@@ -117,7 +117,7 @@ function hillPaint(bm,mode){
 
 /* ---------- create the map, or reject within the time limit ---------- */
 function create(container,o){
-  o=o||{}; const deadline=Date.now()+(o.timeout||6000);
+  o=o||{}; const deadline=Date.now()+(o.timeout||6000); const lg=o.log||(()=>{});
   return new Promise((ok,ko)=>{
     let map=null, done=false;
     const fail=e=>{ if(done) return; done=true; clearTimeout(tm); try{ if(map) map.remove(); }catch(_){} ko(e instanceof Error?e:new Error(String(e))); };
@@ -125,8 +125,8 @@ function create(container,o){
     if(!window.maplibregl) return fail(new Error('maplibre-gl not loaded'));
     if(navigator.onLine===false) return fail(new Error('offline'));
     const ac=window.AbortController?new AbortController():null; setTimeout(()=>ac&&ac.abort(),Math.max(500,deadline-Date.now()));
-    fetch(o.styleUrl||STYLE_URL,{signal:ac&&ac.signal,credentials:'omit'}).then(r=>{ if(!r.ok) throw new Error('style '+r.status); return r.json(); }).then(base=>{
-      if(done) return; const style=buildStyle(base,o);
+    lg('fetch style'); fetch(o.styleUrl||STYLE_URL,{signal:ac&&ac.signal,credentials:'omit'}).then(r=>{ lg('style http '+r.status); if(!r.ok) throw new Error('style '+r.status); return r.json(); }).then(base=>{
+      if(done) return; const style=buildStyle(base,o); lg('style built, '+style.layers.length+' layers');
       try{ map=new maplibregl.Map({container,style,center:o.center||[10,60],zoom:o.zoom==null?4:o.zoom,minZoom:2,maxZoom:17.5,maxPitch:80,attributionControl:false,dragRotate:false,pitchWithRotate:false,
         touchPitch:false,fadeDuration:200,canvasContextAttributes:{antialias:true},cooperativeGestures:false,refreshExpiredTiles:false}); }
       catch(e){ return fail(e); }
@@ -137,8 +137,8 @@ function create(container,o){
       if(container.clientWidth<640) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
       map.__bb={bm:'chart',relief:'vfr',vid:style.metadata['bb:vid'],ex:1.5,t3:false};
       let loaded=false, tile=false; const chk=()=>{ if(loaded&&!done){ done=true; clearTimeout(tm); ok(map); } };
-      map.on('error',e=>{ if(!loaded&&e&&e.error&&/style|WebGL|context|layers\[|expression|sources\./i.test(String(e.error.message||''))) fail(e.error); });
-      map.on('load',()=>{ loaded=true; try{ addImages(map); setBasemap(map,o.bm||'chart'); setRelief(map,o.relief||'vfr'); }catch(e){ return fail(e); } chk(); });
+      map.on('error',e=>{ lg('map error: '+String((e&&e.error&&e.error.message)||e).slice(0,120)); if(!loaded&&e&&e.error&&/style|WebGL|context|layers\[|expression|sources\./i.test(String(e.error.message||''))) fail(e.error); });
+      map.on('load',()=>{ lg('map load'); loaded=true; try{ addImages(map); setBasemap(map,o.bm||'chart'); setRelief(map,o.relief||'vfr'); }catch(e){ return fail(e); } chk(); });
       map.on('data',e=>{ if(e.dataType==='source'&&e.tile&&e.sourceId===map.__bb.vid){ tile=true; chk(); } });
     }).catch(fail);
   });

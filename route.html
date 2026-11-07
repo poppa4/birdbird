@@ -514,7 +514,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=2"></script>
+<script src="rxmap.js?v=3"></script>
 <script>
 (function(){
 'use strict';
@@ -1809,11 +1809,13 @@ function mlWanted(){ const q=new URLSearchParams(location.search).get('map'); if
 function mlLib(){ return new Promise((ok,ko)=>{ if(window.maplibregl) return ok(); const l=document.createElement('link'); l.rel='stylesheet'; l.href='vendor/maplibre/maplibre-gl.css?v=5.24.0'; document.head.appendChild(l);
   const s=document.createElement('script'); s.src='vendor/maplibre/maplibre-gl.js?v=5.24.0'; s.onload=()=>window.maplibregl?ok():ko(new Error('maplibre')); s.onerror=()=>ko(new Error('maplibre-gl.js')); document.head.appendChild(s); }); }
 const mlRelief=()=>!LY.ter?'off':MM;
-async function mlStart(){ if(!mlWanted()){ mapEl.dataset.map='canvas'; return; } const t0=Date.now(); mapEl.dataset.map='loading';
+const MDBG=/[?&]mapdebug\b/.test(location.search); let mdBox=null;
+function mlog(t){ if(!MDBG) return; if(!mdBox){ mdBox=document.createElement('pre'); mdBox.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;max-width:94vw;max-height:45vh;overflow:auto;background:#10171D;color:#D7E1E6;font:11px/1.4 monospace;padding:8px;border-radius:4px;white-space:pre-wrap;margin:0'; document.body.appendChild(mdBox); } mdBox.textContent+=((performance.now()/1000).toFixed(1))+'s '+t+'\n'; }
+async function mlStart(){ mlog('RXMAP '+(!!window.RXMAP)+' · online '+navigator.onLine+' · webgl '+(()=>{ try{ return !!document.createElement('canvas').getContext('webgl2')||!!document.createElement('canvas').getContext('webgl'); }catch(e){ return false; } })()+' · '+navigator.userAgent.slice(0,80)); if(!mlWanted()){ mlog('not wanted -> canvas'); mapEl.dataset.map='canvas'; return; } const t0=Date.now(); mapEl.dataset.map='loading';
   const div=document.createElement('div'); div.className='mlmap wait'; div.id='mlmap'; mapEl.insertBefore(div,mapEl.firstChild);
-  try{ await mlLib(); const m=await RXMAP.create(div,{center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(4000,15000-(Date.now()-t0))});
-    if(T3.on) await set3(false); ML=m; mlInit(); }
-  catch(e){ div.remove(); ML=null; mapEl.dataset.map='canvas'; const why=(e&&e.message)||String(e); try{ console.info('Route Explorer: using the built-in canvas map ('+why+')'); }catch(_){} drawMap();
+  try{ await mlLib(); mlog('maplibre-gl loaded '+(window.maplibregl&&maplibregl.getVersion?maplibregl.getVersion():'')); const m=await RXMAP.create(div,{log:mlog,center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(4000,15000-(Date.now()-t0))});
+    if(T3.on) await set3(false); ML=m; mlInit(); mlog('MapLibre active'); }
+  catch(e){ div.remove(); ML=null; mapEl.dataset.map='canvas'; const why=(e&&e.message)||String(e); mlog('FALLBACK: '+why); try{ console.info('Route Explorer: using the built-in canvas map ('+why+')'); }catch(_){} drawMap();
     if(navigator.onLine!==false&&location.protocol.startsWith('http')){ const n=document.createElement('div'); n.className='mlwarn'; n.innerHTML=L({en:'High-resolution map could not load',no:'Høyoppløst kart kunne ikke lastes'})+' <code>'+why.replace(/[<>&]/g,'')+'</code> <button type="button">'+L({en:'Try again',no:'Prøv igjen'})+'</button> <button type="button" class="x" aria-label="Close">×</button>';
       n.querySelector('button').onclick=()=>location.reload(); n.querySelector('.x').onclick=()=>n.remove(); mapEl.appendChild(n); } } }
 function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); mapEl.dataset.map='maplibre'; el('mlmap').classList.remove('wait'); el('bmsel').hidden=false; bmUI();
