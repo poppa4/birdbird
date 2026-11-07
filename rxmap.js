@@ -67,7 +67,7 @@ function restyle(L){
       if(rail) return keep('rail',{'line-color':P.rail,'line-width':lin(8,0.4,14,1.2),'line-opacity':/tunnel/.test(id)?0.4:0.8});
       const w=['match',['get','class'],'motorway',1.6,['trunk','primary'],1.25,['secondary','tertiary'],0.9,0.55];
       return keep('road',{'line-color':['match',['get','class'],['motorway','trunk'],P.roadMaj,P.road],'line-width':['interpolate',['exponential',1.5],['zoom'],5,['*',w,0.5],10,['*',w,1],14,['*',w,3.2],18,['*',w,12]],'line-opacity':/tunnel/.test(id)?0.45:['match',['get','class'],['path','track','service'],0.6,0.95]}); }
-    if(sl==='aeroway') return keep('fill',{'line-color':P.runway,'line-width':['match',['get','class'],'runway',exp(10,1,14,6,18,40),exp(12,0.5,14,2,18,14)]});
+    if(sl==='aeroway') return keep('fill',{'line-color':P.runway,'line-width':exp(10,['match',['get','class'],'runway',1,0.3],12,['match',['get','class'],'runway',2.6,0.5],14,['match',['get','class'],'runway',6,2],18,['match',['get','class'],'runway',40,14])});
     return null;
   }
   if(t==='symbol'){
