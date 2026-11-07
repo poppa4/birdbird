@@ -136,7 +136,7 @@ function create(container,o){
       // narrow screens: attribution starts folded behind its (i) button; it opens on tap
       if(container.clientWidth<640) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
       map.__bb={bm:'chart',relief:'vfr',vid:style.metadata['bb:vid'],ex:1.5,t3:false};
-      let loaded=false, tile=false; const chk=()=>{ if(loaded&&tile&&!done){ done=true; clearTimeout(tm); ok(map); } };
+      let loaded=false, tile=false; const chk=()=>{ if(loaded&&!done){ done=true; clearTimeout(tm); ok(map); } };
       map.on('error',e=>{ if(!loaded&&e&&e.error&&/style|WebGL|context|layers\[|expression|sources\./i.test(String(e.error.message||''))) fail(e.error); });
       map.on('load',()=>{ loaded=true; try{ addImages(map); setBasemap(map,o.bm||'chart'); setRelief(map,o.relief||'vfr'); }catch(e){ return fail(e); } chk(); });
       map.on('data',e=>{ if(e.dataType==='source'&&e.tile&&e.sourceId===map.__bb.vid){ tile=true; chk(); } });

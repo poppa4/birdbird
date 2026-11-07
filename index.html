@@ -171,6 +171,7 @@
 .part h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.15;margin:6px 0 8px}
 .part p{margin:0;font-size:15.5px;color:var(--h-ink2);line-height:1.55;max-width:56ch}
 .part .pl{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:16px}
+.part .pl a.go{background:var(--h-acc);border-color:var(--h-acc);color:#fff;font-weight:600}.part .pl a.go:hover{color:#fff;filter:brightness(1.08)}
 .part .pl a{font-size:14px;text-decoration:none;border:1px solid var(--h-rule);border-radius:3px;padding:5px 10px;background:var(--h-sheet)}
 .part .pl a:first-child{border-color:var(--h-ink);font-weight:600}
 .part .pl a:hover{border-color:var(--h-acc);color:var(--h-acc)}
@@ -357,63 +358,27 @@
   <!-- 3. How it fits together -->
   <section class="hsec" id="parts" aria-labelledby="h-pa">
     <header><div><span class="kick">How it fits together</span><h2 id="h-pa">Plan it, understand it, ask about it</h2><p class="sub">The briefing pack is the centre. Every page links to the theory behind it, and Flight Intelligence answers from your own documents when a number does not add up.</p></div></header>
-    <div class="flow">
-      <article class="fc">
-        <div class="fill"><svg viewBox="0 0 320 190" aria-hidden="true">
-          <rect x="70" y="14" width="168" height="160" rx="3" fill="#fff" stroke="#C6D0D3" transform="rotate(-4 154 94)"/>
-          <g transform="rotate(-4 154 94)"><path d="M84 40 H200 M84 52 H180 M84 64 H196 M84 76 H170" stroke="#DCE3E4" stroke-width="3"/></g>
-          <rect x="96" y="26" width="176" height="152" rx="3" fill="#fff" stroke="#13202A" stroke-width="1.2"/>
-          <rect x="96" y="26" width="176" height="5" fill="#9A1E68"/>
-          <text x="108" y="48" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#9A1E68" letter-spacing=".6">IFR · ENGM → ENBR</text>
-          <text x="108" y="64" font-family="Archivo,sans-serif" font-weight="700" font-size="13" fill="#13202A">Flight cross-section</text>
-          <path d="M106 158 L122 146 L136 150 L150 128 L164 138 L178 118 L192 132 L208 126 L222 140 L238 136 L262 158Z" fill="#E9E4D8" stroke="#B08A5A" stroke-width=".9"/>
-          <path d="M110 156 L132 96 L236 96 L258 156" fill="none" stroke="#9A1E68" stroke-width="2.4" stroke-linejoin="round"/>
-          <circle cx="132" cy="96" r="3.4" fill="#fff" stroke="#13202A" stroke-width="1.4"/><circle cx="236" cy="96" r="3.4" fill="#fff" stroke="#13202A" stroke-width="1.4"/>
-          <text x="184" y="90" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="#13202A">FL120</text>
-          <path d="M106 118 H262" stroke="#1D4E9E" stroke-dasharray="3 3" stroke-width=".8"/><text x="258" y="114" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="7" fill="#1D4E9E">MSA 7400</text>
-          <g transform="translate(18 112)"><rect width="66" height="54" rx="3" fill="#10171D"/><text x="8" y="16" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#8B99A7">FUEL kg</text><rect x="8" y="24" width="50" height="7" fill="#2A3742"/><rect x="8" y="24" width="38" height="7" fill="#E46BAE"/><text x="8" y="44" font-family="IBM Plex Mono,monospace" font-size="9" fill="#D7E1E6">200 ✓</text></g>
-        </svg></div>
-        <span class="pk"><i>01</i>Plan</span><h3>Briefing pack</h3>
-        <p>Draw the route in Route Explorer and see it over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, VFR or IFR, and print it as a booklet.</p>
-        <div class="act"><a class="btn pri" href="prep.html">Make a briefing pack</a><span class="sec"><a href="route.html">Route Explorer</a><a href="weather.html">METAR and TAF</a></span></div>
+    <div class="parts">
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M6 80 L22 74 L34 62 L46 68 L58 52 L70 60 L84 50 L98 64 L112 70 L126 76 L126 90 L6 90Z" fill="#E9E4D8" stroke="#B08A5A" stroke-width=".8"/><path d="M12 78 L30 40 L100 40 L120 78" fill="none" stroke="#9A1E68" stroke-width="2.2" stroke-linejoin="round"/><circle cx="30" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="66" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="100" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><rect x="14" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M19 16 H43 M19 21 H38 M19 26 H41" stroke="#4C5B66"/><rect x="84" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M89 16 H113 M89 21 H106 M89 26 H110" stroke="#4C5B66"/></svg>
+        <div><span class="pk">01 · PLAN</span><h3>Briefing pack</h3><p>Draw the route in Route Explorer and see it over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, VFR or IFR, and print it as a booklet.</p>
+          <div class="pl"><a class="go" href="prep.html">Make a briefing pack →</a><a href="route.html">Route Explorer</a><a href="weather.html">METAR and TAF</a></div></div>
       </article>
-      <article class="fc">
-        <div class="fill"><svg viewBox="0 0 320 190" aria-hidden="true">
-          <rect x="14" y="14" width="292" height="162" rx="4" fill="#10171D"/>
-          <g fill="none" stroke="#2C4A5C" stroke-width="1.1"><path d="M24 92 C80 90 120 70 170 64 C220 58 260 66 296 70"/><path d="M24 108 C90 108 130 100 180 102 C230 104 260 110 296 112"/><path d="M24 76 C80 72 120 48 170 42 C220 38 260 46 296 48"/><path d="M24 124 C90 124 140 122 190 126 C240 130 270 132 296 134"/></g>
-          <path d="M70 100 C88 80 130 70 214 86 C160 98 104 106 70 100Z" fill="#D7E1E6" transform="rotate(-6 140 92)"/>
-          <path d="M142 86 L142 34" stroke="#E46BAE" stroke-width="2.6"/><path d="M136 42 L142 32 L148 42Z" fill="#E46BAE"/>
-          <text x="152" y="40" font-family="IBM Plex Mono,monospace" font-size="9" fill="#E46BAE">L</text>
-          <text x="28" y="34" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#8B99A7">α 6.0° · CL 0.82</text>
-          <path d="M34 152 H286" stroke="#2A3742" stroke-width="3" stroke-linecap="round"/><path d="M34 152 H150" stroke="#E46BAE" stroke-width="3" stroke-linecap="round"/><circle cx="150" cy="152" r="7" fill="#E46BAE" stroke="#10171D" stroke-width="2"/>
-          <text x="34" y="140" font-family="IBM Plex Mono,monospace" font-size="8" fill="#8B99A7">ANGLE OF ATTACK</text>
-        </svg></div>
-        <span class="pk"><i>02</i>Understand</span><h3>Virtual Lab</h3>
-        <p id="pLab">Interactive labs on the EASA ATPL syllabus, all on the A320. Every briefing page links to the lab that explains it: change the conditions and watch the numbers respond.</p>
-        <div class="act"><a class="btn pri" href="lab.html">Open the learning path</a><span class="sec"><a href="lab.html#all">All topics</a><a href="tunnel.html">Wind tunnel</a></span></div>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M8 58 C30 56 54 44 120 36" fill="none" stroke="#C6D0D3"/><path d="M8 70 C40 70 70 64 120 70" fill="none" stroke="#C6D0D3"/><path d="M8 46 C30 44 60 28 120 24" fill="none" stroke="#C6D0D3"/><path d="M26 56 C36 44 62 40 108 50 C80 54 50 58 26 56Z" fill="#13202A"/><path d="M62 50 L62 16" stroke="#9A1E68" stroke-width="2.4"/><path d="M57 22 L62 12 L67 22Z" fill="#9A1E68"/><path d="M14 84 L118 84" stroke="#13202A"/><path d="M30 84 V80 M50 84 V80 M70 84 V80 M90 84 V80" stroke="#13202A"/><circle cx="74" cy="84" r="4" fill="#fff" stroke="#9A1E68" stroke-width="2"/></svg>
+        <div><span class="pk">02 · UNDERSTAND</span><h3>Virtual Lab</h3><p id="pLab">Interactive labs on the EASA ATPL syllabus, all on the A320.</p>
+          <div class="pl"><a class="go" href="lab.html">Open the learning path →</a><a href="lab.html#all">All topics</a><a href="tunnel.html">Wind tunnel</a></div></div>
       </article>
-      <article class="fc">
-        <div class="fill"><svg viewBox="0 0 320 190" aria-hidden="true">
-          <rect x="22" y="18" width="128" height="156" rx="3" fill="#fff" stroke="#13202A" stroke-width="1.1"/>
-          <text x="34" y="38" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4C5B66">AFM · 2.10 · p. 2-14</text>
-          <path d="M34 52 H136 M34 64 H128 M34 76 H134 M34 100 H130 M34 112 H120 M34 124 H134 M34 136 H112 M34 148 H128" stroke="#DCE3E4" stroke-width="3"/>
-          <rect x="30" y="83" width="112" height="11" fill="#9A1E68" opacity=".16"/><path d="M34 88.5 H132" stroke="#9A1E68" stroke-width="3"/>
-          <path d="M150 88 C168 88 172 72 186 72" fill="none" stroke="#9A1E68" stroke-width="1.2" stroke-dasharray="3 3"/>
-          <rect x="168" y="30" width="134" height="40" rx="8" fill="#E7ECEF"/><text x="180" y="54" font-family="Public Sans,sans-serif" font-size="10" fill="#13202A">Max crosswind?</text>
-          <rect x="168" y="80" width="134" height="80" rx="8" fill="#fff" stroke="#C6D0D3"/><path d="M178 92 V150" stroke="#1D4E9E" stroke-width="2.4"/>
-          <text x="186" y="102" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#1D4E9E">INSTRUCTOR</text>
-          <text x="186" y="118" font-family="Public Sans,sans-serif" font-size="9.5" fill="#13202A">Demonstrated</text><text x="186" y="131" font-family="Public Sans,sans-serif" font-size="9.5" fill="#13202A">25 kt, not a limit.</text>
-          <rect x="186" y="138" width="70" height="13" rx="2" fill="#E8EEF7" stroke="#B7C7E3"/><text x="191" y="147.5" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#1D4E9E">AFM 2.10</text>
-        </svg></div>
-        <span class="pk"><i>03</i>Ask</span><h3>Flight Intelligence</h3>
-        <p>An instructor that answers from your AFM, QRH, SOP and the EASA rules, and shows the page each answer comes from. Your documents stay private in your browser.</p>
-        <div class="act"><a class="btn pri" href="fi.html">Ask Flight Intelligence</a><span class="sec"><a href="checkride.html">Check preparation</a></span></div>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="12" y="12" width="46" height="60" rx="2" fill="#fff" stroke="#13202A"/><path d="M19 22 H50 M19 30 H46 M19 38 H50 M19 46 H42 M19 54 H48" stroke="#C6D0D3"/><rect x="18" y="35" width="34" height="6" fill="#9A1E68" opacity=".18"/><path d="M66 30 H120 a4 4 0 0 1 4 4 V66 a4 4 0 0 1 -4 4 H84 L74 80 L76 70 H66 a4 4 0 0 1 -4 -4 V34 a4 4 0 0 1 4 -4Z" fill="#fff" stroke="#13202A"/><path d="M72 42 H114 M72 50 H110 M72 58 H98" stroke="#4C5B66"/><rect x="100" y="54" width="18" height="9" rx="2" fill="#1D4E9E"/><path d="M52 38 C58 38 60 52 100 58" fill="none" stroke="#1D4E9E" stroke-dasharray="2 3"/><path d="M28 80 v4 a3 3 0 0 0 3 3 h8 a3 3 0 0 0 3 -3 v-4 a7 7 0 0 0 -14 0Z" fill="#13202A"/></svg>
+        <div><span class="pk">03 · ASK</span><h3>Flight Intelligence</h3><p>An instructor that answers from your AFM, QRH, SOP and the EASA rules, and shows the page each answer comes from. Your documents stay private in your browser.</p>
+          <div class="pl"><a class="go" href="fi.html">Ask Flight Intelligence →</a><a href="checkride.html">Check preparation</a></div></div>
       </article>
-    </div>
-    <div class="prac">
-      <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="10" y="10" width="72" height="76" rx="3" fill="#10171D"/><path d="M10 50 L82 42 L82 86 L10 86Z" fill="#6B4A2B"/><path d="M10 10 L82 10 L82 42 L10 50Z" fill="#2A6A9E"/><path d="M28 47 H40 V51 M64 43 H52 V47" stroke="#F0B95A" stroke-width="2.4" fill="none"/><circle cx="46" cy="47" r="2" fill="#F0B95A"/><rect x="90" y="10" width="32" height="76" rx="3" fill="#fff" stroke="#13202A"/><path d="M96 24 H116 M96 36 H112 M96 48 H116 M96 60 H110 M96 72 H114" stroke="#C6D0D3" stroke-width="2"/><path d="M96 23 l3 3 5 -6 M96 35 l3 3 5 -6" stroke="#2E7D4F" stroke-width="1.6" fill="none"/></svg>
-      <div class="pt"><span class="pk">When you are ready to practise</span><h3>Training</h3><p>Fly a whole trip gate to gate, brief out loud, drill the radio, and prepare for the sim assessment and the type rating.</p></div>
-      <div class="pchips"><a href="radio.html">Gate to gate</a><a href="briefing.html">Briefings</a><a href="radio-drills.html">Radio drills</a><a href="cockpit.html">Simulator</a><a href="simcheck.html">A320 sim assessment</a><a href="typerating.html">Type rating (B200)</a></div>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="10" y="10" width="72" height="76" rx="3" fill="#10171D"/><path d="M10 50 L82 42 L82 86 L10 86Z" fill="#6B4A2B"/><path d="M10 10 L82 10 L82 42 L10 50Z" fill="#2A6A9E"/><path d="M28 47 H40 V51 M64 43 H52 V47" stroke="#F0B95A" stroke-width="2.4" fill="none"/><circle cx="46" cy="47" r="2" fill="#F0B95A"/><rect x="90" y="10" width="32" height="76" rx="3" fill="#fff" stroke="#13202A"/><path d="M96 22 H116 M96 32 H112 M96 42 H116 M96 52 H110 M96 62 H116 M96 72 H108" stroke="#4C5B66"/><path d="M95 21 l2 2 4 -4 M95 31 l2 2 4 -4 M95 41 l2 2 4 -4" stroke="#2E7D4F" stroke-width="1.6" fill="none"/></svg>
+        <div><span class="pk">04 · PRACTISE</span><h3>Training</h3><p>Fly a whole trip gate to gate, brief out loud, drill the radio, and prepare for the sim assessment and the type rating.</p>
+          <div class="pl"><a class="go" href="radio.html">Gate to gate →</a><a href="briefing.html">Briefings</a><a href="radio-drills.html">Radio drills</a><a href="cockpit.html">Simulator</a><a href="simcheck.html">A320 sim assessment</a><a href="typerating.html">Type rating (B200)</a></div></div>
+      </article>
     </div>
   </section>
 
@@ -566,7 +531,7 @@ LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
  'Check preparation →':'Kontrollforberedelse →',
  'How it fits together':'Slik henger det sammen','Plan it, understand it, ask about it':'Planlegg, forstå og spør',
  'The briefing pack is the centre. Every page links to the theory behind it, and Flight Intelligence answers from your own documents when a number does not add up.':'Briefingpakken er midtpunktet. Hver side lenker til teorien bak, og Flight Intelligence svarer fra dine egne dokumenter når et tall ikke stemmer.',
- 'Plan':'Planlegg','Understand':'Forstå','Ask':'Spør',
+ '01 · PLAN':'01 · PLANLEGG','02 · UNDERSTAND':'02 · FORSTÅ','03 · ASK':'03 · SPØR','04 · PRACTISE':'04 · ØV','Make a briefing pack →':'Lag en briefingpakke →','Open the learning path →':'Åpne læringsløpet →','Ask Flight Intelligence →':'Spør Flight Intelligence →','Gate to gate →':'Gate to gate →',
  'Draw the route in Route Explorer and see it over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, VFR or IFR, and print it as a booklet.':'Tegn ruten i Route Explorer og se den over terrenget. Gå så gjennom fly, NOTAM, vær, minima, ytelse, drivstoff, masse og balanse i fast rekkefølge, VFR eller IFR, og skriv det ut som et hefte.',
  'Open the learning path':'Åpne læringsløpet',
  'An instructor that answers from your AFM, QRH, SOP and the EASA rules, and shows the page each answer comes from. Your documents stay private in your browser.':'En instruktør som svarer fra din AFM, QRH, SOP og EASA-reglene, og viser siden hvert svar kommer fra. Dokumentene dine blir værende i nettleseren din.',
