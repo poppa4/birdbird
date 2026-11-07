@@ -66,6 +66,13 @@
 .fic .a p{margin:0}.fic .a p+p{margin-top:6px}
 .fic .cite{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;line-height:1.55;color:var(--h-info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
 .fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 6px 6px;font-size:12px;color:var(--h-ink2)}
+.thc{position:absolute;right:-1%;top:8%;z-index:3;display:flex;flex-direction:column;gap:2px;max-width:230px;background:var(--h-sheet);border:1px solid #E0B4C9;border-left:3px solid var(--h-acc);border-radius:6px;padding:10px 14px;text-decoration:none;color:var(--h-ink);box-shadow:0 10px 28px rgba(19,32,42,.12),0 1px 2px rgba(19,32,42,.08)}
+.thc .tk{font-family:var(--h-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--h-acc);font-weight:600}
+.thc b{font-size:14px;font-weight:650;line-height:1.3}
+.thc .tl{font-size:13px;color:var(--h-acc)}
+.thc:hover{border-color:var(--h-acc)}
+@media (min-width:981px) and (max-width:1240px){.thc{right:-2%;top:2%;max-width:210px}}
+@media (max-width:640px){.thc{position:relative;right:auto;top:auto;max-width:none;margin:-30px 8px 0}.thc+.fic{margin-top:10px}.fic .a2{display:none}.stage .pg1,.stage .pg2{opacity:.55}}
 .fic .ft svg{width:11px;height:11px;flex:0 0 11px}
 @media (min-width:981px) and (max-width:1240px){.fic{left:-6%;width:56%}.fic .q{font-size:13.5px}}
 @media (max-width:980px){.stage{padding-bottom:0}.fic{left:0}}
@@ -255,7 +262,7 @@
         </defs>
 
         <!-- page 1: cover -->
-        <g class="pg" data-d="6"><g transform="translate(26 18) rotate(-5 118 167)">
+        <g class="pg pg1" data-d="6"><g transform="translate(26 18) rotate(-5 118 167)">
           <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
           <rect width="236" height="4" fill="#9A1E68"/>
           <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">BIRDBIRD</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">1 / 14</text>
@@ -276,7 +283,7 @@
         </g></g>
 
         <!-- page 2: planning minima -->
-        <g class="pg" data-d="10"><g transform="translate(196 50) rotate(-.6 118 167)">
+        <g class="pg pg2" data-d="10"><g transform="translate(196 50) rotate(-.6 118 167)">
           <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
           <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">4 / 14</text>
           <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
@@ -307,6 +314,7 @@
           <ellipse cx="74" cy="96" rx="20" ry="5.5" fill="#EDF1F3" opacity=".9"/><ellipse cx="92" cy="93" rx="16" ry="5" fill="#EDF1F3" opacity=".9"/><ellipse cx="160" cy="98" rx="22" ry="5.5" fill="#EDF1F3" opacity=".9"/>
           <line x1="16" y1="104" x2="220" y2="104" stroke="#4C5B66" stroke-width=".8" stroke-dasharray="4 3"/>
           <text x="218" y="101" font-size="5.6" fill="#4C5B66" text-anchor="end">MSA 7400</text>
+          <rect x="178" y="94" width="44" height="13" rx="6.5" fill="none" stroke="#9A1E68" stroke-width="1.1" stroke-dasharray="2.5 2"/>
           <line x1="16" y1="132" x2="220" y2="132" stroke="#1D4E9E" stroke-width=".8" stroke-dasharray="1.5 2.5"/>
           <text x="20" y="129" font-size="5.6" fill="#1D4E9E">0 °C</text>
           <path d="M22 158 L64 80 L172 80 L214 158" fill="none" stroke="#9A1E68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
@@ -335,11 +343,12 @@
           <text x="16" y="324" font-size="5.6" fill="#AEBBC1">EXAMPLE VALUES</text>
         </g></g>
       </svg>
+      <a class="thc" id="thc" href="altimetry.html"><span class="tk">Theory</span><b>Why is the MSA 7,400 ft?</b><span class="tl">Pressure and altitude lab →</span></a>
       <div class="fic" id="fic" role="group" aria-label="Flight Intelligence: an example answer">
         <div class="fh"><b>Flight Intelligence</b><span class="own"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h4.8L9.5 3.2V11h-7z M7.2 1v2.3h2.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>From your documents</span></div>
         <div class="bd">
           <div class="q">What is the maximum crosswind for landing?</div>
-          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p></div>
+          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p class="a2"><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p></div>
         </div>
         <div class="ft"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span>Your AFM, QRH and SOP stay in this browser.</span></div>
       </div>
@@ -529,6 +538,7 @@ LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
  'A320 simulator assessment':'A320-simulatortest','The manoeuvres, the configuration and the go-around.':'Manøvrene, konfigurasjonen og avbrutt innflyging.',
  'Autoflight and warnings':'Autoflight og varsling','Read the FMA, selected against managed modes.':'Les FMA-en, selected mot managed moduser.',
  'Check preparation →':'Kontrollforberedelse →',
+ 'Theory':'Teori','Why is the MSA 7,400 ft?':'Hvorfor er MSA 7400 ft?','Pressure and altitude lab →':'Lab: trykk og høyde →',
  'How it fits together':'Slik henger det sammen','Plan it, understand it, ask about it':'Planlegg, forstå og spør',
  'The briefing pack is the centre. Every page links to the theory behind it, and Flight Intelligence answers from your own documents when a number does not add up.':'Briefingpakken er midtpunktet. Hver side lenker til teorien bak, og Flight Intelligence svarer fra dine egne dokumenter når et tall ikke stemmer.',
  '01 · PLAN':'01 · PLANLEGG','02 · UNDERSTAND':'02 · FORSTÅ','03 · ASK':'03 · SPØR','04 · PRACTISE':'04 · ØV','Make a briefing pack →':'Lag en briefingpakke →','Open the learning path →':'Åpne læringsløpet →','Ask Flight Intelligence →':'Spør Flight Intelligence →','Gate to gate →':'Gate to gate →',
@@ -717,6 +727,10 @@ if(MQ2&&MQ2.addEventListener) MQ2.addEventListener('change',drawDA);
 })();
 
 (function(){ const el=LAB.el, L=LAB.L; const n=el('srcnote'); if(!n) return; const d=()=>{ n.innerHTML=L({en:'<span class="sn-k">Sources</span><span>Flight Intelligence answers from your own AFM, QRH and SOP first. Regulations follow the <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, March 2026) and ICAO; airspace and procedures come from your national <b>AIP</b>. Not a live feed: always check the current revision. <a href="sources.html">All data sources →</a></span>',no:'<span class="sn-k">Kilder</span><span>Flight Intelligence svarer først fra din egen AFM, QRH og SOP. Regelverket følger <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, mars 2026) og ICAO; luftrom og prosedyrer kommer fra ditt nasjonale <b>AIP</b>. Ikke en direkte kobling: sjekk alltid gjeldende revisjon. <a href="sources.html">Alle datakilder →</a></span>'}); }; d(); LAB.onLang(d); })();
+
+/* mobile: one readable page (cross-section and fuel), the others peek behind */
+(function(){ const sv=document.querySelector('#stage > svg'); if(!sv||!window.matchMedia) return; const mq=matchMedia('(max-width:640px)');
+  const set=()=>sv.setAttribute('viewBox',mq.matches?'318 64 320 392':'0 0 640 470'); set(); mq.addEventListener?mq.addEventListener('change',set):mq.addListener(set); })();
 </script>
 </body>
 </html>
