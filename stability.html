@@ -69,6 +69,15 @@
 .mro{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-2)}
 .mro b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
 .cards6{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.fa{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);border:1px solid var(--rule);border-radius:var(--radius-lg);background:var(--sheet);overflow:hidden;margin:4px 0 16px}
+.fa>div{padding:10px 14px;border-top:1px solid var(--rule-2);font-size:14px;line-height:1.45;color:var(--ink-2)}
+.fa>div.h{border-top:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3,#6B7884);background:var(--paper)}
+.fa>div.k{color:var(--ink);font-weight:600}
+.fa>div.on{background:rgba(154,30,104,.06);color:var(--ink)}
+.fa .pl{color:#2E7D4F;font-weight:600}.fa .mi{color:#B03A2E;font-weight:600}
+@media (max-width:600px){.fa{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fa>div.k{grid-column:1/-1;background:var(--paper);padding-bottom:4px}.fa>div.h.k0{display:none}}
+#bsCv{aspect-ratio:16/8}@media (max-width:600px){#bsCv{aspect-ratio:4/3.6}}
+.bsl{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2);margin-top:-4px}
 </style>
 </head>
 <body data-title="Stability, Controls and Load Factor">
@@ -83,12 +92,31 @@
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#cg">CG and balance</a><a href="#static">Static stability</a><a href="#dynamic">Dynamic stability</a><a href="#vn">Load factor and V-n</a><a href="#controls">Flight controls</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#basics">Forward or aft CG</a><a href="#cg">CG and balance</a><a href="#static">Static stability</a><a href="#dynamic">Dynamic stability</a><a href="#vn">Load factor and V-n</a><a href="#controls">Flight controls</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <!-- 0 basics -->
+  <section class="card" id="basics">
+    <div class="eyebrow">1 · Start here</div>
+    <h2>Forward or aft CG</h2>
+    <p class="lead" id="bsLead"></p>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="bsCv" aria-label="A320 side view: wing lift, weight at the CG and the tail download, which grows as the CG moves forward"></canvas></div>
+        <div id="bsCtl"></div>
+      </div>
+      <div class="rail">
+        <div class="grp" id="bsG"></div>
+        <div class="ro" id="bsR"></div>
+      </div>
+    </div>
+    <div class="fa" id="bsT"></div>
+    <div class="exam" id="bsE"></div>
+  </section>
 
   <!-- 1 CG -->
   <span id="long" aria-hidden="true" style="display:block;scroll-margin-top:72px"></span>
   <section class="card" id="cg">
-    <div class="eyebrow">1 · Interactive</div>
+    <div class="eyebrow">2 · Interactive</div>
     <h2>CG and balance</h2>
     <p class="lead" id="cgLead"></p>
     <div class="split">
@@ -112,7 +140,7 @@
 
   <!-- 2 static -->
   <section class="card" id="static">
-    <div class="eyebrow">2 · Interactive</div>
+    <div class="eyebrow">3 · Interactive</div>
     <h2>Static longitudinal stability</h2>
     <p class="lead" id="stLead"></p>
     <div class="split">
@@ -132,7 +160,7 @@
 
   <!-- 3 dynamic -->
   <section class="card" id="dynamic">
-    <div class="eyebrow">3 · Interactive</div>
+    <div class="eyebrow">4 · Interactive</div>
     <h2>Dynamic stability</h2>
     <p class="lead" id="dyLead"></p>
     <div class="h3row"><h3>Pitch: short period and phugoid</h3></div>
@@ -166,7 +194,7 @@
 
   <!-- 4 V-n -->
   <section class="card" id="vn">
-    <div class="eyebrow">4 · Interactive</div>
+    <div class="eyebrow">5 · Interactive</div>
     <h2>Load factor, V-n and buffet</h2>
     <p class="lead" id="vnLead"></p>
     <div class="split">
@@ -188,7 +216,7 @@
 
   <!-- 5 controls -->
   <section class="card" id="controls">
-    <div class="eyebrow">5 · Interactive</div>
+    <div class="eyebrow">6 · Interactive</div>
     <h2>Flight controls</h2>
     <p class="lead" id="ctLead"></p>
     <div class="split">
@@ -218,7 +246,7 @@
 
   <!-- 6 ops -->
   <section class="card" id="ops">
-    <div class="eyebrow">6 · Operations</div>
+    <div class="eyebrow">7 · Operations</div>
     <h2>In the aircraft</h2>
     <div class="split">
       <div class="stack">
@@ -253,7 +281,7 @@ LAB.add({},{
  'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
  'Everything ATPL 081 asks about stability, control and manoeuvre loads, worked on one A320. Load it forward and aft, disturb it, pull g in turbulence and at altitude, and move every control surface. Each lab shows the classic aerodynamics the exam tests, and what fly-by-wire normal law does on top.':'Alt ATPL 081 spør om stabilitet, styring og manøverlaster, regnet på én A320. Last den fremme og bak, forstyrr den, trekk g i turbulens og i høyden, og beveg hver rorflate. Hver lab viser den klassiske aerodynamikken eksamen tester, og hva fly-by-wire normal law gjør på toppen.',
  'CG and balance':'CG og balanse','Static stability':'Statisk stabilitet','Dynamic stability':'Dynamisk stabilitet','Load factor and V-n':'Lastfaktor og V-n','Flight controls':'Flykontroller','In the aircraft':'I flyet','Test yourself':'Test deg selv',
- '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt','Check':'Sjekk',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt','6 · Interactive':'6 · Interaktiv','7 · Operations':'7 · Operativt','1 · Start here':'1 · Start her','Forward or aft CG':'Fremre eller bakre CG','Check':'Sjekk',
  'Static longitudinal stability':'Statisk lengdestabilitet','Load factor, V-n and buffet':'Lastfaktor, V-n og buffet',
  'Pitch: short period and phugoid':'Pitch: kortperiode og fugoide','Lateral and directional: Dutch roll and spiral':'Tverr- og retningsstabilitet: Dutch roll og spiral',
  'Classic controls the exam asks about':'Klassiske ror eksamen spør om','Adverse yaw and its cures':'Negativ giring og botemidler','Aerodynamic balance':'Aerodynamisk balanse','Tabs':'Tabs','Mass balance and flutter':'Massebalanse og flutter','Aileron reversal':'Balanserorreversering','THS versus elevator trim':'THS mot trim med høyderoret',
@@ -289,6 +317,86 @@ function sl(id,o){ return LAB.slider(el(id),o); }
 function band(g,x0,x1,y0,y1,col){ g.fillStyle=col; g.fillRect(Math.min(x0,x1),y0,Math.abs(x1-x0),y1-y0); }
 function vline(g,x,y0,y1,col,dash,w){ g.strokeStyle=col; g.lineWidth=w||1.2; g.setLineDash(dash||[]); g.beginPath(); g.moveTo(x,y0); g.lineTo(x,y1); g.stroke(); g.setLineDash([]); }
 function dot(g,x,y,r,col,ring){ g.fillStyle=col; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); if(ring){ g.strokeStyle=ring; g.lineWidth=1.5; g.stroke(); } }
+
+
+/* ================= 0 · Forward or aft CG: the basics ================= */
+(function(){
+const M=64, rho=S.isa(35000).rho, ENV=S.envelope(M);
+const BS={h:ENV.fwd+ (ENV.aft-ENV.fwd)*0.5};
+el('bsLead').innerHTML=L({en:'The single most examined idea in this subject. Where the centre of gravity (CG) sits along the wing decides how stable the aircraft is, how fast it stalls, how much fuel it burns and how hard it is to rotate and flare. Slide the CG between the A320 forward and aft limits (64 t) and watch every effect move together.',no:'Det temaet eksamen spør mest om. Hvor tyngdepunktet (CG) ligger langs vingen bestemmer hvor stabilt flyet er, hvor fort det staller, hvor mye drivstoff det bruker og hvor tungt det er å rotere og flare. Flytt CG mellom fremre og bakre grense for A320 (64 t) og se alle effektene endre seg samtidig.'});
+el('bsG').textContent=L({en:'At this CG',no:'Ved denne CG-en'});
+const ctl=el('bsCtl');
+const s1=LAB.slider(ctl,{label:{en:'CG position (% MAC)',no:'CG-posisjon (% MAC)'}.en,min:Math.ceil(ENV.fwd*2)/2,max:Math.floor(ENV.aft*2)/2,step:0.5,v:Math.round(BS.h*2)/2,f:v=>nf(v,1)+' %',on:v=>{BS.h=v;draw();}});
+LAB.add({},{'CG position (% MAC)':'CG-posisjon (% MAC)'});
+const lim=document.createElement('div'); lim.className='bsl'; ctl.appendChild(lim);
+const val=h=>{ const x=h/100, st=S.stall(M,x,'full'), cr=S.cruise(M,x,35000,0.78), ref=S.cruise(M,0.25,35000,0.78), fl=S.flare(M,x);
+  return {sm:(S.hn-x)*100, vs:st.Vs, td:-st.Lt/(M*1000*S.g)*100, tdc:-cr.t.Lt/cr.t.W*100, fuel:(cr.D/ref.D-1)*100, sfg:S.sfg(M,x,rho)/S.sfg(M,ENV.fwd/100,rho)*100, fl:fl.frac*100, vapp:fl.Vapp}; };
+const F=val(ENV.fwd), A=val(ENV.aft);
+const st=fit('bsCv',g0=>paint(g0));
+function paint(stc){ const g=S.clear(stc), W=stc.w, H=stc.h, n=narrow(stc), v=val(BS.h), fs=n?10.5:12;
+  // --- aircraft, schematic: positions along the wing exaggerated ×3 ---
+  const pad=n?12:28, sc=(W-2*pad)/38.6, cx0=pad+17.9*sc, cy=H*(n?0.30:0.32), X=x=>cx0-x*sc, Z=z=>cy-z*sc;
+  g.fillStyle='#2A3946'; g.strokeStyle='#4A5D6C'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(X(-11.6),Z(1.7)); g.lineTo(X(-16.3),Z(8)); g.lineTo(X(-18.9),Z(8)); g.lineTo(X(-19.4),Z(1.3)); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle='#33444F'; g.beginPath(); g.moveTo(X(17.7),Z(-0.3)); g.quadraticCurveTo(X(17.6),Z(1.2),X(14),Z(1.98)); g.lineTo(X(-8),Z(1.98)); g.lineTo(X(-19.9),Z(1.55)); g.lineTo(X(-19.9),Z(1.15)); g.lineTo(X(-8),Z(-1.98)); g.lineTo(X(14),Z(-1.98)); g.quadraticCurveTo(X(17.6),Z(-1.6),X(17.7),Z(-0.3)); g.closePath(); g.fill(); g.stroke();
+  const EX=3, wc=0.6, xs=f=>wc-(f-0.4)*AC.c*EX, zw=-1.2;
+  g.fillStyle='#4E6272'; g.beginPath(); g.moveTo(X(xs(0)),Z(zw)); g.quadraticCurveTo(X(xs(0.12)),Z(zw+0.9),X(xs(0.45)),Z(zw+0.6)); g.lineTo(X(xs(1)),Z(zw)); g.quadraticCurveTo(X(xs(0.5)),Z(zw-0.3),X(xs(0)),Z(zw)); g.fill();
+  g.fillStyle='#9AA9B5'; g.fillRect(X(-13.4),Z(1.05),X(-18.2)-X(-13.4),3);
+  const x=BS.h/100, cpx=0.38, L0=H*(n?0.15:0.17), xcg=xs(x), xcp=xs(cpx), xt=-16.4;
+  const ly=Z(zw+0.6)-2; arrow(g,X(xcp),ly,X(xcp),ly-L0*(1+v.tdc/100),I.cyan,3,10);
+  txt(g,L({en:'wing lift ',no:'vingeløft '})+nf(100+v.tdc,1)+' % W',X(xcp)+7,ly-L0*(1+v.tdc/100)+10,{col:I.cyan,al:'left',size:fs});
+  arrow(g,X(xcg),Z(0),X(xcg),Z(0)+L0,I.white,3,10);
+  txt(g,L({en:'weight at CG',no:'vekt i CG'}),X(xcg)-8,Z(0)+L0-4,{col:I.white,al:'right',size:fs});
+  dot(g,X(xcg),Z(0),6,'#10171D',I.white);
+  const tl=Math.max(6,v.tdc/100*L0*8); arrow(g,X(xt),Z(1.1),X(xt),Z(1.1)+tl,I.mag,3,10);
+  txt(g,L({en:'tail pushes down ',no:'halen presser ned '})+nf(v.tdc,1)+' % W',X(xt)-8,Z(1.1)+tl+4,{col:I.mag,al:'right',size:fs});
+  // --- enlarged MAC ruler ---
+  const r0=10,r1=55, rx0=pad+(n?4:40), rx1=W-pad-(n?4:40), RX=f=>rx0+(f-r0)/(r1-r0)*(rx1-rx0), ry=H*(n?0.80:0.80);
+  txt(g,L({en:'CG along the wing, % MAC (enlarged)',no:'CG langs vingen, % MAC (forstørret)'}),rx0,ry-(n?54:60),{col:'#8B99A7',al:'left',size:n?9.5:11});
+  g.fillStyle='rgba(127,203,232,.13)'; g.fillRect(RX(ENV.fwd),ry-7,RX(ENV.aft)-RX(ENV.fwd),14);
+  g.strokeStyle='#5B6B78'; g.lineWidth=1; g.beginPath(); g.moveTo(rx0,ry); g.lineTo(rx1,ry); g.stroke();
+  for(let f=10;f<=55;f+=5){ vline(g,RX(f),ry-3,ry+3,'#5B6B78'); if(!n||f%10==0) txt(g,f+'',RX(f),ry+(n?15:17),{col:'#6B7884',al:'center',size:n?9:10}); }
+  const mk=(f,lab,col,up)=>{ vline(g,RX(f),ry-12,ry+12,col,[3,3],1.5); txt(g,lab,RX(f),up?ry-17:ry+(n?28:32),{col,al:'center',size:n?9.5:11}); };
+  mk(ENV.fwd,L({en:'FWD limit',no:'fremre grense'}),'#7FCBE8',false);
+  mk(ENV.aft,L({en:'AFT limit',no:'bakre grense'}),'#7FCBE8',false);
+  mk(cpx*100,L({en:'lift',no:'løft'}),I.cyan,true);
+  mk(S.hn*100,L({en:'neutral point',no:'nøytralpunkt'}),'#E07A5F',true);
+  g.fillStyle=I.white; g.beginPath(); g.moveTo(RX(BS.h),ry-8); g.lineTo(RX(BS.h)+7,ry); g.lineTo(RX(BS.h),ry+8); g.lineTo(RX(BS.h)-7,ry); g.closePath(); g.fill();
+  // stability margin bracket
+  g.strokeStyle='#8FD3A6'; g.lineWidth=1.5; g.beginPath(); g.moveTo(RX(BS.h),ry-33); g.lineTo(RX(S.hn*100),ry-33); g.stroke();
+  txt(g,L({en:'static margin ',no:'statisk margin '})+nf(v.sm,1)+' %',(RX(BS.h)+RX(S.hn*100))/2,ry-38,{col:'#8FD3A6',al:'center',size:n?9.5:11});
+}
+const T3=[
+ [{en:'Stability',no:'Stabilitet'},{en:'<span class="pl">More stable</span>: bigger static margin, the nose returns firmly after a disturbance',no:'<span class="pl">Mer stabilt</span>: større statisk margin, nesen kommer bestemt tilbake etter en forstyrrelse'},{en:'<span class="mi">Less stable</span>: margin shrinks towards the neutral point; behind it the aircraft is unstable',no:'<span class="mi">Mindre stabilt</span>: marginen krymper mot nøytralpunktet; bak det er flyet ustabilt'}],
+ [{en:'Stall speed',no:'Stallfart'},{en:'<span class="mi">Higher</span>: the tail pushes down harder, so the wing must lift weight plus tail load',no:'<span class="mi">Høyere</span>: halen presser hardere ned, så vingen må løfte vekten pluss halelasten'},{en:'<span class="pl">Lower</span>: less tail download, less lift needed',no:'<span class="pl">Lavere</span>: mindre halelast, mindre løft trengs'}],
+ [{en:'Drag, fuel and range',no:'Motstand, drivstoff og rekkevidde'},{en:'<span class="mi">More drag</span> (induced and trim drag), more fuel, <span class="mi">less range</span> and endurance',no:'<span class="mi">Mer motstand</span> (indusert og trimmotstand), mer drivstoff, <span class="mi">kortere rekkevidde</span> og utholdenhet'},{en:'<span class="pl">Less drag</span>, less fuel, <span class="pl">more range</span>; airlines load aft for this',no:'<span class="pl">Mindre motstand</span>, mindre drivstoff, <span class="pl">lengre rekkevidde</span>; flyselskaper laster bakover av denne grunnen'}],
+ [{en:'Control forces and manoeuvrability',no:'Rorkrefter og manøvrerbarhet'},{en:'<span class="mi">Heavier</span>: higher stick force per g, less responsive in pitch',no:'<span class="mi">Tyngre</span>: høyere stikkekraft per g, tregere i pitch'},{en:'<span class="pl">Lighter</span> and more responsive, but <span class="mi">easier to over-control</span> and overstress',no:'<span class="pl">Lettere</span> og mer responsivt, men <span class="mi">lettere å overstyre</span> og overbelaste'}],
+ [{en:'Rotation and flare',no:'Rotasjon og flare'},{en:'<span class="mi">More elevator needed</span> to lift the nose; sets the forward limit',no:'<span class="mi">Mer høyderor trengs</span> for å løfte nesen; dette setter fremre grense'},{en:'Easy rotation, but <span class="mi">tailstrike</span> risk and tail tipping on the ground at the extreme',no:'Lett rotasjon, men <span class="mi">tailstrike</span>-fare og at flyet tipper på halen på bakken helt bak'}],
+ [{en:'Take-off and landing',no:'Avgang og landing'},{en:'<span class="mi">Higher V-speeds</span> (they follow VS), longer distances, slightly less climb',no:'<span class="mi">Høyere V-hastigheter</span> (de følger VS), lengre distanser, litt dårligere stigning'},{en:'<span class="pl">Slightly lower V-speeds</span> and better climb',no:'<span class="pl">Litt lavere V-hastigheter</span> og bedre stigning'}]
+];
+function draw(){ const v=val(BS.h), fr=(BS.h-ENV.fwd)/(ENV.aft-ENV.fwd), side=fr<0.4?'f':fr>0.6?'a':'';
+  st.draw();
+  lim.innerHTML=`<span>◀ ${L({en:'FORWARD',no:'FREMOVER'})} ${nf(ENV.fwd,1)} %</span><span>${L({en:'AFT',no:'BAKOVER'})} ${nf(ENV.aft,1)} % ▶</span>`;
+  const r=(lab,cur,f,a)=>`<div class="rrow"><span>${L(lab)}</span><b>${cur}</b></div>`;
+  el('bsR').innerHTML=[
+   r({en:'Static margin (stability)',no:'Statisk margin (stabilitet)'},nf(v.sm,1)+' % MAC'),
+   r({en:'Tail download, cruise',no:'Halelast ned, marsj'},nf(v.tdc,1)+' % W'),
+   r({en:'Stall speed VS1g, CONF FULL',no:'Stallfart VS1g, CONF FULL'},nf(v.vs,1)+' kt'),
+   r({en:'Cruise fuel burn vs 25 % MAC',no:'Drivstofforbruk i marsj mot 25 % MAC'},(v.fuel>0?'+':'')+nf(v.fuel,1)+' %'),
+   r({en:'Stick force per g (vs fwd limit)',no:'Stikkekraft per g (mot fremre grense)'},nf(v.sfg,0)+' %'),
+   r({en:'Elevator needed in the flare',no:'Høyderor nødvendig i flaren'},nf(v.fl,0)+' %')
+  ].join('')+`<p class="callout info" style="margin-top:10px;font-size:14px">${side==='f'?L({en:'Forward half: stable and heavy, at the cost of stall speed and fuel.',no:'Fremre halvdel: stabilt og tungt, på bekostning av stallfart og drivstoff.'}):side==='a'?L({en:'Aft half: efficient and light, at the cost of stability.',no:'Bakre halvdel: effektivt og lett, på bekostning av stabilitet.'}):L({en:'Mid range: the usual compromise.',no:'Midt i: det vanlige kompromisset.'})} ${L({en:'Across the whole A320 range: stall speed',no:'Over hele A320-spennet: stallfart'})} ${nf(F.vs-A.vs,1)} kt, ${L({en:'fuel',no:'drivstoff'})} ${nf(F.fuel-A.fuel,1)} %.</p>`;
+  el('bsT').innerHTML=`<div class="h k0"></div><div class="h${side==='f'?' on':''}">${L({en:'Forward CG',no:'Fremre CG'})}</div><div class="h${side==='a'?' on':''}">${L({en:'Aft CG',no:'Bakre CG'})}</div>`+T3.map(t=>`<div class="k">${L(t[0])}</div><div class="${side==='f'?'on':''}">${L(t[1])}</div><div class="${side==='a'?'on':''}">${L(t[2])}</div>`).join('');
+}
+EXT('bsE',[
+ {en:'<b>Forward CG</b>: more stable, higher stall speed, more drag and fuel (less range), heavier stick forces, more elevator to rotate and flare.',no:'<b>Fremre CG</b>: mer stabilt, høyere stallfart, mer motstand og drivstoff (kortere rekkevidde), tyngre stikkekrefter, mer høyderor for å rotere og flare.'},
+ {en:'<b>Aft CG</b>: less stable, lower stall speed, less drag (better range and economy), lighter forces and more manoeuvrable, but easier to over-control.',no:'<b>Bakre CG</b>: mindre stabilt, lavere stallfart, mindre motstand (bedre rekkevidde og økonomi), lettere krefter og mer manøvrerbart, men lettere å overstyre.'},
+ {en:'Why: with the CG ahead of the wing\'s lift the tail must push <b>down</b>. The further forward the CG, the bigger that download, and the wing has to carry it as extra lift.',no:'Hvorfor: med CG foran vingens løft må halen presse <b>ned</b>. Jo lenger frem CG, desto større halelast, og vingen må bære den som ekstra løft.'},
+ {en:'<b>Forward limit</b> = enough elevator to rotate and flare (and acceptable forces). <b>Aft limit</b> = enough stability (minimum static margin and stick force per g).',no:'<b>Fremre grense</b> = nok høyderor til å rotere og flare (og akseptable krefter). <b>Bakre grense</b> = nok stabilitet (minste statiske margin og stikkekraft per g).'}
+],{en:'The loadsheet gives the take-off CG; you enter it as the THS trim in the MCDU. Fuel and passenger movement shift the CG in flight, and some types move it aft with a trim tank to save fuel (not the A320).',no:'Loadsheeten gir avgangs-CG; du legger den inn som THS-trim i MCDU. Drivstoff og passasjerer flytter CG under flyging, og noen typer flytter den bakover med en trimtank for å spare drivstoff (ikke A320).'});
+LAB.onLang&&LAB.onLang(draw);
+draw();
+})();
 
 /* ================= 1 · CG and balance ================= */
 const CG={h:28,m:64,ph:'cr'};
