@@ -29,19 +29,19 @@
 .more:hover{text-decoration:underline;text-underline-offset:3px}
 
 /* ---------- hero: come prepared ---------- */
-.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-areas:"copy stage" "three stage" "note note";grid-template-rows:auto 1fr auto;gap:0 56px;align-items:center;padding:60px 0 76px}
+.hero{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,13fr);grid-template-areas:"copy stage" "three stage" "note note";grid-template-rows:auto 1fr auto;gap:0 48px;align-items:center;padding:44px 0 60px}
 .hero .hc{grid-area:copy;align-self:end}.hero .stage{grid-area:stage}.hero .three{grid-area:three;align-self:start}
-.hero h1{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(38px,4.2vw,58px);line-height:1.02;letter-spacing:-.02em;margin:0}
-.hero .lede{font-size:19px;line-height:1.55;color:var(--h-ink);max-width:42ch;margin:22px 0 0}
-.hero .btns{margin-top:30px;gap:12px}
-.hero .btn{font-size:16px;padding:12px 20px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border-radius:3px}
+.hero h1{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(34px,3.3vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0}
+.hero .lede{font-size:17px;line-height:1.6;color:var(--h-ink);max-width:46ch;margin:18px 0 0}
+.hero .btns{margin-top:26px;gap:12px}
+.hero .btn{font-size:15px;padding:11px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border-radius:3px}
 .hero .btn.pri{color:#fff}
 .three{list-style:none;margin:30px 0 0;padding:0;border-top:1px solid var(--h-rule);max-width:520px}
 .three li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--h-rule2);font-size:14.5px;line-height:1.45;color:var(--h-ink2)}
 .three b{color:var(--h-ink);font-weight:600}
 .three a{text-decoration:none}.three a:hover b{color:var(--h-acc)}
 @media (max-width:520px){.three li{grid-template-columns:minmax(0,1fr);gap:2px}}
-@media (max-width:980px){.hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "stage" "three" "note";grid-template-rows:auto;gap:40px;padding:32px 0 48px}.hero .three{margin-top:0}.hero .lede{font-size:18px}}
+@media (max-width:980px){.hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "stage" "three" "note";grid-template-rows:auto;gap:40px;padding:32px 0 48px}.hero .three{margin-top:0}.hero .lede{font-size:17px}.hero h1{font-size:31px}}
 
 .srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
 /* composed visual: briefing pack + Flight Intelligence answer */
