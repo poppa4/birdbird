@@ -20,7 +20,7 @@
 .chk input{accent-color:var(--magenta);margin:0}
 ol.steps{margin:6px 0 0;padding-left:20px;color:var(--ink-2);font-size:14.5px;line-height:1.5}
 ol.steps li{margin:4px 0}
-.vid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:center;margin-top:18px;border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:14px}
+.vid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:center;margin:6px 0 18px;border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:14px}
 @media (max-width:760px){.vid{grid-template-columns:minmax(0,1fr)}}
 .vframe{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#10171D}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -51,6 +51,15 @@ ol.steps li{margin:4px 0}
   <section class="card" id="single">
     <div class="eyebrow">1 · Interactive</div>
     <h2>Asymmetric thrust and rudder authority</h2>
+    <div class="vid" id="vid">
+      <div class="vframe"><button class="vplay" id="vplay" type="button" aria-label="Play the video"><i></i><span id="vnote"></span></button></div>
+      <div class="vtx">
+        <div class="eyebrow" id="vey"></div>
+        <h3 id="vh"></h3>
+        <ul id="vl"></ul>
+        <a id="vlink" href="https://www.youtube.com/watch?v=VJOYERf6380" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
     <p class="lead">One engine pushes, the other only drags. The yawing moment is the live engine’s thrust times its distance from the centreline, plus the windmilling drag of the failed engine on the other side. The rudder answers with a side force on the fin, and that force grows with the square of the speed. Centre the beta target with the rudder pedal.</p>
     <div class="split">
       <div class="stack">
@@ -70,15 +79,6 @@ ol.steps li{margin:4px 0}
           <div class="rrow"><span>Beta target</span><b id="r6"></b></div>
         </div>
         <p class="callout blue" id="x1"></p>
-      </div>
-    </div>
-    <div class="vid" id="vid">
-      <div class="vframe"><button class="vplay" id="vplay" type="button" aria-label="Play the video"><i></i><span id="vnote"></span></button></div>
-      <div class="vtx">
-        <div class="eyebrow" id="vey"></div>
-        <h3 id="vh"></h3>
-        <ul id="vl"></ul>
-        <a id="vlink" href="https://www.youtube.com/watch?v=VJOYERf6380" target="_blank" rel="noopener"></a>
       </div>
     </div>
   </section>
