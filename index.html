@@ -46,24 +46,25 @@
 .srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
 /* composed visual: briefing pack + Flight Intelligence answer */
 .stage{margin:0;position:relative;min-width:0;aspect-ratio:640/600;padding:0}
-.stage .sc{position:absolute;display:block;border-radius:8px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 18px 40px rgba(19,32,42,.16),0 2px 6px rgba(19,32,42,.08);will-change:transform}
-.stage .sc-wt{right:0;top:0;width:72%;aspect-ratio:1400/1028;background:#2A3742;border:1px solid #2A3742}
+.stage::before{content:"";position:absolute;inset:-6% -8% -4% -6%;background:radial-gradient(60% 55% at 62% 40%,rgba(127,160,190,.22),transparent 70%),radial-gradient(40% 40% at 20% 70%,rgba(154,30,104,.07),transparent 70%);pointer-events:none;z-index:0}
+.stage .sc{position:absolute;display:block;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 30px 60px -18px rgba(19,32,42,.32),0 12px 24px -12px rgba(19,32,42,.18),0 0 0 1px rgba(19,32,42,.06);will-change:transform;transition:box-shadow .3s ease}
+.stage .sc-wt{right:0;top:2%;width:74%;aspect-ratio:1400/1028;background:#1B252E;z-index:1}
 .stage .sc-wt img{display:block;width:100%;height:100%;object-fit:cover}
-.stage .sc-bp{left:0;top:27%;width:35%;aspect-ratio:236/372;z-index:2;background:#fff;border:1px solid var(--h-rule)}
+.stage .sc-bp{left:1%;top:30%;width:33%;aspect-ratio:236/334;z-index:2;background:#fff;border-radius:6px;rotate:-4deg}
 .stage .sc-bp svg{display:block;width:100%;height:100%}
 .stage svg text{font-family:var(--h-mono)}
 .stage svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
 .stage svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
-.stage .sct{position:absolute;left:10px;bottom:10px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;display:flex;align-items:baseline;gap:8px;background:rgba(16,23,29,.86);color:#D7E1E6;border-radius:4px;padding:5px 9px;font-size:12px;backdrop-filter:blur(4px)}
+.stage .sct{position:absolute;left:12px;bottom:12px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;display:flex;align-items:baseline;gap:8px;background:rgba(16,23,29,.62);color:#D7E1E6;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 12px;font-size:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .stage .sct b{color:#fff;font-weight:650;font-size:12.5px}
 .stage .sct span{font-family:var(--h-mono);font-size:10.5px;color:#9FB0BC}
-.stage .sc-wt .sct{top:10px;bottom:auto}
+.stage .sc-wt .sct{top:12px;bottom:auto}
 .stage .sc-bp .sct{flex-direction:column;gap:0;background:rgba(255,255,255,.94);color:var(--h-ink2);border:1px solid var(--h-rule2)}
 .stage .sc-bp .sct b{color:var(--h-ink)}.stage .sc-bp .sct span{color:var(--h-ink2)}
-.stage .sc:hover{box-shadow:0 22px 48px rgba(19,32,42,.2),0 2px 6px rgba(19,32,42,.1)}
+.stage .sc:hover{box-shadow:0 36px 70px -18px rgba(19,32,42,.38),0 14px 28px -12px rgba(19,32,42,.2),0 0 0 1px rgba(19,32,42,.08)}
 .stage .sc:focus-visible{outline:2px solid var(--h-acc);outline-offset:3px}
-.stage figcaption{position:absolute;left:0;bottom:-4px;font-size:12.5px;color:var(--h-ink2)}
-.fic{position:absolute;right:2%;bottom:0;left:auto;width:min(370px,57%);z-index:4;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:6px;
+.stage figcaption{position:absolute;left:1%;bottom:-2px;z-index:1;font-size:12.5px;color:var(--h-ink2)}
+.fic{position:absolute;right:1%;bottom:2%;left:auto;width:min(370px,56%);z-index:4;background:var(--h-sheet);border:1px solid rgba(19,32,42,.08);border-radius:12px;
   box-shadow:0 1px 1px rgba(19,32,42,.05),0 28px 56px -26px rgba(19,32,42,.45);font-size:14px;line-height:1.5;will-change:transform}
 .fic .fh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--h-rule2)}
 .fic .fh b{font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
@@ -76,17 +77,22 @@
 .fic .fwho{display:block;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--h-info);margin-bottom:4px}
 .fic .a p{margin:0}.fic .a p+p{margin-top:6px}
 .fic .cite{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;line-height:1.55;color:var(--h-info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
-.fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 6px 6px;font-size:12px;color:var(--h-ink2)}
+.fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 12px 12px;font-size:12px;color:var(--h-ink2)}
 .fic .ft svg{width:11px;height:11px;flex:0 0 11px}
 @media (min-width:981px) and (max-width:1240px){.fic{right:0;width:62%}.fic .q{font-size:13.5px}}
 @media (max-width:980px){.stage{max-width:640px;margin-bottom:26px}}
 @media (max-width:640px){
-  .stage{aspect-ratio:auto;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;align-items:flex-start}
-  .stage::-webkit-scrollbar{display:none}
-  .stage .sc,.fic{position:relative;left:auto;right:auto;top:auto;bottom:auto;flex:0 0 84%;width:auto;scroll-snap-align:center;transform:none!important}
-  .stage .sc-bp{flex-basis:62%}
-  .fic{margin:0;font-size:13.5px}.fic .q{font-size:13.5px}
-  .stage figcaption{display:none}
+  .stage{aspect-ratio:auto;display:block;padding:0 0 0;margin:0}
+  .stage::before{inset:-4% 0 10% 0}
+  .hero{overflow-x:clip}
+  .stage .sc{transform:none!important}
+  .stage .sc-wt{position:relative;right:auto;top:auto;width:100%}
+  .stage .sc-bp{position:absolute;left:-1%;top:auto;bottom:auto;width:38%;margin-top:-26%;rotate:-5deg}
+  .stage .sc-bp{position:relative;display:block;margin:-22% 0 0 2%;z-index:3}
+  .fic{position:relative;right:auto;left:auto;bottom:auto;width:auto;margin:-48% 0 0 26%;transform:none!important;font-size:12.5px}
+  .fic .bd{padding:10px 12px;gap:8px}.fic .q{font-size:12.5px;padding:6px 10px}.fic .fh{padding:8px 12px}.fic .fh .own{display:none}.fic .ft{padding:7px 12px;font-size:11px}.fic .a{padding-left:10px;font-size:12.5px}.fic .a p+p{display:none}.fic .cite{font-size:10px}
+  .stage figcaption{position:static;margin:14px 0 0;text-align:left}
+  .stage .sct{font-size:11px;padding:5px 10px}.stage .sct span{font-size:9.5px}
 }
 @media (prefers-reduced-motion:reduce){.stage .pg,.fic{will-change:auto}}
 
@@ -261,8 +267,8 @@
         <img src="media/hero-tunnel.jpg" srcset="media/hero-tunnel-800.jpg 800w, media/hero-tunnel.jpg 1400w" sizes="(max-width:640px) 92vw, 460px" width="1400" height="1028" alt="" decoding="async" fetchpriority="high">
         <span class="sct"><b>Wind tunnel</b><span>A320 · α 4.8° · smoke</span></span>
       </a>
-      <a class="sc sc-bp pg" data-d="14" href="prep.html" aria-label="Briefing pack: flight cross-section and fuel, ENGM to ENBR">
-        <svg viewBox="0 0 236 372" role="img" aria-label="Briefing pack page: flight cross-section and fuel, ENGM to ENBR">
+      <a class="sc sc-bp pg" data-d="14" href="prep.html" aria-label="Briefing pack: IFR, Oslo Gardermoen to Bergen Flesland">
+        <svg viewBox="0 0 236 334" role="img" aria-label="Briefing pack cover: IFR, ENGM to ENBR, with its contents">
         <defs>
           <filter id="psh" x="-25%" y="-20%" width="150%" height="150%" color-interpolation-filters="sRGB">
             <feDropShadow dx="0" dy="1" stdDeviation=".6" flood-color="#13202A" flood-opacity=".18"/>
@@ -273,44 +279,25 @@
           <symbol id="tick" viewBox="-7 -7 14 14"><circle r="6.2" fill="#EAF4EE" stroke="#2E7D4F" stroke-width="1"/><path d="M-3 .2 L-.8 2.4 L3.2 -2.2" fill="none" stroke="#2E7D4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         </defs>
         <g>
-          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
-          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">5 / 14</text>
-          <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
-          <text class="ttl" x="16" y="54" font-size="17" fill="#13202A">Flight cross-section</text>
-          <rect x="16" y="66" width="204" height="104" fill="url(#cgrid)"/><rect x="16" y="66" width="204" height="104" fill="url(#cgrid2)"/>
-          <path d="M16 158 L30 157 L44 150 L56 152 L70 140 L82 132 L92 120 L100 126 L110 112 L122 118 L132 108 L142 122 L152 116 L164 130 L178 138 L192 150 L206 156 L220 158 L220 170 L16 170Z" fill="#EDE6D6" stroke="#B08A5A" stroke-width=".8" stroke-linejoin="round"/>
-          <ellipse cx="74" cy="96" rx="20" ry="5.5" fill="#EDF1F3" opacity=".9"/><ellipse cx="92" cy="93" rx="16" ry="5" fill="#EDF1F3" opacity=".9"/><ellipse cx="160" cy="98" rx="22" ry="5.5" fill="#EDF1F3" opacity=".9"/>
-          <line x1="16" y1="104" x2="220" y2="104" stroke="#4C5B66" stroke-width=".8" stroke-dasharray="4 3"/>
-          <text x="218" y="101" font-size="5.6" fill="#4C5B66" text-anchor="end">MSA 7400</text>
-          <line x1="16" y1="132" x2="220" y2="132" stroke="#1D4E9E" stroke-width=".8" stroke-dasharray="1.5 2.5"/>
-          <text x="20" y="129" font-size="5.6" fill="#1D4E9E">0 °C</text>
-          <path d="M22 158 L64 80 L172 80 L214 158" fill="none" stroke="#9A1E68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-          <g fill="#fff" stroke="#13202A" stroke-width="1"><circle cx="64" cy="80" r="2.6"/><circle cx="118" cy="80" r="2.6"/><circle cx="172" cy="80" r="2.6"/></g>
-          <g font-size="5.6" fill="#13202A"><text x="64" y="74" text-anchor="middle">TOC</text><text x="118" y="74" text-anchor="middle">FL120</text><text x="172" y="74" text-anchor="middle">TOD</text></g>
-          <line x1="16" y1="170" x2="220" y2="170" stroke="#13202A" stroke-width=".8"/>
-          <g font-size="6" fill="#4C5B66"><text x="16" y="180">ENGM</text><text x="118" y="180" text-anchor="middle">186 NM</text><text x="220" y="180" text-anchor="end">ENBR</text></g>
-
-          <text class="ttl" x="16" y="210" font-size="14" fill="#13202A">Fuel</text><text x="220" y="210" font-size="6" fill="#7D8B95" text-anchor="end">kg</text>
-          <g>
-            <rect x="16" y="218" width="10.2" height="14" fill="#9AA7AF"/><rect x="26.2" y="218" width="97.9" height="14" fill="#13202A"/><rect x="124.1" y="218" width="5.1" height="14" fill="#4C5B66"/><rect x="129.2" y="218" width="34.7" height="14" fill="#1D4E9E"/><rect x="163.9" y="218" width="40.8" height="14" fill="#9A1E68"/><rect x="204.7" y="218" width="15.3" height="14" fill="#C6D0D3"/>
-            <path d="M26.2 218V232M124.1 218V232M129.2 218V232M163.9 218V232M204.7 218V232" stroke="#fff" stroke-width=".8"/>
+          <rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
+          <rect width="236" height="4" fill="#9A1E68"/>
+          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">BIRDBIRD</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">1 / 14</text>
+          <text x="16" y="56" font-size="8" fill="#9A1E68" letter-spacing="1.3" font-weight="500">IFR BRIEFING PACK</text>
+          <text class="ttl" x="15" y="88" font-size="30" fill="#13202A" letter-spacing="-.2">ENGM</text><path d="M18 96 V104 H40" fill="none" stroke="#9A1E68" stroke-width="1.6"/><path d="M38 100.5 L43 104 L38 107.5" fill="none" stroke="#9A1E68" stroke-width="1.6" stroke-linejoin="round"/><text class="ttl" x="48" y="114" font-size="30" fill="#13202A" letter-spacing="-.2">ENBR</text>
+          <text class="sans" x="16" y="130" font-size="7.6" fill="#4C5B66">Oslo Gardermoen to Bergen Flesland</text>
+          <line x1="16" y1="138.0" x2="220" y2="138.0" stroke="#13202A" stroke-width=".8"/>
+          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="152">DATE</text><text x="86" y="152">ETD</text><text x="156" y="152">EET</text><text x="16" y="180">LEVEL</text><text x="86" y="180">ALTN</text><text x="156" y="180">RULES</text></g>
+          <g font-size="9.5" fill="#13202A" font-weight="500"><text x="16" y="164">14 NOV</text><text x="86" y="164">0830 Z</text><text x="156" y="164">0:58</text><text x="16" y="192">FL120</text><text x="86" y="192">ENZV</text><text x="156" y="192">IFR</text></g>
+          <line x1="16" y1="206.0" x2="220" y2="206.0" stroke="#DCE3E4" stroke-width=".8"/>
+          <text x="16" y="224" font-size="6.5" fill="#4C5B66" letter-spacing=".8" font-weight="500">CONTENTS</text>
+          <g class="sans" font-size="7.6" fill="#13202A">
+            <text x="30" y="241">Aircraft</text><text x="30" y="255">NOTAM</text><text x="30" y="269">Meteorology</text><text x="30" y="283">Planning minima</text><text x="30" y="297">Flight cross-section</text><text x="30" y="311">Runway performance</text><text x="30" y="325">Fuel</text>
           </g>
-          <g font-size="6.2" fill="#13202A">
-            <rect x="16" y="242" width="6" height="6" fill="#9AA7AF"/><text x="26" y="247.5">Taxi</text><text x="74" y="247.5" text-anchor="end" fill="#4C5B66">10</text>
-            <rect x="84" y="242" width="6" height="6" fill="#13202A"/><text x="94" y="247.5">Trip</text><text x="142" y="247.5" text-anchor="end" fill="#4C5B66">96</text>
-            <rect x="152" y="242" width="6" height="6" fill="#4C5B66"/><text x="162" y="247.5">Cont.</text><text x="220" y="247.5" text-anchor="end" fill="#4C5B66">5</text>
-            <rect x="16" y="256" width="6" height="6" fill="#1D4E9E"/><text x="26" y="261.5">Altn</text><text x="74" y="261.5" text-anchor="end" fill="#4C5B66">34</text>
-            <rect x="84" y="256" width="6" height="6" fill="#9A1E68"/><text x="94" y="261.5">Final res.</text><text x="142" y="261.5" text-anchor="end" fill="#4C5B66">40</text>
-            <rect x="152" y="256" width="6" height="6" fill="#C6D0D3"/><text x="162" y="261.5">Extra</text><text x="220" y="261.5" text-anchor="end" fill="#4C5B66">15</text>
-          </g>
-          <line x1="16" y1="274" x2="220" y2="274" stroke="#13202A" stroke-width=".8"/>
-          <text class="sans" x="16" y="290" font-size="8" fill="#13202A" font-weight="600">Block fuel</text><text x="128" y="290" font-size="9" fill="#13202A" font-weight="500" text-anchor="end">200</text>
-          <text class="sans" x="16" y="304" font-size="7" fill="#4C5B66">Required 185</text>
-          <use href="#tick" x="150" y="281" width="13" height="13"/><text x="167" y="290.5" font-size="7" fill="#2E7D4F" font-weight="500">ON BOARD</text>
-          <text x="16" y="324" font-size="5.6" fill="#AEBBC1">EXAMPLE VALUES</text>
+          <g font-size="6.5" fill="#7D8B95"><text x="16" y="241">1</text><text x="16" y="255">2</text><text x="16" y="269">3</text><text x="16" y="283">4</text><text x="16" y="297">5</text><text x="16" y="311">6</text><text x="16" y="325">7</text></g>
+          <g stroke="#C6D0D3" stroke-width=".7" stroke-dasharray="1 2"><path d="M112 240H200M100 254H200M120 268H200M132 282H200M140 296H200M140 310H200M90 324H200"/></g>
+          <g><use href="#tick" x="204" y="233" width="10" height="10"/><use href="#tick" x="204" y="247" width="10" height="10"/><use href="#tick" x="204" y="261" width="10" height="10"/><use href="#tick" x="204" y="275" width="10" height="10"/></g>
         </g>
         </svg>
-        <span class="sct"><b>Briefing pack</b><span>IFR · ENGM → ENBR</span></span>
       </a>
       <div class="fic" id="fic" role="group" aria-label="Flight Intelligence: an example answer">
         <div class="fh"><b>Flight Intelligence</b><span class="own"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h4.8L9.5 3.2V11h-7z M7.2 1v2.3h2.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>From your documents</span></div>
