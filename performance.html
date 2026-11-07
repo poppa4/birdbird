@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A jet transport is certified to survive an engine failure at the worst moment of the take-off and to stop within the runway on landing with a margin. Here…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Performance</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+#rwy{height:200px}#bfl{height:300px}#lim{height:250px}#fp{height:260px}#cfp{height:420px}#csr{height:260px}#cstep{height:220px}#ldv{height:300px}#ddcv{height:440px}
+@media (max-width:600px){#rwy{height:180px}#bfl{height:260px}#lim{height:270px}#fp{height:230px}#cfp{height:380px}#csr{height:240px}#cstep{height:200px}#ldv{height:240px}#ddcv{height:300px}}
+.ro{margin-top:6px}
+.rrow b{white-space:normal;text-align:right}
+.vs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.vs .box b.t{font-family:var(--f-mono);font-weight:500;color:var(--magenta)}
+.vs .box b.t i{font-style:normal;font-family:var(--f-body);font-weight:600;color:var(--ink)}
+table.rc{border-collapse:collapse;width:100%;font-size:13.5px}
+table.rc th,table.rc td{padding:6px 8px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+table.rc th{font-size:12px;color:var(--ink-2);font-weight:500}
+table.rc td:first-child{font-family:var(--f-mono);color:var(--magenta);white-space:nowrap}
+.tablewrap{overflow-x:auto}
+</style>
+</head>
+<body data-title="Performance">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Performance</div>
+      <h1>Performance: take-off, climb, cruise and landing</h1>
+      <p>A jet transport is certified to survive an engine failure at the worst moment of the take-off and to stop within the runway on landing with a margin. Here you can see where V1 comes from, what limits the take-off mass, how a jet climbs and cruises efficiently, and how much runway a landing really needs. Reference aircraft: Airbus A320 with illustrative values.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#takeoff">Take-off and V1</a><a href="#limits">Take-off mass limits</a><a href="#climb">Climb and cruise</a><a href="#enroute">Engine failure en route</a><a href="#landing">Landing distance</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="takeoff">
+    <div><div class="eyebrow">1 · Interactive</div><h2>Take-off speeds and the engine-failure decision</h2>
+      <p class="lead">Below V1 an engine failure means stop; at or above V1 it means go. V1 is chosen so that both outcomes fit on the runway. Choose a V1, let an engine fail at any speed and see whether the aircraft stops within the accelerate-stop distance available (ASDA) or reaches 35 ft within the take-off distance available (TODA).</p></div>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="rwy" aria-label="Runway seen from above with the take-off run, the engine failure and the outcome"></canvas></div>
+        <div class="paper"><canvas id="bfl" aria-label="Accelerate-stop and accelerate-go distance against V1"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Aircraft and runway</div><div id="ctlTO"></div>
+        <div class="grp">Engine failure</div><div id="failSeg"></div><div id="ctlF"></div>
+        <div class="btns"><button class="btn" id="balBtn">Use balanced V1</button></div>
+        <div class="ro" id="toR"></div>
+      </div>
+    </div>
+    <div class="kpis" id="toK"></div>
+    <div class="vs">
+      <div class="box"><b class="t">VEF <i>· engine failure speed</i></b><p>The speed at which the critical engine is assumed to fail. It may not be lower than VMCG.</p></div>
+      <div class="box"><b class="t">V1 <i>· decision speed</i></b><p>The highest speed at which the first action to stop must be taken, and the lowest speed from which the take-off can be continued after a failure at VEF. The pilot recognises the failure about one second after VEF.</p></div>
+      <div class="box"><b class="t">VMCG <i>· ground control</i></b><p>The lowest speed at which the aircraft can be kept within 30 ft of the centreline with rudder only, no nosewheel steering, after a sudden engine failure at take-off thrust. V1 must be at least VMCG.</p></div>
+      <div class="box"><b class="t">VR <i>· rotation</i></b><p>Not less than V1 and not less than 1.05 VMCA. Chosen so that V2 is reached by 35 ft with one engine out, even with a normal rotation rate.</p></div>
+      <div class="box"><b class="t">VMU and VLOF <i>· lift-off</i></b><p>VMU is the lowest speed at which the aircraft can safely lift off. Lift-off speed VLOF must keep a margin above it, typically 1.10 VMU with all engines and 1.05 VMU with one engine out.</p></div>
+      <div class="box"><b class="t">V2 <i>· take-off safety speed</i></b><p>Reached by 35 ft with one engine out. At least 1.13 VSR and 1.10 VMCA. It is the speed flown in the second segment.</p></div>
+    </div>
+    <div class="cols">
+      <div class="callout"><b>Two curves, one crossing.</b> A higher V1 means more runway to stop but less to go. The V1 where the two distances are equal is the balanced V1, and that distance is the balanced field length.</div>
+      <div class="callout blue"><b>The certified distances.</b> Take-off distance (dry) is the longer of the one-engine-out distance to 35 ft and 115 % of the all-engines distance to 35 ft. Accelerate-stop includes two seconds at V1 and no reverse thrust credit on a dry runway.</div>
+      <div class="callout"><b>Wind factoring.</b> The calculations may use only 50 % of a reported headwind and must use 150 % of a reported tailwind. The models on this page do this: the readouts show the wind actually used.</div>
+      <div class="callout red"><b>After V1, go.</b> A stop started above V1 is outside what was calculated, and the aircraft may not stop on the runway. Most high-speed rejected take-off accidents are stops started after V1.</div>
+    </div>
+  </section>
+
+  <section class="card" id="limits">
+    <div><div class="eyebrow">2 · Interactive</div><h2>What limits the take-off mass</h2>
+      <p class="lead">The maximum take-off mass on a given day is the lowest of several limits. Heat and altitude (the WAT effect: weight, altitude, temperature) reduce engine thrust and raise the true airspeed for the same indicated speed, so every limit drops on a hot day at a high aerodrome. For why thin air hurts, see <a href="altimetry.html#da">density altitude</a>.</p></div>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="lim" aria-label="Each take-off mass limit as a bar, with the governing limit highlighted"></canvas></div>
+        <div class="paper"><canvas id="fp" aria-label="Take-off flight path with segments 1 to 4, gross and net path and the obstacle"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Aerodrome</div><div id="ctlL"></div>
+        <div class="grp">Obstacle after the runway</div><div id="ctlO"></div>
+        <div class="grp">Today's take-off</div><div id="ctlW"></div><div id="thrSeg"></div>
+        <div class="ro" id="limR"></div>
+      </div>
+    </div>
+    <div class="kpis" id="limK"></div>
+    <div class="cols">
+      <div class="box"><b class="t">Field length</b><p>There must be a V1 that makes both the accelerate-stop and the accelerate-go distance fit, and 115 % of the all-engines distance must also fit. Longer runway, headwind, downhill slope and cooler air all raise this limit.</p></div>
+      <div class="box"><b class="t">Climb</b><p>With one engine out a twin must have a gross gradient of at least 2.4 % in the second segment (gear up, take-off flaps, V2). This limit does not depend on the runway at all, only on mass, temperature and pressure altitude.</p></div>
+      <div class="box"><b class="t">Obstacle</b><p>The net flight path, the gross path reduced by 0.8 % for a twin, must clear every obstacle in the take-off funnel by at least 35 ft. A close, tall obstacle needs a steep path and limits the mass.</p></div>
+      <div class="box"><b class="t">Tyre speed and brake energy</b><p>The ground speed at lift-off may not exceed the tyre rating (typically 195 kt). V1 may not exceed VMBE, the speed above which the brakes cannot absorb the energy of a stop. Both bite at high, hot aerodromes and with tailwind.</p></div>
+      <div class="box"><b class="t">Structural MTOW</b><p>The certified maximum take-off mass, independent of the day. For this teaching aircraft 78 t. The planned mass may also be limited by the landing mass at destination.</p></div>
+      <div class="box"><b class="t">Flex and derate</b><p>When the actual mass is below the limit, reduced thrust saves engine wear. Flex (assumed temperature): performance is calculated as if it were hotter, and TOGA is still available at any time. Derate: a certified lower thrust rating with its own, lower VMC; TOGA cannot simply be selected without losing those margins.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="climb">
+    <div><div class="eyebrow">3 · Interactive</div><h2>Climb, cruise and descent</h2>
+      <p class="lead">A jet engine gives roughly constant thrust across the speed range, so the climb and cruise speeds of a jet sit in different places from those of a propeller aircraft. Change mass, altitude, wind and cost index and watch where the best speeds and altitudes move.</p></div>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cfp" aria-label="Thrust and drag, and power available and required, against true airspeed"></canvas></div>
+        <div class="paper"><canvas id="csr" aria-label="Specific range against Mach number with long-range, maximum-range and economy speeds"></canvas></div>
+        <div class="paper"><canvas id="cstep" aria-label="Optimum and maximum altitude against mass, with step climbs"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Aircraft</div><div id="ctlC"></div>
+        <div class="ro" id="cR"></div>
+      </div>
+    </div>
+    <div class="kpis" id="cK"></div>
+    <div class="cols">
+      <div class="box"><b class="t">Gradient or rate</b><p>Climb gradient depends on excess thrust: (T − D) / W. Rate of climb depends on excess power: (T − D) × V / W. For a jet, thrust is nearly flat, so the best angle (Vx) is close to the minimum-drag speed and the best rate (Vy) is clearly faster.</p></div>
+      <div class="box"><b class="t">Best range</b><p>Fuel flow follows drag, so the most distance per kilogram comes at the highest ratio of speed to drag, about 1.32 × the minimum-drag speed, until the drag rise near the critical Mach stops it. Long-range cruise gives up 1 % of the range for a few percent more speed.</p></div>
+      <div class="box"><b class="t">Cost index</b><p>Time costs money too (crew, maintenance, connections). The cost index is the ratio of time cost to fuel cost. CI 0 gives the maximum range speed; a higher CI flies faster and burns more fuel to save time.</p></div>
+      <div class="box"><b class="t">Optimum and maximum altitude</b><p>The optimum altitude gives the best range for the present mass and rises as fuel is burnt. The maximum altitude is the lowest of the certified ceiling, the altitude with a 0.3 g buffet margin, and the altitude where the residual climb rate drops to 300 ft/min. Step climbs follow the optimum upwards.</p></div>
+      <div class="box"><b class="t">Wind</b><p>Range is distance over the ground. Into a headwind it pays to fly faster than the still-air best range speed, and with a tailwind slightly slower. A strong headwind can also make a lower level with less wind the better choice.</p></div>
+      <div class="box"><b class="t">Descent</b><p>At idle, the descent gradient is about drag / weight, the inverse of L/D. Each aircraft flown at its own best-L/D speed (higher when heavier) has the same L/D, so the still-air glide distance is the same. The A320 descends at a fixed managed speed above that best-L/D speed; there the heavier aircraft is closer to its best L/D, so it descends more shallowly and its top of descent comes earlier. An early, idle, continuous descent is the most fuel-efficient.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="enroute">
+    <div><div class="eyebrow">4 · Interactive</div><h2>Engine failure en route: drift-down</h2>
+      <p class="lead">With one engine out at cruise level, the remaining engine at maximum continuous thrust (MCT) cannot hold the altitude. The aircraft drifts down until thrust equals drag again. Over high terrain the question is whether the net flight path stays clear of the ground all the way to an aerodrome, or whether a prepared escape route is needed.</p></div>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="ddcv" aria-label="Drift-down profile: gross and net flight path over the terrain along the route"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Aircraft and day</div><div id="ctlDD"></div>
+        <div class="grp">Drift-down speed</div><div id="ddStrat"></div>
+        <div class="grp">Route</div><div id="ddRoute"></div>
+        <div class="grp">Track after the failure</div><div id="ddTrack"></div>
+        <div class="ro" id="ddR"></div>
+      </div>
+    </div>
+    <div class="kpis" id="ddK"></div>
+    <p class="callout blue" id="ddX"></p>
+    <div class="cols">
+      <div class="box"><b class="t">Gross and net</b><p>The gross path is what an average aircraft would fly. The net path is the gross gradient reduced by 1.1 % for a twin (1.4 % and 1.6 % for three and four engines). It is a fictitious, deliberately pessimistic path, and the terrain rules are applied to it, not to the gross path.</p></div>
+      <div class="box"><b class="t">Two ways to comply</b><p>Either the net path is still climbing (gradient positive) at least 1000 ft above all terrain within 5 NM either side of track, or the net path from cruise level to a suitable aerodrome clears all terrain in that corridor by at least 2000 ft. The corridor grows to 10 NM if the navigation accuracy does not meet the 95 % containment level.</p></div>
+      <div class="box"><b class="t">Drift-down speed</b><p>Green dot (best L/D with one engine out) at MCT gives the shallowest descent and the highest level-off: the obstacle strategy. Where terrain is no problem, a faster standard strategy (M.78/300 kt on the A320) reaches lower levels sooner but gets to the diversion aerodrome faster.</p></div>
+      <div class="box"><b class="t">Escape routes</b><p>Over the Alps, and on some routes over Scandinavian mountains, the planned track may not satisfy the rules at high mass on a warm day. Operators then publish escape routes: pre-computed tracks along valleys to an en-route aerodrome, with decision points that tell the crew which way to turn after a failure.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="landing">
+    <div><div class="eyebrow">5 · Interactive</div><h2>Landing distance</h2>
+      <p class="lead">The actual landing distance is measured from 50 ft over the threshold to a full stop. Before departure the aircraft is dispatched against a factored distance; before landing the crew checks the distance for the actual conditions with a margin. Change the runway condition, braking, reversers and approach technique.</p></div>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="ldv" aria-label="Landing from 50 ft to a stop, with speed and distance compared with the runway"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Runway</div><div id="rcSeg"></div><div id="ctlLD1"></div>
+        <div class="grp">Aircraft and technique</div><div id="ctlLD2"></div>
+        <div class="grp">Autobrake</div><div id="abSeg"></div>
+        <div class="grp">Reverse thrust</div><div id="revSeg"></div>
+      </div>
+    </div>
+    <div class="kpis" id="ldK"></div>
+    <div class="split">
+      <div class="box tablewrap"><b class="t">Runway condition codes (RWYCC)</b>
+        <table class="rc" id="rcTab"></table></div>
+      <div class="stack">
+        <div class="callout"><b>At dispatch.</b> Dry: the landing distance available must be at least the certified landing distance divided by 0.6, that is × 1.67. Wet: a further 15 %. Contaminated: the larger of the wet requirement and 115 % of the distance for the contaminant.</div>
+        <div class="callout blue"><b>Before landing.</b> The distance for the conditions at the time of arrival, with the planned braking and reverse, plus 15 %, must fit within the landing distance available.</div>
+        <div class="callout red"><b>Speed and flare.</b> Energy grows with the square of speed. Ten knots too fast and a long flare can together add several hundred metres; a stabilised approach on speed with a firm touchdown in the touchdown zone is the best runway protection.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="ops">
+    <div><div class="eyebrow">6 · Reading</div><h2>In the aircraft</h2>
+      <p class="lead">How the theory shows up in a typical A320 operation. Procedures differ by operator; your operations manual and the FCOM rule.</p></div>
+    <div class="cols">
+      <div class="box"><b class="t">Take-off data</b><p>Speeds and thrust come from the performance application on the EFB, calculated for the runway or intersection, wind, temperature, QNH, runway state and configuration. Both pilots compute or cross-check independently and enter V1, VR, V2 and the flex temperature on the MCDU PERF TAKEOFF page. A gross error check against the expected values catches typing mistakes.</p></div>
+      <div class="box"><b class="t">FLEX or TOGA</b><p>With a flex temperature entered, the thrust levers go to the FLX/MCT detent. If more thrust is needed, TOGA is always available by pushing the levers fully forward, because VMC is based on TOGA. TOGA is used when the runway is contaminated, when wind shear is expected, or when the margins are not there for flex.</p></div>
+      <div class="box"><b class="t">The V1 call</b><p>A typical Airbus procedure: the captain keeps a hand on the thrust levers until V1. At low speed the take-off is rejected for any significant failure; at high speed only for major ones such as engine failure, fire or a sign that the aircraft is unsafe to fly. At V1 the hand comes off and the decision is go.</p></div>
+      <div class="box"><b class="t">Runway condition</b><p>The runway condition report (in Europe via SNOWTAM and ATIS) gives an RWYCC for each third of the runway, for example 5/5/3, with contaminant type, depth and coverage. The crew enters the condition in the performance application. Flex is not used on a contaminated runway.</p></div>
+      <div class="box"><b class="t">Landing distance check in flight</b><p>Before the descent the crew calculates the landing distance at the time of arrival with the expected runway condition, wind, autobrake and reverse, and checks it plus 15 % against the landing distance available. A failure such as a reverser or brake inoperative, or a change in runway condition, means a new calculation.</p></div>
+      <div class="box"><b class="t">Cruise numbers</b><p>The cost index is entered on the INIT A page and the FMS flies the ECON speed and Mach. The PROG page shows the optimum flight level (OPT) and the recommended maximum (REC MAX). Green dot on the speed scale is the best lift-to-drag speed in clean configuration, used for an engine-out climb or drift-down.</p></div>
+      <div class="box"><b class="t">Noise abatement departures: NADP 1 and NADP 2</b><p>NADP 1 (close-in): at or above 800 ft above the aerodrome, reduce to climb thrust and keep take-off flaps at V2 + 10 to 20 kt up to 3000 ft, then accelerate and retract. It protects neighbours close to the runway. NADP 2 (distant): from 800 ft or higher, lower the nose and accelerate, retracting flaps on schedule, with the thrust reduced during or after the retraction, then climb clean to 3000 ft. It reduces noise further out and saves fuel. Either way the noise procedure never overrides the obstacle and engine-failure requirements.</p></div>
+      <div class="box"><b class="t">Why the A320 is Class A</b><p>The A320 is operated as a Class A aeroplane: an engine failure at any point of the take-off is covered by scheduled data, through V1, the accelerate-stop and accelerate-go distances, the net take-off flight path with obstacle clearance and the en-route drift-down rules on this page. Class B aeroplanes, by comparison, use simpler factored charts with no V1.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div><div class="eyebrow">7 · Check your understanding</div><h2>Test yourself</h2></div>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. The aircraft is an A320-like twin jet with rounded, illustrative values (MTOW 78 t, MLW 64.5 t, simplified thrust, drag, braking and friction models, no compressibility in the take-off and landing calculations, TORA = TODA = ASDA with no clearway or stopway, sea level ISA in sections 1 and 4, pressure altitude equal to elevation in section 2). None of the numbers are FCOM or AFM data. Use them to understand relationships, not for operational decisions. Always follow the AFM, the FCOM, your operations manual and your instructor.</p>
+</div>
+
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,nf,el,slider,seg,fit,visible,quiz,shuffle}=LAB;
+LAB.add({},{
+ 'Engine failure en route':'Motorstans underveis','Mass at the failure':'Masse ved motorstansen','Temperature (ISA deviation)':'Temperatur (ISA-avvik)','Cruise level at the failure':'Marsjhøyde ved motorstansen','Green dot (obstacle)':'Green dot (hinder)','M.78 / 300 kt (standard)':'M.78 / 300 kt (standard)','Over the sea':'Over havet','Southern Norway':'Sør-Norge','The Alps':'Alpene','Continue on track':'Fortsett på kursen','Escape route':'Rømningsrute','5 · Interactive':'5 · Interaktiv','6 · Reading':'6 · Lesing','7 · Check your understanding':'7 · Sjekk forståelsen',
+ 'Engine failure en route: drift-down':'Motorstans underveis: drift-down',
+ 'With one engine out at cruise level, the remaining engine at maximum continuous thrust (MCT) cannot hold the altitude. The aircraft drifts down until thrust equals drag again. Over high terrain the question is whether the net flight path stays clear of the ground all the way to an aerodrome, or whether a prepared escape route is needed.':'Med én motor ute i marsjhøyde klarer ikke den gjenværende motoren på maksimal kontinuerlig skyvekraft (MCT) å holde høyden. Flyet synker sakte ned («drifter») til skyvekraften igjen er lik motstanden. Over høyt terreng er spørsmålet om nettobanen holder seg klar av bakken hele veien til en flyplass, eller om det trengs en forberedt rømningsrute (escape route).',
+ 'Drift-down profile: gross and net flight path over the terrain along the route':'Drift-down-profil: brutto- og nettobane over terrenget langs ruten',
+ 'Aircraft and day':'Fly og dag','Drift-down speed':'Fart under drift-down','Route':'Rute','Track after the failure':'Kurs etter motorstansen',
+ 'Gross and net':'Brutto og netto','Two ways to comply':'To måter å oppfylle kravet på','Escape routes':'Rømningsruter (escape routes)',
+ 'The gross path is what an average aircraft would fly. The net path is the gross gradient reduced by 1.1 % for a twin (1.4 % and 1.6 % for three and four engines). It is a fictitious, deliberately pessimistic path, and the terrain rules are applied to it, not to the gross path.':'Bruttobanen er det et gjennomsnittlig fly ville fløyet. Nettobanen er bruttogradienten redusert med 1,1 % for et tomotors fly (1,4 % og 1,6 % for tre og fire motorer). Den er en tenkt, bevisst pessimistisk bane, og terrengkravene brukes på den, ikke på bruttobanen.',
+ 'Either the net path is still climbing (gradient positive) at least 1000 ft above all terrain within 5 NM either side of track, or the net path from cruise level to a suitable aerodrome clears all terrain in that corridor by at least 2000 ft. The corridor grows to 10 NM if the navigation accuracy does not meet the 95 % containment level.':'Enten har nettobanen fortsatt positiv gradient minst 1000 ft over alt terreng innenfor 5 NM på hver side av kursen, eller så klarer nettobanen fra marsjhøyden til en egnet flyplass alt terreng i den korridoren med minst 2000 ft. Korridoren øker til 10 NM hvis navigasjonsnøyaktigheten ikke oppfyller kravet om 95 % innesluttning.',
+ 'Green dot (best L/D with one engine out) at MCT gives the shallowest descent and the highest level-off: the obstacle strategy. Where terrain is no problem, a faster standard strategy (M.78/300 kt on the A320) reaches lower levels sooner but gets to the diversion aerodrome faster.':'Green dot (beste L/D med én motor ute) på MCT gir slakest nedstigning og høyest utflatingshøyde: hinderstrategien (obstacle strategy). Der terrenget ikke er et problem, ender en raskere standardstrategi (M.78/300 kt på A320) lavere og tidligere, men kommer raskere fram til alternativ flyplass.',
+ 'Over the Alps, and on some routes over Scandinavian mountains, the planned track may not satisfy the rules at high mass on a warm day. Operators then publish escape routes: pre-computed tracks along valleys to an en-route aerodrome, with decision points that tell the crew which way to turn after a failure.':'Over Alpene, og på noen ruter over skandinaviske fjell, oppfyller ikke alltid den planlagte kursen kravene med høy masse en varm dag. Operatørene publiserer da rømningsruter: forhåndsberegnede kurser langs daler til en flyplass underveis, med beslutningspunkter som forteller besetningen hvilken vei de skal svinge etter en motorstans.',
+ 'Wind factoring.':'Vindfaktorering.','The calculations may use only 50 % of a reported headwind and must use 150 % of a reported tailwind. The models on this page do this: the readouts show the wind actually used.':'Beregningene kan bare bruke 50 % av rapportert motvind og må bruke 150 % av rapportert medvind. Modellene på denne siden gjør dette: avlesningene viser vinden som faktisk brukes.',
+ 'Noise abatement departures: NADP 1 and NADP 2':'Støydempende avganger: NADP 1 og NADP 2',
+ 'NADP 1 (close-in): at or above 800 ft above the aerodrome, reduce to climb thrust and keep take-off flaps at V2 + 10 to 20 kt up to 3000 ft, then accelerate and retract. It protects neighbours close to the runway. NADP 2 (distant): from 800 ft or higher, lower the nose and accelerate, retracting flaps on schedule, with the thrust reduced during or after the retraction, then climb clean to 3000 ft. It reduces noise further out and saves fuel. Either way the noise procedure never overrides the obstacle and engine-failure requirements.':'NADP 1 (nær flyplassen): på eller over 800 ft over flyplassen reduseres til stigeskyvekraft, og startklaffene beholdes med V2 + 10 til 20 kt opp til 3000 ft, deretter akselereres det og klaffene tas inn. Den skjermer naboene nær banen. NADP 2 (lenger ute): fra 800 ft eller høyere senkes nesen og flyet akselererer mens klaffene tas inn etter planen, med skyvekraften redusert under eller etter innfellingen, og så stiges det rent til 3000 ft. Den gir mindre støy lenger ute og sparer drivstoff. Uansett overstyrer støyprosedyren aldri kravene til hinderklaring og motorstans.',
+ 'Why the A320 is Class A':'Hvorfor A320 er klasse A',
+ 'The A320 is operated as a Class A aeroplane: an engine failure at any point of the take-off is covered by scheduled data, through V1, the accelerate-stop and accelerate-go distances, the net take-off flight path with obstacle clearance and the en-route drift-down rules on this page. Class B aeroplanes, by comparison, use simpler factored charts with no V1.':'A320 opereres som et klasse A-fly: en motorstans når som helst under avgangen er dekket av beregnede data, gjennom V1, distansene for å avbryte og for å fortsette, nettobanen etter avgang med hinderklaring og drift-down-kravene underveis på denne siden. Klasse B-fly bruker til sammenligning enklere faktoriserte diagrammer uten V1.',
+ 'Performance':'Ytelse','Birdbird Virtual Lab · Performance':'Birdbird Virtual Lab · Ytelse',
+ 'Performance: take-off, climb, cruise and landing':'Ytelse: start, stigning, cruise og landing',
+ 'A jet transport is certified to survive an engine failure at the worst moment of the take-off and to stop within the runway on landing with a margin. Here you can see where V1 comes from, what limits the take-off mass, how a jet climbs and cruises efficiently, and how much runway a landing really needs. Reference aircraft: Airbus A320 with illustrative values.':'Et jet-trafikkfly er sertifisert for å tåle en motorstans i det verste øyeblikket av starten, og for å stoppe innenfor rullebanen med margin ved landing. Her ser du hvor V1 kommer fra, hva som begrenser startvekten, hvordan et jetfly stiger og cruiser effektivt, og hvor mye bane en landing egentlig trenger. Referansefly: Airbus A320 med illustrerende verdier.',
+ 'Sections':'Seksjoner','Take-off and V1':'Start og V1','Take-off mass limits':'Begrensninger for startvekt','Climb and cruise':'Stigning og cruise','Landing distance':'Landingsdistanse','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Reading':'5 · Lesing','6 · Check your understanding':'6 · Sjekk forståelsen',
+ 'Take-off speeds and the engine-failure decision':'Startfarter og beslutningen ved motorstans',
+ 'Below V1 an engine failure means stop; at or above V1 it means go. V1 is chosen so that both outcomes fit on the runway. Choose a V1, let an engine fail at any speed and see whether the aircraft stops within the accelerate-stop distance available (ASDA) or reaches 35 ft within the take-off distance available (TODA).':'Under V1 betyr motorstans stopp; på eller over V1 betyr det fortsett. V1 velges slik at begge utfallene får plass på banen. Velg en V1, la en motor stanse ved en hvilken som helst fart og se om flyet stopper innenfor tilgjengelig akselerer-stopp-distanse (ASDA) eller når 35 ft innenfor tilgjengelig startdistanse (TODA).',
+ 'Runway seen from above with the take-off run, the engine failure and the outcome':'Rullebanen sett ovenfra med startløpet, motorstansen og utfallet',
+ 'Accelerate-stop and accelerate-go distance against V1':'Akselerer-stopp- og akselerer-fortsett-distanse mot V1',
+ 'Aircraft and runway':'Fly og rullebane','Engine failure':'Motorstans','Use balanced V1':'Bruk balansert V1',
+ 'Take-off mass':'Startvekt','Runway length (TORA = TODA = ASDA)':'Banelengde (TORA = TODA = ASDA)','Wind (+ headwind, − tailwind)':'Vind (+ motvind, − medvind)','Runway slope (+ uphill)':'Banehelning (+ oppover)','V1 chosen':'Valgt V1','Engine fails at':'Motoren stanser ved',
+ 'All engines':'Alle motorer',
+ 'VMU and VLOF':'VMU og VLOF', '· engine failure speed':'· fart ved motorstans','· decision speed':'· beslutningsfart','· ground control':'· kontroll på bakken','· rotation':'· rotasjon','· lift-off':'· avløft','· take-off safety speed':'· sikker startfart',
+ 'The speed at which the critical engine is assumed to fail. It may not be lower than VMCG.':'Farten der den kritiske motoren antas å stanse. Den kan ikke være lavere enn VMCG.',
+ 'The highest speed at which the first action to stop must be taken, and the lowest speed from which the take-off can be continued after a failure at VEF. The pilot recognises the failure about one second after VEF.':'Den høyeste farten der første handling for å stoppe må gjøres, og den laveste farten starten kan fortsettes fra etter en stans ved VEF. Piloten oppdager stansen omtrent ett sekund etter VEF.',
+ 'The lowest speed at which the aircraft can be kept within 30 ft of the centreline with rudder only, no nosewheel steering, after a sudden engine failure at take-off thrust. V1 must be at least VMCG.':'Den laveste farten der flyet kan holdes innenfor 30 ft fra senterlinjen med bare sideror, uten nesehjulsstyring, etter en plutselig motorstans med startskyvekraft. V1 må være minst VMCG.',
+ 'Not less than V1 and not less than 1.05 VMCA. Chosen so that V2 is reached by 35 ft with one engine out, even with a normal rotation rate.':'Ikke lavere enn V1 og ikke lavere enn 1,05 VMCA. Velges slik at V2 nås innen 35 ft med én motor ute, med normal rotasjonsrate.',
+ 'VMU is the lowest speed at which the aircraft can safely lift off. Lift-off speed VLOF must keep a margin above it, typically 1.10 VMU with all engines and 1.05 VMU with one engine out.':'VMU er den laveste farten flyet trygt kan løfte av ved. Avløftsfarten VLOF må ha margin over den, typisk 1,10 VMU med alle motorer og 1,05 VMU med én motor ute.',
+ 'Reached by 35 ft with one engine out. At least 1.13 VSR and 1.10 VMCA. It is the speed flown in the second segment.':'Nås innen 35 ft med én motor ute. Minst 1,13 VSR og 1,10 VMCA. Det er farten som flys i andre segment.',
+ 'Two curves, one crossing.':'To kurver, ett kryss.','A higher V1 means more runway to stop but less to go. The V1 where the two distances are equal is the balanced V1, and that distance is the balanced field length.':'Høyere V1 gir lengre stoppdistanse, men kortere fortsett-distanse. V1 der de to er like, er balansert V1, og den distansen er balansert banelengde (balanced field length).',
+ 'The certified distances.':'De sertifiserte distansene.','Take-off distance (dry) is the longer of the one-engine-out distance to 35 ft and 115 % of the all-engines distance to 35 ft. Accelerate-stop includes two seconds at V1 and no reverse thrust credit on a dry runway.':'Startdistansen (tørr bane) er den lengste av distansen til 35 ft med én motor ute og 115 % av distansen til 35 ft med alle motorer. Akselerer-stopp inkluderer to sekunder ved V1 og ingen kreditt for reversering på tørr bane.',
+ 'After V1, go.':'Etter V1: fortsett.','A stop started above V1 is outside what was calculated, and the aircraft may not stop on the runway. Most high-speed rejected take-off accidents are stops started after V1.':'Et stopp startet over V1 er utenfor det som er beregnet, og flyet stopper kanskje ikke på banen. De fleste ulykker med avbrutt start i høy fart er stopp startet etter V1.',
+ 'What limits the take-off mass':'Hva begrenser startvekten',
+ 'The maximum take-off mass on a given day is the lowest of several limits. Heat and altitude (the WAT effect: weight, altitude, temperature) reduce engine thrust and raise the true airspeed for the same indicated speed, so every limit drops on a hot day at a high aerodrome. For why thin air hurts, see':'Maksimal startvekt en gitt dag er den laveste av flere begrensninger. Varme og høyde (WAT-effekten: vekt, høyde, temperatur) gir mindre skyvekraft og høyere sann fart for samme indikerte fart, så alle grensene synker en varm dag på en høyt beliggende flyplass. Hvorfor tynn luft gjør vondt, se',
+ 'density altitude':'tetthetshøyde',
+ 'Each take-off mass limit as a bar, with the governing limit highlighted':'Hver startvektbegrensning som en stolpe, med den styrende uthevet',
+ 'Take-off flight path with segments 1 to 4, gross and net path and the obstacle':'Startbanen i lufta med segment 1 til 4, brutto- og nettobane og hinderet',
+ 'Aerodrome':'Flyplass','Obstacle after the runway':'Hinder etter banen',"Today's take-off":'Dagens start',
+ 'Outside air temperature':'Utetemperatur','Aerodrome elevation':'Flyplasshøyde','Runway length':'Banelengde','Obstacle height above runway':'Hinderhøyde over banen','Distance from end of runway':'Avstand fra baneenden','Actual take-off mass':'Faktisk startvekt',
+ 'Field length':'Banelengde','Climb':'Stigning','Obstacle':'Hinder','Tyre speed and brake energy':'Dekkfart og bremseenergi','Structural MTOW':'Strukturell MTOW','Flex and derate':'Flex og derate',
+ 'There must be a V1 that makes both the accelerate-stop and the accelerate-go distance fit, and 115 % of the all-engines distance must also fit. Longer runway, headwind, downhill slope and cooler air all raise this limit.':'Det må finnes en V1 som gjør at både akselerer-stopp- og akselerer-fortsett-distansen får plass, og 115 % av distansen med alle motorer må også få plass. Lengre bane, motvind, nedoverbakke og kaldere luft hever alle denne grensen.',
+ 'With one engine out a twin must have a gross gradient of at least 2.4 % in the second segment (gear up, take-off flaps, V2). This limit does not depend on the runway at all, only on mass, temperature and pressure altitude.':'Med én motor ute må et tomotors fly ha en bruttogradient på minst 2,4 % i andre segment (understell oppe, startklaff, V2). Denne grensen avhenger ikke av banen i det hele tatt, bare av vekt, temperatur og trykkhøyde.',
+ 'The net flight path, the gross path reduced by 0.8 % for a twin, must clear every obstacle in the take-off funnel by at least 35 ft. A close, tall obstacle needs a steep path and limits the mass.':'Nettobanen, bruttobanen redusert med 0,8 % for et tomotors fly, må klare alle hindre i utflygingssektoren med minst 35 ft. Et nært, høyt hinder krever en bratt bane og begrenser vekten.',
+ 'The ground speed at lift-off may not exceed the tyre rating (typically 195 kt). V1 may not exceed VMBE, the speed above which the brakes cannot absorb the energy of a stop. Both bite at high, hot aerodromes and with tailwind.':'Bakkefarten ved avløft kan ikke overstige dekkenes grense (typisk 195 kt). V1 kan ikke overstige VMBE, farten der bremsene ikke lenger kan ta opp energien i et stopp. Begge biter på høye, varme flyplasser og i medvind.',
+ 'The certified maximum take-off mass, independent of the day. For this teaching aircraft 78 t. The planned mass may also be limited by the landing mass at destination.':'Sertifisert maksimal startvekt, uavhengig av dagen. For dette opplæringsflyet 78 t. Planlagt vekt kan også begrenses av landingsvekten på destinasjonen.',
+ 'When the actual mass is below the limit, reduced thrust saves engine wear. Flex (assumed temperature): performance is calculated as if it were hotter, and TOGA is still available at any time. Derate: a certified lower thrust rating with its own, lower VMC; TOGA cannot simply be selected without losing those margins.':'Når faktisk vekt er under grensen, sparer redusert skyvekraft motorene. Flex (antatt temperatur): ytelsen beregnes som om det var varmere, og TOGA er fortsatt tilgjengelig når som helst. Derate: en sertifisert lavere skyvekraftklasse med egen, lavere VMC; TOGA kan ikke bare velges uten å miste de marginene.',
+ 'Climb, cruise and descent':'Stigning, cruise og nedstigning',
+ 'A jet engine gives roughly constant thrust across the speed range, so the climb and cruise speeds of a jet sit in different places from those of a propeller aircraft. Change mass, altitude, wind and cost index and watch where the best speeds and altitudes move.':'En jetmotor gir omtrent konstant skyvekraft over hele fartsområdet, så stige- og cruisefartene til et jetfly ligger andre steder enn for et propellfly. Endre vekt, høyde, vind og kostindeks og se hvor de beste fartene og høydene flytter seg.',
+ 'Thrust and drag, and power available and required, against true airspeed':'Skyvekraft og motstand, og tilgjengelig og nødvendig effekt, mot sann fart',
+ 'Specific range against Mach number with long-range, maximum-range and economy speeds':'Spesifikk rekkevidde mot Mach-tall med long-range-, maks rekkevidde- og ECON-fart',
+ 'Optimum and maximum altitude against mass, with step climbs':'Optimal og maksimal høyde mot vekt, med trinnvis stigning',
+ 'Aircraft':'Fly','Mass':'Vekt','Flight level':'Flygenivå','Wind (+ headwind)':'Vind (+ motvind)','Cost index (kg/min)':'Kostindeks (kg/min)',
+ 'Gradient or rate':'Gradient eller rate','Best range':'Beste rekkevidde','Cost index':'Kostindeks','Optimum and maximum altitude':'Optimal og maksimal høyde','Wind':'Vind','Descent':'Nedstigning',
+ 'Climb gradient depends on excess thrust: (T − D) / W. Rate of climb depends on excess power: (T − D) × V / W. For a jet, thrust is nearly flat, so the best angle (Vx) is close to the minimum-drag speed and the best rate (Vy) is clearly faster.':'Stigegradienten avhenger av overskudd av skyvekraft: (T − D) / W. Stigehastigheten avhenger av overskuddseffekt: (T − D) × V / W. For et jetfly er skyvekraften nesten flat, så beste vinkel (Vx) ligger nær farten for minste motstand, og beste rate (Vy) er klart raskere.',
+ 'Fuel flow follows drag, so the most distance per kilogram comes at the highest ratio of speed to drag, about 1.32 × the minimum-drag speed, until the drag rise near the critical Mach stops it. Long-range cruise gives up 1 % of the range for a few percent more speed.':'Drivstofforbruket følger motstanden, så lengst distanse per kilo får du ved høyest forhold mellom fart og motstand, omtrent 1,32 × farten for minste motstand, til motstandsøkningen nær kritisk Mach stopper det. Long-range cruise gir fra seg 1 % rekkevidde for noen prosent mer fart.',
+ 'Time costs money too (crew, maintenance, connections). The cost index is the ratio of time cost to fuel cost. CI 0 gives the maximum range speed; a higher CI flies faster and burns more fuel to save time.':'Tid koster også penger (besetning, vedlikehold, forbindelser). Kostindeksen er forholdet mellom tidskostnad og drivstoffkostnad. CI 0 gir fart for maks rekkevidde; høyere CI flyr raskere og bruker mer drivstoff for å spare tid.',
+ 'The optimum altitude gives the best range for the present mass and rises as fuel is burnt. The maximum altitude is the lowest of the certified ceiling, the altitude with a 0.3 g buffet margin, and the altitude where the residual climb rate drops to 300 ft/min. Step climbs follow the optimum upwards.':'Optimal høyde gir best rekkevidde for vekten nå og stiger etter hvert som drivstoff brukes. Maksimal høyde er den laveste av sertifisert tak, høyden med 0,3 g buffetmargin, og høyden der gjenværende stigerate faller til 300 ft/min. Trinnvise stigninger følger optimal høyde oppover.',
+ 'Range is distance over the ground. Into a headwind it pays to fly faster than the still-air best range speed, and with a tailwind slightly slower. A strong headwind can also make a lower level with less wind the better choice.':'Rekkevidde er distanse over bakken. I motvind lønner det seg å fly raskere enn beste rekkeviddefart i stille luft, og i medvind litt saktere. Sterk motvind kan også gjøre et lavere nivå med mindre vind til det beste valget.',
+ 'At idle, the descent gradient is about drag / weight, the inverse of L/D. Each aircraft flown at its own best-L/D speed (higher when heavier) has the same L/D, so the still-air glide distance is the same. The A320 descends at a fixed managed speed above that best-L/D speed; there the heavier aircraft is closer to its best L/D, so it descends more shallowly and its top of descent comes earlier. An early, idle, continuous descent is the most fuel-efficient.':'På tomgang er nedstigningsgradienten omtrent motstand / vekt, altså den inverse av L/D. Hvert fly som flys på sin egen fart for beste L/D (høyere når det er tyngre), har samme L/D, så glidedistansen i stille luft er den samme. A320 går ned med en fast managed fart over denne farten; der er det tyngre flyet nærmere sin beste L/D, så det går ned slakere og toppen av nedstigningen kommer tidligere. En tidlig, kontinuerlig nedstigning på tomgang er mest drivstoffeffektiv.',
+ 'The actual landing distance is measured from 50 ft over the threshold to a full stop. Before departure the aircraft is dispatched against a factored distance; before landing the crew checks the distance for the actual conditions with a margin. Change the runway condition, braking, reversers and approach technique.':'Faktisk landingsdistanse måles fra 50 ft over terskelen til full stopp. Før avgang planlegges flyet mot en faktorert distanse; før landing sjekker besetningen distansen for de faktiske forholdene med margin. Endre baneforhold, bremsing, reversering og innflygingsteknikk.',
+ 'Landing from 50 ft to a stop, with speed and distance compared with the runway':'Landing fra 50 ft til stopp, med fart og distanse sammenlignet med banen',
+ 'Runway':'Rullebane','Aircraft and technique':'Fly og teknikk','Autobrake':'Autobrems','Reverse thrust':'Reversering',
+ 'Landing distance available (LDA)':'Tilgjengelig landingsdistanse (LDA)','Landing mass':'Landingsvekt','Speed above VAPP':'Fart over VAPP','Extra float in the flare':'Ekstra flyting i utflatingen',
+ 'LO':'LO','MED':'MED','Max manual':'Maks manuell','Off':'Av','Idle':'Tomgang','Max':'Maks',
+ 'Runway condition codes (RWYCC)':'Baneforholdskoder (RWYCC)',
+ 'At dispatch.':'Ved planlegging.','Dry: the landing distance available must be at least the certified landing distance divided by 0.6, that is × 1.67. Wet: a further 15 %. Contaminated: the larger of the wet requirement and 115 % of the distance for the contaminant.':'Tørr bane: tilgjengelig landingsdistanse må være minst den sertifiserte landingsdistansen delt på 0,6, altså × 1,67. Våt bane: 15 % i tillegg. Kontaminert bane: det største av kravet for våt bane og 115 % av distansen for kontaminanten.',
+ 'Before landing.':'Før landing.','The distance for the conditions at the time of arrival, with the planned braking and reverse, plus 15 %, must fit within the landing distance available.':'Distansen for forholdene ved ankomst, med planlagt bremsing og reversering, pluss 15 %, må få plass innenfor tilgjengelig landingsdistanse.',
+ 'Speed and flare.':'Fart og utflating.','Energy grows with the square of speed. Ten knots too fast and a long flare can together add several hundred metres; a stabilised approach on speed with a firm touchdown in the touchdown zone is the best runway protection.':'Energien øker med kvadratet av farten. Ti knop for fort og en lang utflating kan sammen legge til flere hundre meter; en stabilisert innflyging med riktig fart og en bestemt landing i settesonen er den beste beskyttelsen.',
+ 'How the theory shows up in a typical A320 operation. Procedures differ by operator; your operations manual and the FCOM rule.':'Hvordan teorien viser seg i en typisk A320-operasjon. Prosedyrer varierer mellom operatører; operasjonsmanualen og FCOM gjelder.',
+ 'Take-off data':'Startdata','FLEX or TOGA':'FLEX eller TOGA','The V1 call':'V1-utropet','Runway condition':'Baneforhold','Landing distance check in flight':'Kontroll av landingsdistanse i lufta','Cruise numbers':'Tall i cruise',
+ 'Speeds and thrust come from the performance application on the EFB, calculated for the runway or intersection, wind, temperature, QNH, runway state and configuration. Both pilots compute or cross-check independently and enter V1, VR, V2 and the flex temperature on the MCDU PERF TAKEOFF page. A gross error check against the expected values catches typing mistakes.':'Farter og skyvekraft kommer fra ytelsesapplikasjonen på EFB-en, beregnet for banen eller avkjøringen, vind, temperatur, QNH, baneforhold og konfigurasjon. Begge piloter beregner eller kryssjekker uavhengig og legger V1, VR, V2 og flex-temperaturen inn på MCDU-siden PERF TAKEOFF. En grovfeilsjekk mot forventede verdier fanger tastefeil.',
+ 'With a flex temperature entered, the thrust levers go to the FLX/MCT detent. If more thrust is needed, TOGA is always available by pushing the levers fully forward, because VMC is based on TOGA. TOGA is used when the runway is contaminated, when wind shear is expected, or when the margins are not there for flex.':'Med flex-temperatur lagt inn settes gasshendlene i FLX/MCT-hakket. Trengs mer skyvekraft, er TOGA alltid tilgjengelig ved å skyve hendlene helt fram, fordi VMC er basert på TOGA. TOGA brukes når banen er kontaminert, når vindskjær er ventet, eller når marginene ikke er der for flex.',
+ 'A typical Airbus procedure: the captain keeps a hand on the thrust levers until V1. At low speed the take-off is rejected for any significant failure; at high speed only for major ones such as engine failure, fire or a sign that the aircraft is unsafe to fly. At V1 the hand comes off and the decision is go.':'En typisk Airbus-prosedyre: kapteinen holder hånden på gasshendlene til V1. I lav fart avbrytes starten for enhver vesentlig feil; i høy fart bare for alvorlige, som motorstans, brann eller tegn på at flyet ikke er trygt å fly. Ved V1 tas hånden bort, og beslutningen er fortsett.',
+ 'The runway condition report (in Europe via SNOWTAM and ATIS) gives an RWYCC for each third of the runway, for example 5/5/3, with contaminant type, depth and coverage. The crew enters the condition in the performance application. Flex is not used on a contaminated runway.':'Baneforholdsrapporten (i Europa via SNOWTAM og ATIS) gir en RWYCC for hver tredjedel av banen, for eksempel 5/5/3, med type kontaminant, dybde og dekning. Besetningen legger forholdene inn i ytelsesapplikasjonen. Flex brukes ikke på kontaminert bane.',
+ 'Before the descent the crew calculates the landing distance at the time of arrival with the expected runway condition, wind, autobrake and reverse, and checks it plus 15 % against the landing distance available. A failure such as a reverser or brake inoperative, or a change in runway condition, means a new calculation.':'Før nedstigning beregner besetningen landingsdistansen ved ankomst med forventet baneforhold, vind, autobrems og reversering, og sjekker den pluss 15 % mot tilgjengelig landingsdistanse. En feil som en reverser eller brems ute av drift, eller endrede baneforhold, betyr ny beregning.',
+ 'The cost index is entered on the INIT A page and the FMS flies the ECON speed and Mach. The PROG page shows the optimum flight level (OPT) and the recommended maximum (REC MAX). Green dot on the speed scale is the best lift-to-drag speed in clean configuration, used for an engine-out climb or drift-down.':'Kostindeksen legges inn på INIT A-siden, og FMS-en flyr ECON-fart og -Mach. PROG-siden viser optimalt flygenivå (OPT) og anbefalt maksimum (REC MAX). Green dot på fartsskalaen er farten for best løft/motstand i ren konfigurasjon, brukt ved stigning eller drift-down med én motor.',
+ 'Teaching model. The aircraft is an A320-like twin jet with rounded, illustrative values (MTOW 78 t, MLW 64.5 t, simplified thrust, drag, braking and friction models, no compressibility in the take-off and landing calculations, TORA = TODA = ASDA with no clearway or stopway, sea level ISA in sections 1 and 4, pressure altitude equal to elevation in section 2). None of the numbers are FCOM or AFM data. Use them to understand relationships, not for operational decisions. Always follow the AFM, the FCOM, your operations manual and your instructor.':'Pedagogisk modell. Flyet er et A320-lignende tomotors jetfly med avrundede, illustrerende verdier (MTOW 78 t, MLW 64,5 t, forenklede modeller for skyvekraft, motstand, bremsing og friksjon, ingen kompressibilitet i start- og landingsberegningene, TORA = TODA = ASDA uten clearway eller stopway, havnivå ISA i seksjon 1 og 4, trykkhøyde lik flyplasshøyde i seksjon 2). Ingen av tallene er FCOM- eller AFM-data. Bruk dem til å forstå sammenhenger, ikke til operative beslutninger. Følg alltid AFM, FCOM, operasjonsmanualen og instruktøren.'
+});
+LAB.start('perf');
+
+const G=9.80665, KT=0.514444, FT=0.3048, S=122.6;
+const K=(l,v,c,s)=>`<div class="kpi"><span>${L(l)}</span><b class="${c||''}">${v}</b>${s?`<small>${L(s)}</small>`:''}</div>`;
+const R=(l,v,c)=>`<div class="rrow"><span>${L(l)}</span><b class="${c||''}">${v}</b></div>`;
+const kt=v=>nf(v,0)+' kt', m_=v=>Number.isFinite(v)?nf(v,0)+' m':'–', t_=v=>nf(v/1000,1)+' t';
+const rq={}; const sched=(k,f)=>{ if(rq[k]) return; rq[k]=requestAnimationFrame(()=>{ rq[k]=0; f(); }); };
+const MONO='10px "IBM Plex Mono", monospace', SANS='600 11px "Public Sans", sans-serif', HAND='600 13px "Public Sans", sans-serif';
+const C={ink:'#13202A',mut:'#7D8B95',grid:'#E3E8E8',blue:'#1E5E9E',red:'#B3261E',mag:'#9A1E68',green:'#2C7A4B',amber:'#A86A00',hand:'#1D4E9E'};
+function nice(r,n){ const s=r/n, p=Math.pow(10,Math.floor(Math.log10(s))), f=s/p; return (f<1.5?1:f<3?2:f<7?5:10)*p; }
+// papirdiagram: akser, rutenett og tittel
+function frame(g,b,xr,yr,o){
+  const X=v=>b.x+(v-xr[0])/(xr[1]-xr[0])*b.w, Y=v=>b.y+b.h-(v-yr[0])/(yr[1]-yr[0])*b.h;
+  g.font=MONO; g.lineWidth=1;
+  const xs=o.xs||nice(Math.abs(xr[1]-xr[0]),6), ys=o.ys||nice(yr[1]-yr[0],5), xa=Math.min(xr[0],xr[1]), xb=Math.max(xr[0],xr[1]);
+  g.textAlign='center'; g.textBaseline='top';
+  for(let i=Math.ceil(xa/xs-1e-9); i*xs<=xb+1e-9; i++){ const v=i*xs+0; g.strokeStyle=C.grid; g.beginPath(); g.moveTo(X(v)+0.5,b.y); g.lineTo(X(v)+0.5,b.y+b.h); g.stroke(); g.fillStyle=C.mut; g.fillText(o.xf?o.xf(v):nf(v,0),X(v),b.y+b.h+4); }
+  g.textAlign='right'; g.textBaseline='middle';
+  for(let i=Math.ceil(yr[0]/ys-1e-9); i*ys<=yr[1]+1e-9; i++){ const v=i*ys+0; g.strokeStyle=C.grid; g.beginPath(); g.moveTo(b.x,Y(v)+0.5); g.lineTo(b.x+b.w,Y(v)+0.5); g.stroke(); g.fillStyle=C.mut; g.fillText(o.yf?o.yf(v):nf(v,0),b.x-5,Y(v)); }
+  g.strokeStyle=C.ink; g.beginPath(); g.moveTo(b.x,b.y); g.lineTo(b.x,b.y+b.h); g.lineTo(b.x+b.w,b.y+b.h); g.stroke();
+  g.fillStyle=C.ink; g.font=SANS; g.textAlign='left'; g.textBaseline='bottom'; if(o.t) g.fillText(o.t,b.x,b.y-6);
+  g.font=MONO; g.fillStyle=C.mut; g.textAlign='right'; g.textBaseline='top'; if(o.xt) g.fillText(o.xt,b.x+b.w,b.y+b.h+17);
+  return {X,Y};
+}
+const line=(g,pts,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w||2; g.setLineDash(dash||[]); g.beginPath(); let s=false; for(const [x,y] of pts){ if(!Number.isFinite(y)){ s=false; continue; } s?g.lineTo(x,y):g.moveTo(x,y); s=true; } g.stroke(); g.setLineDash([]); g.lineWidth=1; };
+const dot=(g,x,y,col,r)=>{ g.fillStyle=col; g.beginPath(); g.arc(x,y,r||4,0,Math.PI*2); g.fill(); };
+const tag=(g,x,y,t,col,al,bl)=>{ g.fillStyle=col; g.font=SANS; g.textAlign=al||'left'; g.textBaseline=bl||'bottom'; g.fillText(t,x,y); };
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* =========================================================
+   Startmodell (A320-lignende, illustrerende verdier)
+   ========================================================= */
+const P={T0:118000,LAPSE:0.0014,MUR:0.02,CLG:0.6,CDG:0.085,CDOEI:0.008,MUB:0.40,CLSP:0.1,CDSP:0.14,CLTO:2.25,LDAIR:12.5,LD2:13,LDCL:16,
+  MTOW:78000,EMAX:300e6,TYRE:195,VMCG:107,VMCA:109,FLAT:15,TL:0.0068};
+const dP=pa=>Math.pow(1-2.25577e-5*pa*FT,5.25588);
+const isaT=pa=>15-1.98*pa/1000;
+// skyvekraftfaktor: trykk og flat rating (konstant opp til ISA+15, så synkende)
+function thrF(pa,t){ const fl=isaT(pa)+P.FLAT; return Math.pow(dP(pa),0.85)*(t>fl?Math.max(0.4,1-P.TL*(t-fl)):1); }
+// forhold: tperf = temperatur ytelsen beregnes med (antatt temperatur ved flex)
+function cond(pa,oat,tperf){ const tp=tperf==null?oat:tperf, rho=101325*dP(pa)/(287.053*(tp+273.15)); return {pa,oat,tp,rho,sig:rho/1.225,tf:thrF(pa,tp),tog:thrF(pa,oat)}; }
+function speeds(W,c){ const vmcg=P.VMCG*Math.sqrt(c.tog), vmca=P.VMCA*Math.sqrt(c.tog), vsr=Math.sqrt(2*W*G/(1.225*S*P.CLTO))/KT;
+  const v2=Math.max(1.13*vsr,1.10*vmca), vr=Math.max(v2-5,1.05*vmca); return {vmcg,vmca,vsr,v2,vr,vlof:vr+4}; }
+const thr=(v,c)=>P.T0*c.tf*(1-P.LAPSE*Math.abs(v)/KT);
+// ett startløp. hw = (faktorert) motvind i kt, sl = helning (brøk, + oppover), vef = motorstans (kt CAS), stop = avbryt
+function roll(o){
+  const m=o.W, Wn=m*G, c=o.c, sq=Math.sqrt(c.sig), hw=o.hw*KT, dt=o.dt||0.05, q=v=>0.5*c.rho*v*Math.abs(v)*S;
+  let v=hw, x=0, t=0, n=2, tf=-1; const ev={dist:Infinity}; const tr=o.trace?[]:null;
+  while(t<180){
+    const vc=v*sq/KT; if(tr) tr.push([x,vc,0]);
+    if(n===2 && vc>=o.vef){ n=1; tf=t; ev.fail=x; ev.vef=vc; }
+    if(tf>=0 && ev.v1===undefined && t-tf>=1-1e-9){ ev.v1=vc; ev.x1=x;
+      if(o.stop){ let gs=v-hw; x+=Math.max(0,gs)*2; ev.brk=x; if(tr) tr.push([x,vc,0]);
+        while(gs>0 && t<400){ const a=-(P.MUB*Math.max(0,Wn-q(v)*P.CLSP)+q(v)*P.CDSP)/m-G*o.sl; v+=a*dt; const ng=v-hw; x+=Math.max(0,(gs+Math.max(0,ng))/2)*dt; gs=ng; t+=dt; if(tr) tr.push([x,Math.max(0,v*sq/KT),0]); }
+        ev.dist=x; return ev; } }
+    if(!o.stop && vc>=o.sp.vlof){ ev.lof=x; ev.n=n; const gss=(n*thr(v,c)-Wn/P.LDAIR)/Wn-0.008; ev.gam=gss;
+      if(gss<=0.002) return ev;
+      let h=0, ta=0; while(h<35*FT && ta<60){ const gm=gss*Math.min(1,ta/2+0.1); h+=v*gm*dt; x+=(v-hw)*dt; ta+=dt; if(tr) tr.push([x,vc,h/FT]); }
+      ev.dist=x; ev.air=x-ev.lof; return ev; }
+    const Lf=q(v)*P.CLG, D=q(v)*(P.CDG+(n<2?P.CDOEI:0));
+    const F=n*thr(v,c)-D-P.MUR*Math.max(0,Wn-Lf)-Wn*o.sl;
+    const ov=v; v+=F/m*dt; x+=((ov+v)/2-hw)*dt; t+=dt;
+    if(t>3 && v<=ov) return ev;
+  }
+  return ev;
+}
+// distanser som funksjon av V1 (V1 = farten ett sekund etter motorstans)
+function curves(W,c,hw,sl,step,dt){
+  const sp=speeds(W,c), aeo=roll({W,c,hw,sl,vef:Infinity,sp,dt}), arr=[];
+  for(let vef=70; vef<=sp.vr+2; vef+=step){ const s=roll({W,c,hw,sl,vef,sp,dt,stop:true}); if(s.v1===undefined||s.v1>sp.vr+0.01) break; const gq=roll({W,c,hw,sl,vef,sp,dt}); arr.push({vef,v1:s.v1,asd:s.dist,tod:gq.dist}); }
+  return {sp,aeo,arr};
+}
+function at(arr,v1,k){ if(!arr.length) return Infinity; if(v1<=arr[0].v1) return arr[0][k]; for(let i=1;i<arr.length;i++) if(arr[i].v1>=v1){ const a=arr[i-1],b=arr[i],f=(v1-a.v1)/(b.v1-a.v1); return a[k]+f*(b[k]-a[k]); } return arr[arr.length-1][k]; }
+function vefFor(arr,v1){ return at(arr,v1,'vef'); }
+function balanced(cv){ const a=cv.arr; if(!a.length) return {v1:cv.sp.vr,d:Infinity};
+  for(let i=1;i<a.length;i++){ const d0=a[i-1].asd-a[i-1].tod, d1=a[i].asd-a[i].tod; if(d0<=0&&d1>=0){ const f=(d0===d1||!Number.isFinite(d0-d1))?0:d0/(d0-d1); return {v1:a[i-1].v1+f*(a[i].v1-a[i-1].v1), d:a[i-1].asd+f*(a[i].asd-a[i-1].asd)}; } }
+  const l=a[a.length-1], f=a[0]; return (l.asd<l.tod)? {v1:l.v1,d:Math.max(l.asd,l.tod)} : {v1:f.v1,d:Math.max(f.asd,f.tod)}; }
+// V1-vindu der både stopp og fortsett får plass
+function v1win(cv,Lr,vmax){ let lo=null,hi=null; for(const p of cv.arr){ if(p.v1<cv.sp.vmcg-0.01 || p.v1>Math.min(cv.sp.vr,vmax)+0.01) continue; if(p.asd<=Lr && p.tod<=Lr){ if(lo===null) lo=p.v1; hi=p.v1; } } return lo===null?null:[lo,hi]; }
+function v1goMin(cv,Lr){ for(const p of cv.arr) if(p.tod<=Lr) return p.v1; return cv.sp.vr; }
+const factW=w=>w>=0?0.5*w:1.5*w;  // 50 % motvind, 150 % medvind
+const vmbe=(W,c,hw)=>(Math.sqrt(2*P.EMAX/W)+hw*KT)*Math.sqrt(c.sig)/KT;
+
+/* ---------- 1. startløp og V1 ---------- */
+const TS={W:70000,L:2200,wind:0,sl:0,v1:130,vef:120,fail:'fail'};
+const cTO=el('ctlTO'), cF=el('ctlF');
+const sTO={};
+sTO.W=slider(cTO,{label:'Take-off mass',min:50000,max:78000,step:500,v:TS.W,f:t_,on:v=>{TS.W=v;sched('to',upTO);}});
+sTO.L=slider(cTO,{label:'Runway length (TORA = TODA = ASDA)',min:1200,max:3500,step:50,v:TS.L,f:m_,on:v=>{TS.L=v;sched('to',upTO);}});
+sTO.wind=slider(cTO,{label:'Wind (+ headwind, − tailwind)',min:-10,max:20,step:1,v:TS.wind,f:v=>(v>0?'+':'')+nf(v,0)+' kt',on:v=>{TS.wind=v;sched('to',upTO);}});
+sTO.sl=slider(cTO,{label:'Runway slope (+ uphill)',min:-2,max:2,step:0.1,v:0,f:v=>(v>0?'+':'')+nf(v,1)+' %',on:v=>{TS.sl=v/100;sched('to',upTO);}});
+seg(el('failSeg'),[['fail','Engine failure'],['none','All engines']],'fail',v=>{TS.fail=v;sched('to',upTO);});
+sTO.v1=slider(cF,{label:'V1 chosen',min:100,max:160,step:1,v:TS.v1,f:kt,on:v=>{TS.v1=v;sched('to',upTO);}});
+sTO.vef=slider(cF,{label:'Engine fails at',min:40,max:170,step:1,v:TS.vef,f:kt,on:v=>{TS.vef=v;sched('to',upTO);}});
+let TOR=null;
+el('balBtn').onclick=()=>{ if(!TOR) return; TS.v1=Math.round(TOR.v1use); sTO.v1.set(TS.v1); upTO(); };
+const rv=fit(el('rwy'),()=>drawRwy()), bv=fit(el('bfl'),()=>drawBfl());
+function upTO(){
+  const c=cond(0,15), hwF=factW(TS.wind), cv=curves(TS.W,c,hwF,TS.sl,1,0.05), sp=cv.sp, bal=balanced(cv);
+  const v1use=clamp(Math.max(bal.v1,sp.vmcg),0,sp.vr);
+  const v1=Math.min(TS.v1,sp.vr), vefD=vefFor(cv.arr,v1);   // motorstans som gir oppdagelse akkurat ved V1
+  const asd=at(cv.arr,v1,'asd'), tod=at(cv.arr,v1,'tod'), aeo115=cv.aeo.dist*1.15, req=Math.max(asd,tod,aeo115);
+  // brukerens scenario
+  let sc;
+  if(TS.fail==='none') sc={mode:'aeo',ev:roll({W:TS.W,c,hw:hwF,sl:TS.sl,vef:Infinity,sp,trace:true})};
+  else { const stop=TS.vef<vefD-1e-6 && TS.vef<sp.vlof; sc={mode:stop?'stop':'go',ev:roll({W:TS.W,c,hw:hwF,sl:TS.sl,vef:TS.vef,sp,stop,trace:true})}; }
+  TOR={c,cv,sp,bal,v1use,v1,asd,tod,aeo115,req,sc,hwF};
+  drawRwy(); drawBfl(); roTO();
+}
+
+const windTxt=(w)=>{ const f=factW(w); return w===0? '0 kt' : (w>0? L({en:`+${nf(f,1)} kt (50 % of ${nf(w,0)} kt headwind)`,no:`+${nf(f,1)} kt (50 % av ${nf(w,0)} kt motvind)`}) : L({en:`−${nf(-f,1)} kt (150 % of ${nf(-w,0)} kt tailwind)`,no:`−${nf(-f,1)} kt (150 % av ${nf(-w,0)} kt medvind)`})); };
+const xAt=(tr,v)=>{ for(const p of tr) if(p[1]>=v) return p[0]; return null; };
+function roTO(){
+  const r=TOR; if(!r) return; const sp=r.sp, sc=r.sc, ev=sc.ev, Lr=TS.L;
+  const avail=sc.mode==='stop'?Lr:Lr, need=ev.dist, margin=Lr-need;
+  const dec= sc.mode==='stop'? {en:'Stop',no:'Stopp'} : sc.mode==='go'? {en:'Go',no:'Fortsett'} : {en:'Normal',no:'Normal'};
+  const ok=Number.isFinite(need)&&margin>=0;
+  const v1Warn=TS.v1>sp.vr? L({en:' (limited to VR)',no:' (begrenset til VR)'}) : TS.v1<sp.vmcg? L({en:' (below VMCG)',no:' (under VMCG)'}) : '';
+  el('toR').innerHTML=R({en:'VMCG',no:'VMCG'},kt(sp.vmcg))+R({en:'VR',no:'VR'},kt(sp.vr))+R({en:'V2',no:'V2'},kt(sp.v2))+R({en:'VLOF',no:'VLOF'},kt(sp.vlof))+
+    R({en:'V1 in use',no:'V1 i bruk'},kt(r.v1)+v1Warn,TS.v1<sp.vmcg||TS.v1>sp.vr?'warn':'hl')+
+    R({en:'Accelerate-stop at this V1',no:'Akselerer-stopp ved denne V1'},m_(r.asd),r.asd>Lr?'bad':'')+
+    R({en:'Accelerate-go (OEI) at this V1',no:'Akselerer-fortsett (OEI) ved denne V1'},m_(r.tod),r.tod>Lr?'bad':'')+
+    R({en:'115 % all-engines distance',no:'115 % distanse med alle motorer'},m_(r.aeo115),r.aeo115>Lr?'bad':'')+
+    R({en:'Wind in the calculation',no:'Vind i beregningen'},windTxt(TS.wind));
+  el('toK').innerHTML=K({en:'Decision',no:'Beslutning'},L(dec),sc.mode==='stop'?'warn':'hl', sc.mode==='aeo'?{en:'all engines running',no:'alle motorer går'}:{en:`engine failure at ${nf(TS.vef,0)} kt, V1 ${nf(r.v1,0)} kt`,no:`motorstans ved ${nf(TS.vef,0)} kt, V1 ${nf(r.v1,0)} kt`})+
+    K({en:sc.mode==='stop'?'Distance to stop':'Distance to 35 ft',no:sc.mode==='stop'?'Distanse til stopp':'Distanse til 35 ft'},Number.isFinite(need)?m_(need):L({en:'cannot climb',no:'kan ikke stige'}),ok?'good':'bad')+
+    K({en:'Margin to runway end',no:'Margin til baneenden'},Number.isFinite(margin)?(margin>=0?'':'−')+nf(Math.abs(margin),0)+' m':'–',ok?'good':'bad',ok?'':{en:'overrun',no:'overskrider banen'})+
+    K({en:'Balanced V1',no:'Balansert V1'},kt(r.v1use),'', r.bal.v1<sp.vmcg?{en:'raised to VMCG',no:'hevet til VMCG'}:'')+
+    K({en:'Balanced field length',no:'Balansert banelengde'},m_(Math.max(r.bal.d,r.aeo115)),Math.max(r.bal.d,r.aeo115)>Lr?'bad':'');
+}
+function drawRwy(){
+  const r=TOR, g=rv.ctx, W=rv.w, H=rv.h; if(!W||!r) return; g.clearRect(0,0,W,H);
+  const ev=r.sc.ev, Lr=TS.L, far=Math.max(Lr, Number.isFinite(ev.dist)?ev.dist:Lr*1.1)*1.08+80;
+  const x0=18, X=d=>x0+d/far*(W-x0-14), yc=H*0.62, rw=Math.max(18,H*0.12);
+  // gress og bane
+  g.fillStyle='#16221B'; g.fillRect(0,yc-rw*2.2,W,rw*4.4);
+  g.fillStyle='#2A333B'; g.fillRect(X(0),yc-rw/2,X(Lr)-X(0),rw);
+  g.fillStyle='rgba(236,90,71,.18)'; g.fillRect(X(Lr),yc-rw/2,W-X(Lr),rw);
+  g.strokeStyle='#cfd8e0'; g.setLineDash([10,8]); g.beginPath(); g.moveTo(X(0)+8,yc); g.lineTo(X(Lr)-8,yc); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#cfd8e0'; for(let i=0;i<6;i++){ g.fillRect(X(0)+3,yc-rw/2+3+i*(rw-6)/6,8,(rw-6)/12); g.fillRect(X(Lr)-11,yc-rw/2+3+i*(rw-6)/6,8,(rw-6)/12); }
+  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#8b99a7'; g.textAlign='left'; g.textBaseline='top';
+  g.fillText('0',X(0),yc+rw/2+4); g.textAlign='right'; g.fillText(`TODA = ASDA ${nf(Lr,0)} m`,X(Lr),yc+rw/2+4);
+  const path=r.sc.ev, T2=rollTrace(); if(!T2) return;
+  const pts=T2, hScale=rw*1.4/35;
+  // tegn sporet: grønt før motorstans, deretter rødt (stopp) eller blått (fortsett)
+  const fx=r.sc.mode==='aeo'?Infinity:(path.fail!==undefined?path.fail:Infinity);
+  g.lineWidth=3; g.lineCap='round';
+  let prev=null;
+  for(const p of pts){ const col= p[0]<=fx? '#7fcbe8' : (r.sc.mode==='stop'? '#ec5a47' : '#f0b440'); const y=yc-p[2]*hScale;
+    if(prev){ g.strokeStyle=col; g.beginPath(); g.moveTo(X(prev[0]),prev[1]); g.lineTo(X(p[0]),y); g.stroke(); } prev=[p[0],y]; }
+  g.lineWidth=1;
+  // merker
+  const mk=(d,lab,col,up)=>{ if(d==null||!Number.isFinite(d)) return; g.strokeStyle=col; g.beginPath(); g.moveTo(X(d),yc-rw/2-2); g.lineTo(X(d),yc-rw/2-(up?34:16)); g.stroke(); g.fillStyle=col; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText(lab,clamp(X(d),30,W-30),yc-rw/2-(up?36:18)); };
+  const xV1=xAtTrace(r.v1), xVR=xAtTrace(r.sp.vr);
+  mk(xV1,'V1 '+nf(r.v1,0),'#cfd8e0',true); mk(xVR,'VR '+nf(r.sp.vr,0),'#8b99a7',false);
+  if(r.sc.mode!=='aeo' && path.fail!==undefined){ dot(g,X(path.fail),yc,'#f0b440',5); g.fillStyle='#f0b440'; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillText(L({en:'engine fails',no:'motorstans'}),clamp(X(path.fail),40,W-40),yc+rw/2+18); }
+  // utfall
+  const end=path.dist; g.textBaseline='bottom'; g.textAlign='right'; g.font='600 12px "Public Sans", sans-serif';
+  const msg= !Number.isFinite(end)? L({en:'cannot reach 35 ft',no:'når ikke 35 ft'}) : r.sc.mode==='stop'? (end<=Lr? L({en:`stopped, ${nf(Lr-end,0)} m left`,no:`stoppet, ${nf(Lr-end,0)} m igjen`}) : L({en:`overrun by ${nf(end-Lr,0)} m`,no:`overskrider med ${nf(end-Lr,0)} m`})) :
+    (end<=Lr? L({en:`35 ft, ${nf(Lr-end,0)} m before the end`,no:`35 ft, ${nf(Lr-end,0)} m før enden`}) : L({en:`35 ft only ${nf(end-Lr,0)} m after the end`,no:`35 ft først ${nf(end-Lr,0)} m etter enden`}));
+  const ok=Number.isFinite(end)&&end<=Lr;
+  g.fillStyle= ok?'#71cc93':'#ec5a47'; g.textAlign='left'; g.fillText(msg,10,18);
+  if(Number.isFinite(end)){ if(r.sc.mode==='stop'){ g.fillStyle='#ec5a47'; g.fillRect(X(end)-2,yc-rw/2-4,4,rw+8); } else { dot(g,X(end),yc-35*hScale,'#f0b440',4); g.fillStyle='#cfd8e0'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('35 ft',X(end)-6,yc-35*hScale-2); } }
+  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#8b99a7'; g.textAlign='left'; g.textBaseline='top';
+  g.fillText(L({en:'height above the runway exaggerated',no:'høyde over banen overdrevet'}),10,24);
+}
+function rollTrace(){ const r=TOR; if(!r) return null; const o={W:TS.W,c:r.c,hw:r.hwF,sl:TS.sl,sp:r.sp,trace:true};
+  if(r.sc.mode==='aeo') o.vef=Infinity; else { o.vef=TS.vef; o.stop=r.sc.mode==='stop'; }
+  return traceRun(o); }
+function traceRun(o){ const pts=[]; const m=o.W, Wn=m*G, c=o.c, sq=Math.sqrt(c.sig), hw=o.hw*KT, dt=0.05, q=v=>0.5*c.rho*v*Math.abs(v)*S;
+  let v=hw,x=0,t=0,n=2,tf=-1,v1d=false;
+  while(t<180){ const vc=v*sq/KT; pts.push([x,vc,0]);
+    if(n===2&&vc>=o.vef){ n=1; tf=t; }
+    if(tf>=0&&!v1d&&t-tf>=1-1e-9){ v1d=true; if(o.stop){ let gs=v-hw; x+=Math.max(0,gs)*2; pts.push([x,vc,0]); while(gs>0&&t<400){ const a=-(P.MUB*Math.max(0,Wn-q(v)*P.CLSP)+q(v)*P.CDSP)/m-G*o.sl; v+=a*dt; const ng=v-hw; x+=Math.max(0,(gs+Math.max(0,ng))/2)*dt; gs=ng; t+=dt; pts.push([x,0,0]); } return pts; } }
+    if(!o.stop&&vc>=o.sp.vlof){ const gss=(n*thr(v,c)-Wn/P.LDAIR)/Wn-0.008; if(gss<=0.002){ pts.push([x+400,vc,0]); return pts; } let h=0,ta=0; while(h<35*FT&&ta<60){ const gm=gss*Math.min(1,ta/2+0.1); h+=v*gm*dt; x+=(v-hw)*dt; ta+=dt; pts.push([x,vc,h/FT]); } return pts; }
+    const Lf=q(v)*P.CLG, D=q(v)*(P.CDG+(n<2?P.CDOEI:0)), F=n*thr(v,c)-D-P.MUR*Math.max(0,Wn-Lf)-Wn*o.sl, ov=v; v+=F/m*dt; x+=((ov+v)/2-hw)*dt; t+=dt; if(t>3&&v<=ov) return pts; }
+  return pts; }
+function xAtTrace(vc){ const r=TOR; const pts=traceRun({W:TS.W,c:r.c,hw:r.hwF,sl:TS.sl,sp:r.sp,vef:Infinity}); for(const p of pts) if(p[1]>=vc) return p[0]; return null; }
+function drawBfl(){
+  const r=TOR, g=bv.ctx, W=bv.w, H=bv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const a=r.cv.arr.filter(p=>p.v1>=95); if(!a.length) return;
+  const xr=[95,Math.ceil((r.sp.vr+3)/5)*5];
+  const fin=[...a.map(p=>p.asd),...a.map(p=>p.tod)].filter(Number.isFinite);
+  const ymax=Math.max(TS.L*1.25,Math.min(Math.max(...fin),TS.L*1.9),r.aeo115*1.1), ymin=Math.max(0,Math.min(...fin,TS.L)*0.7);
+  const b={x:52,y:26,w:W-66,h:H-62};
+  const f=frame(g,b,xr,[ymin,ymax],{t:L({en:'Distance required against V1',no:'Nødvendig distanse mot V1'}),xt:L({en:'V1 (kt)',no:'V1 (kt)'}),yf:v=>nf(v,0)});
+  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip();
+  // V1-vindu
+  const win=v1win(r.cv,TS.L,Infinity);
+  if(win){ g.fillStyle='rgba(44,122,75,.10)'; g.fillRect(f.X(win[0]),b.y,Math.max(2,f.X(win[1])-f.X(win[0])),b.h); }
+  // VMCG
+  if(r.sp.vmcg>xr[0]){ g.fillStyle='rgba(179,38,30,.07)'; g.fillRect(b.x,b.y,f.X(r.sp.vmcg)-b.x,b.h); }
+  line(g,[[b.x,f.Y(TS.L)],[b.x+b.w,f.Y(TS.L)]],C.ink,1.5);
+  line(g,[[b.x,f.Y(r.aeo115)],[b.x+b.w,f.Y(r.aeo115)]],C.mut,1.5,[5,4]);
+  line(g,a.map(p=>[f.X(p.v1),f.Y(p.asd)]),C.red,2.2);
+  line(g,a.map(p=>[f.X(p.v1),f.Y(p.tod)]),C.blue,2.2);
+  line(g,[[f.X(r.v1),b.y],[f.X(r.v1),b.y+b.h]],C.mag,1.5,[3,3]);
+  if(Number.isFinite(r.bal.d)) dot(g,f.X(r.bal.v1),f.Y(r.bal.d),C.ink,4);
+  g.restore();
+  tag(g,b.x+b.w-4,f.Y(TS.L)-3,L({en:'runway available',no:'tilgjengelig bane'}),C.ink,'right');
+  tag(g,b.x+4,f.Y(r.aeo115)-3,L({en:'115 % all engines',no:'115 % alle motorer'}),C.mut,'left');
+  const lab=(p,k,t,col)=>{ const q=a[Math.floor(a.length*p)]; if(q&&Number.isFinite(q[k])&&q[k]<ymax) tag(g,f.X(q.v1),f.Y(q[k])-6,t,col,'center'); };
+  lab(0.12,'asd',L({en:'accelerate-stop',no:'akselerer-stopp'}),C.red); lab(0.12,'tod',L({en:'accelerate-go',no:'akselerer-fortsett'}),C.blue);
+  if(r.sp.vmcg>xr[0]) tag(g,b.x+4,b.y+14,'< VMCG',C.red,'left');
+  if(Number.isFinite(r.bal.d)&&r.bal.d<ymax){ g.font=HAND; g.fillStyle=C.hand; g.textAlign='left'; g.textBaseline='top'; const rt=f.X(r.bal.v1)>b.x+b.w*0.75; g.textAlign=rt?'right':'left'; g.fillText(L({en:'balanced',no:'balansert'}),f.X(r.bal.v1)+(rt?-6:6),f.Y(r.bal.d)+4); }
+  if(win){ g.font=MONO; g.fillStyle=C.green; g.textAlign='center'; g.textBaseline='bottom'; g.fillText(L({en:'V1 range',no:'V1-område'}),(f.X(win[0])+f.X(win[1]))/2,b.y+b.h-4); }
+}
+LAB.onLang(()=>{ drawRwy(); drawBfl(); roTO(); });
+
+/* ---------- 2. startvektbegrensninger ---------- */
+const LS={oat:30,el:2000,L:2200,oh:100,od:3000,W:68000,thr:'flex'};
+const cL=el('ctlL'), cO=el('ctlO'), cW=el('ctlW');
+slider(cL,{label:'Outside air temperature',min:-20,max:50,step:1,v:LS.oat,f:v=>nf(v,0)+' °C',on:v=>{LS.oat=v;sched('lim',upLim);}});
+slider(cL,{label:'Aerodrome elevation',min:0,max:8000,step:100,v:LS.el,f:v=>nf(v,0)+' ft',on:v=>{LS.el=v;sched('lim',upLim);}});
+slider(cL,{label:'Runway length',min:1500,max:3600,step:50,v:LS.L,f:m_,on:v=>{LS.L=v;sched('lim',upLim);}});
+slider(cO,{label:'Obstacle height above runway',min:0,max:400,step:10,v:LS.oh,f:v=>nf(v,0)+' ft',on:v=>{LS.oh=v;sched('lim',upLim);}});
+slider(cO,{label:'Distance from end of runway',min:500,max:8000,step:100,v:LS.od,f:m_,on:v=>{LS.od=v;sched('lim',upLim);}});
+slider(cW,{label:'Actual take-off mass',min:50000,max:78000,step:500,v:LS.W,f:t_,on:v=>{LS.W=v;sched('lim',upLim);}});
+seg(el('thrSeg'),[['toga','TOGA'],['flex','FLEX']],LS.thr,v=>{LS.thr=v;sched('lim',upLim);});
+const lv=fit(el('lim'),()=>drawLim()), fv=fit(el('fp'),()=>drawFP());
+function v2tas(W,c){ return speeds(W,c).v2*KT/Math.sqrt(c.sig); }
+function grad2(W,c){ return thr(v2tas(W,c),c)/(W*G)-1/P.LD2; }
+function bis(ok,lo,hi,it){ if(!ok(lo)) return lo; if(ok(hi)) return hi; for(let i=0;i<(it||16);i++){ const m=(lo+hi)/2; ok(m)?lo=m:hi=m; } return lo; }
+function fieldOK(W,c,Lr){ const cv=curves(W,c,0,0,2.5,0.1); if(cv.aeo.dist*1.15>Lr) return {ok:false,cv}; return {ok:!!v1win(cv,Lr,Infinity),cv}; }
+function brakeOK(W,c,Lr){ const cv=curves(W,c,0,0,2.5,0.1); return Math.max(cv.sp.vmcg,v1goMin(cv,Lr))<=vmbe(W,c,0); }
+function tyreOK(W,c){ return speeds(W,c).vlof/Math.sqrt(c.sig)<=P.TYRE; }
+function obsNeed(){ return LS.oh>0? (LS.oh*FT)/LS.od : 0; }
+function allOK(W,c,Lr){ return W<=P.MTOW && grad2(W,c)>=0.024 && grad2(W,c)-0.008>=obsNeed() && tyreOK(W,c) && fieldOK(W,c,Lr).ok && brakeOK(W,c,Lr); }
+let LR=null;
+function upLim(){
+  const c=cond(LS.el,LS.oat), Lr=LS.L, lo=35000, hi=100000;
+  const lim=[
+    {k:'field',n:{en:'Field length',no:'Banelengde'},v:bis(W=>fieldOK(W,c,Lr).ok,lo,hi,14)},
+    {k:'climb',n:{en:'Climb (2nd segment)',no:'Stigning (2. segment)'},v:bis(W=>grad2(W,c)>=0.024,lo,hi)},
+    {k:'obst',n:{en:'Obstacle (net path)',no:'Hinder (nettobane)'},v:LS.oh>0?bis(W=>grad2(W,c)-0.008>=obsNeed(),lo,hi):Infinity},
+    {k:'tyre',n:{en:'Tyre speed',no:'Dekkfart'},v:bis(W=>tyreOK(W,c),lo,hi)},
+    {k:'brake',n:{en:'Brake energy (VMBE)',no:'Bremseenergi (VMBE)'},v:bis(W=>brakeOK(W,c,Lr),lo,hi,14)},
+    {k:'mtow',n:{en:'Structural MTOW',no:'Strukturell MTOW'},v:P.MTOW}];
+  let gov=lim[0]; for(const l of lim) if(l.v<gov.v) gov=l;
+  // flex: høyeste antatte temperatur som fortsatt oppfyller alle krav ved faktisk vekt
+  const isa=isaT(LS.el), tref=isa+P.FLAT, tmax=isa+55, tlo=Math.ceil(Math.max(LS.oat,tref)+1);
+  let flex=null; const W=LS.W;
+  const togaOK=W<=gov.v;
+  if(togaOK){ const okT=t=> thrF(LS.el,t)/thrF(LS.el,LS.oat)>=0.75-1e-9 && allOK(W,cond(LS.el,LS.oat,t),Lr);
+    if(tlo<=tmax && okT(tlo)){ let a=tlo,b=Math.floor(tmax); if(okT(b)) flex=b; else { while(b-a>1){ const m=Math.floor((a+b)/2); okT(m)?a=m:b=m; } flex=a; } } }
+  const cUse= (LS.thr==='flex'&&flex!==null)? cond(LS.el,LS.oat,flex) : c;
+  const cvW=curves(W,cUse,0,0,1,0.05), balW=balanced(cvW), spW=cvW.sp;
+  LR={c,lim,gov,flex,togaOK,cUse,spW,balW,cvW,tref,tmax};
+  drawLim(); drawFP(); roLim();
+}
+function roLim(){ const r=LR; if(!r) return; const sp=r.spW, red=r.flex!==null?(1-thrF(LS.el,r.flex)/thrF(LS.el,LS.oat))*100:0;
+  const useFlex=LS.thr==='flex'&&r.flex!==null, g2=grad2(LS.W,r.cUse);
+  const v1=clamp(Math.max(r.balW.v1,sp.vmcg),0,sp.vr);
+  el('limR').innerHTML=R({en:'Pressure altitude (taken as elevation)',no:'Trykkhøyde (satt lik flyplasshøyden)'},nf(LS.el,0)+' ft')+R({en:'ISA temperature here',no:'ISA-temperatur her'},nf(isaT(LS.el),1)+' °C')+
+    R({en:'Flat-rating temperature (ISA + 15)',no:'Flat rating-temperatur (ISA + 15)'},nf(r.tref,0)+' °C')+R({en:'Take-off thrust available',no:'Tilgjengelig startskyvekraft'},nf(thrF(LS.el,LS.oat)*100,0)+' %')+
+    R({en:'Thrust reduction with flex',no:'Skyvekraftreduksjon med flex'},r.flex!==null?nf(red,0)+' %':'–')+
+    R({en:'V1 / VR / V2',no:'V1 / VR / V2'},`${nf(v1,0)} / ${nf(sp.vr,0)} / ${nf(sp.v2,0)} kt`)+
+    R({en:'2nd segment gradient at this mass',no:'Gradient 2. segment ved denne vekten'},nf(g2*100,1)+' %',g2<0.024?'bad':'');
+  const fl= !r.togaOK? L({en:'Too heavy',no:'For tung'}) : r.flex!==null? nf(r.flex,0)+' °C' : 'TOGA';
+  el('limK').innerHTML=K({en:'Governing limit',no:'Styrende begrensning'},L(r.gov.n).replace(/ \(.*\)/,''),'hl')+K({en:'Maximum take-off mass today',no:'Maksimal startvekt i dag'},t_(Math.min(r.gov.v,P.MTOW)))+
+    K({en:'Margin at actual mass',no:'Margin ved faktisk vekt'},(r.gov.v-LS.W>=0?'+':'−')+nf(Math.abs(r.gov.v-LS.W)/1000,1)+' t',r.gov.v>=LS.W?'good':'bad')+
+    K({en:'Flex temperature available',no:'Tilgjengelig flex-temperatur'},fl,!r.togaOK?'bad':r.flex!==null?'':'warn',r.flex!==null?{en:`max flex ${nf(r.tmax,0)} °C (ISA + 55)`,no:`maks flex ${nf(r.tmax,0)} °C (ISA + 55)`}:'')+
+    K({en:'Thrust used in the path below',no:'Skyvekraft brukt i banen under'},useFlex?'FLEX '+nf(r.flex,0)+' °C':'TOGA');
+}
+function drawLim(){
+  const r=LR, g=lv.ctx, W=lv.w, H=lv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const narrow=W<520, lw=narrow?0:150, b={x:14+lw,y:narrow?46:30,w:W-28-lw-(narrow?0:58),h:H-58};
+  const xr=[40,95], X=v=>b.x+(clamp(v,xr[0],xr[1])-xr[0])/(xr[1]-xr[0])*b.w;
+  g.fillStyle=C.ink; g.font=SANS; g.textAlign='left'; g.textBaseline='bottom'; g.fillText(L({en:'Maximum take-off mass by limit (t)',no:'Maksimal startvekt per begrensning (t)'}),14,22);
+  g.font=MONO; g.textAlign='center'; g.textBaseline='top';
+  for(let v=40;v<=95;v+=10){ g.strokeStyle=C.grid; g.beginPath(); g.moveTo(X(v)+0.5,b.y); g.lineTo(X(v)+0.5,b.y+b.h); g.stroke(); g.fillStyle=C.mut; g.fillText(String(v),X(v),b.y+b.h+4); }
+  const n=r.lim.length, rh=b.h/n;
+  r.lim.forEach((l,i)=>{ const y=b.y+i*rh, bh=narrow?rh*0.36:rh*0.56, by=narrow?y+rh*0.52:y+(rh-bh)/2, v=l.v/1000, isG=l===r.gov;
+    g.fillStyle=isG?C.mag:'#B9C4C8'; g.fillRect(b.x,by,X(v)-b.x,bh);
+    g.font=isG?'700 12px "Public Sans", sans-serif':'500 12px "Public Sans", sans-serif'; g.fillStyle=isG?C.mag:C.ink; g.textBaseline='middle';
+    if(narrow){ g.textAlign='left'; g.textBaseline='bottom'; g.fillText(L(l.n)+' · '+(Number.isFinite(l.v)&&v<95?nf(v,1)+' t':'> 95 t'),b.x,by-2); }
+    else { g.textAlign='right'; g.fillText(L(l.n),b.x-8,by+bh/2); g.textAlign='left'; g.font=MONO; g.fillStyle=C.ink; g.fillText(Number.isFinite(l.v)&&v<95?nf(v,1):'> 95',Math.min(X(v)+5,b.x+b.w+5),by+bh/2); }
+  });
+  g.strokeStyle=C.blue; g.lineWidth=2; g.setLineDash([4,3]); g.beginPath(); g.moveTo(X(LS.W/1000),b.y-4); g.lineTo(X(LS.W/1000),b.y+b.h); g.stroke(); g.setLineDash([]); g.lineWidth=1;
+  g.fillStyle=C.blue; g.font=MONO; g.textAlign=X(LS.W/1000)>b.x+b.w*0.75?'right':'left'; g.textBaseline='bottom'; g.fillText(L({en:'actual',no:'faktisk'})+' '+nf(LS.W/1000,1)+' t',X(LS.W/1000)+(g.textAlign==='left'?4:-4),b.y-4);
+}
+function drawFP(){
+  const r=LR, g=fv.ctx, W=fv.w, H=fv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const c=r.cUse, Wm=LS.W, sp=speeds(Wm,c), v2=sp.v2*KT/Math.sqrt(c.sig), g2=grad2(Wm,c), g1=g2-0.008;
+  const vgd=(2*Wm/1000+85)*KT/Math.sqrt(c.sig), T1=thr(vgd,c), gf=0.9*T1/(Wm*G)-1/P.LDCL;
+  const acc=800*FT, top=1500*FT;
+  // brutto bane (m, m)
+  const pts=[[0,35*FT]]; let x=v2*8, h=35*FT+x*Math.max(0,g1); pts.push([x,h]);
+  const e2= g2>0? x+(acc-h)/g2 : Infinity; let pg=[...pts];
+  const net=[[0,35*FT]]; let hn=35*FT+x*Math.max(0,g1-0.008); net.push([x,hn]);
+  if(Number.isFinite(e2)&&acc>h){ pg.push([e2,acc]); const e3=e2+(vgd*vgd-v2*v2)/(2*G*Math.max(0.004,g2+0.02)); pg.push([e3,acc]); const e4=gf>0?e3+(top-acc)/gf:Infinity; pg.push([Number.isFinite(e4)?e4:e3+20000,Number.isFinite(e4)?top:acc+20000*Math.max(0,gf)]); }
+  const gn2=g2-0.008, gnf=gf-0.008;
+  if(gn2>0){ const n2=x+(acc-hn)/gn2; net.push([n2,acc]); const n3=n2+(vgd*vgd-v2*v2)/(2*G*Math.max(0.004,gn2+0.02)); net.push([n3,acc]); net.push([n3+(gnf>0?(top-acc)/gnf:20000),gnf>0?top:acc]); } else net.push([x+20000,hn+20000*gn2]);
+  const xmax=Math.max(LS.od*1.25,Math.min(pg[pg.length-1][0]*1.04,30000)), b={x:44,y:26,w:W-58,h:H-58};
+  const f=frame(g,b,[-1500,xmax],[0,1700],{t:W<600?L({en:'Take-off path, one engine out (ft)',no:'Startbane, én motor ute (ft)'}):L({en:'Take-off flight path, one engine out (height ft, distance from end of runway)',no:'Startbane i lufta, én motor ute (høyde ft, avstand fra baneenden)'}),xs:nice(xmax,5),ys:500,xf:v=>nf(Math.abs(v)<1?0:v/1000,0)+' km',yf:v=>nf(v,0)});
+  const Pm=p=>[f.X(p[0]),f.Y(p[1]/FT)];
+  g.save(); g.beginPath(); g.rect(b.x,b.y-2,b.w,b.h+2); g.clip();
+  g.fillStyle='#2A333B'; g.fillRect(f.X(-1500),f.Y(0)-3,f.X(0)-f.X(-1500),5);
+  line(g,[[f.X(-400),f.Y(0)],Pm([0,35*FT])],C.ink,2,[2,3]);
+  line(g,net.map(Pm),C.red,1.8,[6,4]);
+  line(g,pg.map(Pm),C.blue,2.4);
+  // hinder
+  if(LS.oh>0){ const ox=f.X(LS.od), oy=f.Y(LS.oh); g.fillStyle=C.ink; g.beginPath(); g.moveTo(ox-7,f.Y(0)); g.lineTo(ox,oy); g.lineTo(ox+7,f.Y(0)); g.closePath(); g.fill();
+    let hnAt=null; for(let i=1;i<net.length;i++){ if(net[i][0]>=LS.od){ const a=net[i-1],bq=net[i],t=(LS.od-a[0])/(bq[0]-a[0]); hnAt=(a[1]+t*(bq[1]-a[1]))/FT; break; } }
+    if(hnAt!==null){ const clr=hnAt-LS.oh; g.strokeStyle=clr>=35?C.green:C.red; g.lineWidth=2; g.beginPath(); g.moveTo(ox,oy); g.lineTo(ox,f.Y(hnAt)); g.stroke(); g.lineWidth=1;
+      tag(g,ox+8,(oy+f.Y(hnAt))/2+5,(clr>=0?'':'−')+nf(Math.abs(clr),0)+' ft',clr>=35?C.green:C.red,'left'); } }
+  g.restore();
+  // segmentnavn
+  g.font=W<600?'600 11px "Public Sans", sans-serif':HAND; g.fillStyle=C.hand; g.textBaseline='bottom'; g.textAlign='center';
+  const segs=[[pts[0],pts[1],'1',(g1*100)],[pg[1],pg[2],'2',g2*100],[pg[2],pg[3],'3',null],[pg[3],pg[4],L({en:'final',no:'slutt'}),gf*100]];
+  segs.forEach(([a,bq,n,gr])=>{ if(!a||!bq) return; const mx=(a[0]+bq[0])/2, my=(a[1]+bq[1])/2; if(mx>xmax) return; const sx=f.X(mx), sy=f.Y(my/FT)-8; g.fillText(n+(gr!=null?' · '+nf(gr,1)+' %':''),clamp(sx,b.x+30,b.x+b.w-30),Math.max(b.y+72,sy)); });
+  g.font=MONO; g.fillStyle=C.mut; g.textAlign='left'; g.textBaseline='bottom';
+  const key=[L({en:'1: gear up  2: V2, min 2.4 %',no:'1: understell opp  2: V2, min 2,4 %'}),L({en:'3: level, accelerate, flaps up  final: MCT, min 1.2 %',no:'3: planet, akselerer, klaff opp  slutt: MCT, min 1,2 %'})];
+  if(W<600){ g.fillText(key[0],b.x+4,b.y+14); g.fillText(key[1].replace(/, (flaps up|klaff opp)/,''),b.x+4,b.y+26); } else g.fillText(key.join('  '),b.x+4,b.y+14);
+  tag(g,b.x+6,b.y+40,L({en:'gross',no:'brutto'}),C.blue,'left'); tag(g,b.x+6,b.y+54,L({en:'net (gross − 0.8 %)',no:'netto (brutto − 0,8 %)'}),C.red,'left');
+}
+LAB.onLang(()=>{ drawLim(); drawFP(); roLim(); });
+
+/* ---------- 3. stigning og cruise ---------- */
+const CR={W:72000,fl:350,wind:0,ci:30};
+const cC=el('ctlC');
+slider(cC,{label:'Mass',min:45000,max:78000,step:500,v:CR.W,f:t_,on:v=>{CR.W=v;sched('cr',upCr);}});
+slider(cC,{label:'Flight level',min:100,max:410,step:10,v:CR.fl,f:v=>'FL'+String(v).padStart(3,'0'),on:v=>{CR.fl=v;sched('cr',upCr);}});
+slider(cC,{label:'Wind (+ headwind)',min:-100,max:100,step:5,v:CR.wind,f:v=>(v>0?'+':'')+nf(v,0)+' kt',on:v=>{CR.wind=v;sched('cr',upCr);}});
+slider(cC,{label:'Cost index (kg/min)',min:0,max:150,step:5,v:CR.ci,f:v=>nf(v,0),on:v=>{CR.ci=v;sched('cr',upCr);}});
+const CD0=0.020, KI=0.042, MMO=0.82, VMO=350, CEIL=39800;
+function isa(hft){ const h=hft*FT; let Tk,p; if(h<=11000){ Tk=288.15-0.0065*h; p=101325*Math.pow(Tk/288.15,5.25588); } else { Tk=216.65; p=22632.06*Math.exp(-(h-11000)/6341.62); } const rho=p/(287.053*Tk); return {Tk,p,rho,sig:rho/1.225,a:Math.sqrt(401.874*Tk),th:Tk/288.15}; }
+function casOf(M,a){ const qc=a.p*(Math.pow(1+0.2*M*M,3.5)-1); return 340.294*Math.sqrt(5*(Math.pow(qc/101325+1,2/7)-1))/KT; }
+const clbo=M=>1.0-0.9*Math.max(0,M-0.55);
+function pt(W,a,M){ const V=M*a.a, q=0.5*a.rho*V*V, cl=W*G/(q*S), mcr=0.80-0.10*(cl-0.5)-0.108, cdw=M>mcr?20*Math.pow(M-mcr,4):0, cd=CD0+KI*cl*cl+cdw, D=q*S*cd;
+  const Th=2*P.T0*0.85*Math.pow(a.sig,0.85)*(1-0.4*M), ff=D*0.065*(0.75+0.32*M)*Math.sqrt(a.th); return {M,V,tas:V/KT,cas:casOf(M,a),cl,D,Th,ff,ld:cl/cd}; }
+function sweep(W,a){ const out=[]; for(let M=0.2;M<=0.86;M+=0.0025){ const p=pt(W,a,M); if(p.cl>1.25) continue; if(p.cas>VMO+20) break; out.push(p); } return out; }
+function maxAlt(W){ let th=0,bf=0; for(let h=20000;h<=45000;h+=200){ const a=isa(h); let roc=-1e9, okb=false; for(let M=0.4;M<=MMO+1e-9;M+=0.005){ const p=pt(W,a,M); if(p.cas>VMO) continue; roc=Math.max(roc,(p.Th-p.D)*p.V/(W*G)/FT*60); if(p.cl<=clbo(M)/1.3) okb=true; } if(roc>=300) th=h; if(okb) bf=h; } return {th,bf,max:Math.min(th,bf,CEIL)}; }
+function bestSR(W,a){ let b=null; for(let M=0.5;M<=MMO+1e-9;M+=0.0025){ const p=pt(W,a,M); if(p.cas>VMO||p.cl>clbo(M)/1.3) continue; const sr=p.tas/p.ff*1000; if(!b||sr>b.sr) b={sr,M}; } return b; }
+function optAlt(W,cap){ let best=0,bh=20000; for(let h=20000;h<=cap;h+=250){ const b=bestSR(W,isa(h)); if(b&&b.sr>best){ best=b.sr; bh=h; } } return bh; }
+const pv=fit(el('cfp'),()=>drawCr1()), sv=fit(el('csr'),()=>drawCr2()), stv=fit(el('cstep'),()=>drawCr3());
+let CRR=null;
+function upCr(){
+  const W=CR.W, a=isa(CR.fl*100), sw=sweep(W,a);
+  let vmd=null,vx=null,vy=null; for(const p of sw){ if(!vmd||p.D<vmd.D) vmd=p; const ex=p.Th-p.D; if(!vx||ex>vx.Th-vx.D) vx=p; if(!vy||ex*p.V>(vy.Th-vy.D)*vy.V) vy=p; }
+  // spesifikk rekkevidde
+  const hw=CR.wind; const srs=sw.filter(p=>p.M>=0.45&&p.M<=MMO+1e-9).map(p=>({...p,sr:p.tas/p.ff*1000,srw:(p.tas-hw)/p.ff*1000,cost:(p.ff+60*CR.ci)/Math.max(1,p.tas-hw)}));
+  let mrc=null,mrw=null,eco=null; for(const p of srs){ if(!mrc||p.sr>mrc.sr) mrc=p; if(!mrw||p.srw>mrw.srw) mrw=p; if(!eco||p.cost<eco.cost) eco=p; }
+  let lrc=null; if(mrc) for(const p of srs) if(p.M>mrc.M && p.sr>=0.99*mrc.sr) lrc=p;
+  const ma=maxAlt(W), opt=optAlt(W,ma.max);
+  CRR={W,a,sw,vmd,vx,vy,srs,mrc,mrw,eco,lrc,ma,opt};
+  drawCr1(); drawCr2(); drawCr3(); roCr();
+}
+function roCr(){ const r=CRR; if(!r) return; const W=r.W, ok=r.vx&&r.vx.Th>r.vx.D;
+  const gx=ok?(r.vx.Th-r.vx.D)/(W*G)*100:0, rocy=ok?(r.vy.Th-r.vy.D)*r.vy.V/(W*G)/FT*60:0;
+  const sp=p=>p?`M${nf(p.M,2)} · ${nf(p.cas,0)} kt`:'–';
+  el('cR').innerHTML=R({en:'Minimum drag speed (VMD)',no:'Fart for minste motstand (VMD)'},r.vmd?nf(r.vmd.cas,0)+' kt CAS':'–')+R({en:'Best angle Vx',no:'Beste vinkel Vx'},ok?nf(r.vx.cas,0)+' kt CAS':'–')+R({en:'Best rate Vy',no:'Beste rate Vy'},ok?nf(r.vy.cas,0)+' kt CAS':'–')+
+    R({en:'Max gradient (at Vx)',no:'Maks gradient (ved Vx)'},ok?nf(gx,1)+' %':'–')+R({en:'Max rate of climb (at Vy)',no:'Maks stigerate (ved Vy)'},ok?nf(rocy,0)+' ft/min':L({en:'none, too high',no:'ingen, for høyt'}),ok?'':'bad')+
+    R({en:'Max range (still air)',no:'Maks rekkevidde (stille luft)'},sp(r.mrc))+R({en:'Long-range cruise',no:'Long-range cruise'},sp(r.lrc))+R({en:'Best range with this wind',no:'Beste rekkevidde med denne vinden'},sp(r.mrw))+R({en:'ECON at this cost index',no:'ECON ved denne kostindeksen'},sp(r.eco),'hl');
+  const e=r.eco; const ffh=e?e.ff:0;
+  el('cK').innerHTML=K({en:'ECON speed',no:'ECON-fart'},e?'M'+nf(e.M,2):'–','hl')+K({en:'Fuel flow at ECON',no:'Forbruk ved ECON'},e?nf(ffh,0)+' kg/h':'–')+
+    K({en:'Ground range per tonne',no:'Distanse over bakken per tonn'},e?nf(e.srw,0)+' NM':'–')+K({en:'Optimum altitude',no:'Optimal høyde'},'FL'+String(Math.round(r.opt/100)).padStart(3,'0'))+
+    K({en:'Maximum altitude',no:'Maksimal høyde'},'FL'+String(Math.floor(r.ma.max/100)).padStart(3,'0'),CR.fl*100>r.ma.max?'bad':'', r.ma.max===CEIL?{en:'certified ceiling',no:'sertifisert tak'}:r.ma.bf<r.ma.th?{en:'1.3 g buffet margin',no:'1,3 g buffetmargin'}:{en:'300 ft/min residual climb',no:'300 ft/min gjenværende stigning'});
+}
+function drawCr1(){
+  const r=CRR, g=pv.ctx, W=pv.w, H=pv.h; if(!W||!r||!r.sw.length) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const sw=r.sw, xr=[Math.floor(sw[0].tas/50)*50,Math.ceil(sw[sw.length-1].tas/50)*50];
+  const h1=(H-100)/2, b1={x:52,y:26,w:W-66,h:h1}, b2={x:52,y:26+h1+44,w:W-66,h:h1};
+  const fmax=Math.max(...sw.map(p=>Math.max(p.Th,Math.min(p.D,p.Th*2))))/1000*1.1;
+  const f1=frame(g,b1,xr,[0,fmax],{t:L({en:'Thrust and drag (kN)',no:'Skyvekraft og motstand (kN)'}),xs:50});
+  g.save(); g.beginPath(); g.rect(b1.x,b1.y,b1.w,b1.h); g.clip();
+  g.fillStyle='rgba(44,122,75,.10)'; g.beginPath(); sw.forEach((p,i)=>{ i?g.lineTo(f1.X(p.tas),f1.Y(p.Th/1000)):g.moveTo(f1.X(p.tas),f1.Y(p.Th/1000)); }); for(let i=sw.length-1;i>=0;i--){ const p=sw[i]; g.lineTo(f1.X(p.tas),f1.Y(Math.min(p.D,p.Th)/1000)); } g.closePath(); g.fill();
+  line(g,sw.map(p=>[f1.X(p.tas),f1.Y(p.D/1000)]),C.red,2.2); line(g,sw.map(p=>[f1.X(p.tas),f1.Y(p.Th/1000)]),C.blue,2.2);
+  // maks rekkevidde: tangent fra origo (still luft)
+  if(r.mrc){ const p=sw.find(s=>Math.abs(s.M-r.mrc.M)<0.002)||r.mrc; line(g,[[f1.X(0),f1.Y(0)],[f1.X(p.tas*1.4),f1.Y(p.D/1000*1.4)]],C.mut,1,[3,3]); }
+  g.restore();
+  const vmark=(f,b,p,lab,col,yv)=>{ if(!p) return; line(g,[[f.X(p.tas),b.y],[f.X(p.tas),b.y+b.h]],col,1.2,[3,3]); dot(g,f.X(p.tas),f.Y(yv),col,4); tag(g,f.X(p.tas)+4,b.y+12,lab,col,'left'); };
+  if(r.vx.Th>r.vx.D){ vmark(f1,b1,r.vx,'Vx',C.green,(r.vx.Th)/1000); }
+  vmark(f1,b1,r.vmd,'VMD',C.red,r.vmd.D/1000);
+  if(r.mrc){ const p=sw.find(s=>Math.abs(s.M-r.mrc.M)<0.002); if(p){ dot(g,f1.X(p.tas),f1.Y(p.D/1000),C.ink,4); tag(g,f1.X(p.tas)+5,f1.Y(p.D/1000)+14,L({en:'max range',no:'maks rekkevidde'}),C.ink,'left'); } }
+  const lp=sw[Math.floor(sw.length*0.08)]; tag(g,f1.X(lp.tas)+4,f1.Y(lp.D/1000)-4,L({en:'drag',no:'motstand'}),C.red,'left');
+  const tp=sw[Math.floor(sw.length*0.55)]; tag(g,f1.X(tp.tas),f1.Y(tp.Th/1000)-4,L({en:'climb thrust available',no:'tilgjengelig stigeskyvekraft'}),C.blue,'center');
+  // effekt
+  const pmax=Math.max(...sw.map(p=>Math.max(p.Th*p.V,Math.min(p.D*p.V,p.Th*p.V*1.6))))/1e6*1.1;
+  const f2=frame(g,b2,xr,[0,pmax],{t:L({en:'Power available and required (MW)',no:'Tilgjengelig og nødvendig effekt (MW)'}),xs:50,xt:L({en:'true airspeed (kt)',no:'sann fart (kt)'}),yf:v=>nf(v,0)});
+  g.save(); g.beginPath(); g.rect(b2.x,b2.y,b2.w,b2.h); g.clip();
+  line(g,sw.map(p=>[f2.X(p.tas),f2.Y(p.D*p.V/1e6)]),C.red,2.2); line(g,sw.map(p=>[f2.X(p.tas),f2.Y(p.Th*p.V/1e6)]),C.blue,2.2);
+  g.restore();
+  if(r.vy.Th>r.vy.D){ vmark(f2,b2,r.vy,'Vy',C.green,r.vy.Th*r.vy.V/1e6); line(g,[[f2.X(r.vy.tas),f2.Y(r.vy.Th*r.vy.V/1e6)],[f2.X(r.vy.tas),f2.Y(r.vy.D*r.vy.V/1e6)]],C.green,3); }
+  if(r.vx.Th>r.vx.D) line(g,[[f1.X(r.vx.tas),f1.Y(r.vx.Th/1000)],[f1.X(r.vx.tas),f1.Y(r.vx.D/1000)]],C.green,3);
+  else { g.font=HAND; g.fillStyle=C.red; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L({en:'drag exceeds thrust everywhere: above the thrust ceiling',no:'motstand over skyvekraft overalt: over skyvekraft-taket'}),b1.x+b1.w/2,b1.y+b1.h*0.3); }
+}
+function drawCr2(){
+  const r=CRR, g=sv.ctx, W=sv.w, H=sv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const s=r.srs.filter(p=>p.M>=0.55); if(s.length<2) return;
+  const all=s.flatMap(p=>[p.sr,p.srw]).filter(v=>v>0), ymax=Math.max(...all)*1.08, ymin=Math.max(0,Math.min(...all)*0.85);
+  const b={x:52,y:26,w:W-66,h:H-60};
+  const f=frame(g,b,[0.55,0.82],[ymin,ymax],{t:L({en:'Specific range (NM per tonne of fuel)',no:'Spesifikk rekkevidde (NM per tonn drivstoff)'}),xs:0.05,xf:v=>nf(v,2),xt:'Mach'});
+  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip();
+  line(g,s.map(p=>[f.X(p.M),f.Y(p.sr)]),C.ink,2.2);
+  if(CR.wind!==0) line(g,s.map(p=>[f.X(p.M),f.Y(p.srw)]),C.blue,2,[6,4]);
+  g.restore();
+  const mk=(p,v,lab,col,dy)=>{ if(!p) return; dot(g,f.X(p.M),f.Y(v),col,4); tag(g,f.X(p.M),f.Y(v)-8-(dy||0),lab,col,'center'); };
+  mk(r.mrc,r.mrc&&r.mrc.sr,'MRC',C.ink,0); if(r.lrc){ dot(g,f.X(r.lrc.M),f.Y(r.lrc.sr),C.mut,4); tag(g,f.X(r.lrc.M)+6,f.Y(r.lrc.sr)+16,'LRC',C.mut,'left'); }
+  if(CR.wind!==0&&r.mrw) mk(r.mrw,r.mrw.srw,L({en:'best with wind',no:'best med vind'}),C.blue,0);
+  if(r.eco){ line(g,[[f.X(r.eco.M),b.y],[f.X(r.eco.M),b.y+b.h]],C.mag,1.5,[3,3]); tag(g,f.X(r.eco.M)+4,b.y+b.h-6,'ECON CI '+nf(CR.ci,0),C.mag,f.X(r.eco.M)>b.x+b.w*0.75?'right':'left'); }
+  if(CR.wind!==0){ g.font=MONO; g.fillStyle=C.blue; g.textAlign='right'; g.textBaseline='top'; g.fillText(L({en:'dashed: over the ground with this wind',no:'stiplet: over bakken med denne vinden'}),b.x+b.w-4,b.y+4); }
+}
+function drawCr3(){
+  const r=CRR, g=stv.ctx, W=stv.w, H=stv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const w0=r.W, w1=Math.max(42000,w0-16000); if(w0-w1<2000) return;
+  const xs=[]; for(let w=w0; w>=w1-1; w-=1000) xs.push(w);
+  if(!drawCr3.cache||drawCr3.cache.k!==w0){ drawCr3.cache={k:w0,d:xs.map(w=>{ const ma=maxAlt(w); return {w,opt:optAlt(w,ma.max),max:ma.max}; })}; }
+  const d=drawCr3.cache.d;
+  const b={x:52,y:26,w:W-66,h:H-60};
+  const ylo=Math.min(340,Math.floor(Math.min(...d.map(p=>p.opt))/100/20)*20-20);
+  const f=frame(g,b,[w0/1000,w1/1000],[ylo,410],{t:L({en:'Optimum and maximum altitude as fuel burns (FL)',no:'Optimal og maksimal høyde etter hvert som drivstoff brukes (FL)'}),xs:2,ys:20,xt:L({en:'mass (t)',no:'vekt (t)'}),xf:v=>nf(v,0)});
+  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip();
+  line(g,d.map(p=>[f.X(p.w/1000),f.Y(p.max/100)]),C.red,1.8,[6,4]);
+  line(g,d.map(p=>[f.X(p.w/1000),f.Y(p.opt/100)]),C.ink,2.2);
+  // trinnvis stigning: RVSM-nivåer i samme retning (2000 ft)
+  let lvl=Math.floor((d[0].opt/100-10)/20)*20+10; if(lvl*100>d[0].max) lvl-=20; const st=[[d[0].w,lvl]];
+  for(const p of d){ if(p.opt/100>=lvl+10 && (lvl+20)*100<=p.max){ st.push([p.w,lvl]); lvl+=20; st.push([p.w,lvl]); } st.push([p.w,lvl]); }
+  line(g,st.map(([w,l])=>[f.X(w/1000),f.Y(l)]),C.mag,2.4);
+  g.restore();
+  tag(g,b.x+b.w-4,f.Y(d[d.length-1].max/100)-4,L({en:'maximum',no:'maksimal'}),C.red,'right');
+  tag(g,b.x+6,f.Y(d[0].opt/100)-6,L({en:'optimum',no:'optimal'}),C.ink,'left');
+  g.font=HAND; g.fillStyle=C.mag; g.textAlign='right'; g.textBaseline='top'; g.fillText(L({en:'step climbs of 2000 ft',no:'trinnvis stigning, 2000 ft'}),b.x+b.w-4,b.y+b.h-24);
+}
+LAB.onLang(()=>{ drawCr1(); drawCr2(); drawCr3(); roCr(); });
+
+/* ---------- 4. landingsdistanse ---------- */
+const LD={rc:'6',W:62000,wind:10,lda:2200,exc:0,flt:0,ab:'med',rev:'max'};
+const MU={6:0.45,5:0.30,4:0.22,3:0.16,2:0.11,1:0.07,0:0.03};
+const ABT={lo:1.7,med:3.0,max:Infinity};
+const RC=[['6',{en:'6',no:'6'},{en:'Dry',no:'Tørr'},{en:'—',no:'—'}],
+ ['5',{en:'5',no:'5'},{en:'Wet (up to 3 mm water), frost',no:'Våt (opp til 3 mm vann), rim'},{en:'Good',no:'God'}],
+ ['4',{en:'4',no:'4'},{en:'Compacted snow, OAT −15 °C or colder',no:'Kompakt snø, OAT −15 °C eller kaldere'},{en:'Good to medium',no:'God til middels'}],
+ ['3',{en:'3',no:'3'},{en:'Slippery wet; dry or wet snow over 3 mm; compacted snow warmer than −15 °C',no:'Glatt våt; tørr eller våt snø over 3 mm; kompakt snø varmere enn −15 °C'},{en:'Medium',no:'Middels'}],
+ ['2',{en:'2',no:'2'},{en:'Standing water or slush over 3 mm',no:'Stående vann eller sørpe over 3 mm'},{en:'Medium to poor',no:'Middels til dårlig'}],
+ ['1',{en:'1',no:'1'},{en:'Ice',no:'Is'},{en:'Poor',no:'Dårlig'}],
+ ['0',{en:'0',no:'0'},{en:'Wet ice, water on compacted snow, snow on ice',no:'Våt is, vann på kompakt snø, snø på is'},{en:'Less than poor: no operations',no:'Mindre enn dårlig: ingen operasjon'}]];
+seg(el('rcSeg'),RC.map(x=>[x[0],'RWYCC '+x[0]]),LD.rc,v=>{LD.rc=v;sched('ld',upLd);});
+const cLD1=el('ctlLD1'), cLD2=el('ctlLD2');
+slider(cLD1,{label:'Landing distance available (LDA)',min:1200,max:3500,step:50,v:LD.lda,f:m_,on:v=>{LD.lda=v;sched('ld',upLd);}});
+slider(cLD1,{label:'Wind (+ headwind, − tailwind)',min:-10,max:30,step:1,v:LD.wind,f:v=>(v>0?'+':'')+nf(v,0)+' kt',on:v=>{LD.wind=v;sched('ld',upLd);}});
+slider(cLD2,{label:'Landing mass',min:45000,max:64500,step:500,v:LD.W,f:t_,on:v=>{LD.W=v;sched('ld',upLd);}});
+slider(cLD2,{label:'Speed above VAPP',min:0,max:20,step:1,v:LD.exc,f:v=>'+'+nf(v,0)+' kt',on:v=>{LD.exc=v;sched('ld',upLd);}});
+slider(cLD2,{label:'Extra float in the flare',min:0,max:8,step:0.5,v:LD.flt,f:v=>'+'+nf(v,1)+' s',on:v=>{LD.flt=v;sched('ld',upLd);}});
+seg(el('abSeg'),[['lo','LO'],['med','MED'],['max','Max manual']],LD.ab,v=>{LD.ab=v;sched('ld',upLd);});
+seg(el('revSeg'),[['off','Off'],['idle','Idle'],['max','Max']],LD.rev,v=>{LD.rev=v;sched('ld',upLd);});
+const ldv=fit(el('ldv'),()=>drawLd());
+const LP={CLL:2.8,CDL:0.20,REVMAX:60000,REVIDLE:14000,TAIR:5};
+function land(o){ // o: W, hw (kt), rc, ab, rev, exc, flt, vapp
+  const m=o.W, rho=1.225, hw=o.hw*KT, vth=(o.vapp+o.exc)*KT, vtd=Math.max(o.vapp*0.9,o.vapp-4+0.6*o.exc-0.5*o.flt)*KT;
+  const tAir=LP.TAIR+0.3*o.exc+o.flt, air=Math.max(0,((vth+vtd)/2-hw)*tAir);
+  const pts=[[0,vth/KT,50]]; const Nair=12; for(let i=1;i<=Nair;i++){ const f=i/Nair; pts.push([air*f,(vth+(vtd-vth)*f)/KT,50*Math.pow(1-f,1.6)]); }
+  let x=air+Math.max(0,vtd-hw)*2, v=vtd; pts.push([x,v/KT,0]);
+  const dt=0.05; let t=0;
+  while(v-hw>0.05 && t<200){ const q=0.5*rho*v*v*S, aA=q*S*0+q*LP.CDL/m*1, vk=v/KT;
+    const aR= o.rev==='max'? (vk>70?LP.REVMAX:LP.REVIDLE)/m : o.rev==='idle'? LP.REVIDLE/m : 0;
+    const aF=MU[o.rc]*G, nat=aA+aR;
+    let a= o.ab==='max'? nat+aF : Math.max(Math.min(ABT[o.ab],nat+aF),nat);
+    const ov=v; v=Math.max(hw,v-a*dt); x+=((ov+v)/2-hw)*dt; t+=dt; pts.push([x,v/KT,0]); }
+  return {air,dist:x,pts,vth:vth/KT,vtd:vtd/KT};
+}
+let LDR=null;
+function upLd(){
+  const W=LD.W, vs=Math.sqrt(2*W*G/(1.225*S*LP.CLL))/KT, vls=1.23*vs, wc=clamp(LD.wind/3,5,15), vapp=vls+wc;
+  const op=land({W,hw:LD.wind,rc:LD.rc,ab:LD.ab,rev:LD.rev,exc:LD.exc,flt:LD.flt,vapp});
+  const cert=land({W,hw:factW(LD.wind),rc:'6',ab:'max',rev:'off',exc:0,flt:0,vapp:vls});
+  const dry=cert.dist/0.6, wet=dry*1.15; let disp, dlab;
+  if(LD.rc==='6'){ disp=dry; dlab={en:'dry: ALD × 1.67',no:'tørr: ALD × 1,67'}; }
+  else if(LD.rc==='5'){ disp=wet; dlab={en:'wet: dry requirement × 1.15',no:'våt: tørr-krav × 1,15'}; }
+  else { const cn=land({W,hw:factW(LD.wind),rc:LD.rc,ab:'max',rev:'max',exc:0,flt:0,vapp:vls}).dist*1.15; disp=Math.max(wet,cn); dlab={en:'contaminated: max(wet, 1.15 × contaminated ALD)',no:'kontaminert: maks(våt, 1,15 × kontaminert ALD)'}; }
+  LDR={vs,vls,vapp,wc,op,cert,disp,dlab,fld:op.dist*1.15};
+  drawLd(); roLd();
+}
+function roLd(){ const r=LDR; if(!r) return; const nil=LD.rc==='0';
+  el('ldK').innerHTML=K({en:'VLS (1.23 VS1g)',no:'VLS (1,23 VS1g)'},kt(r.vls),'',{en:`VS1g ${nf(r.vs,0)} kt, CONF FULL`,no:`VS1g ${nf(r.vs,0)} kt, CONF FULL`})+
+   K({en:'VAPP',no:'VAPP'},kt(r.vapp),'hl',{en:`VLS + ${nf(r.wc,0)} kt wind correction`,no:`VLS + ${nf(r.wc,0)} kt vindkorreksjon`})+
+   K({en:'Actual landing distance',no:'Faktisk landingsdistanse'},m_(r.op.dist),'',{en:`air ${nf(r.op.air,0)} m from 50 ft`,no:`luft ${nf(r.op.air,0)} m fra 50 ft`})+
+   K({en:'In flight: distance + 15 %',no:'I lufta: distanse + 15 %'},nil?L({en:'not allowed',no:'ikke tillatt'}):m_(r.fld),nil||r.fld>LD.lda?'bad':'good',nil?'':{en:r.fld<=LD.lda?`fits, ${nf(LD.lda-r.fld,0)} m spare`:`exceeds LDA by ${nf(r.fld-LD.lda,0)} m`,no:r.fld<=LD.lda?`får plass, ${nf(LD.lda-r.fld,0)} m til overs`:`over LDA med ${nf(r.fld-LD.lda,0)} m`})+
+   K({en:'At dispatch: required',no:'Ved planlegging: krav'},nil?L({en:'not allowed',no:'ikke tillatt'}):m_(r.disp),nil||r.disp>LD.lda?'bad':'good',{en:r.dlab.en+'; wind '+windTxt(LD.wind),no:r.dlab.no+'; vind '+windTxt(LD.wind)});
+}
+function drawLd(){
+  const r=LDR, g=ldv.ctx, W=ldv.w, H=ldv.h; if(!W||!r) return; g.clearRect(0,0,W,H);
+  const op=r.op, far=Math.max(LD.lda,r.fld,LD.rc==='0'?0:r.disp)*1.06+60, x0=20, X=d=>x0+d/far*(W-x0-16);
+  // fartsprofil øverst
+  const py0=34, ph=H*0.42, vmax=r.vapp+22, Yv=v=>py0+ph-(v/vmax)*ph;
+  g.font='10px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='middle';
+  for(let v=0;v<=vmax;v+=40){ g.strokeStyle='#1d2834'; g.beginPath(); g.moveTo(x0,Yv(v)+0.5); g.lineTo(W-16,Yv(v)+0.5); g.stroke(); g.fillStyle='#6f7e8d'; g.textAlign='left'; g.fillText(nf(v,0)+' kt',x0+2,Yv(v)-6); }
+  g.lineWidth=2.4; g.strokeStyle='#7fcbe8'; g.beginPath(); op.pts.forEach((p,i)=>{ i?g.lineTo(X(p[0]),Yv(p[1])):g.moveTo(X(p[0]),Yv(p[1])); }); g.stroke(); g.lineWidth=1;
+  g.fillStyle='#cfd8e0'; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText(L({en:'Speed from 50 ft to stop',no:'Fart fra 50 ft til stopp'}),x0,py0-14);
+  // bane
+  const yc=H*0.8, rw=Math.max(16,H*0.08);
+  g.fillStyle='#16221B'; g.fillRect(0,yc-rw*1.8,W,rw*3.6);
+  const sf={6:'#2A333B',5:'#24394a',4:'#5a6670',3:'#4d5a66',2:'#2f4a60',1:'#6f8796',0:'#8aa2b0'}[LD.rc];
+  g.fillStyle=sf; g.fillRect(X(0),yc-rw/2,X(LD.lda)-X(0),rw);
+  g.fillStyle='rgba(236,90,71,.18)'; g.fillRect(X(LD.lda),yc-rw/2,W-X(LD.lda),rw);
+  g.fillStyle='#cfd8e0'; for(let i=0;i<5;i++) g.fillRect(X(0)+3,yc-rw/2+3+i*(rw-6)/5,8,(rw-6)/10);
+  // luftdel og bakkedel
+  g.strokeStyle='#f0b440'; g.lineWidth=3; g.beginPath(); g.moveTo(X(0),yc); g.lineTo(X(op.air),yc); g.stroke();
+  g.strokeStyle='#7fcbe8'; g.beginPath(); g.moveTo(X(op.air),yc); g.lineTo(X(op.dist),yc); g.stroke(); g.lineWidth=1;
+  dot(g,X(op.air),yc,'#f0b440',4); g.fillStyle=op.dist<=LD.lda?'#71cc93':'#ec5a47'; g.fillRect(X(op.dist)-2,yc-rw/2-4,4,rw+8);
+  const mark=(d,lab,col,row)=>{ if(!Number.isFinite(d)) return; const y=yc+rw/2+6+row*14; g.strokeStyle=col; g.beginPath(); g.moveTo(X(d),yc+rw/2); g.lineTo(X(d),y); g.stroke(); g.fillStyle=col; g.font='10px "IBM Plex Mono", monospace'; g.textAlign=X(d)>W*0.7?'right':'left'; g.textBaseline='top'; g.fillText(lab,X(d)+(g.textAlign==='left'?3:-3),y); };
+  mark(op.air,L({en:'touchdown',no:'setting'}),'#f0b440',0);
+  if(LD.rc!=='0'){ mark(r.fld,L({en:'+15 %',no:'+15 %'}),'#cfd8e0',1); mark(r.disp,L({en:'dispatch',no:'planlegging'}),'#a99bff',0); }
+  g.fillStyle='#8b99a7'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText('LDA '+nf(LD.lda,0)+' m',X(LD.lda)-3,yc-rw/2-3);
+  g.textAlign='left'; g.fillText('50 ft',X(0),yc-rw/2-3);
+  if(LD.rc==='0'){ g.fillStyle='#ec5a47'; g.font='600 13px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L({en:'RWYCC 0: no landing or take-off',no:'RWYCC 0: ingen landing eller start'}),W/2,py0+ph/2); }
+}
+function rcTab(){ el('rcTab').innerHTML=`<thead><tr><th>RWYCC</th><th>${L({en:'Typical surface',no:'Typisk overflate'})}</th><th>${L({en:'Braking action',no:'Bremsevirkning'})}</th></tr></thead><tbody>`+RC.map(x=>`<tr><td>${x[0]}</td><td>${L(x[2])}</td><td>${L(x[3])}</td></tr>`).join('')+'</tbody>'; }
+LAB.onLang(()=>{ drawLd(); roLd(); rcTab(); });
+
+
+/* ---------- 4. motorstans underveis: drift-down ---------- */
+// drift-down model (embedded in performance.html)
+const DDTER={
+  sea:{on:[[0,0],[200,0],[260,300],[300,900],[360,400]],esc:[[0,0],[360,0]]},
+  nor:{on:[[0,300],[25,2500],[50,5200],[80,6900],[110,7600],[135,8100],[160,7200],[190,5600],[220,4200],[260,2400],[300,900],[360,500]],
+       esc:[[0,300],[25,2500],[50,4800],[70,3500],[95,1500],[120,300],[360,0]]},
+  alps:{on:[[0,1600],[30,5500],[60,9500],[85,12500],[110,14800],[130,15800],[150,13800],[175,12000],[200,9500],[235,6000],[270,3000],[310,1500],[360,1000]],
+        esc:[[0,1600],[30,5500],[50,8200],[70,6000],[95,3500],[130,1600],[200,900],[360,700]]}
+};
+function terAt(pr,x){ for(let i=1;i<pr.length;i++) if(x<=pr[i][0]){ const [a,ha]=pr[i-1],[b,hb]=pr[i]; return ha+(hb-ha)*(x-a)/(b-a); } return pr[pr.length-1][1]; }
+function atm(h,dev){ const a=isa(h), Tk=a.Tk+dev, rho=a.p/(287.053*Tk); return {p:a.p,Tk,rho,sig:rho/1.225,a:Math.sqrt(401.874*Tk)}; }
+function machOfCas(cas,a){ let lo=0.05,hi=0.95; for(let i=0;i<40;i++){ const m=(lo+hi)/2; casOf(m,a)<cas?lo=m:hi=m; } return (lo+hi)/2; }
+const DD={TM:96000,LDM:16.5,NET:0.011};
+function ddGD(W,h){ return 2*W/1000+85+Math.max(0,(h-20000)/1000); }
+function ddPoint(W,h,dev,strat){ const a=atm(h,dev), gd=ddGD(W,h);
+  let cas= strat==='std'? Math.min(300,casOf(0.78,a)) : gd; const M=machOfCas(cas,a); const tas=M*a.a;
+  const r=cas/gd, ld=DD.LDM/(1+0.9*(r-1)*(r-1));
+  const T=DD.TM*Math.pow(a.sig,0.85)*(1-0.4*M)*(1-0.009*Math.max(0,dev));
+  const D=W*G/ld; return {cas,M,tas,gam:(T-D)/(W*G),gd,ld}; }
+function ddRun(o){ // o: W, dev, strat, fl, prof
+  const X=360, dt=4; let h=o.fl*100, hn=h, x=0, t=0, lev=null, levn=null; const gp=[[0,h]], np=[[0,hn]];
+  const p0=ddPoint(o.W,h,o.dev,o.strat);
+  while(x<X){ const p=ddPoint(o.W,h,o.dev,o.strat), pn=ddPoint(o.W,hn,o.dev,o.strat);
+    const dx=p.tas*KT*dt/1852; // NM
+    const vs=p.gam*p.tas*KT/FT*60; if(lev===null && vs<-100) h+=p.gam*p.tas*KT*dt/FT; else if(lev===null) lev={x,h,t};
+    const gn=pn.gam-DD.NET, vsn=gn*pn.tas*KT/FT*60; if(levn===null && vsn<-100) hn+=gn*pn.tas*KT*dt/FT; else if(levn===null) levn={x,h:hn};
+    x+=dx; t+=dt; gp.push([x,h]); np.push([x,hn]); }
+  if(lev===null) lev={x:null,h,t:null}; if(levn===null) levn={x:null,h:hn};
+  // terrain checks
+  let minC=Infinity, minX=0, fail=null, hiT=0;
+  for(const [xx,hh] of np){ const ter=terAt(o.prof,xx); hiT=Math.max(hiT,ter); const c=hh-ter; if(c<minC){ minC=c; minX=xx; } if(fail===null && c<2000) fail=xx; }
+  // ceiling search: altitude where gross gradient = 0 and = 1.1 %
+  return {gp,np,lev,levn,minC,minX,fail,hiT,p0}; }
+
+const DS={W:72000,dev:10,fl:350,strat:'obst',route:'alps',track:'on'};
+const cDD=el('ctlDD');
+slider(cDD,{label:'Mass at the failure',min:55000,max:78000,step:500,v:DS.W,f:t_,on:v=>{DS.W=v;sched('dd',upDD);}});
+slider(cDD,{label:'Temperature (ISA deviation)',min:-10,max:25,step:1,v:DS.dev,f:v=>'ISA '+(v>=0?'+':'−')+nf(Math.abs(v),0)+' °C',on:v=>{DS.dev=v;sched('dd',upDD);}});
+slider(cDD,{label:'Cruise level at the failure',min:290,max:390,step:10,v:DS.fl,f:v=>'FL'+v,on:v=>{DS.fl=v;sched('dd',upDD);}});
+seg(el('ddStrat'),[['obst','Green dot (obstacle)'],['std','M.78 / 300 kt (standard)']],DS.strat,v=>{DS.strat=v;sched('dd',upDD);});
+seg(el('ddRoute'),[['sea','Over the sea'],['nor','Southern Norway'],['alps','The Alps']],DS.route,v=>{DS.route=v;sched('dd',upDD);});
+seg(el('ddTrack'),[['on','Continue on track'],['esc','Escape route']],DS.track,v=>{DS.track=v;sched('dd',upDD);});
+const ddv=fit(el('ddcv'),()=>drawDD());
+let DDR=null;
+const FLs=h=>'FL'+String(Math.round(h/100)).padStart(3,'0');
+const ftS=h=>nf(Math.round(h/100)*100,0)+' ft';
+function upDD(){ const prof=DDTER[DS.route][DS.track]; DDR=ddRun({W:DS.W,dev:DS.dev,strat:DS.strat,fl:DS.fl,prof}); DDR.prof=prof; drawDD(); roDD(); }
+const sg=v=>(v<0?'−':'+')+nf(Math.abs(v),1);
+function roDD(){ const r=DDR; if(!r) return; const p=r.p0;
+  const lvlOK=r.levn.h>=r.hiT+1000, ddOK=r.fail===null;
+  el('ddR').innerHTML=R({en:'Speed at the start',no:'Fart ved start'},`${nf(p.cas,0)} kt CAS · M${nf(p.M,2)}`)+
+    R({en:'Green dot at this mass',no:'Green dot ved denne massen'},nf(p.gd,0)+' kt')+
+    R({en:'Initial gross gradient',no:'Første bruttogradient'},sg(p.gam*100)+' %','')+
+    R({en:'Initial net gradient',no:'Første nettogradient'},sg((p.gam-DD.NET)*100)+' %')+
+    R({en:'Highest terrain (±5 NM)',no:'Høyeste terreng (±5 NM)'},ftS(r.hiT))+
+    R({en:'Smallest net clearance',no:'Minste nettoklaring'},(r.minC<0?'−':'')+nf(Math.abs(Math.round(r.minC/100)*100),0)+' ft · '+nf(r.minX,0)+' NM',r.minC<2000?'bad':'');
+  el('ddK').innerHTML=K({en:'Gross level-off',no:'Brutto utflating'},FLs(r.lev.h),'hl',r.lev.x!==null?{en:`after ${nf(r.lev.x,0)} NM, ${nf(r.lev.t/60,0)} min`,no:`etter ${nf(r.lev.x,0)} NM, ${nf(r.lev.t/60,0)} min`}:'')+
+    K({en:'Net level-off',no:'Netto utflating'},FLs(r.levn.h),'')+
+    K({en:'1000 ft level-off rule',no:'1000 ft-regelen (utflating)'},L(lvlOK?{en:'Met',no:'Oppfylt'}:{en:'Not met',no:'Ikke oppfylt'}),lvlOK?'good':'bad',{en:`net level-off vs terrain + 1000 ft`,no:`netto utflating mot terreng + 1000 ft`})+
+    K({en:'2000 ft drift-down rule',no:'2000 ft-regelen (drift-down)'},L(ddOK?{en:'Met',no:'Oppfylt'}:{en:'Not met',no:'Ikke oppfylt'}),ddOK?'good':'bad',ddOK?{en:'all the way to the aerodrome',no:'hele veien til flyplassen'}:{en:`fails at ${nf(r.fail,0)} NM`,no:`svikter ved ${nf(r.fail,0)} NM`});
+  let t;
+  if(lvlOK&&ddOK) t={en:'<b>Compliant.</b> The net path stays well above the terrain. Here the crew can choose the drift-down strategy freely: green dot to stay high, or the standard strategy to reach the diversion aerodrome sooner.',no:'<b>Oppfylt.</b> Nettobanen holder seg godt over terrenget. Her kan besetningen velge strategi fritt: green dot for å holde seg høyt, eller standardstrategien for å komme raskere fram til alternativ flyplass.'};
+  else if(ddOK) t={en:'<b>The drift-down rule saves the route.</b> The net path levels off too low for the 1000 ft rule, but it clears every peak by 2000 ft on the way to the aerodrome. That is enough: only one of the two rules has to be met.',no:'<b>Drift-down-regelen redder ruten.</b> Nettobanen flater ut for lavt til 1000 ft-regelen, men den klarer hver topp med 2000 ft på vei til flyplassen. Det holder: bare én av de to reglene må oppfylles.'};
+  else if(lvlOK) t={en:'<b>The level-off rule is met.</b> The net path levels off more than 1000 ft above the highest terrain, even though it dips closer than 2000 ft on the way. Only one of the two rules has to be met.',no:'<b>Utflatingsregelen er oppfylt.</b> Nettobanen flater ut mer enn 1000 ft over det høyeste terrenget, selv om den kommer nærmere enn 2000 ft underveis. Bare én av de to reglene må oppfylles.'};
+  else t= DS.track==='on'? {en:'<b>Not compliant on this track.</b> Try green dot, a lower mass or a cooler day, or select the escape route: turning early towards lower ground is what makes this route legal at this mass.',no:'<b>Ikke oppfylt på denne kursen.</b> Prøv green dot, lavere masse eller en kaldere dag, eller velg rømningsruten: å svinge tidlig mot lavere terreng er det som gjør ruten lovlig med denne massen.'}
+     : {en:'<b>Not compliant even on the escape route.</b> The mass must come down, for example less fuel or traffic load, or the route must change.',no:'<b>Ikke oppfylt selv på rømningsruten.</b> Massen må ned, for eksempel mindre drivstoff eller trafikklast, eller ruten må endres.'};
+  el('ddX').innerHTML=L(t)+' '+L({en:'Gradients include the extra drag of the windmilling engine and the sideslip; fuel burn during the descent is ignored.',no:'Gradientene tar med ekstra motstand fra motoren som vindmøller og sideslipen; drivstofforbruket under nedstigningen er ignorert.'});
+}
+function drawDD(){ const r=DDR, g=ddv.ctx, W=ddv.w, H=ddv.h; if(!W||!r) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const narrow=W<520, b={x:narrow?44:56,y:28,w:W-(narrow?44:56)-14,h:H-28-40}, top=Math.max(40000,DS.fl*100+3000);
+  const f=frame(g,b,[0,360],[0,top],{xs:narrow?90:60,ys:10000,yf:v=>v?nf(v/1000,0)+'k':'0',t:L({en:'Altitude (ft) along the route',no:'Høyde (ft) langs ruten'}),xt:L({en:'distance from the failure (NM)',no:'distanse fra motorstansen (NM)'})});
+  // terreng
+  const tp=[]; for(let x=0;x<=360;x+=2) tp.push([f.X(x),f.Y(terAt(r.prof,x))]);
+  g.fillStyle='rgba(124,104,78,.30)'; g.beginPath(); g.moveTo(f.X(0),f.Y(0)); tp.forEach(([x,y])=>g.lineTo(x,y)); g.lineTo(f.X(360),f.Y(0)); g.closePath(); g.fill();
+  line(g,tp,'#7C684E',1.5);
+  line(g,tp.map(([x,y],i)=>[x,f.Y(terAt(r.prof,i*2)+2000)]),C.red,1.2,[5,4]);
+  line(g,[[b.x,f.Y(r.hiT+1000)],[b.x+b.w,f.Y(r.hiT+1000)]],C.amber,1,[2,4]);
+  const sm=(arr)=>{ const o=[]; let last=-9; for(const [x,h] of arr){ if(x>360) break; if(x-last>=1){ o.push([f.X(x),f.Y(h)]); last=x; } } return o; };
+  line(g,sm(r.gp),C.blue,2.5); line(g,sm(r.np),C.mag,2,[7,4]);
+  if(r.lev.x!==null) dot(g,f.X(r.lev.x),f.Y(r.lev.h),C.blue,4);
+  if(r.levn.x!==null) dot(g,f.X(r.levn.x),f.Y(r.levn.h),C.mag,4);
+  if(r.fail!==null){ g.strokeStyle=C.red; g.lineWidth=2; const x=f.X(r.fail), y=f.Y(terAt(r.prof,r.fail)+2000); g.beginPath(); g.arc(x,y,8,0,Math.PI*2); g.stroke(); g.lineWidth=1; }
+  g.font=HAND; g.textBaseline='alphabetic';
+  const gx=Math.min(330,Math.max(150,(r.lev.x||200)+20)), gi=r.gp.find(p=>p[0]>=gx)||r.gp[r.gp.length-1], ni=r.np.find(p=>p[0]>=gx)||r.np[r.np.length-1];
+  g.textAlign='right'; g.fillStyle=C.blue; g.fillText(L({en:'gross path',no:'bruttobane'}),f.X(gx),f.Y(gi[1])-7);
+  g.fillStyle=C.mag; g.fillText(L({en:'net path',no:'nettobane'}),f.X(gx),f.Y(ni[1])+20);
+  g.font=MONO; g.textAlign='left'; g.textBaseline='bottom'; g.fillStyle=C.red;
+  g.textAlign='right'; g.fillText(L({en:'terrain + 2000 ft',no:'terreng + 2000 ft'}),b.x+b.w-4,f.Y(terAt(r.prof,360)+2000)-4);
+  g.fillStyle=C.amber; g.textAlign='left'; g.textBaseline='top'; g.fillText(narrow?L({en:'max + 1000 ft',no:'maks + 1000 ft'}):L({en:'highest terrain + 1000 ft',no:'høyeste terreng + 1000 ft'}),b.x+4,f.Y(r.hiT+1000)+3);
+}
+upDD();
+LAB.onLang(()=>{ drawDD(); roDD(); });
+
+/* ---------- 6. quiz ---------- */
+const Q=[
+ {q:{en:'What is the balanced V1?',no:'Hva er balansert V1?'},
+  a:[{en:'The V1 at which the accelerate-stop and accelerate-go distances are equal',no:'V1 der akselerer-stopp- og akselerer-fortsett-distansen er like'},{en:'The V1 halfway between VMCG and VR',no:'V1 midt mellom VMCG og VR'},{en:'The V1 that gives the shortest all-engines take-off',no:'V1 som gir kortest start med alle motorer'}],c:0,
+  e:{en:'Raising V1 lengthens the stop and shortens the go. Where they are equal, the runway needed is as short as it can be: the balanced field length.',no:'Høyere V1 forlenger stoppet og forkorter fortsettelsen. Der de er like, er nødvendig bane så kort som mulig: balansert banelengde.'}},
+ {q:{en:'With the same mass and runway, you choose a higher V1. What happens?',no:'Med samme vekt og bane velger du høyere V1. Hva skjer?'},
+  a:[{en:'Accelerate-stop gets longer, accelerate-go gets shorter',no:'Akselerer-stopp blir lengre, akselerer-fortsett blir kortere'},{en:'Both get longer',no:'Begge blir lengre'},{en:'Accelerate-stop gets shorter, accelerate-go gets longer',no:'Akselerer-stopp blir kortere, akselerer-fortsett blir lengre'}],c:0,
+  e:{en:'A later failure means more speed to brake away but less distance to accelerate on one engine.',no:'En senere stans betyr mer fart å bremse ned, men kortere strekning å akselerere på én motor.'}},
+ {q:{en:'Why may V1 not be lower than VMCG?',no:'Hvorfor kan ikke V1 være lavere enn VMCG?'},
+  a:[{en:'If the engine fails just below V1 and you continue, you must be able to keep the aircraft on the runway',no:'Stanser motoren like under V1 og du fortsetter, må du kunne holde flyet på banen'},{en:'Because the brakes cannot stop the aircraft below VMCG',no:'Fordi bremsene ikke kan stoppe flyet under VMCG'},{en:'Because VMCG is the lift-off speed',no:'Fordi VMCG er avløftsfarten'}],c:0,
+  e:{en:'Continuing from V1 assumes directional control with rudder alone, which is only guaranteed at or above VMCG.',no:'Å fortsette fra V1 forutsetter retningskontroll med bare sideror, og det er bare sikret på eller over VMCG.'}},
+ {q:{en:'What is the minimum gross climb gradient in the second segment for a twin with one engine out?',no:'Hva er minste bruttostigegradient i andre segment for et tomotors fly med én motor ute?'},
+  a:[{en:'2.4 %',no:'2,4 %'},{en:'1.2 %',no:'1,2 %'},{en:'0.8 %',no:'0,8 %'}],c:0,
+  e:{en:'2.4 % in the second segment, positive in the first, 1.2 % in the final segment. 0.8 % is the reduction from gross to net path.',no:'2,4 % i andre segment, positiv i første, 1,2 % i siste segment. 0,8 % er reduksjonen fra brutto- til nettobane.'}},
+ {q:{en:'The obstacle clearance requirement after take-off is met by…',no:'Kravet til hinderklaring etter start oppfylles ved at …'},
+  a:[{en:'the net flight path clearing obstacles by at least 35 ft',no:'nettobanen klarer hindrene med minst 35 ft'},{en:'the gross flight path clearing obstacles by at least 35 ft',no:'bruttobanen klarer hindrene med minst 35 ft'},{en:'the all-engines path clearing obstacles by 1000 ft',no:'banen med alle motorer klarer hindrene med 1000 ft'}],c:0,
+  e:{en:'The net path is the gross path reduced by 0.8 % for a twin, a margin for real-world performance below the certified average.',no:'Nettobanen er bruttobanen redusert med 0,8 % for et tomotors fly, en margin for at virkelig ytelse kan være under sertifisert gjennomsnitt.'}},
+ {q:{en:'A hot day at a high aerodrome with a long runway. Which limit is most likely to govern the take-off mass?',no:'En varm dag på en høyt beliggende flyplass med lang bane. Hvilken begrensning styrer mest sannsynlig startvekten?'},
+  a:[{en:'The climb limit',no:'Stigebegrensningen'},{en:'The structural MTOW',no:'Strukturell MTOW'},{en:'The landing distance',no:'Landingsdistansen'}],c:0,
+  e:{en:'Thrust falls with temperature and altitude, and the climb limit does not care how long the runway is.',no:'Skyvekraften faller med temperatur og høyde, og stigebegrensningen bryr seg ikke om hvor lang banen er.'}},
+ {q:{en:'With a flex take-off, the assumed temperature is…',no:'Ved flex-start er den antatte temperaturen …'},
+  a:[{en:'higher than the actual temperature, and the actual denser air gives an extra margin',no:'høyere enn den faktiske, og den faktiske tettere luften gir ekstra margin'},{en:'lower than the actual temperature, to protect the engines',no:'lavere enn den faktiske, for å beskytte motorene'},{en:'always ISA + 15',no:'alltid ISA + 15'}],c:0,
+  e:{en:'Performance is computed as if it were hotter. The real air is colder and denser, so the true airspeeds are lower and the aircraft does a little better than calculated.',no:'Ytelsen beregnes som om det var varmere. Den virkelige luften er kaldere og tettere, så sanne farter er lavere og flyet gjør det litt bedre enn beregnet.'}},
+ {q:{en:'For a jet, where is the best climb angle speed Vx relative to the minimum drag speed?',no:'For et jetfly, hvor ligger farten for beste stigevinkel Vx i forhold til farten for minste motstand?'},
+  a:[{en:'Close to it, because thrust is nearly constant with speed',no:'Nær den, fordi skyvekraften er nesten konstant med farten'},{en:'Far above it, close to the maximum speed',no:'Langt over, nær maksfarten'},{en:'At the stall speed',no:'Ved steilefarten'}],c:0,
+  e:{en:'Maximum excess thrust is where drag is lowest when thrust is flat. Vy is faster, because excess power also grows with speed.',no:'Størst overskudd av skyvekraft er der motstanden er lavest når skyvekraften er flat. Vy er raskere, fordi overskuddseffekten også øker med farten.'}},
+ {q:{en:'You meet a strong headwind in cruise. To get the most distance per kilogram of fuel you should…',no:'Du får sterk motvind i cruise. For lengst distanse per kilo drivstoff bør du …'},
+  a:[{en:'fly somewhat faster',no:'fly noe raskere'},{en:'fly somewhat slower',no:'fly noe saktere'},{en:'keep the still-air maximum range speed',no:'holde farten for maks rekkevidde i stille luft'}],c:0,
+  e:{en:'Ground range per kilogram is (TAS − headwind) / fuel flow. The best point moves to a higher speed, so less time is spent in the wind.',no:'Distanse over bakken per kilo er (TAS − motvind) / forbruk. Beste punkt flytter seg til høyere fart, så du bruker kortere tid i vinden.'}},
+ {q:{en:'Cost index 0 gives…',no:'Kostindeks 0 gir …'},
+  a:[{en:'the maximum range speed, minimum fuel',no:'fart for maks rekkevidde, minst drivstoff'},{en:'the minimum time speed',no:'fart for minst tid'},{en:'the minimum drag speed',no:'fart for minste motstand'}],c:0,
+  e:{en:'With no cost on time, only fuel counts. Higher cost index values trade fuel for time.',no:'Uten kostnad på tid teller bare drivstoff. Høyere kostindeks bytter drivstoff mot tid.'}},
+ {q:{en:'Why do long flights step climb?',no:'Hvorfor gjør lange flygninger trinnvis stigning?'},
+  a:[{en:'The optimum altitude rises as the aircraft gets lighter',no:'Optimal høyde stiger etter hvert som flyet blir lettere'},{en:'The engines need cooler air later in the flight',no:'Motorene trenger kaldere luft senere i flygningen'},{en:'To stay below the maximum altitude, which falls with time',no:'For å holde seg under maksimal høyde, som synker med tiden'}],c:0,
+  e:{en:'A lighter aircraft needs less lift, so it can fly at the best lift coefficient in thinner air. Both the optimum and maximum altitude rise.',no:'Et lettere fly trenger mindre løft, så det kan fly med beste løftekoeffisient i tynnere luft. Både optimal og maksimal høyde stiger.'}},
+ {q:{en:'The certified dry landing distance is 1000 m. What landing distance must be available at dispatch on a dry runway?',no:'Sertifisert landingsdistanse på tørr bane er 1000 m. Hvilken landingsdistanse må være tilgjengelig ved planlegging på tørr bane?'},
+  a:[{en:'About 1670 m',no:'Omtrent 1670 m'},{en:'About 1150 m',no:'Omtrent 1150 m'},{en:'About 1920 m',no:'Omtrent 1920 m'}],c:0,
+  e:{en:'1000 / 0.6 ≈ 1670 m. A wet runway adds 15 %, about 1920 m. 1150 m is the in-flight margin of 15 %.',no:'1000 / 0,6 ≈ 1670 m. Våt bane legger til 15 %, omtrent 1920 m. 1150 m er marginen på 15 % i lufta.'}},
+ {q:{en:'On a dry runway with autobrake MED, the reversers are set to max. The landing distance…',no:'På tørr bane med autobrems MED settes reverserne til maks. Landingsdistansen …'},
+  a:[{en:'hardly changes, because the autobrake holds a set deceleration and simply brakes less',no:'endres knapt, fordi autobremsen holder en fast retardasjon og bare bremser mindre'},{en:'is roughly halved',no:'blir omtrent halvert'},{en:'gets longer',no:'blir lengre'}],c:0,
+  e:{en:'Reversers save brake wear and energy here. They shorten the distance when braking is friction-limited: on a slippery runway or with maximum manual braking.',no:'Reversering sparer bremseslitasje og energi her. Den forkorter distansen når bremsingen er friksjonsbegrenset: på glatt bane eller med maks manuell bremsing.'}},
+ {q:{en:'You cross the threshold 10 kt above VAPP and float before touching down. The landing distance…',no:'Du passerer terskelen 10 kt over VAPP og flyter før setting. Landingsdistansen …'},
+  a:[{en:'increases markedly, often by a few hundred metres',no:'øker markert, ofte med noen hundre meter'},{en:'increases by about 10 m',no:'øker med omtrent 10 m'},{en:'does not change if the autobrake is on',no:'endres ikke hvis autobremsen er på'}],c:0,
+  e:{en:'Kinetic energy grows with the square of speed, and excess speed is bled off in a long flare before the wheels can brake.',no:'Bevegelsesenergien øker med kvadratet av farten, og overskuddsfarten blødes av i en lang utflating før hjulene kan bremse.'}},
+ {q:{en:'One engine fails in cruise over high terrain. To which flight path are the en-route terrain clearance rules applied?',no:'Én motor stanser i marsjhøyde over høyt terreng. Hvilken flybane brukes terrengkravene underveis på?'},
+  a:[{en:'The net path: the gross gradient reduced by 1.1 % for a twin',no:'Nettobanen: bruttogradienten redusert med 1,1 % for et tomotors fly'},{en:'The gross path the aircraft actually flies',no:'Bruttobanen flyet faktisk flyr'},{en:'The all-engines path',no:'Banen med alle motorer'}],c:0,
+  e:{en:'The net path is a pessimistic margin on the average aircraft. It must either level off 1000 ft above the terrain or clear it by 2000 ft all the way to an aerodrome.',no:'Nettobanen er en pessimistisk margin på det gjennomsnittlige flyet. Den må enten flate ut 1000 ft over terrenget eller klare det med 2000 ft hele veien til en flyplass.'}},
+ {q:{en:'Which drift-down speed gives the highest level-off altitude after an engine failure?',no:'Hvilken fart under drift-down gir høyest utflatingshøyde etter motorstans?'},
+  a:[{en:'Green dot, the one-engine-out best L/D speed, at MCT',no:'Green dot, farten for beste L/D med én motor ute, på MCT'},{en:'VMO, to keep the engine windmilling',no:'VMO, for å holde motoren i vindmølle'},{en:'The long-range cruise speed',no:'Long-range cruise-fart'}],c:0,
+  e:{en:'Best L/D means least drag for the weight, so thrust equals drag at the highest altitude. That is the obstacle strategy; the standard strategy is faster and levels off lower.',no:'Beste L/D betyr minst motstand for vekten, så skyvekraften blir lik motstanden i størst mulig høyde. Det er hinderstrategien; standardstrategien er raskere og flater ut lavere.'}},
+ {q:{en:'The reported wind is 10 kt headwind. Which headwind may the take-off calculation use?',no:'Rapportert vind er 10 kt motvind. Hvilken motvind kan startberegningen bruke?'},
+  a:[{en:'5 kt',no:'5 kt'},{en:'10 kt',no:'10 kt'},{en:'15 kt',no:'15 kt'}],c:0,
+  e:{en:'Only 50 % of a headwind may be counted, and a tailwind is increased to 150 %. Both make the calculation conservative.',no:'Bare 50 % av en motvind kan regnes med, og en medvind økes til 150 %. Begge gjør beregningen konservativ.'}},
+ {q:{en:'What is the main difference between NADP 1 and NADP 2?',no:'Hva er hovedforskjellen mellom NADP 1 og NADP 2?'},
+  a:[{en:'NADP 1 keeps take-off flaps and climbs steeply to 3000 ft; NADP 2 accelerates and retracts flaps from 800 ft',no:'NADP 1 beholder startklaff og stiger bratt til 3000 ft; NADP 2 akselererer og tar inn klaffene fra 800 ft'},{en:'NADP 1 is for jets and NADP 2 for propeller aircraft',no:'NADP 1 er for jetfly og NADP 2 for propellfly'},{en:'NADP 2 uses TOGA thrust to 3000 ft',no:'NADP 2 bruker TOGA til 3000 ft'}],c:0,
+  e:{en:'NADP 1 protects areas close to the aerodrome; NADP 2 protects areas further out and burns less fuel.',no:'NADP 1 skjermer områder nær flyplassen; NADP 2 skjermer områder lenger ute og bruker mindre drivstoff.'}},
+];
+quiz(el('qbox'),'performance',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),14);
+
+upTO(); upLim(); upCr(); upLd(); rcTab();
+})();
+</script>
+</body>
+</html>

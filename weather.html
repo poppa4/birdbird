@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weather for Pilots</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.inbox{display:flex;flex-direction:column;gap:10px}
+.inbox textarea{width:100%;min-height:92px;font-family:var(--f-mono);font-size:16px;line-height:1.5;padding:12px 14px;border:1px solid var(--ink);border-radius:3px;background:#fff;color:var(--ink);resize:vertical;text-transform:uppercase}
+.ex{display:flex;flex-wrap:wrap;gap:6px}
+.ex button{font-family:var(--f-mono);font-size:12.5px;background:#fff;border:1px solid var(--rule);color:var(--ink-2);padding:5px 8px;border-radius:3px;cursor:pointer}
+.ex button:hover{border-color:var(--ink);color:var(--ink)}
+.dec{width:100%;border-collapse:collapse}
+.dec td{padding:9px 12px 9px 0;border-bottom:1px solid var(--rule-2);vertical-align:top;font-size:15px}
+.dec td:first-child{width:1%;white-space:nowrap;font-family:var(--f-mono);font-weight:500;color:var(--magenta)}
+.dec tr.sec td{padding-top:18px;font-family:var(--f-body);font-weight:650;color:var(--ink);border-bottom:1px solid var(--ink)}
+.dec tr.bad td:first-child{color:var(--red)}
+.dec .sub{display:block;color:var(--ink-2);font-size:13.5px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.sum div{padding:12px 16px;border-left:1px solid var(--rule-2)}
+.sum div:first-child{border-left:0;padding-left:0}
+.sum span{display:block;font-size:13px;color:var(--ink-2)}
+.sum b{display:block;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:24px}
+.sum small{display:block;font-size:12.5px;color:var(--ink-2)}
+.rules{list-style:none;margin:0;padding:0}
+.rules li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:15px}
+.rules li i{font-style:normal;font-weight:700;min-width:60px}
+.rules li.ok i{color:var(--green)} .rules li.no i{color:var(--red)}
+.rules li span small{display:block;color:var(--ink-2);font-size:13px}
+.xw{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:860px){.xw{grid-template-columns:minmax(0,1fr)}}
+#xwCv{height:300px}
+.glossary{columns:3 230px;column-gap:28px;font-size:14px}
+.glossary div{break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--rule-2)}
+.glossary b{font-family:var(--f-mono);font-weight:500;color:var(--magenta);display:inline-block;min-width:52px}
+</style>
+</head>
+<body data-title="Weather for Pilots">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <h1>METAR and TAF</h1>
+      <p>Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">Decoded</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
+
+  <section class="card" id="decode">
+    <h2>Decode a report</h2>
+    <p class="lead">Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.</p>
+    <div class="inbox">
+      <textarea id="raw" spellcheck="false" aria-label="METAR or TAF"></textarea>
+      <div class="ex" id="ex"></div>
+    </div>
+    <div class="sum" id="sum"></div>
+    <div class="split">
+      <table class="dec" id="dec"></table>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="box"><b class="t">VFR at the aerodrome</b><ul class="rules" id="rules"></ul><p class="note" style="margin-top:8px">Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.</p></div>
+        <div class="box"><b class="t">Runway</b><div id="rwyBox"></div><p id="rwyTxt"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="xwind">
+    <h2>Crosswind and headwind</h2>
+    <p class="lead">Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.</p>
+    <div class="xw">
+      <div class="panel" id="xwCtl"></div>
+      <div class="view"><canvas id="xwCv" aria-label="Wind components on the runway"></canvas></div>
+    </div>
+  </section>
+
+  <section class="card" id="codes">
+    <h2>The codes you meet most</h2>
+    <div class="glossary" id="gloss"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <h2>Practise</h2>
+    <p class="lead">Ten questions on reports generated for you. New reports every round.</p>
+    <div id="qbox"></div>
+  </section>
+
+  <p class="note">Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,nf,el,slider,seg,fit,quiz,shuffle}=LAB;
+const NOd={
+ 'METAR and TAF':'METAR og TAF','Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.':'Lim inn en værmelding og les den linje for linje på vanlig språk. Se skydekket, sidevinden på rullebanen din og om VFR er tillatt i kontrollsonen. Øv deretter på meldinger som lages for deg.',
+ 'Decode':'Dekod','Crosswind':'Sidevind','Codes':'Koder','Practise':'Øv','Decode a report':'Dekod en melding','Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.':'Lim inn en METAR, SPECI eller TAF. Formatet følger ICAO Annex 3, som brukes i hele Europa.',
+ 'VFR at the aerodrome':'VFR på flyplassen','Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.':'Basert på SERA.5005 og SERA.5010 for fly. Flyplassen, luftrommet og operatøren din kan ha strengere regler.',
+ 'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',
+ 'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
+ 'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
+ 'Decoded':'Dekodet','Check the report':'Sjekk meldingen'
+};
+LAB.add({},NOd);
+
+/* ---------- ordbok ---------- */
+const PH={DZ:['drizzle','yr'],RA:['rain','regn'],SN:['snow','snø'],SG:['snow grains','kornsnø'],PL:['ice pellets','iskorn'],GR:['hail','hagl'],GS:['small hail or snow pellets','sprøhagl'],UP:['unknown precipitation','ukjent nedbør'],
+  BR:['mist','dis'],FG:['fog','tåke'],FU:['smoke','røyk'],VA:['volcanic ash','vulkansk aske'],DU:['widespread dust','støv'],SA:['sand','sand'],HZ:['haze','dis (tørr)'],PO:['dust or sand whirls','støv- eller sandvirvler'],SQ:['squalls','byger med vindkast'],FC:['funnel cloud','traktsky'],SS:['sandstorm','sandstorm'],DS:['duststorm','støvstorm']};
+const DESC={MI:['shallow','grunn'],BC:['patches of','flak av'],PR:['partial','delvis'],DR:['low drifting','lavt drivende'],BL:['blowing','føyke'],SH:['showers of','byger av'],TS:['thunderstorm','tordenvær'],FZ:['freezing','underkjølt']};
+const CL={FEW:['few (1–2 oktas)','få (1–2 åttendedeler)'],SCT:['scattered (3–4 oktas)','spredt (3–4 åttendedeler)'],BKN:['broken (5–7 oktas)','brutt (5–7 åttendedeler)'],OVC:['overcast (8 oktas)','overskyet (8 åttendedeler)']};
+const DIRS={N:['north','nord'],NE:['north-east','nordøst'],E:['east','øst'],SE:['south-east','sørøst'],S:['south','sør'],SW:['south-west','sørvest'],W:['west','vest'],NW:['north-west','nordvest']};
+const lang=()=>document.documentElement.lang==='nb'?1:0;
+const tr=a=>a[lang()];
+const LL=(en,no)=>lang()?no:en;
+const ft=n=>nf(n,0)+' ft';
+const ord=n=>{ n=+n; const s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); };
+const dd=n=>LL('the '+ord(n),'den '+(+n)+'.');
+
+function phen(tok){
+  const m=tok.match(/^(\+|-|VC)?(MI|BC|PR|DR|BL|SH|TS|FZ)?((?:DZ|RA|SN|SG|PL|GR|GS|UP|BR|FG|FU|VA|DU|SA|HZ|PO|SQ|FC|SS|DS)*)$/);
+  if(!m||(!m[2]&&!m[3])) return null;
+  const parts=[]; const p=(m[3].match(/../g)||[]).map(c=>tr(PH[c]));
+  let s='';
+  if(m[2]==='TS'){ s=tr(DESC.TS)+(p.length?LL(' with ',' med ')+p.join(LL(' and ',' og ')):''); }
+  else if(m[2]==='SH'){ s=tr(DESC.SH)+' '+(p.join(LL(' and ',' og '))||LL('precipitation','nedbør')); }
+  else s=(m[2]?tr(DESC[m[2]])+' ':'')+p.join(LL(' and ',' og '));
+  if(m[1]==='-') s=LL('light ','svak ')+s; else if(m[1]==='+') s=LL('heavy ','kraftig ')+s; else if(m[1]==='VC') s=s+LL(' in the vicinity (8–16 km)',' i nærheten (8–16 km)'); else if(m[3]&&/DZ|RA|SN|SG|PL|GR|GS|UP/.test(m[3])) s=LL('moderate ','moderat ')+s;
+  return {txt:s.charAt(0).toUpperCase()+s.slice(1), sig:true};
+}
+
+/* ---------- dekoder ---------- */
+function decode(raw){
+  const toks=raw.toUpperCase().replace(/=/g,' ').replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+  const rows=[], S={wind:null,vis:null,cavok:false,clouds:[],wx:[],temp:null,dew:null,qnh:null,type:null,station:null,ceil:null,errors:0,rvr:[]};
+  let i=0, sect='obs';
+  const row=(tok,txt,sub,bad)=>rows.push({tok,txt,sub,bad}); const sec=t=>rows.push({sec:t});
+  if(!toks.length) return {rows,S};
+  if(/^(METAR|SPECI|TAF)$/.test(toks[i])){ S.type=toks[i]; row(toks[i],{METAR:LL('Routine aerodrome weather report','Rutinemessig værrapport for flyplassen'),SPECI:LL('Special report, issued when the weather changes significantly','Spesialrapport, utstedt når været endrer seg vesentlig'),TAF:LL('Aerodrome forecast','Flyplassprognose')}[toks[i]]); i++; }
+  while(/^(AMD|COR|CNL)$/.test(toks[i]||'')){ row(toks[i],{AMD:LL('Amended','Endret'),COR:LL('Corrected','Korrigert'),CNL:LL('Cancelled','Kansellert')}[toks[i]]); i++; }
+  if(/^[A-Z]{4}$/.test(toks[i]||'')){ S.station=toks[i]; row(toks[i],LL('Aerodrome ','Flyplass ')+toks[i],LL('ICAO location indicator','ICAO-stedsindikator')); i++; }
+  for(;i<toks.length;i++){
+    const t=toks[i]; let m;
+    if(t==='RMK'){ row(toks.slice(i).join(' '),LL('Remarks (national, not decoded here)','Merknader (nasjonale, dekodes ikke her)')); break; }
+    if((m=t.match(/^(\d{2})(\d{2})(\d{2})Z$/))){ row(t,LL(`Issued on ${dd(m[1])} at ${m[2]}:${m[3]} UTC`,`Utstedt ${dd(m[1])} kl. ${m[2]}:${m[3]} UTC`)); continue; }
+    if((m=t.match(/^(\d{2})(\d{2})\/(\d{2})(\d{2})$/))&&S.type==='TAF'&&sect==='obs'&&!S.valid){ S.valid=1; row(t,LL(`Valid from ${dd(m[1])} at ${m[2]}00 UTC to ${dd(m[3])} at ${m[4]}00 UTC`,`Gyldig fra ${dd(m[1])} kl. ${m[2]}00 UTC til ${dd(m[3])} kl. ${m[4]}00 UTC`)); continue; }
+    if(t==='AUTO'){ row(t,LL('Automatic observation, no human observer','Automatisk observasjon, uten observatør')); continue; }
+    if(t==='NIL'){ row(t,LL('No report','Ingen melding')); continue; }
+    if((m=t.match(/^(\d{3}|VRB)(\d{2,3})(?:G(\d{2,3}))?(KT|MPS)$/))){
+      const kt=m[4]==='MPS'?1.944:1, sp=Math.round(+m[2]*kt), g=m[3]?Math.round(+m[3]*kt):null;
+      const w={dir:m[1]==='VRB'?null:+m[1],spd:sp,gust:g}; if(sect==='obs') S.wind=w; else if(!S.fWind) S.fWind=w;
+      const txt= sp===0&&m[1]!=='VRB' ? LL('Calm','Stille') : (m[1]==='VRB'?LL('Variable direction','Variabel retning'):LL(`From ${m[1]}° true`,`Fra ${m[1]}° rettvisende`))+`, ${sp} kt`+(g?LL(`, gusting ${g} kt`,`, vindkast ${g} kt`):'');
+      row(t,LL('Wind: ','Vind: ')+txt, m[4]==='MPS'?LL('Given in metres per second, converted to knots','Oppgitt i meter per sekund, regnet om til knop'):''); continue; }
+    if((m=t.match(/^(\d{3})V(\d{3})$/))){ row(t,LL(`Wind direction varying between ${m[1]}° and ${m[2]}°`,`Vindretningen varierer mellom ${m[1]}° og ${m[2]}°`)); continue; }
+    if(t==='CAVOK'){ if(sect==='obs'){ S.cavok=true; S.vis=10000; } row(t,LL('Ceiling and visibility OK','Skydekke og sikt OK'),LL('Visibility 10 km or more, no cloud below 5000 ft or the highest minimum sector altitude, whichever is greater, no CB or TCU at any height, no significant weather','Sikt 10 km eller mer, ingen skyer under 5000 ft eller høyeste minste sektorhøyde, det som er høyest, ingen CB eller TCU i noen høyde, ikke noe signifikant vær')); continue; }
+    if((m=t.match(/^(\d{4})(NDV)?$/))&&(sect!=='obs'||S.vis===null)){
+      const v=+m[1]; if(sect==='obs') S.vis=v;
+      row(t,LL('Visibility: ','Sikt: ')+(v===9999?LL('10 km or more','10 km eller mer'):v>=5000?nf(v/1000,0)+' km':nf(v,0)+' m'),m[2]?LL('No directional variation available (automatic)','Ingen retningsvariasjon tilgjengelig (automatisk)'):''); continue; }
+    if((m=t.match(/^(\d{4})(N|NE|E|SE|S|SW|W|NW)$/))){ row(t,LL(`Lowest visibility ${nf(+m[1],0)} m towards the ${tr(DIRS[m[2]])}`,`Laveste sikt ${nf(+m[1],0)} m mot ${tr(DIRS[m[2]])}`)); continue; }
+    if((m=t.match(/^(\d+|\d\/\d)SM$/))){ row(t,LL(`Visibility ${m[1]} statute miles (US format)`,`Sikt ${m[1]} statute miles (amerikansk format)`)); continue; }
+    if((m=t.match(/^R(\d{2}[LCR]?)\/([PM]?)(\d{4})(?:V([PM]?)(\d{4}))?([UDN])?$/))){
+      const pm=x=>x==='P'?LL('more than ','mer enn '):x==='M'?LL('less than ','mindre enn '):'';
+      S.rvr.push(+m[3]); row(t,LL(`Runway visual range on runway ${m[1]}: `,`Rullebanesikt (RVR) på bane ${m[1]}: `)+pm(m[2])+nf(+m[3],0)+' m'+(m[5]?LL(' varying to ',' varierende til ')+pm(m[4])+nf(+m[5],0)+' m':'')+(m[6]?{U:LL(', increasing',', økende'),D:LL(', decreasing',', avtagende'),N:LL(', no change',', uendret')}[m[6]]:'')); continue; }
+    if((m=t.match(/^(FEW|SCT|BKN|OVC)(\d{3}|\/\/\/)(CB|TCU|\/\/\/)?$/))){
+      const h=m[2]==='///'?null:+m[2]*100; if(sect==='obs') S.clouds.push({c:m[1],h,t:m[3]});
+      row(t,(x=>x.charAt(0).toUpperCase()+x.slice(1))(tr(CL[m[1]]))+(h!=null?LL(` at ${ft(h)}`,` i ${ft(h)}`):LL(', base not measured',', basis ikke målt'))+(m[3]==='CB'?LL(', cumulonimbus',', cumulonimbus (CB)'):m[3]==='TCU'?LL(', towering cumulus',', tårnende cumulus (TCU)'):''),LL('Height above the aerodrome','Høyde over flyplassen'),m[3]==='CB'); continue; }
+    if((m=t.match(/^VV(\d{3}|\/\/\/)$/))){ const h=m[1]==='///'?null:+m[1]*100; if(sect==='obs') S.vv=h; row(t,LL('Sky obscured, vertical visibility ','Himmelen skjult, vertikal sikt ')+(h!=null?ft(h):LL('not measured','ikke målt')),LL('Counts as the ceiling','Regnes som skydekke (ceiling)'),true); continue; }
+    if(/^(NSC|NCD|SKC|CLR)$/.test(t)){ row(t,{NSC:LL('No significant cloud','Ingen signifikante skyer'),NCD:LL('No cloud detected (automatic)','Ingen skyer registrert (automatisk)'),SKC:LL('Sky clear','Klar himmel'),CLR:LL('No cloud below 12 000 ft (US automatic)','Ingen skyer under 12 000 ft (amerikansk automatisk)')}[t],t==='NSC'?LL('No cloud below 5000 ft or the highest minimum sector altitude, whichever is greater, and no CB or TCU','Ingen skyer under 5000 ft eller høyeste minste sektorhøyde, det som er høyest, og ingen CB eller TCU'):''); continue; }
+    if(t==='NSW'){ row(t,LL('No significant weather (end of the weather in the previous group)','Ikke noe signifikant vær (været i forrige gruppe er over)')); continue; }
+    if((m=t.match(/^(M?\d{2})\/(M?\d{2})?$/))){ const f=x=>x==null?null:(x[0]==='M'?-1:1)*+x.replace('M',''); S.temp=f(m[1]); S.dew=m[2]?f(m[2]):null;
+      row(t,LL(`Temperature ${S.temp} °C, dew point ${S.dew!=null?S.dew+' °C':'not reported'}`,`Temperatur ${S.temp} °C, duggpunkt ${S.dew!=null?S.dew+' °C':'ikke oppgitt'}`), S.dew!=null&&S.temp-S.dew<=2?LL('Spread 2 °C or less: watch for mist, fog or low cloud','Spredning 2 °C eller mindre: se opp for dis, tåke eller lave skyer'):''); continue; }
+    if((m=t.match(/^Q(\d{4})$/))){ S.qnh=+m[1]; row(t,LL(`QNH ${m[1]} hPa`,`QNH ${m[1]} hPa`),LL('Set this on the altimeter to read altitude above mean sea level','Still denne på høydemåleren for å lese høyde over havet')); continue; }
+    if((m=t.match(/^A(\d{4})$/))){ row(t,LL(`Altimeter ${m[1].slice(0,2)}.${m[1].slice(2)} inHg (US format)`,`Høydemåler ${m[1].slice(0,2)}.${m[1].slice(2)} inHg (amerikansk format)`)); continue; }
+    if((m=t.match(/^RE(.+)$/))&&phen(m[1])){ row(t,LL('Recent: ','Nylig: ')+phen(m[1]).txt.toLowerCase(),LL('Ended within the last hour','Avsluttet i løpet av den siste timen')); continue; }
+    if(t==='WS'){ const nx=toks.slice(i+1,i+3).join(' '); const all=/^ALL RWY/.test(nx); const r=(toks[i+1]||'').match(/^R(WY)?(\d{2}[LCR]?)$/); row(t+' '+(all?'ALL RWY':(toks[i+1]||'')),LL('Wind shear reported ','Vindskjær meldt ')+(all?LL('on all runways','på alle rullebaner'):r?LL('on runway ','på bane ')+r[2]:''),'',true); i+= all?2:1; continue; }
+    if((m=t.match(/^R(\d{2}[LCR]?)\/(.{6})$/))){ row(t,LL(`Runway ${m[1]} state report`,`Rullebanetilstand for bane ${m[1]}`),LL('Contamination, depth and braking action','Belegg, dybde og bremseeffekt')); continue; }
+    if(t==='NOSIG'){ sec(LL('Trend','Trend')); row(t,LL('No significant change expected in the next 2 hours','Ingen vesentlig endring ventet de neste 2 timene')); continue; }
+    if(t==='BECMG'||t==='TEMPO'){ sect='chg'; sec(t==='BECMG'?LL('Becoming','Blir'):LL('Temporarily','Midlertidig')); row(t,t==='BECMG'?LL('Conditions change gradually to the following','Forholdene endres gradvis til det følgende'):LL('Temporary fluctuations, each lasting less than an hour, less than half the period','Midlertidige svingninger, hver under en time og til sammen under halve perioden')); continue; }
+    if((m=t.match(/^PROB(30|40)$/))){ sect='chg'; sec(LL(`Probability ${m[1]} %`,`Sannsynlighet ${m[1]} %`)); row(t,LL(`${m[1]} % probability of the following`,`${m[1]} % sannsynlighet for det følgende`)); continue; }
+    if((m=t.match(/^FM(\d{2})(\d{2})(\d{2})$/))){ sect='chg'; sec(LL('From','Fra')); row(t,LL(`From ${dd(m[1])} at ${m[2]}:${m[3]} UTC, conditions change to`,`Fra ${dd(m[1])} kl. ${m[2]}:${m[3]} UTC endres forholdene til`)); continue; }
+    if((m=t.match(/^(FM|TL|AT)(\d{2})(\d{2})$/))){ row(t,{FM:LL('From ','Fra '),TL:LL('Until ','Til '),AT:LL('At ','Kl. ')}[m[1]]+`${m[2]}:${m[3]} UTC`); continue; }
+    if((m=t.match(/^(\d{2})(\d{2})\/(\d{2})(\d{2})$/))){ row(t,LL(`Between ${dd(m[1])} at ${m[2]}00 and ${dd(m[3])} at ${m[4]}00 UTC`,`Mellom ${dd(m[1])} kl. ${m[2]}00 og ${dd(m[3])} kl. ${m[4]}00 UTC`)); continue; }
+    if((m=t.match(/^T([XN])(M?\d{2})\/(\d{2})(\d{2})Z$/))){ const v=(m[2][0]==='M'?-1:1)*+m[2].replace('M',''); row(t,(m[1]==='X'?LL('Maximum temperature ','Maksimumstemperatur '):LL('Minimum temperature ','Minimumstemperatur '))+v+LL(` °C on ${dd(m[3])} at ${m[4]}00 UTC`,` °C ${dd(m[3])} kl. ${m[4]}00 UTC`)); continue; }
+    const ph=phen(t); if(ph){ if(sect==='obs') S.wx.push(t); row(t,ph.txt,'',/TS|FZ|\+|GR|FC|SQ|VA/.test(t)); continue; }
+    S.errors++; row(t,LL('Not recognised. Check for a typing error.','Ikke gjenkjent. Sjekk for skrivefeil.'),'',true);
+  }
+  // skydekke (ceiling): laveste BKN/OVC eller VV
+  const layers=S.clouds.filter(c=>(c.c==='BKN'||c.c==='OVC')&&c.h!=null).map(c=>c.h); if(S.vv!=null) layers.push(S.vv);
+  S.ceil=layers.length?Math.min(...layers):null;
+  return {rows,S};
+}
+
+/* ---------- visning ---------- */
+const EX=[
+ ['VFR day','METAR ENTO 011220Z 21012KT 9999 FEW035 12/05 Q1018 NOSIG='],
+ ['Low cloud','METAR ENGM 011150Z 01008KT 4000 -RA BR BKN008 OVC014 06/05 Q1004 TEMPO 2500 BKN006='],
+ ['Gusty crosswind','METAR ENBR 011220Z 26022G35KT 230V290 9999 -SHRA FEW012 SCT025CB 08/03 Q0991 RETS='],
+ ['Fog','METAR ENTO 010650Z 00000KT 0300 R18/0450N FG VV002 02/02 Q1027 BECMG 1200 BR='],
+ ['CAVOK','METAR ENZV 011320Z 32005KT CAVOK 15/07 Q1021 NOSIG='],
+ ['TAF','TAF ENTO 011100Z 0112/0212 22010KT 9999 FEW030 TEMPO 0115/0119 4000 SHRA BKN014 BECMG 0200/0202 VRB03KT 3000 BR BKN006 PROB30 0203/0207 0800 FG VV002='],
+];
+const exBox=el('ex'); function drawEx(){ exBox.innerHTML=EX.map((e,i)=>`<button data-i="${i}">${L({en:e[0],no:{'VFR day':'VFR-dag','Low cloud':'Lave skyer','Gusty crosswind':'Byig sidevind','Fog':'Tåke','CAVOK':'CAVOK','TAF':'TAF'}[e[0]]})}</button>`).join(''); }
+exBox.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; el('raw').value=EX[+b.dataset.i][1]; run(); });
+let RW={hdg:360,num:'36',len:0};
+const rwySeg=seg(el('rwyBox'),[['36','RWY 36'],['18','RWY 18'],['09','RWY 09'],['27','RWY 27']],'36',v=>{ RW.num=v; RW.hdg=(+v||36)*10; run(); });
+function comps(w,hdg){ if(!w||w.dir==null) return null; const a=(w.dir-hdg)*Math.PI/180; return {head:w.spd*Math.cos(a),cross:w.spd*Math.sin(a),gx:w.gust?w.gust*Math.sin(a):null}; }
+function run(){
+  const {rows,S}=decode(el('raw').value);
+  el('dec').innerHTML=rows.map(r=>r.sec?`<tr class="sec"><td colspan="2">${r.sec}</td></tr>`:`<tr class="${r.bad?'bad':''}"><td>${r.tok}</td><td>${r.txt}${r.sub?`<span class="sub">${r.sub}</span>`:''}</td></tr>`).join('');
+  const w=S.wind; const c=comps(w,RW.hdg);
+  el('sum').innerHTML=[
+    [LL('Wind','Vind'), w? (w.spd===0&&w.dir!==null?LL('Calm','Stille'):(w.dir==null?'VRB':String(w.dir).padStart(3,'0')+'°')+' / '+w.spd+(w.gust?'G'+w.gust:'')+' kt') : '–', c?LL(`Crosswind ${Math.abs(Math.round(c.cross))} kt from the ${c.cross>0?'right':'left'}`,`Sidevind ${Math.abs(Math.round(c.cross))} kt fra ${c.cross>0?'høyre':'venstre'}`):''],
+    [LL('Visibility','Sikt'), S.vis==null?'–':S.vis>=9999?'10 km +':S.vis>=5000?nf(S.vis/1000,0)+' km':nf(S.vis,0)+' m', S.rvr.length?'RVR '+Math.min(...S.rvr)+' m':''],
+    [LL('Ceiling','Skydekke (ceiling)'), S.cavok?LL('None below 5000 ft','Ingen under 5000 ft'):S.ceil!=null?ft(S.ceil):LL('None reported','Ingen meldt'), LL('Lowest BKN, OVC or VV','Laveste BKN, OVC eller VV')],
+    [LL('Temperature','Temperatur'), S.temp!=null?S.temp+' °C':'–', S.dew!=null?LL(`Dew point ${S.dew} °C, spread ${S.temp-S.dew} °C`,`Duggpunkt ${S.dew} °C, spredning ${S.temp-S.dew} °C`):''],
+    ['QNH', S.qnh?S.qnh+' hPa':'–', '']
+  ].map(([a,b,c2])=>`<div><span>${a}</span><b>${b}</b><small>${c2}</small></div>`).join('');
+  // regler
+  const R=[]; const vis=S.vis, ce=S.cavok?99999:(S.ceil==null?99999:S.ceil);
+  if(S.type!=='TAF'&&vis!=null){
+    R.push({ok:vis>=5000&&ce>=1500,t:LL('VFR take-off or landing in a control zone','VFR avgang eller landing i en kontrollsone'),s:LL('Ground visibility at least 5 km and ceiling at least 1500 ft (SERA.5005)','Bakkesikt minst 5 km og skydekke minst 1500 ft (SERA.5005)')});
+    R.push({ok:vis>=1500&&ce>=600,t:LL('Special VFR in a control zone','Spesiell VFR i en kontrollsone'),s:LL('Ground visibility at least 1500 m and ceiling at least 600 ft, with ATC clearance (SERA.5010)','Bakkesikt minst 1500 m og skydekke minst 600 ft, med klarering fra ATC (SERA.5010)')});
+    if(S.clouds.some(x=>x.t==='CB')||S.wx.some(x=>/TS/.test(x))) R.push({ok:false,t:LL('Thunderstorm activity','Tordenværsaktivitet'),s:LL('CB or TS reported: expect turbulence, icing and wind shear','CB eller TS meldt: vent turbulens, ising og vindskjær')});
+    if(w&&w.gust&&w.gust-w.spd>=10) R.push({ok:false,t:LL('Strong gusts','Kraftige vindkast'),s:LL('Gusts 10 kt or more above the mean wind. Many schools add half the gust factor to the approach speed.','Vindkast 10 kt eller mer over middelvinden. Mange skoler legger til halve kastfaktoren på innflygingsfarten.')});
+  }
+  el('rules').innerHTML=R.length?R.map(r=>`<li class="${r.ok?'ok':'no'}"><i>${r.ok?LL('Yes','Ja'):LL('No','Nei')}</i><span>${r.t}<small>${r.s}</small></span></li>`).join(''):`<li><span>${LL('Paste a METAR to check.','Lim inn en METAR for å sjekke.')}</span></li>`;
+  el('rwyTxt').innerHTML=c?LL(`Runway ${RW.num}: headwind <b>${Math.round(c.head)} kt</b>${c.head<0?' (tailwind)':''}, crosswind <b>${Math.abs(Math.round(c.cross))} kt</b> from the ${c.cross>0?'right':'left'}${c.gx!=null?`, up to ${Math.abs(Math.round(c.gx))} kt in gusts`:''}.`,`Bane ${RW.num}: motvind <b>${Math.round(c.head)} kt</b>${c.head<0?' (medvind)':''}, sidevind <b>${Math.abs(Math.round(c.cross))} kt</b> fra ${c.cross>0?'høyre':'venstre'}${c.gx!=null?`, opptil ${Math.abs(Math.round(c.gx))} kt i kastene`:''}.`):LL('No wind direction in the report.','Ingen vindretning i meldingen.');
+  const st=el('stat'); st.textContent=S.errors?T('Check the report'):T('Decoded'); st.className='status'+(S.errors?' warn':' ok');
+  if(w&&w.dir!=null){ XW.dir=w.dir; XW.spd=w.spd; XW.gust=w.gust||0; xwD.set(XW.dir); xwS.set(XW.spd); drawXW(); }
+}
+el('raw').addEventListener('input',run);
+
+/* ---------- sidevind ---------- */
+const XW={dir:210,spd:12,gust:0,rwy:36};
+const xc=el('xwCtl');
+const xwR=slider(xc,{label:'Runway',min:1,max:36,step:1,v:36,f:v=>String(v).padStart(2,'0'),on:v=>{XW.rwy=v;drawXW();}});
+const xwD=slider(xc,{label:'Wind from',min:0,max:360,step:10,v:210,f:v=>String(v||360).padStart(3,'0')+'°',on:v=>{XW.dir=v;drawXW();}});
+const xwS=slider(xc,{label:'Wind speed',min:0,max:40,step:1,v:12,f:v=>v+' kt',on:v=>{XW.spd=v;drawXW();}});
+const xwOut=document.createElement('div'); xwOut.className='kpis'; xwOut.style.marginTop='10px'; xc.appendChild(xwOut);
+LAB.add({},{'Runway':'Rullebane','Wind from':'Vind fra','Wind speed':'Vindstyrke'});
+const xv=fit(el('xwCv'),()=>drawXW());
+function drawXW(){
+  const c=comps({dir:XW.dir,spd:XW.spd},XW.rwy*10);
+  xwOut.innerHTML=`<div class="kpi"><span>${LL('Headwind','Motvind')}</span><b>${Math.round(c.head)} kt</b><small>${c.head<0?LL('tailwind','medvind'):''}</small></div><div class="kpi"><span>${LL('Crosswind','Sidevind')}</span><b>${Math.abs(Math.round(c.cross))} kt</b><small>${c.cross>0?LL('from the right','fra høyre'):c.cross<0?LL('from the left','fra venstre'):''}</small></div>`;
+  const g=xv.ctx, W=xv.w, H=xv.h; if(!W) return; g.clearRect(0,0,W,H);
+  const cx=W/2, cy=H/2, R=Math.min(W,H)*0.38, D=Math.PI/180, rh=XW.rwy*10*D;
+  g.save(); g.translate(cx,cy);
+  g.strokeStyle='rgba(255,255,255,.15)'; g.beginPath(); g.arc(0,0,R,0,7); g.stroke();
+  g.fillStyle='rgba(255,255,255,.55)'; g.font='12px "IBM Plex Mono", monospace'; g.textAlign='center'; g.textBaseline='middle';
+  [['N',0],['E',90],['S',180],['W',270]].forEach(([t,a])=>g.fillText(t,Math.sin(a*D)*(R+16),-Math.cos(a*D)*(R+16)));
+  // rullebane
+  g.save(); g.rotate(rh); g.fillStyle='#3b3e42'; g.fillRect(-14,-R*0.85,28,R*1.7); g.strokeStyle='#fff'; g.setLineDash([10,10]); g.beginPath(); g.moveTo(0,-R*0.75); g.lineTo(0,R*0.75); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#fff'; g.font='bold 15px Archivo, sans-serif'; g.fillText(String(XW.rwy).padStart(2,'0'),0,R*0.62); g.restore();
+  // vindpil (fra retningen)
+  const len=Math.min(R*0.95,20+XW.spd*4), wa=XW.dir*D, sx=Math.sin(wa)*R*1.02, sy=-Math.cos(wa)*R*1.02, ex=sx-Math.sin(wa)*len, ey=sy+Math.cos(wa)*len;
+  g.strokeStyle='#7fcbe8'; g.fillStyle='#7fcbe8'; g.lineWidth=4; g.beginPath(); g.moveTo(sx,sy); g.lineTo(ex,ey); g.stroke();
+  const an=Math.atan2(ey-sy,ex-sx); g.beginPath(); g.moveTo(ex,ey); g.lineTo(ex-14*Math.cos(an-0.4),ey-14*Math.sin(an-0.4)); g.lineTo(ex-14*Math.cos(an+0.4),ey-14*Math.sin(an+0.4)); g.closePath(); g.fill();
+  // komponenter langs og på tvers av banen (fra senter)
+  g.rotate(rh); const sc=len/Math.max(1,XW.spd);
+  g.lineWidth=3; g.strokeStyle='#f0b440'; g.beginPath(); g.moveTo(0,0); g.lineTo(-c.cross*sc,0); g.stroke();
+  g.strokeStyle='#71cc93'; g.beginPath(); g.moveTo(0,0); g.lineTo(0,c.head*sc); g.stroke();
+  g.restore();
+  g.font='600 12px "Public Sans", sans-serif'; g.textAlign='left'; g.fillStyle='#f0b440'; g.fillText(LL('crosswind','sidevind'),12,H-34); g.fillStyle='#71cc93'; g.fillText(LL('headwind','motvind'),12,H-16); g.fillStyle='#7fcbe8'; g.fillText(LL('wind','vind'),110,H-16);
+}
+
+/* ---------- koder ---------- */
+function drawGloss(){ const items=[['CAVOK',LL('Ceiling and visibility OK','Skydekke og sikt OK')],['NOSIG',LL('No significant change','Ingen vesentlig endring')],['BECMG',LL('Becoming','Blir')],['TEMPO',LL('Temporarily','Midlertidig')],['PROB30',LL('30 % probability','30 % sannsynlighet')],['FEW',LL('1–2 oktas','1–2 åttendedeler')],['SCT',LL('3–4 oktas','3–4 åttendedeler')],['BKN',LL('5–7 oktas','5–7 åttendedeler')],['OVC',LL('8 oktas','8 åttendedeler')],['VV',LL('Vertical visibility','Vertikal sikt')],['CB',LL('Cumulonimbus','Cumulonimbus')],['TCU',LL('Towering cumulus','Tårnende cumulus')],['NSC',LL('No significant cloud','Ingen signifikante skyer')],['9999',LL('10 km or more','10 km eller mer')],['BR',LL('Mist (1000–5000 m)','Dis (1000–5000 m)')],['FG',LL('Fog (below 1000 m)','Tåke (under 1000 m)')],['RA',LL('Rain','Regn')],['SN',LL('Snow','Snø')],['DZ',LL('Drizzle','Yr')],['SH',LL('Showers','Byger')],['TS',LL('Thunderstorm','Tordenvær')],['FZ',LL('Freezing','Underkjølt')],['-  +',LL('Light, heavy','Svak, kraftig')],['VC',LL('In the vicinity','I nærheten')],['RE',LL('Recent','Nylig')],['VRB',LL('Variable wind','Variabel vind')],['G',LL('Gusts','Vindkast')],['Q',LL('QNH in hPa','QNH i hPa')],['M',LL('Minus (temperature)','Minus (temperatur)')],['R18/',LL('Runway visual range','Rullebanesikt (RVR)')]];
+  el('gloss').innerHTML=items.map(([a,b])=>`<div><b>${a}</b> ${b}</div>`).join(''); }
+
+/* ---------- øving: genererte meldinger ---------- */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
+function genMetar(){
+  const st=pick(['ENTO','ENGM','ENBR','ENZV','ENVA','ENCN']); const d=rnd(1,28), hh=String(rnd(0,23)).padStart(2,'0'), mm=pick(['20','50']);
+  const calm=Math.random()<0.08; const dir=rnd(1,36)*10, spd=calm?0:rnd(3,24), gust=!calm&&spd>12&&Math.random()<0.4?spd+rnd(8,15):null;
+  const wind=calm?'00000KT':String(dir).padStart(3,'0')+String(spd).padStart(2,'0')+(gust?'G'+gust:'')+'KT';
+  const cavok=Math.random()<0.18;
+  let vis=cavok?null:pick([9999,9999,8000,6000,5000,4000,3000,2500,1500,1200,800,400]);
+  const t=rnd(-8,22), cold=t<=2;
+  const wx=cavok?'':vis>=9999?pick(['','',cold?'-SHSN':'-SHRA']):vis>=5000?pick(['',cold?'-SN':'-RA',cold?'-SHSN':'-SHRA']):vis>=1000?pick(cold?['BR','-SN','SHSN','-RA BR']:['-RA BR','BR','RA']):pick(t<0?['FZFG','+SN','FG']:cold?['FG','+SN']:['FG']);
+  let clouds=''; if(!cavok){ const n=rnd(1,3); let h=pick([3,5,8,10,12,15,20,25,35]); const out=[]; for(let i=0;i<n;i++){ const c=i===n-1&&Math.random()<0.5?pick(['BKN','OVC']):pick(['FEW','SCT','BKN']); out.push(c+String(h).padStart(3,'0')+(c!=='FEW'&&Math.random()<0.1?'CB':'')); h+=rnd(4,15); } if(vis<1000&&Math.random()<0.6) clouds='VV00'+rnd(1,3); else clouds=out.join(' '); }
+  const dp=Math.max(-15,t-(vis&&vis<2000?rnd(0,1):rnd(1,10))); const f=x=>(x<0?'M':'')+String(Math.abs(x)).padStart(2,'0');
+  const q=rnd(985,1035);
+  return ['METAR',st,`${String(d).padStart(2,'0')}${hh}${mm}Z`,wind,cavok?'CAVOK':String(vis).padStart(4,'0'),wx,clouds,`${f(t)}/${f(dp)}`,'Q'+q,pick(['NOSIG','NOSIG','BECMG 9999 NSW','TEMPO 3000 SHRA'])].filter(Boolean).join(' ').replace(/\s+/g,' ');
+}
+function mkQs(){
+  const qs=[]; let guard=0;
+  while(qs.length<10&&guard++<200){
+    const m=genMetar(), {S}=decode(m); const kind=pick(['ceil','vis','xw','vfr','qnh','spread','gust','cavok']);
+    const fig=`<code style="font-family:var(--f-mono);font-size:15px;display:block;background:#fff;border:1px solid var(--rule);padding:10px 12px;margin-bottom:4px">${m}</code>`;
+    const mc=(qtxt,right,wrong,expl)=>{ const opts=shuffle([right,...wrong.filter((x,i,a)=>x!==right&&a.indexOf(x)===i)].slice(0,4)); return {q:{en:fig+qtxt.en,no:fig+qtxt.no},a:opts.map(o=>({en:String(o),no:String(o)})),c:opts.indexOf(right),e:expl}; };
+    if(kind==='ceil'){ const right=S.cavok?LL('No ceiling below 5000 ft','Ingen ceiling under 5000 ft'):S.ceil!=null?ft(S.ceil):LL('No ceiling reported','Ingen ceiling meldt'); const lows=S.clouds.map(c=>c.h).filter(x=>x!=null).map(ft);
+      qs.push(mc({en:'What is the ceiling?',no:'Hva er skydekket (ceiling)?'},right,[...lows,ft((S.ceil||1000)+500),LL('No ceiling reported','Ingen ceiling meldt'),ft(Math.max(100,(S.ceil||1500)-300))],{en:'The ceiling is the lowest BKN or OVC layer, or the vertical visibility. FEW and SCT do not count.',no:'Ceiling er det laveste BKN- eller OVC-laget, eller vertikal sikt. FEW og SCT teller ikke.'})); }
+    else if(kind==='vis'&&!S.cavok){ const v=S.vis; const fmt=x=>x>=9999?'10 km +':x>=5000?nf(x/1000,0)+' km':nf(x,0)+' m'; qs.push(mc({en:'What is the visibility?',no:'Hva er sikten?'},fmt(v),[fmt(9999),fmt(5000),fmt(1500),fmt(800),fmt(3000)],{en:'Four digits in metres. 9999 means 10 km or more.',no:'Fire siffer i meter. 9999 betyr 10 km eller mer.'})); }
+    else if(kind==='xw'&&S.wind&&S.wind.dir!=null&&S.wind.spd>0){ const r=pick([36,18,9,27,1,19]); const c=comps(S.wind,r*10); const x=Math.abs(Math.round(c.cross)); qs.push(mc({en:`Crosswind component on runway ${String(r).padStart(2,'0')}, using the mean wind?`,no:`Sidevindkomponent på bane ${String(r).padStart(2,'0')}, med middelvinden?`},x+' kt',[(x+5)+' kt',Math.max(0,x-5)+' kt',S.wind.spd+' kt',Math.round(S.wind.spd/2)+' kt',(x+9)+' kt'],{en:'Crosswind = wind speed × sin(angle between wind and runway). 30° gives half, 60° almost all of it.',no:'Sidevind = vindstyrke × sin(vinkelen mellom vind og bane). 30° gir halvparten, 60° nesten alt.'})); }
+    else if(kind==='vfr'&&S.vis!=null){ const ce=S.cavok?99999:(S.ceil==null?99999:S.ceil); const ok=S.vis>=5000&&ce>=1500; qs.push(mc({en:'May a VFR flight take off from this aerodrome in a control zone, without special VFR?',no:'Kan en VFR-flyging ta av fra denne flyplassen i en kontrollsone, uten spesiell VFR?'},ok?LL('Yes','Ja'):LL('No','Nei'),[LL('Yes','Ja'),LL('No','Nei')],{en:'SERA.5005: ground visibility at least 5 km and ceiling at least 1500 ft.',no:'SERA.5005: bakkesikt minst 5 km og skydekke minst 1500 ft.'})); }
+    else if(kind==='qnh'&&S.qnh){ qs.push(mc({en:'What do you set on the altimeter for altitude above mean sea level?',no:'Hva stiller du på høydemåleren for høyde over havet?'},S.qnh+' hPa',[(S.qnh+10)+' hPa',(S.qnh-7)+' hPa','1013 hPa'],{en:'Q followed by four digits is the QNH in hectopascals.',no:'Q fulgt av fire siffer er QNH i hektopascal.'})); }
+    else if(kind==='spread'&&S.dew!=null){ const sp=S.temp-S.dew; qs.push(mc({en:'What is the temperature/dew point spread?',no:'Hva er spredningen mellom temperatur og duggpunkt?'},sp+' °C',[(sp+2)+' °C',Math.max(0,sp-2)+' °C',(sp+5)+' °C',Math.abs(S.temp)+' °C'],{en:'M means minus. A small spread means moist air close to saturation: mist, fog or low cloud.',no:'M betyr minus. Liten spredning betyr fuktig luft nær metning: dis, tåke eller lave skyer.'})); }
+    else if(kind==='gust'&&S.wind&&S.wind.gust){ qs.push(mc({en:'What is the gust speed?',no:'Hvor kraftige er vindkastene?'},S.wind.gust+' kt',[S.wind.spd+' kt',(S.wind.gust+5)+' kt',(S.wind.gust-S.wind.spd)+' kt'],{en:'G followed by the gust speed, after the mean wind.',no:'G fulgt av kaststyrken, etter middelvinden.'})); }
+    else if(kind==='cavok'&&S.cavok){ qs.push(mc({en:'Which of these is true for CAVOK?',no:'Hva stemmer for CAVOK?'},LL('No cloud below 5000 ft and visibility 10 km or more','Ingen skyer under 5000 ft og sikt 10 km eller mer'),[LL('Clear sky with no cloud at all','Helt skyfri himmel'),LL('Visibility 5 km or more','Sikt 5 km eller mer'),LL('No cloud below 1500 ft','Ingen skyer under 1500 ft')],{en:'CAVOK also requires no CB or TCU and no significant weather. Higher cloud is allowed.',no:'CAVOK krever også ingen CB eller TCU og ikke noe signifikant vær. Høyere skyer er tillatt.'})); }
+  }
+  return qs;
+}
+quiz(el('qbox'),'weather',mkQs,10);
+
+LAB.start('wx');
+el('raw').value=EX[1][1]; drawEx(); drawGloss(); run(); drawXW();
+LAB.onLang(()=>{ drawEx(); drawGloss(); run(); drawXW(); });
+})();
+</script>
+</body>
+</html>

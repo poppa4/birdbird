@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My training · Birdbird</title>
+<meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* ---------- My training (page-only styles; tokens from site.css) ---------- */
+.mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
+.mt-head .brand{min-width:0}
+.mt-head h1{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:clamp(36px,4.4vw,var(--t-3xl));letter-spacing:-.015em;line-height:1.04;margin:0;color:var(--ink)}
+.mt-head .brand>p{margin:14px 0 0;color:var(--ink-2);font-size:var(--t-md);line-height:1.5;max-width:56ch}
+.mt-eb{display:block;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 12px}
+
+/* rank plate */
+.rankp{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:18px 20px 16px;min-width:0}
+.rankp .rk{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.rankp .rk small{display:block;font-size:12.5px;color:var(--ink-2)}
+.rankp .rk b{display:block;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:26px;line-height:1.1;color:var(--ink);margin-top:2px}
+.rankp .xp{font-family:var(--f-mono);font-size:22px;font-weight:500;color:var(--ink);white-space:nowrap;text-align:right}
+.rankp .xp span{font-size:12px;color:var(--ink-2);margin-left:4px}
+.rankp .bar{position:relative;height:6px;background:var(--rule-2);margin:14px 0 8px;overflow:hidden;border-radius:1px}
+.rankp .bar i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.rankp .rnext{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink-2)}
+.rankp .rnext b{font-weight:600;color:var(--ink)}
+.rankp .ladder{display:flex;gap:3px;margin-top:12px}
+.rankp .ladder i{flex:1;height:3px;background:var(--rule-2)}
+.rankp .ladder i.d{background:var(--ink)}
+.rankp .ladder i.c{background:var(--accent)}
+
+/* track row */
+.trackrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:28px 0 0;padding:14px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.trackrow .lbl{font-size:13.5px;color:var(--ink-2)}
+.trackrow .lbl b{color:var(--ink);font-weight:600}
+.trackrow .seg{flex:0 1 auto}
+.trackrow .seg button{padding:7px 14px}
+.trackrow .tnote{font-size:13px;color:var(--ink-2);margin-left:auto}
+.trackrow.pulse{box-shadow:inset 3px 0 0 var(--accent);padding-left:14px;transition:padding .2s}
+
+/* next up */
+.nextup{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.nu{display:flex;flex-direction:column;gap:8px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:18px 20px 20px;min-width:0}
+.nu.first{border-color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
+.nu .k{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.nu h3{font-family:var(--f-display);font-stretch:90%;font-size:21px;font-weight:700;line-height:1.2;margin:0;color:var(--ink)}
+.nu p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2);flex:1}
+.nu .btn{align-self:flex-start;margin-top:8px}
+.nu .n{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+
+/* learning path */
+.lpsum{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;font-size:13.5px;color:var(--ink-2)}
+.lpsum .lg{display:inline-flex;align-items:center;gap:7px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--rule-2);border:1px solid var(--rule);flex:0 0 auto}
+.dot.d{background:var(--ok);border-color:var(--ok)}
+.dot.s{background:#fff;border:2px solid var(--caution)}
+.lpstrip{display:flex;gap:3px}
+.lpstrip a{flex:1;height:10px;background:var(--rule-2);display:block}
+.lpstrip a.d{background:var(--ok)}
+.lpstrip a.s{background:var(--caution)}
+.lpstrip a.nx{background:var(--accent)}
+.lpstrip a:hover{outline:2px solid var(--ink);outline-offset:1px}
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.mod{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:14px 16px 10px;min-width:0;display:flex;flex-direction:column}
+.mod.off{background:transparent;border-style:dashed}
+.mod .mh{display:flex;align-items:baseline;gap:10px}
+.mod .mh i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.mod .mh a{flex:1;font-family:var(--f-display);font-stretch:92%;font-size:16.5px;font-weight:650;color:var(--ink);text-decoration:none;line-height:1.25}
+.mod .mh a:hover{color:var(--accent)}
+.mod .mh span{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.mod .mb{display:flex;gap:3px;margin:10px 0 6px}
+.mod .mb i{flex:1;height:4px;background:var(--rule-2)}
+.mod .mb i.d{background:var(--ok)} .mod .mb i.s{background:var(--caution)}
+.mod ul{list-style:none;margin:0;padding:0}
+.mod li a{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--rule-2);text-decoration:none;color:var(--ink);font-size:14px;line-height:1.3}
+.mod li:first-child a{border-top:0}
+.mod li a:hover .t{color:var(--accent);text-decoration:underline}
+.mod li .t{flex:1;min-width:0}
+.mod li .tag{font-size:10px;padding:3px 4px 2px}
+.mod li .sc{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);min-width:38px;text-align:right}
+.mod li.d .sc{color:var(--ok)}
+.mod li.nx a{box-shadow:inset 2px 0 0 var(--accent);padding-left:8px;margin-left:-8px}
+.mod li.nx .sc{color:var(--accent);font-family:var(--f-body);font-weight:600}
+.mod li.dim .t{color:var(--ink-2)}
+
+/* type rating */
+.tr-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px}
+.tmr{display:grid;grid-template-columns:22px minmax(0,1fr) 110px 46px;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--rule-2);text-decoration:none;color:var(--ink);font-size:14px}
+.tmr:hover .t{color:var(--accent);text-decoration:underline}
+.tmr .no{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
+.tmr .t{min-width:0;line-height:1.3}
+.tmr .b{height:5px;background:var(--rule-2);overflow:hidden}
+.tmr .b i{display:block;height:100%;background:var(--ok)}
+.tmr .b i.mid{background:var(--caution)} .tmr .b i.low{background:var(--warning)}
+.tmr .p{font-family:var(--f-mono);font-size:12.5px;text-align:right;color:var(--ink-2)}
+.invite{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 32px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:22px 24px}
+.invite h3{font-family:var(--f-display);font-stretch:90%;font-size:21px;font-weight:700;margin:0 0 6px;color:var(--ink)}
+.invite p{margin:0;color:var(--ink-2);font-size:15px;max-width:62ch}
+.invite ul{margin:10px 0 0;padding-left:18px;color:var(--ink-2);font-size:14px}
+
+/* planning */
+.plan2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 40px}
+.plist h3{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 6px!important}
+.plist h3 a{font-family:var(--f-body);font-size:14px;font-weight:600;text-decoration:none}
+.plist h3 a:hover{text-decoration:underline}
+.pi{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 16px;padding:11px 0;border-top:1px solid var(--rule-2);text-decoration:none;color:var(--ink)}
+.pi:hover b{color:var(--accent)}
+.pi b{font-weight:600;font-size:15px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi small{grid-column:1;font-size:13px;color:var(--ink-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pi .w{grid-column:2;grid-row:1/3;align-self:center;font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
+.pi .m{font-family:var(--f-mono)}
+.pempty{border:1px dashed var(--rule);border-radius:var(--radius);padding:18px 18px 20px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.pempty p{margin:0;color:var(--ink-2);font-size:14.5px;max-width:52ch}
+.pmore{font-size:13px;color:var(--ink-2);margin:8px 0 0}
+
+/* achievements */
+.ach{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.ag{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);min-width:0}
+.ag summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto 14px;align-items:center;gap:6px 14px;padding:14px 16px}
+.ag summary::-webkit-details-marker{display:none}
+.ag summary b{font-family:var(--f-display);font-stretch:92%;font-size:17px;font-weight:650;color:var(--ink)}
+.ag summary .c{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2)}
+.ag summary .car{width:8px;height:8px;border-right:1.5px solid var(--ink-2);border-bottom:1.5px solid var(--ink-2);transform:translateY(-2px) rotate(45deg)}
+.ag[open] summary .car{transform:translateY(2px) rotate(-135deg)}
+.ag summary .gb{grid-column:1/-1;height:4px;background:var(--rule-2);overflow:hidden}
+.ag summary .gb i{display:block;height:100%;background:var(--ink)}
+.ag summary:hover b{color:var(--accent)}
+.ag ul{list-style:none;margin:0;padding:0 16px 10px}
+.ag li a{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--rule-2);text-decoration:none;color:var(--ink-2);font-size:14px;line-height:1.3}
+.ag li a:hover .t{color:var(--accent);text-decoration:underline}
+.ag li .ck{width:16px;height:16px;border:1.5px solid var(--rule);border-radius:50%;display:grid;place-items:center}
+.ag li.got a{color:var(--ink)}
+.ag li.got .ck{background:var(--ok);border-color:var(--ok)}
+.ag li.got .ck::after{content:"";width:6px;height:3px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:translateY(-1px) rotate(-45deg)}
+.ag li.part .ck{border-color:var(--caution)}
+.ag li .p{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);min-width:34px;text-align:right}
+.ag li .x{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);min-width:58px;text-align:right}
+.ag li.got .x{color:var(--ink-2)}
+
+/* data */
+.dgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.dgrid .box{display:flex;flex-direction:column;gap:6px}
+.dgrid .box .btns{margin-top:auto;padding-top:10px}
+.dmsg{font-size:13px;color:var(--ink-2);margin:4px 0 0}.dmsg:empty{display:none}
+.dmsg.ok{color:var(--ok)} .dmsg.bad{color:var(--warning)}
+.btn.danger{color:var(--warning);border-color:var(--warning)}
+.btn.danger:hover{background:var(--warning-wash)}
+.btn.dangerfill{background:var(--warning);border-color:var(--warning);color:#fff}
+.btn.dangerfill:hover{background:#9A1D14}
+dialog.rs{border:1px solid var(--rule);border-radius:var(--radius-lg);padding:24px;max-width:min(460px,calc(100vw - 32px));box-shadow:var(--shadow-pop);color:var(--ink);background:var(--sheet)}
+dialog.rs::backdrop{background:rgba(19,32,42,.38)}
+dialog.rs h3{font-family:var(--f-display);font-stretch:90%;font-size:22px;font-weight:700;margin:0 0 8px}
+dialog.rs p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px}
+dialog.rs label{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:0 0 18px;line-height:1.4}
+dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
+
+@media (max-width:1080px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:980px){
+  .mt-head{grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+  .nextup{grid-template-columns:minmax(0,1fr);gap:12px}
+  .tr-grid,.plan2,.ach,.dgrid{grid-template-columns:minmax(0,1fr)}
+  .tr-grid{gap:0}
+  .tr-grid>div+div .tmr:first-child{border-top:1px solid var(--rule-2)}
+}
+@media (max-width:700px){
+  .mt-head{margin-top:24px}
+  .mods{grid-template-columns:minmax(0,1fr)}
+  .trackrow{gap:10px}
+  .trackrow .seg{width:100%;flex-direction:column}
+  .trackrow .seg button{margin-left:0;margin-top:-1px;border-radius:0;text-align:left;padding:10px 14px}
+  .trackrow .seg button:first-child{border-radius:var(--radius) var(--radius) 0 0;margin-top:0}
+  .trackrow .seg button:last-child{border-radius:0 0 var(--radius) var(--radius)}
+  .trackrow .tnote{margin-left:0}
+  .invite{grid-template-columns:minmax(0,1fr);padding:18px}
+  .tmr{grid-template-columns:20px minmax(0,1fr) 64px 42px;gap:8px}
+  .rankp{padding:16px}
+  .nu{padding:16px 16px 18px}
+}
+@media print{.dgrid,#data{display:none}}
+</style>
+</head>
+<body data-title="My training">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="mt-head" id="top">
+    <div class="brand">
+      <span class="mt-eb">Birdbird · My training</span>
+      <h1>My training</h1>
+      <p>Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.</p>
+    </div>
+    <div class="rankp" id="rank" aria-live="polite"></div>
+  </header>
+
+  <div class="trackrow" id="track">
+    <span class="lbl" id="trLbl"></span>
+    <div class="seg" id="trSeg" role="group" aria-label="Your track"></div>
+    <span class="tnote" id="trNote"></span>
+  </div>
+
+  <nav class="snav" aria-label="On this page">
+    <a href="#next">Next up</a><a href="#path">Learning path</a><a href="#type">Type rating</a><a href="#planning">Planning</a><a href="#achievements">Achievements</a><a href="#data">Your data</a>
+  </nav>
+
+  <section class="card" id="next">
+    <div class="shead"><div><h2>Next up</h2></div></div>
+    <p class="lead" id="nextLead"></p>
+    <div class="nextup" id="nextup"></div>
+  </section>
+
+  <section class="card" id="path">
+    <div class="shead">
+      <h2>Learning path</h2>
+      <a class="btn sm" href="lab.html">Open the Virtual Lab</a>
+    </div>
+    <p class="lead">Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.</p>
+    <div class="lpsum" id="lpsum"></div>
+    <div class="lpstrip" id="lpstrip" aria-label="Learning path progress"></div>
+    <div class="mods" id="mods"></div>
+  </section>
+
+  <section class="card" id="type">
+    <div class="shead">
+      <h2>Type rating: King Air B200</h2>
+      <a class="btn sm" href="typerating.html">Open the trainer</a>
+    </div>
+    <div id="trBody"></div>
+  </section>
+
+  <section class="card" id="planning">
+    <h2>Planning</h2>
+    <p class="lead">Your briefing packs and the routes you have drawn in Route Explorer.</p>
+    <div class="plan2">
+      <div class="plist"><h3><span>Briefing packs</span><a href="prep.html">Open →</a></h3><div id="packs"></div></div>
+      <div class="plist"><h3><span>Saved routes</span><a href="route.html">Open →</a></h3><div id="routes"></div></div>
+    </div>
+  </section>
+
+  <section class="card" id="achievements">
+    <div class="shead"><h2>Achievements</h2><span class="note" id="achSum"></span></div>
+    <p class="lead">Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.</p>
+    <div class="ach" id="ach"></div>
+  </section>
+
+  <section class="card" id="data">
+    <h2>Your data</h2>
+    <div class="callout info"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
+    <div class="dgrid">
+      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: scores, rank, type rating statistics, flashcards, briefing packs and routes.</p><div class="btns"><button class="btn pri" id="exp">Download progress file</button></div><p class="dmsg" id="expMsg"></p></div>
+      <div class="box"><b class="t">Import</b><p>Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.</p><div class="btns"><button class="btn" id="impBtn">Choose a file…</button><input type="file" id="impFile" accept=".json,application/json,text/plain" hidden></div><p class="dmsg" id="impMsg"></p></div>
+      <div class="box"><b class="t">Start over</b><p>Delete your training progress in this browser. You choose whether briefing packs and routes go too.</p><div class="btns"><button class="btn danger" id="rsBtn">Reset progress…</button></div><p class="dmsg" id="rsMsg"></p></div>
+    </div>
+  </section>
+
+  <dialog class="rs" id="rsDlg" aria-labelledby="rsH">
+    <form method="dialog">
+      <h3 id="rsH">Reset your progress?</h3>
+      <p>This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.</p>
+      <label><input type="checkbox" id="rsPlan"> <span>Also delete my briefing packs, saved routes, map library and saved aircraft</span></label>
+      <div class="btns"><button class="btn dangerfill" value="yes" id="rsYes">Delete progress</button><button class="btn" value="no" autofocus>Cancel</button></div>
+    </form>
+  </dialog>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="store.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el}=LAB;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+LAB.add({},{
+ 'Birdbird · My training':'Birdbird · Min trening','My training':'Min trening','My training · Birdbird':'Min trening · Birdbird',
+ 'Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.':'Rangen din, hva du bør gjøre nå, og alt du har gjort i labbene, typeratingtreneren og flyplanleggingen, samlet på ett sted.',
+ 'Next up':'Neste','Learning path':'Læringsløp','Type rating':'Typerating','Planning':'Planlegging','Achievements':'Prestasjoner','Your data':'Dine data',
+ 'Open the Virtual Lab':'Åpne Virtual Lab','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
+ 'Type rating: King Air B200':'Typerating: King Air B200','Open the trainer':'Åpne treneren',
+ 'Your briefing packs and the routes you have drawn in Route Explorer.':'Briefingpakkene dine og rutene du har tegnet i Route Explorer.','Briefing packs':'Briefingpakker','Saved routes':'Lagrede ruter','Open →':'Åpne →',
+ 'Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.':'Hver test, drill, simulatoroppdrag og radioscenario gir erfaringspoeng mot rangen din. Det beste resultatet teller, så du kan alltid prøve igjen. En prestasjon er oppnådd ved 80 %.',
+ 'Stored in this browser only':'Lagret bare i denne nettleseren',
+ 'Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.':'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Ingenting sendes til en server, og ingenting synkroniseres mellom enheter ennå. Sletter du nettleserdataene, forsvinner de, så eksporter en kopi innimellom.',
+ 'Export':'Eksporter','Download everything as one JSON file: scores, rank, type rating statistics, flashcards, briefing packs and routes.':'Last ned alt som én JSON-fil: resultater, rang, typeratingstatistikk, flashkort, briefingpakker og ruter.','Download progress file':'Last ned progresjonsfil',
+ 'Import':'Importer','Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.':'Last inn en progresjonsfil fra en annen enhet eller nettleser. De beste resultatene beholdes, og nyeste pakker og ruter vinner.','Choose a file…':'Velg en fil …',
+ 'Start over':'Start på nytt','Delete your training progress in this browser. You choose whether briefing packs and routes go too.':'Slett treningsprogresjonen i denne nettleseren. Du velger selv om briefingpakker og ruter også skal slettes.','Reset progress…':'Nullstill progresjonen …',
+ 'Reset your progress?':'Nullstille progresjonen?',
+ 'This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.':'Dette sletter rangen og erfaringspoengene, quiz- og labresultatene, typeratingstatistikken, flashkortboksene, økthistorikken med instruktøren og valgt løp i denne nettleseren. Det kan ikke angres. Eksporter en kopi først hvis du kanskje vil ha den tilbake.',
+ 'Also delete my briefing packs, saved routes, map library and saved aircraft':'Slett også briefingpakkene, de lagrede rutene, kartbiblioteket og de lagrede flyene mine',
+ 'Delete progress':'Slett progresjonen','Cancel':'Avbryt'
+});
+
+/* ---------- storage helpers (read-only except track, import and reset) ---------- */
+const ls={ get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, json(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }, del(k){ try{ localStorage.removeItem(k); }catch(e){} },
+  keys(){ try{ return Object.keys(localStorage); }catch(e){ return []; } } };
+const num=k=>{ const v=parseInt(ls.get(k)||'0',10); return Number.isFinite(v)?v:0; };
+const P=()=>window.NPROG||null;
+const lx=o=>o?(LAB.lang==='en'?o.en:(o.no||o.en)):'';
+const nfi=v=>Number(v).toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO');
+function ago(t){ if(!t) return ''; const d=Math.floor((Date.now()-t)/864e5);
+  if(d<=0) return L({en:'today',no:'i dag'}); if(d===1) return L({en:'yesterday',no:'i går'}); if(d<14) return L({en:d+' days ago',no:'for '+d+' dager siden'});
+  return new Date(t).toLocaleDateString(LAB.lang==='en'?'en-GB':'nb-NO',{day:'numeric',month:'short',year:new Date(t).getFullYear()===new Date().getFullYear()?undefined:'numeric'}); }
+
+/* ---------- track ---------- */
+const TK='bb-track';
+const TRACKS=[
+ {k:'found',en:'Foundations',no:'Grunnlag',sub:{en:'Core theory for every flight',no:'Kjerneteori for hver flyging'},lv:['','la']},
+ {k:'atpl',en:'ATPL theory on the A320',no:'ATPL-teori på A320',sub:{en:'The full ATPL syllabus, A320 reference',no:'Hele ATPL-pensumet, A320 som referanse'},lv:['','la','jet']},
+ {k:'type',en:'Type rating and airline prep',no:'Typerating og flyselskap',sub:{en:'King Air B200 trainer and the A320 sim assessment',no:'King Air B200-trener og A320-simulatortesten'},lv:['','jet']}];
+const getTrack=()=>{ const t=ls.get(TK)||''; return TRACKS.find(x=>x.k===t)||null; };
+function drawTrack(){ const raw=ls.get(TK)||'', t=getTrack();
+  el('trLbl').innerHTML= t? `${L({en:'Your track',no:'Ditt løp'})}: <b>${esc(lx(t))}</b>` : L({en:'Choose your track to tailor what comes next:',no:'Velg løpet ditt, så tilpasses forslagene:'});
+  el('trSeg').innerHTML=TRACKS.map(x=>`<button type="button" data-t="${x.k}" class="${t&&t.k===x.k?'on':''}" aria-pressed="${!!(t&&t.k===x.k)}">${esc(lx(x))}</button>`).join('');
+  el('trNote').textContent= t? lx(t.sub) : (raw? L({en:'Your saved track is not recognised. Pick one of these.',no:'Det lagrede løpet ble ikke gjenkjent. Velg ett av disse.'}) : L({en:'You can change it at any time.',no:'Du kan endre det når som helst.'})); }
+el('trSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ls.set(TK,b.dataset.t); drawAll(); });
+
+/* ---------- learning path ---------- */
+const quizKey=f=>f.replace(/\.html$/,'');
+function labScore(x){ return Math.max(LAB.done(x.k)||0, num('aeroson-quiz-'+quizKey(x.f))); }
+const stOf=s=> s>=60?'d':s>0?'s':'';
+function inTrack(x,t){ return !t || t.lv.includes(x.lv||''); }
+function nextLab(t){ const list=LAB.FLAT.filter(x=>inTrack(x,t)); return list.find(x=>labScore(x)<60)||null; }
+const LVX={la:{en:'Light twin',no:'Småfly',c:'lt'},jet:{en:'A320',no:'A320',c:'a320'}};
+function drawPath(){ const t=getTrack(), nx=nextLab(t), F=LAB.FLAT;
+  const sc=F.map(labScore), nd=sc.filter(s=>s>=60).length, ns=sc.filter(s=>s>0&&s<60).length;
+  const tl=F.filter(x=>inTrack(x,t)), tnd=tl.filter(x=>labScore(x)>=60).length;
+  el('lpsum').innerHTML=`<span><b class="n" style="font-family:var(--f-mono);color:var(--ink)">${nd} / ${F.length}</b> ${L({en:'labs done',no:'labber ferdige'})}</span>`+
+    (t&&tl.length!==F.length?`<span>${L({en:'In your track',no:'I ditt løp'})}: <b style="font-family:var(--f-mono);color:var(--ink)">${tnd} / ${tl.length}</b></span>`:'')+
+    `<span class="lg"><i class="dot d"></i>${L({en:'Done',no:'Ferdig'})}</span><span class="lg"><i class="dot s"></i>${L({en:'Started',no:'Påbegynt'})}${ns?' ('+ns+')':''}</span><span class="lg"><i class="dot"></i>${L({en:'Not started',no:'Ikke startet'})}</span>`;
+  el('lpstrip').innerHTML=F.map((x,i)=>{ const s=stOf(sc[i]); return `<a href="${x.f}" class="${nx===x?'nx':s}" title="${esc(lx(x))}${sc[i]?' · '+sc[i]+' %':''}" aria-label="${esc(lx(x))}"></a>`; }).join('');
+  el('mods').innerHTML=LAB.PATH.map((m,mi)=>{ const labs=F.filter(x=>x.mi===mi), d=labs.filter(x=>labScore(x)>=60).length, rel=labs.some(x=>inTrack(x,t));
+    return `<div class="mod ${rel?'':'off'}"><div class="mh"><i>${String(mi+1).padStart(2,'0')}</i><a href="lab.html#${m.k}">${esc(lx(m))}</a><span>${d}/${labs.length}</span></div>
+      <div class="mb">${labs.map(x=>`<i class="${stOf(labScore(x))}"></i>`).join('')}</div>
+      <ul>${labs.map(x=>{ const s=labScore(x), st=stOf(s), isN=nx===x, it=inTrack(x,t);
+        return `<li class="${st}${isN?' nx':''}${it?'':' dim'}"><a href="${x.f}${st==='s'?'#quiz':''}"><i class="dot ${st}"></i><span class="t">${esc(lx(x))}</span>${x.lv&&LVX[x.lv]?`<span class="tag ${LVX[x.lv].c}">${lx(LVX[x.lv])}</span>`:''}<span class="sc">${isN&&!s?L({en:'Next',no:'Neste'}):s?s+' %':'–'}</span></a></li>`; }).join('')}</ul></div>`; }).join(''); }
+
+/* ---------- B200 trainer (keys written by typerating.html) ---------- */
+const BK='bb-b200-';
+const B={stats:{},fc:{},deck:'num',has:false,Q:null,C:null,loaded:false};
+function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitner',{})||{}; B.deck=ls.json(BK+'deck','num')||'num';
+  const exam=P()?(P().load()['b200:exam']||0):0; B.exam=exam;
+  B.has=Object.keys(B.stats).length>0||Object.keys(B.fc).length>0||exam>0; }
+function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
+let bLoading=null;
+function loadBank(){ if(bLoading) return bLoading;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=2')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+    const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
+    B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
+  return bLoading; }
+const PROPRE=/propell|\bprops?\b|feather|\bbeta\b|revers|governor|synchro|blade|overspeed/i;
+const FLOWRE=/before start|engine start|\bstarting\b|during (the )?start|taxi|run-?up|before take-?off|take-?off (roll|power)|cruise power|in the descent|on approach|for landing|after landing|shut ?down|checklist|\bflows?\b|normal procedure/i;
+function modQs(m){ const Q=B.Q||[]; if(m.id==='flows') return Q.filter(q=>q.ch!=='emer'&&FLOWRE.test(q.q));
+  return Q.filter(q=>(m.ch||[]).includes(q.ch)&&(m.id==='prop'? PROPRE.test(q.q+' '+q.a[q.c]) : m.id==='power'? !PROPRE.test(q.q+' '+q.a[q.c]) : true)); }
+function b200(){ readB200(); const S=B.stats, ids=Object.keys(S);
+  const missed=ids.filter(i=>S[i]&&S[i].last===0).length;
+  const fcStarted=Object.keys(B.fc).length>0;
+  let due=null, mods=null, mastery=null, total=null, started=0;
+  if(B.loaded&&B.C&&B.Q){ const now=Date.now(); const nums=(B.C.keynums||[]).map((k,i)=>'k'+i), bank=B.Q.filter(q=>q.lvl===1).map(q=>'q'+q.id);
+    const deck=B.deck==='bank'?bank:B.deck==='both'?nums.concat(bank):nums; due=deck.filter(id=>{ const s=B.fc[id]; return !s||s.due<=now; }).length;
+    total=B.Q.length; mastery=total&&ids.length? Math.round(B.Q.filter(q=>S[q.id]&&S[q.id].last===1).length/total*100):null;
+    mods=(B.C.mods||[]).map(m=>{ const qs=modQs(m), seen=qs.filter(q=>S[q.id]).length, ok=qs.filter(q=>S[q.id]&&S[q.id].last===1).length; if(seen) started++; return {m,n:qs.length,seen,p:qs.length?Math.round(ok/qs.length*100):null}; });
+  } else if(fcStarted){ const now=Date.now(); due=Object.values(B.fc).filter(s=>s&&s.due<=now).length; }
+  return {has:B.has,missed,due,fcStarted,mods,mastery,total,started,exam:B.exam,seen:ids.length}; }
+function drawType(){ const b=b200(), host=el('trBody');
+  if(!b.has){ host.innerHTML=`<div class="invite"><div><h3>${L({en:'Preparing for a type rating?',no:'Skal du ta en typerating?'})}</h3><p>${L({en:'The King Air B200 trainer takes you through the aircraft system by system, with cockpit simulators, flashcards that come back when you are about to forget them, and a timed exam. Your mastery per module shows up here once you start.',no:'King Air B200-treneren tar deg gjennom flyet system for system, med cockpitsimulatorer, flashkort som kommer tilbake akkurat før du glemmer dem, og en eksamen på tid. Mestringen per modul vises her når du har begynt.'})}</p>
+      <ul><li>${L({en:'15 modules, from electrical power to emergency procedures',no:'15 moduler, fra elektrisk kraft til nødprosedyrer'})}</li><li>${L({en:'320 questions and a 50-question exam',no:'320 spørsmål og en eksamen med 50 spørsmål'})}</li></ul></div>
+      <div class="btns"><a class="btn pri" href="typerating.html#plan">${L({en:'Start the B200 trainer',no:'Start B200-treneren'})}</a></div></div>`; return; }
+  if(!B.loaded&&(b.seen||b.fcStarted)){ loadBank(); }
+  const kp=`<div class="kpis">
+    <div class="kpi"><span>${L({en:'Overall mastery',no:'Samlet mestring'})}</span><b>${b.mastery==null?'–':b.mastery+' %'}</b><small>${b.total?`${b.seen} / ${b.total} ${L({en:'questions seen',no:'spørsmål sett'})}`:`${b.seen} ${L({en:'questions seen',no:'spørsmål sett'})}`}</small></div>
+    <div class="kpi"><span>${L({en:'Cards due',no:'Kort til repetisjon'})}</span><b class="${b.fcStarted&&b.due?'hl':''}">${b.fcStarted?(b.due==null?'…':b.due):'–'}</b><small>${b.fcStarted?L({en:'flashcards, Leitner boxes',no:'flashkort, Leitner-bokser'}):L({en:'flashcards not started',no:'flashkort ikke startet'})}</small></div>
+    <div class="kpi"><span>${L({en:'Missed to review',no:'Bommet, til repetisjon'})}</span><b class="${b.missed?'warn':''}">${b.missed}</b><small>${L({en:'until answered correctly',no:'til du svarer riktig'})}</small></div>
+    <div class="kpi"><span>${L({en:'Best exam score',no:'Beste eksamensresultat'})}</span><b class="${b.exam>=75?'good':b.exam?'warn':''}">${b.exam?b.exam+' %':'–'}</b><small>${b.exam?(b.exam>=75?L({en:'at or above the usual 75 % pass mark',no:'på eller over vanlig grense på 75 %'}):L({en:'usual pass mark 75 %',no:'vanlig grense 75 %'})):L({en:'no exam taken yet',no:'ingen eksamen tatt ennå'})}</small></div></div>`;
+  let mods='';
+  if(b.mods){ const half=Math.ceil(b.mods.length/2), row=(x,i)=>{ const cls=x.p==null?'':x.p>=80?'':x.p>=50?'mid':'low';
+      return `<a class="tmr" href="typerating.html#mod-${esc(x.m.id)}"><span class="no">${i+1}</span><span class="t">${esc(x.m.t)}</span><span class="b"><i class="${cls}" style="width:${x.seen?x.p:0}%"></i></span><span class="p">${!x.n?'–':x.seen?x.p+' %':'–'}</span></a>`; };
+    mods=`<div class="shead" style="margin-top:8px"><h3>${L({en:'Mastery per module',no:'Mestring per modul'})}</h3><span class="note">${b.started} / ${b.mods.length} ${L({en:'modules started · modules are in English',no:'moduler startet · modulene er på engelsk'})}</span></div>
+      <div class="tr-grid"><div>${b.mods.slice(0,half).map((x,i)=>row(x,i)).join('')}</div><div>${b.mods.slice(half).map((x,i)=>row(x,i+half)).join('')}</div></div>
+      <p class="note">${L({en:'Mastery is the share of a module’s questions you answered correctly at your last attempt.',no:'Mestring er andelen av modulens spørsmål du svarte riktig på sist.'})}</p>`; }
+  else if(b.seen&&!B.loaded) mods=`<p class="note">${L({en:'Loading module statistics…',no:'Laster modulstatistikk …'})}</p>`;
+  host.innerHTML=kp+mods; }
+
+/* ---------- planning (NSTORE 'prep', 'route', 'mapview', 'mapnote') ---------- */
+let PACKS=[], ROUTES=[], VIEWS=[], NOTES=[], SES=[];
+function packTitle(p){ const f=p.f||{}; return (p.title||'').trim()||(f.heading||'').trim()||[f.depapt,f.destapt].filter(Boolean).join(' – ')||L({en:'Untitled briefing pack',no:'Briefingpakke uten navn'}); }
+function routeTitle(r){ const rw=(r.pts||[]).filter(x=>x.t==='rwy').map(x=>x.n); return (r.title||'').trim()||(rw.length?[rw[0],rw[rw.length-1]].filter((v,i,a)=>i===0||v!==a[0]).join(' – '):L({en:'Untitled route',no:'Rute uten navn'})); }
+const realPack=p=>{ const f=p&&p.f||{}; return !!(f.depapt||f.destapt||f.reg||f.type||(p.title||'').trim()||(f.heading||'').trim()); };
+const realRoute=r=>r&&(r.pts||[]).length>0;
+function drawPlan(){ const pk=PACKS.filter(realPack), rt=ROUTES.filter(realRoute);
+  el('packs').innerHTML= pk.length? pk.slice(0,5).map(p=>{ const f=p.f||{}; const meta=[f.date,[f.type,f.reg].filter(Boolean).join(' '),f.rules].filter(Boolean).map(esc).join(' · ');
+      return `<a class="pi" href="prep.html?id=${encodeURIComponent(p.id)}"><b>${esc(packTitle(p))}</b><small>${meta||L({en:'Briefing pack',no:'Briefingpakke'})}</small><span class="w">${esc(ago(p.updated||p.created))}</span></a>`; }).join('')+(pk.length>5?`<p class="pmore">${L({en:`and ${pk.length-5} more in the briefing pack`,no:`og ${pk.length-5} til i briefingpakken`})}</p>`:'')
+    : `<div class="pempty"><p>${L({en:'A briefing pack collects the route, weather, NOTAM, minima, fuel and mass and balance for one flight, in a fixed order, ready to print. Start one for your next flight, real or practice.',no:'En briefingpakke samler rute, vær, NOTAM, minima, drivstoff og masse og balanse for én flytur, i fast rekkefølge, klar til utskrift. Start en for neste tur, ekte eller for øving.'})}</p><a class="btn pri" href="prep.html">${L({en:'Make a briefing pack',no:'Lag en briefingpakke'})}</a></div>`;
+  const lib=VIEWS.length+NOTES.length;
+  el('routes').innerHTML= rt.length? rt.slice(0,5).map(r=>{ const n=(r.pts||[]).length;
+      return `<a class="pi" href="route.html"><b>${esc(routeTitle(r))}</b><small><span class="m">${n}</span> ${L({en:n===1?'point':'points',no:'punkter'})}${r.s&&r.s.cr?` · ${L({en:'cruise',no:'marsj'})} <span class="m">${esc(r.s.cr)} ft</span>`:''}</small><span class="w">${esc(ago(r.updated))}</span></a>`; }).join('')+(rt.length>5?`<p class="pmore">${L({en:`and ${rt.length-5} more in Route Explorer`,no:`og ${rt.length-5} til i Route Explorer`})}</p>`:'')+(lib?`<p class="pmore">${L({en:'Map library',no:'Kartbibliotek'})}: ${VIEWS.length} ${L({en:VIEWS.length===1?'saved view':'saved views',no:VIEWS.length===1?'lagret utsnitt':'lagrede utsnitt'})}, ${NOTES.length} ${L({en:NOTES.length===1?'note':'notes',no:NOTES.length===1?'notat':'notater'})}</p>`:'')
+    : `<div class="pempty"><p>${L({en:'Draw your route on the map in Route Explorer and see the profile over the terrain. Then send it straight into a briefing pack.',no:'Tegn ruten på kartet i Route Explorer og se profilen over terrenget. Send den så rett inn i en briefingpakke.'})}</p><a class="btn" href="route.html">${L({en:'Open Route Explorer',no:'Åpne Route Explorer'})}</a></div>`; }
+
+/* ---------- rank ---------- */
+function drawRank(){ const N=P(); if(!N){ el('rank').innerHTML=''; el('rank').hidden=true; return; }
+  const d=N.load(), xp=N.xpOf(d), r=N.rankOf(xp), max=N.items.reduce((a,i)=>a+i.xp,0);
+  el('rank').innerHTML=`<div class="rk"><div><small>${L({en:'Current rank',no:'Nåværende rang'})}</small><b>${esc(r.name)}</b></div><div class="xp">${nfi(xp)}<span>XP</span></div></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(r.pct*100)}" aria-label="${L({en:'Progress to next rank',no:'Fremgang mot neste rang'})}"><i style="width:${Math.max(r.pct>0?2:0,Math.round(r.pct*100))}%"></i></div>
+    <div class="rnext">${r.next!=null?`<span>${L({en:'Next',no:'Neste'})}: <b>${esc(r.nextName)}</b></span><span style="font-family:var(--f-mono);font-size:12.5px">${nfi(r.next-xp)} XP ${L({en:'to go',no:'igjen'})}</span>`:`<span>${L({en:'Top rank reached.',no:'Høyeste rang nådd.'})}</span><span style="font-family:var(--f-mono);font-size:12.5px">${nfi(xp)} / ${nfi(max)}</span>`}</div>
+    <div class="ladder" title="${L({en:'Ranks',no:'Ranger'})}">${N.ranks.map((x,i)=>`<i class="${i<r.i?'d':i===r.i?'c':''}" title="${esc(lx(x[1]))}"></i>`).join('')}</div>`;
+  el('rank').hidden=false; }
+
+/* ---------- next up ---------- */
+function gaps(){ const m={}; SES.forEach(s=>(s.gaps||[]).forEach(g=>{ const k=String(g).toLowerCase(); if(!m[k]) m[k]={t:g,n:0,last:0}; m[k].n++; m[k].last=Math.max(m[k].last,s.started||0); }));
+  SES.forEach(s=>(s.grades||[]).forEach(g=>{ const k=String(g.topic||'').toLowerCase(); if(m[k]&&g.score>=8&&(s.started||0)>=m[k].last) delete m[k]; }));
+  return Object.values(m).sort((a,b)=>b.n-a.n||b.last-a.last); }
+function drawNext(){ const t=getTrack(), b=b200(), nx=nextLab(t), pk=PACKS.filter(realPack), C={};
+  const anyLab=LAB.FLAT.some(x=>labScore(x)>0);
+  if(nx){ const s=labScore(nx); C.lab={k:L({en:`Virtual Lab · Module ${nx.mi+1}`,no:`Virtual Lab · Modul ${nx.mi+1}`}),
+    h:s?L({en:'Retake: ',no:'Ta på nytt: '})+lx(nx):lx(nx),
+    p:s?L({en:`Your best quiz score is ${s} %. Reach 60 % to mark the lab done.`,no:`Beste quizresultat er ${s} %. Nå 60 % for å markere labben som ferdig.`})
+       :anyLab?L({en:`The next lab in ${t?'your track':'the learning path'}: ${lx(nx.m)}.`,no:`Neste lab i ${t?'løpet ditt':'læringsløpet'}: ${lx(nx.m)}.`})
+       :L({en:'Where the learning path begins. An interactive lab, then a short quiz to check your understanding.',no:'Her starter læringsløpet. En interaktiv lab, og så en kort quiz som sjekker forståelsen.'}),
+    b:s?L({en:'Retake the quiz',no:'Ta quizen igjen'}):anyLab?L({en:'Continue',no:'Fortsett'}):L({en:'Start the first lab',no:'Start første lab'}), href:nx.f+(s?'#quiz':'')}; }
+  else C.lab={k:'Virtual Lab',h:L({en:'Every lab in your track is done',no:'Alle labbene i løpet ditt er ferdige'}),p:L({en:'Raise your scores or try a lab outside your track.',no:'Forbedre resultatene eller prøv en lab utenfor løpet ditt.'}),b:L({en:'See all labs',no:'Se alle labber'}),href:'lab.html'};
+  if(b.fcStarted&&b.due) C.cards={k:L({en:'Type rating · Flashcards',no:'Typerating · Flashkort'}),h:L({en:`${b.due} flashcards due`,no:`${b.due} flashkort å repetere`}),p:L({en:'Cards come back just before you forget them. A round takes a few minutes.',no:'Kortene kommer tilbake rett før du glemmer dem. En runde tar noen minutter.'}),b:L({en:'Review the cards',no:'Repeter kortene'}),href:'typerating.html#cards'};
+  if(b.missed) C.missed={k:L({en:'Type rating · Questions',no:'Typerating · Spørsmål'}),h:L({en:`Review ${b.missed} missed question${b.missed===1?'':'s'}`,no:`Repeter ${b.missed} spørsmål du bommet på`}),p:L({en:'Choose “Missed” in the question trainer. They stay there until you answer them correctly.',no:'Velg «Missed» i spørsmålstreneren. De blir der til du svarer riktig.'}),b:L({en:'Open the question trainer',no:'Åpne spørsmålstreneren'}),href:'typerating.html#quiz'};
+  if(!b.has) C.b200={k:L({en:'Type rating',no:'Typerating'}),h:L({en:'Start the King Air B200 trainer',no:'Start King Air B200-treneren'}),p:L({en:'System by system, with cockpit simulators, flashcards and a timed exam.',no:'System for system, med cockpitsimulatorer, flashkort og eksamen på tid.'}),b:L({en:'Open the trainer',no:'Åpne treneren'}),href:'typerating.html#plan'};
+  const last=pk[0]; if(last&&Date.now()-(last.updated||0)<30*864e5) C.pack={k:L({en:'Briefing pack · ',no:'Briefingpakke · '})+ago(last.updated),h:L({en:'Resume: ',no:'Fortsett: '})+packTitle(last),p:L({en:'Pick up where you left off in your latest briefing pack.',no:'Fortsett der du slapp i den siste briefingpakken.'}),b:L({en:'Resume the pack',no:'Fortsett pakken'}),href:'prep.html?id='+encodeURIComponent(last.id)};
+  else if(!pk.length) C.pack={k:L({en:'Plan',no:'Planlegg'}),h:L({en:'Make your first briefing pack',no:'Lag din første briefingpakke'}),p:L({en:'Route, weather, NOTAM, minima, fuel and mass and balance for one flight, in a fixed order.',no:'Rute, vær, NOTAM, minima, drivstoff og masse og balanse for én tur, i fast rekkefølge.'}),b:L({en:'Start a briefing pack',no:'Start en briefingpakke'}),href:'prep.html',weak:1};
+  const G=gaps(); if(G.length) C.gap={k:'Flight Intelligence',h:L({en:'Revise: ',no:'Repeter: '})+G[0].t,p:L({en:'The instructor flagged this in a session or a scored briefing.',no:'Instruktøren pekte på dette i en økt eller en vurdert briefing.'}),b:L({en:'Revise with the instructor',no:'Repeter med instruktøren'}),href:'fi.html?mode=rev&topic='+encodeURIComponent(G[0].t)+'#aircraft'};
+  if(!t) C.track={k:L({en:'Your track',no:'Ditt løp'}),h:L({en:'Choose your track',no:'Velg løpet ditt'}),p:L({en:'Foundations, ATPL theory on the A320, or type rating. Suggestions here follow your choice.',no:'Grunnlag, ATPL-teori på A320 eller typerating. Forslagene her følger valget ditt.'}),b:L({en:'Choose a track',no:'Velg et løp'}),href:'#track',track:1};
+  const order= t&&t.k==='type' ? ['cards','missed','b200','lab','pack','gap'] : !t ? ['lab','cards','missed','pack','track','gap'] : ['lab','cards','missed','pack','gap','b200'];
+  let pick=order.map(k=>C[k]).filter(Boolean); if(pick.length>3&&pick[2].weak) pick.splice(2,1);
+  pick=pick.slice(0,3);
+  const fresh=!anyLab&&!b.has&&!PACKS.length;
+  el('nextLead').textContent= fresh? L({en:'Welcome aboard. Nothing is recorded yet, so here are three good places to start. Your progress is saved as you go.',no:'Velkommen om bord. Ingenting er registrert ennå, så her er tre gode steder å begynne. Progresjonen lagres underveis.'})
+    : L({en:'Worked out from what you have done so far. The most useful one comes first.',no:'Regnet ut fra det du har gjort så langt. Det nyttigste kommer først.'});
+  el('nextup').innerHTML=pick.map((c,i)=>`<article class="nu ${i===0?'first':''}"><span class="k">${esc(c.k)}</span><h3>${esc(c.h)}</h3><p>${esc(c.p)}</p><a class="btn ${i===0?'pri':''}" href="${esc(c.href)}"${c.track?' data-track="1"':''}>${esc(c.b)}</a></article>`).join(''); }
+el('nextup').addEventListener('click',e=>{ const a=e.target.closest('[data-track]'); if(!a) return; e.preventDefault(); const r=el('track'); r.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'center'}); r.classList.add('pulse'); setTimeout(()=>r.classList.remove('pulse'),1800); const f=r.querySelector('button'); if(f) f.focus({preventScroll:true}); });
+
+/* ---------- achievements ---------- */
+const AG=[['lab',{en:'Virtual Lab',no:'Virtual Lab'}],['sim',{en:'Simulator',no:'Simulator'}],['plan',{en:'Flight planning',no:'Flyplanlegging'}],['radio',{en:'Practise and check',no:'Øv og sjekk'}]];
+function drawAch(){ const N=P(); if(!N){ el('ach').innerHTML=''; return; } const d=N.load(); const open=[...document.querySelectorAll('#ach details[open]')].map(x=>x.dataset.g);
+  let got=0, all=0;
+  el('ach').innerHTML=AG.map(([g,name])=>{ const its=N.items.filter(i=>i.g===g); if(!its.length) return ''; const v=i=>Math.min(100,d[i.k]||0);
+    const n=its.filter(i=>v(i)>=80).length; got+=n; all+=its.length;
+    const sorted=its.slice().sort((a,b)=>(v(b)>=80)-(v(a)>=80)||v(b)-v(a));
+    return `<details class="ag" data-g="${g}" ${open.includes(g)?'open':''}><summary><b>${esc(lx(name))}</b><span class="c">${n} / ${its.length}</span><span class="car" aria-hidden="true"></span><span class="gb"><i style="width:${Math.round(n/its.length*100)}%"></i></span></summary>
+      <ul>${sorted.map(i=>{ const x=v(i), cls=x>=80?'got':x>0?'part':''; return `<li class="${cls}"><a href="${esc(i.href)}"><span class="ck" aria-label="${x>=80?L({en:'Earned',no:'Oppnådd'}):L({en:'Not earned',no:'Ikke oppnådd'})}"></span><span class="t">${esc(N.Lx(i.t))}</span><span class="p">${x?x+' %':''}</span><span class="x">${x?Math.round(i.xp*x/100)+' / ':''}${i.xp} XP</span></a></li>`; }).join('')}</ul></details>`; }).join('');
+  el('achSum').textContent=`${got} / ${all} ${L({en:'earned',no:'oppnådd'})}`; }
+
+/* ---------- data: export, import, reset ---------- */
+const OURS=/^(naeroson-|aeroson-quiz-|vlab-|bb-)/;
+const PROGRESS=k=> k==='naeroson-prog'||/^(aeroson-quiz-|naeroson-radio-|vlab-done-|bb-b200-)/.test(k)||k==='vlab-reg'||k==='bb-track'||k==='naeroson-store-fises';
+const PLANNING=k=> /^naeroson-store-(prep|route|mapview|mapnote|fixes|aircraft|fiac)$/.test(k);
+el('exp').onclick=()=>{ const keys={}; ls.keys().filter(k=>OURS.test(k)).sort().forEach(k=>{ keys[k]=ls.get(k); });
+  const o={app:'birdbird',kind:'progress',v:2,exported:new Date().toISOString(),keys};
+  const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='birdbird-progress-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+  const m=el('expMsg'); m.className='dmsg ok'; m.textContent=L({en:`Downloaded ${Object.keys(keys).length} stored items.`,no:`Lastet ned ${Object.keys(keys).length} lagrede elementer.`}); };
+function mergeKey(k,inc){ const cur=ls.get(k); if(inc==null) return 0; if(typeof inc!=='string') inc=JSON.stringify(inc);
+  if(cur==null){ ls.set(k,inc); return 1; }
+  if(cur===inc) return 0;
+  try{
+    if(/^(aeroson-quiz-|naeroson-radio-|vlab-done-)/.test(k)){ const a=+cur||0, b=+inc||0; if(b>a){ ls.set(k,String(Math.min(100,b))); return 1; } return 0; }
+    if(k==='naeroson-prog'){ const a=JSON.parse(cur)||{}, b=JSON.parse(inc)||{}; let n=0; for(const x in b){ const v=+b[x]; if(v>(+a[x]||0)){ a[x]=Math.min(100,v); n=1; } } if(n) ls.set(k,JSON.stringify(a)); return n; }
+    if(/^naeroson-store-/.test(k)){ const a=JSON.parse(cur)||{}, b=JSON.parse(inc)||{}; let n=0; for(const id in b){ if(!a[id]||((b[id]&&b[id].updated)||0)>((a[id].updated)||0)){ a[id]=b[id]; n=1; } } if(n) ls.set(k,JSON.stringify(a)); return n; }
+    if(k==='bb-b200-stats'){ const a=JSON.parse(cur)||{}, b=JSON.parse(inc)||{}; let n=0; for(const id in b){ if(!a[id]||((b[id]&&b[id].t)||0)>((a[id].t)||0)){ a[id]=b[id]; n=1; } } if(n) ls.set(k,JSON.stringify(a)); return n; }
+    if(k==='bb-b200-leitner'){ const a=JSON.parse(cur)||{}, b=JSON.parse(inc)||{}; let n=0; for(const id in b){ if(!a[id]){ a[id]=b[id]; n=1; } } if(n) ls.set(k,JSON.stringify(a)); return n; }
+  }catch(e){ return 0; }
+  return 0; /* preferences already set on this device are kept */ }
+el('impBtn').onclick=()=>el('impFile').click();
+el('impFile').onchange=async()=>{ const f=el('impFile').files[0], m=el('impMsg'); el('impFile').value=''; if(!f) return;
+  try{ const txt=(await f.text()).trim(); let n=0;
+    if(txt[0]==='{'){ const o=JSON.parse(txt); if(!o||o.app!=='birdbird'||!o.keys||typeof o.keys!=='object') throw new Error('format');
+      for(const k in o.keys){ if(OURS.test(k)) n+=mergeKey(k,o.keys[k]); } }
+    else if(P()){ P().import(txt); n=1; }   /* older "progress code" from the previous Progress page */
+    else throw new Error('format');
+    m.className='dmsg ok'; m.textContent= n? L({en:'Imported. Your best results are kept.',no:'Importert. De beste resultatene dine er beholdt.'}) : L({en:'Nothing new in that file. Everything was already here.',no:'Ingenting nytt i den filen. Alt var her fra før.'});
+    document.dispatchEvent(new CustomEvent('nprog')); await reloadStore(); drawAll();
+  }catch(e){ m.className='dmsg bad'; m.textContent=L({en:'That file is not a Birdbird progress file.',no:'Den filen er ikke en progresjonsfil fra Birdbird.'}); } };
+const dlg=el('rsDlg');
+el('rsBtn').onclick=()=>{ el('rsPlan').checked=false; if(dlg.showModal) dlg.showModal(); else if(confirm(T('Reset your progress?'))) doReset(false); };
+dlg.addEventListener('close',()=>{ if(dlg.returnValue==='yes') doReset(el('rsPlan').checked); });
+async function doReset(plan){ if(P()) try{ P().reset(); }catch(e){}
+  ls.keys().filter(k=>PROGRESS(k)||(plan&&PLANNING(k))).forEach(k=>ls.del(k));
+  B.loaded=false; bLoading=null;
+  const m=el('rsMsg'); m.className='dmsg ok'; m.textContent=plan?L({en:'Progress, packs and routes deleted.',no:'Progresjon, pakker og ruter er slettet.'}):L({en:'Progress deleted. Your briefing packs and routes are kept.',no:'Progresjonen er slettet. Briefingpakkene og rutene er beholdt.'});
+  await reloadStore(); drawAll(); window.scrollTo({top:0,behavior:'auto'}); }
+
+/* ---------- draw ---------- */
+async function reloadStore(){ try{ await NSTORE.ready; const r=await Promise.all(['prep','route','mapview','mapnote','fises'].map(k=>NSTORE.list(k).catch(()=>[])));
+  [PACKS,ROUTES,VIEWS,NOTES,SES]=r.map(x=>Array.isArray(x)?x:[]); }catch(e){} }
+function drawAll(){ drawRank(); drawTrack(); drawNext(); drawPath(); drawType(); drawPlan(); drawAch(); }
+document.addEventListener('nprog',drawAll);
+addEventListener('storage',e=>{ if(!e.key||OURS.test(e.key)){ reloadStore().then(drawAll); } });
+LAB.start('profile');
+LAB.onLang(()=>drawAll());
+drawAll();
+reloadStore().then(drawAll);
+})();
+</script>
+</body>
+</html>

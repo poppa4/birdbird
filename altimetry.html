@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="The altimeter measures air pressure and converts it to altitude using the standard atmosphere. When the real atmosphere differs, the altimeter is wrong.…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pressure and Altitude</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+#xsec{height:440px}
+#alti{width:260px;height:260px;max-width:100%}
+.altrow{display:grid;grid-template-columns:280px minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:1100px){.altrow{grid-template-columns:minmax(0,1fr)}}
+.altrow .view{display:flex;justify-content:center;padding:10px}
+#daBar{height:120px}
+table.ct{border-collapse:collapse;width:100%;font-size:13px}
+table.ct th,table.ct td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+table.ct th{color:var(--muted);font-weight:500;font-size:12px}
+table.ct td:first-child,table.ct th:first-child{text-align:left}
+table.ct td.c{font-family:var(--f-mono);color:var(--amber)}
+.tablewrap{overflow-x:auto}
+</style>
+</head>
+<body data-title="Pressure and Altitude">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Instruments</div>
+      <h1>Pressure and altitude</h1>
+      <p>The altimeter measures air pressure and converts it to altitude using the standard atmosphere. When the real atmosphere differs, the altimeter is wrong. Here you can see how much, and why.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">Safe</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#xs">Why the altimeter lies</a><a href="#set">Altimeter settings</a><a href="#da">Density altitude</a><a href="#cold">Cold temperature</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="xs">
+    <div><div class="eyebrow">1 · Cross-section of the atmosphere</div><h2>Why the altimeter lies</h2>
+      <p class="lead">The aircraft flies with a constant altimeter reading, which means it follows a surface of constant pressure. When the pressure at sea level drops, or the air gets colder, that surface sinks, and the aircraft sinks with it without the altimeter showing it.</p></div>
+    <div class="split">
+      <div class="view"><canvas id="xsec" aria-label="Cross-section with pressure surfaces, aircraft path and terrain"></canvas></div>
+      <div class="panel">
+        <div class="btns" id="xsPre"></div>
+        <div class="grp">Departure A</div><div id="ctlA"></div>
+        <div class="grp">Destination B</div><div id="ctlB"></div>
+        <div class="grp">In the cockpit</div><div id="ctlC"></div>
+        <div class="btns"><button class="btn" id="setA">Set QNH A</button><button class="btn" id="setB">Set QNH B</button></div>
+      </div>
+    </div>
+    <div class="kpis" id="xsK"></div>
+    <div class="cols">
+      <div class="callout"><b>High to low, look out below.</b> Flying towards lower pressure without updating the altimeter: about 27–30 ft lower for every hPa.</div>
+      <div class="callout blue"><b>Hot to cold, look out below.</b> In cold air the pressure surfaces lie lower: roughly 4 % of your height above the station for every 10 °C below ISA.</div>
+      <div class="callout red"><b>Why it matters.</b> Both errors put you lower than you think, and it is closest to the ground, over terrain and on approach, that this becomes dangerous.</div>
+    </div>
+  </section>
+
+  <section class="card" id="set">
+    <div><div class="eyebrow">2 · QNH, QFE and standard</div><h2>Altimeter settings</h2>
+      <p class="lead">The number in the window on the altimeter (the subscale) decides what the altimeter measures from. Change the setting and watch what the instrument shows.</p></div>
+    <div class="altrow">
+      <div class="view"><canvas id="alti" aria-label="Altimeter"></canvas></div>
+      <div class="panel"><div id="setSeg"></div><div id="ctlS"></div></div>
+      <div class="box"><div class="ro" id="setR"></div><p id="setTxt"></p></div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">QNH</b><p>Shows altitude above mean sea level. On the ground it shows the aerodrome elevation. Used below the transition altitude, and the setting charts and terrain heights are built around.</p></div>
+      <div class="box"><b class="t">QFE</b><p>Shows height above the aerodrome. On the runway it shows zero. Used by some operators and in some circuits, and with military traffic.</p></div>
+      <div class="box"><b class="t">Standard 1013.25 hPa</b><p>Shows pressure altitude, used for flight levels. Everyone uses the same setting, so aircraft stay separated from each other even though nobody shows their true altitude.</p></div>
+      <div class="box"><b class="t">Transition</b><p>Climbing: set standard when passing the transition altitude. Descending: set QNH when passing the transition level. The layer in between is the transition layer, where you do not level off.</p></div>
+      <div class="box"><b class="t">On the A320</b><p>Each pilot sets the baro reference on the EFIS control panel: pull the knob for STD, push for QNH. The PFD altitude tape shows the setting below it, and it flashes if you pass the transition altitude or level without changing. The standby instrument (ISIS) has its own baro setting.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="da">
+    <div><div class="eyebrow">3 · Performance</div><h2>Density altitude</h2>
+      <p class="lead">The wings and the engine feel the density of the air, not the altitude on the chart. Density altitude is the altitude in the standard atmosphere that has the same density as the air you are in.</p></div>
+    <div class="split">
+      <div class="view"><canvas id="daBar" aria-label="Density altitude compared with field elevation"></canvas></div>
+      <div class="panel" id="ctlD"></div>
+    </div>
+    <div class="kpis" id="daK"></div>
+    <div class="cols">
+      <div class="box"><b class="t">Jet thrust and flat rating</b><p>The A320's CFM56 or LEAP engines are flat rated: take-off thrust stays roughly constant up to a corner temperature (typically about ISA+15 °C) and then falls as the air gets hotter. Lower pressure reduces thrust at any temperature.</p></div>
+      <div class="box"><b class="t">Speeds on the A320</b><p>V1, VR and V2 are indicated speeds. On a hot, high day the same VR of about 145 kt means a higher true and ground speed, so the take-off run gets longer even if the thrust were unchanged.</p></div>
+      <div class="box"><b class="t">FLEX and TOGA</b><p>When there is margin, the A320 takes off with reduced thrust (FLEX, an assumed temperature higher than the real one). A high density altitude uses up that margin, so FLEX gets smaller and TOGA may be required.</p></div>
+    </div>
+    <p class="note">Take-off distance factor is a rough teaching estimate for a jet like the A320: true airspeed at the same indicated speed rises with 1/σ, and thrust falls with pressure and, above the flat-rating temperature (typical ISA+15 °C), by about 0.8 % per °C. Real take-off performance comes from the aircraft performance software (FCOM/EFB), not from this model.</p>
+  </section>
+
+  <section class="card" id="cold">
+    <div><div class="eyebrow">4 · Minimum altitudes</div><h2>Cold temperature correction</h2>
+      <p class="lead">Published minimum altitudes assume the standard atmosphere. In cold air the aircraft is lower than the altimeter shows, so the correction is added to the published altitudes. The colder it is and the higher above the aerodrome, the bigger the correction.</p></div>
+    <div class="split">
+      <div class="box tablewrap"><table class="ct" id="ctab"></table></div>
+      <div class="panel" id="ctlT"></div>
+    </div>
+    <p class="note">Calculated with the ICAO formula (Doc 8168), the same one behind the ICAO correction tables. Many operators apply cold temperature corrections at aerodrome temperatures of 0 °C and below. Check the AIP and your operations manual.</p>
+  </section>
+
+  <section class="card" id="quiz">
+    <div><div class="eyebrow">5 · Check your understanding</div><h2>Test yourself</h2></div>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. Use the numbers to understand relationships, not for operational decisions. Always follow the AIP, the aircraft flight manual and your instructor.</p>
+</div>
+
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,nf,el,slider,seg,fit,visible,quiz,shuffle}=LAB;
+LAB.add({},{'Pressure and altitude':'Trykk og høyde',
+ 'Pressure and Altitude':'Trykk og høyde','Birdbird Virtual Lab · Instruments':'Birdbird Virtual Lab · Instrumenter',
+ 'Pressure, temperature and altitude':'Trykk, temperatur og høyde',
+ 'The altimeter measures air pressure and converts it to altitude using the standard atmosphere. When the real atmosphere differs, the altimeter is wrong. Here you can see how much, and why.':'Høydemåleren måler lufttrykk og regner det om til høyde etter standardatmosfæren. Når den virkelige atmosfæren er annerledes, viser høydemåleren feil. Her ser du hvor mye, og hvorfor.',
+ 'Why the altimeter lies':'Hvorfor høydemåleren lyver','Altimeter settings':'Høydemålerinnstillinger','Density altitude':'Tetthetshøyde','Cold temperature':'Kulde','Test yourself':'Test deg selv','Sections':'Seksjoner',
+ '1 · Cross-section of the atmosphere':'1 · Tverrsnitt av atmosfæren',
+ 'The aircraft flies with a constant altimeter reading, which means it follows a surface of constant pressure. When the pressure at sea level drops, or the air gets colder, that surface sinks, and the aircraft sinks with it without the altimeter showing it.':'Flyet holder konstant høydemåleravlesning, og følger dermed en flate med konstant trykk. Når trykket ved havnivå faller, eller luften blir kaldere, synker flaten, og flyet synker med den uten at høydemåleren viser det.',
+ 'Departure A':'Avgang A','Destination B':'Destinasjon B','In the cockpit':'I cockpit','Set QNH A':'Sett QNH A','Set QNH B':'Sett QNH B',
+ 'High to low, look out below.':'Fra høyt til lavt trykk: se opp, du er lavere.','Flying towards lower pressure without updating the altimeter: about 27–30 ft lower for every hPa.':'Flyr du mot lavere trykk uten å oppdatere høydemåleren, er du omtrent 27–30 ft lavere per hPa.',
+ 'Hot to cold, look out below.':'Fra varmt til kaldt: se opp, du er lavere.','In cold air the pressure surfaces lie lower: roughly 4 % of your height above the station for every 10 °C below ISA.':'I kald luft ligger trykkflatene lavere: omtrent 4 % av høyden over stasjonen for hver 10 °C under ISA.',
+ 'Why it matters.':'Hvorfor det er viktig.','Both errors put you lower than you think, and it is closest to the ground, over terrain and on approach, that this becomes dangerous.':'Begge feilene gjør at du er lavere enn du tror, og det er nærmest bakken, over terreng og på innflyging, at det blir farlig.',
+ '2 · QNH, QFE and standard':'2 · QNH, QFE og standard','The number in the window on the altimeter (the subscale) decides what the altimeter measures from. Change the setting and watch what the instrument shows.':'Tallet i vinduet på høydemåleren bestemmer hva høydemåleren måler fra. Bytt innstilling og se hva instrumentet viser.',
+ 'Shows altitude above mean sea level. On the ground it shows the aerodrome elevation. Used below the transition altitude, and the setting charts and terrain heights are built around.':'Viser høyde over havet. På bakken viser den flyplassens høyde. Brukes under overgangshøyden, og er innstillingen kart og terrenghøyder er laget for.',
+ 'Shows height above the aerodrome. On the runway it shows zero. Used by some operators and in some circuits, and with military traffic.':'Viser høyde over flyplassen. På rullebanen viser den null. Brukes av noen operatører, i enkelte landingsrunder og av militær trafikk.',
+ 'Standard 1013.25 hPa':'Standard 1013,25 hPa','Shows pressure altitude, used for flight levels. Everyone uses the same setting, so aircraft stay separated from each other even though nobody shows their true altitude.':'Viser trykkhøyde, som brukes for flygenivåer. Alle bruker samme innstilling, så flyene holdes adskilt fra hverandre selv om ingen viser sin virkelige høyde.',
+ 'Transition':'Overgang','Climbing: set standard when passing the transition altitude. Descending: set QNH when passing the transition level. The layer in between is the transition layer, where you do not level off.':'I stigning: sett standard når du passerer overgangshøyden. I nedstigning: sett QNH når du passerer overgangsnivået. Laget imellom er overgangslaget, der du ikke flater ut.',
+ '3 · Performance':'3 · Ytelse','The wings and the engine feel the density of the air, not the altitude on the chart. Density altitude is the altitude in the standard atmosphere that has the same density as the air you are in.':'Vingene og motoren merker luftens tetthet, ikke høyden på kartet. Tetthetshøyde er den høyden i standardatmosfæren som har samme tetthet som luften du er i.',
+ 'Take-off distance factor is a rough teaching estimate for a jet like the A320: true airspeed at the same indicated speed rises with 1/σ, and thrust falls with pressure and, above the flat-rating temperature (typical ISA+15 °C), by about 0.8 % per °C. Real take-off performance comes from the aircraft performance software (FCOM/EFB), not from this model.':'Faktoren for startstrekning er et grovt pedagogisk anslag for et jetfly som A320: sann fart ved samme indikerte fart øker med 1/σ, og skyvekraften faller med trykket og, over flat rating-temperaturen (typisk ISA+15 °C), med omtrent 0,8 % per °C. Ekte startytelse kommer fra flyets ytelsesprogramvare (FCOM/EFB), ikke fra denne modellen.',
+ 'Jet thrust and flat rating':'Jetskyvekraft og flat rating',
+ "The A320's CFM56 or LEAP engines are flat rated: take-off thrust stays roughly constant up to a corner temperature (typically about ISA+15 °C) and then falls as the air gets hotter. Lower pressure reduces thrust at any temperature.":'Motorene på A320 (CFM56 eller LEAP) er flat rated: startskyvekraften er omtrent konstant opp til en knekktemperatur (typisk rundt ISA+15 °C), og faller deretter når luften blir varmere. Lavere trykk gir mindre skyvekraft ved alle temperaturer.',
+ 'Speeds on the A320':'Farter på A320',
+ 'V1, VR and V2 are indicated speeds. On a hot, high day the same VR of about 145 kt means a higher true and ground speed, so the take-off run gets longer even if the thrust were unchanged.':'V1, VR og V2 er indikerte farter. En varm dag på en høyt beliggende flyplass gir samme VR på rundt 145 kt høyere sann fart og bakkefart, så startrullen blir lengre selv om skyvekraften var uendret.',
+ 'FLEX and TOGA':'FLEX og TOGA',
+ 'When there is margin, the A320 takes off with reduced thrust (FLEX, an assumed temperature higher than the real one). A high density altitude uses up that margin, so FLEX gets smaller and TOGA may be required.':'Når det er margin, tar A320 av med redusert skyvekraft (FLEX, en antatt temperatur høyere enn den virkelige). Høy tetthetshøyde spiser opp marginen, så FLEX blir mindre og TOGA kan bli nødvendig.',
+ 'On the A320':'På A320',
+ 'Each pilot sets the baro reference on the EFIS control panel: pull the knob for STD, push for QNH. The PFD altitude tape shows the setting below it, and it flashes if you pass the transition altitude or level without changing. The standby instrument (ISIS) has its own baro setting.':'Hver pilot setter barometrisk referanse på EFIS-kontrollpanelet: trekk knappen for STD, trykk for QNH. Innstillingen vises under høydebåndet på PFD, og den blinker hvis du passerer overgangshøyden eller overgangsnivået uten å bytte. Standbyinstrumentet (ISIS) har egen baroinnstilling.',
+ 'Thrust available, approx.':'Tilgjengelig skyvekraft, omtrent','Flat-rating limit':'Flat rating-grense','Indicated airspeed (VR)':'Indikert fart (VR)',
+ '4 · Minimum altitudes':'4 · Minstehøyder','Cold temperature correction':'Kuldekorreksjon',
+ 'Published minimum altitudes assume the standard atmosphere. In cold air the aircraft is lower than the altimeter shows, so the correction is added to the published altitudes. The colder it is and the higher above the aerodrome, the bigger the correction.':'Publiserte minstehøyder forutsetter standardatmosfæren. I kald luft er flyet lavere enn høydemåleren viser, så korreksjonen legges til de publiserte høydene. Jo kaldere det er og jo høyere over flyplassen, desto større korreksjon.',
+ 'Calculated with the ICAO formula (Doc 8168), the same one behind the ICAO correction tables. Many operators apply cold temperature corrections at aerodrome temperatures of 0 °C and below. Check the AIP and your operations manual.':'Beregnet med ICAO-formelen (Doc 8168), den samme som ligger bak ICAOs korreksjonstabeller. Mange operatører korrigerer ved flyplasstemperatur 0 °C og lavere. Sjekk AIP og operasjonsmanualen.',
+ '5 · Check your understanding':'5 · Sjekk forståelsen',
+ 'Teaching model. Use the numbers to understand relationships, not for operational decisions. Always follow the AIP, the aircraft flight manual and your instructor.':'Pedagogisk modell. Bruk tallene til å forstå sammenhenger, ikke til operative beslutninger. Følg alltid AIP, flygehåndbok og instruktør.',
+ 'Safe':'Trygt','Low':'Lavt','Below terrain':'Under terreng',
+ 'QNH':'QNH','Temperature at sea level':'Temperatur ved havnivå','Altimeter setting':'Høydemålerinnstilling','Altimeter shows':'Høydemåleren viser','Terrain height near B':'Terrenghøyde nær B',
+ 'True altitude at A':'Sann høyde over A','True altitude at B':'Sann høyde over B','Error at B':'Feil ved B','Lowest terrain clearance':'Minste klaring over terreng','You think you are here':'Her tror du at du er',
+ 'Departure':'Avgang','Destination':'Destinasjon','High to low':'Høyt til lavt','Hot to cold':'Varmt til kaldt','Both (worst case)':'Begge (verst)','Standard day':'Standarddag',
+ 'True altitude':'Sann høyde','Terrain':'Terreng','Sea level':'Havnivå',
+ 'Aerodrome elevation':'Flyplasshøyde','Height above the aerodrome':'Høyde over flyplassen','Subscale set to':'Innstilt','Altimeter reads':'Høydemåleren viser','QFE at the aerodrome':'QFE på flyplassen','Pressure altitude':'Trykkhøyde',
+ 'Standard':'Standard','Field elevation':'Flyplasshøyde','Outside air temperature':'Utetemperatur','Indicated airspeed':'Indikert fart',
+ 'ISA temperature here':'ISA-temperatur her','ISA deviation':'ISA-avvik','Density altitude (rule of thumb)':'Tetthetshøyde (tommelfinger)','Relative density σ':'Relativ tetthet σ','True airspeed':'Sann fart','Take-off distance, approx.':'Startstrekning, omtrent',
+ 'Field':'Flyplass','The aircraft performs as if it were here':'Flyet yter som om det var her',
+ 'Aerodrome temperature':'Flyplasstemperatur','Your minimum height above the aerodrome':'Din minstehøyde over flyplassen',
+ 'Height above aerodrome':'Høyde over flyplassen','Correction':'Korreksjon','Corrected minimum altitude':'Korrigert minstehøyde','No correction needed (not colder than ISA)':'Ingen korreksjon (ikke kaldere enn ISA)',
+ 'The altimeter shows altitude above mean sea level.':'Høydemåleren viser høyde over havet.','The altimeter shows height above the aerodrome. On the runway it would read zero.':'Høydemåleren viser høyde over flyplassen. På rullebanen viser den null.',
+ 'The altimeter shows pressure altitude. Divide by 100 for the flight level.':'Høydemåleren viser trykkhøyde. Del på 100 for flygenivået.','Flight level':'Flygenivå',
+ 'the same as standard':'samme som standard'
+});
+LAB.start('alt');
+
+/* ---------- atmosfære ---------- */
+const T0=288.15, LR=0.0065, EX=0.190263, FT=3.28084;
+const pAt=(hm,ref)=>ref*Math.pow(1-LR*hm/T0,1/EX);           // trykk i ISA-høyde hm over referanseflaten
+const hFor=(p,ref)=>(T0/LR)*(1-Math.pow(p/ref,EX));          // ISA-høyde for trykk p
+// sann høyde av trykkflaten p ved stasjon med QNH og temperaturavvik dT (hypsometrisk, middeltemperatur)
+function trueH(p,qnh,dT){ const h=hFor(p,qnh); const Tm=T0-LR*h/2; return h*(Tm+dT)/Tm; }
+
+/* ---------- 1. tverrsnitt ---------- */
+const S={qa:1025,ta:22,qb:995,tb:-8,set:1025,ind:6000,ter:4500};
+const A=el('ctlA'), B=el('ctlB'), C=el('ctlC');
+const sl={};
+const redraw=()=>{ drawXS(); };
+sl.qa=slider(A,{label:'QNH',min:960,max:1050,step:1,v:S.qa,f:v=>nf(v,0)+' hPa',on:v=>{S.qa=v;redraw();}});
+sl.ta=slider(A,{label:'Temperature at sea level',min:-30,max:40,step:1,v:S.ta,f:v=>nf(v,0)+' °C',on:v=>{S.ta=v;redraw();}});
+sl.qb=slider(B,{label:'QNH',min:960,max:1050,step:1,v:S.qb,f:v=>nf(v,0)+' hPa',on:v=>{S.qb=v;redraw();}});
+sl.tb=slider(B,{label:'Temperature at sea level',min:-30,max:40,step:1,v:S.tb,f:v=>nf(v,0)+' °C',on:v=>{S.tb=v;redraw();}});
+sl.ter=slider(B,{label:'Terrain height near B',min:0,max:9000,step:100,v:S.ter,f:v=>nf(v,0)+' ft',on:v=>{S.ter=v;redraw();}});
+sl.set=slider(C,{label:'Altimeter setting',min:950,max:1050,step:1,v:S.set,f:v=>nf(v,0)+' hPa',on:v=>{S.set=v;redraw();}});
+sl.ind=slider(C,{label:'Altimeter shows',min:1000,max:12000,step:100,v:S.ind,f:v=>nf(v,0)+' ft',on:v=>{S.ind=v;redraw();}});
+el('setA').onclick=()=>{ S.set=S.qa; sl.set.set(S.set); redraw(); };
+el('setB').onclick=()=>{ S.set=S.qb; sl.set.set(S.set); redraw(); };
+const presets=[['High to low',{qa:1030,ta:15,qb:990,tb:15,set:1030}],['Hot to cold',{qa:1013,ta:30,qb:1013,tb:-25,set:1013}],['Both (worst case)',{qa:1030,ta:25,qb:985,tb:-20,set:1030}],['Standard day',{qa:1013,ta:15,qb:1013,tb:15,set:1013}]];
+const pre=el('xsPre');
+function drawPre(){ pre.innerHTML=presets.map((p,i)=>`<button class="btn" data-i="${i}">${T(p[0])}</button>`).join(''); }
+drawPre(); LAB.onLang(drawPre);
+pre.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; Object.assign(S,presets[+b.dataset.i][1]); for(const k of ['qa','ta','qb','tb','set']) sl[k].set(S[k]); redraw(); });
+
+const xv=fit(el('xsec'),()=>drawXS());
+const NX=120, terX=0.72, terW=0.16;
+const terrain=x=>{ const d=(x-terX)/terW; return Math.abs(d)<1? S.ter*Math.pow(Math.cos(d*Math.PI/2),2) : 0; };
+let anim=0, xsVis=true;
+visible(el('xsec'),v=>xsVis=v);
+function pathAt(x,p){ const q=S.qa+(S.qb-S.qa)*x, dT=(S.ta-15)+((S.tb-15)-(S.ta-15))*x; return trueH(p,q,dT)*FT; }
+function drawXS(fromLoop){
+  const g=xv.ctx, W=xv.w, H=xv.h; if(!W) return;
+  const pl=58, pr=14, pt=18, pb=46, iw=W-pl-pr, ih=H-pt-pb;
+  const top=Math.max(14000,S.ind+5000);
+  const X=x=>pl+x*iw, Y=f=>pt+ih-(f/top)*ih;
+  g.clearRect(0,0,W,H);
+  // luft: varm til venstre, kald til høyre
+  const tc=t=> t>15? `rgba(240,140,90,${Math.min(0.16,(t-15)/120)})` : `rgba(110,160,240,${Math.min(0.2,(15-t)/110)})`;
+  const gr=g.createLinearGradient(pl,0,pl+iw,0); gr.addColorStop(0,tc(S.ta)); gr.addColorStop(1,tc(S.tb)); g.fillStyle=gr; g.fillRect(pl,pt,iw,ih);
+  // rutenett
+  g.font='10px "IBM Plex Mono", monospace'; g.strokeStyle='#1d2834'; g.fillStyle='#6f7e8d'; g.textAlign='right'; g.textBaseline='middle';
+  for(let f=0;f<=top;f+=2000){ g.beginPath(); g.moveTo(pl,Y(f)+0.5); g.lineTo(pl+iw,Y(f)+0.5); g.stroke(); g.fillText(nf(f,0),pl-6,Y(f)); }
+  g.save(); g.translate(14,pt+ih/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText(T('True altitude')+' (ft)',0,0); g.restore();
+  // isobarer (trykkflater som høydemåleren ville vist i 2000 ft-trinn)
+  for(let a=2000;a<=top;a+=2000){
+    const p=pAt(a/FT,S.set); g.strokeStyle='rgba(169,155,255,.35)'; g.setLineDash([4,4]); g.beginPath();
+    for(let i=0;i<=NX;i++){ const x=i/NX, f=pathAt(x,p); i?g.lineTo(X(x),Y(f)):g.moveTo(X(x),Y(f)); } g.stroke(); g.setLineDash([]);
+    g.fillStyle='rgba(169,155,255,.7)'; g.textAlign='left'; g.fillText(nf(p,0)+' hPa',X(1)-58,Y(pathAt(1,p))-8);
+  }
+  // terreng og havnivå
+  g.fillStyle='#24302a'; g.beginPath(); g.moveTo(X(0),Y(0));
+  for(let i=0;i<=NX;i++){ const x=i/NX; g.lineTo(X(x),Y(terrain(x))); } g.lineTo(X(1),Y(0)); g.closePath(); g.fill();
+  g.strokeStyle='#4c6a55'; g.beginPath(); for(let i=0;i<=NX;i++){ const x=i/NX; i?g.lineTo(X(x),Y(terrain(x))):g.moveTo(X(x),Y(terrain(x))); } g.stroke();
+  g.strokeStyle='#3e5a7a'; g.beginPath(); g.moveTo(X(0),Y(0)+0.5); g.lineTo(X(1),Y(0)+0.5); g.stroke();
+  // der du tror du er
+  g.strokeStyle='rgba(226,232,238,.45)'; g.setLineDash([2,4]); g.beginPath(); g.moveTo(X(0),Y(S.ind)); g.lineTo(X(1),Y(S.ind)); g.stroke(); g.setLineDash([]);
+  g.fillStyle='rgba(226,232,238,.7)'; g.textAlign='left'; g.fillText(T('You think you are here')+' · '+nf(S.ind,0)+' ft',X(0.02),Y(S.ind)-9);
+  // flybanen
+  const p=pAt(S.ind/FT,S.set); let minC=Infinity, cx=0;
+  const pts=[]; for(let i=0;i<=NX;i++){ const x=i/NX, f=pathAt(x,p); pts.push(f); const c=f-terrain(x); if(c<minC){ minC=c; cx=x; } }
+  g.lineWidth=3; g.strokeStyle= minC<0? '#ec5a47' : minC<1000? '#f0b440' : '#7fcbe8';
+  g.beginPath(); pts.forEach((f,i)=>{ const x=i/NX; i?g.lineTo(X(x),Y(f)):g.moveTo(X(x),Y(f)); }); g.stroke(); g.lineWidth=1;
+  // fly
+  const ax=(anim%1), af=pathAt(ax,p), ang=Math.atan2(Y(pathAt(Math.min(1,ax+0.01),p))-Y(af),X(0.01));
+  g.save(); g.translate(X(ax),Y(af)); g.rotate(ang); g.fillStyle='#e2e8ee'; g.beginPath(); g.moveTo(12,0); g.lineTo(-8,-5); g.lineTo(-5,0); g.lineTo(-8,5); g.closePath(); g.fill(); g.restore();
+  // feilpil ved B
+  const fb=pts[NX]; g.strokeStyle='#f0b440'; g.fillStyle='#f0b440'; g.beginPath(); g.moveTo(X(0.985),Y(S.ind)); g.lineTo(X(0.985),Y(fb)); g.stroke();
+  // flyplasser
+  g.fillStyle='#e2e8ee'; g.textAlign='center'; g.textBaseline='top'; g.font='600 11px "Public Sans", sans-serif';
+  g.fillText(T('Departure')+' A',X(0.04),Y(0)+8); g.fillText(T('Destination')+' B',X(0.96),Y(0)+8);
+  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#8b99a7';
+  g.fillText(`${nf(S.qa,0)} hPa · ${nf(S.ta,0)} °C`,X(0.04),Y(0)+24); g.fillText(`${nf(S.qb,0)} hPa · ${nf(S.tb,0)} °C`,X(0.96),Y(0)+24);
+  if(fromLoop) return;
+  // nøkkeltall
+  const err=fb-S.ind;
+  el('xsK').innerHTML=K('True altitude at A',nf(pts[0],0)+' ft')+K('True altitude at B',nf(fb,0)+' ft','hl')+K('Error at B',(err>0?'+':'')+nf(err,0)+' ft',err<-300?'warn':'')+K('Lowest terrain clearance',nf(minC,0)+' ft',minC<0?'bad':minC<1000?'warn':'good');
+  const st=el('stat'); st.className='status '+(minC<0?'bad':minC<1000?'warn':'ok'); st.textContent=T(minC<0?'Below terrain':minC<1000?'Low':'Safe');
+}
+const K=(l,v,c,s)=>`<div class="kpi"><span>${T(l)}</span><b class="${c||''}">${v}</b>${s?`<small>${s}</small>`:''}</div>`;
+LAB.onLang(redraw);
+
+/* ---------- 2. høydemåler ---------- */
+const AS={mode:'qnh',elev:600,qnh:998,agl:1500};
+const sS=el('ctlS');
+seg(el('setSeg'),[['qnh','QNH'],['qfe','QFE'],['std','Standard']],'qnh',v=>{AS.mode=v; drawAlt();});
+slider(sS,{label:'Aerodrome elevation',min:0,max:6000,step:50,v:AS.elev,f:v=>nf(v,0)+' ft',on:v=>{AS.elev=v;drawAlt();}});
+slider(sS,{label:'QNH',min:960,max:1050,step:1,v:AS.qnh,f:v=>nf(v,0)+' hPa',on:v=>{AS.qnh=v;drawAlt();}});
+slider(sS,{label:'Height above the aerodrome',min:0,max:12000,step:50,v:AS.agl,f:v=>nf(v,0)+' ft',on:v=>{AS.agl=v;drawAlt();}});
+const av=fit(el('alti'),()=>drawAlt());
+function drawAlt(){
+  const qfe=pAt(AS.elev/FT,AS.qnh), sub= AS.mode==='qnh'? AS.qnh : AS.mode==='qfe'? qfe : 1013.25;
+  const p=pAt((AS.elev+AS.agl)/FT,AS.qnh), ind=hFor(p,sub)*FT;
+  const g=av.ctx, W=av.w, H=av.h; if(!W) return; const cx=W/2, cy=H/2, R=Math.min(W,H)/2-8;
+  g.clearRect(0,0,W,H);
+  g.fillStyle='#10161c'; g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.fill(); g.strokeStyle='#3a4856'; g.lineWidth=3; g.stroke(); g.lineWidth=1;
+  g.fillStyle='#e2e8ee'; g.font=`600 ${Math.round(R*0.16)}px "Public Sans", sans-serif`; g.textAlign='center'; g.textBaseline='middle';
+  for(let i=0;i<10;i++){ const a=i/10*Math.PI*2-Math.PI/2; g.fillText(String(i),cx+Math.cos(a)*R*0.74,cy+Math.sin(a)*R*0.74); }
+  g.strokeStyle='#cfd8e0'; for(let i=0;i<50;i++){ const a=i/50*Math.PI*2-Math.PI/2, r0=i%5?R*0.9:R*0.86; g.beginPath(); g.moveTo(cx+Math.cos(a)*r0,cy+Math.sin(a)*r0); g.lineTo(cx+Math.cos(a)*R*0.97,cy+Math.sin(a)*R*0.97); g.stroke(); }
+  // trommel og innstillingsvindu
+  g.fillStyle='#05080b'; g.fillRect(cx-R*0.42,cy-R*0.42,R*0.84,R*0.24); g.fillStyle='#e2e8ee'; g.font=`500 ${Math.round(R*0.17)}px "IBM Plex Mono", monospace`;
+  g.fillText(nf(Math.round(ind/10)*10,0),cx,cy-R*0.3);
+  g.fillStyle='#05080b'; g.fillRect(cx+R*0.18,cy+R*0.12,R*0.5,R*0.2); g.fillStyle='#f0b440'; g.font=`500 ${Math.round(R*0.13)}px "IBM Plex Mono", monospace`;
+  g.fillText(nf(sub, sub%1?2:0),cx+R*0.43,cy+R*0.22);
+  const hand=(frac,len,w,col)=>{ const a=frac*Math.PI*2-Math.PI/2; g.strokeStyle=col; g.lineWidth=w; g.lineCap='round'; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*len,cy+Math.sin(a)*len); g.stroke(); g.lineWidth=1; };
+  hand(((ind%10000)+10000)%10000/10000,R*0.5,6,'#e2e8ee'); hand(((ind%1000)+1000)%1000/1000,R*0.82,3,'#e2e8ee');
+  g.fillStyle='#e2e8ee'; g.beginPath(); g.arc(cx,cy,5,0,Math.PI*2); g.fill();
+  const txt= AS.mode==='qnh'? 'The altimeter shows altitude above mean sea level.' : AS.mode==='qfe'? 'The altimeter shows height above the aerodrome. On the runway it would read zero.' : 'The altimeter shows pressure altitude. Divide by 100 for the flight level.';
+  el('setR').innerHTML=R2('Subscale set to',nf(sub,sub%1?2:0)+' hPa')+R2('Altimeter reads',nf(ind,0)+' ft','hl')+R2('True altitude',nf(AS.elev+AS.agl,0)+' ft')+R2('QFE at the aerodrome',nf(qfe,0)+' hPa')+R2('Pressure altitude',nf(hFor(p,1013.25)*FT,0)+' ft')+(AS.mode==='std'?R2('Flight level','FL'+String(Math.round(ind/100)).padStart(3,'0')):'');
+  el('setTxt').textContent=T(txt);
+}
+const R2=(l,v,c)=>`<div class="rrow"><span>${T(l)}</span><b class="${c||''}">${v}</b></div>`;
+LAB.onLang(drawAlt);
+
+/* ---------- 3. tetthetshøyde ---------- */
+const DS={el:2000,qnh:1005,oat:30,ias:145};
+const cD=el('ctlD');
+slider(cD,{label:'Field elevation',min:0,max:10000,step:50,v:DS.el,f:v=>nf(v,0)+' ft',on:v=>{DS.el=v;drawDA();}});
+slider(cD,{label:'QNH',min:960,max:1050,step:1,v:DS.qnh,f:v=>nf(v,0)+' hPa',on:v=>{DS.qnh=v;drawDA();}});
+slider(cD,{label:'Outside air temperature',min:-30,max:50,step:1,v:DS.oat,f:v=>nf(v,0)+' °C',on:v=>{DS.oat=v;drawDA();}});
+slider(cD,{label:'Indicated airspeed (VR)',min:120,max:170,step:1,v:DS.ias,f:v=>nf(v,0)+' kt',on:v=>{DS.ias=v;drawDA();}});
+const dv=fit(el('daBar'),()=>drawDA());
+function drawDA(){
+  const p=pAt(DS.el/FT,DS.qnh), PA=hFor(p,1013.25)*FT, Tk=DS.oat+273.15, rho=p*100/(287.053*Tk), sig=rho/1.225;
+  const DA=(T0/LR)*(1-Math.pow(sig,1/4.25588))*FT, isa=15-1.98*PA/1000, dev=DS.oat-isa, thumb=PA+120*dev, tas=DS.ias/Math.sqrt(sig), flat=isa+15, thr=(p/1013.25)*(DS.oat>flat?Math.max(0.5,1-0.008*(DS.oat-flat)):1), tod=1/(sig*thr);
+  el('daK').innerHTML=K('Pressure altitude',nf(PA,0)+' ft')+K('ISA temperature here',nf(isa,1)+' °C')+K('ISA deviation',(dev>0?'+':'')+nf(dev,1)+' °C',dev>15?'warn':'')+
+    K('Density altitude',nf(DA,0)+' ft',DA-DS.el>3000?'bad':DA-DS.el>1500?'warn':'hl')+K('Density altitude (rule of thumb)',nf(thumb,0)+' ft')+
+    K('Relative density σ',nf(sig,3))+K('True airspeed',nf(tas,0)+' kt')+K('Flat-rating limit',nf(flat,0)+' °C',DS.oat>flat?'warn':'')+K('Thrust available, approx.',nf(thr*100,0)+' %',thr<0.85?'warn':'')+K('Take-off distance, approx.','× '+nf(tod,2),tod>1.4?'bad':tod>1.2?'warn':'');
+  const g=dv.ctx, W=dv.w, H=dv.h; if(!W) return; g.clearRect(0,0,W,H);
+  const mx=Math.max(14000,DA+2000,DS.el+2000), X=f=>20+f/mx*(W-40), y=H/2;
+  g.fillStyle='#1a2430'; g.fillRect(20,y-6,W-40,12);
+  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#6f7e8d'; g.textAlign='center'; g.textBaseline='top';
+  for(let f=0;f<=mx;f+=2000){ g.fillRect(X(f),y+8,1,5); g.fillText(nf(f,0),X(f),y+16); }
+  const span=(a,b,c)=>{ g.fillStyle=c; g.fillRect(Math.min(X(a),X(b)),y-6,Math.abs(X(b)-X(a)),12); };
+  span(DS.el,DA,DA>DS.el?'rgba(236,90,71,.55)':'rgba(113,204,147,.55)');
+  const mark=(f,t,c,up)=>{ g.fillStyle=c; g.beginPath(); g.moveTo(X(f),y+(up?-8:8)); g.lineTo(X(f)-6,y+(up?-18:18)); g.lineTo(X(f)+6,y+(up?-18:18)); g.closePath(); g.fill();
+    g.font='600 11px "Public Sans", sans-serif'; g.textBaseline= up?'bottom':'top'; g.fillText(t,X(f),y+(up?-22:34)); };
+  mark(DS.el,T('Field')+' '+nf(DS.el,0)+' ft','#e2e8ee',true); mark(DA,T('The aircraft performs as if it were here'),'#ec5a47',false);
+}
+LAB.onLang(drawDA);
+
+/* ---------- 4. kuldekorreksjon ---------- */
+const CS={el:1000,t:-25,h:1500};
+const cT=el('ctlT');
+slider(cT,{label:'Aerodrome elevation',min:0,max:8000,step:50,v:CS.el,f:v=>nf(v,0)+' ft',on:v=>{CS.el=v;drawCT();}});
+slider(cT,{label:'Aerodrome temperature',min:-50,max:15,step:1,v:CS.t,f:v=>nf(v,0)+' °C',on:v=>{CS.t=v;drawCT();}});
+slider(cT,{label:'Your minimum height above the aerodrome',min:200,max:6000,step:50,v:CS.h,f:v=>nf(v,0)+' ft',on:v=>{CS.h=v;drawCT();}});
+// ICAO Doc 8168: korreksjon = H·(ISA-avvik)/(gjennomsnittlig faktisk temperatur) – det som må legges til for å få riktig høyde over terrenget
+function corr(h){ const isa=15-1.98*CS.el/1000, dT=CS.t-isa; if(dT>=0) return 0; const Tm=(273.15+CS.t)+0.5*0.00198*CS.el-0.5*0.00198*h; return h*(-dT)/Tm; }
+function drawCT(){
+  const rows=[200,500,1000,1500,2000,3000,4000,5000];
+  if(!rows.includes(CS.h)) rows.push(CS.h); rows.sort((a,b)=>a-b);
+  const isa=15-1.98*CS.el/1000, dT=CS.t-isa;
+  el('ctab').innerHTML=`<thead><tr><th>${T('Height above aerodrome')}</th><th>${T('Correction')}</th><th>${T('Corrected minimum altitude')}</th></tr></thead><tbody>`+
+    rows.map(h=>{ const c=corr(h); return `<tr${h===CS.h?' style="background:rgba(127,203,232,.08)"':''}><td>${nf(h,0)} ft</td><td class="c">+${nf(Math.ceil(c/10)*10,0)} ft</td><td>${nf(CS.el+h+Math.ceil(c/10)*10,0)} ft</td></tr>`; }).join('')+
+    `</tbody>`+(dT>=0?`<caption style="caption-side:bottom;text-align:left;color:var(--muted);padding-top:8px">${T('No correction needed (not colder than ISA)')}</caption>`:'');
+}
+LAB.onLang(drawCT);
+
+/* ---------- 5. quiz ---------- */
+const Q=[
+ {q:{en:'You fly from an area of high pressure towards low pressure without changing the altimeter setting. Your true altitude is…',no:'Du flyr fra høytrykk mot lavtrykk uten å endre høydemålerinnstillingen. Din sanne høyde er…'},
+  a:[{en:'lower than indicated',no:'lavere enn indikert'},{en:'higher than indicated',no:'høyere enn indikert'},{en:'the same as indicated',no:'den samme som indikert'}],c:0,
+  e:{en:'The aircraft follows a pressure surface, and pressure surfaces sink towards a low. High to low, look out below.',no:'Flyet følger en trykkflate, og trykkflatene synker mot et lavtrykk. Høyt til lavt: se opp, du er lavere.'}},
+ {q:{en:'The air is much colder than ISA. Compared with the altimeter, the aircraft is…',no:'Luften er mye kaldere enn ISA. Sammenlignet med høydemåleren er flyet…'},
+  a:[{en:'higher',no:'høyere'},{en:'lower',no:'lavere'},{en:'at the same altitude, temperature only affects performance',no:'i samme høyde, temperatur påvirker bare ytelse'}],c:1,
+  e:{en:'Cold air is denser, so the pressure drops faster with height and the pressure surfaces lie lower. The altimeter over-reads.',no:'Kald luft er tettere, så trykket faller raskere med høyden og trykkflatene ligger lavere. Høydemåleren viser for mye.'}},
+ {q:{en:'The altimeter is set to 1013 hPa while the local QNH is 1003 hPa. Parked at a sea-level aerodrome, it shows approximately…',no:'Høydemåleren står på 1013 hPa mens lokal QNH er 1003 hPa. Parkert på en flyplass ved havnivå viser den omtrent…'},
+  a:[{en:'0 ft',no:'0 ft'},{en:'+270 ft',no:'+270 ft'},{en:'−270 ft',no:'−270 ft'}],c:1,
+  e:{en:'The setting is 10 hPa too high. At roughly 27 ft per hPa the altimeter reads about 270 ft too high.',no:'Innstillingen er 10 hPa for høy. Med omtrent 27 ft per hPa viser høydemåleren rundt 270 ft for mye.'}},
+ {q:{en:'With QFE set, what does the altimeter show on the runway?',no:'Med QFE innstilt, hva viser høydemåleren på rullebanen?'},
+  a:[{en:'Zero',no:'Null'},{en:'The aerodrome elevation',no:'Flyplassens høyde over havet'},{en:'The pressure altitude',no:'Trykkhøyden'}],c:0,
+  e:{en:'QFE is the pressure at the aerodrome, so the altimeter shows height above the aerodrome.',no:'QFE er trykket på flyplassen, så høydemåleren viser høyde over flyplassen.'}},
+ {q:{en:'With QNH set, what does the altimeter show on the runway?',no:'Med QNH innstilt, hva viser høydemåleren på rullebanen?'},
+  a:[{en:'Zero',no:'Null'},{en:'The aerodrome elevation',no:'Flyplassens høyde over havet'},{en:'The flight level',no:'Flygenivået'}],c:1,
+  e:{en:'QNH gives altitude above mean sea level, so on the ground you read the aerodrome elevation.',no:'QNH gir høyde over havet, så på bakken leser du flyplassens høyde.'}},
+ {q:{en:'Which conditions give the highest density altitude?',no:'Hvilke forhold gir høyest tetthetshøyde?'},
+  a:[{en:'Cold day at a sea-level aerodrome',no:'Kald dag på en flyplass ved havnivå'},{en:'Hot day at a high aerodrome with low pressure',no:'Varm dag på en høyt beliggende flyplass med lavt trykk'},{en:'Standard day at sea level',no:'Standarddag ved havnivå'}],c:1,
+  e:{en:'Heat, height and low pressure all reduce the air density, and humidity adds a little too.',no:'Varme, høyde og lavt trykk gir alle lavere lufttetthet, og fuktighet gir litt i tillegg.'}},
+ {q:{en:'A common rule of thumb for density altitude is pressure altitude plus…',no:'En vanlig tommelfingerregel for tetthetshøyde er trykkhøyde pluss…'},
+  a:[{en:'27 ft per hPa',no:'27 ft per hPa'},{en:'120 ft per °C above ISA',no:'120 ft per °C over ISA'},{en:'30 ft per °C above ISA',no:'30 ft per °C over ISA'}],c:1,
+  e:{en:'About 120 ft for every degree warmer than ISA at that pressure altitude.',no:'Omtrent 120 ft for hver grad varmere enn ISA i den trykkhøyden.'}},
+ {q:{en:'On a very cold day, what do you do with the published minimum altitudes?',no:'En veldig kald dag, hva gjør du med de publiserte minstehøydene?'},
+  a:[{en:'Subtract a correction',no:'Trekker fra en korreksjon'},{en:'Add a correction',no:'Legger til en korreksjon'},{en:'Nothing, they are already corrected',no:'Ingenting, de er allerede korrigert'}],c:1,
+  e:{en:'You are lower than indicated, so you add the cold temperature correction to keep the intended clearance.',no:'Du er lavere enn indikert, så du legger til kuldekorreksjonen for å beholde den tiltenkte klaringen.'}},
+ {q:{en:'Climbing through the transition altitude, you set…',no:'I stigning gjennom overgangshøyden setter du…'},
+  a:[{en:'QFE',no:'QFE'},{en:'Standard 1013.25 hPa',no:'Standard 1013,25 hPa'},{en:'The QNH of your destination',no:'QNH for destinasjonen'}],c:1,
+  e:{en:'Above the transition altitude you fly flight levels on the standard setting. Descending, you change to QNH at the transition level.',no:'Over overgangshøyden flyr du flygenivåer med standardinnstilling. I nedstigning bytter du til QNH ved overgangsnivået.'}},
+ {q:{en:'Roughly how large is the temperature error?',no:'Omtrent hvor stor er temperaturfeilen?'},
+  a:[{en:'About 4 % of the height above the station per 10 °C off ISA',no:'Omtrent 4 % av høyden over stasjonen per 10 °C fra ISA'},{en:'About 27 ft per °C regardless of height',no:'Omtrent 27 ft per °C uansett høyde'},{en:'It is too small to matter',no:'Den er for liten til å bety noe'}],c:0,
+  e:{en:'The error grows with height above the reference: about 4 ft per 1000 ft per degree.',no:'Feilen øker med høyden over referansen: omtrent 4 ft per 1000 ft per grad.'}}
+,
+ {q:{en:'An A320 departs on a day hotter than its flat-rating temperature at a high aerodrome. Why does the take-off run grow?',no:'En A320 tar av en dag varmere enn flat rating-temperaturen fra en høyt beliggende flyplass. Hvorfor blir startrullen lengre?'},
+  a:[{en:'Less thrust is available and the same indicated VR means a higher true airspeed',no:'Det er mindre skyvekraft tilgjengelig, og samme indikerte VR betyr høyere sann fart'},{en:'VR is reduced in indicated airspeed',no:'VR reduseres i indikert fart'},{en:'The flaps become less effective, so CONF 3 is required',no:'Klaffene blir mindre effektive, så CONF 3 kreves'}],c:0,
+  e:{en:'Above the flat-rating temperature the engines give less thrust, and in thin air the aircraft must reach a higher TAS for the same IAS. Both lengthen the run.',no:'Over flat rating-temperaturen gir motorene mindre skyvekraft, og i tynn luft må flyet opp i høyere TAS for samme IAS. Begge deler forlenger startrullen.'}}
+];
+quiz(el('qbox'),'altimetry',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
+
+drawXS(); drawAlt(); drawDA(); drawCT();
+function loop(t){ if(xsVis){ anim=(t/1000/12)%1; drawXS(true); } requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

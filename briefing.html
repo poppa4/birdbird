@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Briefings · Birdbird</title>
+<meta name="description" content="Practise departure and approach briefings out loud with today’s weather, a training chart and the aircraft numbers, and get them scored.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+.bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:1050px){.bgrid{grid-template-columns:minmax(0,1fr)}}
+.chartcol{display:flex;flex-direction:column;gap:12px;position:sticky;top:62px}
+@media (max-width:1050px){.chartcol{position:static}}
+.chartbox{border:1px solid var(--rule);background:#fff}
+.wx{font-family:var(--f-mono);font-size:12.5px;background:var(--sheet);border:1px solid var(--rule);padding:10px 12px;line-height:1.55;color:var(--ink)}
+.wx b{font-family:var(--f-body);font-size:12px;color:var(--ink-2);display:block;margin-bottom:2px}
+.letters{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.letters .lt{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--rule-2)}
+.letters .lt .k{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:28px;line-height:1;color:var(--magenta)}
+.letters .lt b{display:block;font-size:15px}
+.letters .lt p{margin:2px 0 0;font-size:14px;color:var(--ink-2)}
+.letters .lt .say{font-size:13.5px;color:var(--chart-blue);margin-top:4px;font-style:italic}
+.speeds{border-collapse:collapse;width:100%;font-size:14px}
+.speeds td,.speeds th{padding:6px 8px;border-bottom:1px solid var(--rule-2);text-align:left}
+.speeds th{font-size:12px;color:var(--ink-2);font-weight:500}
+.speeds td:last-child{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.plateguide{counter-reset:s;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.plateguide{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.plateguide{grid-template-columns:minmax(0,1fr)}}
+.plateguide .pg{counter-increment:s;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
+.plateguide .pg h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:88%;font-size:18px;display:flex;gap:10px;align-items:baseline}
+.plateguide .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:26px;font-weight:780}
+.plateguide .pg p{margin:0;font-size:14px;color:var(--ink-2)}
+.plateguide .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+.hist{font-size:13px;color:var(--ink-2)}
+.rgrid{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:28px;align-items:start}
+@media (max-width:1050px){.rgrid{grid-template-columns:minmax(0,1fr)}}
+.rchart{border:1px solid var(--rule);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.rhint{display:none;margin:6px 0 0}
+@media (max-width:640px){.rchart svg{min-width:600px}.rhint{display:block}}
+.rchart .hz{fill:transparent;cursor:pointer}
+.rchart .hs:hover .hz{fill:rgba(29,78,158,.06)}
+.rchart .hs.on .hz{fill:rgba(29,78,158,.09);stroke:var(--info);stroke-width:2}
+.rchart .hb{fill:var(--info);stroke:#fff;stroke-width:1.5;cursor:pointer}
+.rchart .hs.on .hb{fill:var(--accent)}
+.rchart .hn{fill:#fff;pointer-events:none}
+.rchart .hs:focus{outline:none}.rchart .hs:focus-visible .hz{stroke:var(--accent);stroke-width:2.5}
+.rside{display:flex;flex-direction:column;gap:14px;position:sticky;top:62px;min-width:0}
+@media (max-width:1050px){.rside{position:static}}
+.hsb{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.hsb button{display:flex;gap:8px;align-items:center;text-align:left;font-size:13.5px;font-weight:500;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 10px;cursor:pointer;min-height:40px}
+.hsb button .n{flex:none;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--info);color:#fff;font-size:11.5px;font-weight:700}
+.hsb button.on{border-color:var(--accent);background:var(--accent-wash)}.hsb button.on .n{background:var(--accent)}
+.hsd{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;scroll-margin-top:80px}
+.hsd h3{margin:0 0 6px;font-family:var(--f-display);font-stretch:88%;font-size:20px}
+.hsd p{margin:6px 0 0;font-size:14.5px;color:var(--ink-2)}
+.hsd .tl{display:flex;gap:10px;align-items:baseline;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule-2)}
+.hsd .tl .k{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:22px;line-height:1;color:var(--magenta);white-space:nowrap}
+.hsd .say{font-size:14px;color:var(--chart-blue);font-style:italic;margin-top:2px}
+.spc{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.spc .box b.t{font-size:15px}
+.speeds caption{text-align:left;font-size:12px;color:var(--ink-2);padding:0 8px 4px;caption-side:bottom}
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  body.pchart>*:not(.page),body.pchart .page>*:not(#reading),body.pchart #reading>*:not(.rgrid),body.pchart .rgrid>*:not(.rchartwrap),body.pchart .rchartwrap>*:not(#rchart){display:none!important}
+  body.pchart,body.pchart .page{background:#fff;margin:0;padding:0;max-width:none}
+  body.pchart #reading{padding:0;border:0}
+  body.pchart .rgrid{display:block}
+  body.pchart #rchart{border:0;overflow:visible;width:100%}
+  body.pchart #rchart svg{min-width:0!important;width:100%;max-height:270mm}
+  body.pchart #rchart .hs{display:none}
+}
+</style>
+</head>
+<body data-title="Briefings">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>Briefings</h1>
+      <p>Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. The AI instructor scores the structure, the numbers and how you deal with the threats.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#speeds">A320 speed card</a></nav>
+
+  <section class="card" id="trainer">
+    <div class="btns" style="justify-content:space-between">
+      <div id="kind"></div>
+      <div class="btns"><select id="scen" aria-label="Scenario" style="font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px"><option value="">Practice airport (fictional)</option></select><div id="rules"></div><button class="btn" id="newsc">New scenario</button><span class="ai-state" id="aist">AI: checking…</span></div>
+    </div>
+    <div class="bgrid">
+      <div class="chartcol">
+        <div class="wx" id="wx"></div>
+        <div class="chartbox" id="chart"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <h2 id="bh"></h2>
+        <div class="letters" id="letters"></div>
+        <textarea class="write" id="bt" placeholder="Say it or type it…" aria-label="Your briefing"></textarea>
+        <div class="btns"><button class="btn mic" id="mic">🎙 Dictate</button><button class="btn pri" id="sc">Score my briefing</button><button class="btn" id="model">Show a model briefing</button><button class="btn" id="clear">Clear</button><span class="note" id="bn"></span></div>
+        <div id="out"></div>
+        <p class="hist" id="hist"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="reading">
+    <div class="eyebrow">Chart reading</div>
+    <h2>Reading an approach chart</h2>
+    <p class="lead">Commercial approach charts share one layout: heading, briefing strip, plan view, profile view and minimums, always in the same places. This training chart follows that layout so you learn where to look on a real plate. The airport, procedure and numbers are fictional. Tap a number on the chart.</p>
+    <div class="btns"><div id="rvar"></div></div>
+    <div class="rgrid">
+      <div class="rchartwrap">
+        <div class="rchart" id="rchart"></div>
+        <p class="note rhint">Scroll the chart sideways, or pinch to zoom.</p>
+      </div>
+      <div class="rside">
+        <div class="hsb" id="hsb"></div>
+        <div class="hsd" id="hsd" aria-live="polite"></div>
+        <div class="btns"><button class="btn pri" id="briefit">Brief this chart</button><button class="btn" id="printc">Print chart</button></div>
+        <p class="note">Brief this chart opens the approach trainer with this procedure and today’s weather. The explanations use the ILS values.</p>
+      </div>
+    </div>
+    <div class="callout amber"><span class="ct">Training chart</span>Fictional training chart, not for navigation. It is not a copy of any published chart and is not produced by or affiliated with any chart provider. In the aircraft, use only the current charts approved by your operator.</div>
+  </section>
+
+  <section class="card" id="plate">
+    <div class="eyebrow">Method</div>
+    <h2>How to brief an approach plate: TSADMM</h2>
+    <p class="lead">Work through the plate from the top down, in the same order every time. Read the numbers off the chart, say them out loud, and set them as you go. A briefing takes about a minute. If it takes five, you are reading the chart to yourself instead of making a plan.</p>
+    <div class="plateguide" id="pg"></div>
+    <div class="callout blue">TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Threats come first so the rest of the briefing is built around them. What matters is that the order is fixed and that you end with the missed approach. Set the minima on the bug and the missed-approach altitude in the preselect while you brief them.</div>
+  </section>
+
+  <section class="card" id="speeds">
+    <div class="eyebrow">Reference</div>
+    <h2>A320 speed card</h2>
+    <p class="lead">Typical A320ceo values for training, rounded. On the line the FMS computes the speeds for the actual mass and configuration, and your operator’s FCOM and QRH always come first.</p>
+    <div class="btns"><span class="note">Mass</span><div id="spm"></div></div>
+    <div class="cols">
+      <div><table class="speeds" id="sp1"></table></div>
+      <div><table class="speeds" id="sp2"></table></div>
+    </div>
+    <div class="spc" id="spc"></div>
+  </section>
+  <p class="note">The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ops.js?v=3"></script>
+<script src="brief.js?v=7"></script>
+<script src="chart.js?v=4"></script>
+<script src="ai.js?v=1"></script>
+<script src="store.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el}=LAB, esc=NAI.esc;
+LAB.add({},{
+ 'Birdbird · Training':'Birdbird · Trening','Briefings':'Briefinger','Briefing Trainer':'Briefingtrener',
+ 'Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. The AI instructor scores the structure, the numbers and how you deal with the threats.':'Brief en avgang eller en innflyging høyt, slik du gjør i flyet. Du får dagens vær, kartet og tallene for flyet. AI-instruktøren vurderer strukturen, tallene og hvordan du håndterer truslene.',
+ 'Practice airport (fictional)':'Øvingsflyplass (oppdiktet)','Trainer':'Trener','How to brief a plate':'Slik briefer du et kart','A320 speed card':'A320-fartskort','New scenario':'Nytt scenario',
+ 'Reading an approach chart':'Slik leser du et innflygingskart','Chart reading':'Kartlesing',
+ 'Commercial approach charts share one layout: heading, briefing strip, plan view, profile view and minimums, always in the same places. This training chart follows that layout so you learn where to look on a real plate. The airport, procedure and numbers are fictional. Tap a number on the chart.':'Kommersielle innflygingskart har samme oppbygging: topptekst, briefingstripe, planvisning, profilvisning og minima, alltid på samme sted. Dette treningskartet følger den oppbyggingen, så du lærer hvor du skal se på et ekte kart. Flyplassen, prosedyren og tallene er oppdiktet. Trykk på et nummer på kartet.',
+ 'Scroll the chart sideways, or pinch to zoom.':'Rull kartet sidelengs, eller knip for å zoome.',
+ 'Brief this chart':'Brief dette kartet','Print chart':'Skriv ut kartet',
+ 'Brief this chart opens the approach trainer with this procedure and today’s weather. The explanations use the ILS values.':'«Brief dette kartet» åpner innflygingstreneren med denne prosedyren og dagens vær. Forklaringene bruker ILS-verdiene.',
+ 'Training chart':'Treningskart',
+ 'Fictional training chart, not for navigation. It is not a copy of any published chart and is not produced by or affiliated with any chart provider. In the aircraft, use only the current charts approved by your operator.':'Oppdiktet treningskart, ikke for navigasjon. Det er ikke en kopi av noe publisert kart og er ikke laget av eller tilknyttet noen kartleverandør. I flyet bruker du bare gjeldende kart godkjent av operatøren din.',
+ 'LOC (GS out)':'LOC (GS ute)',
+ 'Dictate':'Dikter','Score my briefing':'Vurder briefingen','Show a model briefing':'Vis en modellbriefing','Clear':'Tøm','Method':'Metode',
+ 'How to brief an approach plate: TSADMM':'Slik briefer du et innflygingskart: TSADMM',
+ 'Work through the plate from the top down, in the same order every time. Read the numbers off the chart, say them out loud, and set them as you go. A briefing takes about a minute. If it takes five, you are reading the chart to yourself instead of making a plan.':'Gå gjennom kartet ovenfra og ned, i samme rekkefølge hver gang. Les tallene av kartet, si dem høyt og sett dem mens du går. En briefing tar omtrent ett minutt. Tar den fem, leser du kartet for deg selv i stedet for å lage en plan.',
+ 'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Threats come first so the rest of the briefing is built around them. What matters is that the order is fixed and that you end with the missed approach. Set the minima on the bug and the missed-approach altitude in the preselect while you brief them.':'TSADMM: Threats, Setup, Arrival, Descent, Minimums, Missed approach. Truslene kommer først, så resten av briefingen bygges rundt dem. Det viktige er at rekkefølgen er fast og at du avslutter med missed approach. Sett minima på buggen og missed approach-høyden i preselect mens du briefer dem.',
+ 'Reference':'Oppslag',
+ 'Typical A320ceo values for training, rounded. On the line the FMS computes the speeds for the actual mass and configuration, and your operator’s FCOM and QRH always come first.':'Typiske A320ceo-verdier for opplæring, avrundet. På linjen regner FMS-en ut fartene for faktisk masse og konfigurasjon, og operatørens FCOM og QRH går alltid foran.',
+ 'Mass':'Masse',
+ 'The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.':'Flyplassen, prosedyrene og kartene er oppdiktet og tegnet for opplæring. Ikke for navigasjon. A320-farter og -grenser er typiske undervisningsverdier, ikke FCOM-data.',
+ 'Departure':'Avgang','Approach':'Innflyging','VFR arrival':'VFR-ankomst','IFR':'IFR','VFR':'VFR'
+});
+const {OPS}=window;
+OPS.ILS36.name='ILS RWY 36';   // dette kartet heter «ILS or LOC RWY 36» (gjelder bare denne siden)
+const RWY_LEN=2500, RWY_W=45;
+
+/* ---------- A320: typiske undervisningsverdier (ikke FCOM) ---------- */
+function spd(t,hw){ const vls=Math.round(126*Math.sqrt(t/60)), add=Math.min(15,Math.max(5,Math.round(Math.max(0,hw||0)/3))), vr=Math.round(85+0.82*t);
+  return {t, vls, vapp:vls+add, gd:Math.round(2*t+85), S:Math.round(1.5*t+92), F:Math.round(t+85), vr, v1:vr-4, v2:vr+4, flex: t<=72? Math.max(40,Math.round(70-(t-60)*2)) : 0}; }
+const SP=V=>spd(V.mass/1000,V.hw);
+const thrTxt=s=> s.flex? 'FLEX '+s.flex : 'TOGA';
+function a320(V){ V.mass= kind==='dep'? OPS.pick([62000,66000,70000,74000]) : OPS.pick([56000,59000,62000,64000]); return V; }
+
+/* ---------- briefingrubrikkene på denne siden: A320 i stedet for DA42 ---------- */
+const has=(s,re)=>re.test(s), num=n=>new RegExp('(^|[^0-9])'+String(n).replace('.','\\.')+'([^0-9]|$)');
+const RB=BRIEF.RUB, setIt=(k,i,o)=>Object.assign(RB[k].items[i],o);
+setIt('dep',1,{chk:(V,n)=>[has(n,/runway 36|rwy 36|36/), has(n,num(RWY_LEN))||has(n,/full length|tora/), has(n,num(V.wd))||has(n,/wind/), has(n,/crosswind|cross wind|headwind/)]});
+setIt('dep',3,{t:{en:'Bugs (speeds and thrust)',no:'Bugs (farter og skyvekraft)'},d:{en:'Take-off configuration, thrust and the speeds for today’s mass: CONF, FLEX or TOGA, V1, VR, V2 and green dot.',no:'Avgangskonfigurasjon, skyvekraft og fartene for dagens masse: CONF, FLEX eller TOGA, V1, VR, V2 og green dot.'},
+  chk:(V,n)=>{ const s=SP(V); return [has(n,/conf|flaps?/), has(n,/flex|toga/), has(n,num(s.v1)), has(n,num(s.vr)), has(n,num(s.v2))]; }});
+setIt('dep',4,{d:{en:'Before V1: what makes you reject and how (“stop” callout, thrust idle, reverse, autobrake RTO). After V1: continue, rotate, SRS, gear up, no action below 400 ft except gear up, ECAM actions, engine-out acceleration altitude, green dot, then the engine-out route.',no:'Før V1: hva får deg til å avbryte og hvordan («stop»-callout, skyvekraft tomgang, reversering, autobrake RTO). Etter V1: fortsett, roter, SRS, hjul opp, ingen handling under 400 ft unntatt hjul opp, ECAM-handlinger, akselerasjonshøyde med én motor, green dot, så ruten med én motor ute.'},
+  chk:(V,n)=>[has(n,/reject|stop|abort/), has(n,/v1|v 1/), has(n,/continue|rotate/), has(n,/srs|v2|v 2/), has(n,/ecam/), has(n,/green dot|accelerat|engine.?out|eosid/), has(n,/return|vectors|back|msa|alternate/)]});
+setIt('app',3,{d:{en:'Final approach point and altitude, glide path angle, rate of descent for the groundspeed, distance and altitude checks, configuration (gear, CONF FULL) and VAPP, stable by 1000 ft.',no:'Final approach point og høyde, glidebanevinkel, synkehastighet for groundspeed, distanse- og høydekontroller, konfigurasjon (hjul, CONF FULL) og VAPP, stabil innen 1000 ft.'},
+  chk:(V,n)=>{ const s=SP(V); return [has(n,/fapso|faf|fap|final approach (fix|point)/)&&(has(n,num(1650))||has(n,num(1700))), has(n,/3 degree|3.0|three degree|glide ?path|glide ?slope/), has(n,/[5-8]\d0 (feet|ft)? ?(per|a|\/) ?min|fpm|feet per minute|rate/), has(n,/d4|d 4|4 miles|1330|1020|check/), has(n,num(s.vapp))||has(n,/vapp|v app|conf(ig)? full|gear down/), has(n,/stable|1000 (feet|ft)/)]; }});
+setIt('app',4,{d:{en:'DA/DH or MDA, the RVR or visibility required and today’s weather against it, what is set in the MCDU (BARO), what you need to see to continue.',no:'DA/DH eller MDA, RVR eller sikt som kreves og dagens vær mot det, hva som er satt i MCDU-en (BARO), hva du må se for å fortsette.'},
+  chk:(V,n,P)=>{ const m=P.kind==='LOC'?P.minima.locMda:P.minima.da; return [has(n,num(m)), has(n,/rvr|visibility|metres|meters|550|750|1200|1300/), has(n,/bug|baro|mcdu|minimums? set|set (the )?minim/), has(n,/lights|runway|visual|see/)]; }});
+setIt('app',5,{d:{en:'The published procedure in your own words, the first actions (TOGA, go-around callout, flaps one step, positive climb gear up, NAV), an engine failure in the go-around, and the plan after the missed approach (hold, second approach or alternate).',no:'Den publiserte prosedyren med egne ord, første handlinger (TOGA, go-around-callout, klaff ett trinn, positiv stigning hjul opp, NAV), motorstans i go-around, og planen etter avbrutt innflyging (holding, ny innflyging eller alternativ).'},
+  chk:(V,n)=>[has(n,/straight ahead|track 360|runway heading/), has(n,num(3000)), has(n,/holan|hold/), has(n,/toga|go.?around|flaps|gear|thrust/), has(n,/(one|1) engine|single engine|oei|engine (failure|out)|ecam/), has(n,/alternate|second approach|another approach|divert/)]});
+setIt('land',2,{d:{en:'Configuration plan (CONF and gear), VAPP and VLS.',no:'Plan for konfigurasjon (CONF og hjul), VAPP og VLS.'},chk:(V,n)=>{ const s=SP(V); return [has(n,/gear/), has(n,/conf|flaps?/), has(n,num(s.vapp))||has(n,/vapp|vls/)]; }});
+setIt('land',4,{d:{en:'When you go around and how: TOGA, pitch, flaps one step, positive climb gear up, where you fly.',no:'Når du går rundt og hvordan: TOGA, stigning, klaff ett trinn, positiv stigning hjul opp, hvor du flyr.'},chk:(V,n)=>[has(n,/go.?around|missed/), has(n,/toga|thrust|power/), has(n,/flaps?|gear|climb/)]});
+
+function facts320(kind,V){
+  const s=SP(V), P=BRIEF.proc(V), A=OPS.APT;
+  const base=`AIRCRAFT: Airbus A320 (typical A320ceo training values, not FCOM), two-crew, approach category C. Mass ${s.t.toFixed(1)} t (MTOM 78 t, MLM 64.5 t). Take-off CONF 1+F, ${thrTxt(s)}, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}, S ${s.S}, F ${s.F}. Landing CONF FULL: VLS ${s.vls}, VAPP ${s.vapp} (VLS + 1/3 of the headwind, at least 5 and at most 15 kt). VFE CONF 1 230, 1+F 215, 2 200, 3 185, FULL 177. VLO 250 extend / 220 retract, VLE 280. Demonstrated crosswind 38 kt. Engine failure on take-off: before V1 reject (thrust idle, reverse, autobrake RTO); after V1 continue, rotate, SRS, no action below 400 ft except gear up, ECAM actions, level off at engine-out acceleration altitude, green dot.
+AERODROME: Birdbird (NAER, fictional), elevation ${A.elev} ft, runway 36/18, ${RWY_LEN} x ${RWY_W} m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${A.freq.atis}, Delivery ${A.freq.del}, Ground ${A.freq.gnd}, Tower ${A.freq.twr}, Approach ${A.freq.app}. Transition altitude ${A.ta} ft. MSA (ASN 25 NM) 3200 ft west of the 360/180 line, 2300 ft east.
+WEATHER: ${V.metar}. ATIS information ${V.info}. Wind ${V.wind}: headwind ${V.hw} kt, crosswind ${V.xw} kt on runway 36. QNH ${V.qnh}.`;
+  if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared via ${OPS.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${OPS.SID.name}: ${OPS.SID.text} Minimum climb gradient 4.5 % to 1500 ft (terrain north-west); at 160 kt groundspeed about 730 ft/min. Check engine-out performance against it. Departure frequency: Birdbird Approach ${A.freq.app}.`
+     : `VFR: leave the control zone via ${A.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Polaris Information ${A.freq.fis}.`);
+  if(kind==='app') return base+`\nAPPROACH CHART: ${P.kind==='RNP'?'RNP RWY 36':'ILS or LOC RWY 36'} (flying ${P.name}), chart ${P.chart} effective ${P.date}. ${P.kind==='RNP'?'SBAS channel 41736, LPV and LNAV minima':'LOC IASN 110.30'}, final course 360°. ${P.kind==='LOC'?'Glide slope OUT: fly as LOC only, constant-angle descent (CDFA) on the DME/altitude table.':'Glide path 3.0°, TCH 50 ft.'}
+IAF: ALPOR and BIKAN 3000 ft. IF: RONAX D10.0 IASN 3000 ft. FAP: FAPSO D5.0 IASN 1650 ft. Distance/altitude checks: ${P.checks.map(c=>c[0]+' '+c[1]+' ft').join(', ')}. Rate of descent on 3.0°: 120 kt GS 635, 130 kt 690, 140 kt 745, 150 kt 795 ft/min.
+MINIMA (row C, A320): ${P.kind==='LOC'?`LOC MDA ${P.minima.locMda} ft (MDH ${P.minima.locMdh}), RVR 1200 m`:`${P.kind==='RNP'?'LPV ':''}DA ${P.minima.da} ft (DH ${P.minima.dh}), RVR ${P.minima.rvr} m. ${P.kind==='RNP'?'LNAV MDA '+P.minima.locMda+' ft':'LOC only MDA '+P.minima.locMda+' ft'}`}. Circling CAT C: MDA 710 ft (700), VIS 2400 m.
+MISSED APPROACH: ${P.missed} HOLDS: ${P.hold} TA ${P.ta} ft. ${P.notes}
+EXPECTED: ${V.ifr?'Radar vectors or own navigation to ALPOR, then ALPOR – RONAX – FAPSO.':''} Landing runway 36 CONF FULL, exit A3.`;
+  return base+`\nVFR ARRIVAL: enter the control zone via ${A.vrp[V.vrp||'N']} at or below 1500 ft, expect to join ${V.vrp==='S'?'straight in for final runway 36':'right base for runway 36'}. Circuit height 1500 ft. Landing runway 36, exit A3.`;
+}
+BRIEF.facts=facts320;
+BRIEF.prompt=function(kind,V,text,lang){ const rub=RB[kind];
+  return `You are a strict but encouraging EASA type-rating instructor and examiner on the Airbus A320. A pilot flying has just given a ${rub.name.en.toLowerCase()} for an A320 flight, out loud or typed (speech recognition may have garbled some words: judge the content, not the spelling). Aircraft values are typical training values; accept values within a few knots of them.
+
+FACTS FOR TODAY (the briefing must be correct against these):
+${V.packFacts? 'The pilot is briefing their OWN planned flight. Facts from their briefing pack (where something is missing from the pack, accept a reasonable value but say it was not in the pack, and never invent chart data):\n'+V.packFacts : facts320(kind,V)}
+
+THE BRIEFING MUST COVER THESE ELEMENTS, in roughly this order:
+${rub.items.map(i=>`${i.k} — ${i.t.en}: ${i.d.en}`).join('\n')}
+
+pilot's briefing:
+"""${String(text).slice(0,6000)}"""
+
+Assess it the way an examiner would: is each element present, correct against the facts, specific (numbers the pilot will actually use, not generic phrases) and safe? Wrong numbers are worse than missing ones: mark them "wrong" and say the correct value. A briefing that is complete but recited without thinking about today’s threats should not get top marks. Brevity is good: do not ask for more words than necessary.
+
+Write all comments in ${lang}. Reply with only a JSON object:
+{"score": integer 0-100,
+ "items": [{"k": "letter exactly as listed above", "status": "ok" | "partial" | "missing" | "wrong", "comment": "one or two short sentences: what was good or what is missing/wrong, with the correct value"}],  (one entry per element, same order)
+ "strengths": ["up to 2 short points"],
+ "fix": ["up to 3 concrete things to change next time, most important first"],
+ "model": "a model briefing for exactly today's facts, in English as said in the cockpit, 90-170 words"}`; };
+const xwTxt=V=> V.xw<2?'no real crosswind':`about ${V.xw} knots crosswind from the ${V.wd>180?'left':'right'}`;
+BRIEF.model=function(kind,V){
+  const s=SP(V), P=BRIEF.proc(V), t=s.t.toFixed(1), loc=P.kind==='LOC', rnp=P.kind==='RNP';
+  if(kind==='dep') return V.ifr?
+`Departure briefing. Threats: ${V.cld[0]==='BKN'||V.cld[0]==='OVC'?'cloud base '+V.cld[1]+' feet so we are in IMC early, ':''}terrain north-west and the 4.5 per cent gradient to 1500 feet, ${V.t<=3?'icing conditions so engine anti-ice on, ':''}take-off mass ${t} tonnes.
+Runway 36 from A1, full length ${RWY_LEN} metres, wind ${V.wind}, ${xwTxt(V)}.
+Initial: ${OPS.SID.name}, track 360, at 1500 feet left turn direct OSVIK, climb 3000 feet, squawk ${V.sq}, minimum gradient 4.5 per cent to 1500 feet. FMS flight plan checked against the chart. After departure Birdbird Approach ${OPS.APT.freq.app}.
+Bugs: ${thrTxt(s)}, CONF 1+F, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}.
+Emergencies: before V1, any failure or warning, I call stop: thrust idle, reverse max, autobrake RTO, keep it straight. After V1 we continue: rotate, SRS, positive climb gear up, no action below 400 feet except gear up, ECAM actions, level off at engine-out acceleration altitude and accelerate to green dot. Engine-out route: runway track, climb to MSA 3200 and ask for vectors back to the ILS 36.
+Transition altitude 7000, standard set passing 7000.
+Safe altitude: MSA 3200 feet in this sector. Any questions?`
+:`Departure briefing. Threats: traffic in the zone and at the reporting point, birds near the lake, so we keep a good lookout. Take-off mass ${t} tonnes.
+Runway 36 from A1, full length ${RWY_LEN} metres, wind ${V.wind}, ${xwTxt(V)}.
+Initial: leave the zone via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below, squawk 7000, then Polaris Information ${OPS.APT.freq.fis}.
+Bugs: ${thrTxt(s)}, CONF 1+F, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}.
+Emergencies: before V1 stop: thrust idle, reverse max, autobrake RTO. After V1 we continue, SRS, gear up, ECAM actions, green dot, and fly a visual circuit back to runway 36.
+Transition altitude 7000, we stay well below it.
+Safe altitude: MSA 3200 feet west, 2300 east. Any questions?`;
+  if(kind==='app'){ const gs=Math.max(110,s.vapp-Math.max(0,V.hw)), rd=Math.round(gs*5.31/10)*10;
+    return `Approach briefing. Threats: ${V.cld[0]} ${V.cld[1]} feet, wind ${V.wind}${V.t<=3?', icing in cloud so engine anti-ice on':''}, terrain 1100 feet three miles west of the final, landing mass ${t} tonnes.
+Setup: ${rnp?'RNP RWY 36':'ILS or LOC RWY 36'}, chart ${P.chart} effective ${P.date}. ${rnp?'Approach loaded in the FMS, LPV, channel 41736 checked':'IASN 110.30 identified, course 360 on both PFDs, LS on'}. ${loc?'Glide slope is out, so this is a localizer approach: FINAL APP, constant angle, MDA.':''} CONF FULL, VLS ${s.vls}, VAPP ${s.vapp}, autobrake LOW, ${RWY_LEN} metres, vacate A3.
+Arrival: via ALPOR at 3000, RONAX at 3000, hold at RONAX if needed. MSA 3200 west, 2300 east, transition altitude 7000.
+Descent: FAPSO at 1650 feet, 5 miles. ${loc?'Constant angle':'Glide slope'} 3 degrees, about ${rd} feet per minute at ${gs} knots groundspeed. Checks: 4 miles 1330, 3 miles 1020, 2 miles 700. Gear down and CONF FULL by 1000 feet, stable by 1000 feet or we go around.
+Minimums: ${loc?'MDA '+P.minima.locMda:'DA '+P.minima.da} feet set in the MCDU, ${loc?'RVR 1200':'RVR '+P.minima.rvr} metres required, visibility today ${V.vis===9999?'10 kilometres':V.vis+' metres'}. To continue I need the approach lights or the runway.
+Missed: straight ahead track 360 to 3000 feet, then direct HOLAN and hold. TOGA, go-around flaps, positive climb gear up, NAV, 3000 checked. Engine failure in the go-around: TOGA, same track, ECAM actions, green dot at acceleration. After the missed: another approach or divert to the alternate, depending on fuel and weather. Questions?`; }
+  return `Arrival briefing. Runway 36, wind ${V.wind}, ${xwTxt(V)}, ${RWY_LEN} metres. We enter via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below and expect ${V.vrp==='S'?'a straight-in for final 36':'right base 36'}, circuit height 1500.
+Configuration: CONF 1 before the zone, gear down and CONF 3 on base, CONF FULL on final, VAPP ${s.vapp}, VLS ${s.vls}. Stable by 500 feet, aim at the markers, autobrake LOW, vacate A3.
+Go-around: TOGA, go-around flaps, positive climb gear up, climb straight ahead to 1500 and tell Tower.
+Threats: traffic at the reporting point and in the circuit, birds by the lake, gusts. Questions?`;
+};
+
+let kind=(location.hash==='#app'?'app':location.hash==='#land'?'land':'dep'), rules='ifr', V=null;
+const SAY={
+ dep:{T:{en:'“Threats: low cloud, terrain north-west, the 4.5 per cent gradient to 1500. If we lose an engine we fly the engine-out route: runway track to MSA and vectors back to the ILS.”',no:'«Threats: low cloud, terrain north-west, the 4.5 per cent gradient to 1500. If we lose an engine we fly the engine-out route: runway track to MSA and vectors back to the ILS.»'},R:{en:'“Runway 36 from A1, full length 2500 metres, wind 350 at 8, about 1 knot crosswind from the left.”',no:'«Runway 36 from A1, full length 2500 metres, wind 350 at 8, about 1 knot crosswind from the left.»'},I:{en:'“OSVIK 1N: track 360, at 1500 left turn direct OSVIK, climb 3000, squawk 4721, 4.5 per cent to 1500. FMS checked against the chart. Approach on 119.25.”',no:'«OSVIK 1N: track 360, at 1500 left turn direct OSVIK, climb 3000, squawk 4721, 4.5 per cent to 1500. FMS checked against the chart. Approach on 119.25.»'},B:{en:'“FLEX 58, CONF 1+F, V1 138, VR 142, V2 146, green dot 217.”',no:'«FLEX 58, CONF 1+F, V1 138, VR 142, V2 146, green dot 217.»'},E:{en:'“Before V1, any failure or warning: I call stop, thrust idle, reverse max, autobrake RTO. After V1 we continue: rotate, SRS, gear up, no action below 400 feet except gear up, ECAM actions, accelerate at engine-out acceleration altitude to green dot.”',no:'«Before V1, any failure or warning: I call stop, thrust idle, reverse max, autobrake RTO. After V1 we continue: rotate, SRS, gear up, no action below 400 feet except gear up, ECAM actions, accelerate at engine-out acceleration altitude to green dot.»'},T2:{en:'“Transition altitude 7000, standard passing 7000.”',no:'«Transition altitude 7000, standard passing 7000.»'},S:{en:'“MSA 3200 in this sector. Questions?”',no:'«MSA 3200 in this sector. Questions?»'}},
+ app:{T:{en:'“Threats: terrain 1100 ft west of the final, icing in cloud above 4000, gusty crosswind. We stay on the profile, engine anti-ice on, VAPP with the wind correction.”',no:'«Threats: terrain 1100 ft west of the final, icing in cloud above 4000, gusty crosswind. We stay on the profile, engine anti-ice on, VAPP with the wind correction.»'},S:{en:'“ILS 36, chart 11-1 effective 1 November, IASN 110.30 identified, course 360 on both PFDs, LS on, APPR armed.”',no:'«ILS 36, chart 11-1 effective 1 November, IASN 110.30 identified, course 360 on both PFDs, LS on, APPR armed.»'},A:{en:'“Via ALPOR 3000, then RONAX 3000, hold at RONAX if needed. MSA 3200 west, 2300 east, transition altitude 7000.”',no:'«Via ALPOR 3000, then RONAX 3000, hold at RONAX if needed. MSA 3200 west, 2300 east, transition altitude 7000.»'},D:{en:'“FAPSO 1650 at 5 miles, 3 degrees, about 690 feet a minute at 130 knots groundspeed, 4 miles 1330, 3 miles 1020. Gear down, CONF FULL, VAPP 136. Stable by 1000.”',no:'«FAPSO 1650 at 5 miles, 3 degrees, about 690 feet a minute at 130 knots groundspeed, 4 miles 1330, 3 miles 1020. Gear down, CONF FULL, VAPP 136. Stable by 1000.»'},M:{en:'“DA 210 set in the MCDU, RVR 550 required, RVR today 1200. Approach lights or runway in sight to continue.”',no:'«DA 210 set in the MCDU, RVR 550 required, RVR today 1200. Approach lights or runway in sight to continue.»'},M2:{en:'“Missed: straight ahead to 3000, then HOLAN and hold. TOGA, go-around flaps, positive climb gear up, NAV. Engine failure in the go-around: TOGA, same track, ECAM. Then a second approach or the alternate.”',no:'«Missed: straight ahead to 3000, then HOLAN and hold. TOGA, go-around flaps, positive climb gear up, NAV. Engine failure in the go-around: TOGA, same track, ECAM. Then a second approach or the alternate.»'}},
+};
+let PACKS=[];
+function packFacts(p,kind){ const f=p.f||{}, v=k=>f[k]!=null&&f[k]!==''?String(f[k]):''; const out=[]; out.push(`Flight ${v('depapt')} to ${v('destapt')}${v('altapt')?' (alternate '+v('altapt')+')':''}, aircraft ${v('type')||'A320'} ${v('reg')}, ${v('rules')||'IFR'}.`);
+  const ks= kind==='dep'? ['dep','to'] : ['dest','alt1'];
+  ks.forEach(k=>{ const m=[v('mt.'+k+'.icao'),v('mt.'+k+'.metar'),v('mt.'+k+'.taf')].filter(Boolean).join(' / '); const mi=[v('mi.'+k+'.wind')&&'wind '+v('mi.'+k+'.wind'),v('mi.'+k+'.rwy')&&'runway '+v('mi.'+k+'.rwy'),v('mi.'+k+'.proc')&&'expected '+v('mi.'+k+'.proc'),v('mi.'+k+'.rv')&&'minimum vis/RVR '+v('mi.'+k+'.rv'),v('mi.'+k+'.rc')&&'DH/MDH or ceiling '+v('mi.'+k+'.rc')].filter(Boolean).join(', '); if(m||mi) out.push(`${k}: ${m}${mi?' · '+mi:''}.`); });
+  if(kind==='dep'){ ['r.dep.tora','r.dep.todr','gr.dep.sid','gr.dep.req'].forEach(k=>{ if(v(k)) out.push(k+' '+v(k)+'.'); }); if(v('rf.dep')) out.push('Radio failure on departure: '+v('rf.dep')+'.'); }
+  else { if(v('rf.arr')) out.push('Radio failure on arrival: '+v('rf.arr')+'.'); }
+  if(v('x.msa')) out.push('MSA '+v('x.msa')+'.'); if(v('b.threats')) out.push('Threats noted: '+v('b.threats')+'.'); return out.join(' '); }
+NSTORE.ready.then(()=>NSTORE.list('prep')).then(l=>{ PACKS=l||[]; el('scen').insertAdjacentHTML('beforeend',PACKS.map(p=>`<option value="${p.id}">${esc(L({en:'My pack: ',no:'Min pakke: '})+(p.title||[p.f&&p.f.depapt,p.f&&p.f.destapt].filter(Boolean).join(' – ')||'?'))}</option>`).join('')); }).catch(()=>{});
+el('scen').onchange=()=>scenario();
+function scenario(app){ const pk=PACKS.find(p=>p.id===el('scen').value); if(pk){ V=a320(OPS.flight({rules:'ifr'})); V.packFacts=packFacts(pk,kind==='app'?'app':'dep'); V.packTitle=pk.title||''; draw(); return; }
+  V=OPS.flight({rules:kind==='land'?'vfr':rules, app}); if(kind==='app'&&!V.ifr) V=OPS.flight({rules:'ifr',app}); V.qnh2=V.qnh2||V.qnh; a320(V); draw(); }
+/* keep chart text inside its frame: squeeze any start-anchored line that would run past the right edge */
+function fitChartText(box){ if(!box) return; box.querySelectorAll('svg[viewBox]').forEach(svg=>{ const vb=svg.viewBox.baseVal; if(!vb||!vb.width) return;
+  svg.querySelectorAll('text').forEach(t=>{ if((t.getAttribute('text-anchor')||'start')!=='start') return; t.removeAttribute('textLength'); t.removeAttribute('lengthAdjust');
+    const x=parseFloat(t.getAttribute('x'))||0, avail=vb.width-x-Math.max(16,Math.min(x,24)); let len=0; try{ len=t.getComputedTextLength(); }catch(e){ return; }
+    if(len>avail&&avail>40){ t.setAttribute('textLength',avail.toFixed(1)); t.setAttribute('lengthAdjust','spacingAndGlyphs'); } }); }); }
+function draw(){
+  const P=BRIEF.proc(V), s=SP(V), rub=RB[kind];
+  el('bh').textContent=L(rub.name);
+  el('model').hidden=!!V.packFacts;
+  el('wx').innerHTML=`<b>${L({en:'Today',no:'I dag'})} · ${V.ifr?'IFR':'VFR'} · A320 · ${L({en:'mass',no:'masse'})} ${s.t.toFixed(1)} t</b>${esc(V.metar)}<br>ATIS ${esc(V.info)} · QNH ${V.qnh} · ${L({en:'crosswind',no:'sidevind'})} ${V.xw} kt<br>`+
+    (kind==='dep'? (V.ifr? `${L({en:'Clearance',no:'Klarering'})}: NAER via OSVIK 1N, climb 3000 ft, squawk ${V.sq}` : `VFR: ${L({en:'leave via',no:'ut via'})} ${V.vrp==='S'?'SIERRA':'NOVEMBER'} ≤1500 ft, squawk 7000`)
+     : kind==='app'? `${L({en:'Expect',no:'Forvent'})}: ${P.name} ${L({en:'via ALPOR',no:'via ALPOR'})}${P.kind==='LOC'?' · ILS GP U/S':''}` : `${L({en:'Join via',no:'Inn via'})} ${V.vrp==='S'?'SIERRA':'NOVEMBER'} ≤1500 ft`)+
+    (kind==='dep'? `<br>${thrTxt(s)} · CONF 1+F · V1 ${s.v1} · VR ${s.vr} · V2 ${s.v2} · ${L({en:'green dot',no:'green dot'})} ${s.gd}` : `<br>CONF FULL · VLS ${s.vls} · VAPP ${s.vapp} · F ${s.F} · S ${s.S}`)+
+    ` <span style="color:var(--ink-3)">(${L({en:'typical',no:'typisk'})})</span>`;
+  el('chart').innerHTML= kind==='app'? CHART.app(P) : (kind==='dep'&&V.ifr)? CHART.sid() : `<div style="padding:16px" class="note">${L({en:'VFR: use the visual approach chart for your aerodrome. Here: runway 36, 2500 × 45 m, circuit 1500 ft, entry via NOVEMBER (8 NM north) or SIERRA (8 NM south).',no:'VFR: bruk VAC-kartet for flyplassen din. Her: rullebane 36, 2500 × 45 m, landingsrunde 1500 ft, innpassering via NOVEMBER (8 NM nord) eller SIERRA (8 NM sør).'})}</div>`;
+  fitChartText(el('chart'));
+  if(V.packFacts){ V.packFacts=packFacts(PACKS.find(p=>p.id===el('scen').value)||{f:{}},kind==='app'?'app':'dep'); el('wx').innerHTML=`<b>${L({en:'Your flight',no:'Din tur'})} · ${esc(V.packTitle)}</b>${esc(V.packFacts)}`; el('chart').innerHTML=`<div style="padding:16px" class="note">${L({en:'Brief from your own chart: open the plate or SID you will fly (attached in the briefing pack or in your EFB). The instructor checks your briefing against the facts in your pack.',no:'Brief fra ditt eget kart: åpne platen eller SID-en du skal fly (vedlagt i briefingpakken eller i EFB-en din). Instruktøren sjekker briefingen mot fakta i pakken din.'})}</div>`; }
+  let mi=0;
+  el('letters').innerHTML=rub.items.map(it=>{ let key=it.k; if((kind==='app'&&it.k==='M')||(kind==='dep'&&it.k==='T')){ key= mi++? it.k+'2':it.k; } const sy=SAY[kind]&&SAY[kind][key];
+    return `<div class="lt"><span class="k">${esc(it.k)}</span><div><b>${esc(L(it.t))}</b><p>${esc(L(it.d))}</p>${sy?`<div class="say">${esc(L(sy))}</div>`:''}</div></div>`; }).join('');
+  el('rules').hidden= kind!=='dep';
+  el('out').innerHTML=''; el('bn').textContent='';
+  hist();
+}
+function hist(){ let h=[]; try{ h=JSON.parse(localStorage.getItem('naeroson-brief-hist')||'[]'); }catch(e){} const k=h.filter(x=>x.k===kind).slice(-6);
+  el('hist').textContent= k.length? L({en:'Your last scores: ',no:'Dine siste resultater: '})+k.map(x=>x.s+' %').join(' · ') : ''; }
+function pushHist(sc){ let h=[]; try{ h=JSON.parse(localStorage.getItem('naeroson-brief-hist')||'[]'); }catch(e){} h.push({k:kind,s:Math.round(sc),t:Date.now()}); h=h.slice(-40); try{ localStorage.setItem('naeroson-brief-hist',JSON.stringify(h)); }catch(e){} hist(); }
+const kseg=LAB.seg(el('kind'),[['dep','Departure'],['app','Approach'],['land','VFR arrival']],kind,v=>{ kind=v; history.replaceState(null,'','#'+v); scenario(); });
+const rseg=LAB.seg(el('rules'),[['ifr','IFR'],['vfr','VFR']],rules,v=>{ rules=v; scenario(); });
+el('newsc').onclick=()=>scenario();
+el('sc').onclick=()=>BRIEF.score(kind,V,el('bt').value,{out:el('out'),note:el('bn'),btn:el('sc'),done:r=>pushHist(r.score)});
+el('model').onclick=()=>{ el('out').innerHTML=`<div class="why" style="font-size:15px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:12px 14px"><b>${L({en:'Model briefing',no:'Modellbriefing'})}</b><br>${esc(BRIEF.model(kind,V)).replace(/\n/g,'<br>')}</div>`; };
+el('clear').onclick=()=>{ el('bt').value=''; el('out').innerHTML=''; };
+NAI.ptt(el('mic'),el('bt'),null,{toggle:true,append:true,lang:'en-GB',space:false}); if(!NAI.sr) el('mic').hidden=true;
+const drawAist=m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Scored by the built-in check',no:'Vurderes med innebygd sjekk'}); if(!m) a.title=L({en:'The AI instructor is not connected on this copy of Birdbird. The built-in check looks for every element and today’s numbers.',no:'AI-instruktøren er ikke koblet til på denne kopien av Birdbird. Den innebygde sjekken ser etter alle elementene og dagens tall.'}); };
+NAI.ready.then(m=>{ drawAist(m); LAB.onLang(()=>drawAist(NAI.mode)); });
+
+/* ---------- Reading an approach chart: interaktiv gjennomgang ---------- */
+const HS={
+ head:{t:{en:'Heading and frequencies',no:'Topptekst og frekvenser'},k:'S',
+  d:{en:'The airport (NAER, Birdbird), the chart index (11-1) and effective date, and the procedure title. The title names every approach on the plate: “ILS or LOC RWY 36” is one chart for the ILS and for the localizer-only approach. The row below lists the frequencies in the order you use them: ATIS, Approach, Tower, Ground.',no:'Flyplassen (NAER, Birdbird), kartindeksen (11-1) og gyldighetsdato, og navnet på prosedyren. Tittelen nevner hver innflyging på kartet: «ILS or LOC RWY 36» er ett kart for både ILS og innflyging kun på localizer. Raden under viser frekvensene i den rekkefølgen du bruker dem: ATIS, Approach, Tower, Ground.'},
+  r:{en:'Check the date against the current revision and the title against your clearance.',no:'Sjekk datoen mot gjeldende revisjon og tittelen mot klareringen.'},
+  say:'“ILS 36, chart 11-1, effective 1 November, current.”'},
+ strip:{t:{en:'Briefing strip',no:'Briefingstripen'},k:'S · D',
+  d:{en:'The numbers you set and say first: localizer ident and frequency (IASN 110.30), final approach course 360°, the glide slope altitude at the final approach point (FAPSO 1650 ft; the figure in brackets, 1640, is height above the threshold), the DA(H), and the aerodrome and touchdown zone elevation.',no:'Tallene du setter og sier først: localizer-ident og frekvens (IASN 110.30), sluttinnflygingskurs 360°, glide slope-høyden ved final approach point (FAPSO 1650 ft; tallet i parentes, 1640, er høyde over terskelen), DA(H), og flyplass- og TDZ-høyde.'},
+  r:{en:'Figures in brackets are heights above the TDZE or aerodrome; the others are altitudes on QNH.',no:'Tall i parentes er høyder over TDZE eller flyplassen; de andre er høyder på QNH.'},
+  say:'“IASN 110.30 identified, course 360 on both PFDs, LS on. Glide slope intercept FAPSO 1650.”'},
+ msa:{t:{en:'Minimum sector altitude',no:'Minste sektorhøyde (MSA)'},k:'A · T',
+  d:{en:'Within 25 NM of the ASN VOR: 3200 ft in the western half, where the high ground is, and 2300 ft in the eastern half. The sector lines are bearings to the VOR. The MSA gives at least 1000 ft obstacle clearance. It is a safety net when you are unsure of your position or off the procedure, not an altitude to fly the approach at.',no:'Innenfor 25 NM fra ASN VOR: 3200 ft i den vestlige halvdelen, der terrenget er høyt, og 2300 ft i den østlige. Sektorlinjene er peilinger til VOR-en. MSA gir minst 1000 ft hinderklaring. Den er et sikkerhetsnett når du er usikker på posisjonen eller utenfor prosedyren, ikke en høyde å fly innflygingen på.'},
+  r:{en:'Note the highest sector: that is where an engine failure or a missed turn costs most.',no:'Merk deg den høyeste sektoren: der koster en motorstans eller en glemt sving mest.'},
+  say:'“MSA 3200 west, 2300 east. The high ground is west of the final.”'},
+ missed:{t:{en:'Missed approach and altimeter',no:'Avbrutt innflyging og høydemåler'},k:'M',
+  d:{en:'The published missed approach in words: climb straight ahead on 360° to 3000 ft, then direct HOLAN and hold. The procedure assumes a 2.5 % climb gradient. Below it: altimeter setting units (hPa), transition level by ATC, transition altitude 7000 ft, and the approach and runway lighting.',no:'Den publiserte avbrutte innflygingen i tekst: stig rett frem på 360° til 3000 ft, så direkte HOLAN og holding. Prosedyren forutsetter 2,5 % stigegradient. Under: enhet for høydemålerinnstilling (hPa), overgangsnivå fra ATC, overgangshøyde 7000 ft, og innflygings- og banelys.'},
+  r:{en:'Say it in your own words, check it against the missed approach in the FMS, and have 3000 set on the FCU before the final approach point.',no:'Si den med egne ord, sjekk den mot missed approach i FMS-en, og ha 3000 satt på FCU-en før final approach point.'},
+  say:'“Missed: straight ahead 360 to 3000, then HOLAN and hold. 3000 set.”'},
+ plan:{t:{en:'Plan view',no:'Planvisning'},k:'T · A',
+  d:{en:'The procedure from above, north up and to scale (scale bar bottom left). From the IAFs ALPOR and BIKAN at 3000 ft to RONAX (IF, D10.0) and its holding; the localizer feather and the 360° course; FAPSO; terrain tint, spot heights (highest 2350 ft, with an arrow) and an obstacle; and the dashed missed approach to the hold at HOLAN.',no:'Prosedyren sett ovenfra, nord opp og i målestokk (målestokk nede til venstre). Fra IAF-ene ALPOR og BIKAN på 3000 ft til RONAX (IF, D10.0) og holdingen der; localizer-fjæren og kursen 360°; FAPSO; terrengfarge, punkthøyder (høyeste 2350 ft, med pil) og et hinder; og den stiplede avbrutte innflygingen til holdingen ved HOLAN.'},
+  r:{en:'Solid lines are the approach, dashed lines the missed approach. Find the terrain closest to your track: 1100 ft, 3 NM west of the final.',no:'Heltrukne linjer er innflygingen, stiplede er avbrutt innflyging. Finn terrenget nærmest kursen: 1100 ft, 3 NM vest for finalen.'},
+  say:'“Via ALPOR at 3000, RONAX, hold at RONAX if needed. Terrain 1100 feet three miles west of the final.”'},
+ profile:{t:{en:'Profile view',no:'Profilvisning'},k:'D',
+  d:{en:'The procedure from the side: 3000 ft at RONAX, descend to 1650 ft, intercept the glide slope at FAPSO (the cross marks the final approach point), then 3.00° down to 50 ft over the threshold (TCH). The table gives the altitude at each DME distance, your cross-check that you are on the path. For the LOC approach the same table is your constant-angle (CDFA) profile, and D3.0 has a minimum of 1020 ft.',no:'Prosedyren sett fra siden: 3000 ft ved RONAX, ned til 1650 ft, fang glide slope ved FAPSO (krysset markerer final approach point), så 3,00° ned til 50 ft over terskelen (TCH). Tabellen gir høyden for hver DME-avstand, kontrollen på at du er på banen. For LOC-innflygingen er samme tabell profilen for konstant vinkel (CDFA), og D3.0 har minstehøyde 1020 ft.'},
+  r:{en:'Pick two or three checks you will call, for example 4 NM 1330 and 3 NM 1020.',no:'Velg to eller tre kontroller du vil sjekke, for eksempel 4 NM 1330 og 3 NM 1020.'},
+  say:'“FAPSO 1650, 3 degrees. Checks: 4 miles 1330, 3 miles 1020, 2 miles 700.”'},
+ rod:{t:{en:'Rate of descent table',no:'Synketabell'},k:'D',
+  d:{en:'Rate of descent on the 3.00° path for each groundspeed, and the time from FAPSO to the LOC missed approach point. An A320 with a VAPP around 135 kt and a light headwind flies about 130 kt over the ground: about 690 ft/min (tinted columns). Rule of thumb: groundspeed × 5.',no:'Synkehastighet på 3,00° for hver groundspeed, og tiden fra FAPSO til LOC-MAPt. En A320 med VAPP rundt 135 kt og litt motvind flyr ca. 130 kt over bakken: ca. 690 ft/min (fargede kolonner). Tommelfingerregel: groundspeed × 5.'},
+  r:{en:'Use groundspeed, not airspeed: a tailwind means a higher rate of descent.',no:'Bruk groundspeed, ikke fart gjennom luften: medvind gir høyere synkehastighet.'},
+  say:'“About 700 feet a minute at 130 knots groundspeed.”'},
+ mins:{t:{en:'Minimums',no:'Minima'},k:'M',
+  d:{en:'One row per aircraft category, set by VAT (1.3 × the stall speed in landing configuration at maximum landing mass). The A320 is category C (VAT 121–140 kt), so read row C. Straight-in: ILS DA(H) 210 ft (200) with RVR 550 m; LOC MDA(H) 460 ft (450) with RVR 1200 m; the ALS out columns apply when the approach lights are unserviceable. Circle-to-land CAT C: up to 180 kt, MDA(H) 710 ft (700), visibility 2400 m.',no:'Én rad per flykategori, bestemt av VAT (1,3 × stallfarten i landingskonfigurasjon ved maks landingsmasse). A320 er kategori C (VAT 121–140 kt), så les rad C. Rett inn: ILS DA(H) 210 ft (200) med RVR 550 m; LOC MDA(H) 460 ft (450) med RVR 1200 m; kolonnene ALS out gjelder når innflygingslysene er ute av drift. Sirkling CAT C: inntil 180 kt, MDA(H) 710 ft (700), sikt 2400 m.'},
+  r:{en:'Compare the required RVR with today’s weather before you start the approach.',no:'Sammenlign kravet til RVR med dagens vær før du starter innflygingen.'},
+  say:'“DA 210 set in the MCDU, RVR 550 required, RVR today 1200. Lights or runway in sight to continue.”'}
+};
+let hsK='strip', rVar='ils36';
+const rvseg=LAB.seg(el('rvar'),[['ils36','ILS'],['loc36','LOC (GS out)'],['rnp36','RNP']],rVar,v=>{ rVar=v; rchart(); });
+function rchart(){ el('rchart').innerHTML=CHART.app(OPS.APPS[rVar],{hot:true}); hsMark(); }
+function hsMark(){ el('rchart').querySelectorAll('.hs').forEach(g=>g.classList.toggle('on',g.dataset.k===hsK)); el('hsb').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===hsK)); }
+function hsDraw(){ const R=CHART.REG;
+  el('hsb').innerHTML=R.map(r=>`<button data-k="${r.k}" type="button"><span class="n">${r.n}</span>${esc(L(HS[r.k].t))}</button>`).join('');
+  const h=HS[hsK], n=R.find(r=>r.k===hsK).n;
+  el('hsd').innerHTML=`<h3>${n} · ${esc(L(h.t))}</h3><p>${esc(L(h.d))}</p><p><b>${L({en:'Read it like this',no:'Les det slik'})}:</b> ${esc(L(h.r))}</p><div class="tl"><span class="k">${esc(h.k)}</span><div><b>${L({en:'In the TSADMM brief',no:'I TSADMM-briefingen'})}</b><div class="say">${esc(h.say)}</div></div></div>`;
+  hsMark(); }
+function hsPick(k,scroll){ if(!HS[k]) return; hsK=k; hsDraw(); if(scroll&&window.matchMedia('(max-width:1050px)').matches) el('hsd').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+el('rchart').addEventListener('click',e=>{ const g=e.target.closest('.hs'); if(g) hsPick(g.dataset.k,true); });
+el('rchart').addEventListener('keydown',e=>{ const g=e.target.closest('.hs'); if(g&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); hsPick(g.dataset.k,true); } });
+el('hsb').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) hsPick(b.dataset.k,false); });
+el('briefit').onclick=()=>{ el('scen').value=''; kind='app'; kseg.set('app'); history.replaceState(null,'','#app'); scenario(rVar); el('bt').value='';
+  el('trainer').scrollIntoView({behavior:'smooth',block:'start'}); setTimeout(()=>{ try{ el('bt').focus({preventScroll:true}); }catch(e){} },600); };
+el('printc').onclick=()=>{ document.body.classList.add('pchart'); const off=()=>{ document.body.classList.remove('pchart'); window.removeEventListener('afterprint',off); }; window.addEventListener('afterprint',off); window.print(); setTimeout(off,1500); };
+
+/* plateguide */
+const PG=[
+ ['T',{en:'Threats',no:'Trusler'},{en:'Weather, NOTAM, the chart and your own state.',no:'Vær, NOTAM, kartet og din egen tilstand.'},[{en:'Terrain and obstacles near the approach',no:'Terreng og hindre nær innflygingen'},{en:'Weather: icing, wind and gusts, low cloud, wind shear',no:'Vær: ising, vind og kast, lave skyer, vindskjær'},{en:'For each threat: what you will do about it',no:'For hver trussel: hva du gjør med den'}]],
+ ['S',{en:'Setup',no:'Oppsett'},{en:'Heading and briefing strip, and the cockpit.',no:'Topptekst og briefingstripe, og cockpiten.'},[{en:'Approach name, runway, chart number and date (is it current?)',no:'Navn på innflygingen, rullebane, kartnummer og dato (er det gjeldende?)'},{en:'Frequency and ident set and identified, and the approach loaded in the FMS',no:'Frekvens og ident satt og identifisert, og innflygingen lastet i FMS-en'},{en:'Final course on the PFD, approach mode, minimums in the MCDU',no:'Sluttkurs på PFD-en, innflygingsmodus, minima i MCDU-en'}]],
+ ['A',{en:'Arrival',no:'Ankomst'},{en:'Plan view: from where you are to the start of the final.',no:'Planvisning: fra der du er til starten av finalen.'},[{en:'Expected arrival: vectors or which IAF',no:'Forventet ankomst: vektorer eller hvilken IAF'},{en:'Altitudes at IAF and IF, and the hold if you expect one',no:'Høyder ved IAF og IF, og holdingen hvis du venter en'},{en:'MSA and transition altitude',no:'MSA og overgangshøyde'}]],
+ ['D',{en:'Descent',no:'Nedstigning'},{en:'Profile view and the descent table.',no:'Profilvisning og synketabellen.'},[{en:'FAF or FAP and its altitude, glide path angle, rate of descent for your groundspeed',no:'FAF eller FAP og høyden der, glidebanevinkel, synkehastighet for din groundspeed'},{en:'Distance and altitude checks you will call',no:'Distanse- og høydekontroller du vil sjekke'},{en:'Configuration and VAPP; stable by 1000 ft, or go around',no:'Konfigurasjon og VAPP; stabil innen 1000 ft, ellers go-around'}]],
+ ['M',{en:'Minimums',no:'Minima'},{en:'Minimums box at the bottom.',no:'Minimaboksen nederst.'},[{en:'DA/DH or MDA for the approach you fly, in your category row (A320: C)',no:'DA/DH eller MDA for innflygingen du flyr, i raden for din kategori (A320: C)'},{en:'RVR or visibility required, compared with today’s weather',no:'RVR eller sikt som kreves, sammenlignet med dagens vær'},{en:'Set the minimums; what you must see to continue',no:'Sett minima; hva du må se for å fortsette'}]],
+ ['M',{en:'Missed approach',no:'Avbrutt innflyging'},{en:'Missed-approach text and the dashed line.',no:'Teksten for avbrutt innflyging og den stiplede linjen.'},[{en:'Route and altitude in your own words; set the altitude',no:'Rute og høyde med egne ord; sett høyden'},{en:'First actions, and an engine failure in the go-around',no:'Første handlinger, og motorstans i go-around'},{en:'The plan after: hold, a second approach, or the alternate',no:'Planen etterpå: holding, ny innflyging eller alternativ'}]]
+];
+function pg(){ el('pg').innerHTML=PG.map(([k,t,d,li])=>`<div class="pg"><h4 data-k="${k}">${esc(L(t))}</h4><p>${esc(L(d))}</p><ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul></div>`).join(''); }
+
+/* A320-fartskort */
+let spM='64.5';
+const spmSeg=LAB.seg(el('spm'),[['55','55 t'],['60','60 t'],['64.5','64.5 t'],['70','70 t'],['77','77 t']],spM,v=>{ spM=v; speeds(); });
+function speeds(){ const t=parseFloat(spM), s=spd(t,0), over=t>64.5;
+  const row=r=>`<tr><td>${esc(typeof r[0]==='string'?r[0]:L(r[0]))}</td><td>${esc(r[1])}</td></tr>`;
+  const a=[[{en:'Take-off CONF 1+F: V1 / VR / V2',no:'Avgang CONF 1+F: V1 / VR / V2'},`${s.v1} / ${s.vr} / ${s.v2}`],[{en:'Green dot (O), below FL200',no:'Green dot (O), under FL200'},s.gd],[{en:'S speed (CONF 1)',no:'S-fart (CONF 1)'},s.S],[{en:'F speed (CONF 2 and 3)',no:'F-fart (CONF 2 og 3)'},s.F],[{en:'VLS CONF FULL',no:'VLS CONF FULL'},s.vls],[{en:'VAPP CONF FULL, calm wind',no:'VAPP CONF FULL, vindstille'},s.vapp],[{en:'VAPP, 20 kt headwind',no:'VAPP, 20 kt motvind'},spd(t,20).vapp]];
+  const b=[['VMO / MMO','350 kt / M0.82'],['VLE','280 kt / M0.67'],[{en:'VLO extend / retract',no:'VLO ut / inn'},'250 / 220 kt'],['VFE CONF 1','230 kt'],['VFE CONF 1+F','215 kt'],['VFE CONF 2','200 kt'],['VFE CONF 3','185 kt'],['VFE CONF FULL','177 kt'],[{en:'Demonstrated crosswind',no:'Demonstrert sidevind'},'38 kt']];
+  el('sp1').innerHTML=`<tr><th>${L({en:'KIAS at',no:'KIAS ved'})} ${t} t (${L({en:'typical',no:'typisk'})})</th><th></th></tr>`+a.map(row).join('')+(over?`<caption>${L({en:'Above the 64.5 t maximum landing mass: the landing speeds would apply to an overweight landing.',no:'Over maks landingsmasse 64,5 t: landingsfartene gjelder da en overvektslanding.'})}</caption>`:'');
+  el('sp2').innerHTML=`<tr><th>${L({en:'Limits (typical A320ceo)',no:'Grenser (typisk A320ceo)'})}</th><th></th></tr>`+b.map(row).join('');
+  const C=[[{en:'VLS',no:'VLS'},{en:'Lowest selectable speed, about 1.23 × the 1 g stall speed for the configuration. The top of the amber strip on the speed tape. Never fly below it in normal operation.',no:'Laveste valgbare fart, ca. 1,23 × stallfarten ved 1 g for konfigurasjonen. Toppen av den gule stripen på fartsskalaen. Fly aldri under den i normal drift.'}],
+   [{en:'VAPP',no:'VAPP'},{en:'Final approach speed: VLS + 1/3 of the headwind component, at least 5 kt and at most 15 kt above VLS. The FMS computes it from the wind you enter on the PERF APPR page.',no:'Sluttinnflygingsfart: VLS + 1/3 av motvindskomponenten, minst 5 kt og høyst 15 kt over VLS. FMS-en regner den ut fra vinden du legger inn på PERF APPR-siden.'}],
+   [{en:'Green dot',no:'Green dot'},{en:'Best lift-to-drag speed in clean configuration: the engine-out climb speed and the default holding speed. Rule of thumb below FL200: 2 × mass in tonnes + 85.',no:'Fart for best løft/motstand i ren konfigurasjon: stigefart med én motor ute og standard holdingfart. Tommelfingerregel under FL200: 2 × masse i tonn + 85.'}],
+   [{en:'S and F',no:'S og F'},{en:'S: minimum speed to retract the slats (CONF 1 to 0) after take-off. F: minimum speed to retract from CONF 2 or 3 to 1. On approach they are the target speeds for the next flap selection.',no:'S: minste fart for å trekke inn slats (CONF 1 til 0) etter avgang. F: minste fart for å gå fra CONF 2 eller 3 til 1. Under innflyging er de målfarter før neste klaffvalg.'}],
+   [{en:'VFE per CONF',no:'VFE per CONF'},{en:'Maximum speed for each flap and slat setting, shown as the red and black strip on the speed tape. It drops with each step: 230, 215, 200, 185 and 177 kt.',no:'Høyeste fart for hver klaff- og slatstilling, vist som den rød-svarte stripen på fartsskalaen. Den synker for hvert trinn: 230, 215, 200, 185 og 177 kt.'}],
+   [{en:'VLE, VLO, VMO/MMO',no:'VLE, VLO, VMO/MMO'},{en:'VLO 250 kt to extend and 220 kt to retract the gear; VLE 280 kt / M0.67 with it down. VMO 350 kt and MMO M0.82: the speed limit switches from knots to Mach in the climb at about FL300.',no:'VLO 250 kt for å senke og 220 kt for å heve hjulene; VLE 280 kt / M0,67 med dem ute. VMO 350 kt og MMO M0,82: fartsgrensen går fra knop til Mach i stigningen ved ca. FL300.'}]];
+  el('spc').innerHTML=C.map(([h,p])=>`<div class="box"><b class="t">${esc(L(h))}</b><p>${esc(L(p))}</p></div>`).join(''); }
+if(document.fonts) document.fonts.ready.then(()=>fitChartText(el('chart')));
+LAB.start('brief'); scenario(); pg(); speeds(); rchart(); hsDraw();
+LAB.onLang(()=>{ draw(); pg(); speeds(); hsDraw(); });
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(['dep','app','land'].includes(h)&&h!==kind){ kind=h; kseg.set(h); scenario(); } });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mass and balance</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#cvA{aspect-ratio:16/10;max-height:480px}
+#cvB{aspect-ratio:16/4.6;max-height:250px}#cvE{aspect-ratio:16/10;max-height:470px}
+@media (max-width:600px){#cvA{aspect-ratio:4/3.8}#cvB{aspect-ratio:16/7}#cvE{aspect-ratio:4/3.8}}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.ls{border-collapse:collapse;width:100%;font-size:14px;background:var(--sheet);border:1px solid var(--rule)}
+.ls th,.ls td{border-bottom:1px solid var(--rule-2);padding:6px 10px;text-align:left;vertical-align:middle}
+.ls th{font-size:12px;color:var(--ink-2);font-weight:500;background:#F6F8F6}
+.ls td.n{font-family:var(--f-mono);text-align:right;white-space:nowrap}
+.ls tr.sum td{font-weight:600}
+.ls input{width:100%;max-width:130px;font-family:var(--f-mono);font-size:14px;text-align:right;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink)}
+.ls input.right{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.ls input.wrong{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.ls select{font-size:14px;padding:6px;border:1px solid var(--rule);border-radius:3px;background:#fff;max-width:100%}
+.ls .fb{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
+.wrapx{overflow-x:auto}
+.lmc{border-left:3px solid var(--magenta);background:var(--sheet);padding:8px 12px;font-size:14px}
+</style>
+</head>
+<body data-title="Mass and balance">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Mass and balance</div>
+      <h1>Mass and balance</h1>
+      <p>Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move passengers, cargo and fuel and watch the centre of gravity travel through the envelope, then work a simplified load sheet with last-minute changes.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#masses">Masses and limits</a><a href="#cg">Centre of gravity</a><a href="#loadsheet">Load sheet</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="masses">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Masses and limits</h2>
+    <p class="lead">Every flight is checked against three structural limits: maximum zero fuel mass, maximum take-off mass and maximum landing mass. Each one allows a different traffic load, and the lowest of the three is the one you can actually carry.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvA" aria-label="Mass build-up from dry operating mass to landing mass, with the three structural limits"></canvas></div>
+      <div class="panel">
+        <div id="actl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Traffic load</span><b id="a1"></b></div>
+          <div class="rrow"><span>Zero fuel mass</span><b id="a2"></b></div>
+          <div class="rrow"><span>Take-off mass</span><b id="a3"></b></div>
+          <div class="rrow"><span>Landing mass</span><b id="a4"></b></div>
+          <div class="rrow"><span>Allowed traffic load</span><b id="a5"></b></div>
+          <div class="rrow"><span>Underload</span><b id="a6"></b></div>
+        </div>
+        <p class="callout blue" id="ax"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="cg">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Centre of gravity</h2>
+    <p class="lead">The CG is the total moment divided by the total mass. On a transport aircraft it is given in percent of the mean aerodynamic chord (% MAC), and load sheets add moments as an index to keep the numbers small. Why the CG limits exist aerodynamically is covered in the <a href="stability.html#long">stability lab</a>.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cvB" aria-label="Side view of the cabin zones and cargo holds with their loads"></canvas></div>
+        <div class="paper"><canvas id="cvE" aria-label="CG envelope with zero fuel, take-off and landing points"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Quick load</div><div id="gpre"></div>
+        <div id="gctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Zero fuel CG</span><b id="g1"></b></div>
+          <div class="rrow"><span>Take-off CG</span><b id="g2"></b></div>
+          <div class="rrow"><span>Landing CG</span><b id="g3"></b></div>
+          <div class="rrow"><span>Index (ZFW / TOW)</span><b id="g4"></b></div>
+          <div class="rrow"><span>Take-off trim (THS)</span><b id="g5"></b></div>
+          <div class="rrow"><span>State</span><b id="g6"></b></div>
+        </div>
+        <p class="callout" id="gx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="loadsheet">
+    <div class="eyebrow">3 · Drill</div>
+    <h2>Load sheet</h2>
+    <p class="lead">A simplified load sheet. Fill in the blanks from the given figures, then check. After that, apply a last-minute change and correct the sheet the way you would before departure.</p>
+    <div class="split">
+      <div class="wrapx"><table class="ls" id="lsheet"></table></div>
+      <div class="panel">
+        <div class="btns"><button class="btn pri" id="lsCheck">Check</button><button class="btn" id="lsLmc">Last-minute change</button><button class="btn" id="lsShow">Show answers</button><button class="btn" id="lsNew">New flight</button></div>
+        <div class="lmc" id="lsMsg" style="margin-top:10px" hidden></div>
+        <p class="callout blue" id="lsx" style="margin-top:10px"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">4 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model of an A320-sized aircraft. Masses, limits, arms, the CG envelope and the trim setting are illustrative typical values, not data for any registration or variant: real limits come from the AFM, the weight and balance manual and the operator’s load control system. Passenger masses use the EASA standard mass of 84 kg per adult including hand baggage.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'Mass and balance':'Masse og balanse','Birdbird Virtual Lab · Mass and balance':'Birdbird Virtual Lab · Masse og balanse',
+ 'Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move passengers, cargo and fuel and watch the centre of gravity travel through the envelope, then work a simplified load sheet with last-minute changes.':'Bygg opp et fly på størrelse med A320 fra tørr operativ masse til landingsmasse, finn hvilken strukturgrense som bestemmer hvor mye du kan ta med, flytt passasjerer, last og drivstoff og se tyngdepunktet vandre gjennom konvolutten, og regn deretter gjennom et forenklet lasteark med siste-liten-endringer.',
+ 'Masses and limits':'Masser og grenser','Centre of gravity':'Tyngdepunkt','Load sheet':'Lasteark','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Drill':'Øvelse','Operations':'Operativt','Check':'Sjekk',
+ 'Every flight is checked against three structural limits: maximum zero fuel mass, maximum take-off mass and maximum landing mass. Each one allows a different traffic load, and the lowest of the three is the one you can actually carry.':'Hver flyging sjekkes mot tre strukturgrenser: maksimal masse uten drivstoff, maksimal avgangsmasse og maksimal landingsmasse. Hver av dem tillater en ulik trafikklast, og den laveste av de tre er den du faktisk kan ta med.',
+ 'Passengers':'Passasjerer','Baggage and cargo (kg)':'Bagasje og last (kg)','Take-off fuel (kg)':'Avgangsdrivstoff (kg)','Trip fuel (kg)':'Turdrivstoff (kg)',
+ 'Traffic load':'Trafikklast','Zero fuel mass':'Masse uten drivstoff','Take-off mass':'Avgangsmasse','Landing mass':'Landingsmasse','Allowed traffic load':'Tillatt trafikklast','Underload':'Underlast',
+ 'The CG is the total moment divided by the total mass. On a transport aircraft it is given in percent of the mean aerodynamic chord (% MAC), and load sheets add moments as an index to keep the numbers small. Why the CG limits exist aerodynamically is covered in the':'CG er det totale momentet delt på den totale massen. På et trafikkfly oppgis det i prosent av den midlere aerodynamiske korden (% MAC), og lasteark legger sammen momenter som en indeks for å holde tallene små. Hvorfor CG-grensene finnes aerodynamisk, er forklart i',
+ 'stability lab':'stabilitetslaben',
+ 'Quick load':'Hurtiglasting','Balanced':'Jevnt fordelt','Forward':'Fremover','Aft':'Bakover',
+ 'Cabin zone A, rows 1–10':'Kabinsone A, rad 1–10','Cabin zone B, rows 11–20':'Kabinsone B, rad 11–20','Cabin zone C, rows 21–30':'Kabinsone C, rad 21–30','Forward hold (kg)':'Fremre lasterom (kg)','Aft hold (kg)':'Bakre lasterom (kg)','Bulk hold (kg)':'Bulk-lasterom (kg)',
+ 'Zero fuel CG':'CG uten drivstoff','Take-off CG':'CG ved avgang','Landing CG':'CG ved landing','Index (ZFW / TOW)':'Indeks (ZFW / TOW)','Take-off trim (THS)':'Avgangstrim (THS)','State':'Tilstand',
+ 'A simplified load sheet. Fill in the blanks from the given figures, then check. After that, apply a last-minute change and correct the sheet the way you would before departure.':'Et forenklet lasteark. Fyll inn feltene ut fra tallene som er gitt, og sjekk. Legg så inn en siste-liten-endring og korriger arket slik du ville gjort før avgang.',
+ 'Last-minute change':'Siste-liten-endring','Show answers':'Vis svar','New flight':'Ny flyging',
+ 'Teaching model of an A320-sized aircraft. Masses, limits, arms, the CG envelope and the trim setting are illustrative typical values, not data for any registration or variant: real limits come from the AFM, the weight and balance manual and the operator’s load control system. Passenger masses use the EASA standard mass of 84 kg per adult including hand baggage.':'Opplæringsmodell av et fly på størrelse med A320. Masser, grenser, armer, CG-konvolutten og trimverdien er illustrative, typiske verdier, ikke data for noen registrering eller variant: de virkelige grensene står i AFM, vekt- og balansemanualen og operatørens lastkontrollsystem. Passasjermasser bruker EASAs standardmasse på 84 kg per voksen inkludert håndbagasje.'
+});
+/* modell (illustrativ A320-størrelse) */
+const DOM=42500, MZFM=62500, MTOM=78000, MLM=64500, PAX=84, MAXF=18700;
+const LEMAC=17.8015, MAC=4.1935, IREF=18.85, DOMARM=18.85;
+const ARM={A:10.65,B:18.7,C:26.8,fwd:10.0,aft:24.5,bulk:28.5,wing:19.6,ctr:17.0};
+const pmac=arm=>(arm-LEMAC)/MAC*100, idx=(m,arm)=>m*(arm-IREF)/1000;
+const kg=v=>nf(Math.round(v),0)+' kg', t1=v=>nf(v/1000,1)+' t';
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+Math.round((sz||17)*0.76*(g.canvas.clientWidth<520?0.82:1))+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function bg(C){ const g=C.ctx; g.setTransform(C.dpr,0,0,C.dpr,0,0); g.clearRect(0,0,C.w,C.h); g.fillStyle='#FBFBF8'; g.fillRect(0,0,C.w,C.h); return g; }
+
+/* ---------- 1 masser ---------- */
+const A={pax:165,cargo:2800,tof:12000,trip:8500};
+function mass(o){ o=o||A; const tl=o.pax*PAX+o.cargo, zfm=DOM+tl, tom=zfm+o.tof, lm=tom-o.trip;
+  const lim=[{k:'zfm',n:L({en:'MZFM',no:'MZFM'}),v:MZFM-DOM},{k:'tom',n:L({en:'MTOM',no:'MTOM'}),v:MTOM-DOM-o.tof},{k:'lm',n:L({en:'MLM',no:'MLM'}),v:MLM-DOM-o.tof+o.trip}];
+  const gov=lim.reduce((a,b)=>b.v<a.v?b:a); return {tl,zfm,tom,lm,lim,gov,under:gov.v-tl}; }
+const CA=LAB.fit(el('cvA'),()=>dA(),2);
+function dA(){ if(!CA.w) return; const g=bg(CA), W=CA.w, H=CA.h, M=mass(); const narrow=W<520;
+  const L0=48,T0=24,B0=46, PH=H-T0-B0, chartW=narrow? W-L0-10 : W*0.64-L0, m0=30000, m1=82000, Y=m=>T0+PH-(m-m0)/(m1-m0)*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let m=30000;m<=80000;m+=10000){ g.beginPath(); g.moveTo(L0,Y(m)); g.lineTo(L0+chartW,Y(m)); g.stroke(); mono(g,nf(m/1000,0)+' t',L0-6,Y(m)+4,null,'right'); }
+  mono(g,L({en:'axis starts at 30 t',no:'aksen starter på 30 t'}),L0,H-6,'#9AA6AC');
+  const cols=[{t:'ZFM',lim:MZFM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68']],tot:M.zfm},{t:'TOM',lim:MTOM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68'],[A.tof,'#1E5E9E']],tot:M.tom},{t:'LM',lim:MLM,parts:[[DOM,'#C9D2D5'],[M.tl,'#9A1E68'],[A.tof-A.trip,'#1E5E9E']],tot:M.lm}];
+  const cw=chartW/3, bw=Math.min(70,cw*0.5);
+  cols.forEach((c,i)=>{ const cx=L0+cw*i+cw/2; let acc=0; c.parts.forEach(([v,col])=>{ const y0=Y(Math.max(m0,acc)), y1=Y(Math.max(m0,acc+v)); g.fillStyle=col; g.fillRect(cx-bw/2,y1,bw,y0-y1); acc+=v; });
+    if(c.tot>c.lim){ g.fillStyle='rgba(179,38,30,.55)'; g.fillRect(cx-bw/2,Y(c.tot),bw,Y(c.lim)-Y(c.tot)); }
+    g.strokeStyle='#B3261E'; g.lineWidth=2; g.setLineDash([5,3]); g.beginPath(); g.moveTo(cx-bw/2-10,Y(c.lim)); g.lineTo(cx+bw/2+10,Y(c.lim)); g.stroke(); g.setLineDash([]);
+    mono(g,'M'+c.t+' '+nf(c.lim/1000,1),cx,Y(c.lim)-6,'#B3261E','center',narrow?9.5:11);
+    mono(g,c.t,cx,T0+PH+16,'#13202A','center',12); mono(g,t1(c.tot),cx,T0+PH+30,c.tot>c.lim?'#B3261E':'#13202A','center',11); });
+  // fuel arrows: burn
+  const x1=L0+cw*1.5+bw/2+4, x2=L0+cw*2.5-bw/2-4; g.strokeStyle='#1E5E9E'; g.lineWidth=1.4; g.setLineDash([3,3]); g.beginPath(); g.moveTo(x1,Y(M.tom)); g.lineTo(x2,Y(M.lm)); g.stroke(); g.setLineDash([]); hand(g,L({en:'trip fuel burnt',no:'turdrivstoff brent'}),(x1+x2)/2,Math.min(Y(M.tom),Y(M.lm))-22,'#1E5E9E','center',15);
+  // legend
+  const lg=[[L({en:'dry operating mass',no:'tørr operativ masse'}),'#C9D2D5'],[L({en:'traffic load',no:'trafikklast'}),'#9A1E68'],[L({en:'fuel',no:'drivstoff'}),'#1E5E9E']]; let lx=L0; lg.forEach(([t,c])=>{ g.fillStyle=c; g.fillRect(lx,8,10,10); mono(g,t,lx+14,17,'#13202A'); g.font='11px IBM Plex Mono, monospace'; lx+=g.measureText(t).width+28; });
+  if(narrow) return;
+  // allowed traffic load per limit
+  const bx=W*0.68, bw2=W*0.3-10, maxv=Math.max(...M.lim.map(l=>l.v),M.tl,1), rowH=Math.min(46,PH/5); let y=T0+30;
+  hand(g,L({en:'traffic load each limit allows',no:'trafikklast hver grense tillater'}),bx,T0+14,'#13202A','start',16);
+  M.lim.forEach(l=>{ const w=Math.max(0,l.v)/maxv*bw2*0.8, on=l===M.gov; g.fillStyle=on?'#9A1E68':'#DCE3E4'; g.fillRect(bx,y,w,rowH*0.5); mono(g,l.n+': '+kg(l.v),bx,y+rowH*0.5+13,on?'#9A1E68':'#4C5B66'); y+=rowH+12; });
+  const wt=M.tl/maxv*bw2*0.8; g.strokeStyle=M.under<0?'#B3261E':'#13202A'; g.lineWidth=2; g.beginPath(); g.moveTo(bx+wt,T0+24); g.lineTo(bx+wt,y-8); g.stroke(); mono(g,L({en:'actual',no:'faktisk'})+' '+kg(M.tl),bx+wt,y+6,M.under<0?'#B3261E':'#13202A',wt>bw2*0.5?'right':'start'); }
+function rA(){ const M=mass(); el('a1').textContent=kg(M.tl)+' ('+A.pax+' × 84 + '+kg(A.cargo)+')';
+  const lim=(v,l)=>`<span class="${v>l?'ko':'ok'}">${kg(v)}</span>`;
+  el('a2').innerHTML=lim(M.zfm,MZFM); el('a3').innerHTML=lim(M.tom,MTOM); el('a4').innerHTML=lim(M.lm,MLM);
+  el('a5').innerHTML=kg(M.gov.v)+' ('+L({en:'limited by',no:'begrenset av'})+' '+M.gov.n+')';
+  el('a6').innerHTML= M.under<0? `<span class="ko">${L({en:'overload',no:'overlast'})} ${kg(-M.under)}</span>` : `<span class="ok">${kg(M.under)}</span>`;
+  const fuelOk=A.trip<=A.tof-2000;
+  const why={zfm:{en:`<b>MZFM governs.</b> The zero fuel mass limit protects the wing root: fuel in the wings relieves the bending load from the fuselage, so above the MZFM extra mass may only be fuel. Adding fuel here does not reduce what you can carry until MTOM or MLM takes over.`,no:`<b>MZFM bestemmer.</b> Grensen for masse uten drivstoff beskytter vingeroten: drivstoff i vingene avlaster bøyningen fra flykroppen, så over MZFM kan ekstra masse bare være drivstoff. Mer drivstoff her reduserer ikke det du kan ta med før MTOM eller MLM tar over.`},
+   tom:{en:`<b>MTOM governs.</b> Every extra kilogram of fuel now costs a kilogram of traffic load. On a long sector, or with tankering, this is the usual limit. A performance-limited take-off mass (runway, climb, obstacles) can be even lower than the structural MTOM and then replaces it.`,no:`<b>MTOM bestemmer.</b> Hvert ekstra kilo drivstoff koster nå et kilo trafikklast. På en lang etappe, eller ved tankering, er dette den vanlige grensen. En ytelsesbegrenset avgangsmasse (bane, stigning, hindringer) kan være enda lavere enn strukturell MTOM og erstatter den da.`},
+   lm:{en:`<b>MLM governs.</b> On a short sector little fuel is burnt, so the aircraft arrives heavy. Carrying extra fuel (tankering) quickly hits the landing limit. The allowed traffic load for MLM is MLM − DOM − take-off fuel + trip fuel.`,no:`<b>MLM bestemmer.</b> På en kort etappe brennes lite drivstoff, så flyet kommer tungt frem. Ekstra drivstoff (tankering) treffer fort landingsgrensen. Tillatt trafikklast for MLM er MLM − DOM − avgangsdrivstoff + turdrivstoff.`}}[M.gov.k];
+  el('ax').innerHTML=L(why)+' '+L({en:`DOM here is ${kg(DOM)} (aircraft, crew, catering, water: everything except traffic load and usable fuel).`,no:`DOM her er ${kg(DOM)} (fly, besetning, catering, vann: alt unntatt trafikklast og brukbart drivstoff).`})+(fuelOk?'':' <span class="ko">'+L({en:'The take-off fuel must also cover reserves: trip fuel this close to the take-off fuel is not a legal plan.',no:'Avgangsdrivstoffet må også dekke reserver: turdrivstoff så nær avgangsdrivstoffet er ikke en lovlig plan.'})+'</span>'); }
+function uA(){ dA(); rA(); }
+LAB.slider(el('actl'),{label:'Passengers',min:0,max:180,step:1,v:A.pax,f:v=>v+' × 84 kg',on:v=>{ A.pax=v; uA(); }});
+LAB.slider(el('actl'),{label:'Baggage and cargo (kg)',min:0,max:7000,step:50,v:A.cargo,f:v=>kg(v),on:v=>{ A.cargo=v; uA(); }});
+LAB.slider(el('actl'),{label:'Take-off fuel (kg)',min:3000,max:MAXF,step:100,v:A.tof,f:v=>kg(v),on:v=>{ A.tof=v; uA(); }});
+LAB.slider(el('actl'),{label:'Trip fuel (kg)',min:1000,max:15000,step:100,v:A.trip,f:v=>kg(v),on:v=>{ A.trip=v; uA(); }});
+
+/* ---------- 2 tyngdepunkt ---------- */
+const Cg={A:50,B:60,C:55,fwd:1200,aft:1800,bulk:400,tof:11000,trip:7500};
+const ENV=[[40000,15],[53000,15],[78000,22],[78000,34],[64500,38],[55000,40],[40000,38]]; // [masse, %MAC]
+function fuelSplit(f){ const wing=Math.min(f,12400); return {wing,ctr:f-wing}; }
+function cgCalc(){ let m=DOM, mo=DOM*DOMARM; [['A',Cg.A*PAX],['B',Cg.B*PAX],['C',Cg.C*PAX],['fwd',Cg.fwd],['aft',Cg.aft],['bulk',Cg.bulk]].forEach(([k,v])=>{ m+=v; mo+=v*ARM[k]; });
+  const zf={m,arm:mo/m}; const add=f=>{ const s=fuelSplit(f); const mm=m+f, mom=mo+s.wing*ARM.wing+s.ctr*ARM.ctr; return {m:mm,arm:mom/mm}; };
+  const to=add(Cg.tof), lf=Math.max(0,Cg.tof-Cg.trip); // centre tank first: remaining fuel = wings first
+  const ld=add(lf);
+  const path=[]; for(let b=0;b<=Cg.trip;b+=Math.max(100,Cg.trip/40)) { const r=add(Math.max(0,Cg.tof-b)); path.push(r); } path.push(ld);
+  return {zf,to,ld,path}; }
+function envLim(m){ // forward and aft %MAC at mass
+  const f= m<=53000? 15 : 15+(m-53000)/(78000-53000)*7; const a= m<=55000? 38+(m-40000)/15000*2 : m<=64500? 40-(m-55000)/9500*2 : 38-(m-64500)/13500*4; return {f,a}; }
+const inEnv=p=>{ const e=envLim(p.m), c=pmac(p.arm); return p.m>=40000&&p.m<=MTOM&&c>=e.f&&c<=e.a; };
+const ths=c=>{ const v=3.5-(c-17)*(4.5/23); return v>=0? L({en:'UP',no:'UP'})+' '+nf(v,1)+'°' : 'DN '+nf(-v,1)+'°'; };
+const CB=LAB.fit(el('cvB'),()=>dB(),2), CE=LAB.fit(el('cvE'),()=>dE(),2);
+function dB(){ if(!CB.w) return; const g=bg(CB), W=CB.w, H=CB.h, R=cgCalc(); const x0=W*0.04, x1=W*0.96, X=a=>x0+(a-4)/(37-4)*(x1-x0), cy=H*0.46, fh=H*0.2;
+  // kropp
+  g.fillStyle='#EEF2F3'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; g.beginPath(); g.moveTo(X(4),cy); g.quadraticCurveTo(X(4.3),cy-fh,X(7),cy-fh); g.lineTo(X(31),cy-fh); g.lineTo(X(37),cy-fh*1.1); g.lineTo(X(37),cy-fh*0.3); g.lineTo(X(31),cy+fh); g.lineTo(X(7),cy+fh); g.quadraticCurveTo(X(4.3),cy+fh,X(4),cy); g.fill(); g.stroke();
+  g.fillStyle='#DDE3E6'; g.beginPath(); g.moveTo(X(32),cy-fh); g.lineTo(X(35),cy-fh*2.6); g.lineTo(X(37),cy-fh*2.6); g.lineTo(X(37),cy-fh); g.closePath(); g.fill(); g.stroke();
+  // vinge (MAC)
+  g.fillStyle='rgba(30,94,158,.18)'; g.fillRect(X(LEMAC),cy+fh*0.15,X(LEMAC+MAC)-X(LEMAC),fh*0.5); g.strokeStyle='#1E5E9E'; g.strokeRect(X(LEMAC),cy+fh*0.15,X(LEMAC+MAC)-X(LEMAC),fh*0.5);
+  const zone=(a0,a1,n,max,y,h,lab)=>{ const f=n/max; g.fillStyle='#fff'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.fillStyle='rgba(154,30,104,'+(0.15+0.6*f)+')'; g.fillRect(X(a0),y,X(a1)-X(a0),h); g.strokeStyle='#9A1E68'; g.lineWidth=1; g.strokeRect(X(a0),y,X(a1)-X(a0),h); mono(g,lab,(X(a0)+X(a1))/2,y+h/2+4,'#13202A','center',W<520?9:11); };
+  zone(7,14.3,Cg.A,60,cy-fh*0.9,fh*0.8,'A '+Cg.A); zone(14.4,22.4,Cg.B,60,cy-fh*0.9,fh*0.8,'B '+Cg.B); zone(22.5,30.5,Cg.C,60,cy-fh*0.9,fh*0.8,'C '+Cg.C);
+  zone(7.8,12.2,Cg.fwd,3400,cy+fh*0.12,fh*0.75,W<520?'':nf(Cg.fwd,0)); zone(22,27,Cg.aft,4500,cy+fh*0.12,fh*0.75,W<520?'':nf(Cg.aft,0)); zone(27.3,29.8,Cg.bulk,1500,cy+fh*0.12,fh*0.75,'');
+  // CG-markør
+  const cx=X(R.to.arm); g.strokeStyle='#13202A'; g.lineWidth=1.2; g.setLineDash([3,3]); g.beginPath(); g.moveTo(cx,cy-fh*1.5); g.lineTo(cx,cy+fh*1.6); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(cx,cy+fh*1.6,6,0,7); g.fill(); g.fillStyle='#fff'; g.beginPath(); g.moveTo(cx,cy+fh*1.6); g.arc(cx,cy+fh*1.6,6,-Math.PI/2,0); g.lineTo(cx,cy+fh*1.6); g.arc(cx,cy+fh*1.6,6,Math.PI/2,Math.PI); g.fill();
+  mono(g,'TOW CG '+nf(pmac(R.to.arm),1)+' % MAC',cx+10,cy+fh*1.6+4,'#13202A');
+  hand(g,L({en:'cabin zones and holds',no:'kabinsoner og lasterom'}),x0,16,'#1D4E9E','start',16); hand(g,'MAC',X(LEMAC+MAC)+4,cy+fh*0.6,'#1E5E9E','start',15);
+  // gear
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(5.1),cy+fh*1.25,4,0,7); g.fill(); g.beginPath(); g.arc(X(20.4),cy+fh*1.3,5,0,7); g.fill(); }
+function dE(){ if(!CE.w) return; const g=bg(CE), W=CE.w, H=CE.h, R=cgCalc(); const L0=50,R0=14,T0=18,B0=40, PW=W-L0-R0, PH=H-T0-B0, c0=10, c1=45, m0=38000, m1=80000, X=c=>L0+(c-c0)/(c1-c0)*PW, Y=m=>T0+PH-(m-m0)/(m1-m0)*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let c=10;c<=45;c+=5){ g.beginPath(); g.moveTo(X(c),T0); g.lineTo(X(c),T0+PH); g.stroke(); mono(g,String(c),X(c),T0+PH+14,null,'center'); } for(let m=40000;m<=80000;m+=10000){ g.beginPath(); g.moveTo(L0,Y(m)); g.lineTo(L0+PW,Y(m)); g.stroke(); mono(g,nf(m/1000,0)+' t',L0-6,Y(m)+4,null,'right'); }
+  mono(g,'% MAC',L0+PW,T0+PH+30,null,'right');
+  g.fillStyle='rgba(46,125,50,.08)'; g.strokeStyle='#2C7A4B'; g.lineWidth=2; g.beginPath(); ENV.forEach(([m,c],i)=>i?g.lineTo(X(c),Y(m)):g.moveTo(X(c),Y(m))); g.closePath(); g.fill(); g.stroke();
+  [[MZFM,'MZFM'],[MLM,'MLM'],[MTOM,'MTOM']].forEach(([m,t])=>{ g.strokeStyle='#B3261E'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(c0),Y(m)); g.lineTo(X(c1),Y(m)); g.stroke(); g.setLineDash([]); mono(g,t,X(c1)-4,Y(m)-4,'#B3261E','right'); });
+  // fuel path
+  g.strokeStyle='#1E5E9E'; g.lineWidth=2; g.beginPath(); R.path.forEach((p,i)=>i?g.lineTo(X(pmac(p.arm)),Y(p.m)):g.moveTo(X(pmac(p.arm)),Y(p.m))); g.stroke();
+  g.strokeStyle='#9AA6AC'; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(pmac(R.zf.arm)),Y(R.zf.m)); g.lineTo(X(pmac(R.ld.arm)),Y(R.ld.m)); g.stroke(); g.setLineDash([]);
+  const pt=(p,t,col)=>{ const ok=inEnv(p)&&!(t==='ZFW'&&p.m>MZFM)&&!(t==='LW'&&p.m>MLM); g.fillStyle=ok?col:'#B3261E'; g.beginPath(); g.arc(X(pmac(p.arm)),Y(p.m),6.5,0,7); g.fill(); mono(g,t,X(pmac(p.arm))+10,Y(p.m)+4,ok?'#13202A':'#B3261E',null,12); };
+  pt(R.zf,'ZFW','#9A1E68'); pt(R.ld,'LW','#5B4BB0'); pt(R.to,'TOW','#13202A');
+  hand(g,L({en:'fuel burn',no:'drivstofforbruk'}),X(pmac((R.to.arm+R.ld.arm)/2))-12,Y((R.to.m+R.ld.m)/2),'#1E5E9E','end',16);
+  hand(g,L({en:'forward limit',no:'fremre grense'}),X(16),Y(45000),'#2C7A4B','start',16); hand(g,L({en:'aft limit',no:'bakre grense'}),X(39),Y(47000),'#2C7A4B','end',16); }
+function rG(){ const R=cgCalc(), z=pmac(R.zf.arm), t=pmac(R.to.arm), l=pmac(R.ld.arm); const f=p=>`<span class="${inEnv(p)?'':'ko'}">${nf(pmac(p.arm),1)} % MAC</span> · ${t1(p.m)}`;
+  el('g1').innerHTML=f(R.zf); el('g2').innerHTML=f(R.to); el('g3').innerHTML=f(R.ld);
+  el('g4').textContent=nf(idx(R.zf.m,R.zf.arm)+50,1)+' / '+nf(idx(R.to.m,R.to.arm)+50,1); el('g5').textContent=ths(t);
+  const bad=[]; if(!inEnv(R.zf)) bad.push('ZFW'); if(!inEnv(R.to)) bad.push('TOW'); if(!inEnv(R.ld)) bad.push('LW'); const over=R.zf.m>MZFM||R.to.m>MTOM||R.ld.m>MLM;
+  el('g6').innerHTML= bad.length? `<span class="ko">${L({en:'outside the envelope',no:'utenfor konvolutten'})}: ${bad.join(', ')}</span>` : over? `<span class="ko">${L({en:'a mass limit is exceeded',no:'en massegrense er overskredet'})}</span>` : `<span class="ok">${L({en:'within limits',no:'innenfor grensene'})}</span>`;
+  el('gx').innerHTML=L({en:`<b>Moments add, CG follows.</b> Each item has a mass and an arm (distance from the reference datum); moment = mass × arm, and CG = Σ moments / Σ mass. % MAC = (CG arm − LEMAC) / MAC × 100, here with LEMAC ${nf(LEMAC,2)} m and MAC ${nf(MAC,2)} m (illustrative). The index is the moment about a reference point, scaled down, so the load sheet can add simple numbers: here index = mass × (arm − ${nf(IREF,2)} m) / 1000 + 50. Passengers in zone A or the forward hold move the CG forward, zone C and the aft and bulk holds move it aft. Fuel: in this model the centre tank sits ahead of the CG and is used first, so the CG first moves aft, then the wing fuel, whose arm is behind the CG, moves it forward again as it burns. The take-off trim (THS) is set from the take-off CG: a forward CG needs more nose-up trim (the line ${ths(t)} for ${nf(t,1)} % MAC is illustrative).`,no:`<b>Momenter summeres, CG følger.</b> Hvert element har en masse og en arm (avstand fra referanselinjen); moment = masse × arm, og CG = Σ momenter / Σ masse. % MAC = (CG-arm − LEMAC) / MAC × 100, her med LEMAC ${nf(LEMAC,2)} m og MAC ${nf(MAC,2)} m (illustrativt). Indeksen er momentet om et referansepunkt, skalert ned, så lastearket kan legge sammen enkle tall: her indeks = masse × (arm − ${nf(IREF,2)} m) / 1000 + 50. Passasjerer i sone A eller fremre lasterom flytter CG fremover, sone C og bakre lasterom og bulk flytter det bakover. Drivstoff: i denne modellen ligger senter-tanken foran CG og brukes først, så CG flytter seg først bakover, og så flytter vingedrivstoffet, med arm bak CG, det fremover igjen når det brennes. Avgangstrimmen (THS) settes ut fra CG ved avgang: fremre CG trenger mer nese-opp-trim (${ths(t)} for ${nf(t,1)} % MAC er illustrativt).`}); }
+function uG(){ dB(); dE(); rG(); }
+const GS={};
+[['A','Cabin zone A, rows 1–10',60,1],['B','Cabin zone B, rows 11–20',60,1],['C','Cabin zone C, rows 21–30',60,1],['fwd','Forward hold (kg)',3400,50],['aft','Aft hold (kg)',4500,50],['bulk','Bulk hold (kg)',1500,50]].forEach(([k,lab,max,st])=>{
+  GS[k]=LAB.slider(el('gctl'),{label:lab,min:0,max,step:st,v:Cg[k],f:v=>st===1? v+' '+L({en:'pax',no:'pax'}) : kg(v),on:v=>{ Cg[k]=v; uG(); }}); });
+GS.tof=LAB.slider(el('gctl'),{label:'Take-off fuel (kg)',min:3000,max:MAXF,step:100,v:Cg.tof,f:v=>kg(v)+(v>12400?' ('+L({en:'centre tank',no:'senter-tank'})+' '+nf(v-12400,0)+')':''),on:v=>{ Cg.tof=v; uG(); }});
+GS.trip=LAB.slider(el('gctl'),{label:'Trip fuel (kg)',min:1000,max:15000,step:100,v:Cg.trip,f:v=>kg(v),on:v=>{ Cg.trip=Math.min(v,Cg.tof-1500); uG(); }});
+const PRE={bal:{A:50,B:60,C:55,fwd:1200,aft:1800,bulk:400},fwd:{A:60,B:45,C:5,fwd:3200,aft:300,bulk:0},aft:{A:5,B:45,C:60,fwd:0,aft:3800,bulk:1200}};
+LAB.seg(el('gpre'),[['bal','Balanced'],['fwd','Forward'],['aft','Aft']],'bal',v=>{ Object.entries(PRE[v]).forEach(([k,x])=>{ Cg[k]=x; GS[k].set(x); }); uG(); });
+
+/* ---------- 3 lasteark ---------- */
+let LS=null, lmcN=0;
+const rnd=(a,b,s)=>Math.round((a+Math.random()*(b-a))/s)*s;
+function newLS(){ const allowOver=Math.random()<0.15; for(let n=0;n<200;n++){ const dom=rnd(41800,43200,10), pax=rnd(110,180,1), bag=rnd(1200,3200,10), cargo=rnd(0,2500,10); const short=Math.random()<0.4;
+  const trip= short? rnd(2200,3200,10) : rnd(5000,10500,10), tof= trip+rnd(2600,(short?9000:4800),10);
+  LS={dom,pax,bag,cargo,tof,trip,in:{},checked:false,shown:false}; const u=lsCalc().under; if(allowOver? (u<0&&u>-1500) : u>=300) break; } lmcN=0; el('lsMsg').hidden=true; drawLS(); }
+function lsCalc(){ const tl=LS.pax*PAX+LS.bag+LS.cargo, zfm=LS.dom+tl, tom=zfm+LS.tof, lm=tom-LS.trip; const al=[MZFM-LS.dom,MTOM-LS.dom-LS.tof,MLM-LS.dom-LS.tof+LS.trip]; const gi=al.indexOf(Math.min(...al)); return {tl,zfm,tom,lm,allowed:al[gi],gov:['MZFM','MTOM','MLM'][gi],under:al[gi]-tl}; }
+const FIELDS=['tl','zfm','tom','lm','allowed','under','gov'];
+function drawLS(){ const C=lsCalc(); const giv=(lab,v)=>`<tr><td>${lab}</td><td class="n">${nf(v,0)}</td><td></td></tr>`;
+  const inp=(k,lab,cls)=>{ const v=LS.in[k]; const ok= LS.checked&&v!==undefined&&v!==''? (k==='gov'? v===C.gov : Math.abs(parseFloat(v)-C[k])<=1) : null; const fb= LS.shown? (k==='gov'?C.gov:nf(C[k],0)) : ok===true? '✓' : ok===false? '✗' : '';
+    const field= k==='gov'? `<select data-k="gov"><option value="">–</option>${['MZFM','MTOM','MLM'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>` : `<input data-k="${k}" inputmode="numeric" class="${ok===true?'right':ok===false?'wrong':''}" value="${v!==undefined?v:''}" aria-label="${lab}">`;
+    return `<tr class="${cls||''}"><td>${lab}</td><td class="n">${field}</td><td class="fb" style="color:${ok===false?'var(--red)':ok?'var(--green)':'var(--ink-2)'}">${fb}</td></tr>`; };
+  el('lsheet').innerHTML=`<tr><th>${L({en:'Item',no:'Post'})}</th><th style="text-align:right">kg</th><th></th></tr>`+
+   giv(L({en:'Dry operating mass (DOM)',no:'Tørr operativ masse (DOM)'}),LS.dom)+giv(L({en:'Passengers',no:'Passasjerer'})+` (${LS.pax} × 84)`,LS.pax*PAX)+giv(L({en:'Baggage',no:'Bagasje'}),LS.bag)+giv(L({en:'Cargo and mail',no:'Last og post'}),LS.cargo)+
+   inp('tl',L({en:'Traffic load',no:'Trafikklast'}),'sum')+inp('zfm',L({en:'Zero fuel mass (ZFM)',no:'Masse uten drivstoff (ZFM)'}),'sum')+
+   giv(L({en:'Take-off fuel',no:'Avgangsdrivstoff'}),LS.tof)+inp('tom',L({en:'Take-off mass (TOM)',no:'Avgangsmasse (TOM)'}),'sum')+giv(L({en:'Trip fuel',no:'Turdrivstoff'}),LS.trip)+inp('lm',L({en:'Landing mass (LM)',no:'Landingsmasse (LM)'}),'sum')+
+   `<tr><th colspan="3">${L({en:'Limits',no:'Grenser'})}: MZFM ${nf(MZFM,0)} · MTOM ${nf(MTOM,0)} · MLM ${nf(MLM,0)}</th></tr>`+
+   inp('allowed',L({en:'Allowed traffic load (lowest of three)',no:'Tillatt trafikklast (lavest av tre)'}))+inp('gov',L({en:'Limiting mass',no:'Begrensende masse'}))+inp('under',L({en:'Underload (negative = overload)',no:'Underlast (negativ = overlast)'}));
+  el('lsheet').querySelectorAll('[data-k]').forEach(e=>{ e.addEventListener(e.tagName==='SELECT'?'change':'input',()=>{ LS.in[e.dataset.k]=e.value; }); });
+  let score=''; if(LS.checked){ const n=FIELDS.filter(k=>{ const v=LS.in[k]; return v!==undefined&&v!==''&&(k==='gov'? v===C.gov : Math.abs(parseFloat(v)-C[k])<=1); }).length; score=`<b>${n} / ${FIELDS.length} ${L({en:'correct',no:'riktige'})}.</b> `; }
+  el('lsx').innerHTML=score+L({en:`Work down the sheet: traffic load = passengers + baggage + cargo; ZFM = DOM + traffic load; TOM = ZFM + take-off fuel; LM = TOM − trip fuel. Then the three allowed traffic loads: MZFM − DOM, MTOM − DOM − take-off fuel, MLM − DOM − take-off fuel + trip fuel. The lowest is the limit, and allowed minus actual is the underload, the margin left for last-minute changes. Answers within 1 kg count.`,no:`Jobb deg nedover arket: trafikklast = passasjerer + bagasje + last; ZFM = DOM + trafikklast; TOM = ZFM + avgangsdrivstoff; LM = TOM − turdrivstoff. Så de tre tillatte trafikklastene: MZFM − DOM, MTOM − DOM − avgangsdrivstoff, MLM − DOM − avgangsdrivstoff + turdrivstoff. Den laveste er grensen, og tillatt minus faktisk er underlasten, marginen som er igjen til siste-liten-endringer. Svar innenfor 1 kg godtas.`}); }
+function lmc(){ const C0=lsCalc(); const opts=[()=>{ const n=rnd(2,6,1); LS.pax+=n; return {en:`${n} more passengers have checked in late (+${n*PAX} kg) with ${n} bags (+${n*15} kg).`,no:`${n} passasjerer til har sjekket inn sent (+${n*PAX} kg) med ${n} kolli (+${n*15} kg).`,bag:n*15}; },
+   ()=>{ const n=rnd(1,4,1); LS.pax=Math.max(0,LS.pax-n); return {en:`${n} passengers did not show up (−${n*PAX} kg); their ${n} bags were offloaded (−${n*15} kg).`,no:`${n} passasjerer møtte ikke (−${n*PAX} kg); deres ${n} kolli ble tatt av (−${n*15} kg).`,bag:-n*15}; },
+   ()=>{ const k=rnd(150,600,10); LS.cargo+=k; return {en:`Extra cargo: ${k} kg loaded in the aft hold.`,no:`Ekstra last: ${k} kg lastet i bakre lasterom.`,bag:0}; },
+   ()=>{ const f=rnd(300,1200,100); LS.tof+=f; return {en:`The captain adds ${f} kg of extra fuel (take-off fuel +${f} kg, trip fuel unchanged).`,no:`Kapteinen legger til ${f} kg ekstra drivstoff (avgangsdrivstoff +${f} kg, turdrivstoff uendret).`,bag:0}; }];
+  const o=opts[Math.floor(Math.random()*opts.length)](); LS.bag=Math.max(0,LS.bag+o.bag); lmcN++; LS.checked=false; LS.shown=false; const C=lsCalc();
+  el('lsMsg').hidden=false; el('lsMsg').innerHTML=`<b>LMC ${lmcN}.</b> ${L(o)} `+L({en:'Update the sheet and check again.',no:'Oppdater arket og sjekk igjen.'})+(C.under<0?' <span class="ko">'+L({en:'Hint: compare with the underload.',no:'Tips: sammenlign med underlasten.'})+'</span>':'');
+  LS.lmcText=o; drawLS(); }
+el('lsCheck').onclick=()=>{ LS.checked=true; drawLS(); };
+el('lsShow').onclick=()=>{ LS.shown=true; LS.checked=true; drawLS(); };
+el('lsNew').onclick=newLS; el('lsLmc').onclick=lmc;
+
+/* ---------- 4 i flyet ---------- */
+function cards(){ const c=[
+ [{en:'Why aft CG saves fuel',no:'Hvorfor bakre CG sparer drivstoff'},{en:'With the CG further aft the tailplane needs less down-force, so the wing carries less total lift, induced drag falls and the trim drag is smaller. The gain is small per % MAC but adds up over a fleet, which is why some long-haul types move fuel to a trim tank in the tail in cruise. The A320 has no trim tank; load distribution and the fuel sequence decide.',no:'Med CG lenger bak trenger haleflaten mindre nedoverkraft, så vingen bærer mindre totalt løft, indusert motstand faller og trimmotstanden blir mindre. Gevinsten er liten per % MAC, men blir stor over en hel flåte, og derfor flytter noen langdistansetyper drivstoff til en trimtank i halen under cruise. A320 har ingen trimtank; lastfordelingen og drivstoffrekkefølgen avgjør.'}],
+ [{en:'Forward CG and rotation',no:'Fremre CG og rotasjon'},{en:'A forward CG needs more elevator and more nose-up trim to rotate, the aircraft feels heavy and the stall speed is slightly higher, so take-off and landing performance suffer. If the trim is set for an aft CG but the real CG is forward, rotation is slow and the take-off run long; the opposite gives an early, fast rotation and a tail-strike risk.',no:'Fremre CG krever mer høyderor og mer nese-opp-trim for å rotere, flyet føles tungt, og stallfarten er litt høyere, så ytelsen ved avgang og landing blir dårligere. Er trimmen satt for bakre CG mens den virkelige CG ligger foran, blir rotasjonen treg og avgangsrullet langt; det motsatte gir en tidlig, rask rotasjon og fare for halenedslag.'}],
+ [{en:'Tail tipping on the ground',no:'Tipping på halen på bakken'},{en:'On the ground the aircraft stands on its main gear and nose gear. If the CG moves behind the main gear, for example when the forward hold is unloaded first, the forward cabin empties or a heavy item goes into the aft hold, it sits on its tail. Loading and unloading sequences exist for this, and some operators use tail stands.',no:'På bakken står flyet på hovedunderstell og nesehjul. Flytter CG seg bak hovedunderstellet, for eksempel når fremre lasterom tømmes først, fremre kabin tømmes eller noe tungt havner i bakre lasterom, setter det seg på halen. Derfor finnes laste- og losserekkefølger, og noen operatører bruker halestøtter.'}],
+ [{en:'When the CG is wrong',no:'Når CG er feil'},{en:'Accident reports repeatedly show the same chain: wrong masses (outdated standard masses, unweighed items), wrong distribution (passengers sitting elsewhere than planned, cargo in the wrong hold) or cargo that is not secured and shifts. The result is an aircraft heavier or more aft than the crew believes, with unexpected pitch behaviour at rotation, when control may already be marginal.',no:'Havarirapporter viser gang på gang samme kjede: feil masser (utdaterte standardmasser, gods som ikke er veid), feil fordeling (passasjerer som sitter et annet sted enn planlagt, last i feil lasterom) eller last som ikke er sikret og forskyver seg. Resultatet er et fly som er tyngre eller har CG lenger bak enn besetningen tror, med uventet oppførsel i pitch ved rotasjon, når kontrollen allerede kan være marginal.'}],
+ [{en:'ZFW and ZFWCG in the FMS',no:'ZFW og ZFWCG i FMS'},{en:'On the A320 the crew enters ZFW and ZFWCG from the load sheet; the FMS adds the fuel to get the gross weight and CG used for predictions and speeds. A typing error (the wrong figure, or TOW instead of ZFW) gives wrong speeds and predictions, so the entries are cross-checked against the load sheet and the fuel on board.',no:'På A320 legger besetningen inn ZFW og ZFWCG fra lastearket; FMS legger til drivstoffet for å få bruttovekten og CG som brukes til beregninger og farter. En tastefeil (feil tall, eller TOW i stedet for ZFW) gir feil farter og beregninger, så verdiene krysssjekkes mot lastearket og drivstoffet om bord.'}],
+ [{en:'Last-minute changes',no:'Siste-liten-endringer'},{en:'Late passengers, no-shows and extra fuel are corrected on the load sheet as LMCs, within limits set by the operator. The underload is the margin: a change bigger than the underload means something must come off. Larger changes require a new load sheet.',no:'Sene passasjerer, passasjerer som ikke møter og ekstra drivstoff korrigeres på lastearket som LMC, innenfor grenser satt av operatøren. Underlasten er marginen: en endring større enn underlasten betyr at noe må av. Større endringer krever et nytt lasteark.'}],
+ [{en:'Compartment, floor and running-load limits',no:'Grenser for lasterom, gulv og løpende last'},{en:'Total mass and CG are not the only limits. Each hold has a maximum mass (here 3,400 kg forward, 4,500 kg aft and 1,500 kg bulk, illustrative), the floor has an area limit in kg/m², and there is a running-load limit in kg per metre of hold length. A heavy, compact item can break all three local limits while the aircraft totals look fine. Example with an illustrative 700 kg/m² floor limit: a 900 kg engine part on a 1.0 × 0.6 m base gives 1,500 kg/m², so it needs a pallet or spreader boards of at least about 1.3 m², and the base must also be long enough to keep the running load down. Heavy items must be restrained so they cannot shift, and the load control system and loading instruction (LIR) show where everything goes.',no:'Total masse og CG er ikke de eneste grensene. Hvert lasterom har en maksimal masse (her 3 400 kg foran, 4 500 kg bak og 1 500 kg i bulk, illustrativt), gulvet har en flategrense i kg/m², og det finnes en grense for løpende last i kg per meter lasteromslengde. En tung, kompakt gjenstand kan bryte alle tre lokale grenser selv om totalene for flyet ser fine ut. Eksempel med en illustrativ gulvgrense på 700 kg/m²: en motordel på 900 kg på en bunn på 1,0 × 0,6 m gir 1 500 kg/m², så den trenger en pall eller lastfordelingsplanker på minst rundt 1,3 m², og bunnen må også være lang nok til å holde den løpende lasten nede. Tunge gjenstander må sikres så de ikke kan forskyve seg, og lastekontrollsystemet og lasteinstruksen (LIR) viser hvor alt skal stå.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+/* ---------- quiz ---------- */
+const Q=[
+ {q:{en:'Which masses make up the dry operating mass (DOM)?',no:'Hvilke masser utgjør tørr operativ masse (DOM)?'},a:[{en:'The aircraft ready for service with crew, catering and equipment, but without usable fuel and traffic load',no:'Flyet klart til bruk med besetning, catering og utstyr, men uten brukbart drivstoff og trafikklast'},{en:'The empty aircraft without crew',no:'Det tomme flyet uten besetning'},{en:'The aircraft with crew and take-off fuel',no:'Flyet med besetning og avgangsdrivstoff'},{en:'The zero fuel mass minus the crew',no:'Masse uten drivstoff minus besetningen'}],c:0,e:{en:'DOM + traffic load = ZFM; ZFM + take-off fuel = TOM.',no:'DOM + trafikklast = ZFM; ZFM + avgangsdrivstoff = TOM.'}},
+ {q:{en:'Why is there a maximum zero fuel mass?',no:'Hvorfor finnes det en maksimal masse uten drivstoff?'},a:[{en:'To limit the bending load at the wing root, since fuel in the wings relieves it',no:'For å begrense bøyningen i vingeroten, siden drivstoff i vingene avlaster den'},{en:'To limit the landing gear load on landing',no:'For å begrense belastningen på understellet ved landing'},{en:'To make sure there is enough fuel for the trip',no:'For å sikre nok drivstoff til turen'},{en:'To keep the CG inside the envelope',no:'For å holde CG innenfor konvolutten'}],c:0,e:{en:'Mass in the fuselage bends the wing up at the root; fuel in the wing counteracts it. Above MZFM, extra mass may only be fuel.',no:'Masse i flykroppen bøyer vingen opp ved roten; drivstoff i vingen motvirker det. Over MZFM kan ekstra masse bare være drivstoff.'}},
+ {q:{en:'DOM 42,000 kg, take-off fuel 9,000 kg, trip fuel 3,000 kg; MZFM 62,500, MTOM 78,000, MLM 64,500 kg. Which limit governs the traffic load?',no:'DOM 42 000 kg, avgangsdrivstoff 9 000 kg, turdrivstoff 3 000 kg; MZFM 62 500, MTOM 78 000, MLM 64 500 kg. Hvilken grense bestemmer trafikklasten?'},a:[{en:'MLM (16,500 kg)',no:'MLM (16 500 kg)'},{en:'MZFM (20,500 kg)',no:'MZFM (20 500 kg)'},{en:'MTOM (27,000 kg)',no:'MTOM (27 000 kg)'},{en:'All three give the same',no:'Alle tre gir det samme'}],c:0,e:{en:'MZFM: 62,500 − 42,000 = 20,500. MTOM: 78,000 − 42,000 − 9,000 = 27,000. MLM: 64,500 − 42,000 − 9,000 + 3,000 = 16,500. Lowest wins.',no:'MZFM: 62 500 − 42 000 = 20 500. MTOM: 78 000 − 42 000 − 9 000 = 27 000. MLM: 64 500 − 42 000 − 9 000 + 3 000 = 16 500. Lavest vinner.'}},
+ {q:{en:'On a short sector you take extra fuel for the next leg (tankering). Which limit is most likely to bite?',no:'På en kort etappe tar du med ekstra drivstoff til neste etappe (tankering). Hvilken grense biter mest sannsynlig?'},a:[{en:'Maximum landing mass',no:'Maksimal landingsmasse'},{en:'Maximum zero fuel mass',no:'Maksimal masse uten drivstoff'},{en:'Minimum fuel',no:'Minimum drivstoff'},{en:'Maximum taxi mass only',no:'Bare maksimal taksemasse'}],c:0,e:{en:'Little fuel is burnt, so almost all the extra fuel is still on board at landing.',no:'Lite drivstoff brennes, så nesten alt ekstra drivstoff er fortsatt om bord ved landing.'}},
+ {q:{en:'An item of 500 kg is moved from the forward hold to the aft hold. What happens?',no:'En gjenstand på 500 kg flyttes fra fremre til bakre lasterom. Hva skjer?'},a:[{en:'Mass unchanged, CG moves aft',no:'Massen uendret, CG flytter seg bakover'},{en:'Mass increases, CG moves aft',no:'Massen øker, CG flytter seg bakover'},{en:'Mass unchanged, CG unchanged',no:'Massen uendret, CG uendret'},{en:'Mass unchanged, CG moves forward',no:'Massen uendret, CG flytter seg fremover'}],c:0,e:{en:'ΔCG = mass moved × distance moved / total mass.',no:'ΔCG = flyttet masse × flyttet avstand / total masse.'}},
+ {q:{en:'Total mass 60,000 kg. 600 kg of cargo is moved 15 m aft. How far does the CG move?',no:'Total masse 60 000 kg. 600 kg last flyttes 15 m bakover. Hvor langt flytter CG seg?'},a:[{en:'0.15 m aft',no:'0,15 m bakover'},{en:'1.5 m aft',no:'1,5 m bakover'},{en:'0.015 m aft',no:'0,015 m bakover'},{en:'0.15 m forward',no:'0,15 m fremover'}],c:0,e:{en:'600 × 15 / 60,000 = 0.15 m. On a 4.2 m MAC that is about 3.6 % MAC.',no:'600 × 15 / 60 000 = 0,15 m. På en MAC på 4,2 m er det rundt 3,6 % MAC.'}},
+ {q:{en:'Why do load sheets use an index instead of moments?',no:'Hvorfor bruker lasteark en indeks i stedet for momenter?'},a:[{en:'It turns very large moments into small numbers that are easy to add',no:'Den gjør svært store momenter om til små tall som er lette å legge sammen'},{en:'It removes the need to know the masses',no:'Den fjerner behovet for å kjenne massene'},{en:'It measures the CG in % MAC directly',no:'Den måler CG i % MAC direkte'},{en:'It is required for fuel only',no:'Den brukes bare for drivstoff'}],c:0,e:{en:'The index is a scaled moment about a reference arm, often with a constant added so it stays positive.',no:'Indeksen er et skalert moment om en referansearm, ofte med en konstant lagt til så den holder seg positiv.'}},
+ {q:{en:'The take-off trim is set for a CG well aft of the actual CG. What can you expect at rotation?',no:'Avgangstrimmen er satt for en CG godt bak den faktiske. Hva kan du forvente ved rotasjon?'},a:[{en:'The aircraft is nose-heavy and slow to rotate',no:'Flyet er nesetungt og roterer tregt'},{en:'A very early, fast rotation',no:'En svært tidlig og rask rotasjon'},{en:'No difference',no:'Ingen forskjell'},{en:'The aircraft yaws',no:'Flyet girer'}],c:0,e:{en:'An aft-CG trim setting has less nose-up trim than the forward CG actually needs.',no:'En trim for bakre CG har mindre nese-opp-trim enn den fremre CG faktisk trenger.'}},
+ {q:{en:'During unloading, which order reduces the risk of tail tipping?',no:'Ved lossing, hvilken rekkefølge reduserer faren for å tippe på halen?'},a:[{en:'Unload the aft hold before the forward hold',no:'Losse bakre lasterom før fremre'},{en:'Unload the forward hold before the aft hold',no:'Losse fremre lasterom før bakre'},{en:'Disembark the forward cabin first',no:'La fremre kabin gå av først'},{en:'Defuel before unloading',no:'Tappe drivstoff før lossing'}],c:0,e:{en:'Removing mass from the back first keeps the CG forward of the main gear.',no:'Å fjerne masse bakfra først holder CG foran hovedunderstellet.'}},
+ {q:{en:'A last-minute change adds 420 kg of traffic load. The underload on the sheet is 300 kg. What now?',no:'En siste-liten-endring legger til 420 kg trafikklast. Underlasten på arket er 300 kg. Hva nå?'},a:[{en:'The change exceeds the margin: something must be offloaded or the fuel/limits recalculated',no:'Endringen overstiger marginen: noe må av, eller drivstoff/grenser må beregnes på nytt'},{en:'Accept it; LMCs are always allowed',no:'Godta den; LMC er alltid tillatt'},{en:'Increase the fuel to compensate',no:'Øke drivstoffet for å kompensere'},{en:'Only the CG needs checking',no:'Bare CG må sjekkes'}],c:0,e:{en:'The underload is how much more traffic load the limiting mass allows; exceeding it means a structural limit is exceeded.',no:'Underlasten er hvor mye mer trafikklast den begrensende massen tillater; overskrides den, er en strukturgrense overskredet.'}},
+ {q:{en:'A 900 kg crate stands on a 1.0 m × 0.6 m base. The hold floor is limited to 700 kg/m² (illustrative). What is the situation?',no:'En kasse på 900 kg står på en bunn på 1,0 m × 0,6 m. Lasteromsgulvet tåler 700 kg/m² (illustrativt). Hvordan er situasjonen?'},a:[{en:'1,500 kg/m² is over the limit: spread the load over at least about 1.3 m², for example on a pallet or spreader boards',no:'1 500 kg/m² er over grensen: fordel lasten over minst rundt 1,3 m², for eksempel på en pall eller lastfordelingsplanker'},{en:'Acceptable, because 900 kg is below the hold limit',no:'Akseptabelt, fordi 900 kg er under grensen for lasterommet'},{en:'Acceptable if the crate goes in the aft hold, where the arm is longer',no:'Akseptabelt hvis kassen går i bakre lasterom, der armen er lengre'},{en:'Only the CG needs checking',no:'Bare CG må sjekkes'}],c:0,e:{en:'900 / 0.6 = 1,500 kg/m². The hold total can be fine while the floor under the crate is overloaded; 900 / 700 ≈ 1.29 m² is the smallest footprint that works. Running load (kg per metre of hold length) must be checked in the same way.',no:'900 / 0,6 = 1 500 kg/m². Totalen for lasterommet kan være i orden selv om gulvet under kassen er overbelastet; 900 / 700 ≈ 1,29 m² er det minste fotavtrykket som fungerer. Løpende last (kg per meter lasteromslengde) må sjekkes på samme måte.'}},
+ {q:{en:'What is the EASA standard mass for an adult passenger on an aircraft with 20 or more seats?',no:'Hva er EASAs standardmasse for en voksen passasjer på et fly med 20 seter eller mer?'},a:[{en:'84 kg including hand baggage',no:'84 kg inkludert håndbagasje'},{en:'75 kg without hand baggage',no:'75 kg uten håndbagasje'},{en:'100 kg including checked baggage',no:'100 kg inkludert innsjekket bagasje'},{en:'70 kg',no:'70 kg'}],c:0,e:{en:'84 kg for all adults (88 male / 70 female if split), 35 kg per child, both including hand baggage.',no:'84 kg for alle voksne (88 menn / 70 kvinner hvis delt), 35 kg per barn, begge inkludert håndbagasje.'}}
+];
+LAB.quiz(el('qbox'),'massbalance',()=>LAB.shuffle(Q.slice()).map(q=>{ const ix=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:ix.map(i=>q.a[i]),c:ix.indexOf(q.c)}; }),12);
+
+LAB.start('mb'); uA(); uG(); newLS(); cards();
+LAB.onLang(()=>{ uA(); uG(); drawLS(); if(LS&&LS.lmcText&&!el('lsMsg').hidden){ el('lsMsg').innerHTML=`<b>LMC ${lmcN}.</b> ${L(LS.lmcText)} `+L({en:'Update the sheet and check again.',no:'Oppdater arket og sjekk igjen.'}); } cards(); });
+})();
+</script>
+</body>
+</html>

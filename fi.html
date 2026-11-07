@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flight Intelligence · Birdbird</title>
+<meta name="description" content="An instructor that answers from your own AFM, QRH and SOP: learn, practise orals and work through scenarios, with every answer showing its source.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+.welcome{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #1D4E9E;padding:12px 16px;font-size:15px}
+.welcome[hidden]{display:none}
+.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.hc{display:flex;flex-direction:column;gap:6px;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:14px 16px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.hc:hover{border-color:var(--magenta);box-shadow:0 6px 18px rgba(19,32,42,.08)}
+.hc.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.hc b{font-size:16px}.hc span{font-size:14px;color:var(--ink-2)}
+.hc em{font-style:normal;font-size:13px;font-weight:600;letter-spacing:.01em;color:#1D4E9E;margin-top:auto;padding-top:6px}
+.hc em::after{content:" →"}
+.tgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+@media (max-width:1000px){.tgrid{grid-template-columns:minmax(0,1fr)}}
+.setrow{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.setrow label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.setrow select,.setrow input,.f2 input,.f2 select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);min-width:180px}
+.bar2{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:8px 0;font-size:14px;color:var(--ink-2)}
+.bar2 b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+.log{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding:4px 4px 4px 0}
+.log .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px;white-space:pre-wrap}
+.log .a{border-left:3px solid #1D4E9E;padding:2px 0 2px 14px}
+.log .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#1D4E9E;display:block;margin-bottom:4px}
+.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#1D4E9E;background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;cursor:pointer;vertical-align:1px}
+.cite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8;cursor:default}
+.grade{display:flex;gap:12px;align-items:flex-start;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--amber);padding:10px 14px;margin-top:8px}
+.grade.ok{border-left-color:var(--green)}.grade.bad{border-left-color:var(--red)}
+.grade .g{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:28px;line-height:1;min-width:52px}
+.labgo{display:inline-flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;background:#F2F6F4;border:1px solid #C9D9D2;border-radius:4px;padding:6px 10px}
+.labgo a{font-weight:600}
+.ansrow{display:flex;flex-direction:column;gap:8px}
+.ansrow textarea{min-height:84px}
+.btn.talk{min-width:150px}.btn.talk.on{background:var(--red);border-color:var(--red);color:#fff}
+.srcp{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;background:var(--sheet);border:1px solid var(--rule);padding:12px 14px;max-height:calc(100vh - 80px);overflow:auto}
+@media (max-width:1000px){.srcp{position:static;max-height:none}}
+.srcp h3{margin:0;font-size:15px}
+.sitem{border-top:1px solid var(--rule-2);padding-top:8px;font-size:13px}
+.sitem b{display:block;font-size:13px}
+.sitem .meta{color:var(--ink-2);font-size:12px}
+.sitem blockquote{margin:6px 0;padding:6px 8px;background:#fff;border-left:3px solid #C8D5E6;font-size:12.5px;line-height:1.5;max-height:160px;overflow:auto}
+.sitem.hl blockquote{border-left-color:#1D4E9E;background:#F4F8FD}
+.reg a{font-weight:600}
+.acs{display:flex;flex-direction:column;gap:14px}
+.acbox{border:1px solid var(--rule);background:#fff;border-radius:6px;padding:12px 14px}
+.achead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.achead h3{margin:0;font-size:17px}
+.dl{list-style:none;margin:8px 0 0;padding:0}
+.dl li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--rule-2);font-size:14px}
+.dl li small{display:block;color:var(--ink-2);font-size:12px}
+.dl li.old span{opacity:.55}
+.dl li button{background:none;border:0;color:var(--ink-2);cursor:pointer;font-size:13px}
+.drop{border:2px dashed var(--rule);border-radius:4px;padding:14px;text-align:center;background:var(--sheet);cursor:pointer;font-size:14px;color:var(--ink-2);margin-top:8px}
+.drop:hover,.drop.on{border-color:var(--magenta);color:var(--ink)}
+.f2{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px 12px;margin-top:8px}
+.f2 label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink-2)}
+.f2 input,.f2 select{min-width:0;width:100%}
+.prog{height:4px;background:var(--rule-2)}.prog i{display:block;height:100%;background:var(--magenta);width:0}
+.ptab{width:100%;border-collapse:collapse;font-size:14px}
+.ptab th,.ptab td{text-align:left;border-bottom:1px solid var(--rule-2);padding:6px 8px;vertical-align:top}
+.ptab th{font-size:12px;color:var(--ink-2);font-weight:600}
+.gaps{display:flex;flex-wrap:wrap;gap:6px}
+.gaps button{font:inherit;font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:14px;padding:4px 10px;cursor:pointer}
+.gaps button:hover{border-color:var(--magenta)}
+.modal{position:fixed;inset:0;background:rgba(19,32,42,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal[hidden]{display:none}
+.modal .mbox{background:#fff;max-width:900px;width:100%;max-height:92vh;overflow:auto;padding:14px 16px;border-radius:6px}
+.modal canvas{max-width:100%;height:auto;display:block;border:1px solid var(--rule)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:14px;padding:4px 11px;cursor:pointer;color:var(--ink)}
+.chips button:hover{border-color:#1D4E9E;color:#1D4E9E}
+.vd{margin:10px 0 4px;border:1px solid var(--rule-2);border-radius:4px;background:#FBFBF8}
+.vd summary{cursor:pointer;padding:8px 10px;font-size:14px;font-weight:600}
+.vd summary span{font-weight:400;color:var(--ink-2);font-size:13px}
+.vd .in{padding:4px 10px 10px}
+.vd table{width:100%;border-collapse:collapse;font-size:13.5px}
+.vd th,.vd td{border-bottom:1px solid var(--rule-2);padding:6px 6px;text-align:left;vertical-align:top}
+.vd th{font-size:12px;color:var(--ink-2);font-weight:600}
+.vd input{width:84px;font:inherit;font-family:var(--f-mono);font-size:13px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px}
+.vd .q{font-size:12px;color:var(--ink-2);max-width:340px}
+.vd .st{font-size:12px;font-weight:700;white-space:nowrap}.vd .st.ok{color:var(--green)}.vd .st.wa{color:#8A5A00}.vd .st.no{color:var(--ink-2);font-weight:500}
+.vd .warn{font-size:12.5px;color:var(--ink-2);border-left:3px solid #9A1E68;padding:6px 10px;background:#fff;margin:8px 0}
+.honest{font-size:13px;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:10px}
+.report .kpis{margin:6px 0}
+/* AI not connected: calm explanation instead of dead controls */
+.offline{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #1D4E9E;padding:16px 18px;display:flex;flex-direction:column;gap:10px;max-width:880px}
+.offline[hidden]{display:none}
+.offline h3{margin:0;font-size:17px}
+.offline p{margin:0;font-size:15px;color:var(--ink-2);max-width:70ch}
+.offline .asked{font-size:14px;color:var(--ink);background:#F4F8FD;border-left:3px solid #C8D5E6;padding:8px 12px}
+.offline ul{list-style:none;margin:2px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px 16px}
+.offline li{border-top:1px solid var(--rule-2);padding:8px 0 0;font-size:14px;color:var(--ink-2)}
+.offline li a,.offline li button{display:block;font:inherit;font-size:15px;font-weight:600;color:var(--ink);text-decoration:none;background:none;border:0;padding:0;margin-bottom:2px;cursor:pointer;text-align:left}
+.offline li a:hover,.offline li button:hover{color:var(--magenta)}
+#vTrain.noai .setrow,#vTrain.noai #modeNote,#vTrain.noai #chips,#vTrain.noai .bar2,#vTrain.noai #tRow,#vTrain.noai #log,#vTrain.noai #ans,#vTrain.noai #srcp,#vTrain.noai #aist{display:none!important}
+#vTrain.noai .tgrid{grid-template-columns:minmax(0,1fr)}
+/* EASA rules library and citations */
+.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:#EAF4EE;border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.ecite span{font-weight:400;color:#3F6B50}
+.ecite:hover{border-color:#14532D;background:#DDEFE4}
+.ecite::after{content:" \2197";font-weight:400}
+.ecite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}.ecite.x::after{content:""}
+.hc.easa b::after{content:" · Rev. 24";font-family:var(--f-mono);font-size:12px;font-weight:500;color:#14532D}
+.ehead{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-end;justify-content:space-between}
+.ehead h2{margin:0}
+.elive{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #14532D;padding:10px 14px;font-size:14.5px;max-width:880px}
+.elive b{font-weight:600}
+.ebar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center}
+.ebar input{font:inherit;font-size:15px;padding:8px 10px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink);flex:1 1 320px;min-width:0}
+.chips button.on{border-color:#14532D;color:#14532D;box-shadow:inset 0 0 0 1px #14532D}
+.elist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px}
+.eitem{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.eitem .eh{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12px;color:var(--ink-2)}
+.eitem code{font-family:var(--f-mono);font-size:13.5px;font-weight:600;color:var(--ink);background:none;padding:0}
+.eitem .et{border:1px solid var(--rule);border-radius:3px;padding:0 5px;font-family:var(--f-mono);font-size:11px}
+.eitem .ev{margin-left:auto;font-size:11.5px}.eitem .ev.ok{color:var(--green)}.eitem .ev.no{color:#8A5A00}
+.eitem b{font-size:14.5px;line-height:1.35}
+.eitem p{margin:0;font-size:14px;line-height:1.5;color:var(--ink)}
+.eitem .el{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13.5px;border-top:1px solid var(--rule-2);padding-top:7px;margin-top:auto}
+.eitem .el a{font-weight:600}
+.eitem .el button{font:inherit;font-size:13px;background:none;border:0;color:var(--ink-2);cursor:pointer;padding:0;text-decoration:underline}
+.esrc{font-size:13.5px;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:10px}
+.esrc ul{margin:6px 0 0;padding-left:18px}.esrc li{margin:3px 0}
+.sitem.easa{border-top-color:#B9D6C4}
+.sitem.easa .ei{margin:6px 0 8px}
+.sitem.easa .ei p{margin:4px 0;font-size:12.5px;line-height:1.5;background:#fff;border-left:3px solid #B9D6C4;padding:6px 8px;max-height:150px;overflow:auto}
+.offline .ematch{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--ink)}
+.offline .ematch div{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+</style>
+</head>
+<body data-title="Flight Intelligence">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Flight Intelligence</div>
+      <h1>Flight Intelligence</h1>
+      <p>Add your AFM, QRH and SOP, then learn, practise orals and work through scenarios with an instructor that answers from those documents. Every answer shows where it comes from.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <a class="trex" href="typerating.html"><span>Example setup</span><b>Type rating trainer: King Air B200</b><em>Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents. This is how your instructor can be set up for a type rating. →</em></a>
+  <style>.trex{display:grid;gap:2px;margin:14px 0 6px;padding:12px 14px;border:1px solid #9AA8AF;border-left:4px solid var(--magenta);background:#fff;text-decoration:none;color:var(--ink)}.trex span{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}.trex b{font-size:17px}.trex em{font-style:normal;font-size:14px;color:var(--ink-2)}.trex:hover{background:#FFF6D6}</style>
+
+  <div class="welcome" id="welcome" hidden></div>
+
+  <section class="card" style="border-top:0;padding-top:8px">
+    <div class="hub" id="hub">
+      <button class="hc" data-h="aircraft"><b>Instructor</b><span>Your aircraft, your SOP and the rules: systems, limitations, procedures, briefings, regulations and theory, from your own documents.</span><em>ask, learn, practise</em></button>
+      <button class="hc" data-h="docs"><b>My aircraft and documents</b><span>Aircraft profiles, your documents and the aircraft data you have checked.</span><em>your library</em></button>
+      <button class="hc" data-h="progress"><b>Training progress</b><span>Past sessions, grades, the topics to revise, and your data.</span><em>where you stand</em></button>
+      <button class="hc easa" data-h="easa"><b>EASA rules library</b><span>Curated references to EASA’s official rules: alternates, planning minima, fuel, approach and VMC rules, each linked to the official text.</span><em>browse the rules</em></button>
+    </div>
+  </section>
+
+  <!-- ===== trening ===== -->
+  <section class="card" id="vTrain" hidden>
+    <div class="tgrid">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
+        <div class="btns" style="justify-content:space-between"><h2 id="instName" style="margin:0">Aircraft Instructor</h2><span class="ai-state" id="aist">AI: checking…</span></div>
+        <div class="setrow">
+          <label>Aircraft<select id="tAc"></select></label>
+          <label>Mode<span id="tMode"></span></label>
+          <label id="ckw" hidden>Check<select id="ckType"></select></label>
+          <label id="flw" hidden>Flight<select id="flSel"></select></label>
+          <label>Topic (optional)<input id="tTopic" placeholder="e.g. electrical system, engine failure"></label>
+        </div>
+        <div class="offline" id="offline" hidden></div>
+        <p class="note" id="modeNote" style="margin:0"></p>
+        <div class="chips" id="chips"></div>
+        <div class="bar2"><span id="docsUsed"></span><span>Session <b id="clock">0:00</b> <button class="btn" id="tPause" hidden>Pause</button></span></div>
+        <div class="btns" id="tRow"><button class="btn pri" id="tStart">Start</button><button class="btn" id="tEnd" hidden>End session and report</button><label class="chk"><input type="checkbox" id="tVoice"> Speak the answers</label><span class="note" id="tNote"></span></div>
+        <div class="log" id="log"></div>
+        <div class="ansrow" id="ans" hidden>
+          <textarea class="write" id="tA" placeholder="Type, or hold the talk button and speak…" aria-label="Your answer or question"></textarea>
+          <div class="btns"><button class="btn talk" id="tTalk">🎙 Hold to talk</button><button class="btn pri" id="tSend">Send</button><button class="btn" id="tSkip" hidden>I don’t know</button><button class="btn" id="tStop" hidden>Stop</button></div>
+        </div>
+      </div>
+      <aside class="srcp" id="srcp">
+        <h3>Sources</h3>
+        <p class="note" style="margin:0">Every answer shows what it was built on. Click a citation to see the passage, and open the page to check it yourself. Verifying should never be a premium feature.</p>
+        <div id="srcList"><p class="note">No answer yet.</p></div>
+        <div id="regList"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ===== dokumenter ===== -->
+  <section class="card" id="vDocs" hidden>
+    <h2 style="margin:0">My aircraft and documents</h2>
+    <p class="note" style="margin:0">Make one profile per aircraft variant and add its documents. Mark the type and revision of each document, and tick a document as superseded when a new revision arrives. Only add documents you are allowed to use.</p>
+    <div class="acs" id="acs"></div>
+    <div class="acbox">
+      <div class="f2"><label>New aircraft profile<input id="nAc" placeholder="e.g. DA42 NG, LN-ABC"></label><label>Type<input id="nType" placeholder="DA42 NG"></label></div>
+      <div class="btns" style="margin-top:8px"><button class="btn" id="nAdd">Add aircraft</button><button class="btn" id="imp">Import earlier Check preparation documents</button><span class="note" id="impNote"></span></div>
+    </div>
+    <div class="acbox">
+      <h3 style="margin:0 0 4px;font-size:16px">General references</h3>
+      <p class="note" style="margin:0">Documents that are not tied to one aircraft: EASA Easy Access Rules, the AIP, your ATO’s training manual.</p>
+      <div id="genDocs"></div>
+    </div>
+    <p class="honest">Where things are kept: the documents and their text stay in this browser (IndexedDB) and are never uploaded as files. When you ask a question, only the few passages that matter are sent to Claude with the question. Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.</p>
+  </section>
+
+  <!-- ===== fremgang ===== -->
+  <section class="card" id="vProg" hidden>
+    <h2 style="margin:0">Training progress</h2>
+    <p class="note" style="margin:0">Results from the labs, briefings, radio and simulator: <a href="profile.html">Progress →</a></p>
+    <div class="kpis" id="pk"></div>
+    <h3 style="margin:8px 0 0;font-size:16px">Topics to revise</h3>
+    <div class="gaps" id="pGaps"></div>
+    <h3 style="margin:8px 0 0;font-size:16px">Sessions</h3>
+    <div class="wrapx" style="overflow-x:auto"><table class="ptab" id="pTab"></table></div>
+    <div id="pRep"></div>
+    <div class="btns"><button class="btn" id="pExp">Export my data</button><button class="btn" id="pDel">Delete all Flight Intelligence data</button><span class="note" id="pNote"></span></div>
+    <p class="honest">Voice is the browser’s own speech recognition and speech synthesis, so it works best in Chrome or Edge. Audio is never recorded or stored. The instructor is a training aid: formal competency assessment stays with your instructors and examiners, and the approved flight manual always takes precedence.</p>
+  </section>
+
+  <!-- ===== EASA-regelbibliotek ===== -->
+  <section class="card" id="vEasa" hidden>
+    <div class="ehead"><h2 id="eTitle">EASA rules library · Rev. 24 (March 2026)</h2><span class="note" id="eChecked"></span></div>
+    <p class="elive" id="eLive"></p>
+    <div class="ebar"><input type="search" id="eQ" placeholder="Search: alternate, final reserve, special VFR, CAT.OP.MPA.182…" aria-label="Search the EASA rules library"></div>
+    <div class="chips" id="eTop"></div>
+    <p class="note" id="eCount" style="margin:0"></p>
+    <div class="elist" id="eList"></div>
+    <div class="esrc" id="eSrc"></div>
+  </section>
+
+  <div class="modal" id="modal" hidden><div class="mbox"><div class="btns" style="justify-content:space-between"><b id="mTitle"></b><button class="btn" id="mClose">Close</button></div><div id="mBody"></div></div></div>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ai.js?v=1"></script>
+<script src="easa.js?v=1"></script>
+<script src="store.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el}=LAB, esc=NAI.esc;
+
+/* ---------- konstanter ---------- */
+const INST1={name:'Instructor',kinds:['afm','fcom','fctm','qrh','lim','tech','sop','chk','prof','ref','other'],
+  role:'an experienced flight instructor and type-rating instructor who also knows the operator\'s SOP and EASA rules (PPL to ATPL theory, IR, multi-engine)',
+  rules:'Teach the aircraft, the operator procedures and aviation knowledge from the documents: systems, limitations, normal and abnormal procedures, performance, briefings, flows, callouts, air law (Part-FCL, Part-NCO/NCC/CAT, SERA), IFR, meteorology, navigation and aerodynamics. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation (AFM, POH, FCOM, QRH) and operator documentation (SOP, checklists) apart and say which one a statement comes from; if they disagree, flag it as a conflict and tell the pilot to raise it with the operator. For rules, name the exact regulation (e.g. SERA.5015, NCO.OP.140) so the pilot can verify it. The approved flight manual always takes precedence.'};
+const INST={aircraft:INST1,sop:INST1,aviation:INST1};
+const KINDS=[['afm','AFM / POH'],['fcom','FCOM'],['fctm','FCTM'],['qrh','QRH / emergency checklist'],['lim','Limitations'],['tech','Technical / systems'],['sop','SOP'],['chk','Checklist'],['prof','Flight profiles'],['ref','Reference (EASA, AIP, training manual)'],['other','Other']];
+const KN=Object.fromEntries(KINDS);
+const MODES={
+  check:['Check preparation','An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.'],
+  learn:['Learn','Ask anything. The instructor explains, then checks your understanding with a follow-up question.'],
+  oral:['Oral exam','One question at a time, like an examiner. Each answer is graded 0–10 with the correct answer and the source.'],
+  scen:['Scenario','A practical situation that unfolds step by step. You make the decisions and get feedback on each one.'],
+  rev:['Revision','Questions on the topics you found difficult before, until they stick.']
+};
+const LABS={engines:['engines.html','The turbofan engine','turbofan, CFM56, LEAP, N1, N2, EGT, compressor, turbine, start, hot start, hung start, reverse, FADEC, flat rating, FLEX'],systems:['jetsystems.html','Jet transport systems','hydraulics, PTU, RAT, fly-by-wire, control laws, electrics, IDG, fuel, crossfeed, bleed, anti-ice, fire, landing gear, brakes'],tunnel:['tunnel.html','Wind tunnel','lift, drag, angle of attack, stall, flaps, wing design'],altimetry:['altimetry.html','Pressure & altitude','QNH, QFE, standard, pressure altitude, density altitude, temperature error, take-off performance'],orientation:['orientation.html','Spatial orientation','vestibular illusions, spatial disorientation'],holding:['holding.html','Holding','holding entries, wind correction, timing'],pitot:['pitot.html','Pitot-static','pitot and static blockages, airspeed, altimeter and VSI errors'],clouds:['clouds.html','Clouds, stability and fog','lapse rates, adiabatic cooling, inversions, stable and unstable air, cloud formation, cloud base, radiation and advection fog, visibility'],fronts:['fronts.html','Pressure, fronts and wind','air masses, warm and cold fronts, occlusions, highs and lows, isobars, Buys Ballot, pressure gradient, Coriolis, friction, geostrophic wind, sea breeze, katabatic wind'],storms:['storms.html','Thunderstorms and wind shear','wind shear, microburst, escape manoeuvre, thunderstorm life cycle, updraft, downdraft, hail, lightning, gust front, squall line, embedded CB, avoidance, SIGMET'],hazards:['hazards.html','Icing and turbulence','airframe icing, freezing rain, rime, clear ice, mountain waves, rotor, mechanical turbulence, clear air turbulence, wake turbulence'],approach:['approach.html','Instrument approach','ILS, LOC, RNP, minima, stable approach, TSADMM brief'],radionav:['radionav.html','Radio navigation','VOR, NDB, ADF, DME, ILS receivers'],gnss:['gnss.html','GNSS and RNAV','RAIM, SBAS, PBN, RNP approaches, GNSS outages']};
+const REGS=[[/\bSERA\.\d{4,5}/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-standardised-european-rules-air-sera','EASA Easy Access Rules: SERA'],
+  [/\b(?:FCL|MED|ARA|ORA)\.\d{3}[A-Z]?(?:\.[A-Z0-9]+)*/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew-regulation-eu-no-11782011','EASA Easy Access Rules: Aircrew (Part-FCL, Part-MED)'],
+  [/\b(?:NCO|NCC|CAT|SPO|ORO)\.[A-Z]{2,4}(?:\.[A-Z]{2,4})?\.\d{3}/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-air-operations','EASA Easy Access Rules: Air Operations'],
+  [/\bICAO Annex \d{1,2}\b/g,'https://www.icao.int/safety/airnavigation/nationalitymarks/annexes_booklet_en.pdf','ICAO Annexes (overview)']];
+
+/* ---------- lagring: dokumenter i nettleseren ---------- */
+const DBN='naeroson-fi'; let idb=null, DOCS=[];
+function openDb(){ return new Promise(res=>{ try{ const r=indexedDB.open(DBN,1); r.onupgradeneeded=()=>{ r.result.createObjectStore('docs',{keyPath:'id'}); r.result.createObjectStore('blobs',{keyPath:'id'}); }; r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }); }
+const st=(s,m)=>idb.transaction(s,m).objectStore(s);
+async function loadDocs(){ idb=await openDb(); if(!idb){ DOCS=[]; return; } DOCS=await new Promise(res=>{ const r=st('docs','readonly').getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>res([]); }); }
+function putDoc(d){ if(idb) try{ st('docs','readwrite').put(d); }catch(e){} }
+function putBlob(id,blob){ if(idb) try{ st('blobs','readwrite').put({id,blob}); }catch(e){} }
+function getBlob(id){ return new Promise(res=>{ if(!idb) return res(null); try{ const r=st('blobs','readonly').get(id); r.onsuccess=()=>res(r.result&&r.result.blob); r.onerror=()=>res(null); }catch(e){ res(null); } }); }
+function delDoc(id){ if(idb) try{ st('docs','readwrite').delete(id); st('blobs','readwrite').delete(id); }catch(e){} }
+
+/* ---------- lagring: profil (konto) ---------- */
+let ACS=[], SES=[];
+async function loadProfile(){ ACS=await NSTORE.list('fiac'); SES=await NSTORE.list('fises');
+  if(!ACS.length){ const a={id:'ac-da42',name:'DA42 NG',type:'Diamond DA42 NG',created:Date.now()}; ACS=[a]; await NSTORE.put('fiac',a); } }
+
+/* ---------- tekstuthenting ---------- */
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
+async function pdfjs(){ if(window.pdfjsLib) return window.pdfjsLib; const base='vendor/'; await loadScript(base+'pdf.min.js'); try{ await loadScript(base+'pdf.worker.min.js'); }catch(e){} window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; return window.pdfjsLib; }
+function chunkPage(text,p,out,sec){ text=text.replace(/\s+/g,' ').trim(); if(!text) return; const size=1400; for(let i=0;i<text.length;i+=size-150) out.push({p,t:text.slice(i,i+size),s:sec||''}); }
+function guessSec(t){ const m=t.match(/(?:^|\s)((?:SECTION|CHAPTER|Section|Chapter)\s+[0-9A-Z]{1,3}[\s.:–-]+[A-Z][A-Za-z ,/&-]{3,40})/); if(m) return m[1].trim(); const n=t.match(/(?:^|\s)(\d{1,2}\.\d{1,2}(?:\.\d{1,2})?\s+[A-Z][A-Z ,/&-]{4,40})(?=\s)/); return n? n[1].trim() : ''; }
+async function readFile(f,onProg){
+  const name=f.name, ext=name.split('.').pop().toLowerCase(); const chunks=[]; let pages=1, sec='';
+  if(ext==='pdf'){ const lib=await pdfjs(); const doc=await lib.getDocument({data:await f.arrayBuffer()}).promise; pages=doc.numPages;
+    for(let i=1;i<=pages;i++){ const pg=await doc.getPage(i); const tc=await pg.getTextContent(); const t=tc.items.map(x=>x.str+(x.hasEOL?'\n':' ')).join(''); const g=guessSec(t.slice(0,400)); if(g) sec=g; chunkPage(t,i,chunks,sec); onProg(i/pages); } }
+  else if(ext==='docx'){ if(!window.mammoth) await loadScript('vendor/mammoth.browser.min.js'); const r=await window.mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()}); pages=byParts(r.value,chunks); onProg(1); }
+  else { pages=byParts(await f.text(),chunks); onProg(1); }
+  return {name,pages,chunks};
+}
+function byParts(t,chunks){ const parts=t.split(/\n{2,}/); let acc='',p=1; for(const x of parts){ acc+=x+'\n'; if(acc.length>3000){ chunkPage(acc,p++,chunks,guessSec(acc.slice(0,300))); acc=''; } } if(acc) chunkPage(acc,p,chunks,guessSec(acc.slice(0,300))); return p; }
+
+/* ---------- søk (BM25-aktig) ---------- */
+const STOP=new Set('the and for are with that this from have has not you your was were will can into when what which who how its their there then than them they shall should must may also any all per under over more less such each other only been being would could does done between after before during og som det er til av med for på har ikke den kan skal'.split(' '));
+const tok=s=>String(s).toLowerCase().replace(/[^a-z0-9æøå.%\- ]/g,' ').split(/\s+/).filter(w=>w.length>2&&!STOP.has(w));
+function pool(inst,acId){ const k=INST[inst].kinds; return (flightDoc().concat(vdSource(acId)).concat(builtins(acId))).concat(DOCS.filter(d=>d.on!==false&&!d.old&&(d.ac===acId||d.ac==='gen')&&(inst==='aviation'? true : k.includes(d.kind)||d.kind==='other'))); }
+function search(q,k,docs){ const qt=[...new Set(tok(expand(q)))]; if(!qt.length) return []; let all=[]; docs.forEach(d=>d.chunks.forEach(c=>all.push({d,c})));
+  const N=all.length||1, df={}; qt.forEach(w=>{ df[w]=0; }); all.forEach(x=>{ const t=x.lc||(x.lc=x.c.t.toLowerCase()); qt.forEach(w=>{ if(t.includes(w)) df[w]++; }); });
+  all.forEach(x=>{ const t=x.lc; let s=0; qt.forEach(w=>{ if(!df[w]) return; let n=0,i=-1; while((i=t.indexOf(w,i+1))>=0&&n<8) n++; if(n) s+=Math.log(1+N/df[w])*(n/(n+1.2)); }); if(x.d.kind==='qrh'||x.d.kind==='lim') s*=1.08; x.s=s; });
+  return all.filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k||6); }
+function randomChunks(n,docs,focus){ let out=focus? search(focus,Math.ceil(n/2),docs) : []; const P=[]; docs.forEach(d=>d.chunks.forEach(c=>{ if(c.t.length>300) P.push({d,c}); })); for(let i=0;i<n*4&&out.length<n&&P.length;i++){ const x=P[Math.floor(Math.random()*P.length)]; if(!out.some(o=>o.c===x.c)) out.push(x); } return out; }
+
+
+/* ---------- temaer, innebygd referanse, synonymer ---------- */
+const CHIPS0=[['Limitations','Speed and engine limitations'],['Engine failure after take-off','Engine failure after take-off'],['Electrical system','Electrical system and failures'],['Fuel system','Fuel system and crossfeed'],['Departure briefing','Departure briefing (T-RIBETS)'],['Approach briefing','Approach briefing (TSADMM)'],['Go-around','Go-around and missed approach'],['Alternate minima','Planning minima for alternates'],['Fuel rules','Fuel requirements and final reserve'],['Approach ban','Commencement and continuation of approach (approach ban)'],['VMC minima','VMC minima and special VFR'],['Icing','Airframe icing'],['Radio failure','Radio failure procedure (SERA)']];
+const CHIPS={aircraft:CHIPS0,sop:CHIPS0,aviation:CHIPS0};
+const NOC={'Limitations':'Begrensninger','Engine failure after take-off':'Motorstans etter avgang','Electrical system':'Elektrisk system','Fuel system':'Drivstoffsystem','Landing gear':'Understell','De-icing':'Avising','Performance':'Ytelse','Departure briefing':'Avgangsbrief','Approach briefing':'Innflygingsbrief','Callouts':'Callouts','Go-around':'Go-around','Stable approach':'Stabil innflyging','Flows':'Flows','Alternate minima':'Alternativminima','Fuel rules':'Drivstoffregler','Approach ban':'Innflygingsforbud','VMC minima':'VMC-minima','Icing':'Ising','Holding':'Holding','RNP approaches':'RNP-innflyginger','Radio failure':'Radiosvikt','Density altitude':'Tetthetshøyde'};
+function drawChips(){ el('chips').innerHTML=(CHIPS[INSTK]||[]).map(([l,t])=>`<button data-c="${esc(t)}">${esc(L({en:l,no:NOC[l]||l}))}</button>`).join(''); }
+el('chips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const t=b.dataset.c;
+  if(MODE==='learn'){ if(!S) startSession(); if(S) turn(L({en:'Teach me: ',no:'Lær meg: '})+t,false); }
+  else { el('tTopic').value=t; if(S) endSession(false); startSession(); } });
+const BUILTIN_DA42={id:'bb-da42',ac:'*da42',name:'Birdbird DA42 reference card (check against your AFM)',kind:'ref',rev:'Birdbird',on:true,pages:1,builtin:true,chunks:[
+ {p:1,s:'Speeds',t:'DA42-VI (DA42 NG with MÄM 42-600; 2 × Austro AE300, FADEC, Jet A-1). Speeds KIAS: Vr 76 (flaps UP), V50 83, Vy 90 (≤1900 kg) / 92 (>1900 kg), Vyse 85 (blue line), Vmca 71 (flaps UP) / 68 (APP); a DA42 NG without MÄM 42-600 has Vmca 76, Vref flaps LDG 84 / 86, VFE APP 133 / LDG 113, VLO extend 188 / retract 152, VLE 188, VNO 151, VNE 188, VO 112 (≤1700 kg) / 119 / 122 (>1800 kg). MTOM 1999 kg with MÄM 42-659 and 42-678 (standard NG 1900 kg). Demonstrated crosswind 25 kt. Starter max 10 s then 20 s cool-down. Max take-off power 100 % for 5 min, max continuous 92 %.'},
+ {p:1,s:'Engine failure',t:'DA42 engine failure: on the ground, power levers idle, directional control, brakes. After lift-off with gear down and runway remaining, land ahead. Otherwise power MAX, rudder, Vyse 85 KIAS, gear UP, flaps UP, identify – verify – secure. Before departure, check the one-engine-inoperative climb performance (AFM section 5) against the SID or obstacle gradient, and brief what you will do if it cannot be met.'},
+ {p:1,s:'Stable approach',t:'Stable approach: by 1000 ft AAL in IMC (500 ft in VMC) within half scale CDI and GS/GP, vertical speed not more than 1000 fpm, speed within ±10 kt, landing configuration. Otherwise go around.'}]};
+function builtins(acId){ const a=acOf(acId); return a&&/da\s?42/i.test((a.name||'')+' '+(a.type||''))? [BUILTIN_DA42] : []; }
+const SYN=[['alternator','generator','charging'],['engine','motor','powerplant'],['fuel','tank','crossfeed'],['gear','undercarriage','landing gear'],['ice','icing','de-ice','anti-ice','deicing'],['stall','stalling'],['vmca','minimum control speed'],['vyse','blue line'],['go-around','missed approach','goaround'],['battery','ecu backup'],['limitation','limit','maximum']];
+function expand(q){ let t=String(q).toLowerCase(); const add=[]; SYN.forEach(g=>{ if(g.some(w=>t.includes(w))) add.push(...g); }); return t+' '+add.join(' '); }
+async function autoImport(){ const db=await new Promise(res=>{ try{ const r=indexedDB.open('naeroson-docs',1); r.onupgradeneeded=()=>{ r.result.createObjectStore('docs',{keyPath:'id'}); }; r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }); if(!db) return; const list=await new Promise(res=>{ try{ const r=db.transaction('docs','readonly').objectStore('docs').getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>res([]); }catch(e){ res([]); } }); const ac=ACS[0].id; list.forEach(d=>{ if(DOCS.some(x=>x.name===d.name.replace(/\.(pdf|docx|txt|md)$/i,'')&&x.pages===d.pages)) return; const nd={id:'fd'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ac,name:d.name.replace(/\.(pdf|docx|txt|md)$/i,''),kind:guessKind(d.name),rev:'',old:false,on:true,pages:d.pages,chunks:d.chunks,added:Date.now(),blob:false}; DOCS.push(nd); putDoc(nd); }); }
+el('imp').onclick=async()=>{ const n=el('impNote'); const db=await new Promise(res=>{ try{ const r=indexedDB.open('naeroson-docs',1); r.onupgradeneeded=()=>{ r.result.createObjectStore('docs',{keyPath:'id'}); }; r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } });
+  if(!db){ n.textContent=L({en:'Nothing found.',no:'Fant ingenting.'}); return; } const list=await new Promise(res=>{ try{ const r=db.transaction('docs','readonly').objectStore('docs').getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>res([]); }catch(e){ res([]); } });
+  let k=0; const ac=ACS[0].id; list.forEach(d=>{ if(DOCS.some(x=>x.name===d.name&&x.pages===d.pages)) return; const nd={id:'fd'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),ac,name:d.name.replace(/\.(pdf|docx|txt|md)$/i,''),kind:guessKind(d.name),rev:'',old:false,on:true,pages:d.pages,chunks:d.chunks,added:Date.now(),blob:false}; DOCS.push(nd); putDoc(nd); k++; });
+  n.textContent= k? L({en:`Imported ${k} document(s) to ${ACS[0].name}. Check their type.`,no:`Hentet ${k} dokument(er) til ${ACS[0].name}. Sjekk typen.`}) : L({en:'No new documents from the earlier Check preparation page.',no:'Ingen nye dokumenter fra den tidligere kontrollforberedelsessiden.'}); drawDocs(); drawUsed(); };
+
+/* ---------- kontrollerte flydata (menneske i loopen) ---------- */
+const VD_ENGINE='bb-calc-1';
+const VDF=[['vr','Rotation speed Vr','KIAS'],['vy','Best rate of climb Vy','KIAS'],['vyse','Vyse (blue line)','KIAS'],['vmca','Vmca','KIAS'],['vref','Approach speed Vref (landing flaps)','KIAS'],['vfe','Max flap speed VFE (landing)','KIAS'],['vle','Max gear extended VLE','KIAS'],['vno','VNO','KIAS'],['vne','VNE','KIAS'],['mtom','Max take-off mass','kg'],['mlm','Max landing mass','kg'],['xw','Demonstrated crosswind','kt']];
+const VDNO={'Rotation speed Vr':'Rotasjonsfart Vr','Best rate of climb Vy':'Beste stigerate Vy','Vyse (blue line)':'Vyse (blue line)','Approach speed Vref (landing flaps)':'Innflygingsfart Vref (landingsklaff)','Max flap speed VFE (landing)':'Maks klaffefart VFE (landing)','Max gear extended VLE':'Maks fart med hjul ute VLE','Max take-off mass':'Maks avgangsmasse','Max landing mass':'Maks landingsmasse','Demonstrated crosswind':'Demonstrert sidevind'};
+const VDS={}; // forslag i minnet: {acId:{key:{v,page,quote,doc}}}
+function vdState(a,k){ const r=(a.vd||{})[k]; if(!r) return {s:'none'}; const d=DOCS.find(x=>x.id===r.src.doc); if(!d) return {s:'stale',why:L({en:'source document removed',no:'kildedokumentet er fjernet'}),r};
+  if(d.old) return {s:'stale',why:L({en:'source marked superseded',no:'kilden er merket som erstattet'}),r}; if((d.rev||'')!==(r.src.rev||'')) return {s:'stale',why:L({en:'document revision changed',no:'dokumentrevisjonen er endret'}),r}; return {s:r.status,r}; }
+function vdBlock(a){ const afm=DOCS.filter(d=>d.ac===a.id&&['afm','lim','fcom','qrh'].includes(d.kind)&&!d.old); const sug=VDS[a.id]||{};
+  const n=VDF.filter(([k])=>{ const st=vdState(a,k).s; return ['confirmed','corrected','entered'].includes(st); }).length;
+  return `<details class="vd" data-vd="${a.id}" ${sug._open?'open':''}><summary>${L({en:'Checked aircraft data',no:'Kontrollerte flydata'})} <span>· ${n} / ${VDF.length} ${L({en:'checked',no:'kontrollert'})}</span></summary><div class="in">
+   <div class="warn">${L({en:'The AI suggests values from your AFM. Open the page and compare before you confirm: only values you have checked are used by Birdbird. Educational use only, not approved for operational flight planning. The approved flight manual always applies.',no:'AI-en foreslår verdier fra din AFM. Åpne siden og sammenlign før du bekrefter: bare verdier du har kontrollert brukes av Birdbird. Kun til opplæring, ikke godkjent for operativ flyplanlegging. Den godkjente flyhåndboken gjelder alltid.'})}</div>
+   <div class="btns" style="margin:6px 0"><button class="btn" data-vdai="${a.id}" ${afm.length?'':'disabled'}>${L({en:'Find values in the AFM (AI)',no:'Finn verdier i AFM (AI)'})}</button><span class="note" data-vdmsg="${a.id}">${afm.length?'':L({en:'Add the AFM or POH first and mark its revision.',no:'Legg til AFM eller POH først og merk revisjonen.'})}</span></div>
+   <div style="overflow-x:auto"><table><tr><th>${L({en:'Item',no:'Verdi'})}</th><th>${L({en:'Suggested (source)',no:'Foreslått (kilde)'})}</th><th>${L({en:'Your value',no:'Din verdi'})}</th><th>${L({en:'Status',no:'Status'})}</th><th></th></tr>
+   ${VDF.map(([k,l,u])=>{ const g=sug[k], st=vdState(a,k), r=st.r; const val=r?r.v:(g?g.v:'');
+     const stTxt= st.s==='entered'? `<span class="st ok">✓ ${L({en:'entered',no:'lagt inn'})}</span>` : st.s==='confirmed'? `<span class="st ok">✓ ${L({en:'checked',no:'kontrollert'})}</span>` : st.s==='corrected'? `<span class="st ok">✓ ${L({en:'corrected',no:'rettet'})}</span>` : st.s==='stale'? `<span class="st wa">${L({en:'check again',no:'kontroller på nytt'})}: ${esc(st.why)}</span>` : `<span class="st no">${L({en:'not checked',no:'ikke kontrollert'})}</span>`;
+     const src=g? `<b>${esc(String(g.v))} ${u}</b> <span class="q">· ${esc(g.name)} ${L({en:'p.',no:'s.'})} ${g.page}${g.quote?' · «'+esc(g.quote.slice(0,90))+'»':''}</span>` : r? `<span class="q">${esc(r.src.name)}${r.src.rev?' rev. '+esc(r.src.rev):''} ${L({en:'p.',no:'s.'})} ${r.src.page||'?'} · ${new Date(r.at).toLocaleDateString(LAB.lang==='no'?'nb-NO':'en-GB')}</span>` : '<span class="q">–</span>';
+     return `<tr><td>${esc(L({en:l,no:VDNO[l]||l}))}</td><td>${src}</td><td><input data-vdv="${k}" value="${esc(val==null?'':String(val))}" inputmode="decimal"> ${u}</td><td>${stTxt}</td><td style="white-space:nowrap">${(g||r)&&(g?g.doc:r.src.doc)?`<button class="btn" data-vdopen="${k}">${L({en:'Open page',no:'Åpne siden'})}</button> `:''}<button class="btn" data-vdok="${k}" ${g&&!g.seen&&!(r)?'disabled title="'+L({en:'Open the page first',no:'Åpne siden først'})+'"':''}>${L({en:'Confirm',no:'Bekreft'})}</button></td></tr>`; }).join('')}</table></div>
+   <p class="note" style="margin:6px 0 0">${L({en:'Each check is saved with the document, revision, page, your value and the time. A new AFM revision means checking again.',no:'Hver kontroll lagres med dokument, revisjon, side, din verdi og tidspunkt. En ny AFM-revisjon betyr ny kontroll.'})}</p></div></details>`; }
+async function vdSync(){ ACS.forEach(a=>{ if(!a.vd) return; const ok={}; VDF.forEach(([k,l,u])=>{ const st=vdState(a,k); if(['confirmed','corrected','entered'].includes(st.s)) ok[k]={v:st.r.v,u,src:st.r.src.name+(st.r.src.rev?' rev '+st.r.src.rev:'')+', p. '+(st.r.src.page||'?'),at:st.r.at}; }); const j=JSON.stringify(ok); if(j!==JSON.stringify(a.vdOk||{})){ a.vdOk=ok; NSTORE.put('fiac',a); } }); }
+async function vdFind(acId){ const a=ACS.find(x=>x.id===acId); const docs=DOCS.filter(d=>d.ac===acId&&['afm','lim','fcom','qrh'].includes(d.kind)&&!d.old); const msg=vD.querySelector(`[data-vdmsg="${acId}"]`);
+  if(!NAI.mode){ msg.textContent=NAI.errText({code:'not_available'}); return; } msg.textContent=L({en:'Reading the AFM…',no:'Leser AFM …'});
+  const ex=search('airspeed limitations VNE VNO VFE VLE VLO Vr rotation Vy Vyse Vmca minimum control speed blue line approach speed Vref landing maximum take-off mass maximum landing mass demonstrated crosswind',14,docs);
+  const src=ex.map((x,i)=>`[S${i+1}] ${x.d.name}${x.d.rev?' rev '+x.d.rev:''}, page ${x.c.p}:\n${x.c.t}`).join('\n\n');
+  try{ const r=await NAI.json(`From the excerpts of an aircraft flight manual below, extract these values ONLY if they are stated explicitly: ${VDF.map(([k,l,u])=>k+' = '+l+' ('+u+')').join('; ')}.
+If a value depends on mass or configuration, take the value for landing flaps / maximum mass and say so in the quote. Never estimate or use general knowledge. For each value give the source number and an exact short quote from the excerpt.
+EXCERPTS:\n${src}\n\nReply with only JSON: {"values":{"key":{"v":number,"s":source number,"quote":"exact words from the excerpt"}}} and leave out anything not found.`,{tier:'default'});
+    const out={_open:true}; const V=(r&&r.values)||{}; let n=0; Object.entries(V).forEach(([k,o])=>{ if(!VDF.some(f=>f[0]===k)||!o||!Number.isFinite(+o.v)) return; const x=ex[(+o.s||0)-1]; if(!x) return; const q=String(o.quote||''); if(q&&!x.c.t.toLowerCase().includes(q.toLowerCase().slice(0,25))) return; out[k]={v:+o.v,page:x.c.p,quote:q,doc:x.d.id,name:x.d.name,rev:x.d.rev||''}; n++; });
+    VDS[acId]=out; drawDocs(); const m2=vD.querySelector(`[data-vdmsg="${acId}"]`); if(m2) m2.textContent= n? L({en:`${n} value(s) suggested. Open each page and compare before you confirm.`,no:`${n} verdi(er) foreslått. Åpne hver side og sammenlign før du bekrefter.`}) : L({en:'No values found with a clear source. Enter them yourself from the AFM.',no:'Fant ingen verdier med tydelig kilde. Skriv dem inn selv fra AFM.'}); }
+  catch(e){ msg.textContent=NAI.errText(e); NAI.fatal(e); } }
+queueMicrotask(()=>{ vD.addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const box=b.closest('[data-vd]'); if(!box&&!b.dataset.vdai) return;
+  if(b.dataset.vdai){ e.preventDefault(); vdFind(b.dataset.vdai); return; }
+  const acId=box.dataset.vd, a=ACS.find(x=>x.id===acId), sug=VDS[acId]=VDS[acId]||{_open:true}; sug._open=true;
+  if(b.dataset.vdopen){ const k=b.dataset.vdopen, g=sug[k], r=(a.vd||{})[k]; const d=DOCS.find(x=>x.id===(g?g.doc:r.src.doc)); if(d){ openPage(d,g?g.page:r.src.page); if(g) g.seen=true; } drawDocs(); return; }
+  if(b.dataset.vdok){ const k=b.dataset.vdok, g=sug[k]; const inp=box.querySelector(`[data-vdv="${k}"]`); const v=parseFloat(String(inp.value).replace(',','.')); if(!Number.isFinite(v)){ inp.focus(); return; }
+    let srcDoc=g? DOCS.find(x=>x.id===g.doc) : null; let page=g?g.page:null;
+    if(!g){ const afm=DOCS.filter(d=>d.ac===acId&&['afm','lim','fcom','qrh'].includes(d.kind)&&!d.old); const pick=window.prompt(L({en:'Which page of the AFM did you take this value from?',no:'Hvilken side i AFM tok du verdien fra?'}),''); if(pick===null) return; page=parseInt(pick,10)||null; srcDoc=afm[0]||null; }
+    if(!srcDoc){ window.alert(L({en:'Add the AFM (with its revision) to this aircraft first, so the check has a source.',no:'Legg til AFM (med revisjon) på dette flyet først, så kontrollen har en kilde.'})); return; }
+    a.vd=a.vd||{}; a.vd[k]={v,unit:VDF.find(f=>f[0]===k)[2],status:g? (+g.v===v?'confirmed':'corrected') : 'entered',suggested:g?g.v:null,src:{doc:srcDoc.id,name:srcDoc.name,rev:srcDoc.rev||'',page},at:Date.now(),engine:VD_ENGINE};
+    await NSTORE.put('fiac',a); drawDocs(); return; } }); });
+function vdSource(acId){ const a=acOf(acId); if(!a||!a.vd) return []; const lines=VDF.map(([k,l,u])=>{ const st=vdState(a,k); return ['confirmed','corrected','entered'].includes(st.s)? `${l}: ${st.r.v} ${u} (${st.r.src.name}${st.r.src.rev?' rev '+st.r.src.rev:''}, page ${st.r.src.page||'?'}, checked by the pilot)` : null; }).filter(Boolean);
+  return lines.length? [{id:'vd-'+a.id,name:L({en:'Your checked aircraft data',no:'Dine kontrollerte flydata'}),kind:'lim',rev:'',on:true,pages:1,builtin:true,chunks:[{p:1,s:'Checked values',t:lines.join('. ')}]}] : []; }
+
+/* ---------- kontroll (tidligere Checkride prep) og turen din ---------- */
+const CKT=[['ir-me-pc','IR(A) ME proficiency check / renewal','EASA Part-FCL proficiency check for the IR(A) and MEP class rating (Appendix 9): IFR departure, holding, 3D and 2D approaches, missed approach, one engine inoperative operations, systems and limitations, performance, mass and balance, flight planning, TEM.'],
+ ['mep','MEP class rating skill test','EASA Part-FCL skill test for a multi-engine piston class rating (Appendix 9): pre-flight, systems, normal and abnormal procedures, simulated engine failure during take-off, asymmetric approach and go-around, asymmetric approach to a full-stop landing, engine shutdown and restart, OEI performance.'],
+ ['ir','IR(A) skill test','EASA Part-FCL IR(A) skill test (Appendix 7): flight planning, IFR departure, en-route, holding, precision and non-precision approaches, missed approach, abnormal and emergency procedures, and flight with one engine inoperative when the test is flown in a multi-engine aircraft.'],
+ ['cpl','CPL(A) skill test','EASA Part-FCL CPL(A) skill test (Appendix 4): pre-flight, navigation, flight planning, airspace, general airwork, approach and landing, abnormal and emergency procedures.'],
+ ['ppl','PPL(A) skill test','EASA Part-FCL PPL(A) skill test (FCL.235, AMC1 FCL.235): pre-flight and departure, general airwork, en-route procedures, approach and landing, abnormal and emergency procedures, and multi-engine items if applicable.'],
+ ['sys','Aircraft systems and limitations oral','Oral examination on the aircraft: limitations, systems (engine, fuel, electrics, hydraulics, landing gear, flight controls, avionics, de-ice), normal and emergency procedures, performance and mass and balance.']];
+const CKNO={'IR(A) ME proficiency check / renewal':'IR(A) ME ferdighetskontroll / fornyelse','MEP class rating skill test':'MEP klasserettighet, praktisk prøve','IR(A) skill test':'IR(A) praktisk prøve','CPL(A) skill test':'CPL(A) praktisk prøve','PPL(A) skill test':'PPL(A) praktisk prøve','Aircraft systems and limitations oral':'Muntlig: flysystemer og begrensninger'};
+el('ckType').innerHTML=CKT.map(([k,l])=>`<option value="${k}">${esc(L({en:l,no:CKNO[l]||l}))}</option>`).join('');
+let PACKS=[], FLIGHT=null;
+async function loadPacks(){ try{ PACKS=await NSTORE.list('prep'); }catch(e){ PACKS=[]; } el('flSel').innerHTML=`<option value="">${L({en:'No flight',no:'Ingen tur'})}</option>`+PACKS.map(p=>`<option value="${p.id}">${esc(p.title||[p.f&&p.f.depapt,p.f&&p.f.destapt].filter(Boolean).join(' – ')||L({en:'Briefing pack',no:'Briefingpakke'}))}</option>`).join(''); el('flw').hidden=!PACKS.length; }
+function flightDoc(){ const p=PACKS.find(x=>x.id===el('flSel').value); if(!p) return []; const f=p.f||{}; const v=k=>f[k]!=null&&f[k]!==''?String(f[k]):'';
+  const parts=[]; const ap=[['dep','Departure'],['to','Take-off alternate'],['dest','Destination'],['alt1','Alternate 1'],['alt2','Alternate 2']];
+  parts.push(`Flight: ${[v('depapt'),v('destapt')].filter(Boolean).join(' to ')}${v('altapt')?' , alternate '+v('altapt'):''}. Aircraft ${v('type')} ${v('reg')}. Rules ${v('rules')}. Date ${v('date')} ETD ${v('etd')}.`);
+  ap.forEach(([k,l])=>{ const m=[v('mt.'+k+'.icao'),v('mt.'+k+'.metar'),v('mt.'+k+'.taf')].filter(Boolean).join(' / '); const mi=[v('mi.'+k+'.wind')&&'wind '+v('mi.'+k+'.wind'),v('mi.'+k+'.rwy')&&'runway '+v('mi.'+k+'.rwy'),v('mi.'+k+'.proc')&&'procedure '+v('mi.'+k+'.proc')].filter(Boolean).join(', '); if(m||mi) parts.push(`${l}: ${m}${mi?' · '+mi:''}.`); });
+  ['m.gen','m.trip','m.wind'].forEach(k=>{ if(v(k)) parts.push('Weather '+k.slice(2)+': '+v(k)+'.'); });
+  ['n.dep','n.dest','n.enr'].forEach(k=>{ if(v(k)) parts.push('NOTAM '+k.slice(2)+': '+v(k)+'.'); });
+  const fu=Object.keys(f).filter(k=>/^fu\./.test(k)&&v(k)).slice(0,20).map(k=>k+'='+v(k)).join(', '); if(fu) parts.push('Fuel page: '+fu+'.');
+  if(v('cl.open')) parts.push('Checklist items in the briefing pack not yet done: '+v('cl.open')+'. In check preparation, ask about these.');
+  if(v('x.msa')||v('x.alt')) parts.push(`Profile: cruise ${v('x.alt')}, MSA ${v('x.msa')}, freezing level ${v('x.frz')}, cloud ${v('x.cb')}–${v('x.ct')}.`);
+  if(p.xs&&p.xs.pts&&p.xs.pts.length) parts.push('Route profile points: '+p.xs.pts.map(q=>`${q.n} ${q.a} ft${q.d?' after '+q.d+' NM':''}`).join(', ')+'.');
+  const mb=['mb.empty.m','mb.front.m','mb.rear.m','mb.fuel.u','mb.mtom'].filter(k=>v(k)).map(k=>k+'='+v(k)).join(', '); if(mb) parts.push('Mass and balance inputs: '+mb+'.');
+  ['rf.dep','rf.enr','rf.arr','b.threats'].forEach(k=>{ if(v(k)) parts.push(k+': '+v(k)+'.'); });
+  return [{id:'flight-'+p.id,name:L({en:'Your briefing pack',no:'Briefingpakken din'})+': '+(p.title||''),kind:'ref',rev:'',on:true,pages:1,builtin:true,chunks:[{p:1,s:'This flight',t:parts.join(' ')}]}]; }
+el('flSel').onchange=()=>{ drawUsed(); };
+function ckScope(){ const t=CKT.find(x=>x[0]===el('ckType').value)||CKT[0]; return t; }
+/* ---------- tilstand ---------- */
+let INSTK='aircraft', MODE='learn', S=null, ctl=null, timer=null;
+const acOf=id=>ACS.find(a=>a.id===id)||ACS[0];
+function gapsAll(){ const m={}; SES.forEach(s=>(s.gaps||[]).forEach(g=>{ const k=g.toLowerCase(); if(!m[k]) m[k]={t:g,n:0,last:0,ac:s.ac,inst:s.inst}; m[k].n++; m[k].last=Math.max(m[k].last,s.started||0); }));
+  // fjern temaer som er bestått senere
+  SES.forEach(s=>(s.grades||[]).forEach(g=>{ const k=String(g.topic||'').toLowerCase(); if(m[k]&&g.score>=8&&(s.started||0)>=m[k].last) delete m[k]; }));
+  return Object.values(m).sort((a,b)=>b.last-a.last); }
+
+/* ---------- visninger ---------- */
+function show(h){ if(h==='sop'||h==='aviation') h='aircraft'; el('hub').querySelectorAll('.hc').forEach(b=>b.classList.toggle('on',b.dataset.h===h));
+  el('vTrain').hidden=!INST[h]; el('vDocs').hidden=h!=='docs'; el('vProg').hidden=h!=='progress'; el('vEasa').hidden=h!=='easa';
+  if(INST[h]){ if(S&&S.inst!==h&&!window.confirm(L({en:'End the current session?',no:'Avslutte økten som pågår?'}))) { show(S.inst); return; } if(S&&S.inst!==h) endSession(false); INSTK=h; drawTrain(); }
+  if(h==='docs') drawDocs(); if(h==='progress') drawProg(); if(h==='easa') drawEasa();
+  try{ sessionStorage.setItem('fi-view',h); }catch(e){} }
+el('hub').addEventListener('click',e=>{ const b=e.target.closest('.hc'); if(b){ show(b.dataset.h); (el(INST[b.dataset.h]?'vTrain':b.dataset.h==='docs'?'vDocs':b.dataset.h==='easa'?'vEasa':'vProg')).scrollIntoView({behavior:'smooth',block:'start'}); } });
+
+function drawTrain(){ el('instName').textContent=L({en:INST[INSTK].name,no:NOI[INST[INSTK].name]||INST[INSTK].name});
+  const cur=el('tAc').value; el('tAc').innerHTML=ACS.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join(''); if(cur&&ACS.some(a=>a.id===cur)) el('tAc').value=cur;
+  el('modeNote').textContent=L({en:MODES[MODE][1],no:NOM[MODES[MODE][1]]||MODES[MODE][1]}); if(!S) el('ans').hidden=MODE!=='learn'; el('ckw').hidden=MODE!=='check'; drawUsed(); }
+function drawUsed(){ const P=pool(INSTK,el('tAc').value).filter(d=>!d.builtin); const n=P.length; drawChips();
+  el('docsUsed').innerHTML= n? `${L({en:'Reading from',no:'Leser fra'})} <b>${n}</b> ${L({en:n===1?'document':'documents',no:'dokument'+(n===1?'':'er')})}: ${esc(P.slice(0,3).map(d=>d.name).join(', '))}${n>3?'…':''}`
+    : (builtins(el('tAc').value).length? `${L({en:'Using the built-in DA42 reference card only (not the AFM).',no:'Bruker bare det innebygde DA42-referansekortet (ikke AFM).'})} ` : '')+`<span class="ko">${L({en:'No documents for this instructor yet.',no:'Ingen dokumenter for denne instruktøren ennå.'})}</span> <a href="#" id="goDocs">${L({en:'Add documents',no:'Legg til dokumenter'})}</a>${' · '+L({en:'for rules and theory it answers from general knowledge with references',no:'for regler og teori svarer den fra generell kunnskap med henvisninger'})}`;
+  const g=el('goDocs'); if(g) g.onclick=e=>{ e.preventDefault(); show('docs'); el('vDocs').scrollIntoView({behavior:'smooth'}); }; }
+el('tAc').onchange=drawUsed;
+const modeSeg=LAB.seg(el('tMode'),Object.entries(MODES).map(([k,v])=>[k,v[0]]),'learn',v=>{ if(S&&!window.confirm(L({en:'End the current session and switch mode?',no:'Avslutte økten og bytte modus?'}))){ modeSeg.set(MODE); return; } if(S) endSession(false); MODE=v; drawTrain(); });
+
+/* ---------- kilder ---------- */
+let SRC=[];
+function drawSrc(list,regs,hl,easa){ SRC=list; easa=easa||[];
+  el('srcList').innerHTML= list.length? list.map((x,i)=>`<div class="sitem ${hl&&hl.includes(i+1)?'hl':''}" id="si${i+1}"><b>S${i+1} · ${esc(x.d.name)}</b><span class="meta">${esc(KN[x.d.kind]||'')}${x.d.rev?' · rev. '+esc(x.d.rev):''} · ${L({en:'page',no:'side'})} ${x.c.p}${x.c.s?' · '+esc(x.c.s):''}</span><blockquote>${esc(x.c.t.slice(0,900))}${x.c.t.length>900?'…':''}</blockquote>${x.d.blob?`<button class="btn" data-open="${i}">${L({en:'Open the page',no:'Åpne siden'})}</button>`:''}</div>`).join('')
+    : `<p class="note">${L({en:'No passages from your documents were used for this answer.',no:'Ingen avsnitt fra dokumentene dine ble brukt i dette svaret.'})}</p>`;
+  const eh= easa.length? `<div class="sitem easa"><b>${L({en:'EASA rules used',no:'EASA-regler brukt'})}</b><span class="meta">${L({en:'Birdbird EASA rules library: summaries in Birdbird’s own words, linked to the official text.',no:'Birdbirds EASA-regelbibliotek: sammendrag med Birdbirds egne ord, lenket til den offisielle teksten.'})}</span>${easa.map((x,i)=>`<div class="ei" id="se${i+1}"><div>E${i+1} · ${EASA.chip(x,i+1)}</div><span class="meta">${esc(x.title)} · ${esc(x.type)} · ${esc(EASA.rev(x,LAB.lang))}${x.verified?'':' · '+L({en:'not yet checked word for word',no:'ikke kontrollert ord for ord ennå'})}</span><p>${esc(EASA.sum(x,LAB.lang))}</p><span class="meta"><a href="${esc(x.url)}" target="_blank" rel="noopener">${L({en:'Open the official text',no:'Åpne den offisielle teksten'})} ↗</a> · <a href="${esc(x.eurlex)}" target="_blank" rel="noopener">EUR-Lex ↗</a></span></div>`).join('')}<span class="meta">${L({en:'Check the current revision through the link before you rely on it.',no:'Sjekk gjeldende revisjon via lenken før du stoler på det.'})}</span></div>` : '';
+  const rg=(regs||[]).filter(r=>!easa.some(x=>x.id.toUpperCase()===r.ref.toUpperCase()));
+  el('regList').innerHTML= eh + (rg.length? `<div class="sitem reg"><b>${L({en:'Regulations mentioned',no:'Regelverk nevnt'})}</b>${rg.map(r=>`<div>${esc(r.ref)} · <a href="${r.url}" target="_blank" rel="noopener">${esc(r.doc)}</a></div>`).join('')}<span class="meta">${L({en:'Open the current text and check the article yourself.',no:'Åpne gjeldende tekst og sjekk artikkelen selv.'})}</span></div>` : ''); }
+el('srcList').addEventListener('click',async e=>{ const b=e.target.closest('[data-open]'); if(!b) return; const x=SRC[+b.dataset.open]; openPage(x.d,x.c.p); });
+async function openPage(d,p){ el('mTitle').textContent=`${d.name} · ${L({en:'page',no:'side'})} ${p}`; el('mBody').innerHTML=`<div class="thinking">${L({en:'Opening…',no:'Åpner…'})}</div>`; el('modal').hidden=false;
+  try{ const blob=await getBlob(d.id); if(!blob) throw 0; const lib=await pdfjs(); const doc=await lib.getDocument({data:await blob.arrayBuffer()}).promise; const pg=await doc.getPage(p); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(2.2,1600/v0.width)}); const c=document.createElement('canvas'); c.width=vp.width; c.height=vp.height; await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise; el('mBody').innerHTML=''; el('mBody').appendChild(c); }
+  catch(e){ el('mBody').innerHTML=`<p class="note">${L({en:'The original page is not stored in this browser. The passage text is shown in the source panel.',no:'Originalsiden er ikke lagret i denne nettleseren. Teksten fra avsnittet vises i kildepanelet.'})}</p>`; } }
+el('mClose').onclick=()=>{ el('modal').hidden=true; el('mBody').innerHTML=''; }; el('modal').addEventListener('click',e=>{ if(e.target===el('modal')) el('mClose').onclick(); });
+function regsIn(t){ const out=[], seen=new Set(); REGS.forEach(([re,url,doc])=>{ (String(t).match(re)||[]).forEach(ref=>{ if(!seen.has(ref)){ seen.add(ref); const e=EASA.get(ref); out.push(e? {ref,url:e.url,doc:L({en:'EASA official text',no:'EASA offisiell tekst'})+' ('+e.revShort+')'} : {ref,url,doc}); } }); }); return out; }
+
+/* ---------- markdown + sitater ---------- */
+function md(s,nsrc,easa){ s=esc(s); const lines=s.split('\n'); let h='',ul=false,ol=false;
+  const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[S(\d{1,2})\]/g,(m,n)=> +n>=1&&+n<=nsrc? `<span class="cite" data-s="${n}">S${n}</span>` : `<span class="cite x" title="${L({en:'No such source: treat this as unverified',no:'Finnes ikke: behandle dette som ubekreftet'})}">S${n}?</span>`).replace(/\[GK\]/g,`<span class="cite x" title="${L({en:'General knowledge, not from your documents',no:'Generell kunnskap, ikke fra dokumentene dine'})}">${L({en:'general',no:'generelt'})}</span>`).replace(/\[E\d{1,2}\]/g,m=>EASA.cite(m,easa||[]));
+  for(const l of lines){ const m=l.match(/^\s*[-*•]\s+(.*)/), n=l.match(/^\s*\d+[.)]\s+(.*)/);
+    if(m){ if(!ul){ h+='<ul>'; ul=true; } h+='<li>'+inl(m[1])+'</li>'; continue; } if(ul){ h+='</ul>'; ul=false; }
+    if(n){ if(!ol){ h+='<ol>'; ol=true; } h+='<li>'+inl(n[1])+'</li>'; continue; } if(ol){ h+='</ol>'; ol=false; }
+    const hh=l.match(/^#{1,4}\s+(.*)/); if(hh){ h+='<h4>'+inl(hh[1])+'</h4>'; continue; }
+    if(l.trim()) h+='<p>'+inl(l)+'</p>'; }
+  if(ul) h+='</ul>'; if(ol) h+='</ol>'; return h; }
+el('log').addEventListener('click',e=>{ const c=e.target.closest('.cite[data-s]'); if(!c) return; const turn=c.closest('[data-t]'); const tr=S&&S.turns[+turn.dataset.t]; if(tr){ drawSrc(tr.src,tr.regs,[+c.dataset.s],tr.easa); } const t=el('si'+c.dataset.s); if(t) t.scrollIntoView({block:'nearest',behavior:'smooth'}); });
+
+/* ---------- økt ---------- */
+function tick(){ if(!S||S.paused) return; S.secs++; el('clock').textContent=Math.floor(S.secs/60)+':'+String(S.secs%60).padStart(2,'0'); }
+function startSession(){ if(!NAI.mode){ el('tNote').textContent=NAI.errText({code:'not_available'}); return; }
+  const ac=acOf(el('tAc').value); S={id:'s'+Date.now().toString(36),inst:INSTK,mode:MODE,ac:ac.id,acName:ac.name,topic:el('tTopic').value.trim(),started:Date.now(),secs:0,turns:[],grades:[],gaps:[],labs:[],paused:false,qn:0};
+  el('log').innerHTML=''; el('ans').hidden=false; el('tStart').hidden=true; el('tEnd').hidden=false; el('tPause').hidden=false; el('tSkip').hidden=MODE==='learn'; el('tNote').textContent='';
+  clearInterval(timer); timer=setInterval(tick,1000); drawSrc([],[]);
+  if(MODE==='learn'){ addA(L({en:`Hi. Ask me anything about the ${ac.name}${INSTK==='aviation'?' or about flying in general':''}. I answer from your documents and show the source on the right.`,no:`Hei. Spør meg om hva som helst om ${ac.name}${INSTK==='aviation'?' eller om flyging generelt':''}. Jeg svarer fra dokumentene dine og viser kilden til høyre.`}),{src:[],regs:[]}); el('tA').focus(); }
+  else turn(null,false); }
+function addQ(t){ const d=document.createElement('div'); d.className='q'; d.textContent=t; el('log').appendChild(d); d.scrollIntoView({block:'nearest'}); }
+function addA(html,tr){ const d=document.createElement('div'); d.className='a md'; const i=S.turns.length; d.dataset.t=i; S.turns.push(Object.assign({a:''},tr||{})); d.innerHTML=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span>${md(html,0)}`; el('log').appendChild(d); return d; }
+
+function pickEx(user){ const P=pool(S.inst,S.ac); const prevQ=[...S.turns].reverse().find(t=>t.question); const qtext=[S.topic,user||'',prevQ?prevQ.question:''].join(' ');
+  let ex= MODE==='learn'||user? search(qtext,6,P) : randomChunks(6,P,S.topic||(MODE==='rev'?revTopics().join(' '):''));
+  if(MODE!=='learn'&&user&&ex.length<4) ex=ex.concat(randomChunks(4-ex.length,P,qtext).filter(x=>!ex.some(y=>y.c===x.c)));
+  const fd=flightDoc(); if(fd.length&&!ex.some(x=>x.d.id===fd[0].id)) ex=[{d:fd[0],c:fd[0].chunks[0]}].concat(ex).slice(0,7);
+  return ex; }
+function pickEasa(user){ const prevQ=[...S.turns].reverse().find(t=>t.question); const t=[S.topic,user||'',prevQ?prevQ.question:''].join(' ');
+  return EASA.isRules(t)? EASA.search(t,4) : []; }
+function prompt(user,skip,ex,easa){
+  const I=INST[S.inst], ac=acOf(S.ac);
+  const srcTxt= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name} (${KN[x.d.kind]||'document'}${x.d.rev?', revision '+x.d.rev:''}), page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
+  const labs=Object.entries(LABS).map(([k,v])=>`${k}: ${v[1]} (${v[2]})`).join('; ');
+  const hist=S.turns.slice(-8).map(t=>(t.q?'PILOT: '+t.q.slice(0,1200)+'\n':'')+(t.a?'INSTRUCTOR: '+t.a.slice(0,1500):'')).join('\n');
+  const modeTxt={
+    learn:'MODE: Learn. Answer the pilot\'s question clearly and at the right depth, then end with ONE short follow-up question that checks understanding (put it last, on its own line, starting with "Check:").',
+    oral:`MODE: Oral examination. ${user||skip?'Grade the pilot\'s answer to your last question strictly but fairly (0-10, 7 = pass standard), say what was missing or wrong and give the correct answer with citations, then':'Greet the pilot in one sentence, then'} ask the next question. ONE question at a time, short and practical, increasing in depth when answers are good. Do not repeat a topic.`,
+    scen:`MODE: Scenario training. ${user||skip?'Give feedback on the pilot\'s decision (grade 0-10, 7 = sound and safe), with what an experienced pilot would do and why, citing the documents, then':'Set up a realistic scenario in this aircraft (phase of flight, weather, mass, what just happened) in 3-5 sentences, then'} move the scenario forward one step and ask what the pilot does now. Test decision-making, not only memory.`,
+    check:`MODE: Check preparation, like an EASA examiner conducting the oral part of a ${ckScope()[1]}. Scope: ${ckScope()[2]} ${user||skip?'Grade the answer (0-10, 7 = pass standard), say what was missing and give the correct answer with citations, then':'Greet the candidate in one sentence, then'} ask ONE short, practical, often scenario-based question at a time, increasing depth when answers are good, mixing topics and not repeating one.`,
+    rev:`MODE: Revision. Focus only on these weak topics from earlier sessions: ${revTopics().join('; ')||'(none recorded yet: pick core topics for this aircraft)'}. ${user||skip?'Grade the answer (0-10), correct it briefly with citations, then':''} ask the next question on a weak topic, rephrased from a different angle than before.`
+  }[MODE];
+  return `You are ${I.role}, working inside Birdbird Flight Intelligence. ${I.rules}
+Aircraft: ${ac.name}${ac.type?' ('+ac.type+')':''}. ${S.topic?'The pilot wants to focus on: '+S.topic+'.':''}
+Write in ${NAI.langName()} and keep aviation terms, speeds and checklist items in English. Be concrete and short: a few short paragraphs or a short list. This may be read aloud, so avoid tables.
+${modeTxt}
+
+SOURCES (excerpts from the pilot's own documents):
+${srcTxt}
+
+${easa&&easa.length? EASA.promptBlock(easa)+'\n\n' : 'EASA RULES: no entry from the Birdbird EASA rules library matched this question. If you state an EASA rule, name its exact ID, mark it [GK] and tell the pilot to check it in the current EASA Easy Access Rules.\n\n'}CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. A statement that is not supported by a source must be marked [GK] (general knowledge), and limitations, speeds, procedure steps and performance values must NEVER be given from general knowledge for this aircraft: say you cannot find them in the documents instead. Name regulations exactly (e.g. SERA.5015) when you use them.
+
+Virtual Lab simulations you may recommend when the pilot misunderstands a concept (only these keys): ${labs}.
+
+${hist?'CONVERSATION SO FAR:\n'+hist+'\n':''}${user?'PILOT NOW: '+String(user).slice(0,3000)+'\n(this may be dictated by speech recognition: ignore spelling)':skip?'PILOT NOW: (says they do not know)':''}
+
+Reply in this exact format: your answer for the pilot first. Then a line with only three dashes (---), then one JSON object on one line:
+{"grade": integer 0-10 or null (only when you graded an answer or decision), "topic": "short topic of what you graded or null", "gap": "short topic the pilot clearly does not know yet, or null", "lab": "one lab key from the list if it would really help, or null", "question": "the question you just asked the pilot, or null"}`; }
+function revTopics(){ return gapsAll().filter(g=>!S||g.ac===S.ac||!g.ac).slice(0,8).map(g=>g.t); }
+
+async function turn(user,skip){
+  if(!S) return; NAI.hush(); if(user) addQ(user); else if(skip) addQ(L({en:'I don’t know.',no:'Jeg vet ikke.'}));
+  const ex=pickEx(user), ea=pickEasa(user); const P=prompt(user,skip,ex,ea);
+  const d=addA('',{q:user||(skip?'(I don\'t know)':''),src:ex,regs:[],easa:ea}); const ti=+d.dataset.t;
+  d.innerHTML=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span><div class="thinking">${L({en:'Thinking…',no:'Tenker…'})}</div>`;
+  ctl=new AbortController(); setBusy(true); drawSrc(ex,[],null,ea);
+  const who=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span>`;
+  try{ const t=await NAI.text(P,{signal:ctl.signal,tier:'default',onText:({text})=>{ d.innerHTML=who+md(text.split(/\n-{3,}\s*\n?/)[0],ex.length,ea); }});
+    const [body,meta]=splitMeta(t); const tr=S.turns[ti]; tr.a=body; tr.regs=regsIn(body); tr.question=meta.question||null;
+    let extra='';
+    if(meta.grade!=null&&Number.isFinite(+meta.grade)&&(user||skip)){ const g=Math.max(0,Math.min(10,Math.round(+meta.grade))); S.grades.push({topic:String(meta.topic||'').slice(0,80)||((S.turns[ti-1]||{}).question||'').slice(0,60),score:g}); extra+=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
+    if(meta.gap){ const gp=String(meta.gap).slice(0,80); if(!S.gaps.some(x=>x.toLowerCase()===gp.toLowerCase())) S.gaps.push(gp); }
+    if(meta.lab&&LABS[meta.lab]){ const lb=LABS[meta.lab]; if(!S.labs.includes(meta.lab)) S.labs.push(meta.lab); extra+=`<div class="labgo">🧪 ${L({en:'See it in the lab:',no:'Se det i labben:'})} <a href="${lb[0]}" target="_blank" rel="noopener">${esc(T(lb[1]))} →</a> <span class="note">${L({en:'come back and I’ll ask you again',no:'kom tilbake, så spør jeg deg igjen'})}</span></div>`; S.pendingLab=meta.lab; }
+    d.innerHTML=who+md(body,ex.length,ea)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
+    saveSoon(); }
+  catch(e){ if(e&&e.text) d.innerHTML=who+md(e.text.split(/\n-{3,}/)[0],ex.length,ea); else d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
+  finally{ setBusy(false); d.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+}
+function splitMeta(t){ const m=t.match(/\n-{3,}\s*\n?\s*(\{[\s\S]*\})\s*$/); if(!m) return [t.replace(/\n-{3,}[\s\S]*$/,'').trim(),{}]; let o={}; try{ o=JSON.parse(m[1]); }catch(e){} return [t.slice(0,m.index).trim(),o]; }
+function setBusy(b){ el('tSend').disabled=el('tSkip').disabled=b; el('tStop').hidden=!b; }
+function send(){ if(!S){ if(MODE==='learn'&&el('tA').value.trim()){ const v=el('tA').value.trim(); startSession(); if(S){ el('tA').value=''; turn(v,false); } } return; } if(S.paused) togglePause(); const v=el('tA').value.trim(); if(!v) return; el('tA').value=''; turn(v,false); }
+let saveT=null; function saveSoon(){ clearTimeout(saveT); saveT=setTimeout(saveSes,1500); }
+async function saveSes(){ if(!S) return; const o={id:S.id,inst:S.inst,mode:S.mode,ac:S.ac,acName:S.acName,topic:S.topic,started:S.started,mins:Math.round(S.secs/60),grades:S.grades,gaps:S.gaps,labs:S.labs,report:S.report||null,
+  turns:S.turns.slice(-30).map(t=>({q:(t.q||'').slice(0,1500),a:(t.a||'').slice(0,2500),cites:(t.src||[]).map(x=>x.d.name+' p.'+x.c.p).concat((t.easa||[]).map(x=>EASA.label(x)))}))};
+  const i=SES.findIndex(x=>x.id===o.id); if(i>=0) SES[i]=o; else SES.unshift(o); await NSTORE.put('fises',o); }
+function togglePause(){ if(!S) return; S.paused=!S.paused; el('tPause').textContent=S.paused?L({en:'Resume',no:'Fortsett'}):L({en:'Pause',no:'Pause'}); if(S.paused) NAI.hush(); }
+async function endSession(report){ if(!S) return; clearInterval(timer); if(ctl) ctl.abort(); NAI.hush(); const s=S;
+  el('ans').hidden=MODE!=='learn'; el('tStart').hidden=false; el('tEnd').hidden=true; el('tPause').hidden=true; el('tStart').textContent=L({en:'Start a new session',no:'Start en ny økt'});
+  if(report&&s.turns.length>1&&NAI.mode){ const d=document.createElement('div'); d.className='a md report'; d.innerHTML=`<div class="thinking">${L({en:'Writing your report…',no:'Skriver rapporten…'})}</div>`; el('log').appendChild(d); d.scrollIntoView({block:'nearest'});
+    try{ const r=await NAI.json(`You are ${INST[s.inst].role}. Write a short end-of-session report for this ${MODES[s.mode][0]} session on the ${s.acName}, in ${NAI.langName()} (aviation terms in English).
+Grades given: ${JSON.stringify(s.grades)}. Weak topics noted: ${JSON.stringify(s.gaps)}.
+Transcript (shortened):
+${s.turns.slice(-16).map(t=>(t.q?'PILOT: '+t.q.slice(0,600)+'\n':'')+'INSTRUCTOR: '+(t.a||'').slice(0,800)).join('\n')}
+Reply with only JSON: {"summary":"2-3 sentences","strengths":["..."],"gaps":["short topic names the pilot should revise"],"next":"one concrete suggestion for the next session"}`,{tier:'default'});
+      s.report={summary:String(r.summary||''),strengths:(r.strengths||[]).map(String).slice(0,5),next:String(r.next||'')}; (r.gaps||[]).map(String).forEach(g=>{ if(!s.gaps.some(x=>x.toLowerCase()===g.toLowerCase())) s.gaps.push(g.slice(0,80)); });
+      d.innerHTML=reportHtml(s); }catch(e){ d.innerHTML=`<p class="note">${esc(NAI.errText(e))}</p>`; } }
+  S=s; await saveSes(); S=null;
+  const avg=s.grades.length? s.grades.reduce((a,g)=>a+g.score,0)/s.grades.length : null; if(avg!=null) NPROG.award('fi:'+s.mode,avg*10);
+  drawWelcome(); }
+function reportHtml(s){ const avg=s.grades.length? (s.grades.reduce((a,g)=>a+g.score,0)/s.grades.length) : null; const R=s.report||{};
+  return `<span class="who">${L({en:'Session report',no:'Øktrapport'})}</span><div class="kpis"><div class="kpi"><span>${L({en:'Time',no:'Tid'})}</span><b>${s.mins!=null?s.mins:Math.round(s.secs/60)} min</b></div><div class="kpi"><span>${L({en:'Graded answers',no:'Vurderte svar'})}</span><b>${s.grades.length}</b></div><div class="kpi"><span>${L({en:'Average',no:'Snitt'})}</span><b>${avg!=null?avg.toFixed(1)+'/10':'–'}</b><small>${avg==null?'':avg>=7?L({en:'Pass standard',no:'Bestått-nivå'}):L({en:'Below pass standard',no:'Under bestått-nivå'})}</small></div></div>
+   ${R.summary?`<p>${esc(R.summary)}</p>`:''}${R.strengths&&R.strengths.length?`<p><b>${L({en:'Good',no:'Bra'})}:</b> ${esc(R.strengths.join(' · '))}</p>`:''}${s.gaps.length?`<p><b>${L({en:'Revise',no:'Repeter'})}:</b> ${esc(s.gaps.join(' · '))}</p>`:''}
+   ${s.labs&&s.labs.length?`<p><b>${L({en:'Labs',no:'Labber'})}:</b> ${s.labs.map(k=>`<a href="${LABS[k][0]}">${esc(T(LABS[k][1]))}</a>`).join(' · ')}</p>`:''}${R.next?`<p><b>${L({en:'Next time',no:'Neste gang'})}:</b> ${esc(R.next)}</p>`:''}`; }
+
+el('tStart').onclick=startSession; el('tEnd').onclick=()=>endSession(true); el('tPause').onclick=togglePause;
+el('tSend').onclick=send; el('tSkip').onclick=()=>{ if(S) turn(null,true); }; el('tStop').onclick=()=>{ if(ctl) ctl.abort(); NAI.hush(); };
+el('tA').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+NAI.ptt(el('tTalk'),el('tA'),t=>{ if(S&&t) send(); },{lang:LAB.lang==='no'?'nb-NO':'en-GB',space:true});
+if(!NAI.sr) el('tTalk').hidden=true;
+// tilbake fra labben: spør igjen
+window.addEventListener('focus',()=>{ if(S&&S.pendingLab&&!el('tSend').disabled){ const k=S.pendingLab; S.pendingLab=null; turn(`(I have just worked through the ${LABS[k][1]} lab. Ask me one question to check I understand it now.)`,false); } });
+
+/* ---------- dokumentbibliotek ---------- */
+function docRow(d){ return `<li class="${d.old?'old':''}"><input type="checkbox" data-on="${d.id}" ${d.on!==false?'checked':''} aria-label="${esc(d.name)}"><span>${esc(d.name)}<small>${esc(KN[d.kind]||'')}${d.rev?' · rev. '+esc(d.rev):''} · ${d.pages} ${L({en:'pages',no:'sider'})}${d.old?' · '+L({en:'superseded',no:'erstattet'}):''}</small></span><span><select data-kind="${d.id}" aria-label="Type">${KINDS.map(([k,l])=>`<option value="${k}" ${d.kind===k?'selected':''}>${esc(l)}</option>`).join('')}</select> <button data-rev="${d.id}">${L({en:'Revision',no:'Revisjon'})}</button> <button data-old="${d.id}">${d.old?L({en:'Current',no:'Gjeldende'}):L({en:'Superseded',no:'Erstattet'})}</button> <button data-del="${d.id}" aria-label="Remove">✕</button></span></li>`; }
+function dropBox(ac){ return `<label class="drop" data-drop="${ac}"><input type="file" accept=".pdf,.txt,.md,.docx" multiple hidden data-file="${ac}"><b>${L({en:'Add documents',no:'Legg til dokumenter'})}</b> ${L({en:'PDF, Word or text. Drop them here or click.',no:'PDF, Word eller tekst. Slipp dem her eller klikk.'})}</label><div class="prog" data-prog="${ac}" hidden><i></i></div><span class="note" data-note="${ac}"></span>`; }
+function drawDocs(){ vdSync(); el('acs').innerHTML=ACS.map(a=>{ const ds=DOCS.filter(d=>d.ac===a.id); return `<div class="acbox"><div class="achead"><h3>${esc(a.name)} <span class="note">${esc(a.type||'')}</span></h3><span><button class="btn" data-train="${a.id}">${L({en:'Train on this aircraft',no:'Tren på dette flyet'})}</button> <button class="btn" data-acdel="${a.id}">${L({en:'Delete',no:'Slett'})}</button></span></div>${vdBlock(a)}<ul class="dl">${ds.map(docRow).join('')||`<li><span></span><span class="note">${L({en:'No documents yet. Start with the AFM or POH, then the QRH and your SOP.',no:'Ingen dokumenter ennå. Start med AFM eller POH, så QRH og SOP.'})}</span><span></span></li>`}</ul>${dropBox(a.id)}</div>`; }).join('');
+  const g=DOCS.filter(d=>d.ac==='gen'); el('genDocs').innerHTML=`<ul class="dl">${g.map(docRow).join('')}</ul>${dropBox('gen')}`; }
+const vD=el('vDocs');
+vD.addEventListener('change',e=>{ const t=e.target; const d=DOCS.find(x=>x.id===(t.dataset.on||t.dataset.kind)); if(t.dataset.file){ addFiles([...t.files],t.dataset.file); t.value=''; return; } if(!d) return; if(t.dataset.on) d.on=t.checked; if(t.dataset.kind) d.kind=t.value; putDoc(d); drawDocs(); });
+vD.addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return; const id=b.dataset.rev||b.dataset.old||b.dataset.del; const d=DOCS.find(x=>x.id===id);
+  if(b.dataset.rev&&d){ const v=window.prompt(L({en:'Revision or date of this document (as printed on it):',no:'Revisjon eller dato for dokumentet (slik det står på det):'}),d.rev||''); if(v!=null){ d.rev=v.trim().slice(0,40); putDoc(d); drawDocs(); } }
+  else if(b.dataset.old&&d){ d.old=!d.old; putDoc(d); drawDocs(); }
+  else if(b.dataset.del&&d){ if(!window.confirm(L({en:'Remove this document from the library?',no:'Fjerne dokumentet fra biblioteket?'}))) return; DOCS=DOCS.filter(x=>x!==d); delDoc(d.id); drawDocs(); }
+  else if(b.dataset.train){ el('tAc').innerHTML=ACS.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join(''); el('tAc').value=b.dataset.train; show('aircraft'); el('vTrain').scrollIntoView({behavior:'smooth'}); }
+  else if(b.dataset.acdel){ const a=ACS.find(x=>x.id===b.dataset.acdel); if(!a||ACS.length<2){ window.alert(L({en:'Keep at least one aircraft.',no:'Behold minst ett fly.'})); return; } if(!window.confirm(L({en:'Delete this aircraft profile and its documents?',no:'Slette flyprofilen og dokumentene?'}))) return; DOCS.filter(d=>d.ac===a.id).forEach(d=>delDoc(d.id)); DOCS=DOCS.filter(d=>d.ac!==a.id); ACS=ACS.filter(x=>x!==a); await NSTORE.del('fiac',a.id); drawDocs(); } });
+['dragenter','dragover'].forEach(ev=>vD.addEventListener(ev,e=>{ const z=e.target.closest('[data-drop]'); if(z){ e.preventDefault(); z.classList.add('on'); } }));
+['dragleave','drop'].forEach(ev=>vD.addEventListener(ev,e=>{ const z=e.target.closest('[data-drop]'); if(z){ e.preventDefault(); z.classList.remove('on'); if(ev==='drop'&&e.dataTransfer.files.length) addFiles([...e.dataTransfer.files],z.dataset.drop); } }));
+function guessKind(n){ n=n.toLowerCase(); return /qrh|emergency|abnormal/.test(n)?'qrh':/fcom/.test(n)?'fcom':/fctm/.test(n)?'fctm':/afm|poh|flight manual|handbook/.test(n)?'afm':/sop|standard operating/.test(n)?'sop':/checklist|sjekkliste/.test(n)?'chk':/profile/.test(n)?'prof':/limit/.test(n)?'lim':/easa|easy access|aip|sera|part-|regulation|om-|training manual/.test(n)?'ref':'other'; }
+async function addFiles(files,ac){ const q=s=>vD.querySelector(`[data-${s}="${ac}"]`); const pr=q('prog'), note=q('note'); pr.hidden=false; const done=[];
+  for(const f of files){ note.textContent=L({en:'Reading ',no:'Leser '})+f.name+'…';
+    try{ const r=await readFile(f,v=>{ pr.firstElementChild.style.width=Math.round(v*100)+'%'; }); const chars=r.chunks.reduce((a,c)=>a+c.t.length,0);
+      if(chars<200){ note.textContent=L({en:`${f.name}: almost no text found. It is probably a scanned PDF, which needs to be converted to text (OCR) first.`,no:`${f.name}: fant nesten ingen tekst. Det er trolig en skannet PDF, som må gjøres om til tekst (OCR) først.`}); continue; }
+      const id='fd'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); const isPdf=/\.pdf$/i.test(f.name);
+      const d={id,ac,name:f.name.replace(/\.(pdf|docx|txt|md)$/i,''),kind:ac==='gen'?'ref':guessKind(f.name),rev:'',old:false,on:true,pages:r.pages,chunks:r.chunks,added:Date.now(),blob:isPdf};
+      DOCS.push(d); putDoc(d); if(isPdf) putBlob(id,f); done.push(`${d.name} (${r.pages})`); }
+    catch(e){ note.textContent=L({en:`Could not read ${f.name}.`,no:`Klarte ikke å lese ${f.name}.`}); } }
+  pr.hidden=true; drawDocs(); const n2=vD.querySelector(`[data-note="${ac}"]`); if(done.length&&n2) n2.textContent=L({en:'Added: ',no:'Lagt til: '})+done.join(', ')+'. '+L({en:'Check the document type and add the revision.',no:'Sjekk dokumenttypen og legg inn revisjonen.'}); drawUsed(); }
+el('nAdd').onclick=async()=>{ const n=el('nAc').value.trim(); if(!n) return; const a={id:'ac'+Date.now().toString(36),name:n.slice(0,60),type:el('nType').value.trim().slice(0,60),created:Date.now()}; ACS.push(a); await NSTORE.put('fiac',a); el('nAc').value=el('nType').value=''; drawDocs(); };
+
+/* ---------- fremgang ---------- */
+function drawProg(){ const mins=SES.reduce((a,s)=>a+(s.mins||0),0), gr=SES.flatMap(s=>s.grades||[]); const avg=gr.length? gr.reduce((a,g)=>a+g.score,0)/gr.length : null; const G=gapsAll();
+  el('pk').innerHTML=`<div class="kpi"><span>${L({en:'Sessions',no:'Økter'})}</span><b>${SES.length}</b></div><div class="kpi"><span>${L({en:'Training time',no:'Treningstid'})}</span><b>${mins} min</b></div><div class="kpi"><span>${L({en:'Graded answers',no:'Vurderte svar'})}</span><b>${gr.length}</b></div><div class="kpi"><span>${L({en:'Average',no:'Snitt'})}</span><b>${avg!=null?avg.toFixed(1)+'/10':'–'}</b></div><div class="kpi"><span>${L({en:'Topics to revise',no:'Temaer å repetere'})}</span><b>${G.length}</b></div>`;
+  el('pGaps').innerHTML= G.length? G.map((g,i)=>`<button data-gap="${i}">${esc(g.t)}</button>`).join('') : `<span class="note">${L({en:'Nothing yet. Topics you struggle with show up here after a session.',no:'Ingenting ennå. Temaer du sliter med dukker opp her etter en økt.'})}</span>`;
+  el('pTab').innerHTML=`<tr><th>${L({en:'Date',no:'Dato'})}</th><th>${L({en:'Instructor',no:'Instruktør'})}</th><th>${L({en:'Mode',no:'Modus'})}</th><th>${L({en:'Aircraft',no:'Fly'})}</th><th>min</th><th>${L({en:'Average',no:'Snitt'})}</th><th></th></tr>`+SES.slice(0,40).map(s=>{ const a=(s.grades||[]).length? ((s.grades.reduce((x,g)=>x+g.score,0))/s.grades.length).toFixed(1) : '–'; return `<tr><td>${new Date(s.started).toLocaleDateString(LAB.lang==='no'?'nb-NO':'en-GB')}</td><td>${esc(L({en:INST[s.inst]?INST[s.inst].name:'',no:NOI[INST[s.inst]?INST[s.inst].name:'']||''}))}</td><td>${esc(T(s.mode==='brief'?'Briefing trainer':MODES[s.mode]?MODES[s.mode][0]:''))}</td><td>${esc(s.acName||'')}</td><td>${s.mins||0}</td><td>${a}</td><td><button class="btn" data-rep="${s.id}">${L({en:'Open',no:'Åpne'})}</button></td></tr>`; }).join(''); }
+el('vProg').addEventListener('click',async e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.gap!=null){ const g=gapsAll()[+b.dataset.gap]; if(!g) return; INSTK=INST[g.inst]?g.inst:'aircraft'; MODE='rev'; modeSeg.set('rev'); show(INSTK); if(g.ac&&ACS.some(a=>a.id===g.ac)) el('tAc').value=g.ac; el('tTopic').value=g.t; drawUsed(); el('vTrain').scrollIntoView({behavior:'smooth'}); }
+  if(b.dataset.rep){ const s=SES.find(x=>x.id===b.dataset.rep); if(!s) return; el('pRep').innerHTML=`<div class="a md" style="border-left:3px solid #1D4E9E;padding-left:14px;margin-top:10px">${reportHtml(s)}<details><summary>${L({en:'Transcript',no:'Utskrift'})}</summary>${(s.turns||[]).map(t=>(t.q?`<p><b>${L({en:'You',no:'Du'})}:</b> ${esc(t.q)}</p>`:'')+`<div>${md(t.a||'',0)}</div>${t.cites&&t.cites.length?`<p class="note">${L({en:'Sources',no:'Kilder'})}: ${esc(t.cites.join(' · '))}</p>`:''}`).join('')}</details></div>`; }
+});
+el('pExp').onclick=()=>{ const data={exported:new Date().toISOString(),aircraft:ACS,sessions:SES,documents:DOCS.map(d=>({name:d.name,ac:d.ac,kind:d.kind,rev:d.rev,old:!!d.old,pages:d.pages}))}; const b=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='birdbird-flight-intelligence.json'; document.body.appendChild(a); a.click(); a.remove(); el('pNote').textContent=L({en:'Export started. The document text itself is not included, only the list.',no:'Eksporten er startet. Selve dokumentteksten er ikke med, bare listen.'}); };
+el('pDel').onclick=async()=>{ if(!window.confirm(L({en:'Delete all aircraft profiles, sessions, progress and documents in Flight Intelligence? This cannot be undone.',no:'Slette alle flyprofiler, økter, fremgang og dokumenter i Flight Intelligence? Dette kan ikke angres.'}))) return;
+  for(const s of SES) await NSTORE.del('fises',s.id); for(const a of ACS) await NSTORE.del('fiac',a.id); DOCS.forEach(d=>delDoc(d.id)); DOCS=[]; SES=[]; await loadProfile(); drawProg(); drawWelcome(); el('pNote').textContent=L({en:'Deleted.',no:'Slettet.'}); };
+
+/* ---------- velkommen tilbake ---------- */
+function drawWelcome(){ const w=el('welcome'); const last=SES[0]; const G=gapsAll();
+  if(!last){ w.hidden=true; return; } w.hidden=false; const g=G[0];
+  w.innerHTML= g? `<span>${L({en:'Welcome back. Last time you found',no:'Velkommen tilbake. Sist syntes du'})} <b>${esc(g.t)}</b> ${L({en:'difficult. Would you like to review it?',no:'var vanskelig. Vil du repetere det?'})}</span><button class="btn pri" id="wGo">${L({en:'Review it now',no:'Repeter nå'})}</button>`
+    : `<span>${L({en:'Welcome back. Your last session:',no:'Velkommen tilbake. Siste økt:'})} ${esc(T(last.mode==='brief'?'Briefing trainer':MODES[last.mode]?MODES[last.mode][0]:''))}, ${esc(last.acName||'')}.</span>`;
+  const b=el('wGo'); if(b) b.onclick=()=>{ INSTK=INST[g.inst]?g.inst:'aircraft'; MODE='rev'; modeSeg.set('rev'); show(INSTK); if(g.ac&&ACS.some(a=>a.id===g.ac)) el('tAc').value=g.ac; el('tTopic').value=g.t; drawUsed(); el('vTrain').scrollIntoView({behavior:'smooth'}); }; }
+
+/* ---------- EASA-regelbibliotek ---------- */
+let ETOP='all';
+function eHtml(x){ const ask=NAI.mode&&window.FI_ASK? `<button type="button" data-eask="${esc(x.id)}">${L({en:'Ask the instructor',no:'Spør instruktøren'})}</button>` : '';
+  return `<article class="eitem"><div class="eh"><code>${esc(x.id)}</code><span class="et">${esc(x.type)}</span><span>${esc(x.part)}</span><span class="ev ${x.verified?'ok':'no'}">${x.verified? L({en:'Checked against the EASA text',no:'Kontrollert mot EASA-teksten'})+' · '+EASA.checked : L({en:'Not yet checked word for word',no:'Ikke kontrollert ord for ord ennå'})}</span></div>
+   <b>${esc(x.title)}</b><p>${esc(EASA.sum(x,LAB.lang))}</p>
+   <div class="el"><a href="${esc(x.url)}" target="_blank" rel="noopener">${L({en:'Open the official text',no:'Åpne den offisielle teksten'})} ↗</a><a href="${esc(x.eurlex)}" target="_blank" rel="noopener">EUR-Lex ↗</a><span class="note">${esc(EASA.rev(x,LAB.lang))}</span>${ask}</div></article>`; }
+function eFilter(q){ q=String(q||'').trim(); let L0=EASA.items.filter(x=>ETOP==='all'||x.topic.includes(ETOP)); if(!q) return L0;
+  const ws=q.toLowerCase().split(/\s+/).filter(Boolean); const hay=x=>(x.id+' '+x.title+' '+x.kw+' '+x.en+' '+x.no).toLowerCase();
+  const hit=L0.filter(x=>ws.every(w=>hay(x).includes(w))); if(hit.length) return hit;
+  return EASA.search(q,8).filter(x=>ETOP==='all'||x.topic.includes(ETOP)); }
+function drawEasaList(){ const q=el('eQ').value, list=eFilter(q);
+  el('eCount').textContent= q||ETOP!=='all'? L({en:`${list.length} of ${EASA.items.length} entries`,no:`${list.length} av ${EASA.items.length} oppføringer`}) : L({en:`${EASA.items.length} entries`,no:`${EASA.items.length} oppføringer`});
+  el('eList').innerHTML= list.length? list.map(eHtml).join('') : `<p class="note">${L({en:'Nothing in the library matches. Try another word, or search the official Easy Access Rules.',no:'Ingenting i biblioteket passer. Prøv et annet ord, eller søk i de offisielle Easy Access Rules.'})}</p>`; }
+function drawEasa(){ const A=EASA.sources.airops, R=EASA.sources.sera;
+  el('eQ').placeholder=L({en:'Search: alternate, final reserve, special VFR, CAT.OP.MPA.182…',no:'Søk: alternativ, final reserve, spesiell VFR, CAT.OP.MPA.182…'}); el('eQ').setAttribute('aria-label',L({en:'Search the EASA rules library',no:'Søk i EASA-regelbiblioteket'}));
+  el('eChecked').textContent=L({en:'Library last checked: ',no:'Biblioteket sist kontrollert: '})+EASA.checked;
+  el('eLive').innerHTML=L({en:'<b>Linked to EASA’s official rules (Easy Access Rules, Rev. 24).</b> Not a live feed — Birdbird checks for new revisions and updates the library. Each entry is a short summary in Birdbird’s own words with the rule ID, its revision and a link to the official text. The instructor cites these entries when you ask about minima, alternates, fuel or VMC and IFR rules. The official text, and your operations manual where it applies, always take precedence.',no:'<b>Lenket til EASAs offisielle regelverk (Easy Access Rules, Rev. 24).</b> Ikke en direkte strøm — Birdbird sjekker om det kommer nye revisjoner og oppdaterer biblioteket. Hver oppføring er et kort sammendrag med Birdbirds egne ord, med regel-ID, revisjon og lenke til den offisielle teksten. Instruktøren viser til disse når du spør om minima, alternativer, drivstoff eller VMC- og IFR-regler. Den offisielle teksten, og driftshåndboken der den gjelder, går alltid foran.'});
+  el('eTop').innerHTML=[['all',{en:'All',no:'Alle'}]].concat(Object.entries(EASA.topics)).map(([k,t])=>`<button type="button" data-et="${k}" class="${ETOP===k?'on':''}">${esc(L(t))}</button>`).join('');
+  el('eSrc').innerHTML=`<b>${L({en:'Official sources',no:'Offisielle kilder'})}</b><ul>
+   <li>${esc(A.name)}, ${esc(LAB.lang==='no'?A.revNo:A.rev)} (${esc(A.reg)}): <a href="${A.online}" target="_blank" rel="noopener">${L({en:'online publication',no:'nettversjon'})} ↗</a> · <a href="${A.ear}" target="_blank" rel="noopener">${L({en:'downloads',no:'nedlastinger'})} ↗</a> · <a href="${A.eurlex}" target="_blank" rel="noopener">EUR-Lex ↗</a></li>
+   <li>${esc(R.name)}, ${esc(LAB.lang==='no'?R.revNo:R.rev)} (${esc(R.reg)}): <a href="${R.online}" target="_blank" rel="noopener">${L({en:'online publication',no:'nettversjon'})} ↗</a> · <a href="${R.ear}" target="_blank" rel="noopener">${L({en:'downloads',no:'nedlastinger'})} ↗</a> · <a href="${R.eurlex}" target="_blank" rel="noopener">EUR-Lex ↗</a></li></ul>
+   <p style="margin:6px 0 0">${L({en:'“Open the official text” goes to the rule in EASA’s online Easy Access Rules, with its AMC and GM below it. If EASA moves a page, use the online publication link above. Entries marked “not yet checked word for word” describe the requirement but have not been compared with the text.',no:'«Åpne den offisielle teksten» går til regelen i EASAs Easy Access Rules på nett, med AMC og GM under. Hvis EASA flytter en side, bruk lenken til nettversjonen over. Oppføringer merket «ikke kontrollert ord for ord ennå» beskriver kravet, men er ikke sammenlignet med teksten.'})}</p>`;
+  drawEasaList(); }
+el('eQ').addEventListener('input',drawEasaList);
+el('eTop').addEventListener('click',e=>{ const b=e.target.closest('[data-et]'); if(!b) return; ETOP=b.dataset.et; el('eTop').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); drawEasaList(); });
+el('eList').addEventListener('click',e=>{ const b=e.target.closest('[data-eask]'); if(!b||!window.FI_ASK) return; const x=EASA.get(b.dataset.eask); if(x) window.FI_ASK(L({en:`Explain ${x.id} (${x.title}) and how I apply it in flight planning.`,no:`Forklar ${x.id} (${x.title}) og hvordan jeg bruker den i flyplanleggingen.`})); });
+window.FI_EASA={pick:q=>EASA.search(q,4),block:list=>EASA.promptBlock(list),render:(text,list)=>md(text,0,list)};
+
+/* ---------- språk ---------- */
+const NOI={'Instructor':'Instruktør','Aircraft Instructor':'Instruktør','SOP Instructor':'Instruktør','Aviation Instructor':'Instruktør'};
+const NOM={'An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Ask anything. The instructor explains, then checks your understanding with a follow-up question.':'Spør om hva som helst. Instruktøren forklarer, og sjekker forståelsen med et oppfølgingsspørsmål.','One question at a time, like an examiner. Each answer is graded 0–10 with the correct answer and the source.':'Ett spørsmål om gangen, som en eksaminator. Hvert svar får 0–10 med riktig svar og kilde.','A practical situation that unfolds step by step. You make the decisions and get feedback on each one.':'En praktisk situasjon som utvikler seg steg for steg. Du tar avgjørelsene og får tilbakemelding på hver.','Questions on the topics you found difficult before, until they stick.':'Spørsmål om temaene du syntes var vanskelige, til de sitter.'};
+LAB.add({},Object.assign({},NOI,{'Example setup':'Eksempeloppsett','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents. This is how your instructor can be set up for a type rating. →':'Studieplan, simulatorer for cockpitsystemene, 320 spørsmål, flashcards, eksamensmodus og en muntlig eksaminator som bruker dokumentene dine. Slik kan instruktøren din settes opp for en typerating. →',
+ 'Birdbird · Flight Intelligence':'Birdbird · Flight Intelligence','Learn':'Lær','Check preparation':'Kontrollforberedelse','An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Check':'Kontroll','Flight':'Tur','Oral exam':'Muntlig eksamen','Scenario':'Scenario','Revision':'Repetisjon',
+ 'Add your AFM, QRH and SOP, then learn, practise orals and work through scenarios with an instructor that answers from those documents. Every answer shows where it comes from.':'Legg inn AFM, QRH og SOP, og lær, øv på muntlig og jobb med scenarioer sammen med en instruktør som svarer fra dokumentene. Hvert svar viser hvor det kommer fra.',
+ 'Your aircraft, your SOP and the rules: systems, limitations, procedures, briefings, regulations and theory, from your own documents.':'Flyet ditt, SOP-en din og regelverket: systemer, begrensninger, prosedyrer, briefinger, regler og teori, fra dine egne dokumenter.','ask, learn, practise':'spør, lær, øv','Systems, limitations, normal and abnormal procedures, from your AFM, POH, FCOM and QRH.':'Systemer, begrensninger, normale og unormale prosedyrer, fra din AFM, POH, FCOM og QRH.','your aircraft':'ditt fly',
+ 'Briefings, flows, callouts and flight profiles from your operator’s SOP and checklists.':'Briefinger, flows, callouts og flygeprofiler fra operatørens SOP og sjekklister.','your operator':'din operatør',
+ 'EASA rules, IFR, meteorology, navigation, aerodynamics and flight preparation.':'EASA-regler, IFR, meteorologi, navigasjon, aerodynamikk og flyforberedelse.','the theory':'teorien',
+ 'My aircraft and documents':'Mine fly og dokumenter','Aircraft profiles, your documents and the aircraft data you have checked.':'Flyprofiler, dokumentene dine og flydataene du har kontrollert.','your library':'ditt bibliotek',
+ 'Training progress':'Treningsfremgang','EASA rules library':'EASA-regelbibliotek','Curated references to EASA’s official rules: alternates, planning minima, fuel, approach and VMC rules, each linked to the official text.':'Utvalgte henvisninger til EASAs offisielle regelverk: alternativer, planleggingsminima, drivstoff, innflyging og VMC-regler, hver lenket til den offisielle teksten.','browse the rules':'bla i reglene','EASA rules library · Rev. 24 (March 2026)':'EASA-regelbibliotek · Rev. 24 (mars 2026)','Briefing trainer':'Briefingtrener','Results from the labs, briefings, radio and simulator:':'Resultater fra labbene, briefingene, radio og simulator:','Progress →':'Fremgang →','Past sessions, grades, the topics to revise, and your data.':'Tidligere økter, karakterer, temaer å repetere og dataene dine.','where you stand':'hvor du står',
+ 'Aircraft':'Fly','Mode':'Modus','Topic (optional)':'Tema (valgfritt)','Session':'Økt','Pause':'Pause','Start':'Start','End session and report':'Avslutt økten med rapport','Speak the answers':'Les svarene høyt',
+ 'Type, or hold the talk button and speak…':'Skriv, eller hold inne snakkeknappen og snakk…','🎙 Hold to talk':'🎙 Hold for å snakke','Send':'Send','I don’t know':'Jeg vet ikke','Stop':'Stopp','Sources':'Kilder',
+ 'Every answer shows what it was built on. Click a citation to see the passage, and open the page to check it yourself. Verifying should never be a premium feature.':'Hvert svar viser hva det bygger på. Klikk på en kilde for å se avsnittet, og åpne siden for å sjekke selv. Å kunne verifisere skal aldri være en premiumfunksjon.',
+ 'No answer yet.':'Ikke noe svar ennå.',
+ 'Make one profile per aircraft variant and add its documents. Mark the type and revision of each document, and tick a document as superseded when a new revision arrives. Only add documents you are allowed to use.':'Lag én profil per flyvariant og legg til dokumentene. Merk type og revisjon på hvert dokument, og merk et dokument som erstattet når en ny revisjon kommer. Legg bare til dokumenter du har lov til å bruke.',
+ 'New aircraft profile':'Ny flyprofil','Type':'Type','Add aircraft':'Legg til fly','Import earlier Check preparation documents':'Hent tidligere dokumenter fra kontrollforberedelsen','General references':'Generelle referanser',
+ 'Documents that are not tied to one aircraft: EASA Easy Access Rules, the AIP, your ATO’s training manual.':'Dokumenter som ikke hører til ett fly: EASA Easy Access Rules, AIP, skolens treningsmanual.',
+ 'Where things are kept: the documents and their text stay in this browser (IndexedDB) and are never uploaded as files. When you ask a question, only the few passages that matter are sent to Claude with the question. Your aircraft profiles, sessions, grades and topics to revise are saved to your profile, so they are there when you come back.':'Hvor ting lagres: dokumentene og teksten blir i denne nettleseren (IndexedDB) og lastes aldri opp som filer. Når du spør, sendes bare de få avsnittene som betyr noe til Claude sammen med spørsmålet. Flyprofiler, økter, karakterer og temaer å repetere lagres på profilen din, så de er der når du kommer tilbake.',
+ 'Topics to revise':'Temaer å repetere','Sessions':'Økter','Export my data':'Eksporter dataene mine','Delete all Flight Intelligence data':'Slett alle Flight Intelligence-data','Close':'Lukk',
+ 'Voice is the browser’s own speech recognition and speech synthesis, so it works best in Chrome or Edge. Audio is never recorded or stored. The instructor is a training aid: formal competency assessment stays with your instructors and examiners, and the approved flight manual always takes precedence.':'Tale bruker nettleserens egen talegjenkjenning og talesyntese, så det virker best i Chrome eller Edge. Lyd blir aldri tatt opp eller lagret. Instruktøren er et treningshjelpemiddel: formell kompetansevurdering ligger hos instruktørene og eksaminatorene dine, og den godkjente flyhåndboken går alltid foran.'
+}));
+
+/* ---------- oppstart ---------- */
+function drawOffline(){ const o=el('offline'); if(o.hidden) return; const q=el('tA').value.trim();
+  o.innerHTML=`<h3>${L({en:'The live instructor is not connected on this copy of Birdbird',no:'Den levende instruktøren er ikke koblet til på denne kopien av Birdbird'})}</h3>
+  <p>${L({en:'The instructor runs on an AI service. It is switched on when Birdbird is opened in Claude or on a site where the service is set up. Your documents and progress stay in this browser, and everything below works fully without it.',no:'Instruktøren bruker en AI-tjeneste. Den er slått på når Birdbird åpnes i Claude eller på et nettsted der tjenesten er satt opp. Dokumentene og progresjonen din blir i denne nettleseren, og alt nedenfor virker fullt ut uten den.'})}</p>
+  ${q?`<p class="asked">${L({en:'Your question',no:'Spørsmålet ditt'})}: “${esc(q)}”. ${L({en:'The labs and the type rating trainer cover most theory questions.',no:'Labene og typeratingtreneren dekker de fleste teorispørsmål.'})}</p>`:''}
+  ${(()=>{ const m=q&&EASA.isRules(q)? EASA.search(q,4) : []; return m.length? `<div class="ematch" id="eMatch"><span>${L({en:'Matching rules in the EASA rules library:',no:'Regler som passer i EASA-regelbiblioteket:'})}</span><div>${m.map((x,i)=>EASA.chip(x,i+1)).join('')}</div></div>` : ''; })()}
+  <ul>
+   <li><button type="button" data-go="easa">${L({en:'EASA rules library',no:'EASA-regelbibliotek'})}</button>${L({en:'Alternates, planning minima, fuel, approach and VMC rules, each linked to the official text. Works without the AI.',no:'Alternativer, planleggingsminima, drivstoff, innflyging og VMC-regler, hver lenket til den offisielle teksten. Virker uten AI.'})}</li>
+   <li><button type="button" data-go="docs">${L({en:'My aircraft and documents',no:'Mine fly og dokumenter'})}</button>${L({en:'Add and organise your AFM, QRH and SOP now, ready for the instructor.',no:'Legg inn og ordne AFM, QRH og SOP nå, klare for instruktøren.'})}</li>
+   <li><a href="typerating.html">${L({en:'Type rating trainer: King Air B200',no:'Typeratingtrener: King Air B200'})}</a>${L({en:'Study plan, cockpit simulators, flashcards and the question trainer.',no:'Studieplan, cockpitsimulatorer, flashcards og spørsmålstreneren.'})}</li>
+   <li><a href="checkride.html">${L({en:'Check preparation',no:'Kontrollforberedelse'})}</a>${L({en:'What to have ready for a proficiency check or skill test.',no:'Hva du skal ha klart til en ferdighetskontroll eller praktisk prøve.'})}</li>
+   <li><a href="briefing.html">${L({en:'Briefings',no:'Briefinger'})}</a>${L({en:'Brief out loud and get a built-in check of the structure and numbers.',no:'Brief høyt og få en innebygd sjekk av struktur og tall.'})}</li>
+   <li><a href="lab.html">${L({en:'Virtual Lab',no:'Virtual Lab'})}</a>${L({en:'Interactive theory, from aerodynamics to jet systems.',no:'Interaktiv teori, fra aerodynamikk til jetsystemer.'})}</li>
+  </ul>`; }
+el('offline').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b){ show(b.dataset.go); el(b.dataset.go==='easa'?'vEasa':'vDocs').scrollIntoView({behavior:'smooth',block:'start'}); } });
+el('tA').addEventListener('input',()=>{ if(!NAI.mode&&!el('offline').hidden){ clearTimeout(window.__offT); window.__offT=setTimeout(drawOffline,300); } });
+NAI.ready.then(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'Instructor on',no:'Instruktør på'}) : ''; if(!m){ el('vTrain').classList.add('noai'); el('offline').hidden=false; drawOffline(); } });
+el('ans').hidden=false; LAB.start('fi'); LAB.onLang(()=>{ drawTrain(); drawDocs(); drawProg(); drawWelcome(); drawOffline(); if(!el('vEasa').hidden) drawEasa(); });
+Promise.all([loadDocs(),NSTORE.ready.then(loadProfile)]).then(async()=>{ await loadPacks(); try{ if(!localStorage.getItem('fi-imp-ck')){ localStorage.setItem('fi-imp-ck','1'); await autoImport(); } }catch(e){}
+  const qs=new URLSearchParams(location.search); if(qs.get('mode')&&MODES[qs.get('mode')]){ MODE=qs.get('mode'); modeSeg.set(MODE); } if(qs.get('topic')&&MODES.rev){ MODE='rev'; modeSeg.set('rev'); setTimeout(()=>{ el('tTopic').value=qs.get('topic').slice(0,200); try{ drawUsed(); }catch(e){} },0); } if(qs.get('pack')&&PACKS.some(p=>p.id===qs.get('pack'))){ el('flSel').value=qs.get('pack'); } drawTrain(); drawWelcome(); let v=null; try{ v=sessionStorage.getItem('fi-view'); }catch(e){} const h=(location.hash||'').slice(1); show(['aircraft','sop','aviation','docs','progress','easa'].includes(h)?h:(v||'aircraft'));
+  window.FI_ASK=q=>{ show('aircraft'); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.ready.then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); };
+  const q=new URLSearchParams(location.search).get('q'); if(q&&INST[INSTK]){ history.replaceState(null,'',location.pathname+location.hash); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.ready.then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); } });
+})();
+</script>
+</body>
+</html>

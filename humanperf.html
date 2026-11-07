@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="How a pilot takes in information, why performance falls when the workload is too high or too low, how the body clock and lost sleep wear down alertness,…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Attention, workload, error and fatigue</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#ipcv{height:250px}
+#atcv{height:440px}
+#ydcv{aspect-ratio:16/10;max-height:400px}
+#wlcv{aspect-ratio:16/9;max-height:420px}
+#fgcv{aspect-ratio:16/10;max-height:460px}
+#swcv{aspect-ratio:16/10;max-height:420px}
+#sacv{aspect-ratio:16/11;max-height:480px}
+#dacv{aspect-ratio:16/9;max-height:330px}
+#bscv{height:130px}
+@media (max-width:680px){#ipcv{height:470px}#atcv{height:340px}#ydcv,#wlcv,#fgcv,#swcv,#sacv,#dacv{aspect-ratio:auto}#ydcv{height:280px}#wlcv{height:300px}#fgcv{height:330px}#swcv{height:300px}#sacv{height:400px}#dacv{height:260px}}
+.rrow b{white-space:normal;text-align:right}
+#d1{white-space:nowrap}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.chk{display:flex;align-items:flex-start;gap:7px;font-size:13.5px;color:var(--ink);cursor:pointer;padding:3px 0;line-height:1.35}
+.chk input{accent-color:var(--magenta);margin:2px 0 0;flex:none}
+.tasks{display:flex;flex-direction:column;margin:2px 0 8px}
+.sw{display:flex;flex-direction:column;margin:2px 0 8px}
+.wmv{min-height:250px;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.wmv .clr{font-family:var(--f-mono);font-size:19px;line-height:1.55;color:#F2F5F7}
+.wmv .idle{color:#AEBBC5;font-size:15px}
+.wmv .bar{height:4px;background:#2A3742;border-radius:2px;overflow:hidden}
+.wmv .bar i{display:block;height:100%;background:#E3A6CB;width:100%}
+.wmv form{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 12px}
+.wmv label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:#AEBBC5}
+.wmv input{font-family:var(--f-mono);font-size:16px;padding:7px 8px;border-radius:3px;border:1px solid #3A4856;background:#18232C;color:#F2F5F7;width:100%}
+.wmv .res{font-family:var(--f-mono);font-size:13px}
+.wmv .res .y{color:#7FD19B}.wmv .res .n{color:#F19A93}
+.wmv .btn{align-self:flex-start}
+.tem3 .box{border-top-width:4px}
+.tem3 .box.th{border-top-color:var(--amber)}.tem3 .box.er{border-top-color:var(--chart-blue)}.tem3 .box.ua{border-top-color:var(--red)}
+.scen{font-size:15px;color:var(--ink);line-height:1.5}
+.scen p{color:var(--ink);font-size:15px;margin:0}
+.ladder{display:flex;flex-direction:column-reverse;gap:6px}
+.ladder button{display:flex;gap:12px;align-items:baseline;text-align:left;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:10px 12px;cursor:pointer;font-size:14px;color:var(--ink)}
+.ladder button b{font-family:var(--f-display);font-stretch:88%;font-size:17px;min-width:118px;white-space:nowrap}
+.ladder button.on{border-color:var(--magenta);box-shadow:inset 3px 0 0 var(--magenta)}
+.ladder button span{color:var(--ink-2)}
+.quote{font-family:var(--f-mono);font-size:14.5px;color:var(--ink);background:#F4F6F4;border-left:3px solid var(--magenta);padding:8px 12px;margin:8px 0 0}
+h3.sub{margin-top:8px}
+</style>
+</head>
+<body data-title="Attention, workload, error and fatigue">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Human factors</div>
+      <h1>Attention, workload, error and fatigue</h1>
+      <p>How a pilot takes in information, why performance falls when the workload is too high or too low, how the body clock and lost sleep wear down alertness, how crews catch threats and errors before they become an accident, and what the eye can and cannot do. Set in two-crew airline operations on an A320-family aircraft.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#info">Information processing</a><a href="#workload">Workload</a><a href="#fatigue">Fatigue</a><a href="#tem">Threat and error</a><a href="#vision">Vision</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="info">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Information processing and attention</h2>
+    <p class="lead">Everything you know about the state of the aircraft arrives through the senses and then has to pass a narrow bottleneck: attention and working memory. Long-term memory and well-practised skills can run partly outside that bottleneck, which is why an experienced pilot can fly and talk at the same time. That works only until the demand rises above what the bottleneck can carry.</p>
+    <div class="paper"><canvas id="ipcv" aria-label="Information processing model from stimuli to action"></canvas></div>
+    <h3 class="sub">The attention budget</h3>
+    <p class="lead">Choose a phase of flight and the tasks that are running. Each task takes a share of a limited attention capacity. When the demand is higher than the capacity, something is not attended to. What matters is which task that is.</p>
+    <div class="split">
+      <div class="paper"><canvas id="atcv" aria-label="Tasks that get attention and tasks that are dropped"></canvas></div>
+      <div class="panel">
+        <div class="grp">Phase of flight</div><div id="aPh"></div>
+        <div class="grp">When demand exceeds capacity</div><div id="aSt"></div>
+        <div id="aCtl"></div>
+        <div class="grp">Tasks running now</div><div class="tasks" id="aTasks"></div>
+        <div class="ro">
+          <div class="rrow"><span>Total demand</span><b id="a1"></b></div>
+          <div class="rrow"><span>Capacity</span><b id="a2"></b></div>
+          <div class="rrow"><span>Spare capacity</span><b id="a3"></b></div>
+          <div class="rrow"><span>Not attended</span><b id="a4"></b></div>
+          <div class="rrow"><span>Situational awareness</span><b id="a5"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout blue" id="ax"></p>
+    <h3 class="sub">Working memory: the read-back test</h3>
+    <div class="split">
+      <div class="view wmv" id="wmShow"></div>
+      <div class="panel">
+        <p class="note">A clearance is shown once, for about as long as it takes to say it. Then it disappears and you write down what you remember. Try the long one without writing anything down while it is shown.</p>
+        <div class="grp">Clearance length</div><div id="wmLen"></div>
+        <div class="btns" style="margin:10px 0"><button class="btn pri" id="wmGo">New clearance</button></div>
+        <div class="ro">
+          <div class="rrow"><span>Last result</span><b id="w1">–</b></div>
+          <div class="rrow"><span>Best short / medium / long</span><b id="w2">–</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">Sensory memory and perception</b><p>Each sense holds a raw copy for a moment: about half a second for vision, a few seconds for hearing. That is why you can still catch the end of a call you were not listening to. Perception then gives the input a meaning, and it uses what you expect. A pilot who expects “cleared to land” can hear it in a call that said something else.</p></div>
+      <div class="box"><b class="t">Working memory and chunking</b><p>Working memory holds roughly 7 ± 2 unrelated items, and they fade in about 20 seconds unless you rehearse them. Chunking stretches the limit: “one two seven decimal eight five five” is six items, “127.855” said as two groups is closer to two. Writing the clearance down is the most reliable chunking of all.</p></div>
+      <div class="box"><b class="t">Long-term memory and skills</b><p>Long-term memory holds knowledge (semantic), experiences (episodic) and motor programmes (procedural skills). A well-practised skill runs with little attention, which frees capacity. The price is that under stress an old habit can take over, for example the procedure from a previous type.</p></div>
+      <div class="box"><b class="t">Situational awareness</b><p>A common model has three levels: perceive what is going on (level 1), understand what it means (level 2), and project where it is going (level 3). Spare capacity is what makes level 3 possible. Most losses of awareness start at level 1: the information was there, but nobody looked at it.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="workload">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Arousal, workload and startle</h2>
+    <p class="lead">Performance is best at a medium level of arousal. Too little and attention wanders; too much and attention narrows, working memory shrinks and habits take over. The best level is lower for a complex or unfamiliar task than for a simple, well-practised one. This inverted U is known as the Yerkes–Dodson relationship.</p>
+    <div class="split">
+      <div class="paper"><canvas id="ydcv" aria-label="Performance against arousal for a simple and a complex task"></canvas></div>
+      <div class="panel">
+        <div class="grp">Task</div><div id="ydTask"></div>
+        <div id="ydCtl"></div>
+        <div class="ro">
+          <div class="rrow"><span>Performance</span><b id="y1"></b></div>
+          <div class="rrow"><span>State</span><b id="y2"></b></div>
+        </div>
+        <p class="callout" id="ydx"></p>
+      </div>
+    </div>
+    <h3 class="sub">Workload against capacity through a flight</h3>
+    <p class="lead">The workload of a sector is uneven: high around take-off and landing, low in cruise. Capacity is what you have available, and it falls with fatigue. Automation lowers the workload of flying, but a late change can make it rise at the worst moment, and a sudden event can take capacity away just when it is needed.</p>
+    <div class="split">
+      <div class="paper"><canvas id="wlcv" aria-label="Workload and capacity through the phases of a flight"></canvas></div>
+      <div class="panel">
+        <div class="grp">Automation</div><div id="wlAuto"></div>
+        <div class="grp">Event</div><div id="wlEv"></div>
+        <div id="wlCtl"></div>
+        <div class="ro">
+          <div class="rrow"><span>Peak workload</span><b id="l1"></b></div>
+          <div class="rrow"><span>Smallest spare capacity</span><b id="l2"></b></div>
+          <div class="rrow"><span>Share of the flight over capacity</span><b id="l3"></b></div>
+          <div class="rrow"><span>Share of the flight in underload</span><b id="l4"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout blue" id="wlx"></p>
+    <div class="cols">
+      <div class="box"><b class="t">Startle and surprise</b><p>Startle is a reflex to a sudden, intense stimulus such as a bang or a loud warning: heart rate jumps, muscles tense, and thinking stops for a few seconds. Surprise is cognitive: what happens does not match what you expected, and you need time to rebuild the picture. Together they can take away capacity for 30 seconds or more, which is a long time at low height.</p></div>
+      <div class="box"><b class="t">Managing a startle</b><p>Many operators train a short reset: take your hands off anything you were about to do, breathe, look at the attitude and the flight path, say what you see, and only then act. Flying the aircraft first is always right; the checklist can wait a few seconds.</p></div>
+      <div class="box"><b class="t">Underload</b><p>A long cruise at night is low workload, low arousal and a low point of the body clock at the same time. Vigilance falls, and a slowly developing problem such as a fuel imbalance or a wrong FMS entry can go unnoticed. Planned cross-checks and short conversations about the flight help keep monitoring alive.</p></div>
+      <div class="box"><b class="t">Managing workload</b><p>Plan and brief in quiet phases, so the busy phases only execute the plan. Prioritise (fly, navigate, communicate, manage), delegate clearly between PF and PM, and choose the level of automation that lowers the workload right now. Ask ATC for time when you need it.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="fatigue">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Circadian rhythm, sleep and fatigue</h2>
+    <p class="lead">Alertness is shaped by two processes. Sleep pressure builds up for every hour you are awake and is only removed by sleep. The body clock adds a daily wave with its low point in the early morning and a smaller dip after lunch. Plan a day below and see where the duty falls on the curve.</p>
+    <div class="split">
+      <div class="paper"><canvas id="fgcv" aria-label="Alertness over a day, with the duty period and the window of circadian low"></canvas></div>
+      <div class="panel">
+        <div id="fCtl"></div>
+        <div class="grp">Rest during the day</div><div id="fRest"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Sleep debt</span><b id="f1"></b></div>
+          <div class="rrow"><span>Awake at end of duty</span><b id="f2"></b></div>
+          <div class="rrow"><span>Duty inside the WOCL</span><b id="f3"></b></div>
+          <div class="rrow"><span>Lowest alertness on duty</span><b id="f4"></b></div>
+          <div class="rrow"><span>Alertness at end of duty</span><b id="f5"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout" id="fx"></p>
+    <div class="cols">
+      <div class="box"><b class="t">Window of circadian low</b><p>EASA flight time limitations define the window of circadian low (WOCL) as 02:00 to 05:59 in the time zone you are acclimatised to. Body temperature and alertness are lowest then, and reaction times are longest. Duties that touch the WOCL get shorter limits.</p></div>
+      <div class="box"><b class="t">Sleep debt</b><p>Sleeping 5 to 6 hours for a few nights builds a debt that is felt less than it is measured: people consistently rate themselves as more alert than their performance shows. Only sleep pays the debt back, and it usually takes more than one good night. Caffeine hides the sleep pressure for a few hours but does not remove it.</p></div>
+      <div class="box"><b class="t">Fatigue compared with alcohol</b><p>A well-known study found that after about 17 hours awake, performance on simple tasks was similar to a blood alcohol concentration of about 0.05 %, and after about 24 hours similar to about 0.1 %. Fatigue is an impairment, not a matter of attitude.</p></div>
+      <div class="box"><b class="t">Naps and controlled rest</b><p>A short nap of about 20 to 30 minutes refreshes without much grogginess. Longer naps reach deep sleep, and waking from it brings sleep inertia: slow thinking for 15 to 30 minutes. A 90-minute nap covers a full sleep cycle and is a good preparation for a night duty. Controlled rest on the flight deck is planned to stay short for the same reason.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="tem">
+    <div class="eyebrow">4 · Drill</div>
+    <h2>Threat and error management and CRM</h2>
+    <p class="lead">Threat and error management (TEM) accepts that threats will appear and that crews will make errors. Safety comes from anticipating the threats, catching the errors, and recovering from any undesired aircraft state before it becomes an incident. The three categories are not about blame; they decide what kind of countermeasure works.</p>
+    <div class="cols tem3">
+      <div class="box th"><b class="t">Threats</b><p>Events or conditions outside the crew’s influence that increase complexity and must be managed: weather, a late runway change, an MEL item, a busy airport, terrain, a similar call sign, a time pressure from the schedule. Some are expected and can be briefed; some arrive without warning; some are latent, built into the system.</p></div>
+      <div class="box er"><b class="t">Errors</b><p>Actions or inactions by the crew that lead away from what was intended: handling errors (wrong FCU selection), procedural errors (a skipped checklist item, a wrong MCDU entry) and communication errors (a misheard clearance). An error that is caught in time has no consequence.</p></div>
+      <div class="box ua"><b class="t">Undesired aircraft states</b><p>A position, speed, attitude or configuration that reduces the safety margin: an altitude bust, a speed well above target, an unstable approach, a wrong taxiway or a runway incursion. The aircraft is now in the wrong state, and the first job is to fix the state, not to find out who caused it.</p></div>
+    </div>
+    <h3 class="sub">The Swiss-cheese model</h3>
+    <p class="lead">Each layer of defence has holes. Latent conditions (a weak roster, an unclear procedure, a training gap) make the holes bigger long before the flight. Active failures by the crew open the last ones. An accident needs the holes to line up. Degrade layers and watch how many hazards get through.</p>
+    <div class="split">
+      <div class="paper"><canvas id="swcv" aria-label="Swiss-cheese model with five layers of defence and hazard trajectories"></canvas></div>
+      <div class="panel">
+        <div id="swCtl"></div>
+        <div class="grp">Degraded layers</div>
+        <div class="sw" id="swChk"></div>
+        <div class="ro">
+          <div class="rrow"><span>Chance one hazard gets through</span><b id="s1"></b></div>
+          <div class="rrow"><span>Hazards through (of 4000)</span><b id="s2"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout blue" id="swx"></p>
+    <h3 class="sub">Scenario drill</h3>
+    <p class="lead">Eight short A320 situations. First decide whether it is a threat, an error or an undesired aircraft state. Then choose the best countermeasure.</p>
+    <div id="drill"></div>
+    <h3 class="sub">Speaking up: the assertiveness ladder</h3>
+    <p class="lead">Night ILS, captain flying. Passing 1500 ft the speed is VAPP + 15 kt and the aircraft is still in CONF 2. At this rate it will not be stabilised by 1000 ft. You are the first officer. Climb the ladder only as far as you need to, and know where the top is before you start.</p>
+    <div class="split">
+      <div class="box" id="ladTxt"></div>
+      <div class="ladder" id="ladder"></div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">Briefings that work</b><p>A good briefing names the two or three threats of today and says what the crew will do about them: “If we are not stable by 1000 ft, we go around.” Reading the chart aloud is not a briefing. The plan agreed in a quiet phase is what lets either pilot recognise a deviation later.</p></div>
+      <div class="box"><b class="t">Cross-check and callouts</b><p>Every FCU and MCDU change is announced and checked by the other pilot against the clearance, and FMA changes are called out. The point is not distrust: two people checking the same thing catch errors that one person cannot see in their own work.</p></div>
+      <div class="box"><b class="t">Authority gradient</b><p>If the gradient is too steep, the first officer does not speak up; if it is too flat, nobody decides. A captain who invites challenge in the briefing (“tell me if you see anything you don’t like”) makes the ladder much shorter for the first officer.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="vision">
+    <div class="eyebrow">5 · Interactive</div>
+    <h2>Vision and the limits of see-and-avoid</h2>
+    <p class="lead">An aircraft on a collision course stays at the same place in the windscreen and simply grows. It does not move across the field of view, so peripheral vision, which is good at movement, does not catch it. Set up an encounter and compare the time you have with the time a classic estimate says you need.</p>
+    <div class="split">
+      <div class="paper"><canvas id="sacv" aria-label="Encounter geometry seen from above, and the time line from detection to collision"></canvas></div>
+      <div class="panel">
+        <div class="grp">Geometry</div><div id="saGeo"></div>
+        <div id="saTgt"></div>
+        <div class="grp">Conditions</div><div id="saCond"></div>
+        <div id="saCtl"></div>
+        <div class="ro">
+          <div class="rrow"><span>Closure speed</span><b id="v1"></b></div>
+          <div class="rrow"><span>Typical detection range</span><b id="v2"></b></div>
+          <div class="rrow"><span>Time from detection to collision</span><b id="v3"></b></div>
+          <div class="rrow"><span>Time needed to see and avoid</span><b id="v4"></b></div>
+          <div class="rrow"><span>Margin</span><b id="v5"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout" id="sax"></p>
+    <h3 class="sub">Night vision and dark adaptation</h3>
+    <div class="split">
+      <div class="paper"><canvas id="dacv" aria-label="Dark adaptation curve: sensitivity of cones and rods over time in the dark"></canvas></div>
+      <div class="panel">
+        <div class="grp">Light on the flight deck</div><div id="daLight"></div>
+        <div id="daCtl"></div>
+        <div class="ro">
+          <div class="rrow"><span>Sensitivity compared with daylight-adapted</span><b id="d1"></b></div>
+          <div class="rrow"><span>Cells doing the work</span><b id="d2"></b></div>
+          <div class="rrow"><span>Colour vision</span><b id="d3"></b></div>
+          <div class="rrow"><span>How to look</span><b id="d4"></b></div>
+        </div>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">The blind spot</b><p>Where the optic nerve leaves the eye there are no receptors. With both eyes open each eye covers the other’s gap, but a windscreen pillar or one closed eye can hide a whole aircraft. Close your left eye, look at the cross with your right eye and move slowly towards or away from the screen. At some distance the dot disappears.</p><div class="paper" style="margin-top:10px"><canvas id="bscv" aria-label="Blind spot test: a cross and a dot"></canvas></div></div>
+      <div class="box"><b class="t">Empty-field myopia</b><p>With nothing to focus on, such as a clear blue sky above a haze layer or a dark night, the eye relaxes to a focus about 1 to 2 m away. Distant aircraft then go unseen even when you are looking. Focus briefly on something far away, such as a cloud, the ground or the wingtip, before you scan.</p></div>
+      <div class="box"><b class="t">Scanning</b><p>The eye only sees sharply in a narrow cone of a few degrees. A useful scan moves in steps of about 10 degrees and stops for about a second in each step, because the eye cannot detect a small target while it is moving. Sweeping the eyes across the sky sees almost nothing.</p></div>
+      <div class="box"><b class="t">Cones and rods</b><p>Cones in the centre of the eye give sharp, coloured daylight vision. Rods, spread around it, are far more sensitive but colour-blind and have no rods in the very centre. At night an object can disappear when you look straight at it, and reappear when you look slightly to one side.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">6 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. The attention budget, the workload curves and the arousal curve are qualitative illustrations, not measurements. The alertness curve is a simplified two-process model (homeostatic sleep pressure plus a circadian wave) on an arbitrary scale, for an average person acclimatised to local time; individual needs and rhythms vary widely. Detection ranges and reaction times are typical teaching values. Nothing here replaces the EASA flight time limitations, your operator’s FTL scheme and procedures, or medical advice.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'Attention, workload, error and fatigue':'Oppmerksomhet, arbeidsbelastning, feil og tretthet','Birdbird Virtual Lab · Human factors':'Birdbird Virtual Lab · Menneskelige faktorer',
+ 'How a pilot takes in information, why performance falls when the workload is too high or too low, how the body clock and lost sleep wear down alertness, how crews catch threats and errors before they become an accident, and what the eye can and cannot do. Set in two-crew airline operations on an A320-family aircraft.':'Hvordan en flyger tar inn informasjon, hvorfor prestasjonen faller når arbeidsbelastningen er for høy eller for lav, hvordan døgnrytmen og tapt søvn sliter ned årvåkenheten, hvordan besetninger fanger opp trusler og feil før de blir en ulykke, og hva øyet kan og ikke kan. Satt i flerpilotdrift i flyselskap med et fly i A320-familien.',
+ 'Information processing':'Informasjonsbehandling','Workload':'Arbeidsbelastning','Fatigue':'Tretthet','Threat and error':'Trusler og feil','Vision':'Syn','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Drill':'4 · Drill','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt','Check':'Sjekk',
+ // 1
+ 'Information processing and attention':'Informasjonsbehandling og oppmerksomhet',
+ 'Everything you know about the state of the aircraft arrives through the senses and then has to pass a narrow bottleneck: attention and working memory. Long-term memory and well-practised skills can run partly outside that bottleneck, which is why an experienced pilot can fly and talk at the same time. That works only until the demand rises above what the bottleneck can carry.':'Alt du vet om flyets tilstand, kommer inn gjennom sansene og må så gjennom en trang flaskehals: oppmerksomheten og arbeidsminnet. Langtidsminnet og godt innøvde ferdigheter kan delvis gå utenom flaskehalsen, og derfor kan en erfaren flyger fly og snakke samtidig. Det virker bare til kravene blir større enn det flaskehalsen kan ta.',
+ 'The attention budget':'Oppmerksomhetsbudsjettet',
+ 'Choose a phase of flight and the tasks that are running. Each task takes a share of a limited attention capacity. When the demand is higher than the capacity, something is not attended to. What matters is which task that is.':'Velg en fase av flygingen og oppgavene som pågår. Hver oppgave tar en del av en begrenset oppmerksomhetskapasitet. Når kravet er større enn kapasiteten, er det noe som ikke får oppmerksomhet. Det som betyr noe, er hvilken oppgave det er.',
+ 'Phase of flight':'Fase av flygingen','When demand exceeds capacity':'Når kravet overstiger kapasiteten','Tasks running now':'Oppgaver som pågår nå',
+ 'Total demand':'Samlet krav','Capacity':'Kapasitet','Spare capacity':'Ledig kapasitet','Not attended':'Får ikke oppmerksomhet','Situational awareness':'Situasjonsforståelse',
+ 'Working memory: the read-back test':'Arbeidsminnet: tilbakelesingstesten',
+ 'A clearance is shown once, for about as long as it takes to say it. Then it disappears and you write down what you remember. Try the long one without writing anything down while it is shown.':'En klarering vises én gang, omtrent så lenge det tar å si den. Så forsvinner den, og du skriver ned det du husker. Prøv den lange uten å notere noe mens den vises.',
+ 'Clearance length':'Klareringens lengde','New clearance':'Ny klarering','Last result':'Siste resultat','Best short / medium / long':'Beste kort / middels / lang',
+ 'Sensory memory and perception':'Sensorisk minne og persepsjon',
+ 'Each sense holds a raw copy for a moment: about half a second for vision, a few seconds for hearing. That is why you can still catch the end of a call you were not listening to. Perception then gives the input a meaning, and it uses what you expect. A pilot who expects “cleared to land” can hear it in a call that said something else.':'Hver sans holder en rå kopi et øyeblikk: rundt et halvt sekund for synet, noen sekunder for hørselen. Derfor kan du fortsatt få med deg slutten av et anrop du ikke lyttet til. Persepsjonen gir så inntrykket en mening, og den bruker det du forventer. En flyger som venter «cleared to land», kan høre det i et anrop som sa noe annet.',
+ 'Working memory and chunking':'Arbeidsminne og gruppering',
+ 'Working memory holds roughly 7 ± 2 unrelated items, and they fade in about 20 seconds unless you rehearse them. Chunking stretches the limit: “one two seven decimal eight five five” is six items, “127.855” said as two groups is closer to two. Writing the clearance down is the most reliable chunking of all.':'Arbeidsminnet holder omtrent 7 ± 2 elementer som ikke henger sammen, og de blekner på rundt 20 sekunder om du ikke repeterer dem. Gruppering strekker grensen: «en to sju desimal åtte fem fem» er seks elementer, «127,855» sagt som to grupper er nærmere to. Å skrive ned klareringen er den sikreste grupperingen av alle.',
+ 'Long-term memory and skills':'Langtidsminne og ferdigheter',
+ 'Long-term memory holds knowledge (semantic), experiences (episodic) and motor programmes (procedural skills). A well-practised skill runs with little attention, which frees capacity. The price is that under stress an old habit can take over, for example the procedure from a previous type.':'Langtidsminnet rommer kunnskap (semantisk), opplevelser (episodisk) og motoriske programmer (prosedyreferdigheter). En godt innøvd ferdighet går med lite oppmerksomhet, og det frigjør kapasitet. Prisen er at en gammel vane kan ta over under stress, for eksempel prosedyren fra en tidligere flytype.',
+ 'A common model has three levels: perceive what is going on (level 1), understand what it means (level 2), and project where it is going (level 3). Spare capacity is what makes level 3 possible. Most losses of awareness start at level 1: the information was there, but nobody looked at it.':'En vanlig modell har tre nivåer: oppfatte hva som skjer (nivå 1), forstå hva det betyr (nivå 2) og se hvor det er på vei (nivå 3). Det er ledig kapasitet som gjør nivå 3 mulig. De fleste tap av situasjonsforståelse starter på nivå 1: informasjonen var der, men ingen så på den.',
+ // 2
+ 'Arousal, workload and startle':'Aktivering, arbeidsbelastning og skvettreaksjon',
+ 'Performance is best at a medium level of arousal. Too little and attention wanders; too much and attention narrows, working memory shrinks and habits take over. The best level is lower for a complex or unfamiliar task than for a simple, well-practised one. This inverted U is known as the Yerkes–Dodson relationship.':'Prestasjonen er best ved et middels aktiveringsnivå. For lite, og oppmerksomheten vandrer; for mye, og oppmerksomheten snevres inn, arbeidsminnet krymper og vanene tar over. Det beste nivået er lavere for en kompleks eller ukjent oppgave enn for en enkel, godt innøvd en. Denne omvendte U-en kalles Yerkes–Dodson-sammenhengen.',
+ 'Task':'Oppgave','Performance':'Prestasjon','State':'Tilstand',
+ 'Workload against capacity through a flight':'Arbeidsbelastning mot kapasitet gjennom en flyging',
+ 'The workload of a sector is uneven: high around take-off and landing, low in cruise. Capacity is what you have available, and it falls with fatigue. Automation lowers the workload of flying, but a late change can make it rise at the worst moment, and a sudden event can take capacity away just when it is needed.':'Arbeidsbelastningen på en etappe er ujevn: høy rundt avgang og landing, lav i marsj. Kapasiteten er det du har til rådighet, og den faller med tretthet. Automatikk senker belastningen ved å fly, men en sen endring kan få den til å stige i det verst tenkelige øyeblikket, og en plutselig hendelse kan ta bort kapasitet akkurat når den trengs.',
+ 'Automation':'Automatikk','Event':'Hendelse','Peak workload':'Høyeste belastning','Smallest spare capacity':'Minste ledige kapasitet','Share of the flight over capacity':'Andel av flygingen over kapasitet','Share of the flight in underload':'Andel av flygingen med underbelastning',
+ 'Startle and surprise':'Skvettreaksjon og overraskelse',
+ 'Startle is a reflex to a sudden, intense stimulus such as a bang or a loud warning: heart rate jumps, muscles tense, and thinking stops for a few seconds. Surprise is cognitive: what happens does not match what you expected, and you need time to rebuild the picture. Together they can take away capacity for 30 seconds or more, which is a long time at low height.':'Skvettreaksjonen er en refleks på et plutselig, kraftig inntrykk som et smell eller et høyt varsel: pulsen hopper, musklene spennes, og tenkningen stopper i noen sekunder. Overraskelse er kognitiv: det som skjer, stemmer ikke med det du ventet, og du trenger tid til å bygge opp bildet igjen. Sammen kan de ta bort kapasitet i 30 sekunder eller mer, og det er lenge i lav høyde.',
+ 'Managing a startle':'Å håndtere en skvettreaksjon',
+ 'Many operators train a short reset: take your hands off anything you were about to do, breathe, look at the attitude and the flight path, say what you see, and only then act. Flying the aircraft first is always right; the checklist can wait a few seconds.':'Mange operatører trener en kort nullstilling: ta hendene bort fra det du var i ferd med å gjøre, pust, se på flyets stilling og flybanen, si hva du ser, og handle først da. Å fly flyet først er alltid riktig; sjekklisten kan vente noen sekunder.',
+ 'Underload':'Underbelastning',
+ 'A long cruise at night is low workload, low arousal and a low point of the body clock at the same time. Vigilance falls, and a slowly developing problem such as a fuel imbalance or a wrong FMS entry can go unnoticed. Planned cross-checks and short conversations about the flight help keep monitoring alive.':'En lang marsj om natten er lav belastning, lav aktivering og et lavpunkt i døgnrytmen på en gang. Årvåkenheten faller, og et problem som utvikler seg sakte, som en ubalanse i drivstoffet eller en feil FMS-verdi, kan gå upåaktet hen. Planlagte krysskontroller og korte samtaler om flygingen hjelper med å holde overvåkingen i live.',
+ 'Managing workload':'Å styre arbeidsbelastningen',
+ 'Plan and brief in quiet phases, so the busy phases only execute the plan. Prioritise (fly, navigate, communicate, manage), delegate clearly between PF and PM, and choose the level of automation that lowers the workload right now. Ask ATC for time when you need it.':'Planlegg og brief i rolige faser, så de travle fasene bare gjennomfører planen. Prioriter (fly, naviger, kommuniser, styr), fordel oppgavene tydelig mellom PF og PM, og velg det automatikknivået som senker belastningen akkurat nå. Be ATC om tid når du trenger det.',
+ // 3
+ 'Circadian rhythm, sleep and fatigue':'Døgnrytme, søvn og tretthet',
+ 'Alertness is shaped by two processes. Sleep pressure builds up for every hour you are awake and is only removed by sleep. The body clock adds a daily wave with its low point in the early morning and a smaller dip after lunch. Plan a day below and see where the duty falls on the curve.':'Årvåkenheten formes av to prosesser. Søvnpresset bygger seg opp for hver time du er våken og fjernes bare av søvn. Den indre klokken legger til en daglig bølge med lavpunkt tidlig om morgenen og en mindre dupp etter lunsj. Planlegg en dag under og se hvor tjenesten havner på kurven.',
+ 'Rest during the day':'Hvile i løpet av dagen','Sleep debt':'Søvngjeld','Awake at end of duty':'Våken ved tjenestens slutt','Duty inside the WOCL':'Tjeneste inne i WOCL','Lowest alertness on duty':'Laveste årvåkenhet i tjenesten','Alertness at end of duty':'Årvåkenhet ved tjenestens slutt',
+ 'Window of circadian low':'Døgnrytmens lavpunkt (WOCL)',
+ 'EASA flight time limitations define the window of circadian low (WOCL) as 02:00 to 05:59 in the time zone you are acclimatised to. Body temperature and alertness are lowest then, and reaction times are longest. Duties that touch the WOCL get shorter limits.':'EASAs flytidsbegrensninger definerer døgnrytmens lavpunkt (WOCL) som 02:00 til 05:59 i tidssonen du er akklimatisert til. Kroppstemperaturen og årvåkenheten er lavest da, og reaksjonstidene lengst. Tjenester som berører WOCL, får kortere grenser.',
+ 'Sleeping 5 to 6 hours for a few nights builds a debt that is felt less than it is measured: people consistently rate themselves as more alert than their performance shows. Only sleep pays the debt back, and it usually takes more than one good night. Caffeine hides the sleep pressure for a few hours but does not remove it.':'Å sove 5 til 6 timer noen netter bygger opp en gjeld som kjennes mindre enn den måles: folk vurderer seg selv konsekvent som mer våkne enn prestasjonene viser. Bare søvn betaler gjelden tilbake, og det tar som regel mer enn én god natt. Koffein skjuler søvnpresset i noen timer, men fjerner det ikke.',
+ 'Fatigue compared with alcohol':'Tretthet sammenlignet med alkohol',
+ 'A well-known study found that after about 17 hours awake, performance on simple tasks was similar to a blood alcohol concentration of about 0.05 %, and after about 24 hours similar to about 0.1 %. Fatigue is an impairment, not a matter of attitude.':'En kjent studie fant at etter rundt 17 timer våken var prestasjonen på enkle oppgaver som ved en promille på rundt 0,5, og etter rundt 24 timer som ved rundt 1 promille. Tretthet er en svekkelse, ikke et spørsmål om innstilling.',
+ 'Naps and controlled rest':'Blund og kontrollert hvile',
+ 'A short nap of about 20 to 30 minutes refreshes without much grogginess. Longer naps reach deep sleep, and waking from it brings sleep inertia: slow thinking for 15 to 30 minutes. A 90-minute nap covers a full sleep cycle and is a good preparation for a night duty. Controlled rest on the flight deck is planned to stay short for the same reason.':'En kort blund på rundt 20 til 30 minutter gir ny energi uten mye ørhet. Lengre blunder når dyp søvn, og å våkne fra den gir søvntreghet: treg tenkning i 15 til 30 minutter. En blund på 90 minutter dekker en hel søvnsyklus og er en god forberedelse til en nattjeneste. Kontrollert hvile i cockpit planlegges kort av samme grunn.',
+ // 4
+ 'Threat and error management and CRM':'Trussel- og feilhåndtering (TEM) og CRM',
+ 'Threat and error management (TEM) accepts that threats will appear and that crews will make errors. Safety comes from anticipating the threats, catching the errors, and recovering from any undesired aircraft state before it becomes an incident. The three categories are not about blame; they decide what kind of countermeasure works.':'Trussel- og feilhåndtering (TEM) aksepterer at trusler vil dukke opp og at besetninger vil gjøre feil. Sikkerheten kommer av å forutse truslene, fange opp feilene og hente seg inn fra enhver uønsket flytilstand før den blir en hendelse. De tre kategoriene handler ikke om skyld; de avgjør hva slags mottiltak som virker.',
+ 'Threats':'Trusler','Errors':'Feil','Undesired aircraft states':'Uønskede flytilstander',
+ 'Events or conditions outside the crew’s influence that increase complexity and must be managed: weather, a late runway change, an MEL item, a busy airport, terrain, a similar call sign, a time pressure from the schedule. Some are expected and can be briefed; some arrive without warning; some are latent, built into the system.':'Hendelser eller forhold utenfor besetningens innflytelse som øker kompleksiteten og må håndteres: vær, et sent baneskifte, et MEL-punkt, en travel flyplass, terreng, et likt kallesignal, tidspress fra ruteplanen. Noen er ventet og kan briefes; noen kommer uten varsel; noen er latente, bygget inn i systemet.',
+ 'Actions or inactions by the crew that lead away from what was intended: handling errors (wrong FCU selection), procedural errors (a skipped checklist item, a wrong MCDU entry) and communication errors (a misheard clearance). An error that is caught in time has no consequence.':'Handlinger eller unnlatelser fra besetningen som fører bort fra det som var meningen: håndteringsfeil (feil valg på FCU), prosedyrefeil (et hoppet sjekklistepunkt, en feil MCDU-verdi) og kommunikasjonsfeil (en klarering som ble hørt feil). En feil som fanges opp i tide, får ingen følger.',
+ 'A position, speed, attitude or configuration that reduces the safety margin: an altitude bust, a speed well above target, an unstable approach, a wrong taxiway or a runway incursion. The aircraft is now in the wrong state, and the first job is to fix the state, not to find out who caused it.':'En posisjon, fart, stilling eller konfigurasjon som reduserer sikkerhetsmarginen: et høydeavvik, en fart godt over målet, en ustabil innflyging, feil taksebane eller en baneinntrengning. Flyet er nå i feil tilstand, og den første jobben er å rette opp tilstanden, ikke å finne ut hvem som forårsaket den.',
+ 'The Swiss-cheese model':'Sveitserostmodellen',
+ 'Each layer of defence has holes. Latent conditions (a weak roster, an unclear procedure, a training gap) make the holes bigger long before the flight. Active failures by the crew open the last ones. An accident needs the holes to line up. Degrade layers and watch how many hazards get through.':'Hvert forsvarslag har hull. Latente forhold (en svak turnus, en uklar prosedyre, et hull i treningen) gjør hullene større lenge før flygingen. Aktive feil fra besetningen åpner de siste. En ulykke krever at hullene står på linje. Svekk lag og se hvor mange farer som slipper gjennom.',
+ 'Degraded layers':'Svekkede lag','Chance one hazard gets through':'Sjanse for at én fare slipper gjennom','Hazards through (of 4000)':'Farer gjennom (av 4000)',
+ 'Scenario drill':'Scenariodrill',
+ 'Eight short A320 situations. First decide whether it is a threat, an error or an undesired aircraft state. Then choose the best countermeasure.':'Åtte korte situasjoner i A320. Avgjør først om det er en trussel, en feil eller en uønsket flytilstand. Velg så det beste mottiltaket.',
+ 'Speaking up: the assertiveness ladder':'Å si fra: selvhevdelsesstigen',
+ 'Night ILS, captain flying. Passing 1500 ft the speed is VAPP + 15 kt and the aircraft is still in CONF 2. At this rate it will not be stabilised by 1000 ft. You are the first officer. Climb the ladder only as far as you need to, and know where the top is before you start.':'ILS om natten, kapteinen flyr. Gjennom 1500 ft er farten VAPP + 15 kt og flyet er fortsatt i CONF 2. I dette tempoet blir det ikke stabilisert innen 1000 ft. Du er styrmann. Gå bare så langt opp stigen som du må, og vit hvor toppen er før du begynner.',
+ 'Briefings that work':'Briefinger som virker',
+ 'A good briefing names the two or three threats of today and says what the crew will do about them: “If we are not stable by 1000 ft, we go around.” Reading the chart aloud is not a briefing. The plan agreed in a quiet phase is what lets either pilot recognise a deviation later.':'En god briefing nevner dagens to eller tre trusler og sier hva besetningen skal gjøre med dem: «Er vi ikke stabile innen 1000 ft, går vi rundt.» Å lese kartet høyt er ikke en briefing. Planen som ble avtalt i en rolig fase, er det som gjør at begge flygerne kan kjenne igjen et avvik senere.',
+ 'Cross-check and callouts':'Krysskontroll og utrop',
+ 'Every FCU and MCDU change is announced and checked by the other pilot against the clearance, and FMA changes are called out. The point is not distrust: two people checking the same thing catch errors that one person cannot see in their own work.':'Hver endring på FCU og MCDU annonseres og sjekkes av den andre flygeren mot klareringen, og endringer på FMA ropes ut. Poenget er ikke mistillit: to personer som sjekker det samme, fanger opp feil som én person ikke ser i sitt eget arbeid.',
+ 'Authority gradient':'Autoritetsgradient',
+ 'If the gradient is too steep, the first officer does not speak up; if it is too flat, nobody decides. A captain who invites challenge in the briefing (“tell me if you see anything you don’t like”) makes the ladder much shorter for the first officer.':'Er gradienten for bratt, sier ikke styrmannen fra; er den for flat, bestemmer ingen. En kaptein som inviterer til innvendinger i briefingen («si fra hvis du ser noe du ikke liker»), gjør stigen mye kortere for styrmannen.',
+ // 5
+ 'Vision and the limits of see-and-avoid':'Synet og grensene for se-og-unngå',
+ 'An aircraft on a collision course stays at the same place in the windscreen and simply grows. It does not move across the field of view, so peripheral vision, which is good at movement, does not catch it. Set up an encounter and compare the time you have with the time a classic estimate says you need.':'Et fly på kollisjonskurs blir stående på samme sted i frontruten og bare vokser. Det beveger seg ikke over synsfeltet, så perifert syn, som er godt på bevegelse, fanger det ikke opp. Sett opp et møte og sammenlign tiden du har med tiden et klassisk anslag sier at du trenger.',
+ 'Geometry':'Geometri','Other aircraft':'Det andre flyet','Conditions':'Forhold',
+ 'Closure speed':'Lukkehastighet','Typical detection range':'Typisk oppdagelsesavstand','Time from detection to collision':'Tid fra oppdagelse til kollisjon','Time needed to see and avoid':'Tid som trengs for å se og unngå','Margin':'Margin',
+ 'Night vision and dark adaptation':'Nattsyn og mørketilpasning',
+ 'Light on the flight deck':'Lys i cockpit','Sensitivity compared with daylight-adapted':'Følsomhet sammenlignet med dagslystilpasset','Cells doing the work':'Celler som gjør jobben','Colour vision':'Fargesyn','How to look':'Hvordan se',
+ 'The blind spot':'Den blinde flekken',
+ 'Where the optic nerve leaves the eye there are no receptors. With both eyes open each eye covers the other’s gap, but a windscreen pillar or one closed eye can hide a whole aircraft. Close your left eye, look at the cross with your right eye and move slowly towards or away from the screen. At some distance the dot disappears.':'Der synsnerven forlater øyet, finnes det ingen reseptorer. Med begge øynene åpne dekker hvert øye den andres hull, men en vindusstolpe eller ett lukket øye kan skjule et helt fly. Lukk venstre øye, se på krysset med høyre øye og beveg deg sakte mot eller bort fra skjermen. På en viss avstand forsvinner prikken.',
+ 'Empty-field myopia':'Tomromsmyopi',
+ 'With nothing to focus on, such as a clear blue sky above a haze layer or a dark night, the eye relaxes to a focus about 1 to 2 m away. Distant aircraft then go unseen even when you are looking. Focus briefly on something far away, such as a cloud, the ground or the wingtip, before you scan.':'Med ingenting å fokusere på, som en klar blå himmel over et dislag eller en mørk natt, slapper øyet av til et fokus rundt 1 til 2 m unna. Fly langt borte blir da ikke sett selv om du ser etter. Fokuser kort på noe langt unna, som en sky, bakken eller vingetippen, før du skanner.',
+ 'Scanning':'Skanning',
+ 'The eye only sees sharply in a narrow cone of a few degrees. A useful scan moves in steps of about 10 degrees and stops for about a second in each step, because the eye cannot detect a small target while it is moving. Sweeping the eyes across the sky sees almost nothing.':'Øyet ser bare skarpt i en smal kjegle på noen få grader. En nyttig skanning flytter seg i steg på rundt 10 grader og stopper rundt et sekund i hvert steg, fordi øyet ikke kan oppdage et lite mål mens det beveger seg. Å feie blikket over himmelen ser nesten ingenting.',
+ 'Cones and rods':'Tapper og staver',
+ 'Cones in the centre of the eye give sharp, coloured daylight vision. Rods, spread around it, are far more sensitive but colour-blind and have no rods in the very centre. At night an object can disappear when you look straight at it, and reappear when you look slightly to one side.':'Tappene i midten av øyet gir skarpt dagssyn med farger. Stavene, spredt rundt dem, er langt mer følsomme, men fargeblinde, og det er ingen staver helt i midten. Om natten kan en gjenstand forsvinne når du ser rett på den, og komme tilbake når du ser litt til siden.',
+ 'Teaching model. The attention budget, the workload curves and the arousal curve are qualitative illustrations, not measurements. The alertness curve is a simplified two-process model (homeostatic sleep pressure plus a circadian wave) on an arbitrary scale, for an average person acclimatised to local time; individual needs and rhythms vary widely. Detection ranges and reaction times are typical teaching values. Nothing here replaces the EASA flight time limitations, your operator’s FTL scheme and procedures, or medical advice.':'Opplæringsmodell. Oppmerksomhetsbudsjettet, belastningskurvene og aktiveringskurven er kvalitative illustrasjoner, ikke målinger. Årvåkenhetskurven er en forenklet toprosessmodell (homeostatisk søvnpress pluss en døgnrytmebølge) på en vilkårlig skala, for en gjennomsnittlig person akklimatisert til lokal tid; individuelle behov og rytmer varierer mye. Oppdagelsesavstander og reaksjonstider er typiske verdier for opplæring. Ingenting her erstatter EASAs flytidsbegrensninger, operatørens FTL-ordning og prosedyrer, eller medisinske råd.',
+ // via T (seg / slider labels)
+ 'Cruise, AP on':'Marsj, AP på','Approach, AP on':'Innflyging, AP på','Approach, hand flown':'Innflyging, håndflydd','Go-around':'Avbrutt innflyging',
+ 'Planned shedding':'Planlagt nedprioritering','Unmanaged':'Ustyrt','Fatigue':'Tretthet',
+ 'Short (3)':'Kort (3)','Medium (5)':'Middels (5)','Long (7)':'Lang (7)',
+ 'Simple, well practised':'Enkel, godt innøvd','Complex, unfamiliar':'Kompleks, ukjent','Arousal':'Aktivering',
+ 'Raw data, no AP':'Rådata, uten AP','AP, FD and A/THR':'AP, FD og A/THR',
+ 'None':'Ingen','Late runway change':'Sent baneskifte','Engine failure at take-off':'Motorsvikt i avgangen','Unexpected go-around':'Uventet avbrutt innflyging',
+ 'Fatigue (time awake, sleep debt)':'Tretthet (tid våken, søvngjeld)',
+ 'Woke up at':'Våknet kl.','Sleep per night':'Søvn per natt','Nights at that amount':'Netter med den mengden','Duty starts':'Tjenesten starter','Duty length (FDP)':'Tjenestens lengde (FDP)',
+ 'Pre-duty nap (90 min)':'Blund før tjenesten (90 min)','Controlled rest (45 min)':'Kontrollert hvile (45 min)',
+ 'Hole size per layer':'Hullstørrelse per lag',
+ 'Head-on':'Rett mot','Crossing (90°)':'Kryssende (90°)','Converging (45°)':'Konvergerende (45°)',
+ 'Other aircraft wingspan':'Vingespenn på det andre flyet','A320: 34 m. A larger span is seen earlier.':'A320: 34 m. Et større vingespenn sees tidligere.',
+ 'Good: clear, active scan':'Gode: klart, aktiv skanning','Average':'Middels','Poor: haze, low sun':'Dårlige: dis, lav sol',
+ 'Own speed (TAS)':'Egen fart (TAS)','Other aircraft speed (TAS)':'Det andre flyets fart (TAS)','Head-down time per scan cycle':'Tid med blikket inne per skanningssyklus',
+ 'Dark':'Mørkt','Dim red':'Svakt rødt','Bright white':'Sterkt hvitt','Minutes since bright light':'Minutter siden sterkt lys'
+});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const C0={bg:'#FBFBF8',grid:'#DCE3E4',axis:'#5E6B74',ink:'#13202A',ink2:'#4C5B66',mag:'#9A1E68',blue:'#1E5E9E',green:'#2C7A4B',amber:'#A86A00',red:'#B3261E',violet:'#5B4BB0'};
+const mono='10.5px "IBM Plex Mono", monospace', hand='600 13px "Public Sans", sans-serif';
+function wrapLines(g,txt,maxW){ const ws=String(txt).split(' '); const out=[]; let line=''; for(const w of ws){ const t=line?line+' '+w:w; if(g.measureText(t).width>maxW&&line){ out.push(line); line=w; } else line=t; } if(line) out.push(line); return out; }
+function wrap(g,txt,x,y,maxW,lh){ const ls=wrapLines(g,txt,maxW); ls.forEach((l,i)=>g.fillText(l,x,y+i*lh)); return ls.length; }
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function arrow(g,x1,y1,x2,y2,c){ g.strokeStyle=c; g.fillStyle=c; g.lineWidth=1.4; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); const a=Math.atan2(y2-y1,x2-x1); g.beginPath(); g.moveTo(x2,y2); g.lineTo(x2-7*Math.cos(a-0.4),y2-7*Math.sin(a-0.4)); g.lineTo(x2-7*Math.cos(a+0.4),y2-7*Math.sin(a+0.4)); g.closePath(); g.fill(); g.lineWidth=1; }
+const hm=h=>{ let m=Math.round(((h%24)+24)%24*60)%1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
+const hrs=h=>{ const m=Math.round(h*60); return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min'; };
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+/* =================== 1a. FLOW DIAGRAM =================== */
+const STG=[
+ [{en:'Stimuli',no:'Stimuli'},{en:'instruments, ATC, outside view, motion',no:'instrumenter, ATC, utsikt, bevegelse'}],
+ [{en:'Sensory memory',no:'Sensorisk minne'},{en:'vision ≈ 0.5 s, hearing ≈ 2–4 s',no:'syn ≈ 0,5 s, hørsel ≈ 2–4 s'}],
+ [{en:'Perception',no:'Persepsjon'},{en:'meaning, shaped by expectation',no:'mening, formet av forventning'}],
+ [{en:'Attention',no:'Oppmerksomhet'},{en:'selects; limited capacity',no:'velger ut; begrenset kapasitet'}],
+ [{en:'Working memory',no:'Arbeidsminne'},{en:'≈ 7 ± 2 items, fades in ≈ 20 s',no:'≈ 7 ± 2 elementer, blekner på ≈ 20 s'}],
+ [{en:'Decision',no:'Beslutning'},{en:'choose a response',no:'velge en respons'}],
+ [{en:'Action',no:'Handling'},{en:'motor programme, speech',no:'motorisk program, tale'}]];
+const LTM=[{en:'Long-term memory',no:'Langtidsminne'},{en:'knowledge, experience, skills (motor programmes)',no:'kunnskap, erfaring, ferdigheter (motoriske programmer)'}];
+const IP=LAB.fit(el('ipcv'),()=>flow(),2);
+function flow(){ const g=IP.ctx, W=IP.w, H=IP.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const narrow=H>350; const box=(x,y,w,h,i,t,s,hl)=>{ rr(g,x,y,w,h,4); g.fillStyle=hl?'#F6EDF2':'#fff'; g.fill(); g.strokeStyle=hl?C0.mag:'#9AA6AC'; g.lineWidth=hl?2:1; g.stroke(); g.lineWidth=1;
+    g.fillStyle=C0.ink; g.font='600 13px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top'; const n=wrap(g,L(t),x+w/2,y+7,w-10,15);
+    g.fillStyle=C0.ink2; g.font='11.5px "Public Sans", sans-serif'; wrap(g,L(s),x+w/2,y+9+n*15,w-10,13.5); };
+  if(!narrow){ const n=7, gap=20, pl=12, bw=(W-2*pl-(n-1)*gap)/n, by=18, bh=78;
+    STG.forEach(([t,s],i)=>{ const x=pl+i*(bw+gap); box(x,by,bw,bh,i,t,s,i===3||i===4); if(i<n-1) arrow(g,x+bw+2,by+bh/2,x+bw+gap-2,by+bh/2,C0.ink2); });
+    const xP=pl+2*(bw+gap), xW=pl+4*(bw+gap)+bw, ly=by+bh+40, lh=56; box(xP,ly,xW-xP,lh,-1,LTM[0],LTM[1],false);
+    [2,4].forEach(i=>{ const cx=pl+i*(bw+gap)+bw/2; arrow(g,cx-6,by+bh+2,cx-6,ly-2,C0.ink2); arrow(g,cx+6,ly-2,cx+6,by+bh+2,C0.ink2); });
+    const xa=pl+6*(bw+gap)+bw/2, xs=pl+bw/2, fy=H-16; g.strokeStyle=C0.mag; g.setLineDash([5,4]); g.lineWidth=1.4; g.beginPath(); g.moveTo(xa,by+bh+2); g.lineTo(xa,fy); g.lineTo(xs,fy); g.stroke(); g.setLineDash([]); arrow(g,xs,fy,xs,by+bh+3,C0.mag);
+    g.fillStyle=C0.mag; g.font=hand; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(L({en:'feedback: did it work?',no:'tilbakemelding: virket det?'}),xa-8,fy-3);
+    g.textAlign='center'; g.fillText(L({en:'the bottleneck',no:'flaskehalsen'}),pl+3.5*(bw+gap)-gap/2,by+bh+28);
+  } else { const pl=30, bw=W*0.58-pl, bh=50, gap=14, by=10;
+    STG.forEach(([t,s],i)=>{ const y=by+i*(bh+gap); box(pl,y,bw,bh,i,t,s,i===3||i===4); if(i<6) arrow(g,pl+bw/2,y+bh+1,pl+bw/2,y+bh+gap-1,C0.ink2); });
+    const lx=pl+bw+18, lw=W-lx-8, y2=by+2*(bh+gap), y4=by+4*(bh+gap)+bh; box(lx,y2,lw,y4-y2,-1,LTM[0],LTM[1],false);
+    [2,4].forEach(i=>{ const cy=by+i*(bh+gap)+bh/2; arrow(g,pl+bw+2,cy-5,lx-2,cy-5,C0.ink2); arrow(g,lx-2,cy+5,pl+bw+2,cy+5,C0.ink2); });
+    const ya=by+6*(bh+gap)+bh/2, ys=by+bh/2; g.strokeStyle=C0.mag; g.setLineDash([5,4]); g.lineWidth=1.4; g.beginPath(); g.moveTo(pl-2,ya); g.lineTo(12,ya); g.lineTo(12,ys); g.stroke(); g.setLineDash([]); arrow(g,12,ys,pl-2,ys,C0.mag);
+    g.save(); g.translate(8,(ya+ys)/2); g.rotate(-Math.PI/2); g.fillStyle=C0.mag; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillText(L({en:'feedback',no:'tilbakemelding'}),0,-4); g.restore(); }
+}
+
+/* =================== 1b. ATTENTION BUDGET =================== */
+const TASKS=[
+ {k:'fly',n:{en:'Fly the aircraft',no:'Fly flyet'},s:{en:'Fly',no:'Fly'},pri:1,sal:6,c:C0.blue,fixed:true},
+ {k:'mon',n:{en:'Monitor flight path and FMA',no:'Overvåke flybane og FMA'},s:{en:'Monitor',no:'Overvåke'},pri:1,sal:1,d:15,c:'#3F7FBF'},
+ {k:'atc',n:{en:'ATC clearance and read-back',no:'ATC-klarering og tilbakelesing'},s:{en:'ATC',no:'ATC'},pri:3,sal:8,d:15,c:C0.amber,au:1},
+ {k:'fms',n:{en:'Re-programme the FMS (runway change)',no:'Programmere om FMS (baneskifte)'},s:{en:'FMS',no:'FMS'},pri:2,sal:9,d:25,c:C0.green},
+ {k:'wx',n:{en:'Weather radar: avoid a CB',no:'Værradar: unngå en CB'},s:{en:'Radar',no:'Radar'},pri:2,sal:5,d:15,c:'#4F9A6C'},
+ {k:'ecam',n:{en:'ECAM procedure (non-normal)',no:'ECAM-prosedyre (unormal)'},s:{en:'ECAM',no:'ECAM'},pri:4,sal:7,d:30,c:C0.violet},
+ {k:'cab',n:{en:'Call from the cabin crew',no:'Anrop fra kabinbesetningen'},s:{en:'Cabin',no:'Kabin'},pri:4,sal:7,d:10,c:'#C08A2E',au:1},
+ {k:'co',n:{en:'Company radio (gate, fuel)',no:'Selskapsradio (gate, drivstoff)'},s:{en:'Company',no:'Selskap'},pri:5,sal:4,d:10,c:'#C9A15A',au:1},
+ {k:'chat',n:{en:'Non-essential conversation',no:'Uvesentlig prat'},s:{en:'Chat',no:'Prat'},pri:6,sal:8,d:10,c:'#8A949A',au:1}];
+const PHD={cruise:10,app:20,man:40,ga:45};
+const A={ph:'app',st:'plan',fat:0,on:{mon:1,atc:1,fms:1,wx:0,ecam:0,cab:0,co:0,chat:0}};
+LAB.seg(el('aPh'),[['cruise','Cruise, AP on'],['app','Approach, AP on'],['man','Approach, hand flown'],['ga','Go-around']],A.ph,v=>{A.ph=v;att();});
+LAB.seg(el('aSt'),[['plan','Planned shedding'],['un','Unmanaged']],A.st,v=>{A.st=v;att();});
+LAB.slider(el('aCtl'),{label:'Fatigue',min:0,max:100,step:5,v:A.fat,f:v=>nf(v,0)+' %',on:v=>{A.fat=v;att();}});
+function taskList(){ el('aTasks').innerHTML=TASKS.filter(t=>!t.fixed).map(t=>`<label class="chk"><input type="checkbox" data-k="${t.k}" ${A.on[t.k]?'checked':''}> <span>${L(t.n)} <small style="color:var(--ink-2)">(${t.d})</small></span></label>`).join(''); }
+el('aTasks').addEventListener('change',e=>{ const k=e.target.dataset.k; if(k){ A.on[k]=e.target.checked?1:0; att(); } });
+const ATC=LAB.fit(el('atcv'),()=>att(),2);
+function allocate(){ const cap=100-0.35*A.fat; const act=TASKS.filter(t=>t.fixed||A.on[t.k]).map(t=>({...t,d:t.fixed?PHD[A.ph]:t.d}));
+  const aud=act.filter(t=>t.au).length; if(aud>=2) act.push({k:'int',n:{en:'Interference: two voices at once',no:'Interferens: to stemmer samtidig'},s:{en:'Overlap',no:'Overlapp'},pri:0,sal:99,d:8*(aud-1),c:C0.red,hatch:1});
+  const ord=act.slice().sort((a,b)=> a.fixed?-1:b.fixed?1: a.k==='int'?-1:b.k==='int'?1: A.st==='plan'? (a.pri-b.pri||b.sal-a.sal) : (b.sal-a.sal));
+  let used=0; const inn=[], out=[]; for(const t of ord){ if(t.fixed||t.k==='int'||used+t.d<=cap+1e-9){ inn.push(t); used+=t.d; } else out.push(t); }
+  const demand=act.reduce((s,t)=>s+t.d,0); return {cap,inn,out,used,demand}; }
+function att(){ const R=allocate(), spare=R.cap-R.demand, monOut=R.out.some(t=>t.k==='mon');
+  el('a1').textContent=nf(R.demand,0); el('a2').textContent=nf(R.cap,0);
+  el('a3').innerHTML=`<span class="${spare<0?'ko':spare<15?'wa':'ok'}">${spare<0?L({en:'none',no:'ingen'})+' ('+nf(spare,0)+')':nf(spare,0)}</span>`;
+  el('a4').innerHTML=R.out.length? R.out.map(t=>`<span class="${t.k==='mon'?'ko':''}">${L(t.s)}</span>`).join(', ') : L({en:'nothing',no:'ingenting'});
+  const sa= monOut? ['ko',{en:'Level 1 lost: nobody watches the flight path',no:'Nivå 1 tapt: ingen ser på flybanen'}] : spare>=15? ['ok',{en:'Level 3: time to think ahead',no:'Nivå 3: tid til å tenke framover'}] : spare>=0? ['wa',{en:'Level 2: keeping up, not ahead',no:'Nivå 2: henger med, ikke foran'}] : ['wa',{en:'Level 2 at best: tasks deferred',no:'I beste fall nivå 2: oppgaver utsatt'}];
+  el('a5').innerHTML=`<span class="${sa[0]}">${L(sa[1])}</span>`;
+  let t;
+  if(monOut) t=L({en:'<b>Attention tunnelling.</b> Without a plan, attention goes to what is loud, new or interesting: the FMS, the voices, the problem. Monitoring is quiet, so it is what disappears, and nobody notices that it has gone. In 1972 an L-1011 crew worked on a landing-gear indicator bulb while the autopilot’s altitude hold had been disengaged; the aircraft descended into the Everglades with three experienced pilots on board.',no:'<b>Tunnelsyn i oppmerksomheten.</b> Uten en plan går oppmerksomheten til det som er høylytt, nytt eller interessant: FMS, stemmene, problemet. Overvåking er stille, så det er den som forsvinner, og ingen merker at den er borte. I 1972 jobbet besetningen på et L-1011 med en lyspære i landingsunderstellsindikatoren mens autopilotens høydehold var koblet ut; flyet sank ned i Everglades med tre erfarne flygere om bord.'});
+  else if(R.out.length) t=L({en:'<b>Planned shedding.</b> The same overload, but the crew chooses what waits: flying and monitoring are kept, the rest is deferred. In practice: “standby” to the cabin, ask ATC for vectors or a hold before reprogramming, and let the PM take the radio while the PF flies.',no:'<b>Planlagt nedprioritering.</b> Den samme overbelastningen, men besetningen velger hva som venter: flyging og overvåking beholdes, resten utsettes. I praksis: «standby» til kabinen, be ATC om vektorer eller en holding før omprogrammering, og la PM ta radioen mens PF flyr.'});
+  else if(spare<15) t=L({en:'<b>Everything fits, just.</b> There is no reserve for the next surprise. This is the moment to stop adding tasks: defer the company call and avoid the conversation until the workload falls.',no:'<b>Alt får plass, så vidt.</b> Det er ingen reserve til neste overraskelse. Nå er tiden for å slutte å legge til oppgaver: utsett selskapsanropet og unngå praten til belastningen faller.'});
+  else t=L({en:'<b>Spare capacity.</b> Use it to think ahead: brief the next phase, check the fuel, look at the weather. Capacity you do not use in a quiet phase cannot be saved for a busy one.',no:'<b>Ledig kapasitet.</b> Bruk den til å tenke framover: brief neste fase, sjekk drivstoffet, se på været. Kapasitet du ikke bruker i en rolig fase, kan ikke spares til en travel.'});
+  if(R.inn.some(x=>x.k==='int')) t+=' '+L({en:'Two auditory tasks at the same time also cost extra: both use the same channel, so they interfere (the red block).',no:'To lytteoppgaver samtidig koster også ekstra: begge bruker samme kanal, så de forstyrrer hverandre (den røde blokken).'});
+  el('ax').innerHTML=t;
+  // tegning
+  const g=ATC.ctx, W=ATC.w, H=ATC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pt=40, pb=14, top=Math.max(130,R.used+10,R.out.reduce((s,x)=>s+x.d,0)+10), sc=(H-pt-pb)/top, gap=W<480?18:34, cw=(W-28-gap)/2, x1=14, x2=x1+cw+gap, base=H-pb;
+  g.font='600 13px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='alphabetic'; g.fillStyle=C0.ink; g.fillText(L({en:'Attended',no:'Får oppmerksomhet'}),x1,20); g.fillText(L(A.st==='plan'?{en:'Deferred',no:'Utsatt'}:{en:'Dropped, unnoticed',no:'Falt ut, umerket'}),x2,20);
+  // kapasitetsramme
+  const ch=R.cap*sc; g.fillStyle='#fff'; g.fillRect(x1,base-ch,cw,ch); g.strokeStyle=C0.ink; g.lineWidth=1.5; g.strokeRect(x1+.5,base-ch+.5,cw-1,ch-1); g.lineWidth=1;
+  g.font=mono; g.fillStyle=C0.ink2; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(L({en:'capacity',no:'kapasitet'})+' '+nf(R.cap,0),x1+cw-4,base-ch-3);
+  const blk=(t,x,y,h,dash,over)=>{ g.save(); if(dash){ g.fillStyle='rgba(255,255,255,.9)'; g.fillRect(x+3,y+1,cw-6,h-2); g.strokeStyle=t.k==='mon'?C0.red:t.c; g.setLineDash([5,3]); g.lineWidth=t.k==='mon'?2:1.4; g.strokeRect(x+3.5,y+1.5,cw-7,h-3); }
+    else { g.fillStyle=t.c; g.fillRect(x+3,y+1,cw-6,h-2); if(t.hatch||over){ g.strokeStyle='rgba(255,255,255,.45)'; g.beginPath(); for(let k=-h;k<cw;k+=8){ g.moveTo(x+3+k,y+h-1); g.lineTo(x+3+k+h,y+1); } g.save(); g.rect(x+3,y+1,cw-6,h-2); g.clip(); g.stroke(); g.restore(); } }
+    g.restore(); if(h>=15){ g.font=(h>=30?'600 12.5px':'600 11px')+' "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='middle'; g.fillStyle=dash?(t.k==='mon'?C0.red:C0.ink):'#fff';
+      const lab=(h>=30&&cw>230?L(t.n):L(t.s))+'  '+t.d; g.fillText(wrapLines(g,lab,cw-18)[0],x+10,y+h/2); } };
+  let y=base; R.inn.forEach(t=>{ const h=t.d*sc; y-=h; blk(t,x1,y,h,false,y<base-ch); });
+  if(R.used>R.cap){ g.strokeStyle=C0.red; g.lineWidth=2; g.beginPath(); g.moveTo(x1,base-ch); g.lineTo(x1+cw,base-ch); g.stroke(); g.lineWidth=1; }
+  y=base; R.out.forEach(t=>{ const h=t.d*sc; y-=h; blk(t,x2,y,h,true); });
+  if(!R.out.length){ g.fillStyle=C0.axis; g.font=hand; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L({en:'nothing dropped',no:'ingenting faller ut'}),x2+cw/2,base-40); }
+  g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(8,base+.5); g.lineTo(W-8,base+.5); g.stroke();
+}
+
+/* =================== 1c. WORKING MEMORY =================== */
+const WM={n:5,phase:'idle',items:[],best:{3:null,5:null,7:null},last:null,timer:null};
+LAB.seg(el('wmLen'),[['3','Short (3)'],['5','Medium (5)'],['7','Long (7)']],'5',v=>{WM.n=+v;});
+const pick=a=>a[Math.floor(Math.random()*a.length)], rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+function genClr(n){ const W5=['TORVA','LUNOR','ESKAL','BIRKA','NORVI','SKADI','RAVLO','GEDRA','MIKOS','VESTA'];
+  const fl=rint(21,37)*10, hdg=rint(1,36)*10, spd=rint(25,30)*10, sq=[0,0,0,0].map(()=>rint(0,7)).join(''), fr=(rint(118,135)+'.'+pick(['005','030','055','105','130','155','205','230','255','305','330','355','405','455','505','555','605','655','705','755','805','855','905','955'])), qnh=rint(985,1035), wp=pick(W5);
+  const all=[
+   {k:'fl',lab:{en:'Flight level',no:'Flygenivå'},en:`climb FL${fl}`,no:`climb FL${fl}`,a:String(fl)},
+   {k:'hdg',lab:{en:'Heading',no:'Kurs'},en:`turn left heading ${String(hdg).padStart(3,'0')}`,no:`turn left heading ${String(hdg).padStart(3,'0')}`,a:String(hdg).padStart(3,'0')},
+   {k:'spd',lab:{en:'Speed (kt)',no:'Fart (kt)'},en:`speed ${spd} knots`,no:`speed ${spd} knots`,a:String(spd)},
+   {k:'wp',lab:{en:'Waypoint',no:'Veipunkt'},en:`then direct ${wp}`,no:`then direct ${wp}`,a:wp},
+   {k:'sq',lab:{en:'Squawk',no:'Squawk'},en:`squawk ${sq}`,no:`squawk ${sq}`,a:sq},
+   {k:'qnh',lab:{en:'QNH',no:'QNH'},en:`QNH ${qnh}`,no:`QNH ${qnh}`,a:String(qnh)},
+   {k:'fr',lab:{en:'Frequency',no:'Frekvens'},en:`contact Control ${fr}`,no:`contact Control ${fr}`,a:fr}];
+  const keep=LAB.shuffle(all.slice()).slice(0,n).map(x=>x.k); return all.filter(x=>keep.includes(x.k)); }
+const norm=s=>String(s).toUpperCase().replace(/[^A-Z0-9]/g,'').replace(/^FL/,'');
+const normA=(it,s)=>{ let v=norm(s); if(it.k==='hdg') v=v.padStart(3,'0'); if(it.k==='fr'){ v=v.replace(/0+$/,''); return v===norm(it.a).replace(/0+$/,''); } return v===norm(it.a); };
+function wmIdle(){ el('wmShow').innerHTML=`<div class="idle">${L({en:'Press “New clearance”. Read it once, as if you heard it on the frequency.',no:'Trykk «Ny klarering». Les den én gang, som om du hørte den på frekvensen.'})}</div>`; }
+function wmShow(){ clearInterval(WM.timer); WM.items=genClr(WM.n); WM.phase='show'; const dur=1.3+1.25*WM.n; const t0=performance.now();
+  const txt='BIRDBIRD 412, '+WM.items.map(x=>x.en).join(', ');
+  el('wmShow').innerHTML=`<div class="clr">${txt}</div><div class="bar"><i id="wmBar"></i></div>`;
+  WM.timer=setInterval(()=>{ const f=1-(performance.now()-t0)/1000/dur; const b=el('wmBar'); if(b) b.style.width=Math.max(0,f*100)+'%'; if(f<=0){ clearInterval(WM.timer); wmAsk(); } },50); }
+function wmAsk(){ WM.phase='ask';
+  el('wmShow').innerHTML=`<div class="idle">${L({en:'Write down what you were cleared for.',no:'Skriv ned hva du ble klarert for.'})}</div><form id="wmF" autocomplete="off">${WM.items.map((x,i)=>`<label>${L(x.lab)}<input name="i${i}" inputmode="${x.k==='wp'?'text':'decimal'}"></label>`).join('')}</form><button class="btn pri" id="wmChk">${L({en:'Check read-back',no:'Sjekk tilbakelesingen'})}</button>`;
+  const f=el('wmF'); f.querySelector('input').focus({preventScroll:true}); f.onsubmit=e=>{ e.preventDefault(); wmCheck(); }; el('wmChk').onclick=wmCheck; }
+function wmCheck(){ const f=el('wmF'); const vals=WM.items.map((x,i)=>f.elements['i'+i].value); const ok=WM.items.map((x,i)=>normA(x,vals[i])); const sc=ok.filter(Boolean).length;
+  WM.last={sc,n:WM.n}; if(WM.best[WM.n]===null||sc>WM.best[WM.n]) WM.best[WM.n]=sc; WM.phase='res'; WM.res={vals,ok}; wmRes(); }
+function wmRes(){ const {vals,ok}=WM.res, sc=ok.filter(Boolean).length;
+  el('wmShow').innerHTML=`<div class="res">${WM.items.map((x,i)=>`<div><span class="${ok[i]?'y':'n'}">${ok[i]?'✓':'✗'}</span> ${L(x.lab)}: ${ok[i]?x.a:`<span class="n">${vals[i]?vals[i].replace(/</g,'&lt;'):'–'}</span> → ${x.a}`}</div>`).join('')}</div><div class="idle">${sc===WM.n? L({en:'Full read-back. Now try a longer one, or one after doing something else for a few seconds.',no:'Full tilbakelesing. Prøv en lengre, eller en etter å ha gjort noe annet i noen sekunder.'}) : WM.n>=7? L({en:'Seven unrelated numbers is at the edge of working memory for almost everyone. That is why clearances are written down and read back, and why long clearances are split.',no:'Sju tall som ikke henger sammen, er på grensen av arbeidsminnet for nesten alle. Derfor skrives klareringer ned og leses tilbake, og derfor deles lange klareringer opp.'}) : L({en:'Items get lost even in short clearances, especially the ones in the middle. The read-back exists so that ATC can catch what you missed.',no:'Elementer forsvinner selv i korte klareringer, særlig de i midten. Tilbakelesingen finnes for at ATC skal fange opp det du gikk glipp av.'})}</div>`; }
+function wmRo(){ el('w1').textContent=WM.last? `${WM.last.sc} / ${WM.last.n}` : '–'; el('w2').textContent=[3,5,7].map(n=>WM.best[n]===null?'–':WM.best[n]+'/'+n).join('  ·  '); }
+el('wmGo').onclick=()=>{ wmShow(); };
+const wmObs=new MutationObserver(()=>wmRo()); wmObs.observe(el('wmShow'),{childList:true});
+function wmLang(){ if(WM.phase==='idle') wmIdle(); else if(WM.phase==='res') wmRes(); else if(WM.phase==='ask'){ /* behold svar */ } wmRo(); }
+
+/* =================== 2a. YERKES–DODSON =================== */
+const Yd={task:'simple',a:50};
+const ydP=(a,task)=>{ const o=task==='simple'?{m:62,w:30}:{m:44,w:23}; return 12+88*Math.exp(-Math.pow((a-o.m)/o.w,2)); };
+LAB.seg(el('ydTask'),[['simple','Simple, well practised'],['complex','Complex, unfamiliar']],Yd.task,v=>{Yd.task=v;yd();});
+LAB.slider(el('ydCtl'),{label:'Arousal',min:0,max:100,step:1,v:Yd.a,f:v=>nf(v,0)+' %',on:v=>{Yd.a=v;yd();}});
+const YC=LAB.fit(el('ydcv'),()=>yd(),2);
+function yd(){ const p=ydP(Yd.a,Yd.task), opt=Yd.task==='simple'?62:44; let st;
+  if(p>=85) st=['ok',{en:'Optimum',no:'Optimalt'}]; else if(Yd.a<opt) st=['wa',{en:'Under-aroused',no:'For lite aktivert'}]; else st=['ko',Yd.a>85?{en:'Over-aroused: startle, freeze',no:'For mye aktivert: skvett, låsing'}:{en:'Over-aroused',no:'For mye aktivert'}];
+  el('y1').textContent=nf(p,0)+' %'; el('y2').innerHTML=`<span class="${st[0]}">${L(st[1])}</span>`;
+  el('ydx').innerHTML= p>=85? L({en:'<b>The working zone.</b> Alert, attention wide enough to see the whole picture, and enough capacity to think ahead.',no:'<b>Arbeidssonen.</b> Våken, oppmerksomheten bred nok til å se hele bildet, og nok kapasitet til å tenke framover.'})
+   : Yd.a<opt? L({en:'<b>Too little arousal.</b> Night cruise, a long hold, a routine that has never gone wrong. Vigilance and monitoring suffer, small deviations go unseen and complacency grows.',no:'<b>For lite aktivering.</b> Marsj om natten, en lang holding, en rutine som aldri har gått galt. Årvåkenhet og overvåking svekkes, små avvik blir ikke sett, og selvtilfredsheten vokser.'})
+   : L({en:'<b>Too much arousal.</b> Attention narrows to one instrument or one problem, working memory shrinks, and old habits replace thinking. Notice that the complex task falls off much earlier: a non-normal with several ECAM actions needs a calmer mind than a normal take-off.',no:'<b>For mye aktivering.</b> Oppmerksomheten snevres inn til ett instrument eller ett problem, arbeidsminnet krymper, og gamle vaner erstatter tenkning. Legg merke til at den komplekse oppgaven faller av mye tidligere: en unormal situasjon med flere ECAM-handlinger krever et roligere hode enn en normal avgang.'});
+  const g=YC.ctx, W=YC.w, H=YC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pl=44, pr=14, pt=28, pb=40, X=a=>pl+a/100*(W-pl-pr), Y=v=>H-pb-v/100*(H-pt-pb);
+  g.font=mono; g.textAlign='right'; g.textBaseline='middle'; for(let v=0;v<=100;v+=25){ g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(pl,Y(v)+.5); g.lineTo(W-pr,Y(v)+.5); g.stroke(); g.fillStyle=C0.axis; g.fillText(v+'',pl-6,Y(v)); }
+  g.save(); g.translate(12,(pt+H-pb)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText(L({en:'performance (%)',no:'prestasjon (%)'}),0,0); g.restore();
+  g.textAlign='left'; g.textBaseline='top'; g.fillText(L({en:'low',no:'lav'}),pl,H-pb+6); g.textAlign='right'; g.fillText(L({en:'high',no:'høy'}),W-pr,H-pb+6); g.textAlign='center'; g.fillText(L({en:'arousal',no:'aktivering'}),(pl+W-pr)/2,H-pb+6);
+  const cur=(task,c,w,dash)=>{ g.strokeStyle=c; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); for(let a=0;a<=100;a+=1){ const y=Y(ydP(a,task)); a?g.lineTo(X(a),y):g.moveTo(X(a),y); } g.stroke(); g.setLineDash([]); g.lineWidth=1; };
+  const sel=Yd.task; cur(sel==='simple'?'complex':'simple','#9AA6AC',1.5,[5,4]); cur(sel,C0.blue,2.8);
+  g.font=hand; g.textBaseline='alphabetic';
+  const W2=W<480; g.fillStyle=C0.axis; g.textAlign='left'; g.fillText(L(W2?{en:'boredom',no:'kjedsomhet'}:{en:'boredom, complacency',no:'kjedsomhet, selvtilfredshet'}),X(2),Y(30)-4);
+  g.textAlign='right'; g.fillText(L(W2?{en:'tunnelling',no:'tunnelsyn'}:{en:'anxiety, tunnelling, freeze',no:'angst, tunnelsyn, låsing'}),X(99),Y(30)-4);
+  g.fillStyle=C0.blue; g.textAlign='center'; g.fillText(L(sel==='simple'?{en:'simple task',no:'enkel oppgave'}:{en:'complex task',no:'kompleks oppgave'}),X(opt),Y(100)-6);
+  g.fillStyle=C0.mag; g.beginPath(); g.arc(X(Yd.a),Y(ydP(Yd.a,sel)),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); g.lineWidth=1;
+}
+
+/* =================== 2b. WORKLOAD TIMELINE =================== */
+const PH=['PRE','TAXI','T/O','CLB','CRZ','DES','APP','LDG','IN'];
+const BASE=[45,35,70,45,15,40,65,75,30], MAN=[0,0,8,25,20,25,22,5,0];
+const Wl={auto:'auto',ev:'none',fat:20};
+LAB.seg(el('wlAuto'),[['raw','Raw data, no AP'],['auto','AP, FD and A/THR']],Wl.auto,v=>{Wl.auto=v;wl();});
+LAB.seg(el('wlEv'),[['none','None'],['rwy','Late runway change'],['eng','Engine failure at take-off'],['ga','Unexpected go-around']],Wl.ev,v=>{Wl.ev=v;wl();});
+LAB.slider(el('wlCtl'),{label:'Fatigue (time awake, sleep debt)',min:0,max:100,step:5,v:Wl.fat,f:v=>nf(v,0)+' %',on:v=>{Wl.fat=v;wl();}});
+const WC=LAB.fit(el('wlcv'),()=>wl(),2);
+const gb=(x,x0,w)=>Math.exp(-Math.pow((x-x0)/w,2));
+function demand(x){ const b=BASE.map((v,i)=>v+(Wl.auto==='raw'?MAN[i]:0)); const c=x-0.5; const i=clamp(Math.floor(c),0,7), f=clamp(c-i,0,1), s=(1-Math.cos(Math.PI*f))/2; let d= c<0? b[0] : c>=8? b[8] : b[i]+(b[i+1]-b[i])*s;
+  if(Wl.ev==='rwy') d+=(Wl.auto==='auto'?38:16)*gb(x,5.85,0.32);
+  if(Wl.ev==='eng') d+=32*gb(x,2.55,0.2)+24*gb(x,3.4,0.45);
+  if(Wl.ev==='ga') d+=40*gb(x,7.55,0.3);
+  return d; }
+function capac(x){ let c=100-0.3*Wl.fat; if(Wl.ev==='eng') c-=30*gb(x,2.5,0.12); if(Wl.ev==='ga') c-=30*gb(x,7.5,0.12); return c; }
+function wl(){ const N=900, pts=[]; for(let i=0;i<=N;i++){ const x=i/N*9; pts.push({x,d:demand(x),c:capac(x)}); }
+  const pk=pts.reduce((m,p)=>p.d>m.d?p:m,pts[0]); const mn=pts.reduce((m,p)=>(p.c-p.d)<(m.c-m.d)?p:m,pts[0]);
+  const over=pts.filter(p=>p.d>p.c).length/pts.length, under=pts.filter(p=>p.d<25).length/pts.length;
+  el('l1').textContent=nf(pk.d,0)+' ('+PH[clamp(Math.floor(pk.x),0,8)]+')';
+  const ms=mn.c-mn.d; el('l2').innerHTML=`<span class="${ms<0?'ko':ms<15?'wa':'ok'}">${nf(ms,0)} (${PH[clamp(Math.floor(mn.x),0,8)]})</span>`;
+  el('l3').innerHTML=`<span class="${over>0?'ko':''}">${nf(over*100,0)} %</span>`; el('l4').innerHTML=`<span class="${under>0.1?'wa':''}">${nf(under*100,0)} %</span>`;
+  const X={none:{en:'<b>A normal sector.</b> The peaks are around take-off and landing and the valley is the cruise. Look at the underload band: with the autopilot on, the cruise sits below it, which is where vigilance is hardest to keep.',no:'<b>En normal etappe.</b> Toppene ligger rundt avgang og landing, og dalen er marsjen. Se på underbelastningsfeltet: med autopiloten inne ligger marsjen under det, og der er årvåkenheten vanskeligst å holde.'},
+   rwy:{en:'<b>A late runway change.</b> With full automation the change means a new approach in the MCDU, new performance data and a new briefing, all heads-down near the start of the approach. Hand-flown on vectors, the same change costs less, because there is less to reprogramme. Automation lowers the average workload but can concentrate it at the worst time. Saying “unable” or asking for track miles is a workload decision.',no:'<b>Et sent baneskifte.</b> Med full automatikk betyr skiftet en ny innflyging i MCDU, nye ytelsesdata og en ny briefing, alt med blikket inne nær starten av innflygingen. Håndflydd på vektorer koster samme skifte mindre, fordi det er mindre å programmere om. Automatikk senker gjennomsnittsbelastningen, men kan samle den på verst tenkelig tidspunkt. Å si «unable» eller be om lengre bane er en beslutning om arbeidsbelastning.'},
+   eng:{en:'<b>Engine failure at take-off.</b> The bang and the yaw come at the highest workload of the flight, and the startle takes a bite out of capacity at the same moment (the notch in the capacity line). This is why the reaction is trained until it is a motor programme, and why nothing but flying is done below 400 ft.',no:'<b>Motorsvikt i avgangen.</b> Smellet og girbevegelsen kommer ved flygingens høyeste belastning, og skvettreaksjonen tar en bit av kapasiteten i samme øyeblikk (hakket i kapasitetslinjen). Derfor trenes reaksjonen til den er et motorisk program, og derfor gjøres ingenting annet enn å fly under 400 ft.'},
+   ga:{en:'<b>An unexpected go-around.</b> The crew was mentally landing. The go-around is a rare, dynamic manoeuvre with high pitch, thrust, configuration changes and an altitude to capture quickly, and the surprise reduces capacity just as it begins. Briefing the go-around on every approach is the countermeasure.',no:'<b>En uventet avbrutt innflyging.</b> Besetningen var mentalt i ferd med å lande. Avbrutt innflyging er en sjelden, dynamisk manøver med høy stigningsvinkel, skyvekraft, konfigurasjonsendringer og en høyde som skal fanges raskt, og overraskelsen senker kapasiteten akkurat når den starter. Mottiltaket er å brife avbrutt innflyging på hver innflyging.'}};
+  el('wlx').innerHTML=L(X[Wl.ev])+(Wl.auto==='raw'&&Wl.ev==='none'?' '+L({en:'Without the autopilot the whole curve lifts, mostly in climb, cruise and descent: hand flying is a full-time task that leaves less room for everything else.',no:'Uten autopilot løftes hele kurven, mest i stigning, marsj og nedstigning: håndflyging er en fulltidsjobb som gir mindre plass til alt annet.'}):'');
+  const g=WC.ctx, W=WC.w, H=WC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pl=40, pr=12, pt=14, pb=34, top=135, Xx=x=>pl+x/9*(W-pl-pr), Y=v=>H-pb-v/top*(H-pt-pb);
+  g.fillStyle='rgba(30,94,158,.06)'; g.fillRect(pl,Y(25),W-pl-pr,Y(0)-Y(25));
+  g.font=mono; g.textAlign='right'; g.textBaseline='middle'; for(let v=0;v<=125;v+=25){ g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(pl,Y(v)+.5); g.lineTo(W-pr,Y(v)+.5); g.stroke(); g.fillStyle=C0.axis; g.fillText(v+'',pl-6,Y(v)); }
+  g.textAlign='center'; g.textBaseline='top'; PH.forEach((p,i)=>{ g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(Xx(i)+.5,pt); g.lineTo(Xx(i)+.5,H-pb); g.stroke(); g.fillStyle=C0.axis; g.font=(W<480?'9.5px':'10.5px')+' "IBM Plex Mono", monospace'; g.fillText(p,Xx(i+0.5),H-pb+6); });
+  // fyll
+  g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(Xx(p.x),Y(p.d)):g.moveTo(Xx(p.x),Y(p.d)); }); g.lineTo(Xx(9),Y(0)); g.lineTo(Xx(0),Y(0)); g.closePath(); g.fillStyle='rgba(30,94,158,.16)'; g.fill();
+  g.save(); g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(Xx(p.x),Y(p.d)):g.moveTo(Xx(p.x),Y(p.d)); }); for(let i=pts.length-1;i>=0;i--) g.lineTo(Xx(pts[i].x),Y(Math.min(pts[i].c,pts[i].d))); g.closePath(); g.fillStyle='rgba(179,38,30,.35)'; g.fill(); g.restore();
+  g.strokeStyle=C0.blue; g.lineWidth=2.4; g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(Xx(p.x),Y(p.d)):g.moveTo(Xx(p.x),Y(p.d)); }); g.stroke();
+  g.strokeStyle=C0.mag; g.lineWidth=2; g.setLineDash([7,4]); g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(Xx(p.x),Y(p.c)):g.moveTo(Xx(p.x),Y(p.c)); }); g.stroke(); g.setLineDash([]); g.lineWidth=1;
+  g.font=hand; g.textBaseline='alphabetic'; g.textAlign='left'; g.fillStyle=C0.mag; g.fillText(L({en:'capacity',no:'kapasitet'}),Xx(4.05),Y(capac(4.5))-6);
+  g.fillStyle=C0.blue; g.fillText(L({en:'workload',no:'belastning'}),Xx(0.1),Y(demand(0.3))-8);
+  g.fillStyle=C0.axis; g.textAlign='right'; g.fillText(L({en:'underload',no:'underbelastning'}),Xx(9)-4,Y(4));
+  if(Wl.ev==='eng'||Wl.ev==='ga'){ const xs=Wl.ev==='eng'?2.5:7.5; g.fillStyle=C0.red; g.textAlign=xs>6?'right':'left'; g.fillText(L({en:'startle',no:'skvett'}),Xx(xs)+(xs>6?-8:8),Y(capac(xs))+14); }
+}
+
+/* =================== 3. FATIGUE =================== */
+const F={wake:7,sl:7.5,n:2,ds:14,dl:10,rest:'none'};
+const SW=18.2, SS=4.2;
+const circ=t=>0.18*Math.cos(2*Math.PI*(t-17.5)/24)-0.04*Math.cos(4*Math.PI*(t-16)/24);
+const idx=(S,t)=>clamp(97.7*(circ(t)-S)+111.9,0,100);
+const fc=el('fCtl');
+LAB.slider(fc,{label:'Woke up at',min:3,max:11,step:0.25,v:F.wake,f:v=>hm(v),on:v=>{F.wake=v;fat();}});
+LAB.slider(fc,{label:'Sleep per night',min:4,max:9,step:0.5,v:F.sl,f:v=>nf(v,1)+' h',on:v=>{F.sl=v;fat();}});
+LAB.slider(fc,{label:'Nights at that amount',min:1,max:5,step:1,v:F.n,f:v=>v+'',on:v=>{F.n=v;fat();}});
+LAB.slider(fc,{label:'Duty starts',min:0,max:23.75,step:0.25,v:F.ds,f:v=>hm(v),on:v=>{F.ds=v;fat();}});
+LAB.slider(fc,{label:'Duty length (FDP)',min:4,max:14,step:0.5,v:F.dl,f:v=>nf(v,1)+' h',on:v=>{F.dl=v;fat();}});
+LAB.seg(el('fRest'),[['none','None'],['nap','Pre-duty nap (90 min)'],['cr','Controlled rest (45 min)']],F.rest,v=>{F.rest=v;fat();});
+const FC=LAB.fit(el('fgcv'),()=>fat(),2);
+function fsim(){ const dt=1/30; let S=0.3; const days=[...Array(6).fill(8),...Array(F.n).fill(F.sl)];
+  for(const h of days){ for(let x=0;x<24-h;x+=dt) S=1-(1-S)*Math.exp(-dt/SW); for(let x=0;x<h;x+=dt) S=S*Math.exp(-dt/SS); }
+  const W0=F.wake; let D0=F.ds; while(D0<W0+0.5) D0+=24; const D1=D0+F.dl; const end=Math.min(W0+42,Math.max(W0+24,D1+2));
+  let nap=null, cr=null, note=null;
+  if(F.rest==='nap'){ const ne=D0-1, ns=ne-1.5; if(ns>=W0+2) nap=[ns,ne]; else note='nap'; }
+  if(F.rest==='cr'){ if(F.dl>=3){ const s=Math.max(D0+1.5,D0+F.dl/2-0.4); cr=[s,s+0.75]; } else note='cr'; }
+  const pts=[]; let lastWake=W0, inert=0.12, tau=0.33;
+  for(let t=W0;t<=end+1e-9;t+=dt){ let asleep=false, phase=null;
+    if(nap&&t>=nap[0]&&t<nap[1]) asleep=true;
+    if(cr&&t>=cr[0]+1/12&&t<cr[0]+7/12) asleep=true;
+    if(asleep){ S=S*Math.exp(-dt/SS); pts.push({t,S,a:null,sleep:true}); lastWake=t+dt; inert= nap&&t<nap[1]? 0.09:0.06; tau=nap&&t<nap[1]?0.25:0.18; continue; }
+    const pen=inert*Math.exp(-(t-lastWake)/tau)*97.7;
+    pts.push({t,S,a:clamp(idx(S,t)-pen,0,100),sleep:false});
+    S=1-(1-S)*Math.exp(-dt/SW); }
+  return {pts,W0,D0,D1,end,nap,cr,note}; }
+function wocl(a,b){ let s=0; for(let d=Math.floor(a/24)-1;d<=Math.ceil(b/24)+1;d++){ const x0=d*24+2, x1=d*24+6; s+=Math.max(0,Math.min(b,x1)-Math.max(a,x0)); } return s; }
+function fat(){ const R=fsim(), P=R.pts; const on=P.filter(p=>!p.sleep&&p.t>=R.D0&&p.t<=R.D1);
+  const lo=on.reduce((m,p)=>p.a<m.a?p:m,on[0]), endp=on[on.length-1]; const debt=F.n*Math.max(0,8-F.sl); const awake=R.D1-R.W0; const wc=wocl(R.D0,R.D1);
+  const band=a=>a>=70?'ok':a>=45?'wa':'ko';
+  el('f1').innerHTML=`<span class="${debt>=4?'ko':debt>0?'wa':'ok'}">${nf(debt,1)} h</span>`;
+  el('f2').innerHTML=`<span class="${awake>=17?'ko':awake>=14?'wa':''}">${hrs(awake)}</span>`;
+  el('f3').innerHTML=`<span class="${wc>0?'wa':''}">${wc>0?hrs(wc):L({en:'none',no:'ingen'})}</span>`;
+  el('f4').innerHTML=`<span class="${band(lo.a)}">${nf(lo.a,0)} ${L({en:'at',no:'kl.'})} ${hm(lo.t)}</span>`;
+  el('f5').innerHTML=`<span class="${band(endp.a)}">${nf(endp.a,0)}</span>`;
+  let t;
+  if(R.note==='nap') t=L({en:'<b>No room for the nap.</b> The duty starts too soon after waking for a 90-minute nap that ends an hour before report. The nap works for afternoon or evening reports.',no:'<b>Ikke plass til blunden.</b> Tjenesten starter for kort tid etter at du våknet til en blund på 90 minutter som slutter en time før oppmøte. Blunden virker for oppmøte på ettermiddag eller kveld.'});
+  else if(wc>0&&awake>=17) t=L({en:'<b>Two effects stacked.</b> The duty runs into the window of circadian low after a long time awake. Sleep pressure is high and the body clock is at its lowest at the same time, which gives the deepest trough the model can produce. Microsleeps become likely, and the last sector and landing fall in it.',no:'<b>To effekter oppå hverandre.</b> Tjenesten går inn i døgnrytmens lavpunkt etter lang tid våken. Søvnpresset er høyt og den indre klokken er på sitt laveste samtidig, og det gir den dypeste dalen modellen kan gi. Mikrosøvn blir sannsynlig, og siste etappe og landing havner i den.'});
+  else if(wc>0) t=L({en:'<b>Early start or night duty.</b> Part of the duty is in the WOCL. Even after a good night, the body clock pulls alertness down, and an early report usually means the night before was cut short as well.',no:'<b>Tidlig start eller nattjeneste.</b> En del av tjenesten ligger i WOCL. Selv etter en god natt trekker den indre klokken årvåkenheten ned, og et tidlig oppmøte betyr som regel at natten før også ble kortere.'});
+  else if(debt>=3) t=L({en:'<b>Sleep debt.</b> Even a daytime duty starts lower and ends lower than after normal sleep. Compare 5 h and 8 h for a few nights: the whole curve moves down.',no:'<b>Søvngjeld.</b> Selv en dagtjeneste starter lavere og slutter lavere enn etter normal søvn. Sammenlign 5 og 8 timer i noen netter: hele kurven flytter seg ned.'});
+  else if(awake>=16) t=L({en:'<b>A long day.</b> The duty itself is in daytime, but you have been awake a long time by the end of it. The evening lift of the body clock holds alertness up for a while, then it falls quickly.',no:'<b>En lang dag.</b> Selve tjenesten er på dagtid, men du har vært våken lenge når den slutter. Kveldsløftet i den indre klokken holder årvåkenheten oppe en stund, så faller den raskt.'});
+  else t=L({en:'<b>A well-placed duty.</b> Rested, inside the circadian day, and not too long awake at the end. Notice the small dip after lunch: it is a property of the body clock, not of the meal.',no:'<b>En godt plassert tjeneste.</b> Uthvilt, innenfor døgnrytmens dag og ikke for lenge våken ved slutten. Legg merke til den lille duppen etter lunsj: den hører til den indre klokken, ikke måltidet.'});
+  if(R.cr) t+=' '+L({en:'The controlled rest gives a small lift, preceded by a short grogginess after waking; the 20 minutes after it are planned as recovery before full duties.',no:'Den kontrollerte hvilen gir et lite løft, etter en kort ørhet når du våkner; de 20 minuttene etter er planlagt som restitusjon før full tjeneste.'});
+  if(R.nap) t+=' '+L({en:'The pre-duty nap removes part of the sleep pressure before the report, which lifts the whole duty.',no:'Blunden før tjenesten fjerner en del av søvnpresset før oppmøte, og det løfter hele tjenesten.'});
+  el('fx').innerHTML=t;
+  const g=FC.ctx, W=FC.w, H=FC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pl=40, pr=12, pt=26, pb=34, t0=R.W0, t1=R.end, X=t=>pl+(t-t0)/(t1-t0)*(W-pl-pr), Y=v=>H-pb-v/100*(H-pt-pb);
+  // WOCL
+  for(let d=Math.floor(t0/24);d<=Math.ceil(t1/24);d++){ const a=Math.max(t0,d*24+2), b=Math.min(t1,d*24+6); if(b>a){ g.fillStyle='rgba(91,75,176,.10)'; g.fillRect(X(a),pt,X(b)-X(a),H-pt-pb); g.fillStyle=C0.violet; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top'; if(X(b)-X(a)>34) g.fillText('WOCL',(X(a)+X(b))/2,pt+3); } }
+  // duty
+  g.fillStyle='rgba(154,30,104,.08)'; g.fillRect(X(R.D0),pt,X(R.D1)-X(R.D0),H-pt-pb); g.strokeStyle='rgba(154,30,104,.5)'; g.beginPath(); g.moveTo(X(R.D0)+.5,pt); g.lineTo(X(R.D0)+.5,H-pb); g.moveTo(X(R.D1)+.5,pt); g.lineTo(X(R.D1)+.5,H-pb); g.stroke();
+  g.fillStyle=C0.mag; g.font='600 11.5px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='bottom'; g.fillText(L({en:'duty',no:'tjeneste'}),(X(R.D0)+X(R.D1))/2,pt-4);
+  [[R.nap,{en:'nap',no:'blund'}],[R.cr,{en:'rest',no:'hvile'}]].forEach(([r,lb])=>{ if(!r) return; g.fillStyle='rgba(44,122,75,.18)'; g.fillRect(X(r[0]),pt,X(r[1])-X(r[0]),H-pt-pb); if(R.cr&&r===R.cr){ g.fillStyle='rgba(44,122,75,.07)'; g.fillRect(X(r[1]),pt,X(r[1]+1/3)-X(r[1]),H-pt-pb); } g.fillStyle=C0.green; g.textAlign='center'; g.textBaseline='bottom'; g.fillText(L(lb),(X(r[0])+X(r[1]))/2,pt-4); });
+  // bånd
+  g.font=mono; g.textAlign='right'; g.textBaseline='middle'; [0,25,45,70,100].forEach(v=>{ g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(pl,Y(v)+.5); g.lineTo(W-pr,Y(v)+.5); g.stroke(); g.fillStyle=C0.axis; g.fillText(v+'',pl-6,Y(v)); });
+  g.save(); g.translate(11,(pt+H-pb)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText(L({en:'alertness (model index)',no:'årvåkenhet (modellindeks)'}),0,0); g.restore();
+  g.textAlign='center'; g.textBaseline='top'; const stp=(t1-t0)>30||W<500?6:3; for(let h=Math.ceil(t0/stp)*stp;h<=t1;h+=stp){ g.fillStyle=C0.axis; g.fillText(hm(h),X(h),H-pb+6); g.strokeStyle='rgba(0,0,0,.05)'; g.beginPath(); g.moveTo(X(h)+.5,pt); g.lineTo(X(h)+.5,H-pb); g.stroke(); }
+  // sirkadisk referanse
+  g.strokeStyle='rgba(91,75,176,.45)'; g.setLineDash([3,4]); g.beginPath(); for(let t=t0;t<=t1;t+=0.1){ const v=50+circ(t)*220; t===t0?g.moveTo(X(t),Y(v)):g.lineTo(X(t),Y(v)); } g.stroke(); g.setLineDash([]);
+  // kurve, farget etter bånd
+  g.lineWidth=2.6; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i]; if(a.sleep||b.sleep) continue; const v=(a.a+b.a)/2; g.strokeStyle=v>=70?C0.green:v>=45?C0.amber:C0.red; g.globalAlpha=(b.t<R.D0||b.t>R.D1)?0.45:1; g.beginPath(); g.moveTo(X(a.t),Y(a.a)); g.lineTo(X(b.t),Y(b.a)); g.stroke(); } g.globalAlpha=1; g.lineWidth=1;
+  g.font=hand; g.textBaseline='alphabetic'; g.textAlign='left'; g.fillStyle=C0.violet; const tb=t0+(t1-t0)*0.04; g.fillText(L({en:'body clock',no:'indre klokke'}),X(tb),Y(50+circ(tb)*220)-6);
+  if(lo){ g.fillStyle=C0.ink; g.beginPath(); g.arc(X(lo.t),Y(lo.a),4.5,0,7); g.fill(); }
+}
+
+/* =================== 4a. SWISS CHEESE =================== */
+const LAY=[{en:'Organisation',no:'Organisasjon'},{en:'Procedures and supervision',no:'Prosedyrer og tilsyn'},{en:'Preconditions',no:'Forutsetninger'},{en:'Crew actions',no:'Besetningens handlinger'},{en:'Last barriers',no:'Siste barrierer'}];
+const LAYS=[{en:'roster, training, culture',no:'turnus, trening, kultur'},{en:'SOPs, checklists, MEL',no:'SOP, sjekklister, MEL'},{en:'fatigue, workload, weather',no:'tretthet, belastning, vær'},{en:'briefing, cross-check',no:'briefing, krysskontroll'},{en:'TCAS, EGPWS, ATC',no:'TCAS, EGPWS, ATC'}];
+const Sw={f:0.15,deg:[false,true,false,false,false]};
+LAB.slider(el('swCtl'),{label:'Hole size per layer',min:0.05,max:0.35,step:0.01,v:Sw.f,f:v=>nf(v*100,0)+' %',on:v=>{Sw.f=v;sw();}});
+function swChk(){ el('swChk').innerHTML=LAY.map((l,i)=>`<label class="chk"><input type="checkbox" data-i="${i}" ${Sw.deg[i]?'checked':''}> <span>${i+1} · ${L(l)} <small style="color:var(--ink-2)">(${L(LAYS[i])})</small></span></label>`).join(''); }
+el('swChk').addEventListener('change',e=>{ const i=e.target.dataset.i; if(i!==undefined){ Sw.deg[+i]=e.target.checked; sw(); } });
+const SC2=LAB.fit(el('swcv'),()=>sw(),2);
+function holes(i){ const f=Math.min(0.8,Sw.f*(Sw.deg[i]?2.2:1)); const r=rng(101+i*17); const n=3; const ws=[0,0,0].map(()=>0.6+r()); const sum=ws.reduce((a,b)=>a+b,0); const hs=[]; let free=1-f; const gaps=[0,0,0,0].map(()=>0.3+r()); const gs=gaps.reduce((a,b)=>a+b,0); let y=gaps[0]/gs*free; for(let k=0;k<n;k++){ const h=ws[k]/sum*f; hs.push([y,y+h]); y+=h+gaps[k+1]/gs*free; } return {f,hs}; }
+function sw(){ const HL=LAY.map((_,i)=>holes(i)); const prob=HL.reduce((p,h)=>p*h.f,1); const r=rng(7); const N=4000; let thr=0; const tr=[];
+  for(let k=0;k<N;k++){ let y=r(); const path=[y]; let ok=true, stop=5; for(let i=0;i<5;i++){ if(i>0){ y=clamp(y+(r()-0.5)*0.12,0.001,0.999); path.push(y); } if(!HL[i].hs.some(([a,b])=>y>=a&&y<=b)){ ok=false; stop=i; break; } } if(ok) thr++; if(k<140||ok) tr.push({path,ok,stop}); }
+  el('s1').innerHTML=`<span class="${prob>1e-3?'ko':prob>1e-5?'wa':'ok'}">${prob<1e-6?'< 1 '+L({en:'in a million',no:'av en million'}):'1 '+L({en:'in',no:'av'})+' '+nf(Math.round(1/prob),0)}</span>`;
+  el('s2').innerHTML=`<span class="${thr?'ko':'ok'}">${nf(thr,0)}</span>`;
+  const nd=Sw.deg.filter(Boolean).length;
+  el('swx').innerHTML= nd===0? L({en:'<b>All layers healthy.</b> Each layer alone lets a fair share of hazards through, but because the holes are in different places, almost nothing gets through all five. Multiplying the chances is the whole idea of defence in depth.',no:'<b>Alle lag friske.</b> Hvert lag alene slipper gjennom en god del farer, men fordi hullene ligger på ulike steder, kommer nesten ingenting gjennom alle fem. Å multiplisere sjansene er hele ideen med forsvar i dybden.'})
+   : nd>=3? L({en:'<b>Several degraded layers.</b> This is how most accidents look in hindsight: a roster that built fatigue, a procedure that was unclear, a briefing that was skipped and a warning that came late. No single failure caused it; the holes lined up.',no:'<b>Flere svekkede lag.</b> Slik ser de fleste ulykker ut i ettertid: en turnus som bygget tretthet, en prosedyre som var uklar, en briefing som ble hoppet over og et varsel som kom sent. Ingen enkelt feil forårsaket det; hullene sto på linje.'})
+   : L({en:'<b>One or two degraded layers.</b> Latent conditions can lie quietly for years because the other layers still hold. That is why reporting systems and audits look for holes before an event, not after it.',no:'<b>Ett eller to svekkede lag.</b> Latente forhold kan ligge stille i årevis fordi de andre lagene fortsatt holder. Derfor leter rapporteringssystemer og revisjoner etter hull før en hendelse, ikke etter.'});
+  const g=SC2.ctx, W=SC2.w, H=SC2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pl=W<480?26:40, pr=W<480?34:70, pt=W<560?30:16, pb=W<480?52:46, sw0=W<480?14:20, xs=i=>pl+20+i*((W-pl-pr-40)/4), Yy=v=>pt+v*(H-pt-pb);
+  g.font=hand; g.fillStyle=C0.amber; g.textAlign='left'; g.textBaseline='alphabetic'; g.fillText(L({en:'hazards',no:'farer'}),4,W<560?18:pt+12);
+  g.fillStyle=C0.red; g.textAlign='right'; g.fillText(L({en:'accident',no:'ulykke'}),W-4,W<560?18:pt+12);
+  tr.forEach(o=>{ if(o.ok) return; g.strokeStyle='rgba(168,106,0,.22)'; g.beginPath(); g.moveTo(pl-14,Yy(o.path[0])); o.path.forEach((y,i)=>g.lineTo(xs(i)-(i===o.stop?sw0/2:0),Yy(y))); g.stroke(); });
+  HL.forEach((h,i)=>{ const x=xs(i)-sw0/2; g.fillStyle=Sw.deg[i]?'#F3D7A0':'#F6E3A8'; g.strokeStyle=Sw.deg[i]?C0.red:'#B89A4E'; rr(g,x,Yy(0),sw0,Yy(1)-Yy(0),5); g.fill(); g.stroke(); g.fillStyle=C0.bg; h.hs.forEach(([a,b])=>{ rr(g,x+3,Yy(a),sw0-6,Math.max(2,Yy(b)-Yy(a)),Math.min(6,(sw0-6)/2)); g.fill(); });
+    g.fillStyle=Sw.deg[i]?C0.red:C0.ink2; g.font='600 '+(W<480?'10px':'11px')+' "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top'; const lb=W<560?String(i+1):L(LAY[i]); const ls=wrapLines(g,lb,(W-pl-pr)/5+6); ls.forEach((l,k)=>g.fillText(l,xs(i),H-pb+6+k*12)); });
+  tr.forEach(o=>{ if(!o.ok) return; g.strokeStyle=C0.red; g.lineWidth=1.6; g.beginPath(); g.moveTo(pl-14,Yy(o.path[0])); o.path.forEach((y,i)=>g.lineTo(xs(i),Yy(y))); g.lineTo(W-pr+24,Yy(o.path[4])); g.stroke(); g.lineWidth=1; });
+}
+
+/* =================== 4b. SCENARIO DRILL =================== */
+const CL=[['T',{en:'Threat',no:'Trussel'}],['E',{en:'Error',no:'Feil'}],['U',{en:'Undesired aircraft state',no:'Uønsket flytilstand'}]];
+const SCN=[
+ {s:{en:'Before top of descent the ATIS changes the landing runway. The new runway is wet, has a 9 kt tailwind component, and comes with an arrival you have never flown.',no:'Før toppen av nedstigningen endrer ATIS landingsbanen. Den nye banen er våt, har 9 kt medvindskomponent og kommer med en ankomstrute du aldri har fløyet.'},cls:'T',
+  w:{en:'Weather, runway and procedure are outside the crew’s influence: a threat. It is still harmless, because nothing has gone wrong yet; it just makes the next 30 minutes more complex.',no:'Vær, bane og prosedyre er utenfor besetningens innflytelse: en trussel. Den er fortsatt ufarlig, for ingenting har gått galt ennå; den gjør bare de neste 30 minuttene mer komplekse.'},
+  cm:[{en:'Re-brief now: the new arrival and approach, landing performance with the tailwind on a wet runway, and what you will do if the tailwind increases',no:'Brief på nytt nå: den nye ankomsten og innflygingen, landingsytelse med medvind på våt bane, og hva dere gjør om medvinden øker'},{en:'Wait for the approach clearance before looking at it, to keep the workload low in cruise',no:'Vent med å se på det til innflygingsklareringen kommer, for å holde belastningen lav i marsj'},{en:'Load the new arrival and let the FMS manage the constraints',no:'Legg inn den nye ankomsten og la FMS håndtere restriksjonene'}],ok:0,
+  cw:{en:'Threats are managed by anticipation: use the quiet phase to plan, check performance and agree the limits before the workload rises.',no:'Trusler håndteres ved å forutse dem: bruk den rolige fasen til å planlegge, sjekke ytelse og bli enige om grensene før belastningen stiger.'}},
+ {s:{en:'Cleared to 4000 ft. The PF sets 5000 ft in the FCU altitude window. The aircraft is still descending through 8000 ft and nobody has said anything.',no:'Klarert til 4000 ft. PF setter 5000 ft i høydevinduet på FCU. Flyet synker fortsatt gjennom 8000 ft, og ingen har sagt noe.'},cls:'E',
+  w:{en:'A crew action that does not match the clearance: an error. The aircraft is not yet in a wrong state; if it is caught now, it has no consequence at all.',no:'En handling fra besetningen som ikke stemmer med klareringen: en feil. Flyet er ennå ikke i feil tilstand; fanges den nå, får den ingen følger i det hele tatt.'},
+  cm:[{en:'Request 5000 ft from ATC so the clearance matches the FCU',no:'Be ATC om 5000 ft så klareringen stemmer med FCU'},{en:'The PM checks the FCU against the clearance and calls it; the PF corrects it: “4000 set”, “checked”',no:'PM sjekker FCU mot klareringen og sier fra; PF retter: «4000 set», «checked»'},{en:'Leave it; the altitude constraint in the FMS will stop the descent anyway',no:'La det være; høyderestriksjonen i FMS stopper nedstigningen uansett'}],ok:1,
+  cw:{en:'Errors are trapped by cross-checking. Every FCU selection is announced and verified against the clearance by the other pilot.',no:'Feil fanges opp med krysskontroll. Hvert valg på FCU annonseres og kontrolleres mot klareringen av den andre flygeren.'}},
+ {s:{en:'Passing 1000 ft above the runway in IMC, the speed is VAPP + 20 kt, the aircraft is in CONF 3 and the landing checklist is not done.',no:'Gjennom 1000 ft over banen i IMC er farten VAPP + 20 kt, flyet er i CONF 3 og landingssjekklisten er ikke gjort.'},cls:'U',
+  w:{en:'Speed and configuration are already outside the stabilisation criteria: the aircraft is in an undesired state. Whatever caused it, the margin is reduced now.',no:'Fart og konfigurasjon er allerede utenfor stabiliseringskriteriene: flyet er i en uønsket tilstand. Uansett årsak er marginen redusert nå.'},
+  cm:[{en:'Continue and aim to be stable by 500 ft',no:'Fortsett og prøv å være stabil innen 500 ft'},{en:'Extend the speedbrakes, select CONF FULL and continue',no:'Kjør ut luftbremsene, velg CONF FULL og fortsett'},{en:'Go around',no:'Gå rundt'}],ok:2,
+  cw:{en:'An undesired aircraft state is managed by restoring a safe state. The stabilisation gate is a defence agreed in advance precisely so that nobody has to judge it under pressure. (Speedbrakes are also not used in CONF FULL on the A320.)',no:'En uønsket flytilstand håndteres ved å gjenopprette en sikker tilstand. Stabiliseringsporten er et forsvar avtalt på forhånd nettopp for at ingen skal måtte vurdere det under press. (Luftbremser brukes heller ikke i CONF FULL på A320.)'}},
+ {s:{en:'The aircraft is dispatched under the MEL with one air-conditioning pack inoperative. The operational flight plan was made for a higher flight level than the MEL allows with one pack.',no:'Flyet er sendt ut etter MEL med én klimapakke ute av drift. Den operative færdplanen er laget for et høyere flygenivå enn MEL tillater med én pakke.'},cls:'T',
+  w:{en:'The defect and the planning gap come from outside the crew: a threat, and a latent one built into the day’s paperwork.',no:'Feilen og hullet i planleggingen kommer utenfra besetningen: en trussel, og en latent en som er bygget inn i dagens papirer.'},
+  cm:[{en:'Read the MEL operational procedure, confirm the maximum flight level and the fuel effect, brief it, and tell dispatch about the planning error',no:'Les den operative prosedyren i MEL, bekreft maksimalt flygenivå og effekten på drivstoffet, brief det, og si fra til dispatch om planleggingsfeilen'},{en:'Fly the planned level; one pack can supply the cabin',no:'Fly planlagt nivå; én pakke kan forsyne kabinen'},{en:'Refuse the aircraft until the pack is fixed',no:'Nekt å ta flyet til pakken er reparert'}],ok:0,
+  cw:{en:'An expected threat is managed in planning: know the limitation, adjust the plan and the fuel, and feed the gap back so the system improves.',no:'En forventet trussel håndteres i planleggingen: kjenn begrensningen, juster planen og drivstoffet, og meld fra om hullet så systemet blir bedre.'}},
+ {s:{en:'During preparation the first officer enters a zero-fuel weight 6 t lower than the loadsheet in the MCDU. The take-off speeds are computed from it.',no:'Under forberedelsene legger styrmannen inn en nullbrenselvekt 6 t lavere enn lastearket i MCDU. Avgangsfartene beregnes ut fra den.'},cls:'E',
+  w:{en:'A wrong entry by the crew: a procedural error. If it is not trapped, it becomes an undesired state at rotation: speeds too low, a risk of tail strike and poor climb.',no:'En feil verdi lagt inn av besetningen: en prosedyrefeil. Fanges den ikke, blir den en uønsket tilstand ved rotasjon: for lave farter, fare for halenedslag og dårlig stigning.'},
+  cm:[{en:'Trust the speeds if they look normal',no:'Stol på fartene hvis de ser normale ut'},{en:'Use TOGA thrust on every take-off to cover data errors',no:'Bruk TOGA på alle avganger for å dekke feil i data'},{en:'An independent cross-check: the other pilot compares the loadsheet with the MCDU weights and the take-off data',no:'En uavhengig krysskontroll: den andre flygeren sammenligner lastearket med vektene i MCDU og avgangsdataene'}],ok:2,
+  cw:{en:'Data-entry errors are caught by independent checks of the source document against what was entered, not by whether the result looks plausible.',no:'Feil i datainnlegging fanges av uavhengige kontroller av kildedokumentet mot det som ble lagt inn, ikke av om resultatet ser rimelig ut.'}},
+ {s:{en:'After hand-flying round a CB, the autopilot was not re-engaged. While both pilots discuss the new route, the aircraft drifts 300 ft above the cleared level.',no:'Etter håndflyging rundt en CB ble autopiloten ikke koblet inn igjen. Mens begge flygerne diskuterer den nye ruten, driver flyet 300 ft over klarert nivå.'},cls:'U',
+  w:{en:'The aircraft is off its cleared level: an undesired aircraft state, which started with an error (AP not re-engaged, nobody monitoring).',no:'Flyet er utenfor klarert nivå: en uønsket flytilstand, som startet med en feil (AP ikke koblet inn, ingen overvåket).'},
+  cm:[{en:'The PF flies back to the cleared level and re-engages the AP; then the crew tells ATC if needed and finishes the route discussion',no:'PF flyr tilbake til klarert nivå og kobler inn AP; så sier besetningen fra til ATC om nødvendig og avslutter rutediskusjonen'},{en:'First find out why the AP was not re-engaged',no:'Finn først ut hvorfor AP ikke ble koblet inn'},{en:'Call ATC first and ask for a block level',no:'Ring ATC først og be om et høydeintervall'}],ok:0,
+  cw:{en:'With an undesired state, fly first: correct the flight path, then communicate, then analyse. The analysis is for later.',no:'Ved en uønsket tilstand flyr du først: rett opp flybanen, så kommuniser, så analyser. Analysen er for senere.'}},
+ {s:{en:'On downwind at night, ATC offers a different runway “if you can accept it now”. It would save 8 minutes, but needs a new approach in the FMS, new performance data and a new briefing.',no:'På medvindslegget om natten tilbyr ATC en annen bane «if you can accept it now». Den sparer 8 minutter, men krever en ny innflyging i FMS, nye ytelsesdata og en ny briefing.'},cls:'T',
+  w:{en:'An offer from ATC with time pressure: a threat. Accepting it without the time to prepare would be the error.',no:'Et tilbud fra ATC med tidspress: en trussel. Å akseptere uten tid til å forberede seg ville vært feilen.'},
+  cm:[{en:'Accept and set it up on the way in',no:'Aksepter og sett det opp på vei inn'},{en:'Say “unable”, or ask for extra track miles until it is set up and briefed',no:'Si «unable», eller be om ekstra distanse til det er satt opp og briefet'},{en:'Accept and fly it visually without changing the FMS',no:'Aksepter og fly visuelt uten å endre FMS'}],ok:1,
+  cw:{en:'Workload management is a countermeasure: you decide how much time you need, not ATC and not the schedule.',no:'Styring av arbeidsbelastning er et mottiltak: det er du som bestemmer hvor mye tid du trenger, ikke ATC og ikke ruteplanen.'}},
+ {s:{en:'Taxiing at night, the aircraft passes the holding point of the active runway that the crew had read back as “holding short”.',no:'Under taksing om natten passerer flyet venteposisjonen for aktiv bane som besetningen hadde lest tilbake som «holding short».'},cls:'U',
+  w:{en:'The aircraft is where it must not be: an undesired aircraft state on the ground (a runway incursion). The error, missing the stop bar and signs, was not trapped.',no:'Flyet er der det ikke skal være: en uønsket flytilstand på bakken (en baneinntrengning). Feilen, å overse stopplyset og skiltene, ble ikke fanget opp.'},
+  cm:[{en:'Continue quickly across to get off the runway',no:'Fortsett raskt over for å komme av banen'},{en:'Stop, tell ATC at once where you are, and follow the instructions',no:'Stopp, si straks fra til ATC hvor dere er, og følg instruksjonene'},{en:'Turn round on the runway and taxi back to the holding point',no:'Snu på banen og takse tilbake til venteposisjonen'}],ok:1,
+  cw:{en:'Restore safety with the least risk: stop and make the situation known, so ATC can stop other traffic. Guessing in the dark adds risk.',no:'Gjenopprett sikkerheten med minst risiko: stopp og gjør situasjonen kjent, så ATC kan stoppe annen trafikk. Å gjette i mørket øker risikoen.'}}];
+const DR={i:0,step:0,pick:-1,score:0,order:LAB.shuffle(SCN.map((_,i)=>i))};
+function drill(){ const box=el('drill'); const n=SCN.length;
+  if(DR.i>=n){ const pct=Math.round(DR.score/(2*n)*100); box.innerHTML=`<div class="qend"><span class="qtop">${L({en:'Drill result',no:'Resultat'})}</span><span class="big">${DR.score} / ${2*n}</span><p class="note">${L(pct>=85?{en:'Strong. You separate the categories and pick the countermeasure that fits each.',no:'Sterkt. Du skiller kategoriene og velger mottiltaket som passer hver av dem.'}:{en:'Read the explanations again: threats are anticipated, errors are trapped, undesired states are fixed first.',no:'Les forklaringene igjen: trusler forutses, feil fanges opp, uønskede tilstander rettes først.'})}</p><button class="btn pri" id="drAgain">${L({en:'Run again',no:'Kjør igjen'})}</button></div>`; el('drAgain').onclick=()=>{ DR.i=0; DR.step=0; DR.pick=-1; DR.score=0; DR.order=LAB.shuffle(SCN.map((_,i)=>i)); drill(); }; return; }
+  const sc=SCN[DR.order[DR.i]]; const answered=DR.pick>=0;
+  const opts= DR.step===0? CL.map(c=>c[1]) : sc.cm; const corr= DR.step===0? CL.findIndex(c=>c[0]===sc.cls) : sc.ok;
+  box.innerHTML=`<div class="quiz"><div class="qtop"><span>${L({en:'Scenario',no:'Scenario'})} ${DR.i+1} ${L({en:'of',no:'av'})} ${n} · ${DR.step===0?L({en:'classify',no:'klassifiser'}):L({en:'countermeasure',no:'mottiltak'})}</span><span>${DR.score} ${L({en:'points',no:'poeng'})}</span></div><div class="qbar"><i style="width:${(DR.i*2+DR.step)/(2*n)*100}%"></i></div>
+   <div class="box scen"><p>${L(sc.s)}</p></div>
+   <p class="qq">${DR.step===0?L({en:'In TEM terms, what is this?',no:'Hva er dette i TEM-termer?'}):L({en:'What is the best countermeasure?',no:'Hva er det beste mottiltaket?'})}</p>
+   <div class="qopts">${opts.map((o,k)=>`<button data-k="${k}" ${answered?'disabled':''} class="${answered?(k===corr?'right':(k===DR.pick?'wrong':'')):''}">${L(o)}</button>`).join('')}</div>
+   ${answered?`<div class="qexp"><b class="${DR.pick===corr?'ok':'no'}">${L(DR.pick===corr?{en:'Correct',no:'Riktig'}:{en:'Not quite',no:'Ikke helt'})}.</b> ${L(DR.step===0?sc.w:sc.cw)}</div><div><button class="btn pri" id="drNext">${L(DR.step===0?{en:'Choose the countermeasure',no:'Velg mottiltaket'}:DR.i===n-1?{en:'See result',no:'Se resultat'}:{en:'Next scenario',no:'Neste scenario'})}</button></div>`:''}</div>`;
+  box.querySelectorAll('.qopts button').forEach(b=>b.onclick=()=>{ if(DR.pick>=0) return; DR.pick=+b.dataset.k; if(DR.pick===corr) DR.score++; drill(); });
+  const nx=el('drNext'); if(nx) nx.onclick=()=>{ if(DR.step===0){ DR.step=1; } else { DR.step=0; DR.i++; } DR.pick=-1; drill(); }; }
+
+/* =================== 4c. ASSERTIVENESS LADDER =================== */
+const LAD=[
+ [{en:'Probe',no:'Spør'},{en:'a question that invites a look',no:'et spørsmål som inviterer til å se'},{en:'“Speed is plus fifteen. Do you want flaps three now?”',no:'«Speed is plus fifteen. Do you want flaps three now?»'},{en:'Low key and face-saving. It often works, because the captain may simply not have noticed. The risk is that a hint is too soft to be heard at a busy moment.',no:'Lavmælt og lar den andre bevare ansiktet. Det virker ofte, fordi kapteinen kanskje bare ikke har lagt merke til det. Risikoen er at et hint er for mykt til å bli hørt i et travelt øyeblikk.'}],
+ [{en:'Alert',no:'Varsle'},{en:'state the concern and the fact',no:'si bekymringen og faktum'},{en:'“I’m concerned: we are fast and not configured. We won’t be stable by one thousand.”',no:'«I’m concerned: we are fast and not configured. We won’t be stable by one thousand.»'},{en:'Name the problem directly, with the facts. Using the captain’s name or rank at the start gets attention: the brain is good at filtering everything else.',no:'Navngi problemet direkte, med fakta. Å bruke kapteinens navn eller tittel først skaffer oppmerksomhet: hjernen er flink til å filtrere bort alt annet.'}],
+ [{en:'Challenge',no:'Utfordre'},{en:'propose the action and ask for a response',no:'foreslå handlingen og krev et svar'},{en:'“Captain, if we are not stable at one thousand we go around. Do you agree?”',no:'«Captain, if we are not stable at one thousand we go around. Do you agree?»'},{en:'Point to the agreed limit and ask for a commitment. A question that needs a yes or no cannot be ignored without it being obvious.',no:'Vis til den avtalte grensen og be om en forpliktelse. Et spørsmål som krever ja eller nei, kan ikke overses uten at det blir tydelig.'}],
+ [{en:'Emergency',no:'Nødsituasjon'},{en:'direct command or action',no:'direkte ordre eller handling'},{en:'“Go around!”',no:'«Go around!»'},{en:'At the gate, unstable: call it. Many operators’ SOPs say that a go-around call by either pilot must be followed. If there is still no response, consider incapacitation and take control (“I have control”).',no:'Ved porten, ustabil: si det. Mange operatørers SOP sier at et «go around»-utrop fra en av flygerne skal følges. Kommer det fortsatt ingen respons, vurder at kapteinen er ufør og ta over («I have control»).'}]];
+let ladI=0;
+function ladder(){ el('ladder').innerHTML=LAD.map((r,i)=>`<button data-i="${i}" class="${i===ladI?'on':''}"><b>${i+1} · ${L(r[0])}</b><span>${L(r[1])}</span></button>`).join('');
+  const r=LAD[ladI]; el('ladTxt').innerHTML=`<b class="t">${ladI+1} · ${L(r[0])}</b><div class="quote">${L(r[2])}</div><p>${L(r[3])}</p>`; }
+el('ladder').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ladI=+b.dataset.i; ladder(); });
+
+/* =================== 5a. SEE AND AVOID =================== */
+const SA={geo:'head',span:34,cond:'avg',v1:250,v2:250,hd:6};
+LAB.seg(el('saGeo'),[['head','Head-on'],['cross','Crossing (90°)'],['conv','Converging (45°)']],SA.geo,v=>{SA.geo=v;sa();});
+LAB.slider(el('saTgt'),{label:'Other aircraft wingspan',min:10,max:65,step:1,v:SA.span,f:v=>v+' m',hint:'A320: 34 m. A larger span is seen earlier.',on:v=>{SA.span=v;sa();}});
+LAB.seg(el('saCond'),[['good','Good: clear, active scan'],['avg','Average'],['poor','Poor: haze, low sun']],SA.cond,v=>{SA.cond=v;sa();});
+LAB.slider(el('saCtl'),{label:'Own speed (TAS)',min:100,max:480,step:10,v:SA.v1,f:v=>v+' kt',on:v=>{SA.v1=v;sa();}});
+LAB.slider(el('saCtl'),{label:'Other aircraft speed (TAS)',min:80,max:480,step:10,v:SA.v2,f:v=>v+' kt',on:v=>{SA.v2=v;sa();}});
+LAB.slider(el('saCtl'),{label:'Head-down time per scan cycle',min:0,max:20,step:1,v:SA.hd,f:v=>v+' s',on:v=>{SA.hd=v;sa();}});
+const CHAIN=[[0.1,{en:'see',no:'se'}],[1.0,{en:'recognise aircraft',no:'kjenne igjen fly'}],[5.0,{en:'realise collision course',no:'forstå kollisjonskurs'}],[4.0,{en:'decide',no:'bestemme'}],[0.4,{en:'move controls',no:'bevege rorene'}],[2.0,{en:'aircraft responds',no:'flyet reagerer'}]];
+const CHC=['#9AA6AC','#7E8B93','#1E5E9E','#5B4BB0','#2C7A4B','#A86A00'];
+const SAC=LAB.fit(el('sacv'),()=>sa(),2);
+function sa(){ const th={head:180,cross:90,conv:45}[SA.geo]*Math.PI/180; const vc=Math.sqrt(SA.v1*SA.v1+SA.v2*SA.v2-2*SA.v1*SA.v2*Math.cos(th));
+  const span=SA.span, amin={good:5,avg:10,poor:20}[SA.cond]; const dm=span/(amin/60*Math.PI/180); const dnm=dm/1852;
+  const T=dnm/vc*3600, need=12.5, delay=SA.hd/2, avail=T-delay, mg=avail-need;
+  el('v1').textContent=nf(vc,0)+' kt'; el('v2').textContent=nf(dnm,1)+' NM'; el('v3').textContent=nf(T,1)+' s';
+  el('v4').textContent=nf(need,1)+' s'+(delay>0?' + '+nf(delay,0)+' s '+L({en:'scan delay',no:'skanneforsinkelse'}):'');
+  el('v5').innerHTML=`<span class="${mg<0?'ko':mg<10?'wa':'ok'}">${mg>=0?'+':''}${nf(mg,1)} s</span>`;
+  let t= mg<0? L({en:'<b>Too late.</b> Even if everything goes right from the moment the other aircraft becomes visible, the aircraft cannot be moved out of the way in time. At airliner speeds, see-and-avoid alone is not a reliable defence; this is why controlled airspace, transponders and TCAS exist.',no:'<b>For sent.</b> Selv om alt går riktig fra det øyeblikket det andre flyet blir synlig, kan flyet ikke flyttes unna i tide. I trafikkflyfart er se-og-unngå alene ikke et pålitelig forsvar; derfor finnes kontrollert luftrom, transpondere og TCAS.'})
+   : mg<10? L({en:'<b>Just possible.</b> The margin depends on looking in the right place at the right moment. Any extra time with the head down, or a target hidden behind a windscreen pillar, removes it.',no:'<b>Så vidt mulig.</b> Marginen avhenger av å se på riktig sted i riktig øyeblikk. Litt ekstra tid med blikket inne, eller et mål skjult bak en vindusstolpe, fjerner den.'})
+   : L({en:'<b>Time enough, on paper.</b> The model assumes the target is detected at the first scan after it becomes visible. In reality detection is a matter of probability, and many mid-air collisions happened in good visibility.',no:'<b>Nok tid, på papiret.</b> Modellen forutsetter at målet oppdages ved første skanning etter at det blir synlig. I virkeligheten er oppdagelse et spørsmål om sannsynlighet, og mange kollisjoner i luften skjedde i godt sikt.'});
+  if(SA.geo!=='head') t+=' '+L({en:'Note that the other aircraft stays at a fixed bearing in your windscreen all the way: no movement to attract the eye.',no:'Legg merke til at det andre flyet blir stående på fast peiling i frontruten hele veien: ingen bevegelse som trekker blikket.'});
+  el('sax').innerHTML=t;
+  const g=SAC.ctx, W=SAC.w, H=SAC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const tlH=W<560?140:Math.min(120,H*0.32), planH=H-tlH-10;
+  // plan: kollisjonspunkt
+  const d1=SA.v1*T/3600, d2=SA.v2*T/3600; 
+  const o2={x:-Math.sin(th)*d2,y:-Math.cos(th)*d2}; // NM fra kollisjonspunktet, opp er +y
+  const xsN=[0,0,o2.x], ysN=[0,-d1,o2.y]; const minX=Math.min(...xsN), maxX=Math.max(...xsN), minY=Math.min(...ysN), maxY=Math.max(...ysN);
+  const mL=40, mR=40, mT=34, mB=34; const sc=Math.min((W-mL-mR)/Math.max(maxX-minX,0.01),(planH-mT-mB)/Math.max(maxY-minY,0.01));
+  const cx=(W-(maxX-minX)*sc)/2-minX*sc, cy=mT+maxY*sc+((planH-mT-mB)-(maxY-minY)*sc)/2;
+  const P={x:cx,y:cy}, own={x:cx,y:cy+d1*sc}, oth={x:cx+o2.x*sc,y:cy-o2.y*sc};
+  g.strokeStyle=C0.grid; g.setLineDash([4,4]); g.beginPath(); g.moveTo(own.x,own.y); g.lineTo(P.x,P.y); g.moveTo(oth.x,oth.y); g.lineTo(P.x,P.y); g.stroke(); g.setLineDash([]);
+  g.strokeStyle='rgba(154,30,104,.6)'; g.beginPath(); g.moveTo(own.x,own.y); g.lineTo(oth.x,oth.y); g.stroke();
+  const mx=own.x*0.72+oth.x*0.28, my=own.y*0.72+oth.y*0.28; g.fillStyle=C0.mag; g.font=hand; g.textAlign='left'; g.textBaseline='middle'; g.fillText(L({en:'seen at',no:'sett på'})+' '+nf(dnm,1)+' NM',mx+8,my);
+  g.strokeStyle=C0.red; g.lineWidth=2; g.beginPath(); g.moveTo(P.x-6,P.y-6); g.lineTo(P.x+6,P.y+6); g.moveTo(P.x+6,P.y-6); g.lineTo(P.x-6,P.y+6); g.stroke(); g.lineWidth=1;
+  g.fillStyle=C0.red; g.font='600 11.5px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='middle'; g.fillText(L({en:'collision point',no:'kollisjonspunkt'}),P.x+12,P.y);
+  const plane=(p,hd,c)=>{ g.save(); g.translate(p.x,p.y); g.rotate(hd); g.fillStyle=c; g.beginPath(); g.moveTo(0,-11); g.lineTo(2,-3); g.lineTo(11,2); g.lineTo(11,4); g.lineTo(2,2); g.lineTo(1.5,8); g.lineTo(4.5,10.5); g.lineTo(4.5,12); g.lineTo(0,11); g.lineTo(-4.5,12); g.lineTo(-4.5,10.5); g.lineTo(-1.5,8); g.lineTo(-2,2); g.lineTo(-11,4); g.lineTo(-11,2); g.lineTo(-2,-3); g.closePath(); g.fill(); g.restore(); };
+  plane(own,0,C0.ink); plane(oth,Math.atan2(P.x-oth.x,-(P.y-oth.y)),C0.blue);
+  g.font='600 11.5px "Public Sans", sans-serif'; g.textBaseline='top'; g.fillStyle=C0.ink; g.textAlign='center'; g.fillText(L({en:'you',no:'deg'})+' · '+SA.v1+' kt',own.x,own.y+14);
+  g.fillStyle=C0.blue; g.textAlign=oth.x>W-80?'right':oth.x<80?'left':'center'; g.fillText(SA.v2+' kt',oth.x+(oth.x>W-80?-10:oth.x<80?10:0),oth.y+14);
+  // tidslinje
+  const y0=H-tlH+8, pl=14, pr=14, tmax=Math.max(T,delay+need)*1.06, X=s=>pl+s/tmax*(W-pl-pr);
+  g.strokeStyle=C0.rule||'#C6D0D3'; g.beginPath(); g.moveTo(0,y0-10.5); g.lineTo(W,y0-10.5); g.stroke();
+  g.font='600 12px "Public Sans", sans-serif'; g.fillStyle=C0.ink; g.textAlign='left'; g.textBaseline='top'; g.fillText(L({en:'Seconds from the moment it can be seen',no:'Sekunder fra det kan sees'}),pl,y0);
+  const by=y0+24, bh=26; g.fillStyle='rgba(44,122,75,.10)'; g.fillRect(X(0),by-4,X(T)-X(0),bh+8);
+  let s=0; if(delay>0){ g.fillStyle='#E4E8EA'; g.fillRect(X(0),by,X(delay)-X(0),bh); s=delay; }
+  CHAIN.forEach(([d,lb],i)=>{ g.fillStyle=CHC[i]; g.fillRect(X(s),by,X(s+d)-X(s),bh); if(X(s+d)-X(s)>44&&i>=2){ g.fillStyle='#fff'; g.font='600 10.5px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(wrapLines(g,L(lb),X(s+d)-X(s)-6)[0],(X(s)+X(s+d))/2,by+bh/2); } s+=d; });
+  g.strokeStyle=C0.red; g.lineWidth=2; g.beginPath(); g.moveTo(X(T),by-10); g.lineTo(X(T),by+bh+10); g.stroke(); g.lineWidth=1;
+  g.fillStyle=C0.red; g.font='600 11.5px "Public Sans", sans-serif'; g.textBaseline='top'; g.textAlign=X(T)>W-90?'right':'center'; g.fillText(L({en:'collision',no:'kollisjon'})+' '+nf(T,1)+' s',X(T),by+bh+12);
+  g.fillStyle=C0.axis; g.textAlign='left'; g.font=mono; if(X(T)>140||X(T)<W-200) g.fillText('0',X(0),by+bh+12);
+  g.font='10.5px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='top'; let lx=pl, ly=by+bh+30; CHAIN.forEach(([d,lb],i)=>{ const txt=L(lb)+' '+nf(d,1)+' s'; const w=g.measureText(txt).width+22; if(lx+w>W-pr&&lx>pl){ lx=pl; ly+=15; } g.fillStyle=CHC[i]; g.fillRect(lx,ly+2,9,9); g.fillStyle=C0.ink2; g.fillText(txt,lx+12,ly); lx+=w; });
+  if(delay>0&&X(delay)-X(0)>40){ g.fillStyle=C0.ink2; g.font='10.5px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L({en:'head down',no:'blikk inne'}),(X(0)+X(delay))/2,by+bh/2); }
+}
+
+/* =================== 5b. DARK ADAPTATION =================== */
+const DA={light:'dark',t:10};
+LAB.seg(el('daLight'),[['dark','Dark'],['red','Dim red'],['white','Bright white']],DA.light,v=>{DA.light=v;da();});
+LAB.slider(el('daCtl'),{label:'Minutes since bright light',min:0,max:40,step:0.5,v:DA.t,f:v=>nf(v,v%1?1:0)+' min',on:v=>{DA.t=v;da();}});
+const cone=t=>1.0+1.6*(1-Math.exp(-t/1.8)), rod=t=>5.0*(1-Math.exp(-t/9.5)), cap={dark:9,red:4.4,white:2.6};
+const sens=(t,l)=>Math.min(cap[l],Math.max(cone(t),rod(t)));
+const DAC=LAB.fit(el('dacv'),()=>da(),2);
+function da(){ const s=sens(DA.t,DA.light), rel=Math.pow(10,s-1.0), rodOn=rod(DA.t)>cone(DA.t)&&DA.light!=='white';
+  el('d1').textContent='≈ '+(rel<10?nf(rel,1):nf(Math.round(rel/(rel>1000?100:10))*(rel>1000?100:10),0))+' ×';
+  el('d2').textContent=L(rodOn?{en:'mainly rods',no:'mest staver'}:{en:'cones',no:'tapper'});
+  el('d3').textContent=L(rodOn?{en:'fading, objects turn grey',no:'svinner, ting blir grå'}:{en:'normal',no:'normalt'});
+  el('d4').textContent=L(rodOn?{en:'10–20° off centre, keep the eyes moving',no:'10–20° til siden, hold blikket i bevegelse'}:{en:'directly at the object',no:'rett på gjenstanden'});
+  const g=DAC.ctx, W=DAC.w, H=DAC.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const pl=46, pr=26, pt=16, pb=34, X=t=>pl+t/40*(W-pl-pr), Y=v=>H-pb-(v-0.5)/5*(H-pt-pb);
+  g.font=mono; g.textAlign='right'; g.textBaseline='middle'; [1,10,100,1000,10000].forEach((m,i)=>{ const v=1+i; g.strokeStyle=C0.grid; g.beginPath(); g.moveTo(pl,Y(v)+.5); g.lineTo(W-pr,Y(v)+.5); g.stroke(); g.fillStyle=C0.axis; g.fillText(m>=1000?(m/1000)+'k':m+'',pl-6,Y(v)); });
+  g.save(); g.translate(11,(pt+H-pb)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText(L({en:'sensitivity (×)',no:'følsomhet (×)'}),0,0); g.restore();
+  g.textAlign='center'; g.textBaseline='top'; for(let m=0;m<=40;m+=10) g.fillText(m+' min',X(m),H-pb+6);
+  const line=(f,c,w,dash)=>{ g.strokeStyle=c; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); for(let t=0;t<=40;t+=0.25){ const v=f(t); t?g.lineTo(X(t),Y(v)):g.moveTo(X(t),Y(v)); } g.stroke(); g.setLineDash([]); g.lineWidth=1; };
+  line(cone,'rgba(168,106,0,.6)',1.5,[5,4]); line(t=>Math.max(rod(t),0.5),'rgba(91,75,176,.55)',1.5,[5,4]); line(t=>sens(t,DA.light),C0.blue,2.8);
+  if(DA.light!=='dark'){ g.strokeStyle=C0.red; g.setLineDash([2,3]); g.beginPath(); g.moveTo(pl,Y(cap[DA.light])); g.lineTo(W-pr,Y(cap[DA.light])); g.stroke(); g.setLineDash([]); g.fillStyle=C0.red; g.font='600 11px "Public Sans", sans-serif'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(L(DA.light==='red'?{en:'limit with dim red light',no:'grense med svakt rødt lys'}:{en:'limit with bright white light',no:'grense med sterkt hvitt lys'}),W-pr-4,Y(cap[DA.light])-3); }
+  g.font=hand; g.textBaseline='alphabetic'; g.textAlign='left'; g.fillStyle=C0.amber; g.fillText(L({en:'cones',no:'tapper'}),X(28),Y(2.6)+18);
+  g.fillStyle=C0.violet; g.fillText(L({en:'rods',no:'staver'}),X(24),Y(rod(24))+22);
+  g.fillStyle=C0.ink2; g.textAlign='left'; if(W>420) g.fillText(L({en:'rod–cone break',no:'stav–tapp-knekk'}),X(7.6),Y(cone(7))+22);
+  g.fillStyle=C0.mag; g.beginPath(); g.arc(X(DA.t),Y(sens(DA.t,DA.light)),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); g.lineWidth=1;
+}
+
+/* =================== 5c. BLIND SPOT =================== */
+const BS=LAB.fit(el('bscv'),()=>bs(),2);
+function bs(){ const g=BS.ctx, W=BS.w, H=BS.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle=C0.bg; g.fillRect(0,0,W,H);
+  const sep=Math.min(W-60,300), x1=(W-sep)/2, x2=x1+sep, y=H/2; g.strokeStyle=C0.ink; g.lineWidth=2.5; g.beginPath(); g.moveTo(x1-10,y); g.lineTo(x1+10,y); g.moveTo(x1,y-10); g.lineTo(x1,y+10); g.stroke(); g.lineWidth=1;
+  g.fillStyle=C0.mag; g.beginPath(); g.arc(x2,y,10,0,7); g.fill(); }
+
+/* =================== 6. CARDS =================== */
+function cards(){ const c=[
+ [{en:'Sterile flight deck',no:'Steril cockpit'},{en:'Below 10,000 ft, and during taxi, take-off and landing, only conversation needed for the operation is allowed (a typical operator policy). It protects attention in exactly the phases where the workload curve peaks and an interruption costs most.',no:'Under 10 000 ft, og under taksing, avgang og landing, er bare samtale som trengs for operasjonen tillatt (en typisk operatørpolicy). Den beskytter oppmerksomheten nettopp i de fasene der belastningskurven topper seg og en forstyrrelse koster mest.'}],
+ [{en:'Airbus golden rules',no:'Airbus’ gylne regler'},{en:'Fly, navigate, communicate, in that order, and manage. Use the appropriate level of automation at all times. Understand the FMA at all times. Take action if things do not go as expected. Each rule is an attention and workload rule as much as a flying rule.',no:'Fly, naviger, kommuniser, i den rekkefølgen, og styr. Bruk riktig automatikknivå hele tiden. Forstå FMA hele tiden. Grip inn hvis ting ikke går som forventet. Hver regel er like mye en regel om oppmerksomhet og arbeidsbelastning som om flyging.'}],
+ [{en:'Monitoring is a task',no:'Overvåking er en oppgave'},{en:'The PM’s main job is to watch the flight path and the FMA, and to say what does not match. Monitoring is quiet and unrewarding, which is why it is the first thing lost in overload. Call FMA changes aloud, and give the PM the radio and the paperwork so that the PF can fly.',no:'PMs viktigste jobb er å følge flybanen og FMA, og si fra om det som ikke stemmer. Overvåking er stille og lite givende, og derfor er det det første som forsvinner ved overbelastning. Rop ut endringer på FMA, og gi PM radioen og papirarbeidet så PF kan fly.'}],
+ [{en:'Fit to fly',no:'Skikket til å fly'},{en:'Under EASA flight time limitations the basic maximum daily flight duty period is up to 13 hours for an acclimatised crew starting in the morning with one or two sectors, reduced for other start times and more sectors. The limits are a maximum, not a guarantee: if you are too tired to operate safely, you must say so, and the operator’s fatigue reporting exists for that.',no:'Etter EASAs flytidsbegrensninger er grunnleggende maksimal daglig flytjenesteperiode inntil 13 timer for en akklimatisert besetning som starter om morgenen med én eller to etapper, kortere for andre starttider og flere etapper. Grensene er et maksimum, ikke en garanti: er du for trett til å operere trygt, må du si fra, og operatørens rapportering av tretthet finnes for det.'}],
+ [{en:'Controlled rest',no:'Kontrollert hvile'},{en:'Where the operator allows it, one pilot at a time may rest in the seat during a quiet phase. EASA guidance limits the rest to about 45 minutes, so that sleep stays at about 30 minutes and avoids deep sleep, followed by about 20 minutes of recovery before normal duties. It is planned well before top of descent, the cabin crew are told, and it is a fatigue countermeasure, not a replacement for planned rest.',no:'Der operatøren tillater det, kan én flyger om gangen hvile i setet i en rolig fase. EASAs veiledning begrenser hvilen til rundt 45 minutter, så søvnen holder seg rundt 30 minutter og unngår dyp søvn, fulgt av rundt 20 minutter restitusjon før normal tjeneste. Den planlegges god tid før toppen av nedstigningen, kabinbesetningen får beskjed, og den er et mottiltak mot tretthet, ikke en erstatning for planlagt hvile.'}],
+ [{en:'Startle in the A320',no:'Skvett i A320'},{en:'A loud bang, a stall warning, an RA or several ECAM warnings at once. The first actions are pitch and thrust, flight path, and a clear “I have control” or “you have control”. The ECAM is read only once the aircraft is under control and the crew agrees on what is happening.',no:'Et høyt smell, et stallvarsel, en RA eller flere ECAM-varsler samtidig. Det første er stilling og skyvekraft, flybane og et klart «I have control» eller «you have control». ECAM leses først når flyet er under kontroll og besetningen er enige om hva som skjer.'}],
+ [{en:'Related labs',no:'Relaterte labber'},{en:'Vestibular and visual illusions, and the trust-your-instruments problem, are in the spatial orientation lab. Hypoxia and the time of useful consciousness are in the pressurisation lab.',no:'Illusjoner fra balanseorganet og synet, og problemet med å stole på instrumentene, er i labben for romlig orientering. Hypoksi og tid med nyttig bevissthet er i trykkabinlabben.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('')
+  .replace(L({en:'the spatial orientation lab',no:'labben for romlig orientering'}),`<a href="orientation.html">${L({en:'the spatial orientation lab',no:'labben for romlig orientering'})}</a>`)
+  .replace(L({en:'the pressurisation lab',no:'trykkabinlabben'}),`<a href="pressurisation.html#hypoxia">${L({en:'the pressurisation lab',no:'trykkabinlabben'})}</a>`); }
+
+/* =================== QUIZ =================== */
+const Q=[
+ {q:{en:'Roughly how much can working memory hold, and for how long without rehearsal?',no:'Omtrent hvor mye kan arbeidsminnet holde, og hvor lenge uten repetisjon?'},a:[{en:'About 7 ± 2 unrelated items, for some tens of seconds',no:'Rundt 7 ± 2 elementer som ikke henger sammen, i noen titalls sekunder'},{en:'About 20 items, for several minutes',no:'Rundt 20 elementer, i flere minutter'},{en:'An unlimited number, as long as you are not fatigued',no:'Et ubegrenset antall, så lenge du ikke er trett'},{en:'About 3 items, for about half a second',no:'Rundt 3 elementer, i rundt et halvt sekund'}],c:0,e:{en:'That limit is why clearances are written down and read back. Half a second is the visual sensory memory, not working memory.',no:'Den grensen er grunnen til at klareringer skrives ned og leses tilbake. Et halvt sekund er det visuelle sensoriske minnet, ikke arbeidsminnet.'}},
+ {q:{en:'Under high workload without a plan, which task is most likely to be dropped without anyone noticing?',no:'Ved høy belastning uten en plan, hvilken oppgave faller lettest ut uten at noen merker det?'},a:[{en:'Monitoring the flight path',no:'Overvåking av flybanen'},{en:'Answering ATC',no:'Å svare ATC'},{en:'Working on the problem that caused the overload',no:'Arbeidet med problemet som skapte overbelastningen'},{en:'Talking to the other pilot',no:'Å snakke med den andre flygeren'}],c:0,e:{en:'Attention goes to what is salient: voices, warnings, the problem. Monitoring is quiet, so it disappears first. Planned task shedding protects it on purpose.',no:'Oppmerksomheten går til det som stikker seg ut: stemmer, varsler, problemet. Overvåking er stille, så den forsvinner først. Planlagt nedprioritering beskytter den med vilje.'}},
+ {q:{en:'Compared with a simple, well-practised task, the arousal level that gives the best performance on a complex, unfamiliar task is…',no:'Sammenlignet med en enkel, godt innøvd oppgave er aktiveringsnivået som gir best prestasjon på en kompleks, ukjent oppgave…'},a:[{en:'lower',no:'lavere'},{en:'higher',no:'høyere'},{en:'the same',no:'det samme'},{en:'irrelevant, because complex tasks are done by the automation',no:'uten betydning, fordi komplekse oppgaver gjøres av automatikken'}],c:0,e:{en:'Complex tasks need working memory and broad attention, which are the first things high arousal takes away. That is why a calm pace in a non-normal pays off.',no:'Komplekse oppgaver trenger arbeidsminne og bred oppmerksomhet, og det er det første høy aktivering tar bort. Derfor lønner det seg med rolig tempo i en unormal situasjon.'}},
+ {q:{en:'Why can automation increase workload at the wrong moment?',no:'Hvorfor kan automatikk øke belastningen i feil øyeblikk?'},a:[{en:'A late change needs heads-down reprogramming in a phase that is already busy',no:'En sen endring krever omprogrammering med blikket inne i en fase som allerede er travel'},{en:'The autopilot needs more monitoring in cruise than hand flying does',no:'Autopiloten krever mer overvåking i marsj enn håndflyging'},{en:'Automation always increases workload',no:'Automatikk øker alltid belastningen'},{en:'The FMS cannot accept changes below 10,000 ft',no:'FMS kan ikke ta imot endringer under 10 000 ft'}],c:0,e:{en:'Automation lowers the average workload, but its programming tends to cluster near the start of the approach. Choosing a lower level of automation, or asking for time, is often the better answer.',no:'Automatikk senker gjennomsnittsbelastningen, men programmeringen har en tendens til å samle seg nær starten av innflygingen. Å velge et lavere automatikknivå, eller å be om tid, er ofte det beste svaret.'}},
+ {q:{en:'What separates startle from surprise?',no:'Hva skiller en skvettreaksjon fra en overraskelse?'},a:[{en:'Startle is a fast physiological reflex to a sudden intense stimulus; surprise is a mismatch between what happens and what you expected',no:'Skvett er en rask fysiologisk refleks på et plutselig, kraftig inntrykk; overraskelse er et misforhold mellom det som skjer og det du ventet'},{en:'Startle only happens to inexperienced pilots',no:'Skvett skjer bare med uerfarne flygere'},{en:'Surprise is faster than startle',no:'Overraskelse er raskere enn skvett'},{en:'They are two names for the same thing',no:'Det er to navn på det samme'}],c:0,e:{en:'Both reduce capacity, and they often come together. Startle passes in seconds; rebuilding the mental picture after a surprise can take much longer.',no:'Begge reduserer kapasiteten, og de kommer ofte sammen. Skvett går over på sekunder; å bygge opp det mentale bildet igjen etter en overraskelse kan ta mye lenger tid.'}},
+ {q:{en:'How do the EASA flight time limitations define the window of circadian low (WOCL)?',no:'Hvordan definerer EASAs flytidsbegrensninger døgnrytmens lavpunkt (WOCL)?'},a:[{en:'02:00 to 05:59 in the time zone the crew is acclimatised to',no:'02:00 til 05:59 i tidssonen besetningen er akklimatisert til'},{en:'00:00 to 06:00 UTC',no:'00:00 til 06:00 UTC'},{en:'13:00 to 15:00 local time, after lunch',no:'13:00 til 15:00 lokal tid, etter lunsj'},{en:'Any time after 17 hours awake',no:'Når som helst etter 17 timer våken'}],c:0,e:{en:'It follows the body clock, so it is defined in the acclimatised time zone, not in UTC. The afternoon dip is real but much smaller.',no:'Det følger den indre klokken, så det defineres i den akklimatiserte tidssonen, ikke i UTC. Ettermiddagsduppen er reell, men mye mindre.'}},
+ {q:{en:'After several nights of short sleep, what removes the sleep debt?',no:'Etter flere netter med kort søvn, hva fjerner søvngjelden?'},a:[{en:'Only sleep, usually more than one good night',no:'Bare søvn, som regel mer enn én god natt'},{en:'Caffeine taken at the right time',no:'Koffein tatt til riktig tid'},{en:'Bright light in the morning',no:'Sterkt lys om morgenen'},{en:'Motivation and a short break',no:'Motivasjon og en kort pause'}],c:0,e:{en:'Caffeine and light can mask sleepiness or shift the body clock, but the homeostatic sleep pressure is only paid back by sleep.',no:'Koffein og lys kan skjule søvnighet eller flytte den indre klokken, men det homeostatiske søvnpresset betales bare tilbake med søvn.'}},
+ {q:{en:'Why is controlled rest on the flight deck kept to a short period?',no:'Hvorfor holdes kontrollert hvile i cockpit til en kort periode?'},a:[{en:'To avoid deep sleep and the sleep inertia that follows waking from it',no:'For å unngå dyp søvn og søvntregheten som følger når du våkner fra den'},{en:'Because the seat is uncomfortable',no:'Fordi setet er ubehagelig'},{en:'Because fatigue only builds up after 45 minutes',no:'Fordi tretthet bare bygger seg opp etter 45 minutter'},{en:'To make sure both pilots can rest at the same time',no:'For at begge flygerne skal kunne hvile samtidig'}],c:0,e:{en:'Waking from deep sleep leaves you slow and confused for a while. A short rest with a planned recovery period gives the benefit without that cost. Only one pilot rests at a time.',no:'Å våkne fra dyp søvn gjør deg treg og forvirret en stund. En kort hvile med en planlagt restitusjonsperiode gir fordelen uten den kostnaden. Bare én flyger hviler om gangen.'}},
+ {q:{en:'ATC offers a late runway change on downwind. In TEM terms this offer is…',no:'ATC tilbyr et sent baneskifte på medvindslegget. I TEM-termer er dette tilbudet…'},a:[{en:'a threat',no:'en trussel'},{en:'a crew error',no:'en feil fra besetningen'},{en:'an undesired aircraft state',no:'en uønsket flytilstand'},{en:'a countermeasure',no:'et mottiltak'}],c:0,e:{en:'It comes from outside the crew and adds complexity. Accepting it without time to prepare could lead to errors, and those to an undesired state.',no:'Det kommer utenfra besetningen og øker kompleksiteten. Å akseptere uten tid til å forberede seg kan føre til feil, og de til en uønsket tilstand.'}},
+ {q:{en:'In the Swiss-cheese model, what is a latent condition?',no:'Hva er et latent forhold i sveitserostmodellen?'},a:[{en:'A weakness created by decisions far from the flight deck that lies dormant until it combines with other failures',no:'En svakhet skapt av beslutninger langt fra cockpit som ligger i dvale til den kombineres med andre feil'},{en:'An error the crew makes during the flight',no:'En feil besetningen gjør under flygingen'},{en:'A hidden technical defect in the aircraft',no:'En skjult teknisk feil i flyet'},{en:'The last barrier, such as TCAS',no:'Den siste barrieren, som TCAS'}],c:0,e:{en:'Rosters, procedures, training and culture can open holes long before the flight. Active failures by the crew are the last holes that line up.',no:'Turnuser, prosedyrer, trening og kultur kan åpne hull lenge før flygingen. Aktive feil fra besetningen er de siste hullene som kommer på linje.'}},
+ {q:{en:'Two aircraft approach head-on at 250 kt each. The other is first seen at 1.5 NM. About how much time is left, and is it enough?',no:'To fly kommer rett mot hverandre i 250 kt hver. Det andre sees først på 1,5 NM. Omtrent hvor mye tid er det igjen, og er det nok?'},a:[{en:'About 11 s, less than the roughly 12.5 s a classic estimate says you need',no:'Rundt 11 s, mindre enn de rundt 12,5 s et klassisk anslag sier at du trenger'},{en:'About 22 s, comfortably enough',no:'Rundt 22 s, godt nok'},{en:'About 1 minute, plenty',no:'Rundt 1 minutt, mer enn nok'},{en:'About 3 s, but reaction time is under 1 s',no:'Rundt 3 s, men reaksjonstiden er under 1 s'}],c:0,e:{en:'Closure speed is 500 kt, about 0.14 NM per second, so 1.5 NM takes about 11 s. Seeing, recognising, judging, deciding, moving and the aircraft responding take roughly 12.5 s together.',no:'Lukkehastigheten er 500 kt, rundt 0,14 NM per sekund, så 1,5 NM tar rundt 11 s. Å se, kjenne igjen, vurdere, bestemme, bevege seg og at flyet reagerer tar til sammen rundt 12,5 s.'}},
+ {q:{en:'What is empty-field myopia, and what helps?',no:'Hva er tomromsmyopi, og hva hjelper?'},a:[{en:'With nothing to focus on, the eye relaxes to a near focus; look briefly at something distant before scanning',no:'Med ingenting å fokusere på slapper øyet av til et nært fokus; se kort på noe langt borte før du skanner'},{en:'Short-sightedness caused by hypoxia; use oxygen',no:'Nærsynthet forårsaket av hypoksi; bruk oksygen'},{en:'A blind spot in the centre of the eye at night; look straight at objects',no:'En blind flekk midt i øyet om natten; se rett på ting'},{en:'Glare from a low sun; wear sunglasses',no:'Blending fra lav sol; bruk solbriller'}],c:0,e:{en:'In an empty sky the eye rests at about 1 to 2 m. Focusing on a distant cloud, the ground or the wingtip resets it.',no:'På en tom himmel hviler øyet på rundt 1 til 2 m. Å fokusere på en sky langt borte, bakken eller vingetippen nullstiller det.'}},
+ {q:{en:'You have been in the dark for 30 minutes. A dim light disappears when you look straight at it. Why?',no:'Du har vært i mørket i 30 minutter. Et svakt lys forsvinner når du ser rett på det. Hvorfor?'},a:[{en:'The centre of the eye has cones but no rods, and in the dark the rods do the work',no:'Midten av øyet har tapper, men ingen staver, og i mørket er det stavene som gjør jobben'},{en:'The eye is not yet dark-adapted after 30 minutes',no:'Øyet er ennå ikke mørketilpasset etter 30 minutter'},{en:'The light is in the blind spot whenever you look at it',no:'Lyset er i den blinde flekken hver gang du ser på det'},{en:'The pupil closes when you focus',no:'Pupillen lukker seg når du fokuserer'}],c:0,e:{en:'Full dark adaptation takes about 30 minutes and is done by the rods, which are absent in the very centre. Look 10 to 20 degrees to one side.',no:'Full mørketilpasning tar rundt 30 minutter og gjøres av stavene, som mangler helt i midten. Se 10 til 20 grader til siden.'}}
+];
+LAB.quiz(el('qbox'),'humanperf',()=>LAB.shuffle(Q.slice()));
+
+LAB.start('hp');
+const all=()=>{ flow(); taskList(); att(); wmLang(); yd(); wl(); fat(); swChk(); sw(); drill(); ladder(); sa(); da(); bs(); cards(); };
+all();
+LAB.onLang(all);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About Birdbird</title>
+<meta name="description" content="Who built Birdbird and why: interactive aviation theory, flight preparation and training, built by a pilot on three principles.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* about.html – page-local layout */
+.ab-who{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,340px);gap:32px 48px;align-items:start}
+@media (max-width:900px){.ab-who{grid-template-columns:minmax(0,1fr)}}
+.ab-who .txt p{margin:0 0 16px;font-size:var(--t-md);line-height:1.6;max-width:66ch;color:var(--ink)}
+.ab-who .txt p:last-child{margin-bottom:0}
+.ab-card{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:20px 22px}
+.ab-card .mono{display:block;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:12px}
+.ab-card .nm{display:flex;align-items:center;gap:14px}
+.ab-card .ini{flex:0 0 52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:19px;letter-spacing:.02em}
+.ab-card .nm b{display:block;font-family:var(--f-display);font-stretch:92%;font-size:19px;font-weight:650;line-height:1.2}
+.ab-card .nm div span{font-size:14px;color:var(--ink-2)}
+.ab-card dl{margin:16px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:0;border-top:1px solid var(--rule-2)}
+.ab-card dt,.ab-card dd{margin:0;padding:8px 0;border-bottom:1px solid var(--rule-2);font-size:14px}
+.ab-card dt{color:var(--ink-2);padding-right:16px}
+.ab-card dd{color:var(--ink)}
+.ab-card dl>*:nth-last-child(-n+2){border-bottom:0}
+/* principles */
+.princ{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--ink)}
+.princ>div{padding:20px 24px 8px 0}
+.princ>div+div{padding-left:24px;border-left:1px solid var(--rule-2)}
+.princ .n{display:block;font-family:var(--f-mono);font-size:12px;color:var(--accent);margin-bottom:8px}
+.princ h3{font-size:var(--t-lg);margin-bottom:10px}
+.princ p{margin:0 0 10px;color:var(--ink-2);font-size:15px;line-height:1.55}
+@media (max-width:860px){.princ{grid-template-columns:minmax(0,1fr)}.princ>div,.princ>div+div{padding:18px 0;border-left:0}.princ>div+div{border-top:1px solid var(--rule-2)}}
+/* contact */
+.ab-contact{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 48px;align-items:start}
+@media (max-width:860px){.ab-contact{grid-template-columns:minmax(0,1fr)}}
+.ab-contact .msg{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;padding:22px 24px;font-size:var(--t-md);line-height:1.55;margin:0}
+.ab-links a{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule-2);text-decoration:none;color:var(--ink);font-weight:600;font-size:15px}
+.ab-links a:first-child{border-top:1px solid var(--rule)}
+.ab-links a span{font-weight:400;color:var(--ink-2);font-size:14px;text-align:right}
+.ab-links a:hover{color:var(--accent)}
+</style>
+</head>
+<body data-title="About Birdbird">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · About</div>
+      <h1>About Birdbird</h1>
+      <p>Birdbird is a place to understand flying and to prepare for it: interactive theory, flight preparation and training for pilots, from the first instrument lessons to an airline simulator check.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#who">Who built it</a><a href="#what">What is here</a><a href="#principles">Principles</a><a href="#contact">Contact</a></nav>
+
+  <section class="card" id="who">
+    <h2>Who built it, and why</h2>
+    <div class="ab-who">
+      <div class="txt">
+        <p>Birdbird is built by Daniel Nilsson, a pilot.</p>
+        <p>During training, the hard parts were rarely the flying itself. They were the order of things, and the things you cannot see: the air over the wing, the error in the altimeter on a cold day, the margin that disappears when an engine fails at the wrong moment.</p>
+        <p>Textbooks describe these things well, but they do not move. Birdbird is the set of tools that was missing: models you can change and watch respond, a briefing you can repeat the same way every time, and practice that follows a fixed order until it runs on its own.</p>
+        <p>The Virtual Lab is built on the A320, the type rating trainer covers the King Air B200, and the training tools use a light twin. It keeps growing.</p>
+      </div>
+      <aside class="ab-card" aria-label="Author">
+        <span class="mono">Author</span>
+        <div class="nm"><span class="ini" aria-hidden="true">DN</span><div><b>Daniel Nilsson</b><span>Pilot</span></div></div>
+        <dl>
+          <dt>Aircraft</dt><dd>Light twin, A320, King Air B200</dd>
+          <dt>Languages</dt><dd>English and Norwegian</dd>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="card" id="what">
+    <h2>What is here</h2>
+    <div class="kpis">
+      <div class="kpi"><span>Interactive labs</span><b>25</b><small>in 9 modules</small></div>
+      <div class="kpi"><span>Reference aircraft</span><b>3</b><small>light twin, A320, King Air B200</small></div>
+      <div class="kpi"><span>B200 type rating questions</span><b>320</b><small>with an oral exam</small></div>
+      <div class="kpi"><span>Languages</span><b>2</b><small>English and Norwegian</small></div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">Virtual Lab</b><p>Interactive theory in modules that follow the EASA ATPL subjects, with a short test at the end of each lab.</p></div>
+      <div class="box"><b class="t">Briefing pack and Route Explorer</b><p>VFR and IFR briefing, minima, performance, mass and balance, fuel and kneeboard sheets, with a terrain profile and airspace for the route.</p></div>
+      <div class="box"><b class="t">Training</b><p>Gate to gate, briefings, radio drills, a simulator, A320 simulator assessment preparation and the B200 type rating trainer.</p></div>
+      <div class="box"><b class="t">Flight Intelligence</b><p>An instructor that answers from your own AFM, QRH and SOP, and shows the passage each answer is built on.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="principles">
+    <h2>Principles</h2>
+    <p class="lead">Three rules decide what goes into Birdbird and how it is built.</p>
+    <div class="princ">
+      <div><span class="n">01</span><h3>Understanding over memorising</h3><p>Every lab starts from why something happens, and lets you change the inputs to see it. Tests ask you to reason, not to recognise a stored answer.</p><p>If you understand the model, the exam question and the situation in the aircraft are the same problem.</p></div>
+      <div><span class="n">02</span><h3>Honest teaching models</h3><p>The labs use simplified physics and typical values, and each one says what it leaves out. Aircraft figures are illustrative, not manufacturer data.</p><p>Birdbird is for understanding and preparation. The AFM, the AIP and your operator's procedures always come first.</p></div>
+      <div><span class="n">03</span><h3>Your documents stay yours</h3><p>Documents you add for Flight Intelligence are processed and stored in your own browser. Progress and ranks are stored there too.</p><p>There are no Birdbird accounts, no analytics and no tracking cookies.</p></div>
+    </div>
+    <p class="note"><a href="privacy.html">Read the privacy page</a></p>
+  </section>
+
+  <section class="card" id="contact">
+    <h2>Contact</h2>
+    <div class="ab-contact">
+      <p class="msg">Contact details will be published with the site's own domain.</p>
+      <nav class="ab-links" aria-label="More about Birdbird">
+        <a href="schools.html">For flight schools and operators <span>How a school can use Birdbird</span></a>
+        <a href="privacy.html">Privacy <span>What is stored, and where</span></a>
+        <a href="sources.html">Data sources and licences <span>Where the data comes from</span></a>
+      </nav>
+    </div>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({'Sections':'Sections','Author':'Author','More about Birdbird':'More about Birdbird'},{
+ 'About Birdbird':'Om Birdbird',
+ 'Birdbird · About':'Birdbird · Om',
+ 'Birdbird is a place to understand flying and to prepare for it: interactive theory, flight preparation and training for pilots, from the first instrument lessons to an airline simulator check.':'Birdbird er et sted for å forstå flyging og forberede seg på den: interaktiv teori, flyforberedelse og trening for piloter, fra de første instrumenttimene til simulatorsjekken hos et flyselskap.',
+ 'Sections':'Seksjoner','Author':'Forfatter','More about Birdbird':'Mer om Birdbird',
+ 'Who built it':'Hvem som har laget det','What is here':'Hva som finnes her','Principles':'Prinsipper','Contact':'Kontakt',
+ 'Who built it, and why':'Hvem som har laget det, og hvorfor',
+ 'Birdbird is built by Daniel Nilsson, a pilot.':'Birdbird er laget av Daniel Nilsson, pilot.',
+ 'During training, the hard parts were rarely the flying itself. They were the order of things, and the things you cannot see: the air over the wing, the error in the altimeter on a cold day, the margin that disappears when an engine fails at the wrong moment.':'Under utdanningen var det sjelden selve flygingen som var vanskelig. Det var rekkefølgen på ting, og det du ikke kan se: luften over vingen, feilen i høydemåleren på en kald dag, marginen som forsvinner når en motor stopper i feil øyeblikk.',
+ 'Textbooks describe these things well, but they do not move. Birdbird is the set of tools that was missing: models you can change and watch respond, a briefing you can repeat the same way every time, and practice that follows a fixed order until it runs on its own.':'Lærebøkene beskriver dette godt, men de beveger seg ikke. Birdbird er verktøyene som manglet: modeller du kan endre og se reagere, en briefing du kan gjenta på samme måte hver gang, og øving i fast rekkefølge til den går av seg selv.',
+ 'The Virtual Lab is built on the A320, the type rating trainer covers the King Air B200, and the training tools use a light twin. It keeps growing.':'Virtual Lab er bygget på A320, typeratingtreneren dekker King Air B200, og treningsverktøyene bruker et tomotors småfly. Det fortsetter å vokse.',
+ 'Pilot':'Pilot','Aircraft':'Fly','Light twin, A320, King Air B200':'Tomotors småfly, A320, King Air B200','Languages':'Språk','English and Norwegian':'Engelsk og norsk',
+ 'Interactive labs':'Interaktive labber','in 9 modules':'i 9 moduler','Reference aircraft':'Referansefly','light twin, A320, King Air B200':'tomotors småfly, A320, King Air B200',
+ 'B200 type rating questions':'Spørsmål til B200-typerating','with an oral exam':'med muntlig eksamen',
+ 'Interactive theory in modules that follow the EASA ATPL subjects, with a short test at the end of each lab.':'Interaktiv teori i moduler som følger EASA ATPL-fagene, med en kort test på slutten av hver lab.',
+ 'Briefing pack and Route Explorer':'Briefingpakke og Route Explorer',
+ 'VFR and IFR briefing, minima, performance, mass and balance, fuel and kneeboard sheets, with a terrain profile and airspace for the route.':'VFR- og IFR-briefing, minima, ytelse, masse og balanse, drivstoff og kneeboard-ark, med terrengprofil og luftrom for ruten.',
+ 'Training':'Trening',
+ 'Gate to gate, briefings, radio drills, a simulator, A320 simulator assessment preparation and the B200 type rating trainer.':'Gate to gate, briefinger, radiodriller, en simulator, forberedelse til A320-simulatortesten og typeratingtreneren for B200.',
+ 'An instructor that answers from your own AFM, QRH and SOP, and shows the passage each answer is built on.':'En instruktør som svarer ut fra din egen AFM, QRH og SOP, og viser avsnittet hvert svar bygger på.',
+ 'Three rules decide what goes into Birdbird and how it is built.':'Tre regler avgjør hva som kommer inn i Birdbird, og hvordan det bygges.',
+ 'Understanding over memorising':'Forståelse framfor pugging',
+ 'Every lab starts from why something happens, and lets you change the inputs to see it. Tests ask you to reason, not to recognise a stored answer.':'Hver lab starter med hvorfor noe skjer, og lar deg endre forutsetningene for å se det. Testene ber deg resonnere, ikke kjenne igjen et innlært svar.',
+ 'If you understand the model, the exam question and the situation in the aircraft are the same problem.':'Forstår du modellen, er eksamensspørsmålet og situasjonen i flyet det samme problemet.',
+ 'Honest teaching models':'Ærlige undervisningsmodeller',
+ 'The labs use simplified physics and typical values, and each one says what it leaves out. Aircraft figures are illustrative, not manufacturer data.':'Labbene bruker forenklet fysikk og typiske verdier, og hver av dem sier hva som er utelatt. Tall for flyene er illustrasjoner, ikke produsentdata.',
+ "Birdbird is for understanding and preparation. The AFM, the AIP and your operator's procedures always come first.":'Birdbird er for forståelse og forberedelse. AFM, AIP og operatørens prosedyrer kommer alltid først.',
+ 'Your documents stay yours':'Dokumentene dine forblir dine',
+ 'Documents you add for Flight Intelligence are processed and stored in your own browser. Progress and ranks are stored there too.':'Dokumenter du legger inn i Flight Intelligence, behandles og lagres i din egen nettleser. Progresjon og rang lagres også der.',
+ 'There are no Birdbird accounts, no analytics and no tracking cookies.':'Det finnes ingen Birdbird-kontoer, ingen analyseverktøy og ingen sporingscookies.',
+ 'Read the privacy page':'Les personvernsiden',
+ "Contact details will be published with the site's own domain.":'Kontaktinformasjon publiseres sammen med nettstedets eget domene.',
+ 'For flight schools and operators':'For flyskoler og operatører','How a school can use Birdbird':'Slik kan en skole bruke Birdbird',
+ 'Privacy':'Personvern','What is stored, and where':'Hva som lagres, og hvor',
+ 'Data sources and licences':'Datakilder og lisenser','Where the data comes from':'Hvor dataene kommer fra'
+});
+LAB.start('about');
+})();
+</script>
+</body>
+</html>

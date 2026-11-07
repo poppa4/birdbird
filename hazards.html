@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Two hazards you meet on almost every IFR flight. Build ice on a wing and see which clouds and drops make the worst of it. Then fly through mountain waves,…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Icing and Turbulence</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#ice{aspect-ratio:16/8;max-height:420px}#tb{aspect-ratio:16/8.4;max-height:480px}#wk{aspect-ratio:16/8;max-height:420px}#dice{aspect-ratio:16/9;max-height:440px}@media (max-width:600px){#dice{aspect-ratio:4/3}}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
+</style>
+</head>
+<body data-title="Icing and Turbulence">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
+      <h1>Icing and turbulence</h1>
+      <p>Two hazards you meet on almost every IFR flight. Build ice on a wing and see which clouds and drops make the worst of it. Then fly through mountain waves, mechanical turbulence and clear air turbulence, and watch wake vortices sink and drift.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#icing">Icing</a><a href="#deice">De-icing</a><a href="#turb">Turbulence</a><a href="#wake">Wake turbulence</a><a href="#more">Other hazards</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="icing">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Build ice on a wing</h2>
+    <div class="split">
+      <div class="paper"><canvas id="ice" aria-label="Wing leading edge with ice"></canvas></div>
+      <div class="panel">
+        <div class="grp">Cloud</div><div id="icl"></div>
+        <div class="grp">Drops</div><div id="idr"></div>
+        <div id="ictl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Type of ice</span><b id="iType"></b></div>
+          <div class="rrow"><span>Likely intensity</span><b id="iInt"></b></div>
+        </div>
+        <p class="callout" id="iEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="deice">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>De-icing and anti-icing on the ground</h2>
+    <p class="lead">De-icing removes frost, snow and ice. Anti-icing puts a layer of fluid on the clean surface that absorbs falling precipitation for a limited time: the holdover time (HOT). Choose the procedure, the fluid and the weather, then let the clock run from the start of the anti-icing step.</p>
+    <div class="split">
+      <div class="paper"><canvas id="dice" aria-label="Wing section with de-icing fluid and a holdover time bar"></canvas></div>
+      <div class="panel">
+        <div class="grp">Procedure</div><div id="dProc"></div>
+        <div class="grp">Fluid</div><div id="dFl"></div>
+        <div class="grp">Mix (fluid / water)</div><div id="dMix"></div>
+        <div class="grp">Precipitation</div><div id="dPr"></div>
+        <div id="dctl"></div>
+        <div class="ro" style="margin-top:6px">
+          <div class="rrow"><span>Fluid</span><b id="dr1"></b></div>
+          <div class="rrow"><span>Holdover time (illustrative)</span><b id="dr2"></b></div>
+          <div class="rrow"><span>HOT starts</span><b id="dr3"></b></div>
+          <div class="rrow"><span>Status</span><b id="dr4"></b></div>
+        </div>
+        <p class="callout" id="dEx"></p>
+      </div>
+    </div>
+    <div class="cols" id="dcards"></div>
+  </section>
+
+  <section class="card" id="turb">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Turbulence</h2>
+    <div class="split">
+      <div class="paper"><canvas id="tb" aria-label="Cross-section showing turbulence and your aircraft"></canvas></div>
+      <div class="panel">
+        <div class="grp">Type</div><div id="tmode"></div>
+        <div id="tctl"></div>
+        <div class="ro" style="margin-top:6px">
+          <div class="rrow"><span>Turbulence where you are</span><b id="t1"></b></div>
+          <div class="rrow"><span>Vertical air motion</span><b id="t2"></b></div>
+        </div>
+        <p class="callout" id="tEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="wake">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>Wake turbulence in operations</h2>
+    <p class="note" id="wLink"></p>
+    <div class="split">
+      <div class="paper"><canvas id="wk" aria-label="Wake vortices behind an aircraft seen from behind"></canvas></div>
+      <div class="panel">
+        <div class="grp">Aircraft ahead</div><div id="wcat"></div>
+        <div id="wctl"></div>
+        <p class="callout blue" id="wEx"></p>
+      </div>
+    </div>
+    <div class="wrapx" style="overflow-x:auto"><table class="ftab" id="wtab"></table></div>
+  </section>
+
+  <section class="card" id="more">
+    <div class="eyebrow">5 · Summary</div>
+    <h2>Other hazards</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching models with simplified physics. Use them to understand the mechanism. Separation minima and procedures come from ICAO Doc 4444, the AIP and your operator.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'Weather Hazards':'Værfarer','Icing and Turbulence':'Ising og turbulens','Icing and turbulence':'Ising og turbulens','Two hazards you meet on almost every IFR flight. Build ice on a wing and see which clouds and drops make the worst of it. Then fly through mountain waves, mechanical turbulence and clear air turbulence, and watch wake vortices sink and drift.':'To farer du møter på nesten hver IFR-tur. Bygg is på en vinge og se hvilke skyer og dråper som gir det verste. Fly så gjennom fjellbølger, mekanisk turbulens og klarluftsturbulens, og se vakevirvler synke og drive.','Turbulence':'Turbulens','Type':'Type','Turbulence where you are':'Turbulens der du er','Vertical air motion':'Vertikal luftbevegelse','Mountain waves':'Fjellbølger','Mechanical':'Mekanisk','Clear air (CAT)':'Klar luft (CAT)','Stable air':'Stabil luft','Unstable air':'Ustabil luft','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi','Weather hazards':'Værfarer',
+ 'The weather that hurts aircraft, one at a time: build ice on a wing, fly an approach through a microburst, and watch wake vortices sink and drift. Then the short version of thunderstorms, fog, mountain waves and the rest.':'Været som skader fly, ett om gangen: bygg is på en vinge, fly en innflyging gjennom en mikroburst, og se vakevirvler synke og drive. Deretter kortversjonen av tordenvær, tåke, fjellbølger og resten.',
+ 'Icing':'Ising','Microburst':'Mikroburst','Wake turbulence':'Vaketurbulens','Other hazards':'Andre farer','Test yourself':'Test deg selv','Interactive':'Interaktiv','Summary':'Sammendrag','Check':'Sjekk',
+ 'Build ice on a wing':'Bygg is på en vinge','Cloud':'Sky','Drops':'Dråper','Type of ice':'Istype','Likely intensity':'Sannsynlig intensitet',
+ 'Layer (St, Ns)':'Lag (St, Ns)','Heaped (Cu, CB)':'Haugsky (Cu, CB)','Small':'Små','Large':'Store','Freezing rain':'Underkjølt regn',
+ 'Outside air temperature (°C)':'Utetemperatur (°C)','Minutes in cloud':'Minutter i sky',
+ 'Microburst on final':'Mikroburst på finalen','Outflow strength (kt)':'Styrke på utstrømmingen (kt)','You':'Du','Hold attitude':'Hold attityde','Go-around at first sign':'Go-around ved første tegn','▶ Fly the approach':'▶ Fly innflygingen',
+ 'Airspeed change':'Fartsendring','Height lost below the glide path':'Høyde tapt under glidebanen',
+ 'Wake vortices sink and drift':'Vakevirvler synker og driver','Aircraft ahead':'Flyet foran','Crosswind (kt)':'Sidevind (kt)','Seconds after it passed':'Sekunder etter at det passerte',
+ 'Light':'Lett','Medium':'Medium','Heavy':'Tung','Super':'Super',
+ 'Teaching models with simplified physics. Use them to understand the mechanism. Separation minima and procedures come from ICAO Doc 4444, the AIP and your operator.':'Opplæringsmodeller med forenklet fysikk. Bruk dem til å forstå mekanismen. Separasjonsminima og prosedyrer kommer fra ICAO Doc 4444, AIP og operatøren din.'
+});
+/* ---------- ising ---------- */
+const I={cl:'st',dr:'small',t:-6,min:6};
+const C1=LAB.fit(el('ice'),()=>ice(),2);
+function iceKind(){ const t=I.t; if(t>0) return {k:'none'}; if(I.dr==='fzra') return {k:'clear',sev:t>-8?3:2};
+  if(t<-40) return {k:'none'};
+  if(t<-20) return {k:'rime',sev:I.cl==='cu'?1:0.5};
+  if(I.dr==='large'||(I.cl==='cu'&&t>-10)) return {k:t>-10?'clear':'mixed',sev:I.cl==='cu'?2.5:1.8};
+  if(t>-10) return {k:I.cl==='cu'?'mixed':'rime',sev:I.cl==='cu'?2:1.4};
+  return {k:'rime',sev:I.cl==='cu'?1.6:1}; }
+function ice(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const k=iceKind(), cx=W*0.42, cy=H*0.52, s=Math.min(W,H*2)/900;
+  // luftstrøm
+  g.strokeStyle='rgba(30,94,158,.25)'; g.lineWidth=1.2; for(let i=-3;i<=3;i++){ g.beginPath(); g.moveTo(0,cy+i*40*s); g.bezierCurveTo(cx-160*s,cy+i*40*s,cx-80*s,cy+i*(i?55:0)*s,cx+40*s,cy+i*58*s); g.lineTo(W,cy+i*50*s); g.stroke(); }
+  // dråper
+  const dn=I.dr==='small'?60:I.dr==='large'?30:24, dr=I.dr==='small'?1.6:I.dr==='large'?3.4:4.5; g.fillStyle='rgba(30,94,158,.6)'; for(let i=0;i<dn;i++){ const x=(i*97)%Math.max(1,(cx-100*s)), y=(i*53)%H; g.beginPath(); g.arc(x,y,dr,0,7); g.fill(); }
+  // vinge
+  g.save(); g.translate(cx,cy); g.scale(s,s);
+  g.fillStyle='#DCE2E6'; g.strokeStyle='#13202A'; g.lineWidth=2; g.beginPath(); g.moveTo(0,-40); g.bezierCurveTo(-70,-40,-70,40,0,40); g.lineTo(520,10); g.lineTo(520,-6); g.closePath(); g.fill(); g.stroke();
+  const amt=Math.min(1,I.min/20)*k.sev/2;
+  if(k.k!=='none'&&amt>0){ g.globalAlpha=1;
+    if(k.k==='rime'){ g.fillStyle='#FFFFFF'; g.strokeStyle='#9DB1BD'; g.beginPath(); g.moveTo(-8,-34); g.quadraticCurveTo(-60-amt*70,-6,-60-amt*90,0); g.quadraticCurveTo(-60-amt*70,6,-8,34); g.bezierCurveTo(-60,20,-60,-20,-8,-34); g.fill(); g.stroke(); for(let i=0;i<14;i++){ g.beginPath(); const y=-24+i*3.6; g.moveTo(-58,y); g.lineTo(-58-amt*80*(1-Math.abs(y)/40),y*1.2); g.stroke(); } }
+    else { g.fillStyle=k.k==='clear'?'rgba(170,215,240,.75)':'rgba(220,235,245,.9)'; g.strokeStyle='#5E8FB0'; const h=amt*90; g.beginPath(); g.moveTo(-4,-38); g.quadraticCurveTo(-50-h*0.6,-60-h*0.7,-62-h*0.9,-40-h*0.8); g.quadraticCurveTo(-48-h*0.4,-14,-66,0); g.quadraticCurveTo(-48-h*0.4,14,-62-h*0.9,40+h*0.8); g.quadraticCurveTo(-50-h*0.6,60+h*0.7,-4,38); g.bezierCurveTo(-64,24,-64,-24,-4,-38); g.fill(); g.stroke();
+      if(I.dr==='fzra'||I.dr==='large'){ g.fillStyle='rgba(170,215,240,.6)'; g.fillRect(40,-44,140,6); g.fillRect(40,38,160,6); } } }
+  g.restore();
+  g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(L({en:'relative wind',no:'relativ vind'}),12,24);
+  if(k.k==='clear') g.fillText(L({en:'horns: the airflow over the wing is ruined',no:'horn: luftstrømmen over vingen er ødelagt'}),cx-60*s,H-14);
+  if(I.dr!=='small'&&k.k!=='none') g.fillText(L({en:'runback: ice behind the heated slats',no:'tilbakerenning: is bak de oppvarmede slatsene'}),cx+40*s,cy-70*s);
+  if(k.k==='rime') g.fillText(L({en:'white, rough, brittle',no:'hvit, ru, sprø'}),cx-60*s,H-14);
+}
+function iceRO(){ const k=iceKind(); const N={none:{en:'None',no:'Ingen'},rime:{en:'Rime',no:'Rimis'},clear:{en:'Clear (glaze)',no:'Klaris'},mixed:{en:'Mixed',no:'Blandet'}};
+  el('iType').textContent=L(N[k.k]); el('iInt').textContent=k.k==='none'?'—':L(k.sev>=2.5?{en:'Severe',no:'Kraftig'}:k.sev>=1.6?{en:'Moderate',no:'Moderat'}:{en:'Light',no:'Lett'});
+  const E={none:I.t>0?{en:'Above about +2 to +3 °C structural icing in flight is unlikely (cold-soaked wings can still ice). The engines are another matter: the intake accelerates and cools the air, so Airbus defines icing conditions as OAT on the ground or TAT in flight of +10 °C or below with visible moisture, and the A320 uses engine anti-ice in them.',no:'Over rundt +2 til +3 °C er ising på flyet i lufta lite sannsynlig (kaldvåte vinger kan likevel ise). Motorene er en annen sak: innløpet akselererer og kjøler luften, så Airbus definerer isingsforhold som OAT på bakken eller TAT i lufta på +10 °C eller lavere med synlig fuktighet, og A320 bruker motoranti-is i slike forhold.'}:{en:'Below about −40 °C the cloud is all ice crystals: they bounce off. Little airframe icing.',no:'Under rundt −40 °C er skyen bare iskrystaller: de spretter av. Lite ising på flyet.'},
+   rime:{en:'Small drops freeze instantly where they hit and trap air: white, rough and brittle ice that grows forward from the leading edge. Typical in layer cloud and in cold cloud. It still adds drag and weight.',no:'Små dråper fryser med en gang der de treffer og fanger luft: hvit, ru og sprø is som vokser forover fra forkanten. Typisk i lagskyer og i kalde skyer. Den gir likevel motstand og vekt.'},
+   clear:{en:'Large drops near 0 °C freeze slowly, flow back and form clear, hard ice, often with horns. It is heavy, hard to see and very hard to remove. In freezing rain it can build faster than any system can cope with, and behind the protected area: leave the conditions without delay.',no:'Store dråper nær 0 °C fryser sakte, renner bakover og danner klar, hard is, ofte med horn. Den er tung, vanskelig å se og svært vanskelig å få bort. I underkjølt regn kan den bygge seg opp raskere enn noe system klarer, og bak det beskyttede området: kom deg ut av forholdene uten opphold.'},
+   mixed:{en:'In cumulus there is a mix of drop sizes: rough clear ice with rime in it. Cumulus between 0 and −15 °C gives the worst icing; avoid it, or get through quickly.',no:'I cumulus er det blandede dråpestørrelser: ru klaris med rimis i. Cumulus mellom 0 og −15 °C gir den verste isingen; unngå den, eller kom deg raskt gjennom.'}};
+  el('iEx').textContent=L(E[k.k])+' '+L({en:'The A320 is certified for flight in icing conditions: hot bleed air heats the engine intakes and three outer slats on each wing, and the probes and windshield are heated electrically. Freezing rain and large drops lie outside that certification.',no:'A320 er sertifisert for flyging i isingsforhold: varm bleed-luft varmer motorinnløpene og tre ytre slats på hver vinge, og sondene og frontruten varmes elektrisk. Underkjølt regn og store dråper ligger utenfor den sertifiseringen.'}); }
+function iu(){ ice(); iceRO(); }
+LAB.seg(el('icl'),[['st','Layer (St, Ns)'],['cu','Heaped (Cu, CB)']],I.cl,v=>{ I.cl=v; iu(); });
+LAB.seg(el('idr'),[['small','Small'],['large','Large'],['fzra','Freezing rain']],I.dr,v=>{ I.dr=v; iu(); });
+LAB.slider(el('ictl'),{label:'Outside air temperature (°C)',min:-45,max:10,step:1,v:I.t,f:v=>v+' °C',on:v=>{ I.t=v; iu(); }});
+LAB.slider(el('ictl'),{label:'Minutes in cloud',min:0,max:20,step:1,v:I.min,f:v=>v+' min',on:v=>{ I.min=v; iu(); }});
+/* ---------- turbulens ---------- */
+const TU={m:'wave',u:40,stab:'stable',x:0.55,alt:0.35};
+const C2=LAB.fit(el('tb'),()=>tb(),2);
+function tbw(xn,an){ // returnerer {w ft/min, sev 0-4, zone}
+  if(TU.m==='wave'){ const rx=0.25, d=xn-rx; if(TU.u<20||TU.stab!=='stable') { const w= d>0&&d<0.15&&an<0.35? -(TU.u*15): 0; return {w,sev: an<0.35&&d>0&&d<0.25? (TU.u>30?2:1):0,zone: d>0&&d<0.25&&an<0.35?'lee':'none'}; }
+    const lam=0.08+TU.u/600, A=Math.min(0.12,TU.u/400); if(d<-0.02) return {w:TU.u*12*(1-an),sev:0,zone:'wind'};
+    const env=Math.exp(-Math.max(0,d)/0.9), ph=2*Math.PI*d/lam; const w=-Math.sin(ph)*A*env*TU.u*900*(an<0.9?1:0.5); const rotor= d>lam*0.3&&d<lam*1.6&&an<0.28; const lee=d>=0&&d<lam*0.45&&an<0.5;
+    return {w:Math.round(w/50)*50,sev: rotor?4:lee?3:Math.abs(w)>1000?2:Math.abs(w)>300?1:0, zone: rotor?'rotor':lee?'lee':'wave'}; }
+  if(TU.m==='mech'){ const d=xn-0.3; const h=an; const sev= d>0&&d<0.4&&h<0.25? (TU.u>35?3:TU.u>20?2:1) : (h<0.12&&TU.u>15?1:0); return {w:sev?Math.round((Math.random()-0.5)*TU.u*30/50)*50:0,sev,zone:sev?'eddy':'none'}; }
+  // CAT: jetkjerne midt i, FL350
+  const dx=(xn-0.5)/0.18, dz=(an-0.62)/0.12; const core=Math.exp(-(dx*dx+dz*dz)/2); const shear=Math.abs(dz)*core*TU.u/40; const cold= xn<0.5; const sev= shear>0.4? (cold?3:2) : shear>0.2?1:0; return {w:0,sev,zone:sev?'cat':'none'}; }
+function tb(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W) return; const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#D6E3EE'); sky.addColorStop(1,'#F4F2EC'); g.fillStyle=sky; g.fillRect(0,0,W,H); const gy=H*0.88, Y=a=>gy-a*(gy-14), X=x=>x*W;
+  if(TU.m==='wave'){ // fjellrygg
+    g.fillStyle='#8B9A7A'; g.beginPath(); g.moveTo(0,gy); g.lineTo(X(0.12),gy); g.quadraticCurveTo(X(0.22),Y(0.32),X(0.25),Y(0.33)); g.quadraticCurveTo(X(0.29),Y(0.3),X(0.4),gy); g.lineTo(W,gy); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
+    const st=TU.stab==='stable'&&TU.u>=20, lam=0.08+TU.u/600, A=Math.min(0.12,TU.u/400);
+    g.strokeStyle='rgba(30,94,158,.55)'; g.lineWidth=1.4; for(let k=0;k<7;k++){ const a0=0.38+k*0.08; g.beginPath(); for(let x=0;x<=1.0001;x+=0.004){ const d=x-0.25; let a=a0; if(d>-0.13&&d<0) a+= (0.33*(1-Math.abs(d)/0.13))*Math.max(0,1-(a0-0.33)/0.8)*0.6; if(st&&d>=0) a+= A*Math.exp(-d/0.9)*Math.cos(2*Math.PI*d/lam)*Math.max(0.2,1-(a0-0.4)*0.9)+0.01; const y=Y(a); x?g.lineTo(X(x),y):g.moveTo(X(x),y); } g.stroke(); }
+    if(st){ for(let i=0;i<4;i++){ const x=0.25+lam*(i+0.03), a=0.62+A*1.2; g.fillStyle='rgba(255,255,255,.9)'; g.beginPath(); g.ellipse(X(x),Y(a),W*0.045,9,0,0,7); g.fill(); g.strokeStyle='#B4BFC7'; g.stroke(); }
+      g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#13202A'; g.fillText(L({en:'lenticular clouds',no:'linseskyer'}),X(0.25+lam*1.1),Y(0.62+A*1.2)-14);
+      g.fillStyle='rgba(200,205,210,.8)'; g.beginPath(); g.ellipse(X(0.25+lam*0.9),Y(0.16),W*0.05,14,0,0,7); g.fill(); g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#B3261E'; g.fillText(L({en:'rotor: severe turbulence',no:'rotor: kraftig turbulens'}),X(0.25+lam*0.9)-40,Y(0.16)+30);
+      g.strokeStyle='#B3261E'; g.lineWidth=1.6; g.beginPath(); g.ellipse(X(0.25+lam*0.9),Y(0.16),W*0.035,18,0,0.3,5.9); g.stroke(); }
+    g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#13202A'; g.fillText(L({en:'wind',no:'vind'})+' '+TU.u+' kt →',12,22); }
+  else if(TU.m==='mech'){ g.fillStyle='#8B9A7A'; g.fillRect(0,gy,W,H-gy); g.fillStyle='#7A8794'; g.fillRect(X(0.22),Y(0.16),X(0.08),gy-Y(0.16)); g.fillStyle='#4E6B4A'; for(let i=0;i<6;i++){ g.beginPath(); g.arc(X(0.12+i*0.015),Y(0.08),10,0,7); g.fill(); }
+    g.fillStyle='#13202A'; g.fillRect(X(0.62),gy-3,X(0.3),4); g.font='11px IBM Plex Mono, monospace'; g.fillText('RWY',X(0.75),gy+14);
+    const tt=performance.now()/700; g.strokeStyle='rgba(179,38,30,.6)'; g.lineWidth=1.6; for(let i=0;i<7;i++){ const x=X(0.33+i*0.05+((tt*0.02*TU.u/20)%0.05)), y=Y(0.1+0.05*Math.sin(i+tt)), r=6+TU.u*0.25*(1-i/9); g.beginPath(); g.arc(x,y,r,0,5.2); g.stroke(); }
+    g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#B3261E'; g.fillText(L({en:'eddies downwind of hangars and trees',no:'virvler på lesiden av hangarer og trær'}),X(0.35),Y(0.32)); g.fillStyle='#13202A'; g.fillText(L({en:'wind',no:'vind'})+' '+TU.u+' kt →',12,22); }
+  else { // CAT
+    const cx=X(0.5), cy=Y(0.62); for(let r=5;r>=1;r--){ g.fillStyle=`rgba(154,30,104,${0.05*r})`; g.beginPath(); g.ellipse(cx,cy,X(0.18)*r/3.2,(gy-14)*0.12*r/3.2,0,0,7); g.fill(); }
+    g.fillStyle='#9A1E68'; g.font='600 12px "Public Sans", sans-serif'; g.fillText(L({en:'jet stream core',no:'jetstrømkjerne'})+' '+(TU.u*3)+' kt',cx-50,cy+4);
+    g.strokeStyle='#5E6B74'; g.setLineDash([6,5]); g.beginPath(); g.moveTo(0,Y(0.55)); g.lineTo(X(0.45),Y(0.68)); g.lineTo(W,Y(0.8)); g.stroke(); g.setLineDash([]); g.fillStyle='#5E6B74'; g.font='11px IBM Plex Mono, monospace'; g.fillText(L({en:'tropopause',no:'tropopause'}),X(0.8),Y(0.8)-6);
+    g.fillStyle='rgba(179,38,30,.15)'; g.beginPath(); g.ellipse(cx-X(0.07),cy-(gy-14)*0.1,X(0.12),(gy-14)*0.05,0.2,0,7); g.fill(); g.beginPath(); g.ellipse(cx-X(0.06),cy+(gy-14)*0.11,X(0.12),(gy-14)*0.05,-0.2,0,7); g.fill();
+    g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#B3261E'; g.fillText(L({en:'strong shear: CAT, worst on the cold (polar) side',no:'sterkt skjær: CAT, verst på den kalde (polare) siden'}),X(0.03),Y(0.9));
+    g.fillStyle='#1E5E9E'; g.fillText(L({en:'cold air',no:'kald luft'}),X(0.05),Y(0.4)); g.fillStyle='#C2410C'; g.fillText(L({en:'warm air',no:'varm luft'}),X(0.85),Y(0.4)); }
+  // flyet
+  const px=X(TU.x), py=Y(TU.alt); const R=tbw(TU.x,TU.alt); g.fillStyle=['#2E7D32','#2E7D32','#8A5A00','#B3261E','#B3261E'][R.sev]; g.beginPath(); g.moveTo(px+14,py); g.lineTo(px-10,py-5); g.lineTo(px-10,py+5); g.closePath(); g.fill(); g.beginPath(); g.arc(px,py,16,0,7); g.strokeStyle=g.fillStyle; g.lineWidth=1.5; g.stroke(); }
+function tbro(){ const R=tbw(TU.x,TU.alt); const S=[{en:'nil',no:'ingen'},{en:'light',no:'lett'},{en:'moderate',no:'moderat'},{en:'severe',no:'kraftig'},{en:'severe to extreme',no:'kraftig til ekstrem'}];
+  el('t1').innerHTML=`<span class="${R.sev>=3?'ko':R.sev===2?'wa':'ok'}">${L(S[R.sev])}</span>`; el('t2').textContent= TU.m==='wave'? (R.w>0?'+':'')+R.w+' ft/min' : '—';
+  el('tEx').innerHTML= TU.m==='wave'? L({en:'<b>Mountain waves.</b> They need wind of about 20–25 kt or more blowing roughly at right angles across a ridge, increasing with height, and a stable layer near the ridge top. The air then oscillates downwind like water behind a rock: smooth, strong up- and downdrafts that can exceed 2000 ft/min, lenticular clouds at the crests if there is moisture, and a rotor below the first crests at about ridge height, with severe turbulence. The lee side of the ridge has the strongest downdraft. In an A320, waves show up as altitude and speed excursions even at cruise levels, and as strong downdrafts in the climb and descent near the ridges: keep a good margin above the minimum safe altitudes, and expect the altimeter to over-read in the strong winds. A SIGMET SEV MTW warns of it.',no:'<b>Fjellbølger.</b> De krever vind på rundt 20–25 kt eller mer omtrent vinkelrett på en fjellrygg, økende med høyden, og et stabilt lag nær toppen av ryggen. Luften svinger da på lesiden som vann bak en stein: jevn, kraftig opp- og nedvind som kan overstige 2000 ft/min, linseskyer på toppene hvis det er fuktighet, og en rotor under de første toppene omtrent i høyde med ryggen, med kraftig turbulens. Lesiden av ryggen har den kraftigste nedvinden. I en A320 merkes bølgene som avvik i høyde og fart selv i marsjhøyde, og som kraftig nedvind i stigning og nedstigning nær ryggene: hold god margin over minste sikre høyder, og regn med at høydemåleren viser for høyt i sterk vind. En SIGMET SEV MTW varsler om det.'})
+   : TU.m==='mech'? L({en:'<b>Mechanical turbulence.</b> Wind flowing over and around obstacles (hangars, trees, hills, cliffs) breaks into eddies on the downwind side. It grows with wind speed and surface roughness and is worst in the lowest few hundred feet, exactly where you are slowest and closest to the ground on short final. On the A320, managed speed adds a wind correction to VAPP and ground speed mini raises the target in gusts; keep your hands on the sidestick and thrust levers, and expect a sudden sink or roll just before the threshold when the wind blows across buildings.',no:'<b>Mekanisk turbulens.</b> Vind som strømmer over og rundt hindringer (hangarer, trær, åser, stup), brytes opp i virvler på lesiden. Den øker med vindstyrken og hvor ujevnt terrenget er, og er verst i de nederste få hundre fotene, akkurat der du er sakte og nær bakken på kort final. På A320 legger managed speed en vindkorreksjon til VAPP, og ground speed mini øker målet i kast; ha hendene på sidestikka og skyvehendlene, og regn med plutselig synk eller rull like før terskelen når vinden blåser over bygninger.'})
+   : L({en:'<b>Clear air turbulence (CAT).</b> In strong vertical wind shear around jet streams, near the tropopause and in sharp troughs, the air breaks into waves with no cloud to warn you. It is usually worst just below the core on the cold (polar) side and above it. Use the SIGWX chart and turbulence forecasts, pilot reports, and keep the seat belts fastened in the cruise. If you meet it, a change of level of a few thousand feet often gets you out.',no:'<b>Klarluftsturbulens (CAT).</b> I sterkt vertikalt vindskjær rundt jetstrømmer, nær tropopausen og i skarpe tråger brytes luften opp i bølger uten skyer som varsler. Den er vanligvis verst like under kjernen på den kalde (polare) siden og over den. Bruk SIGWX-kartet og turbulensprognoser, rapporter fra piloter, og hold setebeltene på i cruise. Møter du den, kommer du ofte ut med å endre høyde noen tusen fot.'}); }
+function tu(){ tb(); tbro(); }
+function mkt(){ el('tctl').innerHTML=''; LAB.slider(el('tctl'),{label:L({en:'Wind speed (kt)',no:'Vindstyrke (kt)'}),min:5,max:70,step:5,v:TU.u,f:v=>v+' kt',on:v=>{ TU.u=v; tu(); }});
+  LAB.slider(el('tctl'),{label:L({en:'Your position (left to right)',no:'Din posisjon (venstre til høyre)'}),min:0.02,max:0.98,step:0.01,v:TU.x,f:v=>Math.round(v*100)+' %',on:v=>{ TU.x=v; tu(); }});
+  LAB.slider(el('tctl'),{label:L({en:'Your height',no:'Din høyde'}),min:0.05,max:0.95,step:0.01,v:TU.alt,f:v=>Math.round(v*100)+' %',on:v=>{ TU.alt=v; tu(); }});
+  if(TU.m==='wave'){ const d=document.createElement('div'); el('tctl').appendChild(d); LAB.seg(d,[['stable','Stable air'],['unstable','Unstable air']],TU.stab,v=>{ TU.stab=v; tu(); }); } }
+LAB.seg(el('tmode'),[['wave','Mountain waves'],['mech','Mechanical'],['cat','Clear air (CAT)']],TU.m,v=>{ TU.m=v; if(v==='cat'){ TU.alt=0.55; TU.x=0.4; } else { TU.alt=0.3; TU.x=0.5; } mkt(); tu(); });
+let tvis=true; new IntersectionObserver(es=>tvis=es[0].isIntersecting).observe(el('tb')); (function lp(){ requestAnimationFrame(lp); if(tvis&&TU.m==='mech') tb(); })();
+/* ---------- vake ---------- */
+const K={cat:'H',xw:3,s:60};
+const CAT={M:{n:{en:'Medium (e.g. A320)',no:'Medium (f.eks. A320)'},span:34,sink:400},H:{n:{en:'Heavy (e.g. B777)',no:'Tung (f.eks. B777)'},span:61,sink:450},J:{n:{en:'Super (A380)',no:'Super (A380)'},span:80,sink:500}};
+const C3=LAB.fit(el('wk'),()=>wk(),2);
+function wk(){ const g=C3.ctx,W=C3.w,H=C3.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const c=CAT[K.cat];
+  const ft2px=H/1600, m2px=W/520, gy=H-30, cx=W/2, alt0=1200;
+  g.fillStyle='#E9E4D8'; g.fillRect(0,gy,W,30); g.fillStyle='#13202A'; g.fillRect(cx-90,gy-3,180,4); g.fillStyle='#7D8B95'; g.font='10px IBM Plex Mono, monospace'; g.fillText(L({en:'runway, seen from behind',no:'rullebanen, sett bakfra'}),cx-60,gy+18);
+  // flyet foran (på bakken etter s sek?) - vi viser virvler i høyde
+  const sinkFt=Math.min(alt0-80, c.sink*K.s/60*(K.s<120?1:0.8)), yV=gy-(alt0-sinkFt)*ft2px; const drift=Math.max(-W*0.42,Math.min(W*0.42,K.xw*0.5144*K.s*m2px*0.9)); const half=c.span*0.39*m2px;
+  const near=alt0-sinkFt<200; const spread=near? (1+ (200-(alt0-sinkFt))/60) : 1; const dec=Math.max(0.15,1-K.s/240);
+  for(const sg of [-1,1]){ const x=cx+drift+sg*half*spread; g.strokeStyle=`rgba(154,30,104,${dec})`; g.lineWidth=2; for(let r=6;r<26;r+=5){ g.beginPath(); g.arc(x,yV,r*(0.6+c.span/80),sg>0?0:Math.PI,(sg>0?0:Math.PI)+Math.PI*1.6); g.stroke(); } }
+  // fly-silhuett i start
+  g.strokeStyle='#9AA6AC'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(cx-c.span/2*m2px,gy-alt0*ft2px); g.lineTo(cx+c.span/2*m2px,gy-alt0*ft2px); g.stroke(); g.setLineDash([]);
+  g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(L({en:'where it flew',no:'der det fløy'}),cx+c.span/2*m2px+8,gy-alt0*ft2px+5);
+  g.fillText(L({en:'vortices now',no:'virvlene nå'})+` · −${Math.round(sinkFt)} ft`,cx+drift+half*spread+30,yV+5);
+  if(near) g.fillText(L({en:'near the ground they spread sideways and can stall over the runway',no:'nær bakken sprer de seg sidelengs og kan bli liggende over banen'}),20,gy-12);
+  g.fillStyle='#7D8B95'; g.font='10px IBM Plex Mono, monospace'; for(let a=0;a<=1500;a+=500) g.fillText(a+' ft',4,gy-a*ft2px+3); }
+function wkRO(){ el('wLink').innerHTML=L({en:'Why the vortices form, how strong they are and how fast they sink is in <a href="tunnel.html#wake">Wind tunnel › Wingtip vortices</a>. This section is about where the wake goes near the runway and how separation keeps you out of it.',no:'Hvorfor virvlene dannes, hvor sterke de er og hvor fort de synker, finner du i <a href="tunnel.html#wake">Vindtunnel › Vingetippvirvler</a>. Denne delen handler om hvor vaken går nær rullebanen, og hvordan separasjon holder deg unna den.'});
+  el('wEx').textContent=L({en:'Vortices sink to typically 500–1000 ft below the flight path, more behind Heavy and Super aircraft, and drift with the wind. A light crosswind of about 1–5 kt can hold the upwind vortex over the touchdown zone, and a light quartering tailwind is the worst case: it can push the vortices forward onto the approach path and the touchdown zone. Stay above the path of the aircraft ahead and land beyond its touchdown point; take off before its rotation point, or wait.',no:'Virvlene synker typisk til 500–1000 ft under flybanen, mer bak Heavy- og Super-fly, og driver med vinden. Lett sidevind på rundt 1–5 kt kan holde den ene virvelen over settepunktsonen, og lett medvind på skrå er verst: den kan skyve virvlene fram på innflygingsbanen og settepunktsonen. Hold deg over banen til flyet foran og land etter dets settepunkt; ta av før dets rotasjonspunkt, eller vent.'});
+  el('wtab').innerHTML=`<tr><th>${L({en:'Ahead → behind',no:'Foran → bak'})}</th><th>${L({en:'Approach (ICAO radar separation)',no:'Innflyging (ICAO radarseparasjon)'})}</th><th>${L({en:'Departure (same runway)',no:'Avgang (samme bane)'})}</th></tr>`+[
+   ['Heavy → Medium (A320)','5 NM','2 min'],['Super → Medium (A320)','7 NM','3 min'],['Medium → Medium (A320)','—','—'],['Heavy → Heavy','4 NM','—'],['Medium (A320) → Light','5 NM','2 min']].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')+`<tr><td colspan="3" class="note">${L({en:'ICAO categories from Doc 4444. The A320 is Medium (ICAO) and Upper Medium in RECAT-EU; behind another Medium there is no wake separation, only the radar minimum. Many European airports use RECAT-EU with other values; the AIP for each aerodrome decides. If you accept a visual approach or visual separation, avoiding the wake becomes your responsibility.',no:'ICAO-kategorier fra Doc 4444. A320 er Medium (ICAO) og Upper Medium i RECAT-EU; bak en annen Medium er det ingen vakeseparasjon, bare radarminimum. Mange europeiske flyplasser bruker RECAT-EU med andre verdier; AIP for hver flyplass avgjør. Hvis du godtar en visuell innflyging eller visuell separasjon, blir det ditt ansvar å unngå vaken.'})}</td></tr>`; }
+function wu(){ wk(); wkRO(); }
+LAB.seg(el('wcat'),[['M','Medium'],['H','Heavy'],['J','Super']],K.cat,v=>{ K.cat=v; wu(); });
+LAB.slider(el('wctl'),{label:'Crosswind (kt)',min:-10,max:10,step:1,v:K.xw,f:v=>(v>0?'→ ':v<0?'← ':'')+Math.abs(v)+' kt',on:v=>{ K.xw=v; wu(); }});
+LAB.slider(el('wctl'),{label:'Seconds after it passed',min:0,max:180,step:5,v:K.s,f:v=>v+' s',on:v=>{ K.s=v; wu(); }});
+/* ---------- andre farer ---------- */
+function cards(){ const c=[
+ [{en:'Reporting turbulence',no:'Rapportere turbulens'},{en:'ICAO and SERA air-reports use two levels. Moderate: moderate changes in attitude or altitude, the aircraft stays in positive control, about 0.5–1.0 g at the centre of gravity. Severe: abrupt changes, the aircraft may be momentarily out of control, more than 1.0 g. (The FAA scale adds light and extreme.) Report moderate or severe turbulence to ATC: the next pilot needs it.',no:'ICAO og SERA bruker to nivåer i rapporter fra luften. Moderat: moderate endringer i attitude eller høyde, flyet er under kontroll, rundt 0,5–1,0 g i tyngdepunktet. Kraftig: brå endringer, flyet kan kortvarig være ute av kontroll, mer enn 1,0 g. (FAA-skalaen har i tillegg lett og ekstrem.) Rapporter moderat eller kraftig turbulens til ATC: neste pilot trenger det.'}],
+ [{en:'Ice on the ground',no:'Is på bakken'},{en:'Frost, snow and ice must be off the wings before take-off. Fluids, holdover times and the checks before take-off are in <a href="#deice">De-icing and anti-icing on the ground</a>.',no:'Rim, snø og is må være borte fra vingene før avgang. Væsker, holdover-tider og kontrollene før avgang finner du i <a href="#deice">Avising og anti-ising på bakken</a>.'}],
+ [{en:'Mountain waves',no:'Fjellbølger'},{en:'Strong wind across a ridge in stable air: smooth lenticular clouds, strong up- and downdrafts downwind, rotor turbulence below the crests. In the A320 the risk is greatest in the climb and descent near the ridges; at cruise level waves can still give altitude and speed excursions. A SIGMET SEV MTW warns of it.',no:'Sterk vind på tvers av en fjellrygg i stabil luft: glatte linseskyer, sterk opp- og nedvind på lesiden, rotorturbulens under bølgetoppene. I A320 er risikoen størst i stigning og nedstigning nær ryggene; i marsjhøyde kan bølgene likevel gi avvik i høyde og fart. En SIGMET SEV MTW varsler om det.'}],
+ [{en:'Clear air turbulence',no:'Klarluftsturbulens'},{en:'Near jet streams and tropopause folds, with no cloud to warn you. Look at SIGWX charts and pilot reports; seat belts on.',no:'Nær jetstrømmer og tropopausefolder, uten skyer som varsler. Se på SIGWX-kart og pilotrapporter; sikkerhetsbeltene på.'}],
+ [{en:'Related labs',no:'Beslektede labber'},{en:'Thunderstorms, the worst of both icing and turbulence, have their own lab: <a href="storms.html">Thunderstorms and CB</a>. Microbursts and low-level wind shear are in <a href="storms.html#shear">Thunderstorms and wind shear</a>, and fog in <a href="clouds.html">Clouds, stability and fog</a>.',no:'Tordenvær, det verste av både ising og turbulens, har sin egen lab: <a href="storms.html">Tordenvær og CB</a>. Mikroburst og vindskjær i lav høyde er i <a href="storms.html#shear">Tordenvær og vindskjær</a>, og tåke i <a href="clouds.html">Skyer, stabilitet og tåke</a>.'}],
+ [{en:'Ice protection on the A320',no:'Isbeskyttelse på A320'},{en:'Engine anti-ice (bleed air to the nacelle lips) in icing conditions, wing anti-ice (bleed air to three outer slats per wing) when ice builds up, and automatic electrical heating of the probes and windows. Unless an optional ice detector is fitted, the crew spots ice visually: on the wiper bolts and the visual ice indicator between the windshields.',no:'Motoranti-is (bleed-luft til nacellekanten) i isingsforhold, vingeanti-is (bleed-luft til tre ytre slats per vinge) når det bygger seg opp is, og automatisk elektrisk oppvarming av sonder og vinduer. Med mindre en valgfri isdetektor er montert, ser besetningen isen visuelt: på viskerbolten og den visuelle isindikatoren mellom frontrutene.'}],
+ [{en:'Volcanic ash and sand',no:'Vulkansk aske og sand'},{en:'Ash melts in turbine engines and sandblasts windows; it does not show on weather radar. Follow ash advisories and NOTAM. Dust and sand reduce visibility to near zero in minutes.',no:'Aske smelter i turbinmotorer og sandblåser vinduer; den vises ikke på værradar. Følg askevarsler og NOTAM. Støv og sand kan redusere sikten til nesten null på minutter.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+LAB.quiz(el('qbox'),'hazards',()=>LAB.shuffle([
+ {q:{en:'Where in a cumulus cloud is icing usually worst?',no:'Hvor i en cumulussky er isingen vanligvis verst?'},a:[{en:'Between 0 and about −15 °C',no:'Mellom 0 og rundt −15 °C'},{en:'Below −30 °C',no:'Under −30 °C'},{en:'Just above +5 °C',no:'Like over +5 °C'}],c:0,e:{en:'Plenty of large supercooled drops; colder cloud has more ice crystals.',no:'Mange store underkjølte dråper; kaldere skyer har flere iskrystaller.'}},
+ {q:{en:'Which ice is heaviest and hardest to remove?',no:'Hvilken is er tyngst og vanskeligst å få bort?'},a:[{en:'Clear ice',no:'Klaris'},{en:'Rime',no:'Rimis'},{en:'Hoar frost',no:'Rimfrost'}],c:0,e:{en:'Large drops spread before freezing and form dense, smooth ice.',no:'Store dråper sprer seg før de fryser og danner tett, glatt is.'}},
+ {q:{en:'Where is the turbulence usually worst in mountain waves?',no:'Hvor er turbulensen vanligvis verst i fjellbølger?'},a:[{en:'In the rotor below the first wave crests, downwind of the ridge',no:'I rotoren under de første bølgetoppene, på lesiden av ryggen'},{en:'High above the lenticular clouds',no:'Høyt over linseskyene'},{en:'On the upwind side of the ridge',no:'På lovsiden av ryggen'}],c:0,e:{en:'The rotor sits at about ridge height downwind and can be severe; the lee slope has the strongest downdraft.',no:'Rotoren ligger omtrent i høyde med ryggen på lesiden og kan være kraftig; lesiden av ryggen har den kraftigste nedvinden.'}},
+ {q:{en:'Which crosswind is most dangerous for wake turbulence on the runway?',no:'Hvilken sidevind er farligst for vaketurbulens på banen?'},a:[{en:'A light one, around 1–5 kt',no:'En svak, rundt 1–5 kt'},{en:'Calm',no:'Vindstille'},{en:'A strong one, above 20 kt',no:'En sterk, over 20 kt'}],c:0,e:{en:'It can hold the upwind vortex near the runway centreline instead of blowing it away.',no:'Den kan holde den ene virvelen nær senterlinjen i stedet for å blåse den bort.'}},
+ {q:{en:'You land behind a heavy jet on the same runway. Where do you aim?',no:'Du lander bak et tungt jetfly på samme bane. Hvor sikter du?'},a:[{en:'Beyond its touchdown point',no:'Etter dets settepunkt'},{en:'Before its touchdown point',no:'Før dets settepunkt'},{en:'Exactly on its touchdown point',no:'Nøyaktig på dets settepunkt'}],c:0,e:{en:'Vortices stop when the wheels touch down. Above its path and beyond its touchdown keeps you clear.',no:'Virvlene stopper når hjulene treffer bakken. Over banen og etter settepunktet holder deg unna.'}},
+ {q:{en:'Clear air turbulence is most often found…',no:'Klarluftsturbulens finnes oftest …'},a:[{en:'around jet streams, where the vertical wind shear is strong',no:'rundt jetstrømmer, der det vertikale vindskjæret er sterkt'},{en:'inside fair-weather cumulus',no:'inne i godværscumulus'},{en:'in fog',no:'i tåke'}],c:0,e:{en:'Strong shear near the tropopause and jet streams, often on the cold (polar) side; no cloud gives a warning.',no:'Sterkt skjær nær tropopausen og jetstrømmer, ofte på den kalde (polare) siden; ingen skyer varsler.'}},
+ {q:{en:'A two-step de-icing/anti-icing is done. When does the holdover time start?',no:'Det gjøres avising/anti-ising i to trinn. Når starter holdover-tiden?'},a:[{en:'At the start of the second (anti-icing) step',no:'Ved starten av andre trinn (anti-ising)'},{en:'At the start of the first step',no:'Ved starten av første trinn'},{en:'When the aircraft starts to taxi',no:'Når flyet begynner å takse'},{en:'When the last fluid has been applied',no:'Når den siste væsken er påført'}],c:0,e:{en:'The protection comes from the anti-icing fluid, so the clock starts when that step begins. The start time is part of the anti-icing code you receive.',no:'Beskyttelsen kommer fra anti-isingsvæsken, så klokken starter når det trinnet begynner. Starttiden er en del av anti-isingskoden du får.'}},
+ {q:{en:'Why does a Type IV fluid protect much longer than Type I?',no:'Hvorfor beskytter en Type IV-væske mye lenger enn Type I?'},a:[{en:'It is thickened, so a thick layer stays on the wing and keeps absorbing precipitation until it shears off in the take-off run',no:'Den er fortykket, så et tykt lag blir liggende på vingen og fortsetter å ta opp nedbør til det skjæres av under startløpet'},{en:'It is applied hotter',no:'Den påføres varmere'},{en:'It contains no glycol, so it cannot dilute',no:'Den inneholder ikke glykol, så den kan ikke fortynnes'}],c:0,e:{en:'Type I is thin and runs off quickly. The thickener in Type II and IV gives a thick layer at rest that thins out under the shear of the airflow at speed.',no:'Type I er tynn og renner raskt av. Fortykningsmiddelet i Type II og IV gir et tykt lag i ro som blir tynt under skjærkreftene fra luftstrømmen i fart.'}},
+ {q:{en:'You are still taxiing in snow when the holdover time runs out. What now?',no:'Du takser fortsatt i snø når holdover-tiden går ut. Hva nå?'},a:[{en:'Take off only if a pre-take-off contamination check shows clean surfaces; otherwise de-ice again',no:'Ta bare av hvis en pre-take-off contamination check viser rene flater; ellers avise på nytt'},{en:'Take off within 5 minutes, since the table has a safety margin',no:'Ta av innen 5 minutter, siden tabellen har en sikkerhetsmargin'},{en:'Select wing anti-ice on and take off',no:'Slå på vinge-anti-ice og ta av'}],c:0,e:{en:'A HOT is not a hard safety margin in either direction. Once it is exceeded, only an inspection of the critical surfaces (or new treatment) allows the take-off. Wing anti-ice is not designed to clean a contaminated wing on the ground.',no:'En HOT er ingen fast sikkerhetsmargin i noen retning. Når den er overskredet, er det bare en kontroll av de kritiske flatene (eller ny behandling) som tillater avgang. Vinge-anti-ice er ikke laget for å rense en forurenset vinge på bakken.'}},
+ {q:{en:'For which conditions do the holdover tables give no time at all?',no:'For hvilke forhold gir holdover-tabellene ingen tid i det hele tatt?'},a:[{en:'Moderate or heavy freezing rain, heavy snow and hail',no:'Moderat eller kraftig underkjølt regn, kraftig snø og hagl'},{en:'Frost',no:'Rim'},{en:'Light snow at −5 °C',no:'Lett snø ved −5 °C'}],c:0,e:{en:'No fluid has been shown to protect for any useful time in these conditions, so there is no HOT and no take-off.',no:'Ingen væske har vist at den beskytter i nyttig tid under disse forholdene, så det finnes ingen HOT og ingen avgang.'}},
+ {q:{en:'Which sign tells you the anti-icing fluid has failed?',no:'Hvilket tegn forteller deg at anti-isingsvæsken har sviktet?'},a:[{en:'The surface loses its gloss and snow lies on top instead of being absorbed',no:'Overflaten mister glansen, og snø blir liggende oppå i stedet for å tas opp'},{en:'The fluid drips off the trailing edge',no:'Væsken drypper av bakkanten'},{en:'The fluid is still green',no:'Væsken er fortsatt grønn'}],c:0,e:{en:'A glossy wet surface is still absorbing. Dull patches, slush or snow accumulating mean the fluid is diluted and freezing.',no:'En blank, våt overflate tar fortsatt opp nedbør. Matte flekker, sørpe eller snø som samler seg betyr at væsken er fortynnet og fryser.'}},
+ {q:{en:'An A320 (Medium) follows a Heavy on the same approach under ICAO radar separation. The minimum wake turbulence distance is…',no:'En A320 (Medium) følger et Heavy-fly på samme innflyging med ICAO radarseparasjon. Minste avstand for vaketurbulens er …'},a:[{en:'5 NM',no:'5 NM'},{en:'3 NM',no:'3 NM'},{en:'8 NM',no:'8 NM'}],c:0,e:{en:'Heavy → Medium is 5 NM in Doc 4444 (8 NM is Super → Light). Under RECAT-EU the value can be different; the AIP decides.',no:'Heavy → Medium er 5 NM i Doc 4444 (8 NM er Super → Light). Med RECAT-EU kan verdien være en annen; AIP avgjør.'}}
+]),12);
+/* ---------- avising og anti-ising ---------- */
+LAB.add({},{
+ 'De-icing':'Avising','De-icing and anti-icing on the ground':'Avising og anti-ising på bakken','Procedure':'Prosedyre','Fluid':'Væske','Mix (fluid / water)':'Blanding (væske / vann)','Precipitation':'Nedbør',
+ 'Holdover time (illustrative)':'Holdover-tid (illustrativ)','HOT starts':'HOT starter','Status':'Status','One-step':'Ett trinn','Two-step':'To trinn',
+ 'Type I':'Type I','Type II':'Type II','Type III':'Type III','Type IV':'Type IV','Frost':'Rim','Freezing fog':'Underkjølt tåke','Light snow':'Lett snø','Moderate snow':'Moderat snø','Freezing drizzle':'Underkjølt yr','Light freezing rain':'Lett underkjølt regn','Heavy snow, mod./heavy FZRA, hail':'Kraftig snø, mod./kraftig FZRA, hagl',
+ 'Wake turbulence in operations':'Vaketurbulens i operasjon',
+ 'De-icing removes frost, snow and ice. Anti-icing puts a layer of fluid on the clean surface that absorbs falling precipitation for a limited time: the holdover time (HOT). Choose the procedure, the fluid and the weather, then let the clock run from the start of the anti-icing step.':'Avising fjerner rim, snø og is. Anti-ising legger et lag væske på den rene overflaten som tar opp nedbør som faller, i en begrenset tid: holdover-tiden (HOT). Velg prosedyre, væske og vær, og la klokken gå fra starten av anti-isingstrinnet.',
+ 'Wing section with de-icing fluid and a holdover time bar':'Vingesnitt med avisingsvæske og en stolpe for holdover-tid'
+});
+const DI={proc:'two',fl:'IV',mix:'100',pr:'lsn',t:-5,min:20};
+const HOTB={I:{frost:[45,45],fzfg:[11,17],lsn:[11,18],msn:[6,11],fzdz:[5,8],lfzra:[2,5]},II:{frost:[480,480],fzfg:[35,90],lsn:[30,60],msn:[15,30],fzdz:[30,55],lfzra:[15,30]},III:{frost:[120,120],fzfg:[20,40],lsn:[15,30],msn:[8,15],fzdz:[10,20],lfzra:[6,10]},IV:{frost:[720,720],fzfg:[60,150],lsn:[45,80],msn:[25,45],fzdz:[40,75],lfzra:[25,40]}};
+const FLC={I:'#E8892B',II:'#E9DFA6',III:'#F2D531',IV:'#5FAE5A'};
+function hot(){ const f=DI.fl, t=DI.t, p=DI.pr;
+  if(p==='heavy') return {none:{en:'No holdover time exists for these conditions: do not take off.',no:'Det finnes ingen holdover-tid for disse forholdene: ikke ta av.'}};
+  if(f!=='I'&&DI.mix==='50'&&t<-3) return {none:{en:'A 50/50 mix may only be used down to −3 °C.',no:'En 50/50-blanding kan bare brukes ned til −3 °C.'}};
+  if(f!=='I'&&DI.mix==='75'&&t<-14) return {none:{en:'A 75/25 mix may only be used down to −14 °C.',no:'En 75/25-blanding kan bare brukes ned til −14 °C.'}};
+  if(t<-25) return {none:{en:'Below the lowest operational use temperature (LOUT) assumed here (−25 °C). Check the fluid’s LOUT.',no:'Under laveste operative brukstemperatur (LOUT) som er antatt her (−25 °C). Sjekk væskens LOUT.'}};
+  if((p==='fzdz'||p==='lfzra')&&t<-10) return {none:{en:'The tables give no holdover time for freezing drizzle or rain at this temperature.',no:'Tabellene gir ingen holdover-tid for underkjølt yr eller regn ved denne temperaturen.'}};
+  const b=HOTB[f][p], kt= t>=-3?1 : t>=-14?0.7 : 0.45, km= f==='I'?1 : DI.mix==='100'?1 : DI.mix==='75'?0.6 : 0.3, k1= DI.proc==='one'&&f!=='I'?0.85:1;
+  return {lo:Math.max(1,Math.round(b[0]*kt*km*k1)),hi:Math.max(1,Math.round(b[1]*kt*km*k1))}; }
+const CD=LAB.fit(el('dice'),()=>dd(),2);
+function fmtM(m){ return m>=120? (m/60%1? nf(m/60,1):m/60)+' h' : m+' min'; }
+function dd(){ const g=CD.ctx,W=CD.w,H=CD.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const h=hot();
+  const narrow=W<520, bh=narrow?58:64, top=H-bh; const cx=W*0.08, cy=top*0.62, s=Math.min(W*0.84/520,top/180);
+  // nedbør
+  const tt=performance.now()/1000; const p=DI.pr;
+  if(p!=='frost'){ for(let i=0;i<70;i++){ const x=(i*73.3+tt*(p.includes('sn')||p==='heavy'?20:60)*(i%3+1)*0.3)%W, y=((i*41.7)+tt*(p.includes('sn')?30:p==='fzfg'?6:110))%(top-10);
+    if(p.includes('sn')||p==='heavy'){ g.fillStyle='rgba(120,140,160,.7)'; g.beginPath(); g.arc(x,y,p==='msn'||p==='heavy'?2.4:1.6,0,7); g.fill(); } else if(p==='fzfg'){ g.fillStyle='rgba(150,165,180,.35)'; g.beginPath(); g.arc(x,y,1.2,0,7); g.fill(); } else { g.strokeStyle='rgba(30,94,158,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(x,y); g.lineTo(x-1.5,y+(p==='lfzra'?9:5)); g.stroke(); } } }
+  // vinge
+  g.save(); g.translate(cx,cy); g.scale(s,s);
+  const up=x=> -38*Math.sqrt(Math.max(0,x/520))*(1-x/520)*2.1-2, lo=x=> 16*Math.sqrt(Math.max(0,x/520))*(1-x/520)*1.4;
+  const fr= h.none? 0 : Math.min(1.6,DI.min/Math.max(1,h.hi)); // forbruk av væsken
+  const thick= DI.fl==='I'?2.2:DI.fl==='III'?4.5:6.5;
+  // væskelag
+  if(!h.none||DI.pr!=='heavy'){ g.beginPath(); for(let x=0;x<=520;x+=4) g.lineTo(x,up(x)-thick*(1-0.5*Math.min(1,fr))); for(let x=520;x>=0;x-=4) g.lineTo(x,up(x)); g.closePath();
+    const c=FLC[DI.fl]; g.fillStyle=c; g.globalAlpha=0.75; g.fill(); g.globalAlpha=1;
+    if(fr>0.6){ g.fillStyle=`rgba(255,255,255,${Math.min(0.9,(fr-0.6)*1.6)})`; g.fill(); } }
+  g.fillStyle='#DCE2E6'; g.strokeStyle='#13202A'; g.lineWidth=1.6; g.beginPath(); for(let x=0;x<=520;x+=4) g.lineTo(x,up(x)); for(let x=520;x>=0;x-=4) g.lineTo(x,lo(x)); g.closePath(); g.fill(); g.stroke();
+  // snø/is når væsken har sviktet
+  if(fr>1||h.none){ g.fillStyle='#FFFFFF'; g.strokeStyle='#9DB1BD'; g.lineWidth=1; for(let x=20;x<500;x+=14){ const y=up(x)-thick-2; g.beginPath(); g.arc(x,y,3+((x*7)%5),Math.PI,0); g.fill(); g.stroke(); } }
+  g.restore();
+  g.font='600 '+(narrow?'11':'14')+'px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E';
+  const lab= h.none? L({en:'no protection: contamination builds',no:'ingen beskyttelse: urenheter bygger seg opp'}) : fr>1? L({en:'fluid has failed: dull, snow no longer absorbed',no:'væsken har sviktet: matt, snø tas ikke lenger opp'}) : fr>0.6? L({en:'fluid diluting: approaching the end of the HOT',no:'væsken fortynnes: nærmer seg slutten av HOT'}) : L({en:'glossy fluid layer absorbing the precipitation',no:'blank væskefilm som tar opp nedbøren'});
+  g.fillText(lab,cx,Math.max(18,cy-60*s)); 
+  // HOT-stolpe
+  const ax=narrow?10:16, aw=W-ax*2, MX=180, Xm=m=>ax+Math.min(1,m/MX)*aw, by=top+18;
+  g.fillStyle='#EEF1EF'; g.fillRect(ax,by,aw,14);
+  if(!h.none){ g.fillStyle='#CFE6D4'; g.fillRect(ax,by,Xm(h.lo)-ax,14); g.fillStyle='#F6E2B5'; g.fillRect(Xm(h.lo),by,Math.max(2,Xm(h.hi)-Xm(h.lo)),14); g.fillStyle='#F2CFCB'; if(h.hi<MX) g.fillRect(Xm(h.hi),by,ax+aw-Xm(h.hi),14); }
+  else { g.fillStyle='#F2CFCB'; g.fillRect(ax,by,aw,14); }
+  g.font='10px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; for(let m=0;m<=MX;m+=narrow?60:30){ g.textAlign=m===0?'left':m===MX?'right':'center'; g.fillText(m+(m===MX?'+ min':''),Xm(m),by+28); } g.textAlign='start';
+  const xm=Xm(DI.min); g.fillStyle='#13202A'; g.beginPath(); g.moveTo(xm,by-1); g.lineTo(xm-6,by-10); g.lineTo(xm+6,by-10); g.closePath(); g.fill(); g.fillRect(xm-1,by,2,14);
+  g.fillStyle='#13202A'; g.font='11px IBM Plex Mono, monospace'; g.fillText(L({en:'time since start of the anti-icing step',no:'tid siden start av anti-isingstrinnet'}),ax,by-14); }
+function dro(){ const h=hot(), f=DI.fl;
+  const FN={I:{en:'Type I (orange): unthickened, applied hot, thin layer',no:'Type I (oransje): ufortykket, påført varm, tynt lag'},II:{en:'Type II (pale yellow): thickened, for jets rotating above about 100 kt',no:'Type II (blekgul): fortykket, for jetfly som roterer over rundt 100 kt'},III:{en:'Type III (bright yellow): thickened, flows off at lower rotation speeds (about 60 kt and above)',no:'Type III (klar gul): fortykket, renner av ved lavere rotasjonsfart (rundt 60 kt og over)'},IV:{en:'Type IV (green): thickened, longest protection, for jets rotating above about 100 kt',no:'Type IV (grønn): fortykket, lengst beskyttelse, for jetfly som roterer over rundt 100 kt'}};
+  el('dr1').textContent=L(FN[f]);
+  el('dr2').innerHTML= h.none? `<span class="ko">${L({en:'none',no:'ingen'})}</span>` : (h.lo===h.hi? fmtM(h.lo) : fmtM(h.lo)+' – '+fmtM(h.hi));
+  el('dr3').textContent= DI.proc==='one'? L({en:'at the start of the single (de-/anti-icing) application',no:'ved start av den ene påføringen (av-/anti-ising)'}) : L({en:'at the start of step 2 (anti-icing)',no:'ved start av trinn 2 (anti-ising)'});
+  const st= h.none? 'no' : DI.min<=h.lo? 'in' : DI.min<=h.hi? 'range' : 'out';
+  el('dr4').innerHTML= st==='no'? `<span class="ko">${L({en:'no protection',no:'ingen beskyttelse'})}</span>` : st==='in'? `<span class="ok">${L({en:'within HOT',no:'innenfor HOT'})}</span>` : st==='range'? `<span class="wa">${L({en:'within the range: judge the conditions',no:'innenfor spennet: vurder forholdene'})}</span>` : `<span class="ko">${L({en:'HOT exceeded',no:'HOT overskredet'})}</span>`;
+  const proc= DI.proc==='one'? L({en:'<b>One-step:</b> heated fluid (usually diluted) removes the contamination and is left on as the protection. Quick, but the heated, diluted layer protects for less time than a cold, neat second step.',no:'<b>Ett trinn:</b> oppvarmet væske (vanligvis fortynnet) fjerner urenhetene og blir liggende som beskyttelse. Raskt, men det oppvarmede, fortynnede laget beskytter kortere enn et kaldt, ufortynnet andre trinn.'}) : L({en:'<b>Two-step:</b> step 1 removes the contamination with hot water or Type I; step 2 applies the anti-icing fluid, typically within about 3 minutes, before the first layer can freeze. The HOT starts with step 2.',no:'<b>To trinn:</b> trinn 1 fjerner urenhetene med varmt vann eller Type I; trinn 2 legger på anti-isingsvæsken, typisk innen rundt 3 minutter, før det første laget kan fryse. HOT starter med trinn 2.'});
+  const what= st==='no'? L(h.none) : st==='in'? L({en:'Within the holdover time, if the weather has not changed. Most operators still require a pre-take-off check of representative surfaces from the cabin.',no:'Innenfor holdover-tiden, hvis været ikke har endret seg. De fleste operatører krever likevel en pre-take-off check av representative flater fra kabinen.'}) : st==='range'? L({en:'The lower value applies to heavier precipitation. Where in the range you are is a judgement: heavier snow, wind or jet blast shorten it.',no:'Den laveste verdien gjelder for kraftigere nedbør. Hvor i spennet du er, er en vurdering: kraftigere snø, vind eller jetblast forkorter det.'}) : L({en:'HOT exceeded: do not take off unless a pre-take-off contamination check, normally from outside the aircraft within 5 minutes of take-off, shows clean surfaces. Otherwise de-ice again.',no:'HOT overskredet: ikke ta av med mindre en pre-take-off contamination check, normalt utenfra flyet innen 5 minutter før avgang, viser rene flater. Ellers må flyet avises på nytt.'});
+  el('dEx').innerHTML=proc+' '+what+' <i>'+L({en:'Illustrative values only: always use the current HOT tables published for the season and adopted by your operator.',no:'Bare illustrative verdier: bruk alltid de gjeldende HOT-tabellene som er publisert for sesongen og tatt i bruk av operatøren din.'})+'</i>'; }
+function du(){ dd(); dro(); }
+function mkd(){ el('dctl').innerHTML='';
+  LAB.slider(el('dctl'),{label:L({en:'Outside air temperature (°C)',no:'Utetemperatur (°C)'}),min:-30,max:3,step:1,v:DI.t,f:v=>v+' °C',on:v=>{ DI.t=v; du(); }});
+  LAB.slider(el('dctl'),{label:L({en:'Minutes since the HOT started',no:'Minutter siden HOT startet'}),min:0,max:180,step:1,v:DI.min,f:v=>v+' min',on:v=>{ DI.min=v; du(); }}); }
+let mixSeg=null;
+function mkmix(){ el('dMix').innerHTML=''; el('dMix').className=''; if(DI.fl==='I'){ el('dMix').innerHTML=`<p class="note">${L({en:'Type I is mixed so that its freezing point is at least 10 °C below the OAT.',no:'Type I blandes slik at frysepunktet er minst 10 °C under utetemperaturen.'})}</p>`; return; } mixSeg=LAB.seg(el('dMix'),[['100','100/0'],['75','75/25'],['50','50/50']],DI.mix,v=>{ DI.mix=v; du(); }); }
+LAB.seg(el('dProc'),[['one','One-step'],['two','Two-step']],DI.proc,v=>{ DI.proc=v; du(); });
+LAB.seg(el('dFl'),[['I','Type I'],['II','Type II'],['III','Type III'],['IV','Type IV']],DI.fl,v=>{ DI.fl=v; mkmix(); du(); });
+LAB.seg(el('dPr'),[['frost','Frost'],['fzfg','Freezing fog'],['lsn','Light snow'],['msn','Moderate snow'],['fzdz','Freezing drizzle'],['lfzra','Light freezing rain'],['heavy','Heavy snow, mod./heavy FZRA, hail']],DI.pr,v=>{ DI.pr=v; du(); });
+let dvis=true; new IntersectionObserver(es=>dvis=es[0].isIntersecting).observe(el('dice')); (function lp(){ requestAnimationFrame(lp); if(dvis&&DI.pr!=='frost') dd(); })();
+function dcards(){ const c=[
+ [{en:'Clean aircraft concept',no:'Rent fly-prinsippet'},{en:'No take-off with frost, snow, slush or ice adhering to the wings, control surfaces, tail or engine inlets. A layer as thin as coarse sandpaper can cut maximum lift substantially and raise the stall speed. The only exceptions are those the manufacturer allows, such as thin frost on the lower wing surface over cold-soaked fuel, within its stated limits.',no:'Ingen avgang med rim, snø, sludd eller is som sitter fast på vinger, ror, hale eller motorinnløp. Et lag så tynt som grovt sandpapir kan redusere maksimalt løft betydelig og øke stallfarten. De eneste unntakene er dem produsenten tillater, som tynt rim på undersiden av vingen over kaldt drivstoff, innenfor grensene den oppgir.'}],
+ [{en:'Why thickened fluids last longer',no:'Hvorfor fortykkede væsker varer lenger'},{en:'Type II, III and IV contain a thickener: at rest the fluid is viscous and forms a thick layer that keeps absorbing snow and rain. In the take-off run the airflow shears it thin and it flows off before rotation, if the aircraft is fast enough for that fluid type.',no:'Type II, III og IV inneholder et fortykningsmiddel: i ro er væsken tyktflytende og danner et tykt lag som fortsetter å ta opp snø og regn. Under startløpet skjærer luftstrømmen den tynn, og den renner av før rotasjon, hvis flyet er raskt nok for den væsketypen.'}],
+ [{en:'Checks before take-off',no:'Kontroller før avgang'},{en:'Pre-take-off check: within the HOT, the crew looks at representative surfaces, usually from the cabin. Pre-take-off contamination check: when the HOT has been exceeded, a check of the critical surfaces within 5 minutes of take-off, normally from outside. Signs of fluid failure: loss of gloss, snow lying on top, ice crystals or slush.',no:'Pre-take-off check: innenfor HOT ser besetningen på representative flater, vanligvis fra kabinen. Pre-take-off contamination check: når HOT er overskredet, en kontroll av de kritiske flatene innen 5 minutter før avgang, normalt utenfra. Tegn på at væsken svikter: tap av glans, snø som blir liggende oppå, iskrystaller eller sørpe.'}],
+ [{en:'On the A320',no:'På A320'},{en:'Type II and IV fluids are normal, and the anti-icing code (for example “TYPE IV/100/10:42”) from the de-icing crew tells you the fluid, the mix and the start time. Air conditioning packs and APU bleed are normally off while fluid is sprayed, to keep fumes out of the cabin. Engine and wing anti-ice and the take-off performance follow the operator’s procedures.',no:'Type II- og IV-væsker er vanlige, og anti-isingskoden (for eksempel «TYPE IV/100/10:42») fra avisingsmannskapet forteller deg væske, blanding og starttid. Klimaanleggets packs og APU bleed er normalt av mens væske sprøytes, for å holde damp ute av kabinen. Motor- og vinge-anti-ice og avgangsytelsen følger operatørens prosedyrer.'}]];
+ el('dcards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+LAB.start('hazards'); iu(); mkt(); tu(); wu(); cards(); mkmix(); mkd(); du(); dcards();
+LAB.onLang(()=>{ iu(); mkt(); tu(); wu(); cards(); mkmix(); mkd(); du(); dcards(); });
+})();
+</script>
+</body>
+</html>

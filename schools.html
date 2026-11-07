@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For flight schools and operators · Birdbird</title>
+<meta name="description" content="How a flight school or operator can use Birdbird: interactive theory mapped to the EASA ATPL subjects, a standard briefing pack, type-rating preparation and a document-grounded instructor.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* schools.html – page-local layout on top of the shared design system */
+.ip-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.ip-cols.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:980px){.ip-cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.ip-cols,.ip-cols.two{grid-template-columns:minmax(0,1fr)}}
+.ip-cols .box{display:flex;flex-direction:column;gap:0;padding:20px 22px}
+.ip-cols .box .k{font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+.ip-cols .box p{flex:1 1 auto}
+.ip-cols .box .go{margin-top:14px;font-size:14px;font-weight:600;text-decoration:none;align-self:flex-start}
+.ip-cols .box .go:hover{text-decoration:underline}
+.ip-cols .box .tg{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+/* problem list: flat, numbered */
+.prob{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--ink)}
+.prob>div{padding:18px 24px 6px 0}
+.prob>div+div{padding-left:24px;border-left:1px solid var(--rule-2)}
+.prob .n{display:block;font-family:var(--f-mono);font-size:12px;color:var(--accent);margin-bottom:8px}
+.prob h3{margin-bottom:8px}
+.prob p{margin:0;color:var(--ink-2);font-size:15px;line-height:1.55}
+@media (max-width:860px){.prob{grid-template-columns:minmax(0,1fr)}.prob>div,.prob>div+div{padding:16px 0;border-left:0}.prob>div+div{border-top:1px solid var(--rule-2)}}
+/* subject register */
+.reg{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius)}
+.reg th{text-align:left;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--wash)}
+.reg td{padding:10px 14px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+.reg tr:last-child td{border-bottom:0}
+.reg td.c{font-family:var(--f-mono);font-size:13px;white-space:nowrap;color:var(--ink)}
+.reg td.m{font-weight:600}
+.reg .code{font-family:var(--f-mono);font-size:13px;color:var(--ink-2);margin-right:4px}
+.reg td .tag{margin:0 4px 4px 0}
+.regwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:640px){
+  .reg thead{display:none}
+  .reg,.reg tbody,.reg tr,.reg td{display:block;width:100%}
+  .reg tr{padding:10px 14px;border-bottom:1px solid var(--rule-2)}
+  .reg tr:last-child{border-bottom:0}
+  .reg td{padding:2px 0;border:0}
+  .reg td.c{color:var(--ink-2)}
+}
+/* course stages */
+.stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;counter-reset:st}
+.stages>div{position:relative;padding:22px 24px 22px 0;border-top:3px solid var(--rule)}
+.stages>div+div{padding-left:24px}
+.stages>div.on{border-top-color:var(--ink)}
+.stages .st{display:block;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:8px}
+.stages h3{font-size:var(--t-lg);margin-bottom:10px}
+.stages ul{margin:0;padding:0 0 0 18px;color:var(--ink-2);font-size:15px;line-height:1.55}
+.stages li{margin:0 0 6px}
+@media (max-width:860px){.stages{grid-template-columns:minmax(0,1fr)}.stages>div,.stages>div+div{padding:18px 0}}
+/* roadmap */
+.tag.plan{color:var(--caution)}
+.tag.now{color:var(--ok)}
+.road .box{background:var(--wash);border-style:dashed}
+/* contact */
+.cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px 32px;background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;padding:28px 32px}
+.cta h2{font-size:clamp(24px,2.2vw,30px)}
+.cta p{margin:10px 0 0;color:var(--ink-2);max-width:62ch;font-size:var(--t-md)}
+@media (max-width:640px){.cta{padding:22px 20px}.cta .btns{width:100%}.cta .btns .btn{flex:1 1 auto}}
+</style>
+</head>
+<body data-title="For flight schools and operators">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · For flight schools and operators</div>
+      <h1>For flight schools and operators</h1>
+      <p>Birdbird gives a ground school or a training department one consistent set of interactive theory, briefing material and type-rating preparation. Instructors can use it in the classroom, and students can repeat the same material on their own between lessons.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#problem">The problem</a><a href="#offer">What a school gets</a><a href="#subjects">ATPL subjects</a><a href="#course">In a course</a><a href="#roadmap">Roadmap</a><a href="#contact">Contact</a></nav>
+
+  <section class="card" id="problem">
+    <h2>Where training time is lost</h2>
+    <p class="lead">Three problems come up again and again in ground school and type training. None of them is about the students' effort.</p>
+    <div class="prob">
+      <div><span class="n">01</span><h3>Theory that doesn't stick</h3><p>Students pass the theory exams, then meet the same ideas in the aircraft and cannot use them. Cold-temperature altimeter error, Vmca or a take-off performance limit is easy to memorise and hard to picture.</p></div>
+      <div><span class="n">02</span><h3>Briefings that differ between instructors</h3><p>Each instructor briefs a lesson in their own way. Students hear different words, different priorities and different minima for the same exercise, and spend effort working out what is actually expected.</p></div>
+      <div><span class="n">03</span><h3>Type-rating preparation on paper</h3><p>Systems knowledge for a type rating usually comes from a thick manual and a list of questions. Students rarely get to operate the systems or answer an oral question before they sit in front of the examiner.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="offer">
+    <h2>What Birdbird offers a school</h2>
+    <p class="lead">Everything below works today, in a normal web browser, on a classroom screen, a laptop or a phone.</p>
+    <div class="ip-cols">
+      <div class="box"><span class="k">Learn</span><b class="t">A learning path aligned to the ATPL subjects</b><p>25 interactive labs in 9 modules, from principles of flight to human performance. Each module follows an EASA ATPL theory subject, and every lab uses the A320 as its reference aircraft.</p><a class="go" href="lab.html">Open the learning path →</a></div>
+      <div class="box"><span class="k">Teach</span><b class="t">Labs an instructor can project</b><p>Each lab is one page built around a live model: move a slider and the drawing and the numbers change with it. A ground school lesson can start from the same picture the student later revises with.</p><a class="go" href="altimetry.html">Example: pressure and altitude →</a></div>
+      <div class="box"><span class="k">Plan</span><b class="t">One standard briefing pack</b><p>VFR and IFR versions with planning minima, performance, mass and balance and fuel, plus printable kneeboard sheets. Route Explorer adds a terrain profile, 3D terrain and airspace for the planned route.</p><a class="go" href="prep.html">Open the briefing pack →</a></div>
+      <div class="box"><span class="k">Practise</span><b class="t">Practice in a fixed order</b><p>Gate to gate, structured briefings (TSADMM and T-RIBETS), radio drills, a simulator and preparation for the A320 simulator assessment. The order of things is practised until it runs on its own.</p><a class="go" href="radio.html">Open training →</a></div>
+      <div class="box"><span class="k">Type rating</span><b class="t">Instructor setups per aircraft type</b><p>A setup collects the material for one type: a question bank, cockpit system simulators and an oral exam. The King Air B200 type rating trainer, with 320 questions, is the working example.</p><a class="go" href="typerating.html">See the B200 trainer →</a></div>
+      <div class="box"><span class="k">Instructor</span><b class="t">A document-grounded instructor for each student</b><p>Flight Intelligence answers from the student's own documents, such as the AFM, QRH and SOP, and shows the passage each answer is built on. The documents are processed and stored in the student's own browser.</p><a class="go" href="fi.html">Open Flight Intelligence →</a></div>
+    </div>
+  </section>
+
+  <section class="card" id="subjects">
+    <h2>How the labs map to the ATPL subjects</h2>
+    <p class="lead">The learning path follows the order of a theory course. The table shows which EASA ATPL(A) theory subject each module supports.</p>
+    <div class="regwrap">
+      <table class="reg">
+        <thead><tr><th>Module</th><th>ATPL subject</th><th>Labs</th></tr></thead>
+        <tbody id="subj"></tbody>
+      </table>
+    </div>
+    <p class="note">Air law (010) and operational procedures (070) have no lab of their own; they appear inside the briefing pack and the training pages. Communications (090) is practised in the radio drills.</p>
+  </section>
+
+  <section class="card" id="course">
+    <h2>How it fits into a course</h2>
+    <p class="lead">Birdbird sits beside an approved course and its material. The same student can use it from the first instrument lessons to the airline simulator check.</p>
+    <div class="stages">
+      <div class="on"><span class="st">Stage 1</span><h3>PPL, night and instrument rating</h3><ul><li>Labs on meteorology, altimetry, pitot-static, radio navigation, holding and instrument approaches.</li><li>The VFR and IFR briefing pack and kneeboard sheets for every training flight.</li><li>Gate to gate, briefings and radio drills on the light twin.</li></ul></div>
+      <div class="on"><span class="st">Stage 2</span><h3>ATPL theory</h3><ul><li>The full learning path as the visual companion to the theory course.</li><li>A short test at the end of every lab for revision.</li><li>A320 labs for performance, systems, high-speed flight and flight planning.</li></ul></div>
+      <div class="on"><span class="st">Stage 3</span><h3>MCC, type rating and airline assessment</h3><ul><li>Preparation for the A320 simulator assessment and for checks.</li><li>A type rating trainer per aircraft, as with the King Air B200.</li><li>The instructor answering from the operator's own SOP and checklists.</li></ul></div>
+    </div>
+    <p class="callout info"><span class="ct">Scope</span>Birdbird is training material. It does not replace approved course material, the AFM or the operator's procedures, and it carries no regulatory approval.</p>
+  </section>
+
+  <section class="card road" id="roadmap">
+    <h2>On the roadmap for schools</h2>
+    <p class="callout caution"><span class="ct">Planned, not available yet</span>The items below are what is being worked on for schools and operators. None of them is available today, and no dates are promised.</p>
+    <div class="ip-cols two">
+      <div class="box"><div class="tg"><span class="tag plan">Planned</span></div><b class="t">School accounts</b><p>One account per school, with student logins, so progress follows the student between devices instead of staying in one browser.</p></div>
+      <div class="box"><div class="tg"><span class="tag plan">Planned</span></div><b class="t">Instructor dashboard</b><p>An overview of each student's progress through the labs, tests and type-rating material, so an instructor can see where to spend the next lesson.</p></div>
+      <div class="box"><div class="tg"><span class="tag plan">Planned</span></div><b class="t">Setups built from your SOP</b><p>Instructor setups made from the school's or operator's own SOP, checklists and aircraft, in the same way as the B200 example.</p></div>
+      <div class="box"><div class="tg"><span class="tag plan">Planned</span></div><b class="t">Export to a learning management system</b><p>Progress and results exported in a format a school's existing learning management system can import.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="contact">
+    <div class="cta">
+      <div>
+        <h2>Try Birdbird with a group</h2>
+        <p>If you run a ground school, a training organisation or a type-rating course and want to use Birdbird with your students, get in touch.</p>
+      </div>
+      <div class="btns"><a class="btn pri lg" href="about.html#contact">Contact</a><a class="btn lg" href="about.html">About Birdbird</a></div>
+    </div>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el}=LAB;
+/* Modules from the learning path (lab.js LAB.PATH) mapped to EASA ATPL(A) theory subjects */
+const SUBJ={air:[{c:'022',en:'Instrumentation',no:'Instrumentering'},{c:'050',en:'Meteorology',no:'Meteorologi'}],
+  pof:[{c:'081',en:'Principles of flight',no:'Aerodynamikk'}],
+  sys:[{c:'021',en:'Airframe, systems, electrics, power plant',no:'Flyskrog, systemer, elektrisk, motor'}],
+  perf:[{c:'031',en:'Mass and balance',no:'Masse og balanse'},{c:'032',en:'Performance',no:'Ytelse'}],
+  met:[{c:'050',en:'Meteorology',no:'Meteorologi'}],
+  inst:[{c:'022',en:'Instrumentation',no:'Instrumentering'}],
+  nav:[{c:'061',en:'General navigation',no:'Generell navigasjon'},{c:'062',en:'Radio navigation',no:'Radionavigasjon'}],
+  fpl:[{c:'033',en:'Flight planning and monitoring',no:'Flyplanlegging og overvåking'}],
+  hf:[{c:'040',en:'Human performance and limitations',no:'Menneskelig ytelse og begrensninger'}]};
+const LV={la:{c:'lt',en:'Light twin',no:'Småfly'},jet:{c:'a320',en:'A320',no:'A320'},'':{c:'core',en:'Core',no:'Grunnlag'}};
+function subj(){
+  el('subj').innerHTML=LAB.PATH.map((m,i)=>{
+    const s=SUBJ[m.k]||[];
+    const lv=['','la','jet'].filter(k=>m.labs.some(l=>l[4]===k));
+    return `<tr><td class="m"><a href="lab.html#${m.k}">${String(i+1).padStart(2,'0')} · ${L(m)}</a></td>`+
+      `<td>${s.map(x=>`<span class="code">${x.c}</span> ${L(x)}`).join('<br>')}</td>`+
+      `<td>${m.labs.length} ${L(m.labs.length===1?{en:'lab',no:'lab'}:{en:'labs',no:'labber'})} &nbsp;${lv.map(k=>`<span class="tag ${LV[k].c}">${L(LV[k])}</span>`).join('')}</td></tr>`;
+  }).join('');
+}
+LAB.add({'Sections':'Sections'},{
+ 'For flight schools and operators':'For flyskoler og operatører',
+ 'Birdbird · For flight schools and operators':'Birdbird · For flyskoler og operatører',
+ 'Birdbird gives a ground school or a training department one consistent set of interactive theory, briefing material and type-rating preparation. Instructors can use it in the classroom, and students can repeat the same material on their own between lessons.':'Birdbird gir en teoriskole eller en treningsavdeling ett felles sett med interaktiv teori, briefingmateriell og forberedelse til typerating. Instruktører kan bruke det i klasserommet, og elevene kan gå gjennom det samme stoffet på egen hånd mellom timene.',
+ 'Sections':'Seksjoner',
+ 'The problem':'Problemet','What a school gets':'Hva skolen får','ATPL subjects':'ATPL-fag','In a course':'I et kurs','Roadmap':'Veikart','Contact':'Kontakt',
+ 'Where training time is lost':'Hvor treningstiden går tapt',
+ "Three problems come up again and again in ground school and type training. None of them is about the students' effort.":'Tre problemer dukker opp igjen og igjen i teoriundervisning og typetrening. Ingen av dem handler om elevenes innsats.',
+ "Theory that doesn't stick":'Teori som ikke fester seg',
+ 'Students pass the theory exams, then meet the same ideas in the aircraft and cannot use them. Cold-temperature altimeter error, Vmca or a take-off performance limit is easy to memorise and hard to picture.':'Elevene består teorieksamenene, møter så de samme ideene i flyet og får ikke brukt dem. Høydemålerfeil i kulde, Vmca eller en ytelsesbegrensning ved avgang er lett å pugge og vanskelig å se for seg.',
+ 'Briefings that differ between instructors':'Briefinger som varierer mellom instruktører',
+ 'Each instructor briefs a lesson in their own way. Students hear different words, different priorities and different minima for the same exercise, and spend effort working out what is actually expected.':'Hver instruktør briefer en time på sin måte. Elevene hører ulike ord, ulike prioriteringer og ulike minima for den samme øvelsen, og bruker krefter på å finne ut hva som faktisk forventes.',
+ 'Type-rating preparation on paper':'Forberedelse til typerating på papir',
+ 'Systems knowledge for a type rating usually comes from a thick manual and a list of questions. Students rarely get to operate the systems or answer an oral question before they sit in front of the examiner.':'Systemkunnskap til en typerating kommer som regel fra en tykk manual og en liste med spørsmål. Elevene får sjelden betjene systemene eller svare på et muntlig spørsmål før de sitter foran eksaminatoren.',
+ 'What Birdbird offers a school':'Hva Birdbird gir en skole',
+ 'Everything below works today, in a normal web browser, on a classroom screen, a laptop or a phone.':'Alt under virker i dag, i en vanlig nettleser, på en klasseromsskjerm, en bærbar PC eller en telefon.',
+ 'Learn':'Lær','Teach':'Undervis','Plan':'Planlegg','Practise':'Øv','Type rating':'Typerating','Instructor':'Instruktør',
+ 'A learning path aligned to the ATPL subjects':'Et læringsløp som følger ATPL-fagene',
+ '25 interactive labs in 9 modules, from principles of flight to human performance. Each module follows an EASA ATPL theory subject, and every lab uses the A320 as its reference aircraft.':'25 interaktive labber i 9 moduler, fra aerodynamikk til menneskelige faktorer. Hver modul følger et EASA ATPL-fag, og alle labbene bruker A320 som referansefly.',
+ 'Open the learning path →':'Åpne læringsløpet →',
+ 'Labs an instructor can project':'Labber en instruktør kan vise på storskjerm',
+ 'Each lab is one page built around a live model: move a slider and the drawing and the numbers change with it. A ground school lesson can start from the same picture the student later revises with.':'Hver lab er én side bygget rundt en levende modell: flytt en glidebryter, så endres tegningen og tallene med den. En teoritime kan starte fra det samme bildet som eleven repeterer med senere.',
+ 'Example: pressure and altitude →':'Eksempel: trykk og høyde →',
+ 'One standard briefing pack':'Én felles briefingpakke',
+ 'VFR and IFR versions with planning minima, performance, mass and balance and fuel, plus printable kneeboard sheets. Route Explorer adds a terrain profile, 3D terrain and airspace for the planned route.':'VFR- og IFR-versjoner med planleggingsminima, ytelse, masse og balanse og drivstoff, pluss kneeboard-ark for utskrift. Route Explorer legger til terrengprofil, 3D-terreng og luftrom for den planlagte ruten.',
+ 'Open the briefing pack →':'Åpne briefingpakken →',
+ 'Practice in a fixed order':'Øving i fast rekkefølge',
+ 'Gate to gate, structured briefings (TSADMM and T-RIBETS), radio drills, a simulator and preparation for the A320 simulator assessment. The order of things is practised until it runs on its own.':'Gate to gate, strukturerte briefinger (TSADMM og T-RIBETS), radiodriller, en simulator og forberedelse til A320-simulatortesten. Rekkefølgen øves til den går av seg selv.',
+ 'Open training →':'Åpne trening →',
+ 'Instructor setups per aircraft type':'Instruktøroppsett per flytype',
+ 'A setup collects the material for one type: a question bank, cockpit system simulators and an oral exam. The King Air B200 type rating trainer, with 320 questions, is the working example.':'Et oppsett samler stoffet for én type: en spørsmålsbank, simulatorer for cockpitsystemene og en muntlig eksamen. Typeratingtreneren for King Air B200, med 320 spørsmål, er eksempelet som er i bruk.',
+ 'See the B200 trainer →':'Se B200-treneren →',
+ 'A document-grounded instructor for each student':'En instruktør som bygger på elevens egne dokumenter',
+ "Flight Intelligence answers from the student's own documents, such as the AFM, QRH and SOP, and shows the passage each answer is built on. The documents are processed and stored in the student's own browser.":'Flight Intelligence svarer ut fra elevens egne dokumenter, som AFM, QRH og SOP, og viser avsnittet hvert svar bygger på. Dokumentene behandles og lagres i elevens egen nettleser.',
+ 'Open Flight Intelligence →':'Åpne Flight Intelligence →',
+ 'How the labs map to the ATPL subjects':'Hvordan labbene følger ATPL-fagene',
+ 'The learning path follows the order of a theory course. The table shows which EASA ATPL(A) theory subject each module supports.':'Læringsløpet følger rekkefølgen i et teorikurs. Tabellen viser hvilket EASA ATPL(A)-teorifag hver modul støtter.',
+ 'Module':'Modul','ATPL subject':'ATPL-fag','Labs':'Labber',
+ 'Air law (010) and operational procedures (070) have no lab of their own; they appear inside the briefing pack and the training pages. Communications (090) is practised in the radio drills.':'Luftfartsrett (010) og operative prosedyrer (070) har ingen egen lab; de inngår i briefingpakken og treningssidene. Kommunikasjon (090) øves i radiodrillene.',
+ 'How it fits into a course':'Hvordan det passer inn i et kurs',
+ 'Birdbird sits beside an approved course and its material. The same student can use it from the first instrument lessons to the airline simulator check.':'Birdbird står ved siden av et godkjent kurs og kursmateriellet. Den samme eleven kan bruke det fra de første instrumenttimene til simulatorsjekken hos flyselskapet.',
+ 'Stage 1':'Trinn 1','Stage 2':'Trinn 2','Stage 3':'Trinn 3',
+ 'PPL, night and instrument rating':'PPL, natt og instrumentrettighet',
+ 'Labs on meteorology, altimetry, pitot-static, radio navigation, holding and instrument approaches.':'Labber om meteorologi, høydemåling, pitot-statisk system, radionavigasjon, holding og instrumentinnflyging.',
+ 'The VFR and IFR briefing pack and kneeboard sheets for every training flight.':'VFR- og IFR-briefingpakken og kneeboard-ark til hver treningstur.',
+ 'Gate to gate, briefings and radio drills on the light twin.':'Gate to gate, briefinger og radiodriller på det tomotors småflyet.',
+ 'ATPL theory':'ATPL-teori',
+ 'The full learning path as the visual companion to the theory course.':'Hele læringsløpet som visuell følgesvenn til teorikurset.',
+ 'A short test at the end of every lab for revision.':'En kort test på slutten av hver lab for repetisjon.',
+ 'A320 labs for performance, systems, high-speed flight and flight planning.':'A320-labber for ytelse, systemer, høyfart og flyplanlegging.',
+ 'MCC, type rating and airline assessment':'MCC, typerating og opptak hos flyselskap',
+ 'Preparation for the A320 simulator assessment and for checks.':'Forberedelse til A320-simulatortesten og til sjekker.',
+ 'A type rating trainer per aircraft, as with the King Air B200.':'En typeratingtrener per flytype, slik som for King Air B200.',
+ "The instructor answering from the operator's own SOP and checklists.":'Instruktøren svarer ut fra operatørens egen SOP og sjekklister.',
+ 'Scope':'Omfang',
+ "Birdbird is training material. It does not replace approved course material, the AFM or the operator's procedures, and it carries no regulatory approval.":'Birdbird er opplæringsmateriell. Det erstatter ikke godkjent kursmateriell, AFM eller operatørens prosedyrer, og det har ingen godkjenning fra myndighetene.',
+ 'On the roadmap for schools':'På veikartet for skoler',
+ 'Planned, not available yet':'Planlagt, ikke tilgjengelig ennå',
+ 'The items below are what is being worked on for schools and operators. None of them is available today, and no dates are promised.':'Punktene under er det som arbeides med for skoler og operatører. Ingen av dem er tilgjengelige i dag, og det er ikke lovet noen datoer.',
+ 'Planned':'Planlagt',
+ 'School accounts':'Skolekontoer',
+ 'One account per school, with student logins, so progress follows the student between devices instead of staying in one browser.':'Én konto per skole, med innlogging for elevene, slik at progresjonen følger eleven mellom enheter i stedet for å bli liggende i én nettleser.',
+ 'Instructor dashboard':'Oversikt for instruktører',
+ "An overview of each student's progress through the labs, tests and type-rating material, so an instructor can see where to spend the next lesson.":'En oversikt over hver elevs progresjon gjennom labbene, testene og typeratingstoffet, slik at instruktøren ser hvor neste time bør brukes.',
+ 'Setups built from your SOP':'Oppsett bygget fra deres SOP',
+ "Instructor setups made from the school's or operator's own SOP, checklists and aircraft, in the same way as the B200 example.":'Instruktøroppsett laget fra skolens eller operatørens egen SOP, sjekklister og fly, på samme måte som B200-eksempelet.',
+ 'Export to a learning management system':'Eksport til et læringssystem (LMS)',
+ "Progress and results exported in a format a school's existing learning management system can import.":'Progresjon og resultater eksportert i et format som skolens eksisterende læringssystem kan importere.',
+ 'Try Birdbird with a group':'Prøv Birdbird med en gruppe',
+ 'If you run a ground school, a training organisation or a type-rating course and want to use Birdbird with your students, get in touch.':'Driver du en teoriskole, en treningsorganisasjon eller et typeratingkurs og vil bruke Birdbird med elevene dine, ta kontakt.',
+ 'About Birdbird':'Om Birdbird'
+});
+subj(); LAB.onLang(subj);
+LAB.start('schools');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Briefing pack · Birdbird</title>
+<meta name="description" content="Build a printable briefing pack for each flight: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the ATC flight plan.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+@font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
+.bar{position:relative;z-index:5;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--rule)}
+.bar select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:320px}
+.saved{font-size:13px;color:var(--ink-2)}
+.pgrid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;margin-top:18px}
+@media (max-width:980px){.pgrid{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.toc{position:sticky;top:70px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+.toc a{color:var(--ink-2);text-decoration:none;padding:4px 0;border-left:2px solid transparent;padding-left:10px}
+.toc a:hover{color:var(--ink);border-left-color:var(--magenta)}
+.book{display:flex;flex-direction:column;gap:22px;min-width:0}
+.sheet{background:#fff;border:1px solid var(--rule);box-shadow:0 1px 0 rgba(0,0,0,.03);padding:26px 30px 30px;scroll-margin-top:70px}
+@media (max-width:600px){.sheet{padding:18px 14px}}
+.sheet .sh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
+.sheet .sh h2{font-family:var(--f-display);font-stretch:88%;font-size:24px;margin:0}
+.sheet .sh h2 span{color:var(--magenta);margin-right:8px}
+.sheet .sh small{font-size:12px;color:var(--ink-2);font-family:var(--f-mono)}
+.sheet h3{font-size:15px!important;margin:14px 0 6px!important;font-family:var(--f-body)!important;font-weight:700!important}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 18px}
+.fl{display:flex;flex-direction:column;gap:1px;font-size:12px;color:var(--ink-2);padding:4px 0}
+.fl.w2{grid-column:span 2}.fl.wall{grid-column:1/-1}
+@media (max-width:600px){.fl.w2{grid-column:auto}}
+.fl input,.fl textarea,.fl select,.tb input,.tb select{font-family:"Caveat",var(--f-body);font-size:20px;color:var(--chart-blue);border:0;border-bottom:1px dotted #9AA6AC;background:transparent;padding:2px 2px;width:100%;min-width:0;border-radius:0}
+.fl textarea{resize:vertical;min-height:58px;line-height:1.35;background-image:repeating-linear-gradient(transparent 0 26px,#DDE3E5 26px 27px);border-bottom:0}
+.fl select,.tb select{font-family:var(--f-body);font-size:15px}
+.fl input:focus,.fl textarea:focus,.tb input:focus{outline:none;background:#F6F1F4}
+.tb{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 8px}
+.tb th,.tb td{border:1px solid #9AA6AC;padding:3px 6px;text-align:left;vertical-align:middle}
+.tb th{background:#E9EEEF;font-weight:600;font-size:12px}
+.tb td.calc{font-family:var(--f-mono);font-size:13px;background:#F6F8F6;white-space:nowrap}
+.tb input{font-size:18px}
+.wrapx{overflow-x:auto}
+.navlog input{font-size:16px!important}.navlog td{padding:3px 4px}.navlog td:nth-child(1),.navlog td:nth-child(2){min-width:70px}.navlog td:nth-child(8){min-width:74px}
+.why{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:-6px 0 12px;font-size:13px;color:var(--ink-2)}
+.why span{font-family:Caveat,cursive;font-size:19px;color:#1D4E9E}
+.whyb{border:1px solid #C9D2D5;background:#fff;border-radius:14px;padding:3px 11px;font:inherit;font-size:13px;color:#9A1E68;cursor:pointer}
+.whyb:hover{border-color:#9A1E68;background:#F6EDF2}
+.whyp{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);z-index:60;background:var(--paper,#EEF1EE);border-left:1px solid var(--rule);box-shadow:-10px 0 30px rgba(19,32,42,.18);display:flex;flex-direction:column}
+.whyp[hidden]{display:none}.whyp header{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rule);background:#fff}
+.whyp header b{flex:1;font-size:15px}.whyp header a{font-size:13px;color:#9A1E68}.whyp header button{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--ink-2)}
+.whyp iframe{flex:1;border:0;width:100%;background:var(--paper,#EEF1EE)}
+body.briefing .why{display:none}
+.altres{margin:10px 0;padding:10px 14px;border:1px solid var(--line,#D5DCD8);border-radius:8px;background:#fff}.altres ul{margin:4px 0 0 18px;padding:0;font-size:13.5px}.altres li{margin:2px 0}.altres i{color:var(--ink-2);font-style:normal;font-size:12px}.altn{font-size:17px}.altn b{font-size:28px;color:var(--chart-blue);margin-right:4px}.altbox .ckl{margin:6px 0}.altbox [hidden]{display:none!important}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}
+.ref{font-size:12.5px;color:var(--ink-2);background:#F6F8F6;border-left:3px solid var(--chart-blue);padding:8px 12px;margin:8px 0}
+.cover{text-align:center}
+.cover .big{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:40px;margin:8px 0 2px;letter-spacing:-.01em}
+.cover .fg{text-align:left}.cover .hdrf{grid-column:1/-1}
+.cover .kicker.custom{font-family:var(--f-display);font-stretch:88%;font-size:26px;font-weight:700;letter-spacing:0;color:var(--ink);text-transform:none}
+.contents{columns:2;column-gap:30px;text-align:left;font-size:14px;margin-top:14px}
+@media (max-width:600px){.contents{columns:1}}
+.contents div{display:flex;gap:8px;border-bottom:1px dotted var(--rule);padding:3px 0;break-inside:avoid}
+.sk{position:relative;border:1px solid #9AA6AC;touch-action:none}
+.sk canvas{display:block;width:100%;height:auto;cursor:crosshair}
+.xsbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin:10px 0 8px}
+.xsform{background:#F6F8F6;border:1px solid var(--rule);padding:12px 14px;margin-bottom:10px;display:flex;flex-direction:column;gap:10px}
+.xq{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:4px 18px}
+.xq b{display:block;font-size:13px;margin:2px 0}
+.xq .fl input{font-family:var(--f-body);font-size:15px;color:var(--ink)}
+#xsTb select,#xsTb input{font-family:var(--f-body);font-size:14px;color:var(--ink)}
+#xsTb td.act{white-space:nowrap}#xsTb td.act button{border:0;background:none;cursor:pointer;color:var(--ink-2);font-size:15px;padding:2px 4px}
+.sk.drawing{outline:2px solid var(--magenta)}
+.sktools{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.sktools button{font-size:13px;padding:5px 10px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;cursor:pointer}
+.sktools button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.risk td:nth-child(2),.risk td:nth-child(3),.risk td:nth-child(4){text-align:center;width:64px}
+.risk input[type=radio]{width:auto;accent-color:var(--magenta)}
+.rtot{font-family:var(--f-display);font-stretch:88%;font-size:20px;font-weight:700}
+/* bok */
+.viewseg{min-width:150px}
+.modebar{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:space-between;gap:10px 18px;margin:14px 0 4px}
+.mseg{display:flex;border:1px solid var(--ink)}
+.mseg button{font:inherit;font-size:15px;font-weight:600;background:var(--sheet);color:var(--ink-2);border:0;border-left:1px solid var(--ink);padding:9px 18px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left}
+.mseg button:first-child{border-left:0}
+.mseg button small{font-size:12px;font-weight:400;color:inherit;opacity:.8}
+.mseg button:hover{color:var(--ink);background:#F3F6F4}
+.mseg button.on{background:var(--ink);color:#fff}
+.kbl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:14px}
+.kbl>span{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:2px}
+.kbl a{text-decoration:none;color:var(--ink);border:1px solid var(--rule);background:var(--sheet);padding:7px 11px;font-weight:600}
+.kbl a:hover{border-color:var(--ink)}
+.kbl a.on{border-color:var(--magenta);color:var(--magenta)}
+@media (max-width:640px){.mseg{flex:1 1 100%}.mseg button{flex:1 1 0}}
+.book.paged>.sheet:not(.cur){display:none}
+.book.paged .sheet{max-width:880px;width:100%;margin:0 auto;min-height:1150px;border-color:#D5DCDE;box-shadow:0 1px 2px rgba(19,32,42,.06),0 14px 36px rgba(19,32,42,.10);padding:40px 48px 70px;position:relative}
+@media (max-width:700px){.book.paged .sheet{min-height:0;padding:22px 16px 56px}}
+.sheet .pf{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:6px;margin-top:26px}
+.book.paged .sheet .pf{position:absolute;left:48px;right:48px;bottom:22px;margin:0}
+@media (max-width:700px){.book.paged .sheet .pf{left:16px;right:16px}}
+.pager{position:fixed;left:24px;bottom:16px;z-index:38;display:flex;align-items:center;gap:2px;background:var(--ink);color:#fff;border-radius:999px;padding:5px;box-shadow:0 8px 24px rgba(19,32,42,.25)}
+.pager{transition:opacity .2s,transform .2s}.pager.away{opacity:0;pointer-events:none;transform:translateY(16px)}
+.pager button{background:none;border:0;color:#fff;font-size:18px;width:42px;height:36px;border-radius:999px;cursor:pointer}
+.pager button:hover{background:#2A3843}
+.pager select{background:transparent;color:#fff;border:0;font:inherit;font-size:14px;max-width:150px;padding:4px;text-overflow:ellipsis}
+.pager select option{color:#13202A}
+.clbox{margin-top:18px;border-top:1px solid var(--rule);padding-top:12px}
+.clbox h3{font-size:14px;margin:0 0 2px;display:flex;justify-content:space-between;align-items:baseline}.clbox h3 small{font-weight:600;color:var(--ink-2)}
+.clbox .clbar{height:4px;background:var(--rule-2);margin:6px 0 8px}.clbox .clbar i{display:block;height:100%;background:var(--green)}
+.cl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.cl li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;align-items:start;font-size:13px;line-height:1.35;padding:3px 0}
+.cl input{margin:2px 0 0;width:15px;height:15px;accent-color:var(--green)}
+.cl li.done span{color:var(--ink-2);text-decoration:line-through;text-decoration-color:rgba(0,0,0,.25)}
+.cl li a{color:inherit;text-decoration:none}.cl li a:hover{color:var(--magenta)}
+.cl li em{font-style:normal;font-size:11px;color:var(--green);margin-left:4px}
+.clmob{display:none;margin:12px 0 0;border:1px solid var(--rule);border-radius:4px;background:#fff;padding:8px 12px}
+.clmob summary{cursor:pointer;font-weight:600;font-size:14px}
+@media (max-width:980px){.clmob{display:block}.tocwrap{display:none}}
+.clprint{display:none}
+.instrrow[hidden]{display:none!important}
+@media (pointer:coarse){.cl li{padding:6px 0}.cl input{width:20px;height:20px}}
+.toc a.on{color:var(--ink);border-left-color:var(--magenta);font-weight:600}
+@media (max-width:700px){.why{margin-top:0}}
+/* pager: docked bottom-left beside the page list on desktop (never over the sheet), a sticky bar above the book on smaller screens */
+@media (max-width:980px){
+  .pager{position:sticky;top:8px;left:auto;bottom:auto;margin:12px 0 10px;justify-content:space-between;border-radius:6px}
+  .pager.away{opacity:1;pointer-events:auto;transform:none}
+  .pager select{max-width:none;flex:1;font-size:15px}
+  .pager.tuck{transform:translateY(calc(-100% - 16px));opacity:0;pointer-events:none}
+  .pgfoot{display:flex}
+}
+.pgfoot{display:none;justify-content:space-between;gap:10px;margin:14px 0 0}
+.pgfoot[hidden]{display:none!important}
+.pgfoot button{flex:1;max-width:48%}
+.pgfoot button:last-child{margin-left:auto}
+body.briefing .pgfoot{display:none!important}
+/* toolbar: secondary actions collapse into "More" on phones */
+.more{position:relative;display:none}
+.more>summary{list-style:none;cursor:pointer;user-select:none}
+.more>summary::-webkit-details-marker{display:none}
+.more>summary::after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+.more[open]>summary::after{transform:translateY(1px) rotate(-135deg)}
+.more .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:45;min-width:230px;background:#fff;border:1px solid var(--rule);box-shadow:0 12px 30px rgba(19,32,42,.18);padding:6px 0;display:flex;flex-direction:column}
+.more .menu button,.more .menu a{font:inherit;font-size:15px;text-align:left;background:none;border:0;padding:10px 16px;color:var(--ink);text-decoration:none;cursor:pointer}
+.more .menu button:hover,.more .menu a:hover{background:#F3F6F4}
+.more .menu hr{border:0;border-top:1px solid var(--rule-2);margin:4px 0}
+.more .menu small{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 16px 2px}
+@media (max-width:760px){
+  .bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;z-index:41}
+  .bar .btns{display:contents}
+  .bar .sec,.kbl{display:none!important}
+  .bar select#sel{grid-column:1;grid-row:1;max-width:none;width:100%;min-height:42px}
+  .more{display:block;grid-column:2;grid-row:1}
+  #vseg{grid-column:1;grid-row:2;min-width:0}
+  #pfill{grid-column:2;grid-row:2}
+  .saved{grid-column:1/-1;grid-row:3;font-size:12.5px}
+  .fab{display:none!important}
+}
+.cover .band{height:12px;background:var(--magenta);margin:-40px -48px 34px}
+.book:not(.paged) .cover .band{margin:-26px -30px 26px}
+@media (max-width:600px){.book:not(.paged) .cover .band{margin:-18px -14px 20px}}
+@media (max-width:700px){.cover .band{margin:-22px -16px 22px}}
+.cover .kicker{font-family:var(--f-mono);font-size:13px;letter-spacing:.24em;color:var(--magenta);font-weight:600}
+.cover .route{font-family:var(--f-display);font-stretch:82%;font-weight:780;font-size:clamp(34px,6vw,60px);line-height:1;margin:10px 0 6px;letter-spacing:-.01em}
+.cover .sub{font-size:16px;color:var(--ink-2)}
+.cover .signs{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:30px;text-align:left}
+.cover .signs div{border-top:1px solid var(--ink);padding-top:4px;font-size:12px;color:var(--ink-2)}
+.contents div{justify-content:space-between}
+.contents div i{flex:1;border-bottom:1px dotted var(--rule);margin:0 6px 4px}
+/* vedlegg */
+.atts{display:flex;flex-direction:column;gap:18px;margin-top:10px}
+.att{margin:0;border:1px solid var(--rule);padding:10px;background:#fff;break-inside:avoid}
+.att figcaption{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;margin-bottom:8px}
+.att figcaption button{font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:4px 9px;cursor:pointer;margin-left:4px}
+.att figcaption button:hover{border-color:var(--ink)}
+.attimg{position:relative;line-height:0}
+.attimg img{width:100%;height:auto;display:block}
+.attimg svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.att.editing .attimg svg{pointer-events:auto;touch-action:none;cursor:crosshair}
+.att.editing .attimg{outline:2px solid var(--magenta)}
+.atttools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;font-size:13px}
+.atttools button{font-size:13px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:5px 10px;cursor:pointer}
+.atttools button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.atttools .dot{width:22px;height:22px;border-radius:50%;padding:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--rule)}
+.atttools .dot.on{box-shadow:0 0 0 2px var(--ink)}
+.atttools input{font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:3px;padding:4px 8px;width:150px}
+.attbtn{margin-top:12px}
+dialog.pp{border:1px solid var(--rule);padding:18px 20px;max-width:420px}
+dialog.pp::backdrop{background:rgba(19,32,42,.35)}
+/* briefingmodus */
+body.briefing .sitefoot,body.briefing header.site,body.briefing .trnav,body.briefing .ntip,body.briefing .lhead,body.briefing .bar,body.briefing .toc,body.briefing .fab,body.briefing .asst,body.briefing .attbtn,body.briefing .noprint:not(.pager){display:none!important}
+body.briefing .pgrid{display:block;margin:0}
+body.briefing{background:#E4E9E6}
+body.briefing .book.paged .sheet{max-width:1180px;min-height:calc(100vh - 110px);margin-top:14px;font-size:18px}
+body.briefing .sheet .sh h2{font-size:34px}
+body.briefing .fl{font-size:15px}
+body.briefing .fl input,body.briefing .fl select,body.briefing .fl textarea{font-size:28px;pointer-events:none;border-bottom-color:transparent}
+body.briefing .tb{font-size:16px}
+body.briefing .tb input{font-size:22px;pointer-events:none}
+body.briefing .fl:has(> input:placeholder-shown),body.briefing .fl:has(> textarea:placeholder-shown){display:none}
+body.briefing .ref{font-size:15px}
+body.briefing .pager,body.briefing .pager.away,body.briefing .pager.tuck{position:fixed;left:50%!important;right:auto;top:auto;bottom:16px;transform:translateX(-50%);margin:0;border-radius:999px;justify-content:flex-start;opacity:1;pointer-events:auto}
+body.briefing .pager select{flex:0 1 auto;max-width:52vw}
+body.briefing #book{padding-bottom:76px}
+.bexit{display:none}
+body.briefing .bexit{display:inline-flex;align-items:center;margin-left:4px;background:#2A3843;border-radius:999px;padding:0 14px;height:36px;font-size:14px;color:#fff;border:0;cursor:pointer}
+.ckl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:6px 18px;font-size:15px}
+/* assistent */
+.asst{position:fixed;right:18px;bottom:18px;z-index:50;width:min(420px,calc(100vw - 36px));background:#fff;border:1px solid var(--rule);box-shadow:0 10px 30px rgba(19,32,42,.18);display:flex;flex-direction:column;max-height:min(70vh,640px)}
+.asst header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--rule);font-weight:600;font-size:14px}
+.asst header button{background:none;border:0;font-size:18px;cursor:pointer;color:var(--ink-2)}
+.asst .alog{flex:1 1 auto;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.asst .alog .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:7px 10px;max-width:90%}
+.asst .ain{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--rule)}
+.asst .ain textarea{flex:1;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:3px;padding:6px 8px;resize:none;height:54px}
+.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:#EAF4EE;border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.ecite span{font-weight:400;color:#3F6B50}.ecite:hover{border-color:#14532D;background:#DDEFE4}.ecite::after{content:" \2197";font-weight:400}
+.ecite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}.ecite.x::after{content:""}
+.asst .eused{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:6px;margin-top:6px}
+.asst .eused small{flex-basis:100%;font-size:12px}
+body.nofab .fab{display:none!important}
+body:not(.nofab) #askbar{display:none}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:16px;z-index:39;box-shadow:0 8px 24px rgba(19,32,42,.22)}
+@media print{
+  .clprint{display:block!important;break-after:page;page-break-after:always;padding:10mm 4mm}.clprint h2{font-size:18pt;margin:0 0 4mm}.clprint ul{list-style:none;padding:0;margin:0;columns:2;column-gap:10mm}.clprint li{font-size:10.5pt;padding:1.6mm 0;break-inside:avoid}.clprint li b{display:inline-block;width:5mm;height:5mm;border:1px solid #000;margin-right:3mm;vertical-align:-1mm;text-align:center;line-height:5mm;font-size:9pt}
+  @page{size:A4;margin:12mm}
+  body{background:#fff!important;padding:0!important;font-size:11pt}
+  header.site,.sitefoot,.trnav,.ntip,.bar,.toc,.lhead,.fab,.asst,.noprint,.sktools{display:none!important}
+  .pgrid{display:block;margin:0}
+  .page{max-width:none}
+  .sheet{border:0!important;box-shadow:none!important;padding:0!important;min-height:0!important;break-before:page;page-break-before:always}
+  .book.paged>.sheet:not(.cur):not([hidden]){display:block!important}
+  .pager,.attbtn{display:none!important}
+  .sheet .pf{position:static!important;margin-top:18px!important}
+  .cover .band{margin:0 0 24px!important}
+  .att{border:0;padding:0}
+  .sheet:first-child{break-before:auto;page-break-before:auto}
+  .fl input,.fl textarea,.tb input{color:#1E3F8A}
+  .fl textarea{height:auto!important;min-height:22mm}
+  body.blank .fl input,body.blank .fl textarea,body.blank .tb input,body.blank .tb td.calc,body.blank .fl select,body.blank .tb select{color:transparent!important}
+  body.blank .tb td.calc span{visibility:hidden}
+  body.blank .sk canvas.ink,body.blank .sk svg.ink{visibility:hidden}
+  body.blank .sk{background-image:linear-gradient(#E3E8EA 1px,transparent 1px),linear-gradient(90deg,#E3E8EA 1px,transparent 1px);background-size:5% 11.1%}
+  .ref{break-inside:avoid}
+  a{color:inherit;text-decoration:none}
+}
+.mbload{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px 22px;align-items:start;margin:10px 0 14px;background:#fff;border:1px solid var(--rule);padding:12px 14px}
+@media (max-width:820px){.mbload{grid-template-columns:minmax(0,1fr)}}
+.mbload svg{width:100%;height:auto;display:block}
+.mbsl{display:flex;flex-direction:column;gap:7px}
+.mbsl label{display:grid;grid-template-columns:118px minmax(0,1fr) 62px;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)}
+.mbsl input[type=range]{width:100%;accent-color:#9A1E68}
+.mbsl output{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);text-align:right}
+.mbspd{font-size:13px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:6px}
+.mbspd b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+</style>
+</head>
+<body data-title="Briefing pack">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Flight planning</div>
+      <h1>Briefing pack</h1>
+      <p>One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and flight plan. Add or remove pages as you need. Prints as a booklet.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+
+  <div class="modebar noprint" id="modebar"></div>
+  <div class="bar">
+    <div class="btns"><select id="sel" aria-label="Your preparations"></select><button class="btn sec" id="new">New</button><button class="btn sec" id="dup">Duplicate</button><button class="btn sec" id="del">Delete</button></div>
+    <div class="btns"><button class="btn sec" id="askbar">Ask the instructor</button><button class="btn sec" id="bmode">▶ Briefing mode</button><div id="vseg" class="viewseg"></div><span class="saved" id="saved"></span><button class="btn sec" id="pblank">Print blank</button><button class="btn pri" id="pfill">Print / Save as PDF</button>
+      <details class="more noprint" id="more"><summary class="btn">More</summary><div class="menu" id="moremenu" role="menu">
+        <button type="button" role="menuitem" data-proxy="new">New</button><button type="button" role="menuitem" data-proxy="dup">Duplicate</button><button type="button" role="menuitem" data-proxy="del" id="mdel">Delete</button>
+        <hr><button type="button" role="menuitem" data-proxy="bmode">▶ Briefing mode</button><button type="button" role="menuitem" data-proxy="pblank">Print blank</button><button type="button" role="menuitem" data-proxy="fab">Ask the instructor</button>
+        <hr><small>Kneeboards</small><a role="menuitem" href="sheets.html#vfr" target="_blank">VFR ↗</a><a role="menuitem" href="sheets.html#ifr" target="_blank">IFR ↗</a><a role="menuitem" href="sheets.html#risk" target="_blank">Risk assessment ↗</a>
+      </div></details></div>
+  </div>
+
+  <div class="clprint" id="clprint"></div>
+  <div class="pgrid">
+    <div class="tocwrap" style="position:sticky;top:70px;align-self:start;max-height:calc(100vh - 150px);overflow:auto;padding-right:4px"><nav class="toc" id="toc" aria-label="Sections" style="position:static"></nav><div class="clbox noprint" id="clbox"></div></div>
+    <div class="bookcol"><details class="clmob noprint" id="clmob"><summary></summary><div id="clbox2"></div></details>
+    <nav class="pager noprint" id="pager" aria-label="Pages"><button id="pgprev" aria-label="Previous page">‹</button><select id="pgsel" aria-label="Page"></select><button id="pgnext" aria-label="Next page">›</button><button class="bexit" id="bexit">Exit</button></nav>
+    <div class="book" id="book"></div>
+    <div class="pgfoot noprint" id="pgfoot"><button class="btn" id="pgfprev">‹ Previous page</button><button class="btn" id="pgfnext">Next page ›</button></div></div>
+  </div>
+</div>
+<aside class="whyp noprint" id="whyp" hidden><header><b id="whyt"></b><a id="whyo" target="_blank" rel="noopener">Open ↗</a><button id="whyx" aria-label="Close">×</button></header><iframe id="whyf" title="Lab"></iframe></aside>
+<button class="btn pri fab noprint" id="fab">Ask the instructor</button>
+<div class="asst noprint" id="asst" hidden>
+  <header><span>Instructor</span><a id="afi" href="fi.html" style="font-size:13px;font-weight:500;margin-left:auto;margin-right:10px">Open in Flight Intelligence →</a><button id="aclose" aria-label="Close">×</button></header>
+  <div class="alog" id="alog"><p class="note">Ask about anything in your preparation: “What is the pressure altitude?”, “Is 1.25 × TODR inside TORA?”, “What fuel do I need for 1 h 40 min with a 30 min alternate?”. The instructor sees what you have filled in and reads your documents from Flight Intelligence.</p></div>
+  <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ai.js?v=1"></script>
+<script src="easa.js?v=1"></script>
+<script src="store.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el}=LAB, esc=NAI.esc;
+/* ---------- skjema ---------- */
+const F=(k,l,o)=>{ o=o||{}; const cls='fl'+(o.w?' '+o.w:''); if(o.area) return `<label class="${cls}"><span>${l}</span><textarea data-k="${k}" placeholder=" " rows="${o.rows||3}"></textarea></label>`;
+  if(o.sel) return `<label class="${cls}"><span>${l}</span><select data-k="${k}">${o.sel.map(x=>`<option>${x}</option>`).join('')}</select></label>`;
+  return `<label class="${cls}"><span>${l}</span><input data-k="${k}" placeholder=" " ${o.num?'inputmode="decimal"':''} autocomplete="off"></label>`; };
+const I=(k,o)=>`<input data-k="${k}" ${o&&o.num?'inputmode="decimal"':''} autocomplete="off" aria-label="${k}">`;
+const C=k=>`<td class="calc" data-c="${k}"><span></span></td>`;
+const XQ=(k,l,ph)=>`<label class="fl"><span>${l}</span><input data-q="${k}" placeholder="${ph}" autocomplete="off"></label>`;
+const APT=[['dep','Departure'],['toalt','Take-off alternate'],['dest','Destination'],['alt1','Alternate 1'],['alt2','Alternate 2']];
+const SECTIONS=[
+ ['cover','Cover',()=>`<div class="cover"><div class="band"></div><div class="kicker" data-c="kick"><span>BRIEFING PACK</span></div><div class="route" data-c="route"><span>— → —</span></div><div class="sub" data-c="title"><span></span></div>
+   <div class="fg" style="margin-top:24px">${F('heading','Heading (optional)',{w:'noprint hdrf'})}${F('pilot','Pilot')}${F('instr','Instructor / examiner',{w:'instrrow'})}${F('type','Aircraft type')}${F('reg','Registration')}${F('purpose','Purpose',{sel:['Training flight','Proficiency check','Skill test','Navigation flight','Commercial flight','Other']})}${F('rules','Flight rules',{sel:['VFR','IFR','IFR / VFR']})}${F('date','Date')}${F('etd','ETD (UTC)')}${F('depapt','Departure')}${F('destapt','Destination')}${F('alt1apt','Alternate 1')}${F('alt2apt','Alternate 2')}</div>
+   <details class="noprint" style="text-align:left;margin-top:14px"><summary style="cursor:pointer;font-size:14px">Choose the pages in this pack</summary><div id="secsel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:4px 16px;margin-top:8px;font-size:14px"></div></details>
+   <h3 style="text-align:left;margin-top:22px!important">Contents</h3><div class="contents" id="contents"></div>
+   <div class="signs"><div>Pilot</div><div class="instrrow">Instructor / examiner</div></div></div>`],
+ ['crew','Crew, flight and OFP check',()=>`<div class="fg">${F('cr.fn','Flight number')}${F('cr.cs','ATC callsign')}${F('cr.cpt','Captain')}${F('cr.fo','First officer')}${F('cr.pf','Pilot flying this sector',{sel:['Captain','First officer']})}${F('cr.cab','Cabin crew')}${F('cr.pax','Passengers (booked / on board)')}${F('cr.std','STD / STA (UTC)')}${F('cr.slot','CTOT / slot')}${F('cr.stand','Stand / gate')}</div>
+   <h3>Flight duty period</h3><div class="wrapx"><table class="tb"><tr><th>Report (UTC)</th><th>Max FDP (h:mm)</th><th>FDP ends (UTC)</th><th>Planned block (h:mm)</th><th>Planned on blocks (UTC)</th><th>Margin</th></tr><tr><td>${I('cr.rep')}</td><td>${I('cr.fdp')}</td>${C('cr.fdpend')}<td>${I('cr.blk')}</td><td>${I('cr.onb')}</td>${C('cr.fdpmg')}</tr></table></div>
+   <div class="ref">The maximum FDP comes from your operator’s flight time limitation scheme (EASA ORO.FTL), with the table for your reporting time and number of sectors. Extensions and commander’s discretion follow the operator’s rules.</div>
+   <h3>OFP and briefing check</h3><div class="ckl">${['OFP matches the ATC flight plan: route, level, speed, aircraft','Fuel figures checked against the fuel policy','Alternates selected and weather above planning minima','NOTAM: departure, destination, alternates, en route','Weather: METAR, TAF, SIGMET, significant weather, winds','MEL/CDL items and their operational procedures','Take-off and landing performance, runway condition','De-icing and holdover time, if needed','Load sheet checked and signed, NOTOC for dangerous goods','Slot, stand and pushback','Security and passenger information'].map((t,i)=>`<label class="chk"><input type="checkbox" data-k="cr.c${i}" value="1"> ${t}</label>`).join('')}</div>
+   <div class="fg" style="margin-top:8px">${F('cr.mel','MEL / CDL items',{w:'wall',area:1,rows:2})}${F('cr.notes','Commander’s notes',{w:'wall',area:1,rows:2})}</div>`],
+ ['check','The check',()=>`<div class="fg">${F('ck.type','Check',{sel:['Proficiency check IR(A) ME','Proficiency check IR(A) SE','Skill test IR(A)','Skill test CPL(A)','Skill test PPL(A)','Class rating MEP','Other']})}${F('ck.exam','Examiner')}${F('ck.form','Form / reference (e.g. EASA Appendix 9)')}${F('ck.ato','ATO / operator')}${F('ck.seq','Planned sequence (departure, hold, approaches, OEI, return)',{w:'wall',area:1,rows:4})}${F('ck.fail','Simulated failures and how they are given (agreed in the briefing)',{w:'wall',area:1,rows:3})}${F('ck.roles','Who does what: radio, navigation, checklists, examiner as ATC?',{w:'wall',area:1,rows:2})}${F('ck.wx','Weather minima for the exercises and what happens if they are not met',{w:'wall',area:1,rows:2})}</div>
+   <h3>Items to show</h3><div class="ckl">${['Pre-flight, mass and balance, performance','IFR departure / SID','Holding: entry, timing, wind correction','3D approach (ILS or LPV) to minimum','2D approach (LOC, RNP LNAV, VOR or NDB)','Missed approach','One engine inoperative: control, identify, secure','Asymmetric approach and go-around','Abnormal and emergency procedures','Radio, TEM and decision-making'].map((t,i)=>`<label class="chk"><input type="checkbox" data-k="ck.i${i}" value="1"> ${t}</label>`).join('')}</div>`],
+ ['aircraft','Aircraft',()=>`<div class="fg">${F('ac.reg','Registration')}${F('ac.docs','Documents (CofR, ARC, insurance, radio licence, W&B)',{w:'w2'})}${F('ac.tech','Tech log / defects, remaining time to maintenance',{w:'wall'})}${F('ac.mel','Departure under condition (MEL, deferred items)',{w:'wall'})}${F('ac.fluids','Fluid levels (fuel, oil)',{w:'w2'})}${F('ac.safety','Safety and rescue equipment',{w:'w2'})}${F('ac.xw','Max demonstrated crosswind (kt)',{num:1})}</div>`],
+ ['pilot','Pilot',()=>`<div class="fg">${F('p.lic','Licence and ratings valid until')}${F('p.med','Medical valid until')}${F('p.recent','Recency (3 take-offs and landings in 90 days, IR currency)',{w:'w2'})}${F('p.fit','Fit to fly (illness, medication, stress, alcohol, fatigue, eating)',{w:'wall'})}</div>
+   <div class="ref">IMSAFE: Illness · Medication · Stress · Alcohol · Fatigue · Eating. If one of them is a real “no”, the flight is a “no”.</div>`],
+ ['notam','NOTAM',()=>`<div class="fg">${APT.map(([k,l])=>F('n.'+k,l,{w:'wall',area:1,rows:2})).join('')}${F('n.enr','En route (airspace, danger areas, navaids, obstacles)',{w:'wall',area:1,rows:3})}</div>`],
+ ['met','Meteorology',()=>`<div class="fg">${F('m.gen','General situation (surface analysis, SIGWX, fronts, pressure systems)',{w:'wall',area:1,rows:4})}${F('m.trip','Route (cloud, visibility, icing, turbulence, freezing level)',{w:'wall',area:1,rows:4})}${F('m.wind','Wind and temperature at cruise level',{w:'wall',area:1,rows:2})}</div>
+   <h3>Aerodrome reports</h3><div class="wrapx"><table class="tb"><tr><th></th><th>ICAO</th><th>METAR (now)</th><th>TAF at ETA ± 1 h</th></tr>${APT.map(([k,l])=>`<tr><th>${l}</th><td style="width:70px">${I('mt.'+k+'.icao')}</td><td>${I('mt.'+k+'.metar')}</td><td>${I('mt.'+k+'.taf')}</td></tr>`).join('')}</table></div>
+   <p class="note noprint"><a href="weather.html">Decode a METAR or TAF</a></p>`],
+ ['minima','Planning minima',()=>`<h3 class="ifr">IFR</h3><div class="wrapx ifr"><table class="tb"><tr><th></th><th>Wind</th><th>RWY</th><th>Procedure</th><th>Req. VIS / RVR (m)</th><th>Req. DH / MDH or ceiling (ft)</th><th>Fcst VIS (m)</th><th>Fcst ceiling (ft)</th><th>Window (UTC)</th><th>OK</th></tr>
+   ${APT.map(([k,l])=>`<tr><th>${l}</th><td>${I('mi.'+k+'.wind')}</td><td>${I('mi.'+k+'.rwy')}</td><td>${I('mi.'+k+'.proc')}</td><td>${I('mi.'+k+'.rv',{num:1})}</td><td>${I('mi.'+k+'.rc',{num:1})}</td><td>${I('mi.'+k+'.fv',{num:1})}</td><td>${I('mi.'+k+'.fc',{num:1})}</td><td>${I('mi.'+k+'.win')}</td>${C('mi.'+k)}</tr>`).join('')}</table></div>
+   <div class="ref ifr">Forecasts are checked for ETA ± 1 hour. For the alternates, the required ceiling and visibility are filled in from the rules below when you leave them empty. Operator’s own rule (OM-A), if stricter: <input data-k="mi.rule" style="font-family:Caveat;font-size:18px;border:0;border-bottom:1px dotted #9AA6AC;width:52%;color:var(--chart-blue);background:transparent"></div>
+   <h3 class="ifr">Destination alternates: 0, 1 or 2?</h3>
+   <div class="ifr altbox">
+    <div class="fg">
+     <label class="fl"><span>Rules for this flight</span><select data-k="al.reg"><option value="nco">Part-NCO (non-commercial, not complex)</option><option value="ncc">Part-NCC (non-commercial, complex aircraft)</option><option value="cat">Part-CAT (commercial, basic fuel scheme)</option></select></label>
+     <label class="fl"><span>Best approach at destination</span><select data-k="al.at"><option value="iap">Instrument approach, straight-in</option><option value="circ">Circling only</option><option value="none">No instrument approach</option></select></label>
+     ${F('al.dh','Destination DH / MDH (ft above aerodrome)',{num:1})}${F('al.dv','Destination RVR / VIS minimum (m)',{num:1})}
+     ${F('al.fc','Lowest forecast ceiling in the window (ft)',{num:1})}${F('al.fv','Lowest forecast visibility in the window (m)',{num:1})}
+     <span class="al-cat">${F('al.ft','Planned flight time (h)',{num:1})}</span><span class="al-cat">${F('al.rw','Separate usable runways at destination',{num:1})}</span><span class="al-cat">${F('al.ch','Circling height at destination (ft)',{num:1})}</span>
+    </div>
+    <div class="ckl">
+     <label class="chk"><input type="checkbox" data-k="al.nomet" value="1"> No meteorological information for the destination</label>
+     <label class="chk al-cat"><input type="checkbox" data-k="al.var" value="1"> Operator uses the basic fuel scheme with variations (approved)</label>
+     <label class="chk al-ncc al-cat"><input type="checkbox" data-k="al.iso" value="1"> Destination is an isolated aerodrome (designated / approved)</label>
+     <label class="chk al-ncc"><input type="checkbox" data-k="al.vmc" value="1"> Approach and landing can be made in VMC for the whole window</label>
+     <label class="chk al-nco al-ncc"><input type="checkbox" data-k="al.ngn" value="1"> An approach that does not rely on GNSS (ILS, LOC, VOR, NDB) is available at the destination or the alternate</label>
+     <label class="chk al-nco"><input type="checkbox" data-k="al.sbas" value="1"> Or: all SBAS conditions in NCO.OP.142(b) are met</label>
+    </div>
+    <div class="altres" data-c="al.res"><span></span></div>
+    <div class="wrapx"><table class="tb"><tr><th></th><th>Approach used for planning</th><th>DH / MDH (ft)</th><th>RVR / VIS min (m)</th><th>Min. safe IFR height (ft)</th><th>Required ceiling / VIS</th><th>Forecast</th><th>OK</th></tr>
+     ${['alt1','alt2'].map(k=>`<tr><th>${k==='alt1'?'Alternate 1':'Alternate 2'}</th><td><select data-k="aa.${k}.at"><option value="iap">Instrument approach</option><option value="circ">Circling</option><option value="none">No instrument approach</option></select></td><td>${I('aa.'+k+'.dh',{num:1})}</td><td>${I('aa.'+k+'.dv',{num:1})}</td><td>${I('aa.'+k+'.msh',{num:1})}</td>${C('aa.'+k+'.req')}${C('aa.'+k+'.fc')}${C('aa.'+k+'.ok')}</tr>`).join('')}</table></div>
+    <div class="ref">Forecast for the alternates is taken from the table above. Source: EASA Easy Access Rules for Air Operations, Rev. 24 (March 2026): NCO.OP.140, 142, 143 · NCC.OP.147, 151, 153 · CAT.OP.MPA.182 with AMC2, AMC5 and AMC6. Your operations manual can be stricter, and CAT operators with approved variations (AMC8/AMC9) use their own tables. The OM-A is the authority. <a class="noprint" href="fi.html#easa" target="_blank" rel="noopener">Open these rules in the EASA rules library ↗</a></div>
+   </div>
+   <h3 class="vfr">VFR</h3><div class="wrapx vfr"><table class="tb"><tr><th></th><th>Wind</th><th>RWY</th><th>Airspace</th><th>SVFR</th><th>Req. VIS (m)</th><th>Req. ceiling (ft)</th><th>Fcst VIS (m)</th><th>Fcst ceiling (ft)</th><th>OK</th></tr>
+   ${[['vd','Departure'],['vr','En route'],['va','Destination'],['vl','Alternate']].map(([k,l])=>`<tr><th>${l}</th><td>${I('mv.'+k+'.wind')}</td><td>${I('mv.'+k+'.rwy')}</td><td>${I('mv.'+k+'.cls')}</td><td>${I('mv.'+k+'.svfr')}</td><td>${I('mv.'+k+'.rv',{num:1})}</td><td>${I('mv.'+k+'.rc',{num:1})}</td><td>${I('mv.'+k+'.fv',{num:1})}</td><td>${I('mv.'+k+'.fc',{num:1})}</td>${C('mv.'+k)}</tr>`).join('')}</table></div>
+   <div class="ref vfr">VMC (SERA.5001): at and above FL100 8 km; below FL100 in classes A–E 5 km, 1500 m horizontally and 1000 ft vertically from cloud. Classes F and G at or below 3000 ft AMSL or 1000 ft above terrain: 5 km (1500 m for aircraft at slow speed where allowed), clear of cloud, surface in sight. Control zone: ceiling 1500 ft and ground visibility 5 km unless special VFR. See <a href="essentials.html">VFR and IFR essentials</a>.</div>`],
+ ['nav','Navigation log',()=>`<div class="fg noprint">${F('nl.var','Variation for legs without their own (+E / −W)',{num:1})}${F('nl.tas','TAS for new legs (kt)',{num:1})}</div>
+   <div class="wrapx"><table class="tb navlog"><tr><th>From</th><th>To</th><th>MSA / MEA</th><th>Alt</th><th>TT°</th><th>VAR</th><th>Dist NM</th><th>TAS</th><th>W/V</th><th>WCA</th><th>MH°</th><th>GS</th><th>Time</th><th>Fuel</th><th>ETA</th><th>ATA</th></tr>
+   ${Array.from({length:10},(_,i)=>`<tr><td>${I('nl.'+i+'.f')}</td><td>${I('nl.'+i+'.t')}</td><td>${I('nl.'+i+'.msa',{num:1})}</td><td>${I('nl.'+i+'.alt')}</td><td>${I('nl.'+i+'.tt',{num:1})}</td><td>${I('nl.'+i+'.var',{num:1})}</td><td>${I('nl.'+i+'.d',{num:1})}</td><td>${I('nl.'+i+'.tas',{num:1})}</td><td>${I('nl.'+i+'.w')}</td>${C('nl.'+i+'.wca')}${C('nl.'+i+'.mh')}${C('nl.'+i+'.gs')}${C('nl.'+i+'.time')}${C('nl.'+i+'.fuel')}<td>${I('nl.'+i+'.eta')}</td><td>${I('nl.'+i+'.ata')}</td></tr>`).join('')}
+   <tr><th colspan="6">Total</th>${C('nl.tot.d')}<td colspan="6"></td>${C('nl.tot.time')}${C('nl.tot.fuel')}<td colspan="2"></td></tr></table></div>
+   <div class="ref">Wind as 270/15. WCA, heading and groundspeed come from the wind triangle; MH = TH − variation (east positive). Route Explorer fills the variation for each leg from the World Magnetic Model (WMM 2025); a leg without its own uses the field above. Fuel uses the planning fuel flow on the fuel page. Times in minutes.</div>`],
+ ['air','Route, airspace and daylight',()=>`<div class="wrapx"><table class="tb"><tr><th>Segment / point</th><th>Airspace</th><th>Unit and frequency</th><th>Altitude limits</th><th>Squawk / notes</th></tr>${Array.from({length:8},(_,i)=>`<tr><td>${I('ar.'+i+'.seg')}</td><td>${I('ar.'+i+'.cls')}</td><td>${I('ar.'+i+'.unit')}</td><td>${I('ar.'+i+'.alt')}</td><td>${I('ar.'+i+'.note')}</td></tr>`).join('')}</table></div>
+   <div class="fg">${F('ar.out','Exit / entry points (VRP) at departure and destination',{w:'w2'})}${F('ar.div','Diversion aerodromes along the route',{w:'w2'})}${F('ar.sr','Sunrise (UTC)')}${F('ar.ss','Sunset (UTC)')}${F('ar.last','Latest landing time (UTC)')}${F('ar.dz','Danger, restricted and military areas active',{w:'w2'})}</div>
+   <div class="ref">VFR by day ends at the end of evening civil twilight in most of Europe; check your national AIP (ENR 1.2) and plan to land with margin. Note who you talk to on each segment and where you need a clearance.</div>`],
+ ['xsec','Flight cross-section',()=>`<div class="fg">${F('x.msa','Minimum safe altitude / MEA (ft)',{num:1})}${F('x.frz','Freezing level (ft or FL)')}${F('x.cb','Cloud base (ft)',{num:1})}${F('x.ct','Cloud tops (ft)',{num:1})}${F('x.alt','Cruising altitude / level')}${F('x.tl','Transition altitude / level')}</div>
+   <div class="xsbar noprint"><div class="btns"><button class="btn pri" id="xsQuick">Quick profile</button><button class="btn" id="xsAi">Describe the route to the AI</button><button class="btn" id="xsTable">Edit points</button><button class="btn" id="xsZoom">Expand approach</button><button class="btn" id="xsDraw">✎ Draw on it</button><a class="btn" href="route.html" id="xsRoute">Build it on the map ↗</a></div><span class="note" id="xsNote"></span></div>
+   <div class="xsform noprint" id="xsQ" hidden>
+     <div class="xq">
+       <div><b>Departure</b>${XQ('dep','Aerodrome','ENTO')}${XQ('rwy','RWY','18')}${XQ('elev','Elevation','286')}</div>
+       <div><b>Departure route</b>${XQ('sid','SID / exit fix','')}${XQ('sidd','Distance from RWY (NM)','')}${XQ('sida','Altitude at fix','')}</div>
+       <div><b>Cruise</b>${XQ('cr','Cruise altitude (ft)','')}${XQ('enr','En route distance to IAF (NM)','')}${XQ('cl','Climb gradient (ft/NM)','400')}${XQ('ds','Descent gradient (ft/NM)','300')}</div>
+       <div><b>Arrival</b>${XQ('iaf','IAF','')}${XQ('iafa','IAF altitude','')}${XQ('hold','Hold at IAF? (yes/no)','no')}${XQ('arr','Aerodrome','')}${XQ('thr','Threshold elevation','')}</div>
+       <div><b>Approach</b>${XQ('app','Approach (ILS, RNP, VOR…)','ILS')}${XQ('faf','FAF / FAP','')}${XQ('fafd','IAF to FAF (NM)','')}${XQ('fafa','FAF altitude','')}${XQ('da','DA / MDA (ft)','')}</div>
+       <div><b>Missed approach</b>${XQ('ma','Missed fix','')}${XQ('mad','Distance from DA point (NM)','')}${XQ('maa','Missed altitude','')}</div>
+     </div>
+     <div class="btns"><button class="btn pri" id="xsGen">Generate profile</button><span class="note">Altitudes in feet. Leave out what you don’t need.</span></div>
+   </div>
+   <div class="xsform noprint" id="xsA" hidden>
+     <textarea class="write" id="xsTxt" style="min-height:90px" placeholder="E.g. ENTO RWY 18, SID to 3000 ft, cruise FL70, 40 NM to the IAF at 3000 ft with a hold, ILS at destination, FAP 2000 ft 6 NM, DA 270 ft, missed climb to 3000 ft, 8 NM"></textarea>
+     <div class="btns"><button class="btn pri" id="xsAiGo">Draw it</button><span class="note">The AI turns your description into points you can check and edit.</span></div>
+   </div>
+   <div class="xsform noprint" id="xsT" hidden><div class="wrapx"><table class="tb" id="xsTb"></table></div><div class="btns"><button class="btn" id="xsAdd">Add point</button><button class="btn" id="xsClr">Clear profile</button></div></div>
+   <div class="sk" id="skwrap"><svg id="xsv" class="ink" viewBox="0 0 1000 360" style="position:absolute;inset:0;width:100%;height:100%"></svg><canvas id="sk" class="ink" width="1000" height="360" style="position:relative;pointer-events:none"></canvas></div>
+   <div class="sktools noprint" id="skt" hidden><button data-c="#13202A" class="on">Pen</button><button data-c="#1E5E9E">Blue</button><button data-c="#B3261E">Red</button><button data-u="1">Undo</button><button data-x="1">Clear drawing</button></div>
+   <p class="note">Build the profile from a few numbers or a sentence, then draw your own notes on top. Distances are along the route, not to scale with terrain.</p>`],
+ ['rwy','Runway performance',()=>{ const factors=`<div class="fg noprint" style="margin-bottom:6px">${F('rf.to','Take-off factor (× TODR ≤ TORA)',{num:1})}${F('rf.ld','Landing factor (× LDR ≤ LDA)',{num:1})}</div>`;
+   const row=(k,l,to)=>`<h3>${l}</h3><div class="wrapx"><table class="tb"><tr><th>RWY</th><th>Mass</th><th>Wind</th><th>Head / cross</th><th>QNH</th><th>Elev (ft)</th><th>Temp °C</th><th>PA (ft)</th><th>DA (ft)</th><th>Condition</th></tr><tr><td>${I('r.'+k+'.rwy')}</td><td>${I('r.'+k+'.mass',{num:1})}</td><td>${I('r.'+k+'.wind')}</td>${C('r.'+k+'.hx')}<td>${I('r.'+k+'.qnh',{num:1})}</td><td>${I('r.'+k+'.elev',{num:1})}</td><td>${I('r.'+k+'.t',{num:1})}</td>${C('r.'+k+'.pa')}${C('r.'+k+'.da')}<td>${I('r.'+k+'.cond')}</td></tr></table>
+     <table class="tb">${to?`<tr><th>TODR (m)</th><td>${I('r.'+k+'.tod',{num:1})}</td><th>× factor</th>${C('r.'+k+'.todf')}<th>≤ TORA (m)</th><td>${I('r.'+k+'.tora',{num:1})}</td>${C('r.'+k+'.tok')}</tr><tr><th>ASDR (m, ME)</th><td>${I('r.'+k+'.asd',{num:1})}</td><th></th><td></td><th>≤ ASDA (m)</th><td>${I('r.'+k+'.asda',{num:1})}</td>${C('r.'+k+'.aok')}</tr>`
+       :`<tr><th>LDR (m)</th><td>${I('r.'+k+'.ldr',{num:1})}</td><th>× factor</th>${C('r.'+k+'.ldrf')}<th>≤ LDA (m)</th><td>${I('r.'+k+'.lda',{num:1})}</td>${C('r.'+k+'.lok')}</tr>`}</table></div>`;
+   return factors+row('dep','Departure',1)+row('dest','Destination')+row('alt1','Alternate 1')+row('alt2','Alternate 2')+`<div class="ref">Wind as 270/15 and runway as 27 (or 274). Head and crosswind are worked out for you; a tailwind shows as negative. Density altitude ≈ PA + 120 × (T − ISA temperature). Pressure altitude = elevation + (1013 − QNH) × 30 ft. Factors are your operator’s; a common choice is 1.25 on take-off distance and 1/0.7 (1.43) on landing distance. Use the flight manual charts for TODR, ASDR and LDR.</div>`; }],
+ ['grad','Climb gradients (IFR)',()=>`<div class="wrapx"><table class="tb"><tr><th></th><th>Procedure</th><th>Required (%)</th><th>Aircraft can do (%)</th><th>GS (kt)</th><th>Required (ft/min)</th><th>OK</th></tr>
+   ${[['g.sid','SID, all engines'],['g.sidoei','SID, one engine inoperative'],['g.map','Missed approach (dest)'],['g.mapoei','Missed approach, OEI'],['g.mapalt','Missed approach (alternate)']].map(([k,l])=>`<tr><th>${l}</th><td>${I(k+'.p')}</td><td>${I(k+'.req',{num:1})}</td><td>${I(k+'.can',{num:1})}</td><td>${I(k+'.gs',{num:1})}</td>${C(k+'.fpm')}${C(k+'.ok')}</tr>`).join('')}</table></div>
+   <div class="ref">Rate of climb (ft/min) ≈ gradient (%) × groundspeed (kt) × 1.013. The aircraft’s gradient ≈ rate of climb ÷ (GS × 1.013) × 100. On one engine, check whether the published gradient is achievable at today’s mass and temperature, and plan what you do if it is not.</div>`],
+ ['fuel','Fuel',()=>`<div class="fg noprint">${F('fu.unit','Unit',{sel:['US gal','L','kg','lb']})}${F('fu.ff','Fuel flow per hour (planning)',{num:1})}<span class="catrow">${F('fu.hold','Holding fuel flow per hour at 1500 ft',{num:1})}</span><span class="catrow">${F('fu.eng','Engines',{sel:['turbine','piston']})}</span></div>
+   <div class="wrapx"><table class="tb"><tr><th></th>${[1,2,3].map(i=>`<th>Leg ${i}: ${I('fu.l'+i+'.name')}</th>`).join('')}</tr>
+   ${[['taxi','Taxi'],['trip','Trip'],['cont','Contingency'],['alt','Alternate'],['frf','Final reserve'],['add','Additional'],['xtra','Extra (discretionary)']].map(([k,l])=>`<tr><th>${l}</th>${[1,2,3].map(i=>`<td>${I('fu.l'+i+'.'+k,{num:1})}</td>`).join('')}</tr>`).join('')}
+   <tr class="catrow"><th>Basic scheme (CAT) minimum</th>${[1,2,3].map(i=>C('fu.l'+i+'.cat')).join('')}</tr>
+   <tr><th>Minimum required</th>${[1,2,3].map(i=>C('fu.l'+i+'.min')).join('')}</tr>
+   <tr><th>On board (block)</th>${[1,2,3].map(i=>`<td>${I('fu.l'+i+'.ob',{num:1})}</td>`).join('')}</tr>
+   <tr><th>Margin</th>${[1,2,3].map(i=>C('fu.l'+i+'.mg')).join('')}</tr>
+   <tr><th>Endurance (h:mm)</th>${[1,2,3].map(i=>C('fu.l'+i+'.end')).join('')}</tr></table></div>
+   <div class="ref">Write your operator’s fuel policy: <input data-k="fu.rule" style="font-family:Caveat;font-size:18px;border:0;border-bottom:1px dotted #9AA6AC;width:60%;color:var(--chart-blue);background:transparent"><br>Typical final reserve: 45 min for IFR and night VFR, 30 min for day VFR (check your operations manual). Endurance uses the planning fuel flow.<span class="catrow"><br>CAT basic fuel scheme (CAT.OP.MPA.181, AMC1/AMC2): contingency is the higher of 5 % of trip fuel and 5 minutes holding at 1500 ft (performance class A; class B and C: at least 5 % of trip). Final reserve: 30 minutes holding at 1500 ft for turbine engines, 45 minutes for piston (the DA42 diesel burns Jet A-1 but counts as piston: 45 minutes). With no destination alternate, alternate fuel is at least 15 minutes holding. Fuel schemes with variations follow your OM-A.</span></div>`],
+ ['mb','Mass and balance',()=>`<div class="mbac noprint"><div class="btns"><select id="mbSel" aria-label="Aircraft data"></select><button class="btn" id="mbSave">Save as my aircraft</button><button class="btn" id="mbAi">Read the attached W&amp;B report (AI)</button></div><p class="note" id="mbNote">Type data (arms, CG envelope, limits) comes from the flight manual. Empty mass and empty-mass arm come from <b>your</b> aircraft’s mass and balance report: every aircraft is different. Save it once as “my aircraft” and reuse it in every pack.</p></div>
+   <div class="fg">${F('mb.reg','Aircraft (registration)')}${F('mb.dens','Fuel density (kg per unit)',{num:1})}${F('mb.mtom','MTOM (kg)',{num:1})}${F('mb.mlm','MLM (kg)',{num:1})}${F('mb.mzfm','MZFM (kg)',{num:1})}${F('mb.env','CG envelope: fwd mass arm, … | aft mass arm, …',{w:'w2'})}</div>
+   <div class="mbload noprint" id="mbLoad"></div>
+   <div class="wrapx"><table class="tb"><tr><th>Item</th><th>Mass (kg)</th><th>Arm (m)</th><th>Moment (kg·m)</th></tr>
+   ${[['empty','Empty mass (from W&B report)'],['front','Front seats'],['rear','Rear seats'],['nose','Nose baggage'],['cabin','Cabin baggage'],['ext','Baggage extension'],['other','Other']].map(([k,l])=>`<tr><th>${l}</th><td>${I('mb.'+k+'.m',{num:1})}</td><td>${I('mb.'+k+'.a',{num:1})}</td>${C('mb.'+k+'.mo')}</tr>`).join('')}
+   <tr><th>Zero fuel</th>${C('mb.zf.m')}${C('mb.zf.a')}${C('mb.zf.mo')}</tr>
+   <tr><th>Fuel on board (units from fuel page)</th><td>${I('mb.fuel.u',{num:1})}</td><td>${I('mb.fuel.a',{num:1})}</td>${C('mb.fuel.mo')}</tr>
+   <tr><th>Take-off</th>${C('mb.to.m')}${C('mb.to.a')}${C('mb.to.mo')}</tr>
+   <tr><th>Trip fuel burnt (units)</th><td>${I('mb.burn.u',{num:1})}</td><td></td>${C('mb.burn.mo')}</tr>
+   <tr><th>Landing</th>${C('mb.ld.m')}${C('mb.ld.a')}${C('mb.ld.mo')}</tr></table></div>
+   <p data-c="mb.check" class="note"><span></span></p>
+   <svg id="mbChart" viewBox="0 0 640 320" style="width:100%;max-width:640px;height:auto;display:none;border:1px solid var(--rule)" role="img" aria-label="CG envelope"></svg>
+   <div class="ref">Arms and limits come from your aircraft’s mass and balance report and flight manual. Fuel mass = units × density (Jet A-1 ≈ 0.80 kg/L, 3.03 kg/US gal; AVGAS ≈ 0.72 kg/L, 2.72 kg/US gal).</div>`],
+ ['load','Load sheet and performance',()=>`<div class="wrapx"><table class="tb"><tr><th></th><th>Actual / planned</th><th>Limit</th><th>Check</th></tr>
+   <tr><th>Zero fuel mass (ZFM)</th><td>${I('ld.zfm',{num:1})}</td><td>${I('ld.mzfm',{num:1})}</td>${C('ld.zfmok')}</tr>
+   <tr><th>Take-off fuel</th><td>${I('ld.tof',{num:1})}</td><td></td><td></td></tr>
+   <tr><th>Take-off mass (TOM)</th>${C('ld.tom')}<td>${I('ld.mtom',{num:1})}</td>${C('ld.tomok')}</tr>
+   <tr><th>Trip fuel</th><td>${I('ld.trip',{num:1})}</td><td></td><td></td></tr>
+   <tr><th>Landing mass (LM)</th>${C('ld.lm')}<td>${I('ld.mlm',{num:1})}</td>${C('ld.lmok')}</tr>
+   <tr><th>Underload / limiting</th>${C('ld.ul')}<td colspan="2"></td></tr>
+   <tr><th>CG / trim (%MAC)</th><td>${I('ld.mac')}</td><td>${I('ld.macl')}</td><td></td></tr></table></div>
+   <div class="ref">TOM = ZFM + take-off fuel. LM = TOM − trip fuel. For MTOM use the lowest of structural, performance-limited and any other limit. Units as on your load sheet.</div>
+   <h3>Take-off</h3><div class="wrapx"><table class="tb"><tr><th>RWY / intersection</th><th>Condition (RWYCC)</th><th>Flaps</th><th>Thrust / assumed temp</th><th>V1</th><th>VR</th><th>V2</th><th>Engine-out procedure</th></tr><tr><td>${I('to.rwy')}</td><td>${I('to.rcc')}</td><td>${I('to.flap')}</td><td>${I('to.thr')}</td><td>${I('to.v1',{num:1})}</td><td>${I('to.vr',{num:1})}</td><td>${I('to.v2',{num:1})}</td><td>${I('to.eo')}</td></tr></table></div>
+   <h3>Landing</h3><div class="wrapx"><table class="tb"><tr><th>RWY</th><th>Condition (RWYCC)</th><th>Flaps</th><th>VREF / VAPP</th><th>Autobrake</th><th>Required distance</th><th>LDA</th><th>OK</th></tr><tr><td>${I('la.rwy')}</td><td>${I('la.rcc')}</td><td>${I('la.flap')}</td><td>${I('la.v')}</td><td>${I('la.ab')}</td><td>${I('la.req',{num:1})}</td><td>${I('la.lda',{num:1})}</td>${C('la.ok')}</tr></table></div>
+   <div class="fg">${F('to.deice','De-icing: fluid, start time, holdover time',{w:'wall'})}</div>
+   <div class="ref">Performance comes from your aircraft’s performance software or manual and the operator’s procedures. Runway condition codes follow the global reporting format (RCAM); a contaminated runway changes both take-off and landing figures.</div>`],
+ ['rcf','Radio failure',()=>`<div class="fg">${[['rf.dep','Departure'],['rf.enr','En route'],['rf.arr','Arrival'],['rf.alt1','Alternate 1'],['rf.alt2','Alternate 2']].map(([k,l])=>F(k,l,{w:'wall',area:1,rows:3})).join('')}</div>
+   <div class="ref">Squawk 7600. VMC: continue in VMC, land at the nearest suitable aerodrome, report the arrival. IMC (SERA.14083): keep the last assigned speed and level, or the minimum flight altitude if higher, for 7 minutes, then follow the flight plan to the navaid serving the destination, hold until the expected approach time or ETA, then make the approach and land within 30 minutes if possible. Check the AIP (ENR 1.1) and the SID or STAR for local procedures.</div>`],
+ ['risk','Risk assessment',()=>`<table class="tb risk"><tr><th>Factor</th><th>Low</th><th>Medium</th><th>High</th><th>Note or mitigation</th></tr>
+   ${[['pilot','Pilot: recency, experience on type, IMSAFE'],['ac','Aircraft: defects, equipment, performance margin'],['wx','Weather: ceiling, visibility, wind and crosswind, icing, trend'],['terr','Terrain, airspace and route'],['aero','Aerodromes: runway length, NOTAM, alternates, lighting'],['night','Light: night, sunset margin'],['time','Pressure: schedule, passengers, “get-there-itis”'],['fuel','Fuel and endurance margin']].map(([k,l])=>`<tr><th>${l}</th>${[1,2,3].map(v=>`<td><input type="radio" name="rk.${k}" data-k="rk.${k}" value="${v}" aria-label="${l} ${['low','medium','high'][v-1]}"></td>`).join('')}<td>${I('rk.'+k+'.n')}</td></tr>`).join('')}</table>
+   <p><span class="rtot" data-c="rk.tot"><span></span></span></p>
+   <div class="ref">Any “high” needs a mitigation you can name, or a different plan. Two or more “high”: talk to an instructor or another pilot before you go. PAVE: Pilot · Aircraft · enVironment · External pressures.</div>`],
+ ['brief','Briefing notes and threats',()=>`<div class="fg">${F('b.threats','Threats today and how you manage them (TEM)',{w:'wall',area:1,rows:4})}${F('b.dep','Departure briefing notes',{w:'wall',area:1,rows:3})}${F('b.app','Approach / arrival briefing notes',{w:'wall',area:1,rows:3})}${F('b.go','Go / no-go decision and why',{w:'wall',area:1,rows:2})}</div>
+   <p class="note noprint">Practise them in the <a href="briefing.html">briefing trainer</a>.</p>`],
+ ['charts','Charts and workings',()=>`<p class="lead" style="margin:0 0 4px;color:var(--ink-2);max-width:68ch">Add the charts you work from: take-off and landing distance graphs, one-engine-inoperative climb, approach plates, the load sheet. Draw your lines on them and write the result, so the method is in the pack when you brief it.</p>`],
+ ['fpl','ATC flight plan',()=>`<div class="fg">${F('fp.filed','Filed (time, method, reference)')}${F('fp.dof','Date of flight (DOF)')}${F('fp.text','Flight plan (items 7 to 19)',{w:'wall',area:1,rows:5})}</div>
+   <p class="note noprint">Check the format in the <a href="planning.html#fpl">flight plan checker</a>, and plan the legs in the <a href="planning.html#nav">navigation log</a>.</p>`]
+];
+const IFRONLY=['grad'];
+const TPL={cat:{n:{en:'Commercial or airline flight',no:'Kommersiell flyging eller airline'},f:{rules:'IFR',purpose:'Commercial flight','al.reg':'cat','fu.unit':'kg','fu.eng':'turbine'},hide:['check','pilot','mb','air','nav','risk']},pc:{n:{en:'Skill test or proficiency check',no:'Praktisk prøve eller ferdighetskontroll'},f:{rules:'IFR',purpose:'Proficiency check'},hide:['air','crew','load']},ifr:{n:{en:'IFR flight (standard)',no:'IFR-tur (standard)'},f:{rules:'IFR',purpose:'Navigation flight'},hide:['check','crew','load','pilot','nav','air','risk','brief','charts']},vfr:{n:{en:'VFR flight',no:'VFR-tur'},f:{rules:'VFR',purpose:'Navigation flight'},hide:['check','grad','crew','load']},local:{n:{en:'Local VFR training',no:'Lokal VFR-trening'},f:{rules:'VFR',purpose:'Training flight'},hide:['check','grad','nav','minima','air','crew','load']},blank:{n:{en:'Everything',no:'Alt'},f:{},hide:[]}};
+const WHY={
+ aircraft:[['pitot.html','Pitot-static system','Pitot-statisk system']],
+ met:[['weather.html','Read a METAR or TAF','Les en METAR eller TAF'],['fronts.html','Fronts and cloud','Fronter og skyer'],['hazards.html','Icing, CB and wind shear','Ising, CB og vindskjær']],
+ minima:[['approach.html#seg','Approach types and minima','Innflygingstyper og minima'],['essentials.html','VMC and IFR minima','VMC- og IFR-minima']],
+ nav:[['radionav.html','VOR, NDB and DME','VOR, NDB og DME'],['gnss.html','GNSS and RNAV','GNSS og RNAV']],
+ air:[['essentials.html','Airspace and VMC','Luftrom og VMC']],
+ xsec:[['route.html','Build it on the map','Bygg den på kartet'],['altimetry.html','Cold temperature and altitude','Kulde og høyde']],
+ rwy:[['altimetry.html','Pressure and density altitude','Trykk- og tetthetshøyde'],['tunnel.html','Lift, stall and take-off','Løft, stall og avgang'],['hazards.html#wake','Wake turbulence on the runway','Vaketurbulens på banen']],
+ grad:[['approach.html#rod','Gradients, ft/NM and ft/min','Gradienter, ft/NM og ft/min'],['gnss.html#wp','Turns at waypoints','Svinger ved veipunkter']],
+ check:[['holding.html','Holding entries','Holding-entry'],['approach.html','ILS, LOC and RNP needles','ILS-, LOC- og RNP-nåler'],['briefing.html','Practise the briefings','Øv på briefingene'],['fi.html?mode=check#aircraft','Check preparation with the instructor','Kontrollforberedelse med instruktøren']],
+ rcf:[['essentials.html','Radio failure procedures','Prosedyrer ved radiosvikt']],
+ brief:[['briefing.html','TSADMM approach briefing','TSADMM-innflygingsbrief'],['orientation.html','Disorientation threats','Desorientering som trussel']],
+ crew:[['hazards.html','Weather hazards','Værfarer']],
+ load:[['tunnel.html','Mass, lift and stall speed','Masse, løft og stallfart']]
+};
+/* ---------- bygg siden ---------- */
+el('book').innerHTML=SECTIONS.map(([id,t,fn],i)=>`<section class="sheet" id="s-${id}" data-s="${id}">${i?`<div class="sh"><h2>${t}</h2><small data-c="hdr"><span></span></small></div>`:`<h2 hidden>${t}</h2>`}${fn()}${i&&!['pilot','risk'].includes(id)?`<div class="atts" data-sec="${id}"></div><button class="btn attbtn noprint" data-sec="${id}">${id==='xsec'?'＋ Add your own route or profile (screenshot or PDF)':'＋ Attach a chart or document page'}</button>`:''}<div class="pf"><span>BIRDBIRD · BRIEFING PACK</span><span data-c="hdr"><span></span></span><span class="pn"></span></div></section>`).join('');
+el('toc').innerHTML=SECTIONS.map(([id,t],i)=>`<a href="#s-${id}">${t}</a>`).join('');
+
+
+/* ---------- tilstand ---------- */
+let P=null, ALL=[], dirty=null;
+const blankPrep=()=>({v2:1,hide:['check','crew','load','pilot','nav','air','risk','brief','charts'],id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:'',created:Date.now(),f:{'rf.to':'1.25','rf.ld':'1.43','fu.unit':'US gal','mb.dens':'3.03','rules':'IFR','purpose':'Training flight'},sk:[]});
+const wind=v=>{ const t=String(v||'').toUpperCase().replace(/\s/g,'').replace(/KT$/,''); let m=t.match(/^(\d{3})(\d{2,3})(?:G(\d{2,3}))?$/)||t.match(/^(\d{1,3})[\/@](\d{1,3})(?:G(\d{1,3}))?$/); if(!m) return null; return {d:+m[1],s:+m[2],g:m[3]?+m[3]:null}; };
+const rwyHdg=v=>{ const m=String(v||'').match(/(\d{1,3})/); if(!m) return null; const n=+m[1]; return n<=36? n*10 : n; };
+const num=v=>{ const n=parseFloat(String(v==null?'':v).replace(',','.')); return Number.isFinite(n)?n:null; };
+const fx=(v,d)=>v==null?'':(Math.round(v*10**(d||0))/10**(d||0)).toLocaleString(LAB.lang==='no'?'nb-NO':'en-GB',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+function setC(k,html){ document.querySelectorAll(`[data-c="${k}"]`).forEach(e=>{ const s=e.querySelector('span')||e; s.innerHTML=html; }); }
+const okm=(b)=>b==null?'':b?'<b class="ok">✓</b>':'<b class="ko">✗</b>';
+function title(){ const f=P.f; return (f.heading||'').trim()||[f.depapt,f.destapt].filter(Boolean).join(' – ')||L({en:'New preparation',no:'Ny forberedelse'}); }
+function xwTxt(wv,rv){ const w=wind(wv), rw=rwyHdg(rv); if(!w||rw==null) return ''; const a=(w.d-rw)*Math.PI/180, hw=Math.round(w.s*Math.cos(a)), xw=Math.round(w.s*Math.sin(a)), xg=w.g?Math.round(Math.abs(w.g*Math.sin(a))):null, lim=num(P.f['ac.xw']);
+  const worst=Math.max(Math.abs(xw),xg||0), over=lim&&worst>lim;
+  return `<span class="${over?'ko':''}">${hw>=0?'H':'T'} ${Math.abs(hw)} · X ${Math.abs(xw)}${xw?(xw>0?' R':' L'):''}${xg?` (G ${xg})`:''}${over?' > '+lim:''}</span>`; }
+/* ---------- destinasjonsalternativer (EASA EAR Air OPS rev. 24) ---------- */
+function altReq(reg,at,dh,dv,msh){ // planleggingsminima for et alternativ
+  const R={nco:'NCO.OP.143',ncc:'NCC.OP.147',cat:'AMC6 CAT.OP.MPA.182 Table 2'}[reg];
+  if(at==='none'){ if(reg==='cat') return {na:true,ref:R}; return {c:Math.max(2000,msh||0),v:5000,ref:R+'(c)',miss:msh==null}; }
+  if(dh==null) return null;
+  if(reg==='cat'){ if(at==='circ') return {c:dh+400,v:dv!=null?dv+1500:null,ref:R+', circling'}; if(dh<250) return {c:dh+200,v:dv!=null?dv+800:null,ref:R+', type B'}; return {c:dh+400,v:dv!=null?dv+1500:null,ref:R+', type A'}; }
+  if(at!=='circ'&&dh<250) return {c:dh+200,v:reg==='ncc'?Math.max(1500,(dv||0)+800):1500,ref:R+'(a)',miss:reg==='ncc'&&dv==null};
+  return {c:dh+400,v:3000,ref:R+'(b)'};
+}
+function altCalc(f,g){
+  const reg=f['al.reg']||'nco', at=f['al.at']||'iap', dh=g('al.dh'), dv=g('al.dv')??g('mi.dest.rv'), fc=g('al.fc')??g('mi.dest.fc'), fv=g('al.fv')??g('mi.dest.fv');
+  const on=k=>f[k]==='1', ft=x=>fx(x)+' ft', fm=x=>fx(x)+' m';
+  document.querySelectorAll('.altbox .al-nco,.altbox .al-ncc,.altbox .al-cat').forEach(e=>{ e.hidden=!e.classList.contains('al-'+reg); });
+  let n=null, why=[], warn=[];
+  const need=a=>{ why.push(L({en:'Fill in: ',no:'Fyll inn: '})+a); };
+  if(reg==='nco'){
+    if(on('al.nomet')){ n=1; why.push(L({en:'No weather information for the destination, so an alternate is required.',no:'Ingen værinformasjon for destinasjonen, så alternativ kreves.'})+' <i>NCO.OP.140</i>'); }
+    else if(at==='none'){ n=1; why.push(L({en:'The exemption needs an available instrument approach at the destination.',no:'Unntaket krever en tilgjengelig instrumentinnflyging på destinasjonen.'})+' <i>NCO.OP.140</i>'); }
+    else if(dh==null||fc==null||fv==null) need([dh==null?'DH/MDH':'',fc==null?L({en:'ceiling',no:'skybase'}):'',fv==null?L({en:'visibility',no:'sikt'}):''].filter(Boolean).join(', '));
+    else { const okc=fc>=dh+1000, okv=fv>=5000; n=okc&&okv?0:1;
+      why.push(`${L({en:'Ceiling',no:'Skybase'})} ${ft(fc)} ${okc?'≥':'<'} DH/MDH + 1000 = ${ft(dh+1000)} ${okm(okc)}`, `${L({en:'Visibility',no:'Sikt'})} ${fm(fv)} ${okv?'≥':'<'} ${fm(5000)} ${okm(okv)}`);
+      why.push(L({en:'Window: ETA ± 1 h, or departure to ETA + 1 h if that is shorter.',no:'Vindu: ETA ± 1 t, eller avgang til ETA + 1 t hvis det er kortere.'})+' <i>NCO.OP.140</i>'); }
+    if(n&&!on('al.ngn')&&!on('al.sbas')) warn.push(L({en:'The alternate may only be used if an approach that does not rely on GNSS is available at the destination or the alternate, or all SBAS conditions are met.',no:'Alternativet kan bare brukes hvis en innflyging som ikke er avhengig av GNSS finnes på destinasjonen eller alternativet, eller alle SBAS-vilkårene er oppfylt.'})+' <i>NCO.OP.142</i>');
+  } else if(reg==='ncc'){
+    if(on('al.vmc')&&!on('al.nomet')){ n=0; why.push(L({en:'Approach and landing in VMC for the whole window (ETA ± 1 h, or departure to ETA + 1 h if shorter).',no:'Innflyging og landing i VMC hele vinduet (ETA ± 1 t, eller avgang til ETA + 1 t hvis kortere).'})+' <i>NCC.OP.151(a)</i>'); }
+    else if(on('al.iso')&&!on('al.nomet')){
+      if(at==='none'){ n=1; why.push(L({en:'An isolated aerodrome needs a prescribed instrument approach for the exemption.',no:'En isolert flyplass krever en publisert instrumentinnflyging for unntaket.'})+' <i>NCC.OP.151(b)</i>'); }
+      else if(dh==null||fc==null||fv==null) need('DH/MDH, '+L({en:'ceiling, visibility',no:'skybase, sikt'}));
+      else { const vreq=Math.max(5500,(dv||0)+4000), okc=fc>=dh+1000, okv=fv>=vreq; n=okc&&okv?0:1;
+        why.push(`${L({en:'Isolated aerodrome, window ETA ± 2 h.',no:'Isolert flyplass, vindu ETA ± 2 t.'})}`,`${L({en:'Cloud base',no:'Skybase'})} ${ft(fc)} ${okc?'≥':'<'} ${ft(dh+1000)} ${okm(okc)}`,`${L({en:'Visibility',no:'Sikt'})} ${fm(fv)} ${okv?'≥':'<'} ${fm(vreq)} ${okm(okv)}`);
+        why.push(L({en:'Visibility: 5.5 km or minimum + 4 km; the higher value is used here.',no:'Sikt: 5,5 km eller minimum + 4 km; høyeste verdi er brukt her.'})+' <i>NCC.OP.151(b)</i>'); } }
+    else { n=1; why.push(L({en:'IFR: at least one weather-permissible destination alternate, unless VMC for the approach and landing or an isolated aerodrome.',no:'IFR: minst ett værmessig brukbart destinasjonsalternativ, med mindre innflyging og landing er i VMC eller destinasjonen er isolert.'})+' <i>NCC.OP.151</i>'); }
+    if(n&&!on('al.ngn')) warn.push(L({en:'With PBN (GNSS) approaches: select the alternate only if an approach not relying on GNSS is available at it or at the destination, unless GNSS robustness is demonstrated.',no:'Med PBN-innflyginger (GNSS): velg alternativet bare hvis en innflyging som ikke er avhengig av GNSS finnes der eller på destinasjonen, med mindre GNSS-robusthet er dokumentert.'})+' <i>AMC1 NCC.OP.153</i>');
+  } else {
+    const rw=g('al.rw'), ch=g('al.ch'), fl=g('al.ft');
+    if(on('al.iso')){ n=0; why.push(L({en:'Isolated destination: no destination alternate, but a point of no return (PNR) and additional fuel are required, and the authority must approve the aerodrome.',no:'Isolert destinasjon: ingen destinasjonsalternativ, men et point of no return (PNR) og additional fuel kreves, og myndigheten må godkjenne flyplassen.'})+' <i>CAT.OP.MPA.182(d)(2), AMC2(c), AMC7</i>'); }
+    else if(on('al.nomet')){ n=2; why.push(L({en:'No weather information for the destination: two destination alternates.',no:'Ingen værinformasjon for destinasjonen: to destinasjonsalternativer.'})+' <i>AMC2 CAT.OP.MPA.182(b)</i>'); }
+    else if(at==='none'){ n=null; why.push(L({en:'IFR to a destination without an instrument approach is not covered by these tables. Check the OM-A.',no:'IFR til en destinasjon uten instrumentinnflyging dekkes ikke av disse tabellene. Sjekk OM-A.'})); }
+    else if(dh==null||fc==null||fv==null||dv==null) need([dh==null?'DH/MDH':'',dv==null?'RVR/VIS':'',fc==null?L({en:'ceiling',no:'skybase'}):'',fv==null?L({en:'visibility',no:'sikt'}):''].filter(Boolean).join(', '));
+    else {
+      const lv=fv>=dv, lc=(at==='circ'||dh>=250)? fc>=dh : true;
+      if(!lv||!lc){ n=null; why.push(`<b class="ko">${L({en:'Below landing minima at ETA ± 1 h: the aerodrome cannot be selected as destination.',no:'Under landingsminima ved ETA ± 1 t: flyplassen kan ikke velges som destinasjon.'})}</b> <i>AMC5 CAT.OP.MPA.182(a)</i>`); }
+      else {
+        const pm=altReq('cat',at,dh,dv), pc=fc>=pm.c, pv=fv>=pm.v;
+        const zc=Math.max(2000,(ch||0)+500), zOk = fl!=null&&fl<=6 && rw!=null&&rw>=2 && fc>=zc && fv>=5000, z = zOk && on('al.var');
+        if(!pc||!pv){ n=2; why.push(`${L({en:'Destination is below the planning minima',no:'Destinasjonen er under planleggingsminima'})} (${ft(pm.c)} / ${fm(pm.v)}): ${L({en:'two destination alternates.',no:'to destinasjonsalternativer.'})} <i>AMC2(b), AMC6 CAT.OP.MPA.182</i>`); }
+        else if(z){ n=0; why.push(`${L({en:'Flight ≤ 6 h, two separate usable runways, ceiling',no:'Flytid ≤ 6 t, to separate brukbare rullebaner, skybase'})} ${ft(fc)} ≥ ${ft(zc)} ${L({en:'and visibility ≥ 5 km for ETA ± 1 h.',no:'og sikt ≥ 5 km for ETA ± 1 t.'})} <i>AMC2 CAT.OP.MPA.182(c)</i>`); }
+        else { n=1; why.push(L({en:'Standard: at least one destination alternate.',no:'Standard: minst ett destinasjonsalternativ.'})+' <i>AMC2 CAT.OP.MPA.182(a)</i>'); if(zOk&&!on('al.var')) why.push(L({en:'Flying with no destination alternate (≤ 6 h, two runways, weather margins) is only allowed under the basic fuel scheme with variations, approved for your operator.',no:'Å fly uten destinasjonsalternativ (≤ 6 t, to rullebaner, værmarginer) er bare tillatt med basic fuel scheme with variations, godkjent for operatøren.'})+' <i>AMC2 CAT.OP.MPA.182(c)</i>');
+          const miss=[]; if(fl==null||fl>6) miss.push(L({en:'flight ≤ 6 h',no:'flytid ≤ 6 t'})); if(rw==null||rw<2) miss.push(L({en:'two separate usable runways',no:'to separate brukbare rullebaner'})); if(fc<zc) miss.push(L({en:'ceiling ≥ ',no:'skybase ≥ '})+ft(zc)); if(fv<5000) miss.push(L({en:'visibility ≥ 5 km',no:'sikt ≥ 5 km'}));
+          why.push(L({en:'For no alternate you would also need: ',no:'For null alternativer mangler: '})+miss.join(', ')+'.'); } } }
+    warn.push(L({en:'Make sure you can still navigate to and land at the destination or an alternate if the planned approach capability is lost (e.g. GNSS).',no:'Sørg for at du fortsatt kan navigere til og lande på destinasjonen eller et alternativ hvis den planlagte innflygingskapabiliteten forsvinner (f.eks. GNSS).'})+' <i>CAT.OP.MPA.182(f)</i>');
+  }
+  const head = n==null? '' : n===0? `<div class="altn"><b>0</b> ${L({en:'No destination alternate required',no:'Ingen destinasjonsalternativ kreves'})}</div>` : `<div class="altn"><b>${n}</b> ${n===1?L({en:'destination alternate required',no:'destinasjonsalternativ kreves'}):L({en:'destination alternates required',no:'destinasjonsalternativer kreves'})}</div>`;
+  setC('al.res', head+`<ul>${why.map(w=>'<li>'+w+'</li>').join('')}</ul>`+(warn.length?`<p class="note">⚠ ${warn.join('<br>⚠ ')}</p>`:''));
+  // planleggingsminima for alternativene
+  const out={};
+  ['alt1','alt2'].forEach((k,i)=>{ const q=altReq(reg,f['aa.'+k+'.at']||'iap',g('aa.'+k+'.dh'),g('aa.'+k+'.dv'),g('aa.'+k+'.msh'));
+    const afc=g('mi.'+k+'.fc'), afv=g('mi.'+k+'.fv');
+    if(n!=null&&i>=n){ setC('aa.'+k+'.req',`<small>${L({en:'not required',no:'ikke påkrevd'})}</small>`); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',''); return; }
+    if(!q){ setC('aa.'+k+'.req',''); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',''); return; }
+    if(q.na){ setC('aa.'+k+'.req',`<small class="ko">${L({en:'No row in Table 2: not usable as alternate under the basic scheme',no:'Ingen rad i Table 2: kan ikke brukes som alternativ i basic scheme'})}</small>`); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',okm(false)); return; }
+    out[k]={c:q.c,v:q.v};
+    setC('aa.'+k+'.req',`${ft(q.c)} / ${q.v!=null?fm(q.v):'— m'}<br><small>${q.ref}${q.miss?' · '+L({en:'add RVR/VIS or MSH',no:'legg inn RVR/VIS eller MSH'}):''}</small>`);
+    setC('aa.'+k+'.fc', afc!=null||afv!=null? `${afc!=null?ft(afc):'—'} / ${afv!=null?fm(afv):'—'}` : `<small>${L({en:'from table above',no:'fra tabellen over'})}</small>`);
+    setC('aa.'+k+'.ok', afc!=null&&afv!=null&&q.v!=null? okm(afc>=q.c&&afv>=q.v) : ''); });
+  return out;
+}
+function calc(){
+  const f=P.f, g=k=>num(f[k]);
+  setC('title',esc([f.type,f.reg,f.purpose].filter(Boolean).join(' · '))); setC('kick',esc((f.heading||'').trim()||((f.rules==='VFR'||f.rules==='IFR')?f.rules+' ':'')+'BRIEFING PACK')); document.querySelectorAll('[data-c="kick"]').forEach(e=>e.classList.toggle('custom',!!(f.heading||'').trim()));
+  setC('route',esc((f.depapt||'—')+' → '+(f.destapt||'—')));
+  setC('hdr',esc([f.reg,f.depapt&&f.destapt?f.depapt+'–'+f.destapt:'',f.date].filter(Boolean).join(' · ')));
+  // alternativer
+  const AR=altCalc(f,g);
+  // minima
+  APT.forEach(([k])=>{ const ar=AR[k]; const rv=g('mi.'+k+'.rv')??(ar&&ar.v), rc=g('mi.'+k+'.rc')??(ar&&ar.c), fv=g('mi.'+k+'.fv'), fc=g('mi.'+k+'.fc'); const xs=xwTxt(f['mi.'+k+'.wind'],f['mi.'+k+'.rwy']); setC('mi.'+k, ((rv!=null&&fv!=null)||(rc!=null&&fc!=null)? okm((rv==null||fv==null||fv>=rv)&&(rc==null||fc==null||fc>=rc)) : '')+(xs?'<br><small>'+xs+'</small>':'')); });
+  ['vd','vr','va','vl'].forEach(k=>{ const rv=g('mv.'+k+'.rv'), rc=g('mv.'+k+'.rc'), fv=g('mv.'+k+'.fv'), fc=g('mv.'+k+'.fc'); const xs=xwTxt(f['mv.'+k+'.wind'],f['mv.'+k+'.rwy']); setC('mv.'+k, ((rv!=null&&fv!=null)||(rc!=null&&fc!=null)? okm((rv==null||fv==null||fv>=rv)&&(rc==null||fc==null||fc>=rc)) : '')+(xs?'<br><small>'+xs+'</small>':'')); });
+  // bane
+  const tf=g('rf.to')||1, lf=g('rf.ld')||1;
+  ['dep','dest','alt1','alt2'].forEach(k=>{ const q=g('r.'+k+'.qnh'), e=g('r.'+k+'.elev'); const pa=q!=null&&e!=null? e+(1013-q)*30 : null; setC('r.'+k+'.pa', pa!=null? fx(pa) : '');
+    const tt=g('r.'+k+'.t'); setC('r.'+k+'.da', pa!=null&&tt!=null? fx(Math.round((pa+120*(tt-(15-2*pa/1000)))/10)*10) : '');
+    setC('r.'+k+'.hx', xwTxt(f['r.'+k+'.wind'],f['r.'+k+'.rwy']));
+    if(k==='dep'){ const t=g('r.dep.tod'), a=g('r.dep.tora'), s=g('r.dep.asd'), sa=g('r.dep.asda'); setC('r.dep.todf',t!=null?fx(t*tf):''); setC('r.dep.tok',t!=null&&a!=null?okm(t*tf<=a):''); setC('r.dep.aok',s!=null&&sa!=null?okm(s<=sa):''); }
+    else { const l=g('r.'+k+'.ldr'), a=g('r.'+k+'.lda'); setC('r.'+k+'.ldrf',l!=null?fx(l*lf):''); setC('r.'+k+'.lok',l!=null&&a!=null?okm(l*lf<=a):''); } });
+  // gradienter
+  ['g.sid','g.sidoei','g.map','g.mapoei','g.mapalt'].forEach(k=>{ const r=g(k+'.req'), c=g(k+'.can'), gs=g(k+'.gs'); setC(k+'.fpm', r!=null&&gs!=null? fx(r*gs*1.013) : ''); setC(k+'.ok', r!=null&&c!=null? okm(c>=r) : ''); });
+  // navigasjonslogg
+  { const vr=g('nl.var')||0; let tD=0,tT=0,tF=0,any=false;
+    for(let i=0;i<10;i++){ const p='nl.'+i+'.'; const tt=g(p+'tt'), d=g(p+'d'), tas=g(p+'tas')||g('nl.tas'), w=wind(f[p+'w'])||{d:0,s:0}, lv=g(p+'var')??vr;
+      if(tt==null||!tas){ ['wca','mh','gs','time','fuel'].forEach(k=>setC(p+k,'')); continue; }
+      const a=(w.d-tt)*Math.PI/180, r=Math.max(-1,Math.min(1,w.s*Math.sin(a)/tas)), wca=Math.asin(r)*180/Math.PI, gs=tas*Math.cos(wca*Math.PI/180)-w.s*Math.cos(a), th=(tt+wca+360)%360, mh=((th-lv)%360+360)%360;
+      setC(p+'wca',(wca>=0?'+':'')+Math.round(wca)); setC(p+'mh',String(Math.round(mh)).padStart(3,'0')); setC(p+'gs',Math.round(gs));
+      if(d!=null&&gs>0){ const tm=d/gs*60; const ffu=g('fu.ff'); setC(p+'time',Math.round(tm)); setC(p+'fuel',ffu?fx(tm/60*ffu,1):''); tD+=d; tT+=tm; tF+=ffu?tm/60*ffu:0; any=true; } else { setC(p+'time',''); setC(p+'fuel',''); } }
+    setC('nl.tot.d',any?fx(tD,1):''); setC('nl.tot.time',any?Math.floor(tT/60)+':'+String(Math.round(tT%60)).padStart(2,'0'):''); setC('nl.tot.fuel',any&&tF?fx(tF,1):''); }
+  // mannskap og FDP
+  { const hm=v=>{ const m=String(v||'').match(/^(\d{1,2})[:.h]?(\d{2})$/); return m? +m[1]*60+ +m[2] : null; }; const rep=hm(f['cr.rep']), fdp=hm(f['cr.fdp']), onb=hm(f['cr.onb']); const t2=m=>String(Math.floor(((m%1440)+1440)%1440/60)).padStart(2,'0')+':'+String(((m%60)+60)%60).padStart(2,'0');
+    setC('cr.fdpend', rep!=null&&fdp!=null? t2(rep+fdp) : ''); const end=rep!=null&&fdp!=null?rep+fdp:null; let mg=end!=null&&onb!=null? end-(onb<rep?onb+1440:onb) : null; setC('cr.fdpmg', mg!=null? `${mg<0?'−':''}${Math.floor(Math.abs(mg)/60)}:${String(Math.abs(mg)%60).padStart(2,'0')} ${okm(mg>=0)}` : ''); }
+  // lasteark
+  { const zfm=g('ld.zfm'), mz=g('ld.mzfm'), tof=g('ld.tof'), mt=g('ld.mtom'), tr=g('ld.trip')??g('fu.l1.trip'), ml=g('ld.mlm'); const tom=zfm!=null&&tof!=null?zfm+tof:null, lm=tom!=null&&tr!=null?tom-tr:null;
+    setC('ld.tom',tom!=null?fx(tom):''); setC('ld.lm',lm!=null?fx(lm):''); setC('ld.zfmok',zfm!=null&&mz!=null?okm(zfm<=mz):''); setC('ld.tomok',tom!=null&&mt!=null?okm(tom<=mt):''); setC('ld.lmok',lm!=null&&ml!=null?okm(lm<=ml):'');
+    const ul=[mz!=null&&zfm!=null?['MZFM',mz-zfm]:null, mt!=null&&tom!=null?['MTOM',mt-tom]:null, ml!=null&&lm!=null?['MLM',ml-lm]:null].filter(Boolean).sort((a,b)=>a[1]-b[1])[0]; setC('ld.ul',ul?`${fx(ul[1])} <small>(${ul[0]})</small> ${okm(ul[1]>=0)}`:'');
+    const lr=g('la.req'), lda=g('la.lda'); setC('la.ok',lr!=null&&lda!=null?okm(lr<=lda):''); }
+  // CAT-drivstoff
+  { const tr=['Training flight','Proficiency check','Skill test'].includes(f.purpose||'Training flight')||!!(f.instr||'').trim(); document.querySelectorAll('.instrrow').forEach(e=>e.hidden=!tr); }
+  { const cat=(f['al.reg']==='cat')||f.purpose==='Commercial flight'; document.querySelectorAll('.catrow').forEach(e=>e.hidden=!cat); const hf=g('fu.hold'), turb=(f['fu.eng']||'turbine')==='turbine';
+    [1,2,3].forEach(i=>{ const p='fu.l'+i+'.'; const tr=g(p+'trip'); if(!cat||(tr==null&&hf==null)){ setC(p+'cat',''); return; } const cmin=Math.max(tr!=null?tr*0.05:0, hf!=null?hf*5/60:0), fmin=hf!=null?hf*(turb?0.5:0.75):null; const c=g(p+'cont'), fr=g(p+'frf');
+      setC(p+'cat',`<small>${L({en:'cont.',no:'cont.'})} ≥ ${fx(cmin,0)}${c!=null?' '+okm(c>=cmin-0.5):''}${fmin!=null?` · FRF ≥ ${fx(fmin,0)}${fr!=null?' '+okm(fr>=fmin-0.5):''}`:''}</small>`); }); }
+  // drivstoff
+  const ff=g('fu.ff');
+  [1,2,3].forEach(i=>{ const p='fu.l'+i+'.'; const parts=['taxi','trip','cont','alt','frf','add','xtra'].map(k=>g(p+k)); const any=parts.some(v=>v!=null); const min=parts.reduce((a,v)=>a+(v||0),0);
+    setC(p+'min',any?fx(min,1):''); const ob=g(p+'ob'); setC(p+'mg', any&&ob!=null? `${fx(ob-min,1)} ${okm(ob>=min)}` : '');
+    setC(p+'end', ob!=null&&ff? (()=>{ const h=(ob-(g(p+'taxi')||0))/ff; return Math.floor(h)+':'+String(Math.round((h%1)*60)).padStart(2,'0'); })() : ''); });
+  // masse og balanse
+  let M=0, MO=0, any=false; ['empty','front','rear','nose','cabin','ext','other'].forEach(k=>{ const m=g('mb.'+k+'.m'), a=g('mb.'+k+'.a'); if(m!=null){ any=true; M+=m; if(a!=null) MO+=m*a; } setC('mb.'+k+'.mo', m!=null&&a!=null? fx(m*a,1) : ''); });
+  setC('mb.zf.m',any?fx(M,1):''); setC('mb.zf.mo',any?fx(MO,1):''); setC('mb.zf.a',any&&M?fx(MO/M,3):'');
+  const dens=g('mb.dens')||0, fu=g('mb.fuel.u'), fa=g('mb.fuel.a'), fm=fu!=null?fu*dens:null; setC('mb.fuel.mo', fm!=null&&fa!=null? fx(fm*fa,1)+` <small>(${fx(fm,1)} kg)</small>` : '');
+  const TM=M+(fm||0), TMO=MO+(fm!=null&&fa!=null?fm*fa:0); setC('mb.to.m',any?fx(TM,1):''); setC('mb.to.mo',any?fx(TMO,1):''); setC('mb.to.a',any&&TM?fx(TMO/TM,3):'');
+  const bu=g('mb.burn.u'), bm=bu!=null?bu*dens:null; setC('mb.burn.mo', bm!=null&&fa!=null? '−'+fx(bm*fa,1)+` <small>(${fx(bm,1)} kg)</small>`:'');
+  const LM=TM-(bm||0), LMO=TMO-(bm!=null&&fa!=null?bm*fa:0); setC('mb.ld.m',any?fx(LM,1):''); setC('mb.ld.mo',any?fx(LMO,1):''); setC('mb.ld.a',any&&LM?fx(LMO/LM,3):'');
+  const mt=g('mb.mtom'), ml=g('mb.mlm'), fw=g('mb.fwd'), af=g('mb.aft'), cg=TM?TMO/TM:null; const msgs=[];
+  if(any&&mt) msgs.push(`${L({en:'Take-off mass',no:'Avgangsmasse'})} ${fx(TM,1)} kg ${okm(TM<=mt)}`); if(any&&ml) msgs.push(`${L({en:'Landing mass',no:'Landingsmasse'})} ${fx(LM,1)} kg ${okm(LM<=ml)}`);
+  const E=envParse(f['mb.env']), mz=g('mb.mzfm'); const inE=(m,a)=>!E||(a>=envAt(E.fwd,m)-1e-4&&a<=envAt(E.aft,m)+1e-4);
+  if(any&&mz) msgs.push(`ZFM ${fx(M,1)} kg ${okm(M<=mz)}`);
+  if(any&&cg){ if(E) msgs.push(`CG ${fx(cg,3)} m ${okm(inE(TM,cg))}`); else if(fw&&af) msgs.push(`CG ${fx(cg,3)} m ${okm(cg>=fw&&cg<=af)}`); }
+  setC('mb.check',msgs.join(' · '));
+  const pts=[]; if(any&&M){ pts.push({n:'ZF',m:M,a:MO/M,ok:inE(M,MO/M)}); } if(any&&TM&&fm){ pts.push({n:'TO',m:TM,a:TMO/TM,ok:inE(TM,TMO/TM)&&(!mt||TM<=mt)}); } if(any&&LM&&bm){ pts.push({n:'LDG',m:LM,a:LMO/LM,ok:inE(LM,LMO/LM)}); }
+  envChart(E,pts.sort((x,y)=>x.m-y.m),mt);
+  try{ drawLoad(E,any?TM:null,any&&TM?TMO/TM:null,mt,any?LM:null,any&&LM?LMO/LM:null); }catch(e){}
+  // risiko
+  const rk=['pilot','ac','wx','terr','aero','night','time','fuel'].map(k=>+f['rk.'+k]||0); const n=rk.filter(Boolean).length, hi=rk.filter(v=>v===3).length, md=rk.filter(v=>v===2).length;
+  setC('rk.tot', n? `${hi?`<span class="ko">${hi} ${L({en:'high',no:'høy'})}</span>`:''} ${md} ${L({en:'medium',no:'middels'})} · ${n}/8 ${L({en:'assessed',no:'vurdert'})} · ${hi>=2?L({en:'Talk to someone before you go.',no:'Snakk med noen før du drar.'}):hi?L({en:'Mitigate the high one.',no:'Reduser den høye.'}):L({en:'Acceptable.',no:'Akseptabelt.'})}` : '');
+  // regler
+  const r=f.rules||'IFR'; document.querySelectorAll('.ifr').forEach(e=>e.hidden=r==='VFR'); document.querySelectorAll('.vfr').forEach(e=>e.hidden=r==='IFR');
+  SECTIONS.forEach(([id],i)=>{ if(!i) return; const off=(P.hide||[]).includes(id)||(IFRONLY.includes(id)&&r==='VFR'); el('s-'+id).hidden=off; });
+  document.querySelectorAll('#secsel input').forEach(c=>{ c.checked=!(P.hide||[]).includes(c.value); c.disabled=IFRONLY.includes(c.value)&&r==='VFR'; });
+  drawMode();
+  paging();
+}
+function drawMode(){ const mb=el('modebar'); if(!mb||!P) return; const r=P.f.rules||'IFR';
+  const B=(k,en,no,sen,sno)=>`<button data-r="${k}" class="${r===k?'on':''}">${L({en,no})}<small>${L({en:sen,no:sno})}</small></button>`;
+  mb.innerHTML=`<div class="mseg" role="group" aria-label="${L({en:'Flight rules',no:'Flygeregler'})}">${B('VFR','VFR briefing pack','VFR-briefingpakke','VMC minima, nav log, risk','VMC-minima, navlogg, risiko')}${B('IFR','IFR briefing pack','IFR-briefingpakke','Minima, alternates, gradients','Minima, alternativer, gradienter')}</div>
+  <div class="kbl"><span>${L({en:'Kneeboards',no:'Kneebrett'})}</span><a href="sheets.html#vfr" target="_blank" class="${r==='VFR'?'on':''}">VFR ↗</a><a href="sheets.html#ifr" target="_blank" class="${r==='IFR'?'on':''}">IFR ↗</a><a href="sheets.html#risk" target="_blank">${L({en:'Risk assessment',no:'Risikovurdering'})} ↗</a></div>`; }
+el('modebar').addEventListener('click',e=>{ const b=e.target.closest('button[data-r]'); if(!b||!P) return; const r=b.dataset.r; if((P.f.rules||'IFR')===r) return;
+  const tk=r.toLowerCase(); P.f.rules=r; P.hide=TPL[tk].hide.slice(); P.tpl=tk; fill(); queueSave(); });
+LAB.onLang(()=>drawMode());
+function fill(){ document.querySelectorAll('#book [data-k]').forEach(e=>{ const v=P.f[e.dataset.k]; if(e.type==='radio') e.checked=String(v)===e.value; else if(e.type==='checkbox') e.checked=v==='1'; else { e.value=v==null?'':v; if(e.tagName==='SELECT'&&e.selectedIndex<0) e.selectedIndex=0; } }); drawSk(); renderAllAtts(); calc(); }
+function metarFill(k,txt){ const T=' '+String(txt||'').toUpperCase()+' '; const w=T.match(/ (\d{3}|VRB)(\d{2,3})(G\d{2,3})?KT /), q=T.match(/ Q(\d{4}) /), tt=T.match(/ (M?\d{2})\/(M?\d{2}) /); const fillIf=(key,v)=>{ if(v!=null&&!P.f[key]) setF(key,v); };
+  const wv= w&&w[1]!=='VRB'? w[1]+'/'+(+w[2])+(w[3]?'G'+(+w[3].slice(1)):'') : null, tv= tt? String(tt[1].startsWith('M')?-+tt[1].slice(1):+tt[1]) : null;
+  if(['dep','dest','alt1','alt2'].includes(k)){ fillIf('r.'+k+'.wind',wv); fillIf('r.'+k+'.qnh',q?q[1]:null); fillIf('r.'+k+'.t',tv); }
+  fillIf('mi.'+k+'.wind',wv); const vm={dep:'vd',dest:'va',alt1:'vl'}[k]; if(vm) fillIf('mv.'+vm+'.wind',wv); }
+function onInput(e){ const t=e.target; if(!t.dataset||!t.dataset.k) return; P.f[t.dataset.k]= t.type==='checkbox'? (t.checked?'1':'') : t.value; { const mm=t.dataset.k.match(/^mt\.(\w+)\.metar$/); if(mm) metarFill(mm[1],t.value); } calc(); queueSave(); }
+el('book').addEventListener('input',onInput); el('book').addEventListener('change',onInput);
+function queueSave(){ el('saved').textContent=L({en:'Saving…',no:'Lagrer…'}); clearTimeout(dirty); dirty=setTimeout(saveNow,700); }
+async function saveNow(){ P.title=title(); const where=await NSTORE.put('prep',P); el('saved').textContent= where==='account'? L({en:'Saved to your profile',no:'Lagret på profilen din'}) : L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); const o=[...el('sel').options].find(x=>x.value===P.id); if(o) o.textContent=optText(P); }
+const optText=p=>(p.title||L({en:'New preparation',no:'Ny forberedelse'}))+(p.f&&p.f.date?' · '+p.f.date:'');
+function drawSel(){ el('sel').innerHTML=ALL.map(p=>`<option value="${p.id}" ${p.id===P.id?'selected':''}>${esc(optText(p))}</option>`).join(''); }
+el('sel').onchange=()=>{ P=ALL.find(p=>p.id===el('sel').value); fill(); };
+function pickTpl(){ return new Promise(res=>{ const d=document.createElement('dialog'); d.className='pp'; d.innerHTML=`<b>${L({en:'New briefing pack',no:'Ny briefingpakke'})}</b><p class="note">${L({en:'Start from a template. You can add or remove pages on the cover.',no:'Start fra en mal. Du kan legge til eller fjerne sider på forsiden.'})}</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${['ifr','vfr','local','pc','cat','blank'].map(k=>[k,TPL[k]]).map(([k,t])=>`<button class="btn" data-k="${k}" style="text-align:left">${esc(L(t.n))}</button>`).join('')}</div><div class="btns" style="margin-top:12px"><button class="btn" data-no>${L({en:'Cancel',no:'Avbryt'})}</button></div>`;
+  document.body.appendChild(d); d.showModal(); const done=v=>{ d.close(); d.remove(); res(v); }; d.querySelector('[data-no]').onclick=()=>done(null); d.addEventListener('cancel',()=>done(null)); d.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>done(b.dataset.k)); }); }
+el('new').onclick=async()=>{ const k=await pickTpl(); if(!k) return; P=blankPrep(); Object.assign(P.f,TPL[k].f); P.hide=TPL[k].hide.slice(); P.tpl=k; ALL.unshift(P); drawSel(); fill(); page=0; paging(); await saveNow(); window.scrollTo({top:0}); };
+el('dup').onclick=async()=>{ const c=JSON.parse(JSON.stringify(P)); c.id=blankPrep().id; c.created=Date.now(); ['date','etd'].forEach(k=>delete c.f[k]); P=c; ALL.unshift(P); drawSel(); fill(); await saveNow(); };
+let delArm=false; el('del').onclick=async()=>{ if(!delArm){ delArm=true; el('del').textContent=L({en:'Click again to delete',no:'Klikk igjen for å slette'}); setTimeout(()=>{ delArm=false; el('del').textContent=T('Delete'); const m=el('mdel'); if(m) m.textContent=T('Delete'); },3000); return; }
+  delArm=false; el('del').textContent=T('Delete'); await NSTORE.del('prep',P.id); ALL=ALL.filter(p=>p.id!==P.id); if(!ALL.length){ P=blankPrep(); ALL=[P]; } else P=ALL[0]; drawSel(); fill(); };
+el('pfill').onclick=()=>{ document.body.classList.remove('blank'); window.print(); };
+el('pblank').onclick=()=>{ document.body.classList.add('blank'); window.print(); setTimeout(()=>document.body.classList.remove('blank'),500); };
+window.addEventListener('afterprint',()=>document.body.classList.remove('blank'));
+
+/* ---------- tverrsnitt: profilgenerator ---------- */
+const XT=[['rwy','Runway'],['sid','SID / exit fix'],['wpt','Waypoint'],['toc','Top of climb'],['tod','Top of descent'],['iaf','IAF'],['if','IF'],['hold','Hold'],['faf','FAF / FAP'],['da','DA / MDA'],['missed','Missed approach'],['alt','Alternate']];
+const xsv=el('xsv'), NSV='http://www.w3.org/2000/svg';
+const pnum=v=>{ if(v==null) return null; const t=String(v).trim().toUpperCase(); if(!t) return null; const fl=t.match(/^FL\s*(\d{2,3})$/); if(fl) return +fl[1]*100; const n=parseFloat(t.replace(',','.').replace(/[^0-9.\-]/g,'')); return Number.isFinite(n)?n:null; };
+function xsData(){ P.xs=P.xs||{pts:[]}; return P.xs; }
+function genQuick(q){
+  const n=k=>pnum(q[k]), out=[]; const el0=n('elev')||0, cr=n('cr'), cl=n('cl')||400, ds=n('ds')||300; let d=0;
+  out.push({n:(q.dep||'DEP')+(q.rwy?' '+q.rwy:''),t:'rwy',d:0,a:el0});
+  const sidd=n('sidd'); if(q.sid||sidd){ out.push({n:q.sid||'SID',t:'sid',d:sidd||10,a:n('sida')||Math.min(cr||3000,el0+(sidd||10)*cl)}); d+=sidd||10; }
+  const iafTot=(sidd||0)+(n('enr')||30);
+  if(cr){ const tocD=(cr-el0)/cl; if(tocD>d&&tocD<iafTot){ out.push({n:'TOC',t:'toc',d:tocD-d,a:cr}); d=tocD; } }
+  const iafa=n('iafa')||(cr?Math.min(cr,3000):3000);
+  if(cr&&cr>iafa){ const todD=iafTot-(cr-iafa)/ds; if(todD>d){ out.push({n:'TOD',t:'tod',d:todD-d,a:cr}); d=todD; } }
+  out.push({n:q.iaf||'IAF',t:'iaf',d:Math.max(0,iafTot-d),a:iafa}); d=iafTot;
+  if(/^(y|j|true)/i.test(q.hold||'')) out.push({n:'HOLD',t:'hold',d:0,a:iafa});
+  const thr=n('thr')||0, fafa=n('fafa')||thr+1500, fafd=n('fafd')||5; out.push({n:(q.faf||'FAF'),t:'faf',d:fafd,a:fafa,note:q.app||''});
+  const da=n('da')||thr+200, gp=318; const dDA=(fafa-da)/gp, dThr=(fafa-thr-50)/gp;
+  out.push({n:(/ils|lpv|gls/i.test(q.app||'ILS')?'DA ':'MDA ')+da,t:'da',d:Math.max(0.1,dDA),a:da});
+  out.push({n:(q.arr||'ARR')+' THR',t:'rwy',d:Math.max(0.1,dThr-dDA),a:thr});
+  if(q.ma||n('maa')) out.push({n:q.ma||'MAP',t:'missed',d:n('mad')||6,a:n('maa')||3000});
+  return out;
+}
+function xsRender(){
+  const X=xsData(), pts=X.pts||[]; const f=P.f; xsv.innerHTML='';
+  const ra=document.getElementById('xsRoute'); if(ra){ ra.href='route.html?pack='+encodeURIComponent(P.id); ra.textContent=X.route?L({en:'Edit on the map ↗',no:'Rediger på kartet ↗'}):L({en:'Build it on the map ↗',no:'Bygg den på kartet ↗'}); }
+  const xn=document.getElementById('xsNote'); if(xn&&X.route){ const stale=X.f&&['x.alt','x.msa','x.frz','x.cb','x.ct'].some(k=>(f[k]||'')!==(X.f[k]||''));
+    xn.innerHTML= stale? L({en:'You changed cruise, MSA or weather here after the profile was made. <a href="route.html?pack='+encodeURIComponent(P.id)+'">Open it on the map</a> to update it.',no:'Du har endret cruise, MSA eller vær her etter at profilen ble laget. <a href="route.html?pack='+encodeURIComponent(P.id)+'">Åpne den på kartet</a> for å oppdatere.'}) : (X.svg?L({en:'Linked to Route Explorer. Changes on the map update this profile.',no:'Koblet til Route Explorer. Endringer på kartet oppdaterer denne profilen.'}):''); }
+  const H_=X.svg?420:360; if(sk.height!==H_){ sk.height=H_; } xsv.setAttribute('viewBox','0 0 1000 '+H_);
+  if(X.svg){ xsv.innerHTML=X.svg; return; }
+  const add=(tag,a)=>{ const e=document.createElementNS(NSV,tag); for(const k in a) e.setAttribute(k,a[k]); xsv.appendChild(e); return e; };
+  const tx=(t,x,y,o)=>{ const e=add('text',Object.assign({x,y,'font-family':'IBM Plex Mono, monospace','font-size':11,fill:'#13202A'},o||{})); e.textContent=t; return e; };
+  add('rect',{x:0,y:0,width:1000,height:360,fill:'#fff'});
+  const L0=56,R0=24,T0=22,B0=44, W=1000-L0-R0, H=360-T0-B0;
+  if(!pts.length){ for(let x=0;x<=1000;x+=50) add('line',{x1:x,y1:0,x2:x,y2:360,stroke:'#E3E8EA'}); for(let y=0;y<=360;y+=40) add('line',{x1:0,y1:y,x2:1000,y2:y,stroke:'#E3E8EA'});
+    tx(L({en:'Make a quick profile, describe the route to the AI, or draw by hand.',no:'Lag en hurtigprofil, beskriv ruten til AI-en, eller tegn for hånd.'}),500,184,{'text-anchor':'middle',fill:'#9AA6AC','font-size':14,class:'noprint'}); return; }
+  let cum=0; const P2=pts.map(p=>{ cum+=(+p.d||0); return Object.assign({},p,{x:cum,a:+p.a||0}); });
+  const total=Math.max(1,cum);
+  const msa=pnum(f['x.msa']), frz=pnum(f['x.frz']), cb=pnum(f['x.cb']), ct=pnum(f['x.ct']);
+  const top=Math.max(...P2.map(p=>p.a),msa||0,Math.min(frz||0,20000),ct||0,1000);
+  const ymax=Math.ceil(top*1.25/1000)*1000;
+  const iafP=P2.find(p=>p.t==='iaf')||P2.find(p=>p.t==='faf'); const xi=iafP?iafP.x:null; const zoom=X.zoom!==false&&xi&&(total-xi)/total<0.35&&xi>0;
+  const XS=v=> zoom? (v<=xi? L0+v/xi*W*0.6 : L0+W*0.6+(v-xi)/(total-xi)*W*0.4) : L0+v/total*W, YS=a=>T0+H-(Math.max(0,a)/ymax)*H;
+  const step=ymax>12000?2000:1000; for(let a=0;a<=ymax;a+=step){ add('line',{x1:L0,y1:YS(a),x2:1000-R0,y2:YS(a),stroke:'#EEF1EF'}); tx(a>=10000&&step===2000?'FL'+a/100:String(a),L0-6,YS(a)+4,{'text-anchor':'end','font-size':10,fill:'#7D8B95'}); }
+  const tick=(d,lab)=>{ add('line',{x1:XS(d),y1:T0+H,x2:XS(d),y2:T0+H+5,stroke:'#7D8B95'}); tx(lab,XS(d),T0+H+18,{'text-anchor':'middle','font-size':10,fill:'#7D8B95'}); };
+  if(zoom){ const d1s=xi>60?20:xi>25?10:5; for(let d=0;d<=xi-d1s*0.4;d+=d1s) tick(d,d+' NM'); tick(xi,Math.round(xi)+' NM'); const r=total-xi, d2s=r>12?5:2; for(let d=d2s;d<=r+0.01;d+=d2s) tick(xi+d,'+'+d); tx(L({en:'approach expanded',no:'innflyging forstørret'}),XS(xi)+6,T0+H+32,{'font-size':9.5,fill:'#9A1E68'}); add('line',{x1:XS(xi),y1:T0,x2:XS(xi),y2:T0+H,stroke:'#9A1E68','stroke-dasharray':'2 4',opacity:.4}); }
+  else { const dst=total>150?50:total>60?20:total>25?10:5; for(let d=0;d<=total+0.01;d+=dst) tick(d,d+' NM'); }
+  const ter=P2.filter(p=>pnum(p.ter)!=null); if(ter.length>1) add('path',{d:'M'+XS(ter[0].x)+' '+YS(0)+ter.map(p=>' L'+XS(p.x)+' '+YS(pnum(p.ter))).join('')+' L'+XS(ter[ter.length-1].x)+' '+YS(0)+' Z',fill:'#EDE6D6',stroke:'#B08A5A'});
+  add('line',{x1:L0,y1:YS(0),x2:1000-R0,y2:YS(0),stroke:'#13202A'});
+  if(cb!=null&&ct!=null&&ct>cb){ add('rect',{x:L0,y:YS(ct),width:W,height:YS(cb)-YS(ct),fill:'#DCE4E9',opacity:.55}); tx(L({en:'cloud',no:'skyer'})+` ${cb}–${ct}`,1000-R0-4,YS(ct)+13,{'text-anchor':'end','font-size':10,fill:'#4C5B66'}); }
+  if(frz!=null&&frz<ymax){ add('line',{x1:L0,y1:YS(frz),x2:1000-R0,y2:YS(frz),stroke:'#1E5E9E','stroke-dasharray':'3 5'}); tx('0 °C  '+(frz>=10000?'FL'+Math.round(frz/100):frz),1000-R0-4,YS(frz)-4,{'text-anchor':'end','font-size':10,fill:'#1E5E9E'}); }
+  if(msa!=null){ add('line',{x1:L0,y1:YS(msa),x2:1000-R0,y2:YS(msa),stroke:'#B3261E','stroke-dasharray':'8 4',opacity:.8}); tx('MSA '+msa,L0+6,YS(msa)-4,{'font-size':10,fill:'#B3261E','font-weight':600}); }
+  let d1='', dMiss='', lastDA=null, prev=null;
+  P2.forEach(p=>{ const x=XS(p.x), y=YS(p.a);
+    if(p.t==='missed'){ const s0=lastDA||prev; if(s0) dMiss+=`M${XS(s0.x)} ${YS(s0.a)} L${x} ${y} `; prev=p; return; }
+    if(p.t==='alt'&&prev){ dMiss+=`M${XS(prev.x)} ${YS(prev.a)} L${x} ${y} `; prev=p; return; }
+    d1+=(d1?' L':'M')+x+' '+y; if(p.t==='da') lastDA=p; prev=p; });
+  if(d1) add('path',{d:d1,fill:'none',stroke:'#9A1E68','stroke-width':3,'stroke-linejoin':'round','stroke-linecap':'round'});
+  if(dMiss) add('path',{d:dMiss,fill:'none',stroke:'#9A1E68','stroke-width':2.2,'stroke-dasharray':'7 5'});
+  let lastLx=-99, lv=0;
+  P2.forEach(p=>{ const x=XS(p.x), y=YS(p.a);
+    if(p.t==='rwy') add('rect',{x:x-14,y:y-2,width:28,height:4,fill:'#13202A'});
+    else if(p.t==='faf') add('path',{d:`M${x} ${y-7} L${x+7} ${y} L${x} ${y+7} L${x-7} ${y} Z`,fill:'#13202A'});
+    else if(p.t==='hold') add('ellipse',{cx:x+16,cy:y-14,rx:18,ry:7,fill:'none',stroke:'#13202A','stroke-width':1.4});
+    else if(p.t==='da') add('line',{x1:x-12,y1:y,x2:x+12,y2:y,stroke:'#B3261E','stroke-width':2});
+    else if(p.t==='toc'||p.t==='tod') add('circle',{cx:x,cy:y,r:3.5,fill:'#fff',stroke:'#9A1E68','stroke-width':1.6});
+    else add('path',{d:`M${x} ${y-6} L${x+5.5} ${y+4} L${x-5.5} ${y+4} Z`,fill:'#fff',stroke:'#13202A','stroke-width':1.5});
+    lv=(x-lastLx<70)?(lv+1)%3:0; lastLx=x;
+    const endRwy=p.t==='rwy'&&p.x>0;
+    if(p.t==='da'){ tx(p.n||'',x-16,y+4,{'text-anchor':'end','font-weight':600,'font-size':11,fill:'#B3261E'}); return; }
+    if(endRwy){ tx(p.n||'',x,y+30,{'text-anchor':'middle','font-weight':600,'font-size':11}); tx(String(Math.round(p.a)),x,y+42,{'text-anchor':'middle','font-size':10,fill:'#4C5B66'}); return; }
+    tx(p.n||'',x,y-14-lv*14-(p.t==='hold'?16:0),{'text-anchor':'middle','font-weight':600,'font-size':11});
+    if(p.t==='rwy'&&p.x===0){ tx(String(Math.round(p.a))+' ft',x+18,y-4,{'font-size':10,fill:'#4C5B66'}); return; }
+    if(p.t!=='hold'&&p.t!=='da') tx(p.a>=10000?'FL'+Math.round(p.a/100):String(Math.round(p.a)),x,y+18+lv*12,{'text-anchor':'middle','font-size':10,fill:'#4C5B66'});
+    if(p.note) tx(p.note,x,y+30+lv*12,{'text-anchor':'middle','font-size':9.5,fill:'#1E5E9E'}); });
+}
+function xsTable(){ const X=xsData();
+  el('xsTb').innerHTML=`<tr><th>#</th><th>${L({en:'Name',no:'Navn'})}</th><th>Type</th><th>${L({en:'NM from previous',no:'NM fra forrige'})}</th><th>${L({en:'Altitude (ft)',no:'Høyde (ft)'})}</th><th>${L({en:'Terrain / MEA (ft)',no:'Terreng / MEA (ft)'})}</th><th>${L({en:'Note',no:'Notat'})}</th><th></th></tr>`+
+   X.pts.map((p,i)=>`<tr data-i="${i}"><td>${i+1}</td><td><input data-x="n" value="${esc(p.n||'')}"></td><td><select data-x="t">${XT.map(([k,l])=>`<option value="${k}" ${p.t===k?'selected':''}>${l}</option>`).join('')}</select></td><td><input data-x="d" inputmode="decimal" value="${p.d==null?'':Math.round(p.d*10)/10}"></td><td><input data-x="a" inputmode="decimal" value="${p.a==null?'':Math.round(p.a)}"></td><td><input data-x="ter" inputmode="decimal" value="${esc(p.ter||'')}"></td><td><input data-x="note" value="${esc(p.note||'')}"></td><td class="act"><button data-m="-1" aria-label="Up">↑</button><button data-m="1" aria-label="Down">↓</button><button data-del="1" aria-label="Delete">✕</button></td></tr>`).join(''); }
+const xsEdit=e=>{ const r=e.target.closest('tr'); if(!r||!e.target.dataset.x) return; e.stopPropagation(); xsData().svg=null; const p=xsData().pts[+r.dataset.i]; const k=e.target.dataset.x; p[k]=(k==='d'||k==='a')?pnum(e.target.value):e.target.value; xsRender(); queueSave(); };
+el('xsTb').addEventListener('input',xsEdit); el('xsTb').addEventListener('change',xsEdit);
+el('xsTb').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const i=+b.closest('tr').dataset.i, A=xsData().pts;
+  if(b.dataset.del) A.splice(i,1); else { const j=i+(+b.dataset.m); if(j<0||j>=A.length) return; [A[i],A[j]]=[A[j],A[i]]; } xsData().svg=null; xsTable(); xsRender(); queueSave(); });
+const showX=id=>{ ['xsQ','xsA','xsT'].forEach(k=>el(k).hidden= k===id? !el(k).hidden : true); if(id==='xsT'&&!el('xsT').hidden) xsTable(); };
+el('xsQuick').onclick=()=>{ showX('xsQ'); const q=xsData().q||{}; document.querySelectorAll('[data-q]').forEach(i=>{ i.value=q[i.dataset.q]||''; }); if(!q.dep&&P.f.depapt) document.querySelector('[data-q="dep"]').value=P.f.depapt; if(!q.arr&&P.f.destapt) document.querySelector('[data-q="arr"]').value=P.f.destapt; };
+el('xsZoom').onclick=()=>{ const X=xsData(); X.zoom=X.zoom===false; xsRender(); queueSave(); };
+el('xsAi').onclick=()=>showX('xsA'); el('xsTable').onclick=()=>showX('xsT');
+document.querySelectorAll('[data-q]').forEach(i=>i.addEventListener('input',e=>e.stopPropagation()));
+el('xsGen').onclick=()=>{ const q={}; document.querySelectorAll('[data-q]').forEach(i=>{ const k=i.dataset.q; q[k]=i.value.trim()||(['cl','ds','app','hold'].includes(k)?i.placeholder:''); }); const X=xsData(); X.q=q; X.pts=genQuick(q); X.svg=null; xsRender(); el('xsQ').hidden=true; el('xsT').hidden=false; xsTable(); queueSave(); el('xsNote').textContent=L({en:'Check the points and adjust them in the table.',no:'Sjekk punktene og juster dem i tabellen.'}); };
+el('xsAdd').onclick=()=>{ const A=xsData().pts; const last=A[A.length-1]; A.push({n:'',t:'wpt',d:5,a:last?last.a:3000}); xsData().svg=null; xsTable(); xsRender(); queueSave(); };
+el('xsClr').onclick=()=>{ xsData().pts=[]; xsData().svg=null; xsTable(); xsRender(); queueSave(); };
+el('xsAiGo').onclick=async()=>{ const t=el('xsTxt').value.trim(); if(!t) return; if(!NAI.mode){ el('xsNote').textContent=NAI.errText({code:'not_available'})+' '+L({en:'Use Quick profile instead.',no:'Bruk hurtigprofil i stedet.'}); return; }
+  el('xsAiGo').disabled=true; el('xsNote').textContent=L({en:'Drawing the profile…',no:'Tegner profilen…'});
+  try{ const r=await NAI.json(`Turn this pilot's description of a flight into a vertical profile (cross-section) for a briefing pack. Use real published procedure values only if you are confident; otherwise use what the pilot wrote, and mark any value you estimated with "check" in "note". Distances are along the route in NM from the previous point. Altitudes in feet (FL70 = 7000). Include: departure runway (type rwy, at its elevation), SID or exit fix, top of climb and top of descent (estimate with about 400 ft/NM climb and 300 ft/NM descent if not given), en-route waypoints the pilot names, IAF, a hold if mentioned (type hold, distance 0, same altitude as the holding fix), IF, FAF/FAP, the DA or MDA point (type da, where a 3 degree path reaches the minimum, named like "DA 270"), the threshold (type rwy) and the end of the missed approach (type missed, distance from the DA point). Alternate if mentioned (type alt). Allowed types: rwy, sid, wpt, toc, tod, iaf, if, hold, faf, da, missed, alt.
+DESCRIPTION: <<${t.slice(0,2000)}>>
+Reply with only JSON: {"points":[{"n":"name","t":"type","d":number,"a":number,"note":"short or empty","ter":"highest terrain or MEA for the leg if known, else empty"}],"msa":number or null,"freezing":number or null,"cloudBase":number or null,"cloudTops":number or null}`,{tier:'default'});
+    if(!r||!Array.isArray(r.points)||!r.points.length) throw {code:'invalid_json'};
+    const X=xsData(); X.svg=null; X.pts=r.points.map(p=>({n:String(p.n||''),t:XT.some(x=>x[0]===p.t)?p.t:'wpt',d:pnum(p.d)||0,a:pnum(p.a)||0,note:String(p.note||''),ter:p.ter==null?'':String(p.ter)}));
+    if(r.msa&&!P.f['x.msa']) P.f['x.msa']=String(r.msa); if(r.freezing&&!P.f['x.frz']) P.f['x.frz']=String(r.freezing); if(r.cloudBase&&!P.f['x.cb']) P.f['x.cb']=String(r.cloudBase); if(r.cloudTops&&!P.f['x.ct']) P.f['x.ct']=String(r.cloudTops);
+    fill(); el('xsA').hidden=true; el('xsT').hidden=false; xsTable(); queueSave(); el('xsNote').textContent=L({en:'Check every point against your charts.',no:'Sjekk hvert punkt mot kartene dine.'});
+  }catch(e){ el('xsNote').textContent=NAI.errText(e); NAI.fatal(e); } finally{ el('xsAiGo').disabled=false; } };
+['x.alt','x.msa','x.frz','x.cb','x.ct'].forEach(k=>document.querySelector(`[data-k="${k}"]`).addEventListener('input',()=>setTimeout(xsRender)));
+/* ---------- tegning oppå ---------- */
+const sk=el('sk'), sx=sk.getContext('2d'); let pen='#13202A', cur=null, drawing=false;
+el('xsDraw').onclick=()=>{ drawing=!drawing; sk.style.pointerEvents=drawing?'auto':'none'; sk.style.touchAction=drawing?'none':'auto'; el('skt').hidden=!drawing; el('skwrap').classList.toggle('drawing',drawing); el('xsDraw').classList.toggle('on',drawing); };
+function drawSk(){ xsRender(); sx.clearRect(0,0,1000,sk.height); (P.sk||[]).forEach(s=>{ sx.strokeStyle=s.c; sx.lineWidth=2.2; sx.lineJoin=sx.lineCap='round'; sx.beginPath(); for(let i=0;i<s.p.length;i+=2){ i? sx.lineTo(s.p[i],s.p[i+1]) : sx.moveTo(s.p[i],s.p[i+1]); } sx.stroke(); }); }
+const pt=e=>{ const r=sk.getBoundingClientRect(); return [Math.round((e.clientX-r.left)/r.width*1000),Math.round((e.clientY-r.top)/r.height*sk.height)]; };
+sk.addEventListener('pointerdown',e=>{ if(!drawing) return; sk.setPointerCapture(e.pointerId); cur={c:pen,p:pt(e)}; P.sk=P.sk||[]; P.sk.push(cur); });
+sk.addEventListener('pointermove',e=>{ if(!cur) return; const [x,y]=pt(e); const n=cur.p.length; if(Math.abs(x-cur.p[n-2])+Math.abs(y-cur.p[n-1])<3) return; cur.p.push(x,y); sx.strokeStyle=cur.c; sx.lineWidth=2.2; sx.lineCap='round'; sx.beginPath(); sx.moveTo(cur.p[n-2],cur.p[n-1]); sx.lineTo(x,y); sx.stroke(); });
+const endSk=()=>{ if(cur){ cur=null; queueSave(); } }; sk.addEventListener('pointerup',endSk); sk.addEventListener('pointercancel',endSk);
+el('skt').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.u){ (P.sk||[]).pop(); drawSk(); queueSave(); return; } if(b.dataset.x){ P.sk=[]; drawSk(); queueSave(); return; }
+  pen=b.dataset.c; el('skt').querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x===b)); });
+
+/* ---------- masse og balanse: flytypedata og mine fly ---------- */
+const ACTYPES={
+  da42ng:{n:'DA42-VI (AFM 7.01.16, MTOM/MLM 1999 kg with MÄM 42-659 + 42-678)',f:{'mb.front.a':'2.30','mb.rear.a':'3.25','mb.nose.a':'0.60','mb.cabin.a':'3.89','mb.ext.a':'4.54','mb.fuel.a':'2.63','mb.dens':'3.18','mb.mtom':'1999','mb.mlm':'1999','mb.env':'1450 2.350, 1468 2.350, 1999 2.434 | 1450 2.454, 1700 2.480, 1999 2.480','fu.unit':'US gal','ac.xw':'25'},note:{en:'From the DA42-VI flight manual, section 6 (fuel 0.84 kg/L = 3.18 kg/US gal in the main tanks, arm 2.63 m; the fuel line covers the main tanks only, auxiliary tanks sit at arm 3.20 m). If OÄM 42-199 is installed, the aft CG limit is 2.454 m at 1450 kg and 2.460 m from 1510 kg. Check the modifications on your aircraft and fill in MZFM from your flight manual.',no:'Fra flyhåndboken til DA42-VI, kapittel 6 (drivstoff 0,84 kg/L = 3,18 kg/US gal i hovedtankene, arm 2,63 m; drivstofflinjen gjelder bare hovedtankene, hjelpetankene sitter på arm 3,20 m). Har flyet OÄM 42-199, er bakre CG-grense 2,454 m ved 1450 kg og 2,460 m fra 1510 kg. Sjekk modifikasjonene på ditt fly og fyll inn MZFM fra flyhåndboken.'}},
+  custom:{n:'Other type: enter from the flight manual',f:{},note:{en:'Enter the arms, limits and envelope from the flight manual, and the empty mass from the aircraft’s W&B report.',no:'Fyll inn armer, grenser og konvolutt fra flyhåndboken, og tom masse fra flyets veieskjema.'}}
+};
+let MYAC=[]; NSTORE.ready.then(()=>NSTORE.list('fiac')).then(l=>{ window.__fiac=l||[]; try{ calc(); }catch(e){} }).catch(()=>{});
+async function mbList(){ MYAC=await NSTORE.list('aircraft'); const o=[`<option value="">${L({en:'Aircraft data…',no:'Flydata …'})}</option>`]; o.push(`<optgroup label="${L({en:'My aircraft',no:'Mine fly'})}">`+MYAC.map(a=>`<option value="my:${a.id}">${esc(a.reg||'?')} · ${esc(a.type||'')}</option>`).join('')+'</optgroup>');
+  o.push(`<optgroup label="${L({en:'Type data',no:'Typedata'})}">`+Object.entries(ACTYPES).map(([k,t])=>`<option value="type:${k}">${esc(t.n)}</option>`).join('')+'</optgroup>'); el('mbSel').innerHTML=o.join(''); }
+function setF(k,v){ P.f[k]=v; const e=document.querySelector(`#book [data-k="${k}"]`); if(e) e.value=v; }
+el('mbSel').onchange=()=>{ const v=el('mbSel').value; if(!v) return; if(v.startsWith('type:')){ const t=ACTYPES[v.slice(5)]; Object.entries(t.f).forEach(([k,x])=>setF(k,x)); el('mbNote').textContent=L(t.note); }
+  else { const a=MYAC.find(x=>'my:'+x.id===v); if(a){ Object.entries(a.f).forEach(([k,x])=>setF(k,x)); el('mbNote').textContent=L({en:`Loaded ${a.reg}. Empty mass and arm are from your saved W&B report.`,no:`Lastet ${a.reg}. Tom masse og arm er fra veieskjemaet du lagret.`}); } }
+  el('mbSel').value=''; calc(); queueSave(); };
+el('mbSave').onclick=async()=>{ const keys=Object.keys(P.f).filter(k=>/^mb\.(empty\.[ma]|front\.a|rear\.a|nose\.a|cabin\.a|ext\.a|other\.a|fuel\.a|dens|mtom|mlm|mzfm|env|reg)$/.test(k)||k==='ac.xw'||k==='fu.unit'); const f={}; keys.forEach(k=>f[k]=P.f[k]);
+  const reg=P.f['mb.reg']||P.f.reg||''; if(!reg){ el('mbNote').textContent=L({en:'Fill in the registration first.',no:'Fyll inn registreringen først.'}); return; }
+  const ex=MYAC.find(a=>a.reg===reg); const a={id:ex?ex.id:'ac'+Date.now().toString(36),reg,type:P.f.type||'',f}; await NSTORE.put('aircraft',a); await mbList(); el('mbNote').textContent=L({en:`Saved ${reg} to your aircraft.`,no:`Lagret ${reg} under dine fly.`}); };
+el('mbAi').onclick=async()=>{ const att=(P.att||[]).filter(a=>a.sec==='mb'); if(!att.length){ el('mbNote').textContent=L({en:'Attach a photo or PDF page of the W&B report below first.',no:'Legg ved et bilde eller en PDF-side av veieskjemaet nedenfor først.'}); return; }
+  if(!NAI.mode){ el('mbNote').textContent=NAI.errText({code:'not_available'}); return; }
+  el('mbAi').disabled=true; el('mbNote').textContent=L({en:'Reading the report…',no:'Leser skjemaet …'});
+  try{ const imgs=[]; for(const a of att.slice(0,3)){ const b=await attBlob(a); if(b) imgs.push(b); }
+    const r=await NAI.json(`These images are an aircraft mass and balance (weighing) report and possibly a load sheet. Read the values exactly as printed. Do not guess: use null for anything you cannot read clearly. Convert to kg and metres if the report is in lb and inches (1 lb = 0.4536 kg, 1 in = 0.0254 m) and say so in "note".
+Reply with only JSON: {"reg":string|null,"type":string|null,"emptyMass":number|null,"emptyArm":number|null,"emptyMoment":number|null,"date":string|null,"note":"one short sentence"}`,{tier:'default',images:imgs});
+    if(r&&r.emptyMass) setF('mb.empty.m',String(r.emptyMass)); const arm=r&&(r.emptyArm|| (r.emptyMoment&&r.emptyMass? Math.round(r.emptyMoment/r.emptyMass*1000)/1000 : null)); if(arm) setF('mb.empty.a',String(arm)); if(r&&r.reg&&!P.f['mb.reg']) setF('mb.reg',r.reg);
+    el('mbNote').textContent=(r&&r.note?r.note+' ':'')+L({en:'Check every number against the report.',no:'Sjekk hvert tall mot skjemaet.'}); calc(); queueSave(); }
+  catch(e){ el('mbNote').textContent=NAI.errText(e); NAI.fatal(e); } finally{ el('mbAi').disabled=false; } };
+
+/* ---------- interaktiv lasting ---------- */
+const MBST=[['front',{en:'Front seats',no:'Forsete'},0,220],['rear',{en:'Rear seats',no:'Baksete'},0,220],['nose',{en:'Nose baggage',no:'Nesebagasje'},0,30],['cabin',{en:'Cabin baggage',no:'Kabinbagasje'},0,45],['ext',{en:'Baggage extension',no:'Bagasjeforlengelse'},0,18],['fuel',{en:'Fuel',no:'Drivstoff'},0,0]];
+const isDA42=()=>String(P.f['mb.front.a']||'')==='2.30'&&String(P.f['mb.mtom']||'')==='1999';
+function drawLoad(E,TM,cg,mt,LM,lcg){ const box=el('mbLoad'); if(!box) return; const g=k=>{ const v=parseFloat(String(P.f[k]||'').replace(',','.')); return Number.isFinite(v)?v:null; };
+  if(!box.dataset.b){ box.dataset.b=1; box.innerHTML=`<div><svg id="mbSv" viewBox="0 0 520 240" role="img" aria-label="Loading"></svg><div class="mbspd" id="mbSpd"></div></div><div class="mbsl" id="mbSl"></div>`;
+    el('mbSl').innerHTML=MBST.map(([k,l,a,b])=>`<label>${esc(L(l))}<input type="range" data-st="${k}" min="${a}" max="${b||100}" step="1"><output data-out="${k}"></output></label>`).join('')+`<span class="note">${L({en:'Drag to load the aircraft. The table below fills in and the CG moves.',no:'Dra for å laste flyet. Tabellen under fylles ut og tyngdepunktet flytter seg.'})}</span>`;
+    el('mbSl').addEventListener('input',e=>{ const k=e.target.dataset.st; if(!k) return; setF(k==='fuel'?'mb.fuel.u':'mb.'+k+'.m',e.target.value); calc(); queueSave(); }); }
+  const unit=P.f['fu.unit']||'units', dens=g('mb.dens')||0; const fuMax= dens>2? 50 : dens>0.6&&dens<1? 200 : 100;
+  MBST.forEach(([k,l,a,b])=>{ const r=box.querySelector(`[data-st="${k}"]`); if(k==='fuel') r.max=fuMax; const v=k==='fuel'? g('mb.fuel.u') : g('mb.'+k+'.m'); if(document.activeElement!==r) r.value=v||0; box.querySelector(`[data-out="${k}"]`).textContent= k==='fuel'? `${v||0} ${unit}` : `${v||0} kg`; });
+  // fly sett ovenfra: x = arm
+  const sv=el('mbSv'), arms=MBST.map(([k])=>g('mb.'+k+'.a')).concat([E?E.fwd[0][1]:null,E?E.aft[E.aft.length-1][1]:null,cg]).filter(v=>v!=null);
+  const a0=Math.min(...arms,2)-0.5, a1=Math.max(...arms,3)+0.6, X=a=>30+(a-a0)/(a1-a0)*460; const cy=110;
+  let h=`<rect width="520" height="240" fill="#FBFBF8"/>`;
+  h+=`<path d="M${X(a0+0.1)} ${cy} Q${X(a0+0.25)} ${cy-18} ${X(a0+0.9)} ${cy-20} L${X(a1-0.9)} ${cy-9} L${X(a1-0.2)} ${cy-6} L${X(a1-0.2)} ${cy+6} L${X(a1-0.9)} ${cy+9} L${X(a0+0.9)} ${cy+20} Q${X(a0+0.25)} ${cy+18} ${X(a0+0.1)} ${cy} Z" fill="#E9EEF1" stroke="#4C5B66" stroke-width="1.4"/>`;
+  const wl=X(2.2), wr=X(2.75); h+=`<path d="M${wl} ${cy-20} L${wl+10} ${cy-100} L${wr+4} ${cy-100} L${wr} ${cy-20} Z M${wl} ${cy+20} L${wl+10} ${cy+100} L${wr+4} ${cy+100} L${wr} ${cy+20} Z" fill="#E9EEF1" stroke="#4C5B66" stroke-width="1.2"/>`;
+  h+=`<path d="M${X(a1-0.6)} ${cy-8} L${X(a1-0.35)} ${cy-46} L${X(a1-0.15)} ${cy-46} L${X(a1-0.25)} ${cy-8} Z M${X(a1-0.6)} ${cy+8} L${X(a1-0.35)} ${cy+46} L${X(a1-0.15)} ${cy+46} L${X(a1-0.25)} ${cy+8} Z" fill="#E9EEF1" stroke="#4C5B66" stroke-width="1.1"/>`;
+  [[cy-62],[cy+62]].forEach(([y])=>{ h+=`<rect x="${X(1.55)}" y="${y-9}" width="${X(2.3)-X(1.55)}" height="18" rx="8" fill="#DDE3E6" stroke="#4C5B66"/>`; });
+  // stasjoner
+  const ord=MBST.filter(([k])=>k!=='fuel'&&g('mb.'+k+'.a')!=null).sort((x,y)=>g('mb.'+x[0]+'.a')-g('mb.'+y[0]+'.a')).map(x=>x[0]);
+  MBST.forEach(([k,l])=>{ const a=g('mb.'+k+'.a'); if(a==null) return; const m= k==='fuel'? (g('mb.fuel.u')||0)*dens : (g('mb.'+k+'.m')||0); const r=Math.max(4,Math.min(22,Math.sqrt(m)*1.6)); const yy= k==='fuel'? cy-42 : cy;
+    if(k!=='fuel') h+=`<line x1="${X(a)}" y1="${cy+r}" x2="${X(a)}" y2="${183+(ord.indexOf(k)%2)*16}" stroke="#1D4E9E" stroke-dasharray="1 3"/>`;
+    h+=`<circle cx="${X(a)}" cy="${yy}" r="${r}" fill="${m>0?'rgba(29,78,158,.22)':'none'}" stroke="#1D4E9E" stroke-width="1.2" stroke-dasharray="${m>0?'':'3 3'}"/>`;
+    h+=`<text x="${X(a)}" y="${k==='fuel'?yy-r-4:196+(ord.indexOf(k)%2)*16}" text-anchor="middle" font-family="Caveat, cursive" font-size="15" fill="#1D4E9E">${esc(L(l))}${m>0?' '+Math.round(m):''}</text>`; });
+  // CG-grenser og CG
+  if(E&&TM){ const fw=envAt(E.fwd,TM), af=envAt(E.aft,TM); h+=`<rect x="${X(fw)}" y="${cy-24}" width="${X(af)-X(fw)}" height="48" fill="rgba(46,125,50,.12)" stroke="#2E7D32" stroke-dasharray="4 3"/><text x="${X(fw)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="end">${fw.toFixed(3)} </text><text x="${X(af)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="start"> ${af.toFixed(3)}</text>`; }
+  if(cg!=null){ const ok=!E||(cg>=envAt(E.fwd,TM)-1e-4&&cg<=envAt(E.aft,TM)+1e-4); const c=ok?'#13202A':'#B3261E';
+    h+=`<g><circle cx="${X(cg)}" cy="${cy}" r="11" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M${X(cg)} ${cy-11} A11 11 0 0 1 ${X(cg)+11} ${cy} L${X(cg)} ${cy} Z M${X(cg)} ${cy+11} A11 11 0 0 1 ${X(cg)-11} ${cy} L${X(cg)} ${cy} Z" fill="${c}"/></g><text x="${X(cg)}" y="${cy-30}" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="${c}">CG ${cg.toFixed(3)} m${ok?'':' ⚠'}</text>`; }
+  if(lcg!=null&&Math.abs(lcg-(cg||0))>0.002){ h+=`<circle cx="${X(lcg)}" cy="${cy}" r="5" fill="none" stroke="#9A1E68" stroke-width="1.6"/><text x="${X(lcg)}" y="${cy+22}" text-anchor="middle" font-family="Caveat, cursive" font-size="14" fill="#9A1E68">${L({en:'landing',no:'landing'})}</text>`; }
+  h+=`<text x="12" y="232" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9AA6AC">${L({en:'nose ← arm (m) → tail · not to scale',no:'nese ← arm (m) → hale · ikke i skala'})}</text>`;
+  sv.innerHTML=h;
+  // farter for denne massen (DA42 NG/VI, AFM)
+  const sp=el('mbSpd'); const FA=(window.__fiac||[]).find(x=>{ const t=String(P.f.type||P.f['ac.type']||'').toLowerCase(), r=String(P.f.reg||P.f['mb.reg']||'').toLowerCase(); const n=(x.name+' '+(x.type||'')).toLowerCase(); return x.vdOk&&Object.keys(x.vdOk).length&&((t&&n.includes(t))||(r&&n.includes(r))||(isDA42()&&/da\s?42/.test(n))); });
+  if(FA){ const V=FA.vdOk, sh=[['vr','Vr'],['vy','Vy'],['vyse','Vyse'],['vmca','Vmca'],['vref','Vref'],['vne','VNE']].filter(([k])=>V[k]).map(([k,n])=>`${n} <b>${V[k].v}</b>`).join(' · ');
+    sp.innerHTML=`${L({en:'Your checked data for',no:'Dine kontrollerte data for'})} ${esc(FA.name)}: ${sh||'–'}${V.mtom?` · MTOM <b>${V.mtom.v}</b> kg ${TM&&TM>V.mtom.v?'<span class="ko">'+L({en:'exceeded',no:'overskredet'})+'</span>':''}`:''}. <span class="note">${L({en:'Checked by you against',no:'Kontrollert av deg mot'})} ${esc((V.vr||V.vne||V.mtom||Object.values(V)[0]).src)} ${L({en:'in Flight Intelligence. Educational use only.',no:'i Flight Intelligence. Kun til opplæring.'})}</span>`; return; }
+  if(isDA42()&&TM){ const hv=TM>1900; const vo=TM<=1700?112:TM<=1800?119:122; sp.innerHTML=`${L({en:'DA42 speeds at',no:'DA42-farter ved'})} <b>${Math.round(TM)} kg</b>: Vr <b>76</b> · Vy <b>${hv?92:90}</b> · Vyse <b>85</b> · Vmca <b>71</b> (VI; NG 76) · Vref LDG <b>${(LM||TM)>1900?86:84}</b> · Vo <b>${vo}</b> KIAS. <span class="note">${L({en:'From the AFM speed table. Your school’s speed card comes first.',no:'Fra fartstabellen i AFM. Skolens fartskort går foran.'})}</span>`; }
+  else sp.innerHTML= TM? `<span class="note">${L({en:'Speeds by mass are shown for the DA42 type data. For other types, read them from the AFM at this mass.',no:'Farter etter masse vises for DA42-typedata. For andre typer, les dem i AFM ved denne massen.'})}</span>` : ''; }
+function envParse(s){ const parts=String(s||'').split('|'); if(parts.length<2) return null; const pts=t=>t.split(',').map(x=>x.trim().split(/\s+/).map(Number)).filter(p=>p.length>=2&&p.every(Number.isFinite)).sort((a,b)=>a[0]-b[0]); const fwd=pts(parts[0]), aft=pts(parts[1]); return fwd.length>1&&aft.length>1?{fwd,aft}:null; }
+function envAt(line,m){ if(m<=line[0][0]) return line[0][1]; for(let i=1;i<line.length;i++){ if(m<=line[i][0]){ const [m0,a0]=line[i-1],[m1,a1]=line[i]; return a0+(a1-a0)*(m-m0)/(m1-m0); } } return line[line.length-1][1]; }
+function envChart(E,pts,mt){ const svg=el('mbChart'); if(!E){ svg.innerHTML=''; svg.style.display='none'; return; } svg.style.display='block';
+  const all=E.fwd.concat(E.aft), ms=all.map(p=>p[0]).concat(pts.map(p=>p.m)), as=all.map(p=>p[1]).concat(pts.map(p=>p.a));
+  const m0=Math.min(...ms)-60, m1=Math.max(...ms,mt||0)+40, a0=Math.min(...as)-0.02, a1=Math.max(...as)+0.02, W=640,H=320,l=60,r=20,t=16,b=40;
+  const X=a=>l+(a-a0)/(a1-a0)*(W-l-r), Y=m=>H-b-(m-m0)/(m1-m0)*(H-t-b);
+  let s=`<rect width="${W}" height="${H}" fill="#fff"/>`;
+  for(let m=Math.ceil(m0/100)*100;m<=m1;m+=100) s+=`<line x1="${l}" x2="${W-r}" y1="${Y(m)}" y2="${Y(m)}" stroke="#EEF1EF"/><text x="${l-6}" y="${Y(m)+4}" font-size="10" text-anchor="end" fill="#7D8B95" font-family="IBM Plex Mono,monospace">${m}</text>`;
+  for(let a=Math.ceil(a0*50)/50;a<=a1;a+=0.02) s+=`<line y1="${t}" y2="${H-b}" x1="${X(a)}" x2="${X(a)}" stroke="#EEF1EF"/><text y="${H-b+16}" x="${X(a)}" font-size="10" text-anchor="middle" fill="#7D8B95" font-family="IBM Plex Mono,monospace">${a.toFixed(2)}</text>`;
+  const poly=E.fwd.map(p=>X(p[1])+','+Y(p[0])).concat(E.aft.slice().reverse().map(p=>X(p[1])+','+Y(p[0])));
+  s+=`<polygon points="${poly.join(' ')}" fill="#E2F1E7" stroke="#2C7A4B" stroke-width="1.6"/>`;
+  if(mt) s+=`<line x1="${l}" x2="${W-r}" y1="${Y(mt)}" y2="${Y(mt)}" stroke="#B3261E" stroke-dasharray="6 4"/><text x="${W-r-4}" y="${Y(mt)-4}" font-size="10" text-anchor="end" fill="#B3261E" font-family="IBM Plex Mono,monospace">MTOM ${mt}</text>`;
+  if(pts.length>1) s+=`<polyline points="${pts.map(p=>X(p.a)+','+Y(p.m)).join(' ')}" fill="none" stroke="#9A1E68" stroke-width="2"/>`;
+  pts.forEach(p=>{ s+=`<circle cx="${X(p.a)}" cy="${Y(p.m)}" r="5" fill="${p.ok?'#9A1E68':'#B3261E'}"/><text x="${X(p.a)+8}" y="${Y(p.m)+4}" font-size="11" font-weight="600" fill="#13202A" font-family="IBM Plex Mono,monospace">${p.n}</text>`; });
+  s+=`<text x="${(l+W-r)/2}" y="${H-6}" font-size="10" text-anchor="middle" fill="#4C5B66" font-family="IBM Plex Mono,monospace">CG (m aft of datum)</text><text x="12" y="${t+4}" font-size="10" fill="#4C5B66" font-family="IBM Plex Mono,monospace">kg</text>`;
+  svg.innerHTML=s; }
+
+/* ---------- sidevalg ---------- */
+el('secsel').innerHTML=SECTIONS.slice(1).map(([id,t])=>`<label class="chk"><input type="checkbox" value="${id}" checked> ${t}</label>`).join('');
+el('secsel').addEventListener('change',e=>{ const c=e.target; if(!c.value) return; e.stopPropagation(); P.hide=(P.hide||[]).filter(x=>x!==c.value); if(!c.checked) P.hide.push(c.value); calc(); queueSave(); });
+/* ---------- bokvisning ---------- */
+let view='book'; try{ view=localStorage.getItem('naeroson-prep-view')||'book'; }catch(e){}
+let page=0;
+const vis=()=>[...document.querySelectorAll('#book>.sheet')].filter(s=>!s.hidden);
+const stitle=s=>s.querySelector('h2').textContent.replace(/^\d+\s*/,'').trim();
+function paging(){ const S=vis(); el('book').classList.toggle('paged',view==='book'); if(page>=S.length) page=S.length-1; if(page<0) page=0;
+  S.forEach((s,i)=>{ s.classList.toggle('cur',i===page); const pn=s.querySelector('.pn'); if(pn) pn.textContent=(i+1)+' / '+S.length; });
+  el('pager').hidden=view!=='book'; el('pgfoot').hidden=view!=='book'; el('pgfprev').disabled=page<=0; el('pgfnext').disabled=page>=S.length-1;
+  el('pgsel').innerHTML=S.map((s,i)=>`<option value="${i}" ${i===page?'selected':''}>${i+1}. ${esc(stitle(s))}</option>`).join('');
+  document.querySelectorAll('.toc a').forEach(a=>{ const s=document.querySelector(a.getAttribute('href')); a.hidden=!!(s&&s.hidden); a.classList.toggle('on',view==='book'&&S[page]&&a.getAttribute('href')==='#'+S[page].id); });
+  el('contents').innerHTML=S.slice(1).map((s,i)=>`<div><span>${esc(stitle(s))}</span><i></i><span>${i+2}</span></div>`).join(''); }
+function go(i,scroll){ page=i; paging(); if(scroll!==false){ const pg=el('pager'), stk=getComputedStyle(pg).position==='sticky'&&!pg.hidden; const t=el('book').getBoundingClientRect().top+window.scrollY-10-(stk?pg.offsetHeight+18:0); window.scrollTo({top:t,behavior:'smooth'}); } }
+{ const pgr=el('pager'), bk=el('book'); const pgAway=()=>{ if(!pgr||!bk) return; const r=bk.getBoundingClientRect(); pgr.classList.toggle('away', r.top>innerHeight*0.55 && !document.body.classList.contains('briefing')); }; addEventListener('scroll',pgAway,{passive:true}); addEventListener('resize',pgAway); setTimeout(pgAway,0); setTimeout(pgAway,800); }
+el('pgfprev').onclick=()=>go(page-1); el('pgfnext').onclick=()=>go(page+1);
+/* phones and tablets: the docked pager tucks away while you scroll down or type, and comes back when you scroll up */
+{ const pgr=el('pager'); let lastY=scrollY; const small=()=>innerWidth<=980;
+  addEventListener('scroll',()=>{ const y=scrollY, dy=y-lastY; lastY=y; if(!small()||document.body.classList.contains('briefing')){ pgr.classList.remove('tuck'); return; } if(Math.abs(dy)<4) return; const ae=document.activeElement; const typing=ae&&el('book').contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName); pgr.classList.toggle('tuck', typing || (dy>0 && pgr.getBoundingClientRect().top<=12)); },{passive:true});
+  el('book').addEventListener('focusin',e=>{ if(small()&&/INPUT|TEXTAREA/.test(e.target.tagName)) pgr.classList.add('tuck'); }); }
+el('pgprev').onclick=()=>go(page-1); el('pgnext').onclick=()=>go(page+1); el('pgsel').onchange=()=>go(+el('pgsel').value);
+el('toc').addEventListener('click',e=>{ const a=e.target.closest('a'); if(!a||view!=='book') return; e.preventDefault(); const i=vis().findIndex(s=>'#'+s.id===a.getAttribute('href')); if(i>=0) go(i); });
+document.addEventListener('keydown',e=>{ if(view!=='book'||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return; if(e.key==='ArrowRight') go(page+1); if(e.key==='ArrowLeft') go(page-1); });
+function briefing(on){ document.body.classList.toggle('briefing',on); if(on){ view='book'; vseg.set('book'); paging(); try{ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} window.scrollTo({top:0}); } else { try{ document.fullscreenElement&&document.exitFullscreen(); }catch(e){} } }
+/* the floating "Ask the instructor" button only shows where the right margin is wide enough to keep it clear of the fields; otherwise it lives in the toolbar */
+function placeFab(){ const f=el('fab'); const cur=document.querySelector('#book.paged>.sheet.cur')||document.querySelector('#book>.sheet'); let ok=false;
+  if(cur&&innerWidth>760){ const r=cur.getBoundingClientRect(), pad=parseFloat(getComputedStyle(cur).paddingRight)||0; const w=f.offsetWidth||170; ok=innerWidth-(r.right-pad)>=w+40; }
+  document.body.classList.toggle('nofab',!ok); }
+addEventListener('resize',placeFab); new MutationObserver(placeFab).observe(el('book'),{attributes:true,attributeFilter:['class']}); setTimeout(placeFab,0); setTimeout(placeFab,600);
+el('askbar').onclick=()=>el('fab').click();
+/* pager sits in the left gutter under the page list on desktop */
+{ const pgr=el('pager'); const place=()=>{ if(innerWidth>980){ const tw=document.querySelector('.tocwrap'); const r=tw&&tw.getBoundingClientRect(); pgr.style.left=Math.max(16,Math.round(r&&r.width?r.left:24))+'px'; } else pgr.style.left=''; }; addEventListener('resize',place); place(); setTimeout(place,300); }
+/* "More" menu (phones): proxies to the toolbar buttons so every action keeps one implementation */
+{ const more=el('more'), menu=el('moremenu');
+  const syncDel=()=>{ el('mdel').textContent=el('del').textContent; };
+  menu.addEventListener('click',e=>{ const b=e.target.closest('[data-proxy]'); if(!b){ if(e.target.closest('a')) more.open=false; return; }
+    const k=b.dataset.proxy; el(k).click(); if(k==='del'){ syncDel(); if(el('del').textContent!==T('Delete')) return; } more.open=false; syncDel(); });
+  document.addEventListener('click',e=>{ if(e.isTrusted&&more.open&&!more.contains(e.target)){ more.open=false; } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&more.open){ more.open=false; more.querySelector('summary').focus(); } });
+  LAB.onLang(syncDel); }
+el('bmode').onclick=()=>briefing(true); el('bexit').onclick=()=>briefing(false);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.body.classList.contains('briefing')) briefing(false); });
+document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement&&document.body.classList.contains('briefing')) briefing(false); });
+const vseg=LAB.seg(el('vseg'),[['book','Book'],['all','All pages']],view,v=>{ view=v; try{ localStorage.setItem('naeroson-prep-view',v); }catch(e){} paging(); });
+
+/* ---------- vedlegg: kart og utregninger ---------- */
+let adb=null, assets=null;
+const aReady=(async()=>{ adb=await new Promise(res=>{ try{ const r=indexedDB.open('naeroson-att',1); r.onupgradeneeded=()=>r.result.createObjectStore('img'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } });
+  try{ if(window.claude&&claude.use) assets=await claude.use('assets'); }catch(e){ assets=null; } })();
+async function aPut(k,b){ await aReady; if(!adb) return false; return new Promise(res=>{ try{ const t=adb.transaction('img','readwrite'); t.objectStore('img').put(b,k); t.oncomplete=()=>res(true); t.onerror=()=>res(false); }catch(e){ res(false); } }); }
+async function aGet(k){ await aReady; if(!adb) return null; return new Promise(res=>{ try{ const r=adb.transaction('img').objectStore('img').get(k); r.onsuccess=()=>res(r.result||null); r.onerror=()=>res(null); }catch(e){ res(null); } }); }
+const uc={};
+async function attUrl(a){ if(uc[a.id]) return uc[a.id]; const b=await aGet(a.id); if(b) return uc[a.id]=URL.createObjectURL(b); return a.url||null; }
+async function attBlob(a){ const b=await aGet(a.id); if(b) return b; if(a.url){ try{ const r=await fetch(a.url); if(r.ok) return await r.blob(); }catch(e){} } return null; }
+async function toJpeg(src,w,h){ const s=Math.min(1,1800/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*s); c.height=Math.round(h*s); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(src,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)); return {b,w:c.width,h:c.height}; }
+async function addAtt(sec,blob,name,w,h){ const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await aPut(id,blob); const a={id,sec,name,w,h,marks:[],note:''};
+  if(assets){ try{ const r=await assets.upload(blob); if(r&&r.id){ a.asset=r.id; a.url=r.url; } }catch(e){} }
+  P.att=P.att||[]; P.att.push(a); renderAtts(sec); queueSave(); }
+function loadScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
+async function pdfjs(){ if(window.pdfjsLib) return window.pdfjsLib; const base='vendor/'; await loadScript(base+'pdf.min.js'); try{ await loadScript(base+'pdf.worker.min.js'); }catch(e){} window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; return window.pdfjsLib; }
+function pickPages(n,name){ return new Promise(res=>{ const d=document.createElement('dialog'); d.className='pp'; d.innerHTML=`<b>${esc(name)}</b><p class="note">${L({en:`The document has ${n} pages. Which do you want? For example 4 or 12-14.`,no:`Dokumentet har ${n} sider. Hvilke vil du ha? For eksempel 4 eller 12-14.`})}</p><input style="font:inherit;font-size:16px;width:100%;padding:6px 8px;border:1px solid var(--rule)" value="1"><div class="btns" style="margin-top:12px"><button class="btn pri" data-ok>${L({en:'Add',no:'Legg til'})}</button><button class="btn" data-no>${L({en:'Cancel',no:'Avbryt'})}</button></div>`;
+  document.body.appendChild(d); d.showModal(); const inp=d.querySelector('input'); inp.select();
+  const done=v=>{ d.close(); d.remove(); res(v); };
+  d.querySelector('[data-no]').onclick=()=>done(null); d.addEventListener('cancel',()=>done(null));
+  d.querySelector('[data-ok]').onclick=()=>{ const out=[]; inp.value.split(/[,; ]+/).forEach(t=>{ const m=t.match(/^(\d+)(?:-(\d+))?$/); if(!m) return; const a=+m[1], b=m[2]?+m[2]:a; for(let i=Math.max(1,a);i<=Math.min(n,b)&&out.length<12;i++) out.push(i); }); done(out.length?out:null); }; }); }
+let attSec=null; const fin=document.createElement('input'); fin.type='file'; fin.accept='image/*,.pdf,application/pdf'; fin.multiple=true; fin.hidden=true; document.body.appendChild(fin);
+el('book').addEventListener('click',e=>{ const b=e.target.closest('.attbtn'); if(b){ attSec=b.dataset.sec; fin.click(); } });
+fin.onchange=async()=>{ const files=[...fin.files]; fin.value=''; const btn=document.querySelector(`.attbtn[data-sec="${attSec}"]`); const t0=btn.textContent; btn.disabled=true; btn.textContent=L({en:'Adding…',no:'Legger til…'});
+  try{ for(const f of files){ if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){ const lib=await pdfjs(); const doc=await lib.getDocument({data:await f.arrayBuffer()}).promise; const pages= doc.numPages>1? await pickPages(doc.numPages,f.name) : [1]; if(!pages) continue;
+        for(const n of pages){ const pg=await doc.getPage(n); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await toJpeg(c,c.width,c.height); await addAtt(attSec,j.b,f.name.replace(/\.pdf$/i,'')+' · p. '+n,j.w,j.h); } }
+      else { const u=URL.createObjectURL(f); const img=new Image(); const ok=await new Promise(r=>{ img.onload=()=>r(true); img.onerror=()=>r(false); img.src=u; }); if(ok){ const j=await toJpeg(img,img.naturalWidth,img.naturalHeight); await addAtt(attSec,j.b,f.name.replace(/\.[a-z]+$/i,''),j.w,j.h); } URL.revokeObjectURL(u); } } }
+  catch(e){ alertNote(L({en:'Could not read that file.',no:'Klarte ikke å lese filen.'})); }
+  finally{ btn.disabled=false; btn.textContent=t0; } };
+function alertNote(t){ el('saved').textContent=t; }
+const COLS=['#B3261E','#1E5E9E','#9A1E68','#13202A'];
+function renderAtts(sec){ const box=document.querySelector(`.atts[data-sec="${sec}"]`); if(!box) return; const list=(P.att||[]).filter(a=>a.sec===sec);
+  box.innerHTML=list.map(a=>`<figure class="att" data-id="${a.id}"><figcaption><b>${esc(a.name)}</b><span class="noprint"><button data-act="edit">✎ ${L({en:'Draw lines',no:'Tegn linjer'})}</button><button data-act="ai">${L({en:'Ask the AI',no:'Spør AI-en'})}</button><button data-act="del">${L({en:'Remove',no:'Fjern'})}</button></span></figcaption>
+    <div class="atttools noprint" hidden><button data-t="line" class="on">${L({en:'Line',no:'Linje'})}</button><button data-t="pen">${L({en:'Pen',no:'Penn'})}</button><button data-t="text">${L({en:'Text',no:'Tekst'})}</button><input data-lab placeholder="${L({en:'Text to place, e.g. 640 m',no:'Tekst å plassere, f.eks. 640 m'})}">${COLS.map((c,i)=>`<button class="dot ${i?'':'on'}" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}<label class="chk"><input type="checkbox" data-snap checked> ${L({en:'Straight (snap ⟂)',no:'Rett (lås ⟂)'})}</label><button data-u>${L({en:'Undo',no:'Angre'})}</button><button data-x>${L({en:'Clear',no:'Tøm'})}</button><button data-done>${L({en:'Done',no:'Ferdig'})}</button></div>
+    <div class="attimg"><img alt="${esc(a.name)}"><svg viewBox="0 0 ${a.w} ${a.h}" class="ink"></svg></div>
+    <label class="fl"><span>${L({en:'Reading and result',no:'Avlesning og resultat'})}</span><input data-att-note value="${esc(a.note||'')}" autocomplete="off"></label></figure>`).join('');
+  list.forEach(async a=>{ const f=box.querySelector(`[data-id="${a.id}"]`); const u=await attUrl(a); if(u) f.querySelector('img').src=u; else f.querySelector('.attimg').insertAdjacentHTML('afterbegin',`<p class="note" style="line-height:1.4">${L({en:'The image is saved on the device where you added it.',no:'Bildet er lagret på enheten der du la det til.'})}</p>`); drawMarks(a,f.querySelector('svg')); }); }
+function renderAllAtts(){ document.querySelectorAll('.atts').forEach(b=>renderAtts(b.dataset.sec)); }
+function drawMarks(a,svg,tmp){ const sw=Math.max(2,a.w/350), fs=Math.max(14,a.w/40);
+  const one=m=> m.t==='l'? `<line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="${m.c}" stroke-width="${sw}" stroke-linecap="round"/><circle cx="${m.x1}" cy="${m.y1}" r="${sw*1.5}" fill="${m.c}"/><circle cx="${m.x2}" cy="${m.y2}" r="${sw*1.5}" fill="${m.c}"/>`
+    : m.t==='p'? `<polyline points="${m.p.join(' ')}" fill="none" stroke="${m.c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`
+    : `<text x="${m.x}" y="${m.y}" font-size="${fs}" font-family="Caveat, cursive" font-weight="700" fill="${m.c}" paint-order="stroke" stroke="#fff" stroke-width="${fs/6}">${esc(m.s)}</text>`;
+  svg.innerHTML=(a.marks||[]).map(one).join('')+(tmp?one(tmp):''); }
+let ED=null;
+el('book').addEventListener('click',async e=>{ const fig=e.target.closest('.att'); if(!fig) return; const a=(P.att||[]).find(x=>x.id===fig.dataset.id); if(!a) return; const b=e.target.closest('button'); if(!b) return;
+  const act=b.dataset.act;
+  if(act==='edit'){ const on=!fig.classList.contains('editing'); document.querySelectorAll('.att.editing').forEach(f=>{ f.classList.remove('editing'); f.querySelector('.atttools').hidden=true; }); if(on){ fig.classList.add('editing'); fig.querySelector('.atttools').hidden=false; ED={a,fig,tool:'line',c:COLS[0]}; } else ED=null; return; }
+  if(act==='del'){ if(b.dataset.arm!=='1'){ b.dataset.arm='1'; b.textContent=L({en:'Click again',no:'Klikk igjen'}); setTimeout(()=>{ b.dataset.arm=''; b.textContent=L({en:'Remove',no:'Fjern'}); },2500); return; }
+    P.att=P.att.filter(x=>x!==a); if(a.asset&&assets){ try{ await assets.delete(a.asset); }catch(_){} } renderAtts(a.sec); queueSave(); return; }
+  if(act==='ai'){ openAsst(a); return; }
+  if(!ED||ED.a!==a) return;
+  if(b.dataset.t){ ED.tool=b.dataset.t; fig.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b)); }
+  else if(b.dataset.c){ ED.c=b.dataset.c; fig.querySelectorAll('.dot').forEach(x=>x.classList.toggle('on',x===b)); }
+  else if(b.hasAttribute('data-u')){ a.marks.pop(); drawMarks(a,fig.querySelector('svg')); queueSave(); }
+  else if(b.hasAttribute('data-x')){ a.marks=[]; drawMarks(a,fig.querySelector('svg')); queueSave(); }
+  else if(b.hasAttribute('data-done')){ fig.classList.remove('editing'); fig.querySelector('.atttools').hidden=true; ED=null; } });
+el('book').addEventListener('input',e=>{ const t=e.target; if(!t.hasAttribute||!t.hasAttribute('data-att-note')) return; const fig=t.closest('.att'); const a=(P.att||[]).find(x=>x.id===fig.dataset.id); if(a){ a.note=t.value; queueSave(); } });
+const spt=(svg,a,e)=>{ const r=svg.getBoundingClientRect(); return [Math.round((e.clientX-r.left)/r.width*a.w),Math.round((e.clientY-r.top)/r.height*a.h)]; };
+let drag=null;
+el('book').addEventListener('pointerdown',e=>{ const svg=e.target.closest('.att.editing svg'); if(!svg||!ED) return; e.preventDefault(); const a=ED.a, [x,y]=spt(svg,a,e);
+  if(ED.tool==='text'){ const s=(ED.fig.querySelector('[data-lab]').value||'').trim()||'?'; a.marks.push({t:'x',c:ED.c,x,y,s}); drawMarks(a,svg); queueSave(); return; }
+  svg.setPointerCapture(e.pointerId); drag= ED.tool==='pen'? {t:'p',c:ED.c,p:[x,y]} : {t:'l',c:ED.c,x1:x,y1:y,x2:x,y2:y}; });
+el('book').addEventListener('pointermove',e=>{ if(!drag||!ED) return; const svg=ED.fig.querySelector('svg'), a=ED.a; let [x,y]=spt(svg,a,e);
+  if(drag.t==='p'){ const n=drag.p.length; if(Math.abs(x-drag.p[n-2])+Math.abs(y-drag.p[n-1])<4) return; drag.p.push(x,y); }
+  else { if(ED.fig.querySelector('[data-snap]').checked){ const dx=Math.abs(x-drag.x1), dy=Math.abs(y-drag.y1); if(dx>dy*2.5) y=drag.y1; else if(dy>dx*2.5) x=drag.x1; } drag.x2=x; drag.y2=y; }
+  drawMarks(a,svg,drag); });
+const endDrag=()=>{ if(!drag||!ED) return; const a=ED.a; if(drag.t==='p'? drag.p.length>2 : Math.hypot(drag.x2-drag.x1,drag.y2-drag.y1)>4) a.marks.push(drag); drag=null; drawMarks(a,ED.fig.querySelector('svg')); queueSave(); };
+el('book').addEventListener('pointerup',endDrag); el('book').addEventListener('pointercancel',endDrag);
+
+/* ---------- assistent ---------- */
+let AT=[], actl=null;
+let aiAtt=null;
+function openAsst(a){ el('asst').hidden=false; el('fab').hidden=true; if(a){ aiAtt=a; el('alog').insertAdjacentHTML('beforeend',`<p class="note">📎 ${esc(a.name)}${a.note?' · '+esc(a.note):''}</p>`); if(!el('aq').value) el('aq').value=L({en:'Help me read this chart for my flight. What do I get, and how do I read it step by step?',no:'Hjelp meg å lese dette diagrammet for turen min. Hva får jeg, og hvordan leser jeg det steg for steg?'}); } el('aq').focus(); }
+el('fab').onclick=()=>{ openAsst(null); el('afi').href='fi.html?pack='+encodeURIComponent(P.id)+'#aircraft'; };
+el('aclose').onclick=()=>{ el('asst').hidden=true; el('fab').hidden=false; if(actl) actl.abort(); };
+
+/* felles instruktør: dokumentene og de kontrollerte dataene fra Flight Intelligence */
+let FIDOCS=null;
+async function fiDocs(){ if(FIDOCS) return FIDOCS; FIDOCS=await new Promise(res=>{ try{ const r=indexedDB.open('naeroson-fi',1); r.onupgradeneeded=()=>{ r.result.createObjectStore('docs',{keyPath:'id'}); r.result.createObjectStore('blobs',{keyPath:'id'}); }; r.onsuccess=()=>{ try{ const q=r.result.transaction('docs','readonly').objectStore('docs').getAll(); q.onsuccess=()=>res((q.result||[]).filter(d=>d.on!==false&&!d.old)); q.onerror=()=>res([]); }catch(e){ res([]); } }; r.onerror=()=>res([]); }catch(e){ res([]); } }); return FIDOCS; }
+function fiSearch(q,docs,k){ const tk=x=>String(x).toLowerCase().replace(/[^a-z0-9æøå.%\- ]/g,' ').split(/\s+/).filter(w=>w.length>2); const qt=[...new Set(tk(q))]; if(!qt.length) return []; const all=[]; docs.forEach(d=>(d.chunks||[]).forEach(c=>all.push({d,c,t:c.t.toLowerCase()}))); const N=all.length||1, df={}; qt.forEach(w=>df[w]=all.filter(x=>x.t.includes(w)).length);
+  all.forEach(x=>{ let sc=0; qt.forEach(w=>{ if(!df[w]) return; let n=0,i=-1; while((i=x.t.indexOf(w,i+1))>=0&&n<8) n++; if(n) sc+=Math.log(1+N/df[w])*(n/(n+1.2)); }); x.s=sc; }); return all.filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k||5); }
+/* EASA-regelbiblioteket: regler som passer spørsmålet (og regelverket som er valgt i planleggingsminima) */
+function easaFor(q){ const reg=P.f['al.reg']||''; const t=q+' '+(reg?reg.toUpperCase():''); return EASA.isRules(q)? EASA.search(t,4) : []; }
+function easaUsed(list){ return list.length? `<div class="eused"><span>${L({en:'EASA rules used:',no:'EASA-regler brukt:'})}</span>${list.map((x,i)=>EASA.chip(x,i+1)).join('')}<small>${L({en:'Birdbird EASA rules library, linked to the official text. Not a live feed: check the current revision through the link.',no:'Birdbirds EASA-regelbibliotek, lenket til den offisielle teksten. Ikke en direkte strøm: sjekk gjeldende revisjon via lenken.'})}</small></div>` : ''; }
+async function ask(){
+  const q=el('aq').value.trim(); if(!q) return; const log=el('alog');
+  if(!NAI.mode){ const m=easaFor(q); log.insertAdjacentHTML('beforeend',`<p class="note">${esc(NAI.errText({code:'not_available'}))}</p>`+(m.length?`<div class="md">${easaUsed(m).replace(L({en:'EASA rules used:',no:'EASA-regler brukt:'}),L({en:'Matching rules in the EASA rules library:',no:'Regler som passer i EASA-regelbiblioteket:'}))}</div>`:'')); return; }
+  el('aq').value=''; log.insertAdjacentHTML('beforeend',`<div class="q">${esc(q)}</div>`); const a=document.createElement('div'); a.className='md'; a.innerHTML=`<div class="thinking">${L({en:'Thinking…',no:'Tenker…'})}</div>`; log.appendChild(a); a.scrollIntoView({block:'nearest'});
+  const filled=Object.fromEntries(Object.entries(P.f).filter(([k,v])=>v!==''&&v!=null));
+  const fdocs=await fiDocs(); const ex=fiSearch(q,fdocs,5); const chk=(window.__fiac||[]).filter(a=>a.vdOk&&Object.keys(a.vdOk).length).map(a=>`${a.name}: `+Object.entries(a.vdOk).map(([k,o])=>`${k} ${o.v} (${o.src})`).join(', ')).join('\n');
+  const docTxt=(ex.length?ex.map((x,i)=>`[S${i+1}] ${x.d.name}${x.d.rev?' rev '+x.d.rev:''}, page ${x.c.p}:\n${x.c.t}`).join('\n\n'):'(none relevant)')+(chk?'\n\nAIRCRAFT DATA CHECKED BY THE PILOT AGAINST THE AFM:\n'+chk:'');
+  const ea=easaFor(q); const easaTxt= ea.length? '\n\n'+EASA.promptBlock(ea) : '\n\nEASA RULES: no entry from the Birdbird EASA rules library matched this question. If you state an EASA rule, name its exact ID and tell the pilot to check it in the current EASA Easy Access Rules.';
+  const rules=`You are the Birdbird instructor (an experienced EASA flight instructor) sitting next to a pilot who is filling in a briefing pack (sections: aircraft, pilot, NOTAM, meteorology, planning minima, cross-section, runway performance, climb gradients, fuel, mass and balance, radio failure, risk assessment, briefing notes, ATC flight plan). Answer in ${NAI.langName()}, briefly and concretely. Do calculations step by step with units and round sensibly. Use the pilot's filled-in values (below) where relevant; say which value you used. If a value is missing, say what you need. Remind them that their flight manual and operations manual are the authority when a number depends on them. Field keys are abbreviations: r.dep.* runway data for departure, fu.l1.* fuel leg 1, mb.* mass and balance, mi.* IFR planning minima, mv.* VFR minima.\n\nFILLED IN NOW:\n${JSON.stringify(filled).slice(0,12000)}\n\nEXCERPTS FROM THE PILOT'S OWN DOCUMENTS (cite as [S1], [S2]; never invent a limitation, speed or performance value that is not in them or in the checked data):\n${docTxt}${easaTxt}`;
+  const att=aiAtt; aiAtt=null; let imgs=null; if(att){ const b=await attBlob(att); if(b) imgs=[b]; }
+  const turns=[{role:'user',content:rules},{role:'assistant',content:'Ready.'}].concat(AT.slice(-8)).concat([{role:'user',content:(att?`[Attached chart: ${att.name}. The pilot's lines are drawn on it in colour where they have marked it. Their reading so far: ${att.note||'none'}]\n`:'')+q}]);
+  actl=new AbortController();
+  try{ const t=await NAI.text(turns,{signal:actl.signal,tier:'default',images:imgs||undefined,onText:({text})=>{ a.innerHTML=mdl(text,ea); }}); a.innerHTML=mdl(t,ea)+easaUsed(ea); AT.push({role:'user',content:q},{role:'assistant',content:t}); }
+  catch(e){ a.innerHTML=e&&e.text?mdl(e.text,ea):`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
+}
+function mdl(s,ea){ return EASA.cite(mdl0(s),ea||[]); }
+function mdl0(s){ return esc(s).split(/\n{2,}/).map(p=>/^\s*[-*•] /m.test(p)?'<ul>'+p.split('\n').map(l=>l.replace(/^\s*[-*•]\s+/,'')).filter(Boolean).map(l=>'<li>'+l+'</li>').join('')+'</ul>':'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
+window.PREP_EASA={pick:easaFor,block:l=>EASA.promptBlock(l),render:(t,l)=>mdl(t,l)+easaUsed(l)};
+el('asend').onclick=ask; el('aq').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); ask(); } });
+
+
+/* ---------- forstå det: lab i sidepanel ---------- */
+function openWhy(u,title){ const [pg,hash]=u.split('#'); const src=pg+'?embed=1'+(hash?'#'+hash:''); el('whyt').textContent=title; el('whyo').href=u; const f=el('whyf'); if(f.dataset.src!==src){ f.src=src; f.dataset.src=src; } el('whyp').hidden=false; }
+el('book').addEventListener('click',e=>{ const b=e.target.closest('.whyb'); if(!b) return; openWhy(b.dataset.u,LAB.lang==='no'?b.dataset.no:b.dataset.en); });
+el('whyx').onclick=()=>{ el('whyp').hidden=true; };
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!el('whyp').hidden) el('whyp').hidden=true; });
+LAB.onLang(()=>{ document.querySelectorAll('.whyb').forEach(b=>b.textContent=LAB.lang==='no'?b.dataset.no:b.dataset.en); document.querySelectorAll('.why>span').forEach(s=>s.textContent=L({en:'Understand it',no:'Forstå det'})+':'); });
+/* ---------- språk ---------- */
+LAB.add({},{
+ 'Open ↗':'Åpne ↗',
+ "Crew, flight and OFP check":"Mannskap, flyging og OFP-sjekk","Flight number":"Flightnummer","ATC callsign":"ATC-kallesignal","Captain":"Kaptein","First officer":"Styrmann","Pilot flying this sector":"Pilot flying denne etappen","Cabin crew":"Kabinbesetning","Passengers (booked / on board)":"Passasjerer (booket / om bord)","STD / STA (UTC)":"STD / STA (UTC)","CTOT / slot":"CTOT / slot","Stand / gate":"Oppstillingsplass / gate","Flight duty period":"Tjenesteperiode (FDP)","Report (UTC)":"Oppmøte (UTC)","Max FDP (h:mm)":"Maks FDP (t:mm)","FDP ends (UTC)":"FDP slutter (UTC)","Planned block (h:mm)":"Planlagt blokktid (t:mm)","Planned on blocks (UTC)":"Planlagt on blocks (UTC)","Margin":"Margin","The maximum FDP comes from your operator’s flight time limitation scheme (EASA ORO.FTL), with the table for your reporting time and number of sectors. Extensions and commander’s discretion follow the operator’s rules.":"Maks FDP kommer fra operatørens arbeidstidsordning (EASA ORO.FTL), med tabellen for oppmøtetid og antall etapper. Forlengelser og kapteinens skjønn følger operatørens regler.","OFP and briefing check":"OFP- og briefingsjekk","OFP matches the ATC flight plan: route, level, speed, aircraft":"OFP stemmer med ATC-flyplanen: rute, høyde, fart, fly","Fuel figures checked against the fuel policy":"Drivstofftall sjekket mot drivstoffpolicyen","Alternates selected and weather above planning minima":"Alternativer valgt og været over planleggingsminima","NOTAM: departure, destination, alternates, en route":"NOTAM: avgang, destinasjon, alternativer, underveis","Weather: METAR, TAF, SIGMET, significant weather, winds":"Vær: METAR, TAF, SIGMET, significant weather, vind","MEL/CDL items and their operational procedures":"MEL/CDL-punkter og tilhørende prosedyrer","Take-off and landing performance, runway condition":"Avgangs- og landingsytelse, baneforhold","De-icing and holdover time, if needed":"Avising og holdover-tid, ved behov","Load sheet checked and signed, NOTOC for dangerous goods":"Lasteark sjekket og signert, NOTOC for farlig gods","Slot, stand and pushback":"Slot, oppstillingsplass og pushback","Security and passenger information":"Sikkerhet og passasjerinformasjon","MEL / CDL items":"MEL / CDL-punkter","Commander’s notes":"Kapteinens notater","Load sheet and performance":"Lasteark og ytelse","Actual / planned":"Faktisk / planlagt","Limit":"Grense","Check":"Sjekk","Zero fuel mass (ZFM)":"Masse uten drivstoff (ZFM)","Take-off fuel":"Avgangsdrivstoff","Take-off mass (TOM)":"Avgangsmasse (TOM)","Trip fuel":"Trip-drivstoff","Landing mass (LM)":"Landingsmasse (LM)","Underload / limiting":"Underload / begrensende","CG / trim (%MAC)":"Tyngdepunkt / trim (%MAC)","TOM = ZFM + take-off fuel. LM = TOM − trip fuel. For MTOM use the lowest of structural, performance-limited and any other limit. Units as on your load sheet.":"TOM = ZFM + avgangsdrivstoff. LM = TOM − trip-drivstoff. Bruk den laveste av strukturell, ytelsesbegrenset og eventuelle andre grenser som MTOM. Enheter som på lastearket.","Take-off":"Avgang","Landing":"Landing","RWY / intersection":"Bane / avkjøring","Condition (RWYCC)":"Forhold (RWYCC)","Flaps":"Klaff","Thrust / assumed temp":"Skyvekraft / antatt temp.","Engine-out procedure":"Prosedyre ved motorstans","RWY":"Bane","VREF / VAPP":"VREF / VAPP","Autobrake":"Autobrems","Required distance":"Påkrevd distanse","LDA":"LDA","OK":"OK","De-icing: fluid, start time, holdover time":"Avising: væske, starttid, holdover-tid","Performance comes from your aircraft’s performance software or manual and the operator’s procedures. Runway condition codes follow the global reporting format (RCAM); a contaminated runway changes both take-off and landing figures.":"Ytelse kommer fra flyets ytelsesprogram eller -manual og operatørens prosedyrer. Baneforholdskodene følger det globale rapporteringsformatet (RCAM); en kontaminert bane endrer både avgangs- og landingstall.","Basic scheme (CAT) minimum":"Basic scheme (CAT) minimum","Holding fuel flow per hour at 1500 ft":"Drivstofforbruk per time i holding (1500 ft)","Engines":"Motorer","Commercial flight":"Kommersiell flyging",
+ 'Build it on the map ↗':'Bygg den på kartet ↗',
+ "Forecasts are checked for ETA ± 1 hour. For the alternates, the required ceiling and visibility are filled in from the rules below when you leave them empty. Operator’s own rule (OM-A), if stricter:":"Prognosene sjekkes for ETA ± 1 time. For alternativene fylles krav til skybase og sikt inn fra reglene under når feltene står tomme. Operatørens egen regel (OM-A), hvis strengere:","Destination alternates: 0, 1 or 2?":"Destinasjonsalternativer: 0, 1 eller 2?","Rules for this flight":"Regelverk for turen","Part-NCO (non-commercial, not complex)":"Part-NCO (ikke-kommersiell, ikke komplekst fly)","Part-NCC (non-commercial, complex aircraft)":"Part-NCC (ikke-kommersiell, komplekst fly)","Part-CAT (commercial, basic fuel scheme)":"Part-CAT (kommersiell, basic fuel scheme)","Best approach at destination":"Beste innflyging på destinasjonen","Instrument approach, straight-in":"Instrumentinnflyging, rett inn","Circling only":"Kun sirkling","No instrument approach":"Ingen instrumentinnflyging","Instrument approach":"Instrumentinnflyging","Circling":"Sirkling","Destination DH / MDH (ft above aerodrome)":"DH / MDH på destinasjonen (ft over flyplassen)","Destination RVR / VIS minimum (m)":"RVR / VIS-minimum på destinasjonen (m)","Lowest forecast ceiling in the window (ft)":"Laveste varslede skybase i vinduet (ft)","Lowest forecast visibility in the window (m)":"Laveste varslede sikt i vinduet (m)","Planned flight time (h)":"Planlagt flytid (t)","Separate usable runways at destination":"Separate brukbare rullebaner på destinasjonen","Circling height at destination (ft)":"Sirklingshøyde på destinasjonen (ft)","No meteorological information for the destination":"Ingen værinformasjon for destinasjonen","Operator uses the basic fuel scheme with variations (approved)":"Operatøren bruker basic fuel scheme with variations (godkjent)","Destination is an isolated aerodrome (designated / approved)":"Destinasjonen er en isolert flyplass (utpekt / godkjent)","Approach and landing can be made in VMC for the whole window":"Innflyging og landing kan gjøres i VMC hele vinduet","An approach that does not rely on GNSS (ILS, LOC, VOR, NDB) is available at the destination or the alternate":"En innflyging som ikke er avhengig av GNSS (ILS, LOC, VOR, NDB) finnes på destinasjonen eller alternativet","Or: all SBAS conditions in NCO.OP.142(b) are met":"Eller: alle SBAS-vilkårene i NCO.OP.142(b) er oppfylt","Approach used for planning":"Innflyging brukt i planleggingen","DH / MDH (ft)":"DH / MDH (ft)","RVR / VIS min (m)":"RVR / VIS min (m)","Min. safe IFR height (ft)":"Laveste sikre IFR-høyde (ft)","Required ceiling / VIS":"Krav skybase / sikt","Forecast":"Prognose","Forecast for the alternates is taken from the table above. Source: EASA Easy Access Rules for Air Operations, Rev. 24 (March 2026): NCO.OP.140, 142, 143 · NCC.OP.147, 151, 153 · CAT.OP.MPA.182 with AMC2, AMC5 and AMC6. Your operations manual can be stricter, and CAT operators with approved variations (AMC8/AMC9) use their own tables. The OM-A is the authority.":"Prognosen for alternativene hentes fra tabellen over. Kilde: EASA Easy Access Rules for Air Operations, Rev. 24 (mars 2026): NCO.OP.140, 142, 143 · NCC.OP.147, 151, 153 · CAT.OP.MPA.182 med AMC2, AMC5 og AMC6. Driftshåndboken kan være strengere, og CAT-operatører med godkjente varianter (AMC8/AMC9) bruker egne tabeller. OM-A er fasit.",
+ 'Birdbird · Flight planning':'Birdbird · Flyplanlegging','Flight preparation book':'Bok for flyforberedelse','Flight Preparation':'Flyforberedelse',
+ 'Everything you prepare before a flight, in a fixed order, so nothing is forgotten before a check or a skill test. Fill it in here and it is saved to your profile. You can also print it blank for paper or GoodNotes, or print it filled in as a PDF.':'Alt du forbereder før en tur, i fast rekkefølge, så ingenting glemmes før en PC eller praktisk prøve. Fyll den ut her, så lagres den på profilen din. Du kan også skrive den ut tom for papir eller GoodNotes, eller skrive den ut utfylt som PDF.',
+ 'More':'Mer','‹ Previous page':'‹ Forrige side','Next page ›':'Neste side ›','Kneeboards':'Kneebrett','Risk assessment ↗':'Risikovurdering ↗','New':'Ny','Duplicate':'Dupliser','Delete':'Slett','Print blank':'Skriv ut tom','Print / Save as PDF':'Skriv ut / lagre som PDF','Ask the planning assistant':'Spør planleggingsassistenten','Ask the instructor':'Spør instruktøren','Open these rules in the EASA rules library ↗':'Åpne reglene i EASA-regelbiblioteket ↗','Ask about anything in your preparation: “What is the pressure altitude?”, “Is 1.25 × TODR inside TORA?”, “What fuel do I need for 1 h 40 min with a 30 min alternate?”. The instructor sees what you have filled in and reads your documents from Flight Intelligence.':'Spør om hva som helst i forberedelsen: «Hva er trykkhøyden?», «Er 1,25 × TODR innenfor TORA?», «Hvor mye drivstoff trenger jeg for 1 t 40 min med 30 min til alternativ?». Instruktøren ser det du har fylt inn og leser dokumentene dine fra Flight Intelligence.','Instructor':'Instruktør','Open in Flight Intelligence →':'Åpne i Flight Intelligence →','Planning assistant':'Planleggingsassistent','Ask':'Spør',
+ 'Cover':'Forside','Heading (optional)':'Overskrift (valgfri)','Aircraft':'Fly','Pilot':'Pilot','Meteorology':'Meteorologi','Planning minima':'Planleggingsminima','Flight cross-section':'Tverrsnitt av turen','Runway performance':'Baneytelse','Climb gradients (IFR)':'Stigegradienter (IFR)','Fuel':'Drivstoff','Mass and balance':'Masse og balanse','Radio failure':'Radiosvikt','Risk assessment':'Risikovurdering','Briefing notes and threats':'Briefingnotater og trusler','ATC flight plan':'ATC-flyplan',
+ 'Departure':'Avgang','Destination':'Destinasjon','Take-off alternate':'Avgangsalternativ','Alternate 1':'Alternativ 1','Alternate 2':'Alternativ 2','En route':'Underveis','Arrival':'Ankomst','Alternate':'Alternativ',
+ 'Aerodrome reports':'Flyplassrapporter','Draw terrain, cloud layers, freezing level, MSA and your planned profile with a finger, pen or mouse.':'Tegn terreng, skylag, frysenivå, MSA og den planlagte profilen med finger, penn eller mus.',
+ 'Pen':'Penn','▶ Briefing mode':'▶ Briefingmodus','Exit':'Avslutt','The check':'Kontrollen','Items to show':'Punkter som skal vises','Route, airspace and daylight':'Rute, luftrom og dagslys','Save as my aircraft':'Lagre som mitt fly','Read the attached W&B report (AI)':'Les vedlagt veieskjema (AI)','Max demonstrated crosswind (kt)':'Maks demonstrert sidevind (kt)','Navigation log':'Navigasjonslogg','Choose the pages in this pack':'Velg sidene i pakken','Head / cross':'Mot- / sidevind','Variation (+E / −W)':'Variasjon (+Ø / −V)','Variation for legs without their own (+E / −W)':'Misvisning for etapper uten egen (+Ø / −V)','Wind as 270/15. WCA, heading and groundspeed come from the wind triangle; MH = TH − variation (east positive). Route Explorer fills the variation for each leg from the World Magnetic Model (WMM 2025); a leg without its own uses the field above. Fuel uses the planning fuel flow on the fuel page. Times in minutes.':'Vind som 270/15. WCA, kurs og groundspeed kommer fra vindtrekanten; MH = TH − misvisning (østlig positiv). Route Explorer fyller inn misvisningen for hver etappe fra World Magnetic Model (WMM 2025); en etappe uten egen bruker feltet over. Drivstoff bruker planlagt forbruk fra drivstoffsiden. Tider i minutter.','TAS for new legs (kt)':'TAS for nye etapper (kt)','Total':'Totalt','From':'Fra','To':'Til','Briefing pack':'Briefingpakke','Briefing Pack':'Briefingpakke','Book':'Bok','All pages':'Alle sider','Contents':'Innhold','Charts and workings':'Diagrammer og utregninger','＋ Add your own route or profile (screenshot or PDF)':'＋ Legg til egen rute eller profil (skjermbilde eller PDF)','＋ Attach a chart or document page':'＋ Legg ved et diagram eller en dokumentside','Instructor / examiner':'Instruktør / eksaminator',
+ 'Add the charts you work from: take-off and landing distance graphs, one-engine-inoperative climb, approach plates, the load sheet. Draw your lines on them and write the result, so the method is in the pack when you brief it.':'Legg ved diagrammene du jobber fra: avgangs- og landingsdistanse, stigning på én motor, innflygingskart, lastelisten. Tegn linjene dine på dem og skriv resultatet, så framgangsmåten ligger i pakken når du briefer den.',
+ 'One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and flight plan. Add or remove pages as you need. Prints as a booklet.':'Én pakke per flyging, i fast rekkefølge: fly, NOTAM, vær, minima, profil, ytelse, drivstoff, masse og balanse, radiosvikt og flyplan. Legg til eller fjern sider etter behov. Skrives ut som et hefte.','Quick profile':'Hurtigprofil','Expand approach':'Forstørr innflygingen','Describe the route to the AI':'Beskriv ruten til AI-en','Edit points':'Rediger punkter','✎ Draw on it':'✎ Tegn på den','Generate profile':'Lag profil','Draw it':'Tegn den','Add point':'Legg til punkt','Clear profile':'Tøm profilen','Clear drawing':'Tøm tegningen','Departure route':'Avgangsrute','Cruise':'Cruise','Approach':'Innflyging','Missed approach':'Avbrutt innflyging','Altitudes in feet. Leave out what you don’t need.':'Høyder i fot. Hopp over det du ikke trenger.','The AI turns your description into points you can check and edit.':'AI-en gjør beskrivelsen om til punkter du kan sjekke og endre.','Build the profile from a few numbers or a sentence, then draw your own notes on top. Distances are along the route, not to scale with terrain.':'Lag profilen fra noen tall eller en setning, og tegn dine egne notater oppå. Distansene er langs ruten, ikke i målestokk med terrenget.','Blue':'Blå','Red':'Rød','Undo':'Angre','Clear':'Tøm','Factor':'Faktor','Low':'Lav','Medium':'Middels','High':'Høy','Item':'Punkt','Take-off':'Avgang','Landing':'Landing','Zero fuel':'Null drivstoff'
+});
+/* ---------- oppstart ---------- */
+LAB.start('prep');
+NSTORE.ready.then(async m=>{ mbList(); ALL=await NSTORE.list('prep'); ALL.forEach(x=>{ if(!x.v2){ x.v2=1; if(x.f&&x.f.purpose!=='Commercial flight') x.hide=[...new Set([...(x.hide||[]),'crew','load'])]; } }); const want=new URLSearchParams(location.search).get('id'); if(!ALL.length){ P=blankPrep(); ALL=[P]; } else P=ALL.find(x=>x.id===want)||ALL[0]; drawSel(); fill(); if(location.hash){ const hh=/^#s-/.test(location.hash)?location.hash:'#s-'+location.hash.slice(1); const i=vis().findIndex(x=>'#'+x.id===hh); if(i>=0) setTimeout(()=>go(i),50); }
+  el('saved').textContent= m==='account'? L({en:'Saved to your profile',no:'Lagres på profilen din'}) : L({en:'Saved in this browser',no:'Lagres i denne nettleseren'}); });
+/* ---------- før du drar: sjekkliste ---------- */
+const CL=[
+ ['aircraft',{en:'Aircraft: tech log, defects and MEL, documents on board',no:'Fly: tech log, feil og MEL, dokumenter om bord'}],
+ ['pilot',{en:'Pilot: licence, medical, recency, IMSAFE',no:'Pilot: sertifikat, medical, trening, IMSAFE'}],
+ ['notam',{en:'NOTAM for departure, route, destination and alternates',no:'NOTAM for avgang, rute, destinasjon og alternativer'}],
+ ['met',{en:'Weather: METAR, TAF, significant weather, winds, freezing level',no:'Vær: METAR, TAF, signifikant vær, vind, frysenivå'}],
+ ['minima',{en:'Minima and alternates checked against the forecast',no:'Minima og alternativer sjekket mot prognosen'}],
+ ['air',{en:'Route, airspace, danger areas and daylight',no:'Rute, luftrom, fareområder og dagslys'}],
+ ['nav',{en:'Navigation log: headings, times, MSA per leg',no:'Navigasjonslogg: kurser, tider, MSA per etappe'}],
+ ['xsec',{en:'Profile: terrain, MSA, cloud and freezing level along the route',no:'Profil: terreng, MSA, skyer og frysenivå langs ruten'}],
+ ['rwy',{en:'Take-off and landing distances with margins',no:'Avgangs- og landingsdistanse med margin'}],
+ ['grad',{en:'Climb gradients, including one engine out',no:'Stigegradienter, også på én motor'}],
+ ['fuel',{en:'Fuel: trip, reserves, alternate, endurance',no:'Drivstoff: tur, reserver, alternativ, flytid'}],
+ ['mb',{en:'Mass and balance inside limits for take-off and landing',no:'Masse og balanse innenfor grensene ved avgang og landing'}],
+ ['rcf',{en:'Radio failure plan for departure, en route and arrival',no:'Plan for radiosvikt ved avgang, underveis og ankomst'}],
+ ['risk',{en:'Risk assessment and personal minimums',no:'Risikovurdering og personlige minima'}],
+ ['brief',{en:'Threats and briefings ready (T-RIBETS, TSADMM)',no:'Trusler og briefinger klare (T-RIBETS, TSADMM)'}],
+ ['fpl',{en:'ATC flight plan filed and acknowledged',no:'ATC-flyplan sendt og bekreftet'}],
+ ['x.charts',{en:'Charts and plates current (AIRAC)',no:'Kart og plater gjeldende (AIRAC)'}],
+ ['x.fueltype',{en:'Fuel type and quantity confirmed at the aircraft',no:'Drivstofftype og mengde bekreftet ved flyet'}],
+ ['x.pax',{en:'Passengers briefed',no:'Passasjerer briefet'}],
+ ['x.kit',{en:'Headset, documents, torch, kneeboard',no:'Headset, dokumenter, lommelykt, kneebrett'}]];
+const DEFF=blankPrep().f;
+function secFilled(id){ const sec=document.getElementById('s-'+id); if(!sec||sec.hidden) return false; let n=0; sec.querySelectorAll('[data-k]').forEach(i=>{ const k=i.dataset.k, v=P.f[k]; if(v!=null&&v!==''&&v!==DEFF[k]) n++; }); return n>=2; }
+function clState(){ return CL.map(([id,t])=>{ const auto=id.indexOf('x.')!==0&&secFilled(id); const man=P.f['cl.'+id]==='1'; return {id,t,auto,done:auto||man}; }); }
+function clHtml(){ const st=clState(), n=st.filter(x=>x.done).length;
+  return `<h3>${L({en:'Before you go',no:'Før du drar'})}<small>${n} / ${st.length}</small></h3><div class="clbar"><i style="width:${Math.round(n/st.length*100)}%"></i></div><ul class="cl">${st.map(x=>`<li class="${x.done?'done':''}"><input type="checkbox" data-cl="${x.id}" ${x.done?'checked':''} ${x.auto?'disabled title="'+esc(L({en:'Filled in the pack',no:'Fylt ut i pakken'}))+'"':''} aria-label="${esc(L(x.t))}"><span>${x.id.indexOf('x.')!==0&&document.getElementById('s-'+x.id)&&!document.getElementById('s-'+x.id).hidden?`<a href="#s-${x.id}" data-go="${x.id}">${esc(L(x.t))}</a>`:esc(L(x.t))}${x.auto?`<em>✓ ${L({en:'in the pack',no:'i pakken'})}</em>`:''}</span></li>`).join('')}</ul>
+   <p class="note" style="font-size:12px;margin:8px 0 0">${L({en:'Not a form. Items tick themselves when you fill in that page; tick the rest yourself.',no:'Ikke et skjema. Punktene hukes av selv når du fyller ut den siden; huk av resten selv.'})}</p>`; }
+function drawCL(){ const h=clHtml(); el('clbox').innerHTML=h; el('clbox2').innerHTML=h; const st=clState(), n=st.filter(x=>x.done).length; el('clmob').querySelector('summary').textContent=L({en:'Before you go',no:'Før du drar'})+` · ${n} / ${st.length}`;
+  el('clprint').innerHTML=`<h2>${L({en:'Before you go',no:'Før du drar'})} – ${esc(P.title||'')}</h2><ul>${st.map(x=>`<li><b>${x.done?'✓':''}</b>${esc(L(x.t))}</li>`).join('')}</ul>`;
+  const open=st.filter(x=>!x.done).map(x=>x.t.en).join('; '); if((P.f['cl.open']||'')!==open){ P.f['cl.open']=open; } }
+['clbox','clbox2'].forEach(id=>el(id).addEventListener('click',e=>{ const c=e.target.closest('input[data-cl]'); if(c){ P.f['cl.'+c.dataset.cl]=c.checked?'1':''; drawCL(); queueSave(); return; } const a=e.target.closest('a[data-go]'); if(a&&view==='book'){ e.preventDefault(); const i=vis().findIndex(s=>s.id==='s-'+a.dataset.go); if(i>=0) go(i); } }));
+let clT=null; el('book').addEventListener('input',()=>{ clearTimeout(clT); clT=setTimeout(drawCL,400); }); el('book').addEventListener('change',()=>{ clearTimeout(clT); clT=setTimeout(drawCL,400); });
+const _fill=fill; fill=function(){ _fill.apply(this,arguments); setTimeout(drawCL,0); };
+LAB.onLang(()=>{ calc(); drawSel(); drawCL(); });
+/* ruten kan være endret i Route Explorer i en annen fane */
+document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState!=='visible'||!P) return; try{ const L2=await NSTORE.list('prep'); const n=L2.find(x=>x.id===P.id); if(n&&n.xs&&(n.xs.at||0)>((P.xs&&P.xs.at)||0)){ P.xs=n.xs; ['depapt','destapt','x.alt','x.msa','x.frz','x.cb','x.ct'].forEach(k=>{ if(n.f[k]!=null) P.f[k]=n.f[k]; }); for(const k in n.f){ if(/^nl\./.test(k)) P.f[k]=n.f[k]; } fill(); try{ drawSk(); }catch(e){ xsRender(); } } }catch(e){} });
+})();
+</script>
+</body>
+</html>

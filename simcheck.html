@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A320 simulator assessment · Birdbird</title>
+<meta name="description" content="Prepare for an airline A320 recruitment simulator assessment, built around a real assessment at a major European airline: the manoeuvres, the assessed skills, raw-data flying, configuration and speed, PF and PM calls and the instrument scan.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#tpfd,#spfd{aspect-ratio:4/3.1;max-height:520px;width:100%;display:block}
+#prof{aspect-ratio:16/9.5;max-height:520px}
+@media (max-width:600px){#prof{aspect-ratio:4/3.6}}
+.rrow b{white-space:normal;text-align:right}
+/* key/value table (manoeuvre tab and at-a-glance facts) */
+.mtab{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0;border-top:1px solid var(--rule)}
+.mtab>div{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule-2);font-size:14.5px;line-height:1.5;min-width:0}
+.mtab>div.k{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding-top:12px}
+@media (max-width:600px){.mtab{grid-template-columns:minmax(0,1fr)}.mtab>div.k{border-bottom:0;padding-bottom:0}}
+.mseg{flex-wrap:wrap;height:auto}
+.card h3{margin-top:12px}
+/* trust banner */
+.trust{background:var(--sheet);border:1px solid var(--rule);border-top:3px solid var(--info);border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:22px 24px 20px}
+.trust .ct{display:block;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin:0 0 8px}
+.trust .th{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-lg);line-height:1.35;color:var(--ink);margin:0;max-width:62ch;text-wrap:pretty}
+.trust .tp{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:18px 0 0;border-top:1px solid var(--rule-2)}
+.trust .tp>div{padding:14px 20px 4px 0;min-width:0}
+.trust .tp>div+div{padding-left:20px;border-left:1px solid var(--rule-2)}
+.trust .tp b{display:block;font-family:var(--f-display);font-stretch:92%;font-size:15.5px;font-weight:650;color:var(--ink);line-height:1.25}
+.trust .tp p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2)}
+.trust .tp div.own b{color:var(--accent)}
+@media (max-width:1000px){.trust .tp{grid-template-columns:repeat(2,minmax(0,1fr))}.trust .tp>div:nth-child(3){padding-left:0;border-left:0}.trust .tp>div:nth-child(n+3){border-top:1px solid var(--rule-2);margin-top:10px}}
+@media (max-width:600px){.trust{padding:18px 16px 16px}.trust .th{font-size:17.5px}.trust .tp{grid-template-columns:minmax(0,1fr)}.trust .tp>div,.trust .tp>div+div{padding:12px 0 2px;border-left:0}.trust .tp>div+div{border-top:1px solid var(--rule-2);margin-top:10px}}
+/* at a glance */
+.glance{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px 40px;align-items:start}
+@media (max-width:900px){.glance{grid-template-columns:minmax(0,1fr)}}
+.mnl{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule);counter-reset:mn}
+.mnl li{border-bottom:1px solid var(--rule-2)}
+.mnl button{display:flex;align-items:baseline;gap:12px;width:100%;text-align:left;font:inherit;font-size:14.5px;color:var(--ink);background:none;border:0;padding:9px 4px 9px 0;cursor:pointer}
+.mnl button::before{counter-increment:mn;content:counter(mn,decimal-leading-zero);font-family:var(--f-mono);font-size:12px;color:var(--ink-2);flex:0 0 22px}
+.mnl button::after{content:"→";margin-left:auto;color:var(--ink-3)}
+.mnl button:hover{color:var(--accent)}.mnl button:hover::after{color:var(--accent)}
+.glh{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 8px}
+/* drills */
+.drill{display:flex;flex-direction:column;gap:12px}
+.ev{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--chart-blue);padding:12px 16px}
+.ev .role{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--magenta)}
+.ev p{margin:4px 0 0;font-size:16px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts button{text-align:left;font:inherit;font-size:15px;padding:10px 14px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;cursor:pointer;color:var(--ink)}
+.opts button:hover:not([disabled]){border-color:var(--chart-blue)}
+.opts button.right{border-color:var(--green);background:#E2F1E7}
+.opts button.wrong{border-color:var(--red);background:#F6E0DE}
+.opts button[disabled]{cursor:default}
+#cdrill{max-width:820px}
+.fbk{font-size:14.5px;line-height:1.5}
+.score{font-size:13px;color:var(--ink-2)}
+.chk{list-style:none;margin:0;padding:0}
+.chk li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--rule-2);font-size:14px}
+.chk li::before{content:"";flex:0 0 10px;height:10px;border-radius:50%;margin-top:5px;background:var(--green)}
+.chk li.bad::before{background:var(--red)}.chk li.warn::before{background:var(--amber)}
+.gaord{display:flex;flex-wrap:wrap;gap:8px}
+.gaord button{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;cursor:pointer;text-align:left;color:var(--ink)}
+.gaord button.done{border-color:var(--green);background:#E2F1E7;cursor:default}
+.gaord button.no{border-color:var(--red)}
+.galist{margin:0;padding-left:22px;font-size:14.5px;line-height:1.55}
+/* card grids: 4 × 2 and 3 × 3, no ragged rows */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:1000px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.g3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.g4{grid-template-columns:minmax(0,1fr)}}
+.box .n{display:block;font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);margin-bottom:6px;letter-spacing:.04em}
+.box.key{border-color:var(--info);box-shadow:inset 3px 0 0 var(--info)}
+</style>
+</head>
+<body data-title="A320 simulator assessment">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>A320 simulator assessment</h1>
+      <p>Prepare for an airline A320 recruitment check in the simulator: hand-flown on raw data, as pilot flying and as pilot monitoring.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#overview">Overview</a><a href="#glance">At a glance</a><a href="#maneuvers">Manoeuvres</a><a href="#config">Configuration and speed</a><a href="#calls">PF and PM calls</a><a href="#scan">Raw-data scan</a><a href="#ready">Preparation</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="overview">
+    <h2>Overview</h2>
+    <div class="trust" id="trust"></div>
+    <h3>What the assessor looks for</h3>
+    <p class="note">The four instrument-flying principles the airline evaluates, then the crew and aircraft skills behind them.</p>
+    <div class="g4" id="skills"></div>
+    <div class="g4" id="skills2"></div>
+  </section>
+
+  <section class="card" id="glance">
+    <h2>At a glance</h2>
+    <div class="glance">
+      <div><div class="glh">The session</div><div class="mtab" id="facts"></div></div>
+      <div><div class="glh">Manoeuvres to expect</div><ol class="mnl" id="mnl"></ol><p class="note" style="margin-top:10px">Select a manoeuvre to see its targets, technique and typical errors.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="maneuvers">
+    <h2>Manoeuvres</h2>
+    <p class="lead">Goal, typical targets, technique, tolerances and common errors for each manoeuvre.</p>
+    <div id="mseg" class="mseg"></div>
+    <div class="mtab" id="mtab"></div>
+    <h3>Pitch and thrust targets</h3>
+    <p class="note">Choose a configuration and a phase to see the approximate attitude, N1 and speed band for an A320 of about 60 t at low altitude. Typical training values only.</p>
+    <div class="split">
+      <div class="view"><canvas id="tpfd" aria-label="Simplified primary flight display with the target attitude, speed and altitude"></canvas></div>
+      <div class="panel">
+        <div class="grp">Configuration</div><div id="tcfg"></div>
+        <div class="grp">Landing gear</div><div id="tgear"></div>
+        <div class="grp">Phase</div><div id="tph"></div>
+        <div class="ro" style="margin-top:10px">
+          <div class="rrow"><span>Target speed</span><b id="rSpd"></b></div>
+          <div class="rrow"><span>Speed band</span><b id="rBand"></b></div>
+          <div class="rrow"><span>Pitch attitude</span><b id="rPitch"></b></div>
+          <div class="rrow"><span>N1</span><b id="rN1"></b></div>
+          <div class="rrow"><span>Vertical speed</span><b id="rVs"></b></div>
+          <div class="rrow"><span>Flight path angle</span><b id="rFpa"></b></div>
+        </div>
+        <p class="callout" id="tEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="config">
+    <h2>Configuration and speed</h2>
+    <p class="lead">Level at 3000 ft on vectors, 15 NM out, glide path intercept at about 9.4 NM. Place each flap step and the gear, and see whether you stay inside the limits and are stable at 1000 ft.</p>
+    <div class="split">
+      <div class="paper"><canvas id="prof" aria-label="Speed against distance on the approach, with flap limits and the stable approach gate"></canvas></div>
+      <div class="panel">
+        <div id="cctl"></div>
+        <div class="grp">Result</div>
+        <ul class="chk" id="cres"></ul>
+      </div>
+    </div>
+    <p class="note">Thrust is at idle until the speed reaches the target for the configuration. Limit speeds are common A320 placard values; target speeds are typical for about 60 t; the deceleration is a teaching model. Your candidate guide has its own flap and speed schedule: learn that one and fly it as written.</p>
+    <h3>Go-around: the order of things</h3>
+    <div class="split">
+      <div><p class="note" style="margin-bottom:12px">Tap the actions in order. The idea is the same in every Airbus SOP; the exact calls and speeds are in your guide.</p><div class="gaord" id="gaord"></div><p class="fbk" id="gafb"></p></div>
+      <div class="panel"><div class="grp" style="margin-top:0">Your order</div><ol class="galist" id="galist"></ol><div class="btns" style="margin-top:8px"><button class="btn" id="gareset">Start again</button></div></div>
+    </div>
+  </section>
+
+  <section class="card" id="calls">
+    <h2>PF and PM calls</h2>
+    <p class="lead">Something happens in the simulator: pick the call or response. Generic Airbus-style wording; the exact calls in your candidate guide take precedence.</p>
+    <div class="drill" id="cdrill"></div>
+  </section>
+
+  <section class="card" id="scan">
+    <h2>Raw-data scan</h2>
+    <p class="lead">Attitude plus thrust gives performance. Find the deviation and choose the first correction: small, early, then check the result.</p>
+    <div class="split">
+      <div class="view"><canvas id="spfd" aria-label="Simplified primary flight display with a deviation"></canvas></div>
+      <div class="panel drill" id="sdrill"></div>
+    </div>
+  </section>
+
+  <section class="card" id="ready">
+    <h2>Preparation checklist</h2>
+    <p class="lead">Nine things to have done before the day, starting with the one the airline itself asks for.</p>
+    <div class="g3" id="rcards"></div>
+    <p class="note" id="rmore"></p>
+  </section>
+
+  <section class="card" id="quiz">
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. Attitudes, N1 values and speeds are typical, rounded values for a light-to-medium A320 at low altitude: not FCOM data and not the values of any particular assessment. Tolerances are commonly used ones, not assessment criteria. The candidate guide you receive is the reference.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'Birdbird · Training':'Birdbird · Trening','A320 simulator assessment':'A320 simulatortest','A320 Simulator Assessment':'A320 simulatortest',
+ 'Prepare for an airline A320 recruitment check in the simulator: hand-flown on raw data, as pilot flying and as pilot monitoring.':'Forbered deg til en simulatortest ved rekruttering til et flyselskap på A320: håndfløyet på rådata, som pilot flying og som pilot monitoring.',
+ 'Overview':'Oversikt','At a glance':'Kort fortalt','Manoeuvres':'Manøvrer','Configuration and speed':'Konfigurasjon og fart','PF and PM calls':'PF- og PM-callouts','Raw-data scan':'Rådataskanning','Preparation':'Forberedelser','Preparation checklist':'Sjekkliste for forberedelser','Test yourself':'Test deg selv',
+ 'What the assessor looks for':'Hva vurderingen ser etter',
+ 'The four instrument-flying principles the airline evaluates, then the crew and aircraft skills behind them.':'De fire prinsippene for instrumentflyging som flyselskapet vurderer, og så besetnings- og flyferdighetene bak dem.',
+ 'The session':'Økten','Manoeuvres to expect':'Manøvrer du kan forvente',
+ 'Select a manoeuvre to see its targets, technique and typical errors.':'Velg en manøver for å se verdier, teknikk og typiske feil.',
+ 'Goal, typical targets, technique, tolerances and common errors for each manoeuvre.':'Mål, typiske verdier, teknikk, toleranser og vanlige feil for hver manøver.',
+ 'Pitch and thrust targets':'Pitch- og thrustverdier',
+ 'Choose a configuration and a phase to see the approximate attitude, N1 and speed band for an A320 of about 60 t at low altitude. Typical training values only.':'Velg konfigurasjon og fase for å se omtrentlig attityde, N1 og fartsområde for en A320 på rundt 60 t i lav høyde. Bare typiske treningsverdier.',
+ 'Configuration':'Konfigurasjon','Landing gear':'Understell','Phase':'Fase','Target speed':'Målfart','Speed band':'Fartsområde','Pitch attitude':'Pitchattityde','Vertical speed':'Vertikalfart','Flight path angle':'Banevinkel',
+ 'Level at 3000 ft on vectors, 15 NM out, glide path intercept at about 9.4 NM. Place each flap step and the gear, and see whether you stay inside the limits and are stable at 1000 ft.':'Plant på 3000 ft på vektorer, 15 NM ute, glidebaneinterception ved rundt 9,4 NM. Plasser hvert flaptrinn og understellet, og se om du holder deg innenfor grensene og er stabil ved 1000 ft.',
+ 'Result':'Resultat',
+ 'Thrust is at idle until the speed reaches the target for the configuration. Limit speeds are common A320 placard values; target speeds are typical for about 60 t; the deceleration is a teaching model. Your candidate guide has its own flap and speed schedule: learn that one and fly it as written.':'Thrust står på idle til farten når målet for konfigurasjonen. Grensefartene er vanlige A320-plakatverdier; målfartene er typiske for rundt 60 t; retardasjonen er en undervisningsmodell. Kandidatguiden din har sitt eget flap- og fartsskjema: lær det og fly det slik det står.',
+ 'Go-around: the order of things':'Go-around: rekkefølgen',
+ 'Tap the actions in order. The idea is the same in every Airbus SOP; the exact calls and speeds are in your guide.':'Trykk på handlingene i riktig rekkefølge. Ideen er den samme i alle Airbus-SOP-er; de nøyaktige callouts og fartene står i guiden din.',
+ 'Start again':'Start på nytt','Your order':'Din rekkefølge',
+ 'Something happens in the simulator: pick the call or response. Generic Airbus-style wording; the exact calls in your candidate guide take precedence.':'Noe skjer i simulatoren: velg callout eller svar. Generell ordlyd i Airbus-stil; de nøyaktige callouts i kandidatguiden din går foran.',
+ 'Attitude plus thrust gives performance. Find the deviation and choose the first correction: small, early, then check the result.':'Attityde pluss thrust gir ytelse. Finn avviket og velg første korreksjon: liten, tidlig, og sjekk så resultatet.',
+ 'Nine things to have done before the day, starting with the one the airline itself asks for.':'Ni ting du bør ha gjort før dagen, og først det flyselskapet selv ber om.',
+ 'Teaching model. Attitudes, N1 values and speeds are typical, rounded values for a light-to-medium A320 at low altitude: not FCOM data and not the values of any particular assessment. Tolerances are commonly used ones, not assessment criteria. The candidate guide you receive is the reference.':'Undervisningsmodell. Attityder, N1-verdier og farter er typiske, avrundede verdier for en lett til middels tung A320 i lav høyde: ikke FCOM-data og ikke verdiene til noen bestemt test. Toleransene er vanlig brukte, ikke vurderingskriterier. Kandidatguiden du får, er referansen.',
+ 'Clean':'Clean','Up':'Oppe','Down':'Nede','Level':'Plant','Climb 1000 ft/min':'Stig 1000 ft/min','Descend 1000 ft/min':'Synk 1000 ft/min','3° approach':'3°-innflyging',
+ 'Speed at 15 NM':'Fart ved 15 NM','Gear down at':'Understell ned ved','CONF 1 at':'CONF 1 ved','CONF 2 at':'CONF 2 ved','CONF 3 at':'CONF 3 ved','FULL at':'FULL ved',
+ 'Departure':'Avgang','Steep turns':'Krappe svinger','Slow flight':'Sakteflyging','Fixed-rate descent':'Fast synkrate','ILS (3D)':'ILS (3D)','Go-around':'Go-around','Holding':'Holding','2D approach':'2D-innflyging','Landing':'Landing'
+});
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sgn=(v,d)=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v),d);
+
+/* ================= 1 · Overview and at a glance ================= */
+/* The four principles the airline evaluates (own wording) */
+const SK=[
+ [{en:'Instrument cross-check',no:'Instrumentkryssjekk'},{en:'A selective radial scan: the attitude indicator is the centre, and the eyes go out to speed, altitude, heading and vertical speed and back again. Which instrument you visit most depends on what you are changing.',no:'En selektiv radiell skanning: attitydeindikatoren er sentrum, og blikket går ut til fart, høyde, kurs og vertikalfart og tilbake igjen. Hvilket instrument du besøker mest, avhenger av hva du endrer.'}],
+ [{en:'Interpretation',no:'Tolkning'},{en:'Reading what the needles and tapes actually say, including trends: the speed trend arrow and the vertical speed tell you where the aircraft is going before the altitude and speed get there.',no:'Å lese hva viserne og tapene faktisk sier, også trender: fartstrendpila og vertikalfarten forteller hvor flyet er på vei før høyden og farten kommer dit.'}],
+ [{en:'Corrective action on deviations',no:'Korrigering av avvik'},{en:'A 1° pitch change or a few percent N1, made early, beats a big correction made late. Assessors look for deviations that are caught and stopped, not for a perfect needle.',no:'En pitchendring på 1° eller noen prosent N1, tidlig, slår en stor korreksjon sent. Vurderingen ser etter avvik som blir fanget og stoppet, ikke en perfekt viser.'}],
+ [{en:'Smooth, accurate handling',no:'Myk og nøyaktig håndtering'},{en:'Set the attitude and the thrust, then let go: small, brief sidestick inputs back to neutral, and thrust changes of a few percent N1 at a time. In normal law the aircraft trims itself, so there is no trim to set.',no:'Sett attityden og thrust, og slipp: små, korte sidestickutslag tilbake til nøytral, og thrustendringer på noen prosent N1 om gangen. I normal law trimmer flyet selv, så det finnes ingen trim å stille.'}]
+];
+/* crew and aircraft skills behind them */
+const SK2=[
+ [{en:'Normal law handling',no:'Håndtering i normal law'},{en:'Stick neutral holds the flight path, not the attitude, so a stick held aft keeps pitching up. Up to 33° bank the aircraft holds the bank and compensates pitch itself; above 33° and in the protections auto-trim stops. The thrust pitch couple of the under-wing engines is mostly countered by the law; you feel it fully only in alternate or direct law.',no:'Nøytral stikke holder flybanen, ikke attityden, så en stikke holdt bakover fortsetter å løfte nesen. Opp til 33° krengning holder flyet krengningen og kompenserer pitch selv; over 33° og i beskyttelsene stopper autotrim. Pitchmomentet fra motorene under vingen motvirkes stort sett av kontrolloven; du kjenner det fullt ut bare i alternate eller direct law.'}],
+ [{en:'CRM and the PF/PM split',no:'CRM og fordelingen PF/PM'},{en:'The pilot flying flies and decides; the pilot monitoring watches, calls deviations, handles radio and selections on request. Both seats are assessed: a quiet, passive PM scores poorly.',no:'Pilot flying flyr og bestemmer; pilot monitoring overvåker, melder avvik og tar radio og valg på forespørsel. Begge setene vurderes: en stille og passiv PM får dårlig score.'}],
+ [{en:'Procedures and calls',no:'Prosedyrer og callouts'},{en:'Fly the procedures and checklists in your candidate guide as written, so both pilots always know what comes next. Say the calls clearly and on time, and answer the other pilot’s calls.',no:'Fly prosedyrene og sjekklistene i kandidatguiden slik de står, så begge pilotene alltid vet hva som kommer. Si callouts tydelig og i tide, og svar på den andre pilotens callouts.'}],
+ [{en:'Workload management',no:'Arbeidsbelastning'},{en:'Fly first. Delegate radio and selections to the PM, plan the next step early (configuration, level-off, briefing) and keep spare capacity for the unexpected.',no:'Fly først. Deleger radio og valg til PM, planlegg neste steg tidlig (konfigurasjon, utflating, briefing) og hold av kapasitet til det uventede.'}]
+];
+const TRUST={
+ h:{en:'This page is built around a real A320 recruitment simulator assessment at a major European airline: the same manoeuvres, the same assessed skills and the same recommendations to candidates.',
+    no:'Denne siden er bygget rundt en ekte A320-simulatortest ved rekruttering til et stort europeisk flyselskap: de samme manøvrene, de samme ferdighetene som vurderes, og de samme rådene til kandidatene.'},
+ p:[
+  [{en:'What the airline assesses',no:'Hva flyselskapet vurderer'},{en:'General flying skills, knowledge of instrument flying procedures and crew resource management, judged on cross-check, interpretation, correction of deviations and smooth handling.',no:'Generelle flygeferdigheter, kunnskap om instrumentprosedyrer og CRM, vurdert på kryssjekk, tolkning, korrigering av avvik og myk håndtering.'}],
+  [{en:'How the session runs',no:'Slik foregår økten'},{en:'About two hours in an A320 FNPT II, with a pilot flying part and a pilot monitoring part. Both are assessed. Raw data and manual thrust throughout.',no:'Rundt to timer i en A320 FNPT II, med en del som pilot flying og en del som pilot monitoring. Begge vurderes. Rådata og manuell thrust hele veien.'}],
+  [{en:'What they recommend',no:'Hva de anbefaler'},{en:'Both pilots work strictly to the procedures and checklists in the candidate guide. Learn its procedures, calls and flap and speed schedule by heart, and fly them as written.',no:'Begge pilotene jobber strengt etter prosedyrene og sjekklistene i kandidatguiden. Lær prosedyrene, callouts og flap- og fartsskjemaet utenat, og fly dem slik de står.'}],
+  [{en:'What Birdbird adds',no:'Hva Birdbird legger til'},{en:'The explanations, targets, drills and generic calls here are our own. Your guide is the authority on the day: learn its exact calls, speeds and checklists from it, or <a href="fi.html">upload it privately in Flight Intelligence</a> to drill them.',no:'Forklaringene, verdiene, drillene og de generelle callouts her er våre egne. Guiden din er fasiten på dagen: lær de nøyaktige callouts, fartene og sjekklistene fra den, eller <a href="fi.html">last den opp privat i Flight Intelligence</a> og drill dem.'},'own']
+ ]
+};
+const FACTS=[
+ [{en:'Device',no:'Simulator'},{en:'A320 FNPT II (flight and navigation procedures trainer)',no:'A320 FNPT II (flight and navigation procedures trainer)'}],
+ [{en:'Duration',no:'Varighet'},{en:'About two hours',no:'Rundt to timer'}],
+ [{en:'Roles',no:'Roller'},{en:'A pilot flying part and a pilot monitoring part. Both are assessed.',no:'En del som pilot flying og en del som pilot monitoring. Begge vurderes.'}],
+ [{en:'Flying',no:'Flyging'},{en:'Hand-flown on raw data with manual thrust. Autopilot, flight director, autothrust and the FMA are not used.',no:'Håndfløyet på rådata med manuell thrust. Autopilot, flight director, autothrust og FMA brukes ikke.'}],
+ [{en:'Charts',no:'Kart'},{en:'Approach charts for the manoeuvres are handed out on the day.',no:'Innflygingskart for manøvrene deles ut på dagen.'}],
+ [{en:'Procedures',no:'Prosedyrer'},{en:'Those in your candidate guide, followed strictly by both pilots.',no:'De i kandidatguiden din, fulgt strengt av begge pilotene.'}]
+];
+const MNL=[
+ ['dep',{en:'Radar-vectored departure',no:'Avgang med radarvektorer'}],
+ ['steep',{en:'Steep turns',no:'Krappe svinger'}],
+ ['slow',{en:'Slow flight',no:'Sakteflyging'}],
+ ['ror',{en:'Descent at a fixed rate',no:'Nedstigning med fast synkrate'}],
+ ['ils',{en:'Radar vectors to a 3D approach',no:'Radarvektorer til en 3D-innflyging'}],
+ ['ga',{en:'Go-around',no:'Go-around'}],
+ ['hold',{en:'Holding',no:'Holding'}],
+ ['npa',{en:'2D approach',no:'2D-innflyging'}],
+ ['land',{en:'Landing',no:'Landing'}]
+];
+function overview(){
+  el('trust').innerHTML=`<span class="ct">${esc(L({en:'Based on a real assessment',no:'Basert på en ekte test'}))}</span><p class="th">${esc(L(TRUST.h))}</p><div class="tp">${TRUST.p.map(([t,d,c])=>`<div class="${c||''}"><b>${esc(L(t))}</b><p>${L(d)}</p></div>`).join('')}</div>`;
+  const box=([t,d])=>`<div class="box"><b class="t">${esc(L(t))}</b><p>${esc(L(d))}</p></div>`;
+  el('skills').innerHTML=SK.map(box).join('');
+  el('skills2').innerHTML=SK2.map(box).join('');
+  el('facts').innerHTML=FACTS.map(([k,v])=>`<div class="k">${esc(L(k))}</div><div>${esc(L(v))}</div>`).join('');
+  el('mnl').innerHTML=MNL.map(([k,t])=>`<li><button data-k="${k}">${esc(L(t))}</button></li>`).join('');
+}
+el('mnl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; mseg.set(b.dataset.k); manRender(); el('maneuvers').scrollIntoView({behavior:'smooth',block:'start'}); });
+
+/* ================= PFD drawing ================= */
+const D2R=Math.PI/180;
+function pfd(st,s){
+  const g=st.ctx, W=st.w, H=st.h; if(!W) return;
+  g.clearRect(0,0,W,H); g.fillStyle='#0b1116'; g.fillRect(0,0,W,H);
+  const fs=Math.max(10,Math.min(14,W/40));
+  const spdW=Math.max(46,W*0.13), altW=Math.max(52,W*0.14), vsW=Math.max(22,W*0.05), hdgH=Math.max(30,H*0.11), top=Math.max(18,H*0.06);
+  const ax0=spdW+12, aw=W-ax0-altW-vsW-16, ay0=top, ah=H-top-hdgH-14;
+  const cx=ax0+aw/2, cy=ay0+ah/2;
+  // top line: N1 and pitch
+  g.font=`500 ${fs}px "IBM Plex Mono",monospace`; g.textBaseline='middle'; g.textAlign='left';
+  g.fillStyle='#8fe39f'; g.fillText('N1 '+nf(s.n1,0)+' %',6,top/2+1);
+  g.textAlign='right'; g.fillStyle='#cfd8e0'; if(s.title) g.fillText(s.title,W-6,top/2+1);
+  // attitude
+  g.save(); g.beginPath(); g.rect(ax0,ay0,aw,ah); g.clip();
+  const ppd=ah/34;
+  g.translate(cx,cy); g.rotate(-(s.bank||0)*D2R);
+  const hy=(s.pitch||0)*ppd;
+  g.fillStyle='#2f78b8'; g.fillRect(-W*2,-H*3,W*4,H*3+hy);
+  g.fillStyle='#7a4a24'; g.fillRect(-W*2,hy,W*4,H*3);
+  g.strokeStyle='#fff'; g.lineWidth=1.5; g.beginPath(); g.moveTo(-W*2,hy); g.lineTo(W*2,hy); g.stroke();
+  g.lineWidth=1; g.fillStyle='#fff'; g.textAlign='right'; g.font=`${fs*0.85}px "IBM Plex Mono",monospace`;
+  for(let p=-30;p<=30;p+=2.5){ if(!p) continue; const y=hy-p*ppd, big=p%10===0, mid=p%5===0, lw=big?aw*0.16:mid?aw*0.09:aw*0.04;
+    g.beginPath(); g.moveTo(-lw,y); g.lineTo(lw,y); g.stroke(); if(big){ g.fillText(String(Math.abs(p)),-lw-4,y); } }
+  g.restore();
+  // bank scale
+  g.save(); g.strokeStyle='#fff'; g.fillStyle='#fff'; g.lineWidth=1.3; const R=Math.min(aw,ah)*0.44;
+  for(const b of [-45,-30,-20,-10,0,10,20,30,45]){ const a=(b-90)*D2R, r2=R+(Math.abs(b)%30===0||b===0?9:5); g.beginPath(); g.moveTo(cx+R*Math.cos(a),cy+R*Math.sin(a)); g.lineTo(cx+r2*Math.cos(a),cy+r2*Math.sin(a)); g.stroke(); }
+  const ba=(-(s.bank||0)-90)*D2R; g.fillStyle='#f2d33a'; g.beginPath(); const px=cx+R*Math.cos(ba), py=cy+R*Math.sin(ba);
+  g.save(); g.translate(px,py); g.rotate(ba+Math.PI/2); g.moveTo(0,0); g.lineTo(-6,10); g.lineTo(6,10); g.closePath(); g.fill(); g.restore(); g.restore();
+  // aircraft symbol
+  g.fillStyle='#000'; g.strokeStyle='#f2d33a'; g.lineWidth=3; const sw=aw*0.2;
+  g.beginPath(); g.moveTo(cx-sw-aw*0.08,cy); g.lineTo(cx-aw*0.08,cy); g.lineTo(cx-aw*0.08,cy+10); g.stroke();
+  g.beginPath(); g.moveTo(cx+sw+aw*0.08,cy); g.lineTo(cx+aw*0.08,cy); g.lineTo(cx+aw*0.08,cy+10); g.stroke();
+  g.fillStyle='#f2d33a'; g.fillRect(cx-3,cy-3,6,6);
+  // ILS
+  if(s.ils){
+    const sp=aw*0.1, ly=ay0+ah-14; g.strokeStyle='#fff'; g.lineWidth=1.3;
+    for(const k of [-2,-1,1,2]){ g.beginPath(); g.arc(cx+k*sp,ly,3.5,0,7); g.stroke(); }
+    g.fillStyle='#fff'; g.fillRect(cx-1,ly-7,2,14);
+    const lx=cx+Math.max(-2.4,Math.min(2.4,s.loc||0))*sp; diamond(g,lx,ly,'#e05ad0',7);
+    const gx=ax0+aw-14, gsp=ah*0.1;
+    for(const k of [-2,-1,1,2]){ g.beginPath(); g.arc(gx,cy+k*gsp,3.5,0,7); g.stroke(); }
+    g.fillStyle='#fff'; g.fillRect(gx-7,cy-1,14,2);
+    diamond(g,gx,cy-Math.max(-2.4,Math.min(2.4,s.gs||0))*gsp,'#e05ad0',7);
+  }
+  // speed tape
+  const pxk=ah/80, sx0=6, yv=v=>cy-(v-s.ias)*pxk;
+  g.save(); g.beginPath(); g.rect(sx0,ay0,spdW,ah); g.clip(); g.fillStyle='#26323c'; g.fillRect(sx0,ay0,spdW,ah);
+  if(s.vmax){ const y=yv(s.vmax); g.fillStyle='#d23b2f'; g.fillRect(sx0+spdW-7,ay0,7,Math.max(0,y-ay0)); g.fillStyle='#fff'; for(let yy=y-6;yy>ay0-10;yy-=12) g.fillRect(sx0+spdW-7,yy-3,7,4); }
+  if(s.vmin){ const y=yv(s.vmin); g.fillStyle='#e8a427'; g.fillRect(sx0+spdW-4,y,4,ay0+ah-y); }
+  g.strokeStyle='#fff'; g.fillStyle='#fff'; g.lineWidth=1.2; g.textAlign='right'; g.font=`${fs}px "IBM Plex Mono",monospace`;
+  for(let v=Math.floor((s.ias-45)/10)*10;v<=s.ias+45;v+=10){ const y=yv(v); g.beginPath(); g.moveTo(sx0+spdW-12,y); g.lineTo(sx0+spdW-4,y); g.stroke(); if(v%20===0) g.fillText(String(v),sx0+spdW-15,y); }
+  if(s.trend){ const y2=yv(s.ias+s.trend); g.strokeStyle='#f2d33a'; g.lineWidth=2; g.beginPath(); g.moveTo(sx0+spdW-14,cy); g.lineTo(sx0+spdW-14,y2); g.stroke(); g.beginPath(); const dn=s.trend<0?-1:1; g.moveTo(sx0+spdW-18,y2+dn*6); g.lineTo(sx0+spdW-14,y2); g.lineTo(sx0+spdW-10,y2+dn*6); g.stroke(); }
+  g.restore();
+  if(s.tgt){ const y=yv(s.tgt); g.fillStyle='#e05ad0'; if(y>ay0+4&&y<ay0+ah-4){ g.beginPath(); g.moveTo(sx0+spdW,y); g.lineTo(sx0+spdW+9,y-6); g.lineTo(sx0+spdW+9,y+6); g.closePath(); g.fill(); } else { g.font=`${fs}px "IBM Plex Mono",monospace`; g.textAlign='center'; g.fillText(String(s.tgt),sx0+spdW/2,y<=ay0+4?ay0-8:ay0+ah+9); } }
+  g.strokeStyle='#f2d33a'; g.lineWidth=2.5; g.beginPath(); g.moveTo(sx0,cy); g.lineTo(sx0+spdW+4,cy); g.stroke();
+  // altitude tape
+  const alx=ax0+aw+10, pxf=ah/1100, ya=a=>cy-(a-s.alt)*pxf;
+  g.save(); g.beginPath(); g.rect(alx,ay0,altW,ah); g.clip(); g.fillStyle='#26323c'; g.fillRect(alx,ay0,altW,ah);
+  g.strokeStyle='#fff'; g.fillStyle='#fff'; g.lineWidth=1.2; g.textAlign='left'; g.font=`${fs}px "IBM Plex Mono",monospace`;
+  for(let a=Math.floor((s.alt-600)/100)*100;a<=s.alt+600;a+=100){ const y=ya(a); g.beginPath(); g.moveTo(alx,y); g.lineTo(alx+(a%500===0?12:7),y); g.stroke(); if(a%200===0) g.fillText(String(a),alx+14,y); }
+  if(s.altTgt!==undefined){ const y=ya(s.altTgt); if(y>ay0&&y<ay0+ah){ g.fillStyle='#38c6e8'; g.fillRect(alx,y-3,6,6); g.fillRect(alx,y-1,altW,2); } }
+  g.restore();
+  if(s.altTgt!==undefined){ const y=ya(s.altTgt); if(y<=ay0||y>=ay0+ah){ g.fillStyle='#38c6e8'; g.textAlign='center'; g.font=`${fs}px "IBM Plex Mono",monospace`; g.fillText(String(s.altTgt),alx+altW/2,y<=ay0?ay0-8:ay0+ah+9); } }
+  // current value boxes
+  box(g,sx0,cy,spdW-8,String(Math.round(s.ias)),fs*1.15,'left');
+  box(g,alx,cy,altW,String(Math.round(s.alt)),fs*1.1,'left');
+  // VS
+  const vx=alx+altW+5; g.fillStyle='#26323c'; g.fillRect(vx,ay0+ah*0.15,vsW,ah*0.7);
+  const vsy=v=>cy-Math.sign(v)*Math.min(1,Math.sqrt(Math.abs(v)/2000))*ah*0.33;
+  g.strokeStyle='#8fe39f'; g.lineWidth=2.5; g.beginPath(); g.moveTo(vx+vsW,cy); g.lineTo(vx+2,vsy(s.vs||0)); g.stroke();
+  if(Math.abs(s.vs||0)>=200){ g.fillStyle='#8fe39f'; g.textAlign='center'; g.font=`${fs*0.85}px "IBM Plex Mono",monospace`; g.fillText(String(Math.round(Math.abs(s.vs)/100)),vx+vsW/2,s.vs>0?ay0+ah*0.15-8:ay0+ah*0.85+8); }
+  // heading tape
+  const hy0=ay0+ah+8, hh=hdgH-6, pxd=aw/50;
+  g.save(); g.beginPath(); g.rect(ax0,hy0,aw,hh); g.clip(); g.fillStyle='#26323c'; g.fillRect(ax0,hy0,aw,hh);
+  g.strokeStyle='#fff'; g.fillStyle='#fff'; g.lineWidth=1.2; g.textAlign='center'; g.font=`${fs}px "IBM Plex Mono",monospace`;
+  for(let d=Math.floor((s.hdg-30)/5)*5;d<=s.hdg+30;d+=5){ const x=cx+(d-s.hdg)*pxd, dd=((d%360)+360)%360; g.beginPath(); g.moveTo(x,hy0); g.lineTo(x,hy0+(dd%10===0?9:5)); g.stroke(); if(dd%10===0) g.fillText(String(dd/10).padStart(2,'0'),x,hy0+hh*0.62); }
+  if(s.hdgTgt!==undefined){ let dh=((s.hdgTgt-s.hdg+540)%360)-180; const x=cx+dh*pxd; g.fillStyle='#38c6e8'; g.beginPath(); g.moveTo(x,hy0); g.lineTo(x-6,hy0+9); g.lineTo(x+6,hy0+9); g.closePath(); g.fill(); }
+  g.restore();
+  g.strokeStyle='#f2d33a'; g.lineWidth=2.5; g.beginPath(); g.moveTo(cx,hy0-4); g.lineTo(cx,hy0+10); g.stroke();
+  // highlight
+  if(s.hl){ const r={spd:[sx0-2,ay0-2,spdW+12,ah+4],alt:[alx-2,ay0-2,altW+vsW+9,ah+4],att:[ax0-2,ay0-2,aw+4,ah+4],hdg:[ax0-2,hy0-2,aw+4,hh+4],vs:[vx-2,ay0+ah*0.15-14,vsW+4,ah*0.7+28],ils:[ax0-2,ay0-2,aw+4,ah+4]}[s.hl];
+    if(r){ g.strokeStyle='#f0b440'; g.lineWidth=2.5; g.setLineDash([6,4]); g.strokeRect(...r); g.setLineDash([]); } }
+}
+function diamond(g,x,y,c,r){ g.fillStyle=c; g.beginPath(); g.moveTo(x,y-r); g.lineTo(x+r*0.7,y); g.lineTo(x,y+r); g.lineTo(x-r*0.7,y); g.closePath(); g.fill(); }
+function box(g,x,y,w,txt,f,al){ const h=f*1.7; g.fillStyle='#000'; g.fillRect(x,y-h/2,w,h); g.strokeStyle='#f2d33a'; g.lineWidth=1.5; g.strokeRect(x,y-h/2,w,h); g.fillStyle='#8fe39f'; g.font=`500 ${f}px "IBM Plex Mono",monospace`; g.textAlign='center'; g.fillText(txt,x+w/2,y+1); }
+
+/* ================= 2 · Manoeuvres ================= */
+const F=(en,no)=>({en,no});
+const MAN={
+ dep:{t:F('Radar-vectored departure','Avgang med radarvektorer'),
+  goal:F('Fly the take-off and climb by hand on the headings and altitudes ATC gives you, cleaning up the aircraft on speed and levelling off exactly.','Fly avgang og stigning for hånd på kursene og høydene ATC gir deg, rydd opp flyet på fart og flat ut nøyaktig.'),
+  tgt:F('Rotate at about 3° per second towards roughly 15° nose up, then adjust pitch to hold the initial climb speed (V2 + 10 to 15 kt is common). After acceleration altitude: lower the nose to about 10°, accelerate and retract flaps on the F and S speeds. Climb at 250 kt with climb thrust: around 10–12° pitch at light weight, low altitude.','Roter med rundt 3° per sekund mot omtrent 15° nese opp, og juster pitch for å holde første stigefart (V2 + 10 til 15 kt er vanlig). Etter akselerasjonshøyde: senk nesen til rundt 10°, akselerer og ta inn flaps på F- og S-fart. Stig med 250 kt og climb thrust: rundt 10–12° pitch ved lav vekt i lav høyde.'),
+  how:F('Set the attitude first and let the speed settle before you chase it. Turns at about 25° bank. Start levelling off at roughly 10 % of the climb rate before the altitude (2000 ft/min → about 200 ft early), lower the nose to the level attitude and bring the thrust back as the speed approaches the target, not after.','Sett attityden først og la farten stabilisere seg før du jager den. Svinger med rundt 25° krengning. Begynn utflatingen på omtrent 10 % av stigeraten før høyden (2000 ft/min → rundt 200 ft før), senk nesen til planattityden og trekk av thrust når farten nærmer seg målet, ikke etterpå.'),
+  tol:F('Commonly used: speed +10/−5 kt on the initial climb, heading ±10°, altitude ±100 ft after level-off.','Vanlig brukt: fart +10/−5 kt i første stigning, kurs ±10°, høyde ±100 ft etter utflating.'),
+  err:F('Over-rotation and chasing the speed tape; late level-off and an altitude bust; climb thrust left on after level-off so the speed runs towards the limit; clean-up forgotten while busy with ATC.','Overrotasjon og jaging av fartstapen; sen utflating og høydeoverskridelse; climb thrust står igjen etter utflating så farten løper mot grensen; opprydding glemt mens du er opptatt med ATC.')},
+ steep:{t:F('Steep turns','Krappe svinger'),
+  goal:F('Turn through 180° or 360° at 45° bank holding altitude and speed, and roll out on the given heading.','Svinge 180° eller 360° med 45° krengning mens du holder høyde og fart, og rulle ut på gitt kurs.'),
+  tgt:F('At 45° bank the load factor is about 1.4, so the wing needs more lift: typically +1 to +2° pitch above the level attitude and a few percent more N1 (about +3–5 %). Roll-out lead about half the bank angle, so start rolling out about 20° before the heading. Normal law holds the bank with the stick neutral only up to 33°; beyond that the roll input must be held, or the aircraft rolls back to 33°. Pitch compensation is automatic only up to 33°, so at 45° you hold a little aft stick (and the auto-trim is frozen).','Ved 45° krengning er lastfaktoren rundt 1,4, så vingen trenger mer løft: typisk +1 til +2° pitch over planattityden og noen prosent mer N1 (rundt +3–5 %). Begynn utrullingen omtrent halve krengningsvinkelen før, altså rundt 20° før kursen. Normal law holder krengningen med nøytral stikke bare opp til 33°; utover det må rullutslaget holdes, ellers ruller flyet tilbake til 33°. Pitchkompensasjonen er automatisk bare opp til 33°, så ved 45° holder du litt bakover stikke (og autotrim er frosset).'),
+  how:F('Roll in smoothly. Up to 33° the aircraft compensates the pitch itself; passing 33°, keep a small roll input to hold the bank, add aft stick to raise the nose and add the thrust. Hold the bank with the bank scale, then watch the vertical speed for the first sign of a trend and correct by 1° of pitch. If the nose drops a lot, take off a little bank first, then raise the nose. Roll out at the same rate you rolled in, release the aft stick below 33° and remove the extra thrust as you go.','Rull inn mykt. Opp til 33° kompenserer flyet pitch selv; når du passerer 33°, hold et lite rullutslag for å holde krengningen, gi bakover stikke for å løfte nesen og legg på thrust. Hold krengningen på krengningsskalaen, følg vertikalfarten for første tegn på en trend og korriger med 1° pitch. Faller nesen mye, ta av litt krengning først og løft så nesen. Rull ut like raskt som du rullet inn, slipp baktrykket under 33° og ta bort ekstra thrust underveis.'),
+  tol:F('Commonly used: altitude ±100 ft, speed ±10 kt, bank 45° ±5°, roll-out heading ±10°.','Vanlig brukt: høyde ±100 ft, fart ±10 kt, krengning 45° ±5°, utrullingskurs ±10°.'),
+  err:F('Aft stick added too late past 33°, so the aircraft descends in the first 90°; releasing the roll input, so the bank drifts back towards 33°; overbanking past 50°; climbing on roll-out because the extra pitch stays; staring at the attitude and forgetting the altimeter.','Bakover stikke lagt til for sent etter 33°, så flyet synker de første 90°; slipper rullutslaget, så krengningen sklir tilbake mot 33°; for mye krengning over 50°; stigning ved utrulling fordi ekstra pitch blir stående; stirring på attityden og glemt høydemåler.')},
+ slow:{t:F('Slow flight','Sakteflyging'),
+  goal:F('Decelerate in level flight to a low speed in a given configuration (clean near green dot, or with flaps near S or F speed), hold it with altitude and heading, and accelerate back.','Senk farten i plan flyging til en lav fart i gitt konfigurasjon (clean nær green dot, eller med flaps nær S- eller F-fart), hold den med høyde og kurs, og akselerer tilbake.'),
+  tgt:F('Typical at about 60 t, level: clean near green dot (~205 kt) about +5° and 55 % N1; CONF 1 near S (~185 kt) about +6°; CONF 2–3 near F (~145–155 kt) about +6° and 60–63 % N1. Use the targets panel below.','Typisk ved rundt 60 t, plant: clean nær green dot (~205 kt) rundt +5° og 55 % N1; CONF 1 nær S (~185 kt) rundt +6°; CONF 2–3 nær F (~145–155 kt) rundt +6° og 60–63 % N1. Bruk verdipanelet under.'),
+  how:F('Thrust back. With the stick neutral, normal law holds the level path, so the nose rises by itself as the speed decays and the trim follows; watch the attitude and correct the path with small inputs. About 10 kt before the target, set the thrust for the new speed: thrust for slow speeds is higher than you expect. Call for flaps only below the limit speed. To accelerate: thrust first, then lower the nose as the speed builds to stay on altitude. Normal law protects the angle of attack, but at alpha prot the auto-trim stops and the aircraft holds angle of attack rather than the path, so it sinks: in the assessment treat VLS as your floor.','Trekk av thrust. Med nøytral stikke holder normal law den plane banen, så nesen går opp av seg selv mens farten faller, og trimmen følger; følg attityden og korriger banen med små utslag. Rundt 10 kt før målet, sett thrust for den nye farten: lav fart krever mer thrust enn du tror. Be om flaps bare under grensefarten. For å akselerere: thrust først, og senk nesen etter hvert som farten øker, så du holder høyden. Normal law beskytter angrepsvinkelen, men ved alpha prot stopper autotrim og flyet holder angrepsvinkel i stedet for bane, så det synker: i testen er VLS gulvet ditt.'),
+  tol:F('Commonly used: speed +10/−5 kt, altitude ±100 ft, heading ±10°.','Vanlig brukt: fart +10/−5 kt, høyde ±100 ft, kurs ±10°.'),
+  err:F('Thrust added too late, so the speed undershoots into the amber band towards alpha prot; pumping the sidestick instead of small inputs and release; big thrust changes that make the speed overshoot.','Thrust lagt på for sent, så farten går under og inn i det gule båndet mot alpha prot; pumping med sidesticken i stedet for små utslag og slipp; store thrustendringer som gjør at farten skyter over.')},
+ ror:{t:F('Fixed-rate descent','Fast synkrate'),
+  goal:F('Descend at a given rate and speed, for example 1000 ft/min at 250 kt or the rate for a 3° path, and level off on the altitude.','Synk med en gitt rate og fart, for eksempel 1000 ft/min på 250 kt eller raten for en 3°-bane, og flat ut på høyden.'),
+  tgt:F('Rate for a 3° path ≈ groundspeed × 5 (more exactly × 5.3). One degree of pitch is worth roughly groundspeed × 1.8 ft/min: about 450 ft/min at 250 kt, about 250 ft/min at 140 kt. So 1000 ft/min at 250 kt clean is about 2° below the level attitude (around 0° pitch) with N1 reduced to somewhere near 48 %.','Raten for en 3°-bane ≈ groundspeed × 5 (mer nøyaktig × 5,3). En grad pitch er verdt omtrent groundspeed × 1,8 ft/min: rundt 450 ft/min på 250 kt, rundt 250 ft/min på 140 kt. Så 1000 ft/min på 250 kt clean er rundt 2° under planattityden (omtrent 0° pitch) med N1 redusert til et sted nær 48 %.'),
+  how:F('Lower the nose by the calculated amount and reduce thrust at the same time, so the speed stays. Wait for the vertical speed to settle (it lags), then correct in half-degree steps. Level-off lead about 10 % of the rate: 1000 ft/min → start 100 ft before.','Senk nesen med det utregnede og reduser thrust samtidig, så farten blir stående. Vent til vertikalfarten har satt seg (den henger etter), og korriger i halve grader. Start utflatingen rundt 10 % av raten før: 1000 ft/min → begynn 100 ft før.'),
+  tol:F('Commonly used: rate within about ±200 ft/min, speed ±10 kt, heading ±10°, level-off ±100 ft.','Vanlig brukt: rate innenfor rundt ±200 ft/min, fart ±10 kt, kurs ±10°, utflating ±100 ft.'),
+  err:F('Changing pitch without thrust, so the speed runs away; chasing the vertical speed needle; no level-off lead; forgetting to add thrust back on level-off.','Endrer pitch uten thrust, så farten løper; jager vertikalfartviseren; ingen forvarsling før utflating; glemmer å legge på thrust igjen ved utflating.')},
+ ils:{t:F('Vectors to an ILS (3D)','Vektorer til ILS (3D)'),
+  goal:F('Fly the vectors, intercept the localizer and then the glide path, configure on time and be stable by the 1000 ft gate, down to the decision altitude.','Fly vektorene, fang localizer og så glidebanen, konfigurer i tide og vær stabil ved 1000 ft-porten, ned til beslutningshøyden.'),
+  tgt:F('On the glide path in CONF FULL at VAPP (~135 kt at 60 t): pitch about +2.5°, N1 about 55–60 %, rate about 700 ft/min. Glide path capture means about 3° less pitch than level and a thrust reduction at the same moment.','På glidebanen i CONF FULL på VAPP (~135 kt ved 60 t): pitch rundt +2,5°, N1 rundt 55–60 %, rate rundt 700 ft/min. Ved glidebaneinterception er pitch rundt 3° lavere enn plant, og thrust reduseres samtidig.'),
+  how:F('Call localizer alive and start the turn early enough for the intercept angle; with 30° it often begins at about 1 dot. Once established, correct with 2–5° of heading, never more close in. Be in CONF 2 with the gear down as the glide path approaches, so you can go down and slow down at the same time. Corrections on the glide path are half a degree of pitch with a matching touch of thrust.','Meld localizer alive og start svingen tidlig nok for interceptvinkelen; med 30° begynner den ofte rundt 1 prikk. Når du er etablert, korriger med 2–5° kurs, aldri mer nær banen. Vær i CONF 2 med understell ute når glidebanen kommer, så du kan synke og senke farten samtidig. Korreksjoner på glidebanen er en halv grad pitch med litt thrust i takt.'),
+  tol:F('Commonly used: within 1 dot on the glide path and half a dot on the localizer (the usual call limits), speed VAPP +10/−5 kt, stable by 1000 ft in IMC.','Vanlig brukt: innenfor 1 prikk på glidebanen og en halv prikk på localizer (de vanlige callout-grensene), fart VAPP +10/−5 kt, stabil innen 1000 ft i IMC.'),
+  err:F('Turning too late and overshooting the localizer; big heading corrections close in where the needle is sensitive; pitch changes without thrust; configuration too late, so the aircraft is fast and high at the gate.','Svinger for sent og skyter over localizer; store kurskorreksjoner nær banen der viseren er følsom; pitchendringer uten thrust; for sen konfigurasjon, så flyet er høyt og raskt ved porten.')},
+ ga:{t:F('Go-around','Go-around'),
+  goal:F('Change from descent to a positive climb without delay, with the right configuration changes and calls, and level off cleanly at the missed approach altitude.','Gå fra nedstigning til positiv stigning uten nøling, med riktige konfigurasjonsendringer og callouts, og flat ut rent på høyden for bortkjøring.'),
+  tgt:F('Thrust levers to TOGA and pitch towards about 15°, then adjust for speed. Flaps one step up. Gear up with a positive climb. The missed approach altitude is often only 2000–3000 ft above you and the climb rate is high, so the level-off comes quickly.','Thrusthendlene til TOGA og pitch mot rundt 15°, juster så for fart. Flaps ett trinn opp. Understell opp ved positiv stigning. Høyden for bortkjøring er ofte bare 2000–3000 ft over deg og stigeraten er høy, så utflatingen kommer fort.'),
+  how:F('Thrust and pitch together. In normal law the TOGA thrust does not pitch the nose up by itself (the law holds the path), so rotate deliberately with aft stick to the target attitude, then release and hold it. Call the go-around clearly, let the PM handle flaps and gear on your command, then fly the missed approach track. Plan the level-off and the thrust reduction before you get there.','Thrust og pitch samtidig. I normal law løfter ikke TOGA-thrust nesen av seg selv (loven holder banen), så roter bevisst med bakover stikke til målattityden, og slipp og hold den. Meld go-around tydelig, la PM ta flaps og understell på din kommando, og fly så sporet for bortkjøring. Planlegg utflating og thrustreduksjon før du er der.'),
+  tol:F('Commonly used: minimal height loss below the minimum, speed not below VLS, the missed approach track within half scale, level-off ±100 ft.','Vanlig brukt: minimalt høydetap under minimum, fart ikke under VLS, sporet for bortkjøring innenfor halv skala, utflating ±100 ft.'),
+  err:F('Hesitation; gear selected up before a positive climb; flap overspeed because the clean-up is late; overshooting the missed approach altitude because the level-off starts too late at a high climb rate.','Nøling; understell opp før positiv stigning; flapoverfart fordi oppryddingen kommer sent; overskyter høyden for bortkjøring fordi utflatingen starter for sent med høy stigerate.')},
+ hold:{t:F('Holding','Holding'),
+  goal:F('Enter and fly a published holding pattern on raw data, with correct timing and wind correction.','Fly inn i og fly et publisert ventemønster på rådata, med riktig tid og vindkorreksjon.'),
+  tgt:F('Clean near green dot or a little above (inside the holding speed limit, 230 kt up to FL140 in ICAO airspace). Turns at 25° bank (rate one would need more at these speeds). Level pitch about +3 to +5°.','Clean nær green dot eller litt over (innenfor holdingfartsgrensen, 230 kt opp til FL140 i ICAO-luftrom). Svinger med 25° krengning (rate one ville krevd mer ved disse fartene). Planpitch rundt +3 til +5°.'),
+  how:F('Choose the entry before you reach the fix (see the <a href="holding.html">holding lab</a>). One minute outbound below FL140, timed from abeam the fix; outbound, apply about three times the inbound drift correction; adjust the outbound time from the length of the last inbound leg.','Velg innflyging før du når fixen (se <a href="holding.html">holding-laben</a>). Ett minutt utgående under FL140, tatt fra tvers av fixen; utgående, bruk rundt tre ganger avdriftskorreksjonen fra inngående; juster utgående tid etter lengden på forrige inngående legg.'),
+  tol:F('Commonly used: altitude ±100 ft, speed ±10 kt, inbound track within about half scale.','Vanlig brukt: høyde ±100 ft, fart ±10 kt, inngående spor innenfor rundt halv skala.'),
+  err:F('Wrong entry; no wind correction outbound; timing from the wrong point; altitude drifting while you are busy with the clock.','Feil innflyging; ingen vindkorreksjon utgående; tid fra feil punkt; høyden sklir mens du er opptatt med klokka.')},
+ npa:{t:F('2D approach (LOC or VOR, CDFA)','2D-innflyging (LOC eller VOR, CDFA)'),
+  goal:F('Fly a non-precision approach as a continuous descent final approach: one stable descent from the final approach fix to the derived decision altitude, with no level-off at the minimum.','Fly en ikke-presisjonsinnflyging som continuous descent final approach: én stabil nedstigning fra final approach fix til avledet beslutningshøyde, uten utflating på minimum.'),
+  tgt:F('Landing configuration and VAPP before the final approach fix. Rate from the chart or groundspeed × 5 for a 3° path. Pitch about +2.5° and N1 about 55–60 % in CONF FULL, as on the ILS. The derived decision altitude is the MDA plus the operator’s add-on.','Landingskonfigurasjon og VAPP før final approach fix. Rate fra kartet eller groundspeed × 5 for en 3°-bane. Pitch rundt +2,5° og N1 rundt 55–60 % i CONF FULL, som på ILS. Avledet beslutningshøyde er MDA pluss operatørens tillegg.'),
+  how:F('At the fix, lower the nose about 3° and reduce thrust in one movement. Compare altitude with the chart’s distance table every mile and adjust the rate by 100–200 ft/min. At the derived decision altitude: visual reference, continue; not, go around. The <a href="approach.html#rod">approach lab</a> has the rate table.','Ved fixen, senk nesen rundt 3° og reduser thrust i én bevegelse. Sammenlign høyden med avstandstabellen på kartet hver mil og juster raten med 100–200 ft/min. På avledet beslutningshøyde: visuell referanse, fortsett; ikke, go-around. <a href="approach.html#rod">Innflygingslaben</a> har ratetabellen.'),
+  tol:F('Commonly used: track within half scale (about ±5° on a VOR), on the altitude profile within about ±100 ft, speed VAPP +10/−5 kt.','Vanlig brukt: spor innenfor halv skala (rundt ±5° på VOR), på høydeprofilen innenfor rundt ±100 ft, fart VAPP +10/−5 kt.'),
+  err:F('Starting down early or late; levelling at the minimum and looking for the runway (dive and drive); no distance-altitude check; chasing a VOR needle that becomes sensitive near the station.','Begynner nedstigningen for tidlig eller sent; flater ut på minimum og leter etter banen («dive and drive»); ingen avstand-høydesjekk; jager en VOR-viser som blir følsom nær stasjonen.')},
+ land:{t:F('Landing','Landing'),
+  goal:F('From visual at the minimum to touchdown in the touchdown zone, on the centreline, without floating.','Fra visuelt ved minimum til touchdown i touchdown-sonen, på senterlinjen, uten å flyte.'),
+  tgt:F('Keep the approach attitude and path down to about 30 ft. Then flare with about 2–3° more pitch and thrust to idle (“RETARD” at about 20 ft). Below about 50 ft normal law changes to flare mode: the aircraft memorises the attitude and then gently lowers the nose, so the flare needs a deliberate aft stick input, as in a conventional aircraft. Touchdown attitude typically around 5°; the tail-strike risk grows quickly above about 10°.','Hold innflygingsattityden og banen ned til rundt 30 ft. Flare så med rundt 2–3° mer pitch og thrust til idle («RETARD» rundt 20 ft). Under rundt 50 ft går normal law over i flare mode: flyet husker attityden og senker så nesen forsiktig, så flaren krever et bevisst bakover stikkeutslag, som i et konvensjonelt fly. Touchdown-attityde typisk rundt 5°; risikoen for halestreik øker raskt over rundt 10°.'),
+  how:F('Move the eyes outside gradually and keep the aim point fixed in the windscreen; do not duck under the path. Small flare, thrust to idle, let it settle. In crosswind, keep the drift correction and align with rudder in the flare. After touchdown: lower the nose, reversers and braking as the SOP says.','Flytt blikket gradvis ut og hold siktepunktet fast i frontruta; ikke dukk under banen. Liten flare, thrust til idle, la flyet sette seg. I sidevind, behold avdriftskorreksjonen og rett opp med rorpedal i flaren. Etter touchdown: senk nesen, reversering og bremsing slik SOP sier.'),
+  tol:F('Commonly used: touchdown in the touchdown zone, on the centreline, speed VAPP +10/−5 kt to the flare.','Vanlig brukt: touchdown i touchdown-sonen, på senterlinjen, fart VAPP +10/−5 kt til flaren.'),
+  err:F('Flaring too high or too much, so the aircraft floats; thrust left on in the flare; ducking under to land early; pushing the nose down after touchdown.','Flarer for høyt eller for mye, så flyet flyter; thrust står på i flaren; dukker under for å lande tidlig; dytter nesen ned etter touchdown.')}
+};
+const MKEYS=[['dep','Departure'],['steep','Steep turns'],['slow','Slow flight'],['ror','Fixed-rate descent'],['ils','ILS (3D)'],['ga','Go-around'],['hold','Holding'],['npa','2D approach'],['land','Landing']];
+const mseg=LAB.seg(el('mseg'),MKEYS,'steep',manRender);
+function manRender(){
+  const m=MAN[mseg.v], row=(k,v)=>`<div class="k">${L(k)}</div><div>${L(v)}</div>`;
+  el('mtab').innerHTML=`<div class="k">${L(F('Manoeuvre','Manøver'))}</div><div><b>${esc(L(m.t))}</b></div>`+row(F('Goal','Mål'),m.goal)+row(F('Typical targets','Typiske verdier'),m.tgt)+row(F('How to fly it','Slik flyr du den'),m.how)+row(F('Tolerances','Toleranser'),m.tol)+row(F('Typical errors','Typiske feil'),m.err);
+}
+
+/* targets panel */
+const CF={clean:{tgt:250,lo:205,hi:350,p:2.5,n:57,lab:F('250 kt (green dot about 205)','250 kt (green dot rundt 205)')},
+          c1:{tgt:185,lo:165,hi:230,p:6,n:56,lab:F('S speed, about 185 kt','S-fart, rundt 185 kt')},
+          c2:{tgt:155,lo:140,hi:200,p:6.5,n:60,lab:F('F speed, about 155 kt','F-fart, rundt 155 kt')},
+          c3:{tgt:145,lo:132,hi:185,p:6,n:63,lab:F('F speed, about 145 kt','F-fart, rundt 145 kt')},
+          full:{tgt:135,lo:128,hi:177,p:5.5,n:65,lab:F('VAPP, about 135 kt','VAPP, rundt 135 kt')}};
+const tcfg=LAB.seg(el('tcfg'),[['clean','Clean'],['c1','1'],['c2','2'],['c3','3'],['full','FULL']],'clean',tRender);
+const tgear=LAB.seg(el('tgear'),[['up','Up'],['dn','Down']],'up',tRender);
+const tph=LAB.seg(el('tph'),[['lvl','Level'],['clb','Climb 1000 ft/min'],['des','Descend 1000 ft/min'],['app','3° approach']],'lvl',tRender);
+const tst=LAB.fit(el('tpfd'),()=>tRender());
+function tCalc(){
+  const c=CF[tcfg.v], gear=tgear.v==='dn';
+  const V=c.tgt, hi=gear?Math.min(c.hi,280):c.hi;
+  let vs= tph.v==='clb'?1000: tph.v==='des'?-1000: tph.v==='app'? -Math.round(V*5.3/10)*10 : 0;
+  const gam=Math.asin(vs/(V*101.27))/D2R;
+  let n1=c.n+(gear?5:0)+4*gam, note='';
+  if(n1<25){ n1=25; note='idle'; } if(n1>90){ n1=90; note='max'; }
+  return {c,gear,V,hi,lo:c.lo,vs,gam,pitch:c.p+gam,n1,note};
+}
+function tRender(){
+  const r=tCalc();
+  pfd(tst,{pitch:r.pitch,bank:0,ias:r.V,tgt:r.V,vmax:r.hi,vmin:r.lo,alt:3000,altTgt:tph.v==='lvl'?3000:undefined,vs:r.vs,hdg:90,hdgTgt:90,n1:r.n1,ils:tph.v==='app',loc:0,gs:0,title:L(F('typical values','typiske verdier'))});
+  el('rSpd').textContent=L(r.c.lab);
+  el('rBand').textContent=`${r.lo}–${r.hi} kt`;
+  el('rPitch').textContent='≈ '+sgn(Math.round(r.pitch*2)/2,1)+'°';
+  el('rN1').textContent='≈ '+nf(Math.round(r.n1),0)+' %'+(r.note==='idle'?' (idle)':r.note==='max'?' (max)':'');
+  el('rVs').textContent=(r.vs>0?'+':r.vs<0?'−':'')+nf(Math.abs(r.vs),0)+' ft/min';
+  el('rFpa').textContent=sgn(r.gam,1)+'°';
+  let ex=[];
+  if(tcfg.v==='clean') ex.push(L(F('Clean below FL100 the speed limit is 250 kt; the upper end of the band here is VMO.','Clean under FL100 er fartsgrensen 250 kt; øvre ende av båndet her er VMO.')));
+  else ex.push(L(F(`Upper limit is VFE for this configuration (${r.c.hi} kt). The lower end is roughly VLS.`,`Øvre grense er VFE for denne konfigurasjonen (${r.c.hi} kt). Nedre ende er omtrent VLS.`)));
+  if(r.gear) ex.push(L(F('Gear down adds drag: about +5 % N1 for the same path.','Understell ute gir mer motstand: rundt +5 % N1 for samme bane.')));
+  if(tcfg.v==='clean'&&r.gear) ex.push(L(F('Gear down when clean is unusual and limited by VLE 280 kt.','Understell ute i clean er uvanlig og begrenset av VLE 280 kt.')));
+  if(tph.v!=='lvl') ex.push(L(F(`Pitch changes from the level attitude by the flight path angle (${sgn(r.gam,1)}°), and N1 changes with it.`,`Pitch endres fra planattityden med banevinkelen (${sgn(r.gam,1)}°), og N1 endres med den.`)));
+  if(r.note==='idle') ex.push(L(F('At idle the aircraft cannot hold this speed on this path: shallower path, more drag or a lower speed.','På idle klarer ikke flyet å holde denne farten på denne banen: slakere bane, mer motstand eller lavere fart.')));
+  ex.push(L(F('Approximate values for about 60 t; the real numbers depend on mass, altitude and engine.','Omtrentlige verdier for rundt 60 t; de virkelige tallene avhenger av masse, høyde og motor.')));
+  el('tEx').textContent=ex.join(' ');
+}
+
+/* ================= 3 · Configuration drill ================= */
+const CFGS=[{n:'Clean',vfe:350,tgt:205,dec:8},{n:'CONF 1',vfe:230,tgt:185,dec:10},{n:'CONF 2',vfe:200,tgt:155,dec:13},{n:'CONF 3',vfe:185,tgt:145,dec:15},{n:'FULL',vfe:177,tgt:135,dec:17}];
+const VAPP=135, GSI=3000/318, GATE=1000/318;
+const cbox=el('cctl');
+const nm=v=>nf(v,1)+' NM';
+const cs={
+ v0:LAB.slider(cbox,{label:'Speed at 15 NM',min:180,max:250,step:5,v:220,f:v=>v+' kt',on:cRun}),
+ c1:LAB.slider(cbox,{label:'CONF 1 at',min:0,max:15,step:0.5,v:13,f:nm,on:cRun}),
+ c2:LAB.slider(cbox,{label:'CONF 2 at',min:0,max:15,step:0.5,v:10,f:nm,on:cRun}),
+ g:LAB.slider(cbox,{label:'Gear down at',min:0,max:15,step:0.5,v:8.5,f:nm,on:cRun}),
+ c3:LAB.slider(cbox,{label:'CONF 3 at',min:0,max:15,step:0.5,v:7,f:nm,on:cRun}),
+ c4:LAB.slider(cbox,{label:'FULL at',min:0,max:15,step:0.5,v:6,f:nm,on:cRun})
+};
+const pst=LAB.fit(el('prof'),()=>cRun());
+function cSim(){
+  const ev=[[cs.c1.v,1],[cs.c2.v,2],[cs.c3.v,3],[cs.c4.v,4],[cs.g.v,'g']];
+  let v=cs.v0.v, cfg=0, gear=false; const pts=[], errs=[], marks=[];
+  let reached=null; const dx=0.05;
+  for(let d=15; d>=-0.001; d-=dx){
+    for(const e of ev){ if(Math.abs(e[0]-d)<dx/2){
+      if(e[1]==='g'){ if(!gear){ gear=true; marks.push([d,'G',v]); if(v>250) errs.push(L(F(`Gear extended at ${Math.round(v)} kt, above VLO 250 kt.`,`Understell felt ut på ${Math.round(v)} kt, over VLO 250 kt.`))); } }
+      else if(e[1]>cfg){
+        if(e[1]>cfg+1) errs.push(L(F(`${CFGS[e[1]].n} selected before ${CFGS[cfg+1].n}: select flaps one step at a time.`,`${CFGS[e[1]].n} valgt før ${CFGS[cfg+1].n}: ta flaps ett trinn om gangen.`)));
+        cfg=e[1]; marks.push([d,['','1','2','3','F'][cfg],v]);
+        if(v>CFGS[cfg].vfe+0.5) errs.push(L(F(`${CFGS[cfg].n} selected at ${Math.round(v)} kt, above VFE ${CFGS[cfg].vfe} kt.`,`${CFGS[cfg].n} valgt på ${Math.round(v)} kt, over VFE ${CFGS[cfg].vfe} kt.`)));
+      } } }
+    pts.push([d,v,cfg,gear]);
+    const onPath=d<=GSI, C=CFGS[cfg];
+    let dec=C.dec+(gear?5:0)-(onPath?10:0);
+    const tgt=C.tgt;
+    if(dec>=0){ if(v>tgt) v=Math.max(tgt, v-dec*dx); }
+    else v=Math.min(260, v-dec*dx); // too little drag for the path at idle: the aircraft accelerates
+    if(cfg===4 && reached===null && v<=VAPP+0.5) reached=d;
+  }
+  // overspeed during flight (accelerating clean on path etc.)
+  let over=null; for(const p of pts){ if(p[2]>0 && p[1]>CFGS[p[2]].vfe+1){ over=p; break; } }
+  if(over && !errs.some(x=>x.includes('VFE'))) errs.push(L(F(`Speed exceeded VFE of ${CFGS[over[2]].n} at ${nf(over[0],1)} NM.`,`Farten gikk over VFE for ${CFGS[over[2]].n} ved ${nf(over[0],1)} NM.`)));
+  const gp=pts.reduce((a,p)=>Math.abs(p[0]-GATE)<Math.abs(a[0]-GATE)?p:a,pts[0]);
+  return {pts,errs,marks,gate:gp,reached};
+}
+function cRun(){
+  const r=cSim(), g=pst.ctx, W=pst.w, H=pst.h; if(!W) return;
+  g.clearRect(0,0,W,H);
+  const fs=Math.max(10,Math.min(13,W/55));
+  const l=44, rr=12, t=22, sh=H*0.62, ab=t+sh+26, ah=H-ab-26;
+  const X=d=>l+(15-d)/15*(W-l-rr), Y=v=>t+(1-(v-120)/(260-120))*sh, YA=a=>ab+(1-a/3200)*ah;
+  g.font=`${fs}px "IBM Plex Mono",monospace`; g.textBaseline='middle';
+  // grid
+  g.strokeStyle='#E1E6E6'; g.lineWidth=1; g.fillStyle='#4C5B66'; g.textAlign='right';
+  for(let v=120;v<=260;v+=20){ g.beginPath(); g.moveTo(l,Y(v)); g.lineTo(W-rr,Y(v)); g.stroke(); g.fillText(String(v),l-5,Y(v)); }
+  g.textAlign='center'; for(let d=15;d>=0;d-=1){ const x=X(d); g.beginPath(); g.moveTo(x,t); g.lineTo(x,t+sh); g.stroke(); if(d%3===0||W>700) g.fillText(String(d),x,H-10); }
+  g.textAlign='left'; g.fillText('kt',4,t-10);
+  // gate and intercept
+  g.strokeStyle='#1E5E9E'; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(GATE),t); g.lineTo(X(GATE),ab+ah); g.stroke();
+  g.strokeStyle='#9A1E68'; g.beginPath(); g.moveTo(X(GSI),t); g.lineTo(X(GSI),ab+ah); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#1E5E9E'; g.textAlign='center'; g.fillText('1000 ft',X(GATE),t-10); g.fillStyle='#9A1E68'; g.fillText('G/S',X(GSI),t-10);
+  // VFE step line
+  g.strokeStyle='#B3261E'; g.lineWidth=1.6; g.beginPath(); let first=true;
+  for(const p of r.pts){ const lim=p[2]===0?260:CFGS[p[2]].vfe; const y=Y(Math.min(259,lim)); if(first){ g.moveTo(X(p[0]),y); first=false; } else g.lineTo(X(p[0]),y); } g.stroke();
+  { const lp=r.pts[r.pts.length-1]; g.fillStyle='#B3261E'; g.textAlign='right'; g.fillText('VFE',W-rr-4,Y(Math.min(259,lp[2]===0?260:CFGS[lp[2]].vfe))-9); }
+  // VAPP band
+  g.fillStyle='rgba(44,122,75,.12)'; g.fillRect(l,Y(VAPP+10),W-l-rr,Y(VAPP-5)-Y(VAPP+10));
+  g.fillStyle='#2C7A4B'; g.textAlign='left'; g.fillText('VAPP +10/−5',l+4,Y(VAPP-5)-8);
+  // speed curve
+  g.strokeStyle='#1E5E9E'; g.lineWidth=2.4; g.beginPath(); r.pts.forEach((p,i)=>{ const x=X(p[0]), y=Y(Math.min(260,p[1])); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke();
+  // marks
+  g.font=`600 ${fs}px "Public Sans",sans-serif`;
+  r.marks.forEach(([d,lab,v])=>{ const x=X(d), y=Y(Math.min(258,v)); g.fillStyle='#13202A'; g.beginPath(); g.arc(x,y,8.5,0,7); g.fill(); g.fillStyle='#fff'; g.textAlign='center'; g.fillText(lab,x,y+0.5); });
+  // altitude panel
+  g.font=`${fs}px "IBM Plex Mono",monospace`;
+  g.strokeStyle='#C6D0D3'; g.lineWidth=1; g.strokeRect(l,ab,W-l-rr,ah);
+  g.strokeStyle='#4C5B66'; g.lineWidth=2; g.beginPath(); g.moveTo(X(15),YA(3000)); g.lineTo(X(GSI),YA(3000)); g.lineTo(X(0),YA(50)); g.stroke();
+  g.fillStyle='#4C5B66'; g.textAlign='right'; g.fillText('3000',l-5,YA(3000)); g.fillText('0',l-5,YA(0)); g.textAlign='left'; g.fillText(L(F('altitude, ft','høyde, ft')),l+4,ab+ah-8); g.textAlign='right'; g.fillText(L(F('distance to threshold, NM','avstand til terskel, NM')),W-rr-4,ab+10);
+  // results
+  const gp=r.gate, items=[];
+  r.errs.forEach(e=>items.push(['bad',e]));
+  if(!r.errs.length) items.push(['ok',L(F('No limit speed exceeded and flaps selected in sequence.','Ingen grensefart overskredet, og flaps valgt i rekkefølge.'))]);
+  const spd=gp[1];
+  items.push([gp[2]===4?'ok':gp[2]===3?'warn':'bad', gp[2]===4?L(F('1000 ft: landing configuration (FULL).','1000 ft: landingskonfigurasjon (FULL).')):gp[2]===3?L(F('1000 ft: CONF 3. Acceptable only if CONF 3 is the planned landing flap.','1000 ft: CONF 3. Bare greit hvis CONF 3 er planlagt landingsflap.')):L(F(`1000 ft: still in ${CFGS[gp[2]].n}, not in landing configuration.`,`1000 ft: fortsatt i ${CFGS[gp[2]].n}, ikke i landingskonfigurasjon.`))]);
+  items.push([gp[3]?'ok':'bad', gp[3]?L(F('1000 ft: gear down.','1000 ft: understell nede.')):L(F('1000 ft: gear still up.','1000 ft: understell fortsatt oppe.'))]);
+  const sOk=spd<=VAPP+10&&spd>=VAPP-5;
+  items.push([sOk?'ok':'bad', L(F(`1000 ft: speed ${Math.round(spd)} kt (VAPP ${VAPP}, +10/−5).`,`1000 ft: fart ${Math.round(spd)} kt (VAPP ${VAPP}, +10/−5).`))]);
+  const stab=r.reached!==null && r.reached>=GATE+0.3;
+  items.push([stab?'ok':'bad', stab?L(F(`Thrust stabilised: on speed from ${nf(r.reached,1)} NM, before the gate.`,`Thrust stabilisert: på fart fra ${nf(r.reached,1)} NM, før porten.`)):L(F('Thrust not stabilised at the gate: the aircraft is still decelerating at idle.','Thrust ikke stabilisert ved porten: flyet bremser fortsatt på idle.'))]);
+  const allOk=!r.errs.length&&gp[2]>=3&&gp[3]&&sOk&&stab;
+  items.push([allOk?'ok':'bad', allOk?L(F('Stable at the gate: continue.','Stabil ved porten: fortsett.')):L(F('Not stable at 1000 ft in IMC: go around.','Ikke stabil ved 1000 ft i IMC: go-around.'))]);
+  el('cres').innerHTML=items.map(([c,t])=>`<li class="${c==='ok'?'':c}">${esc(t)}</li>`).join('');
+}
+
+/* go-around order */
+const GA=[
+ F('Thrust levers to TOGA and call the go-around','Thrusthendlene til TOGA og meld go-around'),
+ F('Rotate to the go-around attitude (about 15°) and hold it','Roter til go-around-attityden (rundt 15°) og hold den'),
+ F('PF asks for flaps; PM retracts them one step','PF ber om flaps; PM tar dem inn ett trinn'),
+ F('Positive climb confirmed, then gear up','Positiv stigning bekreftet, så understell opp'),
+ F('Fly the missed approach track and plan the level-off','Fly sporet for bortkjøring og planlegg utflatingen'),
+ F('At acceleration altitude: climb thrust, lower the nose, accelerate','På akselerasjonshøyde: climb thrust, senk nesen, akselerer'),
+ F('Retract the remaining flaps on the F and S speeds','Ta inn resten av flapsene på F- og S-fart')
+];
+let gaNext=0, gaOrder=[];
+function gaReset(){ gaNext=0; gaOrder=LAB.shuffle(GA.map((_,i)=>i)); gaDraw(''); }
+function gaDraw(msg){
+  el('gaord').innerHTML=gaOrder.map(i=>`<button data-i="${i}" class="${i<gaNext?'done':''}">${esc(L(GA[i]))}</button>`).join('');
+  el('galist').innerHTML=GA.slice(0,gaNext).map(x=>`<li>${esc(L(x))}</li>`).join('');
+  el('gafb').innerHTML=msg||(gaNext===GA.length?`<span class="good">${esc(L(F('Complete. Thrust and pitch first, then configuration, then navigation and clean-up.','Ferdig. Thrust og pitch først, så konfigurasjon, så navigasjon og opprydding.')))}</span>`:'');
+}
+el('gaord').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const i=+b.dataset.i; if(i<gaNext) return;
+  if(i===gaNext){ gaNext++; gaDraw(''); }
+  else { gaDraw(`<span class="bad">${esc(L(F('Not yet. What must happen before that?','Ikke ennå. Hva må skje før det?')))}</span>`); const nb=el('gaord').querySelector(`[data-i="${i}"]`); if(nb) nb.classList.add('no'); } });
+el('gareset').onclick=gaReset;
+
+/* ================= 4 · Calls drill ================= */
+const PM=F('You are PM','Du er PM'), PF=F('You are PF','Du er PF');
+const CALLS=[
+ {r:PM,ev:F('Take-off roll: the PF has set take-off thrust and the engines have stabilised at the target.','Startrull: PF har satt startthrust og motorene har stabilisert seg på målet.'),a:[F('“Thrust set”','«Thrust set»'),F('“V1”','«V1»'),F('“Rotate”','«Rotate»'),F('Nothing; the PF can see it','Ingenting; PF ser det selv')],why:F('Confirms that the thrust the PF wants is actually there before the aircraft is committed.','Bekrefter at thrusten PF vil ha faktisk er der før flyet er forpliktet.')},
+ {r:PM,ev:F('Take-off roll: the airspeed passes 100 kt.','Startrull: farten passerer 100 kt.'),a:[F('“One hundred knots”','«One hundred knots»'),F('“Thrust set”','«Thrust set»'),F('“Speed checked”','«Speed checked»'),F('“V1”','«V1»')],why:F('Both airspeed indicators are cross-checked; the PF answers “checked”. It also marks the change to the high-speed part of the take-off, where only serious failures justify a rejected take-off.','Begge fartsmålerne kryssjekkes; PF svarer «checked». Den markerer også overgangen til høyfartsdelen av starten, der bare alvorlige feil rettferdiggjør avbrutt start.')},
+ {r:PM,ev:F('Take-off roll: the speed reaches the decision speed.','Startrull: farten når beslutningsfarten.'),a:[F('“V1”','«V1»'),F('“Rotate”','«Rotate»'),F('“Positive climb”','«Positive climb»'),F('“One hundred knots”','«One hundred knots»')],why:F('After V1 the take-off continues: the call tells the PF that the stop option is gone.','Etter V1 fortsetter starten: callouten forteller PF at muligheten til å stoppe er borte.')},
+ {r:PM,ev:F('After lift-off: the altimeter is increasing and the vertical speed is positive.','Etter lift-off: høydemåleren øker og vertikalfarten er positiv.'),a:[F('“Positive climb”','«Positive climb»'),F('“Gear up”','«Gear up»'),F('“Climbing”','«Climbing»'),F('“V2”','«V2»')],why:F('The PM confirms a real climb on two indications; the PF then orders “gear up”. Retracting the gear before a positive climb risks touching back down on the gear doors.','PM bekrefter reell stigning på to indikasjoner; PF beordrer så «gear up». Å ta inn understellet før positiv stigning gir risiko for å sette seg ned igjen på understellsdørene.')},
+ {r:PF,ev:F('The PM calls “positive climb”.','PM melder «positive climb».'),a:[F('“Gear up”','«Gear up»'),F('“Flaps up”','«Flaps up»'),F('“Checked”','«Checked»'),F('“Climb thrust”','«Climb thrust»')],why:F('Gear retraction on the PF’s command, after the climb is confirmed: a clear split of who decides and who acts.','Inntak av understell på PFs kommando, etter at stigningen er bekreftet: tydelig fordeling av hvem som bestemmer og hvem som utfører.')},
+ {r:PM,ev:F('Climbing, you are 1000 ft below the cleared altitude.','I stigning er du 1000 ft under klarert høyde.'),a:[F('“One thousand to go”','«One thousand to go»'),F('“Altitude”','«Altitude»'),F('“Level off”','«Level off»'),F('Nothing until the altitude is reached','Ingenting før høyden er nådd')],why:F('Gives both pilots time to prepare the level-off and to check the cleared altitude is the one set. Many altitude busts happen in the last 1000 ft.','Gir begge pilotene tid til å forberede utflatingen og sjekke at klarert høyde er den som er satt. Mange høydeoverskridelser skjer de siste 1000 ft.')},
+ {r:PM,ev:F('Climbing through the transition altitude.','Stiger gjennom overgangshøyden.'),a:[F('“Transition altitude, standard set”, then cross-check both altimeters','«Transition altitude, standard set», så kryssjekk begge høydemålerne'),F('“QNH set”','«QNH set»'),F('“Flight level”','«Flight level»'),F('Set standard on your own side only','Sett standard bare på din side')],why:F('Both altimeters must change to 1013 hPa together and be compared, so the crew flies the same flight level.','Begge høydemålerne må settes til 1013 hPa samtidig og sammenlignes, så besetningen flyr samme flygenivå.')},
+ {r:PM,ev:F('Descending through the transition level, the QNH has been given by ATC.','Synker gjennom overgangsnivået, og ATC har gitt QNH.'),a:[F('“Transition level, QNH … set”, then compare the altimeters','«Transition level, QNH … set», så sammenlign høydemålerne'),F('“Standard set”','«Standard set»'),F('“Altimeters checked”, without saying the value','«Altimeters checked», uten å si verdien'),F('Set QNH when the approach starts','Sett QNH når innflygingen starter')],why:F('Saying the value lets the other pilot catch a wrong setting; comparing the readings checks both instruments.','Når verdien sies, kan den andre piloten fange en feil innstilling; sammenligning av avlesningene sjekker begge instrumentene.')},
+ {r:PM,ev:F('On vectors, the localizer deviation starts to move from full scale.','På vektorer begynner localizer-avviket å bevege seg fra fullt utslag.'),a:[F('“Localizer alive”','«Localizer alive»'),F('“Localizer”','«Localizer»'),F('“Established”','«Established»'),F('“On course”','«On course»')],why:F('Warns the PF that the intercept turn is coming, so the turn can be started on time instead of overshooting.','Varsler PF om at interceptsvingen kommer, så svingen kan startes i tide i stedet for å skyte over.')},
+ {r:PM,ev:F('On the localizer, the glide path deviation starts to move.','På localizer begynner glidebaneavviket å bevege seg.'),a:[F('“Glide slope alive”','«Glide slope alive»'),F('“Glide slope”','«Glide slope»'),F('“Gear down”','«Gear down»'),F('“Minimum”','«Minimum»')],why:F('Starts the final configuration and prepares the PF for the pitch and thrust change at capture.','Starter siste konfigurasjon og forbereder PF på pitch- og thrustendringen ved interception.')},
+ {r:PM,ev:F('The PF asks for flaps 2. The speed is below VFE for CONF 2.','PF ber om flaps 2. Farten er under VFE for CONF 2.'),a:[F('“Speed checked, flaps two”, after selecting','«Speed checked, flaps two», etter valget'),F('Select silently','Velg uten å si noe'),F('“Flaps two” without looking at the speed','«Flaps two» uten å se på farten'),F('“Unable”','«Unable»')],why:F('The PM checks the speed against the limit before moving the lever, and announces the selection so the PF knows it has happened.','PM sjekker farten mot grensen før hendelen flyttes, og melder valget så PF vet at det er gjort.')},
+ {r:PM,ev:F('On final, the aircraft drifts more than 1 dot off the glide path.','På finalen driver flyet mer enn 1 prikk ut av glidebanen.'),a:[F('“Glide slope”','«Glide slope»'),F('“Go around”','«Go around»'),F('“Sink rate”','«Sink rate»'),F('Nothing; the PF is correcting','Ingenting; PF korrigerer')],why:F('A short deviation call; the PF answers “correcting”. The PM speaks even if the PF seems to have seen it: that is the cross-check.','En kort avvikscallout; PF svarer «correcting». PM sier ifra selv om PF ser ut til å ha sett det: det er kryssjekken.')},
+ {r:PF,ev:F('The PM calls “localizer”.','PM melder «localizer».'),a:[F('“Correcting”','«Correcting»'),F('“Checked”','«Checked»'),F('“Go around”','«Go around»'),F('No answer needed','Ikke nødvendig å svare')],why:F('Acknowledging closes the loop: the PM knows the PF has heard and is acting. If the deviation keeps growing, the PM calls again.','Å bekrefte lukker sløyfen: PM vet at PF har hørt og handler. Øker avviket, melder PM igjen.')},
+ {r:PM,ev:F('On final, the speed goes 12 kt above the target.','På finalen går farten 12 kt over målet.'),a:[F('“Speed”','«Speed»'),F('“Slow down”','«Slow down»'),F('“Thrust idle”','«Thrust idle»'),F('“Go around”','«Go around»')],why:F('Name the parameter, not the fix: the PF decides the correction. Common limits are +10/−5 kt.','Nevn parameteren, ikke løsningen: PF bestemmer korreksjonen. Vanlige grenser er +10/−5 kt.')},
+ {r:PM,ev:F('On final, the rate of descent goes above 1000 ft/min.','På finalen går synkraten over 1000 ft/min.'),a:[F('“Sink rate”','«Sink rate»'),F('“Glide slope”','«Glide slope»'),F('“Pull up”','«Pull up»'),F('“Speed”','«Speed»')],why:F('A high rate close to the ground is an early sign of an unstable approach.','Høy synkrate nær bakken er et tidlig tegn på en ustabil innflyging.')},
+ {r:PM,ev:F('The aircraft is 100 ft above the decision altitude.','Flyet er 100 ft over beslutningshøyden.'),a:[F('“One hundred above”','«One hundred above»'),F('“Minimum”','«Minimum»'),F('“Decide”','«Decide»'),F('“Approaching”','«Approaching»')],why:F('Prepares the PF for the decision and moves the eyes towards the outside view.','Forbereder PF på beslutningen og flytter blikket mot utsiden.')},
+ {r:PF,ev:F('The PM calls “minimum”. You have no visual reference.','PM melder «minimum». Du har ingen visuell referanse.'),a:[F('“Go around, flaps”','«Go around, flaps»'),F('“Continue”','«Continue»'),F('Level off and look','Flat ut og se etter banen'),F('“Checked”','«Checked»')],why:F('One call starts the whole go-around: thrust, pitch and the request for flap retraction.','Én callout starter hele go-arounden: thrust, pitch og bestilling av flapsinntak.')}
+];
+let cq=null, cScore=0, cN=0, cBag=[];
+function cNext(){ if(!cBag.length) cBag=LAB.shuffle(CALLS.slice()); const c=cBag.pop(); const o=LAB.shuffle(c.a.map((a,i)=>({a,ok:i===0}))); cq={c,o,pick:-1}; cDraw(); }
+function cDraw(){
+  if(!cq) return; const {c,o,pick}=cq, done=pick>=0;
+  el('cdrill').innerHTML=`<div class="score">${esc(L(F('Score','Poeng')))}: ${cScore} / ${cN}</div>
+   <div class="ev"><span class="role">${esc(L(c.r))}</span><p>${esc(L(c.ev))}</p></div>
+   <div class="opts">${o.map((x,i)=>`<button data-i="${i}" ${done?'disabled':''} class="${done?(x.ok?'right':(i===pick?'wrong':'')):''}">${esc(L(x.a))}</button>`).join('')}</div>
+   ${done?`<p class="fbk"><b class="${o[pick].ok?'good':'bad'}">${esc(L(o[pick].ok?F('Correct.','Riktig.'):F('Not quite.','Ikke helt.')))}</b> ${esc(L(c.why))}</p><div class="btns"><button class="btn pri" id="cnext">${esc(L(F('Next event','Neste hendelse')))}</button></div>`:''}`;
+  el('cdrill').querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ if(cq.pick>=0) return; cq.pick=+b.dataset.i; cN++; if(cq.o[cq.pick].ok) cScore++; cDraw(); });
+  const n=el('cnext'); if(n) n.onclick=cNext;
+}
+
+/* ================= 5 · Scan drill ================= */
+const BASE={pitch:2.5,bank:0,ias:250,tgt:250,vmax:350,vmin:205,alt:5000,altTgt:5000,vs:0,hdg:90,hdgTgt:90,n1:57};
+const APP={pitch:2.5,bank:0,ias:135,tgt:135,vmax:177,vmin:128,alt:1800,vs:-700,hdg:270,hdgTgt:270,n1:57,ils:true,loc:0,gs:0};
+const SCN=[
+ {s:{...BASE,ias:240,tgt:250,trend:-4,n1:53},hl:'spd',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Hold the attitude, add a few percent N1','Hold attityden, legg på noen prosent N1'),F('Lower the nose 2° to gain speed','Senk nesen 2° for å få fart'),F('Add a lot of thrust, then reduce later','Legg på mye thrust, og reduser senere')],
+  why:F('Altitude is right, so the attitude is right. Only the energy is short: thrust. In normal law the path stays put while the speed builds; check that the attitude does not drift.','Høyden stemmer, så attityden stemmer. Det er bare energien som mangler: thrust. I normal law blir banen liggende mens farten øker; sjekk at attityden ikke driver.')},
+ {s:{...BASE,ias:262,trend:3,n1:62},hl:'spd',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Hold the attitude, reduce a few percent N1','Hold attityden, reduser noen prosent N1'),F('Raise the nose to slow down','Løft nesen for å senke farten'),F('Thrust to idle until on speed','Thrust til idle til du er på fart')],
+  why:F('On altitude but fast: too much thrust for this attitude. Reduce a little and wait; idle overshoots the other way.','På høyde men for fort: for mye thrust for denne attityden. Reduser litt og vent; idle gir overskyting andre veien.')},
+ {s:{...BASE,alt:4890,ias:259,trend:2,pitch:2,vs:-100},hl:'alt',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Raise the nose about 1°, leave the thrust','Løft nesen rundt 1°, la thrust stå'),F('Add thrust only','Bare legg på thrust'),F('Raise the nose 5° to get back quickly','Løft nesen 5° for å komme raskt tilbake')],
+  why:F('Low and fast is an energy trade: convert the extra speed back into height with a small pitch increase. When both are back, the thrust was right all along.','Lav og rask er et energibytte: gjør den ekstra farten om til høyde med en liten pitchøkning. Når begge er tilbake, var thrusten riktig hele tiden.')},
+ {s:{...BASE,alt:5110,ias:241,trend:-2,pitch:3.5,vs:100},hl:'alt',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Lower the nose about 1°, leave the thrust','Senk nesen rundt 1°, la thrust stå'),F('Reduce thrust','Reduser thrust'),F('Add thrust and hold the attitude','Legg på thrust og hold attityden')],
+  why:F('High and slow: the speed went into height. Lower the nose a little and the aircraft trades it back.','Høy og sakte: farten gikk over i høyde. Senk nesen litt, så bytter flyet den tilbake.')},
+ {s:{...BASE,alt:4900,pitch:1.5,vs:-200,n1:57},hl:'alt',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Raise the nose about 1° and add a little thrust','Løft nesen rundt 1° og legg på litt thrust'),F('Raise the nose about 1°, leave the thrust','Løft nesen rundt 1°, la thrust stå'),F('Add thrust only','Bare legg på thrust')],
+  why:F('Low but on speed: there is no extra speed to trade. Climbing back needs energy, so add a little thrust with the pitch, then return both to the level values.','Lav men på fart: det finnes ingen ekstra fart å bytte. Å stige tilbake krever energi, så legg på litt thrust med pitchen, og sett så begge tilbake til planverdiene.')},
+ {s:{...BASE,hdg:78,vs:0},hl:'hdg',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Bank about 10° right, roll out on 090','Krengning rundt 10° til høyre, rull ut på 090'),F('Bank 25° right','Krengning 25° til høyre'),F('Use rudder to yaw the nose round','Bruk rorpedal for å gire nesen rundt')],
+  why:F('A common rule: bank about the size of the heading error, up to the normal maximum. 12° off needs a gentle turn, not a full rate turn.','En vanlig regel: krengning rundt like stor som kursfeilen, opp til normal maks. 12° feil trenger en slak sving, ikke en full standardsving.')},
+ {s:{...BASE,vs:-500,alt:4980,pitch:0.5},hl:'vs',task:F('Level at 5000 ft, 250 kt, heading 090.','Plant på 5000 ft, 250 kt, kurs 090.'),
+  a:[F('Return to the level attitude to stop the trend','Gå tilbake til planattityden for å stoppe trenden'),F('Wait until the altitude is 100 ft off','Vent til høyden er 100 ft unna'),F('Add thrust to stop the descent','Legg på thrust for å stoppe nedstigningen')],
+  why:F('The altitude is still almost right, but the vertical speed shows where it is going. Fix the cause, the attitude, before the deviation grows.','Høyden er fortsatt nesten riktig, men vertikalfarten viser hvor den er på vei. Rett årsaken, attityden, før avviket vokser.')},
+ {s:{...APP,gs:1.1,vs:-950,pitch:1.5,n1:55,alt:1700},hl:'ils',task:F('ILS final, CONF FULL, VAPP 135 kt.','ILS-final, CONF FULL, VAPP 135 kt.'),
+  a:[F('Raise the nose about 1° and add a little thrust','Løft nesen rundt 1° og legg på litt thrust'),F('Lower the nose to catch the diamond','Senk nesen for å fange diamanten'),F('Add thrust only','Bare legg på thrust')],
+  why:F('The glide path diamond is above the centre, so the path is above you: you are low. Reduce the descent rate with a small pitch increase and a touch of thrust to keep the speed.','Glidebanediamanten er over midten, så banen er over deg: du er lav. Reduser synkraten med en liten pitchøkning og litt thrust for å holde farten.')},
+ {s:{...APP,gs:-1,vs:-500,pitch:3,n1:58},hl:'ils',task:F('ILS final, CONF FULL, VAPP 135 kt.','ILS-final, CONF FULL, VAPP 135 kt.'),
+  a:[F('Lower the nose about 1° and reduce a little thrust','Senk nesen rundt 1° og reduser litt thrust'),F('Lower the nose 4°','Senk nesen 4°'),F('Reduce thrust to idle','Thrust til idle')],
+  why:F('Diamond below the centre: you are high. A larger rate of descent for a short time, with a little less thrust so the speed does not rise, then back to the normal approach values when re-established.','Diamanten under midten: du er høy. Litt større synkrate en kort stund, med litt mindre thrust så farten ikke stiger, og så tilbake til normale innflygingsverdier når du er etablert igjen.')},
+ {s:{...APP,loc:-1},hl:'ils',task:F('ILS final, CONF FULL, VAPP 135 kt, inbound course 270.','ILS-final, CONF FULL, VAPP 135 kt, inngående kurs 270.'),
+  a:[F('Turn left about 5°, then watch the needle and take out the correction as it centres','Sving rundt 5° til venstre, følg viseren og ta ut korreksjonen når den sentreres'),F('Turn left 20°','Sving 20° til venstre'),F('Turn right towards the centre of the scale','Sving til høyre mot midten av skalaen')],
+  why:F('Fly towards the diamond: it is left, so the localizer is left. Close to the runway the needle is sensitive, so a few degrees are enough.','Fly mot diamanten: den er til venstre, så localizer er til venstre. Nær banen er viseren følsom, så noen få grader er nok.')}
+];
+const sst=LAB.fit(el('spfd'),()=>sDraw());
+let sq=null, sScore=0, sN=0, sBag=[];
+function sNext(){ if(!sBag.length) sBag=LAB.shuffle(SCN.slice()); const c=sBag.pop(); sq={c,o:LAB.shuffle(c.a.map((a,i)=>({a,ok:i===0}))),pick:-1}; sDraw(); }
+function sDraw(){
+  if(!sq) return; const {c,o,pick}=sq, done=pick>=0;
+  pfd(sst,{...c.s,hl:done?c.hl:null});
+  el('sdrill').innerHTML=`<div class="score">${esc(L(F('Score','Poeng')))}: ${sScore} / ${sN}</div>
+   <div class="ev"><span class="role">${esc(L(F('Target','Mål')))}</span><p>${esc(L(c.task))}</p></div>
+   <p class="note" style="margin:0">${esc(L(F('What do you do first?','Hva gjør du først?')))}</p>
+   <div class="opts">${o.map((x,i)=>`<button data-i="${i}" ${done?'disabled':''} class="${done?(x.ok?'right':(i===pick?'wrong':'')):''}">${esc(L(x.a))}</button>`).join('')}</div>
+   ${done?`<p class="fbk"><b class="${o[pick].ok?'good':'bad'}">${esc(L(o[pick].ok?F('Correct.','Riktig.'):F('Not quite.','Ikke helt.')))}</b> ${esc(L(c.why))}</p><div class="btns"><button class="btn pri" id="snext">${esc(L(F('Next situation','Neste situasjon')))}</button></div>`:''}`;
+  el('sdrill').querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ if(sq.pick>=0) return; sq.pick=+b.dataset.i; sN++; if(sq.o[sq.pick].ok) sScore++; sDraw(); });
+  const n=el('snext'); if(n) n.onclick=sNext;
+}
+
+/* ================= 6 · Ready ================= */
+const RD=[
+ [F('Learn the guide by heart','Lær guiden utenat'),F('This is what the airline recommends. Learn the procedures, the calls and the flap and speed schedule in your candidate guide until you can say them without looking, then fly them exactly as written.','Dette er det flyselskapet anbefaler. Lær prosedyrene, callouts og flap- og fartsskjemaet i kandidatguiden til du kan dem uten å se, og fly dem nøyaktig slik de står.'),'key'],
+ [F('Drill the real guide','Drill den ekte guiden'),F('Upload your guide privately in <a href="fi.html">Flight Intelligence</a> and let it question you on its exact calls, speeds and checklists.','Last opp guiden din privat i <a href="fi.html">Flight Intelligence</a> og la den spørre deg om nøyaktig de callouts, fartene og sjekklistene.')],
+ [F('Prepare the PM part too','Forbered PM-delen også'),F('Half the session is pilot monitoring, and it is assessed. Know when to check the speed before moving the flaps, which deviations to call, and how to run each checklist.','Halve økten er pilot monitoring, og den vurderes. Vit når du sjekker farten før du flytter flapsene, hvilke avvik du melder, og hvordan du kjører hver sjekkliste.')],
+ [F('Chair-fly every profile','Stolfly hver profil'),F('With a picture of the A320 cockpit, fly each manoeuvre in your head: hands, calls and what you expect to see, in both seats. Repeat until the sequence runs without effort.','Med et bilde av A320-cockpiten, fly hver manøver i hodet: hender, callouts og hva du forventer å se, i begge seter. Gjenta til rekkefølgen går av seg selv.')],
+ [F('Pitch and power numbers','Pitch- og thrustverdier'),F('Carry a small set of attitude and N1 values for each configuration. Check them in the first minutes in the simulator and adjust to what that device actually needs.','Ha et lite sett med attityde- og N1-verdier for hver konfigurasjon. Sjekk dem de første minuttene i simulatoren og juster til det den faktisk trenger.')],
+ [F('Practise raw data only','Øv bare på rådata'),F('If you have access to any simulator, fly with the flight director and autothrust off. The scan without command bars feels different, and that is what you will have on the day.','Har du tilgang til en simulator, fly med flight director og autothrust av. Skanningen uten kommandostreker føles annerledes, og det er det du får på dagen.')],
+ [F('Unfamiliar charts, briefed out loud','Ukjente kart, brifet høyt'),F('The charts are handed out on the day. Practise picking out the key numbers from any approach chart quickly and briefing them in a fixed order on the <a href="briefing.html">briefings page</a>.','Kartene deles ut på dagen. Øv på å finne nøkkeltallene i et hvilket som helst innflygingskart raskt og brife dem i fast rekkefølge på <a href="briefing.html">briefingsiden</a>.')],
+ [F('CRM behaviour','CRM-atferd'),F('Say what you see and plan. Use the PM for radio and selections, confirm what you hear, and as PM speak up early and clearly.','Si hva du ser og planlegger. Bruk PM til radio og valg, bekreft det du hører, og si ifra tidlig og tydelig som PM.')],
+ [F('When you make an error','Når du gjør en feil'),F('Fly the aircraft first, then say what happened and what you are doing about it, and carry on. How you handle an error usually counts for more than the error itself.','Fly flyet først, si så hva som skjedde og hva du gjør med det, og fortsett. Hvordan du håndterer en feil, teller som regel mer enn selve feilen.')]
+];
+function ready(){
+  el('rcards').innerHTML=RD.map(([t,d,c],i)=>`<div class="box${c?' '+c:''}"><span class="n">${String(i+1).padStart(2,'0')}</span><b class="t">${esc(L(t))}</b><p>${L(d)}</p></div>`).join('');
+  el('rmore').innerHTML=L(F('Background: <a href="approach.html">Instrument approach</a> (needles, rates, CDFA), <a href="holding.html">Holding</a>, <a href="autoflight.html">Autoflight and FMA</a>, <a href="performance.html">Performance</a>, <a href="highspeed.html">High-speed flight</a>.','Bakgrunn: <a href="approach.html">Instrumentinnflyging</a> (visere, rater, CDFA), <a href="holding.html">Holding</a>, <a href="autoflight.html">Autoflight og FMA</a>, <a href="performance.html">Ytelse</a>, <a href="highspeed.html">Høyfartsflyging</a>.'));
+}
+
+/* ================= 7 · Quiz ================= */
+const QZ=[
+ {q:F('In a 45° level turn, what has to change compared with level flight?','Hva må endres i en plan sving med 45° krengning sammenlignet med plan flyging?'),a:[F('More pitch and a little more thrust, because the load factor is about 1.4','Mer pitch og litt mer thrust, fordi lastfaktoren er rundt 1,4'),F('Nothing, if the turn is coordinated','Ingenting, hvis svingen er koordinert'),F('Less pitch, because the aircraft turns faster','Mindre pitch, fordi flyet svinger raskere')],e:F('The lift must carry 1/cos 45° ≈ 1.41 times the weight. More angle of attack means more drag, so thrust goes up too.','Løftet må bære 1/cos 45° ≈ 1,41 ganger vekten. Mer angrepsvinkel gir mer motstand, så thrust må også opp.')},
+ {q:F('You are in a 45° bank turn to heading 270. When do you start rolling out?','Du er i en sving med 45° krengning mot kurs 270. Når begynner du å rulle ut?'),a:[F('About 20° before 270','Rundt 20° før 270'),F('Exactly at 270','Akkurat på 270'),F('About 45° before 270','Rundt 45° før 270')],e:F('A common lead is about half the bank angle.','En vanlig forvarsling er rundt halve krengningsvinkelen.')},
+ {q:F('Groundspeed 140 kt on a 3° path. About which rate of descent?','Groundspeed 140 kt på en 3°-bane. Omtrent hvilken synkrate?'),a:[F('About 750 ft/min','Rundt 750 ft/min'),F('About 450 ft/min','Rundt 450 ft/min'),F('About 1100 ft/min','Rundt 1100 ft/min')],e:F('140 × 5.3 ≈ 740 ft/min.','140 × 5,3 ≈ 740 ft/min.')},
+ {q:F('Level flight: altitude exactly on target, speed 10 kt slow. What do you change?','Plan flyging: høyden akkurat på målet, farten 10 kt for lav. Hva endrer du?'),a:[F('Thrust up a little, hold the attitude','Litt mer thrust, hold attityden'),F('Lower the nose','Senk nesen'),F('Raise the nose','Løft nesen')],e:F('Altitude right means the attitude is right; only thrust is short.','Riktig høyde betyr riktig attityde; det er bare thrust som mangler.')},
+ {q:F('Level flight: 100 ft low and 10 kt fast. What is the best first correction?','Plan flyging: 100 ft lav og 10 kt for rask. Hva er beste første korreksjon?'),a:[F('Raise the nose slightly and leave the thrust','Løft nesen litt og la thrust stå'),F('Add thrust','Legg på thrust'),F('Reduce thrust and raise the nose a lot','Reduser thrust og løft nesen mye')],e:F('Trade the extra speed for the missing height.','Bytt den ekstra farten mot høyden som mangler.')},
+ {q:F('The A320 engines are mounted below the wing. You add thrust quickly in normal law, stick neutral. What do you see?','A320-motorene sitter under vingen. Du legger på thrust raskt i normal law med nøytral stikke. Hva ser du?'),a:[F('Little pitch change: the law counters the nose-up couple and holds the path, and the speed increases','Lite pitchendring: loven motvirker nese-opp-momentet og holder banen, og farten øker'),F('A strong pitch-up that you must trim out with the trim wheel','En kraftig nese-opp som du må trimme bort med trimhjulet'),F('The nose pitches down','Nesen går ned')],e:F('The thrust line below the centre of gravity gives a nose-up moment, but normal law holds the flight path and trims. In alternate or direct law you feel the couple, and in direct law you trim by hand.','Thrustlinjen under tyngdepunktet gir et nese-opp-moment, men normal law holder flybanen og trimmer. I alternate eller direct law kjenner du momentet, og i direct law trimmer du for hånd.')},
+ {q:F('Normal law, steep turn at 45° bank. You release the sidestick. What happens?','Normal law, krapp sving med 45° krengning. Du slipper sidesticken. Hva skjer?'),a:[F('The aircraft rolls back to 33° and the nose drops slightly, because the pitch compensation and the auto-trim stop at 33°','Flyet ruller tilbake til 33° og nesen går litt ned, fordi pitchkompensasjonen og autotrim stopper ved 33°'),F('It holds 45° and the altitude, as it does at 25°','Det holder 45° og høyden, slik det gjør ved 25°'),F('It rolls wings level at once','Det ruller vingene plant med en gang')],e:F('Bank is held with the stick neutral only up to 33°. Beyond that the roll input and some aft stick must be held.','Krengning holdes med nøytral stikke bare opp til 33°. Utover det må rullutslaget og litt bakover stikke holdes.')},
+ {q:F('The PF asks for flaps 2 at 210 kt. With the typical A320 limit of 200 kt for CONF 2, the PM…','PF ber om flaps 2 på 210 kt. Med typisk A320-grense på 200 kt for CONF 2, gjør PM …'),a:[F('does not select yet and tells the PF the speed is too high','venter med å velge og sier til PF at farten er for høy'),F('selects them; the aircraft protects itself','velger dem; flyet beskytter seg selv'),F('selects CONF 3 instead','velger CONF 3 i stedet')],e:F('Checking the speed before moving the lever is exactly what “speed checked” means.','Å sjekke farten før hendelen flyttes er nettopp det «speed checked» betyr.')},
+ {q:F('Which of these belongs to a commonly used stable approach gate in IMC?','Hva hører med i en vanlig brukt stabiliseringsport i IMC?'),a:[F('At 1000 ft: on the path, landing configuration, on speed, thrust stabilised','På 1000 ft: på banen, landingskonfigurasjon, på fart, thrust stabilisert'),F('At 500 ft: gear down only','På 500 ft: bare understell nede'),F('At the minimum: runway in sight','På minimum: banen i sikte')],e:F('Many operators use 1000 ft in IMC and 500 ft in VMC. Not stable means go around.','Mange operatører bruker 1000 ft i IMC og 500 ft i VMC. Ikke stabil betyr go-around.')},
+ {q:F('On a 2D approach flown as CDFA you reach the derived decision altitude without visual reference. You…','På en 2D-innflyging fløyet som CDFA når du avledet beslutningshøyde uten visuell referanse. Du …'),a:[F('go around','går rundt'),F('level off at the MDA and look','flater ut på MDA og ser etter banen'),F('continue to the missed approach point','fortsetter til missed approach point')],e:F('CDFA removes the level segment at the minimum: decide and go around.','CDFA fjerner det plane segmentet på minimum: bestem deg og gå rundt.')},
+ {q:F('Go-around from CONF FULL. How far are the flaps retracted at first?','Go-around fra CONF FULL. Hvor langt tas flapsene inn først?'),a:[F('One step','Ett trinn'),F('Fully up','Helt inn'),F('Not at all until acceleration altitude','Ikke i det hele tatt før akselerasjonshøyde')],e:F('One step reduces drag while keeping a margin above the stall at the low go-around speed.','Ett trinn reduserer motstanden og beholder margin over stall ved den lave go-around-farten.')},
+ {q:F('Climbing at 2000 ft/min towards a cleared altitude. When do you start the level-off?','Stiger med 2000 ft/min mot klarert høyde. Når begynner du utflatingen?'),a:[F('About 200 ft before','Rundt 200 ft før'),F('At the altitude','På høyden'),F('About 1000 ft before','Rundt 1000 ft før')],e:F('About 10 % of the vertical speed.','Rundt 10 % av vertikalfarten.')},
+ {q:F('In a raw-data scan, which instrument is at the centre?','Hvilket instrument er sentrum i en rådataskanning?'),a:[F('The attitude indicator','Attitydeindikatoren'),F('The altimeter','Høydemåleren'),F('The vertical speed indicator','Vertikalfartsindikatoren')],e:F('Attitude is what you control directly; the other instruments show the result.','Attityden er det du styrer direkte; de andre instrumentene viser resultatet.')},
+ {q:F('In this kind of assessment, which seat is evaluated?','Hvilket sete vurderes i en slik test?'),a:[F('Both: the pilot flying part and the pilot monitoring part','Begge: delen som pilot flying og delen som pilot monitoring'),F('Only the pilot flying part','Bare delen som pilot flying'),F('Only the seat you will fly in the airline','Bare setet du skal fly i flyselskapet')],e:F('The session is split into a PF part and a PM part, and both are assessed.','Økten er delt i en PF-del og en PM-del, og begge vurderes.')},
+ {q:F('Your guide gives one flap and speed schedule, a training video shows another. What do you fly?','Guiden din gir ett flap- og fartsskjema, en treningsvideo viser et annet. Hva flyr du?'),a:[F('The one in the candidate guide, as written','Det i kandidatguiden, slik det står'),F('Whichever feels more natural','Det som føles mest naturlig'),F('A mix, as long as the limit speeds are respected','En blanding, så lenge grensefartene overholdes')],e:F('Both pilots are expected to work strictly to the guide’s procedures, so that each knows what the other will do next.','Begge pilotene skal jobbe strengt etter guidens prosedyrer, så hver av dem vet hva den andre gjør neste.')},
+ {q:F('As PF you realise you forgot to call for the gear. What does the assessor want to see?','Som PF oppdager du at du har glemt å be om understellet. Hva vil vurderingen se?'),a:[F('Correct it, say what happened, and continue','Rette det, si hva som skjedde, og fortsette'),F('Say nothing and hope it was not seen','Ikke si noe og håpe det ikke ble sett'),F('Stop the exercise and start again','Stoppe øvelsen og starte på nytt')],e:F('Error management is part of CRM: fix, communicate, carry on flying.','Feilhåndtering er en del av CRM: rett, kommuniser, fly videre.')}
+];
+LAB.quiz(el('qbox'),'simcheck',()=>LAB.shuffle(QZ.slice()).map(q=>{ const o=LAB.shuffle(q.a.map((a,i)=>({a,ok:i===0}))); return {q:q.q,a:o.map(x=>x.a),c:o.findIndex(x=>x.ok),e:q.e}; }),12);
+
+LAB.start('simcheck');
+overview(); manRender(); tRender(); cRun(); gaReset(); cNext(); sNext(); ready();
+LAB.onLang(()=>{ overview(); manRender(); tRender(); cRun(); gaDraw(''); cDraw(); sDraw(); ready(); });
+})();
+</script>
+</body>
+</html>

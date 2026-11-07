@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data sources and licences · Birdbird</title>
+<meta name="description" content="Where Birdbird's data comes from: airspace and navaids, terrain elevation, the World Magnetic Model, EASA regulations and ICAO concepts, with licences, attribution and the limits of teaching models.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* sources.html – page-local layout: one register per group of sources */
+.src{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
+.src>div{display:grid;grid-template-columns:minmax(180px,1.1fr) minmax(0,2fr) minmax(170px,1fr);gap:6px 28px;padding:16px 0;border-bottom:1px solid var(--rule-2)}
+.src .nm b{display:block;font-family:var(--f-display);font-stretch:92%;font-size:17px;font-weight:650;line-height:1.25;color:var(--ink)}
+.src .nm span{display:block;font-size:13px;color:var(--ink-2);margin-top:4px}
+.src .use{font-size:15px;line-height:1.55;color:var(--ink)}
+.src .use p{margin:0 0 6px}.src .use p:last-child{margin:0}
+.src .att{font-size:13px;color:var(--ink-2);margin-top:6px;font-style:normal}
+.src .att::before{content:"Attribution: ";font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+html[lang=nb] .src .att::before{content:"Kreditering: "}
+.src .lic{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.src .lic .tag{white-space:normal;text-align:left;line-height:1.2}
+.src .lic small{font-size:12.5px;color:var(--ink-2);line-height:1.4}
+.src .hd{display:grid;padding:8px 0;border-bottom:1px solid var(--rule)}
+.src .hd span{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+@media (max-width:860px){
+  .src>div{grid-template-columns:minmax(0,1fr);gap:8px}
+  .src .hd{display:none}
+  .src .lic{flex-direction:row;flex-wrap:wrap;align-items:center}
+}
+.sc-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 40px;align-items:start}
+@media (max-width:860px){.sc-two{grid-template-columns:minmax(0,1fr)}}
+.sc-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.sc-list li{padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.sc-list li b{font-weight:600}
+.sc-list li span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+.tag.pd{color:var(--ok)}
+.tag.at{color:var(--info)}
+.tag.nc{color:var(--caution)}
+.tag.no{color:var(--warning)}
+</style>
+</head>
+<body data-title="Data sources and licences">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Data sources</div>
+      <h1>Data sources and licences</h1>
+      <p>Where the data in Birdbird comes from, the terms it is used under, and what it must not be used for. Birdbird is training material: none of the data below replaces official, current aeronautical information.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#aero">Aeronautical data</a><a href="#terrain">Terrain and maps</a><a href="#magnetic">Magnetic variation</a><a href="#rules">Regulations</a><a href="#models">Teaching models</a><a href="#software">Fonts and software</a></nav>
+
+  <section class="card" id="aero">
+    <h2>Aeronautical data</h2>
+    <p class="lead">Airspace, airports, navaids and route points used by Route Explorer and the briefing pack.</p>
+    <div class="src">
+      <div class="hd"><span>Source</span><span>Used for</span><span>Terms</span></div>
+      <div><div class="nm"><b>openAIP</b><span>Community-maintained aeronautical database</span></div>
+        <div class="use"><p>Planned source for airspace in Route Explorer (not yet in use).</p><p class="att">openAIP (openaip.net)</p></div>
+        <div class="lic"><span class="tag at">Free use with attribution</span><small>The data stays free: it may not be resold or placed behind a paywall.</small></div></div>
+      <div><div class="nm"><b>OurAirports</b><span>Open airport and navaid data</span></div>
+        <div class="use"><p>Airports and navaids for search, route building and the navigation log.</p><p class="att">OurAirports (ourairports.com)</p></div>
+        <div class="lic"><span class="tag pd">Public domain</span></div></div>
+      <div><div class="nm"><b>Fintraffic eAIP</b><span>Finland, ENR 4.4</span></div>
+        <div class="use"><p>IFR significant points for Finland.</p><p class="att">Fintraffic ANS, eAIP Finland</p></div>
+        <div class="lic"><span class="tag at">Free reuse</span></div></div>
+      <div><div class="nm"><b>Isavia eAIP</b><span>Iceland, ENR 4.4</span></div>
+        <div class="use"><p>IFR significant points for Iceland.</p><p class="att">Isavia ANS, eAIP Iceland</p></div>
+        <div class="lic"><span class="tag nc">Non-commercial use</span></div></div>
+      <div><div class="nm"><b>Norway, Sweden and Denmark</b><span>National AIPs</span></div>
+        <div class="use"><p>Not included. These AIPs are not used until the publishers give permission. You can add the points you need yourself under My fixes in Route Explorer.</p></div>
+        <div class="lic"><span class="tag no">Not used</span></div></div>
+    </div>
+    <p class="callout caution"><span class="ct">Official AIP data</span>Birdbird does not use data from an official AIP without the publisher's permission. Route Explorer and the briefing pack are not official VFR or IFR charts. Always check positions, airspace and frequencies against the current AIP and charts.</p>
+  </section>
+
+  <section class="card" id="terrain">
+    <h2>Terrain and maps</h2>
+    <p class="lead">The terrain profile, the 3D terrain view and the highest-terrain figure per map square are computed from public digital elevation data.</p>
+    <div class="src">
+      <div class="hd"><span>Source</span><span>Used for</span><span>Terms</span></div>
+      <div><div class="nm"><b>Terrain Tiles</b><span>Mapzen, hosted on AWS Open Data</span></div>
+        <div class="use"><p>Elevation for the terrain profile and the 3D terrain. The tiles combine several public elevation datasets, listed below.</p><p class="att">Mapzen / AWS Terrain Tiles</p></div>
+        <div class="lic"><span class="tag at">Open data with attribution</span></div></div>
+      <div><div class="nm"><b>EU-DEM</b><span>Copernicus, European Union</span></div>
+        <div class="use"><p>Terrain in Europe.</p><p class="att">Produced using Copernicus data and information funded by the European Union – EU-DEM layers</p></div>
+        <div class="lic"><span class="tag at">Free and open, with attribution</span></div></div>
+      <div><div class="nm"><b>Kartverket</b><span>Norwegian Mapping Authority</span></div>
+        <div class="use"><p>Terrain in Norway.</p><p class="att">© Kartverket</p></div>
+        <div class="lic"><span class="tag at">CC BY 4.0</span></div></div>
+      <div><div class="nm"><b>SRTM, GMTED2010 and ETOPO1</b><span>USGS and NOAA</span></div>
+        <div class="use"><p>Terrain outside the areas above, and the global base.</p><p class="att">SRTM and GMTED2010 (USGS); ETOPO1 (NOAA)</p></div>
+        <div class="lic"><span class="tag pd">Public domain</span></div></div>
+      <div><div class="nm"><b>Natural Earth</b><span>Public map data</span></div>
+        <div class="use"><p>Coastlines and the base map.</p><p class="att">Made with Natural Earth</p></div>
+        <div class="lic"><span class="tag pd">Public domain</span></div></div>
+    </div>
+    <p class="note">The highest-terrain figure is Birdbird's own number from these data: the highest point plus 300 ft for unknown obstacles, rounded up to the next 100 ft. It is not an official minimum safe altitude or maximum elevation figure.</p>
+  </section>
+
+  <section class="card" id="magnetic">
+    <h2>Magnetic variation</h2>
+    <div class="src">
+      <div><div class="nm"><b>World Magnetic Model 2025</b><span>NOAA NCEI and the British Geological Survey</span></div>
+        <div class="use"><p>Magnetic variation for each leg in Route Explorer and the navigation log, used to turn true track into magnetic track. The model is valid from 2025 to 2030.</p><p class="att">World Magnetic Model (WMM2025), NOAA NCEI and BGS</p></div>
+        <div class="lic"><span class="tag pd">Public domain</span></div></div>
+    </div>
+    <p class="note">Charted variation in the AIP can differ slightly from the model, because charts are updated on their own cycle. For planning on a real flight, use the variation on the current chart.</p>
+  </section>
+
+  <section class="card" id="rules">
+    <h2>Regulations and standards referenced</h2>
+    <div class="sc-two">
+      <ul class="sc-list">
+        <li><b>EASA Easy Access Rules for Air Operations</b><span>Planning minima and fuel rules in the briefing pack (for example NCO, NCC and CAT operations). The briefing pack states the revision it is based on.</span></li>
+        <li><b>Birdbird EASA rules library</b><span>A curated set of references used by Flight Intelligence and the briefing pack instructor: alternates, planning minima, fuel, aerodrome operating minima, approach, VMC and IFR rules, low-visibility operations, PBN, icing and oxygen. Each entry gives the rule ID, a short summary in Birdbird’s own words, the revision it is based on (Easy Access Rules for Air Operations, Revision 24, March 2026; SERA, revision from August 2025) and links to the official text on the EASA website and on EUR-Lex. Entries checked against the EASA text are marked as such. It is not a live feed: Birdbird checks for new revisions and updates the library, and the date of the last check is shown with it.</span></li>
+        <li><b>EASA Easy Access Rules for Aircrew</b><span>The structure of the ATPL theory subjects that the learning path follows.</span></li>
+        <li><b>EASA Easy Access Rules for SERA</b><span>Rules of the air used in the briefing and radio material.</span></li>
+        <li><b>ICAO concepts</b><span>Standard terminology, phraseology and procedure design concepts, such as holding entries and approach segments, described in Birdbird's own words.</span></li>
+      </ul>
+      <div style="display:flex;flex-direction:column;gap:10px"><p class="callout info"><span class="ct">How they are used</span>Regulations are summarised and referenced, not reproduced. Rules change: always use the current consolidated version published by EASA, the national authority and ICAO, and your operator's manuals where they apply.</p>
+      <p class="callout info"><span class="ct">The EASA rules library</span>When you ask the instructor about rules, the matching library entries are sent with your question, and the answer cites them as chips that open the official text in a new tab. Birdbird cannot read the EASA website while you use it, so the library shows the revision and date it was checked rather than claiming to be up to date. <a href="fi.html#easa">Browse the library</a> · <a href="https://www.easa.europa.eu/en/document-library/easy-access-rules" target="_blank" rel="noopener">EASA Easy Access Rules</a></p></div>
+    </div>
+  </section>
+
+  <section class="card" id="models">
+    <h2>Teaching models and aircraft values</h2>
+    <div class="cols">
+      <div class="box"><b class="t">Teaching models</b><p>The labs use simplified physics to show how things relate. Each lab says what it leaves out. Use the numbers to understand, not to make operational decisions.</p></div>
+      <div class="box"><b class="t">Aircraft values are typical</b><p>Figures for the light twin, the A320 and the King Air B200 are typical, rounded or illustrative values for teaching. They are not taken from, and do not replace, the AFM, the FCOM or the manufacturer's data.</p></div>
+      <div class="box"><b class="t">Questions written for Birdbird</b><p>Tests and question banks are written in Birdbird's own words to check understanding. They are not copied from any official or commercial question bank.</p></div>
+    </div>
+    <p class="callout warning"><span class="ct">Not for operational use</span>Always follow the AIP, the aircraft flight manual, your operator's procedures and your instructor.</p>
+  </section>
+
+  <section class="card" id="software">
+    <h2>Fonts and software</h2>
+    <p class="lead">All fonts and libraries are served from Birdbird itself. No page loads fonts or scripts from a third-party service.</p>
+    <div class="src">
+      <div class="hd"><span>Component</span><span>Used for</span><span>Licence</span></div>
+      <div><div class="nm"><b>Archivo, Public Sans, IBM Plex Mono</b><span>Typefaces</span></div>
+        <div class="use"><p>Headings, body text, and numbers and units.</p></div>
+        <div class="lic"><span class="tag at">SIL Open Font License 1.1</span></div></div>
+      <div><div class="nm"><b>three.js</b><span>3D graphics library</span></div>
+        <div class="use"><p>3D terrain, the wind tunnel and the cockpit view.</p></div>
+        <div class="lic"><span class="tag at">MIT</span></div></div>
+      <div><div class="nm"><b>PDF.js</b><span>Mozilla</span></div>
+        <div class="use"><p>Reading PDF documents in your browser for Flight Intelligence.</p></div>
+        <div class="lic"><span class="tag at">Apache 2.0</span></div></div>
+      <div><div class="nm"><b>Mammoth</b><span>Word document reader</span></div>
+        <div class="use"><p>Reading Word documents in your browser for Flight Intelligence.</p></div>
+        <div class="lic"><span class="tag at">BSD 2-Clause</span></div></div>
+    </div>
+    <p class="note">Spotted a missing attribution or a source used outside its terms? <a href="about.html#contact">Contact</a></p>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({'Sections':'Sections'},{
+ 'Data sources and licences':'Datakilder og lisenser','Birdbird · Data sources':'Birdbird · Datakilder',
+ 'Where the data in Birdbird comes from, the terms it is used under, and what it must not be used for. Birdbird is training material: none of the data below replaces official, current aeronautical information.':'Hvor dataene i Birdbird kommer fra, vilkårene de brukes under, og hva de ikke må brukes til. Birdbird er opplæringsmateriell: ingen av dataene under erstatter offisiell, gjeldende luftfartsinformasjon.',
+ 'Sections':'Seksjoner',
+ 'Aeronautical data':'Luftfartsdata','Terrain and maps':'Terreng og kart','Magnetic variation':'Misvisning','Regulations':'Regelverk','Teaching models':'Undervisningsmodeller','Fonts and software':'Skrifttyper og programvare',
+ 'Airspace, airports, navaids and route points used by Route Explorer and the briefing pack.':'Luftrom, flyplasser, navigasjonshjelpemidler og rutepunkter som brukes i Route Explorer og briefingpakken.',
+ 'Source':'Kilde','Used for':'Brukes til','Terms':'Vilkår','Component':'Komponent','Licence':'Lisens',
+ 'Community-maintained aeronautical database':'Luftfartsdatabase vedlikeholdt av brukerne',
+ 'Planned source for airspace in Route Explorer (not yet in use).':'Planlagt kilde for luftrom i Route Explorer (ikke tatt i bruk ennå).',
+ 'Free use with attribution':'Fri bruk med kreditering',
+ 'The data stays free: it may not be resold or placed behind a paywall.':'Dataene forblir gratis: de kan ikke selges videre eller legges bak betalingsmur.',
+ 'Open airport and navaid data':'Åpne data om flyplasser og navigasjonshjelpemidler',
+ 'Airports and navaids for search, route building and the navigation log.':'Flyplasser og navigasjonshjelpemidler til søk, rutebygging og navigasjonsloggen.',
+ 'Public domain':'Fritt tilgjengelig (public domain)',
+ 'Finland, ENR 4.4':'Finland, ENR 4.4','IFR significant points for Finland.':'IFR-punkter (significant points) for Finland.','Free reuse':'Fri gjenbruk',
+ 'Iceland, ENR 4.4':'Island, ENR 4.4','IFR significant points for Iceland.':'IFR-punkter (significant points) for Island.','Non-commercial use':'Ikke-kommersiell bruk',
+ 'Norway, Sweden and Denmark':'Norge, Sverige og Danmark','National AIPs':'Nasjonale AIP-er',
+ 'Not included. These AIPs are not used until the publishers give permission. You can add the points you need yourself under My fixes in Route Explorer.':'Ikke med. Disse AIP-ene brukes ikke før utgiverne gir tillatelse. Du kan legge inn punktene du trenger selv under Mine fixes i Route Explorer.',
+ 'Not used':'Brukes ikke',
+ 'Official AIP data':'Offisielle AIP-data',
+ "Birdbird does not use data from an official AIP without the publisher's permission. Route Explorer and the briefing pack are not official VFR or IFR charts. Always check positions, airspace and frequencies against the current AIP and charts.":'Birdbird bruker ikke data fra en offisiell AIP uten tillatelse fra utgiveren. Route Explorer og briefingpakken er ikke offisielle VFR- eller IFR-kart. Kontroller alltid posisjoner, luftrom og frekvenser mot gjeldende AIP og kart.',
+ 'The terrain profile, the 3D terrain view and the highest-terrain figure per map square are computed from public digital elevation data.':'Terrengprofilen, 3D-terrenget og tallet for høyeste terreng per kartrute beregnes fra offentlige digitale høydedata.',
+ 'Mapzen, hosted on AWS Open Data':'Mapzen, hos AWS Open Data',
+ 'Elevation for the terrain profile and the 3D terrain. The tiles combine several public elevation datasets, listed below.':'Høyde til terrengprofilen og 3D-terrenget. Flisene kombinerer flere offentlige høydedatasett, listet under.',
+ 'Open data with attribution':'Åpne data med kreditering',
+ 'Copernicus, European Union':'Copernicus, Den europeiske union','Terrain in Europe.':'Terreng i Europa.','Free and open, with attribution':'Fri og åpen, med kreditering',
+ 'Norwegian Mapping Authority':'Statens kartverk','Terrain in Norway.':'Terreng i Norge.',
+ 'USGS and NOAA':'USGS og NOAA','Terrain outside the areas above, and the global base.':'Terreng utenfor områdene over, og det globale grunnlaget.',
+ 'Public map data':'Offentlige kartdata','Coastlines and the base map.':'Kystlinjer og grunnkartet.',
+ "The highest-terrain figure is Birdbird's own number from these data: the highest point plus 300 ft for unknown obstacles, rounded up to the next 100 ft. It is not an official minimum safe altitude or maximum elevation figure.":'Tallet for høyeste terreng er Birdbirds eget tall fra disse dataene: høyeste punkt pluss 300 ft for ukjente hindringer, rundet opp til nærmeste 100 ft over. Det er ikke en offisiell minste sikre høyde eller et MEF.',
+ 'NOAA NCEI and the British Geological Survey':'NOAA NCEI og British Geological Survey',
+ 'Magnetic variation for each leg in Route Explorer and the navigation log, used to turn true track into magnetic track. The model is valid from 2025 to 2030.':'Misvisning for hver etappe i Route Explorer og navigasjonsloggen, brukt til å gjøre rettvisende kurs om til magnetisk kurs. Modellen gjelder fra 2025 til 2030.',
+ 'Charted variation in the AIP can differ slightly from the model, because charts are updated on their own cycle. For planning on a real flight, use the variation on the current chart.':'Misvisningen i AIP-kartene kan avvike litt fra modellen, fordi kartene oppdateres i sin egen syklus. Til planlegging av en virkelig tur, bruk misvisningen på gjeldende kart.',
+ 'Regulations and standards referenced':'Regelverk og standarder det vises til',
+ 'EASA Easy Access Rules for Air Operations':'EASA Easy Access Rules for Air Operations',
+ 'Planning minima and fuel rules in the briefing pack (for example NCO, NCC and CAT operations). The briefing pack states the revision it is based on.':'Planleggingsminima og drivstoffregler i briefingpakken (for eksempel NCO-, NCC- og CAT-operasjoner). Briefingpakken oppgir hvilken revisjon den bygger på.',
+ 'EASA Easy Access Rules for Aircrew':'EASA Easy Access Rules for Aircrew',
+ 'The structure of the ATPL theory subjects that the learning path follows.':'Oppbygningen av ATPL-teorifagene som læringsløpet følger.',
+ 'EASA Easy Access Rules for SERA':'EASA Easy Access Rules for SERA',
+ 'Rules of the air used in the briefing and radio material.':'Lufttrafikkregler som brukes i briefing- og radiostoffet.',
+ 'ICAO concepts':'ICAO-begreper',
+ "Standard terminology, phraseology and procedure design concepts, such as holding entries and approach segments, described in Birdbird's own words.":'Standard terminologi, fraseologi og prinsipper for prosedyreutforming, som holding-innflyging og innflygingssegmenter, forklart med Birdbirds egne ord.',
+ 'How they are used':'Hvordan de brukes',
+ 'Birdbird EASA rules library':'Birdbirds EASA-regelbibliotek',
+ 'A curated set of references used by Flight Intelligence and the briefing pack instructor: alternates, planning minima, fuel, aerodrome operating minima, approach, VMC and IFR rules, low-visibility operations, PBN, icing and oxygen. Each entry gives the rule ID, a short summary in Birdbird’s own words, the revision it is based on (Easy Access Rules for Air Operations, Revision 24, March 2026; SERA, revision from August 2025) and links to the official text on the EASA website and on EUR-Lex. Entries checked against the EASA text are marked as such. It is not a live feed: Birdbird checks for new revisions and updates the library, and the date of the last check is shown with it.':'Et utvalg henvisninger som brukes av Flight Intelligence og instruktøren i briefingpakken: alternativer, planleggingsminima, drivstoff, flyplassminima, innflyging, VMC- og IFR-regler, lavsiktoperasjoner, PBN, ising og oksygen. Hver oppføring har regel-ID, et kort sammendrag med Birdbirds egne ord, revisjonen den bygger på (Easy Access Rules for Air Operations, revisjon 24, mars 2026; SERA, revisjon fra august 2025) og lenker til den offisielle teksten på EASAs nettsted og på EUR-Lex. Oppføringer som er kontrollert mot EASA-teksten, er merket slik. Det er ikke en direkte strøm: Birdbird sjekker om det kommer nye revisjoner og oppdaterer biblioteket, og datoen for siste kontroll vises sammen med det.',
+ 'The EASA rules library':'EASA-regelbiblioteket',
+ 'When you ask the instructor about rules, the matching library entries are sent with your question, and the answer cites them as chips that open the official text in a new tab. Birdbird cannot read the EASA website while you use it, so the library shows the revision and date it was checked rather than claiming to be up to date.':'Når du spør instruktøren om regler, sendes oppføringene som passer sammen med spørsmålet, og svaret viser til dem med merker som åpner den offisielle teksten i en ny fane. Birdbird kan ikke lese EASAs nettsted mens du bruker det, så biblioteket viser revisjonen og datoen det ble kontrollert, i stedet for å påstå at det er oppdatert.',
+ 'Browse the library':'Bla i biblioteket','EASA Easy Access Rules':'EASA Easy Access Rules',
+ "Regulations are summarised and referenced, not reproduced. Rules change: always use the current consolidated version published by EASA, the national authority and ICAO, and your operator's manuals where they apply.":'Regelverket oppsummeres og henvises til, det gjengis ikke. Regler endres: bruk alltid gjeldende konsoliderte versjon fra EASA, nasjonal myndighet og ICAO, og operatørens håndbøker der de gjelder.',
+ 'Teaching models and aircraft values':'Undervisningsmodeller og flyverdier',
+ 'The labs use simplified physics to show how things relate. Each lab says what it leaves out. Use the numbers to understand, not to make operational decisions.':'Labbene bruker forenklet fysikk for å vise sammenhenger. Hver lab sier hva som er utelatt. Bruk tallene til å forstå, ikke til operative beslutninger.',
+ 'Aircraft values are typical':'Flyverdiene er typiske',
+ "Figures for the light twin, the A320 and the King Air B200 are typical, rounded or illustrative values for teaching. They are not taken from, and do not replace, the AFM, the FCOM or the manufacturer's data.":'Tallene for det tomotors småflyet, A320 og King Air B200 er typiske, avrundede eller illustrerende verdier for undervisning. De er ikke hentet fra, og erstatter ikke, AFM, FCOM eller produsentens data.',
+ 'Questions written for Birdbird':'Spørsmål skrevet for Birdbird',
+ "Tests and question banks are written in Birdbird's own words to check understanding. They are not copied from any official or commercial question bank.":'Tester og spørsmålsbanker er skrevet med Birdbirds egne ord for å sjekke forståelse. De er ikke kopiert fra noen offisiell eller kommersiell spørsmålsbank.',
+ 'Not for operational use':'Ikke til operativ bruk',
+ "Always follow the AIP, the aircraft flight manual, your operator's procedures and your instructor.":'Følg alltid AIP, flygehåndboken, operatørens prosedyrer og instruktøren din.',
+ 'All fonts and libraries are served from Birdbird itself. No page loads fonts or scripts from a third-party service.':'Alle skrifttyper og biblioteker leveres fra Birdbird selv. Ingen sider laster skrifttyper eller skript fra en tredjepartstjeneste.',
+ 'Typefaces':'Skrifttyper','Headings, body text, and numbers and units.':'Overskrifter, brødtekst, og tall og enheter.',
+ '3D graphics library':'Bibliotek for 3D-grafikk','3D terrain, the wind tunnel and the cockpit view.':'3D-terreng, vindtunnelen og cockpitvisningen.',
+ 'Reading PDF documents in your browser for Flight Intelligence.':'Leser PDF-dokumenter i nettleseren din for Flight Intelligence.',
+ 'Word document reader':'Leser for Word-dokumenter','Reading Word documents in your browser for Flight Intelligence.':'Leser Word-dokumenter i nettleseren din for Flight Intelligence.',
+ 'Spotted a missing attribution or a source used outside its terms?':'Ser du en manglende kreditering eller en kilde som brukes utenfor vilkårene?',
+ 'SRTM, GMTED2010 and ETOPO1':'SRTM, GMTED2010 og ETOPO1',
+ 'Contact':'Kontakt'
+});
+LAB.start('sources');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacy · Birdbird</title>
+<meta name="description" content="Birdbird privacy in plain language: no accounts, progress and documents stay in your browser, no analytics or tracking cookies, and how to clear your data.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* privacy.html – page-local layout */
+.pv-short{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;border-top:1px solid var(--ink)}
+.pv-short li{display:flex;gap:14px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--rule-2);font-size:var(--t-md);line-height:1.5}
+.pv-short li::before{content:"";flex:0 0 8px;height:8px;border-radius:50%;background:var(--accent);transform:translateY(-2px)}
+@media (max-width:760px){.pv-short{grid-template-columns:minmax(0,1fr)}}
+.reg{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius)}
+.reg th{text-align:left;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--wash)}
+.reg td{padding:11px 14px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.5}
+.reg tr:last-child td{border-bottom:0}
+.reg td:first-child{font-weight:600;width:28%}
+.reg td.w{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);white-space:nowrap}
+@media (max-width:700px){
+  .reg thead{display:none}
+  .reg,.reg tbody,.reg tr,.reg td{display:block;width:100%!important}
+  .reg tr{padding:12px 14px;border-bottom:1px solid var(--rule-2)}
+  .reg tr:last-child{border-bottom:0}
+  .reg td{padding:2px 0;border:0}
+  .reg td.w{white-space:normal;color:var(--ink-2);margin-top:4px}
+}
+.pv-text p{margin:0 0 14px;max-width:72ch;font-size:var(--t-sm);line-height:1.6}
+.pv-text p:last-child{margin-bottom:0}
+.pv-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 40px;align-items:start}
+@media (max-width:860px){.pv-two{grid-template-columns:minmax(0,1fr)}}
+.pv-steps{margin:0;padding:0 0 0 20px;font-size:15px;line-height:1.6}
+.pv-steps li{margin:0 0 8px}
+.pv-clear{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.pv-clear .res{font-size:14px;color:var(--ink-2);min-height:1.5em;margin:0}
+.pv-clear .res.ok{color:var(--ok)}
+.pv-clear .cnt{font-family:var(--f-mono);font-size:13px;color:var(--ink)}
+.btn.danger{border-color:var(--warning);color:var(--warning)}
+.btn.danger.arm{background:var(--warning);color:#fff}
+.btn.danger.arm:hover{background:#951c13}
+</style>
+</head>
+<body data-title="Privacy">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Privacy</div>
+      <h1>Privacy</h1>
+      <p>What Birdbird stores, where it is stored, and how to remove it, in plain language.</p>
+      <div class="lmeta"><span class="mi"><span class="k">Last updated</span><span class="v">2026-11-07</span></span></div>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#short">The short version</a><a href="#stored">What is stored</a><a href="#ai">AI features</a><a href="#tracking">Cookies and tracking</a><a href="#clear">Clear your data</a><a href="#changes">Changes</a></nav>
+
+  <section class="card" id="short">
+    <h2>The short version</h2>
+    <ul class="pv-short">
+      <li>Birdbird has no user accounts yet. You do not sign up or log in.</li>
+      <li>Your progress, ranks and settings are stored in your own browser.</li>
+      <li>Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser.</li>
+      <li>AI features send requests through your own Claude account, and only when you use them.</li>
+      <li>No analytics, no tracking cookies and no advertising.</li>
+      <li>Fonts are served from Birdbird itself, not from Google or another third party.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="stored">
+    <h2>What is stored, and where</h2>
+    <p class="lead">Birdbird uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a Birdbird server.</p>
+    <table class="reg">
+      <thead><tr><th>What</th><th>Why</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>Progress, test results and rank</td><td>To show which labs you have done and your rank.</td><td class="w">Local storage</td></tr>
+        <tr><td>Language and display choices</td><td>To remember English or Norwegian and how you left a page.</td><td class="w">Local storage</td></tr>
+        <tr><td>Briefing packs, aircraft and navigation logs</td><td>So you can return to a plan you have made.</td><td class="w">Local storage</td></tr>
+        <tr><td>Your documents (AFM, QRH, SOP, checklists)</td><td>So Flight Intelligence can answer from them.</td><td class="w">IndexedDB</td></tr>
+        <tr><td>Instructor setups and sessions</td><td>To keep your aircraft setups and earlier sessions.</td><td class="w">Local storage, IndexedDB</td></tr>
+        <tr><td>Attachments in the briefing pack</td><td>So the files stay with the plan.</td><td class="w">IndexedDB</td></tr>
+      </tbody>
+    </table>
+    <p class="callout info"><span class="ct">When Birdbird runs inside Claude</span>If you open Birdbird as an app inside Claude, saved briefing packs, aircraft, instructor setups and sessions are also kept in private storage tied to your own Claude account, so they follow you between devices. Only you can see them. Your documents are not copied there; they stay in the browser.</p>
+    <p class="note">Because nothing is stored on a Birdbird server, Birdbird cannot see, recover or delete your data for you. Clearing it is in your hands, see below.</p>
+  </section>
+
+  <section class="card" id="ai">
+    <h2>AI features</h2>
+    <div class="pv-two">
+      <div class="pv-text">
+        <p>Flight Intelligence, the oral exam in the type rating trainer and some training exercises use an AI model. When Birdbird runs inside Claude and you use one of these features, the request goes through your own Claude account.</p>
+        <p>A request contains your question and the passages from your documents that are needed to answer it, not the whole library. Anthropic's terms and privacy policy for your Claude account apply to those requests.</p>
+        <p>Where no AI is available, the AI features are switched off and nothing is sent.</p>
+      </div>
+      <p class="callout caution"><span class="ct">Before it changes</span>If Birdbird later offers AI on its own domain, without a Claude account, this page will be updated before that service is switched on, and it will say who processes the requests.</p>
+    </div>
+  </section>
+
+  <section class="card" id="tracking">
+    <h2>Cookies, analytics and tracking</h2>
+    <div class="pv-text">
+      <p>Birdbird does not set cookies, does not use analytics or tracking tools, and shows no advertising. No tracking pixels, no social media widgets.</p>
+      <p>The fonts are stored with the site and loaded from it, so opening a page does not send your address to a font service.</p>
+      <p>Like any website, the server that delivers the pages may keep ordinary technical logs, such as the time of a request and an IP address, for operation and security. Birdbird does not use them to follow you.</p>
+    </div>
+  </section>
+
+  <section class="card" id="clear">
+    <h2>How to clear your data</h2>
+    <div class="pv-two">
+      <div class="pv-clear">
+        <h3>Clear everything in this browser</h3>
+        <p class="note">Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone.</p>
+        <p class="cnt" id="cnt"></p>
+        <button type="button" class="btn danger" id="clr">Clear Birdbird data</button>
+        <p class="res" id="res" role="status"></p>
+      </div>
+      <div>
+        <h3>Or use your browser</h3>
+        <ol class="pv-steps">
+          <li>Open your browser's settings and find privacy, or site data.</li>
+          <li>Look up the Birdbird site and choose to delete its data (sometimes called cookies and site data).</li>
+          <li>To remove everything at once, clear browsing data for all time, including cookies and site data.</li>
+        </ol>
+        <p class="note">Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="changes">
+    <h2>Changes to this page</h2>
+    <div class="pv-text">
+      <p>Accounts, school features or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.</p>
+    </div>
+    <p class="btns"><a class="btn" href="about.html#contact">Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el}=LAB;
+/* Birdbird's own storage: local storage key prefixes and IndexedDB databases used across the site */
+const PFX=['naeroson','aeroson','vlab-','fi-'];
+const DBS=['naeroson-fi','naeroson-docs','naeroson-att'];
+const mine=k=>PFX.some(p=>k.indexOf(p)===0);
+function keys(){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&mine(k)&&k!=='vlab-lang') out.push(k); } }catch(e){} return out; }
+function count(){ const n=keys().length; el('cnt').textContent=L({en:`${n} saved item${n===1?'':'s'} in local storage, plus any documents.`,no:`${n} lagrede element${n===1?'':'er'} i lokal lagring, pluss eventuelle dokumenter.`}); }
+let armed=false, tmr=0;
+const btn=el('clr'), res=el('res');
+function label(){ btn.textContent=armed? L({en:'Click again to delete everything',no:'Klikk igjen for å slette alt'}) : L({en:'Clear Birdbird data',no:'Slett Birdbird-data'}); btn.classList.toggle('arm',armed); }
+btn.addEventListener('click',async()=>{
+  if(!armed){ armed=true; label(); res.className='res'; res.textContent=''; clearTimeout(tmr); tmr=setTimeout(()=>{ armed=false; label(); },6000); return; }
+  clearTimeout(tmr); armed=false;
+  const lang=LAB.lang; const ks=keys();
+  try{ ks.forEach(k=>localStorage.removeItem(k)); localStorage.setItem('vlab-lang',lang); }catch(e){}
+  await Promise.all(DBS.map(n=>new Promise(r=>{ try{ const q=indexedDB.deleteDatabase(n); q.onsuccess=q.onerror=q.onblocked=()=>r(); }catch(e){ r(); } })));
+  label(); res.className='res ok'; res.textContent=L({en:`Done. ${ks.length} items and the document stores were removed from this browser. Your language choice was kept.`,no:`Ferdig. ${ks.length} elementer og dokumentlagrene ble fjernet fra denne nettleseren. Språkvalget ble beholdt.`});
+  count(); document.dispatchEvent(new Event('nprog'));
+});
+LAB.add({'Sections':'Sections'},{
+ 'Privacy':'Personvern','Birdbird · Privacy':'Birdbird · Personvern',
+ 'What Birdbird stores, where it is stored, and how to remove it, in plain language.':'Hva Birdbird lagrer, hvor det lagres, og hvordan du fjerner det, i klartekst.',
+ 'Last updated':'Sist oppdatert','Sections':'Seksjoner',
+ 'The short version':'Kortversjonen','What is stored':'Hva som lagres','AI features':'AI-funksjoner','Cookies and tracking':'Cookies og sporing','Clear your data':'Slett dataene dine','Changes':'Endringer',
+ 'Birdbird has no user accounts yet. You do not sign up or log in.':'Birdbird har ingen brukerkontoer ennå. Du registrerer deg ikke og logger ikke inn.',
+ 'Your progress, ranks and settings are stored in your own browser.':'Progresjon, rang og innstillinger lagres i din egen nettleser.',
+ 'Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser.':'Dokumenter du legger inn, som AFM, QRH eller SOP, behandles og lagres i din egen nettleser.',
+ 'AI features send requests through your own Claude account, and only when you use them.':'AI-funksjonene sender forespørsler gjennom din egen Claude-konto, og bare når du bruker dem.',
+ 'No analytics, no tracking cookies and no advertising.':'Ingen analyseverktøy, ingen sporingscookies og ingen reklame.',
+ 'Fonts are served from Birdbird itself, not from Google or another third party.':'Skrifttypene leveres fra Birdbird selv, ikke fra Google eller en annen tredjepart.',
+ 'What is stored, and where':'Hva som lagres, og hvor',
+ 'Birdbird uses two kinds of storage that belong to your browser: local storage for small settings and progress, and IndexedDB for documents and larger files. Neither is sent to a Birdbird server.':'Birdbird bruker to typer lagring som hører til nettleseren din: lokal lagring for små innstillinger og progresjon, og IndexedDB for dokumenter og større filer. Ingen av dem sendes til en Birdbird-server.',
+ 'What':'Hva','Why':'Hvorfor','Where':'Hvor',
+ 'Progress, test results and rank':'Progresjon, testresultater og rang','To show which labs you have done and your rank.':'For å vise hvilke labber du har tatt, og rangen din.','Local storage':'Lokal lagring',
+ 'Language and display choices':'Språk- og visningsvalg','To remember English or Norwegian and how you left a page.':'For å huske engelsk eller norsk og hvordan du forlot en side.',
+ 'Briefing packs, aircraft and navigation logs':'Briefingpakker, fly og navigasjonslogger','So you can return to a plan you have made.':'Så du kan gå tilbake til en plan du har laget.',
+ 'Your documents (AFM, QRH, SOP, checklists)':'Dokumentene dine (AFM, QRH, SOP, sjekklister)','So Flight Intelligence can answer from them.':'Så Flight Intelligence kan svare ut fra dem.',
+ 'Instructor setups and sessions':'Instruktøroppsett og økter','To keep your aircraft setups and earlier sessions.':'For å ta vare på flyoppsettene og tidligere økter.','Local storage, IndexedDB':'Lokal lagring, IndexedDB',
+ 'Attachments in the briefing pack':'Vedlegg i briefingpakken','So the files stay with the plan.':'Så filene følger planen.',
+ 'When Birdbird runs inside Claude':'Når Birdbird kjører inne i Claude',
+ 'If you open Birdbird as an app inside Claude, saved briefing packs, aircraft, instructor setups and sessions are also kept in private storage tied to your own Claude account, so they follow you between devices. Only you can see them. Your documents are not copied there; they stay in the browser.':'Åpner du Birdbird som en app inne i Claude, lagres briefingpakker, fly, instruktøroppsett og økter også i privat lagring knyttet til din egen Claude-konto, slik at de følger deg mellom enheter. Bare du kan se dem. Dokumentene dine kopieres ikke dit; de blir i nettleseren.',
+ 'Because nothing is stored on a Birdbird server, Birdbird cannot see, recover or delete your data for you. Clearing it is in your hands, see below.':'Fordi ingenting lagres på en Birdbird-server, kan ikke Birdbird se, gjenopprette eller slette dataene dine for deg. Det er du som sletter dem, se under.',
+ 'Flight Intelligence, the oral exam in the type rating trainer and some training exercises use an AI model. When Birdbird runs inside Claude and you use one of these features, the request goes through your own Claude account.':'Flight Intelligence, den muntlige eksamenen i typeratingtreneren og noen treningsøvelser bruker en AI-modell. Når Birdbird kjører inne i Claude og du bruker en av disse funksjonene, går forespørselen gjennom din egen Claude-konto.',
+ "A request contains your question and the passages from your documents that are needed to answer it, not the whole library. Anthropic's terms and privacy policy for your Claude account apply to those requests.":'En forespørsel inneholder spørsmålet ditt og avsnittene fra dokumentene dine som trengs for å svare, ikke hele biblioteket. Anthropics vilkår og personvernerklæring for Claude-kontoen din gjelder for disse forespørslene.',
+ 'Where no AI is available, the AI features are switched off and nothing is sent.':'Der ingen AI er tilgjengelig, er AI-funksjonene slått av, og ingenting sendes.',
+ 'Before it changes':'Før det endres',
+ 'If Birdbird later offers AI on its own domain, without a Claude account, this page will be updated before that service is switched on, and it will say who processes the requests.':'Hvis Birdbird senere tilbyr AI på eget domene, uten Claude-konto, oppdateres denne siden før tjenesten slås på, og den vil si hvem som behandler forespørslene.',
+ 'Cookies, analytics and tracking':'Cookies, analyse og sporing',
+ 'Birdbird does not set cookies, does not use analytics or tracking tools, and shows no advertising. No tracking pixels, no social media widgets.':'Birdbird setter ingen cookies, bruker ingen analyse- eller sporingsverktøy og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier.',
+ 'The fonts are stored with the site and loaded from it, so opening a page does not send your address to a font service.':'Skrifttypene ligger på nettstedet og lastes derfra, så når du åpner en side, sendes ikke adressen din til en skrifttjeneste.',
+ 'Like any website, the server that delivers the pages may keep ordinary technical logs, such as the time of a request and an IP address, for operation and security. Birdbird does not use them to follow you.':'Som for alle nettsteder kan serveren som leverer sidene, føre vanlige tekniske logger, som tidspunkt for en forespørsel og en IP-adresse, for drift og sikkerhet. Birdbird bruker dem ikke til å følge deg.',
+ 'How to clear your data':'Slik sletter du dataene dine',
+ 'Clear everything in this browser':'Slett alt i denne nettleseren',
+ 'Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone.':'Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som Birdbird har lagret i denne nettleseren. Det kan ikke angres.',
+ 'Or use your browser':'Eller bruk nettleseren',
+ "Open your browser's settings and find privacy, or site data.":'Åpne innstillingene i nettleseren og finn personvern eller nettstedsdata.',
+ 'Look up the Birdbird site and choose to delete its data (sometimes called cookies and site data).':'Finn Birdbird-nettstedet og velg å slette dataene (ofte kalt informasjonskapsler og nettstedsdata).',
+ 'To remove everything at once, clear browsing data for all time, including cookies and site data.':'For å fjerne alt på én gang, slett nettleserdata for hele perioden, inkludert informasjonskapsler og nettstedsdata.',
+ 'Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.':'Data som ligger hos Claude-kontoen din når Birdbird kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i Birdbird.',
+ 'Changes to this page':'Endringer på denne siden',
+ 'Accounts, school features or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.':'Kontoer, skolefunksjoner eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.',
+ 'Contact':'Kontakt','Data sources and licences':'Datakilder og lisenser'
+});
+LAB.start('privacy');
+count(); label(); LAB.onLang(()=>{ count(); label(); if(res.textContent) res.textContent=''; });
+})();
+</script>
+</body>
+</html>

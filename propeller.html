@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Lose an engine on the A320 and see why the aircraft yaws, why rudder authority depends on speed, and where VMCG, VMCA and VMCL come from. Then follow the engine failure after V1.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Engine Failure and Minimum Control Speeds</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+#cv1{aspect-ratio:16/10;max-height:470px}#cv1b{aspect-ratio:16/6.2;max-height:250px}
+#cv2{aspect-ratio:16/7;max-height:330px}#cv2b{aspect-ratio:16/4.6;max-height:220px;min-height:150px}
+@media (max-width:600px){#cv1{aspect-ratio:4/3.3}#cv1b{aspect-ratio:16/9}#cv2{aspect-ratio:16/10}#cv2b{aspect-ratio:16/8}}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer;margin:6px 0 2px}
+.chk input{accent-color:var(--magenta);margin:0}
+ol.steps{margin:6px 0 0;padding-left:20px;color:var(--ink-2);font-size:14.5px;line-height:1.5}
+ol.steps li{margin:4px 0}
+</style>
+</head>
+<body data-title="Engine Failure and Minimum Control Speeds">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <h1>Engine failure and minimum control speeds</h1>
+      <p>Lose an engine on the A320 and the live engine tries to turn the aircraft. See how big that yawing moment is, why the rudder can only hold it above a certain speed, and how certification turns this into VMCG, VMCA and VMCL and into the limits on V1, VR and V2.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#single">Asymmetric thrust</a><a href="#twin">VMCG and VMCA</a><a href="#a320">Failure after V1</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="single">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Asymmetric thrust and rudder authority</h2>
+    <p class="lead">One engine pushes, the other only drags. The yawing moment is the live engine’s thrust times its distance from the centreline, plus the windmilling drag of the failed engine on the other side. The rudder answers with a side force on the fin, and that force grows with the square of the speed. Centre the beta target with the rudder pedal.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cv1" aria-label="A320 seen from above with one engine failed, the thrust, drag and rudder forces, and the PFD sideslip index"></canvas></div>
+        <div class="paper"><canvas id="cv1b" aria-label="Yawing moment needed and rudder moment available against airspeed"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Failed engine</div><div id="fe"></div>
+        <div id="c1"></div>
+        <label class="chk"><input type="checkbox" id="wm" checked> <span>Windmilling drag of the failed engine</span></label>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Live engine thrust</span><b id="r1"></b></div>
+          <div class="rrow"><span>Yawing moment to hold</span><b id="r2"></b></div>
+          <div class="rrow"><span>Rudder needed / available</span><b id="r3"></b></div>
+          <div class="rrow"><span>Bank for zero sideslip</span><b id="r4"></b></div>
+          <div class="rrow"><span>VMCA at this thrust and bank</span><b id="r5"></b></div>
+          <div class="rrow"><span>Beta target</span><b id="r6"></b></div>
+        </div>
+        <p class="callout blue" id="x1"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="twin">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>VMCG, VMCA and the take-off speeds</h2>
+    <p class="lead">Fail an engine on the take-off roll. The pilot recognises it after about a second and applies full rudder, without nose-wheel steering, as in certification. VMCG is the lowest failure speed from which the aircraft is back on a heading parallel to the centreline without drifting more than 30 ft sideways. In the air the same logic gives VMCA, flown with no more than 5° of bank toward the live engine.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cv2" aria-label="Runway seen from above with the track after an engine failure and the 30 ft limits"></canvas></div>
+        <div class="paper"><canvas id="cv2b" aria-label="Speed scale with VMCG, VMCA, VR, V2 and the stall-based minimum"></canvas></div>
+      </div>
+      <div class="panel">
+        <div id="c2"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Largest deviation from the centreline</span><b id="t1"></b></div>
+          <div class="rrow"><span>Control limit on the ground, this thrust and wind</span><b id="t2"></b></div>
+          <div class="rrow"><span>VMCG / VMCA used for the speeds (TOGA)</span><b id="t3"></b></div>
+          <div class="rrow"><span>Lowest V1 / VR</span><b id="t4"></b></div>
+          <div class="rrow"><span>Lowest V2 and what sets it</span><b id="t5"></b></div>
+        </div>
+        <p class="callout" id="x2"></p>
+      </div>
+    </div>
+    <div class="cols" style="margin-top:16px">
+      <div class="box"><b class="t">VMCG · on the ground</b><p>Engine failure at take-off thrust, rudder only, no nose-wheel steering. The track may not deviate more than 30 ft from the centreline before the heading is parallel again. V1 may not be lower than VMCG.</p></div>
+      <div class="box"><b class="t">VMCA · in the air</b><p>Critical engine suddenly inoperative, take-off thrust on the other, most adverse CG, take-off configuration, out of ground effect, straight flight with no more than 5° of bank toward the live engine. VR must be at least 1.05 VMCA and V2 at least 1.10 VMCA.</p></div>
+      <div class="box"><b class="t">VMCL · approach and landing</b><p>The same idea in the landing configuration, with go-around thrust on the live engine. The reference approach speed may not be lower than VMCL, so flying VLS or above keeps you clear of it during a one-engine approach and go-around.</p></div>
+    </div>
+    <p class="note" style="margin-top:10px">Teaching model of an A320-size aircraft with typical values. It is calibrated so that take-off thrust at sea level, ISA, gives VMCG ≈ 107 kt and VMCA ≈ 109 kt, the same values the performance lab uses. Your aircraft’s figures are in its flight manual and performance software.</p>
+  </section>
+
+  <section class="card" id="a320">
+    <div class="eyebrow">3 · Procedure</div>
+    <h2>Engine failure at or after V1 on the A320</h2>
+    <div class="cols">
+      <div class="box"><b class="t">What the aircraft does for you, and what it does not</b><p id="nl"></p></div>
+      <div class="box"><b class="t">Typical sequence</b><ol class="steps" id="seq"></ol></div>
+      <div class="box"><b class="t">Thrust levers</b><p id="tl"></p></div>
+    </div>
+    <p class="note" style="margin-top:10px">Typical Airbus technique for teaching. The exact calls, altitudes and actions are in your operator’s FCOM, FCTM and SOPs.</p>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">4 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model of an A320-size aircraft. Thrust, arms, rudder authority and the yaw dynamics are simplified and use typical values; they are not FCOM or certification data. VMCG, VMCA, VMCL and the take-off speeds for your aircraft come from its flight manual and performance software.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'Engine Failure and Minimum Control Speeds':'Motorstans og minste kontrollfarter','Engine failure and minimum control speeds':'Motorstans og minste kontrollfarter','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
+ 'Lose an engine on the A320 and the live engine tries to turn the aircraft. See how big that yawing moment is, why the rudder can only hold it above a certain speed, and how certification turns this into VMCG, VMCA and VMCL and into the limits on V1, VR and V2.':'Mist en motor på A320, og den gode motoren prøver å dreie flyet. Se hvor stort girmomentet er, hvorfor sideroret bare klarer å holde det over en viss fart, og hvordan sertifiseringen gjør dette om til VMCG, VMCA og VMCL og til grensene for V1, VR og V2.',
+ 'Asymmetric thrust':'Asymmetrisk skyv','VMCG and VMCA':'VMCG og VMCA','Failure after V1':'Motorstans etter V1','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Procedure':'3 · Prosedyre','4 · Operations':'4 · Operativt','Check':'Sjekk',
+ 'Asymmetric thrust and rudder authority':'Asymmetrisk skyv og rorautoritet',
+ 'One engine pushes, the other only drags. The yawing moment is the live engine’s thrust times its distance from the centreline, plus the windmilling drag of the failed engine on the other side. The rudder answers with a side force on the fin, and that force grows with the square of the speed. Centre the beta target with the rudder pedal.':'Den ene motoren skyver, den andre bare bremser. Girmomentet er skyvet fra den gode motoren ganger avstanden fra senterlinjen, pluss vindmøllemotstanden fra den døde motoren på den andre siden. Sideroret svarer med en sidekraft på halefinnen, og den kraften vokser med kvadratet av farten. Sentrer beta-målet med pedalen.',
+ 'Failed engine':'Motor som stopper','Windmilling drag of the failed engine':'Vindmøllemotstand fra den døde motoren',
+ 'Live engine thrust':'Skyv fra den gode motoren','Yawing moment to hold':'Girmoment som må holdes','Rudder needed / available':'Ror som trengs / tilgjengelig','Bank for zero sideslip':'Krengning for null sideslip','VMCA at this thrust and bank':'VMCA ved dette skyvet og denne krengningen','Beta target':'Beta-mål',
+ 'Thrust on the live engine (% TOGA)':'Skyv på den gode motoren (% TOGA)','Airspeed (KIAS)':'Fart (KIAS)','Bank toward the live engine (°)':'Krengning mot den gode motoren (°)','Rudder pedal (% of full travel)':'Pedal (% av fullt utslag)',
+ 'VMCG, VMCA and the take-off speeds':'VMCG, VMCA og startfartene',
+ 'Fail an engine on the take-off roll. The pilot recognises it after about a second and applies full rudder, without nose-wheel steering, as in certification. VMCG is the lowest failure speed from which the aircraft is back on a heading parallel to the centreline without drifting more than 30 ft sideways. In the air the same logic gives VMCA, flown with no more than 5° of bank toward the live engine.':'La en motor stoppe under startrullingen. Piloten oppdager det etter omtrent ett sekund og gir fullt sideror, uten nesehjulsstyring, slik som i sertifiseringen. VMCG er den laveste farten for motorstans der flyet kommer tilbake på en kurs parallell med senterlinjen uten å drive mer enn 30 ft til siden. I luften gir den samme logikken VMCA, fløyet med maks 5° krengning mot den gode motoren.',
+ 'Largest deviation from the centreline':'Største avvik fra senterlinjen','Control limit on the ground, this thrust and wind':'Kontrollgrense på bakken, dette skyvet og denne vinden','VMCG / VMCA used for the speeds (TOGA)':'VMCG / VMCA brukt for fartene (TOGA)','Lowest V1 / VR':'Laveste V1 / VR','Lowest V2 and what sets it':'Laveste V2 og hva som bestemmer den',
+ 'Engine failure speed VEF (KIAS)':'Fart ved motorstans VEF (KIAS)','Take-off thrust (% TOGA)':'Startskyv (% TOGA)','Crosswind from the failed-engine side (kt)':'Sidevind fra siden med død motor (kt)','Take-off mass (t)':'Startmasse (t)','FLEX is typically 75–95 % of TOGA':'FLEX er typisk 75–95 % av TOGA','Negative = wind from the live-engine side':'Negativ = vind fra siden med god motor',
+ 'VMCG · on the ground':'VMCG · på bakken','VMCA · in the air':'VMCA · i luften','VMCL · approach and landing':'VMCL · innflyging og landing',
+ 'Engine failure at take-off thrust, rudder only, no nose-wheel steering. The track may not deviate more than 30 ft from the centreline before the heading is parallel again. V1 may not be lower than VMCG.':'Motorstans med startskyv, bare sideror, ingen nesehjulsstyring. Banen kan ikke avvike mer enn 30 ft fra senterlinjen før kursen er parallell igjen. V1 kan ikke være lavere enn VMCG.',
+ 'Critical engine suddenly inoperative, take-off thrust on the other, most adverse CG, take-off configuration, out of ground effect, straight flight with no more than 5° of bank toward the live engine. VR must be at least 1.05 VMCA and V2 at least 1.10 VMCA.':'Kritisk motor stopper brått, startskyv på den andre, mest ugunstige CG, startkonfigurasjon, utenfor bakkeeffekt, rett flyging med maks 5° krengning mot den gode motoren. VR må være minst 1,05 VMCA og V2 minst 1,10 VMCA.',
+ 'The same idea in the landing configuration, with go-around thrust on the live engine. The reference approach speed may not be lower than VMCL, so flying VLS or above keeps you clear of it during a one-engine approach and go-around.':'Den samme ideen i landingskonfigurasjon, med gjennomstartsskyv på den gode motoren. Referansefarten for innflyging kan ikke være lavere enn VMCL, så når du flyr VLS eller mer, holder du deg klar av den under en innflyging og gjennomstart på én motor.',
+ 'Teaching model of an A320-size aircraft with typical values. It is calibrated so that take-off thrust at sea level, ISA, gives VMCG ≈ 107 kt and VMCA ≈ 109 kt, the same values the performance lab uses. Your aircraft’s figures are in its flight manual and performance software.':'Opplæringsmodell av et fly på A320-størrelse med typiske verdier. Den er kalibrert slik at startskyv ved havnivå, ISA, gir VMCG ≈ 107 kt og VMCA ≈ 109 kt, de samme verdiene som ytelseslabben bruker. Tallene for ditt fly står i flyhåndboken og ytelsesprogramvaren.',
+ 'Engine failure at or after V1 on the A320':'Motorstans ved eller etter V1 på A320','What the aircraft does for you, and what it does not':'Hva flyet gjør for deg, og hva det ikke gjør','Typical sequence':'Typisk rekkefølge','Thrust levers':'Gasshendler',
+ 'Typical Airbus technique for teaching. The exact calls, altitudes and actions are in your operator’s FCOM, FCTM and SOPs.':'Typisk Airbus-teknikk til opplæring. Nøyaktige utrop, høyder og handlinger står i operatørens FCOM, FCTM og SOP-er.',
+ 'Teaching model of an A320-size aircraft. Thrust, arms, rudder authority and the yaw dynamics are simplified and use typical values; they are not FCOM or certification data. VMCG, VMCA, VMCL and the take-off speeds for your aircraft come from its flight manual and performance software.':'Opplæringsmodell av et fly på A320-størrelse. Skyv, armer, rorautoritet og girdynamikk er forenklet og bruker typiske verdier; de er ikke FCOM- eller sertifiseringsdata. VMCG, VMCA, VMCL og startfartene for ditt fly kommer fra flyhåndboken og ytelsesprogramvaren.'
+});
+
+/* ================= modell: A320-størrelse, typiske verdier ================= */
+const KT=0.514444, YE=5.75, LV=16, WT=70000*9.81, T0=120e3; // motorarm fra senterlinjen (m), finnearm (m), typisk masse, TOGA-skyv per motor ved stillstand (N)
+const thr=(V,p)=>T0*p*(1-0.0013*V);                // skyv faller med farten (ram drag)
+const qd=V=>0.5*1.225*Math.pow(V*KT,2);
+const S={eng:'1',p:100,v:140,bank:2,rud:60,wm:true};
+function mreq(V,p,wm){ return (thr(V,p/100)+(wm?qd(V)*2.5:0))*YE; }          // N·m
+function bz(V,p,wm){ return Math.asin(Math.min(0.2,mreq(V,p,wm)/(LV*WT)))*180/Math.PI; } // krengning for null sideslip
+function need(V,p,b,wm){ return mreq(V,p,wm)*(1+0.03*(bz(V,p,wm)-b)); }   // sideslip krever mer ror, krengning forbi bz gir litt hjelp
+const dmax=V=>V<=160?25:Math.max(3.4,25-(V-160)/(380-160)*21.6);            // rorbegrenser: 25° under 160 kt, 3,4° ved 380 kt
+const KA=need(109,100,5,true)/qd(109);                                      // kalibrert: VMCA = 109 kt ved TOGA og 5°
+const avail=V=>qd(V)*KA*dmax(V)/25;
+function vmca(p,b,wm){ for(let v=50;v<=260;v+=0.25){ if(avail(v)>=need(v,p,b,wm)) return v; } return null; }
+
+/* ---------- 1: tegning ---------- */
+const C1=LAB.fit(el('cv1'),()=>d1(),2), C1b=LAB.fit(el('cv1b'),()=>d1b(),2);
+function arrow(g,x0,y0,x1,y1,c,w){ g.strokeStyle=c; g.fillStyle=c; g.lineWidth=w||3; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(y1-y0,x1-x0), h=7+(w||3)*1.5; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-h*Math.cos(a-.4),y1-h*Math.sin(a-.4)); g.lineTo(x1-h*Math.cos(a+.4),y1-h*Math.sin(a+.4)); g.closePath(); g.fill(); }
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+(sz||13)+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'center'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px "IBM Plex Mono", monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+// A320 ovenfra, nese opp; s = skala (px per m), senter i (0,0) = CG
+function a320(g,s,dead){ g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.3;
+  // vinger (pilform 25°), spenn 34 m
+  [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*1.9*s,-2.5*s); g.lineTo(sd*17*s,6.2*s); g.lineTo(sd*17*s,7.6*s); g.lineTo(sd*6*s,5.4*s); g.lineTo(sd*1.9*s,4.6*s); g.closePath(); g.fill(); g.stroke();
+    // haleplan
+    g.beginPath(); g.moveTo(sd*1.1*s,13.2*s); g.lineTo(sd*6.2*s,16.6*s); g.lineTo(sd*6.2*s,17.6*s); g.lineTo(sd*1.1*s,16.8*s); g.closePath(); g.fill(); g.stroke(); });
+  // kropp, 37,6 m
+  g.beginPath(); g.moveTo(0,-19*s); g.bezierCurveTo(2.2*s,-18*s,2*s,-14*s,2*s,-11*s); g.lineTo(2*s,10*s); g.quadraticCurveTo(1.6*s,17*s,0.4*s,19*s); g.lineTo(-0.4*s,19*s); g.quadraticCurveTo(-1.6*s,17*s,-2*s,10*s); g.lineTo(-2*s,-11*s); g.bezierCurveTo(-2*s,-14*s,-2.2*s,-18*s,0,-19*s); g.closePath(); g.fill(); g.stroke();
+  // motorer
+  [-1,1].forEach(sd=>{ const d=(sd<0&&dead==='1')||(sd>0&&dead==='2'); g.fillStyle=d?'#F1E3E2':'#D4DCE1'; g.strokeStyle=d?'#B3261E':'#4C5B66'; g.beginPath(); g.ellipse(sd*YE*s,-0.8*s,1.05*s,2.4*s,0,0,7); g.fill(); g.stroke(); });
+  g.strokeStyle='#4C5B66'; }
+function d1(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const V=S.v, nd=need(V,S.p,S.bank,S.wm), av=avail(V), ap=S.rud/100*av, imb=(nd-ap)/Math.max(1,nd); // positiv = gir mot død motor
+  const sgn=S.eng==='1'?-1:1; // side for død motor: -1 venstre
+  const narrow=W<520, s=Math.min(W*(narrow?0.95:0.62)/36,H*0.86/40), cx=narrow?W*0.5:W*0.38, cy=H*0.53;
+  const yaw=Math.max(-1,Math.min(1,imb))*0.12*sgn;
+  g.save(); g.translate(cx,cy); g.rotate(yaw); a320(g,s,S.eng);
+  const live=-sgn, T=thr(V,S.p/100), Tl=Math.max(6,T/120e3*7*s);
+  arrow(g,live*YE*s,-3.4*s,live*YE*s,-3.4*s-Tl,'#9A1E68',3.5);
+  if(S.wm){ const D=qd(V)*2.5, Dl=Math.max(4,D/120e3*7*s*3); arrow(g,sgn*YE*s,1.8*s,sgn*YE*s,1.8*s+Dl,'#B3261E',2.5); }
+  // ror og finnekraft
+  const rd=S.rud/100*dmax(V)*Math.PI/180*1.4; g.save(); g.translate(0,16.5*s); g.rotate(sgn*rd); g.fillStyle='#13202A'; g.fillRect(-0.35*s,0,0.7*s,3.2*s); g.restore();
+  if(S.rud>2){ const fl=Math.min(6.5*s,ap/700e3*6.5*s); arrow(g,0,15.5*s,sgn*fl,15.5*s,'#1D4E9E',3); }
+  // arm
+  g.strokeStyle='rgba(154,30,104,.5)'; g.setLineDash([3,4]); g.lineWidth=1.2; g.beginPath(); g.moveTo(0,-6*s); g.lineTo(live*YE*s,-6*s); g.stroke(); g.setLineDash([]);
+  g.restore();
+  const lab=narrow?11:12.5;
+  hand(g,L({en:'thrust × arm',no:'skyv × arm'}),cx+live*(YE*s+8),cy-5*s,'#9A1E68',live>0?'start':'end',lab);
+  if(S.wm) hand(g,L({en:'windmilling drag',no:'vindmøllemotstand'}),cx+sgn*YE*s,cy+1.8*s+Math.max(4,qd(V)*2.5/120e3*7*s*3)+15,'#B3261E','center',lab);
+  if(S.rud>2) hand(g,L({en:'rudder side force',no:'sidekraft fra roret'}),cx+sgn*3*s,cy+15.5*s-10,'#1D4E9E',sgn<0?'end':'start',lab);
+  const st= nd>av*1.0001? L({en:'not enough rudder at this speed: below VMCA',no:'ikke nok ror ved denne farten: under VMCA'}) : imb>0.03? L({en:'yawing toward the failed engine',no:'girer mot den døde motoren'}) : imb<-0.03? L({en:'too much rudder: yawing toward the live engine',no:'for mye ror: girer mot den gode motoren'}) : L({en:'balanced: heading held',no:'balansert: kursen holdes'});
+  hand(g,st,W/2,H-12,nd>av||Math.abs(imb)>0.03?'#B3261E':'#2C7A4B','center',narrow?11.5:13);
+  // PFD-utsnitt: rullskala og beta-mål
+  const pw=narrow?130:190, ph=narrow?86:120, px=W-pw-10, py=10; g.fillStyle='#10171D'; g.beginPath(); g.roundRect?g.roundRect(px,py,pw,ph,6):g.rect(px,py,pw,ph); g.fill();
+  const ox=px+pw/2, oy=py+ph*0.92, R=ph*0.72, bk=S.bank*(S.eng==='1'?1:-1); // positiv = høyre krengning
+  g.save(); g.beginPath(); g.rect(px,py,pw,ph); g.clip();
+  g.translate(ox,oy); g.rotate(-bk*Math.PI/180); g.fillStyle='#2F7FC0'; g.fillRect(-pw,-ph*2,pw*2,ph*2-R*0.35); g.fillStyle='#8A5A2B'; g.fillRect(-pw,-R*0.35,pw*2,ph*2); g.restore();
+  g.strokeStyle='#fff'; g.lineWidth=1.2; g.beginPath(); g.arc(ox,oy,R,Math.PI*1.25,Math.PI*1.75); g.stroke();
+  [-45,-30,-20,-10,0,10,20,30,45].forEach(a=>{ const r=(a-90)*Math.PI/180, l=a%30===0?8:5; g.beginPath(); g.moveTo(ox+Math.cos(r)*R,oy+Math.sin(r)*R); g.lineTo(ox+Math.cos(r)*(R-l),oy+Math.sin(r)*(R-l)); g.stroke(); });
+  // rullpeker (gul trekant) roterer med krengning, beta-mål under den
+  const ra=(-bk-90)*Math.PI/180, tx=ox+Math.cos(ra)*(R-10), ty=oy+Math.sin(ra)*(R-10);
+  g.save(); g.translate(tx,ty); g.rotate(-bk*Math.PI/180); g.fillStyle='#F2C230'; g.beginPath(); g.moveTo(0,-6); g.lineTo(-6,2); g.lineTo(6,2); g.closePath(); g.fill();
+  const off=Math.max(-1,Math.min(1,imb*3))*14*(S.eng==='1'?1:-1); // forskjøvet mot pedalen som trengs (mot god motor)
+  g.fillStyle='#3FA9F5'; g.fillRect(-9+off,4,18,6); g.restore();
+  g.strokeStyle='#F2C230'; g.lineWidth=2.5; g.beginPath(); g.moveTo(ox-pw*0.32,oy-R*0.35); g.lineTo(ox-pw*0.12,oy-R*0.35); g.moveTo(ox+pw*0.12,oy-R*0.35); g.lineTo(ox+pw*0.32,oy-R*0.35); g.stroke();
+  mono(g,L({en:'PFD: beta target',no:'PFD: beta-mål'}),px+6,py+12,'#9FB3C1','start',10); }
+function d1b(){ const g=C1b.ctx,W=C1b.w,H=C1b.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const L0=46,R0=12,T0=16,B0=26, PW=W-L0-R0, PH=H-T0-B0, v0=80, v1=220, mmax=1500, X=v=>L0+(v-v0)/(v1-v0)*PW, Y=m=>T0+PH-m/mmax*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let v=v0;v<=v1;v+=20){ g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); mono(g,String(v),X(v),T0+PH+14,'#5E6B74','center'); }
+  for(let m=0;m<=1500;m+=500){ g.beginPath(); g.moveTo(L0,Y(m)); g.lineTo(L0+PW,Y(m)); g.stroke(); mono(g,String(m),L0-6,Y(m)+4,'#5E6B74','end'); }
+  mono(g,'kN·m',4,T0+2,'#5E6B74','start'); mono(g,'KIAS',L0+PW-2,T0+PH-6,'#5E6B74','end');
+  const curve=(f,c,w)=>{ g.strokeStyle=c; g.lineWidth=w; g.beginPath(); for(let v=v0;v<=v1;v+=1){ const y=Y(Math.min(mmax,f(v)/1000)); v===v0?g.moveTo(X(v),y):g.lineTo(X(v),y); } g.stroke(); };
+  curve(v=>need(v,S.p,S.bank,S.wm),'#9A1E68',2.4); curve(avail,'#1D4E9E',2.4);
+  const vm=vmca(S.p,S.bank,S.wm); if(vm&&vm>=v0&&vm<=v1){ g.strokeStyle='#B3261E'; g.setLineDash([4,3]); g.lineWidth=1.4; g.beginPath(); g.moveTo(X(vm),T0); g.lineTo(X(vm),T0+PH); g.stroke(); g.setLineDash([]); mono(g,'VMCA '+Math.round(vm),X(vm)+4,T0+10,'#B3261E'); }
+  g.fillStyle='rgba(179,38,30,.06)'; if(vm) g.fillRect(L0,T0,Math.max(0,Math.min(PW,X(vm)-L0)),PH);
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(S.v),Y(need(S.v,S.p,S.bank,S.wm)/1000),5,0,7); g.fill();
+  const sm=W<520?10.5:12; hand(g,L({en:'needed',no:'trengs'}),X(v1)-4,Y(need(v1,S.p,S.bank,S.wm)/1000)-6,'#9A1E68','end',sm); hand(g,L({en:'rudder available',no:'tilgjengelig ror'}),X(185),Math.max(T0+12,Y(avail(185)/1000)-8),'#1D4E9E','end',sm);
+  if(W>420) mono(g,L({en:'rudder travel limited above 160 kt',no:'rorutslaget begrenses over 160 kt'}),X(162),T0+PH-20,'#7D8B95'); }
+function r1(){ const V=S.v, T=thr(V,S.p/100), nd=need(V,S.p,S.bank,S.wm), av=avail(V), ap=S.rud/100*av, imb=(nd-ap)/Math.max(1,nd), vm=vmca(S.p,S.bank,S.wm), live=S.eng==='1'?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'});
+  el('r1').textContent=nf(T/1000,0)+' kN';
+  el('r2').textContent=nf(nd/1000,0)+' kN·m';
+  el('r3').innerHTML=`<span class="${nd>av?'ko':nd>0.85*av?'wa':'ok'}">${Math.round(nd/av*100)} %</span>`;
+  el('r4').textContent='≈ '+nf(bz(V,S.p,S.wm),1)+'° '+L({en:'toward the live engine',no:'mot den gode motoren'});
+  el('r5').innerHTML= vm? (V<vm? `<span class="ko">${Math.round(vm)} kt: ${L({en:'you are below it',no:'du er under'})}</span>` : Math.round(vm)+' kt') : '–';
+  el('r6').innerHTML= nd>av? `<span class="ko">${L({en:'cannot be centred',no:'kan ikke sentreres'})}</span>` : Math.abs(imb)<=0.03? `<span class="ok">${L({en:'centred',no:'sentrert'})}</span>` : imb>0? `<span class="wa">${L({en:'displaced: more',no:'forskjøvet: mer'})} ${live} ${L({en:'rudder',no:'pedal'})}</span>` : `<span class="wa">${L({en:'displaced: less rudder',no:'forskjøvet: mindre pedal'})}</span>`;
+  let x;
+  if(nd>av) x=L({en:'Below VMCA even full rudder cannot hold the heading. The only ways back are more speed or less thrust on the live engine, both of which cost height. With correct V2 and speed discipline you are never here.',no:'Under VMCA klarer ikke engang fullt sideror å holde kursen. Eneste veier tilbake er mer fart eller mindre skyv på den gode motoren, og begge koster høyde. Med riktig V2 og fartsdisiplin havner du aldri her.'});
+  else if(S.p<60) x=L({en:'Less thrust on the live engine means less yaw and a lower VMCA. That is why VMCA is determined at maximum take-off thrust: it is the worst case the crew can select.',no:'Mindre skyv på den gode motoren gir mindre gir og lavere VMCA. Derfor bestemmes VMCA med maks startskyv: det er det verste tilfellet besetningen kan velge.'});
+  else if(S.bank<1) x=L({en:'Wings level, the rudder’s side force has nothing to balance it but sideslip, and the sideslip itself yaws the nose toward the failed engine. More rudder is needed and VMCA rises. A few degrees of bank toward the live engine let a component of weight take the side force instead.',no:'Med vingene vannrett er det bare sideslip som kan balansere sidekraften fra roret, og sideslipen girer i seg selv nesen mot den døde motoren. Det trengs mer ror, og VMCA øker. Noen graders krengning mot den gode motoren lar en komponent av vekten ta sidekraften i stedet.'});
+  else if(V>160) x=L({en:'Above 160 kt the rudder travel limiter starts to reduce the maximum deflection to protect the fin. There is still plenty of authority here, because the yawing moment the rudder can make grows with the square of the speed.',no:'Over 160 kt begynner rorbegrenseren å redusere maks utslag for å beskytte halefinnen. Det er fortsatt god autoritet her, fordi girmomentet roret kan lage vokser med kvadratet av farten.'});
+  else x=L({en:'The A320’s engines sit about 5.7 m either side of the centreline. At take-off thrust the live engine gives a yawing moment of around 600 kN·m. The fin is about 16 m behind the CG, so the rudder must make a side force near 40 kN. Halve the speed and it can make only a quarter of that.',no:'Motorene på A320 sitter rundt 5,7 m på hver side av senterlinjen. Med startskyv gir den gode motoren et girmoment på rundt 600 kN·m. Halefinnen er rundt 16 m bak CG, så roret må lage en sidekraft på nær 40 kN. Halver farten, og det klarer bare en firedel av det.'});
+  el('x1').textContent=x; }
+function u1(){ d1(); d1b(); r1(); }
+LAB.seg(el('fe'),[['1','ENG 1 (left)'],['2','ENG 2 (right)']],S.eng,v=>{ S.eng=v; u1(); });
+LAB.add({},{'ENG 1 (left)':'ENG 1 (venstre)','ENG 2 (right)':'ENG 2 (høyre)'});
+LAB.slider(el('c1'),{label:'Thrust on the live engine (% TOGA)',min:30,max:100,step:1,v:S.p,f:v=>v+' %',on:v=>{ S.p=v; u1(); }});
+LAB.slider(el('c1'),{label:'Airspeed (KIAS)',min:80,max:220,step:1,v:S.v,f:v=>v+' kt',on:v=>{ S.v=v; u1(); }});
+LAB.slider(el('c1'),{label:'Bank toward the live engine (°)',min:0,max:5,step:0.5,v:S.bank,f:v=>nf(v,1)+'°',on:v=>{ S.bank=v; u1(); }});
+LAB.slider(el('c1'),{label:'Rudder pedal (% of full travel)',min:0,max:100,step:1,v:S.rud,f:v=>v+' %',on:v=>{ S.rud=v; u1(); }});
+el('wm').onchange=e=>{ S.wm=e.target.checked; u1(); };
+
+/* ---------- 2: VMCG på bakken ---------- */
+const G={vef:115,p:100,xw:0,m:64};
+const KR=426, CR=2e6, IZ=4e6, KX=100;
+function roll(vef,p,xw,keep){ let V=vef, r=0, psi=0, y=0, x=0, t=0, ymax=0, turned=false; const tr=keep?[[0,0]]:null, dt=0.02;
+  while(t<20){ const Vm=V*KT, q=qd(V), dec=Math.exp(-t/0.8), Tl=thr(V,p/100);
+    const Mas=(Tl-Tl*dec+q*2.5*(1-dec))*YE, Mxw=q*KX*xw/Math.max(V,1), d=t<1?0:Math.min(1,(t-1)/0.7), Mr=q*KR*d*dmax(V)/25;
+    r+=(Mas+Mxw-Mr-CR*r)/IZ*dt; psi+=r*dt; y+=Vm*Math.sin(psi)*dt; x+=Vm*Math.cos(psi)*dt; V+=2.5*dt; t+=dt; if(y>ymax) ymax=y;
+    if(tr&&Math.round(t/dt)%5===0) tr.push([x,y/0.3048]);
+    if(r<0&&psi>0) turned=true;
+    if(turned&&psi<=0){ if(tr){ for(let k=0;k<40;k++) tr.push([x+k*Vm*0.1,y/0.3048]); } return {dev:ymax/0.3048,ok:true,tr,x,t}; }
+    if(y/0.3048>400) break; }
+  return {dev:Math.max(ymax/0.3048,400),ok:false,tr,x,t}; }
+function vmcg(p,xw){ let lo=50,hi=200; for(let i=0;i<26;i++){ const m=(lo+hi)/2; const r=roll(m,p,xw); if(r.ok&&r.dev<=30) hi=m; else lo=m; } return hi; }
+const VMCG0=vmcg(100,0), VMCA0=vmca(100,5,true);
+const C2=LAB.fit(el('cv2'),()=>d2(),2), C2b=LAB.fit(el('cv2b'),()=>d2b(),2);
+let RG=null;
+function calc2(){ const r=roll(G.vef,G.p,G.xw,true), lim=vmcg(G.p,G.xw), vsr=Math.sqrt(2*G.m*1000*9.81/(1.225*122.6*2.25))/KT; RG={r,lim,vsr,v2s:1.13*vsr,v2c:1.10*VMCA0,vr:Math.max(1.05*VMCA0,0)}; }
+function d2(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W||!RG) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const r=RG.r, L0=14, R0=14, cy=H*0.5, xr=Math.max(600,r.tr[r.tr.length-1][0]*1.05), X=x=>L0+x/xr*(W-L0-R0), ys=(H*0.36)/80, Y=f=>cy-f*ys*(S.eng==='2'?-1:1)*-1;
+  // bane
+  g.fillStyle='#3B4650'; g.fillRect(0,cy-H*0.3,W,H*0.6); g.strokeStyle='#F4F6F7'; g.lineWidth=2; g.setLineDash([18,14]); g.beginPath(); g.moveTo(0,cy); g.lineTo(W,cy); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#F4F6F7'; g.fillRect(0,cy-H*0.3+3,W,2); g.fillRect(0,cy+H*0.3-5,W,2);
+  // 30 ft-grenser (sideveis overdrevet)
+  g.strokeStyle='#F2C230'; g.lineWidth=1.4; g.setLineDash([5,4]); [30,-30].forEach(f=>{ g.beginPath(); g.moveTo(0,cy-f*ys); g.lineTo(W,cy-f*ys); g.stroke(); }); g.setLineDash([]);
+  mono(g,'30 ft',W-R0,cy-30*ys-4,'#F2C230','end',11);
+  // spor (avvik tegnes mot siden med død motor: ENG 1 = venstre = opp i bildet)
+  const side=S.eng==='1'?-1:1; g.strokeStyle=r.ok&&r.dev<=30?'#7FD1A0':'#FF8A80'; g.lineWidth=3; g.beginPath(); r.tr.forEach(([x,f],i)=>{ const yy=cy+side*Math.min(70,f)*ys; i?g.lineTo(X(x),yy):g.moveTo(X(x),yy); }); g.stroke();
+  g.fillStyle='#F2C230'; g.beginPath(); g.arc(X(0),cy,5,0,7); g.fill();
+  const sz=W<520?10.5:12.5; hand(g,L({en:'engine fails',no:'motoren stopper'})+' · '+G.vef+' kt',X(0)+8,cy+side*-1*14+4,'#F4F6F7','start',sz);
+  const msg= !r.ok? L({en:'not recovered: the aircraft leaves the runway',no:'ikke gjenvunnet: flyet går av banen'}) : r.dev<=30? L({en:'heading parallel again within 30 ft',no:'kursen parallell igjen innenfor 30 ft'}) : L({en:'recovered, but more than 30 ft off the centreline',no:'gjenvunnet, men mer enn 30 ft fra senterlinjen'});
+  hand(g,msg,W/2,H-8,r.ok&&r.dev<=30?'#2C7A4B':'#B3261E','center',sz);
+  mono(g,L({en:'sideways scale exaggerated',no:'sideveis skala overdrevet'}),L0,14,'#7D8B95','start',10.5); }
+function d2b(){ const g=C2b.ctx,W=C2b.w,H=C2b.h; if(!W||!RG) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const v0=90, v1=170, L0=16, R0=16, X=v=>L0+(v-v0)/(v1-v0)*(W-L0-R0), ay=H*0.58;
+  g.strokeStyle='#13202A'; g.lineWidth=1.4; g.beginPath(); g.moveTo(L0,ay); g.lineTo(W-R0,ay); g.stroke();
+  for(let v=v0;v<=v1;v+=10){ g.beginPath(); g.moveTo(X(v),ay-4); g.lineTo(X(v),ay+4); g.stroke(); mono(g,String(v),X(v),ay+18,'#5E6B74','center'); }
+  const v2=Math.max(RG.v2s,RG.v2c), sz=W<520?10:11.5;
+  const mk=[['VMCG',VMCG0,'#B3261E',-1],['VMCA',VMCA0,'#B3261E',-2],['VR ≥ 1.05 VMCA',1.05*VMCA0,'#1D4E9E',-3],['1.10 VMCA',RG.v2c,'#9A1E68',-4],['1.13 VSR',RG.v2s,'#2C7A4B',-5]];
+  mk.forEach(([t,v,c,row])=>{ if(v<v0||v>v1) return; g.strokeStyle=c; g.lineWidth=2; g.beginPath(); g.moveTo(X(v),ay); g.lineTo(X(v),ay+row*(H<170?11:14)); g.stroke(); const lx=X(v)+3, tw=g.measureText(t+' 000').width; mono(g,t+' '+Math.round(v),lx+tw>W-4?X(v)-3:lx,ay+row*(H<170?11:14)-2,c,lx+tw>W-4?'end':'start',sz); });
+  g.fillStyle='rgba(154,30,104,.18)'; g.fillRect(X(v2)-3,ay-6,6,12); mono(g,'V2 min '+Math.round(v2),X(v2),H-4,'#13202A','center',sz); }
+function r2(){ const R=RG, r=R.r; el('t1').innerHTML= !r.ok? `<span class="ko">${L({en:'not recovered',no:'ikke gjenvunnet'})}</span>` : `<span class="${r.dev<=30?'ok':'ko'}">${nf(r.dev,0)} ft</span>`;
+  el('t2').textContent='≈ '+Math.round(R.lim)+' kt';
+  el('t3').textContent=Math.round(VMCG0)+' / '+Math.round(VMCA0)+' kt';
+  el('t4').textContent=Math.round(VMCG0)+' / '+Math.round(1.05*VMCA0)+' kt';
+  const v2=Math.max(R.v2s,R.v2c); el('t5').textContent=Math.round(v2)+' kt · '+(R.v2c>=R.v2s? L({en:'1.10 VMCA (light aircraft)',no:'1,10 VMCA (lett fly)'}) : L({en:'1.13 VSR (stall margin)',no:'1,13 VSR (steilemargin)'}));
+  let x;
+  if(G.p<100) x=L({en:'With FLEX the live engine gives less thrust, so the real control limit is lower than VMCG. But V1, VR and V2 are still checked against the TOGA values, because the crew may push the levers to TOGA at any moment. Derated thrust, where offered, is different: the lower thrust becomes the certified limit, VMCG and VMCA fall, and TOGA should not be selected at low speed.',no:'Med FLEX gir den gode motoren mindre skyv, så den virkelige kontrollgrensen er lavere enn VMCG. Men V1, VR og V2 sjekkes fortsatt mot TOGA-verdiene, fordi besetningen kan skyve hendlene til TOGA når som helst. Derated skyv, der det finnes, er annerledes: det lavere skyvet blir den sertifiserte grensen, VMCG og VMCA blir lavere, og TOGA bør ikke velges i lav fart.'});
+  else if(G.xw>0) x=L({en:'A crosswind from the failed-engine side adds to the yaw: the aircraft also wants to weathercock into the wind, toward the dead engine. The control limit rises. On a wet or contaminated runway the tyres and the nose-wheel steering help less, so the margin you rely on in practice shrinks too.',no:'Sidevind fra siden med død motor øker giret: flyet vil også vende seg mot vinden, mot den døde motoren. Kontrollgrensen øker. På våt eller kontaminert bane hjelper dekkene og nesehjulsstyringen mindre, så marginen du i praksis regner med, krymper også.'});
+  else if(G.xw<0) x=L({en:'With the wind from the live-engine side, weathercocking works against the asymmetric yaw and the control limit falls. VMCG itself is a certified value and does not change with the wind on the day.',no:'Med vinden fra siden med god motor virker værhanetendensen mot det asymmetriske giret, og kontrollgrensen faller. VMCG er selv en sertifisert verdi og endres ikke med dagens vind.'});
+  else if(G.vef<VMCG0) x=L({en:'Below VMCG the rudder cannot stop the swing before the aircraft has drifted too far. That is why V1 may never be below VMCG: a failure just before V1 must be stoppable, and one at V1 must be controllable on the runway.',no:'Under VMCG klarer ikke roret å stoppe svingen før flyet har drevet for langt. Derfor kan V1 aldri være under VMCG: en motorstans like før V1 må kunne stoppes, og en ved V1 må kunne kontrolleres på banen.'});
+  else x=L({en:'Above VMCG the rudder is strong enough. Notice the speed scale: at a light mass the stall speed is low, and 1.10 VMCA, not 1.13 VSR, sets the lowest V2. At heavy masses the stall margin governs.',no:'Over VMCG er roret sterkt nok. Se på fartsskalaen: ved lav masse er steilefarten lav, og 1,10 VMCA, ikke 1,13 VSR, bestemmer laveste V2. Ved høy masse er det steilemarginen som styrer.'});
+  el('x2').textContent=x; }
+function u2(){ calc2(); d2(); d2b(); r2(); }
+LAB.slider(el('c2'),{label:'Engine failure speed VEF (KIAS)',min:80,max:150,step:1,v:G.vef,f:v=>v+' kt',on:v=>{ G.vef=v; u2(); }});
+LAB.slider(el('c2'),{label:'Take-off thrust (% TOGA)',min:70,max:100,step:1,v:G.p,f:v=>v===100?'TOGA':v+' %',on:v=>{ G.p=v; u2(); },hint:'FLEX is typically 75–95 % of TOGA'});
+LAB.slider(el('c2'),{label:'Crosswind from the failed-engine side (kt)',min:-20,max:20,step:1,v:G.xw,f:v=>(v>0?'+':'')+v+' kt',on:v=>{ G.xw=v; u2(); },hint:'Negative = wind from the live-engine side'});
+LAB.slider(el('c2'),{label:'Take-off mass (t)',min:48,max:78,step:1,v:G.m,f:v=>v+' t',on:v=>{ G.m=v; u2(); }});
+
+/* ---------- 3: prosedyre ---------- */
+function proc(){
+  el('nl').textContent=L({en:'In normal law the flight control computers damp the yaw, coordinate turns and hold the bank you leave, but they do not put in the large, steady rudder deflection that balances the live engine. That comes from your feet: centre the blue beta target with rudder. Some other types, for example the Boeing 777 with its thrust asymmetry compensation, add rudder automatically; the A320 relies on the pilot. Once the autopilot is engaged it takes over the rudder trim.',no:'I normal law demper flykontrolldatamaskinene giret, koordinerer svinger og holder krengningen du lar stå, men de gir ikke det store, faste rorutslaget som balanserer den gode motoren. Det kommer fra føttene dine: sentrer det blå beta-målet med sideror. Noen andre typer, for eksempel Boeing 777 med sin thrust asymmetry compensation, gir ror automatisk; A320 er avhengig av piloten. Når autopiloten er koblet inn, tar den over rortrimmen.'});
+  const seq=L({en:['On the runway: keep the centreline with rudder. The yaw is sudden and the rudder input is large.','At VR: rotate smoothly at a slightly lower rate toward about 12.5° of pitch, then follow the SRS pitch bar (it holds V2 to V2 + 15).','Airborne: centre the beta target with rudder, keep the wings about level with the sidestick, and call positive climb before gear up.','Trim the rudder, then engage the autopilot when appropriate. ECAM actions start at a safe height, typically 400 ft.','At the engine-out acceleration altitude: level off or reduce the climb, accelerate, retract the flaps on schedule and select MCT at green dot.'],no:['På banen: hold senterlinjen med sideror. Giret kommer brått, og rorutslaget er stort.','Ved VR: roter jevnt med litt lavere rate mot rundt 12,5° pitch, og følg så SRS-pitchbaren (den holder V2 til V2 + 15).','I luften: sentrer beta-målet med sideror, hold vingene omtrent vannrett med sidesticken, og kall positive climb før hjulene tas opp.','Trim sideroret, og koble inn autopiloten når det passer. ECAM-handlingene starter i trygg høyde, typisk 400 ft.','Ved akselerasjonshøyden for én motor: flat ut eller reduser stigningen, akselerer, ta inn klaffene etter skjema og velg MCT ved green dot.']});
+  el('seq').innerHTML=seq.map(s=>`<li>${s}</li>`).join('');
+  el('tl').textContent=L({en:'Leave the thrust levers where they are. The A320 has no autothrust action on the live engine at take-off: TOGA or FLX stays set until you select MCT. Pulling the levers back does not help control above VMCA and costs climb gradient. A typical technique is that the captain keeps a hand on the levers until V1 and takes it off at V1, so that a late reject cannot start by reflex.',no:'La gasshendlene stå. A320 har ingen autothrust-handling på den gode motoren ved avgang: TOGA eller FLX står til du velger MCT. Å trekke hendlene tilbake hjelper ikke kontrollen over VMCA og koster stigegradient. En typisk teknikk er at kapteinen holder hånden på hendlene til V1 og tar den bort ved V1, slik at en sen avbrytelse ikke kan starte av refleks.'}); }
+
+/* ---------- 4: kort ---------- */
+function cards(){ const c=[
+ [{en:'The blue beta target',no:'Det blå beta-målet'},{en:'Normally the sideslip index under the PFD roll pointer is yellow. In take-off configuration with a large thrust asymmetry it turns blue and becomes the beta target: the sideslip that gives the best climb with one engine out. Centre it with rudder, as you would step on the ball.',no:'Til vanlig er sideslipindeksen under rullpekeren på PFD-en gul. I startkonfigurasjon med stor skyvasymmetri blir den blå og blir til beta-målet: sideslipen som gir best stigning med én motor ute. Sentrer den med sideror, som når du tråkker på kula.'}],
+ [{en:'TOGA, FLEX and VMC',no:'TOGA, FLEX og VMC'},{en:'VMCG and VMCA are set at maximum take-off thrust. A FLEX take-off reduces the actual yaw, but the speeds are still protected against TOGA, because TOGA is always available. High and hot airfields give less thrust, so the VMC values in IAS fall while the stall speeds in IAS do not.',no:'VMCG og VMCA settes med maks startskyv. En FLEX-avgang reduserer det faktiske giret, men fartene er fortsatt beskyttet mot TOGA, fordi TOGA alltid er tilgjengelig. Høytliggende og varme flyplasser gir mindre skyv, så VMC-verdiene i IAS faller, mens steilefartene i IAS ikke gjør det.'}],
+ [{en:'Crosswind and contaminated runways',no:'Sidevind og kontaminerte baner'},{en:'Certification assumes rudder only. In real life nose-wheel steering helps, but on a slippery runway it helps little, and a crosswind from the failed-engine side adds to the swing. Crosswind limits on contaminated runways are lower partly for this reason.',no:'Sertifiseringen forutsetter bare sideror. I virkeligheten hjelper nesehjulsstyringen, men på en glatt bane hjelper den lite, og sidevind fra siden med død motor øker svingen. Sidevindsgrensene på kontaminerte baner er lavere delvis av denne grunnen.'}],
+ [{en:'One-engine approach and go-around',no:'Innflyging og gjennomstart på én motor'},{en:'In the landing configuration VMCL is the limit. A one-engine go-around means a big, fast thrust change on one side: be ready with rudder as the thrust comes up, and keep the speed at or above VLS.',no:'I landingskonfigurasjon er VMCL grensen. En gjennomstart på én motor betyr en stor og rask skyvendring på én side: vær klar med sideror når skyvet kommer, og hold farten på eller over VLS.'}],
+ [{en:'Rudder trim and the autopilot',no:'Rortrim og autopilot'},{en:'Holding a large pedal force for minutes is tiring and imprecise. Once the beta target is centred, trim the rudder out. With the autopilot engaged the rudder trim is managed for you; when you disconnect it, expect to take over a trimmed but asymmetric aircraft.',no:'Å holde en stor pedalkraft i minutter er slitsomt og unøyaktig. Når beta-målet er sentrert, trimmer du bort sideroret. Med autopiloten inne styres rortrimmen for deg; når du kobler den ut, overtar du et trimmet, men asymmetrisk fly.'}],
+ [{en:'From propellers to fans',no:'Fra propeller til faner'},{en:'On propeller twins, P-factor and slipstream make one engine the critical one. On the A320 the two turbofans are practically symmetric, so the yaw is almost the same whichever engine fails.',no:'På tomotors propellfly gjør P-faktor og slipstrøm én motor kritisk. På A320 er de to turbofanene i praksis symmetriske, så giret er nesten likt uansett hvilken motor som stopper.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+LAB.quiz(el('qbox'),'propeller',()=>LAB.shuffle([
+ {q:{en:'What sets the size of the yawing moment after an engine failure on the A320?',no:'Hva bestemmer størrelsen på girmomentet etter motorstans på A320?'},a:[{en:'The live engine’s thrust times its distance from the centreline, plus the drag of the windmilling engine',no:'Skyvet fra den gode motoren ganger avstanden fra senterlinjen, pluss motstanden fra motoren i vindmølle'},{en:'Only the drag of the failed engine',no:'Bare motstanden fra den døde motoren'},{en:'The P-factor of the live engine',no:'P-faktoren til den gode motoren'}],c:0,e:{en:'Moment is force times arm. The failed engine’s drag acts on the other side and adds to the same yaw.',no:'Moment er kraft ganger arm. Motstanden fra den døde motoren virker på den andre siden og øker det samme giret.'}},
+ {q:{en:'You halve the airspeed. The yawing moment the rudder can make becomes about…',no:'Du halverer farten. Girmomentet roret kan lage blir omtrent …'},a:[{en:'a quarter',no:'en firedel'},{en:'a half',no:'halvparten'},{en:'unchanged',no:'uendret'}],c:0,e:{en:'Aerodynamic force goes with dynamic pressure, which goes with V². The engine’s thrust barely changes, so at low speed the asymmetry wins.',no:'Aerodynamisk kraft følger det dynamiske trykket, som går med V². Motorskyvet endres knapt, så i lav fart vinner asymmetrien.'}},
+ {q:{en:'Why may V1 not be lower than VMCG?',no:'Hvorfor kan ikke V1 være lavere enn VMCG?'},a:[{en:'A failure at V1 means continuing, and you must then be able to keep the aircraft on the runway with rudder alone',no:'En motorstans ved V1 betyr å fortsette, og da må du kunne holde flyet på banen med bare sideror'},{en:'Because the brakes are not certified below VMCG',no:'Fordi bremsene ikke er sertifisert under VMCG'},{en:'Because VMCG is the rotation speed',no:'Fordi VMCG er rotasjonsfarten'}],c:0,e:{en:'Above V1 you go. Directional control with rudder only is guaranteed only at or above VMCG.',no:'Over V1 fortsetter du. Retningskontroll med bare sideror er bare sikret på eller over VMCG.'}},
+ {q:{en:'Which relationships apply to the take-off speeds?',no:'Hvilke sammenhenger gjelder for startfartene?'},a:[{en:'VR ≥ 1.05 VMCA and V2 ≥ 1.10 VMCA',no:'VR ≥ 1,05 VMCA og V2 ≥ 1,10 VMCA'},{en:'VR ≥ VMCG and V2 ≥ 1.05 VMCG',no:'VR ≥ VMCG og V2 ≥ 1,05 VMCG'},{en:'V1 ≥ 1.10 VMCA',no:'V1 ≥ 1,10 VMCA'}],c:0,e:{en:'VMCA protects the airborne phase, VMCG the ground roll. V2 must also be at least 1.13 VSR; the higher of the two governs.',no:'VMCA beskytter fasen i luften, VMCG startrullingen. V2 må også være minst 1,13 VSR; den høyeste av de to styrer.'}},
+ {q:{en:'Why is VMCA determined with up to 5° of bank toward the live engine?',no:'Hvorfor bestemmes VMCA med inntil 5° krengning mot den gode motoren?'},a:[{en:'A component of weight then balances the rudder’s side force, so less sideslip and less rudder are needed',no:'En komponent av vekten balanserer da sidekraften fra roret, så det trengs mindre sideslip og mindre ror'},{en:'Bank increases the thrust of the live engine',no:'Krengning øker skyvet fra den gode motoren'},{en:'The ailerons then produce yaw toward the live engine',no:'Krengerorene gir da gir mot den gode motoren'}],c:0,e:{en:'Wings level, only sideslip can balance the rudder’s side force, and that sideslip yaws the nose toward the dead engine. VMCA is then several knots higher.',no:'Med vingene vannrett kan bare sideslip balansere sidekraften fra roret, og den sideslipen girer nesen mot den døde motoren. VMCA blir da flere knop høyere.'}},
+ {q:{en:'After an engine failure at V2 in normal law, what does the A320 do about the yaw?',no:'Etter motorstans ved V2 i normal law, hva gjør A320 med giret?'},a:[{en:'It damps the yaw and coordinates turns, but the pilot must apply the rudder that balances the thrust, guided by the beta target',no:'Den demper giret og koordinerer svinger, men piloten må gi det sideroret som balanserer skyvet, ved hjelp av beta-målet'},{en:'It applies full compensating rudder automatically',no:'Den gir fullt kompenserende sideror automatisk'},{en:'It reduces the live engine’s thrust to remove the asymmetry',no:'Den reduserer skyvet på den gode motoren for å fjerne asymmetrien'}],c:0,e:{en:'Some types have automatic thrust-asymmetry compensation. The A320 relies on the pilot’s rudder until the autopilot is engaged.',no:'Noen typer har automatisk kompensasjon for skyvasymmetri. A320 er avhengig av pilotens sideror til autopiloten er koblet inn.'}},
+ {q:{en:'The sideslip index on the PFD has turned blue after an engine failure on take-off. What do you do?',no:'Sideslipindeksen på PFD-en har blitt blå etter motorstans ved avgang. Hva gjør du?'},a:[{en:'Centre it with rudder',no:'Sentrer den med sideror'},{en:'Centre it with the sidestick',no:'Sentrer den med sidesticken'},{en:'Ignore it until the ECAM actions are complete',no:'Ignorer den til ECAM-handlingene er ferdige'}],c:0,e:{en:'The blue beta target shows the sideslip for best one-engine climb. Rudder controls sideslip; the sidestick controls roll.',no:'Det blå beta-målet viser sideslipen for best stigning på én motor. Sideroret styrer sideslip; sidesticken styrer rulling.'}},
+ {q:{en:'You take off with FLEX. Which VMCG and VMCA are V1, VR and V2 checked against?',no:'Du tar av med FLEX. Hvilke VMCG og VMCA sjekkes V1, VR og V2 mot?'},a:[{en:'The values for TOGA, because TOGA can be selected at any time',no:'Verdiene for TOGA, fordi TOGA kan velges når som helst'},{en:'Lower values for the reduced thrust',no:'Lavere verdier for det reduserte skyvet'},{en:'VMC does not apply to FLEX take-offs',no:'VMC gjelder ikke for FLEX-avganger'}],c:0,e:{en:'FLEX lowers the real yaw, but the protection must cover the worst thrust the crew can select. Derated thrust, where offered, is the case where the VMC values are lowered.',no:'FLEX reduserer det virkelige giret, men beskyttelsen må dekke det verste skyvet besetningen kan velge. Derated skyv, der det finnes, er tilfellet der VMC-verdiene senkes.'}},
+ {q:{en:'A crosswind blows from the side of the engine that fails on the take-off roll. Compared with calm wind, keeping straight is…',no:'Sidevinden blåser fra siden til motoren som stopper under startrullingen. Sammenlignet med stille vær er det å holde retningen …'},a:[{en:'harder: weathercocking turns the nose toward the failed engine too',no:'vanskeligere: værhanetendensen dreier også nesen mot den døde motoren'},{en:'easier: the wind pushes against the yaw',no:'lettere: vinden presser mot giret'},{en:'the same, because VMCG is fixed',no:'det samme, fordi VMCG er fast'}],c:0,e:{en:'An aircraft weathercocks into the wind. With the wind from the dead-engine side, that adds to the asymmetric yaw.',no:'Et fly vender seg mot vinden. Med vinden fra siden med død motor øker det det asymmetriske giret.'}},
+ {q:{en:'At a light take-off mass, what usually sets the lowest V2?',no:'Ved lav startmasse, hva bestemmer vanligvis laveste V2?'},a:[{en:'1.10 VMCA',no:'1,10 VMCA'},{en:'1.13 VSR',no:'1,13 VSR'},{en:'VMCG',no:'VMCG'}],c:0,e:{en:'The stall speed falls with mass, but VMCA does not, because it depends on thrust and rudder, not weight.',no:'Steilefarten faller med massen, men VMCA gjør ikke det, fordi den avhenger av skyv og ror, ikke vekt.'}},
+ {q:{en:'Why is VMCA lower at a high, hot airfield?',no:'Hvorfor er VMCA lavere på en høytliggende, varm flyplass?'},a:[{en:'The live engine gives less thrust there, so the yawing moment is smaller',no:'Den gode motoren gir mindre skyv der, så girmomentet er mindre'},{en:'The rudder is more effective in thin air',no:'Sideroret er mer effektivt i tynn luft'},{en:'It is not; VMCA is the same everywhere',no:'Det er den ikke; VMCA er lik overalt'}],c:0,e:{en:'The rudder’s force at a given IAS is the same, but the asymmetric thrust is smaller. Stall speeds in IAS do not fall, so the two come closer.',no:'Rorkraften ved en gitt IAS er den samme, men det asymmetriske skyvet er mindre. Steilefartene i IAS faller ikke, så de to kommer nærmere hverandre.'}},
+ {q:{en:'What does VMCL protect?',no:'Hva beskytter VMCL?'},a:[{en:'Control with one engine out in the landing configuration, including a go-around with the live engine at go-around thrust',no:'Kontroll med én motor ute i landingskonfigurasjon, inkludert en gjennomstart med den gode motoren på gjennomstartsskyv'},{en:'Directional control on the landing roll after touchdown',no:'Retningskontroll under landingsrullingen etter nedsetting'},{en:'The minimum speed for using the reversers',no:'Minste fart for bruk av reversene'}],c:0,e:{en:'The approach reference speed may not be below VMCL, so VLS keeps you above it.',no:'Referansefarten for innflyging kan ikke være under VMCL, så VLS holder deg over den.'}}
+]),12);
+
+LAB.start('prop'); u1(); u2(); proc(); cards();
+LAB.onLang(()=>{ u1(); u2(); proc(); cards(); });
+})();
+</script>
+</body>
+</html>

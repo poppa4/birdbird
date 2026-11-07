@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radio drills · Birdbird</title>
+<meta name="description" content="Two-way radio practice with EASA and ICAO phraseology: guided scenarios, readbacks, the phonetic alphabet and a short test.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.rgrid{display:grid;grid-template-columns:330px minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:980px){.rgrid{grid-template-columns:minmax(0,1fr)}}
+.scen{display:flex;flex-direction:column;gap:6px}
+.scen button{text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:9px 11px;color:var(--fg);cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.scen button small{color:var(--muted);font-size:12px}
+.scen button.on{border-color:var(--smoke);background:rgba(127,203,232,.08)}
+.scen button .best{font-family:var(--f-mono);font-size:11px;color:var(--green)}
+.brief{font-size:13px;color:var(--muted)}
+.brief b{color:var(--fg)}
+.atis{font-family:var(--f-mono);font-size:12.5px;background:#070a0d;border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:#d7f5e1;line-height:1.55}
+.radio{background:linear-gradient(#1f2328,#16191d);border:1px solid #363c44;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.rhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.freq{display:flex;gap:10px;align-items:baseline;font-family:var(--f-mono)}
+.freq .act{font-size:24px;color:#29e05a;letter-spacing:.04em}
+.freq .stn{font-size:12px;color:#8e98a3;letter-spacing:.12em;text-transform:uppercase}
+.tx{display:inline-block;font-family:var(--f-mono);font-size:11px;padding:2px 7px;border-radius:3px;border:1px solid #3a4048;color:#8e98a3}
+.tx.on{background:#ec5a47;border-color:#ec5a47;color:#fff}
+.tx.rx{background:#29e05a;border-color:#29e05a;color:#0d1319}
+.log{height:420px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px;scroll-behavior:smooth}
+.msg{max-width:88%;border-radius:8px;padding:8px 11px;font-size:14px;line-height:1.45}
+.msg .who{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:2px}
+.msg.atc{align-self:flex-start;background:#0c1d14;border:1px solid #1d4a2e}
+.msg.atc .who{color:#29e05a}
+.msg.me{align-self:flex-end;background:#132331;border:1px solid #24435a}
+.msg.me .who{color:var(--smoke)}
+.msg.sys{align-self:center;max-width:100%;background:transparent;border:1px dashed var(--line);color:var(--muted);font-size:13px}
+.fb{margin-top:6px;display:flex;flex-direction:column;gap:3px;font-size:12.5px}
+.fb span{display:flex;gap:6px}
+.fb .y{color:var(--green)}.fb .n{color:#ff8e7e}.fb .w{color:var(--amber)}
+.fb .model{color:var(--muted);font-family:var(--f-mono);font-size:12px;margin-top:2px}
+.task{background:rgba(127,203,232,.07);border-left:3px solid var(--smoke);padding:8px 11px;border-radius:0 6px 6px 0;font-size:13.5px}
+.inrow{display:flex;gap:8px;align-items:stretch}
+.inrow textarea{flex:1 1 auto;min-width:0;font-family:var(--f-body);font-size:14.5px;background:#0b0e11;color:var(--fg);border:1px solid #3a4048;border-radius:6px;padding:9px 10px;resize:none;height:64px}
+.inrow textarea:focus{outline:2px solid var(--smoke);outline-offset:0}
+.ptt{flex:0 0 74px;border-radius:8px;border:1px solid #4a515a;background:radial-gradient(circle at 40% 35%,#4a525c,#252a30);color:#fff;font-weight:700;font-size:12px;cursor:pointer;touch-action:none;user-select:none;font-family:var(--f-mono)}
+.ptt.on{background:#ec5a47;border-color:#ec5a47}
+.ptt:disabled{opacity:.4;cursor:not-allowed}
+.send{flex:0 0 auto}
+.rbtns{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.score{font-family:var(--f-mono);font-size:13px;color:var(--fg)}
+table.ph{border-collapse:collapse;width:100%;font-size:13px}
+table.ph td,table.ph th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.ph th{font-size:12px;color:var(--muted);font-weight:500}
+table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
+.alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:6px}
+.alpha div{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:5px 8px;font-size:13px}
+.alpha div b{font-family:var(--f-mono);color:var(--smoke);margin-right:6px}
+.alpha div small{display:block;color:var(--muted);font-size:11px}
+.aibox{display:flex;flex-direction:column;gap:10px}
+.aiset{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.aiset select,.aiset input{width:100%;font-family:var(--f-body);font-size:14px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 8px}
+.aiset label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.aioff{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #1D4E9E;padding:14px 18px;max-width:880px}
+.aioff b{display:block;font-size:16px}
+.aioff p{margin:6px 0 4px;color:var(--ink-2);font-size:15px;max-width:70ch}
+.aioff ul{margin:4px 0 0;padding-left:18px;font-size:15px;color:var(--ink-2)}
+.aioff li{margin:3px 0}.aioff a{font-weight:600}
+</style>
+</head>
+<body data-title="Radio drills">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>Radio drills</h1>
+      <p>Two-way radio practice with EASA and ICAO phraseology. Make the call, the controller answers, and every transmission is checked: what you read back, what you missed, and what a good call sounds like.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">Ready</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#train">Guided scenarios</a><a href="#ai">AI controller</a><a href="#ref">Phraseology</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="train">
+    <div class="eyebrow">1 · Two-way</div>
+    <h2>Guided scenarios</h2>
+    <p class="lead">Pick a scenario and talk to the controller by typing, or hold the PTT button (or the space bar) and speak. You are LN-NAE, a DA42 at Birdbird. Values like QNH and squawk change every time.</p>
+    <div class="rgrid">
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+        <div class="scen" id="scen"></div>
+        <div class="box"><b class="t">Situation</b><div class="brief" id="brief"></div></div>
+        <div class="atis" id="atis"></div>
+        <div class="rbtns"><button class="btn" id="playAtis">Listen to ATIS</button></div>
+      </div>
+      <div class="radio">
+        <div class="rhead"><div class="freq"><span class="act" id="fq">118.300</span><span class="stn" id="stn">Birdbird Tower</span></div><div class="rbtns"><span class="tx" id="txi">TX</span><span class="tx" id="rxi">RX</span><span class="score" id="score"></span></div></div>
+        <div class="log" id="log" aria-live="polite"></div>
+        <div class="task" id="task"></div>
+        <div class="inrow"><textarea id="say" placeholder="Type your transmission…" aria-label="Your transmission"></textarea><button class="ptt" id="ptt" aria-label="Push to talk">PTT</button></div>
+        <div class="rbtns"><button class="btn pri send" id="send">Transmit</button><button class="btn" id="hint">Show a good call</button><button class="btn" id="restart">Restart scenario</button><label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="voice" checked> Read the controller aloud</label></div>
+        <div class="note" id="micNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="ai">
+    <div class="eyebrow">2 · Free practice</div>
+    <h2>AI controller</h2>
+    <p class="lead">Fly any situation you like. The AI plays the controller, answers like real ATC and tells you after each call what to improve. It answers within a few seconds; keep calls short, like on a real frequency.</p>
+    <div class="aibox" id="aibox">
+      <div class="aiset">
+        <label>Controller<select id="aiUnit"><option value="Birdbird Tower (VFR traffic, control zone)">Tower – VFR</option><option value="Birdbird Ground and Delivery (IFR clearance, taxi)">Ground and delivery – IFR</option><option value="Birdbird Approach (IFR arrivals, vectors, ILS)">Approach – IFR arrival</option><option value="Polaris Information (flight information service, uncontrolled airspace)">Flight information (FIS)</option><option value="Birdbird Approach (emergency and urgency handling)">Emergencies</option></select></label>
+        <label>Your situation (optional)<input id="aiSit" placeholder="e.g. VFR from Torp to Birdbird, 2500 ft, 12 NM south"></label>
+        <label>Difficulty<select id="aiLvl"><option value="student pilot on first radio lessons: speak slowly, simple instructions">Beginner</option><option value="PPL student: normal ATC pace, occasional extra traffic information" selected>Normal</option><option value="IR student: busy frequency, conditional clearances, re-routes and expect-further-clearance items">Hard</option></select></label>
+      </div>
+      <div class="radio">
+        <div class="log" id="aiLog" style="height:340px"></div>
+        <div class="inrow"><textarea id="aiSay" placeholder="Type your first call…" aria-label="Your transmission to the AI controller"></textarea><button class="ptt" id="aiPtt" aria-label="Push to talk">PTT</button></div>
+        <div class="rbtns"><button class="btn pri" id="aiSend">Transmit</button><button class="btn" id="aiStop" hidden>Stop</button><button class="btn" id="aiReset">New session</button><span class="note" id="aiNote"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="ref">
+    <div class="eyebrow">3 · Reference</div>
+    <h2>Phraseology</h2>
+    <div class="cols">
+      <div class="box"><b class="t">Always read back</b><p>Route clearances. Clearances to enter, land on, take off from, cross, taxi on or backtrack a runway, and hold short of it. Runway in use, altimeter settings (QNH), squawk codes, levels, headings and speeds, transition levels and frequency changes. End the readback with your callsign.</p></div>
+      <div class="box"><b class="t">First call</b><p>Who you call, who you are, where you are, what you want. Example: “Birdbird Tower, LN-NAE, DA42, 10 miles south, 2000 feet, information Bravo, request joining for landing.”</p></div>
+      <div class="box"><b class="t">Words to avoid</b><p>Say “ready for departure”, not “ready for take-off” (take-off is used only in the clearance). Say “say again”, not “repeat”. Say “affirm”, not “yes” or “affirmative”. No “over and out”.</p></div>
+    </div>
+    <table class="ph" style="margin-top:6px">
+      <tr><th>Word</th><th>Meaning</th></tr>
+      <tr><td>ACKNOWLEDGE</td><td>Let me know that you have received and understood this message.</td></tr>
+      <tr><td>AFFIRM</td><td>Yes.</td></tr>
+      <tr><td>NEGATIVE</td><td>No, or permission not granted, or that is not correct.</td></tr>
+      <tr><td>ROGER</td><td>I have received all of your last transmission. Never a reply to a question or a substitute for a readback.</td></tr>
+      <tr><td>WILCO</td><td>I understand your message and will comply with it.</td></tr>
+      <tr><td>STANDBY</td><td>Wait and I will call you.</td></tr>
+      <tr><td>SAY AGAIN</td><td>Repeat all, or the following part, of your last transmission.</td></tr>
+      <tr><td>CORRECTION</td><td>An error has been made; the correct version is…</td></tr>
+      <tr><td>MAYDAY ×3</td><td>Distress: grave and imminent danger, immediate assistance required.</td></tr>
+      <tr><td>PAN PAN ×3</td><td>Urgency: a condition that concerns safety, no immediate assistance required.</td></tr>
+    </table>
+    <h3 style="margin-top:6px">Numbers and letters</h3>
+    <div class="alpha" id="alpha"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+
+  <p class="note">Teaching tool based on ICAO Doc 4444, ICAO Doc 9432 and EASA SERA. Local phraseology varies: always follow your AIP and your instructor. Birdbird, its frequencies and the scenarios are fictional.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,quiz,shuffle}=LAB;
+LAB.add({},{
+ 'Birdbird · Training':'Birdbird · Trening','Radio drills':'Radiodriller','Radio Drills':'Radiodriller',
+ 'Two-way radio practice with EASA and ICAO phraseology. Make the call, the controller answers, and every transmission is checked: what you read back, what you missed, and what a good call sounds like.':'Toveis radiotrening med EASA- og ICAO-fraseologi. Du gjør oppkallet, flygelederen svarer, og hver sending sjekkes: hva du leste tilbake, hva du glemte og hvordan et godt oppkall høres ut.',
+ 'Guided scenarios':'Guidede scenarier','AI controller':'AI-flygeleder','Phraseology':'Fraseologi','Test yourself':'Test deg selv','Two-way':'Toveis',
+ 'Pick a scenario and talk to the controller by typing, or hold the PTT button (or the space bar) and speak. You are LN-NAE, a DA42 at Birdbird. Values like QNH and squawk change every time.':'Velg et scenario og snakk med flygelederen ved å skrive, eller hold inne PTT-knappen (eller mellomromstasten) og snakk. Du er LN-NAE, en DA42 på Birdbird. Verdier som QNH og squawk endres hver gang.',
+ 'Situation':'Situasjon','Listen to ATIS':'Hør ATIS','Transmit':'Send','Show a good call':'Vis et godt oppkall','Restart scenario':'Start scenarioet på nytt','Read the controller aloud':'Les opp flygelederen',
+ 'Free practice':'Fri trening','Fly any situation you like. The AI plays the controller, answers like real ATC and tells you after each call what to improve. It answers within a few seconds; keep calls short, like on a real frequency.':'Fly hvilken som helst situasjon. AI-en spiller flygeleder, svarer som ekte ATC og forteller deg etter hvert oppkall hva du kan gjøre bedre. Den bruker din egen Claude-konto og fungerer bare når siden er åpnet i Claude.',
+ 'Controller':'Flygeleder','Your situation (optional)':'Din situasjon (valgfritt)','Difficulty':'Vanskelighetsgrad','Stop':'Stopp','New session':'Ny økt',
+ 'Reference':'Oppslag','Always read back':'Les alltid tilbake','First call':'Første oppkall','Words to avoid':'Ord du bør unngå',
+ 'Route clearances. Clearances to enter, land on, take off from, cross, taxi on or backtrack a runway, and hold short of it. Runway in use, altimeter settings (QNH), squawk codes, levels, headings and speeds, transition levels and frequency changes. End the readback with your callsign.':'Ruteklareringer. Klareringer for å kjøre inn på, lande på, ta av fra, krysse, taksere på eller backtracke en rullebane, og å holde før den. Rullebane i bruk, høydemålerinnstilling (QNH), squawk-koder, nivåer, kurser og farter, overgangsnivå og frekvensskifte. Avslutt tilbakelesingen med kallesignalet ditt.',
+ 'Who you call, who you are, where you are, what you want. Example: “Birdbird Tower, LN-NAE, DA42, 10 miles south, 2000 feet, information Bravo, request joining for landing.”':'Hvem du kaller, hvem du er, hvor du er, hva du vil. Eksempel: «Birdbird Tower, LN-NAE, DA42, 10 miles south, 2000 feet, information Bravo, request joining for landing.»',
+ 'Say “ready for departure”, not “ready for take-off” (take-off is used only in the clearance). Say “say again”, not “repeat”. Say “affirm”, not “yes” or “affirmative”. No “over and out”.':'Si «ready for departure», ikke «ready for take-off» (take-off brukes bare i klareringen). Si «say again», ikke «repeat». Si «affirm», ikke «yes» eller «affirmative». Ingen «over and out».',
+ 'Word':'Ord','Meaning':'Betydning','Numbers and letters':'Tall og bokstaver','Check':'Sjekk',
+ 'Let me know that you have received and understood this message.':'Bekreft at du har mottatt og forstått meldingen.','Yes.':'Ja.','No, or permission not granted, or that is not correct.':'Nei, eller tillatelse ikke gitt, eller det er ikke riktig.',
+ 'I have received all of your last transmission. Never a reply to a question or a substitute for a readback.':'Jeg har mottatt hele din siste sending. Aldri et svar på et spørsmål eller en erstatning for tilbakelesing.',
+ 'I understand your message and will comply with it.':'Jeg forstår meldingen og vil etterkomme den.','Wait and I will call you.':'Vent, jeg kaller deg opp.','Repeat all, or the following part, of your last transmission.':'Gjenta hele, eller følgende del av, din siste sending.',
+ 'An error has been made; the correct version is…':'Det er gjort en feil; riktig versjon er …','Distress: grave and imminent danger, immediate assistance required.':'Nød: alvorlig og overhengende fare, behov for umiddelbar hjelp.','Urgency: a condition that concerns safety, no immediate assistance required.':'Il: en situasjon som angår sikkerheten, uten behov for umiddelbar hjelp.',
+ 'Teaching tool based on ICAO Doc 4444, ICAO Doc 9432 and EASA SERA. Local phraseology varies: always follow your AIP and your instructor. Birdbird, its frequencies and the scenarios are fictional.':'Opplæringsverktøy basert på ICAO Doc 4444, ICAO Doc 9432 og EASA SERA. Lokal fraseologi varierer: følg alltid AIP og instruktøren din. Birdbird, frekvensene og scenariene er oppdiktet.',
+ 'Ready':'Klar','Transmitting':'Sender','Listening':'Lytter'
+});
+
+/* ---------- normalisering av tale/tekst ---------- */
+const PH={alpha:'a',alfa:'a',bravo:'b',charlie:'c',delta:'d',echo:'e',foxtrot:'f',golf:'g',hotel:'h',india:'i',juliett:'j',juliet:'j',kilo:'k',lima:'l',mike:'m',november:'n',oscar:'o',papa:'p',quebec:'q',romeo:'r',sierra:'s',tango:'t',uniform:'u',victor:'v',whiskey:'w',whisky:'w',xray:'x',yankee:'y',zulu:'z'};
+const NUMW={zero:'0',one:'1',wun:'1',two:'2',three:'3',tree:'3',four:'4',fower:'4',five:'5',fife:'5',six:'6',seven:'7',eight:'8',ait:'8',nine:'9',niner:'9',ten:'10',twenty:'20',thirty:'30'};
+function norm(raw){
+  let s=(' '+raw.toLowerCase()+' ').replace(/x-ray/g,'xray').replace(/take[\s-]?off/g,'takeoff').replace(/\b([a-z]{1,2})-([a-z]{1,3})\b/g,'$1$2').replace(/(\d),(\d)/g,'$1$2');
+  s=s.replace(/(\d)\.(\d)/g,'$1 . $2').replace(/[,;:!?]/g,' , ').replace(/[^a-z0-9.,\s]/g,' ').replace(/\.(?!\s*\d)/g,' , ');
+  let t=s.split(/\s+/).filter(Boolean).map(w=>NUMW[w]??((w==='decimal'||w==='point'||w==='dayseemal')?'.':w));
+  // tusen og hundre
+  const o=[]; for(const w of t){ const p=o[o.length-1];
+    if((w==='thousand'||w==='tousand')&&/^\d+$/.test(p||'')){ o[o.length-1]=String(+p*1000); continue; }
+    if(w==='hundred'&&/^\d+$/.test(p||'')){ const v=+p*100; const pp=o[o.length-2]; if(pp&&/^\d+000$/.test(pp)&&v<1000){ o.pop(); o[o.length-1]=String(+pp+v); } else o[o.length-1]=String(v); continue; }
+    o.push(w); }
+  // slå sammen sifre og desimal
+  const m=[]; for(const w of o){ const p=m[m.length-1];
+    if(/^[\d.]+$/.test(w) && p!==undefined && /^[\d.]+$/.test(p) && !(/^\d{4,}$/.test(w)) && !(/000$/.test(p)&&p.length>=4)) m[m.length-1]=p+w; else m.push(w); }
+  // fonetiske bokstaver -> bokstav, slå sammen enkeltbokstaver
+  const r=[]; for(let w of m){ if(PH[w]) w=PH[w]; const p=r[r.length-1];
+    if(w.length===1&&/[a-z]/.test(w)&&p&&/^[a-z]+$/.test(p)&&r._lastSingle) r[r.length-1]=p+w; else r.push(w);
+    r._lastSingle=(w.length===1&&/[a-z]/.test(w))||(r._lastSingle&&w.length===1); }
+  const toks=r.filter(w=>w!==',').map(w=>/^\d+\.\d*0+$/.test(w)?w.replace(/0+$/,'').replace(/\.$/,''):w);
+  return {s:' '+toks.join(' ')+' ', toks, raw};
+}
+const has=(n,re)=>re.test(n.s);
+const num=(n,v)=>n.toks.includes(String(v).replace(/^(\d+\.\d*?)0+$/,'$1').replace(/\.$/,''));
+const csOK=n=>n.toks.some(t=>/lnnae$/.test(t)||/(^|[^a-z])?lae$/.test(t)||t==='lnnae') || /\blnnae\b|\blae\b/.test(n.s);
+
+/* ---------- tilfeldige verdier ---------- */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1)), pick=a=>a[Math.floor(Math.random()*a.length)];
+const LET=['Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel','India','Kilo','Lima'];
+function mkV(){
+  const wd=pick([330,340,350,10,20,30]), ws=rnd(4,14);
+  return {qnh:rnd(996,1031), info:pick(LET), sq:[rnd(1,6),rnd(0,7),rnd(0,7),rnd(1,7)].join(''), wd:String(wd).padStart(3,'0'), ws, rwy:'36', hp:pick(['A1','B1']),
+    app:pick(['119.250','120.900','124.700']), twr:'118.300', fis:pick(['125.350','127.450']), hdgL:pick(['330','320','340']), hdgR:pick(['010','020']), alt:pick(['3000','3500']), mdHdg:pick(['020','350','010']) };
+}
+const sp3=s=>s;
+
+/* ---------- elementer ---------- */
+const CS={l:{en:'Your callsign (LN-NAE, or L-AE once ATC has shortened it)',no:'Kallesignalet ditt (LN-NAE, eller L-AE når ATC har forkortet det)'},t:csOK};
+const ST=u=>({l:{en:`The station you call: Birdbird ${u}`,no:`Stasjonen du kaller: Birdbird ${u}`},t:n=>has(n,/(n?aero|nero|narrow|nairo|naro|nair) ?s[oau]n/)&&has(n,new RegExp('\\b'+u.toLowerCase()+'\\b'))});
+const N=(en,no,v)=>({l:{en:en+' '+v,no:no+' '+v},t:n=>num(n,v)});
+const W=(en,no,re,opt)=>({l:{en,no},t:n=>has(n,re),opt});
+const INFO=v=>({l:{en:'The ATIS letter: information '+v.info,no:'ATIS-bokstaven: information '+v.info},t:n=>new RegExp('information '+v.info[0].toLowerCase()+'\\b|info '+v.info[0].toLowerCase()+'\\b|information '+v.info[0].toLowerCase()+'[a-z]*').test(n.s)});
+const RWY=v=>({l:{en:'Runway '+v.rwy,no:'Rullebane '+v.rwy},t:n=>has(n,new RegExp('runway '+v.rwy+'\\b'))});
+
+/* ---------- scenarier ---------- */
+const SC=[
+ {k:'vfrdep', t:{en:'VFR departure',no:'VFR-avgang'}, d:{en:'Taxi, take-off, leave the zone',no:'Taksing, avgang, forlate kontrollsonen'},
+  brief:v=>({en:`You are at the apron with engines running, VFR to Torp via point Sierra. ATIS is information <b>${v.info}</b>. Start on Birdbird Ground 121.700.`,no:`Du står på apron med motorene i gang, VFR til Torp via punkt Sierra. ATIS er information <b>${v.info}</b>. Start på Birdbird Ground 121.700.`}),
+  steps:v=>[
+   {p:1,f:['121.700','Birdbird Ground'],task:{en:'Call Ground: who, who you are, where, ATIS, request taxi.',no:'Kall Ground: hvem, hvem du er, hvor, ATIS, be om taksing.'},items:[ST('Ground'),CS,W('Where you are: at the apron','Hvor du er: på apron',/apron|stand|parking|ramp/),INFO(v),W('Request taxi','Be om taksing',/taxi/)],
+    model:`Birdbird Ground, LN-NAE, DA42 at the apron, information ${v.info}, VFR to Torp, request taxi.`},
+   {a:`L-AE, taxi to holding point ${v.hp} runway ${v.rwy} via Alpha, QNH ${v.qnh}.`},
+   {p:1,rb:1,task:{en:'Read back the taxi clearance.',no:'Les tilbake taksiklareringen.'},items:[{l:{en:'Holding point '+v.hp,no:'Holdepunkt '+v.hp},t:n=>has(n,new RegExp('\\b'+v.hp[0].toLowerCase()+' ?1\\b'))},RWY(v),N('QNH','QNH',v.qnh),CS],model:`Taxi to holding point ${v.hp} runway ${v.rwy} via Alpha, QNH ${v.qnh}, L-AE.`},
+   {a:`L-AE, contact Tower ${v.twr}.`,sys:{en:'You taxi to the holding point and do the run-up.',no:'Du takserer til holdepunktet og gjør motorsjekken.'}},
+   {p:1,rb:1,task:{en:'Read back the frequency change.',no:'Les tilbake frekvensskiftet.'},items:[N('Frequency','Frekvens',v.twr),CS],model:`${v.twr}, L-AE.`},
+   {p:1,f:[v.twr,'Birdbird Tower'],task:{en:'Call Tower at the holding point and say you are ready.',no:'Kall Tower ved holdepunktet og si at du er klar.'},items:[ST('Tower'),CS,{l:{en:'Holding point '+v.hp,no:'Holdepunkt '+v.hp},t:n=>has(n,new RegExp('\\b'+v.hp[0].toLowerCase()+' ?1\\b'))},W('Ready for departure','Ready for departure',/ready/)],
+    model:`Birdbird Tower, L-AE, holding point ${v.hp}, ready for departure.`},
+   {a:`L-AE, wind ${v.wd} degrees ${v.ws} knots, runway ${v.rwy}, cleared for take-off.`},
+   {p:1,rb:1,task:{en:'Read back the take-off clearance.',no:'Les tilbake avgangsklareringen.'},items:[W('Cleared for take-off','Cleared for take-off',/cleared (for )?takeoff/),RWY(v),CS],model:`Runway ${v.rwy}, cleared for take-off, L-AE.`},
+   {a:`L-AE, report leaving the control zone via Sierra.`,sys:{en:'Airborne. You climb out towards Sierra.',no:'I luften. Du stiger ut mot Sierra.'}},
+   {p:1,rb:1,task:{en:'Acknowledge the instruction.',no:'Bekreft instruksen.'},items:[W('Wilco (or: will report leaving via Sierra)','Wilco (eller: will report leaving via Sierra)',/wilco|will report|report(ing)? leaving/),CS],model:`Wilco, L-AE.`},
+   {p:1,task:{en:'Report leaving the zone via Sierra at 2000 ft.',no:'Meld at du forlater sonen via Sierra i 2000 ft.'},items:[CS,W('Leaving the control zone','Forlater kontrollsonen',/leaving|left/),W('Via Sierra','Via Sierra',/\bs\b|sierra/),N('Altitude','Høyde','2000')],model:`L-AE, leaving the control zone via Sierra, 2000 feet.`},
+   {a:`L-AE, contact Polaris Information ${v.fis}, goodbye.`},
+   {p:1,rb:1,task:{en:'Read back the frequency change.',no:'Les tilbake frekvensskiftet.'},items:[N('Frequency','Frekvens',v.fis),CS],model:`${v.fis}, L-AE, goodbye.`}
+  ]},
+ {k:'vfrarr', t:{en:'VFR arrival',no:'VFR-ankomst'}, d:{en:'Join the circuit and land',no:'Inn i trafikkrunden og land'},
+  brief:v=>({en:`You are 10 NM south of Birdbird at 2000 ft, inbound for a full-stop landing. ATIS is information <b>${v.info}</b>. Tower is ${v.twr}.`,no:`Du er 10 NM sør for Birdbird i 2000 ft, på vei inn for landing. ATIS er information <b>${v.info}</b>. Tower er ${v.twr}.`}),
+  steps:v=>[
+   {p:1,f:[v.twr,'Birdbird Tower'],task:{en:'First call to Tower: who, who you are, type, where, level, ATIS, what you want.',no:'Første oppkall til Tower: hvem, hvem du er, type, hvor, høyde, ATIS, hva du vil.'},items:[ST('Tower'),CS,W('Position: 10 miles south','Posisjon: 10 miles south',/\b10\b.*(south|s)\b|south/),N('Altitude','Høyde','2000'),INFO(v),W('Intention: landing / joining','Hensikt: landing / joining',/land|join|full stop/),W('Aircraft type DA42','Flytype DA42',/da ?42|diamond/,1)],
+    model:`Birdbird Tower, LN-NAE, DA42, 10 miles south, 2000 feet, information ${v.info}, request joining for landing.`},
+   {a:`L-AE, enter control zone via November, not above 1500 feet, QNH ${v.qnh}, report November.`},
+   {p:1,rb:1,task:{en:'Read back the zone clearance.',no:'Les tilbake soneklareringen.'},items:[W('Via November','Via November',/\bn\b|november|via n/),N('Not above','Ikke over','1500'),N('QNH','QNH',v.qnh),CS,W('Report November (wilco)','Report November (wilco)',/report|wilco/,1)],model:`Enter control zone via November, not above 1500 feet, QNH ${v.qnh}, wilco, L-AE.`},
+   {p:1,task:{en:'Report at November, 1500 ft.',no:'Meld over November, 1500 ft.'},sys:{en:'A few minutes later you are over November.',no:'Noen minutter senere er du over November.'},items:[CS,W('November','November',/\bn\b|november/),N('Altitude','Høyde','1500')],model:`L-AE, November, 1500 feet.`},
+   {a:`L-AE, join right downwind runway ${v.rwy}, report downwind.`},
+   {p:1,rb:1,task:{en:'Read back.',no:'Les tilbake.'},items:[W('Right downwind','Right downwind',/right downwind/),RWY(v),CS],model:`Join right downwind runway ${v.rwy}, wilco, L-AE.`},
+   {p:1,task:{en:'Report downwind.',no:'Meld downwind.'},items:[CS,W('Downwind','Downwind',/downwind/)],model:`L-AE, downwind runway ${v.rwy}.`},
+   {a:`L-AE, number 2, follow the Cessna on base.`},
+   {p:1,rb:1,task:{en:'Acknowledge your sequence and the traffic.',no:'Bekreft rekkefølgen og trafikken.'},items:[N('Number','Nummer','2'),W('Traffic in sight (or: looking out)','Traffic in sight (eller: looking out)',/in sight|looking|traffic|cessna/),CS],model:`Number 2, traffic in sight, L-AE.`},
+   {p:1,task:{en:'Report final.',no:'Meld finale.'},items:[CS,W('Final','Finale',/final/)],model:`L-AE, final runway ${v.rwy}.`},
+   {a:`L-AE, runway ${v.rwy}, wind ${v.wd} degrees ${v.ws} knots, cleared to land.`},
+   {p:1,rb:1,task:{en:'Read back the landing clearance.',no:'Les tilbake landingsklareringen.'},items:[W('Cleared to land','Cleared to land',/cleared (to )?land/),RWY(v),CS],model:`Runway ${v.rwy}, cleared to land, L-AE.`}
+  ]},
+ {k:'ifrclr', t:{en:'IFR clearance',no:'IFR-klarering'}, d:{en:'Copy and read back CRAFT',no:'Notér og les tilbake CRAFT'},
+  brief:v=>({en:`IFR to Bergen, filed at 8000 ft. ATIS is information <b>${v.info}</b>. Have a pen ready: Clearance limit, Route, Altitude, Frequency, Transponder.`,no:`IFR til Bergen, innsendt for 8000 ft. ATIS er information <b>${v.info}</b>. Ha penn klar: Clearance limit, Route, Altitude, Frequency, Transponder.`}),
+  steps:v=>[
+   {p:1,f:['121.875','Birdbird Delivery'],task:{en:'Ask Delivery for your IFR clearance.',no:'Be Delivery om IFR-klareringen.'},items:[ST('Delivery'),CS,W('Destination or IFR','Destinasjon eller IFR',/bergen|ifr/),INFO(v),W('Request clearance','Be om klarering',/clearance/)],
+    model:`Birdbird Delivery, LN-NAE, DA42 at the apron, IFR to Bergen, information ${v.info}, request clearance.`},
+   {a:`LN-NAE, cleared to Bergen via ASN 1A departure, flight planned route, climb to altitude ${v.alt} feet, after departure contact Birdbird Approach ${v.app}, squawk ${v.sq}.`},
+   {p:1,rb:1,task:{en:'Read back the full clearance.',no:'Les tilbake hele klareringen.'},items:[W('Clearance limit: Bergen','Klareringsgrense: Bergen',/bergen/),W('Departure ASN 1A','Utflyging ASN 1A',/asn ?1 ?a\b|asn1a|asn 1a/),N('Altitude','Høyde',v.alt),N('Departure frequency','Utflygingsfrekvens',v.app),N('Squawk','Squawk',v.sq),CS],
+    model:`Cleared to Bergen via ASN 1A departure, flight planned route, climb altitude ${v.alt} feet, after departure ${v.app}, squawk ${v.sq}, LN-NAE.`},
+   {a:`LN-NAE, readback correct, contact Ground 121.700 for start-up.`},
+   {p:1,rb:1,task:{en:'Read back the frequency.',no:'Les tilbake frekvensen.'},items:[N('Frequency','Frekvens','121.700'),CS],model:`121.700, LN-NAE.`}
+  ]},
+ {k:'ils', t:{en:'IFR arrival and ILS',no:'IFR-ankomst og ILS'}, d:{en:'Descent, vectors, cleared ILS',no:'Nedstigning, vektorer, klarert ILS'},
+  brief:v=>({en:`You are inbound from the south at 6000 ft, heading 360. ATIS is information <b>${v.info}</b>. Approach is ${v.app}.`,no:`Du kommer inn fra sør i 6000 ft, kurs 360. ATIS er information <b>${v.info}</b>. Approach er ${v.app}.`}),
+  steps:v=>[
+   {p:1,f:[v.app,'Birdbird Approach'],task:{en:'Check in with Approach: who, who you are, level, ATIS.',no:'Sjekk inn med Approach: hvem, hvem du er, nivå, ATIS.'},items:[ST('Approach'),CS,N('Level','Nivå','6000'),INFO(v)],model:`Birdbird Approach, LN-NAE, 6000 feet, information ${v.info}.`},
+   {a:`LN-NAE, identified, descend to altitude 3000 feet, QNH ${v.qnh}, expect ILS approach runway ${v.rwy}.`},
+   {p:1,rb:1,task:{en:'Read back.',no:'Les tilbake.'},items:[W('Descend','Descend',/descend/),N('Altitude','Høyde','3000'),N('QNH','QNH',v.qnh),CS,W('Expect ILS '+v.rwy,'Expect ILS '+v.rwy,/ils/,1)],model:`Descend to altitude 3000 feet, QNH ${v.qnh}, expect ILS runway ${v.rwy}, LN-NAE.`},
+   {a:`LN-NAE, turn left heading ${v.hdgL}, vectors for ILS runway ${v.rwy}.`},
+   {p:1,rb:1,task:{en:'Read back the heading.',no:'Les tilbake kursen.'},items:[W('Left (direction of turn)','Venstre (svingretning)',/left/),N('Heading','Kurs',v.hdgL),CS],model:`Left heading ${v.hdgL}, LN-NAE.`},
+   {a:`LN-NAE, 8 miles from touchdown, turn right heading ${v.hdgR}, cleared ILS approach runway ${v.rwy}, report established.`},
+   {p:1,rb:1,task:{en:'Read back the approach clearance.',no:'Les tilbake innflygingsklareringen.'},items:[W('Right (direction of turn)','Høyre (svingretning)',/right/),N('Heading','Kurs',v.hdgR),W('Cleared ILS','Cleared ILS',/cleared ils|cleared (for )?(the )?ils/),RWY(v),CS],model:`Right heading ${v.hdgR}, cleared ILS approach runway ${v.rwy}, wilco, LN-NAE.`},
+   {p:1,task:{en:'Report established on the localizer.',no:'Meld etablert på localizeren.'},items:[CS,W('Established','Established',/established/)],model:`LN-NAE, established ILS runway ${v.rwy}.`},
+   {a:`LN-NAE, contact Tower ${v.twr}.`},
+   {p:1,rb:1,task:{en:'Read back the frequency.',no:'Les tilbake frekvensen.'},items:[N('Frequency','Frekvens',v.twr),CS],model:`${v.twr}, LN-NAE.`}
+  ]},
+ {k:'mayday', t:{en:'Engine failure: MAYDAY',no:'Motorstans: MAYDAY'}, d:{en:'Distress call with all elements',no:'Nødmelding med alle elementer'},
+  brief:v=>({en:`Your right engine has failed. You are 15 NM south of Birdbird at 3000 ft, heading 360, 2 persons on board, and want to land at Birdbird. You are on Birdbird Approach ${v.app}.`,no:`Høyre motor har stoppet. Du er 15 NM sør for Birdbird i 3000 ft, kurs 360, 2 personer om bord, og vil lande på Birdbird. Du er på Birdbird Approach ${v.app}.`}),
+  steps:v=>[
+   {p:1,f:[v.app,'Birdbird Approach'],task:{en:'Transmit a MAYDAY: MAYDAY ×3, station, callsign, type, nature of the emergency, intentions, position, level, heading. Persons on board if time allows.',no:'Send MAYDAY: MAYDAY ×3, stasjon, kallesignal, type, nødens art, hensikt, posisjon, høyde, kurs. Personer om bord hvis du har tid.'},
+    items:[{l:{en:'MAYDAY three times',no:'MAYDAY tre ganger'},t:n=>(n.s.match(/may ?day/g)||[]).length>=3},ST('Approach'),CS,W('Aircraft type','Flytype',/da ?42|diamond/),W('Nature: engine failure','Art: motorstans',/engine/),W('Intentions','Hensikt',/intend|request|land|return|divert/),W('Position (15 miles south)','Posisjon (15 miles south)',/\b15\b|south/),N('Altitude','Høyde','3000'),N('Heading','Kurs','360'),W('Persons on board','Personer om bord',/persons|pob|souls|on board/,1)],
+    model:`MAYDAY MAYDAY MAYDAY, Birdbird Approach, LN-NAE, DA42, right engine failure, intend to land at Birdbird, 15 miles south, 3000 feet, heading 360, 2 persons on board.`},
+   {a:`LN-NAE, roger MAYDAY, turn right heading ${v.mdHdg}, runway ${v.rwy} available, squawk 7700, report field in sight.`},
+   {p:1,rb:1,task:{en:'Read back.',no:'Les tilbake.'},items:[W('Right','Høyre',/right/),N('Heading','Kurs',v.mdHdg),N('Squawk','Squawk','7700'),CS,W('Wilco / report field in sight','Wilco / report field in sight',/wilco|report|field/,1)],model:`Right heading ${v.mdHdg}, squawk 7700, wilco, LN-NAE.`}
+  ]}
+];
+
+/* ---------- frasesjekk ---------- */
+function flags(n,step){
+  const F=[]; const s=n.s;
+  if(/\brepeat\b/.test(s)) F.push({en:'Use “say again”, not “repeat”.',no:'Bruk «say again», ikke «repeat».'});
+  if(/\b(yes|yeah|ok|okay)\b/.test(s)) F.push({en:'Use “affirm” or “wilco”, not “yes” or “OK”.',no:'Bruk «affirm» eller «wilco», ikke «yes» eller «OK».'});
+  if(/\baffirmative\b/.test(s)) F.push({en:'ICAO uses “affirm”, not “affirmative”.',no:'ICAO bruker «affirm», ikke «affirmative».'});
+  if(/over and out/.test(s)) F.push({en:'There is no “over and out”.',no:'Det finnes ingen «over and out».'});
+  if(/ready (for )?takeoff/.test(s)) F.push({en:'Say “ready for departure”. The word take-off is kept for the take-off clearance.',no:'Si «ready for departure». Ordet take-off brukes bare i avgangsklareringen.'});
+  if(step.rb&&/\broger\b/.test(s)&&step.items.some(i=>!i.t(n))) F.push({en:'“Roger” is not a readback. Read back the clearance items.',no:'«Roger» er ikke tilbakelesing. Les tilbake elementene i klareringen.'});
+  return F;
+}
+
+/* ---------- tale ---------- */
+const NW=['zero','one','two','three','four','five','six','seven','eight','niner'];
+function spoken(t){
+  return t.replace(/\b([A-Z])-([A-Z]{2})\b/g,(m,a,b)=>[a,...b].map(c=>Object.keys(PH).find(k=>PH[k]===c.toLowerCase())).join(' '))
+    .replace(/\b(LN)-([A-Z]{3})\b/g,(m,a,b)=>[...a,...b].map(c=>Object.keys(PH).find(k=>PH[k]===c.toLowerCase())).join(' '))
+    .replace(/\b(\d{3})\.(\d{1,3})\b/g,(m,a,b)=>[...a].map(d=>NW[d]).join(' ')+' decimal '+[...b].map(d=>NW[d]).join(' '))
+    .replace(/\b(\d+) feet\b/g,(m,a)=>{ const v=+a; const th=Math.floor(v/1000), h=Math.floor(v%1000/100); return (th?NW[th].replace('niner','nine')+' thousand ':'')+(h?NW[h]+' hundred ':'')+'feet'; })
+    .replace(/\b([A-Z])(\d)\b/g,(m,a,d)=>Object.keys(PH).find(k=>PH[k]===a.toLowerCase())+' '+NW[d])
+    .replace(/\bASN 1A\b/,'Alpha Sierra November One Alpha')
+    .replace(/\b(\d{2,4})\b/g,(m)=>[...m].map(d=>NW[d]).join(' '));
+}
+let voice=null; function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); voice=vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged=pickVoice; }catch(e){}
+function speak(t,done){ if(!el('voice').checked||!('speechSynthesis' in window)){ done&&done(); return; }
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(spoken(t)); if(voice) u.voice=voice; u.lang='en-GB'; u.rate=1.08; u.pitch=0.95;
+    rx(true); u.onend=u.onerror=()=>{ rx(false); done&&done(); }; speechSynthesis.speak(u); }catch(e){ done&&done(); } }
+function rx(on){ el('rxi').classList.toggle('rx',on); setStat(on?'Listening':'Ready'); }
+function setStat(k){ const s=el('stat'); s.textContent=T(k); s.className='status'+(k==='Ready'?' ok':''); }
+
+/* talegjenkjenning */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function mkPTT(btn,ta,onFinal){
+  if(!SR){ btn.disabled=true; btn.title='Speech input is not supported in this browser'; el('micNote').textContent=L({en:'Speech input needs Chrome or Edge. You can always type.',no:'Taleinndata krever Chrome eller Edge. Du kan alltid skrive.'}); return null; }
+  let rec=null, active=false, base='';
+  const start=()=>{ if(active) return; try{ speechSynthesis.cancel(); }catch(e){}
+    rec=new SR(); rec.lang='en-GB'; rec.interimResults=true; rec.continuous=true; base=ta.value?ta.value+' ':'';
+    rec.onresult=e=>{ let txt=''; for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript; ta.value=base+txt; };
+    rec.onerror=e=>{ el('micNote').textContent= e.error==='not-allowed'||e.error==='service-not-allowed' ? L({en:'The microphone is blocked here. Allow it in the browser, or type instead.',no:'Mikrofonen er blokkert her. Tillat den i nettleseren, eller skriv i stedet.'}) : (e.error==='no-speech'?'':e.error); };
+    rec.onend=()=>{ active=false; btn.classList.remove('on'); el('txi').classList.remove('on'); if(ta.value.trim()) onFinal(); };
+    try{ rec.start(); active=true; btn.classList.add('on'); el('txi').classList.add('on'); setStat('Transmitting'); }catch(e){} };
+  const stop=()=>{ if(rec&&active){ try{ rec.stop(); }catch(e){} } setStat('Ready'); };
+  btn.addEventListener('pointerdown',e=>{ e.preventDefault(); start(); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,stop));
+  return {start,stop};
+}
+
+/* ---------- motor for guidede scenarier ---------- */
+const G={k:'vfrdep',v:null,steps:[],i:0,tries:0,pts:0,max:0,lastAtc:''};
+const logEl=el('log');
+function add(cls,who,html,fb){ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${who}</span>`:'')+html+(fb||''); logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; return d; }
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function drawScen(){ el('scen').innerHTML=SC.map(s=>{ let b=null; try{ b=localStorage.getItem('naeroson-radio-'+s.k); }catch(e){} return `<button data-k="${s.k}" class="${s.k===G.k?'on':''}"><b>${L(s.t)}</b><small>${L(s.d)}</small>${b?`<span class="best">${L({en:'Best',no:'Beste'})}: ${b} %</span>`:''}</button>`; }).join(''); }
+el('scen').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; G.k=b.dataset.k; drawScen(); start(); });
+function atisText(v){ return `BIRDBIRD INFORMATION ${v.info.toUpperCase()}. RUNWAY ${v.rwy} IN USE. WIND ${v.wd} DEGREES ${v.ws} KNOTS. VISIBILITY 10 KILOMETRES OR MORE. FEW 2500 FEET. TEMPERATURE 12, DEW POINT 6. QNH ${v.qnh}. TRANSITION LEVEL 70. ACKNOWLEDGE INFORMATION ${v.info.toUpperCase()} ON FIRST CONTACT.`; }
+function start(){
+  const sc=SC.find(s=>s.k===G.k); G.v=mkV(); G.steps=sc.steps(G.v); G.i=0; G.tries=0; G.pts=0; G.max=0;
+  logEl.innerHTML=''; el('brief').innerHTML=L(sc.brief(G.v)); el('atis').textContent=atisText(G.v);
+  add('sys','',L({en:'Scenario started. Read the situation and the ATIS, then make your call.',no:'Scenarioet har startet. Les situasjonen og ATIS-en, og gjør så oppkallet.'}));
+  run();
+}
+function setFreq(f){ if(!f) return; el('fq').textContent=f[0]; el('stn').textContent=f[1]; }
+function run(){
+  while(G.i<G.steps.length && G.steps[G.i].a){ const s=G.steps[G.i]; if(s.sys) add('sys','',L(s.sys)); add('atc',el('stn').textContent,esc(s.a)); G.lastAtc=s.a; speak(s.a); G.i++; }
+  if(G.i>=G.steps.length){ finish(); return; }
+  const s=G.steps[G.i]; if(s.sys&&!s._shown){ s._shown=1; add('sys','',L(s.sys)); }
+  setFreq(s.f); el('task').innerHTML='<b>'+L({en:'Your turn',no:'Din tur'})+':</b> '+L(s.task); el('say').focus({preventScroll:true}); score();
+}
+function score(){ el('score').textContent=G.max? Math.round(G.pts/G.max*100)+' %' : ''; }
+function transmit(){
+  const txt=el('say').value.trim(); if(!txt||G.i>=G.steps.length) return; el('say').value='';
+  const s=G.steps[G.i], n=norm(txt);
+  const res=s.items.map(it=>({it,ok:!!it.t(n)})); const req=res.filter(r=>!r.it.opt), miss=req.filter(r=>!r.ok);
+  const fl=flags(n,s);
+  const fb=`<div class="fb">${res.map(r=>`<span class="${r.ok?'y':(r.it.opt?'w':'n')}">${r.ok?'✓':(r.it.opt?'○':'✕')} ${esc(L(r.it.l))}${!r.ok&&r.it.opt?' '+L({en:'(good to include)',no:'(bra å ta med)'}):''}</span>`).join('')}${fl.map(f=>`<span class="w">! ${esc(L(f))}</span>`).join('')}</div>`;
+  add('me','LN-NAE',esc(txt),fb);
+  if(!miss.length){ G.pts+=req.length*(G.tries?0.6:1); G.max+=req.length; G.i++; G.tries=0; setTimeout(run,450); return; }
+  G.tries++;
+  if(G.tries<2){
+    const cs=/L-AE|LN-NAE/.test(G.lastAtc)&&G.lastAtc.startsWith('L-AE')?'L-AE':'LN-NAE';
+    const reply= s.rb ? `${cs}, negative, I say again, ${G.lastAtc.replace(/^(L-AE|LN-NAE),\s*/,'')}` : `${csOK(n)?(G.i===0?'LN-NAE':cs)+', say again':'Station calling Birdbird, say again your callsign'}.`;
+    setTimeout(()=>{ add('atc',el('stn').textContent,esc(reply)); speak(reply); },450);
+  } else {
+    G.pts+=(req.length-miss.length)*0.5; G.max+=req.length; G.i++; G.tries=0;
+    add('sys','',L({en:'A good call would have been:',no:'Et godt oppkall hadde vært:'})+` <span style="font-family:var(--f-mono);color:var(--fg)">${esc(s.model)}</span>`);
+    setTimeout(run,600);
+  }
+  score();
+}
+function finish(){
+  const pct=G.max?Math.round(G.pts/G.max*100):0; el('task').innerHTML='<b>'+L({en:'Scenario complete',no:'Scenario fullført'})+':</b> '+pct+' %. '+L(pct>=90?{en:'Clean and complete radio work.',no:'Ren og fullstendig radiobruk.'}:pct>=70?{en:'Good. Look at the red items above and try again.',no:'Bra. Se på de røde punktene over og prøv igjen.'}:{en:'Read the reference below, then try again. New values every run.',no:'Les oppslaget under og prøv igjen. Nye verdier hver gang.'});
+  if(window.NPROG) NPROG.award('radio:'+G.k,pct); try{ const k='naeroson-radio-'+G.k, b=+(localStorage.getItem(k)||0); if(pct>b) localStorage.setItem(k,pct); }catch(e){} drawScen(); score();
+}
+el('send').onclick=transmit;
+el('say').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); transmit(); } });
+el('hint').onclick=()=>{ const s=G.steps[G.i]; if(s&&s.model) add('sys','',L({en:'Example:',no:'Eksempel:'})+` <span style="font-family:var(--f-mono);color:var(--fg)">${esc(s.model)}</span>`); };
+el('restart').onclick=start;
+el('playAtis').onclick=()=>{ if(G.v) speak(atisText(G.v).toLowerCase().replace(/\bqnh\b/,'Q N H')); };
+const ptt=mkPTT(el('ptt'),el('say'),transmit);
+// mellomrom som PTT når fokus ikke er i et tekstfelt
+let spaceDown=false; const inGuided=()=>{ const r=el('train').getBoundingClientRect(); return r.top<innerHeight*0.6&&r.bottom>innerHeight*0.4; };
+window.addEventListener('keydown',e=>{ if(e.code!=='Space'||e.repeat||!ptt) return; const a=document.activeElement; if(a&&(a.tagName==='TEXTAREA'||a.tagName==='INPUT'||a.tagName==='BUTTON'||a.tagName==='SELECT')) return; if(!inGuided()) return; e.preventDefault(); spaceDown=true; ptt.start(); });
+window.addEventListener('keyup',e=>{ if(e.code==='Space'&&spaceDown){ spaceDown=false; ptt.stop(); } });
+
+/* ---------- AI-flygeleder ---------- */
+let sample=null, aiTurns=[], aiCtl=null;
+const aiLog=el('aiLog');
+function aiAdd(cls,who,html){ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${who}</span>`:'')+html; aiLog.appendChild(d); aiLog.scrollTop=aiLog.scrollHeight; return d; }
+function aiIntro(){ aiLog.innerHTML=''; aiTurns=[]; aiAdd('sys','',L({en:'Make your first call. You are LN-NAE, a DA42. The controller answers and gives feedback after each call.',no:'Gjør det første oppkallet. Du er LN-NAE, en DA42. Flygelederen svarer og gir tilbakemelding etter hvert oppkall.'})); }
+function rules(){
+  const lang=document.documentElement.lang==='nb'?'no':'en';
+  return `You are an air traffic controller in a radio-telephony training simulator for pilots training under EASA. Unit: ${el('aiUnit').value}. Airport: Birdbird (fictional), runway 36/18, QNH 1013, Tower 118.300, Approach 119.250, Ground 121.700, ATIS information Bravo, VOR "ASN". The pilot is LN-NAE, a Diamond DA42. Pilot level: ${el('aiLvl').value}. Situation given by the pilot: ${el('aiSit').value||'none given: infer it from the first call'}.
+Rules:
+- Reply as ATC would on the radio, using ICAO Doc 4444/Doc 9432 and EASA SERA phraseology, numbers as digits, callsign abbreviated (L-AE) only after you have used the full callsign first. Keep the scenario realistic and consistent with earlier turns. Give new instructions that move the flight along.
+- If the pilot's readback is wrong or incomplete, correct it as real ATC does ("L-AE, negative, QNH 1013").
+- Then judge the pilot's LAST transmission only: missing readback items, wrong order of the initial call (who you call, who you are, where you are, what you want), non-standard words (repeat, yes, affirmative, ready for take-off, over and out), and missing callsign.
+Reply with only a JSON object: {"atc": "the controller's transmission", "ok": true or false (was the pilot's last transmission correct and complete), "notes": ["at most 3 short feedback points, written in ${lang==='no'?'Norwegian (bokmål)':'English'}; empty if perfect"], "better": "the ideal version of the pilot's last transmission, in English radio phraseology"}`;
+}
+async function aiSend(){
+  const txt=el('aiSay').value.trim(); if(!txt) return;
+  if(!sample){ el('aiNote').textContent=L({en:'The AI controller is not available right now. The guided scenarios above always work.',no:'AI-flygelederen er ikke tilgjengelig akkurat nå. De guidede scenariene over virker alltid.'}); return; }
+  el('aiSay').value=''; aiAdd('me','LN-NAE',esc(txt)); aiTurns.push({role:'user',content:'PILOT: '+txt});
+  if(aiTurns.length>24) aiTurns=aiTurns.slice(-24); while(aiTurns.length&&aiTurns[0].role!=='user') aiTurns.shift();
+  const wait=aiAdd('atc','ATC','…'); aiCtl=new AbortController(); el('aiStop').hidden=false; el('aiSend').disabled=true;
+  try{
+    const msgs=[{role:'user',content:rules()},...aiTurns];
+    const r= sample==='api' ? await apiJson(msgs,aiCtl.signal) : await sample.json(msgs,{signal:aiCtl.signal,cache:false,modelTier:'default',effort:'low'});
+    const atc=String(r&&r.atc||'').trim()||'Say again.';
+    wait.innerHTML=`<span class="who">ATC</span>${esc(atc)}`;
+    const notes=Array.isArray(r.notes)?r.notes.slice(0,3).map(String):[];
+    const fb=document.createElement('div'); fb.className='fb';
+    fb.innerHTML=(r.ok&&!notes.length?`<span class="y">✓ ${L({en:'Correct and complete.',no:'Riktig og fullstendig.'})}</span>`:'')+notes.map(n=>`<span class="${r.ok?'w':'n'}">${r.ok?'!':'✕'} ${esc(n)}</span>`).join('')+(!r.ok&&r.better?`<span class="model">${L({en:'Better:',no:'Bedre:'})} ${esc(String(r.better))}</span>`:'');
+    aiLog.lastElementChild.previousElementSibling?.appendChild(fb);
+    aiTurns.push({role:'assistant',content:JSON.stringify({atc})});
+    speak(atc);
+  }catch(e){
+    wait.remove(); aiTurns.pop();
+    const m={not_granted:{en:'Claude was not allowed for this page.',no:'Claude ble ikke tillatt for denne siden.'},sampling_disabled:{en:'Claude is not available for this account.',no:'Claude er ikke tilgjengelig for denne kontoen.'},rate_limited:{en:'Too many calls right now. Wait a moment and try again.',no:'For mange forespørsler akkurat nå. Vent litt og prøv igjen.'},invalid_json:{en:'The controller answer was garbled. Transmit again.',no:'Svaret fra flygelederen var uleselig. Send på nytt.'}};
+    if(e&&e.code!=='cancelled') el('aiNote').textContent=L(m[e&&e.code]||{en:'No answer. Try again.',no:'Ikke noe svar. Prøv igjen.'});
+    if(e&&(e.code==='not_granted'||e.code==='sampling_disabled')) sample=null;
+  } finally { el('aiStop').hidden=true; el('aiSend').disabled=false; }
+}
+el('aiSend').onclick=aiSend; el('aiStop').onclick=()=>aiCtl&&aiCtl.abort(); el('aiReset').onclick=aiIntro;
+el('aiSay').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); aiSend(); } });
+mkPTT(el('aiPtt'),el('aiSay'),aiSend);
+async function apiJson(messages,signal){
+  const res=await fetch('/api/atc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages}),signal}).catch(e=>{ throw {code:signal&&signal.aborted?'cancelled':'upstream_error'}; });
+  if(res.status===429) throw {code:'rate_limited'}; if(!res.ok) throw {code:'upstream_error'};
+  const j=await res.json(); const t=String(j.text||''); const a=t.indexOf('{'), b=t.lastIndexOf('}'); try{ return JSON.parse(t.slice(a,b+1)); }catch(e){ throw {code:'invalid_json'}; } }
+(async()=>{ try{ if(window.claude&&claude.use) sample=await claude.use('sample'); }catch(e){ sample=null; }
+  if(!sample && location.protocol.startsWith('http')){ try{ const r=await fetch('/api/atc',{method:'GET'}); if(r.ok){ const j=await r.json(); if(j&&j.ok) sample='api'; } }catch(e){} }
+  el('aiNote').textContent= sample==='api'? '' : sample? L({en:'Uses your Claude account. The first call asks for permission.',no:'Bruker Claude-kontoen din. Første oppkall ber om tillatelse.'}) : '';
+  if(!sample){ el('aibox').hidden=true; const o=document.createElement('div'); o.className='aioff'; o.id='aioff'; el('aibox').insertAdjacentElement('beforebegin',o);
+    const draw=()=>{ o.innerHTML=`<b>${L({en:'The AI controller is not connected on this copy of Birdbird',no:'AI-flygelederen er ikke koblet til på denne kopien av Birdbird'})}</b><p>${L({en:'Free practice needs the AI service, which runs when Birdbird is opened in Claude or on a site where it is set up. Everything else on this page works without it:',no:'Fri trening trenger AI-tjenesten, som kjører når Birdbird åpnes i Claude eller på et nettsted der den er satt opp. Alt annet på denne siden virker uten den:'})}</p><ul><li><a href="#train">${L({en:'Guided scenarios',no:'Guidede scenarier'})}</a> ${L({en:'with readback checks and a model call for each step',no:'med sjekk av tilbakelesing og et eksempeloppkall for hvert steg'})}</li><li><a href="#ref">${L({en:'Phraseology',no:'Fraseologi'})}</a> ${L({en:'and the phonetic alphabet',no:'og det fonetiske alfabetet'})}</li><li><a href="#quiz">${L({en:'Test yourself',no:'Test deg selv'})}</a></li><li><a href="radio.html">${L({en:'Gate to gate',no:'Gate to gate'})}</a> ${L({en:'with built-in checks for every call',no:'med innebygde sjekker av hvert oppkall'})}</li></ul>`; };
+    draw(); LAB.onLang(draw); } })();
+
+/* ---------- alfabet ---------- */
+const AL=[['A','Alfa','AL fah'],['B','Bravo','BRAH voh'],['C','Charlie','CHAR lee'],['D','Delta','DELL tah'],['E','Echo','ECK oh'],['F','Foxtrot','FOKS trot'],['G','Golf','golf'],['H','Hotel','hoh TELL'],['I','India','IN dee ah'],['J','Juliett','JEW lee ETT'],['K','Kilo','KEY loh'],['L','Lima','LEE mah'],['M','Mike','mike'],['N','November','no VEM ber'],['O','Oscar','OSS cah'],['P','Papa','pah PAH'],['Q','Quebec','keh BECK'],['R','Romeo','ROW me oh'],['S','Sierra','see AIR rah'],['T','Tango','TANG go'],['U','Uniform','YOU nee form'],['V','Victor','VIK tah'],['W','Whiskey','WISS key'],['X','X-ray','ECKS ray'],['Y','Yankee','YANG key'],['Z','Zulu','ZOO loo'],
+ ['0','Zero','ZE-RO'],['1','One','WUN'],['2','Two','TOO'],['3','Three','TREE'],['4','Four','FOW-er'],['5','Five','FIFE'],['6','Six','SIX'],['7','Seven','SEV-en'],['8','Eight','AIT'],['9','Nine','NIN-er'],['.','Decimal','DAY-SEE-MAL'],['000','Thousand','TOU-SAND']];
+el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small></div>`).join('');
+
+/* ---------- quiz ---------- */
+const Q=[
+ {q:{en:'Tower: “L-AE, runway 36, cleared for take-off.” Correct readback?',no:'Tower: «L-AE, runway 36, cleared for take-off.» Riktig tilbakelesing?'},a:[{en:'“Runway 36, cleared for take-off, L-AE.”',no:'«Runway 36, cleared for take-off, L-AE.»'},{en:'“Roger, L-AE.”',no:'«Roger, L-AE.»'},{en:'“Taking off, L-AE.”',no:'«Taking off, L-AE.»'}],c:0,e:{en:'Runway clearances are always read back in full, with the callsign.',no:'Rullebaneklareringer leses alltid tilbake i sin helhet, med kallesignal.'}},
+ {q:{en:'You are ready at the holding point. What do you say?',no:'Du er klar ved holdepunktet. Hva sier du?'},a:[{en:'“Ready for departure”',no:'«Ready for departure»'},{en:'“Ready for take-off”',no:'«Ready for take-off»'},{en:'“Request take-off”',no:'«Request take-off»'}],c:0,e:{en:'Take-off is only used by ATC in the clearance (or to cancel it), to avoid misunderstandings.',no:'Take-off brukes bare av ATC i klareringen (eller for å kansellere den), for å unngå misforståelser.'}},
+ {q:{en:'What does WILCO mean?',no:'Hva betyr WILCO?'},a:[{en:'I understand and will comply',no:'Jeg forstår og vil etterkomme'},{en:'I have received your message',no:'Jeg har mottatt meldingen'},{en:'Yes',no:'Ja'}],c:0,e:{en:'Roger only means received. Wilco means understood and will comply.',no:'Roger betyr bare mottatt. Wilco betyr forstått og vil etterkomme.'}},
+ {q:{en:'Which squawk code means emergency?',no:'Hvilken squawk-kode betyr nød?'},a:[{en:'7700',no:'7700'},{en:'7600',no:'7600'},{en:'7500',no:'7500'}],c:0,e:{en:'7700 emergency, 7600 radio failure, 7500 unlawful interference.',no:'7700 nød, 7600 radiobortfall, 7500 kapring.'}},
+ {q:{en:'How is 118.300 pronounced?',no:'Hvordan uttales 118.300?'},a:[{en:'One one eight decimal three zero zero',no:'One one eight decimal three zero zero'},{en:'One hundred eighteen point three',no:'One hundred eighteen point three'},{en:'Eleven eight decimal three',no:'Eleven eight decimal three'}],c:0,e:{en:'Each digit separately, with “decimal”. With 8.33 kHz spacing all six digits are spoken.',no:'Hvert siffer for seg, med «decimal». Med 8,33 kHz kanalavstand uttales alle seks sifrene.'}},
+ {q:{en:'In which order is a first call made?',no:'I hvilken rekkefølge gjør man et første oppkall?'},a:[{en:'Station called, own callsign, position, request',no:'Stasjonen du kaller, eget kallesignal, posisjon, ønske'},{en:'Own callsign, station called, request, position',no:'Eget kallesignal, stasjonen du kaller, ønske, posisjon'},{en:'Request first, then callsign',no:'Ønsket først, så kallesignal'}],c:0,e:{en:'Who you call, who you are, where you are, what you want.',no:'Hvem du kaller, hvem du er, hvor du er, hva du vil.'}},
+ {q:{en:'When may you abbreviate LN-NAE to L-AE?',no:'Når kan du forkorte LN-NAE til L-AE?'},a:[{en:'After ATC has abbreviated it',no:'Etter at ATC har forkortet det'},{en:'Always',no:'Alltid'},{en:'Only on the ground',no:'Bare på bakken'}],c:0,e:{en:'Only after the ground station has used the abbreviated form.',no:'Først etter at bakkestasjonen har brukt den forkortede formen.'}},
+ {q:{en:'A MAYDAY is preceded by…',no:'En MAYDAY-melding starter med…'},a:[{en:'MAYDAY three times',no:'MAYDAY tre ganger'},{en:'MAYDAY once',no:'MAYDAY én gang'},{en:'PAN PAN three times',no:'PAN PAN tre ganger'}],c:0,e:{en:'MAYDAY ×3 for distress, PAN PAN ×3 for urgency.',no:'MAYDAY ×3 for nød, PAN PAN ×3 for il.'}}
+];
+quiz(el('qbox'),'radio',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
+
+LAB.start('radio');
+drawScen(); start(); aiIntro();
+LAB.onLang(()=>{ drawScen(); const sc=SC.find(s=>s.k===G.k); if(G.v) el('brief').innerHTML=L(sc.brief(G.v)); if(G.steps[G.i]) el('task').innerHTML='<b>'+L({en:'Your turn',no:'Din tur'})+':</b> '+L(G.steps[G.i].task); });
+window.__norm=norm; window.__G=G; window.__tx=t=>{ el('say').value=t; transmit(); };
+})();
+</script>
+</body>
+</html>

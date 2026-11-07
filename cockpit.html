@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A twin-engine trainer with a primary flight display, a multi-function display and an autopilot, styled after the G1000 glass cockpit. Practise scans,…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Glass Cockpit Trainer</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.tool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.tool .seg{flex:1 1 520px}
+.panel2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:1100px){.panel2{grid-template-columns:minmax(0,1fr)}}
+.bezel{background:linear-gradient(#24282d,#1b1e22);border:1px solid #363c44;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 6px 18px rgba(0,0,0,.35);min-width:0}
+.screen{position:relative;aspect-ratio:4/3;background:#000;border-radius:3px;overflow:hidden;border:1px solid #0a0a0a}
+.screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.softrow{position:absolute;left:0;right:0;bottom:0;height:3.125%;display:grid;grid-template-columns:repeat(12,1fr)}
+.softrow button{background:transparent;border:0;padding:0;cursor:pointer;min-height:0}
+.softrow button:disabled{cursor:default}
+.softrow button:focus-visible{outline:2px solid var(--smoke);outline-offset:-2px}
+.panel2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,640px),1fr));gap:12px}
+.bezel{display:grid;grid-template-columns:76px minmax(0,1fr) 76px;gap:8px;padding:10px 8px;background:linear-gradient(#2a2e33,#1c1f23);border:1px solid #3a4048;border-radius:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 8px 22px rgba(0,0,0,.4)}
+.bezel .mid{display:flex;flex-direction:column;gap:6px;min-width:0}
+.bcolw{display:flex;flex-direction:column;align-items:center;gap:7px;padding-top:22px;min-width:0}
+.kn{position:relative;width:62px;height:62px;flex:0 0 auto;touch-action:none;cursor:grab;outline:none;margin-bottom:12px}
+.kn .ko{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 40% 30%,#59616b,#22262b 70%);border:1px solid #121417;box-shadow:0 2px 4px rgba(0,0,0,.5)}
+.kn .ko i,.kn .ki i{position:absolute;left:50%;top:3px;width:2px;height:9px;margin-left:-1px;background:#cfd6dc;border-radius:1px;transform-origin:1px 28px}
+.kn .ki{position:absolute;inset:15px;border-radius:50%;background:radial-gradient(circle at 40% 30%,#6c7581,#2a2f35 72%);border:1px solid #121417;cursor:pointer}
+.kn .ki i{transform-origin:1px 15px;top:2px;height:7px}
+.kn:not(.dual) .ko i{transform-origin:1px 28px}
+.kn .kl{position:absolute;top:100%;left:-10px;right:-10px;text-align:center;font:600 9.5px var(--f-mono);letter-spacing:.06em;color:#aab3bc;margin-top:2px;white-space:nowrap}
+.kn:focus-visible{box-shadow:0 0 0 2px var(--smoke);border-radius:50%}
+.bz{font:600 10.5px var(--f-mono);color:#eef2f5;background:linear-gradient(#444b54,#2c3138);border:1px solid #14171a;border-radius:4px;padding:6px 0;width:100%;cursor:pointer;box-shadow:0 1px 0 rgba(255,255,255,.08) inset}
+.bz:active{transform:translateY(1px);background:#22262b}
+.bz.ff{font-size:14px;padding:3px 0;width:44px}
+.fk{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%}
+.apk{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:100%}
+.apk .bz{font-size:9.5px;padding:7px 0 5px;position:relative}
+.apk .bz::after{content:"";position:absolute;top:2px;left:50%;width:12px;height:2px;margin-left:-6px;border-radius:1px;background:#0d1012}
+.apk .bz.lit::after{background:#29e05a;box-shadow:0 0 5px #29e05a}
+.skw .skrow{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.sk{height:22px;background:linear-gradient(#444b54,#2c3138);border:1px solid #14171a;border-radius:3px;cursor:pointer}
+.sk:active{background:#22262b}
+.howto summary{cursor:pointer;color:var(--smoke);font-size:13px}
+#cockpit:fullscreen{overflow:auto;background:var(--bg);padding:12px}
+@media (max-width:700px){.bezel{grid-template-columns:62px minmax(0,1fr) 62px;padding:8px 4px;gap:4px}.kn{width:52px;height:52px}.kn .ki{inset:12px}.kn .ko i{transform-origin:1px 23px}}
+.otw{position:relative;height:clamp(220px,36vh,460px);border-radius:12px 12px 4px 4px;overflow:hidden;background:#8fb0cf;border:1px solid #3a4048}
+.otw canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.otw .glare{position:absolute;left:0;right:0;bottom:0;height:18%;pointer-events:none;background:radial-gradient(120% 140% at 50% 140%,#1a1d21 62%,rgba(26,29,33,0) 63%)}
+.otw .otwbar{position:absolute;right:10px;top:10px;display:flex;gap:6px;align-items:center}
+.otw .otwbar .seg button{background:rgba(13,19,25,.7);color:#e2e8ee;border-color:rgba(255,255,255,.2)}
+.otw .otwbar .seg button.on{background:var(--smoke);color:#0d1319}
+.otw .otwbar .btn{background:rgba(13,19,25,.72);color:#fff;border-color:rgba(255,255,255,.35);font-size:12.5px;padding:5px 10px}
+.otw .otwbar .seg button{border-color:rgba(255,255,255,.3)}
+.otw .otwmsg{position:absolute;inset:0;display:grid;place-items:center;color:#0d1319;font-weight:600}
+.otw.off{height:44px;background:var(--panel-2)}
+.otw.off canvas,.otw.off .glare,.otw.off .seg{display:none}
+.touch{position:absolute;left:0;right:0;top:6%;bottom:3.4%;pointer-events:none}
+.tz{position:absolute;pointer-events:auto;touch-action:none;border:1px dashed rgba(255,255,255,.35);border-radius:14px;background:rgba(0,0,0,.18)}
+.tz i{position:absolute;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:rgba(127,203,232,.85);box-shadow:0 0 0 5px rgba(127,203,232,.25);left:50%;top:50%}
+.tthr{left:1.5%;bottom:3%;width:8%;height:58%}
+.tthr span{position:absolute;bottom:4px;left:0;right:0;text-align:center;font:600 10px var(--f-mono);color:#fff}
+.tstk{right:1.5%;bottom:3%;width:30%;aspect-ratio:1}
+.bname{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;color:#8e98a3;padding:0 4px}
+.knobs{display:flex;flex-wrap:wrap;gap:8px}
+.knob{display:flex;align-items:center;background:#111317;border:1px solid #363c44;border-radius:999px;padding:3px;gap:4px;flex:1 1 150px;touch-action:none;user-select:none}
+.knob button{flex:0 0 32px;width:32px;height:32px;border-radius:50%;border:1px solid #454c55;background:radial-gradient(circle at 40% 35%,#4a525c,#252a30);color:#fff;font-weight:700;font-size:16px;cursor:pointer;line-height:1}
+.knob button:active{background:#5b6570}
+.knob .kc{flex:1 1 auto;text-align:center;cursor:ns-resize;line-height:1.15;min-width:0}
+.knob .kl{display:block;font-size:10px;letter-spacing:.12em;color:#8e98a3;font-family:var(--f-mono)}
+.knob .kv{display:block;font-family:var(--f-mono);font-size:13px;color:#13e0ff}
+.knob .kv.g{color:#29e05a}
+.apbar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;background:#16191d;border:1px solid #363c44;border-radius:8px;padding:8px}
+.apbar{flex-wrap:nowrap}.apbar button{flex:1 1 0;min-width:0;background:linear-gradient(#3a4048,#2a2f36);border:1px solid #4a515a;color:#eef2f5;font-weight:600;font-size:11.5px;padding:12px 2px 7px;border-radius:4px;position:relative;cursor:pointer;font-family:var(--f-mono)}
+.apbar button::after{content:"";position:absolute;top:4px;left:50%;transform:translateX(-50%);width:18px;height:3px;border-radius:2px;background:#0d1012}
+.apbar button.lit::after{background:#29e05a;box-shadow:0 0 6px #29e05a}
+.apbar button:active{transform:translateY(1px)}
+.apbar .sp{flex:0 0 6px}
+@media (max-width:560px){.apbar{flex-wrap:wrap}.apbar button{flex:1 1 18%}}
+.lower{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.5fr);gap:12px}
+@media (max-width:980px){.lower{grid-template-columns:minmax(0,1fr)}}
+.mission h3{margin-bottom:4px}
+.mission .brief{color:var(--muted);font-size:13px;margin:0 0 8px}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.checks li{display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:5px;background:var(--bg)}
+.checks li i{flex:0 0 18px;height:18px;border-radius:50%;border:2px solid var(--line);font-style:normal;font-size:11px;display:grid;place-items:center;margin-top:1px}
+.checks li.ok{border-color:rgba(113,204,147,.5)} .checks li.ok i{background:var(--green);border-color:var(--green);color:#0d1319}
+.checks li.bad{border-color:rgba(236,90,71,.55)} .checks li.bad i{background:var(--red);border-color:var(--red);color:#fff}
+.checks li.now{border-color:var(--smoke)}
+.ctlgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.stick{position:relative;width:100%;max-width:220px;aspect-ratio:1;margin:6px auto 0;border-radius:12px;background:radial-gradient(circle,#1d2732 0,#121820 70%);border:1px solid var(--line);touch-action:none;cursor:grab}
+.stick::before,.stick::after{content:"";position:absolute;background:rgba(255,255,255,.08)}
+.stick::before{left:50%;top:8%;bottom:8%;width:1px}.stick::after{top:50%;left:8%;right:8%;height:1px}
+.stick .dot{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;left:50%;top:50%;border-radius:50%;background:var(--smoke);box-shadow:0 0 0 6px rgba(127,203,232,.18);pointer-events:none}
+.stick small{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--muted);pointer-events:none}
+.thr{display:flex;gap:16px;justify-content:center;align-items:flex-end;margin-top:6px}
+.thr label{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted);font-family:var(--f-mono)}
+.thr input[type=range]{writing-mode:vertical-lr;direction:rtl;height:170px;width:32px;accent-color:#e2e8ee}
+.thr output{font-family:var(--f-mono);color:var(--fg);font-size:13px}
+.gear{display:flex;align-items:center;gap:10px}
+.gear button{width:64px;height:64px;border-radius:50%;border:2px solid var(--line);background:radial-gradient(circle at 40% 35%,#eef2f5,#9aa3ad);cursor:pointer;font-weight:700;color:#0d1319}
+.gear .lights{display:flex;gap:5px}
+.gear .lights b{width:14px;height:14px;border-radius:50%;background:#26313b;display:block}
+.gear .lights b.g{background:#29e05a;box-shadow:0 0 6px #29e05a}.gear .lights b.r{background:#ec5a47;box-shadow:0 0 6px #ec5a47}
+.mini{font-size:12px;color:var(--muted)}
+.ro2{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin:4px 0}
+.ro2 b{font-family:var(--f-mono);color:var(--fg);font-weight:500}
+.engbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn.warn{border-color:var(--red);color:#ffb3a8}
+.btn.on{background:var(--amber);border-color:var(--amber);color:#0d1319}
+kbd{font-family:var(--f-mono);font-size:11.5px;background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:1px 5px;color:var(--fg)}
+table.keys{border-collapse:collapse;width:100%;font-size:13px}
+table.keys td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.keys td:first-child{white-space:nowrap;width:1%}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.legend .box b.t{display:flex;gap:8px;align-items:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:2px;flex:0 0 12px}
+</style>
+</head>
+<body data-title="Glass Cockpit Trainer">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Simulators · Beta</div>
+      <h1>DA42 glass cockpit trainer</h1>
+      <p>A twin-engine trainer with a primary flight display, a multi-function display and an autopilot, styled after the G1000 glass cockpit. Practise scans, autopilot modes, ILS approaches and engine failures in the browser.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">Flying</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#cockpit">Cockpit</a><a href="#controls">Controls and mission</a><a href="#systems">Failures and weather</a><a href="#read">How to read it</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="cockpit">
+    <div class="tool">
+      <div id="segScen" aria-label="Mission"></div>
+      <div class="btns"><button class="btn" id="bPause">Pause</button><button class="btn" id="bReset">Restart</button><button class="btn" id="bFull">Full screen</button><button class="btn" id="bTouch" aria-pressed="false">Touch controls</button><button class="btn" id="bSound" aria-pressed="true">Sound on</button></div>
+    </div>
+    <div class="otw" id="otwBox"><canvas id="otw" aria-label="View out of the window"></canvas><div class="glare"></div>
+      <div class="otwbar"><div class="seg" id="segView"><button data-v="" class="on">Front</button><button data-v="L">Left</button><button data-v="R">Right</button></div><button class="btn" id="bOtw">Hide outside view</button></div>
+      <div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div></div>
+    <div class="panel2" id="panel">
+      <div class="bezel" id="bzP"><div class="bcolw" data-side="L"></div><div class="mid"><div class="bname"><span>PFD</span><span>GDU · primary flight display</span></div>
+        <div class="screen"><canvas id="pfd" aria-label="Primary flight display"></canvas><div class="touch" id="touch" hidden><div class="tz tthr" id="tThr"><i></i><span>PWR</span></div><div class="tz tstk" id="tStk"><i></i></div></div></div><div class="skw"></div></div><div class="bcolw" data-side="R"></div></div>
+      <div class="bezel" id="bzM"><div class="bcolw" data-side="L"></div><div class="mid"><div class="bname"><span>MFD</span><span>GDU · multi-function display</span></div>
+        <div class="screen"><canvas id="mfd" aria-label="Multi-function display"></canvas></div><div class="skw"></div></div><div class="bcolw" data-side="R"></div></div>
+    </div>
+    <details class="howto"><summary>How to use the avionics</summary><div class="cols" style="margin-top:8px">
+      <div class="box"><b class="t">Knobs</b><p>Scroll on a knob, or drag up and down. Dual knobs: the outer ring and the inner knob are separate. Click the inner knob to push it. Keyboard: focus a knob, arrows turn the inner knob, Shift + arrows the outer, Enter pushes.</p></div>
+      <div class="box"><b class="t">Flight plan</b><p>FPL opens the flight plan. Push FMS for the cursor, turn the outer FMS knob to move it, turn the inner knob to insert a waypoint, CLR removes one. MENU gives Activate Leg and Delete Flight Plan.</p></div>
+      <div class="box"><b class="t">Direct-to and approaches</b><p>D→, type the ident with the FMS knob (or the keyboard), ENT, ENT. PROC → SELECT APPROACH → approach → transition → LOAD or ACTIVATE. For an ILS the localizer frequency is tuned for you, and the CDI switches from GPS to LOC1 on final.</p></div>
+      <div class="box"><b class="t">Radios and CDI</b><p>NAV and COM: the outer ring tunes MHz, the inner knob kHz, push the inner knob to pick NAV1/NAV2, ⇄ swaps standby and active. The CDI softkey cycles GPS → NAV1 → NAV2.</p></div>
+    </div></details>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">Fly it</div>
+    <h2>Controls and mission</h2>
+    <div class="lower">
+      <div class="box mission" id="mission"></div>
+      <div class="ctlgrid">
+        <div class="box">
+          <b class="t">Yoke</b>
+          <div class="stick" id="stick"><span class="dot"></span><small>Drag · releases to centre</small></div>
+          <div id="rudBox"></div>
+          <div class="ro2"><span>Elevator trim</span><b id="trimV">0</b></div>
+          <div class="btns"><button class="btn" id="trDn">Nose down</button><button class="btn" id="trUp">Nose up</button></div>
+          <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="autoTrim" checked> Auto-trim (beginner)</label>
+        </div>
+        <div class="box">
+          <b class="t">Power</b>
+          <div class="thr">
+            <label>L<input type="range" id="thrL" min="0" max="100" step="1" value="60" aria-label="Left throttle"><output id="thrLv">60</output></label>
+            <label>R<input type="range" id="thrR" min="0" max="100" step="1" value="60" aria-label="Right throttle"><output id="thrRv">60</output></label>
+          </div>
+          <label class="mini" style="display:flex;gap:6px;align-items:center;justify-content:center;margin-top:8px"><input type="checkbox" id="thrLink" checked> Move both levers together</label>
+        </div>
+        <div class="box">
+          <b class="t">Configuration</b>
+          <div class="ro2"><span>Flaps</span><b id="flapV">UP</b></div>
+          <div id="segFlap"></div>
+          <div class="ro2" style="margin-top:12px"><span>Landing gear</span><b id="gearV">DOWN</b></div>
+          <div class="gear"><button id="gearBtn" aria-label="Gear lever">DN</button><div class="lights" id="gearL"><b></b><b></b><b></b></div></div>
+          <div class="btns" style="margin-top:12px"><button class="btn" id="brk">Hold for brakes</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="systems">
+    <div class="eyebrow">Make it harder</div>
+    <h2>Failures and weather</h2>
+    <div class="cols">
+      <div class="box">
+        <b class="t">Engines</b>
+        <p>Fail an engine at any time. Dead foot, dead engine: the foot you are not pressing is on the side of the failed engine.</p>
+        <div class="engbtns" style="margin-top:8px">
+          <button class="btn warn" id="failL">Fail left</button><button class="btn warn" id="failR">Fail right</button>
+          <button class="btn" id="featL">Feather left</button><button class="btn" id="featR">Feather right</button>
+          <button class="btn" id="restore" style="grid-column:1/-1">Restore both engines</button>
+        </div>
+      </div>
+      <div class="box"><b class="t">Wind</b><div id="windBox"></div></div>
+      <div class="box"><b class="t">Atmosphere</b><div id="atmBox"></div></div>
+    </div>
+  </section>
+
+  <section class="card" id="read">
+    <div class="eyebrow">Scan</div>
+    <h2>How to read the displays</h2>
+    <p class="lead">Colour carries meaning. Learn the colours and most of the screen reads itself.</p>
+    <div class="legend">
+      <div class="box"><b class="t"><span class="sw" style="background:#13e0ff"></span>Cyan: what you selected</b><p>Heading bug, selected altitude, altimeter setting, the selected vertical speed. Things you set with a knob.</p></div>
+      <div class="box"><b class="t"><span class="sw" style="background:#ff3cf0"></span>Magenta: trends and commands</b><p>Speed and altitude trend vectors (where you will be in 6 seconds), the turn-rate arc, the flight director bars and the ground track.</p></div>
+      <div class="box"><b class="t"><span class="sw" style="background:#29e05a"></span>Green: VOR and LOC, active modes</b><p>The course needle and deviation bar for VOR or localizer, the glideslope diamond, and active autopilot modes. White modes are armed and waiting.</p></div>
+      <div class="box"><b class="t"><span class="sw" style="background:#ffd400"></span>Yellow and red: attention</b><p>Your aircraft symbol is yellow. Yellow text is a caution, red is a warning. A red line on the speed tape marks Vmca, the blue line is Vyse.</p></div>
+      <div class="box"><b class="t">Speed tape colours</b><p>White arc: flap range. Green: normal range. Yellow: caution, smooth air only. Red: never exceed and below stall.</p></div>
+      <div class="box"><b class="t">Autopilot modes</b><p>HDG follows the heading bug. NAV and APR capture a VOR or localizer course. ALT holds altitude, VS holds a climb or descent rate, FLC holds a speed. ALTS means the selected altitude is armed for capture.</p></div>
+    </div>
+    <h3 style="margin-top:6px">Keyboard</h3>
+    <table class="keys">
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Pitch and roll. Up is nose down, like a yoke. Hold <kbd>Shift</kbd> for full deflection.</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right (stays where you leave it) · centre the rudder</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Power up and down, both levers</td></tr>
+      <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
+      <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up · gear · brakes while held</td></tr>
+      <tr><td><kbd>Space</kbd> · <kbd>Z</kbd></td><td>Autopilot disconnect · engage autopilot</td></tr>
+      <tr><td><kbd>H</kbd> <kbd>J</kbd> · <kbd>K</kbd> <kbd>L</kbd></td><td>Heading bug left and right · selected altitude down and up</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Pause</td></tr>
+    </table>
+    <p class="mini">A gamepad also works: left stick for pitch and roll, right stick sideways for rudder, triggers for power.</p>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+
+  <p class="note">Teaching model, not a certified simulator, and not affiliated with Garmin or Diamond Aircraft. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.</p>
+</div>
+
+<script src="three.min.js"></script>
+<script src="simterrain.js?v=3"></script>
+<script src="fdm.js?v=4"></script>
+<script src="fms.js?v=3"></script>
+<script src="glass.js?v=4"></script>
+<script src="avx.js?v=3"></script>
+<script src="otw.js?v=3"></script>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,nf,el,slider,seg,fit,visible,quiz,shuffle}=LAB;
+LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knotter","Scroll on a knob, or drag up and down. Dual knobs: the outer ring and the inner knob are separate. Click the inner knob to push it. Keyboard: focus a knob, arrows turn the inner knob, Shift + arrows the outer, Enter pushes.":"Rull på en knott, eller dra opp og ned. Doble knotter: ytre ring og indre knott er separate. Klikk på den indre knotten for å trykke den inn. Tastatur: velg en knott, piltastene dreier den indre, Shift + piltaster den ytre, Enter trykker.","Flight plan":"Flyplan","FPL opens the flight plan. Push FMS for the cursor, turn the outer FMS knob to move it, turn the inner knob to insert a waypoint, CLR removes one. MENU gives Activate Leg and Delete Flight Plan.":"FPL åpner flyplanen. Trykk FMS for markøren, drei den ytre FMS-knotten for å flytte den, drei den indre for å sette inn et veipunkt, CLR fjerner ett. MENU gir Activate Leg og Delete Flight Plan.","Direct-to and approaches":"Direct-to og innflyginger","D→, type the ident with the FMS knob (or the keyboard), ENT, ENT. PROC → SELECT APPROACH → approach → transition → LOAD or ACTIVATE. For an ILS the localizer frequency is tuned for you, and the CDI switches from GPS to LOC1 on final.":"D→, skriv identen med FMS-knotten (eller tastaturet), ENT, ENT. PROC → SELECT APPROACH → innflyging → transition → LOAD eller ACTIVATE. For en ILS stilles localizer-frekvensen inn automatisk, og CDI-en går fra GPS til LOC1 på finalen.","Radios and CDI":"Radioer og CDI","NAV and COM: the outer ring tunes MHz, the inner knob kHz, push the inner knob to pick NAV1/NAV2, ⇄ swaps standby and active. The CDI softkey cycles GPS → NAV1 → NAV2.":"NAV og COM: ytre ring stiller MHz, indre knott kHz, trykk den indre knotten for å velge NAV1/NAV2, ⇄ bytter standby og aktiv. CDI-softkey går GPS → NAV1 → NAV2.",
+ 'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','DA42 glass cockpit trainer':'DA42 glass cockpit-trener',
+ 'A twin-engine trainer with a primary flight display, a multi-function display and an autopilot, styled after the G1000 glass cockpit. Practise scans, autopilot modes, ILS approaches and engine failures in the browser.':'En tomotors trener med primær flyskjerm, flerfunksjonsskjerm og autopilot, laget i stil med G1000 glass cockpit. Øv på instrumentskanning, autopilotmoder, ILS-innflyginger og motorstans rett i nettleseren.',
+ 'Cockpit':'Cockpit','Controls and mission':'Kontroller og oppdrag','Failures and weather':'Feil og vær','How to read it':'Slik leser du den','Test yourself':'Test deg selv',
+ 'Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Sound on':'Lyd på','Sound off':'Lyd av','Resume':'Fortsett',
+ 'Click a softkey on the screen':'Klikk på en softkey nederst på skjermen','Engine and map':'Motor og kart',
+ 'Fly it':'Fly','Yoke':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Elevator trim':'Høyderortrim','Nose down':'Nese ned','Nose up':'Nese opp','Auto-trim (beginner)':'Auto-trim (nybegynner)',
+ 'Power':'Effekt','Move both levers together':'Flytt begge hendlene sammen','Configuration':'Konfigurasjon','Flaps':'Flaps','Landing gear':'Understell','Hold for brakes':'Hold for bremser',
+ 'Make it harder':'Gjør det vanskeligere','Engines':'Motorer','Fail an engine at any time. Dead foot, dead engine: the foot you are not pressing is on the side of the failed engine.':'Stopp en motor når som helst. «Dead foot, dead engine»: foten du ikke trykker med, er på samme side som motoren som har stoppet.',
+ 'Fail left':'Stopp venstre','Fail right':'Stopp høyre','Feather left':'Fløy venstre','Feather right':'Fløy høyre','Restore both engines':'Gjenopprett begge motorene',
+ 'Wind':'Vind','Atmosphere':'Atmosfære','Scan':'Skanning','How to read the displays':'Slik leser du skjermene','Colour carries meaning. Learn the colours and most of the screen reads itself.':'Fargene betyr noe. Lær fargene, så leser det meste av skjermen seg selv.',
+ 'Cyan: what you selected':'Cyan: det du har valgt','Heading bug, selected altitude, altimeter setting, the selected vertical speed. Things you set with a knob.':'Kursmerke, valgt høyde, høydemåler-innstilling og valgt stigehastighet. Ting du stiller med en bryter.',
+ 'Magenta: trends and commands':'Magenta: trender og kommandoer','Speed and altitude trend vectors (where you will be in 6 seconds), the turn-rate arc, the flight director bars and the ground track.':'Trendvektorer for fart og høyde (der du er om 6 sekunder), svinghastighetsbuen, flight director-stolpene og sporet over bakken.',
+ 'Green: VOR and LOC, active modes':'Grønn: VOR og LOC, aktive moder','The course needle and deviation bar for VOR or localizer, the glideslope diamond, and active autopilot modes. White modes are armed and waiting.':'Kursnålen og avviksstolpen for VOR eller localizer, glidebane-diamanten og aktive autopilotmoder. Hvite moder er armert og venter.',
+ 'Yellow and red: attention':'Gul og rød: obs','Your aircraft symbol is yellow. Yellow text is a caution, red is a warning. A red line on the speed tape marks Vmca, the blue line is Vyse.':'Flysymbolet er gult. Gul tekst er en advarsel om forsiktighet, rød er en varsling. En rød strek på fartstapen markerer Vmca, den blå er Vyse.',
+ 'Speed tape colours':'Farger på fartstapen','White arc: flap range. Green: normal range. Yellow: caution, smooth air only. Red: never exceed and below stall.':'Hvit bue: flapsområdet. Grønn: normalt område. Gul: forsiktig, kun i rolig luft. Rød: aldri overskrid, og under stall.',
+ 'Autopilot modes':'Autopilotmoder','HDG follows the heading bug. NAV and APR capture a VOR or localizer course. ALT holds altitude, VS holds a climb or descent rate, FLC holds a speed. ALTS means the selected altitude is armed for capture.':'HDG følger kursmerket. NAV og APR fanger en VOR- eller localizer-kurs. ALT holder høyden, VS holder stige- eller synkehastighet, FLC holder en fart. ALTS betyr at valgt høyde er armert for innfanging.',
+ 'Keyboard':'Tastatur','Pitch and roll. Up is nose down, like a yoke. Hold':'Stigning og krengning. Opp er nese ned, som et ratt. Hold','for full deflection.':'for fullt utslag.',
+ 'Rudder left and right (stays where you leave it) · centre the rudder':'Sideror venstre og høyre (blir stående) · sentrer sideroret','Power up and down, both levers':'Mer og mindre effekt, begge hendlene','Elevator trim nose down and up':'Trim nese ned og opp',
+ 'Flaps down and up · gear · brakes while held':'Flaps ned og opp · understell · bremser mens du holder','Autopilot disconnect · engage autopilot':'Koble ut autopilot · koble inn autopilot','Heading bug left and right · selected altitude down and up':'Kursmerke venstre og høyre · valgt høyde ned og opp',
+ 'A gamepad also works: left stick for pitch and roll, right stick sideways for rudder, triggers for power.':'Spillkontroll fungerer også: venstre stikke for stigning og krengning, høyre stikke sideveis for sideror, avtrekkerne for effekt.',
+ 'Check':'Sjekk','or':'eller',
+ 'Teaching model, not a certified simulator, and not affiliated with Garmin or Diamond Aircraft. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.':'Pedagogisk modell, ikke en sertifisert simulator, og ikke tilknyttet Garmin eller Diamond Aircraft. Fartene er DA42 NG-verdier fra publiserte begrensninger (KIAS); motorinstrumentenes områder er omtrentlige. Bruk alltid flygehåndboken, AIP og instruktøren din.',
+ 'Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','On ground':'På bakken','Mission complete':'Oppdrag fullført'
+});
+
+const F=FDM, S=F.create(), AP=F.mkAP(), KT=F.KT;
+const UI={hdg:360,paused:false,sound:true,scen:'free'};
+const X=AVX, XA=AVX.A, FM=FMS;
+let curNav={cdi:{valid:false},gps:{valid:false}};
+function navCur(o){ return X.navNow(S,(o||S.o||{}).gs||0); }
+const inp={keys:new Set(),stick:null,gp:null,thrMove:0,brakeHeld:false};
+let lastO=null, iasTrend=0, turnRate=0, missionState=null, completeShown=false;
+
+/* ---------- oppdrag ---------- */
+const SCEN=[
+ {k:'free', t:{en:'Free flight',no:'Fri flyging'}, brief:{en:'3000 ft, 9 NM south of Birdbird Field. Try the autopilot: set the heading bug, press HDG, set an altitude, press VS or FLC and watch ALTS capture it.',no:'3000 ft, 9 NM sør for Birdbird Field. Prøv autopiloten: still kursmerket, trykk HDG, velg en høyde, trykk VS eller FLC og se ALTS fange den.'},
+  set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:['NAER'],dto:'NAER'},
+  checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
+           {t:{en:'Fly a heading with HDG mode',no:'Fly en kurs med HDG-moden'},f:c=>c.ap.on&&c.ap.lat==='HDG'},
+           {t:{en:'Climb or descend with VS or FLC and let ALTS capture',no:'Stig eller synk med VS eller FLC og la ALTS fange høyden'},f:c=>c.m.altsSeen&&c.ap.vert==='ALT'&&Math.abs(c.o.alt-c.ap.alt)<60, pre:c=>{ if(/ALTS/.test(c.ap.vertArm)) c.m.altsSeen=true; }} ]},
+ {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Full power on both engines, rotate at about 76 KIAS, climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway, flaps up above 400 ft.',no:'Rullebane 36, vindstille. Full effekt på begge motorene, roter ved rundt 76 KIAS, stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen, flaps opp over 400 ft.'},
+  set:{ground:true,N:20,E:0,hdg:360,thr:0,flap:1,gear:1}, ui:{hdg:360,alt:3000,fp:['NAER','KORPA','VSTB']},
+  checks:[ {t:{en:'Full power (both levers above 95 %)',no:'Full effekt (begge hendler over 95 %)'},f:c=>c.s.eng.every(e=>e.thr>0.95)},
+           {t:{en:'Rotate and lift off',no:'Roter og løft av'},f:c=>!c.s.ground},
+           {t:{en:'Gear up with a positive climb',no:'Understell opp med positiv stigning'},f:c=>c.s.ctl.gear===0&&!c.s.ground, bad:c=>c.s.ctl.gear===0&&c.o.vs<0&&c.o.alt<200},
+           {t:{en:'Flaps up above 400 ft',no:'Flaps opp over 400 ft'},f:c=>c.s.ctl.flap===0&&c.o.alt>400, bad:c=>c.s.ctl.flap===0&&c.o.alt<300&&!c.s.ground},
+           {t:{en:'Climb through 1500 ft between 85 and 100 KIAS',no:'Stig gjennom 1500 ft mellom 85 og 100 KIAS'},f:c=>c.o.alt>1500&&c.o.ias>85&&c.o.ias<100} ]},
+ {k:'ils', t:{en:'ILS 36',no:'ILS 36'}, brief:{en:'Heading 030 at 2000 ft, being vectored to the localizer for runway 36. Press PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. The localizer frequency is tuned for you. Press APR: LOC and GS arm. The CDI switches from GPS to LOC1 on final. Gear down at glideslope capture, flaps LDG on short final, disconnect and land.',no:'Kurs 030 i 2000 ft, vektorert mot localizeren til rullebane 36. Trykk PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. LOC-frekvensen stilles inn for deg. Trykk APR: LOC og GS armeres. CDI-en bytter fra GPS til LOC1 på finalen. Understell ned når glidebanen fanges, flaps LDG på kort finale, koble ut og land.'},
+  set:{N:-17500,E:-3600,alt:2000,ias:120,hdg:30,flap:1,gear:0}, ui:{hdg:30,alt:2000,fp:['NAER'],dto:'NAER'}, ap:true,
+  checks:[ {t:{en:'Load and activate ILS 36 with PROC',no:'Last inn og aktiver ILS 36 med PROC'},f:c=>c.fp.appr&&c.fp.appr.kind==='ILS'&&c.fp.apprActive},
+           {t:{en:'NAV1 active on 110.30 (IASN)',no:'NAV1 aktiv på 110.30 (IASN)'},f:c=>X.navAct(0)==='110.30'},
+           {t:{en:'Arm APR (LOC and GS shown in white)',no:'Armer APR (LOC og GS vises i hvitt)'},f:c=>c.ap.latArm==='APR'||c.ap.lat==='LOC'},
+           {t:{en:'CDI on LOC1 and localizer captured',no:'CDI på LOC1 og localizer fanget'},f:c=>c.ap.lat==='LOC'||(c.n.src==='LOC'&&c.n.valid&&Math.abs(c.n.dev)<0.3)},
+           {t:{en:'Glideslope captured or flown',no:'Glidebane fanget eller fløyet'},f:c=>c.ap.vert==='GS'||(c.n.gs&&Math.abs(c.n.gs.dev)<0.3&&c.o.vs<-300)},
+           {t:{en:'Gear down above 1000 ft',no:'Understell ute over 1000 ft'},f:c=>c.s.ctl.gear===1&&c.o.alt>1000, bad:c=>c.s.ctl.gear===0&&c.o.alt<1000},
+           {t:{en:'Land on runway 36',no:'Land på rullebane 36'},f:c=>c.s.ground&&!c.s.crash} ]},
+ {k:'rnav', t:{en:'RNAV 36 LPV',no:'RNAV 36 LPV'}, brief:{en:'3000 ft just past TUSKA, autopilot in GPS and ALT, flight plan TUSKA → NAER. Press PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Press APR: GP arms. Watch TERM change to LPV 2 NM before FAPSO, then the glidepath capture. Gear down at FAPSO, land.',no:'3000 ft like etter TUSKA, autopilot i GPS og ALT, flyplan TUSKA → NAER. Trykk PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Trykk APR: GP armeres. Se TERM bytte til LPV 2 NM før FAPSO, og så at glidebanen fanges. Understell ned ved FAPSO, land.'},
+  set:{N:-20.1*1852,E:-7.33*1852,alt:3000,ias:125,hdg:20,flap:0,gear:0}, ui:{hdg:20,alt:3000,fp:['TUSKA','NAER'],dto:'TUSKA'}, ap:'gps',
+  checks:[ {t:{en:'Load and activate RNAV 36 via ALPOR',no:'Last inn og aktiver RNAV 36 via ALPOR'},f:c=>c.fp.appr&&c.fp.appr.kind==='RNAV'&&c.fp.apprActive},
+           {t:{en:'Arm APR (GP shown in white)',no:'Armer APR (GP vises i hvitt)'},f:c=>/GP/.test(c.ap.vertArm)||c.ap.vert==='GP'},
+           {t:{en:'LPV annunciated on the HSI',no:'LPV vises på HSI-en'},f:c=>c.gps.mode==='LPV'},
+           {t:{en:'Glidepath captured (GP)',no:'Glidebane fanget (GP)'},f:c=>c.ap.vert==='GP'||(c.gps.gp&&Math.abs(c.gps.gp.dev)<0.3&&c.o.vs<-300)},
+           {t:{en:'Gear down before FAPSO',no:'Understell ute før FAPSO'},f:c=>c.s.ctl.gear===1&&c.gps.to==='FAPSO', bad:c=>c.s.ctl.gear===0&&c.gps.to==='RW36'},
+           {t:{en:'Land on runway 36',no:'Land på rullebane 36'},f:c=>c.s.ground&&!c.s.crash} ]},
+ {k:'efato', t:{en:'Engine failure',no:'Motorstans'}, brief:{en:'Climbing out at 500 ft, gear and flaps up. In a few seconds one engine fails. Pitch for blue line (85 KIAS), keep the heading with rudder (dead foot, dead engine), bank about 5° towards the live engine, identify, verify, feather (engine master OFF), climb to 1000 ft.',no:'Stiger ut i 500 ft med understell og flaps oppe. Om noen sekunder stopper en motor. Hold blå linje (85 KIAS), hold kursen med sideroret («dead foot, dead engine»), krengning rundt 5° mot den levende motoren, identifiser, verifiser, fløy propellen (engine master OFF), stig til 1000 ft.'},
+  set:{N:1800,E:0,alt:500,ias:95,hdg:360,gear:0,flap:0,thr:1,gam:5}, ui:{hdg:360,alt:1000,fp:[]}, failAt:4,
+  checks:[ {t:{en:'Keep heading within 20° of 360',no:'Hold kursen innenfor 20° av 360'},f:c=>c.m.failed&&c.t>c.m.failT+20&&!c.m.hdgBad, bad:c=>c.m.hdgBad, pre:c=>{ if(c.m.failed&&Math.abs(F.wrap180(c.o.hdg-360))>20) c.m.hdgBad=true; }},
+           {t:{en:'Stay above Vmca (76 KIAS)',no:'Hold farten over Vmca (76 KIAS)'},f:c=>c.m.failed&&c.t>c.m.failT+20&&!c.m.vmcBad, bad:c=>c.m.vmcBad, pre:c=>{ if(c.m.failed&&c.o.ias<76) c.m.vmcBad=true; }},
+           {t:{en:'Feather the failed engine (not the good one)',no:'Fløy motoren som stoppet (ikke den gode)'},f:c=>c.s.eng.some(e=>e.fail&&e.feather)&&!c.s.eng.some(e=>!e.fail&&e.feather), bad:c=>c.s.eng.some(e=>!e.fail&&e.feather)},
+           {t:{en:'Climb to 1000 ft at blue line or a little above (85–95 KIAS)',no:'Stig til 1000 ft på blå linje eller litt over (85–95 KIAS)'},f:c=>c.o.alt>1000&&c.o.ias>=84&&c.o.ias<95} ]},
+ {k:'steep', t:{en:'Steep turns',no:'Bratte svinger'}, brief:{en:'3000 ft, 120 KIAS. Roll into 45° of bank and fly a full 360°. Add a little power and back pressure. Keep the altitude within ±100 ft and the bank between 40° and 50°.',no:'3000 ft, 120 KIAS. Rull inn til 45° krengning og fly en hel 360°. Gi litt mer effekt og trekk litt. Hold høyden innenfor ±100 ft og krengningen mellom 40° og 50°.'},
+  set:{N:-16700,E:0,alt:3000,ias:120,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]},
+  checks:[ {t:{en:'Bank 40–50° for most of the turn',no:'40–50° krengning mesteparten av svingen'},f:c=>c.m.turn>300&&c.m.inBand/c.m.inTurn>0.8, pre:c=>{ const b=Math.abs(c.o.roll); if(b>30){ c.m.inTurn=(c.m.inTurn||0)+c.dt; if(b>=40&&b<=50) c.m.inBand=(c.m.inBand||0)+c.dt; c.m.turn=(c.m.turn||0)+Math.abs(c.turnRate)*c.dt; if(Math.abs(c.o.alt-3000)>100) c.m.altBad=true; } }},
+           {t:{en:'Altitude within ±100 ft while turning',no:'Høyden innenfor ±100 ft i svingen'},f:c=>c.m.turn>300&&!c.m.altBad, bad:c=>c.m.altBad},
+           {t:{en:'Complete 360°',no:'Fullfør 360°'},f:c=>c.m.turn>350} ]},
+ {k:'stall', t:{en:'Stall',no:'Stall'}, brief:{en:'4000 ft, clean. Bring both levers to idle and hold the altitude with back pressure until the STALL warning. Recover: nose down to unload the wing, full power, wings level, then climb away.',no:'4000 ft, rent fly. Ta begge hendlene til tomgang og hold høyden ved å trekke til STALL-varselet kommer. Gjenvinn: nese ned for å avlaste vingen, full effekt, vingene vannrett, og stig.'},
+  set:{N:-16700,E:0,alt:4000,ias:110,hdg:360,gear:0}, ui:{hdg:360,alt:4000,fp:[]},
+  checks:[ {t:{en:'Idle power',no:'Tomgang'},f:c=>c.s.eng.every(e=>e.thr<0.05)},
+           {t:{en:'Reach the stall warning',no:'Nå stallvarselet'},f:c=>c.m.stalled, pre:c=>{ if(c.s.buffet>0.3&&!c.m.stalled){ c.m.stalled=true; c.m.stallAlt=c.o.alt; } if(c.m.stalled) c.m.minAlt=Math.min(c.m.minAlt??1e9,c.o.alt); }},
+           {t:{en:'Recover: above 85 KIAS and climbing',no:'Gjenvinn: over 85 KIAS og stigende'},f:c=>c.m.stalled&&c.o.ias>85&&c.o.vs>0},
+           {t:{en:'Lose less than 300 ft',no:'Mist mindre enn 300 ft'},f:c=>c.m.stalled&&c.o.ias>85&&c.o.vs>0&&c.m.stallAlt-c.m.minAlt<300, bad:c=>c.m.stalled&&c.m.stallAlt-c.m.minAlt>=300} ]}
+];
+
+function resetMission(){
+  const sc=SCEN.find(x=>x.k===UI.scen);
+  S.env.wdir=windDir.v; S.env.wspd=windSpd.v; S.env.turb=turb.v/100; S.env.isa=isaDev.v; S.env.qnh=qnhAct.v; S.baro=XA.baro=qnhAct.v; XA.baroStd=false;
+  F.place(S,sc.set); F.readouts(S);
+  Object.assign(AP,F.mkAP()); AP.hdg=UI.hdg=sc.ui.hdg; AP.alt=sc.ui.alt;
+  XA.cdi='GPS'; XA.crs=[360,360]; XA.radio.nav[0]={act:'113.30',stby:'110.30'}; XA.radio.nav[1]={act:'116.50',stby:'108.00'}; XA.win.P=XA.win.M=null; XA.soft.P=XA.soft.M='top'; XA.mfdPage='MAP'; XA.msgs.length=0;
+  XA.fp=FM.mkFP(); if(sc.ui.fp&&sc.ui.fp.length){ FM.setRoute(XA.fp,sc.ui.fp,S); if(sc.ui.dto) FM.directTo(XA.fp,sc.ui.dto,S); if(sc.k==='rnav'){ XA.fp.act=1; XA.fp.dto=null; } }
+  if(sc.ap){ const o=F.readouts(S), n=navCur(o).cdi; F.apSet(AP,S,o,'AP',n); F.apSet(AP,S,o,sc.ap==='gps'?'NAV':'HDG',n); F.apSet(AP,S,o,'ALT',n); }
+  missionState={m:{}, t:0, done:sc.checks.map(()=>0)}; completeShown=false;
+  S.autotrim=el('autoTrim').checked; holdPitch=null;
+  syncThrottleUI(); renderMission(); lastO=null;
+}
+
+/* ---------- glidere og segmenter ---------- */
+const scenSeg=seg(el('segScen'),SCEN.map(s=>[s.k,s.t]),UI.scen,v=>{ UI.scen=v; resetMission(); });
+// seg bruker T(); vi trenger L() for objekter
+scenSeg.set=function(x){ this.v=x; drawScen(); };
+function drawScen(){ el('segScen').innerHTML=SCEN.map(s=>`<button data-v="${s.k}" class="${s.k===UI.scen?'on':''}">${L(s.t)}</button>`).join(''); }
+drawScen(); LAB.onLang(drawScen);
+el('segScen').addEventListener('click',()=>setTimeout(drawScen,0));
+const flapSeg=seg(el('segFlap'),[['0','UP'],['1','APP'],['2','LDG']],'0',v=>{ setFlap(+v); });
+const rud=slider(el('rudBox'),{label:'Rudder',min:-100,max:100,step:1,v:0,f:v=>(v>0?'R ':v<0?'L ':'')+Math.abs(v)+' %',on:v=>{ S.ctl.rud=v/100; }});
+rud.inp.addEventListener('dblclick',()=>{ rud.set(0); S.ctl.rud=0; });
+const windDir=slider(el('windBox'),{label:'From',min:0,max:360,step:10,v:0,f:v=>String(v||360).padStart(3,'0')+'°',on:v=>S.env.wdir=v});
+const windSpd=slider(el('windBox'),{label:'Speed',min:0,max:40,step:1,v:0,f:v=>v+' kt',on:v=>S.env.wspd=v});
+const turb=slider(el('windBox'),{label:'Turbulence',min:0,max:100,step:5,v:0,f:v=>v+' %',on:v=>S.env.turb=v/100});
+const isaDev=slider(el('atmBox'),{label:'Temperature vs ISA',min:-30,max:30,step:1,v:0,f:v=>(v>0?'+':'')+v+' °C',on:v=>S.env.isa=v,hint:'Hot air: less lift and thrust for the same speed over the ground.'});
+const qnhAct=slider(el('atmBox'),{label:'Actual QNH',min:960,max:1050,step:1,v:1013,f:v=>v+' hPa',on:v=>S.env.qnh=v,hint:'If the actual QNH differs from the setting on the PFD, the altimeter is wrong. Set it with the BARO knob.'});
+LAB.add({},{'Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Temperature vs ISA':'Temperatur mot ISA','Actual QNH':'Faktisk QNH',
+ 'Hot air: less lift and thrust for the same speed over the ground.':'Varm luft: mindre løft og skyv for samme fart over bakken.',
+ 'If the actual QNH differs from the setting on the PFD, the altimeter is wrong. Set it with the BARO knob.':'Hvis faktisk QNH er en annen enn innstillingen på PFD-en, viser høydemåleren feil. Still den med BARO-bryteren.'});
+
+/* ---------- bezeler (AVX) ---------- */
+const p3=n=>String(Math.round(F.wrap360(n))||360).padStart(3,'0');
+const KN=[];
+['P','M'].forEach(dsp=>{
+  const bz=el(dsp==='P'?'bzP':'bzM'), h=X.bezelHTML(dsp);
+  bz.querySelector('[data-side=L]').innerHTML=h.left; bz.querySelector('[data-side=R]').innerHTML=h.right; bz.querySelector('.skw').innerHTML=h.soft;
+  bz.querySelectorAll('.kn').forEach(k=>X.bindKnob(k,(which,st)=>{ X.knobAct(dsp,k.dataset.kn,which,st,ctx()); click(); }));
+  bz.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.bk){ const k=b.dataset.bk; if(k==='NAVFF'){ const n=XA.radio.nav[XA.radio.navSel]; [n.act,n.stby]=[n.stby,n.act]; } else if(k==='COMFF'){ const c=XA.radio.com[XA.radio.comSel]; [c.act,c.stby]=[c.stby,c.act]; } else X.key(dsp,k,ctx()); click(); }
+    if(b.dataset.sk!==undefined){ X.soft(dsp,+b.dataset.sk,ctx()); click(); }
+    if(b.dataset.ap){ apPress(b.dataset.ap); } });
+});
+function ctx(){ return {s:S,o:S.o||F.readouts(S),ap:AP,onCdi:()=>{ if(/LOC|VOR|VAPP|GPS/.test(AP.lat)){ AP.lat='ROL'; AP.rollRef=0; } AP.latArm=''; },onLoad:()=>{},onDirect:()=>{}}; }
+function click(){ mfdForce=true; beep(1700,0.015,0.03); }
+el('mfd').addEventListener('wheel',e=>{ e.preventDefault(); X.range(e.deltaY>0?1:-1); },{passive:false});
+/* fullskjerm */
+el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg({en:'Full screen is blocked here. Open the page in its own tab.',no:'Fullskjerm er blokkert her. Åpne siden i en egen fane.'})); }catch(e){} };
+
+/* ---------- 3D-utsikt ---------- */
+let otwOn=true, otwView=''; let otwReady=false;
+// bygg 3D-scenen etter første bilde, så siden blir klar raskere
+(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } if(!otwReady){ el('otwMsg').hidden=false; } },{timeout:400});
+el('segView').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; otwView=b.dataset.v; el('segView').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); });
+el('bOtw').onclick=()=>{ otwOn=!otwOn; el('otwBox').classList.toggle('off',!otwOn); el('bOtw').textContent=T(otwOn?'Hide outside view':'Show outside view'); };
+let otwVis=true; visible(el('otwBox'),v=>otwVis=v);
+
+/* ---------- autopilot ---------- */
+function apPress(k){ if(k==='VNV'||k==='BC'){ X.msg(k+' is not simulated'); return; } const o=F.readouts(S), n=navCur(o).cdi; F.apSet(AP,S,o,k,n); beep(1200,0.04,0.05); }
+function apLights(){ document.querySelectorAll('[data-ap]').forEach(b=>{ const k=b.dataset.ap; let on=false;
+  if(k==='AP') on=AP.on; else if(k==='FD') on=AP.fd; else if(k==='HDG') on=AP.lat==='HDG'; else if(k==='NAV') on=(AP.lat==='VOR'||AP.lat==='GPS')&&!AP.aprMode||AP.latArm==='NAV'; else if(k==='APR') on=AP.lat==='LOC'||AP.lat==='VAPP'||AP.latArm==='APR'||(AP.lat==='GPS'&&AP.aprMode);
+  else if(k==='ALT') on=AP.vert==='ALT'; else if(k==='VS') on=AP.vert==='VS'; else if(k==='FLC') on=AP.vert==='FLC'; b.classList.toggle('lit',on); }); }
+
+/* ---------- effekt, flaps, understell ---------- */
+function setThr(i,v){ v=F.clamp(v,0,1); if(el('thrLink').checked){ S.eng.forEach(e=>e.thr=v); } else S.eng[i].thr=v; syncThrottleUI(); }
+function syncThrottleUI(){ el('thrL').value=Math.round(S.eng[0].thr*100); el('thrR').value=Math.round(S.eng[1].thr*100); el('thrLv').textContent=Math.round(S.eng[0].thr*100); el('thrRv').textContent=Math.round(S.eng[1].thr*100); }
+el('thrL').addEventListener('input',e=>setThr(0,e.target.value/100));
+el('thrR').addEventListener('input',e=>setThr(1,e.target.value/100));
+function setFlap(n){ S.ctl.flap=F.clamp(n,0,2); flapSeg.set(String(S.ctl.flap)); }
+function toggleGear(){ if(S.ground&&S.ctl.gear===1) { msg({en:'The gear lever is locked on the ground.',no:'Understellshendelen er låst på bakken.'}); return; } S.ctl.gear=S.ctl.gear?0:1; beep(400,0.08,0.06); }
+el('gearBtn').onclick=toggleGear;
+const brk=el('brk'); ['pointerdown'].forEach(ev=>brk.addEventListener(ev,()=>inp.brakeHeld=true)); ['pointerup','pointerleave','pointercancel'].forEach(ev=>brk.addEventListener(ev,()=>inp.brakeHeld=false));
+const trimStep=d=>{ S.ctl.trim=F.clamp(S.ctl.trim+d,-1,1); };
+el('trDn').onclick=()=>trimStep(-0.03); el('trUp').onclick=()=>trimStep(0.03);
+el('autoTrim').onchange=e=>S.autotrim=e.target.checked;
+
+/* ---------- motorfeil ---------- */
+el('failL').onclick=()=>{ S.eng[0].fail=true; };
+el('failR').onclick=()=>{ S.eng[1].fail=true; };
+el('featL').onclick=()=>{ S.eng[0].feather=!S.eng[0].feather; };
+el('featR').onclick=()=>{ S.eng[1].feather=!S.eng[1].feather; };
+el('restore').onclick=()=>{ S.eng.forEach(e=>{ e.fail=false; e.feather=false; }); };
+
+/* ---------- berøringskontroller på PFD ---------- */
+const tStk=el('tStk'), tThr=el('tThr');
+function setTouch(on){ el('touch').hidden=!on; el('bTouch').classList.toggle('on',on); el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
+el('bTouch').onclick=()=>setTouch(el('touch').hidden);
+{ let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':matchMedia('(pointer:coarse)').matches); }
+function tStkAt(e){ const r=tStk.getBoundingClientRect(); const x=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1), y=F.clamp((e.clientY-r.top)/r.height*2-1,-1,1); inp.stick={x,y}; const k=tStk.querySelector('i'); k.style.left=(50+x*50)+'%'; k.style.top=(50+y*50)+'%'; }
+tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tStkAt(e); ensureAudio(); });
+tStk.addEventListener('pointermove',e=>{ if(inp.stick) tStkAt(e); });
+['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+function tThrAt(e){ const r=tThr.getBoundingClientRect(); const v=F.clamp(1-(e.clientY-r.top)/r.height,0,1); S.eng.forEach(x=>x.thr=v); syncThrottleUI(); tThr.querySelector('i').style.top=((1-v)*100)+'%'; }
+tThr.addEventListener('pointerdown',e=>{ e.preventDefault(); tThr.setPointerCapture(e.pointerId); tThrAt(e); });
+tThr.addEventListener('pointermove',e=>{ if(e.buttons||e.pressure) tThrAt(e); });
+
+/* ---------- styrestikke ---------- */
+const stick=el('stick'), dot=stick.querySelector('.dot');
+function stickAt(e){ const r=stick.getBoundingClientRect(); const x=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1), y=F.clamp((e.clientY-r.top)/r.height*2-1,-1,1); inp.stick={x,y}; }
+stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
+stick.addEventListener('pointermove',e=>{ if(inp.stick) stickAt(e); });
+['pointerup','pointercancel'].forEach(ev=>stick.addEventListener(ev,()=>{ inp.stick=null; }));
+
+/* ---------- tastatur ---------- */
+const typing=()=>{ const a=document.activeElement; return a && (a.tagName==='INPUT'&&a.type!=='range'&&a.type!=='checkbox' || a.tagName==='TEXTAREA' || a.getAttribute('role')==='spinbutton'); };
+const flightKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','q','e','b',' ','+','-','=','[',']']);
+window.addEventListener('keydown',e=>{
+  if(typing()||e.metaKey||e.ctrlKey||e.altKey) return;
+  { const dsp=['P','M'].find(d=>XA.win[d]&&(XA.win[d].type==='DTO'||XA.win[d].type==='WPT'));
+    if(dsp&&!e.repeat){ if(/^[a-zA-Z0-9]$/.test(e.key)){ X.typeChar(dsp,e.key.toUpperCase()); e.preventDefault(); return; }
+      if(e.key==='Backspace'){ X.typeChar(dsp,'BS'); e.preventDefault(); return; } if(e.key==='Enter'){ X.key(dsp,'ENT',ctx()); e.preventDefault(); return; } if(e.key==='Escape'){ X.key(dsp,'CLR',ctx()); e.preventDefault(); return; } }
+    const any=['P','M'].find(d=>XA.win[d]); if(any&&!e.repeat){ if(e.key==='Enter'){ X.key(any,'ENT',ctx()); e.preventDefault(); return; } if(e.key==='Escape'){ X.key(any,'CLR',ctx()); e.preventDefault(); return; } } }
+  const k=e.key.length===1?e.key.toLowerCase():e.key;
+  if(!inCockpitView()&&!['p'].includes(k)) return;
+  if(flightKeys.has(k)||['f','v','g','z','h','j','k','l','x','p'].includes(k)) e.preventDefault();
+  ensureAudio();
+  if(e.repeat&&['f','v','g','z','p',' ','x'].includes(k)) return;
+  inp.keys.add(k);
+  if(k==='f') setFlap(S.ctl.flap+1); if(k==='v') setFlap(S.ctl.flap-1); if(k==='g') toggleGear();
+  if(k===' ') { if(AP.on) apPress('AP'); } if(k==='z'&&!AP.on) apPress('AP');
+  if(k==='h') AP.hdg=F.wrap360(AP.hdg-(e.shiftKey?10:1)); if(k==='j') AP.hdg=F.wrap360(AP.hdg+(e.shiftKey?10:1));
+  if(k==='k') AP.alt=Math.max(0,AP.alt-100); if(k==='l') AP.alt=Math.min(20000,AP.alt+100);
+  if(k==='x'){ rud.set(0); S.ctl.rud=0; }
+  if(k==='p') togglePause();
+});
+window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
+window.addEventListener('blur',()=>inp.keys.clear());
+let cockpitVis=true; visible(el('cockpit'),v=>cockpitVis=v);
+const inCockpitView=()=>cockpitVis;
+
+/* ---------- lyd ---------- */
+let AC=null, horn=null;
+function ensureAudio(){ if(AC||!UI.sound) return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); const o=AC.createOscillator(), g=AC.createGain(); o.type='square'; o.frequency.value=420; g.gain.value=0; o.connect(g).connect(AC.destination); o.start(); horn={o,g}; }catch(e){ AC=null; } }
+function beep(f,d,v){ if(!AC||!UI.sound) return; try{ const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=f; g.gain.value=v||0.05; o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime+d); }catch(e){} }
+function hornLevel(on,warn){ if(!horn) return; const t=AC.currentTime; let v=0; if(UI.sound&&on) v=0.035; if(UI.sound&&!on&&warn) v=(t*2.5%1<0.5)?0.03:0; horn.g.gain.setTargetAtTime(v,t,0.02); horn.o.frequency.setTargetAtTime(on?420:900,t,0.01); }
+el('bSound').onclick=()=>{ UI.sound=!UI.sound; el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); el('bSound').setAttribute('aria-pressed',UI.sound); if(UI.sound) ensureAudio(); };
+document.addEventListener('pointerdown',ensureAudio,{once:true});
+
+/* ---------- pause og reset ---------- */
+function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paused?'Resume':'Pause'); }
+el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ resetMission(); if(UI.paused) togglePause(); };
+LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); renderMission(); });
+
+/* ---------- oppdragspanel ---------- */
+let note=null, noteT=0;
+function msg(m){ note=m; noteT=4; renderMission(); }
+function renderMission(){
+  const sc=SCEN.find(x=>x.k===UI.scen); if(!missionState) return;
+  const st=missionState.done;
+  const allOk=st.every(x=>x===1);
+  el('mission').innerHTML=`<b class="t">${L(sc.t)}</b><p class="brief">${L(sc.brief)}</p>
+    <ul class="checks">${sc.checks.map((c,i)=>`<li class="${st[i]===1?'ok':st[i]===-1?'bad':''}"><i>${st[i]===1?'✓':st[i]===-1?'✕':''}</i><span>${L(c.t)}</span></li>`).join('')}</ul>
+    ${allOk?`<div class="callout blue" style="margin-top:10px"><b>${T('Mission complete')}.</b> ${L({en:'Try it again with wind, or pick the next mission.',no:'Prøv igjen med vind, eller velg neste oppdrag.'})}</div>`:''}
+    ${S.crash?`<div class="callout red" style="margin-top:10px"><b>${L({en:'Crashed',no:'Havarert'})}:</b> ${L(crashText(S.crash))} ${L({en:'Press Restart.',no:'Trykk Start på nytt.'})}</div>`:''}
+    ${note&&noteT>0?`<div class="callout" style="margin-top:10px">${L(note)}</div>`:''}`;
+}
+const CR={'Gear-up landing':'Landing uten understell','Hard landing (more than 700 ft/min)':'Hard landing (mer enn 700 ft/min)','Wingtip strike: bank too steep at touchdown':'Vingespissen traff bakken: for mye krengning ved touchdown','Nose-wheel first: pitch too low at touchdown':'Nesehjulet først: for lav nese ved touchdown','Landed off the runway':'Landet utenfor rullebanen','Ran off the runway':'Kjørte av rullebanen','Controlled flight into terrain':'Fløy inn i terrenget (CFIT)'};
+const crashText=c=>({en:c,no:CR[c]||c});
+function updMission(dt,o,n){
+  const sc=SCEN.find(x=>x.k===UI.scen); const M=missionState; M.t+=dt;
+  if(sc.failAt && !M.m.failed && M.t>sc.failAt){ const i=Math.random()<0.5?0:1; S.eng[i].fail=true; M.m.failed=true; M.m.failT=M.t; }
+  const c={s:S,o,ap:AP,n,ui:UI,fp:XA.fp,gps:curNav.gps,m:M.m,t:M.t,dt,turnRate};
+  let ch=false;
+  sc.checks.forEach((k,i)=>{ if(k.pre) k.pre(c); if(M.done[i]!==0) return; if(k.bad&&k.bad(c)){ M.done[i]=-1; ch=true; } else if(k.f(c)){ M.done[i]=1; ch=true; beep(880,0.08,0.05); } });
+  if(ch){ renderMission(); if(window.NPROG){ const ok=M.done.filter(x=>x===1).length; if(M.done.every(x=>x!==0)) NPROG.award('sim:'+UI.scen,Math.round(ok/M.done.length*100)); } }
+}
+
+/* ---------- skjermer ---------- */
+const pfdS=fit(el('pfd'),null,1.5), mfdS=fit(el('mfd'),null,1.5);
+const clock=()=>{ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+function alerts(o){ const L=[];
+  S.eng.forEach((e,i)=>{ if(e.fail) L.push({t:(i?'R':'L')+' ENG FAIL',lvl:'w'}); else if(e.feather) L.push({t:(i?'R':'L')+' FEATHERED',lvl:'c'}); });
+  if(S.ctl.gearPos<0.02 && !S.ground && (S.ctl.flapPos>1.5 || (o.alt<1000 && S.eng.every(e=>e.thr<0.3)))) L.push({t:'GEAR UP',lvl:'w'});
+  if(S.eng.some(e=>e.fuel<5)) L.push({t:'LOW FUEL',lvl:'c'});
+  if(o.ias>F.AC.V.ne) L.push({t:'OVERSPEED',lvl:'w'});
+  { const dA=Math.hypot(S.N-750,S.E)/1852; if(!S.ground&&dA>2.5&&o.agl<1000){ if(o.agl<300&&o.vs<-300) L.push({t:'PULL UP',lvl:'w'}); else if(o.vs<-500||o.agl<500) L.push({t:'TERRAIN',lvl:'c'}); } }
+  if(S.ctl.flapPos>0.5 && o.ias>(S.ctl.flapPos>1.5?F.AC.V.fe2:F.AC.V.fe1)+3) L.push({t:'FLAP OVERSPEED',lvl:'c'});
+  return L; }
+
+function draw(o,n){
+  const nv=curNav, cdi=nv.cdi; const dme=F.navFreq(S,X.navAct(0),XA.crs[0],FM.NAVAIDS);
+  const d={o,s:S,ap:AP,nav1:cdi,gps:nv.gps,fp:XA.fp,crs:cdi.src==='GPS'?(cdi.dtk||0):cdi.crs,hdgBug:AP.hdg,baro:XA.baro,baroStd:XA.baroStd,V:F.AC.V,iasTrend,turnRate,time:performance.now()/1000,
+    wind:{dir:S.env.wdir,spd:S.env.wspd},groundAlt:(o.terrFt||0)+((XA.baroStd?1013.25:XA.baro)-S.env.qnh)*27.3,alerts:alerts(o),clock:clock(),softPFD:X.softPFD(),softMFD:X.softMFD(),
+    radio:XA.radio,cdiKey:XA.cdi,mins:XA.mins,vspd:(S.ground||o.agl<1500),brgs:XA.brg.map((m,i)=>{ if(!m) return null; if(m===1){ const st=X.navStation(i); const r=F.navFreq(S,X.navAct(i),0,FM.NAVAIDS); return {src:'NAV'+(i+1),id:st?st.id:'',brg:r.valid?F.wrap360(r.brg-o.hdg)+o.hdg:null,dist:r.valid?r.dist:null}; } const g=nv.gps; return {src:'GPS',id:g.to||'',brg:g.valid?g.brg:null,dist:g.valid?g.dis:null}; }),navIds:[0,1].map(i=>{ const st=X.navStation(i); return st?st.id:''; }),inset:XA.inset,dme:XA.dme,dmeInfo:dme,windOn:XA.wind,xpdr:XA.xpdr,ident:XA.ident,
+    winP:X.view('P',S),winM:X.view('M',S),mfdPage:XA.mfdPage,db:FM.DB,dcltr:XA.dcltr,
+    mapRange:XA.mapRange,mapMode:XA.mapMode,world:F.WORLD,crash:S.crash?L(crashText(S.crash)).toUpperCase():null,crashHint:L({en:'Press Restart to try again',no:'Trykk Start på nytt for å prøve igjen'})};
+  GLASS.pfd(pfdS,d); if(++mfdTick%3===0||mfdForce){ mfdForce=false; GLASS.mfd(mfdS,d); }
+}
+
+/* ---------- løkka ---------- */
+let holdPitch=null, last=performance.now(), slow=0, gpPrev={};
+function pilotInput(dt){
+  const K=inp.keys, sh=K.has('Shift')||K.has('shift');
+  let ax=0, ay=0;
+  if(K.has('ArrowLeft')||K.has('a')) ax-=1; if(K.has('ArrowRight')||K.has('d')) ax+=1;
+  if(K.has('ArrowUp')||K.has('w')) ay-=1; if(K.has('ArrowDown')||K.has('s')) ay+=1;
+  const mag=sh?0.7:0.2;
+  inp.kx=(inp.kx||0)+F.clamp(ax*mag-(inp.kx||0),-dt*3,dt*3); inp.ky=(inp.ky||0)+F.clamp(ay*mag-(inp.ky||0),-dt*3,dt*3);
+  let x=inp.kx, y=inp.ky, r=null, gpThr=0;
+  if(inp.stick){ x=inp.stick.x; y=-inp.stick.y*-1; y=inp.stick.y; }
+  const pads=navigator.getGamepads?navigator.getGamepads():[]; const gp=pads&&[...pads].find(p=>p&&p.connected);
+  if(gp){ const dz=v=>Math.abs(v)<0.08?0:v; const gx=dz(gp.axes[0]||0), gy=dz(gp.axes[1]||0), gr=dz(gp.axes[2]||0);
+    if(gx||gy){ x=gx; y=gy; } if(gr) r=gr;
+    const rt=gp.buttons[7]?gp.buttons[7].value:0, lt=gp.buttons[6]?gp.buttons[6].value:0; gpThr=rt-lt; }
+  // ror
+  if(K.has('q')) S.ctl.rud=F.clamp(S.ctl.rud-dt*0.8,-1,1); if(K.has('e')) S.ctl.rud=F.clamp(S.ctl.rud+dt*0.8,-1,1);
+  if(r!==null) S.ctl.rud=r;
+  // effekt
+  let td=0; if(K.has('+')||K.has('=')) td+=1; if(K.has('-')) td-=1; td+=gpThr;
+  if(td){ S.eng.forEach(e=>e.thr=F.clamp(e.thr+td*dt*0.5,0,1)); }
+  // bremser
+  S.ctl.brake=(K.has('b')||inp.brakeHeld)?1:0;
+  // trim
+  if(K.has('[')) trimStep(-dt*0.25); if(K.has(']')) trimStep(dt*0.25);
+  const active=Math.abs(x)>0.02||Math.abs(y)>0.02;
+  if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35){ apPress('AP'); } else return; }
+  S.ctl.ail=x; S.ctl.ele=y;
+  // auto-trim: hold stillingen når pilot slipper
+  if(S.autotrim && !S.ground){
+    if(Math.abs(y)>0.03){ holdPitch=null; }
+    else { const o=S.o; if(holdPitch===null) holdPitch=o.pitch; S.ctl.trim=F.clamp(S.ctl.trim+F.clamp(0.06*(holdPitch-o.pitch)-1.2*S.q,-0.4,0.4)*dt*3,-1,1); }
+  } else holdPitch=null;
+  return active;
+}
+function loop(t){
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); last=t;
+  if(!UI.paused && !S.crash){
+    pilotInput(dt);
+    S.baro=XA.baroStd?1013.25:XA.baro;
+    { const o0=F.readouts(S); const r=FM.sequence(XA.fp,S,o0.gs,o0.trk); if(r==='SEQ') beep(900,0.05,0.03); if(r==='SUSP') X.msg('SUSP at missed approach point'); X.autoSlew(S); }
+    if(XA.timer.run) XA.timer.t+=dt; if(XA.ident>0) XA.ident-=dt;
+    const N=Math.max(1,Math.round(dt*240)), h=dt/N;
+    for(let i=0;i<N;i++){ const o=F.readouts(S); if(i%8===0) curNav=navCur(o); F.apRun(AP,S,o,curNav.cdi,h); F.step(S,h); }
+    S.trailT+=dt; if(S.trailT>2 && !S.ground){ S.trailT=0; S.trail.push([S.N,S.E]); if(S.trail.length>900) S.trail.shift(); }
+  }
+  const o=F.readouts(S); curNav=navCur(o); const n=curNav.cdi;
+  if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
+  lastO={ias:o.ias,hdg:o.hdg};
+  if(!UI.paused&&!S.crash) updMission(dt,o,n);
+  if(noteT>0){ noteT-=dt; if(noteT<=0) renderMission(); }
+  hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, alerts(o).some(a=>a.t==='GEAR UP')&&!UI.paused);
+  if(cockpitVis) draw(o,n);
+  ftAvg+=((dt*1000||16)-ftAvg)*0.05;
+  if(otwReady&&otwOn&&otwVis){ const slowDev=ftAvg>24; if(!slowDev||(++otwSkip%2===0)) OTW.render(S,otwView); if(slowDev!==OTW.low) OTW.quality(slowDev); }
+  slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
+  requestAnimationFrame(loop);
+}
+let wasCrash=null, mfdTick=0, mfdForce=true, ftAvg=16, otwSkip=0;
+function slowUI(o){
+  KN.forEach(f=>f()); if(!el('touch').hidden) tThr.querySelector('i').style.top=((1-S.eng[0].thr)*100)+'%'; apLights(); syncThrottleUI();
+  el('trimV').textContent=(S.ctl.trim>0?'▲ ':S.ctl.trim<0?'▼ ':'')+Math.abs(Math.round(S.ctl.trim*100))+' %';
+  if(Math.abs(rud.v/100-S.ctl.rud)>0.005) rud.set(Math.round(S.ctl.rud*100));
+  el('flapV').textContent=['UP','APP','LDG'][Math.round(S.ctl.flapPos)]+(Math.abs(S.ctl.flapPos-S.ctl.flap)>0.02?' …':'');
+  if(flapSeg.v!==String(S.ctl.flap)) flapSeg.set(String(S.ctl.flap));
+  const gp=S.ctl.gearPos; el('gearV').textContent=gp>0.99?'DOWN':gp<0.01?'UP':'TRANSIT';
+  el('gearBtn').textContent=S.ctl.gear?'DN':'UP';
+  el('gearL').querySelectorAll('b').forEach(b=>{ b.className=gp>0.99?'g':gp<0.01?'':'r'; });
+  const st=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
+  st.textContent=T(sKey); st.className='status'+(S.crash?'':(UI.paused?'':' ok'));
+  if(S.crash!==wasCrash){ wasCrash=S.crash; renderMission(); }
+  ['L','R'].forEach((s,i)=>{ el('feat'+s).classList.toggle('on',S.eng[i].feather); el('fail'+s).disabled=S.eng[i].fail; });
+  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
+}
+
+/* ---------- quiz ---------- */
+const Q=[
+ {q:{en:'The magenta line growing up from the speed readout means…',no:'Den magenta streken som vokser opp fra fartsavlesningen betyr…'},a:[{en:'the speed you will have in about 6 seconds',no:'farten du vil ha om rundt 6 sekunder'},{en:'the selected speed',no:'valgt fart'},{en:'the maximum flap speed',no:'maksimal flapsfart'}],c:0,e:{en:'Trend vectors show where the value will be in 6 seconds if nothing changes.',no:'Trendvektorer viser hvor verdien er om 6 sekunder hvis ingenting endres.'}},
+ {q:{en:'An autopilot mode shown in white (for example GS) is…',no:'En autopilotmode vist i hvitt (for eksempel GS) er…'},a:[{en:'armed: it will engage when its condition is met',no:'armert: den kobles inn når betingelsen er oppfylt'},{en:'active and flying the aircraft',no:'aktiv og flyr flyet'},{en:'failed',no:'feilet'}],c:0,e:{en:'Green is active, white is armed and waiting.',no:'Grønn er aktiv, hvit er armert og venter.'}},
+ {q:{en:'The red line on the DA42 speed tape at 76 KIAS is…',no:'Den røde streken på fartstapen til DA42 ved 76 KIAS er…'},a:[{en:'Vmca, minimum control speed in the air with one engine inoperative',no:'Vmc, minste kontrollerbare fart med én motor ute'},{en:'the stall speed',no:'stallfarten'},{en:'Vne',no:'Vne'}],c:0,e:{en:'Below Vmca, full rudder can no longer hold the heading against the live engine.',no:'Under Vmca kan ikke fullt sideror lenger holde kursen mot den levende motoren.'}},
+ {q:{en:'After an engine failure you need right rudder to fly straight. Which engine failed?',no:'Etter en motorstans trenger du høyre sideror for å fly rett. Hvilken motor stoppet?'},a:[{en:'Left',no:'Venstre'},{en:'Right',no:'Høyre'},{en:'You cannot tell from the rudder',no:'Det kan du ikke se på sideroret'}],c:0,e:{en:'Dead foot, dead engine: the left foot is idle, so the left engine failed.',no:'«Dead foot, dead engine»: venstre fot gjør ingenting, så venstre motor har stoppet.'}},
+ {q:{en:'Why feather the propeller of a failed engine?',no:'Hvorfor fløyer man propellen på en motor som har stoppet?'},a:[{en:'A windmilling propeller causes a lot of drag and yaw',no:'En propell som vindmøller gir mye motstand og giring'},{en:'To restart the engine',no:'For å starte motoren igjen'},{en:'To charge the battery',no:'For å lade batteriet'}],c:0,e:{en:'Feathering turns the blades edge-on to the airflow. Drag falls, Vmc falls and the one-engine climb improves.',no:'Fløying vrir bladene på kant mot luften. Motstanden faller, Vmc faller og stigningen på én motor blir bedre.'}},
+ {q:{en:'The CDI needle on the HSI is green. The navigation source is…',no:'CDI-nålen på HSI-en er grønn. Navigasjonskilden er…'},a:[{en:'VOR or localizer',no:'VOR eller localizer'},{en:'GPS',no:'GPS'},{en:'The heading bug',no:'Kursmerket'}],c:0,e:{en:'Green for VOR or LOC, magenta for GPS.',no:'Grønn for VOR eller LOC, magenta for GPS.'}},
+ {q:{en:'ALTS is shown in white while you climb in VS mode. What will happen?',no:'ALTS vises i hvitt mens du stiger i VS-mode. Hva skjer?'},a:[{en:'The autopilot levels off at the selected altitude',no:'Autopiloten flater ut i valgt høyde'},{en:'The autopilot disconnects at the selected altitude',no:'Autopiloten kobles ut i valgt høyde'},{en:'Nothing until you press ALT',no:'Ingenting før du trykker ALT'}],c:0,e:{en:'ALTS arms altitude capture. Near the selected altitude it switches to ALT.',no:'ALTS armerer innfanging av høyde. Nær valgt høyde bytter den til ALT.'}},
+ {q:{en:'The slip indicator under the roll pointer is displaced to the right. To centre it you…',no:'Glideindikatoren under krengningspekeren er forskjøvet til høyre. For å sentrere den…'},a:[{en:'press right rudder',no:'trykker du høyre sideror'},{en:'press left rudder',no:'trykker du venstre sideror'},{en:'add power',no:'gir du mer effekt'}],c:0,e:{en:'Step on the trapezoid, like stepping on the ball.',no:'Tråkk på trapeset, som å tråkke på kula.'}}
+];
+quiz(el('qbox'),'cockpit',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
+
+LAB.start('sim'); window.__S=S; window.__AP=AP;
+resetMission();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

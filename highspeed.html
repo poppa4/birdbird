@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="A jet transport lives between two limits: drag and stall at the slow end, compressibility and buffet at the fast end. Fly an A320-sized wing through the…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>High-speed flight and drag</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#cvD{aspect-ratio:16/10;max-height:500px}
+#cvS{aspect-ratio:16/10;max-height:460px}
+#cvF{aspect-ratio:16/8;max-height:400px}#cvM{aspect-ratio:16/6;max-height:260px}
+#cvC{aspect-ratio:16/10;max-height:500px}
+#cvW{aspect-ratio:16/10;max-height:460px}#cvU{aspect-ratio:16/8;max-height:380px}#cvA{aspect-ratio:16/5.5;max-height:250px}#cvR{aspect-ratio:16/5;max-height:220px}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+.sub{margin-top:18px}
+.ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}.ftab td.n{font-family:var(--f-mono);white-space:nowrap}
+.wrapx{overflow-x:auto}
+@media (max-width:600px){#cvD,#cvS,#cvC{aspect-ratio:4/3.8}#cvW{aspect-ratio:4/3.2}#cvF{aspect-ratio:4/3}#cvM{aspect-ratio:16/10}#cvR{aspect-ratio:16/8}#cvU{aspect-ratio:4/3}#cvA{aspect-ratio:16/9}}
+</style>
+</head>
+<body data-title="High-speed flight and drag">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <h1>High-speed flight and drag</h1>
+      <p>A jet transport lives between two limits: drag and stall at the slow end, compressibility and buffet at the fast end. Fly an A320-sized wing through the drag curve, push the Mach number until shock waves form, find the coffin corner at altitude, and see what the swept wing buys and what it costs.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#drag">Drag and speed stability</a><a href="#mach">Mach and compressibility</a><a href="#coffin">Buffet boundary</a><a href="#swept">The swept wing</a><a href="#upset">Upset recovery</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="drag">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Drag and speed stability</h2>
+    <p class="lead">Total drag is the sum of induced drag, which falls with speed, and parasite drag, which rises with it. The bottom of the curve is the minimum drag speed. For the aerofoil and the stall itself, see the <a href="tunnel.html#profil">wind tunnel</a>.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvD" aria-label="Drag curve: induced, parasite and total drag against calibrated airspeed"></canvas></div>
+      <div class="panel">
+        <div class="grp">Configuration</div><div id="dcfg"></div>
+        <div id="dctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Minimum drag speed (Vmd)</span><b id="d1"></b></div>
+          <div class="rrow"><span>Minimum power speed (Vmp)</span><b id="d2"></b></div>
+          <div class="rrow"><span>Drag at this speed</span><b id="d3"></b></div>
+          <div class="rrow"><span>Lift-to-drag ratio</span><b id="d4"></b></div>
+          <div class="rrow"><span>Mach number / TAS</span><b id="d5"></b></div>
+          <div class="rrow"><span>Side of the drag curve</span><b id="d6"></b></div>
+          <div class="rrow"><span>Speed drops 10 kt, thrust unchanged</span><b id="d7"></b></div>
+        </div>
+        <p class="callout blue" id="dx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="mach">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Mach and compressibility</h2>
+    <p class="lead">The speed of sound depends only on temperature, so it falls as you climb. The airspeed indicator works on dynamic pressure, the wing feels Mach number. A climb at constant IAS therefore ends in a climb at constant Mach.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvS" aria-label="IAS, EAS, TAS and the speed of sound against altitude in a climb"></canvas></div>
+      <div class="panel">
+        <div id="sctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Crossover altitude</span><b id="s1"></b></div>
+          <div class="rrow"><span>At the marker: IAS (CAS)</span><b id="s2"></b></div>
+          <div class="rrow"><span>EAS</span><b id="s3"></b></div>
+          <div class="rrow"><span>TAS</span><b id="s4"></b></div>
+          <div class="rrow"><span>Mach number</span><b id="s5"></b></div>
+          <div class="rrow"><span>Local speed of sound</span><b id="s6"></b></div>
+        </div>
+        <p class="callout" id="sx"></p>
+      </div>
+    </div>
+    <div class="split sub">
+      <div class="stack">
+        <div class="paper"><canvas id="cvF" aria-label="Aerofoil with local supersonic flow and a shock wave"></canvas></div>
+        <div class="paper"><canvas id="cvM" aria-label="Drag coefficient against Mach number"></canvas></div>
+      </div>
+      <div class="panel">
+        <div id="fctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Critical Mach number</span><b id="f1"></b></div>
+          <div class="rrow"><span>Drag divergence Mach number</span><b id="f2"></b></div>
+          <div class="rrow"><span>Peak local Mach on the upper surface</span><b id="f3"></b></div>
+          <div class="rrow"><span>Wave drag</span><b id="f4"></b></div>
+          <div class="rrow"><span>Flow</span><b id="f5"></b></div>
+        </div>
+        <p class="callout blue" id="fx"></p>
+      </div>
+    </div>
+    <h3 class="sub">The machmeter</h3>
+    <p class="lead">The machmeter needs no thermometer. It compares the dynamic pressure with the static pressure, and that ratio depends only on the Mach number.</p>
+    <div class="cols" id="machm"></div>
+  </section>
+
+  <section class="card" id="coffin">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Buffet boundary and coffin corner</h2>
+    <p class="lead">At every altitude there is a low-speed buffet limit (the wing near the stall) and a high-speed buffet limit (shock-induced separation). Climb, add mass or pull g and the two close in until there is no gap left.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvC" aria-label="Buffet onset boundary: altitude against Mach number"></canvas></div>
+      <div class="panel">
+        <div id="cctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Lift coefficient now</span><b id="c1"></b></div>
+          <div class="rrow"><span>Margin to buffet onset</span><b id="c2"></b></div>
+          <div class="rrow"><span>Low-speed buffet at the chosen g</span><b id="c3"></b></div>
+          <div class="rrow"><span>High-speed buffet at the chosen g</span><b id="c4"></b></div>
+          <div class="rrow"><span>Highest level with this margin</span><b id="c5"></b></div>
+          <div class="rrow"><span>State</span><b id="c6"></b></div>
+        </div>
+        <p class="callout blue" id="cx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="swept">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>The swept wing</h2>
+    <p class="lead">Sweep makes the wing see only the part of the airflow that is at right angles to the leading edge. That delays the shock waves, but it also sends air outboard along the span, and that has consequences at low speed and in yaw.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cvW" aria-label="Swept wing seen from above with the flow split into normal and spanwise parts"></canvas></div>
+        <div class="paper"><canvas id="cvR" aria-label="Dutch roll after a rudder doublet, with and without the yaw damper"></canvas></div>
+      </div>
+      <div class="panel">
+        <div id="wctl"></div>
+        <div class="grp">Show on the wing</div><div id="wdev"></div>
+        <div class="grp">Yaw damper</div><div id="wyd"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Critical Mach, ideal sweep theory</span><b id="w1"></b></div>
+          <div class="rrow"><span>Critical Mach, typical real wing</span><b id="w2"></b></div>
+          <div class="rrow"><span>Lift-curve slope and CLmax</span><b id="w3"></b></div>
+          <div class="rrow"><span>Tip stall and pitch-up tendency</span><b id="w4"></b></div>
+          <div class="rrow"><span>Dutch roll</span><b id="w5"></b></div>
+        </div>
+        <p class="callout" id="wx"></p>
+      </div>
+    </div>
+    <h3 class="sub">A320 high-lift configurations</h3>
+    <div class="wrapx"><table class="ftab" id="conf"></table></div>
+    <p class="note" id="confn"></p>
+  </section>
+
+  <section class="card" id="upset">
+    <div class="eyebrow">5 · Interactive</div>
+    <h2>High-altitude stall and upset recovery</h2>
+    <p class="lead">In normal law the A320 protects its angle of attack. After an air data failure, in alternate or direct law, it can stall like any other aircraft, and at high level the recovery is slow and costs thousands of feet. Start a stall at altitude and choose how you recover.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cvU" aria-label="Altitude against time during the stall recovery"></canvas></div>
+        <div class="paper"><canvas id="cvA" aria-label="Angle of attack and bank angle against time"></canvas></div>
+      </div>
+      <div class="panel">
+        <div id="uctl"></div>
+        <div class="grp">Nose-down input</div><div id="uPush"></div>
+        <div class="grp">Recovery order</div><div id="uOrd"></div>
+        <div class="grp">Thrust</div><div id="uThr"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Out of the stall after</span><b id="u1"></b></div>
+          <div class="rrow"><span>Wings level after</span><b id="u2"></b></div>
+          <div class="rrow"><span>Back in level flight after</span><b id="u3"></b></div>
+          <div class="rrow"><span>Altitude lost</span><b id="u4"></b></div>
+          <div class="rrow"><span>Highest rate of descent</span><b id="u5"></b></div>
+          <div class="rrow"><span>Highest Mach in the dive</span><b id="u6"></b></div>
+        </div>
+        <p class="callout" id="ux"></p>
+      </div>
+    </div>
+    <h3 class="sub">Jet upset recovery: the A320 order</h3>
+    <div class="wrapx"><table class="ftab" id="uTab"></table></div>
+    <p class="note" id="uNote"></p>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">6 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'High-speed flight and drag':'Høyhastighetsflyging og motstand','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
+ 'A jet transport lives between two limits: drag and stall at the slow end, compressibility and buffet at the fast end. Fly an A320-sized wing through the drag curve, push the Mach number until shock waves form, find the coffin corner at altitude, and see what the swept wing buys and what it costs.':'Et jetfly lever mellom to grenser: motstand og stall i den langsomme enden, kompressibilitet og buffet i den raske. Fly en vinge på størrelse med A320 gjennom motstandskurven, øk Machtallet til sjokkbølgene dannes, finn «coffin corner» i høyden, og se hva pilvingen gir og hva den koster.',
+ 'Drag and speed stability':'Motstand og fartsstabilitet','Mach and compressibility':'Mach og kompressibilitet','Buffet boundary':'Buffetgrense','Buffet boundary and coffin corner':'Buffetgrense og coffin corner','The swept wing':'Pilvingen','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Operations':'Operativt','Check':'Sjekk',
+ 'Total drag is the sum of induced drag, which falls with speed, and parasite drag, which rises with it. The bottom of the curve is the minimum drag speed. For the aerofoil and the stall itself, see the':'Total motstand er summen av indusert motstand, som faller med farten, og parasittmotstand, som øker med den. Bunnen av kurven er farten for minste motstand. For vingeprofilen og selve stallet, se',
+ 'wind tunnel':'vindtunnelen',
+ 'Configuration':'Konfigurasjon','Clean':'Rent','CONF FULL, gear down':'CONF FULL, hjul ute',
+ 'Mass (t)':'Masse (t)','Pressure altitude (ft)':'Trykkhøyde (ft)','Calibrated airspeed (kt)':'Kalibrert fart (kt)',
+ 'Minimum drag speed (Vmd)':'Fart for minste motstand (Vmd)','Minimum power speed (Vmp)':'Fart for minste effekt (Vmp)','Drag at this speed':'Motstand ved denne farten','Lift-to-drag ratio':'Løft/motstand-forhold','Mach number / TAS':'Machtall / TAS','Side of the drag curve':'Side av motstandskurven','Speed drops 10 kt, thrust unchanged':'Farten faller 10 kt, uendret skyvekraft',
+ 'The speed of sound depends only on temperature, so it falls as you climb. The airspeed indicator works on dynamic pressure, the wing feels Mach number. A climb at constant IAS therefore ends in a climb at constant Mach.':'Lydhastigheten avhenger bare av temperaturen, så den faller når du stiger. Fartsmåleren virker på dynamisk trykk, vingen merker Machtallet. En stigning med konstant IAS ender derfor i en stigning med konstant Mach.',
+ 'Climb IAS (kt)':'Stige-IAS (kt)','Climb Mach':'Stige-Mach','Temperature deviation from ISA (°C)':'Temperaturavvik fra ISA (°C)','Marker altitude (ft)':'Høyde for markøren (ft)',
+ 'Crossover altitude':'Overgangshøyde (crossover)','At the marker: IAS (CAS)':'Ved markøren: IAS (CAS)','EAS':'EAS','TAS':'TAS','Mach number':'Machtall','Local speed of sound':'Lokal lydhastighet',
+ 'Free-stream Mach number':'Machtall i fri strøm','Lift coefficient (angle of attack)':'Løftekoeffisient (innfallsvinkel)',
+ 'Critical Mach number':'Kritisk Machtall','Drag divergence Mach number':'Machtall for motstandsdivergens','Peak local Mach on the upper surface':'Høyeste lokale Mach på oversiden','Wave drag':'Bølgemotstand','Flow':'Strømning',
+ 'At every altitude there is a low-speed buffet limit (the wing near the stall) and a high-speed buffet limit (shock-induced separation). Climb, add mass or pull g and the two close in until there is no gap left.':'I hver høyde finnes en buffetgrense for lav fart (vingen nær stall) og en for høy fart (sjokkindusert separasjon). Stig, øk massen eller trekk g, så nærmer de to seg hverandre til det ikke er noe rom igjen.',
+ 'Flight level':'Flygenivå','Load factor margin (g)':'Lastfaktormargin (g)',
+ 'Lift coefficient now':'Løftekoeffisient nå','Margin to buffet onset':'Margin til buffet','Low-speed buffet at the chosen g':'Buffet ved lav fart, valgt g','High-speed buffet at the chosen g':'Buffet ved høy fart, valgt g','Highest level with this margin':'Høyeste nivå med denne marginen','State':'Tilstand',
+ 'Sweep makes the wing see only the part of the airflow that is at right angles to the leading edge. That delays the shock waves, but it also sends air outboard along the span, and that has consequences at low speed and in yaw.':'Pilform gjør at vingen bare «ser» den delen av luftstrømmen som står vinkelrett på forkanten. Det utsetter sjokkbølgene, men det sender også luft utover langs spennet, og det får følger i lav fart og i giring.',
+ 'Sweep angle (°)':'Pilvinkel (°)','Show on the wing':'Vis på vingen','Yaw damper':'Girdemper','Nothing':'Ingenting','Slats and flaps':'Slats og flaps','Wing fence':'Vingegjerde','Vortex generators':'Virvelgeneratorer','On':'På','Off':'Av',
+ 'Critical Mach, ideal sweep theory':'Kritisk Mach, ideell pilteori','Critical Mach, typical real wing':'Kritisk Mach, typisk ekte vinge','Lift-curve slope and CLmax':'Løftekurvens stigning og CLmax','Tip stall and pitch-up tendency':'Tippstall og pitch-up-tendens','Dutch roll':'Dutch roll',
+ 'A320 high-lift configurations':'Høyløftkonfigurasjoner på A320',
+ 'Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).':'Opplæringsmodell av et fly på størrelse med A320 i ISA (vingeareal 122,6 m², motstandspolar CD = 0,020 + 0,040 CL² rent, bølgemotstand fra en enkel Lock-lov, en forenklet buffetgrense). Alle tall er illustrative, typiske verdier, ikke FCOM- eller AFM-data. De virkelige grensene står i FCOM, AFM og FMS (MAX og REC MAX-høyde, VLS, green dot).'
+});
+
+/* ---------- felles: atmosfære og fart ---------- */
+const S_W=122.6, G=9.80665, A0=340.294, P0=101325, KT=0.514444;
+function isa(hft){ const h=hft*0.3048; let T,p; if(h<=11000){ T=288.15-0.0065*h; p=P0*Math.pow(T/288.15,5.25588); } else { T=216.65; p=22632.1*Math.exp(-G*(h-11000)/(287.053*216.65)); } return {T,p}; }
+function altP(p){ if(p>=22632.1){ const T=288.15*Math.pow(p/P0,1/5.25588); return (288.15-T)/0.0065/0.3048; } return (11000+Math.log(22632.1/p)*287.053*216.65/G)/0.3048; }
+function m2c(M,p){ const qc=p*(Math.pow(1+0.2*M*M,3.5)-1); return A0*Math.sqrt(5*(Math.pow(qc/P0+1,2/7)-1))/KT; }
+function c2m(vc,p){ const qc=P0*(Math.pow(1+0.2*Math.pow(vc*KT/A0,2),3.5)-1); return Math.sqrt(5*(Math.pow(qc/p+1,2/7)-1)); }
+function sos(T){ return Math.sqrt(1.4*287.053*T)/KT; }
+/* vinge: buffet-/maks CL mot Mach, kritisk Mach mot CL, bølgemotstand */
+const CLb=M=>1.5-1.2*M*M-20*Math.pow(Math.max(0,M-0.74),2);
+const Mcr=CL=>0.70-0.10*(CL-0.5);
+const CDw=(M,CL)=>{ const x=M-Mcr(CL); return x>0? 20*x*x*x*x : 0; };
+const Mdd=CL=>Mcr(CL)+0.108;
+const VMO=350, MMO=0.82, CEIL=39800;
+function arrow(g,x0,y0,x1,y1,c,w,hd){ g.strokeStyle=c; g.fillStyle=c; g.lineWidth=w||2; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(y1-y0,x1-x0), s=hd||8; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-s*Math.cos(a-.4),y1-s*Math.sin(a-.4)); g.lineTo(x1-s*Math.cos(a+.4),y1-s*Math.sin(a+.4)); g.closePath(); g.fill(); }
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+Math.round((sz||17)*0.76*(g.canvas.clientWidth<520?0.82:1))+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function bg(C){ const g=C.ctx; g.setTransform(C.dpr,0,0,C.dpr,0,0); g.clearRect(0,0,C.w,C.h); g.fillStyle='#FBFBF8'; g.fillRect(0,0,C.w,C.h); return g; }
+const ft=v=>nf(Math.round(v/100)*100,0)+' ft', FL=v=>'FL'+String(Math.round(v/1000)*10).padStart(3,'0');
+
+/* ---------- 1 motstandskurven ---------- */
+const D={m:64,h:0,v:250,cfg:'clean'};
+const CFG={clean:{cd0:0.020,k:0.040,vmin:110,vmax:360},full:{cd0:0.080,k:0.045,clmax:2.9,vmin:95,vmax:200}};
+function drag(vc,o){ o=o||D; const {p}=isa(o.h); const M=c2m(vc,p), qS=0.7*p*M*M*S_W, W=o.m*1000*G, CL=W/qS, c=CFG[o.cfg];
+  const cdw= o.cfg==='clean'? CDw(M,CL) : 0, clmax= o.cfg==='clean'? CLb(M) : c.clmax;
+  return {M,CL,Dp:qS*c.cd0/1000,Di:qS*c.k*CL*CL/1000,Dw:qS*cdw/1000,D:qS*(c.cd0+c.k*CL*CL+cdw)/1000,stall:CL>clmax,clmax,tas:M*sos(isa(o.h).T)}; }
+function vstall(o){ o=o||D; for(let v=60;v<400;v+=0.5){ if(!drag(v,o).stall) return v; } return 400; }
+function mins(){ const c=CFG[D.cfg]; let vmd=0,dmin=1e9,vmp=0,pmin=1e12; const vs=vstall();
+  for(let v=Math.max(80,vs);v<=c.vmax+40;v+=0.5){ const r=drag(v); if(r.D<dmin){ dmin=r.D; vmd=v; } const P=r.D*r.tas; if(P<pmin){ pmin=P; vmp=v; } } return {vmd,dmin,vmp,vs}; }
+const CD_=LAB.fit(el('cvD'),()=>dD(),2);
+function dD(){ const C=CD_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, c=CFG[D.cfg], R=mins();
+  const L0=46,R0=14,T0=40,B0=40, PW=W-L0-R0, PH=H-T0-B0, v0=c.vmin, v1=c.vmax, X=v=>L0+(v-v0)/(v1-v0)*PW;
+  let ymax=0; for(let v=Math.max(v0,R.vs);v<=v1;v+=2){ ymax=Math.max(ymax,drag(v).D); } ymax=Math.min(ymax,R.dmin*2.6); const step=ymax>120?40:20; ymax=Math.ceil(ymax/step)*step; const Y=d=>T0+PH-d/ymax*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let v=Math.ceil(v0/20)*20;v<=v1;v+=20){ g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); } for(let d=0;d<=ymax;d+=step){ g.beginPath(); g.moveTo(L0,Y(d)); g.lineTo(L0+PW,Y(d)); g.stroke(); }
+  for(let v=Math.ceil(v0/40)*40;v<=v1;v+=40) mono(g,String(v),X(v),T0+PH+14,null,'center'); for(let d=0;d<=ymax;d+=step) mono(g,String(d),L0-6,Y(d)+4,null,'right');
+  mono(g,L({en:'CAS (kt)',no:'CAS (kt)'}),L0+PW,T0+PH+30,null,'right'); mono(g,L({en:'drag (kN)',no:'motstand (kN)'}),6,T0-8);
+  // stall-område
+  if(R.vs>v0){ g.fillStyle='rgba(179,38,30,.08)'; g.fillRect(L0,T0,X(Math.min(R.vs,v1))-L0,PH); hand(g,L({en:'stall',no:'stall'}),L0+6,T0+18,'#B3261E'); }
+  // fartsgrenser
+  const vlim= D.cfg==='clean'? Math.min(VMO,m2c(MMO,isa(D.h).p)) : 177;
+  if(vlim<v1){ g.fillStyle='rgba(179,38,30,.06)'; g.fillRect(X(vlim),T0,L0+PW-X(vlim),PH); g.strokeStyle='#B3261E'; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(vlim),T0); g.lineTo(X(vlim),T0+PH); g.stroke(); g.setLineDash([]);
+    mono(g,D.cfg==='clean'?(vlim<VMO-0.5?'MMO':'VMO'):'VFE',X(vlim)-4,T0+12,'#B3261E','right'); }
+  const curve=(f,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); let s=0; for(let v=Math.max(v0,R.vs);v<=v1;v+=1){ const y=Y(Math.min(ymax*1.05,f(drag(v)))); s++?g.lineTo(X(v),y):g.moveTo(X(v),y); } g.stroke(); g.setLineDash([]); };
+  g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip();
+  curve(r=>r.Di,'#1E5E9E',2,[6,4]); curve(r=>r.Dp,'#A86A00',2,[6,4]); if(D.cfg==='clean') curve(r=>r.Dw,'#B3261E',2,[2,3]); curve(r=>r.D,'#13202A',3);
+  // Vmd og Vmp
+  [[R.vmd,'Vmd','#2C7A4B'],[R.vmp,'Vmp','#5B4BB0']].forEach(([v,t,col])=>{ if(v<v0||v>v1) return; g.strokeStyle=col; g.lineWidth=1.2; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(v),Y(drag(v).D)); g.lineTo(X(v),T0+PH); g.stroke(); g.setLineDash([]); g.fillStyle=col; g.beginPath(); g.arc(X(v),Y(drag(v).D),4,0,7); g.fill(); mono(g,t,X(v)+4,T0+PH-6,col); });
+  // nåpunkt
+  const r=drag(D.v); if(!r.stall){ const x=X(D.v), y=Y(Math.min(ymax,r.D)); g.fillStyle='#9A1E68'; g.beginPath(); g.arc(x,y,7,0,7); g.fill();
+    g.strokeStyle='#9A1E68'; g.lineWidth=1.5; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(D.v-35),y); g.lineTo(X(D.v+35),y); g.stroke(); g.setLineDash([]); mono(g,L({en:'thrust set',no:'satt skyvekraft'}),X(D.v+37),y+4,'#9A1E68');
+    const r2=drag(D.v-10); if(!r2.stall&&D.v-10>=v0){ const y2=Y(Math.min(ymax,r2.D)); g.fillStyle=r2.D>r.D?'#B3261E':'#2C7A4B'; g.beginPath(); g.arc(X(D.v-10),y2,4.5,0,7); g.fill(); mono(g,'−10 kt',X(D.v-10),y2+(r2.D>r.D?-9:16),r2.D>r.D?'#B3261E':'#2C7A4B','center'); } }
+  g.restore();
+  // forklaring
+  let lx=L0+PW; [[L({en:'total',no:'total'}),'#13202A'],[L({en:'induced',no:'indusert'}),'#1E5E9E'],[L({en:'parasite',no:'parasitt'}),'#A86A00']].concat(D.cfg==='clean'?[[L({en:'wave',no:'bølge'}),'#B3261E']]:[]).reverse().forEach(([t,col])=>{ g.font='11px IBM Plex Mono, monospace'; const tw=g.measureText(t).width; mono(g,t,lx,14,col,'right'); g.fillStyle=col; g.fillRect(lx-tw-18,10,12,3); lx-=tw+28; });
+  const mid=(R.vs+R.vmd)/2; if(mid>v0) hand(g,L({en:'back side: speed unstable',no:'baksiden: fartsustabil'}),X(Math.max(v0+2,R.vs+2)),Y(R.dmin)-ymax*0.2/ymax*PH-30,'#B3261E','start',16);
+  hand(g,L({en:'front side: speed stable',no:'forsiden: fartsstabil'}),X(Math.min(v1-40,R.vmd+(v1-R.vmd)*0.25)),Y(R.dmin)+28,'#2C7A4B','start',16); }
+function rD(){ const R=mins(), r=drag(D.v), r2=drag(D.v-10), dd=r2.D-r.D, {T}=isa(D.h);
+  const tas=v=>Math.round(c2m(v,isa(D.h).p)*sos(T));
+  el('d1').textContent=Math.round(R.vmd)+' kt CAS · '+tas(R.vmd)+' kt TAS'; el('d2').textContent=Math.round(R.vmp)+' kt CAS';
+  if(r.stall){ ['d3','d4','d5','d7'].forEach(i=>el(i).textContent='–'); el('d6').innerHTML=`<span class="ko">${L({en:'below the stall speed',no:'under stallfarten'})} (≈ ${Math.round(R.vs)} kt)</span>`; }
+  else { el('d3').textContent=nf(r.D,1)+' kN'+(r.Dw>0.5?' ('+L({en:'wave',no:'bølge'})+' '+nf(r.Dw,1)+')':''); el('d4').textContent=nf(D.m*G/r.D,1);
+    el('d5').textContent='M '+nf(r.M,2)+' · '+Math.round(r.tas)+' kt';
+    const back=D.v<R.vmd-2, fr=D.v>R.vmd+2; el('d6').innerHTML= back? `<span class="wa">${L({en:'back side (below Vmd)',no:'baksiden (under Vmd)'})}</span>` : fr? `<span class="ok">${L({en:'front side (above Vmd)',no:'forsiden (over Vmd)'})}</span>` : L({en:'at the bottom: neutral',no:'i bunnen: nøytral'});
+    el('d7').innerHTML= r2.stall? `<span class="ko">${L({en:'stall',no:'stall'})}</span>` : dd>0.05? `<span class="ko">${L({en:'drag rises',no:'motstanden øker'})} ${nf(dd,1)} kN: ${L({en:'keeps slowing',no:'fortsetter å bremse'})}</span>` : dd<-0.05? `<span class="ok">${L({en:'drag falls',no:'motstanden faller'})} ${nf(-dd,1)} kN: ${L({en:'speed recovers',no:'farten tar seg opp'})}</span>` : L({en:'almost no change',no:'nesten ingen endring'}); }
+  const vlim= D.cfg==='clean'? Math.min(VMO,m2c(MMO,isa(D.h).p)) : 177;
+  el('dx').innerHTML= D.cfg==='full'? L({en:`<b>Landing configuration.</b> Flaps, slats and gear more than triple the parasite drag, so the whole curve moves up and Vmd moves down, but a typical approach speed (VLS plus a few knots, about ${Math.round(R.vs*1.23+5)} kt here) is still below Vmd (${Math.round(R.vmd)} kt). On the back side a speed loss increases drag, so the aircraft slows down further unless thrust is added. That is why approach speed must be held actively, with autothrust in SPEED mode or with deliberate manual thrust, and why a stabilised approach has the thrust spooled up, not at idle.`,no:`<b>Landingskonfigurasjon.</b> Flaps, slats og hjul mer enn tredobler parasittmotstanden, så hele kurven flytter seg opp og Vmd flytter seg ned, men en typisk innflygingsfart (VLS pluss noen knop, rundt ${Math.round(R.vs*1.23+5)} kt her) ligger fortsatt under Vmd (${Math.round(R.vmd)} kt). På baksiden øker motstanden når farten faller, så flyet bremser videre hvis ikke skyvekraften økes. Derfor må innflygingsfarten holdes aktivt, med autothrust i SPEED-modus eller med bevisst manuell skyvekraft, og derfor har en stabilisert innflyging motorene spolt opp, ikke på tomgang.`})
+   : D.v>vlim? L({en:`<b>Beyond the speed limit.</b> Above VMO/MMO the aircraft is outside its certified envelope. At this altitude the limit is ${vlim<VMO-0.5?'MMO':'VMO'} (${Math.round(vlim)} kt CAS). Note how the wave drag bends the curve up steeply as Mach rises: at high altitude it is the Mach number, not the indicated speed, that sets the high-speed end.`,no:`<b>Over fartsgrensen.</b> Over VMO/MMO er flyet utenfor den sertifiserte konvolutten. I denne høyden er grensen ${vlim<VMO-0.5?'MMO':'VMO'} (${Math.round(vlim)} kt CAS). Legg merke til hvordan bølgemotstanden bøyer kurven bratt opp når Mach øker: i stor høyde er det Machtallet, ikke indikert fart, som setter grensen i den raske enden.`})
+   : L({en:`<b>Induced drag ∝ 1/V², parasite drag ∝ V².</b> They are equal at Vmd, where the lift-to-drag ratio is best (about ${nf(D.m*G/R.dmin,1)} here). Vmd rises with the square root of mass. In CAS it hardly changes with altitude, but the same CAS is a much higher TAS and Mach up high, and above roughly FL 250 wave drag starts to steepen the right-hand side. Vmp, about Vmd / 1.32, is where power (drag × TAS) is least; for a jet, whose thrust is roughly constant with speed, Vmd is the speed for maximum endurance and Vmp is mainly a propeller concept.`,no:`<b>Indusert motstand ∝ 1/V², parasittmotstand ∝ V².</b> De er like ved Vmd, der løft/motstand-forholdet er best (rundt ${nf(D.m*G/R.dmin,1)} her). Vmd øker med kvadratroten av massen. I CAS endrer den seg knapt med høyden, men samme CAS er mye høyere TAS og Mach høyt oppe, og over omtrent FL 250 begynner bølgemotstanden å gjøre høyre side brattere. Vmp, omtrent Vmd / 1,32, er der effekten (motstand × TAS) er minst; for et jetfly, der skyvekraften er omtrent konstant med farten, er Vmd farten for lengst flytid, og Vmp er hovedsakelig et propellbegrep.`}); }
+function uD(){ dD(); rD(); }
+let dV;
+function mkD(){ el('dctl').innerHTML=''; const c=CFG[D.cfg];
+  LAB.slider(el('dctl'),{label:'Mass (t)',min:45,max:78,step:0.5,v:D.m,f:v=>nf(v,1)+' t',on:v=>{ D.m=v; uD(); }});
+  LAB.slider(el('dctl'),{label:'Pressure altitude (ft)',min:0,max:39000,step:500,v:D.h,f:v=>nf(v,0)+' ft',on:v=>{ D.h=v; uD(); }});
+  dV=LAB.slider(el('dctl'),{label:'Calibrated airspeed (kt)',min:c.vmin,max:c.vmax,step:1,v:Math.min(c.vmax,Math.max(c.vmin,D.v)),f:v=>v+' kt',on:v=>{ D.v=v; uD(); }}); D.v=dV.v; }
+LAB.seg(el('dcfg'),[['clean','Clean'],['full','CONF FULL, gear down']],D.cfg,v=>{ D.cfg=v; D.v= v==='full'? 140 : 250; if(v==='full') D.h=Math.min(D.h,5000); mkD(); uD(); });
+
+/* ---------- 2a fartsforhold i stigning ---------- */
+const Sp={ias:300,mach:0.78,dev:0,hm:20000};
+const CS_=LAB.fit(el('cvS'),()=>dS(),2);
+function xover(){ const qc=P0*(Math.pow(1+0.2*Math.pow(Sp.ias*KT/A0,2),3.5)-1); const p=qc/(Math.pow(1+0.2*Sp.mach*Sp.mach,3.5)-1); return altP(p); }
+function spAt(h){ const {T,p}=isa(h), Tt=T+Sp.dev, hx=xover(); let M,cas; if(h<hx){ cas=Sp.ias; M=c2m(cas,p); } else { M=Sp.mach; cas=m2c(M,p); } const a=sos(Tt); return {cas,M,tas:M*a,eas:M*A0*Math.sqrt(p/P0)/KT,a}; }
+function dS(){ const C=CS_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h; const L0=50,R0=16,T0=22,B0=38, PW=W-L0-R0, PH=H-T0-B0, hmax=41000, vmax=700, X=v=>L0+v/vmax*PW, Y=h=>T0+PH-h/hmax*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let v=0;v<=vmax;v+=100){ g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); mono(g,String(v),X(v),T0+PH+14,null,'center'); } for(let h=0;h<=40000;h+=10000){ g.beginPath(); g.moveTo(L0,Y(h)); g.lineTo(L0+PW,Y(h)); g.stroke(); mono(g,h?FL(h):'0',L0-6,Y(h)+4,null,'right'); }
+  mono(g,L({en:'speed (kt)',no:'fart (kt)'}),L0+PW,T0+PH+30,null,'right');
+  const hx=xover(); g.fillStyle='rgba(30,94,158,.06)'; if(hx<hmax) g.fillRect(L0,T0,PW,Y(Math.max(0,hx))-T0);
+  const line=(f,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); for(let h=0;h<=hmax;h+=250){ const x=X(f(spAt(h))); h?g.lineTo(x,Y(h)):g.moveTo(x,Y(h)); } g.stroke(); g.setLineDash([]); };
+  line(s=>s.a,'#7D8B95',1.6,[6,4]); line(s=>s.tas,'#9A1E68',2.6); line(s=>s.eas,'#A86A00',2); line(s=>s.cas,'#13202A',2.6);
+  if(hx<hmax){ g.strokeStyle='#1E5E9E'; g.lineWidth=1.2; g.setLineDash([4,4]); g.beginPath(); g.moveTo(L0,Y(hx)); g.lineTo(L0+PW,Y(hx)); g.stroke(); g.setLineDash([]); hand(g,L({en:'crossover: constant Mach above',no:'crossover: konstant Mach over'}),L0+PW-6,Y(hx)-6,'#1E5E9E','end',16); }
+  const top=spAt(37000); hand(g,'IAS',X(top.cas)-6,Y(37000),'#13202A','end'); { const e2=spAt(24000); hand(g,'EAS',X(e2.eas)-6,Y(24000),'#A86A00','end'); } hand(g,'TAS',X(top.tas)+6,Y(37000)+14,'#9A1E68'); hand(g,L({en:'speed of sound',no:'lydhastighet'}),X(spAt(4000).a)-4,Y(4000),'#7D8B95','end',16);
+  const s=spAt(Sp.hm); g.strokeStyle='#13202A'; g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(L0,Y(Sp.hm)); g.lineTo(L0+PW,Y(Sp.hm)); g.stroke(); g.setLineDash([]);
+  [[s.cas,'#13202A'],[s.eas,'#A86A00'],[s.tas,'#9A1E68'],[s.a,'#7D8B95']].forEach(([v,c])=>{ g.fillStyle=c; g.beginPath(); g.arc(X(v),Y(Sp.hm),4.5,0,7); g.fill(); });
+  mono(g,'M '+nf(s.M,2),X(s.tas)+8,Y(Sp.hm)-6,'#9A1E68'); }
+function rS(){ const hx=xover(), s=spAt(Sp.hm); el('s1').textContent= hx>41000? L({en:'above FL 410',no:'over FL 410'}) : hx<0? L({en:'below sea level',no:'under havnivå'}) : FL(hx)+' ('+ft(hx)+')';
+  el('s2').textContent=Math.round(s.cas)+' kt'; el('s3').textContent=Math.round(s.eas)+' kt'; el('s4').textContent=Math.round(s.tas)+' kt'; el('s5').textContent='M '+nf(s.M,3); el('s6').textContent=Math.round(s.a)+' kt ('+nf(isa(Sp.hm).T-273.15+Sp.dev,0)+' °C)';
+  el('sx').innerHTML=L({en:`<b>IAS, CAS, EAS, TAS.</b> IAS is what the instrument shows; CAS corrects it for instrument and position error (on the A320 the two are close, so they are treated together here). EAS also corrects for the compressibility of the air in the pitot tube, which matters at high speed and altitude: EAS is a little below CAS. TAS is the speed through the air and is EAS divided by √σ, so it grows about 2 % per 1000 ft. Mach is TAS divided by the local speed of sound, √(γRT). Climbing at constant IAS, TAS rises and the speed of sound falls, so Mach grows quickly until it reaches the climb Mach at the crossover altitude. Above that you hold Mach, and the IAS falls. The crossover altitude depends only on the IAS/Mach pair, because both are pressure relationships: change the temperature and TAS and the speed of sound move, but the crossover stays.`,no:`<b>IAS, CAS, EAS, TAS.</b> IAS er det instrumentet viser; CAS korrigerer for instrument- og posisjonsfeil (på A320 er de to nær hverandre, så de behandles sammen her). EAS korrigerer i tillegg for at lufta presses sammen i pitotrøret, noe som betyr noe ved høy fart og høyde: EAS ligger litt under CAS. TAS er farten gjennom lufta og er EAS delt på √σ, så den øker rundt 2 % per 1000 ft. Mach er TAS delt på den lokale lydhastigheten, √(γRT). I stigning med konstant IAS øker TAS og lydhastigheten faller, så Mach øker raskt til den når stige-Mach ved crossover-høyden. Over den holder du Mach, og IAS faller. Crossover-høyden avhenger bare av IAS/Mach-paret, fordi begge er trykkforhold: endre temperaturen, og TAS og lydhastigheten flytter seg, men crossover blir der den er.`}); }
+function uS(){ dS(); rS(); }
+LAB.slider(el('sctl'),{label:'Climb IAS (kt)',min:250,max:340,step:5,v:Sp.ias,f:v=>v+' kt',on:v=>{ Sp.ias=v; uS(); }});
+LAB.slider(el('sctl'),{label:'Climb Mach',min:0.70,max:0.82,step:0.01,v:Sp.mach,f:v=>'M '+nf(v,2),on:v=>{ Sp.mach=v; uS(); }});
+LAB.slider(el('sctl'),{label:'Temperature deviation from ISA (°C)',min:-20,max:20,step:1,v:Sp.dev,f:v=>(v>0?'+':'')+v+' °C',on:v=>{ Sp.dev=v; uS(); }});
+LAB.slider(el('sctl'),{label:'Marker altitude (ft)',min:0,max:41000,step:500,v:Sp.hm,f:v=>nf(v,0)+' ft',on:v=>{ Sp.hm=v; uS(); }});
+
+/* ---------- 2b profil med sjokk ---------- */
+const F={M:0.78,CL:0.5};
+const CF_=LAB.fit(el('cvF'),()=>dF(),2), CM_=LAB.fit(el('cvM'),()=>dM(),2);
+function fstate(){ const mc=Mcr(F.CL), x=F.M-mc, sup=x>0, peak= F.M/mc, xs= sup? Math.min(0.88,0.32+x*3.2) : 0, sep= x>0.085, low= x>0.06, tuck= x>0.11; return {mc,x,sup,peak,xs,sep,low,tuck,mdd:Mdd(F.CL),cdw:CDw(F.M,F.CL)}; }
+function foil(x){ const t=0.12, c=0.035; const yt=5*t*(0.2969*Math.sqrt(x)-0.126*x-0.3516*x*x+0.2843*x*x*x-0.1036*x*x*x*x); const yc= c*(1-Math.pow(2*x-1,2))*0.9; return {u:yc+yt,l:yc-yt*0.8}; }
+function dF(){ const C=CF_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fstate(); const x0=W*0.2, cw=W*0.56, cy=H*0.6, sc=cw*1.2, X=x=>x0+x*cw, Yu=x=>cy-foil(x).u*sc, Yl=x=>cy-foil(x).l*sc;
+  // strømlinjer
+  g.strokeStyle='#D3DBDE'; g.lineWidth=1; for(let k=-3;k<=4;k++){ if(!k) continue; g.beginPath(); for(let i=0;i<=120;i++){ const xx=-0.35+i/120*1.75, xc=Math.min(1,Math.max(0,xx)); const hump=Math.exp(-Math.pow((xx-0.3)/0.45,2)); const bump= k>0? 0.085*sc*hump*Math.exp(-k*0.35) : -0.03*sc*hump*Math.exp(k*0.35); const y=cy-k*H*0.085-bump; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); }
+  // supersonisk område
+  if(s.sup){ const hgt=Math.min(H*0.42,(0.02+s.x*1.5)*cw), xa=Math.max(0.04,0.22-s.x*0.6);
+    const gr=g.createLinearGradient(0,cy-hgt,0,cy); gr.addColorStop(0,'rgba(154,30,104,.10)'); gr.addColorStop(1,'rgba(154,30,104,.30)'); g.fillStyle=gr;
+    g.beginPath(); g.moveTo(X(xa),Yu(xa)); for(let i=0;i<=40;i++){ const t=i/40, xx=xa+(s.xs-xa)*t; g.lineTo(X(xx),Yu(xx)-hgt*Math.sin(Math.PI*Math.pow(t,0.8))*(t<0.98?1:0.6)); } g.lineTo(X(s.xs),Yu(s.xs)); for(let i=40;i>=0;i--){ const xx=xa+(s.xs-xa)*i/40; g.lineTo(X(xx),Yu(xx)); } g.closePath(); g.fill();
+    hand(g,'M > 1',X((xa+s.xs)/2),Yu((xa+s.xs)/2)-hgt*0.45,'#9A1E68','center');
+    // sjokk
+    g.strokeStyle='#B3261E'; g.lineWidth=3; g.beginPath(); g.moveTo(X(s.xs),Yu(s.xs)); g.lineTo(X(s.xs)+4,Yu(s.xs)-hgt*0.85); g.stroke(); hand(g,L({en:'shock wave',no:'sjokkbølge'}),X(s.xs)+8,Yu(s.xs)-hgt*0.85,'#B3261E');
+    if(s.low){ const xl=Math.min(0.9,s.xs+0.05), hl=Math.min(H*0.25,(s.x-0.06)*4*cw); g.fillStyle='rgba(154,30,104,.18)'; g.beginPath(); g.moveTo(X(xl-0.3),Yl(xl-0.3)); g.quadraticCurveTo(X(xl-0.12),Yl(xl-0.12)+hl,X(xl),Yl(xl)); g.closePath(); g.fill(); g.strokeStyle='#B3261E'; g.lineWidth=2.4; g.beginPath(); g.moveTo(X(xl),Yl(xl)); g.lineTo(X(xl)+3,Yl(xl)+hl*0.9+6); g.stroke(); }
+    if(s.sep){ g.strokeStyle='#B3261E'; g.lineWidth=1.4; for(let j=0;j<3;j++){ g.beginPath(); for(let i=0;i<=30;i++){ const xx=s.xs+i/30*(1.25-s.xs), y=Yu(Math.min(1,xx))-6-j*7-Math.sin(i*1.2+j)*4; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); } hand(g,L({en:'separated flow behind the shock: buffet',no:'separert strømning bak sjokket: buffet'}),X(1.02),Yu(1)-34,'#B3261E','start',16); }
+  }
+  // profil
+  g.fillStyle='#DDE3E6'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; g.beginPath(); for(let i=0;i<=80;i++){ const x=1-Math.cos(i/80*Math.PI/2); i?g.lineTo(X(x),Yu(x)):g.moveTo(X(x),Yu(x)); } for(let i=80;i>=0;i--){ const x=1-Math.cos(i/80*Math.PI/2); g.lineTo(X(x),Yl(x)); } g.closePath(); g.fill(); g.stroke();
+  // trykksentrum
+  const cp=0.25+(s.sup?Math.min(0.2,s.x*1.6):0); g.fillStyle='#1E5E9E'; arrow(g,X(cp),cy-6,X(cp),cy-6-H*0.17,'#1E5E9E',3,9); hand(g,L({en:'centre of pressure',no:'trykksentrum'}),X(cp)-8,cy-12-H*0.17,'#1E5E9E','end',16);
+  arrow(g,W*0.03,H*0.2,W*0.13,H*0.2,'#13202A',2); mono(g,'M '+nf(F.M,2),W*0.03,H*0.2-8,'#13202A',null,12);
+  hand(g, s.tuck? L({en:'Mach tuck: centre of pressure moves aft, nose drops',no:'Mach tuck: trykksentrum flytter seg bakover, nesen synker'}) : !s.sup? L({en:'subsonic everywhere',no:'subsonisk overalt'}) : L({en:'transonic: a pocket of supersonic flow',no:'transonisk: en lomme med supersonisk strømning'}),W*0.03,H-12,s.tuck?'#B3261E':'#13202A','start',17); }
+function dM(){ const C=CM_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fstate(); const L0=46,R0=14,T0=14,B0=26, PW=W-L0-R0, PH=H-T0-B0, m0=0.5, m1=0.92, X=m=>L0+(m-m0)/(m1-m0)*PW, cd=m=>0.020+0.040*F.CL*F.CL+CDw(m,F.CL), ymax=0.06, Y=c=>T0+PH-c/ymax*PH;
+  g.strokeStyle='#EEF1EF'; for(let m=0.5;m<=0.92;m+=0.05){ g.beginPath(); g.moveTo(X(m),T0); g.lineTo(X(m),T0+PH); g.stroke(); mono(g,nf(m,2),X(m),T0+PH+14,null,'center'); }
+  for(let c=0.02;c<=ymax;c+=0.02) mono(g,nf(c,2),L0-6,Y(c)+4,null,'right'); mono(g,'CD',6,T0+PH/2);
+  g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip(); g.strokeStyle='#13202A'; g.lineWidth=2.4; g.beginPath(); for(let m=m0;m<=m1;m+=0.002){ const y=Y(cd(m)); m===m0?g.moveTo(X(m),y):g.lineTo(X(m),y); } g.stroke(); g.restore();
+  [[s.mc,'Mcrit','#A86A00'],[s.mdd,'Mdd','#B3261E'],[MMO,'MMO','#7D8B95']].forEach(([m,t,c],i)=>{ if(m<m0||m>m1) return; g.strokeStyle=c; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(m),T0); g.lineTo(X(m),T0+PH); g.stroke(); g.setLineDash([]); mono(g,t,X(m)+3,T0+10+i*12,c); });
+  g.fillStyle='#9A1E68'; g.beginPath(); g.arc(X(F.M),Y(Math.min(ymax,cd(F.M))),5.5,0,7); g.fill(); }
+function rF(){ const s=fstate(); el('f1').textContent='M '+nf(s.mc,2); el('f2').textContent='≈ M '+nf(s.mdd,2); el('f3').textContent= 'M '+nf(s.peak,2)+(s.peak>=1?' ('+L({en:'supersonic',no:'supersonisk'})+')':'');
+  el('f4').textContent= nf(s.cdw*1e4,0)+' '+L({en:'drag counts',no:'motstandsenheter (counts)'});
+  el('f5').innerHTML= !s.sup? `<span class="ok">${L({en:'subsonic',no:'subsonisk'})}</span>` : s.sep? `<span class="ko">${L({en:'shock-induced separation: buffet',no:'sjokkindusert separasjon: buffet'})}</span>` : F.M>s.mdd? `<span class="wa">${L({en:'beyond drag divergence',no:'forbi motstandsdivergens'})}</span>` : `<span class="wa">${L({en:'local supersonic flow, weak shock',no:'lokal supersonisk strømning, svakt sjokk'})}</span>`;
+  el('fx').innerHTML=L({en:`<b>Critical Mach number (Mcrit)</b> is the free-stream Mach at which the fastest local flow, over the upper surface, first reaches M 1. Above it a pocket of supersonic flow forms and ends in a shock wave. A weak shock costs little, but as Mach rises the shock grows, moves aft and the drag rises steeply: <b>drag divergence</b>, usually defined where the drag coefficient starts rising by about 0.002 per 0.02 Mach (here about M ${nf(s.mdd,2)}). The extra drag is <b>wave drag</b>. The pressure jump through a strong shock thickens and separates the boundary layer behind it: the wing shakes, which is <b>high-speed buffet</b>, and the lift loss and aft shift of the centre of pressure pitch the nose down, which is <b>Mach tuck</b>. More lift (higher CL, i.e. heavier or higher) accelerates the upper-surface flow more, so Mcrit falls. Airliner wings use supercritical sections that keep the shock weak, and MMO is set below the speeds where buffet and tuck become a problem.`,no:`<b>Kritisk Machtall (Mcrit)</b> er Machtallet i fri strøm der den raskeste lokale strømningen, over oversiden, først når M 1. Over det dannes en lomme med supersonisk strømning som ender i en sjokkbølge. Et svakt sjokk koster lite, men når Mach øker, vokser sjokket, flytter seg bakover, og motstanden stiger bratt: <b>motstandsdivergens</b>, vanligvis definert der motstandskoeffisienten begynner å øke med rundt 0,002 per 0,02 Mach (her rundt M ${nf(s.mdd,2)}). Tilleggsmotstanden er <b>bølgemotstand</b>. Trykkspranget gjennom et kraftig sjokk gjør grensesjiktet bak tykkere og får det til å separere: vingen rister, som er <b>buffet ved høy fart</b>, og løftetapet og at trykksentrum flytter seg bakover, gir nesen ned, som er <b>Mach tuck</b>. Mer løft (høyere CL, altså tyngre eller høyere) akselererer strømningen over oversiden mer, så Mcrit faller. Vinger på trafikkfly har superkritiske profiler som holder sjokket svakt, og MMO er satt under fartene der buffet og tuck blir et problem.`}); }
+function uF(){ dF(); dM(); rF(); }
+LAB.slider(el('fctl'),{label:'Free-stream Mach number',min:0.55,max:0.92,step:0.01,v:F.M,f:v=>'M '+nf(v,2),on:v=>{ F.M=v; uF(); }});
+LAB.slider(el('fctl'),{label:'Lift coefficient (angle of attack)',min:0.2,max:0.9,step:0.05,v:F.CL,f:v=>'CL '+nf(v,2),on:v=>{ F.CL=v; uF(); }});
+
+/* ---------- 3 buffetgrense ---------- */
+const B={m:66,fl:370,M:0.78,n:1.3};
+const CC_=LAB.fit(el('cvC'),()=>dC(),2);
+function bW(n,m){ return (n||1)*(m||B.m)*1000*G; }
+function clAt(M,h,n){ const {p}=isa(h); return bW(n)/(0.7*p*M*M*S_W); }
+function edges(h,n){ const {p}=isa(h), req=bW(n)/(0.7*p*S_W); let lo=null,hi=null; for(let M=0.3;M<=0.95;M+=0.0005){ const ok=CLb(M)*M*M>=req; if(ok&&lo===null) lo=M; if(ok) hi=M; } return {lo,hi}; }
+function maxAlt(n){ let best=0; for(let M=0.3;M<=0.95;M+=0.0005) best=Math.max(best,CLb(M)*M*M); const p=bW(n)/(0.7*S_W*best); return altP(p); }
+function dC(){ const C=CC_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h; const L0=52,R0=16,T0=18,B0=40, PW=W-L0-R0, PH=H-T0-B0, m0=0.45, m1=0.92, h0=20000, h1=46000, X=m=>L0+(m-m0)/(m1-m0)*PW, Y=h=>T0+PH-(h-h0)/(h1-h0)*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let m=0.45;m<=0.92;m+=0.05){ g.beginPath(); g.moveTo(X(m),T0); g.lineTo(X(m),T0+PH); g.stroke(); mono(g,nf(m,2),X(m),T0+PH+14,null,'center'); } for(let h=20000;h<=46000;h+=5000){ g.beginPath(); g.moveTo(L0,Y(h)); g.lineTo(L0+PW,Y(h)); g.stroke(); mono(g,FL(h),L0-6,Y(h)+4,null,'right'); }
+  mono(g,L({en:'Mach number',no:'Machtall'}),L0+PW,T0+PH+30,null,'right');
+  g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip();
+  const bound=(n,col,w,fill)=>{ const lo=[],hi=[]; for(let h=h0;h<=h1;h+=100){ const e=edges(h,n); if(e.lo===null) break; lo.push([e.lo,h]); hi.push([e.hi,h]); } if(!lo.length) return; const top=maxAlt(n), mt=lo.length? (lo[lo.length-1][0]+hi[hi.length-1][0])/2 : 0;
+    if(fill){ g.fillStyle=fill; g.beginPath(); lo.forEach(([m,h],i)=>i?g.lineTo(X(m),Y(h)):g.moveTo(X(m),Y(h))); g.lineTo(X(mt),Y(top)); for(let i=hi.length-1;i>=0;i--) g.lineTo(X(hi[i][0]),Y(hi[i][1])); g.closePath(); g.fill(); }
+    g.strokeStyle=col; g.lineWidth=w; g.beginPath(); lo.forEach(([m,h],i)=>i?g.lineTo(X(m),Y(h)):g.moveTo(X(m),Y(h))); g.lineTo(X(mt),Y(top)); for(let i=hi.length-1;i>=0;i--) g.lineTo(X(hi[i][0]),Y(hi[i][1])); g.stroke(); return {top,mt}; };
+  const b1=bound(1,'#13202A',2.4,'rgba(46,125,50,.07)'); const bn= B.n>1.001? bound(B.n,'#2C7A4B',2,'rgba(46,125,50,.10)') : null;
+  // VMO/MMO
+  g.strokeStyle='#B3261E'; g.lineWidth=1.8; g.setLineDash([6,4]); g.beginPath(); for(let h=h0;h<=h1;h+=200){ const m=Math.min(MMO,c2m(VMO,isa(h).p)); h===h0?g.moveTo(X(m),Y(h)):g.lineTo(X(m),Y(h)); } g.stroke();
+  g.strokeStyle='#7D8B95'; g.beginPath(); g.moveTo(L0,Y(CEIL)); g.lineTo(L0+PW,Y(CEIL)); g.stroke(); g.setLineDash([]);
+  g.restore();
+  mono(g,'VMO',X(c2m(VMO,isa(21000).p))+4,Y(21000)-4,'#B3261E'); mono(g,'MMO '+nf(MMO,2),X(MMO)+4,Y(33000),'#B3261E'); mono(g,L({en:'certified max altitude',no:'sertifisert maks høyde'}),L0+6,Y(CEIL)-5,'#7D8B95');
+  if(b1){ hand(g,L({en:'1 g buffet onset',no:'buffet ved 1 g'}),X(b1.mt)+10,Math.max(T0+16,Y(b1.top)+4),'#13202A','start',16); }
+  if(bn) hand(g,nf(B.n,2)+' g',X(bn.mt)+10,Math.min(T0+PH-6,Math.max(T0+32,Y(bn.top)+18)),'#2C7A4B','start',16);
+  hand(g,L({en:'low-speed buffet',no:'buffet, lav fart'}),X(0.5),Y(27000),'#13202A','start',16); hand(g,L({en:'high-speed buffet',no:'buffet, høy fart'}),X(0.865),Y(24500),'#13202A','end',16);
+  const h=B.fl*100, inside=clAt(B.M,h,B.n)<=CLb(B.M); g.fillStyle=inside?'#9A1E68':'#B3261E'; g.beginPath(); g.arc(X(B.M),Y(h),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); }
+function rC(){ const h=B.fl*100, CL=clAt(B.M,h,1), cb=CLb(B.M), gm=cb/CL, e=edges(h,B.n), ma=Math.min(maxAlt(B.n),CEIL), {p}=isa(h);
+  el('c1').textContent='CL '+nf(CL,2)+' · CLbuffet '+nf(cb,2);
+  el('c2').innerHTML=`<span class="${gm<1?'ko':gm<B.n?'wa':'ok'}">${nf(gm,2)} g (${gm>1?L({en:'bank about',no:'krengning ca.'})+' '+Math.round(Math.acos(1/gm)*180/Math.PI)+'°':L({en:'in buffet',no:'i buffet'})})</span>`;
+  el('c3').textContent= e.lo===null? '–' : 'M '+nf(e.lo,2)+' · '+Math.round(m2c(e.lo,p))+' kt';
+  el('c4').textContent= e.hi===null? '–' : 'M '+nf(e.hi,2)+(e.hi>MMO?' ('+L({en:'beyond MMO',no:'over MMO'})+')':'');
+  const mb=maxAlt(B.n); el('c5').textContent= FL(Math.floor(ma/1000)*1000)+' '+(mb<CEIL? '('+L({en:'buffet limited',no:'begrenset av buffet'})+')' : '('+L({en:'certified ceiling',no:'sertifisert tak'})+')');
+  const vm=Math.min(MMO,c2m(VMO,p)); el('c6').innerHTML= gm<1? `<span class="ko">${L({en:'in buffet at 1 g',no:'i buffet ved 1 g'})}</span>` : B.M>vm+0.0005? `<span class="ko">${L({en:'above VMO/MMO',no:'over VMO/MMO'})}</span>` : h>CEIL? `<span class="ko">${L({en:'above the certified ceiling',no:'over sertifisert tak'})}</span>` : gm<B.n? `<span class="wa">${L({en:'less margin than chosen',no:'mindre margin enn valgt'})}</span>` : `<span class="ok">${L({en:'inside the boundary with margin',no:'innenfor grensen med margin'})}</span>`;
+  el('cx').innerHTML=L({en:`<b>Reading the plot.</b> Each curve is where buffet starts at a given load factor. Inside it the wing flies without buffet; to the left it buffets near the stall, to the right from the shock. The higher you fly, the lower the air pressure, so the wing needs a higher CL for the same weight, and the speed range shrinks. Operators normally require a margin of 0.3 g to buffet onset, i.e. the aircraft must be able to pull 1.3 g (a 40° bank, or a strong gust) without buffeting: that sets the recommended maximum altitude. Where the low- and high-speed limits meet is the <b>coffin corner</b>: no speed is safe. In practice a jet transport is also limited by thrust (it must be able to climb at a minimum rate and hold speed in a turn) and by the certified maximum altitude, here ${ft(CEIL)} (typical).`,no:`<b>Slik leser du plottet.</b> Hver kurve viser hvor buffet begynner ved en gitt lastfaktor. Innenfor flyr vingen uten buffet; til venstre buffeter den nær stall, til høyre på grunn av sjokket. Jo høyere du flyr, desto lavere er lufttrykket, så vingen trenger høyere CL for samme vekt, og fartsområdet krymper. Operatører krever normalt 0,3 g margin til buffet, altså at flyet må kunne trekke 1,3 g (40° krengning eller et kraftig vindkast) uten buffet: det setter den anbefalte maksimale høyden. Der grensene for lav og høy fart møtes, er <b>coffin corner</b>: ingen fart er trygg. I praksis er et jetfly også begrenset av skyvekraften (det må kunne stige med en minste rate og holde farten i en sving) og av sertifisert maksimal høyde, her ${ft(CEIL)} (typisk).`}); }
+function uC(){ dC(); rC(); }
+LAB.slider(el('cctl'),{label:'Mass (t)',min:50,max:78,step:0.5,v:B.m,f:v=>nf(v,1)+' t',on:v=>{ B.m=v; uC(); }});
+LAB.slider(el('cctl'),{label:'Flight level',min:250,max:430,step:10,v:B.fl,f:v=>'FL'+v,on:v=>{ B.fl=v; uC(); }});
+LAB.slider(el('cctl'),{label:'Mach number',min:0.55,max:0.88,step:0.005,v:B.M,f:v=>'M '+nf(v,3),on:v=>{ B.M=v; uC(); }});
+LAB.slider(el('cctl'),{label:'Load factor margin (g)',min:1,max:1.6,step:0.05,v:B.n,f:v=>nf(v,2)+' g',on:v=>{ B.n=v; uC(); }});
+
+/* ---------- 4 pilvinge ---------- */
+const Wg={sw:25,dev:'none',yd:'off',t0:-1};
+const MC0=0.70*Math.sqrt(Math.cos(25*Math.PI/180));
+const CW_=LAB.fit(el('cvW'),()=>dW(),2), CR_=LAB.fit(el('cvR'),()=>dR(),2);
+function wst(){ const r=Wg.sw*Math.PI/180, c=Math.cos(r); const zN=Math.max(0.03,0.22-0.006*Wg.sw); return {ideal:Math.min(0.99,MC0/c),real:Math.min(0.99,MC0/Math.sqrt(c)),slope:c,clmax:Math.pow(c,0.9)*(Wg.dev==='hl'?1.75:1),tip:Math.sin(r),zeta:Wg.yd==='on'?0.45:zN,ratio:0.5+3*Math.sin(r)}; }
+function dW(){ const C=CW_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=wst(); const r=Wg.sw*Math.PI/180, cx=W*0.5, span=Math.min(W*0.42,H*0.6), cr=Math.min(H*0.2,span*0.5), ct=cr*0.32, tipOff=span*Math.tan(r), rootY=Math.max(H*0.16,(H-tipOff-cr)/2);
+  // flykropp
+  g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; g.beginPath(); g.ellipse(cx,H*0.48,W*0.025,H*0.45,0,0,7); g.fill(); g.stroke();
+  const wing=sgn=>{ const p=[[cx+sgn*W*0.02,rootY],[cx+sgn*(W*0.02+span),rootY+tipOff],[cx+sgn*(W*0.02+span),rootY+tipOff+ct],[cx+sgn*W*0.02,rootY+cr]]; return p; };
+  [-1,1].forEach(sgn=>{ const p=wing(sgn); g.fillStyle='#DDE3E6'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; g.beginPath(); p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y)); g.closePath(); g.fill(); g.stroke();
+    // tippstall
+    const tf=0.25+0.6*s.tip*(Wg.dev==='fence'||Wg.dev==='vg'?0.45:1)*(Wg.dev==='hl'?0.6:1); const a=1-tf; g.fillStyle=`rgba(179,38,30,${0.08+0.35*s.tip*(Wg.dev==='none'?1:0.5)})`; g.beginPath(); const lerp=(A,B_,t)=>[A[0]+(B_[0]-A[0])*t,A[1]+(B_[1]-A[1])*t]; const q1=lerp(p[0],p[1],a), q2=lerp(p[3],p[2],a); g.moveTo(q1[0],q1[1]); g.lineTo(p[1][0],p[1][1]); g.lineTo(p[2][0],p[2][1]); g.lineTo(q2[0],q2[1]); g.closePath(); g.fill();
+    if(Wg.dev==='hl'){ g.strokeStyle='#1E5E9E'; g.lineWidth=4; const s1=lerp(p[0],p[1],0.1), s2=lerp(p[0],p[1],0.97); g.beginPath(); g.moveTo(s1[0],s1[1]-4); g.lineTo(s2[0],s2[1]-4); g.stroke(); const f1=lerp(p[3],p[2],0.04), f2=lerp(p[3],p[2],0.68); g.strokeStyle='#5B4BB0'; g.lineWidth=6; g.beginPath(); g.moveTo(f1[0],f1[1]+5); g.lineTo(f2[0],f2[1]+5); g.stroke(); }
+    if(Wg.dev==='fence'){ g.strokeStyle='#13202A'; g.lineWidth=3; [0.55].forEach(t=>{ const a1=lerp(p[0],p[1],t), a2=lerp(p[3],p[2],t); g.beginPath(); g.moveTo(a1[0],a1[1]-5); g.lineTo(a1[0]+(a2[0]-a1[0])*0.75,a1[1]+(a2[1]-a1[1])*0.75); g.stroke(); }); }
+    if(Wg.dev==='vg'){ g.strokeStyle='#13202A'; g.lineWidth=1.5; for(let t=0.35;t<=0.95;t+=0.06){ const a1=lerp(p[0],p[1],t), a2=lerp(p[3],p[2],t), m=[a1[0]+(a2[0]-a1[0])*0.22,a1[1]+(a2[1]-a1[1])*0.22]; g.beginPath(); g.moveTo(m[0]-3,m[1]-3); g.lineTo(m[0]+3,m[1]+3); g.stroke(); } }
+    // spennvis strømning
+    if(Wg.sw>3){ for(let t=0.25;t<=0.85;t+=0.3){ const a1=lerp(p[0],p[1],t), a2=lerp(p[3],p[2],t), st=[a1[0]+(a2[0]-a1[0])*0.45,a1[1]+(a2[1]-a1[1])*0.45]; const len=span*0.13*Math.sin(r)*(Wg.dev==='fence'&&t>0.5?0.4:1); arrow(g,st[0],st[1],st[0]+sgn*len*Math.cos(r)*1.0,st[1]+len*Math.sin(r)*1.0,'#A86A00',1.6,6); } } });
+  // vektor-dekomponering på høyre vinge
+  const p=wing(1), mid=[(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2], V=Math.min(H*0.16,70); const ox=mid[0], oy=Math.max(8,mid[1]-V-12);
+  arrow(g,ox,oy,ox,oy+V,'#13202A',2.4); hand(g,'V',ox-8,oy+V*0.4,'#13202A','end');
+  const vn=V*Math.cos(r);
+  // normal komponent: vinkelrett på forkanten. forkantens retning: (cos r, sin r) ; normalen (−sin r, cos r)
+  const nx=-Math.sin(r), ny=Math.cos(r); arrow(g,ox,oy,ox+nx*vn*Math.cos(0),oy+ny*vn,'#1E5E9E',2.4); const tx=Math.cos(r), ty=Math.sin(r), vt=V*Math.sin(r); if(vt>4) arrow(g,ox+nx*vn,oy+ny*vn,ox+nx*vn+tx*vt,oy+ny*vn+ty*vt,'#A86A00',2.2);
+  hand(g,'V cos Λ',ox+nx*vn-6,oy+ny*vn*0.55,'#1E5E9E','end',16); if(vt>8) hand(g,'V sin Λ',ox+nx*vn+tx*vt+6,oy+ny*vn+ty*vt+4,'#A86A00','start',16);
+  // Λ-merke
+  g.strokeStyle='#7D8B95'; g.setLineDash([3,3]); g.lineWidth=1; g.beginPath(); g.moveTo(p[0][0],p[0][1]); g.lineTo(p[0][0]+span,p[0][1]); g.stroke(); g.setLineDash([]); mono(g,'Λ = '+Wg.sw+'°',p[0][0]+span*0.55,p[0][1]-6,'#13202A',null,12);
+  hand(g,L({en:'spanwise flow',no:'spennvis strømning'}),10,20,'#A86A00','start',16); hand(g,L({en:'tip stalls first',no:'tippen staller først'}),10,38,'#B3261E','start',16);
+  const lab={none:'',hl:L({en:'slats (blue), flaps (violet)',no:'slats (blå), flaps (fiolett)'}),fence:L({en:'wing fence blocks the spanwise flow',no:'vingegjerdet stopper den spennvise strømningen'}),vg:L({en:'vortex generators re-energise the boundary layer',no:'virvelgeneratorer gir grensesjiktet ny energi'})}[Wg.dev]; if(lab) hand(g,lab,10,56,'#13202A','start',16); }
+function dR(){ const C=CR_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=wst(); const L0=10, PW=W-20, cy=H*0.5, T=24, X=t=>L0+t/T*PW, wd=2*Math.PI/5.5, z=s.zeta, wn=wd;
+  g.strokeStyle='#E3E8EA'; g.beginPath(); g.moveTo(L0,cy); g.lineTo(L0+PW,cy); g.stroke();
+  const tr=(amp,lag,col)=>{ g.strokeStyle=col; g.lineWidth=2.2; g.beginPath(); for(let t=0;t<=T;t+=0.05){ const tt=Math.max(0,t-lag); const y=cy-amp*Math.exp(-z*wn*tt)*Math.sin(wd*tt); t?g.lineTo(X(t),y):g.moveTo(X(t),y); } g.stroke(); };
+  const a=H*0.18; tr(a,0,'#1E5E9E'); tr(Math.min(H*0.42,a*s.ratio*0.5),0.6,'#9A1E68');
+  mono(g,L({en:'sideslip (yaw)',no:'sideslip (giring)'}),W-10,16,'#1E5E9E','right'); mono(g,L({en:'bank (roll)',no:'krengning (rull)'}),W-10,30,'#9A1E68','right'); mono(g,L({en:'after a yaw disturbance → time (24 s)',no:'etter en giringsforstyrrelse → tid (24 s)'}),L0+2,H-8); }
+function rW(){ const s=wst(); el('w1').textContent='M '+nf(s.ideal,2); el('w2').textContent='M '+nf(s.real,2);
+  el('w3').textContent='× '+nf(s.slope,2)+' · CLmax × '+nf(s.clmax,2)+(Wg.dev==='hl'?' ('+L({en:'slats and flaps out',no:'slats og flaps ute'})+')':'');
+  el('w4').innerHTML= s.tip<0.15? `<span class="ok">${L({en:'small',no:'liten'})}</span>` : (Wg.dev==='none'&&s.tip>0.35)? `<span class="ko">${L({en:'strong',no:'sterk'})}</span>` : `<span class="wa">${L({en:'moderate',no:'moderat'})}${Wg.dev!=='none'?' ('+L({en:'reduced by the devices',no:'redusert av tiltakene'})+')':''}</span>`;
+  const half=Math.log(2)/(2*Math.PI*s.zeta/Math.sqrt(1-s.zeta*s.zeta)); el('w5').innerHTML= Wg.yd==='on'? `<span class="ok">${L({en:'well damped (yaw damper)',no:'godt dempet (girdemper)'})}</span>` : s.zeta<0.1? `<span class="ko">${L({en:'lightly damped',no:'svakt dempet'})}: ${nf(half,1)} ${L({en:'cycles to halve',no:'perioder til halvering'})}</span>` : `<span class="wa">${L({en:'damped',no:'dempet'})}: ${nf(half,1)} ${L({en:'cycles to halve',no:'perioder til halvering'})}</span>`;
+  el('wx').innerHTML=L({en:`<b>Why sweep works.</b> On an infinite swept wing only the component of the flow normal to the leading edge, V cos Λ, sets the pressure distribution, so in ideal theory Mcrit rises by 1/cos Λ. On a real wing the root and tip spoil part of the effect, so the gain is roughly half (about 1/√cos Λ, used here). The price: lift-curve slope and CLmax fall roughly with cos Λ, so a swept wing needs powerful high-lift devices. The spanwise component V sin Λ drifts the boundary layer outboard, thickening it at the tips, so the <b>tips stall first</b>. On a swept wing the tips are aft, so losing their lift moves the centre of pressure forward: <b>pitch-up</b>, which deepens the stall. Leading-edge slats or Krueger flaps, wing fences, vortex generators and washout all fight this. In a sideslip the forward-going wing has less effective sweep and more lift, so sweep adds strong effective dihedral; with the weaker directional stability at high altitude this gives a <b>Dutch roll</b> tendency, which is why swept-wing jets have a yaw damper. Basic Dutch roll and spiral stability are in the <a href="stability.html#lat">stability lab</a>.`,no:`<b>Hvorfor pilform virker.</b> På en uendelig pilvinge er det bare komponenten av strømningen vinkelrett på forkanten, V cos Λ, som bestemmer trykkfordelingen, så i ideell teori øker Mcrit med 1/cos Λ. På en ekte vinge ødelegger roten og tippen deler av effekten, så gevinsten er omtrent halvparten (rundt 1/√cos Λ, brukt her). Prisen: løftekurvens stigning og CLmax faller omtrent med cos Λ, så en pilvinge trenger kraftige høyløftanordninger. Den spennvise komponenten V sin Λ fører grensesjiktet utover, så det blir tykkere ved tippene, og <b>tippene staller først</b>. På en pilvinge ligger tippene bak, så når de mister løft, flytter trykksentrum seg fremover: <b>pitch-up</b>, som gjør stallet dypere. Forkant-slats eller Krueger-klaffer, vingegjerder, virvelgeneratorer og vridning (washout) motvirker dette. I en sideslip har vingen som går fremover mindre effektiv pilvinkel og mer løft, så pilform gir sterk effektiv V-form; sammen med svakere retningsstabilitet i stor høyde gir det en tendens til <b>Dutch roll</b>, og derfor har jetfly med pilvinger girdemper. Grunnleggende Dutch roll og spiralstabilitet finner du i <a href="stability.html#lat">stabilitetslaben</a>.`}); }
+function conf(){ const R=[['CONF 1','18°','0°',{en:'Holding and early approach (in flight); 1+F with 10° flaps for take-off',no:'Venting og tidlig innflyging (i lufta); 1+F med 10° flaps for avgang'}],['CONF 1+F','18°','10°',{en:'Take-off',no:'Avgang'}],['CONF 2','22°','15°',{en:'Take-off, approach',no:'Avgang, innflyging'}],['CONF 3','22°','20°',{en:'Take-off, landing (for example in strong wind shear risk or a go-around climb limit)',no:'Avgang, landing (for eksempel ved risiko for vindskjær eller begrensning i go-around-stigning)'}],['CONF FULL','27°','40°',{en:'Normal landing: lowest approach speed',no:'Normal landing: lavest innflygingsfart'}]];
+  el('conf').innerHTML=`<tr><th>${L({en:'Configuration',no:'Konfigurasjon'})}</th><th>${L({en:'Slats',no:'Slats'})}</th><th>${L({en:'Flaps',no:'Flaps'})}</th><th>${L({en:'Typical use',no:'Typisk bruk'})}</th></tr>`+R.map(r=>`<tr><td class="n">${r[0]}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td><td>${L(r[3])}</td></tr>`).join('');
+  el('confn').textContent=L({en:'Typical A320 values (A320ceo family); exact deflections vary by variant. The A320 has five leading-edge slats and two Fowler flaps per wing, no Krueger flaps (some other jets, such as the Boeing 737, use Krueger flaps on the inboard leading edge). The A320ceo wingtip fences are drag-reducing tip devices, not boundary-layer fences.',no:'Typiske A320-verdier (A320ceo-familien); nøyaktige utslag varierer mellom varianter. A320 har fem forkant-slats og to Fowler-flaps per vinge, ingen Krueger-klaffer (noen andre jetfly, som Boeing 737, bruker Krueger-klaffer på den indre forkanten). Vingetipp-gjerdene på A320ceo er tippanordninger som reduserer motstand, ikke grensesjiktgjerder.'}); }
+function uW(){ dW(); dR(); rW(); }
+LAB.slider(el('wctl'),{label:'Sweep angle (°)',min:0,max:45,step:1,v:Wg.sw,f:v=>v+'°',on:v=>{ Wg.sw=v; uW(); }});
+LAB.seg(el('wdev'),[['none','Nothing'],['hl','Slats and flaps'],['fence','Wing fence'],['vg','Vortex generators']],Wg.dev,v=>{ Wg.dev=v; uW(); });
+LAB.seg(el('wyd'),[['off','Off'],['on','On']],Wg.yd,v=>{ Wg.yd=v; uW(); });
+
+LAB.add({},{
+ 'The machmeter':'Machmeteret','The machmeter needs no thermometer. It compares the dynamic pressure with the static pressure, and that ratio depends only on the Mach number.':'Machmeteret trenger ikke termometer. Det sammenligner det dynamiske trykket med det statiske trykket, og det forholdet avhenger bare av Machtallet.',
+ 'Upset recovery':'Upset recovery','High-altitude stall and upset recovery':'Stall i stor høyde og upset recovery',
+ 'In normal law the A320 protects its angle of attack. After an air data failure, in alternate or direct law, it can stall like any other aircraft, and at high level the recovery is slow and costs thousands of feet. Start a stall at altitude and choose how you recover.':'I normal law beskytter A320 angrepsvinkelen sin. Etter en luftdatafeil, i alternate eller direct law, kan det stalle som alle andre fly, og i stor høyde går utrettingen sakte og koster tusenvis av fot. Start en stall i høyden og velg hvordan du retter ut.',
+ 'Nose-down input':'Nese-ned-input','Recovery order':'Rekkefølge','Thrust':'Skyvekraft','Out of the stall after':'Ute av stallen etter','Wings level after':'Vingene rette etter','Back in level flight after':'Tilbake i plan flyging etter','Altitude lost':'Høydetap','Highest rate of descent':'Høyeste synkrate','Highest Mach in the dive':'Høyeste Mach i dykket',
+ 'Jet upset recovery: the A320 order':'Upset recovery i jetfly: rekkefølgen på A320',
+ 'Bank at the stall (°)':'Krengning ved stallen (°)','Firm (unload)':'Bestemt (avlast)','Small':'Lite','None (stick held back)':'Ingen (stikken holdt bak)','Push, then roll':'Trykk, så rull','Roll, then push':'Rull, så trykk','Increase once out of the stall':'Øk når flyet er ute av stallen','TOGA at once':'TOGA med en gang'
+});
+/* ---------- 2c machmeteret ---------- */
+function machm(){ const c=[
+ [{en:'How it measures',no:'Slik måler det'},{en:'Mach is a function of the ratio of dynamic (pitot minus static) to static pressure, (Pt − Ps) / Ps. A mechanical machmeter combines an airspeed capsule with an aneroid altitude capsule through a ratio arm; on the A320 the ADRs compute the same ratio and the PFD shows the Mach number under the speed tape. Temperature cancels out, so no temperature probe is needed.',no:'Mach er en funksjon av forholdet mellom dynamisk trykk (pitot minus statisk) og statisk trykk, (Pt − Ps) / Ps. Et mekanisk machmeter kombinerer en fartskapsel og en aneroid høydekapsel gjennom en forholdsarm; på A320 regner ADR-ene ut det samme forholdet, og PFD viser Machtallet under fartstapen. Temperaturen faller bort, så ingen temperaturføler trengs.'}],
+ [{en:'Errors it has',no:'Feil det har'},{en:'Instrument error and position (pressure) error, because the static source is never perfect; on the A320 the ADRs correct for the known position error. There is no density or temperature error. Compressibility is already part of the Mach relationship, so there is no separate correction for it.',no:'Instrumentfeil og posisjonsfeil (trykkfeil), fordi den statiske kilden aldri er perfekt; på A320 korrigerer ADR-ene for den kjente posisjonsfeilen. Det er ingen tetthets- eller temperaturfeil. Kompressibilitet er allerede en del av Mach-sammenhengen, så det finnes ingen egen korreksjon for den.'}],
+ [{en:'Blockages',no:'Blokkeringer'},{en:'It fails like the airspeed indicator. Static blocked: reads low in a climb and high in a descent. Pitot and drain blocked: reads high in a climb. With a blocked static source the dangerous case is the climb: the Mach reads low, and the real Mach can pass MMO unnoticed. See <a href="pitot.html#lab">the pitot-static lab</a>.',no:'Det svikter som fartsmåleren. Statisk blokkert: viser for lite i stigning og for mye i nedstigning. Pitot og drenering blokkert: viser for mye i stigning. Med blokkert statisk kilde er stigningen det farlige tilfellet: Mach viser for lavt, og virkelig Mach kan passere MMO uten at noen merker det. Se <a href="pitot.html#lab">pitot-statisk-labben</a>.'}],
+ [{en:'Mach, TAS and temperature',no:'Mach, TAS og temperatur'},{en:'Mach does not need temperature, but turning Mach into TAS does: TAS = M × a, and the local speed of sound a depends only on the static air temperature. On a cold day the same M 0.78 is fewer knots of TAS, which is why the flight plan uses the forecast temperature.',no:'Mach trenger ikke temperatur, men å regne Mach om til TAS gjør det: TAS = M × a, og den lokale lydhastigheten a avhenger bare av lufttemperaturen. En kald dag er den samme M 0,78 færre knop TAS, og derfor bruker den operative flygeplanen den varslede temperaturen.'}]];
+ el('machm').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+/* ---------- 5 stall i stor høyde og upset recovery ---------- */
+const U={fl:350,bank:30,push:'firm',ord:'jet',thr:'need'};
+const clmaxU=M=>1.1*CLb(M), aOfU=CL=>CL/0.1-1.5;
+function clU(al,M){ const cm=clmaxU(M), as=aOfU(cm); return al<=as? 0.1*(al+1.5) : Math.max(0.6*cm,cm-0.06*(al-as)); }
+function uSim(){ const m=64000, Wt=m*G, h0=U.fl*100; let h=h0, at=isa(h), a=sos(at.T)*KT;
+  let M=0.6; for(let i=0;i<30;i++){ const q=Wt/(S_W*clmaxU(M)*0.97); M=Math.sqrt(q/(0.7*at.p)); }
+  let V=M*a, gam=0, phi=U.bank, al=aOfU(clmaxU(M))+3.5, t=0, ph=U.push==='none'?'hold':(U.ord==='roll'&&Math.abs(phi)>3?'roll1':'push');
+  const ev={unst:null,lvl:Math.abs(phi)<=3?0:null,done:null}, pts=[]; let maxRod=0, maxM=M, hmin=h, tas0=V/KT;
+  const dt=0.02, pu0=4*Math.pow(at.p/P0,0.6)+1.5;
+  while(t<(U.push==='none'?60:90)){ at=isa(h); a=sos(at.T)*KT; M=V/a; const q=0.7*at.p*M*M, cm=clmaxU(M), as=aOfU(cm);
+    const aN=n=>Math.max(-3,Math.min(as-1.5,aOfU(n*Wt/(q*S_W))));
+    const clb=130000*Math.pow(at.p/P0,0.6), toga=clb*1.35;
+    const hiM=(ph==='accel'||ph==='pull'||ph==='done')&&M>0.75; const Th= hiM? 0.05*clb : U.thr==='toga'? toga : (ev.unst===null? 0.75*clb : clb);
+    let cmd, rr=0;
+    if(ph==='hold') cmd=as+8;
+    else if(ph==='roll1'){ cmd=as+3.5; rr=3; if(Math.abs(phi)<=3){ ph='push'; ev.lvl=t; } }
+    else if(ph==='push'){ cmd= U.push==='small'? as-0.7 : aN(0.5); if(U.thr==='toga') cmd+=pu0*(U.push==='small'?1:0.4);
+      if(al<as-0.5){ ev.unst=t; ph= Math.abs(phi)>3? 'roll' : 'accel'; } }
+    else if(ph==='roll'){ cmd=aN(0.8); rr=10; if(Math.abs(phi)<=3){ ev.lvl=t; ph='accel'; } }
+    else if(ph==='accel'){ cmd=aN(0.8); if(Wt/(q*S_W)<=0.6*cm||M>=0.72) ph='pull'; }
+    else if(ph==='pull'){ cmd=Math.min(aOfU(0.88*cm),aOfU(1.4*Wt/(q*S_W))); if(gam>=0){ ph='done'; ev.done=t; } }
+    else cmd=aOfU(Wt/(q*S_W)/Math.cos(phi*Math.PI/180));
+    if(rr){ const r=(al>as? 3 : rr)*dt; phi= Math.abs(phi)<=r? 0 : phi-Math.sign(phi)*r; }
+    al+=(cmd-al)*dt/1.2;
+    const CL=clU(al,M), CD=0.020+0.040*CL*CL+CDw(M,Math.min(CL,0.9))+(al>as?0.025*(al-as):0)+(hiM?0.012:0);
+    const Lf=q*S_W*CL, Df=q*S_W*CD;
+    V+=((Th-Df)/m-G*Math.sin(gam))*dt; gam+=(Lf*Math.cos(phi*Math.PI/180)-Wt*Math.cos(gam))/(m*V)*dt;
+    h+=V*Math.sin(gam)*dt/0.3048; t+=dt;
+    maxRod=Math.max(maxRod,-V*Math.sin(gam)/0.3048*60); maxM=Math.max(maxM,M); hmin=Math.min(hmin,h);
+    if(Math.round(t/dt)%10===0) pts.push({t,h,al,as,phi});
+    if(ev.done!==null&&t>ev.done+6) break; if(h<h0-30000) break; }
+  return {pts,ev,maxRod,maxM,lost:h0-hmin,h0,tas0,tasEnd:V/KT,M0:pts.length?null:null}; }
+const CU_=LAB.fit(el('cvU'),()=>dU(),2), CA_=LAB.fit(el('cvA'),()=>dU(),2);
+let UR=null;
+function dU(){ if(!UR) return; const r=UR, tmax=Math.max(30,Math.ceil(r.pts[r.pts.length-1].t/10)*10);
+  { const C=CU_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, L0=58,R0=14,T0=16,B0=34, PW=W-L0-R0, PH=H-T0-B0;
+    const lost=Math.max(2000,Math.ceil(r.lost/2000)*2000+1000), X=t=>L0+t/tmax*PW, Y=hh=>T0+(r.h0-hh)/lost*PH;
+    g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let t=0;t<=tmax;t+=10){ g.beginPath(); g.moveTo(X(t),T0); g.lineTo(X(t),T0+PH); g.stroke(); mono(g,String(t),X(t),T0+PH+14,null,'center'); }
+    const st=lost>8000?2000:1000; for(let d=0;d<=lost;d+=st){ g.beginPath(); g.moveTo(L0,Y(r.h0-d)); g.lineTo(L0+PW,Y(r.h0-d)); g.stroke(); mono(g,FL(r.h0-d),L0-6,Y(r.h0-d)+4,null,'right'); }
+    mono(g,L({en:'time (s)',no:'tid (s)'}),L0+PW,T0+PH+28,null,'right');
+    [['unst',L({en:'out of stall',no:'ute av stall'}),'#2C7A4B'],['lvl',L({en:'wings level',no:'vinger rette'}),'#1E5E9E'],['done',L({en:'level flight',no:'plan flyging'}),'#9A1E68']].forEach(([k,t,c],i)=>{ const v=r.ev[k]; if(v===null||v===undefined) return; g.strokeStyle=c; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); g.setLineDash([]); hand(g,t,X(v)+4,T0+PH-8-i*18,c,'start',15); });
+    g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip(); g.strokeStyle='#13202A'; g.lineWidth=2.6; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.h)):g.moveTo(X(p.t),Y(p.h))); g.stroke(); g.restore();
+    hand(g,L({en:'altitude',no:'høyde'})+' · −'+nf(Math.round(r.lost/100)*100,0)+' ft',L0+PW-8,T0+16,'#13202A','end',16); }
+  { const C=CA_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, L0=58,R0=14,T0=12,B0=26, PW=W-L0-R0, PH=H-T0-B0, X=t=>L0+t/tmax*PW, Y=a=>T0+(16-a)/22*PH;
+    g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let a=-4;a<=16;a+=4){ g.beginPath(); g.moveTo(L0,Y(a)); g.lineTo(L0+PW,Y(a)); g.stroke(); mono(g,a+'°',L0-6,Y(a)+4,null,'right'); }
+    for(let t=0;t<=tmax;t+=10) mono(g,String(t),X(t),T0+PH+14,null,'center');
+    g.save(); g.beginPath(); g.rect(L0,T0,PW,PH); g.clip();
+    g.fillStyle='rgba(179,38,30,.10)'; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.as)):g.moveTo(X(p.t),Y(p.as))); g.lineTo(X(r.pts[r.pts.length-1].t),T0); g.lineTo(X(0),T0); g.closePath(); g.fill();
+    g.strokeStyle='#1E5E9E'; g.lineWidth=1.6; g.setLineDash([5,4]); g.beginPath(); r.pts.forEach((p,i)=>{ const y=Y(Math.abs(p.phi)/5); i?g.lineTo(X(p.t),y):g.moveTo(X(p.t),y); }); g.stroke(); g.setLineDash([]);
+    g.strokeStyle='#9A1E68'; g.lineWidth=2.4; g.beginPath(); r.pts.forEach((p,i)=>i?g.lineTo(X(p.t),Y(p.al)):g.moveTo(X(p.t),Y(p.al))); g.stroke(); g.restore();
+    hand(g,L({en:'stalled',no:'stallet'}),L0+PW-6,T0+16,'#B3261E','end',15); hand(g,L({en:'angle of attack',no:'angrepsvinkel'}),L0+8,T0+16,'#9A1E68','start',15); mono(g,L({en:'- - bank ÷ 5',no:'- - krengning ÷ 5'}),L0+PW-6,T0+PH-6,'#1E5E9E','end'); } }
+function rU(){ const r=UR, e=r.ev, s=v=>v===null||v===undefined? `<span class="ko">${L({en:'not within the run',no:'ikke i løpet av kjøringen'})}</span>` : nf(v,0)+' s';
+  el('u1').innerHTML=s(e.unst); el('u2').innerHTML= U.bank===0? L({en:'level from the start',no:'rette fra start'}) : s(e.lvl); el('u3').innerHTML=s(e.done);
+  el('u4').innerHTML=`<span class="${r.lost>6000?'ko':r.lost>3000?'wa':''}">${nf(Math.round(r.lost/100)*100,0)} ft</span>`; el('u5').textContent=nf(Math.round(r.maxRod/100)*100,0)+' ft/min';
+  el('u6').innerHTML= r.maxM>MMO? `<span class="ko">M ${nf(r.maxM,2)} (${L({en:'beyond MMO',no:'over MMO'})})</span>` : 'M '+nf(r.maxM,2);
+  let x;
+  if(U.push==='none') x=L({en:'<b>Holding the stick back keeps the wing stalled.</b> The nose stays up, the aircraft sinks at a very high rate and the stall warning may even stop when the speed reads very low. Nothing changes until the angle of attack is reduced. This was the central lesson of the AF447 accident.',no:'<b>Å holde stikken bak holder vingen stallet.</b> Nesen blir stående oppe, flyet synker svært fort, og stallvarslingen kan til og med stoppe når farten viser svært lavt. Ingenting endrer seg før angrepsvinkelen reduseres. Dette var den sentrale lærdommen fra AF447-ulykken.'});
+  else if(e.unst===null) x=L({en:'<b>Still stalled.</b> A small push with take-off thrust set at once is not enough: the engines below the wing add a nose-up moment that holds the angle of attack above the stall. Push more, and add thrust only once the stall is gone.',no:'<b>Fortsatt stallet.</b> Et lite trykk fremover med startskyvekraft satt med en gang er ikke nok: motorene under vingen gir et nese-opp-moment som holder angrepsvinkelen over stall. Trykk mer, og legg på skyvekraft først når stallen er borte.'});
+  else if(U.ord==='roll'&&U.bank>3) x=L({en:'<b>Rolling first, while stalled, is slow.</b> Ailerons and roll spoilers work poorly on a stalled wing, a wing can drop, and all the while the aircraft keeps sinking with a high drag. Unload first: the roll then comes quickly.',no:'<b>Å rulle først, mens flyet er stallet, går tregt.</b> Balanseror og rullspoilere virker dårlig på en stallet vinge, en vinge kan falle, og hele tiden synker flyet med stor motstand. Avlast først: da kommer rullingen raskt.'});
+  else x=L({en:`<b>Why it costs height.</b> At FL${U.fl} the thrust margin is small, so the aircraft cannot power out of a stall: the energy to accelerate from about ${Math.round(r.tas0)} to ${Math.round(r.tasEnd)} kt TAS must come from altitude. The pull-out is then limited by the buffet margin, so it is gentle and long. ${U.push==='small'?'A small push recovers more slowly and keeps the aircraft in buffet for longer.':'A firm push breaks the stall quickly, but watch the Mach in the dive.'}`,no:`<b>Hvorfor det koster høyde.</b> På FL${U.fl} er skyvekraftmarginen liten, så flyet kan ikke «trekke seg ut» av en stall med motorene: energien til å akselerere fra rundt ${Math.round(r.tas0)} til ${Math.round(r.tasEnd)} kt TAS må komme fra høyden. Uthentingen er så begrenset av buffetmarginen, så den blir slak og lang. ${U.push==='small'?'Et lite trykk fremover tar ut stallen saktere og holder flyet i buffet lenger.':'Et bestemt trykk fremover bryter stallen raskt, men følg med på Mach i dykket.'}`});
+  el('ux').innerHTML=x; }
+function uU(){ UR=uSim(); dU(); rU(); }
+LAB.slider(el('uctl'),{label:'Flight level',min:100,max:390,step:10,v:U.fl,f:v=>'FL'+v,on:v=>{ U.fl=v; uU(); }});
+LAB.slider(el('uctl'),{label:'Bank at the stall (°)',min:0,max:60,step:5,v:U.bank,f:v=>v+'°',on:v=>{ U.bank=v; uU(); }});
+LAB.seg(el('uPush'),[['firm','Firm (unload)'],['small','Small'],['none','None (stick held back)']],U.push,v=>{ U.push=v; uU(); });
+LAB.seg(el('uOrd'),[['jet','Push, then roll'],['roll','Roll, then push']],U.ord,v=>{ U.ord=v; uU(); });
+LAB.seg(el('uThr'),[['need','Increase once out of the stall'],['toga','TOGA at once']],U.thr,v=>{ U.thr=v; uU(); });
+function uTab(){ const R=[
+  [{en:'Stalled (stall warning, buffet, high sink rate)',no:'Stallet (stallvarsel, buffet, høy synkrate)'},{en:'Nose-down pitch control until out of the stall, even at the cost of altitude. Then roll the wings level, then thrust as needed (with care near the ground, because of the pitch-up from the engines) and speedbrakes retracted. Then recover the flight path smoothly.',no:'Nese-ned-pitch til flyet er ute av stallen, selv om det koster høyde. Rull så vingene rette, så skyvekraft etter behov (forsiktig nær bakken på grunn av pitch-up fra motorene) og luftbremser inne. Hent så flybanen mykt.'}],
+  [{en:'Nose high, speed decreasing',no:'Nese høyt, farten faller'},{en:'Autopilot and autothrust off. Nose-down input (unload) and nose-down trim if needed. If that is not enough, bank, typically not beyond about 60°, to let the nose fall. Reduce thrust if the engine pitch-up is making it worse. Roll level as the nose comes through the horizon.',no:'Autopilot og autothrust av. Nese-ned-input (avlast) og nese-ned-trim om nødvendig. Er det ikke nok, krenge, typisk ikke over rundt 60°, så nesen faller. Reduser skyvekraften hvis pitch-up fra motorene gjør det verre. Rull rett når nesen passerer horisonten.'}],
+  [{en:'Nose low, speed increasing',no:'Nese lavt, farten øker'},{en:'Autopilot and autothrust off. If stalled, recover from the stall first. Unload slightly and roll the wings level by the shortest way. Thrust and speedbrakes as needed for the speed. Then recover to level flight within the g limits.',no:'Autopilot og autothrust av. Er flyet stallet, ta ut stallen først. Avlast litt og rull vingene rette korteste vei. Skyvekraft og luftbremser etter behov for farten. Hent så inn til plan flyging innenfor g-grensene.'}],
+  [{en:'Why angle of attack comes first',no:'Hvorfor angrepsvinkelen kommer først'},{en:'Small thrust margin at altitude, high TAS, slow engine response and engines below the wing: thrust cannot pull the aircraft out of a stall and can raise the nose further. Only a lower angle of attack helps. On an aircraft with a large power margin and low speed, power helps at once; on a jet at altitude it does not.',no:'Liten skyvekraftmargin i høyden, høy TAS, treg motorrespons og motorer under vingen: skyvekraft kan ikke dra flyet ut av en stall og kan løfte nesen mer. Bare lavere angrepsvinkel hjelper. På et fly med stor effektmargin og lav fart hjelper effekt med en gang; på et jetfly i høyden gjør den ikke det.'}]];
+  el('uTab').innerHTML=`<tr><th>${L({en:'Situation',no:'Situasjon'})}</th><th>${L({en:'A320 recovery (generic)',no:'Gjenoppretting på A320 (generelt)'})}</th></tr>`+R.map(r=>`<tr><td><b>${L(r[0])}</b></td><td>${L(r[1])}</td></tr>`).join('');
+  el('uNote').innerHTML=L({en:'Generic principles, as taught in the industry upset prevention and recovery training material. The procedures you fly are the ones in your operator’s FCOM and QRH. The illusions that lead into an upset are in the <a href="orientation.html#ear">spatial orientation lab</a>. The simulation is a point-mass teaching model at 64 t; the stall is entered at about 1 g with the chosen bank.',no:'Generelle prinsipper, slik de læres i bransjens opplæringsmateriell for upset prevention and recovery. Prosedyrene du flyr, er de i operatørens FCOM og QRH. Illusjonene som fører inn i en upset, står i <a href="orientation.html#ear">labben om romlig orientering</a>. Simuleringen er en enkel punktmassemodell ved 64 t; stallen startes ved rundt 1 g med valgt krengning.'}); }
+/* ---------- 5 i flyet ---------- */
+function cards(){ const c=[
+ [{en:'Green dot',no:'Green dot'},{en:'On the Airbus speed scale, green dot is the clean-configuration best lift-to-drag speed, an approximation of Vmd. It is the engine-out drift-down speed and a good holding speed when no other is given. It rises with mass, roughly 2 kt per tonne at low level.',no:'På Airbus-fartsskalaen er green dot farten for beste løft/motstand i ren konfigurasjon, en tilnærming til Vmd. Det er drift-down-farten med én motor ute og en god ventefart når ingen annen er gitt. Den øker med massen, omtrent 2 kt per tonn i lav høyde.'}],
+ [{en:'Approach on the back side',no:'Innflyging på baksiden'},{en:'In landing configuration the approach speed is below Vmd. A speed loss raises drag, so it does not correct itself. Autothrust in SPEED mode does the work; flying manual thrust, expect to move the levers, and never let the engines sit at idle on short final.',no:'I landingskonfigurasjon ligger innflygingsfarten under Vmd. Et fartstap øker motstanden, så det retter seg ikke selv. Autothrust i SPEED-modus gjør jobben; med manuell skyvekraft må du forvente å bevege hendlene, og aldri la motorene stå på tomgang på kort finale.'}],
+ [{en:'MAX and REC MAX',no:'MAX og REC MAX'},{en:'The FMS shows a maximum altitude based on a 0.3 g buffet margin and on thrust available, plus the certified ceiling. Flying at that altitude leaves little margin in turbulence; most operators prefer to cruise a couple of thousand feet below it.',no:'FMS viser en maksimal høyde basert på 0,3 g buffetmargin og tilgjengelig skyvekraft, i tillegg til sertifisert tak. Å fly i den høyden gir liten margin i turbulens; de fleste operatører foretrekker å fly et par tusen fot under.'}],
+ [{en:'Turbulence at altitude',no:'Turbulens i høyden'},{en:'Fly the recommended turbulence speed (on the A320 family typically around 275 kt / M 0.76): it sits between the two buffet limits. Avoid large thrust changes and chasing speed, keep the autopilot in, and consider descending to widen the margin.',no:'Fly anbefalt turbulensfart (på A320-familien typisk rundt 275 kt / M 0,76): den ligger mellom de to buffetgrensene. Unngå store skyvekraftendringer og å jage farten, behold autopiloten og vurder å gå ned for å øke marginen.'}],
+ [{en:'Overspeed',no:'Overspeed'},{en:'VMO protects mainly against dynamic pressure loads, MMO against compressibility effects such as buffet and Mach tuck. On the A320 high-speed protection adds a nose-up demand above VMO/MMO in normal law, but an overspeed warning still means reducing thrust and, if needed, speed brakes.',no:'VMO beskytter først og fremst mot belastning fra dynamisk trykk, MMO mot kompressibilitetseffekter som buffet og Mach tuck. På A320 gir høyfartsbeskyttelsen en nese-opp-kommando over VMO/MMO i normal law, men en overspeed-varsling betyr fortsatt at du reduserer skyvekraften og, om nødvendig, bruker luftbremsene.'}],
+ [{en:'Yaw damping',no:'Girdemping'},{en:'On the A320 the yaw damper function is part of the flight augmentation computers and works in the background. In degraded control laws it may be lost, and the aircraft may show a lightly damped Dutch roll at altitude; the procedures tell you how to fly it.',no:'På A320 er girdemperfunksjonen en del av flight augmentation-datamaskinene og virker i bakgrunnen. I degraderte kontrollover kan den falle bort, og flyet kan vise en svakt dempet Dutch roll i høyden; prosedyrene forteller deg hvordan du flyr det.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+/* ---------- quiz ---------- */
+const Q=[
+ {q:{en:'At the minimum drag speed (Vmd), how do induced and parasite drag compare?',no:'Ved farten for minste motstand (Vmd), hvordan er indusert motstand og parasittmotstand i forhold til hverandre?'},a:[{en:'They are equal',no:'De er like'},{en:'Induced drag is twice parasite drag',no:'Indusert motstand er dobbelt så stor som parasittmotstanden'},{en:'Parasite drag is zero',no:'Parasittmotstanden er null'},{en:'Induced drag is at its maximum',no:'Indusert motstand er på sitt største'}],c:0,e:{en:'One falls with 1/V², the other rises with V²; their sum is least where they are equal, which is also where L/D is best.',no:'Den ene faller med 1/V², den andre øker med V²; summen er minst der de er like, og der er også L/D best.'}},
+ {q:{en:'You are on the approach below Vmd and the speed drops by 5 kt with thrust unchanged. What happens next?',no:'Du er på innflyging under Vmd, og farten faller 5 kt med uendret skyvekraft. Hva skjer videre?'},a:[{en:'Drag increases, so the speed keeps falling',no:'Motstanden øker, så farten fortsetter å falle'},{en:'Drag decreases, so the speed returns by itself',no:'Motstanden minker, så farten kommer tilbake av seg selv'},{en:'Nothing, drag is independent of speed there',no:'Ingenting, motstanden er uavhengig av farten der'},{en:'The aircraft pitches down and gains speed automatically',no:'Flyet pitcher ned og får fart automatisk'}],c:0,e:{en:'On the back side of the drag curve the aircraft is speed unstable: thrust must be added actively.',no:'På baksiden av motstandskurven er flyet fartsustabilt: skyvekraften må økes aktivt.'}},
+ {q:{en:'The aircraft is heavier. What happens to Vmd?',no:'Flyet er tyngre. Hva skjer med Vmd?'},a:[{en:'It increases, with the square root of mass',no:'Den øker, med kvadratroten av massen'},{en:'It decreases',no:'Den minker'},{en:'It is unchanged',no:'Den er uendret'},{en:'It increases in proportion to mass',no:'Den øker proporsjonalt med massen'}],c:0,e:{en:'Vmd is at a fixed CL (best L/D), so the required dynamic pressure rises with weight and the speed with √mass.',no:'Vmd ligger ved en fast CL (beste L/D), så nødvendig dynamisk trykk øker med vekten og farten med √masse.'}},
+ {q:{en:'Climbing at a constant IAS, what happens to the Mach number?',no:'I stigning med konstant IAS, hva skjer med Machtallet?'},a:[{en:'It increases',no:'Det øker'},{en:'It decreases',no:'Det minker'},{en:'It stays constant',no:'Det er konstant'},{en:'It increases only above the tropopause',no:'Det øker bare over tropopausen'}],c:0,e:{en:'TAS rises with altitude and the speed of sound falls (below the tropopause), so Mach rises on both counts.',no:'TAS øker med høyden og lydhastigheten faller (under tropopausen), så Mach øker av begge grunner.'}},
+ {q:{en:'Climbing at a constant Mach number above the crossover altitude, the IAS…',no:'I stigning med konstant Mach over crossover-høyden vil IAS …'},a:[{en:'decreases',no:'minke'},{en:'increases',no:'øke'},{en:'stays constant',no:'være konstant'},{en:'first increases, then decreases',no:'først øke, så minke'}],c:0,e:{en:'At constant Mach the dynamic pressure falls with the static pressure, so IAS falls.',no:'Ved konstant Mach faller det dynamiske trykket med det statiske trykket, så IAS faller.'}},
+ {q:{en:'Which statement about the crossover altitude is correct?',no:'Hvilket utsagn om crossover-høyden stemmer?'},a:[{en:'It depends on the IAS/Mach pair, not on temperature',no:'Den avhenger av IAS/Mach-paret, ikke av temperaturen'},{en:'It is lower on a warm day',no:'Den er lavere en varm dag'},{en:'It is always the tropopause',no:'Den er alltid tropopausen'},{en:'It depends on the aircraft mass',no:'Den avhenger av flyets masse'}],c:0,e:{en:'Both CAS and Mach are pressure relationships, so the altitude where a given pair coincide is a pressure altitude.',no:'Både CAS og Mach er trykkforhold, så høyden der et gitt par møtes, er en trykkhøyde.'}},
+ {q:{en:'Why does the nose tend to drop at high Mach (Mach tuck)?',no:'Hvorfor har nesen en tendens til å synke ved høy Mach (Mach tuck)?'},a:[{en:'The shock moves aft and the centre of pressure moves aft with it',no:'Sjokket flytter seg bakover, og trykksentrum flytter seg bakover med det'},{en:'The CG moves forward as fuel is used',no:'CG flytter seg fremover når drivstoff brukes'},{en:'The elevator becomes more effective',no:'Høyderoret blir mer effektivt'},{en:'The speed of sound increases',no:'Lydhastigheten øker'}],c:0,e:{en:'On a swept wing, shock-induced separation near the root can also reduce downwash on the tail; both effects pitch the nose down.',no:'På en pilvinge kan sjokkindusert separasjon nær roten også redusere nedvasket over halen; begge effektene gir nesen ned.'}},
+ {q:{en:'Heavier aircraft, same flight level. What happens to the buffet boundary?',no:'Tyngre fly, samme flygenivå. Hva skjer med buffetgrensen?'},a:[{en:'Low-speed buffet comes at a higher Mach and high-speed buffet at a lower Mach',no:'Buffet ved lav fart kommer ved høyere Mach og buffet ved høy fart ved lavere Mach'},{en:'Both limits move to a higher Mach',no:'Begge grensene flytter seg til høyere Mach'},{en:'Nothing, buffet depends only on Mach',no:'Ingenting, buffet avhenger bare av Mach'},{en:'The speed range gets wider',no:'Fartsområdet blir bredere'}],c:0,e:{en:'A heavier aircraft needs a higher CL, which is closer to the buffet CL at both ends, so the speed window narrows.',no:'Et tyngre fly trenger høyere CL, som ligger nærmere buffet-CL i begge ender, så fartsvinduet blir smalere.'}},
+ {q:{en:'A 1.3 g buffet margin means the aircraft can…',no:'En buffetmargin på 1,3 g betyr at flyet kan …'},a:[{en:'pull 1.3 g, for example a 40° banked turn, before buffet starts',no:'trekke 1,3 g, for eksempel en sving med 40° krengning, før buffet begynner'},{en:'fly 30 % faster than MMO',no:'fly 30 % raskere enn MMO'},{en:'climb 1300 ft/min',no:'stige 1300 ft/min'},{en:'withstand 1.3 times the limit load',no:'tåle 1,3 ganger grenselasten'}],c:0,e:{en:'n = 1/cos(bank): 1.3 g is about 40° of bank in a level turn, or a gust of similar strength.',no:'n = 1/cos(krengning): 1,3 g er omtrent 40° krengning i en plan sving, eller et vindkast av samme styrke.'}},
+ {q:{en:'Why does wing sweep raise the critical Mach number?',no:'Hvorfor øker pilform det kritiske Machtallet?'},a:[{en:'The wing section responds mainly to the flow component normal to the leading edge, V cos Λ',no:'Vingeprofilen reagerer hovedsakelig på strømningskomponenten vinkelrett på forkanten, V cos Λ'},{en:'Sweep makes the wing thicker',no:'Pilform gjør vingen tykkere'},{en:'Sweep increases the speed of sound around the wing',no:'Pilform øker lydhastigheten rundt vingen'},{en:'Sweep removes the boundary layer',no:'Pilform fjerner grensesjiktet'}],c:0,e:{en:'The flow over the section is effectively slower, so local M 1 is reached at a higher free-stream Mach.',no:'Strømningen over profilen er i praksis langsommere, så lokal M 1 nås ved et høyere Machtall i fri strøm.'}},
+ {q:{en:'A swept wing without stall-control devices tends to stall…',no:'En pilvinge uten tiltak mot stall har en tendens til å stalle …'},a:[{en:'at the tips first, causing pitch-up',no:'ved tippene først, med pitch-up'},{en:'at the root first, causing a nose drop',no:'ved roten først, med nesen ned'},{en:'evenly along the span',no:'jevnt langs spennet'},{en:'only in a sideslip',no:'bare i en sideslip'}],c:0,e:{en:'Spanwise flow thickens the tip boundary layer; the tips are behind the CG on a swept wing, so losing their lift moves the centre of pressure forward.',no:'Spennvis strømning gjør grensesjiktet tykkere ved tippene; tippene ligger bak CG på en pilvinge, så når de mister løft, flytter trykksentrum seg fremover.'}},
+ {q:{en:'Why do swept-wing jets have a yaw damper?',no:'Hvorfor har jetfly med pilvinger girdemper?'},a:[{en:'Sweep gives strong effective dihedral, which makes Dutch roll lightly damped, especially at altitude',no:'Pilform gir sterk effektiv V-form, som gjør Dutch roll svakt dempet, særlig i høyden'},{en:'To prevent spiral instability',no:'For å hindre spiral ustabilitet'},{en:'To counter Mach tuck',no:'For å motvirke Mach tuck'},{en:'To coordinate turns at low speed only',no:'Bare for å koordinere svinger i lav fart'}],c:0,e:{en:'Strong roll due to sideslip relative to directional stability is the classic recipe for Dutch roll.',no:'Sterk rulling på grunn av sideslip i forhold til retningsstabiliteten er den klassiske oppskriften på Dutch roll.'}},
+ {q:{en:'Why does a machmeter not need a temperature input?',no:'Hvorfor trenger ikke et machmeter temperatur som inngangsverdi?'},a:[{en:'Mach depends only on the ratio of dynamic to static pressure, so temperature cancels out',no:'Mach avhenger bare av forholdet mellom dynamisk og statisk trykk, så temperaturen faller bort'},{en:'It uses the standard ISA temperature for the altitude',no:'Det bruker standard ISA-temperatur for høyden'},{en:'It measures the speed of sound directly',no:'Det måler lydhastigheten direkte'},{en:'It takes the temperature from the TAT probe',no:'Det henter temperaturen fra TAT-sonden'}],c:0,e:{en:'Temperature is needed only to turn Mach into TAS (TAS = M × a).',no:'Temperatur trengs bare for å regne Mach om til TAS (TAS = M × a).'}},
+ {q:{en:'At FL370 in alternate law, the aircraft stalls. What comes first?',no:'På FL370 i alternate law staller flyet. Hva kommer først?'},a:[{en:'Nose-down pitch to reduce the angle of attack, even if it costs altitude',no:'Nese ned for å redusere angrepsvinkelen, selv om det koster høyde'},{en:'TOGA thrust while holding the attitude',no:'TOGA mens du holder attityden'},{en:'Roll the wings level, then push',no:'Rull vingene rette, så trykk'},{en:'Speedbrakes out',no:'Luftbremser ut'}],c:0,e:{en:'At altitude the thrust margin is tiny and the engines below the wing pitch the nose up. Only a lower angle of attack ends the stall; roll and thrust come after.',no:'I høyden er skyvekraftmarginen liten, og motorene under vingen løfter nesen. Bare lavere angrepsvinkel avslutter stallen; rulling og skyvekraft kommer etterpå.'}}
+];
+LAB.quiz(el('qbox'),'highspeed',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),10);
+
+LAB.start('hs'); mkD(); uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); uU(); uTab();
+LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); rU(); uTab(); });
+})();
+</script>
+</body>
+</html>

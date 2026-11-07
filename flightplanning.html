@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Build the fuel for an A320-sized aircraft component by component and see which mass limit or tank caps it, decide how many destination alternates a…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flight planning and fuel</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+.drill .btns .btn{font-weight:500;white-space:normal;max-width:100%;text-align:left}
+#cvF{height:330px}#cvA{height:340px}#cvI{height:340px}#cvT{height:300px}#cvC{height:300px}
+@media (max-width:600px){#cvF{height:385px}#cvA{height:360px}#cvI{height:320px}#cvT{height:280px}#cvC{height:300px}}
+.ro{margin-top:8px}
+.rrow b{white-space:normal;text-align:right;font-weight:600}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.card>.cols,.card>.drill,.card>.tablewrap{margin-top:16px}
+.drill{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
+.drill .dq{font-size:15px;margin:6px 0 10px}
+.drill .btns .btn{font-weight:500}
+.drill .btn.right{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.drill .btn.wrong{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.drill .fb{margin-top:10px;font-size:14px}
+.tablewrap{overflow-x:auto}
+table.pm{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--sheet);border:1px solid var(--rule)}
+table.pm th,table.pm td{padding:6px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+table.pm th{font-size:12px;color:var(--ink-2);font-weight:500;background:#F6F8F6}
+.fpl .box b.t{font-family:var(--f-mono);font-weight:500;color:var(--magenta)}
+.fpl .box b.t i{font-style:normal;font-family:var(--f-body);font-weight:600;color:var(--ink)}
+.fpl code{font-family:var(--f-mono);font-size:13px;background:#F3F6F4;padding:0 3px;border-radius:2px;white-space:nowrap}
+</style>
+</head>
+<body data-title="Flight planning and fuel">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Flight planning</div>
+      <h1>Flight planning and fuel</h1>
+      <p>Build the fuel for an A320-sized aircraft component by component and see which mass limit or tank caps it, decide how many destination alternates a forecast requires, monitor fuel against the plan in flight, work out when tankering pays, and choose a cruise level and cost index. Values are illustrative teaching values for an A320ceo-sized aircraft.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#fuel">Fuel make-up</a><a href="#alternates">Alternates and minima</a><a href="#inflight">In-flight fuel</a><a href="#tanker">Tankering</a><a href="#cruise">Level and cost index</a><a href="#atc">ATC flight plan</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="fuel">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Fuel make-up</h2>
+    <p class="lead" id="fuelLead"></p>
+    <div class="split">
+      <div class="paper"><canvas id="cvF" aria-label="Block fuel as a stacked bar against tank capacity, and the zero fuel, take-off and landing masses against their limits"></canvas></div>
+      <div class="panel">
+        <div class="grp">Route and load</div><div id="fRoute"></div>
+        <div class="grp">Contingency</div><div id="fCont"></div>
+        <div class="grp">Destination alternate</div><div id="fAlt"></div><div id="fAlt2"></div>
+        <div class="grp">Above the minimum</div><div id="fMore"></div>
+        <div class="ro" id="fR"></div>
+      </div>
+    </div>
+    <p class="callout blue" id="fx" style="margin-top:14px"></p>
+  </section>
+
+  <section class="card" id="alternates">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Alternates and planning minima</h2>
+    <p class="lead" id="altLead"></p>
+    <div class="split">
+      <div class="paper"><canvas id="cvA" aria-label="Destination forecast ceiling and visibility over the day, with the window from one hour before to one hour after the estimated time of arrival"></canvas></div>
+      <div class="panel">
+        <div class="grp">Destination forecast</div><div id="aScen"></div><div id="aEta"></div>
+        <div class="grp">Destination approach</div><div id="aApp"></div>
+        <div class="grp">Destination aerodrome</div><div id="aRwy"></div><div id="aIso"></div><div id="aTime"></div>
+        <div class="ro" id="aR"></div>
+      </div>
+    </div>
+    <p class="callout blue" id="ax" style="margin-top:14px"></p>
+    <div class="tablewrap"><table class="pm" id="pmTab"></table></div>
+  </section>
+
+  <section class="card" id="inflight">
+    <div class="eyebrow">3 · Interactive and drill</div>
+    <h2>In-flight fuel monitoring</h2>
+    <p class="lead">At every fuel check the crew compares the fuel on board with the plan and predicts the fuel at landing. The prediction, not the fuel on board now, drives the decisions: continue, re-plan, divert, commit to the destination, and tell ATC.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvI" aria-label="Planned and actual fuel on board along the route, with the predicted landing fuel and the reserve thresholds"></canvas></div>
+      <div class="panel">
+        <div class="grp">Flight so far</div><div id="iCtl"></div>
+        <div class="grp">Destination status</div><div id="iCommit"></div>
+        <div class="ro" id="iR"></div>
+      </div>
+    </div>
+    <p class="callout blue" id="ix" style="margin-top:14px"></p>
+    <div class="drill" id="drill">
+      <b>Drill: what do you tell ATC?</b>
+      <p class="dq" id="dQ"></p>
+      <div class="btns" id="dA"></div>
+      <div class="fb" id="dF"></div>
+      <div class="btns" style="margin-top:10px"><button class="btn pri" id="dNew">New situation</button><span class="note" id="dScore"></span></div>
+    </div>
+  </section>
+
+  <section class="card" id="tanker">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>Tankering economics</h2>
+    <p class="lead" id="tLead"></p>
+    <div class="split">
+      <div class="paper"><canvas id="cvT" aria-label="Net saving against the amount of fuel tankered, with the limit set by landing mass, take-off mass or tank capacity"></canvas></div>
+      <div class="panel">
+        <div class="grp">Prices</div><div id="tPrice"></div>
+        <div class="grp">Flight</div><div id="tFlt"></div>
+        <div class="ro" id="tR"></div>
+      </div>
+    </div>
+    <p class="callout blue" id="tx" style="margin-top:14px"></p>
+  </section>
+
+  <section class="card" id="cruise">
+    <div class="eyebrow">5 · Reading and interactive</div>
+    <h2>Choosing a flight level and cost index</h2>
+    <p class="lead" id="cLead"></p>
+    <div class="split">
+      <div class="paper"><canvas id="cvC" aria-label="Trip fuel and flight time for each cruise level, with the cheapest level for the chosen cost index"></canvas></div>
+      <div class="panel">
+        <div class="grp">Sector</div><div id="cCtl"></div>
+        <div class="grp">Wind with height</div><div id="cWind"></div>
+        <div class="ro" id="cR"></div>
+      </div>
+    </div>
+    <div class="cols" id="cBoxes"></div>
+  </section>
+
+  <section class="card" id="atc">
+    <div class="eyebrow">6 · Reading</div>
+    <h2>The ATC flight plan in brief</h2>
+    <p class="lead" id="atcLead"></p>
+    <div class="cols fpl" id="atcBoxes"></div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">7 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model of an A320ceo-sized aircraft: MTOM 78,000 kg, MLM 64,500 kg, MZFM 62,500 kg, DOM 42,500 kg, usable fuel about 18,700 kg (typical). Fuel flows, trip fuel, alternate fuel, the cruise level model and the tankering penalty are simplified typical values, not FCOM or flight-planning-system data. The fuel rules follow the ideas of the EASA basic fuel scheme (CAT.OP.MPA.181 and its AMC) in simplified form; the operator's approved fuel scheme, aerodrome selection policy and the current regulations always apply.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'Flight planning and fuel':'Flyplanlegging og drivstoff','Birdbird Virtual Lab · Flight planning':'Birdbird Virtual Lab · Flyplanlegging',
+ 'Build the fuel for an A320-sized aircraft component by component and see which mass limit or tank caps it, decide how many destination alternates a forecast requires, monitor fuel against the plan in flight, work out when tankering pays, and choose a cruise level and cost index. Values are illustrative teaching values for an A320ceo-sized aircraft.':'Bygg opp drivstoffet for et fly på størrelse med A320 komponent for komponent og se hvilken massegrense eller tank som setter taket, avgjør hvor mange destinasjonsalternativer en værprognose krever, følg drivstoffet mot planen under flyging, regn ut når tankering lønner seg, og velg marsjhøyde og kostindeks. Verdiene er illustrative opplæringsverdier for et fly på størrelse med A320ceo.',
+ 'Fuel make-up':'Drivstoffsammensetning','Alternates and minima':'Alternativer og minima','In-flight fuel':'Drivstoff under flyging','Tankering':'Tankering','Level and cost index':'Høyde og kostindeks','ATC flight plan':'ATC-færdselsplan','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive and drill':'3 · Interaktiv og øvelse','4 · Interactive':'4 · Interaktiv','5 · Reading and interactive':'5 · Lesing og interaktiv','6 · Reading':'6 · Lesing','7 · Operations':'7 · Operativt','Check':'Sjekk',
+ 'Alternates and planning minima':'Alternative flyplasser og planleggingsminima','In-flight fuel monitoring':'Drivstoffoppfølging under flyging','Tankering economics':'Tankeringsøkonomi','Choosing a flight level and cost index':'Valg av flygenivå og kostindeks','The ATC flight plan in brief':'ATC-færdselsplanen kort fortalt',
+ 'Route and load':'Rute og last','Contingency':'Uforutsett (contingency)','Destination alternate':'Destinasjonsalternativ','Above the minimum':'Utover minimum',
+ 'Destination forecast':'Prognose for destinasjonen','Destination approach':'Innflyging på destinasjonen','Destination aerodrome':'Destinasjonsflyplassen',
+ 'At every fuel check the crew compares the fuel on board with the plan and predicts the fuel at landing. The prediction, not the fuel on board now, drives the decisions: continue, re-plan, divert, commit to the destination, and tell ATC.':'Ved hver drivstoffsjekk sammenligner besetningen drivstoffet om bord med planen og beregner drivstoffet ved landing. Det er prognosen, ikke drivstoffet om bord nå, som styrer beslutningene: fortsette, planlegge på nytt, avbryte til alternativ, forplikte seg til destinasjonen og informere ATC.',
+ 'Flight so far':'Flygingen så langt','Destination status':'Status for destinasjonen','Drill: what do you tell ATC?':'Øvelse: hva sier du til ATC?','New situation':'Ny situasjon',
+ 'Prices':'Priser','Flight':'Flyging','Sector':'Etappe','Wind with height':'Vind med høyden',
+ 'Teaching model of an A320ceo-sized aircraft: MTOM 78,000 kg, MLM 64,500 kg, MZFM 62,500 kg, DOM 42,500 kg, usable fuel about 18,700 kg (typical). Fuel flows, trip fuel, alternate fuel, the cruise level model and the tankering penalty are simplified typical values, not FCOM or flight-planning-system data. The fuel rules follow the ideas of the EASA basic fuel scheme (CAT.OP.MPA.181 and its AMC) in simplified form; the operator\'s approved fuel scheme, aerodrome selection policy and the current regulations always apply.':'Opplæringsmodell av et fly på størrelse med A320ceo: MTOM 78 000 kg, MLM 64 500 kg, MZFM 62 500 kg, DOM 42 500 kg, brukbart drivstoff rundt 18 700 kg (typisk). Drivstofforbruk, turdrivstoff, alternativdrivstoff, høydemodellen og tankeringstapet er forenklede typiske verdier, ikke FCOM- eller flyplanleggingsdata. Drivstoffreglene følger ideene i EASAs grunnleggende drivstoffordning (CAT.OP.MPA.181 med AMC) i forenklet form; operatørens godkjente drivstoffordning, policy for valg av flyplasser og gjeldende regelverk gjelder alltid.',
+ // slider and segment labels
+ 'Distance (still-air NM)':'Distanse (NM i stille luft)','Wind component':'Vindkomponent','Traffic load':'Trafikklast','Taxi fuel':'Taksedrivstoff',
+ '5 % of trip':'5 % av tur','3 % with an en-route alternate':'3 % med underveisalternativ',
+ 'One alternate':'Ett alternativ','No alternate required':'Ikke krav om alternativ','Isolated destination':'Isolert destinasjon',
+ 'Distance destination → alternate':'Distanse destinasjon → alternativ','Additional fuel':'Tilleggsdrivstoff (additional)','Extra fuel (expected delays)':'Ekstra drivstoff (forventede forsinkelser)','Discretionary fuel (commander)':'Skjønnsdrivstoff (fartøysjef)',
+ 'Only if the reserves do not cover the critical case, e.g. engine failure or depressurisation to an en-route alternate':'Bare hvis reservene ikke dekker det kritiske tilfellet, f.eks. motorstans eller trykkfall til et underveisalternativ',
+ 'Clear day, TEMPO showers':'Klar dag, TEMPO byger','Morning fog':'Morgentåke','Warm front arriving':'Varmfront på vei inn',
+ 'Estimated time of arrival':'Beregnet ankomsttid','ILS CAT III':'ILS CAT III','ILS CAT I':'ILS CAT I','RNP (2D)':'RNP (2D)',
+ 'One runway':'Én rullebane','Two separate runways':'To separate rullebaner','Normal aerodrome':'Vanlig flyplass','Isolated aerodrome':'Isolert flyplass','Planned flight time':'Planlagt flytid',
+ 'Position along the route':'Posisjon langs ruten','Fuel burn versus plan':'Forbruk mot plan','Headwind stronger than planned':'Motvind sterkere enn planlagt','Expected holding at destination':'Forventet venting ved destinasjonen',
+ 'Alternate kept':'Alternativ beholdt','Committed to destination':'Forpliktet til destinasjonen',
+ 'Price at departure (per tonne)':'Pris på avgangsplass (per tonn)','Price at destination (per tonne)':'Pris på destinasjonen (per tonn)','Flight time':'Flytid','Burn penalty per hour':'Ekstra forbruk per time','Zero fuel mass':'Masse uten drivstoff','Fuel tankered':'Tankert drivstoff',
+ 'Distance':'Distanse','Mass at top of climb':'Masse ved toppen av stigningen','Cost index':'Kostindeks',
+ 'Calm':'Stille','Headwind grows with height':'Motvinden øker med høyden','Tailwind grows with height':'Medvinden øker med høyden'
+});
+const DOM=42500, MZFM=62500, MTOM=78000, MLM=64500, TANK=18700;
+const kg=v=>nf(Math.round(v),0)+' kg', t1=v=>nf(v/1000,1)+' t';
+const hm=h=>{ const m=Math.round(h*60); return Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min'; };
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+Math.round((sz||17)*0.76*(g.canvas.clientWidth<520?0.82:1))+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function bg(C){ const g=C.ctx; g.setTransform(C.dpr,0,0,C.dpr,0,0); g.clearRect(0,0,C.w,C.h); g.fillStyle='#FBFBF8'; g.fillRect(0,0,C.w,C.h); return g; }
+function dash(g,x1,y1,x2,y2,c,w,d){ g.strokeStyle=c; g.lineWidth=w||1.5; g.setLineDash(d||[5,4]); g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); g.setLineDash([]); }
+function ro(id,rows){ el(id).innerHTML=rows.map(([k,v])=>`<div class="rrow"><span>${L(k)}</span><b>${v}</b></div>`).join(''); }
+const tw=(g,t,sz)=>{ g.font=(sz||11)+'px IBM Plex Mono, monospace'; return g.measureText(t).width; };
+
+/* typical fuel flows (kg/h), scaled with mass */
+const cruiseFF=m=>2450*m/64000, holdFF=m=>2300*m/64000;
+
+/* ================= 1 fuel make-up ================= */
+const F={dist:1100,wind:-20,load:15000,taxi:200,cont:'5',alt:'one',altD:120,add:0,extra:0,disc:0};
+function tripOf(dist,wind,tom){ const gs=450+wind, t=0.25+dist/gs; let trip=4000; for(let i=0;i<4;i++){ trip=t*cruiseFF(tom-trip/2)+250; } return {trip,time:t}; }
+function plan(){ const zfm=DOM+F.load; let tom=zfm+9000, r={};
+  for(let i=0;i<6;i++){ const T=tripOf(F.dist,F.wind,tom), lmd=tom-T.trip;
+    let alt=0, altLab='ALTN';
+    if(F.alt==='one') alt=(550+6.5*F.altD)*(lmd/60000);
+    const mres=lmd-alt, frf=0.5*holdFF(mres);
+    if(F.alt==='none'){ alt=0.25*holdFF(lmd); altLab='HOLD 15'; }
+    if(F.alt==='iso'){ alt=Math.max(0,2*cruiseFF(lmd)-frf); altLab='ISOL 2 h'; }
+    const cont=Math.max((F.cont==='3'?0.03:0.05)*T.trip, holdFF(lmd)*5/60), contMin5=holdFF(lmd)*5/60>(F.cont==='3'?0.03:0.05)*T.trip;
+    const req=F.taxi+T.trip+cont+alt+frf+F.add+F.extra, block=req+F.disc;
+    tom=zfm+block-F.taxi; r={zfm,tom,lm:tom-T.trip,trip:T.trip,time:T.time,cont,contMin5,alt,altLab,frf,req,block}; }
+  const lims=[{k:'tank',n:{en:'tank capacity',no:'tankkapasitet'},v:TANK},{k:'tom',n:{en:'MTOM',no:'MTOM'},v:MTOM-r.zfm+F.taxi},{k:'lm',n:{en:'MLM',no:'MLM'},v:MLM-r.zfm+r.trip+F.taxi}];
+  r.cap=lims.reduce((a,b)=>b.v<a.v?b:a); r.lims=lims; return r; }
+const FC=[['TAXI','#8C979C','taxi'],['TRIP','#1E5E9E','trip'],['CONT','#6E9CCB','cont'],['ALTN','#2C8C8C','alt'],['FRF','#B3261E','frf'],['ADD','#5B4BB0','add'],['EXTRA','#C27C0E','extra'],['DISC','#E3B85C','disc']];
+const CF=LAB.fit(el('cvF'),()=>dF(),2);
+function dF(){ if(!CF.w) return; const g=bg(CF), W=CF.w, H=CF.h, R=plan(), narrow=W<520; const L0=14, R0=14;
+  const vals={taxi:F.taxi,trip:R.trip,cont:R.cont,alt:R.alt,frf:R.frf,add:F.add,extra:F.extra,disc:F.disc};
+  const fmax=Math.max(TANK,R.block)*1.06, X=f=>L0+f/fmax*(W-L0-R0);
+  hand(g,L({en:'block fuel, built up component by component',no:'blokkdrivstoff, bygget opp komponent for komponent'}),L0,22,'#13202A','start',17);
+  const by=38, bh=40; let acc=0;
+  FC.forEach(([lab,col,k])=>{ const v=vals[k]; if(v<=0) return; const x0=X(acc), x1=X(acc+v); g.fillStyle=col; g.fillRect(x0,by,x1-x0,bh); g.strokeStyle='#FBFBF8'; g.lineWidth=1; g.strokeRect(x0,by,x1-x0,bh);
+    const name=k==='alt'?R.altLab:lab; if(x1-x0>tw(g,name,10)+8){ mono(g,name,(x0+x1)/2,by+17,k==='disc'?'#13202A':'#fff','center',10); if(x1-x0>tw(g,nf(v,0),10)+8) mono(g,nf(v,0),(x0+x1)/2,by+31,k==='disc'?'#13202A':'#fff','center',10); }
+    acc+=v; });
+  // required bracket
+  const yb=by+bh+12; g.strokeStyle='#13202A'; g.lineWidth=1.2; g.beginPath(); g.moveTo(X(0),yb-5); g.lineTo(X(0),yb); g.lineTo(X(R.req),yb); g.lineTo(X(R.req),yb-5); g.stroke();
+  mono(g,L({en:'required minimum',no:'påkrevd minimum'})+' '+nf(R.req,0),X(0),yb+14,'#13202A','start',narrow?10:11);
+  // tank and limit lines
+  dash(g,X(TANK),by-4,X(TANK),by+bh+16,'#13202A',1.5); mono(g,L({en:'tank ',no:'tank '})+nf(TANK,0),X(TANK),yb+14,'#13202A','right',10);
+  if(R.cap.k!=='tank'){ dash(g,X(R.cap.v),by-8,X(R.cap.v),by+bh+30,'#9A1E68',2,[4,3]); mono(g,'max '+L(R.cap.n)+' '+nf(R.cap.v,0),Math.min(X(R.cap.v)+4,W-R0),yb+30,'#9A1E68',X(R.cap.v)>W*0.55?'right':'start',10); }
+  // legend
+  let lx=L0, ly=yb+(R.cap.k!=='tank'?50:36); const leg=[['TAXI',{en:'taxi',no:'taxe'}],['TRIP',{en:'trip',no:'tur'}],['CONT',{en:'contingency',no:'uforutsett'}],[R.altLab,{en:F.alt==='one'?'alternate':F.alt==='none'?'15 min hold, no alternate':'isolated: 2 h incl. FRF',no:F.alt==='one'?'alternativ':F.alt==='none'?'15 min venting, uten alternativ':'isolert: 2 t inkl. FRF'}],['FRF',{en:'final reserve',no:'endelig reserve'}],['ADD',{en:'additional',no:'tillegg'}],['EXTRA',{en:'extra',no:'ekstra'}],['DISC',{en:'discretionary',no:'skjønn'}]];
+  leg.forEach(([a,t],i)=>{ const txt=L(t); const w=tw(g,txt,10)+26; if(lx+w>W-R0){ lx=L0; ly+=16; } g.fillStyle=FC[i][1]; g.fillRect(lx,ly-9,10,10); mono(g,txt,lx+14,ly,'#13202A','start',10); lx+=w; });
+  // masses
+  const m0=40000, m1=82000, ML=narrow?34:40, MX=m=>ML+(m-m0)/(m1-m0)*(W-ML-R0-(narrow?0:90));
+  let y=ly+28; hand(g,L({en:'masses against the structural limits',no:'masser mot strukturgrensene'}),L0,y,'#13202A','start',16); y+=12;
+  const rows=[['ZFM',R.zfm,MZFM,[[DOM,'#C9D2D5'],[F.load,'#9A1E68']]],['TOM',R.tom,MTOM,[[DOM,'#C9D2D5'],[F.load,'#9A1E68'],[R.block-F.taxi,'#1E5E9E']]],['LM',R.lm,MLM,[[DOM,'#C9D2D5'],[F.load,'#9A1E68'],[R.block-F.taxi-R.trip,'#1E5E9E']]]];
+  const rh=Math.max(16,Math.min(22,(H-y-30)/3-10));
+  rows.forEach(([n,tot,lim,parts])=>{ let a=0; mono(g,n,L0,y+rh/2+4,'#13202A','start',11); parts.forEach(([v,c])=>{ const x0=MX(Math.max(m0,a)), x1=MX(Math.max(m0,a+v)); g.fillStyle=c; g.fillRect(x0,y,x1-x0,rh); a+=v; });
+    if(tot>lim){ g.fillStyle='rgba(179,38,30,.55)'; g.fillRect(MX(lim),y,MX(tot)-MX(lim),rh); }
+    dash(g,MX(lim),y-4,MX(lim),y+rh+4,'#B3261E',2,[4,3]);
+    const lt='M'+n+' '+nf(lim/1000,1);
+    if(narrow){ mono(g,t1(tot)+' / '+lt,MX(m0),y+rh+12,tot>lim?'#B3261E':'#4C5B66','start',10); }
+    else { mono(g,t1(tot),MX(Math.max(tot,lim))+8,y+rh/2+4,tot>lim?'#B3261E':'#13202A','start',11); mono(g,lt,MX(lim),y-6,'#B3261E','center',10); }
+    y+=rh+(narrow?22:18); });
+  mono(g,L({en:'mass axis starts at 40 t',no:'masseaksen starter på 40 t'}),ML,H-6,'#9AA6AC','start',10); }
+function rF(){ const R=plan(); const st=(v,l)=>`<span class="${v>l?'ko':'ok'}">${kg(v)}</span>`;
+  ro('fR',[[{en:'Trip fuel (flight time)',no:'Turdrivstoff (flytid)'},kg(R.trip)+' ('+hm(R.time)+')'],[{en:'Contingency',no:'Uforutsett'},kg(R.cont)+(R.contMin5?' (5 min)':'')],[{en:F.alt==='one'?'Alternate fuel':F.alt==='none'?'15 min holding at destination':'Isolated: 2 h above destination',no:F.alt==='one'?'Alternativdrivstoff':F.alt==='none'?'15 min venting ved destinasjonen':'Isolert: 2 t over destinasjonen'},kg(R.alt)],[{en:'Final reserve (30 min)',no:'Endelig reserve (30 min)'},kg(R.frf)],
+   [{en:'Required minimum block',no:'Påkrevd minste blokkdrivstoff'},kg(R.req)],[{en:'Block fuel',no:'Blokkdrivstoff'},`<span class="${R.block>R.cap.v?'ko':''}">${kg(R.block)}</span>`],[{en:'Max block allowed',no:'Maks tillatt blokkdrivstoff'},kg(R.cap.v)+' ('+L(R.cap.n)+')'],
+   [{en:'Zero fuel mass',no:'Masse uten drivstoff'},st(R.zfm,MZFM)],[{en:'Take-off mass',no:'Avgangsmasse'},st(R.tom,MTOM)],[{en:'Landing mass',no:'Landingsmasse'},st(R.lm,MLM)]]);
+  let msg;
+  if(R.zfm>MZFM) msg=L({en:`<b>Over MZFM by ${kg(R.zfm-MZFM)}.</b> Fuel cannot fix this: the zero fuel mass is traffic load plus DOM, so traffic load must come off.`,no:`<b>Over MZFM med ${kg(R.zfm-MZFM)}.</b> Drivstoff kan ikke løse dette: masse uten drivstoff er trafikklast pluss DOM, så trafikklast må av.`});
+  else if(R.req>R.cap.v){ msg= R.cap.k==='tank'? L({en:`<b>Not possible as planned.</b> The required fuel is ${kg(R.req)} but the tanks hold about ${kg(TANK)}. Offloading traffic load does not help much here: the sector is simply too long for this fuel load. Options: a nearer alternate, a fuel stop, or a scheme that allows less contingency.`,no:`<b>Ikke mulig slik planlagt.</b> Påkrevd drivstoff er ${kg(R.req)}, men tankene rommer rundt ${kg(TANK)}. Å ta av trafikklast hjelper lite her: etappen er rett og slett for lang. Muligheter: et nærmere alternativ, en mellomlanding for drivstoff, eller en ordning som tillater mindre uforutsett-drivstoff.`})
+     : L({en:`<b>Not possible as planned.</b> The required fuel is ${kg(R.req)}, but the ${L(R.cap.n)} only allows ${kg(R.cap.v)}. About ${kg(R.req-R.cap.v)} of traffic load must come off (a little less in reality, because a lighter aircraft also burns less).`,no:`<b>Ikke mulig slik planlagt.</b> Påkrevd drivstoff er ${kg(R.req)}, men ${L(R.cap.n)} tillater bare ${kg(R.cap.v)}. Rundt ${kg(R.req-R.cap.v)} trafikklast må av (litt mindre i virkeligheten, fordi et lettere fly også bruker mindre).`}); }
+  else if(R.block>R.cap.v) msg=L({en:`<b>The ${L(R.cap.n)} caps the fuel.</b> The legal minimum fits, but the extra and discretionary fuel take the block to ${kg(R.block)}, above the ${kg(R.cap.v)} allowed. `+(R.cap.k==='lm'?'On a short sector little fuel is burnt, so fuel added at the departure is still on board at landing: the landing mass, not the take-off mass, sets the ceiling.':'Reduce the fuel or the traffic load.'),no:`<b>${L(R.cap.n)} setter taket for drivstoffet.</b> Det lovlige minimumet får plass, men ekstra- og skjønnsdrivstoffet gir blokkdrivstoff ${kg(R.block)}, over tillatte ${kg(R.cap.v)}. `+(R.cap.k==='lm'?'På en kort etappe brennes lite, så drivstoff som legges til ved avgang er fortsatt om bord ved landing: det er landingsmassen, ikke avgangsmassen, som setter taket.':'Reduser drivstoffet eller trafikklasten.')});
+  else msg=L({en:`<b>Legal and within limits.</b> Margin to the governing fuel limit (${L(R.cap.n)}): ${kg(R.cap.v-R.block)}. `,no:`<b>Lovlig og innenfor grensene.</b> Margin til den styrende drivstoffgrensen (${L(R.cap.n)}): ${kg(R.cap.v-R.block)}. `});
+  msg+=' '+L({en:`Trip fuel covers take-off to landing at the destination. Contingency covers the unforeseen (here the higher of ${F.cont==='3'?'3 % with an en-route alternate':'5 %'} of trip fuel and 5 min holding at 1,500 ft above the destination). Alternate fuel covers a missed approach and the flight to the destination alternate. Final reserve is 30 min holding at 1,500 ft above the aerodrome for a jet, worked out with the expected mass on arrival, and is meant to be on board at every landing. Taxi fuel is burnt before take-off, so take-off fuel is block minus taxi.`,no:`Turdrivstoff dekker avgang til landing på destinasjonen. Uforutsett-drivstoff dekker det uforutsette (her den høyeste av ${F.cont==='3'?'3 % med underveisalternativ':'5 %'} av turdrivstoffet og 5 min venting i 1 500 ft over destinasjonen). Alternativdrivstoff dekker en avbrutt innflyging og flygingen til destinasjonsalternativet. Endelig reserve er 30 min venting i 1 500 ft over flyplassen for et jetfly, beregnet med forventet masse ved ankomst, og skal være om bord ved hver landing. Taksedrivstoff brennes før avgang, så avgangsdrivstoff er blokk minus taxe.`});
+  el('fx').innerHTML=msg; }
+function uF(){ dF(); rF(); }
+LAB.slider(el('fRoute'),{label:'Distance (still-air NM)',min:200,max:2800,step:50,v:F.dist,f:v=>nf(v,0)+' NM',on:v=>{F.dist=v;uF();}});
+LAB.slider(el('fRoute'),{label:'Wind component',min:-80,max:80,step:5,v:F.wind,f:v=>v===0?'0 kt':(v<0?L({en:'head ',no:'mot '})+(-v):L({en:'tail ',no:'med '})+v)+' kt',on:v=>{F.wind=v;uF();}});
+LAB.slider(el('fRoute'),{label:'Traffic load',min:0,max:21000,step:100,v:F.load,f:v=>kg(v),on:v=>{F.load=v;uF();}});
+LAB.slider(el('fRoute'),{label:'Taxi fuel',min:100,max:600,step:20,v:F.taxi,f:v=>kg(v),on:v=>{F.taxi=v;uF();}});
+LAB.seg(el('fCont'),[['5','5 % of trip'],['3','3 % with an en-route alternate']],F.cont,v=>{F.cont=v;uF();});
+const altD=LAB.slider(el('fAlt2'),{label:'Distance destination → alternate',min:30,max:300,step:5,v:F.altD,f:v=>nf(v,0)+' NM',on:v=>{F.altD=v;uF();}});
+LAB.seg(el('fAlt'),[['one','One alternate'],['none','No alternate required'],['iso','Isolated destination']],F.alt,v=>{F.alt=v; altD.el.style.display=v==='one'?'':'none'; uF();});
+LAB.slider(el('fMore'),{label:'Additional fuel',min:0,max:2000,step:50,v:F.add,f:v=>kg(v),hint:'Only if the reserves do not cover the critical case, e.g. engine failure or depressurisation to an en-route alternate',on:v=>{F.add=v;uF();}});
+LAB.slider(el('fMore'),{label:'Extra fuel (expected delays)',min:0,max:3000,step:50,v:F.extra,f:v=>kg(v),on:v=>{F.extra=v;uF();}});
+LAB.slider(el('fMore'),{label:'Discretionary fuel (commander)',min:0,max:8000,step:100,v:F.disc,f:v=>kg(v),on:v=>{F.disc=v;uF();}});
+
+/* ================= 2 alternates ================= */
+const A={scen:'fog',eta:8.5,app:'cat1',rwy:'two',iso:'no',time:2.5};
+const SC={ // [t0,t1,ceiling ft,vis m,tempo]
+ clear:[[6,18,4500,10000,0],[13,16,1400,4000,1]],
+ fog:[[6,9,100,300,0],[9,10.5,600,2500,0],[10.5,18,2500,8000,0],[6.5,8,100,150,1]],
+ front:[[6,11,3500,10000,0],[11,13,1200,6000,0],[13,18,500,2500,0],[14,17,300,1200,1]]};
+const APP={cat3:{n:'ILS CAT III',dh:50,rvr:200,np:false},cat1:{n:'ILS CAT I',dh:200,rvr:550,np:false},rnp:{n:'RNP (2D)',dh:500,rvr:1500,np:true}};
+function altEval(){ const segs=SC[A.scen], w0=A.eta-1, w1=A.eta+1; let cig=1e9, vis=1e9;
+  segs.forEach(([t0,t1,c,v])=>{ if(t1>w0&&t0<w1){ cig=Math.min(cig,c); vis=Math.min(vis,v); } });
+  const ap=APP[A.app]; const belowMin= vis<ap.rvr || (ap.np && cig<ap.dh);
+  const goodNoAlt= cig>=2000 && vis>=5000;
+  let n, why;
+  if(A.iso==='yes'){ n='iso'; }
+  else if(belowMin){ n=2; }
+  else if(goodNoAlt && A.rwy==='two' && A.time<=6){ n=0; }
+  else n=1;
+  return {cig,vis,ap,belowMin,goodNoAlt,n}; }
+const CA=LAB.fit(el('cvA'),()=>dA(),2);
+function dA(){ if(!CA.w) return; const g=bg(CA), W=CA.w, H=CA.h, R=altEval(), narrow=W<520; const L0=narrow?44:56, R0=12, T0=30;
+  const X=t=>L0+(t-6)/12*(W-L0-R0); const sh=(H-T0-40)/2-10;
+  const strips=[{k:'c',y:T0,max:5000,ticks:[200,500,1000,2000,4000],lab:'ft',name:{en:'ceiling',no:'skydekke'}},{k:'v',y:T0+sh+26,max:10000,ticks:[200,550,1500,5000,10000],lab:'m',name:{en:'visibility / RVR',no:'sikt / RVR'}}];
+  hand(g,L({en:'destination forecast (simplified TAF)',no:'prognose for destinasjonen (forenklet TAF)'}),L0,18,'#13202A','start',16);
+  // window
+  g.fillStyle='rgba(154,30,104,.09)'; g.fillRect(X(Math.max(6,A.eta-1)),T0-4,X(Math.min(18,A.eta+1))-X(Math.max(6,A.eta-1)),sh*2+34);
+  strips.forEach(s=>{ const Y=v=>s.y+sh-Math.sqrt(clamp(v,0,s.max)/s.max)*sh;
+    g.strokeStyle='#E3E8E6'; g.lineWidth=1; s.ticks.forEach(v=>{ g.beginPath(); g.moveTo(L0,Y(v)); g.lineTo(W-R0,Y(v)); g.stroke(); mono(g,v>=1000&&s.k==='v'?nf(v/1000,v%1000?1:0)+' km':nf(v,0),L0-4,Y(v)+3,'#5E6B74','right',narrow?9:10); });
+    mono(g,L(s.name)+(s.k==='c'?' (ft)':''),L0+4,s.y+10,'#13202A','start',10);
+    SC[A.scen].forEach(([t0,t1,c,v,tp])=>{ const val=s.k==='c'?c:v; const x0=X(t0), x1=X(t1);
+      if(!tp){ g.fillStyle='rgba(30,94,158,.16)'; g.fillRect(x0,Y(val),x1-x0,s.y+sh-Y(val)); g.strokeStyle='#1E5E9E'; g.lineWidth=2; g.beginPath(); g.moveTo(x0,Y(val)); g.lineTo(x1,Y(val)); g.stroke(); }
+      else { g.strokeStyle='#C27C0E'; g.lineWidth=2; g.setLineDash([4,3]); g.strokeRect(x0,Y(val),x1-x0,s.y+sh-Y(val)); g.setLineDash([]); mono(g,'TEMPO',(x0+x1)/2,Math.max(s.y+20,Y(val)-4),'#C27C0E','center',9); } });
+    // thresholds
+    const thr= s.k==='c' ? [[2000,'#2C7A4B',narrow?'2000':L({en:'no-alternate 2000 ft',no:'uten alternativ 2000 ft'})]].concat(R.ap.np?[[R.ap.dh,'#B3261E','MDH '+R.ap.dh]]:[]) : [[5000,'#2C7A4B',narrow?'5 km':L({en:'no-alternate 5 km',no:'uten alternativ 5 km'})],[R.ap.rvr,'#B3261E',(R.ap.np?'VIS ':'RVR ')+R.ap.rvr]];
+    thr.forEach(([v,c,t])=>{ dash(g,L0,Y(v),W-R0,Y(v),c,1.4,[6,4]); mono(g,t,W-R0-2,Y(v)-3,c,'right',9.5); });
+    g.strokeStyle='#9AA6AC'; g.lineWidth=1; g.strokeRect(L0,s.y,W-L0-R0,sh); });
+  // time axis
+  for(let t=6;t<=18;t+=2) mono(g,String(t).padStart(2,'0')+'Z',X(t),H-20,'#5E6B74','center',10);
+  g.strokeStyle='#9A1E68'; g.lineWidth=2; g.beginPath(); g.moveTo(X(A.eta),T0-6); g.lineTo(X(A.eta),T0+sh*2+30); g.stroke();
+  const et=String(Math.floor(A.eta)).padStart(2,'0')+String(Math.round((A.eta%1)*60)).padStart(2,'0')+'Z';
+  mono(g,'ETA '+et+' ± 1 h',clamp(X(A.eta),L0+50,W-R0-50),H-6,'#9A1E68','center',11); }
+function rA(){ const R=altEval(); const nTxt= R.n==='iso'? L({en:'none possible (isolated)',no:'ingen mulig (isolert)'}) : String(R.n);
+  ro('aR',[[{en:'Worst ceiling in window',no:'Laveste skydekke i vinduet'},nf(R.cig,0)+' ft'],[{en:'Worst visibility in window',no:'Dårligste sikt i vinduet'},nf(R.vis,0)+' m'],[{en:'Destination planning minima',no:'Planleggingsminima for destinasjonen'},(R.ap.np?'MDH '+R.ap.dh+' ft, VIS ':'RVR ')+R.ap.rvr+' m'],[{en:'Above planning minima?',no:'Over planleggingsminima?'},R.belowMin?`<span class="ko">${L({en:'no',no:'nei'})}</span>`:`<span class="ok">${L({en:'yes',no:'ja'})}</span>`],[{en:'Destination alternates required',no:'Påkrevde destinasjonsalternativer'},`<span class="${R.n===2||R.n==='iso'?'wa':'ok'}" style="font-size:16px">${nTxt}</span>`]]);
+  let m;
+  if(R.n==='iso') m=L({en:`<b>Isolated destination.</b> There is no usable alternate within reach, so the plan cannot rely on one. Instead the aircraft carries holding fuel at the destination (for a jet typically 2 h at normal cruise consumption, including the final reserve) and the crew works out a point of no return: the last point from which it can still return to a suitable en-route aerodrome. Beyond it, the destination weather must be checked once more before continuing.`,no:`<b>Isolert destinasjon.</b> Det finnes ikke noe brukbart alternativ innen rekkevidde, så planen kan ikke bygge på et. I stedet tar flyet med ventedrivstoff ved destinasjonen (for et jetfly typisk 2 t med normalt marsjforbruk, inkludert endelig reserve), og besetningen regner ut et point of no return: det siste punktet der flyet fortsatt kan snu til en egnet flyplass underveis. Før dette punktet sjekkes destinasjonsværet en siste gang.`});
+  else if(R.n===2) m=L({en:`<b>Two destination alternates.</b> In the window the forecast is below the destination planning minima (${R.ap.n}). You may still plan to go, because the forecast can be wrong and the weather may improve, but the plan needs two alternates and the fuel to the further one. Try a CAT III approach in the fog case, or move the ETA out of the fog.`,no:`<b>To destinasjonsalternativer.</b> I vinduet er prognosen under planleggingsminima for destinasjonen (${R.ap.n}). Du kan likevel planlegge å fly, fordi prognosen kan slå feil og været kan bedre seg, men planen trenger to alternativer og drivstoff til det fjerneste. Prøv CAT III i tåke-tilfellet, eller flytt ETA ut av tåken.`});
+  else if(R.n===0) m=L({en:`<b>No destination alternate required</b> in this teaching rule: planned flight time not more than 6 h, two separate usable runways, and for the whole window ceiling at least 2,000 ft and visibility at least 5 km. You may of course still nominate one, and most operators do.`,no:`<b>Ikke krav om destinasjonsalternativ</b> etter denne opplæringsregelen: planlagt flytid høyst 6 t, to separate brukbare rullebaner, og i hele vinduet skydekke minst 2 000 ft og sikt minst 5 km. Du kan selvsagt likevel velge et, og de fleste operatører gjør det.`});
+  else m=L({en:`<b>One destination alternate.</b> The destination is above its planning minima in the window, but the conditions for flying without an alternate are not all met (`+[A.rwy!=='two'?'only one runway':'',A.time>6?'flight time over 6 h':'',!R.goodNoAlt?'ceiling below 2,000 ft or visibility below 5 km in the window':''].filter(Boolean).join(', ')+`). The alternate itself must also meet its own, stricter planning minima for its ETA ± 1 h (table below).`,no:`<b>Ett destinasjonsalternativ.</b> Destinasjonen er over sine planleggingsminima i vinduet, men vilkårene for å fly uten alternativ er ikke alle oppfylt (`+[A.rwy!=='two'?'bare én rullebane':'',A.time>6?'flytid over 6 t':'',!R.goodNoAlt?'skydekke under 2 000 ft eller sikt under 5 km i vinduet':''].filter(Boolean).join(', ')+`). Alternativet selv må også oppfylle sine egne, strengere planleggingsminima for sin ETA ± 1 t (tabellen under).`});
+  m+=' '+L({en:'In this model a TEMPO group counts in full. How TEMPO and PROB groups are applied, and the exact conditions, are set by the operator\'s aerodrome selection policy.',no:'I denne modellen teller en TEMPO-gruppe fullt ut. Hvordan TEMPO- og PROB-grupper brukes, og de nøyaktige vilkårene, står i operatørens policy for valg av flyplasser.'});
+  el('ax').innerHTML=m; }
+function uA(){ dA(); rA(); }
+LAB.seg(el('aScen'),[['clear','Clear day, TEMPO showers'],['fog','Morning fog'],['front','Warm front arriving']],A.scen,v=>{A.scen=v;uA();});
+LAB.slider(el('aEta'),{label:'Estimated time of arrival',min:7,max:17,step:0.25,v:A.eta,f:v=>String(Math.floor(v)).padStart(2,'0')+':'+String(Math.round((v%1)*60)).padStart(2,'0')+'Z',on:v=>{A.eta=v;uA();}});
+LAB.seg(el('aApp'),[['cat3','ILS CAT III'],['cat1','ILS CAT I'],['rnp','RNP (2D)']],A.app,v=>{A.app=v;uA();});
+LAB.seg(el('aRwy'),[['one','One runway'],['two','Two separate runways']],A.rwy,v=>{A.rwy=v;uA();});
+el('aIso').style.marginTop='8px';
+LAB.seg(el('aIso'),[['no','Normal aerodrome'],['yes','Isolated aerodrome']],A.iso,v=>{A.iso=v;uA();});
+LAB.slider(el('aTime'),{label:'Planned flight time',min:0.5,max:8,step:0.25,v:A.time,f:v=>hm(v),on:v=>{A.time=v;uA();}});
+function pmTable(){ const r=[[{en:'Approach available at the alternate',no:'Innflyging tilgjengelig på alternativet'},{en:'Planning minimum used for the alternate (classic teaching table)',no:'Planleggingsminimum brukt for alternativet (klassisk opplæringstabell)'}],
+  [{en:'CAT II or CAT III',no:'CAT II eller CAT III'},{en:'CAT I minima (RVR)',no:'CAT I-minima (RVR)'}],
+  [{en:'CAT I',no:'CAT I'},{en:'Non-precision minima: RVR or visibility, and ceiling at or above the MDH',no:'Ikke-presisjonsminima: RVR eller sikt, og skydekke på eller over MDH'}],
+  [{en:'Non-precision',no:'Ikke-presisjon'},{en:'Non-precision minima plus 200 ft and 1,000 m',no:'Ikke-presisjonsminima pluss 200 ft og 1 000 m'}],
+  [{en:'Circling',no:'Sirkling'},{en:'Circling minima',no:'Sirklingsminima'}]];
+  el('pmTab').innerHTML=`<tr><th>${L(r[0][0])}</th><th>${L(r[0][1])}</th></tr>`+r.slice(1).map(([a,b])=>`<tr><td>${L(a)}</td><td>${L(b)}</td></tr>`).join('')+`<tr><td colspan="2" class="note">${L({en:'The idea: the alternate is planned one step below its best approach, so a single equipment failure or slightly worse weather still leaves a usable approach. The 2022 EASA rules express this as increments that depend on the approach type and the operator\'s approvals; the operator\'s table applies.',no:'Ideen: alternativet planlegges ett trinn under sin beste innflyging, slik at en enkelt utstyrsfeil eller litt dårligere vær fortsatt gir en brukbar innflyging. EASA-reglene fra 2022 uttrykker dette som tillegg som avhenger av innflygingstype og operatørens godkjenninger; operatørens tabell gjelder.'})}</td></tr>`; }
+function altTexts(){ el('altLead').innerHTML=L({en:'Before departure the destination forecast for a window from one hour before to one hour after the ETA decides how many destination alternates the plan needs, if any. Planning minima are stricter than the landing minima you fly to, because a forecast is only a forecast. Your own briefing pack has the worksheet for this in <a href="prep.html#minima">Planning minima</a>.',no:'Før avgang avgjør prognosen for destinasjonen i et vindu fra én time før til én time etter ETA hvor mange destinasjonsalternativer planen trenger, om noen. Planleggingsminima er strengere enn landingsminimaene du flyr etter, fordi en prognose bare er en prognose. Din egen briefingpakke har skjemaet for dette under <a href="prep.html#minima">Planleggingsminima</a>.'}); }
+
+/* ================= 3 in-flight ================= */
+const I={pos:450,dev:4,hw:20,hold:0,commit:'alt'};
+const IP={D:900,gs:450,trip:5600,cont:280,alt:1300,frf:1050,disc:300}; IP.tof=IP.trip+IP.cont+IP.alt+IP.frf+IP.disc;
+function infl(){ const f=(1+I.dev/100)*IP.gs/(IP.gs-I.hw), perNM=IP.trip/IP.D;
+  const planNow=IP.tof-perNM*I.pos, actNow=IP.tof-perNM*f*I.pos, rem=perNM*f*(IP.D-I.pos), holdF=holdFF(60000)*I.hold/60;
+  const pred=actNow-rem-holdF, req= I.commit==='alt'? IP.alt+IP.frf : IP.frf;
+  let st;
+  if(pred<IP.frf) st='mayday'; else if(I.commit==='dest' && pred-IP.frf<holdFF(60000)*10/60) st='minfuel'; else if(pred<req) st='replan'; else st='ok';
+  return {f,planNow,actNow,rem,holdF,pred,req,st,perNM}; }
+const CI_=LAB.fit(el('cvI'),()=>dI(),2);
+function dI(){ if(!CI_.w) return; const g=bg(CI_), W=CI_.w, H=CI_.h, R=infl(), narrow=W<520; const L0=narrow?42:54, R0=narrow?14:70, T0=30, B0=34;
+  const X=d=>L0+d/IP.D*(W-L0-R0), fmax=9500, Y=f=>T0+(H-T0-B0)*(1-clamp(f,-500,fmax)/fmax);
+  hand(g,L({en:'fuel on board along the route',no:'drivstoff om bord langs ruten'}),L0,18,'#13202A','start',16);
+  g.strokeStyle='#E3E8E6'; g.lineWidth=1; for(let f=0;f<=9000;f+=narrow?3000:1500){ g.beginPath(); g.moveTo(L0,Y(f)); g.lineTo(W-R0,Y(f)); g.stroke(); mono(g,nf(f,0),L0-4,Y(f)+3,'#5E6B74','right',10); }
+  for(let d=0;d<=IP.D;d+=150){ mono(g,d===0?'DEP':d===IP.D?'DEST':String(d),X(d),H-B0+15,'#5E6B74','center',10); g.strokeStyle='#E3E8E6'; g.beginPath(); g.moveTo(X(d),T0); g.lineTo(X(d),H-B0); g.stroke(); }
+  mono(g,'NM',W-R0,H-6,'#5E6B74','right',10);
+  // thresholds
+  const th=[[IP.alt+IP.frf,'#C27C0E','ALTN + FRF'],[IP.frf,'#B3261E','FRF']];
+  th.forEach(([v,c,t])=>{ dash(g,L0,Y(v),W-R0,Y(v),c,1.6,[6,4]); mono(g,t,narrow?L0+4:W-R0+4,Y(v)+(narrow?-4:4),c,'start',10); });
+  // plan
+  g.strokeStyle='#9AA6AC'; g.lineWidth=2; g.beginPath(); g.moveTo(X(0),Y(IP.tof)); g.lineTo(X(IP.D),Y(IP.tof-IP.trip)); g.stroke();
+  mono(g,L({en:'plan',no:'plan'}),X(IP.D*0.18),Y(IP.tof-IP.trip*0.18)-8,'#5E6B74','start',11);
+  // actual
+  const col=R.st==='mayday'?'#B3261E':R.st==='minfuel'||R.st==='replan'?'#C27C0E':'#1E5E9E';
+  g.strokeStyle='#1E5E9E'; g.lineWidth=2.6; g.beginPath(); g.moveTo(X(0),Y(IP.tof)); g.lineTo(X(I.pos),Y(R.actNow)); g.stroke();
+  g.strokeStyle=col; g.lineWidth=2; g.setLineDash([6,4]); g.beginPath(); g.moveTo(X(I.pos),Y(R.actNow)); g.lineTo(X(IP.D),Y(R.actNow-R.rem)); if(R.holdF>0) g.lineTo(X(IP.D),Y(R.pred)); g.stroke(); g.setLineDash([]);
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(I.pos),Y(R.actNow),5,0,7); g.fill();
+  g.fillStyle=col; g.beginPath(); g.arc(X(IP.D),Y(R.pred),5,0,7); g.fill();
+  mono(g,nf(R.pred,0),X(IP.D)-8,Y(R.pred)+(R.pred<IP.frf+600?16:-8),col,'right',11);
+  if(R.holdF>0) hand(g,L({en:'holding',no:'venting'}),X(IP.D)-8,Y(R.actNow-R.rem)-6,'#5E6B74','right',14);
+  hand(g,L({en:'predicted',no:'beregnet'}),X((I.pos+IP.D)/2),Y(R.actNow-R.rem/2)-12,col,'center',15); }
+function rI(){ const R=infl(); const d=R.actNow-R.planNow;
+  const S={ok:{c:'ok',en:'On plan: continue',no:'På planen: fortsett'},replan:{c:'wa',en:'Re-plan: below ALTN + FRF',no:'Planlegg på nytt: under ALTN + FRF'},minfuel:{c:'wa',en:'MINIMUM FUEL',no:'MINIMUM FUEL'},mayday:{c:'ko',en:'MAYDAY MAYDAY MAYDAY FUEL',no:'MAYDAY MAYDAY MAYDAY FUEL'}}[R.st];
+  ro('iR',[[{en:'Planned fuel on board here',no:'Planlagt drivstoff om bord her'},kg(R.planNow)],[{en:'Actual fuel on board',no:'Faktisk drivstoff om bord'},kg(R.actNow)],[{en:'Difference from plan',no:'Avvik fra plan'},`<span class="${d<-150?'wa':''}">${d>=0?'+':'−'}${kg(Math.abs(d))}</span>`],[{en:'Predicted landing fuel at destination',no:'Beregnet drivstoff ved landing på destinasjonen'},kg(R.pred)],[{en:'Required on arrival',no:'Påkrevd ved ankomst'},kg(R.req)+(I.commit==='alt'?' (ALTN + FRF)':' (FRF)')],[{en:'Status',no:'Status'},`<span class="${S.c}">${L(S)}</span>`]]);
+  const T={ok:{en:`<b>Continue.</b> The predicted landing fuel covers the alternate and the final reserve. Keep checking: at each check compare the fuel on board with the plan and also check that fuel on board plus fuel used still equals the fuel at engine start, which would reveal a leak.`,no:`<b>Fortsett.</b> Beregnet drivstoff ved landing dekker alternativet og endelig reserve. Fortsett å sjekke: sammenlign drivstoffet om bord med planen ved hver sjekk, og kontroller at drivstoff om bord pluss brukt drivstoff fortsatt er lik drivstoffet ved motorstart, ellers kan det være en lekkasje.`},
+   replan:{en:`<b>Re-plan before it becomes urgent.</b> The prediction no longer covers the alternate plus the final reserve. Options: divert to the alternate or a nearer aerodrome while the fuel still allows a choice, reduce the burn (direct routing, better level), or, if the destination has two separate runways and good weather, commit to it and accept that the alternate is no longer protected. That is the decision point: once past it, only the destination is left.`,no:`<b>Planlegg på nytt før det haster.</b> Prognosen dekker ikke lenger alternativet pluss endelig reserve. Muligheter: dra til alternativet eller en nærmere flyplass mens drivstoffet ennå gir et valg, reduser forbruket (direkte rute, bedre nivå), eller, hvis destinasjonen har to separate rullebaner og godt vær, forplikt deg til den og godta at alternativet ikke lenger er beskyttet. Det er beslutningspunktet: etter det er bare destinasjonen igjen.`},
+   minfuel:{en:`<b>Declare MINIMUM FUEL.</b> You are committed to land at a specific aerodrome, and any change to the existing clearance (a hold, a longer routing) may take you below the final reserve at landing. It is not an emergency: it tells ATC that there is no room for further delay. Here less than 10 min of holding is left above the final reserve.`,no:`<b>Meld MINIMUM FUEL.</b> Du er forpliktet til å lande på en bestemt flyplass, og enhver endring i gjeldende klarering (venting, lengre rute) kan føre til landing under endelig reserve. Det er ikke en nødsituasjon: det forteller ATC at det ikke er rom for flere forsinkelser. Her er det under 10 min venting igjen over endelig reserve.`},
+   mayday:{en:`<b>Declare MAYDAY MAYDAY MAYDAY FUEL.</b> The usable fuel predicted at landing at the nearest aerodrome where a safe landing can be made is below the final reserve. This is a fuel emergency: ATC gives priority. The final reserve is protected fuel, so the declaration is made when the prediction falls below it, not when the tanks are nearly empty.`,no:`<b>Meld MAYDAY MAYDAY MAYDAY FUEL.</b> Brukbart drivstoff beregnet ved landing på nærmeste flyplass der en sikker landing kan gjøres, er under endelig reserve. Dette er en drivstoffnødsituasjon: ATC gir prioritet. Endelig reserve er beskyttet drivstoff, så meldingen gis når prognosen faller under den, ikke når tankene nesten er tomme.`}}[R.st];
+  el('ix').innerHTML=L(T)+' '+L({en:`Burn factor in this flight: ${nf(R.f,2)} × plan (burn deviation × planned/actual ground speed).`,no:`Forbruksfaktor på denne flygingen: ${nf(R.f,2)} × plan (forbruksavvik × planlagt/faktisk groundspeed).`}); }
+function uI(){ dI(); rI(); }
+LAB.slider(el('iCtl'),{label:'Position along the route',min:0,max:900,step:10,v:I.pos,f:v=>nf(v,0)+' / 900 NM',on:v=>{I.pos=v;uI();}});
+LAB.slider(el('iCtl'),{label:'Fuel burn versus plan',min:-5,max:15,step:1,v:I.dev,f:v=>(v>0?'+':'')+v+' %',on:v=>{I.dev=v;uI();}});
+LAB.slider(el('iCtl'),{label:'Headwind stronger than planned',min:-30,max:80,step:5,v:I.hw,f:v=>(v>0?'+':'')+v+' kt',on:v=>{I.hw=v;uI();}});
+LAB.slider(el('iCtl'),{label:'Expected holding at destination',min:0,max:60,step:5,v:I.hold,f:v=>v+' min',on:v=>{I.hold=v;uI();}});
+LAB.seg(el('iCommit'),[['alt','Alternate kept'],['dest','Committed to destination']],I.commit,v=>{I.commit=v;uI();});
+// drill
+let DR=null, dScore=[0,0];
+const DOPT=[['none',{en:'Nothing to declare: keep monitoring',no:'Ingenting å melde: følg med videre'}],['replan',{en:'No declaration yet: re-plan (divert or commit)',no:'Ingen melding ennå: planlegg på nytt (divert eller forplikt)'}],['min',{en:'MINIMUM FUEL',no:'MINIMUM FUEL'}],['may',{en:'MAYDAY MAYDAY MAYDAY FUEL',no:'MAYDAY MAYDAY MAYDAY FUEL'}]];
+const rnd=(a,b,s)=>Math.round((a+Math.random()*(b-a))/s)*s;
+function newDrill(){ const k=['none','replan','min','may'][Math.floor(Math.random()*4)]; const frf=rnd(1000,1150,10), alt=rnd(1100,1600,50);
+  let q;
+  if(k==='none'){ const p=frf+alt+rnd(200,900,10); q={en:`Cruise, alternate kept. FRF ${nf(frf,0)} kg, alternate fuel ${nf(alt,0)} kg. Predicted landing fuel at the destination: ${nf(p,0)} kg. ATC expects no delay.`,no:`Marsj, alternativ beholdt. FRF ${nf(frf,0)} kg, alternativdrivstoff ${nf(alt,0)} kg. Beregnet drivstoff ved landing på destinasjonen: ${nf(p,0)} kg. ATC venter ingen forsinkelse.`}; }
+  if(k==='replan'){ const p=frf+alt-rnd(200,700,10); q={en:`Cruise, alternate kept. FRF ${nf(frf,0)} kg, alternate fuel ${nf(alt,0)} kg. Stronger headwind: predicted landing fuel at the destination is now ${nf(p,0)} kg. The destination has two runways and good weather.`,no:`Marsj, alternativ beholdt. FRF ${nf(frf,0)} kg, alternativdrivstoff ${nf(alt,0)} kg. Sterkere motvind: beregnet drivstoff ved landing på destinasjonen er nå ${nf(p,0)} kg. Destinasjonen har to rullebaner og godt vær.`}; }
+  if(k==='min'){ const p=frf+rnd(80,300,10); q={en:`You have committed to land at the destination (the alternate is no longer reachable with reserves). FRF ${nf(frf,0)} kg. Predicted landing fuel with the present clearance: ${nf(p,0)} kg. Any hold or extra vectoring would take you below FRF.`,no:`Du har forpliktet deg til å lande på destinasjonen (alternativet nås ikke lenger med reserver). FRF ${nf(frf,0)} kg. Beregnet drivstoff ved landing med gjeldende klarering: ${nf(p,0)} kg. Venting eller ekstra vektorering vil ta deg under FRF.`}; }
+  if(k==='may'){ const p=frf-rnd(80,350,10); q={en:`Committed to the destination, then a runway closure adds ${rnd(15,30,5)} min of holding. FRF ${nf(frf,0)} kg. The predicted landing fuel at the nearest aerodrome where a safe landing can be made is now ${nf(p,0)} kg.`,no:`Forpliktet til destinasjonen, så gir en stengt rullebane ${rnd(15,30,5)} min venting. FRF ${nf(frf,0)} kg. Beregnet drivstoff ved landing på nærmeste flyplass der en sikker landing kan gjøres, er nå ${nf(p,0)} kg.`}; }
+  DR={k,q,pick:null}; drawDrill(); }
+function drawDrill(){ if(!DR) return; el('dQ').innerHTML=L(DR.q);
+  el('dA').innerHTML=DOPT.map(([k,t])=>`<button class="btn ${DR.pick? (k===DR.k?'right':(k===DR.pick?'wrong':'')) :''}" data-k="${k}" ${DR.pick?'disabled':''}>${L(t)}</button>`).join('');
+  el('dA').querySelectorAll('button').forEach(b=>b.onclick=()=>{ DR.pick=b.dataset.k; dScore[1]++; if(DR.pick===DR.k) dScore[0]++; drawDrill(); });
+  const E={none:{en:'The prediction covers alternate fuel plus final reserve, so the plan is intact.',no:'Prognosen dekker alternativdrivstoff pluss endelig reserve, så planen holder.'},replan:{en:'Below ALTN + FRF but well above FRF: this is not yet a declaration. It is the moment to decide, while there is still a choice: divert, or commit to the destination where operator policy allows it.',no:'Under ALTN + FRF, men godt over FRF: dette er ennå ikke en melding. Det er tidspunktet for å bestemme seg mens det fortsatt finnes et valg: divert, eller forplikt deg til destinasjonen der operatørens policy tillater det.'},min:{en:'Committed to one aerodrome, and any change to the clearance may mean landing below FRF: MINIMUM FUEL. It is not an emergency, but ATC now knows there is no room for delay.',no:'Forpliktet til én flyplass, og enhver endring i klareringen kan bety landing under FRF: MINIMUM FUEL. Det er ikke en nødsituasjon, men ATC vet nå at det ikke er rom for forsinkelse.'},may:{en:'Predicted landing fuel at the nearest suitable aerodrome is below FRF: MAYDAY MAYDAY MAYDAY FUEL.',no:'Beregnet drivstoff ved landing på nærmeste egnede flyplass er under FRF: MAYDAY MAYDAY MAYDAY FUEL.'}};
+  el('dF').innerHTML= DR.pick? `<span class="${DR.pick===DR.k?'ok':'ko'}">${L(DR.pick===DR.k?{en:'Correct.',no:'Riktig.'}:{en:'Not quite.',no:'Ikke helt.'})}</span> ${L(E[DR.k])}` : '';
+  el('dScore').textContent= dScore[1]? `${dScore[0]} / ${dScore[1]} ${L({en:'correct',no:'riktige'})}` : ''; }
+el('dNew').onclick=newDrill;
+
+/* ================= 4 tankering ================= */
+const TK={pa:750,pb:1000,time:1.0,pen:3.0,zfm:58000,amt:3000};
+const RES=2650; // contingency + alternate + final reserve planned on arrival
+function tk(amt){ amt=amt===undefined?TK.amt:amt; const trip=300+TK.time*cruiseFF(TK.zfm+RES+2500), pt=TK.pen/100*TK.time, burn=amt*pt, arr=amt-burn;
+  const net=(arr*TK.pb-amt*TK.pa)/1000; return {trip,pt,burn,arr,net}; }
+function tkLim(){ const R=tk(0); const lm=(MLM-TK.zfm-RES)/(1-R.pt), tom=MTOM-TK.zfm-R.trip-RES, tank=TANK-R.trip-RES-200;
+  const a=[{k:'lm',n:{en:'MLM',no:'MLM'},v:lm},{k:'tom',n:{en:'MTOM',no:'MTOM'},v:tom},{k:'tank',n:{en:'tank capacity',no:'tankkapasitet'},v:tank}]; return a.reduce((x,y)=>y.v<x.v?y:x); }
+const CT=LAB.fit(el('cvT'),()=>dT(),2);
+function dT(){ if(!CT.w) return; const g=bg(CT), W=CT.w, H=CT.h, narrow=W<520, lim=tkLim(); const L0=narrow?50:62, R0=14, T0=30, B0=36, xmax=10000;
+  const pts=[]; for(let a=0;a<=xmax;a+=100) pts.push([a,tk(a).net]); const ys=pts.map(p=>p[1]); let y0=Math.min(0,...ys), y1=Math.max(0,...ys); if(y1-y0<200){ y1+=100; y0-=100; } const pad=(y1-y0)*0.12; y0-=pad; y1+=pad;
+  const X=a=>L0+a/xmax*(W-L0-R0), Y=v=>T0+(H-T0-B0)*(1-(v-y0)/(y1-y0));
+  hand(g,L({en:'net saving per flight',no:'netto besparelse per flyging'}),L0,18,'#13202A','start',16);
+  // allowed region
+  const lx=X(clamp(lim.v,0,xmax)); g.fillStyle='rgba(179,38,30,.07)'; g.fillRect(lx,T0,W-R0-lx,H-T0-B0);
+  const step=(y1-y0)>3000?1000:(y1-y0)>1200?500:(y1-y0)>500?200:100;
+  g.strokeStyle='#E3E8E6'; g.lineWidth=1; for(let v=Math.ceil(y0/step)*step;v<=y1;v+=step){ g.beginPath(); g.moveTo(L0,Y(v)); g.lineTo(W-R0,Y(v)); g.stroke(); mono(g,nf(Math.round(v)||0,0),L0-4,Y(v)+3,'#5E6B74','right',10); }
+  for(let a=0;a<=xmax;a+=2000){ mono(g,nf(a/1000,0)+' t',X(a),H-B0+15,'#5E6B74','center',10); }
+  mono(g,L({en:'fuel tankered',no:'tankert drivstoff'}),W-R0,H-6,'#5E6B74','right',10); mono(g,'EUR',L0-4,H-6,'#5E6B74','right',10);
+  g.strokeStyle='#13202A'; g.lineWidth=1.2; g.beginPath(); g.moveTo(L0,Y(0)); g.lineTo(W-R0,Y(0)); g.stroke();
+  g.strokeStyle=pts[pts.length-1][1]>=0?'#2C7A4B':'#B3261E'; g.lineWidth=2.4; g.beginPath(); pts.forEach(([a,v],i)=>i?g.lineTo(X(a),Y(v)):g.moveTo(X(a),Y(v))); g.stroke();
+  dash(g,lx,T0,lx,H-B0,'#B3261E',1.8,[5,4]); mono(g,L({en:'max by ',no:'maks etter '})+L(lim.n)+' '+nf(Math.max(0,lim.v),0),lx>W*0.6?lx-4:lx+4,T0+12,'#B3261E',lx>W*0.6?'right':'start',10);
+  const R=tk(); g.fillStyle='#13202A'; g.beginPath(); g.arc(X(TK.amt),Y(R.net),5,0,7); g.fill(); }
+function rT(){ const R=tk(), lim=tkLim(), be=TK.pa/(1-R.pt); const over=TK.amt>lim.v;
+  ro('tR',[[{en:'Extra fuel burnt carrying it',no:'Ekstra forbruk ved å frakte det'},kg(R.burn)+' ('+nf(R.pt*100,1)+' %)'],[{en:'Tankered fuel left on arrival',no:'Tankert drivstoff igjen ved ankomst'},kg(R.arr)],[{en:'Break-even price at destination',no:'Prisen på destinasjonen som går i null'},nf(be,0)+' EUR/t'],[{en:'Net saving',no:'Netto besparelse'},`<span class="${R.net>=0?'ok':'ko'}">${R.net>=0?'+':'−'}${nf(Math.abs(R.net),0)} EUR</span>`],[{en:'Extra CO₂ emitted',no:'Ekstra CO₂-utslipp'},kg(R.burn*3.16)],[{en:'Limit on tankered fuel',no:'Grense for tankert drivstoff'},`<span class="${over?'ko':''}">${kg(Math.max(0,lim.v))} (${L(lim.n)})</span>`]]);
+  el('tx').innerHTML=L({en:`<b>${over?'Not allowed: the '+L(lim.n)+' would be exceeded.':R.net>=0?'Tankering pays here.':'Tankering costs money here.'}</b> Carrying fuel makes the aircraft heavier, so a fraction of it is burnt just to carry it: ${nf(TK.pen,1)} % per flight hour gives ${nf(R.pt*100,1)} % on this sector. It pays only if the destination price is above ${nf(be,0)} EUR/t, i.e. departure price ÷ (1 − fraction burnt). Longer sectors push the break-even up quickly. On a short sector the landing mass usually caps the amount, which links straight back to the fuel make-up section and the <a href="massbalance.html#masses">mass and balance lab</a>. Other costs not modelled: brake and tyre wear, a heavier landing, and the extra CO₂ (about 3.16 kg per kg of fuel), and EU rules (ReFuelEU Aviation) now require operators to uplift most of the fuel they need at each EU airport over a year, which limits routine tankering.`,no:`<b>${over?'Ikke tillatt: '+L(lim.n)+' ville blitt overskredet.':R.net>=0?'Tankering lønner seg her.':'Tankering koster penger her.'}</b> Drivstoff om bord gjør flyet tyngre, så en del av det brennes bare for å frakte det: ${nf(TK.pen,1)} % per flytime gir ${nf(R.pt*100,1)} % på denne etappen. Det lønner seg bare hvis prisen på destinasjonen er over ${nf(be,0)} EUR/t, altså avgangsprisen ÷ (1 − andelen som brennes). Lengre etapper presser nullpunktet raskt opp. På en kort etappe er det som regel landingsmassen som setter taket, noe som henger rett sammen med avsnittet om drivstoffsammensetning og <a href="massbalance.html#masses">laben om masse og balanse</a>. Andre kostnader er ikke modellert: slitasje på bremser og dekk, en tyngre landing og ekstra CO₂ (rundt 3,16 kg per kg drivstoff), og EU-regler (ReFuelEU Aviation) krever nå at operatører fyller det meste av drivstoffet de trenger på hver EU-flyplass over et år, noe som begrenser rutinemessig tankering.`}); }
+function uT(){ dT(); rT(); }
+LAB.slider(el('tPrice'),{label:'Price at departure (per tonne)',min:500,max:1500,step:10,v:TK.pa,f:v=>nf(v,0)+' EUR',on:v=>{TK.pa=v;uT();}});
+LAB.slider(el('tPrice'),{label:'Price at destination (per tonne)',min:500,max:1500,step:10,v:TK.pb,f:v=>nf(v,0)+' EUR',on:v=>{TK.pb=v;uT();}});
+LAB.slider(el('tFlt'),{label:'Flight time',min:0.5,max:4,step:0.25,v:TK.time,f:v=>hm(v),on:v=>{TK.time=v;uT();}});
+LAB.slider(el('tFlt'),{label:'Burn penalty per hour',min:2.5,max:4,step:0.1,v:TK.pen,f:v=>nf(v,1)+' % / h',on:v=>{TK.pen=v;uT();}});
+LAB.slider(el('tFlt'),{label:'Zero fuel mass',min:50000,max:62500,step:100,v:TK.zfm,f:v=>kg(v),on:v=>{TK.zfm=v;uT();}});
+LAB.slider(el('tFlt'),{label:'Fuel tankered',min:0,max:10000,step:100,v:TK.amt,f:v=>kg(v),on:v=>{TK.amt=v;uT();}});
+function tTexts(){ el('tLead').innerHTML=L({en:'When fuel is cheaper at the departure than at the destination, an airline may carry fuel for the next sector instead of buying it there. The extra mass costs extra burn, so the price difference has to pay for the fuel burnt to carry it. Fuel prices here are illustrative.',no:'Når drivstoff er billigere på avgangsplassen enn på destinasjonen, kan et flyselskap ta med drivstoff til neste etappe i stedet for å kjøpe det der. Den ekstra massen gir ekstra forbruk, så prisforskjellen må betale for drivstoffet som brennes for å frakte det. Prisene her er illustrative.'}); }
+
+/* ================= 5 cruise ================= */
+const C={dist:800,mass:66000,ci:30,wind:'calm'};
+const FLS=[290,310,330,350,370,390];
+const isaT=fl=>Math.max(216.65,288.15-1.98*fl/10), aSnd=fl=>661.47*Math.sqrt(isaT(fl)/288.15);
+const optFL=m=>clamp(390-(m-56000)/1000*4,300,398), recMax=m=>Math.min(398,optFL(m)+22);
+const windAt=fl=>C.wind==='calm'?0:C.wind==='head'?-(15+(fl-290)*0.85):(15+(fl-290)*0.85);
+function cruiseAt(fl){ const m=C.mass, opt=optFL(m), mrc=0.765; const pen=1+0.003*Math.pow((fl-opt)/10,2);
+  const sr0=(mrc*aSnd(opt))/cruiseFF(m)/pen; // NM per kg still air at MRC
+  let best=null; for(let M=0.70;M<=0.801;M+=0.002){ const tas=M*aSnd(fl), gs=tas+windAt(fl), dM=M-mrc, sr=sr0*(1-30*Math.pow(Math.max(0,dM),2)-12*Math.pow(Math.min(0,dM),2));
+    const kgNM=1/(sr*gs/tas), minNM=60/gs, cost=kgNM+C.ci*minNM; if(!best||cost<best.cost) best={M,tas,gs,kgNM,minNM,cost}; }
+  const climb=(fl-290)/20*70, climbT=(fl-290)/20*0.6;
+  const fuel=best.kgNM*C.dist+climb+450, time=best.minNM*C.dist+climbT+20;
+  return {fl,M:best.M,gs:best.gs,fuel,time,cost:fuel+C.ci*time,ok:fl<=recMax(m)}; }
+const CC=LAB.fit(el('cvC'),()=>dC(),2);
+function cruiseAll(){ const r=FLS.map(cruiseAt), av=r.filter(x=>x.ok); const bf=av.reduce((a,b)=>b.fuel<a.fuel?b:a,av[0]), bc=av.reduce((a,b)=>b.cost<a.cost?b:a,av[0]); return {r,bf,bc}; }
+function dC(){ if(!CC.w) return; const g=bg(CC), W=CC.w, H=CC.h, narrow=W<520, R=cruiseAll(); const L0=narrow?40:52, R0=12, T0=34, B0=narrow?58:52;
+  const fmax=Math.max(...R.r.map(x=>x.fuel))*1.08, fmin=Math.min(...R.r.map(x=>x.fuel))*0.85, Y=f=>T0+(H-T0-B0)*(1-(f-fmin)/(fmax-fmin));
+  hand(g,L({en:'trip fuel and time at each level (ECON speed for the cost index)',no:'turdrivstoff og tid på hvert nivå (ECON-fart for kostindeksen)'}),L0,18,'#13202A','start',narrow?14:16);
+  const step=(fmax-fmin)>1500?500:(fmax-fmin)>600?200:100; g.strokeStyle='#E3E8E6'; g.lineWidth=1; for(let v=Math.ceil(fmin/step)*step;v<=fmax;v+=step){ g.beginPath(); g.moveTo(L0,Y(v)); g.lineTo(W-R0,Y(v)); g.stroke(); mono(g,nf(v,0),L0-4,Y(v)+3,'#5E6B74','right',10); }
+  mono(g,'kg',L0-4,T0-6,'#5E6B74','right',10); mono(g,L({en:'axis does not start at zero',no:'aksen starter ikke på null'}),W-R0,narrow?H-3:T0-6,'#9AA6AC','right',narrow?8.5:9.5);
+  const cw=(W-L0-R0)/FLS.length, bw=Math.min(54,cw*0.6);
+  R.r.forEach((x,i)=>{ const cx=L0+cw*(i+0.5); const best=x===R.bc, bfuel=x===R.bf;
+    g.fillStyle= !x.ok? '#E6EAEA' : best? '#9A1E68' : bfuel? '#1E5E9E' : '#B9C6CC'; g.fillRect(cx-bw/2,Y(x.fuel),bw,H-B0-Y(x.fuel));
+    if(!x.ok){ g.save(); g.beginPath(); g.rect(cx-bw/2,Y(x.fuel),bw,H-B0-Y(x.fuel)); g.clip(); g.strokeStyle='#C9D2D5'; g.lineWidth=1; for(let k=-H;k<bw+H;k+=7){ g.beginPath(); g.moveTo(cx-bw/2+k,H-B0); g.lineTo(cx-bw/2+k+H,H-B0-H); g.stroke(); } g.restore(); mono(g,'> REC MAX',cx,Y(x.fuel)-4,'#9AA6AC','center',narrow?8:9.5); }
+    else mono(g,nf(x.fuel,0),cx,Y(x.fuel)-4,best?'#9A1E68':bfuel?'#1E5E9E':'#4C5B66','center',narrow?8.5:10);
+    mono(g,'FL'+x.fl,cx,H-B0+15,'#13202A','center',narrow?9.5:11); mono(g,hm(x.time/60).replace(' min',''),cx,H-B0+29,'#5E6B74','center',narrow?8.5:10); mono(g,'M'+nf(x.M,3).replace(/^0/,''),cx,H-B0+43,'#5E6B74','center',narrow?8.5:10); });
+  let lx=L0; [[L({en:'least fuel',no:'minst drivstoff'}),'#1E5E9E'],[L({en:'least cost',no:'lavest kostnad'}),'#9A1E68']].forEach(([t,c])=>{ g.fillStyle=c; g.fillRect(lx,25,10,10); mono(g,t,lx+14,34,'#13202A','start',10); lx+=tw(g,t,10)+30; }); }
+function rC(){ const R=cruiseAll(); const b=R.bc, f=R.bf;
+  ro('cR',[[{en:'Optimum level (this mass)',no:'Optimalt nivå (denne massen)'},'FL'+Math.round(optFL(C.mass))],[{en:'REC MAX (approx.)',no:'REC MAX (omtrent)'},'FL'+Math.round(recMax(C.mass))],[{en:'Least-fuel level',no:'Nivå med minst drivstoff'},'FL'+f.fl+' · '+kg(f.fuel)],[{en:'Least-cost level',no:'Nivå med lavest kostnad'},'FL'+b.fl+' · '+kg(b.fuel)+' · '+hm(b.time/60)],[{en:'ECON Mach there',no:'ECON Mach der'},'M '+nf(b.M,3)]]); }
+function uC(){ dC(); rC(); }
+LAB.slider(el('cCtl'),{label:'Distance',min:300,max:2000,step:50,v:C.dist,f:v=>nf(v,0)+' NM',on:v=>{C.dist=v;uC();}});
+LAB.slider(el('cCtl'),{label:'Mass at top of climb',min:56000,max:76000,step:500,v:C.mass,f:v=>t1(v),on:v=>{C.mass=v;uC();}});
+LAB.slider(el('cCtl'),{label:'Cost index',min:0,max:100,step:5,v:C.ci,f:v=>String(v)+' kg/min',on:v=>{C.ci=v;uC();}});
+LAB.seg(el('cWind'),[['calm','Calm'],['head','Headwind grows with height'],['tail','Tailwind grows with height']],C.wind,v=>{C.wind=v;uC();});
+function cTexts(){ el('cLead').innerHTML=L({en:'The flight plan fixes a cruise level and a cost index; the crew adjusts both in flight. Higher is usually better for a jet until the optimum level for the present mass, but wind changes with height and can move the best level down. The aerodynamics behind the optimum level and the speeds is in the <a href="performance.html#climb">performance lab</a>; here the question is which level and speed make this flight cheapest.',no:'Flyplanen fastsetter et marsjnivå og en kostindeks; besetningen justerer begge under flyging. For et jetfly er høyere som regel bedre opp til optimalt nivå for massen, men vinden endrer seg med høyden og kan flytte det beste nivået ned. Aerodynamikken bak optimalt nivå og fartene finner du i <a href="performance.html#climb">ytelseslaben</a>; her er spørsmålet hvilket nivå og hvilken fart som gjør denne flygingen billigst.'});
+  const b=[[{en:'Cost index: time against fuel',no:'Kostindeks: tid mot drivstoff'},{en:'On Airbus aircraft the cost index is the cost of one minute of flight time expressed in kilograms of fuel. With CI 0 only fuel counts and the FMS flies the maximum range speed. A higher CI trades fuel for minutes. The model here minimises fuel + CI × minutes, so watch the ECON Mach rise with the cost index.',no:'På Airbus-fly er kostindeksen kostnaden ved ett minutts flytid uttrykt i kilo drivstoff. Med CI 0 teller bare drivstoffet, og FMS flyr fart for maksimal rekkevidde. En høyere CI bytter drivstoff mot minutter. Modellen her minimerer drivstoff + CI × minutter, så se hvordan ECON Mach stiger med kostindeksen.'}],
+   [{en:'Wind–altitude trade',no:'Vind mot høyde'},{en:'What matters is fuel per ground mile, not per air mile. If the headwind grows with height, a level 4,000 ft below the optimum can give the lower trip fuel even though the aircraft is less efficient there through the air. A tailwind that grows with height makes the higher level even better. The OFP wind and the FMS wind entries make this trade visible.',no:'Det som teller er drivstoff per nautisk mil over bakken, ikke gjennom luften. Øker motvinden med høyden, kan et nivå 4 000 ft under optimalt gi lavere turdrivstoff selv om flyet er mindre effektivt gjennom luften der. En medvind som øker med høyden gjør det høyere nivået enda bedre. OFP-vinden og vinden som legges inn i FMS gjør denne avveiningen synlig.'}],
+   [{en:'Short sectors and step climbs',no:'Korte etapper og trinnvis stigning'},{en:'On a short sector the climb to a high level costs more than the cruise saves, so the best level is lower. On a long sector the optimum rises as fuel burns off, and the plan uses step climbs, limited by the levels ATC can give (the semicircular or the flight level allocation scheme in use).',no:'På en kort etappe koster stigningen til et høyt nivå mer enn marsjen sparer, så det beste nivået er lavere. På en lang etappe stiger optimalt nivå etter hvert som drivstoffet brennes, og planen bruker trinnvise stigninger, begrenset av nivåene ATC kan gi (semisirkulær regel eller den nivåordningen som brukes).'}]];
+  el('cBoxes').innerHTML=b.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+/* ================= 6 ATC flight plan ================= */
+function atcTexts(){ el('atcLead').innerHTML=L({en:'The ATC flight plan (ICAO FPL format) tells air traffic services who you are, what you can do and where you will fly. It is a different document from the operational flight plan (OFP) with the fuel figures. You can fill one in yourself in the <a href="planning.html#fpl">flight plan tool</a>, and the <a href="prep.html#fpl">briefing pack</a> has a page for it. Only the items that matter most for an airline flight are listed here.',no:'ATC-færdselsplanen (ICAO FPL-format) forteller lufttrafikktjenesten hvem du er, hva flyet kan og hvor du skal fly. Det er et annet dokument enn den operative flygeplanen (OFP) med drivstofftallene. Du kan fylle ut en selv i <a href="planning.html#fpl">færdselsplanverktøyet</a>, og <a href="prep.html#fpl">briefingpakken</a> har en egen side for den. Her står bare punktene som betyr mest for en flyselskapsflyging.'});
+  const b=[[{en:'Items 7–9',no:'Punkt 7–9'},{en:'Who and what',no:'Hvem og hva'},{en:'Item 7: the call sign or registration (e.g. <code>NAX123</code>). Item 8: flight rules (<code>I</code> for IFR) and type of flight (<code>S</code> scheduled, <code>N</code> non-scheduled). Item 9: aircraft type and wake category, <code>A320/M</code>.',no:'Punkt 7: kallesignal eller registrering (f.eks. <code>NAX123</code>). Punkt 8: flygeregler (<code>I</code> for IFR) og type flyging (<code>S</code> rute, <code>N</code> ikke-rute). Punkt 9: flytype og virvelkategori, <code>A320/M</code>.'}],
+   [{en:'Item 10',no:'Punkt 10'},{en:'Equipment and capabilities',no:'Utstyr og egenskaper'},{en:'Letters before the slash describe radio and navigation equipment (e.g. <code>S</code> standard, <code>D</code> DME, <code>G</code> GNSS, <code>R</code> PBN approved, <code>W</code> RVSM, <code>Y</code> 8.33 kHz); after the slash comes surveillance (e.g. <code>L</code> Mode S with ADS-B, <code>B1</code> ADS-B out). ATC uses these to decide which routes and procedures you may be given: filing <code>R</code> without the matching PBN codes, or forgetting <code>W</code>, gets a flight rejected or re-routed.',no:'Bokstavene før skråstreken beskriver radio- og navigasjonsutstyr (f.eks. <code>S</code> standard, <code>D</code> DME, <code>G</code> GNSS, <code>R</code> PBN-godkjent, <code>W</code> RVSM, <code>Y</code> 8,33 kHz); etter skråstreken kommer overvåking (f.eks. <code>L</code> Mode S med ADS-B, <code>B1</code> ADS-B ut). ATC bruker dette til å avgjøre hvilke ruter og prosedyrer du kan få: <code>R</code> uten tilhørende PBN-koder, eller glemt <code>W</code>, gir avvist plan eller omdirigering.'}],
+   [{en:'Items 13 and 16',no:'Punkt 13 og 16'},{en:'Departure, destination, alternates',no:'Avgang, destinasjon, alternativer'},{en:'Departure aerodrome and EOBT (estimated off-block time, UTC); destination, total EET and one or two destination alternates. A delay of more than about 15 min to the EOBT needs a delay message, or the slot and the plan no longer match.',no:'Avgangsflyplass og EOBT (beregnet off-block-tid, UTC); destinasjon, total EET og ett eller to destinasjonsalternativer. En forsinkelse på mer enn rundt 15 min i forhold til EOBT krever en forsinkelsesmelding, ellers stemmer ikke slot og plan lenger.'}],
+   [{en:'Item 15',no:'Punkt 15'},{en:'Speed, level, route',no:'Fart, nivå, rute'},{en:'Cruising speed and level, e.g. <code>N0450F350</code> (TAS 450 kt, FL350), then the route: SID, airways and points, STAR. Speed or level changes are written at the point, e.g. <code>/N0450F370</code>. In Europe the plan is checked by the network manager (IFPS), which rejects routes that break the route availability rules.',no:'Marsjfart og -nivå, f.eks. <code>N0450F350</code> (TAS 450 kt, FL350), så ruten: SID, luftleder og punkter, STAR. Endring av fart eller nivå skrives ved punktet, f.eks. <code>/N0450F370</code>. I Europa kontrolleres planen av nettverksforvalteren (IFPS), som avviser ruter som bryter reglene for tilgjengelige ruter.'}],
+   [{en:'Item 18',no:'Punkt 18'},{en:'Other information',no:'Annen informasjon'},{en:'Indicators that complete item 10 and the flight: <code>PBN/</code> with the RNAV and RNP capabilities (e.g. <code>A1B1C1D1O1S2</code>), <code>DOF/</code> date of flight, <code>REG/</code> registration, <code>EET/</code> boundary estimates, <code>RMK/</code> remarks.',no:'Indikatorer som utfyller punkt 10 og flygingen: <code>PBN/</code> med RNAV- og RNP-egenskapene (f.eks. <code>A1B1C1D1O1S2</code>), <code>DOF/</code> dato for flyging, <code>REG/</code> registrering, <code>EET/</code> estimater ved grenser, <code>RMK/</code> merknader.'}],
+   [{en:'Item 19',no:'Punkt 19'},{en:'Supplementary information',no:'Tilleggsinformasjon'},{en:'Endurance, persons on board, emergency and survival equipment. It is not sent with the flight plan message but kept on file for search and rescue. Endurance is the fuel endurance, not the planned flight time.',no:'Utholdenhet, personer om bord, nød- og overlevelsesutstyr. Det sendes ikke med færdselsplanmeldingen, men oppbevares for søk og redning. Utholdenhet er drivstoffets utholdenhet, ikke planlagt flytid.'}]];
+  el('atcBoxes').innerHTML=b.map(([n,t,d])=>`<div class="box"><b class="t">${L(n)} · <i>${L(t)}</i></b><p>${L(d)}</p></div>`).join(''); }
+
+/* ================= 7 ops ================= */
+function cards(){ const c=[
+ [{en:'The OFP and the fuel order',no:'OFP og drivstoffbestillingen'},{en:'The operational flight plan lists each fuel component, the planned fuel at each waypoint and the alternates. The commander signs for the block fuel, adds discretionary fuel if needed, and the figure goes to the refueller. The refuelling is ordered in kilograms but delivered in litres, so the uplift is checked with the fuel density.',no:'Den operative flygeplanen viser hver drivstoffkomponent, planlagt drivstoff ved hvert veipunkt og alternativene. Fartøysjefen signerer for blokkdrivstoffet, legger til skjønnsdrivstoff ved behov, og tallet går til tankeren. Drivstoffet bestilles i kilo, men leveres i liter, så påfyllingen kontrolleres med tettheten.'}],
+ [{en:'FMS fuel predictions',no:'Drivstoffberegninger i FMS'},{en:'On the A320 the crew enters ZFW, block fuel, the final reserve and the route with winds; the FMS then predicts the fuel on board at each waypoint and at the destination and alternate. The minimum fuel at the destination entered by the crew (alternate plus final reserve) triggers a message when the prediction falls below it.',no:'På A320 legger besetningen inn ZFW, blokkdrivstoff, endelig reserve og ruten med vind; FMS beregner så drivstoff om bord ved hvert veipunkt og ved destinasjon og alternativ. Minste drivstoff ved destinasjonen som besetningen legger inn (alternativ pluss endelig reserve), gir en melding når prognosen faller under den.'}],
+ [{en:'Fuel checks and leaks',no:'Drivstoffsjekker og lekkasjer'},{en:'At regular intervals the crew compares fuel on board with the OFP. A second check matters as much: fuel on board plus fuel used should equal the fuel at engine start. A growing difference points to a leak, and the leak procedure, not the fuel plan, then decides what to do.',no:'Med jevne mellomrom sammenligner besetningen drivstoff om bord med OFP. En annen sjekk er like viktig: drivstoff om bord pluss brukt drivstoff skal være lik drivstoffet ved motorstart. En økende forskjell tyder på lekkasje, og da er det lekkasjeprosedyren, ikke drivstoffplanen, som avgjør hva som gjøres.'}],
+ [{en:'Taxi fuel and the APU',no:'Taksedrivstoff og APU'},{en:'Taxi fuel covers engine start, taxi and the APU before take-off. A long taxi or a de-icing queue can use several hundred kilograms more than planned. If the fuel at the runway is below the planned take-off fuel, the difference comes out of contingency before the flight has started, which needs a decision before take-off.',no:'Taksedrivstoff dekker motorstart, taksing og APU før avgang. Lang taksing eller kø til avising kan bruke flere hundre kilo mer enn planlagt. Er drivstoffet ved rullebanen under planlagt avgangsdrivstoff, går forskjellen av uforutsett-drivstoffet før flygingen har begynt, og det krever en beslutning før avgang.'}],
+ [{en:'Where the fuel sits',no:'Hvor drivstoffet ligger'},{en:'How the fuel is distributed and used between the centre and wing tanks, and why the wing tanks are kept full longest, is in the <a href="jetsystems.html">jet systems lab</a>. The effect of fuel on the CG during the flight is in the <a href="massbalance.html#cg">mass and balance lab</a>.',no:'Hvordan drivstoffet fordeles og brukes mellom senter- og vingetankene, og hvorfor vingetankene holdes fulle lengst, står i <a href="jetsystems.html">laben om jetsystemer</a>. Hvordan drivstoffet påvirker CG under flygingen, står i <a href="massbalance.html#cg">laben om masse og balanse</a>.'}],
+ [{en:'Re-planning in flight',no:'Ny planlegging under flyging'},{en:'If the flight is re-planned in the air, for example to a new destination, the fuel needed from that point is worked out again with the same components: trip to the new destination, contingency, alternate and final reserve. Some operators plan a flight to an intermediate destination with full reserves and then continue to the real destination from a decision point, which allows less contingency on long sectors.',no:'Planlegges flygingen på nytt i luften, for eksempel til en ny destinasjon, regnes drivstoffet fra det punktet ut på nytt med de samme komponentene: tur til den nye destinasjonen, uforutsett, alternativ og endelig reserve. Noen operatører planlegger en flyging til en mellomliggende destinasjon med fulle reserver og fortsetter så til den egentlige destinasjonen fra et beslutningspunkt, noe som gir mindre uforutsett-drivstoff på lange etapper.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+function fuelTexts(){ el('fuelLead').innerHTML=L({en:'Every commercial flight starts with the same sum. The EASA basic fuel scheme (CAT.OP.MPA.181 and its AMC) splits the fuel into parts with a job each, and the sum must then fit in the tanks and keep the take-off and landing masses inside their limits. Your briefing pack has the same sum for your own flights on the <a href="prep.html#fuel">Fuel</a> page.',no:'Hver kommersiell flyging begynner med den samme summen. EASAs grunnleggende drivstoffordning (CAT.OP.MPA.181 med AMC) deler drivstoffet i deler som har hver sin oppgave, og summen må så få plass i tankene og holde avgangs- og landingsmassen innenfor grensene. Briefingpakken din har den samme summen for dine egne flyginger på siden <a href="prep.html#fuel">Drivstoff</a>.'}); }
+
+/* ================= quiz ================= */
+const Q=[
+ {q:{en:'Trip fuel 3,000 kg. Five minutes of holding at 1,500 ft above the destination takes 190 kg. What is the contingency fuel in the basic scheme (5 % option)?',no:'Turdrivstoff 3 000 kg. Fem minutter venting i 1 500 ft over destinasjonen bruker 190 kg. Hva blir uforutsett-drivstoffet i grunnordningen (5 %-alternativet)?'},a:[{en:'190 kg, because the 5-minute amount is higher than 5 % of trip',no:'190 kg, fordi 5-minuttersmengden er høyere enn 5 % av tur'},{en:'150 kg, 5 % of trip',no:'150 kg, 5 % av tur'},{en:'340 kg, both added together',no:'340 kg, begge lagt sammen'},{en:'None: contingency is only needed above 5,000 kg of trip fuel',no:'Ingen: uforutsett trengs bare over 5 000 kg turdrivstoff'}],c:0,e:{en:'Contingency is the higher of the two. On short sectors the 5-minute floor usually governs.',no:'Uforutsett-drivstoff er den høyeste av de to. På korte etapper er det som regel 5-minuttersgulvet som styrer.'}},
+ {q:{en:'What is the final reserve fuel for a turbine-engined aeroplane meant to provide?',no:'Hva skal endelig reserve for et turbinfly dekke?'},a:[{en:'30 min of holding at 1,500 ft above the aerodrome, worked out with the expected mass on arrival, and it should be on board at landing',no:'30 min venting i 1 500 ft over flyplassen, beregnet med forventet masse ved ankomst, og det skal være om bord ved landing'},{en:'45 min of cruise at the planned level',no:'45 min marsj på planlagt nivå'},{en:'Fuel for a missed approach and diversion',no:'Drivstoff til avbrutt innflyging og diversjon'},{en:'Fuel for unforeseen ATC delays on the way',no:'Drivstoff til uforutsette ATC-forsinkelser underveis'}],c:0,e:{en:'The missed approach and diversion are covered by alternate fuel; en-route surprises by contingency. The final reserve is the last protected amount.',no:'Avbrutt innflyging og diversjon dekkes av alternativdrivstoff, overraskelser underveis av uforutsett-drivstoff. Endelig reserve er den siste beskyttede mengden.'}},
+ {q:{en:'ZFM 60,000 kg, trip fuel 2,500 kg, MLM 64,500 kg. Ignoring taxi fuel, what is the most take-off fuel the landing mass allows?',no:'ZFM 60 000 kg, turdrivstoff 2 500 kg, MLM 64 500 kg. Uten taksedrivstoff, hva er det meste avgangsdrivstoffet landingsmassen tillater?'},a:[{en:'7,000 kg',no:'7 000 kg'},{en:'4,500 kg',no:'4 500 kg'},{en:'2,000 kg',no:'2 000 kg'},{en:'18,000 kg',no:'18 000 kg'}],c:0,e:{en:'Landing mass = ZFM + take-off fuel − trip. 64,500 − 60,000 + 2,500 = 7,000 kg.',no:'Landingsmasse = ZFM + avgangsdrivstoff − tur. 64 500 − 60 000 + 2 500 = 7 000 kg.'}},
+ {q:{en:'Why does the landing mass, rather than the take-off mass, often limit the fuel on a short sector?',no:'Hvorfor er det ofte landingsmassen og ikke avgangsmassen som begrenser drivstoffet på en kort etappe?'},a:[{en:'Little fuel is burnt, so almost all the fuel loaded is still on board at landing, and MLM is much lower than MTOM',no:'Lite drivstoff brennes, så nesten alt som fylles er fortsatt om bord ved landing, og MLM er mye lavere enn MTOM'},{en:'The reserves are larger on short sectors',no:'Reservene er større på korte etapper'},{en:'MLM is higher than MTOM',no:'MLM er høyere enn MTOM'},{en:'Contingency is not allowed on short sectors',no:'Uforutsett er ikke tillatt på korte etapper'}],c:0,e:{en:'With 13.5 t between MTOM and MLM in this model, any sector burning less than that and loaded close to MTOM would arrive above MLM.',no:'Med 13,5 t mellom MTOM og MLM i denne modellen vil en etappe som brenner mindre enn det og er lastet nær MTOM, komme frem over MLM.'}},
+ {q:{en:'When is a crew expected to declare MINIMUM FUEL?',no:'Når forventes besetningen å melde MINIMUM FUEL?'},a:[{en:'When committed to land at a specific aerodrome and any change to the existing clearance may lead to landing with less than the final reserve',no:'Når den er forpliktet til å lande på en bestemt flyplass og enhver endring i gjeldende klarering kan føre til landing med mindre enn endelig reserve'},{en:'As soon as the fuel on board is below the planned figure',no:'Så snart drivstoffet om bord er under planlagt verdi'},{en:'When the predicted landing fuel is already below the final reserve',no:'Når beregnet drivstoff ved landing allerede er under endelig reserve'},{en:'Whenever contingency fuel has been used',no:'Hver gang uforutsett-drivstoff er brukt'}],c:0,e:{en:'MINIMUM FUEL is not an emergency; it warns ATC that there is no room for delay. A prediction below the final reserve is MAYDAY FUEL.',no:'MINIMUM FUEL er ikke en nødsituasjon; den varsler ATC om at det ikke er rom for forsinkelse. En prognose under endelig reserve er MAYDAY FUEL.'}},
+ {q:{en:'What triggers MAYDAY MAYDAY MAYDAY FUEL?',no:'Hva utløser MAYDAY MAYDAY MAYDAY FUEL?'},a:[{en:'The usable fuel predicted at landing at the nearest aerodrome where a safe landing can be made is less than the final reserve',no:'Brukbart drivstoff beregnet ved landing på nærmeste flyplass der en sikker landing kan gjøres, er mindre enn endelig reserve'},{en:'The fuel on board reaches the final reserve figure',no:'Drivstoffet om bord når verdien for endelig reserve'},{en:'The alternate can no longer be reached',no:'Alternativet kan ikke lenger nås'},{en:'ATC refuses a direct routing',no:'ATC avslår en direkte rute'}],c:0,e:{en:'It is based on the prediction at landing, so it is declared early enough for ATC to help.',no:'Den bygger på prognosen ved landing, så den meldes tidlig nok til at ATC kan hjelpe.'}},
+ {q:{en:'Halfway to the destination the predicted landing fuel has dropped below alternate fuel plus final reserve, but is well above the final reserve. What is the right first step?',no:'Halvveis til destinasjonen har beregnet drivstoff ved landing falt under alternativdrivstoff pluss endelig reserve, men er godt over endelig reserve. Hva er riktig første steg?'},a:[{en:'Re-plan while there is still a choice: divert, reduce the burn, or commit to the destination if policy and conditions allow',no:'Planlegg på nytt mens det fortsatt finnes et valg: divert, reduser forbruket, eller forplikt deg til destinasjonen hvis policy og forhold tillater det'},{en:'Declare MAYDAY FUEL',no:'Meld MAYDAY FUEL'},{en:'Continue unchanged; contingency covers it',no:'Fortsett uendret; uforutsett dekker det'},{en:'Declare MINIMUM FUEL immediately',no:'Meld MINIMUM FUEL med en gang'}],c:0,e:{en:'Neither declaration applies yet. The value of noticing early is that the options are still open.',no:'Ingen av meldingene gjelder ennå. Verdien av å oppdage det tidlig er at mulighetene fortsatt er åpne.'}},
+ {q:{en:'The burn penalty for carrying fuel is 3 % per hour and the sector is 2 h. Fuel costs 800 EUR/t at the departure. Above roughly which destination price does tankering start to pay?',no:'Ekstra forbruk ved å frakte drivstoff er 3 % per time, og etappen er 2 t. Drivstoff koster 800 EUR/t på avgangsplassen. Over omtrent hvilken pris på destinasjonen begynner tankering å lønne seg?'},a:[{en:'About 851 EUR/t',no:'Omtrent 851 EUR/t'},{en:'Any price above 800 EUR/t',no:'Enhver pris over 800 EUR/t'},{en:'About 1,000 EUR/t',no:'Omtrent 1 000 EUR/t'},{en:'About 776 EUR/t',no:'Omtrent 776 EUR/t'}],c:0,e:{en:'6 % of the tankered fuel is burnt, so 94 % arrives: 800 / 0.94 ≈ 851 EUR/t.',no:'6 % av det tankede drivstoffet brennes, så 94 % kommer frem: 800 / 0,94 ≈ 851 EUR/t.'}},
+ {q:{en:'Which change makes tankering less attractive, all else equal?',no:'Hvilken endring gjør tankering mindre lønnsomt, alt annet likt?'},a:[{en:'A longer sector',no:'En lengre etappe'},{en:'A bigger price difference',no:'En større prisforskjell'},{en:'A lighter zero fuel mass',no:'En lettere masse uten drivstoff'},{en:'A higher MLM',no:'En høyere MLM'}],c:0,e:{en:'The burn penalty grows with flight time, so the break-even price difference grows too.',no:'Det ekstra forbruket øker med flytiden, og da øker også prisforskjellen som skal til for å gå i null.'}},
+ {q:{en:'Why is the destination weather checked for a window from one hour before to one hour after the ETA?',no:'Hvorfor sjekkes destinasjonsværet i et vindu fra én time før til én time etter ETA?'},a:[{en:'Because the actual arrival time can differ from the plan, and the forecast timing is uncertain',no:'Fordi den faktiske ankomsttiden kan avvike fra planen, og tidspunktene i prognosen er usikre'},{en:'Because the TAF is only valid for two hours',no:'Fordi TAF bare gjelder i to timer'},{en:'To leave time for two approaches',no:'For å gi tid til to innflyginger'},{en:'Because ATC slots are two hours long',no:'Fordi ATC-slotter er to timer lange'}],c:0,e:{en:'A delayed departure or a different wind moves the arrival; the window makes the plan robust to both.',no:'En forsinket avgang eller annen vind flytter ankomsten; vinduet gjør planen robust mot begge.'}},
+ {q:{en:'When does a flight plan need two destination alternates?',no:'Når trenger en flyging to destinasjonsalternativer?'},a:[{en:'When the destination forecast is below the planning minima in the window, or there is no weather information for it',no:'Når prognosen for destinasjonen er under planleggingsminima i vinduet, eller det ikke finnes værinformasjon for den'},{en:'Whenever the flight is longer than 6 h',no:'Hver gang flygingen er lengre enn 6 t'},{en:'When the destination has two runways',no:'Når destinasjonen har to rullebaner'},{en:'Only for isolated aerodromes',no:'Bare for isolerte flyplasser'}],c:0,e:{en:'The flight may still depart, but with two alternates and the fuel to the further one.',no:'Flygingen kan likevel gå, men med to alternativer og drivstoff til det fjerneste.'}},
+ {q:{en:'Why are planning minima for an alternate stricter than the landing minima of its best approach?',no:'Hvorfor er planleggingsminima for et alternativ strengere enn landingsminimaene for den beste innflygingen der?'},a:[{en:'So that a forecast error or an equipment failure still leaves a usable approach when you get there',no:'Slik at en feil i prognosen eller en utstyrsfeil fortsatt gir en brukbar innflyging når du kommer frem'},{en:'Because the crew is more tired at the alternate',no:'Fordi besetningen er mer sliten på alternativet'},{en:'Because alternates have no ATC',no:'Fordi alternativer ikke har ATC'},{en:'To reduce the alternate fuel',no:'For å redusere alternativdrivstoffet'}],c:0,e:{en:'The alternate is the safety net; planning one step down keeps a margin.',no:'Alternativet er sikkerhetsnettet; å planlegge ett trinn ned gir en margin.'}},
+ {q:{en:'A strong headwind increases with height. Why can a level below the optimum give the lower trip fuel?',no:'En sterk motvind øker med høyden. Hvorfor kan et nivå under optimalt gi lavere turdrivstoff?'},a:[{en:'Because trip fuel depends on fuel per ground mile, and the lower level has a higher ground speed',no:'Fordi turdrivstoffet avhenger av drivstoff per nautisk mil over bakken, og det lavere nivået gir høyere groundspeed'},{en:'Because engines are more efficient at lower levels',no:'Fordi motorene er mer effektive lavere'},{en:'Because the optimum level does not depend on mass',no:'Fordi optimalt nivå ikke avhenger av massen'},{en:'Because the cost index is ignored at lower levels',no:'Fordi kostindeksen ignoreres lavere'}],c:0,e:{en:'The small loss in air range can be smaller than the gain in ground speed.',no:'Det lille tapet i rekkevidde gjennom luften kan være mindre enn gevinsten i groundspeed.'}},
+ {q:{en:'During a fuel check, fuel on board plus fuel used is 400 kg less than the fuel at engine start, and the gap is growing. What does it suggest?',no:'Ved en drivstoffsjekk er drivstoff om bord pluss brukt drivstoff 400 kg mindre enn drivstoffet ved motorstart, og forskjellen øker. Hva tyder det på?'},a:[{en:'A possible fuel leak',no:'En mulig drivstofflekkasje'},{en:'A stronger headwind than planned',no:'Sterkere motvind enn planlagt'},{en:'A higher cost index',no:'En høyere kostindeks'},{en:'Normal fuel temperature effects only',no:'Bare normale temperaturvirkninger på drivstoffet'}],c:0,e:{en:'Wind and speed change the burn, but fuel used is measured by the engines. Fuel that is neither in the tanks nor burnt by the engines has gone somewhere else.',no:'Vind og fart endrer forbruket, men brukt drivstoff måles av motorene. Drivstoff som verken er i tankene eller brent av motorene, har havnet et annet sted.'}}
+];
+LAB.quiz(el('qbox'),'flightplanning',()=>LAB.shuffle(Q.slice()),10);
+
+function texts(){ fuelTexts(); altTexts(); pmTable(); tTexts(); cTexts(); atcTexts(); cards(); }
+LAB.start('fpl'); texts(); uF(); uA(); uI(); uT(); uC(); newDrill();
+LAB.onLang(()=>{ texts(); uF(); uA(); uI(); uT(); uC(); drawDrill(); });
+})();
+</script>
+</body>
+</html>

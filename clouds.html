@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Almost all weather starts the same way: air is cooled until it reaches its dew point. Lift a parcel of air and see whether it keeps rising into a cumulus…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clouds, Stability and Fog</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#cv1{aspect-ratio:16/10;max-height:520px}#cv2{aspect-ratio:16/8;max-height:420px}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+</style>
+</head>
+<body data-title="Clouds, Stability and Fog">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
+      <h1>Clouds, stability and fog</h1>
+      <p>Almost all weather starts the same way: air is cooled until it reaches its dew point. Lift a parcel of air and see whether it keeps rising into a cumulus or a thunderstorm, or sinks back and spreads out as a flat layer. Then cool a clear, calm night and watch fog form.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#lift">Lift a parcel</a><a href="#fog">Fog overnight</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="lift">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Lift a parcel of air</h2>
+    <div class="split">
+      <div class="paper"><canvas id="cv1" aria-label="Temperature against height, a rising parcel and the cloud it makes"></canvas></div>
+      <div class="panel">
+        <div class="grp">What lifts the air</div><div id="lif"></div>
+        <div id="c1"></div>
+        <label class="chk" style="margin:4px 0"><input type="checkbox" id="inv"> <span>Inversion aloft</span></label>
+        <div class="ro" style="margin-top:6px">
+          <div class="rrow"><span>Cloud base</span><b id="r1"></b></div>
+          <div class="rrow"><span>Cloud tops</span><b id="r2"></b></div>
+          <div class="rrow"><span>Freezing level</span><b id="r3"></b></div>
+          <div class="rrow"><span>The air is</span><b id="r4"></b></div>
+          <div class="rrow"><span>Cloud</span><b id="r5"></b></div>
+        </div>
+        <p class="callout blue" id="x1"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="fog">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Fog overnight</h2>
+    <div class="split">
+      <div class="paper"><canvas id="cv2" aria-label="Temperature and dew point through the night, and when fog forms"></canvas></div>
+      <div class="panel">
+        <div id="c2"></div>
+        <div class="grp">Sky</div><div id="sky"></div>
+        <div class="ro" style="margin-top:6px">
+          <div class="rrow"><span>Fog or low cloud forms</span><b id="f1"></b></div>
+          <div class="rrow"><span>Type</span><b id="f2"></b></div>
+          <div class="rrow"><span>Lifts or clears</span><b id="f3"></b></div>
+        </div>
+        <p class="callout" id="x2"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">3 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. Real soundings are not straight lines, the saturated lapse rate depends on temperature and pressure, and fog depends on local terrain and moisture. Use the TAF, the METAR trend and the forecast charts for decisions.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'Clouds, Stability and Fog':'Skyer, stabilitet og tåke','Clouds, stability and fog':'Skyer, stabilitet og tåke','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
+ 'Almost all weather starts the same way: air is cooled until it reaches its dew point. Lift a parcel of air and see whether it keeps rising into a cumulus or a thunderstorm, or sinks back and spreads out as a flat layer. Then cool a clear, calm night and watch fog form.':'Nesten alt vær starter på samme måte: luft kjøles ned til duggpunktet. Løft en luftpakke og se om den fortsetter å stige til en cumulus eller et tordenvær, eller synker tilbake og legger seg som et flatt lag. Kjøl så ned en klar, stille natt og se tåken dannes.',
+ 'Lift a parcel':'Løft en luftpakke','Lift a parcel of air':'Løft en luftpakke','Fog overnight':'Tåke gjennom natten','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Operations':'Operativt','Check':'Sjekk',
+ 'What lifts the air':'Hva løfter luften','Inversion aloft':'Inversjon i høyden','Cloud base':'Skybase','Cloud tops':'Skytopper','Freezing level':'Frysenivå','The air is':'Luften er','Cloud':'Sky',
+ 'Heating':'Oppvarming','Hills':'Terreng','Front':'Front','Sky':'Himmel','Clear':'Klar','Overcast':'Overskyet','Fog or low cloud forms':'Tåke eller lave skyer dannes','Type':'Type','Lifts or clears':'Letter eller forsvinner',
+ 'Teaching model. Real soundings are not straight lines, the saturated lapse rate depends on temperature and pressure, and fog depends on local terrain and moisture. Use the TAF, the METAR trend and the forecast charts for decisions.':'Opplæringsmodell. Virkelige temperaturprofiler er ikke rette linjer, den fuktigadiabatiske gradienten avhenger av temperatur og trykk, og tåke avhenger av lokalt terreng og fuktighet. Bruk TAF, trenden i METAR og prognosekartene til beslutninger.'
+});
+const S={lif:'heat',t:22,td:12,elr:2.2,inv:false,invH:6000,invS:4};
+const C1=LAB.fit(el('cv1'),()=>d1(),2), C2=LAB.fit(el('cv2'),()=>d2(),2);
+function hand(g,t,x,y,c,al){ g.font='600 13px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'center'; g.fillText(t,x,y); g.textAlign='start'; }
+const HT=30000;
+const baseH=()=>Math.max(0,(S.t-S.td)*400);
+const env=h=>{ const b=baseH(); let t= S.lif==='heat'? (h<b? S.t-3*h/1000 : S.t-3*b/1000-S.elr*(h-b)/1000) : S.t-S.elr*h/1000; if(S.inv){ if(h>S.invH&&h<S.invH+600) t+= S.invS*(h-S.invH)/600 + S.elr*(h-S.invH)/1000; else if(h>=S.invH+600) t+= S.invS + S.elr*0.6; } return t; };
+const salr=t=>Math.max(1.2,Math.min(2.9,1.5+(15-t)*0.045));
+function sim(){ const base=Math.max(0,(S.t-S.td)*400); const kick=0.5; // tvungen løft for terreng og front
+  const forced= S.lif==='hill'?5000:S.lif==='front'?9000:0; const pts=[]; let tp=S.t+kick, h=0, top=null, satur=false, cb=null; const dz=50;
+  while(h<HT){ const lr= h<base? 3 : salr(tp); if(h>=base&&!satur){ satur=true; cb=h; } const te=env(h); pts.push([h,tp]); if(tp<te && h>forced){ top=h; break; } tp-=lr*dz/1000; h+=dz; }
+  if(top==null) top=HT; const sat=cb!=null&&cb<top; let fz=null; for(let z=0;z<HT;z+=50){ if(env(z)<=0){ fz=z; break; } }
+  const stab= S.elr>3? 'abs' : S.elr>salr(env(base)) ? 'cond' : 'stable';
+  let cloud='none'; if(sat){ const depth=top-cb; if(S.lif!=='heat'&&stab==='stable') cloud= S.lif==='front'?'ns':'st'; else if(depth<1500) cloud= stab==='stable'?'st':'cuh'; else if(depth<8000) cloud='cu'; else if(top>18000&&fz&&top>fz+8000) cloud='cb'; else cloud='tcu'; }
+  return {base,cb,top,pts,sat,fz,stab,cloud}; }
+function d1(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const R=sim();
+  const L0=46,T0=12,B0=26, PW=W*0.56-L0, PH=H-T0-B0, tmin=-50, tmax=35, X=t=>L0+(t-tmin)/(tmax-tmin)*PW, Y=h=>T0+PH-h/HT*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let t=-50;t<=35;t+=10){ g.beginPath(); g.moveTo(X(t),T0); g.lineTo(X(t),T0+PH); g.stroke(); } for(let h=0;h<=HT;h+=5000){ g.beginPath(); g.moveTo(L0,Y(h)); g.lineTo(L0+PW,Y(h)); g.stroke(); }
+  g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; for(let t=-40;t<=30;t+=20) g.fillText(t+'°',X(t)-10,T0+PH+14); for(let h=0;h<=HT;h+=10000) g.fillText((h/1000)+'k',6,Y(h)+4);
+  g.strokeStyle='#1E5E9E'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(X(0),T0); g.lineTo(X(0),T0+PH); g.stroke(); g.setLineDash([]);
+  // miljø
+  g.strokeStyle='#C2410C'; g.lineWidth=2.2; g.beginPath(); for(let h=0;h<=HT;h+=100){ const x=X(env(h)); h?g.lineTo(x,Y(h)):g.moveTo(x,Y(h)); } g.stroke();
+  if(S.inv){ g.fillStyle='rgba(194,65,12,.08)'; g.fillRect(L0,Y(S.invH+600),PW,Y(S.invH)-Y(S.invH+600)); hand(g,L({en:'inversion',no:'inversjon'}),X(env(S.invH))+40,Y(S.invH+300)+5,'#C2410C','start'); }
+  // duggpunkt
+  g.strokeStyle='#2B6A3F'; g.lineWidth=1.4; g.setLineDash([5,4]); g.beginPath(); g.moveTo(X(S.td),Y(0)); g.lineTo(X(S.td-0.5*R.base/1000),Y(R.base)); g.stroke(); g.setLineDash([]);
+  // pakke
+  g.strokeStyle='#9A1E68'; g.lineWidth=2.4; g.beginPath(); R.pts.forEach(([h,t],i)=>{ i?g.lineTo(X(t),Y(h)):g.moveTo(X(t),Y(h)); }); g.stroke();
+  if(R.sat){ g.strokeStyle='#13202A'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(L0,Y(R.cb)); g.lineTo(W-8,Y(R.cb)); g.stroke(); g.setLineDash([]); }
+  hand(g,L({en:'the air around',no:'luften rundt'}),X(env(HT*0.75))+6,Y(HT*0.75),'#C2410C','start'); hand(g,L({en:'rising parcel',no:'stigende pakke'}),X(R.pts[Math.min(R.pts.length-1,Math.floor(R.pts.length*0.5))][1])-6,Y(R.pts[Math.floor(R.pts.length*0.5)][0]),'#9A1E68','end'); hand(g,L({en:'dew point',no:'duggpunkt'}),X(S.td)-4,Y(R.base*0.5+300),'#2B6A3F','end');
+  // himmelen
+  const sx=W*0.6, sw=W*0.38; g.fillStyle='#E8EFF4'; g.fillRect(sx,T0,sw,PH); g.fillStyle='#E9E4D8'; g.fillRect(sx,Y(0),sw,B0);
+  if(R.fz){ g.strokeStyle='#1E5E9E'; g.setLineDash([4,5]); g.beginPath(); g.moveTo(sx,Y(R.fz)); g.lineTo(sx+sw,Y(R.fz)); g.stroke(); g.setLineDash([]); g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#1E5E9E'; g.fillText('0 °C',sx+sw-34,Y(R.fz)-4); }
+  if(R.sat){ const yb=Y(R.cb), yt=Y(R.top), cx=sx+sw/2; g.fillStyle='#fff'; g.strokeStyle='#B4BFC7'; g.lineWidth=1.2;
+    if(R.cloud==='st'||R.cloud==='ns'){ g.fillStyle=R.cloud==='ns'?'#B8C2C9':'#DDE3E7'; g.fillRect(sx+6,yt,sw-12,yb-yt); g.strokeRect(sx+6,yt,sw-12,yb-yt); }
+    else { const top=Math.max(yt,T0+34), w=R.cloud==='cuh'?sw*0.26:R.cloud==='cu'?sw*0.34:R.cloud==='tcu'?sw*0.3:sw*0.32; const hgt=yb-top; g.fillStyle=R.cloud==='cb'?'#C9D2D8':'#fff';
+      const blobs=[]; const n=Math.max(3,Math.round(hgt/18)); for(let i=0;i<=n;i++){ const y=yb-hgt*i/n, ww=w*(R.cloud==='cuh'?1:1-0.25*i/n); for(let k=-1;k<=1;k++){ blobs.push([cx+k*ww*0.33+Math.sin(i*1.7+k)*4,y-6,ww*0.36]); } }
+      g.beginPath(); blobs.forEach(([x,y,r])=>{ g.moveTo(x+r,y); g.arc(x,y,r,0,7); }); g.fill(); g.strokeStyle='#B4BFC7'; g.lineWidth=1; g.stroke(); g.beginPath(); blobs.forEach(([x,y,r])=>{ g.moveTo(x+r,y); g.arc(x,y,r,0,7); }); g.fill();
+      g.fillStyle=g.fillStyle; g.fillRect(cx-w*0.5,yb-12,w,12);
+      if(R.cloud==='cb'){ g.beginPath(); g.moveTo(cx-w*0.4,top+18); g.quadraticCurveTo(cx-sw*0.3,top+6,cx-sw*0.46,top+10); g.lineTo(cx+sw*0.46,top+4); g.quadraticCurveTo(cx+sw*0.3,top+16,cx+w*0.4,top+24); g.closePath(); g.fillStyle='#C9D2D8'; g.fill(); g.strokeStyle='#9AA6AC'; g.stroke();
+        g.strokeStyle='rgba(30,94,158,.55)'; for(let x=cx-w*0.35;x<cx+w*0.35;x+=8){ g.beginPath(); g.moveTo(x,yb+4); g.lineTo(x-3,Y(0)-2); g.stroke(); } } } }
+  if(S.inv&&!R.sat){ hand(g,L({en:'haze trapped under the inversion',no:'dis fanget under inversjonen'}),sx+sw/2,Y(S.invH)+16,'#8A6D3B'); }
+  const names={none:{en:'no cloud',no:'ingen sky'},st:{en:'stratus / stratocumulus layer',no:'stratus / stratocumulus-lag'},ns:{en:'nimbostratus',no:'nimbostratus'},cuh:{en:'fair-weather cumulus',no:'godværscumulus'},cu:{en:'cumulus',no:'cumulus'},tcu:{en:'towering cumulus (TCU)',no:'tårnende cumulus (TCU)'},cb:{en:'cumulonimbus (CB)',no:'cumulonimbus (CB)'}};
+  hand(g,L(names[R.cloud]),sx+sw/2,T0+20,R.cloud==='cb'?'#B3261E':'#13202A'); }
+function r1(){ const R=sim(); el('r1').textContent=R.sat? Math.round(R.cb/100)*100+' ft ('+L({en:'spread',no:'spredning'})+' '+(S.t-S.td)+' °C × 400)' : '—'; el('r2').textContent=R.sat? (R.top>=HT?'> FL300':Math.round(R.top/100)*100+' ft'):'—'; el('r3').textContent=R.fz? Math.round(R.fz/100)*100+' ft':L({en:'at the surface',no:'ved bakken'});
+  el('r4').innerHTML= R.stab==='abs'?`<span class="ko">${L({en:'absolutely unstable',no:'absolutt ustabil'})}</span>`: R.stab==='cond'?`<span class="wa">${L({en:'conditionally unstable',no:'betinget ustabil'})}</span>`:`<span class="ok">${L({en:'stable',no:'stabil'})}</span>`;
+  const names={none:{en:'none',no:'ingen'},st:{en:'layer cloud',no:'lagsky'},ns:{en:'nimbostratus',no:'nimbostratus'},cuh:{en:'small cumulus',no:'små cumulus'},cu:{en:'cumulus',no:'cumulus'},tcu:{en:'towering cumulus',no:'tårnende cumulus'},cb:{en:'cumulonimbus',no:'cumulonimbus'}}; el('r5').innerHTML= R.cloud==='cb'?`<span class="ko">${L(names.cb)}</span> · <a href="storms.html">${L({en:'thunderstorms lab',no:'tordenværlabben'})} →</a>`:L(names[R.cloud]);
+  let t=L({en:'<b>Three lapse rates.</b> Rising air that is not saturated cools at the dry adiabatic lapse rate, about 3 °C per 1000 ft. Once it reaches its dew point, cloud forms and condensation releases heat, so it cools more slowly, at the saturated rate of about 1.5 °C per 1000 ft in warm air (up to nearly 3 °C in very cold air). The air around has its own lapse rate (ISA: 2 °C per 1000 ft). The parcel keeps rising as long as it is warmer than the air around it. ',no:'<b>Tre temperaturgradienter.</b> Stigende luft som ikke er mettet, kjøles med den tørradiabatiske gradienten, rundt 3 °C per 1000 ft. Når den når duggpunktet, dannes sky og kondensasjonen frigjør varme, så den kjøles saktere, med den fuktigadiabatiske gradienten på rundt 1,5 °C per 1000 ft i varm luft (opp mot 3 °C i svært kald luft). Luften rundt har sin egen gradient (ISA: 2 °C per 1000 ft). Pakken fortsetter å stige så lenge den er varmere enn luften rundt. '});
+  t+= R.stab==='stable'? L({en:'Here the air around cools slowly, so the parcel soon becomes colder than its surroundings and stops: <b>stable air</b>. Cloud forms only where air is forced up, as flat layers. Smooth flying, but poor visibility in haze, drizzle and low stratus.',no:'Her kjøles luften rundt sakte, så pakken blir snart kaldere enn omgivelsene og stopper: <b>stabil luft</b>. Sky dannes bare der luft tvinges opp, som flate lag. Rolig flyging, men dårlig sikt i dis, yr og lav stratus.'})
+     : R.stab==='cond'? L({en:'Here the air around cools faster than saturated air but slower than dry air: <b>conditionally unstable</b>. Dry air would sink back, but once the parcel is in cloud it is warmer than its surroundings and accelerates upwards. Heaped cloud, showers and turbulence; with deep instability and plenty of moisture, thunderstorms.',no:'Her kjøles luften rundt raskere enn mettet luft, men saktere enn tørr luft: <b>betinget ustabil</b>. Tørr luft ville sunket tilbake, men når pakken er i sky, er den varmere enn omgivelsene og akselererer oppover. Haugsky, byger og turbulens; med dyp ustabilitet og mye fuktighet, tordenvær.'})
+     : L({en:'Here the air around cools faster than even dry air: <b>absolutely unstable</b>. Every lifted parcel, dry or saturated, keeps accelerating upwards. It is usually found only in a shallow layer near the ground on a hot day: strong thermals, gusty wind and bumpy air below the cloud base.',no:'Her kjøles luften rundt raskere enn til og med tørr luft: <b>absolutt ustabil</b>. Hver løftet luftpakke, tørr eller mettet, fortsetter å akselerere oppover. Det finnes som regel bare i et tynt lag nær bakken en varm dag: kraftige termikker, kastevind og humpete luft under skybasen.'});
+  if(S.inv) t+=' '+L({en:'An <b>inversion</b> (temperature rising with height) is the most stable layer there is: it acts as a lid. Cumulus spread out under it as stratocumulus, and haze and smoke are trapped below it.',no:'En <b>inversjon</b> (temperaturen stiger med høyden) er det mest stabile laget som finnes: den virker som et lokk. Cumulus brer seg ut under den som stratocumulus, og dis og røyk fanges under den.'});
+  el('x1').innerHTML=t; }
+function u1(){ d1(); r1(); }
+function mk1(){ el('c1').innerHTML='';
+  LAB.slider(el('c1'),{label:L({en:'Surface temperature (°C)',no:'Temperatur ved bakken (°C)'}),min:-10,max:34,step:1,v:S.t,f:v=>v+' °C',on:v=>{ S.t=v; if(S.td>v) S.td=v; u1(); }});
+  LAB.slider(el('c1'),{label:L({en:'Dew point (°C)',no:'Duggpunkt (°C)'}),min:-20,max:28,step:1,v:S.td,f:v=>v+' °C',on:v=>{ S.td=Math.min(v,S.t); u1(); }});
+  LAB.slider(el('c1'),{label:L({en:'Lapse rate of the air around (°C per 1000 ft)',no:'Temperaturgradient i luften rundt (°C per 1000 ft)'}),min:0,max:3.6,step:0.1,v:S.elr,f:v=>nf(v,1)+' °C',on:v=>{ S.elr=v; u1(); }});
+  if(S.inv) LAB.slider(el('c1'),{label:L({en:'Inversion height (ft)',no:'Inversjonshøyde (ft)'}),min:1000,max:15000,step:500,v:S.invH,f:v=>v+' ft',on:v=>{ S.invH=v; u1(); }}); }
+LAB.seg(el('lif'),[['heat','Heating'],['hill','Hills'],['front','Front']],S.lif,v=>{ S.lif=v; u1(); });
+el('inv').onchange=e=>{ S.inv=e.target.checked; mk1(); u1(); };
+
+/* ---------- tåke ---------- */
+const F={t:12,td:8,wind:3,sky:'clear'};
+function night(){ // fra 18 til 12 neste dag, time for time i 10-minutters steg
+  const out=[]; let t=F.t, td=F.td, fog=null, fogEnd=null, sat=false; const cf=F.sky==='clear'?1:0.2, wf=F.wind<2?1:F.wind<=7?0.85:0.55;
+  for(let m=0;m<=18*60;m+=10){ const hr=18+m/60, after=(hr>=31)?(hr-31):-1; // soloppgang 07
+    if(after<0){ const rate=1.6*cf*wf*Math.exp(-m/60/7); t-=rate/6; } else { t+= (1.6*(F.sky==='clear'?1:0.4))/6; }
+    if(t<=td){ td=t; if(fog==null) fog=hr; sat=true; } else if(sat){ td=Math.min(td+0.05/6, t); if(t-td>0.8&&fogEnd==null&&fog!=null){ fogEnd=hr; } }
+    out.push([hr,t,td]); }
+  return {out,fog,fogEnd}; }
+const hh=h=>{ const x=((h%24)+24)%24; return String(Math.floor(x)).padStart(2,'0')+':'+String(Math.round((x%1)*60)).padStart(2,'0').replace('60','59'); };
+function fogType(n){ if(n.fog==null) return null; if(F.wind>8) return 'st'; if(F.wind<1.5) return 'shallow'; return 'fog'; }
+function d2(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const N=night();
+  const L0=40,R0=12,T0=14,B0=26, PW=W-L0-R0, PH=H-T0-B0, tmin=Math.min(...N.out.map(x=>x[2]))-2, tmax=Math.max(F.t,...N.out.map(x=>x[1]))+2, X=h=>L0+(h-18)/18*PW, Y=t=>T0+PH-(t-tmin)/(tmax-tmin)*PH;
+  g.fillStyle='rgba(19,32,42,.05)'; g.fillRect(X(20),T0,X(31)-X(20),PH);
+  g.strokeStyle='#EEF1EF'; for(let h=18;h<=36;h+=3){ g.beginPath(); g.moveTo(X(h),T0); g.lineTo(X(h),T0+PH); g.stroke(); g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; g.fillText(hh(h),X(h)-16,T0+PH+14); }
+  for(let t=Math.ceil(tmin);t<=tmax;t+=2){ g.fillStyle='#5E6B74'; g.fillText(t+'°',4,Y(t)+4); }
+  if(N.fog!=null){ const e=N.fogEnd||36; const ft=fogType(N); g.fillStyle=ft==='st'?'rgba(150,160,170,.25)':'rgba(170,180,190,.45)'; g.fillRect(X(N.fog),T0,X(e)-X(N.fog),PH); hand(g,ft==='st'?L({en:'low stratus',no:'lav stratus'}):ft==='shallow'?L({en:'shallow ground fog',no:'grunn bakketåke'}):L({en:'radiation fog',no:'strålingståke'}),(X(N.fog)+X(e))/2,T0+22,'#13202A'); }
+  g.lineWidth=2.2; g.strokeStyle='#C2410C'; g.beginPath(); N.out.forEach(([h,t],i)=>i?g.lineTo(X(h),Y(t)):g.moveTo(X(h),Y(t))); g.stroke();
+  g.strokeStyle='#2B6A3F'; g.setLineDash([5,4]); g.beginPath(); N.out.forEach(([h,,td],i)=>i?g.lineTo(X(h),Y(td)):g.moveTo(X(h),Y(td))); g.stroke(); g.setLineDash([]);
+  hand(g,L({en:'temperature',no:'temperatur'}),X(19),Y(N.out[6][1])-8,'#C2410C','start'); hand(g,L({en:'dew point',no:'duggpunkt'}),X(19),Y(F.td)+18,'#2B6A3F','start'); hand(g,L({en:'night',no:'natt'}),X(25.5),T0+PH-8,'#5E6B74'); hand(g,L({en:'sunrise',no:'soloppgang'}),X(31),T0+PH-8,'#8A6D3B'); }
+function r2(){ const N=night(), ft=fogType(N); el('f1').textContent=N.fog!=null? hh(N.fog):L({en:'no',no:'nei'}); el('f2').textContent= ft? L(ft==='st'?{en:'low stratus (wind too strong for fog at the surface)',no:'lav stratus (for mye vind for tåke ved bakken)'}:ft==='shallow'?{en:'shallow ground fog',no:'grunn bakketåke'}:{en:'radiation fog',no:'strålingståke'}) : '—'; el('f3').textContent= N.fog!=null? (N.fogEnd? hh(N.fogEnd):L({en:'not before noon',no:'ikke før middag'})) : '—';
+  el('x2').innerHTML= N.fog==null? L({en:'<b>No fog tonight.</b> The temperature never reaches the dew point. Fog needs the temperature–dew point spread to close: a small spread at sunset, a clear sky so the ground can radiate heat away, and light wind.',no:'<b>Ingen tåke i natt.</b> Temperaturen når aldri duggpunktet. Tåke krever at spredningen mellom temperatur og duggpunkt lukkes: liten spredning ved solnedgang, klar himmel så bakken kan stråle ut varme, og svak vind.'})
+   : ft==='st'? L({en:'<b>Too much wind for fog.</b> The wind mixes the cooled air through a deeper layer, so the condensation happens higher up as low stratus. The ceiling can still be below VFR and IFR minima.',no:'<b>For mye vind for tåke.</b> Vinden blander den avkjølte luften gjennom et dypere lag, så kondensasjonen skjer høyere opp som lav stratus. Skydekket kan likevel være under VFR- og IFR-minima.'})
+   : ft==='shallow'? L({en:'<b>Calm: only a thin layer cools.</b> Shallow ground fog, sometimes only a few metres deep. From the air you may see the runway straight down, but on final, looking through the layer at a low angle, the visibility can be close to zero.',no:'<b>Vindstille: bare et tynt lag kjøles.</b> Grunn bakketåke, noen ganger bare noen få meter tykk. Fra lufta kan du se banen rett ned, men på finalen, når du ser gjennom laget i lav vinkel, kan sikten være nesten null.'})
+   : L({en:'<b>Radiation fog.</b> A clear sky lets the ground lose heat, the air next to it cools to its dew point, and a light wind of about 2–7 kt mixes it through a few hundred feet. It is often thickest just after sunrise and usually clears as the sun heats the ground, from the edges inwards. Under an overcast sky or in winter with a weak sun it may last all day.',no:'<b>Strålingståke.</b> En klar himmel lar bakken miste varme, luften nærmest kjøles til duggpunktet, og svak vind på rundt 2–7 kt blander den gjennom noen hundre fot. Den er ofte tykkest like etter soloppgang og letter vanligvis når solen varmer bakken, fra kantene og innover. Under overskyet himmel eller om vinteren med svak sol kan den bli liggende hele dagen.'}); }
+function u2(){ d2(); r2(); }
+function mk2(){ el('c2').innerHTML='';
+  LAB.slider(el('c2'),{label:L({en:'Temperature at sunset (°C)',no:'Temperatur ved solnedgang (°C)'}),min:-5,max:25,step:1,v:F.t,f:v=>v+' °C',on:v=>{ F.t=v; if(F.td>v) F.td=v; u2(); }});
+  LAB.slider(el('c2'),{label:L({en:'Dew point (°C)',no:'Duggpunkt (°C)'}),min:-10,max:25,step:1,v:F.td,f:v=>v+' °C',on:v=>{ F.td=Math.min(v,F.t); u2(); }});
+  LAB.slider(el('c2'),{label:L({en:'Wind (kt)',no:'Vind (kt)'}),min:0,max:15,step:1,v:F.wind,f:v=>v+' kt',on:v=>{ F.wind=v; u2(); }}); }
+LAB.seg(el('sky'),[['clear','Clear'],['ovc','Overcast']],F.sky,v=>{ F.sky=v; u2(); });
+
+function cards(){ const c=[
+ [{en:'Cloud base from the METAR',no:'Skybase fra METAR'},{en:'For convective cloud, (temperature − dew point) × 400 ft gives an estimate of the base above the ground. 25/13 gives about 4800 ft. It works poorly for layer cloud brought in by a front.',no:'For konvektive skyer gir (temperatur − duggpunkt) × 400 ft et anslag på basen over bakken. 25/13 gir rundt 4800 ft. Det virker dårlig for lagskyer som kommer med en front.'}],
+ [{en:'Advection fog',no:'Adveksjonståke'},{en:'Warm, moist air moving over a colder surface: sea fog in spring and early summer along the coast, or mild air over snow in winter. It can form at any time of day, cover large areas, and persist in stronger wind than radiation fog (up to 15–20 kt).',no:'Varm, fuktig luft som beveger seg over en kaldere overflate: havtåke om våren og forsommeren langs kysten, eller mild luft over snø om vinteren. Den kan dannes når som helst på døgnet, dekke store områder og holde seg i sterkere vind enn strålingståke (opp til 15–20 kt).'}],
+ [{en:'Other fog',no:'Annen tåke'},{en:'Frontal fog: rain from a warm front saturates the cold air below. Hill fog: stratus touching the high ground, often in orographic lift. Steam (arctic sea smoke): very cold air over open, warmer water.',no:'Fronttåke: regn fra en varmfront metter den kalde luften under. Fjelltåke: stratus som ligger på høydene, ofte ved orografisk løft. Frostrøyk: svært kald luft over åpent, varmere vann.'}],
+ [{en:'Visibility terms',no:'Siktbegreper'},{en:'Mist (BR): 1000–5000 m with humid air. Fog (FG): below 1000 m. Haze (HZ): dry particles. Slant visibility on final can be much worse than the reported ground visibility, and RVR is measured along the runway.',no:'Tåkedis (BR): 1000–5000 m med fuktig luft. Tåke (FG): under 1000 m. Tørrdis (HZ): tørre partikler. Skråsikt på finalen kan være mye dårligere enn rapportert sikt ved bakken, og RVR måles langs banen.'}],
+ [{en:'Stability in the forecast',no:'Stabilitet i prognosen'},{en:'Look for cues: CU, TCU, CB and SH in the METAR and TAF mean unstable air; ST, SC, BR, FG and haze mean stable air. Stable means smooth but murky; unstable means bumpy, good visibility between showers, and icing in the tops. On the A320 that means the weather radar on, and engine anti-ice (and wing anti-ice when ice builds) in the cloud tops.',no:'Se etter tegn: CU, TCU, CB og SH i METAR og TAF betyr ustabil luft; ST, SC, BR, FG og dis betyr stabil luft. Stabil betyr rolig, men grått; ustabil betyr humpete, god sikt mellom bygene og ising i toppene. På A320 betyr det værradaren på, og motoranti-is (og vingeanti-is når det bygger seg opp is) i skytoppene.'}],
+ [{en:'Fog and the A320',no:'Tåke og A320'},{en:'Fog is where the A320 autoland earns its keep. With the right approval, crew training and runway, CAT II and CAT III approaches go down to a decision height of 100 ft or less and RVRs of a few hundred metres. Check the RVR trend and the take-off minima before departure, and plan an alternate outside the fog area.',no:'Det er i tåke autoland på A320 gjør nytte for seg. Med riktig godkjenning, trening og bane går CAT II- og CAT III-innflyginger ned til en beslutningshøyde på 100 ft eller lavere og RVR på noen hundre meter. Sjekk RVR-trenden og avgangsminima før avgang, og planlegg en alternativ flyplass utenfor tåkeområdet.'}],
+ [{en:'Ways air is lifted',no:'Måter luft løftes på'},{en:'Heating from below (convection), hills and mountains (orographic), fronts (frontal), and air converging into a low (convergence). All of them end the same way: cooling to the dew point.',no:'Oppvarming nedenfra (konveksjon), åser og fjell (orografisk), fronter (frontal) og luft som strømmer sammen i et lavtrykk (konvergens). Alle ender på samme måte: avkjøling til duggpunktet.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+LAB.quiz(el('qbox'),'clouds',()=>LAB.shuffle([
+ {q:{en:'Unsaturated air is lifted. It cools at about…',no:'Umettet luft løftes. Den kjøles med rundt …'},a:[{en:'3 °C per 1000 ft',no:'3 °C per 1000 ft'},{en:'1.5 °C per 1000 ft',no:'1,5 °C per 1000 ft'},{en:'2 °C per 1000 ft',no:'2 °C per 1000 ft'}],c:0,e:{en:'The dry adiabatic lapse rate. Saturated air cools more slowly because condensation releases heat.',no:'Den tørradiabatiske gradienten. Mettet luft kjøles saktere fordi kondensasjon frigjør varme.'}},
+ {q:{en:'The air around cools 2.5 °C per 1000 ft. The air is…',no:'Luften rundt kjøles 2,5 °C per 1000 ft. Luften er …'},a:[{en:'conditionally unstable',no:'betinget ustabil'},{en:'absolutely stable',no:'absolutt stabil'},{en:'absolutely unstable',no:'absolutt ustabil'}],c:0,e:{en:'Between a typical saturated rate (about 1.5–1.8) and the dry rate (3): stable for dry air, unstable once saturated.',no:'Mellom en typisk fuktigadiabatisk gradient (rundt 1,5–1,8) og den tørradiabatiske (3): stabil for tørr luft, ustabil når den er mettet.'}},
+ {q:{en:'METAR 24/14. Rough cumulus base?',no:'METAR 24/14. Omtrentlig cumulusbase?'},a:[{en:'4000 ft',no:'4000 ft'},{en:'1000 ft',no:'1000 ft'},{en:'10 000 ft',no:'10 000 ft'}],c:0,e:{en:'Spread 10 °C × 400 ft = 4000 ft above the aerodrome.',no:'Spredning 10 °C × 400 ft = 4000 ft over flyplassen.'}},
+ {q:{en:'What does an inversion do to the weather below it?',no:'Hva gjør en inversjon med været under den?'},a:[{en:'Traps haze, smoke and fog and caps cloud growth',no:'Fanger dis, røyk og tåke og stopper skyveksten'},{en:'Causes thunderstorms',no:'Gir tordenvær'},{en:'Improves visibility',no:'Gir bedre sikt'}],c:0,e:{en:'Temperature rising with height is very stable: a lid.',no:'Temperatur som stiger med høyden er svært stabilt: et lokk.'}},
+ {q:{en:'Ideal conditions for radiation fog?',no:'Ideelle forhold for strålingståke?'},a:[{en:'Clear night, light wind, moist air',no:'Klar natt, svak vind, fuktig luft'},{en:'Overcast night, strong wind',no:'Overskyet natt, sterk vind'},{en:'Hot afternoon, dry air',no:'Varm ettermiddag, tørr luft'}],c:0,e:{en:'The ground must cool by radiation and a little wind spreads the cooling upwards.',no:'Bakken må kjøles ved utstråling, og litt vind sprer avkjølingen oppover.'}},
+ {q:{en:'Sea fog drifts in with a 15 kt onshore wind. What kind of fog is it?',no:'Havtåke driver inn med 15 kt pålandsvind. Hva slags tåke er det?'},a:[{en:'Advection fog',no:'Adveksjonståke'},{en:'Radiation fog',no:'Strålingståke'},{en:'Steam fog',no:'Frostrøyk'}],c:0,e:{en:'Moist air moving over a cold surface; it can persist in quite strong wind.',no:'Fuktig luft som beveger seg over en kald overflate; den kan holde seg i ganske sterk vind.'}},
+ {q:{en:'Which METAR cues suggest stable air?',no:'Hvilke tegn i METAR tyder på stabil luft?'},a:[{en:'BR, FG, ST, haze',no:'BR, FG, ST, dis'},{en:'SHRA, CB, TCU',no:'SHRA, CB, TCU'},{en:'Gusts and good visibility',no:'Vindkast og god sikt'}],c:0,e:{en:'Stable air holds moisture and particles near the ground and makes layer cloud.',no:'Stabil luft holder fuktighet og partikler nær bakken og gir lagskyer.'}},
+ {q:{en:'Why does a cumulus cloud keep growing once its base has formed, even though the air below the base was only just unstable?',no:'Hvorfor fortsetter en cumulussky å vokse når basen først er dannet, selv om luften under basen bare så vidt var ustabil?'},a:[{en:'Condensation releases latent heat, so the saturated parcel cools more slowly and stays warmer than the air around',no:'Kondensasjon frigjør latent varme, så den mettede luftpakken kjøles saktere og holder seg varmere enn luften rundt'},{en:'The cloud absorbs sunlight and heats up',no:'Skyen absorberer sollys og varmes opp'},{en:'The wind pushes the cloud upwards',no:'Vinden presser skyen oppover'}],c:0,e:{en:'Above the base the parcel follows the saturated lapse rate (about 1.5–1.8 °C per 1000 ft at low levels), so in a conditionally unstable layer it stays buoyant.',no:'Over basen følger luftpakken den fuktigadiabatiske gradienten (rundt 1,5–1,8 °C per 1000 ft i lave lag), så i et betinget ustabilt lag forblir den oppdriftsrik.'}},
+ {q:{en:'Radiation fog has formed overnight. What normally clears it in the morning?',no:'Strålingståke har dannet seg i løpet av natten. Hva fjerner den vanligvis om morgenen?'},a:[{en:'Sun warming the ground and the wind picking up, mixing drier air down',no:'Solen som varmer bakken og vind som tar seg opp og blander ned tørrere luft'},{en:'A drop in the QNH',no:'Et fall i QNH'},{en:'Further cooling of the ground',no:'Ytterligere avkjøling av bakken'}],c:0,e:{en:'It lifts first into low stratus and then breaks up. Under a thick fog layer or in winter with a weak sun it can last all day.',no:'Den løfter seg først til lav stratus og brytes så opp. Under et tykt tåkelag eller om vinteren med svak sol kan den bli liggende hele dagen.'}},
+ {q:{en:'The temperature/dew point spread at the aerodrome is falling by about 1 °C per hour in the evening, with a clear sky and light wind. What should you expect?',no:'Spredningen mellom temperatur og duggpunkt på flyplassen faller med rundt 1 °C i timen om kvelden, med klar himmel og svak vind. Hva bør du vente?'},a:[{en:'Mist or fog when the spread closes, possibly before your arrival',no:'Dis eller tåke når spredningen lukkes, kanskje før du kommer fram'},{en:'Better visibility as the night goes on',no:'Bedre sikt utover natten'},{en:'Thunderstorms around midnight',no:'Tordenvær rundt midnatt'}],c:0,e:{en:'A shrinking spread under a clear sky means the air near the ground is approaching saturation. Plan an alternate with a better outlook.',no:'En spredning som minker under klar himmel betyr at luften nær bakken nærmer seg metning. Planlegg en alternativ flyplass med bedre utsikter.'}},
+ {q:{en:'Moist air is forced up the windward side of a mountain range and comes down on the lee side. Compared with the windward foot, the air at the lee foot is…',no:'Fuktig luft tvinges opp på lovsiden av en fjellkjede og kommer ned på lesiden. Sammenlignet med foten på lovsiden er luften ved foten på lesiden …'},a:[{en:'warmer and drier (föhn)',no:'varmere og tørrere (føhn)'},{en:'colder and moister',no:'kaldere og fuktigere'},{en:'the same, because the process is adiabatic',no:'den samme, fordi prosessen er adiabatisk'}],c:0,e:{en:'It cooled at the slower saturated rate on the way up while dropping its moisture as cloud and rain, then warms at the dry rate on the way down.',no:'Den ble kjølt med den langsommere fuktigadiabatiske gradienten på vei opp mens den mistet fuktigheten som sky og regn, og varmes så med den tørradiabatiske på vei ned.'}},
+ {q:{en:'Cold air flows over a much warmer sea or lake. Which cloud and visibility picture is typical?',no:'Kald luft strømmer ut over et mye varmere hav eller innsjø. Hvilket bilde av skyer og sikt er typisk?'},a:[{en:'Steam fog near the surface and showery cumulus downwind',no:'Frostrøyk nær overflaten og bygeskyer på lesiden'},{en:'A clear sky with excellent visibility',no:'Klar himmel med utmerket sikt'},{en:'Thick advection fog that lasts for days',no:'Tykk adveksjonståke som varer i flere dager'}],c:0,e:{en:'Heating from below makes the air unstable: steam fog over the water, and snow or rain showers on the downwind coast.',no:'Oppvarming nedenfra gjør luften ustabil: frostrøyk over vannet, og snø- eller regnbyger på kysten i le.'}}
+
+]),12);
+LAB.start('clouds'); mk1(); mk2(); u1(); u2(); cards();
+LAB.onLang(()=>{ mk1(); mk2(); u1(); u2(); cards(); });
+})();
+</script>
+</body>
+</html>

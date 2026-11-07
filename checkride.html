@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Check preparation · Birdbird</title>
+<meta name="description" content="Prepare for a proficiency check or skill test: an oral with the instructor from your own documents, and a list of what to have ready on the day.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+.cgrid{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:980px){.cgrid{grid-template-columns:minmax(0,1fr)}}
+.lib{display:flex;flex-direction:column;gap:10px;position:sticky;top:62px}
+@media (max-width:980px){.lib{position:static}}
+.drop{border:2px dashed var(--rule);border-radius:4px;padding:18px 14px;text-align:center;background:var(--sheet);cursor:pointer;font-size:14px;color:var(--ink-2)}
+.drop:hover,.drop.on{border-color:var(--magenta);color:var(--ink)}
+.drop b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.docs{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.docs li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--rule-2);font-size:14px}
+.docs li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.docs li small{display:block;color:var(--ink-2);font-size:12px}
+.docs li button{background:none;border:0;color:var(--ink-2);cursor:pointer;font-size:13px}
+.docs li button:hover{color:var(--red)}
+.prog{height:4px;background:var(--rule-2)}.prog i{display:block;height:100%;background:var(--magenta);width:0}
+.setrow{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.setrow label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.setrow select,.setrow input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);min-width:200px}
+.ex{display:flex;flex-direction:column;gap:12px}
+.turn{border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.turn .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--magenta)}
+.turn .me{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px}
+.grade{display:flex;gap:12px;align-items:flex-start;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--amber);padding:10px 14px}
+.grade.ok{border-left-color:var(--green)}.grade.bad{border-left-color:var(--red)}
+.grade .g{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:30px;line-height:1;min-width:52px}
+.ansrow{display:flex;flex-direction:column;gap:8px}
+.ansrow textarea{min-height:100px}
+.chat{display:flex;flex-direction:column;gap:12px;max-height:620px;overflow-y:auto;padding-right:4px}
+.chat .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px}
+.chat .a{border-left:3px solid var(--chart-blue);padding:4px 0 4px 14px}
+.empty{color:var(--ink-2);font-size:14px}
+.summary .kpis{margin:6px 0}
+.btns a.btn{text-decoration:none}
+#dont{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:900px){#dont{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){#dont{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body data-title="Check preparation">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>Check preparation</h1>
+      <p>Prepare for a proficiency check or a skill test. The oral is done with the instructor in Flight Intelligence, from your own documents. This page keeps the list of what to have ready.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+
+  <section class="card" id="prep">
+    <h2 style="margin:0">Oral with the instructor</h2>
+    <p style="margin:0;max-width:62ch">Choose the check in Flight Intelligence. The instructor questions you the way an EASA examiner would, grades each answer and shows the source.</p>
+    <div class="btns"><a class="btn pri" href="fi.html?mode=check#aircraft">Start check preparation</a><a class="btn" href="fi.html#docs">Your documents</a></div>
+    <p class="note" style="margin:0">Documents you added here before are moved to Flight Intelligence automatically the first time you open it.</p>
+  </section>
+
+  <section class="card" id="ready">
+    <div class="eyebrow">Before the check</div>
+    <h2>Don’t forget</h2>
+    <div class="cols dont" id="dont"></div>
+    <p class="note">Use the <a href="prep.html">briefing pack</a> for the full planning. The check content is set by the examiner and EASA Part-FCL (Appendix 9 for class and type rating tests and checks and the IR proficiency check; Appendix 7 for the IR skill test). Your ATO’s documents always come first.</p>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ops.js?v=3"></script>
+<script src="ai.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el}=LAB, esc=NAI.esc;
+LAB.add({},{
+ 'Birdbird · Training':'Birdbird · Trening','Check preparation':'Kontrollforberedelse',
+ 'Prepare for a proficiency check or a skill test. Add your own documents, such as the flight manual, your SOP, checklists and the briefing package. The AI examiner reads them and questions you the way an EASA examiner would. You can also ask it anything about flying.':'Forbered deg til en ferdighetskontroll (PC) eller en praktisk prøve. Legg til dine egne dokumenter, som flyhåndboken, SOP, sjekklister og briefingpakken. AI-eksaminatoren leser dem og spør deg slik en EASA-eksaminator ville gjort. Du kan også spørre den om alt som har med flyging å gjøre.',
+ 'Your documents':'Dine dokumenter','Add documents':'Legg til dokumenter','PDF, Word or text. Drop them here or click.':'PDF, Word eller tekst. Slipp dem her eller klikk.',
+ 'Documents stay in this browser. When you ask, only the passages that matter are sent to Claude. Only add documents you are allowed to use.':'Dokumentene blir i denne nettleseren. Når du spør, sendes bare de relevante avsnittene til Claude. Legg bare til dokumenter du har lov til å bruke.',
+ 'Check':'Kontroll','Focus (optional)':'Fokus (valgfritt)','Questions':'Spørsmål','Read questions aloud':'Les spørsmålene høyt','Start the oral':'Start muntlig','Finish and debrief':'Avslutt og debrief',
+ 'Dictate':'Dikter','Answer':'Svar','I don’t know':'Jeg vet ikke','Stop':'Stopp','Ask':'Spør','New conversation':'Ny samtale',
+ 'Ask about anything in aviation: a limitation in your flight manual, how a system works, a rule in Part-FCL or SERA, or how to do a calculation. When your documents cover it, the answer says where to look.':'Spør om hva som helst innen luftfart: en begrensning i flyhåndboken, hvordan et system virker, en regel i Part-FCL eller SERA, eller hvordan du gjør en utregning. Når dokumentene dine dekker det, sier svaret hvor du finner det.',
+ 'Before the check':'Før kontrollen','Use the':'Bruk','briefing pack':'briefingpakken','for the full planning. The check content is set by the examiner and EASA Part-FCL (Appendix 9 for class and type rating tests and checks and the IR proficiency check; Appendix 7 for the IR skill test). Your ATO’s documents always come first.':'til hele planleggingen. Innholdet i kontrollen bestemmes av eksaminatoren og EASA Part-FCL (Appendix 9 for klasse- og typerettighet og IR-ferdighetskontroll; Appendix 7 for praktisk prøve IR). Dokumentene fra skolen din går alltid først.','Prepare for a proficiency check or a skill test. The oral is done with the instructor in Flight Intelligence, from your own documents. This page keeps the list of what to have ready.':'Forbered deg til en ferdighetskontroll (PC) eller en praktisk prøve. Den muntlige delen gjøres med instruktøren i Flight Intelligence, ut fra dine egne dokumenter. Denne siden har lista over hva du må ha klart.','Oral with the instructor':'Muntlig med instruktøren','Choose the check in Flight Intelligence. The instructor questions you the way an EASA examiner would, grades each answer and shows the source.':'Velg kontrollen i Flight Intelligence. Instruktøren spør deg slik en EASA-eksaminator ville gjort, vurderer hvert svar og viser kilden.','Start check preparation':'Start kontrollforberedelse','Your documents':'Dine dokumenter','Documents you added here before are moved to Flight Intelligence automatically the first time you open it.':'Dokumenter du har lagt inn her før, flyttes automatisk til Flight Intelligence første gang du åpner den.','Don’t forget':'Ikke glem','Examiner':'Eksaminator','Ask anything':'Spør om alt'
+});
+/* ---------- husk-liste ---------- */
+const DONT=[
+ [{en:'Papers',no:'Papirer'},{en:'Licence, medical, ID or passport, logbook with the required training signed, the training organisation’s recommendation and the examiner form. Check the expiry dates.',no:'Sertifikat, medical, ID eller pass, loggbok med påkrevd trening signert, anbefalingen fra skolen og eksaminatorskjemaet. Sjekk utløpsdatoene.'}],
+ [{en:'Aircraft',no:'Fly'},{en:'Tech log, defects and MEL items, airworthiness review and insurance on board, mass and balance signed, fuel uplift recorded.',no:'Tech log, feil og MEL-punkter, luftdyktighetsgjennomgangsbevis (ARC) og forsikring om bord, masse og balanse signert, fylt drivstoff notert.'}],
+ [{en:'Planning',no:'Planlegging'},{en:'Weather and NOTAM for every aerodrome, planning minima checked, alternates chosen, fuel plan, flight plan filed, current charts and plates, performance for take-off, landing and OEI.',no:'Vær og NOTAM for alle flyplasser, planleggingsminima sjekket, alternativer valgt, drivstoffplan, flyplan sendt, gjeldende kart og plater, ytelse for avgang, landing og OEI.'}],
+ [{en:'In the aircraft',no:'I flyet'},{en:'Headset, kneeboard and pens, hood or foggles for IR, timer, a printed backup of the plates, checklist and speed card.',no:'Headset, kneebrett og penner, hood eller foggles for IR, timer, utskrift av platene som reserve, sjekkliste og fartskort.'}],
+ [{en:'Briefings ready',no:'Briefinger klare'},{en:'Departure with engine failure plan, approach briefs for each planned approach, radio failure plan for departure, en route and arrival, and the threats you see today.',no:'Avgang med plan for motorstans, innflygingsbriefinger for hver planlagte innflyging, plan for radiosvikt ved avgang, underveis og ankomst, og truslene du ser i dag.'}],
+ [{en:'On the day',no:'På dagen'},{en:'Sleep, food and water. Say what you are doing out loud. If you make a mistake, say it, fix it and fly on: examiners look at how you manage errors.',no:'Søvn, mat og vann. Si høyt hva du gjør. Gjør du en feil, si det, rett den og fly videre: eksaminatorer ser på hvordan du håndterer feil.'}]
+];
+function dont(){ el('dont').innerHTML=DONT.map(([t,d])=>`<div class="box"><b class="t">${esc(L(t))}</b><p>${esc(L(d))}</p></div>`).join(''); }
+
+LAB.start('checkride'); dont(); LAB.onLang(dont);
+})();
+</script>
+</body>
+</html>

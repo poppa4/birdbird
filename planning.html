@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Navigation log · Birdbird</title>
+<meta name="description" content="Plan each leg with the wind triangle, work out fuel to Part-NCO rules and check the ICAO flight plan format before you file it.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.fgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
+.it{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.it .h{display:flex;gap:8px;align-items:baseline}
+.it .n{font-family:var(--f-mono);font-size:11px;color:var(--bg);background:var(--smoke);border-radius:3px;padding:0 5px;font-weight:600}
+.it .h b{font-size:13px}
+.it .row{display:flex;gap:8px;flex-wrap:wrap}
+.f{display:flex;flex-direction:column;gap:3px;flex:1 1 90px;min-width:0}
+.f span{font-size:11px;color:var(--muted)}
+.f input,.f select,.f textarea{font-family:var(--f-mono);font-size:14px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:7px 8px;width:100%;text-transform:uppercase}
+.f textarea{resize:vertical;min-height:62px;line-height:1.45}
+.f input.bad,.f textarea.bad,.f select.bad{border-color:var(--red);background:rgba(236,90,71,.06)}
+.f input.ok,.f textarea.ok{border-color:rgba(113,204,147,.55)}
+.f input:focus,.f textarea:focus,.f select:focus{outline:2px solid var(--smoke);outline-offset:0;border-color:var(--smoke)}
+.c4{grid-column:span 4}.c3{grid-column:span 3}.c6{grid-column:span 6}.c12{grid-column:1/-1}.c8{grid-column:span 8}
+@media (max-width:1000px){.c4,.c3{grid-column:span 6}.c8{grid-column:1/-1}}
+@media (max-width:620px){.c4,.c3,.c6,.c8{grid-column:1/-1}}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chips button{font-family:var(--f-mono);font-size:12px;background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:4px 7px;cursor:pointer}
+.chips button.on{background:var(--smoke);border-color:var(--smoke);color:var(--bg);font-weight:600}
+.chips button:hover{color:var(--fg)}
+.issues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.issues li{font-size:13px;padding:7px 9px;border-radius:5px;border:1px solid var(--line);background:var(--bg);display:flex;gap:8px}
+.issues li i{font-style:normal;font-family:var(--f-mono);font-size:11px;flex:0 0 auto;padding:1px 5px;border-radius:3px;height:fit-content;margin-top:1px}
+.issues li.e i{background:var(--red);color:#fff}.issues li.w i{background:var(--amber);color:#0d1319}.issues li.o i{background:var(--green);color:#0d1319}
+pre.msg{font-family:var(--f-mono);font-size:13px;background:#070a0d;border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:0;white-space:pre-wrap;word-break:break-word;color:#d7f5e1;line-height:1.55}
+.navwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+table.nav{border-collapse:collapse;width:100%;min-width:980px;font-size:13px}
+table.nav th{font-size:11px;font-weight:500;color:var(--muted);text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);background:var(--panel-2);white-space:nowrap}
+table.nav th:nth-child(-n+2){text-align:left}
+table.nav td{padding:4px 4px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.nav td input{width:64px;font-family:var(--f-mono);font-size:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:5px 5px;text-align:right}
+table.nav td input.w{width:86px;text-align:left;text-transform:uppercase}
+table.nav td.out{color:var(--smoke)}
+table.nav td.mh{color:var(--amber);font-weight:500}
+table.nav tr.sel td{background:rgba(127,203,232,.06)}
+table.nav tfoot td{font-weight:600;color:var(--fg);background:var(--panel-2)}
+table.nav td button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px}
+table.nav td button:hover{color:var(--red)}
+.navtop{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.fuel{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:900px){.fuel{grid-template-columns:minmax(0,1fr)}}
+table.ft{border-collapse:collapse;width:100%;font-size:13.5px}
+table.ft td{padding:7px 8px;border-bottom:1px solid var(--line)}
+table.ft td:nth-child(n+2){text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+table.ft tr.tot td{font-weight:600;color:var(--fg);border-top:1px solid var(--muted)}
+table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:4px 5px;text-align:right}
+#wtri{height:280px}
+.fplstat{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-decoration:none;color:inherit;border:1px solid var(--rule);background:var(--sheet);padding:8px 12px;border-radius:3px}
+.fplstat:hover{border-color:var(--ink)}
+.fplstat small{font-size:12px;color:var(--ink-2);letter-spacing:.02em}
+</style>
+</head>
+<body data-title="Navigation log">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Flight planning</div>
+      <h1>Navigation log</h1>
+      <p>Plan the legs with the wind triangle: wind correction, magnetic heading, groundspeed, time and fuel. When the plan is ready, check the ICAO flight plan format before you file it.</p>
+    </div>
+    <div class="hright"><a class="fplstat" href="#fpl" title="Jump to the ICAO flight plan"><small>ICAO flight plan</small><span class="status idle" id="stat">Not filled in yet</span></a></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#navlog">Navigation log</a><a href="#fuel">Fuel</a><a href="#fpl">ICAO flight plan</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="navlog">
+    <div class="eyebrow">1 · Wind triangle</div>
+    <h2>Navigation log</h2>
+    <p class="lead">Enter true course, distance and the forecast wind for each leg. The log works out wind correction, heading, ground speed, time and fuel. East is least, west is best: magnetic = true minus easterly variation.</p>
+    <div class="navtop" id="navtop"></div>
+    <div class="navwrap"><table class="nav" id="nav"><thead><tr><th>From</th><th>To</th><th>Alt ft</th><th>TC °T</th><th>Dist NM</th><th>Wind °T</th><th>Wind kt</th><th>TAS kt</th><th>WCA</th><th>TH °T</th><th>MH °M</th><th>GS kt</th><th>Time</th><th>Fuel</th><th></th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+    <div class="btns"><button class="btn" id="addLeg">Add leg</button><button class="btn" id="toFpl">Use totals in the flight plan</button><span class="note" id="toFplN"></span></div>
+    <div class="split">
+      <div class="view"><canvas id="wtri" aria-label="Wind triangle for the selected leg"></canvas></div>
+      <div class="box"><b class="t" id="legT">Selected leg</b><p id="legTxt"></p></div>
+    </div>
+  </section>
+
+  <section class="card" id="fuel">
+    <div class="eyebrow">2 · EASA Part-NCO</div>
+    <h2>Fuel</h2>
+    <p class="lead">For non-commercial flights in a non-complex aeroplane (Part-NCO), plan to reach the destination and still land with the final reserve: 10 minutes for a local day VFR flight in sight of the aerodrome, 30 minutes for other day VFR, and 45 minutes at night or IFR, where IFR also needs fuel to the alternate. The rule also requires fuel for reasonably expected contingencies and delays (AMC1 NCO.OP.125).</p>
+    <div class="fuel">
+      <table class="ft" id="ftab"></table>
+      <div class="box"><b class="t">Rules used</b><div id="fRules"></div><p id="fMsg"></p></div>
+    </div>
+  </section>
+
+  <section class="card" id="fpl">
+    <div class="eyebrow">3 · ICAO FPL 2012</div>
+    <h2>ICAO flight plan</h2>
+    <p class="lead">The same items as the European flight plan form. Fields turn red when the format is wrong; the check list below says why and how to fix it.</p>
+    <div class="btns"><button class="btn" id="exV">Example: VFR DA42</button><button class="btn" id="exI">Example: IFR DA42</button><button class="btn" id="clr">Clear form</button></div>
+    <div class="fgrid" id="form">
+      <div class="it c4"><div class="h"><span class="n">7</span><b>Aircraft identification</b></div>
+        <div class="row"><label class="f"><span>Registration or flight number, no hyphen</span><input id="i7" maxlength="7" autocomplete="off" spellcheck="false"></label></div></div>
+      <div class="it c4"><div class="h"><span class="n">8</span><b>Flight rules · Type of flight</b></div>
+        <div class="row"><label class="f"><span>Rules</span><select id="i8a"><option value="V">V – VFR</option><option value="I">I – IFR</option><option value="Y">Y – IFR, then VFR</option><option value="Z">Z – VFR, then IFR</option></select></label>
+        <label class="f"><span>Type</span><select id="i8b"><option value="G">G – General aviation</option><option value="N">N – Non-scheduled</option><option value="S">S – Scheduled</option><option value="M">M – Military</option><option value="X">X – Other</option></select></label></div></div>
+      <div class="it c4"><div class="h"><span class="n">9</span><b>Number · Type · Wake category</b></div>
+        <div class="row"><label class="f" style="flex:0 1 60px"><span>Number</span><input id="i9n" maxlength="2" inputmode="numeric"></label><label class="f"><span>Type (ICAO)</span><input id="i9t" maxlength="4" spellcheck="false"></label>
+        <label class="f" style="flex:0 1 80px"><span>Wake</span><select id="i9w"><option>L</option><option>M</option><option>H</option><option>J</option></select></label></div></div>
+      <div class="it c8"><div class="h"><span class="n">10</span><b>Equipment and capabilities</b></div>
+        <div class="row"><label class="f"><span>10a · COM, NAV and approach aids</span><input id="i10a" spellcheck="false"></label><label class="f" style="flex:0 1 160px"><span>10b · Surveillance</span><input id="i10b" spellcheck="false"></label></div>
+        <div class="chips" id="eq"></div><div class="note" id="eqHelp">Click a code to add or remove it.</div></div>
+      <div class="it c4"><div class="h"><span class="n">13</span><b>Departure · Time (UTC)</b></div>
+        <div class="row"><label class="f"><span>Aerodrome (ICAO)</span><input id="i13" maxlength="4" spellcheck="false"></label><label class="f"><span>EOBT HHMM</span><input id="i13t" maxlength="4" inputmode="numeric"></label></div></div>
+      <div class="it c12"><div class="h"><span class="n">15</span><b>Cruising speed · Level · Route</b></div>
+        <div class="row"><label class="f" style="flex:0 1 130px"><span>Speed (N0140, K0260, M078)</span><input id="i15s" maxlength="5" spellcheck="false"></label><label class="f" style="flex:0 1 130px"><span>Level (A045, F080, VFR)</span><input id="i15l" maxlength="5" spellcheck="false"></label>
+        <label class="f" style="flex:1 1 380px"><span>Route</span><textarea id="i15r" spellcheck="false"></textarea></label></div></div>
+      <div class="it c6"><div class="h"><span class="n">16</span><b>Destination · Total EET · Alternates</b></div>
+        <div class="row"><label class="f"><span>Destination</span><input id="i16" maxlength="4" spellcheck="false"></label><label class="f"><span>EET HHMM</span><input id="i16t" maxlength="4" inputmode="numeric"></label><label class="f"><span>Alternate 1</span><input id="i16a" maxlength="4" spellcheck="false"></label><label class="f"><span>Alternate 2</span><input id="i16b" maxlength="4" spellcheck="false"></label></div></div>
+      <div class="it c6"><div class="h"><span class="n">18</span><b>Other information</b></div>
+        <div class="row"><label class="f"><span>Indicator/text, separated by spaces. 0 if none.</span><textarea id="i18" spellcheck="false"></textarea></label></div></div>
+      <div class="it c12"><div class="h"><span class="n">19</span><b>Supplementary information (not transmitted, kept by the ATS office)</b></div>
+        <div class="row"><label class="f"><span>E/ Endurance HHMM</span><input id="i19e" maxlength="4" inputmode="numeric"></label><label class="f"><span>P/ Persons on board</span><input id="i19p" maxlength="3"></label>
+        <label class="f"><span>R/ Radio (U V E)</span><input id="i19r" maxlength="3"></label><label class="f"><span>S/ Survival (P D M J)</span><input id="i19s" maxlength="4"></label><label class="f"><span>J/ Jackets (L F U V)</span><input id="i19j" maxlength="4"></label>
+        <label class="f" style="flex:2 1 160px"><span>A/ Colour and markings</span><input id="i19a"></label><label class="f" style="flex:2 1 160px"><span>C/ Pilot in command</span><input id="i19c"></label></div></div>
+    </div>
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+        <h3>Filed message</h3>
+        <pre class="msg" id="msg"></pre>
+        <div class="btns"><button class="btn pri" id="copy">Copy message</button><span class="note" id="copied"></span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+        <h3>Check</h3>
+        <ul class="issues" id="issues"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+
+  <p class="note">Teaching tool. Formats follow ICAO Doc 4444 (FPL 2012) and EASA Part-NCO in simplified form. Always check the current AIP, your state's ATS office requirements and the aircraft flight manual. Example values are not for navigation.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,nf,el,seg,fit,quiz,shuffle}=LAB;
+LAB.add({},{
+ 'Navigation log and tools':'Navigasjonslogg og verktøy','Birdbird · Flight planning':'Birdbird · Flyplanlegging',
+ 'Plan the legs with the wind triangle: wind correction, magnetic heading, groundspeed, time and fuel. When the plan is ready, check the ICAO flight plan format before you file it.':'Planlegg etappene med vindtrekanten: vindkorreksjon, magnetisk kurs, groundspeed, tid og drivstoff. Når planen er klar, sjekker du formatet på ICAO-flyplanen før du sender den inn.',
+ 'Birdbird · Flight planning':'Birdbird · Flyplanlegging','Flight plan and navigation log':'Flyplan og navigasjonslogg',
+ 'Fill in an ICAO flight plan the way it is filed in Europe, with a check that explains every error. Then plan the legs: wind correction, magnetic heading, time and fuel.':'Fyll ut en ICAO-flyplan slik den sendes inn i Europa, med en sjekk som forklarer hver feil. Planlegg så leggene: vindkorreksjon, magnetisk kurs, tid og drivstoff.',
+ 'ICAO flight plan':'ICAO-flyplan','Navigation log':'Navigasjonslogg','Fuel':'Drivstoff','Test yourself':'Test deg selv',
+ 'The same items as the European flight plan form. Fields turn red when the format is wrong; the check list below says why and how to fix it.':'Samme felt som det europeiske flyplanskjemaet. Feltene blir røde når formatet er feil; sjekklisten under sier hvorfor og hvordan du retter det.',
+ 'Example: VFR DA42':'Eksempel: VFR DA42','Example: IFR DA42':'Eksempel: IFR DA42','Clear form':'Tøm skjemaet',
+ 'Aircraft identification':'Luftfartøyets identifikasjon','Registration or flight number, no hyphen':'Registrering eller rutenummer, uten bindestrek','Flight rules · Type of flight':'Flygeregler · Type flyging','Rules':'Regler','Type':'Type',
+ 'Number · Type · Wake category':'Antall · Type · Turbulenskategori','Number':'Antall','Type (ICAO)':'Type (ICAO)','Wake':'Turbulens',
+ 'Equipment and capabilities':'Utstyr og egenskaper','10a · COM, NAV and approach aids':'10a · COM-, NAV- og innflygingsutstyr','10b · Surveillance':'10b · Overvåkning','Click a code to add or remove it.':'Klikk på en kode for å legge den til eller fjerne den.',
+ 'Departure · Time (UTC)':'Avgang · Tid (UTC)','Aerodrome (ICAO)':'Flyplass (ICAO)','Cruising speed · Level · Route':'Marsjfart · Nivå · Rute','Speed (N0140, K0260, M078)':'Fart (N0140, K0260, M078)','Level (A045, F080, VFR)':'Nivå (A045, F080, VFR)','Route':'Rute',
+ 'Destination · Total EET · Alternates':'Destinasjon · Total EET · Alternativer','Destination':'Destinasjon','Alternate 1':'Alternativ 1','Alternate 2':'Alternativ 2',
+ 'Other information':'Annen informasjon','Indicator/text, separated by spaces. 0 if none.':'Indikator/tekst, skilt med mellomrom. 0 hvis ingen.',
+ 'Supplementary information (not transmitted, kept by the ATS office)':'Tilleggsinformasjon (sendes ikke, oppbevares av ATS-kontoret)','E/ Endurance HHMM':'E/ Utholdenhet TTMM','P/ Persons on board':'P/ Personer om bord','R/ Radio (U V E)':'R/ Nødradio (U V E)','S/ Survival (P D M J)':'S/ Overlevelse (P D M J)','J/ Jackets (L F U V)':'J/ Vester (L F U V)','A/ Colour and markings':'A/ Farge og merking','C/ Pilot in command':'C/ Fartøysjef',
+ 'Filed message':'Innsendt melding','Copy message':'Kopier meldingen','Check':'Sjekk',
+ 'Wind triangle':'Vindtrekant','Enter true course, distance and the forecast wind for each leg. The log works out wind correction, heading, ground speed, time and fuel. East is least, west is best: magnetic = true minus easterly variation.':'Skriv inn rettvisende kurs, distanse og meldt vind for hvert legg. Loggen regner ut vindkorreksjon, kurs, fart over bakken, tid og drivstoff. «East is least, west is best»: magnetisk = rettvisende minus østlig variasjon.',
+ 'From':'Fra','To':'Til','Add leg':'Legg til legg','Use totals in the flight plan':'Bruk totalene i flyplanen','Selected leg':'Valgt legg',
+ 'For non-commercial flights in a non-complex aeroplane (Part-NCO), plan to reach the destination and still land with the final reserve: 10 minutes for a local day VFR flight in sight of the aerodrome, 30 minutes for other day VFR, and 45 minutes at night or IFR, where IFR also needs fuel to the alternate. The rule also requires fuel for reasonably expected contingencies and delays (AMC1 NCO.OP.125).':'For ikke-kommersiell flyging med ikke-komplekse fly (Part-NCO) skal du nå destinasjonen og fortsatt lande med sluttreserven: 10 minutter for en lokal dag-VFR-tur innen synsvidde av flyplassen, 30 minutter for annen dag-VFR, og 45 minutter om natten eller IFR, der IFR også krever drivstoff til alternativ flyplass. Regelen krever også drivstoff for forsinkelser og uforutsette forhold man med rimelighet kan forvente (AMC1 NCO.OP.125).',
+ 'Rules used':'Regler som brukes',
+ 'Teaching tool. Formats follow ICAO Doc 4444 (FPL 2012) and EASA Part-NCO in simplified form. Always check the current AIP, your state\'s ATS office requirements and the aircraft flight manual. Example values are not for navigation.':'Opplæringsverktøy. Formatene følger ICAO Doc 4444 (FPL 2012) og EASA Part-NCO i forenklet form. Sjekk alltid gjeldende AIP, kravene til ATS-kontoret og flygehåndboken. Eksempelverdiene er ikke for navigasjon.',
+ 'No errors':'Ingen feil','errors':'feil','error':'feil'
+});
+
+/* ---------- utstyrskoder ---------- */
+const EQ=[['S',{en:'Standard: VHF RTF, VOR and ILS',no:'Standard: VHF-radio, VOR og ILS'}],['D',{en:'DME',no:'DME'}],['F',{en:'ADF',no:'ADF'}],['G',{en:'GNSS',no:'GNSS'}],['O',{en:'VOR',no:'VOR'}],['L',{en:'ILS',no:'ILS'}],['R',{en:'PBN approved (PBN/ needed in item 18)',no:'PBN-godkjent (krever PBN/ i felt 18)'}],['Y',{en:'VHF with 8.33 kHz spacing',no:'VHF med 8,33 kHz kanalavstand'}],['B',{en:'LPV (APV with SBAS)',no:'LPV (APV med SBAS)'}],['Z',{en:'Other equipment (NAV/, COM/ or DAT/ needed in item 18)',no:'Annet utstyr (krever NAV/, COM/ eller DAT/ i felt 18)'}],['N',{en:'No COM/NAV equipment carried',no:'Ingen COM/NAV-utstyr'}]];
+const SUR=[['N',{en:'None',no:'Ingen'}],['A',{en:'Mode A',no:'Mode A'}],['C',{en:'Mode A and C',no:'Mode A og C'}],['S',{en:'Mode S with altitude and identification',no:'Mode S med høyde og identifikasjon'}],['E',{en:'Mode S with extended squitter',no:'Mode S med extended squitter'}],['B1',{en:'ADS-B out 1090',no:'ADS-B ut 1090'}]];
+const eqBox=el('eq');
+function drawEq(){
+  const a=parseEq(el('i10a').value), b=parseEq(el('i10b').value);
+  eqBox.innerHTML=EQ.map(([k,d])=>`<button data-a="${k}" title="${L(d)}" class="${a.includes(k)?'on':''}">${k}</button>`).join('')+'<span style="width:12px"></span>'+SUR.map(([k,d])=>`<button data-b="${k}" title="${L(d)}" class="${b.includes(k)?'on':''}">${k}</button>`).join('');
+}
+function parseEq(s){ return (s.toUpperCase().match(/[A-Z]\d?/g)||[]); }
+eqBox.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t) return;
+  const id=t.dataset.a?'i10a':'i10b', k=t.dataset.a||t.dataset.b; let arr=parseEq(el(id).value);
+  if(arr.includes(k)) arr=arr.filter(x=>x!==k); else { if(k==='N') arr=[]; else arr=arr.filter(x=>x!=='N'); arr.push(k); }
+  el(id).value=arr.join(''); upd(); });
+eqBox.addEventListener('mouseover',e=>{ const t=e.target.closest('button'); if(!t) return; const d=(t.dataset.a?EQ:SUR).find(x=>x[0]===(t.dataset.a||t.dataset.b)); el('eqHelp').textContent=(t.dataset.a?'10a ':'10b ')+d[0]+' – '+L(d[1]); });
+
+/* ---------- validering ---------- */
+const V=id=>el(id).value.trim().toUpperCase();
+const ICAO=/^[A-Z]{4}$/, HHMM=/^([01]\d|2[0-3])[0-5]\d$/, DUR=/^\d{2}[0-5]\d$/;
+const IND=['STS','PBN','NAV','COM','DAT','SUR','DEP','DEST','DOF','REG','EET','SEL','TYP','CODE','DLE','OPR','ORGN','PER','ALTN','RALT','TALT','RIF','RMK'];
+function parse18(s){ const out={}, bad=[]; if(!s||s==='0') return {out,bad};
+  const re=/([A-Z]{3,4})\/((?:(?![A-Z]{3,4}\/).)*)/g; let m, used=0;
+  while((m=re.exec(s))){ const k=m[1], v=m[2].trim(); if(!IND.includes(k)) bad.push(k); out[k]=(out[k]?out[k]+' ':'')+v; used+=m[0].length; }
+  const rest=s.replace(re,'').trim(); if(rest) bad.push('»'+rest+'«');
+  return {out,bad}; }
+function routeTok(r){ return r.replace(/\s+/g,' ').trim().split(' ').filter(Boolean); }
+function classify(t){
+  if(t==='DCT') return 'dct';
+  if(t==='VFR'||t==='IFR') return 'rules';
+  if(/^[A-Z]{2,5}\/(N\d{4}|K\d{4}|M\d{3})(A\d{3}|F\d{3}|S\d{4}|M\d{4}|VFR)$/.test(t)) return 'change';
+  if(/^\d{2}[NS]\d{3}[EW]$/.test(t)||/^\d{4}[NS]\d{5}[EW]$/.test(t)) return 'point';
+  if(/^[A-Z]{2,5}\d{6}$/.test(t)) return 'point';
+  if(/^[A-Z]{3,5}\d[A-Z]$/.test(t)) return 'proc';
+  if(/^[A-Z]{1,2}\d{1,3}[A-Z]?$/.test(t)) return 'awy';
+  if(/^[A-Z]{2,5}$/.test(t)) return 'point';
+  return 'bad';
+}
+function check(){
+  const I=[]; const E=(f,en,no)=>I.push({k:'e',f,t:{en,no}}), W=(f,en,no)=>I.push({k:'w',f,t:{en,no}});
+  const f={}; const mark=(id,ok)=>{ f[id]=f[id]===false?false:ok; };
+  const id7=V('i7'); if(!id7) E('i7','Item 7: aircraft identification is missing.','Felt 7: identifikasjon mangler.'); else if(!/^[A-Z0-9]{2,7}$/.test(id7)) E('i7','Item 7: use 2–7 letters and digits only. No hyphen: LN-ABC is written LNABC.','Felt 7: bruk 2–7 bokstaver og tall. Ingen bindestrek: LN-ABC skrives LNABC.'); mark('i7',!!id7&&/^[A-Z0-9]{2,7}$/.test(id7));
+  const rules=el('i8a').value;
+  const n9=V('i9n'); if(n9 && (!/^\d{1,2}$/.test(n9)||+n9<2)) { E('i9n','Item 9: give the number of aircraft only for a formation of 2 or more. Leave it empty for one aircraft.','Felt 9: antall fylles bare ut for formasjon med 2 eller flere. La det stå tomt for ett fly.'); mark('i9n',false); }
+  const t9=V('i9t'); if(!t9) E('i9t','Item 9: aircraft type is missing (DA42, C172, P28A…). Use ZZZZ and TYP/ in item 18 if there is no designator.','Felt 9: flytype mangler (DA42, C172, P28A …). Bruk ZZZZ og TYP/ i felt 18 hvis typen ikke har en kode.'); else if(!/^[A-Z][A-Z0-9]{1,3}$/.test(t9)) E('i9t','Item 9: the type designator is 2–4 characters and starts with a letter.','Felt 9: typekoden har 2–4 tegn og starter med en bokstav.'); mark('i9t',/^[A-Z][A-Z0-9]{1,3}$/.test(t9));
+  if(t9==='DA42'&&el('i9w').value!=='L') W('i9w','Item 9: a DA42 (max take-off mass under 7 000 kg) is wake category L.','Felt 9: en DA42 (maks avgangsmasse under 7 000 kg) er turbulenskategori L.');
+  const a10=V('i10a'), b10=V('i10b'), A=parseEq(a10), B=parseEq(b10);
+  if(!a10) E('i10a','Item 10a: list the equipment. S means VHF RTF, VOR and ILS. Use N if nothing is carried.','Felt 10a: oppgi utstyret. S betyr VHF-radio, VOR og ILS. Bruk N hvis du ikke har noe.');
+  else if(/[^A-Z0-9]/.test(a10)) E('i10a','Item 10a: letters and digits only, no spaces or commas.','Felt 10a: bare bokstaver og tall, uten mellomrom eller komma.');
+  mark('i10a',!!a10&&!/[^A-Z0-9]/.test(a10));
+  if(!b10) E('i10b','Item 10b: give the transponder. Most light aircraft today have S (Mode S). Use N for none.','Felt 10b: oppgi transponderen. De fleste småfly har S (Mode S). Bruk N for ingen.'); mark('i10b',!!b10);
+  if(A.includes('N')&&A.length>1) E('i10a','Item 10a: N means no equipment and cannot be combined with other letters.','Felt 10a: N betyr ikke noe utstyr og kan ikke kombineres med andre bokstaver.');
+  const {out:o18,bad:bad18}=parse18(V('i18'));
+  if(A.includes('R')&&!o18.PBN) E('i18','Item 18: R in item 10a requires PBN/ with your PBN capabilities (for example PBN/B2D2S1).','Felt 18: R i felt 10a krever PBN/ med PBN-egenskapene dine (for eksempel PBN/B2D2S1).');
+  if(o18.PBN&&!A.includes('R')) E('i10a','Item 10a: PBN/ in item 18 requires R in item 10a.','Felt 10a: PBN/ i felt 18 krever R i felt 10a.');
+  if(A.includes('Z')&&!(o18.NAV||o18.COM||o18.DAT)) E('i18','Item 18: Z in item 10a requires NAV/, COM/ or DAT/ describing the other equipment.','Felt 18: Z i felt 10a krever NAV/, COM/ eller DAT/ som beskriver utstyret.');
+  if(!A.includes('Y')&&a10) W('i10a','Item 10a: most European airspace requires 8.33 kHz radios. If you have one, add Y.','Felt 10a: det meste av europeisk luftrom krever 8,33 kHz-radio. Har du det, legg til Y.');
+  if(rules!=='V'&&!A.includes('S')&&!(A.includes('O')&&A.includes('L'))) W('i10a','Item 10a: IFR normally needs S (or the individual VOR and ILS letters).','Felt 10a: IFR krever normalt S (eller de enkelte VOR- og ILS-bokstavene).');
+  const d13=V('i13'); if(!ICAO.test(d13)) { E('i13','Item 13: departure aerodrome is a 4-letter ICAO code (ENTO). Use ZZZZ and DEP/ in item 18 if it has none.','Felt 13: avgangsflyplass er en ICAO-kode på 4 bokstaver (ENTO). Bruk ZZZZ og DEP/ i felt 18 hvis den mangler kode.'); } mark('i13',ICAO.test(d13));
+  if(d13==='ZZZZ'&&!o18.DEP) E('i18','Item 18: ZZZZ as departure requires DEP/ with the name or position.','Felt 18: ZZZZ som avgang krever DEP/ med navn eller posisjon.');
+  const t13=V('i13t'); if(!HHMM.test(t13)) E('i13t','Item 13: EOBT is the off-block time in UTC, four digits HHMM (0930).','Felt 13: EOBT er off-block-tid i UTC, fire siffer TTMM (0930).'); mark('i13t',HHMM.test(t13));
+  const sp=V('i15s'); const spOk=/^(N\d{4}|K\d{4}|M\d{3})$/.test(sp); if(!spOk) E('i15s','Item 15: cruising speed is N + 4 digits in knots (N0140), K + 4 digits in km/h, or M + 3 digits Mach.','Felt 15: marsjfart er N + 4 siffer i knop (N0140), K + 4 siffer i km/t, eller M + 3 siffer Mach.'); mark('i15s',spOk);
+  const lv=V('i15l'); const lvOk=/^(A\d{3}|F\d{3}|S\d{4}|M\d{4}|VFR)$/.test(lv); if(!lvOk) E('i15l','Item 15: level is A + 3 digits altitude in hundreds of feet (A045 = 4500 ft), F + 3 digits flight level (F080), or VFR.','Felt 15: nivå er A + 3 siffer høyde i hundre fot (A045 = 4500 ft), F + 3 siffer flygenivå (F080), eller VFR.'); mark('i15l',lvOk);
+  if(rules==='I'&&lv==='VFR') E('i15l','Item 15: an IFR flight plan needs a cruising level, not VFR.','Felt 15: en IFR-flyplan trenger et marsjnivå, ikke VFR.');
+  if(rules==='V'&&lvOk&&lv!=='VFR') W('i15l','Item 15: for VFR you may give an altitude, but VFR is the usual entry.','Felt 15: for VFR kan du oppgi en høyde, men VFR er det vanlige.');
+  const toks=routeTok(V('i15r')); let rOk=true;
+  if(!toks.length){ E('i15r','Item 15: the route is missing. DCT (direct) between points is fine for VFR.','Felt 15: ruten mangler. DCT (direkte) mellom punkter går fint for VFR.'); rOk=false; }
+  toks.forEach((t,i)=>{ const c=classify(t), prev=i?classify(toks[i-1]):null;
+    if(c==='bad'){ E('i15r',`Item 15: “${t}” is not a valid route element.`,`Felt 15: «${t}» er ikke et gyldig ruteelement.`); rOk=false; }
+    if(c==='awy'&&(i===0||prev==='awy'||prev==='dct')) { E('i15r',`Item 15: airway ${t} must start and end at a significant point.`,`Felt 15: luftvei ${t} må starte og slutte i et signifikant punkt.`); rOk=false; }
+    if((c==='point'||c==='change')&&(prev==='point'||prev==='change')) W('i15r',`Item 15: put DCT or an airway between ${toks[i-1]} and ${t}. IFPS in Europe expects DCT to be written out.`,`Felt 15: sett DCT eller en luftvei mellom ${toks[i-1]} og ${t}. IFPS i Europa forventer at DCT skrives ut.`);
+    if(c==='dct'&&prev==='dct'){ E('i15r','Item 15: two DCT in a row.','Felt 15: to DCT etter hverandre.'); rOk=false; } });
+  if(rules==='Y'&&!toks.includes('VFR')) E('i15r','Item 15: rules Y (IFR first) needs the point where you change to VFR, followed by VFR.','Felt 15: regler Y (IFR først) krever punktet der du bytter til VFR, fulgt av VFR.');
+  if(rules==='Z'&&!toks.includes('IFR')) E('i15r','Item 15: rules Z (VFR first) needs the point where you change to IFR, followed by IFR and a speed/level change.','Felt 15: regler Z (VFR først) krever punktet der du bytter til IFR, fulgt av IFR og en fart/nivå-endring.');
+  mark('i15r',rOk);
+  const dest=V('i16'); if(!ICAO.test(dest)) E('i16','Item 16: destination is a 4-letter ICAO code.','Felt 16: destinasjon er en ICAO-kode på 4 bokstaver.'); mark('i16',ICAO.test(dest));
+  if(dest==='ZZZZ'&&!o18.DEST) E('i18','Item 18: ZZZZ as destination requires DEST/.','Felt 18: ZZZZ som destinasjon krever DEST/.');
+  const eet=V('i16t'); if(!DUR.test(eet)) E('i16t','Item 16: total EET is hours and minutes, HHMM (0145).','Felt 16: total EET er timer og minutter, TTMM (0145).'); mark('i16t',DUR.test(eet));
+  ['i16a','i16b'].forEach(k=>{ const v=V(k); if(v&&!ICAO.test(v)){ E(k,'Item 16: an alternate is a 4-letter ICAO code.','Felt 16: alternativ flyplass er en ICAO-kode på 4 bokstaver.'); mark(k,false);} else if(v) mark(k,true); });
+  if(rules==='I'&&!V('i16a')) W('i16a','Item 16: IFR normally needs a destination alternate (Part-NCO), unless the weather allows planning without one.','Felt 16: IFR krever normalt en alternativ flyplass (Part-NCO), med mindre været tillater planlegging uten.');
+  if(bad18.length){ E('i18','Item 18: unknown indicator or text outside an indicator: '+bad18.join(', ')+'. Each piece must be INDICATOR/text, for example RMK/TRAINING.','Felt 18: ukjent indikator eller tekst utenfor en indikator: '+bad18.join(', ')+'. Hver del må være INDIKATOR/tekst, for eksempel RMK/TRAINING.'); mark('i18',false); }
+  if(o18.DOF&&!/^\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(o18.DOF)) { E('i18','Item 18: DOF/ is the date of flight as YYMMDD (DOF/261101).','Felt 18: DOF/ er flydatoen som ÅÅMMDD (DOF/261101).'); mark('i18',false); }
+  if(t9==='ZZZZ'&&!o18.TYP) E('i18','Item 18: type ZZZZ requires TYP/.','Felt 18: type ZZZZ krever TYP/.');
+  if(!o18.DOF) W('i18','Item 18: add DOF/YYMMDD when the EOBT is more than 24 hours ahead; it is good practice to always include it.','Felt 18: legg til DOF/ÅÅMMDD når EOBT er mer enn 24 timer fram i tid; det er god praksis å alltid ta det med.');
+  if(id7&&/^[A-Z]{2}[A-Z]{3}$/.test(id7)===false&&!o18.REG&&/^\D/.test(id7)) {}
+  const e19=V('i19e'); if(!DUR.test(e19)) E('i19e','Item 19: endurance E/ is the fuel endurance as HHMM.','Felt 19: utholdenhet E/ er drivstoff-utholdenheten som TTMM.'); mark('i19e',DUR.test(e19));
+  if(DUR.test(e19)&&DUR.test(eet)){ const m=s=>+s.slice(0,2)*60+ +s.slice(2); if(m(e19)<=m(eet)) E('i19e','Item 19: endurance is not more than the EET. You cannot reach the destination.','Felt 19: utholdenheten er ikke mer enn EET. Du når ikke frem.'); else if(m(e19)<m(eet)+30) W('i19e','Item 19: less than 30 minutes more endurance than EET. Check the fuel plan.','Felt 19: mindre enn 30 minutter mer utholdenhet enn EET. Sjekk drivstoffplanen.'); }
+  const p19=V('i19p'); if(!/^(\d{1,3}|TBN)$/.test(p19)) E('i19p','Item 19: persons on board as a number (P/002) or TBN.','Felt 19: personer om bord som et tall (P/002) eller TBN.'); mark('i19p',/^(\d{1,3}|TBN)$/.test(p19));
+  [['i19r',/^[UVE]*$/],['i19s',/^[PDMJ]*$/],['i19j',/^[LFUV]*$/]].forEach(([k,re])=>{ if(!re.test(V(k))){ E(k,'Item 19: only the listed letters are allowed here.','Felt 19: bare de oppgitte bokstavene er tillatt her.'); mark(k,false);} });
+  if(!V('i19c')) W('i19c','Item 19: name of the pilot in command (C/) is required.','Felt 19: navnet på fartøysjefen (C/) er påkrevd.');
+  return {I,f};
+}
+function msgText(){
+  const n9=V('i9n'), o18=V('i18')||'0';
+  const r=routeTok(V('i15r')).join(' ');
+  let s=`(FPL-${V('i7')}-${el('i8a').value}${el('i8b').value}\n-${n9?n9:''}${V('i9t')}/${el('i9w').value}-${V('i10a')}/${V('i10b')}\n-${V('i13')}${V('i13t')}\n-${V('i15s')}${V('i15l')} ${r}\n-${V('i16')}${V('i16t')}${V('i16a')?' '+V('i16a'):''}${V('i16b')?' '+V('i16b'):''}\n-${o18})`;
+  const sup=[ V('i19e')&&'E/'+V('i19e'), V('i19p')&&'P/'+(/^\d+$/.test(V('i19p'))?V('i19p').padStart(3,'0'):V('i19p')), V('i19r')&&'R/'+V('i19r'), V('i19s')&&'S/'+V('i19s'), V('i19j')&&'J/'+V('i19j'), V('i19a')&&'A/'+V('i19a'), V('i19c')&&'C/'+V('i19c') ].filter(Boolean).join(' ');
+  return s+(sup?'\n\n'+L({en:'Item 19:',no:'Felt 19:'})+' '+sup:'');
+}
+const FIELDS=['i7','i8a','i8b','i9n','i9t','i9w','i10a','i10b','i13','i13t','i15s','i15l','i15r','i16','i16t','i16a','i16b','i18','i19e','i19p','i19r','i19s','i19j','i19a','i19c'];
+let touched=new Set(), typed=new Set(), exampleUsed=false;
+function upd(){
+  const {I,f}=check();
+  FIELDS.forEach(k=>{ const e=el(k); e.classList.remove('bad','ok'); if(!touched.has(k)&&!touched.has('*')) return; if(f[k]===false) e.classList.add('bad'); else if(f[k]===true) e.classList.add('ok'); });
+  const errs=I.filter(x=>x.k==='e'), show=touched.has('*')?I:I.filter(x=>touched.has(x.f));
+  el('issues').innerHTML= show.length? show.map(x=>`<li class="${x.k}"><i>${x.k==='e'?L({en:'ERROR',no:'FEIL'}):L({en:'NOTE',no:'MERK'})}</i><span>${L(x.t)}</span></li>`).join('') : `<li class="o"><i>OK</i><span>${L(touched.size?{en:'Nothing to fix in the fields you have filled.',no:'Ingenting å rette i feltene du har fylt ut.'}:{en:'Start filling in, or load an example.',no:'Begynn å fylle ut, eller last inn et eksempel.'})}</span></li>`;
+  el('msg').textContent=msgText();
+  const st=el('stat'); if(!touched.size){ st.textContent=L({en:'Not filled in yet',no:'Ikke fylt ut ennå'}); st.className='status idle'; } else { st.textContent=errs.length? errs.length+' '+T(errs.length===1?'error':'errors') : T('No errors'); st.className='status'+(errs.length?'':' ok'); }
+  drawEq(); save();
+  if(!errs.length&&!exampleUsed&&typed.size>=10&&window.NPROG) NPROG.award('fpl:clean',100);
+}
+FIELDS.forEach(k=>{ el(k).addEventListener('input',()=>{ touched.add(k); typed.add(k); upd(); }); el(k).addEventListener('change',()=>{ touched.add(k); upd(); }); });
+function fill(o){ exampleUsed=true; FIELDS.forEach(k=>{ if(o[k]!==undefined) el(k).value=o[k]; }); touched=new Set(['*']); upd(); }
+const today=new Date(Date.now()+864e5), dof=String(today.getUTCFullYear()).slice(2)+String(today.getUTCMonth()+1).padStart(2,'0')+String(today.getUTCDate()).padStart(2,'0');
+el('exV').onclick=()=>fill({i7:'LNABC',i8a:'V',i8b:'G',i9n:'',i9t:'DA42',i9w:'L',i10a:'SDFGY',i10b:'S',i13:'ENTO',i13t:'0930',i15s:'N0140',i15l:'VFR',i15r:'DCT TOR DCT 5915N00800E',i16:'ENBR',i16t:'0145',i16a:'ENZV',i16b:'',i18:'DOF/'+dof+' RMK/TRAINING FLIGHT',i19e:'0430',i19p:'2',i19r:'VE',i19s:'',i19j:'L',i19a:'WHITE WITH BLUE STRIPES',i19c:'NILSSON'});
+el('exI').onclick=()=>fill({i7:'LNABC',i8a:'I',i8b:'G',i9n:'',i9t:'DA42',i9w:'L',i10a:'SDFGRY',i10b:'S',i13:'ENTO',i13t:'0930',i15s:'N0150',i15l:'F080',i15r:'DCT TOR DCT 5915N00800E',i16:'ENBR',i16t:'0140',i16a:'ENZV',i16b:'',i18:'PBN/B2D2S1 DOF/'+dof+' RMK/TRAINING FLIGHT',i19e:'0430',i19p:'2',i19r:'VE',i19s:'',i19j:'L',i19a:'WHITE WITH BLUE STRIPES',i19c:'NILSSON'});
+el('clr').onclick=()=>{ FIELDS.forEach(k=>{ const e=el(k); if(e.tagName==='SELECT') e.selectedIndex=0; else e.value=''; }); el('i9w').value='L'; touched=new Set(); typed=new Set(); exampleUsed=false; upd(); };
+el('copy').onclick=async()=>{ const t=el('msg').textContent; let ok=false; try{ await navigator.clipboard.writeText(t); ok=true; }catch(e){ const r=document.createRange(); r.selectNodeContents(el('msg')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); try{ ok=document.execCommand('copy'); }catch(_){} }
+  el('copied').textContent=L(ok?{en:'Copied.',no:'Kopiert.'}:{en:'Selected. Press Ctrl+C to copy.',no:'Markert. Trykk Ctrl+C for å kopiere.'}); setTimeout(()=>el('copied').textContent='',2500); };
+function save(){ try{ const o={}; FIELDS.forEach(k=>o[k]=el(k).value); localStorage.setItem('aeroson-fpl',JSON.stringify(o)); }catch(e){} }
+
+/* ---------- navigasjonslogg ---------- */
+const NT={tas:140,ff:10,unit:'USG',var:3,legs:[]};
+const navtop=el('navtop');
+const mk=(label,key,step,suffix)=>{ const w=document.createElement('label'); w.className='f'; w.innerHTML=`<span>${label}</span><input type="number" step="${step}" value="${NT[key]}" data-k="${key}">`; navtop.appendChild(w); w.querySelector('input').addEventListener('input',e=>{ const v=parseFloat(e.target.value); if(Number.isFinite(v)){ const old=NT[key]; NT[key]=v; if(key==='tas') NT.legs.forEach(l=>{ if(l.tas===old) l.tas=v; }); calc(); } }); };
+navtop.innerHTML='';
+mk(T('TAS (kt) for new legs'),'tas',1); mk(T('Fuel flow per hour'),'ff',0.1); mk(T('Variation (+E / −W)'),'var',0.5);
+const u=document.createElement('label'); u.className='f'; u.innerHTML=`<span>${T('Fuel unit')}</span><select id="unit"><option>USG</option><option>L</option><option>KG</option></select>`; navtop.appendChild(u);
+el('unit').onchange=e=>{ NT.unit=e.target.value; calc(); };
+LAB.add({},{'TAS (kt) for new legs':'TAS (kt) for nye legg','Fuel flow per hour':'Forbruk per time','Variation (+E / −W)':'Variasjon (+Ø / −V)','Fuel unit':'Drivstoffenhet'});
+const DEF=[['ENTO','TOR',1500,265,4,240,15],['TOR','LARV',3500,250,18,240,15],['LARV','KRAG',3500,236,42,250,18],['KRAG','ENBR',5500,300,98,260,20]];
+function legsEx(){ NT.legs=DEF.map(d=>({from:d[0],to:d[1],alt:d[2],tc:d[3],dist:d[4],wd:d[5],ws:d[6],tas:NT.tas})); }
+let sel=0;
+function tri(l){ const D=Math.PI/180; const ang=(l.wd-l.tc)*D; const x=l.ws*Math.sin(ang)/Math.max(1,l.tas);
+  if(Math.abs(x)>=1) return null; const wca=Math.asin(x)/D; const gs=l.tas*Math.cos(wca*D)-l.ws*Math.cos(ang); const th=((l.tc+wca)%360+360)%360; const mh=((th-NT.var)%360+360)%360; const min=gs>0? l.dist/gs*60 : Infinity; return {wca,gs,th,mh,min,fuel:min/60*NT.ff}; }
+const fmtT=m=>!isFinite(m)?'–':Math.floor(m/60)+':'+String(Math.round(m%60)).padStart(2,'0');
+const p3=n=>String(Math.round(n)%360||360).padStart(3,'0');
+function renderNav(){
+  const tb=el('nav').tBodies[0];
+  tb.innerHTML=NT.legs.map((l,i)=>`<tr data-i="${i}" class="${i===sel?'sel':''}"><td><input class="w" data-f="from" value="${l.from}" aria-label="From"></td><td><input class="w" data-f="to" value="${l.to}" aria-label="To"></td>
+    ${['alt','tc','dist','wd','ws','tas'].map(k=>`<td><input type="number" data-f="${k}" value="${l[k]}" aria-label="${k}"></td>`).join('')}
+    <td class="out" data-o="wca"></td><td class="out" data-o="th"></td><td class="mh" data-o="mh"></td><td class="out" data-o="gs"></td><td class="out" data-o="min"></td><td class="out" data-o="fuel"></td><td><button aria-label="Remove leg" data-del="${i}">×</button></td></tr>`).join('');
+  calc();
+}
+el('nav').addEventListener('input',e=>{ const t=e.target, tr=t.closest('tr'); if(!tr) return; const i=+tr.dataset.i, k=t.dataset.f; const v=(k==='from'||k==='to')?t.value.toUpperCase():parseFloat(t.value); if(k!=='from'&&k!=='to'&&!Number.isFinite(v)) return; NT.legs[i][k]=v; if(k==='to'&&NT.legs[i+1]){ NT.legs[i+1].from=v; tr.nextElementSibling.querySelector('[data-f=from]').value=v; } sel=i; calc(); });
+el('nav').addEventListener('focusin',e=>{ const tr=e.target.closest('tbody tr'); if(tr){ sel=+tr.dataset.i; el('nav').querySelectorAll('tbody tr').forEach(r=>r.classList.toggle('sel',+r.dataset.i===sel)); drawTri(); } });
+el('nav').addEventListener('click',e=>{ const b=e.target.closest('[data-del]'); if(b){ NT.legs.splice(+b.dataset.del,1); sel=Math.min(sel,NT.legs.length-1); renderNav(); } });
+el('addLeg').onclick=()=>{ const p=NT.legs[NT.legs.length-1]; NT.legs.push({from:p?p.to:'',to:'',alt:p?p.alt:3500,tc:0,dist:10,wd:p?p.wd:0,ws:p?p.ws:0,tas:NT.tas}); sel=NT.legs.length-1; renderNav(); };
+let totMin=0, totFuel=0, totDist=0;
+function calc(){
+  totMin=0; totFuel=0; totDist=0; let bad=false;
+  NT.legs.forEach((l,i)=>{ const r=tri(l), tr=el('nav').tBodies[0].rows[i]; if(!tr) return; const s=(k,v)=>tr.querySelector(`[data-o=${k}]`).textContent=v;
+    if(!r){ s('wca','!'); s('th','–'); s('mh','–'); s('gs','–'); s('min','–'); s('fuel','–'); bad=true; return; }
+    s('wca',(r.wca>=0?'+':'−')+Math.abs(r.wca).toFixed(0)+'°'); s('th',p3(r.th)); s('mh',p3(r.mh)); s('gs',Math.round(r.gs)); s('min',fmtT(r.min)); s('fuel',r.fuel.toFixed(1));
+    totMin+=r.min; totFuel+=r.fuel; totDist+=+l.dist||0; });
+  el('nav').tFoot.innerHTML=`<tr><td colspan="4">${L({en:'Total',no:'Totalt'})}</td><td>${nf(totDist,0)}</td><td colspan="7"></td><td>${fmtT(totMin)}</td><td>${totFuel.toFixed(1)}</td><td></td></tr>`;
+  drawTri(); fuelCalc(); saveNav();
+}
+const tv=fit(el('wtri'),()=>drawTri());
+function drawTri(){
+  const g=tv.ctx, W=tv.w, H=tv.h; if(!W) return; g.clearRect(0,0,W,H);
+  const l=NT.legs[sel]; if(!l){ return; } const r=tri(l);
+  el('legT').textContent=`${l.from||'?'} → ${l.to||'?'}`;
+  if(!r){ el('legTxt').textContent=L({en:'The wind is stronger than the crosswind your TAS can correct for. No solution.',no:'Vinden er sterkere enn sidevinden TAS kan korrigere for. Ingen løsning.'}); return; }
+  const D=Math.PI/180, V=(deg,len)=>[Math.sin(deg*D)*len,-Math.cos(deg*D)*len];
+  const A=V(r.th,l.tas), w=V(l.wd+180,l.ws), Gp=[A[0]+w[0],A[1]+w[1]];
+  const xs=[0,A[0],Gp[0]], ys=[0,A[1],Gp[1]], x0=Math.min(...xs), x1=Math.max(...xs), y0=Math.min(...ys), y1=Math.max(...ys);
+  const padL=24, padT=70, padR=24, padB=24, sc=Math.min((W-padL-padR)/Math.max(1,x1-x0),(H-padT-padB)/Math.max(1,y1-y0),3);
+  const ox=padL+((W-padL-padR)-(x1-x0)*sc)/2-x0*sc, oy=padT+((H-padT-padB)-(y1-y0)*sc)/2-y0*sc;
+  const X=p=>[ox+p[0]*sc,oy+p[1]*sc];
+  const arrow=(p0,p1,c,dash)=>{ const [ax,ay]=X(p0),[bx,by]=X(p1); g.strokeStyle=c; g.fillStyle=c; g.lineWidth=3; g.setLineDash(dash||[]); g.beginPath(); g.moveTo(ax,ay); g.lineTo(bx,by); g.stroke(); g.setLineDash([]);
+    const an=Math.atan2(by-ay,bx-ax); g.beginPath(); g.moveTo(bx,by); g.lineTo(bx-12*Math.cos(an-0.4),by-12*Math.sin(an-0.4)); g.lineTo(bx-12*Math.cos(an+0.4),by-12*Math.sin(an+0.4)); g.closePath(); g.fill(); };
+  arrow([0,0],A,'#f0b440'); arrow(A,Gp,'#7fcbe8'); arrow([0,0],Gp,'#71cc93');
+  const [oxp,oyp]=X([0,0]); g.fillStyle='#e2e8ee'; g.beginPath(); g.arc(oxp,oyp,4,0,7); g.fill();
+  // legende
+  const leg=[['#f0b440','TH '+p3(r.th)+'° · TAS '+l.tas+' kt'],['#7fcbe8',L({en:'Wind',no:'Vind'})+' '+p3(l.wd)+'° / '+l.ws+' kt'],['#71cc93','TC '+p3(l.tc)+'° · GS '+Math.round(r.gs)+' kt']];
+  g.font='600 12px "Public Sans", sans-serif'; g.textBaseline='middle'; g.textAlign='left';
+  leg.forEach(([c,t],i)=>{ const x=12+i*Math.max(150,(W-24)/3); g.fillStyle=c; g.fillRect(x,16,16,4); g.fillStyle='#e2e8ee'; g.fillText(t,x+22,18); });
+  // nordpil
+  g.save(); g.translate(W-22,52); g.fillStyle='#8b99a7'; g.beginPath(); g.moveTo(0,-12); g.lineTo(-6,4); g.lineTo(6,4); g.closePath(); g.fill(); g.font='10px "IBM Plex Mono", monospace'; g.textAlign='center'; g.fillText('N',0,14); g.restore();
+  const side=r.wca>0?{en:'right',no:'høyre'}:{en:'left',no:'venstre'};
+  el('legTxt').innerHTML=L({en:`True course ${p3(l.tc)}°. The wind from ${p3(l.wd)}° pushes you off course, so you point ${Math.abs(r.wca).toFixed(0)}° to the ${side.en} into the wind: true heading ${p3(r.th)}°. With ${NT.var>=0?NT.var+'° E':(-NT.var)+'° W'} variation the magnetic heading is <b>${p3(r.mh)}°</b>. Ground speed ${Math.round(r.gs)} kt, ${fmtT(r.min)} for ${l.dist} NM.`,
+    no:`Rettvisende kurs ${p3(l.tc)}°. Vinden fra ${p3(l.wd)}° presser deg ut av kurs, så du peker ${Math.abs(r.wca).toFixed(0)}° til ${side.no} mot vinden: rettvisende styrekurs ${p3(r.th)}°. Med ${NT.var>=0?NT.var+'° Ø':(-NT.var)+'° V'} variasjon blir magnetisk styrekurs <b>${p3(r.mh)}°</b>. Fart over bakken ${Math.round(r.gs)} kt, ${fmtT(r.min)} for ${l.dist} NM.`});
+}
+el('toFpl').onclick=()=>{ const h=Math.floor(totMin/60), m=Math.round(totMin%60); el('i16t').value=String(h).padStart(2,'0')+String(m).padStart(2,'0');
+  const end=FU.fob/NT.ff*60; if(isFinite(end)) el('i19e').value=String(Math.floor(end/60)).padStart(2,'0')+String(Math.floor(end%60)).padStart(2,'0');
+  if(NT.legs[0]) el('i13').value=NT.legs[0].from; if(NT.legs.length) el('i16').value=NT.legs[NT.legs.length-1].to; touched.add('i16t'); touched.add('i19e'); upd();
+  el('toFplN').textContent=L({en:'EET, endurance, departure and destination copied to the flight plan.',no:'EET, utholdenhet, avgang og destinasjon er kopiert til flyplanen.'}); setTimeout(()=>el('toFplN').textContent='',3000); };
+function saveNav(){ try{ localStorage.setItem('aeroson-nav',JSON.stringify({NT,FU})); }catch(e){} }
+
+/* ---------- drivstoff ---------- */
+const FU={taxi:1,cont:5,altMin:0,final:30,extra:0,fob:50,kind:'vfrday'};
+const KIND={vfrday:{final:30,alt:false,t:{en:'Day VFR',no:'Dag-VFR'}},vfrnight:{final:45,alt:false,t:{en:'Night VFR',no:'Natt-VFR'}},ifr:{final:45,alt:true,t:{en:'IFR',no:'IFR'}}};
+const kseg=seg(el('fRules'),Object.entries(KIND).map(([k,v])=>[k,v.t.en]),FU.kind,v=>{ FU.kind=v; FU.final=KIND[v].final; fuelCalc(); });
+function fuelCalc(){
+  const k=KIND[FU.kind], ff=NT.ff, U=NT.unit;
+  const trip=totFuel, cont=trip*FU.cont/100, alt=FU.altMin/60*ff, fin=FU.final/60*ff;
+  const req=FU.taxi+trip+cont+(k.alt?alt:0)+fin+FU.extra;
+  const inp=(key,step)=>`<input type="number" step="${step}" value="${FU[key]}" data-k="${key}" aria-label="${key}">`;
+  el('ftab').innerHTML=`
+   <tr><td>${L({en:'Taxi',no:'Taksing'})}</td><td>${inp('taxi',0.5)}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Trip (from the log)',no:'Tur (fra loggen)'})}</td><td>${trip.toFixed(1)}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Contingency, % of trip',no:'Margin, % av tur'})} ${inp('cont',1)}</td><td>${cont.toFixed(1)}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Alternate, minutes',no:'Alternativ, minutter'})} ${inp('altMin',5)} ${k.alt?'':'<span class="note">('+L({en:'not required',no:'ikke påkrevd'})+')</span>'}</td><td>${k.alt?alt.toFixed(1):'–'}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Final reserve, minutes',no:'Sluttreserve, minutter'})} ${inp('final',5)}</td><td>${fin.toFixed(1)}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Extra',no:'Ekstra'})}</td><td>${inp('extra',0.5)}</td><td>${U}</td></tr>
+   <tr class="tot"><td>${L({en:'Minimum at engine start',no:'Minimum ved motorstart'})}</td><td>${req.toFixed(1)}</td><td>${U}</td></tr>
+   <tr><td>${L({en:'Fuel on board',no:'Drivstoff om bord'})}</td><td>${inp('fob',1)}</td><td>${U}</td></tr>
+   <tr class="tot"><td>${L({en:'Margin',no:'Margin'})}</td><td style="color:${FU.fob-req<0?'var(--red)':'var(--green)'}">${(FU.fob-req).toFixed(1)}</td><td>${U}</td></tr>`;
+  const end=FU.fob/ff*60;
+  el('fMsg').innerHTML= FU.fob<req ? L({en:`<b style="color:var(--red)">Not enough fuel.</b> You need ${req.toFixed(1)} ${U} and have ${FU.fob} ${U}. Plan a fuel stop, carry less load and more fuel, or shorten the route.`,no:`<b style="color:var(--red)">Ikke nok drivstoff.</b> Du trenger ${req.toFixed(1)} ${U} og har ${FU.fob} ${U}. Planlegg et tankstopp, ta mindre last og mer drivstoff, eller kort ned ruten.`})
+    : L({en:`Enough fuel with ${(FU.fob-req).toFixed(1)} ${U} to spare. Endurance at ${ff} ${U}/h is ${fmtT(end)}, which goes in item 19 as E/.`,no:`Nok drivstoff, med ${(FU.fob-req).toFixed(1)} ${U} til overs. Utholdenhet med ${ff} ${U}/t er ${fmtT(end)}, som føres i felt 19 som E/.`});
+  saveNav();
+}
+el('ftab').addEventListener('change',e=>{ const k=e.target.dataset.k; if(!k) return; const v=parseFloat(e.target.value); if(Number.isFinite(v)){ FU[k]=v; fuelCalc(); } });
+
+/* ---------- quiz ---------- */
+const Q=[
+ {q:{en:'How is LN-ABC written in item 7?',no:'Hvordan skrives LN-ABC i felt 7?'},a:[{en:'LNABC',no:'LNABC'},{en:'LN-ABC',no:'LN-ABC'},{en:'ABC',no:'ABC'}],c:0,e:{en:'No hyphens or spaces in item 7.',no:'Ingen bindestrek eller mellomrom i felt 7.'}},
+ {q:{en:'What does flight rules Z mean?',no:'Hva betyr flygeregler Z?'},a:[{en:'VFR first, then IFR',no:'VFR først, så IFR'},{en:'IFR first, then VFR',no:'IFR først, så VFR'},{en:'Special VFR',no:'Spesiell VFR'}],c:0,e:{en:'Y is IFR first, Z is VFR first. The change point goes in item 15.',no:'Y er IFR først, Z er VFR først. Byttepunktet føres i felt 15.'}},
+ {q:{en:'You put R in item 10a. What must be in item 18?',no:'Du har R i felt 10a. Hva må stå i felt 18?'},a:[{en:'PBN/ with your PBN capabilities',no:'PBN/ med PBN-egenskapene dine'},{en:'RMK/RNAV',no:'RMK/RNAV'},{en:'Nothing',no:'Ingenting'}],c:0,e:{en:'R and PBN/ go together; one without the other is rejected.',no:'R og PBN/ hører sammen; den ene uten den andre avvises.'}},
+ {q:{en:'A045 in item 15 means…',no:'A045 i felt 15 betyr…'},a:[{en:'altitude 4 500 ft',no:'høyde 4 500 ft'},{en:'flight level 45',no:'flygenivå 45'},{en:'450 ft',no:'450 ft'}],c:0,e:{en:'A is altitude in hundreds of feet. F is flight level.',no:'A er høyde i hundre fot. F er flygenivå.'}},
+ {q:{en:'Which time is EOBT in item 13?',no:'Hvilken tid er EOBT i felt 13?'},a:[{en:'Estimated off-block time, in UTC',no:'Beregnet off-block-tid, i UTC'},{en:'Take-off time in local time',no:'Avgangstid i lokal tid'},{en:'Landing time in UTC',no:'Landingstid i UTC'}],c:0,e:{en:'Off-block, not take-off, and always UTC.',no:'Off-block, ikke avgang, og alltid UTC.'}},
+ {q:{en:'TC 090°, wind 180°/20 kt, TAS 100 kt. The wind correction is about…',no:'TC 090°, vind 180°/20 kt, TAS 100 kt. Vindkorreksjonen er omtrent…'},a:[{en:'12° right',no:'12° høyre'},{en:'12° left',no:'12° venstre'},{en:'20° right',no:'20° høyre'}],c:0,e:{en:'Wind from the right (south) when flying east: point right. asin(20/100) ≈ 11.5°.',no:'Vind fra høyre (sør) når du flyr østover: pek mot høyre. asin(20/100) ≈ 11,5°.'}},
+ {q:{en:'True heading 250°, variation 4° E. Magnetic heading?',no:'Rettvisende styrekurs 250°, variasjon 4° Ø. Magnetisk styrekurs?'},a:[{en:'246°',no:'246°'},{en:'254°',no:'254°'},{en:'250°',no:'250°'}],c:0,e:{en:'East is least: subtract easterly variation.',no:'«East is least»: trekk fra østlig variasjon.'}},
+ {q:{en:'Final reserve fuel for a day VFR flight under Part-NCO (aeroplane) is…',no:'Sluttreserve for en dag-VFR-flyging etter Part-NCO (fly) er…'},a:[{en:'30 minutes',no:'30 minutter'},{en:'45 minutes',no:'45 minutter'},{en:'10 % of trip',no:'10 % av tur'}],c:0,e:{en:'30 minutes by day VFR, 45 minutes at night VFR or IFR.',no:'30 minutter på dag-VFR, 45 minutter på natt-VFR eller IFR.'}}
+];
+quiz(el('qbox'),'planning',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
+
+/* ---------- start ---------- */
+LAB.start('plan');
+try{ const o=JSON.parse(localStorage.getItem('aeroson-fpl')||'null'); if(o&&o.i7){ FIELDS.forEach(k=>{ if(o[k]!==undefined) el(k).value=o[k]; }); touched=new Set(['*']); } }catch(e){}
+try{ const s=JSON.parse(localStorage.getItem('aeroson-nav')||'null'); if(s&&s.NT&&Array.isArray(s.NT.legs)&&s.NT.legs.length){ Object.assign(NT,s.NT); Object.assign(FU,s.FU||{}); navtop.querySelectorAll('input').forEach(i=>i.value=NT[i.dataset.k]); el('unit').value=NT.unit; kseg.set(FU.kind); } else legsEx(); }catch(e){ legsEx(); }
+if(!NT.legs.length) legsEx();
+renderNav(); upd();
+LAB.onLang(()=>{ upd(); calc(); kseg.set(FU.kind); });
+})();
+</script>
+</body>
+</html>

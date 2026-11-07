@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Type rating trainer: King Air B200 · Birdbird</title>
+<meta name="description" content="King Air B200 type rating trainer: a study plan for every system, cockpit system simulators, flashcards, a question trainer with exam mode and an oral exam.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+.intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.intro{grid-template-columns:minmax(0,1fr)}}
+.intro .callout p{margin:0 0 8px}.intro .callout p:last-child{margin:0}
+.verify{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.04em;color:#7A4D00;background:#FBF1DE;border:1px solid #E9D3A8;border-radius:3px;padding:1px 6px;vertical-align:1px}
+/* plan */
+.mods{display:flex;flex-direction:column;border-top:1px solid var(--rule)}
+.mod{border-bottom:1px solid var(--rule)}
+.mod>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:40px minmax(0,1fr) 150px;gap:12px;align-items:center;padding:12px 4px}
+.mod>summary::-webkit-details-marker{display:none}
+.mod>summary:hover{background:#F3F6F4}
+.mod .mt b::after{content:" ▸";color:var(--ink-2);font-weight:400}.mod[open] .mt b::after{content:" ▾"}
+svg.schem{max-height:430px}
+.mod .no{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:24px;color:var(--magenta);text-align:center}
+.mod .mt b{display:block;font-size:16px;font-weight:650}
+.mod .mt span{font-size:13px;color:var(--ink-2)}
+.mbar{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink-2);text-align:right}
+.mbar .tr{height:6px;background:var(--rule-2);border-radius:3px;overflow:hidden}
+.mbar .tr i{display:block;height:100%;background:var(--green)}
+.mbar .tr i.mid{background:var(--amber)}.mbar .tr i.low{background:var(--red)}
+.mod[open]>summary{background:#F6F8F6}
+.mbody{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;padding:6px 4px 22px 56px}
+@media (max-width:900px){.mbody{grid-template-columns:minmax(0,1fr);padding-left:4px}.mod>summary{grid-template-columns:34px minmax(0,1fr) 92px;gap:8px}}
+.mbody .txt p{margin:0 0 10px;max-width:72ch}
+.mbody h4{font-family:var(--f-display);font-stretch:92%;font-size:15.5px;margin:12px 0 4px}
+.mbody ul{margin:0 0 10px;padding-left:20px}.mbody li{margin:3px 0}
+.nums{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--sheet);border:1px solid var(--rule)}
+.nums th{font-size:12px;text-align:left;color:var(--ink-2);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--rule)}
+.nums td{padding:6px 10px;border-bottom:1px solid var(--rule-2);vertical-align:top}
+.nums td:last-child{font-family:var(--f-mono);font-size:12.5px;text-align:right;white-space:nowrap}
+@media (max-width:520px){.nums td:last-child{white-space:normal}}
+.labs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.labs a{font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:14px;padding:4px 10px;text-decoration:none;color:var(--ink)}
+.labs a:hover{border-color:var(--magenta);color:var(--magenta)}
+/* cockpit sims */
+.simgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:1000px){.simgrid{grid-template-columns:minmax(0,1fr)}}
+.simview{display:flex;flex-direction:column;gap:8px;min-width:0}
+.svgwrap{overflow-x:auto;padding:6px}
+svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM Plex Mono",monospace}
+.flow{animation:dash 0.9s linear infinite}.flow.rev{animation-direction:reverse}
+@keyframes dash{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+.annp{background:var(--inst);border:1px solid #0a1015;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.mflash{display:flex;gap:6px}
+.mflash span{flex:1;text-align:center;font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.06em;padding:5px 4px;border-radius:3px;background:#1a232b;color:#46535e;border:1px solid #26323c}
+.mflash .r.on{background:#B3261E;color:#fff;border-color:#e05a47}.mflash .a.on{background:#D99A00;color:#1b1300;border-color:#f2c14e}
+.ann{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:4px}
+.ann span{font-family:var(--f-mono);font-size:11px;text-align:center;padding:6px 3px;border-radius:2px;background:#1a232b;color:#46535e;border:1px solid #26323c;line-height:1.2}
+.ann span.r.on{background:#B3261E;color:#fff;border-color:#e05a47}
+.ann span.a.on{background:#D99A00;color:#1b1300;border-color:#f2c14e}
+.ann span.g.on{background:#1f7a46;color:#e9fff1;border-color:#35c27a}
+.meters{background:var(--sheet);border:1px solid var(--rule);padding:4px 12px}
+.srow{display:grid;grid-template-columns:118px minmax(0,1fr);gap:8px;align-items:center;margin:3px 0}
+.srow>span{font-size:13px;color:var(--ink-2)}
+.srow .seg button{font-size:12.5px;padding:6px 6px}
+.sw{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 8px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.chk input{accent-color:var(--magenta);margin:0}
+.works{list-style:none;margin:6px 0 0;padding:0;font-size:13.5px}
+.works li{padding:4px 0 4px 18px;position:relative;border-bottom:1px solid var(--rule-2)}
+.works li::before{content:"";position:absolute;left:2px;top:10px;width:9px;height:9px;border-radius:50%}
+.works li.y::before{background:var(--green)}.works li.n{color:var(--ink-2);text-decoration:line-through}.works li.n::before{background:#C3CBCF}
+.expl p{margin:6px 0 0;font-size:14px;color:var(--ink)}
+.notice{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--chart-blue);padding:10px 14px;font-size:14px}
+.notice ul{margin:6px 0 0;padding-left:20px}.notice li{margin:4px 0}
+.gauges{display:block;width:100%;aspect-ratio:2.5/1}
+@media (max-width:600px){.gauges{aspect-ratio:1/1}}
+.topv{display:block;width:100%;aspect-ratio:1/0.9;max-height:460px}
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.pplot{display:block;width:100%;aspect-ratio:16/10;max-height:420px}
+@media (max-width:600px){.pplot{aspect-ratio:auto;height:300px}}
+.duty{background:var(--sheet);border:1px solid var(--rule);padding:4px 12px 8px}
+.duty .bar{height:6px;background:var(--rule-2);border-radius:3px;overflow:hidden;margin:2px 0 4px}.duty .bar i{display:block;height:100%;background:var(--green)}.duty .bar i.w{background:var(--red)}
+.slog{margin:6px 0 0;padding-left:20px;font-size:13px;max-height:260px;overflow:auto}.slog li{margin:2px 0}
+.simtabs{max-width:760px}
+/* flashcards */
+.fc{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:900px){.fc{grid-template-columns:minmax(0,1fr)}}
+.card3{background:#fff;border:1px solid var(--rule);border-radius:6px;min-height:220px;padding:22px 24px;display:flex;flex-direction:column;gap:12px;box-shadow:0 6px 18px rgba(19,32,42,.06)}
+.card3 .front{font-family:var(--f-display);font-stretch:92%;font-size:23px;font-weight:650;line-height:1.25}
+.card3 .back{font-size:16px;border-top:1px solid var(--rule-2);padding-top:12px}
+.card3 .back b{font-family:var(--f-mono);font-weight:500;font-size:19px;color:var(--chart-blue);display:block;margin-bottom:4px}
+.card3 .meta{font-size:12px;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.boxes div{background:var(--sheet);border:1px solid var(--rule);padding:8px 4px;text-align:center;font-size:12px;color:var(--ink-2)}
+.boxes div b{display:block;font-family:var(--f-display);font-stretch:88%;font-size:22px;color:var(--ink)}
+/* quiz */
+.qset{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end}
+.qset label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.qset select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);max-width:100%}
+.qset label{max-width:100%;min-width:0}
+@media (max-width:600px){.qset label{flex:1 1 100%}.qset select{width:100%}}
+.qgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;align-items:start}
+@media (max-width:1000px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+.qopts button .k{display:inline-block;width:22px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.qopts button.pick{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
+.stab{width:100%;border-collapse:collapse;font-size:13px}
+.stab th,.stab td{padding:5px 6px;border-bottom:1px solid var(--rule-2);text-align:right}
+.stab th:first-child,.stab td:first-child{text-align:left}
+.stab th{font-size:12px;color:var(--ink-2);font-weight:600}
+.stab button{font:inherit;font-size:12px;background:none;border:0;color:var(--magenta);cursor:pointer;padding:0}
+.timer{font-family:var(--f-mono);font-size:15px}
+.rev{border-top:1px solid var(--rule);padding:10px 0;font-size:14px}
+.rev .qq2{font-weight:600}
+.rev .ok{color:var(--green)}.rev .no{color:var(--red)}
+.empty{background:var(--sheet);border:1px dashed var(--rule);padding:16px;font-size:14px;color:var(--ink-2);border-radius:4px}
+/* oral */
+.ogrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+@media (max-width:1000px){.ogrid{grid-template-columns:minmax(0,1fr)}}
+.olog{display:flex;flex-direction:column;gap:12px;max-height:620px;overflow-y:auto;padding-right:4px}
+.olog .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px;white-space:pre-wrap}
+.olog .a{border-left:3px solid #1D4E9E;padding:2px 0 2px 14px}
+.olog .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#1D4E9E;display:block;margin-bottom:4px}
+.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#1D4E9E;background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;vertical-align:1px}
+.cite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}
+.grade{display:flex;gap:12px;align-items:flex-start;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--amber);padding:10px 14px;margin-top:8px}
+.grade.ok{border-left-color:var(--green)}.grade.bad{border-left-color:var(--red)}
+.grade .g{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:28px;line-height:1;min-width:52px}
+.ansrow{display:flex;flex-direction:column;gap:8px}
+.ansrow textarea{min-height:90px}
+.btn.talk.on{background:var(--red);border-color:var(--red);color:#fff}
+.srcp{display:flex;flex-direction:column;gap:8px;background:var(--sheet);border:1px solid var(--rule);padding:12px 14px;font-size:13px}
+.srcp h3{margin:0;font-size:15px}
+.sitem{border-top:1px solid var(--rule-2);padding-top:8px}
+.sitem b{display:block;font-size:13px}
+.sitem blockquote{margin:6px 0;padding:6px 8px;background:#fff;border-left:3px solid #C8D5E6;font-size:12.5px;line-height:1.5;max-height:150px;overflow:auto}
+.keyp{background:#F4F8FD;border-left:3px solid #1D4E9E;padding:10px 14px;font-size:14px}
+.keyp ul{margin:4px 0 0;padding-left:20px}
+/* flows */
+.phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.ph{background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
+.ph h3{display:flex;gap:10px;align-items:baseline}
+.ph h3 i{font-style:normal;font-family:var(--f-display);font-stretch:85%;font-weight:780;color:var(--magenta);font-size:20px}
+.ph p{margin:6px 0 0;font-size:14px;color:var(--ink-2)}
+.ph ul{margin:6px 0 0;padding-left:18px;font-size:14px}.ph li{margin:3px 0}
+.scen{background:#fff;border:1px solid var(--rule);border-left:4px solid var(--magenta);padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.scen .set{font-size:15px}
+.scen .dp{border-top:1px solid var(--rule-2);padding-top:10px}
+.scen .dp>b{display:block;margin-bottom:6px}
+.scen .opts{display:grid;gap:6px}
+.scen .opts button{text-align:left;font:inherit;font-size:14.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:9px 12px;cursor:pointer}
+.scen .opts button:hover:not([disabled]){border-color:var(--ink)}
+.scen .opts button.right{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.scen .opts button.wrong{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.scen .fb{font-size:14px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:8px 12px;margin-top:6px}
+.trmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:2px 0 12px;font-size:13px;color:var(--ink-2)}
+.langbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--sheet);border:1px solid var(--ink);border-radius:2px;padding:3px 8px}
+/* readouts: tidy 2 × 2 grid, no orphan wrap */
+#kp{grid-template-columns:repeat(2,minmax(0,1fr))}
+#kp .kpi{padding:12px 16px;border-left:1px solid var(--rule-2)}
+#kp .kpi:nth-child(odd){border-left:0;padding-left:0}
+#kp .kpi:nth-child(n+3){border-top:1px solid var(--rule-2)}
+</style>
+</head>
+<body data-title="Type rating trainer: King Air B200">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>Type rating trainer: King Air B200</h1>
+      <div class="trmeta"><span class="langbadge" title="Type ratings are conducted in English, so this trainer is in English only.">English only</span><span>Beechcraft King Air B200 · 15 modules · example setup</span></div>
+      <p>An example of how your Birdbird instructor can be set up for a type rating. A study plan through every system, cockpit simulators for the logic you must master, flashcards for the numbers, a question trainer with an exam mode, an oral exam with the AI instructor and the reasoning behind the normal procedures.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#plan">Study plan</a><a href="#cockpit">Cockpit systems</a><a href="#cards">Flashcards</a><a href="#quiz">Questions</a><a href="#oral">Oral exam</a><a href="#flows">Procedures</a></nav>
+
+  <section class="card" id="setup">
+    <div class="intro">
+      <div class="callout blue">
+        <p><b>Use your own documents.</b> Add your POH/AFM, training manual, checklists and SOP in <a href="fi.html#docs">Flight Intelligence</a>. They are read and stored privately in your browser, never uploaded to Birdbird. The instructor then answers, quizzes and grades you from those documents and shows the page each answer comes from.</p>
+        <p>Without documents it answers from general knowledge and says so. Every number on this page is a <span class="verify">typical B200 — verify in your AFM/POH</span> value: serial numbers, modifications and operators differ, and your approved documents always take precedence.</p>
+        <p class="note">Type ratings are conducted in English, so this trainer is in English only.</p>
+      </div>
+      <div>
+        <div class="kpis" id="kp"></div>
+        <p class="note" id="bankNote" style="margin-top:8px"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="plan">
+    <div class="eyebrow">1 · Study plan</div>
+    <h2>Study plan: fifteen modules in a sensible order</h2>
+    <p class="lead">Work down the list. Each module explains how the system works, how it fails and what you see in the cockpit, then gives the key numbers and the labs that show the physics. "Drill this module" starts the question trainer on that chapter; your mastery is the share of the module's questions you answered correctly the last time you saw them.</p>
+    <div class="mods" id="mods"></div>
+  </section>
+
+  <section class="card" id="cockpit">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Cockpit systems simulator</h2>
+    <p class="lead">Five teaching models of the system logic a type-rating candidate must master. Own simplified drawings, not the aircraft panel. Switch things, fail things and read the annunciators and gauges.</p>
+    <div class="simtabs" id="simtabs"></div>
+    <div id="sim-elec" class="simpane"></div>
+    <div id="sim-fuel" class="simpane" hidden></div>
+    <div id="sim-start" class="simpane" hidden></div>
+    <div id="sim-efail" class="simpane" hidden></div>
+    <div id="sim-press" class="simpane" hidden></div>
+  </section>
+
+  <section class="card" id="cards">
+    <div class="eyebrow">3 · Spaced repetition</div>
+    <h2>Flashcards: limitations and numbers</h2>
+    <p class="lead">Five Leitner boxes. A card you know moves up a box and comes back later (box 1 every session, then after 1, 3, 7 and 14 days); a card you miss goes back to box 1. Ten minutes a day beats an evening before the exam.</p>
+    <div class="fc">
+      <div id="fcCard"></div>
+      <div class="panel">
+        <div class="grp">Deck</div><div id="fcDeck"></div>
+        <div class="grp">Boxes</div><div class="boxes" id="fcBoxes"></div>
+        <p class="note" id="fcNote" style="margin-top:8px"></p>
+        <div class="btns" style="margin-top:8px"><button class="btn" id="fcAll">Study all cards now</button><button class="btn" id="fcReset">Reset boxes</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">4 · Question trainer</div>
+    <h2>Question trainer</h2>
+    <p class="lead">Questions in the style of the type rating theory exam. Answer options are shuffled every time. In practice modes you get the explanation after each answer; the exam mode is timed and shows the review at the end, with your score per chapter.</p>
+    <div class="qset">
+      <label>Mode<span id="qMode"></span></label>
+      <label id="qModW">Module<select id="qMod"></select></label>
+      <label id="qNW">Questions<select id="qN"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="999">All</option></select></label>
+      <label id="qLvW">Level<select id="qLv"><option value="0">All levels</option><option value="1">1 · Recall</option><option value="2">2 · Understanding</option><option value="3">3 · Application</option></select></label>
+      <button class="btn pri" id="qStart">Start</button>
+    </div>
+    <div class="qgrid">
+      <div id="qBox"><div class="empty">Choose a mode and press Start.</div></div>
+      <aside>
+        <h3 style="margin-bottom:6px">Your statistics</h3>
+        <div style="overflow-x:auto"><table class="stab" id="qStats"></table></div>
+        <div class="btns" style="margin-top:8px"><button class="btn" id="qReset">Reset statistics</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="card" id="oral">
+    <div class="eyebrow">5 · Oral exam</div>
+    <h2>Oral exam with the AI instructor</h2>
+    <p class="lead">The instructor plays the examiner: one question at a time about the system you choose, a grade from 0 to 10 for each answer with what was missing, then the next question. It uses passages from your own documents in Flight Intelligence and cites them; without documents it says the answers are general and must be verified.</p>
+    <div class="ogrid">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="qset">
+          <label>System<select id="oSys"></select></label>
+          <label>Documents from<select id="oAc"></select></label>
+          <button class="btn pri" id="oStart">Start the oral</button>
+          <button class="btn" id="oEnd" hidden>End</button>
+          <span class="ai-state" id="aist">AI: checking…</span>
+        </div>
+        <p class="note" id="oDocs"></p>
+        <div class="olog" id="oLog"></div>
+        <div class="ansrow" id="oAns" hidden>
+          <textarea class="write" id="oA" placeholder="Type your answer, or hold the talk button and speak…" aria-label="Your answer"></textarea>
+          <div class="btns"><button class="btn talk" id="oTalk">Hold to talk</button><button class="btn pri" id="oSend">Send answer</button><button class="btn" id="oSkip">I don’t know</button><label class="chk"><input type="checkbox" id="oVoice"> Read questions aloud</label></div>
+        </div>
+      </div>
+      <aside class="srcp" id="oSrc"><h3>Sources for the last answer</h3><p class="note">No answer yet.</p></aside>
+    </div>
+  </section>
+
+  <section class="card" id="flows">
+    <div class="eyebrow">6 · Normal procedures</div>
+    <h2>Why the flows and checks exist</h2>
+    <p class="lead">The logic behind each phase: what is being protected and why the items come in that order. This is not a checklist; fly the checklist and SOP your operator has approved. If you understand the reason for an item you will not miss it, and you will notice when something does not fit.</p>
+    <div class="phases" id="phases"></div>
+    <h3 style="margin-top:14px">Scenario of the day</h3>
+    <div id="scen"></div>
+  </section>
+
+  <p class="foot">Teaching material. The simulators are simplified models of system logic, with own drawings; they are not the aircraft panel, a checklist or approved data. Numbers are typical King Air B200 values that vary with serial number, modifications and the operator: verify every figure in your AFM/POH and follow your approved checklists and SOP. Progress, statistics and flashcard boxes are stored in this browser only.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ai.js?v=1"></script>
+<script src="store.js?v=2"></script>
+<script src="b200-qbank.js"></script>
+<script src="b200-sim.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const {el}=LAB, esc=NAI.esc, C=window.B200C;
+const KEY='bb-b200-';
+const ld=(k,d)=>{ try{ const v=JSON.parse(localStorage.getItem(KEY+k)); return v==null?d:v; }catch(e){ return d; } };
+const sv=(k,v)=>{ try{ localStorage.setItem(KEY+k,JSON.stringify(v)); }catch(e){} };
+const shuffle=LAB.shuffle;
+
+/* ---------- question bank ---------- */
+const CHN={gen:'Aircraft general',elec:'Electrical',light:'Lighting',warn:'Warning systems',fuel:'Fuel',power:'Powerplant and props',fire:'Fire protection',pneu:'Pneumatics',ice:'Ice and rain',air:'Air conditioning',press:'Pressurisation',hyd:'Hydraulics',gear:'Gear and brakes',flt:'Flight controls',avio:'Avionics',misc:'Miscellaneous',wb:'Weight and balance',perf:'Performance',lim:'Limitations',emer:'Emergency procedures'};
+const Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)&&q.c>=0&&q.c<q.a.length).map(q=>Object.assign({},q,{id:String(q.id),ch:CHN[q.ch]?q.ch:'misc',lvl:+q.lvl||2}));
+const QI=Object.fromEntries(Q.map(q=>[q.id,q]));
+const PROPRE=/propell|\bprops?\b|feather|\bbeta\b|revers|governor|synchro|blade|overspeed/i;
+const FLOWRE=/before start|engine start|\bstarting\b|during (the )?start|taxi|run-?up|before take-?off|take-?off (roll|power)|cruise power|in the descent|on approach|for landing|after landing|shut ?down|checklist|\bflows?\b|normal procedure/i;
+const MODS=C.mods;
+function modQs(m){ if(!m) return Q;
+  if(m.id==='flows') return Q.filter(q=>q.ch!=='emer'&&FLOWRE.test(q.q));
+  return Q.filter(q=>m.ch.includes(q.ch)&&(m.id==='prop'? PROPRE.test(q.q+' '+q.a[q.c]) : m.id==='power'? !PROPRE.test(q.q+' '+q.a[q.c]) : true)); }
+let ST=ld('stats',{}); // id -> {n,c,last,t}
+function mastery(list){ if(!list.length) return null; const ok=list.filter(q=>ST[q.id]&&ST[q.id].last===1).length; return Math.round(ok/list.length*100); }
+function seen(list){ return list.filter(q=>ST[q.id]).length; }
+function record(q,ok){ const s=ST[q.id]||{n:0,c:0}; s.n++; if(ok) s.c++; s.last=ok?1:0; s.t=Date.now(); ST[q.id]=s; sv('stats',ST); }
+
+/* ---------- dashboard ---------- */
+function drawKpi(){ const m=Q.length&&seen(Q)? mastery(Q) : null; const missed=Q.filter(q=>ST[q.id]&&ST[q.id].last===0).length; const due=fcDue().length; const started=MODS.filter(md=>seen(modQs(md))>0).length;
+  el('kp').innerHTML=`<div class="kpi"><span>Modules started</span><b>${started} / ${MODS.length}</b></div><div class="kpi"><span>Overall mastery</span><b>${m==null?'–':m+' %'}</b></div><div class="kpi"><span>Missed to review</span><b>${missed}</b></div><div class="kpi"><span>Cards due</span><b>${due}</b></div>`;
+  el('bankNote').innerHTML= Q.length? `Question bank: ${Q.length} questions in ${new Set(Q.map(q=>q.ch)).size} chapters.` : '<span class="bad">The question bank has not loaded.</span> The study plan, simulators, flashcards (key numbers), oral exam and procedures still work.'; }
+
+/* ---------- 1. study plan ---------- */
+function barCls(p){ return p==null?'':p>=80?'':p>=50?'mid':'low'; }
+function drawMods(){ const open=[...document.querySelectorAll('.mod[open]')].map(d=>d.dataset.m);
+  el('mods').innerHTML=MODS.map((m,i)=>{ const qs=modQs(m), p=mastery(qs);
+    return `<details class="mod" data-m="${m.id}" id="mod-${m.id}" ${open.includes(m.id)?'open':''}><summary><span class="no">${i+1}</span><span class="mt"><b>${esc(m.t)}</b><span>${esc(m.sub)}</span></span><span class="mbar">${!qs.length?'no questions yet':!seen(qs)?'not started':p+' % mastery'}<span class="tr"><i class="${barCls(p)}" style="width:${seen(qs)?p:0}%"></i></span><span>${seen(qs)} / ${qs.length} seen</span></span></summary>
+    <div class="mbody"><div class="txt">${m.body}${m.sees?`<h4>Failures and what you see</h4><ul>${m.sees.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${m.know?`<h4>Be able to explain</h4><ul>${m.know.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>
+    <div><table class="nums"><tr><th colspan="2">Key numbers <span class="verify">typical B200 — verify in your AFM/POH</span></th></tr>${m.nums.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
+    ${m.labs&&m.labs.length?`<div class="labs">${m.labs.map(([h,t])=>`<a href="${h}">${esc(t)} →</a>`).join('')}</div>`:''}
+    <div class="btns" style="margin-top:10px"><button class="btn pri" data-drill="${m.id}" ${qs.length?'':'disabled'}>Drill this module${qs.length?` (${qs.length})`:''}</button>${m.sim?`<button class="btn" data-sim="${m.sim}">Open the simulator</button>`:''}<button class="btn" data-oral="${m.id}">Oral on this</button></div></div></div></details>`; }).join(''); }
+el('mods').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.drill){ startQuiz('mod',b.dataset.drill); el('quiz').scrollIntoView({behavior:'smooth'}); }
+  if(b.dataset.sim){ showSim(b.dataset.sim); el('cockpit').scrollIntoView({behavior:'smooth'}); }
+  if(b.dataset.oral){ el('oSys').value=b.dataset.oral; el('oral').scrollIntoView({behavior:'smooth'}); } });
+
+/* ---------- 2. cockpit ---------- */
+const SIMS=[['elec','Electrical'],['fuel','Fuel'],['start','Engine start'],['efail','Engine failure'],['press','Pressurisation']];
+const made={};
+const tabs=LAB.seg(el('simtabs'),SIMS,'elec',v=>showSim(v,true));
+function showSim(k,fromTab,quiet){ if(!fromTab) tabs.set(k); SIMS.forEach(([s])=>{ el('sim-'+s).hidden=s!==k; }); if(!made[k]){ made[k]=true; B200SIM[k](el('sim-'+k)); } if(!quiet) try{ history.replaceState(null,'','#cockpit-'+k); }catch(e){} }
+
+/* ---------- 3. flashcards ---------- */
+const INTV=[0,1,3,7,14];
+let FC=ld('leitner',{}), deck=ld('deck','num'), fcQueue=[], fcCur=null, fcShow=false, fcForce=false;
+function cards(){ const nums=C.keynums.map((k,i)=>({id:'k'+i,f:k[0],b:k[1],x:k[2]||'',src:'Key number'}));
+  const qc=Q.filter(q=>q.lvl===1).map(q=>({id:'q'+q.id,f:q.q,b:q.a[q.c],x:q.e||'',src:CHN[q.ch]}));
+  return deck==='num'?nums:deck==='bank'?qc:nums.concat(qc); }
+function fcDue(){ const now=Date.now(); return cards().filter(c=>{ const s=FC[c.id]; return !s||s.due<=now; }); }
+const fcDeck=LAB.seg(el('fcDeck'),[['num','Key numbers'],['bank','Bank level 1'],['both','Both']],deck,v=>{ deck=v; sv('deck',v); fcForce=false; fcNext(true); });
+function fcNext(rebuild){ if(rebuild||!fcQueue.length){ fcQueue=shuffle((fcForce?cards():fcDue()).slice()).slice(0,25); } fcCur=fcQueue.shift()||null; fcShow=false; drawFC(); }
+function drawFC(){ const cs=cards(); const bx=[0,0,0,0,0]; cs.forEach(c=>{ const s=FC[c.id]; bx[s?s.box-1:0]++; });
+  el('fcBoxes').innerHTML=bx.map((n,i)=>`<div><b>${n}</b>Box ${i+1}</div>`).join('');
+  const due=fcDue().length; el('fcNote').textContent=`${cs.length} cards in this deck, ${due} due now.`+(deck!=='num'&&!Q.length?' The question bank has not loaded, so only key numbers are available.':'');
+  if(!fcCur){ el('fcCard').innerHTML=`<div class="card3"><div class="front">${cs.length?'Nothing due in this deck. Well done.':'No cards in this deck.'}</div><p class="note">Come back tomorrow, switch deck, or study all cards now.</p></div>`; drawKpi(); return; }
+  const s=FC[fcCur.id];
+  el('fcCard').innerHTML=`<div class="card3"><div class="meta"><span>${esc(fcCur.src)} · box ${s?s.box:1}</span><span>${fcQueue.length} more in this round</span></div><div class="front">${esc(fcCur.f)}</div>
+    ${fcShow?`<div class="back"><b>${esc(fcCur.b)}</b>${fcCur.x?`<span class="note">${esc(fcCur.x)}</span>`:''}</div><div class="btns"><button class="btn pri" data-fc="1">I knew it</button><button class="btn" data-fc="0">Not yet</button></div>`:`<div class="btns"><button class="btn pri" data-fc="show">Show the answer</button></div>`}</div>`; drawKpi(); }
+el('fcCard').addEventListener('click',e=>{ const b=e.target.closest('[data-fc]'); if(!b||!fcCur) return; const v=b.dataset.fc;
+  if(v==='show'){ fcShow=true; drawFC(); return; }
+  const s=FC[fcCur.id]||{box:1}; s.box= v==='1'? Math.min(5,s.box+1) : 1; s.due=Date.now()+INTV[s.box-1]*864e5- (s.box===1?0:3600e3); FC[fcCur.id]=s; sv('leitner',FC); fcNext(false); });
+document.addEventListener('keydown',e=>{ if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return; const r=el('cards').getBoundingClientRect(); if(r.top>window.innerHeight||r.bottom<0) return;
+  if(e.code==='Space'&&fcCur&&!fcShow){ e.preventDefault(); fcShow=true; drawFC(); } });
+el('fcAll').onclick=()=>{ fcForce=true; fcNext(true); };
+el('fcReset').onclick=()=>{ if(!confirm('Put every card back in box 1?')) return; FC={}; sv('leitner',FC); fcForce=false; fcNext(true); };
+
+/* ---------- 4. question trainer ---------- */
+let mode='mod';
+const modeSeg=LAB.seg(el('qMode'),[['mod','By module'],['mix','Mixed'],['exam','Exam'],['miss','Missed']],mode,v=>{ mode=v; drawSet(); });
+el('qMod').innerHTML=MODS.map((m,i)=>`<option value="${m.id}">${i+1}. ${esc(m.t)}</option>`).join('');
+function drawSet(){ el('qModW').hidden=mode!=='mod'; el('qNW').hidden=mode==='exam'||mode==='miss'; el('qLvW').hidden=mode==='exam'||mode==='miss'; el('qStart').textContent= mode==='exam'?'Start the exam (50 questions, 75 min)':'Start'; }
+drawSet();
+let QS=null, timer=null;
+function pool(){ const lv=+el('qLv').value; let p= mode==='mod'? modQs(MODS.find(m=>m.id===el('qMod').value)) : mode==='miss'? Q.filter(q=>ST[q.id]&&ST[q.id].last===0) : Q; if(lv&&mode!=='miss'&&mode!=='exam') p=p.filter(q=>q.lvl===lv); return p; }
+function startQuiz(m,mod){ if(m){ mode=m; modeSeg.set(m); drawSet(); } if(mod) el('qMod').value=mod;
+  if(!Q.length){ el('qBox').innerHTML='<div class="empty">The question bank (b200-qbank.js) has not loaded, so there are no questions to show. The rest of the page works without it.</div>'; return; }
+  let p=pool(); if(!p.length){ el('qBox').innerHTML=`<div class="empty">${mode==='miss'?'No missed questions. Questions you get wrong land here until you answer them correctly.':'No questions match this selection yet.'}</div>`; return; }
+  const n= mode==='exam'?50 : mode==='miss'?999 : +el('qN').value;
+  // weight: unseen and missed first, then the rest
+  p=shuffle(p.slice()); if(mode!=='exam') p.sort((a,b)=>rank(a)-rank(b));
+  const list=p.slice(0,n).map(q=>{ const ix=shuffle(q.a.map((_,k)=>k)); return {q, a:ix.map(k=>q.a[k]), c:ix.indexOf(q.c), pick:-1}; });
+  clearInterval(timer); QS={mode, list, i:0, score:0, t0:Date.now(), limit: mode==='exam'? 75*60 : 0, modLabel: mode==='mod'? MODS.find(m=>m.id===el('qMod').value).t : mode==='mix'?'Mixed':mode==='exam'?'Exam':'Missed questions'};
+  if(QS.limit) timer=setInterval(tick,1000); drawQ(); }
+function rank(q){ const s=ST[q.id]; return !s?0 : s.last===0?1 : 2+Math.random(); }
+function tick(){ if(!QS||!QS.limit) return; const left=QS.limit-Math.floor((Date.now()-QS.t0)/1000); const t=el('qTimer'); if(t) t.textContent=fmtT(Math.max(0,left)); if(left<=0){ clearInterval(timer); finish(); } }
+const fmtT=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+function drawQ(){ const S=QS; if(!S) return; if(S.i>=S.list.length) return finish(); const it=S.list[S.i], q=it.q, ans=it.pick>=0, exam=S.mode==='exam';
+  el('qBox').innerHTML=`<div class="quiz"><div class="qtop"><span>${esc(S.modLabel)} · question ${S.i+1} of ${S.list.length}</span><span>${exam?`<span class="timer" id="qTimer">${fmtT(Math.max(0,S.limit-Math.floor((Date.now()-S.t0)/1000)))}</span>`:`${S.score} correct`}</span></div>
+    <div class="qbar"><i style="width:${S.i/S.list.length*100}%"></i></div>
+    <span class="note">${esc(CHN[q.ch])} · level ${q.lvl}</span>
+    <p class="qq">${esc(q.q)}</p>
+    <div class="qopts">${it.a.map((a,k)=>`<button data-k="${k}" ${ans&&!exam?'disabled':''} class="${ans&&!exam?(k===it.c?'right':k===it.pick?'wrong':''):(exam&&k===it.pick?'pick':'')}"><span class="k">${'ABCD'[k]||k+1}</span>${esc(a)}</button>`).join('')}</div>
+    ${ans&&!exam?`<div class="qexp"><b class="${it.pick===it.c?'ok':'no'}">${it.pick===it.c?'Correct.':'Not quite.'}</b> ${esc(q.e||'')}</div>`:''}
+    <div class="btns">${exam?`${S.i>0?'<button class="btn" data-q="prev">Previous</button>':''}<button class="btn pri" data-q="next" ${ans?'':'disabled'}>${S.i===S.list.length-1?'Finish the exam':'Next'}</button><button class="btn" data-q="end">End now</button>`:ans?`<button class="btn pri" data-q="next">${S.i===S.list.length-1?'See the result':'Next'}</button>`:''}</div></div>`; }
+el('qBox').addEventListener('click',e=>{ const S=QS; const b=e.target.closest('button'); if(!b||!S) return;
+  if(b.dataset.k!=null&&S.i<S.list.length){ const it=S.list[S.i]; if(S.mode==='exam'){ it.pick=+b.dataset.k; drawQ(); return; } if(it.pick>=0) return; it.pick=+b.dataset.k; const ok=it.pick===it.c; if(ok) S.score++; record(it.q,ok); drawQ(); drawStats(); return; }
+  const a=b.dataset.q; if(a==='next'){ S.i++; drawQ(); } else if(a==='prev'){ S.i=Math.max(0,S.i-1); drawQ(); } else if(a==='end'){ if(confirm('End the exam now? Unanswered questions count as wrong.')) finish(); }
+  else if(a==='again') startQuiz(); else if(a==='drill'){ startQuiz('mod',b.dataset.m); } else if(a==='missed') startQuiz('miss'); });
+document.addEventListener('keydown',e=>{ if(!QS||/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return; const r=el('qBox').getBoundingClientRect(); if(r.top>window.innerHeight||r.bottom<0) return;
+  const k='1234'.indexOf(e.key); if(k>=0){ const b=el('qBox').querySelector(`.qopts button[data-k="${k}"]:not([disabled])`); if(b){ b.click(); e.preventDefault(); } }
+  if(e.key==='Enter'){ const n=el('qBox').querySelector('[data-q="next"]:not([disabled])'); if(n){ n.click(); e.preventDefault(); } } });
+function finish(){ const S=QS; if(!S) return; clearInterval(timer); const exam=S.mode==='exam';
+  if(exam){ S.score=0; S.list.forEach(it=>{ const ok=it.pick===it.c; if(ok) S.score++; record(it.q,ok); }); }
+  const done=exam?S.list:S.list.filter(it=>it.pick>=0); const n=exam?S.list.length:done.length; const pct=n?Math.round(S.score/n*100):0; if(exam&&window.NPROG) try{ NPROG.award('b200:exam',pct); }catch(e){}
+  const by={}; done.forEach(it=>{ const c=it.q.ch; by[c]=by[c]||{n:0,c:0}; by[c].n++; if(it.pick===it.c) by[c].c++; });
+  const rows=Object.entries(by).map(([c,v])=>({c,n:v.n,p:Math.round(v.c/v.n*100)})).sort((a,b)=>a.p-b.p);
+  const weak=rows.filter(r=>r.p<75).slice(0,3);
+  const modOf=c=>(MODS.find(m=>m.ch&&m.ch.includes(c))||{}).id;
+  const wrong=done.filter(it=>it.pick!==it.c);
+  el('qBox').innerHTML=`<div class="qend"><span class="qtop">${esc(S.modLabel)}${exam?` · time used ${fmtT(Math.min(S.limit,Math.floor((Date.now()-S.t0)/1000)))}`:''}</span><span class="big">${S.score} / ${n} · ${pct} %</span>
+    <p class="note">${exam?(pct>=75?'At or above 75 %, the usual pass mark for type rating theory exams.':'Below 75 %, the usual pass mark for type rating theory exams. Drill the weakest chapters below, then sit another exam.'):pct>=90?'Strong result.':pct>=60?'Good work. Read the explanations for the ones you missed.':'Go back through the module text and the simulator, then try again.'}</p></div>
+    ${rows.length>1?`<table class="stab" style="margin:10px 0"><tr><th>Chapter</th><th>Questions</th><th>Score</th><th></th></tr>${rows.map(r=>`<tr><td>${esc(CHN[r.c])}</td><td>${r.n}</td><td class="${r.p<75?'bad':''}">${r.p} %</td><td>${modOf(r.c)?`<button data-q="drill" data-m="${modOf(r.c)}">drill</button>`:''}</td></tr>`).join('')}</table>`:''}
+    ${weak.length?`<p><b>Weakest areas:</b> ${weak.map(r=>esc(CHN[r.c])).join(', ')}.</p>`:''}
+    <div class="btns"><button class="btn pri" data-q="again">Again</button>${wrong.length?'<button class="btn" data-q="missed">Review missed questions</button>':''}</div>
+    ${wrong.length?`<h3 style="margin-top:16px">Review</h3>${wrong.map(it=>`<div class="rev"><div class="qq2">${esc(it.q.q)}</div><div class="no">${it.pick>=0?'Your answer: '+esc(it.a[it.pick]):'Not answered'}</div><div class="ok">Correct: ${esc(it.a[it.c])}</div><div class="note">${esc(it.q.e||'')}</div></div>`).join('')}`:''}`;
+  QS=null; drawStats(); drawMods(); drawKpi(); }
+function drawStats(){ if(!Q.length){ el('qStats').innerHTML='<tr><td class="note">No question bank loaded.</td></tr>'; return; }
+  const chs=Object.keys(CHN).filter(c=>Q.some(q=>q.ch===c));
+  el('qStats').innerHTML=`<tr><th>Chapter</th><th>Seen</th><th>Correct*</th></tr>`+chs.map(c=>{ const qs=Q.filter(q=>q.ch===c), s=seen(qs), m=mastery(qs); return `<tr><td>${esc(CHN[c])}</td><td>${s}/${qs.length}</td><td class="${m!=null&&s&&m<50?'bad':''}">${s?m+' %':'–'}</td></tr>`; }).join('')+`<tr><td colspan="3" class="note" style="text-align:left">* share of the chapter answered correctly at the last attempt</td></tr>`;
+  drawKpi(); }
+el('qStart').onclick=()=>startQuiz();
+el('qReset').onclick=()=>{ if(!confirm('Delete all question statistics on this page?')) return; ST={}; sv('stats',ST); drawStats(); drawMods(); };
+
+/* ---------- 5. oral ---------- */
+el('oSys').innerHTML=MODS.map((m,i)=>`<option value="${m.id}">${i+1}. ${esc(m.t)}</option>`).join('');
+let idb=null, DOCS=[], ACS=[], OS=null, octl=null;
+function openDb(){ return new Promise(res=>{ try{ const r=indexedDB.open('naeroson-fi',1); r.onupgradeneeded=()=>{ r.result.createObjectStore('docs',{keyPath:'id'}); r.result.createObjectStore('blobs',{keyPath:'id'}); }; r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } }); }
+async function loadDocs(){ idb=await openDb(); if(idb){ DOCS=await new Promise(res=>{ try{ const r=idb.transaction('docs','readonly').objectStore('docs').getAll(); r.onsuccess=()=>res(r.result||[]); r.onerror=()=>res([]); }catch(e){ res([]); } }); }
+  try{ ACS=await NSTORE.list('fiac'); }catch(e){ ACS=[]; }
+  const opts=[['','None: general knowledge only']].concat(ACS.map(a=>[a.id,a.name+(a.type?' ('+a.type+')':'')]));
+  el('oAc').innerHTML=opts.map(([v,t])=>`<option value="${esc(v)}">${esc(t)}</option>`).join('');
+  const kai=ACS.find(a=>/king\s?air|b\s?200|be\s?20|super king/i.test((a.name||'')+' '+(a.type||''))); if(kai) el('oAc').value=kai.id;
+  drawDocsNote(); }
+function docsFor(){ const ac=el('oAc').value; if(!ac) return []; return DOCS.filter(d=>d.on!==false&&!d.old&&(d.ac===ac||d.ac==='gen')&&Array.isArray(d.chunks)); }
+function drawDocsNote(){ const ds=docsFor(); el('oDocs').innerHTML= ds.length? `Reading from <b>${ds.length}</b> document${ds.length>1?'s':''}: ${esc(ds.slice(0,3).map(d=>d.name).join(', '))}${ds.length>3?'…':''}. Answers cite the page.` : `No documents selected, so the instructor answers from general knowledge and marks it as such; verify every number in your AFM/POH. <a href="fi.html#docs">Add your POH/AFM, training manual, checklists and SOP in Flight Intelligence</a>, as an aircraft profile named for example "King Air B200".`; }
+el('oAc').onchange=drawDocsNote;
+const STOP=new Set('the and for are with that this from have has not you your was were will can into when what which who how its their there then than them they shall should must may also any all per under over more less such each other only been being would could does done between after before during'.split(' '));
+const tok=s=>String(s).toLowerCase().replace(/[^a-z0-9.%\- ]/g,' ').split(/\s+/).filter(w=>w.length>2&&!STOP.has(w));
+function search(q,k,docs){ const qt=[...new Set(tok(q))]; if(!qt.length) return []; const all=[]; docs.forEach(d=>d.chunks.forEach(c=>all.push({d,c})));
+  const N=all.length||1, df={}; qt.forEach(w=>df[w]=0); all.forEach(x=>{ const t=x.lc=x.c.t.toLowerCase(); qt.forEach(w=>{ if(t.includes(w)) df[w]++; }); });
+  all.forEach(x=>{ let s=0; qt.forEach(w=>{ if(!df[w]) return; let n=0,i=-1; while((i=x.lc.indexOf(w,i+1))>=0&&n<8) n++; if(n) s+=Math.log(1+N/df[w])*(n/(n+1.2)); }); x.s=s; });
+  return all.filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,k); }
+function md(s,nsrc){ s=esc(s); const lines=s.split('\n'); let h='',ul=false;
+  const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\[S(\d{1,2})\]/g,(m,n)=> +n>=1&&+n<=nsrc? `<span class="cite" title="Source ${n}">S${n}</span>` : `<span class="cite x" title="No such source: treat as unverified">S${n}?</span>`).replace(/\[GK\]/g,'<span class="cite x" title="General knowledge, not from your documents">general</span>');
+  for(const l of lines){ const m=l.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)/); if(m){ if(!ul){ h+='<ul>'; ul=true; } h+='<li>'+inl(m[1])+'</li>'; continue; } if(ul){ h+='</ul>'; ul=false; } if(l.trim()) h+='<p>'+inl(l)+'</p>'; }
+  if(ul) h+='</ul>'; return h; }
+function splitMeta(t){ const m=t.match(/\n-{3,}\s*\n?\s*(\{[\s\S]*\})\s*$/); if(!m) return [t.replace(/\n-{3,}[\s\S]*$/,'').trim(),{}]; let o={}; try{ o=JSON.parse(m[1]); }catch(e){} return [t.slice(0,m.index).trim(),o]; }
+function drawSrc(ex){ el('oSrc').innerHTML='<h3>Sources for the last answer</h3>'+(ex.length? ex.map((x,i)=>`<div class="sitem"><b>S${i+1} · ${esc(x.d.name)}</b><span class="note">page ${esc(x.c.p)}${x.c.s?' · '+esc(x.c.s):''}</span><blockquote>${esc(x.c.t.slice(0,700))}${x.c.t.length>700?'…':''}</blockquote></div>`).join('') : '<p class="note">No passages from your documents were used. Statements marked "general" are general knowledge: verify them.</p>'); }
+function addLog(cls,html){ const d=document.createElement('div'); d.className=cls; d.innerHTML=html; el('oLog').appendChild(d); d.scrollIntoView({block:'nearest'}); return d; }
+function oPrompt(user,skip,ex){ const m=MODS.find(x=>x.id===OS.mod);
+  const src= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name}, page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
+  const hist=OS.turns.slice(-8).map(t=>(t.q?'CANDIDATE: '+t.q.slice(0,1200)+'\n':'')+(t.a?'EXAMINER: '+t.a.slice(0,1400):'')).join('\n');
+  return `You are an experienced type rating examiner and instructor conducting the oral (systems and procedures) part of a Beechcraft King Air B200 type rating, inside the Birdbird training site. The topic of this oral is: ${m.t} (${m.oral}).
+Ask practical, examiner-style questions that test understanding of how the system works, how it fails, what the pilot sees and what the pilot does, and the related limitations. Never invent a limitation, speed, procedure step or value. Prefer the pilot's documents; keep manufacturer documentation (AFM/POH) and operator documentation (SOP, checklists) apart. Write in English, concise: a short grade comment, the correct answer in a few sentences or a short list, then the next question. Do not mention any training company or airline.
+${user||skip?'Grade the candidate\'s answer to your last question strictly but fairly (0-10, 7 = pass standard), say what was missing or wrong and give the correct answer, then':'Greet the candidate in one short sentence, then'} ask ONE next question. Increase depth when answers are good; do not repeat a question.
+
+SOURCES (excerpts from the candidate's own documents):
+${src}
+
+CITATION RULES: after every statement taken from a source, cite it as [S1], [S2] etc. Only cite sources listed above. Mark statements not supported by a source with [GK] (general knowledge). If there are no sources, say once that your answers are general B200 knowledge that must be verified in the AFM/POH, and give numbers only as "typically".
+
+${hist?'ORAL SO FAR:\n'+hist+'\n':''}${user?'CANDIDATE NOW: '+String(user).slice(0,3000)+'\n(this may be dictated: ignore spelling)':skip?'CANDIDATE NOW: (says they do not know)':''}
+
+Reply in this exact format: your text for the candidate first. Then a line with only three dashes (---), then one JSON object on one line:
+{"grade": integer 0-10 or null (only when you graded an answer), "topic": "short topic of what you graded or null", "question": "the question you just asked"}`; }
+async function oTurn(user,skip){ if(!OS) return; NAI.hush(); if(user) addLog('q',esc(user)); else if(skip) addLog('q','I don’t know.');
+  const docs=docsFor(); const m=MODS.find(x=>x.id===OS.mod); const prevQ=(OS.turns[OS.turns.length-1]||{}).question||'';
+  let ex= docs.length? search([m.t,m.oral,prevQ,user||''].join(' '),6,docs) : [];
+  const d=addLog('a','<span class="who">Examiner</span><div class="thinking">Thinking…</div>'); el('oSend').disabled=el('oSkip').disabled=true; drawSrc(ex);
+  const who='<span class="who">Examiner</span>'; octl=new AbortController();
+  try{ const t=await NAI.text(oPrompt(user,skip,ex),{signal:octl.signal,onText:({text})=>{ d.innerHTML=who+md(text.split(/\n-{3,}\s*\n?/)[0],ex.length); }});
+    const [body,meta]=splitMeta(t); OS.turns.push({q:user||(skip?'(does not know)':''),a:body,question:meta.question||''});
+    let extra=''; if(meta.grade!=null&&(user||skip)&&Number.isFinite(+meta.grade)){ const g=clampI(+meta.grade); OS.grades.push(g); extra=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
+    d.innerHTML=who+md(body,ex.length)+extra; if(el('oVoice').checked) NAI.speak(body.replace(/\[(S\d+|GK)\]/g,''),{radio:false,lang:'en'}); }
+  catch(e){ d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
+  finally{ el('oSend').disabled=el('oSkip').disabled=false; } }
+const clampI=v=>Math.max(0,Math.min(10,Math.round(v)));
+/* offline practice when the AI is not available */
+function offline(){ const m=MODS.find(x=>x.id===OS.mod); const pr=C.oral[m.id]||[]; const i=OS.k%Math.max(1,pr.length); const p=pr[i];
+  if(!p){ addLog('a','<span class="who">Practice</span><p>No practice questions for this system.</p>'); return; }
+  OS.cur=p; addLog('a',`<span class="who">Practice question ${OS.k+1}</span><p>${esc(p[0])}</p><p class="note">The AI instructor is not available here, so this is self-assessed: answer out loud or in the box, then compare with the key points.</p>`); }
+function offlineAnswer(text){ const p=OS.cur; if(!p) return; if(text) addLog('q',esc(text));
+  const d=addLog('a',`<span class="who">Key points</span><div class="keyp"><ul>${p[1].map(x=>`<li>${x}</li>`).join('')}</ul></div><p class="note">General B200 knowledge: verify in your AFM/POH.</p><div class="btns" style="margin-top:6px"><button class="btn" data-self="9">I had it</button><button class="btn" data-self="6">Partly</button><button class="btn" data-self="3">Missed it</button></div>`);
+  d.addEventListener('click',e=>{ const b=e.target.closest('[data-self]'); if(!b||!OS) return; OS.grades.push(+b.dataset.self); d.querySelectorAll('[data-self]').forEach(x=>x.disabled=true); OS.k++; offline(); }); }
+function oralAI(){ const on=!!(window.NAI&&NAI.mode); const t=el('oTalk'), sp=el('oSrc'); if(t) t.hidden=!on||!(NAI.ptt||window.SpeechRecognition||window.webkitSpeechRecognition); if(sp) sp.hidden=!on; }
+try{ oralAI(); if(window.NAI&&NAI.ready&&NAI.ready.then) NAI.ready.then(oralAI,oralAI); setTimeout(oralAI,2500); }catch(e){}
+el('oStart').onclick=()=>{ OS={mod:el('oSys').value,turns:[],grades:[],k:0,ai:!!NAI.mode}; el('oLog').innerHTML=''; el('oAns').hidden=false; el('oStart').hidden=true; el('oEnd').hidden=false; drawSrc([]);
+  if(OS.ai) oTurn(null,false); else offline(); };
+el('oEnd').onclick=()=>{ if(octl) octl.abort(); NAI.hush(); if(OS&&OS.grades.length){ const a=OS.grades.reduce((x,y)=>x+y,0)/OS.grades.length; addLog('a',`<span class="who">Summary</span><p>${OS.grades.length} answers graded, average ${a.toFixed(1)}/10 (${a>=7?'at':'below'} the pass standard of 7).</p>`); const om=ld('oral',{}); om[OS.mod]={avg:+a.toFixed(1),n:OS.grades.length,t:Date.now()}; sv('oral',om); }
+  OS=null; el('oAns').hidden=true; el('oStart').hidden=false; el('oEnd').hidden=true; el('oStart').textContent='Start a new oral'; };
+function oSend(){ const v=el('oA').value.trim(); if(!OS) return; if(!OS.ai){ el('oA').value=''; offlineAnswer(v); return; } if(!v) return; el('oA').value=''; oTurn(v,false); }
+el('oSend').onclick=oSend; el('oSkip').onclick=()=>{ if(!OS) return; if(OS.ai) oTurn(null,true); else offlineAnswer(''); };
+el('oA').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); oSend(); } });
+if(NAI.ptt&&NAI.sr) NAI.ptt(el('oTalk'),el('oA'),t=>{ if(OS&&t) oSend(); },{lang:'en-GB',space:false}); else el('oTalk').hidden=true;
+NAI.ready.then(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? 'AI instructor on' : 'Self-assessed practice'; if(!m) a.title='The AI examiner is not connected on this copy of Birdbird. The oral runs as self-assessed practice: answer, then compare with the model answer.'; });
+
+/* ---------- 6. flows + scenario ---------- */
+el('phases').innerHTML=C.phases.map((p,i)=>`<div class="ph"><h3><i>${i+1}</i>${esc(p[0])}</h3><p>${p[1]}</p><ul>${p[2].map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('');
+let scI=Math.floor(Date.now()/864e5)%C.scen.length;
+function drawScen(){ const s=C.scen[scI]; el('scen').innerHTML=`<div class="scen"><span class="note">Scenario ${scI+1} of ${C.scen.length}</span><h3>${esc(s.t)}</h3><div class="set">${s.set}</div>${s.dp.map((d,j)=>`<div class="dp" data-dp="${j}" ${j?'hidden':''}><b>${d.q}</b><div class="opts">${d.o.map((o,k)=>`<button data-o="${k}">${o[0]}</button>`).join('')}</div><div class="fbw"></div></div>`).join('')}<div class="btns"><button class="btn" id="scNext">Another scenario</button><button class="btn" data-oral="emer">Practise this kind of scenario as an oral</button></div></div>`; }
+el('scen').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='scNext'){ scI=(scI+1)%C.scen.length; drawScen(); return; }
+  if(b.dataset.oral){ el('oSys').value='emer'; el('oral').scrollIntoView({behavior:'smooth'}); return; }
+  const dp=b.closest('[data-dp]'); if(!dp||b.dataset.o==null) return; const s=C.scen[scI], d=s.dp[+dp.dataset.dp], o=d.o[+b.dataset.o];
+  dp.querySelectorAll('[data-o]').forEach(x=>{ x.disabled=true; const oo=d.o[+x.dataset.o]; if(oo[1]) x.classList.add('right'); }); if(!o[1]) b.classList.add('wrong');
+  dp.querySelector('.fbw').innerHTML=`<div class="fb"><b class="${o[1]?'good':'bad'}">${o[1]?'Sound.':'Think again.'}</b> ${o[2]}</div>`;
+  const nx=el('scen').querySelector(`[data-dp="${+dp.dataset.dp+1}"]`); if(nx) nx.hidden=false; else dp.insertAdjacentHTML('beforeend',`<div class="fb" style="margin-top:8px"><b>Debrief.</b> ${s.deb}</div>`); });
+drawScen();
+
+/* ---------- start ---------- */
+drawMods(); drawStats(); fcNext(true); drawKpi(); loadDocs();
+const h=(location.hash||'').slice(1); const sk=h.startsWith('cockpit-')?h.slice(8):'';
+showSim(SIMS.some(s=>s[0]===sk)?sk:'elec',false,true);
+if(sk) setTimeout(()=>el('cockpit').scrollIntoView(),50);
+LAB.add({},{'English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening'});
+LAB.start('b200');
+})();
+</script>
+</body>
+</html>

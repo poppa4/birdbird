@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Build the wind triangle by dragging vectors, fly a great circle and a rhumb line from Oslo to Tromsø on a globe and on three chart projections, turn…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>General Navigation</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+#tri{aspect-ratio:16/11;max-height:560px;touch-action:none;cursor:grab}
+#six{aspect-ratio:16/7;max-height:380px}
+#globe{aspect-ratio:1/0.9;max-height:560px;touch-action:none;cursor:grab}
+#chart{aspect-ratio:1/0.85;max-height:560px}
+#year{aspect-ratio:16/10;max-height:500px}
+#petc{aspect-ratio:16/10;max-height:520px}
+.rrow b{white-space:normal;text-align:right}
+.ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
+.fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:#F6F8F6;padding:6px 8px;border-radius:3px;margin-top:6px;overflow-x:auto}
+.sub{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.mini .ctl{margin:4px 0 8px}
+@media (max-width:600px){#tri{aspect-ratio:1/1.1}#globe{aspect-ratio:1/1}#chart{aspect-ratio:1/1.1}#year{aspect-ratio:1/0.95}#petc{aspect-ratio:1/1.15}#six{aspect-ratio:1/0.75}}
+</style>
+</head>
+<body data-title="General Navigation">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Navigation and approach</div>
+      <h1>General navigation</h1>
+      <p>Build the wind triangle by dragging vectors, fly a great circle and a rhumb line from Oslo to Tromsø on a globe and on three chart projections, turn longitude into time and daylight, and find the point of equal time and the point of safe return on an A320 sector over the Barents Sea.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#triangle">Wind triangle</a><a href="#sixty">1 in 60</a><a href="#earth">Earth and directions</a><a href="#charts">Chart projections</a><a href="#time">Time</a><a href="#pet">PET and PNR</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="triangle">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>The wind triangle</h2>
+    <p class="lead">Air vector (heading and TAS) plus wind vector equals ground vector (track and groundspeed). Drag the tip of the blue or magenta vector, and drag the wind in the wind rose. One arrowhead for heading, two for track, three for wind.</p>
+    <div class="split">
+      <div class="paper"><canvas id="tri" aria-label="Wind triangle. Drag the vector tips and the wind rose."></canvas></div>
+      <div class="panel">
+        <div class="grp">Solve for</div><div id="tmode"></div>
+        <div id="tctl"></div><div id="tTrk"></div><div id="tHdg"></div>
+        <div class="grp">Wind</div><div id="tw"></div>
+        <div class="ro" style="margin-top:4px">
+          <div class="rrow"><span>Heading (T)</span><b id="tH"></b></div>
+          <div class="rrow"><span>Track (T)</span><b id="tT"></b></div>
+          <div class="rrow"><span>Groundspeed</span><b id="tGS"></b></div>
+          <div class="rrow"><span>Drift</span><b id="tDr"></b></div>
+          <div class="rrow"><span>Wind correction angle</span><b id="tWca"></b></div>
+          <div class="rrow"><span>Head- or tailwind component</span><b id="tHw"></b></div>
+          <div class="rrow"><span>Crosswind component</span><b id="tXw"></b></div>
+        </div>
+        <p class="callout blue" id="tEx"></p>
+      </div>
+    </div>
+    <h3>Mach, TAS and groundspeed at altitude</h3>
+    <p class="lead">At cruise the A320 flies a Mach number. TAS is Mach times the local speed of sound, and the speed of sound depends only on the air temperature.</p>
+    <div class="split">
+      <div class="box">
+        <div class="ro">
+          <div class="rrow"><span>Static air temperature</span><b id="mSat"></b></div>
+          <div class="rrow"><span>Local speed of sound</span><b id="mA"></b></div>
+          <div class="rrow"><span>True airspeed</span><b id="mTas"></b></div>
+          <div class="rrow"><span>Groundspeed on the track above</span><b id="mGs"></b></div>
+        </div>
+        <div class="fx">TAS = M × a ,  a ≈ 38.97 × √T(K) kt</div>
+        <div class="btns" style="margin-top:10px"><button class="btn" id="mUse">Use this TAS in the triangle</button></div>
+      </div>
+      <div class="panel mini" id="mctl"></div>
+    </div>
+  </section>
+
+  <section class="card" id="sixty">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>The 1 in 60 rule</h2>
+    <p class="lead">One degree of track error puts you about one nautical mile off track for every 60 NM flown, because sin 1° is close to 1/60. That turns off-track distances into angles in your head, and it holds well up to about 20°.</p>
+    <div class="split">
+      <div class="paper"><canvas id="six" aria-label="Planned track, actual track and the correction to the destination"></canvas></div>
+      <div class="panel">
+        <div id="sctl"></div>
+        <div class="ro" style="margin-top:4px">
+          <div class="rrow"><span>Track error</span><b id="sTE"></b></div>
+          <div class="rrow"><span>Closing angle</span><b id="sCA"></b></div>
+          <div class="rrow"><span>Turn to reach the destination</span><b id="sTot"></b></div>
+          <div class="rrow"><span>Turn to parallel the planned track</span><b id="sPar"></b></div>
+        </div>
+        <p class="callout" id="sEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="earth">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>The Earth and directions</h2>
+    <p class="lead">The shortest way between two points is a great circle, but its true track changes as you fly it because the meridians converge towards the poles. A rhumb line keeps a constant true track and is longer. Drag the globe to turn it.</p>
+    <div class="split">
+      <div class="paper"><canvas id="globe" aria-label="Globe with the great circle and the rhumb line between two points. Drag to rotate."></canvas></div>
+      <div class="panel">
+        <div class="grp">Route</div><div id="epre"></div>
+        <div id="ectl" class="mini"></div>
+        <div class="ro" style="margin-top:4px">
+          <div class="rrow"><span>Great-circle distance</span><b id="eGc"></b></div>
+          <div class="rrow"><span>Rhumb-line distance</span><b id="eRl"></b></div>
+          <div class="rrow"><span>Initial great-circle track</span><b id="eIn"></b></div>
+          <div class="rrow"><span>Final great-circle track</span><b id="eFin"></b></div>
+          <div class="rrow"><span>Rhumb-line track</span><b id="eRt"></b></div>
+          <div class="rrow"><span>Convergency</span><b id="eCv"></b></div>
+          <div class="rrow"><span>Conversion angle</span><b id="eCa"></b></div>
+          <div class="rrow"><span>Departure along the mean parallel</span><b id="eDep"></b></div>
+        </div>
+        <p class="callout blue" id="eEx"></p>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">Great circle</b><p>A circle whose plane passes through the centre of the Earth. The equator and every meridian are great circles. It is the shortest route between two points, and its true track changes all the way, except along a meridian or the equator.</p></div>
+      <div class="box"><b class="t">Rhumb line</b><p>A line that crosses every meridian at the same angle, so the true track is constant. Parallels of latitude are rhumb lines. It always lies on the equator side of the great circle, so it is longer.</p></div>
+      <div class="box"><b class="t">Convergency and conversion angle</b><p>Convergency is the angle between two meridians, on the Earth about dlong × sin(mean latitude). The great-circle track changes by the convergency between the two ends. The conversion angle is half of it: the angle between the great circle and the rhumb line at each end.</p><div class="fx">conv = dlong × sin(mean lat) · CA = ½ conv</div></div>
+      <div class="box"><b class="t">Departure</b><p>The east–west distance along a parallel. One degree of longitude is 60 NM at the equator, 30 NM at 60° N and nothing at the pole.</p><div class="fx">dep (NM) = dlong (min) × cos lat</div></div>
+      <div class="box"><b class="t">True and magnetic</b><p>Charts and the great-circle formulas give true directions. The compass and most cockpit displays use magnetic. Variation east, magnetic least; variation west, magnetic best. Over mainland Norway the variation is currently a few degrees east.</p><div class="fx">M = T − var E (+ var W)</div></div>
+    </div>
+  </section>
+
+  <section class="card" id="charts">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>Chart projections</h2>
+    <p class="lead">The same route on three charts. All three are conformal, so angles and small shapes are correct, but they differ in which lines come out straight and in how the scale changes across the sheet. The route is the one you set on the globe above.</p>
+    <div class="split">
+      <div class="paper"><canvas id="chart" aria-label="The route drawn on the selected chart projection"></canvas></div>
+      <div class="panel">
+        <div class="grp">Projection</div><div id="cproj"></div>
+        <div class="grp">Route</div><div id="cpre"></div>
+        <div class="ro" style="margin-top:6px">
+          <div class="rrow"><span>Great circle drawn as</span><b id="cGc"></b></div>
+          <div class="rrow"><span>Rhumb line drawn as</span><b id="cRl"></b></div>
+          <div class="rrow"><span>Chart convergency A to B</span><b id="cCv"></b></div>
+          <div class="rrow"><span>Earth convergency A to B</span><b id="cEc"></b></div>
+          <div class="rrow"><span>Scale factor at A / at B</span><b id="cSc"></b></div>
+          <div class="rrow"><span>Scale is correct</span><b id="cTrue"></b></div>
+        </div>
+        <p class="callout blue" id="cEx"></p>
+      </div>
+    </div>
+    <div class="wrapx" style="overflow-x:auto"><table class="ftab" id="ptab"></table></div>
+  </section>
+
+  <section class="card" id="time">
+    <div class="eyebrow">5 · Interactive</div>
+    <h2>Time, longitude and daylight</h2>
+    <p class="lead">The Earth turns 360° in 24 hours, so 15° of longitude is one hour and 1° is four minutes. Local mean time follows the mean sun over your own meridian; UTC is the local mean time at Greenwich. Sunrise, sunset and twilight depend on latitude and date, and in Norway they range from polar night to midnight sun.</p>
+    <div class="split">
+      <div class="paper"><canvas id="year" aria-label="Day, civil twilight and night through the year at the chosen latitude"></canvas></div>
+      <div class="panel">
+        <div class="grp">Place</div><div id="ypre"></div>
+        <div id="yctl" class="mini"></div>
+        <div class="ro" style="margin-top:4px">
+          <div class="rrow"><span>Local mean time</span><b id="yLmt"></b></div>
+          <div class="rrow"><span>Longitude in time</span><b id="yArc"></b></div>
+          <div class="rrow"><span>Sunrise / sunset (LMT)</span><b id="ySun"></b></div>
+          <div class="rrow"><span>Sunrise / sunset (UTC)</span><b id="ySunU"></b></div>
+          <div class="rrow"><span>Civil twilight (UTC)</span><b id="yTw"></b></div>
+          <div class="rrow"><span>Daylight</span><b id="yDay"></b></div>
+          <div class="rrow"><span>Clock time in Norway</span><b id="yNor"></b></div>
+        </div>
+        <p class="callout blue" id="yEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="pet">
+    <div class="eyebrow">6 · Interactive</div>
+    <h2>PET and PNR</h2>
+    <p class="lead">The point of equal time (PET, or critical point) is where it takes as long to continue as to turn back. The point of safe return (PNR or PSR) is the furthest you can go and still get back with the reserves intact. Both depend on the wind; only the PNR depends on fuel.</p>
+    <div class="split">
+      <div class="paper"><canvas id="petc" aria-label="Sector with PET and PNR and a time-distance graph"></canvas></div>
+      <div class="panel">
+        <div class="grp">Sector</div><div id="ppre"></div>
+        <div class="grp">Failure case for the PET</div><div id="pcase"></div>
+        <div id="pctl" class="mini"></div>
+        <div class="ro" style="margin-top:4px">
+          <div class="rrow"><span>Groundspeed on / back (failure TAS)</span><b id="pGs"></b></div>
+          <div class="rrow"><span>PET from A</span><b id="pPet"></b></div>
+          <div class="rrow"><span>Time to PET (normal cruise)</span><b id="pPt"></b></div>
+          <div class="rrow"><span>From PET to either aerodrome</span><b id="pPt2"></b></div>
+          <div class="rrow"><span>Safe endurance</span><b id="pE"></b></div>
+          <div class="rrow"><span>PNR from A</span><b id="pPnr"></b></div>
+          <div class="rrow"><span>Time to PNR</span><b id="pPnrT"></b></div>
+        </div>
+        <p class="callout" id="pEx"></p>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="box"><b class="t">PET formula</b><p>D is the total distance, O the groundspeed continuing and H the groundspeed returning (home), both at the TAS for the failure case. The time to the PET is that distance flown at the normal cruise groundspeed.</p><div class="fx">PET = D × H / (O + H)</div></div>
+      <div class="box"><b class="t">PNR formula</b><p>E is the safe endurance: fuel available above the reserves divided by the fuel flow. O and H are the normal groundspeeds out and home.</p><div class="fx">T(PNR) = E × H / (O + H) · PNR = T × O</div></div>
+      <div class="box"><b class="t">What the wind does</b><p>The PET moves into wind: a headwind on the way out moves it towards the destination. Any wind, head or tail, brings the PNR closer to the departure, because you lose more time on the slow leg than you gain on the fast one.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">7 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. Spherical Earth with a radius of 3440 NM, no ellipsoid. Mach to TAS uses the ISA temperature lapse plus your deviation. Sunrise and twilight use a simple solar declination formula and ignore the equation of time (up to about 16 minutes), so times can be several minutes off. A320 speeds, fuel flows and failure-case TAS are rounded, illustrative teaching values, not FCOM data. Use the operational flight plan, the FMS and the operations manual for real planning.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'General Navigation':'Generell navigasjon','Birdbird Virtual Lab · Navigation and approach':'Birdbird Virtual Lab · Navigasjon og innflyging','General navigation':'Generell navigasjon',
+ 'Build the wind triangle by dragging vectors, fly a great circle and a rhumb line from Oslo to Tromsø on a globe and on three chart projections, turn longitude into time and daylight, and find the point of equal time and the point of safe return on an A320 sector over the Barents Sea.':'Bygg vindtrekanten ved å dra i vektorene, fly en storsirkel og en loksodrom fra Oslo til Tromsø på en globus og på tre kartprojeksjoner, gjør lengdegrad om til tid og dagslys, og finn point of equal time og point of safe return på en A320-etappe over Barentshavet.',
+ 'Wind triangle':'Vindtrekanten','1 in 60':'1 av 60','Earth and directions':'Jorden og retninger','Chart projections':'Kartprojeksjoner','Time':'Tid','PET and PNR':'PET og PNR','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ 'Interactive':'Interaktiv','Operations':'Drift','Check':'Sjekk','1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Interactive':'5 · Interaktiv','6 · Interactive':'6 · Interaktiv','7 · Operations':'7 · Drift',
+ 'The wind triangle':'Vindtrekanten',
+ 'Air vector (heading and TAS) plus wind vector equals ground vector (track and groundspeed). Drag the tip of the blue or magenta vector, and drag the wind in the wind rose. One arrowhead for heading, two for track, three for wind.':'Luftvektoren (heading og TAS) pluss vindvektoren er lik bakkevektoren (track og groundspeed). Dra i spissen på den blå eller magenta vektoren, og dra vinden i vindrosen. Én pilspiss for heading, to for track, tre for vind.',
+ 'Solve for':'Løs for','Wind':'Vind','Find heading for a track':'Finn heading for en track','Fly a heading':'Fly en heading',
+ 'Heading (T)':'Heading (R)','Track (T)':'Track (R)','Groundspeed':'Groundspeed','Drift':'Avdrift','Wind correction angle':'Vindkorreksjonsvinkel','Head- or tailwind component':'Mot- eller medvindskomponent','Crosswind component':'Sidevindskomponent',
+ 'True airspeed (kt)':'Sann flyfart, TAS (kt)','True track (°)':'Rettvisende track (°)','True heading (°)':'Rettvisende heading (°)','Wind from (°)':'Vind fra (°)','Wind speed (kt)':'Vindstyrke (kt)',
+ 'Mach, TAS and groundspeed at altitude':'Mach, TAS og groundspeed i høyden',
+ 'At cruise the A320 flies a Mach number. TAS is Mach times the local speed of sound, and the speed of sound depends only on the air temperature.':'I marsj flyr A320 et machtall. TAS er machtallet ganger den lokale lydhastigheten, og lydhastigheten avhenger bare av lufttemperaturen.',
+ 'Static air temperature':'Statisk lufttemperatur (SAT)','Local speed of sound':'Lokal lydhastighet','True airspeed':'Sann flyfart (TAS)','Groundspeed on the track above':'Groundspeed på tracken over','Use this TAS in the triangle':'Bruk denne TAS-en i trekanten',
+ 'Flight level':'Flygenivå','Mach number':'Machtall','Temperature deviation from ISA (°C)':'Temperaturavvik fra ISA (°C)',
+ 'The 1 in 60 rule':'1 av 60-regelen',
+ 'One degree of track error puts you about one nautical mile off track for every 60 NM flown, because sin 1° is close to 1/60. That turns off-track distances into angles in your head, and it holds well up to about 20°.':'Én grad trackfeil gir omtrent én nautisk mil ut av track for hver 60 NM fløyet, fordi sin 1° er nær 1/60. Dermed kan du gjøre avstand ut av track om til vinkler i hodet, og regelen holder godt opp til rundt 20°.',
+ 'Distance flown (NM)':'Distanse fløyet (NM)','Off track, right (NM)':'Ut av track, til høyre (NM)','Distance to go (NM)':'Distanse igjen (NM)',
+ 'Track error':'Trackfeil','Closing angle':'Lukkevinkel (closing angle)','Turn to reach the destination':'Sving for å nå destinasjonen','Turn to parallel the planned track':'Sving for å fly parallelt med planlagt track',
+ 'The Earth and directions':'Jorden og retninger',
+ 'The shortest way between two points is a great circle, but its true track changes as you fly it because the meridians converge towards the poles. A rhumb line keeps a constant true track and is longer. Drag the globe to turn it.':'Den korteste veien mellom to punkter er en storsirkel, men den rettvisende tracken endrer seg underveis fordi meridianene konvergerer mot polene. En loksodrom holder konstant rettvisende track og er lengre. Dra i globusen for å snu den.',
+ 'Route':'Rute','Great-circle distance':'Storsirkeldistanse','Rhumb-line distance':'Loksodromdistanse','Initial great-circle track':'Storsirkeltrack ved start','Final great-circle track':'Storsirkeltrack ved slutt','Rhumb-line track':'Loksodromtrack','Convergency':'Konvergens','Conversion angle':'Konverteringsvinkel','Departure along the mean parallel':'Departure langs middelbreddegraden',
+ 'Latitude A (°N)':'Bredde A (°N)','Longitude A (°, east +)':'Lengde A (°, øst +)','Latitude B (°N)':'Bredde B (°N)','Longitude B (°, east +)':'Lengde B (°, øst +)','Variation at A (°, east +)':'Misvisning ved A (°, øst +)',
+ 'Great circle':'Storsirkel','Rhumb line':'Loksodrom','Convergency and conversion angle':'Konvergens og konverteringsvinkel','Departure':'Departure','True and magnetic':'Rettvisende og magnetisk',
+ 'A circle whose plane passes through the centre of the Earth. The equator and every meridian are great circles. It is the shortest route between two points, and its true track changes all the way, except along a meridian or the equator.':'En sirkel med plan gjennom jordens sentrum. Ekvator og alle meridianer er storsirkler. Den er den korteste ruten mellom to punkter, og den rettvisende tracken endrer seg hele veien, unntatt langs en meridian eller ekvator.',
+ 'A line that crosses every meridian at the same angle, so the true track is constant. Parallels of latitude are rhumb lines. It always lies on the equator side of the great circle, so it is longer.':'En linje som krysser alle meridianer i samme vinkel, så den rettvisende tracken er konstant. Breddesirkler er loksodromer. Den ligger alltid på ekvatorsiden av storsirkelen, og er derfor lengre.',
+ 'Convergency is the angle between two meridians, on the Earth about dlong × sin(mean latitude). The great-circle track changes by the convergency between the two ends. The conversion angle is half of it: the angle between the great circle and the rhumb line at each end.':'Konvergens er vinkelen mellom to meridianer, på jorden omtrent dlong × sin(middelbredde). Storsirkeltracken endrer seg med konvergensen mellom de to endene. Konverteringsvinkelen er halvparten: vinkelen mellom storsirkelen og loksodromen i hver ende.',
+ 'The east–west distance along a parallel. One degree of longitude is 60 NM at the equator, 30 NM at 60° N and nothing at the pole.':'Øst–vest-avstanden langs en breddesirkel. Én lengdegrad er 60 NM ved ekvator, 30 NM ved 60° N og null ved polen.',
+ 'Charts and the great-circle formulas give true directions. The compass and most cockpit displays use magnetic. Variation east, magnetic least; variation west, magnetic best. Over mainland Norway the variation is currently a few degrees east.':'Kart og storsirkelformlene gir rettvisende retninger. Kompasset og de fleste cockpitskjermer bruker magnetisk. Østlig misvisning: magnetisk er minst; vestlig misvisning: magnetisk er størst. Over fastlands-Norge er misvisningen i dag noen grader øst.',
+ 'The same route on three charts. All three are conformal, so angles and small shapes are correct, but they differ in which lines come out straight and in how the scale changes across the sheet. The route is the one you set on the globe above.':'Samme rute på tre kart. Alle tre er konforme, så vinkler og små former er riktige, men de skiller seg i hvilke linjer som blir rette og hvordan målestokken endrer seg over arket. Ruten er den du satte på globusen over.',
+ 'Projection':'Projeksjon','Mercator':'Mercator','Lambert conformal':'Lambert konform','Polar stereographic':'Polar stereografisk',
+ 'Great circle drawn as':'Storsirkelen tegnes som','Rhumb line drawn as':'Loksodromen tegnes som','Chart convergency A to B':'Kartkonvergens A til B','Earth convergency A to B':'Jordkonvergens A til B','Scale factor at A / at B':'Målestokkfaktor ved A / ved B','Scale is correct':'Målestokken er riktig',
+ 'Time, longitude and daylight':'Tid, lengdegrad og dagslys',
+ 'The Earth turns 360° in 24 hours, so 15° of longitude is one hour and 1° is four minutes. Local mean time follows the mean sun over your own meridian; UTC is the local mean time at Greenwich. Sunrise, sunset and twilight depend on latitude and date, and in Norway they range from polar night to midnight sun.':'Jorden roterer 360° på 24 timer, så 15° lengde er én time og 1° er fire minutter. Lokal middeltid følger middelsolen over din egen meridian; UTC er lokal middeltid i Greenwich. Soloppgang, solnedgang og tussmørke avhenger av breddegrad og dato, og i Norge spenner de fra mørketid til midnattssol.',
+ 'Place':'Sted','Local mean time':'Lokal middeltid (LMT)','Longitude in time':'Lengdegrad i tid','Sunrise / sunset (LMT)':'Soloppgang / solnedgang (LMT)','Sunrise / sunset (UTC)':'Soloppgang / solnedgang (UTC)','Civil twilight (UTC)':'Borgerlig tussmørke (UTC)','Daylight':'Dagslys','Clock time in Norway':'Klokketid i Norge',
+ 'Latitude (°N)':'Breddegrad (°N)','Longitude (°, east +)':'Lengdegrad (°, øst +)','Date':'Dato','UTC':'UTC',
+ 'The point of equal time (PET, or critical point) is where it takes as long to continue as to turn back. The point of safe return (PNR or PSR) is the furthest you can go and still get back with the reserves intact. Both depend on the wind; only the PNR depends on fuel.':'Point of equal time (PET, eller kritisk punkt) er der det tar like lang tid å fortsette som å snu. Point of safe return (PNR eller PSR) er det lengste du kan fly og fortsatt komme tilbake med reservene i behold. Begge avhenger av vinden; bare PNR avhenger av drivstoff.',
+ 'Sector':'Etappe','Failure case for the PET':'Feiltilfelle for PET','All engines':'Alle motorer','One engine out':'Én motor ute','Depressurised':'Trykkløs',
+ 'Distance A to B (NM)':'Distanse A til B (NM)','Normal cruise TAS (kt)':'Normal marsj-TAS (kt)','TAS in the failure case (kt)':'TAS i feiltilfellet (kt)','Wind component outbound (kt, tail +)':'Vindkomponent utover (kt, medvind +)','Fuel available above reserves (kg)':'Tilgjengelig drivstoff over reservene (kg)','Fuel flow (kg/h)':'Drivstofforbruk (kg/t)',
+ 'Groundspeed on / back (failure TAS)':'Groundspeed videre / tilbake (feil-TAS)','PET from A':'PET fra A','Time to PET (normal cruise)':'Tid til PET (normal marsj)','From PET to either aerodrome':'Fra PET til hver av flyplassene','Safe endurance':'Sikker utholdenhet','PNR from A':'PNR fra A','Time to PNR':'Tid til PNR',
+ 'PET formula':'PET-formel','PNR formula':'PNR-formel','What the wind does':'Hva vinden gjør',
+ 'D is the total distance, O the groundspeed continuing and H the groundspeed returning (home), both at the TAS for the failure case. The time to the PET is that distance flown at the normal cruise groundspeed.':'D er total distanse, O er groundspeed videre og H er groundspeed tilbake (hjem), begge med TAS for feiltilfellet. Tiden til PET er den distansen fløyet med normal marsj-groundspeed.',
+ 'E is the safe endurance: fuel available above the reserves divided by the fuel flow. O and H are the normal groundspeeds out and home.':'E er sikker utholdenhet: tilgjengelig drivstoff over reservene delt på forbruket. O og H er normal groundspeed ut og hjem.',
+ 'The PET moves into wind: a headwind on the way out moves it towards the destination. Any wind, head or tail, brings the PNR closer to the departure, because you lose more time on the slow leg than you gain on the fast one.':'PET flytter seg mot vinden: motvind på vei ut flytter den mot destinasjonen. All vind, mot eller med, flytter PNR nærmere avgangsplassen, fordi du taper mer tid på den langsomme etappen enn du vinner på den raske.',
+ 'Teaching model. Spherical Earth with a radius of 3440 NM, no ellipsoid. Mach to TAS uses the ISA temperature lapse plus your deviation. Sunrise and twilight use a simple solar declination formula and ignore the equation of time (up to about 16 minutes), so times can be several minutes off. A320 speeds, fuel flows and failure-case TAS are rounded, illustrative teaching values, not FCOM data. Use the operational flight plan, the FMS and the operations manual for real planning.':'Opplæringsmodell. Kuleformet jord med radius 3440 NM, ingen ellipsoide. Mach til TAS bruker ISA-temperaturgradienten pluss avviket du setter. Soloppgang og tussmørke bruker en enkel formel for solens deklinasjon og ser bort fra tidsjevningen (opptil rundt 16 minutter), så tidene kan avvike med flere minutter. A320-farter, drivstofforbruk og TAS i feiltilfeller er avrundede, illustrerende opplæringsverdier, ikke FCOM-data. Bruk den operative færdplanen, FMS og driftshåndboken til reell planlegging.'
+});
+const D2R=Math.PI/180, R2D=180/Math.PI, RE=3440.065;
+const n360=a=>((a%360)+360)%360, n180=a=>{ a=n360(a); return a>180?a-360:a; };
+const f3=a=>{ let v=Math.round(n360(a)); if(v===0) v=360; return String(v).padStart(3,'0')+'°'; };
+const PAPER='#FBFBF8', INK='#13202A', MAG='#9A1E68', BLUE='#1E5E9E', AMB='#A86A00', HAND='#1D4E9E', GREY='#7D8B95', RED='#B3261E';
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const hm=min=>{ min=Math.round(min); const s=min<0?'−':''; min=Math.abs(min); return s+Math.floor(min/60)+':'+String(min%60).padStart(2,'0'); };
+const hhmm=h=>{ h=((h%24)+24)%24; let m=Math.round(h*60); if(m>=1440) m-=1440; return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'); };
+let HS=18; const hand=(g,txt,x,y,col,al)=>{ g.font='600 '+Math.round(HS*0.76)+'px "Public Sans", sans-serif'; g.fillStyle=col||HAND; g.textAlign=al||'start'; g.fillText(txt,x,y); g.textAlign='start'; };
+const mono=(g,txt,x,y,col,al,sz)=>{ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=col||GREY; g.textAlign=al||'start'; g.fillText(txt,x,y); g.textAlign='start'; };
+function chev(g,x,y,ux,uy,n,col){ const nx=-uy, ny=ux; g.strokeStyle=col; g.lineWidth=2; for(let i=0;i<n;i++){ const o=(i-(n-1)/2)*7, px=x+ux*o, py=y+uy*o; g.beginPath(); g.moveTo(px-ux*8+nx*5,py-uy*8+ny*5); g.lineTo(px,py); g.lineTo(px-ux*8-nx*5,py-uy*8-ny*5); g.stroke(); } }
+function vec(g,x1,y1,x2,y2,col,n,w){ g.strokeStyle=col; g.lineWidth=w||3; g.lineCap='round'; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); const L2=Math.hypot(x2-x1,y2-y1); if(L2>30) chev(g,(x1+x2)/2,(y1+y2)/2,(x2-x1)/L2,(y2-y1)/L2,n,col); g.lineCap='butt'; }
+function fill(st){ HS=st.w<520?15:18; const g=st.ctx; g.clearRect(0,0,st.w,st.h); g.fillStyle=PAPER; g.fillRect(0,0,st.w,st.h); return g; }
+
+/* ================= 1 · wind triangle ================= */
+const W1={mode:'trk',tas:450,trk:60,hdg:60,wd:310,ws:110};
+function solve(tas,trkOrHdg,mode,wd,ws){ let hdg,trk,gs,ok=true;
+  if(mode==='trk'){ trk=trkOrHdg; const rel=(wd-trk)*D2R, xw=ws*Math.sin(rel); if(Math.abs(xw)>=tas){ ok=false; } const wca=Math.asin(clamp(xw/tas,-1,1))*R2D; hdg=trk+wca; gs=tas*Math.cos(wca*D2R)-ws*Math.cos(rel); }
+  else { hdg=trkOrHdg; const ax=tas*Math.sin(hdg*D2R), ay=tas*Math.cos(hdg*D2R), gx=ax-ws*Math.sin(wd*D2R), gy=ay-ws*Math.cos(wd*D2R); gs=Math.hypot(gx,gy); trk=Math.atan2(gx,gy)*R2D; }
+  const rel=(wd-trk)*D2R; return {hdg:n360(hdg),trk:n360(trk),gs,ok,drift:n180(trk-hdg),hw:ws*Math.cos(rel),xw:ws*Math.sin(rel)}; }
+function S1(){ return solve(W1.tas,W1.mode==='trk'?W1.trk:W1.hdg,W1.mode,W1.wd,W1.ws); }
+const C1=LAB.fit(el('tri'),()=>triDraw(),2); let TG=null, FZ=null;
+function triDraw(){ const st=C1; if(!st.w) return; const g=fill(st), W=st.w, H=st.h, S=S1(), V=W1.tas;
+  const a=[V*Math.sin(S.hdg*D2R),V*Math.cos(S.hdg*D2R)], gv=[S.gs*Math.sin(S.trk*D2R),S.gs*Math.cos(S.trk*D2R)];
+  const wide=W>H*1.15, dr=clamp(Math.min(W,H)*0.13,34,62);
+  const dcx= wide? W-dr-26 : W-dr-16, dcy= wide? dr+40 : H-dr-28;
+  const aw= wide? W-2*dr-60 : W;
+  let sc,ox,oy;
+  if(FZ){ ({sc,ox,oy}=FZ); } else {
+    const xs=[0,a[0],gv[0]], ys=[0,a[1],gv[1]]; let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const sx=Math.max(x1-x0,V*0.35), sy=Math.max(y1-y0,V*0.35); sc=Math.min((aw-90)/sx,(H-90)/sy);
+    ox=aw/2-(x0+x1)/2*sc; oy=H/2+(y0+y1)/2*sc; }
+  const X=x=>ox+x*sc, Y=y=>oy-y*sc;
+  // north reference
+  g.strokeStyle='#C2CBCF'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(0),Y(0)-Math.min(90,H*0.25)); g.stroke(); g.setLineDash([]);
+  mono(g,'N (T)',X(0)+4,Y(0)-Math.min(90,H*0.25)+10);
+  // drift arc
+  const r0=46, aH=(S.hdg-90)*D2R, aT=(S.trk-90)*D2R; g.strokeStyle='#C9A86A'; g.lineWidth=1.5; g.beginPath(); g.arc(X(0),Y(0),r0,S.drift>=0?aH:aT,S.drift>=0?aT:aH); g.stroke();
+  vec(g,X(0),Y(0),X(a[0]),Y(a[1]),BLUE,1,3);
+  vec(g,X(a[0]),Y(a[1]),X(gv[0]),Y(gv[1]),AMB,3,2.5);
+  vec(g,X(0),Y(0),X(gv[0]),Y(gv[1]),MAG,2,3);
+  g.fillStyle=INK; g.beginPath(); g.arc(X(0),Y(0),4,0,7); g.fill();
+  // handle
+  const hp= W1.mode==='hdg'? [X(a[0]),Y(a[1])] : [X(gv[0]),Y(gv[1])]; const hc= W1.mode==='hdg'? BLUE : MAG;
+  g.fillStyle='#fff'; g.strokeStyle=hc; g.lineWidth=2.5; g.beginPath(); g.arc(hp[0],hp[1],9,0,7); g.fill(); g.stroke(); TG={hx:hp[0],hy:hp[1],dcx,dcy,dr,ox,oy,sc};
+  // labels
+  const lab=(p,q,o,f,txt,col)=>{ const P1=[X(p[0]),Y(p[1])], Q1=[X(q[0]),Y(q[1])], O1=[X(o[0]),Y(o[1])]; const mx=P1[0]+(Q1[0]-P1[0])*f, my=P1[1]+(Q1[1]-P1[1])*f, dx=Q1[0]-P1[0], dy=Q1[1]-P1[1], l=Math.hypot(dx,dy)||1; let nx=-dy/l, ny=dx/l; if(nx*(O1[0]-mx)+ny*(O1[1]-my)>0){ nx=-nx; ny=-ny; }
+    g.font='600 '+Math.round(HS*0.76)+'px "Public Sans", sans-serif'; const tw=g.measureText(txt).width; let lx=nx<-0.35? mx+nx*12-tw : nx>0.35? mx+nx*12 : mx-tw/2; lx=clamp(lx,6,W-6-tw); const ty=my+ny*12+(ny>0.35?12:ny<-0.35?-2:5); hand(g,txt,lx,ty,col); };
+  lab([0,0],a,gv,0.62,`HDG ${f3(S.hdg)} · TAS ${Math.round(V)}`,BLUE);
+  lab([0,0],gv,a,0.4,`TRK ${f3(S.trk)} · GS ${Math.round(S.gs)}`,MAG);
+  lab(a,gv,[0,0],0.5,`W/V ${f3(W1.wd).replace('°','')}/${Math.round(W1.ws)}`,AMB);
+  if(Math.abs(S.drift)>=0.5) mono(g,`${L({en:'drift',no:'avdrift'})} ${nf(Math.abs(S.drift),1)}° ${S.drift>0?'R':'L'}`,X(0)+r0*Math.cos(aH+S.drift*D2R/2)+6,Y(0)+r0*Math.sin(aH+S.drift*D2R/2)+4,'#8A6D3B');
+  { const t=W1.mode==='hdg'?L({en:'drag the blue tip: heading and TAS',no:'dra i den blå spissen: heading og TAS'}):L({en:'drag the magenta tip: the track you want',no:'dra i den magenta spissen: tracken du vil ha'}); if(W<520){ mono(g,t,10,16,HAND,'start',10); } else hand(g,t,14,22); }
+  // wind rose
+  g.fillStyle='rgba(255,255,255,.92)'; g.strokeStyle='#C6D0D3'; g.lineWidth=1; g.beginPath(); g.arc(dcx,dcy,dr+8,0,7); g.fill(); g.stroke();
+  g.strokeStyle='#E3E8EA'; g.beginPath(); g.arc(dcx,dcy,dr*0.5,0,7); g.stroke();
+  mono(g,'N',dcx,dcy-dr-12,GREY,'center',10);
+  const wr=dr*W1.ws/150, wa=W1.wd*D2R, hx=dcx+Math.sin(wa)*wr, hy=dcy-Math.cos(wa)*wr;
+  if(W1.ws>0){ vec(g,hx,hy,dcx-Math.sin(wa)*Math.max(wr*0.4,10),dcy+Math.cos(wa)*Math.max(wr*0.4,10),AMB,3,2); }
+  g.fillStyle='#fff'; g.strokeStyle=AMB; g.lineWidth=2.5; g.beginPath(); g.arc(hx,hy,8,0,7); g.fill(); g.stroke();
+  mono(g,L({en:'wind rose: drag',no:'vindrose: dra'}),dcx,dcy+dr+22,AMB,'center',10);
+}
+function triRo(){ const S=S1();
+  el('tH').textContent=f3(S.hdg); el('tT').textContent=f3(S.trk); el('tGS').textContent=Math.round(S.gs)+' kt';
+  el('tDr').textContent= Math.abs(S.drift)<0.05? '0°' : nf(Math.abs(S.drift),1)+'° '+(S.drift>0?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'}));
+  const wca=-S.drift; el('tWca').textContent= Math.abs(wca)<0.05? '0°' : (wca>0?'+':'−')+nf(Math.abs(wca),1)+'° ('+(wca>0?L({en:'nose right of track',no:'nesen til høyre for track'}):L({en:'nose left of track',no:'nesen til venstre for track'}))+')';
+  el('tHw').textContent= Math.abs(S.hw)<0.5? '0 kt' : Math.round(Math.abs(S.hw))+' kt '+(S.hw>=0?L({en:'headwind',no:'motvind'}):L({en:'tailwind',no:'medvind'}));
+  el('tXw').textContent= Math.abs(S.xw)<0.5? '0 kt' : Math.round(Math.abs(S.xw))+' kt '+L({en:'from the',no:'fra'})+' '+(S.xw>=0?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'}));
+  const sideE=S.xw>=0?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'}), loss=W1.tas*(1-Math.cos(S.drift*D2R));
+  el('tEx').textContent= W1.mode==='trk'
+   ? L({en:`Wind from the ${sideE}: to hold track ${f3(S.trk)} you point the nose ${nf(Math.abs(S.drift),1)}° into wind, heading ${f3(S.hdg)}. Groundspeed is TAS × cos(WCA) minus the headwind component, so crabbing alone costs ${nf(loss,1)} kt. Quick check: WCA ≈ crosswind / TAS × 60 = ${nf(Math.abs(S.xw)/W1.tas*60,1)}°.`,
+        no:`Vind fra ${sideE}: for å holde track ${f3(S.trk)} peker du nesen ${nf(Math.abs(S.drift),1)}° opp i vinden, heading ${f3(S.hdg)}. Groundspeed er TAS × cos(WCA) minus motvindskomponenten, så krabbingen alene koster ${nf(loss,1)} kt. Rask sjekk: WCA ≈ sidevind / TAS × 60 = ${nf(Math.abs(S.xw)/W1.tas*60,1)}°.`})
+   : L({en:`Holding heading ${f3(S.hdg)}, the wind pushes you ${nf(Math.abs(S.drift),1)}° to the ${S.drift>=0?'right':'left'}: the track over the ground is ${f3(S.trk)}. Drift is measured from heading to track. To fly a given track, switch to “Find heading for a track”.`,
+        no:`Med heading ${f3(S.hdg)} skyver vinden deg ${nf(Math.abs(S.drift),1)}° til ${S.drift>=0?'høyre':'venstre'}: tracken over bakken er ${f3(S.trk)}. Avdrift måles fra heading til track. For å fly en bestemt track, bytt til «Finn heading for en track».`});
+}
+function tu(){ el('tTrk').hidden=W1.mode!=='trk'; el('tHdg').hidden=W1.mode!=='hdg'; triDraw(); triRo(); machRo(); }
+LAB.seg(el('tmode'),[['trk','Find heading for a track'],['hdg','Fly a heading']],W1.mode,v=>{ const S=S1(); if(v==='hdg'){ W1.hdg=Math.round(S.hdg); sH.set(W1.hdg); } else { W1.trk=Math.round(S.trk); sT.set(W1.trk); } W1.mode=v; tu(); });
+const sV=LAB.slider(el('tctl'),{label:'True airspeed (kt)',min:120,max:520,step:5,v:W1.tas,f:v=>v+' kt',on:v=>{ W1.tas=v; tu(); }});
+const sT=LAB.slider(el('tTrk'),{label:'True track (°)',min:1,max:360,step:1,v:W1.trk,f:v=>f3(v),on:v=>{ W1.trk=v; tu(); }});
+const sH=LAB.slider(el('tHdg'),{label:'True heading (°)',min:1,max:360,step:1,v:W1.hdg,f:v=>f3(v),on:v=>{ W1.hdg=v; tu(); }});
+const sWd=LAB.slider(el('tw'),{label:'Wind from (°)',min:1,max:360,step:1,v:W1.wd,f:v=>f3(v),on:v=>{ W1.wd=v; tu(); }});
+const sWs=LAB.slider(el('tw'),{label:'Wind speed (kt)',min:0,max:150,step:1,v:W1.ws,f:v=>v+' kt',on:v=>{ W1.ws=v; tu(); }});
+{ const cv=el('tri'); let mode=null;
+  const pos=e=>{ const r=cv.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; };
+  cv.addEventListener('pointerdown',e=>{ if(!TG) return; const [x,y]=pos(e);
+    if(Math.hypot(x-TG.dcx,y-TG.dcy)<=TG.dr+12) mode='wind'; else if(Math.hypot(x-TG.hx,y-TG.hy)<26) mode='vec'; else mode=null;
+    if(mode){ FZ={sc:TG.sc,ox:TG.ox,oy:TG.oy}; cv.setPointerCapture(e.pointerId); move(e); } });
+  const move=e=>{ if(!mode) return; const [x,y]=pos(e);
+    if(mode==='wind'){ const dx=x-TG.dcx, dy=y-TG.dcy; W1.wd=Math.round(n360(Math.atan2(dx,-dy)*R2D))||360; W1.ws=Math.round(clamp(Math.hypot(dx,dy)/TG.dr*150,0,150)); sWd.set(W1.wd); sWs.set(W1.ws); }
+    else { const vx=(x-FZ.ox)/FZ.sc, vy=(FZ.oy-y)/FZ.sc, ang=Math.round(n360(Math.atan2(vx,vy)*R2D))||360;
+      if(W1.mode==='hdg'){ W1.hdg=ang; W1.tas=Math.round(clamp(Math.hypot(vx,vy),120,520)/5)*5; sH.set(ang); sV.set(W1.tas); } else { W1.trk=ang; sT.set(ang); } }
+    tu(); };
+  cv.addEventListener('pointermove',move);
+  const up=()=>{ if(mode){ mode=null; FZ=null; triDraw(); } }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }
+/* Mach */
+const M1={fl:370,m:0.78,dev:0};
+function mach(){ const h=M1.fl*100, isa= h<=36089? 15-1.98*h/1000 : -56.5, sat=isa+M1.dev, a=38.967*Math.sqrt(sat+273.15); return {isa,sat,a,tas:M1.m*a}; }
+function machRo(){ const m=mach(), S=S1(), s2=solve(m.tas,S.trk,'trk',W1.wd,W1.ws);
+  el('mSat').textContent=`${nf(m.sat,1)} °C (ISA ${nf(m.isa,1)} °C)`; el('mA').textContent=Math.round(m.a)+' kt'; el('mTas').textContent=Math.round(m.tas)+' kt';
+  el('mGs').textContent=`${Math.round(s2.gs)} kt (${L({en:'track',no:'track'})} ${f3(S.trk)}, W/V ${f3(W1.wd).replace('°','')}/${W1.ws})`; }
+LAB.slider(el('mctl'),{label:'Flight level',min:100,max:410,step:10,v:M1.fl,f:v=>'FL'+v,on:v=>{ M1.fl=v; machRo(); }});
+LAB.slider(el('mctl'),{label:'Mach number',min:0.5,max:0.82,step:0.01,v:M1.m,f:v=>'M '+v.toFixed(2),on:v=>{ M1.m=v; machRo(); }});
+LAB.slider(el('mctl'),{label:'Temperature deviation from ISA (°C)',min:-30,max:30,step:1,v:M1.dev,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' °C',on:v=>{ M1.dev=v; machRo(); }});
+el('mUse').onclick=()=>{ W1.tas=clamp(Math.round(mach().tas/5)*5,120,520); sV.set(W1.tas); tu(); };
+
+/* ================= 2 · 1 in 60 ================= */
+const SX={fl:60,off:5,go:90};
+const C2=LAB.fit(el('six'),()=>sixDraw(),2);
+function sixDraw(){ const st=C2; if(!st.w) return; const g=fill(st), W=st.w, H=st.h;
+  const tot=SX.fl+SX.go, x0=40, x1=W-40, k=(x1-x0)/tot, ex=3, yc=H*0.4;
+  const A=[x0,yc], B=[x1,yc], P=[x0+SX.fl*k, yc+SX.off*k*ex];
+  g.strokeStyle=INK; g.lineWidth=1.6; g.beginPath(); g.moveTo(...A); g.lineTo(...B); g.stroke();
+  g.strokeStyle='#9AA6AC'; g.setLineDash([5,5]); g.lineWidth=1.3; g.beginPath(); g.moveTo(...P); g.lineTo(x1,P[1]); g.stroke(); g.setLineDash([]);
+  vec(g,...A,...P,MAG,2,3);
+  g.strokeStyle=BLUE; g.lineWidth=2.5; g.setLineDash([8,5]); g.beginPath(); g.moveTo(...P); g.lineTo(...B); g.stroke(); g.setLineDash([]);
+  g.strokeStyle='#C9A86A'; g.lineWidth=1; g.beginPath(); g.moveTo(P[0],yc); g.lineTo(...P); g.stroke();
+  for(const [p,t] of [[A,'A'],[B,'B']]){ g.fillStyle=INK; g.beginPath(); g.arc(p[0],p[1],5,0,7); g.fill(); mono(g,t,p[0],p[1]-12,INK,'center',12); }
+  g.fillStyle=MAG; g.beginPath(); g.arc(P[0],P[1],5,0,7); g.fill();
+  hand(g,`${SX.off} NM`,P[0]+6,(yc+P[1])/2+6,'#8A6D3B');
+  hand(g,`TE ${nf(SX.off/SX.fl*60,1)}°`,x0+20,yc+22,MAG); hand(g,`CA ${nf(SX.off/SX.go*60,1)}°`,x1-20,yc+22,BLUE,'right');
+  hand(g,L({en:'planned track',no:'planlagt track'}),(x0+x1)/2,yc-10,INK,'center');
+  hand(g,L({en:'parallel to the plan',no:'parallelt med planen'}),x1-10,P[1]+20,GREY,'right');
+  mono(g,L({en:`${SX.fl} NM flown`,no:`${SX.fl} NM fløyet`}),x0,H-14); mono(g,L({en:`${SX.go} NM to go`,no:`${SX.go} NM igjen`}),x1,H-14,GREY,'right');
+  mono(g,L({en:'lateral scale × 3',no:'sideskala × 3'}),W<520?W-10:W/2,W<520?16:H-14,GREY,W<520?'right':'center'); }
+function sixRo(){ const te=SX.off/SX.fl*60, ca=SX.off/SX.go*60, teX=Math.atan(SX.off/SX.fl)*R2D, caX=Math.atan(SX.off/SX.go)*R2D;
+  const ex=L({en:'exact',no:'eksakt'});
+  el('sTE').textContent=`${nf(te,1)}° (${ex} ${nf(teX,1)}°)`; el('sCA').textContent=`${nf(ca,1)}° (${ex} ${nf(caX,1)}°)`;
+  el('sTot').textContent=`${nf(te+ca,1)}° ${L({en:'left',no:'til venstre'})}`; el('sPar').textContent=`${nf(te,1)}° ${L({en:'left',no:'til venstre'})}`;
+  el('sEx').textContent= te>20? L({en:`At ${nf(teX,0)}° the rule starts to drift from the exact answer, because sin and tan are no longer proportional to the angle. Above about 20° use it only as a rough check.`,no:`Ved ${nf(teX,0)}° begynner regelen å avvike fra det eksakte svaret, fordi sin og tan ikke lenger er proporsjonale med vinkelen. Over rundt 20° bør den bare brukes som grov sjekk.`})
+   : L({en:`Track error = off track ÷ distance flown × 60 = ${SX.off} ÷ ${SX.fl} × 60. Closing angle = off track ÷ distance to go × 60. Turn by the sum to reach B directly, or by the track error alone to fly parallel to the planned track. The same rule gives the wind correction: crosswind ÷ TAS × 60.`,no:`Trackfeil = ut av track ÷ distanse fløyet × 60 = ${SX.off} ÷ ${SX.fl} × 60. Lukkevinkel = ut av track ÷ distanse igjen × 60. Sving summen for å nå B direkte, eller bare trackfeilen for å fly parallelt med planlagt track. Samme regel gir vindkorreksjonen: sidevind ÷ TAS × 60.`}); }
+function sxu(){ sixDraw(); sixRo(); }
+LAB.slider(el('sctl'),{label:'Distance flown (NM)',min:10,max:200,step:5,v:SX.fl,f:v=>v+' NM',on:v=>{ SX.fl=v; sxu(); }});
+LAB.slider(el('sctl'),{label:'Off track, right (NM)',min:1,max:30,step:1,v:SX.off,f:v=>v+' NM',on:v=>{ SX.off=v; sxu(); }});
+LAB.slider(el('sctl'),{label:'Distance to go (NM)',min:10,max:200,step:5,v:SX.go,f:v=>v+' NM',on:v=>{ SX.go=v; sxu(); }});
+
+/* ================= 3 · Earth ================= */
+const AP={ENGM:[60.19,11.10],ENTC:[69.68,18.92],ENSB:[78.25,15.47],KJFK:[40.64,-73.78],RJAA:[35.76,140.39],BIKF:[63.99,-22.61],ENBR:[60.29,5.22]};
+const RP=[['engm-entc','ENGM–ENTC',['ENGM','ENTC']],['engm-kjfk','ENGM–KJFK',['ENGM','KJFK']],['engm-rjaa','ENGM–RJAA',['ENGM','RJAA']],['eq','EQ 0°–90°E',null]];
+const E={la:60.19,lo:11.10,lb:69.68,lob:18.92,v:5,na:'ENGM',nb:'ENTC',rot:[0,0],pre:'engm-entc'};
+function brg(p1,l1,p2,l2){ const y=Math.sin(l2-l1)*Math.cos(p2), x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(l2-l1); return n360(Math.atan2(y,x)*R2D); }
+function cang(p1,l1,p2,l2){ const h=Math.sin((p2-p1)/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin((l2-l1)/2)**2; return 2*Math.asin(Math.min(1,Math.sqrt(h))); }
+const psi=p=>Math.log(Math.tan(Math.PI/4+p/2));
+function dlonOf(){ return n180(E.lob-E.lo)*D2R; }
+function geo(){ const p1=E.la*D2R,l1=E.lo*D2R,p2=E.lb*D2R,l2=E.lob*D2R, dl=dlonOf(), d=cang(p1,l1,p2,l2);
+  const dps=psi(p2)-psi(p1), q=Math.abs(dps)>1e-10?(p2-p1)/dps:Math.cos(p1), rl=Math.hypot(p2-p1,q*dl);
+  const ini=brg(p1,l1,p2,l2), fin=n360(brg(p2,l2,p1,l1)+180), rlt=n360(Math.atan2(dl,dps)*R2D), mlat=(E.la+E.lb)/2;
+  return {d:d*R2D*60,rl:rl*R2D*60,ini,fin,rlt,conv:n180(fin-ini),convA:Math.abs(dl*R2D)*Math.sin(mlat*D2R),mlat,dl:dl*R2D,dep:Math.abs(dl*R2D)*60*Math.cos(mlat*D2R)}; }
+function gcPts(n){ const p1=E.la*D2R,l1=E.lo*D2R,p2=E.lb*D2R,l2=E.lo*D2R+dlonOf(), d=cang(p1,l1,p2,l2), out=[];
+  for(let i=0;i<=n;i++){ const f=i/n; if(d<1e-9){ out.push([p1,l1]); continue; } const A=Math.sin((1-f)*d)/Math.sin(d), B=Math.sin(f*d)/Math.sin(d);
+    const x=A*Math.cos(p1)*Math.cos(l1)+B*Math.cos(p2)*Math.cos(l2), y=A*Math.cos(p1)*Math.sin(l1)+B*Math.cos(p2)*Math.sin(l2), z=A*Math.sin(p1)+B*Math.sin(p2);
+    out.push([Math.atan2(z,Math.hypot(x,y)),Math.atan2(y,x)]); } return out; }
+function rlPts(n){ const p1=E.la*D2R,l1=E.lo*D2R,p2=E.lb*D2R,dl=dlonOf(),s1=psi(p1),ds=psi(p2)-s1,out=[];
+  for(let i=0;i<=n;i++){ const f=i/n; out.push([Math.abs(ds)<1e-10?p1+(p2-p1)*f:2*Math.atan(Math.exp(s1+f*ds))-Math.PI/2, l1+f*dl]); } return out; }
+const C3=LAB.fit(el('globe'),()=>globe(),2); let GL=null;
+function globe(){ const st=C3; if(!st.w) return; const g=fill(st), W=st.w, H=st.h, R=Math.min(W,H)/2-22, cx=W/2, cy=H/2+6;
+  const mid=gcPts(2)[1]; const pc=clamp(mid[0]*R2D+E.rot[1],-89,89)*D2R, lc=mid[1]+E.rot[0]*D2R; GL={R};
+  const P=(p,l)=>{ const cc=Math.sin(pc)*Math.sin(p)+Math.cos(pc)*Math.cos(p)*Math.cos(l-lc); return [cx+Math.cos(p)*Math.sin(l-lc)*R, cy-(Math.cos(pc)*Math.sin(p)-Math.sin(pc)*Math.cos(p)*Math.cos(l-lc))*R, cc>0]; };
+  const poly=(pts,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); let pen=false; for(const [p,l] of pts){ const q=P(p,l); if(q[2]){ pen? g.lineTo(q[0],q[1]) : g.moveTo(q[0],q[1]); pen=true; } else pen=false; } g.stroke(); g.setLineDash([]); };
+  const gr=g.createRadialGradient(cx-R*0.3,cy-R*0.35,R*0.1,cx,cy,R); gr.addColorStop(0,'#FFFFFF'); gr.addColorStop(1,'#E6EDEF'); g.fillStyle=gr; g.beginPath(); g.arc(cx,cy,R,0,7); g.fill(); g.strokeStyle='#AEB9BE'; g.lineWidth=1.2; g.stroke();
+  for(let la=-80;la<=80;la+=10){ const pts=[]; for(let lo=-180;lo<=180;lo+=3) pts.push([la*D2R,lo*D2R]); poly(pts,la===0?'#9AA6AC':'#D7DEE0',la===0?1.4:1); }
+  for(let lo=-180;lo<180;lo+=10){ const pts=[]; for(let la=-90;la<=90;la+=3) pts.push([la*D2R,lo*D2R]); poly(pts,lo===0?'#9AA6AC':'#D7DEE0',1); }
+  for(const lo of [E.lo,E.lob]){ const pts=[]; for(let la=-90;la<=90;la+=2) pts.push([la*D2R,lo*D2R]); poly(pts,'#6E7E88',1.2,[4,4]); }
+  const np=P(Math.PI/2,0); if(np[2]){ g.fillStyle=INK; g.beginPath(); g.arc(np[0],np[1],3,0,7); g.fill(); mono(g,L({en:'N pole',no:'Nordpolen'}),np[0]+6,np[1]-4,INK); }
+  poly(rlPts(120),BLUE,2.5,[7,5]); poly(gcPts(120),MAG,3);
+  for(const [p,l,n] of [[E.la,E.lo,E.na||'A'],[E.lb,E.lob,E.nb||'B']]){ const q=P(p*D2R,l*D2R); if(!q[2]) continue; g.fillStyle='#fff'; g.strokeStyle=INK; g.lineWidth=2; g.beginPath(); g.arc(q[0],q[1],5,0,7); g.fill(); g.stroke(); mono(g,n,q[0]+8,q[1]+14,INK,'start',12); }
+  hand(g,L({en:'great circle',no:'storsirkel'}),14,24,MAG); hand(g,L({en:'rhumb line',no:'loksodrom'}),14,46,BLUE); hand(g,L({en:'meridians through A and B',no:'meridianer gjennom A og B'}),14,68,'#4C5B66');
+  mono(g,L({en:'drag to rotate',no:'dra for å rotere'}),W-12,H-10,GREY,'right'); }
+function earthRo(){ const G=geo(), dir=G.dl>=0?L({en:'east',no:'øst'}):L({en:'west',no:'vest'});
+  el('eGc').textContent=nf(G.d,0)+' NM'; el('eRl').textContent=`${nf(G.rl,0)} NM (+${nf(G.rl-G.d,0)} NM, ${nf((G.rl/G.d-1)*100||0,1)} %)`;
+  const mag=t=>f3(t-E.v)+'M'; el('eIn').textContent=`${f3(G.ini)}T · ${mag(G.ini)}`; el('eFin').textContent=f3(G.fin)+'T'; el('eRt').textContent=`${f3(G.rlt)}T · ${mag(G.rlt)}`;
+  el('eCv').textContent=`${nf(Math.abs(G.conv),1)}° (dlong × sin ${nf(G.mlat,1)}° ≈ ${nf(G.convA,1)}°)`; el('eCa').textContent=nf(Math.abs(G.conv)/2,1)+'°';
+  el('eDep').textContent=`${nf(Math.abs(G.dl)*60,0)}′ × cos ${nf(G.mlat,1)}° = ${nf(G.dep,0)} NM`;
+  el('eEx').textContent= Math.abs(G.dl)<0.05? L({en:'Both points are on the same meridian: great circle and rhumb line coincide, and the track does not change.',no:'Begge punktene ligger på samme meridian: storsirkel og loksodrom faller sammen, og tracken endrer seg ikke.'})
+   : Math.abs(E.la)<0.01&&Math.abs(E.lb)<0.01? L({en:'Along the equator the great circle and the rhumb line are the same line, and sin 0° = 0 gives no convergency.',no:'Langs ekvator er storsirkel og loksodrom samme linje, og sin 0° = 0 gir ingen konvergens.'})
+   : L({en:`Flying ${dir}, the great circle starts on the pole side of the rhumb line, at ${f3(G.ini)}, and ends at ${f3(G.fin)}: a change of ${nf(Math.abs(G.conv),1)}°, the convergency. The rhumb-line track ${f3(G.rlt)} lies between them, ${nf(Math.abs(G.conv)/2,1)}° (the conversion angle) from each. Saving: ${nf(G.rl-G.d,0)} NM.`,no:`Mot ${dir} starter storsirkelen på polsiden av loksodromen, med ${f3(G.ini)}, og slutter med ${f3(G.fin)}: en endring på ${nf(Math.abs(G.conv),1)}°, konvergensen. Loksodromtracken ${f3(G.rlt)} ligger mellom dem, ${nf(Math.abs(G.conv)/2,1)}° (konverteringsvinkelen) fra hver. Besparelse: ${nf(G.rl-G.d,0)} NM.`}); }
+function eu(){ globe(); earthRo(); chart(); chartRo(); }
+const eS={};
+const ePre=LAB.seg(el('epre'),RP.map(r=>[r[0],r[1]]),E.pre,v=>setRoute(v));
+const cPre=LAB.seg(el('cpre'),RP.map(r=>[r[0],r[1]]),E.pre,v=>setRoute(v));
+function setRoute(v){ const r=RP.find(x=>x[0]===v); if(r[2]){ [E.la,E.lo]=AP[r[2][0]]; [E.lb,E.lob]=AP[r[2][1]]; E.na=r[2][0]; E.nb=r[2][1]; } else { E.la=0;E.lo=0;E.lb=0;E.lob=90;E.na='A';E.nb='B'; }
+  E.v= v==='eq'?0: 5; E.rot=[0,0]; E.pre=v; ePre.set(v); cPre.set(v); eS.la.set(E.la); eS.lo.set(E.lo); eS.lb.set(E.lb); eS.lob.set(E.lob); eS.v.set(E.v); eu(); }
+const fLat=v=>nf(v,1)+'° N', fLon=v=>nf(Math.abs(v),1)+'° '+(v<0?'W':'E');
+const eMan=()=>{ E.na='A'; E.nb='B'; E.pre=''; ePre.set(''); cPre.set(''); E.rot=[0,0]; eu(); };
+eS.la=LAB.slider(el('ectl'),{label:'Latitude A (°N)',min:0,max:85,step:0.5,v:E.la,f:fLat,on:v=>{ E.la=v; eMan(); }});
+eS.lo=LAB.slider(el('ectl'),{label:'Longitude A (°, east +)',min:-180,max:180,step:0.5,v:E.lo,f:fLon,on:v=>{ E.lo=v; eMan(); }});
+eS.lb=LAB.slider(el('ectl'),{label:'Latitude B (°N)',min:0,max:85,step:0.5,v:E.lb,f:fLat,on:v=>{ E.lb=v; eMan(); }});
+eS.lob=LAB.slider(el('ectl'),{label:'Longitude B (°, east +)',min:-180,max:180,step:0.5,v:E.lob,f:fLon,on:v=>{ E.lob=v; eMan(); }});
+eS.v=LAB.slider(el('ectl'),{label:'Variation at A (°, east +)',min:-20,max:20,step:1,v:E.v,f:v=>Math.abs(v)+'° '+(v<0?'W':'E'),on:v=>{ E.v=v; earthRo(); }});
+{ const cv=el('globe'); let d=null; cv.addEventListener('pointerdown',e=>{ d=[e.clientX,e.clientY]; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove',e=>{ if(!d||!GL) return; const k=R2D/GL.R; E.rot[0]-=(e.clientX-d[0])*k; E.rot[1]+=(e.clientY-d[1])*k; E.rot[1]=clamp(E.rot[1],-120,120); d=[e.clientX,e.clientY]; globe(); });
+  const up=()=>d=null; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); }
+
+/* ================= 4 · Charts ================= */
+const CP={p:'lcc'};
+function projector(){ const l0=E.lo*D2R+dlonOf()/2, dL=l=>{ let x=l-l0; while(x>Math.PI) x-=2*Math.PI; while(x<-Math.PI) x+=2*Math.PI; return x; };
+  if(CP.p==='merc') return {f:(p,l)=>[dL(l),psi(Math.min(p,86*D2R))],k:p=>1/Math.cos(p),pole:[0,1e3],conv:()=>0,maxLat:85};
+  if(CP.p==='polar') return {f:(p,l)=>{ const r=2*Math.tan(Math.PI/4-p/2); return [r*Math.sin(dL(l)),-r*Math.cos(dL(l))]; },k:p=>2/(1+Math.sin(p)),pole:[0,0],conv:dl=>Math.abs(dl),maxLat:90};
+  const lo=Math.min(E.la,E.lb), hi=Math.max(E.la,E.lb), span=hi-lo, m=(lo+hi)/2; let s1,s2; if(span<6){ s1=m-3; s2=m+3; } else { s1=lo+span/6; s2=hi-span/6; } s1=clamp(s1,2,82); s2=clamp(s2,s1+0.5,84);
+  const p1=s1*D2R,p2=s2*D2R,t=p=>Math.tan(Math.PI/4+p/2), n=Math.log(Math.cos(p1)/Math.cos(p2))/Math.log(t(p2)/t(p1)), F=Math.cos(p1)*Math.pow(t(p1),n)/n, rho=p=>F/Math.pow(t(Math.min(p,89.9*D2R)),n);
+  return {f:(p,l)=>{ const r=rho(p), th=n*dL(l); return [r*Math.sin(th),-r*Math.cos(th)]; },k:p=>n*rho(p)/Math.cos(p),pole:[0,0],conv:dl=>n*Math.abs(dl),maxLat:89.9,n,s1,s2}; }
+function bow(pts,pole){ const a=pts[0], b=pts[pts.length-1], L2=Math.hypot(b[0]-a[0],b[1]-a[1])||1e-9; let mx=0, mi=0;
+  pts.forEach((p,i)=>{ const d=Math.abs((b[0]-a[0])*(a[1]-p[1])-(a[0]-p[0])*(b[1]-a[1]))/L2; if(d>mx){ mx=d; mi=i; } });
+  const p=pts[mi], t=((p[0]-a[0])*(b[0]-a[0])+(p[1]-a[1])*(b[1]-a[1]))/(L2*L2), c=[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]; const toward=Math.hypot(p[0]-pole[0],p[1]-pole[1])<Math.hypot(c[0]-pole[0],c[1]-pole[1]); return {pct:mx/L2*100,toward}; }
+const C4=LAB.fit(el('chart'),()=>chart(),2);
+function chart(){ const st=C4; if(!st.w) return; const g=fill(st), W=st.w, H=st.h, Pj=projector();
+  const gc=gcPts(120).map(([p,l])=>Pj.f(p,l)), rl=rlPts(120).map(([p,l])=>Pj.f(p,l)); const all=gc.concat(rl); if(CP.p==='polar') all.push([0,0]);
+  let x0=Math.min(...all.map(p=>p[0])),x1=Math.max(...all.map(p=>p[0])),y0=Math.min(...all.map(p=>p[1])),y1=Math.max(...all.map(p=>p[1]));
+  let sx=x1-x0, sy=y1-y0; const mn=Math.max(sx,sy,0.08)*0.45; if(sx<mn){ x0-=(mn-sx)/2; x1+=(mn-sx)/2; } if(sy<mn){ y0-=(mn-sy)/2; y1+=(mn-sy)/2; } sx=x1-x0; sy=y1-y0;
+  const pad=0.16, sc=Math.min((W-40)/(sx*(1+2*pad)),(H-40)/(sy*(1+2*pad))), ox=W/2-(x0+x1)/2*sc, oy=H/2+(y0+y1)/2*sc;
+  const X=p=>ox+p[0]*sc, Y=p=>oy-p[1]*sc;
+  const line=(pts,col,w,dash)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); let pen=false; for(const p of pts){ const x=X(p),y=Y(p); if(!isFinite(x)||!isFinite(y)||Math.abs(x)>1e5||Math.abs(y)>1e5){ pen=false; continue; } pen? g.lineTo(x,y) : g.moveTo(x,y); pen=true; } g.stroke(); g.setLineDash([]); };
+  const l0=E.lo+n180(E.lob-E.lo)/2;
+  g.font='10px IBM Plex Mono, monospace';
+  for(let la=0;la<=Math.min(80,Pj.maxLat);la+=10){ const pts=[]; for(let d=-180;d<=180;d+=2) pts.push(Pj.f(la*D2R,(l0+d)*D2R)); line(pts,'#D3DADD',1); const q=Pj.f(la*D2R,l0*D2R); if(X(q)>0&&X(q)<W&&Y(q)>10&&Y(q)<H-4) mono(g,la+'°N',X(q)+3,Y(q)-3,'#9AA6AC','start',10); }
+  for(let m=-180;m<180;m+=10){ const pts=[]; for(let la=0;la<=Pj.maxLat;la+=1) pts.push(Pj.f(la*D2R,m*D2R)); line(pts,'#D3DADD',1);
+    const lab=Pj.f(Math.max(0,Math.floor(Math.min(E.la,E.lb)/10)*10-0)*D2R,m*D2R); const x=X(lab),y=Y(lab); if(x>14&&x<W-14&&y>14&&y<H-4) mono(g,Math.abs(n180(m))+'°'+(n180(m)<0?'W':n180(m)>0?'E':''),x,y+12,'#9AA6AC','center',10); }
+  for(const lo of [E.lo,E.lob]){ const pts=[]; for(let la=0;la<=Pj.maxLat;la+=1) pts.push(Pj.f(la*D2R,lo*D2R)); line(pts,'#6E7E88',1.2,[4,4]); }
+  if(Pj.s1!==undefined){ for(const s of [Pj.s1,Pj.s2]){ const pts=[]; for(let d=-180;d<=180;d+=2) pts.push(Pj.f(s*D2R,(l0+d)*D2R)); line(pts,AMB,1.4,[8,4]); } const q=Pj.f(Pj.s2*D2R,(l0+n180(E.lob-E.lo)/2)*D2R); hand(g,L({en:'standard parallels',no:'standardparalleller'}),Math.min(W-150,X(q)+10),Y(q)-6,AMB); }
+  if(CP.p==='polar'){ const q=Pj.f(Math.PI/2,0); g.fillStyle=INK; g.beginPath(); g.arc(X(q),Y(q),3,0,7); g.fill(); mono(g,L({en:'N pole',no:'Nordpolen'}),X(q)+6,Y(q)-4,INK); }
+  line(rl,BLUE,2.5,[7,5]); line(gc,MAG,3);
+  g.strokeStyle='#9AA6AC'; g.lineWidth=1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(gc[0]),Y(gc[0])); g.lineTo(X(gc[gc.length-1]),Y(gc[gc.length-1])); g.stroke(); g.setLineDash([]);
+  for(const [p,n] of [[gc[0],E.na||'A'],[gc[gc.length-1],E.nb||'B']]){ g.fillStyle='#fff'; g.strokeStyle=INK; g.lineWidth=2; g.beginPath(); g.arc(X(p),Y(p),5,0,7); g.fill(); g.stroke(); mono(g,n,X(p)+8,Y(p)+14,INK,'start',12); }
+  g.fillStyle='rgba(251,251,248,.9)'; g.fillRect(8,6,200,70);
+  hand(g,L({en:'great circle',no:'storsirkel'}),14,24,MAG); hand(g,L({en:'rhumb line',no:'loksodrom'}),14,46,BLUE); hand(g,L({en:'straight ruler line',no:'rett linjal-linje'}),14,68,GREY); }
+function chartRo(){ const Pj=projector(), G=geo(); const gc=gcPts(120).map(([p,l])=>Pj.f(p,l)), rl=rlPts(120).map(([p,l])=>Pj.f(p,l)); const bg=bow(gc,Pj.pole), br=bow(rl,Pj.pole);
+  const desc=b=> b.pct<0.15? L({en:'a straight line',no:'en rett linje'}) : b.pct<0.6? L({en:`nearly straight (bows ${nf(b.pct,2)} % of its length)`,no:`nesten rett (buer ${nf(b.pct,2)} % av lengden)`}) : L({en:`a curve, bowing ${nf(b.pct,1)} % of its length towards the ${b.toward?'pole':'equator'}`,no:`en kurve som buer ${nf(b.pct,1)} % av lengden mot ${b.toward?'polen':'ekvator'}`});
+  el('cGc').textContent=desc(bg); el('cRl').textContent=desc(br);
+  el('cCv').textContent=nf(Pj.conv(G.dl),1)+'°'+(CP.p==='merc'?' ('+L({en:'meridians parallel',no:'meridianene er parallelle'})+')':CP.p==='lcc'?` (n = ${nf(Pj.n,3)} × dlong)`:' (= dlong)');
+  el('cEc').textContent=nf(G.convA,1)+'°';
+  const kA=Pj.k(E.la*D2R), kB=Pj.k(E.lb*D2R); el('cSc').textContent=`${nf(kA,3)} / ${nf(kB,3)}`;
+  el('cTrue').textContent= CP.p==='merc'? L({en:'at the equator; grows with 1/cos lat (×2 at 60°)',no:'ved ekvator; øker med 1/cos bredde (×2 ved 60°)'}) : CP.p==='polar'? L({en:'at the pole; grows towards the equator',no:'ved polen; øker mot ekvator'}) : L({en:`on the standard parallels ${nf(Pj.s1,1)}° and ${nf(Pj.s2,1)}°; slightly small between, large outside`,no:`på standardparallellene ${nf(Pj.s1,1)}° og ${nf(Pj.s2,1)}°; litt for liten mellom, for stor utenfor`});
+  el('cEx').textContent= CP.p==='merc'? L({en:'Mercator: meridians are parallel, so a rhumb line, which crosses them all at the same angle, is a straight line. The great circle bows towards the pole. Chart convergency is zero while the Earth convergency is not, so a straight line here is not the shortest route.',no:'Mercator: meridianene er parallelle, så en loksodrom, som krysser alle i samme vinkel, blir en rett linje. Storsirkelen buer mot polen. Kartkonvergensen er null mens jordkonvergensen ikke er det, så en rett linje her er ikke den korteste ruten.'})
+   : CP.p==='polar'? L({en:'Polar stereographic: meridians are straight lines from the pole, and chart convergency equals dlong. Near the pole that matches the Earth (sin 90° = 1), so great circles are close to straight lines. Rhumb lines spiral towards the pole.',no:'Polar stereografisk: meridianene er rette linjer fra polen, og kartkonvergensen er lik dlong. Nær polen stemmer det med jorden (sin 90° = 1), så storsirkler blir nesten rette linjer. Loksodromer spiraler mot polen.'})
+   : L({en:`Lambert conformal conic: the cone cuts the Earth along the two standard parallels, and chart convergency is n × dlong, where n ≈ sin(parallel of origin) = ${nf(Pj.n,3)}. Between the parallels that is close to the Earth convergency, so a ruler line is very nearly a great circle. That is why most en-route charts use it.`,no:`Lambert konform kjegleprojeksjon: kjeglen skjærer jorden langs de to standardparallellene, og kartkonvergensen er n × dlong, der n ≈ sin(origoparallellen) = ${nf(Pj.n,3)}. Mellom parallellene ligger det nær jordkonvergensen, så en linjal-linje er nesten en storsirkel. Derfor bruker de fleste underveiskart denne projeksjonen.`}); }
+function ptab(){ const R=[[{en:'Mercator',no:'Mercator'},{en:'Cylinder; meridians parallel',no:'Sylinder; meridianer parallelle'},{en:'Straight',no:'Rett'},{en:'Curved, towards the pole',no:'Krum, mot polen'},{en:'1/cos lat, correct at the equator',no:'1/cos bredde, riktig ved ekvator'},{en:'Zero',no:'Null'},{en:'Low latitudes, plotting rhumb lines',no:'Lave bredder, plotting av loksodromer'}],
+  [{en:'Lambert conformal',no:'Lambert konform'},{en:'Cone cutting the Earth at two standard parallels',no:'Kjegle som skjærer jorden langs to standardparalleller'},{en:'Curved, towards the equator',no:'Krum, mot ekvator'},{en:'Nearly straight',no:'Nesten rett'},{en:'Correct on the standard parallels, nearly constant between',no:'Riktig på standardparallellene, nesten konstant mellom'},{en:'n × dlong',no:'n × dlong'},{en:'Most en-route and topographic aeronautical charts in mid latitudes',no:'De fleste underveiskart og topografiske flykart på midlere bredder'}],
+  [{en:'Polar stereographic',no:'Polar stereografisk'},{en:'Plane touching at the pole, projected from the opposite pole',no:'Plan som tangerer ved polen, projisert fra motsatt pol'},{en:'Curved, spiralling to the pole',no:'Krum, spiraler mot polen'},{en:'Nearly straight at high latitudes',no:'Nesten rett på høye bredder'},{en:'Correct at the pole, grows towards the equator',no:'Riktig ved polen, øker mot ekvator'},{en:'dlong',no:'dlong'},{en:'Polar and high-latitude charts',no:'Polare kart og kart for høye bredder'}]];
+  const h=[{en:'Projection',no:'Projeksjon'},{en:'Made from',no:'Laget av'},{en:'Rhumb line',no:'Loksodrom'},{en:'Great circle',no:'Storsirkel'},{en:'Scale',no:'Målestokk'},{en:'Chart convergency',no:'Kartkonvergens'},{en:'Typical use',no:'Typisk bruk'}];
+  el('ptab').innerHTML='<tr>'+h.map(x=>`<th>${L(x)}</th>`).join('')+'</tr>'+R.map(r=>'<tr>'+r.map((c,i)=>i?`<td>${L(c)}</td>`:`<td><b>${L(c)}</b></td>`).join('')+'</tr>').join(''); }
+LAB.seg(el('cproj'),[['merc','Mercator'],['lcc','Lambert conformal'],['polar','Polar stereographic']],CP.p,v=>{ CP.p=v; chart(); chartRo(); });
+
+/* ================= 5 · Time ================= */
+const TM={lat:69.65,lon:18.96,day:355,utc:11,pre:'tos'};
+const PL=[['osl','Oslo',59.91,10.75],['tos','Tromsø',69.65,18.96],['lyr','Longyearbyen',78.22,15.65],['gre','Greenwich',51.48,0]];
+const MON={en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],no:['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des']};
+const dstr=d=>{ const dt=new Date(Date.UTC(2026,0,d)); return dt.getUTCDate()+' '+(LAB.lang==='no'?MON.no:MON.en)[dt.getUTCMonth()]; };
+const decl=d=>-23.44*Math.cos(2*Math.PI*(d+10)/365);
+function sunH(lat,d,h0){ const p=lat*D2R, de=decl(d)*D2R, c=(Math.sin(h0*D2R)-Math.sin(p)*Math.sin(de))/(Math.cos(p)*Math.cos(de)); if(c<=-1) return 12; if(c>=1) return 0; return Math.acos(c)*R2D/15; }
+const C5=LAB.fit(el('year'),()=>year(),2);
+function year(){ const st=C5; if(!st.w) return; const g=fill(st), W=st.w, H=st.h, x0=44, x1=W-12, y0=14, y1=H-30;
+  const X=d=>x0+(d-1)/364*(x1-x0), Y=h=>y0+h/24*(y1-y0); const dw=Math.ceil((x1-x0)/365)+1;
+  for(let d=1;d<=365;d++){ const x=Math.floor(X(d)); const hd=sunH(TM.lat,d,-0.833), ht=sunH(TM.lat,d,-6);
+    g.fillStyle='#2D3E52'; g.fillRect(x,y0,dw,y1-y0);
+    if(ht>0){ g.fillStyle='#8FA8C0'; g.fillRect(x,Y(12-ht),dw,Y(12+ht)-Y(12-ht)); }
+    if(hd>0){ g.fillStyle='#F3E6B3'; g.fillRect(x,Y(12-hd),dw,Y(12+hd)-Y(12-hd)); } }
+  g.strokeStyle='rgba(19,32,42,.18)'; g.lineWidth=1; for(let h=0;h<=24;h+=3){ g.beginPath(); g.moveTo(x0,Y(h)); g.lineTo(x1,Y(h)); g.stroke(); mono(g,String(h).padStart(2,'0')+(h===0?' LMT':''),x0-6,Y(h)+4,GREY,'right',10); }
+  const ms=[1,32,60,91,121,152,182,213,244,274,305,335], mn=LAB.lang==='no'?MON.no:MON.en; ms.forEach((d,i)=>{ mono(g,mn[i],X(d)+(x1-x0)/24,H-12,GREY,'center',10); g.beginPath(); g.moveTo(X(d),y1); g.lineTo(X(d),y1+4); g.stroke(); });
+  // selected date + current time
+  const xd=X(TM.day); g.strokeStyle=MAG; g.lineWidth=2; g.beginPath(); g.moveTo(xd,y0); g.lineTo(xd,y1); g.stroke();
+  const lmt=((TM.utc+TM.lon/15)%24+24)%24; g.strokeStyle='#E040E0'; g.setLineDash([5,4]); g.lineWidth=1.5; g.beginPath(); g.moveTo(x0,Y(lmt)); g.lineTo(x1,Y(lmt)); g.stroke(); g.setLineDash([]);
+  g.fillStyle=MAG; g.beginPath(); g.arc(xd,Y(lmt),5,0,7); g.fill();
+  // labels
+  const lbl=(t,d,h,col)=>{ hand(g,t,clamp(X(d),x0+40,x1-60),Y(h),col,'center'); };
+  if(sunH(TM.lat,172,-0.833)>=12) lbl(L({en:'midnight sun',no:'midnattssol'}),172,3,'#8A5A00');
+  if(sunH(TM.lat,355,-0.833)<=0) lbl(L({en:'polar night',no:'mørketid'}),355,5,'#F3E6B3');
+  lbl(L({en:'day',no:'dag'}),90,12.3,'#8A5A00'); lbl(L({en:'night',no:'natt'}),105,1.6,'#DCE6EE');
+  if(sunH(TM.lat,80,-6)>sunH(TM.lat,80,-0.833)+0.3) hand(g,L({en:'civil twilight',no:'borgerlig tussmørke'}),X(60),Y(12-sunH(TM.lat,60,-6))+14,'#1F3346','center'); }
+function timeRo(){ const lon=TM.lon, off=lon/15, lmt=TM.utc+off; const dayShift=lmt>=24?L({en:' (next day)',no:' (neste dag)'}):lmt<0?L({en:' (previous day)',no:' (dagen før)'}):'';
+  el('yLmt').textContent=hhmm(lmt)+dayShift;
+  const sec=Math.round(Math.abs(off)*3600); el('yArc').textContent=`${nf(Math.abs(lon),2)}° ${lon<0?'W':'E'} = ${lon<0?'−':'+'}${Math.floor(sec/3600)} h ${Math.floor(sec%3600/60)} min ${sec%60} s`;
+  const hd=sunH(TM.lat,TM.day,-0.833), ht=sunH(TM.lat,TM.day,-6);
+  if(hd>=12){ el('ySun').textContent=L({en:'midnight sun: the sun stays up',no:'midnattssol: solen går ikke ned'}); el('ySunU').textContent='—'; }
+  else if(hd<=0){ el('ySun').textContent=L({en:'polar night: the sun does not rise',no:'mørketid: solen står ikke opp'}); el('ySunU').textContent='—'; }
+  else { el('ySun').textContent=hhmm(12-hd)+' / '+hhmm(12+hd); el('ySunU').textContent=hhmm(12-hd-off)+' / '+hhmm(12+hd-off); }
+  el('yTw').textContent= ht>=12? L({en:'all night: it never gets darker than civil twilight',no:'hele natten: det blir aldri mørkere enn borgerlig tussmørke'}) : ht<=0? L({en:'none: dark all day',no:'ingen: mørkt hele dagen'}) : `${L({en:'begins',no:'starter'})} ${hhmm(12-ht-off)} · ${L({en:'ends',no:'slutter'})} ${hhmm(12+ht-off)}`;
+  el('yDay').textContent= hd>=12? '24 h' : hm(2*hd*60).replace(':',' h ')+' min';
+  const dst=TM.day>=88&&TM.day<298, z=dst?2:1; el('yNor').textContent=`${hhmm(TM.utc+z)} (UTC+${z}${dst?', '+L({en:'summer time',no:'sommertid'}):''})`;
+  const decl_=decl(TM.day), noonAlt=90-TM.lat+decl_;
+  el('yEx').textContent= L({en:`On ${dstr(TM.day)} the sun's declination is ${nf(decl_,1)}°, so at ${nf(TM.lat,1)}° N it stands ${nf(noonAlt,1)}° above the horizon at local noon (90° − latitude + declination). `,no:`Den ${dstr(TM.day)} er solens deklinasjon ${nf(decl_,1)}°, så ved ${nf(TM.lat,1)}° N står den ${nf(noonAlt,1)}° over horisonten ved lokal middag (90° − bredde + deklinasjon). `})
+   + (noonAlt< -6? L({en:'Below −6° even at noon: no civil twilight at all.',no:'Under −6° selv midt på dagen: ikke engang borgerlig tussmørke.'}) : noonAlt< -0.833? L({en:'Below the horizon at noon, but above −6°: polar night with a few hours of civil twilight around midday.',no:'Under horisonten midt på dagen, men over −6°: mørketid med noen timer borgerlig tussmørke rundt middag.'}) : hd>=12? L({en:'At midnight the sun is still above the horizon: midnight sun.',no:'Ved midnatt er solen fortsatt over horisonten: midnattssol.'}) : L({en:'Sunrise and sunset in LMT depend only on latitude and date; to get UTC, subtract east longitude in time (add west).',no:'Soloppgang og solnedgang i LMT avhenger bare av bredde og dato; for å få UTC trekker du fra østlig lengde i tid (legger til vestlig).'})); }
+function yu(){ year(); timeRo(); }
+const yPre=LAB.seg(el('ypre'),PL.map(p=>[p[0],p[1]]),TM.pre,v=>{ const p=PL.find(x=>x[0]===v); TM.lat=p[2]; TM.lon=p[3]; TM.pre=v; yS.lat.set(TM.lat); yS.lon.set(TM.lon); yu(); });
+const yS={}; const yMan=()=>{ TM.pre=''; yPre.set(''); yu(); };
+yS.lat=LAB.slider(el('yctl'),{label:'Latitude (°N)',min:0,max:80,step:0.05,v:TM.lat,f:v=>nf(v,1)+'° N',on:v=>{ TM.lat=v; yMan(); }});
+yS.lon=LAB.slider(el('yctl'),{label:'Longitude (°, east +)',min:-180,max:180,step:0.05,v:TM.lon,f:v=>nf(Math.abs(v),2)+'° '+(v<0?'W':'E'),on:v=>{ TM.lon=v; yMan(); }});
+LAB.slider(el('yctl'),{label:'Date',min:1,max:365,step:1,v:TM.day,f:v=>dstr(v),on:v=>{ TM.day=v; yu(); }});
+LAB.slider(el('yctl'),{label:'UTC',min:0,max:23.75,step:0.25,v:TM.utc,f:v=>hhmm(v)+' UTC',on:v=>{ TM.utc=v; yu(); }});
+
+/* ================= 6 · PET / PNR ================= */
+const PS={D:0,tas:450,ctas:360,cs:'oei',w:-40,fuel:5000,ff:2500,a:'ENTC',b:'ENSB',pre:'tos'};
+const gcd=(a,b)=>cang(AP[a][0]*D2R,AP[a][1]*D2R,AP[b][0]*D2R,AP[b][1]*D2R)*R2D*60;
+const PP=[['tos','ENTC–ENSB','ENTC','ENSB'],['osl','ENGM–ENTC','ENGM','ENTC'],['kef','ENBR–BIKF','ENBR','BIKF']];
+PS.D=Math.round(gcd('ENTC','ENSB')/5)*5;
+const CASE={all:450,oei:360,dep:310};
+function pet(){ const go=PS.tas+PS.w, gh=PS.tas-PS.w, co=PS.ctas+PS.w, ch=PS.ctas-PS.w; const dp=PS.D*ch/(co+ch); const E_=PS.fuel/PS.ff; const tp=E_*gh/(go+gh);
+  return {go,gh,co,ch,dp,tPet:dp/go*60,tAfter:dp/ch*60,E:E_,tPnr:tp*60,dPnr:tp*go}; }
+const C6=LAB.fit(el('petc'),()=>petDraw(),2);
+function petDraw(){ const st=C6; if(!st.w) return; const g=fill(st), W=st.w, H=st.h, P=pet(); const x0=56, x1=W-24, X=d=>x0+d/PS.D*(x1-x0);
+  const ry=46; g.strokeStyle=INK; g.lineWidth=3; g.beginPath(); g.moveTo(x0,ry); g.lineTo(x1,ry); g.stroke();
+  for(const [x,t] of [[x0,PS.a||'A'],[x1,PS.b||'B']]){ g.fillStyle='#fff'; g.strokeStyle=INK; g.lineWidth=2; g.beginPath(); g.arc(x,ry,6,0,7); g.fill(); g.stroke(); mono(g,t,x,ry-14,INK,'center',12); }
+  g.strokeStyle=GREY; g.lineWidth=1; g.beginPath(); g.moveTo(X(PS.D/2),ry-8); g.lineTo(X(PS.D/2),ry+8); g.stroke(); mono(g,'½',X(PS.D/2),ry-12,GREY,'center',11);
+  // wind arrow
+  if(PS.w){ const wx=W/2, wy=16, l=Math.min(60,Math.abs(PS.w)); const s=PS.w>0?1:-1; vec(g,wx-s*l/2,wy,wx+s*l/2,wy,AMB,3,2); mono(g,`${Math.abs(PS.w)} kt ${PS.w>0?L({en:'tail',no:'medvind'}):L({en:'head',no:'motvind'})}`,wx+l/2+10,wy+4,AMB); }
+  // PET marker
+  const xp=X(P.dp); g.fillStyle=MAG; g.beginPath(); g.moveTo(xp,ry-2); g.lineTo(xp-7,ry-14); g.lineTo(xp+7,ry-14); g.closePath(); g.fill(); mono(g,'PET',xp,ry+34,MAG,'center',11);
+  const pnrIn=P.dPnr<=PS.D, xn=pnrIn?X(P.dPnr):x1; g.fillStyle=RED; g.beginPath(); g.moveTo(xn,ry+2); g.lineTo(xn-7,ry+14); g.lineTo(xn+7,ry+14); g.closePath(); g.fill(); mono(g,pnrIn?'PNR':'PNR →',xn,ry+48,RED,pnrIn?'center':'right',11);
+  // graph
+  const gy0=ry+70, gy1=H-34, tmax=Math.max(PS.D/P.ch,PS.D/P.co)*60*1.05, Y=t=>gy1-t/tmax*(gy1-gy0);
+  g.strokeStyle='#C6D0D3'; g.lineWidth=1; g.beginPath(); g.moveTo(x0,gy0); g.lineTo(x0,gy1); g.lineTo(x1,gy1); g.stroke();
+  const step=tmax>240?60:tmax>120?30:15; for(let t=0;t<=tmax;t+=step){ mono(g,hm(t),x0-6,Y(t)+4,GREY,'right',10); g.strokeStyle='#EEF1F1'; g.beginPath(); g.moveTo(x0+1,Y(t)); g.lineTo(x1,Y(t)); g.stroke(); }
+  g.strokeStyle=BLUE; g.lineWidth=2.5; g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(PS.D),Y(PS.D/P.ch*60)); g.stroke();
+  g.strokeStyle=AMB; g.lineWidth=2.5; g.beginPath(); g.moveTo(X(0),Y(PS.D/P.co*60)); g.lineTo(X(PS.D),Y(0)); g.stroke();
+  g.strokeStyle=MAG; g.setLineDash([4,4]); g.lineWidth=1.3; g.beginPath(); g.moveTo(xp,ry+8); g.lineTo(xp,gy1); g.stroke(); g.setLineDash([]);
+  g.fillStyle=MAG; g.beginPath(); g.arc(xp,Y(P.tAfter),5,0,7); g.fill();
+  hand(g,L({en:'time back to A',no:'tid tilbake til A'}),X(PS.D*0.82),Y(PS.D*0.82/P.ch*60)-10,BLUE,'center');
+  hand(g,L({en:'time on to B',no:'tid videre til B'}),X(PS.D*0.16),Y(PS.D*0.84/P.co*60)-10,AMB,'center');
+  mono(g,L({en:'distance from A where the failure happens →',no:'distanse fra A der feilen skjer →'}),x1,H-12,GREY,'right',10);
+  mono(g,L({en:'time to reach A or B at the failure TAS',no:'tid til A eller B med feil-TAS'}),x0+6,gy0+10,GREY,'start',10); }
+function petRo(){ const P=pet(); const nm=v=>nf(v,0)+' NM';
+  el('pGs').textContent=`${Math.round(P.co)} / ${Math.round(P.ch)} kt`;
+  el('pPet').textContent=`${nm(P.dp)} (${nf(P.dp/PS.D*100,0)} %)`; el('pPt').textContent=hm(P.tPet)+' h'; el('pPt2').textContent=hm(P.tAfter)+' h';
+  el('pE').textContent=hm(P.E*60)+' h'; el('pPnr').textContent= P.dPnr>PS.D? `${nm(P.dPnr)} (${L({en:'beyond B',no:'forbi B'})})` : nm(P.dPnr); el('pPnrT').textContent=hm(P.tPnr)+' h';
+  const mv=P.dp-PS.D/2;
+  el('pEx').textContent= L({en:`With ${Math.abs(PS.w)} kt ${PS.w<0?'headwind':'tailwind'} outbound the PET lies ${nf(Math.abs(mv),0)} NM ${mv>=0?'beyond':'before'} the midpoint: it moves into wind. A slower failure TAS makes the wind count for more, so the PET moves further. `,no:`Med ${Math.abs(PS.w)} kt ${PS.w<0?'motvind':'medvind'} utover ligger PET ${nf(Math.abs(mv),0)} NM ${mv>=0?'forbi':'før'} midtpunktet: den flytter seg mot vinden. En lavere TAS i feiltilfellet gjør at vinden betyr mer, så PET flytter seg lenger. `})
+   + (P.dPnr<PS.D? L({en:'The PNR is before B: past it you no longer have the fuel to get back to A with reserves, so you are committed to the destination or an en-route alternate.',no:'PNR ligger før B: etter den har du ikke lenger drivstoff til å komme tilbake til A med reservene, så du er forpliktet til destinasjonen eller en underveisalternativ.'}) : L({en:'The PNR lies beyond B: with this fuel you could turn back to A from anywhere on the sector.',no:'PNR ligger forbi B: med dette drivstoffet kan du snu tilbake til A fra hvor som helst på etappen.'})); }
+function pu(){ petDraw(); petRo(); }
+const pS={};
+const pPre=LAB.seg(el('ppre'),PP.map(p=>[p[0],p[1]]),PS.pre,v=>{ const p=PP.find(x=>x[0]===v); PS.a=p[2]; PS.b=p[3]; PS.D=Math.round(gcd(p[2],p[3])/5)*5; PS.pre=v; pS.D.set(PS.D); pu(); });
+LAB.seg(el('pcase'),[['all','All engines'],['oei','One engine out'],['dep','Depressurised']],PS.cs,v=>{ PS.cs=v; PS.ctas= v==='all'? PS.tas : CASE[v]; pS.c.set(PS.ctas); pu(); });
+pS.D=LAB.slider(el('pctl'),{label:'Distance A to B (NM)',min:100,max:1500,step:5,v:PS.D,f:v=>v+' NM',on:v=>{ PS.D=v; PS.a='A'; PS.b='B'; PS.pre=''; pPre.set(''); pu(); }});
+LAB.slider(el('pctl'),{label:'Normal cruise TAS (kt)',min:380,max:480,step:5,v:PS.tas,f:v=>v+' kt',on:v=>{ PS.tas=v; if(PS.cs==='all'){ PS.ctas=v; pS.c.set(v); } pu(); }});
+pS.c=LAB.slider(el('pctl'),{label:'TAS in the failure case (kt)',min:250,max:480,step:5,v:PS.ctas,f:v=>v+' kt',on:v=>{ PS.ctas=v; pu(); }});
+LAB.slider(el('pctl'),{label:'Wind component outbound (kt, tail +)',min:-100,max:100,step:5,v:PS.w,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' kt',on:v=>{ PS.w=v; pu(); }});
+LAB.slider(el('pctl'),{label:'Fuel available above reserves (kg)',min:1000,max:15000,step:100,v:PS.fuel,f:v=>nf(v,0)+' kg',on:v=>{ PS.fuel=v; pu(); }});
+LAB.slider(el('pctl'),{label:'Fuel flow (kg/h)',min:1800,max:3200,step:50,v:PS.ff,f:v=>nf(v,0)+' kg/h',on:v=>{ PS.ff=v; pu(); }});
+
+/* ================= 7 · Ops cards ================= */
+function cards(){ const c=[
+ [{en:'Wind on the ND',no:'Vind på ND'},{en:'The A320 navigation display shows groundspeed, TAS and the current wind (direction, speed and an arrow) in the top left corner. The green track diamond on the compass scale against the heading lubber line is the drift angle you have just calculated.',no:'Navigasjonsskjermen (ND) på A320 viser groundspeed, TAS og aktuell vind (retning, styrke og en pil) øverst til venstre. Den grønne track-diamanten på kompasskalaen mot heading-streken er avdriftsvinkelen du nettopp regnet ut.'}],
+ [{en:'Winds in the plan',no:'Vind i planen'},{en:'The operational flight plan gives each leg a wind component, groundspeed and time. The FMS uses the forecast winds loaded for climb, cruise and descent; compare predicted fuel at the destination with the plan as the flight goes, and update winds when they differ a lot.',no:'Den operative færdplanen gir hver etappe en vindkomponent, groundspeed og tid. FMS bruker de prognoserte vindene som er lagt inn for stigning, marsj og nedstigning; sammenlign forventet drivstoff ved destinasjonen med planen underveis, og oppdater vindene når de avviker mye.'}],
+ [{en:'True and magnetic in the FMS',no:'Rettvisende og magnetisk i FMS'},{en:'The inertial reference computes true heading and converts it to magnetic with a stored variation table. That table does not cover the polar regions, so at very high latitudes, on the way to Svalbard for example, headings and tracks are flown in true. The exact limits and the procedure are in the FCOM.',no:'Treghetsreferansen regner ut rettvisende heading og gjør den om til magnetisk med en lagret misvisningstabell. Tabellen dekker ikke polområdene, så på svært høye bredder, for eksempel på vei til Svalbard, flys heading og track rettvisende. Nøyaktige grenser og prosedyre står i FCOM.'}],
+ [{en:'Great circles in practice',no:'Storsirkler i praksis'},{en:'The FMS flies great-circle legs between waypoints. On a long leg the track on the ND creeps round even in a steady wind: that is convergency, not drift. Routes over the North Atlantic or across the pole look curved on a Mercator chart and straight on a polar one.',no:'FMS flyr storsirkeletapper mellom veipunktene. På en lang etappe kryper tracken på ND rundt selv i jevn vind: det er konvergens, ikke avdrift. Ruter over Nord-Atlanteren eller over polen ser krumme ut på et Mercatorkart og rette på et polarkart.'}],
+ [{en:'UTC and night',no:'UTC og natt'},{en:'Flight plans, NOTAMs, METARs, ATC and the logbook all use UTC. In Norway clocks are UTC+1 in winter and UTC+2 in summer. Under EASA rules night is the time between the end of evening civil twilight and the beginning of morning civil twilight, which in Northern Norway can mean no night in summer and very little day in winter.',no:'Færdplaner, NOTAM, METAR, ATC og loggboken bruker UTC. I Norge er klokken UTC+1 om vinteren og UTC+2 om sommeren. Etter EASA-reglene er natt tiden mellom slutten av borgerlig tussmørke om kvelden og begynnelsen av borgerlig tussmørke om morgenen, som i Nord-Norge kan bety ingen natt om sommeren og svært lite dag om vinteren.'}],
+ [{en:'PET on the flight plan',no:'PET i færdplanen'},{en:'For sectors over water or remote areas the flight plan lists equal-time points between en-route alternates, often for engine failure and for depressurisation. Under EASA rules a twin like the A320 normally stays within 60 minutes at one-engine-inoperative speed of an adequate aerodrome; going further needs ETOPS approval.',no:'For etapper over vann eller øde områder viser færdplanen likt-tid-punkter mellom underveisalternativer, ofte for motorbortfall og for trykktap. Etter EASA-reglene holder en tomotors som A320 seg normalt innenfor 60 minutter med én-motor-fart fra en egnet flyplass; lenger ut krever ETOPS-godkjenning.'}],
+ [{en:'Depressurisation and fuel',no:'Trykktap og drivstoff'},{en:'A depressurisation PET uses the low TAS at about FL100, where fuel burn per mile is much higher. That is why the critical fuel scenario is often the depressurisation, not the engine failure, and why the plan checks fuel from the critical point as well as time.',no:'En PET for trykktap bruker den lave TAS-en rundt FL100, der forbruket per nautisk mil er mye høyere. Derfor er det kritiske drivstoffscenariet ofte trykktapet og ikke motorbortfallet, og derfor sjekker planen drivstoff fra det kritiske punktet i tillegg til tid.'}],
+ [{en:'Gross error checks',no:'Grovfeilsjekker'},{en:'Before trusting a box, check it in your head: 1 in 60 for track errors, groundspeed ÷ 60 for miles per minute, about 3 NM per 1000 ft for the descent. If the FMS and the mental answer differ a lot, find out why before you act on either.',no:'Før du stoler på en boks, sjekk den i hodet: 1 av 60 for trackfeil, groundspeed ÷ 60 for mil per minutt, rundt 3 NM per 1000 ft for nedstigningen. Hvis FMS og hoderegningen avviker mye, finn ut hvorfor før du handler på noen av dem.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('')+
+  `<div class="box"><b class="t">${L({en:'Radio aids and GNSS',no:'Radiohjelpemidler og GNSS'})}</b><p>${L({en:'Position fixing with VOR, DME and NDB, and how the FMS uses satellites, RAIM and RNP, are covered in their own labs.',no:'Posisjonsbestemmelse med VOR, DME og NDB, og hvordan FMS bruker satellitter, RAIM og RNP, er dekket i egne labber.'})}</p><p><a href="radionav.html">${L({en:'Radio navigation',no:'Radionavigasjon'})} →</a> · <a href="gnss.html">${L({en:'GNSS and RNAV',no:'GNSS og RNAV'})} →</a></p></div>`; }
+
+/* ================= Quiz ================= */
+const Q=[
+ {q:{en:'TAS 300 kt, desired track 090°, wind 360/30. Which heading holds the track?',no:'TAS 300 kt, ønsket track 090°, vind 360/30. Hvilken heading holder tracken?'},a:[{en:'About 096°',no:'Rundt 096°'},{en:'About 084°',no:'Rundt 084°'},{en:'090°, the wind only changes groundspeed',no:'090°, vinden endrer bare groundspeed'}],c:1,e:{en:'The wind comes from the left, so the nose goes left into it. WCA ≈ 30 ÷ 300 × 60 ≈ 6°.',no:'Vinden kommer fra venstre, så nesen går til venstre opp i den. WCA ≈ 30 ÷ 300 × 60 ≈ 6°.'}},
+ {q:{en:'You are 5 NM right of track after 50 NM, with 100 NM to go. How much do you turn left to fly directly to the destination?',no:'Du er 5 NM til høyre for track etter 50 NM, med 100 NM igjen. Hvor mye svinger du til venstre for å fly direkte til destinasjonen?'},a:[{en:'6°',no:'6°'},{en:'9°',no:'9°'},{en:'3°',no:'3°'}],c:1,e:{en:'Track error 5 ÷ 50 × 60 = 6°, closing angle 5 ÷ 100 × 60 = 3°, total 9°.',no:'Trackfeil 5 ÷ 50 × 60 = 6°, lukkevinkel 5 ÷ 100 × 60 = 3°, totalt 9°.'}},
+ {q:{en:'Same Mach number, but the air at cruise level is 20 °C colder. The TAS is…',no:'Samme machtall, men luften i marsjhøyden er 20 °C kaldere. TAS-en blir …'},a:[{en:'higher',no:'høyere'},{en:'lower',no:'lavere'},{en:'unchanged, Mach fixes the TAS',no:'uendret, machtallet bestemmer TAS'}],c:1,e:{en:'The speed of sound goes with the square root of the absolute temperature. Colder air, lower speed of sound, lower TAS for the same Mach: about 4 % here.',no:'Lydhastigheten følger kvadratroten av den absolutte temperaturen. Kaldere luft gir lavere lydhastighet og lavere TAS for samme machtall: rundt 4 % her.'}},
+ {q:{en:'Flying a great circle westbound in the northern hemisphere, the true track…',no:'Når du flyr en storsirkel vestover på den nordlige halvkule, vil den rettvisende tracken …'},a:[{en:'increases along the route',no:'øke langs ruten'},{en:'decreases along the route',no:'minke langs ruten'},{en:'stays constant',no:'være konstant'}],c:1,e:{en:'The great circle starts on the pole side of the rhumb line, heading further north, and ends further south, so a westbound track decreases (for example 300° to 250°).',no:'Storsirkelen starter på polsiden av loksodromen, med nordligere retning, og slutter sørligere, så en vestgående track minker (for eksempel 300° til 250°).'}},
+ {q:{en:'Two places at 60° N are 10° of longitude apart. How far apart are they along the parallel?',no:'To steder på 60° N ligger 10 lengdegrader fra hverandre. Hvor langt er det langs breddesirkelen?'},a:[{en:'600 NM',no:'600 NM'},{en:'300 NM',no:'300 NM'},{en:'520 NM',no:'520 NM'}],c:1,e:{en:'Departure = 600′ × cos 60° = 300 NM.',no:'Departure = 600′ × cos 60° = 300 NM.'}},
+ {q:{en:'dlong 20°, mean latitude 30° N. What is the conversion angle?',no:'dlong 20°, middelbredde 30° N. Hva er konverteringsvinkelen?'},a:[{en:'10°',no:'10°'},{en:'5°',no:'5°'},{en:'17°',no:'17°'}],c:1,e:{en:'Convergency = 20 × sin 30° = 10°, and the conversion angle is half of it.',no:'Konvergens = 20 × sin 30° = 10°, og konverteringsvinkelen er halvparten.'}},
+ {q:{en:'On a Lambert conformal chart, a straight line drawn with a ruler is…',no:'På et Lambert konformt kart er en rett linje trukket med linjal …'},a:[{en:'a rhumb line',no:'en loksodrom'},{en:'very nearly a great circle',no:'nesten en storsirkel'},{en:'neither, it has no meaning',no:'ingen av delene, den betyr ingenting'}],c:1,e:{en:'Chart convergency n × dlong is close to the Earth convergency between the standard parallels, so straight lines approximate great circles.',no:'Kartkonvergensen n × dlong ligger nær jordkonvergensen mellom standardparallellene, så rette linjer er tilnærmet storsirkler.'}},
+ {q:{en:'On a Mercator chart, a great circle between two points in the northern hemisphere is drawn as…',no:'På et Mercatorkart tegnes en storsirkel mellom to punkter på den nordlige halvkule som …'},a:[{en:'a straight line',no:'en rett linje'},{en:'a curve bowing towards the pole',no:'en kurve som buer mot polen'},{en:'a curve bowing towards the equator',no:'en kurve som buer mot ekvator'}],c:1,e:{en:'Mercator meridians are parallel, so the rhumb line is straight and the great circle bows towards the pole.',no:'Mercator-meridianene er parallelle, så loksodromen er rett og storsirkelen buer mot polen.'}},
+ {q:{en:'On a polar stereographic chart, chart convergency between two meridians equals…',no:'På et polar stereografisk kart er kartkonvergensen mellom to meridianer lik …'},a:[{en:'dlong × sin lat',no:'dlong × sin bredde'},{en:'dlong',no:'dlong'},{en:'zero',no:'null'}],c:1,e:{en:'The meridians radiate from the pole at their true angle, so chart convergency is dlong everywhere.',no:'Meridianene stråler ut fra polen med sin sanne vinkel, så kartkonvergensen er dlong overalt.'}},
+ {q:{en:'It is 1200 UTC. What is the local mean time at 10° E?',no:'Klokken er 1200 UTC. Hva er lokal middeltid på 10° Ø?'},a:[{en:'1120',no:'1120'},{en:'1240',no:'1240'},{en:'1300',no:'1300'}],c:1,e:{en:'10° × 4 min = 40 min. Longitude east, UTC least: LMT is 40 minutes ahead of UTC.',no:'10° × 4 min = 40 min. Østlig lengde: LMT ligger 40 minutter foran UTC.'}},
+ {q:{en:'Mid-December in Tromsø (about 70° N). The sun…',no:'Midten av desember i Tromsø (rundt 70° N). Solen …'},a:[{en:'rises for about four hours around noon',no:'står opp i rundt fire timer midt på dagen'},{en:'stays below the horizon, but there is civil twilight around midday',no:'holder seg under horisonten, men det er borgerlig tussmørke rundt middag'},{en:'stays more than 6° below the horizon all day',no:'holder seg mer enn 6° under horisonten hele dagen'}],c:1,e:{en:'Noon altitude ≈ 90 − 70 − 23.4 ≈ −3°: below the horizon but above −6°.',no:'Middagshøyde ≈ 90 − 70 − 23,4 ≈ −3°: under horisonten, men over −6°.'}},
+ {q:{en:'600 NM sector. With one engine out the groundspeed on is 400 kt and back is 500 kt. Where is the PET?',no:'Etappe på 600 NM. Med én motor ute er groundspeed videre 400 kt og tilbake 500 kt. Hvor er PET?'},a:[{en:'267 NM from A',no:'267 NM fra A'},{en:'333 NM from A',no:'333 NM fra A'},{en:'300 NM from A',no:'300 NM fra A'}],c:1,e:{en:'PET = D × H ÷ (O + H) = 600 × 500 ÷ 900 ≈ 333 NM. The headwind on the way out moves it beyond the midpoint.',no:'PET = D × H ÷ (O + H) = 600 × 500 ÷ 900 ≈ 333 NM. Motvinden utover flytter den forbi midtpunktet.'}},
+ {q:{en:'Any wind, head or tail, makes the PNR…',no:'All vind, mot eller med, gjør at PNR …'},a:[{en:'move further from the departure',no:'flytter seg lenger fra avgangsplassen'},{en:'move closer to the departure',no:'flytter seg nærmere avgangsplassen'},{en:'stay where it is',no:'blir der den er'}],c:1,e:{en:'Distance to PNR = E × O × H ÷ (O + H), which is largest with no wind: you lose more on the slow leg than you gain on the fast one.',no:'Distanse til PNR = E × O × H ÷ (O + H), som er størst uten vind: du taper mer på den langsomme etappen enn du vinner på den raske.'}},
+ {q:{en:'True track 030°, variation 6° E. Magnetic track?',no:'Rettvisende track 030°, misvisning 6° Ø. Magnetisk track?'},a:[{en:'036°',no:'036°'},{en:'024°',no:'024°'},{en:'030°',no:'030°'}],c:1,e:{en:'Variation east, magnetic least: 030 − 6 = 024°.',no:'Østlig misvisning, magnetisk minst: 030 − 6 = 024°.'}}
+];
+LAB.quiz(el('qbox'),'gennav',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),6);
+
+LAB.start('gnav'); tu(); sxu(); eu(); ptab(); yu(); pu(); cards();
+LAB.onLang(()=>{ tu(); sxu(); eu(); ptab(); yu(); pu(); cards(); });
+})();
+</script>
+</body>
+</html>

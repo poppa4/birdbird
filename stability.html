@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Stability, controls and load factor on the A320: CG in % MAC, the THS and elevator, what normal law changes, swept-wing Dutch roll and the yaw damper, and the A320 V-n diagram.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stability, Controls and Load Factor</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+.stack{display:flex;flex-direction:column;gap:10px;min-width:0}
+#cv1{aspect-ratio:16/9;max-height:440px}#cv2{aspect-ratio:16/5;max-height:220px}#cv3{aspect-ratio:16/10;max-height:460px}#cv4{aspect-ratio:16/10;max-height:480px}#cvT{aspect-ratio:16/9;max-height:420px}#cvY{aspect-ratio:16/9;max-height:400px}
+.sub{margin-top:18px}
+@media (max-width:600px){#cv1,#cvT,#cvY{aspect-ratio:4/3.2}#cv3{aspect-ratio:4/4}#cv4{aspect-ratio:4/3.6}#cv2{aspect-ratio:16/7}}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer;margin:6px 0 2px}
+.chk input{accent-color:var(--magenta);margin:0}
+</style>
+</head>
+<body data-title="Stability, Controls and Load Factor">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <h1>Stability, controls and load factor</h1>
+      <p>Move the A320’s centre of gravity across its % MAC range and see the tail load, the trim, the stall speed and the fuel burn change, and what normal law does to the feel. Then shape the swept wing and the fin to meet the Dutch roll and the spiral, fly the V-n diagram, and see how the THS, elevator, ailerons and spoilers share the work.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#long">Longitudinal stability</a><a href="#lat">Lateral and directional</a><a href="#vn">Load factor</a><a href="#controls">Flight controls</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="long">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Longitudinal stability and the CG</h2>
+    <p class="lead">The wing’s lift acts near the quarter chord, the weight at the CG. The tailplane makes up the difference, usually by pushing down. The further forward the CG, the harder it pushes and the more the wing must lift. The neutral point is where stability runs out.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="paper"><canvas id="cv1" aria-label="A320 seen from the side with lift, weight, tail load, the CG limits and the neutral point on the mean aerodynamic chord"></canvas></div>
+        <div class="paper"><canvas id="cv2" aria-label="Pitch response to a gust over time"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Flight controls</div><div id="law"></div>
+        <div id="c1"></div>
+        <div class="btns" style="margin-top:6px"><button class="btn" id="gust">Gust: nose up</button></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Inside the CG envelope</span><b id="r0"></b></div>
+          <div class="rrow"><span>Static margin</span><b id="r1"></b></div>
+          <div class="rrow"><span>THS for 1 g (typical)</span><b id="r2"></b></div>
+          <div class="rrow"><span>VS1g in CONF FULL</span><b id="r3"></b></div>
+          <div class="rrow"><span>Cruise fuel burn, compared with 30 % MAC</span><b id="r4"></b></div>
+          <div class="rrow"><span>What the pilot feels</span><b id="r5"></b></div>
+        </div>
+        <p class="callout blue" id="x1"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="lat">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Lateral and directional stability</h2>
+    <p class="lead">In a sideslip the fin turns the nose into the relative wind (directional stability) and the wing rolls away from the slip (lateral stability, or dihedral effect). A swept wing adds a lot of dihedral effect of its own, more as the lift coefficient rises. The balance between the two decides the spiral mode and the Dutch roll.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cv3" aria-label="Wing seen from the front and from above, and the bank and yaw after a gust"></canvas></div>
+      <div class="panel">
+        <div id="c3"></div>
+        <div class="grp">Yaw damper</div><div id="yd"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Lift coefficient in cruise</span><b id="s0"></b></div>
+          <div class="rrow"><span>Effective dihedral</span><b id="s3"></b></div>
+          <div class="rrow"><span>Spiral mode</span><b id="s1"></b></div>
+          <div class="rrow"><span>Dutch roll</span><b id="s2"></b></div>
+        </div>
+        <p class="callout" id="x3"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="vn">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Load factor and the V-n diagram</h2>
+    <div class="split">
+      <div class="paper"><canvas id="cv4" aria-label="A320 V-n diagram with the stall line, the limit loads, VA, VMO and VD, and your current point"></canvas></div>
+      <div class="panel">
+        <div class="grp">Configuration</div><div id="cfg"></div>
+        <div id="c4"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Load factor</span><b id="v1"></b></div>
+          <div class="rrow"><span>Stall speed at this load factor</span><b id="v2"></b></div>
+          <div class="rrow"><span>VA at this mass</span><b id="v3"></b></div>
+          <div class="rrow"><span>State</span><b id="v4"></b></div>
+        </div>
+        <p class="callout blue" id="x4"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>Flight controls on the A320</h2>
+    <p class="lead">Pitch: a trimmable horizontal stabiliser (THS) moved by a screw jack sets the trim, and the elevators on its trailing edge do the manoeuvring. Roll: an aileron and spoilers 2 to 5 on each wing. Yaw: the rudder. All are hydraulically powered and computer-commanded; the pilot never feels the air load.</p>
+    <div class="split">
+      <div class="paper"><canvas id="cvT" aria-label="A320 tailplane seen from the side with the THS angle and the elevator deflection"></canvas></div>
+      <div class="panel">
+        <div class="grp">Configuration</div><div id="pcfg"></div>
+        <div class="grp">Pitch trim</div><div id="ptrim"></div>
+        <div id="tctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>THS position</span><b id="t1"></b></div>
+          <div class="rrow"><span>Elevator held for trim</span><b id="t2"></b></div>
+          <div class="rrow"><span>Elevator per g</span><b id="t3"></b></div>
+          <div class="rrow"><span>Load factor before the elevator runs out</span><b id="t4"></b></div>
+        </div>
+        <p class="callout blue" id="tx"></p>
+      </div>
+    </div>
+    <div class="split sub">
+      <div class="paper"><canvas id="cvY" aria-label="A320 seen from above while rolling, with the drag on each wing and the yaw it causes"></canvas></div>
+      <div class="panel">
+        <div class="grp">Roll surfaces</div><div id="yType"></div>
+        <div class="grp">Turn coordination</div><div id="yCo"></div>
+        <div id="yctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Roll rate</span><b id="y1"></b></div>
+          <div class="rrow"><span>Yaw from the roll surfaces</span><b id="y2"></b></div>
+          <div class="rrow"><span>Sideslip</span><b id="y3"></b></div>
+        </div>
+        <p class="callout" id="yx"></p>
+      </div>
+    </div>
+    <div class="cols" id="ccards" style="margin-top:16px"></div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">5 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+    <p class="callout blue" id="a320" style="margin-top:16px"></p>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model of an A320-size aircraft. CG limits, neutral point, trim settings, speeds and load-factor limits are typical, rounded values, not FCOM or certification data. The CG envelope, trim settings and limits for your aircraft come from its FCOM, weight and balance manual and load sheet.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
+ 'Move the A320’s centre of gravity across its % MAC range and see the tail load, the trim, the stall speed and the fuel burn change, and what normal law does to the feel. Then shape the swept wing and the fin to meet the Dutch roll and the spiral, fly the V-n diagram, and see how the THS, elevator, ailerons and spoilers share the work.':'Flytt tyngdepunktet på A320 over området i % MAC, og se halelasten, trimmen, steilefarten og drivstofforbruket endre seg, og hva normal law gjør med følelsen. Form så pilvingen og halefinnen for å møte Dutch roll og spiralen, fly V-n-diagrammet, og se hvordan THS, høyderor, balanseror og spoilere deler arbeidet.',
+ 'Longitudinal stability':'Lengdestabilitet','Lateral and directional':'Tverr- og retningsstabilitet','Load factor':'Lastfaktor','Flight controls':'Flykontroller','In the aircraft':'I flyet','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Operations':'5 · Operativt','Check':'Sjekk',
+ 'Longitudinal stability and the CG':'Lengdestabilitet og tyngdepunktet',
+ 'The wing’s lift acts near the quarter chord, the weight at the CG. The tailplane makes up the difference, usually by pushing down. The further forward the CG, the harder it pushes and the more the wing must lift. The neutral point is where stability runs out.':'Vingens løft virker nær kvartkorden, vekten i tyngdepunktet. Haleplanet tar forskjellen, som regel ved å presse ned. Jo lenger fremme CG ligger, desto hardere presser det, og desto mer må vingen løfte. Nøytralpunktet er der stabiliteten tar slutt.',
+ 'Gust: nose up':'Vindkast: nese opp','Inside the CG envelope':'Innenfor CG-konvolutten','Static margin':'Statisk margin','THS for 1 g (typical)':'THS for 1 g (typisk)','VS1g in CONF FULL':'VS1g i CONF FULL','Cruise fuel burn, compared with 30 % MAC':'Drivstofforbruk i marsj, sammenlignet med 30 % MAC','What the pilot feels':'Hva piloten kjenner',
+ 'Basic aircraft':'Flyet alene','Normal law':'Normal law','CG (% MAC)':'CG (% MAC)','Mass (t)':'Masse (t)',
+ 'Lateral and directional stability':'Tverr- og retningsstabilitet',
+ 'In a sideslip the fin turns the nose into the relative wind (directional stability) and the wing rolls away from the slip (lateral stability, or dihedral effect). A swept wing adds a lot of dihedral effect of its own, more as the lift coefficient rises. The balance between the two decides the spiral mode and the Dutch roll.':'I en sideslip dreier halefinnen nesen mot den relative vinden (retningsstabilitet), og vingen ruller bort fra slipen (tverrstabilitet, eller V-formeffekt). En pilvinge gir mye V-formeffekt i seg selv, mer jo høyere løftekoeffisienten er. Balansen mellom de to bestemmer spiralmodusen og Dutch roll.',
+ 'Yaw damper':'Girdemper','Lift coefficient in cruise':'Løftekoeffisient i marsj','Effective dihedral':'Effektiv V-form','Spiral mode':'Spiralmodus','Dutch roll':'Dutch roll',
+ 'Wing sweep (°)':'Pilform (°)','Geometric dihedral (°)':'Geometrisk V-form (°)','Fin size (% of A320)':'Halefinne (% av A320)','Altitude (ft)':'Høyde (ft)','On':'På','Off':'Av',
+ 'Load factor and the V-n diagram':'Lastfaktor og V-n-diagrammet','Configuration':'Konfigurasjon','Stall speed at this load factor':'Steilefart ved denne lastfaktoren','VA at this mass':'VA ved denne massen','State':'Tilstand',
+ 'Clean':'Rent','CONF FULL':'CONF FULL','Speed (KEAS)':'Fart (KEAS)','Bank in a level turn (°)':'Krengning i plan sving (°)','Add a strong vertical gust':'Legg til et kraftig vertikalt vindkast',
+ 'Flight controls on the A320':'Flykontroller på A320',
+ 'Pitch: a trimmable horizontal stabiliser (THS) moved by a screw jack sets the trim, and the elevators on its trailing edge do the manoeuvring. Roll: an aileron and spoilers 2 to 5 on each wing. Yaw: the rudder. All are hydraulically powered and computer-commanded; the pilot never feels the air load.':'Pitch: en trimbar horisontal stabilisator (THS) som beveges av en skruejekk, setter trimmen, og høyderorene på bakkanten gjør manøvreringen. Rulling: et balanseror og spoiler 2 til 5 på hver vinge. Giring: sideroret. Alle er hydraulisk drevet og styrt av datamaskiner; piloten kjenner aldri luftkreftene.',
+ 'Pitch trim':'Pitchtrim','Auto-trim (normal law)':'Autotrim (normal law)','THS fixed at 0°':'THS fast på 0°','THS position':'THS-posisjon','Elevator held for trim':'Høyderor holdt for trim','Elevator per g':'Høyderor per g','Load factor before the elevator runs out':'Lastfaktor før høyderoret går tomt',
+ 'Airspeed (KIAS)':'Fart (KIAS)',
+ 'Roll surfaces':'Rullflater','Turn coordination':'Svingkoordinering','Roll rate':'Rullrate','Yaw from the roll surfaces':'Giring fra rullflatene','Sideslip':'Sideslip',
+ 'Aileron only':'Bare balanseror','Ailerons + spoilers 2–5':'Balanseror + spoiler 2–5','Spoilers only':'Bare spoilere','Off (direct law)':'Av (direct law)','Roll input (%)':'Rullutslag (%)',
+ 'Teaching model of an A320-size aircraft. CG limits, neutral point, trim settings, speeds and load-factor limits are typical, rounded values, not FCOM or certification data. The CG envelope, trim settings and limits for your aircraft come from its FCOM, weight and balance manual and load sheet.':'Opplæringsmodell av et fly på A320-størrelse. CG-grenser, nøytralpunkt, triminnstillinger, farter og lastfaktorgrenser er typiske, avrundede verdier, ikke FCOM- eller sertifiseringsdata. CG-konvolutten, triminnstillingene og grensene for ditt fly står i FCOM, vekt- og balansehåndboken og lastearket.'
+});
+const KT=0.514444, SW=122.6, MAC=4.19, LT=17, ST=31, g0=9.81;
+function arrow(g,x0,y0,x1,y1,c,w){ g.strokeStyle=c; g.fillStyle=c; g.lineWidth=w||3; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(y1-y0,x1-x0); g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-10*Math.cos(a-.4),y1-10*Math.sin(a-.4)); g.lineTo(x1-10*Math.cos(a+.4),y1-10*Math.sin(a+.4)); g.closePath(); g.fill(); }
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+(sz||13)+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'center'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px "IBM Plex Mono", monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+
+/* ================= 1: lengdestabilitet ================= */
+const NP=48; // typisk nøytralpunkt (pinne fast), % MAC
+const S={cg:28,m:64,law:'nl',t:999};
+function env(m){ const f= m<=53?15:15+(m-53)/25*7; const a= m<=55? 38+(m-40)/15*2 : m<=64.5? 40-(m-55)/9.5*2 : 38-(m-64.5)/13.5*4; return {f,a}; }
+const dl=cg=>0.03+(25-cg)/100*MAC/LT;            // halelast ned som andel av vekten
+function lon(){ const sm=NP-S.cg, d=dl(S.cg), W=S.m*1000*g0, E=env(S.m);
+  const vs=Math.sqrt(2*W*(1+d)/(1.225*SW*2.65))/KT, fuel=15*(Math.pow(1+d,2)-Math.pow(1+dl(30),2));
+  const ths=(30-S.cg)*0.2; return {sm,d,W,E,vs,fuel,ths,inEnv:S.cg>=E.f&&S.cg<=E.a}; }
+function pitchAt(t){ if(t<0) return 0; let k,c; if(S.law==='nl'){ k=0.9; c=1.9; } else { const sm=NP-S.cg; k=sm*0.02; c=0.8; }
+  if(k>0){ const disc=c*c-4*k; if(disc<0){ const w=Math.sqrt(-disc)/2; return 8*Math.exp(-c*t/2)*(Math.cos(w*t)+c/(2*w)*Math.sin(w*t)); } const r1=(-c+Math.sqrt(disc))/2, r2=(-c-Math.sqrt(disc))/2; const A=8*r2/(r2-r1), B=8-A; return A*Math.exp(r1*t)+B*Math.exp(r2*t); }
+  if(k===0) return 8; const r=(-c+Math.sqrt(c*c-4*k))/2; return Math.min(60,8*Math.exp(r*t)); }
+const C1=LAB.fit(el('cv1'),()=>d1(),2), C2=LAB.fit(el('cv2'),()=>d2(),2);
+function d1(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const E=lon();
+  const now=(performance.now()-S.t)/1000, th=S.t<999? pitchAt(now*1.4) : 0, cy=H*0.42, x0=W*0.04, x1=W*0.96, L0=x1-x0, nar=W<520;
+  g.save(); g.translate(W*0.45,cy); g.rotate(-Math.max(-40,Math.min(40,th))*Math.PI/180); g.translate(-W*0.45,-cy);
+  g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; const fh=Math.min(22,H*0.06);
+  g.beginPath(); g.moveTo(x0,cy+fh*0.4); g.quadraticCurveTo(x0+L0*0.01,cy-fh,x0+L0*0.09,cy-fh); g.lineTo(x0+L0*0.8,cy-fh); g.lineTo(x0+L0*0.98,cy-fh*0.5); g.lineTo(x0+L0*0.98,cy-fh*0.1); g.lineTo(x0+L0*0.78,cy+fh); g.lineTo(x0+L0*0.09,cy+fh); g.quadraticCurveTo(x0+L0*0.02,cy+fh,x0,cy+fh*0.4); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(x0+L0*0.8,cy-fh); g.lineTo(x0+L0*0.9,cy-fh*4); g.lineTo(x0+L0*0.96,cy-fh*4); g.lineTo(x0+L0*0.95,cy-fh); g.closePath(); g.fill(); g.stroke();
+  // THS (vinklet) og høyderor
+  const tx=x0+L0*0.9, thsA=E.ths*Math.PI/180*1.5; g.save(); g.translate(tx,cy-fh*0.3); g.rotate(-thsA); g.fillStyle='#C9D2D5'; g.beginPath(); g.ellipse(0,0,L0*0.055,3.5,0,0,7); g.fill(); g.stroke(); g.restore();
+  // vinge og MAC
+  const c0=x0+L0*0.3, cw=L0*0.34, X=pc=>c0+pc/100*cw; g.fillStyle='#DDE3E6'; g.beginPath(); g.ellipse(X(50),cy+fh*0.6,cw*0.55,5,0,0,7); g.fill(); g.stroke();
+  // motor
+  g.fillStyle='#D4DCE1'; g.beginPath(); g.ellipse(X(-8),cy+fh*1.6,L0*0.04,fh*0.55,0,0,7); g.fill(); g.stroke();
+  g.fillStyle='rgba(46,125,50,.14)'; g.fillRect(X(E.E.f),cy-fh*2.6,X(E.E.a)-X(E.E.f),fh*5.2); g.strokeStyle='#2E7D32'; g.setLineDash([4,3]); g.strokeRect(X(E.E.f),cy-fh*2.6,X(E.E.a)-X(E.E.f),fh*5.2); g.setLineDash([]);
+  g.strokeStyle='#B3261E'; g.setLineDash([2,4]); g.beginPath(); g.moveTo(X(NP),cy-fh*3); g.lineTo(X(NP),cy+fh*3); g.stroke(); g.setLineDash([]);
+  arrow(g,X(25),cy-fh*0.6,X(25),cy-fh*0.6-H*0.2*(1+E.d),'#1D4E9E',3.5); arrow(g,X(S.cg),cy+fh*0.6,X(S.cg),cy+fh*0.6+H*0.2,'#13202A',3.5);
+  const tl=E.d; arrow(g,tx,cy+(tl>0?-fh*1.2:fh*1.0),tx,cy+(tl>0?-fh*1.2:fh*1.0)+tl*H*2.2,tl>0?'#9A1E68':'#2E7D32',3);
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(S.cg),cy,7,0,7); g.fill(); g.fillStyle='#fff'; g.beginPath(); g.moveTo(X(S.cg),cy); g.arc(X(S.cg),cy,7,-Math.PI/2,0); g.lineTo(X(S.cg),cy); g.arc(X(S.cg),cy,7,Math.PI/2,Math.PI); g.fill();
+  g.restore();
+  // MAC-skala
+  const sy=H-24; g.strokeStyle='#C9D2D5'; g.lineWidth=1; g.beginPath(); g.moveTo(X(0),sy); g.lineTo(X(60),sy); g.stroke(); [0,10,20,30,40,50,60].forEach(v=>{ g.beginPath(); g.moveTo(X(v),sy-3); g.lineTo(X(v),sy+3); g.stroke(); if(!nar||v%20===0) mono(g,v+'%',X(v),sy+15,'#7D8B95','center',10); });
+  mono(g,'% MAC',X(60)+6,sy+4,'#7D8B95','start',10);
+  const sz=nar?10.5:12.5;
+  hand(g,L({en:'lift',no:'løft'}),X(25)-6,cy-fh*0.6-H*0.2*(1+E.d)+4,'#1D4E9E','end',sz); hand(g,L({en:'weight at the CG',no:'vekt i CG'}),X(S.cg)+8,cy+fh*0.6+H*0.2,'#13202A','start',sz);
+  hand(g,tl>0?L({en:'tail pushes down',no:'halen presser ned'}):L({en:'tail lifts',no:'halen løfter'}),tx,tl>0?cy-fh*1.2+tl*H*2.2-8-fh*0.5:cy+fh*1.0+tl*H*2.2+16,tl>0?'#9A1E68':'#2E7D32','end',sz);
+  hand(g,L({en:'CG limits at this mass',no:'CG-grenser ved denne massen'}),(X(E.E.f)+X(E.E.a))/2,cy+fh*2.6+16,'#2E7D32','center',sz); hand(g,L({en:'neutral point',no:'nøytralpunkt'}),X(NP)+5,cy-fh*3+4,'#B3261E','start',sz); mono(g,L({en:'wing chord (MAC) drawn enlarged',no:'vingekorden (MAC) tegnet forstørret'}),8,14,'#7D8B95','start',10.5);
+  if(S.t<999&&now<12) requestAnimationFrame(()=>{ d1(); d2(); }); }
+function d2(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const cy=H/2, sx=W/20, sy=H/2/16; g.strokeStyle='#E3E8EA'; g.beginPath(); g.moveTo(0,cy); g.lineTo(W,cy); g.stroke();
+  g.strokeStyle='#9A1E68'; g.lineWidth=2.4; g.beginPath(); for(let t=0;t<=20;t+=0.05){ const y=cy-Math.max(-15,Math.min(15,pitchAt(t)))*sy; t?g.lineTo(t*sx,y):g.moveTo(0,y); } g.stroke();
+  const now=S.t<999?(performance.now()-S.t)/1000*1.4:0; if(S.t<999&&now<20){ g.fillStyle='#13202A'; g.beginPath(); g.arc(now*sx,cy-Math.max(-15,Math.min(15,pitchAt(now)))*sy,4,0,7); g.fill(); }
+  mono(g,L({en:'pitch after a gust → time',no:'pitch etter et vindkast → tid'})+' · '+(S.law==='nl'?L({en:'normal law',no:'normal law'}):L({en:'basic aircraft',no:'flyet alene'})),8,14,'#7D8B95'); }
+function r1(){ const E=lon();
+  el('r0').innerHTML=E.inEnv? `<span class="ok">${L({en:'yes',no:'ja'})} (${nf(E.E.f,0)}–${nf(E.E.a,0)} %)</span>` : `<span class="ko">${L({en:'no',no:'nei'})} (${nf(E.E.f,0)}–${nf(E.E.a,0)} %)</span>`;
+  el('r1').innerHTML=`<span class="${E.sm<=0?'ko':E.sm<8?'wa':'ok'}">${nf(E.sm,0)} % MAC</span>`;
+  el('r2').textContent=Math.abs(E.ths)<0.05?'0°':nf(Math.abs(E.ths),1)+'° '+(E.ths>0?'UP':'DN');
+  el('r3').textContent='≈ '+nf(E.vs,0)+' kt';
+  el('r4').textContent=(E.fuel>=0?'+':'')+nf(E.fuel,1)+' %';
+  el('r5').innerHTML= S.law==='nl'? L({en:'neutral stick, no trimming; the aircraft holds its flight path',no:'nøytral stikke, ingen trimming; flyet holder banen'}) : E.sm<=0? `<span class="ko">${L({en:'unstable: it diverges by itself',no:'ustabilt: det divergerer av seg selv'})}</span>` : E.sm<10? `<span class="wa">${L({en:'light and twitchy',no:'lett og urolig'})}</span>` : E.sm>30? L({en:'heavy, very stable',no:'tungt, svært stabilt'}) : L({en:'normal',no:'normal'});
+  let x;
+  if(S.law==='nl') x=L({en:'In normal law the sidestick commands load factor: stick neutral means 1 g corrected for pitch and bank, so the aircraft holds its flight path and the THS trims automatically. There is no speed stability to feel and no trim force to remove. The aerodynamics underneath are unchanged, and the CG limits still apply, because the aircraft must also be flyable in alternate and direct law and with the mechanical pitch trim.',no:'I normal law kommanderer sidesticken lastfaktor: nøytral stikke betyr 1 g korrigert for pitch og krengning, så flyet holder banen, og THS trimmer automatisk. Det er ingen fartsstabilitet å kjenne og ingen trimkraft å fjerne. Aerodynamikken under er uendret, og CG-grensene gjelder fortsatt, fordi flyet også må kunne flys i alternate og direct law og med den mekaniske pitchtrimmen.'});
+  else if(S.cg>=NP) x=L({en:'At the neutral point the basic aircraft is neutrally stable, and behind it unstable: a gust that lifts the nose makes it lift further. The aft CG limit is well ahead of the neutral point so that a margin remains in every law.',no:'I nøytralpunktet er flyet alene nøytralt stabilt, og bak det ustabilt: et vindkast som løfter nesen, får den til å løfte seg mer. Bakre CG-grense ligger godt foran nøytralpunktet, slik at det er margin i alle kontrollover.'});
+  else if(S.cg<E.E.f) x=L({en:'Ahead of the forward limit the tail must push down so hard that the elevator may not have enough authority to rotate or flare, and the stall speed rises. Airbus calculates its speeds at the forward CG for this reason.',no:'Foran fremre grense må halen presse så hardt ned at høyderoret kanskje ikke har nok autoritet til å rotere eller flate ut, og steilefarten øker. Derfor beregner Airbus fartene ved fremre CG.'});
+  else x=L({en:'Inside the envelope. Forward CG: more stable, more tail download, higher stall speed and fuel burn. Aft CG: less download, lower drag and fuel burn, lighter handling. Operators often load toward the aft part of the envelope for this reason.',no:'Innenfor konvolutten. Fremre CG: mer stabilt, mer halelast ned, høyere steilefart og forbruk. Bakre CG: mindre halelast, lavere motstand og forbruk, lettere håndtering. Operatører laster derfor ofte mot bakre del av konvolutten.'});
+  el('x1').textContent=x; }
+function u1(){ d1(); d2(); r1(); }
+LAB.seg(el('law'),[['basic','Basic aircraft'],['nl','Normal law']],S.law,v=>{ S.law=v; u1(); });
+LAB.slider(el('c1'),{label:'CG (% MAC)',min:10,max:55,step:0.5,v:S.cg,f:v=>nf(v,1)+' %',on:v=>{ S.cg=v; u1(); }});
+LAB.slider(el('c1'),{label:'Mass (t)',min:42,max:78,step:0.5,v:S.m,f:v=>nf(v,1)+' t',on:v=>{ S.m=v; u1(); }});
+el('gust').onclick=()=>{ S.t=performance.now(); u1(); };
+
+/* ================= 2: tverr- og retningsstabilitet ================= */
+const LS={sw:25,dih:5,fin:100,alt:35000,yd:'on'};
+function latS(){ const h=LS.alt, dlt=Math.pow(1-6.87559e-6*h,5.25588); const Ve= h>=28000? 0.78*340.3*Math.sqrt(dlt) : Math.min(290*KT,0.78*340.3*Math.sqrt(dlt)); const CL=64000*g0/(0.5*1.225*Ve*Ve*SW);
+  const eff=LS.dih+LS.sw/10*(CL/0.5), fin=LS.fin/100; const spiral=0.55*eff-3.6*fin; const z0=0.30*fin-0.02*eff-0.0000025*h; const zeta=Math.max(-0.05,z0)+(LS.yd==='on'?0.3:0);
+  return {CL,eff,spiral,zeta,period:5.5/Math.sqrt(fin)}; }
+const C3=LAB.fit(el('cv3'),()=>d3(),2);
+function d3(){ const g=C3.ctx,W=C3.w,H=C3.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const E=latS(), nar=W<520, sz=nar?10.5:12.5;
+  // forfra
+  const fx=W*0.25, fy=H*0.3, sp=W*0.19, a=LS.dih*Math.PI/180; g.strokeStyle='#4C5B66'; g.lineWidth=5; g.lineCap='round';
+  g.beginPath(); g.moveTo(fx-sp*Math.cos(a),fy-sp*Math.sin(a)); g.lineTo(fx,fy); g.lineTo(fx+sp*Math.cos(a),fy-sp*Math.sin(a)); g.stroke(); g.lineCap='butt';
+  g.fillStyle='#E9EEF1'; g.beginPath(); g.arc(fx,fy+4,12,0,7); g.fill(); g.lineWidth=1.4; g.stroke();
+  const fh=H*0.12*LS.fin/100; g.fillStyle='#DDE3E6'; g.fillRect(fx-3,fy-8-fh,6,fh); g.strokeRect(fx-3,fy-8-fh,6,fh);
+  [-1,1].forEach(sd=>{ g.fillStyle='#D4DCE1'; g.beginPath(); g.ellipse(fx+sd*sp*0.34,fy+12-sd*0,7,7,0,0,7); g.fill(); g.stroke(); });
+  hand(g,L({en:'from the front',no:'forfra'})+' · '+nf(LS.dih,1)+'°',fx,Math.max(fy+H*0.13,fy+19*Math.min(W*0.4/34,H*0.42/38)+14),'#1D4E9E','center',sz);
+  // ovenfra
+  const tx=W*0.72, ty=H*0.3, s=Math.min(W*0.4/34,H*0.42/38), sw=LS.sw*Math.PI/180; g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.3;
+  [-1,1].forEach(sd=>{ const tipx=sd*17*s, tipy=-2*s+15*s*Math.tan(sw); g.save(); g.translate(tx,ty); g.beginPath(); g.moveTo(sd*1.9*s,-4*s); g.lineTo(tipx,tipy); g.lineTo(tipx,tipy+1.6*s); g.lineTo(sd*1.9*s,4*s); g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.moveTo(sd*1*s,13*s); g.lineTo(sd*6*s,13*s+5*s*Math.tan(sw)+1*s); g.lineTo(sd*6*s,14.5*s+5*s*Math.tan(sw)); g.lineTo(sd*1*s,16*s); g.closePath(); g.fill(); g.stroke(); g.restore(); });
+  g.beginPath(); g.ellipse(tx,ty,1.9*s,18*s,0,0,7); g.fill(); g.stroke();
+  const fl=6*s*LS.fin/100; g.fillStyle='#13202A'; g.fillRect(tx-0.4*s,ty+17*s-fl,0.8*s,fl);
+  hand(g,L({en:'from above',no:'ovenfra'})+' · '+LS.sw+'°',tx,Math.max(fy+H*0.13,ty+19*s+14),'#1D4E9E','center',sz);
+  // tidsforløp: krengning etter vindkast
+  const by=H*0.55, bh=H*0.38, bx=10, bw=W-20, T=40; g.strokeStyle='#E3E8EA'; g.lineWidth=1; g.strokeRect(bx,by,bw,bh); const cy=by+bh/2; g.beginPath(); g.moveTo(bx,cy); g.lineTo(bx+bw,cy); g.stroke();
+  const wn=2*Math.PI/E.period, z=Math.min(0.9,E.zeta), wd=wn*Math.sqrt(Math.max(0.01,1-z*z)), lam=-E.spiral*0.012;
+  g.strokeStyle='#9A1E68'; g.lineWidth=2.2; g.beginPath(); for(let t=0;t<=T;t+=0.05){ const dr=6*Math.exp(-z*wn*t)*Math.sin(wd*t), spi=2*(Math.exp(lam*t)-1)+2; const v=Math.max(-25,Math.min(25,dr+spi)); const X=bx+t/T*bw, Y=cy-v/25*bh/2; t?g.lineTo(X,Y):g.moveTo(X,Y); } g.stroke();
+  mono(g,L({en:'bank after a sideways gust, sidestick and pedals free · 40 s',no:'krengning etter et vindkast fra siden, stikke og pedaler fri · 40 s'}),bx+6,by+13,'#7D8B95','start',nar?8.5:11); }
+function r3(){ const E=latS(); el('s0').textContent=nf(E.CL,2); el('s3').textContent='≈ '+nf(E.eff,1)+'° ('+nf(LS.dih,1)+'° + '+nf(E.eff-LS.dih,1)+'° '+L({en:'from sweep',no:'fra pilform'})+')';
+  el('s1').innerHTML= E.spiral<-0.3? `<span class="ko">${L({en:'divergent',no:'divergent'})}</span>` : E.spiral<0.8? `<span class="wa">${L({en:'neutral to slightly stable',no:'nøytral til svakt stabil'})}</span>` : L({en:'stable',no:'stabil'});
+  const half=E.zeta>0.005? Math.log(2)/(2*Math.PI*E.zeta/Math.sqrt(1-Math.min(0.9,E.zeta)**2)) : null;
+  el('s2').innerHTML= E.zeta<=0.005? `<span class="ko">${L({en:'undamped',no:'udempet'})}</span>` : E.zeta<0.15? `<span class="ko">${L({en:'lightly damped',no:'svakt dempet'})}: ${nf(half,1)} ${L({en:'cycles to halve',no:'perioder til halvering'})}</span>` : E.zeta<0.3? `<span class="wa">${L({en:'damped',no:'dempet'})}: ${nf(half,1)} ${L({en:'cycles to halve',no:'perioder til halvering'})}</span>` : `<span class="ok">${L({en:'well damped',no:'godt dempet'})}</span>`;
+  let x;
+  if(LS.yd==='off'&&E.zeta<0.15) x=L({en:'Sweep gives strong effective dihedral, and at high altitude the aerodynamic damping is low. In a sideslip the wings roll hard while the nose is slow to follow, so the aircraft wags and rolls: Dutch roll. On the A320 the yaw damper function in the flight augmentation computers moves the rudder to damp it. In degraded laws it may be lost; do not fight it with large inputs.',no:'Pilform gir sterk effektiv V-form, og i stor høyde er den aerodynamiske dempingen liten. I en sideslip ruller vingene kraftig mens nesen følger sakte, så flyet logrer og ruller: Dutch roll. På A320 beveger girdemperfunksjonen i flight augmentation-datamaskinene sideroret for å dempe den. I degraderte kontrollover kan den falle bort; ikke kjemp mot den med store utslag.'});
+  else if(E.spiral<-0.3) x=L({en:'Strong directional and weak lateral stability: the aircraft keeps pointing into the wind but is slow to level its wings, so a small bank grows into a tightening, descending spiral. Recovery: thrust idle, level the wings, then recover from the dive. Pulling before the wings are level only tightens the spiral.',no:'Sterk retningsstabilitet og svak tverrstabilitet: flyet peker mot vinden, men retter opp vingene sakte, så en liten krengning vokser til en strammere, synkende spiral. Utretting: skyv til tomgang, rett opp vingene, og hent så flyet ut av dykket. Å trekke før vingene er rette, strammer bare spiralen.'});
+  else x=L({en:'The A320 has about 5° of geometric dihedral and 25° of sweep. Its basic airframe is close to spirally neutral and its Dutch roll lightly damped at altitude. In normal law the computers change both: bank up to 33° is held with the stick released (spiral stability made neutral on purpose), beyond 33° the aircraft rolls back to 33°, and the yaw damper and turn coordination keep the sideslip near zero.',no:'A320 har rundt 5° geometrisk V-form og 25° pilform. Flyet alene er omtrent spiralt nøytralt, og Dutch roll er svakt dempet i høyden. I normal law endrer datamaskinene begge: krengning opp til 33° holdes med stikken sluppet (spiralstabiliteten er gjort nøytral med vilje), over 33° ruller flyet tilbake til 33°, og girdemper og svingkoordinering holder sideslipen nær null.'});
+  el('x3').textContent=x; }
+function u3(){ d3(); r3(); }
+LAB.slider(el('c3'),{label:'Wing sweep (°)',min:0,max:40,step:1,v:LS.sw,f:v=>v+'°',on:v=>{ LS.sw=v; u3(); }});
+LAB.slider(el('c3'),{label:'Geometric dihedral (°)',min:-3,max:8,step:0.5,v:LS.dih,f:v=>nf(v,1)+'°',on:v=>{ LS.dih=v; u3(); }});
+LAB.slider(el('c3'),{label:'Fin size (% of A320)',min:50,max:150,step:5,v:LS.fin,f:v=>v+' %',on:v=>{ LS.fin=v; u3(); }});
+LAB.slider(el('c3'),{label:'Altitude (ft)',min:0,max:39000,step:1000,v:LS.alt,f:v=>nf(v,0)+' ft',on:v=>{ LS.alt=v; u3(); }});
+LAB.seg(el('yd'),[['on','On'],['off','Off']],LS.yd,v=>{ LS.yd=v; u3(); });
+
+/* ================= 3: V-n ================= */
+const V={cfg:'clean',m:64,v:250,bank:30,gust:false};
+const CF={clean:{cl:1.5,np:2.5,nn:-1.0,vmax:350,vd:381},full:{cl:2.65,np:2.0,nn:0,vmax:177,vd:null}};
+const C4=LAB.fit(el('cv4'),()=>d4(),2);
+function vn(){ const c=CF[V.cfg], W=V.m*1000*g0, vs=Math.sqrt(2*W/(1.225*SW*c.cl))/KT, vsn_=vs*Math.sqrt(c.cl/0.8), va=vs*Math.sqrt(c.np), n=1/Math.cos(V.bank*Math.PI/180), vsn=vs*Math.sqrt(n);
+  const dn=V.gust? 1.225*15.2*V.v*KT*5*0.8/(2*W/SW) : 0; return {c,vs,vsn_,va,n,vsn,dn}; }
+function d4(){ const g=C4.ctx,W=C4.w,H=C4.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const R=vn(), c=R.c, nar=W<520;
+  const L0=40,R0=12,T0=14,B0=30, PW=W-L0-R0, PH=H-T0-B0, vmax=420, X=v=>L0+v/vmax*PW, Y=n=>T0+(3.2-n)/(3.2+1.6)*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let v=0;v<=vmax;v+=50){ g.beginPath(); g.moveTo(X(v),T0); g.lineTo(X(v),T0+PH); g.stroke(); if(v%100===0) mono(g,String(v),X(v),T0+PH+14,'#5E6B74','center'); } for(let n=-1;n<=3;n++){ g.beginPath(); g.moveTo(L0,Y(n)); g.lineTo(L0+PW,Y(n)); g.stroke(); mono(g,String(n),L0-8,Y(n)+4,'#5E6B74','end'); }
+  mono(g,'KEAS',L0+PW,T0+PH+27,'#5E6B74','end'); mono(g,'n (g)',4,T0+10,'#5E6B74');
+  const vend=c.vd||c.vmax; g.beginPath(); g.moveTo(X(0),Y(0)); for(let v=0;v<=R.va;v+=1) g.lineTo(X(v),Y((v/R.vs)**2)); g.lineTo(X(vend),Y(c.np)); g.lineTo(X(vend),Y(Math.min(0,c.nn)));
+  if(c.nn<0){ const vneg=R.vsn_*Math.sqrt(-c.nn); g.lineTo(X(c.vmax),Y(c.nn)); g.lineTo(X(vneg),Y(c.nn)); for(let v=vneg;v>=0;v-=1) g.lineTo(X(v),Y(-((v/R.vsn_)**2))); } else g.lineTo(X(0),Y(0));
+  g.closePath(); g.fillStyle='rgba(46,125,50,.08)'; g.fill(); g.strokeStyle='#13202A'; g.lineWidth=1.6; g.stroke();
+  const vl=(v,t,col,y)=>{ g.strokeStyle=col; g.setLineDash([5,4]); g.lineWidth=1.2; g.beginPath(); g.moveTo(X(v),Y(-1.4)); g.lineTo(X(v),Y(3.1)); g.stroke(); g.setLineDash([]); mono(g,t,X(v)+3,Y(y),col,'start',nar?9.5:11); };
+  vl(R.va,'VA '+Math.round(R.va),'#C2410C',3.0);
+  if(V.cfg==='clean'){ vl(350,'VMO','#B3261E',2.85); vl(381,'VD','#B3261E',3.0); g.fillStyle='rgba(194,65,12,.08)'; g.fillRect(X(250),T0,X(275)-X(250),PH); mono(g,nar?'VRA':L({en:'turb. speed',no:'turb.-fart'}),X(250)+2,Y(-1.25),'#C2410C','start',nar?9.5:10.5); }
+  else vl(177,'VFE 177','#B3261E',2.9);
+  g.fillStyle='#13202A'; mono(g,'+'+c.np+' g',X(vend)-4,Y(c.np)-6,'#13202A','end'); mono(g,(c.nn<0?'−1.0':'0')+' g',X(vend)-4,Y(c.nn)+(c.nn<0?14:-6),'#13202A','end');
+  hand(g,L({en:'stall line: n = (V / VS1g)²',no:'steilelinjen: n = (V / VS1g)²'}),X(R.vs*1.25)-8,Y(1.9),'#1D4E9E','end',nar?10.5:12.5);
+  if(V.gust){ g.strokeStyle='rgba(29,78,158,.6)'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(X(0),Y(1)); g.lineTo(X(vend),Y(1+1.225*15.2*vend*KT*5*0.8/(2*V.m*1000*g0/SW))); g.stroke(); g.setLineDash([]); }
+  const n=Math.min(3.1,R.n), ok=V.v>=R.vsn&&n<=c.np&&V.v<=c.vmax; g.fillStyle=ok?'#9A1E68':'#B3261E'; g.beginPath(); g.arc(X(V.v),Y(n),7,0,7); g.fill();
+  if(V.gust){ g.strokeStyle='#B3261E'; g.lineWidth=2; g.beginPath(); g.moveTo(X(V.v),Y(n)); g.lineTo(X(V.v),Y(Math.min(3.1,n+R.dn))); g.stroke(); } }
+function u4(){ d4(); const R=vn(), c=R.c; el('v1').textContent=nf(R.n,2)+' g'+(V.gust?' (+'+nf(R.dn,2)+' g '+L({en:'gust',no:'vindkast'})+')':'');
+  el('v2').textContent=Math.round(R.vsn)+' KEAS'; el('v3').textContent=Math.round(R.va)+' KEAS';
+  const ntot=R.n+(V.gust?R.dn:0);
+  el('v4').innerHTML= V.v<R.vsn? `<span class="ko">${L({en:'stall: not enough speed for this load factor',no:'steiling: ikke nok fart for denne lastfaktoren'})}</span>` : ntot>c.np? `<span class="ko">${L({en:'over the limit load',no:'over grenselasten'})}</span>` : V.v>c.vmax? `<span class="ko">${V.cfg==='clean'?L({en:'above VMO',no:'over VMO'}):L({en:'above VFE',no:'over VFE'})}</span>` : `<span class="ok">${L({en:'inside the envelope',no:'innenfor konvolutten'})}</span>`;
+  el('x4').innerHTML=L({en:`<b>Load factor is lift divided by weight.</b> In a level turn it is 1/cos(bank): 1.15 g at 30°, 1.41 g at 45°, 2 g at 60°, and the stall speed rises with √n. The A320’s limit load factors are +2.5 g / −1.0 g clean and +2.0 g / 0 g with flaps out. VA, the design manoeuvring speed, is where the stall line meets +2.5 g, about VS1g × 1.58: below it the wing stalls before the limit load is reached. On a transport jet VA does not mean full, repeated or combined control inputs are safe. VMO (350 kt) is the operating limit, VD (about 380 kt here) the design dive speed used to prove the structure and flutter margins. In normal law the load factor protection stops the sidestick at +2.5 g / −1 g clean and the AoA protection keeps you off the stall line; in turbulence you fly the recommended turbulence speed, around 250–275 kt, not VA.`,no:`<b>Lastfaktor er løft delt på vekt.</b> I en plan sving er den 1/cos(krengning): 1,15 g ved 30°, 1,41 g ved 45°, 2 g ved 60°, og steilefarten øker med √n. Grenselastfaktorene på A320 er +2,5 g / −1,0 g rent og +2,0 g / 0 g med klaff ute. VA, design-manøvreringsfarten, er der steilelinjen møter +2,5 g, rundt VS1g × 1,58: under den staller vingen før grenselasten nås. På et transportfly betyr ikke VA at fulle, gjentatte eller kombinerte rorutslag er trygge. VMO (350 kt) er driftsgrensen, VD (rundt 380 kt her) designdykkfarten som brukes til å vise struktur- og fluttermarginer. I normal law stopper lastfaktorbeskyttelsen sidesticken ved +2,5 g / −1 g rent, og AoA-beskyttelsen holder deg unna steilelinjen; i turbulens flyr du anbefalt turbulensfart, rundt 250–275 kt, ikke VA.`}); }
+function mk4(){ el('c4').innerHTML=''; const c=CF[V.cfg]; if(V.v>c.vmax+40) V.v=V.cfg==='full'?140:250;
+  LAB.slider(el('c4'),{label:'Mass (t)',min:42,max:78,step:0.5,v:V.m,f:v=>nf(v,1)+' t',on:v=>{ V.m=v; u4(); }});
+  LAB.slider(el('c4'),{label:'Speed (KEAS)',min:90,max:400,step:1,v:V.v,f:v=>v+' kt',on:v=>{ V.v=v; u4(); }});
+  LAB.slider(el('c4'),{label:'Bank in a level turn (°)',min:0,max:70,step:1,v:V.bank,f:v=>v+'°',on:v=>{ V.bank=v; u4(); }});
+  const lab=document.createElement('label'); lab.className='chk'; lab.innerHTML=`<input type="checkbox" ${V.gust?'checked':''}> <span>${LAB.T('Add a strong vertical gust')}</span>`; lab.querySelector('input').onchange=e=>{ V.gust=e.target.checked; u4(); }; el('c4').appendChild(lab); }
+LAB.seg(el('cfg'),[['clean','Clean'],['full','CONF FULL']],V.cfg,v=>{ V.cfg=v; V.v=v==='full'?140:250; mk4(); u4(); });
+
+/* ================= 4: THS, høyderor og rulling ================= */
+const P={cg:28,v:250,cfg:'clean',trim:'auto'};
+const AT=3.5, TAU=0.45, DEUP=30, DEDN=17;
+function pst(){ const m=64000, W=m*g0, q=0.5*1.225*Math.pow(P.v*KT,2), d=dl(P.cg), full=P.cfg==='full';
+  const Lt=-W*d-(full? q*SW*MAC*0.25/LT : 0); const CLw=(W-Lt)/(q*SW); const aw=(CLw-0.25-(full?1.2:0))/5.0; const eps=0.35*aw+(full?0.05:0);
+  const CLt=Lt/(q*ST); const iReq=CLt/AT-(aw-eps); // rad, THS-innfallsvinkel som gir trim med høyderor nøytralt
+  let ths, de; if(P.trim==='auto'){ ths=iReq; de=0; } else { ths=-2*Math.PI/180; de=(iReq-ths)/TAU; }
+  const thsLim=[-(13.5+2)*Math.PI/180,(4-2)*Math.PI/180]; let sat=false; if(P.trim==='auto'&&(ths<thsLim[0]||ths>thsLim[1])){ const c=Math.max(thsLim[0],Math.min(thsLim[1],ths)); de=(ths-c)/TAU; ths=c; sat=true; }
+  const perg=W*((NP+5)-P.cg)/100*MAC/(q*ST*AT*TAU*LT); // rad per g, nese opp
+  const deUp=-de*180/Math.PI; const room=DEUP-deUp; const nmax=1+room/(perg*180/Math.PI);
+  return {q,ths:-ths*180/Math.PI-2,deUp,perg:perg*180/Math.PI,nmax,sat,CLw}; }
+const CT=LAB.fit(el('cvT'),()=>dT(),2);
+function dT(){ const g=CT.ctx,W=CT.w,H=CT.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const s=pst(), nar=W<520, sz=nar?10.5:12.5;
+  const sc=Math.min(W/760,H/420), cy=H*0.5, R=a=>a*Math.PI/180, piv=[W*0.6,cy];
+  g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.3;
+  g.beginPath(); g.moveTo(0,cy-70*sc); g.lineTo(piv[0]+90*sc,cy-18*sc); g.lineTo(piv[0]+110*sc,cy-6*sc); g.lineTo(piv[0]+90*sc,cy+6*sc); g.lineTo(0,cy+80*sc); g.closePath(); g.fill(); g.stroke();
+  g.beginPath(); g.moveTo(piv[0]-300*sc,cy-58*sc); g.lineTo(piv[0]-90*sc,cy-200*sc); g.lineTo(piv[0]+20*sc,cy-200*sc); g.lineTo(piv[0]+60*sc,cy-22*sc); g.closePath(); g.fill(); g.stroke();
+  const a=R(s.ths)*2; g.save(); g.translate(piv[0],piv[1]); g.rotate(-a);
+  g.fillStyle='#C9D2D5'; g.beginPath(); g.moveTo(-230*sc,0); g.quadraticCurveTo(-215*sc,-13*sc,-150*sc,-11*sc); g.lineTo(0,-6*sc); g.lineTo(0,6*sc); g.lineTo(-150*sc,9*sc); g.quadraticCurveTo(-215*sc,11*sc,-230*sc,0); g.fill(); g.stroke();
+  g.rotate(-R(s.deUp)*1.5); g.fillStyle=Math.abs(s.deUp)>0.5?'#9A1E68':'#1E5E9E'; g.beginPath(); g.moveTo(0,-6*sc); g.lineTo(100*sc,-1.5*sc); g.lineTo(100*sc,1.5*sc); g.lineTo(0,6*sc); g.closePath(); g.fill(); g.restore();
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(piv[0],piv[1],4,0,7); g.fill(); const px=piv[0]-60*sc;
+  hand(g,L({en:'THS',no:'THS'})+' '+(Math.abs(s.ths)<0.05?'0°':nf(Math.abs(s.ths),1)+'° '+(s.ths>0?'UP':'DN'))+' '+L({en:'(angle drawn ×2)',no:'(vinkel tegnet ×2)'}),px-60*sc,cy+40*sc,'#4C5B66','center',sz);
+  hand(g,L({en:'elevator',no:'høyderor'}),piv[0]+60*sc,cy-30*sc,s.deUp>0.5?'#9A1E68':'#1E5E9E','center',sz);
+  // høyderorsbudsjett
+  const bx=W*0.08, bw=W*0.84, by=H-36, z=bx+bw*DEDN/(DEUP+DEDN), Xd=d=>z+d/(DEUP+DEDN)*bw; g.strokeStyle='#E3E8EA'; g.lineWidth=12; g.lineCap='butt'; g.beginPath(); g.moveTo(bx,by); g.lineTo(bx+bw,by); g.stroke();
+  g.strokeStyle='#9A1E68'; g.beginPath(); g.moveTo(Xd(0),by); g.lineTo(Xd(Math.max(-DEDN,Math.min(DEUP,s.deUp))),by); g.stroke();
+  const pull=Math.min(DEUP,Math.max(-DEDN,s.deUp)+s.perg*1.0); g.strokeStyle='rgba(29,78,158,.55)'; g.beginPath(); g.moveTo(Xd(Math.max(-DEDN,Math.min(DEUP,s.deUp))),by); g.lineTo(Xd(pull),by); g.stroke();
+  g.fillStyle='#13202A'; g.fillRect(Xd(0)-1,by-10,2,20);
+  mono(g,'17° '+L({en:'nose down',no:'nese ned'}),bx,by-12,'#5E6B74','start',10.5); mono(g,'30° '+L({en:'nose up',no:'nese opp'}),bx+bw,by-12,'#5E6B74','end',10.5);
+  mono(g,nar?L({en:'magenta = trim, blue = +1 g',no:'magenta = trim, blått = +1 g'}):L({en:'elevator travel: magenta = held for trim, blue = one extra g',no:'høyderorsutslag: magenta = holdt for trim, blått = én ekstra g'}),bx+bw/2,by+24,'#13202A','center',nar?9.5:11); }
+function rT(){ const s=pst(); el('t1').innerHTML=(Math.abs(s.ths)<0.05?'0°':nf(Math.abs(s.ths),1)+'° '+(s.ths>0?'UP':'DN'))+(s.sat?` <span class="ko">${L({en:'at its stop',no:'ved stopp'})}</span>`:'');
+  el('t2').innerHTML=Math.abs(s.deUp)<0.1? `<span class="ok">≈ 0°</span>` : `<span class="wa">${nf(Math.abs(s.deUp),1)}° ${s.deUp>0?L({en:'nose up',no:'nese opp'}):L({en:'nose down',no:'nese ned'})}</span>`;
+  el('t3').textContent=nf(s.perg,1)+'° / g'; el('t4').innerHTML= s.nmax<1.3? `<span class="ko">${nf(Math.max(0,s.nmax),2)} g</span>` : s.nmax>2.5? '> 2.5 g' : nf(s.nmax,2)+' g';
+  let x;
+  if(P.trim==='fixed') x=L({en:'With the THS fixed, the elevator must hold the trim as well as manoeuvre. Change speed or CG and watch the trim deflection eat into the travel left for a flare or a pull-up. That is why the A320 trims with the whole stabiliser, and why a jammed THS calls for a landing in a configuration and speed where the elevator has enough authority.',no:'Når THS står fast, må høyderoret holde trimmen i tillegg til å manøvrere. Endre fart eller CG, og se trimutslaget spise av utslaget som er igjen til utflating eller opptrekk. Derfor trimmer A320 med hele stabilisatoren, og derfor krever en fastkjørt THS landing i en konfigurasjon og fart der høyderoret har nok autoritet.'});
+  else if(P.v<170) x=L({en:'At low speed the dynamic pressure is small, so each g needs a lot more elevator: the per-g figure rises with 1/V². A forward CG adds to it. This is why rotation and the flare are the elevator’s hardest jobs, and why the forward CG limit exists.',no:'Ved lav fart er det dynamiske trykket lite, så hver g krever mye mer høyderor: tallet per g øker med 1/V². Fremre CG legger til. Derfor er rotasjon og utflating de tyngste jobbene for høyderoret, og derfor finnes fremre CG-grense.'});
+  else x=L({en:'In normal law the THS trims automatically so that the elevator stays near neutral in steady flight, with its full travel free. Because the sidestick commands load factor, the force per g you feel is set by the sidestick springs, not by the CG: the stick feels the same at any CG, even though the elevator per g changes. Light aircraft trim with a tab on the elevator instead; on a jet the trim range is far too large for that.',no:'I normal law trimmer THS automatisk slik at høyderoret står nær nøytralt i jevn flyging, med hele utslaget ledig. Fordi sidesticken kommanderer lastfaktor, er kraften per g du kjenner bestemt av fjærene i sidesticken, ikke av CG: stikken føles lik ved alle CG, selv om høyderoret per g endrer seg. Småfly trimmer i stedet med en tab på høyderoret; på et jetfly er trimområdet altfor stort til det.'});
+  el('tx').textContent=x; }
+function uT(){ dT(); rT(); }
+function mkT(){ el('tctl').innerHTML='';
+  LAB.slider(el('tctl'),{label:'CG (% MAC)',min:12,max:42,step:0.5,v:P.cg,f:v=>nf(v,1)+' %',on:v=>{ P.cg=v; uT(); }});
+  LAB.slider(el('tctl'),{label:'Airspeed (KIAS)',min:P.cfg==='full'?120:200,max:P.cfg==='full'?177:340,step:1,v:P.v,f:v=>v+' kt',on:v=>{ P.v=v; uT(); }}); }
+LAB.seg(el('pcfg'),[['clean','Clean'],['full','CONF FULL']],P.cfg,v=>{ P.cfg=v; P.v=v==='full'?140:250; mkT(); uT(); });
+LAB.seg(el('ptrim'),[['auto','Auto-trim (normal law)'],['fixed','THS fixed at 0°']],P.trim,v=>{ P.trim=v; uT(); });
+/* rulling */
+const YC={type:'both',co:'nl',r:60,v:250};
+const YT={ail:{k1:0.011,kp:0,roll:0.55},both:{k1:0.011,kp:0.006,roll:1},spoil:{k1:0,kp:0.005,roll:0.5}};
+function yState(){ const m=64000, b=34.1, Vm=YC.v*KT, q=0.5*1.225*Vm*Vm, CL=m*g0/(q*SW), d=YC.r/100, t=YT[YC.type];
+  let p=t.roll*0.07*2*Vm/b*d*180/Math.PI; if(YC.co==='nl') p=Math.min(p,15*d/ Math.max(0.01,d)*d); const cn=d*(-t.k1*CL+t.kp); let beta=cn/0.003; if(YC.co==='nl') beta*=0.08;
+  const dL=0.6+d*(t.k1*CL*50), dR=0.6+d*t.kp*90; return {CL,p,cn,beta,dL,dR}; }
+const CY=LAB.fit(el('cvY'),()=>dY(),2);
+function dY(){ const g=CY.ctx,W=CY.w,H=CY.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const s=yState(), nar=W<520, sz=nar?10.5:12.5;
+  const cx=W*0.5, cy=H*0.52, sc=Math.min(W/40,H/44)*0.95, yaw=Math.max(-8,Math.min(8,s.beta))*Math.PI/180*1.5, d=YC.r/100, sw=0.47;
+  g.save(); g.translate(cx,cy); g.rotate(yaw); g.fillStyle='#E9EEF1'; g.strokeStyle='#4C5B66'; g.lineWidth=1.3;
+  [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*1.9*sc,-4*sc); g.lineTo(sd*17*sc,-2*sc+15*sc*Math.tan(sw)); g.lineTo(sd*17*sc,-0.4*sc+15*sc*Math.tan(sw)); g.lineTo(sd*1.9*sc,4*sc); g.closePath(); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(sd*1*sc,14*sc); g.lineTo(sd*6.2*sc,17.5*sc); g.lineTo(sd*6.2*sc,18.5*sc); g.lineTo(sd*1*sc,17.6*sc); g.closePath(); g.fill(); g.stroke(); });
+  g.beginPath(); g.ellipse(0,0,1.9*sc,19*sc,0,0,7); g.fill(); g.stroke();
+  // høyresving: venstre balanseror ned, høyre opp + spoilere på høyre vinge
+  const ty=x=>-2*sc+(x-1.9)*Math.tan(sw)*sc+1.4*sc;
+  if(YC.type!=='spoil'){ g.fillStyle='#1E5E9E'; g.fillRect(-16*sc,ty(15),3.2*sc,0.8*sc*(0.4+d)); g.fillStyle='#9A1E68'; g.fillRect(12.8*sc,ty(15)-0.8*sc*(0.4+d),3.2*sc,0.8*sc*(0.4+d)); }
+  if(YC.type!=='ail'){ g.fillStyle='#9A1E68'; for(let i=0;i<4;i++){ const x=5.5+i*1.9; g.fillRect(x*sc,ty(x)-1.6*sc,1.6*sc,0.9*sc*(0.3+d)); } }
+  const aL=s.dL*3.2*sc, aR=s.dR*3.2*sc; arrow(g,-14*sc,ty(14)-1.6*sc,-14*sc,ty(14)-1.6*sc+aL,'#B3261E',3); arrow(g,14*sc,ty(14)-1.6*sc,14*sc,ty(14)-1.6*sc+aR,'#B3261E',3);
+  g.restore();
+  hand(g,L({en:'rolling right',no:'ruller til høyre'}),cx,20,'#13202A','center',sz);
+  hand(g,L({en:'rising wing',no:'vinge opp'}),nar?8:cx-W*0.3,H-34,'#B3261E',nar?'start':'center',sz); hand(g,L({en:'falling wing',no:'vinge ned'}),nar?W-8:cx+W*0.3,H-34,'#B3261E',nar?'end':'center',sz);
+  const nose=s.beta<-0.3? L({en:'nose swings left: adverse yaw',no:'nesen svinger mot venstre: negativ giring'}) : s.beta>0.3? L({en:'nose swings right: proverse yaw',no:'nesen svinger mot høyre: positiv giring'}) : L({en:'almost no sideslip',no:'nesten ingen sideslip'});
+  hand(g,nose,cx,H-12,s.beta<-0.3?'#B3261E':'#2C7A4B','center',sz); }
+function rY(){ const s=yState(); el('y1').textContent=nf(s.p,0)+' °/s'+(YC.co==='nl'?' ('+L({en:'max 15 °/s in normal law',no:'maks 15 °/s i normal law'})+')':'');
+  el('y2').innerHTML= s.cn< -0.0005? `<span class="ko">${L({en:'adverse',no:'negativ'})}</span>` : s.cn>0.0005? `<span class="ok">${L({en:'proverse',no:'positiv'})}</span>` : `<span class="ok">${L({en:'about neutral',no:'omtrent nøytral'})}</span>`;
+  el('y3').textContent= Math.abs(s.beta)<0.3? L({en:'≈ 0°',no:'≈ 0°'}) : nf(Math.abs(s.beta),1)+'°';
+  const X={ail:{en:'The down-going aileron on the rising wing adds lift and with it induced drag, so the nose swings away from the turn. It grows with the lift coefficient, so it is worst at low speed and high altitude. The A320’s ailerons alone also give a modest roll rate.',no:'Balanseroret som går ned på vingen som stiger, gir mer løft og dermed indusert motstand, så nesen svinger bort fra svingen. Den vokser med løftekoeffisienten, så den er verst ved lav fart og stor høyde. Balanserorene på A320 gir alene også en beskjeden rullrate.'},
+   both:{en:'Spoilers 2 to 5 rise on the falling wing only, killing lift and adding drag on that side, so they balance the aileron’s adverse yaw and add roll rate. Jets use them because they work at high speed without twisting a thin wing, and they leave the trailing edge free for flaps.',no:'Spoiler 2 til 5 går opp bare på vingen som synker, ødelegger løftet og gir motstand på den siden, så de balanserer balanserorets negative giring og gir mer rullrate. Jetfly bruker dem fordi de virker i høy fart uten å vri en tynn vinge, og de lar bakkanten være fri for klaff.'},
+   spoil:{en:'Spoilers alone still roll the aircraft, with proverse yaw, but more slowly and with a loss of lift. On the A320 this is part of the redundancy: roll control remains if the ailerons are lost, and vice versa.',no:'Spoilere alene ruller fortsatt flyet, med positiv giring, men saktere og med tap av løft. På A320 er dette en del av redundansen: rullkontrollen består om balanserorene faller bort, og omvendt.'}};
+  el('yx').textContent=L(X[YC.type])+' '+(YC.co==='nl'? L({en:'In normal law the computers add rudder for turn coordination, so the sideslip stays near zero without pedal.',no:'I normal law gir datamaskinene sideror for svingkoordinering, så sideslipen holdes nær null uten pedal.'}) : L({en:'Without turn coordination the pilot must use rudder to keep the sideslip at zero.',no:'Uten svingkoordinering må piloten bruke sideror for å holde sideslipen på null.'})); }
+function uY(){ dY(); rY(); }
+LAB.seg(el('yType'),[['ail','Aileron only'],['both','Ailerons + spoilers 2–5'],['spoil','Spoilers only']],YC.type,v=>{ YC.type=v; uY(); });
+LAB.seg(el('yCo'),[['nl','Normal law'],['off','Off (direct law)']],YC.co,v=>{ YC.co=v; uY(); });
+LAB.slider(el('yctl'),{label:'Roll input (%)',min:0,max:100,step:5,v:YC.r,f:v=>v+' %',on:v=>{ YC.r=v; uY(); }});
+LAB.slider(el('yctl'),{label:'Airspeed (KIAS)',min:180,max:340,step:5,v:YC.v,f:v=>v+' kt',on:v=>{ YC.v=v; uY(); }});
+function ccards(){ const c=[
+ [{en:'Rudder and its travel limiter',no:'Sideroret og rorbegrenseren'},{en:'The rudder is powered by three hydraulic actuators. Its maximum deflection is reduced with speed, from about 25° at low speed to a few degrees near VMO, so that a full pedal input at high speed cannot overload the fin. Large alternating rudder inputs are still to be avoided.',no:'Sideroret drives av tre hydrauliske aktuatorer. Maks utslag reduseres med farten, fra rundt 25° ved lav fart til noen få grader nær VMO, slik at fullt pedalutslag i høy fart ikke kan overbelaste halefinnen. Store vekslende rorutslag skal fortsatt unngås.'}],
+ [{en:'Ailerons and spoilers',no:'Balanseror og spoilere'},{en:'One aileron and five spoilers per wing. Spoilers 2 to 5 help in roll; spoilers 2 to 4 also act as speedbrakes, and all five as ground spoilers after touchdown.',no:'Ett balanseror og fem spoilere per vinge. Spoiler 2 til 5 hjelper i rulling; spoiler 2 til 4 virker også som luftbrems, og alle fem som bakkespoilere etter nedsetting.'}],
+ [{en:'Mechanical backup',no:'Mekanisk reserve'},{en:'If all flight control computers are lost, pitch is controlled with the mechanical trim wheel on the THS and lateral control with the rudder pedals. The THS is powerful enough to fly the aircraft on its own.',no:'Hvis alle flykontrolldatamaskinene faller bort, styres pitch med det mekaniske trimhjulet på THS og sidekontroll med pedalene. THS er kraftig nok til å fly flyet alene.'}],
+ [{en:'Flutter and VD',no:'Flutter og VD'},{en:'Control surfaces must not oscillate with the bending structure. Mass balance and the stiffness and damping of the hydraulic actuators keep flutter well above VD, and that margin is why VMO and MMO must not be exceeded.',no:'Rorflater må ikke svinge med den bøyende strukturen. Massebalanse og stivheten og dempingen i de hydrauliske aktuatorene holder flutter godt over VD, og den marginen er grunnen til at VMO og MMO ikke skal overskrides.'}]];
+ el('ccards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+function a320(){ el('a320').innerHTML=L({en:'<b>Where to go next.</b> Swept-wing aerodynamics, buffet and the high-altitude stall are in <a href="highspeed.html">High-speed flight and drag</a>; the control laws and protections in <a href="jetsystems.html#fbw">Jet systems: fly-by-wire</a>; loading and the CG envelope in <a href="massbalance.html">Mass and balance</a>.',no:'<b>Videre herfra.</b> Aerodynamikken for pilvingen, buffet og steiling i stor høyde finner du i <a href="highspeed.html">Høyfart og motstand</a>; kontrollovene og beskyttelsene i <a href="jetsystems.html#fbw">Jetsystemer: fly-by-wire</a>; lasting og CG-konvolutten i <a href="massbalance.html">Masse og balanse</a>.'}); }
+function cards(){ const c=[
+ [{en:'Take-off trim',no:'Trim for avgang'},{en:'The load sheet gives the take-off CG in % MAC. From it the crew gets the THS setting, for example UP 1.0, enters it on the MCDU and sets it on the trim wheel. A wrong trim with a CG near a limit can make rotation heavy or abrupt.',no:'Lastearket gir CG for avgang i % MAC. Ut fra den finner besetningen THS-innstillingen, for eksempel UP 1,0, legger den inn i MCDU og setter den på trimhjulet. Feil trim med CG nær en grense kan gjøre rotasjonen tung eller brå.'}],
+ [{en:'Forward and aft CG',no:'Fremre og bakre CG'},{en:'Forward CG: higher stall speed, more trim drag and fuel burn, heavier rotation. Aft CG: lower fuel burn, lighter handling, smaller margin to the neutral point. The envelope allows both; the load sheet keeps you inside it.',no:'Fremre CG: høyere steilefart, mer trimmotstand og forbruk, tyngre rotasjon. Bakre CG: lavere forbruk, lettere håndtering, mindre margin til nøytralpunktet. Konvolutten tillater begge; lastearket holder deg innenfor.'}],
+ [{en:'Normal law and the feel',no:'Normal law og følelsen'},{en:'The aircraft does not speed up or slow down against your hand as a conventional aircraft does, and it does not need trimming. Speed is watched on the PFD, not felt. In alternate law with reduced protections the same applies; in direct law the stick moves the surfaces directly and you trim manually.',no:'Flyet øker eller minsker ikke farten mot hånden din slik et konvensjonelt fly gjør, og det trenger ikke trimming. Farten følges på PFD-en, den kjennes ikke. I alternate law med reduserte beskyttelser gjelder det samme; i direct law beveger stikken rorflatene direkte, og du trimmer manuelt.'}],
+ [{en:'Spiral dive in degraded law',no:'Spiraldykk i degradert kontrollov'},{en:'Without bank protection a gentle bank can slowly grow while the nose drops. Recovery: thrust idle, level the wings, then recover from the dive. Pulling before the wings are level only tightens the spiral.',no:'Uten krengningsbeskyttelse kan en slak krengning vokse sakte mens nesen synker. Utretting: skyv til tomgang, rett opp vingene, og hent så flyet ut av dykket. Å trekke før vingene er rette, strammer bare spiralen.'}],
+ [{en:'Dutch roll at altitude',no:'Dutch roll i høyden'},{en:'If the yaw damping is lost, a lightly damped Dutch roll can appear at high altitude. Avoid chasing it with rudder; follow the procedure, and descend if needed, where the damping is better.',no:'Hvis girdempingen faller bort, kan en svakt dempet Dutch roll dukke opp i stor høyde. Ikke jag den med sideror; følg prosedyren, og gå ned om nødvendig, der dempingen er bedre.'}],
+ [{en:'Turbulence',no:'Turbulens'},{en:'In severe turbulence fly the recommended turbulence speed, about 250 kt low and 275 kt or M 0.76 high, with autopilot and autothrust as the procedure says. It keeps you away from both the stall and the gust limits.',no:'I kraftig turbulens flyr du anbefalt turbulensfart, rundt 250 kt lavt og 275 kt eller M 0,76 høyt, med autopilot og autothrust slik prosedyren sier. Den holder deg unna både steiling og vindkastgrensene.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+LAB.quiz(el('qbox'),'stability',()=>LAB.shuffle([
+ {q:{en:'Moving the A320’s CG forward makes the stall speed…',no:'Å flytte CG fremover på A320 gjør steilefarten …'},a:[{en:'higher, because the tail pushes down harder and the wing must lift more',no:'høyere, fordi halen presser hardere ned og vingen må løfte mer'},{en:'lower, because the aircraft is more stable',no:'lavere, fordi flyet er mer stabilt'},{en:'unchanged; the computers compensate',no:'uendret; datamaskinene kompenserer'}],c:0,e:{en:'This is why Airbus calculates speeds at a forward CG.',no:'Derfor beregner Airbus fartene ved fremre CG.'}},
+ {q:{en:'Why does an aft CG inside the envelope reduce fuel burn?',no:'Hvorfor gir bakre CG innenfor konvolutten lavere forbruk?'},a:[{en:'Less tail download means less wing lift, less induced drag and less trim drag',no:'Mindre halelast ned betyr mindre vingeløft, mindre indusert motstand og mindre trimmotstand'},{en:'The engines run more efficiently',no:'Motorene går mer effektivt'},{en:'The aircraft flies at a lower angle of attack because it is heavier at the back',no:'Flyet flyr med lavere anstigningsvinkel fordi det er tyngre bak'}],c:0,e:{en:'The effect is small, around one or two per cent, but it adds up over many flights.',no:'Effekten er liten, rundt én eller to prosent, men den summerer seg over mange flyginger.'}},
+ {q:{en:'What does the static margin measure?',no:'Hva måler den statiske marginen?'},a:[{en:'The distance from the CG to the neutral point, in % MAC',no:'Avstanden fra CG til nøytralpunktet, i % MAC'},{en:'The distance between the forward and aft CG limits',no:'Avstanden mellom fremre og bakre CG-grense'},{en:'The margin to the stall',no:'Marginen til steiling'}],c:0,e:{en:'The larger it is, the stronger the restoring moment. At zero the aircraft is neutrally stable.',no:'Jo større den er, desto sterkere er det rettende momentet. Ved null er flyet nøytralt stabilt.'}},
+ {q:{en:'In pitch normal law, releasing the sidestick means…',no:'I normal law i pitch betyr det å slippe sidesticken …'},a:[{en:'the aircraft holds 1 g (corrected for pitch and bank) and keeps its flight path, with the THS trimming automatically',no:'flyet holder 1 g (korrigert for pitch og krengning) og holder banen, mens THS trimmer automatisk'},{en:'the aircraft returns to the speed it was trimmed for',no:'flyet går tilbake til farten det var trimmet for'},{en:'the aircraft levels the wings and the nose',no:'flyet retter opp vingene og nesen'}],c:0,e:{en:'The sidestick is a load-factor demand. There is no speed stability to feel in normal law.',no:'Sidesticken er en lastfaktorkommando. Det er ingen fartsstabilitet å kjenne i normal law.'}},
+ {q:{en:'Why does the A320 still have CG limits when the computers stabilise it?',no:'Hvorfor har A320 fortsatt CG-grenser når datamaskinene stabiliserer det?'},a:[{en:'It must be controllable in degraded laws and with the mechanical backup, and the elevator and THS have limited authority',no:'Det må kunne kontrolleres i degraderte kontrollover og med den mekaniske reserven, og høyderor og THS har begrenset autoritet'},{en:'Only for the structure of the landing gear',no:'Bare for strukturen i understellet'},{en:'Because the computers fail above 40 % MAC',no:'Fordi datamaskinene svikter over 40 % MAC'}],c:0,e:{en:'The aerodynamics are unchanged underneath the control laws.',no:'Aerodynamikken under kontrollovene er uendret.'}},
+ {q:{en:'What gives a swept wing extra dihedral effect?',no:'Hva gir en pilvinge ekstra V-formeffekt?'},a:[{en:'In a sideslip the forward-moving wing sees more of the flow at right angles to its leading edge and lifts more',no:'I en sideslip ser vingen som går fremover mer av strømmen vinkelrett på forkanten og løfter mer'},{en:'The engines under the wing',no:'Motorene under vingen'},{en:'The wing tips are higher than the root',no:'Vingetuppene er høyere enn roten'}],c:0,e:{en:'The effect grows with the lift coefficient, so it is largest at high altitude and low speed.',no:'Effekten vokser med løftekoeffisienten, så den er størst i stor høyde og ved lav fart.'}},
+ {q:{en:'Why do swept-wing jets need a yaw damper?',no:'Hvorfor trenger jetfly med pilvinge girdemper?'},a:[{en:'Strong effective dihedral and low damping at altitude make Dutch roll lightly damped',no:'Sterk effektiv V-form og lav demping i høyden gjør Dutch roll svakt dempet'},{en:'To stop spiral divergence',no:'For å stoppe spiraldivergens'},{en:'To counter engine torque',no:'For å motvirke motorens dreiemoment'}],c:0,e:{en:'Strong roll due to sideslip compared with directional stability is the classic recipe for Dutch roll.',no:'Sterk rulling på grunn av sideslip sammenlignet med retningsstabiliteten er den klassiske oppskriften på Dutch roll.'}},
+ {q:{en:'In lateral normal law, what happens if you roll to 25° of bank and release the sidestick?',no:'I normal law i rulling, hva skjer hvis du ruller til 25° krengning og slipper sidesticken?'},a:[{en:'The aircraft holds 25°',no:'Flyet holder 25°'},{en:'It rolls back to wings level',no:'Det ruller tilbake til vannrett'},{en:'The bank slowly increases',no:'Krengningen øker sakte'}],c:0,e:{en:'Up to 33° the bank is held. Beyond 33° the aircraft rolls back to 33° when the stick is released.',no:'Opp til 33° holdes krengningen. Over 33° ruller flyet tilbake til 33° når stikken slippes.'}},
+ {q:{en:'What are the A320’s limit load factors clean and with flaps out?',no:'Hva er grenselastfaktorene på A320 rent og med klaff ute?'},a:[{en:'+2.5 / −1.0 g clean, +2.0 / 0 g with flaps',no:'+2,5 / −1,0 g rent, +2,0 / 0 g med klaff'},{en:'+3.8 / −1.52 g in all configurations',no:'+3,8 / −1,52 g i alle konfigurasjoner'},{en:'+2.0 / −1.0 g clean, +2.5 / 0 g with flaps',no:'+2,0 / −1,0 g rent, +2,5 / 0 g med klaff'}],c:0,e:{en:'+3.8 g is the normal category of light aircraft. Transport aircraft are designed to +2.5 g.',no:'+3,8 g er normalkategorien for småfly. Transportfly er konstruert for +2,5 g.'}},
+ {q:{en:'At 60° of bank in a level turn, the load factor and stall speed are…',no:'Med 60° krengning i en plan sving er lastfaktoren og steilefarten …'},a:[{en:'2 g and about 1.41 × VS1g',no:'2 g og rundt 1,41 × VS1g'},{en:'1.5 g and 1.22 × VS1g',no:'1,5 g og 1,22 × VS1g'},{en:'2 g and 2 × VS1g',no:'2 g og 2 × VS1g'}],c:0,e:{en:'n = 1/cos 60° = 2, and stall speed rises with √n.',no:'n = 1/cos 60° = 2, og steilefarten øker med √n.'}},
+ {q:{en:'Why is VA lower at a lighter mass?',no:'Hvorfor er VA lavere ved lavere masse?'},a:[{en:'The stall speed is lower, so the stall line meets the limit load at a lower speed',no:'Steilefarten er lavere, så steilelinjen møter grenselasten ved lavere fart'},{en:'The engines give less thrust',no:'Motorene gir mindre skyv'},{en:'It is not; VA is fixed',no:'Det er den ikke; VA er fast'}],c:0,e:{en:'VA ≈ VS1g × √2.5, and VS1g falls with √mass. A light aircraft also feels a gust more.',no:'VA ≈ VS1g × √2,5, og VS1g faller med √masse. Et lett fly kjenner også et vindkast mer.'}},
+ {q:{en:'Why does the A320 trim with the whole stabiliser instead of a trim tab?',no:'Hvorfor trimmer A320 med hele stabilisatoren i stedet for en trimtab?'},a:[{en:'The trim range across speed, CG and flap is too large for a tab, and the elevator keeps its full travel for manoeuvring',no:'Trimområdet over fart, CG og klaff er for stort for en tab, og høyderoret beholder hele utslaget til manøvrering'},{en:'Tabs do not work with hydraulic actuators',no:'Tabs virker ikke med hydrauliske aktuatorer'},{en:'The THS removes the need for an elevator',no:'THS gjør høyderoret overflødig'}],c:0,e:{en:'Trimming with the elevator alone would use up its travel and add drag.',no:'Å trimme med bare høyderoret ville brukt opp utslaget og gitt motstand.'}},
+ {q:{en:'Why do roll spoilers give proverse rather than adverse yaw?',no:'Hvorfor gir rullspoilere positiv og ikke negativ giring?'},a:[{en:'They rise on the falling wing and add drag on that side',no:'De går opp på vingen som synker og gir motstand på den siden'},{en:'They add lift on the rising wing',no:'De gir mer løft på vingen som stiger'},{en:'They deflect the rudder automatically',no:'De gir sideror automatisk'}],c:0,e:{en:'The drag is on the inside of the turn, pulling the nose into it.',no:'Motstanden er på innsiden av svingen og trekker nesen inn i den.'}}
+]),12);
+
+LAB.start('stab'); u1(); u3(); mk4(); u4(); mkT(); uT(); uY(); ccards(); cards(); a320();
+LAB.onLang(()=>{ u1(); u3(); mk4(); u4(); mkT(); uT(); uY(); ccards(); cards(); a320(); });
+})();
+</script>
+</body>
+</html>

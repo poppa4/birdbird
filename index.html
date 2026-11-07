@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birdbird · Aviation theory, flight planning and training</title>
+<meta name="description" content="Briefing pack, theory and instructor in one place. Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+/* ---------- Birdbird home. Chart-room tokens with fallbacks ---------- */
+.home{
+  --h-ink:var(--ink,#13202A); --h-ink2:var(--ink-2,#4C5B66); --h-rule:var(--rule,#C6D0D3); --h-rule2:var(--rule-2,#DCE3E4);
+  --h-sheet:var(--sheet,#FFFFFF); --h-paper:var(--paper,#EDF1EE);
+  --h-acc:var(--accent,var(--magenta,#9A1E68)); --h-info:var(--info,var(--chart-blue,#1D4E9E));
+  --h-panel:var(--instrument,#10171D); --h-pink:var(--instrument-ink,#D7E1E6);
+  --h-disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif);
+  --h-mono:var(--f-mono,"IBM Plex Mono",ui-monospace,Menlo,monospace);
+  width:100%;max-width:1240px;margin:0 auto;color:var(--h-ink)}
+.home a{color:inherit}
+.home .kick{display:block;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--h-acc);margin:0 0 14px}
+.home h2{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(28px,3vw,34px);line-height:1.1;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.home .sub{font-size:17px;line-height:1.5;color:var(--h-ink2);max-width:62ch;margin:12px 0 0}
+.home .num{font-family:var(--h-mono);font-variant-numeric:tabular-nums}
+.hsec{border-top:1px solid var(--h-rule);padding:64px 0 72px;scroll-margin-top:24px}
+.hsec>header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px 40px;flex-wrap:wrap;margin-bottom:32px}
+.hsec>header>div{max-width:720px}
+.more{font-size:15px;font-weight:600;color:var(--h-acc)!important;text-decoration:none;white-space:nowrap}
+.more:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- hero: come prepared ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);grid-template-areas:"copy stage" "three stage" "note note";grid-template-rows:auto 1fr auto;gap:0 56px;align-items:center;padding:60px 0 76px}
+.hero .hc{grid-area:copy;align-self:end}.hero .stage{grid-area:stage}.hero .three{grid-area:three;align-self:start}
+.hero h1{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(38px,4.2vw,58px);line-height:1.02;letter-spacing:-.02em;margin:0}
+.hero .lede{font-size:19px;line-height:1.55;color:var(--h-ink);max-width:42ch;margin:22px 0 0}
+.hero .btns{margin-top:30px;gap:12px}
+.hero .btn{font-size:16px;padding:12px 20px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border-radius:3px}
+.hero .btn.pri{color:#fff}
+.three{list-style:none;margin:30px 0 0;padding:0;border-top:1px solid var(--h-rule);max-width:520px}
+.three li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--h-rule2);font-size:14.5px;line-height:1.45;color:var(--h-ink2)}
+.three b{color:var(--h-ink);font-weight:600}
+.three a{text-decoration:none}.three a:hover b{color:var(--h-acc)}
+@media (max-width:520px){.three li{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media (max-width:980px){.hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "stage" "three" "note";grid-template-rows:auto;gap:40px;padding:32px 0 48px}.hero .three{margin-top:0}.hero .lede{font-size:18px}}
+
+.srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
+/* composed visual: briefing pack + Flight Intelligence answer */
+.stage{margin:0;position:relative;min-width:0;padding:0 0 64px}
+.stage svg{display:block;width:100%;height:auto;overflow:visible}
+.stage .pg{will-change:transform}
+.stage svg text{font-family:var(--h-mono)}
+.stage svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
+.stage svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
+.stage figcaption{position:absolute;right:0;bottom:0;font-size:12.5px;color:var(--h-ink2)}
+.fic{position:absolute;left:-2%;bottom:20px;width:min(380px,58%);background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:6px;
+  box-shadow:0 1px 1px rgba(19,32,42,.05),0 28px 56px -26px rgba(19,32,42,.45);font-size:14px;line-height:1.5;will-change:transform}
+.fic .fh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--h-rule2)}
+.fic .fh b{font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.fic .fh b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--h-info);box-shadow:0 0 0 3px #E2EAF5}
+.fic .own{display:inline-flex;align-items:center;gap:6px;font-family:var(--h-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:#2E7D4F;background:#EAF4EE;border:1px solid #C3DECC;border-radius:2px;padding:3px 7px;white-space:nowrap}
+.fic .own svg{width:11px;height:11px;flex:0 0 11px}
+.fic .bd{padding:14px 16px 14px;display:flex;flex-direction:column;gap:12px}
+.fic .q{align-self:flex-end;background:#E8EEF3;border-radius:8px 8px 2px 8px;padding:8px 12px;max-width:92%;font-size:14px;line-height:1.4}
+.fic .a{border-left:3px solid var(--h-info);padding:1px 0 1px 13px;color:var(--h-ink)}
+.fic .fwho{display:block;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--h-info);margin-bottom:4px}
+.fic .a p{margin:0}.fic .a p+p{margin-top:6px}
+.fic .cite{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;line-height:1.55;color:var(--h-info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 6px 6px;font-size:12px;color:var(--h-ink2)}
+.fic .ft svg{width:11px;height:11px;flex:0 0 11px}
+@media (min-width:981px) and (max-width:1240px){.fic{left:-6%;width:56%}.fic .q{font-size:13.5px}}
+@media (max-width:980px){.stage{padding-bottom:0}.fic{left:0}}
+@media (max-width:640px){
+  .stage{padding:0}
+  .fic{position:relative;left:auto;bottom:auto;width:auto;margin:-34px 8px 0 8px;font-size:13.5px}.fic .q{font-size:13.5px}
+  .stage figcaption{position:static;margin:12px 0 0;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.stage .pg,.fic{will-change:auto}}
+
+/* welcome back */
+.wb{display:none;grid-template-columns:auto minmax(0,1fr) auto;gap:16px 32px;align-items:center;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;padding:18px 24px;margin:0 0 56px}
+.wb.on{display:grid}
+.wb .wk{font-size:13px;color:var(--h-ink2)}
+.wb .wn{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:26px;line-height:1.1}
+.wb .wbar{height:6px;background:var(--h-rule2);border-radius:3px;overflow:hidden;margin-top:6px;max-width:460px}
+.wb .wbar i{display:block;height:100%;background:var(--h-acc)}
+.wb .wnext{font-size:15px;color:var(--h-ink2);margin-top:8px}
+.wb .wnext a{color:var(--h-ink);font-weight:600}
+.wb .btn{text-decoration:none;white-space:nowrap}
+@media (max-width:760px){.wb{grid-template-columns:minmax(0,1fr)}}
+
+/* tracks */
+.tracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media (max-width:1020px){.tracks{grid-template-columns:minmax(0,1fr)}.tracks .track.pick{order:-1}}
+.track{background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;display:flex;flex-direction:column;min-width:0;transition:border-color .15s,box-shadow .15s}
+.track:hover{border-color:#9FB0B8;box-shadow:0 16px 32px -24px rgba(19,32,42,.45)}
+.track .tt{padding:24px 24px 20px;border-bottom:1px solid var(--h-rule2)}
+.track .tag{display:inline-block;font-family:var(--h-mono);font-size:12px;letter-spacing:.02em;color:var(--h-ink2);border:1px solid var(--h-rule);border-radius:2px;padding:2px 7px}
+.track h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:24px;line-height:1.15;margin:14px 0 8px}
+.track .tt p{margin:0;font-size:15px;color:var(--h-ink2);line-height:1.5}
+.track .tm{margin-top:14px;font-size:13px;color:var(--h-ink2)}
+.track .tm b{font-family:var(--h-mono);font-weight:500;color:var(--h-ink)}
+.track ol{list-style:none;margin:0;padding:8px 0;counter-reset:ts;flex:1}
+.track li{counter-increment:ts}
+.track li a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:0 10px;align-items:start;padding:12px 24px;text-decoration:none}
+.track li a::before{content:counter(ts);font-family:var(--h-mono);font-size:13px;line-height:22px;width:22px;height:22px;text-align:center;border-radius:50%;border:1px solid var(--h-rule);color:var(--h-ink2)}
+.track li a:hover{background:#F5F7F6}
+.track li a:hover::before{border-color:var(--h-acc);color:var(--h-acc)}
+.track li a:hover b{color:var(--h-acc)}
+.track li b{display:block;font-size:15.5px;font-weight:600;line-height:1.35}
+.track li span{display:block;font-size:14px;color:var(--h-ink2);line-height:1.4;margin-top:2px}
+.track li em{font-style:normal;font-size:12px;color:var(--h-ink2);border:1px solid var(--h-rule2);border-radius:2px;padding:1px 6px;margin-top:2px;white-space:nowrap}
+.track .tf{border-top:1px solid var(--h-rule2);padding:16px 24px}
+
+.who-pick{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:-8px 0 24px}
+.who-pick>span{font-size:15px;font-weight:600}
+.who-pick .seg button{font-size:14px;padding:8px 14px}
+.who-pick .seg button[aria-pressed=true]{background:var(--h-ink);color:#fff;border-color:var(--h-ink)}
+@media (max-width:640px){.who-pick .seg{flex-direction:column;width:100%}.who-pick .seg button{margin-left:0;margin-top:-1px;border-radius:0;text-align:left}.who-pick .seg button:first-child{border-radius:3px 3px 0 0}.who-pick .seg button:last-child{border-radius:0 0 3px 3px}}
+.track .mine{display:none;margin-left:8px;font-size:12px;font-weight:600;color:#fff;background:var(--h-acc);border-radius:2px;padding:3px 7px;vertical-align:1px}
+.track.pick{border-color:var(--h-acc);box-shadow:0 0 0 1px var(--h-acc)}
+.track.pick .mine{display:inline-block}
+.tracks.chosen .track:not(.pick){opacity:.82}
+.tracks.chosen .track:not(.pick):hover{opacity:1}
+/* schools strip and small links */
+.schools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 40px;align-items:center;background:var(--h-ink);color:#fff;border-radius:6px;padding:32px 36px}
+.schools h2{color:#fff;font-size:clamp(24px,2.4vw,30px)}
+.schools p{margin:10px 0 0;font-size:16px;line-height:1.55;color:#C9D4DA;max-width:66ch}
+.schools .btn{text-decoration:none;white-space:nowrap;background:#fff;color:var(--h-ink);border-color:#fff;font-size:15px;padding:11px 18px}
+.schools .btn:hover{background:#E9EEF0}
+@media (max-width:760px){.schools{grid-template-columns:minmax(0,1fr);padding:24px}}
+.smalllinks{display:flex;flex-wrap:wrap;gap:6px 24px;margin:28px 0 0;font-size:14px}
+.smalllinks a{color:var(--h-ink2);text-decoration:none}
+.smalllinks a:hover{color:var(--h-acc);text-decoration:underline}
+/* four parts */
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--h-rule)}
+@media (max-width:860px){.parts{grid-template-columns:minmax(0,1fr)}}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;padding:32px 32px 32px 0;border-bottom:1px solid var(--h-rule);min-width:0}
+.part:nth-child(even){padding:32px 0 32px 32px;border-left:1px solid var(--h-rule)}
+@media (max-width:860px){.part,.part:nth-child(even){padding:28px 0;border-left:0}}
+.part svg{display:block;width:100%;height:auto;background:var(--h-sheet);border:1px solid var(--h-rule2);border-radius:4px}
+.parts .part:nth-last-child(-n+2){border-bottom:0}
+@media (max-width:860px){.parts .part:nth-last-child(2){border-bottom:1px solid var(--h-rule)}}
+@media (max-width:520px){.part{grid-template-columns:84px minmax(0,1fr);gap:16px}}
+.part .pk{font-family:var(--h-mono);font-size:12px;color:var(--h-acc);letter-spacing:.04em}
+.part h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.15;margin:6px 0 8px}
+.part p{margin:0;font-size:15.5px;color:var(--h-ink2);line-height:1.55;max-width:56ch}
+.part .pl{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:16px}
+.part .pl a{font-size:14px;text-decoration:none;border:1px solid var(--h-rule);border-radius:3px;padding:5px 10px;background:var(--h-sheet)}
+.part .pl a:first-child{border-color:var(--h-ink);font-weight:600}
+.part .pl a:hover{border-color:var(--h-acc);color:var(--h-acc)}
+
+/* mini lab */
+.mini{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:0;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;overflow:hidden}
+@media (max-width:900px){.mini{grid-template-columns:minmax(0,1fr)}}
+.mini .mfig{border-right:1px solid var(--h-rule2);padding:20px 20px 12px;min-width:0}
+@media (max-width:900px){.mini .mfig{border-right:0;border-bottom:1px solid var(--h-rule2)}}
+.mini .mfig svg{display:block;width:100%;height:auto}
+.mini .mrail{padding:20px 24px 24px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mini .mrail .seg{margin-bottom:10px}
+.mini .mrail .seg button{font-size:13px;padding:7px 8px}
+.mini .mhint{margin:auto 0 0;padding-top:12px;font-size:13px;color:var(--h-ink2)}
+.mro{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--h-rule2)}
+.mro div{padding:14px 20px;border-left:1px solid var(--h-rule2);min-width:0}
+.mro div:first-child{border-left:0}
+.mro small{display:block;font-size:12.5px;color:var(--h-ink2)}
+.mro b{display:block;font-family:var(--h-mono);font-weight:500;font-size:22px;margin-top:4px;white-space:nowrap}
+.mro b.hi{color:#B7791F}
+@media (max-width:640px){.mro{grid-template-columns:repeat(2,minmax(0,1fr))}.mro div:nth-child(3){border-left:0}.mro div:nth-child(n+3){border-top:1px solid var(--h-rule2)}}
+.mnote{grid-column:1/-1;border-top:1px solid var(--h-rule2);padding:14px 20px;font-size:14.5px;color:var(--h-ink2);display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap}
+.mnote a{font-weight:600;color:var(--h-acc);text-decoration:none;white-space:nowrap}
+.mnote a:hover{text-decoration:underline}
+
+/* coverage and proof */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--h-ink);border-bottom:1px solid var(--h-rule);margin-bottom:40px}
+.stats div{padding:20px 20px 22px 0}
+.stats div+div{padding-left:20px;border-left:1px solid var(--h-rule)}
+.stats b{display:block;font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:48px;line-height:1}
+.stats span{display:block;font-size:14px;color:var(--h-ink2);margin-top:8px;line-height:1.4}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats div:nth-child(3){padding-left:0;border-left:0}.stats div:nth-child(n+3){border-top:1px solid var(--h-rule)}.stats b{font-size:38px}}
+.cov{width:100%;border-collapse:collapse;font-size:15px}
+.cov th{text-align:left;font-size:13px;font-weight:600;color:var(--h-ink2);padding:0 16px 10px 0;border-bottom:1px solid var(--h-ink)}
+.cov td{padding:12px 16px 12px 0;border-bottom:1px solid var(--h-rule2);vertical-align:top}
+.cov td.c{font-family:var(--h-mono);font-size:14px;color:var(--h-ink2);width:56px}
+.cov td.s{font-weight:600;width:30%}
+.cov td.l a{color:var(--h-ink);text-decoration:none;border-bottom:1px solid var(--h-rule)}
+.cov td.l a:hover{color:var(--h-acc);border-color:var(--h-acc)}
+.cov td.t{width:120px;text-align:right;padding-right:0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--h-ink2);white-space:nowrap}
+.st i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--h-acc)}
+.st.s-lab i{background:var(--h-acc)}
+.st.s-part i{background:linear-gradient(90deg,var(--h-acc) 50%,transparent 50%)}
+@media (max-width:700px){.cov thead{display:none}.cov tr{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-bottom:1px solid var(--h-rule2)}.cov td{border:0;padding:0;width:auto!important}.cov td.l{grid-column:2/-1}.cov td.t{grid-column:3;grid-row:1}}
+.proof{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:40px}
+@media (max-width:860px){.proof{grid-template-columns:minmax(0,1fr)}}
+.who{display:grid;grid-template-columns:88px minmax(0,1fr);gap:20px;align-items:start;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;padding:24px}
+.face{width:88px;height:88px;border-radius:50%;background:var(--h-ink);color:#fff;display:grid;place-items:center;font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:28px;position:relative;overflow:hidden}
+.face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.who b{display:block;font-size:17px;font-weight:650}
+.who p{margin:8px 0 0;font-size:15px;color:var(--h-ink2);line-height:1.55}
+.honest{background:var(--h-sheet);border:1px solid var(--h-rule);border-left:3px solid var(--h-info);border-radius:4px;padding:24px}
+.honest b{display:block;font-size:17px;font-weight:650}
+.honest ul{margin:10px 0 0;padding-left:18px;font-size:15px;color:var(--h-ink2);line-height:1.55}
+.honest li+li{margin-top:6px}
+</style>
+</head>
+<body data-home="1" data-title="Birdbird · Aviation theory, flight planning and training">
+<script src="site.js?v=27"></script>
+<div class="page"><main class="home">
+
+  <!-- 1. Hero -->
+  <section class="hero" aria-labelledby="h1">
+    <div class="hc">
+      <span class="kick">Flight preparation for pilots</span>
+      <h1 id="h1">Briefing pack, theory<br>and instructor in one place</h1>
+      <p class="lede">Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.</p>
+      <div class="btns"><a class="btn pri" href="prep.html">Make a briefing pack</a><a class="btn" href="fi.html">Ask Flight Intelligence</a></div>
+    </div>
+    <figure class="stage" id="stage">
+      <svg viewBox="0 0 640 470" role="img" aria-label="An IFR briefing pack from ENGM to ENBR: cover, planning minima, flight cross-section and fuel">
+        <defs>
+          <filter id="psh" x="-25%" y="-20%" width="150%" height="150%" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="1" stdDeviation=".6" flood-color="#13202A" flood-opacity=".18"/>
+            <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#13202A" flood-opacity=".13"/>
+          </filter>
+          <pattern id="cgrid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#E4ECE8" stroke-width=".6"/></pattern>
+          <pattern id="cgrid2" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#D3DFDA" stroke-width=".7"/></pattern>
+          <symbol id="tick" viewBox="-7 -7 14 14"><circle r="6.2" fill="#EAF4EE" stroke="#2E7D4F" stroke-width="1"/><path d="M-3 .2 L-.8 2.4 L3.2 -2.2" fill="none" stroke="#2E7D4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        </defs>
+
+        <!-- page 1: cover -->
+        <g class="pg" data-d="6"><g transform="translate(26 18) rotate(-5 118 167)">
+          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
+          <rect width="236" height="4" fill="#9A1E68"/>
+          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">BIRDBIRD</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">1 / 14</text>
+          <text x="16" y="56" font-size="8" fill="#9A1E68" letter-spacing="1.3" font-weight="500">IFR BRIEFING PACK</text>
+          <text class="ttl" x="15" y="88" font-size="30" fill="#13202A" letter-spacing="-.2">ENGM</text><path d="M18 96 V104 H40" fill="none" stroke="#9A1E68" stroke-width="1.6"/><path d="M38 100.5 L43 104 L38 107.5" fill="none" stroke="#9A1E68" stroke-width="1.6" stroke-linejoin="round"/><text class="ttl" x="48" y="114" font-size="30" fill="#13202A" letter-spacing="-.2">ENBR</text>
+          <text class="sans" x="16" y="130" font-size="7.6" fill="#4C5B66">Oslo Gardermoen to Bergen Flesland</text>
+          <line x1="16" y1="138.0" x2="220" y2="138.0" stroke="#13202A" stroke-width=".8"/>
+          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="152">DATE</text><text x="86" y="152">ETD</text><text x="156" y="152">EET</text><text x="16" y="180">LEVEL</text><text x="86" y="180">ALTN</text><text x="156" y="180">RULES</text></g>
+          <g font-size="9.5" fill="#13202A" font-weight="500"><text x="16" y="164">14 NOV</text><text x="86" y="164">0830 Z</text><text x="156" y="164">0:58</text><text x="16" y="192">FL120</text><text x="86" y="192">ENZV</text><text x="156" y="192">IFR</text></g>
+          <line x1="16" y1="206.0" x2="220" y2="206.0" stroke="#DCE3E4" stroke-width=".8"/>
+          <text x="16" y="224" font-size="6.5" fill="#4C5B66" letter-spacing=".8" font-weight="500">CONTENTS</text>
+          <g class="sans" font-size="7.6" fill="#13202A">
+            <text x="30" y="241">Aircraft</text><text x="30" y="255">NOTAM</text><text x="30" y="269">Meteorology</text><text x="30" y="283">Planning minima</text><text x="30" y="297">Flight cross-section</text><text x="30" y="311">Runway performance</text><text x="30" y="325">Fuel</text>
+          </g>
+          <g font-size="6.5" fill="#7D8B95"><text x="16" y="241">1</text><text x="16" y="255">2</text><text x="16" y="269">3</text><text x="16" y="283">4</text><text x="16" y="297">5</text><text x="16" y="311">6</text><text x="16" y="325">7</text></g>
+          <g stroke="#C6D0D3" stroke-width=".7" stroke-dasharray="1 2"><path d="M112 240H200M100 254H200M120 268H200M132 282H200M140 296H200M140 310H200M90 324H200"/></g>
+          <g><use href="#tick" x="204" y="233" width="10" height="10"/><use href="#tick" x="204" y="247" width="10" height="10"/><use href="#tick" x="204" y="261" width="10" height="10"/><use href="#tick" x="204" y="275" width="10" height="10"/></g>
+        </g></g>
+
+        <!-- page 2: planning minima -->
+        <g class="pg" data-d="10"><g transform="translate(196 50) rotate(-.6 118 167)">
+          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
+          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">4 / 14</text>
+          <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
+          <text class="ttl" x="16" y="54" font-size="17" fill="#13202A">Planning minima</text>
+          <text x="16" y="68" font-size="6.6" fill="#4C5B66">ETA ± 1 h · forecast against required</text>
+          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="88">AD</text><text x="60" y="88">REQUIRED</text><text x="112" y="88">FORECAST</text><text x="164" y="88" text-anchor="middle">OK</text></g>
+          <line x1="16" y1="93" x2="220" y2="93" stroke="#13202A" stroke-width=".7"/>
+          <g font-size="7.4" fill="#13202A">
+            <text x="16" y="108" font-weight="500">ENGM</text><text x="16" y="118" font-size="5.6" fill="#7D8B95">DEP</text><text x="60" y="108">RVR 550</text><text x="60" y="118" fill="#4C5B66">–</text><text x="112" y="108">9999</text><text x="112" y="118" fill="#4C5B66">BKN012</text>
+            <text x="16" y="140" font-weight="500">ENBR</text><text x="16" y="150" font-size="5.6" fill="#7D8B95">DEST</text><text x="60" y="140">1500 m</text><text x="60" y="150" fill="#4C5B66">400 ft</text><text x="112" y="140">6000</text><text x="112" y="150" fill="#4C5B66">BKN008</text>
+            <text x="16" y="172" font-weight="500">ENZV</text><text x="16" y="182" font-size="5.6" fill="#7D8B95">ALTN</text><text x="60" y="172">2500 m</text><text x="60" y="182" fill="#4C5B66">700 ft</text><text x="112" y="172">9999</text><text x="112" y="182" fill="#4C5B66">SCT025</text>
+          </g>
+          <path d="M16 126H220M16 158H220M16 190H220" stroke="#DCE3E4" stroke-width=".7"/>
+          <use href="#tick" x="157" y="105" width="14" height="14"/><use href="#tick" x="157" y="137" width="14" height="14"/><use href="#tick" x="157" y="169" width="14" height="14"/>
+          <rect x="16" y="204" width="204" height="30" rx="2" fill="#EEF3FA"/><rect x="16" y="204" width="2.4" height="30" fill="#1D4E9E"/>
+          <text x="25" y="216" font-size="6" fill="#1D4E9E" letter-spacing=".5" font-weight="500">DESTINATION ALTERNATES</text><text class="sans" x="25" y="227" font-size="7.4" fill="#13202A">One required. ENZV selected.</text>
+          <g fill="#E3E9EB"><rect x="16" y="252" width="190" height="4" rx="2"/><rect x="16" y="264" width="160" height="4" rx="2"/><rect x="16" y="276" width="176" height="4" rx="2"/><rect x="16" y="288" width="120" height="4" rx="2"/></g>
+        </g></g>
+
+        <!-- page 3: flight cross-section and fuel -->
+        <g class="pg" data-d="15"><g transform="translate(380 88) rotate(3.6 118 167)">
+          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
+          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">5 / 14</text>
+          <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
+          <text class="ttl" x="16" y="54" font-size="17" fill="#13202A">Flight cross-section</text>
+          <rect x="16" y="66" width="204" height="104" fill="url(#cgrid)"/><rect x="16" y="66" width="204" height="104" fill="url(#cgrid2)"/>
+          <path d="M16 158 L30 157 L44 150 L56 152 L70 140 L82 132 L92 120 L100 126 L110 112 L122 118 L132 108 L142 122 L152 116 L164 130 L178 138 L192 150 L206 156 L220 158 L220 170 L16 170Z" fill="#EDE6D6" stroke="#B08A5A" stroke-width=".8" stroke-linejoin="round"/>
+          <ellipse cx="74" cy="96" rx="20" ry="5.5" fill="#EDF1F3" opacity=".9"/><ellipse cx="92" cy="93" rx="16" ry="5" fill="#EDF1F3" opacity=".9"/><ellipse cx="160" cy="98" rx="22" ry="5.5" fill="#EDF1F3" opacity=".9"/>
+          <line x1="16" y1="104" x2="220" y2="104" stroke="#4C5B66" stroke-width=".8" stroke-dasharray="4 3"/>
+          <text x="218" y="101" font-size="5.6" fill="#4C5B66" text-anchor="end">MSA 7400</text>
+          <line x1="16" y1="132" x2="220" y2="132" stroke="#1D4E9E" stroke-width=".8" stroke-dasharray="1.5 2.5"/>
+          <text x="20" y="129" font-size="5.6" fill="#1D4E9E">0 °C</text>
+          <path d="M22 158 L64 80 L172 80 L214 158" fill="none" stroke="#9A1E68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <g fill="#fff" stroke="#13202A" stroke-width="1"><circle cx="64" cy="80" r="2.6"/><circle cx="118" cy="80" r="2.6"/><circle cx="172" cy="80" r="2.6"/></g>
+          <g font-size="5.6" fill="#13202A"><text x="64" y="74" text-anchor="middle">TOC</text><text x="118" y="74" text-anchor="middle">FL120</text><text x="172" y="74" text-anchor="middle">TOD</text></g>
+          <line x1="16" y1="170" x2="220" y2="170" stroke="#13202A" stroke-width=".8"/>
+          <g font-size="6" fill="#4C5B66"><text x="16" y="180">ENGM</text><text x="118" y="180" text-anchor="middle">186 NM</text><text x="220" y="180" text-anchor="end">ENBR</text></g>
+
+          <text class="ttl" x="16" y="210" font-size="14" fill="#13202A">Fuel</text><text x="220" y="210" font-size="6" fill="#7D8B95" text-anchor="end">kg</text>
+          <g>
+            <rect x="16" y="218" width="10.2" height="14" fill="#9AA7AF"/><rect x="26.2" y="218" width="97.9" height="14" fill="#13202A"/><rect x="124.1" y="218" width="5.1" height="14" fill="#4C5B66"/><rect x="129.2" y="218" width="34.7" height="14" fill="#1D4E9E"/><rect x="163.9" y="218" width="40.8" height="14" fill="#9A1E68"/><rect x="204.7" y="218" width="15.3" height="14" fill="#C6D0D3"/>
+            <path d="M26.2 218V232M124.1 218V232M129.2 218V232M163.9 218V232M204.7 218V232" stroke="#fff" stroke-width=".8"/>
+          </g>
+          <g font-size="6.2" fill="#13202A">
+            <rect x="16" y="242" width="6" height="6" fill="#9AA7AF"/><text x="26" y="247.5">Taxi</text><text x="74" y="247.5" text-anchor="end" fill="#4C5B66">10</text>
+            <rect x="84" y="242" width="6" height="6" fill="#13202A"/><text x="94" y="247.5">Trip</text><text x="142" y="247.5" text-anchor="end" fill="#4C5B66">96</text>
+            <rect x="152" y="242" width="6" height="6" fill="#4C5B66"/><text x="162" y="247.5">Cont.</text><text x="220" y="247.5" text-anchor="end" fill="#4C5B66">5</text>
+            <rect x="16" y="256" width="6" height="6" fill="#1D4E9E"/><text x="26" y="261.5">Altn</text><text x="74" y="261.5" text-anchor="end" fill="#4C5B66">34</text>
+            <rect x="84" y="256" width="6" height="6" fill="#9A1E68"/><text x="94" y="261.5">Final res.</text><text x="142" y="261.5" text-anchor="end" fill="#4C5B66">40</text>
+            <rect x="152" y="256" width="6" height="6" fill="#C6D0D3"/><text x="162" y="261.5">Extra</text><text x="220" y="261.5" text-anchor="end" fill="#4C5B66">15</text>
+          </g>
+          <line x1="16" y1="274" x2="220" y2="274" stroke="#13202A" stroke-width=".8"/>
+          <text class="sans" x="16" y="290" font-size="8" fill="#13202A" font-weight="600">Block fuel</text><text x="128" y="290" font-size="9" fill="#13202A" font-weight="500" text-anchor="end">200</text>
+          <text class="sans" x="16" y="304" font-size="7" fill="#4C5B66">Required 185</text>
+          <use href="#tick" x="150" y="281" width="13" height="13"/><text x="167" y="290.5" font-size="7" fill="#2E7D4F" font-weight="500">ON BOARD</text>
+          <text x="16" y="324" font-size="5.6" fill="#AEBBC1">EXAMPLE VALUES</text>
+        </g></g>
+      </svg>
+      <div class="fic" id="fic" role="group" aria-label="Flight Intelligence: an example answer">
+        <div class="fh"><b>Flight Intelligence</b><span class="own"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h4.8L9.5 3.2V11h-7z M7.2 1v2.3h2.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>From your documents</span></div>
+        <div class="bd">
+          <div class="q">What is the maximum crosswind for landing?</div>
+          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p></div>
+        </div>
+        <div class="ft"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span>Your AFM, QRH and SOP stay in this browser.</span></div>
+      </div>
+      <figcaption>Illustration with example values.</figcaption>
+    </figure>
+    <ul class="three">
+      <li><a href="prep.html"><b>Briefing pack</b></a><span>Aircraft, NOTAM, weather, minima, profile, fuel, mass and balance, in a fixed order. VFR or IFR, printed as a booklet.</span></li>
+      <li><a href="lab.html"><b>The theory</b></a><span>Every page links to the interactive lab that explains it.</span></li>
+      <li><a href="fi.html"><b>Flight Intelligence</b></a><span>Answers from your AFM, QRH and SOP, and shows the page it came from.</span></li>
+    </ul>
+    <p class="srcnote" id="srcnote"></p>
+  </section>
+
+  <!-- welcome back (only with progress) -->
+  <section class="wb" id="wb" aria-label="Your progress">
+    <div><div class="wk">Welcome back</div><div class="wn" id="wbN"></div></div>
+    <div><div class="wbar"><i id="wbBar" style="width:0"></i></div><div class="wnext" id="wbNext"></div></div>
+    <a class="btn" href="profile.html">My training</a>
+  </section>
+
+  <!-- 2. Tracks -->
+  <section class="hsec" id="tracks" aria-labelledby="h-tr">
+    <header><div><span class="kick">Where to start</span><h2 id="h-tr">Choose your track</h2><p class="sub">Each track starts with three items. Everything stays open, so move between them as your training needs it.</p></div><a class="more" href="lab.html">See the full learning path →</a></header>
+    <div class="who-pick" role="group" aria-labelledby="wq"><span id="wq">Who are you?</span><div class="seg" id="trSeg"><button type="button" data-t="found" aria-pressed="false">Student pilot, PPL and IR</button><button type="button" data-t="atpl" aria-pressed="false">ATPL, heading to the airlines</button><button type="button" data-t="type" aria-pressed="false">Type rating and instructors</button></div></div>
+    <div class="tracks" id="trList">
+      <article class="track" data-t="found">
+        <div class="tt"><span class="tag">PPL · IR · ME</span><span class="mine">Your track</span><h3>Foundations</h3><p>The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures, taught on the A320.</p><div class="tm" id="tmF">Core labs · A320 reference</div></div>
+        <ol>
+          <li><a href="altimetry.html"><div><b>Pressure and altitude</b><span>QNH, QFE, density altitude and the cold-temperature error.</span></div><em>Lab</em></a></li>
+          <li><a href="propeller.html"><div><b>Propeller effects and Vmca</b><span>The critical engine, and what keeps a twin straight.</span></div><em>Lab</em></a></li>
+          <li><a href="briefing.html"><div><b>Briefings</b><span>Departure and approach briefings, out loud, against a chart.</span></div><em>Practise</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="lab.html#pof">Principles of flight module →</a></div>
+      </article>
+      <article class="track" data-t="atpl">
+        <div class="tt"><span class="tag">ATPL theory · A320</span><span class="mine">Your track</span><h3>ATPL theory on the A320</h3><p>The full ATPL theory syllabus, taught with a jet transport as the reference aircraft: high-speed flight, systems, performance and automation.</p><div class="tm" id="tmA">25 labs · 9 modules</div></div>
+        <ol>
+          <li><a href="highspeed.html"><div><b>High-speed flight and drag</b><span>The drag curve, Mach number and the buffet margin.</span></div><em>Lab</em></a></li>
+          <li><a href="jetsystems.html"><div><b>Jet transport systems</b><span>Three hydraulic systems, the PTU, electrics, bleed and fuel.</span></div><em>Lab</em></a></li>
+          <li><a href="performance.html"><div><b>Performance</b><span>V1, accelerate-stop and take-off distance, climb and landing.</span></div><em>Lab</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="lab.html#path">All 9 modules in order →</a></div>
+      </article>
+      <article class="track" data-t="type">
+        <div class="tt"><span class="tag">Type rating · Airline</span><span class="mine">Your track</span><h3>Type rating and airline prep</h3><p>Preparation for the next seat: a full type rating trainer for the King Air B200, and the A320 simulator assessment used in airline selection.</p><div class="tm">B200 trainer · A320 sim assessment</div></div>
+        <ol>
+          <li><a href="typerating.html"><div><b>Type rating trainer: King Air B200</b><span>Systems by module, limitations, flows and a question trainer.</span></div><em>Trainer</em></a></li>
+          <li><a href="simcheck.html"><div><b>A320 simulator assessment</b><span>The manoeuvres, the configuration and the go-around.</span></div><em>Practise</em></a></li>
+          <li><a href="autoflight.html"><div><b>Autoflight and warnings</b><span>Read the FMA, selected against managed modes.</span></div><em>Lab</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="checkride.html">Check preparation →</a></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. Four parts -->
+  <section class="hsec" id="parts" aria-labelledby="h-pa">
+    <header><div><span class="kick">What is here</span><h2 id="h-pa">Four parts, one flight</h2><p class="sub">Learn why it works, plan the flight, practise the procedures, and ask when something does not add up.</p></div></header>
+    <div class="parts">
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M8 58 C30 56 54 44 120 36" fill="none" stroke="#C6D0D3"/><path d="M8 70 C40 70 70 64 120 70" fill="none" stroke="#C6D0D3"/><path d="M8 46 C30 44 60 28 120 24" fill="none" stroke="#C6D0D3"/><path d="M26 56 C36 44 62 40 108 50 C80 54 50 58 26 56Z" fill="#13202A"/><path d="M62 50 L62 16" stroke="#9A1E68" stroke-width="2.4"/><path d="M57 22 L62 12 L67 22Z" fill="#9A1E68"/><path d="M14 84 L118 84" stroke="#13202A"/><path d="M30 84 V80 M50 84 V80 M70 84 V80 M90 84 V80" stroke="#13202A"/><circle cx="74" cy="84" r="4" fill="#fff" stroke="#9A1E68" stroke-width="2"/></svg>
+        <div><span class="pk">LEARN</span><h3>Virtual Lab</h3><p id="pLab">25 interactive labs in 9 modules, following the EASA ATPL syllabus. Change the conditions yourself and watch the physics respond, then test your understanding.</p>
+          <div class="pl"><a href="lab.html">Learning path</a><a href="lab.html#all">All topics</a><a href="tunnel.html">Wind tunnel</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M6 80 L22 74 L34 62 L46 68 L58 52 L70 60 L84 50 L98 64 L112 70 L126 76 L126 90 L6 90Z" fill="#E9E4D8" stroke="#B08A5A" stroke-width=".8"/><path d="M12 78 L30 40 L100 40 L120 78" fill="none" stroke="#9A1E68" stroke-width="2.2" stroke-linejoin="round"/><circle cx="30" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="66" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="100" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><rect x="14" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M19 16 H43 M19 21 H38 M19 26 H41" stroke="#4C5B66"/><rect x="84" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M89 16 H113 M89 21 H106 M89 26 H110" stroke="#4C5B66"/></svg>
+        <div><span class="pk">PLAN</span><h3>Briefing pack and Route Explorer</h3><p>Draw the route and see the profile over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, and print it as a booklet.</p>
+          <div class="pl"><a href="prep.html">Briefing pack</a><a href="route.html">Route Explorer</a><a href="planning.html">Navigation log</a><a href="weather.html">METAR and TAF</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="10" y="10" width="72" height="76" rx="3" fill="#10171D"/><path d="M10 50 L82 42 L82 86 L10 86Z" fill="#6B4A2B"/><path d="M10 10 L82 10 L82 42 L10 50Z" fill="#2A6A9E"/><path d="M28 47 H40 V51 M64 43 H52 V47" stroke="#F0B95A" stroke-width="2.4" fill="none"/><circle cx="46" cy="47" r="2" fill="#F0B95A"/><rect x="90" y="10" width="32" height="76" rx="3" fill="#fff" stroke="#13202A"/><path d="M96 22 H116 M96 32 H112 M96 42 H116 M96 52 H110 M96 62 H116 M96 72 H108" stroke="#4C5B66"/><path d="M95 21 l2 2 4 -4 M95 31 l2 2 4 -4 M95 41 l2 2 4 -4" stroke="#2E7D4F" stroke-width="1.6" fill="none"/></svg>
+        <div><span class="pk">PRACTISE</span><h3>Training</h3><p>Fly a whole trip gate to gate, brief the departure and the approach out loud, drill radio calls, fly the glass-cockpit simulator, and prepare for the A320 sim assessment and the type rating.</p>
+          <div class="pl"><a href="radio.html">Gate to gate</a><a href="briefing.html">Briefings</a><a href="radio-drills.html">Radio drills</a><a href="cockpit.html">Simulator</a><a href="simcheck.html">A320 sim assessment</a><a href="typerating.html">Type rating (B200)</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="12" y="12" width="46" height="60" rx="2" fill="#fff" stroke="#13202A"/><path d="M19 22 H50 M19 30 H46 M19 38 H50 M19 46 H42 M19 54 H48" stroke="#C6D0D3"/><rect x="18" y="35" width="34" height="6" fill="#9A1E68" opacity=".18"/><path d="M66 30 H120 a4 4 0 0 1 4 4 V66 a4 4 0 0 1 -4 4 H84 L74 80 L76 70 H66 a4 4 0 0 1 -4 -4 V34 a4 4 0 0 1 4 -4Z" fill="#fff" stroke="#13202A"/><path d="M72 42 H114 M72 50 H110 M72 58 H98" stroke="#4C5B66"/><rect x="100" y="54" width="18" height="9" rx="2" fill="#1D4E9E"/><path d="M52 38 C58 38 60 52 100 58" fill="none" stroke="#1D4E9E" stroke-dasharray="2 3"/><path d="M28 80 v4 a3 3 0 0 0 3 3 h8 a3 3 0 0 0 3 -3 v-4 a7 7 0 0 0 -14 0Z" fill="#13202A"/></svg>
+        <div><span class="pk">ASK</span><h3>Flight Intelligence</h3><p>Your instructor, grounded in your own documents: the flight manual, your SOP, the checklists and the regulations. Each answer shows where it comes from, and your documents stay private in your browser.</p>
+          <div class="pl"><a href="fi.html">Open Flight Intelligence</a><a href="checkride.html">Check preparation</a></div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4. Mini lab -->
+  <section class="hsec" id="try" aria-labelledby="h-try">
+    <header><div><span class="kick">Try one now</span><h2 id="h-try">How high does your aircraft think it is?</h2><p class="sub">Set the field elevation, the QNH and the temperature. The wing and the engine perform at the density altitude, not at the height on the chart.</p></div></header>
+    <div class="mini">
+      <div class="mfig"><svg id="da" viewBox="0 0 560 300" role="img" aria-label="Field elevation, pressure altitude and density altitude on one scale"></svg></div>
+      <div class="mrail"><div id="daSeg"></div><div id="sEl"></div><div id="sQ"></div><div id="sT"></div><p class="mhint">ISA model, dry air. Humidity raises the density altitude a little further.</p></div>
+      <div class="mro" style="grid-column:1/-1">
+        <div><small>Pressure altitude</small><b id="dPA">–</b></div>
+        <div><small>ISA deviation</small><b id="dIsa">–</b></div>
+        <div><small>Density altitude</small><b id="dDA">–</b></div>
+        <div><small>Air density, % of ISA sea level</small><b id="dSig">–</b></div>
+      </div>
+      <div class="mnote"><span id="dTxt"></span><a href="altimetry.html">Full lab: Pressure and altitude →</a></div>
+    </div>
+  </section>
+
+  <!-- 5. Coverage and proof -->
+  <section class="hsec" id="coverage" aria-labelledby="h-cov">
+    <header><div><span class="kick">Coverage</span><h2 id="h-cov">Mapped to the EASA ATPL syllabus</h2><p class="sub">Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.</p></div></header>
+    <div class="stats">
+      <div><b id="nLabs">25</b><span>interactive labs</span></div>
+      <div><b id="nMods">9</b><span>modules in the learning path</span></div>
+      <div><b id="nSub">10 / 13</b><span>ATPL subjects with a dedicated lab</span></div>
+      <div><b>3</b><span>aircraft: the A320 in the labs, the King Air B200 type rating and a light twin in the training tools</span></div>
+    </div>
+    <table class="cov">
+      <thead><tr><th>Code</th><th>Subject</th><th>Where it is taught</th><th></th></tr></thead>
+      <tbody id="covBody"></tbody>
+    </table>
+    <div class="proof" id="about">
+      <div class="who">
+        <div class="face" aria-hidden="true">DN<img src="daniel.jpg" alt="" onerror="this.remove()"></div>
+        <div><b>Made by Daniel Nilsson, pilot</b><p>I trained as an airline pilot. The hard parts were rarely the flying itself: they were the order of things, and the things you cannot see, like the air over the wing or why the altimeter is wrong on a cold day. Birdbird is the set of tools I wanted, and it keeps growing.</p></div>
+      </div>
+      <div class="honest">
+        <b>Teaching models, not operational data</b>
+        <ul>
+          <li>The labs use simplified physics and typical values. A320 and B200 figures are illustrative, not manufacturer data.</li>
+          <li>Use Birdbird to understand and to prepare. Always follow the AFM, the AIP and your operator’s procedures.</li>
+          <li>Progress and documents are stored in your own browser.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- For schools -->
+  <section class="hsec" id="schools" aria-labelledby="h-sch" style="padding-bottom:24px">
+    <div class="schools">
+      <div><span class="kick" style="color:#E7A9CF">For flight schools and operators</span><h2 id="h-sch">Use Birdbird in ground school and type training</h2><p>The labs work on a classroom screen, and the briefing pack and the training follow a fixed order that students can repeat on their own. See how a school or an operator can use it.</p></div>
+      <a class="btn" href="schools.html">For schools and operators →</a>
+    </div>
+    <nav class="smalllinks" aria-label="About Birdbird"><a href="about.html">About Birdbird</a><a href="privacy.html">Privacy</a><a href="sources.html">Sources and licences</a></nav>
+  </section>
+
+</main></div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+const NS='http://www.w3.org/2000/svg';
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mk(tag,a,p){ const e=document.createElementNS(NS,tag); for(const k in a) e.setAttribute(k,a[k]); if(p) p.appendChild(e); return e; }
+function tx(p,s,x,y,o){ const e=mk('text',Object.assign({x,y,'font-size':12,'font-family':'"Public Sans",system-ui,sans-serif'},o||{}),p); e.textContent=s; return e; }
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
+ 'Birdbird · Aviation theory, flight planning and training':'Birdbird · Flyteori, flyplanlegging og trening',
+ 'Flight preparation for pilots':'Flyforberedelse for piloter',
+ 'Briefing pack, theory':'Briefingpakke, teori','and instructor in one place':'og instruktør på ett sted',
+ 'Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.':'Birdbird er stedet der du forbereder en flyging og forstår hvert tall i den: briefingpakken, teorien bak hver side, og en instruktør som svarer ut fra dine egne dokumenter.',
+ 'Make a briefing pack':'Lag en briefingpakke','Ask Flight Intelligence':'Spør Flight Intelligence',
+ 'Aircraft, NOTAM, weather, minima, profile, fuel, mass and balance, in a fixed order. VFR or IFR, printed as a booklet.':'Fly, NOTAM, vær, minima, profil, drivstoff, masse og balanse, i fast rekkefølge. VFR eller IFR, skrevet ut som et hefte.',
+ 'The theory':'Teorien','Every page links to the interactive lab that explains it.':'Hver side lenker til den interaktive labben som forklarer den.',
+ 'Answers from your AFM, QRH and SOP, and shows the page it came from.':'Svarer ut fra AFM, QRH og SOP-en din, og viser siden svaret kommer fra.',
+ 'An IFR briefing pack from ENGM to ENBR: cover, planning minima, flight cross-section and fuel':'En IFR-briefingpakke fra ENGM til ENBR: forside, planleggingsminima, tverrsnitt av turen og drivstoff',
+ 'IFR BRIEFING PACK':'IFR-BRIEFINGPAKKE','Oslo Gardermoen to Bergen Flesland':'Oslo Gardermoen til Bergen Flesland',
+ 'DATE':'DATO','LEVEL':'NIVÅ','RULES':'REGLER','CONTENTS':'INNHOLD','14 NOV':'14. NOV',
+ 'Aircraft':'Fly','Meteorology':'Meteorologi','Planning minima':'Planleggingsminima','Flight cross-section':'Tverrsnitt av turen','Runway performance':'Rullebaneytelse','Fuel':'Drivstoff','Mass and balance':'Masse og balanse',
+ 'ETA ± 1 h · forecast against required':'ETA ± 1 t · prognose mot krav','REQUIRED':'KRAV','FORECAST':'PROGNOSE',
+ 'DESTINATION ALTERNATES':'DESTINASJONSALTERNATIVER','One required. ENZV selected.':'Ett kreves. ENZV er valgt.',
+ 'Taxi':'Taxi','Trip':'Tur','Cont.':'Kont.','Altn':'Altn','Final res.':'Sluttres.','Extra':'Ekstra',
+ 'Block fuel':'Blokkdrivstoff','Required 185':'Påkrevd 185','ON BOARD':'OM BORD','EXAMPLE VALUES':'EKSEMPELVERDIER',
+ 'Flight Intelligence: an example answer':'Flight Intelligence: et eksempelsvar','From your documents':'Fra dine dokumenter',
+ 'What is the maximum crosswind for landing?':'Hva er maksimal sidevind for landing?','Instructor':'Instruktør',
+ 'The maximum demonstrated crosswind is 25 kt.':'Maksimal demonstrert sidevind er 25 kt.',
+ 'It is a demonstrated value, not a limit. Your SOP may set a lower one.':'Det er en demonstrert verdi, ikke en begrensning. SOP-en din kan sette en lavere grense.',
+ 'Your AFM, QRH and SOP stay in this browser.':'AFM, QRH og SOP-en din blir i denne nettleseren.',
+ 'Illustration with example values.':'Illustrasjon med eksempelverdier.',
+ 'Mapped to the EASA ATPL syllabus':'Knyttet til EASA ATPL-pensum',
+ 'Welcome back':'Velkommen tilbake','My training':'Min trening',
+ 'Where to start':'Hvor du starter','Who are you?':'Hvem er du?','Student pilot, PPL and IR':'Flyelev, PPL og IR','ATPL, heading to the airlines':'ATPL, på vei til flyselskap','Type rating and instructors':'Typerating og instruktører','Your track':'Ditt løp','For flight schools and operators':'For flyskoler og operatører','Use Birdbird in ground school and type training':'Bruk Birdbird i teoriundervisning og typeopplæring','The labs work on a classroom screen, and the briefing pack and the training follow a fixed order that students can repeat on their own. See how a school or an operator can use it.':'Labbene fungerer på en skjerm i klasserommet, og briefingpakken og treningen følger en fast rekkefølge som elevene kan gjenta på egen hånd. Se hvordan en skole eller en operatør kan bruke det.','For schools and operators →':'For skoler og operatører →','About Birdbird':'Om Birdbird','Privacy':'Personvern','Sources and licences':'Kilder og lisenser','Choose your track':'Velg ditt løp',
+ 'Each track starts with three items. Everything stays open, so move between them as your training needs it.':'Hvert løp starter med tre ting. Alt er åpent, så du kan bevege deg mellom dem etter hva opplæringen din trenger.',
+ 'See the full learning path →':'Se hele læringsløpet →',
+ 'Foundations':'Grunnlag','The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures, taught on the A320.':'Kjerneteorien bak hver flyging: vingen, atmosfæren, instrumenter, vær og instrumentprosedyrer, forklart på A320.',
+ 'Pressure and altitude':'Trykk og høyde','QNH, QFE, density altitude and the cold-temperature error.':'QNH, QFE, tetthetshøyde og kuldefeilen.',
+ 'Propeller effects and Vmca':'Propelleffekter og Vmca','The critical engine, and what keeps a twin straight.':'Kritisk motor, og hva som holder et tomotors fly rett.',
+ 'Briefings':'Briefinger','Departure and approach briefings, out loud, against a chart.':'Avgangs- og innflygingsbriefinger, høyt, mot et kart.',
+ 'Lab':'Lab','Practise':'Øv','Trainer':'Trener','Atmosphere module →':'Modul: atmosfære →','Principles of flight module →':'Modulen aerodynamikk →',
+ 'ATPL theory · A320':'ATPL-teori · A320','ATPL theory on the A320':'ATPL-teori på A320',
+ 'The full ATPL theory syllabus, taught with a jet transport as the reference aircraft: high-speed flight, systems, performance and automation.':'Hele ATPL-teoripensumet, undervist med et jetfly som referansefly: høyfart, systemer, ytelse og automatikk.',
+ 'High-speed flight and drag':'Høyfart og motstand','The drag curve, Mach number and the buffet margin.':'Motstandskurven, machtall og buffetmarginen.',
+ 'Jet transport systems':'Systemer på jetfly','Three hydraulic systems, the PTU, electrics, bleed and fuel.':'Tre hydraulikksystemer, PTU, elektrisk, bleed og drivstoff.',
+ 'Performance':'Ytelse','V1, accelerate-stop and take-off distance, climb and landing.':'V1, akselerasjon-stopp- og startdistanse, stigning og landing.',
+ 'All 9 modules in order →':'Alle 9 moduler i rekkefølge →',
+ 'Type rating · Airline':'Typerating · Flyselskap','Type rating and airline prep':'Typerating og flyselskapsforberedelse',
+ 'Preparation for the next seat: a full type rating trainer for the King Air B200, and the A320 simulator assessment used in airline selection.':'Forberedelse til neste sete: en komplett typeratingtrener for King Air B200, og A320-simulatortesten som brukes i opptak til flyselskap.',
+ 'B200 trainer · A320 sim assessment':'B200-trener · A320-simulatortest',
+ 'Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Systems by module, limitations, flows and a question trainer.':'Systemer modul for modul, begrensninger, flows og spørsmålstrener.',
+ 'A320 simulator assessment':'A320-simulatortest','The manoeuvres, the configuration and the go-around.':'Manøvrene, konfigurasjonen og avbrutt innflyging.',
+ 'Autoflight and warnings':'Autoflight og varsling','Read the FMA, selected against managed modes.':'Les FMA-en, selected mot managed moduser.',
+ 'Check preparation →':'Kontrollforberedelse →',
+ 'What is here':'Hva som finnes her','Four parts, one flight':'Fire deler, én flyging',
+ 'Learn why it works, plan the flight, practise the procedures, and ask when something does not add up.':'Lær hvorfor det virker, planlegg flygingen, øv på prosedyrene, og spør når noe ikke stemmer.',
+ 'LEARN':'LÆR','PLAN':'PLANLEGG','PRACTISE':'ØV','ASK':'SPØR',
+ 'Virtual Lab':'Virtual Lab','Learning path':'Læringsløp','All topics':'Alle emner','Wind tunnel':'Vindtunnel',
+ 'Briefing pack and Route Explorer':'Briefingpakke og Route Explorer',
+ 'Draw the route and see the profile over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, and print it as a booklet.':'Tegn ruten og se profilen over terrenget. Gå så gjennom fly, NOTAM, vær, minima, ytelse, drivstoff, masse og balanse i fast rekkefølge, og skriv det ut som et hefte.',
+ 'Briefing pack':'Briefingpakke','Route Explorer':'Route Explorer','Navigation log':'Navigasjonslogg','METAR and TAF':'METAR og TAF',
+ 'Training':'Trening',
+ 'Fly a whole trip gate to gate, brief the departure and the approach out loud, drill radio calls, fly the glass-cockpit simulator, and prepare for the A320 sim assessment and the type rating.':'Fly en hel tur gate to gate, brief avgangen og innflygingen høyt, drill radiooppkall, fly glass cockpit-simulatoren, og forbered deg til A320-simulatortesten og typeratingen.',
+ 'Gate to gate':'Gate to gate','Radio drills':'Radiodriller','Simulator':'Simulator','A320 sim assessment':'A320-simulatortest','Type rating (B200)':'Typerating (B200)',
+ 'Flight Intelligence':'Flight Intelligence',
+ 'Your instructor, grounded in your own documents: the flight manual, your SOP, the checklists and the regulations. Each answer shows where it comes from, and your documents stay private in your browser.':'Din instruktør, forankret i dine egne dokumenter: flyhåndboken, SOP-en din, sjekklistene og regelverket. Hvert svar viser hvor det kommer fra, og dokumentene dine forblir private i nettleseren.',
+ 'Open Flight Intelligence':'Åpne Flight Intelligence','Check preparation':'Kontrollforberedelse',
+ 'Try one now':'Prøv en nå','How high does your aircraft think it is?':'Hvor høyt tror flyet ditt at det er?',
+ 'Set the field elevation, the QNH and the temperature. The wing and the engine perform at the density altitude, not at the height on the chart.':'Still inn flyplasshøyden, QNH og temperaturen. Vingen og motoren yter etter tetthetshøyden, ikke høyden på kartet.',
+ 'Field elevation':'Flyplasshøyde','Outside air temperature':'Utetemperatur','Standard day':'Standarddag','Hot and high':'Varmt og høyt','Cold, high pressure':'Kaldt, høytrykk',
+ 'Pressure altitude':'Trykkhøyde','ISA deviation':'ISA-avvik','Density altitude':'Tetthetshøyde','Air density, % of ISA sea level':'Lufttetthet, % av ISA ved havet',
+ 'Full lab: Pressure and altitude →':'Hele labben: Trykk og høyde →',
+ 'Coverage':'Dekning','Mapped to the EASA ATPL syllabus':'Knyttet til EASA ATPL-pensum',
+ 'Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.':'Hvert teorifag og hvor det undervises. Luftfartsrett og kommunikasjon dekkes av oppslagssider og øving i stedet for en lab.',
+ 'interactive labs':'interaktive labber','modules in the learning path':'moduler i læringsløpet','ATPL subjects with a dedicated lab':'ATPL-fag med egen lab','aircraft: the A320 in the labs, the King Air B200 type rating and a light twin in the training tools':'fly: A320 i labbene, King Air B200 i typeratingen og et tomotors småfly i treningsverktøyene','ISA model, dry air. Humidity raises the density altitude a little further.':'ISA-modell, tørr luft. Fuktighet øker tetthetshøyden litt til.',
+ 'Code':'Kode','Subject':'Fag','Where it is taught':'Hvor det undervises',
+ 'Made by Daniel Nilsson, pilot':'Laget av Daniel Nilsson, pilot',
+ 'I trained as an airline pilot. The hard parts were rarely the flying itself: they were the order of things, and the things you cannot see, like the air over the wing or why the altimeter is wrong on a cold day. Birdbird is the set of tools I wanted, and it keeps growing.':'Jeg er utdannet trafikkflyger. Det vanskeligste var sjelden selve flygingen: det var rekkefølgen på ting, og det du ikke kan se, som luften over vingen eller hvorfor høydemåleren tar feil på en kald dag. Birdbird er verktøyene jeg ønsket meg, og det vokser hele tiden.',
+ 'Teaching models, not operational data':'Pedagogiske modeller, ikke operative data',
+ 'The labs use simplified physics and typical values. A320 and B200 figures are illustrative, not manufacturer data.':'Labbene bruker forenklet fysikk og typiske verdier. Tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
+ 'Use Birdbird to understand and to prepare. Always follow the AFM, the AIP and your operator’s procedures.':'Bruk Birdbird til å forstå og forberede deg. Følg alltid AFM, AIP og operatørens prosedyrer.',
+ 'Progress and documents are stored in your own browser.':'Progresjon og dokumenter lagres i din egen nettleser.'
+});
+
+/* ---------- counts from the learning path ---------- */
+const FLAT=LAB.FLAT||[], PATH=LAB.PATH||[];
+const nLabs=FLAT.length||25, nMods=PATH.length||9, nLight=FLAT.filter(x=>x.lv!=='jet').length||19;
+const byKey=k=>FLAT.find(x=>x.k===k);
+
+/* ---------- 1. Hero: briefing pack with a gentle depth on pointer move ---------- */
+(function(){ const st=el('stage'); if(!st||RM||!window.matchMedia||!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const L=[...st.querySelectorAll('.pg')].map(e=>({e,d:+e.dataset.d})), fic=el('fic');
+  let r=null, tx=0, ty=0, cx=0, cy=0, run=false;
+  function step(){ cx+=(tx-cx)*.1; cy+=(ty-cy)*.1;
+    for(const p of L) p.e.style.transform=`translate(${(cx*p.d).toFixed(2)}px,${(cy*p.d*.6).toFixed(2)}px)`;
+    if(fic) fic.style.transform=`translate3d(${(-cx*8).toFixed(2)}px,${(-cy*6).toFixed(2)}px,0)`;
+    if(Math.abs(tx-cx)>.0008||Math.abs(ty-cy)>.0008) requestAnimationFrame(step); else run=false; }
+  const kick=()=>{ if(!run){ run=true; requestAnimationFrame(step); } };
+  const inv=()=>{ r=null; }; window.addEventListener('resize',inv,{passive:true}); window.addEventListener('scroll',inv,{passive:true});
+  st.addEventListener('pointermove',e=>{ if(!r) r=st.getBoundingClientRect(); tx=(e.clientX-r.left)/r.width-.5; ty=(e.clientY-r.top)/r.height-.5; kick(); },{passive:true});
+  st.addEventListener('pointerleave',()=>{ tx=0; ty=0; kick(); });
+})();
+
+/* ---------- welcome back ---------- */
+function prog(){
+  const doneLabs=FLAT.filter(x=>LAB.done(x.k)>=60), nxt=FLAT.find(x=>LAB.done(x.k)<60);
+  let xp=0, rk=null; if(window.NPROG){ try{ const d=NPROG.load(); xp=NPROG.xpOf(d); rk=NPROG.rankOf(xp); }catch(e){} }
+  const on=doneLabs.length>0||xp>0; el('wb').classList.toggle('on',on); if(!on) return;
+  el('wbN').textContent=L({en:`${doneLabs.length} of ${nLabs} labs done`,no:`${doneLabs.length} av ${nLabs} labber fullført`});
+  el('wbBar').style.width=Math.round(doneLabs.length/nLabs*100)+'%';
+  const nx=el('wbNext'); nx.textContent='';
+  if(nxt){ nx.append(L({en:'Next in the learning path: ',no:'Neste i læringsløpet: '})); const a=document.createElement('a'); a.href=nxt.f; a.textContent=L({en:nxt.en,no:nxt.no}); nx.append(a); }
+  if(rk&&xp>0) nx.append(' · '+rk.name+' · '+rk.xp+' XP');
+}
+document.addEventListener('nprog',prog);
+
+/* ---------- tracks and counts ---------- */
+function counts(){
+  el('tmF').textContent=L({en:`Core labs · A320 reference`,no:`Kjernelabber · A320 som referanse`});
+  el('tmA').textContent=L({en:`${nLabs} labs · ${nMods} modules`,no:`${nLabs} labber · ${nMods} moduler`});
+  el('pLab').textContent=L({en:`${nLabs} interactive labs in ${nMods} modules, following the EASA ATPL syllabus. Change the conditions yourself and watch the physics respond, then test your understanding.`,no:`${nLabs} interaktive labber i ${nMods} moduler, etter EASA ATPL-pensum. Endre forholdene selv og se fysikken svare, og test så forståelsen din.`});
+  el('nLabs').textContent=nLabs; el('nMods').textContent=nMods;
+}
+
+/* ---------- 4. Density altitude mini-lab ---------- */
+// ISA: PA from station pressure, density ratio from pressure and temperature, DA from density ratio.
+const D={el:2000,q:1013,t:15};
+const ISA=(pa)=>15-1.98*pa/1000;
+function calcDA(){ const ps=D.q*Math.pow(1-6.8756e-6*D.el,5.2559); const pa=(1-Math.pow(ps/1013.25,1/5.2559))/6.8756e-6;
+  const sig=(ps/1013.25)*(288.15/(D.t+273.15)); const da=(1-Math.pow(sig,1/4.2559))/6.8756e-6; return {ps,pa,sig,da,dev:D.t-ISA(pa)}; }
+const dsv=el('da'); const MQ2=window.matchMedia?matchMedia('(max-width:560px)'):null;
+const fmtFt=v=>(LAB.lang==='en'?Math.round(v/10)*10:Math.round(v/10)*10).toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO')+' ft';
+function drawDA(){
+  const r=calcDA();
+  const VW=(MQ2&&MQ2.matches)?360:560, XL=VW===360?44:70, XR=VW-10, LX=VW-122, M1=VW-250+(VW===360?40:0), M2=VW-140;
+  dsv.setAttribute('viewBox',`0 0 ${VW} 300`);
+  const AMAX=clamp(Math.ceil((Math.max(r.da,D.el,r.pa)+2500)/2000)*2000,8000,16000);
+  const y0=272, y1=30, Y=v=>y0-(clamp(v,-1000,AMAX)/AMAX)*(y0-y1);
+  dsv.innerHTML='';
+  // sky
+  const defs=mk('defs',{},dsv), lg=mk('linearGradient',{id:'dsky',x1:0,y1:0,x2:0,y2:1},defs);
+  mk('stop',{offset:0,'stop-color':'#E4ECF2'},lg); mk('stop',{offset:1,'stop-color':'#FFFFFF'},lg);
+  mk('rect',{x:XL,y:y1-14,width:XR-XL,height:y0-y1+14,fill:'url(#dsky)'},dsv);
+  // scale
+  for(let a=0;a<=AMAX;a+=1000){ const y=Y(a), maj=a%2000===0;
+    mk('line',{x1:XL,y1:y,x2:XR,y2:y,stroke:maj?'#DCE3E4':'#EEF2F3'},dsv);
+    mk('line',{x1:XL-8,y1:y,x2:XL,y2:y,stroke:'#4C5B66'},dsv);
+    if(maj) tx(dsv,a.toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO'),XL-12,y+4,{'text-anchor':'end','font-size':11,fill:'#4C5B66','font-family':'"IBM Plex Mono",ui-monospace,monospace'}); }
+  tx(dsv,'ft',XL-12,y1-10,{'text-anchor':'end','font-size':11,fill:'#4C5B66'});
+  mk('line',{x1:XL,y1:y1-14,x2:XL,y2:y0,stroke:'#13202A'},dsv);
+  // terrain and runway at field elevation
+  const ye=Y(D.el);
+  mk('path',{d:`M${XL} ${y0} L${XL} ${ye+30} L${XL+30} ${ye+12} L${XL+60} ${ye} L${M1-10} ${ye} L${M1+20} ${ye+14} L${M2} ${ye+8} L${LX+20} ${ye+26} L${XR} ${ye+40} L${XR} ${y0}Z`,fill:'#E9E4D8',stroke:'#B08A5A','stroke-width':1},dsv);
+  mk('rect',{x:XL+70,y:ye-3,width:M1-XL-90,height:4,fill:'#13202A'},dsv);
+  mk('line',{x1:XL,y1:y0,x2:XR,y2:y0,stroke:'#13202A'},dsv);
+  // markers
+  const M=[[D.el,L({en:'Field elevation',no:'Flyplasshøyde'}),'#13202A',0],[r.pa,L({en:'Pressure altitude',no:'Trykkhøyde'}),'#1D4E9E',1],[r.da,L({en:'Density altitude',no:'Tetthetshøyde'}),r.da-D.el>1500?'#B7791F':'#9A1E68',2]];
+  // spread labels so they do not overlap
+  const ys=M.map(m=>Y(m[0])); const order=[0,1,2].sort((i,j)=>ys[j]-ys[i]); const ly=ys.slice();
+  for(let k=1;k<3;k++){ const i=order[k], p=order[k-1]; if(ly[p]-ly[i]<32) ly[i]=ly[p]-32; }
+  M.forEach((m,i)=>{ const y=ys[i], col=m[2];
+    if(i>0) mk('line',{x1:M1,y1:y,x2:M2,y2:y,stroke:col,'stroke-width':2,'stroke-dasharray':i===1?'5 4':''},dsv);
+    mk('circle',{cx:M1,cy:y,r:4,fill:col},dsv);
+    mk('path',{d:`M${M2} ${y} L${M2+8} ${ly[i]} L${LX-4} ${ly[i]}`,fill:'none',stroke:col,'stroke-width':1},dsv);
+    tx(dsv,m[1],LX,ly[i]-3,{fill:col,'font-size':12.5,'font-weight':650});
+    tx(dsv,fmtFt(m[0]),LX,ly[i]+12,{fill:col,'font-size':12,'font-family':'"IBM Plex Mono",ui-monospace,monospace'}); });
+  // aircraft symbol at density altitude
+  const yd=Y(r.da); const g=mk('g',{transform:`translate(${(XL+M1)/2} ${Math.min(yd,ye-14)})`},dsv);
+  mk('path',{d:'M-26 0 C-22 -4 -8 -5 6 -4 L20 -3 C23 -2 25 -1 26 0 C25 2 21 2 16 2 L-16 2 C-21 2 -25 1 -26 0Z',fill:'#9A1E68'},g);
+  mk('path',{d:'M-23 -1 L-28 -11 L-23 -11 L-18 -2Z',fill:'#9A1E68'},g);
+  mk('path',{d:'M-6 1 L14 1',stroke:'#13202A','stroke-width':2.4},g);
+  // readouts
+  el('dPA').textContent=fmtFt(r.pa);
+  const dv=Math.round(r.dev); el('dIsa').textContent=(dv>0?'ISA+':dv<0?'ISA−':'ISA')+(dv?Math.abs(dv):'')+(dv?' °C':'');
+  const dd=el('dDA'); dd.textContent=fmtFt(r.da); dd.className=r.da-D.el>1500?'hi':'';
+  el('dSig').textContent=nf(r.sig*100,0)+' %';
+  const tas=100/Math.sqrt(r.sig);
+  el('dTxt').textContent=L({en:`At 100 KIAS the true airspeed is about ${Math.round(tas)} kt, so the take-off and landing rolls are ${tas>101?'longer':(tas<99?'shorter':'as published for sea level ISA')} at the same indicated speeds.`,no:`Ved 100 KIAS er sann fart omtrent ${Math.round(tas)} kt, så start- og landingsdistansen blir ${tas>101?'lengre':(tas<99?'kortere':'som publisert for ISA ved havnivå')} ved de samme indikerte fartene.`});
+}
+const PRE={std:[0,1013,15],hot:[5000,1008,32],cold:[0,1040,-20]};
+const sEl=LAB.slider(el('sEl'),{label:'Field elevation',min:0,max:10000,step:100,v:D.el,f:v=>v.toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO')+' ft',on:v=>{D.el=v;drawDA();}});
+const sQ=LAB.slider(el('sQ'),{label:'QNH',min:950,max:1050,step:1,v:D.q,f:v=>v+' hPa',on:v=>{D.q=v;drawDA();}});
+const sT=LAB.slider(el('sT'),{label:'Outside air temperature',min:-30,max:45,step:1,v:D.t,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' °C',on:v=>{D.t=v;drawDA();}});
+const seg=LAB.seg(el('daSeg'),[['std','Standard day'],['hot','Hot and high'],['cold','Cold, high pressure']],'',k=>{ const p=PRE[k]; D.el=p[0];D.q=p[1];D.t=p[2]; sEl.set(p[0]); sQ.set(p[1]); sT.set(p[2]); drawDA(); });
+[sEl,sQ,sT].forEach(s=>s.inp.addEventListener('input',()=>seg.set('')));
+
+/* ---------- 5. Syllabus coverage ---------- */
+const COV=[
+ ['010',{en:'Air law',no:'Luftfartsrett'},[['essentials.html',{en:'VFR and IFR essentials',no:'Det viktigste i VFR og IFR'}]],'ref'],
+ ['021',{en:'Aircraft general knowledge',no:'Flykunnskap'},['engines','systems','jets','press'],'lab'],
+ ['022',{en:'Instrumentation',no:'Instrumentering'},['alt','pitot','gyro','af'],'lab'],
+ ['031',{en:'Mass and balance',no:'Masse og balanse'},['mb'],'lab'],
+ ['032',{en:'Performance',no:'Ytelse'},['perf'],'lab'],
+ ['033',{en:'Flight planning and monitoring',no:'Flyplanlegging og overvåking'},['fpl',['planning.html',{en:'Navigation log',no:'Navigasjonslogg'}]],'lab'],
+ ['040',{en:'Human performance and limitations',no:'Menneskelig ytelse og begrensninger'},['ori','hp'],'lab'],
+ ['050',{en:'Meteorology',no:'Meteorologi'},['clouds','fronts','storms','hazards'],'lab'],
+ ['061',{en:'General navigation',no:'Generell navigasjon'},['gnav'],'lab'],
+ ['062',{en:'Radio navigation',no:'Radionavigasjon'},['radionav','gnss','hold','approach'],'lab'],
+ ['070',{en:'Operational procedures',no:'Operative prosedyrer'},['hazards',['simcheck.html',{en:'A320 simulator assessment',no:'A320-simulatortest'}]],'part'],
+ ['081',{en:'Principles of flight',no:'Aerodynamikk'},['tunnel','stab','prop','hs'],'lab'],
+ ['090',{en:'Communications',no:'Kommunikasjon'},[['radio-drills.html',{en:'Radio drills',no:'Radiodriller'}],['radio.html',{en:'Gate to gate',no:'Gate to gate'}]],'prac']
+];
+const STL={lab:{en:'Lab',no:'Lab'},part:{en:'Partly',no:'Delvis'},ref:{en:'Reference',no:'Oppslag'},prac:{en:'Practice',no:'Øving'}};
+function drawCov(){
+  const tb=el('covBody'); tb.innerHTML='';
+  COV.forEach(([c,s,items,st])=>{
+    const tr=document.createElement('tr');
+    const links=items.map(it=>{ if(typeof it==='string'){ const x=byKey(it); return x?`<a href="${x.f}">${L({en:x.en,no:x.no})}</a>`:''; } return `<a href="${it[0]}">${L(it[1])}</a>`; }).filter(Boolean).join(', ');
+    tr.innerHTML=`<td class="c">${c}</td><td class="s">${L(s)}</td><td class="l">${links}</td><td class="t"><span class="st s-${st}"><i></i>${L(STL[st])}</span></td>`;
+    tb.appendChild(tr); });
+  el('nSub').textContent=COV.filter(r=>r[3]==='lab').length+' / '+COV.length;
+}
+
+/* ---------- track choice (first-visit onboarding, remembered) ---------- */
+const TK='bb-track';
+function getTrack(){ try{ return localStorage.getItem(TK)||''; }catch(e){ return ''; } }
+function showTrack(){ const t=getTrack();
+  document.querySelectorAll('#trSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+  document.querySelectorAll('#trList .track').forEach(c=>c.classList.toggle('pick',c.dataset.t===t));
+  el('trList').classList.toggle('chosen',!!t); }
+function setTrack(t){ try{ localStorage.setItem(TK,t); }catch(e){} showTrack(); }
+el('trSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setTrack(b.dataset.t);
+  const c=document.querySelector(`#trList .track[data-t="${b.dataset.t}"]`); if(c&&window.innerWidth<1020) c.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); });
+el('trList').addEventListener('click',e=>{ const a=e.target.closest('a'), c=e.target.closest('.track'); if(a&&c) setTrack(c.dataset.t); });
+showTrack();
+
+LAB.start('home');
+function all(){ drawDA(); drawCov(); counts(); prog(); }
+all(); LAB.onLang(all);
+if(MQ2&&MQ2.addEventListener) MQ2.addEventListener('change',drawDA);
+})();
+
+(function(){ const el=LAB.el, L=LAB.L; const n=el('srcnote'); if(!n) return; const d=()=>{ n.innerHTML=L({en:'<span class="sn-k">Sources</span><span>Flight Intelligence answers from your own AFM, QRH and SOP first. Regulations follow the <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, March 2026) and ICAO; airspace and procedures come from your national <b>AIP</b>. Not a live feed: always check the current revision. <a href="sources.html">All data sources →</a></span>',no:'<span class="sn-k">Kilder</span><span>Flight Intelligence svarer først fra din egen AFM, QRH og SOP. Regelverket følger <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, mars 2026) og ICAO; luftrom og prosedyrer kommer fra ditt nasjonale <b>AIP</b>. Ikke en direkte kobling: sjekk alltid gjeldende revisjon. <a href="sources.html">Alle datakilder →</a></span>'}); }; d(); LAB.onLang(d); })();
+</script>
+</body>
+</html>

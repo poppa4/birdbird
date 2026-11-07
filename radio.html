@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gate to gate · Birdbird</title>
+<meta name="description" content="Fly a whole DA42 training trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks.">
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="train.css?v=1">
+<style>
+@font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
+.setup{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
+.setup .f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.setup .seg{min-width:220px}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:14px;color:var(--ink)}
+.g2g{display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start;margin-top:4px}
+@media (max-width:980px){.g2g{grid-template-columns:minmax(0,1fr)}.side{order:2}}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:62px}
+@media (max-width:980px){.side{position:static}}
+.phases{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.phases li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:14px;color:var(--ink-2)}
+.phases li .d{width:12px;height:12px;border-radius:50%;border:2px solid var(--rule);justify-self:center}
+.phases li.done{color:var(--ink)} .phases li.done .d{background:var(--ink);border-color:var(--ink)}
+.phases li.now{color:var(--ink);font-weight:600} .phases li.now .d{border-color:var(--magenta);background:var(--magenta);box-shadow:0 0 0 4px #F3E6EE}
+.phases li b{font-weight:600;font-size:13px;font-variant-numeric:tabular-nums}
+.illus{background:#0F171D;border-radius:4px;overflow:hidden;position:relative}
+.illus svg{display:block;width:100%;height:auto}
+.illus .cap{position:absolute;left:12px;top:10px;font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8FA1AE}
+.step{display:flex;flex-direction:column;gap:12px;margin-top:16px;min-height:280px}
+.step .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.step .kind{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--magenta)}
+.step .cnt{font-size:13px;color:var(--ink-2)}
+.step h3{font-size:22px!important;margin:0}
+.step .qtext{font-size:16px;margin:0;max-width:70ch}
+.opts{display:grid;gap:6px;max-width:760px}
+.opts button{text-align:left;font-size:15px;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:3px;padding:11px 14px;cursor:pointer;line-height:1.4}
+.opts button:hover:not([disabled]){border-color:var(--ink)}
+.opts button.right{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
+.opts button.wrong{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
+.opts button[disabled]{cursor:default}
+.why{font-size:14.5px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:10px 14px;max-width:80ch}
+.why b{color:var(--ink)}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:700px){.flow{grid-template-columns:minmax(0,1fr)}}
+.flow h4{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.pool{display:flex;flex-direction:column;gap:6px}
+.pool button{text-align:left;font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.pool button:hover{border-color:var(--ink)}
+.pool button.shake{animation:shake .3s;border-color:var(--red)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.pool button.shake{animation:none}}
+.done-list{list-style:none;margin:0;padding:0;counter-reset:n;display:flex;flex-direction:column;gap:6px}
+.done-list li{counter-increment:n;display:flex;gap:10px;align-items:baseline;font-size:14px;padding:8px 12px;border:1px solid var(--rule-2);border-radius:3px;background:#F6F8F6}
+.done-list li::before{content:counter(n);font-family:var(--f-display);font-stretch:88%;font-weight:750;color:var(--ink-2);min-width:16px}
+.done-list li.ok{border-color:#B9DCC6}.done-list li.bad{border-color:#E8B8B3;background:#FBF1F0}
+.done-list li small{display:block;color:var(--ink-2);font-size:12px}
+.cl{border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:760px}
+.cl .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:9px 14px;border-bottom:1px dotted var(--rule);font-size:14.5px;align-items:center}
+.cl .row:last-child{border-bottom:0}
+.cl .row .r{font-family:var(--f-mono);font-size:13px;font-weight:500;text-align:right}
+.cl .row .r.bad{color:var(--red)} .cl .row .r.ok{color:var(--green)}
+.cl .row.cur{background:#F3E6EE}
+.cl .hd{padding:8px 14px;background:var(--ink);color:#fff;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.resp{display:flex;flex-wrap:wrap;gap:8px}
+.resp button{font-family:var(--f-mono);font-size:13px;background:var(--sheet);border:1px solid var(--ink);border-radius:3px;padding:8px 12px;cursor:pointer}
+.resp button:hover{background:#EEF1EF}
+.atis{font-family:var(--f-mono);font-size:12.5px;background:#070a0d;border:1px solid #3a4048;border-radius:6px;padding:10px 12px;color:#d7f5e1;line-height:1.55}
+.ask{display:flex;flex-direction:column;gap:10px}
+.ask .aq{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ask .aq span{min-width:110px;font-size:14px;color:var(--ink-2)}
+.nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid var(--rule)}
+.facts div{padding:8px 12px 8px 0;border-bottom:1px solid var(--rule-2);font-size:13.5px}
+.facts div span{display:block;font-size:12px;color:var(--ink-2)}
+.chartwrap{max-width:560px;border:1px solid var(--rule)}
+.deb .kpis{margin-top:4px}
+.deb table{border-collapse:collapse;width:100%;max-width:760px;font-size:14px}
+.deb td,.deb th{padding:7px 8px;border-bottom:1px solid var(--rule-2);text-align:left}
+.deb th{font-size:12px;color:var(--ink-2);font-weight:500}
+.deb td:last-child,.deb th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.order-table{border-collapse:collapse;width:100%;font-size:14px}
+.order-table td,.order-table th{padding:8px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
+.order-table th{font-size:12px;color:var(--ink-2);font-weight:500}
+.order-table td:first-child{font-weight:600;white-space:nowrap}
+</style>
+</head>
+<body data-title="Gate to gate">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird · Training</div>
+      <h1>Gate to gate</h1>
+      <p>Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+
+  <section class="card" id="trip">
+    <div class="setup">
+      <div class="f">Flight<div id="scen"></div></div>
+      <div class="f">Mode<div id="mode"></div></div>
+      <label class="chk"><input type="checkbox" id="voice" checked> ATC voice</label>
+      <span class="ai-state" id="aist">AI: checking…</span>
+      <button class="btn" id="newf">New flight</button>
+    </div>
+    <div class="g2g">
+      <aside class="side">
+        <ol class="phases" id="phases"></ol>
+        <div class="knee" id="knee"></div>
+      </aside>
+      <div>
+        <div class="illus" id="illus"></div>
+        <div class="step" id="step" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="order">
+    <div class="eyebrow">Reference</div>
+    <h2>The order of a flight</h2>
+    <p class="lead">The rhythm is the same in every phase: do the flow from memory, verify with the checklist, brief what is coming, then talk. The checklist is read in full on the ground, and kept short below 1000 ft.</p>
+    <table class="order-table">
+      <thead><tr><th>When</th><th>What you do</th><th>Radio</th></tr></thead>
+      <tbody id="otab"></tbody>
+    </table>
+    <p class="note">Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.</p>
+  </section>
+</div>
+<script src="lab.js?v=20"></script>
+<script src="ops.js?v=3"></script>
+<script src="brief.js?v=7"></script>
+<script src="chart.js?v=4"></script>
+<script src="g2g-steps.js?v=2"></script>
+<script src="ai.js?v=1"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,shuffle}=LAB, esc=NAI.esc;
+LAB.add({},{
+ 'Birdbird · Training':'Birdbird · Trening','Gate to gate':'Gate to gate','Gate to Gate':'Gate to gate',
+ 'Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.':'Fly en hel tur i DA42 i riktig rekkefølge: flows, sjekklister, briefinger og hvert radiooppkall, fra planleggingsrommet til klossene. AI-en spiller flygeleder og instruktør, med tale eller tastatur.',
+ 'Flight':'Tur','Mode':'Modus','ATC voice':'ATC-stemme','New flight':'Ny tur','Reference':'Oppslag','The order of a flight':'Rekkefølgen på en flytur',
+ 'The rhythm is the same in every phase: do the flow from memory, verify with the checklist, brief what is coming, then talk. The checklist is read in full on the ground, and kept short below 1000 ft.':'Rytmen er den samme i hver fase: gjør flowen fra hukommelsen, verifiser med sjekklisten, brief det som kommer, og snakk så. Sjekklisten leses fullt ut på bakken, og holdes kort under 1000 ft.',
+ 'When':'Når','What you do':'Hva du gjør','Radio':'Radio',
+ 'Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.':'Basert på flyhåndboken for Diamond DA42 NG/VI og en typisk ATO-SOP for DA42-VI. Skolens egen SOP og sjekkliste går alltid foran. Birdbird, prosedyrene, kartene og frekvensene er oppdiktet.',
+ 'IFR training flight':'IFR-treningstur','VFR local flight':'VFR lokaltur','Learn':'Lær','Check':'Sjekk'
+});
+const KEY='naeroson-g2g';
+const S={scen:'ifr',mode:'learn',V:null,steps:[],i:0,res:[],K:{},done:false};
+let sub={}; // tilstand for steget som vises
+
+/* ---------- lagring ---------- */
+/* keep chart text inside its frame: squeeze any start-anchored line that would run past the right edge */
+function fitChartText(box){ if(!box) return; box.querySelectorAll('svg[viewBox]').forEach(svg=>{ const vb=svg.viewBox.baseVal; if(!vb||!vb.width) return;
+  svg.querySelectorAll('text').forEach(t=>{ if((t.getAttribute('text-anchor')||'start')!=='start') return; t.removeAttribute('textLength'); t.removeAttribute('lengthAdjust');
+    const x=parseFloat(t.getAttribute('x'))||0, avail=vb.width-x-Math.max(16,Math.min(x,24)); let len=0; try{ len=t.getComputedTextLength(); }catch(e){ return; }
+    if(len>avail&&avail>40){ t.setAttribute('textLength',avail.toFixed(1)); t.setAttribute('lengthAdjust','spacingAndGlyphs'); } }); }); }
+document.addEventListener('toggle',e=>{ const d=e.target; if(d&&d.open&&d.querySelector&&d.querySelector('.chartwrap')) fitChartText(d); },true);
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({scen:S.scen,mode:S.mode,V:S.V,i:S.i,res:S.res,K:S.K,done:S.done})); }catch(e){} }
+function load(){ try{ const o=JSON.parse(localStorage.getItem(KEY)||'null'); if(o&&o.V){ Object.assign(S,o); S.steps=G2G.STEPS(S.V); return true; } }catch(e){} return false; }
+function newFlight(scen){ if(scen) S.scen=scen; S.V=OPS.flight({rules:S.scen}); S.steps=G2G.STEPS(S.V); S.i=0; S.res=[]; S.K={}; S.done=false; save(); render(true); }
+
+/* ---------- normalisering for radio ---------- */
+const PHON={alfa:'a',alpha:'a',bravo:'b',charlie:'c',delta:'d',echo:'e',foxtrot:'f',golf:'g',hotel:'h',india:'i',juliett:'j',juliet:'j',kilo:'k',lima:'l',mike:'m',november:'n',oscar:'o',papa:'p',quebec:'q',romeo:'r',sierra:'s',tango:'t',uniform:'u',victor:'v',whiskey:'w',whisky:'w',xray:'x','x-ray':'x',yankee:'y',zulu:'z'};
+function rnorm(t){ const n=BRIEF.norm(String(t).replace(/-/g,' ').replace(/\balpha\b/gi,'alfa').replace(/\bjuliet\b/gi,'juliett').replace(/\bwhisky\b/gi,'whiskey').replace(/x-ray/gi,'xray'));
+  const sp=n.replace(/\b(?:(?:alfa|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliett|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\s+){2,}(?:alfa|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliett|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\b/g,m=>m.split(/\s+/).map(w=>PHON[w]).join(''));
+  return n+' | '+sp; }
+function hasCS(t){ const c=String(t).toLowerCase().replace(/[a-z-]+/g,w=>PHON[w]||w).replace(/[^a-z0-9]/g,''); return /lnnae|lnae|lae|nae/.test(c); }
+function rule(step,txt){ const n=rnorm(txt); return step.items.map(it=> it.cs? hasCS(txt) : (it.re.test(n) && !(it.not&&it.not.test(n)))); }
+
+/* ---------- illustrasjon ---------- */
+const GPOS={office:[408,128,0],stand:null,taxi:[250,150,180],hp:[236,222,270],lineup:[200,214,0],roll:[200,120,0],vacate:[226,30,90],taxiin:[250,78,180]};
+function standPos(){ const k=OPS.APT.stands.indexOf(S.V.stand); return [284+k*15,150,0]; }
+const plane=(x,y,r,c)=>`<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0-9 L1.6-4 L1.6-1.5 L9 2 L9 3.6 L1.6 2.4 L1.2 6 L4 7.6 L4 8.8 L0 8 L-4 8.8 L-4 7.6 L-1.2 6 L-1.6 2.4 L-9 3.6 L-9 2 L-1.6-1.5 L-1.6-4Z" fill="${c||'#F5C94A'}" stroke="#0F171D" stroke-width=".8"/></g>`;
+function ground(pos){
+  const p= pos==='stand'?standPos(): GPOS[pos]||standPos();
+  let s=`<svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">`;
+  s+=`<rect width="640" height="250" fill="#16222A"/>`;
+  s+=`<rect x="190" y="18" width="20" height="214" fill="#3A444C"/><line x1="200" y1="28" x2="200" y2="222" stroke="#C9D2D8" stroke-dasharray="7 7" stroke-width="1.2"/>`;
+  s+=`<text x="200" y="244" fill="#C9D2D8" font-family="IBM Plex Mono,monospace" font-size="11" text-anchor="middle">36</text><text x="200" y="14" fill="#C9D2D8" font-family="IBM Plex Mono,monospace" font-size="11" text-anchor="middle">18</text>`;
+  s+=`<path d="M210 30 H250 V222 H210 M250 125 H210" fill="none" stroke="#2C363E" stroke-width="10"/><path d="M210 30 H250 V222 H210 M250 125 H210" fill="none" stroke="#C9A43A" stroke-width="1"/>`;
+  s+=`<line x1="222" y1="215" x2="222" y2="229" stroke="#E5B93A" stroke-width="2.5"/><text x="232" y="244" fill="#E5B93A" font-family="IBM Plex Mono,monospace" font-size="10">A1</text><text x="232" y="22" fill="#E5B93A" font-family="IBM Plex Mono,monospace" font-size="10">A3</text><text x="256" y="200" fill="#8FA1AE" font-family="IBM Plex Mono,monospace" font-size="10">A</text>`;
+  s+=`<rect x="262" y="128" width="104" height="40" fill="#2C363E"/><text x="314" y="182" fill="#8FA1AE" font-family="IBM Plex Mono,monospace" font-size="10" text-anchor="middle">APRON</text>`;
+  OPS.APT.stands.forEach((st,k)=>{ s+=`<text x="${284+k*15}" y="138" fill="#5E7180" font-family="IBM Plex Mono,monospace" font-size="8" text-anchor="middle">${st}</text>`; });
+  s+=`<rect x="384" y="104" width="50" height="34" fill="#25313A" stroke="#3E4C56"/><text x="409" y="152" fill="#8FA1AE" font-family="IBM Plex Mono,monospace" font-size="9" text-anchor="middle">CLUB</text>`;
+  s+=`<rect x="372" y="64" width="10" height="22" fill="#25313A" stroke="#3E4C56"/><text x="390" y="76" fill="#8FA1AE" font-family="IBM Plex Mono,monospace" font-size="9">TWR</text>`;
+  s+=`<path d="M560 40 v-18 l-4 8 h8 l-4 -8" stroke="#8FA1AE" fill="none"/><text x="560" y="54" fill="#8FA1AE" font-family="IBM Plex Mono,monospace" font-size="10" text-anchor="middle">N</text>`;
+  if(pos==='office') s+=`<circle cx="409" cy="121" r="7" fill="#F5C94A"/>`+plane(...standPos(),'#7D8B95');
+  else s+=plane(p[0],p[1],p[2]);
+  return s+'</svg>';
+}
+const APOS_I={climb:[110,1000],osvik:[230,3000],alpor:[330,3000],hold:[420,3000],faf:[500,1700],final:[556,800],short:[596,250]};
+const APOS_V={climb:[100,800],vrp:[185,1500],area:[320,3000],rejoin:[430,2000],vrpIn:[490,1500],base:[555,1000],final:[595,400]};
+function air(pos){
+  const ifr=S.V.ifr, P=ifr?APOS_I:APOS_V, gy=215, Y=a=>gy-a/3000*150;
+  let s=`<svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="640" height="250" fill="#16222A"/>`;
+  s+=`<rect x="0" y="${gy}" width="640" height="35" fill="#1E2C25"/>`;
+  [1000,2000,3000].forEach(a=>{ s+=`<line x1="0" y1="${Y(a)}" x2="640" y2="${Y(a)}" stroke="#22303A"/><text x="8" y="${Y(a)-4}" fill="#5E7180" font-family="IBM Plex Mono,monospace" font-size="9">${a}</text>`; });
+  s+=`<rect x="22" y="${gy-3}" width="40" height="3" fill="#C9D2D8"/><rect x="590" y="${gy-3}" width="40" height="3" fill="#C9D2D8"/>`;
+  const pts= ifr? [[40,0],[110,1000],[150,1500],[230,3000],[330,3000],[420,3000],[470,3000],[500,1700],[556,800],[610,0]]
+               : [[40,0],[100,800],[185,1500],[260,3000],[380,3000],[430,2000],[490,1500],[555,1000],[610,0]];
+  s+=`<polyline points="${pts.map(p=>p[0]+','+Y(p[1])).join(' ')}" fill="none" stroke="#9A1E68" stroke-width="2" stroke-dasharray="1 0"/>`;
+  const lab=ifr? [['OSVIK',230,3000],['ALPOR',330,3000],['RONAX',420,3000],['FAPSO',500,1700],['RWY 36',610,0]] : [[S.V.vrp==='S'?'SIERRA':'NOVEMBER',185,1500],['TRAINING AREA',320,3000],[S.V.vrp==='S'?'SIERRA':'NOVEMBER',490,1500],['RWY 36',610,0]];
+  lab.forEach(([t,x,a])=>{ s+=`<circle cx="${x}" cy="${Y(a)}" r="3" fill="#C9D2D8"/><text x="${x}" y="${Y(a)-10}" fill="#C9D2D8" font-family="IBM Plex Mono,monospace" font-size="10" text-anchor="middle">${t}</text>`; });
+  if(ifr) s+=`<ellipse cx="434" cy="${Y(3000)+20}" rx="22" ry="8" fill="none" stroke="#5E7180" stroke-dasharray="3 3"/><path d="M500 ${Y(1700)-7}l7 7-7 7-7-7z" fill="none" stroke="#C9D2D8"/>`;
+  const p=P[pos]||[40,0];
+  s+=`<g transform="translate(${p[0]} ${Y(p[1])}) scale(1.7)"><path d="M-12 0 L8 -1.5 L12 0 L8 1.5 Z M-3 -1 L2 -7 L4 -7 L2 -1 Z M-11 -1 L-9 -6 L-7 -6 L-8 -1Z" fill="#F5C94A"/></g>`;
+  s+=`<text x="${p[0]+24}" y="${Y(p[1])-12}" fill="#F5C94A" font-family="IBM Plex Mono,monospace" font-size="11" font-weight="600">${p[1]?p[1]+' ft':''}</text>`;
+  return s+'</svg>';
+}
+function illus(step){ const g=GPOS[step.pos]!==undefined||step.pos==='stand'||step.pos==='office'; el('illus').innerHTML=(g?ground(step.pos):air(step.pos))+`<span class="cap">${esc(L(G2G.PHASES.find(p=>p[0]===step.ph)[1]))}</span>`; }
+
+/* ---------- sidepanel ---------- */
+const KN=[['atis','ATIS'],['qnh','QNH'],['wind',{en:'Wind',no:'Vind'}],['rwy','RWY'],['start',{en:'Start-up',no:'Oppstart'}],['clr',{en:'Clearance',no:'Klarering'}],['sq','Squawk'],['taxi',{en:'Taxi',no:'Taksing'}],['to',{en:'Take-off',no:'Avgang'}],['exp',{en:'Expect',no:'Forvent'}],['app',{en:'Approach',no:'Innflyging'}],['ldg',{en:'Landing',no:'Landing'}]];
+function side(){
+  const cur=S.done?null:S.steps[S.i];
+  el('phases').innerHTML=G2G.PHASES.filter(p=>S.steps.some(x=>x.ph===p[0])).map(([k,t])=>{ const idx=S.steps.map((x,j)=>x.ph===k?j:-1).filter(j=>j>=0);
+    const sc=idx.map(j=>S.res[j]).filter(v=>v!=null); const done=S.done||idx.every(j=>j<S.i); const now=cur&&cur.ph===k;
+    const pct=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length*100)+' %':''; return `<li class="${now?'now':done?'done':''}"><span class="d"></span><span>${esc(L(t))}</span><b>${done||now?pct:''}</b></li>`; }).join('');
+  const keys=KN.filter(([k])=> S.V.ifr || !['clr','exp','app'].includes(k));
+  el('knee').innerHTML=`<b>${L({en:'Kneeboard',no:'Kneebrett'})} · LN-NAE</b>`+keys.map(([k,l])=>`<div class="kr"><span>${typeof l==='string'?l:L(l)}</span>${S.K[k]!=null?`<i>${esc(S.K[k])}</i>`:'<i class="empty">—</i>'}</div>`).join('');
+}
+
+/* ---------- AI ---------- */
+let aiOn=false;
+const drawAist=m=>{ aiOn=!!m; const a=el('aist'); a.classList.toggle('on',aiOn); a.textContent= aiOn? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Built-in checks',no:'Innebygde sjekker'}); a.title= aiOn&&NAI.mode==='sample'? L({en:'Uses your Claude account. The first call asks for permission.',no:'Bruker Claude-kontoen din. Første kall ber om tillatelse.'}) : L({en:'Radio calls and briefings are checked by the built-in rules. Open the page in Claude for the AI controller and instructor.',no:'Oppkall og briefinger sjekkes av innebygde regler. Åpne siden i Claude for AI-flygeleder og instruktør.'}); };
+NAI.ready.then(m=>{ drawAist(m); LAB.onLang(()=>drawAist(NAI.mode)); });
+
+/* ---------- steg ---------- */
+const KIND={mcq:{en:'Decide',no:'Bestem'},order:{en:'Flow',no:'Flow'},check:{en:'Checklist',no:'Sjekkliste'},atis:{en:'Listen',no:'Lytt'},brief:{en:'Brief',no:'Brief'},radio:{en:'Radio',no:'Radio'}};
+function head(st){ const n=S.steps.length; return `<div class="top"><span class="kind">${esc(L(KIND[st.k]))}</span><span class="cnt">${L({en:'Step',no:'Steg'})} ${S.i+1} ${T('av')} ${n}</span></div><h3>${esc(L(st.t))}</h3>`; }
+function navBtns(canNext){ return `<div class="nav"><button class="btn pri" id="nx" ${canNext?'':'hidden'}>${L({en:'Continue',no:'Fortsett'})} →</button>${S.i>0?`<button class="btn" id="bk">← ${L({en:'Back',no:'Tilbake'})}</button>`:''}</div>`; }
+function wireNav(){ const n=el('nx'); if(n) n.onclick=next; const b=el('bk'); if(b) b.onclick=()=>{ NAI.hush(); S.i=Math.max(0,S.i-1); save(); render(true); }; }
+function finishStep(score){ S.res[S.i]=score==null?null:Math.max(0,Math.min(1,score)); const st=S.steps[S.i]; if(st.knee) Object.assign(S.K,st.knee); save(); side(); const n=el('nx'); if(n){ n.hidden=false; n.focus({preventScroll:true}); } }
+function next(){ NAI.hush(); if(S.i<S.steps.length-1){ S.i++; save(); render(true); } else { S.done=true; save(); debrief(); } }
+function whyBox(st,ok){ return st.why? `<div class="why"><b>${ok===true?L({en:'Correct.',no:'Riktig.'}):ok===false?L({en:'Not quite.',no:'Ikke helt.'}):''}</b> ${esc(L(st.why))}</div>` : ''; }
+
+function render(scroll){
+  side(); if(S.done){ debrief(); return; }
+  const st=S.steps[S.i]; sub={}; illus(st);
+  const box=el('step');
+  ({mcq:rMcq,order:rOrder,check:rCheck,atis:rAtis,brief:rBrief,radio:rRadio})[st.k](st,box);
+  if(scroll){ const r=el('trip').getBoundingClientRect(); if(r.top<-200) el('illus').scrollIntoView({block:'start',behavior:'smooth'}); }
+}
+
+/* valg */
+function rMcq(st,box){
+  const order=shuffle(st.a.map((_,k)=>k)); const prev=S.res[S.i];
+  box.innerHTML=head(st)+`<p class="qtext">${esc(L(st.q))}</p><div class="opts">${order.map(k=>`<button data-k="${k}">${esc(L(st.a[k]))}</button>`).join('')}</div><div id="wy"></div>`+navBtns(prev!=null);
+  wireNav();
+  box.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; box.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; const xk=+x.dataset.k; if(xk===st.c) x.classList.add('right'); else if(xk===k) x.classList.add('wrong'); });
+    el('wy').innerHTML=whyBox(st,k===st.c); finishStep(k===st.c?1:0); });
+}
+/* flow i rekkefølge */
+function lis(a){ const d=[]; a.forEach(v=>{ let i=d.findIndex(x=>x>=v); if(i<0) d.push(v); else d[i]=v; }); return d.length; }
+function rOrder(st,box){
+  const n=st.items.length; sub={picked:[],miss:0,pool:shuffle(st.items.map((_,k)=>k))}; const learn=S.mode==='learn';
+  box.innerHTML=head(st)+`<p class="qtext">${esc(L(st.q))}</p>
+    <div class="flow"><div><h4>${L({en:'Items',no:'Punkter'})}</h4><div class="pool" id="pool"></div></div><div><h4>${L({en:'Your flow',no:'Din flow'})}</h4><ol class="done-list" id="dl"></ol></div></div><div id="wy"></div>`+navBtns(false);
+  wireNav();
+  const draw=()=>{ el('pool').innerHTML=sub.pool.filter(k=>!sub.picked.includes(k)).map(k=>`<button data-k="${k}">${esc(st.items[k])}</button>`).join('');
+    el('dl').innerHTML=sub.picked.map((k,j)=>`<li class="${sub.end?(k===j?'ok':'bad'):''}">${esc(st.items[k])}${sub.end&&k!==j?`<small>${L({en:'Should be',no:'Skal være'})}: ${esc(st.items[j])}</small>`:''}</li>`).join('');
+    el('pool').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k;
+      if(learn && k!==sub.picked.length){ sub.miss++; b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); return; }
+      sub.picked.push(k); if(sub.picked.length===n) end(); draw(); }); };
+  const end=()=>{ sub.end=true; const sc= learn? Math.max(0,1-sub.miss/n) : lis(sub.picked)/n; const ok=sc>=0.99;
+    el('wy').innerHTML=`<div class="why"><b>${Math.round(sc*100)} %.</b> ${learn? (sub.miss?L({en:`${sub.miss} wrong ${sub.miss===1?'tap':'taps'} on the way.`,no:`${sub.miss} feil trykk underveis.`}):L({en:'Clean flow.',no:'Ren flow.'})) : (ok?L({en:'All in order.',no:'Alt i riktig rekkefølge.'}):L({en:'The red ones are out of place.',no:'De røde står på feil plass.'}))} ${st.why?esc(L(st.why)):''}</div>`;
+    finishStep(sc); };
+  draw();
+}
+/* sjekkliste */
+function rCheck(st,box){
+  sub={j:0,ok:0,ans:[]}; const learn=S.mode==='learn';
+  box.innerHTML=head(st)+`<p class="qtext">${esc(L(st.q))}</p><div class="cl" id="cl"></div><div class="resp" id="resp"></div><div id="wy"></div>`+navBtns(false);
+  wireNav();
+  const draw=()=>{
+    el('cl').innerHTML=`<div class="hd">${esc(L(st.t))}</div>`+st.items.map((it,j)=>`<div class="row ${j===sub.j?'cur':''}"><span>${esc(it[0])}</span><span class="r ${sub.ans[j]==null?'':sub.ans[j]?'ok':'bad'}">${j<sub.j? esc(it[1]) : j===sub.j?'…':''}</span></div>`).join('');
+    if(sub.j>=st.items.length){ el('resp').innerHTML=''; const sc=sub.ok/st.items.length; el('wy').innerHTML=`<div class="why"><b>${L({en:'Checklist completed',no:'Sjekkliste fullført'})} · ${Math.round(sc*100)} %.</b> ${st.why?esc(L(st.why)):''}</div>`; finishStep(sc); return; }
+    const it=st.items[sub.j]; el('resp').innerHTML=shuffle([it[1]].concat(it[2])).map(r=>`<button data-r="${esc(r)}">${esc(r)}</button>`).join('');
+    el('resp').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const right=b.dataset.r===it[1]; sub.ans[sub.j]=right; if(right) sub.ok++;
+      if(!right&&learn){ el('wy').innerHTML=`<div class="why"><b>${esc(it[0])}:</b> ${esc(it[1])}</div>`; } else el('wy').innerHTML='';
+      sub.j++; draw(); }); };
+  draw();
+}
+/* ATIS */
+function rAtis(st,box){
+  const learn=S.mode==='learn'; sub={a:{}};
+  box.innerHTML=head(st)+`<p class="qtext">${esc(L(st.q))}</p>
+    <div class="radio"><div class="rhead"><div class="freq"><span class="act">${st.freq[0]}</span><span class="stn">${esc(st.freq[1])}</span></div><span class="tx" id="rxi">RX</span></div>
+    <div class="rbtns"><button class="btn pri" id="play">▶ ${L({en:'Play ATIS',no:'Spill av ATIS'})}</button><button class="btn" id="show">${L({en:'Show text',no:'Vis tekst'})}</button></div>
+    <div class="atis" id="atx" ${learn||!('speechSynthesis' in window)?'':'hidden'}>${esc(st.text)}</div></div>
+    <div class="ask">${st.ask.map((q,j)=>`<div class="aq"><span>${esc(L(q.q))}</span><div class="resp" data-j="${j}">${shuffle(q.opts.slice()).map(o=>`<button data-o="${esc(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}</div><div id="wy"></div>`+navBtns(false);
+  wireNav();
+  el('play').onclick=async()=>{ el('rxi').classList.add('rx'); await NAI.speak(st.text,{rate:1.1}); el('rxi').classList.remove('rx'); };
+  el('show').onclick=()=>{ el('atx').hidden=false; sub.peek=true; };
+  box.querySelectorAll('.ask .resp').forEach(r=>r.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const j=+r.dataset.j, q=st.ask[j]; if(sub.a[j]!=null) return; sub.a[j]=b.dataset.o===q.a;
+    r.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.o===q.a) x.style.borderColor='var(--green)'; else if(x===b) x.style.borderColor='var(--red)'; });
+    if(Object.keys(sub.a).length===st.ask.length){ const sc=Object.values(sub.a).filter(Boolean).length/st.ask.length; el('atx').hidden=false;
+      el('wy').innerHTML=`<div class="why"><b>${Math.round(sc*100)} %.</b> ${L({en:'Note the letter and the QNH on your kneeboard, and say the letter on first contact.',no:'Noter bokstaven og QNH på kneebrettet, og si bokstaven ved første kontakt.'})}</div>`; finishStep(sc); } }));
+}
+/* briefing */
+function rBrief(st,box){
+  const V=S.V, kind=st.kind==='dep'?'dep':st.kind, P=BRIEF.proc(V), s=OPS.speeds(V.mass);
+  const facts= kind==='dep'? [[L({en:'Runway',no:'Bane'}),'36 from A1 · 1500 m'],[L({en:'Wind',no:'Vind'}),`${V.wind} · X ${V.xw} kt`],['Speeds',`Vr ${s.vr} · Vy ${s.vy} · Vyse 85 · Vmca 71 (DA42-VI)`],[L({en:'Clearance',no:'Klarering'}),V.ifr?`OSVIK 1N · 3000 ft · ${V.sq}`:`${V.vrp==='S'?'SIERRA':'NOVEMBER'} · ≤1500 ft · 7000`],[L({en:'Mass',no:'Masse'}),V.mass+' kg'],['MSA','3200 ft']]
+    : kind==='app'? [['Chart',`${P.name} · ${P.chart}`],[L({en:'Weather',no:'Vær'}),`${V.cld[0]} ${V.cld[1]} ft · ${V.vis===9999?'10 km+':V.vis+' m'} · ${V.t}°C`],['QNH',V.qnh2],[L({en:'Minima',no:'Minima'}),P.kind==='LOC'?`MDA ${P.minima.locMda}`:`DA ${P.minima.da}`],['Vref',`${s.vref} (LDG)`],[L({en:'Wind',no:'Vind'}),V.wind]]
+    : [[L({en:'Runway',no:'Bane'}),'36 · 1500 m'],[L({en:'Wind',no:'Vind'}),`${V.wind} · X ${V.xw} kt`],[L({en:'Entry',no:'Inn'}),`${V.vrp==='S'?'SIERRA':'NOVEMBER'} ≤1500 ft`],['Vref',`${s.vref} (LDG)`],['QNH',V.qnh2],[L({en:'Circuit',no:'Runde'}),'1000 ft']];
+  const rub=BRIEF.RUB[kind];
+  box.innerHTML=head(st)+`<p class="qtext">${esc(L(st.q))}</p>
+    <div class="facts">${facts.map(f=>`<div><span>${esc(f[0])}</span>${esc(f[1])}</div>`).join('')}</div>
+    ${kind!=='land'?`<details><summary>${L({en:'Open the chart',no:'Åpne kartet'})}</summary><div class="chartwrap">${kind==='app'?CHART.app(P):(V.ifr?CHART.sid():'')}</div></details>`:''}
+    <p class="note"><b>${esc(rub.letters)}</b> · ${rub.items.map(i=>`<b>${i.k}</b> ${esc(L(i.t))}`).join(' · ')} · <a href="briefing.html#${kind==='app'?'app':'dep'}">${L({en:'Full briefing trainer',no:'Full briefingtrener'})}</a></p>
+    <textarea class="write" id="bt" placeholder="${L({en:'Say it or type it…',no:'Si det eller skriv det…'})}"></textarea>
+    <div class="btns"><button class="btn mic" id="mic">🎙 ${L({en:'Dictate',no:'Dikter'})}</button><button class="btn pri" id="sc">${L({en:'Score my briefing',no:'Vurder briefingen'})}</button><button class="btn" id="skip">${L({en:'Show a model briefing',no:'Vis en modellbriefing'})}</button><span class="note" id="bn"></span></div>
+    <div id="out"></div>`+navBtns(S.res[S.i]!=null);
+  wireNav();
+  NAI.ptt(el('mic'),el('bt'),null,{toggle:true,append:true,lang:'en-GB',space:false});
+  if(!NAI.sr) el('mic').hidden=true;
+  el('skip').onclick=()=>{ el('out').innerHTML=`<div class="why"><b>${L({en:'Model briefing',no:'Modellbriefing'})}</b><br>${esc(BRIEF.model(kind,V)).replace(/\n/g,'<br>')}</div>`; if(S.res[S.i]==null) finishStep(0); };
+  el('sc').onclick=()=>BRIEF.score(kind,V,el('bt').value,{out:el('out'),note:el('bn'),btn:el('sc'),done:r=>finishStep(r.score/100)});
+}
+/* radio */
+function rRadio(st,box){
+  const learn=S.mode==='learn'; sub={tries:0,best:0,usedModel:false};
+  const prev=S.steps[S.i-1]; const ctxAtc= st.atcFirst || (st.rb&&prev&&prev.k==='radio'&&prev.atc? prev.atc : null);
+  box.innerHTML=head(st)+`<div class="radio">
+    <div class="rhead"><div class="freq"><span class="act">${st.freq[0]}</span><span class="stn">${esc(st.freq[1])}</span></div><span class="tx" id="rxi">RX</span></div>
+    <div class="log" id="log"></div>
+    <div class="inrow"><textarea id="say" placeholder="${L({en:'Type your call, or hold PTT (or the space bar) and speak…',no:'Skriv oppkallet, eller hold inne PTT (eller mellomrom) og snakk…'})}" aria-label="${L({en:'Your transmission',no:'Din sending'})}"></textarea><button class="ptt" id="ptt" aria-label="Push to talk">PTT</button></div>
+    <div class="rbtns"><button class="btn pri" id="tx">${L({en:'Transmit',no:'Send'})}</button><button class="btn" id="model">${L({en:'Show a good call',no:'Vis et godt oppkall'})}</button>${ctxAtc?`<button class="btn" id="again">${L({en:'Say again',no:'Gjenta'})}</button>`:''}<span class="note" id="rn"></span></div>
+  </div>`+navBtns(S.res[S.i]!=null);
+  wireNav();
+  const log=el('log');
+  const add=(cls,who,html)=>{ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${esc(who)}</span>`:'')+html; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; };
+  const atc=async t=>{ add('atc',st.freq[1],esc(t)); if(el('voice').checked){ el('rxi').classList.add('rx'); await NAI.speak(t); el('rxi').classList.remove('rx'); } };
+  if(learn) add('sys','',esc(L(st.task)));
+  if(st.rb&&!st.atcFirst&&ctxAtc) add('atc',st.freq[1],esc(ctxAtc));
+  if(st.atcFirst) atc(st.atcFirst);
+  el('again')&&(el('again').onclick=()=>atc(ctxAtc));
+  el('model').onclick=()=>{ sub.usedModel=true; add('sys','',`${L({en:'A good call',no:'Et godt oppkall'})}: <b>${esc(st.model)}</b>`); };
+  const ta=el('say');
+  const send=async()=>{
+    const txt=ta.value.trim(); if(!txt||sub.busy||sub.passed) return; ta.value=''; sub.tries++;
+    const me=add('me','LN-NAE',esc(txt));
+    const hitsR=rule(st,txt); let hits=hitsR, notes=[], better=null, aiAtc=null;
+    if(aiOn){ sub.busy=true; el('tx').disabled=true; el('rn').textContent=L({en:'Checking…',no:'Sjekker…'});
+      try{
+        const r=await NAI.json(radioPrompt(st,txt,ctxAtc),{tier:'quick'});
+        if(r&&Array.isArray(r.items)&&r.items.length===st.items.length) hits=r.items.map((v,j)=> v===true || (st.items[j].cs&&hitsR[j]));
+        notes=Array.isArray(r&&r.notes)?r.notes.slice(0,3).map(String):[]; better=r&&r.better?String(r.better):null; aiAtc=r&&r.atc?String(r.atc):null;
+      }catch(e){ if(NAI.fatal(e)){ aiOn=false; } }
+      finally{ sub.busy=false; el('tx').disabled=false; el('rn').textContent=''; } }
+    const frac=hits.filter(Boolean).length/hits.length, pass=hits.every(Boolean);
+    const fb=document.createElement('div'); fb.className='fb';
+    fb.innerHTML=st.items.map((it,j)=> hits[j]? (learn?`<span class="y">✓ ${esc(L(it.l))}</span>`:'') : `<span class="n">✕ ${esc(L(it.l))}</span>`).join('')+notes.map(n=>`<span class="w">! ${esc(n)}</span>`).join('')+(!pass&&(better||learn)?`<span class="model">${L({en:'Better',no:'Bedre'})}: ${esc(better||st.model)}</span>`:'');
+    me.appendChild(fb);
+    let sc=frac*(sub.tries>1?0.8:1)*(sub.usedModel?0.6:1); sub.best=Math.max(sub.best,sc);
+    if(pass||sub.tries>=3){ sub.passed=true;
+      const reply= pass? (st.atc? (aiAtc&&!/say again|negative/i.test(aiAtc)? aiAtc : st.atc) : null) : (st.atc||null);
+      if(!pass) add('sys','',`${L({en:'Moving on. The call was',no:'Vi går videre. Oppkallet var'})}: <b>${esc(st.model)}</b>`);
+      if(reply) await atc(reply);
+      finishStep(sub.best);
+    } else {
+      const corr= aiAtc ? aiAtc : (st.rb? 'L-AE, negative, say again your readback.' : `Station calling ${st.freq[1]}, say again.`);
+      await atc(corr);
+    }
+  };
+  el('tx').onclick=send;
+  ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); } });
+  NAI.ptt(el('ptt'),ta,()=>send(),{lang:'en-GB'});
+  if(!NAI.sr) el('ptt').title=L({en:'Speech input needs Chrome or Edge. You can always type.',no:'Taleinndata krever Chrome eller Edge. Du kan alltid skrive.'});
+}
+function radioPrompt(st,txt,ctx){
+  const V=S.V;
+  return `You are an EASA radiotelephony instructor running a training simulator, and you also play the ATC unit "${st.freq[1]}" (${st.freq[0]}). Fictional aerodrome Birdbird (NAER), runway 36. The pilot is LN-NAE, a DA42 (abbreviated L-AE once ATC has used it). Flight: ${V.ifr?'IFR training flight':'VFR local flight'}. ATIS information ${V.info} then ${V.infoNext}, QNH ${V.qnh} then ${V.qnh2}, squawk ${V.sq}.
+${ctx?`The last ATC transmission to the pilot was: "${ctx}"`:'This is the pilot\'s call to ATC.'}
+Task given to the pilot: ${st.task.en}
+The pilot's transmission (it may come from speech recognition: ignore spelling, punctuation and filler words; numbers may be in words or digits; "L-AE" and "Lima November November Alfa Echo" are the callsign): "${txt}"
+Required elements, in order:
+${st.items.map((it,j)=>`${j+1}. ${it.l.en}`).join('\n')}
+A model call: "${st.model}"
+For each required element say if it is present and correct (a wrong number counts as not present). Then note non-standard phraseology (e.g. "repeat", "yes", "affirmative", "ready for take-off" instead of "ready for departure", "over and out", a missing callsign in a readback).
+${st.atc?`If every element is correct, ATC replies with: "${st.atc}" (you may use the abbreviated callsign).`:'If every element is correct, ATC has no reply (use an empty string).'} If not, ATC replies as a real controller would: correct a wrong readback ("L-AE, negative, QNH ${V.qnh}") or ask to say again.
+Write notes in ${NAI.langName()}. Reply with only a JSON object:
+{"items":[true or false for each element, in order],"notes":["up to 3 short tips, empty if perfect"],"better":"the ideal pilot transmission in English","atc":"ATC's reply"}`;
+}
+
+/* ---------- debrief ---------- */
+function debrief(){
+  side(); el('illus').innerHTML=ground('stand')+`<span class="cap">${L({en:'Debrief',no:'Debrief'})}</span>`;
+  const sc=S.res.filter(v=>v!=null); const pct=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length*100):0;
+  NPROG.award(S.scen==='ifr'?'g2g:ifr':'g2g:vfr',pct);
+  const rows=G2G.PHASES.filter(p=>S.steps.some(x=>x.ph===p[0])).map(([k,t])=>{ const v=S.steps.map((x,j)=>x.ph===k?S.res[j]:null).filter(x=>x!=null); return [L(t),v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*100):null]; });
+  const weak=S.steps.map((x,j)=>({x,j,v:S.res[j]})).filter(o=>o.v!=null&&o.v<0.8).sort((a,b)=>a.v-b.v).slice(0,4);
+  const byKind=['order','check','radio','brief','mcq'].map(k=>{ const v=S.steps.map((x,j)=>x.k===k?S.res[j]:null).filter(x=>x!=null); return [L(KIND[k==='mcq'?'mcq':k]),v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*100):null]; }).filter(r=>r[1]!=null);
+  el('step').innerHTML=`<div class="deb"><div class="top"><span class="kind">${L({en:'Debrief',no:'Debrief'})}</span></div><h3>${L({en:'Blocks on. How did it go?',no:'Blocks on. Hvordan gikk det?'})}</h3>
+    <div class="kpis"><div class="kpi"><span>${L({en:'Overall',no:'Totalt'})}</span><b>${pct} %</b><small>${S.scen==='ifr'?T('IFR training flight'):T('VFR local flight')} · ${S.mode==='learn'?T('Learn'):T('Check')}</small></div>${byKind.map(r=>`<div class="kpi"><span>${esc(r[0])}</span><b>${r[1]} %</b></div>`).join('')}</div>
+    <table><thead><tr><th>${L({en:'Phase',no:'Fase'})}</th><th>${L({en:'Score',no:'Score'})}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]==null?'–':r[1]+' %'}</td></tr>`).join('')}</tbody></table>
+    ${weak.length?`<h3 style="font-size:17px!important;margin-top:8px">${L({en:'Work on these',no:'Jobb med disse'})}</h3>${weak.map(o=>`<div class="why"><b>${esc(L(o.x.t))} · ${Math.round(o.v*100)} %.</b> ${o.x.why?esc(L(o.x.why)):o.x.model?esc(o.x.model):''}</div>`).join('')}`:`<div class="why"><b>${L({en:'Clean trip.',no:'Ren tur.'})}</b> ${L({en:'Try it in Check mode, or fly the other trip.',no:'Prøv den i Sjekk-modus, eller fly den andre turen.'})}</div>`}
+    <div class="nav"><button class="btn pri" id="again2">${L({en:'Fly it again with new weather',no:'Fly igjen med nytt vær'})}</button><button class="btn" id="other">${S.scen==='ifr'?T('VFR local flight'):T('IFR training flight')}</button></div></div>`;
+  el('again2').onclick=()=>newFlight(); el('other').onclick=()=>{ scen.set(S.scen==='ifr'?'vfr':'ifr'); newFlight(S.scen==='ifr'?'vfr':'ifr'); };
+}
+
+/* ---------- oppslagstabell ---------- */
+const OT=[
+ [{en:'Planning room',no:'Planleggingsrommet'},{en:'Weather and NOTAM, route, mass and balance, fuel, flight plan, documents, walk-around.',no:'Vær og NOTAM, rute, masse og balanse, drivstoff, flyplan, dokumenter, walk-around.'},'—'],
+ [{en:'Before start',no:'Før start'},{en:'Before start flow, then checklist. Listen to ATIS.',no:'Before start-flow, så sjekkliste. Lytt på ATIS.'},{en:'Ground: request start-up with the ATIS letter',no:'Ground: be om oppstart med ATIS-bokstaven'}],
+ [{en:'After start',no:'Etter start'},{en:'After start flow and checklist, altimeters set, G1000 setup.',no:'After start-flow og sjekkliste, høydemålere satt, G1000-oppsett.'},{en:'Delivery: IFR clearance, read it back',no:'Delivery: IFR-klarering, les tilbake'}],
+ [{en:'Taxi',no:'Taksing'},{en:'Brakes and instrument check while rolling.',no:'Bremser og instrumentsjekk mens du ruller.'},{en:'Ground: request taxi',no:'Ground: be om taksing'}],
+ [{en:'Holding point',no:'Holdepunkt'},{en:'Before take-off flow and checklist, run-up and ECU test, then the departure and emergency briefing.',no:'Before take-off-flow og sjekkliste, run-up og ECU-test, så avgangs- og nødbriefing.'},{en:'Tower: ready for departure',no:'Tower: ready for departure'}],
+ [{en:'Line-up',no:'Oppstilling'},{en:'Line-up checklist, heading against the runway, lights.',no:'Line-up-sjekkliste, kurs mot rullebanen, lys.'},{en:'Read back the take-off clearance',no:'Les tilbake avgangsklareringen'}],
+ [{en:'Climb',no:'Stigning'},{en:'Callouts, gear up when no runway is left, climb checklist above 1000 ft, “one to go”.',no:'Callouts, hjul opp når det ikke er bane igjen, climb-sjekkliste over 1000 ft, «one to go».'},{en:'Approach or FIS: first contact',no:'Approach eller FIS: første kontakt'}],
+ [{en:'Cruise and hold',no:'Cruise og holding'},{en:'Cruise checklist. ATIS, then the approach briefing while the workload is low.',no:'Cruise-sjekkliste. ATIS, så innflygingsbriefingen mens arbeidsmengden er lav.'},{en:'Read back re-routes, holds and new QNH',no:'Les tilbake omrutinger, holdinger og ny QNH'}],
+ [{en:'Approach',no:'Innflyging'},{en:'Approach checklist, before landing flow, stable by 1000 ft (IFR) or 500 ft (VFR).',no:'Approach-sjekkliste, before landing-flow, stabil innen 1000 ft (IFR) eller 500 ft (VFR).'},{en:'Approach clearance, established, Tower, cleared to land',no:'Innflygingsklarering, etablert, Tower, klarert for landing'}],
+ [{en:'After landing',no:'Etter landing'},{en:'Only after the runway is vacated: after landing flow and checklist. Shutdown with 2 minutes at idle.',no:'Først når banen er forlatt: after landing-flow og sjekkliste. Avslutning med 2 minutter på tomgang.'},{en:'Vacate, Ground, taxi to the stand',no:'Forlat banen, Ground, taksing til stand'}]
+];
+function otab(){ el('otab').innerHTML=OT.map(r=>`<tr><td>${esc(L(r[0]))}</td><td>${esc(L(r[1]))}</td><td>${typeof r[2]==='string'?r[2]:esc(L(r[2]))}</td></tr>`).join(''); }
+
+/* ---------- oppstart ---------- */
+const scen=LAB.seg(el('scen'),[['ifr','IFR training flight'],['vfr','VFR local flight']],'ifr',v=>{ if(v!==S.scen) newFlight(v); });
+const mode=LAB.seg(el('mode'),[['learn','Learn'],['check','Check']],'learn',v=>{ S.mode=v; save(); render(); });
+el('newf').onclick=()=>newFlight();
+el('voice').onchange=()=>{ if(!el('voice').checked) NAI.hush(); };
+LAB.start('g2g');
+if(!load()) newFlight('ifr'); else { scen.set(S.scen); mode.set(S.mode); render(); }
+otab(); LAB.onLang(()=>{ render(); otab(); });
+})();
+</script>
+</body>
+</html>

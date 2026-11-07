@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="The A320 turbofan taken apart: fan, compressors, combustor, turbines, reverser and accessory gearbox. Then start it on the ECAM, spool it up and see flat rating, FLEX and bleed.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Turbofan Engine</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%;touch-action:none}
+#cv{aspect-ratio:16/8;max-height:560px;cursor:grab}
+#cv.drag{cursor:grabbing}
+#gr{aspect-ratio:16/4;max-height:220px}
+.how{border:1px solid var(--rule);border-left:3px solid var(--blue);border-radius:4px;background:#fff;padding:12px 16px;margin:0 0 14px;font-size:15px;line-height:1.55}.how b.t{display:block;margin-bottom:4px}.how ol{margin:4px 0 6px;padding-left:22px}.how li{margin:2px 0}.how p{margin:0;color:var(--ink-2)}
+.etop{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:10px}
+@media (max-width:640px){.hint{display:none!important}}
+.hint{position:absolute;left:10px;bottom:8px;font-size:12.5px;color:#5E6B74;background:rgba(251,251,248,.85);padding:2px 6px;border-radius:3px;pointer-events:none}
+.plist{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.plist button{font:inherit;font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:14px;padding:4px 10px;cursor:pointer;color:var(--ink)}
+.plist button.on{border-color:var(--magenta);background:#F6EAF1;color:var(--magenta);font-weight:600}
+.det{border-left:3px solid var(--magenta);padding:2px 0 2px 14px;margin-top:6px}
+.det h3{margin:0 0 4px;font-size:19px}
+.det .kind{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.det p{margin:0 0 9px;font-size:15px;line-height:1.55}
+.det ul{margin:0 0 9px;padding-left:20px;font-size:15px;line-height:1.5}
+.det .ck{background:#EEF3F7;border-radius:4px;padding:8px 10px;font-size:14.5px}
+.det .ck b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:#1D4E9E;margin-bottom:2px}
+.rrow b{white-space:normal;text-align:right}
+.cmp{width:100%;border-collapse:collapse;font-size:14.5px}
+.cmp th,.cmp td{border-bottom:1px solid var(--rule);padding:8px 10px 8px 0;text-align:left;vertical-align:top}
+.cmp th{font-size:13px;color:var(--ink-2);font-weight:600}
+@media (max-width:760px){.cmp{font-size:13px}.cmp th,.cmp td{padding:6px 6px 6px 0}}
+.twrap{overflow-x:auto}
+</style>
+</head>
+<body data-title="The Turbofan Engine">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Aircraft systems</div>
+      <h1>The turbofan engine</h1>
+      <p>The engine on the A320: a high-bypass, two-spool turbofan (CFM56-5B or IAE V2500 on the ceo, CFM LEAP-1A or Pratt & Whitney PW1100G on the neo). Pull it apart, drag any part away, and click it to see what it does, the pressure and temperature there, what can go wrong and what you see on the ECAM. Then start it, spool it up and see why it is flat rated.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#eng">Take it apart</a><a href="#start">Start and spool-up</a><a href="#rating">Flat rating and FLEX</a><a href="#cmp">A320 engines</a><a href="#ops">In the cockpit</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="eng">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Take it apart</h2>
+    <div class="how" id="how"></div>
+    <div class="split">
+      <div>
+        <div class="paper"><canvas id="cv" aria-label="Cutaway of the selected engine. Drag parts to move them, click a part to read about it."></canvas><span class="hint" id="hint"></span></div>
+        <div class="plist" id="plist"></div>
+        <div class="paper" style="margin-top:12px"><canvas id="gr" aria-label="Pressure and temperature through the engine"></canvas></div>
+        <p class="note" id="grnote" style="margin:6px 0 0"></p>
+      </div>
+      <div class="panel">
+        <div id="ctl"></div>
+        <label class="chk" style="margin:4px 0 6px"><input type="checkbox" id="flow" checked> <span>Show the airflow</span></label>
+        <div class="btns" style="margin:0 0 6px"><button class="btn" id="reset">Put it back together</button></div>
+        <div class="ro">
+          <div class="rrow"><span id="l1"></span><b id="r1"></b></div>
+          <div class="rrow"><span id="l2"></span><b id="r2"></b></div>
+          <div class="rrow"><span id="l3"></span><b id="r3"></b></div>
+          <div class="rrow"><span id="l4"></span><b id="r4"></b></div>
+        </div>
+        <div class="det" id="det"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="start">
+    <div class="eyebrow">2 · Interactive</div>
+    <h2>Start and spool-up on the ECAM</h2>
+    <p class="lead">An automatic start as the FADEC runs it on a CFM56-5B-type engine: the starter turns the HP spool, ignition and fuel come in at set N2 values, the EGT shows the light-off, and the starter cuts out at about 50 % N2. Insert a start fault and watch the FADEC abort. Then advance the thrust lever from idle and time the spool-up.</p>
+    <div class="split">
+      <div class="view"><canvas id="ecv" aria-label="Simplified engine display with N1 and EGT dials, N2, fuel flow and a time history"></canvas></div>
+      <div class="panel">
+        <div class="btns" style="margin:0 0 6px"><button class="btn pri" id="bstart">Auto start</button><button class="btn" id="bstop">Master off</button></div>
+        <div class="grp">Start fault</div><div id="sfault"></div>
+        <div class="grp">Thrust lever</div><div id="tla"></div>
+        <div class="grp">Idle before the thrust is advanced</div><div id="idle"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Phase</span><b id="e1"></b></div>
+          <div class="rrow"><span>Start valve / ignition / fuel</span><b id="e2"></b></div>
+          <div class="rrow"><span>Time from idle to 95 % thrust</span><b id="e3"></b></div>
+        </div>
+        <p class="callout blue" id="ex"></p>
+      </div>
+    </div>
+    <p class="note" style="margin-top:10px">Typical values for a CFM56-5B-type engine at sea level: start EGT limit 725 °C, take-off EGT limit 950 °C, idle about 20 % N1 and 58 % N2. Other A320 engines differ; the FCOM gives the real limits.</p>
+  </section>
+
+  <section class="card" id="rating">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Flat rating, FLEX and bleed</h2>
+    <p class="lead">A turbofan is flat rated: up to a corner temperature (here ISA + 15) it gives its full rated take-off thrust, and the EGT climbs as the day gets warmer. Above the corner the EGT limit takes over and thrust falls. FLEX tells the FADEC to give the thrust it would give at a higher, assumed temperature, which saves EGT margin and engine life.</p>
+    <div class="split">
+      <div class="paper"><canvas id="rcv" aria-label="Take-off thrust and EGT against outside air temperature, with the flat-rating corner and the FLEX temperature"></canvas></div>
+      <div class="panel">
+        <div id="rctl"></div>
+        <label class="chk" style="margin:6px 0 2px"><input type="checkbox" id="bai"> <span>Engine and wing anti-ice on</span></label>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Flat-rating corner (TREF)</span><b id="g1"></b></div>
+          <div class="rrow"><span>TOGA thrust today</span><b id="g2"></b></div>
+          <div class="rrow"><span>Thrust used</span><b id="g3"></b></div>
+          <div class="rrow"><span>Take-off EGT / margin to the limit</span><b id="g4"></b></div>
+        </div>
+        <p class="callout" id="gx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="cmp">
+    <div class="eyebrow">4 · Understand</div>
+    <h2>A320 engines, and why a turbofan</h2>
+    <p class="lead" id="cmplead"></p>
+    <div class="twrap"><table class="cmp" id="a3tab"></table></div>
+    <p class="lead" id="cmplead2" style="margin-top:16px"></p>
+    <div class="twrap"><table class="cmp" id="cmptab"></table></div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">5 · Operations</div>
+    <h2>In the cockpit</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. Shapes are simplified and the numbers are typical values for the engines of the A320 family, mostly CFM56-5B-like, not FCOM data. Limits, start procedures and indications differ between engine types: the FCOM and the engine manufacturer’s data decide.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+LAB.add({},{
+ 'The Turbofan Engine':'Turbofanmotoren','The turbofan engine':'Turbofanmotoren','Birdbird Virtual Lab · Aircraft systems':'Birdbird Virtual Lab · Flysystemer',
+ 'The engine on the A320: a high-bypass, two-spool turbofan (CFM56-5B or IAE V2500 on the ceo, CFM LEAP-1A or Pratt & Whitney PW1100G on the neo). Pull it apart, drag any part away, and click it to see what it does, the pressure and temperature there, what can go wrong and what you see on the ECAM. Then start it, spool it up and see why it is flat rated.':'Motoren på A320: en turbofan med høyt omløpsforhold og to spoler (CFM56-5B eller IAE V2500 på ceo, CFM LEAP-1A eller Pratt & Whitney PW1100G på neo). Trekk den fra hverandre, dra en del ut, og klikk på den for å se hva den gjør, trykket og temperaturen der, hva som kan gå galt og hva du ser på ECAM. Start den så, spol den opp og se hvorfor den er flat rated.',
+ 'Take it apart':'Ta den fra hverandre','Start and spool-up':'Start og spoling','Flat rating and FLEX':'Flat rating og FLEX','A320 engines':'A320-motorer','In the cockpit':'I cockpit','Test yourself':'Test deg selv',
+ '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Understand':'4 · Forstå','5 · Operations':'5 · Operativt','Check':'Sjekk',
+ 'Show the airflow':'Vis luftstrømmen','Put it back together':'Sett den sammen igjen','Pull apart':'Trekk fra hverandre','Power lever':'Gasshendel',
+ 'Start and spool-up on the ECAM':'Start og spoling på ECAM',
+ 'An automatic start as the FADEC runs it on a CFM56-5B-type engine: the starter turns the HP spool, ignition and fuel come in at set N2 values, the EGT shows the light-off, and the starter cuts out at about 50 % N2. Insert a start fault and watch the FADEC abort. Then advance the thrust lever from idle and time the spool-up.':'En automatisk start slik FADEC kjører den på en motor av CFM56-5B-typen: starteren dreier HP-spolen, tenning og drivstoff kommer inn ved faste N2-verdier, EGT viser tenningen, og starteren kobles ut ved rundt 50 % N2. Legg inn en startfeil og se FADEC avbryte. Skyv så gasshendelen fram fra tomgang og ta tiden på spolingen.',
+ 'Auto start':'Auto start','Master off':'Master av','Start fault':'Startfeil','Thrust lever':'Gasshendel','Idle before the thrust is advanced':'Tomgang før skyvet økes',
+ 'None':'Ingen','Hot start':'Varm start','Hung start':'Hengende start','No light-off':'Ingen tenning','Flight idle':'Flight idle','Approach idle':'Approach idle',
+ 'Phase':'Fase','Start valve / ignition / fuel':'Startventil / tenning / drivstoff','Time from idle to 95 % thrust':'Tid fra tomgang til 95 % skyv',
+ 'Typical values for a CFM56-5B-type engine at sea level: start EGT limit 725 °C, take-off EGT limit 950 °C, idle about 20 % N1 and 58 % N2. Other A320 engines differ; the FCOM gives the real limits.':'Typiske verdier for en motor av CFM56-5B-typen ved havnivå: EGT-grense ved start 725 °C, EGT-grense ved avgang 950 °C, tomgang rundt 20 % N1 og 58 % N2. Andre A320-motorer er annerledes; FCOM gir de virkelige grensene.',
+ 'Flat rating, FLEX and bleed':'Flat rating, FLEX og bleed',
+ 'A turbofan is flat rated: up to a corner temperature (here ISA + 15) it gives its full rated take-off thrust, and the EGT climbs as the day gets warmer. Above the corner the EGT limit takes over and thrust falls. FLEX tells the FADEC to give the thrust it would give at a higher, assumed temperature, which saves EGT margin and engine life.':'En turbofan er flat rated: opp til en hjørnetemperatur (her ISA + 15) gir den fullt nominelt startskyv, og EGT stiger når dagen blir varmere. Over hjørnet tar EGT-grensen over, og skyvet faller. FLEX ber FADEC gi det skyvet den ville gitt ved en høyere, antatt temperatur, og det sparer EGT-margin og motorlevetid.',
+ 'Engine and wing anti-ice on':'Anti-ice for motor og vinge på','Flat-rating corner (TREF)':'Hjørnetemperatur (TREF)','TOGA thrust today':'TOGA-skyv i dag','Thrust used':'Skyv brukt','Take-off EGT / margin to the limit':'EGT ved avgang / margin til grensen',
+ 'Airport elevation (ft)':'Flyplasshøyde (ft)','Outside air temperature (°C)':'Utetemperatur (°C)','FLEX temperature (°C)':'FLEX-temperatur (°C)','EGT margin of this engine (°C)':'EGT-margin for denne motoren (°C)','New engine ≈ 100–150 °C, worn engine much less':'Ny motor ≈ 100–150 °C, slitt motor mye mindre',
+ 'A320 engines, and why a turbofan':'A320-motorer, og hvorfor turbofan',
+ 'Teaching model. Shapes are simplified and the numbers are typical values for the engines of the A320 family, mostly CFM56-5B-like, not FCOM data. Limits, start procedures and indications differ between engine types: the FCOM and the engine manufacturer’s data decide.':'Opplæringsmodell. Formene er forenklet, og tallene er typiske verdier for motorene i A320-familien, for det meste CFM56-5B-lignende, ikke FCOM-data. Begrensninger, startprosedyrer og indikasjoner varierer mellom motortyper: FCOM og motorprodusentens data avgjør.'
+});
+
+/* ================= motorer: deler, tegning og tekst ================= */
+// Hver del: k, n (navn), kind, a..b (posisjon langs motoren 0–1), r (radier), ex (retning ved demontering), d (forklaring), ck (i cockpit)
+const P=(en,no)=>({en,no});
+const ENG={};
+
+/* ---------- TURBOFAN ---------- */
+ENG.fan={short:P('A320 turbofan (CFM56-5B-type), high bypass, two spools','A320-turbofan (CFM56-5B-type), høyt omløpsforhold, to spoler'),name:P('Turbofan','Turbofan'),sub:P('High-bypass, two-spool turbofan, as on the A320','Turbofan med høyt omløpsforhold og to spoler, som på A320'),
+ parts:[
+ {k:'inlet',kind:'inlet',a:0,b:0.1,r:[0.98,0.2],ex:[-0.34,0],n:P('Inlet and spinner','Innløp og spinner'),
+  d:P(`<p>The inlet slows the air from flight speed to about Mach 0.5–0.6 at the fan face, with as little loss and distortion as possible. In cruise the slowing-down is itself compression: the ram rise adds pressure before any blade has touched the air.</p><p>The lip is thick and rounded so it can swallow air coming in from the sides at take-off, when the engine sucks hard and the aircraft is slow, yet thin enough for low drag in cruise. The spinner guides the air to the fan root; its shape is chosen so ice breaks off in small pieces.</p><ul><li>Engine anti-ice heats the lip with hot bleed air. Ice that breaks off the lip goes straight into the fan.</li><li>Strong crosswind or tailwind at low speed distorts the flow into the fan and can stall it. That is one reason for setting take-off thrust in steps.</li></ul>`,
+    `<p>Innløpet bremser luften fra flyfart til rundt Mach 0,5–0,6 foran fanen, med minst mulig tap og forstyrrelse. I cruise er selve oppbremsingen en kompresjon: ram-økningen gir trykk før noe blad har rørt luften.</p><p>Leppen er tykk og avrundet så den kan svelge luft som kommer fra siden ved avgang, når motoren suger hardt og flyet går sakte, men tynn nok til lav motstand i cruise. Spinneren leder luften inn mot fanroten; formen er valgt slik at is brekker av i små biter.</p><ul><li>Engine anti-ice varmer leppen med varm bleed-luft. Is som løsner fra leppen, går rett inn i fanen.</li><li>Sterk sidevind eller medvind ved lav fart forstyrrer strømmen inn i fanen og kan få den til å stalle. Det er én grunn til at avgangsskyvet settes i trinn.</li></ul>`),
+  ck:P('Engine anti-ice ON in icing conditions, before you enter them. Take-off thrust set in two steps: stabilise around 40–50 % N1, then advance.','Engine anti-ice ON i isingsforhold, før du går inn i dem. Avgangsskyv settes i to trinn: stabiliser rundt 40–50 % N1, og skyv så fram.')},
+ {k:'fan',kind:'fan',a:0.1,b:0.16,r:[0.93,0.2],ex:[-0.24,0],n:P('Fan','Fan'),
+  d:P(`<p>The fan is the first stage of the low-pressure (LP) spool: wide, twisted blades of titanium (36 on the CFM56-5B) or carbon-fibre composite (18 on the LEAP-1A). It raises the pressure only about 1.4–1.7 times, but it moves an enormous mass of air. In a high-bypass engine it makes around 80 % of the thrust.</p><p>The reason is propulsive efficiency. Thrust is mass flow times the change in velocity, but the energy you waste is in the speed of the jet you leave behind. Accelerating a lot of air a little is far more efficient than accelerating a little air a lot. That is the whole idea of the turbofan.</p><ul><li>Tip speed is supersonic at take-off; the shock waves are part of the buzz-saw noise you hear in the cabin.</li><li>The fan case is wrapped in Kevlar and must contain a released blade (blade-off test in certification).</li><li>Birds, ice, hail and loose objects (FOD) hit the fan first.</li></ul>`,
+    `<p>Fanen er første trinn på lavtrykksspolen (LP): brede, vridde blader av titan (36 på CFM56-5B) eller karbonfiberkompositt (18 på LEAP-1A). Den øker trykket bare rundt 1,4–1,7 ganger, men flytter en enorm luftmengde. I en motor med høyt omløpsforhold lager den rundt 80 % av skyvet.</p><p>Grunnen er propulsiv virkningsgrad. Skyv er masse per sekund ganger hastighetsendringen, men energien du kaster bort, ligger i farten på strålen du etterlater deg. Å akselerere mye luft litt er langt mer effektivt enn å akselerere lite luft mye. Det er hele ideen bak turbofanen.</p><ul><li>Bladspissene går overlydsfart ved avgang; sjokkbølgene er en del av den «sagende» lyden du hører i kabinen.</li><li>Fanhuset er viklet med Kevlar og må holde på et blad som løsner (blade-off-test i sertifiseringen).</li><li>Fugl, is, hagl og løse gjenstander (FOD) treffer fanen først.</li></ul>`),
+  ck:P('N1 is the fan speed in % of a reference rpm and is the main thrust parameter on the CFM56 and LEAP (the V2500 uses EPR). Engine vibration is mostly fan vibration.','N1 er fanturtallet i % av et referanseturtall og er hovedparameteren for skyv på CFM56 og LEAP (V2500 bruker EPR). Motorvibrasjon er stort sett fanvibrasjon.')},
+ {k:'byp',kind:'bypass',a:0.16,b:0.66,r:[0.93,0.5],ex:[0,-0.72],n:P('Bypass duct and nacelle','Omløpskanal og nacelle'),
+  d:P(`<p>Behind the fan the air is split. Most of it, 5 to 12 times as much as goes into the core (the bypass ratio), flows around the core in the bypass duct. Outlet guide vanes straighten it, and it leaves through the bypass nozzle as cold thrust. Only the inner part goes through the splitter into the core.</p><p>A higher bypass ratio gives lower fuel burn and less noise, but a bigger and heavier engine, and thrust that falls off faster as speed rises (thrust lapse). The nacelle around it holds the thrust reverser, the fire detection loops and the access panels.</p>`,
+    `<p>Bak fanen deles luften. Det meste, 5 til 12 ganger så mye som går inn i kjernen (omløpsforholdet), strømmer rundt kjernen i omløpskanalen. Ledeskovler retter den opp, og den går ut gjennom omløpsdysen som kaldt skyv. Bare den indre delen går forbi splitteren og inn i kjernen.</p><p>Høyere omløpsforhold gir lavere forbruk og mindre støy, men en større og tyngre motor, og skyv som faller raskere når farten øker (thrust lapse). Nacellen rundt holder skyvreversen, branndeteksjonen og inspeksjonslukene.</p>`),
+  ck:P('Fire detection loops in the nacelle trigger the ENG FIRE warning; the fire bottles discharge into the nacelle, not into the gas path.','Branndeteksjonen i nacellen utløser ENG FIRE-varselet; brannflaskene tømmes inn i nacellen, ikke inn i gasstrømmen.')},
+ {k:'rev',kind:'reverser',a:0.44,b:0.6,r:[0.93,0.62],ex:[0.14,-1.02],n:P('Thrust reverser','Skyvrevers'),
+  d:P(`<p>On most high-bypass engines a sleeve in the nacelle slides aft, blocker doors swing into the bypass duct, and the bypass air is turned forward through cascade vanes. Only the cold bypass flow is reversed; the hot core keeps pushing aft.</p><ul><li>Most effective at high speed, right after touchdown. Reduce to idle reverse at about 60–70 kt: at low speed the engine can re-ingest its own exhaust and debris and the compressor can stall.</li><li>Reverse is not used for the certified dry-runway landing distance, but it matters a lot on wet and contaminated runways.</li><li>A reverser that unlocks or deploys in flight is an emergency with its own checklist.</li></ul>`,
+    `<p>På de fleste motorer med høyt omløpsforhold glir en hylse i nacellen bakover, blokkeringsdører svinger inn i omløpskanalen, og omløpsluften vendes fremover gjennom skovlgitre (cascades). Bare den kalde omløpsstrømmen reverseres; den varme kjernen skyver fortsatt bakover.</p><ul><li>Mest effektiv ved høy fart, rett etter nedsetting. Reduser til idle reverse rundt 60–70 kt: ved lav fart kan motoren suge inn sin egen eksos og rusk, og kompressoren kan stalle.</li><li>Revers brukes ikke i den sertifiserte landingsdistansen på tørr bane, men betyr mye på våt og kontaminert bane.</li><li>En revers som låses opp eller går ut i luften, er en nødsituasjon med egen sjekkliste.</li></ul>`),
+  ck:P('REV amber while unlocking, green when deployed. Reverse idle by about 60–70 kt.','REV gul mens den låses opp, grønn når den er ute. Idle reverse innen rundt 60–70 kt.')},
+ {k:'lpc',kind:'axial',a:0.16,b:0.27,r:[0.47,0.42,0.24,0.24],n2:3,ex:[-0.14,0],n:P('Booster (LP compressor)','Booster (LP-kompressor)'),
+  d:P(`<p>A few axial stages on the LP shaft, right behind the fan, raise the pressure of the core air further before it reaches the high-pressure compressor. Fan and booster together give a pressure ratio of about 2–3.</p><p>Between the booster and the HP compressor are variable bleed valves. At low power they open and dump air into the bypass duct, so the booster does not push more air than the HP compressor can take (which would stall it). They also throw out water, hail and ice that the booster has centrifuged outwards.</p>`,
+    `<p>Noen få aksialtrinn på LP-akselen, rett bak fanen, øker trykket i kjerneluften ytterligere før den når høytrykkskompressoren. Fan og booster gir sammen et trykkforhold på rundt 2–3.</p><p>Mellom boosteren og HP-kompressoren sitter variable bleed-ventiler. Ved lav effekt åpner de og slipper luft ut i omløpskanalen, så boosteren ikke presser mer luft enn HP-kompressoren kan ta imot (da ville den stalle). De kaster også ut vann, hagl og is som boosteren har slynget utover.</p>`),
+  ck:P('No direct indication; the FADEC schedules the valves. You notice them only if they fail (stall margin).','Ingen direkte indikasjon; FADEC styrer ventilene. Du merker dem bare hvis de svikter (stallmargin).')},
+ {k:'hpc',kind:'axial',a:0.28,b:0.5,r:[0.4,0.3,0.25,0.25],n2:9,ex:[-0.06,0],n:P('HP compressor','HP-kompressor'),
+  d:P(`<p>Nine to ten axial stages on the high-pressure (HP) spool. Each stage is a rotating blade row that speeds the air up, followed by a fixed stator row that slows it down again and turns the speed into pressure. Each stage only adds a little, about 1.2–1.4 times, but together with the fan and booster the overall pressure ratio is 30–50:1. The air leaves at 500–650 °C, heated by compression alone.</p><p>The blades get shorter towards the back because the air gets denser. The front stages have variable stator vanes that the FADEC turns with rpm, so each blade row meets the air at the right angle of attack across the whole speed range.</p><ul><li><b>Stall:</b> a blade row stalls like a wing at too high angle of attack, for example from inlet distortion, damage, ice or a too-fast thrust change.</li><li><b>Surge:</b> the whole flow breaks down and reverses. A loud bang, perhaps flames from inlet and exhaust, EGT rising, N1/N2 fluctuating.</li><li>Air is bled from here for air conditioning, pressurisation and anti-ice. Every kilogram bled costs thrust and raises EGT.</li></ul>`,
+    `<p>Ni til ti aksialtrinn på høytrykksspolen (HP). Hvert trinn er en roterende bladrad som øker farten på luften, fulgt av en fast statorrad som bremser den igjen og gjør farten om til trykk. Hvert trinn gir bare litt, rundt 1,2–1,4 ganger, men sammen med fan og booster blir det totale trykkforholdet 30–50:1. Luften går ut med 500–650 °C, varmet opp bare av kompresjonen.</p><p>Bladene blir kortere bakover fordi luften blir tettere. De fremste trinnene har variable statorskovler som FADEC dreier med turtallet, så hver bladrad møter luften med riktig anstigningsvinkel over hele turtallsområdet.</p><ul><li><b>Stall:</b> en bladrad staller som en vinge ved for høy anstigningsvinkel, for eksempel på grunn av forstyrret innløp, skade, is eller for rask endring av skyvet.</li><li><b>Surge:</b> hele strømmen bryter sammen og snur. Et høyt smell, kanskje flammer fra innløp og eksos, stigende EGT, N1/N2 som svinger.</li><li>Herfra tappes luft til klimaanlegg, trykkabin og anti-ice. Hvert kilo som tappes, koster skyv og øker EGT.</li></ul>`),
+  ck:P('Surge: thrust lever slowly to idle, monitor EGT and N2, then the QRH (engine stall). Bleed air on: higher EGT for the same thrust.','Surge: gasshendel rolig til idle, følg EGT og N2, deretter QRH (engine stall). Bleed-luft på: høyere EGT for samme skyv.')},
+ {k:'comb',kind:'comb',a:0.5,b:0.6,r:[0.37,0.18],ex:[0,0.05],n:P('Combustor','Brennkammer'),
+  d:P(`<p>An annular chamber with about 20 fuel nozzles. Only around 20–30 % of the core air takes part in the burning, in the primary zone near the nozzles, at close to 2000 °C. The rest flows outside the liner, enters through rows of holes and films, cools the liner walls and dilutes the gas to a temperature the turbine can survive: about 1400–1600 °C at the turbine inlet.</p><p>The flame has to stay alight over a huge range of fuel–air ratios, from idle at 41 000 ft to take-off on a hot day. Two igniters (A and B) light it for the start and can run continuously in heavy rain, icing, severe turbulence and on contaminated runways.</p><ul><li><b>Flameout:</b> heavy rain or hail, ice ingestion, fuel starvation, or very rapid lever movement at high altitude.</li><li><b>Relight:</b> windmilling or with starter assist, inside the relight envelope (altitude and speed) in the QRH.</li></ul>`,
+    `<p>Et ringformet kammer med rundt 20 drivstoffdyser. Bare rundt 20–30 % av kjerneluften tar del i forbrenningen, i primærsonen ved dysene, på nesten 2000 °C. Resten strømmer utenfor flammerøret, kommer inn gjennom rader av hull og kjølefilmer, kjøler veggene og blander ut gassen til en temperatur turbinen tåler: rundt 1400–1600 °C ved turbininnløpet.</p><p>Flammen må holde seg tent over et enormt område av blandingsforhold, fra tomgang i 41 000 ft til avgang på en varm dag. To tennplugger (A og B) tenner ved start og kan gå kontinuerlig i kraftig regn, ising, kraftig turbulens og på kontaminert bane.</p><ul><li><b>Flammeslukk:</b> kraftig regn eller hagl, innsugd is, drivstoffmangel, eller svært rask hendelbevegelse i stor høyde.</li><li><b>Gjentenning:</b> med vindmølle eller starterhjelp, innenfor gjentenningsområdet (høyde og fart) i QRH.</li></ul>`),
+  ck:P('Continuous ignition ON in heavy rain, icing and severe turbulence. Fuel flow (kg/h) is the direct measure of what goes in here.','Kontinuerlig tenning ON i kraftig regn, ising og kraftig turbulens. Drivstoffstrøm (kg/h) er det direkte målet på hva som går inn her.')},
+ {k:'hpt',kind:'turb',a:0.6,b:0.655,r:[0.33,0.3,0.22,0.22],n2:2,ex:[0.06,0],n:P('HP turbine','HP-turbin'),
+  d:P(`<p>One or two stages that take energy out of the hot gas to drive the HP compressor, tens of megawatts on a large engine. This is the hottest and most stressed part of the engine: the gas is hotter than the melting point of the blade metal.</p><p>The blades survive because they are cast as single crystals of nickel alloy, cooled by compressor air through internal passages that leaves through tiny holes as a film over the surface, and coated with a ceramic thermal barrier. Their life is set by temperature: a few tens of degrees more shortens it a lot (creep and oxidation).</p><p>Turbine inlet temperature cannot be measured directly, so the engine measures the exhaust gas temperature (EGT) further back and uses it as the indicator.</p>`,
+    `<p>Ett eller to trinn som henter energi ut av den varme gassen for å drive HP-kompressoren, titalls megawatt på en stor motor. Dette er den varmeste og hardest belastede delen av motoren: gassen er varmere enn smeltepunktet til metallet i bladene.</p><p>Bladene overlever fordi de er støpt som enkeltkrystaller av nikkellegering, kjølt med kompressorluft gjennom innvendige kanaler som går ut gjennom små hull som en film over overflaten, og belagt med et keramisk varmeskjold. Levetiden styres av temperaturen: noen titalls grader mer forkorter den mye (krypning og oksidasjon).</p><p>Turbininnløpstemperaturen kan ikke måles direkte, så motoren måler eksosgasstemperaturen (EGT) lenger bak og bruker den som indikator.</p>`),
+  ck:P('EGT margin is engine life. That is why reduced take-off thrust (flex or assumed temperature) is used whenever performance allows.','EGT-margin er motorlevetid. Derfor brukes redusert avgangsskyv (flex eller assumed temperature) når ytelsen tillater det.')},
+ {k:'lpt',kind:'turb',a:0.66,b:0.8,r:[0.36,0.44,0.21,0.21],n2:5,ex:[0.14,0],n:P('LP turbine','LP-turbin'),
+  d:P(`<p>Four to seven stages that drive the fan and booster through the LP shaft. It turns much slower than the HP turbine, so it needs more stages and a larger diameter to take out the energy. The stages grow towards the back because the pressure falls and the gas expands.</p><p>Most of the energy that drives the fan, and therefore most of the thrust, is taken out here. EGT is often measured between the HP and LP turbine or at the LP turbine exit, depending on the engine.</p>`,
+    `<p>Fire til sju trinn som driver fanen og boosteren gjennom LP-akselen. Den går mye saktere enn HP-turbinen, så den trenger flere trinn og større diameter for å hente ut energien. Trinnene vokser bakover fordi trykket faller og gassen utvider seg.</p><p>Det meste av energien som driver fanen, og dermed det meste av skyvet, hentes ut her. EGT måles ofte mellom HP- og LP-turbinen eller ved utløpet av LP-turbinen, avhengig av motoren.</p>`),
+  ck:P('EGT (°C) with its amber and red limits. Watch the peak during the start and at take-off.','EGT (°C) med gul og rød grense. Følg toppen under start og ved avgang.')},
+ {k:'noz',kind:'nozzle',a:0.8,b:0.97,r:[0.42,0.27,0.18],ex:[0.26,0],n:P('Core nozzle and tail cone','Kjernedyse og halekjegle'),
+  d:P(`<p>The remaining pressure in the hot gas is turned into speed in the converging nozzle around the tail cone. In a high-bypass engine the hot core jet gives only about 20 % of the thrust; in a turbojet it gives all of it.</p><p>The jet behind an engine at take-off power is dangerous for hundreds of metres, and even at idle it can blow over people and vehicles close behind. Chevrons and mixers on some engines blend the hot and cold streams to cut noise.</p>`,
+    `<p>Det gjenværende trykket i den varme gassen gjøres om til fart i den konvergerende dysen rundt halekjeglen. I en motor med høyt omløpsforhold gir den varme kjernestrålen bare rundt 20 % av skyvet; i en turbojet gir den alt.</p><p>Strålen bak en motor på avgangseffekt er farlig i flere hundre meter, og selv på tomgang kan den blåse over personer og kjøretøy like bak. Sagtenner (chevrons) og miksere på noen motorer blander den varme og kalde strømmen for å dempe støyen.</p>`),
+  ck:P('Mind the jet blast area when you start, taxi and apply breakaway thrust on the apron.','Pass på jetblast-området når du starter, taksier og gir løsrivningsskyv på oppstillingsplassen.')},
+ {k:'lps',kind:'shaft',a:0.12,b:0.8,r:[0.05],ex:[0,0.5],n:P('LP shaft (N1)','LP-aksel (N1)'),
+  d:P(`<p>A long, slim shaft that runs inside the HP shaft and connects the LP turbine at the back to the fan and booster at the front. Its speed is N1. On big fans 100 % N1 is only around 2500–5500 rpm depending on fan size, because the fan tips would otherwise go far too fast.</p><p>The two spools are not connected mechanically. Each finds its own speed, and only the air couples them. This lets each compressor run closer to its best speed and makes the engine easier to start: the starter only has to turn the HP spool.</p>`,
+    `<p>En lang, slank aksel som går inne i HP-akselen og kobler LP-turbinen bak til fanen og boosteren foran. Turtallet er N1. På store faner er 100 % N1 bare rundt 2500–5500 o/min avhengig av fanstørrelsen, fordi fanspissene ellers ville gått altfor fort.</p><p>De to spolene er ikke mekanisk koblet. Hver finner sitt eget turtall, og bare luften kobler dem. Det lar hver kompressor gå nærmere sitt beste turtall og gjør motoren lettere å starte: starteren trenger bare å dreie HP-spolen.</p>`),
+  ck:P('N1 (%) is the thrust gauge on most turbofans. During the start, N1 should begin to turn by about 20 % N2; if it does not, abort (N1 not rotating, possibly a seized fan).','N1 (%) er skyvmåleren på de fleste turbofaner. Under start skal N1 begynne å rotere innen rundt 20 % N2; gjør den ikke det, avbryt (N1 roterer ikke, kanskje fastlåst fan).')},
+ {k:'hps',kind:'shaft',a:0.28,b:0.66,r:[0.11],ex:[0,0.86],n:P('HP shaft (N2)','HP-aksel (N2)'),
+  d:P(`<p>A short, hollow shaft between the HP compressor and HP turbine, running at around 10 000–15 000 rpm. Its speed is N2.</p><p>The starter turns the HP spool through the accessory gearbox, and most accessories are driven by it: fuel pump, oil pumps, hydraulic pump and generator. That is why N2 is the parameter you follow during the start, and why a windmilling engine at low N2 gives little hydraulic pressure.</p>`,
+    `<p>En kort, hul aksel mellom HP-kompressoren og HP-turbinen, som går med rundt 10 000–15 000 o/min. Turtallet er N2.</p><p>Starteren dreier HP-spolen gjennom tilbehørsgirkassen, og de fleste tilbehørene drives av den: drivstoffpumpe, oljepumper, hydraulikkpumpe og generator. Derfor er N2 parameteren du følger under start, og derfor gir en motor i vindmølle med lav N2 lite hydraulikktrykk.</p>`),
+  ck:P('Start: starter engages, N2 rises, fuel at about 20–25 % N2 (FADEC), light-off seen as EGT rising, starter cuts out at about 50 % N2, idle around 60 % N2.','Start: starteren kobles inn, N2 stiger, drivstoff ved rundt 20–25 % N2 (FADEC), tenning sees som stigende EGT, starteren kobles ut ved rundt 50 % N2, tomgang rundt 60 % N2.')},
+ {k:'agb',kind:'agb',a:0.33,b:0.47,r:[-0.62],ex:[-0.34,0.45],n:P('Accessory gearbox','Tilbehørsgirkasse'),
+  d:P(`<p>A radial shaft (tower shaft) takes power from the HP spool down to a gearbox on the engine case. On it sit the air turbine starter, the fuel pump and fuel metering unit, the oil pumps, an engine-driven hydraulic pump, the generator (an integrated drive generator that gives constant-frequency 115 V 400 Hz AC whatever the engine speed) and a small permanent-magnet alternator that powers the FADEC on its own.</p><p>The FADEC (Full Authority Digital Engine Control) has two channels and controls fuel, variable vanes, bleed valves and ignition. You set a thrust lever angle; the FADEC decides how to get there without overspeeding, overtemperaturing or stalling the engine.</p>`,
+    `<p>En radiell aksel (tower shaft) tar kraft fra HP-spolen ned til en girkasse på motorhuset. På den sitter luftturbinstarteren, drivstoffpumpen og doseringsenheten, oljepumpene, en motordrevet hydraulikkpumpe, generatoren (en integrated drive generator som gir 115 V 400 Hz vekselstrøm med fast frekvens uansett turtall) og en liten permanentmagnetgenerator som forsyner FADEC alene.</p><p>FADEC (Full Authority Digital Engine Control) har to kanaler og styrer drivstoff, variable skovler, bleed-ventiler og tenning. Du setter en vinkel på gasshendelen; FADEC bestemmer hvordan motoren kommer dit uten overturtall, overtemperatur eller stall.</p>`),
+  ck:P('Oil pressure, oil temperature and oil quantity come from here. Low oil pressure below the limit means engine shutdown per the checklist.','Oljetrykk, oljetemperatur og oljemengde kommer herfra. Lavt oljetrykk under grensen betyr motorstopp etter sjekklisten.')}
+ ],
+ path:[[0.02,0.55,0.2],[0.1,0.88,0.2],[0.16,0.46,0.24],[0.27,0.4,0.25],[0.5,0.3,0.25],[0.55,0.34,0.2],[0.6,0.32,0.22],[0.66,0.34,0.21],[0.8,0.44,0.21],[0.97,0.27,0.18]],
+ byp:[[0.16,0.9,0.5],[0.66,0.78,0.47]],
+ st:[[0,1,15,'0'],[0.1,1,15,'2'],[0.16,1.6,60,'13'],[0.27,2.5,110,'25'],[0.5,40,620,'3'],[0.6,38,1500,'4'],[0.66,10,1050,'45'],[0.8,1.4,600,'5'],[0.97,1,560,'9']],
+ rd(p){ return [['N1',nf(19.5+77*Math.pow(p,0.75),1)+' %'],['N2',nf(58+40*Math.pow(p,0.6),1)+' %'],['EGT',Math.round(430+430*p)+' °C'],[L({en:'Fuel flow',no:'Drivstoffstrøm'}),Math.round(280+4100*Math.pow(p,1.6))+' kg/h']]; }
+};
+
+/* ================= tilstand ================= */
+const S={e:'fan',ex:0,pw:0.6,sel:'fan',flow:true,t:0};
+const OFF={};
+let C=LAB.fit(el('cv'),()=>draw(),2), CG=LAB.fit(el('gr'),()=>graph(),2);
+const E=()=>ENG[S.e];
+function geo(){ const W=C.w,H=C.h, s=1/(1+0.62*S.ex); const DW=(W-48)*s, H2=H*0.4*s; return {W,H,s,DW,H2,x0:(W-DW)/2,cy:H*0.5,DH:(H-30)*s,y0:(H-(H-30)*s)/2}; }
+function off(p,G){ const o=OFF[S.e+p.k]||{x:0,y:0}; return {x:p.ex[0]*S.ex*G.DW+o.x, y:p.ex[1]*S.ex*G.H2+o.y}; }
+// koordinater for aksiale deler
+function mk(G,O){ return (u,r)=>[G.x0+u*G.DW+O.x, G.cy-r*G.H2+O.y]; }
+const COL={cold:'#C9D6DF',mid:'#B7C3CC',hot:'#E2A26B',hotter:'#D9763F',metal:'#8C99A3',dark:'#4C5B66',line:'#13202A'};
+function poly(g,pts,fill,stroke,lw){ g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); if(fill){ g.fillStyle=fill; g.fill(); } if(stroke){ g.strokeStyle=stroke; g.lineWidth=lw||1.2; g.stroke(); } }
+function both(fn){ fn(1); fn(-1); }
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ---------- tegning av hver deltype ---------- */
+function drawPart(g,p,G,O,hl){
+  let M=mk(G,O); const a=p.a, b=p.b, r=p.r, line=hl?'#9A1E68':COL.line, lw=hl?2.2:1.1;
+  const split=p.kind==='bypass'||p.kind==='reverser'; const both=fn=>{ [1,-1].forEach(sg=>{ if(split) M=mk(G,{x:O.x,y:O.y*sg}); fn(sg); }); M=mk(G,O); };
+  switch(p.kind){
+  case 'inlet': both(sg=>{ const t=r[0]; g.beginPath(); const q0=M(a+0.02,sg*(t-0.1)), q1=M(a,sg*(t-0.05)), q2=M(a+0.012,sg*(t+0.02)), q3=M(b,sg*(t+0.0)), q4=M(b,sg*(t-0.06)); g.moveTo(q0[0],q0[1]); g.quadraticCurveTo(q1[0]-4,q1[1],q2[0],q2[1]); g.lineTo(q3[0],q3[1]); g.lineTo(q4[0],q4[1]); g.quadraticCurveTo(M(a+0.04,sg*(t-0.08))[0],M(a+0.04,sg*(t-0.08))[1],q0[0],q0[1]); g.closePath(); g.fillStyle='#DDE3E7'; g.fill(); g.strokeStyle=line; g.lineWidth=lw; g.stroke(); });
+    g.beginPath(); { const p0=M(a+0.03,0), p1=M(b,r[1]), p2=M(b,-r[1]); g.moveTo(p0[0],p0[1]); g.quadraticCurveTo(p1[0]-8,p1[1],p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.quadraticCurveTo(p2[0]-8,p2[1],p0[0],p0[1]); g.fillStyle='#AEB9C1'; g.fill(); g.strokeStyle=line; g.lineWidth=lw; g.stroke(); } break;
+  case 'fan': both(sg=>{ const n=1; poly(g,[M(a+0.01,sg*r[1]),M(a+0.005,sg*r[0]),M(b-0.01,sg*r[0]*0.98),M(b-0.02,sg*r[1])],'#9FB0BC',line,lw);
+      for(let i=1;i<6;i++){ const y=lerp(r[1],r[0],i/6); g.strokeStyle='rgba(19,32,42,.25)'; g.lineWidth=0.8; g.beginPath(); const q0=M(a+0.01,sg*y), q1=M(b-0.015,sg*y); g.moveTo(q0[0],q0[1]); g.lineTo(q1[0],q1[1]); g.stroke(); }
+      poly(g,[M(a,sg*(r[0]+0.01)),M(b,sg*(r[0]+0.01)),M(b,sg*(r[0]+0.05)),M(a,sg*(r[0]+0.05))],'#7E8D98',line,0.8); });
+    poly(g,[M(a,r[1]),M(b,r[1]),M(b,-r[1]),M(a,-r[1])],'#AEB9C1',line,lw); break;
+  case 'bypass': both(sg=>{ // nacelle ytterst og splitter/kjernehus
+      poly(g,[M(a,sg*0.93),M(b-0.04,sg*0.86),M(b,sg*0.8),M(b,sg*0.77),M(b-0.05,sg*0.82),M(a,sg*0.9)],'#DDE3E7',line,lw);
+      poly(g,[M(a,sg*0.5),M(a+0.03,sg*0.49),M(b,sg*0.47),M(b,sg*0.44),M(a+0.03,sg*0.46),M(a+0.005,sg*0.47)],'#C5CED4',line,lw);
+      for(let i=0;i<3;i++){ const u=a+0.02+i*0.012; const q0=M(u,sg*0.52), q1=M(u+0.01,sg*0.88); g.strokeStyle=hl?'#9A1E68':'#6E7C86'; g.lineWidth=2; g.beginPath(); g.moveTo(q0[0],q0[1]); g.lineTo(q1[0],q1[1]); g.stroke(); }
+      if(!hl){ g.fillStyle='rgba(120,170,210,.10)'; poly(g,[M(a,sg*0.9),M(b-0.04,sg*0.83),M(b-0.04,sg*0.47),M(a,sg*0.5)],'rgba(120,170,210,.10)'); } }); break;
+  case 'reverser': both(sg=>{ poly(g,[M(a,sg*0.92),M(b,sg*0.88),M(b,sg*0.8),M(a,sg*0.84)],'#C5CED4',line,lw); for(let u=a+0.01;u<b-0.005;u+=0.012){ const q0=M(u,sg*0.82), q1=M(u+0.008,sg*0.9); g.strokeStyle='#4C5B66'; g.lineWidth=1.2; g.beginPath(); g.moveTo(q0[0],q0[1]); g.lineTo(q1[0],q1[1]); g.stroke(); } }); break;
+  case 'axial': { const [t0,t1,h0,h1]=r, n=p.n2; both(sg=>{ poly(g,[M(a,sg*t0),M(b,sg*t1),M(b,sg*(t1+0.04)),M(a,sg*(t0+0.04))],'#C5CED4',line,lw);
+      for(let i=0;i<n;i++){ const u0=a+(b-a)*i/n, u1=u0+(b-a)/n*0.45, u2=u0+(b-a)/n*0.55, u3=u0+(b-a)/n*0.95, tt=lerp(t0,t1,(i+0.5)/n), hh=lerp(h0,h1,(i+0.5)/n);
+        poly(g,[M(u0,sg*hh),M(u1,sg*hh),M(u1,sg*(tt-0.005)),M(u0,sg*(tt-0.005))],'#8FA1AE',hl?line:null,0.8);
+        poly(g,[M(u2,sg*(hh+0.01)),M(u3,sg*(hh+0.01)),M(u3,sg*tt),M(u2,sg*tt)],'#D5DDE2',hl?line:null,0.8); } });
+      poly(g,[M(a,h0),M(b,h1),M(b,-h1),M(a,-h0)],'#AEB9C1',line,lw); break; }
+  case 'comb': { both(sg=>{ poly(g,[M(a,sg*r[0]),M(b,sg*r[0]),M(b,sg*(r[0]+0.04)),M(a,sg*(r[0]+0.04))],'#C5CED4',line,lw);
+      const gr=g.createLinearGradient(M(a,0)[0],0,M(b,0)[0],0); gr.addColorStop(0,'#F4D9A6'); gr.addColorStop(0.35,'#E8833A'); gr.addColorStop(1,'#E6A15F');
+      g.beginPath(); const s0=M(a+0.012,sg*(r[1]+0.06)), s1=M(a+0.03,sg*(r[0]-0.03)), s2=M(b-0.005,sg*(r[0]-0.06)), s3=M(b-0.005,sg*(r[1]+0.02)); g.moveTo(s0[0],s0[1]); g.quadraticCurveTo(M(a,sg*(r[0]-0.02))[0],M(a,sg*(r[0]-0.02))[1],s1[0],s1[1]); g.lineTo(s2[0],s2[1]); g.lineTo(s3[0],s3[1]); g.closePath(); g.fillStyle=gr; g.fill(); g.strokeStyle=hl?line:'#8A5A2B'; g.lineWidth=hl?2:1; g.stroke();
+      const nz=M(a+0.008,sg*((r[0]+r[1])/2+0.02)); g.fillStyle='#4C5B66'; g.fillRect(nz[0]-4,nz[1]-3,10,6);
+      for(let i=1;i<4;i++){ const h=M(a+(b-a)*i/4,sg*(r[0]-0.03)); g.fillStyle='#FBFBF8'; g.beginPath(); g.arc(h[0],h[1],1.6,0,7); g.fill(); } });
+    poly(g,[M(a,r[1]),M(b,r[1]),M(b,-r[1]),M(a,-r[1])],'#AEB9C1',line,lw); break; }
+  case 'turb': { const [t0,t1,h0,h1]=r, n=p.n2; both(sg=>{ poly(g,[M(a,sg*t0),M(b,sg*t1),M(b,sg*(t1+0.04)),M(a,sg*(t0+0.04))],'#C5CED4',line,lw);
+      for(let i=0;i<n;i++){ const u0=a+(b-a)*i/n, u1=u0+(b-a)/n*0.45, u2=u0+(b-a)/n*0.55, u3=u0+(b-a)/n*0.95, tt=lerp(t0,t1,(i+0.5)/n), hh=lerp(h0,h1,(i+0.5)/n);
+        poly(g,[M(u0,sg*hh),M(u1,sg*hh),M(u1,sg*tt),M(u0,sg*tt)],'#D7B48C',hl?line:null,0.8); poly(g,[M(u2,sg*(hh+0.01)),M(u3,sg*(hh+0.01)),M(u3,sg*tt),M(u2,sg*tt)],'#C9873F',hl?line:null,0.8); } });
+    poly(g,[M(a,h0),M(b,h1),M(b,-h1),M(a,-h0)],'#AEB9C1',line,lw); break; }
+  case 'nozzle': both(sg=>{ poly(g,[M(a,sg*r[0]),M(b,sg*r[1]),M(b,sg*(r[1]+0.03)),M(a,sg*(r[0]+0.04))],'#C5CED4',line,lw); });
+    if(r[2]>0){ g.beginPath(); const p0=M(a,r[2]), p1=M(b+0.02,0), p2=M(a,-r[2]); g.moveTo(p0[0],p0[1]); g.lineTo(p1[0],p1[1]); g.lineTo(p2[0],p2[1]); g.closePath(); g.fillStyle='#AEB9C1'; g.fill(); g.strokeStyle=line; g.lineWidth=lw; g.stroke(); } break;
+  case 'shaft': { const y=r[0]; poly(g,[M(a,y),M(b,y),M(b,-y),M(a,-y)],p.k==='hps'||p.k==='ggs'?'#7E8D98':'#5F6E79',line,lw); break; }
+  case 'agb': { const y=r[0], p0=M(a,y), p1=M(b,y-0.22); poly(g,[[p0[0],p0[1]],[p1[0],p0[1]],[p1[0],p1[1]],[p0[0],p1[1]]],'#B8C2C9',line,lw);
+      const mx=(p0[0]+p1[0])/2, my=(p0[1]+p1[1])/2, rr=Math.abs(p1[1]-p0[1])*0.28; [-1,0,1].forEach(i=>{ g.beginPath(); g.arc(mx+i*rr*2.1,my,rr,0,7); g.strokeStyle='#4C5B66'; g.lineWidth=1.2; g.stroke(); });
+      const tw=M((a+b)/2,y), tw2=M((a+b)/2,-0.12); g.strokeStyle='#5F6E79'; g.lineWidth=3; g.beginPath(); g.moveTo(tw[0],tw[1]); g.lineTo(tw2[0],tw2[1]); g.stroke(); break; }
+  }
+}
+/* ---------- luftstrøm ---------- */
+const PART=[]; for(let i=0;i<260;i++) PART.push({u:Math.random(),f:Math.random(),b:Math.random()<0.55});
+function pathAt(path,u){ for(let i=0;i<path.length-1;i++){ const [u0,o0,i0]=path[i],[u1,o1,i1]=path[i+1]; if(u>=u0&&u<=u1){ const t=(u-u0)/(u1-u0); return [lerp(o0,o1,t),lerp(i0,i1,t)]; } } return null; }
+function stAt(u){ const st=E().st; if(!st) return null; for(let i=0;i<st.length-1;i++){ if(u>=st[i][0]&&u<=st[i+1][0]){ const t=(u-st[i][0])/(st[i+1][0]-st[i][0]); return [lerp(st[i][1],st[i+1][1],t),lerp(st[i][2],st[i+1][2],t)]; } } return null; }
+function tCol(T){ const t=Math.max(0,Math.min(1,(T-15)/1400)); const r=Math.round(lerp(90,235,Math.min(1,t*1.6))), gg=Math.round(lerp(150,90,t)), bb=Math.round(lerp(220,40,t)); return `rgba(${r},${gg},${bb},.75)`; }
+function flow(g,G){ if(!S.flow||S.ex>0.04) return; const en=E(), path=en.path, u0=path[0][0], u1=path[path.length-1][0], M=mk(G,{x:0,y:0}), sp=0.0016+0.006*S.pw;
+  PART.forEach((q,i)=>{ if(en.byp&&q.b){ q.u+=sp*0.8; const a=en.byp[0][0], b=en.byp[1][0]; if(q.u>b||q.u<a) q.u=a+Math.random()*0.02; const t=(q.u-a)/(b-a); const ro=lerp(en.byp[0][1],en.byp[1][1],t), ri=lerp(en.byp[0][2],en.byp[1][2],t); const r=lerp(ri,ro,q.f)*(i%2?1:-1); const pt=M(q.u,r); g.fillStyle='rgba(90,150,220,.6)'; g.fillRect(pt[0],pt[1],3,1.6); return; }
+    const st=stAt(q.u); q.u+=sp*(1+(st?Math.min(2.5,st[1]/400):0)); if(q.u>u1||q.u<u0){ q.u=u0+Math.random()*0.02; q.f=Math.random(); } const pa=pathAt(path,q.u); if(!pa) return; const r=lerp(pa[1],pa[0],0.1+0.8*q.f)*(i%2?1:-1); const pt=M(q.u,r); const s2=stAt(q.u); g.fillStyle=s2?tCol(s2[1]):'rgba(90,150,220,.6)'; g.fillRect(pt[0],pt[1],3.2,1.8); }); }
+
+/* ---------- hovedtegning ---------- */
+function draw(){ const g=C.ctx, W=C.w, H=C.h; if(!W) return; const G=geo(); g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let x=0;x<W;x+=40){ g.beginPath(); g.moveTo(x,0); g.lineTo(x,H); g.stroke(); } for(let y=0;y<H;y+=40){ g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); }
+  if(S.ex<0.05){ g.setLineDash([6,6]); g.strokeStyle='rgba(19,32,42,.25)'; g.beginPath(); g.moveTo(10,G.cy); g.lineTo(W-10,G.cy); g.stroke(); g.setLineDash([]); }
+  const parts=E().parts, order=[...parts].sort((a,b)=>(a.kind==='bypass'||a.kind==='reverser'?1:0)-(b.kind==='bypass'||b.kind==='reverser'?1:0));
+  // aksler og agb først, så resten, så valgt del øverst
+  const z=p=>p.kind==='shaft'?0:p.kind==='agb'?1:p.kind==='bypass'?3:p.kind==='reverser'?4:2;
+  const sorted=[...parts].sort((a,b)=>z(a)-z(b)); sorted.forEach(p=>{ if(p.k!==S.sel) drawPart(g,p,G,off(p,G),false); });
+  flow(g,G);
+  const sp=parts.find(p=>p.k===S.sel); if(sp) drawPart(g,sp,G,off(sp,G),true);
+  // etiketter når den er trukket fra hverandre
+  if(S.ex>0.35){ g.font='600 12px Public Sans, sans-serif'; g.textAlign='center'; const used=[]; parts.forEach(p=>{ const R=rect(p,G); const t=L(p.n), tw=g.measureText(t).width; let x=Math.max(tw/2+4,Math.min(W-tw/2-4,R.x+R.w/2)), y=Math.min(H-6,R.y+Math.abs(R.h)+14); if(p.kind==='bypass'||p.kind==='reverser') y=Math.max(14,R.y-6); if(p.kind==='shaft'){ x=Math.min(W-tw/2-4,R.x+R.w+tw/2+8); y=R.y+Math.abs(R.h)/2+4; } while(used.some(u=>Math.abs(u[0]-x)<(u[2]+tw)/2+6&&Math.abs(u[1]-y)<14)) y+=14; used.push([x,y,tw]); g.fillStyle=p.k===S.sel?'#9A1E68':'#13202A'; g.fillText(t,x,y); }); g.textAlign='start'; }
+  else if(W>520){ g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(L(E().short),12,22); }
+}
+function rect(p,G){ const O=off(p,G);
+  const M=mk(G,O); let top, bot;
+  if(p.kind==='agb'){ const a=M(p.a,p.r[0]), b=M(p.b,p.r[0]-0.22); return {x:a[0],y:a[1],w:b[0]-a[0],h:b[1]-a[1]}; }
+  if(p.kind==='shaft'){ top=p.r[0]+0.02; bot=-top; }
+  else if(p.kind==='bypass'||p.kind==='reverser'){ top=0.95; bot=0.45; }
+  else { top=Math.max(...p.r.slice(0,2))+0.05; bot=-top; }
+  const a=M(p.a,top), b=M(p.b,bot); return {x:a[0],y:a[1],w:Math.max(8,b[0]-a[0]),h:b[1]-a[1]}; }
+function hit(x,y){ const G=geo(), parts=E().parts; // minste treffflate vinner (aksler og små deler foran store)
+  let best=null, ba=1e9; parts.forEach(p=>{ const R=rect(p,G); let ok=x>=R.x&&x<=R.x+R.w&&y>=R.y&&y<=R.y+R.h; if(!ok&&(p.kind==='bypass'||p.kind==='reverser')){ const oy=off(p,G).y; const R2={x:R.x,y:2*G.cy-(R.y-oy)-R.h-oy,w:R.w,h:R.h}; ok=x>=R2.x&&x<=R2.x+R2.w&&y>=R2.y&&y<=R2.y+R2.h; }
+    if(ok){ const ar=R.w*Math.abs(R.h); if(ar<ba){ ba=ar; best=p; } } }); return best; }
+
+/* ---------- graf: trykk og temperatur ---------- */
+function graph(){ const g=CG.ctx, W=CG.w, H=CG.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const L0=46,R0=46,T0=14,B0=22, PW=W-L0-R0, PH=H-T0-B0;
+  g.font='11px IBM Plex Mono, monospace';
+  const st=E().st, X=u=>L0+u*PW, maxP=Math.max(...st.map(s=>s[1])), maxT=1600, YP=p=>T0+PH-p/maxP*PH, YT=t=>T0+PH-t/maxT*PH;
+  g.strokeStyle='#EEF1EF'; st.forEach(s=>{ g.beginPath(); g.moveTo(X(s[0]),T0); g.lineTo(X(s[0]),T0+PH); g.stroke(); g.fillStyle='#5E6B74'; g.textAlign='center'; g.fillText(s[3],X(s[0]),T0+PH+14); }); g.textAlign='start';
+  const k=0.55+0.45*S.pw;
+  g.strokeStyle='#1E5E9E'; g.lineWidth=2; g.beginPath(); st.forEach((s,i)=>{ const p=1+(s[1]-1)*k; i?g.lineTo(X(s[0]),YP(p)):g.moveTo(X(s[0]),YP(p)); }); g.stroke();
+  g.strokeStyle='#C2410C'; g.beginPath(); st.forEach((s,i)=>{ const t=15+(s[2]-15)*(0.6+0.4*S.pw); i?g.lineTo(X(s[0]),YT(t)):g.moveTo(X(s[0]),YT(t)); }); g.stroke();
+  g.fillStyle='#1E5E9E'; g.fillText(L({en:'pressure',no:'trykk'})+' ('+nf(1+(maxP-1)*k,0)+' bar max)',L0,T0+8); g.fillStyle='#C2410C'; g.textAlign='end'; g.fillText(L({en:'temperature',no:'temperatur'})+' (°C)',W-R0,T0+8); [0,500,1000,1500].forEach(t=>g.fillText(String(t),W-4,YT(t)+4)); g.textAlign='start';
+  const sp=E().parts.find(p=>p.k===S.sel); if(sp&&sp.a!=null&&sp.kind!=='shaft'&&sp.kind!=='agb'){ g.fillStyle='rgba(154,30,104,.10)'; g.fillRect(X(sp.a),T0,X(sp.b)-X(sp.a),PH); }
+  el('grnote').textContent=L({en:'Stations follow the usual numbering (0 free stream, 2 compressor face, 3 compressor exit, 4 turbine inlet, 5 turbine exit, 9 nozzle exit). Typical values; the highlighted band is the part you have selected.',no:'Stasjonene følger vanlig nummerering (0 fri strøm, 2 kompressorinnløp, 3 kompressorutløp, 4 turbininnløp, 5 turbinutløp, 9 dyseutløp). Typiske verdier; det markerte feltet er delen du har valgt.'}); }
+
+/* ---------- panel ---------- */
+function det(){ const p=E().parts.find(x=>x.k===S.sel)||E().parts[0]; S.sel=p.k; const ck=L(p.ck);
+  el('det').innerHTML=`<div class="kind">${esc(L(E().name))}</div><h3>${esc(L(p.n))}</h3>${L(p.d)}${ck?`<div class="ck"><b>${L({en:'In the cockpit',no:'I cockpit'})}</b>${esc(ck)}</div>`:''}`;
+  el('plist').innerHTML=E().parts.map(x=>`<button data-k="${x.k}" class="${x.k===S.sel?'on':''}">${esc(L(x.n))}</button>`).join(''); }
+function rd(){ const r=E().rd(S.pw); [1,2,3,4].forEach(i=>{ el('l'+i).textContent=r[i-1][0]; el('r'+i).textContent=r[i-1][1]; }); }
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+el('plist').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.sel=b.dataset.k; det(); draw(); graph(); });
+let exS=null;
+function ctl(){ el('ctl').innerHTML=''; exS=LAB.slider(el('ctl'),{label:'Pull apart',min:0,max:1,step:0.01,v:S.ex,f:v=>Math.round(v*100)+' %',on:v=>{ S.ex=v; draw(); }}); LAB.slider(el('ctl'),{label:'Power lever',min:0,max:1,step:0.01,v:S.pw,f:v=>v<0.03?L({en:'idle',no:'tomgang'}):Math.round(v*100)+' %',on:v=>{ S.pw=v; rd(); graph(); }}); }
+el('flow').onchange=e=>{ S.flow=e.target.checked; draw(); };
+el('reset').onclick=()=>{ Object.keys(OFF).forEach(k=>{ if(k.indexOf(S.e)===0) delete OFF[k]; }); S.ex=0; ctl(); draw(); };
+
+/* ---------- dra og klikk ---------- */
+let drag=null;
+const cv=el('cv');
+cv.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; const p=hit(x,y); if(!p) return; S.sel=p.k; det(); graph(); drag={p,x,y,moved:false}; cv.setPointerCapture(e.pointerId); cv.classList.add('drag'); draw(); });
+cv.addEventListener('pointermove',e=>{ if(!drag) return; const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; const dx=x-drag.x, dy=y-drag.y; if(Math.abs(dx)+Math.abs(dy)>2) drag.moved=true; const key=S.e+drag.p.k; const o=OFF[key]||{x:0,y:0}; o.x+=dx; o.y+=dy; OFF[key]=o; drag.x=x; drag.y=y; draw(); });
+const end=()=>{ drag=null; cv.classList.remove('drag'); };
+cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+cv.addEventListener('dblclick',()=>{ el('reset').click(); });
+function hint(){ el('hint').textContent=L({en:'Drag a part to pull it out · click to read · double-click to reassemble',no:'Dra en del for å trekke den ut · klikk for å lese · dobbeltklikk for å sette sammen'}); }
+
+/* ---------- animasjon ---------- */
+let vis=true, last=0; LAB.visible?LAB.visible(cv,v=>vis=v):0;
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function loop(ts){ requestAnimationFrame(loop); if(!vis||reduce) return; const dt=Math.min(0.05,(ts-last)/1000||0); last=ts; S.t+=dt; draw(); }
+requestAnimationFrame(loop);
+
+/* ---------- sammenligning ---------- */
+function cmp(){ el('cmplead').textContent=L({en:'The A320 family has flown with four engine types. All are high-bypass, two-spool turbofans with FADEC; the neo engines have a much higher bypass ratio and burn roughly 15 % less fuel. Typical, rounded values:',no:'A320-familien har fløyet med fire motortyper. Alle er turbofaner med høyt omløpsforhold, to spoler og FADEC; neo-motorene har mye høyere omløpsforhold og bruker rundt 15 % mindre drivstoff. Typiske, avrundede verdier:'});
+  const a=[[L({en:'Engine',no:'Motor'}),L({en:'Version',no:'Versjon'}),L({en:'Bypass ratio',no:'Omløpsforhold'}),L({en:'Fan diameter',no:'Fandiameter'}),L({en:'Take-off thrust',no:'Startskyv'}),L({en:'Note',no:'Merknad'})],
+   ['CFM56-5B','ceo','≈ 5.5–6','1.73 m','≈ 98–120 kN',L({en:'The reference engine in this lab',no:'Referansemotoren i denne labben'})],
+   ['IAE V2500-A5','ceo','≈ 4.6–4.8','1.60 m','≈ 110–147 kN',L({en:'Uses EPR as the main thrust parameter',no:'Bruker EPR som hovedparameter for skyv'})],
+   ['CFM LEAP-1A','neo','≈ 11','1.98 m','≈ 110–145 kN',L({en:'Composite fan, very high pressure ratio',no:'Komposittfan, svært høyt trykkforhold'})],
+   ['PW1100G-JM','neo','≈ 12','2.06 m','≈ 110–147 kN',L({en:'Geared turbofan: a gearbox lets the fan turn slower than the LP turbine',no:'Girt turbofan: en girkasse lar fanen gå saktere enn LP-turbinen'})]];
+  el('a3tab').innerHTML=a.map((r,i)=>`<tr>${r.map(c=>i?`<td>${esc(c)}</td>`:`<th>${esc(c)}</th>`).join('')}</tr>`).join('');
+  el('cmplead2').textContent=L({en:'Every engine makes thrust the same way, by throwing air backwards. A propeller moves a lot of air slowly, a turbojet a little air very fast. Propulsive efficiency is best when the jet is only a little faster than the aircraft, which is why the turbofan suits the A320’s Mach 0.78 cruise. For comparison only:',no:'Alle motorer lager skyv på samme måte, ved å kaste luft bakover. En propell flytter mye luft sakte, en turbojet lite luft svært fort. Propulsiv virkningsgrad er best når strålen bare er litt raskere enn flyet, og derfor passer turbofanen til A320s marsj på Mach 0,78. Bare til sammenligning:'});
+  const rows=[[L({en:'Engine',no:'Motor'}),L({en:'Best speed range',no:'Beste fartsområde'}),L({en:'Strengths',no:'Styrker'}),L({en:'Weaknesses',no:'Svakheter'})],
+   [L({en:'Piston',no:'Stempel'}),L({en:'up to about 200 kt, low altitude',no:'opp til rundt 200 kt, lav høyde'}),L({en:'Cheap, efficient at low power',no:'Billig, effektiv ved lav effekt'}),L({en:'Heavy for its power; power falls with altitude',no:'Tung for effekten; effekten faller med høyden'})],
+   [L({en:'Turboprop',no:'Turboprop'}),L({en:'about 250–350 kt, FL150–FL300',no:'rundt 250–350 kt, FL150–FL300'}),L({en:'Very efficient on short sectors, good field performance',no:'Svært effektiv på korte strekninger, gode bane-egenskaper'}),L({en:'Propeller tip speed limits cruise speed',no:'Propellspissfarten begrenser marsjfarten'})],
+   [L({en:'Turbofan',no:'Turbofan'}),L({en:'about Mach 0.7–0.85, FL300–FL410',no:'rundt Mach 0,7–0,85, FL300–FL410'}),L({en:'Efficient and quiet at high subsonic speed, high thrust',no:'Effektiv og stille ved høy underlydsfart, stort skyv'}),L({en:'Thirsty low and slow, slow to spool up from idle',no:'Tørst lavt og sakte, treg å spole opp fra tomgang'})],
+   [L({en:'Turbojet',no:'Turbojet'}),L({en:'supersonic',no:'overlyd'}),L({en:'Simple, small frontal area',no:'Enkel, lite frontareal'}),L({en:'Loud and very thirsty at low speed',no:'Høylytt og svært tørst ved lav fart'})]];
+  el('cmptab').innerHTML=rows.map((r,i)=>`<tr>${r.map(c=>i?`<td>${esc(c)}</td>`:`<th>${esc(c)}</th>`).join('')}</tr>`).join(''); }
+
+/* ---------- kort ---------- */
+function cards(){ const c=[
+ [{en:'The engine display',no:'Motorvisningen'},{en:'The upper ECAM shows N1 (the thrust parameter on CFM and LEAP engines; EPR on the V2500), EGT with its amber and red limits, N2 and fuel flow. The lower ECAM ENG page adds oil quantity, pressure and temperature, vibration and the start valve and ignition status.',no:'Øvre ECAM viser N1 (skyvparameteren på CFM- og LEAP-motorer; EPR på V2500), EGT med gule og røde grenser, N2 og drivstoffstrøm. ENG-siden på nedre ECAM viser i tillegg oljemengde, oljetrykk og -temperatur, vibrasjon og status for startventil og tenning.'}],
+ [{en:'Start faults',no:'Startfeil'},{en:'Hot start (EGT over the start limit), hung start (N2 stops accelerating short of idle) and no light-off (fuel but no EGT rise). In an automatic start on the ground the FADEC detects these, cuts the fuel and dry-cranks the engine, and may try again. In a manual start the crew does it.',no:'Varm start (EGT over startgrensen), hengende start (N2 slutter å akselerere før tomgang) og ingen tenning (drivstoff, men ingen EGT-økning). Ved automatisk start på bakken oppdager FADEC dette, kutter drivstoffet og motorerer motoren tørt, og kan prøve igjen. Ved manuell start gjør besetningen det.'}],
+ [{en:'Spool-up time',no:'Spoletid'},{en:'From flight idle a large turbofan needs several seconds, up to about 8, to reach go-around thrust. With the slats out the A320 uses approach idle, a higher idle that shortens that time. A go-around starts with the thrust levers, never after the pitch-up.',no:'Fra flight idle trenger en stor turbofan flere sekunder, opptil rundt 8, for å nå gjennomstartsskyv. Med slatsene ute bruker A320 approach idle, en høyere tomgang som korter ned tiden. En gjennomstart starter med gasshendlene, aldri etter at nesen er løftet.'}],
+ [{en:'Thrust levers and detents',no:'Gasshendler og hakk'},{en:'There is no motor on the A320 thrust levers. The detents are IDLE, CL, FLX/MCT and TOGA. In the CL detent autothrust can command anything up to climb thrust; FLX/MCT gives FLEX thrust on the ground and MCT in the air; TOGA is full thrust.',no:'Gasshendlene på A320 har ingen motor. Hakkene er IDLE, CL, FLX/MCT og TOGA. I CL-hakket kan autothrust gi alt opp til stigeskyv; FLX/MCT gir FLEX-skyv på bakken og MCT i luften; TOGA er fullt skyv.'}],
+ [{en:'Reverse thrust',no:'Skyvrevers'},{en:'Only the cold bypass air is turned forward. REV shows amber while the reverser is in transit and green when deployed. Use maximum reverse early and bring it to idle reverse by about 70 kt, to avoid re-ingesting exhaust and debris.',no:'Bare den kalde omløpsluften vendes forover. REV vises gult mens reversen beveger seg og grønt når den er ute. Bruk maks revers tidlig, og reduser til idle reverse innen rundt 70 kt for å unngå å suge inn eksos og rusk.'}],
+ [{en:'Bleed air and anti-ice',no:'Bleed-luft og anti-ice'},{en:'Air taken from the HP compressor feeds the packs, pressurisation and wing anti-ice; engine anti-ice heats the inlet lip. Every kilogram bled costs thrust or raises EGT, so the take-off performance includes a penalty for anti-ice and sometimes for packs.',no:'Luft tatt fra HP-kompressoren forsyner pakkene, trykkabinen og vingenes anti-ice; motorens anti-ice varmer innløpsleppen. Hvert kilo som tappes, koster skyv eller øker EGT, så ytelsesberegningen for avgang tar med en straff for anti-ice og noen ganger for pakkene.'}],
+ [{en:'Engine failure on take-off',no:'Motorstans ved avgang'},{en:'Fly first: keep straight with rudder and follow the SRS. The yaw, the rudder and the minimum control speeds are in <a href="propeller.html#single">Engine failure and minimum control speeds</a>; V1, V2 and the go/stop decision are in <a href="performance.html#takeoff">Performance</a>.',no:'Fly først: hold retningen med sideror og følg SRS. Giret, sideroret og minste kontrollfarter finner du i <a href="propeller.html#single">Motorstans og minste kontrollfarter</a>; V1, V2 og beslutningen om å fortsette eller stoppe finner du i <a href="performance.html#takeoff">Ytelse</a>.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+
+LAB.quiz(el('qbox'),'engines',()=>LAB.shuffle([
+ {q:{en:'In a high-bypass turbofan like the CFM56-5B, where does most of the thrust come from?',no:'Hvor kommer det meste av skyvet fra i en turbofan med høyt omløpsforhold som CFM56-5B?'},a:[{en:'The fan and the bypass air',no:'Fanen og omløpsluften'},{en:'The hot core jet',no:'Den varme kjernestrålen'},{en:'The combustor',no:'Brennkammeret'}],c:0,e:{en:'Around 80 % comes from the fan. Moving a lot of air a little is more efficient than moving a little air a lot.',no:'Rundt 80 % kommer fra fanen. Å flytte mye luft litt er mer effektivt enn å flytte lite luft mye.'}},
+ {q:{en:'What are variable stator vanes and bleed valves in the compressor for?',no:'Hva er variable statorskovler og bleed-ventiler i kompressoren til?'},a:[{en:'To prevent compressor stall away from the design speed',no:'For å hindre kompressorstall utenfor designturtallet'},{en:'To cool the turbine',no:'For å kjøle turbinen'},{en:'To increase thrust at take-off',no:'For å øke skyvet ved avgang'}],c:0,e:{en:'They keep each blade row at a sensible angle of attack, especially at low rpm.',no:'De holder hver bladrad på en fornuftig anstigningsvinkel, særlig ved lavt turtall.'}},
+ {q:{en:'Why does the starter turn the HP spool and not the fan?',no:'Hvorfor dreier starteren HP-spolen og ikke fanen?'},a:[{en:'The HP spool feeds the combustor and drives the accessories; once it runs, the gas drives the LP spool',no:'HP-spolen forsyner brennkammeret og driver tilbehøret; når den går, driver gassen LP-spolen'},{en:'The fan is locked during the start',no:'Fanen er låst under start'},{en:'The fan would overspeed',no:'Fanen ville fått overturtall'}],c:0,e:{en:'The two spools are only coupled by the gas flow. That is why N1 starts turning some time after N2.',no:'De to spolene er bare koblet av gasstrømmen. Derfor begynner N1 å rotere en stund etter N2.'}},
+ {q:{en:'During an automatic start the EGT rises fast toward the start limit. What happens?',no:'Under en automatisk start stiger EGT raskt mot startgrensen. Hva skjer?'},a:[{en:'The FADEC cuts the fuel and dry-cranks the engine to cool it: a hot start',no:'FADEC kutter drivstoffet og motorerer motoren tørt for å kjøle den: en varm start'},{en:'The FADEC adds fuel to accelerate through it',no:'FADEC gir mer drivstoff for å akselerere gjennom det'},{en:'Nothing; the start limit only applies in flight',no:'Ingenting; startgrensen gjelder bare i luften'}],c:0,e:{en:'Too much fuel for too little air. Keeping air moving through the engine without fuel cools the turbine.',no:'For mye drivstoff for lite luft. Luft gjennom motoren uten drivstoff kjøler turbinen.'}},
+ {q:{en:'What does a hung start look like?',no:'Hvordan ser en hengende start ut?'},a:[{en:'Light-off has happened, but N2 stops accelerating short of idle while EGT keeps rising',no:'Tenningen har skjedd, men N2 slutter å akselerere før tomgang mens EGT fortsetter å stige'},{en:'No EGT rise after fuel is on',no:'Ingen EGT-økning etter at drivstoffet er på'},{en:'N1 rotates before N2',no:'N1 roterer før N2'}],c:0,e:{en:'The engine cannot accelerate on its own power yet. No EGT rise is the no-light-off case.',no:'Motoren klarer ikke å akselerere på egen kraft ennå. Ingen EGT-økning er tilfellet ingen tenning.'}},
+ {q:{en:'Why must thrust come first, or together with the pitch-up, in a go-around?',no:'Hvorfor må skyvet komme først, eller samtidig med at nesen løftes, i en gjennomstart?'},a:[{en:'The engines need several seconds to spool up from idle',no:'Motorene trenger flere sekunder på å spole opp fra tomgang'},{en:'The FADEC will not accept a pitch change first',no:'FADEC godtar ikke pitchendring først'},{en:'To protect the reversers',no:'For å beskytte reversene'}],c:0,e:{en:'From flight idle it can take up to about 8 seconds to reach go-around thrust. That is also why approach idle exists.',no:'Fra flight idle kan det ta opptil rundt 8 sekunder å nå gjennomstartsskyv. Derfor finnes også approach idle.'}},
+ {q:{en:'What does flat rating mean?',no:'Hva betyr flat rating?'},a:[{en:'Full rated thrust is available up to a corner temperature; above it the EGT limit makes thrust fall',no:'Fullt skyv er tilgjengelig opp til en hjørnetemperatur; over den gjør EGT-grensen at skyvet faller'},{en:'Thrust is the same at every altitude',no:'Skyvet er det samme i alle høyder'},{en:'The engine gives constant EGT at all temperatures',no:'Motoren gir konstant EGT ved alle temperaturer'}],c:0,e:{en:'Below the corner the engine could give more, but is limited to the rated thrust, and EGT rises as the day warms up.',no:'Under hjørnet kunne motoren gitt mer, men begrenses til nominelt skyv, og EGT stiger når dagen blir varmere.'}},
+ {q:{en:'On a FLEX take-off the assumed temperature is…',no:'Ved FLEX-avgang er den antatte temperaturen …'},a:[{en:'higher than the actual temperature, and the FADEC gives the thrust for that temperature',no:'høyere enn den faktiske temperaturen, og FADEC gir skyvet for den temperaturen'},{en:'lower than the actual temperature',no:'lavere enn den faktiske temperaturen'},{en:'the temperature at which the engine was certified',no:'temperaturen motoren ble sertifisert ved'}],c:0,e:{en:'The FLEX temperature must be above both the actual OAT and the flat-rating corner. The real, cooler air gives extra margin, and the EGT stays well below the limit.',no:'FLEX-temperaturen må være over både faktisk OAT og hjørnetemperaturen. Den virkelige, kaldere luften gir ekstra margin, og EGT holder seg godt under grensen.'}},
+ {q:{en:'Which air does the thrust reverser turn forward on the A320’s engines?',no:'Hvilken luft vender skyvreversen forover på A320-motorene?'},a:[{en:'The cold bypass air',no:'Den kalde omløpsluften'},{en:'The hot core exhaust',no:'Den varme kjerneeksosen'},{en:'Both streams equally',no:'Begge strømmene likt'}],c:0,e:{en:'Blocker doors close the bypass duct and cascades turn the flow forward. The core keeps pushing aft.',no:'Blokkeringsdører stenger omløpskanalen, og skovlgitre vender strømmen forover. Kjernen skyver fortsatt bakover.'}},
+ {q:{en:'Why reduce to idle reverse at about 70 kt?',no:'Hvorfor redusere til idle reverse rundt 70 kt?'},a:[{en:'To avoid re-ingesting exhaust and debris, which can stall the compressor',no:'For å unngå å suge inn eksos og rusk, som kan få kompressoren til å stalle'},{en:'Reverse gives no thrust below 70 kt',no:'Revers gir ikke skyv under 70 kt'},{en:'To save the brakes',no:'For å spare bremsene'}],c:0,e:{en:'At low speed the reversed flow can be drawn back into the inlet.',no:'Ved lav fart kan den reverserte strømmen trekkes tilbake inn i innløpet.'}},
+ {q:{en:'Engine anti-ice is switched on for take-off. What happens to the engine?',no:'Motorens anti-ice slås på før avgang. Hva skjer med motoren?'},a:[{en:'Bleed air is taken, so for the same thrust the EGT is higher, and the performance includes a penalty',no:'Det tappes bleed-luft, så for samme skyv er EGT høyere, og ytelsen tar med en straff'},{en:'Thrust rises because the inlet is warmer',no:'Skyvet øker fordi innløpet er varmere'},{en:'Nothing; anti-ice is electric',no:'Ingenting; anti-ice er elektrisk'}],c:0,e:{en:'Air that leaves the compressor does not reach the turbine. The engine has to work harder for the same thrust.',no:'Luft som forlater kompressoren når ikke turbinen. Motoren må jobbe hardere for samme skyv.'}},
+ {q:{en:'Of the air entering the combustor, roughly how much takes part in the burning?',no:'Omtrent hvor mye av luften som går inn i brennkammeret, tar del i forbrenningen?'},a:[{en:'About a quarter; the rest cools and dilutes',no:'Rundt en fjerdedel; resten kjøler og blander ut'},{en:'All of it',no:'All sammen'},{en:'About 90 %',no:'Rundt 90 %'}],c:0,e:{en:'Burning all of it at the ideal ratio would give gas far too hot for the turbine.',no:'Å brenne alt i ideelt blandingsforhold ville gitt gass altfor varm for turbinen.'}}
+]),12);
+
+/* ================= start og spoling (ECAM) ================= */
+const ES={ph:'off',t:0,n1:0,n2:0,egt:20,ff:0,fault:'none',tla:'idle',idle:'flight',lit:false,hist:[],gaT:null,ga:null,valve:false,ign:false,fuel:false,dry:0,fade:0};
+const ELIM={start:725,to:950};
+const CE=LAB.fit(el('ecv'),()=>dE(),2);
+function n1Target(){ return ES.tla==='idle'? (ES.ph==='run'?(ES.idle==='app'?32:21):19.5) : ES.tla==='cl'?86:ES.tla==='flx'?90:97; }
+function stepE(dt){ const T=ES;
+  if(T.ph==='off'){ T.n2=Math.max(0,T.n2-3*dt); T.n1=Math.max(0,T.n1-1.5*dt); T.egt+=(Math.max(20,T.egt>200?T.egt-1:20)-T.egt)*0.2*dt*5; T.ff=0; }
+  else if(T.ph==='start'){ T.t+=dt; const sv=T.valve;
+    { const cap=T.lit?60:(T.fault==='hung'?40:30); if(T.n2>cap) T.n2-=3*dt; else if(sv||T.lit) T.n2=Math.min(cap,T.n2+(T.lit? (T.fault==='hung'&&T.n2>36?0.05:1.8) : 1.5)*dt); }
+    if(!T.ign&&T.n2>=16) T.ign=true;
+    if(!T.fuel&&T.n2>=22){ T.fuel=true; T.fuelT=T.t; }
+    if(T.fuel){ T.ff=Math.min(T.lit?280:180,T.ff+60*dt);
+      if(!T.lit&&T.fault!=='nolight'&&T.t-T.fuelT>3) T.lit=true;
+      if(T.fault==='nolight'&&T.t-T.fuelT>15) abortE({en:'no light-off',no:'ingen tenning'}); }
+    if(T.lit){ const peak=T.fault==='hot'?800:650, tgt= T.n2<45? peak*Math.min(1,(T.t-T.fuelT-3)/8) : peak-(T.n2-45)/13*(peak-430); T.egt+=(Math.max(T.egt>tgt?tgt:20,tgt)-T.egt)*0.6*dt;
+      if(T.fault==='hot'&&T.egt>ELIM.start-5) abortE({en:'hot start: EGT approaching the start limit',no:'varm start: EGT nærmer seg startgrensen'});
+      if(T.fault==='hung'&&T.n2>36&&T.t-T.fuelT>28) abortE({en:'hung start: N2 not accelerating',no:'hengende start: N2 akselererer ikke'}); }
+    if(T.n2>=50&&T.valve) T.valve=false;
+    if(T.n1>19.5) T.n1-=2*dt; else if(T.n2>=20) T.n1=Math.min(19.5,T.n1+ (T.lit?0.7:0.25)*dt);
+    if(T.n2>=57.9&&!T.valve){ T.ph='run'; T.ign=false; } }
+  else if(T.ph==='dry'){ T.dry-=dt; T.n2+=(25-T.n2)*0.3*dt; T.egt+=(120-T.egt)*0.08*dt; T.n1+=(4-T.n1)*0.2*dt; T.ff=0; if(T.dry<=0){ T.ph='off'; T.valve=false; } }
+  else if(T.ph==='run'){ const tgt=n1Target(); const amax=1.7+0.27*(T.n1-15); const d=tgt-T.n1; T.n1+= d>0? Math.min(1.6*d,amax)*dt : Math.max(1.0*d,-15)*dt;
+    T.n2=58+40*Math.pow(Math.max(0,(T.n1-19.5)/77.5),0.6); const fr=Math.max(0,(T.n1-19.5)/77.5); T.egt+=((430+430*fr)-T.egt)*0.8*dt; T.ff=280+4100*Math.pow(fr,1.6);
+    if(T.ga&&T.gaT==null){ T.ga.t+=dt; if(T.n1>=0.983*97) T.gaT=T.ga.t; } }
+  T.hacc=(T.hacc||0)+dt; if(T.hacc>=0.1){ T.hacc=0; T.hist.push([T.n1,T.n2,T.egt]); if(T.hist.length>600) T.hist.shift(); } }
+function abortE(why){ ES.ph='dry'; ES.dry=30; ES.fuel=false; ES.ign=false; ES.lit=false; ES.ff=0; ES.valve=true; ES.msg=why; }
+function dial(g,cx,cy,R,v,max,lab,unit,amber,red,txt){ const a0=Math.PI*0.75, a1=Math.PI*2.05, A=x=>a0+(a1-a0)*Math.min(1.05,Math.max(0,x/max));
+  g.lineWidth=2; g.strokeStyle='#D7E1E6'; g.beginPath(); g.arc(cx,cy,R,a0,A(amber||max)); g.stroke();
+  if(amber){ g.strokeStyle='#F2A33A'; g.beginPath(); g.arc(cx,cy,R,A(amber),A(red)); g.stroke(); } if(red){ g.strokeStyle='#E5484D'; g.lineWidth=4; g.beginPath(); g.arc(cx,cy,R,A(red),a1); g.stroke(); }
+  const col= red&&v>=red?'#E5484D': amber&&v>=amber?'#F2A33A':'#3DDC84';
+  g.strokeStyle=col; g.lineWidth=3; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(A(v))*(R-2),cy+Math.sin(A(v))*(R-2)); g.stroke();
+  g.font='600 '+Math.round(R*0.36)+'px "IBM Plex Mono", monospace'; g.fillStyle=col; g.textAlign='right'; g.fillText(txt,cx+R*0.95,cy+R*0.62);
+  g.font=Math.round(Math.max(10,R*0.22))+'px "IBM Plex Mono", monospace'; g.fillStyle='#4FB4E8'; g.textAlign='center'; g.fillText(lab,cx,cy-R-8); g.fillStyle='#9FB3C1'; g.fillText(unit,cx,cy+R+14); g.textAlign='start'; }
+function dE(){ const g=CE.ctx,W=CE.w,H=CE.h; if(!W) return; g.fillStyle='#10171D'; g.fillRect(0,0,W,H); const T=ES, nar=W<520;
+  const top=H*0.5, R=Math.min(W*0.13,top*0.32);
+  dial(g,W*0.2,top*0.55,R,T.n1,110,'N1','%',null,null,nf(T.n1,1));
+  dial(g,W*0.5,top*0.55,R,T.egt,1100,'EGT','°C',T.ph==='start'||T.ph==='dry'?ELIM.start-40:ELIM.to-35,T.ph==='start'||T.ph==='dry'?ELIM.start:ELIM.to,String(Math.round(T.egt)));
+  const mx=W*0.74; g.font=(nar?11:13)+'px "IBM Plex Mono", monospace'; g.fillStyle='#4FB4E8'; g.fillText('N2 %',mx,top*0.3); g.fillText('FF KG/H',mx,top*0.62);
+  g.font='600 '+(nar?16:22)+'px "IBM Plex Mono", monospace'; g.fillStyle=T.ph==='start'&&T.n2<58?'#3DDC84':'#3DDC84'; g.fillText(nf(T.n2,1),mx,top*0.3+(nar?18:26)); g.fillText(String(Math.round(T.ff/10)*10),mx,top*0.62+(nar?18:26));
+  // status
+  g.font=(nar?10.5:12.5)+'px "IBM Plex Mono", monospace'; let y=top*0.9; const mem=[];
+  if(T.ph==='start'){ if(T.valve) mem.push(['START VALVE OPEN','#3DDC84']); if(T.ign) mem.push(['IGN A','#3DDC84']); if(T.fuel) mem.push(['FUEL ON','#3DDC84']); }
+  if(T.ph==='dry') mem.push(['ENG 1 START FAULT','#F2A33A'],['DRY CRANK '+Math.max(0,Math.ceil(T.dry))+' S','#F2A33A']);
+  if(T.ph==='run') mem.push(['ENG 1 AVAIL','#3DDC84'],['THR '+T.tla.toUpperCase(),'#D7E1E6']);
+  if(T.ph==='off') mem.push(['ENG 1 SHUT DOWN','#9FB3C1']);
+  g.textAlign='left'; mem.forEach(([m,c],i)=>{ g.fillStyle=c; g.fillText(m,12+(nar?0:i*(W/3.2))*(nar?0:1),y+(nar?i*13:0)); });
+  // historikk
+  const by=H*0.62, bh=H*0.32, bx=10, bw=W-20; g.strokeStyle='#2A3742'; g.lineWidth=1; g.strokeRect(bx,by,bw,bh);
+  const line=(k,max,col)=>{ g.strokeStyle=col; g.lineWidth=1.8; g.beginPath(); T.hist.forEach((h,i)=>{ const xx=bx+bw-(T.hist.length-1-i)/600*bw, yy=by+bh-Math.min(1,h[k]/max)*bh; i?g.lineTo(xx,yy):g.moveTo(xx,yy); }); g.stroke(); };
+  line(0,110,'#3DDC84'); line(1,110,'#4FB4E8'); line(2,1100,'#F2A33A');
+  g.font='10.5px "IBM Plex Mono", monospace'; g.fillStyle='#3DDC84'; g.fillText('N1',bx+6,by+13); g.fillStyle='#4FB4E8'; g.fillText('N2',bx+30,by+13); g.fillStyle='#F2A33A'; g.fillText('EGT',bx+54,by+13); g.fillStyle='#7D8B95'; g.textAlign='right'; g.fillText(L({en:'last 60 s',no:'siste 60 s'}),bx+bw-6,by+13); g.textAlign='left'; }
+function rE(){ const T=ES;
+  el('e1').textContent= T.ph==='off'? L({en:'off',no:'av'}) : T.ph==='start'? (T.lit? L({en:'light-off, accelerating',no:'tent, akselererer'}) : T.fuel? L({en:'fuel on, waiting for light-off',no:'drivstoff på, venter på tenning'}) : L({en:'starter turning the HP spool',no:'starteren dreier HP-spolen'})) : T.ph==='dry'? L({en:'start aborted, dry crank',no:'start avbrutt, tørrmotorering'}) : L({en:'running',no:'går'});
+  el('e2').textContent=(T.valve?L({en:'open',no:'åpen'}):L({en:'closed',no:'lukket'}))+' / '+(T.ign?'ON':'OFF')+' / '+(T.fuel||T.ph==='run'?'ON':'OFF');
+  el('e3').textContent= T.gaT!=null? nf(T.gaT,1)+' s ('+(T.ga.from==='app'?L({en:'from approach idle',no:'fra approach idle'}):L({en:'from flight idle',no:'fra flight idle'}))+')' : T.ga? L({en:'spooling…',no:'spoler …'}) : '–';
+  let x;
+  if(T.ph==='dry') x=L({en:'The FADEC has aborted the start ('+L(T.msg)+'). Fuel and ignition are off and the starter keeps turning the engine to blow the heat and any fuel out. On the ground an automatic start may then be retried; the ECAM tells you what to do.',no:'FADEC har avbrutt starten ('+L(T.msg)+'). Drivstoff og tenning er av, og starteren fortsetter å dreie motoren for å blåse ut varmen og eventuelt drivstoff. På bakken kan en automatisk start da prøves igjen; ECAM forteller deg hva du skal gjøre.'});
+  else if(T.ph==='start') x=L({en:'The starter is an air turbine driven by bleed air from the APU or the other engine. Ignition comes on at about 16 % N2 and fuel at about 22 %. The EGT rise is the light-off. N1 starts to turn only when gas begins to flow through the LP turbine.',no:'Starteren er en luftturbin drevet av bleed-luft fra APU-en eller den andre motoren. Tenningen kommer på ved rundt 16 % N2 og drivstoffet ved rundt 22 %. EGT-økningen er tenningen. N1 begynner først å rotere når gassen strømmer gjennom LP-turbinen.'});
+  else if(T.ph==='run') x=L({en:'Select TOGA from idle and watch the N1 trace: slow at first, faster as the engine accelerates. From flight idle it takes about 8 s to reach 95 % of go-around thrust; from approach idle, used on the A320 with slats extended, noticeably less.',no:'Velg TOGA fra tomgang og følg N1-kurven: sakte i starten, raskere når motoren akselererer. Fra flight idle tar det rundt 8 s å nå 95 % av gjennomstartsskyvet; fra approach idle, som A320 bruker med slatsene ute, merkbart kortere.'});
+  else x=L({en:'Press Auto start. On the A320 this is the ENG MODE selector to IGN/START and the ENG MASTER switch ON; the FADEC does the rest.',no:'Trykk Auto start. På A320 er dette ENG MODE-velgeren til IGN/START og ENG MASTER-bryteren ON; FADEC gjør resten.'});
+  el('ex').textContent=x; }
+let eLast=0, eVis=true; LAB.visible(el('ecv'),v=>eVis=v);
+function eLoop(ts){ requestAnimationFrame(eLoop); const dt=Math.min(0.1,(ts-eLast)/1000||0); eLast=ts; if(!eVis) return; let k=dt; while(k>0){ const h=Math.min(0.02,k); stepE(h); k-=h; } dE(); if(Math.round(ts/250)!==Math.round((ts-dt*1000)/250)) rE(); }
+requestAnimationFrame(eLoop);
+el('bstart').onclick=()=>{ if(ES.ph==='run'||ES.ph==='start') return; Object.assign(ES,{ph:'start',t:0,valve:true,ign:false,fuel:false,lit:false,ff:0,gaT:null,ga:null,tla:'idle'}); tlaSeg.set('idle'); rE(); };
+el('bstop').onclick=()=>{ Object.assign(ES,{ph:'off',valve:false,ign:false,fuel:false,lit:false,ga:null,gaT:null}); rE(); };
+LAB.seg(el('sfault'),[['none','None'],['hot','Hot start'],['hung','Hung start'],['nolight','No light-off']],ES.fault,v=>{ ES.fault=v; });
+const tlaSeg=LAB.seg(el('tla'),[['idle','IDLE'],['cl','CL'],['flx','FLX'],['toga','TOGA']],ES.tla,v=>{ if(ES.ph!=='run'){ tlaSeg.set('idle'); return; } const was=ES.tla; ES.tla=v; if(v==="toga"&&was==="idle"&&ES.n1<45){ ES.ga={t:0,from:ES.idle}; ES.gaT=null; } rE(); });
+LAB.seg(el('idle'),[['flight','Flight idle'],['app','Approach idle']],ES.idle,v=>{ ES.idle=v; });
+
+/* ================= flat rating og FLEX ================= */
+const RS={el:0,oat:20,flex:50,ai:false,mg:80};
+const CRV=LAB.fit(el('rcv'),()=>dR(),2);
+const isaT=e=>15-1.98*e/1000, dP=e=>Math.pow(1-6.87559e-6*e,5.25588);
+const TREF=e=>isaT(e)+15;
+function thrF(e,t){ return Math.pow(dP(e),0.85)*(t>TREF(e)?Math.max(0.4,1-0.0068*(t-TREF(e))):1); }
+function rcalc(){ const tr=TREF(RS.el), tmax=isaT(RS.el)+55, tog=thrF(RS.el,RS.oat)*(RS.ai?0.975:1);
+  const fmin=Math.max(tr,RS.oat+1); let fx=Math.min(tmax,Math.max(fmin,RS.flex)); let used=thrF(RS.el,fx)*(RS.ai?0.975:1); let lim25=false; if(used<0.75*tog){ lim25=true; while(fx>fmin&&thrF(RS.el,fx)*(RS.ai?0.975:1)<0.75*tog) fx-=0.5; used=thrF(RS.el,fx)*(RS.ai?0.975:1); }
+  const ecorner=ELIM.to-RS.mg, egt=t=>ecorner-2.6*Math.max(0,tr-t); const egtTO=egt(RS.oat)+(RS.ai?12:0), egtFX=egtTO-650*(1-used/tog);
+  return {tr,tmax,tog,fx,used,lim25,fmin,egtTO,egtFX,valid:RS.flex>=fmin}; }
+function dR(){ const g=CRV.ctx,W=CRV.w,H=CRV.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const R=rcalc();
+  const L0=44,R0=46,T0=18,B0=30, PW=W-L0-R0, PH=H-T0-B0, t0=-20, t1=75, X=t=>L0+(t-t0)/(t1-t0)*PW, Y=f=>T0+PH-(f-0.4)/(1.05-0.4)*PH, YE_=e=>T0+PH-(e-500)/(1200-500)*PH;
+  g.strokeStyle='#EEF1EF'; g.lineWidth=1; for(let t=-20;t<=70;t+=10){ g.beginPath(); g.moveTo(X(t),T0); g.lineTo(X(t),T0+PH); g.stroke(); mono(g,String(t),X(t),T0+PH+14,'#5E6B74','center'); }
+  for(let f=0.4;f<=1.001;f+=0.2){ g.beginPath(); g.moveTo(L0,Y(f)); g.lineTo(L0+PW,Y(f)); g.stroke(); mono(g,Math.round(f*100)+'%',L0-4,Y(f)+4,'#9A1E68','end'); }
+  [600,800,1000,1200].forEach(e=>mono(g,String(e),W-4,YE_(e)+4,'#C2410C','end'));
+  mono(g,L({en:'OAT / assumed temperature °C',no:'OAT / antatt temperatur °C'}),L0+PW,T0+PH+27,'#5E6B74','end');
+  // EGT-grense
+  g.strokeStyle='#B3261E'; g.setLineDash([5,4]); g.beginPath(); g.moveTo(L0,YE_(ELIM.to)); g.lineTo(L0+PW,YE_(ELIM.to)); g.stroke(); g.setLineDash([]); mono(g,L({en:'EGT limit',no:'EGT-grense'})+' '+ELIM.to,L0+PW-4,YE_(ELIM.to)-4,'#B3261E','end');
+  // kurver
+  g.strokeStyle='#9A1E68'; g.lineWidth=2.6; g.beginPath(); for(let t=t0;t<=t1;t+=0.5){ const y=Y(thrF(RS.el,t)*(RS.ai?0.975:1)); t===t0?g.moveTo(X(t),y):g.lineTo(X(t),y); } g.stroke();
+  g.strokeStyle='#C2410C'; g.lineWidth=2; g.beginPath(); for(let t=t0;t<=t1;t+=0.5){ const e=ELIM.to-RS.mg-2.6*Math.max(0,R.tr-t)+(RS.ai?12:0); const y=YE_(e); t===t0?g.moveTo(X(t),y):g.lineTo(X(t),y); } g.stroke();
+  // hjørne
+  g.strokeStyle='rgba(19,32,42,.35)'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(R.tr),T0); g.lineTo(X(R.tr),T0+PH); g.stroke(); g.setLineDash([]); mono(g,'TREF '+Math.round(R.tr)+'°',X(R.tr)+4,T0+10,'#13202A');
+  // OAT og FLEX
+  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(RS.oat),Y(R.tog),6,0,7); g.fill(); mono(g,'OAT',X(RS.oat),Y(R.tog)-10,'#13202A','center',11);
+  if(R.valid){ g.fillStyle='#1D4E9E'; g.beginPath(); g.arc(X(R.fx),Y(R.used),6,0,7); g.fill(); g.strokeStyle='#1D4E9E'; g.setLineDash([4,3]); g.beginPath(); g.moveTo(X(R.fx),Y(R.used)); g.lineTo(X(RS.oat),Y(R.used)); g.stroke(); g.setLineDash([]); mono(g,'FLEX '+Math.round(R.fx)+'°',X(R.fx)+8,Y(R.used)+4,'#1D4E9E');
+    g.fillStyle='#1D4E9E'; g.beginPath(); g.arc(X(RS.oat),YE_(R.egtFX),4,0,7); g.fill(); mono(g,L({en:'EGT with FLEX',no:'EGT med FLEX'}),X(RS.oat)+7,YE_(R.egtFX)+4,'#1D4E9E','start',10.5); }
+  g.fillStyle='#C2410C'; g.beginPath(); g.arc(X(RS.oat),YE_(R.egtTO),4,0,7); g.fill();
+  const sz=W<520?10.5:12.5; hand(g,L({en:'TOGA thrust',no:'TOGA-skyv'}),X(t0)+6,Y(thrF(RS.el,t0))-8,'#9A1E68','start',sz); hand(g,L({en:'EGT at TOGA',no:'EGT ved TOGA'}),X(t0)+6,YE_(ELIM.to-RS.mg-2.6*(R.tr-t0))+16,'#C2410C','start',sz); }
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+(sz||13)+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'center'; g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px "IBM Plex Mono", monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+function rR(){ const R=rcalc(); el('g1').textContent=Math.round(R.tr)+' °C (ISA + 15)';
+  el('g2').textContent=nf(R.tog*100,0)+' % '+L({en:'of sea-level rated',no:'av nominelt ved havnivå'});
+  el('g3').innerHTML= R.valid? `FLEX ${Math.round(R.fx)} °C: ${nf(R.used*100,0)} % (−${nf((1-R.used/R.tog)*100,0)} %)`+(R.lim25?` <span class="wa">${L({en:'25 % limit',no:'25 %-grense'})}</span>`:'') : `<span class="wa">${L({en:'FLEX not valid: TOGA',no:'FLEX ikke gyldig: TOGA'})}</span>`;
+  const e=R.valid?R.egtFX:R.egtTO; el('g4').innerHTML=`<span class="${ELIM.to-e<0?'ko':ELIM.to-e<25?'wa':'ok'}">${Math.round(e)} °C / ${Math.round(ELIM.to-e)} °C</span>`;
+  let x;
+  if(!R.valid) x=L({en:'The FLEX temperature must be higher than both the actual OAT and the flat-rating corner, and no higher than the maximum FLEX temperature. Otherwise the take-off is flown at TOGA.',no:'FLEX-temperaturen må være høyere enn både faktisk OAT og hjørnetemperaturen, og ikke høyere enn maks FLEX-temperatur. Ellers flys avgangen med TOGA.'});
+  else if(RS.oat>R.tr) x=L({en:'Above the corner temperature the engine is EGT-limited: TOGA thrust itself is falling, so on hot days there is less room for FLEX. At a high airfield everything shifts down: lower pressure means less thrust and a lower corner.',no:'Over hjørnetemperaturen er motoren EGT-begrenset: selve TOGA-skyvet faller, så på varme dager er det mindre rom for FLEX. På en høytliggende flyplass forskyves alt nedover: lavere trykk gir mindre skyv og lavere hjørne.'});
+  else if(RS.mg<30) x=L({en:'A worn engine has little EGT margin left: on a warm day at TOGA it comes close to the red line. That is why operators use FLEX whenever performance allows, and why the EGT margin trend is how engine health is watched.',no:'En slitt motor har lite EGT-margin igjen: på en varm dag med TOGA kommer den nær den røde streken. Derfor bruker operatørene FLEX når ytelsen tillater det, og derfor følges motorhelsen gjennom trenden i EGT-margin.'});
+  else x=L({en:'With FLEX the engine runs as if the day were hotter, so it gives less thrust and runs cooler than at TOGA. The actual air is colder and denser than assumed, which adds a hidden margin. The reduction is limited to 25 % of TOGA, and TOGA can always be selected.',no:'Med FLEX går motoren som om dagen var varmere, så den gir mindre skyv og går kaldere enn med TOGA. Den virkelige luften er kaldere og tettere enn antatt, og det gir en skjult margin. Reduksjonen er begrenset til 25 % av TOGA, og TOGA kan alltid velges.'});
+  el('gx').textContent=x; }
+function uR(){ dR(); rR(); }
+function mkR(){ el('rctl').innerHTML='';
+  LAB.slider(el('rctl'),{label:'Airport elevation (ft)',min:0,max:8000,step:250,v:RS.el,f:v=>nf(v,0)+' ft',on:v=>{ RS.el=v; uR(); }});
+  LAB.slider(el('rctl'),{label:'Outside air temperature (°C)',min:-20,max:50,step:1,v:RS.oat,f:v=>v+' °C',on:v=>{ RS.oat=v; uR(); }});
+  LAB.slider(el('rctl'),{label:'FLEX temperature (°C)',min:0,max:75,step:1,v:RS.flex,f:v=>v+' °C',on:v=>{ RS.flex=v; uR(); }});
+  LAB.slider(el('rctl'),{label:'EGT margin of this engine (°C)',min:10,max:150,step:5,v:RS.mg,f:v=>v+' °C',on:v=>{ RS.mg=v; uR(); },hint:'New engine ≈ 100–150 °C, worn engine much less'}); }
+el('bai').onchange=e=>{ RS.ai=e.target.checked; uR(); };
+
+function all(){ det(); rd(); cmp(); cards(); hint(); draw(); graph(); rE(); uR(); }
+const HOW={
+ fan:{en:['The big fan at the front pulls in a huge amount of air. Most of it goes around the core (bypass) and gives most of the thrust.','The rest goes into the core: low- and high-pressure compressors squeeze it, and fuel burns continuously in the combustion chamber.','The high-pressure turbine drives the high-pressure compressor through the outer shaft.','The low-pressure turbine drives the fan and the low-pressure compressor through the inner shaft. The two spools turn at different speeds (N1 and N2).','In short: moving a lot of air a little faster is far more efficient and quieter than moving a little air very fast. That is why the A320 uses turbofans.'],
+      no:['Den store fanen foran trekker inn en enorm mengde luft. Mesteparten går rundt kjernen (bypass) og gir mesteparten av skyvekraften.','Resten går inn i kjernen: lav- og høytrykkskompressorer presser den sammen, og drivstoff brenner kontinuerlig i brennkammeret.','Høytrykksturbinen driver høytrykkskompressoren gjennom den ytre akselen.','Lavtrykksturbinen driver fanen og lavtrykkskompressoren gjennom den indre akselen. De to spolene går med ulikt turtall (N1 og N2).','Kort sagt: å flytte mye luft litt raskere er langt mer effektivt og stillere enn å flytte lite luft veldig raskt. Derfor bruker A320 turbofan.']}};
+function how(){ const h=HOW[S.e], a=L(h); el('how').innerHTML=`<b class="t">${L({en:'How it works',no:'Slik virker den'})}: ${L(E().name)}</b><ol>${a.slice(0,4).map(x=>`<li>${x}</li>`).join('')}</ol><p>${a[4]}</p>`; }
+LAB.start('engines'); ctl(); mkR(); all(); how(); LAB.onLang(()=>{ ctl(); mkR(); all(); how(); });
+})();
+</script>
+</body>
+</html>

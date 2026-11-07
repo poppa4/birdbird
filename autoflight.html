@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Press the FCU knobs on an A320-style autopilot and watch what the FMA says and what the aircraft actually does. Then work through the classic mode traps,…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Autoflight and Warning Systems</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%}
+.view canvas{display:block;width:100%}
+#fmaC{height:196px}
+#prof{aspect-ratio:16/8.5;max-height:430px}
+#dFma{height:96px}#dProf{aspect-ratio:16/7;max-height:320px}
+#nd{aspect-ratio:16/10;max-height:400px}#side{aspect-ratio:16/10;max-height:400px}
+#gp{aspect-ratio:16/8;max-height:440px}
+@media (max-width:600px){#prof,#side,#gp,#nd{aspect-ratio:auto;height:290px}#dProf{aspect-ratio:auto;height:250px}}
+.rrow b{white-space:normal;text-align:right}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.fcu{display:grid;grid-template-columns:52px 1fr 1fr;gap:6px 6px;align-items:center;margin:4px 0 8px}
+.fcu span{font:600 12.5px var(--f-mono);color:var(--ink-2)}
+.fcu .btn{padding:6px 8px;font-size:13px}
+.aloud{font:600 14px var(--f-mono);color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:8px 12px}
+.dr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:980px){.dr{grid-template-columns:minmax(0,1fr)}}
+.dr .qq{font-size:18px}
+.lights{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.lights span{font:600 12px var(--f-mono);padding:4px 8px;border-radius:3px;background:#1B2329;color:#5E6B74}
+.lights span.am{color:#F2B33D}.lights span.rd{color:#FF5A4F}.lights span.gn{color:#4ED17A}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
+</style>
+</head>
+<body data-title="Autoflight and Warning Systems">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Instruments</div>
+      <h1>Autoflight and warning systems</h1>
+      <p>Press the FCU knobs on an A320-style autopilot and watch what the FMA says and what the aircraft actually does. Then work through the classic mode traps, and see how TCAS and EGPWS decide when to warn you.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#fma">Reading the FMA</a><a href="#traps">Mode traps</a><a href="#tcas">TCAS</a><a href="#gpws">EGPWS</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="fma">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Reading the FMA</h2>
+    <p class="lead">The flight mode annunciator (FMA) at the top of the PFD is the only place that tells you what the autopilot and autothrust are doing right now. Pull a knob for a selected mode, push it for a managed mode, and compare the FMA with the flight path.</p>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="fmaC" aria-label="FMA and FCU windows"></canvas></div>
+        <div class="paper"><canvas id="prof" aria-label="Vertical profile and speed over time"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Scenario</div>
+        <div class="btns"><button class="btn" id="scClb">Climb after take-off</button><button class="btn" id="scDes">Top of descent</button><button class="btn" id="run"></button></div>
+        <div class="grp">FCU knobs</div>
+        <div class="fcu">
+          <span>SPD</span><button class="btn" data-a="pullSpd">Pull</button><button class="btn" data-a="pushSpd">Push</button>
+          <span>HDG</span><button class="btn" data-a="pullHdg">Pull</button><button class="btn" data-a="pushHdg">Push</button>
+          <span>ALT</span><button class="btn" data-a="pullAlt">Pull</button><button class="btn" data-a="pushAlt">Push</button>
+          <span>V/S</span><button class="btn" data-a="pullVs">Pull</button><button class="btn" data-a="pushVs">Push</button>
+        </div>
+        <div id="fctl"></div>
+        <div class="ro">
+          <div class="rrow"><span>Altitude</span><b id="rAlt"></b></div>
+          <div class="rrow"><span>Speed (target)</span><b id="rSpd"></b></div>
+          <div class="rrow"><span>Vertical speed</span><b id="rVs"></b></div>
+          <div class="rrow"><span>Thrust</span><b id="rThr"></b></div>
+        </div>
+      </div>
+    </div>
+    <div class="aloud" id="aloud"></div>
+    <p class="callout blue" id="fEx"></p>
+    <div class="cols">
+      <div class="box"><b class="t">Five columns</b><p>1: autothrust mode. 2: vertical mode. 3: lateral mode. 4: approach capability (CAT 1, CAT 3 DUAL, and so on). 5: what is engaged: AP1/AP2, the flight directors and A/THR. Green is active, blue (cyan) is armed, magenta is an armed altitude constraint, and a white box marks a mode that has just changed.</p></div>
+      <div class="box"><b class="t">Managed and selected</b><p>Push a knob and the FMGS manages that target: the FCU window shows dashes and a white dot. Pull it and you select the target yourself: the window shows the number. Managed vertical modes (CLB, DES) follow the flight plan constraints; the open modes (OP CLB, OP DES) go straight for the FCU altitude.</p></div>
+      <div class="box"><b class="t">Pitch and thrust are a pair</b><p>In THR CLB or THR IDLE the thrust is fixed and the elevator holds the speed (OP CLB, CLB, OP DES, DES). In SPEED the autothrust holds the speed and the elevator flies a path (V/S, ALT*, ALT). Read the first two columns together.</p></div>
+    </div>
+  </section>
+
+  <section class="card" id="traps">
+    <div class="eyebrow">2 · Drill</div>
+    <h2>Mode awareness traps</h2>
+    <p class="lead">Each scenario stops at the moment something changes. Read the FMA, predict what the aircraft does next, then watch the next few minutes play out in the same model as above.</p>
+    <div id="dSel"></div>
+    <div class="dr">
+      <div class="stack">
+        <h3 id="dTitle"></h3>
+        <p class="note" id="dSit" style="font-size:14.5px;color:var(--ink)"></p>
+        <div class="view"><canvas id="dFma" aria-label="FMA at the moment of the event"></canvas></div>
+        <p class="qq" id="dQ"></p>
+        <div class="qopts" id="dOpts"></div>
+      </div>
+      <div class="stack">
+        <div class="paper"><canvas id="dProf" aria-label="What the aircraft did next"></canvas></div>
+        <div class="qexp" id="dExp" hidden></div>
+        <div class="aloud" id="dAloud" hidden></div>
+      </div>
+    </div>
+    <p class="callout"><b>Read the FMA aloud.</b> After every FCU action, and whenever a mode changes on its own, the pilot flying reads the change and the pilot monitoring checks it. Most mode surprises are caught in that one second: the aircraft is doing what the FMA says, not what you meant.</p>
+  </section>
+
+  <section class="card" id="tcas">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>TCAS: traffic and resolution advisories</h2>
+    <p class="lead">TCAS II interrogates the transponders around you and works in time, not distance: tau is the range divided by the closure rate. Move the intruder and see when it becomes a traffic advisory (TA) and then a resolution advisory (RA).</p>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="nd" aria-label="Traffic display and vertical speed scale"></canvas></div>
+        <div class="paper"><canvas id="side" aria-label="Side view up to the closest point of approach"></canvas></div>
+      </div>
+      <div class="panel">
+        <div id="tctl"></div>
+        <div class="grp">Intruder equipment</div><div id="tEq"></div>
+        <div class="grp">Your crew</div><div id="tResp"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Sensitivity level</span><b id="tSL"></b></div>
+          <div class="rrow"><span>Range tau</span><b id="tTau"></b></div>
+          <div class="rrow"><span>TA / RA threshold</span><b id="tThr"></b></div>
+          <div class="rrow"><span>Status</span><b id="tSt"></b></div>
+          <div class="rrow"><span>Vertical miss, no response</span><b id="tM0"></b></div>
+          <div class="rrow"><span>Vertical miss, as flown</span><b id="tM1"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout blue" id="tEx"></p>
+  </section>
+
+  <section class="card" id="gpws">
+    <div class="eyebrow">4 · Interactive</div>
+    <h2>EGPWS modes 1 to 5 and terrain look-ahead</h2>
+    <p class="lead">The classic GPWS modes look straight down with the radio altimeter. The enhanced system adds a terrain database and looks ahead along the flight path. Fly each profile and see which mode speaks first.</p>
+    <div id="gSc"></div>
+    <div class="split">
+      <div class="paper"><canvas id="gp" aria-label="Flight path over terrain with alerts"></canvas></div>
+      <div class="panel">
+        <div class="grp">Configuration</div><div id="gCfg"></div>
+        <div id="gctl"></div>
+        <div class="btns"><button class="btn" id="gPlay"></button></div>
+        <div class="lights" id="gL"></div>
+        <div class="ro">
+          <div class="rrow"><span>Radio altitude</span><b id="gRA"></b></div>
+          <div class="rrow"><span>Rate of descent</span><b id="gROD"></b></div>
+          <div class="rrow"><span>Terrain closure rate</span><b id="gTC"></b></div>
+          <div class="rrow"><span>Aural alert</span><b id="gAl"></b></div>
+        </div>
+      </div>
+    </div>
+    <p class="callout" id="gEx"></p>
+    <h3 class="sub" id="radalt" style="margin-top:10px">Radio altimeter basics</h3>
+    <div class="cols" id="raCards"></div>
+  </section>
+
+  <section class="card" id="ops">
+    <div class="eyebrow">5 · Operations</div>
+    <h2>In the aircraft</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model. The autoflight logic is a simplified A320-family behaviour with illustrative performance (climb thrust, idle descent, VLS about 205 kt clean, VMO 350 kt), managed speed 250 kt below 10 000 ft and 300 kt above, and managed descent flown as an idle descent that honours constraints. TCAS thresholds are typical TCAS II version 7.1 values; GPWS envelopes are typical shapes, not certified data. None of this is FCOM or FCTM data: always follow your operator’s procedures and the aircraft documentation.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'Autoflight and Warning Systems':'Autopilot og varslingssystemer','Birdbird Virtual Lab · Instruments':'Birdbird Virtual Lab · Instrumenter','Autoflight and warning systems':'Autopilot og varslingssystemer',
+ 'Press the FCU knobs on an A320-style autopilot and watch what the FMA says and what the aircraft actually does. Then work through the classic mode traps, and see how TCAS and EGPWS decide when to warn you.':'Trykk og trekk i FCU-knappene på en autopilot i A320-stil og se hva FMA-en sier og hva flyet faktisk gjør. Gå så gjennom de klassiske modusfellene, og se hvordan TCAS og EGPWS bestemmer når de skal varsle deg.',
+ 'Reading the FMA':'Lese FMA-en','Mode traps':'Modusfeller','TCAS':'TCAS','EGPWS':'EGPWS','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Drill':'Drill','Operations':'Operativt','Check':'Sjekk',
+ '1 · Interactive':'1 · Interaktiv','2 · Drill':'2 · Drill','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Operations':'5 · Operativt',
+ 'The flight mode annunciator (FMA) at the top of the PFD is the only place that tells you what the autopilot and autothrust are doing right now. Pull a knob for a selected mode, push it for a managed mode, and compare the FMA with the flight path.':'Flight mode annunciator (FMA) øverst på PFD-en er det eneste stedet som forteller deg hva autopiloten og autothrust gjør akkurat nå. Trekk i en knapp for en valgt (selected) modus, trykk for en styrt (managed) modus, og sammenlign FMA-en med flybanen.',
+ 'Scenario':'Scenario','Climb after take-off':'Stigning etter avgang','Top of descent':'Toppen av nedstigningen','FCU knobs':'FCU-knapper','Pull':'Trekk','Push':'Trykk',
+ 'Altitude':'Høyde','Speed (target)':'Fart (mål)','Vertical speed':'Vertikalfart','Thrust':'Skyvekraft',
+ 'Five columns':'Fem kolonner','1: autothrust mode. 2: vertical mode. 3: lateral mode. 4: approach capability (CAT 1, CAT 3 DUAL, and so on). 5: what is engaged: AP1/AP2, the flight directors and A/THR. Green is active, blue (cyan) is armed, magenta is an armed altitude constraint, and a white box marks a mode that has just changed.':'1: autothrust-modus. 2: vertikal modus. 3: lateral modus. 4: innflygingskapasitet (CAT 1, CAT 3 DUAL og så videre). 5: hva som er innkoblet: AP1/AP2, flight directorene og A/THR. Grønt er aktivt, blått (cyan) er armert, magenta er en armert høyderestriksjon, og en hvit ramme markerer en modus som nettopp har endret seg.',
+ 'Managed and selected':'Managed og selected','Push a knob and the FMGS manages that target: the FCU window shows dashes and a white dot. Pull it and you select the target yourself: the window shows the number. Managed vertical modes (CLB, DES) follow the flight plan constraints; the open modes (OP CLB, OP DES) go straight for the FCU altitude.':'Trykk på en knapp, og FMGS styrer det målet: FCU-vinduet viser streker og en hvit prikk. Trekk i den, og du velger målet selv: vinduet viser tallet. Managed vertikale moduser (CLB, DES) følger restriksjonene i ruten; de åpne modusene (OP CLB, OP DES) går rett mot FCU-høyden.',
+ 'Pitch and thrust are a pair':'Pitch og skyvekraft hører sammen','In THR CLB or THR IDLE the thrust is fixed and the elevator holds the speed (OP CLB, CLB, OP DES, DES). In SPEED the autothrust holds the speed and the elevator flies a path (V/S, ALT*, ALT). Read the first two columns together.':'I THR CLB eller THR IDLE er skyvekraften fast og høyderoret holder farten (OP CLB, CLB, OP DES, DES). I SPEED holder autothrust farten og høyderoret flyr en bane (V/S, ALT*, ALT). Les de to første kolonnene sammen.',
+ 'Mode awareness traps':'Modusfeller','Each scenario stops at the moment something changes. Read the FMA, predict what the aircraft does next, then watch the next few minutes play out in the same model as above.':'Hvert scenario stopper i det øyeblikket noe endres. Les FMA-en, forutsi hva flyet gjør videre, og se de neste minuttene spilles av i den samme modellen som over.',
+ 'Read the FMA aloud.':'Les FMA-en høyt.','After every FCU action, and whenever a mode changes on its own, the pilot flying reads the change and the pilot monitoring checks it. Most mode surprises are caught in that one second: the aircraft is doing what the FMA says, not what you meant.':'Etter hver FCU-handling, og hver gang en modus endrer seg av seg selv, leser pilot flying endringen og pilot monitoring sjekker den. De fleste modusoverraskelser fanges opp i det ene sekundet: flyet gjør det FMA-en sier, ikke det du mente.',
+ 'TCAS: traffic and resolution advisories':'TCAS: trafikk- og unnvikelsesråd','TCAS II interrogates the transponders around you and works in time, not distance: tau is the range divided by the closure rate. Move the intruder and see when it becomes a traffic advisory (TA) and then a resolution advisory (RA).':'TCAS II spør transponderne rundt deg og regner i tid, ikke avstand: tau er avstanden delt på nærmingsfarten. Flytt det andre flyet og se når det blir et trafikkråd (TA) og deretter et unnvikelsesråd (RA).',
+ 'Intruder equipment':'Utstyr i det andre flyet','Your crew':'Din besetning','Sensitivity level':'Følsomhetsnivå','Range tau':'Avstands-tau','TA / RA threshold':'TA-/RA-grense','Status':'Status','Vertical miss, no response':'Vertikal avstand, ingen reaksjon','Vertical miss, as flown':'Vertikal avstand, slik det flys',
+ 'EGPWS modes 1 to 5 and terrain look-ahead':'EGPWS mode 1 til 5 og terrengvarsling forover','The classic GPWS modes look straight down with the radio altimeter. The enhanced system adds a terrain database and looks ahead along the flight path. Fly each profile and see which mode speaks first.':'De klassiske GPWS-modusene ser rett ned med radiohøydemåleren. Det forbedrede systemet legger til en terrengdatabase og ser forover langs flybanen. Fly hver profil og se hvilken modus som sier fra først.',
+ 'Configuration':'Konfigurasjon','Radio altitude':'Radiohøyde','Rate of descent':'Synkrate','Terrain closure rate':'Terrengnærmingsrate','Aural alert':'Lydvarsel',
+ 'Teaching model. The autoflight logic is a simplified A320-family behaviour with illustrative performance (climb thrust, idle descent, VLS about 205 kt clean, VMO 350 kt), managed speed 250 kt below 10 000 ft and 300 kt above, and managed descent flown as an idle descent that honours constraints. TCAS thresholds are typical TCAS II version 7.1 values; GPWS envelopes are typical shapes, not certified data. None of this is FCOM or FCTM data: always follow your operator’s procedures and the aircraft documentation.':'Pedagogisk modell. Autopilotlogikken er en forenklet oppførsel i A320-familien med illustrativ ytelse (stigeskyvekraft, tomgangsnedstigning, VLS rundt 205 kt rent, VMO 350 kt), managed fart 250 kt under 10 000 ft og 300 kt over, og managed nedstigning flydd som en tomgangsnedstigning som overholder restriksjoner. TCAS-grensene er typiske verdier for TCAS II versjon 7.1; GPWS-konvoluttene er typiske former, ikke sertifiserte data. Ingenting av dette er FCOM- eller FCTM-data: følg alltid operatørens prosedyrer og flyets dokumentasjon.',
+ 'FCU altitude':'FCU-høyde','Selected speed':'Valgt fart','V/S target':'V/S-mål','Altitude constraint in the flight plan':'Høyderestriksjon i ruten',
+ 'Intruder range':'Avstand til det andre flyet','Closure rate':'Nærmingsfart','Intruder relative altitude':'Det andre flyets relative høyde','Intruder vertical speed':'Det andre flyets vertikalfart','Your vertical speed':'Din vertikalfart','Your altitude':'Din høyde',
+ 'TCAS II (coordinated)':'TCAS II (koordinert)','Transponder only':'Bare transponder','Follow the RA':'Følg RA','Follow ATC (opposite)':'Følg ATC (motsatt)','No response':'Ingen reaksjon',
+ 'Ridge ahead':'Fjellrygg foran','Steep descent':'Bratt nedstigning','Approach':'Innflyging','After take-off':'Etter avgang',
+ 'Clean':'Rent','Gear down':'Understell ute','Landing flaps':'Landingsklaff',
+ 'Rate of descent (fpm)':'Synkrate (fpm)','Speed (kt)':'Fart (kt)','Position along the path':'Posisjon langs banen','Sink after take-off (fpm)':'Synk etter avgang (fpm)'
+});
+
+/* ================= felles autopilotmodell ================= */
+const VLS=205, VMAX=350, G0=9.81;
+const mgd=a=>a<10000?250:300;
+const tgtSpd=S=>Math.max(VLS,Math.min(VMAX-10,S.spdMan?mgd(S.alt):S.spdSel));
+const tasMs=S=>S.ias*(1+S.alt/1000*0.017)*0.5144;
+const dragW=v=>0.06*(0.5*(v/240)**2+0.5*(240/v)**2);
+const tCl=a=>0.16*(1-a/45000), tId=0.005;
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const UP=['CLB','OP CLB'], DN=['DES','OP DES'];
+function mk(o){ return Object.assign({alt:3000,ias:250,vs:0,thr:0,vm:'CLB',lm:'NAV',athr:'THR CLB',spdMan:true,spdSel:250,fcu:15000,vsT:0,cst:0,t:0,chg:{},ap:true,fd:true,man:false,manVs:0,capT:0,capVs:0,hold:0,prot:false,msg:null,hist:[],ev:[]},o); }
+function setM(S,vm,athr){ if(vm!=null&&vm!==S.vm){ S.vm=vm; S.chg.v=S.t; S.ev.push({t:S.t,alt:S.alt,txt:vm==='VS'?'V/S':vm}); } if(athr!=null&&athr!==S.athr){ S.athr=athr; S.chg.a=S.t; } }
+function cstAhead(S,dir){ if(!S.cst) return false; return dir>0? (S.cst>S.alt+50&&S.cst<S.fcu) : (S.cst<S.alt-50&&S.cst>S.fcu); }
+function step(S,dt){
+  const V=tgtSpd(S), tas=tasMs(S), D=dragW(S.ias); let thr,acc,vs;
+  const pathMode=()=>{ let vsT=0;
+    if(S.man) vsT=S.manVs;
+    else if(S.vm==='VS') vsT=S.vsT;
+    else if(S.vm==='ALT*'||S.vm==='ALT CST*') vsT=cl((S.capT-S.alt)*6,-S.capVs,S.capVs);
+    else vsT=cl((S.hold-S.alt)*3,-500,500);
+    let sn=vsT/(tas*196.85);
+    if(S.man&&S.athr==='THR IDLE'){ thr=tId; acc=(thr-D-sn)*G0/0.5144; vs=vsT; return; }
+    const aD=cl(0.25*(V-S.ias),-1,1), need=D+sn+aD*0.5144/G0; thr=cl(need,tId,tCl(S.alt)); acc=(thr-D-sn)*G0/0.5144;
+    S.prot=false;
+    if(S.vm==='VS'&&!S.man){ if(S.ias<=VLS&&acc<0){ sn=tCl(S.alt)-D; vsT=Math.min(vsT,sn*tas*196.85); thr=tCl(S.alt); acc=0; S.prot=true; } else if(S.ias>=VMAX&&acc>0){ sn=tId-D; vsT=Math.max(vsT,sn*tas*196.85); thr=tId; acc=0; S.prot=true; } }
+    vs=vsT; };
+  if(!S.man&&(UP.includes(S.vm)||DN.includes(S.vm))){ const up=UP.includes(S.vm); thr=up?tCl(S.alt):tId; acc=cl(0.25*(V-S.ias),-1,1);
+    let sn=thr-D-acc*0.5144/G0; vs=tas*sn*196.85;
+    if(up&&vs<300){ vs=300; acc=(thr-D-300/(tas*196.85))*G0/0.5144; } if(!up&&vs>-500){ vs=-500; acc=(thr-D+500/(tas*196.85))*G0/0.5144; } }
+  else pathMode();
+  S.ias+=acc*dt; S.alt+=vs/60*dt; S.vs=vs; S.thr=thr; S.t+=dt;
+  // A/THR-beskyttelse i THR IDLE ved manuell flyging (FD ikke fulgt)
+  if(S.man&&S.athr==='THR IDLE'&&S.ias<VLS-2){ setM(S,null,'SPEED'); S.fd=false; S.msg='fdoff'; S.ev.push({t:S.t,alt:S.alt,txt:'FD OFF · SPEED'}); }
+  if(S.man) return;
+  // overganger
+  if(UP.includes(S.vm)||DN.includes(S.vm)||S.vm==='VS'){
+    const dir=UP.includes(S.vm)?1:DN.includes(S.vm)?-1:(S.vs>=0?1:-1); const band=Math.max(80,Math.abs(S.vs)/6);
+    const managed=S.vm==='CLB'||S.vm==='DES';
+    if(managed&&cstAhead(S,dir)&&Math.abs(S.cst-S.alt)<=band){ S.capT=S.cst; S.capVs=Math.max(300,Math.abs(S.vs)); setM(S,'ALT CST*','SPEED'); }
+    else if((S.fcu-S.alt)*dir>0&&Math.abs(S.fcu-S.alt)<=band&&Math.abs(S.vs)>50){ S.capT=S.fcu; S.capVs=Math.max(300,Math.abs(S.vs)); setM(S,'ALT*','SPEED'); }
+  } else if(S.vm==='ALT*'||S.vm==='ALT CST*'){
+    if(S.vm==='ALT CST*'&&S.cst!==S.capT){ resume(S); }
+    else if(Math.abs(S.capT-S.alt)<20){ S.hold=S.capT; setM(S,S.vm==='ALT*'?'ALT':'ALT CST','SPEED'); }
+  } else if(S.vm==='ALT CST'){ if(S.cst!==S.hold) resume(S); }
+}
+function resume(S){ if(S.lm!=='NAV'){ setM(S,'ALT','SPEED'); S.hold=Math.round(S.alt); return; } if(S.fcu>S.alt+50) setM(S,'CLB','THR CLB'); else if(S.fcu<S.alt-50) setM(S,'DES','THR IDLE'); else { S.hold=S.fcu; setM(S,'ALT','SPEED'); } }
+function curVs(S){ return Math.round(S.vs/100)*100; }
+function act(S,a){ const d=S.fcu-S.alt; S.msg=null;
+  if(a==='pullAlt'){ if(Math.abs(d)<100){ S.msg='same'; return; } setM(S,d>0?'OP CLB':'OP DES',d>0?'THR CLB':'THR IDLE'); }
+  if(a==='pushAlt'){ if(S.lm!=='NAV'){ S.msg='nonav'; return; } if(Math.abs(d)<100){ S.msg='same'; return; } setM(S,d>0?'CLB':'DES',d>0?'THR CLB':'THR IDLE'); }
+  if(a==='pullVs'){ S.vsT=curVs(S); setM(S,'VS','SPEED'); }
+  if(a==='pushVs'){ S.vsT=0; setM(S,'VS','SPEED'); if(S.vm==='VS') S.chg.v=S.t; }
+  if(a==='pullSpd'){ S.spdSel=Math.round(tgtSpd(S)); S.spdMan=false; S.chg.a=S.t; }
+  if(a==='pushSpd'){ S.spdMan=true; S.chg.a=S.t; }
+  if(a==='pullHdg'){ if(S.lm!=='HDG'){ S.lm='HDG'; S.chg.l=S.t; if(S.vm==='CLB'){ setM(S,'OP CLB','THR CLB'); S.msg='hdgclb'; } else if(S.vm==='DES'||S.vm==='ALT CST*'){ S.vsT=curVs(S); setM(S,'VS','SPEED'); S.msg='hdgdes'; } else if(S.vm==='ALT CST') setM(S,'ALT','SPEED'); } }
+  if(a==='pushHdg'){ if(S.lm!=='NAV'){ S.lm='NAV'; S.chg.l=S.t; } }
+}
+function setFcu(S,v){ S.fcu=v; S.msg=null;
+  if(S.vm==='ALT*'&&Math.abs(v-S.capT)>250){ S.vsT=curVs(S); setM(S,'VS','SPEED'); S.msg='altstar'; }
+  else if(UP.includes(S.vm)&&v<S.alt){ S.vsT=curVs(S); setM(S,'VS','SPEED'); S.msg='revclb'; }
+  else if(DN.includes(S.vm)&&v>S.alt){ S.vsT=curVs(S); setM(S,'VS','SPEED'); S.msg='revdes'; } }
+function armed(S){ if(S.man) return null; const mv=['CLB','OP CLB','DES','OP DES','VS'].includes(S.vm); if(!mv) return null;
+  const dir=UP.includes(S.vm)?1:DN.includes(S.vm)?-1:(S.vsT>=0?1:-1);
+  if((S.vm==='CLB'||S.vm==='DES')&&cstAhead(S,dir)) return {t:'ALT',c:'#E255C8'};
+  if((S.fcu-S.alt)*dir>0) return {t:'ALT',c:'#3FD0E8'}; return null; }
+const vmTxt=S=> S.man? (S.fd?S.vm:'') : S.vm==='VS'? 'V/S '+(S.vsT>0?'+':S.vsT<0?'−':'')+Math.abs(S.vsT) : S.vm;
+function readAloud(S){ const a=armed(S), p=[]; if(S.athr) p.push(S.athr); const v=vmTxt(S); if(v) p.push(v); if(!S.man||S.fd) p.push(S.lm); if(a) p.push(a.t+' '+(a.c==='#E255C8'?L({en:'magenta',no:'magenta'}):L({en:'blue',no:'blå'})));
+  const e=[]; if(S.ap) e.push('AP1'); if(S.fd) e.push('1FD2'); e.push('A/THR'); return '“'+p.join(', ')+'”  ·  '+e.join(' ');}
+
+/* ---- FMA + FCU-tegning ---- */
+function drawFMA(g,x0,y0,W,H,S,fcu){
+  g.fillStyle='#05090C'; g.fillRect(x0,y0,W,H);
+  const cw=[0.2,0.22,0.18,0.17,0.23], fs=Math.max(10,Math.min(15,W/32)); let x=x0;
+  const xs=cw.map(c=>{ const a=x; x+=c*W; return a; });
+  g.strokeStyle='#5B6670'; g.lineWidth=1; for(let i=1;i<5;i++){ g.beginPath(); g.moveTo(xs[i]+0.5,y0+4); g.lineTo(xs[i]+0.5,y0+H-4); g.stroke(); }
+  g.font=`600 ${fs}px "IBM Plex Mono", monospace`; g.textAlign='center'; g.textBaseline='middle';
+  const rh=H/3, row=r=>y0+rh*(r+0.5);
+  const txt=(c,r,t,col,box)=>{ if(!t) return; const cx=xs[c]+cw[c]*W/2; g.fillStyle=col; g.fillText(t,cx,row(r)); if(box){ const w=g.measureText(t).width+10; g.strokeStyle='#E8EEF2'; g.lineWidth=1.3; g.strokeRect(cx-w/2,row(r)-fs*0.75,w,fs*1.5); g.lineWidth=1; } };
+  const nb=k=>S.chg[k]!=null&&S.t-S.chg[k]<10&&S.t>0.1;
+  txt(0,0,S.athr,'#2BD47A',nb('a'));
+  if(!S.man||S.fd){ txt(1,0,vmTxt(S),'#2BD47A',nb('v')); txt(2,0,S.lm,'#2BD47A',nb('l')); }
+  const a=armed(S); if(a) txt(1,1,a.t,a.c);
+  if(S.prot) txt(1,2,L({en:'SPD PROT',no:'SPD PROT'}),'#F2B33D');
+  txt(4,0,S.ap?'AP1':'','#E8EEF2'); txt(4,1,S.fd?'1 FD 2':'','#E8EEF2'); txt(4,2,'A/THR','#E8EEF2');
+  if(!fcu) return;
+  // FCU
+  const fy=y0+H+10, fh=Math.max(46,(fcu-H-14)), wins=[['SPD',S.spdMan?null:String(Math.round(S.spdSel)),S.spdMan],['HDG',S.lm==='NAV'?null:'270',S.lm==='NAV'],['ALT',String(Math.round(S.fcu)).padStart(5,'0'),S.vm==='CLB'||S.vm==='DES'||S.vm.startsWith('ALT CST')],['V/S',S.vm==='VS'&&!S.man?((S.vsT>=0?'+':'−')+String(Math.abs(S.vsT)/100).padStart(2,'0')+'oo'):null,false]];
+  const ww=W/4; g.textBaseline='middle';
+  wins.forEach(([lab,val,dot],i)=>{ const wx=x0+i*ww+6, w=ww-12; g.fillStyle='#8FA1AE'; g.font=`600 ${Math.max(9,fs*0.72)}px "IBM Plex Mono", monospace`; g.textAlign='left'; g.fillText(lab,wx,fy+8);
+    g.fillStyle='#120E08'; g.fillRect(wx,fy+18,w,fh-24); g.strokeStyle='#3A3226'; g.strokeRect(wx+0.5,fy+18.5,w-1,fh-25);
+    g.fillStyle='#FFB547'; g.font=`500 ${Math.max(11,fs*1.1)}px "IBM Plex Mono", monospace`; g.textAlign='center';
+    const cy=fy+18+(fh-24)/2; g.fillText(val==null?(lab==='V/S'?'-----':'---'):val,wx+w/2-(dot?6:0),cy);
+    if(dot){ g.fillStyle='#F4F1EA'; g.beginPath(); g.arc(wx+w-10,cy,3.4,0,7); g.fill(); } });
+}
+
+/* ================= 1. live FMA-sim ================= */
+let S=null, running=true;
+const scen={clb:()=>mk({alt:3000,ias:250,vm:'CLB',athr:'THR CLB',fcu:15000,cst:8000}),des:()=>mk({alt:18000,ias:300,vm:'ALT',athr:'SPEED',hold:18000,fcu:18000,cst:9000})};
+const sl={};
+function load(k){ S=scen[k](); S.hist=[]; for(const [kk,v] of [['fcu',S.fcu],['spd',S.spdSel],['vs',S.vsT],['cst',S.cst]]) sl[kk].set(v); running=true; runBtn(); upd(); }
+const fc=el('fctl');
+sl.fcu=LAB.slider(fc,{label:'FCU altitude',min:1000,max:20000,step:100,v:15000,f:v=>nf(v,0)+' ft',on:v=>{ setFcu(S,v); upd(); }});
+sl.spd=LAB.slider(fc,{label:'Selected speed',min:210,max:340,step:5,v:250,f:v=>v+' kt',on:v=>{ S.spdSel=v; upd(); }});
+sl.vs=LAB.slider(fc,{label:'V/S target',min:-4000,max:4000,step:100,v:0,f:v=>(v>0?'+':'')+nf(v,0)+' fpm',on:v=>{ if(S.vm==='VS'){ S.vsT=v; } upd(); }});
+sl.cst=LAB.slider(fc,{label:'Altitude constraint in the flight plan',min:0,max:19000,step:500,v:8000,f:v=>v?nf(v,0)+' ft':L({en:'none',no:'ingen'}),on:v=>{ S.cst=v; upd(); }});
+document.querySelectorAll('.fcu .btn').forEach(b=>b.onclick=()=>{ act(S,b.dataset.a); if(b.dataset.a==='pullVs'||b.dataset.a==='pushVs') sl.vs.set(S.vsT); if(b.dataset.a==='pullSpd') sl.spd.set(S.spdSel); upd(); });
+el('scClb').onclick=()=>load('clb'); el('scDes').onclick=()=>load('des');
+function runBtn(){ el('run').textContent=running?L({en:'Pause',no:'Pause'}):L({en:'Run',no:'Kjør'}); }
+el('run').onclick=()=>{ running=!running; runBtn(); };
+const Cf=LAB.fit(el('fmaC'),()=>dF(),2), Cp=LAB.fit(el('prof'),()=>dP(),2);
+function dF(){ const g=Cf.ctx,W=Cf.w,H=Cf.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#0F171D'; g.fillRect(0,0,W,H); drawFMA(g,8,8,W-16,84,S,H-20); }
+const mcol=vm=> UP.includes(vm)?'#9A1E68': DN.includes(vm)?'#1E5E9E': vm==='VS'?'#A86A00':'#2C7A4B';
+function drawProfile(g,W,H,S,win,t0,mark,auto){
+  g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const pl=52,pr=14,pt=14, hA=(H-pt-30)*0.68, yS0=pt+hA+22, hS=H-yS0-22;
+  const tEnd=t0+win, X=t=>pl+(t-t0)/win*(W-pl-pr);
+  const hs=S.hist.filter(p=>p.t>=t0-1);
+  let top=20000, bot=0; if(auto){ const v=hs.map(p=>p.alt).concat([S.fcu]).concat(S.cst?[S.cst]:[]); bot=Math.max(0,Math.floor((Math.min(...v)-800)/1000)*1000); top=Math.ceil((Math.max(...v)+800)/1000)*1000; }
+  const Y=a=>pt+hA-(a-bot)/(top-bot)*hA, gst=(top-bot)>10000?5000:(top-bot)>4000?2000:1000;
+  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#7D8B95'; g.textAlign='right'; g.textBaseline='middle'; g.strokeStyle='#E3E8EA'; g.lineWidth=1;
+  for(let a=Math.ceil(bot/gst)*gst;a<=top;a+=gst){ g.beginPath(); g.moveTo(pl,Y(a)+0.5); g.lineTo(W-pr,Y(a)+0.5); g.stroke(); g.fillText(nf(a,0),pl-5,Y(a)); }
+  // FCU og restriksjon
+  g.setLineDash([6,4]); g.strokeStyle='#1FA6C0'; g.lineWidth=1.5; g.beginPath(); g.moveTo(pl,Y(S.fcu)); g.lineTo(W-pr,Y(S.fcu)); g.stroke();
+  if(S.cst){ g.strokeStyle='#C13FA8'; g.beginPath(); g.moveTo(pl,Y(S.cst)); g.lineTo(W-pr,Y(S.cst)); g.stroke(); }
+  g.setLineDash([]); g.textAlign='left'; g.font='600 11px "IBM Plex Mono", monospace'; g.fillStyle='#1FA6C0'; g.fillText('FCU '+nf(S.fcu,0),pl+4,Y(S.fcu)-8);
+  if(S.cst){ g.fillStyle='#C13FA8'; g.fillText(L({en:'constraint ',no:'restriksjon '})+nf(S.cst,0),pl+4,Y(S.cst)+(Math.abs(S.cst-S.fcu)<1200?10:-8)); }
+  // spor
+  g.lineWidth=2.6; for(let i=1;i<hs.length;i++){ g.strokeStyle=mcol(hs[i].vm); g.beginPath(); g.moveTo(X(hs[i-1].t),Y(hs[i-1].alt)); g.lineTo(X(hs[i].t),Y(hs[i].alt)); g.stroke(); } g.lineWidth=1;
+  // hendelser
+  g.font='600 10.5px "IBM Plex Mono", monospace'; g.textAlign='left';
+  let lastX=-99; S.ev.filter(e=>e.t>=t0&&e.t<=tEnd).forEach(e=>{ const x=X(e.t), y=Y(e.alt); g.fillStyle='#13202A'; g.beginPath(); g.arc(x,y,3,0,7); g.fill(); const yy=y-12-((x-lastX<70)?12:0); g.fillText(e.txt,Math.min(x+4,W-pr-80),yy); lastX=x; });
+  if(mark!=null){ g.strokeStyle='#13202A'; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(mark),pt); g.lineTo(X(mark),H-18); g.stroke(); g.setLineDash([]); }
+  const cur=hs[hs.length-1]; if(cur){ g.fillStyle='#13202A'; g.beginPath(); g.arc(X(cur.t),Y(cur.alt),4.5,0,7); g.fill(); }
+  // fartspanel
+  const smin=180,smax=360, Ys=v=>yS0+hS-(v-smin)/(smax-smin)*hS;
+  g.strokeStyle='#E3E8EA'; g.strokeRect(pl+0.5,yS0+0.5,W-pl-pr-1,hS-1);
+  g.fillStyle='rgba(179,38,30,.10)'; g.fillRect(pl,Ys(VLS),W-pl-pr,Ys(smin)-Ys(VLS));
+  g.fillStyle='#B3261E'; g.font='10px "IBM Plex Mono", monospace'; g.fillText('VLS '+VLS,W-pr-60,Ys(VLS)+9);
+  g.fillStyle='#7D8B95'; g.textAlign='right'; g.fillText('IAS',pl-5,yS0+hS/2+3); g.fillText(nf(smin,0),pl-5,Ys(smin)-2); g.fillText(nf(smax,0),pl-5,Ys(smax)+8);
+  g.strokeStyle='#13202A'; g.lineWidth=1.8; g.beginPath(); hs.forEach((p,i)=>{ i?g.lineTo(X(p.t),Ys(p.ias)):g.moveTo(X(p.t),Ys(p.ias)); }); g.stroke();
+  g.strokeStyle='#9A1E68'; g.setLineDash([4,3]); g.lineWidth=1.2; g.beginPath(); hs.forEach((p,i)=>{ i?g.lineTo(X(p.t),Ys(p.tg)):g.moveTo(X(p.t),Ys(p.tg)); }); g.stroke(); g.setLineDash([]); g.lineWidth=1;
+  g.textAlign='center'; g.fillStyle='#7D8B95'; const tst=W<600?120:60; for(let s=Math.ceil(t0/tst)*tst;s<=tEnd;s+=tst) if(X(s)<W-pr-16) g.fillText(Math.round(s/60)+' min',X(s),H-8);
+  g.font='600 13px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.textAlign='left'; if(!auto&&W>600) g.fillText(L({en:'altitude (colour = vertical mode)',no:'høyde (farge = vertikal modus)'}),pl+6,pt+12);
+}
+function dP(){ const g=Cp.ctx,W=Cp.w,H=Cp.h; if(!W) return; const win=480, t0=Math.max(0,S.t-win*0.85); drawProfile(g,W,H,S,win,t0,null); }
+const EX={
+ 'CLB':{en:'<b>CLB (managed climb).</b> Climb thrust is fixed and the elevator holds the managed speed. Flight plan altitude constraints are honoured: an “at or below” constraint ahead shows a magenta ALT.',no:'<b>CLB (managed stigning).</b> Stigeskyvekraften er fast og høyderoret holder managed fart. Høyderestriksjoner i ruten overholdes: en «at or below»-restriksjon foran vises som en magenta ALT.'},
+ 'OP CLB':{en:'<b>OP CLB (open climb).</b> Climb thrust and the elevator on speed, straight to the FCU altitude. Constraints are ignored. Fast and simple, which is exactly why it can bust a constraint.',no:'<b>OP CLB (åpen stigning).</b> Stigeskyvekraft og høyderoret på fart, rett til FCU-høyden. Restriksjoner ignoreres. Raskt og enkelt, og nettopp derfor kan den bryte en restriksjon.'},
+ 'DES':{en:'<b>DES (managed descent).</b> Thrust at idle, the elevator keeps the managed speed (on the real aircraft it also flies the computed path), and constraints are honoured. Needs NAV.',no:'<b>DES (managed nedstigning).</b> Skyvekraft på tomgang, høyderoret holder managed fart (i det ekte flyet følger det også den beregnede banen), og restriksjoner overholdes. Krever NAV.'},
+ 'OP DES':{en:'<b>OP DES (open descent).</b> Idle thrust and the elevator on speed, straight down to the FCU altitude. Constraints are ignored. Close to the ground this is the mode to be careful with.',no:'<b>OP DES (åpen nedstigning).</b> Tomgang og høyderoret på fart, rett ned til FCU-høyden. Restriksjoner ignoreres. Nær bakken er dette modusen å være forsiktig med.'},
+ 'VS':{en:'<b>V/S.</b> The elevator flies the vertical speed you set; the autothrust (SPEED) holds the speed, but only between idle and climb thrust. Ask for more climb than the engines can give and the speed bleeds off until the speed protection reduces the V/S near VLS.',no:'<b>V/S.</b> Høyderoret flyr vertikalfarten du har satt; autothrust (SPEED) holder farten, men bare mellom tomgang og stigeskyvekraft. Ber du om mer stigning enn motorene kan gi, synker farten til fartsbeskyttelsen reduserer V/S nær VLS.'},
+ 'ALT*':{en:'<b>ALT* (capture).</b> The aircraft is rounding off onto the FCU altitude, with SPEED on the autothrust. Changing the FCU altitude by more than 250 ft now reverts to V/S at the current vertical speed.',no:'<b>ALT* (innfanging).</b> Flyet runder av mot FCU-høyden, med SPEED på autothrust. Endrer du FCU-høyden med mer enn 250 ft nå, faller modusen tilbake til V/S med nåværende vertikalfart.'},
+ 'ALT':{en:'<b>ALT.</b> Holding the captured altitude, SPEED on the autothrust. A new FCU altitude does nothing until you pull or push the ALT knob.',no:'<b>ALT.</b> Holder den innfangede høyden, SPEED på autothrust. En ny FCU-høyde gjør ingenting før du trekker eller trykker på ALT-knappen.'},
+ 'ALT CST*':{en:'<b>ALT CST*.</b> Capturing a flight plan constraint, not the FCU altitude.',no:'<b>ALT CST*.</b> Fanger inn en restriksjon i ruten, ikke FCU-høyden.'},
+ 'ALT CST':{en:'<b>ALT CST.</b> Level at the constraint. In the aircraft the climb or descent resumes when the constraint waypoint is passed; here, set the constraint to none to let it continue.',no:'<b>ALT CST.</b> Planet ved restriksjonen. I flyet fortsetter stigningen eller nedstigningen når veipunktet med restriksjonen er passert; her setter du restriksjonen til ingen for å la det fortsette.'}};
+const MSG={same:{en:'FCU altitude is (almost) the current altitude: no climb or descent to engage.',no:'FCU-høyden er (nesten) nåværende høyde: ingen stigning eller nedstigning å koble inn.'},nonav:{en:'No change: managed CLB and DES need NAV. Push the HDG knob first.',no:'Ingen endring: managed CLB og DES krever NAV. Trykk på HDG-knappen først.'},hdgclb:{en:'Reversion: selecting a heading in CLB gives OP CLB. Constraints are no longer protected.',no:'Reversjon: å velge kurs i CLB gir OP CLB. Restriksjonene er ikke lenger beskyttet.'},hdgdes:{en:'Reversion: selecting a heading in DES gives V/S at the current rate, with SPEED on the autothrust.',no:'Reversjon: å velge kurs i DES gir V/S med nåværende rate, med SPEED på autothrust.'},altstar:{en:'Reversion: the FCU altitude changed during ALT*, so the mode reverted to V/S at the current vertical speed.',no:'Reversjon: FCU-høyden ble endret under ALT*, så modusen falt tilbake til V/S med nåværende vertikalfart.'},revclb:{en:'Reversion: FCU altitude set below the aircraft in a climb mode, so V/S at the current rate. It will not capture an altitude behind it.',no:'Reversjon: FCU-høyden satt under flyet i en stigemodus, så V/S med nåværende rate. Den fanger ikke en høyde bak seg.'},revdes:{en:'Reversion: FCU altitude set above the aircraft in a descent mode, so V/S at the current rate.',no:'Reversjon: FCU-høyden satt over flyet i en nedstigningsmodus, så V/S med nåværende rate.'}};
+function ro(){ el('rAlt').textContent=nf(S.alt,0)+' ft'; el('rSpd').innerHTML=`${nf(S.ias,0)} kt <span style="color:var(--ink-2)">(${nf(tgtSpd(S),0)} ${S.spdMan?L({en:'managed',no:'managed'}):L({en:'selected',no:'selected'})})</span>`;
+  el('rVs').textContent=(S.vs>0?'+':'')+nf(Math.round(S.vs/10)*10,0)+' fpm'; const tp=S.thr/tCl(S.alt)*100; el('rThr').innerHTML= S.thr<=tId+1e-4? 'IDLE' : `${nf(Math.min(100,tp),0)} % ${L({en:'of climb thrust',no:'av stigeskyvekraft'})}`+(tp>99.5&&S.athr==='SPEED'?` <span class="wa">${L({en:'(limit)',no:'(grense)'})}</span>`:'');
+  el('aloud').textContent=L({en:'Read aloud: ',no:'Les høyt: '})+readAloud(S);
+  let t=L(EX[S.vm]||EX.ALT); if(S.vm==='VS'&&S.ias<VLS+6&&S.vs>0) t+=' '+L({en:'<b>Speed is at the bottom of the envelope now.</b>',no:'<b>Farten er nå nederst i konvolutten.</b>'}); if(S.msg&&MSG[S.msg]) t=`<b>${L(MSG[S.msg])}</b> `+t; el('fEx').innerHTML=t; }
+function upd(){ dF(); dP(); ro(); }
+let vis=true, last=0, acc=0, rec=0; LAB.visible(el('prof'),v=>vis=v);
+function loop(ts){ const dt=Math.min(0.1,(ts-(last||ts))/1000); last=ts;
+  if(running&&vis&&S){ acc+=dt*10; while(acc>0.2){ step(S,0.2); acc-=0.2; rec+=0.2; if(rec>=1){ rec=0; S.hist.push({t:S.t,alt:S.alt,ias:S.ias,tg:tgtSpd(S),vm:S.vm}); if(S.hist.length>2000) S.hist.shift(); } } upd(); }
+  requestAnimationFrame(loop); }
+load('clb'); requestAnimationFrame(loop);
+
+/* ================= 2. drill ================= */
+function runTo(S,sec,until){ for(let i=0;i<sec*5;i++){ step(S,0.2); if(i%5===0) S.hist.push({t:S.t,alt:S.alt,ias:S.ias,tg:tgtSpd(S),vm:S.vm}); if(until&&until(S)) return; } }
+const DR=[
+ {k:'vs',ti:{en:'1 · V/S with too much climb',no:'1 · V/S med for mye stigning'},
+  sit:{en:'Climbing through 12 000 ft at 250 kt. ATC asks for a good rate, so the pilot pulls the V/S knob and sets +3000 fpm. Climb thrust can give roughly 1700 fpm at this speed.',no:'Stiger gjennom 12 000 ft i 250 kt. ATC ber om god rate, så piloten trekker V/S-knappen og setter +3000 fpm. Stigeskyvekraften gir omtrent 1700 fpm i denne farten.'},
+  set:()=>{ const s=mk({alt:11000,ias:250,vm:'OP CLB',athr:'THR CLB',fcu:20000,spdMan:false,spdSel:250}); runTo(s,30); s.chg={}; s.vsT=3000; setM(s,'VS','SPEED'); return s; },
+  q:{en:'What happens over the next minute?',no:'Hva skjer det neste minuttet?'},
+  a:[{en:'The speed bleeds off towards VLS; only there does the speed protection cut the V/S',no:'Farten synker mot VLS; først der kutter fartsbeskyttelsen V/S'},{en:'The autothrust goes above climb thrust to hold 250 kt',no:'Autothrust går over stigeskyvekraft for å holde 250 kt'},{en:'The autopilot reverts to OP CLB at once',no:'Autopiloten går straks over til OP CLB'}],c:0,
+  e:{en:'In V/S the elevator has priority on the vertical speed. SPEED can only give up to climb thrust, so the rest comes out of the speed. The protection near VLS keeps you flying, but you arrive there with no margin. Fix: OP CLB, or a V/S the engines can support.',no:'I V/S har høyderoret prioritet på vertikalfarten. SPEED kan bare gi opp til stigeskyvekraft, så resten tas fra farten. Beskyttelsen nær VLS holder deg flygende, men du kommer dit uten margin. Løsning: OP CLB, eller en V/S motorene klarer.'}},
+ {k:'opdes',ti:{en:'2 · OP DES with a constraint',no:'2 · OP DES med restriksjon'},
+  sit:{en:'Managed descent (DES) from FL140 towards an FCU altitude of 5000 ft. The STAR has “at or above 9000 ft” at the next waypoint, shown as a magenta ALT. To expedite, the pilot pulls the ALT knob.',no:'Managed nedstigning (DES) fra FL140 mot FCU-høyde 5000 ft. STAR-en har «at or above 9000 ft» ved neste veipunkt, vist som en magenta ALT. For å skynde seg trekker piloten ALT-knappen.'},
+  set:()=>{ const s=mk({alt:14600,ias:300,vm:'DES',athr:'THR IDLE',fcu:5000,cst:9000}); runTo(s,15); s.chg={}; act(s,'pullAlt'); return s; },
+  q:{en:'What happens at 9000 ft?',no:'Hva skjer ved 9000 ft?'},
+  a:[{en:'It levels at 9000 ft (ALT CST)',no:'Det flater ut i 9000 ft (ALT CST)'},{en:'It descends straight through 9000 ft towards 5000 ft',no:'Det går rett gjennom 9000 ft mot 5000 ft'},{en:'It reverts to V/S at 9000 ft',no:'Det går over til V/S ved 9000 ft'}],c:1,
+  e:{en:'OP DES goes for the FCU altitude and ignores flight plan constraints. The magenta ALT disappears from the FMA the moment you pull. If the constraint matters, stay in DES, or set the FCU to the constraint and pull.',no:'OP DES går mot FCU-høyden og ignorerer restriksjonene i ruten. Den magenta ALT forsvinner fra FMA-en i det øyeblikket du trekker. Er restriksjonen viktig, bli i DES, eller sett FCU til restriksjonen og trekk.'}},
+ {k:'altstar',ti:{en:'3 · New altitude during ALT*',no:'3 · Ny høyde under ALT*'},
+  sit:{en:'OP CLB to 10 000 ft. Passing 9800 ft the FMA shows ALT*. ATC: “climb FL120”. The pilot turns the FCU altitude to 12 000 ft.',no:'OP CLB til 10 000 ft. Ved 9800 ft viser FMA-en ALT*. ATC: «climb FL120». Piloten skrur FCU-høyden til 12 000 ft.'},
+  set:()=>{ const s=mk({alt:7000,ias:250,vm:'OP CLB',athr:'THR CLB',fcu:10000}); runTo(s,300,x=>x.vm==='ALT*'&&x.alt>9800); s.chg={}; setFcu(s,12000); return s; },
+  q:{en:'What does the autopilot do?',no:'Hva gjør autopiloten?'},
+  a:[{en:'Goes back to OP CLB with climb thrust',no:'Går tilbake til OP CLB med stigeskyvekraft'},{en:'Reverts to V/S at the current, already reduced vertical speed',no:'Faller tilbake til V/S med nåværende, allerede reduserte vertikalfart'},{en:'Levels at 10 000 ft anyway',no:'Flater ut i 10 000 ft likevel'}],c:1,
+  e:{en:'A change of more than 250 ft during ALT* reverts to V/S, holding whatever vertical speed the capture had reached (here about 1200 fpm, often less). The aircraft creeps up to the new level. Read V/S on the FMA, then pull (or push) ALT to get a proper climb.',no:'En endring på mer enn 250 ft under ALT* gir V/S med den vertikalfarten innfangingen hadde kommet til (her rundt 1200 fpm, ofte mindre). Flyet kryper opp til det nye nivået. Les V/S på FMA-en, og trekk (eller trykk) så ALT for en ordentlig stigning.'}},
+ {k:'idle',ti:{en:'4 · THR IDLE while hand-flying',no:'4 · THR IDLE med manuell flyging'},
+  sit:{en:'OP DES to 3000 ft, THR IDLE. The pilot disconnects the autopilot to hand-fly, leaves the flight directors on, and raises the nose to reduce the descent to about 300 fpm instead of following the FD.',no:'OP DES til 3000 ft, THR IDLE. Piloten kobler ut autopiloten for å fly manuelt, lar flight directorene stå på, og løfter nesen for å redusere nedstigningen til rundt 300 fpm i stedet for å følge FD-en.'},
+  set:()=>{ const s=mk({alt:7500,ias:250,vm:'OP DES',athr:'THR IDLE',fcu:3000,ap:false}); runTo(s,10); s.chg={}; s.man=true; s.manVs=-300; return s; },
+  q:{en:'What does the autothrust do as the speed falls?',no:'Hva gjør autothrust når farten synker?'},
+  a:[{en:'Adds thrust at once to hold the target speed',no:'Gir straks mer skyvekraft for å holde målfarten'},{en:'Stays at idle: in THR IDLE the speed belongs to the pitch',no:'Blir på tomgang: i THR IDLE er farten pitchens ansvar'},{en:'Disconnects',no:'Kobler ut'}],c:1,
+  e:{en:'THR IDLE is not a speed mode. Nobody is holding the speed if you do not follow the FD pitch. On current standards the FDs drop out and A/THR reverts to SPEED near VLS, with a triple click, but you get there with a low-energy aircraft. When hand-flying, either follow the FD or switch both FDs off so A/THR goes to SPEED.',no:'THR IDLE er ikke en fartsmodus. Ingen holder farten hvis du ikke følger FD-pitchen. På dagens standarder faller FD-ene ut og A/THR går over til SPEED nær VLS, med et trippelklikk, men da har du allerede et fly med lite energi. Når du flyr manuelt: følg FD-en, eller slå av begge FD-ene så A/THR går til SPEED.'}},
+ {k:'pullalt',ti:{en:'5 · Pull ALT with the go-around altitude set',no:'5 · Trekk ALT med go-around-høyden satt'},
+  sit:{en:'Level at 3000 ft in ALT before the approach. The FCU altitude is already set to the missed approach altitude, 5000 ft. The pilot wants to start down early and pulls the ALT knob.',no:'Planet i 3000 ft i ALT før innflygingen. FCU-høyden er allerede satt til høyden for bomprosedyren, 5000 ft. Piloten vil starte ned tidlig og trekker ALT-knappen.'},
+  set:()=>{ const s=mk({alt:3000,ias:220,vm:'ALT',athr:'SPEED',hold:3000,fcu:5000,spdMan:false,spdSel:220}); runTo(s,20); s.chg={}; act(s,'pullAlt'); return s; },
+  q:{en:'What happens?',no:'Hva skjer?'},
+  a:[{en:'OP DES at idle',no:'OP DES på tomgang'},{en:'OP CLB with climb thrust towards 5000 ft',no:'OP CLB med stigeskyvekraft mot 5000 ft'},{en:'Nothing, ALT stays',no:'Ingenting, ALT blir stående'}],c:1,
+  e:{en:'The open mode goes towards the FCU altitude, wherever it is. With 5000 ft set, pulling gives OP CLB and THR CLB. Set the altitude you want first, then pull, and read the FMA.',no:'Den åpne modusen går mot FCU-høyden, hvor enn den er. Med 5000 ft satt gir trekk OP CLB og THR CLB. Sett høyden du vil ha først, trekk så, og les FMA-en.'}},
+ {k:'hdg',ti:{en:'6 · Heading in a managed climb',no:'6 · Kurs i managed stigning'},
+  sit:{en:'Managed climb (CLB) at 6000 ft towards 15 000 ft, with “at or below 8000 ft” on the SID (magenta ALT). ATC gives a heading and the pilot pulls the HDG knob.',no:'Managed stigning (CLB) i 6000 ft mot 15 000 ft, med «at or below 8000 ft» på SID-en (magenta ALT). ATC gir en kurs og piloten trekker HDG-knappen.'},
+  set:()=>{ const s=mk({alt:5200,ias:250,vm:'CLB',athr:'THR CLB',fcu:15000,cst:8000}); runTo(s,20); s.chg={}; act(s,'pullHdg'); return s; },
+  q:{en:'What happens to the 8000 ft constraint?',no:'Hva skjer med restriksjonen på 8000 ft?'},
+  a:[{en:'Still honoured: CLB stays engaged',no:'Fortsatt overholdt: CLB blir innkoblet'},{en:'CLB reverts to OP CLB, and the climb goes through 8000 ft',no:'CLB går over til OP CLB, og stigningen går gjennom 8000 ft'},{en:'The aircraft levels off where it is',no:'Flyet flater ut der det er'}],c:1,
+  e:{en:'Managed vertical modes need NAV. Off the flight plan, CLB reverts to OP CLB and the constraints are no longer flown. If ATC has not cleared you above the constraint, set it in the FCU.',no:'Managed vertikale moduser krever NAV. Utenfor ruten går CLB over til OP CLB og restriksjonene flys ikke lenger. Har ikke ATC klarert deg over restriksjonen, sett den i FCU-en.'}}];
+let di=0, dS=null, dAns=-1, dOrd=[];
+LAB.seg(el('dSel'),DR.map((d,i)=>[String(i),String(i+1)]),'0',v=>{ di=+v; dLoad(); });
+const Cdf=LAB.fit(el('dFma'),()=>dDraw(),2), Cdp=LAB.fit(el('dProf'),()=>dDraw(),2);
+function dLoad(){ dS=DR[di].set(); dS.t0=dS.t; dAns=-1; dOrd=LAB.shuffle([0,1,2]); dDraw(); }
+function dDraw(){ if(!dS) return; const d=DR[di];
+  el('dTitle').textContent=L(d.ti); el('dSit').textContent=L(d.sit); el('dQ').textContent=L(d.q);
+  el('dOpts').innerHTML=dOrd.map(k=>`<button data-k="${k}" ${dAns>=0?'disabled':''} class="${dAns>=0?(k===d.c?'right':(k===dAns?'wrong':'')):''}">${L(d.a[k])}</button>`).join('');
+  el('dOpts').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(dAns>=0) return; dAns=+b.dataset.k; const R=JSON.parse(JSON.stringify(dS)); runTo(R,240); dS.res=R; dDraw(); });
+  const R=dAns>=0?dS.res:dS;
+  { const g=Cdf.ctx,W=Cdf.w,H=Cdf.h; if(W){ g.clearRect(0,0,W,H); g.fillStyle='#0F171D'; g.fillRect(0,0,W,H); const s0=JSON.parse(JSON.stringify(dS)); s0.t=dS.t0+0.5; drawFMA(g,8,8,W-16,H-16,s0,0); } }
+  { const g=Cdp.ctx,W=Cdp.w,H=Cdp.h; if(W){ if(dAns>=0) drawProfile(g,W,H,R,R.t-(dS.t0-60),dS.t0-60,dS.t0,true);
+      else { const s0=JSON.parse(JSON.stringify(dS)); drawProfile(g,W,H,s0,300,dS.t0-60,dS.t0,true); g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.textAlign='center'; g.fillText(L({en:'make your prediction first',no:'gjør din forutsigelse først'}),W*0.62,H*0.4); } } }
+  const ex=el('dExp'), al=el('dAloud');
+  if(dAns>=0){ ex.hidden=false; al.hidden=false; ex.innerHTML=`<b class="${dAns===d.c?'ok':'no'}">${T(dAns===d.c?'Riktig':'Feil')}.</b> ${L(d.e)}`; al.textContent=L({en:'FMA after the event: ',no:'FMA etter hendelsen: '})+readAloud(dS)+L({en:'  ·  four minutes later: ',no:'  ·  fire minutter senere: '})+readAloud(dS.res); }
+  else { ex.hidden=true; al.hidden=true; } }
+dLoad();
+
+/* ================= 3. TCAS ================= */
+const TC={own:12000,rng:5,clo:420,dz:400,vi:-1200,vo:0,eq:'tcas',resp:'ra'};
+const SLT=[[1000,2,20,null,0.30,null,850,null,null],[2350,3,25,15,0.33,0.20,850,600,300],[5000,4,30,20,0.48,0.35,850,600,300],[10000,5,40,25,0.75,0.55,850,600,350],[20000,6,45,30,1.00,0.80,850,600,400],[42000,7,48,35,1.30,1.10,850,700,600],[1e9,7,48,35,1.30,1.10,1200,800,700]];
+function tcas(){ const r=SLT.find(x=>TC.own<x[0]); const [ ,sl,tTA,tRA,dTA,dRA,zTA,zRA,alim]=r;
+  const tau=TC.rng/TC.clo*3600, tm=d=> TC.rng<=d?0:(TC.rng*TC.rng-d*d)/(TC.rng*TC.clo)*3600;
+  const vc=(TC.vi-TC.vo), vt= TC.dz*vc<0? Math.abs(TC.dz)/Math.abs(vc)*60 : Infinity;
+  const vTA=Math.abs(TC.dz)<zTA||vt<tTA, vRA=zRA!=null&&(Math.abs(TC.dz)<zRA||vt<tRA);
+  let st='other'; if(TC.rng<6&&Math.abs(TC.dz)<1200) st='prox'; if(tm(dTA)<=tTA&&vTA) st='ta'; if(tRA!=null&&tm(dRA)<=tRA&&vRA) st='ra';
+  const t=tau; const iAt=(tt,vs)=>TC.dz+vs*tt/60; const own=(tt,v)=> tt<=5? TC.vo*tt/60 : TC.vo*5/60+v*(tt-5)/60;
+  const m0=iAt(t,TC.vi)-own(t,TC.vo); // intruder minus own
+  let ra=null; if(st==='ra'){ const sepUp=own(t,1500)-iAt(t,TC.vi), sepDn=iAt(t,TC.vi)-own(t,-1500); const nonX= TC.dz<0?1:-1;
+    let sense= (nonX>0?sepUp:sepDn)>=alim? nonX : (sepUp>=sepDn?1:-1); const cross= sense!==nonX && Math.abs(TC.dz)>100;
+    const sepWith=v=> sense>0? own(t,v)-iAt(t,TC.vi) : iAt(t,TC.vi)-own(t,v);
+    let kind, vT;
+    if(sepWith(TC.vo)>=alim&&TC.vo*sense>=0){ kind='mon'; vT=TC.vo; }
+    else if(TC.vo*sense<0&&sepWith(0)>=alim){ kind='lvl'; vT=0; }
+    else if(sepWith(1500)>=alim||t<8){ kind='cd'; vT=1500*sense; }
+    else { kind='inc'; vT=2500*sense; }
+    ra={sense,kind,vT,cross}; }
+  // slik det flys
+  let ownV=TC.vo, intV=TC.vi;
+  if(ra){ if(TC.resp==='ra') ownV=ra.vT; else if(TC.resp==='atc') ownV=-ra.sense*1500; if(TC.eq==='tcas') intV= ra.sense>0? Math.min(TC.vi,-1500) : Math.max(TC.vi,1500); }
+  const m1=(TC.dz+ (t<=5?TC.vi*t/60:TC.vi*5/60+intV*(t-5)/60)) - own(t,ownV);
+  return {sl,tTA,tRA,dTA,dRA,alim,tau,st,ra,m0,m1,ownV,intV,t};
+}
+const raTxt=ra=> !ra?'': ra.kind==='mon'? 'MONITOR VERTICAL SPEED' : ra.kind==='lvl'? 'LEVEL OFF, LEVEL OFF' : ra.kind==='inc'? (ra.sense>0?'INCREASE CLIMB':'INCREASE DESCENT') : ra.sense>0? (ra.cross?'CLIMB, CROSSING CLIMB':'CLIMB, CLIMB') : (ra.cross?'DESCEND, CROSSING DESCEND':'DESCEND, DESCEND');
+const tcl=el('tctl');
+LAB.slider(tcl,{label:'Your altitude',min:1500,max:41000,step:500,v:TC.own,f:v=>nf(v,0)+' ft',on:v=>{ TC.own=v; tu(); }});
+LAB.slider(tcl,{label:'Intruder range',min:0.2,max:10,step:0.1,v:TC.rng,f:v=>nf(v,1)+' NM',on:v=>{ TC.rng=v; tu(); }});
+LAB.slider(tcl,{label:'Closure rate',min:100,max:1000,step:10,v:TC.clo,f:v=>v+' kt',on:v=>{ TC.clo=v; tu(); }});
+LAB.slider(tcl,{label:'Intruder relative altitude',min:-2000,max:2000,step:50,v:TC.dz,f:v=>(v>0?'+':'')+nf(v,0)+' ft',on:v=>{ TC.dz=v; tu(); }});
+LAB.slider(tcl,{label:'Intruder vertical speed',min:-3000,max:3000,step:100,v:TC.vi,f:v=>(v>0?'+':'')+nf(v,0)+' fpm',on:v=>{ TC.vi=v; tu(); }});
+LAB.slider(tcl,{label:'Your vertical speed',min:-3000,max:3000,step:100,v:TC.vo,f:v=>(v>0?'+':'')+nf(v,0)+' fpm',on:v=>{ TC.vo=v; tu(); }});
+LAB.seg(el('tEq'),[['tcas','TCAS II (coordinated)'],['xpdr','Transponder only']],TC.eq,v=>{ TC.eq=v; tu(); });
+LAB.seg(el('tResp'),[['ra','Follow the RA'],['atc','Follow ATC (opposite)'],['none','No response']],TC.resp,v=>{ TC.resp=v; tu(); });
+const Cn=LAB.fit(el('nd'),()=>tu(),2), Cs=LAB.fit(el('side'),()=>tu(),2);
+function nd(R){ const g=Cn.ctx,W=Cn.w,H=Cn.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#0F171D'; g.fillRect(0,0,W,H);
+  const vw=Math.min(110,W*0.24), nw=W-vw-10, cx=nw/2, cy=H*0.86, sc=Math.min(H*0.78,nw*0.56)/10;
+  g.strokeStyle='#3E4C56'; g.lineWidth=1; g.beginPath(); g.arc(cx,cy,sc*10,Math.PI*1.18,Math.PI*1.82); g.stroke();
+  g.setLineDash([2,5]); g.beginPath(); g.arc(cx,cy,sc*5,Math.PI*1.1,Math.PI*1.9); g.stroke(); g.setLineDash([]);
+  g.strokeStyle='#C9D2D8'; for(let a=7;a<12;a++){ const an=a*Math.PI/6; g.beginPath(); g.moveTo(cx+Math.cos(an)*sc*3,cy+Math.sin(an)*sc*3); g.lineTo(cx+Math.cos(an)*sc*3+Math.cos(an)*3,cy+Math.sin(an)*sc*3+Math.sin(an)*3); g.stroke(); }
+  g.fillStyle='#8FA1AE'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='left'; g.fillText('3',cx+sc*3*0.72+3,cy-sc*3*0.72); g.fillText('5',cx+sc*5*0.6+3,cy-sc*5*0.8); g.fillText('10 NM',cx+sc*10*0.5+4,cy-sc*10*0.84);
+  g.strokeStyle='#F2D33D'; g.lineWidth=3; g.beginPath(); g.moveTo(cx-16,cy); g.lineTo(cx+16,cy); g.moveTo(cx,cy-8); g.lineTo(cx,cy+16); g.moveTo(cx-6,cy+14); g.lineTo(cx+6,cy+14); g.stroke(); g.lineWidth=1;
+  const b=25*Math.PI/180, r=Math.min(10,TC.rng)*sc, ix=cx+Math.sin(b)*r, iy=cy-Math.cos(b)*r, s=8;
+  if(R.st==='ra'){ g.fillStyle='#FF3B30'; g.fillRect(ix-s,iy-s,2*s,2*s); } else if(R.st==='ta'){ g.fillStyle='#F2B33D'; g.beginPath(); g.arc(ix,iy,s,0,7); g.fill(); }
+  else { g.beginPath(); g.moveTo(ix,iy-s-1); g.lineTo(ix+s,iy); g.lineTo(ix,iy+s+1); g.lineTo(ix-s,iy); g.closePath(); if(R.st==='prox'){ g.fillStyle='#E8EEF2'; g.fill(); } else { g.strokeStyle='#E8EEF2'; g.lineWidth=1.6; g.stroke(); g.lineWidth=1; } }
+  const col=R.st==='ra'?'#FF3B30':R.st==='ta'?'#F2B33D':'#E8EEF2'; g.fillStyle=col; g.font='600 13px "IBM Plex Mono", monospace'; g.textAlign='center';
+  const rel=Math.round(TC.dz/100), rt=(rel>=0?'+':'−')+String(Math.abs(rel)).padStart(2,'0'); g.fillText(rt,ix,TC.dz>=0?iy-s-6:iy+s+15);
+  if(Math.abs(TC.vi)>=500){ const ax=ix+s+8; g.strokeStyle=col; g.lineWidth=2; g.beginPath(); g.moveTo(ax,iy-7); g.lineTo(ax,iy+7); if(TC.vi>0){ g.moveTo(ax-4,iy-3); g.lineTo(ax,iy-7); g.lineTo(ax+4,iy-3); } else { g.moveTo(ax-4,iy+3); g.lineTo(ax,iy+7); g.lineTo(ax+4,iy+3); } g.stroke(); g.lineWidth=1; }
+  if(R.st==='ra'||R.st==='ta'){ g.font='600 15px "IBM Plex Mono", monospace'; g.fillStyle=col; g.textAlign='left'; g.fillText(R.st==='ra'?raTxt(R.ra):'TRAFFIC, TRAFFIC',10,22); }
+  // VSI
+  const vx=W-vw+10, vy=16, vh=H-32, V=v=>vy+vh/2-cl(v,-3000,3000)/3000*vh/2, bw=18;
+  g.fillStyle='#1B252D'; g.fillRect(vx,vy,bw,vh);
+  if(R.ra){ const ra=R.ra; g.fillStyle='rgba(255,59,48,.85)';
+    const red=(a,b)=>g.fillRect(vx,Math.min(V(a),V(b)),bw,Math.abs(V(a)-V(b))), grn=(a,b)=>{ g.fillStyle='rgba(43,212,122,.9)'; g.fillRect(vx,Math.min(V(a),V(b)),bw,Math.abs(V(a)-V(b))); g.fillStyle='rgba(255,59,48,.85)'; };
+    if(ra.kind==='mon'){ if(ra.sense>0) red(-3000,Math.min(0,TC.vo)); else red(Math.max(0,TC.vo),3000); }
+    else if(ra.kind==='lvl'){ if(ra.sense>0){ red(-3000,0); grn(0,250); } else { red(0,3000); grn(-250,0); } }
+    else { const v=Math.abs(ra.vT); if(ra.sense>0){ red(-3000,v); grn(v,v+500); } else { red(-v,3000); grn(-v-500,-v); } } }
+  g.strokeStyle='#C9D2D8'; g.fillStyle='#8FA1AE'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='left';
+  for(const v of [-3000,-2000,-1000,0,1000,2000,3000]){ g.beginPath(); g.moveTo(vx+bw,V(v)); g.lineTo(vx+bw+5,V(v)); g.stroke(); g.fillText(String(Math.abs(v)/1000),vx+bw+8,V(v)+3); }
+  const nv=R.ra&&TC.resp!=='none'? R.ownV : TC.vo; g.strokeStyle='#FFFFFF'; g.lineWidth=2.5; g.beginPath(); g.moveTo(vx-12,vy+vh/2); g.lineTo(vx+bw+2,V(nv)); g.stroke(); g.lineWidth=1;
+  }
+function side(R){ const g=Cs.ctx,W=Cs.w,H=Cs.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const t=Math.min(R.t,120), tMax=t+15, pl=56,pr=14,pt=16,pb=28;
+  const own=(tt,v)=> tt<=0? TC.vo*tt/60 : tt<=5? TC.vo*tt/60 : TC.vo*5/60+v*(tt-5)/60;
+  const intr=(tt,v)=> TC.dz+(tt<=5? TC.vi*tt/60 : TC.vi*5/60+v*(tt-5)/60);
+  const ownV=R.ra?R.ownV:TC.vo, intV=R.ra?R.intV:TC.vi;
+  let lo=0,hi=0; for(let tt=-10;tt<=tMax;tt+=1){ for(const v of [own(tt,ownV),intr(tt,intV),own(tt,TC.vo),intr(tt,TC.vi)]){ lo=Math.min(lo,v); hi=Math.max(hi,v); } }
+  const span=Math.max(1500,(hi-lo)*1.15), mid=(hi+lo)/2, Y=v=>pt+(H-pt-pb)/2-(v-mid)/span*(H-pt-pb), X=tt=>pl+(tt+10)/(tMax+10)*(W-pl-pr);
+  g.strokeStyle='#E3E8EA'; g.fillStyle='#7D8B95'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='right'; const stp=span>4000?1000:500;
+  for(let v=Math.ceil((mid-span/2)/stp)*stp;v<=mid+span/2;v+=stp){ g.beginPath(); g.moveTo(pl,Y(v)); g.lineTo(W-pr,Y(v)); g.stroke(); g.fillText((v>0?'+':'')+nf(v,0),pl-5,Y(v)+3); }
+  g.textAlign='center'; for(let tt=0;tt<=tMax;tt+=(tMax>60?20:10)) g.fillText(tt+' s',X(tt),H-8);
+  // CPA og ALIM
+  if(R.t<=120){ g.strokeStyle='#13202A'; g.setLineDash([3,3]); g.beginPath(); g.moveTo(X(t),pt); g.lineTo(X(t),H-pb); g.stroke(); g.setLineDash([]); g.fillStyle='#13202A'; g.fillText('CPA',X(t),pt+8);
+    if(R.alim){ g.fillStyle='rgba(30,94,158,.10)'; const o=own(t,ownV); g.fillRect(X(t)-14,Y(o+R.alim),28,Y(o-R.alim)-Y(o+R.alim)); } }
+  const path=(f,v,col,dash,w)=>{ g.strokeStyle=col; g.lineWidth=w; g.setLineDash(dash); g.beginPath(); for(let tt=-10;tt<=tMax;tt+=0.5){ const y=Y(f(tt,v)); tt===-10?g.moveTo(X(tt),y):g.lineTo(X(tt),y); } g.stroke(); g.setLineDash([]); g.lineWidth=1; };
+  if(R.ra){ path(own,TC.vo,'#9AA6AC',[5,4],1.4); path(intr,TC.vi,'#E0A9A5',[5,4],1.4); }
+  path(own,ownV,'#1E5E9E',[],2.6); path(intr,intV,'#B3261E',[],2.6);
+  g.fillStyle='#1E5E9E'; g.beginPath(); g.arc(X(0),Y(0),4.5,0,7); g.fill(); g.fillStyle='#B3261E'; g.beginPath(); g.arc(X(0),Y(TC.dz),4.5,0,7); g.fill();
+  g.font='600 13px "Public Sans", sans-serif'; g.textAlign='left'; g.fillStyle='#1E5E9E'; g.fillText(L({en:'you',no:'deg'}),X(0)+8,Y(0)+(TC.dz>0?18:-8)); g.fillStyle='#B3261E'; g.fillText(L({en:'intruder',no:'det andre flyet'}),X(0)+8,Y(TC.dz)+(TC.dz>0?-8:18));
+  if(R.ra){ g.fillStyle='#1D4E9E'; g.fillText(L({en:'grey: no response · blue band: ALIM around you at CPA',no:'grått: ingen reaksjon · blått felt: ALIM rundt deg ved CPA'}),pl+6,pt+12); }
+  g.save(); g.translate(13,pt+(H-pt-pb)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillStyle='#7D8B95'; g.font='10px "IBM Plex Mono", monospace'; g.fillText(L({en:'relative altitude (ft)',no:'relativ høyde (ft)'}),0,0); g.restore(); }
+function tu(){ const R=tcas(); nd(R); side(R);
+  el('tSL').textContent='SL '+R.sl+(R.sl===2?L({en:' (TA only)',no:' (bare TA)'}):'');
+  el('tTau').textContent=R.tau>600?'> 600 s':nf(R.tau,0)+' s';
+  el('tThr').textContent=`${R.tTA} s / ${R.tRA==null?'–':R.tRA+' s'} · ALIM ${R.alim==null?'–':R.alim+' ft'}`;
+  const stT={other:{en:'Other traffic',no:'Annen trafikk'},prox:{en:'Proximate traffic',no:'Nær trafikk'},ta:{en:'Traffic advisory',no:'Trafikkråd (TA)'},ra:{en:'Resolution advisory',no:'Unnvikelsesråd (RA)'}};
+  el('tSt').innerHTML=`<span class="${R.st==='ra'?'ko':R.st==='ta'?'wa':''}">${L(stT[R.st])}</span>`+(R.ra?`<br><span style="font-family:var(--f-mono);font-size:13px">${raTxt(R.ra)}</span>`:'');
+  const fm=m=>`${nf(Math.abs(m),0)} ft ${m>=0?L({en:'(intruder above)',no:'(den andre over)'}):L({en:'(intruder below)',no:'(den andre under)'})}`;
+  const bad=m=>R.alim&&Math.abs(m)<R.alim?'ko':Math.abs(m)<300?'ko':'ok';
+  el('tM0').innerHTML= R.t>300? '–' : `<span class="${bad(R.m0)}">${fm(R.m0)}</span>`;
+  el('tM1').innerHTML= R.t>300? '–' : `<span class="${bad(R.m1)}">${fm(R.m1)}</span>`;
+  let t;
+  if(R.st==='ra'&&TC.resp==='atc') t=L({en:'<b>Following ATC against the RA.</b> If the intruder follows its coordinated RA, both aircraft now manoeuvre towards each other. This is the Überlingen accident in 2002: one crew followed the controller, the other followed TCAS. Always follow the RA, even against an ATC instruction, and tell ATC “TCAS RA” as soon as you can.',no:'<b>Følger ATC mot RA.</b> Følger det andre flyet sitt koordinerte RA, manøvrerer begge flyene nå mot hverandre. Dette er Überlingen-ulykken i 2002: én besetning fulgte flygelederen, den andre fulgte TCAS. Følg alltid RA, også mot en ATC-instruks, og si «TCAS RA» til ATC så snart du kan.'});
+  else if(R.st==='ra'&&TC.resp==='none') t=L({en:'<b>No response.</b> The RA only works if someone flies it. Pilots are expected to start the manoeuvre within about 5 seconds, with about 0.25 g, and to fly the green, not just stop the red.',no:'<b>Ingen reaksjon.</b> RA virker bare hvis noen flyr den. Piloter forventes å starte manøveren innen rundt 5 sekunder, med rundt 0,25 g, og å fly det grønne, ikke bare stoppe det røde.'});
+  else if(R.st==='ra') t=(TC.eq==='tcas'?L({en:'<b>Coordinated RA.</b> The two TCAS units agree through Mode S which way each will go, so the senses are always complementary. ',no:'<b>Koordinert RA.</b> De to TCAS-enhetene avtaler via Mode S hvilken vei hver skal, så retningene er alltid motsatte. '}):L({en:'<b>Intruder with a transponder only.</b> It reports altitude, so you get an RA, but it gets none and its crew may manoeuvre either way. ',no:'<b>Det andre flyet har bare transponder.</b> Det sender høyde, så du får RA, men det får ingen selv, og besetningen kan manøvrere hvilken vei som helst. '}))+L({en:'TCAS chooses the sense that gives the most separation, preferring not to cross the intruder’s altitude, and the weakest manoeuvre that still achieves ALIM at the closest point.',no:'TCAS velger retningen som gir mest separasjon, helst uten å krysse det andre flyets høyde, og den svakeste manøveren som likevel gir ALIM ved nærmeste punkt.'});
+  else if(R.st==='ta') t=L({en:'<b>Traffic advisory.</b> Look for the traffic and get ready for an RA, but do not manoeuvre on a TA alone. The thresholds are times: at higher altitudes TCAS warns earlier because aircraft are faster and need more time.',no:'<b>Trafikkråd.</b> Se etter trafikken og gjør deg klar for en RA, men ikke manøvrer bare på en TA. Grensene er tider: høyere oppe varsler TCAS tidligere fordi flyene er raskere og trenger mer tid.'});
+  else t=L({en:'<b>Tau, not distance.</b> Double the closure rate and the same range gives half the time, so the alert comes at twice the distance. Close in, the DMOD distance takes over so a slow, close intruder is not missed.',no:'<b>Tau, ikke avstand.</b> Dobler du nærmingsfarten, gir samme avstand halve tiden, så varselet kommer på dobbel avstand. Tett inne tar DMOD-avstanden over, så et sakte, nært fly ikke blir oversett.'});
+  if(R.sl===2) t=L({en:'<b>Below 1000 ft above ground TCAS gives TAs only</b> (SL 2): no RAs this close to the ground. Descend RAs are also inhibited below about 1100 ft.',no:'<b>Under 1000 ft over bakken gir TCAS bare TA</b> (SL 2): ingen RA så nær bakken. Descend-RA er også sperret under rundt 1100 ft.'});
+  el('tEx').innerHTML=t; }
+LAB.onLang(tu);
+
+/* ================= 4. EGPWS ================= */
+const GS={sc:'ridge',cfg:'clean',rod:1500,spd:250,pos:0.35,play:false};
+const GSC={ridge:{cfg:'clean',rod:1500,spd:250,x1:16,alt0:6500,ter:x=>x<7?300:300+Math.max(0,Math.min(1,(x-7)/6))**1.6*5200},
+ flat:{cfg:'clean',rod:4500,spd:250,x1:8,alt0:3000,ter:()=>0},
+ app:{cfg:'land',rod:1000,spd:145,x1:6.6,alt0:2050,ter:x=>x>6.25?0:0, rwy:6.3},
+ to:{cfg:'gear',rod:600,spd:160,x1:6,alt0:0,ter:()=>0}};
+const gc=el('gctl'), gsl={};
+LAB.seg(el('gSc'),[['ridge','Ridge ahead'],['flat','Steep descent'],['app','Approach'],['to','After take-off']],GS.sc,v=>{ GS.sc=v; const s=GSC[v]; GS.cfg=s.cfg; GS.rod=s.rod; GS.spd=s.spd; GS.pos=0.3; cfgSeg.set(GS.cfg); gsl.rod.set(GS.rod); gsl.spd.set(GS.spd); gsl.pos.set(GS.pos); gu(); });
+const cfgSeg=LAB.seg(el('gCfg'),[['clean','Clean'],['gear','Gear down'],['land','Landing flaps']],GS.cfg,v=>{ GS.cfg=v; gu(); });
+gsl.rod=LAB.slider(gc,{label:'Rate of descent (fpm)',min:0,max:8000,step:100,v:GS.rod,f:v=>nf(v,0)+' fpm',on:v=>{ GS.rod=v; gu(); }});
+gsl.spd=LAB.slider(gc,{label:'Speed (kt)',min:120,max:320,step:5,v:GS.spd,f:v=>v+' kt',on:v=>{ GS.spd=v; gu(); }});
+gsl.pos=LAB.slider(gc,{label:'Position along the path',min:0,max:1,step:0.005,v:GS.pos,f:v=>nf(v*100,0)+' %',on:v=>{ GS.pos=v; gu(); }});
+function gAlt(t){ const s=GSC[GS.sc]; if(GS.sc==='to'){ const tc=700/1500*60; return t<=tc? 1500*t/60 : 700-GS.rod*(t-tc)/60; } return s.alt0-GS.rod*t/60; }
+function gEnd(){ const s=GSC[GS.sc]; const tx=s.x1/GS.spd*3600; let te=tx; for(let t=0;t<=tx;t+=0.5){ const x=GS.spd*t/3600; if(gAlt(t)<=s.ter(x)&&t>5){ te=t; break; } } return te; }
+function gEval(t){ const s=GSC[GS.sc], x=GS.spd*t/3600, a=gAlt(t), ra=a-s.ter(x), dt=1;
+  const ta=Math.max(0,t-dt), tb=ta+dt, raA=gAlt(ta)-s.ter(GS.spd*ta/3600), raB=gAlt(tb)-s.ter(GS.spd*tb/3600), clos=Math.max(0,(raA-raB)/dt*60), rod=Math.max(0,(gAlt(ta)-gAlt(tb))/dt*60);
+  const out=[]; // [mode, text, level]
+  if(ra>=10&&ra<=2450){ if(rod>1600+ra*2.2) out.push(['1','PULL UP','w']); else if(rod>1000+(ra-10)*4000/2440) out.push(['1','SINK RATE','c']); }
+  const land=GS.cfg==='land';
+  const m2top= land?790: 1650+(GS.spd>220?Math.min(800,(GS.spd-220)*800/90):0);
+  if(ra>=30&&ra<=m2top&&clos>2000+(ra-30)*2.8) out.push(['2',land?'TERRAIN, TERRAIN':'TERRAIN, TERRAIN · PULL UP','w']);
+  if(GS.sc==='to'){ let mx=0; for(let tt=0;tt<=t;tt+=0.5) mx=Math.max(mx,gAlt(tt)); const loss=mx-a; if(ra<1500&&ra>30&&loss>20+0.1*mx) out.push(['3',"DON'T SINK",'c']); }
+  if(GS.sc!=='to'&&!land&&ra>30){ if(GS.cfg==='clean'){ const lim=GS.spd<190?500:Math.min(1000,500+(GS.spd-190)*500/60); if(ra<lim) out.push(['4',GS.spd<190?'TOO LOW, GEAR':'TOO LOW, TERRAIN','c']); }
+    else { const lim=GS.spd<159?245:Math.min(1000,245+(GS.spd-159)*755/91); if(ra<lim) out.push(['4',GS.spd<159?'TOO LOW, FLAPS':'TOO LOW, TERRAIN','c']); } }
+  let dots=null; if(GS.sc==='app'){ const d=Math.max(0.05,s.rwy-x)*6076, ang=Math.atan2(a-50,d)*180/Math.PI; dots=(3-ang)/0.35; if(GS.cfg!=='clean'&&ra<1000&&ra>30&&dots>1.3) out.push(['5','GLIDESLOPE',ra<300&&dots>2?'w5':'c']); }
+  // look-ahead
+  let ahead=null; if(GS.sc==='ridge'&&ra>0){ const vs=-rod; for(let tau=0;tau<=60;tau+=1){ const xa=x+GS.spd*tau/3600, aa=a+vs*tau/60; if(aa<s.ter(xa)+300){ ahead=tau; break; } } }
+  if(ahead!=null){ if(ahead<=30) out.push(['TAD','TERRAIN AHEAD, PULL UP','w']); else out.push(['TAD','TERRAIN AHEAD','c']); }
+  return {x,a,ra,clos,rod,out,dots,ahead}; }
+const Cg=LAB.fit(el('gp'),()=>gu(),2);
+function gDraw(E,tNow,tE){ const g=Cg.ctx,W=Cg.w,H=Cg.h; if(!W) return; const s=GSC[GS.sc]; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
+  const pl=50,pr=14,pt=16,pb=26; let top=GS.sc==='ridge'?7500:GS.sc==='flat'?3500:GS.sc==='app'?2200:1200;
+  const X=x=>pl+x/s.x1*(W-pl-pr), Y=a=>pt+(H-pt-pb)*(1-a/top);
+  g.strokeStyle='#E3E8EA'; g.fillStyle='#7D8B95'; g.font='10px "IBM Plex Mono", monospace'; g.textAlign='right'; const st=top>4000?1000:top>2000?500:200;
+  for(let a=0;a<=top;a+=st){ g.beginPath(); g.moveTo(pl,Y(a)); g.lineTo(W-pr,Y(a)); g.stroke(); g.fillText(nf(a,0),pl-5,Y(a)+3); }
+  g.textAlign='center'; const xs=(s.x1>10?2:1)*(W<600?2:1); for(let x=0;x<=s.x1;x+=xs) g.fillText(x+(x===0?' NM':''),X(x),H-8);
+  // terreng
+  g.fillStyle='#D9CBB0'; g.beginPath(); g.moveTo(X(0),Y(0)); for(let i=0;i<=200;i++){ const x=i/200*s.x1; g.lineTo(X(x),Y(s.ter(x))); } g.lineTo(X(s.x1),Y(0)); g.closePath(); g.fill(); g.strokeStyle='#8A6D3B'; g.beginPath(); for(let i=0;i<=200;i++){ const x=i/200*s.x1; i?g.lineTo(X(x),Y(s.ter(x))):g.moveTo(X(x),Y(s.ter(x))); } g.stroke();
+  if(GS.sc==='app'){ g.fillStyle='#13202A'; g.fillRect(X(s.rwy),Y(0)-3,X(s.x1)-X(s.rwy),4); g.strokeStyle='#2C7A4B'; g.setLineDash([6,4]); g.beginPath(); g.moveTo(X(s.rwy),Y(50)); g.lineTo(X(0),Y(50+s.rwy*318)); g.stroke(); g.setLineDash([]); g.fillStyle='#2C7A4B'; g.font='600 12px "Public Sans", sans-serif'; g.textAlign='left'; g.fillText(L({en:'3° glide slope',no:'3° glidebane'}),X(0.3),Y(50+5.9*318)-6); }
+  if(GS.sc==='to'){ g.fillStyle='#13202A'; g.fillRect(X(0),Y(0)-3,X(0.4)-X(0),4); }
+  // bane
+  const pts=[]; for(let t=0;t<=tE;t+=Math.max(0.5,tE/300)) pts.push([GS.spd*t/3600,gAlt(t),t]); pts.push([GS.spd*tE/3600,gAlt(tE),tE]);
+  g.lineWidth=2.4; g.strokeStyle='#1E5E9E'; g.beginPath(); pts.filter(p=>p[2]<=tNow).forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke();
+  g.setLineDash([5,4]); g.lineWidth=1.4; g.beginPath(); pts.filter(p=>p[2]>=tNow).forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1]))); g.stroke(); g.setLineDash([]); g.lineWidth=1;
+  // fremoverkikk
+  if(GS.sc==='ridge'){ const vs=-E.rod; const seg=(t0,t1,c)=>{ g.strokeStyle=c; g.lineWidth=5; g.globalAlpha=0.35; g.beginPath(); g.moveTo(X(E.x+GS.spd*t0/3600),Y(E.a+vs*t0/60)); g.lineTo(X(E.x+GS.spd*t1/3600),Y(E.a+vs*t1/60)); g.stroke(); g.globalAlpha=1; g.lineWidth=1; }; seg(0,30,'#B3261E'); seg(30,60,'#A86A00'); }
+  // fly
+  const ang=Math.atan2(-(gAlt(tNow+1)-E.a)/(top)*(H-pt-pb),(GS.spd/3600)/s.x1*(W-pl-pr));
+  g.save(); g.translate(X(E.x),Y(E.a)); g.rotate(ang); g.fillStyle='#13202A'; g.beginPath(); g.moveTo(-14,0); g.bezierCurveTo(-11,-3,-4,-4,3,-3); g.lineTo(12,-1); g.lineTo(12,1); g.lineTo(-9,2); g.closePath(); g.fill(); g.fillRect(-13,-7,2,6); g.restore();
+  // radiohøyde
+  g.strokeStyle='#7D8B95'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(E.x),Y(E.a)); g.lineTo(X(E.x),Y(E.a-E.ra)); g.stroke(); g.setLineDash([]);
+  const w=E.out.find(o=>o[2]==='w'||o[2]==='w5'), c=E.out[0];
+  if(c){ const txt=(w||c)[1]; g.font='700 15px "IBM Plex Mono", monospace'; const tw=g.measureText(txt).width+18; g.fillStyle=w?'#B3261E':'#A86A00'; g.fillRect(W-pr-tw,pt,tw,26); g.fillStyle='#fff'; g.textAlign='center'; g.fillText(txt,W-pr-tw/2,pt+18); }
+  g.font='600 13px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.textAlign='left'; if(GS.sc==='ridge') g.fillText(L({en:'look-ahead: red 30 s, amber 60 s',no:'fremoverkikk: rødt 30 s, gult 60 s'}),pl+6,pt+14); }
+function gu(){ const tE=gEnd(), t=GS.pos*tE, E=gEval(t); gDraw(E,t,tE);
+  const modes=['1','2','3','4','5','TAD']; el('gL').innerHTML=modes.map(m=>{ const o=E.out.find(x=>x[0]===m); return `<span class="${o?(o[2]==='c'?'am':'rd'):''}">${m==='TAD'?L({en:'Look-ahead',no:'Fremoverkikk'}):'Mode '+m}</span>`; }).join('');
+  el('gRA').textContent=nf(Math.max(0,E.ra),0)+' ft'; el('gROD').textContent=nf(E.rod,0)+' fpm'; el('gTC').textContent=nf(E.clos,0)+' fpm'+(E.dots!=null?` · ${nf(Math.max(0,E.dots),1)} ${L({en:'dots low',no:'prikker lav'})}`:'');
+  el('gAl').innerHTML= E.out.length? E.out.map(o=>`<span class="${o[2]==='c'?'wa':'ko'}">${o[1]}</span>`).join('<br>') : `<span class="ok">${L({en:'none',no:'ingen'})}</span>`;
+  const ex={ridge:{en:'<b>Rising terrain.</b> Mode 2 only sees the ground under the aircraft getting closer, so over a steep slope it fires late, sometimes too late to outclimb the ridge. The look-ahead compares the projected flight path with the terrain database and gives TERRAIN AHEAD about a minute out. Slide back and forth and compare when each one speaks. Response to any PULL UP: autopilot off, full back stick, TOGA, speedbrakes in, wings level.',no:'<b>Stigende terreng.</b> Mode 2 ser bare at bakken under flyet kommer nærmere, så over en bratt skråning varsler den sent, noen ganger for sent til å stige over ryggen. Fremoverkikket sammenligner den fremskrevne flybanen med terrengdatabasen og gir TERRAIN AHEAD rundt et minutt i forveien. Dra frem og tilbake og sammenlign når hver av dem sier fra. Reaksjon på enhver PULL UP: autopilot av, full stikke bakover, TOGA, speedbrakes inn, vingene vannrett.'},
+   flat:{en:'<b>Mode 1, excessive rate of descent.</b> The envelope is radio altitude against barometric descent rate: SINK RATE first, then PULL UP. Lower and faster is worse. Reduce the rate of descent below about 3000 fpm and watch the alert disappear.',no:'<b>Mode 1, for høy synkrate.</b> Konvolutten er radiohøyde mot barometrisk synkrate: SINK RATE først, så PULL UP. Lavere og raskere er verre. Reduser synkraten under rundt 3000 fpm og se varselet forsvinne.'},
+   app:{en:'<b>Mode 5 and mode 4.</b> Fly steeper than the 3° path and the aircraft goes low on the glide slope: GLIDESLOPE below 1000 ft once you are more than about 1.3 dots low, louder below 300 ft. Select Clean to see mode 4: close to the ground without the gear down gives TOO LOW, GEAR.',no:'<b>Mode 5 og mode 4.</b> Fly brattere enn 3°-banen og flyet kommer lavt på glidebanen: GLIDESLOPE under 1000 ft når du er mer enn rundt 1,3 prikker lav, kraftigere under 300 ft. Velg Rent for å se mode 4: nær bakken uten understellet ute gir TOO LOW, GEAR.'},
+   to:{en:'<b>Mode 3, altitude loss after take-off.</b> The system remembers the highest altitude reached and calls DON’T SINK if you lose too much of it below about 1500 ft, for example after a flap retraction too early or a distraction in the climb.',no:'<b>Mode 3, høydetap etter avgang.</b> Systemet husker den høyeste høyden som er nådd, og sier DON’T SINK hvis du mister for mye av den under rundt 1500 ft, for eksempel etter for tidlig klaffeinntrekking eller distraksjon i stigningen.'}};
+  el('gEx').innerHTML=L(ex[GS.sc]); }
+let gLast=0; function gPlayBtn(){ el('gPlay').textContent=GS.play?L({en:'Pause',no:'Pause'}):L({en:'Play',no:'Spill av'}); }
+el('gPlay').onclick=()=>{ GS.play=!GS.play; if(GS.play&&GS.pos>=0.999){ GS.pos=0; } gPlayBtn(); };
+function gLoop(ts){ const dt=Math.min(0.1,(ts-(gLast||ts))/1000); gLast=ts; if(GS.play){ GS.pos=Math.min(1,GS.pos+dt/14); gsl.pos.set(GS.pos); gu(); if(GS.pos>=1){ GS.play=false; gPlayBtn(); } } requestAnimationFrame(gLoop); }
+requestAnimationFrame(gLoop); LAB.onLang(()=>{ gPlayBtn(); gu(); });
+
+/* ================= 5. kort ================= */
+function raCards(){ const c=[
+ [{en:'What it measures',no:'Hva den måler'},{en:'The height of the antenna above whatever is directly below: ground, trees, buildings or sea. A frequency-modulated signal (in the 4.2–4.4 GHz band) is sent down, and the time to the echo gives the height. It is not referenced to sea level, so it jumps over a ridge or a building and reads the true clearance, not the altitude. On the A320 it is shown on the PFD below about 2500 ft, and the system is calibrated to read about zero with the main gear on the runway.',no:'Høyden fra antennen til det som er rett under: bakke, trær, bygninger eller sjø. Et frekvensmodulert signal (i båndet 4,2–4,4 GHz) sendes ned, og tiden til ekkoet gir høyden. Den er ikke referert til havnivå, så den hopper over en rygg eller en bygning og viser den virkelige klaringen, ikke høyden over havet. På A320 vises den på PFD under rundt 2500 ft, og systemet er kalibrert til å vise rundt null med hovedhjulene på banen.'}],
+ [{en:'Who uses it',no:'Hvem som bruker den'},{en:'GPWS modes 1 to 5 (sink rate, terrain closure, descent after take-off, too low gear or flaps, glide slope) are all built on radio height. The automatic callouts (“one thousand”, “fifty, forty, thirty, twenty, ten”, “retard”) come from it. Autoland uses it for the LAND mode (about 400 ft), the flare (about 40 ft) and the retard; the normal-law flare mode starts at about 50 ft. TCAS uses it to inhibit resolution advisories close to the ground.',no:'GPWS mode 1 til 5 (synkrate, terrengnærming, synk etter avgang, for lavt uten hjul eller klaff, glidebane) bygger alle på radiohøyde. De automatiske callouts («one thousand», «fifty, forty, thirty, twenty, ten», «retard») kommer fra den. Autoland bruker den til LAND-modus (rundt 400 ft), flaren (rundt 40 ft) og retard; flare mode i normal law starter rundt 50 ft. TCAS bruker den til å sperre resolution advisories nær bakken.'}],
+ [{en:'Decision height and its traps',no:'Beslutningshøyde og fellene'},{en:'CAT II and CAT III minima are a decision height (DH) read on the radio altimeter, so the terrain before the threshold matters: an approach over a valley or a pier reads differently from one over flat ground, which is why such runways need special approval. CAT I and non-precision minima are barometric (DA/MDA). A faulty radio altimeter can fool the automation: in a 2009 accident in Amsterdam a radio altimeter reading −8 ft made the autothrust retard to idle on the approach.',no:'CAT II- og CAT III-minima er en beslutningshøyde (DH) avlest på radiohøydemåleren, så terrenget før terskelen betyr noe: en innflyging over en dal eller en pir viser annerledes enn en over flatt terreng, og derfor krever slike baner egen godkjenning. CAT I- og ikke-presisjonsminima er barometriske (DA/MDA). En feil radiohøydemåler kan lure automatikken: i en ulykke i Amsterdam i 2009 viste en radiohøydemåler −8 ft, og autothrust gikk til tomgang på innflygingen.'}]];
+ el('raCards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+LAB.add({},{'Radio altimeter basics':'Radiohøydemåleren: grunnlag'});
+function cards(){ const c=[
+ [{en:'FMA callouts',no:'FMA-utrop'},{en:'Typical SOP: the pilot flying announces every FMA change from left to right, for example “THR IDLE, OP DES, NAV”, and the pilot monitoring checks it. Also check the FMA after every FCU input: a knob pulled when you meant to push is only visible there.',no:'Typisk SOP: pilot flying sier hver FMA-endring fra venstre mot høyre, for eksempel «THR IDLE, OP DES, NAV», og pilot monitoring sjekker. Sjekk også FMA-en etter hver FCU-input: en knapp som er trukket når du mente å trykke, synes bare der.'}],
+ [{en:'Fly the aircraft, then the automation',no:'Fly flyet, så automatikken'},{en:'If the aircraft does not do what you expect, go down a level: from managed to selected, from selected to AP off with the FD, and if needed both FDs off and A/THR in SPEED. Do not try to reprogram the FMS when the flight path is wrong.',no:'Gjør ikke flyet det du forventer, gå ned ett nivå: fra managed til selected, fra selected til AP av med FD, og om nødvendig begge FD-ene av og A/THR i SPEED. Ikke prøv å programmere om FMS-en når flybanen er feil.'}],
+ [{en:'TCAS RA',no:'TCAS RA'},{en:'Autopilot and flight directors off (unless the aircraft has the AP/FD TCAS mode), fly the green on the vertical speed scale smoothly and promptly, and do not manoeuvre opposite to the RA. Report “TCAS RA” to ATC; after “clear of conflict” return to the clearance and report it.',no:'Autopilot og flight directorer av (med mindre flyet har AP/FD TCAS-modus), fly det grønne på vertikalfartsskalaen jevnt og raskt, og manøvrer aldri motsatt av RA. Meld «TCAS RA» til ATC; etter «clear of conflict», gå tilbake til klareringen og meld det.'}],
+ [{en:'TCAS inhibitions',no:'TCAS-sperrer'},{en:'Typical: RAs inhibited below about 1000 ft above ground, descend RAs below about 1100 ft and increase descent below about 1450 ft, and climb RAs can be limited at high altitude when performance is short. TA ONLY is selected when the aircraft cannot follow an RA, for example with an engine failure.',no:'Typisk: RA sperret under rundt 1000 ft over bakken, descend-RA under rundt 1100 ft og increase descent under rundt 1450 ft, og climb-RA kan begrenses høyt oppe når ytelsen er knapp. TA ONLY velges når flyet ikke kan følge en RA, for eksempel ved motorsvikt.'}],
+ [{en:'EGPWS response',no:'EGPWS-reaksjon'},{en:'PULL UP or TERRAIN AHEAD, PULL UP at night or in IMC: react immediately, no discussion. Autopilot off, pull to full back stick (the protections keep the angle of attack safe), thrust levers TOGA, speedbrakes retracted, wings level, until the warning stops and the terrain is clear. Cautions are corrected at once.',no:'PULL UP eller TERRAIN AHEAD, PULL UP om natten eller i IMC: reager straks, ingen diskusjon. Autopilot av, full stikke bakover (beskyttelsene holder angrepsvinkelen trygg), skyvehendlene TOGA, speedbrakes inn, vingene vannrett, til varselet stopper og terrenget er klart. Forsiktighetsvarsler korrigeres med en gang.'}],
+ [{en:'Database and position',no:'Database og posisjon'},{en:'The look-ahead is only as good as the terrain database and the aircraft position (normally GPS). With degraded navigation accuracy, for example during GNSS jamming in Northern Norway, the terrain function can be wrong, and the crew may be told to inhibit it. Modes 1 to 5 use the radio altimeter and keep working.',no:'Fremoverkikket er aldri bedre enn terrengdatabasen og flyets posisjon (vanligvis GPS). Med svekket navigasjonsnøyaktighet, for eksempel ved GNSS-jamming i Nord-Norge, kan terrengfunksjonen ta feil, og besetningen kan bli bedt om å slå den av. Mode 1 til 5 bruker radiohøydemåleren og virker videre.'}],
+ [{en:'Modes 6 and 7',no:'Mode 6 og 7'},{en:'Mode 6 gives the altitude callouts (“one hundred”, “fifty” and so on) and the bank angle warning; mode 7 is the reactive windshear warning, alongside the predictive windshear from the weather radar. See the storms lab for windshear and microbursts.',no:'Mode 6 gir høydeutropene («one hundred», «fifty» og så videre) og varsel for krengning; mode 7 er det reaktive vindskjærvarselet, sammen med prediktiv vindskjær fra værradaren. Se tordenværlabben for vindskjær og mikroburst.'}],
+ [{en:'Alpha floor',no:'Alpha floor'},{en:'In normal law, if the angle of attack becomes very high the A/THR commands TOGA thrust on its own: A.FLOOR, then TOGA LK on the FMA. It is a last-ditch protection, not a speed mode, and it is not available in every configuration or law.',no:'I normal law gir A/THR selv TOGA-skyvekraft hvis angrepsvinkelen blir svært høy: A.FLOOR, så TOGA LK på FMA-en. Det er en siste beskyttelse, ikke en fartsmodus, og den er ikke tilgjengelig i alle konfigurasjoner og laws.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('').replace('the storms lab',`<a href="storms.html">the storms lab</a>`).replace('tordenværlabben',`<a href="storms.html">tordenværlabben</a>`); }
+
+/* ================= quiz ================= */
+const Q=[
+ {q:{en:'The FMA shows THR IDLE | OP DES | NAV. What is holding the speed?',no:'FMA-en viser THR IDLE | OP DES | NAV. Hva holder farten?'},a:[{en:'The elevator, through pitch',no:'Høyderoret, gjennom pitch'},{en:'The autothrust',no:'Autothrust'},{en:'Nothing, speed is free in OP DES',no:'Ingenting, farten er fri i OP DES'}],c:0,e:{en:'With thrust fixed at idle, the autopilot controls speed with pitch. Rate of descent is whatever results.',no:'Med skyvekraften fast på tomgang styrer autopiloten farten med pitch. Synkraten blir det den blir.'}},
+ {q:{en:'In V/S with A/THR in SPEED you ask for more climb than climb thrust can give. What happens first?',no:'I V/S med A/THR i SPEED ber du om mer stigning enn stigeskyvekraften kan gi. Hva skjer først?'},a:[{en:'The speed decays',no:'Farten synker'},{en:'The vertical speed reduces at once',no:'Vertikalfarten reduseres straks'},{en:'The thrust goes to TOGA',no:'Skyvekraften går til TOGA'}],c:0,e:{en:'The elevator holds the V/S and the autothrust is limited to climb thrust, so the deficit comes out of the speed until the protection near VLS reduces the V/S.',no:'Høyderoret holder V/S og autothrust er begrenset til stigeskyvekraft, så underskuddet tas fra farten til beskyttelsen nær VLS reduserer V/S.'}},
+ {q:{en:'Which descent mode honours an “at or above” constraint in the flight plan?',no:'Hvilken nedstigningsmodus overholder en «at or above»-restriksjon i ruten?'},a:[{en:'DES',no:'DES'},{en:'OP DES',no:'OP DES'},{en:'Both',no:'Begge'}],c:0,e:{en:'Only the managed mode follows the constraints. OP DES goes straight to the FCU altitude.',no:'Bare den styrte modusen følger restriksjonene. OP DES går rett til FCU-høyden.'}},
+ {q:{en:'During ALT* you change the FCU altitude by 2000 ft. The FMA will typically show…',no:'Under ALT* endrer du FCU-høyden med 2000 ft. FMA-en vil typisk vise…'},a:[{en:'V/S at the current vertical speed',no:'V/S med nåværende vertikalfart'},{en:'OP CLB',no:'OP CLB'},{en:'ALT, levelling at the old altitude',no:'ALT, planet i den gamle høyden'}],c:0,e:{en:'A change of more than 250 ft during capture reverts to V/S, often with a small vertical speed. Re-engage a climb or descent mode deliberately.',no:'En endring på mer enn 250 ft under innfanging gir V/S, ofte med liten vertikalfart. Koble inn en stige- eller nedstigningsmodus bevisst.'}},
+ {q:{en:'You pull the HDG knob while in CLB. What happens to the vertical mode?',no:'Du trekker HDG-knappen mens du er i CLB. Hva skjer med den vertikale modusen?'},a:[{en:'It reverts to OP CLB',no:'Den går over til OP CLB'},{en:'It stays CLB',no:'Den blir CLB'},{en:'It changes to ALT',no:'Den endres til ALT'}],c:0,e:{en:'CLB needs NAV. Off the flight plan the climb continues as OP CLB, and constraints are no longer flown.',no:'CLB krever NAV. Utenfor ruten fortsetter stigningen som OP CLB, og restriksjonene flys ikke lenger.'}},
+ {q:{en:'A blue ALT under the vertical mode on the FMA means…',no:'En blå ALT under den vertikale modusen på FMA-en betyr…'},a:[{en:'Altitude capture of the FCU altitude is armed',no:'Innfanging av FCU-høyden er armert'},{en:'The aircraft is holding altitude',no:'Flyet holder høyden'},{en:'A flight plan constraint is armed',no:'En restriksjon i ruten er armert'}],c:0,e:{en:'Blue (cyan) is armed, green is active. A magenta ALT means the next level-off will be at a flight plan constraint.',no:'Blått (cyan) er armert, grønt er aktivt. En magenta ALT betyr at neste utflating blir ved en restriksjon i ruten.'}},
+ {q:{en:'TCAS tau is…',no:'TCAS-tau er…'},a:[{en:'The time to closest approach: range divided by closure rate',no:'Tiden til nærmeste punkt: avstand delt på nærmingsfart'},{en:'The distance at which TCAS warns',no:'Avstanden der TCAS varsler'},{en:'The vertical separation at closest approach',no:'Den vertikale separasjonen ved nærmeste punkt'}],c:0,e:{en:'TCAS thresholds are times, so a fast closure triggers the alert at a greater range.',no:'TCAS-grensene er tider, så en rask nærming utløser varselet på større avstand.'}},
+ {q:{en:'You get a CLIMB RA while ATC instructs you to descend. You…',no:'Du får en CLIMB-RA mens ATC ber deg sinke. Du…'},a:[{en:'Follow the RA and report “TCAS RA”',no:'Følger RA og melder «TCAS RA»'},{en:'Follow ATC, they see the whole picture',no:'Følger ATC, de ser hele bildet'},{en:'Level off as a compromise',no:'Flater ut som et kompromiss'}],c:0,e:{en:'The RA is coordinated with the other aircraft; ATC does not know about it. Doing the opposite can make both aircraft move towards each other.',no:'RA-en er koordinert med det andre flyet; ATC vet ikke om den. Å gjøre det motsatte kan få begge flyene til å bevege seg mot hverandre.'}},
+ {q:{en:'An intruder has a Mode C transponder but no TCAS. What do you get?',no:'Et fly har Mode C-transponder, men ikke TCAS. Hva får du?'},a:[{en:'TAs and RAs, but no coordination with the intruder',no:'TA og RA, men ingen koordinering med det andre flyet'},{en:'TAs only',no:'Bare TA'},{en:'Nothing, it needs TCAS to be seen',no:'Ingenting, det må ha TCAS for å bli sett'}],c:0,e:{en:'Altitude reporting is enough for RAs. Coordination needs TCAS in both aircraft talking over Mode S. Without altitude reporting you only get TAs.',no:'Høyderapportering er nok for RA. Koordinering krever TCAS i begge fly som snakker via Mode S. Uten høyderapportering får du bare TA.'}},
+ {q:{en:'Why does EGPWS look-ahead protect better than mode 2 against a steep ridge?',no:'Hvorfor beskytter EGPWS-fremoverkikket bedre enn mode 2 mot en bratt fjellrygg?'},a:[{en:'It compares the projected path with a terrain database instead of waiting for the radio altimeter to see the ground rise',no:'Det sammenligner den fremskrevne banen med en terrengdatabase i stedet for å vente på at radiohøydemåleren ser bakken stige'},{en:'It uses a stronger radio altimeter',no:'Det bruker en sterkere radiohøydemåler'},{en:'It is only active in landing configuration',no:'Det er bare aktivt i landingskonfigurasjon'}],c:0,e:{en:'Mode 2 only sees what is under the aircraft. The look-ahead typically gives a caution about a minute and a warning about 30 seconds ahead.',no:'Mode 2 ser bare det som er under flyet. Fremoverkikket gir typisk et forsiktighetsvarsel rundt et minutt og et varsel rundt 30 sekunder i forveien.'}},
+ {q:{en:'DON’T SINK comes from which GPWS mode?',no:'DON’T SINK kommer fra hvilken GPWS-modus?'},a:[{en:'Mode 3, altitude loss after take-off or go-around',no:'Mode 3, høydetap etter avgang eller go-around'},{en:'Mode 1, excessive descent rate',no:'Mode 1, for høy synkrate'},{en:'Mode 5, below glide slope',no:'Mode 5, under glidebanen'}],c:0,e:{en:'Mode 3 remembers the highest altitude and warns of a loss close to the ground in the climb-out.',no:'Mode 3 husker høyeste høyde og varsler om tap nær bakken i utstigningen.'}},
+ {q:{en:'TOO LOW, GEAR is a mode 4 alert. What triggers it?',no:'TOO LOW, GEAR er et mode 4-varsel. Hva utløser det?'},a:[{en:'Low radio altitude at low speed without the gear down',no:'Lav radiohøyde i lav fart uten understellet ute'},{en:'Too high a descent rate with the gear down',no:'For høy synkrate med understellet ute'},{en:'Gear extended above VLE',no:'Understell ute over VLE'}],c:0,e:{en:'Mode 4 protects against being close to the ground in the wrong configuration. At higher speed the same envelope gives TOO LOW, TERRAIN.',no:'Mode 4 beskytter mot å være nær bakken i feil konfigurasjon. I høyere fart gir samme konvolutt TOO LOW, TERRAIN.'}},
+ {q:{en:'You are hand-flying in OP DES with THR IDLE and the FDs on, but not following them. What protects the speed?',no:'Du flyr manuelt i OP DES med THR IDLE og FD-ene på, men følger dem ikke. Hva beskytter farten?'},a:[{en:'Very little until it is near VLS',no:'Svært lite før den er nær VLS'},{en:'The autothrust, as in SPEED',no:'Autothrust, som i SPEED'},{en:'The autopilot',no:'Autopiloten'}],c:0,e:{en:'In THR IDLE the thrust stays at idle. Follow the FD, or switch both FDs off so the autothrust reverts to SPEED.',no:'I THR IDLE blir skyvekraften på tomgang. Følg FD-en, eller slå av begge FD-ene så autothrust går over til SPEED.'}}
+];
+LAB.quiz(el('qbox'),'autoflight',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),8);
+
+LAB.start('af'); runBtn(); gPlayBtn(); upd(); tu(); gu(); cards(); raCards();
+LAB.onLang(()=>{ runBtn(); upd(); dDraw(); cards(); raCards(); });
+})();
+</script>
+</body>
+</html>

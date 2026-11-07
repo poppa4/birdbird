@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Drag the A320 round a VOR or an NDB and turn it. The DDRMI, the ND and the MCDU radio nav page all update, so you can see what each one actually measures: bearings to…">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Radio Navigation</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=11">
+<style>
+.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
+.paper canvas{display:block;width:100%;touch-action:none;cursor:grab}
+#map{aspect-ratio:1/0.78;max-height:560px}#rscope{aspect-ratio:1/0.9;max-height:600px}
+.view canvas#rscope{touch-action:auto;cursor:default}#ins{aspect-ratio:3/1.05;max-height:330px}
+.rrow b{white-space:normal;text-align:right}
+.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}
+.chal{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:6px}.chal button{padding:9px;border:1px solid var(--rule);background:var(--sheet);cursor:pointer;font:inherit;font-size:15px;border-radius:3px}
+.chal button.right{border-color:var(--green);background:#E6F4EA}.chal button.wrong{border-color:var(--red);background:#FBE9E9}
+</style>
+</head>
+<body data-title="Radio Navigation">
+<script src="site.js?v=27"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Navigation and approach</div>
+      <h1>Radio navigation</h1>
+      <p>Drag the A320 round a VOR or an NDB and turn it. The DDRMI, the ND in ROSE VOR mode and the MCDU RADIO NAV page all update, so you can see what each one actually measures: bearings to the station, radials from it, and where heading matters and where it does not.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#lab">Move the aircraft</a><a href="#chal">Where am I?</a><a href="#radar">Radar and ADS-B</a><a href="#notes">What to remember</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="lab">
+    <div class="eyebrow">1 · Interactive</div>
+    <h2>Move the aircraft</h2>
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="paper"><canvas id="map" aria-label="Map with the station and your aircraft. Drag the aircraft."></canvas></div>
+        <div class="view"><canvas id="ins" aria-label="DDRMI, ND ROSE VOR and MCDU RADIO NAV page"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="grp">Station</div><div id="stn"></div>
+        <div id="nctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>QDM (bearing to the station)</span><b id="rQdm"></b></div>
+          <div class="rrow"><span>Radial (QDR, from the station)</span><b id="rQdr"></b></div>
+          <div class="rrow"><span>Relative bearing</span><b id="rRb"></b></div>
+          <div class="rrow"><span>VOR deviation (ND)</span><b id="rCdi"></b></div>
+          <div class="rrow"><span>DME (slant range)</span><b id="rDme"></b></div>
+        </div>
+        <p class="callout blue" id="nEx"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="chal">
+    <div class="eyebrow">2 · Drill</div>
+    <h2>Where am I?</h2>
+    <div class="split">
+      <div><p class="note" id="cq"></p><div class="chal" id="cans"></div><p class="callout" id="cfb" hidden></p></div>
+      <div class="panel"><div class="btns"><button class="btn pri" id="cnew">New position</button></div><p class="note" id="cscore"></p></div>
+    </div>
+  </section>
+
+  <section class="card" id="radar">
+    <div class="eyebrow">3 · Interactive</div>
+    <h2>Radar, transponder and ADS-B</h2>
+    <p class="lead">The VOR, NDB and DME tell you where you are. Surveillance tells ATC where you are. Choose what the ground station uses and how your transponder is set, then see what appears on the controller’s screen.</p>
+    <div class="split">
+      <div class="view"><canvas id="rscope" aria-label="Controller's radar screen with your aircraft and other traffic"></canvas></div>
+      <div class="panel">
+        <div class="grp">ATC surveillance</div><div id="rsrc"></div>
+        <div class="grp">Your transponder</div><div id="rmode"></div>
+        <div class="grp">Squawk</div><div id="rsq"></div>
+        <div class="grp">ADS-B Out</div><div id="radsb"></div>
+        <div id="rctl"></div>
+        <div class="ro" style="margin-top:8px">
+          <div class="rrow"><span>Primary echo (vs 20 NM)</span><b id="xPsr"></b></div>
+          <div class="rrow"><span>Transponder reply (vs 20 NM)</span><b id="xSsr"></b></div>
+          <div class="rrow"><span>Radar line of sight</span><b id="xLos"></b></div>
+          <div class="rrow"><span>On the ATC screen</span><b id="xLab"></b></div>
+          <div class="rrow"><span>Other aircraft’s TCAS</span><b id="xTcas"></b></div>
+        </div>
+        <p class="callout blue" id="xEx"></p>
+      </div>
+    </div>
+    <div class="cols" id="rcards" style="margin-top:16px"></div>
+  </section>
+
+  <section class="card" id="notes">
+    <div class="eyebrow">4 · Summary</div>
+    <h2>What to remember</h2>
+    <div class="cols" id="cards"></div>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot">Teaching model with no magnetic variation and no wind: headings, tracks and bearings are all the same reference. VOR full scale is drawn as ±10°: on the ND scale, 2 dots each side, one dot is 5°. Radar: echo strength scales with 1/R⁴ for a primary return and 1/R² for a transponder reply; detection ranges, the radar antenna height (100 ft) and the screen labels are typical, simplified values.</p>
+</div>
+<script src="lab.js?v=20"></script>
+<script>
+(function(){
+'use strict';
+const {T,L,el,nf}=LAB;
+LAB.add({},{
+ 'Radio Navigation':'Radionavigasjon','Birdbird Virtual Lab · Navigation and approach':'Birdbird Virtual Lab · Navigasjon og innflyging','Radio navigation':'Radionavigasjon',
+ 'Drag the A320 round a VOR or an NDB and turn it. The DDRMI, the ND in ROSE VOR mode and the MCDU RADIO NAV page all update, so you can see what each one actually measures: bearings to the station, radials from it, and where heading matters and where it does not.':'Dra A320-en rundt en VOR eller en NDB og drei den. DDRMI, ND i ROSE VOR-modus og MCDU-siden RADIO NAV oppdateres, så du ser hva hvert instrument faktisk måler: peilinger til stasjonen, radialer fra den, og hvor kursen har betydning og hvor den ikke har det.',
+ 'Move the aircraft':'Flytt flyet','Where am I?':'Hvor er jeg?','What to remember':'Det du må huske','Test yourself':'Test deg selv','Interactive':'Interaktiv','Drill':'Drill','Summary':'Sammendrag','Check':'Sjekk',
+ 'Station':'Stasjon','QDM (bearing to the station)':'QDM (peiling til stasjonen)','Radial (QDR, from the station)':'Radial (QDR, fra stasjonen)','Relative bearing':'Relativ peiling','DME (slant range)':'DME (skrådistanse)',
+ 'Heading':'Kurs','Course (CRS)':'Kurs (CRS)','VOR deviation (ND)':'VOR-avvik (ND)','Altitude (ft)':'Høyde (ft)','New position':'Ny posisjon',
+ '1 · Interactive':'1 · Interaktiv','2 · Drill':'2 · Drill','3 · Interactive':'3 · Interaktiv','4 · Summary':'4 · Sammendrag',
+ 'Radar and ADS-B':'Radar og ADS-B','Radar, transponder and ADS-B':'Radar, transponder og ADS-B',
+ 'The VOR, NDB and DME tell you where you are. Surveillance tells ATC where you are. Choose what the ground station uses and how your transponder is set, then see what appears on the controller’s screen.':'VOR, NDB og DME forteller deg hvor du er. Overvåking forteller ATC hvor du er. Velg hva bakkestasjonen bruker og hvordan transponderen din er stilt, og se hva som kommer opp på flygelederens skjerm.',
+ 'ATC surveillance':'ATC-overvåking','Your transponder':'Din transponder','Squawk':'Squawk','ADS-B Out':'ADS-B Out',
+ 'Primary radar':'Primærradar','Secondary (SSR)':'Sekundær (SSR)','ADS-B':'ADS-B','Off':'Av','On':'På','Mode A':'Mode A','Mode C':'Mode C','Mode S':'Mode S',
+ 'Distance from the radar (NM)':'Avstand fra radaren (NM)','Pressure altitude (ft)':'Trykkhøyde (ft)',
+ 'Primary echo (vs 20 NM)':'Primærekko (mot 20 NM)','Transponder reply (vs 20 NM)':'Transpondersvar (mot 20 NM)','Radar line of sight':'Radarens siktlinje','On the ATC screen':'På ATC-skjermen','Other aircraft’s TCAS':'Andre flys TCAS',
+ 'Teaching model with no magnetic variation and no wind: headings, tracks and bearings are all the same reference. VOR full scale is drawn as ±10°: on the ND scale, 2 dots each side, one dot is 5°. Radar: echo strength scales with 1/R⁴ for a primary return and 1/R² for a transponder reply; detection ranges, the radar antenna height (100 ft) and the screen labels are typical, simplified values.':'Opplæringsmodell uten misvisning og uten vind: kurser, tracker og peilinger har samme referanse. Fullt utslag på VOR er tegnet som ±10°: på ND-skalaen, 2 prikker på hver side, er én prikk 5°. Radar: ekkostyrken går med 1/R⁴ for et primærekko og 1/R² for et transpondersvar; deteksjonsavstander, antennehøyden (100 ft) og skjermetikettene er typiske, forenklede verdier.'
+});
+const N={st:'vor',x:-12,y:8,hdg:120,obs:90,alt:5000};
+const n3=v=>String(Math.round(((v%360)+360)%360)||360).padStart(3,'0');
+const df=(a,b)=>{ let d=((a-b)%360+540)%360-180; return d; };
+function geo(){ const d=Math.hypot(N.x,N.y); const qdm=(Math.atan2(-N.x,-N.y)*180/Math.PI+360)%360, qdr=(qdm+180)%360, rb=(qdm-N.hdg+360)%360;
+  const to=Math.abs(df(N.obs,qdm))<90; const dev= to? df(qdm,N.obs) : df(N.obs,qdr); const dots=Math.max(-5,Math.min(5,dev/2)); return {d,qdm,qdr,rb,to,dev,dots,slant:Math.hypot(d,N.alt/6076)}; }
+const C1=LAB.fit(el('map'),()=>map(),2), C2=LAB.fit(el('ins'),()=>ins(),2);
+const RNG=32; let sc=1;
+function map(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const cx=W/2, cy=H/2; sc=Math.min(W,H)/2/RNG; const G=geo();
+  // kompassrose
+  g.strokeStyle='#E3E8EA'; for(let r=10;r<=30;r+=10){ g.beginPath(); g.arc(cx,cy,r*sc,0,7); g.stroke(); }
+  g.strokeStyle='#C9D2D5'; g.fillStyle='#7D8B95'; g.font='10px IBM Plex Mono, monospace'; g.textAlign='center';
+  for(let a=0;a<360;a+=10){ const r0=30*sc, r1=a%30?28.8*sc:27.5*sc, t=a*Math.PI/180; g.beginPath(); g.moveTo(cx+Math.sin(t)*r0,cy-Math.cos(t)*r0); g.lineTo(cx+Math.sin(t)*r1,cy-Math.cos(t)*r1); g.stroke(); if(!(a%30)) g.fillText(n3(a),cx+Math.sin(t)*31.8*sc,cy-Math.cos(t)*31.8*sc+3); } g.textAlign='start';
+  // OBS-radial
+  if(N.st==='vor'){ const t=N.obs*Math.PI/180; g.setLineDash([6,5]); g.strokeStyle='rgba(154,30,104,.6)'; g.lineWidth=1.6; g.beginPath(); g.moveTo(cx-Math.sin(t)*30*sc,cy+Math.cos(t)*30*sc); g.lineTo(cx+Math.sin(t)*30*sc,cy-Math.cos(t)*30*sc); g.stroke(); g.setLineDash([]);
+    g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#9A1E68'; g.fillText('CRS '+n3(N.obs),cx+Math.sin(t)*22*sc+8,cy-Math.cos(t)*22*sc); }
+  // linje til stasjonen
+  const ax=cx+N.x*sc, ay=cy-N.y*sc; g.strokeStyle='#1E5E9E'; g.lineWidth=1.4; g.setLineDash([2,4]); g.beginPath(); g.moveTo(ax,ay); g.lineTo(cx,cy); g.stroke(); g.setLineDash([]);
+  // stasjon
+  if(N.st==='vor'){ g.strokeStyle='#2E4A62'; g.fillStyle='#fff'; g.lineWidth=1.6; g.beginPath(); for(let i=0;i<6;i++){ const t=i*Math.PI/3; g[i?'lineTo':'moveTo'](cx+9*Math.cos(t),cy+9*Math.sin(t)); } g.closePath(); g.fill(); g.stroke(); g.fillStyle='#2E4A62'; g.beginPath(); g.arc(cx,cy,2,0,7); g.fill(); }
+  else { g.fillStyle='#8A6D3B'; for(let r=4;r<=12;r+=4) for(let a=0;a<360;a+=30){ const t=a*Math.PI/180; g.beginPath(); g.arc(cx+Math.cos(t)*r,cy+Math.sin(t)*r,1.2,0,7); g.fill(); } }
+  // fly
+  g.save(); g.translate(ax,ay); g.rotate(N.hdg*Math.PI/180); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(0,-13); g.lineTo(2.2,-4); g.lineTo(12,2); g.lineTo(12,4.5); g.lineTo(2.2,2); g.lineTo(1.6,8); g.lineTo(5,11); g.lineTo(5,12.5); g.lineTo(0,11.5); g.lineTo(-5,12.5); g.lineTo(-5,11); g.lineTo(-1.6,8); g.lineTo(-2.2,2); g.lineTo(-12,4.5); g.lineTo(-12,2); g.lineTo(-2.2,-4); g.closePath(); g.fill(); g.restore();
+  g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(L({en:'drag me',no:'dra meg'}),ax-20,ay+32); g.fillText('QDM '+n3(G.qdm),(ax+cx)/2+12,(ay+cy)/2+18); }
+function dial(g,cx,cy,r){ g.fillStyle='#070B0E'; g.beginPath(); g.arc(cx,cy,r,0,7); g.fill(); g.strokeStyle='#3E4C56'; g.lineWidth=2; g.stroke(); }
+function card(g,cx,cy,r,rot){ g.save(); g.translate(cx,cy); g.rotate(-rot*Math.PI/180); g.strokeStyle='#C9D2D8'; g.fillStyle='#C9D2D8'; g.font=`600 ${Math.max(9,r*0.13)}px IBM Plex Mono, monospace`; g.textAlign='center';
+  for(let a=0;a<360;a+=5){ const t=a*Math.PI/180, l=a%30?(a%10?0.06:0.1):0.14; g.lineWidth=a%30?1:1.6; g.beginPath(); g.moveTo(Math.sin(t)*r*0.92,-Math.cos(t)*r*0.92); g.lineTo(Math.sin(t)*r*(0.92-l),-Math.cos(t)*r*(0.92-l)); g.stroke();
+    if(!(a%30)){ g.save(); g.rotate(t); g.fillText(a===0?'N':a===90?'E':a===180?'S':a===270?'W':String(a/10),0,-r*0.66); g.restore(); } } g.restore(); g.textAlign='start'; }
+function needle(g,cx,cy,r,ang,col,w,double){ g.save(); g.translate(cx,cy); g.rotate(ang*Math.PI/180); g.strokeStyle=col; g.fillStyle=col; g.lineWidth=w; g.beginPath(); g.moveTo(0,r*0.8); g.lineTo(0,-r*0.72); g.stroke(); g.beginPath(); g.moveTo(0,-r*0.86); g.lineTo(-r*0.07,-r*0.68); g.lineTo(r*0.07,-r*0.68); g.closePath(); g.fill(); g.restore(); }
+function lubber(g,cx,cy,r){ g.fillStyle='#F5C94A'; g.beginPath(); g.moveTo(cx,cy-r*0.93); g.lineTo(cx-6,cy-r-2); g.lineTo(cx+6,cy-r-2); g.closePath(); g.fill(); }
+function ins(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#0F171D'; g.fillRect(0,0,W,H); const G=geo(), r=Math.min(W/6.8,H/2.4), y=H/2+4;
+  // DDRMI (standby RMI with DME)
+  let cx=W/6; dial(g,cx,y,r); card(g,cx,y,r,N.hdg); needle(g,cx,y,r,G.qdm-N.hdg,N.st==='vor'?'#2BD47A':'#F5C94A',3); lubber(g,cx,y,r);
+  lab(g,W<600?'DDRMI':'DDRMI'+(N.st==='vor'?' · DME '+nf(G.slant,1):' · ADF'),cx,H-8);
+  // ND ROSE VOR: heading-up rose; course pointer and deviation bar turn with the course
+  cx=W/2; dial(g,cx,y,r); card(g,cx,y,r,N.hdg); lubber(g,cx,y,r);
+  if(N.st==='vor'){ g.save(); g.translate(cx,y); g.rotate((N.obs-N.hdg)*Math.PI/180); const C='#38D9F5';
+    g.fillStyle='#C9D2D8'; for(let i=-2;i<=2;i++){ if(!i) continue; g.beginPath(); g.arc(i*r*0.2,0,2.4,0,7); g.fill(); }
+    g.strokeStyle=C; g.fillStyle=C; g.lineWidth=4; g.beginPath(); g.moveTo(0,-r*0.8); g.lineTo(0,-r*0.5); g.moveTo(0,r*0.5); g.lineTo(0,r*0.82); g.stroke();
+    g.beginPath(); g.moveTo(0,-r*0.9); g.lineTo(-r*0.07,-r*0.74); g.lineTo(r*0.07,-r*0.74); g.closePath(); g.fill();
+    const dx=Math.max(-2.1,Math.min(2.1,G.dots*0.4))*r*0.2; g.beginPath(); g.moveTo(dx,-r*0.44); g.lineTo(dx,r*0.44); g.stroke();
+    g.beginPath(); if(G.to){ g.moveTo(dx,-r*0.32); g.lineTo(dx-7,-r*0.2); g.lineTo(dx+7,-r*0.2); } else { g.moveTo(dx,r*0.32); g.lineTo(dx-7,r*0.2); g.lineTo(dx+7,r*0.2); } g.closePath(); g.fill(); g.restore();
+    g.strokeStyle='#F5C94A'; g.lineWidth=3; g.beginPath(); g.moveTo(cx-r*0.16,y); g.lineTo(cx+r*0.16,y); g.moveTo(cx,y-r*0.08); g.lineTo(cx,y+r*0.12); g.stroke(); }
+  else { g.fillStyle='#E06C5F'; g.font='700 13px IBM Plex Mono, monospace'; g.textAlign='center'; g.fillText(L({en:'no VOR tuned',no:'ingen VOR innstilt'}),cx,y+4); g.textAlign='start'; }
+  lab(g,W<600?'ND':'ND ROSE VOR · CRS '+n3(N.obs),cx,H-8);
+  // MCDU RADIO NAV page (simplified)
+  cx=5*W/6; const bw=Math.min(W/3-14,r*2.3), bh=r*(W<600?1.85:2), x0=cx-bw/2, y0=y-r; g.fillStyle='#05080A'; g.fillRect(x0,y0,bw,bh); g.strokeStyle='#3E4C56'; g.lineWidth=2; g.strokeRect(x0,y0,bw,bh);
+  const fs=Math.max(9,Math.min(14,bw/11)); const tx=(s,xx,yy,c,big,al)=>{ g.fillStyle=c; g.font=`${big?600:400} ${big?fs:fs*0.8}px IBM Plex Mono, monospace`; g.textAlign=al||'left'; g.fillText(s,xx,yy); g.textAlign='start'; };
+  const lh=bh/7.2, px=x0+6;
+  tx('RADIO NAV',cx,y0+lh,'#E2E8EE',true,'center');
+  tx('VOR1/FREQ',px,y0+lh*2,'#C9D2D8'); tx(N.st==='vor'?'BDV/112.30':'[ ]/[ . ]',px,y0+lh*2.9,'#38D9F5',true);
+  tx('CRS',px,y0+lh*3.9,'#C9D2D8'); tx(N.st==='vor'?n3(N.obs):'[ ]',px,y0+lh*4.8,'#38D9F5',true);
+  tx('ADF1/FREQ',px,y0+lh*5.8,'#C9D2D8'); tx(N.st==='ndb'?'BD/375.0':'[ ]/[ . ]',px,y0+lh*6.7,'#38D9F5',true);
+  lab(g,'MCDU',cx,H-8); }
+function lab(g,t,x,y){ g.fillStyle='#8FA1AE'; g.font='600 12px IBM Plex Mono, monospace'; g.textAlign='center'; g.fillText(t,x,y); g.textAlign='start'; }
+function ro(){ const G=geo(); el('rQdm').textContent=n3(G.qdm)+'°'; el('rQdr').textContent=n3(G.qdr)+'°'; el('rRb').textContent=n3(G.rb)+'°';
+  el('rCdi').textContent= N.st!=='vor'? '—' : (Math.abs(G.dots)<0.25? L({en:'centred',no:'midtstilt'}) : `${nf(Math.min(2,Math.abs(G.dots*0.4)),1)} ${L({en:'dots',no:'prikker'})} ${G.dots>0?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'})}`)+' · '+(G.to?'TO':'FROM');
+  el('rDme').textContent=nf(G.slant,1)+' NM ('+L({en:'ground',no:'bakke'})+' '+nf(G.d,1)+')';
+  el('nEx').textContent= L({en:`The DDRMI needle (and the bearing pointer on the ND) always points to the station: read QDM ${n3(G.qdm)} at the head, radial ${n3(G.qdr)} at the tail. Turn the aircraft: the card turns, the needle keeps pointing at the station, and QDM does not change. The needle’s angle from the nose is the relative bearing (${n3(G.rb)}); QDM = heading + relative bearing. The deviation bar on the ND ignores heading: it only compares your position with the course set on the MCDU RADIO NAV page. Tuning is normally automatic by the FMGS; the crew can force a station and course on that page.`,no:`DDRMI-nålen (og peilepekeren på ND) peker alltid mot stasjonen: les QDM ${n3(G.qdm)} på spissen, radial ${n3(G.qdr)} på halen. Drei flyet: kortet dreier, nålen fortsetter å peke mot stasjonen, og QDM endrer seg ikke. Nålens vinkel fra nesen er relativ peiling (${n3(G.rb)}); QDM = kurs + relativ peiling. Avviksstreken på ND bryr seg ikke om kursen flyet har: den sammenligner bare posisjonen din med kursen satt på MCDU-siden RADIO NAV. Innstillingen gjøres normalt automatisk av FMGS; besetningen kan tvinge fram en stasjon og en kurs på den siden.`})+(G.d<2?' '+L({en:'Close to a VOR you are in the cone of confusion: the needles swing and the flag flickers.',no:'Nær en VOR er du i forvirringskjeglen: nålene svinger og flagget flakker.'}):''); }
+function nu(){ map(); ins(); ro(); }
+const sSt=LAB.seg(el('stn'),[['vor','VOR/DME'],['ndb','NDB']],N.st,v=>{ N.st=v; nu(); });
+const sH=LAB.slider(el('nctl'),{label:'Heading',min:0,max:355,step:5,v:N.hdg,f:v=>n3(v)+'°',on:v=>{ N.hdg=v; nu(); }});
+LAB.slider(el('nctl'),{label:'Course (CRS)',min:0,max:355,step:5,v:N.obs,f:v=>n3(v)+'°',on:v=>{ N.obs=v; nu(); }});
+LAB.slider(el('nctl'),{label:'Altitude (ft)',min:1000,max:30000,step:500,v:N.alt,f:v=>v+' ft',on:v=>{ N.alt=v; nu(); }});
+// dra
+const cv=el('map'); let drag=false;
+const pos=e=>{ const r=cv.getBoundingClientRect(); const x=(e.clientX-r.left-r.width/2)/sc, y=-(e.clientY-r.top-r.height/2)/sc; const d=Math.hypot(x,y); const k=d>29?29/d:1; N.x=x*k; N.y=y*k; nu(); };
+cv.addEventListener('pointerdown',e=>{ drag=true; cv.setPointerCapture(e.pointerId); pos(e); }); cv.addEventListener('pointermove',e=>{ if(drag) pos(e); }); cv.addEventListener('pointerup',()=>drag=false); cv.addEventListener('pointercancel',()=>drag=false);
+/* ---------- drill ---------- */
+let CH=null, sc_={ok:0,n:0};
+function newCh(){ const r=8+Math.random()*20, a=Math.random()*360; N.x=Math.sin(a*Math.PI/180)*r; N.y=Math.cos(a*Math.PI/180)*r; N.hdg=Math.round(Math.random()*71)*5; sH.set(N.hdg); N.st=Math.random()<0.5?'vor':'ndb'; sSt.set(N.st); nu();
+  const G=geo(); const kind=N.st==='ndb'?'qdm':(Math.random()<0.5?'qdr':'qdm'); const right=Math.round((kind==='qdm'?G.qdm:G.qdr)/5)*5;
+  const opts=LAB.shuffle([right,(right+180)%360,(right+N.hdg)%360,(right+90+Math.round(Math.random()*4)*10)%360].filter((v,i,a)=>a.indexOf(v)===i)).slice(0,4); if(!opts.includes(right)) opts[0]=right;
+  CH={kind,right,opts}; drawCh(); }
+function drawCh(){ if(!CH) return; el('cq').textContent= CH.kind==='qdm'? L({en:'Look at the DDRMI above (the map shows the answer, so cover it if you like). What is the QDM, the magnetic bearing to the station?',no:'Se på DDRMI over (kartet viser svaret, så dekk det til om du vil). Hva er QDM, den magnetiske peilingen til stasjonen?'}) : L({en:'Which radial are you on?',no:'Hvilken radial er du på?'});
+  el('cans').innerHTML=LAB.shuffle(CH.opts.slice()).map(v=>`<button data-v="${v}">${n3(v)}°</button>`).join(''); el('cfb').hidden=true; el('cscore').textContent=sc_.n? `${sc_.ok} / ${sc_.n}`:''; }
+el('cans').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||!CH||CH.done) return; CH.done=1; const ok=+b.dataset.v===CH.right; sc_.n++; if(ok) sc_.ok++; b.classList.add(ok?'right':'wrong'); if(!ok) el('cans').querySelector(`[data-v="${CH.right}"]`).classList.add('right');
+  el('cfb').hidden=false; el('cfb').textContent= ok? L({en:'Right.',no:'Riktig.'}) : (CH.kind==='qdm'? L({en:'QDM is where the needle head points on the DDRMI card, or heading + relative bearing. The tail gives the radial.',no:'QDM er der nålespissen peker på DDRMI-skiven, eller kurs + relativ peiling. Halen gir radialen.'}) : L({en:'The radial is the bearing from the station: the tail of the DDRMI needle, or QDM ± 180.',no:'Radialen er peilingen fra stasjonen: halen på DDRMI-nålen, eller QDM ± 180.'})); el('cscore').textContent=`${sc_.ok} / ${sc_.n}`; });
+el('cnew').onclick=()=>{ newCh(); document.getElementById('lab').scrollIntoView({behavior:'smooth'}); setTimeout(()=>document.getElementById('chal').scrollIntoView({behavior:'smooth'}),900); };
+function cards(){ const c=[
+ [{en:'VOR',no:'VOR'},{en:'VHF, 108–117.95 MHz, line of sight. Gives radials: magnetic bearings from the station. Accuracy about ±5° for planning. Check the Morse ident before you use it.',no:'VHF, 108–117,95 MHz, siktlinje. Gir radialer: magnetiske peilinger fra stasjonen. Nøyaktighet rundt ±5° til planlegging. Sjekk morseidenten før du bruker den.'}],
+ [{en:'NDB and ADF',no:'NDB og ADF'},{en:'LF/MF, 190–1750 kHz, follows the curve of the earth. On the A320 the ADF (where fitted) shows as a bearing pointer on the ND and the DDRMI. Errors: night effect around dusk and dawn, coastal refraction, mountains, and thunderstorms (the needle points at the lightning).',no:'LF/MF, 190–1750 kHz, følger jordkrumningen. På A320 vises ADF (der den er installert) som en peilepeker på ND og DDRMI. Feil: natteffekt rundt skumring og daggry, kystrefraksjon, fjell, og tordenvær (nålen peker mot lynet).'}],
+ [{en:'DME',no:'DME'},{en:'Measures slant range, not ground distance. Overhead the station at 6000 ft it shows about 1 NM. The error is small when you are more than about 1 NM away for every 1000 ft of height.',no:'Måler skrådistanse, ikke bakkedistanse. Over stasjonen i 6000 ft viser den rundt 1 NM. Feilen er liten når du er mer enn rundt 1 NM unna for hver 1000 ft høyde.'}],
+ [{en:'Intercepting',no:'Å avskjære'},{en:'Turn to a heading 30–45° towards the course, wait for the needle to come alive, then lead the turn. Inbound on the DDRMI or the ND bearing pointer: the needle head moves away from the heading index, towards the inbound course on the card; you are on course when the head reaches it (relative bearing = intercept angle). Outbound, the tail moves towards the heading index.',no:'Svinge til en kurs 30–45° mot kursen, vent til nålen begynner å bevege seg, og led svingen. Inngående på DDRMI eller ND-peilepekeren: nålespissen beveger seg bort fra kursindeksen, mot den inngående kursen på skiven; du er på kursen når spissen når den (relativ peiling = avskjæringsvinkel). Utgående beveger halen seg mot kursindeksen.'}],
+ [{en:'Wind correction',no:'Vindkorreksjon'},{en:'Hold a heading into wind and keep the needle steady. On the DDRMI inbound with a crosswind, the needle sits on the downwind side of the heading index by the drift angle.',no:'Hold en kurs opp mot vinden og hold nålen stødig. På DDRMI inngående med sidevind ligger nålen på lesiden av kursindeksen med avdriftsvinkelen.'}],
+ [{en:'Course and sensing on the ND',no:'Kurs og visning på ND'},{en:'A classic CDI set to the reciprocal course shows the course on the wrong side. The A320 ND in ROSE VOR works like an HSI: the course pointer and deviation bar turn with the heading, so the bar always lies on the side where the course is. Still set the course you want to fly on the MCDU RADIO NAV page and check the TO/FROM arrow.',no:'En klassisk CDI satt til motsatt kurs viser kursen på feil side. ND på A320 i ROSE VOR virker som en HSI: kurspekeren og avviksstreken dreier med kursen, så streken ligger alltid på den siden kursen er. Sett likevel kursen du vil fly på MCDU-siden RADIO NAV, og sjekk TO/FROM-pilen.'}]];
+ el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+LAB.quiz(el('qbox'),'radionav',()=>LAB.shuffle([
+ {q:{en:'Heading 060. On the ND the ADF bearing pointer is 30° left of the nose (relative bearing 330). QDM?',no:'Kurs 060. På ND står ADF-peilepekeren 30° til venstre for nesen (relativ peiling 330). QDM?'},a:[{en:'030',no:'030'},{en:'270',no:'270'},{en:'210',no:'210'}],c:0,e:{en:'060 + 330 = 390 → 030.',no:'060 + 330 = 390 → 030.'}},
+ {q:{en:'QDM 250. Which radial are you on?',no:'QDM 250. Hvilken radial er du på?'},a:[{en:'070',no:'070'},{en:'250',no:'250'},{en:'160',no:'160'}],c:0,e:{en:'Radial = QDM ± 180.',no:'Radial = QDM ± 180.'}},
+ {q:{en:'You turn the aircraft 90° while over the same point. What changes on the DDRMI?',no:'Du dreier flyet 90° over samme punkt. Hva endrer seg på DDRMI?'},a:[{en:'The card turns; the bearing the needle shows stays the same',no:'Kortet dreier; peilingen nålen viser er den samme'},{en:'The bearing changes by 90°',no:'Peilingen endres med 90°'},{en:'Nothing moves',no:'Ingenting beveger seg'}],c:0,e:{en:'The DDRMI needle shows QDM, which depends on position only.',no:'DDRMI-nålen viser QDM, som bare avhenger av posisjonen.'}},
+ {q:{en:'At 9000 ft directly over a DME, it reads about…',no:'I 9000 ft rett over en DME viser den omtrent …'},a:[{en:'1.5 NM',no:'1,5 NM'},{en:'0 NM',no:'0 NM'},{en:'9 NM',no:'9 NM'}],c:0,e:{en:'Slant range: 9000 ft ≈ 1.5 NM.',no:'Skrådistanse: 9000 ft ≈ 1,5 NM.'}},
+ {q:{en:'Which error affects an NDB but not a VOR?',no:'Hvilken feil påvirker NDB, men ikke VOR?'},a:[{en:'Night effect',no:'Natteffekt'},{en:'Cone of confusion',no:'Forvirringskjegle'},{en:'Line-of-sight range',no:'Rekkevidde begrenset av siktlinje'}],c:0,e:{en:'Sky waves at dusk and dawn disturb LF/MF signals.',no:'Romsbølger rundt skumring og daggry forstyrrer LF/MF-signaler.'}},
+ {q:{en:'Heading about 090, CRS 090 on the ND in ROSE VOR, TO arrow, deviation bar right of centre. Where is the course?',no:'Kurs rundt 090, CRS 090 på ND i ROSE VOR, TO-pil, avviksstreken til høyre for midten. Hvor er kursen?'},a:[{en:'To your right (south)',no:'Til høyre for deg (sør)'},{en:'To your left (north)',no:'Til venstre for deg (nord)'},{en:'Behind you',no:'Bak deg'}],c:0,e:{en:'With the course matching your direction of flight, fly towards the bar.',no:'Når kursen stemmer med flyretningen, fly mot streken.'}},
+ {q:{en:'An aircraft with a failed transponder crosses your approach. Which ground system can show it?',no:'Et fly med defekt transponder krysser innflygingen din. Hvilket bakkesystem kan vise det?'},a:[{en:'Primary radar',no:'Primærradar'},{en:'Secondary radar (SSR)',no:'Sekundærradar (SSR)'},{en:'ADS-B ground station',no:'ADS-B-bakkestasjon'}],c:0,e:{en:'Only primary radar works on a reflected echo. SSR and ADS-B need something on board that transmits.',no:'Bare primærradaren bruker et reflektert ekko. SSR og ADS-B trenger noe om bord som sender.'}},
+ {q:{en:'You double your distance from a primary radar. The echo becomes about…',no:'Du dobler avstanden fra en primærradar. Ekkoet blir omtrent …'},a:[{en:'1/16 as strong',no:'1/16 så sterkt'},{en:'1/4 as strong',no:'1/4 så sterkt'},{en:'1/2 as strong',no:'halvparten så sterkt'}],c:0,e:{en:'The pulse spreads out on the way to you and the echo spreads out on the way back: 1/R² twice, 1/R⁴. A transponder reply is a new transmission, so it only falls with 1/R².',no:'Pulsen sprer seg på vei til deg og ekkoet sprer seg på vei tilbake: 1/R² to ganger, 1/R⁴. Et transpondersvar er en ny sending, så det faller bare med 1/R².'}},
+ {q:{en:'What does Mode C add to Mode A?',no:'Hva legger Mode C til Mode A?'},a:[{en:'Pressure altitude, referenced to 1013.25 hPa',no:'Trykkhøyde, med referanse 1013,25 hPa'},{en:'The aircraft callsign',no:'Kallesignalet'},{en:'The GNSS position',no:'GNSS-posisjonen'}],c:0,e:{en:'The encoder reports pressure altitude whatever is set on your altimeter. The ground system applies QNH below the transition level.',no:'Enkoderen rapporterer trykkhøyde uansett hva som er satt på høydemåleren. Bakkesystemet legger på QNH under overgangsnivået.'}},
+ {q:{en:'You have lost two-way radio contact. Which code do you set?',no:'Du har mistet toveis radiokontakt. Hvilken kode setter du?'},a:[{en:'7600',no:'7600'},{en:'7700',no:'7700'},{en:'7500',no:'7500'}],c:0,e:{en:'7600 is radio failure, 7700 general emergency, 7500 unlawful interference.',no:'7600 er radiosvikt, 7700 generell nød, 7500 ulovlig inngrep.'}},
+ {q:{en:'Where does an ADS-B position come from?',no:'Hvor kommer en ADS-B-posisjon fra?'},a:[{en:'The aircraft’s own GNSS, broadcast by the aircraft',no:'Flyets egen GNSS, sendt ut av flyet'},{en:'Range and bearing measured by the ground station',no:'Avstand og retning målt av bakkestasjonen'},{en:'The DME',no:'DME-en'}],c:0,e:{en:'The ground station only listens. If the aircraft’s GNSS is jammed, the ADS-B position is lost or wrong while radar still works.',no:'Bakkestasjonen bare lytter. Hvis flyets GNSS blir jammet, forsvinner ADS-B-posisjonen eller blir feil, mens radaren fortsatt virker.'}},
+ {q:{en:'A low aircraft 100 NM from the radar disappears from the screen, although its transponder works. Most likely cause?',no:'Et fly lavt nede 100 NM fra radaren forsvinner fra skjermen, selv om transponderen virker. Mest sannsynlige årsak?'},a:[{en:'It is below the radar horizon (line of sight)',no:'Det er under radarhorisonten (siktlinje)'},{en:'Night effect',no:'Natteffekt'},{en:'Its Mode S address is wrong',no:'Mode S-adressen er feil'}],c:0,e:{en:'Radar is VHF/UHF and needs line of sight: about 1.23 × (√antenna height + √aircraft height) NM, heights in feet.',no:'Radar er VHF/UHF og trenger siktlinje: omtrent 1,23 × (√antennehøyde + √flyhøyde) NM, høyder i fot.'}},
+ {q:{en:'Your transponder only has Mode A. What can another aircraft’s TCAS II do?',no:'Transponderen din har bare Mode A. Hva kan TCAS II i et annet fly gjøre?'},a:[{en:'Give a traffic advisory, but no resolution advisory, because it has no altitude for you',no:'Gi et trafikkvarsel, men ingen RA, fordi den ikke har høyden din'},{en:'Give a full RA',no:'Gi en full RA'},{en:'Nothing: TCAS uses ADS-B only',no:'Ingenting: TCAS bruker bare ADS-B'}],c:0,e:{en:'An RA needs the intruder’s altitude. Without it TCAS can only show you as traffic.',no:'En RA krever høyden til det andre flyet. Uten den kan TCAS bare vise deg som trafikk.'}}
+]));
+
+/* ---------- radar, transponder, ADS-B ---------- */
+const RD={src:'ssr',mode:'S',sq:'4521',adsb:'on',r:40,alt:8500,t:0};
+const PSR_MAX=100, PSR_SMALL=60, ANT=100; // typical approach PSR range on an A320-sized target and on a small target (NM), antenna height (ft)
+function los(h){ return 1.23*(Math.sqrt(ANT)+Math.sqrt(Math.max(0,h))); }
+function rState(){ const L_=los(RD.alt), inLos=RD.r<=L_, psrRel=Math.pow(20/RD.r,4), ssrRel=Math.pow(20/RD.r,2), psrSeen=inLos&&RD.r<=PSR_MAX;
+  const xp=RD.mode!=='off', ssrSeen=inLos&&xp, adsbSeen=RD.adsb==='on'&&inLos; // ADS-B ground station also needs line of sight
+  let seen= RD.src==='psr'? psrSeen : RD.src==='ssr'? ssrSeen : adsbSeen;
+  const fl=String(Math.round(RD.alt/100)).padStart(3,'0');
+  let lab='';
+  if(RD.src==='ssr'&&ssrSeen){ lab= RD.mode==='A'? RD.sq : RD.mode==='C'? RD.sq+'  '+fl : 'BBD12  '+RD.sq+'  '+fl; }
+  if(RD.src==='adsb'&&adsbSeen){ lab='BBD12  '+fl+'  '+(RD.alt<10000?'GS 250':'GS 440'); }
+  const emerg= (RD.src==='ssr'&&xp&&ssrSeen)||(RD.src==='adsb'&&adsbSeen) ? ({'7500':'HIJ','7600':'RDO','7700':'EMG'})[RD.sq]||'' : '';
+  return {L_,inLos,psrRel,ssrRel,psrSeen,ssrSeen,adsbSeen,seen,lab,emerg,fl}; }
+const C3=LAB.fit(el('rscope'),()=>radar(),2);
+const OTH=[{n:'SAS4TK',brg:300,r:70,fl:340,xp:'S',adsb:1},{n:'NOXPDR',brg:150,r:22,fl:45,xp:'off',adsb:0},{n:'LN-DAX',brg:95,r:115,fl:60,xp:'C',adsb:0,sq:'7000'}];
+function radar(){ const g=C3.ctx,W=C3.w,H=C3.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#07100C'; g.fillRect(0,0,W,H);
+  const cx=W/2, cy=H/2+6, RM=160, sc=(Math.min(W,H)/2-22)/RM, S=rState();
+  g.strokeStyle='rgba(80,200,120,.22)'; g.lineWidth=1; g.fillStyle='rgba(120,220,150,.55)'; g.font='10px IBM Plex Mono, monospace';
+  for(let r=40;r<=RM;r+=40){ g.beginPath(); g.arc(cx,cy,r*sc,0,7); g.stroke(); g.fillText(r+' NM',cx+3,cy-r*sc+12); }
+  for(let a=0;a<360;a+=30){ const t=a*Math.PI/180; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(t)*RM*sc,cy-Math.cos(t)*RM*sc); g.stroke(); }
+  if(RD.src==='psr'){ g.strokeStyle='rgba(220,180,80,.35)'; g.setLineDash([4,4]); g.beginPath(); g.arc(cx,cy,PSR_MAX*sc,0,7); g.stroke(); g.setLineDash([]); g.fillStyle='rgba(220,180,80,.9)'; g.fillText('- - '+L({en:'primary range, A320-sized target',no:'primærrekkevidde, mål på størrelse med A320'}),10,H-24); }
+  { const lr=Math.min(RM,S.L_); g.strokeStyle='rgba(120,180,255,.45)'; g.setLineDash([2,5]); g.beginPath(); g.arc(cx,cy,lr*sc,0,7); g.stroke(); g.setLineDash([]); g.fillStyle='rgba(150,200,255,.9)'; g.fillText('··· '+L({en:'radar horizon at your altitude',no:'radarhorisont i din høyde'})+' ('+nf(S.L_,0)+' NM)',10,H-10); }
+  // sweep (primary and SSR antennas rotate; ADS-B does not)
+  if(RD.src!=='adsb'){ const a=RD.t%360*Math.PI/180; const gr=g.createLinearGradient(cx,cy,cx+Math.sin(a)*RM*sc,cy-Math.cos(a)*RM*sc); g.strokeStyle='rgba(110,230,150,.7)'; g.lineWidth=1.6; g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.sin(a)*RM*sc,cy-Math.cos(a)*RM*sc); g.stroke(); }
+  g.fillStyle='#6EE696'; g.beginPath(); g.arc(cx,cy,3,0,7); g.fill();
+  const P=(brg,r)=>[cx+Math.sin(brg*Math.PI/180)*r*sc, cy-Math.cos(brg*Math.PI/180)*r*sc];
+  // weather: primary only
+  if(RD.src==='psr'){ const [wx,wy]=P(230,45); for(let i=0;i<40;i++){ const a=i*2.4, rr=(i%7)*2.2*sc+2; g.fillStyle='rgba(110,230,150,.28)'; g.fillRect(wx+Math.cos(a)*rr,wy+Math.sin(a)*rr*0.7,3,3); } g.fillStyle='rgba(110,230,150,.7)'; g.font='10px IBM Plex Mono, monospace'; g.fillText(L({en:'rain',no:'regn'}),wx-10,wy+24); }
+  function target(x,y,label,col,warn){ g.fillStyle=col; if(RD.src==='psr'){ g.fillRect(x-3,y-3,6,6); } else { g.strokeStyle=col; g.lineWidth=1.6; g.beginPath(); g.moveTo(x-5,y-5); g.lineTo(x+5,y+5); g.moveTo(x+5,y-5); g.lineTo(x-5,y+5); g.stroke(); }
+    if(label){ g.font='600 11px IBM Plex Mono, monospace'; const tw=g.measureText(label).width; let lx=x+9, ly=y-10; if(lx+tw>W-4) lx=x-9-tw; if(warn){ g.fillStyle='#B3261E'; g.fillRect(lx-3,ly-11,tw+6,15); g.fillStyle='#fff'; } else g.fillStyle=col; g.fillText(label,lx,ly); g.strokeStyle='rgba(200,230,210,.4)'; g.lineWidth=1; g.beginPath(); g.moveTo(x+4,y-4); g.lineTo(lx<x?lx+tw:lx-2,ly-3); g.stroke(); } }
+  OTH.forEach(o=>{ const [x,y]=P(o.brg,o.r), inL=o.r<=los(o.fl*100); let on=false, lab='';
+    if(RD.src==='psr'){ on=inL&&o.r<=(o.n==='SAS4TK'?140:PSR_SMALL); }
+    else if(RD.src==='ssr'){ on=inL&&o.xp!=='off'; lab= o.xp==='S'? o.n+'  '+String(o.fl).padStart(3,'0') : (o.sq||'')+'  '+String(o.fl).padStart(3,'0'); }
+    else { on=inL&&o.adsb; lab=o.n+'  '+String(o.fl).padStart(3,'0'); }
+    if(on) target(x,y,lab,'#9FE8B8'); });
+  const [mx,my]=P(40,Math.min(RD.r,RM-2));
+  if(S.seen){ const blink=S.emerg&&(Math.floor(RD.t/40)%2===0); target(mx,my,S.emerg?(S.lab+'  '+S.emerg):S.lab,'#F5C94A',S.emerg&&!blink?true:!!S.emerg); }
+  else { g.strokeStyle='rgba(245,201,74,.6)'; g.setLineDash([3,3]); g.beginPath(); g.arc(mx,my,8,0,7); g.stroke(); g.setLineDash([]); g.fillStyle='rgba(245,201,74,.85)'; g.font='600 11px "Public Sans", sans-serif'; g.fillText(L({en:'you: not on the screen',no:'du: ikke på skjermen'}),mx+12,my+4); }
+  g.fillStyle='rgba(160,200,180,.8)'; g.font='600 11px IBM Plex Mono, monospace'; g.fillText(RD.src==='psr'?'PSR':RD.src==='ssr'?'SSR':'ADS-B',10,18); }
+function rro(){ const S=rState(), pct=v=>v>=10?'×'+nf(v,0):v>=1?'×'+nf(v,1):v>=0.01?'×'+nf(v,2):'×'+v.toExponential(0).replace('e','e');
+  el('xPsr').innerHTML=`${pct(S.psrRel)} · <span class="${S.psrSeen?'ok':'ko'}">${S.psrSeen?L({en:'detected',no:'oppdaget'}):L({en:'too weak or hidden',no:'for svakt eller skjult'})}</span>`;
+  el('xSsr').innerHTML=RD.mode==='off'?`<span class="ko">${L({en:'no reply: transponder off',no:'ikke noe svar: transponder av'})}</span>`:`${pct(S.ssrRel)} · <span class="${S.ssrSeen?'ok':'ko'}">${S.ssrSeen?L({en:'received',no:'mottatt'}):L({en:'below the radar horizon',no:'under radarhorisonten'})}</span>`;
+  el('xLos').innerHTML=`${nf(S.L_,0)} NM ${S.inLos?'':`<span class="ko">${L({en:'you are beyond it',no:'du er utenfor'})}</span>`}`;
+  el('xLab').textContent= !S.seen? L({en:'nothing',no:'ingenting'}) : RD.src==='psr'? L({en:'a blip: position only, no identity, no altitude',no:'en prikk: bare posisjon, ingen identitet, ingen høyde'}) : S.lab+(S.emerg?'  '+S.emerg:'');
+  el('xTcas').innerHTML= RD.mode==='off'? `<span class="ko">${L({en:'cannot see you at all',no:'ser deg ikke i det hele tatt'})}</span>` : RD.mode==='A'? L({en:'sees you, but without altitude: traffic advisory only, no RA',no:'ser deg, men uten høyde: bare trafikkvarsel, ingen RA'}) : L({en:'tracks you with altitude: TA and RA possible',no:'følger deg med høyde: TA og RA mulig'});
+  const ex={psr:{en:'Primary radar sends a pulse and listens for the echo. It needs nothing from the aircraft, so it also sees aircraft with the transponder off or failed, birds and rain. But it gives position only, and the echo travels both ways, so its strength falls with the fourth power of range: double the distance, one sixteenth of the echo.',no:'Primærradaren sender en puls og lytter etter ekkoet. Den trenger ingenting fra flyet, så den ser også fly med transponderen av eller defekt, fugler og regn. Men den gir bare posisjon, og ekkoet går begge veier, så styrken faller med fjerde potens av avstanden: dobbel avstand, en sekstendedel av ekkoet.'},
+   ssr:{en:'Secondary radar interrogates, and your transponder answers with a fresh transmission, so the reply only falls with the square of range and reaches much further. Mode A sends the four-digit code, Mode C adds pressure altitude (the system converts it to QNH below the transition level), Mode S adds a unique aircraft address, your callsign and, with enhanced surveillance, data such as selected altitude. No transponder, no target.',no:'Sekundærradaren spør, og transponderen svarer med en ny sending, så svaret faller bare med kvadratet av avstanden og rekker mye lenger. Mode A sender den firesifrede koden, Mode C legger til trykkhøyde (systemet regner den om til QNH under overgangsnivået), Mode S legger til en unik flyadresse, kallesignalet og, med utvidet overvåking, data som valgt høyde. Ingen transponder, ingen blip.'},
+   adsb:{en:'With ADS-B the aircraft broadcasts its own GNSS position, altitude, callsign and velocity about twice a second. Ground stations only listen, so they are cheap and update fast, but the position is only as good as the aircraft’s GNSS: jamming removes it. ADS-B In lets other aircraft show your broadcast on a traffic display.',no:'Med ADS-B sender flyet ut sin egen GNSS-posisjon, høyde, kallesignal og fart omtrent to ganger i sekundet. Bakkestasjonene lytter bare, så de er billige og oppdaterer raskt, men posisjonen er aldri bedre enn flyets GNSS: jamming fjerner den. ADS-B In lar andre fly vise sendingen din på en trafikkskjerm.'}};
+  let t=L(ex[RD.src]); if(RD.sq==='7500') t+=' '+L({en:'7500: unlawful interference (hijack).',no:'7500: ulovlig inngrep (kapring).'}); if(RD.sq==='7600') t+=' '+L({en:'7600: radio failure. ATC expects you to follow the lost-communication procedure.',no:'7600: radiosvikt. ATC forventer at du følger prosedyren for tapt samband.'}); if(RD.sq==='7700') t+=' '+L({en:'7700: general emergency. The label alarms on every screen that sees you.',no:'7700: generell nødsituasjon. Etiketten gir alarm på alle skjermer som ser deg.'});
+  el('xEx').textContent=t; }
+function ru(){ radar(); rro(); }
+LAB.seg(el('rsrc'),[['psr','Primary radar'],['ssr','Secondary (SSR)'],['adsb','ADS-B']],RD.src,v=>{ RD.src=v; ru(); });
+LAB.seg(el('rmode'),[['off','Off'],['A','Mode A'],['C','Mode C'],['S','Mode S']],RD.mode,v=>{ RD.mode=v; ru(); });
+LAB.seg(el('rsq'),[['4521','4521'],['7000','7000'],['7500','7500'],['7600','7600'],['7700','7700']],RD.sq,v=>{ RD.sq=v; ru(); });
+LAB.seg(el('radsb'),[['on','On'],['off','Off']],RD.adsb,v=>{ RD.adsb=v; ru(); });
+LAB.slider(el('rctl'),{label:'Distance from the radar (NM)',min:5,max:150,step:1,v:RD.r,f:v=>v+' NM',on:v=>{ RD.r=v; ru(); }});
+LAB.slider(el('rctl'),{label:'Pressure altitude (ft)',min:500,max:40000,step:500,v:RD.alt,f:v=>v+' ft',on:v=>{ RD.alt=v; ru(); }});
+function rcards(){ const c=[
+ [{en:'Primary and secondary',no:'Primær og sekundær'},{en:'Primary: a reflected echo, position only, sees everything including weather. Secondary (SSR): a question and an answer, identity and altitude, but only from aircraft with a working transponder. Most ATC screens combine both.',no:'Primær: et reflektert ekko, bare posisjon, ser alt inkludert vær. Sekundær (SSR): et spørsmål og et svar, identitet og høyde, men bare fra fly med fungerende transponder. De fleste ATC-skjermer kombinerer begge.'}],
+ [{en:'Squawk codes',no:'Squawk-koder'},{en:'On the A320 the code is set on the ATC/TCAS panel on the pedestal, and the transponder is Mode S with ADS-B Out. 7000 is the VFR conspicuity code in Europe (2000 when entering from an area without assigned codes). 7500 unlawful interference, 7600 radio failure, 7700 emergency. Avoid passing through the emergency codes when you change code, and press IDENT only when asked.',no:'På A320 settes koden på ATC/TCAS-panelet på pedestalen, og transponderen er Mode S med ADS-B Out. 7000 er VFR-koden i Europa (2000 når du kommer fra et område uten tildelte koder). 7500 ulovlig inngrep, 7600 radiosvikt, 7700 nød. Unngå å gå innom nødkodene når du bytter kode, og trykk IDENT bare når du blir bedt om det.'}],
+ [{en:'Mode S and ADS-B',no:'Mode S og ADS-B'},{en:'Mode S gives each aircraft a unique 24-bit address, so the radar can call one aircraft at a time and read its callsign. ADS-B Out uses the same Mode S transponder (1090 MHz extended squitter) to broadcast GNSS position. TCAS interrogates transponders directly; it does not need ground radar.',no:'Mode S gir hvert fly en unik 24-bits adresse, så radaren kan spørre ett fly om gangen og lese kallesignalet. ADS-B Out bruker den samme Mode S-transponderen (1090 MHz extended squitter) til å sende GNSS-posisjonen. TCAS spør transpondere direkte; det trenger ikke bakkeradar.'}]];
+ el('rcards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
+let rvis=false; LAB.visible(el('rscope'),v=>rvis=v);
+(function rloop(){ if(rvis&&RD.src!=='adsb'){ RD.t+=2; radar(); } else if(rvis&&rState().emerg){ RD.t+=2; radar(); } requestAnimationFrame(rloop); })();
+LAB.start('radionav'); ru(); rcards(); nu(); cards(); const cq0=()=>{ if(!CH) el('cq').textContent=L({en:'Press New position. The aircraft jumps somewhere round the station; read the instruments and answer.',no:'Trykk Ny posisjon. Flyet hopper et sted rundt stasjonen; les instrumentene og svar.'}); }; cq0();
+LAB.onLang(()=>{ nu(); if(CH) drawCh(); cq0(); cards(); ru(); rcards(); });
+})();
+</script>
+</body>
+</html>
