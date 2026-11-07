@@ -22,6 +22,20 @@
 .ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}.ftab td.n{font-family:var(--f-mono);white-space:nowrap}
 .wrapx{overflow-x:auto}
 @media (max-width:600px){#cvD,#cvS,#cvC{aspect-ratio:4/3.8}#cvW{aspect-ratio:4/3.2}#cvF{aspect-ratio:4/3}#cvM{aspect-ratio:16/10}#cvR{aspect-ratio:16/8}#cvU{aspect-ratio:4/3}#cvA{aspect-ratio:16/9}}
+.ectm{margin-top:18px;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:16px 18px}
+.ectm h3{margin:0 0 4px}.ectm>p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px;line-height:1.55;max-width:80ch}
+.ectm .ctls{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:14px}
+.ectm .ctls .seg button{font-size:13px;padding:6px 10px}
+.etiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.etile{border:1px solid var(--rule);border-radius:6px;padding:12px 10px;text-align:center;background:var(--paper)}
+.etile .l{font-family:var(--f-display,inherit);font-size:34px;font-weight:700;line-height:1;color:var(--ink)}
+.etile .w{display:block;font-size:11.5px;color:var(--ink-2);margin:4px 0 8px;font-family:var(--f-mono);letter-spacing:.03em}
+.etile .a{font-size:15px;font-weight:600}
+.etile.up .a{color:#2E7D4F}.etile.dn .a{color:#B03A2E}.etile.eq .a{color:var(--ink-2)}
+.etile.held{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:rgba(154,30,104,.06)}
+.etile.held .a{color:var(--accent)}
+.ectm .rule{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink)}
+@media (max-width:520px){.etiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.etile .l{font-size:28px}}
 </style>
 </head>
 <body data-title="High-speed flight and drag">
@@ -79,6 +93,14 @@
         </div>
         <p class="callout" id="sx"></p>
       </div>
+    </div>
+    <div class="ectm" id="ectm">
+      <div class="eyebrow" id="ecE"></div>
+      <h3 id="ecH"></h3>
+      <p id="ecP"></p>
+      <div class="ctls"><div id="ecHold"></div><div id="ecDir"></div><div id="ecLay"></div></div>
+      <div class="etiles" id="ecT"></div>
+      <p class="rule" id="ecR"></p>
     </div>
     <div class="split sub">
       <div class="stack">
@@ -551,6 +573,7 @@ const Q=[
  {q:{en:'You are on the approach below Vmd and the speed drops by 5 kt with thrust unchanged. What happens next?',no:'Du er på innflyging under Vmd, og farten faller 5 kt med uendret skyvekraft. Hva skjer videre?'},a:[{en:'Drag increases, so the speed keeps falling',no:'Motstanden øker, så farten fortsetter å falle'},{en:'Drag decreases, so the speed returns by itself',no:'Motstanden minker, så farten kommer tilbake av seg selv'},{en:'Nothing, drag is independent of speed there',no:'Ingenting, motstanden er uavhengig av farten der'},{en:'The aircraft pitches down and gains speed automatically',no:'Flyet pitcher ned og får fart automatisk'}],c:0,e:{en:'On the back side of the drag curve the aircraft is speed unstable: thrust must be added actively.',no:'På baksiden av motstandskurven er flyet fartsustabilt: skyvekraften må økes aktivt.'}},
  {q:{en:'The aircraft is heavier. What happens to Vmd?',no:'Flyet er tyngre. Hva skjer med Vmd?'},a:[{en:'It increases, with the square root of mass',no:'Den øker, med kvadratroten av massen'},{en:'It decreases',no:'Den minker'},{en:'It is unchanged',no:'Den er uendret'},{en:'It increases in proportion to mass',no:'Den øker proporsjonalt med massen'}],c:0,e:{en:'Vmd is at a fixed CL (best L/D), so the required dynamic pressure rises with weight and the speed with √mass.',no:'Vmd ligger ved en fast CL (beste L/D), så nødvendig dynamisk trykk øker med vekten og farten med √masse.'}},
  {q:{en:'Climbing at a constant IAS, what happens to the Mach number?',no:'I stigning med konstant IAS, hva skjer med Machtallet?'},a:[{en:'It increases',no:'Det øker'},{en:'It decreases',no:'Det minker'},{en:'It stays constant',no:'Det er konstant'},{en:'It increases only above the tropopause',no:'Det øker bare over tropopausen'}],c:0,e:{en:'TAS rises with altitude and the speed of sound falls (below the tropopause), so Mach rises on both counts.',no:'TAS øker med høyden og lydhastigheten faller (under tropopausen), så Mach øker av begge grunner.'}},
+ {q:{en:'Using ECTM: climbing in the troposphere at a constant TAS, what happens to CAS and Mach?',no:'Med ECTM: i stigning i troposfæren med konstant TAS, hva skjer med CAS og Mach?'},a:[{en:'CAS decreases, Mach increases',no:'CAS minker, Mach øker'},{en:'CAS increases, Mach decreases',no:'CAS øker, Mach minker'},{en:'Both increase',no:'Begge øker'},{en:'Both decrease',no:'Begge minker'}],c:0,e:{en:'E C T M: hold T, everything to the left (E, C) decreases and everything to the right (M) increases in a climb.',no:'E C T M: hold T, alt til venstre (E, C) minker og alt til høyre (M) øker i stigning.'}},
  {q:{en:'Climbing at a constant Mach number above the crossover altitude, the IAS…',no:'I stigning med konstant Mach over crossover-høyden vil IAS …'},a:[{en:'decreases',no:'minke'},{en:'increases',no:'øke'},{en:'stays constant',no:'være konstant'},{en:'first increases, then decreases',no:'først øke, så minke'}],c:0,e:{en:'At constant Mach the dynamic pressure falls with the static pressure, so IAS falls.',no:'Ved konstant Mach faller det dynamiske trykket med det statiske trykket, så IAS faller.'}},
  {q:{en:'Which statement about the crossover altitude is correct?',no:'Hvilket utsagn om crossover-høyden stemmer?'},a:[{en:'It depends on the IAS/Mach pair, not on temperature',no:'Den avhenger av IAS/Mach-paret, ikke av temperaturen'},{en:'It is lower on a warm day',no:'Den er lavere en varm dag'},{en:'It is always the tropopause',no:'Den er alltid tropopausen'},{en:'It depends on the aircraft mass',no:'Den avhenger av flyets masse'}],c:0,e:{en:'Both CAS and Mach are pressure relationships, so the altitude where a given pair coincide is a pressure altitude.',no:'Både CAS og Mach er trykkforhold, så høyden der et gitt par møtes, er en trykkhøyde.'}},
  {q:{en:'Why does the nose tend to drop at high Mach (Mach tuck)?',no:'Hvorfor har nesen en tendens til å synke ved høy Mach (Mach tuck)?'},a:[{en:'The shock moves aft and the centre of pressure moves aft with it',no:'Sjokket flytter seg bakover, og trykksentrum flytter seg bakover med det'},{en:'The CG moves forward as fuel is used',no:'CG flytter seg fremover når drivstoff brukes'},{en:'The elevator becomes more effective',no:'Høyderoret blir mer effektivt'},{en:'The speed of sound increases',no:'Lydhastigheten øker'}],c:0,e:{en:'On a swept wing, shock-induced separation near the root can also reduce downwash on the tail; both effects pitch the nose down.',no:'På en pilvinge kan sjokkindusert separasjon nær roten også redusere nedvasket over halen; begge effektene gir nesen ned.'}},
@@ -566,6 +589,36 @@ LAB.quiz(el('qbox'),'highspeed',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LA
 
 LAB.start('hs'); mkD(); uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); uU(); uTab();
 LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); rU(); uTab(); });
+})();
+
+/* ECTM: Eat Chicken Tikka Masala */
+(function(){ const {L,el}=LAB, K=['E','C','T','M'];
+  const NM={E:{en:'EAS',no:'EAS'},C:{en:'CAS / IAS',no:'CAS / IAS'},T:{en:'TAS',no:'TAS'},M:{en:'Mach',no:'Mach'}};
+  const st={h:'C',d:'up',l:'tro'};
+  LAB.add({},{'Hold CAS':'Hold CAS','Hold EAS':'Hold EAS','Hold TAS':'Hold TAS','Hold Mach':'Hold Mach','Climb':'Stigning','Descent':'Nedstigning','Troposphere':'Troposfæren','Above the tropopause':'Over tropopausen'});
+  LAB.seg(el('ecHold'),[['E','Hold EAS'],['C','Hold CAS'],['T','Hold TAS'],['M','Hold Mach']],st.h,v=>{st.h=v;draw();});
+  LAB.seg(el('ecDir'),[['up','Climb'],['dn','Descent']],st.d,v=>{st.d=v;draw();});
+  LAB.seg(el('ecLay'),[['tro','Troposphere'],['str','Above the tropopause']],st.l,v=>{st.l=v;draw();});
+  function res(){ const i=K.indexOf(st.h), sgn=st.d==='up'?1:-1, r={};
+    K.forEach((k,j)=>{ r[k]= j===i?0 : (j<i?-sgn:sgn); });
+    if(st.l==='str'){ // speed of sound constant: TAS and Mach move together
+      if(st.h==='T') r.M=0; else if(st.h==='M') r.T=0; else r.M=r.T; }
+    return r; }
+  function draw(){ const r=res();
+    el('ecE').textContent=L({en:'Memory aid',no:'Huskeregel'});
+    el('ecH').textContent='ECTM: Eat Chicken Tikka Masala';
+    el('ecP').innerHTML=L({en:'Write the four speeds in this order: <b>E</b>AS, <b>C</b>AS, <b>T</b>AS, <b>M</b>ach. In a <b>climb</b>, hold one of them constant: every speed to its <b>right increases</b> and every speed to its <b>left decreases</b>. In a <b>descent</b> it is the other way round. Pick a speed to hold and check it.',no:'Skriv de fire hastighetene i denne rekkefølgen: <b>E</b>AS, <b>C</b>AS, <b>T</b>AS, <b>M</b>ach. I en <b>stigning</b> holder du én av dem konstant: alle til <b>høyre øker</b> og alle til <b>venstre minker</b>. I en <b>nedstigning</b> er det motsatt. Velg en hastighet å holde og sjekk.'});
+    el('ecT').innerHTML=K.map(k=>{ const v=r[k], c=k===st.h?'held':v>0?'up':v<0?'dn':'eq', a=k===st.h?L({en:'held',no:'holdes'}):v>0?L({en:'▲ increases',no:'▲ øker'}):v<0?L({en:'▼ decreases',no:'▼ minker'}):L({en:'= constant',no:'= konstant'});
+      return `<div class="etile ${c}"><div class="l">${k}</div><span class="w">${L(NM[k])}</span><div class="a">${a}</div></div>`; }).join('');
+    const why={C:{en:'Constant CAS in a climb: the air gets thinner, so TAS must rise to give the same dynamic pressure, and with the speed of sound falling the Mach number rises even faster. EAS sits a little below CAS and the gap (compressibility) grows with height.',no:'Konstant CAS i stigning: lufta blir tynnere, så TAS må øke for å gi samme dynamiske trykk, og når lydhastigheten faller, øker Machtallet enda mer. EAS ligger litt under CAS, og forskjellen (kompressibilitet) øker med høyden.'},
+      M:{en:'Constant Mach in a climb: in the troposphere the temperature and the speed of sound fall, so TAS falls, and CAS and EAS fall even more. This is why the IAS drops after the crossover altitude.',no:'Konstant Mach i stigning: i troposfæren faller temperaturen og lydhastigheten, så TAS faller, og CAS og EAS faller enda mer. Derfor faller IAS etter crossover-høyden.'},
+      T:{en:'Constant TAS in a climb: thinner air gives less dynamic pressure, so CAS and EAS fall; the speed of sound falls, so Mach rises.',no:'Konstant TAS i stigning: tynnere luft gir mindre dynamisk trykk, så CAS og EAS faller; lydhastigheten faller, så Mach øker.'},
+      E:{en:'Constant EAS in a climb: TAS rises with 1/√σ, Mach rises with it, and CAS creeps up above EAS as compressibility grows.',no:'Konstant EAS i stigning: TAS øker med 1/√σ, Mach øker med den, og CAS kryper opp over EAS når kompressibiliteten øker.'}};
+    let t=L(why[st.h]);
+    if(st.d==='dn') t=L({en:'Descent: every arrow flips. ',no:'Nedstigning: alle pilene snur. '})+t;
+    if(st.l==='str') t+=' '+L({en:'<b>Above the tropopause</b> (ISA) the temperature is constant, so the speed of sound is constant and <b>TAS and Mach always move together</b>: hold one and the other is held too.',no:'<b>Over tropopausen</b> (ISA) er temperaturen konstant, så lydhastigheten er konstant, og <b>TAS og Mach følger hverandre</b>: holder du den ene, holdes den andre også.'});
+    el('ecR').innerHTML=t; }
+  draw(); LAB.onLang(draw);
 })();
 </script>
 </body>
