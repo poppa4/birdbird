@@ -45,14 +45,25 @@
 
 .srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
 /* composed visual: briefing pack + Flight Intelligence answer */
-.stage{margin:0;position:relative;min-width:0;padding:0 0 64px}
-.stage svg{display:block;width:100%;height:auto;overflow:visible}
-.stage .pg{will-change:transform}
+.stage{margin:0;position:relative;min-width:0;aspect-ratio:640/600;padding:0}
+.stage .sc{position:absolute;display:block;border-radius:8px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 18px 40px rgba(19,32,42,.16),0 2px 6px rgba(19,32,42,.08);will-change:transform}
+.stage .sc-wt{right:0;top:0;width:72%;aspect-ratio:1400/1028;background:#2A3742;border:1px solid #2A3742}
+.stage .sc-wt img{display:block;width:100%;height:100%;object-fit:cover}
+.stage .sc-bp{left:0;top:27%;width:35%;aspect-ratio:236/372;z-index:2;background:#fff;border:1px solid var(--h-rule)}
+.stage .sc-bp svg{display:block;width:100%;height:100%}
 .stage svg text{font-family:var(--h-mono)}
 .stage svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
 .stage svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
-.stage figcaption{position:absolute;right:0;bottom:0;font-size:12.5px;color:var(--h-ink2)}
-.fic{position:absolute;left:-2%;bottom:20px;width:min(380px,58%);background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:6px;
+.stage .sct{position:absolute;left:10px;bottom:10px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;display:flex;align-items:baseline;gap:8px;background:rgba(16,23,29,.86);color:#D7E1E6;border-radius:4px;padding:5px 9px;font-size:12px;backdrop-filter:blur(4px)}
+.stage .sct b{color:#fff;font-weight:650;font-size:12.5px}
+.stage .sct span{font-family:var(--h-mono);font-size:10.5px;color:#9FB0BC}
+.stage .sc-wt .sct{top:10px;bottom:auto}
+.stage .sc-bp .sct{flex-direction:column;gap:0;background:rgba(255,255,255,.94);color:var(--h-ink2);border:1px solid var(--h-rule2)}
+.stage .sc-bp .sct b{color:var(--h-ink)}.stage .sc-bp .sct span{color:var(--h-ink2)}
+.stage .sc:hover{box-shadow:0 22px 48px rgba(19,32,42,.2),0 2px 6px rgba(19,32,42,.1)}
+.stage .sc:focus-visible{outline:2px solid var(--h-acc);outline-offset:3px}
+.stage figcaption{position:absolute;left:0;bottom:-4px;font-size:12.5px;color:var(--h-ink2)}
+.fic{position:absolute;right:2%;bottom:0;left:auto;width:min(370px,57%);z-index:4;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:6px;
   box-shadow:0 1px 1px rgba(19,32,42,.05),0 28px 56px -26px rgba(19,32,42,.45);font-size:14px;line-height:1.5;will-change:transform}
 .fic .fh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--h-rule2)}
 .fic .fh b{font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
@@ -66,20 +77,16 @@
 .fic .a p{margin:0}.fic .a p+p{margin-top:6px}
 .fic .cite{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;line-height:1.55;color:var(--h-info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
 .fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 6px 6px;font-size:12px;color:var(--h-ink2)}
-.thc{position:absolute;right:-1%;top:8%;z-index:3;display:flex;flex-direction:column;gap:2px;max-width:230px;background:var(--h-sheet);border:1px solid #E0B4C9;border-left:3px solid var(--h-acc);border-radius:6px;padding:10px 14px;text-decoration:none;color:var(--h-ink);box-shadow:0 10px 28px rgba(19,32,42,.12),0 1px 2px rgba(19,32,42,.08)}
-.thc .tk{font-family:var(--h-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--h-acc);font-weight:600}
-.thc b{font-size:14px;font-weight:650;line-height:1.3}
-.thc .tl{font-size:13px;color:var(--h-acc)}
-.thc:hover{border-color:var(--h-acc)}
-@media (min-width:981px) and (max-width:1240px){.thc{right:-2%;top:2%;max-width:210px}}
-@media (max-width:640px){.thc{position:relative;right:auto;top:auto;max-width:none;margin:-30px 8px 0}.thc+.fic{margin-top:10px}.fic .a2{display:none}.stage .pg1,.stage .pg2{opacity:.55}}
 .fic .ft svg{width:11px;height:11px;flex:0 0 11px}
-@media (min-width:981px) and (max-width:1240px){.fic{left:-6%;width:56%}.fic .q{font-size:13.5px}}
-@media (max-width:980px){.stage{padding-bottom:0}.fic{left:0}}
+@media (min-width:981px) and (max-width:1240px){.fic{right:0;width:62%}.fic .q{font-size:13.5px}}
+@media (max-width:980px){.stage{max-width:640px;margin-bottom:26px}}
 @media (max-width:640px){
-  .stage{padding:0}
-  .fic{position:relative;left:auto;bottom:auto;width:auto;margin:-34px 8px 0 8px;font-size:13.5px}.fic .q{font-size:13.5px}
-  .stage figcaption{position:static;margin:12px 0 0;text-align:left}
+  .stage{aspect-ratio:auto;display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:4px 16px 14px;scrollbar-width:none;align-items:flex-start}
+  .stage::-webkit-scrollbar{display:none}
+  .stage .sc,.fic{position:relative;left:auto;right:auto;top:auto;bottom:auto;flex:0 0 84%;width:auto;scroll-snap-align:center;transform:none!important}
+  .stage .sc-bp{flex-basis:62%}
+  .fic{margin:0;font-size:13.5px}.fic .q{font-size:13.5px}
+  .stage figcaption{display:none}
 }
 @media (prefers-reduced-motion:reduce){.stage .pg,.fic{will-change:auto}}
 
@@ -250,7 +257,12 @@
       <div class="btns"><a class="btn pri" href="prep.html">Make a briefing pack</a><a class="btn" href="fi.html">Ask Flight Intelligence</a></div>
     </div>
     <figure class="stage" id="stage">
-      <svg viewBox="0 0 640 470" role="img" aria-label="An IFR briefing pack from ENGM to ENBR: cover, planning minima, flight cross-section and fuel">
+      <a class="sc sc-wt pg" data-d="8" href="tunnel.html" aria-label="Wind tunnel lab: an A320 in the test section with smoke streamlines">
+        <img src="media/hero-tunnel.jpg" srcset="media/hero-tunnel-800.jpg 800w, media/hero-tunnel.jpg 1400w" sizes="(max-width:640px) 92vw, 460px" width="1400" height="1028" alt="" decoding="async" fetchpriority="high">
+        <span class="sct"><b>Wind tunnel</b><span>A320 · α 4.8° · smoke</span></span>
+      </a>
+      <a class="sc sc-bp pg" data-d="14" href="prep.html" aria-label="Briefing pack: flight cross-section and fuel, ENGM to ENBR">
+        <svg viewBox="0 0 236 372" role="img" aria-label="Briefing pack page: flight cross-section and fuel, ENGM to ENBR">
         <defs>
           <filter id="psh" x="-25%" y="-20%" width="150%" height="150%" color-interpolation-filters="sRGB">
             <feDropShadow dx="0" dy="1" stdDeviation=".6" flood-color="#13202A" flood-opacity=".18"/>
@@ -260,51 +272,7 @@
           <pattern id="cgrid2" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#D3DFDA" stroke-width=".7"/></pattern>
           <symbol id="tick" viewBox="-7 -7 14 14"><circle r="6.2" fill="#EAF4EE" stroke="#2E7D4F" stroke-width="1"/><path d="M-3 .2 L-.8 2.4 L3.2 -2.2" fill="none" stroke="#2E7D4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
         </defs>
-
-        <!-- page 1: cover -->
-        <g class="pg pg1" data-d="6"><g transform="translate(26 18) rotate(-5 118 167)">
-          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
-          <rect width="236" height="4" fill="#9A1E68"/>
-          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">BIRDBIRD</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">1 / 14</text>
-          <text x="16" y="56" font-size="8" fill="#9A1E68" letter-spacing="1.3" font-weight="500">IFR BRIEFING PACK</text>
-          <text class="ttl" x="15" y="88" font-size="30" fill="#13202A" letter-spacing="-.2">ENGM</text><path d="M18 96 V104 H40" fill="none" stroke="#9A1E68" stroke-width="1.6"/><path d="M38 100.5 L43 104 L38 107.5" fill="none" stroke="#9A1E68" stroke-width="1.6" stroke-linejoin="round"/><text class="ttl" x="48" y="114" font-size="30" fill="#13202A" letter-spacing="-.2">ENBR</text>
-          <text class="sans" x="16" y="130" font-size="7.6" fill="#4C5B66">Oslo Gardermoen to Bergen Flesland</text>
-          <line x1="16" y1="138.0" x2="220" y2="138.0" stroke="#13202A" stroke-width=".8"/>
-          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="152">DATE</text><text x="86" y="152">ETD</text><text x="156" y="152">EET</text><text x="16" y="180">LEVEL</text><text x="86" y="180">ALTN</text><text x="156" y="180">RULES</text></g>
-          <g font-size="9.5" fill="#13202A" font-weight="500"><text x="16" y="164">14 NOV</text><text x="86" y="164">0830 Z</text><text x="156" y="164">0:58</text><text x="16" y="192">FL120</text><text x="86" y="192">ENZV</text><text x="156" y="192">IFR</text></g>
-          <line x1="16" y1="206.0" x2="220" y2="206.0" stroke="#DCE3E4" stroke-width=".8"/>
-          <text x="16" y="224" font-size="6.5" fill="#4C5B66" letter-spacing=".8" font-weight="500">CONTENTS</text>
-          <g class="sans" font-size="7.6" fill="#13202A">
-            <text x="30" y="241">Aircraft</text><text x="30" y="255">NOTAM</text><text x="30" y="269">Meteorology</text><text x="30" y="283">Planning minima</text><text x="30" y="297">Flight cross-section</text><text x="30" y="311">Runway performance</text><text x="30" y="325">Fuel</text>
-          </g>
-          <g font-size="6.5" fill="#7D8B95"><text x="16" y="241">1</text><text x="16" y="255">2</text><text x="16" y="269">3</text><text x="16" y="283">4</text><text x="16" y="297">5</text><text x="16" y="311">6</text><text x="16" y="325">7</text></g>
-          <g stroke="#C6D0D3" stroke-width=".7" stroke-dasharray="1 2"><path d="M112 240H200M100 254H200M120 268H200M132 282H200M140 296H200M140 310H200M90 324H200"/></g>
-          <g><use href="#tick" x="204" y="233" width="10" height="10"/><use href="#tick" x="204" y="247" width="10" height="10"/><use href="#tick" x="204" y="261" width="10" height="10"/><use href="#tick" x="204" y="275" width="10" height="10"/></g>
-        </g></g>
-
-        <!-- page 2: planning minima -->
-        <g class="pg pg2" data-d="10"><g transform="translate(196 50) rotate(-.6 118 167)">
-          <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
-          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">4 / 14</text>
-          <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
-          <text class="ttl" x="16" y="54" font-size="17" fill="#13202A">Planning minima</text>
-          <text x="16" y="68" font-size="6.6" fill="#4C5B66">ETA ± 1 h · forecast against required</text>
-          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="88">AD</text><text x="60" y="88">REQUIRED</text><text x="112" y="88">FORECAST</text><text x="164" y="88" text-anchor="middle">OK</text></g>
-          <line x1="16" y1="93" x2="220" y2="93" stroke="#13202A" stroke-width=".7"/>
-          <g font-size="7.4" fill="#13202A">
-            <text x="16" y="108" font-weight="500">ENGM</text><text x="16" y="118" font-size="5.6" fill="#7D8B95">DEP</text><text x="60" y="108">RVR 550</text><text x="60" y="118" fill="#4C5B66">–</text><text x="112" y="108">9999</text><text x="112" y="118" fill="#4C5B66">BKN012</text>
-            <text x="16" y="140" font-weight="500">ENBR</text><text x="16" y="150" font-size="5.6" fill="#7D8B95">DEST</text><text x="60" y="140">1500 m</text><text x="60" y="150" fill="#4C5B66">400 ft</text><text x="112" y="140">6000</text><text x="112" y="150" fill="#4C5B66">BKN008</text>
-            <text x="16" y="172" font-weight="500">ENZV</text><text x="16" y="182" font-size="5.6" fill="#7D8B95">ALTN</text><text x="60" y="172">2500 m</text><text x="60" y="182" fill="#4C5B66">700 ft</text><text x="112" y="172">9999</text><text x="112" y="182" fill="#4C5B66">SCT025</text>
-          </g>
-          <path d="M16 126H220M16 158H220M16 190H220" stroke="#DCE3E4" stroke-width=".7"/>
-          <use href="#tick" x="157" y="105" width="14" height="14"/><use href="#tick" x="157" y="137" width="14" height="14"/><use href="#tick" x="157" y="169" width="14" height="14"/>
-          <rect x="16" y="204" width="204" height="30" rx="2" fill="#EEF3FA"/><rect x="16" y="204" width="2.4" height="30" fill="#1D4E9E"/>
-          <text x="25" y="216" font-size="6" fill="#1D4E9E" letter-spacing=".5" font-weight="500">DESTINATION ALTERNATES</text><text class="sans" x="25" y="227" font-size="7.4" fill="#13202A">One required. ENZV selected.</text>
-          <g fill="#E3E9EB"><rect x="16" y="252" width="190" height="4" rx="2"/><rect x="16" y="264" width="160" height="4" rx="2"/><rect x="16" y="276" width="176" height="4" rx="2"/><rect x="16" y="288" width="120" height="4" rx="2"/></g>
-        </g></g>
-
-        <!-- page 3: flight cross-section and fuel -->
-        <g class="pg" data-d="15"><g transform="translate(380 88) rotate(3.6 118 167)">
+        <g>
           <rect x="-3" y="10" width="242" height="334" rx="6" fill="#13202A" opacity=".035"/><rect x="-1" y="6" width="238" height="334" rx="4" fill="#13202A" opacity=".045"/><rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
           <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">IFR · ENGM → ENBR</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">5 / 14</text>
           <line x1="16" y1="30" x2="220" y2="30" stroke="#13202A" stroke-width=".8"/>
@@ -314,7 +282,6 @@
           <ellipse cx="74" cy="96" rx="20" ry="5.5" fill="#EDF1F3" opacity=".9"/><ellipse cx="92" cy="93" rx="16" ry="5" fill="#EDF1F3" opacity=".9"/><ellipse cx="160" cy="98" rx="22" ry="5.5" fill="#EDF1F3" opacity=".9"/>
           <line x1="16" y1="104" x2="220" y2="104" stroke="#4C5B66" stroke-width=".8" stroke-dasharray="4 3"/>
           <text x="218" y="101" font-size="5.6" fill="#4C5B66" text-anchor="end">MSA 7400</text>
-          <rect x="178" y="94" width="44" height="13" rx="6.5" fill="none" stroke="#9A1E68" stroke-width="1.1" stroke-dasharray="2.5 2"/>
           <line x1="16" y1="132" x2="220" y2="132" stroke="#1D4E9E" stroke-width=".8" stroke-dasharray="1.5 2.5"/>
           <text x="20" y="129" font-size="5.6" fill="#1D4E9E">0 °C</text>
           <path d="M22 158 L64 80 L172 80 L214 158" fill="none" stroke="#9A1E68" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
@@ -341,14 +308,15 @@
           <text class="sans" x="16" y="304" font-size="7" fill="#4C5B66">Required 185</text>
           <use href="#tick" x="150" y="281" width="13" height="13"/><text x="167" y="290.5" font-size="7" fill="#2E7D4F" font-weight="500">ON BOARD</text>
           <text x="16" y="324" font-size="5.6" fill="#AEBBC1">EXAMPLE VALUES</text>
-        </g></g>
-      </svg>
-      <a class="thc" id="thc" href="altimetry.html"><span class="tk">Theory</span><b>Why is the MSA 7,400 ft?</b><span class="tl">Pressure and altitude lab →</span></a>
+        </g>
+        </svg>
+        <span class="sct"><b>Briefing pack</b><span>IFR · ENGM → ENBR</span></span>
+      </a>
       <div class="fic" id="fic" role="group" aria-label="Flight Intelligence: an example answer">
         <div class="fh"><b>Flight Intelligence</b><span class="own"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h4.8L9.5 3.2V11h-7z M7.2 1v2.3h2.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>From your documents</span></div>
         <div class="bd">
           <div class="q">What is the maximum crosswind for landing?</div>
-          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p class="a2"><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p></div>
+          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p></div>
         </div>
         <div class="ft"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span>Your AFM, QRH and SOP stay in this browser.</span></div>
       </div>
@@ -728,9 +696,7 @@ if(MQ2&&MQ2.addEventListener) MQ2.addEventListener('change',drawDA);
 
 (function(){ const el=LAB.el, L=LAB.L; const n=el('srcnote'); if(!n) return; const d=()=>{ n.innerHTML=L({en:'<span class="sn-k">Sources</span><span>Flight Intelligence answers from your own AFM, QRH and SOP first. Regulations follow the <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, March 2026) and ICAO; airspace and procedures come from your national <b>AIP</b>. Not a live feed: always check the current revision. <a href="sources.html">All data sources →</a></span>',no:'<span class="sn-k">Kilder</span><span>Flight Intelligence svarer først fra din egen AFM, QRH og SOP. Regelverket følger <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, mars 2026) og ICAO; luftrom og prosedyrer kommer fra ditt nasjonale <b>AIP</b>. Ikke en direkte kobling: sjekk alltid gjeldende revisjon. <a href="sources.html">Alle datakilder →</a></span>'}); }; d(); LAB.onLang(d); })();
 
-/* mobile: one readable page (cross-section and fuel), the others peek behind */
-(function(){ const sv=document.querySelector('#stage > svg'); if(!sv||!window.matchMedia) return; const mq=matchMedia('(max-width:640px)');
-  const set=()=>sv.setAttribute('viewBox',mq.matches?'318 64 320 392':'0 0 640 470'); set(); mq.addEventListener?mq.addEventListener('change',set):mq.addListener(set); })();
+
 </script>
 </body>
 </html>
