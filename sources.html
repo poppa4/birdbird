@@ -79,22 +79,29 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
   <section class="card" id="terrain">
     <h2>Terrain and maps</h2>
     <p class="lead">The terrain profile, the 3D terrain view and the highest-terrain figure per map square are computed from public digital elevation data.</p>
+    <p class="lead">The Route Explorer map is drawn from the open map tiles below, loaded while you use it. If they cannot load (offline, or a blocked network), a simpler built-in map is used instead.</p>
     <div class="src">
       <div class="hd"><span>Source</span><span>Used for</span><span>Terms</span></div>
+      <div><div class="nm"><b>OpenFreeMap</b><span>OpenMapTiles vector tiles from OpenStreetMap</span></div>
+        <div class="use"><p>The Route Explorer chart: land, water, borders, roads and place names, restyled as a calm aeronautical chart. Also the labels over the satellite map.</p><p class="att">OpenFreeMap © OpenMapTiles Data from OpenStreetMap</p></div>
+        <div class="lic"><span class="tag at">Free, commercial use allowed; data ODbL</span></div></div>
+      <div><div class="nm"><b>Sentinel-2 cloudless 2016</b><span>EOX IT Services GmbH</span></div>
+        <div class="use"><p>The satellite map in Route Explorer. Only the 2016 layer is used, because it is the one licensed for commercial use.</p><p class="att">Sentinel-2 cloudless – https://s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016)</p></div>
+        <div class="lic"><span class="tag at">CC BY 4.0</span></div></div>
       <div><div class="nm"><b>Terrain Tiles</b><span>Mapzen, hosted on AWS Open Data</span></div>
-        <div class="use"><p>Elevation for the terrain profile and the 3D terrain. The tiles combine several public elevation datasets, listed below.</p><p class="att">Mapzen / AWS Terrain Tiles</p></div>
+        <div class="use"><p>Elevation for the terrain profile, the relief shading and the 3D terrain. The tiles combine several public elevation datasets, listed below.</p><p class="att">Terrain: Mapzen/AWS Terrain Tiles (SRTM, GMTED, EU-DEM © Copernicus, ETOPO1) – <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">full attribution</a></p></div>
         <div class="lic"><span class="tag at">Open data with attribution</span></div></div>
       <div><div class="nm"><b>EU-DEM</b><span>Copernicus, European Union</span></div>
         <div class="use"><p>Terrain in Europe.</p><p class="att">Produced using Copernicus data and information funded by the European Union – EU-DEM layers</p></div>
         <div class="lic"><span class="tag at">Free and open, with attribution</span></div></div>
       <div><div class="nm"><b>Kartverket</b><span>Norwegian Mapping Authority</span></div>
-        <div class="use"><p>Terrain in Norway.</p><p class="att">© Kartverket</p></div>
+        <div class="use"><p>Terrain in Norway, and the Norway topo map in Route Explorer.</p><p class="att">© Kartverket</p></div>
         <div class="lic"><span class="tag at">CC BY 4.0</span></div></div>
       <div><div class="nm"><b>SRTM, GMTED2010 and ETOPO1</b><span>USGS and NOAA</span></div>
         <div class="use"><p>Terrain outside the areas above, and the global base.</p><p class="att">SRTM and GMTED2010 (USGS); ETOPO1 (NOAA)</p></div>
         <div class="lic"><span class="tag pd">Public domain</span></div></div>
       <div><div class="nm"><b>Natural Earth</b><span>Public map data</span></div>
-        <div class="use"><p>Coastlines and the base map.</p><p class="att">Made with Natural Earth</p></div>
+        <div class="use"><p>Coastlines for the built-in map used when the map tiles cannot load.</p><p class="att">Made with Natural Earth</p></div>
         <div class="lic"><span class="tag pd">Public domain</span></div></div>
     </div>
     <p class="note">The highest-terrain figure is Birdbird's own number from these data: the highest point plus 300 ft for unknown obstacles, rounded up to the next 100 ft. It is not an official minimum safe altitude or maximum elevation figure.</p>
@@ -137,12 +144,15 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
 
   <section class="card" id="software">
     <h2>Fonts and software</h2>
-    <p class="lead">All fonts and libraries are served from Birdbird itself. No page loads fonts or scripts from a third-party service.</p>
+    <p class="lead">All fonts and libraries are served from Birdbird itself. No page loads fonts or scripts from a third-party service. The only exception is the lettering inside the Route Explorer map, which comes with the OpenFreeMap tiles.</p>
     <div class="src">
       <div class="hd"><span>Component</span><span>Used for</span><span>Licence</span></div>
       <div><div class="nm"><b>Archivo, Public Sans, IBM Plex Mono</b><span>Typefaces</span></div>
         <div class="use"><p>Headings, body text, and numbers and units.</p></div>
         <div class="lic"><span class="tag at">SIL Open Font License 1.1</span></div></div>
+      <div><div class="nm"><b>MapLibre GL JS</b><span>Map library</span></div>
+        <div class="use"><p>Drawing the Route Explorer map, the relief and the 3D terrain.</p></div>
+        <div class="lic"><span class="tag at">BSD 3-Clause</span></div></div>
       <div><div class="nm"><b>three.js</b><span>3D graphics library</span></div>
         <div class="use"><p>3D terrain, the wind tunnel and the cockpit view.</p></div>
         <div class="lic"><span class="tag at">MIT</span></div></div>
@@ -188,7 +198,13 @@ LAB.add({'Sections':'Sections'},{
  'Copernicus, European Union':'Copernicus, Den europeiske union','Terrain in Europe.':'Terreng i Europa.','Free and open, with attribution':'Fri og åpen, med kreditering',
  'Norwegian Mapping Authority':'Statens kartverk','Terrain in Norway.':'Terreng i Norge.',
  'USGS and NOAA':'USGS og NOAA','Terrain outside the areas above, and the global base.':'Terreng utenfor områdene over, og det globale grunnlaget.',
- 'Public map data':'Offentlige kartdata','Coastlines and the base map.':'Kystlinjer og grunnkartet.',
+ 'Public map data':'Offentlige kartdata','Coastlines and the base map.':'Kystlinjer og grunnkartet.','Coastlines for the built-in map used when the map tiles cannot load.':'Kystlinjer til det innebygde kartet som brukes når kartflisene ikke kan lastes.',
+ 'The Route Explorer map is drawn from the open map tiles below, loaded while you use it. If they cannot load (offline, or a blocked network), a simpler built-in map is used instead.':'Kartet i Route Explorer tegnes fra de åpne kartflisene under, som lastes mens du bruker det. Kan de ikke lastes (uten nett eller i et blokkert nettverk), brukes et enklere innebygd kart.',
+ 'OpenMapTiles vector tiles from OpenStreetMap':'OpenMapTiles-vektorfliser fra OpenStreetMap','The Route Explorer chart: land, water, borders, roads and place names, restyled as a calm aeronautical chart. Also the labels over the satellite map.':'Kartet i Route Explorer: land, vann, grenser, veier og stedsnavn, i en rolig luftfartskartstil. Også navnene over satellittkartet.','Free, commercial use allowed; data ODbL':'Gratis, kommersiell bruk tillatt; data ODbL',
+ 'The satellite map in Route Explorer. Only the 2016 layer is used, because it is the one licensed for commercial use.':'Satellittkartet i Route Explorer. Bare 2016-laget brukes, fordi det er det som er lisensiert for kommersiell bruk.',
+ 'Elevation for the terrain profile, the relief shading and the 3D terrain. The tiles combine several public elevation datasets, listed below.':'Høyder til terrengprofilen, relieffskyggen og 3D-terrenget. Flisene kombinerer flere offentlige høydedatasett, listet under.','full attribution':'full kreditering',
+ 'Terrain in Norway, and the Norway topo map in Route Explorer.':'Terreng i Norge, og Norge topo-kartet i Route Explorer.','Map library':'Kartbibliotek','Drawing the Route Explorer map, the relief and the 3D terrain.':'Tegner kartet, relieffet og 3D-terrenget i Route Explorer.',
+ 'All fonts and libraries are served from Birdbird itself. No page loads fonts or scripts from a third-party service. The only exception is the lettering inside the Route Explorer map, which comes with the OpenFreeMap tiles.':'Alle skrifttyper og biblioteker leveres fra Birdbird selv. Ingen side laster skrifttyper eller skript fra en tredjepart. Eneste unntak er bokstavene inne i kartet i Route Explorer, som følger med OpenFreeMap-flisene.',
  "The highest-terrain figure is Birdbird's own number from these data: the highest point plus 300 ft for unknown obstacles, rounded up to the next 100 ft. It is not an official minimum safe altitude or maximum elevation figure.":'Tallet for høyeste terreng er Birdbirds eget tall fra disse dataene: høyeste punkt pluss 300 ft for ukjente hindringer, rundet opp til nærmeste 100 ft over. Det er ikke en offisiell minste sikre høyde eller et MEF.',
  'NOAA NCEI and the British Geological Survey':'NOAA NCEI og British Geological Survey',
  'Magnetic variation for each leg in Route Explorer and the navigation log, used to turn true track into magnetic track. The model is valid from 2025 to 2030.':'Misvisning for hver etappe i Route Explorer og navigasjonsloggen, brukt til å gjøre rettvisende kurs om til magnetisk kurs. Modellen gjelder fra 2025 til 2030.',

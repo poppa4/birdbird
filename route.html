@@ -272,6 +272,25 @@
   .rx-ly{max-height:calc(var(--mh) - 130px)}
   .rx-sheet .srcl{font-size:11.5px}
 }
+/* MapLibre-kartet */
+.mapw .mlmap{position:absolute;inset:0;z-index:1}
+.mlmap.wait{visibility:hidden;pointer-events:none}
+.mapw.ml #mcv{display:none}
+.rx:has(#x3w:not([hidden])) .edbar{display:none}
+.rx .mapw.ml .maplg{bottom:calc(var(--shh,0px) + 30px)}
+.mapw.pick .maplibregl-canvas-container{cursor:crosshair!important}
+.mlmap .maplibregl-canvas{outline:none}
+.rx .maplibregl-ctrl-bottom-right{bottom:var(--shh,0px);transition:bottom .2s}
+.mlmap .maplibregl-ctrl-attrib{font:11px/1.4 var(--f-body);background:rgba(255,255,255,.86)}
+.mlmap .maplibregl-ctrl-attrib a{color:var(--ink-2)}
+.mlmap .maplibregl-ctrl-scale{font:10.5px var(--f-mono);border-color:var(--ink-2);color:var(--ink-2);background:rgba(255,255,255,.8)}
+.bb-ac{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--info);border:2px solid #fff;box-shadow:0 0 0 1px var(--info);pointer-events:none;z-index:1}
+.bb-ac[hidden]{display:none}
+.bmsel{margin:0 0 10px}
+.bmg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:6px 0 2px}
+.bmg button{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--rule);background:#fff;border-radius:4px;cursor:pointer;color:var(--ink)}
+.bmg button.on{border-color:var(--accent);color:var(--accent);font-weight:600;background:var(--accent-wash)}
+@media (max-width:900px){ .rx .maplibregl-ctrl-bottom-right{bottom:0} }
 .sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media print{ body.printdraw .page>*:not(#drawMode){display:none!important} body.printdraw #drawMode{display:block!important} body.printdraw .dgrid{display:block} body.printdraw .dsheet{border:1px solid #999} }
 @media print{
@@ -300,7 +319,7 @@
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
     <div class="x3row x3s"><label><span id="x3ex">Terrain ×2</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.5">×1.5</option><option value="2" selected>×2</option><option value="3">×3</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0">Off</option><option value="500">500 ft</option><option value="1000" selected>1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
-    <p class="note x3h" id="x3d"></p><p class="note x3h">Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom</p>
+    <p class="note x3h" id="x3d"></p><p class="note x3h" id="x3hint">Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom</p><p class="note x3h" id="x3hml" hidden>Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom</p>
   </div>
   <div class="rx-top noprint">
     <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★</button><input id="rtxt" type="search" placeholder="Search an airport or fix, or paste a route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
@@ -316,6 +335,7 @@
     <div class="rx-m"><div class="seg3" id="v23" role="group" aria-label="2D or 3D"><button data-v="2" class="on">2D</button><button data-v="3">3D</button></div> <div class="seg3" id="mmode" role="group" aria-label="Map style"><button data-m="vfr" class="on">Relief</button><button data-m="ifr">Plain</button></div><button class="btn lybtn" id="lybtn" aria-expanded="false">Layers</button></div>
   </div>
   <div class="rx-ly noprint" id="layers" hidden>
+    <div class="bmsel" id="bmsel" hidden><b>Base map</b><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="chart" class="on">Chart</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></div>
     <b>What the map shows</b>
     <label class="chk"><input type="checkbox" data-ly="ter"> Terrain (relief)</label>
     <label class="chk"><input type="checkbox" data-ly="mef"> Highest terrain per square (e.g. <b style="font-size:15px">4</b><small>5</small> = 4,500 ft)</label>
@@ -450,7 +470,7 @@
     </details>
     <div class="legs" id="legs"></div>
   </section>
-  <details class="note srcd"><summary>Data sources and limits</summary><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Coastline: Natural Earth. Terrain: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
+  <details class="note srcd"><summary>Data sources and limits</summary><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0). Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
   </div>
 
   <div id="drawMode" hidden>
@@ -493,6 +513,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
+<script src="rxmap.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -609,7 +630,7 @@ async function terrainProfile(M){
 const psv=el('psv');
 function render(){
   const M=compute(); drawTable(M); drawMap(M); drawProfile(M,TP); drawSum(M); drawMkList(M); drawSelbar(); wxMsg(M);
-  if(T3.on){ clearTimeout(T3.rb); T3.rb=setTimeout(()=>{ if(T3.on&&window.THREE) build3(); },350); }
+  if(T3.on&&!ML){ clearTimeout(T3.rb); T3.rb=setTimeout(()=>{ if(T3.on&&window.THREE) build3(); },350); }
   pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
   terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
 }
@@ -796,7 +817,7 @@ function distOnRoute(mx,my){ const M=compute(); let best=null, bd=12; for(let i=
 psv.addEventListener('pointermove',e=>{ if(mkDrag||pDrag) return; const r=psv.getBoundingClientRect(); const vx=(e.clientX-r.left)/r.width*(psv._W0||1000); const bx=psv._box; if(!bx||vx<bx[0]||vx>bx[0]+bx[2]){ if(HOV!=null) setHov(null); return; } const M=compute(); if(M.C.length<2) return; setHov(Math.max(0,Math.min(M.total,psv._XI(vx)))); });
 psv.addEventListener('pointerleave',e=>{ if(!pDrag&&e.pointerType!=='touch') setHov(null); });
 psv.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch'||e.target.closest('.pdrag,.crdrag,.mk,.xnbox')) return; const r=psv.getBoundingClientRect(); const vx=(e.clientX-r.left)/r.width*(psv._W0||1000); const M=compute(); if(M.C.length<2||!psv._XI) return; setHov(Math.max(0,Math.min(M.total,psv._XI(vx)))); });
-queueMicrotask(()=>{ mapEl.addEventListener('pointermove',e=>{ if(drag||ptDrag) return; const r=mapEl.getBoundingClientRect(); const d=distOnRoute(e.clientX-r.left,e.clientY-r.top); if(d==null){ if(HOV!=null){ HOV=null; setHov(null,true); drawMap(); } return; } setHov(d,true); drawMap(); });
+queueMicrotask(()=>{ mapEl.addEventListener('pointermove',e=>{ if(drag||ptDrag||(ML&&(e.buttons||ML.isMoving()))) return; const r=mapEl.getBoundingClientRect(); const d=distOnRoute(e.clientX-r.left,e.clientY-r.top); if(d==null){ if(HOV!=null){ HOV=null; setHov(null,true); drawMap(); } return; } setHov(d,true); drawMap(); });
 mapEl.addEventListener('pointerleave',()=>{ if(HOV!=null){ setHov(null,true); drawMap(); } }); });
 // dra punkt eller fly vertikalt i profilen
 psv.addEventListener('pointerdown',e=>{ const h=e.target.closest&&(e.target.closest('.pdrag')||e.target.closest('.crdrag')); if(!h) return; e.preventDefault(); e.stopPropagation(); psv.setPointerCapture(e.pointerId);
@@ -1021,9 +1042,10 @@ const BND={la0:25,la1:72,lo0:-32,lo1:45};
 function minZ(){ const w=mapEl.clientWidth||600, h=mapEl.clientHeight||400, k=Math.cos(V.la*D2R); return Math.max(h/(BND.la1-BND.la0), w/((BND.lo1-BND.lo0)*k)); }
 function clampV(){ V.z=Math.max(minZ(),Math.min(600,V.z)); const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); const hl=h/2/V.z, hw=w/2/(V.z*k);
   V.la=Math.max(BND.la0+hl,Math.min(BND.la1-hl,V.la)); if(BND.la1-BND.la0<2*hl) V.la=(BND.la0+BND.la1)/2; V.lo=Math.max(BND.lo0+hw,Math.min(BND.lo1-hw,V.lo)); if(BND.lo1-BND.lo0<2*hw) V.lo=(BND.lo0+BND.lo1)/2; }
-const prj=(la,lo)=>{ const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); return [w/2+(lo-V.lo)*k*V.z, h/2-(la-V.la)*V.z]; };
-const inv=(x,y)=>{ const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); return [V.la-(y-h/2)/V.z, V.lo+(x-w/2)/(k*V.z)]; };
+const prj=(la,lo)=>{ if(ML){ const p=ML.project([lo,la]); return [p.x,p.y]; } const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); return [w/2+(lo-V.lo)*k*V.z, h/2-(la-V.la)*V.z]; };
+const inv=(x,y)=>{ if(ML){ const l=ML.unproject([x,y]); return [l.lat,l.lng]; } const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); return [V.la-(y-h/2)/V.z, V.lo+(x-w/2)/(k*V.z)]; };
 let pickMode=false, hits=[];
+let ML=null; // MapLibre-kartet når det er i bruk (rxmap.js); ellers tegnes det gamle lerretskartet
 let mapQ=0; function drawMap(){ if(mapQ) return; mapQ=requestAnimationFrame(()=>{ mapQ=0; drawMapNow(); }); }
 const mcv=el('mcv'), mx_=mcv.getContext('2d');
 const MEFC={}, MEFP={};
@@ -1042,7 +1064,7 @@ function drawMEF(g,lo0,lo1,la0,la1,cx,cy,zx,zy){ const q=V.z>=150?0.5:V.z>=70?1:
     g.fillStyle='rgba(46,91,154,.78)'; g.strokeStyle='rgba(255,255,255,.85)'; g.lineWidth=3;
     if(th){ g.font=fb; g.strokeText(String(th),x0,y+big*0.35); g.fillText(String(th),x0,y+big*0.35); }
     g.font=fs; g.strokeText(String(hu),x0+wb+1,y+big*0.35-big*0.38); g.fillText(String(hu),x0+wb+1,y+big*0.35-big*0.38); } }
-function drawMapNow(){ if(!R) return; clampV(); windyHref(); try{ ptPop(); hBtns(); }catch(e){}
+function drawMapNow(){ if(!R) return; if(ML){ windyHref(); try{ ptPop(); hBtns(); }catch(e){} mlSync(); return; } clampV(); windyHref(); try{ ptPop(); hBtns(); }catch(e){}
   const w=mapEl.clientWidth, h=mapEl.clientHeight, dpr=Math.min(2,window.devicePixelRatio||1);
   if(mcv.width!==Math.round(w*dpr)||mcv.height!==Math.round(h*dpr)){ mcv.width=Math.round(w*dpr); mcv.height=Math.round(h*dpr); }
   const g=mx_; g.setTransform(dpr,0,0,dpr,0,0); hits=[];
@@ -1083,34 +1105,36 @@ function drawMapNow(){ if(!R) return; clampV(); windyHref(); try{ ptPop(); hBtns
   if(HOV!=null){ const M=compute(), q=M.posAt(HOV); if(q&&q.la!=null){ const x=cx+(q.lo-V.lo)*zx, y=cy-(q.la-V.la)*zy; g.beginPath(); g.arc(x,y,7,0,7); g.fillStyle='rgba(29,78,158,.18)'; g.fill(); g.strokeStyle='#1D4E9E'; g.lineWidth=2; g.stroke(); g.font='600 11px IBM Plex Mono, monospace'; g.lineWidth=3; g.strokeStyle='#fff'; const t=fx(HOV,1)+' NM'+(M.PM==='ter'?'':' · '+altTxt(Math.round(M.altAt(HOV)/10)*10)); g.strokeText(t,x+10,y+16); g.fillStyle='#1D4E9E'; g.fillText(t,x+10,y+16); } }
 }
 function fit(){ const P=R.pts.filter(p=>p.la!=null); if(!P.length) return; let a0=90,a1=-90,o0=180,o1=-180; P.forEach(p=>{ a0=Math.min(a0,p.la); a1=Math.max(a1,p.la); o0=Math.min(o0,p.lo); o1=Math.max(o1,p.lo); });
+  if(ML){ mlFit(a0,a1,o0,o1); return; }
   V.la=(a0+a1)/2; V.lo=(o0+o1)/2; const k=Math.cos(V.la*D2R); const w=mapEl.clientWidth, h=mapEl.clientHeight; const top=w<900?120:70, bot=shTarget(h), vh=Math.max(120,h-top-bot);
   V.z=Math.max(4,Math.min(400,Math.min((vh-70)/Math.max(0.05,a1-a0),(w-90)/Math.max(0.05,(o1-o0)*k)))); const ty=top+vh/2; V.la=(a0+a1)/2+(ty-h/2)/V.z; drawMap(); }
 function shTarget(h){ const sh=el('sheet'); if(!sh) return 0; const s=sh.dataset.s; if(window.innerWidth<=900) return 0; return s==='off'?0:s==='min'?46:s==='full'?0:h*(window.innerHeight<=820?0.38:0.44); }
 let drag=null, moved=false; const ptrs=new Map();
 let ptDrag=null;
 function routePtAt(mx,my){ let bi=-1, bd=10; R.pts.forEach((p,i)=>{ if(p.la==null) return; const [x,y]=prj(p.la,p.lo); const d=Math.hypot(x-mx,y-my); if(d<bd){ bd=d; bi=i; } }); return bi; }
-function snapAt(mx,my){ let best=null, bd=14; hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); return best; }
+function snapAt(mx,my){ if(ML) return mlHit(mx,my,14); let best=null, bd=14; hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); return best; }
 function snapPt(h){ const o=h.o; if(h.k==='ap') return {n:o[0],t:'rwy',la:o[2],lo:o[3],elev:o[4]}; if(h.k==='nv') return {n:o[0],t:'wpt',la:o[4],lo:o[5],note:o[2]+(o[3]?' '+o[3]:'')}; if(h.k==='aip') return {n:o[0],t:'wpt',la:o[1],lo:o[2],note:'AIP '+o[3]}; return {n:o.n,t:'wpt',la:o.la,lo:o.lo}; }
-mapEl.addEventListener('pointerdown',e=>{ if(e.target.closest('.mapctl,.mappop,.newpt,.edbar,.ptpop')) return; if(!pickMode&&ptrs.size===0){ const r=mapEl.getBoundingClientRect(); const i=routePtAt(e.clientX-r.left,e.clientY-r.top); if(i>=0){ mapEl.setPointerCapture(e.pointerId); ptDrag={i,x:e.clientX,y:e.clientY,moved:false,snap:null,orig:Object.assign({},R.pts[i])}; closePop(); return; }
-    const lg=legAt(e.clientX-r.left,e.clientY-r.top,e.pointerType==='touch'?14:8); if(lg>0){ const [la,lo]=inv(e.clientX-r.left,e.clientY-r.top); const np={n:'',t:'wpt',la,lo,src:1}; R.pts.splice(lg,0,np); mapEl.setPointerCapture(e.pointerId); ptDrag={i:lg,x:e.clientX,y:e.clientY,moved:false,snap:null,ins:true,orig:Object.assign({},np)}; closePop(); return; } }
+mapEl.addEventListener('pointerdown',e=>{ if(e.target.closest('.mapctl,.mappop,.newpt,.edbar,.ptpop,.maplibregl-ctrl')) return; if(ML&&e.button>0) return; if(!pickMode&&ptrs.size===0){ const r=mapEl.getBoundingClientRect(); const i=routePtAt(e.clientX-r.left,e.clientY-r.top); if(i>=0){ mapEl.setPointerCapture(e.pointerId); ptDrag={i,x:e.clientX,y:e.clientY,moved:false,snap:null,orig:Object.assign({},R.pts[i])}; mlHold(true); closePop(); return; }
+    const lg=legAt(e.clientX-r.left,e.clientY-r.top,e.pointerType==='touch'?14:8); if(lg>0){ const [la,lo]=inv(e.clientX-r.left,e.clientY-r.top); const np={n:'',t:'wpt',la,lo,src:1}; R.pts.splice(lg,0,np); mapEl.setPointerCapture(e.pointerId); ptDrag={i:lg,x:e.clientX,y:e.clientY,moved:false,snap:null,ins:true,orig:Object.assign({},np)}; mlHold(true); closePop(); return; } }
+  if(ML) return;
   mapEl.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]); drag={x:e.clientX,y:e.clientY,la:V.la,lo:V.lo,z:V.z,d:ptrs.size===2?dist2():null}; moved=false; mapEl.style.cursor='grabbing'; });
 function dist2(){ const [a,b]=[...ptrs.values()]; return Math.hypot(a[0]-b[0],a[1]-b[1]); }
-mapEl.addEventListener('pointermove',e=>{ if(ptDrag){ if(Math.abs(e.clientX-ptDrag.x)+Math.abs(e.clientY-ptDrag.y)>3) ptDrag.moved=true; if(!ptDrag.moved) return; const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; const p=R.pts[ptDrag.i]; const sn=snapAt(mx,my); ptDrag.snap=sn; const [la,lo]=sn?[sn.k==='ap'?sn.o[2]:sn.k==='nv'?sn.o[4]:sn.k==='aip'?sn.o[1]:sn.o.la, sn.k==='ap'?sn.o[3]:sn.k==='nv'?sn.o[5]:sn.k==='aip'?sn.o[2]:sn.o.lo]:inv(mx,my); p.la=la; p.lo=lo; drawMapNow(); if(sn){ const [x,y]=prj(la,lo); const g=mx_; g.beginPath(); g.arc(x,y,10,0,7); g.strokeStyle='#1D4E9E'; g.lineWidth=2; g.stroke(); g.font='600 12px Public Sans, sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(snapPt(sn).n,x+12,y+16); } return; }
+mapEl.addEventListener('pointermove',e=>{ if(ptDrag){ if(Math.abs(e.clientX-ptDrag.x)+Math.abs(e.clientY-ptDrag.y)>3) ptDrag.moved=true; if(!ptDrag.moved) return; const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; const p=R.pts[ptDrag.i]; const sn=snapAt(mx,my); ptDrag.snap=sn; const [la,lo]=sn?[sn.k==='ap'?sn.o[2]:sn.k==='nv'?sn.o[4]:sn.k==='aip'?sn.o[1]:sn.o.la, sn.k==='ap'?sn.o[3]:sn.k==='nv'?sn.o[5]:sn.k==='aip'?sn.o[2]:sn.o.lo]:inv(mx,my); p.la=la; p.lo=lo; drawMapNow(); if(sn&&!ML){ const [x,y]=prj(la,lo); const g=mx_; g.beginPath(); g.arc(x,y,10,0,7); g.strokeStyle='#1D4E9E'; g.lineWidth=2; g.stroke(); g.font='600 12px Public Sans, sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(snapPt(sn).n,x+12,y+16); } return; }
   if(!drag||!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,[e.clientX,e.clientY]);
   if(ptrs.size===2){ if(!drag.d){ drag.d=dist2(); drag.z=V.z; } V.z=Math.max(3,Math.min(600,drag.z*dist2()/drag.d)); moved=true; drawMap(); return; }
   const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>3) moved=true; V.la=drag.la+dy/V.z; V.lo=drag.lo-dx/(V.z*Math.cos(V.la*D2R)); drawMap(); });
-const up=e=>{ if(ptDrag){ const d=ptDrag; ptDrag=null; if(!d.moved){ if(d.ins){ R.pts.splice(d.i,1); drawMap(); mapClick(e); return; } selI=d.i; render(); return; } const p=R.pts[d.i];
+const up=e=>{ if(ptDrag){ const d=ptDrag; ptDrag=null; mlHold(false); mlClickT=Date.now(); if(!d.moved){ if(d.ins){ R.pts.splice(d.i,1); drawMap(); mapClick(e); return; } selI=d.i; render(); return; } const p=R.pts[d.i];
     if(d.snap){ const q=snapPt(d.snap); const keepT=['iaf','if','hold','faf','sid'].includes(d.orig.t)?d.orig.t:null; Object.keys(p).forEach(k=>{ if(!['a','d','ter','app'].includes(k)) delete p[k]; }); Object.assign(p,q); if(keepT) p.t=keepT; if(p.t==='rwy'&&d.i!==0&&d.i!==R.pts.length-1) p.t='wpt'; }
     else { p.la=+p.la.toFixed(5); p.lo=+p.lo.toFixed(5); if(d.orig.src||!/^WPT\d+$/.test(p.n||'')){ const n=R.pts.filter(x=>/^WPT\d+$/.test(x.n||'')).length+1; p.n='WPT'+n; } delete p.src; delete p.miss; if(p.t==='rwy') p.t='wpt'; p.note=''; }
     R.rt=''; selI=d.i; render(); queueSave(); return; }
   ptrs.delete(e.pointerId); if(!ptrs.size){ mapEl.style.cursor=''; if(drag&&!moved) mapClick(e); drag=null; } else if(drag){ drag.d=null; } };
-mapEl.addEventListener('pointerup',up); mapEl.addEventListener('pointercancel',e=>{ ptrs.delete(e.pointerId); drag=null; if(ptDrag){ if(ptDrag.ins) R.pts.splice(ptDrag.i,1); else Object.assign(R.pts[ptDrag.i],ptDrag.orig); ptDrag=null; drawMap(); } });
-mapEl.addEventListener('wheel',e=>{ e.preventDefault(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; const [la,lo]=inv(mx,my); V.z=Math.max(3,Math.min(600,V.z*(e.deltaY<0?1.2:1/1.2))); const [la2,lo2]=inv(mx,my); V.la+=la-la2; V.lo+=lo-lo2; drawMap(); },{passive:false});
-el('zin').onclick=()=>{ V.z=Math.min(600,V.z*1.4); drawMap(); }; el('zout').onclick=()=>{ V.z=Math.max(3,V.z/1.4); drawMap(); }; el('zfit').onclick=fit;
+mapEl.addEventListener('pointerup',up); mapEl.addEventListener('pointercancel',e=>{ ptrs.delete(e.pointerId); drag=null; if(ptDrag){ mlHold(false); if(ptDrag.ins) R.pts.splice(ptDrag.i,1); else Object.assign(R.pts[ptDrag.i],ptDrag.orig); ptDrag=null; drawMap(); } });
+mapEl.addEventListener('wheel',e=>{ if(ML) return; e.preventDefault(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; const [la,lo]=inv(mx,my); V.z=Math.max(3,Math.min(600,V.z*(e.deltaY<0?1.2:1/1.2))); const [la2,lo2]=inv(mx,my); V.la+=la-la2; V.lo+=lo-lo2; drawMap(); },{passive:false});
+el('zin').onclick=()=>{ if(ML) return ML.zoomIn(); V.z=Math.min(600,V.z*1.4); drawMap(); }; el('zout').onclick=()=>{ if(ML) return ML.zoomOut(); V.z=Math.max(3,V.z/1.4); drawMap(); }; el('zfit').onclick=fit;
 let pop=null; function closePop(){ if(pop){ pop.remove(); pop=null; } }
 function mapClick(e){ closePop(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
   if(pickMode){ const [la,lo]=inv(mx,my); el('f_c').value=llTxt(la,lo); pickMode=false; mapEl.classList.remove('pick'); el('f_msg').textContent=L({en:'Position picked. Add a name and save.',no:'Posisjon valgt. Gi den et navn og lagre.'}); return; }
-  let best=null, bd=12; hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); if(!best){ const [la,lo]=inv(mx,my); newPointBox(mapEl,mx,my,{la,lo},null); return; }
+  let best=null, bd=12; if(ML) best=mlHit(mx,my,12); else hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); if(!best){ const [la,lo]=inv(mx,my); newPointBox(mapEl,mx,my,{la,lo},null); return; }
   if(best.k==='note'){ noteInfo(best.o); return; }
   showInfo(best); return;
   const o=best.o; let n,t,info,pt;
@@ -1131,7 +1155,7 @@ window.addEventListener('resize',()=>drawMap());
 
 /* ---------- nytt punkt: kart eller profil ---------- */
 function legAt(mx,my,tol){ const A=R.pts; let bi=-1, bd=tol; for(let i=1;i<A.length;i++){ const a=A[i-1], b=A[i]; if(a.la==null||b.la==null||['missed','alt'].includes(b.t)) continue; const [ax,ay]=prj(a.la,a.lo), [bx,by]=prj(b.la,b.lo); const vx=bx-ax, vy=by-ay, L2=vx*vx+vy*vy; if(L2<400) continue; const t=((mx-ax)*vx+(my-ay)*vy)/L2; if(t<0.08||t>0.92) continue; const d=Math.hypot(ax+vx*t-mx,ay+vy*t-my); if(d<bd){ bd=d; bi=i; } } return bi; }
-mapEl.addEventListener('pointermove',e=>{ if(ptDrag||drag||e.pointerType==='touch') return; const r=mapEl.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; mapEl.style.cursor= routePtAt(mx,my)>=0? 'move' : legAt(mx,my,8)>0? 'copy' : ''; });
+mapEl.addEventListener('pointermove',e=>{ if(ptDrag||drag||e.pointerType==='touch') return; if(ML&&(e.buttons||ML.isMoving())) return; const r=mapEl.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; const c= routePtAt(mx,my)>=0? 'move' : legAt(mx,my,8)>0? 'copy' : ML&&mlHit(mx,my,10)? 'pointer' : ''; (ML?ML.getCanvasContainer():mapEl).style.cursor=c; });
 function nearestLeg(la,lo){ const A=R.pts; let bi=-1, bd=1e9; for(let i=1;i<A.length;i++){ const a=A[i-1], b=A[i]; if(a.la==null||b.la==null) continue; const [ax,ay]=prj(a.la,a.lo), [bx,by]=prj(b.la,b.lo), [px,py]=prj(la,lo); const vx=bx-ax, vy=by-ay, t=Math.max(0,Math.min(1,((px-ax)*vx+(py-ay)*vy)/Math.max(1e-6,vx*vx+vy*vy))); const d=Math.hypot(ax+vx*t-px,ay+vy*t-py); if(d<bd){ bd=d; bi=i; } } return bi; }
 let npBox=null;
 function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
@@ -1338,6 +1362,7 @@ el('del').onclick=async()=>{ if(!window.confirm(L({en:'Delete this route?',no:'S
 
 /* ---------- språk ---------- */
 LAB.add({},{
+ 'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Norway topo':'Norge topo','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
  'Already planned in ForeFlight or Garmin Pilot?':'Allerede planlagt i ForeFlight eller Garmin Pilot?','Upload a screenshot or PDF of your route or profile. It goes straight into your briefing pack.':'Last opp et skjermbilde eller en PDF av ruten eller profilen. Det går rett inn i briefingpakken din.','⇪ Upload screenshot or PDF':'⇪ Last opp skjermbilde eller PDF','Add to the briefing pack':'Legg til i briefingpakken','Name':'Navn','Add to briefing pack':'Legg til i briefingpakken','Cancel':'Avbryt',
  'Send to the briefing pack':'Send til briefing pack','Goes with it:':'Følger med:','Route, markers and notes are saved together as one route.':'Rute, markører og notater lagres samlet som én rute.',
  'Relief':'Relieff','Plain':'Lys','Layers':'Kartlag','What the map shows':'Hva kartet viser','Terrain (relief)':'Terreng (relieff)','Briefing pack':'Briefing pack','Search an airport or fix, or paste a route':'Søk flyplass eller fix, eller lim inn en rute',
@@ -1372,7 +1397,7 @@ LAB.add({},{
  'Build the route on the map and see it from the side: climb, cruise, descent, hold, approach and missed approach, with the terrain under it. Send the finished profile to your briefing pack.':'Bygg ruten på kartet og se den fra siden: stigning, marsj, sink, holding, innflyging og missed approach, med terrenget under. Send den ferdige profilen til briefingpakken.',
  'New':'Ny','Duplicate':'Dupliser','Delete':'Slett','Also fill the navigation log':'Fyll også navigasjonsloggen','Send to briefing pack':'Send til briefingpakken','Print':'Skriv ut',
  'Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it':'Dra for å flytte · scroll eller knip for å zoome · klikk på noe for å legge det til · dra et rutepunkt, eller dra linjen for å legge til et punkt · klikk på et punkt for å fjerne det',
- 'Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Coastline: Natural Earth. Terrain: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.':'Flyplasser og navigasjonshjelpemidler: OurAirports. IFR-punkter for Finland (Fintraffic eAIP ENR 4.4, fri gjenbruk) og Island (Isavia eAIP ENR 4.4, ikke-kommersiell bruk). Norge, Sverige og Danmark er tatt ut til AIP-utgiverne gir tillatelse: legg inn punktene du trenger under Mine fixes. Kystlinje: Natural Earth. Terreng: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM og GMTED2010 (USGS); ETOPO1 (NOAA). Kun til planlegging. Sjekk alltid posisjoner mot AIP og gjeldende kart.',
+ 'Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0). Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.':'Flyplasser og navigasjonshjelpemidler: OurAirports. IFR-punkter for Finland (Fintraffic eAIP ENR 4.4, fri gjenbruk) og Island (Isavia eAIP ENR 4.4, ikke-kommersiell bruk). Norge, Sverige og Danmark er tatt ut til AIP-utgiverne gir tillatelse: legg inn punktene du trenger under Mine fixes. Kart: OpenFreeMap © OpenMapTiles, data fra OpenStreetMap (ODbL). Satellitt: Sentinel-2 cloudless 2016 fra EOX IT Services GmbH, inneholder modifiserte Copernicus Sentinel-data 2016 (CC BY 4.0). Norge topo: © Kartverket (CC BY 4.0). Kartbibliotek: MapLibre GL JS (BSD-3). Kystlinje når kartet virker uten nett: Natural Earth. Terreng, relieff og 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM og GMTED2010 (USGS); ETOPO1 (NOAA). Kun til planlegging. Sjekk alltid posisjoner mot AIP og gjeldende kart.',
  'Route':'Rute','Approach':'Innflyging','Levels and weather':'Høyder og vær','My fixes':'Mine fixes',
  'Route (aerodromes, navaids, your fixes or coordinates; add /altitude to a point)':'Rute (flyplasser, navigasjonshjelpemidler, dine fixes eller koordinater; legg til /høyde på et punkt)',
  'Build route':'Bygg ruten','E.g.':'F.eks.','Cruise altitude / level':'Marsjhøyde / flygenivå','Climb gradient (ft/NM)':'Stigegradient (ft/NM)','Descent gradient (ft/NM)':'Sinkgradient (ft/NM)',
@@ -1397,9 +1422,9 @@ LAB.start('route');
 /* ================= Route Explorer 2.0 ================= */
 // kartstil og lag
 const LY0={ap:1,nv:1,fx:1,ter:1,nt:1,mef:1}; const LYD={vfr:LY0,ifr:LY0};
-let MM='vfr', LY=Object.assign({},LYD.vfr);
-try{ const j=JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,j.ly||{}); } }catch(e){}
-function saveLY(){ try{ localStorage.setItem('bb-rx-v2',JSON.stringify({m:MM,ly:LY})); }catch(e){} }
+let MM='vfr', LY=Object.assign({},LYD.vfr), BM='chart';
+try{ const j=JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,j.ly||{}); if(['chart','terrain','sat','topo'].includes(j.bm)) BM=j.bm; } }catch(e){}
+function saveLY(){ try{ localStorage.setItem('bb-rx-v2',JSON.stringify({m:MM,ly:LY,bm:BM})); }catch(e){} }
 function lyUI(){ el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
 el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; MM=b.dataset.m; saveLY(); lyUI(); drawMap(); });
 el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); drawMap(); });
@@ -1627,7 +1652,7 @@ function rnd3(){ if(RND) return; const cv=el('m3d'); RND=new THREE.WebGLRenderer
   cv.addEventListener('webglcontextlost',e=>{ e.preventDefault(); T3.lost=true; }); cv.addEventListener('webglcontextrestored',()=>{ T3.lost=false; if(T3.on) build3(); });
   if(window.ResizeObserver) new ResizeObserver(()=>kick3()).observe(cv); }
 function pw3(){ const p=el('x3w'); if(window.innerWidth<=900||!p||p.hidden) return 0; return Math.round(p.offsetWidth+p.offsetLeft); }
-function kick3(){ if(!T3.on||T3.raf||document.hidden||!T3.S) return; T3.raf=requestAnimationFrame(frame3); }
+function kick3(){ if(ML) return mlKick3(); if(!T3.on||T3.raf||document.hidden||!T3.S) return; T3.raf=requestAnimationFrame(frame3); }
 function frame3(now){ T3.raf=0; if(!T3.on||!T3.S||document.hidden||T3.lost) return; const cv=el('m3d'), w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return;
   const pw=pw3(); if(w!==T3.w||h!==T3.h||pw!==T3.pw){ RND.setSize(w,h,false); CAM.aspect=(w+pw)/h; if(pw) CAM.setViewOffset(w+pw,h,0,0,w,h); else CAM.clearViewOffset(); CAM.updateProjectionMatrix(); T3.w=w; T3.h=h; T3.pw=pw; }
   const dt=T3.t?Math.min(0.1,(now-T3.t)/1000):0; T3.t=now; const Q=T3.S, M=Q.M, tot=M.total||0;
@@ -1650,7 +1675,7 @@ function ui3(){ const Q=T3.S, G=Q&&Q.G, M=Q&&Q.M;
   const has=!!(M&&M.C.length>=2&&M.total>0); el('x3').hidden=!has; if(has) el('x3r').max=String(Math.round(M.total*10)/10);
   el('x3leg').hidden=!has||M.PM==='ter'; el('x3pm').hidden=!has||M.PM!=='ter';
   el('x3ex').textContent=L({en:'Terrain ×',no:'Terreng ×'})+T3.ex+(T3.ex>1&&!PHONE3()?' '+L({en:'(exaggerated)',no:'(overdrevet)'}):''); ui3p(); if(has) x3ro(T3.x); }
-async function set3(on){ T3.on=on; el('m3d').hidden=!on; el('map').classList.toggle('dim3',on); el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on;
+async function set3(on){ if(ML) return ml3(on); T3.on=on; el('m3d').hidden=!on; el('map').classList.toggle('dim3',on); el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on;
   if(!on){ T3.play=false; T3.tok++; if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } if(T3.S){ const c=T3.cam, Q=T3.S; if(c){ V.lo=Q.G.lo0+c.tx/Q.G.kx; V.la=Q.G.la0-c.tz/Q.G.kz; } disp3(Q.scene); T3.S=null; } el('m3msg').hidden=true; drawMap(); return; }
   if(window.innerWidth<=900&&el('sheet').dataset.s==='mid') setSheet('min');
   el('m3msg').hidden=false; el('m3msg').textContent=L({en:'Loading the terrain…',no:'Laster terrenget …'});
@@ -1670,15 +1695,15 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden){ T3.t=0; 
   const up=e=>{ P.delete(e.pointerId); pin=null; if(!P.size) cv.style.cursor=''; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up); cv.addEventListener('contextmenu',e=>e.preventDefault());
   cv.addEventListener('wheel',e=>{ e.preventDefault(); if(!T3.cam||!T3.S) return; fromChase(); zoom(e.deltaY<0?0.88:1.14); kick3(); },{passive:false}); }
 // utforsk ruten: fly, pause og spol (synket med profilen og avlesningen)
-function x3ro(x){ const Q=T3.S; if(!Q||!Q.M) return; const M=Q.M, q=tpq(x), t=q&&q.e, a=M.PM==='ter'?null:M.altAt(x);
+function x3ro(x){ const M=ML?compute():(T3.S&&T3.S.M); if(!M) return; const q=tpq(x), t=q&&q.e, a=M.PM==='ter'?null:M.altAt(x);
   el('x3o').textContent=`${fx(x,1)} / ${fx(M.total,1)} NM`+(t!=null?` · ${L({en:'terrain',no:'terreng'})} ${fx(Math.round(t))} ft`:'')+(a!=null?` · ${L({en:'line',no:'linje'})} ${altTxt(Math.round(a/10)*10)}`:'')+(a!=null&&t!=null?` (${a-t>=0?'+':'−'}${fx(Math.abs(Math.round((a-t)/10)*10))} ft)`:''); }
 el('x3r').addEventListener('input',()=>{ const x=+el('x3r').value; T3.x=x; T3.drive=T3.follow; setHov(x,true); x3ro(x); kick3(); });
 el('x3f').addEventListener('change',()=>{ T3.follow=el('x3f').checked; T3.drive=T3.follow&&(T3.play||HOV!=null); kick3(); });
-el('x3play').onclick=()=>{ const Q=T3.S; if(!Q||!Q.M.total) return; T3.play=!T3.play; if(T3.play){ if(T3.x>=Q.M.total-1e-6) T3.x=0; T3.drive=T3.follow; T3.t=0; } ui3p(); kick3(); };
-el('x3exs').addEventListener('change',()=>{ T3.ex=+el('x3exs').value; if(T3.on&&T3.S){ const old=T3.S.E(1000)||1, c=T3.cam; build3().then(()=>{ if(c&&T3.S) c.ty*=T3.S.E(1000)/old; T3.snap=true; kick3(); }); } });
+el('x3play').onclick=()=>{ const tot=ML?compute().total:(T3.S&&T3.S.M.total); if(!tot) return; T3.play=!T3.play; if(T3.play){ if(T3.x>=tot-1e-6) T3.x=0; T3.drive=T3.follow; T3.t=0; } ui3p(); kick3(); };
+el('x3exs').addEventListener('change',()=>{ T3.ex=+el('x3exs').value; if(ML){ if(T3.on){ RXMAP.set3D(ML,true,T3.ex); mlUi3(); drawMap(); } return; } if(T3.on&&T3.S){ const old=T3.S.E(1000)||1, c=T3.cam; build3().then(()=>{ if(c&&T3.S) c.ty*=T3.S.E(1000)/old; T3.snap=true; kick3(); }); } });
 el('x3ct').addEventListener('change',()=>{ T3.ct=+el('x3ct').value; if(T3.S){ T3.S.mat.uniforms.uI.value=T3.ct; kick3(); } });
 el('x3more').onclick=()=>{ const w=el('x3w'), o=!w.classList.contains('open'); w.classList.toggle('open',o); el('x3more').setAttribute('aria-expanded',String(o)); };
-el('x3reset').onclick=()=>{ T3.play=false; ui3p(); cam3(); kick3(); };
+el('x3reset').onclick=()=>{ T3.play=false; ui3p(); if(ML){ ml3Fit(); return; } cam3(); kick3(); };
 /* ================= Mitt bibliotek: ruter, lagrede visninger og notater ================= */
 let VIEWS=[], NOTES=[];
 async function libLoad(){ try{ VIEWS=await NSTORE.list('mapview'); NOTES=await NSTORE.list('mapnote'); }catch(e){} drawMap(); if(!el('lib').hidden) libDraw(); }
@@ -1700,13 +1725,16 @@ el('lib').addEventListener('click',async e=>{ const t=e.target.closest('button')
   if(t.dataset.r){ const r=ALL.find(x=>x.id===t.dataset.r); if(r){ load(r); setTimeout(fit,50); } libOpen(false); return; }
   if(t.dataset.a==='save'){ const nm=(el('vname').value||'').trim()||(R.title||L({en:'My view',no:'Min visning'})); const v={id:'v'+Date.now().toString(36),name:nm,la:V.la,lo:V.lo,z:V.z,mm:MM,ly:Object.assign({},LY),rid:R.pts.length>=2?R.id:null};
     if(T3.on&&T3.cam) v.d3={cam:Object.assign({},T3.cam),ex:T3.ex,x:+el('x3r').value||0};
+    if(ML){ v.ml={p:+ML.getPitch().toFixed(1),b:+ML.getBearing().toFixed(1),bm:BM}; if(T3.on) v.d3={ex:T3.ex,x:+el('x3r').value||0}; }
     await NSTORE.put('mapview',v); VIEWS.unshift(v); libDraw(); return; }
   if(t.dataset.dv){ await NSTORE.del('mapview',t.dataset.dv); VIEWS=VIEWS.filter(v=>v.id!==t.dataset.dv); libDraw(); return; }
   if(t.dataset.v){ const v=VIEWS.find(x=>x.id===t.dataset.v); if(v) openView(v); libOpen(false); return; }
   if(t.dataset.n){ const n=NOTES.find(x=>x.id===t.dataset.n); if(n){ V.la=n.la; V.lo=n.lo; V.z=Math.max(V.z,120); if(T3.on) await set3(false); drawMap(); noteInfo(n); } libOpen(false); return; } });
 async function openView(v){ if(v.rid){ const r=ALL.find(x=>x.id===v.rid); if(r&&r!==R) load(r); }
   MM=v.mm==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,v.ly||{}); saveLY(); lyUI(); V.la=v.la; V.lo=v.lo; V.z=v.z;
-  if(v.d3){ T3.ex=v.d3.ex||2; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
+  if(ML){ if(v.ml&&v.ml.bm) setBM(v.ml.bm); if(v.d3){ T3.ex=v.d3.ex||2; el('x3exs').value=String(T3.ex); if(!T3.on) await set3(true); else RXMAP.set3D(ML,true,T3.ex); } else if(T3.on) await set3(false);
+    MLV={la:v.la,lo:v.lo,z:v.z}; ML.jumpTo({center:[v.lo,v.la],zoom:mlZ(v.z,v.la),pitch:v.ml?v.ml.p:(v.d3?60:0),bearing:v.ml?v.ml.b:0}); if(v.d3&&v.d3.x){ el('x3r').value=v.d3.x; T3.x=v.d3.x; setHov(v.d3.x,true); x3ro(v.d3.x); } drawMap(); return; }
+  if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||2; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
   else { if(T3.on) await set3(false); V.la=v.la; V.lo=v.lo; V.z=v.z; drawMap(); } }
 // notater på kartet
 function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="Close">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
@@ -1768,12 +1796,104 @@ document.addEventListener('pointerdown',e=>{ if(!e.target.closest('#packpop,#pac
 // rute-linjen
 el('rmore').onclick=()=>{ const x=el('routex'); x.hidden=!x.hidden; el('rmore').setAttribute('aria-expanded',String(!x.hidden)); el('rmore').textContent=x.hidden?'▾':'▴'; };
 
+/* ================= MapLibre-kartet (rxmap.js), med lerretskartet som reserve =================
+   Lerretskartet tegnes først. MapLibre lastes i bakgrunnen; er stil og første kartflis på plass
+   innen ca. 6 s, byttes kartet. Ellers (artefakt uten nett, ingen WebGL, frakoblet) blir lerretskartet. */
+let mlClickT=0, MLV=null; const MLK={};
+const mlZ=(z,la)=>Math.log2(Math.max(1e-6,z*360*Math.cos(la*D2R)/512)); // px per breddegrad -> MapLibre-zoom
+const mlVz=(Z,la)=>512*2**Z/(360*Math.cos(la*D2R));
+if(/[?&]debug\b/.test(location.search)) window.__rx={get ML(){ return ML; },get R(){ return R; },compute,prj};
+function mlWanted(){ const q=new URLSearchParams(location.search).get('map'); if(q==='canvas') return false; if(q==='ml') return !!window.RXMAP;
+  try{ if(localStorage.getItem('bb-rx-map')==='canvas') return false; }catch(e){} return !!window.RXMAP&&navigator.onLine!==false; }
+function mlLib(){ return new Promise((ok,ko)=>{ if(window.maplibregl) return ok(); const l=document.createElement('link'); l.rel='stylesheet'; l.href='vendor/maplibre/maplibre-gl.css?v=5.24.0'; document.head.appendChild(l);
+  const s=document.createElement('script'); s.src='vendor/maplibre/maplibre-gl.js?v=5.24.0'; s.onload=()=>window.maplibregl?ok():ko(new Error('maplibre')); s.onerror=()=>ko(new Error('maplibre-gl.js')); document.head.appendChild(s); }); }
+const mlRelief=()=>!LY.ter?'off':MM;
+async function mlStart(){ if(!mlWanted()){ mapEl.dataset.map='canvas'; return; } const t0=Date.now(); mapEl.dataset.map='loading';
+  const div=document.createElement('div'); div.className='mlmap wait'; div.id='mlmap'; mapEl.insertBefore(div,mapEl.firstChild);
+  try{ await mlLib(); const m=await RXMAP.create(div,{center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(1500,6000-(Date.now()-t0))});
+    if(T3.on) await set3(false); ML=m; mlInit(); }
+  catch(e){ div.remove(); ML=null; mapEl.dataset.map='canvas'; try{ console.info('Route Explorer: using the built-in canvas map ('+((e&&e.message)||e)+')'); }catch(_){} drawMap(); } }
+function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); mapEl.dataset.map='maplibre'; el('mlmap').classList.remove('wait'); el('bmsel').hidden=false; bmUI();
+  m.on('move',()=>{ const c=m.getCenter(); V.la=c.lat; V.lo=c.lng; V.z=mlVz(m.getZoom(),c.lat); MLV={la:V.la,lo:V.lo,z:V.z}; try{ ptPop(); }catch(e){} });
+  m.on('moveend',()=>{ windyHref(); mlMef(); });
+  m.on('dragstart',()=>{ if(T3.drive){ T3.drive=false; T3.mb=null; try{ m.setCenterClampedToGround(true); }catch(e){} } });
+  m.on('click',e=>{ if(Date.now()-mlClickT<350) return; mapClick(e.originalEvent); });
+  MLV={la:V.la,lo:V.lo,z:V.z}; m.jumpTo({center:[V.lo,V.la],zoom:mlZ(V.z,V.la)});
+  mlStatic(); drawMap(); }
+function mlHold(on){ if(!ML) return; if(on){ ML.dragPan.disable(); ML.touchZoomRotate.disable(); } else { ML.dragPan.enable(); ML.touchZoomRotate.enable(); if(!T3.on) ML.touchZoomRotate.disableRotation(); } }
+function mlHit(mx,my,r){ const h=ML&&RXMAP.hit(ML,mx,my,r); if(!h) return null; const o= h.k==='ap'?NAV.ap[h.i] : h.k==='nv'?NAV.nv[h.i] : h.k==='aip'?NAV.fx[h.i] : h.k==='fix'?FIX[h.i] : h.k==='note'?NOTES[h.i] : null; return o?{x:h.x,y:h.y,k:h.k,o}:null; }
+const mlF=(g,p)=>({type:'Feature',geometry:g,properties:p||{}}), mlP=(la,lo)=>({type:'Point',coordinates:[lo,la]}), mlC=a=>({type:'FeatureCollection',features:a});
+function mlPut(id,fc){ const k=JSON.stringify(fc); if(MLK[id]===k) return; MLK[id]=k; RXMAP.setData(ML,id,fc); }
+function mlStatic(){ if(!NAV) return;
+  RXMAP.setData(ML,'bb-ap',mlC(NAV.ap.map((a,i)=>mlF(mlP(a[2],a[3]),{k:'ap',i,c:a[5]||0,n:a[0]}))));
+  RXMAP.setData(ML,'bb-nv',mlC(NAV.nv.map((n,i)=>mlF(mlP(n[4],n[5]),{k:'nv',i,n:n[0],ndb:/NDB/.test(n[2])?1:0}))));
+  RXMAP.setData(ML,'bb-fx',mlC((NAV.fx||[]).map((p,i)=>mlF(mlP(p[1],p[2]),{k:'aip',i,n:p[0]}))));
+  RXMAP.setData(ML,'bb-awy',mlC(Object.keys(AWY||{}).map(k=>{ const c=(AWY[k]||[]).filter(p=>p[1]!=null).map(p=>[p[2],p[1]]); return c.length>1?mlF({type:'LineString',coordinates:c},{n:k.split('@')[0]}):null; }).filter(Boolean))); }
+function mlSync(){ const m=ML; if(!m||!R) return;
+  if(MLV&&(Math.abs(V.la-MLV.la)>1e-7||Math.abs(V.lo-MLV.lo)>1e-7||Math.abs(V.z-MLV.z)>MLV.z*1e-4)){ MLV={la:V.la,lo:V.lo,z:V.z}; m.easeTo({center:[V.lo,V.la],zoom:mlZ(V.z,V.la),duration:450}); }
+  const lk=JSON.stringify([LY,MM]); if(MLK.ly!==lk){ MLK.ly=lk; RXMAP.setGroups(m,LY); RXMAP.setRelief(m,mlRelief()); }
+  const M=compute(), legs=[]; let prev=null; R.pts.forEach(p=>{ if(p.la==null) return; if(prev){ const n=Math.max(1,Math.min(64,Math.ceil(gc(prev,p)/4))), c=[]; for(let i=0;i<=n;i++) c.push([prev.lo+(p.lo-prev.lo)*i/n,prev.la+(p.la-prev.la)*i/n]); legs.push(mlF({type:'LineString',coordinates:c},{d:['missed','alt'].includes(p.t)?1:0})); } prev=p; }); // samme linje som profilen (lineært i bredde/lengde)
+  mlPut('bb-leg',mlC(legs)); mlPut('bb-rpt',mlC(R.pts.map((p,i)=>p.la==null?null:mlF(mlP(p.la,p.lo),{n:p.n||'',s:i===selI?1:0})).filter(Boolean)));
+  { const cr=crit(M), q=cr&&M.posAt(cr.x); let f=[]; if(q&&q.la!=null){ const c=cr.m!=null&&cr.m<0?'r':cr.m!=null&&cr.m<(+S('mg')||1000)?'a':'n'; const t=cr.m==null? fx(Math.round(cr.t))+' ft' : (cr.m<0?'−':'')+fx(Math.abs(Math.round(cr.m/10)*10))+' ft'; f=[mlF(mlP(q.la,q.lo),{c,t})]; } mlPut('bb-crit',mlC(f)); }
+  { let f=[]; if(HOV!=null){ const q=M.posAt(HOV); if(q&&q.la!=null) f=[mlF(mlP(q.la,q.lo),{t:fx(HOV,1)+' NM'+(M.PM==='ter'?'':' · '+altTxt(Math.round(M.altAt(HOV)/10)*10))})]; } mlPut('bb-hov',mlC(f)); }
+  { let f=[]; const sn=ptDrag&&ptDrag.snap; if(sn){ const q=snapPt(sn); f=[mlF(mlP(q.la,q.lo),{n:q.n})]; } mlPut('bb-snap',mlC(f)); }
+  mlPut('bb-my',mlC(FIX.map((f,i)=>f.la==null?null:mlF(mlP(f.la,f.lo),{k:'fix',i,n:f.n})).filter(Boolean)));
+  mlPut('bb-note',mlC(NOTES.map((n,i)=>mlF(mlP(n.la,n.lo),{k:'note',i,t:(n.t||'').split('\n')[0].slice(0,28)}))));
+  mlMef(); if(T3.on){ ml3Path(M); mlUi3(M); } }
+function mlMef(){ if(!ML) return; const q=LY.mef&&window.TERRAIN&&!T3.on? (V.z>=150?0.5:V.z>=70?1:0) : 0; const pts=[], gl=[];
+  if(q){ const b=ML.getBounds(), la0=b.getSouth(), la1=b.getNorth(), lo0=b.getWest(), lo1=b.getEast(); const qa0=Math.floor(la0/q)*q, qo0=Math.floor(lo0/q)*q;
+    if((la1-qa0)/q*(lo1-qo0)/q<900){ for(let la=qa0;la<la1;la+=q) for(let lo=qo0;lo<lo1;lo+=q){ const v=mefOf(q,la,lo); if(!v) continue; const th=Math.floor(v/1000), hu=Math.round((v%1000)/100); pts.push(mlF(mlP(la+q/2,lo+q/2),{th:th?String(th):'',hu:String(hu)})); }
+      if(q===0.5){ for(let lo=qo0;lo<=lo1;lo+=q) gl.push(mlF({type:'LineString',coordinates:[[lo,la0],[lo,la1]]})); for(let la=qa0;la<=la1;la+=q) gl.push(mlF({type:'LineString',coordinates:[[lo0,la],[lo1,la]]})); } } }
+  mlPut('bb-mef',mlC(pts)); mlPut('bb-mefg',mlC(gl)); }
+function mlFit(a0,a1,o0,o1){ const m=ML, w=mapEl.clientWidth, h=mapEl.clientHeight; const pad={top:(w<900?120:70)+30,bottom:shTarget(h)+35,left:45,right:60};
+  if(pad.top+pad.bottom>h-80){ const k=(h-80)/(pad.top+pad.bottom); pad.top*=k; pad.bottom*=k; }
+  const bearing=T3.on?m.getBearing():0; let cam=null; try{ cam=m.cameraForBounds([[o0,a0],[o1,a1]],{padding:pad,maxZoom:11.5,bearing}); }catch(e){}
+  if(!cam){ m.easeTo({center:[(o0+o1)/2,(a0+a1)/2],duration:500}); return; }
+  m.easeTo(Object.assign({},cam,{bearing,pitch:T3.on?62:0,zoom:cam.zoom-(T3.on?0.35:0),duration:600})); }
+// grunnkart
+function bmUI(){ el('bmsel').querySelectorAll('[data-b]').forEach(b=>{ const on=b.dataset.b===BM; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); }); }
+function setBM(b){ BM=b; saveLY(); bmUI(); if(ML) RXMAP.setBasemap(ML,BM); }
+el('bmsel').addEventListener('click',e=>{ const b=e.target.closest('[data-b]'); if(b) setBM(b.dataset.b); });
+// 3D i MapLibre: terreng fra AWS, ruten draperes, planlagt bane som gardin i høyden
+function ml3(on){ T3.on=on; el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on; el('m3msg').hidden=true;
+  { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3hint').hidden=true; el('x3hml').hidden=false;
+  if(!on){ T3.play=false; T3.drive=false; T3.mb=null; try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
+  if(window.innerWidth<=900&&el('sheet').dataset.s==='mid') setSheet('min');
+  RXMAP.set3D(ML,true,T3.ex); ml3Fit(); MLK.p3=''; drawMap(); return Promise.resolve(); }
+function ml3Fit(){ T3.drive=false; T3.mb=null; try{ ML.setCenterClampedToGround(true); }catch(e){} const m=ML, P=R.pts.filter(p=>p.la!=null&&!['missed','alt'].includes(p.t)); let b=m.getBearing();
+  if(P.length>=2){ b=((brg(P[0],P[P.length-1])-70)%360+540)%360-180; let a0=90,a1=-90,o0=180,o1=-180; P.forEach(p=>{ a0=Math.min(a0,p.la); a1=Math.max(a1,p.la); o0=Math.min(o0,p.lo); o1=Math.max(o1,p.lo); });
+    let cam=null; try{ cam=m.cameraForBounds([[o0,a0],[o1,a1]],{padding:{top:60,bottom:Math.min(shTarget(mapEl.clientHeight)+40,mapEl.clientHeight/2),left:pw3()+40,right:60},bearing:b,maxZoom:11}); }catch(e){}
+    if(cam){ m.easeTo(Object.assign({},cam,{bearing:b,pitch:62,zoom:cam.zoom+0.2,duration:1100})); return; } }
+  m.easeTo({pitch:62,bearing:b,duration:900}); }
+function ml3Path(M){ const tot=M.total||0; const key=JSON.stringify([R.pts,R.s,R.mk,M.PM,TP&&TP.pts&&TP.pts.length,T3.ex]);
+  if(M.PM==='ter'||M.C.length<2||!tot){ RXMAP.setPath3D(ML,null,null); MLK.p3=''; return; }
+  if(MLK.p3!==key){ MLK.p3=key; const n=Math.max(80,Math.min(600,Math.round(tot*3))), xs=new Set(); for(let i=0;i<=n;i++) xs.add(+(tot*i/n).toFixed(4)); M.C.forEach(c=>{ if(c.x>=0&&c.x<=tot) xs.add(+c.x.toFixed(4)); });
+    const hx=h=>[(h>>16&255)/255,(h>>8&255)/255,(h&255)/255]; MLK.pts=[...xs].sort((a,b)=>a-b).map(x=>{ const q=M.posAt(x); return q&&q.la!=null?{la:q.la,lo:q.lo,alt:M.altAt(x),col:hx(CLS3[cls3(M,x)])}:null; }).filter(Boolean); }
+  let hov=null; const at=T3.play?T3.x:HOV; if(at!=null){ const q=M.posAt(at); if(q&&q.la!=null) hov={la:q.la,lo:q.lo,alt:M.altAt(at)}; }
+  RXMAP.setPath3D(ML,MLK.pts,hov); }
+function mlUi3(M){ M=M||compute(); const has=M.C.length>=2&&M.total>0; el('x3').hidden=!has; if(has) el('x3r').max=String(Math.round(M.total*10)/10);
+  el('x3leg').hidden=!has||M.PM==='ter'; el('x3pm').hidden=!has||M.PM!=='ter';
+  el('x3d').textContent=L({en:'Terrain: AWS Terrain Tiles (about 30 m in Europe). The line in the air is your planned altitude.',no:'Terreng: AWS Terrain Tiles (omtrent 30 m i Europa). Linjen i lufta er den planlagte høyden din.'});
+  el('x3ex').textContent=L({en:'Terrain ×',no:'Terreng ×'})+T3.ex+(T3.ex>1&&!PHONE3()?' '+L({en:'(exaggerated)',no:'(overdrevet)'}):''); ui3p(); if(has) x3ro(T3.x); }
+function ml3Alt(M,x){ if(M.PM!=='ter') return M.altAt(x); const q=tpq(x); return ((q&&(q.c!=null?q.c:q.e))||0)+2000; }
+function mlKick3(){ if(!T3.on||T3.raf||document.hidden) return; T3.raf=requestAnimationFrame(mlFrame3); }
+function mlFrame3(now){ T3.raf=0; if(!T3.on||!ML) return; const dt=T3.t?Math.min(0.1,(now-T3.t)/1000):0; T3.t=now; const M=compute(), tot=M.total||0;
+  if(T3.play&&tot>0){ T3.x=Math.min(tot,T3.x+dt*tot/T3.dur); el('x3r').value=T3.x; HOV=T3.x; rdo(T3.x); x3ro(T3.x); drawMap(); if(T3.x>=tot){ T3.play=false; ui3p(); } }
+  const at=T3.play?T3.x:HOV;
+  if(at!=null&&tot>0&&T3.follow&&T3.drive){ const d=Math.max(0.5,tot*0.01), q=M.posAt(at), q0=M.posAt(Math.max(0,at-d)), q2=M.posAt(Math.min(tot,at+d));
+    if(q&&q.la!=null&&q0&&q2&&q0.la!=null&&q2.la!=null){ const tb=brg(q0,q2); if(T3.mb==null) T3.mb=tb; const db=((tb-T3.mb)%360+540)%360-180; T3.mb+=db*(dt>0?1-Math.exp(-dt*2.5):1);
+      // jaktkamera: bak og over flyet, ser fremover langs ruten (høyder i meter, med samme overdrivelse som terrenget)
+      const ex=RXMAP.exag(ML)||1, a=ml3Alt(M,at)*0.3048*ex, back=Math.max(2.5,Math.min(8,tot*0.04));
+      const [cla,clo]=offs(q.la,q.lo,T3.mb+180,back), [tla,tlo]=offs(q.la,q.lo,T3.mb,back*0.5);
+      try{ ML.setCenterClampedToGround(false); ML.jumpTo(ML.calculateCameraOptionsFromTo([clo,cla],a+back*1852*0.5,[tlo,tla],a-back*1852*0.25)); }catch(e){} } }
+  drawMap(); if(T3.play) mlKick3(); else T3.t=0; }
+
 // høyde på kartet
 function rxTop(){ const r=el('rx'); const tp=document.querySelector('.rx-top'); if(tp) r.style.setProperty('--tch',(tp.offsetTop+tp.offsetHeight+8)+'px'); const t=r.getBoundingClientRect().top+window.scrollY; r.style.setProperty('--rxtop',Math.max(0,Math.min(200,t))+'px'); }
 window.addEventListener('resize',()=>{ rxTop(); shH(); drawMap(); }); setTimeout(rxTop,0); setTimeout(rxTop,600);
 lyUI();
 LAB.onLang(()=>{ render(); drawFix(); lyUI(); pmUI(); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
-Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; load(ALL[0]); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
+Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; load(ALL[0]); mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>
 <script>try{ if(matchMedia("(max-width:480px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass, punkt eller rute":"Airport, fix or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
