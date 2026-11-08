@@ -9,7 +9,7 @@ const STYLE_URL='https://tiles.openfreemap.org/styles/positron';
 // AWS Terrain Tiles (terrarium): z/x/y
 const DEM_URL='https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 // EOX Sentinel-2 cloudless 2016 (WMTS REST: TileMatrix/TileRow/TileCol = z/y/x). Only the 2016 layer is CC BY 4.0.
-const SAT_URL='https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg';
+const SAT_URL='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 // Kartverket topo (WMTS REST: TileMatrix/TileRow/TileCol = z/y/x)
 const TOPO_URL='https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png';
 /* openAIP airspace (vector tiles). Needs a free API key from openaip.net (My account → API clients).
@@ -25,7 +25,7 @@ const A=(h,t)=>`<a href="${h}" target="_blank" rel="noopener">${t}</a>`;
 const ATT={
   ofm:A('https://openfreemap.org','OpenFreeMap')+' '+A('https://www.openmaptiles.org/','© OpenMapTiles')+' Data from '+A('https://www.openstreetmap.org/copyright','OpenStreetMap'),
   dem:'Terrain: '+A('https://github.com/tilezen/joerd/blob/master/docs/attribution.md','Mapzen/AWS Terrain Tiles (SRTM, GMTED, EU-DEM © Copernicus, ETOPO1)'),
-  sat:A('https://s2maps.eu','Sentinel-2 cloudless – https://s2maps.eu')+' by '+A('https://eox.at','EOX IT Services GmbH')+' (Contains modified Copernicus Sentinel data 2016)',
+  sat:'Imagery '+A('https://www.esri.com','© Esri')+', Maxar, Earthstar Geographics, and the GIS User Community',
   topo:A('https://www.kartverket.no/','© Kartverket'),
   nav:'Airports, navaids: '+A('https://ourairports.com/data/','OurAirports'),
   oaip:'Airspace: '+A('https://www.openaip.net','© openAIP')+' ('+A('https://creativecommons.org/licenses/by-nc/4.0/','CC BY-NC 4.0')+')'
@@ -134,7 +134,7 @@ function buildStyle(base,o){
   st.sources['bb-dem']=Object.assign({},dem); st.sources['bb-demh']=Object.assign({},dem);
   // 512 px CSS per tile = sharp on retina; on dpr ≥ 1.5 the 256 px satellite tiles are declared smaller so the map fetches the next zoom level
   const dpr=window.devicePixelRatio||1;
-  st.sources['bb-sat']={type:'raster',tiles:[SAT_URL],tileSize:dpr>=1.5?128:256,minzoom:0,maxzoom:13,attribution:ATT.sat};
+  st.sources['bb-sat']={type:'raster',tiles:[SAT_URL],tileSize:256,minzoom:0,maxzoom:19,attribution:ATT.sat};
   st.sources['bb-topo']={type:'raster',tiles:[TOPO_URL],tileSize:256,minzoom:0,maxzoom:18,attribution:ATT.topo,bounds:[-10,53,42,82]};
   const wi=out.findIndex(l=>l.metadata['bb:g']==='water'); const at=wi>=0?wi:1;
     const reliefV={id:'bb-reliefv',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'reliefv'},layout:{visibility:'none'},paint:{'color-relief-opacity':lin(5,0.9,12,0.75),'color-relief-color':TINT_VFR}};
