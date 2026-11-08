@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="Fly through a warm front, a cold front or an occlusion and watch the sky change: cloud, rain, visibility, wind, pressure and the freezing level, exactly…">
+<meta name="description" content="Fly through a warm front, a cold front or an occlusion and watch the sky change: cloud, rain, visibility, wind, pressure and the freezing level. Then the air masses, jet streams and the global circulation behind them.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pressure, Fronts and Wind</title>
+<title>Fronts and Air Masses</title>
 <link rel="stylesheet" href="lab.css?v=6">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
 .paper canvas{display:block;width:100%}
 #xs{aspect-ratio:16/7.6;max-height:520px}
-#fv{aspect-ratio:16/10;max-height:460px}#lw{aspect-ratio:16/8;max-height:420px}#tephi{aspect-ratio:4/3;max-height:480px}#gc{aspect-ratio:16/10;max-height:520px;touch-action:none;cursor:ew-resize}
+#gc{aspect-ratio:16/10;max-height:520px;touch-action:none;cursor:ew-resize}
 .ftab{border-collapse:collapse;width:100%;font-size:14px}
 .ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}
 .ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
@@ -20,21 +20,21 @@
 .tag.r{background:#F7E3E3;color:#8E1F1F}.tag.a{background:#FBF0D9;color:#7A5410}
 </style>
 </head>
-<body data-title="Pressure, Fronts and Wind">
-<script src="site.js?v=28"></script>
+<body data-title="Fronts and Air Masses">
+<script src="site.js?v=29"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
-      <h1>Pressure, fronts and wind</h1>
-      <p>Fly through a warm front, a cold front or an occlusion and watch the sky change: cloud, rain, visibility, wind, pressure and the freezing level, exactly where you are. Then drag your aircraft around a low and a high, see the forces that make the wind, and the winds the sun makes along a coast and in a valley.</p>
+      <h1>Fronts and air masses</h1>
+      <p data-tx="lead">Fly through a warm front, a cold front or an occlusion and watch the sky change: cloud, rain, visibility, wind, pressure and the freezing level, exactly where you are. Then the air masses that meet at the fronts, the jet streams above them and the global circulation that sets it all up. Pressure systems and the wind itself are in <a href="pressure.html">Pressure and wind</a>.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#lab">Fly through a front</a><a href="#table">The fronts side by side</a><a href="#stab">Highs and lows</a><a href="#forces">Why the wind blows</a><a href="#local">Local winds</a><a href="#press">Air masses, jet streams and charts</a><a href="#global">Global circulation</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#lab">Fly through a front</a><a href="#table">The fronts side by side</a><a href="#press">Air masses, jet streams and charts</a><a href="#global">Global circulation</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="lab">
+  <section class="card" id="lab" data-step="explore">
     <div class="eyebrow">1 · Interactive</div>
     <h2>Fly through a front</h2>
     <div class="split">
@@ -57,68 +57,20 @@
     </div>
   </section>
 
-  <section class="card" id="table">
+  <section class="card" id="table" data-step="debrief">
     <div class="eyebrow">2 · Summary</div>
     <h2>The fronts side by side</h2>
     <div class="wrapx" style="overflow-x:auto"><table class="ftab" id="ftab"></table></div>
   </section>
 
-  <section class="card" id="stab">
-    <div class="eyebrow">3 · Interactive</div>
-    <h2>Highs and lows</h2>
-    <div class="split">
-      <div class="paper"><canvas id="tephi" aria-label="Chart with a low, a high, isobars and your aircraft. Drag the aircraft."></canvas></div>
-      <div class="panel">
-        <div id="ctl2"></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>Pressure (QNH) here</span><b id="sBase"></b></div>
-          <div class="rrow"><span>Wind at 2000 ft</span><b id="sTop"></b></div>
-          <div class="rrow"><span>Surface wind (over land)</span><b id="sSt"></b></div>
-          <div class="rrow"><span>Typical weather</span><b id="sWx"></b></div>
-        </div>
-        <p class="callout blue" id="expl2"></p>
-      </div>
-    </div>
-  </section>
-
-  <section class="card" id="forces">
-    <div class="eyebrow">4 · Interactive</div>
-    <h2>Why the wind blows</h2>
-    <div class="split">
-      <div class="paper"><canvas id="fv" aria-label="Isobars, the forces on the air and the resulting wind"></canvas></div>
-      <div class="panel">
-        <div id="c1"></div>
-        <div class="ro" style="margin-top:6px">
-          <div class="rrow"><span>Wind</span><b id="r1"></b></div>
-          <div class="rrow"><span>Angle to the isobars</span><b id="r2"></b></div>
-        </div>
-        <p class="callout blue" id="x1"></p>
-      </div>
-    </div>
-  </section>
-
-  <section class="card" id="local">
-    <div class="eyebrow">5 · Interactive</div>
-    <h2>Local winds</h2>
-    <div class="split">
-      <div class="paper"><canvas id="lw" aria-label="Sea breeze or valley winds through the day"></canvas></div>
-      <div class="panel">
-        <div class="grp">Where</div><div id="where"></div>
-        <div id="c2"></div>
-        <div class="ro" style="margin-top:6px"><div class="rrow"><span>Wind now</span><b id="w1"></b></div></div>
-        <p class="callout" id="x2"></p>
-      </div>
-    </div>
-  </section>
-
-  <section class="card" id="press">
-    <div class="eyebrow">6 · Background</div>
+  <section class="card" id="press" data-step="debrief">
+    <div class="eyebrow">3 · Background</div>
     <h2>Air masses, jet streams and charts</h2>
     <div class="cols" id="pcards"></div>
   </section>
 
-  <section class="card" id="global">
-    <div class="eyebrow">7 · Interactive</div>
+  <section class="card" id="global" data-step="debrief">
+    <div class="eyebrow">4 · Interactive</div>
     <h2>Global circulation and climate</h2>
     <p class="lead">The sun heats the tropics most. Rising air at the equator and sinking air around 30° form the Hadley cells; the Ferrel and polar cells complete the picture towards the poles. Together they set the pressure belts, the prevailing winds, the ITCZ and where the jet streams sit. Move the latitude and the month and watch the belts follow the sun.</p>
     <div class="split">
@@ -139,20 +91,20 @@
     </div>
   </section>
 
-  <section class="card" id="quiz">
+  <section class="card" id="quiz" data-step="check">
     <div class="eyebrow">Check</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot">Teaching model of textbook fronts in the northern hemisphere. Real weather is messier: always read the actual METAR, TAF, SIGMET and significant weather chart.</p>
 </div>
-<script src="lab.js?v=21"></script>
+<script src="lab.js?v=22"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el,nf}=LAB;
 LAB.add({},{
- 'Weather and Fronts':'Vær og fronter','Fronts and Pressure Systems':'Fronter og trykksystemer','Fronts and pressure systems':'Fronter og trykksystemer','Pressure, Fronts and Wind':'Trykk, fronter og vind','Pressure, fronts and wind':'Trykk, fronter og vind','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi','Weather and fronts':'Vær og fronter',
+ 'Weather and Fronts':'Vær og fronter','Fronts and Air Masses':'Fronter og luftmasser','Fronts and air masses':'Fronter og luftmasser','3 · Background':'3 · Bakgrunn','4 · Interactive':'4 · Interaktiv','1 · Interactive':'1 · Interaktiv','2 · Summary':'2 · Sammendrag','Fronts and Pressure Systems':'Fronter og trykksystemer','Fronts and pressure systems':'Fronter og trykksystemer','Pressure, Fronts and Wind':'Trykk, fronter og vind','Pressure, fronts and wind':'Trykk, fronter og vind','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi','Weather and fronts':'Vær og fronter',
  'Fly through a warm front, a cold front or an occlusion and watch the sky change: cloud, rain, visibility, wind, pressure and the freezing level, exactly where you are. Then drag your aircraft around a low and a high, see the forces that make the wind, and the winds the sun makes along a coast and in a valley.':'Fly gjennom en varmfront, en kaldfront eller en okklusjon og se hvordan himmelen endrer seg: skyer, nedbør, sikt, vind, trykk og frysenivå, akkurat der du er. Dra så flyet rundt et lavtrykk og et høytrykk, se kreftene som lager vinden, og vindene solen lager langs en kyst og i en dal.',
  'Fly through a front':'Fly gjennom en front','The fronts side by side':'Frontene side om side','Stability and cloud base':'Stabilitet og skybase','Highs and lows':'Høytrykk og lavtrykk','Pressure (QNH) here':'Trykk (QNH) her','Wind at 2000 ft':'Vind i 2000 ft','Surface wind (over land)':'Bakkevind (over land)','Typical weather':'Typisk vær','Depth of the low (hPa)':'Dybde på lavtrykket (hPa)','Strength of the high (hPa)':'Styrke på høytrykket (hPa)','Air masses, jet streams and charts':'Luftmasser, jetstrømmer og kart','Pressure and wind':'Trykk og vind','Test yourself':'Test deg selv','Interactive':'Interaktiv','Summary':'Sammendrag','Background':'Bakgrunn','Check':'Sjekk',
  'The front moves from left to right. Distances are typical, real fronts vary a lot.':'Fronten beveger seg fra venstre mot høyre. Avstandene er typiske, virkelige fronter varierer mye.',
@@ -283,102 +235,7 @@ function table(){ const r=[
   [{en:'Occlusion',no:'Okklusjon'},{en:'Mixed',no:'Blandet'},{en:'Layer cloud with embedded CB',no:'Lagskyer med innebygde CB'},{en:'Long band of rain with heavier showers inside',no:'Langt bånd med regn og kraftigere byger inni'},{en:'Hidden CB, icing, long periods in cloud',no:'Skjulte CB, ising, lange perioder i sky'}],
   [{en:'Stationary front',no:'Stasjonær front'},{en:'Gentle',no:'Slak'},{en:'Like a warm front',no:'Som en varmfront'},{en:'Can rain in the same place for days',no:'Kan regne på samme sted i dagevis'},{en:'Persistent low cloud',no:'Vedvarende lave skyer'}]];
   el('ftab').innerHTML=`<tr><th>${L({en:'Front',no:'Front'})}</th><th>${L({en:'Slope',no:'Helning'})}</th><th>${L({en:'Cloud',no:'Skyer'})}</th><th>${L({en:'Precipitation',no:'Nedbør'})}</th><th>${L({en:'Main hazards',no:'Viktigste farer'})}</th></tr>`+r.map(x=>`<tr><td><b>${L(x[0])}</b></td>${x.slice(1).map(c=>`<td>${L(c)}</td>`).join('')}</tr>`).join(''); }
-/* ---------- høytrykk og lavtrykk ---------- */
-const P2={low:24,high:12,px:0.42,py:0.62};
-const C2=LAB.fit(el('tephi'),()=>stab(),2);
-const LOWC=[0.32,0.42], HIGHC=[0.78,0.55];
-function pres(x,y){ const dl=(x-LOWC[0])**2+(y-LOWC[1])**2, dh=(x-HIGHC[0])**2+(y-HIGHC[1])**2; return 1013-P2.low*Math.exp(-dl/0.05)+P2.high*Math.exp(-dh/0.07); }
-function wind(x,y){ const e=0.002; const gx=(pres(x+e,y)-pres(x-e,y))/(2*e), gy=(pres(x,y+e)-pres(x,y-e))/(2*e); // y nedover på skjermen
-  const g=Math.hypot(gx,gy); // geostrofisk vind: lavtrykket til venstre med vinden i ryggen (nordlig halvkule)
-  // skjermvektor mot lavere trykk: (-gx,-gy). Vinden går 90° til høyre for denne (sett ovenfra, nord opp)
-  const tx=-gx, ty=-gy; const vx=-ty, vy=tx; // dreid 90° med klokka på skjermen (y ned)
-  const dirTo=Math.atan2(vx,-vy)*180/Math.PI; const from=((dirTo+180)%360+360)%360; const spd=Math.min(70,g*0.55);
-  return {from,spd,vx,vy}; }
-function stab(){ const g=C2.ctx, W=C2.w, H=C2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
-  // isobarer med marching squares light: tegn konturer ved å sample
-  const N=90, M=Math.round(N*H/W); const val=[]; for(let j=0;j<=M;j++){ val[j]=[]; for(let i=0;i<=N;i++) val[j][i]=pres(i/N,j/M); }
-  g.strokeStyle='#5E6B74'; g.lineWidth=1.1; g.font='10px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74';
-  for(let lv=960;lv<=1040;lv+=4){ g.beginPath(); for(let j=0;j<M;j++) for(let i=0;i<N;i++){ const a=val[j][i]-lv,b=val[j][i+1]-lv,c=val[j+1][i+1]-lv,d=val[j+1][i]-lv; const pts=[]; const X=t=>t/N*W, Y=t=>t/M*H;
-      if((a<0)!==(b<0)) pts.push([X(i+a/(a-b)),Y(j)]); if((b<0)!==(c<0)) pts.push([X(i+1),Y(j+b/(b-c))]); if((d<0)!==(c<0)) pts.push([X(i+d/(d-c)),Y(j+1)]); if((a<0)!==(d<0)) pts.push([X(i),Y(j+a/(a-d))]);
-      if(pts.length>=2){ g.moveTo(pts[0][0],pts[0][1]); g.lineTo(pts[1][0],pts[1][1]); } } g.stroke(); }
-  // fronter fra lavtrykket
-  const lx=LOWC[0]*W, ly=LOWC[1]*H; g.lineWidth=2.6; g.strokeStyle='#B3261E'; g.beginPath(); g.moveTo(lx,ly); g.quadraticCurveTo(lx+W*0.12,ly+H*0.05,lx+W*0.2,ly+H*0.22); g.stroke();
-  g.strokeStyle='#1E5E9E'; g.beginPath(); g.moveTo(lx,ly); g.quadraticCurveTo(lx+W*0.02,ly+H*0.25,lx-W*0.08,ly+H*0.48); g.stroke();
-  g.font='700 30px Archivo, sans-serif'; g.fillStyle='#B3261E'; g.textAlign='center'; g.fillText('L',lx,ly+10); g.fillStyle='#1E5E9E'; g.fillText('H',HIGHC[0]*W,HIGHC[1]*H+10); g.textAlign='start';
-  // pil for vinden ved flyet
-  const x=P2.px*W, y=P2.py*H, w=wind(P2.px,P2.py); const n=Math.hypot(w.vx,w.vy)||1; const ux=w.vx/n, uy=w.vy/n, len=Math.min(70,14+w.spd*1.4);
-  g.strokeStyle='#9A1E68'; g.fillStyle='#9A1E68'; g.lineWidth=3; g.beginPath(); g.moveTo(x-ux*len/2,y-uy*len/2); g.lineTo(x+ux*len/2,y+uy*len/2); g.stroke(); const a=Math.atan2(uy,ux); g.beginPath(); g.moveTo(x+ux*len/2,y+uy*len/2); g.lineTo(x+ux*len/2-10*Math.cos(a-0.4),y+uy*len/2-10*Math.sin(a-0.4)); g.lineTo(x+ux*len/2-10*Math.cos(a+0.4),y+uy*len/2-10*Math.sin(a+0.4)); g.closePath(); g.fill();
-  // overflatevind dreid 30° mot lavtrykket
-  const r=-30*Math.PI/180, sx=ux*Math.cos(r)-uy*Math.sin(r), sy=ux*Math.sin(r)+uy*Math.cos(r), sl=len*0.65; g.strokeStyle='#8A6D3B'; g.setLineDash([5,4]); g.lineWidth=2; g.beginPath(); g.moveTo(x,y); g.lineTo(x+sx*sl,y+sy*sl); g.stroke(); g.setLineDash([]);
-  g.fillStyle='#13202A'; g.beginPath(); g.arc(x,y,6,0,7); g.fill(); g.font='600 12px "Public Sans", sans-serif'; g.fillStyle='#9A1E68'; g.fillText(L({en:'2000 ft',no:'2000 ft'}),x+ux*len/2+6,y+uy*len/2); g.fillStyle='#8A6D3B'; g.fillText(L({en:'surface',no:'bakken'}),x+sx*sl+6,y+sy*sl+12);
-  g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; g.fillText(L({en:'N ↑ · drag the dot',no:'N ↑ · dra punktet'}),8,H-8); }
-function stabRO(){ const p=pres(P2.px,P2.py), w=wind(P2.px,P2.py); el('sBase').textContent=Math.round(p)+' hPa'; const d3=v=>String(Math.round(((v%360)+360)%360/10)*10||360).padStart(3,'0');
-  el('sTop').textContent=d3(w.from)+'° / '+Math.round(w.spd)+' kt'; el('sSt').textContent=d3(w.from-30)+'° / '+Math.round(w.spd*0.5)+' kt';
-  const dl=Math.hypot(P2.px-LOWC[0],P2.py-LOWC[1]), dh=Math.hypot(P2.px-HIGHC[0],P2.py-HIGHC[1]);
-  el('sWx').textContent= dl<0.14? L({en:'cloud, rain, strong wind',no:'skyer, regn, sterk vind'}) : dh<0.16? L({en:'settled, light wind; fog or haze possible',no:'stabilt, svak vind; tåke eller dis mulig'}) : p<1008? L({en:'unsettled',no:'ustabilt vær'}) : L({en:'fair',no:'pent'});
-  el('expl2').innerHTML=L({en:'<b>Air flows from high to low pressure, but the Earth turns underneath it.</b> The Coriolis effect deflects moving air to the right in the northern hemisphere, so above the friction layer the wind ends up blowing along the isobars (the geostrophic wind): anticlockwise round a low, clockwise round a high. The closer the isobars, the stronger the wind. Near the ground friction slows it and turns it towards the low pressure, about 30° over land and 10° over the sea (dashed arrow). Buys Ballot: back to the wind, the low is on your left. Flying from high towards low pressure, an altimeter left on the old QNH reads too high: “high to low, look out below”.',no:'<b>Luft strømmer fra høyt mot lavt trykk, men jorda dreier under den.</b> Corioliskraften bøyer luft i bevegelse mot høyre på nordlig halvkule, så over friksjonslaget ender vinden opp med å blåse langs isobarene (den geostrofiske vinden): mot klokka rundt et lavtrykk, med klokka rundt et høytrykk. Jo tettere isobarene ligger, jo sterkere vind. Nær bakken bremser friksjonen den og dreier den mot det lave trykket, rundt 30° over land og 10° over sjø (stiplet pil). Buys Ballot: med vinden i ryggen er lavtrykket til venstre. Flyr du fra høyt mot lavt trykk, viser en høydemåler med gammel QNH for høyt: «high to low, look out below».'}); }
-function u2(){ stab(); stabRO(); }
-LAB.slider(el('ctl2'),{label:'Depth of the low (hPa)',min:4,max:45,step:1,v:P2.low,f:v=>v+' hPa',on:v=>{ P2.low=v; u2(); }});
-LAB.slider(el('ctl2'),{label:'Strength of the high (hPa)',min:0,max:25,step:1,v:P2.high,f:v=>v+' hPa',on:v=>{ P2.high=v; u2(); }});
-{ const cv=el('tephi'); let dr=false; const mv=e=>{ const r=cv.getBoundingClientRect(); P2.px=Math.max(0.02,Math.min(0.98,(e.clientX-r.left)/r.width)); P2.py=Math.max(0.03,Math.min(0.97,(e.clientY-r.top)/r.height)); u2(); };
-  cv.style.touchAction='none'; cv.style.cursor='crosshair'; cv.addEventListener('pointerdown',e=>{ dr=true; cv.setPointerCapture(e.pointerId); mv(e); }); cv.addEventListener('pointermove',e=>{ if(dr) mv(e); }); cv.addEventListener('pointerup',()=>dr=false); }
-/* ---------- kreftene ---------- */
-const F={gap:0.5,lat:60,alt:'sfc',sea:false};
-const CF=LAB.fit(el('fv'),()=>fd(),2);
-function fcalc(){ const pgf=1/F.gap, f=Math.sin(F.lat*Math.PI/180); const vg= f<0.05? null : Math.min(80,12*pgf/f); // geostrofisk fart (kt), forenklet
-  const turn= F.alt==='sfc'? (F.sea?10:30) : 0, red= F.alt==='sfc'? (F.sea?0.7:0.5) : 1; return {pgf,f,vg,turn,v:vg==null?null:vg*red}; }
-function arw(g,x0,y0,dx,dy,c,lab){ const x1=x0+dx,y1=y0+dy; g.strokeStyle=c; g.fillStyle=c; g.lineWidth=3; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(dy,dx); g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-11*Math.cos(a-.4),y1-11*Math.sin(a-.4)); g.lineTo(x1-11*Math.cos(a+.4),y1-11*Math.sin(a+.4)); g.closePath(); g.fill(); if(lab){ g.font='600 12px "Public Sans", sans-serif'; g.fillText(lab,x1+(dx>=0?6:-6)-(dx<0?g.measureText(lab).width:0),y1+(dy>0?16:-6)); } }
-function fd(){ const g=CF.ctx,W=CF.w,H=CF.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); const R=fcalc();
-  const sp=Math.max(26,F.gap*120); g.strokeStyle='#9AA6AC'; g.lineWidth=1.2; g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; let p=1004;
-  for(let y=H*0.5-sp*3;y<=H;y+=sp){ if(y<0){ p+=4; continue; } g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke(); g.fillText(p+' hPa',8,y-4); p+=4; }
-  g.font='700 22px Archivo, sans-serif'; g.fillStyle='#B3261E'; g.fillText('L',W-40,26); g.fillStyle='#1E5E9E'; g.fillText('H',W-40,H-10);
-  const cx=W*0.45, cy=H*0.5, k=Math.min(W,H)*0.0045; g.fillStyle='#13202A'; g.beginPath(); g.arc(cx,cy,6,0,7); g.fill();
-  if(R.vg==null){ arw(g,cx,cy,0,-80,'#B3261E',L({en:'pressure gradient force',no:'trykkgradientkraft'})); arw(g,cx+40,cy,0,-50,'#9A1E68'); g.font='600 13px "Public Sans", sans-serif'; g.fillStyle='#9A1E68'; g.fillText(L({en:'at the equator no Coriolis: air flows straight into the low',no:'ved ekvator ingen coriolis: luften strømmer rett inn i lavtrykket'}),20,H-24); return; }
-  const ang=R.turn*Math.PI/180, wx=Math.cos(ang), wy=-Math.sin(ang); const c=Math.max(60,Math.min(130,R.v*4)), fr=c*Math.tan(ang), pg=c/Math.cos(ang), v=Math.max(40,Math.min(150,R.v*3));
-  arw(g,cx,cy,0,-pg,'#B3261E',L({en:'pressure gradient force',no:'trykkgradientkraft'}));
-  arw(g,cx,cy,Math.sin(ang)*c,Math.cos(ang)*c,'#1E5E9E',L({en:'Coriolis',no:'coriolis'}));
-  if(fr>1) arw(g,cx,cy,-wx*fr,-wy*fr,'#8A6D3B',L({en:'friction',no:'friksjon'}));
-  arw(g,cx,cy,wx*v,wy*v,'#9A1E68',L({en:'wind',no:'vind'})+' '+Math.round(R.v)+' kt');
-  g.font='11px IBM Plex Mono, monospace'; g.fillStyle='#5E6B74'; g.fillText(L({en:'northern hemisphere, low pressure to the north',no:'nordlig halvkule, lavtrykk i nord'}),8,H-8); }
-function fro(){ const R=fcalc(); el('r1').textContent= R.vg==null? L({en:'into the low, weak',no:'inn i lavtrykket, svak'}) : Math.round(R.v)+' kt'; el('r2').textContent= R.vg==null?'90°': R.turn? R.turn+'° '+L({en:'towards the low',no:'mot lavtrykket'}) : L({en:'parallel (geostrophic)',no:'parallell (geostrofisk)'});
-  el('x1').innerHTML=L({en:'<b>Three forces.</b> The <b>pressure gradient force</b> pushes air from high towards low pressure; the closer the isobars, the stronger it is. As soon as the air moves, the <b>Coriolis effect</b> (the Earth turning underneath) deflects it to the right in the northern hemisphere, more strongly the faster it moves and the higher the latitude. Above about 2000–3000 ft the two balance, and the wind blows along the isobars: the <b>geostrophic wind</b>. Near the ground <b>friction</b> slows the wind, Coriolis gets weaker, and the pressure force wins a little: the surface wind backs (turns anticlockwise) towards the low, about 30° over land and 10° over the sea, and drops to roughly half (land) or two-thirds (sea) of the wind aloft. So when you climb out, expect the wind to veer and increase.',no:'<b>Tre krefter.</b> <b>Trykkgradientkraften</b> skyver luft fra høyt mot lavt trykk; jo tettere isobarene ligger, jo sterkere er den. Så snart luften beveger seg, bøyer <b>corioliskraften</b> (jorda som dreier under) den mot høyre på nordlig halvkule, sterkere jo fortere den går og jo høyere breddegraden er. Over rundt 2000–3000 ft balanserer de to, og vinden blåser langs isobarene: <b>den geostrofiske vinden</b>. Nær bakken bremser <b>friksjonen</b> vinden, corioliskraften blir svakere, og trykkraften vinner litt: bakkevinden dreier mot venstre (backer) mot lavtrykket, rundt 30° over land og 10° over sjø, og faller til omtrent halvparten (land) eller to tredjedeler (sjø) av vinden i høyden. Når du stiger ut, må du altså regne med at vinden dreier mot høyre (veerer) og øker.'}); }
-function fu(){ fd(); fro(); }
-function mkf(){ el('c1').innerHTML='';
-  LAB.slider(el('c1'),{label:L({en:'Isobar spacing',no:'Avstand mellom isobarene'}),min:0.25,max:1.2,step:0.05,v:F.gap,f:v=>v<0.45?L({en:'tight',no:'tett'}):v<0.8?L({en:'medium',no:'middels'}):L({en:'wide',no:'vid'}),on:v=>{ F.gap=v; fu(); }});
-  LAB.slider(el('c1'),{label:L({en:'Latitude (°)',no:'Breddegrad (°)'}),min:0,max:80,step:1,v:F.lat,f:v=>v+'°',on:v=>{ F.lat=v; fu(); }});
-  const a=document.createElement('div'); el('c1').appendChild(a); LAB.seg(a,[['sfc','Surface'],['up','2000 ft and above']],F.alt,v=>{ F.alt=v; fu(); });
-  const lb=document.createElement('label'); lb.className='chk'; lb.innerHTML=`<input type="checkbox" ${F.sea?'checked':''}> <span>${L({en:'Over the sea',no:'Over sjøen'})}</span>`; lb.querySelector('input').onchange=e=>{ F.sea=e.target.checked; fu(); }; el('c1').appendChild(lb); }
-
-/* ---------- lokale vinder ---------- */
-const LW={w:'coast',h:14};
-const CL=LAB.fit(el('lw'),()=>ld(),2);
-function lstate(){ const h=LW.h, day=h>=10&&h<=18, night=h>=21||h<=6; const str= day? Math.round(4+10*Math.sin((h-10)/8*Math.PI)) : night? 4 : 1; return {day,night,str}; }
-function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W) return; const S_=lstate(); const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,S_.day?'#CFE2F3':S_.night?'#22324A':'#E6D2B5'); sky.addColorStop(1,S_.day?'#F4F7F9':S_.night?'#3B4B63':'#F2E6D3'); g.fillStyle=sky; g.fillRect(0,0,W,H);
-  const gy=H*0.78; const tt=performance.now()/900;
-  if(LW.w==='coast'){ g.fillStyle='#4E7FA8'; g.fillRect(0,gy,W*0.45,H-gy); g.fillStyle='#C9B48A'; g.fillRect(W*0.45,gy-6,W*0.55,H-gy+6);
-    if(S_.day){ g.fillStyle='#fff'; g.beginPath(); g.ellipse(W*0.72,H*0.3,60,20,0,0,7); g.ellipse(W*0.78,H*0.26,40,18,0,0,7); g.fill(); }
-    const dir= S_.day?1:S_.night?-1:0; if(dir){ // sirkulasjon
-      const pts=[[W*0.15,gy-14],[W*0.8,gy-14],[W*0.8,H*0.28],[W*0.15,H*0.28]]; const seq= dir>0? [pts[0],pts[1],pts[2],pts[3]] : [pts[1],pts[0],pts[3],pts[2]];
-      g.strokeStyle='rgba(154,30,104,.75)'; g.lineWidth=2.6; g.setLineDash([10,8]); g.lineDashOffset=-tt*20; g.beginPath(); seq.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.stroke(); g.setLineDash([]); for(let i=0;i<4;i++){ const p0=seq[i], p1=seq[(i+1)%4], mx=(p0[0]+p1[0])/2, my=(p0[1]+p1[1])/2, an=Math.atan2(p1[1]-p0[1],p1[0]-p0[0]); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(mx+10*Math.cos(an),my+10*Math.sin(an)); g.lineTo(mx-8*Math.cos(an-0.6),my-8*Math.sin(an-0.6)); g.lineTo(mx-8*Math.cos(an+0.6),my-8*Math.sin(an+0.6)); g.closePath(); g.fill(); } }
-    g.font='600 13px "Public Sans", sans-serif'; g.fillStyle=S_.night?'#E6EDF1':'#13202A'; g.textAlign='center'; g.fillText(S_.day?L({en:'land heats faster: air rises over land, sea breeze blows onshore',no:'land varmes raskere: luften stiger over land, sjøbrisen blåser inn'}):S_.night?L({en:'land cools faster: weak land breeze blows offshore',no:'land kjøles raskere: svak landbris blåser ut'}):L({en:'calm while the temperatures even out',no:'stille mens temperaturene jevner seg ut'}),W*0.5,22); g.textAlign='start'; }
-  else { // dal
-    g.fillStyle=S_.night?'#55604F':'#8FA27A'; g.beginPath(); g.moveTo(0,H*0.25); g.lineTo(W*0.42,gy); g.lineTo(W*0.58,gy); g.lineTo(W,H*0.25); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
-    const dir=S_.day?-1:S_.night?1:0; if(dir){ g.strokeStyle='rgba(154,30,104,.8)'; g.lineWidth=2.6; g.setLineDash([10,8]); g.lineDashOffset=-tt*20; [[W*0.06,H*0.3,W*0.38,gy-10],[W*0.94,H*0.3,W*0.62,gy-10]].forEach(([x0,y0,x1,y1])=>{ const a0=dir>0?[x0,y0-12]:[x1,y1-12], a1=dir>0?[x1,y1-12]:[x0,y0-12]; g.beginPath(); g.moveTo(a0[0],a0[1]); g.lineTo(a1[0],a1[1]); g.stroke(); const an=Math.atan2(a1[1]-a0[1],a1[0]-a0[0]); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(a1[0],a1[1]); g.lineTo(a1[0]-12*Math.cos(an-0.5),a1[1]-12*Math.sin(an-0.5)); g.lineTo(a1[0]-12*Math.cos(an+0.5),a1[1]-12*Math.sin(an+0.5)); g.closePath(); g.fill(); }); g.setLineDash([]);
-      if(S_.night){ g.fillStyle='rgba(220,230,240,.55)'; g.fillRect(W*0.42,gy-18,W*0.16,18); } }
-    g.font='600 13px "Public Sans", sans-serif'; g.fillStyle=S_.night?'#E6EDF1':'#13202A'; g.textAlign='center'; g.fillText(S_.day?L({en:'sun-warmed slopes: anabatic wind flows up the slopes',no:'solvarme skråninger: anabatisk vind strømmer opp liene'}):S_.night?L({en:'cold air drains down: katabatic wind, fog in the valley floor',no:'kald luft renner ned: katabatisk vind, tåke i dalbunnen'}):L({en:'turning',no:'snur'}),W*0.5,22); g.textAlign='start'; }
-  g.font='11px IBM Plex Mono, monospace'; g.fillStyle=S_.night?'#E6EDF1':'#5E6B74'; g.fillText(String(LW.h).padStart(2,'0')+':00',8,H-8); }
-function lro(){ const S_=lstate(); el('w1').textContent= LW.w==='coast'? (S_.day? L({en:'onshore, about',no:'pålands, rundt'})+' '+S_.str+' kt' : S_.night? L({en:'offshore, about',no:'fralands, rundt'})+' '+S_.str+' kt' : L({en:'light and variable',no:'svak og variabel'})) : (S_.day? L({en:'up the slopes, light',no:'opp liene, svak'}) : S_.night? L({en:'down the slopes, can be strong under glaciers',no:'ned liene, kan være sterk under breer'}) : L({en:'light and variable',no:'svak og variabel'}));
-  el('x2').innerHTML= LW.w==='coast'? L({en:'<b>Sea breeze.</b> On a sunny day the land heats up much faster than the sea. Air rises over the land, and cooler sea air flows in underneath: an onshore wind of typically 10–15 kt, starting late morning, reaching 1000–2000 ft deep and up to 20–40 km inland, strongest in the afternoon. A runway that had a crosswind or tailwind in the morning can have a headwind in the afternoon, and the sea-breeze front can bring a line of cumulus and turbulence inland. At night the process reverses into a weaker land breeze.',no:'<b>Sjøbris.</b> En solrik dag varmes land opp mye raskere enn sjøen. Luften stiger over land, og kjøligere sjøluft strømmer inn under: en pålandsvind på typisk 10–15 kt, som starter utpå formiddagen, blir 1000–2000 ft dyp og når 20–40 km inn i landet, sterkest om ettermiddagen. En bane som hadde sidevind eller medvind om morgenen, kan ha motvind om ettermiddagen, og sjøbrisfronten kan gi en rekke cumulus og turbulens innover land. Om natten snur prosessen til en svakere landbris.'})
-   : L({en:'<b>Valley winds.</b> By day the sun warms the slopes, and air flows up them (anabatic wind), usually gentle. At night the slopes cool, and the cold, dense air drains downhill (katabatic wind) and pools in the valley floor, where it can form fog and frost. Under glaciers and in fjords, katabatic winds can be strong and gusty, and they are a classic cause of unexpected tailwind and turbulence on approach to valley airports in the early morning.',no:'<b>Dalvinder.</b> Om dagen varmer solen liene, og luft strømmer opp (anabatisk vind), vanligvis svakt. Om natten kjøles liene, og den kalde, tunge luften renner nedover (katabatisk vind) og samler seg i dalbunnen, der den kan gi tåke og rim. Under breer og i fjorder kan katabatiske vinder være sterke og kastevise, og de er en klassisk årsak til uventet medvind og turbulens på innflyging til dalflyplasser tidlig om morgenen.'}); }
-function lu(){ ld(); lro(); }
-LAB.seg(el('where'),[['coast','Coast'],['valley','Valley']],LW.w,v=>{ LW.w=v; lu(); });
-function mkl(){ el('c2').innerHTML=''; LAB.slider(el('c2'),{label:L({en:'Time of day',no:'Tid på døgnet'}),min:0,max:23,step:1,v:LW.h,f:v=>String(v).padStart(2,'0')+':00',on:v=>{ LW.h=v; lu(); }}); }
-let lvis=true; new IntersectionObserver(es=>lvis=es[0].isIntersecting).observe(el('lw')); (function lp(){ requestAnimationFrame(lp); if(lvis) ld(); })();
-
 function cards(){ const c=[
-  [{en:'Low pressure',no:'Lavtrykk'},{en:'Air converges near the ground and rises: cloud and rain. In the northern hemisphere the wind blows anticlockwise round a low. Fronts are tied to lows.',no:'Luften strømmer sammen nær bakken og stiger: skyer og regn. På den nordlige halvkule blåser vinden mot klokka rundt et lavtrykk. Frontene hører til lavtrykkene.'}],
-  [{en:'High pressure',no:'Høytrykk'},{en:'Air sinks and warms: little cloud, light wind, clockwise round the high. In winter the sinking air can trap fog, low stratus and haze under an inversion for days.',no:'Luften synker og varmes: lite skyer, svak vind, med klokka rundt høytrykket. Om vinteren kan den synkende luften holde tåke, lav stratus og dis under en inversjon i dagevis.'}],
-  [{en:'Buys Ballot',no:'Buys Ballot'},{en:'Back to the wind in the northern hemisphere: the low is on your left. Flying towards a low you get drift to the right and the altimeter reads too high if you do not reset: high to low, look out below.',no:'Ryggen mot vinden på den nordlige halvkule: lavtrykket er til venstre. Flyr du mot et lavtrykk, får du avdrift til høyre, og høydemåleren viser for høyt hvis du ikke stiller om: fra høyt til lavt er du lavere enn du tror.'}],
   [{en:'Air masses',no:'Luftmasser'},{en:'Maritime polar air: cold, unstable, showers and good visibility. Tropical maritime: warm, moist, stable, low stratus and fog over cold sea. Continental air in winter: very cold and dry.',no:'Maritim polarluft: kald, ustabil, byger og god sikt. Maritim tropisk: varm, fuktig, stabil, lav stratus og tåke over kaldt hav. Kontinental luft om vinteren: svært kald og tørr.'}],
   [{en:'Jet streams',no:'Jetstrømmer'},{en:'Narrow bands of very strong wind, typically 100–200 kt, just below the tropopause where the temperature contrast between air masses is largest, such as along the polar front. Strongest in winter. In the A320 cruise band they decide ground speed, fuel and the best flight level, and clear air turbulence is most likely on the cold (polar) side and just below the core.',no:'Smale bånd med svært sterk vind, typisk 100–200 kt, rett under tropopausen der temperaturforskjellen mellom luftmassene er størst, for eksempel langs polarfronten. Sterkest om vinteren. I A320-ens cruisehøyder avgjør de groundspeed, drivstoff og beste flygenivå, og klarluftsturbulens er mest sannsynlig på den kalde (polare) siden og rett under kjernen.'}],
   [{en:'Tropopause',no:'Tropopausen'},{en:'The top of the weather: temperature stops falling with height. About FL250–300 over Norway in winter, higher in summer and much higher in the tropics (FL500+). Cumulonimbus tops spread out here, and breaks in the tropopause mark the jet streams.',no:'Toppen av været: temperaturen slutter å synke med høyden. Rundt FL250–300 over Norge om vinteren, høyere om sommeren og mye høyere i tropene (FL500+). Toppen av CB-er brer seg ut her, og brudd i tropopausen markerer jetstrømmene.'}],
@@ -390,13 +247,10 @@ LAB.quiz(el('qbox'),'fronts',()=>LAB.shuffle([
  {q:{en:'Which front most often gives a sudden wind shift, gusts and CB?',no:'Hvilken front gir oftest brå vinddreining, kast og CB?'},a:[{en:'Cold front',no:'Kaldfront'},{en:'Warm front',no:'Varmfront'},{en:'Stationary front',no:'Stasjonær front'}],c:0,e:{en:'The steep cold front lifts warm, moist air fast.',no:'Den bratte kaldfronten løfter varm, fuktig luft raskt.'}},
  {q:{en:'Temperature 16 °C, dew point 11 °C. Roughly where is the base of cumulus?',no:'Temperatur 16 °C, duggpunkt 11 °C. Omtrent hvor er basen til cumulus?'},a:[{en:'2000 ft',no:'2000 ft'},{en:'500 ft',no:'500 ft'},{en:'5000 ft',no:'5000 ft'}],c:0,e:{en:'Spread 5 °C × 400 ft = 2000 ft.',no:'Spredning 5 °C × 400 ft = 2000 ft.'}},
  {q:{en:'In winter, ahead of a warm front, the biggest icing danger is often…',no:'Om vinteren, foran en varmfront, er den største isingsfaren ofte …'},a:[{en:'Freezing rain below the warm layer',no:'Underkjølt regn under det varme laget'},{en:'Hail from CB',no:'Hagl fra CB'},{en:'Hoar frost in clear air',no:'Rimfrost i klar luft'}],c:0,e:{en:'Rain from the warm air above falls into sub-zero air and freezes on contact with the aircraft.',no:'Regn fra den varme luften over faller ned i kuldegrader og fryser når det treffer flyet.'}},
- {q:{en:'Northern hemisphere, wind on your back. Where is the low?',no:'Nordlige halvkule, vinden i ryggen. Hvor er lavtrykket?'},a:[{en:'On your left',no:'Til venstre'},{en:'On your right',no:'Til høyre'},{en:'Straight ahead',no:'Rett frem'}],c:0,e:{en:'Buys Ballot’s law.',no:'Buys Ballots lov.'}},
  {q:{en:'The air cools 1 °C per 1000 ft with height. A lifted parcel will…',no:'Luften kjøles 1 °C per 1000 ft med høyden. En løftet luftpakke vil …'},a:[{en:'sink back: the air is stable',no:'synke tilbake: luften er stabil'},{en:'keep rising: the air is unstable',no:'fortsette å stige: luften er ustabil'},{en:'stay where it is',no:'bli der den er'}],c:0,e:{en:'Less than the saturated rate (about 1.5 °C): the parcel becomes colder than its surroundings.',no:'Mindre enn den mettede raten (rundt 1,5 °C): pakken blir kaldere enn omgivelsene.'}},
-{q:{en:'Northern hemisphere, over land. The 2000 ft wind is 270/30. The surface wind is most likely about…',no:'Nordlig halvkule, over land. Vinden i 2000 ft er 270/30. Bakkevinden er mest sannsynlig rundt …'},a:[{en:'240/15',no:'240/15'},{en:'300/15',no:'300/15'},{en:'270/45',no:'270/45'}],c:0,e:{en:'Friction backs the surface wind about 30° over land and roughly halves its speed.',no:'Friksjonen dreier bakkevinden rundt 30° mot venstre over land og halverer omtrent farten.'}},
- {q:{en:'Close isobars mean…',no:'Tette isobarer betyr …'},a:[{en:'strong wind',no:'sterk vind'},{en:'light wind',no:'svak vind'},{en:'high pressure',no:'høytrykk'}],c:0,e:{en:'A steep pressure gradient gives a strong pressure gradient force and strong wind.',no:'En bratt trykkgradient gir en sterk trykkgradientkraft og sterk vind.'}},
- {q:{en:'Why does the wind not blow straight from high to low pressure above the friction layer?',no:'Hvorfor blåser ikke vinden rett fra høyt til lavt trykk over friksjonslaget?'},a:[{en:'The Coriolis effect deflects it until it flows along the isobars',no:'Corioliskraften bøyer den til den strømmer langs isobarene'},{en:'Friction is strongest there',no:'Friksjonen er sterkest der'},{en:'The isobars block it',no:'Isobarene stopper den'}],c:0,e:{en:'Pressure gradient force and Coriolis balance: the geostrophic wind.',no:'Trykkgradientkraften og corioliskraften balanserer: den geostrofiske vinden.'}},
- {q:{en:'A coastal aerodrome on a sunny summer afternoon. What wind do you expect?',no:'En kystflyplass en solrik sommerettermiddag. Hvilken vind forventer du?'},a:[{en:'An onshore sea breeze',no:'En pålands sjøbris'},{en:'An offshore land breeze',no:'En fralands landbris'},{en:'Calm all day',no:'Vindstille hele dagen'}],c:0,e:{en:'Land heats faster than sea; air rises over land and sea air flows in.',no:'Land varmes raskere enn sjø; luft stiger over land og sjøluft strømmer inn.'}},
- {q:{en:'Early morning approach to a valley airport below a glacier. A typical surprise is…',no:'Tidlig morgen, innflyging til en dalflyplass under en bre. En typisk overraskelse er …'},a:[{en:'a katabatic tailwind and turbulence down the valley',no:'katabatisk medvind og turbulens nedover dalen'},{en:'a strong sea breeze',no:'en sterk sjøbris'},{en:'thermals from the hot slopes',no:'termikk fra varme lier'}],c:0,e:{en:'Cold air drains down the slopes at night and early morning.',no:'Kald luft renner ned liene om natten og tidlig om morgenen.'}}
+ {q:{en:'Maritime polar air arriving over a warmer sea in winter typically gives…',no:'Maritim polarluft som kommer inn over et varmere hav om vinteren gir typisk …'},a:[{en:'Cumulus and showers, good visibility between them',no:'Cumulus og byger, god sikt mellom dem'},{en:'Low stratus, drizzle and fog',no:'Lav stratus, yr og tåke'},{en:'Clear skies and haze',no:'Klar himmel og dis'}],c:0,e:{en:'Cold air heated from below becomes unstable: heaped cloud, showers and good visibility outside them.',no:'Kald luft som varmes nedenfra blir ustabil: haugskyer, byger og god sikt utenfor dem.'}},
+ {q:{en:'Where is clear air turbulence most likely near a polar front jet stream?',no:'Hvor er klarluftsturbulens mest sannsynlig nær en polarfrontjet?'},a:[{en:'On the cold (polar) side, just below the core',no:'På den kalde (polare) siden, like under kjernen'},{en:'On the warm side, well above the core',no:'På den varme siden, godt over kjernen'},{en:'Exactly in the core',no:'Nøyaktig i kjernen'}],c:0,e:{en:'The strongest wind shear is on the cold side and just below the core.',no:'Det kraftigste vindskjæret ligger på den kalde siden og like under kjernen.'}},
+ {q:{en:'Tropical maritime air moving over a colder sea typically gives…',no:'Maritim tropisk luft som beveger seg over et kaldere hav gir typisk …'},a:[{en:'Advection fog and low stratus',no:'Advektiv tåke og lav stratus'},{en:'Thunderstorms and hail',no:'Tordenvær og hagl'},{en:'Very good visibility',no:'Svært god sikt'}],c:0,e:{en:'Warm, moist air cooled from below becomes stable and saturated near the surface.',no:'Varm, fuktig luft som kjøles nedenfra blir stabil og mettet nær overflaten.'}}
 ]),8);
 LAB.add({},{
  'Wind and Wind Shear':'Vind og vindskjær','Wind and wind shear':'Vind og vindskjær','Why the wind blows':'Hvorfor vinden blåser','Local winds':'Lokale vinder','Wind shear':'Vindskjær','In the aircraft':'I flyet','Operations':'Operativt',
@@ -506,8 +360,9 @@ function mkg(){ el('gctl').innerHTML='';
 LAB.seg(el('gReg'),[['ocean','Open ocean (Atlantic)'],['asia','South Asia (monsoon)']],GC.reg,v=>{ GC.reg=v; gu(); });
 { const cv=el('gc'); let dr=false; const mv=e=>{ const r=cv.getBoundingClientRect(), L0=r.width<560?30:40; const la=Math.round(((e.clientX-r.left-L0)/(r.width-L0-10))*180-90); GC.lat=Math.max(-80,Math.min(80,la)); mkg(); gu(); }; cv.addEventListener('pointerdown',e=>{ dr=true; cv.setPointerCapture(e.pointerId); mv(e); }); cv.addEventListener('pointermove',e=>{ if(dr) mv(e); }); cv.addEventListener('pointerup',()=>dr=false); }
 LAB.add({},{'Global circulation':'Global sirkulasjon'});
-LAB.start('fronts'); tseg; sseg; upd(); table(); u2(); mkf(); fu(); mkl(); lu(); cards(); mkg(); gu();
-LAB.onLang(()=>{ upd(); table(); u2(); mkf(); fu(); mkl(); lu(); cards(); mkg(); gu(); });
+LAB.tx({lead:'Fly gjennom en varmfront, en kaldfront eller en okklusjon og se hvordan himmelen endrer seg: skyer, nedbør, sikt, vind, trykk og frysenivå, akkurat der du er. Så luftmassene som møtes ved frontene, jetstrømmene over dem og den globale sirkulasjonen som setter det hele i gang. Trykksystemer og selve vinden finner du i <a href="pressure.html">Trykk og vind</a>.'});
+LAB.start('fronts'); tseg; sseg; upd(); table(); cards(); mkg(); gu();
+LAB.onLang(()=>{ upd(); table(); cards(); mkg(); gu(); });
 })();
 </script>
 </body>

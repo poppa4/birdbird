@@ -7,7 +7,7 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 ## Information architecture (lab.js `PATH`)
 
 - `PATH` holds seven areas in this order: `pof` Aerodynamics, `met` Meteorology and the atmosphere, `inst` Instruments, `nav` Navigation and instrument procedures, `sys` Aircraft and engine systems, `perf` Performance, `mb` Mass and balance. After them comes one entry with `more:true` (`hf` Human factors). That entry is not an area. It shows up only in the quiet "More" list on `lab.html`.
-- `LAB.AREAS` lists the seven areas. `LAB.MORE` lists the More entries. `LAB.FLAT` lists all 25 labs.
+- `LAB.AREAS` lists the seven areas. `LAB.MORE` lists the More entries. `LAB.FLAT` lists all 26 labs.
 - Each area has `en`/`no`, a one-line description `d`, and 3–4 concepts `c` (all EN/NO). The area's labs are tuples `[file, key, EN, NO, level]`.
 - `level` sets the "Applies to" tag: `''` all aircraft, `jet` A320 model, `mix` A320 + light twin, `la` light twin.
 - The first lab in an area is its recommended start. On `lab.html` the "Open area" button links to that lab.
@@ -50,7 +50,8 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
    - Changing depth fires a `labdepth` event on `document` (detail = depth) and a `resize`.
    - Mark anything that is not needed in the short version with **`.deep`**. It is hidden in Short and in Instructor.
    - Instructor also hides `.lead`, `.callout`, `.ntip`, static `.card>p` without ids, and the header lead. Keep text that must stay visible in Instructor out of those, or give it an id.
-   - Today no page uses `.deep`, so Short looks the same as Deep dive until labs are rebuilt.
+   - Sections inside `.deep` also drop out of the sidebar and the scroll spy in Short and Instructor.
+   - `pressure.html` (Pressure and wind) is the reference rebuild: explicit `data-step` on every section, `.deep` blocks, one `data-lab-model`, a Try section with live feedback, scenario presets for Instructor.
 3. **Primary model**: put `data-lab-model` on the main interactive container (canvas wrapper).
    - Without it, the shell picks the first `.lab-model, .view, .paper, .viewport` outside `#quiz`.
    - The shell adds `.atl-model` to that element, and `.atl-split` to its closest `.split`.
@@ -60,6 +61,7 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
    - The meta row links to it. It gets the id `limits` unless it already has one.
 5. **Tabs inside sections** (for example the propeller tabs) are untouched.
 6. **Strings**: every string is EN/NO through `L({en,no})` or `LAB.add(dict, no)`. The shell redraws itself on `LAB.onLang`.
+   - Rich prose (with `<b>`, links, `<sub>`): put the English HTML in the page with `data-tx="key"` and give the Norwegian with `LAB.tx({key:'…'})`.
 
 ## Rules
 

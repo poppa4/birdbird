@@ -335,7 +335,7 @@
 </style>
 </head>
 <body data-home="1" data-title="Birdbird · Aviation theory, flight planning and training">
-<script src="site.js?v=28"></script>
+<script src="site.js?v=29"></script>
 <div class="page"><main class="home">
 
   <!-- 1. Hero -->
@@ -490,7 +490,7 @@
   <section class="hsec" id="coverage" hidden aria-labelledby="h-cov">
     <header><div><span class="kick">Coverage</span><h2 id="h-cov">Mapped to the EASA ATPL syllabus</h2><p class="sub">Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.</p></div></header>
     <div class="stats">
-      <div><b id="nLabs">25</b><span>interactive labs</span></div>
+      <div><b id="nLabs">26</b><span>interactive labs</span></div>
       <div><b id="nMods">7</b><span>subject areas in Virtual Labs</span></div>
       <div><b id="nSub">10 / 13</b><span>ATPL subjects with a dedicated lab</span></div>
       <div><b>3</b><span>aircraft: the A320 in the labs, the King Air B200 type rating and a light twin in the training tools</span></div>
@@ -525,7 +525,7 @@
   </section>
 
 </main></div>
-<script src="lab.js?v=21"></script>
+<script src="lab.js?v=22"></script>
 <script>
 (function(){
 'use strict';
@@ -624,7 +624,7 @@ LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
 
 /* ---------- counts from the learning path ---------- */
 const FLAT=LAB.FLAT||[], PATH=LAB.PATH||[];
-const nLabs=FLAT.length||25, nMods=(LAB.AREAS||PATH).length||7, nLight=FLAT.filter(x=>x.lv!=='jet').length||19;
+const nLabs=FLAT.length||26, nMods=(LAB.AREAS||PATH).length||7, nLight=FLAT.filter(x=>x.lv!=="jet").length||20;
 const byKey=k=>FLAT.find(x=>x.k===k);
 
 /* ---------- 1. Hero: briefing pack with a gentle depth on pointer move ---------- */

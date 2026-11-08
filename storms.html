@@ -18,7 +18,7 @@
 </style>
 </head>
 <body data-title="Thunderstorms and Wind Shear">
-<script src="site.js?v=28"></script>
+<script src="site.js?v=29"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -127,7 +127,7 @@
   </section>
   <p class="foot">Teaching model. Real storms vary enormously in size, speed and severity. Avoidance distances are common guidance; follow your operator’s procedures, the SIGMETs and ATC, and never rely on the radar picture alone.</p>
 </div>
-<script src="lab.js?v=21"></script>
+<script src="lab.js?v=22"></script>
 <script>
 (function(){
 'use strict';
@@ -257,7 +257,7 @@ function cards(){ const c=[
  [{en:'In METAR, TAF and SIGMET',no:'I METAR, TAF og SIGMET'},{en:'CB after a cloud layer (SCT030CB), TS for thunderstorm, +TSRA, TSGR with hail, VCTS in the vicinity (8–16 km). SIGMET: OBSC TS (obscured by haze or darkness), EMBD TS (embedded in layer cloud), FRQ TS (frequent, little or no separation), SQL TS (squall line). An EMBD or FRQ SIGMET on your route is a reason to re-plan.',no:'CB etter et skylag (SCT030CB), TS for tordenvær, +TSRA, TSGR med hagl, VCTS i nærheten (8–16 km). SIGMET: OBSC TS (skjult av dis eller mørke), EMBD TS (innebygd i lagskyer), FRQ TS (hyppige, liten eller ingen avstand mellom dem), SQL TS (squall line). En EMBD- eller FRQ-SIGMET på ruten er en grunn til å planlegge på nytt.'}],
  [{en:'If you get caught',no:'Hvis du blir fanget'},{en:'Fly attitude, not altitude: keep the wings level and the attitude steady, accept height changes, and fly the recommended turbulence speed for the A320 from the QRH (typically around 250–275 kt or M0.76). Keep the autopilot on, and follow the QRH on autothrust. Do not turn back inside the cloud unless you are sure it is the shortest way out. Storm lights on against lightning, engine anti-ice on, seat belt signs on and the cabin seated, tell ATC.',no:'Fly attitude, ikke høyde: hold vingene vannrett og attituden stødig, godta høydeendringer, og fly anbefalt turbulensfart for A320 fra QRH (typisk rundt 250–275 kt eller M0,76). Behold autopiloten, og følg QRH for autothrust. Ikke snu inne i skyen med mindre du er sikker på at det er korteste vei ut. Stormlys på mot lyn, motoranti-is på, setebeltetegn på og kabinen sittende, si fra til ATC.'}],
  [{en:'Radar and datalink on the A320',no:'Radar og datalink på A320'},{en:'The A320 weather radar is the tool for avoiding cells en route (see <a href="#wxr">Airborne weather radar</a>). Datalink weather and lightning data are for planning, not for threading between cells, because the picture can be several minutes old. On the ground, a storm approaching the aerodrome, or within about 10–15 NM of it, means waiting: the gust front and wind shear arrive before the rain.',no:'Værradaren på A320 er verktøyet for å unngå celler underveis (se <a href="#wxr">Værradar i flyet</a>). Værdata via datalink og lyndata er til planlegging, ikke til å smette mellom celler, for bildet kan være flere minutter gammelt. På bakken betyr en storm som nærmer seg flyplassen, eller er innen rundt 10–15 NM fra den, at du venter: vindkastfronten og vindskjæret kommer før regnet.'}],
- [{en:'Related labs',no:'Beslektede labber'},{en:'Why the air rises in the first place is in <a href="clouds.html">Clouds, stability and fog</a>. Pressure systems and the wind are in <a href="fronts.html">Pressure, fronts and wind</a>. Icing and turbulence in general are in <a href="hazards.html">Icing and turbulence</a>.',no:'Hvorfor luften stiger i utgangspunktet, finner du i <a href="clouds.html">Skyer, stabilitet og tåke</a>. Trykksystemer og vind finner du i <a href="fronts.html">Trykk, fronter og vind</a>. Ising og turbulens generelt finner du i <a href="hazards.html">Ising og turbulens</a>.'}]];
+ [{en:'Related labs',no:'Beslektede labber'},{en:'Why the air rises in the first place is in <a href="clouds.html">Clouds, stability and fog</a>. Pressure systems and the wind are in <a href="pressure.html">Pressure and wind</a>. Icing and turbulence in general are in <a href="hazards.html">Icing and turbulence</a>.',no:'Hvorfor luften stiger i utgangspunktet, finner du i <a href="clouds.html">Skyer, stabilitet og tåke</a>. Trykksystemer og vind finner du i <a href="pressure.html">Trykk og vind</a>. Ising og turbulens generelt finner du i <a href="hazards.html">Ising og turbulens</a>.'}]];
  el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
 
 LAB.quiz(el('qbox'),'storms',()=>LAB.shuffle([
