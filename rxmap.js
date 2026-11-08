@@ -48,6 +48,7 @@ const ATT={
 };
 // chart-room palette (site.css: --paper #EDF1EE, --sheet #FFF, --ink #13202A, --accent #9A1E68, --info #1D4E9E)
 // modern palette (2026-11): cooler neutral land, clear blue water, quiet greys for roads and borders; airports in Birdbird navy-blue
+const AP_SM='#A0286F';
 const P={land:'#F1F3F1',water:'#CFE1EC',coast:'#9DB9CC',waterLine:'#B3CDDD',wood:'#DFE8DC',park:'#E3EBE0',ice:'#F9FBFC',resid:'#E6E7E4',bldg:'#DCDDD8',aero:'#DEE1E3',runway:'#B9BEC3',
   border:'#8E97A3',state:'#C5CBD2',road:'#E2E4E6',roadMaj:'#D6DADF',rail:'#CDD1D5',ink:'#0B2545',ink2:'#435466',ink3:'#6B7A88',halo:'rgba(250,251,250,.94)',waterLbl:'#4E7896',peak:'#4A5562',
   accent:'#9A1E68',info:'#1D4E9E',ap:'#1F4E8C',vor:'#24706A',ndb:'#7A6440',aip:'#7D93A3'};
@@ -67,10 +68,24 @@ const VIS={
   topo:   {road:0,rail:0,bldg:0,label:0,roadlabel:0,waterlabel:0,peak:0,sat:0,topo:1}
 };
 const URB=['residential','suburb','neighbourhood','commercial','industrial','retail'];
+const lin=(...s)=>['interpolate',['linear'],['zoom'],...s];
+const exp=(...s)=>['interpolate',['exponential',1.5],['zoom'],...s];
+// VFR chart colours (see BMP.vfr and TINT_VFR)
+const VFR={land:'#CFE2C0',water:'#AED6EE',river:'#86BEE0',coast:'#5C97C2',town:'#F6E07A',townEdge:'#C9A93A',roadMaj:'#A39585',road:'#B2A799',roadMin:'#C6BDB1'};
 // paint that changes per basemap (only applied to layers whose type the property belongs to)
 const BMP={
-  vfr:{water:{'fill-color':'#BCD7E8','line-color':'#9EC1D8'},coast:{'line-color':'#7FA4BE'},
-    urban:{'fill-color':'#E6D9B8','fill-opacity':['match',['get','class'],URB,0.6,0]},ice:{'fill-opacity':0.55}},
+  /* VFR chart (2026-11 redesign): sectional / ICAO 1:500 000 conventions, kept calm so the aviation layers stand out.
+     Land starts in the lowland green of the tints (no flash before the DEM arrives), clear light-blue water with a
+     darker coastline, towns in sectional yellow with a thin darker edge (stronger at low zoom, where they are
+     landmarks), thin warm-grey roads, white glaciers with a blue edge. Colours and widths are interpolated over zoom. */
+  vfr:{bg:{'background-color':VFR.land},water:{'fill-color':VFR.water,'line-color':VFR.river,'line-width':exp(7,0.5,12,1.2,16,3)},coast:{'line-color':VFR.coast,'line-width':lin(4,0.6,9,0.9,13,1.3)},
+    urban:{'fill-color':VFR.town,'fill-outline-color':VFR.townEdge,'fill-opacity':['interpolate',['linear'],['zoom'],4,['match',['get','class'],URB,0.95,0],9,['match',['get','class'],URB,0.85,0],12,['match',['get','class'],URB,0.6,0],15,['match',['get','class'],URB,0.42,0]]},
+    ice:{'fill-color':'#F8FBFD','fill-outline-color':'#A9CBE2','fill-opacity':0.85},
+    road:{'line-color':['match',['get','class'],['motorway','trunk'],VFR.roadMaj,'primary',VFR.road,VFR.roadMin]},rail:{'line-color':'#A7A29B'},
+    boundary:{'line-color':['match',['to-number',['get','admin_level']],2,'#7A6F86','#B3ADB9']},bldg:{'fill-color':'#E9D27A','fill-outline-color':'#CDB25A'},
+    aero:{'fill-color':'#D7D3CC','line-color':'#8E8A84'},
+    label:{'text-color':['match',['get','class'],['city','capital'],'#15212C','town','#24303B','country','#4A4F57','state','#5E6670','#38434E'],'text-halo-color':'rgba(255,255,250,.9)','text-halo-width':1.5},
+    waterlabel:{'text-color':'#3F77A6','text-halo-color':'rgba(226,240,250,.85)'},peak:{'text-color':'#5B4632'}},
   ifr:{bg:{'background-color':'#FAFAF7'},water:{'fill-color':'#E2EAEF','line-color':'#D3DEE5'},coast:{'line-color':'#B6C7D2'},
     urban:{'fill-color':'#ECEBE6','fill-opacity':['match',['get','class'],URB,0.6,0]},road:{'line-color':'#E9E5DE'},ice:{'fill-color':'#FCFCFB'},
     label:{'text-color':'#59656D'},waterlabel:{'text-color':'#7E97A8'},boundary:{'line-color':'#BDB5A6'}},
@@ -79,19 +94,18 @@ const BMP={
     peak:{'text-color':'#FFF4E0','text-halo-color':'rgba(16,24,30,.8)'},
     boundary:{'line-color':'rgba(255,255,255,.78)'}}
 };
-const lin=(z0,v0,z1,v1)=>['interpolate',['linear'],['zoom'],z0,v0,z1,v1];
-const exp=(...s)=>['interpolate',['exponential',1.5],['zoom'],...s];
 
 /* ---------- hypsometric tints (metres), SkyVector / ICAO VFR-chart style ----------
    Low green, pale yellow-green, tan, brown, grey and white on the highest ground.
    Spread over Norway's 0–2,469 m so lowland, valleys, fjells and the big massifs all read differently. */
-/* modern VFR tints: soft sage lowland, pale green-grey hills, light stone and cool grey on the fjells, white on top.
-   Same breakpoints as before, so lowland, valleys, fjells and the big massifs still read differently. */
+/* VFR tints (2026-11): sectional-style hypsometry tuned for Norway (0–2,469 m). Lowland green, pale green on the hills,
+   light sand and tan on the fjells, warm brown-grey on the high massifs, light grey and white on the tops. No yellow
+   (yellow is for towns). Sea level is opaque so coasts never show the background; below 0 m the vector water shows. */
 const TINT_VFR=['interpolate',['linear'],['elevation'],
-  -1,'rgba(0,0,0,0)', 0,'rgba(205,224,200,0)', 1,'rgb(205,224,200)',
-  100,'rgb(212,228,204)', 250,'rgb(221,232,210)', 450,'rgb(229,234,218)', 650,'rgb(233,233,222)',
-  850,'rgb(229,228,219)', 1050,'rgb(222,221,213)', 1300,'rgb(212,212,207)', 1550,'rgb(202,204,203)',
-  1800,'rgb(196,200,203)', 2050,'rgb(210,214,218)', 2300,'rgb(230,233,236)', 2700,'rgb(246,247,248)', 5000,'rgb(255,255,255)'];
+  -1,'rgba(207,226,192,0)', 0,'rgb(207,226,192)',
+  120,'rgb(214,231,196)', 280,'rgb(224,235,200)', 450,'rgb(234,236,206)', 650,'rgb(239,232,208)',
+  850,'rgb(238,225,199)', 1050,'rgb(233,215,189)', 1250,'rgb(224,205,180)', 1450,'rgb(214,198,177)',
+  1650,'rgb(208,199,189)', 1850,'rgb(214,210,204)', 2050,'rgb(228,227,224)', 2300,'rgb(242,242,240)', 2700,'rgb(252,252,252)'];
 const TINT_TER=['interpolate',['linear'],['elevation'],
   -1,'rgba(0,0,0,0)',0,'rgba(205,221,190,0)',2,'rgba(205,221,190,1)',120,'rgb(214,226,192)',370,'rgb(228,229,196)',670,'rgb(234,224,188)',1000,'rgb(224,204,164)',1370,'rgb(204,180,146)',1770,'rgb(184,168,150)',2290,'rgb(214,210,204)',3050,'rgb(244,243,240)'];
 
@@ -124,6 +138,9 @@ function restyle(L){
   }
   if(t==='symbol'){
     const lab=(g,c,h)=>{ if(L.layout&&L.layout['icon-image']&&g!=='peak'){ L.layout=Object.assign({},L.layout); ['icon-image','icon-size','icon-offset','icon-anchor','icon-optional'].forEach(k=>delete L.layout[k]); if(L.paint) ['icon-color','icon-halo-color','icon-halo-width','icon-opacity'].forEach(k=>delete L.paint[k]); } return keep(g,{'text-color':c,'text-halo-color':h,'text-halo-width':1.3,'text-halo-blur':0}); };
+    // fewer small-place names: villages from z10, hamlets and suburbs from z11.5 (less clutter under the aviation layers)
+    if(sl==='place'){ if(id==='label_village') L.minzoom=Math.max(L.minzoom||0,10); if(id==='label_other') L.minzoom=Math.max(L.minzoom||0,11.5); }
+    if(sl==='water_name'&&L.layout) L.layout=Object.assign({},L.layout,{'text-font':FONT_I});
     if(sl==='place') return lab('label',['match',['get','class'],['city','capital'],P.ink,'town','#22364D','country',P.ink2,'state',P.ink3,'#4E5F70'],P.halo);
     if(sl==='water_name'||sl==='waterway') return lab('waterlabel',P.waterLbl,'rgba(232,240,245,.9)');
     if(sl==='transportation_name'){ L.minzoom=Math.max(L.minzoom||0,11); return lab('roadlabel','#8B8E8C','rgba(255,255,255,.9)'); }
@@ -136,10 +153,12 @@ function restyle(L){
 // lt = direction the main light comes from (° true, 315 = NW, the chart convention); the fill lights turn with it.
 // Anchored to the map, so the shading does not swing round when the 3D camera turns.
 function hillPaint(bm,lt){ const d=(lt==null?315:lt)-315, r=a=>((a+d)%360+360)%360;
-  if(bm==='vfr') return {'hillshade-method':'multidirectional','hillshade-exaggeration':0.6,'hillshade-illumination-anchor':'map',
-    'hillshade-illumination-direction':[r(315),r(270),r(0)],'hillshade-illumination-altitude':[40,50,50],
-    'hillshade-shadow-color':['rgba(38,52,70,.5)','rgba(40,54,70,.2)','rgba(40,54,70,.2)'],
-    'hillshade-highlight-color':['rgba(255,255,255,.45)','rgba(255,255,255,.12)','rgba(255,255,255,.12)']};
+  // soft, crisp relief: a NW key light with warm grey-brown shadows (like a chart's relief shading), cool fill lights;
+  // a little stronger at low zoom so Norway's relief reads in the overview, softer close in so it never gets noisy
+  if(bm==='vfr') return {'hillshade-method':'multidirectional','hillshade-exaggeration':lin(4,0.72,9,0.56,13,0.44),'hillshade-illumination-anchor':'map',
+    'hillshade-illumination-direction':[r(315),r(270),r(0)],'hillshade-illumination-altitude':[38,50,50],
+    'hillshade-shadow-color':['rgba(56,58,60,.46)','rgba(52,60,72,.16)','rgba(52,60,72,.16)'],
+    'hillshade-highlight-color':['rgba(255,255,248,.5)','rgba(255,255,255,.1)','rgba(255,255,255,.1)']};
   // over satellite: imagery already has its own sun shading, so a low, cool key light and soft fill lights just
   // deepen the shaded slopes and lift the sunny ones enough for ridges, valleys and fjord sides to read in 3D
   if(bm==='sat') return {'hillshade-method':'multidirectional','hillshade-exaggeration':0.5,'hillshade-illumination-anchor':'map',
@@ -185,7 +204,7 @@ function buildStyle(base,o){
   if(key) st.sources['bb-sathi']={type:'raster',tiles:[HI_URL+encodeURIComponent(key)],tileSize:ts,minzoom:0,maxzoom:18,attribution:ATT.hi};
   st.sources['bb-topo']={type:'raster',tiles:[TOPO_URL],tileSize:256,minzoom:0,maxzoom:18,attribution:ATT.topo,bounds:[-10,53,42,82]};
   const wi=out.findIndex(l=>l.metadata['bb:g']==='water'); const at=wi>=0?wi:1;
-    const reliefV={id:'bb-reliefv',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'reliefv'},layout:{visibility:'none'},paint:{'color-relief-opacity':lin(5,0.9,12,0.75),'color-relief-color':TINT_VFR}};
+    const reliefV={id:'bb-reliefv',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'reliefv'},layout:{visibility:'none'},paint:{'color-relief-opacity':lin(5,1,11,0.92,14,0.8),'color-relief-color':TINT_VFR}};
   const relief={id:'bb-relief',type:'color-relief',source:'bb-demh',metadata:{'bb:g':'relief'},layout:{visibility:'none'},paint:{'color-relief-opacity':0.8,'color-relief-color':TINT_TER}};
   const hillM={id:'bb-hillm',type:'hillshade',source:'bb-demh',metadata:{'bb:g':'hillm'},layout:{visibility:'none'},paint:hillPaint('vfr')};
   const hill={id:'bb-hill',type:'hillshade',source:'bb-demh',metadata:{'bb:g':'hill'},layout:{visibility:'none'},paint:hillPaint('chart')};
@@ -201,7 +220,10 @@ function buildStyle(base,o){
   // coastline: thin outline of the water polygons, under the labels
   const ci=out.findIndex(l=>l.metadata['bb:g']==='water')+1;
   out.splice(ci>0?ci:out.length,0,{id:'bb-coast',type:'line',source:vid,'source-layer':'water',metadata:{'bb:g':'coast'},paint:{'line-color':P.coast,'line-width':lin(3,0.5,12,1.1)}});
-  st.layers=out; st.metadata=Object.assign({},st.metadata,{'bb:vid':vid});
+  // first paint: the VFR chart starts on its lowland green (not grey) before 'load' applies the basemap; setBasemap
+  // gets the plain-chart colour back as the original (map.__bb.ch, see create)
+  const bgL=out.find(l=>l.metadata['bb:g']==='bg'); if(bgL&&(!o||!o.bm||o.bm==='vfr')) bgL.paint=Object.assign({},bgL.paint,{'background-color':VFR.land});
+  st.layers=out; st.metadata=Object.assign({},st.metadata,{'bb:vid':vid,'bb:bg':bgL?bgL.id:null});
   delete st.terrain; delete st.sky;
   return st;
 }
@@ -236,6 +258,7 @@ function create(container,o){
       // narrow screens: attribution starts folded behind its (i) button; it opens on tap
       if(container.clientWidth<640) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
       map.__bb={bm:'vfr',relief:'on',ly:{},vid:style.metadata['bb:vid'],ex:1.5,t3:false,oaip:'none',lt:315,sc,satBad:{}};
+      if(style.metadata['bb:bg']) map.__bb.ch={[style.metadata['bb:bg']]:{'background-color':P.land}};
       satWatch(map,lg);
       let loaded=false, tile=false; const chk=()=>{ if(loaded&&!done){ done=true; clearTimeout(tm); ok(map); } };
       map.on('error',e=>{ lg('map error: '+String((e&&e.error&&e.error.message)||e).slice(0,120)); if(!loaded&&e&&e.error&&/style|WebGL|context|layers\[|expression|sources\./i.test(String(e.error.message||''))) fail(e.error); });
@@ -306,12 +329,12 @@ function setSky(map){ try{ map.setSky(skyFor(map.__bb.bm)); }catch(e){} }
 function exag(map){ const t=map.getTerrain&&map.getTerrain(); return t?(t.exaggeration||1):0; }
 
 /* contour lines in feet, computed in the browser from the same AWS DEM tiles (maplibre-contour, BSD-3) */
-function ctPaint(bm){ const c=bm==='ifr'?'rgba(110,118,124,':'rgba(92,104,116,';
-  return {l:{'line-color':['match',['get','level'],1,c+(bm==='ifr'?'.32)':'.42)'),c+(bm==='ifr'?'.18)':'.24)')]},t:{'text-color':bm==='ifr'?'#7A848A':'#56636F'}}; }
+function ctPaint(bm){ const v=bm==='vfr', c=bm==='ifr'?'rgba(110,118,124,':v?'rgba(126,98,68,':'rgba(92,104,116,';
+  return {l:{'line-color':['match',['get','level'],1,c+(bm==='ifr'?'.32)':v?'.4)':'.42)'),c+(bm==='ifr'?'.18)':v?'.2)':'.24)')]},t:{'text-color':bm==='ifr'?'#7A848A':v?'#7A5F42':'#56636F'}}; }
 function ctLayers(src,bm){ const c=ctPaint(bm);
-  return [{id:'bb-ct',type:'line',source:src,'source-layer':'contours',minzoom:8.5,metadata:{'bb:g':'ct'},layout:{visibility:'none','line-join':'round'},paint:Object.assign({'line-width':['interpolate',['linear'],['zoom'],9,['match',['get','level'],1,0.7,0.35],14,['match',['get','level'],1,1.2,0.7]]},c.l)},
+  return [{id:'bb-ct',type:'line',source:src,'source-layer':'contours',minzoom:8.5,metadata:{'bb:g':'ct'},layout:{visibility:'none','line-join':'round'},paint:Object.assign({'line-width':['interpolate',['linear'],['zoom'],9,['match',['get','level'],1,0.7,0.35],14,['match',['get','level'],1,1.2,0.7]],'line-opacity':lin(8.5,0,10,1)},c.l)},
     {id:'bb-ctl',type:'symbol',source:src,'source-layer':'contours',minzoom:10,metadata:{'bb:g':'ct'},filter:['>',['get','level'],0],layout:{visibility:'none','symbol-placement':'line','symbol-spacing':360,'text-size':10,'text-font':FONT_R,'text-field':['number-format',['get','ele'],{}],'text-padding':4,'text-max-angle':30},
-      paint:Object.assign({'text-halo-color':'rgba(250,248,240,.85)','text-halo-width':1.2},c.t)}]; }
+      paint:Object.assign({'text-halo-color':'rgba(250,248,240,.85)','text-halo-width':1.2,'text-opacity':lin(10,0,10.8,1)},c.t)}]; }
 const CT_TH={8:[1000,5000],9:[500,2500],10:[500,1000],11:[250,1000],12:[200,1000],13:[100,500]};
 let CTL=null;
 function loadScript(src){ return new Promise((ok,ko)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>ko(new Error(src)); document.head.appendChild(s); }); }
@@ -365,7 +388,7 @@ function oaLayers(src){ const s=n=>({source:src,'source-layer':n}), g=k=>['coale
   return [
     sym('bb-oa-ob','obstacles',11,{'icon-image':['match',['get','type'],'wind_turbine','bb-ob-wt','bb-ob'],'icon-anchor':'bottom','text-field':['step',['zoom'],g('name_label'),13,['coalesce',['get','name_label_full'],['get','name_label'],'']],'text-size':9.5,'text-anchor':'top','text-offset':[0,0.2]},tx('#2B3440')),
     sym('bb-oa-ap','airports',8,{'icon-image':['match',['get','type'],['heli_civil','heli_mil'],'bb-oa-h','gliding','bb-oa-g','af_water','bb-oa-w','ad_mil','bb-oa-m','ad_closed','bb-oa-x','bb-oa-f'],
-      'text-field':['step',['zoom'],g('name_label'),10,['coalesce',['get','name_label_full'],['get','name_label'],'']],'text-offset':[0.9,0],'text-anchor':'left'},tx('#1F4E8C'),['!',['has','icao_code']]),
+      'text-field':['step',['zoom'],g('name_label'),10,['coalesce',['get','name_label_full'],['get','name_label'],'']],'text-offset':[0.9,0],'text-anchor':'left'},tx(AP_SM),['!',['has','icao_code']]),
     sym('bb-oa-nv','navaids',6,{'icon-image':['match',['get','type'],'ndb','bb-ndb','bb-vor'],'text-field':['step',['zoom'],g('identifier'),9,['coalesce',['get','name_label_full'],['get','identifier'],'']],'text-offset':[0.9,0.6],'text-anchor':'top-left'},tx('#24706A')),
     dot('bb-oa-hs','hotspots','#A0620A',8), dot('bb-oa-hg','hang_glidings','#3F6E3A',8), dot('bb-oa-rc','rc_airfields','#5B6C7C',10),
     sym('bb-oa-rp','reporting_points',8,{'icon-image':['match',['get','type'],'compulsory','bb-rp-c','bb-rp-r'],'icon-size':['interpolate',['linear'],['zoom'],8,0.8,10,1,13,1.25],'symbol-sort-key':0,'text-field':['step',['zoom'],'',9,g('name')],'text-font':FONT_B,'text-size':['interpolate',['linear'],['zoom'],9,11,13,13.5],'text-offset':[0.95,-0.05],'text-anchor':'left','text-optional':false,'text-allow-overlap':false},{'text-color':'#123E86','text-halo-color':'#fff','text-halo-width':2.2})
@@ -391,7 +414,7 @@ function addImages(map){
   icon(map,'bb-my',12,12,g=>{ g.beginPath(); g.moveTo(6,1); g.lineTo(11,10.4); g.lineTo(1,10.4); g.closePath(); g.fillStyle='#fff'; g.fill(); g.strokeStyle=P.accent; g.lineWidth=1.5; g.stroke(); });
   icon(map,'bb-note',16,24,g=>{ g.beginPath(); g.moveTo(8,23); g.lineTo(2,13); g.lineTo(2,1.5); g.lineTo(14,1.5); g.lineTo(14,13); g.closePath(); g.fillStyle='#F2C230'; g.fill(); g.strokeStyle='#8A6D00'; g.lineWidth=1; g.stroke(); });
   // openAIP points: VFR reporting points (filled triangle = compulsory, open = on request), obstacles, small airfields
-  const RP='#123E86', OB='#2B3440', OA='#1F4E8C';
+  const RP='#123E86', OB='#2B3440', OA=AP_SM;
   icon(map,'bb-rp-c',20,19,g=>{ g.lineJoin='round'; g.beginPath(); g.moveTo(10,1.5); g.lineTo(18.5,17); g.lineTo(1.5,17); g.closePath(); g.strokeStyle='#fff'; g.lineWidth=3.2; g.stroke(); g.fillStyle=RP; g.fill(); });
   icon(map,'bb-rp-r',20,19,g=>{ g.lineJoin='round'; const t=()=>{ g.beginPath(); g.moveTo(10,2.2); g.lineTo(17.8,16.4); g.lineTo(2.2,16.4); g.closePath(); }; t(); g.strokeStyle='#fff'; g.lineWidth=5; g.stroke(); g.fillStyle='rgba(255,255,255,.95)'; g.fill(); t(); g.strokeStyle=RP; g.lineWidth=2.4; g.stroke(); g.beginPath(); g.arc(10,11.6,1.6,0,7); g.fillStyle=RP; g.fill(); });
   icon(map,'bb-ob',12,14,g=>{ g.beginPath(); g.moveTo(1.5,13); g.lineTo(6,1.5); g.lineTo(10.5,13); g.strokeStyle='#fff'; g.lineWidth=3; g.stroke(); g.strokeStyle=OB; g.lineWidth=1.4; g.stroke(); g.beginPath(); g.arc(6,10.6,1.3,0,7); g.fillStyle=OB; g.fill(); });
@@ -425,12 +448,12 @@ function addOverlays(map){
   // airports: large from the start, medium and small as you zoom in
   [[2,2.5,4.2],[1,5,3.2],[0,7.5,2.4]].forEach(([c,mz,r])=>{
     if(c===2) add({id:'bb-ap2r',type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],2],paint:{'circle-radius':lin(3,r+2.2,10,r+4.5),'circle-color':'rgba(0,0,0,0)','circle-stroke-color':'rgba(44,95,141,.5)','circle-stroke-width':1}});
-    add({id:'bb-ap'+c,type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],c],paint:{'circle-radius':lin(3,r,10,r+1.6),'circle-color':c?P.ap:'#fff','circle-stroke-color':P.ap,'circle-stroke-width':1.3}}); });
+    add({id:'bb-ap'+c,type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],c],paint:{'circle-radius':lin(3,r,10,r+1.6),'circle-color':c?P.ap:'#fff','circle-stroke-color':c?'#fff':AP_SM,'circle-stroke-width':c?lin(3,1,10,1.6):1.6,'circle-opacity':lin(mz,0,mz+0.4,1),'circle-stroke-opacity':lin(mz,0,mz+0.4,1)}}); });
   add({id:'bb-nv',type:'symbol',source:'bb-nv',minzoom:4.8,filter:['any',['!=',['get','ndb'],1],['>=',['zoom'],7]],layout:{'icon-image':['case',['==',['get','ndb'],1],'bb-ndb','bb-vor'],'icon-allow-overlap':true,'icon-ignore-placement':true,
     'text-field':['step',['zoom'],'',6.5,['get','n']],'text-font':FONT_R,'text-size':10.5,'text-offset':[0.9,0.7],'text-anchor':'top-left','text-optional':true,'symbol-sort-key':['case',['==',['get','ndb'],1],3,1]},paint:Object.assign({'text-color':['case',['==',['get','ndb'],1],P.ndb,P.vor]},halo)});
   add({id:'bb-fx',type:'symbol',source:'bb-fx',minzoom:6.2,layout:{'icon-image':'bb-aip','icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['step',['zoom'],'',7.6,['get','n']],'text-font':FONT_R,'text-size':9.5,'text-offset':[0.7,0.1],'text-anchor':'left','text-optional':true},paint:Object.assign({'text-color':P.aip},halo)});
   add({id:'bb-my',type:'symbol',source:'bb-my',layout:{'icon-image':'bb-my','icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['step',['zoom'],'',4.5,['get','n']],'text-font':FONT_R,'text-size':10.5,'text-offset':[0.8,0.1],'text-anchor':'left','text-optional':true},paint:Object.assign({'text-color':P.accent},halo)});
-  [[2,4.2],[1,6.4],[0,8.6]].forEach(([c,mz])=>add({id:'bb-apl'+c,type:'symbol',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],c],layout:{'text-field':['get','n'],'text-font':c===2?FONT_B:FONT_R,'text-size':c===2?11.5:10.5,'text-offset':[0.7,-0.55],'text-anchor':'bottom-left','text-optional':true,'symbol-sort-key':-c},paint:Object.assign({'text-color':P.ap},halo)}));
+  [[2,4.2],[1,6.4],[0,8.6]].forEach(([c,mz])=>add({id:'bb-apl'+c,type:'symbol',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],c],layout:{'text-field':['get','n'],'text-font':c===2?FONT_B:FONT_R,'text-size':c===2?11.5:10.5,'text-offset':[0.7,-0.55],'text-anchor':'bottom-left','text-optional':true,'symbol-sort-key':-c},paint:Object.assign({'text-color':c?P.ap:AP_SM},halo)}));
   add({id:'bb-note',type:'symbol',source:'bb-note',layout:{'icon-image':'bb-note','icon-anchor':'bottom','icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['step',['zoom'],'',4.3,['get','t']],'text-font':FONT_B,'text-size':11,'text-offset':[0.9,-1.1],'text-anchor':'left','text-optional':true},paint:Object.assign({'text-color':'#5C4A00'},halo)});
   // route points and names on top
   add({id:'bb-rpt',type:'circle',source:'bb-rpt',paint:{'circle-radius':['case',['==',['get','s'],1],6,4.6],'circle-color':['case',['==',['get','s'],1],P.accent,'#fff'],'circle-stroke-color':P.accent,'circle-stroke-width':2.2,'circle-pitch-alignment':'map'}});
