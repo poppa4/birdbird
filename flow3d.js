@@ -30,6 +30,47 @@
       out[1] *= sy;
     }
 
+    /* ---- rask sampler for partikler (røyk): feltet blandet ferdig for gjeldende α, kjølvannsvinkel og stallskalering
+       (3 tall per node i stedet for 15) og oppslagstabeller for indeksene i de ikke-uniforme aksene (ingen binærsøk).
+       Samme trilineære interpolasjon som fieldAt, så verdiene er identiske. */
+    const FB = { v: null, key: '', lx: null, ly: null, lz: null };
+    function lut(ax) {
+      const n = ax.length, R = 2048, a0 = ax[0], inv = R / (ax[n - 1] - a0), t = new Uint16Array(R + 1);
+      let i = 0; for (let k = 0; k <= R; k++) { const v = a0 + k / inv; while (i < n - 2 && ax[i + 1] <= v) i++; t[k] = i; }
+      return { t, a0, inv, R, ax, n };
+    }
+    function ensureBlend(A, sc) {
+      if (!F.data) return false;
+      const key = A + ':' + F.wt + ':' + sc + ':' + F.nx + ':' + F.data.length;
+      if (FB.key === key && FB.d === F.data) return true;
+      const N = F.nx * F.ny * F.nz, d = F.data, t1 = F.wt, t0 = 1 - t1;
+      if (!FB.v || FB.v.length !== N * 3) FB.v = new Float32Array(N * 3);
+      const v = FB.v;
+      for (let n = 0, b = 0; n < N; n++, b += 15) for (let q = 0; q < 3; q++)
+        v[n * 3 + q] = (A * (t0 * d[b + q] + t1 * d[b + 6 + q]) + (t0 * d[b + 3 + q] + t1 * d[b + 9 + q])) * sc + d[b + 12 + q];
+      if (FB.xs !== F.xs) { FB.lx = lut(F.xs); FB.ly = lut(F.ys); FB.lz = lut(F.zs); FB.xs = F.xs; }
+      FB.key = key; FB.d = F.data; return true;
+    }
+    function li(L, v) { // indeks i aksen, −1 utenfor
+      if (v < L.a0) return -1; const k = ((v - L.a0) * L.inv) | 0; if (k > L.R) return -1;
+      let i = L.t[k]; const ax = L.ax; while (i < L.n - 2 && ax[i + 1] <= v) i++; return v > ax[L.n - 1] ? -1 : i;
+    }
+    /* forstyrrelseshastighet fra det blandede feltet (krever ensureBlend for samme α først) */
+    function fieldFast(x, y, z, out) {
+      out[0] = out[1] = out[2] = 0;
+      const sy = y < 0 ? -1 : 1, yy = y < 0 ? -y : y, i = li(FB.lx, x), j = li(FB.ly, yy), l = li(FB.lz, z);
+      if (i < 0 || j < 0 || l < 0) return;
+      const xs = F.xs, ys = F.ys, zs = F.zs, tx = (x - xs[i]) / (xs[i + 1] - xs[i]), ty = (yy - ys[j]) / (ys[j + 1] - ys[j]), tz = (z - zs[l]) / (zs[l + 1] - zs[l]);
+      const v = FB.v, ny = F.ny, nz = F.nz, sx = ny * nz * 3, sY = nz * 3;
+      const b = ((i * ny + j) * nz + l) * 3, ux = 1 - tx, uy = 1 - ty, uz = 1 - tz;
+      const w000 = ux * uy * uz, w100 = tx * uy * uz, w010 = ux * ty * uz, w110 = tx * ty * uz, w001 = ux * uy * tz, w101 = tx * uy * tz, w011 = ux * ty * tz, w111 = tx * ty * tz;
+      for (let q = 0; q < 3; q++) {
+        const o = b + q;
+        out[q] = w000 * v[o] + w100 * v[o + sx] + w010 * v[o + sY] + w110 * v[o + sx + sY] + w001 * v[o + 3] + w101 * v[o + sx + 3] + w011 * v[o + sY + 3] + w111 * v[o + sx + sY + 3];
+      }
+      out[1] *= sy;
+    }
+
     /* ---- geometri (samme som modellen i 3D-scenen) ---- */
     const visTf = ly => 1.32 - 0.32 * Math.min(1, Math.abs(ly) / wing.s);
     function wingZ(ly, xx, c, upper, off) {
@@ -137,7 +178,9 @@
     }
     const CR = [0, 0, 0, 0, 0];
     /* skyv punktet ut av faste flater; CR[3]: bit 1 = separert, bit 2 = traff flaten; CR[4] = turbulensamplitude */
-    function collide(lx, ly, lz) {
+    /* noDead: røykpartikler skal kunne gå inn i den separerte sonen (resirkulasjon); da flyttes de ikke ut av den,
+       men CR[3] bit 4 markerer at punktet er inne i sonen */
+    function collide(lx, ly, lz, noDead) {
       const w = wing; let moved = 0, sep = 0, amp = 0;
       if (Math.abs(ly) < w.s) {
         const c = w.chord(ly), xc = (lx - w.xle(ly)) / c;
@@ -145,8 +188,10 @@
           const xx = xc < 0 ? 0 : xc > 1 ? 1 : xc, zu = wingZ(ly, xx, c, true, 0.012), zl = wingZ(ly, xx, c, false, 0.012);
           if (lz < zu && lz > zl) { lz = (lz - (zu + zl) / 2) >= 0 ? zu : zl; moved = 2; }
         }
-        const dz = deadZone(lx, ly, lz);
-        if (dz.inside) { lz = dz.top + 0.004; sep = 1; } amp = dz.amp; if (amp > 0.002) sep = 1;
+        if (xc > -0.05) {
+          const dz = deadZone(lx, ly, lz);
+          if (dz.inside) { if (noDead) moved |= 4; else lz = dz.top + 0.004; sep = 1; } amp = dz.amp; if (amp > 0.002) sep = 1;
+        }
       }
       const T = FT, u = (lx - T.x0) / T.len;
       if (u > 0 && u < 1) {
@@ -276,7 +321,7 @@
       setRes(r) { res = r; },
       setField(f) { Object.assign(F, f); },
       setBounds(b) { Object.assign(B, b); },
-      fieldAt, wingZ, wingSurf, stripAt, sepFrac, stripCp, nearWall, coreSwirl, ensureCore, get core() { return CORE; }, deadZone, collide, trace, traceMany, crossPlane, surfaceCp
+      fieldAt, fieldFast, ensureBlend, wingZ, wingSurf, stripAt, sepFrac, stripCp, nearWall, coreSwirl, ensureCore, get core() { return CORE; }, deadZone, collide, trace, traceMany, crossPlane, surfaceCp
     };
   }
 
