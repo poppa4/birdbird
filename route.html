@@ -149,7 +149,7 @@
 .rx .mapctl button{width:36px;height:36px;border-radius:6px;box-shadow:0 2px 6px rgba(19,32,42,.08)}
 .rx .mapctl button:disabled{opacity:.4;cursor:default}
 .rx .mapctl a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--rule);background:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;color:var(--ink)}
-.rx .maplg{bottom:calc(var(--shh,0px) + 8px);left:12px;transition:bottom .2s;max-width:calc(100% - 80px)}
+.rx .maplg{bottom:calc(var(--shh,0px) + 52px);left:12px;transition:bottom .2s;max-width:calc(100% - 80px);pointer-events:none} /* above the map credits, which must stay readable; clicks pass through to the map */
 .rx-ly{position:absolute;right:12px;top:var(--tch,64px);max-height:calc(100% - var(--shh,0px) - 80px);overflow:auto;z-index:6;background:#fff;border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(19,32,42,.14);padding:12px 14px;width:250px;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .rx-ly[hidden]{display:none}.rx-ly .note{font-size:12px;margin:4px 0 0}
 .rx-side{position:absolute;left:12px;top:var(--tch,64px);width:300px;max-height:calc(100% - var(--shh,0px) - 80px);overflow:auto;z-index:5;background:#fff;border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(19,32,42,.14);padding:14px 16px;font-size:14px}
@@ -241,7 +241,7 @@
 .x3row{display:flex;gap:8px;align-items:center}.x3row input[type=range]{flex:1;accent-color:var(--magenta)}.x3row .btn{padding:4px 10px}
 .x3o{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}.x3s{justify-content:space-between}.x3s select{font:inherit;font-size:13px;padding:2px 4px}.x3h{font-size:11.5px;margin:0}.x3s label{display:flex;gap:4px;align-items:center;white-space:nowrap}.x3leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--ink-2)}.x3leg[hidden]{display:none}.x3more{display:none}.x3leg i{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px}
 .rx-m{display:flex;gap:8px}#v23[hidden]{display:none}
-@media (max-width:900px){.x3more{display:inline-block}.x3s{flex-wrap:wrap;row-gap:4px}.x3w:not(.open):has(#x3:not([hidden])) :is(.x3s,.x3leg,.x3fl,#x3pm,#x3d,.x3o){display:none}.x3w{left:8px;right:8px;width:auto;padding:6px 10px;gap:4px;font-size:12.5px}.x3w b{display:none}.x3h{display:none}.rx-m{gap:4px}.x3s .btn{padding:3px 8px;font-size:12px}#x3 .chk{font-size:12.5px}}
+@media (max-width:900px){.x3more{display:inline-block}.x3s{flex-wrap:wrap;row-gap:4px}.x3w:not(.open):has(#x3:not([hidden])) :is(.x3s,.x3leg,.x3fl,#x3pm,#x3d,.x3o,.x3look){display:none}.x3w{left:8px;right:8px;width:auto;padding:6px 10px;gap:4px;font-size:12.5px}.x3w b{display:none}.x3h{display:none}.rx-m{gap:4px}.x3s .btn{padding:3px 8px;font-size:12px}#x3 .chk{font-size:12.5px}}
 .rx-s{display:flex;gap:6px}.libbtn{flex:0 0 40px;height:40px;border:1px solid var(--rule);border-radius:6px;background:#fff;font-size:17px;color:var(--magenta);cursor:pointer;box-shadow:0 2px 8px rgba(19,32,42,.08)}
 .rx-s .qres{left:46px}
 .rx-lib h4{font-size:13px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
@@ -277,7 +277,7 @@
 .mlmap.wait{visibility:hidden;pointer-events:none}
 .mapw.ml #mcv{display:none}
 .rx:has(#x3w:not([hidden])) .edbar{display:none}
-.rx .mapw.ml .maplg{bottom:calc(var(--shh,0px) + 30px)}
+.rx .mapw.ml .maplg{bottom:calc(var(--shh,0px) + 52px)}
 .mapw.pick .maplibregl-canvas-container{cursor:crosshair!important}
 .mlmap .maplibregl-canvas{outline:none}
 .rx .maplibregl-ctrl-bottom-right{bottom:var(--shh,0px);transition:bottom .2s}
@@ -312,7 +312,7 @@
 .rx-ly h4:first-of-type{margin-top:4px}
 .rx-ly .lyn{font-size:11.5px;color:var(--ink-2);font-weight:400}
 .rx-ly label.off{color:#9AA6AC}
-.rx-ly .mlonly[hidden]{display:none}
+.rx-ly .mlonly[hidden]{display:none}.rx-ly .lyoa{display:flex;flex-direction:column;gap:4px}.rx-ly .lyoa label.chk.off{color:#9AA6AC}
 .bmg button.wide{grid-column:1/-1}
 @media (max-width:900px){
   .simhud{grid-template-columns:repeat(4,minmax(0,1fr));gap:1px 8px;padding:4px 8px 5px;top:calc(var(--tch,64px) - 4px);left:8px;right:52px;width:auto;max-width:none}
@@ -327,6 +327,8 @@
 .bmg button{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--rule);background:#fff;border-radius:4px;cursor:pointer;color:var(--ink)}
 .bmg button.on{border-color:var(--accent);color:var(--accent);font-weight:600;background:var(--accent-wash)}
 @media (max-width:900px){ .rx .maplibregl-ctrl-bottom-right{bottom:0} }
+/* the map credits (Esri, EOX, OpenFreeMap …) must stay readable: beside the 3D panel, never under it */
+@media (min-width:901px){ .rx:has(#x3w:not([hidden])) .maplibregl-ctrl-bottom-right{left:344px} }
 .sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media print{ body.printdraw .page>*:not(#drawMode){display:none!important} body.printdraw #drawMode{display:block!important} body.printdraw .dgrid{display:block} body.printdraw .dsheet{border:1px solid #999} }
 @media print{
@@ -334,7 +336,42 @@
   .rgrid{display:block}.panel{border:0;padding:0}
   .prof{border:1px solid #999;break-inside:avoid}
 }
+.simload{position:absolute;left:50%;top:calc(var(--tch,64px) + 70px);transform:translateX(-50%);z-index:7;background:rgba(11,37,69,.92);color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(11,37,69,.3);display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;width:min(420px,calc(100% - 24px));box-sizing:border-box;font-size:13.5px}
+.simload[hidden]{display:none}.simload .slb{grid-column:1;height:6px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden}.simload .slb i{display:block;height:100%;width:0;background:#E04C9B;border-radius:3px;transition:width .2s}
+.simload .btn{grid-row:1/3;grid-column:2;background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}.simload b{font-family:var(--f-mono);font-weight:600}
+.x3look{gap:4px;font-size:13px}.x3look span{margin-right:2px;color:var(--ink-2)}.x3look button{min-width:30px;height:28px;border:1px solid var(--rule);background:#fff;border-radius:6px;cursor:pointer;font-size:12px;touch-action:none}.x3look button:last-child{padding:0 8px}
+.bb-look{cursor:grab}.bb-look:active{cursor:grabbing}
+.bb-satnote{position:absolute;left:50%;top:calc(var(--tch,64px) + 6px);transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
 .mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
+/* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy #0B2545 with magenta accents ---- */
+.rx{--navy:#0B2545;--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
+.rx .seg3{border:0;border-radius:10px;background:var(--glass);box-shadow:var(--lift)}
+.rx .seg3 button{border-right:1px solid var(--hair);color:#3A4D60;transition:background .15s,color .15s}
+.rx .seg3 button.on{background:var(--navy);color:#fff}
+.rx .lybtn{border:0!important;border-radius:10px!important;box-shadow:var(--lift)!important;background:var(--glass)!important;color:var(--navy)}
+.rx .lybtn[aria-expanded="true"]{background:var(--navy)!important;color:#fff}
+.rx .mapctl{gap:0;border-radius:12px;background:var(--glass);box-shadow:var(--lift);overflow:hidden}
+.rx .mapctl button,.rx .mapctl a{width:40px;height:40px;border:0;border-bottom:1px solid var(--hair);border-radius:0;box-shadow:none;background:transparent;color:var(--navy);font-size:17px;display:flex;align-items:center;justify-content:center}
+.rx .mapctl a{font-size:11px}.rx .mapctl>:last-child{border-bottom:0}
+.rx .mapctl button:hover:not(:disabled),.rx .mapctl a:hover{background:rgba(154,30,104,.07);color:#9A1E68}
+.rx .edbar{border:0;border-radius:10px;box-shadow:var(--lift)}.rx .edbar button{border-right-color:var(--hair)}
+.rx .rx-ly{border:0;border-radius:16px;box-shadow:0 18px 48px rgba(11,37,69,.2),0 2px 6px rgba(11,37,69,.08);padding:14px 16px 16px;width:286px;gap:4px}
+.rx .rx-ly h4{color:#5B6C7C;letter-spacing:.08em;font-size:11px;margin-top:12px;padding-top:10px;border-top:1px solid var(--hair)}
+.rx .rx-ly h4:first-of-type{border-top:0;padding-top:0}
+.rx .rx-ly label.chk{padding:3px 0}.rx .rx-ly input[type=checkbox]{accent-color:#9A1E68;width:16px;height:16px}
+.rx .bmsel>b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C}
+.rx .bmg{gap:6px}.rx .bmg button{border-radius:10px;padding:8px 10px;border-color:var(--hair);background:#F6F8FA;color:var(--navy)}
+.rx .bmg button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
+.rx .x3w{border:0;border-radius:16px;box-shadow:var(--lift)}
+.rx .simhud{border-radius:14px;background:rgba(11,37,69,.86);box-shadow:0 8px 24px rgba(11,37,69,.25)}
+.rx .mlmap .maplibregl-ctrl-attrib{border-radius:8px 0 0 0}
+/* phones: the Layers panel is a bottom sheet with large touch targets */
+@media (max-width:640px){
+  .rx .rx-ly{left:8px;right:8px;width:auto;max-height:calc(var(--mh,70vh) - 130px);border-radius:18px;padding:12px 16px 16px}
+  .rx .rx-ly::before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:rgba(11,37,69,.18);margin:0 auto 6px}
+  .rx .rx-ly label.chk{padding:6px 0}.rx .bmg button{padding:10px}
+  .rx .mapctl button,.rx .mapctl a{width:42px;height:42px}
+}
 </style>
 </head>
 <body data-title="Route Explorer">
@@ -344,7 +381,7 @@
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
   <div class="mapw" id="map"><canvas id="mcv"></canvas>
-    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
+    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
     <div class="edbar noprint" id="edbar" hidden><button id="undo" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button id="redo" type="button" disabled title="Redo (Ctrl+Shift+Z)">↷ Redo</button><button id="clr" type="button" title="Remove all points from the route">✕ Clear route</button></div>
     <div class="ptpop noprint" id="ptpop" hidden><b id="ptpopn"></b><button id="ptdel" type="button">✕ Remove point</button><button id="ptx" type="button" aria-label="Close">×</button></div>
     <div class="maplg" id="maplg">Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it</div>
@@ -353,13 +390,15 @@
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
     <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
-      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5">×5</option><option value="10">×10</option><option value="20">×20</option><option value="30" selected>×30</option><option value="60">×60</option></select></label></div>
+      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5">×5</option><option value="10" selected>×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label></div>
+      <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
-    <div class="x3row x3s"><label><span id="x3ex">Terrain ×2</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.5">×1.5</option><option value="2" selected>×2</option><option value="3">×3</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0">Off</option><option value="500">500 ft</option><option value="1000" selected>1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
+    <div class="x3row x3s"><label><span id="x3ex">Terrain ×1.5</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.5" selected>×1.5</option><option value="2">×2</option><option value="3">×3</option></select></label><label id="x3ltl" hidden>Light <select id="x3lt" aria-label="Direction of the relief shading light"><option value="315" selected>from NW</option><option value="225">from SW</option><option value="135">from SE</option><option value="45">from NE</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0">Off</option><option value="500">500 ft</option><option value="1000" selected>1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
     <p class="note x3h" id="x3d"></p><p class="note x3h" id="x3hint">Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom</p><p class="note x3h" id="x3hml" hidden>Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom</p>
   </div>
   <div class="simhud noprint" id="simhud" hidden></div>
+  <div class="simload noprint" id="simload" role="status" hidden><div class="slt">Loading terrain and imagery along the route… <b id="simloadp">0 %</b></div><div class="slb"><i id="simloadb"></i></div><button class="btn" id="simskip" type="button">Skip</button></div>
   <div class="rx-top noprint">
     <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★</button><input id="rtxt" type="search" placeholder="Search an airport or fix, or paste a route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
       <div class="qres" id="qres" hidden></div>
@@ -383,6 +422,14 @@
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
     <label class="chk mlonly" id="lyas" hidden><input type="checkbox" data-ly="as"> <span>Airspace (openAIP) <span class="lyn" id="asnote"></span></span></label>
     <label class="chk"><input type="checkbox" data-ly="fx"> IFR points (Finland, Iceland)</label>
+    <div class="mlonly lyoa" id="lyoa" hidden><h4>openAIP <span class="lyn" id="oanote"></span></h4>
+    <label class="chk"><input type="checkbox" data-ly="rp"> VFR reporting points</label>
+    <label class="chk"><input type="checkbox" data-ly="ob"> Obstacles</label>
+    <label class="chk"><input type="checkbox" data-ly="oa"> Small airfields, heliports, glider sites</label>
+    <label class="chk"><input type="checkbox" data-ly="on"> openAIP navaids</label>
+    <label class="chk"><input type="checkbox" data-ly="hs"> Thermal hotspots</label>
+    <label class="chk"><input type="checkbox" data-ly="hg"> Hang gliding sites</label>
+    <label class="chk"><input type="checkbox" data-ly="rc"> RC model airfields</label></div>
     <h4>Terrain numbers</h4>
     <label class="chk"><input type="checkbox" data-ly="mef"> Highest terrain per square (e.g. <b style="font-size:15px">4</b><small>5</small> = 4,500 ft)</label>
     <h4>Mine</h4>
@@ -515,7 +562,7 @@
     </details>
     <div class="legs" id="legs"></div>
   </section>
-  <details class="note srcd"><summary>Data sources and limits</summary><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery (© Esri, Maxar, Earthstar Geographics). Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
+  <details class="note srcd"><summary>Data sources and limits</summary><p style="margin:6px 0 0">Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery through ArcGIS Location Platform (Powered by Esri; sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community); without it, Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0); if neither loads, NASA GIBS Blue Marble at low resolution. The relief shading over the satellite map in 3D is computed from the terrain tiles. Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace, VFR reporting points, obstacles and small airfields: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.</p></details>
   </div>
 
   <div id="drawMode" hidden>
@@ -558,7 +605,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=6"></script>
+<script src="rxmap.js?v=7"></script>
 <script>
 (function(){
 'use strict';
@@ -567,7 +614,8 @@ const NSV='http://www.w3.org/2000/svg';
 const XT=[['rwy','Runway / aerodrome'],['sid','SID / exit fix'],['wpt','Waypoint'],['iaf','IAF'],['if','IF'],['hold','Hold'],['faf','FAF / FAP'],['da','DA / MDA'],['missed','Missed approach'],['alt','Alternate']];
 const APPT=['if','faf','da','missed'];
 const pnum=v=>{ if(v==null) return null; const t=String(v).trim().toUpperCase(); if(!t) return null; const fl=t.match(/^FL\s*(\d{2,3})$/); if(fl) return +fl[1]*100; const n=parseFloat(t.replace(',','.').replace(/[^0-9.\-]/g,'')); return Number.isFinite(n)?n:null; };
-const fx=(v,d)=>v==null||!Number.isFinite(v)?'':(Math.round(v*10**(d||0))/10**(d||0)).toLocaleString(LAB.lang==='no'?'nb-NO':'en-GB',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+// number formatting: one cached Intl.NumberFormat per language and decimals (toLocaleString builds a new one on every call)
+const FXC={}; const fx=(v,d)=>{ if(v==null||!Number.isFinite(v)) return ''; d=d||0; const k=LAB.lang+d; const f=FXC[k]||(FXC[k]=new Intl.NumberFormat(LAB.lang==='no'?'nb-NO':'en-GB',{minimumFractionDigits:d,maximumFractionDigits:d})); return f.format(Math.round(v*10**d)/10**d); };
 const taOf=()=>{ const v=R&&R.s&&pnum(R.s.ta); return v||7000; };
 const altTxt=a=>a==null?'':a>taOf()?'FL'+String(Math.round(a/100)).padStart(3,'0'):fx(a);
 function niceTop(t){ const v=t<10000? t*1.2+300 : t*1.15; const st=v<=5000?500:v<=12500?1000:2500; return Math.ceil(v/st)*st; }
@@ -841,8 +889,10 @@ function zoneTer(M){ const z=zones(M); const r={d:false,a:false}; if(!TP||M.PM!=
 
 /* ---------- kart og profil sammen ---------- */
 let HOV=null, pDrag=null;
-function setHov(x,fromMap){ HOV=x; rdo(x); try{ if(T3.on) kick3(); }catch(e){} const l=el('hcur'), t=el('hcurt'); if(!l) return; if(x==null||!psv._XS){ l.setAttribute('visibility','hidden'); t.setAttribute('visibility','hidden'); if(!fromMap) drawMap(); return; }
-  const px=psv._XS(x); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); const M=compute(); t.setAttribute('x',Math.max(40,Math.min(960,px))); t.textContent=''; t.setAttribute('visibility','hidden'); if(!fromMap) drawMap(); }
+// the readout under the profile follows the pointer at most every 80 ms (the last position always lands)
+let rdoT=0, rdoQ=0; function rdoSoon(x){ const now=performance.now(); clearTimeout(rdoQ); if(now-rdoT>80){ rdoT=now; rdo(x); } else rdoQ=setTimeout(()=>{ rdoT=performance.now(); rdo(HOV); },80-(now-rdoT)); }
+function setHov(x,fromMap){ HOV=x; rdoSoon(x); try{ if(T3.on) kick3(); }catch(e){} const l=el('hcur'), t=el('hcurt'); if(!l) return; if(x==null||!psv._XS){ l.setAttribute('visibility','hidden'); t.setAttribute('visibility','hidden'); if(!fromMap) hovDraw(); return; }
+  const px=psv._XS(x); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); t.setAttribute('x',Math.max(40,Math.min(960,px))); t.textContent=''; t.setAttribute('visibility','hidden'); if(!fromMap) hovDraw(); }
 function hovInfo(x){ const M=compute(); if(x==null||M.C.length<2) return ''; let pi=0; M.C.forEach((c,i)=>{ if(c.x<=x+1e-6&&!['missed','alt'].includes(c.p.t)) pi=i; }); const pc=M.C[pi], nc=M.C.find(c=>c.x>x+1e-6&&!['missed','alt'].includes(c.p.t));
   const near=[pc,nc].filter(Boolean).sort((a,b)=>Math.abs(a.x-x)-Math.abs(b.x-x))[0]; const at= Math.abs(near.x-x)<0.6? `${L({en:'at',no:'ved'})} <b>${esc(near.p.n||'')}</b>` : `<b>${fx(x-pc.x,1)} NM</b> ${L({en:'after',no:'etter'})} <b>${esc(pc.p.n||'')}</b>`;
   let q=null,bd=1e9; if(TP) TP.pts.forEach(p=>{ const d=Math.abs(p.x-x); if(d<bd){ bd=d; q=p; } }); const tc=q&&(q.c!=null?q.c:q.e), te=q&&q.e; const alt=M.PM==='ter'?null:M.altAt(x);
@@ -859,11 +909,14 @@ function critTxt(M){ const c=crit(M); if(!c) return ''; const at=`${L({en:'at',n
 function rdo(x){ const r=el('rdo'); if(!r) return; if(x==null){ const ct=critTxt(compute()); r.innerHTML= ct? ct+`<span class="hint">${L({en:'point at the profile for other places',no:'pek i profilen for andre steder'})}</span>` : `<span class="hint">${L({en:'Point at the profile or the route to read off a place.',no:'Pek i profilen eller på ruten for å lese av et sted.'})}</span>`; } else r.innerHTML=hovInfo(x); }
 function terAt(x){ if(!TP) return null; let b=null,bd=1e9; TP.pts.forEach(p=>{ const d=Math.abs(p.x-x); if(d<bd){ bd=d; b=p; } }); return b&&b.e; }
 function distOnRoute(mx,my){ const M=compute(); let best=null, bd=12; for(let i=1;i<M.C.length;i++){ const a=M.C[i-1], b=M.C[i]; if(a.p.la==null||b.p.la==null||['missed','alt'].includes(b.p.t)) continue; const [ax,ay]=prj(a.p.la,a.p.lo), [bx,by]=prj(b.p.la,b.p.lo); const vx=bx-ax, vy=by-ay, t=Math.max(0,Math.min(1,((mx-ax)*vx+(my-ay)*vy)/Math.max(1e-6,vx*vx+vy*vy))); const d=Math.hypot(ax+vx*t-mx,ay+vy*t-my); if(d<bd){ bd=d; best=a.x+t*(b.x-a.x); } } return best; }
-psv.addEventListener('pointermove',e=>{ if(mkDrag||pDrag) return; const r=psv.getBoundingClientRect(); const vx=(e.clientX-r.left)/r.width*(psv._W0||1000); const bx=psv._box; if(!bx||vx<bx[0]||vx>bx[0]+bx[2]){ if(HOV!=null) setHov(null); return; } const M=compute(); if(M.C.length<2) return; setHov(Math.max(0,Math.min(M.total,psv._XI(vx)))); });
+psv.addEventListener('pointermove',rafT(e=>{ if(mkDrag||pDrag) return; const r=psv.getBoundingClientRect(); const vx=(e.clientX-r.left)/r.width*(psv._W0||1000); const bx=psv._box; if(!bx||vx<bx[0]||vx>bx[0]+bx[2]){ if(HOV!=null) setHov(null); return; } const M=MLK.M||compute(); if(M.C.length<2) return; setHov(Math.max(0,Math.min(M.total,psv._XI(vx)))); }),{passive:true});
 psv.addEventListener('pointerleave',e=>{ if(!pDrag&&e.pointerType!=='touch') setHov(null); });
 psv.addEventListener('pointerdown',e=>{ if(e.pointerType!=='touch'||e.target.closest('.pdrag,.crdrag,.mk,.xnbox')) return; const r=psv.getBoundingClientRect(); const vx=(e.clientX-r.left)/r.width*(psv._W0||1000); const M=compute(); if(M.C.length<2||!psv._XI) return; setHov(Math.max(0,Math.min(M.total,psv._XI(vx)))); });
-queueMicrotask(()=>{ mapEl.addEventListener('pointermove',e=>{ if(drag||ptDrag||(ML&&(e.buttons||ML.isMoving()))) return; const r=mapEl.getBoundingClientRect(); const d=distOnRoute(e.clientX-r.left,e.clientY-r.top); if(d==null){ if(HOV!=null){ HOV=null; setHov(null,true); drawMap(); } return; } setHov(d,true); drawMap(); });
-mapEl.addEventListener('pointerleave',()=>{ if(HOV!=null){ setHov(null,true); drawMap(); } }); });
+// pointer handlers do their work at most once per frame (the latest event wins), and never while the map is moving
+function rafT(f){ let ev=null, q=0; return e=>{ ev=e; if(!q) q=requestAnimationFrame(()=>{ q=0; f(ev); }); }; }
+function hovDraw(){ if(ML) mlHov(); else drawMap(); }
+queueMicrotask(()=>{ mapEl.addEventListener('pointermove',rafT(e=>{ if(drag||ptDrag||T3.dvOn||(ML&&(e.buttons||ML.isMoving()))) return; /* flying: the pointer is for looking around */ const r=mapEl.getBoundingClientRect(); const d=distOnRoute(e.clientX-r.left,e.clientY-r.top); if(d==null){ if(HOV!=null){ HOV=null; setHov(null,true); hovDraw(); } return; } if(d===HOV) return; setHov(d,true); hovDraw(); }),{passive:true});
+mapEl.addEventListener('pointerleave',()=>{ if(HOV!=null&&!T3.dvOn){ setHov(null,true); hovDraw(); } }); });
 // dra punkt eller fly vertikalt i profilen
 psv.addEventListener('pointerdown',e=>{ const h=e.target.closest&&(e.target.closest('.pdrag')||e.target.closest('.crdrag')); if(!h) return; e.preventDefault(); e.stopPropagation(); psv.setPointerCapture(e.pointerId);
   pDrag={i:h.classList.contains('pdrag')?+h.dataset.pi:-1,y0:e.clientY,moved:false,ymax:psv._ymax}; },true);
@@ -1157,9 +1210,9 @@ function shTarget(h){ const sh=el('sheet'); if(!sh) return 0; const s=sh.dataset
 let drag=null, moved=false; const ptrs=new Map();
 let ptDrag=null;
 function routePtAt(mx,my){ let bi=-1, bd=10; R.pts.forEach((p,i)=>{ if(p.la==null) return; const [x,y]=prj(p.la,p.lo); const d=Math.hypot(x-mx,y-my); if(d<bd){ bd=d; bi=i; } }); return bi; }
-function snapAt(mx,my){ if(ML) return mlHit(mx,my,14); let best=null, bd=14; hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); return best; }
+function snapAt(mx,my){ if(ML){ const h=mlHit(mx,my,14); return h&&h.k==='oa'&&(h.o.kind==='ob'||h.o.kind==='hs')?null:h; } let best=null, bd=14; hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); return best; }
 function snapPt(h){ const o=h.o; if(h.k==='ap') return {n:o[0],t:'rwy',la:o[2],lo:o[3],elev:o[4]}; if(h.k==='nv') return {n:o[0],t:'wpt',la:o[4],lo:o[5],note:o[2]+(o[3]?' '+o[3]:'')}; if(h.k==='aip') return {n:o[0],t:'wpt',la:o[1],lo:o[2],note:'AIP '+o[3]}; return {n:o.n,t:'wpt',la:o.la,lo:o.lo}; }
-mapEl.addEventListener('pointerdown',e=>{ if(e.target.closest('.mapctl,.mappop,.newpt,.edbar,.ptpop,.maplibregl-ctrl')) return; if(ML&&e.button>0) return; if(!pickMode&&ptrs.size===0){ const r=mapEl.getBoundingClientRect(); const i=routePtAt(e.clientX-r.left,e.clientY-r.top); if(i>=0){ mapEl.setPointerCapture(e.pointerId); ptDrag={i,x:e.clientX,y:e.clientY,moved:false,snap:null,orig:Object.assign({},R.pts[i])}; mlHold(true); closePop(); return; }
+mapEl.addEventListener('pointerdown',e=>{ if(e.target.closest('.mapctl,.mappop,.newpt,.edbar,.ptpop,.maplibregl-ctrl')) return; if(ML&&(e.button>0||T3.dvOn)) return; if(!pickMode&&ptrs.size===0){ const r=mapEl.getBoundingClientRect(); const i=routePtAt(e.clientX-r.left,e.clientY-r.top); if(i>=0){ mapEl.setPointerCapture(e.pointerId); ptDrag={i,x:e.clientX,y:e.clientY,moved:false,snap:null,orig:Object.assign({},R.pts[i])}; mlHold(true); closePop(); return; }
     const lg=legAt(e.clientX-r.left,e.clientY-r.top,e.pointerType==='touch'?14:8); if(lg>0){ const [la,lo]=inv(e.clientX-r.left,e.clientY-r.top); const np={n:'',t:'wpt',la,lo,src:1}; R.pts.splice(lg,0,np); mapEl.setPointerCapture(e.pointerId); ptDrag={i:lg,x:e.clientX,y:e.clientY,moved:false,snap:null,ins:true,orig:Object.assign({},np)}; mlHold(true); closePop(); return; } }
   if(ML) return;
   mapEl.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,[e.clientX,e.clientY]); drag={x:e.clientX,y:e.clientY,la:V.la,lo:V.lo,z:V.z,d:ptrs.size===2?dist2():null}; moved=false; mapEl.style.cursor='grabbing'; });
@@ -1175,6 +1228,21 @@ const up=e=>{ if(ptDrag){ const d=ptDrag; ptDrag=null; mlHold(false); mlClickT=D
   ptrs.delete(e.pointerId); if(!ptrs.size){ mapEl.style.cursor=''; if(drag&&!moved) mapClick(e); drag=null; } else if(drag){ drag.d=null; } };
 mapEl.addEventListener('pointerup',up); mapEl.addEventListener('pointercancel',e=>{ ptrs.delete(e.pointerId); drag=null; if(ptDrag){ mlHold(false); if(ptDrag.ins) R.pts.splice(ptDrag.i,1); else Object.assign(R.pts[ptDrag.i],ptDrag.orig); ptDrag=null; drawMap(); } });
 mapEl.addEventListener('wheel',e=>{ if(ML) return; e.preventDefault(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; const [la,lo]=inv(mx,my); V.z=Math.max(3,Math.min(600,V.z*(e.deltaY<0?1.2:1/1.2))); const [la2,lo2]=inv(mx,my); V.la+=la-la2; V.lo+=lo-lo2; drawMap(); },{passive:false});
+/* Reset map: base map, relief, layers, 2D, camera, 3D settings, profile mode and the view back to their defaults.
+   The route, fixes and notes are kept; clearing the route is a separate, confirmed action offered in the note. */
+async function resetMap(){ if(T3.on){ T3.play=false; await set3(false); }
+  MM='vfr'; BM='vfr'; LY=Object.assign({},LYD.vfr); saveLY();
+  T3.ex=1.5; el('x3exs').value='1.5'; el('x3lt').value='315'; T3.cm='chase'; camUI(); lookHome(); HOV=null;
+  if(ML){ RXMAP.setBasemap(ML,'vfr'); RXMAP.setLight(ML,315); MLK.ly=''; if(LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); }
+  bmUI(); lyUI(); if(R){ delete R.pm; pmUI(); render(); queueSave(); }
+  if(R&&R.pts.filter(p=>p.la!=null).length) fit();
+  else if(ML){ MLV={la:60,lo:10,z:22}; V={la:60,lo:10,z:22}; ML.easeTo({center:[10,60],zoom:mlZ(22,60),pitch:0,bearing:0,duration:600}); }
+  else { V={lo:10,la:60,z:22}; drawMap(); }
+  let n=mapEl.querySelector('.rxnote'); if(n) n.remove(); n=document.createElement('div'); n.className='bb-satnote rxnote'; n.setAttribute('role','status');
+  n.innerHTML=L({en:'Map reset. Your route and fixes are kept.',no:'Kartet er tilbakestilt. Ruten og fixene dine er beholdt.'})+(R&&R.pts.length?` <button type="button" class="rxclr">${L({en:'Clear route…',no:'Tøm ruten …'})}</button>`:'')+' <button type="button" class="x" aria-label="Close">×</button>';
+  mapEl.appendChild(n); const t=setTimeout(()=>n.remove(),9000); n.querySelector('.x').onclick=()=>{ clearTimeout(t); n.remove(); };
+  const c=n.querySelector('.rxclr'); if(c) c.onclick=()=>{ if(!window.confirm(L({en:'Clear all points in this route? This cannot be undone here.',no:'Fjerne alle punktene i ruten? Dette kan ikke angres her.'}))) return; R.pts=[]; el('rtxt').value=''; render(); queueSave(); clearTimeout(t); n.remove(); }; }
+el('zreset').onclick=()=>{ resetMap(); };
 el('zin').onclick=()=>{ if(ML) return ML.zoomIn(); V.z=Math.min(600,V.z*1.4); drawMap(); }; el('zout').onclick=()=>{ if(ML) return ML.zoomOut(); V.z=Math.max(3,V.z/1.4); drawMap(); }; el('zfit').onclick=fit;
 let pop=null; function closePop(){ if(pop){ pop.remove(); pop=null; } }
 function mapClick(e){ closePop(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
@@ -1200,7 +1268,7 @@ window.addEventListener('resize',()=>drawMap());
 
 /* ---------- nytt punkt: kart eller profil ---------- */
 function legAt(mx,my,tol){ const A=R.pts; let bi=-1, bd=tol; for(let i=1;i<A.length;i++){ const a=A[i-1], b=A[i]; if(a.la==null||b.la==null||['missed','alt'].includes(b.t)) continue; const [ax,ay]=prj(a.la,a.lo), [bx,by]=prj(b.la,b.lo); const vx=bx-ax, vy=by-ay, L2=vx*vx+vy*vy; if(L2<400) continue; const t=((mx-ax)*vx+(my-ay)*vy)/L2; if(t<0.08||t>0.92) continue; const d=Math.hypot(ax+vx*t-mx,ay+vy*t-my); if(d<bd){ bd=d; bi=i; } } return bi; }
-mapEl.addEventListener('pointermove',e=>{ if(ptDrag||drag||e.pointerType==='touch') return; if(ML&&(e.buttons||ML.isMoving())) return; const r=mapEl.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; const c= routePtAt(mx,my)>=0? 'move' : legAt(mx,my,8)>0? 'copy' : ML&&mlHit(mx,my,10)? 'pointer' : ''; (ML?ML.getCanvasContainer():mapEl).style.cursor=c; });
+mapEl.addEventListener('pointermove',rafT(e=>{ if(ptDrag||drag||e.pointerType==='touch') return; if(ML&&(e.buttons||ML.isMoving())) return; const r=mapEl.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; const c= routePtAt(mx,my)>=0? 'move' : legAt(mx,my,8)>0? 'copy' : ML&&mlHit(mx,my,10)? 'pointer' : ''; const t=ML?ML.getCanvasContainer():mapEl; if(t.style.cursor!==c) t.style.cursor=c; }),{passive:true});
 function nearestLeg(la,lo){ const A=R.pts; let bi=-1, bd=1e9; for(let i=1;i<A.length;i++){ const a=A[i-1], b=A[i]; if(a.la==null||b.la==null) continue; const [ax,ay]=prj(a.la,a.lo), [bx,by]=prj(b.la,b.lo), [px,py]=prj(la,lo); const vx=bx-ax, vy=by-ay, t=Math.max(0,Math.min(1,((px-ax)*vx+(py-ay)*vy)/Math.max(1e-6,vx*vx+vy*vy))); const d=Math.hypot(ax+vx*t-px,ay+vy*t-py); if(d<bd){ bd=d; bi=i; } } return bi; }
 let npBox=null;
 function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
@@ -1425,7 +1493,7 @@ LAB.add({},{
  'Expected departure and arrival':'Forventet avgang og ankomst','Departure runway':'Avgangsbane','Arrival runway':'Landingsbane','Arrival':'Ankomst','Instrument, straight-in (3°)':'Instrument, rett inn (3°)','Visual, 3 NM final':'Visuell, 3 NM final',
  'Built from the runway numbers: a straight climb-out and a straight-in final on the extended centreline. Not the published SID or approach.':'Laget fra banenumrene: rett stigning ut og rett inn på forlenget senterlinje. Ikke publisert SID eller innflyging.',
  'My notes':'Mine notater',
- 'Explore the route':'Utforsk ruten','Move the slider to fly along the route.':'Flytt glidebryteren for å fly langs ruten.','Camera follows':'Kameraet følger','Reset view':'Tilbakestill visning','Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom':'Dra for å rotere · høyreklikk-dra, Shift-dra eller to fingre for å flytte · scroll eller knip for å zoome','▶ Fly the route':'▶ Fly ruten','Fly the route':'Fly ruten','Contours':'Koter','Off':'Av','Margin OK':'Margin OK','Inside the clearance':'Innenfor klaringen','Below terrain':'Under terrenget','Not checked':'Ikke sjekket','Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.':'Velg Høydelinje eller Stigning og sink i profilen for å fargelegge ruten etter terrengmargin.','Contour lines':'Koter','3D settings':'3D-innstillinger','Terrain exaggeration':'Overdrivelse av terrenget','Position along the route':'Posisjon langs ruten','3D terrain view':'3D-terrengvisning',
+ 'Explore the route':'Utforsk ruten','Move the slider to fly along the route.':'Flytt glidebryteren for å fly langs ruten.','Camera follows':'Kameraet følger','Reset view':'Tilbakestill visning','Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom':'Dra for å rotere · høyreklikk-dra, Shift-dra eller to fingre for å flytte · scroll eller knip for å zoome','▶ Fly the route':'▶ Fly ruten','Fly the route':'Fly ruten','Contours':'Koter','Light':'Lys','VFR reporting points':'VFR-meldepunkter','Obstacles':'Hindre','Small airfields, heliports, glider sites':'Små flyplasser, helikopterplasser, seilflyplasser','openAIP navaids':'Radiofyr fra openAIP','Thermal hotspots':'Termikk-hotspots','Hang gliding sites':'Hanggliderplasser','RC model airfields':'Modellflyplasser','Reset map':'Tilbakestill kartet','Look':'Se','Centre':'Midtstill','Look around':'Se deg rundt','Look left':'Se til venstre','Look right':'Se til høyre','Look up':'Se opp','Look down':'Se ned','Loading terrain and imagery along the route…':'Laster terreng og bilder langs ruten …','Skip':'Hopp over','from NW':'fra NV','from SW':'fra SV','from SE':'fra SØ','from NE':'fra NØ','Direction of the relief shading light':'Retningen lyset i relieffskyggen kommer fra','Off':'Av','Margin OK':'Margin OK','Inside the clearance':'Innenfor klaringen','Below terrain':'Under terrenget','Not checked':'Ikke sjekket','Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.':'Velg Høydelinje eller Stigning og sink i profilen for å fargelegge ruten etter terrengmargin.','Contour lines':'Koter','3D settings':'3D-innstillinger','Terrain exaggeration':'Overdrivelse av terrenget','Position along the route':'Posisjon langs ruten','3D terrain view':'3D-terrengvisning',
  ' Advanced':' Avansert','Optional settings. They change the profile when it shows Climb and descent, and some of them (MSA, corridor, clearance) in every view.':'Valgfrie innstillinger. De endrer profilen når den viser Stigning og sink, og noen av dem (MSA, korridor, klaring) i alle visninger.',
  'Terrain profile':'Terrengprofil','Altitude line':'Høydelinje','Climb and descent':'Stigning og sink','Show':'Vis','Search airport, navaid or fix':'Søk flyplass, radiofyr eller fix','Layers':'Kartlag','Airports':'Flyplasser','VOR, DME and NDB':'VOR, DME og NDB','IFR points (Finland, Iceland and yours)':'IFR-punkter (Finland, Island og dine egne)','Terrain shading':'Terrengskygge',
  'Airspace and airways are not shown: we do not have licensed data for them yet. Not an official chart.':'Luftrom og luftveier vises ikke: vi har ikke lisensierte data for dem ennå. Ikke et offisielt kart.',
@@ -1448,7 +1516,7 @@ LAB.add({},{
  'Build the route on the map and see it from the side: climb, cruise, descent, hold, approach and missed approach, with the terrain under it. Send the finished profile to your briefing pack.':'Bygg ruten på kartet og se den fra siden: stigning, marsj, sink, holding, innflyging og missed approach, med terrenget under. Send den ferdige profilen til briefingpakken.',
  'New':'Ny','Duplicate':'Dupliser','Delete':'Slett','Also fill the navigation log':'Fyll også navigasjonsloggen','Send to briefing pack':'Send til briefingpakken','Print':'Skriv ut',
  'Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it':'Dra for å flytte · scroll eller knip for å zoome · klikk på noe for å legge det til · dra et rutepunkt, eller dra linjen for å legge til et punkt · klikk på et punkt for å fjerne det',
- 'Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery (© Esri, Maxar, Earthstar Geographics). Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.':'Flyplasser og navigasjonshjelpemidler: OurAirports. IFR-punkter for Finland (Fintraffic eAIP ENR 4.4, fri gjenbruk) og Island (Isavia eAIP ENR 4.4, ikke-kommersiell bruk). Norge, Sverige og Danmark er tatt ut til AIP-utgiverne gir tillatelse: legg inn punktene du trenger under Mine fixes. Kart: OpenFreeMap © OpenMapTiles, data fra OpenStreetMap (ODbL). Satellitt: Esri World Imagery (© Esri, Maxar, Earthstar Geographics). Norge topo: © Kartverket (CC BY 4.0). Kartbibliotek: MapLibre GL JS (BSD-3). Koter: beregnet i nettleseren din fra terrengflisene med maplibre-contour (BSD-3). Luftrom: © openAIP-bidragsytere (CC BY-NC 4.0), en dugnadsdatabase som ikke er offisiell og kan være ufullstendig eller utdatert. Kystlinje når kartet virker uten nett: Natural Earth. Terreng, relieff og 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM og GMTED2010 (USGS); ETOPO1 (NOAA). Kun til planlegging. Sjekk alltid posisjoner mot AIP og gjeldende kart.',
+ 'Airports and navaids: OurAirports. IFR points for Finland (Fintraffic eAIP ENR 4.4, free reuse) and Iceland (Isavia eAIP ENR 4.4, non-commercial use). Norway, Sweden and Denmark are left out until the AIP publishers give permission: add the points you need under My fixes. Map: OpenFreeMap © OpenMapTiles, data from OpenStreetMap (ODbL). Satellite: Esri World Imagery through ArcGIS Location Platform (Powered by Esri; sources: Esri, Maxar, Earthstar Geographics, and the GIS User Community); without it, Sentinel-2 cloudless 2016 by EOX IT Services GmbH, contains modified Copernicus Sentinel data 2016 (CC BY 4.0); if neither loads, NASA GIBS Blue Marble at low resolution. The relief shading over the satellite map in 3D is computed from the terrain tiles. Norway topo: © Kartverket (CC BY 4.0). Map library: MapLibre GL JS (BSD-3). Contour lines: computed in your browser from the terrain tiles with maplibre-contour (BSD-3). Airspace, VFR reporting points, obstacles and small airfields: © openAIP contributors (CC BY-NC 4.0), a community database that is not official and can be incomplete or out of date. Coastline when the map works offline: Natural Earth. Terrain, relief and 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM and GMTED2010 (USGS); ETOPO1 (NOAA). For planning only. Always check positions against the AIP and current charts.':'Flyplasser og navigasjonshjelpemidler: OurAirports. IFR-punkter for Finland (Fintraffic eAIP ENR 4.4, fri gjenbruk) og Island (Isavia eAIP ENR 4.4, ikke-kommersiell bruk). Norge, Sverige og Danmark er tatt ut til AIP-utgiverne gir tillatelse: legg inn punktene du trenger under Mine fixes. Kart: OpenFreeMap © OpenMapTiles, data fra OpenStreetMap (ODbL). Satellitt: Esri World Imagery via ArcGIS Location Platform (Powered by Esri; kilder: Esri, Maxar, Earthstar Geographics og GIS User Community); uten den, Sentinel-2 cloudless 2016 fra EOX IT Services GmbH, inneholder modifiserte Copernicus Sentinel-data 2016 (CC BY 4.0); hvis ingen av dem lastes, NASA GIBS Blue Marble i lav oppløsning. Relieffskyggen over satellittkartet i 3D er beregnet fra terrengflisene. Norge topo: © Kartverket (CC BY 4.0). Kartbibliotek: MapLibre GL JS (BSD-3). Koter: beregnet i nettleseren din fra terrengflisene med maplibre-contour (BSD-3). Luftrom, VFR-meldepunkter, hindre og små flyplasser: © openAIP-bidragsytere (CC BY-NC 4.0), en dugnadsdatabase som ikke er offisiell og kan være ufullstendig eller utdatert. Kystlinje når kartet virker uten nett: Natural Earth. Terreng, relieff og 3D: Mapzen/AWS Terrain Tiles; Europe terrain data produced using Copernicus data and information funded by the European Union – EU-DEM layers; Norway terrain data © Kartverket; SRTM og GMTED2010 (USGS); ETOPO1 (NOAA). Kun til planlegging. Sjekk alltid posisjoner mot AIP og gjeldende kart.',
  'Route':'Rute','Approach':'Innflyging','Levels and weather':'Høyder og vær','My fixes':'Mine fixes',
  'Route (aerodromes, navaids, your fixes or coordinates; add /altitude to a point)':'Rute (flyplasser, navigasjonshjelpemidler, dine fixes eller koordinater; legg til /høyde på et punkt)',
  'Build route':'Bygg ruten','E.g.':'F.eks.','Cruise altitude / level':'Marsjhøyde / flygenivå','Climb gradient (ft/NM)':'Stigegradient (ft/NM)','Descent gradient (ft/NM)':'Sinkgradient (ft/NM)',
@@ -1472,14 +1540,20 @@ LAB.add({},{
 LAB.start('route');
 /* ================= Route Explorer 2.0 ================= */
 // kartstil og lag
-const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1}; const LYD={vfr:LY0,ifr:LY0};
+// layer defaults. VFR: everything aviation on, as on openaip.net (airspace, reporting points, airfields, navaids, obstacles);
+// IFR: low ink (airspace, navaids, IFR points; VFR-only openAIP items off). rp…rc are openAIP points; hs/hg/rc are optional, off.
+const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0};
+const LYD={vfr:LY0,ifr:Object.assign({},LY0,{rp:0,ob:0,oa:0,on:0,hs:0,hg:0,rc:0})};
+// switching VFR/IFR applies that chart's aviation defaults; personal layers (my fixes, notes, relief, contours, terrain numbers) stay as chosen
+const AVK=['ap','nv','fx','as','rp','ob','oa','on','hs','hg','rc'];
+function avDefaults(m){ const d=LYD[m]||LY0; AVK.forEach(k=>LY[k]=d[k]); }
 const BMS=['vfr','ifr','chart','terrain','sat','topo'];
 // v3: the VFR chart is the default base map (v2 saved 'chart' as its default, so only the layer choices carry over)
 let MM='vfr', LY=Object.assign({},LYD.vfr), BM='vfr';
-try{ const j3=JSON.parse(localStorage.getItem('bb-rx-v3')||'null'), j=j3||JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,j.ly||{}); if(j3&&BMS.includes(j3.bm)) BM=j3.bm; } }catch(e){}
+try{ const j3=JSON.parse(localStorage.getItem('bb-rx-v3')||'null'), j=j3||JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LYD[MM],j.ly||{}); if(j3&&BMS.includes(j3.bm)) BM=j3.bm; } }catch(e){}
 function saveLY(){ try{ localStorage.setItem('bb-rx-v3',JSON.stringify({m:MM,ly:LY,bm:BM})); }catch(e){} }
 function lyUI(){ el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
-el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; MM=b.dataset.m; if(ML) setBM(MM); saveLY(); lyUI(); drawMap(); });
+el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.m!==MM) avDefaults(b.dataset.m); MM=b.dataset.m; if(ML) setBM(MM); saveLY(); lyUI(); drawMap(); });
 el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
 el('lybtn').onclick=()=>{ const ly=el('layers'); ly.hidden=!ly.hidden; el('lybtn').setAttribute('aria-expanded',String(!ly.hidden)); };
 // terrengskygge fra den lokale høydemodellen (1′-celler, fot)
@@ -1547,12 +1621,23 @@ document.addEventListener('pointerdown',e=>{ if(!e.target.closest('.rx-r')) el('
 function qGo(r){ qAct(r,'info'); }
 // informasjonspanel
 const AIPL={EN:['Avinor AIP Norway','https://ais.avinor.no/'],ES:['LFV AIP Sweden','https://aro.lfv.se/'],EK:['Naviair AIP Denmark','https://aim.naviair.dk/'],EF:['Fintraffic AIP Finland','https://www.ais.fi/'],BI:['Isavia AIP Iceland','https://eaip.isavia.is/']};
-function ptFrom(h){ const o=h.o; if(h.k==='ap') return {n:o[0],t:'rwy',la:o[2],lo:o[3],elev:o[4]}; if(h.k==='nv') return {n:o[0],t:'wpt',la:o[4],lo:o[5],note:o[2]+(o[3]?' '+o[3]:'')}; if(h.k==='aip') return {n:o[0],t:'wpt',la:o[1],lo:o[2],note:'AIP '+o[3]}; return {n:o.n,t:'wpt',la:o.la,lo:o.lo}; }
+function ptFrom(h){ const o=h.o; if(h.k==='oa') return {n:o.n||'',t:o.kind==='ap'?'rwy':'wpt',la:o.la,lo:o.lo,note:'openAIP '+oaKind(o)}; if(h.k==='ap') return {n:o[0],t:'rwy',la:o[2],lo:o[3],elev:o[4]}; if(h.k==='nv') return {n:o[0],t:'wpt',la:o[4],lo:o[5],note:o[2]+(o[3]?' '+o[3]:'')}; if(h.k==='aip') return {n:o[0],t:'wpt',la:o[1],lo:o[2],note:'AIP '+o[3]}; return {n:o.n,t:'wpt',la:o.la,lo:o.lo}; }
 function setEnd(pt,end){ const A=R.pts; const q=Object.assign({},pt,{t:'rwy'});
   q.role=end; if(A.length===1){ if(A[0].role===end) A[0]=q; else if(end==='dep') A.unshift(q); else A.push(q); } else if(end==='dep'){ if(A.length&&A[0].t==='rwy') A[0]=q; else A.unshift(q); } else { const li=A.length-1; if(A.length>1&&A[li].t==='rwy') A[li]=q; else A.push(q); }
   R.rt=''; applyDA(); el('rtxt').value=routeStr(); render(); queueSave(); if(R.pts.length>=2){ sheetAuto(); fit(); } }
 function routeStr(){ return R.pts.filter(p=>!p.auto&&!p.app&&!['missed','alt'].includes(p.t)).map(p=>p.n||'').filter(Boolean).join(' DCT '); }
+// what an openAIP point is, in words
+function oaKind(o){ const T={rp:o.type==='compulsory'?L({en:'VFR reporting point, compulsory',no:'VFR-meldepunkt, obligatorisk'}):L({en:'VFR reporting point, on request',no:'VFR-meldepunkt, på anmodning'}),
+    ob:L({en:'Obstacle',no:'Hinder'})+(o.type?' ('+o.type.replace(/_/g,' ')+')':''), nv:'Navaid '+(o.type||'').replace(/_/g,'/').toUpperCase(),
+    ap:({heli_civil:L({en:'Heliport',no:'Helikopterplass'}),heli_mil:L({en:'Military heliport',no:'Militær helikopterplass'}),gliding:L({en:'Glider site',no:'Seilflyplass'}),af_water:L({en:'Water aerodrome',no:'Sjøflyplass'}),ad_mil:L({en:'Military aerodrome',no:'Militær flyplass'}),ad_closed:L({en:'Closed aerodrome',no:'Nedlagt flyplass'})})[o.type]||L({en:'Airfield',no:'Flyplass'}),
+    hs:L({en:'Thermal hotspot',no:'Termikk-hotspot'}),hg:L({en:'Hang gliding site',no:'Hanggliderplass'}),rc:L({en:'RC model airfield',no:'Modellflyplass'})}; return T[o.kind]||'openAIP'; }
 function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='';
+  if(h.k==='oa'){ const add=o.kind!=='ob'&&o.kind!=='hs';
+    html=`<span class="id">${esc(o.n||'')}</span><h3>${esc(o.full||o.n||oaKind(o))}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${esc(oaKind(o))}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o.la,o.lo)}</dd></dl>`+
+      (add?`<div class="acts"><button class="btn pri" data-a="dep">${L({en:'From here',no:'Herfra'})}</button><button class="btn pri" data-a="dst">${L({en:'To here',no:'Hit'})}</button><button class="btn" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button></div>`:'')+
+      `<p class="src">${L({en:'Source: openAIP (CC BY-NC 4.0), community data that can be incomplete or out of date. Check against the AIP and the VFR chart.',no:'Kilde: openAIP (CC BY-NC 4.0), dugnadsdata som kan være ufullstendige eller utdaterte. Sjekk mot AIP og VFR-kartet.'})}</p>`;
+    sd.innerHTML=`<button class="x" aria-label="Close">×</button>`+html; sd.hidden=false;
+    sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } const a=b.dataset.a; if(a==='dep'||a==='dst') setEnd(pt,a==='dep'?'dep':'dst'); else if(a==='add'){ addPoint(Object.assign({},pt,pt.t==='rwy'&&R.pts.length?{t:'wpt'}:{})); el('rtxt').value=routeStr(); if(R.pts.length>=2) sheetAuto(); } sd.hidden=true; }; return; }
   const nm=(a,b)=>gc({la:a.la,lo:a.lo},{la:b.la,lo:b.lo});
   if(h.k==='ap'){ const rw=(o[6]||[]).map(r=>{ const h1=/^\d+/.test(r[0])?String(parseInt(r[0],10)*10).padStart(3,'0'):''; const h2=/^\d+/.test(r[1])?String(parseInt(r[1],10)*10).padStart(3,'0'):''; return `<div class="rw"><b>${esc(r[0])}/${esc(r[1])}</b><span>${r[2]?fx(r[2]*0.3048)+' m · '+fx(r[2])+' ft':''}${h1?' · ≈'+h1+'°/'+h2+'°':''}</span></div>`; }).join('');
     const near=NAV.nv.map(n=>({n,d:nm(pt,{la:n[4],lo:n[5]})})).filter(x=>x.d<25).sort((a,b)=>a.d-b.d).slice(0,5);
@@ -1589,7 +1674,7 @@ el('shAdv').onclick=()=>{ const on=el('advp').hidden; el('advp').hidden=!on; el(
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
-const T3={on:false,ready:null,ex:2,ct:1000,follow:true,cm:'chase',spd:30,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
+const T3={on:false,ready:null,ex:1.5,ct:1000,follow:true,cm:'chase',spd:10,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
 const FT3=0.0003048; // fot → km
 const PHONE3=()=>window.innerWidth<=900||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
@@ -1753,11 +1838,17 @@ document.addEventListener('visibilitychange',()=>{ if(document.hidden){ T3.t=0; 
 function x3ro(x){ simHud(x); const M=ML?compute():(T3.S&&T3.S.M); if(!M) return; const q=tpq(x), t=q&&q.e, a=M.PM==='ter'?null:M.altAt(x);
   el('x3o').textContent=`${fx(x,1)} / ${fx(M.total,1)} NM`+(t!=null?` · ${L({en:'terrain',no:'terreng'})} ${fx(Math.round(t))} ft`:'')+(a!=null?` · ${L({en:'line',no:'linje'})} ${altTxt(Math.round(a/10)*10)}`:'')+(a!=null&&t!=null?` (${a-t>=0?'+':'−'}${fx(Math.abs(Math.round((a-t)/10)*10))} ft)`:''); }
 el('x3r').addEventListener('input',()=>{ const x=+el('x3r').value; T3.x=x; T3.drive=T3.cm!=='ov'; setHov(x,true); x3ro(x); kick3(); });
-el('x3play').onclick=()=>{ const tot=ML?simM().total:(T3.S&&T3.S.M.total); if(!tot) return; T3.play=!T3.play; if(T3.play){ if(T3.x>=tot-1e-6) T3.x=0; T3.drive=T3.cm!=='ov'; T3.t=0; } ui3p(); kick3(); };
+el('x3play').onclick=()=>{ const tot=ML?simM().total:(T3.S&&T3.S.M.total); if(!tot) return; if(T3.loading){ el('simskip').click(); return; } /* during buffering, Fly (or Space) skips it */ T3.play=!T3.play; if(T3.play){ if(T3.x>=tot-1e-6) T3.x=0; T3.drive=T3.cm!=='ov'; T3.t=0; if(ML&&!T3.pf) T3.pf={zc:Math.max(8,Math.min(15,ML.getZoom())),toX:T3.x,readyX:T3.x+0.5,busy:false}; } ui3p(); kick3(); };
 el('x3cam').addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(b) setCam(b.dataset.c); });
-el('x3spd').addEventListener('change',()=>{ T3.spd=+el('x3spd').value||30; try{ localStorage.setItem('bb-rx-simspd',String(T3.spd)); }catch(e){} });
-try{ const v=+localStorage.getItem('bb-rx-simspd'); if([1,5,10,20,30,60].includes(v)){ T3.spd=v; el('x3spd').value=String(v); } }catch(e){}
+el('x3spd').addEventListener('change',()=>{ T3.spd=+el('x3spd').value||10; try{ localStorage.setItem('bb-rx-simspd2',String(T3.spd)); }catch(e){} });
+try{ const v=+localStorage.getItem('bb-rx-simspd2'); if([1,5,10,20,30,60].includes(v)){ T3.spd=v; el('x3spd').value=String(v); } }catch(e){}
 el('x3exs').addEventListener('change',()=>{ T3.ex=+el('x3exs').value; if(ML){ if(T3.on){ RXMAP.set3D(ML,true,T3.ex); mlUi3(); drawMap(); } return; } if(T3.on&&T3.S){ const old=T3.S.E(1000)||1, c=T3.cam; build3().then(()=>{ if(c&&T3.S) c.ty*=T3.S.E(1000)/old; T3.snap=true; kick3(); }); } });
+{ let t=0; const go=d=>{ const k=2.2; if(d==='l') lookBy(-k,0); else if(d==='r') lookBy(k,0); else if(d==='u') lookBy(0,k*0.8); else if(d==='d') lookBy(0,-k*0.8); };
+  const stop=()=>{ clearInterval(t); t=0; }; const pad=el('x3look');
+  pad.addEventListener('pointerdown',e=>{ const b=e.target.closest('[data-l]'); if(!b) return; e.preventDefault(); if(!T3.drive||T3.cm==='ov') setCam(T3.cm==='ov'?'chase':T3.cm);
+    if(b.dataset.l==='0'){ lookHome(); return; } go(b.dataset.l); stop(); t=setInterval(()=>go(b.dataset.l),30); });
+  ['pointerup','pointerleave','pointercancel'].forEach(k=>pad.addEventListener(k,stop)); }
+el('x3lt').addEventListener('change',()=>{ if(ML) RXMAP.setLight(ML,+el('x3lt').value); });
 el('x3ct').addEventListener('change',()=>{ T3.ct=+el('x3ct').value; if(T3.S){ T3.S.mat.uniforms.uI.value=T3.ct; kick3(); } });
 el('x3more').onclick=()=>{ const w=el('x3w'), o=!w.classList.contains('open'); w.classList.toggle('open',o); el('x3more').setAttribute('aria-expanded',String(o)); };
 el('x3reset').onclick=()=>{ T3.play=false; ui3p(); if(ML){ ml3Fit(); return; } cam3(); kick3(); };
@@ -1789,9 +1880,9 @@ el('lib').addEventListener('click',async e=>{ const t=e.target.closest('button')
   if(t.dataset.n){ const n=NOTES.find(x=>x.id===t.dataset.n); if(n){ V.la=n.la; V.lo=n.lo; V.z=Math.max(V.z,120); if(T3.on) await set3(false); drawMap(); noteInfo(n); } libOpen(false); return; } });
 async function openView(v){ if(v.rid){ const r=ALL.find(x=>x.id===v.rid); if(r&&r!==R) load(r); }
   MM=v.mm==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,v.ly||{}); saveLY(); lyUI(); V.la=v.la; V.lo=v.lo; V.z=v.z;
-  if(ML){ if(v.ml&&v.ml.bm) setBM(v.ml.bm); if(v.d3){ T3.ex=v.d3.ex||2; el('x3exs').value=String(T3.ex); if(!T3.on) await set3(true); else RXMAP.set3D(ML,true,T3.ex); } else if(T3.on) await set3(false);
+  if(ML){ if(v.ml&&v.ml.bm) setBM(v.ml.bm); if(v.d3){ T3.ex=v.d3.ex||1.5; el('x3exs').value=String(T3.ex); if(!T3.on) await set3(true); else RXMAP.set3D(ML,true,T3.ex); } else if(T3.on) await set3(false);
     MLV={la:v.la,lo:v.lo,z:v.z}; ML.jumpTo({center:[v.lo,v.la],zoom:mlZ(v.z,v.la),pitch:v.ml?v.ml.p:(v.d3?60:0),bearing:v.ml?v.ml.b:0}); if(v.d3&&v.d3.x){ el('x3r').value=v.d3.x; T3.x=v.d3.x; setHov(v.d3.x,true); x3ro(v.d3.x); } drawMap(); return; }
-  if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||2; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
+  if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||1.5; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
   else { if(T3.on) await set3(false); V.la=v.la; V.lo=v.lo; V.z=v.z; drawMap(); } }
 // notater på kartet
 function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="Close">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
@@ -1875,19 +1966,21 @@ async function mlStart(){ mlog('RXMAP '+(!!window.RXMAP)+' · online '+navigator
     if(navigator.onLine!==false&&location.protocol.startsWith('http')){ const n=document.createElement('div'); n.className='mlwarn'; n.innerHTML=L({en:'High-resolution map could not load',no:'Høyoppløst kart kunne ikke lastes'})+' <code>'+why.replace(/[<>&]/g,'')+'</code> <button type="button">'+L({en:'Try again',no:'Prøv igjen'})+'</button> <button type="button" class="x" aria-label="Close">×</button>';
       n.querySelector('button').onclick=()=>location.reload(); n.querySelector('.x').onclick=()=>n.remove(); mapEl.appendChild(n); } } }
 function asUI(st){ const lab=el('lyas'); if(!lab) return; const ok=st==='ok', i=lab.querySelector('input'); i.disabled=!ok; lab.classList.toggle('off',!ok);
+  el('lyoa').querySelectorAll('label.chk').forEach(l=>{ l.classList.toggle('off',!ok); l.querySelector('input').disabled=!ok; }); el('oanote').textContent=ok?'':(st==='denied'?L({en:'(not available)',no:'(ikke tilgjengelig)'}):L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}));
   el('asnote').textContent= ok? '' : st==='denied'? L({en:'(not available: the openAIP key was refused or the service is down)',no:'(ikke tilgjengelig: openAIP-nøkkelen ble avvist eller tjenesten er nede)'}) : L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}); }
 function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); mapEl.dataset.map='maplibre'; el('mlmap').classList.remove('wait'); el('bmsel').hidden=false; bmUI();
   document.querySelectorAll('#layers .mlonly').forEach(x=>x.hidden=false);
   try{ RXMAP.addAirspace(m,st=>{ asUI(st); MLK.ly=''; drawMap(); }); }catch(e){ asUI('denied'); }
   if(LY.ct) RXMAP.addContours(m).then(()=>{ MLK.ly=''; drawMap(); });
   m.on('move',()=>{ const c=m.getCenter(); V.la=c.lat; V.lo=c.lng; V.z=mlVz(m.getZoom(),c.lat); MLV={la:V.la,lo:V.lo,z:V.z}; try{ ptPop(); }catch(e){} });
-  m.on('moveend',()=>{ windyHref(); mlMef(); });
-  m.on('dragstart',()=>{ if(T3.drive){ mlNoPad(); T3.drive=false; T3.mb=null; try{ m.setCenterClampedToGround(true); }catch(e){} } });
-  m.on('click',e=>{ if(Date.now()-mlClickT<350) return; mapClick(e.originalEvent); });
+  m.on('moveend',()=>{ windyHref(); mlMef(); }); lookInit();
+  m.getContainer().addEventListener('bb-satfail',()=>{ if(BM==='sat') setBM('vfr'); }); // no satellite source loads: back to the VFR chart
+  m.on('dragstart',()=>{ if(T3.drive){ mlNoPad(); mlFov(); T3.drive=false; T3.mb=null; try{ m.setCenterClampedToGround(true); }catch(e){} } });
+  m.on('click',e=>{ if(T3.dvOn||Date.now()-mlClickT<350) return; mapClick(e.originalEvent); }); // flying: clicks and drags are for looking around
   MLV={la:V.la,lo:V.lo,z:V.z}; m.jumpTo({center:[V.lo,V.la],zoom:mlZ(V.z,V.la)});
   mlStatic(); drawMap(); }
 function mlHold(on){ if(!ML) return; if(on){ ML.dragPan.disable(); ML.touchZoomRotate.disable(); } else { ML.dragPan.enable(); ML.touchZoomRotate.enable(); if(!T3.on) ML.touchZoomRotate.disableRotation(); } }
-function mlHit(mx,my,r){ const h=ML&&RXMAP.hit(ML,mx,my,r); if(!h) return null; const o= h.k==='ap'?NAV.ap[h.i] : h.k==='nv'?NAV.nv[h.i] : h.k==='aip'?NAV.fx[h.i] : h.k==='fix'?FIX[h.i] : h.k==='note'?NOTES[h.i] : null; return o?{x:h.x,y:h.y,k:h.k,o}:null; }
+function mlHit(mx,my,r){ const h=ML&&RXMAP.hit(ML,mx,my,r); if(!h) return null; if(h.k==='oa') return h.o?{x:h.x,y:h.y,k:'oa',o:h.o}:null; const o= h.k==='ap'?NAV.ap[h.i] : h.k==='nv'?NAV.nv[h.i] : h.k==='aip'?NAV.fx[h.i] : h.k==='fix'?FIX[h.i] : h.k==='note'?NOTES[h.i] : null; return o?{x:h.x,y:h.y,k:h.k,o}:null; }
 const mlF=(g,p)=>({type:'Feature',geometry:g,properties:p||{}}), mlP=(la,lo)=>({type:'Point',coordinates:[lo,la]}), mlC=a=>({type:'FeatureCollection',features:a});
 function mlPut(id,fc){ const k=JSON.stringify(fc); if(MLK[id]===k) return; MLK[id]=k; RXMAP.setData(ML,id,fc); }
 function mlStatic(){ if(!NAV) return;
@@ -1901,11 +1994,14 @@ function mlSync(){ const m=ML; if(!m||!R) return;
   const M=compute(), legs=[]; let prev=null; R.pts.forEach(p=>{ if(p.la==null) return; if(prev){ const n=Math.max(1,Math.min(64,Math.ceil(gc(prev,p)/4))), c=[]; for(let i=0;i<=n;i++) c.push([prev.lo+(p.lo-prev.lo)*i/n,prev.la+(p.la-prev.la)*i/n]); legs.push(mlF({type:'LineString',coordinates:c},{d:['missed','alt'].includes(p.t)?1:0})); } prev=p; }); // samme linje som profilen (lineært i bredde/lengde)
   mlPut('bb-leg',mlC(legs)); mlPut('bb-rpt',mlC(R.pts.map((p,i)=>p.la==null?null:mlF(mlP(p.la,p.lo),{n:p.n||'',s:i===selI?1:0})).filter(Boolean)));
   { const cr=crit(M), q=cr&&M.posAt(cr.x); let f=[]; if(q&&q.la!=null){ const c=cr.m!=null&&cr.m<0?'r':cr.m!=null&&cr.m<(+S('mg')||1000)?'a':'n'; const t=cr.m==null? fx(Math.round(cr.t))+' ft' : (cr.m<0?'−':'')+fx(Math.abs(Math.round(cr.m/10)*10))+' ft'; f=[mlF(mlP(q.la,q.lo),{c,t})]; } mlPut('bb-crit',mlC(f)); }
-  { let f=[]; if(HOV!=null&&!(T3.on&&T3.play)){ const q=M.posAt(HOV); if(q&&q.la!=null) f=[mlF(mlP(q.la,q.lo),{t:fx(HOV,1)+' NM'+(M.PM==='ter'?'':' · '+altTxt(Math.round(M.altAt(HOV)/10)*10))})]; } mlPut('bb-hov',mlC(f)); }
+  MLK.M=M; mlPut('bb-hov',mlHovFC(M));
   { let f=[]; const sn=ptDrag&&ptDrag.snap; if(sn){ const q=snapPt(sn); f=[mlF(mlP(q.la,q.lo),{n:q.n})]; } mlPut('bb-snap',mlC(f)); }
   mlPut('bb-my',mlC(FIX.map((f,i)=>f.la==null?null:mlF(mlP(f.la,f.lo),{k:'fix',i,n:f.n})).filter(Boolean)));
   mlPut('bb-note',mlC(NOTES.map((n,i)=>mlF(mlP(n.la,n.lo),{k:'note',i,t:(n.t||'').split('\n')[0].slice(0,28)}))));
   mlMef(); if(T3.on){ ml3Path(M); mlUi3(M); } }
+function mlHovFC(M){ let f=[]; if(HOV!=null&&!(T3.on&&T3.play)){ const q=M.posAt(HOV); if(q&&q.la!=null) f=[mlF(mlP(q.la,q.lo),{t:fx(HOV,1)+' NM'+(M.PM==='ter'?'':' · '+altTxt(Math.round(M.altAt(HOV)/10)*10))})]; } return mlC(f); }
+// pointer hover over the route: only the hover marker changes, so skip the full sync (profile model reused from the last sync)
+function mlHov(){ if(!ML||!MLK.M){ drawMap(); return; } mlPut('bb-hov',mlHovFC(MLK.M)); }
 function mlMef(){ if(!ML) return; const q=LY.mef&&window.TERRAIN&&!T3.on? (V.z>=150?0.5:V.z>=70?1:0) : 0; const pts=[], gl=[];
   if(q){ const b=ML.getBounds(), la0=b.getSouth(), la1=b.getNorth(), lo0=b.getWest(), lo1=b.getEast(); const qa0=Math.floor(la0/q)*q, qo0=Math.floor(lo0/q)*q;
     if((la1-qa0)/q*(lo1-qo0)/q<900){ for(let la=qa0;la<la1;la+=q) for(let lo=qo0;lo<lo1;lo+=q){ const v=mefOf(q,la,lo); if(!v) continue; const th=Math.floor(v/1000), hu=Math.round((v%1000)/100); pts.push(mlF(mlP(la+q/2,lo+q/2),{th:th?String(th):'',hu:String(hu)})); }
@@ -1918,14 +2014,14 @@ function mlFit(a0,a1,o0,o1){ const m=ML, w=mapEl.clientWidth, h=mapEl.clientHeig
   m.easeTo(Object.assign({},cam,{bearing,pitch:T3.on?62:0,zoom:cam.zoom-(T3.on?0.35:0),duration:600})); }
 // grunnkart
 function bmUI(){ el('bmsel').querySelectorAll('[data-b]').forEach(b=>{ const on=b.dataset.b===BM; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); }); lyUI(); }
-function setBM(b){ if(!BMS.includes(b)) b='vfr'; BM=b; if(b==='vfr'||b==='ifr') MM=b; saveLY(); bmUI(); if(ML) RXMAP.setBasemap(ML,BM); }
+function setBM(b){ if(!BMS.includes(b)) b='vfr'; BM=b; if((b==='vfr'||b==='ifr')&&b!==MM) avDefaults(b); if(b==='vfr'||b==='ifr') MM=b; saveLY(); bmUI(); if(ML) RXMAP.setBasemap(ML,BM); }
 el('bmsel').addEventListener('click',e=>{ const b=e.target.closest('[data-b]'); if(b) setBM(b.dataset.b); });
 // 3D i MapLibre: terreng fra AWS, ruten draperes, planlagt bane som gardin i høyden
 function ml3(on){ T3.on=on; el('rx').classList.toggle('d3',on); setTimeout(()=>{ rxTop(); try{ ML.resize(); }catch(e){} },30); el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on; el('m3msg').hidden=true;
-  { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3hint').hidden=true; el('x3hml').hidden=false;
-  if(!on){ mlNoPad(); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
+  { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3ltl').hidden=false; el('x3hint').hidden=true; el('x3hml').hidden=false;
+  if(!on){ mlNoPad(); mlFov(); simStop(); mlDrive(false); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
   RXMAP.set3D(ML,true,T3.ex); ml3Fit(); MLK.p3=''; drawMap(); return Promise.resolve(); }
-function ml3Fit(){ mlNoPad(); T3.drive=false; T3.mb=null; try{ ML.setCenterClampedToGround(true); }catch(e){} const m=ML, P=R.pts.filter(p=>p.la!=null&&!['missed','alt'].includes(p.t)); let b=m.getBearing();
+function ml3Fit(){ mlNoPad(); mlFov(); if(T3.dvOn) mlDrive(false); T3.drive=false; T3.mb=null; try{ ML.setCenterClampedToGround(true); }catch(e){} const m=ML, P=R.pts.filter(p=>p.la!=null&&!['missed','alt'].includes(p.t)); let b=m.getBearing();
   if(P.length>=2){ b=((brg(P[0],P[P.length-1])-70)%360+540)%360-180; let a0=90,a1=-90,o0=180,o1=-180; P.forEach(p=>{ a0=Math.min(a0,p.la); a1=Math.max(a1,p.la); o0=Math.min(o0,p.lo); o1=Math.max(o1,p.lo); });
     let cam=null; try{ cam=m.cameraForBounds([[o0,a0],[o1,a1]],{padding:{top:60,bottom:Math.min(shTarget(mapEl.clientHeight)+40,mapEl.clientHeight/2),left:pw3()+40,right:60},bearing:b,maxZoom:11}); }catch(e){}
     if(cam){ m.easeTo(Object.assign({},cam,{bearing:b,pitch:62,zoom:cam.zoom+0.2,duration:1100})); return; } }
@@ -1950,28 +2046,79 @@ function simPad(now){ if(T3.padT&&now-T3.padT<500&&T3.pad) return T3.pad; T3.pad
   const xw=el('x3w'), xr=xw&&!xw.hidden?xw.getBoundingClientRect():null;
   const bottom=window.innerWidth<=900? (xr?Math.max(0,Math.min(H*0.45,mr.bottom-xr.top)):0) : Math.min(H*0.5,parseFloat(getComputedStyle(el('rx')).getPropertyValue('--shh'))||0), left=Math.min(mr.width*0.4,pw3());
   top=Math.min(top,Math.max(0,H-bottom-140)); return T3.pad={top:Math.round(top*(window.innerWidth<=900?0.9:0.6)),bottom:Math.round(bottom),left:Math.round(left),right:0}; }
+// camera field of view: cockpit ≈ 80° across the screen (a pilot's view), chase ≈ 64°, otherwise MapLibre's 36.87°.
+// Kept within 36.87–70° vertical so portrait phones do not get a fish-eye view.
+const FOV0=36.87;
+function mlFov(cm){ if(!ML||!ML.setVerticalFieldOfView) return; const tr=ML.transform||{}, W=tr.width||1, H=tr.height||1; // map size without a DOM read (no forced layout per frame)
+  const v=h=>2*Math.atan(Math.tan(h/2*D2R)*H/W)/D2R, want=cm==='cockpit'?Math.max(45,Math.min(70,v(80))):cm==='chase'?Math.max(FOV0,Math.min(55,v(64))):FOV0;
+  if(Math.abs(ML.getVerticalFieldOfView()-want)>0.2) try{ ML.setVerticalFieldOfView(want); }catch(e){} }
 function mlNoPad(){ if(ML&&T3.padded){ T3.padded=false; try{ ML.setPadding({top:0,bottom:0,left:0,right:0}); }catch(e){} } }
+// free look while flying: T3.lkT is the target (from drag, keys, look pad), T3.lk follows it with easing
+T3.lk={y:0,p:0}; T3.lkT={y:0,p:0}; T3.zk=1; T3.k=1;
+function lookBy(dy,dp){ T3.lkT.y=((T3.lkT.y+dy+540)%360)-180; T3.lkT.p=Math.max(-45,Math.min(T3.cm==='cockpit'?22:50,T3.lkT.p+dp)); mlKick3(); }
+function lookHome(){ T3.lkT.y=0; T3.lkT.p=0; T3.zk=1; mlKick3(); }
 function mlFrame3(now){ T3.raf=0; if(!T3.on||!ML) return; const t0=performance.now(); const dt=T3.t?Math.min(0.1,(now-T3.t)/1000):0; T3.t=now; const M=simM(), tot=M.total||0; let more=false;
-  if(T3.play&&tot>0){ T3.x=Math.min(tot,T3.x+dt*simAdv()); el('x3r').value=T3.x; simHov(T3.x,now); if(T3.x>=tot){ T3.play=false; ui3p(); } }
-  const at=T3.play?T3.x:HOV;
+  const dv=!!(T3.drive&&T3.cm!=='ov'); if(dv!==!!T3.dvOn) mlDrive(dv);
+  if(T3.play&&tot>0){ simSpeed(dt); T3.x=Math.min(tot,T3.x+dt*simAdv()); el('x3r').value=T3.x; simHov(T3.x,now); simAhead(); if(T3.x>=tot){ T3.play=false; ui3p(); } }
+  // ease the look offsets toward the target (about 0.15 s), wrapping yaw the short way round
+  { const e=dt>0?1-Math.exp(-dt*7):1, dy=((T3.lkT.y-T3.lk.y+540)%360)-180, dp=T3.lkT.p-T3.lk.p; T3.lk.y+=dy*e; T3.lk.p+=dp*e; if(Math.abs(dy)>0.05||Math.abs(dp)>0.05) more=true; }
+  const at=T3.play?T3.x:(HOV!=null?HOV:(T3.dvOn?T3.x:null));
   if(at!=null&&tot>0){ const tb=trkAt(M,at); if(tb!=null){ if(T3.mb==null||!dt) T3.mb=T3.mb==null?tb:T3.mb; const db=((tb-T3.mb)%360+540)%360-180; T3.mb=(T3.mb+db*(dt>0?1-Math.exp(-dt*(T3.cm==='cockpit'?1.6:2.5)):1)+360)%360; if(Math.abs(db)>0.3) more=true; }
     const q=M.posAt(at);
-    if(q&&q.la!=null&&T3.drive&&T3.cm!=='ov'&&T3.mb!=null){ const ex=RXMAP.exag(ML)||1, a=ml3Alt(M,at)*0.3048*ex;
-      try{ ML.setCenterClampedToGround(false);
-        if(T3.cm==='cockpit'){ // at the aircraft, looking ahead along the track about 7° below the horizon
-          const f=Math.max(3,Math.min(8,tot*0.05)), [tla,tlo]=offs(q.la,q.lo,T3.mb,f);
-          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([q.lo,q.la],a+25,[tlo,tla],a+25-f*1852*Math.tan(7*D2R)),{padding:{top:0,bottom:0,left:0,right:0}})); T3.padded=false; }
-        else { // chase: behind and above, looking ahead along the route
-          const back=Math.max(1.6,Math.min(5,tot*0.035)), [cla,clo]=offs(q.la,q.lo,T3.mb+180,back), [tla,tlo]=offs(q.la,q.lo,T3.mb,back*0.3);
-          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([clo,cla],a+back*1852*0.42,[tlo,tla],a-back*1852*0.05),{padding:simPad(now)})); T3.padded=true; } }catch(e){} } }
+    if(q&&q.la!=null&&dv&&T3.mb!=null){ const ex=RXMAP.exag(ML)||1, a=ml3Alt(M,at)*0.3048*ex, ly=T3.lk.y, lp=T3.lk.p;
+      try{ ML.setCenterClampedToGround(false); mlFov(T3.cm);
+        if(T3.cm==='cockpit'){ // at the aircraft, looking along the track (plus free look), about 7° below the horizon by default
+          const f=Math.max(3,Math.min(8,tot*0.05)), [tla,tlo]=offs(q.la,q.lo,T3.mb+ly,f);
+          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([q.lo,q.la],a+25,[tlo,tla],a+25-f*1852*Math.tan((7-lp)*D2R)),{padding:{top:0,bottom:0,left:0,right:0}})); T3.padded=false; }
+        else { // chase: behind and above; free look orbits the camera round the aircraft
+          const back=Math.max(1.6,Math.min(5,tot*0.035))*T3.zk, el0=Math.atan(0.42)/D2R, elv=Math.max(4,Math.min(80,el0+lp)), cb=T3.mb+180+ly;
+          const [cla,clo]=offs(q.la,q.lo,cb,back*Math.cos(elv*D2R)/Math.cos(el0*D2R)), ah=back*0.3*Math.max(0,Math.cos(ly*D2R)), [tla,tlo]=offs(q.la,q.lo,T3.mb,ah);
+          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([clo,cla],a+back*1852*Math.sin(elv*D2R)/Math.cos(el0*D2R),[tlo,tla],a-back*1852*0.05),{padding:simPad(now)})); T3.padded=true; } }catch(e){} } }
   RXMAP.setPath3D(ML,undefined,acHov(M,at)); if(!T3.play||!T3.hudT||now-T3.hudT>100){ T3.hudT=now; simHud(at!=null?at:T3.x); }
   T3.ft=performance.now()-t0; if(T3.play||more) mlKick3(); else T3.t=0; }
+/* flying camera: drag looks around (chase: orbits), wheel moves the chase camera in and out, double-click recentres.
+   MapLibre's own pan/zoom/rotate are off meanwhile, and the pitch limit opens to 105° so you can look above the horizon. */
+function mlDrive(on){ T3.dvOn=on; const m=ML; if(!m) return; const c=m.getCanvasContainer();
+  try{ if(on){ m.dragPan.disable(); m.dragRotate.disable(); m.scrollZoom.disable(); m.doubleClickZoom.disable(); m.touchZoomRotate.disable(); m.touchPitch.disable(); m.keyboard.disable(); m.setMaxPitch(105); c.classList.add('bb-look'); }
+    else { m.setMaxPitch(85); if(m.getPitch()>85) m.jumpTo({pitch:85}); m.dragPan.enable(); m.scrollZoom.enable(); m.doubleClickZoom.enable(); m.touchZoomRotate.enable(); m.keyboard.enable(); if(T3.on){ m.dragRotate.enable(); m.touchPitch.enable(); } else m.touchZoomRotate.disableRotation(); c.classList.remove('bb-look'); } }catch(e){} }
+let lkP=null;
+function lookInit(){ const c=ML.getCanvasContainer();
+  c.addEventListener('pointerdown',e=>{ if(!T3.dvOn||(e.pointerType==='mouse'&&e.button!==0)) return; lkP={id:e.pointerId,x:e.clientX,y:e.clientY}; try{ c.setPointerCapture(e.pointerId); }catch(_){} });
+  c.addEventListener('pointermove',e=>{ if(!lkP||e.pointerId!==lkP.id) return; const dx=e.clientX-lkP.x, dy=e.clientY-lkP.y; lkP.x=e.clientX; lkP.y=e.clientY; lookBy(-dx*0.3,dy*0.25); },{passive:true});
+  const up=e=>{ if(lkP&&e.pointerId===lkP.id) lkP=null; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
+  c.addEventListener('dblclick',e=>{ if(T3.dvOn){ e.preventDefault(); lookHome(); } });
+  c.addEventListener('wheel',e=>{ if(!T3.dvOn) return; e.preventDefault(); if(T3.cm==='chase'){ T3.zk=Math.max(0.35,Math.min(4,T3.zk*(e.deltaY>0?1.12:1/1.12))); mlKick3(); } },{passive:false}); }
+// arrow keys look around while flying (Shift = faster), C or 0 recentres
+document.addEventListener('keydown',e=>{ if(!T3.on||!T3.dvOn||e.target.closest('input,textarea,select,[contenteditable]')) return; const k=e.shiftKey?12:4;
+  const m={ArrowLeft:[-k,0],ArrowRight:[k,0],ArrowUp:[0,k*0.8],ArrowDown:[0,-k*0.8]}[e.key]; if(m){ e.preventDefault(); lookBy(m[0],m[1]); return; }
+  if(e.key==='c'||e.key==='C'||e.key==='0'){ e.preventDefault(); lookHome(); } });
 /* ================= Simulate the flight ================= */
 const SIMC={k:null,M:null};
 // the profile the simulation flies (cached per frame; render() clears it)
 function simM(){ const k=(R.pm||'')+'|'+JSON.stringify(R.s)+'|'+R.pts.length+'|'+(TP?TP.pts.length:0); if(SIMC.k!==k||!SIMC.M){ SIMC.k=k; SIMC.M=compute(); } return SIMC.M; }
 const gsOf=()=>pnum(R&&R.gs)||100;
-const simAdv=()=>gsOf()/3600*T3.spd; // NM per second of screen time
+/* buffering: the tiles along the route are fetched before the flight starts (with progress, skippable) and then
+   ahead of the aircraft in 12 NM chunks. If the aircraft gets within ~8 s of flight of the unfetched part, or the
+   view is still loading, the speed eases down (to 15 % at most) and recovers once the tiles are in. */
+function simPts(M,x0,x1){ const out=[], st=0.5; for(let x=Math.max(0,x0);x<=Math.min(M.total,x1)+1e-9;x+=st){ const q=M.posAt(x); if(q&&q.la!=null) out.push({la:q.la,lo:q.lo,x}); } return out; }
+function simSpeed(dt){ const base=gsOf()/3600*T3.spd, look=Math.max(0.5,base*8), ready=T3.pf?T3.pf.readyX:Infinity;
+  let k=Math.max(0.15,Math.min(1,(ready-T3.x)/look)); if(ML&&!ML.areTilesLoaded()) k=Math.min(k,0.75);
+  T3.k+=(k-T3.k)*(dt>0?1-Math.exp(-dt*(k<T3.k?3:0.8)):1); }
+function simAhead(){ const pf=T3.pf; if(!pf||!ML||pf.busy) return; if(T3.x>pf.toX){ pf.toX=T3.x; pf.readyX=Math.max(pf.readyX,T3.x); } if(pf.toX>=simM().total) return; if(T3.x+Math.max(4,gsOf()/3600*T3.spd*20)<pf.toX) return;
+  const M=simM(), from=pf.toX, to=Math.min(M.total,from+12); pf.busy=true;
+  const c=RXMAP.prefetch(ML,simPts(M,from,to),pf.zc,{max:600,onProgress:k=>{ pf.readyX=Math.max(pf.readyX,k.readyX); }}); pf.ctl=c;
+  c.promise.then(()=>{ pf.busy=false; pf.toX=to; pf.readyX=Math.max(pf.readyX,to); }); }
+function simStop(){ if(T3.pf&&T3.pf.ctl) T3.pf.ctl.stop(); T3.pf=null; const o=el('simload'); if(o) o.hidden=true; }
+// before take-off: fetch tiles for the first part of the route (all of it on short routes), showing progress
+function simPreload(){ return new Promise(res=>{ if(!ML){ res(); return; } const M=simM(); simStop();
+  const zc=Math.max(8,Math.min(15,ML.getZoom())), first=Math.min(M.total,Math.max(15,gsOf()/3600*T3.spd*45));
+  const pf=T3.pf={zc,toX:first,readyX:0,busy:true}; const o=el('simload'), bar=el('simloadb'), pct=el('simloadp'); o.hidden=false; let fin=false;
+  const end=()=>{ if(fin) return; fin=true; o.hidden=true; pf.busy=false; res(); };
+  el('simskip').onclick=()=>{ pf.readyX=Infinity; end(); };
+  const c=RXMAP.prefetch(ML,simPts(M,0,first),zc,{max:900,onProgress:k=>{ const f=k.n?k.done/k.n:1; bar.style.width=(f*100).toFixed(0)+'%'; pct.textContent=Math.round(f*100)+' %'; pf.readyX=k.readyX; }}); pf.ctl=c;
+  if(!c.n){ pf.readyX=first; end(); return; }
+  c.promise.then(()=>{ pf.readyX=Math.max(pf.readyX,first); setTimeout(end,150); }); }); }
+const simAdv=()=>gsOf()/3600*T3.spd*(T3.k||1); // NM per second of screen time (T3.k < 1 while tiles ahead are still loading)
 // move the profile cursor every frame, the readout a few times a second
 function simHov(x,now){ HOV=x; const l=el('hcur'); if(l&&psv._XS){ const px=psv._XS(x); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); } if(!T3.rdoT||now-T3.rdoT>200){ T3.rdoT=now; rdo(x); } }
 function hmsOf(h){ if(!Number.isFinite(h)) return '–'; const s=Math.round(h*3600), hh=Math.floor(s/3600), mm=Math.floor(s%3600/60), ss=s%60; return hh? hh+':'+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0') : mm+':'+String(ss).padStart(2,'0'); }
@@ -1991,7 +2138,7 @@ function simHud(x){ const h=el('simhud'); if(!h) return; const M=ML?simM():(T3.S
   else if(!inE) warn=`<div class="hw nt">${x<=z.d? L({en:'Departure area: terrain not checked, fly the SID or visual departure',no:'Avgangsområde: terrenget sjekkes ikke, fly SID eller visuell avgang'}) : L({en:'Approach area: terrain not checked, fly the approach chart',no:'Innflygingsområde: terrenget sjekkes ikke, fly etter innflygingskartet'})}</div>`;
   h.innerHTML=c('GS',fx(gs),'kt'+(R.gs?'':' ?'))+c(L({en:'Alt',no:'Høyde'}),altTxt(Math.round(alt/10)*10),alt>taOf()?'':'ft')+c('VS',(vs>0?'+':vs<0?'−':'')+fx(Math.abs(vs)),'fpm')+c(L({en:'Track',no:'Kurs'}),tr!=null?String(Math.round(tr)%360||360).padStart(3,'0')+'°':'–','T')
     +c(L({en:'Terrain',no:'Terreng'}),ter!=null?fx(Math.round(ter/10)*10):'–','ft')+c(L({en:'Clearance',no:'Klaring'}),clr!=null?(clr<0?'−':'')+fx(Math.abs(Math.round(clr/10)*10)):'–','ft',cls)
-    +c(L({en:'To go',no:'Igjen'}),fx(dtg,1),'NM'+(nx?'<span class="nx"> · '+esc(nx.p.n||'')+'</span>':''))+c('ETE',hmsOf(dtg/gs),'')+warn; }
+    +c(L({en:'To go',no:'Igjen'}),fx(dtg,1),'NM'+(nx?'<span class="nx"> · '+esc(nx.p.n||'')+'</span>':''))+c('ETE',hmsOf(dtg/gs),'')+warn+(T3.play&&T3.k<0.85?`<div class="hw nt">${L({en:'Loading ahead: speed',no:'Laster inn foran: fart'})} ×${fx(T3.spd*T3.k,T3.spd*T3.k<10?1:0)}</div>`:''); }
 function simBtnUI(){ const b=el('simbtn'); if(!b) return; const on=T3.on&&T3.play; b.textContent=on?'❚❚ '+L({en:'Pause',no:'Pause'}):'▶ '+L({en:'Simulate flight',no:'Simuler flygingen'}); b.setAttribute('aria-pressed',String(on)); }
 function camUI(){ el('x3cam').querySelectorAll('[data-c]').forEach(b=>{ const on=b.dataset.c===T3.cm; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); }); }
 function setCam(c){ T3.cm=c; camUI(); T3.mb=null;
@@ -1999,12 +2146,16 @@ function setCam(c){ T3.cm=c; camUI(); T3.mb=null;
   else { T3.drive=true; if(!T3.play&&HOV==null){ HOV=T3.x; } if(!ML) T3.snap=false; }
   kick3(); }
 function autoCruise(){ const top=(TP&&Math.max(0,...TP.pts.map(q=>q.e||0)))||0; return Math.max(3000,Math.ceil(top/500)*500+1000); }
-async function simStart(){ if(T3.on&&T3.play){ T3.play=false; ui3p(); return; }
+async function simStart(){ if(T3.loading){ el('simskip').click(); return; } if(T3.on&&T3.play){ T3.play=false; ui3p(); return; }
   const M0=compute(); if(M0.C.filter(c=>c.p.la!=null).length<2||!M0.total) return;
   let ch=false; if(pnum(R.s.cr)==null){ const a=autoCruise(); R.s.cr=a>taOf()?'FL'+String(Math.round(a/100)).padStart(3,'0'):String(a); el('s_cr').value=R.s.cr; ch=true; }
   if(pmode()!=='adv'){ R.pm='adv'; ch=true; } if(ch){ pmUI(); render(); queueSave(); }
   if(!T3.on){ await set3(true); }
-  T3.x=0; T3.mb=null; T3.play=true; T3.drive=T3.cm!=='ov'; T3.t=0; el('x3r').value=0; camUI(); ui3p(); kick3(); }
+  T3.x=0; T3.mb=null; T3.k=1; lookHome(); el('x3r').value=0; camUI();
+  if(ML){ // put the camera at the start, let it settle, then buffer the tiles along the route at the zoom it uses
+    T3.play=false; HOV=0; T3.drive=T3.cm!=='ov'; kick3(); await new Promise(r=>setTimeout(r,400)); if(!T3.on) return;
+    T3.loading=true; ui3p(); await simPreload(); T3.loading=false; if(!T3.on) return; }
+  T3.play=true; T3.drive=T3.cm!=='ov'; T3.t=0; ui3p(); kick3(); }
 el('simbtn').onclick=()=>{ simStart(); };
 // cruise control: type 6500 or FL75, or step 500 ft; GS for the timing and the simulation
 function crStep(d){ const a0=pnum(R.s.cr); const a=Math.max(500,(a0==null?autoCruise():Math.round(a0/500)*500+d)); const v=a>taOf()?'FL'+String(Math.round(a/100)).padStart(3,'0'):String(a); const i=el('s_cr'); i.value=v; i.dispatchEvent(new Event('input')); }
