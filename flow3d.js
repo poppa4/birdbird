@@ -85,8 +85,10 @@
     /* separasjonspunkt på oversiden per stripe (andel av korden) – samme logikk som profilsnittet */
     function sepFrac(j) {
       if (!res) return 1; const r = res.ratio[j], thin = P.AIRFOILS[G.af].t < 0.05;
+      /* on: stallmargin der bakkantseparasjonen starter (0,86 med ren forkant; tidligere med ruhet/is, se applyLE) */
+      const on = G && G.leOn ? G.leOn : 0.86;
       if (r >= 1) return thin ? 0.03 : Math.max(0.03, 0.68 - 1.5 * (r - 1));
-      if (r > 0.86) return thin ? 1 : 1 - 0.32 * Math.pow((r - 0.86) / 0.14, 2);
+      if (r > on) return thin ? 1 : 1 - 0.32 * Math.pow((r - on) / (1 - on), 2);
       return 1;
     }
     /* Cp på vingeflaten per stripe fra virvelgitteret (ΔCp per panel) pluss tykkelsesbidrag; samme som fargene på vingen.
@@ -375,7 +377,22 @@
     };
   }
 
-  root.FLOW3D = { make };
+  /* Forkantens tilstand (ren, insekter, frost, is): profilsnittets grensesjiktmodell gir forholdet k = CL maks (forurenset) /
+     CL maks (ren). Her skaleres hver stripes cl maks med k, og kritisk α og CL maks for vingen regnes på nytt på samme måte
+     som i physics.buildWing (første stripe som når sin cl maks). Selve virvelgitteret er uendret. */
+  function applyLE(w, k) {
+    if (!w || !(k > 0) || Math.abs(k - 1) < 1e-6) return w;
+    let aS = Infinity, jS = 0;
+    for (let j = 0; j < w.N; j++) {
+      w.clmax[j] *= k;
+      if (w.Sa[j] <= 0) continue;
+      const aj = (w.clmax[j] * w.c[j] / 2 - w.Sb[j]) / w.Sa[j];
+      if (aj < aS) { aS = aj; jS = j; }
+    }
+    w.alphaStall = aS; w.stallStation = w.ym[jS] / w.s; w.CLmax = w.CLa * aS + w.CLb; w.leK = k;
+    return w;
+  }
+  root.FLOW3D = { make, applyLE };
 
   /* ---------- som Web Worker: egen kopi av vinge, felt og tilstand ---------- */
   const isWorker = typeof WorkerGlobalScope !== 'undefined' && root instanceof WorkerGlobalScope;
@@ -405,7 +422,7 @@
         if (d.type === 'init') { importScripts(d.physics); P = root.VLab; ctx = make(P); return; }
         if (d.type === 'geom') {
           params = d.params; ac = d.ac;
-          const w = P.buildWing(params); ctx.setWing(w, params, P.AIRCRAFT[ac].model); resKey = ''; cur = null;
+          const w = applyLE(P.buildWing(params), params.leK || 1); ctx.setWing(w, params, P.AIRCRAFT[ac].model); resKey = ''; cur = null;
           return;
         }
         if (d.type === 'field') { ctx.setField({ data: d.data, xs: d.xs, ys: d.ys, zs: d.zs, nx: d.nx, ny: d.ny, nz: d.nz }); return; }

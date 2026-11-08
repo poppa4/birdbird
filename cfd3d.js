@@ -18,6 +18,7 @@
   }
   CFD.coolwarm = coolwarm; CFD.turbo = turbo;
   CFD.cmap = (id, t) => id === 1 ? turbo(t) : coolwarm(t);
+  CFD.cmapN = (id, t, k) => { const c = CFD.cmap(id, t), u = Math.min(1, Math.max(0, (Math.abs(t - 0.5) * 2 - 0.06) / 0.36)), w = k * (1 - u * u * (3 - 2 * u)), g = [0.6, 0.64, 0.69]; return [c[0] + (g[0] - c[0]) * w, c[1] + (g[1] - c[1]) * w, c[2] + (g[2] - c[2]) * w]; };
   CFD.GLSL_CMAP = `
 uniform float cmin; uniform float cmax; uniform float cmapId;
 vec3 coolwarm(float t){ t=clamp(t,0.0,1.0)*8.0;
@@ -32,6 +33,9 @@ vec3 turbo(float x){ x=0.07+0.9*clamp(x,0.0,1.0);
   vec4 v4=vec4(1.0,x,x*x,x*x*x); vec2 v2=v4.zw*v4.z;
   return clamp(vec3(dot(v4,kR)+dot(v2,kR2),dot(v4,kG)+dot(v2,kG2),dot(v4,kB)+dot(v2,kB2)),0.0,1.0); }
 vec3 cmap(float t){ return cmapId>0.5 ? turbo(t) : coolwarm(t); }
+uniform float neutral;
+// midten av skalaen (V = V∞, Cp = 0) blandes mot nøytral grå, så bare avvik fra fri strøm får farge
+vec3 cmapN(float t){ float dv=abs(t-0.5)*2.0; return mix(cmap(t), vec3(0.6,0.64,0.69), neutral*(1.0-smoothstep(0.06,0.42,dv))); }
 float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
 
   /* ---------- strømlinjer: skjermrettede bånd skyggelagt som rør ----------
@@ -84,19 +88,28 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
   CFD.tubeMaterial = function (THREE) {
     return new THREE.ShaderMaterial({
       uniforms: { cmin: { value: -1.5 }, cmax: { value: 1 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, time: { value: 0 }, width: { value: 1.6 },
-        res: { value: new THREE.Vector2(1000, 600) }, bright: { value: 1 }, pulse: { value: 1 }, pulseRate: { value: 1 }, opac: { value: 1 }, studio: { value: 1 }, dref: { value: 16 } },
-      vertexShader: `attribute vec3 prv; attribute vec3 nxt; attribute float side; attribute float cpv; attribute float tv; attribute float fd; attribute float sd;
-        uniform float width; uniform vec2 res; uniform float dref; varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN;
+        res: { value: new THREE.Vector2(1000, 600) }, bright: { value: 1 }, pulse: { value: 1 }, pulseRate: { value: 1 }, opac: { value: 1 }, studio: { value: 1 }, dref: { value: 16 },
+        turb: { value: 1 }, neutral: { value: 0.75 }, solid: { value: new THREE.Vector3(-1, 0, 0) } },
+      vertexShader: `attribute vec3 prv; attribute vec3 nxt; attribute float side; attribute float cpv; attribute float tv; attribute float fd; attribute float sd; attribute float tbv;
+        uniform float width; uniform vec2 res; uniform float dref; uniform float time; uniform float turb; varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN; varying float vTb;
+        // uro bare der modellen har merket strømmen som separert (tbv > 0): billig, glatt, tidsavhengig forskyvning (illustrativ)
+        vec3 wob(vec3 p, float a){ return a*vec3(sin(p.y*3.1+p.z*2.3-time*5.3)+0.6*sin(p.x*5.7-time*8.1),
+                                                    sin(p.x*2.7+p.z*3.9-time*6.1)+0.6*sin(p.y*6.3+time*7.7),
+                                                    sin(p.x*3.3+p.y*2.9+time*5.9)+0.6*sin(p.z*6.9-time*9.3)); }
         void main(){ vV=cpv; vT=tv; vS=side; vF=fd; vSd=sd;
+          float ta=turb*min(tbv,0.25)*1.6; vTb=clamp(tbv*6.0,0.0,1.0);
+          vec3 P0=position, Pa=prv, Pb=nxt; if(ta>0.0005){ P0+=wob(position,ta); Pa+=wob(prv,ta); Pb+=wob(nxt,ta); }
           mat4 M=projectionMatrix*modelViewMatrix;
-          vec4 c=M*vec4(position,1.0), a=M*vec4(prv,1.0), b=M*vec4(nxt,1.0);
+          vec4 c=M*vec4(P0,1.0), a=M*vec4(Pa,1.0), b=M*vec4(Pb,1.0);
           vec2 d=(b.xy/b.w-a.xy/a.w)*res; float L=length(d); d= L>1e-6? d/L : vec2(1.0,0.0);
           vec2 n=vec2(-d.y,d.x); vN=n;
           float w=width*clamp(dref/max(c.w,0.1),0.55,1.8)*mix(0.3,1.0,fd); vW=w;
           c.xy+=n*side*(w+1.0)/res*c.w; gl_Position=c; }`,
       fragmentShader: CFD.GLSL_CMAP + `
-        uniform float time; uniform float bright; uniform float pulse; uniform float pulseRate; uniform float opac; uniform float vmin; uniform float vmax; uniform float studio;
-        varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN;
+        uniform float time; uniform float bright; uniform float pulse; uniform float pulseRate; uniform float opac; uniform float vmin; uniform float vmax; uniform float studio; uniform vec3 solid;
+        varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN; varying float vTb;
+        // fargen nær V∞ blandes mot nøytral grå (fri strøm er ikke «grønn»); avvik fra V∞ får full farge
+        vec3 vcol(float v){ return cmapN(clamp((v-vmin)/(vmax-vmin),0.0,1.0)); }
         void main(){
           float s=abs(vS)*(vW+1.0)/vW;                 // 0 i midten, 1 ved rørkanten (+1 px for kantutjevning)
           float cov=clamp((1.0-s)*vW*0.5+0.5,0.0,1.0);
@@ -105,11 +118,11 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
           vec3 N=normalize(vec3(vN*sc, sqrt(max(0.0,1.0-sc*sc))));
           vec3 Ld=normalize(vec3(-0.42,0.62,0.66)), H=normalize(Ld+vec3(0.0,0.0,1.0));
           float dif=max(dot(N,Ld),0.0), sp=pow(max(dot(N,H),0.0),36.0);
-          vec3 base=cmap(clamp((vV-vmin)/(vmax-vmin),0.0,1.0));
+          vec3 base= solid.x>=0.0 ? solid : vcol(vV);
           vec3 col=base*(0.42+0.7*dif)+sp*(0.25+0.2*studio);
           col*=1.0-(0.28+0.12*studio)*smoothstep(0.5,1.0,s);    // mørk rørkant skiller linjen fra flaten og nabolinjene bak
-          float dev=clamp(abs(vV-1.0)/max(0.02,0.35*(vmax-vmin)),0.0,1.0);
-          a*=mix(0.38+0.2*(1.0-studio),1.0,dev);                  // nesten fri strøm tones ned, forstyrret strøm fremheves
+          float dev=clamp(abs(vV-1.0)/max(0.02,0.6*(vmax-vmin)),0.0,1.0);
+          a*=mix(0.2+0.14*(1.0-studio),1.0,max(dev*dev,vTb));         // nesten fri strøm tones ned, forstyrret strøm fremheves
           float ph=fract(vT*0.22-time*pulseRate*0.22+vSd);
           float head=exp(-(1.0-ph)*26.0)*smoothstep(1.0,0.992,ph);
           col=mix(col,vec3(1.0),0.45*pulse*head);
@@ -119,12 +132,34 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
     });
   };
 
+  /* ---------- ensfarget bånd med fast skjermbredde (separasjonslinje, virvelkjerner, røykstav, oljestriper) ----------
+     Samme geometri som lineGeometry. dash > 0: strekene vandrer langs linjen med flytiden (retning synes). */
+  CFD.ribbonMaterial = function (THREE, o) {
+    o = o || {};
+    return new THREE.ShaderMaterial({
+      uniforms: { color: { value: new THREE.Color(o.color || 0xffffff) }, width: { value: o.width || 2 }, res: { value: new THREE.Vector2(1000, 600) }, opac: { value: o.opac == null ? 1 : o.opac },
+        time: { value: 0 }, dash: { value: o.dash || 0 }, rate: { value: o.rate || 1 }, glow: { value: o.glow || 0 } },
+      vertexShader: `attribute vec3 prv; attribute vec3 nxt; attribute float side; attribute float tv; attribute float fd;
+        uniform float width; uniform vec2 res; varying float vS; varying float vT; varying float vF;
+        void main(){ vS=side; vT=tv; vF=fd; mat4 M=projectionMatrix*modelViewMatrix;
+          vec4 c=M*vec4(position,1.0), a=M*vec4(prv,1.0), b=M*vec4(nxt,1.0);
+          vec2 d=(b.xy/b.w-a.xy/a.w)*res; float L=length(d); d= L>1e-6? d/L : vec2(1.0,0.0);
+          c.xy+=vec2(-d.y,d.x)*side*(width+1.0)/res*c.w; gl_Position=c; }`,
+      fragmentShader: `uniform vec3 color; uniform float opac; uniform float time; uniform float dash; uniform float rate; uniform float glow; uniform float width;
+        varying float vS; varying float vT; varying float vF;
+        void main(){ float s=abs(vS)*(width+1.0)/width; float cov=clamp((1.0-s)*width*0.5+0.5,0.0,1.0);
+          float a=cov*opac*vF; if(dash>0.0){ float ph=fract(vT*dash-time*rate); a*=0.35+0.65*smoothstep(0.0,0.12,ph)*(1.0-smoothstep(0.55,0.7,ph)); }
+          if(a<0.01) discard; vec3 c=color*(1.0+glow*(1.0-s)); gl_FragColor=vec4(c,a); }`,
+      transparent: true, depthWrite: false, side: THREE.DoubleSide
+    });
+  };
+
   /* ---------- fartssnitt: |V|/V∞ som jevnt fargefelt med isolinjer (tegnes i skyggeleggeren) ----------
      map: R/B = fart i 16 bit (smin..smax), G = fast flate. Isolinjer hver 0,05 V/V∞ (tydeligere hver 0,25). */
   CFD.speedSliceMaterial = function (THREE) {
     return new THREE.ShaderMaterial({
       uniforms: { map: { value: null }, smin: { value: 0 }, smax: { value: 2 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, cmin: { value: -1 }, cmax: { value: 1 },
-        op: { value: 0.97 }, iso: { value: 1 }, studio: { value: 1 }, texel: { value: new THREE.Vector2(1 / 256, 1 / 128) } },
+        op: { value: 0.97 }, iso: { value: 1 }, studio: { value: 1 }, neutral: { value: 0.3 }, texel: { value: new THREE.Vector2(1 / 256, 1 / 128) } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
       fragmentShader: CFD.GLSL_CMAP + `
         uniform sampler2D map; uniform float smin; uniform float smax; uniform float vmin; uniform float vmax; uniform float op; uniform float iso; uniform float studio; uniform vec2 texel;
@@ -133,7 +168,7 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
           vec4 t=texture2D(map,vUv);
           float sol=t.g; if(sol>0.5) discard;   // modellen selv vises der flaten skjærer planet
           float v=smin+(smax-smin)*(t.r*65280.0+t.b*255.0)/65535.0;   // 16 bit: høy byte i R, lav i B (bilineær filtrering er lineær, så det går)
-          vec3 c=cmap(clamp((v-vmin)/(vmax-vmin),0.0,1.0));
+          vec3 c=cmapN(clamp((v-vmin)/(vmax-vmin),0.0,1.0));
           float f1=v*20.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5), l1=1.0-smoothstep(0.0,w1*1.2,d1);
           float f2=v*4.0, w2=fwidth(f2), d2=abs(fract(f2-0.5)-0.5), l2=1.0-smoothstep(0.0,w2*1.5,d2);
           // isolinjer bare der feltet faktisk varierer (ellers gir støy rundt et nivå prikker i flate områder)
@@ -152,7 +187,7 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
     const fin = (o && o.fadeIn) || 0.9, fout = (o && o.fadeOut) || 2.2;
     let nv = 0, ni = 0;
     for (const l of L) { const n = l.cp.length; if (n < 2) continue; nv += 2 * n; ni += 6 * (n - 1); }
-    const pos = new Float32Array(nv * 3), prv = new Float32Array(nv * 3), nxt = new Float32Array(nv * 3), side = new Float32Array(nv), cpv = new Float32Array(nv), tv = new Float32Array(nv), fd = new Float32Array(nv), sd = new Float32Array(nv);
+    const pos = new Float32Array(nv * 3), prv = new Float32Array(nv * 3), nxt = new Float32Array(nv * 3), side = new Float32Array(nv), cpv = new Float32Array(nv), tv = new Float32Array(nv), fd = new Float32Array(nv), sd = new Float32Array(nv), tbv = new Float32Array(nv);
     const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
     let v = 0, q = 0;
     for (const l of L) {
@@ -164,7 +199,7 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
           pos[v * 3] = P3[i * 3]; pos[v * 3 + 1] = P3[i * 3 + 1]; pos[v * 3 + 2] = P3[i * 3 + 2];
           prv[v * 3] = P3[ia * 3]; prv[v * 3 + 1] = P3[ia * 3 + 1]; prv[v * 3 + 2] = P3[ia * 3 + 2];
           nxt[v * 3] = P3[ib * 3]; nxt[v * 3 + 1] = P3[ib * 3 + 1]; nxt[v * 3 + 2] = P3[ib * 3 + 2];
-          side[v] = s; cpv[v] = l.cp[i]; tv[v] = l.t[i]; fd[v] = f * (l.fade == null ? 1 : l.fade); sd[v] = l.sd; v++;
+          side[v] = s; cpv[v] = l.cp[i]; tv[v] = l.t[i]; fd[v] = f * (l.fade == null ? 1 : l.fade); sd[v] = l.sd; tbv[v] = l.tb ? l.tb[i] : 0; v++;
         }
         if (i > 0) { const a = base + (i - 1) * 2; idx[q++] = a; idx[q++] = a + 2; idx[q++] = a + 1; idx[q++] = a + 1; idx[q++] = a + 2; idx[q++] = a + 3; }
       }
@@ -172,7 +207,7 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('prv', new THREE.BufferAttribute(prv, 3)); g.setAttribute('nxt', new THREE.BufferAttribute(nxt, 3));
     g.setAttribute('side', new THREE.BufferAttribute(side, 1)); g.setAttribute('cpv', new THREE.BufferAttribute(cpv, 1)); g.setAttribute('tv', new THREE.BufferAttribute(tv, 1));
-    g.setAttribute('fd', new THREE.BufferAttribute(fd, 1)); g.setAttribute('sd', new THREE.BufferAttribute(sd, 1)); g.setIndex(new THREE.BufferAttribute(idx, 1));
+    g.setAttribute('fd', new THREE.BufferAttribute(fd, 1)); g.setAttribute('sd', new THREE.BufferAttribute(sd, 1)); g.setAttribute('tbv', new THREE.BufferAttribute(tbv, 1)); g.setIndex(new THREE.BufferAttribute(idx, 1));
     return g;
   };
 
