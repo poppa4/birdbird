@@ -92,7 +92,7 @@
       eb.innerHTML=`<a href="lab.html">Virtual Lab</a> · ${T('Modul')} ${me.mi+1} · <a href="lab.html#${me.m.k}">${Lx(me.m)}</a>`;
       const keep=meta.querySelector('.mst'); meta.innerHTML=`<span class="mi"><span class="tag ${lv.c}">${Lx(lv)}</span></span>`+
         (nsec?`<span class="mi"><span class="v">${nsec}</span><span class="k">${lang==='en'?'sections':'seksjoner'}</span></span>`:'')+
-        `<span class="mi"><span class="k">${lang==='en'?'Quiz':'Quiz'}</span>${d?`<span class="pbar"><i style="width:${d}%"></i></span><span class="v">${d} %</span>`:`<span class="v">${lang==='en'?'not taken':'ikke tatt'}</span>`}</span>`;
+        '';
       const w=keep||stw; if(w){ const lab=st&&st.dataset.label?{en:st.dataset.label,no:st.dataset.labelNo||st.dataset.label}:(STLAB[page]||{en:'Simulator',no:'Simulator'}); w.querySelector('.k').textContent=Lx(lab)+':'; meta.appendChild(w); } };
     draw(); hooks.push(draw); document.addEventListener('nprog',draw);
   }
@@ -158,7 +158,7 @@
       if(i>=qs.length){
         const pct=Math.round(score/qs.length*100); let b=best(); if(window.NPROG) NPROG.award('quiz:'+key,pct); if(curPage){ try{ if(pct>done(curPage)) localStorage.setItem('vlab-done-'+curPage,String(pct)); }catch(e){} } if(pct>b){ b=pct; try{ localStorage.setItem('aeroson-quiz-'+key,String(pct)); }catch(e){} }
         const msg= pct>=90? 'Sterkt! Du har god kontroll på dette.' : pct>=60? 'Godt jobbet. Les forklaringene på det du bommet på.' : 'Gå gjennom stoffet over og prøv igjen.';
-        box.innerHTML=`<div class="qend"><span class="qtop">${T('Ditt resultat')}</span><span class="big">${score} / ${qs.length}</span><p class="note">${T(msg)}</p><p class="note">${T('Beste resultat')}: ${b} %</p>${(()=>{ const i=FLAT.findIndex(x=>x.k===curPage), n=i>=0?FLAT[i+1]:null; return n?`<div class="btns"><a class="btn pri" href="${n.f}">${T('Neste')}: ${lang==='en'?n.en:n.no} →</a><button class="btn">${T('Prøv igjen')}</button></div>`:(i>=0?`<div class="btns"><a class="btn pri" href="lab.html">${T('Ferdig')}: ${T('Alle labber')} →</a><button class="btn">${T('Prøv igjen')}</button></div>`:`<button class="btn pri">${T('Prøv igjen')}</button>`); })()}</div>`;
+        box.innerHTML=`<div class="qend"><span class="qtop">${T('Ditt resultat')}</span><span class="big">${score} / ${qs.length}</span><p class="note">${T(msg)}</p>${(()=>{ const i=FLAT.findIndex(x=>x.k===curPage), n=i>=0?FLAT[i+1]:null; return n?`<div class="btns"><a class="btn pri" href="${n.f}">${T('Neste')}: ${lang==='en'?n.en:n.no} →</a><button class="btn">${T('Prøv igjen')}</button></div>`:(i>=0?`<div class="btns"><a class="btn pri" href="lab.html">${T('Ferdig')}: ${T('Alle labber')} →</a><button class="btn">${T('Prøv igjen')}</button></div>`:`<button class="btn pri">${T('Prøv igjen')}</button>`); })()}</div>`;
         box.querySelector('button').onclick=start; return;
       }
       const q=qs[i];
