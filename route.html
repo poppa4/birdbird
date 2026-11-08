@@ -118,8 +118,6 @@
 .mappop .warn,.sugg .warn{color:#8A5A00}
 
 /* ---------- Route Explorer 2.0: kartet først ---------- */
-.upbar{background:#F6EDF2;border-top:1px solid #E7CFDC;border-bottom:1px solid #E7CFDC}.upin{max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;justify-content:space-between}.upt{font-size:14px;line-height:1.45;color:var(--ink);flex:1 1 380px}.upt b{color:#7A1652}.upbtn{white-space:nowrap}
-@media (max-width:600px){.upl{display:none}.upin{padding:8px 12px}.upt{flex-basis:auto;font-size:13.5px}}
 .updlg{border:1px solid var(--rule);border-radius:8px;padding:18px;width:min(520px,calc(100vw - 24px));box-shadow:0 18px 50px rgba(19,32,42,.25)}.updlg h3{margin:0 0 10px}.updlg::backdrop{background:rgba(19,32,42,.35)}.upprev{background:#F3F5F5;border:1px solid var(--rule);border-radius:4px;max-height:260px;overflow:auto;margin-bottom:10px;text-align:center}.upprev img{max-width:100%;display:block;margin:0 auto}.updlg .f{display:flex;flex-direction:column;gap:3px;font-size:13px;margin:0 0 8px}.updlg input,.updlg select{font:inherit;font-size:15px;padding:6px 8px;border:1px solid var(--rule);border-radius:4px}.updlg .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}#upnote:empty{display:none}
 .rx{position:relative;height:calc(100dvh - var(--rxtop,112px));min-height:520px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);overflow:hidden;background:#D9E6EE}
 .rx .mapw{position:absolute;inset:0;height:auto;border:0}
@@ -250,6 +248,7 @@
 .rx-lib .li:hover,.rx-lib .li.on{background:#F6EDF2}.rx-lib .li b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rx-lib .li i{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .rx-lib .lirow{display:flex}.rx-lib .lx{border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 8px;border-bottom:1px solid #F0F2F2}
 .rx-lib .lisave{display:flex;gap:6px;margin-bottom:6px}.rx-lib .lisave input{flex:1;min-width:0;font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:4px}
+.rx-lib .liio{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.rx-lib .liio .upgo{text-align:left;white-space:normal;font-size:13px;line-height:1.35}
 .rx-lib .lil .note{margin:6px 9px;font-size:12.5px}
 .btn.sm{padding:3px 9px;font-size:12px;text-transform:none;letter-spacing:0}
 .rx-side .nt{width:100%;box-sizing:border-box;font:inherit;font-size:14px;margin-top:8px;padding:8px;border:1px solid var(--rule);border-radius:4px;resize:vertical}
@@ -373,12 +372,62 @@
   .rx .rx-ly label.chk{padding:6px 0}.rx .bmg button{padding:10px}
   .rx .mapctl button,.rx .mapctl a{width:42px;height:42px}
 }
+/* ---- 2026-11: tidy Layers panel (presets + collapsible groups), airspace on the profile, navlog, export ---- */
+.rx .rx-ly{gap:2px}
+.lypre{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 6px}
+.lypre button{font:inherit;font-size:13px;font-weight:600;padding:8px 6px;border:1px solid var(--hair,#E3E8EA);border-radius:10px;background:#F6F8FA;color:#0B2545;cursor:pointer}
+.lypre button:hover{border-color:#9A1E68}.lypre button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
+.lyg{border-top:1px solid var(--hair,#E3E8EA)}.lyg[hidden]{display:none}
+.lyg>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:9px 0 7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C;user-select:none}
+.lyg>summary::-webkit-details-marker{display:none}
+.lyg>summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.6px solid #7D8B95;border-bottom:1.6px solid #7D8B95;transform:rotate(-45deg);transition:transform .15s}
+.lyg[open]>summary::after{transform:rotate(45deg)}
+.lyg>summary:hover{color:#0B2545}
+.lyc{font-weight:500;letter-spacing:0;text-transform:none;font-size:11.5px;color:#8A97A2;font-family:var(--f-mono)}
+.lyg[open]{padding-bottom:6px}.lyg .bmg{margin-top:0}
+.lyg label.chk{display:flex;align-items:center;gap:6px}.lyg label.chk.sub{padding-left:22px}
+.lysub{display:block;margin:6px 0 0;font-size:11px;color:#8A97A2;letter-spacing:.04em}
+.wxkey{display:inline-flex;gap:2px;margin-left:2px}.wxkey i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.rx .rx-ly>.note{border-top:1px solid var(--hair,#E3E8EA);padding-top:8px;margin-top:2px;font-size:11.5px;line-height:1.45}
+.asl{margin:2px 0 4px;font-size:12.5px;line-height:1.5;color:var(--ink-2)}.asl[hidden]{display:none}
+.asl .ash{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}.asl .ash>b{color:var(--ink);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.asl ul{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
+.asl li{display:inline-flex;align-items:center;gap:6px;border:1px solid #E3E8EA;border-radius:7px;padding:3px 8px 3px 7px;background:#fff;font-variant-numeric:tabular-nums;color:var(--ink)}
+.asl li i{width:9px;height:9px;border-radius:2px;flex:0 0 auto}.asl li small{color:var(--ink-2);font-size:11.5px}
+.asl li.in{border-color:currentColor}.asl li em{font-style:normal;font-weight:700;font-size:11px;padding:0 5px;border-radius:3px;color:#fff}
+.asl .asn{display:block;margin-top:3px;font-size:11.5px}.asl .asw{color:#8A5A00}.asl .asw button{font:inherit;border:0;background:none;color:#9A1E68;text-decoration:underline;cursor:pointer;padding:0}
+.xio{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;margin:2px 0 6px;font-size:12.5px;color:var(--ink-2)}
+.rx-sheet.empty .xio,.rx-sheet.empty .asl{display:none!important}
+.xio .lnk{border:0;background:none;padding:2px 0;font:inherit;color:#7A1652;cursor:pointer;text-align:left}.xio .lnk:hover{text-decoration:underline}
+.xexp{display:inline-flex;align-items:center;gap:4px}.xexp>span{margin-right:2px}
+.xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:#0B2545}.xexp button:hover{border-color:#9A1E68;color:#9A1E68}
+.sh-nl[aria-pressed="true"]{background:var(--ink);color:#fff}
+.nlp{max-width:1100px}.nlp[hidden]{display:none}
+.nlin{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;margin:0 0 8px}
+.nlin .f{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-2)}.nlin .u{font-size:11px;color:#8A97A2}
+.nlin input,.nlin select{font:inherit;font-family:var(--f-mono);font-size:13px;padding:5px 7px;border:1px solid var(--rule);border-radius:4px;width:84px;background:#fff}
+.nlin select{width:auto;font-family:inherit}.nlbtn{margin-left:auto}
+.nlt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid #13202A;white-space:nowrap}
+.nlt td{padding:4px 6px;border-bottom:1px solid #EEF1F2;text-align:right;font-family:var(--f-mono);white-space:nowrap}
+.nlt th:first-child,.nlt td:first-child{text-align:left}.nlt td:first-child{font-family:inherit;font-weight:600}
+.nlt td.hd{font-weight:700;color:#7A1652}.nlt tfoot td{border-top:1.5px solid #13202A;border-bottom:0;font-weight:700}
+.nlnote .nxn{display:none}.nlt input{width:64px;font:inherit;font-size:12px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;text-align:right}.nlt input::placeholder{color:#B4BEC5}
+.nlnote{font-size:11.5px;margin:6px 0 0}
+#nlprint-out{display:none}
+@media (max-width:640px){.nlt .nx{display:none}.nlt th,.nlt td{padding:4px 2px}.nlt th:first-child,.nlt td:first-child{padding-left:0}.nlt{font-size:11.5px}.nlt td{font-size:11px}.nlt td:first-child{white-space:normal;min-width:54px}.nlt input{width:40px;font-size:10.5px;padding:2px}.nlt th{font-size:9px;letter-spacing:0}.nlnote .nxn{display:inline}.asl ul{flex-direction:column}.asl li{display:flex;flex-wrap:wrap}.asl li em{margin-left:auto}.rx .sh-bar .sh-sim,.rx .sh-bar .sh-pack,.rx .sh-bar .sh-nl{padding:5px 8px!important;font-size:12.5px!important}.rx .sh-bar{column-gap:6px}.nlin input{width:70px}.nlbtn{margin-left:0}.nlt{font-size:12px}.nlt th,.nlt td{padding:4px 4px}.xio{justify-content:flex-start}}
+@media print{ body.printnl>*:not(#nlprint-out){display:none!important} body.printnl #nlprint-out{display:block!important;font:12px/1.4 sans-serif} #nlprint-out table{width:100%;border-collapse:collapse} #nlprint-out th,#nlprint-out td{border:1px solid #888;padding:4px 6px;text-align:right} #nlprint-out th:first-child,#nlprint-out td:first-child{text-align:left} #nlprint-out h2{font-size:16px;margin:0 0 6px} }
+.mwx{font-size:13px}.mwx .fc{display:inline-block;font:700 11px/1 var(--f-mono);color:#fff;border-radius:4px;padding:3px 6px;margin-left:6px;vertical-align:2px}.mwx pre{white-space:pre-wrap;font:12px/1.45 var(--f-mono);background:#F4F6F7;border-radius:6px;padding:6px 8px;margin:8px 0}
+.rx .mlwarn{top:auto;bottom:calc(var(--shh,0px) + 14px);transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100% - 24px));box-sizing:border-box;padding:6px 8px 6px 10px;font-size:12.5px;gap:4px 8px;line-height:1.4;box-shadow:0 4px 14px rgba(11,37,69,.14);border-radius:8px}
+.rx .mlwarn button{font:inherit;font-size:12px;border:0;background:none;color:#9A1E68;text-decoration:underline;cursor:pointer;padding:0 2px}.rx .mlwarn .x{text-decoration:none;font-size:16px;line-height:1;color:var(--ink-2)}
+.rx .mlwarn code{flex-basis:100%;font-size:11px;color:var(--ink-2);word-break:break-word}.rx .mlwarn code[hidden]{display:none}
+@media (max-width:900px){.rx .mlwarn{bottom:10px}}
+.mapw:has(.mlwarn) .maplg{display:none}
 </style>
 </head>
 <body data-title="Route Explorer">
 <script src="site.js?v=27"></script>
 <h1 class="sr">Route Explorer</h1>
-<div class="upbar noprint" id="upbar"><div class="upin"><span class="upt"><b>Already planned in ForeFlight or Garmin Pilot?</b> <span class="upl">Upload a screenshot or PDF of your route or profile. It goes straight into your briefing pack.</span></span><button class="btn pri upbtn" id="upbtn" type="button">⇪ Upload screenshot or PDF</button></div></div>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
   <div class="mapw" id="map"><canvas id="mcv"></canvas>
@@ -414,29 +463,31 @@
     <div class="rx-m"><div class="seg3" id="v23" role="group" aria-label="2D or 3D"><button data-v="2" class="on">2D</button><button data-v="3">3D</button></div> <div class="seg3" id="mmode" role="group" aria-label="Chart style"><button data-m="vfr" class="on" title="VFR chart: terrain colours, relief and contours">VFR</button><button data-m="ifr" title="IFR chart: low ink, faint relief">IFR</button></div><button class="btn lybtn" id="lybtn" aria-expanded="false">Layers</button></div>
   </div>
   <div class="rx-ly noprint" id="layers" hidden>
-    <div class="bmsel" id="bmsel" hidden><b>Base map</b><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></div>
-    <h4>Relief</h4>
+    <div class="lypre" role="group" aria-label="Layer presets"><button type="button" data-pre="clean" title="VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.">Clean VFR</button><button type="button" data-pre="all" title="Every layer on">Everything</button></div>
+    <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></details>
+    <details class="lyg" data-g="relief"><summary>Relief <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="ter"> Terrain colours and shading</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="ct"> Contour lines (ft)</label>
-    <h4>Aviation</h4>
+    <label class="chk"><input type="checkbox" data-ly="mef"> Highest terrain per square (e.g. <b style="font-size:15px">4</b><small>5</small> = 4,500 ft)</label></details>
+    <details class="lyg mlonly" data-g="as" hidden><summary>Airspace <span class="lyc"></span></summary>
+    <label class="chk" id="lyas"><input type="checkbox" data-ly="as"> <span>Airspace (openAIP) <span class="lyn" id="asnote"></span></span></label><label class="chk sub asub"><input type="checkbox" data-ly="asCtr"> Control zones (CTR)</label><label class="chk sub asub"><input type="checkbox" data-ly="asTma"> TMA / CTA</label><label class="chk sub asub"><input type="checkbox" data-ly="asRes"> Restricted, danger, prohibited</label><label class="chk sub asub"><input type="checkbox" data-ly="asTiz"> TIZ / TIA / RMZ / TMZ</label><label class="chk sub asub"><input type="checkbox" data-ly="asAtz"> ATZ / MATZ / HTZ</label><label class="chk sub asub"><input type="checkbox" data-ly="asTra"> TRA / TSA and temporary areas</label></details>
+    <details class="lyg" data-g="pts"><summary>Points and weather <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="ap"> Airports</label>
+    <label class="chk mlonly" hidden><input type="checkbox" data-ly="wx"> Weather (METAR) <span class="wxkey" aria-hidden="true"><i style="background:#2E7D32"></i><i style="background:#1D4E9E"></i><i style="background:#C62828"></i><i style="background:#C2189B"></i></span></label>
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
-    <label class="chk mlonly" id="lyas" hidden><input type="checkbox" data-ly="as"> <span>Airspace (openAIP) <span class="lyn" id="asnote"></span></span></label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asCtr"> Control zones (CTR)</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTma"> TMA / CTA</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asRes"> Restricted, danger, prohibited</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTiz"> TIZ / TIA / RMZ / TMZ</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asAtz"> ATZ / MATZ / HTZ</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTra"> TRA / TSA and temporary areas</label>
     <label class="chk"><input type="checkbox" data-ly="fx"> IFR points (Finland, Iceland)</label>
-    <div class="mlonly lyoa" id="lyoa" hidden><h4>openAIP <span class="lyn" id="oanote"></span></h4>
+    <div class="mlonly lyoa" id="lyoa" hidden><span class="lysub">openAIP <span class="lyn" id="oanote"></span></span>
     <label class="chk"><input type="checkbox" data-ly="rp"> VFR reporting points</label>
     <label class="chk"><input type="checkbox" data-ly="ob"> Obstacles</label>
     <label class="chk"><input type="checkbox" data-ly="oa"> Small airfields, heliports, glider sites</label>
     <label class="chk"><input type="checkbox" data-ly="on"> openAIP navaids</label>
     <label class="chk"><input type="checkbox" data-ly="hs"> Thermal hotspots</label>
     <label class="chk"><input type="checkbox" data-ly="hg"> Hang gliding sites</label>
-    <label class="chk"><input type="checkbox" data-ly="rc"> RC model airfields</label></div>
-    <h4>Terrain numbers</h4>
-    <label class="chk"><input type="checkbox" data-ly="mef"> Highest terrain per square (e.g. <b style="font-size:15px">4</b><small>5</small> = 4,500 ft)</label>
-    <h4>Mine</h4>
+    <label class="chk"><input type="checkbox" data-ly="rc"> RC model airfields</label></div></details>
+    <details class="lyg" data-g="mine"><summary>My stuff <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="my"> My fixes</label>
-    <label class="chk"><input type="checkbox" data-ly="nt"> My notes</label>
-    <p class="note">Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.</p>
+    <label class="chk"><input type="checkbox" data-ly="nt"> My notes</label></details>
+    <p class="note">Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.</p>
   </div>
   <aside class="rx-side noprint" id="side" hidden></aside>
   <aside class="rx-side rx-lib noprint" id="lib" hidden></aside>
@@ -444,7 +495,7 @@
     <div class="sh-bar"><button class="sh-t" id="shTog" aria-expanded="true"><b>Terrain profile</b> <span id="shsum"></span></button>
       <div class="seg3" id="pmode" role="group" aria-label="What the profile shows"><button data-p="ter">Terrain</button><button data-p="alt">Altitude line</button><button data-p="adv">Climb and descent</button></div>
       <span class="shcr" id="shcr"><label for="s_cr">Cruise</label><span class="stp"><button type="button" id="crdn" aria-label="500 ft lower" title="500 ft lower">−</button><input id="s_cr" placeholder="6500" list="crlist" autocomplete="off" spellcheck="false" aria-label="Cruise altitude, feet or FL" title="Cruise altitude: feet (6500) or flight level (FL75)"><button type="button" id="crup" aria-label="500 ft higher" title="500 ft higher">+</button></span><label for="s_gs" class="gsl">GS</label><input id="s_gs" inputmode="decimal" placeholder="100" aria-label="Ground speed, knots" title="Ground speed (kt)"><span class="u">kt</span></span><datalist id="crlist"><option value="1500"><option value="2500"><option value="3500"><option value="4500"><option value="5500"><option value="6500"><option value="FL75"><option value="FL85"><option value="FL95"><option value="FL115"><option value="FL150"><option value="FL200"></datalist><button class="btn pri sh-sim" id="simbtn" type="button" title="Fly the route in 3D at your planned altitude">▶ Simulate flight</button>
-      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙<span> Advanced</span></button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
+      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙<span> Advanced</span></button><button class="btn sh-adv sh-nl" id="shNl" aria-pressed="false" title="Navigation log: headings, times and fuel with your wind">Navlog</button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
     </div>
     <div class="packpop" id="packpop" hidden><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
     <div class="sh-body">
@@ -505,6 +556,11 @@
       </div>
       </div>
     </div>
+    <div id="nlp" class="nlp" hidden>
+      <div class="nlin noprint"><label class="f">TAS <span class="u">kt</span><input id="nl_tas" inputmode="decimal" placeholder="100" aria-label="True airspeed, knots"></label><label class="f">Wind <span class="u">° / kt</span><input id="nl_w" placeholder="270/15" autocomplete="off" spellcheck="false" aria-label="Wind for the whole route, direction and speed"></label><label class="f">Fuel flow <span class="u">per hour</span><input id="nl_ff" inputmode="decimal" placeholder="32" aria-label="Fuel flow per hour"></label><label class="f">Unit<select id="nl_fu" aria-label="Fuel unit"><option>L</option><option>US gal</option><option>kg</option><option>lb</option></select></label><span class="nlbtn"><button class="btn" id="nlprint" type="button">Print navlog</button></span></div>
+      <div class="wrapx"><table class="tb nlt" id="nlt"></table></div>
+      <p class="note nlnote" id="nlnote"></p>
+    </div>
     <div id="xsMode">
     <div class="pgrid">
       <div class="pcol">
@@ -512,7 +568,9 @@
     <div class="prof" id="profw"><div class="pzoom noprint" id="pzoom"><button data-pz="1" title="Zoom in on the height scale" aria-label="Zoom in on the height scale">＋</button><button data-pz="-1" title="Zoom out on the height scale" aria-label="Zoom out on the height scale">－</button><button data-pz="0" title="Fit the height scale to the terrain and your altitude">Auto</button><button data-pt="1" id="ptter" class="pter on" title="Show or hide the terrain" aria-pressed="true">Terrain</button></div><svg id="psv" viewBox="0 0 1000 420"></svg></div>
     <div class="xnrow noprint" id="xnrow"><div class="xn l"><button type="button" class="xnb" data-x="xdep">＋ Departure note</button><textarea id="xdep" rows="2" hidden placeholder="e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn." spellcheck="false" aria-label="Expected departure (your note)"></textarea></div><div class="xn r"><button type="button" class="xnb" data-x="xarr">＋ Arrival note</button><textarea id="xarr" rows="2" hidden placeholder="e.g. ILS 30 via HE. Hold at HE if busy. Watch the hills north of the field." spellcheck="false" aria-label="Expected arrival (your note)"></textarea></div></div>
     <p class="note pmsg" id="pmsg"></p>
+    <div class="asl" id="asl" hidden></div>
     <div class="srcl" id="srcl"></div>
+    <div class="xio noprint" id="xio"><button type="button" class="lnk upgo" title="Add a screenshot or PDF of your ForeFlight or Garmin Pilot route or profile to the briefing pack">⇪ ForeFlight or Garmin Pilot screenshot / PDF</button><span class="xexp"><span>Export</span><button type="button" data-ex="gpx" title="GPX route for ForeFlight, Garmin Pilot, SkyDemon and others">GPX</button><button type="button" data-ex="fpl" title="Garmin flight plan (.fpl), also opens in ForeFlight">Garmin FPL</button><button type="button" data-ex="txt" title="Copy the route as text, e.g. ENTO DCT SKI DCT ENGM">Copy route</button></span></div>
     <details class="note howd"><summary>How to read the profile</summary><p id="srcdata" class="resn"></p><ul><li>Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.</li><li>With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙ Advanced); if you add an approach, the approach area starts at the IAF.</li><li>Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙ Advanced).</li><li>The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.</li><li>The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.</li></ul></details>
     <div class="selbar noprint" id="selbar" hidden></div>
       </div>
@@ -606,7 +664,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=9"></script>
+<script src="rxmap.js?v=10"></script>
 <script>
 (function(){
 'use strict';
@@ -720,12 +778,189 @@ async function terrainProfile(M){
   TP={pts:out,hr,cov:out.filter(o=>o.e!=null).length/Math.max(1,out.length)}; return TP;
 }
 
+/* ---------- METAR on the map (/api/wx, aviationweather.gov) ----------
+   Airports on the route, medium and large airports within 20 NM of it, and in view when zoomed in. At most 8 ids per
+   request (the function's limit), 3 requests per update and 6 per minute; each answer (also "no METAR") is kept 5 min. */
+const WXS={c:{},t:0,hist:[],busy:false,lib:null,idx:null};
+const WX_TTL=5*60e3;
+function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=1'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
+function wxCat(m){ if(!m||m.nil) return null; const vis=m.vis==null?null:m.vis/1609.34, cig=m.cavok?null:m.ceil; if(vis==null&&cig==null&&!m.cavok&&!m.hasCloud) return null;
+  const c=v=>v!=null; if((c(cig)&&cig<500)||(c(vis)&&vis<1)) return 'LIFR'; if((c(cig)&&cig<1000)||(c(vis)&&vis<3)) return 'IFR'; if((c(cig)&&cig<=3000)||(c(vis)&&vis<=5)) return 'MVFR'; return 'VFR'; }
+function wxWanted(){ if(!NAV||!ML) return []; const out=[], add=id=>{ if(/^[A-Z]{4}$/.test(id)&&!out.includes(id)) out.push(id); };
+  (R&&R.pts||[]).forEach(p=>{ if(p.t==='rwy'&&p.la!=null) add(String(p.n||'').toUpperCase()); });
+  const P=(R&&R.pts||[]).filter(p=>p.la!=null&&!['missed'].includes(p.t)); if(P.length>=2){ const sm=[]; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], n=Math.max(1,Math.ceil(gc(a,b)/6)); for(let k=0;k<=n;k++) sm.push({la:a.la+(b.la-a.la)*k/n,lo:a.lo+(b.lo-a.lo)*k/n}); }
+    let a0=90,a1=-90,o0=180,o1=-180; sm.forEach(q=>{ a0=Math.min(a0,q.la); a1=Math.max(a1,q.la); o0=Math.min(o0,q.lo); o1=Math.max(o1,q.lo); });
+    NAV.ap.filter(a=>(a[5]||0)>=1&&a[2]>a0-0.4&&a[2]<a1+0.4&&a[3]>o0-0.9&&a[3]<o1+0.9).map(a=>({a,d:Math.min(...sm.map(q=>gc(q,{la:a[2],lo:a[3]})))})).filter(x=>x.d<20).sort((x,y)=>x.d-y.d).slice(0,12).forEach(x=>add(x.a[0])); }
+  if(ML.getZoom()>=6.5){ const b=ML.getBounds(), c=ML.getCenter(); NAV.ap.filter(a=>(a[5]||0)>=1&&b.contains([a[3],a[2]])).sort((x,y)=>(y[5]-x[5])||(gc({la:x[2],lo:x[3]},{la:c.lat,lo:c.lng})-gc({la:y[2],lo:y[3]},{la:c.lat,lo:c.lng}))).slice(0,16).forEach(a=>add(a[0])); }
+  return out.slice(0,24); }
+function wxSoon(){ clearTimeout(WXS.t); WXS.t=setTimeout(()=>wxSync(),700); }
+async function wxFetch(ids){ const now=Date.now(); WXS.hist=WXS.hist.filter(t=>now-t<60e3); if(WXS.hist.length>=6) return false; WXS.hist.push(now);
+  ids.forEach(id=>{ WXS.c[id]=Object.assign(WXS.c[id]||{},{busy:1}); });
+  try{ const r=await fetch('/api/wx?ids='+ids.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw new Error((j&&j.error)||'wx');
+    ids.forEach(id=>{ const st=j.stations&&j.stations[id], mt=st&&st.metar; let m=null; try{ m=mt&&mt.raw?WXK.parseMetar(mt.raw,new Date()):null; }catch(e){}
+      WXS.c[id]={t:Date.now(),raw:mt?mt.raw:'',obs:mt?mt.obsTime:null,m,fc:wxCat(m),name:st&&st.name}; }); return true; }
+  catch(e){ ids.forEach(id=>{ WXS.c[id]={t:Date.now(),err:1}; }); return false; } }
+async function wxSync(only){ if(!ML) return; if(!LY.wx){ mlPut('bb-wx',mlC([])); return; } if(WXS.busy){ if(only) WXS.pend=(WXS.pend||[]).concat(only); return; } if(T3.play) return;
+  try{ await wxLib(); }catch(e){ return; }
+  const now=Date.now(), want=only||wxWanted(), need=want.filter(id=>{ const c=WXS.c[id]; return !c||(!c.busy&&now-c.t>WX_TTL); });
+  WXS.busy=true; try{ for(let i=0;i<need.length&&i<24;i+=8){ if(i) await new Promise(r=>setTimeout(r,1200)); const ok=await wxFetch(need.slice(i,i+8)); wxDraw(); if(!ok) break; } } finally{ WXS.busy=false; } wxDraw(); if(WXS.pend){ const q=WXS.pend; WXS.pend=null; wxSync(q); } }
+function wxDraw(){ if(!ML||!NAV) return; if(!WXS.idx){ WXS.idx={}; NAV.ap.forEach((a,i)=>WXS.idx[a[0]]=i); }
+  const f=LY.wx?Object.keys(WXS.c).filter(id=>WXS.c[id].fc&&WXS.idx[id]!=null).map(id=>{ const a=NAV.ap[WXS.idx[id]]; return mlF(mlP(a[2],a[3]),{k:'ap',i:WXS.idx[id],fc:WXS.c[id].fc,id}); }):[];
+  mlPut('bb-wx',mlC(f)); const sd=el('side'), b=sd&&!sd.hidden&&sd.querySelector('.mwx[data-id]'); if(b) b.outerHTML=wxHtml(b.dataset.id); }
+function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="${esc(id)}">${x}</div>`;
+  if(!c||c.busy) return box(`<p class="src">${L({en:'Loading the METAR…',no:'Henter METAR…'})}</p>`);
+  if(c.err) return box(`<p class="src">${L({en:'The weather service did not answer. Try again in a minute.',no:'Værtjenesten svarte ikke. Prøv igjen om et minutt.'})}</p>`);
+  if(!c.raw) return box(`<p class="src">${L({en:'No METAR from this airport.',no:'Ingen METAR fra denne flyplassen.'})}</p>`);
+  const m=c.m||{}, no=LAB.lang==='no', col=c.fc?RXMAP.WXC[c.fc]:'#8A97A2', rows=[];
+  const age=c.obs?Math.round((Date.now()-new Date(c.obs))/60000):null;
+  if(m.wind) rows.push([L({en:'Wind',no:'Vind'}),m.wind.spd===0?L({en:'calm',no:'stille'}):(m.wind.vrb?L({en:'variable',no:'variabel'}):String(m.wind.dir).padStart(3,'0')+'°')+(m.wind.spd?' '+m.wind.spd+' kt':'')+(m.wind.gust?', '+L({en:'gusts',no:'kast'})+' '+m.wind.gust+' kt':'')+(m.wvar?' ('+m.wvar[0]+'°–'+m.wvar[1]+'°)':'')]);
+  if(m.vis!=null) rows.push([L({en:'Visibility',no:'Sikt'}),m.vis>=10000?L({en:'10 km or more',no:'10 km eller mer'}):m.vis>=5000?fx(m.vis/1000)+' km':fx(m.vis)+' m']);
+  if(m.wx&&m.wx.length) rows.push([L({en:'Weather',no:'Vær'}),m.wx.map(w=>WXK.wxText(w,no?'no':'en')).join(', ')]);
+  rows.push([L({en:'Cloud',no:'Skyer'}),m.cavok?'CAVOK':m.clouds&&m.clouds.length?m.clouds.map(q=>q.c+' '+(q.h!=null?fx(q.h)+' ft':'?')+(q.t?' '+q.t:'')).join(', ')+(m.vv!=null&&m.vv!==undefined?', VV '+fx(m.vv)+' ft':''):m.vv!=null?'VV '+fx(m.vv)+' ft':L({en:'no significant cloud',no:'ingen signifikante skyer'})]);
+  if(m.ceil!=null&&!m.cavok) rows.push([L({en:'Ceiling',no:'Skydekke'}),fx(m.ceil)+' ft']);
+  if(m.temp!=null) rows.push([L({en:'Temp / dew point',no:'Temp / duggpunkt'}),m.temp+' / '+(m.dew!=null?m.dew:'–')+' °C']);
+  if(m.qnh!=null) rows.push(['QNH',m.qnh+' hPa']);
+  return box(`<b style="font-size:13px;display:block;margin-top:10px">METAR${c.obs?' '+new Date(c.obs).toISOString().slice(11,16)+'Z':''}${age!=null&&age>=0?` <span style="font-weight:400;color:var(--ink-2)">(${age<120?age+' min':Math.round(age/60)+' h'} ${L({en:'ago',no:'siden'})})</span>`:''}${c.fc?`<span class="fc" style="background:${col}">${c.fc}</span>`:''}</b><dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl><pre>${esc(c.raw)}</pre><p class="src">${L({en:'Source: aviationweather.gov (NOAA). Can be late or incomplete: check the official briefing before flight. Flight category: VFR, MVFR (ceiling 1000–3000 ft or visibility 3–5 SM), IFR, LIFR (below 500 ft or 1 SM).',no:'Kilde: aviationweather.gov (NOAA). Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging. Kategori: VFR, MVFR (skydekke 1000–3000 ft eller sikt 3–5 SM), IFR, LIFR (under 500 ft eller 1 SM).'})}</p>`); }
+/* ---------- navigasjonslogg: vindtrekant per etappe ----------
+   TC = great-circle initial course of the leg, VAR from wmm.js (World Magnetic Model) at the leg's mid-point,
+   wind for the route (R.nl.w) or per leg (p.nw on the leg's end point), TAS = the speed field in the profile bar. */
+const nlWind=v=>{ const t=String(v||'').toUpperCase().replace(/\s/g,'').replace(/KTS?$/,''); const m=t.match(/^(\d{3})(\d{2,3})(?:G\d{2,3})?$/)||t.match(/^(\d{1,3})[\/@](\d{1,3})(?:G\d{1,3})?$/); if(!m) return null; const d=+m[1], sp=+m[2]; return d<=360?{d:d%360,s:sp}:null; };
+const nlW3=w=>w?String(w.d||360).padStart(3,'0')+'/'+w.s:'';
+function nlRows(M){ const NLs=R.nl||{}, tas=pnum(R.gs), rw=nlWind(NLs.w), ff=pnum(NLs.ff); let cum=0, cf=0; const rows=[];
+  M.C.forEach((c,i)=>{ if(!i||['missed','alt'].includes(c.p.t)||c.d<0.05) return; const q=M.C[i-1].p, p=c.p; const ok=p.la!=null&&q.la!=null;
+    const tc=ok?brg(q,p):null, va=ok?magVar(q,p):null, lw=nlWind(p.nw), w=lw||rw||{d:0,s:0}; const r={i,from:q.n||'',to:p.n||'',d:c.d,tc,va,w:lw||rw,lw:p.nw||''};
+    if(tc!=null&&tas>0){ const a=(w.d-tc)*D2R, sx=w.s*Math.sin(a)/tas; if(Math.abs(sx)<=1){ const wca=Math.asin(sx)*R2D; r.wca=wca; r.gs=tas*Math.cos(wca*D2R)-w.s*Math.cos(a); r.th=((tc+wca)%360+360)%360; if(va!=null) r.mh=((r.th-va)%360+360)%360; }
+      if(r.gs>0){ r.t=c.d/r.gs*60; cum+=r.t; r.cum=cum; if(ff){ r.fu=r.t/60*ff; cf+=r.fu; } } }
+    rows.push(r); });
+  return {rows,tas,ff,cum,cf,dist:rows.reduce((a,r)=>a+r.d,0),fu:NLs.fu||'L'}; }
+const d3=v=>v==null?'–':String(Math.round(v)%360||360).padStart(3,'0');
+const mmss=m=>m==null?'–':Math.floor(Math.round(m)/60)+':'+String(Math.round(m)%60).padStart(2,'0');
+function nlTable(N,print){ const H=[L({en:'Leg',no:'Etappe'}),'TC','NM','VAR',L({en:'Wind',no:'Vind'}),'WCA','TH','MH','GS',L({en:'Time',no:'Tid'}),L({en:'Total',no:'Totalt'}),L({en:'Fuel',no:'Drivstoff'})];
+  const rw=nlW3(nlWind((R.nl||{}).w));
+  const body=N.rows.map(r=>`<tr><td>${esc(r.from)} → ${esc(r.to)}</td><td class="nx">${d3(r.tc)}°</td><td>${fx(r.d,1)}</td><td class="nx">${r.va!=null?WMM.fmt(r.va,LAB.lang==='no'):'–'}</td><td>${print?esc(nlW3(r.w)||'–'):`<input data-nw="${r.i}" value="${esc(r.lw)}" placeholder="${esc(rw||'000/0')}" aria-label="${L({en:'Wind for this leg',no:'Vind for etappen'})}" autocomplete="off" spellcheck="false">`}</td><td class="nx">${r.wca!=null?(r.wca>=0?'+':'−')+Math.abs(Math.round(r.wca))+'°':'–'}</td><td class="nx">${d3(r.th)}°</td><td class="hd">${d3(r.mh)}°</td><td>${r.gs!=null?fx(r.gs):'–'}</td><td>${r.t!=null?Math.round(r.t):'–'}</td><td>${mmss(r.cum)}</td><td>${r.fu!=null?fx(r.fu,1):'–'}</td></tr>`).join('');
+  const NX=[1,3,5,6], cx=k=>NX.includes(k)?' class="nx"':'';
+  return `<thead><tr>${H.map((h,k)=>`<th${cx(k)}>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody><tfoot><tr><td>${L({en:'Total',no:'Totalt'})}</td><td class="nx"></td><td>${fx(N.dist,1)}</td><td class="nx"></td><td></td><td class="nx"></td><td class="nx"></td><td></td><td></td><td></td><td>${mmss(N.cum||null)}</td><td>${N.cf?fx(N.cf,1)+' '+esc(N.fu):'–'}</td></tr></tfoot>`; }
+function drawNavlog(M){ const p=el('nlp'); if(!p||p.hidden||!R) return; M=M||compute(); const N=nlRows(M), NLs=R.nl||{};
+  const ae=document.activeElement; if(ae!==el('nl_tas')) el('nl_tas').value=R.gs||''; if(ae!==el('nl_w')) el('nl_w').value=NLs.w||''; if(ae!==el('nl_ff')) el('nl_ff').value=NLs.ff||''; el('nl_fu').value=NLs.fu||'L';
+  const keep=ae&&ae.dataset&&ae.dataset.nw, pos=keep&&ae.selectionStart; el('nlt').innerHTML=N.rows.length?nlTable(N):'';
+  if(keep){ const i=el('nlt').querySelector(`[data-nw="${keep}"]`); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(e){} } }
+  const bad=N.tas&&N.rows.some(r=>r.tc!=null&&r.gs==null);
+  el('nlnote').innerHTML=[!N.rows.length?L({en:'Build a route first.',no:'Bygg en rute først.'}):'', N.rows.length&&!N.tas?`<b>${L({en:'Enter the TAS to get headings, times and fuel.',no:'Skriv inn TAS for å få kurser, tider og drivstoff.'})}</b>`:'', bad?`<span class="ko">${L({en:'The wind is stronger than the TAS on some legs.',no:'Vinden er sterkere enn TAS på noen etapper.'})}</span>`:'',
+    `<span class="nxn">${L({en:'On a phone TC, VAR, WCA and TH are hidden: turn the phone or print the navlog for every column.',no:'På telefon er TC, VAR, WCA og TH skjult: snu telefonen eller skriv ut navloggen for alle kolonnene.'})}</span>`,
+    L({en:'TC: true course of each leg (great circle, at the start of the leg). VAR: World Magnetic Model at the middle of the leg (+E). Wind: direction it blows from (° true) / kt; a leg without its own wind uses the route wind. MH = TH − VAR. Times in minutes. For planning practice: check against your charts and the forecast winds aloft.',no:'TC: rettvisende kurs for etappen (storsirkel, ved starten). VAR: World Magnetic Model midt på etappen (+Ø). Vind: retningen den blåser fra (° rettvisende) / kt; en etappe uten egen vind bruker vinden for ruten. MH = TH − VAR. Tider i minutter. Til planleggingsøvelse: sjekk mot kartene og prognosen for vind i høyden.'})].filter(Boolean).join(' '); }
+function nlLabel(){ const w=R&&((R.nl&&nlWind(R.nl.w))||(R.pts||[]).some(p=>nlWind(p.nw))); const g=document.querySelector('.shcr .gsl'); if(g) g.textContent=w?'TAS':'GS'; }
+function nlOpen(on){ const p=el('nlp'); if(on&&!el('advp').hidden) el('shAdv').click(); p.hidden=!on; el('xsMode').hidden=on||!el('advp').hidden; el('shNl').setAttribute('aria-pressed',String(on));
+  if(on){ if(el('sheet').dataset.s==='min'||el('sheet').dataset.s==='off') setSheet('mid'); drawNavlog(); } else drawProfile(compute(),TP); }
+el('shNl').onclick=()=>nlOpen(el('nlp').hidden);
+el('nlp').addEventListener('input',e=>{ const t=e.target; if(!R) return; R.nl=R.nl||{};
+  if(t.id==='nl_tas'){ const sg=el('s_gs'); sg.value=t.value; sg.dispatchEvent(new Event('input')); }
+  else if(t.id==='nl_w') R.nl.w=t.value.trim(); else if(t.id==='nl_ff') R.nl.ff=t.value.trim(); else if(t.id==='nl_fu') R.nl.fu=t.value;
+  else if(t.dataset.nw!=null){ const c=compute().C[+t.dataset.nw]; if(c) c.p.nw=t.value.trim(); }
+  nlLabel(); drawNavlog(); queueSave(); });
+el('nl_fu').addEventListener('change',e=>{ R.nl=R.nl||{}; R.nl.fu=e.target.value; drawNavlog(); queueSave(); });
+el('nlprint').onclick=()=>{ const M=compute(), N=nlRows(M); let o=el('nlprint-out'); if(!o){ o=document.createElement('div'); o.id='nlprint-out'; document.body.appendChild(o); }
+  const dep=M.C[0]&&M.C[0].p.n, dst=M.C.length?M.C[M.C.length-1].p.n:''; const NLs=R.nl||{};
+  o.innerHTML=`<h2>${L({en:'Navigation log',no:'Navigasjonslogg'})} · ${esc(dep||'')} → ${esc(dst||'')}</h2><p>TAS ${esc(String(R.gs||'–'))} kt · ${L({en:'wind',no:'vind'})} ${esc(nlW3(nlWind(NLs.w))||'–')} · ${L({en:'cruise',no:'marsj'})} ${M.cr!=null?altTxt(M.cr):'–'} · ${L({en:'fuel flow',no:'forbruk'})} ${esc(NLs.ff||'–')} ${esc(NLs.fu||'L')}/h · ${new Date().toISOString().slice(0,10)}</p><table>${nlTable(N,true)}</table><p style="font-size:10px">${L({en:'Birdbird Route Explorer, for planning practice. Not an official flight plan.',no:'Birdbird Route Explorer, til planleggingsøvelse. Ikke en offisiell reiseplan.'})}</p>`;
+  document.body.classList.add('printnl'); const done=()=>{ document.body.classList.remove('printnl'); window.removeEventListener('afterprint',done); }; window.addEventListener('afterprint',done); window.print(); setTimeout(done,1500); };
+
+/* ---------- eksport: GPX, Garmin .fpl og rutetekst (ForeFlight leser GPX og FPL) ---------- */
+function xq(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
+function exPts(){ return (R.pts||[]).filter(p=>p.la!=null&&p.lo!=null&&!['missed','alt'].includes(p.t)); }
+const llIcao=(la,lo)=>{ const f=(v,w,h)=>{ const a=Math.abs(v), d=Math.floor(a), m=Math.round((a-d)*60); const [D,M_]=m===60?[d+1,0]:[d,m]; return String(D).padStart(w,'0')+String(M_).padStart(2,'0')+(v<0?h[1]:h[0]); }; return f(la,2,'NS')+f(lo,3,'EW'); };
+const asc=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/Ø/g,'O').replace(/ø/g,'o').replace(/Æ/g,'AE').replace(/æ/g,'ae').replace(/Å/g,'A').replace(/å/g,'a');
+const isAp=p=>p.t==='rwy'&&/^[A-Z]{4}$/.test(p.n||'')&&NAV&&NAV.apI&&NAV.apI[p.n];
+function exName(){ const P=exPts(); return P.length?asc((P[0].n||'')+'-'+(P[P.length-1].n||'')).replace(/[^A-Za-z0-9-]/g,'')||'route':'route'; }
+function toGpx(){ const P=exPts(), nm=exName();
+  const pt=p=>`    <rtept lat="${p.la.toFixed(6)}" lon="${p.lo.toFixed(6)}">${isAp(p)&&NAV.apI[p.n][4]!=null?`<ele>${(NAV.apI[p.n][4]*0.3048).toFixed(1)}</ele>`:''}<name>${xq(p.n||llIcao(p.la,p.lo))}</name>${p.note?`<desc>${xq(p.note)}</desc>`:''}<sym>${isAp(p)?'Airport':'Waypoint'}</sym></rtept>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Birdbird Route Explorer (birdbird.eu)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n  <metadata><name>${xq(nm)}</name><time>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</time></metadata>\n  <rte>\n    <name>${xq(nm)}</name>\n${P.map(pt).join('\n')}\n  </rte>\n</gpx>\n`; }
+function toFpl(){ const P=exPts(), used={}, tbl=[], seq=[];
+  P.forEach((p,i)=>{ let id, ty, cc='';
+    if(isAp(p)){ id=p.n; ty='AIRPORT'; cc=p.n.slice(0,2); }
+    else { ty='USER WAYPOINT'; let b=/^\d{2,4}[NS]\d{3,5}[EW]$/i.test(String(p.n||'').replace(/[\s\/]/g,''))?'':asc(p.n||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6); if(!b) b='WP'+String(i+1).padStart(2,'0'); id=b; let k=2; while(used[id+'|'+ty]&&(used[id+'|'+ty].la!==p.la||used[id+'|'+ty].lo!==p.lo)) id=b.slice(0,6-String(k).length)+(k++); }
+    const key=id+'|'+ty; if(!used[key]){ used[key]={la:p.la,lo:p.lo}; tbl.push(`    <waypoint>\n      <identifier>${xq(id)}</identifier>\n      <type>${ty}</type>\n      <country-code>${xq(cc)}</country-code>\n      <lat>${p.la.toFixed(6)}</lat>\n      <lon>${p.lo.toFixed(6)}</lon>${(()=>{ const cm=asc(p.n&&p.n!==id?p.n:'').toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,25).trim(); return cm?`\n      <comment>${xq(cm)}</comment>`:''; })()}\n    </waypoint>`); }
+    seq.push(`    <route-point>\n      <waypoint-identifier>${xq(id)}</waypoint-identifier>\n      <waypoint-type>${ty}</waypoint-type>\n      <waypoint-country-code>${xq(cc)}</waypoint-country-code>\n    </route-point>`); });
+  const rn=asc(P.length?(P[0].n||'')+' TO '+(P[P.length-1].n||''):'ROUTE').toUpperCase().replace(/[^A-Z0-9 ]/g,'').slice(0,25).trim()||'ROUTE';
+  return `<?xml version="1.0" encoding="utf-8"?>\n<flight-plan xmlns="http://www8.garmin.com/xmlschemas/FlightPlan/v1">\n  <created>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</created>\n  <waypoint-table>\n${tbl.join('\n')}\n  </waypoint-table>\n  <route>\n    <route-name>${xq(rn)}</route-name>\n    <flight-plan-index>1</flight-plan-index>\n${seq.join('\n')}\n  </route>\n</flight-plan>\n`; }
+function toTxt(){ const P=exPts(); return P.map(p=>{ const n=String(p.n||'').toUpperCase(); return n&&/^[A-Z0-9]{2,5}$/.test(n)&&NAV&&resolvable(n)?n:llIcao(p.la,p.lo); }).join(' DCT '); }
+function exSave(name,type,text){ const b=new Blob([text],{type}), u=URL.createObjectURL(b), a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); }
+function exToast(btn,t){ const o=btn.textContent; btn.textContent=t; btn.disabled=true; setTimeout(()=>{ btn.textContent=o; btn.disabled=false; },1600); }
+async function exDo(k,btn){ if(exPts().length<2){ exToast(btn,L({en:'Build a route first',no:'Bygg en rute først'})); return; }
+  if(k==='gpx') exSave(exName()+'.gpx','application/gpx+xml',toGpx());
+  else if(k==='fpl') exSave(exName()+'.fpl','application/xml',toFpl());
+  else { const t=toTxt(); let ok=false; try{ await navigator.clipboard.writeText(t); ok=true; }catch(e){ const ta=document.createElement('textarea'); ta.value=t; ta.style.cssText='position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select(); try{ ok=document.execCommand('copy'); }catch(_){} ta.remove(); }
+    exToast(btn,ok?L({en:'Copied',no:'Kopiert'})+' ✓':t); } }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-ex]'); if(b) exDo(b.dataset.ex,b); });
+/* ---------- luftrom langs ruten i profilen (openAIP-fliser som er lastet i kartet) ---------- */
+let ASR=null; const ASX={t:0,key:'',dirty:false};
+const AS_COL={b:'#1D4E9E',r:'#B3261E',m:'#9A1E68',a:'#A0620A'};
+function asSoon(ms){ clearTimeout(ASX.t); ASX.t=setTimeout(asCalc,ms==null?250:ms); }
+function asEnd(M){ let x=0; M.C.forEach(c=>{ if(c.p.la!=null&&!['missed','alt'].includes(c.p.t)) x=Math.max(x,c.x); }); return x; }
+/* Only tiles in view are loaded, so what was found earlier is kept: for the parts of the route in view now the fresh
+   result is used, for the parts out of view the remembered one. The list says so while part of the route has never been
+   in view (or only zoomed out past the tiles). The memory is cleared when the route or the airspace switches change. */
+function ivClip(iv,runs){ const o=[]; iv.forEach(([a,b])=>runs.forEach(([c,d])=>{ const x=Math.max(a,c), y=Math.min(b,d); if(y-x>1e-6) o.push([x,y]); })); return o; }
+function ivUnion(iv){ const s=iv.slice().sort((p,q)=>p[0]-q[0]), o=[]; s.forEach(v=>{ const l=o[o.length-1]; if(l&&v[0]<=l[1]+0.02) l[1]=Math.max(l[1],v[1]); else o.push(v.slice()); }); return o; }
+function ivNot(runs,t){ const o=[]; let x=0; ivUnion(runs).forEach(([a,b])=>{ if(a>x) o.push([x,a]); x=Math.max(x,b); }); if(x<t) o.push([x,t]); return o; }
+function asCalc(){ ASX.dirty=false; if(!ML||!R||T3.play) return; const M=compute(), tA=asEnd(M); let res=null;
+  if(M.C.length>=2&&tA>0.2&&ML.__bb.oaip==='ok'&&LY.as){ const cur=RXMAP.asRoute(ML,{total:tA,posAt:M.posAt});
+    const mk=JSON.stringify([R.pts.map(p=>[p.la,p.lo,p.t]),['asCtr','asTma','asRes','asTiz','asAtz','asTra'].map(k=>LY[k])]);
+    if(!ASX.mem||ASX.mem.k!==mk) ASX.mem={k:mk,seen:[],list:new Map()};
+    // parts of the route in view now (tiles exist from zoom 5)
+    const runs=[]; if(ML.getZoom()>=5){ const b=ML.getBounds(), n=Math.max(40,Math.min(400,Math.ceil(tA/0.5))); let st=null;
+      for(let i=0;i<=n;i++){ const x=tA*i/n, q=M.posAt(x), v=!!q&&b.contains([q.lo,q.la]); if(v&&st==null) st=x; if((!v||i===n)&&st!=null){ runs.push([st,v?x:Math.max(st,x-tA/n)]); st=null; } } }
+    const mem=ASX.mem, out=ivNot(runs,tA), keys=new Set([...mem.list.keys(),...cur.list.map(a=>a.key)]), list=[];
+    keys.forEach(k=>{ const c=cur.list.find(a=>a.key===k), m=mem.list.get(k), base=c||m;
+      const iv=ivUnion(ivClip(c?c.iv:[],runs).concat(ivClip(m?m.iv:[],out))).filter(v=>v[1]-v[0]>0.02);
+      if(iv.length){ const e=Object.assign({},base,{iv}); list.push(e); mem.list.set(k,e); } else mem.list.delete(k); });
+    mem.seen=ivUnion(mem.seen.concat(runs)); list.sort((p,q)=>p.iv[0][0]-q.iv[0][0]);
+    res={list,ok:true,tA,partial:ivNot(mem.seen,tA).some(([a,b])=>b-a>0.3)}; }
+  const key=res?JSON.stringify([res.partial,res.list.map(a=>[a.key,a.iv.map(v=>v.map(x=>+x.toFixed(2)))])]):'';
+  ASR=res; if(key!==ASX.key){ ASX.key=key; drawProfile(compute(),TP); } }
+function asGnd(tp,x){ if(!tp||!tp.pts||!tp.pts.length) return 0; const P=tp.pts, st=P.length>1?(P[1].x-P[0].x):1; const q=P[Math.max(0,Math.min(P.length-1,Math.round((x-P[0].x)/Math.max(1e-6,st))))]; return (q.c!=null?q.c:q.e)||0; }
+const asLo=(a,g)=>!a.lo?g:a.lo.agl?g+a.lo.ft:a.lo.ft, asUp=(a,g)=>!a.up?1e6:a.up.agl?g+a.up.ft:a.up.ft;
+// where the planned altitude is inside each airspace (Altitude line / Climb and descent)
+function asIn(M,tp,a){ if(M.PM==='ter') return []; const out=[]; a.iv.forEach(([x0,x1])=>{ const n=Math.max(4,Math.ceil((x1-x0)/0.1)); let st=null;
+  for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n, g=asGnd(tp,x), al=M.altAt(x), v=al>=asLo(a,g)&&al<asUp(a,g); if(v&&st==null) st=x; if((!v||i===n)&&st!=null){ if(x-st>0.05) out.push([st,x]); st=null; } } }); return out; }
+function asDraw(M,tp,o){ const {add,XS,YS,T0,H,W0,L0,R0,ymax}=o; const A=ASR&&ASR.list||[]; if(!A.length||!ML){ asList(M,tp); return null; }
+  const tot=Math.max(1,M.total), Yc=a=>Math.max(T0,Math.min(T0+H,YS(Math.min(a,ymax*1.2)))), g=add('g',{class:'asg','pointer-events':'none'}), bands=[], labs=[];
+  const big=A.slice().sort((p,q)=>(asUp(q,0)-asLo(q,0))-(asUp(p,0)-asLo(p,0)));
+  big.forEach(a=>{ const col=AS_COL[a.cat]||AS_COL.b;
+    a.iv.forEach(([x0,x1])=>{ x0=Math.max(0,x0); x1=Math.min(tot,x1); if(x1-x0<0.02) return; const n=(a.lo&&a.lo.agl||a.up&&a.up.agl||!a.lo)?Math.max(2,Math.ceil((x1-x0)/0.25)):1, xs=[]; for(let i=0;i<=n;i++) xs.push(x0+(x1-x0)*i/n);
+      const top=xs.map(x=>[XS(x),Yc(asUp(a,asGnd(tp,x)))]), bot=xs.map(x=>[XS(x),Yc(asLo(a,asGnd(tp,x)))]).reverse();
+      const pth=pp=>pp.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ');
+      add('path',{d:pth(top.concat(bot))+' Z',fill:col,'fill-opacity':a.cat==='b'&&a.type!=='ctr'?0.07:0.11,stroke:'none'},g);
+      const up=asUp(a,0), clip=up>ymax*1.2&&!(a.up&&a.up.agl);
+      add('path',{d:pth(top),fill:'none',stroke:col,'stroke-width':1.3,'stroke-opacity':clip?0.25:0.75,'stroke-dasharray':clip?'2 4':''},g);
+      if(!(a.lo&&a.lo.gnd)&&a.lo) add('path',{d:pth(bot),fill:'none',stroke:col,'stroke-width':1.1,'stroke-opacity':0.6},g);
+      [[top[0],bot[bot.length-1]],[top[top.length-1],bot[0]]].forEach(([p,q])=>add('line',{x1:p[0],y1:p[1],x2:q[0],y2:q[1],stroke:col,'stroke-width':1,'stroke-opacity':0.55,'stroke-dasharray':'4 3'},g));
+      labs.push({a,col,xa:XS(x0),xb:XS(x1),yt:Math.min(...top.map(q=>q[1])),yb:Math.max(...bot.map(q=>q[1]))}); }); });
+  const IN=A.map(a=>({a,inn:asIn(M,tp,a)}));
+  return {after(){ // over the terrain: highlight where your altitude is inside, then the labels
+    IN.forEach(({a,inn})=>inn.forEach(([x0,x1])=>{ const n=Math.max(2,Math.ceil((x1-x0)/0.2)); let d=''; for(let i=0;i<=n;i++){ const x=x0+(x1-x0)*i/n; d+=(i?' L':'M')+XS(x).toFixed(1)+' '+YS(M.altAt(x)).toFixed(1); }
+      add('path',{d,fill:'none',stroke:AS_COL[a.cat]||AS_COL.b,'stroke-width':10,'stroke-opacity':0.28,'stroke-linecap':'round',class:'asin','pointer-events':'none'}); }));
+    asList(M,tp,IN); },
+  labels(){ // last, over the path: name, class and limits inside each box, away from the profile buttons
+    const placed=[]; try{ const pz=el('pzoom'), sv=el('psv'); if(pz&&sv&&!PACKDIM){ const a=pz.getBoundingClientRect(), b=sv.getBoundingClientRect(), k=W0/Math.max(1,b.width); if(a.width) placed.push([(a.left-b.left)*k-4,(a.top-b.top)*k-2,a.width*k+8,a.height*k+4]); } }catch(e){} labs.sort((p,q)=>(p.xb-p.xa)-(q.xb-q.xa)).forEach(l=>{ const w=l.xb-l.xa; if(w<64) return; const t1=l.a.name+(l.a.cls?' ('+l.a.cls+')':''), t2=(l.a.lo?l.a.lo.txt:'GND')+'–'+(l.a.up?l.a.up.txt:'?');
+      const tw=Math.min(w-8,Math.max(t1.length,t2.length)*5.9+6); let x=Math.max(l.xa,L0)+5, y=Math.max(l.yt,T0)+13;
+      for(let k=0;k<8;k++){ const hitR=placed.some(r=>x<r[0]+r[2]&&x+tw>r[0]&&y-11<r[1]+r[3]&&y+15>r[1]); if(!hitR) break; y+=26; }
+      if(y+14>Math.min(l.yb,T0+H)-2||y+14>T0+H) return; placed.push([x,y-11,tw,26]);
+      const T=(t,yy,b)=>{ const e=add('text',{x,y:yy,'font-family':'Archivo, Arial Narrow, sans-serif','font-size':b?10.5:10,'font-weight':b?700:400,fill:l.col,'paint-order':'stroke',stroke:'rgba(251,251,248,.9)','stroke-width':3,'pointer-events':'none'}); e.textContent=t.length>Math.floor(w/5.6)?t.slice(0,Math.max(4,Math.floor(w/5.6)-1))+'…':t; };
+      T(t1,y,1); T(t2,y+12,0); }); } }; }
+function asList(M,tp,IN){ const box=el('asl'); if(!box||PACKDIM) return; const A=ASR&&ASR.list;
+  if(!ML||!ASR||!LY.as||ML.__bb.oaip!=='ok'||M.C.length<2){ box.hidden=true; box.innerHTML=''; return; }
+  IN=IN||A.map(a=>({a,inn:asIn(M,tp,a)})); const big=ASR.tA>30, nm=v=>big?fx(Math.round(v)):fx(v,1);
+  const ctl=c=>c==='r'?L({en:'inside: needs permission',no:'inne: krever tillatelse'}):c==='a'?L({en:'inside: check if active',no:'inne: sjekk om aktivt'}):c==='m'?L({en:'inside: radio / transponder',no:'inne: radio / transponder'}):L({en:'inside: needs clearance',no:'inne: krever klarering'});
+  const li=IN.map(({a,inn})=>{ const col=AS_COL[a.cat]||AS_COL.b; return `<li class="${inn.length?'in':''}" style="${inn.length?'color:'+col:''}"><i style="background:${col}"></i><span style="color:var(--ink)"><b>${esc(a.name)}</b>${a.cls?' ('+a.cls+')':''} <small>${esc((a.lo?a.lo.txt:'GND')+'–'+(a.up?a.up.txt:'?'))} · ${a.iv.map(v=>nm(v[0])+'–'+nm(v[1])).join(', ')} NM</small></span>${inn.length?`<em style="background:${col}">${ctl(a.cat)}</em>`:''}</li>`; }).join('');
+  box.hidden=false; box.innerHTML=`<div class="ash"><b>${L({en:'Route crosses',no:'Ruten krysser'})}</b>${A.length?'':`<span>${L({en:'no openAIP airspace of the types switched on in Layers.',no:'ikke noe openAIP-luftrom av typene som er slått på under Kartlag.'})}</span>`}</div>${A.length?`<ul>${li}</ul>`:''}`+
+    (ASR.partial?`<span class="asn asw">${L({en:'Part of the route is outside the map view, so airspace there is not loaded and not listed.',no:'En del av ruten er utenfor kartutsnittet, så luftrommet der er ikke lastet og ikke med.'})} <button type="button" data-asfit="1">${L({en:'Show the whole route',no:'Vis hele ruten'})}</button></span>`:'')+
+    `<span class="asn">${L({en:'Airspace from openAIP, a community database: not an official source. Check the AIP and NOTAM.',no:'Luftrom fra openAIP, en dugnadsdatabase: ikke en offisiell kilde. Sjekk AIP og NOTAM.'})}</span>`; }
+el('asl').addEventListener('click',e=>{ if(e.target.closest('[data-asfit]')){ fit(); setTimeout(()=>asSoon(0),900); } });
 /* ---------- profil-tegning ---------- */
 const psv=el('psv');
 function render(){
   SIMC.k=null; const M=compute(); drawTable(M); drawMap(M); simUI(M); drawProfile(M,TP); drawSum(M); drawMkList(M); drawSelbar(); wxMsg(M);
   if(T3.on&&!ML){ clearTimeout(T3.rb); T3.rb=setTimeout(()=>{ if(T3.on&&window.THREE) build3(); },350); }
-  pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
+  asSoon(); if(ML&&LY.wx) wxSoon(); nlLabel(); drawNavlog(M); pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
   terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
 }
 function hm(h){ if(!Number.isFinite(h)) return ''; const m=Math.round(h*60); return Math.floor(m/60)+':'+String(m%60).padStart(2,'0'); }
@@ -735,11 +970,11 @@ function drawSum(M){ const sm=el('sum'); if(!M) M=compute(); if(M.C.length<2){ s
   const el_=p=>p&&p.t==='rwy'? (pnum(p.elev)!=null? fx(pnum(p.elev))+' ft' : '') : '';
   sm.innerHTML=[`<span><b>${esc(dep.n||'')}</b> → <b>${esc(dst?dst.p.n:(M.C[M.C.length-1].p.n||''))}</b></span>`,
     `<span>${L({en:'Distance',no:'Distanse'})} <b>${fx(M.total,1)} NM</b></span>`,
-    `<span>${L({en:'Time',no:'Tid'})} <b id="sumt">${gs?hm(M.total/gs):'–'}</b> ${L({en:'at',no:'ved'})} <input id="gs" inputmode="decimal" value="${gs||''}" placeholder="kt" aria-label="Ground speed"> kt</span>`,
+    `<span>${L({en:'Time',no:'Tid'})} <b id="sumt">${gs?hm(M.total/gs):'–'}</b> ${L({en:'at',no:'ved'})} <input id="gs" inputmode="decimal" value="${gs||''}" placeholder="kt" aria-label="${L({en:'Ground speed',no:'Fart over bakken'})}"> kt</span>`,
     M.cr!=null?`<span>${L({en:'Cruise',no:'Marsj'})} <b>${altTxt(M.cr)}</b></span>`:'',
     el_(dep)?`<span>${esc(dep.n)} <b>${el_(dep)}</b></span>`:'', dst&&el_(dst.p)?`<span>${esc(dst.p.n)} <b>${el_(dst.p)}</b></span>`:'',
-    ter!=null?`<span>${L({en:'Highest terrain',no:'Høyeste terreng'})} <b>${fx(ter)} ft</b></span>`:''].filter(Boolean).join('');
-  { const ss=el('shsum'); if(ss) ss.textContent=`${dep.n||''} → ${dst?dst.p.n:(M.C[M.C.length-1].p.n||'')} · ${fx(M.total,1)} NM`+(ter!=null?` · ${L({en:'highest terrain',no:'høyeste terreng'})} ${fx(ter)} ft`:''); }
+    ter!=null?`<span>${L({en:'Highest terrain within',no:'Høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM <b>${fx(ter)} ft</b></span>`:''].filter(Boolean).join('');
+  { const ss=el('shsum'); if(ss) ss.textContent=`${dep.n||''} → ${dst?dst.p.n:(M.C[M.C.length-1].p.n||'')} · ${fx(M.total,1)} NM`+(ter!=null?` · ${L({en:'highest terrain',no:'høyeste terreng'})} ±${fx(sNum('cw',4.3),1)} NM: ${fx(ter)} ft`:''); }
   const g=el('gs'); g.addEventListener('input',()=>{ R.gs=pnum(g.value)||''; el('sumt').textContent=R.gs?hm(M.total/R.gs):'–'; const sg=el('s_gs'); if(sg) sg.value=g.value; simUI(); queueSave(); }); }
 function drawSrc(){ const PMs=pmode(); const t=window.TERRAIN&&TERRAIN.status? TERRAIN.status() : '';
   el('srcl').innerHTML=[R&&R.noTer&&PMs!=='ter'?`<span>${L({en:'Terrain hidden',no:'Terreng skjult'})}</span>`:`<span><i style="background:#E2D8C3;border:1px solid #9C7646"></i>${L({en:'Terrain under the route',no:'Terreng under ruten'})}</span>`,
@@ -802,6 +1037,8 @@ function drawProfile(M,tp,target){
     else { const n=Math.max(2,Math.round((xb-xa)/38)), wd=(xb-xa)/n, cov=w.cov; let d=''; for(let i=0;i<n;i++){ if(cov<=2&&i%2) continue; if(cov===1&&i%4) continue; const a=xa+i*wd, b=a+wd; d+=`M${a} ${y0} L${a} ${y1+5} q${wd*0.25} -10 ${wd*0.5} -1 q${wd*0.25} -8 ${wd*0.5} 1 L${b} ${y0} Z `; }
       if(d) add('path',{d,fill:'#E3EAEE',stroke:'#C6D0D3',opacity:.92}); }
     hand(`${w.st} ${w.txt}`,(xa+xb)/2,y0+16,{'text-anchor':'middle','font-size':15,fill:'#4C5B66'}); });
+  // luftrom (openAIP) bak terrenget
+  const ASD=!target?asDraw(M,tp,{add,XS,YS,T0,H,W0,L0,R0,ymax,PM}):null;
   // terreng
   const ZN=zones(M);
   const NOTER=!!(R&&R.noTer)&&PM!=='ter';
@@ -810,6 +1047,7 @@ function drawProfile(M,tp,target){
     add('path',{d:area('c'),fill:'#E2D8C3',stroke:'#9C7646','stroke-width':1,'stroke-linejoin':'round'}); }
   else { const ter=pts.filter(c=>pnum(c.p.ter)!=null); ter.forEach(c=>{ const x0=c.i?XS(pts[c.i-1].x):XS(0); add('rect',{x:x0,y:YS(pnum(c.p.ter)),width:Math.max(1,XS(c.x)-x0),height:YS(0)-YS(pnum(c.p.ter)),fill:'#E9E4D8',stroke:'#B08A5A'}); }); }
   add('line',{x1:0,y1:T0+H,x2:W0,y2:T0+H,stroke:'#13202A','stroke-width':1});
+  if(ASD) ASD.after();
   if(!target&&(PM==='adv'||XD||XA)){ if(!sv.querySelector('#zpat')){ const dfs=add('defs',{}); const pt=add('pattern',{id:'zpat',width:8,height:8,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},dfs); add('rect',{width:8,height:8,fill:'#EEF1F3'},pt); add('line',{x1:0,y1:0,x2:0,y2:8,stroke:'#D5DCE0','stroke-width':3},pt); }
     const zr=(x0,x1,t1,t2,anchor)=>{ if(x1-x0<0.05) return; const a=XS(x0), b=XS(x1); add('rect',{x:a,y:T0,width:b-a,height:H,fill:'url(#zpat)',opacity:.55}); add('line',{x1:anchor==='start'?b:a,y1:T0,x2:anchor==='start'?b:a,y2:T0+H,stroke:'#7D8B95','stroke-dasharray':'4 4'}); const tx0=anchor==='start'?a+6:b-6; const dy=(!target&&anchor==='end')?30:0;
       tx(t1,tx0,T0+14+dy,{'text-anchor':anchor,'font-size':11,'font-weight':700,fill:'#4C5B66'}); if(t2) tx(t2,tx0,T0+28+dy,{'text-anchor':anchor,'font-size':10,fill:'#4C5B66'}); };
@@ -870,6 +1108,7 @@ function drawProfile(M,tp,target){
       const t1=tx(head,x0+12,y0+(NWIDE?17:15),{'font-size':10,'font-weight':700,fill:'#9A1E68','letter-spacing':'.06em'}); const hw=NWIDE?head.length*7.2+22:0; const tl=ls.map((l,k)=>tx(l,x0+12+(k===0?hw:0),y0+(NWIDE?17:31)+k*16,{'font-size':12.5,fill:'#13202A'})); [t1,...tl].forEach(n=>n&&gb.appendChild(n)); };
     if(XD) box(NL.d,L({en:'EXPECTED DEPARTURE',no:'FORVENTET AVGANG'}),'start','xdep',ZN.d>0.05?XS(ZN.d/2):XS(0)+14);
     if(XA) box(NL.a,L({en:'EXPECTED ARRIVAL',no:'FORVENTET ANKOMST'}),'end','xarr',XS((ZN.a+ZN.arrEnd)/2)); }
+  if(ASD) ASD.labels();
   if(!target&&PM==='adv') drawMarkers(M,MK,{add,tx,hand,XS,YS,T0,H});
   if(!target&&planeXY) add('rect',{x:planeXY[0]-40,y:planeXY[1]-24,width:80,height:32,fill:'transparent',class:'crdrag'});
   if(!target){ const cr=crit(M); if(cr){ const x=XS(cr.x); if(cr.m==null){ const y=YT(cr.t); add('path',{d:`M${x} ${y-4} l-6 -10 h12 z`,fill:'#13202A','pointer-events':'none'}); tx(fx(Math.round(cr.t))+' ft',x,y-18,{'text-anchor':'middle','font-size':11,'font-weight':700,fill:'#13202A','font-family':'IBM Plex Mono, monospace','pointer-events':'none'}); }
@@ -903,7 +1142,7 @@ function crit(M){ if(!TP||!TP.pts||!M||M.C.length<2) return null; const ter=M.PM
   TP.pts.forEach(q=>{ if(ter){ const t=q.c!=null?q.c:q.e; if(t==null) return; if(!b||t>b.t) b={x:q.x,t}; return; }
     const t=q.e!=null?q.e:q.c; if(t==null||!enr(M,q.x)) return; const m=M.altAt(q.x)-t; if(!b||m<b.m) b={x:q.x,t,m}; }); return b; }
 function critTxt(M){ const c=crit(M); if(!c) return ''; const at=`${L({en:'at',no:'ved'})} ${fx(c.x,1)} NM`;
-  if(c.m==null) return `<span class="crit">▲ ${L({en:'Highest terrain under the route',no:'Høyeste terreng under ruten'})} <b>${fx(Math.round(c.t))} ft</b> ${at}</span>`;
+  if(c.m==null) return `<span class="crit">▲ ${L({en:'Highest terrain directly under the route',no:'Høyeste terreng rett under ruten'})} <b>${fx(Math.round(c.t))} ft</b> ${at}</span>`;
   const mg=+S('mg')||1000, cls=c.m<0?'bad':c.m<mg?'warn':'';
   const head=c.m<0? L({en:'Below the terrain by',no:'Under terrenget med'}) : L({en:'Smallest margin',no:'Minste margin'});
   return `<span class="crit ${cls}">↕ ${head} <b>${fx(Math.abs(Math.round(c.m/10)*10))} ft</b> ${at}</span><span>${L({en:'highest terrain within',no:'høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM ${L({en:'there',no:'der'})}: <b>${fx(Math.round(c.t))} ft</b></span>`; }
@@ -930,7 +1169,7 @@ function drawSelbar(){ const b=el('selbar'); if(selI<0||selI>=R.pts.length){ b.h
   b.innerHTML=`<b>${L({en:'Point',no:'Punkt'})} ${selI+1}</b><input class="n" data-s="n" value="${esc(p.n||'')}" aria-label="Name"><select data-s="t">${XT.map(([k,l])=>`<option value="${k}" ${p.t===k?'selected':''}>${L({en:l,no:TNO[l]||l})}</option>`).join('')}</select>
    <label>${L({en:'Altitude',no:'Høyde'})} <input class="a" data-s="a" value="${esc(p.a||'')}" placeholder="${c?altTxt(Math.round(c.tgt)):''}"></label>
    <span class="note">${c?fx(c.x,1)+' NM':''}${p.la!=null?' · '+llTxt(p.la,p.lo):''}</span>
-   <span><button data-sb="-1" aria-label="Earlier">←</button> <button data-sb="1" aria-label="Later">→</button> <button data-sb="map">${L({en:'Show on map',no:'Vis på kartet'})}</button> <button data-sb="del">${L({en:'Delete',no:'Slett'})}</button> <button data-sb="x" aria-label="Close">×</button></span>
+   <span><button data-sb="-1" aria-label="${L({en:'Earlier',no:'Tidligere'})}">←</button> <button data-sb="1" aria-label="${L({en:'Later',no:'Senere'})}">→</button> <button data-sb="map">${L({en:'Show on map',no:'Vis på kartet'})}</button> <button data-sb="del">${L({en:'Delete',no:'Slett'})}</button> <button data-sb="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></span>
    <span class="note">${L({en:'Tip: drag the point up or down in the profile, or drag it on the map to another fix.',no:'Tips: dra punktet opp eller ned i profilen, eller dra det til en annen fix på kartet.'})}</span>`; }
 el('selbar').addEventListener('input',e=>{ const k=e.target.dataset.s; if(!k||selI<0) return; R.pts[selI][k]=e.target.value; drawProfile(compute(),TP); drawMap(); drawTable(compute()); queueSave(); });
 el('selbar').addEventListener('change',e=>{ const k=e.target.dataset.s; if(!k||selI<0) return; if(k==='n'){ const v=e.target.value.trim().toUpperCase(); const r=resolve(v,R.pts[selI-1]); const p=R.pts[selI]; p.n=v; if(!r.miss&&r.la!=null&&window.confirm(L({en:`Move the point to ${v}'s position?`,no:`Flytte punktet til posisjonen til ${v}?`}))){ p.la=r.la; p.lo=r.lo; if(r.note) p.note=r.note; if(r.elev!=null) p.elev=r.elev; } } render(); queueSave(); });
@@ -1240,7 +1479,7 @@ async function resetMap(){ if(T3.on){ T3.play=false; await set3(false); }
   else if(ML){ MLV={la:60,lo:10,z:22}; V={la:60,lo:10,z:22}; ML.easeTo({center:[10,60],zoom:mlZ(22,60),pitch:0,bearing:0,duration:600}); }
   else { V={lo:10,la:60,z:22}; drawMap(); }
   let n=mapEl.querySelector('.rxnote'); if(n) n.remove(); n=document.createElement('div'); n.className='bb-satnote rxnote'; n.setAttribute('role','status');
-  n.innerHTML=L({en:'Map reset. Your route and fixes are kept.',no:'Kartet er tilbakestilt. Ruten og fixene dine er beholdt.'})+(R&&R.pts.length?` <button type="button" class="rxclr">${L({en:'Clear route…',no:'Tøm ruten …'})}</button>`:'')+' <button type="button" class="x" aria-label="Close">×</button>';
+  n.innerHTML=L({en:'Map reset. Your route and fixes are kept.',no:'Kartet er tilbakestilt. Ruten og fixene dine er beholdt.'})+(R&&R.pts.length?` <button type="button" class="rxclr">${L({en:'Clear route…',no:'Tøm ruten …'})}</button>`:'')+' <button type="button" class="x" aria-label="'+L({en:'Close',no:'Lukk'})+'">×</button>';
   mapEl.appendChild(n); const t=setTimeout(()=>n.remove(),9000); n.querySelector('.x').onclick=()=>{ clearTimeout(t); n.remove(); };
   const c=n.querySelector('.rxclr'); if(c) c.onclick=()=>{ if(!window.confirm(L({en:'Clear all points in this route? This cannot be undone here.',no:'Fjerne alle punktene i ruten? Dette kan ikke angres her.'}))) return; R.pts=[]; el('rtxt').value=''; render(); queueSave(); clearTimeout(t); n.remove(); }; }
 el('zreset').onclick=()=>{ resetMap(); };
@@ -1341,9 +1580,11 @@ async function sendRoute(silent){ if(MODE==='draw') return silent?null:sendDraw(
   const f=P.f; const firstR=M.C[0].p, lastR=[...M.C].reverse().find(c=>c.p.t==='rwy'&&c.i>0);
   if(firstR.t==='rwy'&&!f.depapt) f.depapt=firstR.n; if(lastR&&!f.destapt) f.destapt=lastR.p.n;
   [['x.msa','msa'],['x.frz','frz'],['x.cb','cb'],['x.ct','ct']].forEach(([a,b])=>{ if(S(b)) f[a]=S(b); }); if(S('cr')) f['x.alt']=S('cr');
-  if(el('sendnl').checked){ for(let i=0;i<10;i++) ['f','t','msa','alt','tt','d','var'].forEach(k=>delete f['nl.'+i+'.'+k]);
+  if(el('sendnl').checked){ for(let i=0;i<10;i++) ['f','t','msa','alt','tt','d','var','tas','w'].forEach(k=>delete f['nl.'+i+'.'+k]); const tasN=pnum(R.gs), NLs=R.nl||{};
     let r=0; M.C.forEach((c,i)=>{ if(!i||r>=10||c.app||['missed','alt','hold'].includes(c.p.t)||c.d<0.05) return; const q=M.C[i-1].p, p=c.p; f['nl.'+r+'.f']=q.n||''; f['nl.'+r+'.t']=p.n||''; if(p.la!=null&&q.la!=null){ f['nl.'+r+'.tt']=String(Math.round(brg(q,p))); const vv=magVar(q,p); if(vv!=null){ f['nl.'+r+'.var']=String(Math.round(vv*10)/10); if(r===0) f['nl.var']=String(Math.round(vv*10)/10); } } f['nl.'+r+'.d']=String(Math.round(c.d*10)/10); { const A_=Math.round(Math.max(M.C[i-1].tgt,c.tgt)); f['nl.'+r+'.alt']= A_>=10000? 'FL'+String(Math.round(A_/100)).padStart(3,'0') : String(A_); }
-      const te=legTer(M,i)??pnum(p.ter); if(te!=null) f['nl.'+r+'.msa']=String(Math.ceil((te+mg)/100)*100); r++; }); }
+      const te=legTer(M,i)??pnum(p.ter); if(te!=null) f['nl.'+r+'.msa']=String(Math.ceil((te+mg)/100)*100);
+      if(tasN) f['nl.'+r+'.tas']=String(tasN); { const w=nlWind(p.nw)||nlWind(NLs.w); if(w) f['nl.'+r+'.w']=nlW3(w); } r++; });
+    if(tasN) f['nl.tas']=String(tasN); if(pnum(NLs.ff)){ f['fu.ff']=String(pnum(NLs.ff)); f['fu.unit']=NLs.fu||'L'; } if(Array.isArray(P.hide)) P.hide=P.hide.filter(h=>h!=='nav'); }
   P.xs.f={}; ['x.alt','x.msa','x.frz','x.cb','x.ct'].forEach(k=>P.xs.f[k]=f[k]||'');
   P.title=[f.depapt,f.destapt].filter(Boolean).join(' – ')||P.title; await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
   el('sendnote').innerHTML=`${silent?L({en:'Linked to',no:'Koblet til'}):L({en:'Sent to',no:'Sendt til'})} <b>${esc(P.title||'')}</b>.${silent?' '+L({en:'Changes here go to the pack automatically.',no:'Endringer her går automatisk til pakken.'}):''} <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; }
@@ -1356,16 +1597,17 @@ async function upPut(k,b){ const db=await upDb(); if(!db) return false; return n
 async function upJpeg(src,w,h){ const k=Math.min(1,1800/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(src,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)); return {b,w:c.width,h:c.height}; }
 function upScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
 async function upPdf(f){ const base='vendor/'; if(!window.pdfjsLib){ await upScript(base+'pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; } const doc=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; const pg=await doc.getPage(1); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await upJpeg(c,c.width,c.height); j.pages=doc.numPages; return j; }
-el('upbtn').onclick=()=>upIn.click();
-upIn.onchange=async()=>{ const f=upIn.files[0]; upIn.value=''; if(!f) return; const btn=el('upbtn'), t0=btn.textContent; btn.disabled=true; btn.textContent=L({en:'Reading…',no:'Leser…'});
+// upload buttons: the ★ library menu and the compact line under the profile (class upgo)
+let UPB=null; document.addEventListener('click',e=>{ const b=e.target.closest('.upgo'); if(!b||b.disabled) return; UPB=b; upIn.click(); });
+upIn.onchange=async()=>{ const f=upIn.files[0]; upIn.value=''; if(!f) return; const btn=UPB&&document.body.contains(UPB)?UPB:document.createElement('button'), t0=btn.innerHTML; btn.disabled=true; btn.textContent=L({en:'Reading…',no:'Leser…'});
   try{ let j; if(/\.pdf$/i.test(f.name)||f.type==='application/pdf') j=await upPdf(f); else { const u=URL.createObjectURL(f); const img=new Image(); const ok=await new Promise(r=>{ img.onload=()=>r(true); img.onerror=()=>r(false); img.src=u; }); if(!ok) throw new Error('img'); j=await upJpeg(img,img.naturalWidth,img.naturalHeight); URL.revokeObjectURL(u); }
     Object.assign(UP,{blob:j.b,w:j.w,h:j.h}); if(UP.url) URL.revokeObjectURL(UP.url); UP.url=URL.createObjectURL(j.b); el('upimg').src=UP.url;
     el('upname').value=f.name.replace(/\.[a-z0-9]+$/i,'').replace(/^IMG[_-]?\d+$/i,'')||L({en:'My route and profile',no:'Min rute og profil'}); if(/^(screenshot|skjermbilde)/i.test(el('upname').value)) el('upname').value=L({en:'My route and profile',no:'Min rute og profil'});
     await loadPacks(); el('uppack').innerHTML=el('packs').innerHTML; el('uppack').value=el('packs').value;
     el('upnote').textContent=j.pages>1? L({en:`The PDF has ${j.pages} pages. The first page is added. You can add more pages in the briefing pack.`,no:`PDF-en har ${j.pages} sider. Den første siden legges til. Flere sider kan du legge til i briefingpakken.`}) : '';
     el('upok').disabled=false; el('upok').hidden=false; el('upcancel').textContent=L({en:'Cancel',no:'Avbryt'}); el('updlg').showModal(); }
-  catch(e){ btn.disabled=false; btn.textContent=L({en:'Could not read that file. Use PNG, JPG or PDF.',no:'Klarte ikke å lese filen. Bruk PNG, JPG eller PDF.'}); setTimeout(()=>{ btn.textContent=t0; },3500); return; }
-  btn.disabled=false; btn.textContent=t0; };
+  catch(e){ btn.disabled=false; btn.textContent=L({en:'Could not read that file. Use PNG, JPG or PDF.',no:'Klarte ikke å lese filen. Bruk PNG, JPG eller PDF.'}); setTimeout(()=>{ btn.innerHTML=t0; },3500); return; }
+  btn.disabled=false; btn.innerHTML=t0; };
 el('upok').onclick=async e=>{ e.preventDefault(); if(!UP.blob) return; const b=el('upok'); b.disabled=true;
   try{ let P=PACKS.find(p=>p.id===el('uppack').value);
     if(!P){ P={hide:['check'],id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:'',created:Date.now(),f:{'rf.to':'1.25','rf.ld':'1.43','fu.unit':'US gal','mb.dens':'3.03','rules':'IFR','purpose':'Training flight'},sk:[]}; }
@@ -1484,8 +1726,8 @@ LAB.add({},{
  'Behind and above the aircraft':'Bak og over flyet','From the aircraft, looking ahead along the track':'Fra flyet, fremover langs kursen','The whole route':'Hele ruten',
  'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Norway topo':'Norge topo','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
  'Already planned in ForeFlight or Garmin Pilot?':'Allerede planlagt i ForeFlight eller Garmin Pilot?','Upload a screenshot or PDF of your route or profile. It goes straight into your briefing pack.':'Last opp et skjermbilde eller en PDF av ruten eller profilen. Det går rett inn i briefingpakken din.','⇪ Upload screenshot or PDF':'⇪ Last opp skjermbilde eller PDF','Add to the briefing pack':'Legg til i briefingpakken','Name':'Navn','Add to briefing pack':'Legg til i briefingpakken','Cancel':'Avbryt',
- 'Send to the briefing pack':'Send til briefing pack','Goes with it:':'Følger med:','Route, markers and notes are saved together as one route.':'Rute, markører og notater lagres samlet som én rute.',
- 'Relief':'Relieff','Plain':'Lys','Layers':'Kartlag','What the map shows':'Hva kartet viser','Terrain (relief)':'Terreng (relieff)','Briefing pack':'Briefing pack','Search an airport or fix, or paste a route':'Søk flyplass eller fix, eller lim inn en rute',
+ 'Send to the briefing pack':'Send til briefingpakken','Goes with it:':'Følger med:','Route, markers and notes are saved together as one route.':'Rute, markører og notater lagres samlet som én rute.',
+ 'Relief':'Relieff','Plain':'Lys','Layers':'Kartlag','What the map shows':'Hva kartet viser','Terrain (relief)':'Terreng (relieff)','Briefing pack':'Briefingpakke','Search an airport or fix, or paste a route':'Søk flyplass eller fix, eller lim inn en rute',
  'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Not shown: airspace, airways, obstacles and IFR points for Norway, Sweden and Denmark (no licensed data yet). Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til nærmeste 100 ft. Ikke en offisiell MEF. Vises ikke: luftrom, luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark (ingen lisensierte data ennå). Ikke et offisielt VFR- eller IFR-kart.','Highest terrain per square (e.g.':'Høyeste terreng per rute (f.eks.','= 4,500 ft)':'= 4 500 ft)',
  'Auto':'Auto',
  'Expected departure (your note)':'Forventet avgang (ditt notat)','Notes for departure and arrival':'Notater for avgang og ankomst','Expected arrival (your note)':'Forventet ankomst (ditt notat)',
@@ -1500,7 +1742,7 @@ LAB.add({},{
  'Airspace and airways are not shown: we do not have licensed data for them yet. Not an official chart.':'Luftrom og luftveier vises ikke: vi har ikke lisensierte data for dem ennå. Ikke et offisielt kart.',
  'Map and profile':'Kart og profil','Draw by hand':'Tegn for hånd','Advanced':'Avansert','weather on the profile, approach, levels, terrain settings and your own fixes':'vær på profilen, innflyging, høyder, terrenginnstillinger og egne fikspunkter',
  'Weather is drawn when the profile shows Climb and descent. For forecasts, use the Windy button on the map.':'Været tegnes når profilen viser Stigning og sink. For prognoser, bruk Windy-knappen på kartet.',
- 'Send to the briefing pack ↓':'Send til briefing pack ↓','Choose the pack and send. The profile, the weather and the navigation log go with it.':'Velg pakken og send. Profilen, været og navigasjonsloggen følger med.','Climb and descent ':'Stigning og sink ',
+ 'Send to the briefing pack ↓':'Send til briefingpakken ↓','Choose the pack and send. The profile, the weather and the navigation log go with it.':'Velg pakken og send. Profilen, været og navigasjonsloggen følger med.','Climb and descent ':'Stigning og sink ',
  'How to read the profile':'Slik leser du profilen','Departure and approach area':'Avgangs- og innflygingsområde',
  'Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.':'Terreng viser bare bakken under ruten. Høydelinje legger til én høyde du velger. Stigning og sink legger til en illustrativ bane fra stige- og sinkgradientene dine. Ingen av dem er en prosedyre.',
  'With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙ Advanced); if you add an approach, the approach area starts at the IAF.':'Med Stigning og sink flys den første og siste delen av flygingen (skravert) på en SID, en innflyging eller visuelt. Verktøyet har ikke de prosedyrene, så det sjekker ikke terrenget der, og linjen er stiplet. Bruk kartet. Områdene er 10 NM som standard (endre det under ⚙ Avansert); legger du inn en innflyging, starter innflygingsområdet ved IAF.',
@@ -1538,15 +1780,38 @@ LAB.add({},{
  'Draw the profile yourself, like a page in GoodNotes: climb, cruise, descent, hold, approach and missed approach, terrain and cloud. Tick “Draw on my route” to get the real terrain and the route points under your pencil, or use a blank sheet with your own scale.':'Tegn profilen selv, som en side i GoodNotes: stigning, marsj, sink, holding, innflyging og missed approach, terreng og skyer. Kryss av for «Tegn på ruten min» for å få det ekte terrenget og rutepunktene under blyanten, eller bruk et tomt ark med egen skala.',
  'Draw on my route: real terrain and the route points, scale set automatically':'Tegn på ruten min: ekte terreng og rutepunktene, skalaen settes automatisk'
 });
+LAB.add({},{
+ 'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','Weather (METAR)':'Vær (METAR)',
+ 'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. METAR fra aviationweather.gov, til trening: sjekk den offisielle briefingen. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
+ 'Navlog':'Navlogg','TAS':'TAS','Wind':'Vind','° / kt':'° / kt','Fuel flow':'Forbruk','per hour':'per time','Unit':'Enhet','Print navlog':'Skriv ut navloggen','True airspeed, knots':'Sann flyfart, knop','Wind for the whole route, direction and speed':'Vind for hele ruten, retning og styrke','Fuel flow per hour':'Forbruk per time','Fuel unit':'Drivstoffenhet',
+ '⇪ ForeFlight or Garmin Pilot screenshot / PDF':'⇪ Skjermbilde / PDF fra ForeFlight eller Garmin Pilot','Export':'Eksporter','GPX':'GPX','Garmin FPL':'Garmin FPL','Copy route':'Kopier ruten'});
+LAB.add({},{
+ 'Add a screenshot or PDF of your ForeFlight or Garmin Pilot route or profile to the briefing pack':'Legg et skjermbilde eller en PDF av ruten eller profilen fra ForeFlight eller Garmin Pilot i briefingpakken',
+ 'Close':'Lukk','Copy the route as text, e.g. ENTO DCT SKI DCT ENGM':'Kopier ruten som tekst, f.eks. ENTO DCT SKI DCT ENGM','Every layer on':'Alle kartlag på','Fit route':'Tilpass til ruten','Fit the route':'Vis hele ruten',
+ 'Fit the height scale to the terrain and your altitude':'Tilpass høydeskalaen til terrenget og høyden din','Full screen':'Fullskjerm','GPX route for ForeFlight, Garmin Pilot, SkyDemon and others':'GPX-rute for ForeFlight, Garmin Pilot, SkyDemon og andre',
+ 'Garmin flight plan (.fpl), also opens in ForeFlight':'Garmin-reiseplan (.fpl), åpnes også i ForeFlight','Hide':'Skjul','Larger':'Større','Smaller':'Mindre',
+ 'Look ahead again (C, or double-click the map)':'Se fremover igjen (C, eller dobbeltklikk på kartet)','Look down (↓)':'Se ned (↓)','Look left (←)':'Se til venstre (←)','Look right (→)':'Se til høyre (→)','Look up (↑)':'Se opp (↑)',
+ 'My library':'Mitt bibliotek','My routes, saved views and notes':'Mine ruter, lagrede visninger og notater','Navigation log: headings, times and fuel with your wind':'Navigasjonslogg: kurser, tider og drivstoff med vinden din',
+ 'Redo (Ctrl+Shift+Z)':'Gjør om (Ctrl+Shift+Z)','Undo (Ctrl+Z)':'Angre (Ctrl+Z)','Remove all points from the route':'Fjern alle punktene fra ruten','Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.':'Tilbakestill kartet: VFR-kart, standard kartlag, 2D, hele ruten. Ruten din beholdes.',
+ 'Route options':'Rutevalg','Margin OK':'Margin OK','VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.':'VFR-kart med CTR-, TMA- og R/D/P-luftrom, flyplasser og meldepunkter. Hindre, radiofyr og koter av.',
+ 'Weather in Windy':'Vær i Windy','Weather in Windy (opens a new tab)':'Vær i Windy (åpnes i ny fane)','What the profile shows':'Hva profilen viser','Your routes':'Rutene dine','Zoom in':'Zoom inn','Zoom out':'Zoom ut',
+ 'Zoom in on the height scale':'Zoom inn på høydeskalaen','Zoom out on the height scale':'Zoom ut på høydeskalaen','name':'navn','Route Explorer':'Route Explorer',
+ 'e.g. ILS 30 via HE. Hold at HE if busy. Watch the hills north of the field.':'f.eks. ILS 30 via HE. Holding ved HE hvis travelt. Se opp for åsene nord for plassen.',
+ 'e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn.':'f.eks. OBOLA 2A, RWY 17. Stig rett frem til 1500, så høyresving.'});
+/* title, placeholder and aria-label in the page: lab.js only swaps text (and aria-labels it has an English entry for), so the
+   English originals are kept here and looked up in the Norwegian dictionary on every language change */
+const TRA=['title','placeholder','aria-label'];
+function trAttr(root){ (root||document).querySelectorAll('#rx [title],#rx [placeholder],#rx [aria-label],.page [title],.page [placeholder],.page [aria-label],dialog [title],dialog [placeholder],dialog [aria-label]').forEach(e=>{ TRA.forEach(a=>{ if(!e.hasAttribute(a)) return; const k='en'+a.replace(/-./g,x=>x[1].toUpperCase()).replace(/^./,x=>x.toUpperCase()); if(e.dataset[k]==null) e.dataset[k]=e.getAttribute(a); const o=e.dataset[k]; const v=LAB.lang==='no'?LAB.T(o):o; if(e.getAttribute(a)!==v) e.setAttribute(a,v); }); }); }
+trAttr(); LAB.onLang(()=>trAttr());
 LAB.start('route');
 /* ================= Route Explorer 2.0 ================= */
 // kartstil og lag
 // layer defaults. VFR: everything aviation on, as on openaip.net (airspace, reporting points, airfields, navaids, obstacles);
 // IFR: low ink (airspace, navaids, IFR points; VFR-only openAIP items off). rp…rc are openAIP points; hs/hg/rc are optional, off.
-const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0};
-const LYD={vfr:LY0,ifr:Object.assign({},LY0,{rp:0,ob:0,oa:0,on:0,hs:0,hg:0,rc:0})};
+const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0,wx:1};
+const LYD={vfr:LY0,ifr:Object.assign({},LY0,{rp:0,ob:0,oa:0,on:0,hs:0,hg:0,rc:0,wx:0})};
 // switching VFR/IFR applies that chart's aviation defaults; personal layers (my fixes, notes, relief, contours, terrain numbers) stay as chosen
-const AVK=['ap','nv','fx','as','asCtr','asTma','asRes','asTiz','asAtz','asTra','rp','ob','oa','on','hs','hg','rc'];
+const AVK=['ap','nv','fx','as','asCtr','asTma','asRes','asTiz','asAtz','asTra','rp','ob','oa','on','hs','hg','rc','wx'];
 function avDefaults(m){ const d=LYD[m]||LY0; AVK.forEach(k=>LY[k]=d[k]); }
 const BMS=['vfr','ifr','chart','terrain','sat','topo'];
 // v3: the VFR chart is the default base map (v2 saved 'chart' as its default, so only the layer choices carry over)
@@ -1554,9 +1819,20 @@ let MM='vfr', LY=Object.assign({},LYD.vfr), BM='vfr';
 try{ const j3=JSON.parse(localStorage.getItem('bb-rx-v3')||'null'), j=j3||JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LYD[MM],j.ly||{}); if(j3&&BMS.includes(j3.bm)) BM=j3.bm; } }catch(e){}
 function saveLY(){ try{ localStorage.setItem('bb-rx-v3',JSON.stringify({m:MM,ly:LY,bm:BM})); }catch(e){} }
 function asSub(){ const m=el('lyas'), on=!!LY.as&&m&&!m.hidden&&!m.classList.contains('off'); document.querySelectorAll('.asub').forEach(l=>{ l.hidden=!m||m.hidden; l.classList.toggle('dis',!on); l.querySelector('input').disabled=!on; }); }
-function lyUI(){ asSub(); el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
+function lyUI(){ asSub(); lyMeta(); el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
 el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.m!==MM) avDefaults(b.dataset.m); MM=b.dataset.m; if(ML) setBM(MM); saveLY(); lyUI(); drawMap(); });
-el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); asSub(); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
+el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); asSub(); lyMeta(); if(i.dataset.ly==='wx') wxSync(); if(/^as/.test(i.dataset.ly)) asSoon(0); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
+
+/* presets and collapsible groups (open/closed remembered in bb-rx-lyg; layer choices stay in bb-rx-v3) */
+const PRE={clean:{ter:1,ct:0,mef:0,as:1,asCtr:1,asTma:1,asRes:1,asTiz:0,asAtz:0,asTra:0,ap:1,wx:1,nv:0,fx:0,rp:1,ob:0,oa:1,on:0,hs:0,hg:0,rc:0},
+  all:{ter:1,ct:1,mef:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,ap:1,wx:1,nv:1,fx:1,rp:1,ob:1,oa:1,on:1,hs:1,hg:1,rc:1}};
+function preOn(k){ const P_=PRE[k]; return Object.keys(P_).every(x=>!!LY[x]===!!P_[x])&&(k!=='clean'||!ML||BM==='vfr'); }
+function lyMeta(){ const box=el('layers'); if(!box) return; box.querySelectorAll('.lypre [data-pre]').forEach(b=>{ const on=preOn(b.dataset.pre); b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); });
+  box.querySelectorAll('details.lyg').forEach(d=>{ const c=d.querySelector('.lyc'); if(!c) return; const ins=[...d.querySelectorAll('input[data-ly]')].filter(i=>!i.closest('[hidden]')&&!i.disabled); c.textContent=ins.length?ins.filter(i=>LY[i.dataset.ly]).length+'/'+ins.length:''; }); }
+el('layers').addEventListener('click',e=>{ const b=e.target.closest('[data-pre]'); if(!b) return; const k=b.dataset.pre; if(k==='clean'&&BM!=='vfr') setBM('vfr'); Object.assign(LY,PRE[k]); if(k==='clean'&&!ML) MM='vfr'; saveLY(); lyUI(); MLK.ly='';
+  if(ML&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); wxSync(); asSoon(0); });
+{ let G={}; try{ G=JSON.parse(localStorage.getItem('bb-rx-lyg')||'null')||{base:1,as:1,pts:1}; }catch(e){ G={base:1,as:1,pts:1}; }
+  document.querySelectorAll('#layers details.lyg').forEach(d=>{ d.open=!!G[d.dataset.g]; d.addEventListener('toggle',()=>{ G[d.dataset.g]=d.open?1:0; try{ localStorage.setItem('bb-rx-lyg',JSON.stringify(G)); }catch(e){} }); }); }
 el('lybtn').onclick=()=>{ const ly=el('layers'); ly.hidden=!ly.hidden; el('lybtn').setAttribute('aria-expanded',String(!ly.hidden)); };
 // terrengskygge fra den lokale høydemodellen (1′-celler, fot)
 const SHC={}, SHP={};
@@ -1638,13 +1914,14 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
     html=`<span class="id">${esc(o.n||'')}</span><h3>${esc(o.full||o.n||oaKind(o))}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${esc(oaKind(o))}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o.la,o.lo)}</dd></dl>`+
       (add?`<div class="acts"><button class="btn pri" data-a="dep">${L({en:'From here',no:'Herfra'})}</button><button class="btn pri" data-a="dst">${L({en:'To here',no:'Hit'})}</button><button class="btn" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button></div>`:'')+
       `<p class="src">${L({en:'Source: openAIP (CC BY-NC 4.0), community data that can be incomplete or out of date. Check against the AIP and the VFR chart.',no:'Kilde: openAIP (CC BY-NC 4.0), dugnadsdata som kan være ufullstendige eller utdaterte. Sjekk mot AIP og VFR-kartet.'})}</p>`;
-    sd.innerHTML=`<button class="x" aria-label="Close">×</button>`+html; sd.hidden=false;
+    sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button>`+html; sd.hidden=false;
     sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } const a=b.dataset.a; if(a==='dep'||a==='dst') setEnd(pt,a==='dep'?'dep':'dst'); else if(a==='add'){ addPoint(Object.assign({},pt,pt.t==='rwy'&&R.pts.length?{t:'wpt'}:{})); el('rtxt').value=routeStr(); if(R.pts.length>=2) sheetAuto(); } sd.hidden=true; }; return; }
   const nm=(a,b)=>gc({la:a.la,lo:a.lo},{la:b.la,lo:b.lo});
   if(h.k==='ap'){ const rw=(o[6]||[]).map(r=>{ const h1=/^\d+/.test(r[0])?String(parseInt(r[0],10)*10).padStart(3,'0'):''; const h2=/^\d+/.test(r[1])?String(parseInt(r[1],10)*10).padStart(3,'0'):''; return `<div class="rw"><b>${esc(r[0])}/${esc(r[1])}</b><span>${r[2]?fx(r[2]*0.3048)+' m · '+fx(r[2])+' ft':''}${h1?' · ≈'+h1+'°/'+h2+'°':''}</span></div>`; }).join('');
     const near=NAV.nv.map(n=>({n,d:nm(pt,{la:n[4],lo:n[5]})})).filter(x=>x.d<25).sort((a,b)=>a.d-b.d).slice(0,5);
     const aip=AIPL[o[0].slice(0,2)];
     html=`<span class="id">${esc(o[0])}</span><h3>${esc(o[1])}</h3><dl><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o[2],o[3])}</dd><dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[4])} ft · ${fx(o[4]*0.3048)} m</dd></dl>`+
+     (ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])?wxHtml(o[0]):'')+
      (rw?`<b style="font-size:13px">${L({en:'Runways',no:'Rullebaner'})}</b>${rw}<p class="src">${L({en:'Headings are from the runway numbers (magnetic, rounded).',no:'Kursene er fra banenumrene (magnetisk, avrundet).'})}</p>`:'')+
      (near.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Navaids within 25 NM',no:'Radiofyr innen 25 NM'})}</b>`+near.map(x=>`<div class="rw"><b>${esc(x.n[0])}</b><span>${esc(x.n[2])} ${esc(x.n[3]||'')} · ${fx(x.d,0)} NM</span></div>`).join(''):'')+
      `<div class="acts"><button class="btn pri" data-a="dep">${L({en:'From here',no:'Herfra'})}</button><button class="btn pri" data-a="dst">${L({en:'To here',no:'Hit'})}</button><button class="btn" data-a="add">${L({en:'Via',no:'Via'})}</button></div>`+
@@ -1653,7 +1930,8 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
   else { const ty=h.k==='nv'?`${esc(o[2])} ${esc(o[3]||'')}`:h.k==='aip'?`${L({en:'IFR point',no:'IFR-punkt'})} · AIP ${esc(o[3])}`:L({en:'My fix',no:'Min fix'});
     html=`<span class="id">${esc(pt.n)}</span><h3>${h.k==='nv'?esc(o[1]):esc(pt.n)}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${ty}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(pt.la,pt.lo)}</dd>${h.k==='nv'&&o[6]!=null?`<dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[6])} ft</dd>`:''}</dl>`+
      `<div class="acts"><button class="btn pri" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button></div><p class="src">${h.k==='nv'?L({en:'Source: OurAirports (public domain).',no:'Kilde: OurAirports (allmenn eiendom).'}):h.k==='aip'?L({en:'Source: the national eAIP, ENR 4.4.',no:'Kilde: nasjonal eAIP, ENR 4.4.'}):''}</p>`; }
-  sd.innerHTML=`<button class="x" aria-label="Close">×</button>`+html; sd.hidden=false;
+  sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button>`+html; sd.hidden=false;
+  if(h.k==='ap'&&ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])){ const c=WXS.c[o[0]]; if(!c||(!c.busy&&Date.now()-c.t>WX_TTL)) wxSync([o[0]]); }
   sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } const a=b.dataset.a; if(a==='dep'||a==='dst') setEnd(pt,a==='dep'?'dep':'dst'); else if(a==='add'){ addPoint(Object.assign({},pt,pt.t==='rwy'&&R.pts.length?{t:'wpt'}:{})); el('rtxt').value=routeStr(); if(R.pts.length>=2) sheetAuto(); } sd.hidden=true; }; }
 // profilmodus
 function advUsed(){ return !!((R.da&&(R.da.dep||R.da.arr))||(R.mk&&R.mk.length)||R.s.cl||R.s.ds||(R.app&&Object.values(R.app).some(Boolean))||R.wx); }
@@ -1672,7 +1950,7 @@ el('shFull').onclick=()=>{ setSheet(el('sheet').dataset.s==='full'?'mid':'full')
 el('shX').onclick=()=>{ el('shOpen').dataset.user='1'; setSheet('off'); };
 el('shOpen').onclick=()=>{ delete el('shOpen').dataset.user; setSheet(SHS==='off'||SHS==='min'?'mid':SHS); };
 el('shTog').onclick=()=>{ setSheet(el('sheet').dataset.s==='min'?'mid':'min'); };
-el('shAdv').onclick=()=>{ const on=el('advp').hidden; el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
+el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){ el('nlp').hidden=true; el('shNl').setAttribute('aria-pressed','false'); } el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
@@ -1862,10 +2140,11 @@ function libDraw(){ const b=el('lib');
   const rs=ALL.map(r=>`<button class="li ${r===R?'on':''}" data-r="${esc(r.id)}"><b>${esc(r.title||L({en:'Untitled route',no:'Rute uten navn'}))}</b><i>${dfmt(r.updated)}</i></button>`).join('');
   const vs=VIEWS.map(v=>`<div class="lirow"><button class="li" data-v="${esc(v.id)}"><b>${esc(v.name)}</b><i>${v.d3?'3D · ':''}${esc((v.mm||'vfr').toUpperCase())}</i></button><button class="lx" data-dv="${esc(v.id)}" aria-label="Delete">×</button></div>`).join('')||`<p class="note">${L({en:'None yet. Save the current map view, 2D or 3D, to come back to it.',no:'Ingen ennå. Lagre kartvisningen du ser på, 2D eller 3D, for å komme tilbake til den.'})}</p>`;
   const ns=NOTES.map(n=>`<button class="li" data-n="${esc(n.id)}"><b>📝 ${esc((n.t||'').slice(0,40)||'…')}</b><i>${dfmt(n.updated)}</i></button>`).join('')||`<p class="note">${L({en:'Click an empty spot on the map and choose Note to pin a note there.',no:'Klikk på et tomt sted på kartet og velg Notat for å feste et notat der.'})}</p>`;
-  b.innerHTML=`<button class="x" aria-label="Close">×</button><h3>${L({en:'My library',no:'Mitt bibliotek'})}</h3>
+  b.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><h3>${L({en:'My library',no:'Mitt bibliotek'})}</h3>
    <h4>${L({en:'Routes',no:'Ruter'})} <button class="btn sm" data-a="new">+ ${L({en:'New',no:'Ny'})}</button></h4><div class="lil">${rs}</div>
    <h4>${L({en:'Saved views',no:'Lagrede visninger'})}</h4><div class="lisave"><input id="vname" placeholder="${L({en:'Name this view',no:'Gi visningen et navn'})}" maxlength="60"><button class="btn pri sm" data-a="save">${L({en:'Save',no:'Lagre'})}</button></div><div class="lil">${vs}</div>
    <h4>${L({en:'My notes',no:'Mine notater'})}</h4><div class="lil">${ns}</div>
+   <h4>${L({en:'Import and export',no:'Importer og eksporter'})}</h4><div class="liio"><button type="button" class="btn sm upgo">⇪ ${L({en:'Add a ForeFlight or Garmin Pilot screenshot or PDF to the briefing pack',no:'Legg et skjermbilde eller en PDF fra ForeFlight eller Garmin Pilot i briefingpakken'})}</button><div class="xexp"><span>${L({en:'This route:',no:'Denne ruten:'})}</span><button type="button" data-ex="gpx">GPX</button><button type="button" data-ex="fpl">Garmin FPL</button><button type="button" data-ex="txt">${L({en:'Copy route',no:'Kopier ruten'})}</button></div><p class="note" style="margin:4px 0 0;font-size:12px">${L({en:'ForeFlight, Garmin Pilot and SkyDemon import GPX; ForeFlight and Garmin units also read .fpl.',no:'ForeFlight, Garmin Pilot og SkyDemon importerer GPX; ForeFlight og Garmin-enheter leser også .fpl.'})}</p></div>
    <p class="src">${NSTORE.mode==='account'?L({en:'Saved to your profile.',no:'Lagret på profilen din.'}):L({en:'Saved in this browser.',no:'Lagret i denne nettleseren.'})}</p>`; }
 function libOpen(on){ const b=el('lib'); b.hidden=!on; el('libbtn').setAttribute('aria-expanded',String(on)); if(on){ el('side').hidden=true; libDraw(); } }
 el('libbtn').onclick=()=>libOpen(el('lib').hidden);
@@ -1887,7 +2166,7 @@ async function openView(v){ if(v.rid){ const r=ALL.find(x=>x.id===v.rid); if(r&&
   if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||1.5; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
   else { if(T3.on) await set3(false); V.la=v.la; V.lo=v.lo; V.z=v.z; drawMap(); } }
 // notater på kartet
-function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="Close">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
+function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
   sd.onclick=async e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; }
     if(b.dataset.a==='ns'){ n.t=sd.querySelector('.nt').value; await NSTORE.put('mapnote',n); if(!NOTES.includes(n)) NOTES.unshift(n); sd.hidden=true; drawMap(); }
     if(b.dataset.a==='nd'){ await NSTORE.del('mapnote',n.id); NOTES=NOTES.filter(x=>x!==n); sd.hidden=true; drawMap(); } };
@@ -1937,7 +2216,7 @@ function daUI(){ const {d,a}=ends(); const DA=R.da||{}; const opt=(n,v)=>`<optio
   el('depr').innerHTML=d?opt(d.n,DA.dep):`<option value="">—</option>`; el('arrr').innerHTML=a?opt(a.n,DA.arr):`<option value="">—</option>`; el('arrt').value=DA.arrt||'ifr'; el('arrtw').hidden=!DA.arr; if(document.activeElement!==el('xdep')) el('xdep').value=DA.xd||''; if(document.activeElement!==el('xarr')) el('xarr').value=DA.xa||''; xpc(); }
 ['depr','arrr','arrt'].forEach(id=>el(id).addEventListener('change',()=>{ R.da=Object.assign({},R.da||{},{dep:el('depr').value,arr:el('arrr').value,arrt:el('arrt').value}); applyDA(); render(); queueSave(); }));
 /* briefing pack som naturlig avslutning */
-function packInc(){ const M=compute(), DA=R.da||{}; const it=[L({en:'Terrain profile, as shown',no:'Terrengprofilen, slik den vises'})]; if(DA.xd||DA.xa) it.push(L({en:'Your notes for departure and arrival',no:'Notatene dine for avgang og ankomst'})); if((R.mk||[]).length) it.push(L({en:'Your markers',no:'Markørene dine'})+' ('+R.mk.length+')'); if(R.wx&&M.PM==='adv') it.push(L({en:'Weather on the profile',no:'Vær på profilen'})); if(el('sendnl').checked) it.push(L({en:'Navigation log',no:'Navigasjonslogg'})+' ('+M.C.length+' '+L({en:'points',no:'punkter'})+')');
+function packInc(){ const M=compute(), DA=R.da||{}; const it=[L({en:'Terrain profile, as shown',no:'Terrengprofilen, slik den vises'})]; if(DA.xd||DA.xa) it.push(L({en:'Your notes for departure and arrival',no:'Notatene dine for avgang og ankomst'})); if((R.mk||[]).length) it.push(L({en:'Your markers',no:'Markørene dine'})+' ('+R.mk.length+')'); if(R.wx&&M.PM==='adv') it.push(L({en:'Weather on the profile',no:'Vær på profilen'})); if(el('sendnl').checked){ const NLs=R.nl||{}, ex=[pnum(R.gs)?'TAS':'',nlWind(NLs.w)||(R.pts||[]).some(p=>nlWind(p.nw))?L({en:'wind',no:'vind'}):'',pnum(NLs.ff)?L({en:'fuel flow',no:'forbruk'}):''].filter(Boolean); it.push(L({en:'Navigation log',no:'Navigasjonslogg'})+' ('+M.C.length+' '+L({en:'points',no:'punkter'})+(ex.length?', '+ex.join(', '):'')+')'); }
   el('pinc').innerHTML=it.map(t=>`<li>${esc(t)}</li>`).join(''); }
 function packOpen(on){ const pp=el('packpop'); pp.hidden=!on; el('packbtn').setAttribute('aria-expanded',String(on)); if(on){ packInc(); } }
 { const slot=el('packslot'), slot2=el('packslot2'); const sb=document.querySelector('.sendbox'); if(sb&&slot) slot.appendChild(sb); const sn=el('sendnote'); if(sn&&slot2) slot2.appendChild(sn); const sec=el('sendsec'); if(sec) sec.hidden=true; }
@@ -1952,7 +2231,7 @@ el('rmore').onclick=()=>{ const x=el('routex'); x.hidden=!x.hidden; el('rmore').
 let mlClickT=0, MLV=null; const MLK={};
 const mlZ=(z,la)=>Math.log2(Math.max(1e-6,z*360*Math.cos(la*D2R)/512)); // px per breddegrad -> MapLibre-zoom
 const mlVz=(Z,la)=>512*2**Z/(360*Math.cos(la*D2R));
-if(/[?&]debug\b/.test(location.search)) window.__rx={get ML(){ return ML; },get R(){ return R; },get T3(){ return T3; },compute,prj,simM,simHud,acHov,trkAt};
+if(/[?&]debug\b/.test(location.search)) window.__rx={toGpx,toFpl,toTxt,nlRows,asCalc,asReset(){ ASX.mem=null; },wxCat,get ASR(){ return ASR; },get WXS(){ return WXS; },get ML(){ return ML; },get R(){ return R; },get T3(){ return T3; },compute,prj,simM,simHud,acHov,trkAt};
 function mlWanted(){ const q=new URLSearchParams(location.search).get('map'); if(q==='canvas') return false; if(q==='ml') return !!window.RXMAP;
   try{ if(localStorage.getItem('bb-rx-map')==='canvas') return false; }catch(e){} return !!window.RXMAP&&navigator.onLine!==false; }
 function mlLib(){ return new Promise((ok,ko)=>{ if(window.maplibregl) return ok(); const l=document.createElement('link'); l.rel='stylesheet'; l.href='vendor/maplibre/maplibre-gl.css?v=5.24.0'; document.head.appendChild(l);
@@ -1965,8 +2244,11 @@ async function mlStart(){ mlog('RXMAP '+(!!window.RXMAP)+' · online '+navigator
   try{ await mlLib(); mlog('maplibre-gl loaded '+(window.maplibregl&&maplibregl.getVersion?maplibregl.getVersion():'')); const m=await RXMAP.create(div,{log:mlog,center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(4000,15000-(Date.now()-t0))});
     if(T3.on) await set3(false); ML=m; mlInit(); mlog('MapLibre active'); }
   catch(e){ div.remove(); ML=null; mapEl.dataset.map='canvas'; const why=(e&&e.message)||String(e); mlog('FALLBACK: '+why); try{ console.info('Route Explorer: using the built-in canvas map ('+why+')'); }catch(_){} drawMap();
-    if(navigator.onLine!==false&&location.protocol.startsWith('http')){ const n=document.createElement('div'); n.className='mlwarn'; n.innerHTML=L({en:'High-resolution map could not load',no:'Høyoppløst kart kunne ikke lastes'})+' <code>'+why.replace(/[<>&]/g,'')+'</code> <button type="button">'+L({en:'Try again',no:'Prøv igjen'})+'</button> <button type="button" class="x" aria-label="Close">×</button>';
-      n.querySelector('button').onclick=()=>location.reload(); n.querySelector('.x').onclick=()=>n.remove(); mapEl.appendChild(n); } } }
+    if(navigator.onLine!==false&&location.protocol.startsWith('http')){ const gl=/webgl|context|gpu/i.test(why); const n=document.createElement('div'); n.className='mlwarn'; n.setAttribute('role','status');
+      n.innerHTML=`<span>${gl?L({en:'The detailed map isn’t available in this browser, so the simple map is shown instead.',no:'Det detaljerte kartet er ikke tilgjengelig i denne nettleseren, så det enkle kartet vises i stedet.'}):L({en:'The detailed map could not load, so the simple map is shown instead.',no:'Det detaljerte kartet kunne ikke lastes, så det enkle kartet vises i stedet.'})}</span> <button type="button" class="mwr">${L({en:'Try again',no:'Prøv igjen'})}</button> <button type="button" class="mwd" aria-expanded="false">${L({en:'Details',no:'Detaljer'})}</button> <button type="button" class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><code hidden></code>`;
+      n.querySelector('code').textContent=why; n.querySelector('.mwr').onclick=()=>location.reload(); n.querySelector('.x').onclick=()=>n.remove();
+      n.querySelector('.mwd').onclick=e=>{ const c=n.querySelector('code'); c.hidden=!c.hidden; e.currentTarget.setAttribute('aria-expanded',String(!c.hidden)); };
+      ['pointerdown','pointerup','mousedown','click','touchstart','dblclick','wheel'].forEach(t=>n.addEventListener(t,e=>e.stopPropagation(),{passive:true})); mapEl.appendChild(n); } } }
 function asUI(st){ const lab=el('lyas'); if(!lab) return; const ok=st==='ok', i=lab.querySelector('input'); i.disabled=!ok; lab.classList.toggle('off',!ok);
   el('lyoa').querySelectorAll('label.chk').forEach(l=>{ l.classList.toggle('off',!ok); l.querySelector('input').disabled=!ok; }); el('oanote').textContent=ok?'':(st==='denied'?L({en:'(not available)',no:'(ikke tilgjengelig)'}):L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}));
   el('asnote').textContent= ok? '' : st==='denied'? L({en:'(not available: the openAIP key was refused or the service is down)',no:'(ikke tilgjengelig: openAIP-nøkkelen ble avvist eller tjenesten er nede)'}) : L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}); asSub(); }
@@ -1975,12 +2257,13 @@ function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); 
   try{ RXMAP.addAirspace(m,st=>{ asUI(st); MLK.ly=''; drawMap(); }); }catch(e){ asUI('denied'); }
   if(LY.ct) RXMAP.addContours(m).then(()=>{ MLK.ly=''; drawMap(); });
   m.on('move',()=>{ const c=m.getCenter(); V.la=c.lat; V.lo=c.lng; V.z=mlVz(m.getZoom(),c.lat); MLV={la:V.la,lo:V.lo,z:V.z}; try{ ptPop(); }catch(e){} });
-  m.on('moveend',()=>{ windyHref(); mlMef(); }); lookInit();
+  m.on('moveend',()=>{ windyHref(); mlMef(); if(!T3.play){ ASX.dirty=true; wxSoon(); } }); lookInit();
+  m.on('sourcedata',e=>{ if(e.sourceId==='bb-oaip'&&e.tile) ASX.dirty=true; }); m.on('idle',()=>{ if(ASX.dirty) asSoon(150); });
   m.getContainer().addEventListener('bb-satfail',()=>{ if(BM==='sat') setBM('vfr'); }); // no satellite source loads: back to the VFR chart
   m.on('dragstart',()=>{ if(T3.drive){ mlNoPad(); mlFov(); T3.drive=false; T3.mb=null; try{ m.setCenterClampedToGround(true); }catch(e){} } });
   m.on('click',e=>{ if(T3.dvOn||Date.now()-mlClickT<350) return; mapClick(e.originalEvent); }); // flying: clicks and drags are for looking around
   MLV={la:V.la,lo:V.lo,z:V.z}; m.jumpTo({center:[V.lo,V.la],zoom:mlZ(V.z,V.la)});
-  mlStatic(); drawMap(); }
+  mlStatic(); drawMap(); wxSoon(); }
 function mlHold(on){ if(!ML) return; if(on){ ML.dragPan.disable(); ML.touchZoomRotate.disable(); } else { ML.dragPan.enable(); ML.touchZoomRotate.enable(); if(!T3.on) ML.touchZoomRotate.disableRotation(); } }
 function mlHit(mx,my,r){ const h=ML&&RXMAP.hit(ML,mx,my,r); if(!h) return null; if(h.k==='oa') return h.o?{x:h.x,y:h.y,k:'oa',o:h.o}:null; const o= h.k==='ap'?NAV.ap[h.i] : h.k==='nv'?NAV.nv[h.i] : h.k==='aip'?NAV.fx[h.i] : h.k==='fix'?FIX[h.i] : h.k==='note'?NOTES[h.i] : null; return o?{x:h.x,y:h.y,k:h.k,o}:null; }
 const mlF=(g,p)=>({type:'Feature',geometry:g,properties:p||{}}), mlP=(la,lo)=>({type:'Point',coordinates:[lo,la]}), mlC=a=>({type:'FeatureCollection',features:a});
@@ -2177,7 +2460,7 @@ psv.addEventListener('click',e=>{ if(!T3.on||justDragged||!psv._XI||!psv._box) r
 function rxTop(){ const r=el('rx'); const tp=document.querySelector('.rx-top'); if(tp) r.style.setProperty('--tch',(tp.offsetTop+tp.offsetHeight+8)+'px'); const t=r.getBoundingClientRect().top+window.scrollY; r.style.setProperty('--rxtop',Math.max(0,Math.min(200,t))+'px'); }
 window.addEventListener('resize',()=>{ rxTop(); shH(); drawMap(); }); setTimeout(rxTop,0); setTimeout(rxTop,600);
 lyUI();
-LAB.onLang(()=>{ render(); drawFix(); lyUI(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
+LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
 Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; load(ALL[0]); mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>

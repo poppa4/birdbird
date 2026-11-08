@@ -224,7 +224,7 @@ function create(container,o){
       const small=Math.min(screen.width||9999,screen.height||9999)<700;
       try{ map=new maplibregl.Map({container,style,center:o.center||[10,60],zoom:o.zoom==null?4:o.zoom,minZoom:2,maxZoom:17.5,maxPitch:85,attributionControl:false,dragRotate:false,pitchWithRotate:false,
         touchPitch:false,fadeDuration:150,canvasContextAttributes:{antialias:true},cooperativeGestures:false,refreshExpiredTiles:false,renderWorldCopies:false,
-        pixelRatio:dprOf(),maxCanvasSize:[glMax(),glMax()],maxTileCacheZoomLevels:small?5:6,maxTileCacheSize:small?160:400,anisotropicFilterPitch:20}); }
+        locale:/^nb|^no/.test(document.documentElement.lang||'')?{'AttributionControl.ToggleAttribution':'Vis eller skjul kildene','AttributionControl.MapFeedback':'Tilbakemelding på kartet','ScaleControl.Meters':'m','ScaleControl.Kilometers':'km'}:undefined,pixelRatio:dprOf(),maxCanvasSize:[glMax(),glMax()],maxTileCacheZoomLevels:small?5:6,maxTileCacheSize:small?160:400,anisotropicFilterPitch:20}); }
       catch(e){ return fail(e); }
       map.touchZoomRotate.disableRotation();
       // gestures: a little more glide after a drag, and wheel zoom that answers each notch promptly
@@ -406,7 +406,8 @@ function addImages(map){
   [['n','#13202A'],['a','#B86E00'],['r','#B3261E']].forEach(([k,c])=>icon(map,'bb-crit-'+k,18,16,g=>{ g.beginPath(); g.moveTo(9,1.5); g.lineTo(16.5,14.5); g.lineTo(1.5,14.5); g.closePath(); g.fillStyle='#fff'; g.fill(); g.strokeStyle=c; g.lineWidth=2; g.lineJoin='round'; g.stroke(); }));
 }
 const FC={type:'FeatureCollection',features:[]};
-const SRC=['bb-mef','bb-mefg','bb-awy','bb-ap','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+const WXC={VFR:'#2E7D32',MVFR:'#1D4E9E',IFR:'#C62828',LIFR:'#C2189B'};
+const SRC=['bb-mef','bb-mefg','bb-awy','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
   const halo={'text-halo-color':'rgba(255,255,255,.92)','text-halo-width':1.6,'text-halo-blur':0.2};
@@ -419,6 +420,8 @@ function addOverlays(map){
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});
   add({id:'bb-leg',type:'line',source:'bb-leg',filter:['!=',['get','d'],1],layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':P.accent,'line-width':lin(3,3.2,12,4.6)}});
   add({id:'bb-leg-d',type:'line',source:'bb-leg',filter:['==',['get','d'],1],layout:{'line-join':'round'},paint:{'line-color':P.accent,'line-width':lin(3,2.4,12,3.4),'line-dasharray':[2,1.5]}});
+  // METAR flight category: a coloured ring around the airport (VFR green, MVFR blue, IFR red, LIFR magenta), under the airport and route symbols
+  add({id:'bb-wx',type:'circle',source:'bb-wx',layout:{visibility:'none'},paint:{'circle-radius':lin(4,5.5,10,10),'circle-color':['match',['get','fc'],'VFR',WXC.VFR,'MVFR',WXC.MVFR,'IFR',WXC.IFR,'LIFR',WXC.LIFR,'#8A97A2'],'circle-opacity':0.2,'circle-stroke-color':['match',['get','fc'],'VFR',WXC.VFR,'MVFR',WXC.MVFR,'IFR',WXC.IFR,'LIFR',WXC.LIFR,'#8A97A2'],'circle-stroke-width':lin(4,2,10,2.8),'circle-pitch-alignment':'map'}});
   // airports: large from the start, medium and small as you zoom in
   [[2,2.5,4.2],[1,5,3.2],[0,7.5,2.4]].forEach(([c,mz,r])=>{
     if(c===2) add({id:'bb-ap2r',type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],2],paint:{'circle-radius':lin(3,r+2.2,10,r+4.5),'circle-color':'rgba(0,0,0,0)','circle-stroke-color':'rgba(44,95,141,.5)','circle-stroke-width':1}});
@@ -439,7 +442,7 @@ function addOverlays(map){
   add({id:'bb-hovl',type:'symbol',source:'bb-hov',layout:{'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'top-left','text-offset':[0.9,0.7],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
-const LYG={ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+const LYG={wx:['bb-wx'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
 /* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
 const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
 function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;
@@ -453,7 +456,7 @@ function setGroups(map,LY){ map.__bb.ly=Object.assign({},LY);
   Object.keys(OAG).forEach(k=>OAG[k].forEach(id=>vis(map,id,!!LY[k]&&map.__bb.oaip==='ok')));
   applyRelief(map); }
 function setData(map,id,fc){ const s=map.getSource(id); if(s) s.setData(fc||FC); }
-const HITL=['bb-ap0','bb-ap1','bb-ap2','bb-nv','bb-fx','bb-my','bb-note','bb-oa-rp','bb-oa-ap','bb-oa-nv','bb-oa-ob'];
+const HITL=['bb-wx','bb-ap0','bb-ap1','bb-ap2','bb-nv','bb-fx','bb-my','bb-note','bb-oa-rp','bb-oa-ap','bb-oa-nv','bb-oa-ob'];
 // the nearest clickable aviation feature within r CSS px
 function hit(map,x,y,r){ const L=HITL.filter(id=>map.getLayer(id)&&map.getLayoutProperty(id,'visibility')!=='none');
   const fs=map.queryRenderedFeatures([[x-r,y-r],[x+r,y+r]],{layers:L}); let best=null, bd=r;
@@ -463,6 +466,45 @@ function hit(map,x,y,r){ const L=HITL.filter(id=>map.getLayer(id)&&map.getLayout
 function airspaceAt(map,x,y){ if(map.__bb.oaip!=='ok'||!map.getLayer('bb-as-tma')) return []; const ids=(map.__bb.asIds||[]).filter(id=>map.getLayer(id)&&map.getLayoutProperty(id,'visibility')!=='none'&&/-(ctrf|pf)$/.test(id)===false);
   let fs=[]; try{ fs=map.queryRenderedFeatures([[x-3,y-3],[x+3,y+3]],{layers:ids}); }catch(e){} const seen={}; return fs.map(f=>f.properties).filter(p=>{ const k=(p.name||'')+p.type; if(seen[k]) return false; seen[k]=1; return true; }); }
 
+/* ---------- airspace along the route (for the vertical profile) ----------
+   Reads the openAIP 'airspaces' features from the tiles MapLibre has loaded (querySourceFeatures: only loaded tiles,
+   so the caller says when part of the route is outside the view). A polygon that crosses tiles comes back as one clipped
+   piece per tile: pieces are grouped by name + type + limits and the route is tested against their union, so the
+   entry and exit distances are those of the whole airspace. posAt(x) gives {la,lo} at x NM along the route.
+   Limits: value/unit/reference datum as strings (ft | m | FL; GND | MSL | STD) or openAIP's numeric codes
+   (unit 0 m, 1 ft, 6 FL; datum 0 GND, 1 MSL, 2 STD). FL is converted at 1013 hPa (FL95 = 9,500 ft). */
+const UNIT={0:'M',1:'FT',6:'FL'}, DATUM={0:'GND',1:'MSL',2:'STD'};
+function limOf(q,pre){ let v=q[pre+'_value']; if(v==null||v==='') return null; v=+v; if(!Number.isFinite(v)) return null;
+  let u=q[pre+'_unit'], d=q[pre+'_reference_datum']; u=typeof u==='number'?UNIT[u]:String(u||'FT').toUpperCase(); d=typeof d==='number'?DATUM[d]:String(d||'MSL').toUpperCase(); if(d==='SFC') d='GND';
+  const ft=u==='FL'?v*100:u==='M'?v*3.28084:v;
+  if(u==='FL'||d==='STD'){ const fl=Math.round(u==='FL'?v:v/100); return {ft:fl*100,agl:false,txt:'FL'+String(fl).padStart(fl<100?2:3,'0')}; }
+  if(d==='GND') return ft<1?{ft:0,agl:true,gnd:true,txt:'GND'}:{ft:Math.round(ft),agl:true,txt:Math.round(ft)+' ft AGL'};
+  if(ft>=60000) return {ft:Math.round(ft),agl:false,txt:'UNL'};
+  return {ft:Math.round(ft),agl:false,txt:Math.round(ft)+' ft'}; }
+const AS_TYPE={}; Object.keys(ASG).forEach(k=>ASG[k].forEach(t=>AS_TYPE[t]=k));
+const AS_CLS=['A','B','C','D','E','F','G'];
+function asCat(t,c){ return ['restricted','danger','prohibited'].includes(t)?'r':['tiz','tia','rmz','tmz','atz','matz','htz'].includes(t)?'m':ASG.asTra.includes(t)?'a':'b'; }
+function ringsIn(rings,lo,la){ let ins=false; for(const r of rings){ for(let i=0,j=r.length-1;i<r.length;j=i++){ const xi=r[i][0], yi=r[i][1], xj=r[j][0], yj=r[j][1]; if(((yi>la)!==(yj>la))&&(lo<(xj-xi)*(la-yi)/(yj-yi)+xi)) ins=!ins; } } return ins; }
+function asRoute(map,o){ const out={list:[],ok:false}; if(!map||map.__bb.oaip!=='ok'||!map.getSource('bb-oaip')) return out;
+  const LY=map.__bb.ly||{}; if(!LY.as) { out.ok=true; return out; }
+  let fs=[]; try{ fs=map.querySourceFeatures('bb-oaip',{sourceLayer:'airspaces'}); }catch(e){ return out; }
+  const tot=o.total, step=Math.max(0.05,tot/1500), n=Math.ceil(tot/step); const P=new Float64Array((n+1)*2); let a0=90,a1=-90,b0=180,b1=-180;
+  for(let i=0;i<=n;i++){ const q=o.posAt(Math.min(tot,i*step)); P[i*2]=q.lo; P[i*2+1]=q.la; a0=Math.min(a0,q.la); a1=Math.max(a1,q.la); b0=Math.min(b0,q.lo); b1=Math.max(b1,q.lo); }
+  const G=new Map();
+  fs.forEach(f=>{ const q=f.properties||{}, t=String(q.type||'').toLowerCase(), k=AS_TYPE[t]; if(!k||LY[k]===0) return;
+    if(t==='other'&&!/^[abcd]$/i.test(String(q.icao_class||''))&&!(q.icao_class>=0&&q.icao_class<=3)) return;
+    const g=f.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]; if(!polys.length) return;
+    const lo=limOf(q,'lower_limit'), up=limOf(q,'upper_limit'); const key=[q.name||'',t,lo&&lo.txt,up&&up.txt].join('|');
+    let e=G.get(key); if(!e){ const c=q.icao_class; e={key,name:String(q.name||t.toUpperCase()),type:t,k,cat:asCat(t),cls:typeof c==='number'?(AS_CLS[c]||''):(/^[a-g]$/i.test(String(c||''))?String(c).toUpperCase():''),lo,up,polys:[]}; G.set(key,e); }
+    polys.forEach(pl=>{ let x0=180,x1=-180,y0=90,y1=-90; pl[0].forEach(c=>{ if(c[0]<x0) x0=c[0]; if(c[0]>x1) x1=c[0]; if(c[1]<y0) y0=c[1]; if(c[1]>y1) y1=c[1]; }); if(x1<b0||x0>b1||y1<a0||y0>a1) return; e.polys.push({r:pl,x0,x1,y0,y1}); }); });
+  G.forEach(e=>{ if(!e.polys.length) return; const inside=(lo,la)=>e.polys.some(p=>lo>=p.x0&&lo<=p.x1&&la>=p.y0&&la<=p.y1&&ringsIn(p.r,lo,la));
+    const edge=(xa,xb,wasIn)=>{ for(let k=0;k<7;k++){ const xm=(xa+xb)/2, q=o.posAt(xm); if(inside(q.lo,q.la)===wasIn) xa=xm; else xb=xm; } return (xa+xb)/2; };
+    const iv=[]; let st=null, prev=false;
+    for(let i=0;i<=n;i++){ const x=Math.min(tot,i*step), v=inside(P[i*2],P[i*2+1]);
+      if(v&&!prev) st=i?edge((i-1)*step,x,false):0; if(!v&&prev) iv.push([st,edge((i-1)*step,x,true)]); prev=v; }
+    if(prev) iv.push([st,tot]);
+    if(iv.length) out.list.push({key:e.key,name:e.name,type:e.type,k:e.k,cat:e.cat,cls:e.cls,lo:e.lo,up:e.up,iv}); });
+  out.list.sort((a,b)=>a.iv[0][0]-b.iv[0][0]); out.ok=true; return out; }
 /* ---------- 3D: the planned path at altitude (curtain to the ground + ribbon at the level) and the aircraft ---------- */
 const AC_SVG='<svg viewBox="-16 -16 32 32" width="34" height="34" aria-hidden="true"><path d="M0-14c1.3 0 2 1.4 2 3.2V-4l11 6.2v2.6L2 1.6V8.4l3.6 2.8v2.2L0 12l-5.6 1.4v-2.2L-2 8.4V1.6l-11 3.2V2.2L-2-4v-6.8C-2-12.6-1.3-14 0-14z" fill="#9A1E68" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 function pathLayer(){
@@ -545,6 +587,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={create,asRoute,limOf,WXC,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();
