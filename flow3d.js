@@ -138,17 +138,30 @@
       }
       // utsmøringsradius i rutenettet ved kjernen
       let rg = 0.32; if (F.ys) { const j = bin(F.ys, YC), l = bin(F.zs, zT + 3 * tt); if (j >= 0 && l >= 0) rg = Math.max(0.28, 1.25 * Math.max(F.ys[j + 1] - F.ys[j], F.zs[l + 1] - F.zs[l])); }
-      CORE = { x0, x1, n, X, Yc, Zc, Gc, rg2: rg * rg, rc2: 0.11 * 0.11, key: res.alpha + ':' + F.wt + ':' + res.scale };
+      CORE = { x0, x1, n, X, Yc, Zc, Gc, rg2: rg * rg, rc2: 0.11 * 0.11, rw2: 0.7 * 0.7, key: res.alpha + ':' + F.wt + ':' + res.scale };
       return CORE;
     }
-    function coreSwirl(X, Y, Z, v, ex) {
+    /* full = true (strømlinjer, fartssnitt): nær kjernen (r ≲ 0,6, vekt exp(−(r/R)⁴), R = 0,7) erstattes tverrfarten fra rutenettet
+       helt av modellens egen oppviklede virvel: kjernens drift langs oppviklingsbanen (kjernen er en materiell linje) pluss
+       en Lamb–Oseen-virvel med samme sirkulasjon Γc. Rutenettet blander feltet for to kjølvannsvinkler lineært, så den
+       utsmurte virvelen ligger delt mellom to baner og ikke på banen; uten dette driver linjene ut av virvelen i stedet
+       for å vikle seg rundt den. Langt ute (vekt → 0) er feltet urørt. */
+    function coreSwirl(X, Y, Z, v, ex, full) {
       const C = CORE; if (!C || X < C.x0) return;
       const t = Math.min(C.n - 1.001, (X - C.x0) / (C.x1 - C.x0) * (C.n - 1)), i = t | 0, u = t - i;
       const yc = C.Yc[i] + (C.Yc[i + 1] - C.Yc[i]) * u, zc = C.Zc[i] + (C.Zc[i + 1] - C.Zc[i]) * u, G = C.Gc[i] + (C.Gc[i + 1] - C.Gc[i]) * u;
       const sg = Y < 0 ? -1 : 1, dy = Y - sg * yc, dz = Z - zc, r2 = dy * dy + dz * dz;
-      if (r2 > 9 * C.rg2 || r2 < 1e-10) return;
+      const lim = full ? Math.max(9 * C.rg2, 3 * C.rw2) : 9 * C.rg2;
+      if (r2 > lim || r2 < 1e-10) return;
       const k = sg * ex * G / (2 * Math.PI * r2) * (Math.exp(-r2 / C.rg2) - Math.exp(-r2 / C.rc2));
-      v[1] += -dz * k; v[2] += dy * k;
+      let vy = v[1] - dz * k, vz = v[2] + dy * k;
+      if (full && ex > 0 && G > 1e-4) {
+        const q = r2 / C.rw2, wg = Math.exp(-q * q);   // flat nær kjernen, faller av rundt r ≈ 0,7
+        const dX = (C.x1 - C.x0) / (C.n - 1), syc = (C.Yc[i + 1] - C.Yc[i]) / dX, szc = (C.Zc[i + 1] - C.Zc[i]) / dX, u0 = v[0];
+        const kl = sg * ex * G / (2 * Math.PI * r2) * (1 - Math.exp(-r2 / C.rc2));
+        vy += wg * (sg * syc * u0 - dz * kl - vy); vz += wg * (szc * u0 + dy * kl - vz);
+      }
+      v[1] = vy; v[2] = vz;
     }
     function ensureCore() { if (!res || !wing) return; const key = res.alpha + ':' + F.wt + ':' + res.scale; if (!CORE || CORE.key !== key || CORE.w !== wing) { buildCore(); CORE.w = wing; } }
     function buildFusTab(m) {
@@ -215,16 +228,19 @@
       const al = res.alpha * DEG, ca = Math.cos(al), sa = Math.sin(al), sc = res.scale, f = [0, 0, 0];
       const p = o.p, spd = o.spd, sep = o.sep, tb = o.tb; let hit = null, tprev = 0, n = 0;
       const k1 = [0, 0, 0], k2 = [0, 0, 0], k3 = [0, 0, 0], k4 = [0, 0, 0];
-      const vel = (X, Y, Z, v) => { fieldAt(X, Y, Z, al, sc, f); v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(X, Y, Z, v, ex); nearWall(X, Y, Z, v, ex); };
+      // blandet felt for denne α (3 tall per node, ingen binærsøk) – samme verdier som fieldAt, men flere ganger raskere
+      const fast = ensureBlend(al, sc), full = !!o.full;   // full: oppviklet kjerne (strømlinjer); røykdysene bruker samme felt som røyken
+      const vel = (X, Y, Z, v) => { if (fast) fieldFast(X, Y, Z, f); else fieldAt(X, Y, Z, al, sc, f); v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(X, Y, Z, v, ex, full); nearWall(X, Y, Z, v, ex); };
       for (; n < steps; n++) {
         vel(x, y, z, k1);
         vel(x + k1[0] * h / 2, y + k1[1] * h / 2, z + k1[2] * h / 2, k2);
         vel(x + k2[0] * h / 2, y + k2[1] * h / 2, z + k2[2] * h / 2, k3);
         vel(x + k3[0] * h, y + k3[1] * h, z + k3[2] * h, k4);
-        p.push(x, y, z); spd.push(Math.hypot(k1[0], k1[1], k1[2]));
+        // i det turbulente kjølvannet går middelstrømmen saktere (hastighetsunderskudd); fargen viser det samme
+        const kd = tprev > 0.01 ? 1 - Math.min(0.45, tprev * 2.2) : 1;
+        p.push(x, y, z); spd.push(Math.hypot(k1[0], k1[1], k1[2]) * kd);
         let hx = (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6, hy = (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6, hz = (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]) / 6;
-        // i det turbulente kjølvannet går middelstrømmen saktere (hastighetsunderskudd)
-        if (tprev > 0.01) { const k = 1 - Math.min(0.45, tprev * 2.2); hx *= k; hz *= k; }
+        hx *= kd; hz *= kd;
         x += hx * h; y += hy * h; z += hz * h;
         const c = collide(x, y, z); x = c[0]; y = c[1]; z = c[2]; sep.push(c[3] & 1); if ((c[3] & 2) && !hit) hit = [x, y, z];
         tprev = Math.max(c[4], tprev * 0.997); tb.push(tprev);
@@ -236,17 +252,17 @@
     /* mange linjer, pakket i typede tabeller. Rette partier tynnes ut (punktene beholder flytiden). */
     /* dirs[L] = 2: integrer både bakover og forover fra frøet (frø midt i strømmen, f.eks. ved tippvirvelen);
        flytiden settes så t = 0 ligger ved x0 (raken), slik at pulsene er i fase med linjene fra raken */
-    function traceMany(seeds, steps, h, ex, thin, dirs, x0) {
+    function traceMany(seeds, steps, h, ex, thin, dirs, x0, back) {
       ensureCore();
       const nL = seeds.length / 3, off = new Uint32Array(nL + 1), hits = new Float32Array(nL * 3).fill(NaN);
       const P3 = [], SP = [], SE = [], TB = [], TT = [];
-      const o = { p: [], spd: [], sep: [], tb: [] }, ob = { p: [], spd: [], sep: [], tb: [] };
+      const o = { p: [], spd: [], sep: [], tb: [], full: true }, ob = { p: [], spd: [], sep: [], tb: [], full: true };
       for (let L = 0; L < nL; L++) {
         o.p.length = o.spd.length = o.sep.length = o.tb.length = 0;
         let hit = null, t0 = 0;
         if (dirs && dirs[L] === 2) {
           ob.p.length = ob.spd.length = ob.sep.length = ob.tb.length = 0;
-          trace(seeds[3 * L], seeds[3 * L + 1], seeds[3 * L + 2], Math.round(steps * 0.6), -h, ex, ob);
+          trace(seeds[3 * L], seeds[3 * L + 1], seeds[3 * L + 2], back || Math.round(steps * 0.6), -h, ex, ob);
           const nb = ob.spd.length;
           for (let i = nb - 1; i >= 1; i--) { o.p.push(ob.p[3 * i], ob.p[3 * i + 1], ob.p[3 * i + 2]); o.spd.push(ob.spd[i]); o.sep.push(ob.sep[i]); o.tb.push(0); }
           const ox = o.p.length ? o.p[0] : seeds[3 * L]; t0 = Math.max(0, ox - (x0 == null ? ox : x0));
@@ -261,7 +277,7 @@
             const dx = x - lx, dy = y - ly, dz = z - lz, d = Math.hypot(dx, dy, dz);
             const nx = o.p[3 * i + 3] - x, ny = o.p[3 * i + 4] - y, nz = o.p[3 * i + 5] - z, dn = Math.hypot(nx, ny, nz) || 1;
             const cs = (tx * nx + ty * ny + tz * nz) / dn;
-            keep = d > 0.42 || cs < 0.9994 || o.sep[i] !== o.sep[Math.max(0, i - 1)] || o.tb[i] > 0.002 || Math.abs(o.spd[i] - o.spd[last]) > 0.025;
+            keep = d > 0.42 || cs < 0.9994 || o.sep[i] !== o.sep[Math.max(0, i - 1)] || (o.tb[i] > 0.002 && d > 0.16) || Math.abs(o.spd[i] - o.spd[last]) > 0.025;
           }
           if (keep) {
             P3.push(x, y, z); SP.push(o.spd[i]); SE.push(o.sep[i]); TB.push(o.tb[i]); TT.push(t0 + i * Math.abs(h));
@@ -301,6 +317,40 @@
       return { om: sm, v: vv, w: ww, solid };
     }
 
+    /* Fartsplan |V|/V∞ for snittvisningen: et rutenett O + i·U + j·V (vingeramme) med samme hastighet som strømlinjene
+       (felt + tippvirvelkjerne + nærvegg). Faste flater (vinge, skrog, gondoler) markeres. I den separerte sonen bak
+       separasjonslinjen brukes modellens eget kjølvann (samme hastighetsunderskudd som strømlinjene), ikke en turbulensmodell. */
+    function speedPlane(O, U, V, NU, NV, ex) {
+      ensureCore();
+      const al = res.alpha * DEG, ca = Math.cos(al), sa = Math.sin(al), sc = res.scale, f = [0, 0, 0], v = [0, 0, 0];
+      const fast = ensureBlend(al, sc);
+      const spd = new Float32Array(NU * NV), solid = new Uint8Array(NU * NV), fac = new Float32Array(NU * NV).fill(1);
+      for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) {
+        const u = i / (NU - 1), w = j / (NV - 1), q = j * NU + i;
+        const x = O[0] + U[0] * u + V[0] * w, y = O[1] + U[1] * u + V[1] * w, z = O[2] + U[2] * u + V[2] * w;
+        const c = collide(x, y, z, true);
+        if (c[3] & 2) { solid[q] = 1; continue; }
+        if (fast) fieldFast(x, y, z, f); else fieldAt(x, y, z, al, sc, f);
+        v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(x, y, z, v, ex, true); nearWall(x, y, z, v, ex);
+        spd[q] = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        if (c[3] & 4) fac[q] = 0.22; else if (c[4] > 0.002) fac[q] = 1 - Math.min(0.45, c[4] * 2.2);
+      }
+      /* Underskuddet kommer fra stallmodellen per stripe (trappetrinn langs spennet); det glattes over ~ én stripebredde
+         (to omganger boksfilter ≈ gauss) før det legges på farten. Selve potensialfeltet glattes ikke. */
+      const Rr = Math.max(1, Math.round(Math.min(NU, NV) / 40)), tmp = new Float32Array(NU * NV);
+      const box = (src, dst, along) => {
+        const n = along ? NU : NV, m = along ? NV : NU;
+        for (let b = 0; b < m; b++) { let acc = 0, cnt = 0;
+          const at = a => along ? b * NU + a : a * NU + b;
+          for (let a = -Rr; a <= Rr; a++) if (a >= 0 && a < n) { acc += src[at(a)]; cnt++; }
+          for (let a = 0; a < n; a++) { dst[at(a)] = acc / cnt; const o = a - Rr, i2 = a + Rr + 1;
+            if (o >= 0) { acc -= src[at(o)]; cnt--; } if (i2 < n) { acc += src[at(i2)]; cnt++; } } }
+      };
+      for (let it = 0; it < 2; it++) { box(fac, tmp, true); box(tmp, fac, false); }
+      for (let q = 0; q < NU * NV; q++) spd[q] *= fac[q];
+      return { spd, solid };
+    }
+
     /* Cp på overflaten fra feltet: tangentiell fart like utenfor flaten. pos/nor i vingerammen. */
     function surfaceCp(pos, nor, out) {
       const al = res.alpha * DEG, ca = Math.cos(al), sa = Math.sin(al), f = [0, 0, 0], n = pos.length / 3;
@@ -321,7 +371,7 @@
       setRes(r) { res = r; },
       setField(f) { Object.assign(F, f); },
       setBounds(b) { Object.assign(B, b); },
-      fieldAt, fieldFast, ensureBlend, wingZ, wingSurf, stripAt, sepFrac, stripCp, nearWall, coreSwirl, ensureCore, get core() { return CORE; }, deadZone, collide, trace, traceMany, crossPlane, surfaceCp
+      fieldAt, fieldFast, ensureBlend, wingZ, wingSurf, stripAt, sepFrac, stripCp, nearWall, coreSwirl, ensureCore, get core() { return CORE; }, deadZone, collide, trace, traceMany, crossPlane, speedPlane, surfaceCp
     };
   }
 
@@ -330,28 +380,51 @@
   /* ---------- som Web Worker: egen kopi av vinge, felt og tilstand ---------- */
   const isWorker = typeof WorkerGlobalScope !== 'undefined' && root instanceof WorkerGlobalScope;
   if (isWorker) {
-    let ctx = null, P = null, params = null, ac = null;
+    let ctx = null, P = null, params = null, ac = null, cur = null, resKey = '';
+    function state(d) {
+      const k = d.alpha + ':' + (ctx.wing && ctx.wing.s) + ':' + params.twist + ':' + params.flapDeg;
+      if (k !== resKey || !ctx.res || ctx.res.alpha !== d.alpha) { ctx.setRes(P.evaluate(ctx.wing, d.alpha, P.AIRCRAFT[ac].cd0)); resKey = k; }
+      ctx.F.wt = d.wt; if (d.bounds) ctx.setBounds(d.bounds);
+    }
+    function postTrace(d, a, b, t0, last) {
+      const r = ctx.traceMany(d.seeds.subarray(a * 3, b * 3), d.steps, d.h, d.ex, d.thin, d.dirs ? d.dirs.subarray(a, b) : null, d.x0, d.back);
+      r.id = d.id; r.ms = Date.now() - t0; r.smoke = d.smoke; r.from = a; r.last = !!last; r.total = d.seeds.length / 3;
+      root.postMessage({ type: 'trace', r }, [r.off.buffer, r.p.buffer, r.spd.buffer, r.sep.buffer, r.tb.buffer, r.t.buffer, r.hits.buffer]);
+    }
+    function step() {
+      if (!cur) return; const c = cur, d = c.d, nL = d.seeds.length / 3;
+      try {
+        state(d);
+        const b = Math.min(nL, c.i + d.chunk); postTrace(d, c.i, b, c.t0, b >= nL); c.i = b;
+        if (b < nL && cur === c) setTimeout(step, 0); else if (cur === c) cur = null;
+      } catch (err) { cur = null; root.postMessage({ type: 'error', msg: String(err && err.message || err) }); }
+    }
     root.onmessage = function (e) {
       const d = e.data;
       try {
         if (d.type === 'init') { importScripts(d.physics); P = root.VLab; ctx = make(P); return; }
         if (d.type === 'geom') {
           params = d.params; ac = d.ac;
-          const w = P.buildWing(params); ctx.setWing(w, params, P.AIRCRAFT[ac].model);
+          const w = P.buildWing(params); ctx.setWing(w, params, P.AIRCRAFT[ac].model); resKey = ''; cur = null;
           return;
         }
         if (d.type === 'field') { ctx.setField({ data: d.data, xs: d.xs, ys: d.ys, zs: d.zs, nx: d.nx, ny: d.ny, nz: d.nz }); return; }
+        if (d.type === 'cancel') { cur = null; return; }
         // felles tilstand per jobb: α, kjølvannsblanding, grenser
         if (!ctx || !ctx.wing) return;
-        ctx.setRes(P.evaluate(ctx.wing, d.alpha, P.AIRCRAFT[ac].cd0));
-        ctx.F.wt = d.wt; if (d.bounds) ctx.setBounds(d.bounds);
+        state(d);
         if (d.type === 'trace') {
-          const t0 = Date.now(), r = ctx.traceMany(d.seeds, d.steps, d.h, d.ex, d.thin, d.dirs, d.x0);
-          r.id = d.id; r.ms = Date.now() - t0; r.smoke = d.smoke;
-          root.postMessage({ type: 'trace', r }, [r.off.buffer, r.p.buffer, r.spd.buffer, r.sep.buffer, r.tb.buffer, r.t.buffer, r.hits.buffer]);
+          /* i biter: hver bit sendes tilbake med en gang (progressiv visning), og en ny jobb avbryter den gamle
+             mellom bitene (α-glideren kan dras uten at gamle jobber hoper seg opp) */
+          const chunk = d.chunk || 0, nL = d.seeds.length / 3; cur = null;
+          if (!chunk || nL <= chunk) { postTrace(d, 0, nL, Date.now(), true); return; }
+          cur = { d, i: 0, t0: Date.now() }; setTimeout(step, 0);
         } else if (d.type === 'plane') {
           const r = ctx.crossPlane(d.X0, d.Y0, d.Y1, d.Z0, d.Z1, d.NY, d.NZ, d.ex); r.id = d.id;
           root.postMessage({ type: 'plane', r }, [r.om.buffer, r.v.buffer, r.w.buffer, r.solid.buffer]);
+        } else if (d.type === 'vslice') {
+          const t0 = Date.now(), r = ctx.speedPlane(d.O, d.U, d.V, d.NU, d.NV, d.ex); r.id = d.id; r.ms = Date.now() - t0; r.NU = d.NU; r.NV = d.NV;
+          root.postMessage({ type: 'vslice', r }, [r.spd.buffer, r.solid.buffer]);
         } else if (d.type === 'cp') {
           const out = new Float32Array(d.pos.length / 3); ctx.surfaceCp(d.pos, d.nor, out);
           root.postMessage({ type: 'cp', id: d.id, cp: out }, [out.buffer]);

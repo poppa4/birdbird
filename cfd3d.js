@@ -9,8 +9,9 @@
   // Moreland «smooth cool–warm» (sRGB) og Google Turbo (polynom)
   const CW = [[59, 76, 192], [98, 130, 234], [141, 176, 254], [184, 208, 249], [221, 221, 221], [245, 196, 173], [244, 154, 123], [222, 96, 77], [180, 4, 38]].map(c => c.map(v => v / 255));
   function coolwarm(t) { t = Math.max(0, Math.min(1, t)) * 8; const i = Math.min(7, Math.floor(t)), u = t - i, a = CW[i], b = CW[i + 1]; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u]; }
+  // Turbo uten den nesten svarte enden (starter i dyp blå), så langsom strøm leses som blå også på lys bakgrunn
   function turbo(x) {
-    x = Math.max(0, Math.min(1, x)); const x2 = x * x, x3 = x2 * x, x4 = x2 * x2, x5 = x4 * x;
+    x = 0.07 + 0.9 * Math.max(0, Math.min(1, x)); const x2 = x * x, x3 = x2 * x, x4 = x2 * x2, x5 = x4 * x;
     return [0.13572138 + 4.61539260 * x - 42.66032258 * x2 + 132.13108234 * x3 - 152.94239396 * x4 + 59.28637943 * x5,
             0.09140261 + 2.19418839 * x + 4.84296658 * x2 - 14.18503333 * x3 + 4.27729857 * x4 + 2.82956604 * x5,
             0.10667330 + 12.64194608 * x - 60.58204836 * x2 + 110.36276771 * x3 - 89.90310912 * x4 + 27.34824973 * x5].map(v => Math.max(0, Math.min(1, v)));
@@ -24,7 +25,7 @@ vec3 coolwarm(float t){ t=clamp(t,0.0,1.0)*8.0;
        c5=vec3(0.961,0.769,0.678), c6=vec3(0.957,0.604,0.482), c7=vec3(0.871,0.376,0.302), c8=vec3(0.706,0.016,0.149);
   if(t<1.0) return mix(c0,c1,t); if(t<2.0) return mix(c1,c2,t-1.0); if(t<3.0) return mix(c2,c3,t-2.0); if(t<4.0) return mix(c3,c4,t-3.0);
   if(t<5.0) return mix(c4,c5,t-4.0); if(t<6.0) return mix(c5,c6,t-5.0); if(t<7.0) return mix(c6,c7,t-6.0); return mix(c7,c8,t-7.0); }
-vec3 turbo(float x){ x=clamp(x,0.0,1.0);
+vec3 turbo(float x){ x=0.07+0.9*clamp(x,0.0,1.0);
   const vec4 kR=vec4(0.13572138,4.61539260,-42.66032258,132.13108234); const vec4 kG=vec4(0.09140261,2.19418839,4.84296658,-14.18503333);
   const vec4 kB=vec4(0.10667330,12.64194608,-60.58204836,110.36276771); const vec2 kR2=vec2(-152.94239396,59.28637943);
   const vec2 kG2=vec2(4.27729857,2.82956604); const vec2 kB2=vec2(-89.90310912,27.34824973);
@@ -76,6 +77,76 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
       blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor
     });
   };
+  /* ---------- tette strømlinjer: skjermrettede bånd skyggelagt som belyste rør ----------
+     Samme geometri som lineMaterial. Bredden følger dybden (nære linjer er tykkere), endene smalner av, og hvert
+     fragment får en rørnormal (på tvers av båndet) med diffus- og glanslys fra et fast studiolys. Fargen er lokal fart
+     |V|/V∞ (cpv) gjennom fargekartet. Én tegnekall for alle linjene; linjer nær fri strøm tones ned. */
+  CFD.tubeMaterial = function (THREE) {
+    return new THREE.ShaderMaterial({
+      uniforms: { cmin: { value: -1.5 }, cmax: { value: 1 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, time: { value: 0 }, width: { value: 1.6 },
+        res: { value: new THREE.Vector2(1000, 600) }, bright: { value: 1 }, pulse: { value: 1 }, pulseRate: { value: 1 }, opac: { value: 1 }, studio: { value: 1 }, dref: { value: 16 } },
+      vertexShader: `attribute vec3 prv; attribute vec3 nxt; attribute float side; attribute float cpv; attribute float tv; attribute float fd; attribute float sd;
+        uniform float width; uniform vec2 res; uniform float dref; varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN;
+        void main(){ vV=cpv; vT=tv; vS=side; vF=fd; vSd=sd;
+          mat4 M=projectionMatrix*modelViewMatrix;
+          vec4 c=M*vec4(position,1.0), a=M*vec4(prv,1.0), b=M*vec4(nxt,1.0);
+          vec2 d=(b.xy/b.w-a.xy/a.w)*res; float L=length(d); d= L>1e-6? d/L : vec2(1.0,0.0);
+          vec2 n=vec2(-d.y,d.x); vN=n;
+          float w=width*clamp(dref/max(c.w,0.1),0.55,1.8)*mix(0.3,1.0,fd); vW=w;
+          c.xy+=n*side*(w+1.0)/res*c.w; gl_Position=c; }`,
+      fragmentShader: CFD.GLSL_CMAP + `
+        uniform float time; uniform float bright; uniform float pulse; uniform float pulseRate; uniform float opac; uniform float vmin; uniform float vmax; uniform float studio;
+        varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN;
+        void main(){
+          float s=abs(vS)*(vW+1.0)/vW;                 // 0 i midten, 1 ved rørkanten (+1 px for kantutjevning)
+          float cov=clamp((1.0-s)*vW*0.5+0.5,0.0,1.0);
+          float a=cov*vF*opac; if(a<0.02) discard;
+          float sc=clamp(vS*(vW+1.0)/vW,-1.0,1.0);
+          vec3 N=normalize(vec3(vN*sc, sqrt(max(0.0,1.0-sc*sc))));
+          vec3 Ld=normalize(vec3(-0.42,0.62,0.66)), H=normalize(Ld+vec3(0.0,0.0,1.0));
+          float dif=max(dot(N,Ld),0.0), sp=pow(max(dot(N,H),0.0),36.0);
+          vec3 base=cmap(clamp((vV-vmin)/(vmax-vmin),0.0,1.0));
+          vec3 col=base*(0.42+0.7*dif)+sp*(0.25+0.2*studio);
+          col*=1.0-(0.28+0.12*studio)*smoothstep(0.5,1.0,s);    // mørk rørkant skiller linjen fra flaten og nabolinjene bak
+          float dev=clamp(abs(vV-1.0)/max(0.02,0.35*(vmax-vmin)),0.0,1.0);
+          a*=mix(0.38+0.2*(1.0-studio),1.0,dev);                  // nesten fri strøm tones ned, forstyrret strøm fremheves
+          float ph=fract(vT*0.22-time*pulseRate*0.22+vSd);
+          float head=exp(-(1.0-ph)*26.0)*smoothstep(1.0,0.992,ph);
+          col=mix(col,vec3(1.0),0.45*pulse*head);
+          gl_FragColor=vec4(col*bright,a);
+        }`,
+      transparent: true, depthWrite: false, side: THREE.DoubleSide
+    });
+  };
+
+  /* ---------- fartssnitt: |V|/V∞ som jevnt fargefelt med isolinjer (tegnes i skyggeleggeren) ----------
+     map: R/B = fart i 16 bit (smin..smax), G = fast flate. Isolinjer hver 0,05 V/V∞ (tydeligere hver 0,25). */
+  CFD.speedSliceMaterial = function (THREE) {
+    return new THREE.ShaderMaterial({
+      uniforms: { map: { value: null }, smin: { value: 0 }, smax: { value: 2 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, cmin: { value: -1 }, cmax: { value: 1 },
+        op: { value: 0.97 }, iso: { value: 1 }, studio: { value: 1 }, texel: { value: new THREE.Vector2(1 / 256, 1 / 128) } },
+      vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+      fragmentShader: CFD.GLSL_CMAP + `
+        uniform sampler2D map; uniform float smin; uniform float smax; uniform float vmin; uniform float vmax; uniform float op; uniform float iso; uniform float studio; uniform vec2 texel;
+        varying vec2 vUv;
+        void main(){
+          vec4 t=texture2D(map,vUv);
+          float sol=t.g; if(sol>0.5) discard;   // modellen selv vises der flaten skjærer planet
+          float v=smin+(smax-smin)*(t.r*65280.0+t.b*255.0)/65535.0;   // 16 bit: høy byte i R, lav i B (bilineær filtrering er lineær, så det går)
+          vec3 c=cmap(clamp((v-vmin)/(vmax-vmin),0.0,1.0));
+          float f1=v*20.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5), l1=1.0-smoothstep(0.0,w1*1.2,d1);
+          float f2=v*4.0, w2=fwidth(f2), d2=abs(fract(f2-0.5)-0.5), l2=1.0-smoothstep(0.0,w2*1.5,d2);
+          // isolinjer bare der feltet faktisk varierer (ellers gir støy rundt et nivå prikker i flate områder)
+          float g1=smoothstep(0.004,0.02,w1), g2=smoothstep(0.001,0.005,w2);
+          c*=1.0-iso*(0.12*l1*step(w1,0.5)*g1+0.26*l2*step(w2,0.5)*g2);
+          float e=smoothstep(0.0,0.012,vUv.x)*smoothstep(1.0,0.988,vUv.x)*smoothstep(0.0,0.02,vUv.y)*smoothstep(1.0,0.98,vUv.y);
+          float nearSolid=smoothstep(0.5,0.0,sol)*1.0;
+          gl_FragColor=vec4(c,op*e*nearSolid);
+        }`,
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, extensions: { derivatives: true }
+    });
+  };
+
   /* L: [{p:Float32Array (tre-koordinater), cp:Float32Array, t:Float32Array, sd}] */
   CFD.lineGeometry = function (THREE, L, o) {
     const fin = (o && o.fadeIn) || 0.9, fout = (o && o.fadeOut) || 2.2;
@@ -123,19 +194,20 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
   };
 
   /* ---------- nøytralt studiomiljø (myke softbokser) for refleksjoner i CFD-modus ---------- */
-  CFD.studioEnv = function (THREE, renderer) {
+  CFD.studioEnv = function (THREE, renderer, light) {
     const es = new THREE.Scene();
     const sg = new THREE.SphereGeometry(30, 32, 16), pa = sg.attributes.position, col = new Float32Array(pa.count * 3);
     for (let i = 0; i < pa.count; i++) {
       const h = pa.getY(i) / 30, up = Math.pow(Math.max(h, 0), 0.7), dn = Math.pow(Math.max(-h, 0), 0.5);
-      const mid = [0.2, 0.22, 0.25], top = [0.42, 0.45, 0.5], bot = [0.06, 0.065, 0.075];
+      const mid = light ? [0.62, 0.64, 0.66] : [0.2, 0.22, 0.25], top = light ? [0.95, 0.96, 0.97] : [0.42, 0.45, 0.5], bot = light ? [0.36, 0.37, 0.39] : [0.06, 0.065, 0.075];
       for (let c = 0; c < 3; c++) { const m = mid[c] + (top[c] - mid[c]) * up; col[i * 3 + c] = m + (bot[c] - m) * dn; }
     }
     sg.setAttribute('color', new THREE.BufferAttribute(col, 3));
     const sky = new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide }));
     es.add(sky);
     const box = (w, h, x, y, z, I) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(I, I, I * 1.02), side: THREE.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); es.add(m); };
-    box(16, 6, -6, 18, 6, 3.2); box(10, 10, 14, 6, -10, 1.6); box(20, 2, 0, 4, -22, 1.1); box(8, 8, -18, 2, -6, 0.9);
+    const kb = light ? 1.5 : 1;
+    box(16, 6, -6, 18, 6, 3.2 * kb); box(10, 10, 14, 6, -10, 1.6 * kb); box(20, 2, 0, 4, -22, 1.1 * kb); box(8, 8, -18, 2, -6, 0.9 * kb);
     const pm = new THREE.PMREMGenerator(renderer);
     const t = pm.fromScene(es, 0.03).texture; pm.dispose();
     es.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
