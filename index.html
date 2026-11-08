@@ -45,12 +45,12 @@
 
 .srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
 /* composed visual: briefing pack + Flight Intelligence answer */
-.stage{margin:0;position:relative;min-width:0;aspect-ratio:640/600;padding:0}
+.stage{margin:0;position:relative;min-width:0;aspect-ratio:640/680;padding:0}
 .stage::before{content:"";position:absolute;inset:-6% -8% -4% -6%;background:radial-gradient(60% 55% at 62% 40%,rgba(127,160,190,.22),transparent 70%),radial-gradient(40% 40% at 20% 70%,rgba(154,30,104,.07),transparent 70%);pointer-events:none;z-index:0}
 .stage .sc{position:absolute;display:block;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 30px 60px -18px rgba(19,32,42,.32),0 12px 24px -12px rgba(19,32,42,.18),0 0 0 1px rgba(19,32,42,.06);will-change:transform;transition:box-shadow .3s ease}
-.stage .sc-wt{right:0;top:2%;width:74%;aspect-ratio:1400/1028;background:#1B252E;z-index:1}
+.stage .sc-wt{right:0;top:0;width:94%;aspect-ratio:1490/742;background:#14191E;z-index:1}
 .stage .sc-wt img{display:block;width:100%;height:100%;object-fit:cover}
-.stage .sc-bp{left:1%;top:30%;width:33%;aspect-ratio:236/334;z-index:2;background:#fff;border-radius:6px;rotate:-4deg}
+.stage .sc-bp{left:0;top:40%;width:32%;aspect-ratio:236/334;z-index:2;background:#fff;border-radius:6px;rotate:-4deg}
 .stage .sc-bp svg{display:block;width:100%;height:100%}
 .stage svg text{font-family:var(--h-mono)}
 .stage svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
@@ -58,13 +58,13 @@
 .stage .sct{position:absolute;left:12px;bottom:12px;white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden;display:flex;align-items:baseline;gap:8px;background:rgba(16,23,29,.62);color:#D7E1E6;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 12px;font-size:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .stage .sct b{color:#fff;font-weight:650;font-size:12.5px}
 .stage .sct span{font-family:var(--h-mono);font-size:10.5px;color:#9FB0BC}
-.stage .sc-wt .sct{top:12px;bottom:auto}
+.stage .sc-wt .sct{top:12px;bottom:auto;left:auto;right:12px}
 .stage .sc-bp .sct{flex-direction:column;gap:0;background:rgba(255,255,255,.94);color:var(--h-ink2);border:1px solid var(--h-rule2)}
 .stage .sc-bp .sct b{color:var(--h-ink)}.stage .sc-bp .sct span{color:var(--h-ink2)}
 .stage .sc:hover{box-shadow:0 36px 70px -18px rgba(19,32,42,.38),0 14px 28px -12px rgba(19,32,42,.2),0 0 0 1px rgba(19,32,42,.08)}
 .stage .sc:focus-visible{outline:2px solid var(--h-acc);outline-offset:3px}
 .stage figcaption{position:absolute;left:1%;bottom:-2px;z-index:1;font-size:12.5px;color:var(--h-ink2)}
-.fic{position:absolute;right:1%;bottom:2%;left:auto;width:min(370px,56%);z-index:4;background:var(--h-sheet);border:1px solid rgba(19,32,42,.08);border-radius:12px;
+.fic{position:absolute;right:0;bottom:3%;left:auto;width:min(380px,60%);z-index:4;background:var(--h-sheet);border:1px solid rgba(19,32,42,.08);border-radius:12px;
   box-shadow:0 1px 1px rgba(19,32,42,.05),0 28px 56px -26px rgba(19,32,42,.45);font-size:14px;line-height:1.5;will-change:transform}
 .fic .fh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--h-rule2)}
 .fic .fh b{font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
@@ -88,11 +88,12 @@
   .stage .sc{transform:none!important}
   .stage .sc-wt{position:relative;right:auto;top:auto;width:100%}
   .stage .sc-bp{position:absolute;left:-1%;top:auto;bottom:auto;width:38%;margin-top:-26%;rotate:-5deg}
-  .stage .sc-bp{position:relative;display:block;margin:-22% 0 0 2%;z-index:3}
+  .stage .sc-bp{position:relative;display:block;margin:4% 0 0 2%;z-index:3}
   .fic{position:relative;right:auto;left:auto;bottom:auto;width:auto;margin:-48% 0 0 26%;transform:none!important;font-size:12.5px}
   .fic .bd{padding:10px 12px;gap:8px}.fic .q{font-size:12.5px;padding:6px 10px}.fic .fh{padding:8px 12px}.fic .fh .own{display:none}.fic .ft{padding:7px 12px;font-size:11px}.fic .a{padding-left:10px;font-size:12.5px}.fic .a p+p{display:none}.fic .cite{font-size:10px}
   .stage figcaption{position:static;margin:14px 0 0;text-align:left}
-  .stage .sct{font-size:11px;padding:5px 10px}.stage .sct span{font-size:9.5px}
+  .stage .sct{font-size:10px;padding:4px 9px;gap:6px}.stage .sct b{font-size:11px}.stage .sct span{font-size:9px}
+  .stage .sc-wt{width:100%}
 }
 @media (prefers-reduced-motion:reduce){.stage .pg,.fic{will-change:auto}}
 
@@ -263,9 +264,9 @@
       <div class="btns"><a class="btn pri" href="prep.html">Make a briefing pack</a><a class="btn" href="fi.html">Ask Flight Intelligence</a></div>
     </div>
     <figure class="stage" id="stage">
-      <a class="sc sc-wt pg" data-d="8" href="tunnel.html" aria-label="Wind tunnel lab: an A320 in the test section with smoke streamlines">
-        <img src="media/hero-tunnel.jpg" srcset="media/hero-tunnel-800.jpg 800w, media/hero-tunnel.jpg 1400w" sizes="(max-width:640px) 92vw, 460px" width="1400" height="1028" alt="" decoding="async" fetchpriority="high">
-        <span class="sct"><b>Wind tunnel</b><span>A320 · α 5° · streamlines</span></span>
+      <a class="sc sc-wt pg" data-d="8" href="tunnel.html#sec2d" aria-label="Airfoil lab: smoke lines, pressure field and boundary layer at 6 degrees">
+        <img src="media/hero-airfoil.jpg" srcset="media/hero-airfoil-800.jpg 800w, media/hero-airfoil.jpg 1490w" sizes="(max-width:640px) 92vw, 600px" width="1490" height="742" alt="" decoding="async" fetchpriority="high">
+        <span class="sct"><b>Virtual Lab</b><span>Airfoil · α 6° · pressure field</span></span>
       </a>
       <a class="sc sc-bp pg" data-d="14" href="prep.html" aria-label="Briefing pack: IFR, Oslo Gardermoen to Bergen Flesland">
         <svg viewBox="0 0 236 334" role="img" aria-label="Briefing pack cover: IFR, ENGM to ENBR, with its contents">
