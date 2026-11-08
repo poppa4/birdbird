@@ -823,8 +823,8 @@ function staticFor(d){ let c=sCache.get(d.key); if(c) return c;
   g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(d.field,0,0,W,H);
   g.lineWidth=1; g.strokeStyle='rgba(11,37,69,.3)'; g.beginPath(); for(const l of d.lines){ const p=l.pts; g.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) g.lineTo(p[i][0],p[i][1]); } g.stroke();
   const fg=g.createLinearGradient(0,OY-40,0,OY+40); fg.addColorStop(0,'#FFFFFF'); fg.addColorStop(1,'#DCE4EA');
-  g.beginPath(); d.foil.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.shadowColor='rgba(11,37,69,.22)'; g.shadowBlur=16; g.shadowOffsetY=7; g.fillStyle=fg; g.fill(); g.shadowColor='transparent'; g.strokeStyle='#0B2545'; g.lineWidth=1.3; g.stroke();
-  sCache.set(d.key,c); if(sCache.size>8) sCache.delete(sCache.keys().next().value); return c; }
+  g.beginPath(); d.foil.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.save(); g.translate(0,6); g.fillStyle='rgba(11,37,69,.08)'; g.fill(); g.translate(0,-3); g.fill(); g.restore(); g.fillStyle=fg; g.fill(); g.strokeStyle='#0B2545'; g.lineWidth=1.3; g.stroke();
+  sCache.set(d.key,c); if(sCache.size>45) sCache.delete(sCache.keys().next().value); return c; }
 function use(key){ if(key===curKey) return; curKey=key; cur=data(key); foil=cur.foil; lines=cur.lines;
   if(parts.length<lines.length*2){ for(let i=parts.length;i<lines.length*2;i++) parts.push({l:i>>1,s:Math.random()}); }
   el('hxA').textContent=(cur.a*180/Math.PI).toFixed(1)+'°'; el('hxC').textContent=cur.cl.toFixed(2); }
@@ -838,16 +838,14 @@ function drawFoil(){}
 function at(l,s){ let lo=0,hi=l.cum.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(l.cum[m]<s) lo=m; else hi=m; } return lo; }
 let last=0, raf=0, vis=true;
 function frame(t){ raf=0; if(!vis) return; const dt=Math.min(.05,(t-(last||t))/1000); last=t;
-  if(!RMq&&!hover){ auto+=dt; targetA=(6+2.2*Math.sin(auto*.35))*Math.PI/180; }
   if(Math.abs(targetA-Acur)>.0005){ Acur+=(targetA-Acur)*Math.min(1,dt*4); use(Math.round(Acur/STEP)); if(t-linkT>250){ linkT=t; links(); } }
   drawStatic();
   if(!RMq&&cur){ const tail=new Path2D(), head=new Path2D(), sp=(mobile?55:80);
-    for(const q of parts){ const l=lines[q.l]; if(!l) continue; const s0=q.s*l.len, i=at(l,s0), v=l.sp[i]||1; q.s+=dt*v*sp/l.len; if(q.s>1) q.s-=1;
-      const i1=at(l,Math.max(0,s0-34*v)), im=at(l,Math.max(0,s0-12*v));
-      tail.moveTo(l.pts[i1][0],l.pts[i1][1]); for(let k=i1+1;k<=im;k++) tail.lineTo(l.pts[k][0],l.pts[k][1]);
-      head.moveTo(l.pts[im][0],l.pts[im][1]); for(let k=im+1;k<=i;k++) head.lineTo(l.pts[k][0],l.pts[k][1]); }
-    ctx.lineCap='round'; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(154,30,104,.28)'; ctx.stroke(tail); ctx.strokeStyle='rgba(154,30,104,.85)'; ctx.stroke(head);
-    if(cur) { ctx.setTransform(1,0,0,1,0,0); } }
+    const P=(l,s)=>{ const i=at(l,s), a=l.pts[i], b=l.pts[Math.min(i+1,l.pts.length-1)], seg=(l.cum[i+1]||l.cum[i])-l.cum[i], f=seg>0?Math.min(1,Math.max(0,(s-l.cum[i])/seg)):0; return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,i]; };
+    const run=(path,l,s0,s1)=>{ const A0=P(l,s0), B0=P(l,s1); path.moveTo(A0[0],A0[1]); for(let k=A0[2]+1;k<=B0[2];k++) path.lineTo(l.pts[k][0],l.pts[k][1]); path.lineTo(B0[0],B0[1]); };
+    for(const q of parts){ const l=lines[q.l]; if(!l) continue; const s0=q.s*l.len, v=l.sp[at(l,s0)]||1; q.s+=dt*v*sp/l.len; if(q.s>1) q.s-=1;
+      run(tail,l,Math.max(0,s0-34*v),Math.max(0,s0-12*v)); run(head,l,Math.max(0,s0-12*v),s0); }
+    ctx.lineCap='round'; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(154,30,104,.28)'; ctx.stroke(tail); ctx.strokeStyle='rgba(154,30,104,.85)'; ctx.stroke(head); }
   if(!RMq) raf=requestAnimationFrame(frame);
 }
 let targetA=A, hover=false, auto=0, lastBuild=0;
@@ -861,7 +859,7 @@ function links(){ const sv=el('deskLinks'), desk=el('desk'); if(!sv||!desk) retu
 function start(){ layout(); setA(Acur); build(); last=0; if(RMq){ drawStatic(); } else if(!raf) raf=requestAnimationFrame(frame); }
 let rz=0; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(start,120); },{passive:true});
 hx.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse') return; hover=true; const r=hx.getBoundingClientRect(); const fy=(e.clientY-r.top)/r.height; targetA=(11-10*Math.max(0,Math.min(1,fy)))*Math.PI/180; },{passive:true});
-hx.addEventListener('pointerleave',()=>{ hover=false; });
+hx.addEventListener('pointerleave',()=>{ hover=false; targetA=6*Math.PI/180; });
 if('IntersectionObserver' in window) new IntersectionObserver(es=>{ vis=es[0].isIntersecting; if(vis&&!RMq&&!raf) raf=requestAnimationFrame(frame); }).observe(hx);
 LAB.add({},{'Open the Virtual Lab':'Åpne Virtual Lab','Lab · Crosswind':'Lab · Sidevind','Angle of attack':'Angstigningsvinkel','Lift coefficient':'Løftekoeffisient','Move your pointer over the flow to change the angle of attack':'Beveg pekeren over strømningen for å endre angstigningsvinkelen'});
 const tx=()=>{ el('hxHint').textContent=L({en:'Move your pointer up and down to change the angle of attack',no:'Beveg pekeren opp og ned for å endre angrepsvinkelen'}); };
