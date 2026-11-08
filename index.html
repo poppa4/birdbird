@@ -304,6 +304,7 @@
 
 .hk{--navy:#0B2545;padding:56px 0 24px}
 .hk-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 64px;align-items:end}
+.hk-eye{font-size:12.5px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--h-acc,#9A1E68);margin:0 0 14px;display:flex;align-items:center;gap:10px}.hk-eye::before{content:'';width:22px;height:2px;background:currentColor;border-radius:1px}
 .hk h1{font-family:var(--h-disp);font-weight:650;font-stretch:100%;font-size:clamp(36px,4vw,58px);line-height:1.02;letter-spacing:-.028em;color:var(--navy);margin:0}
 .hk .lede{font-size:17px;line-height:1.6;color:var(--h-ink2);margin:0;max-width:46ch}
 .hk .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
@@ -339,7 +340,8 @@
   <!-- 1. Hero -->
   <section class="hk" aria-labelledby="h1">
     <div class="hk-top">
-      <h1 id="h1">Briefing pack, theory<br>and instructor in one place</h1>
+      <div class="hk-head"><p class="hk-eye">The aviation platform</p>
+      <h1 id="h1">Briefing pack, theory<br>and instructor in one place</h1></div>
       <div class="hk-side">
         <p class="lede">Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.</p>
         <div class="btns"><a class="btn pri" href="prep.html">Make a briefing pack</a><a class="btn" href="fi.html">Ask Flight Intelligence</a></div>
@@ -536,7 +538,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
  'Birdbird · Aviation theory, flight planning and training':'Birdbird · Flyteori, flyplanlegging og trening',
  'Flight preparation for pilots':'Flyforberedelse for piloter',
- 'Briefing pack, theory':'Briefingpakke, teori','and instructor in one place':'og instruktør på ett sted',
+ 'The aviation platform':'Flyplattformen','Briefing pack, theory':'Briefingpakke, teori','and instructor in one place':'og instruktør på ett sted',
  'Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.':'Birdbird er stedet der du forbereder en flyging og forstår hvert tall i den: briefingpakken, teorien bak hver side, og en instruktør som svarer ut fra dine egne dokumenter.',
  'Make a briefing pack':'Lag en briefingpakke','Ask Flight Intelligence':'Spør Flight Intelligence',
  'Aircraft, NOTAM, weather, minima, profile, fuel, mass and balance, in a fixed order. VFR or IFR, printed as a booklet.':'Fly, NOTAM, vær, minima, profil, drivstoff, masse og balanse, i fast rekkefølge. VFR eller IFR, skrevet ut som et hefte.',
