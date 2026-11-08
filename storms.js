@@ -1,317 +1,213 @@
-/* Birdbird – storms.js: "Thunderstorms and wind shear" (storms.html). One storm, three views on one canvas.
-   Life of a CB: a single cell (or a multicell cluster, a squall line, an embedded CB) in cross-section, 0–60 min.
-     A CB needs moisture, instability and lift; take one away and it does not form. Cloud base = (T − Td) × 400 ft,
-     tops and updrafts grow with instability and moisture; cumulus 0–15 min, mature 15–36, dissipating 36–60.
-     Air motion is drawn by particles in a simple updraft/downdraft/outflow field.
-   Microburst on final: point-mass approach at constant pitch attitude and thrust (or a recovery), through an outflow
-     with a headwind → downdraft → tailwind: dV/dt = g·((T − D)/W − sin γa) + dHW/dt, dh/dt = V·sin γa + w.
-     Lift = weight, so α rises as V falls (α = α0·(V0/V)²) and the path drops (γa = θ − α).
-   Weather radar: 3.5° pencil beam from the aircraft (height = alt + r·tan(tilt) + 0.66·r² ft for the earth's curvature),
-     reflectivity strong for liquid water below the freezing level, weak for ice above it; strong echoes attenuate the
-     beam (two-way), so cells behind show weaker or not at all. Gain shifts all echoes by ±8 dB. */
+/* Birdbird – storms.js: "Thunderstorms and wind shear" (storms.html).
+   The page: controls, readouts, the three views of the 3D model (cb3d.js) on the physics in cbmodel.js,
+   the navigation display and the airspeed strip (2D canvases), Key concepts, deep-dive folds, a one-at-a-time
+   "Try it" stepper with live checks, key points and the quiz. Every string EN/NO. */
 (function(){
 'use strict';
 const {L,el,nf}=LAB;
 const t2=(en,no)=>({en,no});
-const INK={ink:'#D7E1E6',mute:'#8B99A7',dim:'#5E6D7C',cyan:'#7FCBE8',mag:'#E46BAE',amber:'#F0B440',red:'#EC5A47',green:'#71CC93',white:'#EEF3F7',blue:'#5AA9E6'};
-const MONO='"IBM Plex Mono", ui-monospace, monospace', BODY='"Public Sans", system-ui, sans-serif';
+const M=window.CBM, MB=M.MB, RD=M.RD, FT2KM=M.FT2KM, TROPO=M.TROPO, clamp=M.clamp;
+const MONO='"IBM Plex Mono", ui-monospace, monospace';
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const hooks=[]; const on=f=>{ hooks.push(f); return f; };
-const hash=(n,s)=>{ const v=Math.sin(n*127.1+s*311.7)*43758.5453; return v-Math.floor(v); };
 
-const S={view:'life',type:'single',t:24,m:0.75,i:0.75,l:0.7,play:false,
-  dv:50,pil:'none',xc:2.6,R:0.8,vapp:140,fly:false,k:0,
-  fl:33000,tilt:0,gain:'cal',rng:80,
-  show:{air:true,haz:true,iso:true,avoid:false,truth:false,beam:true}};
-const cv=el('stCv'); const C=LAB.fit(cv,()=>{ rebuild(); },2);
-const stat=document.createElement('canvas'), sg=stat.getContext('2d');
-/* label in a small dark box with a coloured edge (the wind tunnel's callout tags) */
-function tag(g,s,x,y,col,al,sz){ const n=C.w<560; sz=sz||(n?10.5:12); g.font=`500 ${sz}px ${BODY}`; const w=g.measureText(s).width+12, h=sz+8; let x0=al==='center'?x-w/2:al==='right'?x-w:x; x0=Math.max(4,Math.min(C.w-w-4,x0)); const y0=y-h+4;
-  g.fillStyle='rgba(14,18,22,.86)'; g.fillRect(x0,y0,w,h); g.strokeStyle='rgba(255,255,255,.14)'; g.lineWidth=1; g.strokeRect(x0+0.5,y0+0.5,w-1,h-1); g.fillStyle=col||INK.amber; g.fillRect(x0,y0,2,h); g.fillStyle='#EEF3F7'; g.textAlign='left'; g.fillText(s,x0+7,y0+h-5.5); }
-function txt(g,s,x,y,col,al,sz,wt){ g.font=`${wt||500} ${sz||11}px ${MONO}`; g.textAlign=al||'left'; g.lineWidth=3; g.strokeStyle='rgba(12,17,22,.8)'; g.strokeText(s,x,y); g.fillStyle=col||INK.ink; g.fillText(s,x,y); g.textAlign='left'; }
-function hatch(col,gap,dir){ const c=document.createElement('canvas'); c.width=c.height=gap; const x=c.getContext('2d'); x.strokeStyle=col; x.lineWidth=1; x.beginPath();
-  if(dir>0){ x.moveTo(0,gap); x.lineTo(gap,0); x.moveTo(-1,1); x.lineTo(1,-1); x.moveTo(gap-1,gap+1); x.lineTo(gap+1,gap-1); } else { x.moveTo(0,0); x.lineTo(gap,gap); x.moveTo(gap-1,-1); x.lineTo(gap+1,1); x.moveTo(-1,gap-1); x.lineTo(1,gap+1); } x.stroke(); return x.createPattern(c,'repeat'); }
-const PAT={ice:hatch('rgba(127,203,232,.6)',6,1),tu:hatch('rgba(240,180,64,.55)',8,-1)};
-function arrow(g,x0,y0,x1,y1,col,w,h){ g.strokeStyle=col; g.fillStyle=col; g.lineWidth=w||1.6; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(y1-y0,x1-x0), k=h||6;
-  g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-k*Math.cos(a-0.45),y1-k*Math.sin(a-0.45)); g.lineTo(x1-k*Math.cos(a+0.45),y1-k*Math.sin(a+0.45)); g.closePath(); g.fill(); }
-function bg(g,W,H){ const b=g.createLinearGradient(0,0,0,H); b.addColorStop(0,'#141d26'); b.addColorStop(1,'#1d2833'); g.fillStyle=b; g.fillRect(0,0,W,H); }
+/* ---------------- state ---------------- */
+const COND={cape:'mod',td:16,shear:'low',fzl:10000,uw:50,type:'single',t:26};
+const E={}, CELLS=[];
+const S={view:'storm',play:false,fly:false,k:0,look:'sky',
+  plane:{on:false,along:-26,off:0,fl:25000,flying:false,x0:0},
+  show:{flow:false,hail:false,gust:false,ring:false,ltg:true,ice:false,turb:false,avoid:false,levels:true,labels:true,cloud:'solid',truth:false}};
+MB.dv=50; MB.xc=2.6; MB.R=0.8; MB.vapp=140; MB.pil='none';
+RD.fl=33000; RD.tilt=0; RD.gain='cal'; RD.rng=80;
+function model(){ M.storm(COND,E,CELLS); }
+model();
 
-/* =============== 1. LIFE OF A CB =============== */
-const KX0=-45, KX1=75; let ZT=56000; const TP=39000, FZL=11000, M20=21000, M40=30500;
-const LY={L0:44,R0:10,T0:8,yG:0,W:0,H:0};
-const X=km=>LY.L0+(km-KX0)/(KX1-KX0)*(LY.W-LY.L0-LY.R0), Y=ft=>LY.yG-ft/ZT*(LY.yG-LY.T0);
-const ENV={base:0,tmax:0,up:0,cb:false,why:null,td:0};
-function env(){ const td=4+16*S.m, base=Math.round((25-td)*400/100)*100; ENV.td=td; ENV.base=base; ENV.why=null;
-  if(S.l<0.2){ ENV.cb=false; ENV.why='lift'; ENV.tmax=0; ENV.up=0; return; }
-  if(S.m<0.3){ ENV.cb=false; ENV.why='moist'; ENV.tmax=base+3000; ENV.up=400; return; }
-  if(S.i<0.35){ ENV.cb=false; ENV.why='stab'; ENV.tmax=base+4000+9000*S.i/0.35; ENV.up=300+1500*S.i; return; }
-  ENV.cb=true; ENV.tmax=Math.min(TP+4500,20000+30000*S.i*(0.6+0.4*S.m)); ENV.up=Math.round((800+5200*S.i*S.m)/100)*100; }
-/* a cell at age a (min): stage, top, width, anvil, alpha */
-function cell(a,xc){ const c={xc,a,st:'none',top:0,w:0,anv:0,al:1,up:0,dn:0,rain:0,hail:false,ltg:false,mb:false,gust:0};
-  if(a<0||a>62) return c; const b=ENV.base;
-  if(!ENV.cb){ const g=clamp(a/15,0,1); c.st='cu'; c.top=b+(ENV.tmax-b)*Math.pow(g,0.7); c.w=3+4*g; c.up=ENV.up*g; return c; }
-  if(a<15){ const g=a/15; c.st='cu'; c.top=b+(0.72*ENV.tmax-b)*Math.pow(g,0.8); c.w=3+5*g; c.up=ENV.up*(0.4+0.4*g); return c; }
-  if(a<36){ c.st='mat'; c.top=ENV.tmax; c.w=8+4*S.i; c.anv=Math.min(48,10+(a-15)*1.7); c.up=ENV.up; c.dn=ENV.up*0.6*Math.min(1,(a-15)/6); c.rain=1; c.hail=S.i>0.45; c.ltg=true; c.gust=Math.min(25,(a-15)*1.3); c.mb=a>=26&&S.i*S.m>0.35; return c; }
-  const d=(a-36)/26; c.st='dis'; c.top=ENV.tmax*(0.92-0.35*d); c.w=(8+4*S.i)*(1-0.35*d); c.anv=48+d*8; c.al=1-0.6*d; c.up=0; c.dn=ENV.up*0.35*(1-d); c.rain=0.45*(1-d); c.gust=25*(1-d); c.mb=a<40&&S.i*S.m>0.35; return c; }
-let CELLS=[], HC=null, LC=null;
-function cells(){ env(); const t=S.t; CELLS.length=0;
-  if(S.type==='multi'){ CELLS.push(cell(t+18,-16),cell(t+2,0),cell(t-14,15)); for(const c of CELLS) c.anv=Math.min(c.anv,22); let best=null; for(const c of CELLS) if(c.gust&&(!best||c.gust>best.gust)) best=c; for(const c of CELLS) if(c!==best){ c.gust=0; c.mb=false; } }
-  else if(S.type==='squall'){ CELLS.push(cell(26,6)); }
-  else CELLS.push(cell(t,0));
-  HC=null; LC=null; for(let k=0;k<CELLS.length;k++){ const c=CELLS[k]; if(!HC&&c.hail&&c.st==='mat') HC=c; if(!LC&&c.ltg&&c.al>0.5&&S.type!=='emb') LC=c; } }
-const STAGE={none:t2('no cloud','ingen sky'),cu:t2('cumulus (growing)','cumulus (voksende)'),mat:t2('mature','moden'),dis:t2('dissipating','oppløsning')};
-function layoutLife(){ const W=C.w,H=C.h; LY.W=W; LY.H=H; const n=W<560; ZT=W<=640?47000:56000; LY.L0=n?34:44; LY.R0=n?6:10; LY.T0=6; LY.yG=H-(n?20:24); }
-/* lumpy tower outline: left edge up, (anvil), right edge down */
-function towerPath(g,c,yb){ const half=c.w/2, xa=X(c.xc-half), xb=X(c.xc+half), yt=Y(c.top), n=7, wpx=xb-xa;
-  g.moveTo(xa,yb);
-  if(c.st==='cu'){ for(let k=1;k<=n;k++){ const y=yb-(yb-yt)*k/n, bump=wpx*(0.06+0.08*hash(k,c.xc)); g.quadraticCurveTo(xa-bump,y+(yb-yt)/(2*n),xa+wpx*0.08*k/n,y); }
-    g.quadraticCurveTo(xa+wpx*0.2,yt-wpx*0.25,X(c.xc),yt-4); g.quadraticCurveTo(xb-wpx*0.15,yt-wpx*0.2,xb-wpx*0.08,yt+(yb-yt)/n*0.6);
-    for(let k=n-1;k>=0;k--){ const y=yb-(yb-yt)*k/n, bump=wpx*(0.06+0.08*hash(k+11,c.xc)); g.quadraticCurveTo(xb+bump,y-(yb-yt)/(2*n),xb-wpx*0.08*k/n,y); } g.closePath(); return; }
-  const top=Math.min(c.top,TP), yab=Y(top-6500), ya=Y(top), aL=X(c.xc-half-4), aR=X(Math.min(KX1+5,c.xc+half+c.anv));
-  for(let k=1;k<=n;k++){ const y=yb-(yb-yab)*k/n, bump=wpx*(0.05+0.07*hash(k,c.xc)); g.quadraticCurveTo(xa-bump,y+(yb-yab)/(2*n),xa+wpx*0.05*Math.sin(k),y); }
-  g.lineTo(aL,yab+2); g.quadraticCurveTo(aL-8,ya+4,aL+6,ya); 
-  if(c.top>TP+500&&c.st==='mat'){ const yo=Y(c.top); g.lineTo(X(c.xc-half*0.5),ya); g.quadraticCurveTo(X(c.xc),yo-6,X(c.xc+half*0.5),ya); }
-  g.lineTo(aR,ya+1); g.quadraticCurveTo(aR+10,ya+5,aR,ya+10); g.quadraticCurveTo((xb+aR)/2,yab+2,xb+wpx*0.1,yab+5);
-  for(let k=n-1;k>=0;k--){ const y=yb-(yb-yab)*k/n, bump=wpx*(0.05+0.07*hash(k+11,c.xc)); g.quadraticCurveTo(xb+bump,y-(yb-yab)/(2*n),xb-wpx*0.05*Math.sin(k),y); } g.closePath(); }
-function drawLife(g){ const W=C.w,H=C.h, n=W<560; layoutLife(); bg(g,W,H); cells();
-  /* isotherms and tropopause */
-  if(S.show.iso){ g.setLineDash([5,4]); g.lineWidth=1.2;
-    for(const [z,lab,col] of [[FZL,'0 °C','#CFEFFF'],[M20,'−20 °C','#9FD8F0'],[M40,'−40 °C','#7FA9C0']]){ g.strokeStyle=col; g.globalAlpha=0.6; g.beginPath(); g.moveTo(LY.L0,Y(z)); g.lineTo(W-LY.R0,Y(z)); g.stroke(); g.globalAlpha=1; txt(g,lab,W-LY.R0-4,Y(z)-4,col,'right',10); }
-    g.strokeStyle='rgba(200,210,220,.35)'; g.beginPath(); g.moveTo(LY.L0,Y(TP)); g.lineTo(W-LY.R0,Y(TP)); g.stroke(); g.setLineDash([]); txt(g,L(t2('tropopause','tropopause')),W-LY.R0-4,Y(TP)-4,INK.mute,'right',10); }
-  const yb=Y(ENV.base);
-  /* squall line: trailing stratiform region */
-  if(S.type==='squall'){ const gr=g.createLinearGradient(0,Y(27000),0,Y(9000)); gr.addColorStop(0,'rgba(200,210,220,.55)'); gr.addColorStop(1,'rgba(130,145,158,.6)'); g.fillStyle=gr;
-    g.beginPath(); g.moveTo(X(KX0),Y(9000)); for(let x=KX0;x<=2;x+=1.5) g.lineTo(X(x),Y(27000+Math.sin(x/2.3)*500+(x>-6?(x+6)*700:0))); g.lineTo(X(2),Y(8000)); g.closePath(); g.fill();
-    g.fillStyle='rgba(120,160,200,.12)'; g.fillRect(X(KX0),Y(9000),X(0)-X(KX0),LY.yG-Y(9000)); }
-  /* rain shafts (static haze) */
-  for(const c of CELLS){ if(!c.rain) continue; const half=c.w/2, x0=X(c.xc-half), x1=X(c.xc+(c.st==='mat'?0.15:1)*half); const gr=g.createLinearGradient(0,yb,0,LY.yG); gr.addColorStop(0,`rgba(120,165,210,${0.28*c.rain})`); gr.addColorStop(1,`rgba(120,165,210,${0.12*c.rain})`); g.fillStyle=gr; g.fillRect(x0,yb,x1-x0,LY.yG-yb); }
-  /* cells */
-  for(const c of CELLS){ if(c.st==='none') continue; g.save(); g.globalAlpha=c.al; const gr=g.createLinearGradient(0,Y(c.top),0,yb); gr.addColorStop(0,'rgba(240,244,247,.97)'); gr.addColorStop(0.55,'rgba(198,208,217,.96)'); gr.addColorStop(1,'rgba(98,112,126,.97)'); g.fillStyle=gr;
-    g.beginPath(); towerPath(g,c,yb); g.fill();
-    if(S.show.haz&&ENV.cb&&c.st!=='cu'){ g.save(); g.clip(); g.fillStyle=PAT.ice; g.fillRect(0,Y(Math.min(c.top,M20)),W,Y(FZL)-Y(Math.min(c.top,M20))); g.restore(); }
-    g.restore(); }
-  /* embedded: the layer cloud hides it */
-  if(S.type==='emb'){ const gr=g.createLinearGradient(0,Y(23000),0,Y(3000)); gr.addColorStop(0,'rgba(178,190,201,.93)'); gr.addColorStop(1,'rgba(110,124,138,.95)'); g.fillStyle=gr; g.beginPath(); g.moveTo(X(KX0),Y(3000));
-    for(let x=KX0;x<=KX1;x+=1.2) g.lineTo(X(x),Y(22000+Math.sin(x/3.1)*600+Math.sin(x/1.3)*250)); g.lineTo(X(KX1),Y(3000)); g.closePath(); g.fill();
-    const c=CELLS[0]; if(c.st!=='none'){ g.setLineDash([4,4]); g.strokeStyle='rgba(255,215,160,.8)'; g.lineWidth=1.2; g.beginPath(); towerPath(g,c,Y(3000)); g.stroke(); g.setLineDash([]); tag(g,L(t2('CB hidden in layer cloud','CB skjult i lagskyer')),X(c.xc),Y(12000),'#FFD7A0','center'); } }
-  /* turbulence zone around mature cells */
-  if(S.show.haz&&ENV.cb){ for(const c of CELLS){ if(c.st!=='mat'&&!(c.st==='dis'&&S.type!=='multi')) continue; const half=c.w/2, xa=X(c.xc-half-14), xb=X(c.xc+half+14+c.anv*0.4), yt=Y(Math.min(ZT,c.top+3000));
-    g.save(); g.globalAlpha=c.al; g.beginPath(); g.roundRect?g.roundRect(xa,yt,xb-xa,LY.yG-yt,18):g.rect(xa,yt,xb-xa,LY.yG-yt); g.setLineDash([6,4]); g.strokeStyle='rgba(240,180,64,.75)'; g.lineWidth=1.2; g.stroke(); g.setLineDash([]); g.restore();
-    tag(g,L(t2('severe turbulence','kraftig turbulens')),xa+6,yt+20,INK.amber,'left'); } }
-  /* gust front and microburst */
-  for(const c of CELLS){ if(!c.gust||c.al<0.4) continue; const xd=c.xc-c.w*0.25, xg=c.xc+c.w/2+c.gust; const y=LY.yG-6;
-    arrow(g,X(xd),y,X(xg),y,'rgba(238,243,247,.85)',2,7); arrow(g,X(xd),y,X(xd-6-c.gust*0.3),y,'rgba(238,243,247,.6)',1.6,6);
-    tag(g,L(t2('gust front','vindkastfront')),X(xg),y-10,INK.white,'right');
-    if(S.type==='squall'){ g.fillStyle='rgba(150,165,178,.9)'; g.beginPath(); g.moveTo(X(c.xc+c.w/2),Y(ENV.base)); g.quadraticCurveTo(X(xg-4),Y(ENV.base*0.5),X(xg-1),Y(900)); g.lineTo(X(c.xc+c.w/2-1),Y(900)); g.closePath(); g.fill(); tag(g,L(t2('shelf cloud','hyllesky')),X(c.xc+c.w/2+2),Y(ENV.base+1400),'#C9D2DA','left'); }
-    if(c.mb&&S.type!=='squall'){ tag(g,L(t2('microburst','mikroburst')),X(xd),Y(ENV.base*0.6),INK.red,'right'); } }
-  /* avoidance */
-  const mc=CELLS.find(c=>c.st==='mat')||CELLS.find(c=>c.st==='dis');
-  if(S.show.avoid&&mc&&ENV.cb){ g.setLineDash([3,4]); g.lineWidth=1.2;
-    for(const [km,lab] of [[18.5,'10 NM'],[37,'20 NM']]){ for(const sgn of [-1,1]){ const x=X(mc.xc+sgn*(mc.w/2+km)); if(x<LY.L0||x>W-LY.R0) continue; g.strokeStyle='rgba(228,107,174,.7)'; g.beginPath(); g.moveTo(x,Y(ZT-4000)); g.lineTo(x,LY.yG); g.stroke(); txt(g,lab,x,Y(ZT-4000)-4,INK.mag,'center',10); } }
-    g.setLineDash([]); if(mc.anv>8) tag(g,L(t2('hail can fall from the anvil','hagl kan falle fra ambolten')),X(mc.xc+mc.w/2+4),Y(Math.min(mc.top,TP)-12000),INK.mag,'left'); }
-  /* labels */
-  for(const c of CELLS){ if(c.st==='none') continue; if(S.type==='multi') txt(g,L(STAGE[c.st]),X(c.xc),Y(Math.min(ZT-1500,c.top+1800)),c.st==='mat'?'#FFD7A0':INK.ink,'center',n?10:11,600);
-    if(c.st==='mat'&&c.anv>14&&!n&&S.type!=='multi') tag(g,L(t2('anvil','ambolt')),X(c.xc+c.w/2+c.anv*0.6),Y(Math.min(c.top,TP)-7500),'#C9D2DA','left');
-    if(c.st==='mat'&&c.top>TP+500&&!n) tag(g,L(t2('overshooting top','overskytende topp')),X(c.xc)+30,Y(c.top)-2,'#C9D2DA','left'); }
-  if(!ENV.cb){ const msg=ENV.why==='lift'?t2('No lift: moist, unstable air, but nothing starts it rising. Clear sky.','Ingen løft: fuktig, ustabil luft, men ingenting får den til å stige. Klar himmel.'):ENV.why==='moist'?t2('Too dry: the cloud base is high and only small cumulus form.','For tørt: skybasen er høy, og bare små cumulus dannes.'):t2('Too stable: the cumulus stops growing. No CB.','For stabilt: cumulusen slutter å vokse. Ingen CB.');
-    txt(g,L(msg),W/2,Y(32000),INK.amber,'center',n?10:12,600); }
-  /* cloud base, ground, axes */
-  if(CELLS.some(c=>c.st!=='none')){ txt(g,L(t2('base','base'))+' '+nf(ENV.base,0)+' ft',X(CELLS[0].xc-CELLS[0].w/2)-6,yb+4,INK.mute,'right',10); }
-  g.fillStyle='#2a2f2a'; g.fillRect(LY.L0,LY.yG,W-LY.L0-LY.R0,4); g.strokeStyle='#55626e'; g.lineWidth=1; g.beginPath(); g.moveTo(LY.L0,LY.yG+0.5); g.lineTo(W-LY.R0,LY.yG+0.5); g.stroke();
-  axesFt(g,[10000,20000,30000,40000],Y,W);
-  const sx=X(KX1-5), s10=X(KX1-5)-X(KX1-5-18.52); g.strokeStyle=INK.mute; g.lineWidth=1.2; g.beginPath(); g.moveTo(sx-s10,LY.yG+12); g.lineTo(sx,LY.yG+12); g.moveTo(sx-s10,LY.yG+8); g.lineTo(sx-s10,LY.yG+16); g.moveTo(sx,LY.yG+8); g.lineTo(sx,LY.yG+16); g.stroke(); txt(g,'10 NM',sx-s10/2,LY.yG+(n?20:22),INK.mute,'center',9.5);
-  }
-function axesFt(g,ticks,Yf,W){ g.font=`10px ${MONO}`; g.textAlign='right'; for(const a of ticks){ const y=Yf(a); g.fillStyle=INK.dim; g.fillText(a>=10000?'FL'+a/100:nf(a,0),LY.L0-4,y+3); g.strokeStyle='rgba(255,255,255,.05)'; g.beginPath(); g.moveTo(LY.L0,y); g.lineTo(W-LY.R0,y); g.stroke(); } g.textAlign='left'; }
-/* particles, rain, hail, lightning (life view) */
-const NPt=260, pX=new Float32Array(NPt), pZ=new Float32Array(NPt), pU=new Float32Array(NPt), pW=new Float32Array(NPt);
-const NR=150, rX=new Float32Array(NR), rP=new Float32Array(NR), rC=new Int8Array(NR);
-const LTG=new Float32Array(32); let ltgN=0, ltgT=0, ltgNext=1.2;
-const VEL={u:0,w:0};
-function vel(x,z){ let u=0,w=0; for(let i=0;i<CELLS.length;i++){ const c=CELLS[i]; if(c.st==='none') continue; const half=c.w/2, dx=x-c.xc, sh=Math.cos(Math.PI/2*clamp(dx/half,-1,1));
-    if(c.st==='cu'){ if(Math.abs(dx)<half&&z>ENV.base*0.3&&z<c.top) w+=c.up*sh*(0.3+0.7*Math.sin(Math.PI*clamp(z/c.top,0,1))); continue; }
-    if(c.st==='mat'&&dx>-0.15*half&&dx<half&&z>ENV.base*0.3&&z<c.top){ const s2=Math.cos(Math.PI/2*clamp((dx-0.42*half)/(0.58*half),-1,1)); w+=c.up*s2*(0.35+0.65*Math.sin(Math.PI*clamp(z/c.top,0,1))); if(z>Math.min(c.top,TP)-5500){ u+=1.6; w*=0.25; } }
-    const dlo=c.st==='mat'?-half:-half, dhi=c.st==='mat'?-0.15*half:half; if(c.dn&&dx>dlo&&dx<dhi&&z<Math.min(c.top*0.75,26000)){ const s3=Math.cos(Math.PI/2*clamp((dx-(dlo+dhi)/2)/((dhi-dlo)/2),-1,1)); w-=c.dn*s3*(z<2500?z/2500:1)*(c.mb?1.5:1); }
-    if(c.dn&&z<3000){ const xd=c.xc+(c.st==='mat'?-0.55*half:0), r=x-xd; if(Math.abs(r)<c.gust+half+4) u+=Math.sign(r)*c.dn*0.0011*(r>0?1.2:0.7)*Math.exp(-z/1500)*clamp(Math.abs(r)/2,0,1); } }
-  VEL.u=u; VEL.w=w; return VEL; }
-function respawn(i){ let nl=0; for(let k=0;k<CELLS.length;k++) if(CELLS[k].st!=='none') nl++; if(!nl){ pZ[i]=-1; return; } let pick=Math.floor(Math.random()*nl), c=null; for(let k=0;k<CELLS.length;k++){ if(CELLS[k].st==='none') continue; if(pick--===0){ c=CELLS[k]; break; } } const half=c.w/2;
-  if(c.st==='mat'&&Math.random()<0.35){ pX[i]=c.xc-half*(0.2+0.75*Math.random()); pZ[i]=6000+Math.random()*Math.min(18000,c.top*0.6); }
-  else if(c.st==='dis'){ pX[i]=c.xc+(Math.random()-0.5)*c.w; pZ[i]=4000+Math.random()*c.top*0.6; }
-  else { pX[i]=c.xc+(c.st==='mat'?(Math.random()*0.85)*half:(Math.random()-0.5)*c.w*0.8); pZ[i]=ENV.base*0.5+Math.random()*(c.top*0.85-ENV.base*0.5); } }
-function seedLife(){ for(let i=0;i<NPt;i++) respawn(i); for(let i=0;i<NR;i++){ rP[i]=Math.random(); rC[i]=-1; } }
-function stepLife(dt,t){ for(let i=0;i<NPt;i++){ if(pZ[i]<0){ respawn(i); continue; } const v=vel(pX[i],pZ[i]); pU[i]=v.u; pW[i]=v.w; pX[i]+=v.u*dt; pZ[i]+=v.w*0.35*dt;
-    if(pZ[i]<=200||pZ[i]>ZT||pX[i]<KX0||pX[i]>KX1||(Math.abs(v.w)<60&&Math.abs(v.u)<0.1)||Math.random()<dt*0.12) respawn(i); }
-  ltgT-=dt; if(ltgT<=0&&ltgN) ltgN=0; ltgNext-=dt; if(ltgNext<=0&&!reduce){ ltgNext=0.8+Math.random()*2.2; const c=LC; if(c){ const cg=Math.random()<0.45; let x=c.xc+(Math.random()-0.5)*c.w*0.6, z=cg?FZL+2000+Math.random()*6000:16000+Math.random()*10000; ltgN=0;
-      for(let k=0;k<16;k++){ LTG[2*k]=x; LTG[2*k+1]=z; ltgN++; if(cg){ z-=(z/ (16-k)); x+=(Math.random()-0.5)*1.6; if(z<=0){ LTG[2*k+1]=0; break; } } else { x+=(Math.random()-0.3)*2.2; z+=(Math.random()-0.5)*1800; } } ltgT=0.14; } } }
-function frameLife(g,t){ const W=C.w;
-  /* rain */
-  const yb=Y(ENV.base); g.strokeStyle='rgba(140,190,235,.7)'; g.lineWidth=1; g.beginPath();
-  for(let i=0;i<NR;i++){ const c=CELLS[i%CELLS.length]; if(!c||!c.rain||c.st==='none') continue; if(i/NR>c.rain*(S.type==='emb'?1:1)) continue; const half=c.w/2, x0=c.xc-half, x1=c.xc+(c.st==='mat'?0.15:1)*half, x=X(x0+(x1-x0)*hash(i,7)); const f=(rP[i]+t*0.9)%1, y=yb+(LY.yG-yb)*f; g.moveTo(x,y); g.lineTo(x-1,y+6); } g.stroke();
-  /* hail */
-  const hc=HC; if(hc&&S.type!=='emb'){ g.fillStyle='rgba(240,248,255,.95)'; g.beginPath(); const half=hc.w/2;
-    for(let k=0;k<16;k++){ const x=hc.xc+half*(0.05+0.8*hash(k,3)), z=FZL+2000+(Math.min(hc.top,TP)*0.62-FZL)*hash(k,5)+2200*Math.sin(t*1.1+k*1.7); g.moveTo(X(x)+2,Y(z)); g.arc(X(x),Y(z),2,0,Math.PI*2); }
-    for(let k=0;k<6;k++){ const x=hc.xc+half+2+Math.min(14,hc.anv*0.5)*hash(k,9), f=(hash(k,2)+t*0.35)%1, z=(Math.min(hc.top,TP)-6500)*(1-f); g.moveTo(X(x)+2,Y(z)); g.arc(X(x),Y(z),1.8,0,Math.PI*2); }
-    g.fill(); }
-  /* air motion */
-  if(S.show.air){ for(let pass=0;pass<2;pass++){ g.beginPath(); for(let i=0;i<NPt;i++){ if(pZ[i]<0) continue; const up=pW[i]>=0; if((pass===0)!==up) continue; const x=X(pX[i]), y=Y(pZ[i]), dx=pU[i]*0.9, dz=pW[i]*0.35*0.55; g.moveTo(x,y); g.lineTo(X(pX[i]-dx),Y(pZ[i]-dz)); }
-      g.strokeStyle=pass===0?'rgba(240,160,80,.95)':'rgba(110,180,240,.95)'; g.lineWidth=1.6; g.stroke(); } }
-  /* lightning */
-  if(ltgN>1){ g.save(); g.strokeStyle='rgba(255,250,210,.95)'; g.shadowColor='rgba(255,250,200,.9)'; g.shadowBlur=10; g.lineWidth=1.6; g.beginPath(); g.moveTo(X(LTG[0]),Y(LTG[1])); for(let k=1;k<ltgN;k++) g.lineTo(X(LTG[2*k]),Y(LTG[2*k+1])); g.stroke(); g.restore(); }
-}
+/* ---------------- 3D ---------------- */
+const NOGL=t2('The 3D storm needs WebGL, which this browser has turned off or does not support. Try another browser or device. The rest of the page, the radar display and the airspeed strip still work.','3D-stormen trenger WebGL, som denne nettleseren har slått av eller ikke støtter. Prøv en annen nettleser eller enhet. Resten av siden, radarskjermen og fartsstripen fungerer fortsatt.');
+const fl=v=>v>=10000?'FL'+Math.round(v/100):nf(v,0)+' ft';
+const RO={a:-99,b:-99,c:-99,gnd:false,gr:0,hA:0,wA:0,attB:0};
+const DC={x:0,z:0};
+/* the five named stages of a single cell: the backbone of the 3D model */
+const DEV={
+ hum:{n:t2('Cumulus humilis/mediocris','Cumulus humilis/mediocris'),ab:'CU',t:3,top:t2('base + 3,000–6,000 ft','base + 3000–6000 ft'),
+   w:t2('Small heaps with flat bases, tops below the freezing level. Rising thermals, nothing more.','Små hauger med flat base, toppene under frysenivået. Stigende termikk, ikke noe mer.'),
+   p:t2('Light turbulence below and in them. Watch them: if they grow, the day is unstable.','Lett turbulens under og i dem. Følg med: vokser de, er dagen ustabil.'),mt:t2('not named in METAR (cloud amount only)','nevnes ikke i METAR (bare skymengde)')},
+ tcu:{n:t2('Cumulus congestus','Cumulus congestus'),ab:'TCU',t:10,top:t2('FL150–FL250','FL150–FL250'),
+   w:t2('Tall cauliflower towers with crisp edges. Strong updrafts carry supercooled water above the freezing level; no ice at the top yet.','Høye blomkålstårn med skarpe kanter. Sterk oppvind bærer underkjølt vann over frysenivået; ingen is i toppen ennå.'),
+   p:t2('Severe turbulence and icing possible inside: avoid. It can become a CB within 10–20 minutes.','Kraftig turbulens og ising er mulig inni: unngå. Den kan bli en CB i løpet av 10–20 minutter.'),mt:t2('reported as TCU','rapporteres som TCU')},
+ calvus:{n:t2('Cumulonimbus calvus','Cumulonimbus calvus'),ab:'CB',t:17,top:t2('near the tropopause','nær tropopausen'),
+   w:t2('The top turns to ice: the crisp edges go soft and fibrous. The first lightning; rain forms aloft but has not reached the ground.','Toppen blir til is: de skarpe kantene blir myke og trådete. De første lynene; regn dannes i høyden, men har ikke nådd bakken.'),
+   p:t2('It is a CB now: avoid by at least 10 NM, 20 NM if it is severe.','Det er en CB nå: unngå med minst 10 NM, 20 NM hvis den er kraftig.'),mt:t2('reported as CB','rapporteres som CB')},
+ incus:{n:t2('Cumulonimbus capillatus incus','Cumulonimbus capillatus incus'),ab:'CB',t:26,top:t2('FL350–FL450, overshooting top','FL350–FL450, overskytende topp'),
+   w:t2('Mature: the anvil spreads downwind, rain and hail reach the ground, the downdraft spreads out as a gust front, microbursts are possible.','Moden: ambolten sprer seg med vinden, regn og hagl når bakken, nedvinden sprer seg som en vindkastfront, mikroburster er mulig.'),
+   p:t2('All hazards at once. Avoid by 20 NM, more on the anvil side; never under the anvil.','Alle farer på en gang. Unngå med 20 NM, mer på amboltsiden; aldri under ambolten.'),mt:t2('CB, often with TS, +TSRA or TSGR','CB, ofte med TS, +TSRA eller TSGR')},
+ dis:{n:t2('Dissipating CB','CB i oppløsning'),ab:'CB',t:47,top:t2('falling; the anvil stays (orphan anvil)','synker; ambolten blir igjen (foreldreløs ambolt)'),
+   w:t2('Downdrafts everywhere, the updraft is gone, light rain. The detached anvil drifts on downwind.','Nedvind overalt, oppvinden er borte, lett regn. Den løsrevne ambolten driver videre med vinden.'),
+   p:t2('Still turbulent with a gusty outflow, and hail can still fall from the anvil. Keep clear until it has rained out.','Fortsatt turbulent med kastende utstrømming, og hagl kan fortsatt falle fra ambolten. Hold avstand til den har regnet ut.'),mt:t2('CB, often with RA or SHRA','CB, ofte med RA eller SHRA')}};
+const DEVK=['hum','tcu','calvus','incus','dis'];
+const PL={x:0,h:25000,z:0,hdg:0,cx:0,cz:0}, PR={};
+function labels(lbl,api,narrow){ const v=api.view, vx=api.VEX[v]||1, Y=ft=>ft*FT2KM*vx;
+  if(v==='storm'){ const c=M.main(CELLS); if(!c) return; const hb=E.base*FT2KM, tk=TROPO*FT2KM, cxT=c.x+E.tilt*(tk-hb), sq=E.type==='squall';
+    if(E.type==='single'||E.type==='emb'){ const d=DEV[c.dev]; if(d) lbl(L(d.n)+' · '+d.ab,c.x+E.tilt*(Math.min(c.top,TROPO)*FT2KM-hb),Y(Math.min(c.top,TROPO)+c.over),c.z,'up',c.st==='cu'?60:-110,-40,4); }
+    if(c.over>400&&!sq&&c.dev==='incus') lbl(L(t2('Overshooting top','Overskytende topp')),cxT,Y(TROPO+c.over),c.z,'',-40,-34,2);
+    if(c.anv>0.35&&!sq&&E.type!=='multi') lbl(L(t2('Anvil, spread downwind by the upper wind','Ambolt, spredt med vinden i høyden')),cxT+E.anvL*c.anv*0.72,(tk-0.4)*vx,c.z,'',10,-38,2);
+    if(c.st==='mat'&&c.anv>0.65&&!sq&&E.type!=='emb'){ const La=E.anvL*c.anv, a=0.34, thick=(2.6-1.5*a)*(0.5+0.5*c.anv); lbl(L(t2('Mammatus under the anvil','Mammatus under ambolten')),cxT-c.R*0.9+a*(La+c.R*0.9),(tk+0.35*(1-a)-thick-0.5)*vx,c.z+3,'',40,40,1); }
+    if(E.type==='single'&&c.st==='mat'){ const ht=Math.min(c.top,TROPO)*FT2KM; lbl(L(t2('Flanking line: new towers','Flankelinje: nye tårn')),c.x-3.6-4.3,(hb+(ht-hb)*0.38)*vx,c.z+3.2+4.6,'',-30,-30,1); }
+    if(c.rain>0.2){ if(sq){ DC.x=c.x+c.R*0.6; DC.z=c.z; } else M.downCentre(E,c,DC); lbl(L(c.hail>=2?t2('Rain and hail shaft','Regn- og haglsjakt'):t2('Rain shaft','Regnsjakt')),DC.x,hb*0.45*vx,DC.z+c.R*0.4,'dn',-50,20,1);
+      if(c.gust>4&&!S.show.gust&&E.type!=='emb') lbl(L(t2('Shelf cloud on the gust front','Hyllesky på vindkastfronten')),(sq?1.5:DC.x)+c.gust*0.9,0.55*vx,sq?12:DC.z,'',30,-30,2); }
+    if(E.type==='multi'){ for(const q of CELLS){ if(q===c||q.st==='none'||q.al<0.3) continue; lbl(L(q.st==='cu'?t2('new cell','ny celle'):q.st==='mat'?t2('mature','moden'):t2('dissipating','i oppløsning')),q.x,Y(Math.min(q.top,TROPO)),q.z,'',0,-26,2); } }
+    if(sq) lbl(L(t2('Squall line: cells side by side','Bygelinje: celler side om side')),2,Y(TROPO)+0.6*vx,24,'',0,-30,3);
+    if(E.type==='emb'){ lbl(L(t2('Layer cloud hides the CB: only radar and lightning show it','Lagskyer skjuler CB-en: bare radar og lyn viser den')),c.x-14,Y(21000),c.z+16,'hz',0,-30,4); }
+    if(S.show.levels&&!narrow){ const x=c.x+6-30; lbl(L(t2('Cloud base','Skybase'))+' '+nf(E.base,0)+' ft',x,Y(E.base),27,'lv',-10,16,1); lbl('0 °C · '+fl(E.fzl),x,Y(E.fzl),27,'lv',-10,16,1); lbl('−20 °C · '+fl(E.m20),x,Y(E.m20),27,'lv',-10,16,1); }
+    if(S.show.flow&&c.up>0) lbl(L(t2('Updraft','Oppvind'))+' ≈'+nf(Math.round(c.up/100)*100,0)+' ft/min',c.x+E.tilt*4,Y(c.top*0.45),c.z,'up',-70,-20,3);
+    if(S.show.flow&&c.dd>0&&!sq){ M.downCentre(E,c,DC); lbl(L(t2('Downdraft','Nedvind')),DC.x,Y(E.base+6000),DC.z,'dn',60,0,2); }
+    if(S.show.hail&&c.st==='mat'&&c.hail>0) lbl(L(t2('Hail grows on every loop','Haglet vokser for hver runde')),c.x+E.tilt*((E.fzl+E.m20)/2*FT2KM-hb)+c.R*0.4,Y((E.fzl+E.m20)/2),c.z,'ice',70,-10,2);
+    if(S.show.gust&&c.gust>2){ let x; if(sq) x=1.5+c.gust; else { M.downCentre(E,c,DC); x=DC.x+c.gust; } lbl(L(t2('Gust front','Vindkastfront'))+' · '+E.gustV+' kt · '+L(t2('gusts','kast'))+' '+E.gustW+' kt',x,0.9*vx,sq?8:DC.z,'dn',30,-34,3); }
+    if(S.show.ring){ let q=null; for(const k of CELLS) if(k.mb>0.05&&(!q||k.mb>q.mb)) q=k; if(q){ M.downCentre(E,q,DC); lbl(L(t2('Microburst: ring vortex at the ground','Mikroburst: ringvirvel ved bakken')),DC.x,1.6,DC.z,'hz',-60,24,3); } }
+    if(S.show.ice&&c.st!=='cu') lbl(L(t2('Icing: supercooled water, 0 to −20 °C','Ising: underkjølt vann, 0 til −20 °C')),c.x+c.R*0.8+E.tilt*((E.fzl+E.m20)/2*FT2KM-hb),Y((E.fzl+E.m20)/2),c.z+c.R*0.6,'ice',-60,-30,2);
+    if(S.show.turb&&c.st!=='cu') lbl(L(t2('Severe turbulence, also in clear air around the cell','Kraftig turbulens, også i klar luft rundt cellen')),c.x-c.R-6,Y(c.top*0.62),c.z,'tb',-30,-20,2);
+    if(S.show.avoid&&c.st!=='cu'){ const x0=sq?1:c.x; lbl('10 NM',x0-18.5,0.2,sq?-28:c.z,'av',0,-18,2); lbl('20 NM',x0-37,0.2,sq?-28:c.z,'av',0,-18,2); }
+    if(S.plane.on){ const l=lbl('',0,0,0,'av',40,-30,5); l.follow=p=>p.set(PL.x,PL.h*FT2KM*vx,PL.z); l.txt=()=>L(t2('You','Du'))+' · '+fl(PL.h)+' · '+(PR.dCore>500?'–':nf(PR.dCore,0)+' NM '+L(t2('to the core','til kjernen'))); }
+    return; }
+  if(v==='mb'){ const X=d=>-2*d;
+    lbl(L(t2('Downdraft','Nedvind')),X(MB.xc),1.9,0,'dn',0,-30,3);
+    lbl(L(t2('Headwind: IAS rises','Motvind: IAS øker')),X(MB.xc+MB.R*1.5),0.32,0,'gr',-20,-36,3);
+    lbl(L(t2('Tailwind: IAS falls','Medvind: IAS faller')),X(MB.xc-MB.R*1.4),0.32,0,'hz',20,-36,3);
+    lbl(L(t2('3° glide path','3° glidebane')),X(5.4),MB.gs(5.4)/1000,0,'gr',0,-26,2);
+    lbl(L(t2('Runway','Rullebane')),0.9,0,0,'lv',30,24,1);
+    if(S.show.ring) lbl(L(t2('Ring vortex','Ringvirvel')),X(MB.xc)+MB.R*2*0.9,0.9,0,'hz',50,-10,2);
+    return; }
+  if(v==='wx'){ for(const c of M.radarCells()){ const q=c.q; if(q.r>RD.rng) continue; lbl(q.id+' · '+L(t2('top','topp'))+' '+fl(q.top),c.x,Y(q.top)+1,c.z,'',0,-28,3); }
+    const r=Math.min(RD.rng*0.3,20); lbl(L(t2('Radar beam','Radarstråle'))+' '+(RD.tilt>0?'+':RD.tilt<0?'−':'')+nf(Math.abs(RD.tilt),2)+'°',r*1.852,Y(Math.max(0,RD.beamC(r))),0,'av',-20,-34,3);
+    if(S.show.levels) lbl('0 °C · '+fl(M.RFZL),12,Y(M.RFZL),-30,'lv',0,18,1);
+    if(RO.b<20&&RO.attB>8&&RD.rng>=68) lbl(L(t2('Attenuation shadow: B is hidden','Dempingsskygge: B er skjult')),68*1.852,Y(Math.max(0,RD.beamC(68))),0,'hz',0,36,2); } }
+const V=window.CB3D?CB3D.init({host:el('c3'),canvas:el('cb3'),labels:el('labels'),chip:el('chip'),legend:el('cbar'),T:()=>L(NOGL),labelSet:labels})
+  :{ok:false,setView(){},setStorm(){},setShow(){},setLook(){},cam(){},setMB(){},mbK(){},setRadar(){},tick(){},relabel(){},resize(){},presets:()=>['q','side'],VEX:{}};
+if(!window.CB3D){ const n=document.createElement('div'); n.className='nogl'; n.textContent=L(NOGL); el('c3').appendChild(n); }
 
-/* =============== 2. MICROBURST ON FINAL =============== */
-const D0=6, HT=2600, MAXN=2400, DT=0.1;
-const sD=new Float32Array(MAXN), sH=new Float32Array(MAXN), sV=new Float32Array(MAXN), sHW=new Float32Array(MAXN), sW=new Float32Array(MAXN), sF=new Uint8Array(MAXN);
-const SIM={n:0,trig:-1,gnd:-1,shaker:-1,minV:0,maxV:0,minDev:0,ga:false};
-const MB={L0:40,R0:10,T0:8,yG:0,yS0:0,yS1:0};
-const MX=d=>MB.L0+(D0-d)/D0*(C.w-MB.L0-MB.R0), MY=h=>MB.yG-h/HT*(MB.yG-MB.T0);
-function hw(d,h){ const dx=(d-S.xc)/S.R, f=dx*Math.exp(0.5*(1-dx*dx)), hf=clamp(h/150,0.5,1)*Math.exp(-Math.max(0,h-300)/1300); return S.dv/2*f*hf; }
-function wv(d,h){ const dx=(d-S.xc)/S.R; return -40*S.dv*Math.exp(-dx*dx/0.64)*clamp(h/500,0.12,1); }
-const gsH=d=>d*6076*Math.tan(3*Math.PI/180)+50;
-function simulate(){ const V0=S.vapp, a0=5, th0=-3+a0, TW0=0.12-Math.sin(3*Math.PI/180); let d=5.4, h=gsH(5.4), V=V0, th=th0, TW=TW0, mode=0, prevHW=hw(d,h); // mode 0 approach, 1 recovery
-  SIM.trig=-1; SIM.gnd=-1; SIM.shaker=-1; SIM.minV=V0; SIM.maxV=V0; SIM.minDev=0; SIM.ga=false; let i=0;
-  for(;i<MAXN;i++){ const W_=hw(d,h), w=wv(d,h), a=a0*(V0/V)*(V0/V), ga=(th-a)*Math.PI/180;
-    sD[i]=d; sH[i]=h; sV[i]=V; sHW[i]=W_; sW[i]=w; sF[i]=mode; SIM.minV=Math.min(SIM.minV,V); SIM.maxV=Math.max(SIM.maxV,V); SIM.minDev=Math.min(SIM.minDev,h-gsH(Math.max(0,d)));
-    if(a>12&&SIM.shaker<0) SIM.shaker=i;
-    if(mode===0&&((S.pil==='rec'&&(V<V0-15||h<gsH(d)-150))||(S.pil==='early'&&(V>V0+10||W_-hw(5.4,gsH(5.4))>12)))){ mode=1; SIM.trig=i; }
-    if(mode===1){ TW=Math.min(0.30,TW+0.08*DT); th=Math.min(15,th+3*DT); if(a>12) th-=4*DT; }
-    const D_=0.03*(V/V0)*(V/V0)+0.09*(V0/V)*(V0/V);
-    const dHW=(W_-prevHW)/DT; prevHW=W_;
-    V+=(19.06*(TW-D_-Math.sin(ga))+dHW)*DT; V=Math.max(60,V);
-    h+=(V*1.6878*Math.sin(ga)+w/60)*DT; d-=(V*Math.cos(ga)-W_)/3600*DT;
-    if(h<=0&&d>0.05){ SIM.gnd=i; sD[i+1]=d; sH[i+1]=0; sV[i+1]=V; sHW[i+1]=W_; sW[i+1]=w; sF[i+1]=mode; i+=2; break; }
-    if(d<=0||(mode===1&&h>HT-150)){ i++; break; } }
-  SIM.n=Math.min(i,MAXN); SIM.ga=SIM.trig>=0; }
-function drawMB(g){ const W=C.w,H=C.h,n=W<560; MB.L0=n?36:44; MB.R0=n?6:10; MB.T0=8; const sh=Math.max(70,Math.round(H*0.24)); MB.yS1=H-6; MB.yS0=H-sh; MB.yG=MB.yS0-(n?20:24);
-  bg(g,W,H); simulate();
-  /* cloud base and rain shaft over the microburst */
-  const xc=MX(S.xc), rw=MX(S.xc-S.R*1.1)-MX(S.xc+S.R*1.1), cb=MY(HT-120);
-  const gr=g.createLinearGradient(0,MB.T0,0,cb+16); gr.addColorStop(0,'rgba(90,103,116,.98)'); gr.addColorStop(1,'rgba(70,82,94,.98)'); g.fillStyle=gr; g.beginPath(); g.moveTo(MB.L0,MB.T0);
-  for(let x=MB.L0;x<=W-MB.R0;x+=6){ const near=Math.exp(-Math.pow((x-xc)/(rw*1.6),2)); g.lineTo(x,cb-6+near*14+Math.sin(x/9)*3); } g.lineTo(W-MB.R0,MB.T0); g.closePath(); g.fill();
-  const rs=g.createLinearGradient(0,cb,0,MB.yG); rs.addColorStop(0,'rgba(120,165,210,.35)'); rs.addColorStop(1,'rgba(120,165,210,.15)'); g.fillStyle=rs; g.beginPath(); g.moveTo(xc-rw*0.45,cb); g.lineTo(xc+rw*0.45,cb); g.lineTo(xc+rw*0.75,MB.yG); g.lineTo(xc-rw*0.75,MB.yG); g.closePath(); g.fill();
-  /* wind field */
-  if(S.show.air){ g.lineWidth=1.2; for(let h=150;h<HT-250;h+=330) for(let d=0.15;d<D0;d+=D0/(n?11:20)){ const u=-hw(d,h), w=wv(d,h); const sx=u, sy=w/60*0.6; const m=Math.hypot(sx,sy); if(m<2) continue; const k=Math.min(18,4+m*0.45)/m, x=MX(d), y=MY(h);
-      arrow(g,x-sx*k/2,y+sy*k/2,x+sx*k/2,y-sy*k/2,w<-600?'rgba(110,180,240,.75)':'rgba(238,243,247,.45)',1.1,4); } }
-  /* runway, glide path */
-  g.fillStyle='#2a2f2a'; g.fillRect(MB.L0,MB.yG,W-MB.L0-MB.R0,4); g.fillStyle='#55626e'; g.fillRect(MX(0),MB.yG-1,MX(-0.4)-MX(0)+6,5); txt(g,L(t2('runway','rullebane')),MX(0)-4,MB.yG-6,INK.mute,'right',10);
-  g.setLineDash([5,5]); g.strokeStyle='rgba(113,204,147,.75)'; g.lineWidth=1.3; g.beginPath(); g.moveTo(MX(D0),MY(gsH(D0))); g.lineTo(MX(0),MY(50)); g.stroke(); g.setLineDash([]); txt(g,L(t2('3° glide path','3° glidebane')),MX(5.6),MY(gsH(5.6))-8,INK.green,'left',10);
-  /* labels in the field */
-  tag(g,L(t2('headwind','motvind')),MX(S.xc+S.R*1.3),MY(300),INK.white,'center'); tag(g,L(t2('downdraft','nedvind')),xc,MY(HT*0.55),'#6EB4F0','center'); tag(g,L(t2('tailwind','medvind')),MX(S.xc-S.R*1.3),MY(300),INK.white,'center');
-  /* flown path */
-  g.strokeStyle='rgba(238,243,247,.9)'; g.lineWidth=1.8; g.beginPath(); for(let i=0;i<SIM.n;i+=2){ const x=MX(sD[i]), y=MY(sH[i]); if(i) g.lineTo(x,y); else g.moveTo(x,y); } g.stroke();
-  if(SIM.trig>=0){ const x=MX(sD[SIM.trig]), y=MY(sH[SIM.trig]); g.fillStyle=INK.amber; g.beginPath(); g.arc(x,y,4,0,Math.PI*2); g.fill(); txt(g,S.pil==='early'?L(t2('go-around','go-around')):L(t2('recovery','gjenoppretting')),x,y-9,INK.amber,'center',10); }
-  if(SIM.gnd>=0){ const x=clamp(MX(sD[SIM.gnd]),MB.L0+(n?60:130),W-MB.R0-(n?60:130)); txt(g,'✕ '+L(n?t2('ground contact','bakkekontakt'):t2('ground contact short of the runway','bakkekontakt før rullebanen')),x,MB.yG-10,INK.red,'center',n?10:11,600); }
-  /* axes */
-  axesMB(g,W,n);
-  /* strip: IAS change and headwind */
-  const y0=MB.yS0,y1=MB.yS1, xa=MX(D0), xb=MX(0); g.fillStyle='rgba(8,12,16,.45)'; g.fillRect(xa,y0,xb-xa,y1-y0); g.strokeStyle='rgba(255,255,255,.07)'; g.strokeRect(xa+0.5,y0+0.5,xb-xa-1,y1-y0-1);
-  const sc=Math.max(30,Math.ceil(Math.max(SIM.maxV-S.vapp,S.vapp-SIM.minV,S.dv/2)/10)*10), yk=v=>(y0+y1)/2-v/sc*((y1-y0)/2-8);
-  g.strokeStyle='rgba(255,255,255,.18)'; g.beginPath(); g.moveTo(xa,yk(0)); g.lineTo(xb,yk(0)); g.stroke();
-  g.setLineDash([4,3]); g.strokeStyle='rgba(238,243,247,.6)'; g.lineWidth=1.4; g.beginPath(); for(let i=0;i<SIM.n;i+=2){ const x=MX(sD[i]), y=yk(sHW[i]); if(i) g.lineTo(x,y); else g.moveTo(x,y); } g.stroke(); g.setLineDash([]);
-  g.strokeStyle=INK.amber; g.lineWidth=1.8; g.beginPath(); for(let i=0;i<SIM.n;i+=2){ const x=MX(sD[i]), y=yk(sV[i]-S.vapp); if(i) g.lineTo(x,y); else g.moveTo(x,y); } g.stroke();
-  txt(g,'IAS − Vapp',xa+4,y0+12,INK.amber,'left',10,600); txt(g,L(t2('headwind','motvind')),xa+4,y0+25,'#C9D2DA','left',10); txt(g,'+'+sc+' kt',xb-4,y0+12,INK.dim,'right',9.5); txt(g,'−'+sc+' kt',xb-4,y1-4,INK.dim,'right',9.5);
-  MB.yk=yk; }
-function axesMB(g,W,n){ g.font=`10px ${MONO}`; g.textAlign='right'; for(const a of [500,1000,1500,2000]){ const y=MY(a); g.fillStyle=INK.dim; g.fillText(nf(a,0),MB.L0-4,y+3); g.strokeStyle='rgba(255,255,255,.05)'; g.beginPath(); g.moveTo(MB.L0,y); g.lineTo(W-MB.R0,y); g.stroke(); }
-  g.textAlign='center'; for(let d=1;d<=5;d++) g.fillText(d+(d===5?' NM':''),MX(d),MB.yG+15); g.textAlign='left'; }
-function frameMB(g){ const i=Math.min(SIM.n-1,Math.floor(S.k)); if(i<0) return; const x=MX(sD[i]), y=MY(sH[i]);
-  g.strokeStyle=INK.mag; g.lineWidth=1.2; g.beginPath(); g.moveTo(x,MB.yS0); g.lineTo(x,MB.yS1); g.stroke(); if(MB.yk){ g.fillStyle=INK.amber; g.beginPath(); g.arc(x,MB.yk(sV[i]-S.vapp),3,0,Math.PI*2); g.fill(); }
-  const a=i>0?Math.atan2(-(sH[i]-sH[i-1])*(MB.yG-MB.T0)/HT,(sD[i-1]-sD[i])/D0*(C.w-MB.L0-MB.R0)||1):0;
-  g.save(); g.translate(x,y); g.rotate(a); drawJetSide(g,C.w<560?1.05:1.3); g.restore(); }
-function drawJetSide(g,s){ g.save(); g.scale(s,s); g.fillStyle='#E8EEF2'; g.strokeStyle='rgba(10,14,18,.9)'; g.lineWidth=0.8/s;
-  g.beginPath(); g.moveTo(-17,-1.2); g.bezierCurveTo(-14,-3.4,-6,-3.6,8,-3.4); g.bezierCurveTo(13,-3.3,16.5,-2,18,0); g.bezierCurveTo(16.5,1.8,13,2.6,8,2.7); g.lineTo(-12,2.6); g.bezierCurveTo(-15,2.4,-17,1.4,-17,-1.2); g.closePath(); g.fill(); g.stroke();
-  g.beginPath(); g.moveTo(-11,-3.2); g.lineTo(-16.5,-10.5); g.lineTo(-13.6,-10.5); g.lineTo(-6.5,-3.4); g.closePath(); g.fill(); g.stroke();
-  g.fillStyle='#B7C3CC'; g.beginPath(); g.moveTo(-2,0.6); g.lineTo(5,0.6); g.lineTo(-4,4.6); g.lineTo(-7,4.6); g.closePath(); g.fill();
-  g.fillStyle='#9AA8B3'; g.beginPath(); g.ellipse(1,3.6,3.6,1.3,0,0,Math.PI*2); g.fill(); g.fillStyle='#2B4A63'; g.beginPath(); g.moveTo(13.2,-2.4); g.lineTo(15.4,-1.4); g.lineTo(13.2,-1.2); g.closePath(); g.fill(); g.restore(); }
-
-/* =============== 3. WEATHER RADAR =============== */
-const RFZL=14000, BW=3.5;
-const RC=[{id:'A',b:-6,r:38,pk:56,rc:5,top:43000},{id:'B',b:-2,r:68,pk:52,rc:6,top:40000},{id:'C',b:30,r:52,pk:46,rc:4,top:22000}];
-for(const c of RC){ c.x=c.r*Math.sin(c.b*Math.PI/180); c.y=c.r*Math.cos(c.b*Math.PI/180); }
-/* true reflectivity (dBZ) at a point (x,y NM, h ft) */
-function zTrue(x,y,h){ let best=-99; for(let i=0;i<RC.length;i++){ const c=RC[i]; if(h>c.top) continue; const d2=((x-c.x)*(x-c.x)+(y-c.y)*(y-c.y))/(c.rc*c.rc); if(d2>4) continue;
-    let z=c.pk-14*d2; if(h>RFZL) z-=22*(h-RFZL)/(c.top-RFZL)+4; if(h>c.top-3000) z-=8; if(z>best) best=z; } return best; }
-const beamC=r=>S.fl+r*6076*Math.tan(S.tilt*Math.PI/180)+0.664*r*r, beamHW=r=>r*6076*Math.tan(BW/2*Math.PI/180);
-const GAIN={min:-8,cal:0,max:8};
-const NB=121, NRr=150; const PPI=new Float32Array(NB*NRr), GND=new Uint8Array(NB*NRr), TRU=new Float32Array(NB*NRr);
-const RO2={};
-function scan(){ const R=S.rng, dr=R/NRr, gdb=GAIN[S.gain];
-  for(let b=0;b<NB;b++){ const br=(-60+b)*Math.PI/180, sb=Math.sin(br), cb=Math.cos(br); let att=0;
-    for(let k=0;k<NRr;k++){ const r=(k+0.5)*dr, x=r*sb, y=r*cb, hc=beamC(r), hw=beamHW(r); let zs=-99, zt=-99, cnt=0, sum=0;
-      for(let j=-3;j<=3;j++){ const h=hc+hw*j/3; if(h<0) continue; const z=zTrue(x,y,h); if(z>zt) zt=z; const lin=z>-50?Math.pow(10,z/10):0; sum+=lin*(1-Math.abs(j)/4); cnt+=(1-Math.abs(j)/4); }
-      zs=sum>0?10*Math.log10(sum/cnt):-99; const lo=hc-hw; GND[b*NRr+k]=lo<0?(lo<-hw*0.6?2:1):0;
-      PPI[b*NRr+k]=zs>-50?zs-att+gdb:-99; TRU[b*NRr+k]=Math.max(-99,zTrue(x,y,Math.min(RFZL-2000,Math.max(500,hc))));
-      if(zs>30) att+=(zs-30)*0.11*dr*2; } } }
-const zcol=(z,a)=>z>=50?`rgba(214,40,190,${a})`:z>=40?`rgba(226,58,46,${a})`:z>=30?`rgba(232,200,60,${a})`:z>=20?`rgba(46,160,90,${a})`:null;
-const ZN=z=>z>=50?t2('magenta','magenta'):z>=40?t2('red','rød'):z>=30?t2('yellow','gul'):z>=20?t2('green','grønn'):t2('nothing','ingenting');
-function cellOnDisplay(c){ const R=S.rng; if(c.r>R) return -100; let best=-99; for(let b=0;b<NB;b++){ const bd=-60+b; if(Math.abs(bd-c.b)>Math.max(4,c.rc/c.r*57)) continue; for(let k=0;k<NRr;k++){ const r=(k+0.5)*R/NRr; if(Math.abs(r-c.r)>c.rc*1.2) continue; best=Math.max(best,PPI[b*NRr+k]); } } return best; }
-function drawWX(g){ const W=C.w,H=C.h,n=W<560; bg(g,W,H); scan();
-  /* side view (top 36 %) */
-  const L0=n?34:44, R0=n?6:10, T0=W<=640?8:58, sh=Math.round(H*(n?0.34:0.30)), yG=T0+sh, R=S.rng; const SX=r=>L0+r/R*(W-L0-R0), SY=h=>yG-h/50000*(sh-6);
-  g.fillStyle='rgba(8,12,16,.35)'; g.fillRect(L0,T0,W-L0-R0,sh);
-  for(const c of RC){ if(Math.abs(c.b)>12||c.r>R) continue; const xm=SX(c.r), hw=Math.max(5,(SX(c.rc*1.5)-SX(0))), yt=SY(c.top), ab=SY(c.top-5000);
-    g.fillStyle='rgba(205,214,222,.30)'; g.beginPath(); g.moveTo(xm-hw,yG); g.quadraticCurveTo(xm-hw*1.15,(yG+ab)/2,xm-hw*0.8,ab); g.lineTo(xm-hw*1.4,ab); g.quadraticCurveTo(xm-hw*1.5,yt,xm-hw*1.2,yt); g.lineTo(xm+hw*2.4,yt); g.quadraticCurveTo(xm+hw*2.6,yt+4,xm+hw*2.2,ab); g.lineTo(xm+hw*0.8,ab); g.quadraticCurveTo(xm+hw*1.15,(yG+ab)/2,xm+hw,yG); g.closePath(); g.fill();
-    for(let h=0;h<c.top;h+=500){ const z=zTrue(c.x,c.y,h); if(z<20) continue; const f=Math.sqrt(clamp((z-12)/(c.pk-12),0,1)); g.fillStyle=zcol(z,0.85); g.fillRect(xm-hw*0.75*f,SY(h+500),hw*1.5*f,SY(h)-SY(h+500)+0.6); }
-    txt(g,c.id,xm,yt-4,INK.ink,'center',10,600); }
-  g.setLineDash([4,4]); g.strokeStyle='rgba(207,239,255,.55)'; g.lineWidth=1; g.beginPath(); g.moveTo(L0,SY(RFZL)); g.lineTo(W-R0,SY(RFZL)); g.stroke(); g.setLineDash([]); txt(g,'0 °C',W-R0-4,SY(RFZL)-4,'#CFEFFF','right',9.5);
-  if(S.show.beam){ g.fillStyle='rgba(228,107,174,.13)'; g.strokeStyle='rgba(228,107,174,.8)'; g.lineWidth=1; g.beginPath(); g.moveTo(SX(0),SY(S.fl)); for(let r=0;r<=R;r+=R/40) g.lineTo(SX(r),SY(clamp(beamC(r)+beamHW(r),0,50000))); for(let r=R;r>=0;r-=R/40) g.lineTo(SX(r),SY(clamp(beamC(r)-beamHW(r),0,50000))); g.closePath(); g.fill();
-    g.beginPath(); for(let r=0;r<=R;r+=R/40){ const y=SY(clamp(beamC(r),0,50000)); if(r) g.lineTo(SX(r),y); else g.moveTo(SX(r),y); } g.stroke(); }
-  g.fillStyle='#2a2f2a'; g.fillRect(L0,yG,W-L0-R0,3); g.save(); g.translate(SX(0)+8,SY(S.fl)); drawJetSide(g,0.8); g.restore();
-  g.font=`10px ${MONO}`; g.fillStyle=INK.dim; g.textAlign='right'; for(const a of [10000,30000,50000]) g.fillText('FL'+a/100,L0-4,SY(a)+3); g.textAlign='left';
-  txt(g,L(t2('side view along the track','sett fra siden langs kursen')),L0+4,T0+12,INK.mute,'left',9.5);
-  /* navigation display (rest) */
-  const top=yG+(n?24:28), ox=W/2, oy=H-14, rad=Math.min(oy-top,(W/2-14)/Math.sin(60*Math.PI/180)); const P=(bd,r)=>[ox+r/R*rad*Math.sin(bd*Math.PI/180),oy-r/R*rad*Math.cos(bd*Math.PI/180)];
-  g.fillStyle='#05090C'; g.beginPath(); g.moveTo(ox,oy); g.arc(ox,oy,rad,-Math.PI/2-Math.PI/3,-Math.PI/2+Math.PI/3); g.closePath(); g.fill();
-  const dr=R/NRr;
+/* ---------------- 2D: navigation display ---------------- */
+function txt(g,s,x,y,col,al,sz,wt){ g.font=`${wt||500} ${sz||11}px ${MONO}`; g.textAlign=al||'left'; g.lineWidth=3; g.strokeStyle='rgba(6,9,12,.85)'; g.strokeText(s,x,y); g.fillStyle=col||'#D7E1E6'; g.fillText(s,x,y); g.textAlign='left'; }
+const ND=LAB.fit(el('ndCv'),()=>drawND(),2);
+function drawND(){ if(S.view!=='wx'||!ND.w) return; const g=ND.ctx, W=ND.w, H=ND.h, R=RD.rng; g.setTransform(ND.dpr,0,0,ND.dpr,0,0); g.fillStyle='#06090c'; g.fillRect(0,0,W,H);
+  const ox=W/2, oy=H-16, rad=Math.min(oy-14,(W/2-12)/Math.sin(60*Math.PI/180)), P=(bd,r)=>[ox+r/R*rad*Math.sin(bd*Math.PI/180),oy-r/R*rad*Math.cos(bd*Math.PI/180)];
+  g.fillStyle='#020405'; g.beginPath(); g.moveTo(ox,oy); g.arc(ox,oy,rad,-Math.PI/2-Math.PI/3,-Math.PI/2+Math.PI/3); g.closePath(); g.fill();
+  const NB=RD.NB, NR=RD.NR, dr=R/NR;
   for(let b=0;b<NB;b++){ const a0=(-60+b-0.5-90)*Math.PI/180, a1=(-60+b+0.5-90)*Math.PI/180;
-    for(let k=0;k<NRr;k++){ const o=b*NRr+k; let col=zcol(PPI[o],0.92); if(!col&&GND[o]===2) col='rgba(190,150,70,.55)'; if(!col) continue;
+    for(let k=0;k<NR;k++){ const o=b*NR+k; let col=M.zcol(RD.PPI[o],0.95); if(!col&&RD.GND[o]===2) col='rgba(190,150,70,.55)'; if(!col) continue;
       const r0=k*dr/R*rad, r1=(k+1)*dr/R*rad; g.fillStyle=col; g.beginPath(); g.arc(ox,oy,r1,a0,a1); g.arc(ox,oy,r0,a1,a0,true); g.closePath(); g.fill(); } }
-  if(S.show.truth){ g.setLineDash([3,3]); g.strokeStyle='rgba(238,243,247,.7)'; g.lineWidth=1.1; for(const c of RC){ if(c.r>R) continue; const [x,y]=P(c.b,c.r); g.beginPath(); g.arc(x,y,c.rc*1.4/R*rad,0,Math.PI*2); g.stroke(); txt(g,c.id+' · '+c.pk+' dBZ · '+L(t2('top','topp'))+' FL'+c.top/100,x+c.rc*1.4/R*rad+4,y+4,INK.white,'left',9.5); } g.setLineDash([]); }
-  else for(const c of RC){ if(c.r>R) continue; const [x,y]=P(c.b,c.r); txt(g,c.id,x+c.rc*1.3/R*rad+4,y-4,INK.mute,'left',10,600); }
-  g.strokeStyle='rgba(200,215,225,.35)'; g.lineWidth=1; for(let q=1;q<=4;q++){ g.beginPath(); g.arc(ox,oy,rad*q/4,-Math.PI/2-Math.PI/3,-Math.PI/2+Math.PI/3); g.stroke(); const [x,y]=P(-58,R*q/4); txt(g,String(R*q/4),x-4,y,INK.mute,'right',9.5); }
-  g.fillStyle=INK.white; g.beginPath(); g.moveTo(ox,oy-8); g.lineTo(ox-6,oy+4); g.lineTo(ox+6,oy+4); g.closePath(); g.fill();
-  txt(g,(S.tilt>0?'+':S.tilt<0?'−':'')+nf(Math.abs(S.tilt),2)+'° · '+L({min:t2('gain MIN','gain MIN'),cal:t2('gain CAL','gain CAL'),max:t2('gain MAX','gain MAX')}[S.gain]),W-R0-4,oy,INK.cyan,'right',10);
-  /* readouts */
-  const A=RC[0], B=RC[1], Cc=RC[2]; RO2.hA=beamC(A.r); RO2.wA=2*beamHW(A.r); RO2.a=cellOnDisplay(A); RO2.b=cellOnDisplay(B); RO2.c=cellOnDisplay(Cc); RO2.gnd=false; for(let k=0;k<NRr;k++) if(GND[60*NRr+k]===2){ RO2.gnd=true; RO2.gr=(k+0.5)*dr; break; } }
+  if(S.show.truth){ g.setLineDash([3,3]); g.strokeStyle='rgba(238,243,247,.75)'; g.lineWidth=1.1; for(const c of M.RC){ if(c.r>R) continue; const [x,y]=P(c.b,c.r); g.beginPath(); g.arc(x,y,c.rc*1.4/R*rad,0,Math.PI*2); g.stroke(); txt(g,c.id+' '+c.pk+' dBZ',x+c.rc*1.4/R*rad+4,y+4,'#EEF3F7','left',9.5); } g.setLineDash([]); }
+  else for(const c of M.RC){ if(c.r>R) continue; const [x,y]=P(c.b,c.r); txt(g,c.id,x+c.rc*1.3/R*rad+4,y-4,'#8B99A7','left',10,600); }
+  g.strokeStyle='rgba(200,215,225,.35)'; g.lineWidth=1; for(let q=1;q<=4;q++){ g.beginPath(); g.arc(ox,oy,rad*q/4,-Math.PI/2-Math.PI/3,-Math.PI/2+Math.PI/3); g.stroke(); const [x,y]=P(-56,R*q/4); txt(g,String(R*q/4),x-3,y,'#8B99A7','right',9.5); }
+  g.fillStyle='#EEF3F7'; g.beginPath(); g.moveTo(ox,oy-8); g.lineTo(ox-6,oy+4); g.lineTo(ox+6,oy+4); g.closePath(); g.fill();
+  txt(g,'TILT '+(RD.tilt>0?'+':RD.tilt<0?'−':'')+nf(Math.abs(RD.tilt),2)+'°',8,16,'#7FCBE8','left',10.5,600); txt(g,'GAIN '+RD.gain.toUpperCase(),8,30,'#7FCBE8','left',10.5,600); txt(g,fl(RD.fl),W-8,16,'#7FCBE8','right',10.5,600); }
 
-/* =============== the shared viewport: views, controls, loop =============== */
-let lastSeed='';
-function rebuild(){ if(!C.w) return; const W=C.w,H=C.h,dpr=C.dpr; stat.width=Math.round(W*dpr); stat.height=Math.round(H*dpr); sg.setTransform(dpr,0,0,dpr,0,0);
-  if(S.view==='life') drawLife(sg); else if(S.view==='mb') drawMB(sg); else drawWX(sg);
-  readout(); dirty=true; }
-let tNow=0, dirty=true;
-function frame(){ if(!C.w) return; const g=C.ctx; g.setTransform(1,0,0,1,0,0); g.drawImage(stat,0,0); g.setTransform(C.dpr,0,0,C.dpr,0,0);
-  if(S.view==='life') frameLife(g,tNow); else if(S.view==='mb') frameMB(g); }
-const VIEWS=[['life',t2('Life of a CB','Livet til en CB')],['mb',t2('Microburst on final','Mikroburst på finalen')],['wx',t2('Weather radar','Værradar')]];
+/* ---------------- 2D: IAS / headwind strip under the approach ---------------- */
+const SP=LAB.fit(el('strip'),()=>drawStrip(),2);
+function drawStrip(){ if(S.view!=='mb'||!SP.w) return; const g=SP.ctx, W=SP.w, H=SP.h, n=W<560; g.setTransform(SP.dpr,0,0,SP.dpr,0,0); g.clearRect(0,0,W,H);
+  const L0=n?40:52, R0=n?10:16, y0=10, y1=H-18, X=d=>L0+(MB.D0-d)/MB.D0*(W-L0-R0);
+  const sc=Math.max(30,Math.ceil(Math.max(MB.maxV-MB.vapp,MB.vapp-MB.minV,MB.dv/2)/10)*10), yk=v=>(y0+y1)/2-v/sc*((y1-y0)/2);
+  g.strokeStyle='rgba(255,255,255,.18)'; g.lineWidth=1; g.beginPath(); g.moveTo(L0,yk(0)); g.lineTo(W-R0,yk(0)); g.stroke();
+  g.font=`10px ${MONO}`; g.fillStyle='#5E6D7C'; g.textAlign='center'; for(let d=0;d<=5;d++) g.fillText(d+(d===5?' NM':''),X(d),H-5); g.textAlign='left';
+  g.setLineDash([4,3]); g.strokeStyle='rgba(201,210,218,.75)'; g.lineWidth=1.4; g.beginPath(); for(let i=0;i<MB.n;i+=2){ const x=X(MB.sD[i]), y=yk(MB.sHW[i]); if(i) g.lineTo(x,y); else g.moveTo(x,y); } g.stroke(); g.setLineDash([]);
+  g.strokeStyle='#F0B440'; g.lineWidth=2; g.beginPath(); for(let i=0;i<MB.n;i+=2){ const x=X(MB.sD[i]), y=yk(MB.sV[i]-MB.vapp); if(i) g.lineTo(x,y); else g.moveTo(x,y); } g.stroke();
+  if(MB.trig>=0){ const x=X(MB.sD[MB.trig]); g.strokeStyle='rgba(240,180,64,.5)'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(x,y0); g.lineTo(x,y1); g.stroke(); g.setLineDash([]); txt(g,L(MB.pil==='early'?t2('go-around','go-around'):t2('recovery','gjenoppretting')),x+4,y0+10,'#F0B440','left',9.5); }
+  txt(g,'IAS − Vapp',L0+4,y0+12,'#F0B440','left',10,600); txt(g,L(t2('headwind','motvind')),L0+4,y0+25,'#C9D2DA','left',10);
+  txt(g,'+'+sc+' kt',L0-6,y0+8,'#5E6D7C','right',9.5); txt(g,'0',L0-6,yk(0)+3,'#5E6D7C','right',9.5); txt(g,'−'+sc+' kt',L0-6,y1,'#5E6D7C','right',9.5);
+  const i=clamp(Math.floor(S.k),0,Math.max(0,MB.n-1)), x=X(MB.sD[i]); g.strokeStyle='#E46BAE'; g.lineWidth=1.2; g.beginPath(); g.moveTo(x,y0); g.lineTo(x,y1); g.stroke(); g.fillStyle='#F0B440'; g.beginPath(); g.arc(x,yk(MB.sV[i]-MB.vapp),3.5,0,Math.PI*2); g.fill();
+  if(MB.gnd>=0) txt(g,'✕ '+L(t2('ground contact','bakkekontakt')),clamp(X(MB.sD[MB.gnd]),L0+60,W-R0-60),y1-4,'#EC5A47','center',10,600); }
+
+/* ---------------- views, tools, legend ---------------- */
+const VIEWS=[['storm',t2('The storm (3D)','Stormen (3D)')],['mb',t2('Microburst on final','Mikroburst på finalen')],['wx',t2('Weather radar','Værradar')]];
+const CAMN={q:t2('3/4','3/4'),side:t2('Side','Side'),cockpit:t2('Cockpit','Cockpit'),top:t2('Top','Ovenfra'),chase:t2('Chase','Følg')};
+let camK='q';
 function drawTabs(){ el('vtabs').innerHTML=VIEWS.map(([k,t])=>`<button type="button" role="tab" data-v="${k}" class="${k===S.view?'on':''}" aria-selected="${k===S.view}">${L(t)}</button>`).join('');
-  const lab=S.view==='life'?(S.play?'■ '+L(t2('Stop','Stopp')):'▶ '+L(t2('Play 60 min','Spill av 60 min'))):S.view==='mb'?(S.fly?'■ '+L(t2('Stop','Stopp')):'▶ '+L(t2('Fly the approach','Fly innflygingen'))):'';
-  el('vtools').innerHTML=lab?`<button type="button" id="goB" class="${S.play||S.fly?'on':'go'}" aria-pressed="${S.play||S.fly}">${lab}</button>`:''; }
-function setView(v){ S.view=v; S.play=false; S.fly=false; el('xpanel').querySelectorAll('[data-pv]').forEach(d=>{ d.hidden=d.dataset.pv!==v; }); drawTabs(); drawTogs(); legend(); rebuild(); see(); }
+  const go=S.view==='storm'?(S.play?'■ '+L(t2('Stop','Stopp')):'▶ '+L(t2('Play 60 min','Spill av 60 min'))):S.view==='mb'?(S.fly?'■ '+L(t2('Stop','Stopp')):'▶ '+L(t2('Fly the approach','Fly innflygingen'))):'';
+  const cams=(V.ok?V.presets():[]).map(k=>`<button type="button" class="cam${k===camK?' on':''}" data-cam="${k}">${L(CAMN[k])}</button>`).join('');
+  el('vtools').innerHTML=(go?`<button type="button" id="goB" class="${S.play||S.fly?'on':'go'}" aria-pressed="${S.play||S.fly}">${go}</button>`:'')+(V.ok?`<span class="sep"></span>${cams}<span class="sep"></span>${[['sky',t2('Day','Dag')],['night',t2('Night','Natt')],['dark',t2('Dark','Mørk')]].map(([k,t])=>`<button type="button" data-look="${k}" class="${S.look===k?'on':''}">${L(t)}</button>`).join('')}`:'');
+  el('vhint').textContent=V.ok?L(t2('Drag to rotate · scroll to zoom','Dra for å rotere · scroll for å zoome')):''; }
 el('vtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setView(b.dataset.v); });
-el('vtools').addEventListener('click',e=>{ if(!e.target.closest('#goB')) return; if(S.view==='life'){ S.play=!S.play; if(S.play&&S.t>=60){ S.t=0; slT.set(0); rebuild(); } } else if(S.view==='mb'){ S.fly=!S.fly; if(S.fly&&S.k>=SIM.n-1) S.k=0; } drawTabs(); });
-LAB.add({},{'Single cell':'Enkeltcelle','Multicell':'Multicelle','Squall line':'Bygelinje','Embedded':'Innleiret','No reaction':'Ingen reaksjon','Recovery at warning':'Gjenoppretting ved varsel','Go-around at first sign':'Go-around ved første tegn',
- 'Time (min)':'Tid (min)','Moisture: dew point':'Fuktighet: duggpunkt','Instability: lapse rate':'Ustabilitet: temperaturfall','Lift (trigger)':'Løft (utløser)','Outflow: headwind to tailwind change':'Utstrømming: endring fra motvind til medvind',
- 'Flight level':'Flygenivå','Antenna tilt':'Antennetilt','Microburst position (NM to threshold)':'Mikroburstens posisjon (NM til terskel)','Downdraft core radius (NM)':'Radius på nedvindskjernen (NM)','Approach speed Vapp (kt)':'Innflygingsfart Vapp (kt)','MIN':'MIN','CAL':'CAL','MAX':'MAX'});
-const segT=LAB.seg(el('sType'),[['single','Single cell'],['multi','Multicell'],['squall','Squall line'],['emb','Embedded']],S.type,v=>{ S.type=v; changed(); });
-const slT=LAB.slider(el('lifeCtl'),{label:'Time (min)',min:0,max:60,step:1,v:S.t,f:v=>v+' min',on:v=>{ S.t=v; S.play=false; drawTabs(); changed(true); }});
-const slM=LAB.slider(el('lifeCtl'),{label:'Moisture: dew point',min:0,max:1,step:0.05,v:S.m,f:v=>nf(4+16*v,0)+' °C (T 25 °C)',on:v=>{ S.m=v; changed(); }});
-const slI=LAB.slider(el('lifeCtl'),{label:'Instability: lapse rate',min:0,max:1,step:0.05,v:S.i,f:v=>nf(1.2+1.8*v,1)+' °C/1000 ft',on:v=>{ S.i=v; changed(); }});
-const slL=LAB.slider(el('lifeCtl'),{label:'Lift (trigger)',min:0,max:1,step:0.05,v:S.l,f:v=>v<0.2?L(t2('none','ingen')):v<0.5?L(t2('weak','svakt')):L(t2('strong','sterkt')),on:v=>{ S.l=v; changed(); }});
-const segP=LAB.seg(el('sPil'),[['none','No reaction'],['rec','Recovery at warning'],['early','Go-around at first sign']],S.pil,v=>{ S.pil=v; S.k=0; changed(); });
-const slDV=LAB.slider(el('mbCtl'),{label:'Outflow: headwind to tailwind change',min:20,max:80,step:5,v:S.dv,f:v=>v+' kt',on:v=>{ S.dv=v; S.k=0; changed(); }});
-const segR=LAB.seg(el('sRng'),[['40','40 NM'],['80','80 NM'],['160','160 NM']],String(S.rng),v=>{ S.rng=+v; changed(); });
-const segG=LAB.seg(el('sGain'),[['min','MIN'],['cal','CAL'],['max','MAX']],S.gain,v=>{ S.gain=v; changed(); });
-const slFL=LAB.slider(el('wxCtl'),{label:'Flight level',min:10000,max:39000,step:1000,v:S.fl,f:v=>'FL'+v/100,on:v=>{ S.fl=v; changed(); }});
-const slTi=LAB.slider(el('wxCtl'),{label:'Antenna tilt',min:-6,max:6,step:0.25,v:S.tilt,f:v=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v),2)+'°',on:v=>{ S.tilt=v; changed(); }});
-const slXC=LAB.slider(el('adv'),{label:'Microburst position (NM to threshold)',min:1.5,max:4.5,step:0.1,v:S.xc,f:v=>nf(v,1)+' NM',on:v=>{ S.xc=v; S.k=0; changed(); }});
-const slR=LAB.slider(el('adv'),{label:'Downdraft core radius (NM)',min:0.5,max:1.2,step:0.05,v:S.R,f:v=>nf(v,2)+' NM',on:v=>{ S.R=v; S.k=0; changed(); }});
-const slVa=LAB.slider(el('adv'),{label:'Approach speed Vapp (kt)',min:110,max:160,step:5,v:S.vapp,f:v=>v+' kt',on:v=>{ S.vapp=v; S.k=0; changed(); }});
-const TOGS=[['air',t2('Air motion','Luftbevegelse'),'life'],['haz',t2('Hazard zones','Faresoner'),'life'],['iso',t2('Isotherms','Isotermer'),'life'],['avoid',t2('Avoidance distances','Avstand å holde'),'life'],['air',t2('Wind arrows','Vindpiler'),'mb'],['beam',t2('Radar beam','Radarstrålen'),'wx'],['truth',t2('What is really there','Hva som faktisk er der'),'wx']];
-function drawTogs(){ el('togs').innerHTML=TOGS.filter(t=>t[2]===S.view).map(([k,t])=>`<button type="button" class="xtog${S.show[k]?' on':''}" data-k="${k}" aria-pressed="${!!S.show[k]}">${L(t)}</button>`).join(''); }
-el('togs').addEventListener('click',e=>{ const b=e.target.closest('[data-k]'); if(!b) return; S.show[b.dataset.k]=!S.show[b.dataset.k]; drawTogs(); legend(); rebuild(); });
-const PRE=[['mat',t2('Mature single cell','Moden enkeltcelle'),{view:'life',type:'single',t:25,m:0.8,i:0.8,l:0.7}],
- ['nolift',t2('Moist and unstable, no lift','Fuktig og ustabil, uten løft'),{view:'life',type:'single',t:25,m:0.8,i:0.8,l:0.1}],
- ['squall',t2('Squall line','Bygelinje'),{view:'life',type:'squall',m:0.85,i:0.85,l:0.8}],
- ['emb',t2('Embedded CB','Innleiret CB'),{view:'life',type:'emb',t:25,m:0.8,i:0.7,l:0.7}],
+el('vtools').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='goB'){ if(S.view==='storm'){ S.play=!S.play; if(S.play&&COND.t>=59.5){ COND.t=0; slT.set(0); changed(true); } } else { S.fly=!S.fly; if(S.fly&&S.k>=MB.n-1) S.k=0; } drawTabs(); return; }
+  if(b.dataset.cam){ camK=b.dataset.cam; V.cam(camK); drawTabs(); return; }
+  if(b.dataset.look){ S.look=b.dataset.look; V.setLook(S.look); drawTabs(); } });
+function setView(v){ if(!VIEWS.some(x=>x[0]===v)) v='storm'; S.view=v; S.play=false; S.fly=false; camK='q';
+  el('xpanel').querySelectorAll('[data-pv]').forEach(d=>{ d.hidden=d.dataset.pv!==v; });
+  el('vcv').classList.toggle('wx',v==='wx'); el('ndBox').hidden=v!=='wx'; el('strip').hidden=v!=='mb';
+  V.setView(v); V.setLook(S.look); V.setStorm(E,CELLS,COND);
+  if(v==='mb'){ MB.simulate(); V.setMB(); S.k=0; V.mbK(0); }
+  if(v==='wx'){ RD.scan(); readRadar(); V.setRadar(); }
+  V.setShow(S.show); plane(); drawTabs(); drawTogs(); legend(); readout(); see(); requestAnimationFrame(()=>{ drawND(); drawStrip(); V.resize(); }); }
+
+/* ---------------- controls ---------------- */
+LAB.add({},{'Low':'Lav','Moderate':'Moderat','High':'Høy','Single cell':'Enkeltcelle','Multicell':'Multicelle','Squall line':'Bygelinje','Embedded':'Innleiret','Solid':'Hel','See-through':'Gjennomsiktig','Off':'Av',
+ 'No reaction':'Ingen reaksjon','Recovery at warning':'Gjenoppretting ved varsel','Go-around at first sign':'Go-around ved første tegn','MIN':'MIN','CAL':'CAL','MAX':'MAX',
+ 'Dew point (moisture)':'Duggpunkt (fuktighet)','Upper wind at the anvil':'Vind i amboltnivå','Flight level':'Flygenivå','Along the wind (NM from the core)':'Langs vinden (NM fra kjernen)','Across (NM from the core)':'På tvers (NM fra kjernen)','Upwind side':'Lo-siden','Under the anvil':'Under ambolten','Through the core':'Gjennom kjernen','Under the base':'Under basen','Freezing level':'Frysenivå','Stage timeline':'Tidslinje for stadiene','Flight level':'Flygenivå','Antenna tilt':'Antennetilt',
+ 'Outflow: headwind to tailwind change':'Utstrømming: endring fra motvind til medvind','Microburst position (NM to threshold)':'Mikroburstens posisjon (NM til terskel)','Downdraft core radius (NM)':'Radius på nedvindskjernen (NM)','Approach speed Vapp (kt)':'Innflygingsfart Vapp (kt)'});
+const segCape=LAB.seg(el('sCape'),[['low','Low'],['mod','Moderate'],['high','High']],COND.cape,v=>{ COND.cape=v; changed(); });
+const slTd=LAB.slider(el('condCtl'),{label:'Dew point (moisture)',min:8,max:22,step:1,v:COND.td,f:v=>v+' °C · '+L(t2('base','base'))+' '+nf((25-v)*400,0),on:v=>{ COND.td=v; changed(); }});
+const slFz=LAB.slider(el('condCtl'),{label:'Freezing level',min:6000,max:14000,step:500,v:COND.fzl,f:v=>fl(v),on:v=>{ COND.fzl=v; changed(); }});
+const slUw=LAB.slider(el('condCtl'),{label:'Upper wind at the anvil',min:10,max:100,step:5,v:COND.uw,f:v=>v+' kt',on:v=>{ COND.uw=v; changed(); }});
+const segSh=LAB.seg(el('sShear'),[['low','Low'],['mod','Moderate'],['high','High']],COND.shear,v=>{ COND.shear=v; changed(); });
+const segTy=LAB.seg(el('sType'),[['single','Single cell'],['multi','Multicell'],['squall','Squall line'],['emb','Embedded']],COND.type,v=>{ COND.type=v; changed(); V.cam(camK); });
+const slT=LAB.slider(el('timeCtl'),{label:'Stage timeline',min:0,max:60,step:1,v:COND.t,f:v=>v+' min',on:v=>{ COND.t=v; S.play=false; drawTabs(); changed(true); }});
+function drawStg(){ const c=M.main(CELLS), sg=COND.type==='single'||COND.type==='emb';
+  el('stg').innerHTML=DEVK.map(k=>`<button type="button" data-s="${k}" class="${c&&c.dev===k?'on':''}" title="${L(DEV[k].n)}">${DEV[k].ab==='CB'?'CB<br>'+L({calvus:t2('calvus','calvus'),incus:t2('incus','incus'),dis:t2('dying','døende')}[k]):DEV[k].ab+'<br>'+L(k==='hum'?t2('small','liten'):t2('tower','tårn'))}</button>`).join('');
+  el('stg').hidden=!sg; const d=c&&DEV[c.dev], b=el('devCard');
+  if(!sg){ b.innerHTML=`<div class="dn"><b>${L(COND.type==='multi'?t2('Multicell: every stage at once','Multicelle: alle stadier samtidig'):COND.type==='squall'?t2('Squall line: mature CBs in a row','Bygelinje: modne CB-er på rekke'):'')}</b><code>CB</code></div><p>${L(COND.type==='multi'?t2('New towers (TCU) grow on the outflow while older cells mature and die. Play the timeline and follow one cell.','Nye tårn (TCU) vokser på utstrømmingen mens eldre celler modnes og dør. Spill av tidslinjen og følg én celle.'):t2('The cells keep regenerating on a long gust front with a shelf cloud. Hard to go round: look for a real gap on the radar.','Cellene fornyer seg langs en lang vindkastfront med hyllesky. Vanskelig å gå rundt: se etter en reell åpning på radaren.'))}</p>`; return; }
+  if(!d){ b.innerHTML=''; return; }
+  b.innerHTML=`<div class="dn"><b>${L(d.n)}</b><code>${d.ab}</code></div><dl><dt>${L(t2('Top','Topp'))}</dt><dd>${fl(Math.round((Math.min(c.top,TROPO)+c.over)/500)*500)} · ${L(d.top)}</dd><dt>${L(t2('Updraft','Oppvind'))}</dt><dd>${c.up?'≈'+nf(Math.round(c.up/100)*100,0)+' ft/min':L(t2('none: downdrafts only','ingen: bare nedvind'))}</dd><dt>METAR</dt><dd>${L(d.mt)}</dd></dl><p>${L(d.w)}</p><p class="pm"><b>${L(t2('Pilot:','Pilot:'))}</b> ${L(d.p)}</p>`; }
+el('stg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const k=b.dataset.s; COND.t=k==='dis'?Math.min(60,E.matEnd+12):DEV[k].t; slT.set(COND.t); S.play=false; drawTabs(); changed(true); });
+const segCl=LAB.seg(el('sCloud'),[['solid','Solid'],['see','See-through'],['off','Off']],S.show.cloud,v=>{ S.show.cloud=v; V.setShow(S.show); live(); });
+const segP=LAB.seg(el('sPil'),[['none','No reaction'],['rec','Recovery at warning'],['early','Go-around at first sign']],MB.pil,v=>{ MB.pil=v; S.k=0; mbChanged(); });
+const slDV=LAB.slider(el('mbCtl'),{label:'Outflow: headwind to tailwind change',min:20,max:80,step:5,v:MB.dv,f:v=>v+' kt',on:v=>{ MB.dv=v; S.k=0; mbChanged(); }});
+const segR=LAB.seg(el('sRng'),[['40','40 NM'],['80','80 NM'],['160','160 NM']],String(RD.rng),v=>{ RD.rng=+v; wxChanged(); });
+const segG=LAB.seg(el('sGain'),[['min','MIN'],['cal','CAL'],['max','MAX']],RD.gain,v=>{ RD.gain=v; wxChanged(); });
+const slFL=LAB.slider(el('wxCtl'),{label:'Flight level',min:10000,max:39000,step:1000,v:RD.fl,f:v=>'FL'+v/100,on:v=>{ RD.fl=v; wxChanged(); }});
+const slTi=LAB.slider(el('wxCtl'),{label:'Antenna tilt',min:-6,max:6,step:0.25,v:RD.tilt,f:v=>(v>0?'+':v<0?'−':'')+nf(Math.abs(v),2)+'°',on:v=>{ RD.tilt=v; wxChanged(); }});
+const slXC=LAB.slider(el('adv'),{label:'Microburst position (NM to threshold)',min:1.5,max:4.5,step:0.1,v:MB.xc,f:v=>nf(v,1)+' NM',on:v=>{ MB.xc=v; S.k=0; mbChanged(); }});
+const slR=LAB.slider(el('adv'),{label:'Downdraft core radius (NM)',min:0.5,max:1.2,step:0.05,v:MB.R,f:v=>nf(v,2)+' NM',on:v=>{ MB.R=v; S.k=0; mbChanged(); }});
+const slVa=LAB.slider(el('adv'),{label:'Approach speed Vapp (kt)',min:110,max:160,step:5,v:MB.vapp,f:v=>v+' kt',on:v=>{ MB.vapp=v; S.k=0; mbChanged(); }});
+void slXC; void slR; void slVa;
+/* ---------------- Fly: an aircraft near the cell, and what it meets ---------------- */
+const FLYV={up:{along:-26,off:0,fl:25000},anvil:{along:20,off:0,fl:20000},core:{along:0,off:0,fl:16000},base:{along:9,off:0,fl:2000}};
+const segFly=LAB.seg(el('sFlyP'),[['up','Upwind side'],['anvil','Under the anvil'],['core','Through the core'],['base','Under the base']],'up',v=>{ Object.assign(S.plane,FLYV[v],{flying:false}); syncPlane(); plane(); drawTabs(); });
+const slPF=LAB.slider(el('flyCtl'),{label:'Flight level',min:1000,max:41000,step:1000,v:S.plane.fl,f:v=>fl(v),on:v=>{ S.plane.fl=v; plane(); }});
+const slAl=LAB.slider(el('flyCtl'),{label:'Along the wind (NM from the core)',min:-45,max:55,step:1,v:S.plane.along,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' NM '+(v<0?L(t2('upwind','lo')):v>0?L(t2('downwind','le')):''),on:v=>{ S.plane.along=v; S.plane.flying=false; plane(); }});
+const slOf=LAB.slider(el('flyCtl'),{label:'Across (NM from the core)',min:-30,max:30,step:1,v:S.plane.off,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' NM',on:v=>{ S.plane.off=v; plane(); }});
+function syncPlane(){ slPF.set(S.plane.fl); slAl.set(Math.round(S.plane.along)); slOf.set(S.plane.off); }
+function plane(){ const p=S.plane, c=M.main(CELLS); const cx=c?c.x:0, cz=c?c.z:0; PL.x=cx+p.along*1.852; PL.z=cz+p.off*1.852; PL.h=p.fl; PL.cx=cx; PL.cz=cz;
+  M.probe(E,CELLS,PL.x,PL.h,PL.z,PR); V.setPlane&&V.setPlane({on:p.on&&S.view==='storm',x:PL.x,h:PL.h,z:PL.z,hdg:0,cx,cz}); drawFly(); live(); }
+const LVN=[t2('none','ingen'),t2('light','lett'),t2('moderate','moderat'),t2('severe','kraftig')];
+function drawFly(){ const p=S.plane; el('flyOn').textContent=p.on?L(t2('Remove the aircraft','Fjern flyet')):L(t2('Place an aircraft','Plasser et fly')); el('flyOn').setAttribute('aria-pressed',String(p.on)); el('flyOn').classList.toggle('pri',!p.on);
+  el('flyGo').textContent=p.flying?'■ '+L(t2('Stop','Stopp')):'▶ '+L(t2('Fly across','Fly forbi')); el('flyGo').hidden=!p.on; el('flyBody').hidden=!p.on;
+  el('flyS').textContent=p.on?fl(p.fl):''; if(!p.on) return;
+  const lv=(v,a)=>`<b class="${v>=3?'s3':v===2?'s2':v===0?'ok':''}">${L((a||LVN)[v])}</b>`;
+  const rows=[[t2('In cloud','I sky'),`<b>${PR.cloud?L(t2('yes, IMC','ja, IMC')):L(t2('no','nei'))}</b>`],[t2('Turbulence','Turbulens'),lv(PR.turb)],[t2('Icing','Ising'),lv(PR.ice)],
+    [t2('Hail','Hagl'),lv(PR.hail,[t2('none','ingen'),t2('small','lite'),t2('possible','mulig'),t2('likely','sannsynlig')])],[t2('Lightning','Lyn'),lv(PR.ltg,[t2('low','lav'),t2('possible','mulig'),t2('high','høy'),t2('very high','svært høy')])],
+    [t2('Wind shear','Vindskjær'),lv(PR.ws,[t2('none','ingen'),t2('gusty','kastevind'),t2('gust front','vindkastfront'),t2('microburst','mikroburst')])],
+    [t2('To the core','Til kjernen'),`<b>${PR.dCore>500?'–':nf(PR.dCore,0)+' NM'}</b>`],[t2('To the anvil','Til ambolten'),`<b class="${PR.under?'s3':''}">${PR.under?L(t2('under it','under den')):PR.dAnv>500?'–':nf(PR.dAnv,0)+' NM'}</b>`],
+    [t2('10/20 NM guidance','10/20 NM-regelen'),PR.guide===2&&!PR.under?`<b class="ok">✓ ${L(t2('more than 20 NM','mer enn 20 NM'))}</b>`:PR.guide===1&&!PR.under?`<b class="s2">${L(t2('10–20 NM: weak cells only','10–20 NM: bare svake celler'))}</b>`:`<b class="s3">✕ ${L(PR.under?t2('under the anvil','under ambolten'):t2('inside 10 NM','innenfor 10 NM'))}</b>`]];
+  el('flyRo').innerHTML=rows.map(([k,v])=>`<div class="rrow"><span>${L(k)}</span>${v}</div>`).join(''); }
+el('flyOn').addEventListener('click',()=>{ S.plane.on=!S.plane.on; S.plane.flying=false; if(S.plane.on) el('flySec').open=true; plane(); V.relabel(); live(); });
+el('flyGo').addEventListener('click',()=>{ const p=S.plane; p.flying=!p.flying; if(p.flying&&p.along>=54) p.along=-45; drawFly(); });
+const TOGS={storm:[['flow',t2('Air motion','Luftbevegelse')],['hail',t2('Hail loop','Haglsløyfe')],['gust',t2('Gust front','Vindkastfront')],['ring',t2('Microburst','Mikroburst')],['ltg',t2('Lightning','Lyn')],['ice',t2('Icing zone','Isingssone')],['turb',t2('Turbulence zone','Turbulenssone')],['avoid',t2('Avoid 10/20 NM','Unngå 10/20 NM')],['levels',t2('Levels','Nivåer')],['labels',t2('Labels','Etiketter')]],
+  mb:[['flow',t2('Air motion','Luftbevegelse')],['ring',t2('Ring vortex','Ringvirvel')],['labels',t2('Labels','Etiketter')]],
+  wx:[['truth',t2('What is really there','Hva som faktisk er der')],['levels',t2('Freezing level','Frysenivå')],['ltg',t2('Lightning','Lyn')],['labels',t2('Labels','Etiketter')]]};
+function drawTogs(){ el('togs').innerHTML=TOGS[S.view].map(([k,t])=>`<button type="button" class="xtog${S.show[k]?' on':''}" data-k="${k}" aria-pressed="${!!S.show[k]}">${L(t)}</button>`).join(''); }
+el('togs').addEventListener('click',e=>{ const b=e.target.closest('[data-k]'); if(!b) return; S.show[b.dataset.k]=!S.show[b.dataset.k]; drawTogs(); V.setShow(S.show); legend(); drawND(); live(); });
+function hint(){ el('shearH').textContent=L({low:t2('Upright cell: rain falls into its own updraft and kills it within the hour.','Opprett celle: regnet faller ned i sin egen oppvind og tar livet av den innen en time.'),
+  mod:t2('Tilted: new cells grow on the outflow, the storm becomes a multicell.','Skråstilt: nye celler vokser på utstrømmingen, stormen blir en multicelle.'),
+  high:t2('Strongly tilted, rotating updraft: a long-lived, supercell-like storm.','Sterkt skråstilt, roterende oppvind: en langlivet storm som ligner en superscelle.')}[COND.shear]); }
+
+/* scenarios for instructors */
+const PRE=[['classic',t2('Summer afternoon CB','CB en sommerettermiddag'),{view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,t:24}],
+ ['super',t2('Strong shear: supercell-like','Sterkt vindskjær: superscelle-aktig'),{view:'storm',type:'single',cape:'high',td:18,shear:'high',fzl:11000,t:30,show:{flow:true,hail:true}}],
+ ['dry',t2('Dry microburst','Tørr mikroburst'),{view:'storm',type:'single',cape:'high',td:9,shear:'low',fzl:12000,t:24,show:{ring:true,flow:true},cam:'cockpit'}],
+ ['anvil',t2('Under the anvil at FL200','Under ambolten i FL200'),{view:'storm',type:'single',cape:'high',td:17,shear:'mod',uw:80,fzl:10000,t:28,show:{hail:true,avoid:true},plane:{on:true,along:20,off:0,fl:20000},cam:'side'}],
+ ['night',t2('Embedded CB at night','Innleiret CB om natten'),{view:'storm',type:'emb',cape:'mod',td:18,shear:'mod',fzl:9000,t:26,look:'night'}],
+ ['multi',t2('Multicell cluster','Multicelleklynge'),{view:'storm',type:'multi',cape:'mod',td:17,shear:'mod',fzl:10000,t:20}],
+ ['squall',t2('Squall line, shelf cloud','Bygelinje, hyllesky'),{view:'storm',type:'squall',cape:'high',td:18,shear:'mod',fzl:11000,t:25,cam:'cockpit'}],
+ ['emb',t2('Embedded CB','Innleiret CB'),{view:'storm',type:'emb',cape:'mod',td:18,shear:'mod',fzl:9000,t:26}],
  ['mbn',t2('Microburst: no reaction','Mikroburst: ingen reaksjon'),{view:'mb',pil:'none',dv:50,fly:true}],
  ['mbe',t2('Microburst: go around early','Mikroburst: tidlig go-around'),{view:'mb',pil:'early',dv:50,fly:true}],
  ['over',t2('Radar: beam over the core','Radar: strålen over kjernen'),{view:'wx',fl:37000,tilt:1.5,gain:'cal',rng:80}],
@@ -319,174 +215,245 @@ const PRE=[['mat',t2('Mature single cell','Moden enkeltcelle'),{view:'life',type
 let cur=null;
 function drawPre(){ el('pre').innerHTML=PRE.map(([k,t])=>`<button class="btn sm${k===cur?' on':''}" type="button" data-k="${k}">${L(t)}</button>`).join(''); }
 el('pre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const p=PRE.find(x=>x[0]===b.dataset.k); if(p) setS(p[2],p[0]); });
-function setS(o,k){ const fly=o.fly; Object.assign(S,o); S.fly=false; S.play=false; S.k=0; cur=k||null;
-  segT.set(S.type); slT.set(S.t); slM.set(S.m); slI.set(S.i); slL.set(S.l); segP.set(S.pil); slDV.set(S.dv); segR.set(String(S.rng)); segG.set(S.gain); slFL.set(S.fl); slTi.set(S.tilt);
-  drawPre(); setView(S.view); if(fly){ S.fly=true; drawTabs(); } }
-function changed(keep){ if(!keep){ cur=null; drawPre(); } el('lifeCtl').querySelector('.ctl').hidden=S.type==='squall'; rebuild(); if(S.view==='life'&&!keep) seedLife(); live(); }
-/* readouts */
-const fl=v=>v>=10000?'FL'+Math.round(v/100):nf(v,0)+' ft';
-function readout(){ let h='';
-  if(S.view==='life'){ const c=CELLS.find(c=>c.st==='mat')||CELLS.find(c=>c.st!=='none')||CELLS[0]; const hz=[];
-    if(ENV.cb&&c&&c.st!=='cu'&&c.st!=='none'){ hz.push(L(t2('turbulence','turbulens')),L(t2('icing','ising'))); if(c.hail) hz.push(L(t2('hail','hagl'))); if(c.ltg) hz.push(L(t2('lightning','lyn'))); if(c.mb) hz.push(L(t2('microburst','mikroburst'))); }
-    const miss=ENV.why==='lift'?t2('no lift','ikke løft'):ENV.why==='moist'?t2('too dry','for tørt'):ENV.why==='stab'?t2('too stable','for stabilt'):null;
-    h=`<span><i>${L(t2('STAGE','STADIUM'))}</i><b class="${c&&c.st==='mat'?'r':''}">${S.type==='squall'?L(t2('mature line','moden linje')):L(STAGE[c?c.st:'none'])}</b></span><span><i>${L(t2('TOPS','TOPPER'))}</i><b>${c&&c.st!=='none'?fl(c.top):'–'}</b></span><span class="hx"><i>${L(t2('BASE','BASE'))}</i><b>${nf(ENV.base,0)} ft</b></span><span><i>${L(t2('UPDRAFT','OPPVIND'))}</i><b>${c&&c.up?'≈'+nf(c.up,0)+' ft/min':'–'}</b></span><span><i>CB?</i><b class="${ENV.cb?'r':'g'}">${ENV.cb?L(t2('yes','ja')):L(t2('no','nei'))+' · '+L(miss)}</b></span>${hz.length?`<span><i>${L(t2('HAZARDS','FARER'))}</i><b class="a">${hz.join(' · ')}</b></span>`:''}`;
-    el('xsv').textContent=L(STAGE[c?c.st:'none'])+' · '+S.t+' min'; }
-  else if(S.view==='mb'){ const i=clamp(Math.floor(S.k),0,Math.max(0,SIM.n-1)); const dV=sV[i]-S.vapp, dev=sH[i]-gsH(Math.max(0,sD[i])); const st=SIM.gnd>=0&&i>=SIM.gnd-1?t2('ground contact','bakkekontakt'):sF[i]?t2('recovery: max thrust, pitch up','gjenoppretting: maks skyv, nesen opp'):SIM.shaker>=0&&i>=SIM.shaker&&sV[i]<S.vapp-20?t2('stick shaker','stikkerister'):t2('on approach','på innflyging');
-    h=`<span><i>IAS</i><b class="${dV<-10?'r':dV>10?'a':''}">${nf(sV[i],0)} kt (${dV>=0?'+':'−'}${nf(Math.abs(dV),0)})</b></span><span><i>${L(t2('HEADWIND','MOTVIND'))}</i><b>${sHW[i]>=0?'+':'−'}${nf(Math.abs(sHW[i]),0)} kt</b></span><span><i>${L(t2('VERTICAL WIND','VERTIKALVIND'))}</i><b class="${sW[i]<-1000?'r':''}">${nf(sW[i],0)} ft/min</b></span><span><i>${L(t2('VS GLIDE PATH','MOT GLIDEBANEN'))}</i><b class="${dev<-150?'r':''}">${dev>=0?'+':'−'}${nf(Math.abs(dev),0)} ft</b></span><span><i>${L(t2('STATUS','STATUS'))}</i><b class="${SIM.gnd>=0&&i>=SIM.gnd-1?'r':sF[i]?'a':''}">${L(st)}</b></span>`;
-    el('xsv').textContent=L(t2('Microburst','Mikroburst'))+' · '+S.dv+' kt'; }
-  else { const cn=z=>z<20?L(t2('not shown','vises ikke')):L(ZN(z));
-    h=`<span><i>${L(t2('BEAM CENTRE AT A','STRÅLESENTER VED A'))}</i><b>${fl(Math.max(0,RO2.hA))}</b></span><span class="hx"><i>${L(t2('BEAM COVERS AT A','STRÅLEN DEKKER VED A'))}</i><b>${nf(RO2.wA,0)} ft</b></span><span><i>A</i><b>${cn(RO2.a)}</b></span><span><i>B (${L(t2('behind A','bak A'))})</i><b class="${RO2.b<20?'a':''}">${cn(RO2.b)}</b></span><span><i>C</i><b>${cn(RO2.c)}</b></span><span class="hx"><i>${L(t2('GROUND','BAKKE'))}</i><b>${RO2.gnd?L(t2('from','fra'))+' '+nf(RO2.gr,0)+' NM':L(t2('none','ingen'))}</b></span>`;
-    el('xsv').textContent='FL'+S.fl/100+' · '+L(t2('tilt','tilt'))+' '+nf(S.tilt,2)+'°'; }
-  el('chip').innerHTML=h; see(); live(); }
-function legend(){ const lg=(c,t,cls)=>`<span><i class="${cls||''}" style="--c:${c}"></i>${L(t)}</span>`;
-  el('vleg').innerHTML=S.view==='life'?lg('#F0A050',t2('updraft','oppvind'))+lg('#6EB4F0',t2('downdraft','nedvind'))+lg('#8CBEEB',t2('rain','regn'))+lg('#F0F8FF',t2('hail','hagl'),'dot')+(S.show.haz?lg('#7FCBE8',t2('icing (0 to −20 °C)','ising (0 til −20 °C)'),'a')+lg('#F0B440',t2('severe turbulence','kraftig turbulens'),'d'):'')+(S.show.iso?lg('#CFEFFF',t2('isotherms','isotermer'),'d'):'')
-   :S.view==='mb'?lg('#71CC93',t2('3° glide path','3° glidebane'),'d')+lg('#EEF3F7',t2('flown path','flydd bane'))+lg('#6EB4F0',t2('downdraft','nedvind'))+lg(INK.amber,t2('IAS − Vapp','IAS − Vapp'))+lg('#C9D2DA',t2('headwind component','motvindskomponent'),'d')
-   :lg('rgb(46,160,90)',t2('green: light','grønn: lett'),'sq')+lg('rgb(232,200,60)',t2('yellow: moderate','gul: moderat'),'sq')+lg('rgb(226,58,46)',t2('red: heavy','rød: kraftig'),'sq')+lg('rgb(214,40,190)',t2('magenta: extreme','magenta: ekstrem'),'sq')+lg('rgb(190,150,70)',t2('ground returns','bakkeekko'),'sq')+(S.show.beam?lg(INK.mag,t2('beam','stråle'),'a'):''); }
-function see(){ const s=S.view==='life'?t2('one storm in cross-section, about 120 km wide. Press Play to watch it grow, mature and die in an hour. Amber streaks rise, blue streaks sink; the hatched area inside the cloud is where supercooled water gives severe icing.','én storm i snitt, rundt 120 km bred. Trykk Spill av for å se den vokse, modnes og dø i løpet av en time. Oransje streker stiger, blå synker; det skraverte området i skyen er der underkjølt vann gir kraftig ising.')
-   :S.view==='mb'?t2('the same storm’s downdraft hitting the ground on your final approach. The strip below shows your airspeed change (amber) against the headwind (dashed): first a gain, then a larger loss.','nedvinden fra den samme stormen treffer bakken på finalen din. Stripen under viser fartsendringen (oransje) mot motvinden (stiplet): først en økning, så et større tap.')
-   :t2('the beam from your radar in a side view (top) and the picture on the navigation display (bottom). Change the tilt and see which part of each cell the beam actually hits.','strålen fra radaren sett fra siden (øverst) og bildet på navigasjonsskjermen (nederst). Endre tilten og se hvilken del av hver celle strålen faktisk treffer.');
+const SHOW0={flow:false,hail:false,gust:false,ring:false,ice:false,turb:false,avoid:false,cloud:'solid'};
+function setS(o,k){ const fly=o.fly;
+  for(const q of ['type','cape','td','shear','fzl','t','uw']) if(o[q]!=null) COND[q]=o[q];
+  if(o.view==='storm'){ S.plane.on=false; S.plane.flying=false; } if(o.plane){ Object.assign(S.plane,o.plane); }
+  if(o.pil) MB.pil=o.pil; if(o.dv) MB.dv=o.dv; if(o.fl) RD.fl=o.fl; if(o.tilt!=null) RD.tilt=o.tilt; if(o.gain) RD.gain=o.gain; if(o.rng) RD.rng=o.rng;
+  if(o.view==='storm') Object.assign(S.show,SHOW0); if(o.show) Object.assign(S.show,o.show);
+  if(o.truth!=null) S.show.truth=o.truth;
+  segCape.set(COND.cape); slTd.set(COND.td); slFz.set(COND.fzl); segSh.set(COND.shear); segTy.set(COND.type); slT.set(COND.t); segP.set(MB.pil); slDV.set(MB.dv); segR.set(String(RD.rng)); segG.set(RD.gain); slFL.set(RD.fl); slTi.set(RD.tilt); segCl.set(S.show.cloud); slUw.set(COND.uw); syncPlane();
+  if(o.look) S.look=o.look; else if(o.view==='storm'&&S.look==='night') S.look='sky';
+  cur=k||null; model(); hint(); drawStg(); drawPre(); setView(o.view||S.view);
+  if(o.cam){ camK=o.cam; V.cam(o.cam); drawTabs(); }
+  if(fly){ S.fly=true; drawTabs(); } live(); }
+function changed(keep){ if(!keep){ cur=null; drawPre(); } model(); hint(); drawStg(); if(S.view==='storm') V.setStorm(E,CELLS,COND); plane(); readout(); legend(); live(); }
+function mbChanged(){ cur=null; drawPre(); MB.simulate(); V.setMB(); V.mbK(S.k); V.relabel(); readout(); drawStrip(); live(); }
+function wxChanged(){ cur=null; drawPre(); RD.scan(); readRadar(); V.setRadar(); readout(); drawND(); live(); }
+
+/* ---------------- readouts ---------------- */
+function readRadar(){ const A=M.RC[0]; RO.hA=RD.beamC(A.r); RO.wA=2*RD.beamHW(A.r); RO.a=RD.cellOnDisplay(M.RC[0]); RO.b=RD.cellOnDisplay(M.RC[1]); RO.c=RD.cellOnDisplay(M.RC[2]);
+  RO.gnd=false; for(let k=0;k<RD.NR;k++) if(RD.GND[60*RD.NR+k]===2){ RO.gnd=true; RO.gr=(k+0.5)*RD.rng/RD.NR; break; }
+  const bi=58, k=Math.min(RD.NR-1,Math.floor(68/RD.rng*RD.NR)); RO.attB=RD.rng>=68?RD.ATT[bi*RD.NR+k]:0; }
+const STN={none:t2('–','–'),cu:t2('Cumulus','Cumulus'),mat:t2('Mature','Moden'),dis:t2('Dissipating','Oppløsning')};
+function readout(){ let h=''; const sp=(i,b,cls,hx)=>`<span${hx?' class="hx"':''}><i>${i}</i><b class="${cls||''}">${b}</b></span>`;
+  if(S.view==='storm'){ const c=M.main(CELLS); const st=c?c.st:'none';
+    const dv=c&&DEV[c.dev], stage=COND.type==='squall'?L(t2('Mature line','Moden linje')):COND.type==='multi'?L(t2('Multicell','Multicelle')):dv?dv.ab+' · '+L(c.dev==='incus'&&E.rot&&COND.type==='single'?t2('supercell-like','superscelle-aktig'):{hum:t2('small','liten'),tcu:t2('towering','tårnende'),calvus:t2('calvus','calvus'),incus:t2('mature','moden'),dis:t2('dissipating','i oppløsning')}[c.dev]):L(STN[st]);
+    h=sp(L(t2('STAGE','STADIUM')),stage,st==='mat'?'r':'')+sp(L(t2('CLOUD TOP','SKYTOPP')),c?fl(Math.round((Math.min(c.top,TROPO)+c.over)/500)*500):'–')+sp(L(t2('MAX UPDRAFT','MAKS OPPVIND')),c&&c.up?'≈'+nf(Math.round(c.up/100)*100,0)+' ft/min':'–',c&&c.up>5000?'a':'')
+      +sp(L(t2('HAIL','HAGL')),c&&c.hail>0?'≈'+nf(c.hail,1)+' cm':L(t2('none','ingen')),c&&c.hail>=2?'a':'')+sp(L(t2('GUST FRONT','VINDKASTFRONT')),c&&c.gust>2&&st!=='cu'?E.gustV+' kt · '+L(t2('gusts','kast'))+' '+E.gustW:'–')
+      +sp(L(t2('TIME','TID')),Math.round(COND.t)+' min')+sp(L(t2('BASE','BASE')),nf(E.base,0)+' ft','',1)+sp(L(t2('MICROBURST','MIKROBURST')),!c||c.st==='cu'||c.dev==='calvus'?'–':E.mbLikely?L(t2('likely','sannsynlig')):L(t2('less likely','mindre sannsynlig')),E.mbLikely&&c&&(c.dev==='incus'||c.dev==='dis')?'r':'',1);
+    el('xsv').textContent=stage+' · '+Math.round(COND.t)+' min'; }
+  else if(S.view==='mb'){ const i=clamp(Math.floor(S.k),0,Math.max(0,MB.n-1)); const dV=MB.sV[i]-MB.vapp, dev=MB.sH[i]-MB.gs(Math.max(0,MB.sD[i]));
+    const gnd=MB.gnd>=0&&i>=MB.gnd-1, st=gnd?t2('ground contact','bakkekontakt'):MB.sF[i]?t2('recovery: max thrust, pitch up','gjenoppretting: maks skyv, nesen opp'):MB.shaker>=0&&i>=MB.shaker&&MB.sV[i]<MB.vapp-20?t2('stick shaker','stikkerister'):t2('on approach','på innflyging');
+    h=sp('IAS',nf(MB.sV[i],0)+' kt ('+(dV>=0?'+':'−')+nf(Math.abs(dV),0)+')',dV<-10?'r':dV>10?'a':'')+sp(L(t2('HEADWIND','MOTVIND')),(MB.sHW[i]>=0?'+':'−')+nf(Math.abs(MB.sHW[i]),0)+' kt')+sp(L(t2('VERTICAL WIND','VERTIKALVIND')),nf(MB.sW[i],0)+' ft/min',MB.sW[i]<-1000?'r':'')
+      +sp(L(t2('VS GLIDE PATH','MOT GLIDEBANEN')),(dev>=0?'+':'−')+nf(Math.abs(dev),0)+' ft',dev<-150?'r':'')+sp(L(t2('STATUS','STATUS')),L(st),gnd?'r':MB.sF[i]?'a':'');
+    el('xsv').textContent=L(t2('Microburst','Mikroburst'))+' · '+MB.dv+' kt'; }
+  else { const cn=z=>z<20?L(t2('not shown','vises ikke')):L(z>=50?t2('magenta','magenta'):z>=40?t2('red','rød'):z>=30?t2('yellow','gul'):t2('green','grønn'));
+    h=sp(L(t2('BEAM CENTRE AT A','STRÅLESENTER VED A')),fl(Math.max(0,Math.round(RO.hA/100)*100)))+sp(L(t2('BEAM HEIGHT AT A','STRÅLEHØYDE VED A')),nf(Math.round(RO.wA/100)*100,0)+' ft','',1)+sp('A',cn(RO.a))+sp('B ('+L(t2('behind A','bak A'))+')',cn(RO.b),RO.b<20?'a':'')+sp('C',cn(RO.c),RO.c<20?'a':'')+sp(L(t2('GROUND','BAKKE')),RO.gnd?L(t2('from','fra'))+' '+nf(RO.gr,0)+' NM':L(t2('none','ingen')),'',1);
+    el('xsv').textContent='FL'+RD.fl/100+' · '+L(t2('tilt','tilt'))+' '+nf(RD.tilt,2)+'°'; }
+  el('chip').innerHTML=h; }
+function legend(){ const lg=(c,t,cls)=>`<span><i class="${cls||''}" style="--c:${c}"></i>${L(t)}</span>`, sh=S.show; let s='';
+  if(S.view==='storm'){ s=lg('#9fb0c2',t2('rain shaft','regnsjakt'),'a'); if(sh.hail) s+=lg('#E6F2FF',t2('hailstones','haglkorn'),'dot'); if(sh.gust) s+=lg('#9FC7F0',t2('gust front','vindkastfront'),'a'); if(sh.ice) s+=lg('#8fe3ff',t2('icing 0 to −20 °C','ising 0 til −20 °C'),'a'); if(sh.turb) s+=lg('#F0B440',t2('severe turbulence','kraftig turbulens'),'a');
+    if(sh.avoid) s+=lg('#E46BAE',t2('10 and 20 NM','10 og 20 NM'),'d'); if(sh.levels) s+=lg('#9fe0ff',t2('cloud base · 0 °C · −20 °C','skybase · 0 °C · −20 °C'),'d'); if(sh.ltg) s+=lg('#fffad2',t2('lightning','lyn')); }
+  else if(S.view==='mb') s=lg('#71CC93',t2('3° glide path','3° glidebane'),'d')+lg('#EEF3F7',t2('flown path (amber: speed lost)','flydd bane (oransje: fart tapt)'))+lg('#F0B440',t2('IAS − Vapp','IAS − Vapp'))+lg('#C9D2DA',t2('headwind','motvind'),'d');
+  else s=lg('rgb(46,160,90)',t2('green: light','grønn: lett'),'sq')+lg('rgb(232,200,60)',t2('yellow: moderate','gul: moderat'),'sq')+lg('rgb(226,58,46)',t2('red: heavy','rød: kraftig'),'sq')+lg('rgb(214,40,190)',t2('magenta: extreme','magenta: ekstrem'),'sq')+lg('rgb(190,150,70)',t2('ground returns','bakkeekko'),'sq')+lg('#E46BAE',t2('radar beam','radarstråle'));
+  el('vleg').innerHTML=s;
+  const cb=el('cbar'), need=(S.view==='storm'||S.view==='mb')&&(sh.flow||sh.ring);
+  cb.hidden=!need||!V.ok; if(need&&window.CB3D&&CB3D.wcol){ const st=[]; for(let i=0;i<=12;i++){ const w=CB3D.WMIN+(CB3D.WMAX-CB3D.WMIN)*i/12; st.push(CB3D.wcol(w)+' '+(i/12*100).toFixed(0)+'%'); }
+    const tk=[8000,4000,0,-4000].map(w=>`<span style="position:absolute;left:0;bottom:${((w-CB3D.WMIN)/(CB3D.WMAX-CB3D.WMIN)*100).toFixed(1)}%;transform:translateY(50%)">${w>0?'+':w<0?'−':''}${nf(Math.abs(w),0)}</span>`).join('');
+    cb.innerHTML=`<span class="t">${L(t2('Vertical speed','Vertikalfart'))} · ft/min</span><div class="row"><div class="bar" style="background:linear-gradient(to top,${st.join(',')})"></div><div class="tk" style="position:relative;width:40px">${tk}</div></div>`; } }
+function see(){ const s=S.view==='storm'?t2('one storm in 3D, about 100 km across (heights drawn 1.5× taller). Press Play to watch it grow, mature and die in an hour, or switch on layers under Show to look inside: the air coloured by vertical speed, the hail loop, the gust front and the microburst.','én storm i 3D, rundt 100 km på tvers (høyder tegnet 1,5 ganger høyere). Trykk Spill av for å se den vokse, modnes og dø i løpet av en time, eller slå på lag under Vis for å se inn: luften farget etter vertikalfart, haglsløyfen, vindkastfronten og mikrobursten.')
+   :S.view==='mb'?t2('the downdraft of the storm hitting the ground on your final approach (heights drawn 3× taller). The strip under it shows the airspeed change (amber) against the headwind (dashed): first a gain, then a larger loss.','nedvinden fra stormen treffer bakken på finalen din (høyder tegnet 3 ganger høyere). Stripen under viser fartsendringen (oransje) mot motvinden (stiplet): først en økning, så et større tap.')
+   :t2('your radar beam on a curtain along the track (heights drawn 2.2× taller): inside the beam the colours are what the radar receives; the navigation display beside it is what you see. Change the tilt and see which part of each storm the beam actually hits.','radarstrålen på et snitt langs kursen (høyder tegnet 2,2 ganger høyere): inne i strålen er fargene det radaren mottar; navigasjonsskjermen ved siden av er det du ser. Endre tilten og se hvilken del av hver storm strålen faktisk treffer.');
   el('xsee').innerHTML='<b>'+L(t2('What you are seeing:','Dette ser du:'))+'</b> '+L(s); }
-/* loop */
-let vis=true, last=0, acc=0;
+
+/* ---------------- loop ---------------- */
+let vis=true, last=0, acc=0, tNow=0;
 LAB.visible(el('stVp'),v=>{ vis=v; });
-function loop(ts){ requestAnimationFrame(loop); const dt=Math.min(0.05,((ts||0)-last)/1000); last=ts||0; if(!vis||document.hidden) return;
-  if(S.view==='life'){ if(S.play){ S.t=Math.min(60,S.t+dt*2.5); acc+=dt; if(acc>0.1){ acc=0; slT.set(Math.round(S.t)); drawLife(sg); readout(); } if(S.t>=60){ S.play=false; drawTabs(); } }
-    if(!reduce||S.play){ tNow+=dt; stepLife(dt,tNow); dirty=true; } }
-  else if(S.view==='mb'&&S.fly){ S.k+=dt*SIM.n/14; if(S.k>=SIM.n-1){ S.k=SIM.n-1; S.fly=false; drawTabs(); } acc+=dt; if(acc>0.08||!S.fly){ acc=0; readout(); } dirty=true; }
-  if(dirty){ frame(); dirty=false; } }
+function loop(ts){ requestAnimationFrame(loop); const dt=Math.min(0.05,((ts||0)-last)/1000)||0.016; last=ts||0; if(!vis||document.hidden) return;
+  const anim=!reduce||S.play||S.fly; if(anim) tNow+=dt;
+  if(S.view==='storm'&&S.play){ COND.t=Math.min(60,COND.t+dt*2.5); acc+=dt; if(acc>0.12){ acc=0; slT.set(Math.round(COND.t)); changed(true); } if(COND.t>=60){ S.play=false; drawTabs(); } }
+  else if(S.view==='mb'&&S.fly){ S.k+=dt*MB.n/12; if(S.k>=MB.n-1){ S.k=MB.n-1; S.fly=false; drawTabs(); live(); } V.mbK(S.k); acc+=dt; if(acc>0.08||!S.fly){ acc=0; readout(); drawStrip(); } }
+  if(S.plane.flying&&S.view==='storm'){ S.plane.along+=dt*7; if(S.plane.along>=55){ S.plane.along=55; S.plane.flying=false; } acc+=0; slAl.set(Math.round(S.plane.along)); plane(); }
+  V.tick(dt,tNow,anim); }
 requestAnimationFrame(loop);
 
-/* =============== Try it =============== */
-let active=null; const ans={}, touched={};
-const go=()=>{ const t=el('stVp'); if(t) t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'}); };
+/* ---------------- Try it: one task at a time ---------------- */
+let ti=0; const ans={}, touched={};
+const go=()=>{ const t=el('stVp'); if(t) t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'}); document.querySelectorAll('details.xpanel').forEach(d=>{ d.open=true; }); };
 const TASKS=[
- {k:'lift',model:1,q:t2('Keep the air moist and unstable, but make sure no CB can form.','Hold luften fuktig og ustabil, men sørg for at ingen CB kan dannes.'),pre:{view:'life',type:'single',t:25,m:0.8,i:0.8,l:0.7},
-  check:()=>{ if(S.view!=='life') return {ok:0,m:t2('Open the Life of a CB tab.','Åpne fanen Livet til en CB.')}; if(ENV.cb) return {ok:0,m:t2('The CB still forms. Which of the three ingredients is left to take away?','CB-en dannes fortsatt. Hvilken av de tre ingrediensene gjenstår å ta bort?')};
-    if(ENV.why==='lift'&&S.m>=0.5&&S.i>=0.5) return {ok:1,m:t2('Yes: without lift (no heating, front, hills or convergence) moist, unstable air just sits there. All three are needed: moisture, instability and lift.','Ja: uten løft (ingen oppvarming, front, fjell eller konvergens) blir fuktig, ustabil luft bare liggende. Alle tre trengs: fuktighet, ustabilitet og løft.')};
-    return {ok:0,m:t2('That stops it, but you changed the moisture or the instability. Keep both high and take away the third ingredient.','Det stopper den, men du endret fuktigheten eller ustabiliteten. Hold begge høye og ta bort den tredje ingrediensen.')}; }},
- {k:'stage',q:t2('Which stage has updrafts and downdrafts side by side, the first rain at the ground, hail and lightning?','Hvilket stadium har oppvind og nedvind side om side, det første regnet ved bakken, hagl og lyn?'),
-  opts:[t2('Cumulus','Cumulus'),t2('Mature','Moden'),t2('Dissipating','Oppløsning'),t2('All three equally','Alle tre like mye')],c:1,
-  e:t2('The mature stage starts when precipitation drags air down. Cumulus has updrafts only; in the dissipating stage downdrafts take over and the storm rains itself out.','Det modne stadiet starter når nedbøren drar luft ned. Cumulus har bare oppvind; i oppløsningsstadiet tar nedvinden over, og stormen regner seg ut.'),
-  show:{view:'life',type:'single',t:25,m:0.8,i:0.8,l:0.7}},
- {k:'mb',q:t2('Short final near showers: IAS suddenly rises 15 kt and you float above the glide path. Best reaction?','Kort finale nær byger: IAS stiger plutselig 15 kt, og du flyter over glidebanen. Beste reaksjon?'),
-  opts:[t2('Reduce thrust to get back to Vapp','Reduser skyvet for å komme tilbake til Vapp'),t2('Treat it as the first sign of a microburst and go around now','Behandle det som første tegn på en mikroburst og gå rundt nå'),t2('Continue: the extra headwind makes the landing easier','Fortsett: den ekstra motvinden gjør landingen lettere'),t2('Select more flap','Velg mer flaps')],c:1,
-  e:t2('The headwind is the leading edge of the outflow. Next come the downdraft and the tailwind, and the loss is bigger than the gain. Reducing thrust now leaves you with even less energy. Follow your aircraft’s wind shear procedure.','Motvinden er forkanten av utstrømmingen. Så kommer nedvinden og medvinden, og tapet er større enn gevinsten. Reduserer du skyvet nå, har du enda mindre energi. Følg flyets prosedyre for vindskjær.'),
-  show:{view:'mb',pil:'early',dv:50,fly:true}},
- {k:'tilt',model:1,q:t2('Radar at FL330: cell C, to the right, does not show. Find a tilt that paints it.','Radar i FL330: celle C, til høyre, vises ikke. Finn en tilt som får den fram.'),pre:{view:'wx',fl:33000,tilt:1,gain:'cal',rng:80},
-  check:()=>{ if(S.view!=='wx') return {ok:0,m:t2('Open the Weather radar tab.','Åpne fanen Værradar.')}; if(RO2.c>=20) return {ok:1,m:t2(`Yes, at ${nf(S.tilt,2)}°: C is low-topped (FL220), so the beam passed over it. Tilt down until the lower edge of the beam reaches the wet part of the cell, and watch for ground returns.`,`Ja, ved ${nf(S.tilt,2)}°: C har lave topper (FL220), så strålen gikk over den. Tilt ned til strålens nedre kant når den våte delen av cellen, og se opp for bakkeekko.`)};
-    return {ok:0,m:S.tilt>-0.5?t2('The beam is still above the top of C: tilt down.','Strålen er fortsatt over toppen av C: tilt ned.'):t2('Keep going: the beam must reach below FL200 at about 50 NM.','Fortsett: strålen må ned under FL200 rundt 50 NM.')}; }},
- {k:'shadow',q:t2('Behind a strong red cell the display is black. Most likely?','Bak en kraftig rød celle er skjermen svart. Mest sannsynlig?'),
-  opts:[t2('Clear air: a good way through','Klar luft: en god vei gjennom'),t2('Attenuation: the beam cannot see behind the cell, and it may hide another one','Demping: strålen ser ikke bak cellen, og den kan skjule en annen'),t2('Ground returns','Bakkeekko'),t2('The gain is too high','Gain er for høy')],c:1,
-  e:t2('Heavy rain absorbs the beam. Treat a black area right behind a strong cell as unknown, not as clear; turn on “What is really there” to see cell B.','Kraftig regn demper strålen. Behandle et svart område rett bak en kraftig celle som ukjent, ikke som klart; slå på «Hva som faktisk er der» for å se celle B.'),
-  show:{view:'wx',fl:15000,tilt:-1,gain:'cal',rng:80}}];
-function drawTasks(){ el('tasks').innerHTML=TASKS.map((t,i)=>`<li class="task" id="task-${t.k}"><span class="n">${L(t2('Task','Oppgave'))} ${i+1}</span><p class="q">${L(t.q)}</p>`+
-   (t.model?`<div class="btns"><button type="button" class="btn pri sm" data-go="${t.k}">${L(t2('Do it in the model','Gjør det i modellen'))} ↑</button></div><span class="fb" id="fb-${t.k}"></span>`:'')+
-   (t.opts?(()=>{ const a=ans[t.k]; return `<div class="opts">${t.opts.map((o,j)=>`<button type="button" data-t="${t.k}" data-o="${j}" class="${a!=null&&j===t.c?'right':''}${a===j&&j!==t.c?' wrong':''}">${L(o)}</button>`).join('')}</div><span class="fb${a===t.c?' ok':''}">${a!=null?'<b>'+L(a===t.c?t2('Right.','Riktig.'):t2('Not quite.','Ikke helt.'))+'</b> '+L(t.e):''}</span><div class="btns"><button type="button" class="btn sm" data-show="${t.k}">${L(t2('Show it in the model','Vis i modellen'))} ↑</button></div>`; })():'')+`</li>`).join('');
-  live(); drawTbox(); }
-function drawTbox(){ const b=el('tbox'); if(!active){ b.hidden=true; return; } const i=TASKS.findIndex(t=>t.k===active);
-  b.hidden=false; b.innerHTML=`<span class="k">${L(t2('Task','Oppgave'))} ${i+1}<button type="button" aria-label="${L(t2('Close the task','Lukk oppgaven'))}" id="tclose">×</button></span>${L(TASKS[i].q)}<span class="fb" id="tfb"></span>`;
-  el('tclose').onclick=()=>{ active=null; drawTbox(); }; live(); }
-function live(){ if(typeof TASKS==='undefined') return; TASKS.filter(t=>t.model&&touched[t.k]).forEach(t=>{ const r=t.check(), html=L(r.m); const f=el('fb-'+t.k); if(f&&f.innerHTML!==html){ f.innerHTML=html; f.classList.toggle('ok',!!r.ok); } if(active===t.k){ const g=el('tfb'); if(g&&g.innerHTML!==html){ g.innerHTML=html; g.classList.toggle('ok',!!r.ok); } } }); }
-el('tasks').addEventListener('click',e=>{ const gb=e.target.closest('[data-go]'), o=e.target.closest('[data-o]'), sh=e.target.closest('[data-show]');
-  if(gb){ const t=TASKS.find(x=>x.k===gb.dataset.go); active=t.k; touched[active]=1; if(t.pre) setS(t.pre); drawTbox(); go(); return; }
-  if(o){ ans[o.dataset.t]=+o.dataset.o; drawTasks(); return; }
-  if(sh){ const t=TASKS.find(x=>x.k===sh.dataset.show); active=null; drawTbox(); setS(t.show); go(); } });
+ {k:'stage',model:1,q:t2('Stop the timeline at the moment the cumulus becomes a CB: the top turns to ice. Which stage is it?','Stopp tidslinjen i det øyeblikket cumulusen blir en CB: toppen blir til is. Hvilket stadium er det?'),pre:{view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,uw:50,t:8},
+  check:()=>{ if(S.view!=='storm') return {ok:0,m:t2('Open the storm (3D) tab.','Åpne fanen Stormen (3D).')}; const c=M.main(CELLS); if(!c||COND.type!=='single'&&COND.type!=='emb') return {ok:0,m:t2('Use a single cell.','Bruk en enkeltcelle.')};
+    if(c.dev==='hum'||c.dev==='tcu') return {ok:0,m:t2('Still '+DEV[c.dev].ab+': crisp cauliflower edges, liquid water at the top. Move the timeline on.','Fortsatt '+DEV[c.dev].ab+': skarpe blomkålkanter, flytende vann i toppen. Flytt tidslinjen videre.')};
+    if(c.dev==='calvus') return {ok:1,m:t2('Yes: cumulonimbus calvus. The top has started to freeze and goes soft and fibrous; the first lightning comes now, and from here on the METAR says CB. The anvil (incus) follows within minutes.','Ja: cumulonimbus calvus. Toppen har begynt å fryse og blir myk og trådete; de første lynene kommer nå, og herfra står det CB i METAR. Ambolten (incus) følger i løpet av minutter.')};
+    return {ok:0,m:t2('Too late: it already has an anvil. Go back a few minutes.','For sent: den har allerede ambolt. Gå noen minutter tilbake.')}; }},
+ {k:'fly',model:1,q:t2('You must pass this mature cell at FL250 with an 80 kt upper wind. Place the aircraft where it meets the 20 NM guidance, on the safer side.','Du må passere denne modne cellen i FL250 med 80 kt vind i høyden. Plasser flyet der det oppfyller 20 NM-regelen, på den tryggeste siden.'),pre:{view:'storm',type:'single',cape:'high',td:17,shear:'mod',uw:80,fzl:10000,t:28,show:{avoid:true},plane:{on:true,along:20,off:0,fl:25000},cam:'top'},
+  check:()=>{ if(S.view!=='storm') return {ok:0,m:t2('Open the storm (3D) tab.','Åpne fanen Stormen (3D).')}; if(!S.plane.on) return {ok:0,m:t2('Place the aircraft (Fly group in the panel).','Plasser flyet (gruppen Fly i panelet).')};
+    if(PR.under) return {ok:0,m:t2('You are under the anvil: hail can fall out of it in clear air, and lightning strikes reach out here. Move upwind.','Du er under ambolten: hagl kan falle ut av den i klar luft, og lyn når ut hit. Flytt deg mot vinden.')};
+    if(PR.guide<2) return {ok:0,m:t2('Only '+nf(PR.dCore,0)+' NM from the core. Keep at least 20 NM from a severe cell.','Bare '+nf(PR.dCore,0)+' NM fra kjernen. Hold minst 20 NM fra en kraftig celle.')};
+    if(S.plane.along>0) return {ok:0,m:t2('Far enough, but on the downwind side, where the anvil, hail and turbulence are carried. The upwind side is cleaner.','Langt nok, men på le-siden, dit ambolten, hagl og turbulens føres. Lo-siden er renere.')};
+    return {ok:1,m:t2('Yes: '+nf(PR.dCore,0)+' NM upwind of the core, clear of the anvil. Deviating upwind keeps you away from the anvil, the hail fall-out and the worst turbulence.','Ja: '+nf(PR.dCore,0)+' NM på lo-siden av kjernen, klar av ambolten. Avvik mot vinden holder deg unna ambolten, haglnedfallet og den verste turbulensen.')}; }},
+ {k:'tilt',model:1,q:t2('Make this storm live longer: tilt it with strong wind shear, then run the timeline past 40 minutes.','Få denne stormen til å leve lenger: skråstill den med kraftig vindskjær, og kjør tidslinjen forbi 40 minutter.'),pre:{view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,t:24},
+  check:()=>{ if(S.view!=='storm') return {ok:0,m:t2('Open the storm (3D) tab.','Åpne fanen Stormen (3D).')}; if(COND.type!=='single') return {ok:0,m:t2('Use a single cell for this one.','Bruk en enkeltcelle her.')};
+    if(COND.shear!=='high') return {ok:0,m:t2('Raise the wind shear with height to High and watch the tower lean and the anvil stream away.','Øk vindskjæret med høyden til Høy, og se tårnet lene seg og ambolten strekke seg bort.')};
+    if(COND.t<40) return {ok:0,m:t2('Good tilt. Now move the timeline past 40 min (or press Play): an upright cell would already be dying.','Fin helning. Flytt nå tidslinjen forbi 40 min (eller trykk Spill av): en opprett celle ville allerede vært i ferd med å dø.')};
+    const c=M.main(CELLS); if(c&&c.st==='mat') return {ok:1,m:t2('Yes: still mature at '+Math.round(COND.t)+' min. The tilt keeps the rain and the cold downdraft away from the updraft, so the storm is not choked by its own outflow. Real supercells live for hours.','Ja: fortsatt moden etter '+Math.round(COND.t)+' min. Helningen holder regnet og den kalde nedvinden unna oppvinden, så stormen kveles ikke av sin egen utstrømming. Ekte superceller lever i timevis.')};
+    return {ok:0,m:t2('Past 50 min even this one dies. Go back to about 40–45 min.','Etter 50 min dør også denne. Gå tilbake til rundt 40–45 min.')}; }},
+ {k:'mb',model:1,q:t2('With no reaction the aircraft touches the ground short of the runway. Choose a pilot action that keeps it flying, then fly the approach.','Uten reaksjon treffer flyet bakken før rullebanen. Velg en handling som holder det i lufta, og fly innflygingen.'),pre:{view:'mb',pil:'none',dv:50,fly:true},
+  check:()=>{ if(S.view!=='mb') return {ok:0,m:t2('Open the Microburst on final tab.','Åpne fanen Mikroburst på finalen.')}; if(MB.pil==='none') return {ok:0,m:t2('Pick a pilot action in the panel.','Velg en handling i panelet.')};
+    if(MB.gnd>=0) return {ok:0,m:t2('Still ground contact: react earlier, or reduce the outflow.','Fortsatt bakkekontakt: reager tidligere, eller reduser utstrømmingen.')};
+    if(S.k<MB.n-2) return {ok:0,m:t2('Now press Fly the approach.','Trykk nå Fly innflygingen.')};
+    let mh=1e9; for(let i=0;i<MB.n;i++) mh=Math.min(mh,MB.sH[i]); mh=Math.max(0,Math.round(mh/10)*10);
+    return {ok:1,m:MB.pil==='early'?t2('Yes. Going around at the first sign, the unexpected IAS gain, uses the extra energy to climb before the downdraft and tailwind arrive.','Ja. Go-around ved første tegn, den uventede fartsøkningen, bruker den ekstra energien til å stige før nedvinden og medvinden kommer.')
+      :t2('It works this time, lowest point about '+nf(mh,0)+' ft. Waiting for the warning leaves far less margin than going around at the first sign.','Det går denne gangen, laveste punkt rundt '+nf(mh,0)+' ft. Å vente på varselet gir langt mindre margin enn go-around ved første tegn.')}; }},
+ {k:'tiltc',model:1,q:t2('At FL330 cell C, to the right, does not paint. Find a tilt that paints it.','I FL330 vises ikke celle C, til høyre. Finn en tilt som får den fram.'),pre:{view:'wx',fl:33000,tilt:1,gain:'cal',rng:80},
+  check:()=>{ if(S.view!=='wx') return {ok:0,m:t2('Open the Weather radar tab.','Åpne fanen Værradar.')}; if(RO.c>=20) return {ok:1,m:t2('Yes, at '+nf(RD.tilt,2)+'°: C is low-topped (FL220), so the beam passed over it. Tilt down until the lower edge of the beam reaches the wet part below the freezing level, and watch for ground returns.','Ja, ved '+nf(RD.tilt,2)+'°: C har lave topper (FL220), så strålen gikk over den. Tilt ned til den nedre kanten av strålen når den våte delen under frysenivået, og se opp for bakkeekko.')};
+    return {ok:0,m:RD.tilt>-0.5?t2('The beam is still above the top of C: tilt down.','Strålen er fortsatt over toppen av C: tilt ned.'):t2('Keep going: the beam must reach below about FL200 at 50 NM.','Fortsett: strålen må ned under rundt FL200 på 50 NM.')}; }}];
+function drawTask(){ const t=TASKS[ti], a=ans[t.k], n=TASKS.length;
+  let h=`<div class="th"><span class="n">${L(t2('Task','Oppgave'))} ${ti+1} ${L(t2('of','av'))} ${n}</span><span class="dots">${TASKS.map((x,i)=>`<button type="button" data-i="${i}" class="${i===ti?'on':''}" aria-label="${L(t2('Task','Oppgave'))} ${i+1}"></button>`).join('')}</span></div><p class="q">${L(t.q)}</p>`;
+  if(t.model) h+=`<span class="fb" id="tfbS"></span><div class="nav"><button type="button" class="btn pri sm" data-go="1">${L(t2('Set it up in the model','Sett det opp i modellen'))} ↑</button>`;
+  else h+=`<div class="opts">${t.opts.map((o,j)=>`<button type="button" data-o="${j}" class="${a!=null&&j===t.c?'right':''}${a===j&&j!==t.c?' wrong':''}">${L(o)}</button>`).join('')}</div><span class="fb${a===t.c?' ok':''}">${a!=null?'<b>'+L(a===t.c?t2('Right.','Riktig.'):t2('Not quite.','Ikke helt.'))+'</b> '+L(t.e):''}</span><div class="nav"><button type="button" class="btn sm" data-show="1">${L(t2('Show it in the model','Vis i modellen'))} ↑</button>`;
+  h+=`<span class="sp"></span><button type="button" class="btn sm" data-p="1" ${ti===0?'disabled':''}>← ${L(t2('Previous','Forrige'))}</button><button type="button" class="btn sm" data-n="1" ${ti===n-1?'disabled':''}>${L(t2('Next','Neste'))} →</button></div>`;
+  el('tstep').innerHTML=h; drawTbox(); live(); }
+function drawTbox(){ const b=el('tbox'), t=TASKS[ti]; if(!t.model||!touched[t.k]){ b.hidden=true; return; }
+  b.hidden=false; b.innerHTML=`<span class="k">${L(t2('Task','Oppgave'))} ${ti+1}<button type="button" aria-label="${L(t2('Close the task','Lukk oppgaven'))}" id="tclose">×</button></span>${L(t.q)}<span class="fb" id="tfb"></span>`;
+  el('tclose').onclick=()=>{ touched[t.k]=0; drawTbox(); live(); }; }
+function live(){ if(typeof TASKS==='undefined') return; const t=TASKS[ti]; if(!t||!t.model) return; const f=el('tfbS'), g=el('tfb'); if(!touched[t.k]){ if(f) f.innerHTML=''; return; }
+  const r=t.check(), html=(r.ok?'<b>✓</b> ':'')+L(r.m); for(const x of [f,g]) if(x&&x.innerHTML!==html){ x.innerHTML=html; x.classList.toggle('ok',!!r.ok); } }
+el('tstep').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const t=TASKS[ti];
+  if(b.dataset.i!=null){ ti=+b.dataset.i; drawTask(); return; } if(b.dataset.p){ ti=Math.max(0,ti-1); drawTask(); return; } if(b.dataset.n){ ti=Math.min(TASKS.length-1,ti+1); drawTask(); return; }
+  if(b.dataset.go){ touched[t.k]=1; setS(t.pre); drawTbox(); live(); go(); return; }
+  if(b.dataset.o!=null){ ans[t.k]=+b.dataset.o; drawTask(); return; }
+  if(b.dataset.show){ setS(t.show); go(); } });
 
-/* =============== Understand: key concept cards =============== */
+/* ---------------- Understand: key concept cards ---------------- */
 if(window.KCS){ const {sv,tx,ar}=KCS;
   const gnd='<line x1="6" y1="58" x2="194" y2="58" stroke="#55626e"/>';
   const cb=(x,s)=>`<path d="M${x-10*s},58 C${x-14*s},40 ${x-8*s},26 ${x-4*s},18 L${x-22*s},14 L${x+30*s},12 L${x+10*s},18 C${x+12*s},30 ${x+12*s},44 ${x+10*s},58 Z" fill="#cfd8df"/>`;
-  const life=o=>({click:()=>setS(Object.assign({view:'life',type:'single',m:0.8,i:0.8,l:0.7},o)),to:'#stVp'});
+  const stage=k=>{ setS({view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,uw:50,t:DEV[k].t}); camK='side'; V.cam('side'); drawTabs(); };
+  const st=(o,sh,cam)=>({click:()=>{ setS(Object.assign({view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,t:24,show:sh||{}},o)); if(cam){ camK=cam; V.cam(cam); drawTabs(); } },to:'#stVp'});
   const KC=[
-   Object.assign({k:'ing',t:t2('Conditions for a CB','Vilkår for en CB'),d:t2('Three ingredients: <b>moisture</b>, <b>instability</b> (a steep lapse rate through a deep layer) and <b>lift</b> to start it: heating, a front, hills or converging air. Take one away and no CB forms.','Tre ingredienser: <b>fuktighet</b>, <b>ustabilitet</b> (stort temperaturfall gjennom et tykt lag) og <b>løft</b> som setter det i gang: oppvarming, en front, fjell eller luft som strømmer sammen. Ta bort én, og ingen CB dannes.'),
-    ill:()=>sv(`${gnd}${tx(40,22,L(t2('moisture','fukt')),'#7fcbe8','middle',9)}${tx(100,22,L(t2('instability','ustabil')),'#f0b440','middle',9)}${tx(160,22,L(t2('lift','løft')),'#71cc93','middle',9)}${ar(160,52,160,30,'#71cc93')}${tx(70,46,'+','#c9d2da','middle',12)}${tx(130,46,'+','#c9d2da','middle',12)}`)},life({t:25,l:0.1})),
-   Object.assign({k:'lc',t:t2('Life cycle','Livssyklus'),d:t2('<b>Cumulus</b> (updrafts only), <b>mature</b> (updrafts and downdrafts, rain at the ground, hail, lightning) and <b>dissipating</b> (downdrafts only). Each stage lasts roughly 15–20 minutes.','<b>Cumulus</b> (bare oppvind), <b>moden</b> (oppvind og nedvind, regn ved bakken, hagl, lyn) og <b>oppløsning</b> (bare nedvind). Hvert stadium varer omtrent 15–20 minutter.'),
-    ill:()=>sv(`${gnd}<path d="M24,58 C20,44 28,36 36,34 C44,36 50,44 46,58 Z" fill="#dfe6ec"/>${cb(100,1)}<path d="M156,58 C152,46 158,40 164,38 L150,20 L196,20 L172,38 C178,44 178,52 176,58 Z" fill="rgba(207,216,223,.5)"/>${tx(36,64,'Cu','#8b99a7','middle',8)}${tx(100,64,L(t2('mature','moden')),'#8b99a7','middle',8)}${tx(166,64,L(t2('dissipating','oppløsning')),'#8b99a7','middle',8)}`)},{click:()=>{ setS({view:'life',type:'single',t:0,m:0.8,i:0.8,l:0.7}); S.play=true; drawTabs(); },to:'#stVp'}),
-   Object.assign({k:'ud',t:t2('Updraft and downdraft','Oppvind og nedvind'),d:t2('Updrafts can reach several thousand ft/min and carry you up whatever you do with the controls. Rain and evaporative cooling drive the downdraft, which hits the ground and spreads out.','Oppvind kan nå flere tusen ft/min og løfte deg uansett hva du gjør med rorene. Regn og fordampingskjøling driver nedvinden, som treffer bakken og sprer seg utover.'),
-    ill:()=>sv(`${gnd}${cb(100,1.3)}${ar(112,54,112,20,'#F0A050')}${ar(88,22,88,54,'#6EB4F0')}${tx(124,40,'↑','#F0A050','start',9)}`)},life({t:25})),
-   Object.assign({k:'hail',t:t2('Hail','Hagl'),d:t2('Ice grows while strong updrafts keep it aloft above the freezing level. It falls in and near the core, but can also be thrown out under the anvil, in clear air miles from the cell.','Is vokser mens sterk oppvind holder den oppe over frysenivået. Den faller i og nær kjernen, men kan også kastes ut under ambolten, i klar luft flere mil fra cellen.'),
-    ill:()=>sv(`${gnd}${cb(80,1.3)}<circle cx="130" cy="30" r="2.5" fill="#f0f8ff"/><circle cx="140" cy="40" r="2.5" fill="#f0f8ff"/><circle cx="150" cy="50" r="2.5" fill="#f0f8ff"/>${tx(160,30,L(t2('under anvil','under ambolt')),'#e46bae','start',8)}`)},{click:()=>{ setS({view:'life',type:'single',t:28,m:0.8,i:0.85,l:0.7}); S.show.avoid=true; drawTogs(); rebuild(); },to:'#stVp'}),
-   Object.assign({k:'ltg',t:t2('Lightning','Lyn'),d:t2('Most strikes on aircraft happen within about 5000 ft of the freezing level, in or near the cloud, often in precipitation. Usually little damage, but it can affect avionics and dazzle the crew.','De fleste lynnedslag i fly skjer innenfor rundt 5000 ft fra frysenivået, i eller nær skyen, ofte i nedbør. Som regel lite skade, men det kan påvirke avionikk og blende besetningen.'),
-    ill:()=>sv(`${gnd}${cb(90,1.3)}<path d="M96,30 L88,42 L96,42 L86,58" stroke="#fffad2" stroke-width="1.8" fill="none"/>`)},life({t:24})),
-   Object.assign({k:'gf',t:t2('Gust front','Vindkastfront'),d:t2('The outflow from the downdraft runs ahead of the storm as a gust front: sudden wind shift, strong gusts and turbulence, sometimes 15–20 NM ahead of the rain.','Utstrømmingen fra nedvinden løper foran stormen som en vindkastfront: brå vinddreining, sterke kast og turbulens, noen ganger 15–20 NM foran regnet.'),
-    ill:()=>sv(`${gnd}${cb(60,1.3)}${ar(70,54,180,54,'#eef3f7',2)}${tx(176,46,L(t2('gust front','vindkastfront')),'#eef3f7','end',9)}`)},life({t:30})),
-   Object.assign({k:'mb',t:t2('Microburst','Mikroburst'),d:t2('A small, intense downdraft, less than about 4 km (2 NM) across, lasting 5–15 minutes, with outflow winds that can change by 50 kt or more across the approach path.','En liten, kraftig nedvind, mindre enn rundt 4 km (2 NM) på tvers, som varer 5–15 minutter, med utstrømmingsvind som kan endre seg med 50 kt eller mer langs innflygingen.'),
-    ill:()=>sv(`${gnd}<rect x="70" y="4" width="60" height="10" rx="4" fill="#5a6774"/>${ar(100,16,100,48,'#6EB4F0',2.2)}${ar(100,54,60,54,'#eef3f7')}${ar(100,54,140,54,'#eef3f7')}`)},{click:()=>setS({view:'mb',pil:'none',dv:50,fly:true}),to:'#stVp'}),
+   Object.assign({k:'ing',t:t2('Conditions for a CB','Vilkår for en CB'),d:t2('Three ingredients: <b>moisture</b>, <b>instability</b> through a deep layer, and <b>lift</b> to start it (heating, a front, hills or converging air). The more unstable and moist, the stronger the updraft.','Tre ingredienser: <b>fuktighet</b>, <b>ustabilitet</b> gjennom et tykt lag, og <b>løft</b> som setter det i gang (oppvarming, en front, fjell eller luft som strømmer sammen). Jo mer ustabil og fuktig, desto sterkere oppvind.'),
+    ill:()=>sv(`${gnd}${tx(40,22,L(t2('moisture','fukt')),'#7fcbe8','middle',9)}${tx(100,22,L(t2('instability','ustabil')),'#f0b440','middle',9)}${tx(160,22,L(t2('lift','løft')),'#71cc93','middle',9)}${ar(160,52,160,30,'#71cc93')}${tx(70,46,'+','#c9d2da','middle',12)}${tx(130,46,'+','#c9d2da','middle',12)}`)},st({cape:'high',td:18},{flow:true})),
+   Object.assign({k:'lc',t:t2('Life cycle','Livssyklus'),d:t2('<b>Cumulus</b> (updrafts only), <b>mature</b> (updrafts and downdrafts side by side, rain at the ground, hail, lightning) and <b>dissipating</b> (downdrafts only). A single cell lives about an hour.','<b>Cumulus</b> (bare oppvind), <b>moden</b> (oppvind og nedvind side om side, regn ved bakken, hagl, lyn) og <b>oppløsning</b> (bare nedvind). En enkeltcelle lever omtrent en time.'),
+    ill:()=>sv(`${gnd}<path d="M24,58 C20,44 28,36 36,34 C44,36 50,44 46,58 Z" fill="#dfe6ec"/>${cb(100,1)}<path d="M156,58 C152,46 158,40 164,38 L150,20 L196,20 L172,38 C178,44 178,52 176,58 Z" fill="rgba(207,216,223,.5)"/>${tx(36,64,'Cu','#8b99a7','middle',8)}${tx(100,64,L(t2('mature','moden')),'#8b99a7','middle',8)}${tx(166,64,L(t2('dissipating','oppløsning')),'#8b99a7','middle',8)}`)},{click:()=>{ setS({view:'storm',type:'single',cape:'mod',td:16,shear:'low',fzl:10000,t:0}); S.play=true; drawTabs(); },to:'#stVp'}),
+   Object.assign({k:'cu',t:t2('CU: fair-weather cumulus','CU: godværscumulus'),d:t2('Small heaps with flat bases from rising thermals, tops below the freezing level. Bumpy, harmless, but a sign of an unstable day if they grow.','Små hauger med flat base fra stigende termikk, toppene under frysenivået. Humpete og ufarlige, men et tegn på en ustabil dag hvis de vokser.'),
+    ill:()=>sv(`${gnd}<path d="M60,52 C56,40 66,34 74,36 C80,28 94,30 96,38 C106,36 112,44 108,52 Z" fill="#e6ecf0"/><path d="M130,54 C128,46 136,42 142,44 C148,40 156,44 154,54 Z" fill="#e6ecf0"/>${tx(176,30,'CU','#c9d2da','middle',11)}`)},{click:()=>stage('hum'),to:'#stVp'}),
+   Object.assign({k:'tcu',t:t2('TCU: towering cumulus','TCU: tårnende cumulus'),d:t2('Cumulus congestus: tall cauliflower towers full of supercooled water, no ice at the top yet. Severe turbulence and icing possible inside; it can be a CB in 10–20 minutes.','Cumulus congestus: høye blomkålstårn fulle av underkjølt vann, ingen is i toppen ennå. Kraftig turbulens og ising er mulig inni; den kan være en CB om 10–20 minutter.'),
+    ill:()=>sv(`${gnd}<path d="M78,58 C72,48 76,38 80,34 C76,24 84,14 94,16 C100,8 114,12 114,22 C122,24 124,34 118,40 C124,46 122,54 118,58 Z" fill="#e6ecf0"/>${tx(170,30,'TCU','#c9d2da','middle',11)}`)},{click:()=>stage('tcu'),to:'#stVp'}),
+   Object.assign({k:'cb',t:t2('CB: cumulonimbus','CB: cumulonimbus'),d:t2('Once the top turns to ice (calvus) it is a CB; with an anvil (incus) it is mature, with rain, hail, lightning and a gust front. Avoid by 10–20 NM.','Når toppen blir til is (calvus), er det en CB; med ambolt (incus) er den moden, med regn, hagl, lyn og vindkastfront. Unngå med 10–20 NM.'),
+    ill:()=>sv(`${gnd}${cb(92,1.3)}${tx(172,30,'CB','#c9d2da','middle',11)}`)},{click:()=>stage('incus'),to:'#stVp'}),
+   Object.assign({k:'ud',t:t2('Updraft and downdraft','Oppvind og nedvind'),d:t2('Updrafts of several thousand ft/min carry you up whatever you do with the controls. Rain drags air down and evaporation cools it: the downdraft hits the ground and spreads out.','Oppvind på flere tusen ft/min løfter deg uansett hva du gjør med rorene. Regnet drar luft ned og fordamping kjøler den: nedvinden treffer bakken og sprer seg.'),
+    ill:()=>sv(`${gnd}${cb(100,1.3)}${ar(112,54,112,20,'#F0A050')}${ar(88,22,88,54,'#6EB4F0')}`)},st({t:26},{flow:true,cloud:'see'})),
+   Object.assign({k:'hail',t:t2('Hail','Hagl'),d:t2('Ice grows while a strong updraft carries it round and round above the freezing level. It falls near the core, but can also be thrown out under the anvil, in clear air miles from the cell.','Is vokser mens sterk oppvind fører den rundt og rundt over frysenivået. Den faller nær kjernen, men kan også kastes ut under ambolten, i klar luft langt fra cellen.'),
+    ill:()=>sv(`${gnd}${cb(80,1.3)}<circle cx="130" cy="30" r="2.5" fill="#f0f8ff"/><circle cx="140" cy="40" r="2.5" fill="#f0f8ff"/><circle cx="150" cy="50" r="2.5" fill="#f0f8ff"/>${tx(160,30,L(t2('under anvil','under ambolt')),'#e46bae','start',8)}`)},st({cape:'high',td:17,t:27},{hail:true,cloud:'see'})),
+   Object.assign({k:'ltg',t:t2('Lightning','Lyn'),d:t2('Most strikes on aircraft happen within about 5000 ft of the freezing level, in or near the cloud, often in rain. Usually little damage, but it can upset avionics and dazzle the crew.','De fleste lynnedslag i fly skjer innenfor rundt 5000 ft fra frysenivået, i eller nær skyen, ofte i regn. Som regel lite skade, men det kan forstyrre avionikken og blende besetningen.'),
+    ill:()=>sv(`${gnd}${cb(90,1.3)}<path d="M96,30 L88,42 L96,42 L86,58" stroke="#fffad2" stroke-width="1.8" fill="none"/>`)},st({t:24},{levels:true})),
+   Object.assign({k:'gf',t:t2('Gust front','Vindkastfront'),d:t2('The cold outflow runs ahead of the storm: a sudden wind shift, strong gusts and turbulence, often 10–20 NM ahead of the rain, sometimes under a shelf cloud.','Den kalde utstrømmingen løper foran stormen: brå vinddreining, sterke kast og turbulens, ofte 10–20 NM foran regnet, noen ganger under en hyllesky.'),
+    ill:()=>sv(`${gnd}${cb(60,1.3)}${ar(70,54,180,54,'#eef3f7',2)}${tx(176,46,L(t2('gust front','vindkastfront')),'#eef3f7','end',9)}`)},st({t:32,td:18},{gust:true},'cockpit')),
+   Object.assign({k:'mb',t:t2('Microburst','Mikroburst'),d:t2('A small, intense downdraft, under about 4 km (2 NM) across, lasting 5–15 minutes, with an outflow that can change the wind by 50 kt or more along the approach.','En liten, kraftig nedvind, under rundt 4 km (2 NM) på tvers, som varer 5–15 minutter, med en utstrømming som kan endre vinden med 50 kt eller mer langs innflygingen.'),
+    ill:()=>sv(`${gnd}<rect x="70" y="4" width="60" height="10" rx="4" fill="#5a6774"/>${ar(100,16,100,48,'#6EB4F0',2.2)}${ar(100,54,60,54,'#eef3f7')}${ar(100,54,140,54,'#eef3f7')}`)},st({cape:'high',td:10,fzl:12000,t:24},{ring:true,flow:true})),
    Object.assign({k:'ws',t:t2('Wind shear on final','Vindskjær på finalen'),d:t2('A sudden headwind raises the IAS and lifts you above the path; a tailwind or downdraft does the opposite. In a microburst the gain comes first and the bigger loss follows.','En plutselig motvind øker IAS og løfter deg over banen; medvind eller nedvind gjør det motsatte. I en mikroburst kommer gevinsten først, og det større tapet etter.'),
     ill:()=>sv(`<line x1="10" y1="32" x2="190" y2="32" stroke="#55626e" stroke-dasharray="3 3"/><path d="M10,32 C50,32 60,14 80,14 C100,14 110,58 140,58 C160,58 170,40 190,40" stroke="#F0B440" stroke-width="2" fill="none"/>${tx(80,10,'+IAS','#F0B440','middle',9)}${tx(140,52,'−IAS','#EC5A47','middle',9)}`)},{click:()=>setS({view:'mb',pil:'none',dv:60,fly:true}),to:'#stVp'}),
-   Object.assign({k:'ty',t:t2('Single cell to squall line','Enkeltcelle til bygelinje'),d:t2('A <b>single cell</b> lives about an hour. <b>Multicells</b> keep forming new cells on the gust front. A <b>squall line</b> is a long line of cells, often ahead of a cold front. An <b>embedded CB</b> is hidden in layer cloud.','En <b>enkeltcelle</b> lever omtrent en time. <b>Multiceller</b> danner stadig nye celler på vindkastfronten. En <b>bygelinje</b> er en lang rekke celler, ofte foran en kaldfront. En <b>innleiret CB</b> er skjult i lagskyer.'),
-    ill:()=>sv(`${gnd}${cb(40,0.8)}${cb(70,1)}${cb(104,0.7)}<rect x="130" y="26" width="64" height="26" fill="#9fadb9"/><path d="M162,52 L162,18" stroke="#ffd7a0" stroke-dasharray="2 2"/>${tx(162,16,'EMBD','#ffd7a0','middle',8)}`)},{click:()=>setS({view:'life',type:'multi',t:10,m:0.8,i:0.8,l:0.7}),to:'#stVp'}),
-   Object.assign({k:'wx',t:t2('Weather radar','Værradar'),d:t2('The radar sees precipitation, not turbulence. Wet cores below the freezing level reflect most, so <b>tilt</b> down to scan them; use <b>gain</b> CAL to judge intensity; strong rain <b>attenuates</b> the beam and hides what is behind.','Radaren ser nedbør, ikke turbulens. Våte kjerner under frysenivået reflekterer mest, så <b>tilt</b> ned for å treffe dem; bruk <b>gain</b> CAL for å vurdere styrken; kraftig regn <b>demper</b> strålen og skjuler det som er bak.'),
+   Object.assign({k:'ty',t:t2('Storm types','Stormtyper'),d:t2('A <b>single cell</b> lives about an hour. <b>Multicells</b> keep forming new cells on their outflow. A <b>squall line</b> is a long line of cells, often ahead of a cold front. Strong shear gives a long-lived, rotating <b>supercell</b>.','En <b>enkeltcelle</b> lever omtrent en time. <b>Multiceller</b> danner stadig nye celler på utstrømmingen. En <b>bygelinje</b> er en lang rekke celler, ofte foran en kaldfront. Kraftig vindskjær gir en langlivet, roterende <b>superscelle</b>.'),
+    ill:()=>sv(`${gnd}${cb(40,0.8)}${cb(80,1)}${cb(124,0.7)}${tx(166,30,'×n','#c9d2da','middle',11)}`)},st({type:'multi',shear:'mod',td:17,t:20})),
+   Object.assign({k:'emb',t:t2('Embedded CB','Innleiret CB'),d:t2('A CB hidden in layer cloud, typical in warm fronts and occlusions. You cannot see it: use the radar, the SIGMET (EMBD TS) and lightning data.','En CB skjult i lagskyer, typisk i varmfronter og okklusjoner. Du ser den ikke: bruk radaren, SIGMET (EMBD TS) og lyndata.'),
+    ill:()=>sv(`${gnd}<rect x="20" y="22" width="160" height="30" fill="#9fadb9"/><path d="M100,52 L100,10" stroke="#ffd7a0" stroke-dasharray="2 2"/>${tx(100,8,'EMBD TS','#ffd7a0','middle',8)}`)},st({type:'emb',td:18,shear:'mod',fzl:9000,t:26})),
+   Object.assign({k:'wx',t:t2('Radar principles','Radarprinsipper'),d:t2('The radar sees precipitation, not turbulence. Wet cores below the freezing level reflect most, so <b>tilt</b> down to scan them; use <b>gain</b> CAL to judge intensity; heavy rain <b>attenuates</b> the beam and hides what is behind.','Radaren ser nedbør, ikke turbulens. Våte kjerner under frysenivået reflekterer mest, så <b>tilt</b> ned for å treffe dem; bruk <b>gain</b> CAL for å vurdere styrken; kraftig regn <b>demper</b> strålen og skjuler det som er bak.'),
     ill:()=>sv(`<path d="M100,60 L40,6 A80,80 0 0 1 160,6 Z" fill="#05090c" stroke="#33414d"/><circle cx="92" cy="30" r="7" fill="#e23a2e"/><circle cx="92" cy="30" r="3" fill="#d628be"/><circle cx="118" cy="40" r="5" fill="#e8c83c"/><circle cx="118" cy="40" r="2" fill="#e23a2e"/><path d="M92,22 L86,6 L98,6 Z" fill="rgba(0,0,0,.6)"/>`)},{click:()=>setS({view:'wx',fl:15000,tilt:-1,gain:'cal',rng:80}),to:'#stVp'}),
-   Object.assign({k:'av',t:t2('Avoidance distances','Avstand å holde'),d:t2('Common guidance: at least 10 NM from any thunderstorm and 20 NM from severe or large cells, more on the downwind (anvil) side. Do not fly under the anvil. Your operator’s procedures decide.','Vanlig veiledning: minst 10 NM fra ethvert tordenvær og 20 NM fra kraftige eller store celler, mer på le-siden (amboltsiden). Ikke fly under ambolten. Operatørens prosedyrer gjelder.'),
-    ill:()=>sv(`${gnd}${cb(100,1.2)}<path d="M64,6 L64,58 M136,6 L136,58" stroke="#e46bae" stroke-dasharray="3 3"/><path d="M40,6 L40,58 M160,6 L160,58" stroke="#e46bae" stroke-dasharray="1 3"/>${tx(64,64,'10','#e46bae','middle',8)}${tx(40,64,'20 NM','#e46bae','middle',8)}`)},{click:()=>{ setS({view:'life',type:'single',t:25,m:0.8,i:0.8,l:0.7}); S.show.avoid=true; drawTogs(); rebuild(); },to:'#stVp'})];
-  KCS.render(el('kcGrid'),KC);
-}
+   Object.assign({k:'av',t:t2('Avoidance','Unngåelse'),d:t2('Common guidance: at least 10 NM from any thunderstorm and 20 NM from severe cells, more on the downwind (anvil) side. Never fly under the anvil. Your operator’s procedures decide.','Vanlig veiledning: minst 10 NM fra ethvert tordenvær og 20 NM fra kraftige celler, mer på le-siden (amboltsiden). Fly aldri under ambolten. Operatørens prosedyrer gjelder.'),
+    ill:()=>sv(`${gnd}${cb(100,1.2)}<path d="M64,6 L64,58 M136,6 L136,58" stroke="#e46bae" stroke-dasharray="3 3"/><path d="M40,6 L40,58 M160,6 L160,58" stroke="#e46bae" stroke-dasharray="1 3"/>${tx(64,64,'10','#e46bae','middle',8)}${tx(40,64,'20 NM','#e46bae','middle',8)}`)},st({cape:'high',td:17,shear:'mod',t:28},{avoid:true,turb:true},'top')),
+   Object.assign({k:'sig',t:t2('SIGMET TS codes','SIGMET-koder for TS'),d:t2('<b>OBSC TS</b>: hidden by haze or cloud. <b>EMBD TS</b>: embedded in layer cloud. <b>FRQ TS</b>: frequent, little or no gap. <b>SQL TS</b>: squall line. <b>TSGR</b>: with hail. In METAR and TAF: TS, +TSRA, CB, TCU.','<b>OBSC TS</b>: skjult av dis eller skyer. <b>EMBD TS</b>: innleiret i lagskyer. <b>FRQ TS</b>: hyppige, liten eller ingen åpning. <b>SQL TS</b>: bygelinje. <b>TSGR</b>: med hagl. I METAR og TAF: TS, +TSRA, CB, TCU.'),
+    ill:()=>sv(`<rect x="10" y="10" width="180" height="44" rx="3" fill="#0b1117" stroke="#33414d"/>${tx(18,26,'SIGMET 2 VALID 1400/1800','#8b99a7','start',8)}${tx(18,42,'EMBD TS FCST TOP FL380','#ffd7a0','start',9)}`)},st({type:'squall',cape:'high',td:18,shear:'mod',t:25}))];
+  KCS.render(el('kcGrid'),KC); }
 
-/* =============== text =============== */
+/* ---------------- deep-dive folds ---------------- */
+const DD=[
+ [t2('Supercells and rotation','Superceller og rotasjon'),t2('the long-lived, rotating storm','den langlivede, roterende stormen'),[
+   t2('When the wind changes strongly in speed and direction with height, the updraft tilts and can start to rotate. The rotating updraft, a <b>mesocyclone</b> some 3–10 km across, stays strong for hours because the rain falls outside it instead of into it.','Når vinden endrer seg kraftig i styrke og retning med høyden, skråstilles oppvinden og kan begynne å rotere. Den roterende oppvinden, en <b>mesosyklon</b> på rundt 3–10 km, holder seg sterk i timevis fordi regnet faller utenfor den i stedet for ned i den.'),
+   t2('Supercells give the largest hail, the strongest gusts and most tornadoes. On the radar look for a <b>hook</b> on one flank, an echo-free notch where the updraft is so strong that rain has no time to form, and very high tops. For the pilot: give them the widest berth of all, and keep clear of the anvil and the area downwind.','Superceller gir de største haglene, de sterkeste vindkastene og de fleste tornadoene. På radaren ser du etter en <b>krok</b> på den ene flanken, et ekkofritt hakk der oppvinden er så sterk at regnet ikke rekker å dannes, og svært høye topper. For piloten: hold den største avstanden av alle, og hold deg unna ambolten og området på le-siden.')]],
+ [t2('Downburst and microburst: the scales','Downburst og mikroburst: størrelsene'),t2('how big, how long, how strong','hvor store, hvor lenge, hvor kraftige'),[
+   t2('A <b>downburst</b> is any downdraft strong enough to cause damaging winds at the ground. It is a <b>macroburst</b> when the outflow is more than 4 km (2.2 NM) across, a <b>microburst</b> when it is smaller.','En <b>downburst</b> er enhver nedvind som er sterk nok til å gi skadelig vind ved bakken. Den er en <b>makroburst</b> når utstrømmingen er mer enn 4 km (2,2 NM) på tvers, og en <b>mikroburst</b> når den er mindre.'),
+   'TABLE',
+   t2('<b>Wet</b> microbursts come with heavy rain under a low base. <b>Dry</b> microbursts come from a high base over dry air, often with only virga or a ring of dust: easy to underestimate.','<b>Våte</b> mikroburster kommer med kraftig regn under en lav base. <b>Tørre</b> mikroburster kommer fra en høy base over tørr luft, ofte bare med virga eller en støvring: lett å undervurdere.')]],
+ [t2('Low-level wind shear alerts','Varsler om vindskjær i lav høyde'),t2('LLWAS, airport Doppler radar, predictive and reactive systems','LLWAS, Doppler-radar på flyplassen, prediktive og reaktive systemer'),[
+   t2('<b>On the ground.</b> Some airports have a network of anemometers around the runways (LLWAS) or a Doppler weather radar that look for a wind shift or an outflow on the approach and departure paths. ATC then passes a wind shear or microburst alert, often with the expected loss or gain in knots.','<b>På bakken.</b> Noen flyplasser har et nettverk av vindmålere rundt banene (LLWAS) eller en Doppler-værradar som ser etter vindskift eller utstrømming på innflygings- og utflygingsbanene. ATC gir da et varsel om vindskjær eller mikroburst, ofte med forventet tap eller gevinst i knop.'),
+   t2('<b>In the aircraft.</b> A <b>predictive</b> system (PWS) uses the Doppler weather radar to see the outflow pattern a few miles ahead, at low altitude during take-off and approach, and warns before you enter it. A <b>reactive</b> system warns when the aircraft is already in wind shear, from the change in airspeed and energy.','<b>I flyet.</b> Et <b>prediktivt</b> system (PWS) bruker Doppler-værradaren til å se utstrømmingsmønsteret noen mil foran, i lav høyde under start og innflyging, og varsler før du flyr inn i det. Et <b>reaktivt</b> system varsler når flyet allerede er i vindskjær, ut fra endringen i fart og energi.'),
+   t2('What you do with each warning, go around, reject or recover, comes from your aircraft’s procedure. As a general principle: a predictive warning ahead means do not continue into it; a reactive warning means fly the wind shear recovery now.','Hva du gjør ved hvert varsel, go-around, avbrutt start eller gjenoppretting, står i flyets prosedyre. Som et generelt prinsipp: et prediktivt varsel foran betyr ikke fortsett inn i det; et reaktivt varsel betyr fly gjenopprettingen nå.')]],
+ [t2('Reflectivity is not turbulence','Reflektivitet er ikke turbulens'),t2('what the colours mean, and what they do not','hva fargene betyr, og hva de ikke betyr'),[
+   t2('The radar measures <b>reflectivity</b>: how much energy comes back from precipitation. It rises steeply with drop size, so a few big wet drops or wet hail give a strong echo, and ice crystals or dry snow a weak one. The colours are rain rate, not bumpiness.','Radaren måler <b>reflektivitet</b>: hvor mye energi som kommer tilbake fra nedbør. Den øker kraftig med dråpestørrelsen, så noen få store våte dråper eller vått hagl gir et sterkt ekko, og iskrystaller eller tørr snø et svakt. Fargene er nedbørsmengde, ikke hvor humpete det er.'),
+   t2('Severe turbulence is often where the colours change fastest (steep gradients), at the edges, above the core, between cells and in clear air around them. Shapes help: hooks, fingers, scalloped edges and U-shapes mean an active, dangerous cell. Radars with a turbulence mode use the Doppler spread of the echo, only at short range and only where there is rain.','Kraftig turbulens er ofte der fargene skifter raskest (bratte gradienter), i kantene, over kjernen, mellom cellene og i klar luft rundt dem. Formen hjelper: kroker, fingre, buede kanter og U-former betyr en aktiv, farlig celle. Radarer med turbulensmodus bruker Doppler-spredningen i ekkoet, bare på kort avstand og bare der det er nedbør.')]],
+ [t2('Static, St. Elmo’s fire and lightning strikes','Statisk elektrisitet, St. Elmos ild og lynnedslag'),t2('what you hear, see and should do','hva du hører, ser og bør gjøre'),[
+   t2('<b>Precipitation static</b>: flying through ice crystals, snow or rain charges the airframe. The discharge gives noise on the radios (worst on low frequencies); static dischargers on the trailing edges keep it down. <b>St. Elmo’s fire</b> is a harmless blue glow on the windscreen and the tips, but it tells you the electric field is strong and a strike is possible.','<b>Nedbørsstatikk</b>: å fly gjennom iskrystaller, snø eller regn lader opp flyskroget. Utladningen gir støy på radioene (verst på lave frekvenser); statiske utladere på bakkantene holder den nede. <b>St. Elmos ild</b> er en ufarlig blå glød på frontruta og tuppene, men den forteller at det elektriske feltet er sterkt og et nedslag er mulig.'),
+   t2('A <b>lightning strike</b> enters at one extremity and leaves at another. Usually little happens: a flash, a bang, perhaps a compass error or a tripped system. Turn the cockpit lights up in thunderstorm areas against flash blindness, follow your checklist, and report it so the aircraft is inspected.','Et <b>lynnedslag</b> går inn i en ytterkant og ut av en annen. Som regel skjer det lite: et lysglimt, et smell, kanskje kompassfeil eller et system som faller ut. Skru opp cockpitlyset i tordenværsområder mot lysblending, følg sjekklisten, og rapporter det så flyet blir inspisert.')]],
+ [t2('Heavy rain and hail: engines and airframe','Kraftig regn og hagl: motorer og skrog'),t2('why you cannot just push through','hvorfor du ikke bare kan presse deg gjennom'),[
+   t2('Very heavy rain and hail can exceed what an engine is certified to swallow: compressor stall, flameout or damage. Hail can crack windscreens, dent the radome and the leading edges, and is found under the anvil and above the core, where the radar echo is weak because dry hail reflects poorly.','Svært kraftig regn og hagl kan overstige det en motor er sertifisert for å svelge: kompressorstall, flammeutslukking eller skade. Hagl kan sprekke frontruter, bulke radomen og forkantene, og finnes under ambolten og over kjernen, der radarekkoet er svakt fordi tørt hagl reflekterer dårlig.'),
+   t2('If penetration cannot be avoided, the aircraft procedure applies, typically turbulence speed, continuous ignition, engine anti-ice as required and steady thrust. The real protection is not to go in.','Hvis du ikke kan unngå å fly inn, gjelder flyets prosedyre, typisk turbulensfart, kontinuerlig tenning, motoravising etter behov og jevnt skyv. Den virkelige beskyttelsen er å ikke fly inn.')]],
+ [t2('Operational avoidance: general guidance','Unngåelse i praksis: generell veiledning'),t2('distances, tops, gaps; your operator decides','avstander, topper, åpninger; operatøren bestemmer'),[
+   t2('Common rules of thumb, always subject to your operator’s procedures and the AIP:','Vanlige tommelfingerregler, alltid underlagt operatørens prosedyrer og AIP:'),
+   'LIST',
+   t2('Plan it before you meet it: SIGMETs, lightning data, satellite and radar pictures, and the TAF for the destination and alternates. Decide early, and deviate upwind.','Planlegg før du møter det: SIGMET-er, lyndata, satellitt- og radarbilder, og TAF for destinasjon og alternativer. Bestem deg tidlig, og avvik på lo-siden.')]]];
+const DDTAB=[[t2('Type','Type'),t2('Size of the outflow','Størrelse på utstrømmingen'),t2('Lasts','Varer'),t2('Winds','Vind')],
+  [t2('Macroburst','Makroburst'),t2('more than 4 km','mer enn 4 km'),t2('5–30 min','5–30 min'),t2('damaging, up to about 60 m/s at the ground','skadelig, opptil rundt 60 m/s ved bakken')],
+  [t2('Microburst','Mikroburst'),t2('less than 4 km (2.2 NM)','mindre enn 4 km (2,2 NM)'),t2('5–15 min, strongest for 2–5 min','5–15 min, sterkest i 2–5 min'),t2('downdraft up to about 6000 ft/min; headwind to tailwind change typically 45 kt or more','nedvind opptil rundt 6000 ft/min; endring fra motvind til medvind typisk 45 kt eller mer')]];
+const DDLIST=[t2('Stay at least 10 NM from any thunderstorm and 20 NM from severe cells, more on the anvil side; never fly under the anvil.','Hold minst 10 NM fra ethvert tordenvær og 20 NM fra kraftige celler, mer på amboltsiden; fly aldri under ambolten.'),
+  t2('Do not try to pass between two strong cells less than about 40 NM apart.','Ikke prøv å fly mellom to kraftige celler som er mindre enn rundt 40 NM fra hverandre.'),
+  t2('If you overfly, clear the visible top by at least 5000 ft, more in strong upper winds. Building tops often outclimb you.','Hvis du flyr over, hold minst 5000 ft over den synlige toppen, mer ved sterk vind i høyden. Voksende topper stiger ofte raskere enn deg.'),
+  t2('Do not take off or land with a thunderstorm on or close to the departure or approach path; expect wind shear 10–20 NM out.','Ikke start eller land med tordenvær på eller nær utflygings- eller innflygingsbanen; vent vindskjær 10–20 NM unna.')];
+
+/* ---------------- text ---------------- */
 on(()=>{
-  el('xLead').innerHTML=L(t2('One storm, three views. <b>Life of a CB</b>: grow it, watch the air move and see where the hazards are. <b>Microburst on final</b>: fly an approach through its downdraft. <b>Weather radar</b>: find it with the beam, and see what the picture leaves out.','Én storm, tre visninger. <b>Livet til en CB</b>: la den vokse, se luften bevege seg og hvor farene er. <b>Mikroburst på finalen</b>: fly en innflyging gjennom nedvinden. <b>Værradar</b>: finn den med strålen, og se hva bildet utelater.'));
-  el('tryLead').innerHTML=L(t2('Five short tasks. Two you do in the model, with live feedback; three you answer here and then see in the model.','Fem korte oppgaver. To gjør du i modellen, med fortløpende tilbakemelding; tre svarer du på her og ser så i modellen.'));
-  el('tyH').textContent=L(t2('Storm types','Stormtyper'));
-  const TY=[[t2('Single cell (air mass)','Enkeltcelle (luftmasse)'),t2('One cell from local heating, often on summer afternoons','Én celle fra lokal oppvarming, ofte sommerettermiddager'),t2('About 1 hour','Omtrent 1 time'),t2('Visible, isolated, easy to go round in VMC','Synlig, isolert, lett å gå rundt i VMC')],
-    [t2('Multicell','Multicelle'),t2('A cluster: new cells keep forming on the gust front of the old ones','En klynge: nye celler dannes stadig på vindkastfronten til de gamle'),t2('Several hours','Flere timer'),t2('Cells at all stages side by side; the cluster drifts and regenerates','Celler i alle stadier side om side; klyngen driver og fornyer seg')],
-    [t2('Squall line','Bygelinje'),t2('A line of cells, often 50–100 NM ahead of or along a cold front','En linje av celler, ofte 50–100 NM foran eller langs en kaldfront'),t2('Several hours','Flere timer'),t2('Hard to go round; strong gust front and shelf cloud; look for a real gap on the radar','Vanskelig å gå rundt; kraftig vindkastfront og hyllesky; se etter en reell åpning på radaren')],
-    [t2('Supercell','Superscelle'),t2('One large rotating cell with a very strong, long-lived updraft','Én stor roterende celle med svært sterk og langvarig oppvind'),t2('Hours','Timer'),t2('Large hail, tornadoes, extreme turbulence: stay well clear','Store hagl, tornadoer, ekstrem turbulens: hold god avstand')],
-    [t2('Embedded CB','Innleiret CB'),t2('A CB hidden in layer cloud, typical in occlusions and warm fronts','En CB skjult i lagskyer, typisk i okklusjoner og varmfronter'),t2('Varies','Varierer'),t2('You cannot see it: use the radar, SIGMET (EMBD TS) and lightning data','Du ser den ikke: bruk radar, SIGMET (EMBD TS) og lyndata')]];
-  el('tyTab').innerHTML=`<tr><th>${L(t2('Type','Type'))}</th><th>${L(t2('What it is','Hva det er'))}</th><th>${L(t2('Lives','Lever'))}</th><th>${L(t2('For the pilot','For piloten'))}</th></tr>`+TY.map(r=>`<tr><td><b>${L(r[0])}</b></td>${r.slice(1).map(c=>`<td>${L(c)}</td>`).join('')}</tr>`).join('');
-  const BG=[t2('<b>Warnings.</b> METAR and TAF: TS, +TSRA, TSGR (hail), CB and TCU in the cloud group. SIGMET: OBSC TS (obscured by haze or cloud), EMBD TS (embedded in layer cloud), FRQ TS (frequent, little or no gap), SQL TS (squall line), with GR for hail. Lightning detection data show active cells even where radar cover is poor.','<b>Varsler.</b> METAR og TAF: TS, +TSRA, TSGR (hagl), CB og TCU i skygruppen. SIGMET: OBSC TS (skjult av dis eller skyer), EMBD TS (innleiret i lagskyer), FRQ TS (hyppige, liten eller ingen åpning), SQL TS (bygelinje), med GR for hagl. Lyndata viser aktive celler også der radardekningen er dårlig.'),
-    t2('<b>If you are caught in one.</b> As a general principle: fly the aircraft’s turbulence speed, hold the attitude and wings level, accept altitude and airspeed excursions rather than chase them, do not turn back in a steep turn, and use the procedures in your aircraft’s manual (ignition, anti-ice, cockpit lights full bright against lightning).','<b>Hvis du blir fanget i ett.</b> Som et generelt prinsipp: fly flyets turbulensfart, hold attituden og vingene vannrett, godta avvik i høyde og fart heller enn å jage dem, ikke snu i en bratt sving, og bruk prosedyrene i flyets håndbok (tenning, avising, full cockpitbelysning mot lyn).'),
-    t2('<b>Wind shear recovery.</b> The exact actions come from your aircraft’s procedure. The common principle: maximum thrust, pitch towards the guidance or just short of the stick shaker, keep the configuration until clear, and do not try to regain the lost speed by pitching down near the ground.','<b>Gjenoppretting etter vindskjær.</b> De eksakte handlingene kommer fra flyets prosedyre. Det felles prinsippet: maks skyv, nesen opp mot guidance eller like under stikkeristeren, behold konfigurasjonen til du er ute, og ikke prøv å hente igjen tapt fart ved å senke nesen nær bakken.'),
-    t2('<b>Icing in a CB.</b> Strong updrafts carry large supercooled drops high: severe icing is possible from 0 °C up to −20 °C and supercooled water exists down to about −40 °C.','<b>Ising i en CB.</b> Sterk oppvind bærer store underkjølte dråper høyt: kraftig ising er mulig fra 0 °C opp til −20 °C, og underkjølt vann finnes ned til rundt −40 °C.')];
-  el('bgBox').innerHTML=`<span class="k">${L(t2('Deep dive · warnings and procedures','Dypdykk · varsler og prosedyrer'))}</span>`+BG.map(p=>`<p>${L(p)}</p>`).join('');
-  const TK=[t2('<b>Moisture, instability and lift.</b> A CB needs all three; the lift can be heating, a front, hills or converging air.','<b>Fuktighet, ustabilitet og løft.</b> En CB trenger alle tre; løftet kan være oppvarming, en front, fjell eller luft som strømmer sammen.'),
-    t2('<b>Cumulus, mature, dissipating.</b> Updrafts only, then updrafts and downdrafts with rain at the ground, hail and lightning, then downdrafts only. A single cell lives about an hour; multicells and squall lines for hours.','<b>Cumulus, moden, oppløsning.</b> Bare oppvind, så oppvind og nedvind med regn ved bakken, hagl og lyn, så bare nedvind. En enkeltcelle lever omtrent en time; multiceller og bygelinjer i timevis.'),
-    t2('<b>Everything at once.</b> Severe turbulence and icing, hail (also under the anvil), lightning, and a gust front that can reach 15–20 NM ahead of the rain.','<b>Alt på en gang.</b> Kraftig turbulens og ising, hagl (også under ambolten), lyn, og en vindkastfront som kan nå 15–20 NM foran regnet.'),
-    t2('<b>Microburst: gain first, then the bigger loss.</b> Headwind (IAS up, above the path), then downdraft, then tailwind (IAS down, sinking). Go around early; if caught, fly your aircraft’s wind shear recovery.','<b>Mikroburst: gevinst først, så det større tapet.</b> Motvind (IAS opp, over banen), så nedvind, så medvind (IAS ned, synker). Gå rundt tidlig; blir du fanget, fly flyets prosedyre for vindskjær.'),
-    t2('<b>Radar sees rain, not turbulence.</b> Tilt down to scan the wet core below the freezing level, judge intensity with gain CAL, and treat a black area behind a strong cell as unknown.','<b>Radaren ser regn, ikke turbulens.</b> Tilt ned for å treffe den våte kjernen under frysenivået, vurder styrken med gain CAL, og behandle et svart område bak en kraftig celle som ukjent.'),
-    t2('<b>Keep your distance.</b> Common guidance is 10 NM, and 20 NM from severe cells, more on the anvil side; deviate upwind, never under the anvil. Your operator’s procedures decide.','<b>Hold avstand.</b> Vanlig veiledning er 10 NM, og 20 NM fra kraftige celler, mer på amboltsiden; avvik på lo-siden, aldri under ambolten. Operatørens prosedyrer gjelder.')];
+  el('kin').textContent=L(t2('Sixteen ideas, each small. “Show in the model” sets up the 3D storm so you can see it.','Seksten ideer, hver liten. «Vis i modellen» setter opp 3D-stormen så du kan se det.'));
+  el('ddH').textContent=L(t2('Deep dive','Dypdykk'));
+  const open=[...document.querySelectorAll('#ddList details[open]')].map(d=>d.id);
+  el('ddList').innerHTML=DD.map(([t,s,ps],i)=>`<details class="dfold" id="dd${i}"><summary>${L(t)} <small>${L(s)}</small></summary><div>${ps.map(p=>p==='TABLE'?`<div class="wrapx"><table class="ftab">${DDTAB.map((r,j)=>`<tr>${r.map(c=>j?`<td>${L(c)}</td>`:`<th>${L(c)}</th>`).join('')}</tr>`).join('')}</table></div>`:p==='LIST'?`<ul>${DDLIST.map(x=>`<li>${L(x)}</li>`).join('')}</ul>`:`<p>${L(p)}</p>`).join('')}</div></details>`).join('');
+  for(const id of open){ const d=el(id); if(d) d.open=true; }
+  el('xLead').innerHTML=L(t2('One storm, three views. <b>The storm</b>: set the conditions, grow it and look inside. <b>Microburst on final</b>: fly an approach through its downdraft. <b>Weather radar</b>: aim the beam at it, and see what the picture leaves out.','Én storm, tre visninger. <b>Stormen</b>: still inn forholdene, la den vokse og se inn i den. <b>Mikroburst på finalen</b>: fly en innflyging gjennom nedvinden. <b>Værradar</b>: sikt strålen mot den, og se hva bildet utelater.'));
+  el('tryLead').innerHTML=L(t2('Five short tasks, one at a time. The ones you do in the model are checked live.','Fem korte oppgaver, én om gangen. De du gjør i modellen, sjekkes fortløpende.'));
+  el('advH').textContent=L(t2('Approach settings for the Microburst on final view.','Innstillinger for innflygingen i visningen Mikroburst på finalen.'));
+  el('ndH').textContent=L(t2('Navigation display','Navigasjonsskjerm'));
+  const TK=[t2('<b>Moisture, instability and lift.</b> A CB needs all three. The more unstable and moist the air, the stronger the updraft, the higher the top and the bigger the hail.','<b>Fuktighet, ustabilitet og løft.</b> En CB trenger alle tre. Jo mer ustabil og fuktig luften er, desto sterkere oppvind, høyere topp og større hagl.'),
+    t2('<b>Cumulus, mature, dissipating.</b> Updrafts only, then updrafts and downdrafts side by side with rain, hail and lightning, then downdrafts only. Wind shear tilts the storm and makes it live longer.','<b>Cumulus, moden, oppløsning.</b> Bare oppvind, så oppvind og nedvind side om side med regn, hagl og lyn, så bare nedvind. Vindskjær skråstiller stormen og får den til å leve lenger.'),
+    t2('<b>Everything at once.</b> Severe turbulence and icing (0 to −20 °C), hail also under the anvil, lightning near the freezing level, and a gust front 10–20 NM ahead of the rain.','<b>Alt på en gang.</b> Kraftig turbulens og ising (0 til −20 °C), hagl også under ambolten, lyn nær frysenivået, og en vindkastfront 10–20 NM foran regnet.'),
+    t2('<b>Microburst: gain first, then the bigger loss.</b> Headwind (IAS up, above the path), then downdraft, then tailwind (IAS down, sinking). Go around at the first sign; if caught, fly your aircraft’s wind shear recovery.','<b>Mikroburst: gevinst først, så det større tapet.</b> Motvind (IAS opp, over banen), så nedvind, så medvind (IAS ned, synker). Gå rundt ved første tegn; blir du fanget, fly flyets gjenoppretting etter vindskjær.'),
+    t2('<b>Radar sees rain, not turbulence.</b> Tilt to scan the wet core below the freezing level, judge intensity with gain CAL, and treat a black area behind a strong cell as unknown.','<b>Radaren ser regn, ikke turbulens.</b> Tilt for å treffe den våte kjernen under frysenivået, vurder styrken med gain CAL, og behandle et svart område bak en kraftig celle som ukjent.'),
+    t2('<b>Keep your distance.</b> Commonly 10 NM, 20 NM from severe cells, more on the anvil side; deviate upwind, never under the anvil. Your operator’s procedures decide.','<b>Hold avstand.</b> Vanligvis 10 NM, 20 NM fra kraftige celler, mer på amboltsiden; avvik på lo-siden, aldri under ambolten. Operatørens prosedyrer gjelder.')];
   el('take').innerHTML=TK.map(x=>`<li>${L(x)}</li>`).join('');
-  const m=el('maid'); m.querySelector('.eyebrow').textContent=L(t2('Memory aid','Huskeregel')); m.querySelector('h3').textContent=L(t2('A gain on final near a storm is a warning, not a gift','En fartsøkning på finalen nær en storm er en advarsel, ikke en gave'));
-  m.querySelector('p').innerHTML=L(t2('The first sign of a microburst is a headwind: the IAS rises and the aircraft floats above the path. Seconds later the downdraft and the tailwind take it all back, and more. Go around while you still have the energy.','Første tegn på en mikroburst er motvind: IAS stiger, og flyet flyter over banen. Sekunder senere tar nedvinden og medvinden alt tilbake, og mer til. Gå rundt mens du fortsatt har energien.'));
-  const EX=[t2('<b>Numbers.</b> Updrafts in a mature CB often 2000–6000 ft/min, more in severe storms; downdrafts and microbursts up to about 6000 ft/min. A microburst is under 4 km across and lasts 5–15 minutes.','<b>Tall.</b> Oppvind i en moden CB ofte 2000–6000 ft/min, mer i kraftige stormer; nedvind og mikroburster opptil rundt 6000 ft/min. En mikroburst er under 4 km på tvers og varer 5–15 minutter.'),
-    t2('<b>Radar beam.</b> A 3.5° beam is about 1 NM tall at 15 NM and more than 3 NM tall at 50 NM, so a distant small cell fills only part of it and looks weaker. Ice reflects far less than water: the frozen upper part of a CB can look harmless.','<b>Radarstrålen.</b> En stråle på 3,5° er rundt 1 NM høy på 15 NM og over 3 NM høy på 50 NM, så en liten celle langt unna fyller bare en del av den og ser svakere ut. Is reflekterer mye mindre enn vann: den frosne øvre delen av en CB kan se ufarlig ut.'),
-    t2('<b>Overflying.</b> Tops can grow thousands of feet per minute; climbing over a building cell often fails, and severe turbulence and hail extend above and around the visible top.','<b>Å fly over.</b> Topper kan vokse tusenvis av fot i minuttet; å stige over en voksende celle mislykkes ofte, og kraftig turbulens og hagl finnes over og rundt den synlige toppen.')];
-  el('dbE').innerHTML=`<span class="k">${L(t2('Deep dive · what the examiner asks','Dypdykk · dette spør sensor om'))}</span>`+EX.map(p=>`<p>${L(p)}</p>`).join('');
-  el('foot').innerHTML='<b>'+L(t2('Model and limitations.','Modell og begrensninger.'))+'</b> '+L(t2('Teaching models with simplified physics and typical textbook values. The storm is idealised (cloud base from the dew point spread, tops and updrafts from the instability, a fixed summer temperature profile); the air motion is a sketch of the circulation, not a simulation. The approach is a point-mass model of a generic jet at constant pitch attitude and thrust, or a generic recovery: it is not any aircraft’s procedure or performance. The radar is a simple beam model with typical colours. Real storms vary enormously: use the METAR, TAF, SIGMET and the radar together, keep the distances in your operator’s procedures, and follow your aircraft’s wind shear and turbulence procedures.','Opplæringsmodeller med forenklet fysikk og typiske lærebokverdier. Stormen er idealisert (skybase fra duggpunktsdifferansen, topper og oppvind fra ustabiliteten, en fast sommertemperaturprofil); luftbevegelsen er en skisse av sirkulasjonen, ikke en simulering. Innflygingen er en punktmassemodell av et generisk jetfly med konstant attitude og skyv, eller en generisk gjenoppretting: det er ikke prosedyren eller ytelsen til noe bestemt fly. Radaren er en enkel strålemodell med typiske farger. Virkelige stormer varierer enormt: bruk METAR, TAF, SIGMET og radaren sammen, hold avstandene i operatørens prosedyrer, og følg flyets prosedyrer for vindskjær og turbulens.'));
-  drawTasks(); drawPre(); drawTabs(); drawTogs(); legend(); see();
+  const m=el('maid'); m.querySelector('.k').textContent=L(t2('Memory aid','Huskeregel')); m.querySelector('b').textContent=L(t2('A gain on final near a storm is a warning, not a gift','En fartsøkning på finalen nær en storm er en advarsel, ikke en gave'));
+  m.querySelector('p').textContent=L(t2('The first sign of a microburst is a headwind: the IAS rises and the aircraft floats above the path. Seconds later the downdraft and the tailwind take it all back, and more. Go around while you still have the energy.','Første tegn på en mikroburst er motvind: IAS stiger, og flyet flyter over banen. Sekunder senere tar nedvinden og medvinden alt tilbake, og mer til. Gå rundt mens du fortsatt har energien.'));
+  el('foot').innerHTML='<b>'+L(t2('Model and limitations.','Modell og begrensninger.'))+'</b> '+L(t2('Schematic teaching models with typical textbook values, not a forecast. The storm is idealised: cloud base from the dew-point spread at a fixed 25 °C, the updraft from parcel theory (half of √(2·CAPE)), tops, overshoot and hail size from the updraft, a simple life cycle and a sketch of the air motion; the 3D cloud is illustrative and heights are drawn taller than they are. The approach is a point-mass model of a generic jet at constant pitch attitude and thrust, or a generic recovery: not any aircraft’s procedure or performance. The radar is a simple beam model with typical colours. Real storms vary enormously: use the METAR, TAF, SIGMET, lightning data and the radar together, keep the distances in your operator’s procedures, and follow your aircraft’s wind shear and turbulence procedures.','Skjematiske opplæringsmodeller med typiske lærebokverdier, ikke en værvarsling. Stormen er idealisert: skybase fra duggpunktsdifferansen ved fast 25 °C, oppvinden fra partikkelteori (halvparten av √(2·CAPE)), topper, overskyting og haglstørrelse fra oppvinden, en enkel livssyklus og en skisse av luftbevegelsen; 3D-skyen er illustrativ, og høyder er tegnet høyere enn de er. Innflygingen er en punktmassemodell av et generisk jetfly med konstant attitude og skyv, eller en generisk gjenoppretting: ikke prosedyren eller ytelsen til noe bestemt fly. Radaren er en enkel strålemodell med typiske farger. Virkelige stormer varierer enormt: bruk METAR, TAF, SIGMET, lyndata og radaren sammen, hold avstandene i operatørens prosedyrer, og følg flyets prosedyrer for vindskjær og turbulens.'));
+  hint(); drawTask(); drawPre(); drawTabs(); drawFly(); drawTogs(); drawStg(); legend(); see(); readout(); drawND(); drawStrip();
 });
 
-/* =============== quiz =============== */
+/* ---------------- quiz: one question at a time (lab.js), 10 drawn from 15 ---------------- */
 LAB.quiz(el('qbox'),'storms',()=>LAB.shuffle([
- {q:{en:'Which stage of a thunderstorm has both strong updrafts and downdrafts?',no:'Hvilket stadium av et tordenvær har både sterk oppvind og nedvind?'},a:[{en:'Mature',no:'Modent'},{en:'Cumulus',no:'Cumulus'},{en:'Dissipating',no:'Oppløsning'}],c:0,e:{en:'The mature stage starts when precipitation drags air down; it is also when the first rain reaches the ground.',no:'Det modne stadiet starter når nedbøren drar luft med seg ned; det er også da det første regnet når bakken.'}},
- {q:{en:'Why is flying under the anvil dangerous?',no:'Hvorfor er det farlig å fly under ambolten?'},a:[{en:'Hail can fall from it, far from the core',no:'Hagl kan falle fra den, langt fra kjernen'},{en:'It always contains a microburst',no:'Den inneholder alltid en mikroburst'},{en:'Radar shows it as red',no:'Radaren viser den som rød'}],c:0,e:{en:'Hail can be thrown out of the top of the cell and fall from the anvil in clear air; radar does not show the anvil well.',no:'Hagl kan kastes ut av toppen av cellen og falle fra ambolten i klar luft; radaren viser ikke ambolten godt.'}},
- {q:{en:'A common minimum distance from a severe thunderstorm echo is…',no:'En vanlig minsteavstand fra et kraftig tordenekko er …'},a:[{en:'20 NM',no:'20 NM'},{en:'2 NM',no:'2 NM'},{en:'5 NM',no:'5 NM'}],c:0,e:{en:'At least 10 NM from any thunderstorm, 20 NM from severe or fast-growing cells.',no:'Minst 10 NM fra ethvert tordenvær, 20 NM fra kraftige eller raskt voksende celler.'}},
- {q:{en:'What does EMBD TS in a SIGMET mean?',no:'Hva betyr EMBD TS i en SIGMET?'},a:[{en:'Thunderstorms hidden inside layer cloud',no:'Tordenvær skjult inne i lagskyer'},{en:'Thunderstorms ending soon',no:'Tordenvær som snart tar slutt'},{en:'Thunderstorms over the sea',no:'Tordenvær over havet'}],c:0,e:{en:'Embedded: you cannot see them, so without radar you cannot avoid them visually.',no:'Innebygd: du ser dem ikke, så uten radar kan du ikke unngå dem visuelt.'}},
- {q:{en:'You are caught in a thunderstorm in IMC. You should…',no:'Du blir fanget i et tordenvær i IMC. Du bør …'},a:[{en:'hold attitude and wings level, accept altitude changes',no:'holde attitude og vingene vannrett, godta høydeendringer'},{en:'hold altitude exactly with large pitch inputs',no:'holde høyden nøyaktig med store pitchendringer'},{en:'turn back immediately in a steep turn',no:'snu straks i en bratt sving'}],c:0,e:{en:'Chasing altitude in strong up- and downdrafts overstresses the aircraft and risks a stall.',no:'Å jage høyden i kraftig opp- og nedvind overbelaster flyet og kan gi stall.'}},
- {q:{en:'Which three ingredients does a thunderstorm need?',no:'Hvilke tre ingredienser trenger et tordenvær?'},a:[{en:'Instability, moisture and a lifting trigger',no:'Ustabilitet, fuktighet og noe som løfter'},{en:'High pressure, dry air and calm wind',no:'Høytrykk, tørr luft og vindstille'},{en:'An inversion, fog and drizzle',no:'En inversjon, tåke og yr'}],c:0,e:{en:'Deep unstable air, low-level moisture and a trigger such as heating, a front or hills.',no:'Dyp ustabil luft, fuktighet i lave lag og en utløser som oppvarming, en front eller åser.'}},
- {q:{en:'In the cruise at FL350 a cell 40 NM ahead shows only green. Why might it still be a strong storm?',no:'I cruise i FL350 viser en celle 40 NM foran bare grønt. Hvorfor kan det likevel være en kraftig storm?'},a:[{en:'The beam may be passing through the frozen upper part, which reflects weakly: tilt down',no:'Strålen kan gå gjennom den frosne øvre delen, som reflekterer svakt: tilt ned'},{en:'Green always means light rain at all levels',no:'Grønt betyr alltid lett regn i alle høyder'},{en:'The radar is only calibrated below FL250',no:'Radaren er bare kalibrert under FL250'}],c:0,e:{en:'Ice and dry hail reflect far less than liquid water. Scan the part of the cell below the freezing level before judging it.',no:'Is og tørt hagl reflekterer langt mindre enn flytende vann. Avsøk delen av cellen under frysenivået før du vurderer den.'}},
- {q:{en:'Behind a magenta core the display is black. The best interpretation is…',no:'Bak en magenta kjerne er skjermen svart. Den beste tolkningen er …'},a:[{en:'possibly a radar shadow: the area is unknown and may hide more cells',no:'mulig radarskygge: området er ukjent og kan skjule flere celler'},{en:'clear air: a good escape route',no:'klar luft: en god fluktvei'},{en:'ground returns',no:'bakkeekko'}],c:0,e:{en:'Heavy precipitation absorbs the radar energy (attenuation). Nothing comes back from behind it, whatever is there.',no:'Kraftig nedbør tar opp radarenergien (demping). Ingenting kommer tilbake bakfra, uansett hva som er der.'}},
- {q:{en:'Which gives the strongest radar echo?',no:'Hva gir det sterkeste radarekkoet?'},a:[{en:'Wet hail and heavy rain',no:'Vått hagl og kraftig regn'},{en:'Dry snow',no:'Tørr snø'},{en:'Ice crystals in an anvil',no:'Iskrystaller i en ambolt'}],c:0,e:{en:'Reflectivity grows with drop size and is much higher for liquid water than for ice.',no:'Reflektiviteten øker med dråpestørrelsen og er mye høyere for flytende vann enn for is.'}},
- {q:{en:'A radar beam about 3.5° wide is roughly how tall at 100 NM?',no:'En radarstråle rundt 3,5° bred er omtrent hvor høy på 100 NM?'},a:[{en:'About 18,000 ft',no:'Rundt 18 000 ft'},{en:'About 2,000 ft',no:'Rundt 2000 ft'},{en:'About 60,000 ft',no:'Rundt 60 000 ft'}],c:0,e:{en:'About 6,076 ft per NM × 100 × tan 3.5°. A small cell then fills only part of the beam and looks weaker than it is.',no:'Rundt 6076 ft per NM × 100 × tan 3,5°. En liten celle fyller da bare en del av strålen og ser svakere ut enn den er.'}},
- {q:{en:'You must deviate around a cell; the wind at your level is from the west. Which side do you prefer?',no:'Du må avvike rundt en celle; vinden i din høyde er fra vest. Hvilken side foretrekker du?'},a:[{en:'The west (upwind) side',no:'Vestsiden (lo-siden)'},{en:'The east (downwind) side',no:'Østsiden (le-siden)'},{en:'Either, the hazard is symmetrical',no:'Hvilken som helst, faren er symmetrisk'}],c:0,e:{en:'The anvil, hail and turbulence are carried downwind, so the upwind side is cleaner. Keep about 20 NM from strong echoes at cruise levels.',no:'Ambolten, hagl og turbulens føres med vinden, så lo-siden er renere. Hold rundt 20 NM fra kraftige ekko i marsjhøyde.'}},
- {q:{en:'Which of these does the weather radar not show?',no:'Hva av dette viser ikke værradaren?'},a:[{en:'Clear air turbulence',no:'Klarluftsturbulens'},{en:'Heavy rain',no:'Kraftig regn'},{en:'A wet hail core',no:'En kjerne av vått hagl'}],c:0,e:{en:'Radar needs precipitation to reflect from. CAT, the anvil and volcanic ash give little or no echo.',no:'Radaren trenger nedbør å reflektere fra. CAT, ambolten og vulkansk aske gir lite eller ingen ekko.'}},
- {q:t2('On approach you fly into the leading edge of a microburst. What do you first notice?','På innflyging flyr du inn i forkanten av en mikroburst. Hva merker du først?'),a:[t2('IAS increases and the aircraft goes above the glide path','IAS øker, og flyet går over glidebanen'),t2('IAS decreases and the aircraft sinks below the glide path','IAS minker, og flyet synker under glidebanen'),t2('No change until the downdraft','Ingen endring før nedvinden')],c:0,e:t2('The outflow first gives a headwind. The downdraft and the tailwind follow, and the loss is bigger than the gain.','Utstrømmingen gir først motvind. Nedvinden og medvinden følger, og tapet er større enn gevinsten.')},
- {q:t2('A typical microburst is…','En typisk mikroburst er …'),a:[t2('less than about 4 km across and lasts 5–15 minutes','mindre enn rundt 4 km på tvers og varer 5–15 minutter'),t2('about 40 km across and lasts several hours','rundt 40 km på tvers og varer flere timer'),t2('always visible as heavy rain','alltid synlig som kraftig regn')],c:0,e:t2('Small and short-lived, which is why it is hard to forecast. A dry microburst can come from virga with little rain at the ground.','Liten og kortvarig, og derfor vanskelig å varsle. En tørr mikroburst kan komme fra virga med lite regn ved bakken.')},
- {q:t2('Which stage of a thunderstorm has downdrafts only?','Hvilket stadium av et tordenvær har bare nedvind?'),a:[t2('Dissipating','Oppløsning'),t2('Mature','Moden'),t2('Cumulus','Cumulus')],c:0,e:t2('The downdraft spreads through the whole cell, cuts off the updraft and the storm rains itself out; the anvil often remains.','Nedvinden sprer seg gjennom hele cellen, kutter oppvinden, og stormen regner seg ut; ambolten blir ofte igjen.')}
-]),8);
+ {q:t2('Which stage of a thunderstorm has both strong updrafts and downdrafts?','Hvilket stadium av et tordenvær har både sterk oppvind og nedvind?'),a:[t2('Mature','Modent'),t2('Cumulus','Cumulus'),t2('Dissipating','Oppløsning')],c:0,e:t2('The mature stage starts when the rain drags air down; it is also when the first rain reaches the ground, with hail and lightning.','Det modne stadiet starter når regnet drar luft ned; det er også da det første regnet når bakken, med hagl og lyn.')},
+ {q:t2('Which stage has downdrafts only?','Hvilket stadium har bare nedvind?'),a:[t2('Dissipating','Oppløsning'),t2('Mature','Moden'),t2('Cumulus','Cumulus')],c:0,e:t2('The downdraft spreads through the cell, cuts off the updraft and the storm rains itself out; the anvil often remains.','Nedvinden sprer seg gjennom cellen, kutter oppvinden, og stormen regner seg ut; ambolten blir ofte igjen.')},
+ {q:t2('Why does strong wind shear with height make a storm live longer?','Hvorfor får kraftig vindskjær med høyden en storm til å leve lenger?'),a:[t2('The updraft tilts, so the rain and the cold downdraft fall outside it','Oppvinden skråstilles, så regnet og den kalde nedvinden faller utenfor den'),t2('Shear adds moisture to the storm','Vindskjær tilfører stormen fuktighet'),t2('Shear lowers the freezing level','Vindskjær senker frysenivået')],c:0,e:t2('In an upright cell the rain falls into the updraft and chokes it. Tilted, the two are kept apart: multicells and supercells.','I en opprett celle faller regnet ned i oppvinden og kveler den. Skråstilt holdes de to fra hverandre: multiceller og superceller.')},
+ {q:t2('Why is flying under the anvil dangerous?','Hvorfor er det farlig å fly under ambolten?'),a:[t2('Hail can fall from it, far from the core','Hagl kan falle fra den, langt fra kjernen'),t2('It always contains a microburst','Den inneholder alltid en mikroburst'),t2('The radar shows it as red','Radaren viser den som rød')],c:0,e:t2('Hail can be thrown out of the top of the cell and fall from the anvil in clear air; the radar does not show the anvil well.','Hagl kan kastes ut av toppen av cellen og falle fra ambolten i klar luft; radaren viser ikke ambolten godt.')},
+ {q:t2('Where is the risk of severe icing in a CB greatest?','Hvor er faren for kraftig ising i en CB størst?'),a:[t2('Between 0 °C and about −20 °C, where strong updrafts carry large supercooled drops','Mellom 0 °C og rundt −20 °C, der sterk oppvind bærer store underkjølte dråper'),t2('Only below the cloud base','Bare under skybasen'),t2('Only in the anvil above −40 °C','Bare i ambolten over −40 °C')],c:0,e:t2('Large supercooled drops freeze slowly and spread back over the wing: clear ice, fast.','Store underkjølte dråper fryser sakte og sprer seg bakover på vingen: klaris, raskt.')},
+ {q:t2('What does EMBD TS in a SIGMET mean?','Hva betyr EMBD TS i en SIGMET?'),a:[t2('Thunderstorms hidden inside layer cloud','Tordenvær skjult inne i lagskyer'),t2('Thunderstorms ending soon','Tordenvær som snart tar slutt'),t2('Thunderstorms over the sea','Tordenvær over havet')],c:0,e:t2('Embedded: you cannot see them, so without radar you cannot avoid them visually.','Innleiret: du ser dem ikke, så uten radar kan du ikke unngå dem visuelt.')},
+ {q:t2('SQL TS in a SIGMET means…','SQL TS i en SIGMET betyr …'),a:[t2('a squall line: a line of thunderstorms with little or no gap','en bygelinje: en linje av tordenvær med liten eller ingen åpning'),t2('a single isolated storm','ett enkelt isolert tordenvær'),t2('thunderstorms in the mountains','tordenvær i fjellet')],c:0,e:t2('Squall lines can be hundreds of kilometres long, often ahead of a cold front, with a strong gust front and shelf cloud.','Bygelinjer kan være hundrevis av kilometer lange, ofte foran en kaldfront, med en kraftig vindkastfront og hyllesky.')},
+ {q:t2('On short final the IAS suddenly rises 15 kt near a shower and you float above the path. Best reaction?','På kort finale øker IAS plutselig 15 kt nær en byge, og du flyter over banen. Beste reaksjon?'),a:[t2('Treat it as the first sign of a microburst and go around','Behandle det som første tegn på en mikroburst og gå rundt'),t2('Reduce thrust to get back to Vapp','Reduser skyvet for å komme tilbake til Vapp'),t2('Continue: the extra headwind makes the landing easier','Fortsett: den ekstra motvinden gjør landingen lettere')],c:0,e:t2('The headwind is the leading edge of the outflow. The downdraft and tailwind follow, and the loss is bigger than the gain.','Motvinden er forkanten av utstrømmingen. Nedvinden og medvinden følger, og tapet er større enn gevinsten.')},
+ {q:t2('A typical microburst is…','En typisk mikroburst er …'),a:[t2('less than about 4 km across and lasts 5–15 minutes','mindre enn rundt 4 km på tvers og varer 5–15 minutter'),t2('about 40 km across and lasts several hours','rundt 40 km på tvers og varer flere timer'),t2('always visible as heavy rain','alltid synlig som kraftig regn')],c:0,e:t2('Small and short-lived, so hard to forecast. A dry microburst can come from virga with little rain at the ground.','Liten og kortvarig, og derfor vanskelig å varsle. En tørr mikroburst kan komme fra virga med lite regn ved bakken.')},
+ {q:t2('Which gives the strongest radar echo?','Hva gir det sterkeste radarekkoet?'),a:[t2('Wet hail and heavy rain','Vått hagl og kraftig regn'),t2('Dry snow','Tørr snø'),t2('Ice crystals in an anvil','Iskrystaller i en ambolt')],c:0,e:t2('Reflectivity grows steeply with drop size and is much higher for liquid water than for ice.','Reflektiviteten øker kraftig med dråpestørrelsen og er mye høyere for flytende vann enn for is.')},
+ {q:t2('In the cruise at FL350 a cell 40 NM ahead shows only green. Why might it still be a strong storm?','I cruise i FL350 viser en celle 40 NM foran bare grønt. Hvorfor kan det likevel være en kraftig storm?'),a:[t2('The beam may be in the frozen upper part, which reflects weakly: tilt down','Strålen kan være i den frosne øvre delen, som reflekterer svakt: tilt ned'),t2('Green always means light rain at all levels','Grønt betyr alltid lett regn i alle høyder'),t2('The radar works only below FL250','Radaren virker bare under FL250')],c:0,e:t2('Ice and dry hail reflect far less than water. Scan the part below the freezing level before you judge the cell.','Is og tørt hagl reflekterer langt mindre enn vann. Avsøk delen under frysenivået før du vurderer cellen.')},
+ {q:t2('Behind a magenta core the display is black. The best interpretation is…','Bak en magenta kjerne er skjermen svart. Den beste tolkningen er …'),a:[t2('possibly a radar shadow: unknown, it may hide more cells','mulig radarskygge: ukjent, den kan skjule flere celler'),t2('clear air: a good escape route','klar luft: en god fluktvei'),t2('ground returns','bakkeekko')],c:0,e:t2('Heavy precipitation absorbs the radar energy (attenuation). Nothing comes back from behind it, whatever is there.','Kraftig nedbør tar opp radarenergien (demping). Ingenting kommer tilbake bakfra, uansett hva som er der.')},
+ {q:t2('You must deviate around a cell; the wind at your level is from the west. Which side do you prefer?','Du må avvike rundt en celle; vinden i din høyde er fra vest. Hvilken side foretrekker du?'),a:[t2('The west (upwind) side','Vestsiden (lo-siden)'),t2('The east (downwind) side','Østsiden (le-siden)'),t2('Either, the hazard is symmetrical','Hvilken som helst, faren er symmetrisk')],c:0,e:t2('The anvil, hail and turbulence are carried downwind, so the upwind side is cleaner.','Ambolten, hagl og turbulens føres med vinden, så lo-siden er renere.')},
+ {q:t2('You are caught in a thunderstorm in IMC. As a general principle you should…','Du blir fanget i et tordenvær i IMC. Som et generelt prinsipp bør du …'),a:[t2('fly the turbulence speed, hold attitude and wings level, accept altitude changes','fly turbulensfarten, holde attitude og vingene vannrett, godta høydeendringer'),t2('hold altitude exactly with large pitch inputs','holde høyden nøyaktig med store pitchendringer'),t2('turn back immediately in a steep turn','snu straks i en bratt sving')],c:0,e:t2('Chasing altitude in strong up- and downdrafts overstresses the aircraft and risks a stall. Your aircraft’s procedure gives the details.','Å jage høyden i kraftig opp- og nedvind overbelaster flyet og kan gi stall. Flyets prosedyre gir detaljene.')},
+ {q:t2('St. Elmo’s fire glows on the windscreen. What does it tell you?','St. Elmos ild gløder på frontruta. Hva forteller den deg?'),a:[t2('The electric field is strong: a lightning strike is possible','Det elektriske feltet er sterkt: et lynnedslag er mulig'),t2('The windscreen heating has failed','Frontrutevarmen har sviktet'),t2('You are in severe icing','Du er i kraftig ising')],c:0,e:t2('The glow itself is harmless corona discharge, but it comes with strong fields and often radio static.','Gløden i seg selv er ufarlig koronautladning, men den kommer med sterke felt og ofte radiostøy.')}
+]),10);
 
-/* =============== static strings, start =============== */
+/* ---------------- static strings, start ---------------- */
 LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
- 'Key concepts':'Nøkkelbegreper','The storm lab':'Stormlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
- '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Storm type':'Stormtype','Pilot':'Pilot','Range':'Rekkevidde','Gain':'Gain','Show':'Vis','Scenarios':'Scenarioer','Advanced':'Avansert',
- 'Virtual Lab':'Virtual Lab','Sections':'Seksjoner','View':'Visning',
- 'Thunderstorm model: the life of a cumulonimbus, an approach through a microburst, or the weather radar':'Tordenværmodell: livet til en cumulonimbus, en innflyging gjennom en mikroburst, eller værradaren'});
-LAB.tx({lead:'En cumulonimbus rommer nesten alle farer i luftfarten på en gang: kraftig turbulens, ising, hagl, lyn, vindkastfronter og mikroburster. La en storm vokse fra en cumulus til en moden celle og se den dø, fly en innflyging gjennom mikrobursten, og finn den på værradaren, også det radaren ikke viser deg.',
- kin:'Ordene som brukes i modellen under. Hvert kort lenker til stedet i modellen der det vises.',kfs:'Stormtyper, varsler og avstand i sin helhet'});
+ 'Key concepts':'Nøkkelbegreper','The storm lab':'Stormlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv','Deep dive':'Dypdykk',
+ '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Instability':'Ustabilitet','Wind shear with height':'Vindskjær med høyden','Development':'Utvikling','Fly':'Fly','Stage':'Stadium','Pilot':'Pilot','Radar':'Radar','Range':'Rekkevidde','Gain':'Gain','Show':'Vis','Cloud':'Sky','Scenarios':'Scenarioer','Advanced':'Avansert',
+ 'Navigation display':'Navigasjonsskjerm','Virtual Lab':'Virtual Lab','Sections':'Seksjoner','View':'Visning',
+ '3D thunderstorm model. Drag to rotate, scroll to zoom.':'3D-modell av et tordenvær. Dra for å rotere, scroll for å zoome.','Airspeed change and headwind along the approach':'Fartsendring og motvind langs innflygingen','Weather radar picture on the navigation display':'Værradarbildet på navigasjonsskjermen'});
+LAB.tx({lead:'En cumulonimbus rommer nesten alle farer i luftfarten på en gang: kraftig turbulens, ising, hagl, lyn, vindkastfronter og mikroburster. La en storm vokse i 3D fra en cumulus til en moden storm og se den dø, se inn i luften som driver den, fly en innflyging gjennom mikrobursten, og sikt værradaren mot den.'});
 function runHooks(){ hooks.forEach(f=>f()); }
-runHooks(); LAB.onLang(()=>{ runHooks(); rebuild(); });
-/* old anchors: #life, #shear, #wxr, #radar open the right view; #types opens the full reference */
-const HV={'#life':'life','#shear':'mb','#wxr':'wx','#radar':'wx'}; if(HV[location.hash]) setView(HV[location.hash]); else setView('life'); if(location.hash==='#types') el('full').open=true;
-seedLife();
+runHooks(); LAB.onLang(()=>{ runHooks(); V.relabel(); });
+/* old anchors: #life → the storm, #shear → microburst, #wxr and #radar → radar, #types → the deep dive */
+const HV={'#life':'storm','#shear':'mb','#wxr':'wx','#radar':'wx'}; setView(HV[location.hash]||'storm'); if(location.hash==='#types'){ const d=el('dd0'); if(d) d.open=true; }
 LAB.start('storms');
 })();

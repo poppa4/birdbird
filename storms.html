@@ -2,44 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="A cumulonimbus holds almost every hazard in aviation at once. Grow one from a cumulus to a mature storm and watch it die, fly an approach through a microburst, and use the weather radar: tilt, gain and the attenuation shadow.">
+<meta name="description" content="A cumulonimbus holds almost every hazard in aviation at once. Grow a 3D thunderstorm from a cumulus to a mature cell and watch it die, see its updrafts, hail, gust front and microburst, fly an approach through the microburst, and aim the weather radar beam at the storm.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Thunderstorms and Wind Shear</title>
 <link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-#stCv{aspect-ratio:16/9.4;touch-action:pan-y}
-@media (max-width:640px){#stCv{aspect-ratio:4/4.8}}
-.xpanel .pre{margin:0}
+/* the 3D viewport */
+.vcv{position:relative}
+.c3wrap{position:relative;min-width:0}
+.c3{position:relative;overflow:hidden}
+#cb3{display:block;width:100%;aspect-ratio:16/9.4;max-height:760px;touch-action:pan-y;cursor:grab}
+#cb3:active{cursor:grabbing}
+#strip{display:block;width:100%;height:132px;border-top:1px solid rgba(255,255,255,.07);background:rgba(8,12,16,.35)}
+#strip[hidden]{display:none}
+.vcv.wx{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,36%);align-items:stretch}
+.nd{position:relative;background:#06090c;border-left:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
+.nd[hidden]{display:none}
+.nd canvas{display:block;width:100%;flex:1 1 auto;min-height:0}
+.nd .ndh{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#8E99A4;padding:8px 10px 0}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.labels svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.labels svg line{stroke:rgba(235,240,245,.6);stroke-width:1}
+.labels svg circle{fill:#fff;stroke:rgba(0,0,0,.45);stroke-width:1}
+.lbl{position:absolute;left:0;top:0;white-space:nowrap;font-family:var(--f-body);font-size:11.5px;font-weight:500;letter-spacing:.01em;color:#eef2f5;background:rgba(12,15,18,.62);border-left:2px solid rgba(230,235,239,.75);border-radius:2px;padding:2px 7px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);will-change:transform}
+.lbl.up{border-left-color:#f0a050;color:#ffe2c4}.lbl.dn{border-left-color:#6eb4f0;color:#d6ecff}.lbl.ice{border-left-color:#8fe3ff;color:#d8f6ff}.lbl.tb{border-left-color:#f0b440;color:#ffe9b0}
+.lbl.av{border-left-color:#e46bae;color:#ffd6ec}.lbl.lv{border-left-color:#9aa8b4;color:#c9d2da;font-family:var(--f-mono);font-size:10.5px}.lbl.hz{border-left-color:#ec5a47;color:#ffd0c8}.lbl.gr{border-left-color:#71cc93;color:#cdf2da}
+.cbar{position:absolute;right:10px;bottom:10px;z-index:2;background:rgba(12,15,18,.6);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:6px 8px 7px;font-family:var(--f-mono);font-size:10px;color:#c9d2da;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);pointer-events:none}
+.cbar[hidden]{display:none}
+.cbar .t{display:block;color:#eef2f5;margin-bottom:4px;font-size:10.5px}
+.cbar .row{display:flex;gap:6px;align-items:stretch}
+.cbar .bar{width:10px;height:112px;border-radius:2px}
+.cbar .tk{display:flex;flex-direction:column;justify-content:space-between;height:112px}
+.vhint{position:absolute;left:12px;bottom:8px;z-index:2;font-family:var(--f-mono);font-size:10.5px;color:rgba(220,228,235,.6);pointer-events:none}
+.vtools .sep{width:1px;height:20px;background:rgba(255,255,255,.14);margin:0 4px}
+.vtools button.cam.on{background:rgba(230,235,239,.18);color:#fff;border-color:rgba(255,255,255,.35)}
+.nogl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;background:#fff;color:#13202A;border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.5;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:5;text-align:center}
+.stg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:10px 0 4px}
+.devc{border:1px solid var(--rule-2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;background:var(--paper,#F6F8F6);padding:9px 11px;margin-top:4px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
+.devc .dn{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:3px}
+.devc .dn b{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:14.5px;color:var(--ink)}
+.devc .dn code{font-family:var(--f-mono);font-size:11px;font-weight:600;color:#fff;background:var(--ink);border-radius:3px;padding:1px 5px;white-space:nowrap}
+.devc dl{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin:4px 0}
+.devc dt{color:var(--ink-3);font-size:11.5px}.devc dd{margin:0;color:var(--ink);font-family:var(--f-mono);font-size:11.5px}
+.devc p{margin:4px 0 0}.devc p.pm{color:var(--ink)}.devc p.pm b{color:var(--accent)}
+.flyro{margin-top:6px}.flyro .rrow{font-size:12.5px;padding:4px 0}.flyro .rrow b{font-family:var(--f-mono);font-weight:500;font-size:12px}
+.flyro b.s3{color:var(--warning)}.flyro b.s2{color:var(--caution,#B7791F)}.flyro b.ok{color:var(--ok)}
+#flyBody[hidden]{display:none}
+.stg button{font-family:var(--f-body);font-size:11.5px;line-height:1.15;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:5px 4px;cursor:pointer;color:var(--ink-2);min-height:30px}
+.stg button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+@media (max-width:640px){
+  #cb3{aspect-ratio:4/4.3}
+  .vcv.wx{display:flex;flex-direction:column}
+  .nd{border-left:0;border-top:1px solid rgba(255,255,255,.08)}
+  .nd canvas{aspect-ratio:1/0.82;flex:none}
+  .vhint{display:none}
+  .cbar{right:6px;bottom:6px;padding:4px 6px}.cbar .bar,.cbar .tk{height:80px}
+  .lbl{font-size:10.5px;padding:1px 6px}
+  #strip{height:112px}
+}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0 0 10px}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
 .take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
 .take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
 .take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
 .take li b{font-weight:600}
-.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
-.maid .eyebrow{margin-bottom:4px}
-.maid h3{margin:0 0 4px;font-size:17px}
-.maid p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
-.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;font-size:15px;line-height:1.55;color:var(--ink)}
-.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
-.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
-.ftab{border-collapse:collapse;width:100%;font-size:14px}
-.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}
-.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
-.wrapx{overflow-x:auto}
-.kfull h3.sub{margin:18px 0 8px}
-.kfull h3.sub:first-child{margin-top:0}
-.kfull>summary{width:auto;max-width:100%}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .lbl{font-size:14px}
+body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Thunderstorms and Wind Shear">
-<script src="site.js?v=33"></script>
+<script src="site.js?v=34"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
       <h1>Thunderstorms and wind shear</h1>
-      <p data-tx="lead">A cumulonimbus holds almost every hazard in aviation at once: severe turbulence, icing, hail, lightning, gust fronts and microbursts. Grow a storm from a cumulus to a mature cell and watch it die, fly an approach through its microburst, and find it on the weather radar, including what the radar does not show you.</p>
+      <p data-tx="lead">A cumulonimbus holds almost every hazard in aviation at once: severe turbulence, icing, hail, lightning, gust fronts and microbursts. Grow one in 3D from a cumulus to a mature storm and watch it die, look inside at the air that drives it, fly an approach through its microburst, and aim the weather radar at it.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -49,13 +130,12 @@
     <span id="types" aria-hidden="true"></span>
     <div class="eyebrow">1 · Understand</div>
     <h2>Key concepts</h2>
-    <p class="kintro" data-tx="kin">The words used in the model below. Each card links to the place in the model where it is shown.</p>
+    <p class="kintro" id="kin"></p>
     <div id="kcGrid"></div>
-    <details class="kfull" id="full"><summary data-tx="kfs">Storm types, warnings and avoidance in full</summary><div>
-      <h3 class="sub" id="tyH"></h3>
-      <div class="wrapx"><table class="ftab" id="tyTab"></table></div>
-      <div class="deepbox deep" id="bgBox" style="margin-top:16px"></div>
-    </div></details>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
+    </div>
   </section>
 
   <section class="card" id="explore" data-step="explore">
@@ -66,20 +146,42 @@
     <div class="xapp">
       <div class="xvp" id="stVp" data-lab-model>
         <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="View"></div><div class="vtools" id="vtools"></div></div>
-        <div class="vcv"><canvas id="stCv" aria-label="Thunderstorm model: the life of a cumulonimbus, an approach through a microburst, or the weather radar"></canvas><div class="vchip" id="chip" aria-live="polite"></div></div>
+        <div class="vcv" id="vcv">
+          <div class="c3wrap">
+            <div class="c3" id="c3"><canvas id="cb3" aria-label="3D thunderstorm model. Drag to rotate, scroll to zoom."></canvas><div class="labels" id="labels"></div>
+              <div class="cbar" id="cbar" hidden></div><div class="vhint" id="vhint"></div></div>
+            <canvas id="strip" hidden aria-label="Airspeed change and headwind along the approach"></canvas>
+          </div>
+          <div class="nd" id="ndBox" hidden><div class="ndh" id="ndH">Navigation display</div><canvas id="ndCv" aria-label="Weather radar picture on the navigation display"></canvas></div>
+          <div class="vchip" id="chip" aria-live="polite"></div>
+        </div>
         <div class="vleg" id="vleg"></div>
       </div>
       <p class="xsee" id="xsee"></p>
       <details class="xpanel" id="xpanel" open aria-label="Controls">
         <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <div class="tbox" id="tbox" hidden></div>
-        <details class="xsec" open><summary>Conditions</summary>
-          <div data-pv="life"><div class="grp">Storm type</div><div id="sType"></div><div id="lifeCtl" style="margin-top:10px"></div></div>
-          <div data-pv="mb" hidden><div class="grp">Pilot</div><div id="sPil"></div><div id="mbCtl" style="margin-top:10px"></div></div>
-          <div data-pv="wx" hidden><div class="grp">Range</div><div id="sRng"></div><div class="grp">Gain</div><div id="sGain"></div><div id="wxCtl" style="margin-top:10px"></div></div>
+        <details class="xsec" open data-pv="storm"><summary>Conditions</summary>
+          <div class="grp">Instability</div><div id="sCape"></div>
+          <div id="condCtl" style="margin-top:6px"></div>
+          <div class="grp">Wind shear with height</div><div id="sShear"></div>
+          <p class="hint" id="shearH"></p>
         </details>
+        <details class="xsec" open data-pv="storm"><summary>Development</summary>
+          <div id="sType"></div>
+          <div class="stg" id="stg" role="group" aria-label="Stage"></div>
+          <div id="timeCtl"></div>
+          <div class="devc" id="devCard" aria-live="polite"></div>
+        </details>
+        <details class="xsec" open data-pv="mb" hidden><summary>Pilot</summary><div id="sPil"></div><div id="mbCtl" style="margin-top:10px"></div></details>
+        <details class="xsec" open data-pv="wx" hidden><summary>Radar</summary><div class="grp">Range</div><div id="sRng"></div><div class="grp">Gain</div><div id="sGain"></div><div id="wxCtl" style="margin-top:10px"></div></details>
         <details class="xsec" open><summary>Show</summary>
           <div class="xtogs" id="togs"></div>
+          <div data-pv="storm"><div class="grp" style="margin-top:10px">Cloud</div><div id="sCloud"></div></div>
+        </details>
+        <details class="xsec" data-pv="storm" id="flySec"><summary>Fly <small id="flyS"></small></summary>
+          <div class="btns" style="margin-bottom:8px"><button type="button" class="btn sm" id="flyOn" aria-pressed="false"></button><button type="button" class="btn sm" id="flyGo"></button></div>
+          <div id="flyBody"><div id="sFlyP"></div><div id="flyCtl" style="margin-top:8px"></div><div class="flyro" id="flyRo"></div></div>
         </details>
         <details class="xsec" open><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
         <details class="xsec deep"><summary>Advanced</summary><div id="adv"></div><p class="hint" id="advH"></p></details>
@@ -87,7 +189,7 @@
       <div class="tryblk" id="try" data-step="try">
         <h3>Try it</h3>
         <p class="note" id="tryLead"></p>
-        <ol class="tasks" id="tasks"></ol>
+        <div class="tstep" id="tstep"></div>
       </div>
     </div>
   </section>
@@ -96,8 +198,7 @@
     <div class="eyebrow">3 · Test yourself</div>
     <h2>Key points</h2>
     <ul class="take" id="take"></ul>
-    <div class="maid" id="maid"><div class="eyebrow"></div><h3></h3><p></p></div>
-    <div class="deepbox deep" id="dbE"></div>
+    <div class="maid" id="maid"><span class="k"></span><b></b><p></p></div>
   </section>
 
   <section class="card" id="quiz" data-step="check">
@@ -107,9 +208,11 @@
   </section>
   <p class="foot" id="foot"></p>
 </div>
+<script src="three.min.js"></script>
+<script src="cbmodel.js?v=1"></script>
+<script src="cb3d.js?v=1"></script>
 <script src="lab.js?v=31"></script>
-<script src="chartnote.js?v=1"></script>
 <script src="concepts.js?v=1"></script>
-<script src="storms.js?v=1"></script>
+<script src="storms.js?v=2"></script>
 </body>
 </html>
