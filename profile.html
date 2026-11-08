@@ -156,6 +156,47 @@ dialog.rs p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px}
 dialog.rs label{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:0 0 18px;line-height:1.4}
 dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 
+/* account */
+.acc-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin:0 0 6px}
+.acc-who{display:flex;align-items:center;gap:12px;min-width:0}
+.acc-who .av{flex:0 0 40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px}
+.acc-who b{display:block;font-size:17px;color:var(--ink);overflow-wrap:anywhere}
+.acc-who small{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink-2)}
+.acc-who small i{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:0 0 auto}
+.acc-who small i.sync{background:var(--info)} .acc-who small i.err{background:var(--caution)}
+.acc-two,.acc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.acc-two .box,.acc-grid .box{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.acc-two .box.first{border-color:var(--ink);box-shadow:inset 0 3px 0 var(--accent)}
+.acc-two h3,.acc-grid h3,.acc-code h3{font-family:var(--f-display);font-stretch:90%;font-size:19px;font-weight:700;margin:0;color:var(--ink)}
+.acc-two p,.acc-grid p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.acc-two .btns,.acc-grid .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
+.acc-f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.acc-f input{font:inherit;font-weight:400;font-size:15px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;width:100%;box-sizing:border-box;min-width:0}
+.acc-f input:hover{border-color:var(--ink-2)}
+.acc-f input.code{font-family:var(--f-mono);letter-spacing:.04em;text-transform:uppercase}
+.acc-f small{font-weight:400;color:var(--ink-2);font-size:12.5px}
+.acc-two details{border-top:1px solid var(--rule-2);padding-top:10px}
+.acc-two summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--info)}
+.acc-two details[open] summary{margin-bottom:10px}
+.acc-two details .btns{margin-top:10px}
+.acc-ns,.acc-keys{list-style:none;margin:0;padding:0}
+.acc-ns li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--rule-2);font-size:14px;color:var(--ink)}
+.acc-ns li:first-child,.acc-keys li:first-child{border-top:0}
+.acc-ns li span{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);text-align:right}
+.acc-keys li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:9px 0;border-top:1px solid var(--rule-2)}
+.acc-keys li b{font-size:14.5px;color:var(--ink);overflow-wrap:anywhere}
+.acc-keys li small{grid-column:1;font-size:12.5px;color:var(--ink-2)}
+.acc-keys li .btn{grid-column:2;grid-row:1/3}
+.acc-keys .tag{font-size:10px;padding:2px 5px 1px;margin-left:6px;vertical-align:1px}
+.acc-code{border:1px solid var(--ink);box-shadow:inset 0 3px 0 var(--accent);background:var(--sheet);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:12px;margin:0 0 16px}
+.acc-code p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2);max-width:66ch}
+.acc-code .rc{display:block;font-family:var(--f-mono);font-size:clamp(15px,4.2vw,24px);font-weight:500;letter-spacing:.02em;color:var(--ink);background:var(--wash);border:1px dashed var(--rule);border-radius:var(--radius);padding:12px 14px;overflow-wrap:anywhere;user-select:all}
+.acc-code label{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.4}
+.acc-code label input{margin-top:2px;accent-color:var(--accent)}
+.acc-code .btns{display:flex;flex-wrap:wrap;gap:8px}
+.acc-msg{margin:12px 0 0}
+#acBody>.callout{margin:0 0 14px}
+@media (max-width:760px){.acc-two,.acc-grid{grid-template-columns:minmax(0,1fr)}.acc-two .box,.acc-grid .box{padding:16px}.acc-top .btns{width:100%}}
 @media (max-width:1080px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:980px){
   .mt-head{grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
@@ -200,7 +241,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
   </div>
 
   <nav class="snav" aria-label="On this page">
-    <a href="#next">Next up</a><a href="#path">Learning path</a><a href="#type">Type rating</a><a href="#planning">Planning</a><a href="#achievements">Achievements</a><a href="#data">Your data</a>
+    <a href="#next">Next up</a><a href="#path">Learning path</a><a href="#type">Type rating</a><a href="#planning">Planning</a><a href="#achievements">Achievements</a><a href="#account">Account</a><a href="#data">Your data</a>
   </nav>
 
   <section class="card" id="next">
@@ -243,9 +284,24 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <div class="ach" id="ach"></div>
   </section>
 
+  <section class="card" id="account" aria-labelledby="acH">
+    <div class="shead"><h2 id="acH">Account</h2><span class="note" id="acState"></span></div>
+    <div id="acBody"><p class="note">Checking your account…</p></div>
+    <p class="dmsg acc-msg" id="acMsg" role="status" aria-live="polite"></p>
+  </section>
+
+  <dialog class="rs" id="acDelDlg" aria-labelledby="acDelH">
+    <form method="dialog">
+      <h3 id="acDelH">Delete your account?</h3>
+      <p id="acDelP"></p>
+      <label><input type="checkbox" id="acDelLocal"> <span id="acDelLocalT"></span></label>
+      <div class="btns"><button class="btn dangerfill" value="yes" id="acDelYes"></button><button class="btn" value="no" autofocus id="acDelNo"></button></div>
+    </form>
+  </dialog>
+
   <section class="card" id="data">
     <h2>Your data</h2>
-    <div class="callout info"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
+    <div class="callout info" id="dataNote"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
     <div class="dgrid">
       <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: scores, rank, type rating statistics, flashcards, briefing packs and routes.</p><div class="btns"><button class="btn pri" id="exp">Download progress file</button></div><p class="dmsg" id="expMsg"></p></div>
       <div class="box"><b class="t">Import</b><p>Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.</p><div class="btns"><button class="btn" id="impBtn">Choose a file…</button><input type="file" id="impFile" accept=".json,application/json,text/plain" hidden></div><p class="dmsg" id="impMsg"></p></div>
@@ -257,6 +313,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <form method="dialog">
       <h3 id="rsH">Reset your progress?</h3>
       <p>This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.</p>
+      <p id="rsAcct" hidden></p>
       <label><input type="checkbox" id="rsPlan"> <span>Also delete my briefing packs, saved routes, map library and saved aircraft</span></label>
       <div class="btns"><button class="btn dangerfill" value="yes" id="rsYes">Delete progress</button><button class="btn" value="no" autofocus>Cancel</button></div>
     </form>
@@ -285,7 +342,8 @@ LAB.add({},{
  'Reset your progress?':'Nullstille progresjonen?',
  'This deletes your rank and experience points, quiz and lab results, type rating statistics, flashcard boxes, instructor session history and your chosen track in this browser. It cannot be undone. Export a copy first if you might want it back.':'Dette sletter rangen og erfaringspoengene, quiz- og labresultatene, typeratingstatistikken, flashkortboksene, økthistorikken med instruktøren og valgt løp i denne nettleseren. Det kan ikke angres. Eksporter en kopi først hvis du kanskje vil ha den tilbake.',
  'Also delete my briefing packs, saved routes, map library and saved aircraft':'Slett også briefingpakkene, de lagrede rutene, kartbiblioteket og de lagrede flyene mine',
- 'Delete progress':'Slett progresjonen','Cancel':'Avbryt'
+ 'Delete progress':'Slett progresjonen','Cancel':'Avbryt',
+ 'Account':'Konto','Checking your account…':'Sjekker kontoen din …','Delete your account?':'Slette kontoen?'
 });
 
 /* ---------- storage helpers (read-only except track, import and reset) ---------- */
@@ -481,6 +539,120 @@ async function doReset(plan){ if(P()) try{ P().reset(); }catch(e){}
   const m=el('rsMsg'); m.className='dmsg ok'; m.textContent=plan?L({en:'Progress, packs and routes deleted.',no:'Progresjon, pakker og ruter er slettet.'}):L({en:'Progress deleted. Your briefing packs and routes are kept.',no:'Progresjonen er slettet. Briefingpakkene og rutene er beholdt.'});
   await reloadStore(); drawAll(); window.scrollTo({top:0,behavior:'auto'}); }
 
+/* ---------- account (account.js: passkeys and sync) ---------- */
+const UI={code:null,codeWhy:null,busy:false,arm:null,armT:0,needKey:false};
+const AC=()=>window.BBACCOUNT||null;
+const day=t=>t?new Date(t).toLocaleDateString(LAB.lang==='en'?'en-GB':'nb-NO',{day:'numeric',month:'short',year:'numeric'}):'–';
+const NSL={progress:{en:'Progress and results',no:'Progresjon og resultater'},packs:{en:'Briefing packs and aircraft',no:'Briefingpakker og fly'},routes:{en:'Routes, fixes and map notes',no:'Ruter, punkter og kartnotater'},settings:{en:'Settings, such as language',no:'Innstillinger, som språk'}};
+function acMsg(kind,text){ const m=el('acMsg'); m.className='dmsg acc-msg'+(kind?' '+kind:''); m.textContent=text||''; }
+function syncLine(A){ const s=A.sync||{};
+  if(s.state==='syncing') return {c:'sync',t:L({en:'Syncing…',no:'Synkroniserer …'})};
+  if(s.state==='offline') return {c:'err',t:L({en:'Offline. Changes are kept in this browser and sync when you are back online.',no:'Frakoblet. Endringer ligger i denne nettleseren og synkroniseres når du er på nett igjen.'})};
+  if(s.state==='error') return {c:'err',t:L({en:'Sync paused: ',no:'Synkronisering satt på pause: '})+(s.error||'')};
+  return {c:'',t:s.last?L({en:'Synced ',no:'Synkronisert '})+ago(s.last)+' '+new Date(s.last).toLocaleTimeString(LAB.lang==='en'?'en-GB':'nb-NO',{hour:'2-digit',minute:'2-digit'}):L({en:'Signed in',no:'Logget inn'})}; }
+function codePanel(){ const why=UI.codeWhy==='recovery'?L({en:'You signed in with your recovery code, so it has been used up. This is your new one. The old code no longer works.',no:'Du logget inn med gjenopprettingskoden, så den er brukt opp. Dette er den nye. Den gamle koden virker ikke lenger.'})
+    : UI.codeWhy==='new'?L({en:'Your new recovery code. The old one no longer works.',no:'Den nye gjenopprettingskoden din. Den gamle virker ikke lenger.'})
+    : L({en:'Your account is ready. If you ever lose every device with your passkey, this code is the only way back in.',no:'Kontoen din er klar. Mister du alle enhetene med passnøkkelen, er denne koden eneste vei tilbake.'});
+  return `<div class="acc-code" role="region" aria-labelledby="acCodeH"><h3 id="acCodeH">${L({en:'Save your recovery code',no:'Ta vare på gjenopprettingskoden'})}</h3>
+    <p>${esc(why)} ${L({en:'Write it down or save it in your password manager. Birdbird stores only a scrambled copy and cannot show it again.',no:'Skriv den ned eller lagre den i passordbehandleren. Birdbird lagrer bare en kryptert kopi og kan ikke vise den igjen.'})}</p>
+    <code class="rc" id="acRc">${esc(UI.code)}</code>
+    <div class="btns"><button type="button" class="btn" id="acCopy">${L({en:'Copy',no:'Kopier'})}</button><button type="button" class="btn" id="acDl">${L({en:'Download as a text file',no:'Last ned som tekstfil'})}</button></div>
+    <label><input type="checkbox" id="acSaved"> <span>${L({en:'I have saved my recovery code somewhere safe',no:'Jeg har lagret gjenopprettingskoden et trygt sted'})}</span></label>
+    <div class="btns"><button type="button" class="btn pri" id="acDone" disabled>${L({en:'Done',no:'Ferdig'})}</button></div></div>`; }
+function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body) return;
+  const keepFocus=document.activeElement&&body.contains(document.activeElement)?document.activeElement.id:null;
+  const nameVal=el('acName')?el('acName').value:'', codeVal=el('acCode')?el('acCode').value:'', recOpen=el('acRec')?el('acRec').open:false;
+  drawDataNote();
+  if(!A||A.backend==='unknown'&&!A.user){ st.textContent=''; body.innerHTML=`<p class="note">${L({en:'Checking your account…',no:'Sjekker kontoen din …'})}</p>`; return; }
+  if(A.backend==='none'&&!A.user){ st.textContent='';
+    body.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only, and everything else works as usual.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren, og alt annet virker som vanlig.'})}</div>
+      <p class="btns"><a class="btn" href="https://birdbird.eu/profile.html#account">${L({en:'Open birdbird.eu',no:'Åpne birdbird.eu'})}</a></p>`; return; }
+  if(A.backend==='off'&&!A.user){ st.textContent='';
+    body.innerHTML=`<div class="callout caution"><span class="ct">${L({en:'Coming soon',no:'Kommer snart'})}</span>${L({en:'Accounts are being switched on for Birdbird. Until then, your progress and briefing packs are saved in this browser only, and nothing is lost.',no:'Kontoer er i ferd med å bli slått på for Birdbird. Til da lagres progresjonen og briefingpakkene bare i denne nettleseren, og ingenting går tapt.'})}</div>`; return; }
+  const dis=UI.busy?' disabled':'';
+  let h=UI.code?codePanel():'';
+  if(!A.user){ st.textContent='';
+    h+=`<p class="lead">${L({en:'Create a free account and your progress and briefing packs follow you to other devices, from your computer to your phone. You sign in with a passkey: Face ID, Touch ID, Windows Hello or your phone’s screen lock. No password and no e-mail.',no:'Lag en gratis konto, så følger progresjonen og briefingpakkene deg til andre enheter, fra datamaskinen til telefonen. Du logger inn med en passnøkkel: Face ID, Touch ID, Windows Hello eller skjermlåsen på telefonen. Ikke noe passord og ingen e-post.'})}</p>`;
+    if(!A.supported) h+=`<div class="callout caution"><span class="ct">${L({en:'No passkeys in this browser',no:'Ingen passnøkler i denne nettleseren'})}</span>${L({en:'This browser cannot use passkeys. Update it or try another browser to create an account. If you already have one, sign in with your recovery code below.',no:'Denne nettleseren kan ikke bruke passnøkler. Oppdater den eller prøv en annen nettleser for å lage en konto. Har du allerede en konto, logg inn med gjenopprettingskoden under.'})}</div>`;
+    else if(A.platform===false) h+=`<p class="note">${L({en:'No built-in passkey was found on this device. Your browser will offer to use your phone instead: scan the QR code with it.',no:'Fant ingen innebygd passnøkkel på denne enheten. Nettleseren vil tilby å bruke telefonen i stedet: skann QR-koden med den.'})}</p>`;
+    h+=`<div class="acc-two">
+      <div class="box first"><h3>${L({en:'Create an account',no:'Lag en konto'})}</h3>
+        <label class="acc-f" for="acName">${L({en:'Name (optional)',no:'Navn (valgfritt)'})}<input id="acName" maxlength="60" autocomplete="nickname" value="${esc(nameVal)}"><small>${L({en:'Shown only to you, and in your device’s passkey list.',no:'Vises bare for deg, og i passnøkkellisten på enheten.'})}</small></label>
+        <div class="btns"><button type="button" class="btn pri" id="acNew"${dis}${A.supported?'':' disabled'}>${L({en:'Create account with a passkey',no:'Lag konto med passnøkkel'})}</button></div></div>
+      <div class="box"><h3>${L({en:'Sign in',no:'Logg inn'})}</h3>
+        <p>${L({en:'Already have an account? Use the passkey you made, on this device or with your phone.',no:'Har du allerede en konto? Bruk passnøkkelen du laget, på denne enheten eller med telefonen.'})}</p>
+        <div class="btns"><button type="button" class="btn" id="acIn"${dis}${A.supported?'':' disabled'}>${L({en:'Sign in with a passkey',no:'Logg inn med passnøkkel'})}</button></div>
+        <details id="acRec"${recOpen||!A.supported?' open':''}><summary>${L({en:'Use a recovery code',no:'Bruk en gjenopprettingskode'})}</summary>
+          <label class="acc-f" for="acCode">${L({en:'Recovery code',no:'Gjenopprettingskode'})}<input id="acCode" class="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" value="${esc(codeVal)}"><small>${L({en:'The code you saved when you created the account.',no:'Koden du lagret da du laget kontoen.'})}</small></label>
+          <div class="btns"><button type="button" class="btn" id="acRecGo"${dis}>${L({en:'Sign in with the code',no:'Logg inn med koden'})}</button></div></details></div></div>
+      <p class="note" style="margin-top:12px">${L({en:'Your data stays in this browser too, so Birdbird keeps working offline. The privacy page explains what is stored.',no:'Dataene ligger også i denne nettleseren, så Birdbird virker uten nett. Personvernsiden forklarer hva som lagres.'})} <a href="privacy.html#account">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
+  } else {
+    const me=A.me||{}, creds=me.credentials||[], sl=syncLine(A), nm=(A.user&&A.user.name)||'';
+    st.textContent=L({en:'Signed in',no:'Logget inn'});
+    const dm={}; (me.data||[]).forEach(x=>dm[x.ns]=x);
+    if(UI.needKey) h+=`<div class="callout info"><span class="ct">${L({en:'Next step',no:'Neste steg'})}</span>${L({en:'Add a passkey on this device, so next time you sign in with Face ID, fingerprint or your screen lock instead of the recovery code.',no:'Legg til en passnøkkel på denne enheten, så logger du inn med Face ID, fingeravtrykk eller skjermlåsen neste gang i stedet for gjenopprettingskoden.'})}<div class="btns" style="margin-top:10px"><button type="button" class="btn pri" id="acAdd2"${dis}${A.supported?'':' disabled'}>${L({en:'Add a passkey on this device',no:'Legg til passnøkkel på denne enheten'})}</button></div></div>`;
+    h+=`<div class="acc-top"><div class="acc-who"><span class="av" aria-hidden="true">${esc((nm||'B').slice(0,1).toUpperCase())}</span><div><b>${nm?esc(nm):L({en:'Your Birdbird account',no:'Birdbird-kontoen din'})}</b><small><i class="${sl.c}"></i><span id="acSyncLine">${esc(sl.t)}</span></small></div></div>
+        <div class="btns"><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
+      <p class="lead">${L({en:'Your progress and briefing packs are saved to your account and follow you to other devices. Sign in with your passkey on your phone or another computer to pick up where you left off.',no:'Progresjonen og briefingpakkene dine lagres på kontoen og følger deg til andre enheter. Logg inn med passnøkkelen på telefonen eller en annen datamaskin for å fortsette der du slapp.'})}</p>
+      <div class="acc-grid">
+        <div class="box"><h3>${L({en:'What is synced',no:'Hva som synkroniseres'})}</h3><ul class="acc-ns">${A.namespaces.map(n=>`<li>${esc(L(NSL[n]))}<span>${dm[n]?esc(ago(dm[n].updatedAt)):L({en:'nothing yet',no:'ingenting ennå'})}</span></li>`).join('')}</ul>
+          <p class="note">${L({en:'Not synced: documents you upload to Flight Intelligence and attachments in briefing packs. They stay on this device.',no:'Synkroniseres ikke: dokumenter du laster opp til Flight Intelligence og vedlegg i briefingpakker. De blir på denne enheten.'})}</p></div>
+        <div class="box"><h3>${L({en:'Passkeys',no:'Passnøkler'})}</h3>
+          <ul class="acc-keys">${creds.map(c=>{ const arm=UI.arm===c.id; return `<li><b>${esc(c.name||L({en:'Passkey',no:'Passnøkkel'}))}${c.synced?`<span class="tag">${L({en:'synced',no:'synkronisert'})}</span>`:''}</b><small>${L({en:'Added',no:'Lagt til'})} ${esc(day(c.created))}${c.lastUsed?' · '+L({en:'last used',no:'sist brukt'})+' '+esc(ago(c.lastUsed)):''}</small><button type="button" class="btn sm ${arm?'dangerfill':'danger'}" data-rm="${esc(c.id)}"${creds.length<2||UI.busy?' disabled':''} aria-label="${esc(L({en:'Remove passkey ',no:'Fjern passnøkkel '})+(c.name||''))}">${arm?L({en:'Click again to remove',no:'Klikk igjen for å fjerne'}):L({en:'Remove',no:'Fjern'})}</button></li>`; }).join('')||`<li><small>${L({en:'Loading…',no:'Laster …'})}</small></li>`}</ul>
+          ${creds.length===1?`<p class="note">${L({en:'Your only passkey cannot be removed. Add one on another device first.',no:'Den eneste passnøkkelen kan ikke fjernes. Legg til en på en annen enhet først.'})}</p>`:''}
+          <p class="note">${L({en:'With iCloud Keychain or Google Password Manager, a passkey made on one device is already on your others.',no:'Med iCloud-nøkkelring eller Googles passordbehandler finnes en passnøkkel laget på én enhet allerede på de andre.'})}</p>
+          <div class="btns"><button type="button" class="btn" id="acAdd"${dis}${A.supported?'':' disabled'}>${L({en:'Add a passkey on this device',no:'Legg til passnøkkel på denne enheten'})}</button></div></div>
+        <div class="box"><h3>${L({en:'Recovery code',no:'Gjenopprettingskode'})}</h3>
+          <p>${me.recovery&&me.recovery.created?L({en:'Made on ',no:'Laget '})+esc(day(me.recovery.created))+'. ':''}${L({en:'Keep it somewhere safe: it is the way back in if you lose every passkey. Lost it? Make a new one, and the old one stops working.',no:'Oppbevar den trygt: den er veien tilbake hvis du mister alle passnøklene. Mistet den? Lag en ny, så slutter den gamle å virke.'})}</p>
+          <div class="btns"><button type="button" class="btn" id="acNewCode"${dis}>${L({en:'Make a new recovery code',no:'Lag en ny gjenopprettingskode'})}</button></div></div>
+        <div class="box"><h3>${L({en:'Delete account',no:'Slett kontoen'})}</h3>
+          <p>${L({en:'Deletes your account, its passkeys and everything saved to it on the server, straight away.',no:'Sletter kontoen, passnøklene og alt som er lagret på den på serveren, med en gang.'})}</p>
+          <div class="btns"><button type="button" class="btn danger" id="acDel"${dis}>${L({en:'Delete account…',no:'Slett kontoen …'})}</button></div></div>
+      </div>
+      <p class="note" style="margin-top:12px">${L({en:'Signing out keeps your data in this browser. To remove it from this device as well, use “Clear Birdbird data” on the privacy page.',no:'Når du logger ut, blir dataene liggende i denne nettleseren. For å fjerne dem fra enheten også, bruk «Slett Birdbird-data» på personvernsiden.'})} <a href="privacy.html#clear">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
+  }
+  body.innerHTML=h;
+  if(keepFocus&&el(keepFocus)&&!el(keepFocus).disabled) el(keepFocus).focus({preventScroll:true});
+}
+function drawDataNote(){ const A=AC(), n=el('dataNote'); if(!n) return;
+  n.innerHTML= A&&A.user? `<span class="ct">${L({en:'In this browser and in your account',no:'I denne nettleseren og på kontoen din'})}</span>${L({en:'Your progress, briefing packs, routes and settings are saved in this browser and synced to your account, so they follow you to your other devices. Uploaded documents and attachments stay on this device. Export a copy if you want a file of your own.',no:'Progresjonen, briefingpakkene, rutene og innstillingene dine lagres i denne nettleseren og synkroniseres til kontoen, så de følger deg til de andre enhetene dine. Opplastede dokumenter og vedlegg blir på denne enheten. Eksporter en kopi hvis du vil ha en egen fil.'})}`
+    : `<span class="ct">${L({en:'Stored in this browser only',no:'Lagret bare i denne nettleseren'})}</span>${A&&(A.backend==='ok')?L({en:'Your progress, briefing packs and routes live in this browser on this device. Create an account above to sync them between devices. Clearing your browser data deletes what is only stored here, so export a copy now and then.',no:'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Lag en konto over for å synkronisere dem mellom enheter. Sletter du nettleserdataene, forsvinner det som bare ligger her, så eksporter en kopi innimellom.'}):L({en:'Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server. Clearing your browser data deletes it, so export a copy now and then.',no:'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Ingenting sendes til en server. Sletter du nettleserdataene, forsvinner de, så eksporter en kopi innimellom.'})}`;
+  const ra=el('rsAcct'); if(ra){ ra.hidden=!(A&&A.user); ra.textContent=L({en:'You are signed in, so this also deletes it from your account, on all your devices.',no:'Du er logget inn, så dette sletter det også fra kontoen din, på alle enhetene dine.'}); } }
+async function acRun(fn,okText){ const A=AC(); if(!A||UI.busy) return; UI.busy=true; acMsg('',L({en:'Working…',no:'Jobber …'})); drawAcct();
+  try{ const r=await fn(A); UI.busy=false; acMsg('ok',typeof okText==='function'?okText(r):(okText||'')); }
+  catch(e){ UI.busy=false; acMsg('bad',(e&&e.message)||L({en:'Something went wrong. Try again.',no:'Noe gikk galt. Prøv igjen.'})); }
+  drawAcct(); }
+el('acBody').addEventListener('input',e=>{ if(e.target.id==='acSaved') el('acDone').disabled=!e.target.checked; });
+el('acBody').addEventListener('change',e=>{ if(e.target.id==='acSaved') el('acDone').disabled=!e.target.checked; });
+el('acBody').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; if(e.target.id==='acName'){ e.preventDefault(); el('acNew').click(); } if(e.target.id==='acCode'){ e.preventDefault(); el('acRecGo').click(); } });
+el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; const id=b.id;
+  if(id==='acNew') acRun(async A=>{ const v=await A.signup(el('acName').value.trim()); UI.code=v.recoveryCode; UI.codeWhy='signup'; UI.needKey=false; return v; },L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'}));
+  else if(id==='acIn') acRun(async A=>{ const v=await A.login(); UI.needKey=false; return v; },L({en:'Signed in. Your data is synced.',no:'Logget inn. Dataene dine er synkronisert.'}));
+  else if(id==='acRecGo'){ const c=el('acCode').value.trim(); if(!c){ acMsg('bad',L({en:'Type your recovery code first.',no:'Skriv inn gjenopprettingskoden først.'})); el('acCode').focus(); return; }
+    acRun(async A=>{ const v=await A.recovery(c); UI.code=v.recoveryCode; UI.codeWhy='recovery'; UI.needKey=true; return v; },L({en:'Signed in with your recovery code.',no:'Logget inn med gjenopprettingskoden.'})); }
+  else if(id==='acAdd'||id==='acAdd2') acRun(async A=>{ const v=await A.addPasskey(); UI.needKey=false; return v; },L({en:'Passkey added. You can sign in with it on this device now.',no:'Passnøkkelen er lagt til. Du kan logge inn med den på denne enheten nå.'}));
+  else if(id==='acSync') acRun(async A=>{ await A.syncNow({force:true}); const s=A.sync; if(s.state==='error'||s.state==='offline') throw new Error(s.error||''); },L({en:'Synced.',no:'Synkronisert.'}));
+  else if(id==='acOut') acRun(async A=>{ await A.logout(); UI.code=null; UI.needKey=false; },L({en:'Signed out. Your data is still in this browser.',no:'Logget ut. Dataene ligger fortsatt i denne nettleseren.'}));
+  else if(id==='acNewCode') acRun(async A=>{ const v=await A.newRecoveryCode(); UI.code=v.recoveryCode; UI.codeWhy='new'; return v; },L({en:'New recovery code made. Save it now.',no:'Ny gjenopprettingskode laget. Lagre den nå.'}));
+  else if(id==='acCopy'){ const t=UI.code; (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>acMsg('ok',L({en:'Copied. Paste it into your password manager or a note you keep safe.',no:'Kopiert. Lim den inn i passordbehandleren eller et notat du tar vare på.'})),()=>{ const r=document.createRange(); r.selectNodeContents(el('acRc')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); acMsg('',L({en:'Selected. Press Ctrl+C or ⌘C to copy.',no:'Merket. Trykk Ctrl+C eller ⌘C for å kopiere.'})); }); }
+  else if(id==='acDl'){ const txt=`Birdbird recovery code\n\n${UI.code}\n\nUse it at https://birdbird.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='birdbird-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
+  else if(id==='acDone'){ UI.code=null; acMsg('',''); drawAcct(); const f=el('acSync')||el('acNew'); if(f) f.focus(); }
+  else if(id==='acDel'){ const d=el('acDelDlg'); el('acDelP').textContent=L({en:'This permanently deletes your Birdbird account, its passkeys and all progress, briefing packs, routes and settings saved to it, on every device. It cannot be undone. The passkey itself stays in your device’s password settings, where you can delete it.',no:'Dette sletter Birdbird-kontoen din for godt, med passnøklene og all progresjon, alle briefingpakker, ruter og innstillinger som er lagret på den, på alle enheter. Det kan ikke angres. Selve passnøkkelen blir liggende i passordinnstillingene på enheten, der du kan slette den.'});
+    el('acDelLocalT').textContent=L({en:'Also delete the Birdbird data in this browser',no:'Slett også Birdbird-dataene i denne nettleseren'}); el('acDelYes').textContent=L({en:'Delete account',no:'Slett kontoen'}); el('acDelNo').textContent=L({en:'Cancel',no:'Avbryt'}); el('acDelH').textContent=L({en:'Delete your account?',no:'Slette kontoen?'});
+    el('acDelLocal').checked=false; if(d.showModal) d.showModal(); }
+  else if(b.dataset.rm){ const cid=b.dataset.rm; if(UI.arm!==cid){ UI.arm=cid; clearTimeout(UI.armT); UI.armT=setTimeout(()=>{ UI.arm=null; drawAcct(); },6000); drawAcct(); const nb=[...el('acBody').querySelectorAll('[data-rm]')].find(x=>x.dataset.rm===cid); if(nb) nb.focus(); return; }
+    UI.arm=null; acRun(A=>A.removePasskey(cid),L({en:'Passkey removed from your account. You can also delete it in that device’s password settings.',no:'Passnøkkelen er fjernet fra kontoen. Du kan også slette den i passordinnstillingene på den enheten.'})); }
+});
+el('acDelDlg').addEventListener('close',()=>{ if(el('acDelDlg').returnValue!=='yes') return; const local=el('acDelLocal').checked;
+  acRun(async A=>{ await A.deleteAccount(); if(local) A.wipeLocal(); UI.code=null; UI.needKey=false; if(local){ B.loaded=false; bLoading=null; await reloadStore(); drawAll(); } },local?L({en:'Your account and the data in this browser are deleted.',no:'Kontoen og dataene i denne nettleseren er slettet.'}):L({en:'Your account is deleted. The data in this browser is kept.',no:'Kontoen er slettet. Dataene i denne nettleseren er beholdt.'})); });
+function acctReady(){ const A=AC(); if(!A) return;
+  document.addEventListener('bb-account',()=>{ if(!UI.busy) drawAcct(); });
+  document.addEventListener('bb-account-sync',e=>{ e.preventDefault(); B.loaded=false; bLoading=null; reloadStore().then(drawAll); });
+  A.detect().then(()=>drawAcct());
+  drawAcct(); }
+if(window.BBACCOUNT) acctReady(); else document.addEventListener('bb-account-ready',acctReady,{once:true});
+setTimeout(()=>{ if(!window.BBACCOUNT){ const b=el('acBody'); if(b&&/Checking|Sjekker/.test(b.textContent)) b.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren.'})}</div>`; } },6000);
+
 /* ---------- draw ---------- */
 async function reloadStore(){ try{ await NSTORE.ready; const r=await Promise.all(['prep','route','mapview','mapnote','fises'].map(k=>NSTORE.list(k).catch(()=>[])));
   [PACKS,ROUTES,VIEWS,NOTES,SES]=r.map(x=>Array.isArray(x)?x:[]); }catch(e){} }
@@ -488,7 +660,7 @@ function drawAll(){ drawRank(); drawTrack(); drawNext(); drawPath(); drawType();
 document.addEventListener('nprog',drawAll);
 addEventListener('storage',e=>{ if(!e.key||OURS.test(e.key)){ reloadStore().then(drawAll); } });
 LAB.start('profile');
-LAB.onLang(()=>drawAll());
+LAB.onLang(()=>{ drawAll(); acMsg('',''); drawAcct(); });
 drawAll();
 reloadStore().then(drawAll);
 })();

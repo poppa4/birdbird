@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy · Birdbird</title>
-<meta name="description" content="Birdbird privacy in plain language: no accounts, progress and documents stay in your browser, no analytics or tracking cookies, and how to clear your data.">
+<meta name="description" content="Birdbird privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
 <link rel="stylesheet" href="lab.css?v=6">
 <link rel="stylesheet" href="site.css?v=11">
 <style>
@@ -50,19 +50,19 @@
       <div class="eyebrow">Birdbird · Privacy</div>
       <h1>Privacy</h1>
       <p>What Birdbird stores, where it is stored, and how to remove it, in plain language.</p>
-      <div class="lmeta"><span class="mi"><span class="k">Last updated</span><span class="v">2026-11-07</span></span></div>
+      <div class="lmeta"><span class="mi"><span class="k">Last updated</span><span class="v">2026-11-08</span></span></div>
     </div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#short">The short version</a><a href="#stored">What is stored</a><a href="#ai">AI features</a><a href="#tracking">Cookies and tracking</a><a href="#clear">Clear your data</a><a href="#changes">Changes</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#short">The short version</a><a href="#stored">What is stored</a><a href="#account">Accounts and sync</a><a href="#ai">AI features</a><a href="#tracking">Cookies and tracking</a><a href="#clear">Clear your data</a><a href="#changes">Changes</a></nav>
 
   <section class="card" id="short">
     <h2>The short version</h2>
     <ul class="pv-short">
-      <li>Birdbird has no user accounts yet. You do not sign up or log in.</li>
-      <li>Your progress, ranks and settings are stored in your own browser.</li>
+      <li>An account is optional. Without one, your progress, ranks and settings are stored in your own browser only.</li>
+      <li>With an account, your progress, briefing packs, routes and settings are also saved on Birdbird’s server, so they follow you to your other devices. You can delete the account at any time.</li>
       <li>Documents you add, such as an AFM, QRH or SOP, are processed and stored in your own browser.</li>
       <li>AI features send requests through your own Claude account, and only when you use them.</li>
-      <li>No analytics, no tracking cookies and no advertising.</li>
+      <li>No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.</li>
       <li>Fonts are served from Birdbird itself, not from Google or another third party.</li>
     </ul>
   </section>
@@ -82,7 +82,34 @@
       </tbody>
     </table>
     <p class="callout info"><span class="ct">When Birdbird runs inside Claude</span>If you open Birdbird as an app inside Claude, saved briefing packs, aircraft, instructor setups and sessions are also kept in private storage tied to your own Claude account, so they follow you between devices. Only you can see them. Your documents are not copied there; they stay in the browser.</p>
-    <p class="note">Because nothing is stored on a Birdbird server, Birdbird cannot see, recover or delete your data for you. Clearing it is in your hands, see below.</p>
+    <p class="note">Without an account, nothing is stored on a Birdbird server, so Birdbird cannot see, recover or delete that data for you. Clearing it is in your hands, see below.</p>
+  </section>
+
+  <section class="card" id="account">
+    <h2>Accounts and sync</h2>
+    <p class="lead">If you create an account, Birdbird stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with a passkey, so there is no password, and Birdbird does not ask for your e-mail address.</p>
+    <table class="reg">
+      <thead><tr><th>What</th><th>Why</th><th>How long</th></tr></thead>
+      <tbody>
+        <tr><td>Passkey public key, a device label (such as “iPhone · Safari”) and dates</td><td>To check that it is you when you sign in. The private key, your face and your fingerprint never leave your device; Birdbird only ever sees the public key.</td><td class="w">Until you remove the passkey or delete the account</td></tr>
+        <tr><td>Recovery code</td><td>So you can get back in if you lose every passkey. Only a one-way hash is stored, never the code itself.</td><td class="w">Until it is used or replaced</td></tr>
+        <tr><td>Name (optional)</td><td>Shown to you on My training and in your passkey list.</td><td class="w">Until you delete the account</td></tr>
+        <tr><td>Session</td><td>A random sign-in id in a cookie (HttpOnly, Secure, SameSite=Lax). The server stores only a hash of it, with a short device label.</td><td class="w">60 days after last use, or until you sign out</td></tr>
+        <tr><td>Synced data: progress and results, briefing packs and saved aircraft, routes, fixes and map notes, settings such as language</td><td>So your training and plans follow you from one device to another.</td><td class="w">Until you delete it or the account</td></tr>
+        <tr><td>Attempt counters</td><td>To slow down anyone guessing at sign-in. Counted per hashed IP address; the address itself is not stored.</td><td class="w">At most one day</td></tr>
+      </tbody>
+    </table>
+    <div class="pv-two" style="margin-top:20px">
+      <div class="pv-text">
+        <p><b>Where.</b> Account data is stored in a Cloudflare D1 database that runs Birdbird’s server functions, created in Cloudflare’s EU jurisdiction so that the data is stored in the European Union. Cloudflare processes it on Birdbird’s behalf.</p>
+        <p><b>Not synced.</b> Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.</p>
+      </div>
+      <div class="pv-text">
+        <p><b>Delete your account.</b> Go to My training, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
+        <p><b>Sign out.</b> Signing out ends the session on the server. Your data stays in that browser until you clear it.</p>
+        <p class="btns"><a class="btn" href="profile.html#account">Manage your account</a></p>
+      </div>
+    </div>
   </section>
 
   <section class="card" id="ai">
@@ -100,7 +127,7 @@
   <section class="card" id="tracking">
     <h2>Cookies, analytics and tracking</h2>
     <div class="pv-text">
-      <p>Birdbird does not set cookies, does not use analytics or tracking tools, and shows no advertising. No tracking pixels, no social media widgets.</p>
+      <p>Birdbird does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.</p>
       <p>The fonts are stored with the site and loaded from it, so opening a page does not send your address to a font service.</p>
       <p>Like any website, the server that delivers the pages may keep ordinary technical logs, such as the time of a request and an IP address, for operation and security. Birdbird does not use them to follow you.</p>
     </div>
@@ -111,7 +138,7 @@
     <div class="pv-two">
       <div class="pv-clear">
         <h3>Clear everything in this browser</h3>
-        <p class="note">Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone.</p>
+        <p class="note">Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.</p>
         <p class="cnt" id="cnt"></p>
         <button type="button" class="btn danger" id="clr">Clear Birdbird data</button>
         <p class="res" id="res" role="status"></p>
@@ -123,7 +150,7 @@
           <li>Look up the Birdbird site and choose to delete its data (sometimes called cookies and site data).</li>
           <li>To remove everything at once, clear browsing data for all time, including cookies and site data.</li>
         </ol>
-        <p class="note">Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.</p>
+        <p class="note">Data saved to your Birdbird account is removed by deleting the account on My training. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.</p>
       </div>
     </div>
   </section>
@@ -131,7 +158,7 @@
   <section class="card" id="changes">
     <h2>Changes to this page</h2>
     <div class="pv-text">
-      <p>Accounts, school features or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.</p>
+      <p>School features, e-mail sign-in or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.</p>
     </div>
     <p class="btns"><a class="btn" href="about.html#contact">Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
   </section>
@@ -144,7 +171,7 @@ const {L,el}=LAB;
 /* Birdbird's own storage: local storage key prefixes and IndexedDB databases used across the site */
 const PFX=['naeroson','aeroson','vlab-','fi-'];
 const DBS=['naeroson-fi','naeroson-docs','naeroson-att'];
-const mine=k=>PFX.some(p=>k.indexOf(p)===0);
+const mine=k=>PFX.some(p=>k.indexOf(p)===0)||k==='birdbird-account';
 function keys(){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&mine(k)&&k!=='vlab-lang') out.push(k); } }catch(e){} return out; }
 function count(){ const n=keys().length; el('cnt').textContent=L({en:`${n} saved item${n===1?'':'s'} in local storage, plus any documents.`,no:`${n} lagrede element${n===1?'':'er'} i lokal lagring, pluss eventuelle dokumenter.`}); }
 let armed=false, tmr=0;
@@ -153,10 +180,11 @@ function label(){ btn.textContent=armed? L({en:'Click again to delete everything
 btn.addEventListener('click',async()=>{
   if(!armed){ armed=true; label(); res.className='res'; res.textContent=''; clearTimeout(tmr); tmr=setTimeout(()=>{ armed=false; label(); },6000); return; }
   clearTimeout(tmr); armed=false;
+  const wasIn=!!(window.BBACCOUNT&&BBACCOUNT.user); if(window.BBACCOUNT) try{ await BBACCOUNT.forgetDevice(); }catch(e){}
   const lang=LAB.lang; const ks=keys();
   try{ ks.forEach(k=>localStorage.removeItem(k)); localStorage.setItem('vlab-lang',lang); }catch(e){}
   await Promise.all(DBS.map(n=>new Promise(r=>{ try{ const q=indexedDB.deleteDatabase(n); q.onsuccess=q.onerror=q.onblocked=()=>r(); }catch(e){ r(); } })));
-  label(); res.className='res ok'; res.textContent=L({en:`Done. ${ks.length} items and the document stores were removed from this browser. Your language choice was kept.`,no:`Ferdig. ${ks.length} elementer og dokumentlagrene ble fjernet fra denne nettleseren. Språkvalget ble beholdt.`});
+  label(); res.className='res ok'; res.textContent=L({en:`Done. ${ks.length} items and the document stores were removed from this browser. Your language choice was kept.`,no:`Ferdig. ${ks.length} elementer og dokumentlagrene ble fjernet fra denne nettleseren. Språkvalget ble beholdt.`})+(wasIn?' '+L({en:'You were signed out; your account still has its copy.',no:'Du ble logget ut; kontoen har fortsatt sin kopi.'}):'');
   count(); document.dispatchEvent(new Event('nprog'));
 });
 LAB.add({'Sections':'Sections'},{
@@ -201,7 +229,45 @@ LAB.add({'Sections':'Sections'},{
  'Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.':'Data som ligger hos Claude-kontoen din når Birdbird kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i Birdbird.',
  'Changes to this page':'Endringer på denne siden',
  'Accounts, school features or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.':'Kontoer, skolefunksjoner eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.',
- 'Contact':'Kontakt','Data sources and licences':'Datakilder og lisenser'
+ 'Contact':'Kontakt','Data sources and licences':'Datakilder og lisenser',
+ "Accounts and sync":"Kontoer og synkronisering",
+ "An account is optional. Without one, your progress, ranks and settings are stored in your own browser only.":"En konto er valgfri. Uten konto lagres progresjon, rang og innstillinger bare i din egen nettleser.",
+ "With an account, your progress, briefing packs, routes and settings are also saved on Birdbird’s server, so they follow you to your other devices. You can delete the account at any time.":"Med konto lagres progresjon, briefingpakker, ruter og innstillinger også på Birdbirds server, så de følger deg til de andre enhetene dine. Du kan slette kontoen når som helst.",
+ "No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.":"Ingen analyseverktøy, ingen sporingscookies og ingen reklame. Den eneste cookien er innloggingscookien, og bare hvis du logger inn.",
+ "Without an account, nothing is stored on a Birdbird server, so Birdbird cannot see, recover or delete that data for you. Clearing it is in your hands, see below.":"Uten konto lagres ingenting på en Birdbird-server, så Birdbird kan ikke se, gjenopprette eller slette de dataene for deg. Det er du som sletter dem, se under.",
+ "If you create an account, Birdbird stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with a passkey, so there is no password, and Birdbird does not ask for your e-mail address.":"Lager du en konto, lagrer Birdbird det som trengs for å logge deg inn og holde dataene like på alle enhetene dine. Du logger inn med en passnøkkel, så det finnes ikke noe passord, og Birdbird ber ikke om e-postadressen din.",
+ "How long":"Hvor lenge",
+ "Passkey public key, a device label (such as “iPhone · Safari”) and dates":"Passnøkkelens offentlige nøkkel, en enhetsetikett (som «iPhone · Safari») og datoer",
+ "To check that it is you when you sign in. The private key, your face and your fingerprint never leave your device; Birdbird only ever sees the public key.":"For å sjekke at det er deg når du logger inn. Den private nøkkelen, ansiktet og fingeravtrykket ditt forlater aldri enheten; Birdbird ser bare den offentlige nøkkelen.",
+ "Until you remove the passkey or delete the account":"Til du fjerner passnøkkelen eller sletter kontoen",
+ "Recovery code":"Gjenopprettingskode",
+ "So you can get back in if you lose every passkey. Only a one-way hash is stored, never the code itself.":"Så du kommer inn igjen hvis du mister alle passnøklene. Bare en enveis hash lagres, aldri selve koden.",
+ "Until it is used or replaced":"Til den brukes eller erstattes",
+ "Name (optional)":"Navn (valgfritt)",
+ "Shown to you on My training and in your passkey list.":"Vises for deg på Min trening og i passnøkkellisten.",
+ "Until you delete the account":"Til du sletter kontoen",
+ "Session":"Økt",
+ "A random sign-in id in a cookie (HttpOnly, Secure, SameSite=Lax). The server stores only a hash of it, with a short device label.":"En tilfeldig innloggings-id i en cookie (HttpOnly, Secure, SameSite=Lax). Serveren lagrer bare en hash av den, med en kort enhetsetikett.",
+ "60 days after last use, or until you sign out":"60 dager etter siste bruk, eller til du logger ut",
+ "Synced data: progress and results, briefing packs and saved aircraft, routes, fixes and map notes, settings such as language":"Synkroniserte data: progresjon og resultater, briefingpakker og lagrede fly, ruter, punkter og kartnotater, innstillinger som språk",
+ "So your training and plans follow you from one device to another.":"Så treningen og planene følger deg fra én enhet til en annen.",
+ "Until you delete it or the account":"Til du sletter dem eller kontoen",
+ "Attempt counters":"Telling av forsøk",
+ "To slow down anyone guessing at sign-in. Counted per hashed IP address; the address itself is not stored.":"For å bremse alle som prøver å gjette seg inn. Telles per hashet IP-adresse; selve adressen lagres ikke.",
+ "At most one day":"Høyst ett døgn",
+ "Where.":"Hvor.",
+ "Account data is stored in a Cloudflare D1 database that runs Birdbird’s server functions, created in Cloudflare’s EU jurisdiction so that the data is stored in the European Union. Cloudflare processes it on Birdbird’s behalf.":"Kontodata lagres i en Cloudflare D1-database som kjører Birdbirds serverfunksjoner, opprettet i Cloudflares EU-jurisdiksjon slik at dataene lagres i EU. Cloudflare behandler dem på vegne av Birdbird.",
+ "Not synced.":"Synkroniseres ikke.",
+ "Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.":"Dokumenter du laster opp til Flight Intelligence (AFM, QRH, SOP) og vedlegg i briefingpakker blir i nettleseren på den enheten. Nøkler du legger inn for kartlag synkroniseres heller ikke.",
+ "Delete your account.":"Slett kontoen.",
+ "Go to My training, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min trening, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene og alle synkroniserte data slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
+ "Sign out.":"Logg ut.",
+ "Signing out ends the session on the server. Your data stays in that browser until you clear it.":"Når du logger ut, avsluttes økten på serveren. Dataene blir liggende i den nettleseren til du sletter dem.",
+ "Manage your account":"Administrer kontoen",
+ "Birdbird does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"Birdbird bruker ingen analyse- eller sporingsverktøy og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
+ "Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.":"Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som Birdbird har lagret i denne nettleseren. Det kan ikke angres. Er du logget inn, logges du ut først, og kopien på kontoen beholdes.",
+ "Data saved to your Birdbird account is removed by deleting the account on My training. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.":"Data som er lagret på Birdbird-kontoen, fjerner du ved å slette kontoen på Min trening. Data som ligger hos Claude-kontoen din når Birdbird kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i Birdbird.",
+ "School features, e-mail sign-in or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.":"Skolefunksjoner, innlogging med e-post eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på."
 });
 LAB.start('privacy');
 count(); label(); LAB.onLang(()=>{ count(); label(); if(res.textContent) res.textContent=''; });
