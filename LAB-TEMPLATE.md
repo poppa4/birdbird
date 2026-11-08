@@ -68,3 +68,15 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 - Do not add progress tracking, done markers or counters to the labs or to `lab.html`.
 - Keep file names and URLs. To regroup labs, edit `PATH` and the counts follow from it.
 - When `lab.js`, `site.js` or `site.css` change, bump their `?v=` on every page that loads them.
+
+## The standard (owner decision, Nov 2026): every lab looks like the wind tunnel
+
+`tunnel.html` is the visual and structural standard for every lab. New and rebuilt labs copy it:
+
+- **Three steps** in the bar: 1 Understand, 2 Explore, 3 Test yourself. `data-step` values `try` map to Explore and `debrief` to Test yourself (see `STEP3` in `lab.js`). "Next" is the end link, not a step.
+- **Understand** = a *Key concepts* grid: small cards with a tiny illustration, a short title, one line, and "Show it in the model" that jumps to and highlights the right place/state. Longer text goes in `.deep`.
+- **Explore** = control panel on the left (groups: Conditions / Show / Advanced, the tunnel's component styles), a dark premium viewport with the view tabs on top, a compact readout chip in a viewport corner, the legend in the viewport, a one-line "What you're seeing" under it, then the *Try it* tasks as small boxes.
+- **Test yourself** = "Key points" ("Det viktigste") with at most one memory-aid card, then the quiz.
+- Charts: plain-language "How to read this", key points labelled in words on the chart, a simple default view with "Show full chart" for the rest, and one take-away sentence.
+- Aircraft drawings: refined and professional (the stability.html jet is the reference), sensibly sized, never filling the view.
+- Tidy and clear overview first; depth is fine when it is organised and explained.
