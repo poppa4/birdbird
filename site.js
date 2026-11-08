@@ -139,7 +139,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=18'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=19'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
