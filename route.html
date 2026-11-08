@@ -341,6 +341,7 @@
 .simload .btn{grid-row:1/3;grid-column:2;background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}.simload b{font-family:var(--f-mono);font-weight:600}
 .x3look{gap:4px;font-size:13px}.x3look span{margin-right:2px;color:var(--ink-2)}.x3look button{min-width:30px;height:28px;border:1px solid var(--rule);background:#fff;border-radius:6px;cursor:pointer;font-size:12px;touch-action:none}.x3look button:last-child{padding:0 8px}
 .bb-look{cursor:grab}.bb-look:active{cursor:grabbing}
+.chk.sub{padding-left:22px;font-size:.94em}.chk.sub.dis{opacity:.45}
 .bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
 .mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
 /* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy #0B2545 with magenta accents ---- */
@@ -420,7 +421,7 @@
     <h4>Aviation</h4>
     <label class="chk"><input type="checkbox" data-ly="ap"> Airports</label>
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
-    <label class="chk mlonly" id="lyas" hidden><input type="checkbox" data-ly="as"> <span>Airspace (openAIP) <span class="lyn" id="asnote"></span></span></label>
+    <label class="chk mlonly" id="lyas" hidden><input type="checkbox" data-ly="as"> <span>Airspace (openAIP) <span class="lyn" id="asnote"></span></span></label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asCtr"> Control zones (CTR)</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTma"> TMA / CTA</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asRes"> Restricted, danger, prohibited</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTiz"> TIZ / TIA / RMZ / TMZ</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asAtz"> ATZ / MATZ / HTZ</label><label class="chk sub mlonly asub" hidden><input type="checkbox" data-ly="asTra"> TRA / TSA and temporary areas</label>
     <label class="chk"><input type="checkbox" data-ly="fx"> IFR points (Finland, Iceland)</label>
     <div class="mlonly lyoa" id="lyoa" hidden><h4>openAIP <span class="lyn" id="oanote"></span></h4>
     <label class="chk"><input type="checkbox" data-ly="rp"> VFR reporting points</label>
@@ -605,7 +606,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=8"></script>
+<script src="rxmap.js?v=9"></script>
 <script>
 (function(){
 'use strict';
@@ -1493,7 +1494,7 @@ LAB.add({},{
  'Expected departure and arrival':'Forventet avgang og ankomst','Departure runway':'Avgangsbane','Arrival runway':'Landingsbane','Arrival':'Ankomst','Instrument, straight-in (3°)':'Instrument, rett inn (3°)','Visual, 3 NM final':'Visuell, 3 NM final',
  'Built from the runway numbers: a straight climb-out and a straight-in final on the extended centreline. Not the published SID or approach.':'Laget fra banenumrene: rett stigning ut og rett inn på forlenget senterlinje. Ikke publisert SID eller innflyging.',
  'My notes':'Mine notater',
- 'Explore the route':'Utforsk ruten','Move the slider to fly along the route.':'Flytt glidebryteren for å fly langs ruten.','Camera follows':'Kameraet følger','Reset view':'Tilbakestill visning','Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom':'Dra for å rotere · høyreklikk-dra, Shift-dra eller to fingre for å flytte · scroll eller knip for å zoome','▶ Fly the route':'▶ Fly ruten','Fly the route':'Fly ruten','Contours':'Koter','Light':'Lys','VFR reporting points':'VFR-meldepunkter','Obstacles':'Hindre','Small airfields, heliports, glider sites':'Små flyplasser, helikopterplasser, seilflyplasser','openAIP navaids':'Radiofyr fra openAIP','Thermal hotspots':'Termikk-hotspots','Hang gliding sites':'Hanggliderplasser','RC model airfields':'Modellflyplasser','Reset map':'Tilbakestill kartet','Look':'Se','Centre':'Midtstill','Look around':'Se deg rundt','Look left':'Se til venstre','Look right':'Se til høyre','Look up':'Se opp','Look down':'Se ned','Loading terrain and imagery along the route…':'Laster terreng og bilder langs ruten …','Skip':'Hopp over','from NW':'fra NV','from SW':'fra SV','from SE':'fra SØ','from NE':'fra NØ','Direction of the relief shading light':'Retningen lyset i relieffskyggen kommer fra','Off':'Av','Margin OK':'Margin OK','Inside the clearance':'Innenfor klaringen','Below terrain':'Under terrenget','Not checked':'Ikke sjekket','Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.':'Velg Høydelinje eller Stigning og sink i profilen for å fargelegge ruten etter terrengmargin.','Contour lines':'Koter','3D settings':'3D-innstillinger','Terrain exaggeration':'Overdrivelse av terrenget','Position along the route':'Posisjon langs ruten','3D terrain view':'3D-terrengvisning',
+ 'Explore the route':'Utforsk ruten','Move the slider to fly along the route.':'Flytt glidebryteren for å fly langs ruten.','Camera follows':'Kameraet følger','Reset view':'Tilbakestill visning','Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom':'Dra for å rotere · høyreklikk-dra, Shift-dra eller to fingre for å flytte · scroll eller knip for å zoome','▶ Fly the route':'▶ Fly ruten','Fly the route':'Fly ruten','Contours':'Koter','Light':'Lys','VFR reporting points':'VFR-meldepunkter','Control zones (CTR)':'Kontrollsoner (CTR)','TMA / CTA':'TMA / CTA','Restricted, danger, prohibited':'Restriksjons-, fare- og forbudsområder','TIZ / TIA / RMZ / TMZ':'TIZ / TIA / RMZ / TMZ','ATZ / MATZ / HTZ':'ATZ / MATZ / HTZ','TRA / TSA and temporary areas':'TRA / TSA og midlertidige områder','Obstacles':'Hindre','Small airfields, heliports, glider sites':'Små flyplasser, helikopterplasser, seilflyplasser','openAIP navaids':'Radiofyr fra openAIP','Thermal hotspots':'Termikk-hotspots','Hang gliding sites':'Hanggliderplasser','RC model airfields':'Modellflyplasser','Reset map':'Tilbakestill kartet','Look':'Se','Centre':'Midtstill','Look around':'Se deg rundt','Look left':'Se til venstre','Look right':'Se til høyre','Look up':'Se opp','Look down':'Se ned','Loading terrain and imagery along the route…':'Laster terreng og bilder langs ruten …','Skip':'Hopp over','from NW':'fra NV','from SW':'fra SV','from SE':'fra SØ','from NE':'fra NØ','Direction of the relief shading light':'Retningen lyset i relieffskyggen kommer fra','Off':'Av','Margin OK':'Margin OK','Inside the clearance':'Innenfor klaringen','Below terrain':'Under terrenget','Not checked':'Ikke sjekket','Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.':'Velg Høydelinje eller Stigning og sink i profilen for å fargelegge ruten etter terrengmargin.','Contour lines':'Koter','3D settings':'3D-innstillinger','Terrain exaggeration':'Overdrivelse av terrenget','Position along the route':'Posisjon langs ruten','3D terrain view':'3D-terrengvisning',
  ' Advanced':' Avansert','Optional settings. They change the profile when it shows Climb and descent, and some of them (MSA, corridor, clearance) in every view.':'Valgfrie innstillinger. De endrer profilen når den viser Stigning og sink, og noen av dem (MSA, korridor, klaring) i alle visninger.',
  'Terrain profile':'Terrengprofil','Altitude line':'Høydelinje','Climb and descent':'Stigning og sink','Show':'Vis','Search airport, navaid or fix':'Søk flyplass, radiofyr eller fix','Layers':'Kartlag','Airports':'Flyplasser','VOR, DME and NDB':'VOR, DME og NDB','IFR points (Finland, Iceland and yours)':'IFR-punkter (Finland, Island og dine egne)','Terrain shading':'Terrengskygge',
  'Airspace and airways are not shown: we do not have licensed data for them yet. Not an official chart.':'Luftrom og luftveier vises ikke: vi har ikke lisensierte data for dem ennå. Ikke et offisielt kart.',
@@ -1542,19 +1543,20 @@ LAB.start('route');
 // kartstil og lag
 // layer defaults. VFR: everything aviation on, as on openaip.net (airspace, reporting points, airfields, navaids, obstacles);
 // IFR: low ink (airspace, navaids, IFR points; VFR-only openAIP items off). rp…rc are openAIP points; hs/hg/rc are optional, off.
-const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0};
+const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0};
 const LYD={vfr:LY0,ifr:Object.assign({},LY0,{rp:0,ob:0,oa:0,on:0,hs:0,hg:0,rc:0})};
 // switching VFR/IFR applies that chart's aviation defaults; personal layers (my fixes, notes, relief, contours, terrain numbers) stay as chosen
-const AVK=['ap','nv','fx','as','rp','ob','oa','on','hs','hg','rc'];
+const AVK=['ap','nv','fx','as','asCtr','asTma','asRes','asTiz','asAtz','asTra','rp','ob','oa','on','hs','hg','rc'];
 function avDefaults(m){ const d=LYD[m]||LY0; AVK.forEach(k=>LY[k]=d[k]); }
 const BMS=['vfr','ifr','chart','terrain','sat','topo'];
 // v3: the VFR chart is the default base map (v2 saved 'chart' as its default, so only the layer choices carry over)
 let MM='vfr', LY=Object.assign({},LYD.vfr), BM='vfr';
 try{ const j3=JSON.parse(localStorage.getItem('bb-rx-v3')||'null'), j=j3||JSON.parse(localStorage.getItem('bb-rx-v2')||'null'); if(j){ MM=j.m==='ifr'?'ifr':'vfr'; LY=Object.assign({},LYD[MM],j.ly||{}); if(j3&&BMS.includes(j3.bm)) BM=j3.bm; } }catch(e){}
 function saveLY(){ try{ localStorage.setItem('bb-rx-v3',JSON.stringify({m:MM,ly:LY,bm:BM})); }catch(e){} }
-function lyUI(){ el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
+function asSub(){ const m=el('lyas'), on=!!LY.as&&m&&!m.hidden&&!m.classList.contains('off'); document.querySelectorAll('.asub').forEach(l=>{ l.hidden=!m||m.hidden; l.classList.toggle('dis',!on); l.querySelector('input').disabled=!on; }); }
+function lyUI(){ asSub(); el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
 el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.m!==MM) avDefaults(b.dataset.m); MM=b.dataset.m; if(ML) setBM(MM); saveLY(); lyUI(); drawMap(); });
-el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
+el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); asSub(); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
 el('lybtn').onclick=()=>{ const ly=el('layers'); ly.hidden=!ly.hidden; el('lybtn').setAttribute('aria-expanded',String(!ly.hidden)); };
 // terrengskygge fra den lokale høydemodellen (1′-celler, fot)
 const SHC={}, SHP={};
@@ -1967,9 +1969,9 @@ async function mlStart(){ mlog('RXMAP '+(!!window.RXMAP)+' · online '+navigator
       n.querySelector('button').onclick=()=>location.reload(); n.querySelector('.x').onclick=()=>n.remove(); mapEl.appendChild(n); } } }
 function asUI(st){ const lab=el('lyas'); if(!lab) return; const ok=st==='ok', i=lab.querySelector('input'); i.disabled=!ok; lab.classList.toggle('off',!ok);
   el('lyoa').querySelectorAll('label.chk').forEach(l=>{ l.classList.toggle('off',!ok); l.querySelector('input').disabled=!ok; }); el('oanote').textContent=ok?'':(st==='denied'?L({en:'(not available)',no:'(ikke tilgjengelig)'}):L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}));
-  el('asnote').textContent= ok? '' : st==='denied'? L({en:'(not available: the openAIP key was refused or the service is down)',no:'(ikke tilgjengelig: openAIP-nøkkelen ble avvist eller tjenesten er nede)'}) : L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}); }
+  el('asnote').textContent= ok? '' : st==='denied'? L({en:'(not available: the openAIP key was refused or the service is down)',no:'(ikke tilgjengelig: openAIP-nøkkelen ble avvist eller tjenesten er nede)'}) : L({en:'(needs an openAIP key)',no:'(trenger en openAIP-nøkkel)'}); asSub(); }
 function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); mapEl.dataset.map='maplibre'; el('mlmap').classList.remove('wait'); el('bmsel').hidden=false; bmUI();
-  document.querySelectorAll('#layers .mlonly').forEach(x=>x.hidden=false);
+  document.querySelectorAll('#layers .mlonly').forEach(x=>x.hidden=false); asSub();
   try{ RXMAP.addAirspace(m,st=>{ asUI(st); MLK.ly=''; drawMap(); }); }catch(e){ asUI('denied'); }
   if(LY.ct) RXMAP.addContours(m).then(()=>{ MLK.ly=''; drawMap(); });
   m.on('move',()=>{ const c=m.getCenter(); V.la=c.lat; V.lo=c.lng; V.z=mlVz(m.getZoom(),c.lat); MLV={la:V.la,lo:V.lo,z:V.z}; try{ ptPop(); }catch(e){} });

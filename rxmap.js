@@ -373,7 +373,7 @@ function oaLayers(src){ const s=n=>({source:src,'source-layer':n}), g=k=>['coale
 function addAirspace(map,cb){ const key=oaipKey(); cb=cb||(()=>{}); if(!key){ map.__bb.oaip='none'; cb('none'); return false; }
   if(map.getSource('bb-oaip')) return true;
   map.addSource('bb-oaip',{type:'vector',tiles:[OPENAIP_URL+encodeURIComponent(key)],minzoom:5,maxzoom:14,attribution:ATT.oaip});
-  const before=map.getLayer('bb-mefg')?'bb-mefg':undefined; const Ls=asLayers('bb-oaip'); Ls.forEach(L=>map.addLayer(L,before)); map.__bb.asIds=Ls.map(L=>L.id); map.__bb.oaip='ok';
+  const before=map.getLayer('bb-mefg')?'bb-mefg':undefined; const Ls=asLayers('bb-oaip'); Ls.forEach(L=>map.addLayer(L,before)); map.__bb.asIds=Ls.map(L=>L.id); map.__bb.asF={}; Ls.forEach(L=>map.__bb.asF[L.id]=L.filter||null); map.__bb.oaip='ok';
   // openAIP points above the airspace, under the route
   const b2=map.getLayer('bb-leg-case')?'bb-leg-case':undefined; oaLayers('bb-oaip').forEach(L=>map.addLayer(L,b2));
   let errs=0; map.on('error',e=>{ if(map.__bb.oaip!=='ok') return; const er=e&&e.error, u=String((er&&er.url)||''), st=er&&er.status;
@@ -440,10 +440,16 @@ function addOverlays(map){
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
 const LYG={ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+/* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
+const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
+function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;
+  const tf=on.length?['match',['get','type'],on,true,false]:['==',1,0];
+  (map.__bb.asIds||[]).forEach(id=>{ if(!map.getLayer(id)) return; const b=(map.__bb.asF||{})[id]; map.setFilter(id,b?['all',b,tf]:tf); }); }
 function setGroups(map,LY){ map.__bb.ly=Object.assign({},LY);
   const oaNav=!!LY.on&&map.__bb.oaip==='ok';
   Object.keys(LYG).forEach(k=>{ const on=k==='awy'?true:k==='nv'?!!LY.nv&&!oaNav:!!LY[k]; LYG[k].forEach(id=>vis(map,id,on)); });
   const as=!!LY.as&&map.__bb.oaip==='ok'; (map.__bb.asIds||[]).forEach(id=>vis(map,id,as));
+  if(as) asTypes(map,LY);
   Object.keys(OAG).forEach(k=>OAG[k].forEach(id=>vis(map,id,!!LY[k]&&map.__bb.oaip==='ok')));
   applyRelief(map); }
 function setData(map,id,fc){ const s=map.getSource(id); if(s) s.setData(fc||FC); }
