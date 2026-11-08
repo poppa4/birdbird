@@ -406,7 +406,7 @@ function addImages(map){
   [['n','#13202A'],['a','#B86E00'],['r','#B3261E']].forEach(([k,c])=>icon(map,'bb-crit-'+k,18,16,g=>{ g.beginPath(); g.moveTo(9,1.5); g.lineTo(16.5,14.5); g.lineTo(1.5,14.5); g.closePath(); g.fillStyle='#fff'; g.fill(); g.strokeStyle=c; g.lineWidth=2; g.lineJoin='round'; g.stroke(); }));
 }
 const FC={type:'FeatureCollection',features:[]};
-const WXC={VFR:'#2E7D32',MVFR:'#1D4E9E',IFR:'#C62828',LIFR:'#C2189B'};
+const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
 const SRC=['bb-mef','bb-mefg','bb-awy','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
@@ -420,8 +420,8 @@ function addOverlays(map){
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});
   add({id:'bb-leg',type:'line',source:'bb-leg',filter:['!=',['get','d'],1],layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':P.accent,'line-width':lin(3,3.2,12,4.6)}});
   add({id:'bb-leg-d',type:'line',source:'bb-leg',filter:['==',['get','d'],1],layout:{'line-join':'round'},paint:{'line-color':P.accent,'line-width':lin(3,2.4,12,3.4),'line-dasharray':[2,1.5]}});
-  // METAR flight category: a coloured ring around the airport (VFR green, MVFR blue, IFR red, LIFR magenta), under the airport and route symbols
-  add({id:'bb-wx',type:'circle',source:'bb-wx',layout:{visibility:'none'},paint:{'circle-radius':lin(4,5.5,10,10),'circle-color':['match',['get','fc'],'VFR',WXC.VFR,'MVFR',WXC.MVFR,'IFR',WXC.IFR,'LIFR',WXC.LIFR,'#8A97A2'],'circle-opacity':0.2,'circle-stroke-color':['match',['get','fc'],'VFR',WXC.VFR,'MVFR',WXC.MVFR,'IFR',WXC.IFR,'LIFR',WXC.LIFR,'#8A97A2'],'circle-stroke-width':lin(4,2,10,2.8),'circle-pitch-alignment':'map'}});
+  // METAR flight category: a coloured ring around the airport (SERA categories: VFR green, special VFR amber, IFR red), under the airport and route symbols
+  add({id:'bb-wx',type:'circle',source:'bb-wx',layout:{visibility:'none'},paint:{'circle-radius':lin(4,5.5,10,10),'circle-color':['match',['get','fc'],'VFR',WXC.VFR,'SVFR',WXC.SVFR,'IFR',WXC.IFR,'#8A97A2'],'circle-opacity':0.2,'circle-stroke-color':['match',['get','fc'],'VFR',WXC.VFR,'SVFR',WXC.SVFR,'IFR',WXC.IFR,'#8A97A2'],'circle-stroke-width':lin(4,2,10,2.8),'circle-pitch-alignment':'map'}});
   // airports: large from the start, medium and small as you zoom in
   [[2,2.5,4.2],[1,5,3.2],[0,7.5,2.4]].forEach(([c,mz,r])=>{
     if(c===2) add({id:'bb-ap2r',type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],2],paint:{'circle-radius':lin(3,r+2.2,10,r+4.5),'circle-color':'rgba(0,0,0,0)','circle-stroke-color':'rgba(44,95,141,.5)','circle-stroke-width':1}});

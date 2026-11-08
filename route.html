@@ -664,7 +664,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=10"></script>
+<script src="rxmap.js?v=11"></script>
 <script>
 (function(){
 'use strict';
@@ -785,7 +785,8 @@ const WXS={c:{},t:0,hist:[],busy:false,lib:null,idx:null};
 const WX_TTL=5*60e3;
 function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=1'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
 function wxCat(m){ if(!m||m.nil) return null; const vis=m.vis==null?null:m.vis/1609.34, cig=m.cavok?null:m.ceil; if(vis==null&&cig==null&&!m.cavok&&!m.hasCloud) return null;
-  const c=v=>v!=null; if((c(cig)&&cig<500)||(c(vis)&&vis<1)) return 'LIFR'; if((c(cig)&&cig<1000)||(c(vis)&&vis<3)) return 'IFR'; if((c(cig)&&cig<=3000)||(c(vis)&&vis<=5)) return 'MVFR'; return 'VFR'; }
+  /* European categories from SERA (EU 923/2012): VFR in a control zone needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft (SERA.5005(b)); special VFR needs ≥ 1500 m and ceiling ≥ 600 ft (SERA.5010); below that only IFR */
+  const c=v=>v!=null, vm=m.vis==null?null:m.vis; if(m.cavok) return 'VFR'; if((c(cig)&&cig<600)||(c(vm)&&vm<1500)) return 'IFR'; if((c(cig)&&cig<1500)||(c(vm)&&vm<5000)) return 'SVFR'; return 'VFR'; }
 function wxWanted(){ if(!NAV||!ML) return []; const out=[], add=id=>{ if(/^[A-Z]{4}$/.test(id)&&!out.includes(id)) out.push(id); };
   (R&&R.pts||[]).forEach(p=>{ if(p.t==='rwy'&&p.la!=null) add(String(p.n||'').toUpperCase()); });
   const P=(R&&R.pts||[]).filter(p=>p.la!=null&&!['missed'].includes(p.t)); if(P.length>=2){ const sm=[]; for(let i=1;i<P.length;i++){ const a=P[i-1], b=P[i], n=Math.max(1,Math.ceil(gc(a,b)/6)); for(let k=0;k<=n;k++) sm.push({la:a.la+(b.la-a.la)*k/n,lo:a.lo+(b.lo-a.lo)*k/n}); }
@@ -820,7 +821,7 @@ function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="
   if(m.ceil!=null&&!m.cavok) rows.push([L({en:'Ceiling',no:'Skydekke'}),fx(m.ceil)+' ft']);
   if(m.temp!=null) rows.push([L({en:'Temp / dew point',no:'Temp / duggpunkt'}),m.temp+' / '+(m.dew!=null?m.dew:'–')+' °C']);
   if(m.qnh!=null) rows.push(['QNH',m.qnh+' hPa']);
-  return box(`<b style="font-size:13px;display:block;margin-top:10px">METAR${c.obs?' '+new Date(c.obs).toISOString().slice(11,16)+'Z':''}${age!=null&&age>=0?` <span style="font-weight:400;color:var(--ink-2)">(${age<120?age+' min':Math.round(age/60)+' h'} ${L({en:'ago',no:'siden'})})</span>`:''}${c.fc?`<span class="fc" style="background:${col}">${c.fc}</span>`:''}</b><dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl><pre>${esc(c.raw)}</pre><p class="src">${L({en:'Source: aviationweather.gov (NOAA). Can be late or incomplete: check the official briefing before flight. Flight category: VFR, MVFR (ceiling 1000–3000 ft or visibility 3–5 SM), IFR, LIFR (below 500 ft or 1 SM).',no:'Kilde: aviationweather.gov (NOAA). Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging. Kategori: VFR, MVFR (skydekke 1000–3000 ft eller sikt 3–5 SM), IFR, LIFR (under 500 ft eller 1 SM).'})}</p>`); }
+  return box(`<b style="font-size:13px;display:block;margin-top:10px">METAR${c.obs?' '+new Date(c.obs).toISOString().slice(11,16)+'Z':''}${age!=null&&age>=0?` <span style="font-weight:400;color:var(--ink-2)">(${age<120?age+' min':Math.round(age/60)+' h'} ${L({en:'ago',no:'siden'})})</span>`:''}${c.fc?`<span class="fc" style="background:${col}">${c.fc}</span>`:''}</b><dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl><pre>${esc(c.raw)}</pre><p class="src">${L({en:'Source: aviationweather.gov (NOAA). Can be late or incomplete: check the official briefing before flight. Category (SERA, EASA): VFR = visibility ≥ 5 km and ceiling ≥ 1500 ft; SVFR = special VFR only (≥ 1500 m, ceiling ≥ 600 ft, in a control zone with ATC clearance); IFR = below that. Ceiling = lowest BKN or OVC layer.',no:'Kilde: aviationweather.gov (NOAA). Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging. Kategori (SERA, EASA): VFR = sikt ≥ 5 km og skydekke ≥ 1500 ft; SVFR = bare spesiell VFR (≥ 1500 m, skydekke ≥ 600 ft, i kontrollsone med klarering fra ATC); IFR = under det. Skydekke = laveste BKN- eller OVC-lag.'})}</p>`); }
 /* ---------- navigasjonslogg: vindtrekant per etappe ----------
    TC = great-circle initial course of the leg, VAR from wmm.js (World Magnetic Model) at the leg's mid-point,
    wind for the route (R.nl.w) or per leg (p.nw on the leg's end point), TAS = the speed field in the profile bar. */
