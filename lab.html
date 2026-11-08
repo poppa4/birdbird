@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Virtual Lab · Birdbird</title>
-<meta name="description" content="25 interactive labs covering the theory behind flying, from principles of flight to human performance, built on the A320.">
+<meta name="description" content="25 interactive labs covering the theory behind flying, from principles of flight to human performance. Principles for every aircraft; numbers from an illustrative A320 model.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="lab.css?v=6">
 <link rel="stylesheet" href="site.css?v=11">
@@ -165,14 +165,14 @@ const tops=l=>(TOP[l[0]]||[]).map(([a,en,no,ty])=>[a,a==='quiz'?QZ:t(en,no),ty])
 const labOn=u=> S.labs[u]!==0;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const count=cat=>labsOf(cat).reduce((a,l)=>a+tops(l).length,0);
-const LVC={la:'lt',jet:'a320'};
-const lvt=l=>l[4]?`<span class="tag ${LVC[l[4]]}">${esc(L(LV[l[4]]))}</span>`:'';
+const LVC={la:'lt',jet:'a320',mix:'a320',gen:'core'};
+const lvt=l=>{ const k=l[4]||'gen'; return `<span class="tag ${LVC[k]}" title="${esc(L(k==='gen'?{en:'General principles that apply to every aircraft',no:'Generelle prinsipper som gjelder alle fly'}:{en:'Numbers come from an illustrative teaching model, not manufacturer data',no:'Tallene kommer fra en illustrerende undervisningsmodell, ikke produsentdata'}))}">${esc(L(LV[k]))}</span>`; };
 const isDone=l=>LAB.done(l[1])>=60;
 
 function draw(){
   const no=LAB.lang==='no', path=S.cat==='path';
   const doneN=ALL.filter(isDone).length;
-  el('lead').textContent=no?'Teorien bak flygingen, som interaktive modeller du kan stille på. 25 labber i ni moduler, fra aerodynamikk til menneskelige faktorer, bygget på A320.':'The theory behind flying, as interactive models you can adjust. 25 labs in nine modules, from principles of flight to human performance, built on the A320.';
+  el('lead').textContent=no?'Teorien bak flygingen, som interaktive modeller du kan stille på. 25 labber i ni moduler, fra aerodynamikk til menneskelige faktorer. Prinsippene gjelder alle fly; der labben viser tall, kommer de fra en illustrerende A320-modell, og merket på hver lab viser hva som gjelder.':'The theory behind flying, as interactive models you can adjust. 25 labs in nine modules, from principles of flight to human performance. The principles apply to every aircraft; where a lab shows numbers they come from an illustrative A320 model, and the tag on each lab says which.';
   el('stats').innerHTML=`<div><b>${ALL.length}</b><span>${no?'labber':'labs'}</span></div><div><b>${PATH.length}</b><span>${no?'moduler':'modules'}</span></div><div><b>${count('all')}</b><span>${no?'emner':'topics'}</span></div>`;
   el('tabs').innerHTML=`<button role="tab" data-c="path" aria-selected="${path}" class="${path?'on':''}">${no?'Læringsløp':'Learning path'}<i>${ALL.length}</i></button><button role="tab" data-c="all" aria-selected="${!path}" class="${!path?'on':''}">${no?'Alle emner':'All topics'}<i>${count('all')}</i></button>`;
   el('foot').textContent=no?'Opplæringsmodeller for forståelse, ikke en spørsmålsbank. Følg AIP, flyhåndboken og operatørens prosedyrer for tallene du flyr etter.':'Teaching models for understanding, not a question bank. Follow the AIP, the flight manual and your operator’s procedures for numbers you fly with.';

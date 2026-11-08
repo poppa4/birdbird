@@ -34,22 +34,22 @@
   function setLang(l){ lang=l; try{ localStorage.setItem('vlab-lang',l); }catch(e){} apply(); hooks.forEach(f=>f()); }
 
   // header: lab-navigasjon + språk
-  /* Læringsløp: moduler i anbefalt rekkefølge. [fil, sidenøkkel, EN, NO, nivå] nivå: 'la' = småfly (DA42), 'jet' = transportfly (A320), '' = felles */
+  /* Læringsløp: moduler i anbefalt rekkefølge. [fil, sidenøkkel, EN, NO, nivå] nivå: 'la' = småfly (DA42), 'jet' = tall fra A320-undervisningsmodell, 'mix' = A320 + lett tomotors, '' = gjelder alle fly */
   const PATH=[
-   {k:'pof',en:'Principles of flight',no:'Aerodynamikk',labs:[['tunnel.html','tunnel','Wind tunnel','Vindtunnel',''],['stability.html','stab','Stability, controls and load factor','Stabilitet, ror og lastfaktor',''],['propeller.html','prop','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter',''],['highspeed.html','hs','High-speed flight and drag','Høyfart og motstand','']]},
-   {k:'air',en:'Atmosphere and air data',no:'Atmosfære og luftdata',labs:[['altimetry.html','alt','Pressure and altitude','Trykk og høyde',''],['pitot.html','pitot','Pitot-static and unreliable airspeed','Pitot-statisk og upålitelig fart','']]},
+   {k:'pof',en:'Principles of flight',no:'Aerodynamikk',labs:[['tunnel.html','tunnel','Wind tunnel','Vindtunnel','jet'],['stability.html','stab','Stability, controls and load factor','Stabilitet, ror og lastfaktor','jet'],['propeller.html','prop','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter','mix'],['highspeed.html','hs','High-speed flight and drag','Høyfart og motstand','jet']]},
+   {k:'air',en:'Atmosphere and air data',no:'Atmosfære og luftdata',labs:[['altimetry.html','alt','Pressure and altitude','Trykk og høyde',''],['pitot.html','pitot','Pitot-static and unreliable airspeed','Pitot-statisk og upålitelig fart','jet']]},
    {k:'met',en:'Meteorology',no:'Meteorologi',labs:[['clouds.html','clouds','Clouds, stability and fog','Skyer, stabilitet og tåke',''],['fronts.html','fronts','Pressure, fronts and wind','Trykk, fronter og vind',''],['storms.html','storms','Thunderstorms and weather radar','Tordenvær og værradar',''],['hazards.html','hazards','Icing, turbulence and de-icing','Ising, turbulens og avising','']]},
-   {k:'sys',en:'Aircraft and engines',no:'Fly og motorer',labs:[['engines.html','engines','The turbofan engine','Turbofanmotoren',''],['jetsystems.html','jets','Jet transport systems','Systemer på jetfly',''],['pressurisation.html','press','Pressurisation and hypoxia','Trykkabin og hypoksi','']]},
-   {k:'inst',en:'Instruments and automation',no:'Instrumenter og automatikk',labs:[['gyros.html','gyro','Compass, gyros and ADIRS','Kompass, gyroer og ADIRS',''],['autoflight.html','af','Autoflight and warnings','Autoflight og varsling','']]},
-   {k:'perf',en:'Mass, balance and performance',no:'Masse, balanse og ytelse',labs:[['massbalance.html','mb','Mass and balance','Masse og balanse',''],['performance.html','perf','Performance','Ytelse','']]},
+   {k:'sys',en:'Aircraft and engines',no:'Fly og motorer',labs:[['engines.html','engines','The turbofan engine','Turbofanmotoren','jet'],['jetsystems.html','jets','Jet transport systems','Systemer på jetfly','jet'],['pressurisation.html','press','Pressurisation and hypoxia','Trykkabin og hypoksi','jet']]},
+   {k:'inst',en:'Instruments and automation',no:'Instrumenter og automatikk',labs:[['gyros.html','gyro','Compass, gyros and ADIRS','Kompass, gyroer og ADIRS','jet'],['autoflight.html','af','Autoflight and warnings','Autoflight og varsling','jet']]},
+   {k:'perf',en:'Mass, balance and performance',no:'Masse, balanse og ytelse',labs:[['massbalance.html','mb','Mass and balance','Masse og balanse','jet'],['performance.html','perf','Performance','Ytelse','jet']]},
    {k:'nav',en:'Navigation',no:'Navigasjon',labs:[['gennav.html','gnav','General navigation','Generell navigasjon',''],['radionav.html','radionav','Radio navigation and radar','Radionavigasjon og radar',''],['gnss.html','gnss','GNSS and RNAV','GNSS og RNAV',''],['holding.html','hold','Holding','Holding',''],['approach.html','approach','Instrument approach and ILS','Instrumentinnflyging og ILS','']]},
-   {k:'fpl',en:'Flight planning',no:'Flyplanlegging',labs:[['flightplanning.html','fpl','Flight planning and fuel','Flyplanlegging og drivstoff','']]},
+   {k:'fpl',en:'Flight planning',no:'Flyplanlegging',labs:[['flightplanning.html','fpl','Flight planning and fuel','Flyplanlegging og drivstoff','jet']]},
    {k:'hf',en:'Human performance',no:'Menneskelige faktorer',labs:[['orientation.html','ori','Spatial orientation','Romlig orientering',''],['humanperf.html','hp','Attention, workload, error and fatigue','Oppmerksomhet, arbeidsbelastning, feil og tretthet','']]}];
   const FLAT=PATH.flatMap((m,mi)=>m.labs.map((l,li)=>({m,mi,li,f:l[0],k:l[1],en:l[2],no:l[3],lv:l[4]})));
-  const LV={la:{en:'Light twin',no:'Småfly'},jet:{en:'A320',no:'A320'}};
+  const LV={la:{en:'Light twin',no:'Småfly'},jet:{en:'A320 model',no:'A320-modell'},mix:{en:'A320 + light twin',no:'A320 + lett tomotors'},gen:{en:'All aircraft',no:'Alle fly'}};
   let curPage=null;
   const done=k=>{ try{ return parseInt(localStorage.getItem('vlab-done-'+k)||'0',10)||0; }catch(e){ return 0; } };
-  const LVX={la:{en:'Light twin',no:'Småfly',c:'lt'},jet:{en:'A320',no:'A320',c:'a320'},'':{en:'Core',no:'Grunnlag',c:'core'}};
+  const LVX={la:{en:'Light twin',no:'Småfly',c:'lt'},jet:{en:'A320 model',no:'A320-modell',c:'a320'},mix:{en:'A320 + light twin',no:'A320 + lett tomotors',c:'a320'},'':{en:'All aircraft',no:'Alle fly',c:'core'}};
   /* live status chips in the page header get a label (data-label on the chip wins) */
   const STLAB={alt:{en:'Terrain clearance at B',no:'Terrengklaring ved B'},tunnel:{en:'Airflow',no:'Luftstrøm'}};
   const Lx=o=>lang==='en'?o.en:o.no;

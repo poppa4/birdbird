@@ -418,7 +418,7 @@
       </article>
       <article class="part">
         <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M8 58 C30 56 54 44 120 36" fill="none" stroke="#C6D0D3"/><path d="M8 70 C40 70 70 64 120 70" fill="none" stroke="#C6D0D3"/><path d="M8 46 C30 44 60 28 120 24" fill="none" stroke="#C6D0D3"/><path d="M26 56 C36 44 62 40 108 50 C80 54 50 58 26 56Z" fill="#13202A"/><path d="M62 50 L62 16" stroke="#9A1E68" stroke-width="2.4"/><path d="M57 22 L62 12 L67 22Z" fill="#9A1E68"/><path d="M14 84 L118 84" stroke="#13202A"/><path d="M30 84 V80 M50 84 V80 M70 84 V80 M90 84 V80" stroke="#13202A"/><circle cx="74" cy="84" r="4" fill="#fff" stroke="#9A1E68" stroke-width="2"/></svg>
-        <div><span class="pk">02 · UNDERSTAND</span><h3>Virtual Lab</h3><p id="pLab">Interactive labs on the EASA ATPL syllabus, all on the A320.</p>
+        <div><span class="pk">02 · UNDERSTAND</span><h3>Virtual Lab</h3><p id="pLab">Interactive labs on the EASA ATPL syllabus. Principles for every aircraft, numbers from an illustrative A320 model.</p>
           <div class="pl"><a class="go" href="lab.html">Open the learning path →</a><a href="lab.html#all">All topics</a><a href="tunnel.html">Wind tunnel</a></div></div>
       </article>
       <article class="part">
@@ -440,7 +440,7 @@
     <div class="who-pick" role="group" aria-labelledby="wq"><span id="wq">Who are you?</span><div class="seg" id="trSeg"><button type="button" data-t="found" aria-pressed="false">Student pilot, PPL and IR</button><button type="button" data-t="atpl" aria-pressed="false">ATPL, heading to the airlines</button><button type="button" data-t="type" aria-pressed="false">Type rating and instructors</button></div></div>
     <div class="tracks" id="trList">
       <article class="track" data-t="found">
-        <div class="tt"><span class="tag">PPL · IR · ME</span><span class="mine">Your track</span><h3>Foundations</h3><p>The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures, taught on the A320.</p><div class="tm" id="tmF">Core labs · A320 reference</div></div>
+        <div class="tt"><span class="tag">PPL · IR · ME</span><span class="mine">Your track</span><h3>Foundations</h3><p>The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures. The principles apply to every aircraft; worked numbers use an A320 teaching model.</p><div class="tm" id="tmF">Core labs · A320 reference</div></div>
         <ol>
           <li><a href="altimetry.html"><div><b>Pressure and altitude</b><span>QNH, QFE, density altitude and the cold-temperature error.</span></div><em>Lab</em></a></li>
           <li><a href="propeller.html"><div><b>Propeller effects and Vmca</b><span>The critical engine, and what keeps a twin straight.</span></div><em>Lab</em></a></li>
@@ -563,7 +563,7 @@ LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
  'Where to start':'Hvor du starter','Who are you?':'Hvem er du?','Student pilot, PPL and IR':'Flyelev, PPL og IR','ATPL, heading to the airlines':'ATPL, på vei til flyselskap','Type rating and instructors':'Typerating og instruktører','Your track':'Ditt løp','For flight schools and operators':'For flyskoler og operatører','Use Birdbird in ground school and type training':'Bruk Birdbird i teoriundervisning og typeopplæring','The labs work on a classroom screen, and the briefing pack and the training follow a fixed order that students can repeat on their own. See how a school or an operator can use it.':'Labbene fungerer på en skjerm i klasserommet, og briefingpakken og treningen følger en fast rekkefølge som elevene kan gjenta på egen hånd. Se hvordan en skole eller en operatør kan bruke det.','For schools and operators →':'For skoler og operatører →','About Birdbird':'Om Birdbird','Privacy':'Personvern','Sources and licences':'Kilder og lisenser','Choose your track':'Velg ditt løp',
  'Each track starts with three items. Everything stays open, so move between them as your training needs it.':'Hvert løp starter med tre ting. Alt er åpent, så du kan bevege deg mellom dem etter hva opplæringen din trenger.',
  'See the full learning path →':'Se hele læringsløpet →',
- 'Foundations':'Grunnlag','The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures, taught on the A320.':'Kjerneteorien bak hver flyging: vingen, atmosfæren, instrumenter, vær og instrumentprosedyrer, forklart på A320.',
+ 'Foundations':'Grunnlag','The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures. The principles apply to every aircraft; worked numbers use an A320 teaching model.':'Kjerneteorien bak hver flyging: vingen, atmosfæren, instrumenter, vær og instrumentprosedyrer. Prinsippene gjelder alle fly; regneeksemplene bruker en A320-undervisningsmodell.',
  'Pressure and altitude':'Trykk og høyde','QNH, QFE, density altitude and the cold-temperature error.':'QNH, QFE, tetthetshøyde og kuldefeilen.',
  'Propeller effects and Vmca':'Propelleffekter og Vmca','The critical engine, and what keeps a twin straight.':'Kritisk motor, og hva som holder et tomotors fly rett.',
  'Briefings':'Briefinger','Departure and approach briefings, out loud, against a chart.':'Avgangs- og innflygingsbriefinger, høyt, mot et kart.',
@@ -657,7 +657,7 @@ document.addEventListener('nprog',prog);
 function counts(){
   el('tmF').textContent=L({en:`Core labs · A320 reference`,no:`Kjernelabber · A320 som referanse`});
   el('tmA').textContent=L({en:`${nLabs} labs · ${nMods} modules`,no:`${nLabs} labber · ${nMods} moduler`});
-  el('pLab').textContent=L({en:`${nLabs} interactive labs in ${nMods} modules on the EASA ATPL syllabus, all on the A320. Every briefing page links to the lab that explains it: change the conditions and watch the numbers respond.`,no:`${nLabs} interaktive labber i ${nMods} moduler etter EASA ATPL-pensum, alle på A320. Hver side i briefingpakken lenker til labben som forklarer den: endre forholdene og se tallene svare.`});
+  el('pLab').textContent=L({en:`${nLabs} interactive labs in ${nMods} modules on the EASA ATPL syllabus. Each lab is tagged with what it applies to: all aircraft, or numbers from an illustrative A320 model. Every briefing page links to the lab that explains it: change the conditions and watch the numbers respond.`,no:`${nLabs} interaktive labber i ${nMods} moduler etter EASA ATPL-pensum. Hver lab er merket med hva den gjelder: alle fly, eller tall fra en illustrerende A320-modell. Hver side i briefingpakken lenker til labben som forklarer den: endre forholdene og se tallene svare.`});
   el('nLabs').textContent=nLabs; el('nMods').textContent=nMods;
 }
 
