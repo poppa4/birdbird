@@ -253,6 +253,57 @@ body:not(.nofab) #askbar{display:none}
 .mbsl output{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);text-align:right}
 .mbspd{font-size:13px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:6px}
 .mbspd b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+/* live weather + NOTAM */
+.wxp{margin:0 0 14px}
+.wxbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:4px 0 8px}
+.wxst{font-size:13.5px;color:var(--ink-2);flex:1 1 260px;min-width:0}
+.wxst.load::before{content:"";display:inline-block;width:10px;height:10px;border:2px solid var(--rule);border-top-color:var(--accent);border-radius:50%;margin-right:7px;vertical-align:-1px;animation:wxspin .8s linear infinite}
+@keyframes wxspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.wxst.load::before{animation:none}}
+.wxst.ok{color:var(--ok)}.wxst.warn{color:var(--caution)}.wxst.err{color:var(--warning);background:var(--warning-wash);padding:6px 10px;border-left:3px solid var(--warning)}
+.wxt{max-width:520px}
+.wxwin{font-size:13.5px;color:var(--ink-2);margin:2px 0 10px}
+.wxnote{font-size:12.5px;color:var(--ink-2);background:var(--wash);border-left:3px solid var(--caution);padding:7px 11px;margin:8px 0}
+.wxcards{display:flex;flex-direction:column;gap:12px}
+.wxempty{font-size:14px;color:var(--ink-2);border:1px dashed var(--rule);padding:12px 14px;margin:0}
+.wxc{border:1px solid var(--rule);background:#fff;padding:12px 14px;break-inside:avoid;min-width:0}
+.wxc header{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;border-bottom:1px solid var(--rule-2);padding-bottom:6px;margin-bottom:8px}
+.wxc header b{font-size:17px}
+.wxrole{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.wxname{font-size:13px;color:var(--ink-2)}
+.wxraw{margin:4px 0 8px;min-width:0}
+.wxraw .wxlab{display:block;font-size:11.5px;color:var(--ink-2);font-family:var(--f-mono)}
+.wxraw code{display:block;font-family:var(--f-mono);font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--wash);padding:6px 9px;border-left:3px solid var(--info)}
+.wxrwy{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;font-size:13px;margin:6px 0}
+.wxrwy select,.wxrwy input{font:inherit;font-size:14px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px;background:#fff;max-width:100%}
+.wxrwy small{color:var(--ink-3);font-size:11.5px;flex:1 1 220px}
+.wxc h4{font-size:12.5px;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2);font-family:var(--f-mono);font-weight:600}
+.wxi{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.wxi li{position:relative;padding:5px 8px 5px 26px;font-size:14px;line-height:1.4;border-left:3px solid var(--rule-2);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.wxi li>span{flex:1 1 240px;min-width:0}
+.wxi li::before{position:absolute;left:9px;top:6px;font-size:12px;font-weight:700}
+.wxi li.l-ok{border-left-color:var(--ok)}.wxi li.l-ok::before{content:"✓";color:var(--ok)}
+.wxi li.l-warn{border-left-color:var(--caution);background:var(--caution-wash)}.wxi li.l-warn::before{content:"!";color:var(--caution)}
+.wxi li.l-bad{border-left-color:var(--warning);background:var(--warning-wash)}.wxi li.l-bad::before{content:"✗";color:var(--warning)}
+.wxi li.l-info::before{content:"i";color:var(--info);font-style:italic;font-family:Georgia,serif}
+.wxi li.l-rule{font-size:12.5px;color:var(--ink-2);padding-left:8px}
+.wxl{font-size:12px;padding:2px 9px}
+.mono{font-family:var(--f-mono);font-size:.92em}
+.wxman{margin:14px 0}.wxman summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 0}
+.tb textarea.wxr{font-family:var(--f-mono);font-size:13px;color:var(--chart-blue);border:0;border-bottom:1px dotted #9AA6AC;background:transparent;width:100%;min-width:180px;resize:vertical;line-height:1.35;padding:2px}
+.tb input.wxauto,.fl input.wxauto,.tb textarea.wxauto{background:#E3F0E7}
+.printonly{display:none}
+.ntm .nsrc{margin:6px 0 10px 18px;padding:0;font-size:14px}.ntm .nsrc li{margin:3px 0;overflow-wrap:anywhere}
+.ntcards{display:flex;flex-direction:column;gap:10px;margin:8px 0 12px}
+.ntc{border:1px solid var(--rule);border-left:4px solid var(--rule);background:#fff;padding:10px 12px;break-inside:avoid;min-width:0}
+.ntc.n-bad{border-left-color:var(--warning)}.ntc.n-warn{border-left-color:var(--caution)}
+.ntc header{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.nst{font-size:12px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--wash)}.nst.n-bad{background:var(--warning-wash);color:var(--warning)}.nst.n-warn{background:var(--caution-wash);color:var(--caution)}.nst.n-ok{color:var(--ok)}
+.ntc .nt{font-size:13px;color:var(--ink-2);margin:4px 0;overflow-wrap:anywhere}
+.ntc .nplain{font-size:15px;margin:4px 0;overflow-wrap:anywhere}
+.ntc .nraw{font-size:12px;color:var(--ink-2);margin:2px 0 6px;white-space:pre-wrap;overflow-wrap:anywhere}
+.nact{font-size:13px;color:var(--ok);display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center}
+@media print{.printonly{display:inline}.wxp.has+.wxman{display:none}body.blank .wxcards,body.blank .ntcards,body.blank .wxwin,body.blank .ntm{display:none}.wxc,.ntc{border-color:#999}.wxi li{background:none!important}.tb textarea.wxr{color:#1E3F8A;resize:none}body.blank .tb textarea{color:transparent!important}}
 </style>
 </head>
 <body data-title="Briefing pack">
@@ -297,6 +348,7 @@ body:not(.nofab) #askbar{display:none}
 <script src="lab.js?v=20"></script>
 <script src="ai.js?v=1"></script>
 <script src="easa.js?v=1"></script>
+<script src="wxkit.js?v=1"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
@@ -326,10 +378,20 @@ const SECTIONS=[
  ['aircraft','Aircraft',()=>`<div class="fg">${F('ac.reg','Registration')}${F('ac.docs','Documents (CofR, ARC, insurance, radio licence, W&B)',{w:'w2'})}${F('ac.tech','Tech log / defects, remaining time to maintenance',{w:'wall'})}${F('ac.mel','Departure under condition (MEL, deferred items)',{w:'wall'})}${F('ac.fluids','Fluid levels (fuel, oil)',{w:'w2'})}${F('ac.safety','Safety and rescue equipment',{w:'w2'})}${F('ac.xw','Max demonstrated crosswind (kt)',{num:1})}</div>`],
  ['pilot','Pilot',()=>`<div class="fg">${F('p.lic','Licence and ratings valid until')}${F('p.med','Medical valid until')}${F('p.recent','Recency (3 take-offs and landings in 90 days, IR currency)',{w:'w2'})}${F('p.fit','Fit to fly (illness, medication, stress, alcohol, fatigue, eating)',{w:'wall'})}</div>
    <div class="ref">IMSAFE: Illness · Medication · Stress · Alcohol · Fatigue · Eating. If one of them is a real “no”, the flight is a “no”.</div>`],
- ['notam','NOTAM',()=>`<div class="fg">${APT.map(([k,l])=>F('n.'+k,l,{w:'wall',area:1,rows:2})).join('')}${F('n.enr','En route (airspace, danger areas, navaids, obstacles)',{w:'wall',area:1,rows:3})}</div>`],
- ['met','Meteorology',()=>`<div class="fg">${F('m.gen','General situation (surface analysis, SIGWX, fronts, pressure systems)',{w:'wall',area:1,rows:4})}${F('m.trip','Route (cloud, visibility, icing, turbulence, freezing level)',{w:'wall',area:1,rows:4})}${F('m.wind','Wind and temperature at cruise level',{w:'wall',area:1,rows:2})}</div>
-   <h3>Aerodrome reports</h3><div class="wrapx"><table class="tb"><tr><th></th><th>ICAO</th><th>METAR (now)</th><th>TAF at ETA ± 1 h</th></tr>${APT.map(([k,l])=>`<tr><th>${l}</th><td style="width:70px">${I('mt.'+k+'.icao')}</td><td>${I('mt.'+k+'.metar')}</td><td>${I('mt.'+k+'.taf')}</td></tr>`).join('')}</table></div>
-   <p class="note noprint"><a href="weather.html">Decode a METAR or TAF</a></p>`],
+ ['notam','NOTAM',()=>`<div class="ntm" id="ntm"></div>
+   <div class="fg noprint">${F('n.paste','Paste NOTAMs here (ICAO format, from the official briefing)',{w:'wall',area:1,rows:5})}</div>
+   <div class="ntcards" id="ntmCards"></div>
+   <h3>Your notes per aerodrome</h3><div class="fg">${APT.map(([k,l])=>F('n.'+k,l,{w:'wall',area:1,rows:2})).join('')}${F('n.enr','En route (airspace, danger areas, navaids, obstacles)',{w:'wall',area:1,rows:3})}</div>`],
+ ['met','Meteorology',()=>`<div class="wxp" id="wxp">
+   <div class="wxbar noprint"><button class="btn pri" id="wxGo" type="button">Fetch latest METAR and TAF</button><span class="wxst" id="wxSt" role="status" aria-live="polite"></span></div>
+   <div class="fg wxt">${F('wx.eet','Flight time, EET (h:mm)')}${F('wx.altt','Destination to alternate (min)',{num:1})}</div>
+   <p class="wxwin" id="wxWin"></p>
+   <div class="wxcards" id="wxCards"></div>
+   <div class="wxbar noprint"><button class="btn" id="wxApply" type="button">Use these forecasts in Planning minima</button><span class="note" id="wxApplyNote"></span></div>
+   <p class="wxnote" id="wxNote"></p></div>
+   <details class="wxman" id="wxman" open><summary>Aerodrome reports: edit or paste manually</summary><div class="wrapx"><table class="tb wxtb"><tr><th></th><th>ICAO</th><th>METAR (now)</th><th>TAF</th></tr>${APT.map(([k,l])=>`<tr><th>${l}</th><td style="width:70px">${I('mt.'+k+'.icao')}</td><td><textarea class="wxr" data-k="mt.${k}.metar" rows="2" spellcheck="false" aria-label="METAR ${l}"></textarea></td><td><textarea class="wxr" data-k="mt.${k}.taf" rows="2" spellcheck="false" aria-label="TAF ${l}"></textarea></td></tr>`).join('')}</table></div>
+   <p class="note noprint">ICAO codes come from the cover when left empty. <a href="weather.html">Decode a METAR or TAF line by line</a></p></details>
+   <div class="fg">${F('m.gen','General situation (surface analysis, SIGWX, fronts, pressure systems)',{w:'wall',area:1,rows:4})}${F('m.trip','Route (cloud, visibility, icing, turbulence, freezing level)',{w:'wall',area:1,rows:4})}${F('m.wind','Wind and temperature at cruise level',{w:'wall',area:1,rows:2})}</div>`],
  ['minima','Planning minima',()=>`<h3 class="ifr">IFR</h3><div class="wrapx ifr"><table class="tb"><tr><th></th><th>Wind</th><th>RWY</th><th>Procedure</th><th>Req. VIS / RVR (m)</th><th>Req. DH / MDH or ceiling (ft)</th><th>Fcst VIS (m)</th><th>Fcst ceiling (ft)</th><th>Window (UTC)</th><th>OK</th></tr>
    ${APT.map(([k,l])=>`<tr><th>${l}</th><td>${I('mi.'+k+'.wind')}</td><td>${I('mi.'+k+'.rwy')}</td><td>${I('mi.'+k+'.proc')}</td><td>${I('mi.'+k+'.rv',{num:1})}</td><td>${I('mi.'+k+'.rc',{num:1})}</td><td>${I('mi.'+k+'.fv',{num:1})}</td><td>${I('mi.'+k+'.fc',{num:1})}</td><td>${I('mi.'+k+'.win')}</td>${C('mi.'+k)}</tr>`).join('')}</table></div>
    <div class="ref ifr">Forecasts are checked for ETA ± 1 hour. For the alternates, the required ceiling and visibility are filled in from the rules below when you leave them empty. Operator’s own rule (OM-A), if stricter: <input data-k="mi.rule" style="font-family:Caveat;font-size:18px;border:0;border-bottom:1px dotted #9AA6AC;width:52%;color:var(--chart-blue);background:transparent"></div>
@@ -357,7 +419,8 @@ const SECTIONS=[
    </div>
    <h3 class="vfr">VFR</h3><div class="wrapx vfr"><table class="tb"><tr><th></th><th>Wind</th><th>RWY</th><th>Airspace</th><th>SVFR</th><th>Req. VIS (m)</th><th>Req. ceiling (ft)</th><th>Fcst VIS (m)</th><th>Fcst ceiling (ft)</th><th>OK</th></tr>
    ${[['vd','Departure'],['vr','En route'],['va','Destination'],['vl','Alternate']].map(([k,l])=>`<tr><th>${l}</th><td>${I('mv.'+k+'.wind')}</td><td>${I('mv.'+k+'.rwy')}</td><td>${I('mv.'+k+'.cls')}</td><td>${I('mv.'+k+'.svfr')}</td><td>${I('mv.'+k+'.rv',{num:1})}</td><td>${I('mv.'+k+'.rc',{num:1})}</td><td>${I('mv.'+k+'.fv',{num:1})}</td><td>${I('mv.'+k+'.fc',{num:1})}</td>${C('mv.'+k)}</tr>`).join('')}</table></div>
-   <div class="ref vfr">VMC (SERA.5001): at and above FL100 8 km; below FL100 in classes A–E 5 km, 1500 m horizontally and 1000 ft vertically from cloud. Classes F and G at or below 3000 ft AMSL or 1000 ft above terrain: 5 km (1500 m for aircraft at slow speed where allowed), clear of cloud, surface in sight. Control zone: ceiling 1500 ft and ground visibility 5 km unless special VFR. See <a href="essentials.html">VFR and IFR essentials</a>.</div>`],
+   <div class="ref vfr">VMC (SERA.5001): at and above FL100 8 km; below FL100 in classes A–E 5 km, 1500 m horizontally and 1000 ft vertically from cloud. Classes F and G at or below 3000 ft AMSL or 1000 ft above terrain: 5 km (1500 m for aircraft at slow speed where allowed), clear of cloud, surface in sight. Control zone: ceiling 1500 ft and ground visibility 5 km unless special VFR. See <a href="essentials.html">VFR and IFR essentials</a>.</div>
+   <p class="note wxsrcn" data-c="wxsrc"><span></span></p>`],
  ['nav','Navigation log',()=>`<div class="fg noprint">${F('nl.var','Variation for legs without their own (+E / −W)',{num:1})}${F('nl.tas','TAS for new legs (kt)',{num:1})}</div>
    <div class="wrapx"><table class="tb navlog"><tr><th>From</th><th>To</th><th>MSA / MEA</th><th>Alt</th><th>TT°</th><th>VAR</th><th>Dist NM</th><th>TAS</th><th>W/V</th><th>WCA</th><th>MH°</th><th>GS</th><th>Time</th><th>Fuel</th><th>ETA</th><th>ATA</th></tr>
    ${Array.from({length:10},(_,i)=>`<tr><td>${I('nl.'+i+'.f')}</td><td>${I('nl.'+i+'.t')}</td><td>${I('nl.'+i+'.msa',{num:1})}</td><td>${I('nl.'+i+'.alt')}</td><td>${I('nl.'+i+'.tt',{num:1})}</td><td>${I('nl.'+i+'.var',{num:1})}</td><td>${I('nl.'+i+'.d',{num:1})}</td><td>${I('nl.'+i+'.tas',{num:1})}</td><td>${I('nl.'+i+'.w')}</td>${C('nl.'+i+'.wca')}${C('nl.'+i+'.mh')}${C('nl.'+i+'.gs')}${C('nl.'+i+'.time')}${C('nl.'+i+'.fuel')}<td>${I('nl.'+i+'.eta')}</td><td>${I('nl.'+i+'.ata')}</td></tr>`).join('')}
@@ -538,7 +601,7 @@ function altCalc(f,g){
     if(n!=null&&i>=n){ setC('aa.'+k+'.req',`<small>${L({en:'not required',no:'ikke påkrevd'})}</small>`); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',''); return; }
     if(!q){ setC('aa.'+k+'.req',''); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',''); return; }
     if(q.na){ setC('aa.'+k+'.req',`<small class="ko">${L({en:'No row in Table 2: not usable as alternate under the basic scheme',no:'Ingen rad i Table 2: kan ikke brukes som alternativ i basic scheme'})}</small>`); setC('aa.'+k+'.fc',''); setC('aa.'+k+'.ok',okm(false)); return; }
-    out[k]={c:q.c,v:q.v};
+    out[k]={c:q.c,v:q.v,ref:q.ref};
     setC('aa.'+k+'.req',`${ft(q.c)} / ${q.v!=null?fm(q.v):'— m'}<br><small>${q.ref}${q.miss?' · '+L({en:'add RVR/VIS or MSH',no:'legg inn RVR/VIS eller MSH'}):''}</small>`);
     setC('aa.'+k+'.fc', afc!=null||afv!=null? `${afc!=null?ft(afc):'—'} / ${afv!=null?fm(afv):'—'}` : `<small>${L({en:'from table above',no:'fra tabellen over'})}</small>`);
     setC('aa.'+k+'.ok', afc!=null&&afv!=null&&q.v!=null? okm(afc>=q.c&&afv>=q.v) : ''); });
@@ -550,7 +613,7 @@ function calc(){
   setC('route',esc((f.depapt||'—')+' → '+(f.destapt||'—')));
   setC('hdr',esc([f.reg,f.depapt&&f.destapt?f.depapt+'–'+f.destapt:'',f.date].filter(Boolean).join(' · ')));
   // alternativer
-  const AR=altCalc(f,g);
+  const AR=altCalc(f,g); LASTAR=AR;
   // minima
   APT.forEach(([k])=>{ const ar=AR[k]; const rv=g('mi.'+k+'.rv')??(ar&&ar.v), rc=g('mi.'+k+'.rc')??(ar&&ar.c), fv=g('mi.'+k+'.fv'), fc=g('mi.'+k+'.fc'); const xs=xwTxt(f['mi.'+k+'.wind'],f['mi.'+k+'.rwy']); setC('mi.'+k, ((rv!=null&&fv!=null)||(rc!=null&&fc!=null)? okm((rv==null||fv==null||fv>=rv)&&(rc==null||fc==null||fc>=rc)) : '')+(xs?'<br><small>'+xs+'</small>':'')); });
   ['vd','vr','va','vl'].forEach(k=>{ const rv=g('mv.'+k+'.rv'), rc=g('mv.'+k+'.rc'), fv=g('mv.'+k+'.fv'), fc=g('mv.'+k+'.fc'); const xs=xwTxt(f['mv.'+k+'.wind'],f['mv.'+k+'.rwy']); setC('mv.'+k, ((rv!=null&&fv!=null)||(rc!=null&&fc!=null)? okm((rv==null||fv==null||fv>=rv)&&(rc==null||fc==null||fc>=rc)) : '')+(xs?'<br><small>'+xs+'</small>':'')); });
@@ -612,6 +675,7 @@ function calc(){
   const r=f.rules||'IFR'; document.querySelectorAll('.ifr').forEach(e=>e.hidden=r==='VFR'); document.querySelectorAll('.vfr').forEach(e=>e.hidden=r==='IFR');
   SECTIONS.forEach(([id],i)=>{ if(!i) return; const off=(P.hide||[]).includes(id)||(IFRONLY.includes(id)&&r==='VFR'); el('s-'+id).hidden=off; });
   document.querySelectorAll('#secsel input').forEach(c=>{ c.checked=!(P.hide||[]).includes(c.value); c.disabled=IFRONLY.includes(c.value)&&r==='VFR'; });
+  try{ wxRender(); wxMarks(); }catch(e){ console.warn('wx',e); }
   drawMode();
   paging();
 }
@@ -990,9 +1054,232 @@ el('book').addEventListener('click',e=>{ const b=e.target.closest('.whyb'); if(!
 el('whyx').onclick=()=>{ el('whyp').hidden=true; };
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!el('whyp').hidden) el('whyp').hidden=true; });
 LAB.onLang(()=>{ document.querySelectorAll('.whyb').forEach(b=>b.textContent=LAB.lang==='no'?b.dataset.no:b.dataset.en); document.querySelectorAll('.why>span').forEach(s=>s.textContent=L({en:'Understand it',no:'Forstå det'})+':'); });
+/* ---------- live weather: fetch, interpret, feed the minima (wxkit.js) ---------- */
+const WXR={dep:{en:'Departure',no:'Avgang'},toalt:{en:'Take-off alternate',no:'Avgangsalternativ'},dest:{en:'Destination',no:'Destinasjon'},alt1:{en:'Alternate 1',no:'Alternativ 1'},alt2:{en:'Alternate 2',no:'Alternativ 2'}};
+const WXCOV={dep:'depapt',dest:'destapt',alt1:'alt1apt',alt2:'alt2apt'};
+const WXVFR={dep:'vd',dest:'va',alt1:'vl'};
+const icaoOf=v=>{ const m=String(v||'').toUpperCase().match(/\b[A-Z]{4}\b/); return m?m[0]:''; };
+const wxIcao=k=>icaoOf(P.f['mt.'+k+'.icao'])||icaoOf(P.f[WXCOV[k]]);
+const WXLAB={xw:['weather.html#xwind','Crosswind and headwind','Sidevind og motvind'],gust:['storms.html#shear','Gusts and wind shear','Vindkast og vindskjær'],fog:['clouds.html#fog','Fog and low cloud','Tåke og lave skyer'],ice:['hazards.html#icing','Airframe icing','Ising på flyet'],deice:['hazards.html#deice','De-icing and holdover','Avising og holdover'],ts:['storms.html#life','Thunderstorms','Tordenvær'],qnh:['altimetry.html#set','Altimeter setting','Høydemålerinnstilling'],cold:['altimetry.html#cold','Cold temperature corrections','Kuldekorreksjon'],da:['altimetry.html#da','Density altitude','Tetthetshøyde'],min:['approach.html#seg','Approach minima','Innflygingsminima'],alt:['flightplanning.html#alternates','Alternates','Alternativer'],vmc:['essentials.html#vfr','VMC and VFR minima','VMC- og VFR-minima'],ils:['approach.html#ils','ILS and non-precision approaches','ILS og ikke-presisjonsinnflyging'],nav:['radionav.html','Radio navigation','Radionavigasjon'],gnss:['gnss.html#risk','GNSS outages','GNSS-bortfall'],perf:['performance.html#landing','Landing performance','Landingsytelse'],taf:['weather.html#decode','Read a TAF line by line','Les en TAF linje for linje']};
+const labB=k=>{ const x=WXLAB[k]; return x?`<button type="button" class="whyb wxl noprint" data-u="${x[0]}" data-en="${esc(x[1])}" data-no="${esc(x[2])}">${esc(LAB.lang==='no'?x[2]:x[1])}</button>`:''; };
+const ech=id=>{ try{ const x=EASA.get(id); return x?EASA.chip(x):''; }catch(e){ return ''; } };
+const lw=()=>LAB.lang==='no'?'no':'en';
+const ftx=v=>fx(v)+' ft', mtx=v=>v>=10000?L({en:'10 km or more',no:'10 km eller mer'}):v>=5000?fx(v/1000)+' km':fx(v)+' m';
+let NAVD=null, navP=null;
+function navLoad(){ if(!navP) navP=fetch('data/nav-eu.json').then(r=>r.ok?r.json():null).then(j=>{ NAVD={}; if(j&&j.ap) j.ap.forEach(a=>{ NAVD[a[0]]=a; }); wxSig=''; wxRender(); }).catch(()=>{ NAVD={}; }); return navP; }
+/* times: ETD from the cover, EET here (or planned block), ETA at the alternate = ETA + leg */
+function pDate(s){ s=String(s||'').trim(); let m; const y0=new Date().getUTCFullYear();
+  if((m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return [+m[1],+m[2]-1,+m[3]];
+  if((m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})/))) return [m[3].length===2?2000+ +m[3]:+m[3],+m[2]-1,+m[1]];
+  if((m=s.match(/^(\d{1,2})[./]\s?(\d{1,2})\.?$/))) return [y0,+m[2]-1,+m[1]];
+  if((m=s.match(/^(\d{1,2})\.?\s*([A-Za-zæøå]{3})[a-zæøå]*\.?\s*(\d{4})?/))){ const k=m[2].toLowerCase(); let i='jan feb mar apr may jun jul aug sep oct nov dec'.split(' ').indexOf(k); if(i<0) i='jan feb mar apr mai jun jul aug sep okt nov des'.split(' ').indexOf(k); if(i>=0) return [m[3]?+m[3]:y0,i,+m[1]]; }
+  return null; }
+const pHM=s=>{ const m=String(s||'').trim().match(/^(\d{1,2})[:.h]?(\d{2})\s*(Z|UTC)?$/i); return m&&+m[1]<24&&+m[2]<60? +m[1]*60+ +m[2] : null; };
+const pDur=s=>{ const t=String(s||'').trim(); let m=t.match(/^(\d{1,2})[:.h](\d{2})$/); if(m) return +m[1]*60+ +m[2]; m=t.match(/^(\d{1,3})\s*(min)?$/i); return m? +m[1] : null; };
+function wxTimes(){ const em=pHM(P.f.etd); if(em==null) return null; const d=pDate(P.f.date), n=new Date(); const [y,mo,da]=d||[n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()];
+  const etd=new Date(Date.UTC(y,mo,da,0,em)); let eet=pDur(P.f['wx.eet']); if(eet==null) eet=pDur(P.f['cr.blk']);
+  const eta=eet!=null? new Date(+etd+eet*60e3) : null, leg=num(P.f['wx.altt'])||0, h=3600e3;
+  const W={dep:[new Date(+etd-h),new Date(+etd+h)],toalt:[new Date(+etd-h),new Date(+etd+h)]};
+  if(eta){ W.dest=[new Date(Math.max(+etd,+eta-h)),new Date(+eta+h)]; W.alt1=W.alt2=[new Date(+eta+leg*60e3-h),new Date(+eta+leg*60e3+h)]; }
+  return {etd,eta,eet,leg,noDate:!d,W}; }
+/* what the pack requires at each aerodrome (for the comparison in the card) */
+function wxReq(k){ const g=x=>num(P.f[x]); const vfr=(P.f.rules||'IFR')==='VFR';
+  if(vfr){ const m=WXVFR[k]; if(!m) return null; const v=g('mv.'+m+'.rv'), c=g('mv.'+m+'.rc'); if(v!=null||c!=null) return {v,c,lab:L({en:'your VFR minima (Planning minima)',no:'VFR-minimaene dine (Planleggingsminima)'}),ech:'SERA.5005'}; return {v:5000,c:1500,lab:L({en:'VFR in a control zone without special VFR',no:'VFR i kontrollsone uten spesiell VFR'}),ech:'SERA.5005'}; }
+  const ar=LASTAR&&LASTAR[k]; const reg=P.f['al.reg']||'nco';
+  if(k==='alt1'||k==='alt2'){ const v=g('mi.'+k+'.rv')??(ar&&ar.v), c=g('mi.'+k+'.rc')??(ar&&ar.c); if(v==null&&c==null) return {need:1}; return {v,c,lab:L({en:'alternate planning minima',no:'planleggingsminima for alternativ'})+(ar&&ar.ref?' · '+ar.ref:''),ech:{nco:'NCO.OP.143',ncc:'NCC.OP.147',cat:'AMC6 CAT.OP.MPA.182'}[reg]}; }
+  const v=g('mi.'+k+'.rv'), c=g('mi.'+k+'.rc'); if(v==null&&c==null) return {need:1}; return {v,c,lab:k==='dest'?L({en:'landing minima for the planned approach',no:'landingsminima for planlagt innflyging'}):L({en:'your minima (Planning minima)',no:'minimaene dine (Planleggingsminima)'}),ech:reg==='cat'?'AMC5 CAT.OP.MPA.182':null}; }
+let LASTAR={}, wxSig='', WXA={};
+const ageTxt=d=>{ if(!d) return ''; const m=Math.round((Date.now()-d)/60e3); if(m<0) return L({en:'in the future?',no:'i fremtiden?'}); if(m<90) return m+' min'; const h=Math.round(m/60); return h<48? h+' h' : Math.round(h/24)+' d'; };
+const LI=(lvl,txt,lab,extra)=>`<li class="l-${lvl}"><span>${txt}</span>${lab?labB(lab):''}${extra||''}</li>`;
+function rwyFor(k,id,w){ const a=NAVD&&NAVD[id]; const ends=a?WXK.rwyEnds(a[6]):[]; const pick=P.f['wx.'+k+'.rwy']; let rw=ends.find(e=>e.id===pick)||null;
+  if(!rw&&pick){ const h=rwyHdg(pick); if(h!=null) rw={id:pick,hdg:h}; }
+  return {ends,rw:rw||WXK.bestRwy(ends,w),auto:!rw,elev:a?a[4]:null,name:a?a[1]:null}; }
+function metarItems(k,M,R,closed){ const it=[], xl=num(P.f['ac.xw']), vfr=(P.f.rules||'IFR')==='VFR', l=lw(), rq=wxReq(k);
+  const w=M.wind;
+  if(w){ const g=w.gust?L({en:` gusting ${w.gust} kt`,no:` med vindkast ${w.gust} kt`}):''; const vr=M.wvar?L({en:`, varying ${M.wvar[0]}–${M.wvar[1]}°`,no:`, varierer ${M.wvar[0]}–${M.wvar[1]}°`}):'';
+    if(w.spd===0) it.push(LI('ok',L({en:'<b>Wind</b> calm.',no:'<b>Vind</b> stille.'}),null));
+    else if(w.dir==null) it.push(LI('warn',L({en:`<b>Wind</b> variable ${w.spd} kt${g}: the crosswind can come from any side.`,no:`<b>Vind</b> variabel ${w.spd} kt${g}: sidevinden kan komme fra begge sider.`}),'xw'));
+    else if(R.rw){ const c=WXK.comps(w,R.rw.hdg), side=c.cross>0?L({en:'right',no:'høyre'}):L({en:'left',no:'venstre'}), worst=Math.max(Math.abs(c.cross),c.gcross||0), over=xl&&worst>xl, tail=c.head<0;
+      const t=L({en:`<b>Wind</b> ${String(w.dir).padStart(3,'0')}° ${w.spd} kt${g}${vr} → RWY ${R.rw.id}: ${tail?'tailwind':'headwind'} ${Math.abs(c.head)} kt, crosswind ${Math.abs(c.cross)} kt${c.cross?' from the '+side:''}${c.gcross!=null?`, ${c.gcross} kt in gusts`:''}.`,no:`<b>Vind</b> ${String(w.dir).padStart(3,'0')}° ${w.spd} kt${g}${vr} → bane ${R.rw.id}: ${tail?'medvind':'motvind'} ${Math.abs(c.head)} kt, sidevind ${Math.abs(c.cross)} kt${c.cross?' fra '+side:''}${c.gcross!=null?`, ${c.gcross} kt i kastene`:''}.`})
+        +(over?' '+L({en:`<b>Above your max demonstrated crosswind (${xl} kt).</b>`,no:`<b>Over maks demonstrert sidevind (${xl} kt).</b>`}):'')
+        +(!xl?' '+L({en:'Add the max demonstrated crosswind on the Aircraft page to have it checked.',no:'Legg inn maks demonstrert sidevind på Fly-siden for å få den sjekket.'}):'')
+        +(tail?' '+L({en:'Tailwind: check the flight manual limit and the longer landing distance.',no:'Medvind: sjekk grensen i flyhåndboken og den lengre landingsdistansen.'}):'');
+      it.push(LI(over||(tail&&Math.abs(c.head)>=5)?'bad':(xl&&worst>0.8*xl)||tail?'warn':'ok',t,'xw')); }
+    else it.push(LI('info',L({en:`<b>Wind</b> ${String(w.dir).padStart(3,'0')}° ${w.spd} kt${g}${vr}. Pick a runway to see the components.`,no:`<b>Vind</b> ${String(w.dir).padStart(3,'0')}° ${w.spd} kt${g}${vr}. Velg bane for å se komponentene.`}),'xw'));
+    if(w.gust&&w.gust-w.spd>=10) it.push(LI('warn',L({en:`<b>Gusts</b> ${w.gust-w.spd} kt above the mean wind: expect turbulence close to the ground. Many operators add half the gust factor to the approach speed.`,no:`<b>Vindkast</b> ${w.gust-w.spd} kt over middelvinden: vent turbulens nær bakken. Mange operatører legger halve kastfaktoren til innflygingsfarten.`}),'gust')); }
+  if(closed.length) closed.forEach(n=>it.push(LI('bad',L({en:`<b>NOTAM ${esc(n.id||'')}</b>: RWY ${esc(n.rw.join('/'))} closed${n.act==='active'?' during your flight':n.act==='sched'?' at times (see schedule)':''}. Check the runway you plan to use.`,no:`<b>NOTAM ${esc(n.id||'')}</b>: bane ${esc(n.rw.join('/'))} stengt${n.act==='active'?' under turen din':n.act==='sched'?' til tider (se tidsplanen)':''}. Sjekk banen du planlegger å bruke.`}),null)));
+  if(M.cavok) it.push(LI('ok',L({en:'<b>CAVOK</b>: visibility 10 km or more, no cloud below 5000 ft (or the highest MSA), no CB, no significant weather.',no:'<b>CAVOK</b>: sikt 10 km eller mer, ingen skyer under 5000 ft (eller høyeste MSA), ingen CB, ikke signifikant vær.'}),null));
+  else if(M.vis!=null||M.rvr.length){ const rv=M.rvr.length?Math.min(...M.rvr.map(r=>r.v)):null, eff=rv!=null?rv:M.vis; let lvl='ok', note='';
+    if(rq&&rq.v!=null&&eff!=null&&eff<rq.v){ lvl='bad'; note=' '+L({en:`Below ${fx(rq.v)} m (${rq.lab}).`,no:`Under ${fx(rq.v)} m (${rq.lab}).`}); } else if(eff!=null&&eff<1500) lvl='warn';
+    const rt=M.rvr.map(r=>`RVR ${r.rwy} ${r.pm==='M'?L({en:'below ',no:'under '}):r.pm==='P'?L({en:'above ',no:'over '}):''}${fx(r.v)} m${r.tr==='D'?L({en:' falling',no:' synkende'}):r.tr==='U'?L({en:' rising',no:' stigende'}):''}`).join(', ');
+    it.push(LI(lvl,`<b>${L({en:'Visibility',no:'Sikt'})}</b> ${M.vis!=null?mtx(M.vis):'–'}${rt?' · '+rt:''}.${note}`,lvl==='ok'?null:vfr?'vmc':'min')); }
+  if(!M.cavok){ const lay=M.clouds.map(c=>c.c+(c.h!=null?String(c.h/100).padStart(3,'0'):'///')+c.t).join(' ')+(M.vv!==undefined?' VV'+(M.vv!=null?String(M.vv/100).padStart(3,'0'):'///'):'');
+    if(M.ceil!=null){ let lvl=M.ceil<500?'warn':'ok', note=''; if(rq&&rq.c!=null&&M.ceil<rq.c){ lvl=vfr||k!=='dest'?'bad':'warn'; note=' '+L({en:`Below ${ftx(rq.c)} (${rq.lab}).`,no:`Under ${ftx(rq.c)} (${rq.lab}).`}); }
+      it.push(LI(lvl,`<b>${L({en:'Ceiling',no:'Skybase (ceiling)'})}</b> ${ftx(M.ceil)} <span class="mono">${esc(lay)}</span>.${note}`,lvl==='ok'?null:vfr?'vmc':'min')); }
+    else if(M.clouds.length||M.nsc) it.push(LI('ok',`<b>${L({en:'Ceiling',no:'Skybase (ceiling)'})}</b> ${L({en:'none (no broken or overcast layer)',no:'ingen (ikke brutt eller overskyet lag)'})}${lay?` <span class="mono">${esc(lay)}</span>`:''}.`,null));
+    if(M.cb||M.tcu) it.push(LI('bad',L({en:`<b>${M.cb?'Cumulonimbus (CB)':'Towering cumulus (TCU)'}</b> reported: turbulence, icing, wind shear and heavy showers near the aerodrome.`,no:`<b>${M.cb?'Cumulonimbus (CB)':'Tårnende cumulus (TCU)'}</b> meldt: turbulens, ising, vindskjær og kraftige byger nær flyplassen.`}),'ts')); }
+  if(M.wx.length){ const bad=M.wx.some(x=>/TS|FZ|\+|GR|SQ|FC|VA/.test(x)); it.push(LI(bad?'bad':'info',`<b>${L({en:'Weather',no:'Vær'})}</b> ${esc(M.wx.map(x=>WXK.wxText(x,l)).join(', '))}.`,M.wx.some(x=>/TS/.test(x))?'ts':M.wx.some(x=>/FZ/.test(x))?'ice':M.wx.some(x=>/FG|BR/.test(x))?'fog':null)); }
+  if(M.ws.length) it.push(LI('bad',L({en:`<b>Wind shear</b> reported ${M.ws[0]==='ALL'?'on all runways':'on RWY '+esc(M.ws.join(', '))}.`,no:`<b>Vindskjær</b> meldt ${M.ws[0]==='ALL'?'på alle baner':'på bane '+esc(M.ws.join(', '))}.`}),'gust'));
+  if(M.re.length) it.push(LI('info',L({en:'<b>Recent</b> ',no:'<b>Nylig</b> '})+esc(M.re.map(x=>WXK.wxText(x,l)).join(', '))+L({en:' (in the last hour).',no:' (siste time).'}),M.re.some(x=>/TS/.test(x))?'ts':null));
+  if(M.temp!=null){ const sp=M.dew!=null?M.temp-M.dew:null; const moist=M.ceil!=null||M.clouds.some(c=>c.c!=='FEW')||M.wx.some(x=>/RA|SN|DZ|BR|FG|PL|SG/.test(x)), fz=M.wx.some(x=>/FZ/.test(x));
+    it.push(LI(sp!=null&&sp<=2?'warn':'ok',`<b>${L({en:'Temperature',no:'Temperatur'})}</b> ${M.temp} °C${M.dew!=null?L({en:`, dew point ${M.dew} °C (spread ${sp} °C)`,no:`, duggpunkt ${M.dew} °C (spredning ${sp} °C)`}):''}.${sp!=null&&sp<=2?' '+L({en:'Small spread: mist, fog or low cloud can form, especially as it cools.',no:'Liten spredning: dis, tåke eller lave skyer kan dannes, særlig når det kjøles ned.'}):''}`,sp!=null&&sp<=2?'fog':null));
+    if(fz) it.push(LI('bad',L({en:'<b>Icing</b>: freezing precipitation. Severe icing on the ground and in the air.',no:'<b>Ising</b>: underkjølt nedbør. Kraftig ising på bakken og i lufta.'}),'ice'));
+    else if(M.temp<=3&&M.temp>=-20&&moist) it.push(LI('warn',L({en:'<b>Icing</b>: visible moisture at +3 °C or colder. Expect icing in cloud and precipitation; check the freezing level on the route.',no:'<b>Ising</b>: synlig fuktighet ved +3 °C eller kaldere. Vent ising i skyer og nedbør; sjekk frysenivået på ruten.'}),'ice'));
+    if(M.temp<=0&&(fz||M.wx.some(x=>/SN|SG|PL/.test(x))||(sp!=null&&sp<=2))) it.push(LI('warn',L({en:'<b>De-icing</b>: at or below 0 °C with snow, freezing precipitation or likely frost. Plan for de-icing and the holdover time.',no:'<b>Avising</b>: 0 °C eller kaldere med snø, underkjølt nedbør eller sannsynlig rim. Planlegg avising og holdover-tid.'}),'deice'));
+    if(!vfr&&M.temp<=0) it.push(LI('info',L({en:'<b>Cold temperature</b>: true altitude is lower than indicated. Apply cold temperature corrections where your operator or the AIP requires them.',no:'<b>Kulde</b>: sann høyde er lavere enn indikert. Bruk kuldekorreksjon der operatøren eller AIP krever det.'}),'cold')); }
+  if(M.qnh){ const pa=R.elev!=null? R.elev+(1013-M.qnh)*30 : null, da=pa!=null&&M.temp!=null? Math.round((pa+120*(M.temp-(15-2*pa/1000)))/10)*10 : null;
+    it.push(LI(M.qnh<1000?'warn':'ok',`<b>QNH</b> ${M.qnh} hPa${M.inhg?` (${M.inhg} inHg)`:''}.${pa!=null?' '+L({en:`Pressure altitude about ${fx(pa)} ft (elevation ${fx(R.elev)} ft)`,no:`Trykkhøyde ca. ${fx(pa)} ft (høyde ${fx(R.elev)} ft)`})+(da!=null?L({en:`, density altitude about ${fx(da)} ft`,no:`, tetthetshøyde ca. ${fx(da)} ft`}):'')+'.':''}${M.qnh<1000?' '+L({en:'Low pressure: check the transition level and set QNH early.',no:'Lavtrykk: sjekk overgangsnivået og sett QNH i god tid.'}):''}`,da!=null&&R.elev!=null&&da>R.elev+1500?'da':'qnh')); }
+  if(M.trend) it.push(LI('info',`<b>${L({en:'Trend (next 2 h)',no:'Trend (neste 2 t)'})}</b> <span class="mono">${esc(M.trend)}</span>`,null));
+  return it; }
+function tafItems(k,F,TW,R){ const it=[], l=lw(), xl=num(P.f['ac.xw']);
+  const win=TW&&TW.W[k]; const wl=k==='dep'||k==='toalt'?L({en:'ETD ± 1 h',no:'ETD ± 1 t'}):k==='dest'?L({en:'ETA ± 1 h',no:'ETA ± 1 t'}):L({en:'ETA at the alternate ± 1 h',no:'ETA på alternativet ± 1 t'});
+  if(!win){ it.push(LI('info',TW?L({en:'Add the flight time (EET) above to check the TAF for your arrival window.',no:'Legg inn flytiden (EET) over for å sjekke TAF-en for ankomstvinduet.'}):L({en:'Add the date and ETD on the cover, and the EET above, to check the TAF for your windows.',no:'Legg inn dato og ETD på forsiden, og EET over, for å sjekke TAF-en for vinduene dine.'}),'taf')); return {it,A:null}; }
+  const A=WXK.tafWindow(F,win[0],win[1]); const head=`<b>${wl}</b> ${WXK.hmc(win[0])}–${WXK.hmc(win[1])}`;
+  if(!A||!A.partial){ it.push(LI('bad',head+': '+L({en:`not covered by this TAF (valid ${WXK.zt(F.from)}–${WXK.zt(F.to)}). Wait for a newer TAF; you cannot plan on this one.`,no:`dekkes ikke av denne TAF-en (gyldig ${WXK.zt(F.from)}–${WXK.zt(F.to)}). Vent på en nyere TAF; du kan ikke planlegge med denne.`}),'taf')); return {it,A:null}; }
+  if(!A.covered) it.push(LI('warn',head+': '+L({en:'only partly covered by this TAF. The rest needs a newer TAF.',no:'dekkes bare delvis av denne TAF-en. Resten krever en nyere TAF.'}),null));
+  const rq=wxReq(k), src=g=>g?`<span class="mono">${esc(WXK.lbl(g))}</span>`:'';
+  const cTxt=A.ceil!=null? ftx(A.ceil) : L({en:'no ceiling',no:'ingen ceiling'});
+  let lvl='ok', cmp='';
+  if(rq&&!rq.need&&(rq.v!=null||rq.c!=null)){ const okv=rq.v==null||A.vis==null||A.vis>=rq.v, okc=rq.c==null||A.ceil==null||A.ceil>=rq.c; lvl=okv&&okc?'ok':'bad';
+    cmp=`<br>${L({en:'Required',no:'Krav'})} (${esc(rq.lab)}): ${rq.c!=null?ftx(rq.c):'—'} / ${rq.v!=null?fx(rq.v)+' m':'—'} ${okm(okv&&okc)}${!(okv&&okc)?' '+L({en:`<b>${k==='alt1'||k==='alt2'?'Not usable as alternate in this window.':'Below minima in this window.'}</b>`,no:`<b>${k==='alt1'||k==='alt2'?'Kan ikke brukes som alternativ i dette vinduet.':'Under minima i dette vinduet.'}</b>`}):''} ${rq.ech?ech(rq.ech):''}`; }
+  else if(rq&&rq.need&&(P.f.rules||'IFR')!=='VFR') cmp='<br>'+L({en:'Fill in DH/MDH and RVR/VIS for this aerodrome in Planning minima to compare.',no:'Fyll inn DH/MDH og RVR/sikt for denne flyplassen i Planleggingsminima for å sammenligne.'});
+  it.push(LI(lvl,`${head}: ${L({en:'plan with',no:'planlegg med'})} <b>${A.vis!=null?mtx(A.vis):'—'}</b>${A.vsrc?' ('+src(A.vsrc)+')':''} ${L({en:'and',no:'og'})} <b>${cTxt}</b>${A.csrc&&A.ceil!=null?' ('+src(A.csrc)+')':''}.${cmp}`,k==='alt1'||k==='alt2'?'alt':'min'));
+  // wind in the window
+  if(R.rw&&A.winds.length){ let wv=null,wc=null; A.winds.forEach(x=>{ const c=WXK.comps(x.w,R.rw.hdg); if(c&&(wc==null||Math.abs(c.cross)>Math.abs(wc.cross))){ wc=c; wv=x; } });
+    if(wv){ const over=xl&&Math.abs(wc.cross)>xl; it.push(LI(over?'bad':wc.head<0?'warn':'ok',L({en:`<b>Wind</b> strongest crosswind in the window: <span class="mono">${esc(wv.w.raw)}</span> (${src(wv.src)}) → ${Math.abs(wc.cross)} kt on RWY ${R.rw.id}${wc.head<0?`, tailwind ${-wc.head} kt`:''}${wc.gcross!=null?`; ${wc.gcross} kt in gusts`:''}.${over?` <b>Above ${xl} kt.</b>`:''} The mean wind should be within limits; gusts may be disregarded for planning, not for flying.`,no:`<b>Vind</b> sterkeste sidevind i vinduet: <span class="mono">${esc(wv.w.raw)}</span> (${src(wv.src)}) → ${Math.abs(wc.cross)} kt på bane ${R.rw.id}${wc.head<0?`, medvind ${-wc.head} kt`:''}${wc.gcross!=null?`; ${wc.gcross} kt i kastene`:''}.${over?` <b>Over ${xl} kt.</b>`:''} Middelvinden skal være innenfor grensene; kast kan ses bort fra i planleggingen, ikke når du flyr.`}),'xw')); } }
+  // each change group in the window
+  A.notes.forEach(n=>{ const g=n.g, lab=`<span class="mono">${esc(n.label)}</span>`, wx=n.wx&&n.wx.length?n.wx.map(x=>WXK.wxText(x,l)).join(', '):'', det=[n.vis!=null&&n.dv?mtx(n.vis):'',n.ceil!=null&&n.dc?ftx(n.ceil):''].filter(Boolean).join(' / ');
+    const T={apply:{en:`${lab}: ${det}${wx?' with '+wx:''}. Persistent conditions: <b>applied</b>.`,no:`${lab}: ${det}${wx?' med '+wx:''}. Vedvarende forhold: <b>brukt</b>.`},
+      'apply-nowx':{en:`${lab}: ${det}, no weather given. Treated as persistent and <b>applied</b> (the cautious reading).`,no:`${lab}: ${det}, uten oppgitt vær. Regnet som vedvarende og <b>brukt</b> (den forsiktige tolkningen).`},
+      'ignore-transient':{en:`${lab}: ${det}${wx?' with '+wx:''}. Transient or showery: <b>may be disregarded</b> for planning minima. It is still a threat: plan for holding or diverting.`,no:`${lab}: ${det}${wx?' med '+wx:''}. Forbigående eller byer: <b>kan ses bort fra</b> for planleggingsminima. Det er fortsatt en trussel: planlegg for venting eller avvik.`},
+      'ignore-probtempo':{en:`${lab}: ${det}${wx?' with '+wx:''}. PROB TEMPO: a deterioration <b>may be disregarded</b> for planning minima.`,no:`${lab}: ${det}${wx?' med '+wx:''}. PROB TEMPO: en forverring <b>kan ses bort fra</b> for planleggingsminima.`},
+      improve:{en:`${lab}: an improvement. Improvements in TEMPO and PROB are <b>disregarded</b>.`,no:`${lab}: en forbedring. Forbedringer i TEMPO og PROB <b>ses bort fra</b>.`},
+      nochange:{en:`${lab}: no lower visibility or ceiling than the main forecast.`,no:`${lab}: ikke lavere sikt eller skybase enn hovedprognosen.`},
+      becmg:{en:`${lab}: changes between ${WXK.hmc(g.from)} and ${WXK.hmc(g.to)}. A deterioration counts from the start, an improvement only from the end.`,no:`${lab}: endres mellom ${WXK.hmc(g.from)} og ${WXK.hmc(g.to)}. En forverring gjelder fra starten, en forbedring først fra slutten.`}}[n.act];
+    if(!T) return; it.push(LI(/^apply/.test(n.act)?'warn':'info',L(T),n.cb||(n.wx||[]).some(x=>/TS/.test(x))?'ts':(n.wx||[]).some(x=>/FG|BR/.test(x))?'fog':null)); });
+  if(A.notes.some(n=>/TEMPO|PROB/.test(n.g.type))) it.push(`<li class="l-rule"><span>${L({en:'TEMPO and PROB applied as in the TAF table of',no:'TEMPO og PROB brukt som i TAF-tabellen i'})} ${ech('AMC3 CAT.OP.MPA.182')} ${L({en:'(Part-NCO: AMC1 NCO.OP.160, same conventions). Your OM-A rules if stricter.',no:'(Part-NCO: AMC1 NCO.OP.160, samme konvensjoner). OM-A gjelder hvis strengere.'})}</span></li>`);
+  return {it,A}; }
+function tafLines(raw){ return esc(raw).replace(/\s+(?=(BECMG|TEMPO|FM\d{6}|PROB\d{2})\b)/g,(m,a,o,s)=>/PROB\d{2}$/.test(s.slice(0,o))?' ':'\n  '); }
+function wxNotams(){ try{ return WXK.parseNotams(P.f['n.paste']||''); }catch(e){ return []; } }
+let wxStFor=null;
+function wxRender(){ const box=el('wxCards'); if(!box||!P||!window.WXK) return; if(wxStFor!==P.id){ wxStFor=P.id; wxIdle(); } const TW=wxTimes();
+  const sig=JSON.stringify([LAB.lang,P.f.rules,P.f['al.reg'],P.f['ac.xw'],P.f.etd,P.f.date,P.f['wx.eet'],P.f['wx.altt'],P.f['cr.blk'],P.f['n.paste'],APT.map(([k])=>[wxIcao(k),P.f['mt.'+k+'.metar'],P.f['mt.'+k+'.taf'],P.f['wx.'+k+'.rwy'],P.f['mi.'+k+'.rv'],P.f['mi.'+k+'.rc'],P.f['mv.'+(WXVFR[k]||'')+'.rv'],P.f['mv.'+(WXVFR[k]||'')+'.rc']]),JSON.stringify(LASTAR),!!NAVD,Math.floor(Date.now()/60e3),P.wx&&P.wx.at]);
+  if(sig===wxSig) return; wxSig=sig;
+  const fid=document.activeElement&&box.contains(document.activeElement)?document.activeElement.id:null;
+  // window line
+  el('wxWin').innerHTML= TW? `${L({en:'ETD',no:'ETD'})} <b>${WXK.hmc(TW.etd)}</b>${TW.noDate?` <small>(${L({en:'no date on the cover: today assumed',no:'ingen dato på forsiden: i dag antatt'})})</small>`:''}${TW.eta?` · ETA <b>${WXK.hmc(TW.eta)}</b> · ${L({en:'TAF windows',no:'TAF-vinduer'})}: ${L({en:'departure',no:'avgang'})} ${WXK.hm(TW.W.dep[0])}–${WXK.hm(TW.W.dep[1])}, ${L({en:'destination',no:'destinasjon'})} ${WXK.hm(TW.W.dest[0])}–${WXK.hm(TW.W.dest[1])}, ${L({en:'alternates',no:'alternativer'})} ${WXK.hm(TW.W.alt1[0])}–${WXK.hm(TW.W.alt1[1])}`:` · ${L({en:'add the EET to get the arrival windows',no:'legg inn EET for å få ankomstvinduene'})}`}` : L({en:'Add the date and ETD (UTC) on the cover to check the TAF for your departure and arrival windows.',no:'Legg inn dato og ETD (UTC) på forsiden for å sjekke TAF-en for avgangs- og ankomstvinduene.'});
+  const NT=wxNotams(); const t0=TW?new Date(+TW.etd-3600e3):null, t1=TW?new Date(+(TW.eta||TW.etd)+((TW.leg||0)*60e3)+3600e3):null;
+  const cards=[]; WXA={}; let needNav=false;
+  APT.forEach(([k])=>{ const id=wxIcao(k), mr=(P.f['mt.'+k+'.metar']||'').trim(), tr=(P.f['mt.'+k+'.taf']||'').trim(); if(!mr&&!tr) return; needNav=true;
+    const st=(P.wx&&P.wx.st&&P.wx.st[id])||{}; const M=mr?WXK.parseMetar(mr,st.metar?new Date(st.metar):new Date()):null; const F=tr?WXK.parseTaf(/^TAF\b/i.test(tr)?tr:'TAF '+tr,st.taf?new Date(st.taf):new Date()):null;
+    const sid=(M&&M.station)||(F&&F.station)||id; const R=rwyFor(k,sid,M&&M.wind);
+    const closed=NT.filter(n=>(n.loc||[]).includes(sid)).flatMap(n=>n.impacts.filter(x=>x.k==='rwyclsd'&&R.rw&&x.rwy.some(r=>r===R.rw.id||r===String(R.rw.id).replace(/[LCR]$/,''))).map(x=>({id:n.id,rw:x.rwy,act:WXK.overlap(n,t0,t1)}))).filter(x=>x.act!=='later'&&x.act!=='ended');
+    const mAge=M&&M.time?ageTxt(M.time):'', mOld=M&&M.time&&Date.now()-M.time>90*60e3;
+    const T=F?tafItems(k,F,TW,R):{it:[],A:null}; WXA[k]={id:sid,M,F,A:T.A,R};
+    const opts=R.ends.length? `<option value="">${L({en:'Auto',no:'Auto'})}${R.auto&&R.rw?' ('+esc(R.rw.id)+')':''}</option>`+R.ends.map(e=>`<option value="${esc(e.id)}" ${P.f['wx.'+k+'.rwy']===e.id?'selected':''}>RWY ${esc(e.id)}${e.len?' · '+fx(Math.round(e.len*0.3048/10)*10)+' m':''}</option>`).join('') : '';
+    cards.push(`<article class="wxc" data-k="${k}"><header><span class="wxrole">${esc(L(WXR[k]))}</span> <b class="mono">${esc(sid||'????')}</b> <span class="wxname">${esc(st.name||R.name||'')}</span></header>
+      ${M?`<div class="wxraw"><span class="wxlab">METAR${M.time?` · <span class="${mOld?'ko':''}">${WXK.zt(M.time)} · ${mAge} ${L({en:'old',no:'gammel'})}</span>`:''}</span><code>${esc(mr)}</code></div>`:''}
+      ${F?`<div class="wxraw"><span class="wxlab">TAF${F.issue?` · ${L({en:'issued',no:'utstedt'})} ${WXK.zt(F.issue)} · ${ageTxt(F.issue)} ${L({en:'ago',no:'siden'})}`:''}${F.from?` · ${L({en:'valid',no:'gyldig'})} ${WXK.zt(F.from).slice(0,4)}–${WXK.zt(F.to).slice(0,4)}`:''}</span><code>${tafLines(/^TAF\b/i.test(tr)?tr:'TAF '+tr)}</code></div>`:''}
+      <div class="wxrwy">${R.ends.length?`<label class="noprint">${L({en:'Runway',no:'Bane'})} <select id="wxr-${k}" data-wxrwy="${k}">${opts}</select></label><span class="printonly">RWY ${esc(R.rw?R.rw.id:'—')}</span>`:`<label>${L({en:'Runway',no:'Bane'})} <input id="wxr-${k}" data-wxrwy="${k}" value="${esc(P.f['wx.'+k+'.rwy']||'')}" placeholder="17" size="4" inputmode="numeric"></label>`}<small>${L({en:'Heading from the runway number (±5°, magnetic); METAR and TAF wind is true. Runway list: OurAirports.',no:'Kurs fra banenummeret (±5°, magnetisk); vind i METAR og TAF er rettvisende. Baneliste: OurAirports.'})}</small></div>
+      ${M?`<h4>${L({en:'Now (METAR)',no:'Nå (METAR)'})}${mOld?` <span class="ko">${L({en:'old report',no:'gammel melding'})}</span>`:''}</h4><ul class="wxi">${metarItems(k,M,R,closed).join('')}</ul>`:''}
+      ${F?`<h4>${L({en:'Forecast for your window (TAF)',no:'Prognose for vinduet ditt (TAF)'})}</h4><ul class="wxi">${T.it.join('')}</ul>`:''}
+      ${M&&M.unk&&M.unk.length?`<p class="note">${L({en:'Not read:',no:'Ikke lest:'})} <span class="mono">${esc(M.unk.join(' '))}</span></p>`:''}</article>`); });
+  if(needNav&&!NAVD) navLoad();
+  box.innerHTML= cards.length? cards.join('') : `<p class="wxempty">${L({en:'Fetch the latest reports, or paste METAR and TAF in the table below. The plain-language reading for each aerodrome appears here.',no:'Hent de siste meldingene, eller lim inn METAR og TAF i tabellen under. Tolkningen for hver flyplass kommer her.'})}</p>`;
+  el('wxp').classList.toggle('has',cards.length>0); { const d=el('wxman'); if(d&&!d.dataset.touched) d.open=!cards.length; }
+  if(fid){ const f=el(fid); if(f) f.focus(); }
+  el('wxNote').innerHTML=L({en:'For training. Reports from aviationweather.gov can be late or incomplete, and the reading here can miss things. Before flight, check the official briefing (for Norway: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).',no:'For trening. Meldinger fra aviationweather.gov kan være forsinket eller mangelfulle, og tolkningen her kan overse ting. Sjekk den offisielle briefingen før flyging (i Norge: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).'});
+  ntmRender(TW,NT,t0,t1); }
+el('book').addEventListener('change',e=>{ const s=e.target.closest('[data-wxrwy]'); if(!s) return; P.f['wx.'+s.dataset.wxrwy+'.rwy']=s.value.trim().toUpperCase(); wxSig=''; calc(); queueSave(); });
+el('book').addEventListener('click',e=>{ if(e.target.closest('#wxman>summary')) el('wxman').dataset.touched='1'; });
+/* fetch */
+function wxStatus(kind,html){ const s=el('wxSt'); if(!s) return; s.className='wxst '+kind; s.innerHTML=html; }
+function wxIdle(){ if(P&&P.wx&&P.wx.at){ const d=new Date(P.wx.at); wxStatus('',L({en:`Last fetched ${WXK.zt(d)} (${ageTxt(d)} ago). Fetch again for the latest.`,no:`Sist hentet ${WXK.zt(d)} (${ageTxt(d)} siden). Hent på nytt for det siste.`})); } else wxStatus('',L({en:'Not fetched yet.',no:'Ikke hentet ennå.'})); }
+async function wxFetch(){ const ids=[...new Set(APT.map(([k])=>wxIcao(k)).filter(Boolean))];
+  if(!ids.length){ wxStatus('err',L({en:'Add the aerodromes first: ICAO codes on the cover (departure, destination, alternates) or in the table below.',no:'Legg inn flyplassene først: ICAO-koder på forsiden (avgang, destinasjon, alternativer) eller i tabellen under.'})); return; }
+  const b=el('wxGo'); b.disabled=true; wxStatus('load',L({en:`Fetching METAR and TAF for ${ids.join(', ')}…`,no:`Henter METAR og TAF for ${ids.join(', ')} …`}));
+  const fail=(why,msg)=>{ b.disabled=false; const man=L({en:'Enter METAR and TAF manually in the table below; the reading works the same.',no:'Skriv inn METAR og TAF manuelt i tabellen under; tolkningen virker likt.'});
+    wxStatus('err',{nofn:L({en:'Live weather isn’t available on this copy of the page (it needs the weather service on birdbird.eu).',no:'Levende vær er ikke tilgjengelig i denne kopien av siden (den trenger værtjenesten på birdbird.eu).'}),offline:L({en:'You’re offline.',no:'Du er frakoblet.'}),bad:L({en:'Check the ICAO codes.',no:'Sjekk ICAO-kodene.'})+(msg?' '+esc(msg):''),upstream:L({en:'Couldn’t reach the weather service.',no:'Fikk ikke kontakt med værtjenesten.'})+(msg?' <small>'+esc(msg)+'</small>':' '+L({en:'Try again in a minute.',no:'Prøv igjen om et minutt.'})),timeout:L({en:'The weather service didn’t answer in time. Try again in a minute.',no:'Værtjenesten svarte ikke i tide. Prøv igjen om et minutt.'})}[why]+' '+(why==='bad'?'':man));
+    { const d=el('wxman'); if(d) d.open=true; } };
+  let r,j; try{ if(!/^https?:/.test(location.protocol)) throw 0; r=await fetch('/api/wx?ids='+encodeURIComponent(ids.join(',')),{headers:{accept:'application/json'}}); }catch(e){ return fail(navigator.onLine===false?'offline':'nofn'); }
+  if(!/json/.test(r.headers.get('content-type')||'')) return fail(r.status>=500?'upstream':'nofn');
+  try{ j=await r.json(); }catch(e){ return fail('nofn'); }
+  if(!r.ok||!j||!j.ok) return fail(j&&j.error==='bad_ids'?'bad':j&&j.error==='timeout'?'timeout':'upstream',j&&j.message);
+  P.wx=P.wx||{}; P.wx.at=j.fetched||new Date().toISOString(); P.wx.st=P.wx.st||{};
+  const got=[]; APT.forEach(([k])=>{ const id=wxIcao(k), s=id&&j.stations&&j.stations[id]; if(!s) return; if(!icaoOf(P.f['mt.'+k+'.icao'])) setF('mt.'+k+'.icao',id);
+    P.wx.st[id]={metar:s.metar&&s.metar.obsTime||null,taf:s.taf&&s.taf.issueTime||null,name:s.name||null};
+    if(s.metar){ setF('mt.'+k+'.metar',s.metar.raw); } if(s.taf){ setF('mt.'+k+'.taf',s.taf.raw); } if(s.metar||s.taf) got.push(id); });
+  const miss=(j.missing||[]).filter(x=>ids.includes(x)), notaf=ids.filter(x=>j.stations[x]&&j.stations[x].metar&&!j.stations[x].taf);
+  b.disabled=false; await navLoad().catch(()=>{}); wxSig='';
+  wxStatus(miss.length?'warn':'ok',L({en:`Fetched ${WXK.zt(new Date(P.wx.at))} from aviationweather.gov: ${[...new Set(got)].length} of ${ids.length} aerodromes.`,no:`Hentet ${WXK.zt(new Date(P.wx.at))} fra aviationweather.gov: ${[...new Set(got)].length} av ${ids.length} flyplasser.`})
+    +(miss.length?' '+L({en:`No report for ${miss.join(', ')}: the station may not publish one, or the service has none. Enter it manually below if you have it.`,no:`Ingen melding for ${miss.join(', ')}: stasjonen publiserer kanskje ikke, eller tjenesten har ingen. Skriv den inn under hvis du har den.`}):'')
+    +(notaf.length?' '+L({en:`No TAF for ${notaf.join(', ')}.`,no:`Ingen TAF for ${notaf.join(', ')}.`}):''));
+  calc(); wxApply(true); queueSave(); }
+/* feed the planning minima, runway performance; values stay editable */
+function wxApply(auto){ calc(); const TW=wxTimes(); P.wx=P.wx||{}; const A=P.wx.auto=P.wx.auto||{}; let n=0; const kept=[];
+  const put=(key,v,src)=>{ if(v==null||v==='') return; v=String(v); const cur=P.f[key]; const prev=A[key]; if(cur==null||cur===''||cur===v||(prev&&cur===prev.v)){ if(cur!==v){ setF(key,v); n++; } A[key]={v,src}; } else kept.push(key); };
+  const wtx=w=>w&&w.dir!=null?String(w.dir).padStart(3,'0')+'/'+w.spd+(w.gust?'G'+w.gust:''):null;
+  APT.forEach(([k])=>{ const X=WXA[k]; if(!X) return; const tsrc=X.F&&X.F.issue?`TAF ${X.id} ${WXK.zt(X.F.issue)}`:'TAF', msrc=X.M&&X.M.time?`METAR ${X.id} ${WXK.zt(X.M.time)}`:'METAR';
+    const rw=X.R&&X.R.rw?X.R.rw.id:null;
+    if(X.A&&X.A.partial){ const fc=X.A.ceil!=null?X.A.ceil:5000, win=`${WXK.hm(X.A.t0)}–${WXK.hm(X.A.t1)}`;
+      let wv=null,wc=null; if(X.R&&X.R.rw) X.A.winds.forEach(x=>{ const c=WXK.comps(x.w,X.R.rw.hdg); if(c&&(wc==null||Math.abs(c.cross)>Math.abs(wc.cross))){ wc=c; wv=x.w; } });
+      put('mi.'+k+'.fv',X.A.vis,tsrc); put('mi.'+k+'.fc',fc,tsrc+(X.A.ceil==null?' · '+L({en:'no ceiling: entered as 5000 ft',no:'ingen ceiling: lagt inn som 5000 ft'}):'')); put('mi.'+k+'.win',win,tsrc); put('mi.'+k+'.wind',wtx(wv),tsrc); put('mi.'+k+'.rwy',rw,tsrc);
+      const m=WXVFR[k]; if(m){ put('mv.'+m+'.fv',X.A.vis,tsrc); put('mv.'+m+'.fc',fc,tsrc); put('mv.'+m+'.wind',wtx(wv),tsrc); put('mv.'+m+'.rwy',rw,tsrc); } }
+    if(X.M&&['dep','dest','alt1','alt2'].includes(k)){ put('r.'+k+'.wind',wtx(X.M.wind),msrc); put('r.'+k+'.qnh',X.M.qnh,msrc); put('r.'+k+'.t',X.M.temp,msrc); put('r.'+k+'.rwy',rw,msrc); if(X.R&&X.R.elev!=null) put('r.'+k+'.elev',X.R.elev,'OurAirports'); } });
+  calc(); queueSave();
+  const nt=el('wxApplyNote'); if(nt) nt.textContent= n? L({en:`${n} values updated from the reports. They are marked in Planning minima and Runway performance; edit any of them to override.`,no:`${n} verdier oppdatert fra meldingene. De er merket i Planleggingsminima og Baneytelse; endre en av dem for å overstyre.`})+(kept.length?' '+L({en:`Kept ${kept.length} values you had changed.`,no:`Beholdt ${kept.length} verdier du hadde endret.`}):'') : (auto?'':Object.keys(WXA).length?L({en:'Planning minima already match the reports.',no:'Planleggingsminima stemmer allerede med meldingene.'})+(kept.length?' '+L({en:`Kept ${kept.length} values you had changed.`,no:`Beholdt ${kept.length} verdier du hadde endret.`}):''):L({en:'Nothing to fill yet: add reports and the ETD/EET first.',no:'Ingenting å fylle inn ennå: legg inn meldinger og ETD/EET først.'})); }
+function wxMarks(){ const A=(P.wx&&P.wx.auto)||{}; const used={};
+  document.querySelectorAll('#book .wxauto').forEach(e=>{ e.classList.remove('wxauto'); e.removeAttribute('title'); });
+  Object.keys(A).forEach(k=>{ if(P.f[k]!==A[k].v) return; const e=document.querySelector(`#book [data-k="${k}"]`); if(!e) return; e.classList.add('wxauto'); e.title=L({en:'From ',no:'Fra '})+A[k].src+L({en:'. Edit to override.',no:'. Endre for å overstyre.'}); if(/^m[iv]\./.test(k)) used[A[k].src.split(' · ')[0]]=1; });
+  const s=Object.keys(used); setC('wxsrc', s.length? L({en:'Shaded forecast values come from ',no:'Skraverte prognoseverdier kommer fra '})+esc(s.join(', '))+L({en:' (the window in the Window column). Edit any of them to override.',no:' (vinduet i Vindu-kolonnen). Endre en av dem for å overstyre.'}) : ''); }
+/* ---------- NOTAM: official sources, paste and read ---------- */
+const NSRC={EN:[{en:'Norway',no:'Norge'},'Avinor IPPC (briefing and NOTAM)','https://www.ippc.no/ippc/index.jsp'],ES:[{en:'Sweden',no:'Sverige'},'LFV AROWeb','https://aro.lfv.se/'],EK:[{en:'Denmark',no:'Danmark'},'Naviair briefing','https://briefing.naviair.dk'],EF:[{en:'Finland',no:'Finland'},'Fintraffic AIS · pre-flight information bulletins','https://www.ais.fi/ais/bulletins/']};
+const EADB='https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic/';
+const NIMP={ils:[{en:'ILS (or part of it) unserviceable: the ILS minima do not apply. Plan the next-best approach (LOC, RNP or VOR) with its higher minima, and check that an alternate is still required and usable.',no:'ILS (eller en del av det) ute av drift: ILS-minimaene gjelder ikke. Planlegg nest beste innflyging (LOC, RNP eller VOR) med høyere minima, og sjekk om alternativ nå kreves og kan brukes.'},'ils'],
+ adclsd:[{en:'Aerodrome closed: it cannot be your destination or alternate while the NOTAM is active.',no:'Flyplassen er stengt: den kan ikke være destinasjon eller alternativ mens NOTAM-en gjelder.'},'alt'],
+ rwyclsd:[{en:'Runway closed: check which runway is left, its crosswind and its length.',no:'Bane stengt: sjekk hvilken bane som er igjen, sidevinden på den og lengden.'},'xw'],
+ rwylim:[{en:'Runway limited (work, reduced length or width): check the declared distances against your take-off and landing distances.',no:'Banen er begrenset (arbeid, redusert lengde eller bredde): sjekk deklarerte distanser mot avgangs- og landingsdistansene dine.'},'perf'],
+ decl:[{en:'Declared distances changed: use the NOTAM figures for TORA, TODA, ASDA and LDA in Runway performance.',no:'Endrede deklarerte distanser: bruk NOTAM-tallene for TORA, TODA, ASDA og LDA i Baneytelse.'},'perf'],
+ navaid:[{en:'Navaid unserviceable: check every procedure that uses it (SID, STAR, approach, missed approach, holding).',no:'Navigasjonshjelpemiddel ute av drift: sjekk alle prosedyrer som bruker det (SID, STAR, innflyging, avbrutt innflyging, venting).'},'nav'],
+ gnss:[{en:'GNSS may be unreliable: RNP approaches and GNSS navigation may not be available. Have a non-GNSS plan.',no:'GNSS kan være upålitelig: RNP-innflyginger og GNSS-navigasjon er kanskje ikke tilgjengelig. Ha en plan uten GNSS.'},'gnss'],
+ proc:[{en:'Procedure changed or not available: brief from the current chart and the NOTAM.',no:'Prosedyre endret eller ikke tilgjengelig: brief fra gjeldende kart og NOTAM-en.'},'min'],
+ lights:[{en:'Lights unserviceable: approach or runway lights out can raise the minima and affect night operations.',no:'Lys ute av drift: manglende innflygings- eller banelys kan heve minimaene og påvirke mørkeoperasjoner.'},'min'],
+ obst:[{en:'Obstacle: check it against your departure and approach path, and your minimum altitudes.',no:'Hinder: sjekk det mot avgangs- og innflygingsbanen og minstehøydene dine.'},null],
+ airspace:[{en:'Airspace activity: check the area and its times against your route and levels.',no:'Luftromsaktivitet: sjekk området og tidene mot ruten og høydene dine.'},'vmc'],
+ hours:[{en:'Opening hours changed: make sure the aerodrome is open for your ETA, with margin.',no:'Endret åpningstid: sørg for at flyplassen er åpen ved ETA, med margin.'},null]};
+const ntD=d=>d?`${WXK.pad(d.getUTCDate())} ${(LAB.lang==='no'?'jan feb mar apr mai jun jul aug sep okt nov des':'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec').split(' ')[d.getUTCMonth()]} ${WXK.hmc(d)}`:'';
+function ntmRender(TW,NT,t0,t1){ const box=el('ntm'), cb=el('ntmCards'); if(!box||!cb) return;
+  const ap={}; APT.forEach(([k])=>{ const id=wxIcao(k); if(id){ (ap[id]=ap[id]||[]).push(k); } });
+  const pre={}; Object.keys(ap).forEach(id=>{ const p=id.slice(0,2); (pre[p]=pre[p]||[]).push(id); });
+  const rows=Object.keys(pre).map(p=>{ const s=NSRC[p]; return s?`<li><b>${esc(L(s[0]))}</b> <span class="mono">${esc(pre[p].join(' '))}</span>: <a href="${s[2]}" target="_blank" rel="noopener">${esc(s[1])} ↗</a></li>`:`<li><span class="mono">${esc(pre[p].join(' '))}</span>: ${L({en:'use that country’s AIS briefing service, or EAD Basic below.',no:'bruk landets AIS-briefingtjeneste, eller EAD Basic under.'})}</li>`; });
+  box.innerHTML=`<p class="wxnote">${L({en:'There is no free, open NOTAM feed for Europe that Birdbird can fetch for you. Get the NOTAMs from the official source, paste them below, and Birdbird lays them out against your flight. The official text always rules.',no:'Det finnes ingen gratis, åpen NOTAM-kilde for Europa som Birdbird kan hente for deg. Hent NOTAM fra den offisielle kilden, lim dem inn under, så setter Birdbird dem opp mot turen din. Den offisielle teksten gjelder alltid.'})}</p>
+   <ul class="nsrc">${rows.join('')}<li><b>EUROCONTROL EAD Basic</b>: <a href="${EADB}" target="_blank" rel="noopener">${L({en:'pre-flight bulletins for all of Europe',no:'pre-flight-bulletiner for hele Europa'})} ↗</a> <small>${L({en:'(free registration; EUROCONTROL says EAD Basic is not for operational use)',no:'(gratis registrering; EUROCONTROL sier at EAD Basic ikke er for operativ bruk)'})}</small></li></ul>`;
+  if(!NT.length){ cb.innerHTML=(P.f['n.paste']||'').trim()?`<p class="wxst err">${L({en:'No NOTAM found in the text. Paste them in the ICAO format with the Q), A), B), C) and E) fields.',no:'Fant ingen NOTAM i teksten. Lim dem inn i ICAO-formatet med feltene Q), A), B), C) og E).'})}</p>`:''; return; }
+  const rk=k=>['dep','dest','alt1','alt2','toalt'].indexOf(k); const ifr=(P.f.rules||'IFR')!=='VFR';
+  const L2=NT.map(n=>{ const roles=(n.loc||[]).flatMap(id=>ap[id]||[]); const act=WXK.overlap(n,t0,t1); return {n,roles,act,o:(act==='active'?0:act==='sched'?1:act==null?2:3)*10+(roles.length?Math.min(...roles.map(rk)):9)}; }).sort((a,b)=>a.o-b.o);
+  const actTxt={active:['bad',{en:'Active during your flight',no:'Gjelder under turen din'}],sched:['warn',{en:'Overlaps your flight: check the schedule',no:'Overlapper turen din: sjekk tidsplanen'}],later:['ok',{en:'Starts after your flight',no:'Starter etter turen din'}],ended:['ok',{en:'Ended before your flight',no:'Sluttet før turen din'}]};
+  const und=P.wx&&P.wx.ilsUndo;
+  cb.innerHTML=`<p class="note">${L({en:`${NT.length} NOTAM read.`,no:`${NT.length} NOTAM lest.`})} ${TW?L({en:`Your flight: ${ntD(t0)} to ${ntD(t1)} (ETD − 1 h to ETA at the alternate + 1 h).`,no:`Turen din: ${ntD(t0)} til ${ntD(t1)} (ETD − 1 t til ETA på alternativet + 1 t).`}):L({en:'Add the date and ETD on the cover to see which NOTAMs are active during your flight.',no:'Legg inn dato og ETD på forsiden for å se hvilke NOTAM som gjelder under turen.'})}</p>`+L2.map(({n,roles,act})=>{ const a=act&&actTxt[act]; const q=n.subj&&WXK.QS[n.subj]; const c=n.cond&&WXK.QC[n.cond]; const li=lw()==='no'?1:0;
+    const imp=n.impacts.map(x=>{ const d=NIMP[x.k]; if(!d) return ''; let extra='';
+      if(x.k==='ils'&&ifr) roles.forEach(k=>{ const done=und&&und.k===k&&und.id===n.id; extra+=done?`<span class="nact">${L({en:`Switched ${L(WXR[k])} to a non-ILS approach. Enter its minima from the chart.`,no:`${L(WXR[k])} er satt til innflyging uten ILS. Legg inn minimaene fra kartet.`})} <button type="button" class="btn sm" data-nundo="1">${L({en:'Undo',no:'Angre'})}</button></span>`:`<button type="button" class="btn sm noprint" data-nils="${k}" data-nid="${esc(n.id||'')}">${L({en:`Plan a non-ILS approach at ${L(WXR[k])}`,no:`Planlegg innflyging uten ILS på ${L(WXR[k]).toLowerCase()}`})}</button>`; });
+      return `<li class="l-${x.lvl==='hi'?'bad':x.lvl==='md'?'warn':'info'}"><span>${L(d[0])}${x.h?' ('+esc(x.h)+')':''}</span>${d[1]?labB(d[1]):''}${extra}</li>`; }).join('');
+    return `<article class="ntc ${a?'n-'+a[0]:''}"><header><b class="mono">${esc(n.id||'NOTAM')}</b>${n.kind==='NOTAMR'&&n.repl?` <small>${L({en:'replaces',no:'erstatter'})} ${esc(n.repl)}</small>`:n.kind==='NOTAMC'?` <small>${L({en:'cancels',no:'kansellerer'})} ${esc(n.repl||'')}</small>`:''} <span class="mono">${esc((n.loc||[]).join(' '))}</span>${roles.map(k=>` <span class="wxrole">${esc(L(WXR[k]))}</span>`).join('')}${a?` <span class="nst n-${a[0]}">${esc(L(a[1]))}</span>`:''}</header>
+      <p class="nt">${n.from?`${L({en:'From',no:'Fra'})} <b>${ntD(n.from)}</b>`:''}${n.perm?` · <b>${L({en:'permanent',no:'permanent'})}</b>`:n.to?` ${L({en:'to',no:'til'})} <b>${ntD(n.to)}</b>${n.est?` (${L({en:'estimated',no:'estimert'})})`:''}`:''}${n.sched?` · ${L({en:'schedule',no:'tidsplan'})} <span class="mono">${esc(n.sched)}</span>`:''}${q?` · ${esc(q[li])}${c?': '+esc(c[li]):''}`:''}${n.f.F||n.f.G?` · ${esc(n.f.F||'')}–${esc((n.f.G||'').replace(/\)\s*$/,''))}`:''}</p>
+      <p class="nplain">${esc(WXK.plain(n.E||'',lw()))}</p><p class="nraw mono">${esc(n.E||'')}</p>${imp?`<ul class="wxi">${imp}</ul>`:''}</article>`; }).join('');
+}
+el('book').addEventListener('click',e=>{ const b=e.target.closest('[data-nils]'); if(b){ const k=b.dataset.nils, id=b.dataset.nid; const keys=['mi.'+k+'.proc','mi.'+k+'.rv','mi.'+k+'.rc']; if(k==='dest') keys.push('al.dh','al.dv'); if(k==='alt1'||k==='alt2') keys.push('aa.'+k+'.dh','aa.'+k+'.dv');
+    P.wx=P.wx||{}; const u={}; keys.forEach(x=>{ u[x]=P.f[x]||''; }); P.wx.ilsUndo={k,id,u};
+    setF('mi.'+k+'.proc',L({en:'Non-ILS (ILS U/S, NOTAM ',no:'Uten ILS (ILS U/S, NOTAM '})+id+')'); keys.slice(1).forEach(x=>setF(x,''));
+    wxSig=''; calc(); queueSave(); const i=vis().findIndex(s=>s.id==='s-minima'); if(i>=0&&view==='book') go(i); setTimeout(()=>{ const f=document.querySelector(`#book [data-k="${k==='dest'?'al.dh':k==='alt1'||k==='alt2'?'aa.'+k+'.dh':'mi.'+k+'.rc'}"]`)||document.querySelector(`#book [data-k="mi.${k}.rv"]`); if(f){ f.scrollIntoView({block:'center'}); f.focus(); } },view==='book'?400:50); return; }
+  if(e.target.closest('[data-nundo]')){ const u=P.wx&&P.wx.ilsUndo; if(u){ Object.keys(u.u).forEach(x=>setF(x,u.u[x])); delete P.wx.ilsUndo; wxSig=''; calc(); queueSave(); } return; }
+  if(e.target.closest('#wxGo')){ wxFetch(); return; } if(e.target.closest('#wxApply')){ wxSig=''; wxRender(); wxApply(false); } });
+window.addEventListener('beforeprint',()=>{ if(document.body.classList.contains('blank')){ const d=el('wxman'); if(d) d.open=true; } });
+LAB.onLang(()=>{ wxSig=''; wxIdle(); });
+
 /* ---------- språk ---------- */
 LAB.add({},{
  'Open ↗':'Åpne ↗',
+ 'Fetch latest METAR and TAF':'Hent siste METAR og TAF','Use these forecasts in Planning minima':'Bruk prognosene i Planleggingsminima','Flight time, EET (h:mm)':'Flytid, EET (t:mm)','Destination to alternate (min)':'Destinasjon til alternativ (min)','Aerodrome reports: edit or paste manually':'Flyplassmeldinger: rediger eller lim inn manuelt','ICAO codes come from the cover when left empty.':'ICAO-kodene hentes fra forsiden når feltene står tomme.','Decode a METAR or TAF line by line':'Dekod en METAR eller TAF linje for linje','Paste NOTAMs here (ICAO format, from the official briefing)':'Lim inn NOTAM her (ICAO-format, fra den offisielle briefingen)','Your notes per aerodrome':'Dine notater per flyplass',
  "Crew, flight and OFP check":"Mannskap, flyging og OFP-sjekk","Flight number":"Flightnummer","ATC callsign":"ATC-kallesignal","Captain":"Kaptein","First officer":"Styrmann","Pilot flying this sector":"Pilot flying denne etappen","Cabin crew":"Kabinbesetning","Passengers (booked / on board)":"Passasjerer (booket / om bord)","STD / STA (UTC)":"STD / STA (UTC)","CTOT / slot":"CTOT / slot","Stand / gate":"Oppstillingsplass / gate","Flight duty period":"Tjenesteperiode (FDP)","Report (UTC)":"Oppmøte (UTC)","Max FDP (h:mm)":"Maks FDP (t:mm)","FDP ends (UTC)":"FDP slutter (UTC)","Planned block (h:mm)":"Planlagt blokktid (t:mm)","Planned on blocks (UTC)":"Planlagt on blocks (UTC)","Margin":"Margin","The maximum FDP comes from your operator’s flight time limitation scheme (EASA ORO.FTL), with the table for your reporting time and number of sectors. Extensions and commander’s discretion follow the operator’s rules.":"Maks FDP kommer fra operatørens arbeidstidsordning (EASA ORO.FTL), med tabellen for oppmøtetid og antall etapper. Forlengelser og kapteinens skjønn følger operatørens regler.","OFP and briefing check":"OFP- og briefingsjekk","OFP matches the ATC flight plan: route, level, speed, aircraft":"OFP stemmer med ATC-flyplanen: rute, høyde, fart, fly","Fuel figures checked against the fuel policy":"Drivstofftall sjekket mot drivstoffpolicyen","Alternates selected and weather above planning minima":"Alternativer valgt og været over planleggingsminima","NOTAM: departure, destination, alternates, en route":"NOTAM: avgang, destinasjon, alternativer, underveis","Weather: METAR, TAF, SIGMET, significant weather, winds":"Vær: METAR, TAF, SIGMET, significant weather, vind","MEL/CDL items and their operational procedures":"MEL/CDL-punkter og tilhørende prosedyrer","Take-off and landing performance, runway condition":"Avgangs- og landingsytelse, baneforhold","De-icing and holdover time, if needed":"Avising og holdover-tid, ved behov","Load sheet checked and signed, NOTOC for dangerous goods":"Lasteark sjekket og signert, NOTOC for farlig gods","Slot, stand and pushback":"Slot, oppstillingsplass og pushback","Security and passenger information":"Sikkerhet og passasjerinformasjon","MEL / CDL items":"MEL / CDL-punkter","Commander’s notes":"Kapteinens notater","Load sheet and performance":"Lasteark og ytelse","Actual / planned":"Faktisk / planlagt","Limit":"Grense","Check":"Sjekk","Zero fuel mass (ZFM)":"Masse uten drivstoff (ZFM)","Take-off fuel":"Avgangsdrivstoff","Take-off mass (TOM)":"Avgangsmasse (TOM)","Trip fuel":"Trip-drivstoff","Landing mass (LM)":"Landingsmasse (LM)","Underload / limiting":"Underload / begrensende","CG / trim (%MAC)":"Tyngdepunkt / trim (%MAC)","TOM = ZFM + take-off fuel. LM = TOM − trip fuel. For MTOM use the lowest of structural, performance-limited and any other limit. Units as on your load sheet.":"TOM = ZFM + avgangsdrivstoff. LM = TOM − trip-drivstoff. Bruk den laveste av strukturell, ytelsesbegrenset og eventuelle andre grenser som MTOM. Enheter som på lastearket.","Take-off":"Avgang","Landing":"Landing","RWY / intersection":"Bane / avkjøring","Condition (RWYCC)":"Forhold (RWYCC)","Flaps":"Klaff","Thrust / assumed temp":"Skyvekraft / antatt temp.","Engine-out procedure":"Prosedyre ved motorstans","RWY":"Bane","VREF / VAPP":"VREF / VAPP","Autobrake":"Autobrems","Required distance":"Påkrevd distanse","LDA":"LDA","OK":"OK","De-icing: fluid, start time, holdover time":"Avising: væske, starttid, holdover-tid","Performance comes from your aircraft’s performance software or manual and the operator’s procedures. Runway condition codes follow the global reporting format (RCAM); a contaminated runway changes both take-off and landing figures.":"Ytelse kommer fra flyets ytelsesprogram eller -manual og operatørens prosedyrer. Baneforholdskodene følger det globale rapporteringsformatet (RCAM); en kontaminert bane endrer både avgangs- og landingstall.","Basic scheme (CAT) minimum":"Basic scheme (CAT) minimum","Holding fuel flow per hour at 1500 ft":"Drivstofforbruk per time i holding (1500 ft)","Engines":"Motorer","Commercial flight":"Kommersiell flyging",
  'Build it on the map ↗':'Bygg den på kartet ↗',
  "Forecasts are checked for ETA ± 1 hour. For the alternates, the required ceiling and visibility are filled in from the rules below when you leave them empty. Operator’s own rule (OM-A), if stricter:":"Prognosene sjekkes for ETA ± 1 time. For alternativene fylles krav til skybase og sikt inn fra reglene under når feltene står tomme. Operatørens egen regel (OM-A), hvis strengere:","Destination alternates: 0, 1 or 2?":"Destinasjonsalternativer: 0, 1 eller 2?","Rules for this flight":"Regelverk for turen","Part-NCO (non-commercial, not complex)":"Part-NCO (ikke-kommersiell, ikke komplekst fly)","Part-NCC (non-commercial, complex aircraft)":"Part-NCC (ikke-kommersiell, komplekst fly)","Part-CAT (commercial, basic fuel scheme)":"Part-CAT (kommersiell, basic fuel scheme)","Best approach at destination":"Beste innflyging på destinasjonen","Instrument approach, straight-in":"Instrumentinnflyging, rett inn","Circling only":"Kun sirkling","No instrument approach":"Ingen instrumentinnflyging","Instrument approach":"Instrumentinnflyging","Circling":"Sirkling","Destination DH / MDH (ft above aerodrome)":"DH / MDH på destinasjonen (ft over flyplassen)","Destination RVR / VIS minimum (m)":"RVR / VIS-minimum på destinasjonen (m)","Lowest forecast ceiling in the window (ft)":"Laveste varslede skybase i vinduet (ft)","Lowest forecast visibility in the window (m)":"Laveste varslede sikt i vinduet (m)","Planned flight time (h)":"Planlagt flytid (t)","Separate usable runways at destination":"Separate brukbare rullebaner på destinasjonen","Circling height at destination (ft)":"Sirklingshøyde på destinasjonen (ft)","No meteorological information for the destination":"Ingen værinformasjon for destinasjonen","Operator uses the basic fuel scheme with variations (approved)":"Operatøren bruker basic fuel scheme with variations (godkjent)","Destination is an isolated aerodrome (designated / approved)":"Destinasjonen er en isolert flyplass (utpekt / godkjent)","Approach and landing can be made in VMC for the whole window":"Innflyging og landing kan gjøres i VMC hele vinduet","An approach that does not rely on GNSS (ILS, LOC, VOR, NDB) is available at the destination or the alternate":"En innflyging som ikke er avhengig av GNSS (ILS, LOC, VOR, NDB) finnes på destinasjonen eller alternativet","Or: all SBAS conditions in NCO.OP.142(b) are met":"Eller: alle SBAS-vilkårene i NCO.OP.142(b) er oppfylt","Approach used for planning":"Innflyging brukt i planleggingen","DH / MDH (ft)":"DH / MDH (ft)","RVR / VIS min (m)":"RVR / VIS min (m)","Min. safe IFR height (ft)":"Laveste sikre IFR-høyde (ft)","Required ceiling / VIS":"Krav skybase / sikt","Forecast":"Prognose","Forecast for the alternates is taken from the table above. Source: EASA Easy Access Rules for Air Operations, Rev. 24 (March 2026): NCO.OP.140, 142, 143 · NCC.OP.147, 151, 153 · CAT.OP.MPA.182 with AMC2, AMC5 and AMC6. Your operations manual can be stricter, and CAT operators with approved variations (AMC8/AMC9) use their own tables. The OM-A is the authority.":"Prognosen for alternativene hentes fra tabellen over. Kilde: EASA Easy Access Rules for Air Operations, Rev. 24 (mars 2026): NCO.OP.140, 142, 143 · NCC.OP.147, 151, 153 · CAT.OP.MPA.182 med AMC2, AMC5 og AMC6. Driftshåndboken kan være strengere, og CAT-operatører med godkjente varianter (AMC8/AMC9) bruker egne tabeller. OM-A er fasit.",

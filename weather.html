@@ -36,6 +36,9 @@
 .glossary{columns:3 230px;column-gap:28px;font-size:14px}
 .glossary div{break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--rule-2)}
 .glossary b{font-family:var(--f-mono);font-weight:500;color:var(--magenta);display:inline-block;min-width:52px}
+.live{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:14px}
+.live input{font-family:var(--f-mono);font-size:15px;width:76px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;text-transform:uppercase;background:#fff}
+.livest{font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}.livest.err{color:var(--warning)}
 </style>
 </head>
 <body data-title="Weather for Pilots">
@@ -54,6 +57,7 @@
     <h2>Decode a report</h2>
     <p class="lead">Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.</p>
     <div class="inbox">
+      <div class="live"><label for="liveId">Latest report for</label><input id="liveId" maxlength="4" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">METAR</button><button class="btn sm" type="button" id="liveT">TAF</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
       <textarea id="raw" spellcheck="false" aria-label="METAR or TAF"></textarea>
       <div class="ex" id="ex"></div>
     </div>
@@ -101,7 +105,7 @@ const NOd={
  'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',
  'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
- 'Decoded':'Dekodet','Check the report':'Sjekk meldingen'
+ 'Decoded':'Dekodet','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };
 LAB.add({},NOd);
 
@@ -230,6 +234,18 @@ function run(){
   if(w&&w.dir!=null){ XW.dir=w.dir; XW.spd=w.spd; XW.gust=w.gust||0; xwD.set(XW.dir); xwS.set(XW.spd); drawXW(); }
 }
 el('raw').addEventListener('input',run);
+/* live: latest METAR or TAF through /api/wx (only on birdbird.eu) */
+async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=el('liveSt'); const say=(t,e)=>{ st.textContent=t; st.className='livest'+(e?' err':''); };
+  if(!/^[A-Z]{4}$/.test(id)){ say(LL('Type a four-letter ICAO code, e.g. ENGM.','Skriv en ICAO-kode med fire bokstaver, f.eks. ENGM.'),1); el('liveId').focus(); return; }
+  say(LL('Fetching…','Henter …')); let r,j;
+  try{ if(!/^https?:/.test(location.protocol)) throw 0; r=await fetch('/api/wx?ids='+id,{headers:{accept:'application/json'}}); if(!/json/.test(r.headers.get('content-type')||'')) throw 0; j=await r.json(); }
+  catch(e){ say(LL('Live reports aren’t available on this copy of the page (they need birdbird.eu). Paste a report below instead.','Levende meldinger er ikke tilgjengelig i denne kopien av siden (de krever birdbird.eu). Lim inn en melding under i stedet.'),1); return; }
+  if(!r.ok||!j.ok){ say((j&&j.message)||LL('Couldn’t reach the weather service. Try again in a minute.','Fikk ikke kontakt med værtjenesten. Prøv igjen om et minutt.'),1); return; }
+  const s=j.stations[id], x=s&&(kind==='T'?s.taf:s.metar);
+  if(!x){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
+  el('raw').value=x.raw; run(); const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
+  say(LL(`From aviationweather.gov${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra aviationweather.gov${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
+el('liveM').onclick=()=>live('M'); el('liveT').onclick=()=>live('T'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
 
 /* ---------- sidevind ---------- */
 const XW={dir:210,spd:12,gust:0,rwy:36};
