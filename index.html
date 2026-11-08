@@ -252,61 +252,10 @@
 .honest ul{margin:10px 0 0;padding-left:18px;font-size:15px;color:var(--h-ink2);line-height:1.55}
 .honest li+li{margin-top:6px}
 
-/* ===== hero: live potential flow ===== */
-body{overflow-x:clip}
-.hx{--night:#0F2233;--mist:#C9D6E0;--pink:#E35BA4;position:relative;width:100vw;margin-left:calc(50% - 50vw);background:radial-gradient(120% 90% at 70% 30%,#16314A 0,#0F2233 55%,#0B1B29 100%);color:#fff;min-height:min(700px,calc(100svh - 124px));margin-bottom:170px;isolation:isolate}
-.hx canvas#flow{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0}
-.hx-links{position:absolute;left:0;top:0;width:100%;height:calc(100% + 150px);pointer-events:none;z-index:2;overflow:visible}
-.hx-links path{fill:none;stroke:var(--pink);stroke-width:1.4;stroke-dasharray:4 5;animation:hxdash 1.2s linear infinite;opacity:.9}
-.hx-links circle{fill:var(--pink)}
-.hx-links circle.ring{fill:none;stroke:var(--pink);stroke-width:1.2;opacity:.6}
-@keyframes hxdash{to{stroke-dashoffset:-18}}
-.hx-in{position:relative;z-index:3;max-width:var(--container);margin:0 auto;padding:0 var(--gr) 0 var(--gl);min-height:inherit;display:flex;align-items:center;pointer-events:none}
-.hx .hc{width:min(52%,640px);padding:56px 0 120px;pointer-events:auto}
-.hx .kick{color:#F2A6CF}
-.hx h1{font-family:var(--h-disp);font-stretch:85%;font-weight:700;font-size:clamp(38px,3.9vw,58px);line-height:1;letter-spacing:-.025em;margin:14px 0 0;color:#fff;text-wrap:balance}
-.hx .lede{font-size:17.5px;line-height:1.6;color:#C3D0DA;max-width:44ch;margin:20px 0 0}
-.hx .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
-.hx .btn{font-size:15px;padding:12px 19px;text-decoration:none;border-radius:3px;display:inline-flex;align-items:center}
-.hx .btn.pri{background:var(--h-acc);color:#fff;border:1px solid var(--h-acc)}
-.hx .btn.pri:hover{background:#B02A7B}
-.hx .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4)}
-.hx .btn.ghost:hover{border-color:#fff;background:rgba(255,255,255,.06)}
-.hx .btn:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.hx-read{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 28px;margin-top:40px;padding-top:16px;border-top:1px solid rgba(201,214,224,.18);max-width:440px}
-.hx-read div{display:flex;flex-direction:column;gap:3px}
-.hx-read span{font-size:12px;color:#8FA3B4}
-.hx-read b{font-family:var(--h-mono);font-weight:500;font-size:22px;color:#fff;font-variant-numeric:tabular-nums}
-.hx-read p{flex-basis:100%;margin:0;font-size:12.5px;color:#7F94A6}
-.hx-cards{position:absolute;right:var(--gr);bottom:-140px;display:flex;align-items:flex-end;gap:26px;pointer-events:auto}
-.hx-bp{display:block;width:232px;background:#fff;border-radius:6px;rotate:-5deg;translate:0 -18px;box-shadow:0 40px 70px -24px rgba(5,12,20,.6),0 0 0 1px rgba(19,32,42,.08);transition:rotate .4s,translate .4s}
-.hx-bp:hover{rotate:-3deg;translate:0 -24px}
-.hx-bp svg{display:block;width:100%;height:auto}
-.hx-bp svg text{font-family:var(--h-mono)}
-.hx-bp svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
-.hx-bp svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
-.hx .fic{position:relative;inset:auto;width:360px;margin:0;color:var(--h-ink);box-shadow:0 40px 70px -24px rgba(5,12,20,.6),0 0 0 1px rgba(19,32,42,.08);border-radius:10px}
-.hx .fic .fh .own{display:none}
-.hx-after{position:relative}
-@media (max-width:1180px){.hx .hc{width:50%}.hx .fic{width:320px}.hx-bp{width:200px}}
-@media (max-width:860px){
-  .hx{min-height:0;margin-bottom:90px}
-  .hx-in{display:block}
-  .hx .hc{width:auto;padding:min(50vw,270px) 0 30px}
-  .hx h1{font-size:clamp(34px,9vw,46px)}
-  .hx-read{margin-top:28px}
-  .hx-cards{position:relative;right:auto;bottom:auto;margin:0 0 -90px;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:12px;align-items:start}
-  .hx-bp{width:auto;rotate:-3deg;translate:0 0}.hx-bp:hover{rotate:-3deg;translate:0 0}
-  .hx .fic{width:auto;font-size:12px}
-  .hx .fic .bd{padding:9px 10px;gap:7px}.hx .fic .q{font-size:12px;padding:6px 9px}.hx .fic .fh{padding:8px 10px}.hx .fic .ft{padding:7px 10px;font-size:10.5px}.hx .fic .a{padding-left:9px;font-size:12px}.hx .fic .cite{font-size:9.5px}.hx .fic .lab a{font-size:9.5px;padding:2px 7px}
-  .hx-links{display:none}
-}
-@media (prefers-reduced-motion:reduce){.hx-links path{animation:none}}
-
 /* ===== hero: Scandinavian, product tiles ===== */
 .hk{--navy:#0B2545;padding:64px 0 24px}
 .hk-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 64px;align-items:end}
-.hk h1{font-family:var(--h-disp);font-weight:650;font-stretch:100%;font-size:clamp(38px,4.4vw,64px);line-height:1.02;letter-spacing:-.028em;color:var(--navy);margin:0}
+.hk h1{font-family:var(--h-disp);font-weight:650;font-stretch:100%;font-size:clamp(36px,4vw,58px);line-height:1.02;letter-spacing:-.028em;color:var(--navy);margin:0}
 .hk .lede{font-size:17px;line-height:1.6;color:var(--h-ink2);margin:0;max-width:46ch}
 .hk .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
 .hk .btn{font-size:15px;padding:12px 20px;border-radius:2px;text-decoration:none;display:inline-flex;align-items:center}
@@ -776,94 +725,7 @@ if(MQ2&&MQ2.addEventListener) MQ2.addEventListener('change',drawDA);
 
 
 
-/* ===== hero: live potential flow (Joukowski aerofoil, exact) ===== */
-(function(){ const el=LAB.el, L=LAB.L;
-const hx=el('hx'), cv=el('flow'); if(!hx||!cv||!cv.getContext) return;
-const ctx=cv.getContext('2d'); const RMq=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MU=[-0.10,0.08], R=Math.hypot(1-MU[0],MU[1]), BETA=Math.asin(MU[1]/R), CH=4.0113;
-const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]], cd=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d]}, ca=(a,b)=>[a[0]+b[0],a[1]+b[1]], cs=(a,b)=>[a[0]-b[0],a[1]-b[1]];
-const csq=a=>{const r=Math.hypot(a[0],a[1]); let x=Math.sqrt((r+a[0])/2), y=Math.sqrt(Math.max(0,(r-a[0])/2)); if(a[1]<0) y=-y; return [x,y]};
-let A=6*Math.PI/180, G, ROT, ROTi, EA, EAi;
-function setA(a){ A=a; G=4*Math.PI*R*Math.sin(a+BETA); ROT=[Math.cos(-a),Math.sin(-a)]; ROTi=[Math.cos(a),Math.sin(a)]; EA=ROTi; EAi=ROT; }
-function inv(z){ const s=csq(cs(cm(z,z),[4,0])); const z1=[(z[0]+s[0])/2,(z[1]+s[1])/2], z2=[(z[0]-s[0])/2,(z[1]-s[1])/2]; return Math.hypot(z1[0]-MU[0],z1[1]-MU[1])>=Math.hypot(z2[0]-MU[0],z2[1]-MU[1])?z1:z2; }
-// velocity in display (pitched) frame at display point p=[x,y]; returns [vx,vy,|zp|]
-function vel(x,y){ const zo=cm([x,y],ROTi), zt=inv(zo), zp=cs(zt,MU); const zp2=cm(zp,zp);
-  let dW=cs(EAi,cm(EA,cd([R*R,0],zp2))); dW=ca(dW,cd([0,G/(2*Math.PI)],zp));
-  const den=cs([1,0],cd([1,0],cm(zt,zt))); const w=cd(dW,den); const v=cm([w[0],-w[1]],ROT); return [v[0],v[1],Math.hypot(zp[0],zp[1])]; }
-let W=0,H=0,DPR=1,S=1,OX=0,OY=0, lines=[], field=null, foil=[], parts=[], mobile=false;
-const toS=(x,y)=>[OX+x*S,OY-y*S], toM=(sx,sy)=>[(sx-OX)/S,(OY-sy)/S];
-function layout(){ const r=hx.getBoundingClientRect(); W=r.width; H=r.height; DPR=Math.min(2,window.devicePixelRatio||1); cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
-  mobile=W<860; const chord=mobile?Math.min(W*.74,520):Math.min(W*.4,640); S=chord/CH;
-  OX=mobile?W*.54:W*.72; OY=mobile?Math.min(W*.52,280)*.48:H*.34; }
-const lerp=(a,b,t)=>a+(b-a)*t;
-function colSpeed(v){ // slow → mist blue, fast → warm white/peach
-  const t=Math.max(0,Math.min(1,(v-.7)/(1.65-.7)));
-  const k=[[96,128,166],[176,196,214],[236,242,247],[255,214,170],[255,160,98]], i=Math.min(3,Math.floor(t*4)), f=t*4-i;
-  return k[i].map((c,j)=>Math.round(lerp(c,k[i+1][j],f))); }
-function build(){
-  // aerofoil outline
-  foil=[]; for(let i=0;i<=360;i++){ const t=i/360*2*Math.PI, zt=[MU[0]+R*Math.cos(t),MU[1]+R*Math.sin(t)], z=ca(zt,cd([1,0],zt)), p=cm(z,ROT); foil.push(toS(p[0],p[1])); }
-  // Cp field, low resolution
-  const fw=Math.ceil(W/7), fh=Math.ceil(H/7); field=document.createElement('canvas'); field.width=fw; field.height=fh; const fx=field.getContext('2d'), id=fx.createImageData(fw,fh);
-  for(let j=0;j<fh;j++) for(let i=0;i<fw;i++){ const m=toM((i+.5)*W/fw,(j+.5)*H/fh), v=vel(m[0],m[1]); let cp=v[2]<R*1.001?0:1-(v[0]*v[0]+v[1]*v[1]); const o=(j*fw+i)*4;
-    if(cp<0){ const t=Math.min(1,-cp/2.2); id.data[o]=50; id.data[o+1]=100; id.data[o+2]=235; id.data[o+3]=Math.round(170*Math.pow(t,.8)); }
-    else { const t=Math.min(1,cp); id.data[o]=240; id.data[o+1]=128; id.data[o+2]=78; id.data[o+3]=Math.round(190*t*t*t); } }
-  fx.putImageData(id,0,0);
-  // streamlines (RK4 in model units)
-  lines=[]; const gap=mobile?11:13, ds=4/S, x0=toM(-20,0)[0], xEnd=toM(W+20,0)[0];
-  const f=(x,y)=>{ const v=vel(x,y), n=Math.max(Math.hypot(v[0],v[1]),.15); return [v[0]/n,v[1]/n,Math.hypot(v[0],v[1]),v[2]]; };
-  for(let sy=-gap*2; sy<H+gap*4; sy+=gap){ let p=toM(-20,sy); p[0]=x0; const pts=[], sp=[]; let alive=true;
-    for(let k=0;k<1400&&alive;k++){ const k1=f(p[0],p[1]); if(k1[3]<R*1.003) break; const s=toS(p[0],p[1]); pts.push(s); sp.push(k1[2]);
-      const k2=f(p[0]+ds/2*k1[0],p[1]+ds/2*k1[1]), k3=f(p[0]+ds/2*k2[0],p[1]+ds/2*k2[1]), k4=f(p[0]+ds*k3[0],p[1]+ds*k3[1]);
-      p=[p[0]+ds/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]), p[1]+ds/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1])]; if(p[0]>xEnd) break; }
-    if(pts.length>8){ const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])); lines.push({pts,sp,cum,len:cum[cum.length-1]}); } }
-  if(!parts.length||parts.length!==lines.length*2){ parts=[]; lines.forEach((l,i)=>{ parts.push({l:i,s:Math.random()},{l:i,s:Math.random()}); }); }
-  el('hxA').textContent=(A*180/Math.PI).toFixed(1)+'°'; el('hxC').textContent=(8*Math.PI*R*Math.sin(A+BETA)/CH).toFixed(2);
-  links();
-}
-function drawStatic(){ ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
-  ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high'; ctx.drawImage(field,0,0,W,H);
-  ctx.lineWidth=1; for(const l of lines){ ctx.beginPath(); const p=l.pts; ctx.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i+=2) ctx.lineTo(p[i][0],p[i][1]);
-    const c=colSpeed(Math.max(...l.sp.slice(0,l.sp.length))); ctx.strokeStyle=`rgba(${colSpeed(1.05).join(',')},.22)`; ctx.stroke(); }
-}
-function shade(){ if(mobile){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'rgba(11,27,41,0)'); g.addColorStop(.16,'rgba(11,27,41,0)'); g.addColorStop(.3,'rgba(11,27,41,.88)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); return; } const g=ctx.createLinearGradient(0,0,W*.58,0); g.addColorStop(0,'rgba(11,27,41,.88)'); g.addColorStop(.6,'rgba(11,27,41,.7)'); g.addColorStop(1,'rgba(11,27,41,0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
-function drawFoil(){ const g=ctx.createLinearGradient(0,OY-40,0,OY+40); g.addColorStop(0,'#F4F7F9'); g.addColorStop(1,'#A9B9C6');
-  ctx.beginPath(); foil.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.shadowColor='rgba(0,0,0,.45)'; ctx.shadowBlur=24; ctx.shadowOffsetY=10; ctx.fillStyle=g; ctx.fill(); ctx.shadowColor='transparent'; ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.stroke(); }
-function at(l,s){ let lo=0,hi=l.cum.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(l.cum[m]<s) lo=m; else hi=m; } return lo; }
-let last=0, raf=0, vis=true;
-function frame(t){ raf=0; if(!vis) return; const dt=Math.min(.05,(t-(last||t))/1000); last=t;
-  if(!RMq&&!hover){ auto+=dt; targetA=(6+2.2*Math.sin(auto*.35))*Math.PI/180; }
-  if(Math.abs(targetA-A)>.0012){ setA(A+(targetA-A)*Math.min(1,dt*3)); if(t-lastBuild>90){ lastBuild=t; build(); } }
-  drawStatic();
-  if(!RMq){ for(const q of parts){ const l=lines[q.l]; if(!l) continue; const i=at(l,q.s*l.len), v=l.sp[i]||1; q.s+=dt*v*(mobile?70:95)/l.len; if(q.s>1) q.s-=1;
-      const s1=q.s*l.len, i1=at(l,Math.max(0,s1-34*v)); const c=colSpeed(v); ctx.beginPath(); ctx.moveTo(l.pts[i1][0],l.pts[i1][1]); for(let k=i1+1;k<=i;k++) ctx.lineTo(l.pts[k][0],l.pts[k][1]);
-      const g=ctx.createLinearGradient(l.pts[i1][0],l.pts[i1][1],l.pts[i][0],l.pts[i][1]); g.addColorStop(0,`rgba(${c},0)`); g.addColorStop(1,`rgba(${c},.8)`); ctx.strokeStyle=g; ctx.lineWidth=1.5; ctx.stroke(); } }
-  shade();
-  drawFoil();
-  if(!RMq) raf=requestAnimationFrame(frame);
-}
-let targetA=A, hover=false, auto=0, lastBuild=0;
-function links(){ const sv=el('hxLinks'); if(!sv||mobile){ if(sv) sv.innerHTML=''; return; } const hr=hx.getBoundingClientRect();
-  const tags=[...hx.querySelectorAll('.hx-bp rect[fill="#F6E7EF"]')].slice(0,1), lab=hx.querySelector('.fic .lab a');
-  const tgt=(fx)=>{ // point on upper surface at fraction fx of chord
-    const i=Math.round(90+fx*0); return null; };
-  const up=foil.slice(0,181); // upper half (t from 0..π) goes TE→LE over top
-  const pick=f=>{ const p=up[Math.round((1-f)*180)]||up[0]; return [p[0],p[1]-3]; };
-  let d=''; const add=(r,f,side)=>{ if(!r) return; const b=r.getBoundingClientRect(); const s=[side>0?b.right-hr.left:b.left-hr.left+b.width/2,b.top-hr.top+b.height/2]; if(side===0) s[1]=b.top-hr.top;
-    const e=pick(f); const c1=[s[0],s[1]-(s[1]-e[1])*.55], c2=[e[0],e[1]+(s[1]-e[1])*.45];
-    d+=`<path d="M${s[0].toFixed(1)} ${s[1].toFixed(1)} C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${e[0].toFixed(1)} ${e[1].toFixed(1)}"/><circle cx="${s[0].toFixed(1)}" cy="${s[1].toFixed(1)}" r="2.6"/><circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="3"/><circle class="ring" cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="7"/>`; };
-  add(tags[0],.32,1); add(lab,.62,0); sv.innerHTML=d; }
-function start(){ layout(); setA(A); build(); last=0; if(RMq){ drawStatic(); shade(); drawFoil(); } else if(!raf) raf=requestAnimationFrame(frame); }
-let rz=0; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(start,120); },{passive:true});
-hx.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse') return; hover=true; const r=hx.getBoundingClientRect(); const fy=(e.clientY-r.top)/r.height; targetA=(9-7*Math.max(0,Math.min(1,fy)))*Math.PI/180; },{passive:true});
-hx.addEventListener('pointerleave',()=>{ hover=false; });
-if('IntersectionObserver' in window) new IntersectionObserver(es=>{ vis=es[0].isIntersecting; if(vis&&!RMq&&!raf) raf=requestAnimationFrame(frame); }).observe(hx);
-LAB.add({},{'Angle of attack':'Angstigningsvinkel','Lift coefficient':'Løftekoeffisient','Move your pointer over the flow to change the angle of attack':'Beveg pekeren over strømningen for å endre angstigningsvinkelen'});
-const tx=()=>{ el('hxAL').textContent=L({en:'Angle of attack',no:'Angrepsvinkel'}); el('hxCL').textContent=L({en:'Lift coefficient',no:'Løftekoeffisient'}); el('hxHint').textContent=matchMedia('(hover:hover)').matches?L({en:'Move your pointer up and down over the flow to change the angle of attack. Ideal potential flow around a cambered aerofoil.',no:'Beveg pekeren opp og ned over strømningen for å endre angrepsvinkelen. Ideell potensialstrøm rundt et krummet vingeprofil.'}):L({en:'Ideal potential flow around a cambered aerofoil, computed live.',no:'Ideell potensialstrøm rundt et krummet vingeprofil, beregnet direkte.'}); };
-tx(); LAB.onLang&&LAB.onLang(tx);
-if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>links());
-start();
-})();
+
 </script>
 </body>
 </html>
