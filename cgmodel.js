@@ -273,22 +273,34 @@ function paint(){
   g.fillStyle='rgba(127,203,232,.06)'; g.beginPath(); g.moveTo(m0[0],m0[1]); g.lineTo(m1[0],m1[1]); g.lineTo(RX(100),ly0); g.lineTo(RX(0),ly0); g.closePath(); g.fill();
   g.strokeStyle='rgba(127,203,232,.22)'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(m0[0],m0[1]); g.lineTo(RX(0),ly0); g.moveTo(m1[0],m1[1]); g.lineTo(RX(100),ly0); g.stroke(); g.setLineDash([]);
   g.fillStyle='rgba(9,15,21,.86)'; g.strokeStyle='#26343F'; g.lineWidth=1; g.beginPath(); g.roundRect?g.roundRect(lx0,ly0,lx1-lx0,lh,8):g.rect(lx0,ly0,lx1-lx0,lh); g.fill(); g.stroke();
-  txt(g,n?L({en:'MAC enlarged · % MAC',no:'MAC forstørret · % MAC'}):L({en:'The wing chord (MAC), enlarged · % MAC',no:'Vingekorden (MAC), forstørret · % MAC'}),lx0+10,ly0+16,{mono:1,col:I.mute,size:F(n?9:10)});
+  const det=window.CN&&CN.full('cmMac');
+  txt(g,n?L({en:'MAC enlarged · % MAC',no:'MAC forstørret · % MAC'}):L({en:'The wing chord (MAC, mean aerodynamic chord), enlarged · positions in % MAC',no:'Vingekorden (MAC, midlere aerodynamisk korde), forstørret · posisjoner i % MAC'}),lx0+10,ly0+16,{mono:1,col:I.mute,size:F(n?9:10)});
+  { const e0=E.env, fwdX=ST.h<e0.fwd, aftX=ST.h>e0.aft, sc0=E.sm<=0?K.bad:(fwdX||aftX)?K.cau:K.ok;
+    const st0=E.sm<=0?L({en:'behind the neutral point: unstable',no:'bak nøytralpunktet: ustabilt'}):fwdX?L({en:'ahead of the forward limit',no:'foran fremre grense'}):aftX?L({en:'behind the aft limit: too little margin',no:'bak bakre grense: for liten margin'}):L({en:'inside the limits · stable',no:'innenfor grensene · stabilt'});
+    txt(g,(n?'':'CG '+nf(ST.h,1)+' % · ')+st0,lx1-10,ly0+16,{col:sc0,al:'right',size:F(n?9.5:11)}); }
   // airfoil along the chord
   const af=(p,up)=>{ const x=p/100, tk=0.12*(1.4845*Math.sqrt(x)-0.63*x-1.758*x*x+1.4215*x*x*x-0.5075*x*x*x*x), cam=0.04*(x<0.4?(2*0.4*x-x*x)/0.16:((1-0.8)+2*0.4*x-x*x)/0.36); return (cam+(up?tk:-tk)); };
   const AY=v=>ry-v*(n?110:150)*Math.min(1,(rx1-rx0)/900);
   g.beginPath(); for(let p=0;p<=100;p+=2) g[p?'lineTo':'moveTo'](RX(p),AY(af(p,true))); for(let p=100;p>=0;p-=2) g.lineTo(RX(p),AY(af(p,false))); g.closePath();
   const ag=g.createLinearGradient(0,AY(0.1),0,ry+6); ag.addColorStop(0,'rgba(201,211,219,.22)'); ag.addColorStop(1,'rgba(201,211,219,.08)'); g.fillStyle=ag; g.fill(); g.strokeStyle='rgba(201,211,219,.45)'; g.stroke();
+  // zones along the chord: too nose-heavy · allowed · tail-heavy · unstable
+  const e=E.env, hnP=S.hn*100;
+  g.fillStyle='rgba(240,180,64,.13)'; g.fillRect(RX(0),ry-5,RX(e.fwd)-RX(0),10); g.fillRect(RX(e.aft),ry-5,RX(hnP)-RX(e.aft),10);
+  g.fillStyle='rgba(236,90,71,.16)'; g.fillRect(RX(hnP),ry-5,RX(100)-RX(hnP),10);
+  if(!det){ const zf=F(n?9:10.5), zy=ry-R(n?24:30);
+    const Z=[[0,e.fwd,n?{en:'nose-heavy',no:'nesetungt'}:{en:'too nose-heavy',no:'for nesetungt'},K.cau],[e.fwd,e.aft,n?{en:'allowed',no:'tillatt'}:{en:'allowed CG range',no:'tillatt CG-område'},K.ok],[e.aft,hnP,n?{en:'tail-heavy',no:'haletungt'}:{en:'too tail-heavy',no:'for haletungt'},K.cau],[hnP,100,{en:'unstable',no:'ustabilt'},K.bad]];
+    g.font='500 '+zf+'px '+S.FONT.body;
+    Z.forEach(([a,b,t,col])=>{ const s0=L(t), w=g.measureText(s0).width, x0=RX(a), x1=RX(b); if(w+8>x1-x0) return; const cx=(x0+x1)/2, cgx0=RX(ST.h); if(Math.abs(cx-cgx0)<w/2+12&&b-a<30) return; txt(g,s0,cx,zy,{col,al:'center',size:zf,w:500}); }); }
   // envelope band
-  const e=E.env; g.fillStyle='rgba(113,204,147,.24)'; g.fillRect(RX(e.fwd),ry-5,RX(e.aft)-RX(e.fwd),10);
+  g.fillStyle='rgba(113,204,147,.24)'; g.fillRect(RX(e.fwd),ry-5,RX(e.aft)-RX(e.fwd),10);
   g.strokeStyle='rgba(113,204,147,.9)'; g.lineWidth=1.5; [e.fwd,e.aft].forEach(v=>{ g.beginPath(); g.moveTo(RX(v),ry-9); g.lineTo(RX(v),ry+9); g.stroke(); });
   // chord line and ticks
   g.strokeStyle='#5B6B78'; g.lineWidth=1; g.beginPath(); g.moveTo(RX(0),ry); g.lineTo(RX(100),ry); g.stroke();
   const tY=ly1-(n?8:10);
   for(let p=0;p<=100;p+=10){ g.beginPath(); g.moveTo(RX(p),tY-12); g.lineTo(RX(p),tY-8); g.stroke(); if(!n||p%20===0) txt(g,p+'',RX(p),tY,{mono:1,col:I.dim,al:'center',size:F(9.5)}); }
-  if(!n){ txt(g,'LEMAC',RX(0),tY-16,{mono:1,col:I.dim,al:'center',size:F(9)}); txt(g,'TEMAC',RX(100),tY-16,{mono:1,col:I.dim,al:'center',size:F(9)}); }
+  if(!n){ txt(g,det?'LEMAC':L({en:'leading edge',no:'forkant'}),RX(0),tY-16,{mono:1,col:I.dim,al:'center',size:F(9)}); txt(g,det?'TEMAC':L({en:'trailing edge',no:'bakkant'}),RX(100),tY-16,{mono:1,col:I.dim,al:'center',size:F(9)}); }
   const fsL=F(n?9.5:11);
-  { const fsz=F(n?9:10), ls=[(n?'':L({en:'fwd limit ',no:'fremre grense '}))+nf(e.fwd,1),(n?'':L({en:'aft limit ',no:'bakre grense '}))+nf(e.aft,1)];
+  { const fsz=F(n?9:10), ls=[(n?'':L({en:'forward limit ',no:'fremre grense '}))+nf(e.fwd,1)+' %',(n?'':L({en:'aft limit ',no:'bakre grense '}))+nf(e.aft,1)+' %'];
     g.font='400 '+fsz+'px '+S.FONT.mono; const w0=g.measureText(ls[0]).width, w1=g.measureText(ls[1]).width, cg0=RX(ST.h);
     const fl=!(cg0<RX(e.fwd)-2&&cg0>RX(e.fwd)-w0-14), al=(cg0>RX(e.aft)+2&&cg0<RX(e.aft)+w1+14);
     txt(g,ls[0],fl?RX(e.fwd)-4:RX(e.fwd)+4,ry+20,{mono:1,col:K.ok,al:fl?'right':'left',size:fsz});
@@ -298,13 +310,14 @@ function paint(){
   if(!n&&ph!=='cr') txt(g,L({en:'main gear',no:'hovedunderstell'}),RX(mg)+4,ry+36,{mono:1,col:I.mute,size:F(9.5)});
   // neutral point
   const npx=RX(S.hn*100); g.strokeStyle='#F08A5D'; g.lineWidth=1.8; g.setLineDash([5,3]); g.beginPath(); g.moveTo(npx,ry-R(n?50:60)); g.lineTo(npx,ry+12); g.stroke(); g.setLineDash([]);
-  txt(g,'NP '+nf(S.hn*100,0)+' %',npx+5,ry-R(n?40:46),{col:'#F08A5D',size:fsL});
+  txt(g,det?'NP '+nf(S.hn*100,0)+' %'+(n?'':' · '+L({en:'neutral point',no:'nøytralpunkt'})):(n?'NP':L({en:'neutral point',no:'nøytralpunkt'})),npx+5,ry-R(n?40:46),{col:'#F08A5D',size:det?fsL:F(n?9:10),w:det?600:500});
   // CP with a small lift arrow
-  const cpx=RX(t.cp*100), cpUp=R(n?32:38); arrow(g,cpx,ry-4,cpx,ry-cpUp,I.cyan,2.4,8);
+  const cpx=RX(t.cp*100), cpUp=R(n?32:38);
+  if(det){ arrow(g,cpx,ry-4,cpx,ry-cpUp,I.cyan,2.4,8);
   const cpLab='CP '+nf(t.cp*100,0)+' %';
   g.font='600 '+fsL+'px '+S.FONT.body; const cpw=g.measureText(cpLab).width;
   const cpRight=cpx+cpw/2>npx-4&&cpx<npx;
-  txt(g,cpLab,cpRight?cpx-6:cpx,ry-cpUp-5,{col:I.cyan,al:cpRight?'right':'center',size:fsL});
+  txt(g,cpLab,cpRight?cpx-6:cpx,ry-cpUp-5,{col:I.cyan,al:cpRight?'right':'center',size:fsL}); }
   // CG handle with a weight arrow, and the static margin
   const cgx=RX(ST.h), cgc=E.sm<=0?K.bad:E.inEnv?I.white:K.cau;
   arrow(g,cgx,ry+4,cgx,ry+R(n?30:34),cgc,2.4,8);
@@ -313,13 +326,13 @@ function paint(){
   txt(g,'CG '+nf(ST.h,1)+' %',cgx,ry+R(n?44:52),{col:cgc,al:'center',size:F(n?11:13)});
   g.fillStyle=cgc; g.globalAlpha=0.55; [[-1,1]].forEach(()=>{ g.beginPath(); g.moveTo(cgx-hs-4,ry); g.lineTo(cgx-hs-10,ry-5); g.lineTo(cgx-hs-10,ry+5); g.closePath(); g.fill(); g.beginPath(); g.moveTo(cgx+hs+4,ry); g.lineTo(cgx+hs+10,ry-5); g.lineTo(cgx+hs+10,ry+5); g.closePath(); g.fill(); }); g.globalAlpha=1;
   // lift moment arm (CG ↔ CP)
-  const arm=(t.cp-E.h)*AC.c; if(Math.abs(cgx-cpx)>10){ const ay=ry-R(n?17:20), lab=(n?'':L({en:'lift arm ',no:'løftearm '}))+nf(Math.abs(arm),2)+' m', fsA=F(n?9:10);
+  const arm=(t.cp-E.h)*AC.c; if(det&&Math.abs(cgx-cpx)>10){ const ay=ry-R(n?17:20), lab=(n?'':L({en:'lift arm ',no:'løftearm '}))+nf(Math.abs(arm),2)+' m', fsA=F(n?9:10);
     g.font='400 '+fsA+'px '+S.FONT.mono; const tw=g.measureText(lab).width;
     if(Math.abs(cgx-cpx)>tw+24) dim(g,cgx,cpx,ay,'rgba(127,203,232,.8)',lab,{size:fsA});
     else { dim(g,cgx,cpx,ay,'rgba(127,203,232,.8)','',{}); const lft=cpx>cgx; txt(g,lab,lft?Math.min(cgx,cpx)-8:Math.max(cgx,cpx)+8,ay+4,{mono:1,col:'rgba(127,203,232,.9)',al:lft?'right':'left',size:fsA}); } }
   // static margin bracket
   const smy=ry-R(n?62:70); const smc=E.sm<=0?K.bad:E.inEnv?K.ok:K.cau;
-  if(Math.abs(npx-cgx)>4){ dim(g,cgx,npx,smy,smc,(n?'SM ':L({en:'static margin ',no:'statisk margin '}))+nf(E.sm,1)+' %',{size:F(n?9.5:11)}); }
+  if(Math.abs(npx-cgx)>4){ dim(g,cgx,npx,smy,smc,(E.sm<=0?(n?'':L({en:'negative margin ',no:'negativ margin '})):det?(n?'SM ':L({en:'static margin ',no:'statisk margin '})):(n?'':L({en:'stability margin ',no:'stabilitetsmargin '})))+nf(E.sm,1)+' %',{size:F(n?9.5:11)}); }
   // instructor hint on the stage
   geo.cgHit={x:cgx,y:ry};
 }
@@ -394,35 +407,72 @@ function outcomes(){
 
 /* ---------------- envelope (drag the dot) and limits chart ---------------- */
 let envSt=null, limSt=null;
-const EX=[5,60], EY=[40,80];
-function envBox(stc){ const n=stc.w<420; return {x:n?40:46,y:28,w:stc.w-(n?52:62),h:stc.h-(n?58:62)}; }
-function paintEnv(){ if(!envSt||!envSt.w) return; const g=S.clear(envSt), W=envSt.w, H=envSt.h, b=envBox(envSt);
+const EX=[5,60], EY=[40,84];
+function envBox(stc){ const n=stc.w<420; return {x:n?40:46,y:28,w:stc.w-(n?52:62),h:stc.h-(n?62:66)}; }
+/* small multi-line label centred at (x,y) */
+function lbl(g,lines,x,y,col,fs){ lines.forEach((s0,i)=>txt(g,s0,x,y+(i-(lines.length-1)/2)*(fs+2)+fs*0.35,{col,al:'center',size:fs,w:500})); }
+function paintEnv(){ if(!envSt||!envSt.w) return; const g=S.clear(envSt), W=envSt.w, H=envSt.h, b=envBox(envSt), n=W<420, det=window.CN&&CN.full('cmEnv'), hnP=S.hn*100, fz=n?9.5:10.5;
   txt(g,L({en:'Mass and CG envelope · drag the dot',no:'Masse- og CG-konvolutt · dra punktet'}),10,17,{col:I.ink,size:12});
-  const ax=S.axes(g,b,EX,EY,{xt:[10,20,30,40,50,60],yt:[40,50,60,70,80],xf:v=>v+'%',yf:v=>v});
-  txt(g,'t',b.x-6,b.y-6,{mono:1,col:I.dim,al:'right',size:9.5});
+  const ax=S.axes(g,b,EX,EY,{xt:[10,20,30,40,50,60],yt:[40,50,60,70,80],xf:v=>v+'%',yf:v=>v===80?v+' t':v});
+  txt(g,L({en:'CG position, % MAC →',no:'CG-posisjon, % MAC →'}),b.x+b.w,b.y+b.h+26,{mono:1,col:I.dim,al:'right',size:9.5});
+  // zones: outside is tinted, the envelope is cut out of it
+  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip();
+  g.fillStyle='rgba(240,180,64,.07)'; g.fillRect(b.x,b.y,b.w,b.h);
+  g.fillStyle='rgba(236,90,71,.10)'; g.fillRect(ax.X(hnP),b.y,b.x+b.w-ax.X(hnP),b.h); g.fillRect(b.x,b.y,b.w,ax.Y(MTOW)-b.y);
+  g.restore();
   g.beginPath(); ENVM.forEach((m,i)=>{ const e=S.envelope(m); i?g.lineTo(ax.X(e.fwd),ax.Y(m)):g.moveTo(ax.X(e.fwd),ax.Y(m)); }); ENVM.slice().reverse().forEach(m=>{ const e=S.envelope(m); g.lineTo(ax.X(e.aft),ax.Y(m)); }); g.closePath();
-  g.fillStyle='rgba(113,204,147,.14)'; g.fill(); g.strokeStyle=K.ok; g.lineWidth=1.6; g.stroke();
-  [[MTOW,'MTOW'],[MLW,'MLW'],[MZFW,'MZFW'],[OEW,'OEW']].forEach(([m,s])=>{ S.line(g,[[ax.X(EX[0]),ax.Y(m)],[ax.X(EX[1]),ax.Y(m)]],I.dim,1,[4,4]); txt(g,s,ax.X(EX[1])-3,ax.Y(m)-4,{mono:1,col:I.mute,al:'right',size:9.5}); });
-  S.line(g,[[ax.X(S.hn*100),ax.Y(EY[1])],[ax.X(S.hn*100),ax.Y(EY[0])]],'#F08A5D',1.4,[5,3]); txt(g,'NP',ax.X(S.hn*100)-4,ax.Y(EY[0])-6,{mono:1,col:'#F08A5D',al:'right',size:10});
-  S.line(g,[[ax.X(XMG/AC.c*100),ax.Y(EY[1])],[ax.X(XMG/AC.c*100),ax.Y(EY[0])]],'rgba(139,153,167,.6)',1,[2,3]);
+  g.fillStyle=I.bg; g.fill(); g.fillStyle='rgba(113,204,147,.16)'; g.fill(); g.strokeStyle=K.ok; g.lineWidth=1.6; g.stroke();
+  // mass lines: MTOW and OEW always, the others in the full chart
+  const ML=det?[[MTOW,'MTOW'],[MLW,L({en:'MLW · max landing',no:'MLW · maks landing'})],[MZFW,L({en:'MZFW · max zero fuel',no:'MZFW · maks uten drivstoff'})],[OEW,L({en:'OEW · empty',no:'OEW · tomt'})]]:[[MTOW,'MTOW'],[OEW,L({en:'OEW · empty',no:'OEW · tomt'})]];
+  ML.forEach(([m,s0])=>{ S.line(g,[[ax.X(EX[0]),ax.Y(m)],[ax.X(EX[1]),ax.Y(m)]],I.dim,1,[4,4]); txt(g,s0,ax.X(EX[1])-3,ax.Y(m)-4,{mono:1,col:I.mute,al:'right',size:9.5}); });
+  S.line(g,[[ax.X(hnP),ax.Y(EY[1])],[ax.X(hnP),ax.Y(EY[0])]],'#F08A5D',1.4,[5,3]); txt(g,'NP',ax.X(hnP)-4,ax.Y(MTOW)+14,{mono:1,col:'#F08A5D',al:'right',size:10});
+  if(det){ S.line(g,[[ax.X(XMG/AC.c*100),ax.Y(EY[1])],[ax.X(XMG/AC.c*100),ax.Y(EY[0])]],'rgba(139,153,167,.6)',1,[2,3]); if(!n) txt(g,L({en:'main gear',no:'hovedunderstell'}),ax.X(XMG/AC.c*100)+4,ax.Y(52),{mono:1,col:I.mute,size:9}); }
+  // zone words
+  const yTop=(ax.Y(EY[1])+ax.Y(MTOW))/2;
+  txt(g,n?L({en:'Too heavy: above MTOW',no:'For tungt: over MTOW'}):L({en:'Too heavy: above MTOW (max take-off mass)',no:'For tungt: over MTOW (maks startmasse)'}),b.x+b.w/2-(n?14:20),yTop+4,{col:K.bad,al:'center',size:fz,w:500});
+  const e46=S.envelope(46), mL=n?47:48;
+  lbl(g,[L({en:'Too far',no:'For langt'}),L({en:'forward',no:'fram'})],(ax.X(EX[0])+ax.X(e46.fwd))/2,ax.Y(mL),K.cau,fz);
+  lbl(g,[L({en:'Too far',no:'For langt'}),L({en:'aft',no:'bak'})],(ax.X(e46.aft)+ax.X(hnP))/2,ax.Y(mL),K.cau,fz);
+  lbl(g,[L({en:'Unstable',no:'Ustabilt'})],(ax.X(hnP)+ax.X(EX[1]))/2,ax.Y(70),K.bad,fz);
+  const inM=Math.abs(ax.Y(ST.m)-ax.Y(47))<26&&Math.abs(ax.X(ST.h)-ax.X(27))<60?72:47, eI=S.envelope(inM);
+  lbl(g,[L({en:'Allowed',no:'Tillatt'}),L({en:'loading',no:'lasting'})],(ax.X(eI.fwd)+ax.X(eI.aft))/2,ax.Y(inM),K.ok,fz);
+  // your loading
   const col=E.sm<=0?K.bad:E.inEnv?K.mag:K.cau, x=ax.X(ST.h), y=ax.Y(ST.m);
   g.strokeStyle='rgba(228,107,174,.35)'; g.lineWidth=1; g.beginPath(); g.moveTo(x,b.y+b.h); g.lineTo(x,y); g.lineTo(b.x,y); g.stroke();
   g.fillStyle=col; g.beginPath(); g.arc(x,y,8,0,7); g.fill(); g.strokeStyle='#0D161E'; g.lineWidth=2; g.stroke();
-  txt(g,E.inEnv?L({en:'inside the envelope',no:'innenfor konvolutten'}):L({en:'outside the envelope',no:'utenfor konvolutten'}),b.x+8,b.y+14,{col:E.inEnv?K.ok:K.cau,size:11});
   envSt.ax=ax; envSt.b=b; }
-function paintLim(){ if(!limSt||!limSt.w) return; const g=S.clear(limSt), W=limSt.w, H=limSt.h, n=W<420, b={x:n?40:46,y:28,w:W-(n?52:62),h:H-(n?58:62)};
+function paintLim(){ if(!limSt||!limSt.w) return; const g=S.clear(limSt), W=limSt.w, H=limSt.h, n=W<420, b={x:n?40:46,y:28,w:W-(n?52:62),h:H-(n?62:66)}, det=window.CN&&CN.full('cmLim'), hnP=S.hn*100, fz=n?9.5:10.5;
   txt(g,L({en:'What sets the limits, at this mass',no:'Hva som setter grensene, ved denne massen'}),10,17,{col:I.ink,size:12});
   const ax=S.axes(g,b,EX,[0,120],{xt:[10,20,30,40,50,60],yt:[0,40,80,120],xf:v=>v+'%',yf:v=>v+'%'});
-  const e=E.env; g.fillStyle='rgba(113,204,147,.10)'; g.fillRect(ax.X(e.fwd),b.y,ax.X(e.aft)-ax.X(e.fwd),b.h);
+  txt(g,L({en:'CG position, % MAC →',no:'CG-posisjon, % MAC →'}),b.x+b.w,b.y+b.h+26,{mono:1,col:I.dim,al:'right',size:9.5});
+  const e=E.env;
+  g.fillStyle='rgba(240,180,64,.07)'; g.fillRect(b.x,b.y,ax.X(e.fwd)-b.x,b.h); g.fillRect(ax.X(e.aft),b.y,ax.X(hnP)-ax.X(e.aft),b.h);
+  g.fillStyle='rgba(236,90,71,.10)'; g.fillRect(ax.X(hnP),b.y,b.x+b.w-ax.X(hnP),b.h);
+  g.fillStyle='rgba(113,204,147,.10)'; g.fillRect(ax.X(e.fwd),b.y,ax.X(e.aft)-ax.X(e.fwd),b.h);
   S.line(g,[[ax.X(EX[0]),ax.Y(100)],[ax.X(EX[1]),ax.Y(100)]],I.dim,1,[2,3]);
-  const fl=[], sf=[]; for(let h=EX[0];h<=EX[1];h+=0.5){ fl.push([ax.X(h),ax.Y(Math.min(120,S.flare(ST.m,h/100,GE).frac*100))]); const v=ST.m*(S.hm(ST.m,RHO)-h/100)/(64*(S.hm(64,RHO)-.15))*100; sf.push([ax.X(h),ax.Y(Math.max(0,Math.min(120,v)))]); }
-  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip(); S.line(g,fl,K.cau,2.2); S.line(g,sf,I.cyan,2.2); g.restore();
-  S.line(g,[[ax.X(S.hn*100),b.y],[ax.X(S.hn*100),b.y+b.h]],'#F08A5D',1.2,[4,3]);
-  S.line(g,[[ax.X(ST.h),b.y],[ax.X(ST.h),b.y+b.h]],I.white,1.4);
+  txt(g,L({en:'100 % = full nose-up elevator',no:'100 % = fullt høyderor opp'}),b.x+b.w-4,ax.Y(100)+(n?12:-5),{mono:1,col:I.mute,al:'right',size:9});
   const flv=h=>Math.min(120,S.flare(ST.m,h/100,GE).frac*100), sfv=h=>ST.m*(S.hm(ST.m,RHO)-h/100)/(64*(S.hm(64,RHO)-.15))*100;
-  txt(g,L({en:'flare elevator needed',no:'høyderor for utflating'}),ax.X(39),ax.Y(flv(39))-8,{col:K.cau,size:n?10:11});
-  txt(g,L({en:'stick force per g',no:'stikkekraft per g'}),ax.X(9),ax.Y(Math.min(112,sfv(9)))+(sfv(9)>100?18:-8),{col:I.cyan,size:n?10:11});
-  if(!n){ txt(g,L({en:'fwd limit: elevator runs out',no:'fremre grense: høyderoret tar slutt'}),ax.X(e.fwd)-4,b.y+b.h-8,{mono:1,col:K.ok,al:'right',size:9.5}); txt(g,L({en:'aft limit: margin and feel',no:'bakre grense: margin og følelse'}),ax.X(e.aft)+4,b.y+b.h-8,{mono:1,col:K.ok,size:9.5}); }
+  const fl=[], sf=[]; let hx=null; for(let h=EX[0];h<=EX[1];h+=0.5){ const f=flv(h); if(hx==null&&f<=100) hx=h; fl.push([ax.X(h),ax.Y(f)]); sf.push([ax.X(h),ax.Y(Math.max(0,Math.min(120,sfv(h))))]); }
+  g.save(); g.beginPath(); g.rect(b.x,b.y,b.w,b.h); g.clip(); S.line(g,fl,K.cau,2.2); S.line(g,sf,I.cyan,2.2); g.restore();
+  if(det) S.line(g,[[ax.X(hnP),b.y],[ax.X(hnP),b.y+b.h]],'#F08A5D',1.2,[4,3]);
+  S.line(g,[[ax.X(ST.h),b.y],[ax.X(ST.h),b.y+b.h]],I.white,1.4);
+  txt(g,L({en:'your CG',no:'din CG'}),ax.X(ST.h)+(ST.h>45?-4:4),b.y+12,{col:I.white,al:ST.h>45?'right':'left',size:9.5,w:500});
+  // the two curves, named in words
+  txt(g,n?L({en:'flare elevator needed',no:'høyderor for utflating'}):L({en:'elevator needed to flare',no:'høyderor som trengs for å flate ut'}),ax.X(n?33:31),ax.Y(flv(n?33:31))-8,{col:K.cau,size:n?10:11});
+  { const hs=n?33:34, ys=Math.max(0,Math.min(120,sfv(hs))); txt(g,n?L({en:'stick force per g',no:'stikkekraft per g'}):L({en:'stick force per g (% of normal)',no:'stikkekraft per g (% av normal)'}),ax.X(hs)-6,ax.Y(ys)+ (n?16:18),{col:I.cyan,al:'right',size:n?10:11,bg:'rgba(16,23,29,.85)'}); }
+  // where the elevator runs out, and the light-stick end
+  if(hx!=null&&hx>EX[0]){ const px=ax.X(hx), py=ax.Y(100); g.fillStyle=K.bad; g.beginPath(); g.arc(px,py,4,0,7); g.fill();
+    lbl(g,[L({en:'elevator',no:'høyderoret'}),L({en:'runs out',no:'tar slutt'})],px,py+(n?24:28),K.bad,fz);
+    if(det&&ax.X(e.fwd)-px>14) { dim(g,px,ax.X(e.fwd),py+40,'rgba(240,180,64,.8)',L({en:'margin',no:'margin'}),{size:9}); } }
+  { const px=ax.X(e.aft), py=ax.Y(Math.max(0,Math.min(120,sfv(e.aft)))); g.fillStyle=I.cyan; g.beginPath(); g.arc(px,py,4,0,7); g.fill();
+    txt(g,n?L({en:'light',no:'lett'}):L({en:'stick getting light',no:'stikka blir lett'}),px-8,py+(n?15:17),{col:I.cyan,al:'right',size:fz,w:500,bg:'rgba(16,23,29,.85)'}); }
+  // zone words along the bottom (the old limit notes in the full chart)
+  if(det){ if(!n){ txt(g,L({en:'fwd limit: elevator runs out',no:'fremre grense: høyderoret tar slutt'}),ax.X(e.fwd)-4,b.y+b.h-8,{mono:1,col:K.ok,al:'right',size:9.5}); txt(g,L({en:'aft limit: margin and feel',no:'bakre grense: margin og følelse'}),ax.X(e.aft)+4,b.y+b.h-8,{mono:1,col:K.ok,size:9.5}); }
+    txt(g,'NP',ax.X(hnP)+4,b.y+24,{mono:1,col:'#F08A5D',size:10});
+    txt(g,L({en:'stick force 100 % = 64 t at 15 % MAC',no:'stikkekraft 100 % = 64 t ved 15 % MAC'}),b.x+b.w-4,ax.Y(100)+12,{mono:1,col:I.dim,al:'right',size:9}); }
+  else { const zy=b.y+b.h-8, fw=g;
+    const Z=[[EX[0],e.fwd,{en:'too far fwd',no:'for langt fram'},K.cau],[e.fwd,e.aft,{en:'allowed',no:'tillatt'},K.ok],[e.aft,hnP,{en:'too far aft',no:'for langt bak'},K.cau],[hnP,EX[1],{en:'unstable',no:'ustabilt'},K.bad]];
+    fw.font='500 '+fz+'px '+S.FONT.body; Z.forEach(([a0,b0,t0,c0])=>{ const s0=L(t0), w0=fw.measureText(s0).width; if(w0+14>ax.X(b0)-ax.X(a0)) return; txt(g,s0,(ax.X(a0)+ax.X(b0))/2,zy,{col:c0,al:'center',size:fz,w:500}); }); }
 }
 
 /* ---------------- controls ---------------- */
@@ -437,7 +487,16 @@ const PRE=[
 let preOn=null;
 function setState(o,keepPre){ if(o.m!=null) ST.m=Math.round(Math.max(OEW,Math.min(MTOW,o.m))*2)/2; if(o.h!=null) ST.h=Math.round(Math.max(5,Math.min(60,o.h))*2)/2; if(o.ph&&o.ph!==ST.ph){ ST.ph=o.ph; A.t0=performance.now(); A.th=0; A.q=0; A.trace=[]; A.g0=null; if(phSeg) phSeg.set(ST.ph); }
   if(!keepPre) preOn=null; update(); }
-function update(){ E=calc(); if(slCG) slCG.set(ST.h); if(slM) slM.set(ST.m); outcomes(); paint(); paintEnv(); paintLim(); drawPre(); drawTog(); kick(); changed(); }
+let cnEnv=null, cnMac=null;
+function cnStatus(){ if(!E) return; const e=E.env, ld=nf(ST.m,1)+' t, CG '+nf(ST.h,1)+' % MAC';
+  const head=L({en:'Your loading: ',no:'Lastingen din: '})+ld+': ';
+  let s0, c0;
+  if(E.sm<=0){ s0=L({en:'behind the neutral point. The aircraft is unstable: a disturbance keeps growing.',no:'bak nøytralpunktet. Flyet er ustabilt: en forstyrrelse fortsetter å vokse.'}); c0=K.bad; }
+  else if(ST.h<e.fwd){ s0=nf(e.fwd-ST.h,1)+' % '+L({en:'ahead of the forward limit. Too nose-heavy: not enough elevator to flare or rotate.',no:'foran fremre grense. For nesetungt: ikke nok høyderor til å flate ut eller rotere.'}); c0=K.cau; }
+  else if(ST.h>e.aft){ s0=nf(ST.h-e.aft,1)+' % '+L({en:'behind the aft limit. Too tail-heavy: little stability and very light controls.',no:'bak bakre grense. For haletungt: lite stabilitet og svært lette ror.'}); c0=K.cau; }
+  else { s0=L({en:'inside the envelope. Legal to fly.',no:'innenfor konvolutten. Lovlig å fly.'}); c0=K.ok; }
+  if(cnEnv) cnEnv.status(head+s0,c0); }
+function update(){ E=calc(); cnStatus(); if(slCG) slCG.set(ST.h); if(slM) slM.set(ST.m); outcomes(); paint(); paintEnv(); paintLim(); drawPre(); drawTog(); kick(); changed(); }
 function drawPre(){ const b=el('cmPre'); if(!b) return; b.innerHTML=PRE.map(([k,t])=>`<button type="button" class="btn sm${preOn===k?' on':''}" data-k="${k}">${L(t)}</button>`).join(''); }
 function drawTog(){ const p=el('cmPlay'); if(p) p.textContent='▶ '+(ST.ph==='cr'?L({en:'Gust',no:'Vindkast'}):ST.ph==='to'?L({en:'Rotate again',no:'Roter igjen'}):L({en:'Flare again',no:'Flat ut igjen'}));
   const b=el('cmTog'); if(!b) return;
@@ -447,7 +506,7 @@ function drawTog(){ const p=el('cmPlay'); if(p) p.textContent='▶ '+(ST.ph==='c
 function legend(){ const b=el('cmLeg'); if(!b) return;
   const it=[['#EEF3F7','line',{en:'Weight at the CG',no:'Vekt i CG'}],['#7FCBE8','line',{en:'Wing lift at the CP',no:'Vingeløft i CP'}],['#E46BAE','line',{en:'Tail force (drawn ×5)',no:'Halekraft (tegnet ×5)'}],['#F08A5D','dash',{en:'NP, neutral point',no:'NP, nøytralpunkt'}],['#71CC93','band',{en:'CG limits at this mass',no:'CG-grenser ved denne massen'}],['#FFD58A','dot',{en:'Lit window = passengers',no:'Lyst vindu = passasjerer'}]];
   b.innerHTML=it.map(([c,k,t])=>`<span><i class="${k}" style="--c:${c}"></i>${L(t)}</span>`).join('');
-  el('cmHint').innerHTML=L({en:'<b>What you are seeing:</b> the aircraft with its three vertical forces, and below it the wing chord (MAC) blown up so you can see where the CG sits between its limits. The distance from the CG to the NP is the static margin.',no:'<b>Det du ser:</b> flyet med de tre vertikale kreftene, og under det vingekorden (MAC) forstørret, så du ser hvor CG ligger mellom grensene. Avstanden fra CG til NP er den statiske marginen.'}); }
+  el('cmHint').innerHTML=(window.CN&&CN.full('cmMac')?'<b>'+L({en:'CP',no:'CP'})+'</b> '+L({en:'(centre of pressure): where the wing’s lift acts.',no:'(trykksenter): der vingeløftet virker.'})+' <b>NP</b> '+L({en:'(neutral point): with the CG here the aircraft has no stability left.',no:'(nøytralpunkt): med CG her har flyet ingen stabilitet igjen.'})+' <b>'+L({en:'Lift arm',no:'Løftearm'})+'</b> '+L({en:'(CG to CP): lift × arm is the pitch moment the tail must balance. ',no:'(CG til CP): løft × arm er pitchmomentet halen må balansere. '}):'')+L({en:'<b>What you are seeing:</b> the aircraft with its three vertical forces, and below it the wing chord (MAC) blown up so you can see where the CG sits between its limits. The distance from the CG to the NP is the static margin.',no:'<b>Det du ser:</b> flyet med de tre vertikale kreftene, og under det vingekorden (MAC) forstørret, så du ser hvor CG ligger mellom grensene. Avstanden fra CG til NP er den statiske marginen.'}); }
 function init(){
   st=LAB.fit(el('cmCv'),()=>paint(),2);
   LAB.visible(el('cmCv'),v=>{ vis=v; kick(); });
@@ -471,6 +530,18 @@ function init(){
   const end=()=>{ drag=null; cv.classList.remove('drag'); }; cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
   // envelope: drag the dot in 2D
   envSt=LAB.fit(el('cmEnv'),()=>paintEnv(),2); limSt=LAB.fit(el('cmLim'),()=>paintLim(),2);
+  if(window.CN){ const T=CN.t;
+    cnMac=CN.add(el('cmCv'),{key:'cmMac',
+      read:()=>L({en:'Top: the aircraft and its three up-down forces. Bottom: the wing chord blown up. The ◆ is the CG; the green band is where it is allowed to be.',no:'Øverst: flyet og de tre kreftene opp og ned. Nederst: vingekorden forstørret. ◆ er CG; det grønne båndet er der den får lov å være.'}),
+      take:()=>L({en:'Further forward = more stable but heavier to pitch; further aft = lighter and more efficient but less stable. The limits keep you between “not enough elevator” and “not enough stability”.',no:'Lenger fram = mer stabilt, men tyngre å pitche; lenger bak = lettere og mer effektivt, men mindre stabilt. Grensene holder deg mellom «ikke nok høyderor» og «ikke nok stabilitet».'}),
+      tog:{en:'Show CP, NP and lift arm',no:'Vis CP, NP og løftearm'},
+      full:()=>{ paint(); legend(); }});
+    cnEnv=CN.add(el('cmEnv'),{read:()=>L({en:'Across: where the CG is. Up: how heavy the aircraft is. Every loading inside the green shape is legal.',no:'Bortover: hvor CG ligger. Oppover: hvor tungt flyet er. All lasting innenfor den grønne formen er lovlig.'}),
+      take:()=>L({en:'Mass and CG are checked together: a CG that is fine when light can be too far forward when heavy.',no:'Masse og CG sjekkes sammen: en CG som er grei når flyet er lett, kan være for langt fram når det er tungt.'}),
+      status:true, full:()=>paintEnv()});
+    CN.add(el('cmLim'),{read:()=>L({en:'Two needs against CG position: the amber line is elevator needed to flare, the blue line is how firm the stick feels in a pull.',no:'To behov mot CG-posisjon: den gule linjen er høyderoret som trengs for å flate ut, den blå er hvor fast stikka føles i et opptrekk.'}),
+      take:()=>L({en:'The forward limit stops you running out of elevator in the flare; the aft limit keeps enough stability and stick feel. Both are set with a safety margin.',no:'Fremre grense hindrer at du går tom for høyderor i utflatingen; bakre grense sikrer nok stabilitet og stikkefølelse. Begge settes med sikkerhetsmargin.'}),
+      full:()=>paintLim()}); }
   const ev=el('cmEnv'); let ed=false;
   const evSet=e=>{ if(!envSt.ax) return; const r=ev.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top, b=envSt.b;
     const h=EX[0]+(x-b.x)/b.w*(EX[1]-EX[0]), m=EY[0]+(b.y+b.h-y)/b.h*(EY[1]-EY[0]); setState({h,m}); };

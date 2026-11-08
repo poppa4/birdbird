@@ -42,6 +42,11 @@ function calc(){ const o=opt(), P=M.ltPoint(o,T.v), vm=M.ltVmc(o), vmO=M.ltVmc(o
 /* geometry, metres: x = right wing, y = forward */
 const G={ye:LT.ye,R:LT.R,yProp:2.45,yFin:-4.85,cg0:0.3};
 const fusel=[[0,4.5],[0.34,4.1],[0.6,3.1],[0.66,1.4],[0.62,-0.6],[0.42,-3.0],[0.14,-5.25]];
+const TW={wing:[[-5.9,0.82],[-0.6,1.05],[0.6,1.05],[5.9,0.82],[5.9,-0.25],[0.6,-0.72],[-0.6,-0.72],[-5.9,-0.25]],
+  ailL:[[-5.9,-0.25],[-3.6,-0.46],[-3.6,-0.1],[-5.9,0.06]], ailR:[[5.9,-0.25],[3.6,-0.46],[3.6,-0.1],[5.9,0.06]],
+  tail:[[-2.25,-4.25],[2.25,-4.25],[2.25,-4.95],[-2.25,-4.95]].map((p,i)=>[p[0],p[1]+(i<2?-Math.abs(p[0])*0.1:-Math.abs(p[0])*0.03)]),
+  stripe:[[-0.07,2.4],[0.07,2.4],[0.07,-4.0],[-0.07,-4.0]]};
+const TG={cx:NaN,cy:NaN,sc:NaN,ps:NaN,list:[],i:0};
 function top(st,g,box,ps){
   const P=C.P, liveR=P.live==='R', sl=liveR?1:-1, n=narrow(st), fs=n?10:11;
   const sc=Math.min(box.w/14.2,box.h/15.4), cx=box.x+box.w/2, cy=box.y+box.h*0.47;
@@ -50,27 +55,32 @@ function top(st,g,box,ps){
   const poly=(pts,fill,stroke,lw)=>{ g.beginPath(); pts.forEach((p,i)=>{ const q=X(p[0],p[1]); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); }); g.closePath(); if(fill){ g.fillStyle=fill; g.fill(); } if(stroke){ g.strokeStyle=stroke; g.lineWidth=lw||1; g.stroke(); } };
   const ln=(a,b,col,w,dash)=>{ const p=X(a[0],a[1]), q=X(b[0],b[1]); g.strokeStyle=col; g.lineWidth=w||1; g.setLineDash(dash||[]); g.beginPath(); g.moveTo(p[0],p[1]); g.lineTo(q[0],q[1]); g.stroke(); g.setLineDash([]); };
   const ar=(a,b,col,w,h)=>{ const p=X(a[0],a[1]), q=X(b[0],b[1]); arrow(g,p[0],p[1],q[0],q[1],col,w,h); return q; };
+  /* shaded paint in the CG lab's visual language; gradients cached while the view does not move */
+  const hit=TG.cx===cx&&TG.cy===cy&&TG.sc===sc&&TG.ps===ps; if(!hit){ TG.cx=cx; TG.cy=cy; TG.sc=sc; TG.ps=ps; TG.list.length=0; } TG.i=0;
+  const gr=(x0,y0,x1,y1,a,m,b)=>{ if(hit&&TG.i<TG.list.length) return TG.list[TG.i++]; const p0=X(x0,y0), p1=X(x1,y1), q=g.createLinearGradient(p0[0],p0[1],p1[0],p1[1]); q.addColorStop(0,a); if(m) q.addColorStop(0.5,m); q.addColorStop(1,b); TG.list[TG.i++]=q; return q; };
+  const EDGE='rgba(30,44,56,.65)';
   const tx=(t,x,y,o)=>{ const p=X(x,y); txt(g,t,p[0]+(o.dx||0),p[1]+(o.dy||0),Object.assign({size:fs,bg:BG},o)); };
   // flight path (straight, heading held) and relative wind with sideslip
   const fp=X(0,9), fq=X(0,-7.5); g.strokeStyle='rgba(127,203,232,.16)'; g.setLineDash([5,7]); g.lineWidth=1; g.beginPath(); g.moveTo(cx,box.y+4); g.lineTo(cx,box.y+box.h-4); g.stroke(); g.setLineDash([]);
   // accelerated slipstream over the live wing
   const xl=sl*G.ye, xT=xl+P.e;
   // wing
-  poly([[-5.9,0.82],[-0.6,1.05],[0.6,1.05],[5.9,0.82],[5.9,-0.25],[0.6,-0.72],[-0.6,-0.72],[-5.9,-0.25]],'#3A4A57','#5E6D7C',1);
-  poly([[-5.9,-0.25],[-3.6,-0.46],[-3.6,-0.1],[-5.9,0.06]],'#2F3D48');poly([[5.9,-0.25],[3.6,-0.46],[3.6,-0.1],[5.9,0.06]],'#2F3D48');
+  poly(TW.wing,gr(0,1.05,0,-0.72,'#F2F5F8',null,'#A9B5BF'),EDGE,1);
+  poly(TW.ailL,'#98A5B0',EDGE,0.8);poly(TW.ailR,'#98A5B0',EDGE,0.8);
   if(T.lay.as){ const xc=xl+P.e*0.9; g.save(); const gr=g.createLinearGradient(...X(0,G.yProp),...X(0,-1.6)); gr.addColorStop(0,'rgba(127,203,232,.30)'); gr.addColorStop(1,'rgba(127,203,232,.04)'); poly([[xc-G.R*0.95,G.yProp],[xc+G.R*0.95,G.yProp],[xc+G.R*1.05,-1.6],[xc-G.R*1.05,-1.6]],gr); g.restore();
     tx(L({en:'+ lift',no:'+ løft'}),xc+sl*1.25,-1.15,{col:I.green,al:'center',w:700}); }
   // tailplane
-  poly([[-2.25,-4.25],[2.25,-4.25],[2.25,-4.95],[-2.25,-4.95]].map((p,i)=>[p[0],p[1]+(i<2?-Math.abs(p[0])*0.1:-Math.abs(p[0])*0.03)]),'#3A4A57','#5E6D7C',1);
+  poly(TW.tail,gr(0,-4.25,0,-5.0,'#EEF2F5',null,'#A9B5BF'),EDGE,1);
   // fuselage
   const fu=fusel.concat(fusel.slice().reverse().map(p=>[-p[0],p[1]]));
-  poly(fu,'#4C5D6A','#8B99A7',1.1);
-  poly([[-0.42,3.4],[0.42,3.4],[0.55,2.5],[-0.55,2.5]],'rgba(127,203,232,.35)');
+  poly(fu,gr(-0.7,0,0.7,0,'#A9B5BF','#F6F8FA','#A9B5BF'),EDGE,1.1);
+  poly(TW.stripe,'rgba(228,107,174,.9)');
+  poly([[-0.42,3.4],[0.42,3.4],[0.55,2.5],[-0.55,2.5]],gr(0,3.4,0,2.5,'#3E6380',null,'#16283A'),'rgba(226,232,238,.6)',0.8);
   // nacelles
-  for(const sx of [-1,1]){ const x=sx*G.ye; poly([[x-0.34,2.25],[x+0.34,2.25],[x+0.38,0.4],[x+0.22,-1.5],[x-0.22,-1.5],[x-0.38,0.4]],'#56687A','#8B99A7',1); const sp=X(x,2.38); g.fillStyle='#D7E1E6'; g.beginPath(); g.arc(sp[0],sp[1],Math.max(2,sc*0.14),0,7); g.fill(); }
+  for(const sx of [-1,1]){ const x=sx*G.ye; poly([[x-0.34,2.25],[x+0.34,2.25],[x+0.38,0.4],[x+0.22,-1.5],[x-0.22,-1.5],[x-0.38,0.4]],gr(x-0.38,0,x+0.38,0,'#9EAAB4','#EEF2F5','#9EAAB4'),EDGE,1); const sp=X(x,2.38); g.fillStyle='#D7E1E6'; g.beginPath(); g.arc(sp[0],sp[1],Math.max(2,sc*0.14),0,7); g.fill(); }
   // fin and rudder
   const dr=T.lay.rec?clamp(P.dreq,0,LT.dmax):0;
-  poly([[-0.07,-3.7],[0.07,-3.7],[0.09,-5.1],[-0.09,-5.1]],'#D7E1E6');
+  poly([[-0.09,-3.6],[0.09,-3.6],[0.11,-5.1],[-0.11,-5.1]],'#1D3A5C','rgba(226,232,238,.7)',0.8);
   const rd=sl*dr*D2R; poly([[-0.07,-5.1],[0.07,-5.1],[0.07*Math.cos(rd)+Math.sin(rd)*0.75*1,-5.1-0.75*Math.cos(rd)],[-0.07*Math.cos(rd)+Math.sin(rd)*0.75,-5.1-0.75*Math.cos(rd)]],I.cyan);
   // propellers: edge-on blades seen from above (projected length R·|cos θ|), descending half highlighted
   const t=RT.t;
@@ -130,16 +140,19 @@ function behind(st,g,box){
   txt(g,L({en:'From behind',no:'Bakfra'}),box.x+8,box.y+16,{col:I.mute,size:fs,mono:1});
   const seg=(a,b,col,w)=>{ const p=B(a[0],a[1]), q=B(b[0],b[1]); g.strokeStyle=col; g.lineWidth=w; g.lineCap='round'; g.beginPath(); g.moveTo(p[0],p[1]); g.lineTo(q[0],q[1]); g.stroke(); g.lineCap='butt'; };
   // tailplane and fin
-  seg([-2.25,0.55],[2.25,0.55],'#5E6D7C',Math.max(2,sc*0.12));
-  seg([0,0.5],[0,2.1],'#6E7F8D',Math.max(2.5,sc*0.16));
+  seg([-2.25,0.55],[2.25,0.55],'#AEB9C2',Math.max(2,sc*0.12));
+  seg([0,0.5],[0,2.1],'#1D3A5C',Math.max(2.5,sc*0.16)); seg([0,0.5],[0,2.1],'rgba(226,232,238,.35)',1);
   // wings (low wing, slight dihedral)
-  seg([-5.9,-0.05],[0,-0.42],'#8B99A7',Math.max(3,sc*0.2)); seg([0,-0.42],[5.9,-0.05],'#8B99A7',Math.max(3,sc*0.2));
+  seg([-5.9,-0.05],[0,-0.42],'#C9D3DA',Math.max(3,sc*0.2)); seg([0,-0.42],[5.9,-0.05],'#C9D3DA',Math.max(3,sc*0.2));
+  seg([-5.9,-0.05],[0,-0.42],'rgba(255,255,255,.55)',Math.max(1,sc*0.05)); seg([0,-0.42],[5.9,-0.05],'rgba(255,255,255,.55)',Math.max(1,sc*0.05));
   // accelerated slipstream: extra lift on the live wing
   if(T.lay.as){ const xa=sl*G.ye+P.e; const a=B(xa,-0.2), b=B(xa-0*s,1.6); const L1=B(xa,0.1), L2=B(xa,1.5); arrow(g,L1[0],L1[1],L2[0],L2[1],I.green,2.6,9); txt(g,L({en:'+ lift',no:'+ løft'}),L2[0]+sl*8,L2[1]+12,{col:I.green,al:sl>0?'left':'right',size:fs-1,bg:BG}); }
   // fuselage
-  const fc=B(0,0); g.fillStyle='#4C5D6A'; g.strokeStyle='#8B99A7'; g.lineWidth=1.2; g.beginPath(); g.arc(fc[0],fc[1],sc*0.68,0,7); g.fill(); g.stroke();
+  const fc=B(0,0); g.fillStyle='#E3E9EE'; g.strokeStyle='rgba(30,44,56,.7)'; g.lineWidth=1.2; g.beginPath(); g.arc(fc[0],fc[1],sc*0.68,0,7); g.fill(); g.stroke();
+  g.fillStyle='rgba(138,152,164,.55)'; g.beginPath(); g.arc(fc[0],fc[1],sc*0.68,0.15*Math.PI+ph,0.85*Math.PI+ph); g.closePath(); g.fill();
+  { const cp=B(0,0.38); g.fillStyle='#22405A'; g.beginPath(); g.arc(cp[0],cp[1],sc*0.34,Math.PI+ph,2*Math.PI+ph); g.closePath(); g.fill(); }
   // nacelles + propellers (clockwise from behind = clockwise on screen)
-  for(const sx of [-1,1]){ const x=sx*G.ye, live=sx===sl, nc=B(x,-0.1); g.fillStyle='#56687A'; g.beginPath(); g.arc(nc[0],nc[1],sc*0.36,0,7); g.fill();
+  for(const sx of [-1,1]){ const x=sx*G.ye, live=sx===sl, nc=B(x,-0.1); g.fillStyle='#C9D3DA'; g.beginPath(); g.arc(nc[0],nc[1],sc*0.36,0,7); g.fill();
     g.strokeStyle=live?'rgba(215,225,230,.22)':'rgba(236,90,71,.25)'; g.lineWidth=1; g.beginPath(); g.arc(nc[0],nc[1],sc*G.R,0,7); g.stroke();
     if(T.lay.pf&&live){ g.fillStyle='rgba(240,180,64,.16)'; g.beginPath(); g.moveTo(nc[0],nc[1]); g.arc(nc[0],nc[1],sc*G.R,-Math.PI/2+ph,Math.PI/2+ph); g.closePath(); g.fill();
       txt(g,L({en:'↓ descending blade',no:'↓ nedadgående blad'}),nc[0]+sc*G.R*0.4,nc[1]+sc*G.R+14,{col:I.amber,al:'center',size:fs-1.5,bg:BG}); }
@@ -186,6 +199,9 @@ LAB.visible(el('ltCv'),v=>{ vis=v; if(v&&!raf){ RT.last=0; raf=requestAnimationF
 
 /* chart: rudder moment needed vs available against airspeed */
 const chS=LAB.fit(el('ltCh'),()=>drawCh(),2);
+if(window.CN) CN.add(el('ltCh'),{read:{en:'Across: airspeed. Up: yawing moment. Pink is the turn the dead engine forces on you; blue is what full rudder can give back.',no:'Bortover: fart. Oppover: girmoment. Rosa er giringen den døde motoren påfører deg; blå er det fullt sideror kan gi tilbake.'},
+  take:{en:'Rudder power grows with speed, the engine’s pull does not. Below VMCA (where the lines cross) full rudder is not enough: keep the speed above it.',no:'Rorkraften vokser med farten, motorens drag gjør det ikke. Under VMCA (der linjene krysser) er ikke fullt sideror nok: hold farten over den.'},
+  full:()=>drawCh()});
 function drawCh(){ const st=chS; if(!st.w||!C) return; const g=S.clear(st), W=st.w, H=st.h, n=narrow(st);
   const box={x:n?40:52,y:24,w:W-(n?52:72),h:H-(n?50:52)}, v0=45, v1=130;
   const o=opt(), oO=opt({fail:T.fail==='L'?'R':'L'}); const pts=[], ptsO=[], av=[]; let ymax=0;
@@ -202,12 +218,18 @@ function drawCh(){ const st=chS; if(!st.w||!C) return; const g=S.clear(st), W=st
   if(C.vm!=null&&C.vm>v0){ const xv=ax.X(C.vm); g.fillStyle='rgba(228,107,174,.06)'; g.fillRect(box.x,box.y,xv-box.x,box.h); }
   const P=pts.map(p=>[ax.X(p[0]),ax.Y(p[1])]), PO=ptsO.map(p=>[ax.X(p[0]),ax.Y(p[1])]), PA=av.map(p=>[ax.X(p[0]),ax.Y(Math.min(p[1],ymax*1.2))]);
   g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip();
-  S.line(g,PO,'rgba(139,153,167,.75)',1.5,[5,4]); S.line(g,PA,I.cyan,2.4); S.line(g,P,I.mag,2.6); g.restore();
+  const det=window.CN&&CN.full('ltCh');
+  if(det) S.line(g,PO,'rgba(139,153,167,.75)',1.5,[5,4]); S.line(g,PA,I.cyan,2.4); S.line(g,P,I.mag,2.6); g.restore();
   const lab=(pp,t,col,dy)=>{ const p=pp[Math.floor(pp.length*0.86)]; txt(g,t,p[0],p[1]+(dy||-8),{col,al:'right',size:10.5,bg:BG}); };
   lab(P,L({en:'rudder moment needed · ',no:'rormoment som trengs · '})+(T.fail==='L'?L({en:'left failed',no:'venstre ute'}):L({en:'right failed',no:'høyre ute'})),I.mag,-8);
-  lab(PO,L({en:'other engine failed',no:'den andre motoren ute'}),I.mute,14);
-  const pa=PA.find(p=>p[1]<=box.y+18)||PA[PA.length-1]; txt(g,L({en:'available ∝ V²',no:'tilgjengelig ∝ V²'}),pa[0]-6,Math.max(box.y+14,pa[1]+4),{col:I.cyan,al:'right',size:10.5,bg:BG});
-  if(C.vm!=null){ const xv=ax.X(C.vm); S.line(g,[[xv,box.y],[xv,box.y+box.h]],I.mag,1.2,[3,3]); txt(g,'VMCA '+nf(C.vm,0),xv+5,box.y+12,{col:I.mag,size:11,mono:1,bg:BG}); }
+  if(det) lab(PO,L({en:'other engine failed',no:'den andre motoren ute'}),I.mute,14);
+  const pa=n?[PA[Math.min(PA.length-1,55)][0]+14,PA[Math.min(PA.length-1,55)][1]+10]:(PA.find(p=>p[1]<=box.y+18)||PA[PA.length-1]); txt(g,det?L({en:'available ∝ V²',no:'tilgjengelig ∝ V²'}):n?L({en:'rudder available',no:'ror tilgjengelig'}):L({en:'rudder available (grows with speed²)',no:'ror tilgjengelig (vokser med fart²)'}),pa[0]-6,Math.max(box.y+14,pa[1]+4),{col:I.cyan,al:n?'left':'right',size:10.5,bg:BG});
+  if(C.vm!=null){ const xv=ax.X(C.vm); S.line(g,[[xv,box.y],[xv,box.y+box.h]],I.mag,1.2,[3,3]); txt(g,'VMCA '+nf(C.vm,0),xv+5,box.y+12,{col:I.mag,size:11,mono:1,bg:BG});
+    if(!det){ const fz=n?9.5:10.5, yy=box.y+box.h*(n?0.62:0.58);
+      const zl=Math.max(xs,box.x), zw=xv-zl, zl2=zw>(n?66:96)?zl:box.x, zc=(zl2+xv)/2;
+      if(xv-zl2>(n?66:96)) [L({en:'rudder can’t',no:'roret klarer'}),L({en:'hold the yaw',no:'ikke å holde'}),...(n?[]:[L({en:'= not controllable',no:'= ikke kontrollerbart'})])].forEach((t,i)=>txt(g,t,zc,yy+i*(fz+3),{col:'#E79BC4',al:'center',size:fz,w:500,bg:BG}));
+      if(!n){ const yx=ax.Y(Math.min(M.ltPoint(o,C.vm).Nreq,ymax)); txt(g,L({en:'← here the rudder can no longer hold the yaw',no:'← her klarer ikke roret lenger å holde giringen'}),xv+6,Math.min(box.y+box.h-24,yx+30),{col:I.mag,size:10,w:500,bg:BG}); }
+      if(box.x+box.w-xv>110) txt(g,L({en:'rudder wins: controllable',no:'roret vinner: kontrollerbart'}),box.x+box.w-6,box.y+box.h-8,{col:I.green,al:'right',size:fz,w:500}); } }
   const xc=ax.X(clamp(T.v,v0,v1)); S.line(g,[[xc,box.y],[xc,box.y+box.h]],'rgba(238,243,247,.5)',1,[2,3]);
   const p=M.ltPoint(o,T.v); const yc=ax.Y(Math.min(p.Nreq,ymax)); g.fillStyle=C.ok?I.green:I.red; g.beginPath(); g.arc(xc,yc,5,0,7); g.fill(); g.strokeStyle=I.bg; g.lineWidth=1.5; g.stroke();
 }

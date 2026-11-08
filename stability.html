@@ -143,7 +143,7 @@ body.depth-instructor #cmCv{aspect-ratio:16/8.8}
 .cgm-adv summary{cursor:pointer;font-size:14px;color:var(--ink-2);width:max-content}
 .cgm-adv summary:hover{color:var(--ink)}
 .cgm-tog{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:6px}
-.cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);gap:12px;align-items:start}
+.cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 20px;align-items:start}.cgm-note{grid-column:1/-1}
 #cmEnv{aspect-ratio:16/11;touch-action:none;cursor:crosshair}#cmLim{aspect-ratio:16/11}
 .cgm-note p{font-size:14px}
 @media (max-width:1100px){.cgm-more{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cgm-note{grid-column:1/-1}}
@@ -201,11 +201,13 @@ body.depth-instructor .maid b{font-size:24px}
     <div class="eyebrow">1 · Understand</div>
     <h2>CG, lift and the tail: one balance</h2>
     <p class="lead" id="unLead"></p>
+    <div id="unKc"></div>
+    <details class="kfull"><summary>The balance in one diagram, and every term in full</summary><div>
     <div class="un-grid">
       <figure class="un-fig" id="unFig"></figure>
       <dl class="terms un-defs" id="unDefs"></dl>
     </div>
-    <div class="deepbox deep" id="unDeep"></div>
+    <div class="deepbox deep" id="unDeep"></div></div></details>
   </section>
 
   <!-- 2 · EXPLORE: the CG and mass model -->
@@ -234,7 +236,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 3 · TRY -->
   <section class="card" id="try" data-step="try">
-    <div class="eyebrow">3 · Try</div>
+    <div class="eyebrow">2 · Explore · Try it</div>
     <h2>Try it</h2>
     <p class="lead" id="tryLead"></p>
     <ol class="tasks" id="tasks"></ol>
@@ -242,7 +244,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 4 · DEBRIEF -->
   <section class="card" id="debrief" data-step="debrief">
-    <div class="eyebrow">4 · Debrief</div>
+    <div class="eyebrow">3 · Key points</div>
     <h2>What happened, and why it matters</h2>
     <div class="cols why" id="dbCards"></div>
     <div class="maid" id="maid"></div>
@@ -254,13 +256,13 @@ body.depth-instructor .maid b{font-size:24px}
   <!-- 5 static -->
   <span id="long" class="anc" aria-hidden="true"></span>
   <section class="card" id="static" data-step="explore">
-    <div class="eyebrow">5 · Interactive</div>
+    <div class="eyebrow">2 · Explore</div>
     <h2>Static longitudinal stability</h2>
     <p class="lead" id="stLead"></p>
     <div class="split">
       <div class="stack">
-        <div class="view"><canvas id="stCv" aria-label="Pitching moment coefficient against angle of attack for the current CG, the CG limits and the neutral point"></canvas></div>
         <div class="view"><canvas id="stAn" aria-label="The aircraft after a nose-up gust, returning or diverging, with angle of attack over time"></canvas><div class="ovr"><button class="vbtn" id="stGo">Gust +3°</button></div></div>
+        <div class="view"><canvas id="stCv" aria-label="Pitching moment coefficient against angle of attack for the current CG, the CG limits and the neutral point"></canvas></div>
       </div>
       <div class="rail">
         <div id="stCtl"></div>
@@ -274,7 +276,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 3 dynamic -->
   <section class="card" id="dynamic" data-step="explore">
-    <div class="eyebrow">6 · Interactive</div>
+    <div class="eyebrow">2 · Explore</div>
     <h2>Dynamic stability</h2>
     <p class="lead" id="dyLead"></p>
     <div class="h3row"><h3>Pitch: short period and phugoid</h3></div>
@@ -308,7 +310,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 4 V-n -->
   <section class="card" id="vn" data-step="explore">
-    <div class="eyebrow">7 · Interactive</div>
+    <div class="eyebrow">2 · Explore</div>
     <h2>Load factor, V-n and buffet</h2>
     <p class="lead" id="vnLead"></p>
     <div class="split">
@@ -321,7 +323,7 @@ body.depth-instructor .maid b{font-size:24px}
         <div class="grp">Chart</div><div id="vnMode"></div>
         <div class="grp">Configuration</div><div id="vnCfg"></div>
         <div id="vnCtl"></div>
-        <label class="chk"><input type="checkbox" id="vnG" checked> <span>Gust lines</span></label>
+        <label class="chk"><input type="checkbox" id="vnG"> <span>Gust lines</span></label>
         <div class="ro" id="vnR"></div>
       </div>
     </div>
@@ -330,7 +332,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 5 controls -->
   <section class="card" id="controls" data-step="explore">
-    <div class="eyebrow">8 · Interactive</div>
+    <div class="eyebrow">2 · Explore</div>
     <h2>Flight controls</h2>
     <p class="lead" id="ctLead"></p>
     <div class="split">
@@ -360,7 +362,7 @@ body.depth-instructor .maid b{font-size:24px}
 
   <!-- 6 ops -->
   <section class="card" id="ops" data-step="debrief">
-    <div class="eyebrow">9 · Operations</div>
+    <div class="eyebrow">3 · Key points · in the aircraft</div>
     <h2>In the aircraft</h2>
     <div class="split">
       <div class="stack">
@@ -378,15 +380,47 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
 
   <section class="card" id="quiz" data-step="check">
-    <div class="eyebrow">5 · Check</div>
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot" id="foot"></p>
 </div>
 <script src="lab.js?v=26"></script>
+<script src="chartnote.js?v=1"></script>
+<script src="concepts.js?v=1"></script>
 <script src="stab.js?v=1"></script>
-<script src="cgmodel.js?v=1"></script>
+<script src="cgmodel.js?v=2"></script>
+<script>
+/* Understand: key concept cards (same pattern as the wind tunnel) */
+(function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;
+  const jet=(x,y,k,r)=>`<g transform="translate(${x} ${y}) rotate(${r||0}) scale(${k||1})"><path d="M-30,0 C-30,-3 -26,-4 -20,-4 L22,-4 C28,-4 31,-1 31,0 C30,2 26,3 20,3 L-22,3 C-27,3 -30,2 -30,0 Z" fill="#e8edf1" stroke="#c9d2da" stroke-width=".5"/><path d="M-20,-4 L-28,-13 L-24,-13 L-14,-4 Z" fill="#1D3A5C"/><path d="M-6,1 L6,1 L2,4 L-8,4 Z" fill="#9aa8b3"/><line x1="-30" y1="0.5" x2="30" y2="0.5" stroke="#E46BAE" stroke-width=".9"/></g>`;
+  const cgs=(x,y)=>`<circle cx="${x}" cy="${y}" r="3.2" fill="#0f161d" stroke="#eef3f7" stroke-width=".9"/><path d="M${x},${y} L${x},${y-3.2} A3.2,3.2 0 0 1 ${x+3.2},${y} Z M${x},${y} L${x},${y+3.2} A3.2,3.2 0 0 1 ${x-3.2},${y} Z" fill="#eef3f7"/>`;
+  const ruler=(sub)=>`<line x1="16" y1="40" x2="184" y2="40" stroke="#5B6B78"/><rect x="${16+168*0.185}" y="36" width="${168*0.222}" height="8" fill="rgba(113,204,147,.3)"/>${sub||''}`;
+  const KCS_=[
+   {k:'cg',t:{en:'Centre of gravity (CG)',no:'Tyngdepunkt (CG)'},d:{en:'The <b>CG</b> is the point where the whole weight acts. Passengers, cargo and fuel decide where it sits.',no:'<b>CG</b> er punktet der hele vekten virker. Passasjerer, last og drivstoff bestemmer hvor det ligger.'},
+    ill:()=>sv(`${jet(100,28,2)}${cgs(96,30)}${ar(96,34,96,60,'#eef3f7')}${tx(102,58,'W','#eef3f7')}`),click:'#cmPh button[data-v="cr"]',to:'#cmCv'},
+   {k:'mac',t:{en:'% MAC',no:'% MAC'},d:{en:'CG positions are given in per cent of the <b>mean aerodynamic chord</b> (MAC), the wing’s average chord: 0 % at its leading edge, 100 % at its trailing edge.',no:'CG-posisjoner oppgis i prosent av <b>midlere aerodynamisk korde</b> (MAC), vingens gjennomsnittlige korde: 0 % ved forkanten, 100 % ved bakkanten.'},
+    ill:()=>sv(`${ruler()}${tx(16,56,'0 %','#8b99a7')}${tx(184,56,'100 %','#8b99a7','end')}<path d="M80,36 L84,40 L80,44 L76,40 Z" fill="#eef3f7"/>${tx(80,30,'CG 28 %','#eef3f7','middle')}`),to:'#cmCv'},
+   {k:'tail',t:{en:'The tail balances pitch',no:'Halen balanserer pitch'},d:{en:'The wing’s lift acts behind the CG and tries to pitch the nose down. The tailplane pushes down to balance it, so the wing must lift a little more than the weight.',no:'Vingeløftet virker bak CG og vil dytte nesen ned. Haleflaten presser ned for å balansere, så vingen må løfte litt mer enn vekten.'},
+    ill:()=>sv(`${jet(100,32,2)}${ar(112,30,112,4,'#7fcbe8')}${ar(160,22,160,40,'#E46BAE')}${cgs(96,33)}${tx(116,10,'L','#7fcbe8')}${tx(166,40,L({en:'tail ↓',no:'hale ↓'}),'#E46BAE')}`),click:'#cmPh button[data-v="cr"]',to:'#cmCv'},
+   {k:'np',t:{en:'Neutral point and stability margin',no:'Nøytralpunkt og stabilitetsmargin'},d:{en:'With the CG at the <b>neutral point</b> the aircraft has no stability left. The distance from the CG forward of it is the <b>static margin</b>: the bigger, the more stable.',no:'Med CG i <b>nøytralpunktet</b> har flyet ingen stabilitet igjen. Avstanden fra CG fram til det er den <b>statiske marginen</b>: jo større, desto mer stabilt.'},
+    ill:()=>sv(`${ruler(`<line x1="${16+168*0.51}" y1="20" x2="${16+168*0.51}" y2="48" stroke="#F08A5D" stroke-dasharray="3 2"/>`)}<path d="M63,36 L67,40 L63,44 L59,40 Z" fill="#eef3f7"/><line x1="63" y1="24" x2="${16+168*0.51}" y2="24" stroke="#71cc93"/>${tx(80,20,L({en:'margin',no:'margin'}),'#71cc93','middle')}${tx(106,30,'NP','#F08A5D')}`),click:'#cmPre button[data-k="aft"]',to:'#cmCv'},
+   {k:'fwd',t:{en:'Forward limit',no:'Fremre grense'},d:{en:'Too far forward and the elevator can no longer raise the nose enough to rotate or flare. The forward limit keeps enough elevator in hand.',no:'For langt fram, og høyderoret klarer ikke lenger å løfte nesen nok til å rotere eller flate ut. Fremre grense sørger for nok høyderor.'},
+    ill:()=>sv(`<line x1="10" y1="56" x2="190" y2="56" stroke="#55626e"/>${jet(100,42,2,-4)}${tx(100,14,L({en:'elevator runs out',no:'høyderoret tar slutt'}),'#F0B440','middle')}`),click:'#cmPre button[data-k="fwd"]',to:'#cmCv'},
+   {k:'aft',t:{en:'Aft limit',no:'Bakre grense'},d:{en:'Too far aft and the margin shrinks: the aircraft gets twitchy, the stick light and easy to over-control. Behind the neutral point it is unstable.',no:'For langt bak, og marginen krymper: flyet blir urolig, stikka lett og lett å overstyre. Bak nøytralpunktet er det ustabilt.'},
+    ill:()=>sv(`<path d="M16,40 C40,40 50,26 70,40 S100,54 120,32 S160,14 184,50" fill="none" stroke="#EC5A47" stroke-width="1.6"/>${tx(100,14,L({en:'the motion grows',no:'bevegelsen vokser'}),'#EC5A47','middle')}`),click:'#cmPre button[data-k="xa"]',to:'#cmCv'},
+   {k:'env',t:{en:'Mass and CG envelope',no:'Masse- og CG-konvolutt'},d:{en:'The certified CG range depends on the mass. Every legal loading sits inside one shape; mass and CG are always checked together.',no:'Det sertifiserte CG-området avhenger av massen. All lovlig lasting ligger innenfor én form; masse og CG sjekkes alltid sammen.'},
+    ill:()=>sv(`<path d="M60,58 L60,30 L82,8 L130,8 L142,26 L142,44 L134,58 Z" fill="rgba(113,204,147,.18)" stroke="#71cc93"/><circle cx="100" cy="30" r="4" fill="#E46BAE"/>${tx(146,12,'MTOW','#8b99a7')}`),to:'#cmEnv'},
+   {k:'static',t:{en:'Static stability',no:'Statisk stabilitet'},d:{en:'Static stability is the first tendency after a disturbance: a stable aircraft noses back towards trim on its own.',no:'Statisk stabilitet er den første tendensen etter en forstyrrelse: et stabilt fly går av seg selv tilbake mot trim.'},
+    ill:()=>sv(`<line x1="16" y1="40" x2="184" y2="40" stroke="#55626e"/><path d="M16,14 C40,60 64,22 88,44 S130,38 184,40" fill="none" stroke="#E46BAE" stroke-width="1.6"/>${tx(184,30,L({en:'returns',no:'går tilbake'}),'#71cc93','end')}`),to:'#stAn',dp:true},
+   {k:'dyn',t:{en:'Dynamic stability',no:'Dynamisk stabilitet'},d:{en:'What happens over time: the quick short period dies out in seconds; the slow phugoid trades speed for height over minutes.',no:'Hva som skjer over tid: den raske kortperioden dør ut på sekunder; den langsomme fugoiden bytter fart mot høyde over minutter.'},
+    ill:()=>sv(`<line x1="16" y1="34" x2="184" y2="34" stroke="#55626e"/><path d="M16,34 C30,4 44,4 58,34 S86,60 100,34 S128,14 142,34 S170,48 184,34" fill="none" stroke="#f0b440" stroke-width="1.6"/>${tx(180,58,L({en:'phugoid',no:'fugoide'}),'#f0b440','end')}`),to:'#pCv',dp:true},
+   {k:'vn',t:{en:'Load factor and V-n',no:'Lastfaktor og V-n'},d:{en:'Below the manoeuvring speed VA the wing stalls before it can be overstressed; above VA a hard pull can damage the structure first.',no:'Under manøverfarten VA staller vingen før den kan overbelastes; over VA kan et hardt trekk skade strukturen først.'},
+    ill:()=>sv(`<line x1="16" y1="50" x2="184" y2="50" stroke="#55626e"/><path d="M16,50 C50,48 70,30 92,12 L184,12 L184,50" fill="rgba(113,204,147,.12)" stroke="#71cc93"/><line x1="92" y1="8" x2="92" y2="54" stroke="#f0b440" stroke-dasharray="3 2"/>${tx(96,24,'VA','#f0b440')}${tx(30,26,'STALL','#71cc93')}`),to:'#vnCv'}];
+  const g=document.getElementById('unKc'); if(g) KCS.render(g,KCS_);
+})();
+</script>
 <script>
 (function(){
 'use strict';
@@ -398,7 +432,7 @@ LAB.add({},{
  'CG, lift and the tail: one balance':'CG, løft og halen: én balanse','CG and mass: one aircraft, every effect':'CG og masse: ett fly, alle effektene','Try it':'Prøv selv','What the pilot takes away':'Det piloten tar med seg',
  'CG, lift and the tail':'CG, løft og halen','CG and mass model':'CG- og massemodell','Pilot takeaways':'Det piloten tar med seg','Presets':'Forhåndsvalg',
  'CG position (% MAC)':'CG-posisjon (% MAC)','Mass (t) · OEW 42 to MTOW 78':'Masse (t) · OEW 42 til MTOW 78','Cruise':'Marsj','Take-off rotation':'Rotasjon ved avgang','Landing flare':'Utflating',
- '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Interactive':'5 · Interaktiv','7 · Interactive':'7 · Interaktiv','8 · Interactive':'8 · Interaktiv','9 · Operations':'9 · Operativt',
+ '1 · Understand':'1 · Forstå','The balance in one diagram, and every term in full':'Balansen i ett diagram, og alle begrepene i sin helhet','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points':'3 · Det viktigste','3 · Key points · in the aircraft':'3 · Det viktigste · i flyet','3 · Test yourself':'3 · Test deg selv','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Interactive':'5 · Interaktiv','7 · Interactive':'7 · Interaktiv','8 · Interactive':'8 · Interaktiv','9 · Operations':'9 · Operativt',
  'Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord.':'Sidebilde av et tomotors jetfly med vekten i CG, vingeløftet i trykksenteret og halekraften, over en forstørret midlere aerodynamisk korde med CG-grensene, nøytralpunktet og den statiske marginen. Dra CG langs korden.',
  'Mass and CG envelope. Drag the dot to set mass and CG together.':'Masse- og CG-konvolutt. Dra punktet for å sette masse og CG samtidig.','Flare elevator needed and stick force per g against CG, with the CG limits at this mass':'Høyderor nødvendig i utflatingen og stikkekraft per g mot CG, med CG-grensene ved denne massen',
  'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
@@ -486,19 +520,24 @@ function stSim(){ const M=S.longModel({m:64,h:STA.h/100,hft:10000,keas:280}); //
   const dn=(npOf()-S.hn); M.A[2][1]+= -M.q*AC.S*AC.c*AC.aw*(dn)/M.Iyy; M.A[2][1]+=0; STA.sim=S.longSim(M,[0,3*D2R,0,0],12,0.01,'basic'); }
 const stC=fit('stCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st), h=STA.h/100, at=3;
   const strip=n?56:62, box={x:n?40:50,y:30,w:W-(n?52:68),h:H-30-strip-36};
-  txt(g,L({en:'Pitching moment about the CG, Cm, against angle of attack',no:'Pitchmoment om CG, Cm, mot anstigningsvinkel'}),10,17,{col:I.ink,size:n?11:12});
+  const det=window.CN&&CN.full('stCv');
+  txt(g,n?L({en:'Pitching moment Cm against α',no:'Pitchmoment Cm mot α'}):L({en:'Pitching moment about the CG (Cm) against angle of attack (α)',no:'Pitchmoment om CG (Cm) mot anstigningsvinkel (α)'}),10,17,{col:I.ink,size:n?11:12});
   const ax=S.axes(g,{x:box.x,y:box.y,w:box.w,h:box.h},[-2,12],[-0.36,0.36],{xt:[-2,0,2,4,6,8,10,12],yt:[-0.3,-0.2,-0.1,0,0.1,0.2,0.3],xf:v=>v+'°',yf:v=>(v>0?'+':'')+nf(v,1),zero:0});
   band(g,ax.X(at),ax.X(12),ax.Y(0),ax.Y(-0.36),'rgba(113,204,147,.06)'); band(g,ax.X(-2),ax.X(at),ax.Y(0.36),ax.Y(0),'rgba(113,204,147,.06)');
   const cm=(hh,np)=>a=>-AC.aw*(np-hh)*(a-at)*D2R;
   const ln=(f,col,w,d)=>{ g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip(); S.line(g,[-2,12].map(a=>[ax.X(a),ax.Y(f(a))]),col,w,d); g.restore(); };
-  ln(cm(0.15,S.hn),I.dim,1.2,[5,4]); ln(cm(S.hn,S.hn),I.red,1.2,[5,4]); ln(cm(0.56,S.hn),I.dim,1.2,[2,3]);
-  ln(cm(h,S.hnF),I.cyan,1.8,[6,4]); ln(cm(h,S.hn),I.mag,3);
+  if(det){ ln(cm(0.15,S.hn),I.dim,1.2,[5,4]); ln(cm(0.56,S.hn),I.dim,1.2,[2,3]); } ln(cm(S.hn,S.hn),I.red,1.2,[5,4]);
+  if(det||STA.free==='free') ln(cm(h,S.hnF),I.cyan,1.8,[6,4]); ln(cm(h,S.hn),I.mag,3);
+  { const sm=npOf()-h, a1=n?9.5:10.2, v1=Math.max(-0.33,Math.min(0.33,cm(h,npOf())(a1)));
+    txt(g,sm>0.005?L({en:'your CG: slopes down = stable',no:'din CG: heller ned = stabil'}):sm>-0.005?L({en:'your CG: flat = neutral',no:'din CG: flat = nøytral'}):L({en:'your CG: slopes up = unstable',no:'din CG: heller opp = ustabil'}),ax.X(a1),ax.Y(v1)+(v1<=0?16:-8),{col:sm>0.005?I.mag:I.red,al:'right',size:n?10:11,w:500,bg:'rgba(16,23,29,.8)'}); }
   const lb=(a,f,s,col)=>{ const v=Math.max(-0.33,Math.min(0.33,f(a))); txt(g,s,ax.X(a),ax.Y(v)+(v<0?-6:14),{mono:1,col,al:'right',size:n?9:10}); };
-  lb(11.8,cm(0.15,S.hn),'15 %',I.mute); txt(g,'56 %',ax.X(-1.8),ax.Y(cm(0.56,S.hn)(-1.8))+14,{mono:1,col:I.mute,size:n?9:10}); txt(g,L({en:'at NP: neutral',no:'i NP: nøytralt'}),ax.X(11.8),ax.Y(0)-5,{mono:1,col:I.red,al:'right',size:n?9:10});
+  if(det){ lb(11.8,cm(0.15,S.hn),'15 %',I.mute); txt(g,'56 %',ax.X(-1.8),ax.Y(cm(0.56,S.hn)(-1.8))+14,{mono:1,col:I.mute,size:n?9:10}); } txt(g,L({en:'at NP: neutral',no:'i NP: nøytralt'}),ax.X(11.8),ax.Y(0)-5,{mono:1,col:I.red,al:'right',size:n?9:10});
   // disturbance marker
   const ad=at+3, v=cm(h,npOf())(ad); dot(g,ax.X(at),ax.Y(0),5,I.white); dot(g,ax.X(ad),ax.Y(Math.max(-0.35,Math.min(0.35,v))),5,I.mag);
   if(Math.abs(v)>0.004) arrow(g,ax.X(ad),ax.Y(Math.max(-0.3,Math.min(0.3,v)))+(v<0?12:-12),ax.X(at+0.6),ax.Y(Math.max(-0.3,Math.min(0.3,v)))+(v<0?12:-12),v<0?I.green:I.red,2,8);
+  if(Math.abs(v)>0.004&&!n) txt(g,v<0?L({en:'pushes back to trim',no:'dytter tilbake til trim'}):L({en:'pushes further away',no:'dytter lenger bort'}),ax.X(at+0.6)+((ax.X(ad)-ax.X(at+0.6))/2),ax.Y(Math.max(-0.3,Math.min(0.3,v)))+(v<0?28:-20),{col:v<0?I.green:I.red,al:'center',size:10.5,w:500});
   txt(g,L({en:'trim',no:'trim'}),ax.X(at),ax.Y(0)-9,{mono:1,col:I.ink,al:'center',size:10});
+  txt(g,'α →',box.x+box.w-2,box.y+box.h+26,{mono:1,col:I.dim,al:'right',size:9.5});
   if(!n){ txt(g,L({en:'restoring: nose down',no:'rettende: nese ned'}),ax.X(11.8),ax.Y(-0.33)+10,{mono:1,col:I.green,al:'right',size:10}); txt(g,L({en:'restoring: nose up',no:'rettende: nese opp'}),ax.X(-1.8),ax.Y(0.33),{mono:1,col:I.green,size:10}); }
   // CG strip
   const sy=H-strip+8, P=p=>box.x+(p-10)/50*box.w;
@@ -538,6 +577,10 @@ function stAll(){ stSim(); stC.draw(); stA.draw(); stRead(); }
 sl('stCtl',{label:'CG (% MAC)',min:10,max:58,step:0.5,v:STA.h,f:v=>nf(v,1)+' %',on:v=>{ STA.h=v; STA.t0=-1; stAll(); }});
 seg('stFree',[['fixed','Held (powered, A320)'],['free','Free to float (classic)']],STA.free,v=>{ STA.free=v; STA.t0=-1; stAll(); });
 el('stGo').onclick=()=>{ STA.t0=performance.now(); stAn.start(); };
+if(window.CN){ CN.add('stAn',{read:{en:'A gust pitches the nose up 3°. The aircraft is on the left; the line on the right is α over 12 seconds.',no:'Et vindkast løfter nesen 3°. Flyet er til venstre; linjen til høyre er α over 12 sekunder.'}});
+  CN.add('stCv',{read:()=>L({en:'Across: angle of attack (α). Up: the pitching moment (Cm, + = nose up). Push α above trim and read the moment that follows.',no:'Bortover: anstigningsvinkel (α). Oppover: pitchmomentet (Cm, + = nese opp). Øk α over trim og les momentet som følger.'}),
+    take:{en:'A line that slopes down means stability: more α gives a nose-down push back to trim. Moving the CG aft flattens the slope; at the neutral point (NP) it is flat.',no:'En linje som heller nedover betyr stabilitet: mer α gir et dytt nese ned tilbake til trim. Når CG flyttes bakover, flater helningen ut; i nøytralpunktet (NP) er den flat.'},
+    full:()=>stC.draw()}); }
 on(()=>{ el('stLead').textContent=L({en:'Disturb the aircraft in pitch and ask what the first tendency is. Static stability lives in the slope of the pitching-moment curve: the further the CG is ahead of the neutral point, the steeper the slope and the stronger the push back to trim. Move the CG and fire a gust.',no:'Forstyrr flyet i pitch og spør hva den første tendensen er. Statisk stabilitet ligger i helningen på pitchmomentkurven: jo lenger CG ligger foran nøytralpunktet, desto brattere helning og desto sterkere dytt tilbake til trim. Flytt CG og send et vindkast.'});
  EXT('stE',[
   {en:'Positive static stability needs a <b>negative dCm/dα</b>: an increase in α must produce a nose-down moment. The slope is proportional to the static margin (NP − CG).',no:'Positiv statisk stabilitet krever <b>negativ dCm/dα</b>: økt α må gi et nese-ned-moment. Helningen er proporsjonal med den statiske marginen (NP − CG).'},
@@ -652,6 +695,10 @@ sl('lCtl',{label:'Wing sweep (°)',min:0,max:40,step:1,v:LD.sw,f:v=>v+'°',on:v=
 sl('lCtl',{label:'Geometric dihedral (°)',min:-3,max:8,step:0.5,v:LD.dih,f:v=>nf(v,1)+'°',on:v=>{ LD.dih=v; lAll(); }});
 sl('lCtl',{label:'Fin size (% of A320)',min:60,max:150,step:5,v:LD.fin,f:v=>v+' %',on:v=>{ LD.fin=v; lAll(); }});
 el('lGo').onclick=()=>{ LD.t0=performance.now(); lAn.start(); };
+if(window.CN){ CN.add('pTr',{read:{en:'Left: the first 10 seconds after the disturbance (α, angle of attack, and q, pitch rate). Right: the next 5 minutes (speed and height).',no:'Venstre: de første 10 sekundene etter forstyrrelsen (α, anstigningsvinkel, og q, pitchrate). Høyre: de neste 5 minuttene (fart og høyde).'},
+    take:{en:'The short period is quick and dies out by itself; the phugoid is a slow swap of speed for height that the pilot (or autopilot) simply flies out.',no:'Kortperioden er rask og dør ut av seg selv; fugoiden er en langsom utveksling av fart og høyde som piloten (eller autopiloten) bare flyr bort.'}});
+  CN.add('lTr',{read:{en:'Each line is one motion after the sideslip kick: sideslip, bank and heading against time.',no:'Hver linje er én bevegelse etter sideglidningsdyttet: sideglidning, krengning og kurs mot tid.'},
+    take:{en:'Lines that wave and shrink mean a damped Dutch roll; a bank line that slowly keeps growing is the spiral mode.',no:'Linjer som svinger og krymper betyr en dempet Dutch roll; en krengningslinje som sakte fortsetter å vokse er spiralmodusen.'}}); }
 on(()=>{ el('dyLead').textContent=L({en:'Dynamic stability is what happens over time after the first tendency: does the motion die away, keep going or grow? The same equations of motion as a flight simulator, linearised about steady flight at 280 KEAS (M 0.78 above the crossover) and 64 t, for the A320 without its computers, and in pitch also with normal law.',no:'Dynamisk stabilitet er hva som skjer over tid etter den første tendensen: dør bevegelsen ut, fortsetter den eller vokser den? De samme bevegelseslikningene som i en flysimulator, linearisert om jevn flyging i 280 KEAS (M 0,78 over overgangshøyden) og 64 t, for A320 uten datamaskinene, og i pitch også med normal law.'});
  EXT('dyE',[
   {en:'<b>Short period</b>: a quick α and pitch oscillation at almost constant speed, normally heavily damped by the tailplane. <b>Phugoid</b>: a slow exchange of speed and height at almost constant α, lightly damped, with a period of roughly π√2·V/g.',no:'<b>Kortperiode</b>: en rask svingning i α og pitch med nesten konstant fart, normalt kraftig dempet av haleplanet. <b>Fugoide</b>: en langsom utveksling av fart og høyde med nesten konstant α, svakt dempet, med periode omtrent π√2·V/g.'},
@@ -662,16 +709,16 @@ on(()=>{ el('dyLead').textContent=L({en:'Dynamic stability is what happens over 
 });
 
 /* ================= 4 · V-n and buffet ================= */
-const VN={mode:'vn',cfg:'clean',m:64,alt:5000,v:250,M:0.78,bank:30,gust:true};
+const VN={mode:'vn',cfg:'clean',m:64,alt:5000,v:250,M:0.78,bank:30,gust:false};
 function vnState(){ const R=S.vn(VN.m,VN.alt,VN.cfg), n=1/Math.cos(VN.bank*D2R), gC=S.gust(VN.m,VN.alt,VN.v,R.U.C), A=S.isa(VN.alt);
   const bf1=S.buffetMach(VN.m,VN.alt,1.3), bfn=S.buffetMach(VN.m,VN.alt,n), cl=VN.m*1000*S.g/(0.7*A.p*AC.S*VN.M*VN.M);
   return {R,n,gC,bf1,bfn,gBuf:S.CLbuf(VN.M)/cl,Ve:S.easOfMach(VN.M,VN.alt)}; }
 const vnC=fit('vnCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st), E=vnState(), R=E.R, C=R.C;
   if(VN.mode==='buf') return drawBuf(g,W,H,n,E);
-  const vmax=VN.cfg==='clean'?420:260, box={x:n?34:46,y:24,w:W-(n?44:62),h:H-(n?56:58)};
+  const vmax=VN.cfg==='clean'?420:260, box={x:n?34:46,y:24,w:W-(n?44:62),h:H-(n?56:58)}, det=window.CN&&CN.full('vnCv'), fz=n?9.5:11;
   txt(g,L({en:'V-n diagram · ',no:'V-n-diagram · '})+(VN.cfg==='clean'?L({en:'clean',no:'rent'}):VN.cfg==='conf1'?'CONF 1+F':'CONF FULL')+' · '+nf(VN.m,1)+' t · '+nf(VN.alt,0)+' ft',10,16,{col:I.ink,size:n?11:12});
   const ax=S.axes(g,box,[0,vmax],[-1.6,3.2],{xt:VN.cfg==='clean'?[0,100,200,300,400]:[0,50,100,150,200,250],yt:[-1,0,1,2,3],xf:v=>v,yf:v=>(v>0?'+':'')+v,zero:0});
-  txt(g,'KEAS',box.x+box.w,box.y+box.h+(n?26:27),{mono:1,col:I.mute,al:'right',size:10}); txt(g,'n',box.x-4,box.y-6,{mono:1,col:I.mute,al:'right',size:10});
+  txt(g,'KEAS',box.x+box.w,box.y+box.h+(n?26:27),{mono:1,col:I.mute,al:'right',size:10}); txt(g,n?'n, g':L({en:'load factor n, g',no:'lastfaktor n, g'}),box.x+4,box.y+12,{mono:1,col:I.mute,size:10});
   // manoeuvre envelope
   const vend=R.VD; g.beginPath(); g.moveTo(ax.X(0),ax.Y(0)); for(let v=0;v<=R.VA;v+=1) g.lineTo(ax.X(v),ax.Y((v/R.Vs)**2)); g.lineTo(ax.X(vend),ax.Y(C.nmax)); g.lineTo(ax.X(vend),ax.Y(0));
   if(C.nmin<0){ const vneg=R.VsN*Math.sqrt(-C.nmin); g.lineTo(ax.X(Math.min(R.VC,vend)),ax.Y(C.nmin)); g.lineTo(ax.X(vneg),ax.Y(C.nmin)); for(let v=vneg;v>=0;v-=1) g.lineTo(ax.X(v),ax.Y(-((v/R.VsN)**2))); }
@@ -680,20 +727,31 @@ const vnC=fit('vnCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st), E=
   // stall curve continuation (dotted) above the limit
   S.line(g,Array.from({length:60},(_,i)=>{ const v=R.VA+(i/59)*(R.Vs*Math.sqrt(3.2)-R.VA); return [ax.X(v),ax.Y((v/R.Vs)**2)]; }),'rgba(113,204,147,.5)',1,[2,3]);
   // gust lines
-  if(VN.gust){ const gl=(k,v1,col)=>{ S.line(g,[[ax.X(0),ax.Y(1)],[ax.X(v1),ax.Y(1+k*v1)]],col,1.3,[6,4]); S.line(g,[[ax.X(0),ax.Y(1)],[ax.X(v1),ax.Y(1-k*v1)]],col,1.3,[6,4]); };
+  if(VN.gust||det){ const gl=(k,v1,col)=>{ S.line(g,[[ax.X(0),ax.Y(1)],[ax.X(v1),ax.Y(1+k*v1)]],col,1.3,[6,4]); S.line(g,[[ax.X(0),ax.Y(1)],[ax.X(v1),ax.Y(1-k*v1)]],col,1.3,[6,4]); };
     if(VN.cfg==='clean'){ gl(R.kB,R.VB,'rgba(127,203,232,.8)'); gl(R.kC,R.VC,'rgba(127,203,232,.65)'); gl(R.kD,R.VD,'rgba(127,203,232,.5)');
       const ge=[[R.VB,1+R.kB*R.VB],[R.VC,1+R.kC*R.VC],[R.VD,1+R.kD*R.VD]], gn=[[R.VB,1-R.kB*R.VB],[R.VC,1-R.kC*R.VC],[R.VD,1-R.kD*R.VD]];
       S.line(g,ge.map(p=>[ax.X(p[0]),ax.Y(Math.min(3.2,p[1]))]),I.cyan,1.2); S.line(g,gn.map(p=>[ax.X(p[0]),ax.Y(Math.max(-1.6,p[1]))]),I.cyan,1.2);
       if(!n){ txt(g,nf(R.U.B,0)+' ft/s',ax.X(R.VB*0.62),ax.Y(1+R.kB*R.VB*0.62)-6,{mono:1,col:I.cyan,al:'right',size:9.5}); txt(g,nf(R.U.C,0)+' ft/s',ax.X(R.VC),ax.Y(1-R.kC*R.VC)+12,{mono:1,col:I.cyan,al:'center',size:9.5}); txt(g,nf(R.U.D,1)+' ft/s',ax.X(R.VD)-4,ax.Y(1-R.kD*R.VD)-5,{mono:1,col:I.cyan,al:'right',size:9.5}); }
     } else { const k=S.gust(VN.m,VN.alt,1,25).dn; gl(k,R.VD,'rgba(127,203,232,.7)'); if(!n) txt(g,'25 ft/s',ax.X(R.VD)-4,ax.Y(1+k*R.VD)-5,{mono:1,col:I.cyan,al:'right',size:9.5}); } }
   // speeds
+  // plain words on the chart
+  { const vs=R.Vs, va=R.VA;
+    // stall side (above the stall curve, left of VA)
+    const sx=ax.X(Math.max(vs*0.55,va*0.42)), sy=ax.Y(n?2.35:2.45);
+    [L({en:'STALL',no:'STEILING'}),...(n?[]:[L({en:'the wing can’t make',no:'vingen klarer ikke å'}),L({en:'more lift here',no:'lage mer løft her'})])].forEach((t,i)=>txt(g,t,sx,sy+i*(fz+3),{col:'rgba(113,204,147,.95)',al:'center',size:i?fz-0.5:fz,w:i?400:600}));
+    // overstress band above the limit
+    txt(g,n?L({en:'OVERSTRESS',no:'OVERBELASTNING'}):L({en:'OVERSTRESS: the structure can be damaged',no:'OVERBELASTNING: strukturen kan skades'}),(ax.X(va)+ax.X(vend))/2,ax.Y(Math.min(2.95,C.nmax+0.24)),{col:I.red,al:'center',size:fz-0.5,w:500});
+    if(VN.cfg==='clean'&&!VN.gust&&!det){ const lx=ax.X(va)+6, ly=ax.Y(C.nmax)+(n?16:18);
+      const t1=n?[L({en:'above VA, full',no:'over VA kan fullt'}),L({en:'control input',no:'rorutslag'}),L({en:'can overstress',no:'overbelaste'})]:[L({en:'VA, manoeuvring speed: above it,',no:'VA, manøverfart: over den kan'}),L({en:'full control deflection can overstress',no:'fullt rorutslag overbelaste flyet'})];
+      t1.forEach((t,i)=>txt(g,t,lx,ly+i*(fz+3),{col:I.amber,size:fz-0.5,w:i?400:500})); }
+    if(!n||vend>0) txt(g,L({en:'normal flight',no:'normal flyging'}),(ax.X(va)+ax.X(Math.min(R.VC,vend)))/2,ax.Y(C.nmin<0?-0.5:0.35),{col:'rgba(113,204,147,.8)',al:'center',size:fz,w:500}); }
   const vl=(v,s,col,row)=>{ vline(g,ax.X(v),ax.Y(3.2),ax.Y(-1.6),col,[4,4],1.1); txt(g,s,ax.X(v)+3,ax.Y(3.05)+row*12,{mono:1,col,size:n?9:10}); };
-  vl(R.Vs,'VS',I.mute,0);
-  if(VN.cfg==='clean'){ vl(R.VA,'VA',I.amber,0); vl(R.VB,'VB',I.cyan,1); vl(R.VC,R.VC<AC.VMO-1?'MMO':'VC/VMO',I.red,0); vl(R.VD,R.VD<AC.VD-1?'MD':'VD',I.red,1);
+  vl(R.Vs,det||n?'VS':L({en:'VS · stall at 1 g',no:'VS · steiling ved 1 g'}),I.mute,det||n?0:1);
+  if(VN.cfg==='clean'){ vl(R.VA,'VA',I.amber,0); if(det||VN.gust) vl(R.VB,'VB',I.cyan,1); vl(R.VC,R.VC<AC.VMO-1?'MMO':'VC/VMO',I.red,0); vl(R.VD,R.VD<AC.VD-1?'MD':'VD',I.red,1);
     const tv=Math.min(VN.alt>=20000?275:250,S.easOfMach(0.76,VN.alt)); band(g,ax.X(tv-8),ax.X(tv+8),ax.Y(3.2),ax.Y(-1.6),'rgba(240,180,64,.10)'); txt(g,n?'VRA':L({en:'turb. speed',no:'turb.-fart'}),ax.X(tv),ax.Y(-1.45),{mono:1,col:I.amber,al:'center',size:n?9:10}); }
   else vl(R.VD,'VFE',I.red,0);
-  txt(g,'+'+nf(C.nmax,1)+' g',ax.X(vend)-4,ax.Y(C.nmax)-6,{mono:1,col:I.green,al:'right',size:10}); txt(g,(C.nmin<0?'−1.0':'0')+' g',ax.X(vend)-4,ax.Y(C.nmin)+(C.nmin<0?14:-6),{mono:1,col:I.green,al:'right',size:10});
-  if(!n) txt(g,L({en:'n = (V / VS)²',no:'n = (V / VS)²'}),ax.X(R.Vs*1.28)-6,ax.Y(1.64),{col:I.green,al:'right',size:11});
+  txt(g,'+'+nf(C.nmax,1)+' g'+(n?'':' '+L({en:'limit load',no:'grenselast'})),ax.X(vend)-4,ax.Y(C.nmax)-6,{mono:1,col:I.green,al:'right',size:10}); txt(g,(C.nmin<0?'−1.0':'0')+' g'+(n?'':' '+L({en:'limit load',no:'grenselast'})),ax.X(vend)-4,ax.Y(C.nmin)+(C.nmin<0?14:-6),{mono:1,col:I.green,al:'right',size:10});
+  if(!n&&det) txt(g,L({en:'n = (V / VS)²',no:'n = (V / VS)²'}),ax.X(R.Vs*1.28)-6,ax.Y(1.64),{col:I.green,al:'right',size:11});
   // current point: bank load factor
   const nn=Math.min(3.15,E.n), vS=R.Vs*Math.sqrt(E.n);
   if(vS<vmax){ dot(g,ax.X(vS),ax.Y(Math.min(3.15,E.n)),4,I.ink); S.line(g,[[ax.X(vS),ax.Y(nn)],[ax.X(VN.v),ax.Y(nn)]],'rgba(215,225,230,.5)',1,[2,3]); }
@@ -712,7 +770,8 @@ function drawBuf(g,W,H,n,E){ const box={x:n?40:50,y:24,w:W-(n?50:66),h:H-(n?56:5
   // MMO and VMO
   vline(g,ax.X(AC.MMO),ax.Y(f1),ax.Y(f0),I.red,[5,4]); txt(g,'MMO',ax.X(AC.MMO)+3,ax.Y(f0)-6,{mono:1,col:I.red,size:10});
   const vm=[]; for(let fl=f0;fl<=f1;fl+=5){ const M=S.machOfEas(AC.VMO,fl*100); if(M<=0.9) vm.push([ax.X(Math.max(0.45,M)),ax.Y(fl)]); } S.line(g,vm,I.red,1.2,[2,3]);
-  txt(g,'1.0 g',t1?t1[0]:ax.X(0.75),t1?t1[1]-6:ax.Y(445),{mono:1,col:I.mute,al:'center',size:10}); if(t13) txt(g,'1.3 g',t13[0],t13[1]-6,{mono:1,col:I.green,al:'center',size:10});
+  txt(g,'1.0 g',t1?t1[0]:ax.X(0.75),t1?t1[1]-6:ax.Y(445),{mono:1,col:I.mute,al:'center',size:10});
+  if(t1&&t1[1]>box.y+30) txt(g,L({en:'coffin corner: the two buffet lines meet',no:'coffin corner: de to buffetlinjene møtes'}),t1[0],t1[1]-20,{col:I.amber,al:'center',size:n?10:11,w:500,bg:'rgba(16,23,29,.75)'}); if(t13) txt(g,'1.3 g',t13[0],t13[1]-6,{mono:1,col:I.green,al:'center',size:10});
   if(tn) txt(g,nf(E.n,2)+' g',tn[0],tn[1]-6,{mono:1,col:I.amber,al:'center',size:10});
   if(!n){ txt(g,L({en:'low-speed buffet',no:'lavfartsbuffet'}),ax.X(0.5),ax.Y(330),{col:I.mute,size:11}); txt(g,L({en:'high-speed buffet',no:'høyfartsbuffet'}),ax.X(0.89),ax.Y(300),{col:I.mute,al:'right',size:11}); }
   const fl=VN.alt/100, bn=E.bfn, ok=bn&&VN.M>bn.lo&&VN.M<bn.hi; if(fl>=f0) { dot(g,ax.X(VN.M),ax.Y(fl),7,ok?I.mag:I.red,'#10171D'); const rgt=ax.X(VN.M)>W*0.6; txt(g,'FL'+nf(fl,0)+' M'+nf(VN.M,2),ax.X(VN.M)+(rgt?-10:10),ax.Y(fl)+4,{col:ok?I.mag:I.red,al:rgt?'right':'left',size:11,bg:'rgba(16,23,29,.7)'}); }
@@ -732,7 +791,7 @@ function vnRead(){ const E=vnState(), R=E.R, C=R.C, nmx=C.nmax, vS=R.Vs*Math.sqr
    [{en:'Bank to reach 1.3 g',no:'Krengning for 1,3 g'},nf(Math.acos(1/1.3)/D2R,1)+'°']]);
   el('vnX').innerHTML=L(buf?{en:'<b>Buffet onset.</b> At a fixed weight, every altitude has a band of Mach numbers between low-speed buffet (too much CL, the wing is near the stall) and high-speed buffet (shock-induced separation). The band narrows as you climb, and in a turn the required CL goes up with n, so it narrows faster. Operators keep at least a 1.3 g margin, which is a 40° bank: the A320’s REC MAX level in the MCDU is built that way. Where the two buffet lines meet is the coffin corner.',no:'<b>Buffetstart.</b> Ved fast vekt har hver høyde et bånd av machtall mellom lavfartsbuffet (for mye CL, vingen er nær steiling) og høyfartsbuffet (sjokkindusert separasjon). Båndet blir smalere når du stiger, og i en sving øker nødvendig CL med n, så det blir smalere fortere. Operatører holder minst 1,3 g margin, som tilsvarer 40° krengning: REC MAX-nivået i MCDU på A320 bygger på det. Der de to buffetlinjene møtes, er coffin corner.'}
    :{en:'<b>Gust load.</b> Δn = Kg·ρ0·V·a·U / (2·W/S), with V and U as equivalent airspeeds and Kg the gust alleviation factor (0.88μ / (5.3 + μ)). The gust adds the most g at high EAS and at <b>low weight</b>: try 45 t at VC. VB is where the strongest design gust just stalls the wing instead of breaking it; the A320 turbulence speed sits a little above it and well below VC. In normal law the protections hold +2.5 / −1 g clean and +2.0 / 0 g with flaps, and 67° of bank, which is 2.5 g in a level turn; the aerodynamics still set the stall and the gust loads.',no:'<b>Vindkastlast.</b> Δn = Kg·ρ0·V·a·U / (2·W/S), med V og U som ekvivalente farter og Kg vindkastreduksjonsfaktoren (0,88μ / (5,3 + μ)). Vindkastet gir mest g ved høy EAS og ved <b>lav vekt</b>: prøv 45 t ved VC. VB er der det sterkeste dimensjonerende vindkastet så vidt staller vingen i stedet for å brekke den; turbulensfarten på A320 ligger litt over den og godt under VC. I normal law holder beskyttelsene +2,5 / −1 g rent og +2,0 / 0 g med klaff, og 67° krengning, som er 2,5 g i plan sving; aerodynamikken bestemmer fortsatt steiling og vindkastlaster.'}); }
-function vnAll(){ vnC.draw(); vnRead(); }
+function vnAll(){ vnC.draw(); vnRead(); if(typeof cnVn!=='undefined'&&cnVn) cnVn.refresh(); }
 function vnBuild(){ el('vnCtl').innerHTML=''; const vmx=VN.cfg==='clean'?400:VN.cfg==='conf1'?215:177; if(VN.v>vmx) VN.v=VN.cfg==='clean'?250:VN.cfg==='conf1'?180:140;
   sl('vnCtl',{label:'Mass (t)',min:40,max:78,step:0.5,v:VN.m,f:v=>nf(v,1)+' t',on:v=>{ VN.m=v; vnAll(); }});
   sl('vnCtl',{label:'Altitude (ft)',min:0,max:41000,step:500,v:VN.alt,f:v=>nf(v,0)+' ft',on:v=>{ VN.alt=v; vnAll(); }});
@@ -742,6 +801,12 @@ function vnBuild(){ el('vnCtl').innerHTML=''; const vmx=VN.cfg==='clean'?400:VN.
 seg('vnMode',[['vn','V-n diagram'],['buf','Buffet and coffin corner']],VN.mode,v=>{ VN.mode=v; if(v==='buf'){ VN.cfg='clean'; cfgSeg.set('clean'); if(VN.alt<30000) VN.alt=37000; VN.bank=Math.min(VN.bank,30); } vnBuild(); vnAll(); });
 const cfgSeg=seg('vnCfg',[['clean','Clean'],['conf1','CONF 1+F'],['full','CONF FULL']],VN.cfg,v=>{ VN.cfg=v; if(v!=='clean'&&VN.mode==='buf'){ VN.mode='vn'; } if(v!=='clean'&&VN.alt>20000) VN.alt=5000; vnBuild(); vnAll(); });
 el('vnG').onchange=e=>{ VN.gust=e.target.checked; vnAll(); };
+var cnVn=null; if(window.CN){ cnVn=CN.add('vnCv',{
+  read:()=>VN.mode==='buf'?L({en:'Across: Mach number. Up: flight level. Inside the green shape the wing has at least a 1.3 g margin to buffet; the dot is you.',no:'Bortover: machtall. Oppover: flygenivå. Innenfor den grønne formen har vingen minst 1,3 g margin til buffet; punktet er deg.'})
+    :L({en:'Across: speed (KEAS, equivalent airspeed). Up: load factor n, the g you pull. Inside the green shape is safe; the dot is your turn.',no:'Bortover: fart (KEAS, ekvivalent fart). Oppover: lastfaktor n, g-en du trekker. Innenfor den grønne formen er trygt; punktet er svingen din.'}),
+  take:()=>VN.mode==='buf'?L({en:'The higher you fly, the narrower the speed band between stall buffet and Mach buffet; banking narrows it further.',no:'Jo høyere du flyr, desto smalere er fartsbåndet mellom steilebuffet og machbuffet; krengning gjør det enda smalere.'})
+    :L({en:'Below VA the wing stalls before it can break; above VA a hard pull can overstress the structure before the wing stalls.',no:'Under VA staller vingen før den kan brekke; over VA kan et hardt trekk overbelaste strukturen før vingen staller.'}),
+  full:()=>vnC.draw()}); }
 on(()=>{ el('vnLead').textContent=L({en:'Load factor is lift divided by weight. The V-n diagram shows where the wing stalls before the structure is overloaded and where it does not; gusts add their own g on top; and at altitude the buffet boundary closes the speed range from both ends. All speeds here are equivalent airspeeds (EAS).',no:'Lastfaktor er løft delt på vekt. V-n-diagrammet viser hvor vingen staller før strukturen overbelastes, og hvor den ikke gjør det; vindkast legger sin egen g på toppen; og i høyden lukker buffetgrensen fartsområdet fra begge ender. Alle farter her er ekvivalente farter (EAS).'});
  EXT('vnE',[
   {en:'n = L/W. In a level turn <b>n = 1/cos φ</b> (30° → 1.15, 45° → 1.41, 60° → 2) and the stall speed rises with <b>√n</b> (60° → VS × 1.41).',no:'n = L/W. I en plan sving er <b>n = 1/cos φ</b> (30° → 1,15, 45° → 1,41, 60° → 2), og steilefarten øker med <b>√n</b> (60° → VS × 1,41).'},

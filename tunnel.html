@@ -716,6 +716,7 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="tunnel3d.js?v=2"></script>
 <script src="cfd3d.js?v=4"></script>
 <script src="lab.js?v=26"></script>
+<script src="chartnote.js?v=1"></script>
 <script src="physics.js?v=12"></script>
 <script src="section.js?v=11"></script>
 <script src="flow3d.js?v=6"></script>
@@ -2427,7 +2428,7 @@ function drawPol(){
   const gap=14, pw=(W-gap)/2, panels=[{x0:0,xr:[-6,24],xi:0,xt:[0,10,20],fx:v=>v+'°',name:'CL – α'},{x0:pw+gap,xr:[0,cd1],xi:2,xt:[0,cd1/2,cd1],fx:v=>nf(v,cd1<0.2?2:1),name:'CL – CD'}];
   g.font='10px "IBM Plex Mono", monospace'; g.lineWidth=1;
   for(const pn of panels){ const pl=pn.x0+30, pr=pn.x0+pw-16, pt=20, pb=H-18, X=v=>pl+(v-pn.xr[0])/(pn.xr[1]-pn.xr[0])*(pr-pl), Y=v=>pb-(v-cl0)/(cl1-cl0)*(pb-pt);
-    g.fillStyle=C.muted; g.textAlign='left'; g.textBaseline='top'; g.fillText(pn.name,pl,0);
+    g.fillStyle=C.muted; g.textAlign='left'; g.textBaseline='top'; g.fillText(LAB.L(pn.xi?{en:'lift CL vs drag CD',no:'løft CL mot motstand CD'}:{en:'lift CL vs angle α',no:'løft CL mot vinkel α'}),pl,0);
     for(let v=cl0; v<=cl1+1e-9; v+=0.5){ g.strokeStyle=C.line; g.beginPath(); g.moveTo(pl,Y(v)+0.5); g.lineTo(pr,Y(v)+0.5); g.stroke(); g.fillStyle=C.muted; g.textAlign='right'; g.textBaseline='middle'; g.fillText(nf(v,1),pl-4,Y(v)); }
     for(const t of pn.xt){ g.fillStyle=C.muted; g.textAlign='center'; g.textBaseline='top'; g.fillText(pn.fx(t),X(t),pb+4); }
     g.save(); g.beginPath(); g.rect(pl,pt-2,pr-pl,pb-pt+4); g.clip();
@@ -2528,6 +2529,14 @@ function updateCamera(){
 }
 function resize(){ const w=vp.clientWidth,h=vp.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); lineMat.uniforms.res.value.set(w,h); glowMat.uniforms.res.value.set(w,h); tubeMat.uniforms.res.value.set(w,h); for(const m of RIBMATS) m.uniforms.res.value.set(w,h); camera.aspect=w/h; drawPol(); camera.updateProjectionMatrix(); }
 new ResizeObserver(()=>{resize(); drawCharts();}).observe(vp);
+if(window.CN){
+  CN.add('chSpan',{read:{en:'Lift along the span, tip to tip. Blue is this wing; the dashed line is the ideal elliptical shape.',no:'Løft langs spennet, tipp til tipp. Blått er denne vingen; den stiplede linjen er den ideelle elliptiske formen.'},take:{en:'The closer to the ellipse, the less induced drag for the same lift.',no:'Jo nærmere ellipsen, desto mindre indusert motstand for samme løft.'}});
+  CN.add('chStall',{read:{en:'How close each part of the span is to stalling (1.0 = stalled).',no:'Hvor nær hver del av spennet er å stalle (1,0 = stallet).'},take:{en:'You want the root to reach 1.0 first, so the ailerons near the tips keep working.',no:'Du vil at roten skal nå 1,0 først, så krengerorene ute ved tippene fortsatt virker.'}});
+  CN.add('chCL',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the wing now.',no:'Bortover: anstigningsvinkel α. Oppover: løftekoeffisient CL. Punktet er vingen nå.'},take:{en:'Lift grows with α until the critical angle; past the peak the wing stalls and lift falls.',no:'Løftet vokser med α fram til kritisk vinkel; forbi toppen staller vingen og løftet faller.'}});
+  CN.add('chCp',{read:{en:'Pressure along the chord, leading edge on the left. Up means suction (−Cp): blue is the top surface, amber the bottom.',no:'Trykk langs korden, forkanten til venstre. Opp betyr sug (−Cp): blått er oversiden, gult undersiden.'},take:{en:'Most lift comes from suction on the top, close to the leading edge.',no:'Mesteparten av løftet kommer fra sug på oversiden, nær forkanten.'},full:()=>{ try{ SEC.update(true); }catch(e){} }});
+  CN.add('chPolar',{read:{en:'Across: angle of attack α. Up: lift coefficient CL. The dot is the section now.',no:'Bortover: anstigningsvinkel α. Oppover: løftekoeffisient CL. Punktet er profilet nå.'},take:{en:'The peak is CL max at the critical angle of attack: beyond it the flow separates and the wing stalls, at any speed.',no:'Toppen er CL maks ved kritisk anstigningsvinkel: forbi den separerer strømningen og vingen staller, ved hvilken som helst fart.'},full:()=>{ try{ SEC.update(true); }catch(e){} }});
+  CN.add('t3Pol',{read:{en:'Drawn as you change α. Left: lift against angle. Right: lift against drag (the drag polar).',no:'Tegnes mens du endrer α. Venstre: løft mot vinkel. Høyre: løft mot motstand (motstandspolaren).'},take:{en:'Compare a saved run (A) with now to see what flaps, slats or speed do to lift and drag.',no:'Sammenlign en lagret kjøring (A) med nå for å se hva klaff, lameller eller fart gjør med løft og motstand.'}});
+}
 
 /* ---------------- Beregning ---------------- */
 function rebuild(){
@@ -2665,6 +2674,13 @@ function chart(cv,cfg){
     s.pts.forEach((p,i)=>{ i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])); }); g.stroke(); g.setLineDash([]); }
   for(const p of (cfg.pts||[])){ g.fillStyle=p.color; g.beginPath(); g.arc(X(p.x),Y(p.y),4.5,0,Math.PI*2); g.fill(); g.strokeStyle='#0d1319'; g.lineWidth=1.5; g.stroke(); }
   g.restore();
+  /* plain-language notes in data coordinates: {x,y,t,color,al,dy} (t is {en,no} or a string) */
+  for(const nt of (cfg.notes||[])){ const tt=typeof nt.t==='string'?nt.t:LAB.L(nt.t); g.font='500 10.5px "Public Sans", system-ui, sans-serif'; g.textBaseline='middle';
+    const al=nt.al||'left', w=g.measureText(tt).width; let x=X(nt.x)+(nt.dx||0); if(al==='right') x=Math.max(pl+w+2,x); else if(al==='center') x=Math.min(pl+iw-w/2-2,Math.max(pl+w/2+2,x)); else x=Math.min(pl+iw-w-2,x);
+    const y=Math.max(pt+8,Math.min(pt+ih-8,Y(nt.y)+(nt.dy||0)));
+    g.fillStyle='rgba(13,19,25,.78)'; g.fillRect((al==='right'?x-w:al==='center'?x-w/2:x)-3,y-7,w+6,14);
+    g.fillStyle=nt.color||C.fg; g.textAlign=al; g.fillText(tt,x,y); }
+  g.font='10px "IBM Plex Mono", monospace';
   if(cfg.legend){ let x=pl+iw; g.textBaseline='top'; g.textAlign='right';
     for(const l of cfg.legend.slice().reverse()){ g.fillStyle=l.color; const tt=T(l.t), w=g.measureText(tt).width; g.fillText(tt,x,pt+2); x-=w+14; } }
 }
@@ -2683,15 +2699,18 @@ function drawCharts(){
     legend:[{t:'Vingen',color:C.smoke},{t:'Elliptisk',color:C.muted}]});
   chart(document.getElementById('chStall'),{x:[-100,100],y:[-0.2,1.35],xt,fx,yt:[0,0.5,1],
     h:[{y:1,color:C.red,label:'stall'}],
-    series:[{pts:rat,color:res.maxRatio>=1?C.red:res.maxRatio>0.9?C.amber:C.green}]});
+    series:[{pts:rat,color:res.maxRatio>=1?C.red:res.maxRatio>0.9?C.amber:C.green}],
+    notes:(()=>{ let m=rat[0]; rat.forEach(p=>{ if(p[1]>m[1]) m=p; }); return m[1]>0.8?[{x:m[0],y:m[1],dy:m[1]>1.1?14:-12,al:'center',t:{en:'stalls first here',no:'staller først her'},color:m[1]>=1?C.red:C.amber}]:[{x:0,y:0.45,al:'center',t:{en:'well below the stall',no:'godt under stall'},color:C.green}]; })()});
   const curve=P.clCurve(w,-6,24,0.5);
   const cmax=Math.max(1.6,Math.ceil((w.CLmax+0.2)*2)/2);
   const cmin=Math.min(-0.5,Math.floor(Math.min(...curve.map(p=>p[1]))*2)/2);
   const yt=[]; for(let v=Math.ceil(cmin*2)/2; v<=cmax+1e-9; v+=0.5) yt.push(+v.toFixed(1));
   const hs=[{y:w.CLmax,color:C.red,label:'CL maks'}];
   if(st.mode==='speed' && out.CLreq<cmax) hs.push({y:out.CLreq,color:C.amber,label:'CL nødvendig'});
+  const pk=curve.reduce((a,p)=>p[1]>a[1]?p:a,curve[0]);
   chart(document.getElementById('chCL'),{x:[-6,24],y:[cmin,cmax],xt:[-5,0,5,10,15,20],fx:v=>v+'°',yt,
-    h:hs, series:[{pts:curve,color:C.smoke}], pts:[{x:res.alpha,y:res.CL,color:res.post>0?C.red:C.fg}]});
+    h:hs, series:[{pts:curve,color:C.smoke}], pts:[{x:res.alpha,y:res.CL,color:res.post>0?C.red:C.fg}],
+    notes:[{x:pk[0],y:pk[1],dy:-26,al:'right',dx:-4,t:{en:'stall: no more lift',no:'stall: ikke mer løft'},color:C.red},{x:2,y:P.clCurve(w,2,2.01,0.5)[0][1],dy:14,dx:6,t:{en:'more α → more lift',no:'mer α → mer løft'},color:C.smoke}]});
 }
 
 /* ---------------- Profilsnitt (2D) ---------------- */
@@ -2883,17 +2902,21 @@ const SEC=window.SEC=(function(){
     const top=Math.min(10,Math.ceil(mx));
     const yt=[]; const stp=top>6?2:1; for(let v=-1;v<=top;v+=stp) yt.push(v);
     const vl=[]; const b=inv.CL>=0?vis.up:vis.lo;
-    if(vis.up.xtr!=null) vl.push({x:vis.up.xtr,color:C.amber,label:'omslag'});
+    const cpDet=window.CN&&CN.full('chCp');
+    if(vis.up.xtr!=null&&cpDet) vl.push({x:vis.up.xtr,color:C.amber,label:'omslag'});
     if(b.xsep!=null&&b.xsep<0.98) vl.push({x:b.xsep,color:C.red,label:'sep.'});
     chart(document.getElementById('chCp'),{x:[0,1],y:[-1.2,top],xt:[0,0.25,0.5,0.75,1],fx:v=>Math.round(v*100)+'%',yt,fy:v=>nf(v,0),
-      v:vl, series:[{pts:loP,color:C.amber,w:1.5},{pts:upP,color:C.smoke}], legend:[{t:'Oversiden',color:C.smoke},{t:'Undersiden',color:C.amber}]});
+      v:vl, series:[{pts:loP,color:C.amber,w:1.5},{pts:upP,color:C.smoke}], legend:[{t:'Oversiden',color:C.smoke},{t:'Undersiden',color:C.amber}],
+      notes:(()=>{ const pkU=upP.reduce((a,p)=>p[1]>a[1]?p:a,upP[0]); return [{x:pkU[0],y:pkU[1],dx:10,dy:18,t:{en:'suction peak',no:'sugtopp'},color:C.smoke},{x:0.55,y:0.45,al:'center',t:{en:'gap between the lines = lift',no:'avstanden mellom linjene = løft'},color:C.fg}]; })()});
+    const polDet=window.CN&&CN.full('chPolar');
     const cv2=pol.pts.map(p=>[p.a,p.cl]), ci=pol.pts.filter(p=>p.a<=16).map(p=>[p.a,p.cli]);
     const cmax=Math.max(1.5,Math.ceil((pol.CLmax+(st.conf>0?0.7:0.3))*2)/2), cmin=Math.min(-0.5,Math.floor(Math.min(...cv2.map(p=>p[1]),...(st.conf>0&&refPol?refPol.pts.map(p=>p.cl):[0]))*2)/2);
     const yt2=[]; for(let v=Math.ceil(cmin*2)/2; v<=cmax+1e-9; v+=0.5) yt2.push(+v.toFixed(1));
     chart(document.getElementById('chPolar'),{x:[-6,24],y:[cmin,cmax],xt:[-5,0,5,10,15,20],fx:v=>v+'°',yt:yt2,
-      v:[{x:pol.alphaCrit,color:C.red,label:'kritisk α'}], h:[{y:pol.CLmax,color:C.red,label:'CL maks'}],
-      series:(st.conf>0&&refPol?[{pts:refPol.pts.map(p=>[p.a,p.cl]),color:C.amber,dash:[3,3],w:1.3}]:[{pts:ci,color:C.muted,dash:[5,4],w:1.3}]).concat([{pts:cv2,color:C.smoke}]), pts:[{x:ps.alpha,y:vis.CL,color:ps.alpha>pol.alphaCrit?C.red:C.fg}],
-      legend:[{t:'Med grensesjikt',color:C.smoke}].concat(st.conf>0?[{t:'CONF 0',color:C.amber}]:[{t:'Usynlig',color:C.muted}])});
+      v:[{x:pol.alphaCrit,color:C.red,label:polDet?'kritisk α':''}], h:[{y:pol.CLmax,color:C.red,label:polDet?'CL maks':''}],
+      series:(polDet||st.conf>0?(st.conf>0&&refPol?[{pts:refPol.pts.map(p=>[p.a,p.cl]),color:C.amber,dash:[3,3],w:1.3}]:[{pts:ci,color:C.muted,dash:[5,4],w:1.3}]):[]).concat([{pts:cv2,color:C.smoke}]), pts:[{x:ps.alpha,y:vis.CL,color:ps.alpha>pol.alphaCrit?C.red:C.fg}],
+      legend:polDet||st.conf>0?[{t:'Med grensesjikt',color:C.smoke}].concat(st.conf>0?[{t:'CONF 0',color:C.amber}]:[{t:'Usynlig',color:C.muted}]):null,
+      notes:polDet?[]:[{x:pol.alphaCrit,y:pol.CLmax,dy:-12,dx:-6,al:'right',t:{en:'stall: CL max at the critical α',no:'stall: CL maks ved kritisk α'},color:C.red},{x:0,y:cv2.reduce((a,p)=>Math.abs(p[0])<Math.abs(a[0])?p:a,cv2[0])[1],dx:6,dy:16,t:{en:'more α → more lift',no:'mer α → mer løft'},color:C.smoke}]});
   }
 
   /* ---------- lag: bakgrunn (trykkfelt + røyklinjer) og topp (profil, grensesjikt, markører) ---------- */
@@ -3712,6 +3735,9 @@ function drawTape(){
   g.fillStyle='rgba(240,180,64,.6)'; g.fillRect(X(v.vn),y0-bh/2,X(v.warn)-X(v.vn),bh);
   g.fillStyle='rgba(113,204,147,.2)'; g.fillRect(X(v.warn),y0-bh/2,X(v1)-X(v.warn),bh);
   if(v.c.vfe){ g.fillStyle='#ec5a47'; for(let x=X(v.c.vfe);x<X(v1);x+=6) g.fillRect(x,y0+bh/2-3,3,3); }
+  { g.font='600 10.5px "Public Sans", system-ui, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    const zw=(a,b,t,c)=>{ const tt=L(t); if(g.measureText(tt).width+10<X(b)-X(a)){ g.fillStyle=c; g.fillText(tt,(X(a)+X(b))/2,y0+0.5); } };
+    zw(v0,v.vn,{en:'stalled',no:'stallet'},'#fff'); zw(v.warn,v.c.vfe?Math.min(v1,v.c.vfe):v1,{en:'flyable',no:'flygbart'},'#bfe8cd'); }
   g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#8b99a7'; g.textAlign='center'; g.textBaseline='top';
   for(let k=Math.ceil(v0/20)*20;k<=v1;k+=20){ g.fillRect(X(k)-0.5,y0+bh/2,1,4); if(!narrow||k%40===0) g.fillText(String(k),X(k),y0+bh/2+5); }
   g.textAlign='right'; g.textBaseline='bottom'; g.fillText('kt IAS',W-pr,H-4);
@@ -3791,7 +3817,8 @@ function stallText(){
 }
 el('stFly').addEventListener('click',()=>{ const T=window.__tun; if(T&&T.st){ if(T.st.conf!==S.conf||T.st.sp!=='off'){ T.setConf(S.conf); T.st.sp='off'; T.rebuild(); } }
   el('t3').scrollIntoView({behavior:'smooth',block:'start'}); const d=el('stallDemo'); if(d&&!d.classList.contains('on')) setTimeout(()=>d.click(),500); });
-function initStall(){ if(ready) return; ready=true; stallCtl(); buildCards(); upd(); }
+function initStall(){ if(ready) return; ready=true; stallCtl(); buildCards(); upd();
+  if(window.CN&&!initStall.cn){ initStall.cn=1; CN.add('stTape',{take:{en:'The wing always stalls at the same critical angle; bank, mass and flaps only move the speed where that happens.',no:'Vingen staller alltid ved samme kritiske vinkel; krengning, masse og klaff flytter bare farten der det skjer.'}}); } }
 window.STALLP={ set(o,scroll){ initStall(); Object.assign(S,o||{}); if(sMass) sMass.set(S.mass); if(sBank) sBank.set(S.bank); upd(); if(scroll) el('stall').scrollIntoView({behavior:'smooth',block:'start'}); }, upd:()=>upd() };
 LAB.visible(el('stall'),on=>{ if(on){ initStall(); upd(); } });
 setInterval(()=>{ if(ready&&window.__tun&&document.visibilityState==='visible') { const r=el('stRead'); if(r&&r.getBoundingClientRect().top<innerHeight&&r.getBoundingClientRect().bottom>0) upd(); } },1500);

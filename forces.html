@@ -14,11 +14,13 @@
 @media (max-width:600px){#fmCv{aspect-ratio:4/4.3}#fpCv{aspect-ratio:4/2.2}#fdCv{aspect-ratio:4/3.4}}
 .ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 20px)}
 .ovl b{color:#D7E1E6;font-weight:500}.ovl .r{color:#EC5A47}.ovl .g{color:#71CC93}
+#fmOv{display:flex;flex-wrap:wrap;gap:2px 16px;background:rgba(12,15,18,.5);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:6px 10px;font-size:10.5px;line-height:1.35;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);max-width:calc(100% - 120px)}
+#fmOv span{display:block}#fmOv i{font-style:normal;color:#8e99a4;display:block;font-size:9.5px;letter-spacing:.04em}#fmOv b{color:#eef2f5;white-space:nowrap;font-variant-numeric:tabular-nums}#fmOv b.r{color:#EC5A47}
 .ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
 .vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:#D7E1E6;border:1px solid #2A3742;border-radius:3px;padding:5px 9px;cursor:pointer;line-height:1.3;min-height:28px}
 .vbtn:hover{border-color:#7FCBE8}.vbtn.on{background:#E46BAE;color:#10171D;border-color:#E46BAE;font-weight:600}
 .vbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
-@media (max-width:600px){.ovl{display:none}}
+@media (max-width:600px){.ovl{display:none}#fmOv{display:flex;gap:2px 10px;padding:4px 8px;top:auto;bottom:26px;max-width:calc(100% - 20px)}#fmOv .ph{display:none}}
 .phases{display:flex;flex-wrap:wrap;gap:6px}
 .phases button{font-size:13.5px}
 .pre{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -111,8 +113,10 @@ body.depth-instructor #model .atl-split>.rail{display:grid;grid-template-columns
     <div class="eyebrow">1 · Understand</div>
     <h2>The four forces</h2>
     <p class="lead" id="fLead"></p>
+    <div id="fKc"></div>
+    <details class="kfull"><summary data-tx="fAll">The four forces and the key terms in full</summary><div>
     <div class="four" id="fourC"></div>
-    <div class="defs deep" id="defs"></div>
+    <div class="defs deep" id="defs"></div></div></details>
   </section>
 
   <section class="card" id="model" data-step="explore">
@@ -145,14 +149,14 @@ body.depth-instructor #model .atl-split>.rail{display:grid;grid-template-columns
   </section>
 
   <section class="card" id="try" data-step="try">
-    <div class="eyebrow">3 · Try</div>
+    <div class="eyebrow">2 · Explore · Try it</div>
     <h2>Try it</h2>
     <p class="lead" id="tryLead"></p>
     <ol class="tasks" id="tasks"></ol>
   </section>
 
   <section class="card" id="debrief" data-step="debrief">
-    <div class="eyebrow">4 · Debrief</div>
+    <div class="eyebrow">3 · Key points</div>
     <h2>What happened, and why it matters</h2>
     <div class="cols why" id="dbC"></div>
     <div class="maid" id="maR"><div class="eyebrow"></div><h3></h3><p></p></div>
@@ -162,13 +166,15 @@ body.depth-instructor #model .atl-split>.rail{display:grid;grid-template-columns
   </section>
 
   <section class="card" id="quiz" data-step="check">
-    <div class="eyebrow">5 · Check</div>
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot" id="foot"></p>
 </div>
 <script src="lab.js?v=26"></script>
-<script src="forces.js?v=1"></script>
+<script src="chartnote.js?v=1"></script>
+<script src="concepts.js?v=1"></script>
+<script src="forces.js?v=2"></script>
 </body>
 </html>

@@ -166,6 +166,10 @@ ol.steps li{margin:4px 0}
   <section class="card" id="pfactor" data-step="understand">
     <div class="eyebrow">1 · Understand</div>
     <h2>P-factor and the critical engine</h2>
+    <p class="lead" id="pfLead"></p>
+    <div id="pfKc"></div>
+    <details class="kfull"><summary>PAST in full: the four reasons, step by step</summary><div>
+    <div class="past" id="past"></div></div></details>
     <div class="vid" id="vid">
       <div class="vframe"><button class="vplay" id="vplay" type="button" aria-label="Play the video"><i></i><span id="vnote"></span></button></div>
       <div class="vtx">
@@ -175,8 +179,6 @@ ol.steps li{margin:4px 0}
         <a id="vlink" href="https://www.youtube.com/watch?v=VJOYERf6380" target="_blank" rel="noopener"></a>
       </div>
     </div>
-    <p class="lead" id="pfLead"></p>
-    <div class="past" id="past"></div>
     <div class="maid" id="maPast"><div class="eyebrow"></div><h3></h3><p></p></div>
     <p class="note deep" id="pfNote"></p>
   </section>
@@ -301,7 +303,7 @@ ol.steps li{margin:4px 0}
 
   <!-- try -->
   <section class="card" id="try" data-step="try">
-    <div class="eyebrow">3 · Try</div>
+    <div class="eyebrow">2 · Explore · Try it</div>
     <h2>Try it</h2>
     <p class="lead" id="tryLead"></p>
     <ol class="tasks" id="tasks"></ol>
@@ -309,7 +311,7 @@ ol.steps li{margin:4px 0}
 
   <!-- 2 · certification -->
   <section class="card" id="cert" data-step="debrief">
-    <div class="eyebrow">4 · Debrief · certification</div>
+    <div class="eyebrow">3 · Key points · certification</div>
     <h2>What CS-25 fixes, and the speeds it protects</h2>
     <p class="lead" id="ceLead"></p>
     <div class="ct4" id="ceT"></div>
@@ -329,7 +331,7 @@ ol.steps li{margin:4px 0}
   <!-- 4 · ops -->
   <section class="card" id="ops" data-step="debrief">
     <span id="a320" aria-hidden="true"></span>
-    <div class="eyebrow">4 · Debrief · in the A320</div>
+    <div class="eyebrow">3 · Key points · in the A320</div>
     <h2>Engine failure at or after V1 on the A320</h2>
     <div class="cols">
       <div class="box"><b class="t">What the aircraft does for you, and what it does not</b><p id="nl"></p></div>
@@ -341,13 +343,15 @@ ol.steps li{margin:4px 0}
   </section>
 
   <section class="card" id="quiz" data-step="check">
-    <div class="eyebrow">5 · Check</div>
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot" id="foot"></p>
 </div>
 <script src="lab.js?v=26"></script>
+<script src="chartnote.js?v=1"></script>
+<script src="concepts.js?v=1"></script>
 <script src="stab.js?v=1"></script>
 <script src="vmc.js?v=2"></script>
 <script>
@@ -356,7 +360,7 @@ LAB.add({},{
  'Lose an engine on a light twin and on the A320 and slow down until the rudder runs out. That speed is VMCA. See why one engine is critical, what bank, feathering, power and CG do, how a propeller blade works as a wing, and how CS-25 turns VMC into VMCG, VMCL and the limits on V1, VR, V2 and VREF.':'Mist en motor på et lett tomotors fly og på A320, og senk farten til sideroret ikke strekker til. Den farten er VMCA. Se hvorfor én motor er kritisk, hva krengning, fløying, effekt og CG gjør, hvordan et propellblad virker som en vinge, og hvordan CS-25 gjør VMC om til VMCG, VMCL og grensene for V1, VR, V2 og VREF.',
  'Try it':'Prøv selv','Layers':'Lag','Also: VMCG · VMCL':'Også: VMCG · VMCL','the same yaw balance on the ground and in a go-around':'samme girbalanse på bakken og ved gjennomstart','Advanced':'Avansert','3 · Try':'3 · Prøv','5 · Check':'5 · Sjekk','2 · Explore':'2 · Utforsk','2 · Explore · light-twin teaching model':'2 · Utforsk · undervisningsmodell av lett tomotors fly','2 · Explore · A320 model':'2 · Utforsk · A320-modell','4 · Debrief · certification':'4 · Debrief · sertifisering','4 · Debrief · in the A320':'4 · Debrief · i A320',
  'P-factor and the critical engine':'P-faktor og kritisk motor','Light twin: lose an engine':'Lett tomotors: mist en motor','The propeller is a rotating wing':'Propellen er en roterende vinge',
- '1 · Understand':'1 · Forstå','2 · Interactive · light-twin teaching model':'2 · Interaktiv · undervisningsmodell av lett tomotors fly','3 · Interactive':'3 · Interaktiv','4 · Interactive · A320 model':'4 · Interaktiv · A320-modell','5 · Interactive · A320 model':'5 · Interaktiv · A320-modell',
+ '1 · Understand':'1 · Forstå','PAST in full: the four reasons, step by step':'PAST i sin helhet: de fire grunnene, steg for steg','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points · certification':'3 · Det viktigste · sertifisering','3 · Key points · in the A320':'3 · Det viktigste · i A320','3 · Test yourself':'3 · Test deg selv','2 · Interactive · light-twin teaching model':'2 · Interaktiv · undervisningsmodell av lett tomotors fly','3 · Interactive':'3 · Interaktiv','4 · Interactive · A320 model':'4 · Interaktiv · A320-modell','5 · Interactive · A320 model':'5 · Interaktiv · A320-modell',
  'Debrief · Certification':'Debrief · Sertifisering','Debrief · Operations':'Debrief · Operativt','Try':'Prøv','Try it':'Prøv selv','VMCA on the A320: when the rudder runs out':'VMCA på A320: når sideroret ikke strekker til',
  'Light twin: engine failure':'Lett tomotors: motorstans','Propeller as a wing':'Propellen som vinge',
  'Dead propeller':'Død propell','Propeller':'Propell','Windmilling':'Vindmølle','Feathered':'Fløyet',
@@ -518,16 +522,21 @@ const mvC=fit('mvCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); if
   const vm=CUR.vm;
   if(vm){ g.fillStyle='rgba(236,90,71,.08)'; g.fillRect(box.x,box.y,ax.X(Math.min(vm,v1))-box.x,box.h); }
   g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip();
-  S.line(g,pts.map(p=>[ax.X(p[0]),ax.Y(p[3])]),I.dim,1.4,[5,4]);
+  const det=window.CN&&CN.full('mvCv');
+  if(det) S.line(g,pts.map(p=>[ax.X(p[0]),ax.Y(p[3])]),I.dim,1.4,[5,4]);
   S.line(g,pts.map(p=>[ax.X(p[0]),ax.Y(p[1])]),I.mag,2.4);
   S.line(g,pts.map(p=>[ax.X(p[0]),ax.Y(p[2])]),I.cyan,2.4);
   g.restore();
   const lab=(v,i,c,t2,dy)=>{ const p=pts[Math.round(v-v0)]; txt(g,t2,ax.X(v),ax.Y(p[i])+dy,{col:c,al:'right',size:n?10:11.5}); };
   lab(196,1,I.mag,L({en:'rudder moment needed',no:'rormoment som trengs'}),A.phi>=0?18:-8);
-  { const k=pts.findIndex(p=>p[2]>ymax*0.82); const va=k>0?pts[k][0]-2:150; txt(g,L({en:'available ∝ V²',no:'tilgjengelig ∝ V²'}),ax.X(va)-6,ax.Y(Math.min(pts[Math.round(va-v0)][2],ymax*0.82)),{col:I.cyan,al:'right',size:n?10:11.5}); }
-  if(!n) lab(196,3,'#8B99A7',L({en:'engine (T + D)·ye',no:'motor (T + D)·ye'}),A.phi>=0?-8:18);
-  if(vm&&vm<=v1){ vline(g,ax.X(vm),box.y,box.y+box.h,I.red,[4,3],1.4); txt(g,'VMCA '+nf(vm,0),ax.X(vm)+5,box.y+13,{mono:1,col:I.red,size:11}); }
-  if(!n) txt(g,L({en:'travel limited above 160 kt',no:'utslaget begrenses over 160 kt'}),ax.X(162),box.y+box.h-8,{mono:1,col:I.dim,size:9.5});
+  { const k=pts.findIndex(p=>p[2]>ymax*0.82); const va=k>0?pts[k][0]-2:150; txt(g,(()=>{ if(det) return L({en:'available ∝ V²',no:'tilgjengelig ∝ V²'}); const lg=L({en:'rudder available (grows with speed²)',no:'ror tilgjengelig (vokser med fart²)'}); g.font='600 '+(n?10:11.5)+'px '+S.FONT.body; return !n&&ax.X(va)-6-g.measureText(lg).width>box.x+4?lg:L({en:'rudder available',no:'ror tilgjengelig'}); })(),ax.X(va)-6,ax.Y(Math.min(pts[Math.round(va-v0)][2],ymax*0.82)),{col:I.cyan,al:'right',size:n?10:11.5}); }
+  if(!n&&det) lab(196,3,'#8B99A7',L({en:'engine (T + D)·ye',no:'motor (T + D)·ye'}),A.phi>=0?-8:18);
+  if(vm&&vm<=v1){ vline(g,ax.X(vm),box.y,box.y+box.h,I.red,[4,3],1.4); txt(g,'VMCA '+nf(vm,0),ax.X(vm)+5,box.y+13,{mono:1,col:I.red,size:11});
+    if(!det){ const fz=n?9.5:10.5, xv=ax.X(vm);
+      if(!n){ const yx=ax.Y(pts[Math.max(0,Math.min(pts.length-1,Math.round(vm-v0)))][1]); [L({en:'← here the rudder can no',no:'← her klarer ikke roret'}),L({en:'longer hold the yaw',no:'lenger å holde giringen'})].forEach((t,i)=>txt(g,t,xv+6+(i?12:0),Math.min(box.y+box.h-38,yx+30)+i*14,{col:I.red,size:10,w:500,bg:'rgba(16,23,29,.8)'})); }
+      if(xv-box.x>(n?62:90)) [L({en:'rudder can’t',no:'roret klarer'}),L({en:'hold the yaw',no:'ikke å holde'})].forEach((t,i)=>txt(g,t,(box.x+xv)/2,box.y+box.h*0.8+i*(fz+3),{col:'#E79BC4',al:'center',size:fz,w:500}));
+      txt(g,L({en:'controllable',no:'kontrollerbart'}),box.x+box.w-6,box.y+box.h-8,{col:I.green,al:'right',size:fz,w:500}); } }
+  if(!n&&det) txt(g,L({en:'travel limited above 160 kt',no:'utslaget begrenses over 160 kt'}),ax.X(162),box.y+box.h-8,{mono:1,col:I.dim,size:9.5});
   const P=CUR.P; vline(g,ax.X(A.v),box.y,box.y+box.h,'rgba(238,243,247,.5)',[2,3]);
   dot(g,ax.X(A.v),ax.Y(P.Nreq/1000),4.5,I.mag,I.white); dot(g,ax.X(A.v),ax.Y(P.Nav/1000),4.5,I.cyan,I.white);
 });
@@ -547,9 +556,17 @@ const vbC=fit('vbCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); if
   g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip();
   g.fillStyle='rgba(236,90,71,.10)'; g.beginPath(); xs.forEach((p,i)=>{ const X=ax.X(p[0]), Y=ax.Y(p[1]||y1); i?g.lineTo(X,Y):g.moveTo(X,Y); }); g.lineTo(ax.X(xr[1]),box.y+box.h); g.lineTo(ax.X(xr[0]),box.y+box.h); g.closePath(); g.fill();
   S.line(g,xs.map(p=>[ax.X(p[0]),ax.Y(p[1])]),I.red,2.4); g.restore();
-  if(!n) txt(g,L({en:'below the line: not controllable',no:'under linjen: ikke kontrollerbart'}),box.x+8,box.y+box.h-8,{mono:1,col:'#C98A82',size:9.5});
+  txt(g,L({en:'below the line: not controllable',no:'under linjen: ikke kontrollerbart'}),box.x+8,box.y+box.h-8,{mono:1,col:'#C98A82',size:9.5});
+  txt(g,L({en:'above the line: controllable',no:'over linjen: kontrollerbart'}),box.x+8,box.y+14,{mono:1,col:'#8FD3A8',size:9.5});
   const cv=f(cur); if(cv) dot(g,ax.X(cur),ax.Y(cv),5,I.red,I.white);
 });
+if(window.CN){ CN.add('mvCv',{read:{en:'Pink: the yaw the failed engine causes. Blue: what full rudder can give back. Both against airspeed.',no:'Rosa: giringen den døde motoren lager. Blå: det fullt sideror kan gi tilbake. Begge mot fart.'},
+    take:{en:'VMCA is simply the speed where the blue line drops below the pink one: slower than that, you lose directional control.',no:'VMCA er rett og slett farten der den blå linjen faller under den rosa: saktere enn det mister du retningskontrollen.'},full:()=>mvC.draw()});
+  CN.add('vbCv',{read:{en:'The red line is VMCA as one condition changes (pick bank, altitude or thrust). Your speed is the dotted line.',no:'Den røde linjen er VMCA når én betingelse endres (velg krengning, høyde eller skyv). Farten din er den stiplede linjen.'},
+    take:{en:'Banking 5° toward the live engine, less thrust or a higher, hotter airfield all lower VMCA; wings level or full thrust at sea level raise it.',no:'5° krengning mot den gode motoren, mindre skyv eller en høyere, varmere flyplass senker VMCA; vingene rett eller fullt skyv ved havnivå øker den.'}}); }
+if(window.CN){ CN.add('spCv',{read:{en:'A speed scale in knots. Each line is a minimum that the take-off speeds must stay above.',no:'En fartsskala i knop. Hver linje er et minimum som startfartene må ligge over.'},
+    take:{en:'V1, VR and V2 are built on top of the control speeds and the stall speed, so an engine failure at any of them can still be controlled.',no:'V1, VR og V2 bygges oppå kontrollfartene og steilefarten, så en motorstans ved hvilken som helst av dem fortsatt kan kontrolleres.'}});
+  CN.add('trCv',{read:{en:'What happens in the 14 seconds after the engine fails: heading and bank (top) and the rudder used, in % of full travel (bottom).',no:'Hva som skjer de 14 sekundene etter motorstansen: kurs og krengning (øverst) og sideroret som brukes, i % av fullt utslag (nederst).'}}); }
 el('vbMode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; A.chart=b.dataset.m; el('vbMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); vbC.draw(); });
 
 /* --- readouts --- */
@@ -618,8 +635,8 @@ const spC=fit('spCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); co
   const v0=90, v1=170, x0=n?14:24, x1=W-(n?14:24), X=v=>x0+(v-v0)/(v1-v0)*(x1-x0), ay=n?H*0.24:H*0.26;
   g.strokeStyle=I.rule; g.lineWidth=1.4; hline(g,ay,x0,x1,I.mute,[],1.4);
   for(let v=v0;v<=v1;v+=10){ vline(g,X(v),ay-4,ay+4,I.mute); txt(g,String(v),X(v),ay-9,{mono:1,col:I.dim,al:'center',size:9.5}); }
-  const mk=[['VMCG',VMCG_C,I.red],['VMCA',VMCA_C,I.red],['VS1g',Lr.vs,I.dim],['1.05 VMCA',Lr.vr,I.cyan],['1.10 VMCA',Lr.v2c,I.mag],['1.13 VSR',Lr.v2s,I.green]].sort((a,b)=>b[1]-a[1]);
-  const rowH=n?14:Math.min(22,(H-ay-50)/6); mk.forEach(([t2,v,c],i)=>{ if(v<v0||v>v1) return; const yy=ay+16+i*rowH; vline(g,X(v),ay,yy-3,c,[],1.6); const right=X(v)>W*0.7; txt(g,t2+' '+nf(v,0),X(v)+(right?-4:4),yy+4,{mono:1,col:c,al:right?'right':'left',size:n?9.5:10.5}); });
+  const mk=[['VMCG',VMCG_C,I.red,{en:'control on the ground',no:'kontroll på bakken'}],['VMCA',VMCA_C,I.red,{en:'control in the air',no:'kontroll i luften'}],['VS1g',Lr.vs,I.dim,{en:'stall',no:'steiling'}],['1.05 VMCA',Lr.vr,I.cyan,{en:'lowest VR',no:'laveste VR'}],['1.10 VMCA',Lr.v2c,I.mag,{en:'lowest V2 for control',no:'laveste V2 for kontroll'}],['1.13 VSR',Lr.v2s,I.green,{en:'lowest V2 for stall margin',no:'laveste V2 for steilemargin'}]].sort((a,b)=>b[1]-a[1]);
+  const rowH=n?14:Math.min(22,(H-ay-50)/6); mk.forEach(([t2,v,c,w2],i)=>{ if(v<v0||v>v1) return; const yy=ay+16+i*rowH; vline(g,X(v),ay,yy-3,c,[],1.6); const right=X(v)>W*0.7; txt(g,t2+' '+nf(v,0)+(n?'':' · '+L(w2)),X(v)+(right?-4:4),yy+4,{mono:1,col:c,al:right?'right':'left',size:n?9.5:10.5}); });
   // V2 min band
   g.fillStyle='rgba(228,107,174,.25)'; g.fillRect(X(Lr.v2)-3,ay-8,6,16);
   const yb=H-(n?12:14); txt(g,'V1 ≥ '+nf(Lr.v1,0)+'   VR ≥ '+nf(Lr.vr,0)+'   V2 ≥ '+nf(Lr.v2,0)+' kt',x0,yb,{mono:1,col:I.white,size:n?10:11.5});
@@ -739,6 +756,12 @@ const lsC=fit('lsCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); if
   txt(g,'VLS '+nf(LD.vls,0)+' kt · '+L({en:'set by',no:'satt av'})+' '+(LD.vmcl>LD.vref?'VMCL':'1.23 VSR'),x0,H-(n?10:12),{mono:1,col:I.white,size:n?10:11.5});
 });
 const lA=anim('laCv',()=>{ if(lT()>10.5) lA.stop(); laC.draw(); });
+if(window.CN){ CN.add('gTr',{read:{en:'Sideways drift from the centreline and rudder used, against time after the engine fails on the runway.',no:'Avdrift fra senterlinjen og sideror brukt, mot tid etter at motoren stanser på rullebanen.'},
+    take:{en:'VMCG is the lowest speed at which rudder alone keeps the drift within 30 ft: fail an engine slower than that and you must stop.',no:'VMCG er den laveste farten der sideroret alene holder avdriften innenfor 30 ft: stanser en motor saktere enn det, må du stoppe.'}});
+  CN.add('laCv',{read:{en:'After a one-engine go-around: the amber line is live-engine thrust spooling up, the blue line the rudder needed (100 % = full rudder).',no:'Etter en gjennomstart på én motor: den gule linjen er skyvet på den gode motoren som øker, den blå er sideroret som trengs (100 % = fullt ror).'},
+    take:{en:'Thrust arrives within seconds and the rudder must follow it; if the blue line crosses full rudder you are below VMCL.',no:'Skyvet kommer i løpet av sekunder, og sideroret må følge med; krysser den blå linjen fullt ror, er du under VMCL.'}});
+  CN.add('lsCv',{read:{en:'Approach speed scale in knots: the white dot is your speed, the blue tick VLS (lowest selectable speed).',no:'Fartsskala for innflyging i knop: den hvite prikken er farten din, den blå streken VLS (laveste valgbare fart).'},
+    take:{en:'VLS is the higher of 1.23 VSR and VMCL, so flying at or above VLS keeps both a stall margin and rudder control.',no:'VLS er den høyeste av 1,23 VSR og VMCL, så å fly på eller over VLS gir både steilemargin og rorkontroll.'}}); }
 function lRun(){ if(reduce){ LD.t0=-1; laC.draw(); return; } LD.t0=performance.now(); lA.start(); }
 function lRead(){ const mx=Math.max(...LD.ga.map(r=>r.used)), below=LD.v<LD.vmcl;
   rows('lR',[[{en:'VMCL (this mass and bank)',no:'VMCL (denne massen og krengningen)'},kt(LD.vmcl),'hl'],[{en:'VS1g, CONF FULL',no:'VS1g, CONF FULL'},kt(LD.vs)],[{en:'1.23 VSR0',no:'1,23 VSR0'},kt(LD.vref)],
@@ -843,6 +866,28 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
   txt(); LAB.onLang(txt);
 })();
 </script>
-<script src="twin.js?v=1"></script>
+<script src="twin.js?v=3"></script>
+<script>
+/* Understand: key concept cards (same pattern as the wind tunnel) */
+(function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;
+  const twin=(x,y,k)=>`<g transform="translate(${x} ${y}) scale(${k||1})"><rect x="-44" y="-2.5" width="88" height="5" rx="2.5" fill="#c9d3da"/><path d="M-3,-22 C-3,-26 3,-26 3,-22 L3,22 L-3,22 Z" fill="#e8edf1"/><rect x="-14" y="16" width="28" height="3" rx="1.5" fill="#c9d3da"/><rect x="-22" y="-9" width="6" height="12" rx="2" fill="#9aa8b3"/><rect x="16" y="-9" width="6" height="12" rx="2" fill="#9aa8b3"/></g>`;
+  const KCP=[
+   {k:'pf',t:{en:'P-factor',no:'P-faktor'},d:{en:'At high angle of attack the descending blade meets the air at a bigger angle and pulls harder, so the thrust line moves to that side of the disc.',no:'Ved høy anstigningsvinkel møter bladet som går ned lufta med større vinkel og drar hardere, så skyvlinjen flyttes til den siden av disken.'},
+    ill:()=>sv(`<circle cx="100" cy="32" r="26" fill="none" stroke="#55626e" stroke-dasharray="3 2"/>${ar(100,32,100,8,'#8b99a7')}${ar(100,32,100,56,'#f0b440',2.2)}${tx(108,58,L({en:'descending blade: more thrust',no:'blad ned: mer skyv'}),'#f0b440')}`),click:'#ltPre button[data-k="crit"]',to:'#ltCv'},
+   {k:'crit',t:{en:'The critical engine',no:'Kritisk motor'},d:{en:'On a twin with both propellers turning clockwise (from behind), losing the left engine is worse: the right engine’s thrust acts further out, so it yaws harder.',no:'På et tomotors fly der begge propellene går med klokka (sett bakfra), er det verst å miste venstre motor: høyre motors skyv virker lenger ute, så den girer hardere.'},
+    ill:()=>sv(`${twin(100,34,1.1)}${tx(70,10,'✕','#EC5A47','middle',10)}${ar(124,24,124,6,'#E46BAE')}${tx(132,10,L({en:'long arm',no:'lang arm'}),'#E46BAE')}`),click:'#ltPre button[data-k="crit"]',to:'#ltCv'},
+   {k:'past',t:{en:'PAST: why it is critical',no:'PAST: hvorfor den er kritisk'},d:{en:'<b>P</b>-factor, <b>A</b>ccelerated slipstream, <b>S</b>piralling slipstream and <b>T</b>orque all make the left engine the critical one on a conventional twin.',no:'<b>P</b>-faktor, <b>A</b>kselerert slipstrøm, <b>S</b>piralslipstrøm og <b>T</b>orque gjør alle venstre motor til den kritiske på et vanlig tomotors fly.'},
+    ill:()=>sv(`${tx(100,40,'P · A · S · T','#f0b440','middle',16)}`),click:'#ltPre button[data-k="right"]',to:'#ltCv'},
+   {k:'vmca',t:{en:'VMCA',no:'VMCA'},d:{en:'The minimum control speed in the air: below it, full rudder can no longer hold the yaw from the live engine. It is marked as a red line on the airspeed indicator.',no:'Minste kontrollfart i luften: under den klarer ikke fullt sideror lenger å holde giringen fra den gode motoren. Den er merket med rød strek på fartsmåleren.'},
+    ill:()=>sv(`<line x1="16" y1="56" x2="184" y2="56" stroke="#55626e"/><path d="M16,52 C80,44 130,24 184,6" fill="none" stroke="#7fcbe8" stroke-width="1.6"/><path d="M16,24 C80,30 130,32 184,32" fill="none" stroke="#E46BAE" stroke-width="1.6"/><line x1="104" y1="6" x2="104" y2="58" stroke="#EC5A47" stroke-dasharray="3 2"/>${tx(108,14,'VMCA','#EC5A47')}`),click:'#ltPre button[data-k="slow"]',to:'#ltCh'},
+   {k:'dead',t:{en:'Dead foot, dead engine',no:'Død fot, død motor'},d:{en:'The foot that is not pushing the rudder is on the side of the failed engine. Then raise the dead: bank about 5° towards the live engine and feather the dead propeller.',no:'Foten som ikke trykker på sideroret er på siden av motoren som har stoppet. Løft så den døde: krengning omtrent 5° mot den gode motoren, og fløy den døde propellen.'},
+    ill:()=>sv(`<g transform="translate(100 34) rotate(5)">${twin(0,0,1.1)}</g>${tx(56,60,L({en:'dead',no:'død'}),'#EC5A47','middle')}${tx(146,60,L({en:'live',no:'god'}),'#71cc93','middle')}${tx(100,10,'5°','#f0b440','middle')}`),click:'#ltPre button[data-k="fix"]',to:'#ltCv'},
+   {k:'wing',t:{en:'The propeller is a rotating wing',no:'Propellen er en roterende vinge'},d:{en:'Each blade section meets a relative wind made of its rotation and the aircraft’s speed. Its lift, tilted forward, is the thrust.',no:'Hvert bladsnitt møter en relativ vind laget av rotasjonen og flyets fart. Løftet, vippet framover, er skyvet.'},
+    ill:()=>sv(`${ar(40,50,160,50,'#8b99a7')}${ar(160,50,160,14,'#7fcbe8')}${ar(40,50,160,14,'#f0b440')}${tx(100,60,L({en:'rotation',no:'rotasjon'}),'#8b99a7','middle')}${tx(166,24,'TAS','#7fcbe8')}`),click:'#pwPre button[data-k="climb"]',to:'#pwCv'},
+   {k:'feather',t:{en:'Feathering',no:'Fløying'},d:{en:'Turning the dead propeller’s blades edge-on to the airflow stops it windmilling and removes most of its drag, which lowers VMCA and improves the climb.',no:'Å vri bladene på den døde propellen kant mot luftstrømmen stopper vindmøllingen og fjerner det meste av motstanden, som senker VMCA og bedrer stigningen.'},
+    ill:()=>sv(`<line x1="100" y1="8" x2="100" y2="58" stroke="#c9d3da" stroke-width="3"/>${ar(30,32,90,32,'#7fcbe8')}${tx(110,36,L({en:'blades edge-on',no:'bladene på kant'}),'#71cc93')}`),click:'#pwPre button[data-k="fe"]',to:'#pwCv'}];
+  const g=document.getElementById('pfKc'); if(g) KCS.render(g,KCP);
+})();
+</script>
 </body>
 </html>

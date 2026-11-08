@@ -54,7 +54,7 @@ let R=null;
 LAB.add({},{'Forces in Flight':'Krefter i flyging','Forces in flight':'Krefter i flyging','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
  'Lift, weight, thrust and drag, drawn to scale and live. Fly level, climb, glide and turn, and see why lift is less than weight in a climb, why the glide ratio is L/D, and why the stall speed rises in a turn.':'Løft, vekt, skyv og motstand, tegnet i skala og live. Fly rett fram, stig, gli og sving, og se hvorfor løftet er mindre enn vekten i stigning, hvorfor glidetallet er L/D, og hvorfor steilefarten øker i sving.',
  'The four forces':'De fire kreftene','Forces in flight lab':'Kraftlab','Try it':'Prøv selv','Debrief':'Debrief','What to take away':'Det du skal ta med deg','Test yourself':'Test deg selv',
- '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Check':'5 · Sjekk','What happened, and why it matters':'Hva skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg','You set':'Du styrer','Forces':'Krefter',
+ '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Check':'5 · Sjekk','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv','What happened, and why it matters':'Hva skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg','You set':'Du styrer','Forces':'Krefter',
  'Indicated airspeed (kt)':'Indikert fart (kt)','Mass (kg)':'Masse (kg)','Power (%)':'Effekt (%)','Flight path angle (°)':'Banevinkel (°)','Bank angle (°)':'Krengning (°)','Wind (kt, + = headwind)':'Vind (kt, + = motvind)','Height above ground (ft)':'Høyde over bakken (ft)',
  'Power':'Effekt','Path angle':'Banevinkel','Drag':'Motstand','Advanced':'Avansert',
  'In power mode: the result':'I effektmodus: resultatet','In path mode: the power needed':'I banemodus: effekten som trengs','Used for the glide distance and the profile':'Brukes til glidedistansen og profilen'});
@@ -79,23 +79,86 @@ const MAG=n=>n?3:4;
 
 /* side view of the aircraft (own design: low-wing single), metres, x forward, z up, origin at the CG */
 const BODY=[[3.55,0.05],[3.3,0.38],[2.6,0.55],[1.9,0.62],[1.35,1.18],[0.2,1.28],[-0.9,1.05],[-3.4,0.62],[-3.95,0.68],[-4.3,1.75],[-4.75,1.78],[-4.85,0.45],[-4.0,0.12],[-2.0,-0.32],[0.9,-0.46],[2.7,-0.38],[3.35,-0.18]];
+/* trainer outline, hoisted so nothing is rebuilt per frame */
+const SHP=[[['M',-3.55,0.22],['L',-4.75,0.26],['L',-4.95,0.18],['L',-3.7,0.1],['Z']],
+ [['M',-3.35,0.5],['C',-3.8,0.75,-4.15,1.35,-4.38,1.95],['L',-4.86,1.98],['L',-4.98,0.3],['Z']],
+ [['M',-3.9,0.86],['L',-4.62,1.62],['L',-4.75,1.5],['L',-4.08,0.84],['Z']],
+ [['M',-4.6,1.9],['L',-4.66,0.42]],
+ [['M',3.15,0.02],['C',1.5,0.1,-1.5,0.12,-4.95,0.28],['L',-4.96,0.2],['C',-1.5,0.02,1.5,-0.02,3.18,-0.06],['Z']],
+ [['M',1.5,0.72],['C',1.1,1.08,0.65,1.17,0.05,1.16],['C',-0.45,1.14,-0.8,1.02,-1.15,0.86],['L',-1.0,0.7],['Z']],
+ [['M',1.2,0.86],['C',0.9,1.04,0.5,1.1,0.1,1.1]],
+ [['M',0.2,0.72],['L',0.12,1.15]],
+ [['M',-3.55,0.3],['C',-3.75,0.38,-4.3,0.38,-4.9,0.3],['L',-4.92,0.24],['C',-4.3,0.2,-3.75,0.2,-3.55,0.3],['Z']],
+ [['M',1.25,-0.3],['C',1.05,-0.12,0.3,-0.08,-0.55,-0.16],['L',-0.75,-0.26],['C',0.2,-0.42,0.9,-0.44,1.25,-0.3],['Z']],
+ [['M',3.28,0.32],['C',3.6,0.26,3.78,0.16,3.82,0.08],['C',3.78,0,3.6,-0.1,3.28,-0.16],['Z']]];
+const WHL=[[0.55,-1.02,-0.42],[2.45,-0.98,-0.4]], SPAT=WHL.map(w=>[[['M',w[0]+0.05,w[2]],['L',w[0]-0.04,w[1]+0.12]],
+  [['M',w[0]+0.42,w[1]-0.02],['C',w[0]+0.38,w[1]+0.22,w[0]-0.1,w[1]+0.26,w[0]-0.36,w[1]+0.08],['C',w[0]-0.46,w[1]-0.06,w[0]-0.3,w[1]-0.24,w[0]-0.04,w[1]-0.24],['C',w[0]+0.22,w[1]-0.24,w[0]+0.44,w[1]-0.16,w[0]+0.42,w[1]-0.02],['Z']]]);
+const GC={cx:NaN,cy:NaN,sc:NaN,th:NaN,list:[],i:0}, GR={cx:NaN,cy:NaN,k:NaN,list:[],i:0};
 function plane(g,cx,cy,sc,th,t){ const c=Math.cos(th*D2R), s=Math.sin(th*D2R); const P=(x,z)=>[cx+sc*(x*c-z*s), cy-sc*(x*s+z*c)];
-  const poly=(pts,fill,stroke)=>{ g.beginPath(); pts.forEach((p,i)=>{ const q=P(p[0],p[1]); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); }); g.closePath(); g.fillStyle=fill; g.fill(); if(stroke){ g.strokeStyle=stroke; g.lineWidth=1.1; g.stroke(); } };
-  // far wing shadow, body, canopy, wing, tailplane, wheels
-  poly(BODY,'#4C5D6A','#8B99A7');
-  poly([[1.75,0.66],[1.25,1.16],[0.15,1.25],[-0.6,1.06],[-0.6,0.7]],'rgba(127,203,232,.35)');
-  poly([[1.1,-0.28],[0.95,-0.12],[-0.55,-0.12],[-0.75,-0.3],[-0.55,-0.38],[0.95,-0.38]],'#2F3D48','#8B99A7');
-  poly([[-3.7,0.62],[-3.85,0.7],[-4.8,0.7],[-4.85,0.58],[-3.9,0.55]],'#3A4A57','#8B99A7');
-  for(const w of [[0.55,-1.05],[2.55,-0.98]]){ const p=P(w[0],w[1]); g.fillStyle='#222D36'; g.strokeStyle='#8B99A7'; g.lineWidth=1; g.beginPath(); g.arc(p[0],p[1],sc*0.24,0,7); g.fill(); g.stroke(); const a=P(w[0],w[1]+0.2), b=P(w[0]-0.1,w[1]+0.62); g.strokeStyle='#8B99A7'; g.lineWidth=2; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke(); }
-  // propeller disc (edge-on): blade tips oscillate
-  const hub=P(3.62,0.08), ph=t*40; const bl=0.95*Math.abs(Math.cos(ph)); const a=P(3.62,0.08+bl), b=P(3.62,0.08-bl);
-  g.strokeStyle='rgba(215,225,230,.18)'; g.lineWidth=Math.max(3,sc*0.12); const a2=P(3.62,1.03), b2=P(3.62,-0.87); g.beginPath(); g.moveTo(a2[0],a2[1]); g.lineTo(b2[0],b2[1]); g.stroke();
-  g.strokeStyle='#D7E1E6'; g.lineWidth=Math.max(2,sc*0.1); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();
-  g.fillStyle='#D7E1E6'; g.beginPath(); g.arc(hub[0],hub[1],Math.max(2.5,sc*0.13),0,7); g.fill();
+  /* a refined low-wing trainer in the same visual language as the CG lab's jet: white fuselage with soft shading,
+     brand cheatline, navy fin; x forward, z up, the CG at (0,0); units ≈ metres */
+  const pth=cmds=>{ g.beginPath(); cmds.forEach(k=>{ const op=k[0]; if(op==='M'||op==='L'){ const q=P(k[1],k[2]); g[op==='M'?'moveTo':'lineTo'](q[0],q[1]); }
+      else if(op==='Q'){ const a1=P(k[1],k[2]), a2=P(k[3],k[4]); g.quadraticCurveTo(a1[0],a1[1],a2[0],a2[1]); }
+      else if(op==='C'){ const a1=P(k[1],k[2]), a2=P(k[3],k[4]), a3=P(k[5],k[6]); g.bezierCurveTo(a1[0],a1[1],a2[0],a2[1],a3[0],a3[1]); }
+      else if(op==='Z') g.closePath(); }); };
+  const hit=GC.cx===cx&&GC.cy===cy&&GC.sc===sc&&GC.th===th; if(!hit){ GC.cx=cx; GC.cy=cy; GC.sc=sc; GC.th=th; GC.list.length=0; } GC.i=0;
+  const grad=(z0,z1,stops)=>{ if(hit&&GC.i<GC.list.length) return GC.list[GC.i++]; const p0=P(0,z0), p1=P(0,z1), gr=g.createLinearGradient(p0[0],p0[1],p1[0],p1[1]); stops.forEach(([o,col])=>gr.addColorStop(o,col)); GC.list[GC.i++]=gr; return gr; };
+  const lw=Math.max(0.8,sc*0.035);
+  // far-side tailplane and wing (behind the fuselage, darker)
+  pth(SHP[0]); g.fillStyle='#5B6B78'; g.fill();
+  // fin with rudder and a brand stripe
+  pth(SHP[1]);
+  g.fillStyle=grad(2,0.3,[[0,'#24456A'],[1,'#1D3A5C']]); g.fill(); g.strokeStyle='rgba(226,232,238,.55)'; g.lineWidth=lw; g.stroke();
+  pth(SHP[2]); g.fillStyle='rgba(228,107,174,.85)'; g.fill();
+  pth(SHP[3]); g.strokeStyle='rgba(226,232,238,.35)'; g.lineWidth=lw; g.stroke();
+  // fuselage
+  const body=[['M',3.3,0.1],['C',3.25,0.45,2.9,0.6,2.35,0.66],['L',1.55,0.7],['C',1.1,1.12,0.6,1.24,-0.1,1.22],['C',-0.6,1.2,-1.0,1.05,-1.5,0.86],
+    ['C',-2.6,0.66,-3.8,0.5,-4.95,0.36],['L',-4.98,0.12],['C',-3.9,-0.02,-2.4,-0.28,-0.9,-0.46],['C',0.4,-0.6,1.9,-0.52,2.7,-0.36],['C',3.1,-0.26,3.32,-0.1,3.3,0.1],['Z']];
+  pth(body); g.fillStyle=grad(1.25,-0.6,[[0,'#F4F7F9'],[0.45,'#E3E9EE'],[0.8,'#B9C4CC'],[1,'#8A98A4']]); g.fill();
+  g.strokeStyle='rgba(30,44,56,.55)'; g.lineWidth=lw; g.stroke();
+  // cheatline
+  pth(SHP[4]); g.fillStyle='#E46BAE'; g.fill();
+  // canopy glass with a highlight
+  pth(SHP[5]);
+  g.fillStyle=grad(1.17,0.7,[[0,'#3E6380'],[1,'#16283A']]); g.fill(); g.strokeStyle='rgba(226,232,238,.6)'; g.lineWidth=lw; g.stroke();
+  pth(SHP[6]); g.strokeStyle='rgba(220,240,255,.45)'; g.lineWidth=Math.max(1,sc*0.05); g.stroke();
+  pth(SHP[7]); g.strokeStyle='rgba(226,232,238,.6)'; g.lineWidth=lw; g.stroke();
+  // near tailplane (edge-on aerofoil)
+  pth(SHP[8]); g.fillStyle='#C9D3DA'; g.fill(); g.strokeStyle='rgba(30,44,56,.55)'; g.stroke();
+  // near wing: low wing seen from the side, a slim aerofoil at the root
+  pth(SHP[9]);
+  g.fillStyle=grad(-0.08,-0.44,[[0,'#F0F4F7'],[1,'#98A6B1']]); g.fill(); g.strokeStyle='rgba(30,44,56,.6)'; g.stroke();
+  // landing gear with wheel spats
+  for(let wi=0;wi<2;wi++){ const w=WHL[wi], sp=SPAT[wi]; pth(sp[0]); g.strokeStyle='#5B6B78'; g.lineWidth=Math.max(1.4,sc*0.08); g.stroke();
+    pth(sp[1]);
+    g.fillStyle=grad(w[1]+0.26,w[1]-0.24,[[0,'#E9EEF2'],[1,'#8E9CA8']]); g.fill(); g.strokeStyle='rgba(30,44,56,.6)'; g.lineWidth=lw; g.stroke();
+    const wb=P(w[0],w[1]-0.12); g.fillStyle='#1B242C'; g.beginPath(); g.arc(wb[0],wb[1],sc*0.13,0,Math.PI); g.fill(); }
+  // spinner and propeller disc (edge-on, blades flicker)
+  pth(SHP[10]); g.fillStyle=grad(0.32,-0.16,[[0,'#F4F7F9'],[1,'#9AA8B3']]); g.fill(); g.strokeStyle='rgba(30,44,56,.6)'; g.lineWidth=lw; g.stroke();
+  const hub=P(3.42,0.08), ph=t*40, bl=0.95*Math.abs(Math.cos(ph)), a=P(3.42,0.08+bl), b=P(3.42,0.08-bl), a2=P(3.42,1.03), b2=P(3.42,-0.87);
+  g.strokeStyle='rgba(215,225,230,.14)'; g.lineWidth=Math.max(3,sc*0.14); g.lineCap='round'; g.beginPath(); g.moveTo(a2[0],a2[1]); g.lineTo(b2[0],b2[1]); g.stroke();
+  g.strokeStyle='rgba(215,225,230,.75)'; g.lineWidth=Math.max(1.6,sc*0.08); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke(); g.lineCap='butt';
   // CG symbol
-  const cg=P(0,0); g.fillStyle=INK.bg; g.strokeStyle=INK.white; g.lineWidth=1.5; g.beginPath(); g.arc(cg[0],cg[1],5,0,7); g.fill(); g.stroke();
-  g.fillStyle=INK.white; g.beginPath(); g.moveTo(cg[0],cg[1]); g.arc(cg[0],cg[1],5,0,Math.PI/2); g.lineTo(cg[0],cg[1]); g.arc(cg[0],cg[1],5,Math.PI,Math.PI*1.5); g.fill();
+  const cg=P(0,0), r=Math.max(4.5,sc*0.2); g.fillStyle=INK.bg; g.strokeStyle=INK.white; g.lineWidth=1.5; g.beginPath(); g.arc(cg[0],cg[1],r,0,7); g.fill(); g.stroke();
+  g.fillStyle=INK.white; g.beginPath(); g.moveTo(cg[0],cg[1]); g.arc(cg[0],cg[1],r,0,Math.PI/2); g.lineTo(cg[0],cg[1]); g.arc(cg[0],cg[1],r,Math.PI,Math.PI*1.5); g.fill();
   return P; }
+/* the trainer seen from behind, banked by phi (deg), centred on (cx,cy); span = half span in px */
+function rear(g,cx,cy,span,phi){ g.save(); g.translate(cx,cy); g.rotate(phi*D2R); const k=span/5.2;
+  const hit=GR.k===k; if(!hit){ GR.k=k; GR.list.length=0; } GR.i=0;
+  const lin=(y0,y1,a,b)=>{ if(hit&&GR.i<GR.list.length) return GR.list[GR.i++]; const gr=g.createLinearGradient(0,y0,0,y1); gr.addColorStop(0,a); gr.addColorStop(1,b); GR.list[GR.i++]=gr; return gr; };
+  // tailplane and fin behind
+  g.fillStyle='#9AA8B3'; g.beginPath(); g.moveTo(-1.7*k,-0.3*k); g.lineTo(1.7*k,-0.3*k); g.lineTo(1.7*k,-0.1*k); g.lineTo(-1.7*k,-0.1*k); g.closePath(); g.fill();
+  g.fillStyle=lin(-1.9*k,-0.2*k,'#2B527D','#1D3A5C'); g.beginPath(); g.moveTo(-0.1*k,-0.2*k); g.lineTo(-0.06*k,-1.9*k); g.lineTo(0.06*k,-1.9*k); g.lineTo(0.1*k,-0.2*k); g.closePath(); g.fill(); g.strokeStyle='rgba(226,232,238,.5)'; g.lineWidth=1; g.stroke(); g.strokeStyle='rgba(226,232,238,.5)'; g.lineWidth=1; g.stroke();
+  // wing with a little dihedral
+  g.fillStyle=lin(0.1*k,0.55*k,'#F0F4F7','#98A6B1'); g.strokeStyle='rgba(30,44,56,.6)'; g.lineWidth=1;
+  g.beginPath(); g.moveTo(-5.2*k,0.05*k); g.lineTo(-0.4*k,0.42*k); g.lineTo(0.4*k,0.42*k); g.lineTo(5.2*k,0.05*k); g.lineTo(5.2*k,0.22*k); g.lineTo(0.4*k,0.6*k); g.lineTo(-0.4*k,0.6*k); g.lineTo(-5.2*k,0.22*k); g.closePath(); g.fill(); g.stroke();
+  // fuselage cross-section with canopy
+  g.fillStyle=lin(-0.75*k,0.65*k,'#F4F7F9','#8A98A4'); g.beginPath(); g.ellipse?g.ellipse(0,0,0.62*k,0.66*k,0,0,7):g.arc(0,0,0.64*k,0,7); g.fill(); g.stroke();
+  g.fillStyle=lin(-0.95*k,-0.3*k,'#3E6380','#16283A'); g.beginPath(); g.ellipse?g.ellipse(0,-0.42*k,0.42*k,0.36*k,0,Math.PI,0):g.arc(0,-0.42*k,0.4*k,Math.PI,0); g.closePath(); g.fill();
+  g.fillStyle='#E46BAE'; g.fillRect(-0.62*k,0.02*k,1.24*k,0.08*k);
+  // gear
+  g.strokeStyle='#5B6B78'; g.lineWidth=Math.max(1.2,k*0.1); [-1,1].forEach(sd=>{ g.beginPath(); g.moveTo(sd*0.5*k,0.55*k); g.lineTo(sd*1.0*k,1.25*k); g.stroke(); g.fillStyle='#1B242C'; g.beginPath(); g.ellipse?g.ellipse(sd*1.0*k,1.3*k,0.14*k,0.22*k,0,0,7):g.arc(sd*k,1.3*k,0.18*k,0,7); g.fill(); });
+  g.restore(); }
 
 /* ---------------- master view ---------------- */
 const AN={t:0,gx:0,turn:0,last:0};
@@ -112,7 +175,7 @@ function sideView(st,g,n){ const W=st.w, H=st.h, fs=n?10:11.5;
   const pl=W*0.6; dline(g,cx-Math.cos(ga)*pl,cy+Math.sin(ga)*pl,cx+Math.cos(ga)*pl,cy-Math.sin(ga)*pl,'rgba(127,203,232,.4)',1.2,[7,6]);
   if(!n) txt(g,L({en:'flight path',no:'flybane'}),cx+Math.cos(ga)*(n?W*0.36:W*0.44),cy-Math.sin(ga)*(n?W*0.36:W*0.44)-8,{col:'rgba(127,203,232,.7)',al:'center',size:fs-1,mono:1});
   if(Math.abs(R.gam)>0.4){ const rr=n?54:74; g.strokeStyle=INK.amber; g.lineWidth=1.5; g.beginPath(); g.arc(cx,cy,rr,Math.min(0,-ga),Math.max(0,-ga)); g.stroke(); txt(g,'γ '+nf(R.gam,1)+'°',cx+rr+8,cy-Math.sin(ga/2)*rr+4,{col:INK.amber,size:fs,mono:1,bg:BG}); }
-  const sc=Math.min(W*(n?0.052:0.05),H*0.075);
+  const sc=Math.min(W*(n?0.04:0.034),H*0.058);
   plane(g,cx,cy,sc,R.th,AN.t);
   // forces to scale (W = fixed length); T and D optionally ×4
   const f=H*(n?0.26:0.30)/R.W, m=F.mag?MAG(n):1, u=[Math.cos(ga),-Math.sin(ga)], nrm=[-Math.sin(ga),-Math.cos(ga)];
@@ -145,11 +208,8 @@ function turnView(st,g,n){ const W=st.w, H=st.h, fs=n?10:11.5;
   const cx=a.x+a.w/2, cy=a.y+a.h*(n?0.58:0.6), ph=F.phi*D2R, f=Math.min(a.h*0.3/R.W,a.h*0.46/(R.Lf));
   txt(g,L({en:'From behind',no:'Bakfra'}),a.x+10,a.y+(n?18:44),{col:INK.mute,size:fs,mono:1});
   dline(g,a.x+10,cy,a.x+a.w-10,cy,'rgba(139,153,167,.22)',1,[2,5]);
-  const span=Math.min(a.w*0.4,a.h*0.42), c=Math.cos(ph), s=Math.sin(ph);
-  g.strokeStyle='#8B99A7'; g.lineWidth=Math.max(4,span*0.05); g.lineCap='round'; g.beginPath(); g.moveTo(cx-span*c,cy-span*s); g.lineTo(cx+span*c,cy+span*s); g.stroke();
-  g.lineWidth=3; g.beginPath(); g.moveTo(cx-span*0.36*c,cy-span*0.36*s-0); g.moveTo(cx+span*0.32*s*0,cy); g.stroke(); g.lineCap='butt';
-  g.strokeStyle='#6E7F8D'; g.lineWidth=3; g.beginPath(); g.moveTo(cx-s*span*0.08,cy+c*span*0.08); g.lineTo(cx+s*span*0.42,cy-c*span*0.42); g.stroke();
-  g.fillStyle='#4C5D6A'; g.strokeStyle='#8B99A7'; g.lineWidth=1.2; g.beginPath(); g.arc(cx,cy,span*0.13,0,7); g.fill(); g.stroke();
+  const span=Math.min(a.w*(n?0.34:0.3),a.h*0.36), c=Math.cos(ph), s=Math.sin(ph);
+  rear(g,cx,cy,span,F.phi);
   const Lp=R.Lf*f, lx=cx+s*Lp, ly=cy-c*Lp; // bank to the right: lift tilts right
   dline(g,cx,cy,cx,cy-c*Lp,'rgba(127,203,232,.6)',1.4,[4,3]); dline(g,cx,cy-c*Lp,lx,ly,'rgba(127,203,232,.35)',1,[2,3]);
   arrow(g,cx,cy-c*Lp,lx,ly,INK.green,2.6,9); arrow(g,cx,cy,lx,ly,COL.L,3.2,11);
@@ -208,6 +268,11 @@ function drawP(){ const st=fp; if(!st.w||!R) return; const g=clear(st), W=st.w, 
 /* ---------------- drag / power curves ---------------- */
 let dMode='d';
 const fd=LAB.fit(el('fdCv'),()=>drawD(),2);
+const cnFd=window.CN?CN.add(el('fdCv'),{read:()=>dMode==='p'?L({en:'Across: airspeed. Up: power. Red is the power the aircraft needs to fly level; pink is what the engine can give. The white dot is you.',no:'Bortover: fart. Oppover: effekt. Rød er effekten flyet trenger for å holde høyden; rosa er det motoren kan gi. Den hvite prikken er deg.'})
+    :L({en:'Across: airspeed. Up: force. Red is the drag you must overcome to fly level; pink is the thrust available. The white dot is you.',no:'Bortover: fart. Oppover: kraft. Rød er motstanden du må overvinne for å holde høyden; rosa er skyvet som er tilgjengelig. Den hvite prikken er deg.'}),
+  take:()=>dMode==='p'?L({en:'The widest gap between power available and power needed gives the best rate of climb (Vy); the tangent from zero touches the curve at best L/D.',no:'Det største gapet mellom tilgjengelig og nødvendig effekt gir beste stigehastighet (Vy); tangenten fra null treffer kurven ved beste L/D.'})
+    :L({en:'Drag is U-shaped: least at VMD. Slower than VMD needs more thrust, not less (the back of the drag curve). The widest gap between thrust and drag gives the steepest climb (Vx).',no:'Motstanden er U-formet: minst ved VMD. Saktere enn VMD krever mer skyv, ikke mindre (baksiden av motstandskurven). Det største gapet mellom skyv og motstand gir den bratteste stigningen (Vx).'}),
+  full:()=>drawD()}):null;
 function drawD(){ const st=fd; if(!st.w||!R) return; const g=clear(st), W=st.w, H=st.h, n=narrow(st);
   const box={x:n?42:56,y:26,w:W-(n?54:76),h:H-(n?50:52)}, v0=40, v1=160, nn=R.n;
   const rows=[]; for(let v=v0;v<=v1;v+=1){ const d=drag(v,F.m,nn); rows.push({v,Dp:d.Dp,Di:d.Di,D:d.D,T1:tav(v,1),T:tav(v,F.mode==='power'?F.pw:Math.min(1,Math.max(0,R.pw)))}); }
@@ -220,23 +285,31 @@ function drawD(){ const st=fd; if(!st.w||!R) return; const g=clear(st), W=st.w, 
   const xs=ax.X(clamp(R.vsT,v0,v1)); g.fillStyle='rgba(236,90,71,.08)'; g.fillRect(box.x,box.y,xs-box.x,box.h); txt(g,'VS',xs-4,box.y+box.h-6,{col:INK.red,al:'right',size:10,mono:1});
   g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip();
   const P=k=>rows.map(r=>[ax.X(r.v),ax.Y(val(r,k))]);
-  if(!pwr){ path(g,P('Dp'),'rgba(127,203,232,.8)',1.4,[4,3]); path(g,P('Di'),'rgba(185,166,240,.9)',1.4,[4,3]); }
+  const det=window.CN&&CN.full('fdCv');
+  if(!pwr&&det){ path(g,P('Dp'),'rgba(127,203,232,.8)',1.4,[4,3]); path(g,P('Di'),'rgba(185,166,240,.9)',1.4,[4,3]); }
   path(g,P('T1'),'rgba(228,107,174,.55)',1.4,[6,4]); path(g,P('D'),INK.red,2.6); if(F.mode==='power'&&F.pw<0.99&&F.pw>0.01) path(g,P('T'),INK.mag,2);
   g.restore();
   const lab=(k,t,col,frac,dy)=>{ const r=rows[Math.floor(rows.length*frac)]; txt(g,t,ax.X(r.v),ax.Y(val(r,k))+(dy||-7),{col,al:'center',size:10.5,bg:BG}); };
-  if(!pwr){ lab('Dp',L({en:'parasite ∝ V²',no:'parasitt ∝ V²'}),INK.cyan,0.84,14); lab('Di',L({en:'induced ∝ 1/V²',no:'indusert ∝ 1/V²'}),INK.violet,0.12,-8); }
+  if(!pwr&&det){ lab('Dp',L({en:'parasite ∝ V²',no:'parasitt ∝ V²'}),INK.cyan,0.84,14); lab('Di',L({en:'induced ∝ 1/V²',no:'indusert ∝ 1/V²'}),INK.violet,0.12,-8); }
+  // plain words: the two sides of the U, and (power) the bottom of the curve
+  if(!det){ const fz=n?9.5:10.5, xv=ax.X(clamp(R.vmd,v0,v1)), xs2=ax.X(clamp(R.vsT,v0,v1)), ymid=box.y+box.h*0.5;
+    if(!pwr){ if(xv-xs2>(n?60:84)) [L({en:'slower:',no:'saktere:'}),L({en:'more drag',no:'mer motstand'})].forEach((t,i)=>txt(g,t,(xs2+xv)/2,ax.Y(val(rows[Math.round(((R.vsT+R.vmd)/2)-v0)]||rows[0],'D'))-30+i*(fz+3),{col:'#F2A091',al:'center',size:fz,w:500,bg:BG}));
+      txt(g,n?L({en:'faster: more drag',no:'fortere: mer motstand'}):L({en:'faster: more drag again',no:'fortere: mer motstand igjen'}),box.x+box.w-6,Math.min(box.y+box.h-30,ax.Y(val(rows[rows.length-8],'D'))+22),{col:'#F2A091',al:'right',size:fz,w:500,bg:BG}); }
+    else { let rm=rows[0]; rows.forEach(r=>{ if(r.v>=R.vsT&&val(r,'D')<val(rm,'D')) rm=r; }); if(rm.v<R.vsT) rm=rows.find(r=>r.v>=R.vsT)||rm;
+      const x=ax.X(rm.v), y=ax.Y(val(rm,'D')); g.fillStyle=INK.amber; g.beginPath(); g.arc(x,y,3.5,0,7); g.fill();
+      txt(g,n?L({en:'least power',no:'minst effekt'}):L({en:'least power: longest endurance',no:'minst effekt: lengst utholdenhet'}),x,y-12,{col:INK.amber,al:'center',size:fz,w:500,bg:BG}); } }
   lab('D',pwr?L({en:'power required',no:'effekt som trengs'}):L({en:'total drag',no:'total motstand'}),INK.red,pwr?0.9:0.62,-9);
   lab('T1',pwr?L({en:'power available (100 %)',no:'tilgjengelig effekt (100 %)'}):L({en:'thrust available (100 %)',no:'tilgjengelig skyv (100 %)'}),INK.mag,0.2,-8);
   const mk=(v,t,col,row)=>{ if(v<v0||v>v1) return; const x=ax.X(v); dline(g,x,box.y,x,box.y+box.h,col,1.1,[3,3]); txt(g,t,x+4,box.y+box.h-24-row*15,{col,size:10.5,mono:1,bg:BG}); };
   if(pwr){ // tangent from the origin touches the power-required curve at VMD (best L/D)
     const r=rows.find(x=>Math.abs(x.v-R.vmd)<0.6)||rows[0]; const x1=ax.X(r.v), y1=ax.Y(val(r,'D')); const kx=(x1-ax.X(0))/(ax.Y(0)-y1);
     g.save(); g.beginPath(); g.rect(box.x,box.y,box.w,box.h); g.clip(); dline(g,ax.X(v0),ax.Y(val(r,'D')*v0/r.v),ax.X(v1),ax.Y(val(r,'D')*v1/r.v),'rgba(240,180,64,.6)',1,[2,3]); g.restore();
-    mk(R.vy,'Vy '+nf(R.vy,0),INK.green,0); mk(R.vmd,'VMD '+nf(R.vmd,0)+' · '+L({en:'best L/D',no:'beste L/D'}),INK.amber,1); }
-  else { mk(R.vx,'Vx '+nf(R.vx,0),INK.green,0); mk(R.vmd,'VMD '+nf(R.vmd,0)+' · '+L({en:'min drag',no:'min motstand'}),INK.amber,1); }
+    mk(R.vy,'Vy '+nf(R.vy,0)+(n?'':' · '+L({en:'best rate of climb',no:'beste stigehastighet'})),INK.green,0); mk(R.vmd,'VMD '+nf(R.vmd,0)+' · '+L({en:'best L/D',no:'beste L/D'}),INK.amber,1); }
+  else { mk(R.vx,'Vx '+nf(R.vx,0)+(n?'':' · '+L({en:'best angle of climb',no:'beste stigevinkel'})),INK.green,0); mk(R.vmd,'VMD '+nf(R.vmd,0)+' · '+L({en:'min drag, best glide',no:'min motstand, beste glid'}),INK.amber,1); }
   const xc=ax.X(clamp(F.v,v0,v1)); dline(g,xc,box.y,xc,box.y+box.h,'rgba(238,243,247,.5)',1,[2,3]);
   const d=drag(F.v,F.m,nn), yv=pwr?d.D*F.v*KT/1000:d.D/1000; g.fillStyle=R.stall?INK.red:INK.white; g.beginPath(); g.arc(xc,ax.Y(Math.min(yv,ymax)),5,0,7); g.fill(); g.strokeStyle=INK.bg; g.lineWidth=1.5; g.stroke();
 }
-el('dcMode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; dMode=b.dataset.m; el('dcMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); drawD(); });
+el('dcMode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; dMode=b.dataset.m; el('dcMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); drawD(); if(cnFd) cnFd.refresh(); });
 
 /* ---------------- controls ---------------- */
 const modeSeg=LAB.seg(el('mode'),[['power','Power'],['path','Path angle']],F.mode,v=>{ if(v==='path'&&R){ F.gam=Math.round(clamp(R.gam,-8,10)*2)/2; } else if(R){ F.pw=clamp(Math.round(R.pw*20)/20,0,1); } F.mode=v; cur=null; all(); });
@@ -292,7 +365,8 @@ function read(){ const r=R, p=phase();
   const rr=x=>`<div class="rrow"><span>${L(x[0])}</span><b class="${x[2]||''}">${x[1]}</b></div>`;
   el('fR').innerHTML=rows.slice(0,5).map(rr).join('')+`<div class="deep">${rows.slice(5).map(rr).join('')}</div>`;
   el('warn').textContent=r.warn?L(r.warn):'';
-  el('fmOv').innerHTML=`<b>${L(PH.find(x=>x[0]===p)[1])}</b> · ${nf(F.v,0)} kt · ${nf(F.m,0)} kg${F.phi>0.5?' · φ '+nf(F.phi,0)+'°':''} · γ ${nf(r.gam,1)}°`;
+  { const H2=(k,v,c)=>`<span><i>${k}</i><b${c?` class="${c}"`:''}>${v}</b></span>`;
+    el('fmOv').innerHTML=`<span class="ph"><i>${L({en:'Phase',no:'Fase'})}</i><b>${L(PH.find(x=>x[0]===p)[1])}</b></span>`+H2('IAS',nf(F.v,0)+' kt')+H2('γ',nf(r.gam,1)+'°')+H2('n',nf(r.n,2)+' g')+H2('L/D',nf(r.LD,1))+H2(L({en:'Power',no:'Effekt'}),nf(Math.max(0,r.pw)*100,0)+' %',r.pw>1?'r':'')+(r.stall?H2('',L({en:'STALL',no:'STEILING'}),'r'):''); }
 }
 function all(){ R=solve(F); read(); syncCtl(); drawPre(); drawM(); drawP(); drawD(); if(typeof live==='function') live(); }
 
@@ -400,7 +474,33 @@ LAB.quiz(el('qbox'),'forces',()=>LAB.shuffle([
  {q:{en:'Below VMD, slowing down in level flight needs…',no:'Under VMD krever det å senke farten i vannrett flyging …'},a:[{en:'more power, because induced drag rises faster than parasite drag falls',no:'mer effekt, fordi indusert motstand øker raskere enn parasittmotstanden faller'},{en:'less power',no:'mindre effekt'},{en:'no change in power',no:'ingen endring i effekt'}],c:0,e:{en:'That is the back of the drag curve: speed is unstable there.',no:'Det er baksiden av motstandskurven: farten er ustabil der.'}}
 ]),6);
 
-LAB.tx({lead:'Løft, vekt, skyv og motstand, tegnet i skala og live. Fly rett fram, stig, gli og sving, og se hvorfor løftet er mindre enn vekten i stigning, hvorfor glidetallet er L/D, og hvorfor steilefarten øker i sving.',goal:'<span class="k">Læringsmål</span>Forklar hvordan de fire kreftene balanserer i rett fram, stigning, glid og sving, og bruk L/D, Vx, Vy, lastfaktor og svinghastighet i cockpit.'});
+LAB.tx({fAll:'De fire kreftene og nøkkelbegrepene i sin helhet',lead:'Løft, vekt, skyv og motstand, tegnet i skala og live. Fly rett fram, stig, gli og sving, og se hvorfor løftet er mindre enn vekten i stigning, hvorfor glidetallet er L/D, og hvorfor steilefarten øker i sving.',goal:'<span class="k">Læringsmål</span>Forklar hvordan de fire kreftene balanserer i rett fram, stigning, glid og sving, og bruk L/D, Vx, Vy, lastfaktor og svinghastighet i cockpit.'});
+
+/* ---------------- Understand: key concept cards (same pattern as the wind tunnel) ---------------- */
+if(window.KCS){ const {sv,tx,ar}=KCS;
+  const pl=(x,y,k,r)=>`<g transform="translate(${x} ${y}) rotate(${r||0}) scale(${k||1})"><path d="M-22,1 C-20,-3 -8,-4 6,-4 L16,-3 C20,-2 22,0 22,1 C20,3 10,4 0,4 L-16,3 Z" fill="#8e99a4" stroke="#e2e8ee" stroke-width=".6"/><path d="M-20,1 L-24,-8 L-20,-8 L-14,0 Z" fill="#8e99a4" stroke="#e2e8ee" stroke-width=".6"/><path d="M-4,-4 L10,-4 L8,-6.5 L-2,-6.5 Z" fill="#7fcbe8" opacity=".55"/><path d="M-6,-4.2 L12,-4.2" stroke="#c9d2da" stroke-width="1.6"/></g>`;
+  const KCF=[
+   {k:'lift',t:{en:'Lift',no:'Løft'},d:{en:'<b>Lift</b> acts at right angles to the flight path, not straight up. It comes from the wing and grows with speed² and angle of attack: L = ½ρV²·S·CL.',no:'<b>Løft</b> virker vinkelrett på flybanen, ikke rett opp. Det kommer fra vingen og vokser med fart² og anstigningsvinkel: L = ½ρV²·S·CL.'},
+    ill:()=>sv(`<line x1="10" y1="40" x2="190" y2="26" stroke="#55626e" stroke-dasharray="3 3"/>${pl(100,33,1.3,-4.4)}${ar(100,33,97.8,5,'#7fcbe8')}${tx(104,10,'L ⊥ '+L({en:'path',no:'bane'}),'#7fcbe8')}${tx(186,40,L({en:'flight path',no:'flybane'}),'#8b99a7','end')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+   {k:'weight',t:{en:'Weight',no:'Vekt'},d:{en:'<b>Weight</b> is mass × gravity and always points straight down, towards the centre of the earth, whatever the attitude.',no:'<b>Vekt</b> er masse × tyngdeakselerasjon og peker alltid rett ned, mot jordas sentrum, uansett attitude.'},
+    ill:()=>sv(`${pl(100,22,1.3,-8)}${ar(100,22,100,58,'#eef3f7')}${tx(106,54,'W = m·g','#eef3f7')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+   {k:'td',t:{en:'Thrust and drag',no:'Skyv og motstand'},d:{en:'<b>Thrust</b> pulls along the flight path; <b>drag</b> resists the motion. When they are equal the speed stays constant. A propeller’s thrust falls as speed rises.',no:'<b>Skyv</b> drar langs flybanen; <b>motstand</b> bremser bevegelsen. Når de er like, holdes farten konstant. Propellskyvet faller når farten øker.'},
+    ill:()=>sv(`${pl(100,32,1.3)}${ar(130,32,172,32,'#E46BAE')}${ar(70,32,28,32,'#EC5A47')}${tx(170,24,'T','#E46BAE','end')}${tx(30,24,'D','#EC5A47')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+   {k:'steady',t:{en:'Steady flight',no:'Jevn flyging'},d:{en:'When the four forces balance, the aircraft keeps a constant speed in a straight line: level, climbing or descending. The small force polygon in the model then closes.',no:'Når de fire kreftene er i balanse, holder flyet konstant fart i en rett linje: plant, i stigning eller i nedstigning. Den lille kraftpolygonen i modellen lukker seg da.'},
+    ill:()=>sv(`${ar(90,52,90,12,'#7fcbe8')}${ar(90,12,118,12,'#E46BAE')}${ar(118,12,118,52,'#eef3f7')}${ar(118,52,90,52,'#EC5A47')}${tx(124,36,L({en:'closed = steady',no:'lukket = jevn'}),'#71cc93')}`),click:'#pre button[data-k="level"]',to:'#fmCv'},
+   {k:'climb',t:{en:'In a climb, lift < weight',no:'I stigning er løft < vekt'},d:{en:'In a steady climb part of the weight acts backwards along the path, so thrust must cover drag plus W·sin γ, and lift is slightly less than weight.',no:'I en jevn stigning virker en del av vekten bakover langs banen, så skyvet må dekke motstand pluss W·sin γ, og løftet er litt mindre enn vekten.'},
+    ill:()=>sv(`<line x1="20" y1="58" x2="180" y2="10" stroke="#55626e" stroke-dasharray="3 3"/>${pl(100,34,1.25,-16.7)}${ar(100,34,92,6,'#7fcbe8')}${ar(100,34,100,62,'#eef3f7')}${tx(196,56,'T = D + W·sin γ','#E46BAE','end')}`),click:'#pre button[data-k="vy"]',to:'#fmCv'},
+   {k:'glide',t:{en:'Glide ratio = L/D',no:'Glidetall = L/D'},d:{en:'With the engine idle the aircraft trades height for distance. The glide ratio equals the lift-to-drag ratio, best at the minimum-drag speed VMD.',no:'Med motoren på tomgang bytter flyet høyde mot distanse. Glidetallet er lik løft/motstand, best ved minste motstandsfart VMD.'},
+    ill:()=>sv(`<line x1="20" y1="12" x2="186" y2="56" stroke="#7fcbe8" stroke-dasharray="4 3"/>${pl(52,20,1.1,15)}<line x1="20" y1="58" x2="190" y2="58" stroke="#55626e"/>${tx(110,28,'L/D ≈ 10 : 1','#f0b440')}`),click:'#pre button[data-k="glide"]',to:'#fmCv'},
+   {k:'dcurve',t:{en:'The drag curve',no:'Motstandskurven'},d:{en:'Total drag is U-shaped against speed: induced drag falls with speed, parasite drag rises. The bottom is VMD. Slower than VMD needs more thrust, not less.',no:'Total motstand er U-formet mot fart: indusert motstand faller med farten, parasittmotstand øker. Bunnen er VMD. Saktere enn VMD krever mer skyv, ikke mindre.'},
+    ill:()=>sv(`<line x1="16" y1="58" x2="190" y2="58" stroke="#55626e"/><path d="M22,10 C50,52 90,54 120,46 S170,20 186,8" fill="none" stroke="#EC5A47" stroke-width="2"/><line x1="92" y1="10" x2="92" y2="58" stroke="#f0b440" stroke-dasharray="3 3"/>${tx(96,18,'VMD','#f0b440')}`),to:'#fdCv'},
+   {k:'vxvy',t:{en:'Vx and Vy',no:'Vx og Vy'},d:{en:'<b>Vx</b> gives the steepest climb (most height per distance, for obstacles). <b>Vy</b> gives the fastest climb (most height per minute). Vx is the slower of the two.',no:'<b>Vx</b> gir brattest stigning (mest høyde per distanse, for hindringer). <b>Vy</b> gir raskest stigning (mest høyde per minutt). Vx er den laveste av de to.'},
+    ill:()=>sv(`<line x1="16" y1="58" x2="190" y2="58" stroke="#55626e"/><path d="M20,58 L92,12" stroke="#71cc93" stroke-width="1.8"/><path d="M20,58 L186,22" stroke="#7fcbe8" stroke-width="1.8"/>${tx(70,22,'Vx','#71cc93')}${tx(150,24,'Vy','#7fcbe8')}<rect x="104" y="44" width="6" height="14" fill="#8b99a7"/>`),click:'#pre button[data-k="vx"]',to:'#fdCv'},
+   {k:'turn',t:{en:'Load factor in a turn',no:'Lastfaktor i sving'},d:{en:'In a level turn the lift is tilted, so it must grow to keep holding the weight: n = L/W = 1/cos φ. At 60° of bank you pull 2 g.',no:'I en plan sving er løftet vippet, så det må øke for fortsatt å bære vekten: n = L/W = 1/cos φ. Ved 60° krengning trekker du 2 g.'},
+    ill:()=>sv(`<g transform="translate(100 40) rotate(30)"><rect x="-40" y="-2" width="80" height="4" rx="2" fill="#8e99a4"/><circle r="6" fill="#4c5d6a" stroke="#c9d2da" stroke-width=".8"/></g>${ar(100,40,116,8,'#7fcbe8')}${ar(100,40,100,62,'#eef3f7')}${tx(122,14,'L = n·W','#7fcbe8')}${tx(140,48,'60° → 2 g','#f0b440')}`),click:'#pre button[data-k="t60"]',to:'#fmCv'},
+   {k:'vsturn',t:{en:'Stall speed rises in a turn',no:'Stallfarten øker i sving'},d:{en:'The wing must make n times more lift at the same critical angle, so the stall speed rises with √n: at 60° of bank by about 41 %.',no:'Vingen må lage n ganger mer løft ved samme kritiske vinkel, så stallfarten øker med √n: ved 60° krengning med omtrent 41 %.'},
+    ill:()=>sv(`<rect x="16" y="26" width="168" height="12" rx="2" fill="#18232c"/><rect x="16" y="26" width="58" height="12" fill="rgba(236,90,71,.6)"/><rect x="74" y="26" width="24" height="12" fill="rgba(236,90,71,.35)"/>${tx(74,22,'VS1g','#c9d2da','middle')}${tx(98,52,'VS·√n','#ff8b7a','middle')}`),click:'#pre button[data-k="tst"]',to:'#fmCv'}];
+  KCS.render(el('fKc'),KCF); }
 /* start */
 LAB.start('forces');
 all(); hooks.forEach(f=>f());
