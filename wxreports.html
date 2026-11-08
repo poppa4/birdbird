@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Read METAR, SPECI and TAF group by group, see a TAF as a timeline with VFR, SVFR and IFR periods, and learn the symbols on significant weather charts. Norwegian training examples.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reading the Weather</title>
+<link rel="stylesheet" href="lab.css?v=7">
+<link rel="stylesheet" href="site.css?v=12">
+<style>
+.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.foot b{color:var(--ink)}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .eyebrow{margin-bottom:4px}
+.maid h3{margin:0 0 4px;font-size:17px}
+.maid p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.ftab{border-collapse:collapse;width:100%;font-size:14px}
+.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}
+.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
+.ftab td:first-child{font-weight:600;font-family:var(--f-mono);font-size:13px;white-space:nowrap}
+.reft{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:22px 28px}
+.reft h3{margin:0 0 6px}
+.reft .note{margin-top:6px}
+/* samples and paste box in the panel */
+.smp{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 6px}
+.smp .k{flex:0 0 100%;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:4px 0 0}
+.smp button{font-family:var(--f-mono);font-size:12px;padding:5px 8px;min-height:30px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:var(--radius);cursor:pointer}
+.smp button:hover{border-color:var(--ink-3)}
+.smp button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.xsec textarea{width:100%;box-sizing:border-box;min-height:92px;font-family:var(--f-mono);font-size:12.5px;line-height:1.45;border:1px solid var(--rule);border-radius:var(--radius);padding:8px;resize:vertical;background:var(--sheet);color:var(--ink)}
+.xsec .btns{margin-top:6px}
+.tab-dec [data-tab="chart"],.tab-chart [data-tab="dec"]{display:none!important}
+/* the decoder inside the dark viewport */
+.wxp{padding:4px 14px 14px;display:flex;flex-direction:column;gap:12px;min-height:420px}
+.wxsrc{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B99A7;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.wxsrc .ex{color:#13181D;background:#F0B440;border-radius:3px;padding:1px 6px;font-weight:600;letter-spacing:.04em}
+.raw{font-family:var(--f-mono);font-size:17px;line-height:2.05;color:#EEF2F5;word-break:normal;overflow-wrap:anywhere;margin:0}
+.raw .tk{display:inline;padding:3px 3px 2px;margin:0 1px;border-radius:3px;cursor:pointer;border-bottom:2px solid var(--c,#5E6D7C);transition:background .12s}
+.raw .tk:hover,.raw .tk.hov{background:rgba(255,255,255,.1)}
+.raw .tk.sel{background:#E6EBEF;color:#13181D}
+.raw .tk.unk{border-bottom-style:dotted;--c:#EC5A47}
+.raw .tk.rmk{color:#8B99A7;border-bottom-color:transparent}
+.raw .tk.dim{opacity:.38}
+.raw.nocol .tk{border-bottom-color:rgba(255,255,255,.18)}
+.raw .gbr{display:block;height:0}
+.tinfo{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:baseline;background:rgba(12,15,18,.45);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:10px 12px;min-height:58px}
+.tinfo .tt{font-family:var(--f-mono);font-size:18px;color:#EEF2F5;font-weight:500;grid-row:span 2}
+.tinfo .ty{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--c,#8B99A7)}
+.tinfo .tx{font-size:14px;line-height:1.5;color:#D7E1E6}
+.tinfo .tx b{color:#fff;font-weight:600}
+.tinfo.empty{display:block;color:#8B99A7;font-size:13.5px}
+.cat{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px;color:#13181D;background:var(--c,#71CC93)}
+.sumrow{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:#D7E1E6}
+.sumrow b{color:#fff;font-weight:600}
+.sumrow .lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B99A7}
+/* TAF timeline */
+.tl{--lw:86px;position:relative;user-select:none}
+.tlrow{display:grid;grid-template-columns:var(--lw) minmax(0,1fr);align-items:center;min-height:26px;border-top:1px solid rgba(255,255,255,.05)}
+.tll{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.02em;color:#8B99A7;padding-right:6px;overflow-wrap:anywhere}
+.tlt{position:relative;height:100%;min-height:26px;cursor:pointer}
+.tlt.lanes2{min-height:46px}
+.tlb{position:absolute;top:4px;height:18px;border-radius:3px;border:0;padding:0 5px;font-family:var(--f-mono);font-size:10.5px;line-height:18px;color:#13181D;background:var(--c,#71CC93);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-align:left;min-width:3px}
+.tlb.l1{top:24px}
+.tlb.tr{background:repeating-linear-gradient(135deg,var(--c) 0 5px,rgba(0,0,0,.25) 5px 8px)}
+.tlb.prob{opacity:.72;outline:1px dashed rgba(255,255,255,.6);outline-offset:-1px}
+.tlb.sel,.tlb:hover{box-shadow:0 0 0 2px #EEF2F5}
+.tlb.nocat{--c:#8B99A7}
+.tlstrip{position:absolute;top:7px;height:12px;border-radius:2px;background:var(--c)}
+.tlax{position:relative;height:18px;margin-left:var(--lw);font-family:var(--f-mono);font-size:10px;color:#8B99A7}
+.tlax span{position:absolute;top:3px;transform:translateX(-50%);white-space:nowrap}
+.tlax span::before{content:"";position:absolute;left:50%;top:-5px;height:4px;border-left:1px solid rgba(255,255,255,.25)}
+.tlcur{position:absolute;top:0;bottom:18px;width:0;border-left:2px solid #EEF2F5;pointer-events:none;z-index:2}
+.tlcur::before{content:attr(data-t);position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-family:var(--f-mono);font-size:10px;background:#EEF2F5;color:#13181D;padding:0 4px;border-radius:2px;white-space:nowrap}
+.tlwrap{padding-top:16px}
+.tll .sh{display:none}
+.atT{display:flex;flex-direction:column;gap:6px;background:rgba(12,15,18,.45);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:10px 12px}
+.atT .h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B99A7}
+.atT .r{display:grid;grid-template-columns:minmax(90px,auto) auto minmax(0,1fr);gap:4px 10px;align-items:baseline;font-size:13.5px;color:#D7E1E6}
+.atT .r .g{font-family:var(--f-mono);font-size:12px;color:#EEF2F5}
+.atT .r .n{color:#AEB8C1;font-size:12.5px}
+@media (max-width:640px){.raw{font-size:14.5px;line-height:2}.wxp{padding:2px 10px 12px;min-height:0}.tl{--lw:58px}.tll{font-size:9.5px}.atT .r{grid-template-columns:minmax(0,1fr) auto}.atT .r>span:last-child{grid-column:1/-1}.tll .lg{display:none}.tll .sh{display:inline}.tinfo .tt{font-size:15px}}
+/* decoded table (light card under the model) */
+.dtab{border-collapse:collapse;width:100%;font-size:14px}
+.dtab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;vertical-align:top}
+.dtab td:first-child{font-family:var(--f-mono);font-size:13px;white-space:nowrap;border-left:3px solid var(--c,#C6D0D3);width:1%}
+.dtab tr.sec td{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);border-left:0;padding-top:12px;background:none}
+.dtab tr.hov td{background:var(--wash)}
+.dtab tr.sel td{background:var(--accent-wash)}
+.dtab tr{cursor:pointer}
+.dtab tr.sec{cursor:default}
+.live{font-size:13.5px;color:var(--ink-2);margin:0}
+/* Sig Wx chart */
+.chw{padding:2px 10px 12px;display:flex;flex-direction:column;gap:10px}
+.chw svg{display:block;width:100%;height:auto;border-radius:4px;background:#0f161d}
+#chart{overflow-x:auto;border-radius:4px}
+@media (max-width:640px){#chart svg{min-width:640px}}
+.chw svg .s{cursor:pointer}
+.chw svg .s:hover .hl,.chw svg .s.on .hl{stroke:#EEF2F5;stroke-width:2.2;opacity:1}
+.chw svg .hl{opacity:0}
+.chw svg text{font-family:"IBM Plex Mono",monospace}
+.gal{display:flex;flex-wrap:wrap;gap:6px}
+.gal button{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-body);font-size:12px;background:rgba(18,22,26,.62);color:#AEB8C1;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:3px 8px 3px 4px;cursor:pointer;min-height:30px}
+.gal button svg{width:30px;height:22px;background:none;border-radius:0}
+.gal button:hover{color:#E2E8EE;border-color:rgba(255,255,255,.3)}
+.gal button.on{background:#E6EBEF;color:#13181D;border-color:#E6EBEF}
+.gal button.on svg *{stroke:#13181D}
+.gal button.on svg text{fill:#13181D}
+</style>
+</head>
+<body data-title="Reading the Weather">
+<script src="site.js?v=32"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
+      <h1>Reading the weather</h1>
+      <p data-tx="lead">METAR, SPECI and TAF, group by group. Pick a Norwegian example or paste a report, tap any group to see what it means, and read a TAF as a timeline: which conditions apply at the time you arrive, and is it VFR? Then learn the symbols on significant weather charts.</p>
+      <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Decode a METAR and a TAF without a key, find the ceiling and visibility that apply at a given time, and read the hazards on a significant weather chart.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#concepts">Key concepts</a><a href="#explore">Weather report decoder</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="concepts" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kIntro"></p>
+    <div id="wKc"></div>
+    <details class="kfull"><summary data-tx="kAll">Codes, change groups and warnings in full</summary><div class="reft" id="refT"></div></details>
+  </section>
+
+  <section class="card" id="explore" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>Weather report decoder</h2>
+    <p class="lead" id="mLead"></p>
+    <div class="xapp tab-dec" id="xapp">
+      <div class="xvp" id="wxVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vTabs" role="tablist" aria-label="View"></div><div class="vchip inbar" id="wxChip" aria-live="polite"></div></div>
+        <div class="vcv" id="wxBody">
+          <div class="wxp" data-tab="dec">
+            <div class="wxsrc" id="wxSrc"></div>
+            <p class="raw" id="raw"></p>
+            <div class="tinfo empty" id="tinfo"></div>
+            <div id="wxMain"></div>
+          </div>
+          <div class="chw" data-tab="chart">
+            <div id="chart"></div>
+            <div class="tinfo empty" id="cinfo"></div>
+            <div class="gal" id="gal" aria-label="Symbols"></div>
+          </div>
+        </div>
+        <div class="vleg" id="wxLeg"></div>
+      </div>
+      <p class="xsee" id="wxSee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <div class="tbox" id="tbox" hidden></div>
+        <details class="xsec" open><summary>Conditions</summary>
+          <div data-tab="dec"><div class="grp" id="gEx">Example reports</div><div id="smp"></div>
+            <div id="ctlT"></div></div>
+          <div data-tab="chart"><div class="grp" id="gSym">Symbols</div><p class="hint" id="symHint"></p></div>
+        </details>
+        <details class="xsec" open><summary>Show</summary>
+          <div class="xtogs" id="lay"></div>
+        </details>
+        <details class="xsec" data-tab="dec"><summary>Advanced</summary>
+          <div class="grp" id="gPaste">Paste your own</div>
+          <textarea id="paste" spellcheck="false" aria-label="Paste a METAR or TAF" placeholder="METAR ENxx … / TAF ENxx …"></textarea>
+          <div class="btns"><button type="button" class="btn sm pri" id="pasteGo">Decode</button></div>
+          <p class="hint" id="pasteHint"></p>
+        </details>
+      </details>
+      <div class="xcard" data-tab="dec" id="decCard"><h3 id="decH">Decoded, group by group</h3><table class="dtab" id="dtab"></table><p class="live" id="liveLink"></p></div>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <ol class="tasks" id="tasks"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
+    <div class="maid" id="maid"><div class="eyebrow"></div><h3></h3><p></p></div>
+    <div class="deepbox deep" id="dbE"></div>
+  </section>
+
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot" id="foot"></p>
+</div>
+<script src="lab.js?v=30"></script>
+<script src="concepts.js?v=1"></script>
+<script src="wxkit.js?v=1"></script>
+<script src="wxreports.js?v=1"></script>
+</body>
+</html>
