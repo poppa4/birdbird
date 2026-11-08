@@ -168,6 +168,75 @@
     return out;
   }
 
-  const VMC = { g, R0, KT, FT, D2R, LBF, AC, GND, atm, thrustStatic, geom, qOf, rudderTravel, pedalForce, point, vmc, vs1g, airSim, groundRoll, vmcg, goAround };
+
+  /* =====================================================================
+     Light-twin teaching model (own design, no real type): both propellers turn clockwise seen from behind.
+     Frame as above: y > 0 toward the LIVE engine, φ > 0 = bank toward the live engine.
+     Yaw from the engines:  Neng = T·(ye ± e) + D·ye − Nss
+       e   = P-factor offset of the thrust line toward the descending (right-hand) blade, grows with angle of attack;
+             + when the RIGHT engine is the live one (left failed), − when the left engine is live
+       D   = drag of the dead propeller: windmilling (large) or feathered (small)
+       Nss = spiralling slipstream of the live LEFT engine striking the fin from the left (helps only when the right fails)
+     Rolling moment toward the dead engine (held with aileron): accelerated slipstream over the live wing + torque reaction.
+     Fin, rudder and sideslip: the same closed form as the jet model (Yr = (Neng − a·W·sinφ)/(lv − a)).
+     ===================================================================== */
+  const LT = {
+    S: 17.5, b: 11.8, ye: 1.85, R: 0.95,     // wing area m², span m, engine arm m, propeller radius m
+    P0: 150e3, eta: 0.80, Ts: 3700, rpm: 2700, // power per engine W (180 hp), prop efficiency, static thrust N, rpm
+    CdAwm: 0.62, CdAft: 0.06,                // drag area of a windmilling / feathered propeller, m²
+    Sv: 2.0, lv0: 5.15, cgRange: 0.45,      // fin area m², fin arm at forward CG limit m, CG range m (fwd→aft)
+    ad: 2.4, ehta: 0.90, dmax: 25,           // rudder side-force slope per rad, fin efficiency, rudder travel deg
+    Cyb: -0.62, Cnb: 0.10,                  // per rad
+    kp: 0.020,                               // P-factor offset, fraction of R per degree of angle of attack
+    ass: 0.80, yas: 2.35,                    // accelerated slipstream: extra lift per N thrust, its arm (m)
+    css: 0.14,                               // spiralling slipstream: equivalent arm m of the live left engine's thrust
+    CLa: 0.088, a0: -2.0, CLmax: 1.65,       // lift slope per deg, zero-lift AoA, CLmax (clean)
+    mmax: 2000, mmin: 1500
+  };
+  LT.a = LT.b * LT.Cnb / Math.abs(LT.Cyb);
+  // o: {fail:'L'|'R', m kg, cg 0..1 (fwd→aft), phi deg (toward live), pw 0..1, feather bool}
+  function ltPoint(o, v) {
+    const q = qOf(v), V = Math.max(1, v * KT), W = o.m * g, ph = (o.phi || 0) * D2R, pw = o.pw == null ? 1 : o.pw;
+    const T = Math.min(LT.Ts * pw, LT.eta * LT.P0 * pw / V);
+    const CL = W * Math.cos(ph) / (q * LT.S), al = Math.min(CL, LT.CLmax) / LT.CLa + LT.a0;   // wing angle of attack, deg (held at the stall)
+    const e = LT.R * LT.kp * Math.max(0, al);                              // thrust line offset toward the descending blade
+    const live = o.fail === 'L' ? 'R' : 'L', sgn = live === 'R' ? 1 : -1;  // right engine live → its thrust line moves OUT
+    const armT = LT.ye + sgn * e;
+    const D = q * (o.feather ? LT.CdAft : LT.CdAwm);
+    const Nss = live === 'L' ? LT.css * T : 0;
+    const NT = T * armT, ND = D * LT.ye, Neng = NT + ND - Nss;
+    const dx = (o.cg == null ? 1 : o.cg) * LT.cgRange, lv = LT.lv0 - dx, a = LT.a - dx;
+    const k = q * LT.Sv * LT.ad * LT.ehta, Ymax = k * LT.dmax * D2R;
+    const Yr = (Neng - a * W * Math.sin(ph)) / (lv - a);
+    const dreq = Yr / k / D2R, beta = (W * Math.sin(ph) - Yr) / (q * LT.S * Math.abs(LT.Cyb)) / D2R;
+    const Q = pw * LT.P0 / (LT.rpm * 2 * Math.PI / 60);                   // torque N·m; reaction rolls LEFT
+    const yasArm = LT.yas + sgn * e;                                       // slipstream centre follows the descending blade
+    const Las = LT.ass * T * yasArm, Ltq = live === 'R' ? Q : -Q;          // + = roll toward the dead engine
+    const vs = Math.sqrt(2 * W / (R0 * LT.S * LT.CLmax)) / KT;
+    return { v, q, T, D, e, armT, NT, ND, Nss, Neng, Yr, Ymax, Nreq: Yr * lv, Nav: Ymax * lv, NavRaw: Ymax * lv, dreq, beta, al, CL,
+      lv, a, W, Las, Ltq, Lroll: Las + Ltq, Q, vs, used: Yr / Ymax, live,
+      phi0: Math.asin(Math.max(-1, Math.min(1, Neng / lv / W))) / D2R };
+  }
+  function ltVmc(o) {
+    const f = v => { const p = ltPoint(o, v); return p.Ymax - p.Yr; };
+    let lo = 40, hi = 200; if (f(lo) >= 0) return lo; if (f(hi) < 0) return null;
+    for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; f(m) >= 0 ? hi = m : lo = m; } return hi;
+  }
+
+  /* ---------------- blade element: the propeller as a rotating wing ----------------
+     section at 0.75 R: rotational speed U = ω·r, axial speed V (TAS + a little induced flow when it makes thrust),
+     helix angle φ = atan(V/U), angle of attack α = β − φ. Thin-aerofoil lift with a stall, profile drag. */
+  function blade(o) { // o: {rpm, tas kt, beta deg}
+    const r = 0.75 * LT.R, U = Math.max(0, o.rpm) * 2 * Math.PI / 60 * r, V = Math.max(0, o.tas) * KT;
+    const phi = Math.atan2(V, Math.max(U, 1e-6)) / D2R, al = o.beta - phi, W = Math.hypot(U, V);
+    const ast = 15, cl = Math.abs(al) <= ast ? 0.10 * al : Math.sign(al) * (1.5 - 0.035 * (Math.abs(al) - ast));
+    const cd = 0.012 + 0.0009 * al * al + (Math.abs(al) > ast ? 0.4 : 0);
+    const ph = phi * D2R, Lr = cl, Dr = cd;                                // per unit q·c
+    const thrust = Lr * Math.cos(ph) - Dr * Math.sin(ph), torque = Lr * Math.sin(ph) + Dr * Math.cos(ph);
+    const qd = W * W;                                                       // ∝ dynamic pressure on the section
+    return { U, V, W, phi, al, cl, cd, thrust: thrust * qd, torque: torque * qd, tipMach: Math.hypot(U / 0.75, V) / 340.3, adv: V / Math.max(1e-6, (o.rpm / 60) * 2 * LT.R) };
+  }
+
+  const VMC = { LT, ltPoint, ltVmc, blade, g, R0, KT, FT, D2R, LBF, AC, GND, atm, thrustStatic, geom, qOf, rudderTravel, pedalForce, point, vmc, vs1g, airSim, groundRoll, vmcg, goAround };
   if (typeof module === 'object' && module.exports) module.exports = VMC; else root.VMC = VMC;
 })(typeof window !== 'undefined' ? window : globalThis);

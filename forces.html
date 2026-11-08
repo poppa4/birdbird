@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Lift, weight, thrust and drag drawn to scale and live: straight and level, climb (Vx, Vy, gradient and rate), descent and glide (L/D, best glide, wind) and the turn (load factor, radius, rate, stall speed).">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forces in Flight</title>
+<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="site.css?v=12">
+<style>
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.view canvas{touch-action:pan-y}
+#fmCv{aspect-ratio:16/8.6}#fpCv{aspect-ratio:16/3.6}#fdCv{aspect-ratio:16/7.2}
+@media (max-width:600px){#fmCv{aspect-ratio:4/4.3}#fpCv{aspect-ratio:4/2.2}#fdCv{aspect-ratio:4/3.4}}
+.ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 20px)}
+.ovl b{color:#D7E1E6;font-weight:500}.ovl .r{color:#EC5A47}.ovl .g{color:#71CC93}
+.ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
+.vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:#D7E1E6;border:1px solid #2A3742;border-radius:3px;padding:5px 9px;cursor:pointer;line-height:1.3;min-height:28px}
+.vbtn:hover{border-color:#7FCBE8}.vbtn.on{background:#E46BAE;color:#10171D;border-color:#E46BAE;font-weight:600}
+.vbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+@media (max-width:600px){.ovl{display:none}}
+.phases{display:flex;flex-wrap:wrap;gap:6px}
+.phases button{font-size:13.5px}
+.pre{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pre .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.pre button{font-size:13px;padding:6px 11px;min-height:34px}
+.four{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.four{grid-template-columns:minmax(0,1fr)}}
+.four .box{border-top:3px solid var(--c,#333)}
+.four .box .sym{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);margin-top:4px;display:block}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0;border-top:1px solid var(--ink);margin-top:4px}
+.defs div{padding:10px 14px 12px 0;border-bottom:1px solid var(--rule-2);font-size:14px;line-height:1.5;color:var(--ink-2)}
+.defs b{display:block;color:var(--ink);font-size:14.5px;margin-bottom:2px}
+.defs code{font-family:var(--f-mono);font-size:12.5px;color:var(--ink)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-2);cursor:pointer;margin:2px 0 6px}
+.chk input{accent-color:var(--accent);margin:0}
+.ctl input[disabled]{opacity:.45}
+.exam{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--sheet);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px;max-width:none}
+.exam .ct{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.exam ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14.5px;line-height:1.5;color:var(--ink)}
+.rrow b{white-space:normal}
+.kpi b small{display:inline;font-size:14px;color:var(--ink-2);margin-left:2px;letter-spacing:0}
+.rrow.sub span{padding-left:10px}
+.rail .ro{margin-top:2px}
+.warnline{font-size:13.5px;line-height:1.45;margin:6px 0 0;padding:8px 10px;border-radius:var(--radius);background:var(--caution-wash,#FFF6E5);color:var(--ink)}
+.warnline:empty{display:none}
+.adv{border-top:1px solid var(--rule-2);margin-top:2px;padding-top:6px}
+.adv summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 0;list-style-position:inside}
+.adv[open] summary{margin-bottom:6px}
+body.depth-short .pre{display:none}
+/* template patterns from pressure.html: learning goal, deep boxes, tasks, task box, debrief */
+.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
+.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
+.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
+.fb{display:block;margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.fb.ok{color:var(--ok)}
+.fb b{color:inherit}
+.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
+.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
+.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left}
+.task .opts button:hover{border-color:var(--ink)}
+.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.task .btns{margin-top:auto}
+.why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.foot b{color:var(--ink)}
+/* Instructor: presenter-sized controls and readouts */
+body.depth-instructor #model .rrow{font-size:17px;padding:9px 0}
+body.depth-instructor #model .rrow b{font-size:17px}
+body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
+body.depth-instructor .phases button{font-size:16px;padding:10px 14px}
+body.depth-instructor #model .atl-split>.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 32px;align-items:start}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .eyebrow{margin-bottom:4px}
+.maid h3{margin:0 0 4px;font-size:17px}
+.maid p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.cap{margin:-4px 0 2px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.cap i{display:inline-block;width:10px;height:10px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(16,23,29,.35);margin:0 4px 0 8px;vertical-align:-1px;font-style:normal}
+.cap i:first-child{margin-left:0}
+</style>
+</head>
+<body data-title="Forces in Flight">
+<script src="site.js?v=30"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <h1>Forces in flight</h1>
+      <p data-tx="lead">Lift, weight, thrust and drag, drawn to scale and live. Fly level, climb, glide and turn, and see why lift is less than weight in a climb, why the glide ratio is L/D, and why the stall speed rises in a turn.</p>
+      <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain how the four forces balance in level flight, climb, glide and turn, and use L/D, Vx, Vy, load factor and turn rate in the cockpit.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#four">The four forces</a><a href="#model">Forces in flight lab</a><a href="#try">Try it</a><a href="#debrief">Debrief</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="four" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>The four forces</h2>
+    <p class="lead" id="fLead"></p>
+    <div class="four" id="fourC"></div>
+    <div class="defs deep" id="defs"></div>
+  </section>
+
+  <section class="card" id="model" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>Forces in flight lab</h2>
+    <p class="lead" id="mLead"></p>
+    <div class="phases seg" id="ph"></div>
+    <div class="split">
+      <div class="stack">
+        <div class="view" data-lab-model><canvas id="fmCv" aria-label="Aircraft with lift, weight, thrust and drag drawn to scale; in a turn, the view from behind and the turn circle from above"></canvas><div class="ovl" id="fmOv"></div><div class="ovr"><button class="vbtn on" id="mag" type="button" aria-pressed="true">T, D ×4</button></div></div>
+        <p class="cap" id="cM"></p>
+        <div class="pre" id="pre"></div>
+        <div class="kpis" id="fK"></div>
+        <div class="view"><canvas id="fpCv" aria-label="Flight path over the ground: height against distance, with and without wind"></canvas></div>
+        <p class="cap" id="cP"></p>
+        <div class="view"><canvas id="fdCv" aria-label="Drag curve (parasite, induced and total drag) or power curve against airspeed, with the minimum drag speed, Vx and Vy"></canvas><div class="ovr" id="dcMode"><button class="vbtn on" data-m="d" type="button">Drag</button><button class="vbtn" data-m="p" type="button">Power</button></div></div>
+        <p class="cap" id="cD"></p>
+      </div>
+      <div class="rail">
+        <div class="tbox" id="tbox" hidden></div>
+        <div class="grp">You set</div><div id="mode"></div>
+        <div id="ctl" style="margin-top:8px"></div>
+        <details class="adv"><summary>Advanced</summary><div id="ctl2"></div></details>
+        <p class="warnline" id="warn"></p>
+        <div class="grp">Forces</div>
+        <div class="ro" id="fR"></div>
+      </div>
+    </div>
+    <div class="maid" id="maV"><div class="eyebrow"></div><h3></h3><p></p></div>
+  </section>
+
+  <section class="card" id="try" data-step="try">
+    <div class="eyebrow">3 · Try</div>
+    <h2>Try it</h2>
+    <p class="lead" id="tryLead"></p>
+    <ol class="tasks" id="tasks"></ol>
+  </section>
+
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">4 · Debrief</div>
+    <h2>What happened, and why it matters</h2>
+    <div class="cols why" id="dbC"></div>
+    <div class="maid" id="maR"><div class="eyebrow"></div><h3></h3><p></p></div>
+    <h3 id="takeH">Pilot takeaways</h3>
+    <ul class="take" id="take"></ul>
+    <div class="deepbox deep" id="dbE"></div>
+  </section>
+
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">5 · Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot" id="foot"></p>
+</div>
+<script src="lab.js?v=24"></script>
+<script src="forces.js?v=1"></script>
+</body>
+</html>

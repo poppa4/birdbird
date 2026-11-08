@@ -51,6 +51,57 @@
 .ct4>div.k{color:var(--ink);font-weight:600}
 .ct4 .x{color:var(--accent);font-weight:600}
 @media (max-width:760px){.ct4{grid-template-columns:minmax(0,1fr)}.ct4>div.h{display:none}.ct4>div.k{background:var(--paper);padding-bottom:6px}.ct4>div:not(.k):not(.h)::before{content:attr(data-c);display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}}
+/* template patterns from pressure.html: learning goal, deep boxes, tasks, task box, debrief */
+.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
+.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
+.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
+.fb{display:block;margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.fb.ok{color:var(--ok)}
+.fb b{color:inherit}
+.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
+.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
+.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left}
+.task .opts button:hover{border-color:var(--ink)}
+.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.task .btns{margin-top:auto}
+.why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.foot b{color:var(--ink)}
+.adv{border-top:1px solid var(--rule-2);margin-top:2px;padding-top:6px}
+.adv summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 0}
+.adv[open] summary{margin-bottom:6px}
+body.depth-short .ltpre{display:none}
+/* Instructor: presenter-sized readouts */
+body.depth-instructor #lt .rrow,body.depth-instructor #pwing .rrow{font-size:17px;padding:9px 0}
+body.depth-instructor .ltpre .btn{font-size:15px;padding:11px 16px}
+body.depth-instructor #lt .atl-split>.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 32px;align-items:start}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .eyebrow{margin-bottom:4px}
+.maid h3{margin:0 0 4px;font-size:17px}
+.maid p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.cap{margin:-4px 0 2px;font-size:13px;line-height:1.5;color:var(--ink-2)}
+.cap i{display:inline-block;width:10px;height:10px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(16,23,29,.35);margin:0 4px 0 8px;vertical-align:-1px;font-style:normal}
+.cap i:first-child{margin-left:0}
+.also{border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:0 16px;margin-top:4px}
+.also>summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 0;list-style:none}
+.also>summary::-webkit-details-marker{display:none}
+.also>summary span{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+.also>summary span::before{content:"+ ";color:var(--accent)}
+.also[open]>summary span::before{content:"− "}
+.also>summary small{font-size:13px;color:var(--ink-2)}
+.alsob{display:flex;flex-direction:column;gap:16px;padding:0 0 16px}
 .tabs{max-width:560px}
 .tabp[hidden]{display:none}
 .tabp{display:flex;flex-direction:column;gap:16px}
@@ -70,26 +121,51 @@ ol.steps li{margin:4px 0}
 .vtx a{font-size:14px}
 .h3row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin-top:8px}
 .h3row p{margin:0;color:var(--ink-2);font-size:14.5px;max-width:72ch}
+.past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.past{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.past{grid-template-columns:minmax(0,1fr)}}
+.past .box{position:relative;padding-top:14px}
+.past .box .lt{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:var(--accent);float:right;margin:-2px 0 0 8px;opacity:.85}
+.past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:#10171D}
+#ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}
+@media (max-width:600px){#ltOv{display:none}#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
+.lays{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:-4px}
+.lays .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
+.lays .vbtn{font-size:12px;padding:6px 11px;min-height:32px}
+.ltpre{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 2px}
+.ltpre button{font-size:13px;padding:6px 11px;min-height:34px}
+.ltpre button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.stat{display:inline-block;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:3px}
+.stat.ok{background:rgba(113,204,147,.16);color:var(--ok)}.stat.ko{background:rgba(236,90,71,.14);color:var(--warning)}
+.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.task{border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.task .n{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.task h3{margin:0;font-size:16px;line-height:1.3}
+.task p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.task .tb{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.task .ans{border-top:1px solid var(--rule-2);padding-top:8px;font-size:14px;line-height:1.5;color:var(--ink)}
+.task .ans[hidden]{display:none}
 </style>
 </head>
 <body data-title="Engine Failure and Minimum Control Speeds">
-<script src="site.js?v=29"></script>
+<script src="site.js?v=30"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
       <h1>Engine failure and minimum control speeds</h1>
-      <p>Lose an engine on the A320 and slow down until the rudder runs out. That speed is VMCA. Change the bank, thrust, airfield, CG and mass and watch it move, then see how CS-25 turns it into VMCG, VMCL and the limits on V1, VR, V2 and VREF.</p>
+      <p data-tx="lead">Lose an engine on a light twin and on the A320 and slow down until the rudder runs out. That speed is VMCA. See why one engine is critical, what bank, feathering, power and CG do, how a propeller blade works as a wing, and how CS-25 turns VMC into VMCG, VMCL and the limits on V1, VR, V2 and VREF.</p>
+      <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain why one engine is critical on a light twin, what sets VMCA and how bank, feathering, power and CG move it, and how VMCA becomes VMCG, VMCL and the take-off speeds on the A320.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#single">VMCA lab</a><a href="#cert">Certification and speeds</a><a href="#twin">VMCG and VMCL</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#pfactor">P-factor and the critical engine</a><a href="#lt">Light twin: engine failure</a><a href="#pwing">Propeller as a wing</a><a href="#single">VMCA lab</a><a href="#cert">Certification and speeds</a><a href="#try">Try it</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
 
-  <!-- 1 · VMCA -->
-  <section class="card" id="single">
-    <div class="eyebrow">1 · Interactive</div>
-    <h2>VMCA: when the rudder runs out</h2>
+  <!-- 0 · P-factor and the critical engine (light twin) -->
+  <section class="card" id="pfactor" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>P-factor and the critical engine</h2>
     <div class="vid" id="vid">
       <div class="vframe"><button class="vplay" id="vplay" type="button" aria-label="Play the video"><i></i><span id="vnote"></span></button></div>
       <div class="vtx">
@@ -99,6 +175,68 @@ ol.steps li{margin:4px 0}
         <a id="vlink" href="https://www.youtube.com/watch?v=VJOYERf6380" target="_blank" rel="noopener"></a>
       </div>
     </div>
+    <p class="lead" id="pfLead"></p>
+    <div class="past" id="past"></div>
+    <div class="maid" id="maPast"><div class="eyebrow"></div><h3></h3><p></p></div>
+    <p class="note deep" id="pfNote"></p>
+  </section>
+
+  <!-- light twin model -->
+  <section class="card" id="lt" data-step="explore">
+    <div class="eyebrow">2 · Explore · light-twin teaching model</div>
+    <h2>Light twin: lose an engine</h2>
+    <p class="lead" id="ltLead"></p>
+    <div class="btns ltpre" id="ltPre"></div>
+    <div class="split">
+      <div class="stack">
+        <div class="view" data-lab-model><canvas id="ltCv" aria-label="Light twin seen from above and from behind with one engine failed: thrust lines, P-factor, slipstream, torque, rudder force, bank, ball and the dead propeller"></canvas><div class="ovl" id="ltOv"></div></div>
+        <p class="cap" id="cLt"></p>
+        <div class="lays" id="ltLay"></div>
+        <div class="kpis" id="ltK"></div>
+        <div class="view"><canvas id="ltCh" aria-label="Rudder moment needed and available against airspeed for the light twin; they cross at VMCA"></canvas></div>
+        <p class="cap" id="cCh"></p>
+      </div>
+      <div class="rail">
+        <div class="tbox" id="tbox" hidden></div>
+        <div class="grp">Failed engine</div><div id="ltFe"></div>
+        <div class="grp">Dead propeller</div><div id="ltFt"></div>
+        <div id="ltCtl" style="margin-top:8px"></div>
+        <details class="adv"><summary>Advanced</summary><div id="ltCtl2"></div></details>
+        <div class="grp">Yawing moment</div>
+        <div class="bal" id="ltBal"></div>
+        <div class="ro" id="ltR"></div>
+      </div>
+    </div>
+    <div class="maid" id="maDead"><div class="eyebrow"></div><h3></h3><p></p></div>
+    <div class="exam deep" id="ltE"></div>
+    <div class="callout deep" id="ltJet"></div>
+  </section>
+
+  <!-- propeller as a wing -->
+  <section class="card" id="pwing" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The propeller is a rotating wing</h2>
+    <p class="lead" id="pwLead"></p>
+    <div class="btns ltpre" id="pwPre"></div>
+    <div class="split">
+      <div class="stack">
+        <div class="view"><canvas id="pwCv" aria-label="Blade section at 75 % radius with the rotational speed, the true airspeed, the relative wind, blade angle, angle of attack, lift, drag, thrust and torque"></canvas><div class="ovl" id="pwOv"></div></div>
+        <p class="cap" id="cPw"></p>
+      </div>
+      <div class="rail">
+        <div class="tbox" id="tbox2" hidden></div>
+        <div class="grp">Propeller</div><div id="pwMode"></div>
+        <div id="pwCtl" style="margin-top:8px"></div>
+        <div class="ro" id="pwR"></div>
+      </div>
+    </div>
+    <div class="cols deep" id="pwCards"></div>
+  </section>
+
+  <!-- 1 · VMCA -->
+  <section class="card" id="single" data-step="explore">
+    <div class="eyebrow">2 · Explore · A320 model</div>
+    <h2>VMCA on the A320: when the rudder runs out</h2>
     <p class="lead" id="vmLead"></p>
     <div class="split">
       <div class="stack">
@@ -110,6 +248,7 @@ ol.steps li{margin:4px 0}
         <div class="grp">Failed engine</div><div id="fe"></div>
         <div class="grp">Thrust on the live engine</div><div id="thr"></div>
         <div id="vmCtl" style="margin-top:8px"></div>
+        <details class="adv"><summary>Advanced</summary><div id="vmCtl2"></div></details>
         <label class="chk"><input type="checkbox" id="wm" checked> <span>Windmilling drag of the failed engine</span></label>
         <div class="grp">Yawing moment</div>
         <div class="bal" id="vmBal"></div>
@@ -121,12 +260,56 @@ ol.steps li{margin:4px 0}
       <div class="view"><canvas id="mvCv" aria-label="Rudder moment needed and rudder moment available against airspeed; they cross at VMCA"></canvas></div>
       <div class="view"><canvas id="vbCv" aria-label="VMCA against bank angle, airfield altitude or thrust, with the current point"></canvas><div class="ovr" id="vbMode"><button class="vbtn on" data-m="bank" type="button">Bank</button><button class="vbtn" data-m="alt" type="button">Altitude</button><button class="vbtn" data-m="thr" type="button">Thrust</button></div></div>
     </div>
-    <div class="exam" id="vmE"></div>
+    <div class="exam deep" id="vmE"></div>
+    <details class="also" id="twin">
+      <summary><span>Also: VMCG · VMCL</span><small>the same yaw balance on the ground and in a go-around</small></summary>
+      <div class="alsob">
+        <p class="lead" id="twLead"></p>
+        <div class="tabs" id="tabs"></div>
+        <div class="tabp" id="tG">
+          <div class="split">
+            <div class="stack">
+              <div class="view"><canvas id="gCv" aria-label="Runway seen from above with the track after an engine failure at the chosen speed and the 30 ft limits"></canvas><div class="ovl" id="gOv"></div><div class="ovr"><button class="vbtn go" id="gGo" type="button">Run</button></div></div>
+              <div class="view"><canvas id="gTr" aria-label="Lateral deviation and rudder against time"></canvas></div>
+            </div>
+            <div class="rail">
+              <div class="grp">Thrust on the live engine</div><div id="gThr"></div>
+              <div id="gCtl" style="margin-top:8px"></div>
+              <div class="ro" id="gR"></div>
+              <p class="callout info" id="gX"></p>
+            </div>
+          </div>
+          <div class="exam deep" id="gE"></div>
+        </div>
+        <div class="tabp" id="tL" hidden>
+          <div class="split">
+            <div class="stack">
+              <div class="view"><canvas id="laCv" aria-label="One-engine go-around: live-engine thrust spooling up and the rudder needed against time"></canvas><div class="ovr"><button class="vbtn go" id="lGo" type="button">Go around</button></div></div>
+              <div class="view"><canvas id="lsCv" aria-label="Speed scale with the stall speed, VMCL, 1.23 VSR, VLS and the approach speed"></canvas></div>
+            </div>
+            <div class="rail">
+              <div id="lCtl"></div>
+              <div class="ro" id="lR"></div>
+              <p class="callout info" id="lX"></p>
+            </div>
+          </div>
+          <div class="exam deep" id="lE"></div>
+        </div>
+        </div>
+    </details>
+  </section>
+
+  <!-- try -->
+  <section class="card" id="try" data-step="try">
+    <div class="eyebrow">3 · Try</div>
+    <h2>Try it</h2>
+    <p class="lead" id="tryLead"></p>
+    <ol class="tasks" id="tasks"></ol>
   </section>
 
   <!-- 2 · certification -->
-  <section class="card" id="cert">
-    <div class="eyebrow">2 · Certification</div>
+  <section class="card" id="cert" data-step="debrief">
+    <div class="eyebrow">4 · Debrief · certification</div>
     <h2>What CS-25 fixes, and the speeds it protects</h2>
     <p class="lead" id="ceLead"></p>
     <div class="ct4" id="ceT"></div>
@@ -140,50 +323,13 @@ ol.steps li{margin:4px 0}
         <div class="ro" id="spR"></div>
       </div>
     </div>
-    <div class="cards6" id="ceCards"></div>
-  </section>
-
-  <!-- 3 · VMCG and VMCL -->
-  <section class="card" id="twin">
-    <div class="eyebrow">3 · Interactive</div>
-    <h2>VMCG and VMCL</h2>
-    <p class="lead" id="twLead"></p>
-    <div class="tabs" id="tabs"></div>
-    <div class="tabp" id="tG">
-      <div class="split">
-        <div class="stack">
-          <div class="view"><canvas id="gCv" aria-label="Runway seen from above with the track after an engine failure at the chosen speed and the 30 ft limits"></canvas><div class="ovl" id="gOv"></div><div class="ovr"><button class="vbtn go" id="gGo" type="button">Run</button></div></div>
-          <div class="view"><canvas id="gTr" aria-label="Lateral deviation and rudder against time"></canvas></div>
-        </div>
-        <div class="rail">
-          <div class="grp">Thrust on the live engine</div><div id="gThr"></div>
-          <div id="gCtl" style="margin-top:8px"></div>
-          <div class="ro" id="gR"></div>
-          <p class="callout info" id="gX"></p>
-        </div>
-      </div>
-      <div class="exam" id="gE"></div>
-    </div>
-    <div class="tabp" id="tL" hidden>
-      <div class="split">
-        <div class="stack">
-          <div class="view"><canvas id="laCv" aria-label="One-engine go-around: live-engine thrust spooling up and the rudder needed against time"></canvas><div class="ovr"><button class="vbtn go" id="lGo" type="button">Go around</button></div></div>
-          <div class="view"><canvas id="lsCv" aria-label="Speed scale with the stall speed, VMCL, 1.23 VSR, VLS and the approach speed"></canvas></div>
-        </div>
-        <div class="rail">
-          <div id="lCtl"></div>
-          <div class="ro" id="lR"></div>
-          <p class="callout info" id="lX"></p>
-        </div>
-      </div>
-      <div class="exam" id="lE"></div>
-    </div>
+    <div class="cards6 deep" id="ceCards"></div>
   </section>
 
   <!-- 4 · ops -->
-  <section class="card" id="ops">
+  <section class="card" id="ops" data-step="debrief">
     <span id="a320" aria-hidden="true"></span>
-    <div class="eyebrow">4 · Operations</div>
+    <div class="eyebrow">4 · Debrief · in the A320</div>
     <h2>Engine failure at or after V1 on the A320</h2>
     <div class="cols">
       <div class="box"><b class="t">What the aircraft does for you, and what it does not</b><p id="nl"></p></div>
@@ -194,16 +340,32 @@ ol.steps li{margin:4px 0}
     <p class="note">Typical Airbus technique for teaching. The exact calls, altitudes and actions are in your operator’s FCOM, FCTM and SOPs.</p>
   </section>
 
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">5 · Check</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=23"></script>
+<script src="lab.js?v=24"></script>
 <script src="stab.js?v=1"></script>
-<script src="vmc.js?v=1"></script>
+<script src="vmc.js?v=2"></script>
+<script>
+/* strings of the light-twin and propeller sections (twin.js), registered before LAB.start so the static text is translated */
+LAB.add({},{
+ 'Lose an engine on a light twin and on the A320 and slow down until the rudder runs out. That speed is VMCA. See why one engine is critical, what bank, feathering, power and CG do, how a propeller blade works as a wing, and how CS-25 turns VMC into VMCG, VMCL and the limits on V1, VR, V2 and VREF.':'Mist en motor på et lett tomotors fly og på A320, og senk farten til sideroret ikke strekker til. Den farten er VMCA. Se hvorfor én motor er kritisk, hva krengning, fløying, effekt og CG gjør, hvordan et propellblad virker som en vinge, og hvordan CS-25 gjør VMC om til VMCG, VMCL og grensene for V1, VR, V2 og VREF.',
+ 'Try it':'Prøv selv','Layers':'Lag','Also: VMCG · VMCL':'Også: VMCG · VMCL','the same yaw balance on the ground and in a go-around':'samme girbalanse på bakken og ved gjennomstart','Advanced':'Avansert','3 · Try':'3 · Prøv','5 · Check':'5 · Sjekk','2 · Explore':'2 · Utforsk','2 · Explore · light-twin teaching model':'2 · Utforsk · undervisningsmodell av lett tomotors fly','2 · Explore · A320 model':'2 · Utforsk · A320-modell','4 · Debrief · certification':'4 · Debrief · sertifisering','4 · Debrief · in the A320':'4 · Debrief · i A320',
+ 'P-factor and the critical engine':'P-faktor og kritisk motor','Light twin: lose an engine':'Lett tomotors: mist en motor','The propeller is a rotating wing':'Propellen er en roterende vinge',
+ '1 · Understand':'1 · Forstå','2 · Interactive · light-twin teaching model':'2 · Interaktiv · undervisningsmodell av lett tomotors fly','3 · Interactive':'3 · Interaktiv','4 · Interactive · A320 model':'4 · Interaktiv · A320-modell','5 · Interactive · A320 model':'5 · Interaktiv · A320-modell',
+ 'Debrief · Certification':'Debrief · Sertifisering','Debrief · Operations':'Debrief · Operativt','Try':'Prøv','Try it':'Prøv selv','VMCA on the A320: when the rudder runs out':'VMCA på A320: når sideroret ikke strekker til',
+ 'Light twin: engine failure':'Lett tomotors: motorstans','Propeller as a wing':'Propellen som vinge',
+ 'Dead propeller':'Død propell','Propeller':'Propell','Windmilling':'Vindmølle','Feathered':'Fløyet',
+ 'Left engine':'Venstre motor','Right engine':'Høyre motor','Fixed pitch':'Fast stigning','Constant speed':'Konstant turtall',
+ 'Indicated airspeed (KIAS)':'Indikert fart (KIAS)','Bank (° toward the live engine)':'Krengning (° mot den gode motoren)','Power on the live engine (%)':'Effekt på den gode motoren (%)','CG position':'CG-posisjon',
+ 'Aft CG = shorter arm to the fin':'Bakre CG = kortere arm til halefinnen','RPM':'Turtall (RPM)','True airspeed (kt)':'Sann fart (kt)','Blade angle β (°)':'Bladvinkel β (°)',
+ 'Set by the governor in constant-speed mode':'Settes av regulatoren i konstant-turtall-modus'
+});
+</script>
 <script>
 (function(){
 'use strict';
@@ -423,14 +585,16 @@ function vmRead(){ const P=CUR.P, vm=CUR.vm, below=CUR.below, mg=vm==null?null:A
 function vmAll(){ compute(); vmRead(); mvC.draw(); vbC.draw(); spAll&&spAll(); if(CUR.below&&!reduce){ if(RP.t0<0) replay(); } else if(RP.t0>=0&&!acA.live){ RP.t0=-1; } acC.draw(); trC.draw(); }
 LAB.seg(el('fe'),[['1','ENG 1 (left)'],['2','ENG 2 (right)']],A.eng,v=>{ A.eng=v; vmAll(); });
 LAB.seg(el('thr'),[['toga','TOGA'],['flx','FLX (≈ 85 %)']],A.thr,v=>{ A.thr=v; vmAll(); });
-const sl=(o)=>LAB.slider(el('vmCtl'),o);
-sl({label:'Airspeed (KCAS)',min:85,max:200,step:1,v:A.v,f:v=>v+' kt',on:v=>{ A.v=v; vmAll(); }});
-sl({label:'Bank (° toward the live engine)',min:-5,max:5,step:0.5,v:A.phi,f:v=>nf(v,1)+'°',on:v=>{ A.phi=v; vmAll(); },hint:'Negative = toward the dead engine'});
-sl({label:'Mass (t)',min:42,max:78,step:1,v:A.m,f:v=>v+' t',on:v=>{ A.m=v; vmAll(); }});
-sl({label:'CG (% MAC)',min:18,max:40,step:1,v:A.cg,f:v=>v+' %',on:v=>{ A.cg=v; vmAll(); },hint:'Aft CG = shorter arm to the fin'});
-sl({label:'Airfield pressure altitude (ft)',min:0,max:14000,step:500,v:A.hft,f:v=>nf(v,0)+' ft',on:v=>{ A.hft=v; oatS.set(A.oat); vmAll(); }});
-const oatS=sl({label:'Outside air temperature (°C)',min:-20,max:50,step:1,v:A.oat,f:v=>{ const d=v-M.atm(A.hft,null).oat; return v+' °C · ISA '+(d>=0?'+':'−')+nf(Math.abs(d),0); },on:v=>{ A.oat=v; vmAll(); },hint:'Flat rated to about ISA + 15'});
+const sl=(o)=>LAB.slider(el('vmCtl'),o), sl2=(o)=>LAB.slider(el('vmCtl2'),o);
+const vS=sl({label:'Airspeed (KCAS)',min:85,max:200,step:1,v:A.v,f:v=>v+' kt',on:v=>{ A.v=v; vmAll(); }});
+const phS=sl({label:'Bank (° toward the live engine)',min:-5,max:5,step:0.5,v:A.phi,f:v=>nf(v,1)+'°',on:v=>{ A.phi=v; vmAll(); },hint:'Negative = toward the dead engine'});
+sl2({label:'Mass (t)',min:42,max:78,step:1,v:A.m,f:v=>v+' t',on:v=>{ A.m=v; vmAll(); }});
+sl2({label:'CG (% MAC)',min:18,max:40,step:1,v:A.cg,f:v=>v+' %',on:v=>{ A.cg=v; vmAll(); },hint:'Aft CG = shorter arm to the fin'});
+sl2({label:'Airfield pressure altitude (ft)',min:0,max:14000,step:500,v:A.hft,f:v=>nf(v,0)+' ft',on:v=>{ A.hft=v; oatS.set(A.oat); vmAll(); }});
+const oatS=sl2({label:'Outside air temperature (°C)',min:-20,max:50,step:1,v:A.oat,f:v=>{ const d=v-M.atm(A.hft,null).oat; return v+' °C · ISA '+(d>=0?'+':'−')+nf(Math.abs(d),0); },on:v=>{ A.oat=v; vmAll(); },hint:'Flat rated to about ISA + 15'});
 el('wm').onchange=e=>{ A.wm=e.target.checked; vmAll(); };
+/* hook for the Try tasks (twin.js): set the A320 lab and read its VMCA */
+window.PROPA320={ set(o){ if(o.v!=null){ A.v=o.v; vS.set(o.v); } if(o.phi!=null){ A.phi=o.phi; phS.set(o.phi); } vmAll(); }, vmc(o){ return M.vmc(cond(o)); } };
 const setView=v=>{ A.view=v; el('vTop').classList.toggle('on',v==='top'); el('vBack').classList.toggle('on',v==='back'); acC.draw(); };
 el('vTop').onclick=()=>setView('top'); el('vBack').onclick=()=>setView('back'); el('vGo').onclick=replay;
 on(()=>{ el('vmLead').innerHTML=L({en:'After the failure the live engine’s thrust, plus the windmilling drag of the dead one, yaws the nose toward the dead engine: <b>N = (T + D)·ye</b>. The rudder answers with a side force on the fin, <b>Yr = q·Sv·aδ·η·δr</b>, acting at the fin arm lv. That side force grows with dynamic pressure, so with V², while the engine moment hardly changes. Slow down and the rudder eventually runs out of travel. The lowest speed where it can still hold the heading is <b>VMCA</b>.',no:'Etter motorstansen girer skyvet fra den gode motoren, pluss vindmøllemotstanden fra den døde, nesen mot den døde motoren: <b>N = (T + D)·ye</b>. Sideroret svarer med en sidekraft på halefinnen, <b>Yr = q·Sv·aδ·η·δr</b>, som virker på finnearmen lv. Sidekraften vokser med det dynamiske trykket, altså med V², mens motormomentet knapt endrer seg. Senk farten, og til slutt har roret ikke mer utslag. Den laveste farten der det fortsatt holder kursen er <b>VMCA</b>.'});
@@ -636,6 +800,12 @@ on(()=>{ const A2={acCv:{en:'A320 with one engine failed, seen from above or fro
    quiz
    ===================================================================== */
 LAB.quiz(el('qbox'),'propeller',()=>LAB.shuffle([
+ {q:{en:'Light twin, left engine failed. Why does 5° of bank toward the live engine lower VMCA?',no:'Lett tomotors, venstre motor ute. Hvorfor senker 5° krengning mot den gode motoren VMCA?'},a:[{en:'The horizontal part of the lift balances the fin’s side force, so the aircraft no longer needs sideslip that yaws it further toward the dead engine',no:'Den vannrette delen av løftet balanserer sidekraften fra finnen, så flyet trenger ikke lenger sideslip som girer det videre mot den døde motoren'},{en:'Bank increases the power of the live engine',no:'Krengning øker effekten fra den gode motoren'},{en:'The ailerons make yaw toward the live engine',no:'Balanserorene lager gir mot den gode motoren'}],c:0,e:{en:'Near zero sideslip the ball sits about half a width toward the live engine. Wings level the aircraft must slip, and VMCA rises.',no:'Nær null sideslip ligger kula omtrent en halv bredde mot den gode motoren. Med vingene vannrett må flyet gli, og VMCA øker.'}},
+ {q:{en:'Why should the dead engine’s propeller be feathered?',no:'Hvorfor skal propellen på den døde motoren fløyes?'},a:[{en:'A windmilling propeller at fine pitch makes a lot of drag on the dead side: more yaw, higher VMCA and less climb',no:'En propell som vindmøller med fin stigning gir mye motstand på den døde siden: mer gir, høyere VMCA og mindre stigning'},{en:'To restart the engine faster',no:'For å starte motoren raskere'},{en:'Feathering adds thrust on the dead side',no:'Fløying gir skyv på den døde siden'}],c:0,e:{en:'Feathered blades stand edge-on to the airflow (about 85–90°), the propeller stops and most of the drag goes.',no:'Fløyede blad står med kanten mot luftstrømmen (omtrent 85–90°), propellen stopper og det meste av motstanden forsvinner.'}},
+ {q:{en:'On a light twin, how does an aft CG affect VMCA?',no:'Hvordan påvirker bakre CG VMCA på et lett tomotors fly?'},a:[{en:'It raises it: the arm from the CG to the rudder is shorter, so the rudder makes less moment',no:'Den øker: armen fra CG til sideroret er kortere, så roret gir mindre moment'},{en:'It lowers it: more weight on the tail',no:'Den senkes: mer vekt på halen'},{en:'No effect',no:'Ingen effekt'}],c:0,e:{en:'That is why VMCA is determined at the aft CG limit.',no:'Derfor bestemmes VMCA ved bakre CG-grense.'}},
+ {q:{en:'Which effect rolls a light twin toward the dead engine after the left engine fails?',no:'Hvilken effekt ruller et lett tomotors fly mot den døde motoren når venstre motor stopper?'},a:[{en:'Accelerated slipstream over the live wing, helped by the right engine’s torque reaction',no:'Akselerert slipstrøm over den gode vingen, hjulpet av reaksjonsmomentet fra høyre motor'},{en:'The spiralling slipstream striking the fin',no:'Spiralslipstrømmen som treffer finnen'},{en:'The windmilling propeller’s lift',no:'Løftet fra den vindmøllende propellen'}],c:0,e:{en:'The live propeller blows over its part of the wing (more lift there), and a clockwise propeller rolls the aircraft left.',no:'Den gode propellen blåser over sin del av vingen (mer løft der), og en propell som går med klokka ruller flyet til venstre.'}},
+ {q:{en:'With fixed pitch, what happens to the blade angle of attack as TAS increases at the same RPM?',no:'Med fast stigning, hva skjer med bladets angrepsvinkel når TAS øker ved samme turtall?'},a:[{en:'It decreases, because the helix angle φ grows while β stays the same',no:'Den minker, fordi spiralvinkelen φ øker mens β er den samme'},{en:'It increases',no:'Den øker'},{en:'It stays the same',no:'Den er den samme'}],c:0,e:{en:'α = β − φ, φ = atan(V/U). A constant-speed propeller coarsens β to keep α near its best.',no:'α = β − φ, φ = atan(V/U). En propell med konstant turtall gjør β grovere for å holde α nær det beste.'}},
+ {q:{en:'A windmilling propeller has…',no:'En vindmøllende propell har …'},a:[{en:'a negative angle of attack: negative thrust, and the air drives the engine',no:'negativ angrepsvinkel: negativt skyv, og lufta driver motoren'},{en:'its blades edge-on to the airflow',no:'bladene med kanten mot luftstrømmen'},{en:'a stalled blade making extra thrust',no:'et steilet blad som gir ekstra skyv'}],c:0,e:{en:'Edge-on blades are the feathered case.',no:'Blad med kanten mot luftstrømmen er det fløyede tilfellet.'}},
  {q:{en:'What sets the yawing moment after an engine failure on a twin-jet?',no:'Hva bestemmer girmomentet etter motorstans på et tomotors jetfly?'},a:[{en:'The live engine’s thrust plus the dead engine’s windmilling drag, times the engine’s distance from the centreline',no:'Skyvet fra den gode motoren pluss vindmøllemotstanden fra den døde, ganger motorens avstand fra senterlinjen'},{en:'Only the drag of the failed engine',no:'Bare motstanden fra den døde motoren'},{en:'The P-factor of the live engine',no:'P-faktoren til den gode motoren'}],c:0,e:{en:'N = (T + D)·ye. The drag acts on the far side and adds to the same yaw.',no:'N = (T + D)·ye. Motstanden virker på motsatt side og øker det samme giret.'}},
  {q:{en:'You halve the airspeed. The yawing moment the rudder can make becomes about…',no:'Du halverer farten. Girmomentet roret kan lage blir omtrent …'},a:[{en:'a quarter',no:'en firedel'},{en:'a half',no:'halvparten'},{en:'unchanged',no:'uendret'}],c:0,e:{en:'Rudder force goes with dynamic pressure, ½ρV². The engine’s thrust barely changes, so at low speed the asymmetry wins.',no:'Rorkraften følger det dynamiske trykket, ½ρV². Motorskyvet endres knapt, så i lav fart vinner asymmetrien.'}},
  {q:{en:'Why does a small bank toward the live engine lower VMCA?',no:'Hvorfor senker litt krengning mot den gode motoren VMCA?'},a:[{en:'A component of weight balances the fin’s side force, so less sideslip and less rudder are needed',no:'En komponent av vekten balanserer sidekraften fra finnen, så det trengs mindre sideslip og mindre ror'},{en:'Bank increases the thrust of the live engine',no:'Krengning øker skyvet fra den gode motoren'},{en:'The ailerons then make yaw toward the live engine',no:'Krengerorene gir da gir mot den gode motoren'}],c:0,e:{en:'Wings level, only sideslip can balance the fin force, and that slip yaws the nose toward the dead engine. With bank, W·sin φ takes the side force instead.',no:'Med vingene vannrett kan bare sideslip balansere finnekraften, og den sideslipen girer nesen mot den døde motoren. Med krengning tar W·sin φ sidekraften i stedet.'}},
@@ -673,5 +843,6 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
   txt(); LAB.onLang(txt);
 })();
 </script>
+<script src="twin.js?v=1"></script>
 </body>
 </html>

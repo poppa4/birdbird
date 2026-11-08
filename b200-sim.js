@@ -388,7 +388,7 @@ function start(root){
    (d) ENGINE FAILURE, AUTOFEATHER, YAW
    ===================================================================== */
 function efail(root){
-  root.innerHTML=`<p class="lead">Take-off power, autofeather armed. Fail an engine and fly it: keep the aircraft straight with rudder, identify and verify the dead engine, and see how the autofeather logic and the feathered propeller change the yaw and the climb. For the theory of V<sub>MCA</sub>, see the <a href="propeller.html#twin">propeller lab</a>.</p>
+  root.innerHTML=`<p class="lead">Take-off power, autofeather armed. Fail an engine and fly it: keep the aircraft straight with rudder, identify and verify the dead engine, and see how the autofeather logic and the feathered propeller change the yaw and the climb. For the theory of V<sub>MCA</sub>, see the <a href="propeller.html#lt">propeller lab</a>.</p>
   <div class="simgrid"><div class="simview"><div class="view"><canvas class="topv" aria-label="Top view of the aircraft with yaw, rudder and slip indication"></canvas></div>
     <div class="annp" data-ann></div><div class="ro meters" data-ro></div></div>
     <div class="panel" data-ctl></div></div>
@@ -633,7 +633,7 @@ const mods=[
  sees:['Both green AUTOFEATHER lights on during take-off = armed. One goes out = the opposite engine is losing torque.','Propeller rpm above 2,000 and stable at about 2,120: primary governor failed, overspeed governor in control. Reduce power; flight can continue with limits.','Engine failure without autofeather: large yaw and drag from the windmilling propeller until you feather it.'],
  know:['Which force feathers the blades and which force unfeathers them.','The autofeather arming conditions and the sequence after an engine failure.','What beta is and why the power levers must not go into it with props feathered.','How the overspeed governor and fuel topping protect you.'],
  nums:[['Maximum propeller rpm','2,000 rpm'],['Governing range','1,600–2,000 rpm'],['Overspeed governor','about 2,120 rpm (106 %)'],['Transient overspeed','2,200 rpm, 5 s'],['Reverse, maximum','1,900 rpm'],['Reverse, other limits','ITT 750 °C, N1 88 %, 1 min'],['Autofeather arms','power levers ≥ ~90 % N1, torque > ~400 ft-lb'],['Autofeather dumps oil','~200 ft-lb on the failing engine'],['Overspeed governor test','about 1,830–1,910 rpm']],
- labs:[['propeller.html#twin','Twin propeller and VMCA lab'],['engines.html','Engines lab']]},
+ labs:[['propeller.html#lt','Twin propeller and VMCA lab'],['engines.html','Engines lab']]},
 {id:'fire',t:'Fire protection',sub:'Detection, extinguishing, firewall valves, smoke',ch:['fire'],oral:'fire protection: engine fire detection, test, fire warning lights, engine fire extinguishers, firewall shutoff valve, portable extinguishers, engine fire procedures, smoke and fumes, distinguishing fire from bleed air failure',
  body:`<p>Each engine nacelle has a fire-detection system: a temperature-sensing cable loop on later aircraft, individual detectors on earlier ones. Heat makes the circuit and the red <b>ENG FIRE</b> light for that side comes on, together with the MASTER WARNING. A test switch checks the circuits before flight.</p>
 <p>Engine fire extinguishers, where fitted, have one bottle per engine: <b>one shot, one side</b>. They and the firewall shutoff valves are on the hot battery bus, so they work with the master switch off. The idea of the engine fire drill is to <b>remove fuel, air and ignition</b> from the fire zone: power lever idle, propeller feathered, condition lever cut-off, firewall valve closed, then discharge the extinguisher on the correct side. Identify the side twice before acting; shutting down the good engine is the real danger.</p>
@@ -713,7 +713,7 @@ const mods=[
  sees:['Every warning light: confirm with a second indication before an irreversible action (feather, firewall valve, extinguisher).'],
  know:['The memory items of your operator\'s QRH, word for word.','The engine failure drill at each phase of the take-off.','When to land at the nearest suitable airport and when to continue.'],
  nums:[['VMCA','86 KIAS'],['VYSE (blue line)','121 KIAS'],['ALT WARN','12,500 ft cabin'],['Battery-only endurance','limited: shed load at once']],
- labs:[['propeller.html#twin','VMCA and engine failure'],['pressurisation.html#decomp','Decompression lab']]}
+ labs:[['propeller.html#lt','VMCA and engine failure'],['pressurisation.html#decomp','Decompression lab']]}
 ];
 const keynums=[
  ['Maximum take-off weight','12,500 lb'],['Maximum ramp weight','12,590 lb'],['Maximum landing weight','12,500 lb'],['Maximum zero-fuel weight','11,000 lb','Fuel in the wings relieves bending, so weight above this must be fuel.'],
