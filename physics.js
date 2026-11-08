@@ -341,16 +341,18 @@
       const k = ((r0x * r1x + r0y * r1y + r0z * r1z) / r1 - (r0x * r2x + r0y * r2y + r0z * r2z) / r2) * FPI / (c2 + core2 * l2);
       o[0] += k * cx; o[1] += k * cy; o[2] += k * cz;
     }
-    // Oppvikling (Betz): hvert frie virvelben går fra bakkanten langs den frie strømmen og trekkes mot
-    // den oppviklede kjernen ved ±yc. Den ytre delen av virvelflaten vikles opp først (kort lengde Lr).
+    // Oppvikling (Betz): hvert frie virvelben går fra bakkanten langs den frie strømmen og trekkes gradvis mot
+    // den oppviklede kjernen ved ±yc (30 % ved Lr, 70 % ved 3 Lr, 95 % ved 8 Lr). Den ytre delen av virvelflaten
+    // vikles opp først (kortest Lr ved tuppen, ≈ 0,5 halvspenn); innerst er flaten nesten flat innenfor domenet.
+    // Gir samme fart innover for tippvirvelen som for luften rundt den (Spreiter–Sacks: oppviklingen tar flere spenn).
     const RS = m.ROLL ? m.ROLL.s : 5, YC = m.ROLL ? m.ROLL.yc : 4;
     function leg(px, py, pz, tx, ty, tz, a, out, sgn) {
       const c = wc[a], s_ = ws[a], ay = Math.abs(ty), sy = ty < 0 ? -1 : 1;
-      const Lr = RS * (0.22 + 2.4 * Math.pow(Math.max(0, 1 - ay / RS), 1.5));
-      const y1 = ty + (sy * YC - ty) * 0.6, y2 = ty + (sy * YC - ty) * 0.95;
-      const x1 = tx + Lr * c, z1 = tz + Lr * s_, x2 = tx + 3 * Lr * c, z2 = tz + 3 * Lr * s_, x3 = tx + FARR * c, z3 = tz + FARR * s_;
-      if (sgn > 0) { seg(px, py, pz, tx, ty, tz, x1, y1, z1, out); seg(px, py, pz, x1, y1, z1, x2, y2, z2, out); seg(px, py, pz, x2, y2, z2, x3, y2, z3, out); }
-      else { seg(px, py, pz, x3, y2, z3, x2, y2, z2, out); seg(px, py, pz, x2, y2, z2, x1, y1, z1, out); seg(px, py, pz, x1, y1, z1, tx, ty, tz, out); }
+      const Lr = RS * (0.5 + 2.6 * Math.pow(Math.max(0, 1 - ay / RS), 1.5)), d = sy * YC - ty;
+      const y1 = ty + d * 0.3, y2 = ty + d * 0.7, y3 = ty + d * 0.95;
+      const x1 = tx + Lr * c, z1 = tz + Lr * s_, x2 = tx + 3 * Lr * c, z2 = tz + 3 * Lr * s_, x3 = tx + 8 * Lr * c, z3 = tz + 8 * Lr * s_, x4 = tx + FARR * c, z4 = tz + FARR * s_;
+      if (sgn > 0) { seg(px, py, pz, tx, ty, tz, x1, y1, z1, out); seg(px, py, pz, x1, y1, z1, x2, y2, z2, out); seg(px, py, pz, x2, y2, z2, x3, y3, z3, out); seg(px, py, pz, x3, y3, z3, x4, y3, z4, out); }
+      else { seg(px, py, pz, x4, y3, z4, x3, y3, z3, out); seg(px, py, pz, x3, y3, z3, x2, y2, z2, out); seg(px, py, pz, x2, y2, z2, x1, y1, z1, out); seg(px, py, pz, x1, y1, z1, tx, ty, tz, out); }
     }
     // hesteskovirvel A-B med ben via bakkanten (ta, tb); delt del i sh, vinkelavhengig del i w0/w1
     function shoe(px, py, pz, ax, ay, az, bx, by, bz, tax, taz, tbx, tbz) {

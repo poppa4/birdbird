@@ -204,6 +204,45 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
 #quiz .btn{font-size:14px;font-weight:600;font-family:var(--f-body);background:var(--sheet);color:var(--ink);border:1px solid var(--ink);border-radius:3px;padding:8px 14px;cursor:pointer}
 #quiz .btn.pri{background:var(--magenta);color:#fff;border-color:var(--magenta)}
 @media (prefers-reduced-motion:reduce){#quiz .qbar i{transition:none}}
+/* ---- CFD-presentasjon: nøytral mørk gradient, HUD, fargeskala med to akser, aksekors ---- */
+.viewport.cfd{background:radial-gradient(130% 95% at 50% 28%,#3a4048 0%,#23282e 46%,#121518 100%)}
+.viewport .ovbar .ov-tl.hud{background:rgba(12,15,18,.5);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:6px 10px;display:grid;grid-template-columns:repeat(5,auto);gap:2px 16px;font-size:10.5px;line-height:1.35;letter-spacing:.01em;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.hud i{font-style:normal;color:#8e99a4;display:block;font-size:9.5px;letter-spacing:.04em}
+.hud b{color:#eef2f5;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (max-width:640px){.viewport .ovbar .ov-tl.hud{grid-template-columns:repeat(3,auto);gap:2px 12px}.hud .hx{display:none}.ov-tr .camb[data-cam=side],.ov-tr .camb[data-cam=front],.ov-tr .camb[data-cam=top]{display:none}
+  .viewport .cbar{display:block;right:8px;bottom:30px;padding:6px 7px}.cbrow canvas,.cbticks{height:92px}.cbticks.r,.cbt span:last-child,.cbw{display:none}.cbticks{font-size:9.5px}}
+.ov-tabs .envseg{display:inline-flex;margin-right:6px;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.ov-tr .envseg{display:inline-flex;border:1px solid rgba(255,255,255,.14);border-radius:4px;overflow:hidden;margin-right:6px}
+.ov-tr .envseg button{font-family:var(--f-mono);font-size:11px;background:rgba(20,24,28,.7);color:#9aa5b0;border:0;padding:4px 9px;cursor:pointer}
+.ov-tr .envseg button.on{background:#e6ebef;color:#13181d;font-weight:600}
+.viewport.cfd .ov-tabs button{background:rgba(18,22,26,.62);border-color:rgba(255,255,255,.1);color:#aeb8c1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.viewport.cfd .ov-tabs button.on{background:#e6ebef;color:#13181d;border-color:#e6ebef}
+.viewport.cfd .camb{background:rgba(18,22,26,.62);border-color:rgba(255,255,255,.1);color:#d5dce2}
+.viewport.cfd .camb.demo{border-color:rgba(236,90,71,.6);color:#ffb4a8}
+.viewport.cfd .camb.demo.on{background:#ec5a47;color:#fff}
+.cbar{top:auto;bottom:34px;transform:none;background:rgba(12,15,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 10px 9px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.cbt{font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:#dfe5ea;max-width:none;display:flex;justify-content:space-between;gap:14px;margin-bottom:7px;letter-spacing:.02em}
+.cbt span:last-child{color:#8e99a4}
+.cbrow{gap:6px;align-items:stretch}
+.cbrow canvas{width:10px;height:132px;border-radius:1px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.cbticks{height:132px;font-variant-numeric:tabular-nums;font-size:10px;color:#c9d1d8;position:relative;min-width:30px}
+.cbticks span{position:absolute;transform:translateY(-50%);white-space:nowrap}
+.cbticks.l{text-align:right;min-width:30px}.cbticks.l span{right:0}
+.cbticks.r{color:#c9d1d8;min-width:64px}.cbticks.r span{left:0}
+.cbw{margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px}
+.cbw .wbar{height:6px;width:100%;border-radius:1px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.cbw .wt{display:flex;justify-content:space-between;font-size:9.5px;color:#8e99a4;margin-top:3px;font-variant-numeric:tabular-nums}
+.lbl{font-size:11px;font-weight:500;letter-spacing:.01em;color:#eef2f5;background:rgba(12,15,18,.58);border:0;border-left:2px solid rgba(230,235,239,.7);border-radius:2px;padding:2px 7px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.lbl.suc{border-left-color:#7ea6f4;color:#d6e2ff}.lbl.pres{border-left-color:#f08a6c;color:#ffd9cc}.lbl.stag{border-left-color:#ffc433;color:#ffe9b0}.lbl.lift{border-left-color:#4fbf7f;color:#c6f0d6}.lbl.wind{border-left-color:#9fb3c6}
+.ov-busy{background:rgba(12,15,18,.6);color:#c9d1d8;border-radius:999px;padding:3px 10px;top:auto;bottom:12px;right:auto;left:50%;transform:translateX(-50%)}
+.ov-busy::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#f0b440;margin-right:7px;vertical-align:0;animation:blink 1s ease-in-out infinite}
+.viewport.cfd .ov-br{bottom:10px;right:12px;color:#7d8893}
+.rakebox .seg{margin-bottom:4px}
+.tg2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+/* ?shot: bare 3D-bildet, fyller vinduet (brukes til bildet på forsiden) */
+body.shot{overflow:hidden}
+body.shot .viewport{position:fixed;inset:0;height:100vh;min-height:0;border:0;border-radius:0;z-index:9999}
+body.shot .viewport>:not(canvas){display:none!important}
 </style>
 
 </head>
@@ -262,25 +301,28 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
       </div>
     </section>
 
-    <div class="viewport" id="vp"><span id="tunnel" class="anchor"></span>
+    <div class="viewport cfd" id="vp"><span id="tunnel" class="anchor"></span>
       <canvas id="scene" aria-label="3D vindtunnel. Dra for å rotere, scroll eller knip for å zoome."></canvas>
       <div class="ovbar"><div class="ovrow"><div class="ov ov-tabs" role="tablist" id="segView">
-        <button data-v="cp">Trykk</button><button data-v="stream">Strømlinjer</button><button data-v="smoke">Røyk</button><button data-v="slice">Snitt</button><button data-v="vortex">Virvler</button><button data-v="tufts">Ulltråder</button>
+        <button data-v="stream">Strømlinjer</button><button data-v="cp">Trykk</button><button data-v="vortex">Virvler</button><button data-v="slice">Snitt</button><button data-v="smoke">Røyk</button><button data-v="tufts">Ulltråder</button>
       </div><div class="ov ov-tr">
+        <span class="envseg" id="segEnv"><button data-v="cfd" title="CFD-visning">CFD</button><button data-v="tunnel">Tunnel</button></span>
         <button class="camb demo" id="stallDemo" onclick="window.NPROG&&NPROG.award('tunnel:stall',100)">Fly inn i stall</button>
         <button class="camb" data-cam="q">3/4</button>
         <button class="camb" data-cam="side">Side</button>
         <button class="camb" data-cam="front">Front</button>
         <button class="camb" data-cam="top">Topp</button>
+        <button class="camb" data-cam="rear">Bak</button>
         <button class="camb" data-cam="reset" title="Tilbakestill visning">↺</button>
-      </div></div><div class="ov ov-tl" id="ovtl"></div></div>
+      </div></div><div class="ov ov-tl hud" id="ovtl"></div></div>
 
 
       <div class="labels" id="labels"></div>
       <div class="probe" id="probe" hidden></div>
 
-      <div class="ov cbar" id="legend3d"><div class="cbt" id="cbarTitle">Cp</div><div class="cbrow"><canvas id="cbar" width="14" height="180"></canvas>
-        <div class="cbticks"><span>+1 trykk</span><span>+0,5</span><span>0</span><span>−0,5</span><span>−1</span><span>−1,5</span><span>−2 sug</span></div></div></div>
+      <div class="ov cbar" id="legend3d"><div class="cbt"><span id="cbarTitle">Cp</span><span id="cbarTitle2">V/V∞ · kt</span></div><div class="cbrow"><div class="cbticks l" id="cbL"></div><canvas id="cbar" width="10" height="256"></canvas>
+        <div class="cbticks r" id="cbR"></div></div>
+        <div class="cbw" id="cbW" hidden><div class="cbt"><span id="cbWt">ωx</span><span id="cbWu">1/s</span></div><canvas class="wbar" id="wbar" width="128" height="6"></canvas><div class="wt" id="cbWticks"></div></div></div>
       <div class="ov ov-busy" id="busy" hidden>Beregner strømningsfelt …</div>
       <div class="ov ov-br" id="ovbr">Dra for å rotere · scroll/knip for å zoome</div>
     </div>
@@ -352,6 +394,21 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
       </div>
       <div id="flightCtl"></div>
     </div>
+    <div class="sec rakebox">
+      <h2>Strømlinjer <small>RK4 · virvelgitter</small></h2>
+      <div class="ctl"><label>Frørake</label>
+        <div class="seg" id="segRake"><button data-v="line">Linje</button><button data-v="plane">Plan</button><button data-v="section">Snitt</button><button data-v="tips">Vingetupper</button></div>
+      </div>
+      <div id="rakeCtl"></div>
+      <div class="tg2">
+        <label class="tog"><input type="checkbox" id="showPulse" checked> Pulser</label>
+        <label class="tog"><input type="checkbox" id="showMirror" checked> Begge sider</label>
+        <label class="tog"><input type="checkbox" id="showSurf" checked> Cp på flyet</label>
+        <label class="tog"><input type="checkbox" id="showPlane"> Krysstrømsplan</label>
+      </div>
+      <div id="planeCtl"></div>
+      <div id="secCtl"></div>
+    </div>
     <div class="advh">Avanserte innstillinger</div>
     <details class="sec adv" data-k="Vinge">
       <summary><h2>Vinge</h2></summary>
@@ -367,10 +424,11 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
     </details>
     <details class="sec adv" data-k="Visning">
       <summary><h2>Visning</h2></summary>
-      <div class="ctl"><label>Røykrake (Strømlinjer og Røyk)</label>
-        <div class="seg" id="segRake"><button data-v="volume">Volum</button><button data-v="span">Langs spennet</button><button data-v="section">Snitt</button><button data-v="tips">Vingetupper</button></div>
+      <div class="ctl"><label>Fargekart</label>
+        <div class="seg" id="segCmap"><button data-v="0">Kjølig–varm</button><button data-v="1">Turbo</button></div>
       </div>
-      <div id="rakeCtl"></div>
+      <div id="visCtl"></div>
+      <label class="tog"><input type="checkbox" id="showIso" checked> Isolinjer for Cp</label>
       <div class="ctl"><label>Forsterkning av forstyrrelsen</label>
         <div class="seg" id="segExag"><button data-v="1">1× (ekte)</button><button data-v="2">2×</button><button data-v="3">3×</button></div>
       </div>
@@ -387,10 +445,12 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
 window.addEventListener('error',function(e){ var b=document.getElementById('errbox'); if(!b) return; b.hidden=false; b.textContent='Error: '+(e.message||e)+(e.filename?'\n'+e.filename.split('/').pop()+':'+e.lineno:''); });
 </script>
 <script src="three.min.js"></script>
-<script src="tunnel3d.js?v=1"></script>
+<script src="tunnel3d.js?v=2"></script>
+<script src="cfd3d.js?v=1"></script>
 <script src="lab.js?v=20"></script>
-<script src="physics.js?v=10"></script>
+<script src="physics.js?v=11"></script>
 <script src="section.js?v=10"></script>
+<script src="flow3d.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -415,7 +475,7 @@ const NO2EN={
 'Sug opp. Usynlig strømning rundt profilet.':'Suction up. Inviscid flow around the airfoil.',
 'CL mot α, med grensesjikt':'CL vs α, with boundary layer','Topp = CL maks ved kritisk anstigningsvinkel':'Peak = CL max at the critical angle of attack',
 'Prøv dette':'Try this','Bakkeeffekt':'Ground effect','Test deg selv':'Test yourself',
-'FOOT':'Teaching model built around an Airbus A320 with typical values (not FCOM data). Lift and induced drag come from a vortex lattice with 150 panels (30 spanwise, 5 chordwise); the trailing vortices leave the trailing edge along the free stream. Wing thickness, fuselage and nacelles are modelled as source distributions. Slats and Fowler flaps change the section CL max and camber; the stall and the separated wake use approximate section data. The aerofoil section uses a panel method with an integral boundary-layer method. Compressibility, engine thrust effects and the fly-by-wire protections are not included. Use the numbers to understand relationships, not for operational decisions.',
+'FOOT':'Teaching model built around an Airbus A320 with typical values (not FCOM data). Lift and induced drag come from a vortex lattice with 150 panels (30 spanwise, 5 chordwise); the trailing vortices leave the trailing edge along the free stream. Wing thickness, fuselage and nacelles are modelled as source distributions. Slats and Fowler flaps change the section CL max and camber; the stall and the separated wake use approximate section data. The aerofoil section uses a panel method with an integral boundary-layer method. The streamlines are integrated with fourth-order Runge–Kutta through the velocity field induced by the lattice, whose trailing vortices roll up into the tip vortices, and by the source distributions. Compressibility, engine thrust effects and the fly-by-wire protections are not included. Use the numbers to understand relationships, not for operational decisions.',
 'Flyging':'Flight','Styr med fart':'Fly by speed','Styr med α':'Set α directly','Vinge':'Wing','Profil':'Airfoil','Atmosfære':'Atmosphere','Visning':'Display',
 'Røykrake (Strømlinjer og Røyk)':'Smoke rake (Streamlines and Smoke)','Langs spennet':'Along the span','Volum':'Volume','Luften treffer flyet her':'The air strikes the aircraft here','Vingetupper':'Wingtips',
 'Forsterkning av forstyrrelsen':'Disturbance amplification','1× (ekte)':'1× (true)','Forklaringer i bildet':'Labels in the view',
@@ -438,6 +498,14 @@ const NO2EN={
 'Animasjon av vingetippvirvler sett bakfra':'Animation of wingtip vortices seen from behind',
 'Virvlene er sterkest bak et tungt fly som flyr sakte i ren konfigurasjon. De synker, og nær bakken sprer de seg utover. Separasjon og operative råd finner du i Værfarer.':'The vortices are strongest behind a heavy aircraft flying slowly in a clean configuration. They sink, and near the ground they spread outwards. Separation and operational advice are in Weather hazards.',
 'Strømlinjetykkelse':'Streamline width','Strømlinjelysstyrke':'Streamline brightness','Brukes i Langs spennet og Vingetupper.':'Used by Along the span and Wingtips.','Trykkhøyde':'Pressure altitude','Avvik fra ISA':'ISA deviation',
+// CFD-visning
+'CFD-visning':'CFD view','Tunnel':'Tunnel','Bak':'Rear','RK4 · virvelgitter':'RK4 · vortex lattice','Frørake':'Seed rake','Linje':'Line','Plan':'Plane',
+'Pulser':'Pulses','Begge sider':'Both sides','Cp på flyet':'Cp on the aircraft','Krysstrømsplan':'Cross-flow plane','Fargekart':'Colour map','Kjølig–varm':'Cool–warm','Turbo':'Turbo',
+'Isolinjer for Cp':'Cp isolines','Rakens midtpunkt langs spennet':'Rake centre along the span','Rakebredde':'Rake width','Linjetetthet':'Line density',
+'Planets posisjon bak vingetippen':'Plane position behind the wingtip',' korder':' chords','Dra raken gjennom tuppen og se virvelen rulle seg opp.':'Sweep the rake through the tip and watch the vortex roll up.',
+'Virvlighet ωx':'Vorticity ωx','Tippvirvelkjerne':'Tip vortex core','Hastighet i planet':'In-plane velocity','Fri strøm':'Freestream',
+'Sett bakfra: med klokka':'Seen from behind: clockwise','mot klokka':'anticlockwise','Krysstrømsplan, virvlighet ωx':'Cross-flow plane, vorticity ωx',
+'Kjølvann rulles opp':'Wake rolls up','Snittstasjon langs spennet':'Slice station along the span','Cp flate':'Cp surface','V/V∞ · kt linjer':'V/V∞ · kt lines','Sug på oversiden':'Suction on the upper side',
 // fly, profiler, forurensning
 ' · typiske verdier, omtrentlig geometri':' · typical values, approximate geometry','Konfigurasjon':'Configuration','Tilbakestill visning':'Reset view',
 'Trykkfelt':'Pressure field','Røyklinjer':'Smoke lines','lameller':'slats','klaff':'flaps','VFE typisk':'VFE typical','over VFE':'above VFE',
@@ -487,7 +555,7 @@ const NO2EN={
 'L10':'On a cambered airfoil the centre of pressure (CP) moves forward as α increases and aft as α decreases. Drag α and follow the green arrow. Choose NACA 0012 (symmetric): the CP then stays almost fixed around 25 %.',
 'L11':'As α increases, the stagnation point moves down and aft on the underside of the leading edge. That is why the stall warning vane sits under the leading edge: it senses the air starting to flow upwards around the nose.'
 };
-const NO_TXT={ FOOT:'Pedagogisk modell bygd rundt en Airbus A320 med typiske verdier (ikke FCOM-data). Løft og indusert motstand kommer fra et virvelgitter med 150 paneler (30 langs spennet, 5 langs korden); de frie virvlene forlater bakkanten langs den frie strømmen. Vingetykkelse, skrog og motorgondoler er modellert som kildefordelinger. Slats og Fowler-klaffer endrer profilets CL maks og krumning; stallen og det separerte kjølvannet bygger på omtrentlige profildata. Profilsnittet bruker en panelmetode med integral grensesjiktmetode. Kompressibilitet, motorkraft og fly-by-wire-beskyttelsene er ikke med. Bruk tallene til å forstå sammenhenger, ikke til operative beslutninger.',
+const NO_TXT={ FOOT:'Pedagogisk modell bygd rundt en Airbus A320 med typiske verdier (ikke FCOM-data). Løft og indusert motstand kommer fra et virvelgitter med 150 paneler (30 langs spennet, 5 langs korden); de frie virvlene forlater bakkanten langs den frie strømmen. Vingetykkelse, skrog og motorgondoler er modellert som kildefordelinger. Slats og Fowler-klaffer endrer profilets CL maks og krumning; stallen og det separerte kjølvannet bygger på omtrentlige profildata. Profilsnittet bruker en panelmetode med integral grensesjiktmetode. Strømlinjene integreres med fjerdeordens Runge–Kutta gjennom hastighetsfeltet fra virvelgitteret, der de frie virvlene rulles opp til tippvirvlene, og fra kildefordelingene. Kompressibilitet, motorkraft og fly-by-wire-beskyttelsene er ikke med. Bruk tallene til å forstå sammenhenger, ikke til operative beslutninger.',
   L1:'Pilvinger med avsmalning når gjerne cl maks nær tippen først, derfor har A320 washout. Sett «Vridning i tippen» til 0° og se på ulltrådene: stallen starter ute ved krengerorene. Dra tilbake til −4°, så flytter stallen seg innover og krengerorene virker fortsatt.',
   L2:'I CONF FULL står lamellene (slats) på 27° og Fowler-klaffene på 35°. Klaffene gir mer krumning og lengre korde, så samme løft krever mye lavere α. Lamellene øker først og fremst kritisk α og CL maks. Sammenlign Vs og α med CONF 0 ved samme fart.',
   L3:'Løftet avhenger av IAS, så stallfarten i IAS er den samme. TAS er derimot mye høyere enn IAS, og tetthetshøyden viser hvor «høyt» flyet faktisk opplever luften: lengre startstrekning, lavere stigegradient og mindre skyvekraft.',
@@ -524,7 +592,9 @@ if(window.LAB){ LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ s
 const AC0=P.AIRCRAFT.a320;
 const st = { ac:'a320', mode:'speed', alpha:4, ias:AC0.ias, bank:0, mass:AC0.mass, conf:0,
   b:AC0.b, cr:AC0.cr, ck:AC0.ck, yk:AC0.yk, ct:AC0.ct, sweep:AC0.sweep, dih:AC0.dih, twist:AC0.twist, af:AC0.af, flapDeg:0, slatDeg:0, flapSpan:AC0.flapSpan,
-  alt:0, isaDev:0, rake:'span', rakeY:0.45, rakeH:0, exag:1, view:'smoke', labels:true, forces:false, lineW:2.5, lineB:1 };
+  alt:0, isaDev:0, rake:'line', rakeY:0, secY:0.45, rakeW:2.3, rakeH:0, dens:1, exag:1, view:'stream', labels:true, forces:false, lineW:1.8, lineB:1,
+  env:'cfd', pulse:true, mirror:true, surfCp:true, plane:false, xp:1.0, iso:true, cmap:0 };
+const SHOT=/[?&]shot\b/.test(location.search);
 let wing=null, res=null, out={};
 
 /* ---------------- Kontroller ---------------- */
@@ -538,10 +608,17 @@ const defs = {
   wingCtl:[
     {k:'twist', label:'Vridning i tippen', min:-8,max:4,step:0.5, f:v=>nf(v,1)+'°', geo:1, hint:'Negativ verdi er washout: tippen har lavere innfallsvinkel enn roten.'}],
   rakeCtl:[
-    {k:'rakeY', label:'Rakeposisjon langs spennet', min:0,max:1.2,step:0.01, f:v=>nf(v*100,0)+T(' % av halvspenn'), flow:1, hint:'Brukes av Snitt (både røykrake og snittplan).'},
-    {k:'lineW', label:'Strømlinjetykkelse', min:1,max:6,step:0.5, f:v=>nf(v,1)+' px', vis:1},
-    {k:'lineB', label:'Strømlinjelysstyrke', min:0.4,max:2,step:0.1, f:v=>nf(v*100,0)+' %', vis:1},
-    {k:'rakeH', label:'Rakehøyde', min:-2,max:2,step:0.05, f:v=>(v>0?'+':'')+nf(v*st.b/10,1)+' m', flow:1, hint:'Brukes i Langs spennet og Vingetupper.'}],
+    {k:'rakeY', label:'Rakens midtpunkt langs spennet', min:0,max:1.3,step:0.01, f:v=>nf(v*100,0)+T(' % av halvspenn'), flow:1, hint:'Dra raken gjennom tuppen og se virvelen rulle seg opp.'},
+    {k:'rakeW', label:'Rakebredde', min:0.1,max:2.6,step:0.05, f:v=>nf(v*100,0)+T(' % av halvspenn'), flow:1},
+    {k:'rakeH', label:'Rakehøyde', min:-2,max:2,step:0.05, f:v=>(v>0?'+':'')+nf(v*st.b/10,1)+' m', flow:1},
+    {k:'dens', label:'Linjetetthet', min:0.4,max:2,step:0.1, f:v=>nf(v*100,0)+' %', flow:1}],
+  secCtl:[
+    {k:'secY', label:'Snittstasjon langs spennet', min:0.05,max:1.15,step:0.01, f:v=>nf(v*100,0)+T(' % av halvspenn'), flow:1}],
+  planeCtl:[
+    {k:'xp', label:'Planets posisjon bak vingetippen', min:0.2,max:8,step:0.1, f:v=>nf(v,1)+T(' korder'), plane:1}],
+  visCtl:[
+    {k:'lineW', label:'Strømlinjetykkelse', min:0.8,max:5,step:0.1, f:v=>nf(v,1)+' px', vis:1},
+    {k:'lineB', label:'Strømlinjelysstyrke', min:0.4,max:2,step:0.1, f:v=>nf(v*100,0)+' %', vis:1}],
   atmCtl:[
     {k:'alt',    label:'Trykkhøyde', min:0,max:41000,step:100, f:v=>nf(v,0)+' ft'},
     {k:'isaDev', label:'Avvik fra ISA', min:-30,max:30,step:1, f:v=>(v>0?'+':'')+nf(v,0)+' °C'}]
@@ -556,9 +633,13 @@ for (const [box,list] of Object.entries(defs)){
     el.appendChild(w);
     const inp=w.querySelector('input'), o=w.querySelector('output');
     sliders[d.k]={inp,o,d,wrap:w};
-    inp.addEventListener('input',()=>{ st[d.k]=parseFloat(inp.value); o.textContent=d.f(st[d.k]); clearLesson(); if(d.geo) rebuildSoon(); else if(d.vis){ lineMat.uniforms.width.value=st.lineW; lineMat.uniforms.bright.value=st.lineB; smokeMat.uniforms.opac.value=0.55*st.lineB; } else if(d.flow) updateFlow(); else compute(); });
+    inp.addEventListener('input',()=>{ st[d.k]=parseFloat(inp.value); o.textContent=d.f(st[d.k]); clearLesson(); if(d.geo) rebuildSoon(); else if(d.vis) visUniforms(); else if(d.plane) requestPlane(); else if(d.flow) updateFlow(); else compute(); });
   }
 }
+function ctlVis(){ const v=st.view, lin=v==='stream'||v==='vortex'||v==='smoke';
+  for(const k of ['rakeY','rakeW','rakeH','dens']) if(sliders[k]) sliders[k].wrap.hidden=!(v==='stream'||v==='smoke')||(k!=='rakeY'&&k!=='rakeH'&&st.rake==='section')||(st.rake==='tips'&&k!=='dens'&&k!=='rakeH');
+  if(sliders.xp) sliders.xp.wrap.hidden=!planeOn(); if(sliders.secY) sliders.secY.wrap.hidden=v!=='slice';
+  const sr=document.getElementById('segRake'); if(sr) sr.closest('.ctl').hidden=!(v==='stream'||v==='smoke'); void lin; }
 function syncSliders(){ for(const k in sliders){ const s=sliders[k]; s.inp.value=st[k]; s.o.textContent=s.d.f(st[k]); } }
 function setRange(k,min,max,step){ const s=sliders[k].inp; s.min=min; s.max=max; if(step) s.step=step; }
 
@@ -573,12 +654,16 @@ syncs.push(segment('segConf', P.CONFS.map((c,i)=>({v:String(i),html:c.id})), 'co
 syncs.push(segment('segAf', Object.entries(P.AIRFOILS).map(([v,a])=>({v,html:`${T(a.name)}<small>${T(a.note)}</small>`})), 'af', v=>{clearLesson(); st.af=v; rebuild();}));
 syncs.push(segment('segMode', null, 'mode', v=>{st.mode=v; compute();}));
 const syncMode=syncs[syncs.length-1];
-syncs.push(segment('segRake', null, 'rake', v=>{st.rake=v; syncAll(); updateFlow();}));
+const RAKE0={line:{rakeY:0,rakeW:2.3,rakeH:0},plane:{rakeY:0.55,rakeW:1.2,rakeH:0},section:{rakeY:0.45},tips:{rakeH:0}};
+syncs.push(segment('segRake', null, 'rake', v=>{st.rake=v; Object.assign(st,RAKE0[v]||{}); syncAll(); updateFlow();}));
 syncs.push(segment('segExag', null, 'exag', v=>{st.exag=parseFloat(v); syncAll(); updateFlow();}));
-syncs.push(segment('segView', null, 'view', v=>{st.view=v; clearLesson(); syncAll(); updateFlow();}));
-document.getElementById('showForces').addEventListener('change',e=>{st.forces=e.target.checked; compute();});
-document.getElementById('showLabels').addEventListener('change',e=>{st.labels=e.target.checked; buildLabels();});
-function syncAll(){ syncs.forEach(f=>f()); syncSliders(); document.getElementById('showForces').checked=st.forces; document.getElementById('showLabels').checked=st.labels; confHint(); }
+syncs.push(segment('segView', null, 'view', v=>{ const was=st.view; st.view=v; clearLesson(); syncAll(); updateFlow(); if(v==='vortex'&&was!=='vortex') camTo('vq'); }));
+syncs.push(segment('segEnv', null, 'env', v=>{st.env=v; syncAll(); setEnv(); updateFlow();}));
+syncs.push(segment('segCmap', null, 'cmap', v=>{st.cmap=+v; syncAll(); visUniforms(); setLegend(); requestPlane();}));
+const CHK={showForces:'forces',showLabels:'labels',showPulse:'pulse',showMirror:'mirror',showSurf:'surfCp',showPlane:'plane',showIso:'iso'};
+for(const [id,k] of Object.entries(CHK)) document.getElementById(id).addEventListener('change',e=>{ st[k]=e.target.checked;
+  if(k==='forces') compute(); else if(k==='labels') buildLabels(); else if(k==='pulse'||k==='iso') visUniforms(); else updateFlow(); });
+function syncAll(){ syncs.forEach(f=>f()); syncSliders(); ctlVis(); for(const [id,k] of Object.entries(CHK)) document.getElementById(id).checked=!!st[k]; confHint(); }
 function setConf(i){ const c=P.CONFS[i]; st.conf=i; st.flapDeg=c.f; st.slatDeg=c.s; }
 function confHint(){ const c=P.CONFS[st.conf], h=document.getElementById('confHint'); if(!h) return;
   h.textContent= T('lameller')+' '+c.s+'° · '+T('klaff')+' '+c.f+'°'+(c.vfe? ' · '+T('VFE typisk')+' '+c.vfe+' kt':''); }
@@ -595,8 +680,10 @@ function wingParams(){ return {b:st.b,cr:st.cr,ck:st.ck,yk:st.yk,ct:st.ct,sweep:
 if(!window.THREE||!window.T3D){ const b=document.getElementById('busy'); if(b){ b.hidden=false; b.textContent=LANG==='en'?'The 3D view could not load (three.min.js missing).':'3D-visningen kunne ikke lastes (three.min.js mangler).'; } return; }
 const canvas=document.getElementById('scene'), vp=document.getElementById('vp');
 const COARSE=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
-const LOW=(window.innerWidth<760)||COARSE||((navigator.hardwareConcurrency||4)<=4);
-const QL={pr:LOW?1.25:2, shadows:!LOW, smoke:LOW?0.55:1, physical:!LOW};
+const LOW=!SHOT&&((window.innerWidth<760)||COARSE||((navigator.hardwareConcurrency||4)<=4));
+const DPR=Math.min(window.devicePixelRatio||1,2);
+// kvalitet: oppløsning (maks 2), skygger, antall linjer (justeres for enhet og pikseltetthet), glød
+const QL={pr:LOW?Math.min(DPR,1.5):2, shadows:!LOW, smoke:LOW?0.55:1, physical:!LOW, lines:LOW?(DPR>1.5?0.55:0.7):1, glow:!LOW};
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
 let PR=Math.min(window.devicePixelRatio||1,QL.pr);
 renderer.setPixelRatio(PR);
@@ -605,9 +692,9 @@ renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
 renderer.shadowMap.enabled=QL.shadows; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const scene=new THREE.Scene();
-scene.fog=new THREE.FogExp2(0x1b2229,0.009);
-const camera=new THREE.PerspectiveCamera(42,1,0.1,240);
-scene.environment=T3D.envMap(THREE,renderer);
+const tunnelFog=new THREE.FogExp2(0x1b2229,0.009);
+const camera=new THREE.PerspectiveCamera(42,1,0.1,400);
+const ENVMAP={tunnel:T3D.envMap(THREE,renderer), cfd:CFD.studioEnv(THREE,renderer)};
 
 /* testseksjonen i en lukket vindtunnel */
 const FLOORY=-4.2;
@@ -617,7 +704,7 @@ const tunTex={ wall:T3D.panelTex(THREE,{base:'#4a525a',cols:1,rows:1,rivet:42,se
 const tunnel=T3D.tunnel(THREE,Object.assign({tex:tunTex},TUN),QL); scene.add(tunnel.group);
 const TX1=TUN.x1+6, TY0=TUN.y0, TY1=TUN.y1, TZ=TUN.z;
 
-scene.add(new THREE.HemisphereLight(0xdde7f2,0x3a4048,0.75));
+const hemi=new THREE.HemisphereLight(0xdde7f2,0x3a4048,0.75); scene.add(hemi);
 const key=new THREE.DirectionalLight(0xfff4e6,1.2); key.position.set(-3.5,14,5); key.castShadow=QL.shadows;
 key.shadow.mapSize.set(2048,2048); Object.assign(key.shadow.camera,{left:-13,right:13,top:9,bottom:-9,near:2,far:30});
 key.shadow.bias=-0.0003; key.shadow.normalBias=0.03; key.shadow.radius=4; key.shadow.camera.updateProjectionMatrix(); scene.add(key); scene.add(key.target);
@@ -636,7 +723,7 @@ let wingMesh=null, P0={x:0,y:0}, props=[];
 
 /* modellfeste: profilert stag fra dreieskiven i gulvet opp til modellen */
 const mountMat=new THREE.MeshStandardMaterial({color:0x2c3239,roughness:0.32,metalness:0.75});
-(function(){
+const mount=(function(){
   const g=new THREE.Group(), foil=[], NQ=16;
   for(let i=0;i<NQ;i++){ const x=0.5*(1+Math.cos(Math.PI*i/(NQ-1))); foil.push([x,0.5*P.thick({t:0.26},x)]); }
   for(let i=1;i<NQ-1;i++){ const x=0.5*(1-Math.cos(Math.PI*i/(NQ-1))); foil.push([x,-0.5*P.thick({t:0.26},x)]); }
@@ -645,43 +732,54 @@ const mountMat=new THREE.MeshStandardMaterial({color:0x2c3239,roughness:0.32,met
   const strut=new THREE.Mesh(geo,mountMat); strut.castShadow=true; strut.receiveShadow=true; g.add(strut);
   const base=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.95,0.32,40),mountMat); base.position.set(0.05,FLOORY+0.16,0); base.castShadow=true; base.receiveShadow=true; g.add(base);
   const pod=new THREE.Mesh(new THREE.SphereGeometry(1,32,16),mountMat); pod.scale.set(0.75,0.28,0.32); pod.position.set(0.05,-0.12,0); pod.castShadow=true; g.add(pod);
-  scene.add(g);
+  scene.add(g); return g;
 })();
 
-/* ---- fargeskala for trykk: divergerende blå (sug) – lys grå – rød (trykk) ---- */
-const CPMIN=-2, CPMAX=1, BANDS=12;
-const GLSL_CMAP=`
-uniform float cmin; uniform float cmax;
-vec3 cmap(float t){ t=clamp(t,0.0,1.0);
-  vec3 a=vec3(0.19,0.27,0.78), b=vec3(0.45,0.66,1.0), c=vec3(0.90,0.90,0.90), d=vec3(1.0,0.62,0.45), e=vec3(0.78,0.06,0.15);
-  if(t<0.25) return mix(a,b,t*4.0); if(t<0.5) return mix(b,c,(t-0.25)*4.0); if(t<0.75) return mix(c,d,(t-0.5)*4.0); return mix(d,e,(t-0.75)*4.0); }
-float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
-const CSTOPS=[[0,[0.19,0.27,0.78]],[0.25,[0.45,0.66,1.0]],[0.5,[0.90,0.90,0.90]],[0.75,[1.0,0.62,0.45]],[1,[0.78,0.06,0.15]]];
-function cmapJS(t){ t=Math.max(0,Math.min(1,t)); for(let i=1;i<CSTOPS.length;i++) if(t<=CSTOPS[i][0]){ const [a,ca]=CSTOPS[i-1],[b,cb]=CSTOPS[i],u=(t-a)/(b-a); return [ca[0]+(cb[0]-ca[0])*u,ca[1]+(cb[1]-ca[1])*u,ca[2]+(cb[2]-ca[2])*u]; } return CSTOPS[4][1]; }
-const cpT=cp=> cp<0? 0.5-0.5*cp/CPMIN : 0.5+0.5*cp/CPMAX;
-const bandT=t=>(Math.floor(Math.max(0,Math.min(0.9999,t))*BANDS)+0.5)/BANDS;
+/* CFD-presentasjon: rutenettgulv, aksekors, nøytralt miljø; tunnelhallen er den andre modusen */
+const CFDFLOOR=-4.2;
+const grid=CFD.gridFloor(THREE,70); grid.position.set(1.5,CFDFLOOR,0); scene.add(grid);
+const triad=CFD.triad(THREE);
+const CFDB={x0:-9,x1:26,y0:-9,y1:9,z:13};
+const FL=FLOW3D.make(P);   // strømningsfelt, kollisjon og RK4 (samme kode som i trace-workeren)   // CFD-domenet (verdensrammen) – større enn testseksjonen
+function setEnv(){
+  const cfd=st.env==='cfd';
+  vp.classList.toggle('cfd',cfd);
+  tunnel.group.visible=!cfd; mount.visible=!cfd; grid.visible=cfd;
+  scene.fog=cfd?null:tunnelFog; scene.environment=cfd?ENVMAP.cfd:ENVMAP.tunnel;
+  blob.position.y=(cfd?CFDFLOOR:FLOORY)+0.012; blob.material.opacity=cfd?0.32:(QL.shadows?0.45:0.8);
+  key.castShadow=QL.shadows&&!cfd;
+  // CFD: lineær tonekurve, så fargekartet på flaten blir gjengitt tro mot skalaen; tunnel: filmisk
+  const tm=cfd?THREE.LinearToneMapping:THREE.ACESFilmicToneMapping; if(renderer.toneMapping!==tm){ renderer.toneMapping=tm; scene.traverse(o=>{ if(o.material) (Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.needsUpdate=true); }); cpMat.needsUpdate=true; for(const k in mat) mat[k].needsUpdate=true; }
+  renderer.toneMappingExposure=cfd?0.9:1.0;
+  // CFD: dempet, jevnt lys så fargene på flaten ikke blir hvite; tunnel: hallbelysning
+  hemi.intensity=cfd?0.42:0.75; key.intensity=cfd?0.95:1.2; fill.intensity=cfd?0.3:0.35; rim.intensity=cfd?0.28:0.35;
+  camera.fov=cfd?30:42; camera.updateProjectionMatrix();
+  if(wing) FL.setBounds(flowBounds());
+}
+function flowBounds(){ const b= st.env==='cfd'? CFDB : {x0:TUN.x0+0.3,x1:TX1,y0:TY0,y1:TY1,z:TZ}; return {px:P0.x,py:P0.y,x0:b.x0,x1:b.x1,y0:b.y0,y1:b.y1,z:b.z}; }
 
-/* Cp på overflaten med ekte (PBR) belysning: standardmateriale der diffusfargen hentes fra Cp */
-const cpMat=new THREE.MeshStandardMaterial({roughness:0.42,metalness:0.0,envMapIntensity:0.5,side:THREE.DoubleSide});
+/* ---- fargeskala: Cp med vitenskapelig fargekart (kjølig–varm eller turbo); blått = sug/høy fart, rødt = trykk/lav fart ---- */
+const CPMIN=-1.2, CPMAX=1, VMIN=0.75, VMAX=1.25;   // Cp på flaten, V/V∞ på strømlinjene; rødt = høy verdi for begge (sug er blått på flaten, høy fart rødt på linjene)
+const GLSL_CMAP=CFD.GLSL_CMAP;
+function cmapJS(t){ return CFD.cmap(st.cmap,t); }
+const cpT=cp=> cp<0? 0.5-0.5*cp/CPMIN : 0.5+0.5*cp/CPMAX;
+const tInv=t=> t<0.5? (0.5-t)/0.5*CPMIN : (t-0.5)/0.5*CPMAX;   // fargeposisjon → Cp (for skalaen)
+
+/* Cp på overflaten med ekte (PBR) belysning: diffusfargen hentes fra Cp; tynne isolinjer hver 0,1 (kraftigere hver 0,5) */
+const cpMat=new THREE.MeshStandardMaterial({roughness:0.5,metalness:0.0,envMapIntensity:0.35,side:THREE.DoubleSide});
+const cpU={cmin:{value:CPMIN},cmax:{value:CPMAX},cmapId:{value:0},iso:{value:1}};
 cpMat.onBeforeCompile=sh=>{
-  sh.uniforms.cmin={value:CPMIN}; sh.uniforms.cmax={value:CPMAX}; sh.uniforms.bands={value:BANDS};
+  Object.assign(sh.uniforms,cpU);
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float cp; varying float vCp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCp=cp;');
-  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vCp; uniform float bands;'+GLSL_CMAP)
-    .replace('vec4 diffuseColor = vec4( diffuse, opacity );','float tq=cpT(vCp); vec3 cc=cmap((floor(clamp(tq,0.0,0.9999)*bands)+0.5)/bands); float ff=tq*bands, ww=fwidth(ff), dd=min(fract(ff),1.0-fract(ff)); cc*=1.0-0.35*(1.0-smoothstep(0.0,ww*1.4,dd)); vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vCp; uniform float iso;'+GLSL_CMAP)
+    .replace('vec4 diffuseColor = vec4( diffuse, opacity );',`vec3 cc=cmap(cpT(clamp(vCp,cmin,cmax)));
+      float f1=vCp*10.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5);
+      float f2=vCp*2.0, w2=fwidth(f2), d2=abs(fract(f2-0.5)-0.5);
+      float l1=1.0-smoothstep(0.0,w1*1.1,d1), l2=1.0-smoothstep(0.0,w2*1.6,d2);
+      cc*=1.0-iso*(0.07*l1*step(w1,0.45)+0.2*l2);
+      vec4 diffuseColor=vec4(pow(cc,vec3(2.2)),opacity);`);
 };
 cpMat.extensions={derivatives:true};
-const tubeMat=new THREE.ShaderMaterial({
-  uniforms:{cmin:{value:CPMIN},cmax:{value:CPMAX},time:{value:0},ldir:{value:new THREE.Vector3(-0.45,0.8,0.4).normalize()},white:{value:0}},
-  vertexShader:`attribute float cpv; attribute float tv; varying float vCp; varying float vT; varying vec3 vN;
-    void main(){ vCp=cpv; vT=tv; vN=normalize(mat3(modelMatrix)*normal); gl_Position=projectionMatrix*viewMatrix*modelMatrix*vec4(position,1.0); }`,
-  fragmentShader:GLSL_CMAP+`
-    uniform float time; uniform vec3 ldir; uniform float white; varying float vCp; varying float vT; varying vec3 vN;
-    void main(){ vec3 n=normalize(vN); float L=0.45+0.45*max(dot(n,ldir),0.0)+0.15*(0.5+0.5*n.y);
-      vec3 col= white>0.5 ? vec3(0.92,0.95,0.98) : cmap(cpT(vCp));
-      float p=smoothstep(0.86,1.0,fract(vT*0.22-time*0.55));
-      col=mix(col*L,vec3(1.0),0.6*p);
-      gl_FragColor=vec4(col,1.0); }`
-});
 // modellakk: hvit med klarlakk; teksturer for skrog, vinge og haleflater
 const PaintM=QL.physical? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
 const paintOpt=m=>Object.assign({color:0xffffff,roughness:0.34,metalness:0.0,envMapIntensity:0.85},QL.physical?{clearcoat:0.55,clearcoatRoughness:0.18}:{},m||{});
@@ -861,52 +959,29 @@ function buildAirframe(){
 }
 function clearBody(){ while(body.children.length){ const o=body.children.pop(); o.traverse(c=>{ if(c.geometry) c.geometry.dispose(); }); } wingMesh=null; props=[]; cpMeshes.length=0; }
 
-/* ---- trykk på overflaten ---- */
-/* Separasjonspunkt på oversiden per stripe (andel av korden), samme logikk som profilsnittet:
-   bakkantseparasjon som kryper forover når stripen nærmer seg cl maks, og raskt videre forover etter stall. */
-function sepFrac(j){
-  if(!res) return 1; const r=res.ratio[j], thin=P.AIRFOILS[st.af].t<0.05;
-  if(r>=1) return thin? 0.03 : Math.max(0.03,0.68-1.5*(r-1));
-  if(r>0.86) return thin? 1 : 1-0.32*Math.pow((r-0.86)/0.14,2);
-  return 1;
-}
+/* ---- trykk på overflaten (separasjonspunktet per stripe: FL.sepFrac, samme logikk som profilsnittet) ---- */
 function wingCp(){
   if(!wingMesh||!res) return;
-  const g=wingMesh.geometry, cpa=g.attributes.cp.array, base=g.userData.base, C=g.userData.C, N=wing.N, NC=wing.NC, S=N+1, af=P.AIRFOILS[st.af];
-  const stripCp=(j,x,up)=>{
-    let d; const xc0=0.5/NC, xcl=(NC-0.5)/NC;
-    const at=xx=>{ if(xx<=xc0) return res.dCp[j*NC]*(1+1.4*(xc0-xx)/xc0);
-      if(xx>=xcl) return res.dCp[j*NC+NC-1]*(1-xx)/(1-xcl);
-      const f=xx*NC-0.5, q=Math.floor(f), t=f-q; return res.dCp[j*NC+q]*(1-t)+res.dCp[j*NC+q+1]*t; };
-    const xs=sepFrac(j);
-    d=at(x);
-    const tt=2.2*af.t*Math.sqrt(Math.max(x,0))*(1-x);
-    if(up){ let cp=-d/2-tt;
-      if(xs<1 && x>xs){ const cs=-at(xs)/2-2.2*af.t*Math.sqrt(xs)*(1-xs), pl=Math.max(-1.1,Math.min(-0.25,cs*0.75)); cp=pl; } // trykkplatå i separert område
-      if(xs<0.1 && x<0.08) cp=Math.max(cp,-1.2); return cp; }
-    return Math.min(1, d/2-tt+(x<0.02?(1-x/0.02)*0.7:0));
-  };
+  const g=wingMesh.geometry, cpa=g.attributes.cp.array, base=g.userData.base, C=g.userData.C, N=wing.N, S=N+1;
+  const stripCp=FL.stripCp;   // samme Cp som strømlinjene nær flaten bruker
   for(let i=0;i<S;i++){
     const ja=Math.max(0,i-1), jb=Math.min(N-1,i);
     for(let k=0;k<C;k++){ const kk=k%(C-1), x=base[kk][2], up=kk<Q; cpa[i*C+k]=0.5*(stripCp(ja,x,up)+stripCp(jb,x,up)); }
   }
   g.attributes.cp.needsUpdate=true;
 }
+/* vingeramme-posisjoner og -normaler for alle Cp-flater (én gang per geometri), så Cp kan regnes raskt for hver α */
+function prepBodyCp(){
+  const v=new THREE.Vector3(), nr=new THREE.Vector3(), nm=new THREE.Matrix3();
+  for(const o of cpMeshes){ const g=o.geometry, pos=g.attributes.position, nor=g.attributes.normal, n=pos.count;
+    o.updateMatrix(); nm.getNormalMatrix(o.matrix); const wp=new Float32Array(n*3), wn=new Float32Array(n*3);
+    for(let i=0;i<n;i++){ v.fromBufferAttribute(pos,i).applyMatrix4(o.matrix); nr.fromBufferAttribute(nor,i).applyMatrix3(nm).normalize();
+      wp[3*i]=v.x; wp[3*i+1]=v.z; wp[3*i+2]=v.y; wn[3*i]=nr.x; wn[3*i+1]=nr.z; wn[3*i+2]=nr.y; }
+    o.userData.wp=wp; o.userData.wn=wn; }
+}
 function bodyCp(){
   if(!res) return;
-  const al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), v=new THREE.Vector3(), nr=new THREE.Vector3(), f=[0,0,0], nm=new THREE.Matrix3();
-  for(const o of cpMeshes){
-    const g=o.geometry, pos=g.attributes.position, nor=g.attributes.normal, cpa=g.attributes.cp.array;
-    o.updateMatrix(); nm.getNormalMatrix(o.matrix);
-    for(let i=0;i<pos.count;i++){
-      v.fromBufferAttribute(pos,i).applyMatrix4(o.matrix); nr.fromBufferAttribute(nor,i).applyMatrix3(nm).normalize();
-      fieldAt(v.x+nr.x*0.05, v.z+nr.z*0.05, v.y+nr.y*0.05, al, res.scale, f);
-      const u=ca+f[0], sv=f[1], wz=sa+f[2], nx=nr.x, ny=nr.z, nz=nr.y, dn=u*nx+sv*ny+wz*nz;
-      const tu=u-dn*nx, tv=sv-dn*ny, tw=wz-dn*nz;
-      cpa[i]=Math.max(-2.5,1-(tu*tu+tv*tv+tw*tw));
-    }
-    g.attributes.cp.needsUpdate=true;
-  }
+  for(const o of cpMeshes){ if(!o.userData.wp) continue; FL.surfaceCp(o.userData.wp,o.userData.wn,o.geometry.attributes.cp.array); o.geometry.attributes.cp.needsUpdate=true; }
 }
 
 /* kraftpiler */
@@ -920,10 +995,12 @@ for(const a of Object.values(arrows)) scene.add(a);
 const chordLine=(function(){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute([-6,0,0,6,0,0],3));
   const l=new THREE.Line(g,new THREE.LineDashedMaterial({color:0x7fcbe8,dashSize:0.25,gapSize:0.18,transparent:true,opacity:0.5})); l.computeLineDistances(); scene.add(l); return l; })();
 
-/* ---------------- Strømningsfelt (Web Workers) ---------------- */
-const FIELD={data:null,xs:null,ys:null,zs:null,nx:0,ny:0,nz:0,job:0,wt:0};
-const WA=[0,14*DEG];   // kjølvannsvinkler (vingeramme) som feltet regnes for; blandes etter α − ε
-const GXN=LOW?50:62, GYN=LOW?34:42, GZN=LOW?34:42;
+/* ---------------- Strømningsfelt (Web Workers) ----------------
+   Virvelgitteret (30×5 hesteskovirvler med oppviklede frie virvler) og kildene for vinge, skrog og gondoler
+   gir forstyrrelseshastigheten på et ikke-uniformt rutenett, tettest rundt vingen, tuppen og den oppviklede kjernen. */
+const FIELD=FL.F; FIELD.job=0;
+const WA=FIELD.wa;   // kjølvannsvinkler (vingeramme) som feltet regnes for; blandes etter α − ε
+const GXN=LOW?50:64, GYN=LOW?36:46, GZN=LOW?34:44;
 let workers=[];
 try{
   const src='onmessage=function(e){var d=e.data;var r=('+P.fieldKernel.toString()+')(d);postMessage({id:d.id,i0:d.i0,buf:r},[r.buffer]);};';
@@ -933,177 +1010,70 @@ try{
 }catch(e){ workers=[]; }
 let pend=null;
 function requestField(){
-  const job=++FIELD.job, w=wing;
-  const xs=P.axis(-14,24,GXN,[[w.cr*0.5,Math.max(1.2,w.cr),4],[w.xle(w.s)+w.ct*0.5,1.2,3]]);
-  const ys=P.axis(0,9.5,GYN,[[w.s,0.55,7],[0,1.2,2]]);
-  const zs=P.axis(-7,7,GZN,[[0,0.9,5]]);
+  const job=++FIELD.job, w=wing, s=w.s;
+  const xs=P.axis(-14,24,GXN,[[w.cr*0.5,Math.max(1.2,w.cr),4],[w.xle(s)+w.ct*0.5,1.2,3]]);
+  const ys=P.axis(0,9.5,GYN,[[s,0.55,6],[0.86*s,0.7,4],[0,1.2,2]]);
+  const zs=P.axis(-7,7,GZN,[[0,0.9,5],[w.zw(s)+0.5,1.1,3]]);
   const msg={xs,ys,zs,P:Float32Array.from(w.Pa),PT:Float32Array.from(w.PT),Ga:Float32Array.from(w.Ga),Gb:Float32Array.from(w.Gb),S:P.sources(w,st.ac),core2:0.02,SL:Float32Array.from(w.SL),NCc:w.NC,WA,ROLL:{s:w.s,yc:0.86*w.s}};
-  pend={job,xs,ys,zs,data:new Float32Array(GXN*GYN*GZN*15),left:0};
-  document.getElementById('busy').hidden=false;
+  pend={job,xs,ys,zs,data:new Float32Array(GXN*GYN*GZN*15),left:0,t0:performance.now()};
+  busyUI();
   if(!workers.length){ setTimeout(()=>{ if(!pend||pend.job!==job) return; pend.data.set(P.fieldKernel({...msg,i0:0,i1:GXN}),0); finishField(); },20); return; }
   const chunks=workers.length*3, per=Math.ceil(GXN/chunks);
   for(let c=0;c<chunks;c++){ const i0=c*per, i1=Math.min(GXN,i0+per); if(i0>=i1) continue; pend.left++;
     workers[c%workers.length].postMessage({...msg,id:job,i0,i1}); }
 }
 function onChunk(d){ if(!pend||d.id!==pend.job) return; pend.data.set(d.buf,d.i0*GYN*GZN*15); if(--pend.left===0) finishField(); }
-function finishField(){ Object.assign(FIELD,{data:pend.data,xs:pend.xs,ys:pend.ys,zs:pend.zs,nx:GXN,ny:GYN,nz:GZN}); pend=null; document.getElementById('busy').hidden=true; updateFlow(); }
-function bin(ax,v){ const n=ax.length; if(v<ax[0]||v>ax[n-1]) return -1; let lo=0,hi=n-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(ax[m]>v) hi=m; else lo=m; } return lo; }
-function fieldAt(x,y,z,A,sc,out){
-  out[0]=out[1]=out[2]=0; const F=FIELD; if(!F.data) return;
-  const sy=y<0?-1:1, yy=Math.abs(y), i=bin(F.xs,x), j=bin(F.ys,yy), l=bin(F.zs,z);
-  if(i<0||j<0||l<0) return;
-  const tx=(x-F.xs[i])/(F.xs[i+1]-F.xs[i]), ty=(yy-F.ys[j])/(F.ys[j+1]-F.ys[j]), tz=(z-F.zs[l])/(F.zs[l+1]-F.zs[l]);
-  const d=F.data, ny=F.ny, nz=F.nz, t1=F.wt, t0=1-t1;
-  for(let c=0;c<8;c++){ const di=c&1, dj=(c>>1)&1, dl=(c>>2)&1;
-    const wgt=(di?tx:1-tx)*(dj?ty:1-ty)*(dl?tz:1-tz); if(wgt===0) continue;
-    const b=(((i+di)*ny+(j+dj))*nz+(l+dl))*15;
-    for(let q=0;q<3;q++) out[q]+=wgt*((A*(t0*d[b+q]+t1*d[b+6+q])+(t0*d[b+3+q]+t1*d[b+9+q]))*sc+d[b+12+q]);
-  }
-  out[1]*=sy;
+const PERF={field:0,trace:0,plane:0,lines:0,pts:0};
+function finishField(){
+  const f={data:pend.data,xs:pend.xs,ys:pend.ys,zs:pend.zs,nx:GXN,ny:GYN,nz:GZN};
+  FL.setField(f); PERF.field=Math.round(performance.now()-pend.t0);
+  if(TW.w) TW.w.postMessage(Object.assign({type:'field'},f));   // kopi til trace-workeren
+  pend=null; FIELD.ready=true; busyUI(); updateFlow();
 }
+// felles geometri og felt: samme funksjoner som trace-workeren bruker
+const fieldAt=FL.fieldAt, wingZ=FL.wingZ, wingSurf=FL.wingSurf, stripAt=FL.stripAt, sepFrac=FL.sepFrac, deadZone=FL.deadZone, collideW=FL.collide, DZ=FL.DZ;
+function traceW(x,y,z,steps,h,ex){ const o={p:[],spd:[],sep:[],tb:[]}; o.hit=FL.trace(x,y,z,steps,h,ex,o); return o; }
 function hash(a,b){ let h=(a*374761393+b*668265263)|0; h=(h^(h>>>13))*1274126177|0; return ((h^(h>>>16))>>>0)/4294967296; }
-const visTf=ly=>1.32-0.32*Math.min(1,Math.abs(ly)/wing.s);   // samme tykkelsesfordeling som modellen
-function wingZ(ly,xx,c,upper,off){
-  const w=wing; let zc=w.zw(ly)+c*P.camber(w.af,xx)[0];
-  if(st.flapDeg>0 && Math.abs(ly)<=w.fs && xx>0.75) zc-=(xx-0.75)*c*Math.tan(st.flapDeg*DEG);
-  if(st.slatDeg>0 && Math.abs(ly)>=w.slFrom && xx<0.14){ const u=(0.14-xx)/0.14; zc-=Math.tan(st.slatDeg*DEG)*0.14*c*u*u; }
-  zc-=(xx-0.25)*c*Math.tan(st.twist*DEG*Math.abs(ly)/w.s);
-  const ht=0.5*c*P.thick(w.af,xx)*visTf(ly)+off*c; return upper? zc+ht : zc-ht;
-}
-function wingSurf(ly,xc,upper,off){ const w=wing, c=w.chord(ly), xx=Math.max(0,Math.min(1,xc)); return [w.xle(ly)+c*xx, wingZ(ly,xx,c,upper,off||0)]; }
-function stripAt(ly){ const w=wing; return Math.min(w.N-1,Math.max(0,Math.floor(w.N*Math.acos(Math.max(-1,Math.min(1,-ly/w.s)))/Math.PI))); }
-let FT=null; // skrogtabell (vingeramme, skalert)
-function buildFusTab(){
-  const m=AC0.model, k=wing.k, L=m.st[m.st.length-1][0], n=400, hw=new Float32Array(n+1), hh=new Float32Array(n+1), zc=new Float32Array(n+1);
-  for(let i=0;i<=n;i++){ const f=P.fuselageAt(m,L*i/n); hw[i]=f.hw*k*1.05+0.02; hh[i]=f.hh*k*1.05+0.02; zc[i]=(f.zc-m.zw)*k; }
-  const nac=(m.nac||[]).flatMap(nn=>[-1,1].map(sg=>{ const yk=sg*nn.y*k, x0=wing.xle(yk)+nn.x0*k, Lk=nn.L*k, R=new Float32Array(65); for(let i=0;i<=64;i++) R[i]=P.nacelleRadius(nn,i/64)*k+0.02; return {yk,x0,Lk,R,zc:wing.zw(yk)+nn.dz*k}; }));
-  FT={x0:-m.xle*k, len:L*k, n, hw, hh, zc, nac};
-}
-/* Separert område bak separasjonspunktet: «død» luft mellom vingeoverflaten og skjærlaget som forlater
-   flaten langs den frie strømmen; bak bakkanten et kjølvann som sprer seg og lukkes etter Lw.
-   Strømlinjer kan ikke gå inn i det (forskyvningseffekt); nær skjærlaget blir røyken turbulent. */
-const DZ={top:0,bot:0,amp:0,inside:false};
-function deadZone(lx,ly,lz){
-  DZ.inside=false; DZ.amp=0; const w=wing, ay=Math.abs(ly);
-  if(ay>w.s*0.995||!res) return DZ;
-  const j=stripAt(ly), xs=sepFrac(j); if(xs>0.97) return DZ;
-  const c=w.chord(ly), al=Math.tan(res.alpha*DEG), sev=Math.min(1,(1-xs)*2.2);
-  const [Xs,Zs]=wingSurf(ly,xs,true,0.012), [Xt,Zt]=wingSurf(ly,1,true,0.0);
-  if(lx<Xs-0.02) return DZ;
-  const Lw=c*(0.8+2.4*(1-xs)), dx=lx-Xs;
-  const top=Zs+dx*(al+0.05), bot0= lx<=Xt? wingZ(ly,Math.min(1,(lx-w.xle(ly))/c),c,true,0.012) : Zt+(lx-Xt)*(al-0.05);
-  const ff= lx<=Xt? 0 : Math.min(1,(lx-Xt)/Lw), topC=top-(top-bot0)*ff*ff;
-  DZ.top=topC; DZ.bot=bot0;
-  if(lz<topC && lz>bot0 && ff<1) DZ.inside=true;
-  const zc=0.5*(top+bot0), hw=0.5*(top-bot0)+0.06*dx, d=Math.abs(lz-zc)-hw, band=0.08*c+0.1*dx;
-  const prox= d<=0? 1 : Math.max(0,1-d/band);
-  DZ.amp=prox*sev*c*(0.035+0.11*Math.min(1.6,dx/c));
-  return DZ;
-}
-const CR=[0,0,0,0,0];
-function collideW(lx,ly,lz){
-  const w=wing; let moved=0, sep=0, amp=0;
-  if(Math.abs(ly)<w.s){
-    const c=w.chord(ly), xc=(lx-w.xle(ly))/c;
-    if(xc>-0.02 && xc<1.02){
-      const xx=xc<0?0:xc>1?1:xc, zu=wingZ(ly,xx,c,true,0.012), zl=wingZ(ly,xx,c,false,0.012);
-      if(lz<zu && lz>zl){ lz= (lz-(zu+zl)/2)>=0? zu : zl; moved=2; }
-    }
-    const dz=deadZone(lx,ly,lz);
-    if(dz.inside){ lz=dz.top+0.004; sep=1; } amp=dz.amp; if(amp>0.002) sep=1;
+function busyUI(){ const b=document.getElementById('busy'), on=!!(pend||job||(TW.busy&&performance.now()-TW.t0>350)); if(b.hidden===on) b.hidden=!on; }
+
+/* ---------------- Strømlinjer: trace-worker (RK4 utenfor hovedtråden) ----------------
+   Hovedtråden sender frøpunkter; workeren integrerer og sender pakkede linjer tilbake. Er en jobb i gang,
+   venter bare den nyeste forespørselen (α-glideren kan dras fritt). Uten worker: samme kode i små biter per bilde. */
+const TW={w:null,busy:false,queued:null,id:0};
+try{
+  const w=new Worker('flow3d.js?v=2');
+  w.postMessage({type:'init',physics:new URL('physics.js?v=11',location.href).href});
+  w.onmessage=e=>onTW(e.data); w.onerror=e=>{ if(e&&e.preventDefault) e.preventDefault(); TW.w=null; TW.busy=false; busyUI(); updateFlow(); };
+  TW.w=w;
+}catch(e){ TW.w=null; }
+function onTW(d){
+  if(d.type==='error'){ console.warn('flow3d worker:',d.msg); TW.busy=false; busyUI(); return; }
+  if(d.type==='trace'){
+    TW.busy=false; if(TW.queued){ TW.w.postMessage(TW.queued); TW.busy=true; TW.t0=performance.now(); TW.queued=null; }
+    PERF.trace=d.r.ms; d.r.id=d.r.id; acceptLines(d.r); busyUI();
+  } else if(d.type==='plane'){
+    PL.busy=false; if(PL.queued){ TW.w.postMessage(PL.queued); PL.busy=true; PL.queued=null; }
+    acceptPlane(d.r);
   }
-  const F=FT, u=(lx-F.x0)/F.len;
-  if(u>0 && u<1){ const i=Math.min(F.n-1,(u*F.n)|0), hw=F.hw[i], hh=F.hh[i], zc=F.zc[i];
-    const ey=ly/hw, ez=(lz-zc)/hh, r=Math.sqrt(ey*ey+ez*ez);
-    if(r<1){ if(r<1e-4){ lz=zc+hh; } else { ly=ey/r*hw; lz=zc+ez/r*hh; } moved=2; } }
-  for(const n of F.nac){
-    const t=(lx-n.x0)/n.Lk;
-    if(t>0&&t<1){ const R=n.R[(t*64)|0], dy=ly-n.yk, dz=lz-n.zc, r=Math.sqrt(dy*dy+dz*dz);
-      if(r<R){ if(r<1e-4){ lz=n.zc+R; } else { ly=n.yk+dy/r*R; lz=n.zc+dz/r*R; } moved=2; } } }
-  CR[0]=lx; CR[1]=ly; CR[2]=lz; CR[3]=sep|moved; CR[4]=amp; return CR;
 }
-/* integrer en strømlinje i vingerammen (RK2). Returnerer {p, spd, sep, tb (turbulensamplitude), hit} */
-function traceW(x,y,z,steps,h,ex){
-  const al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), A=al, sc=res.scale, f=[0,0,0];
-  const p=[], spd=[], sep=[], tb=[]; let hit=null, tprev=0;
-  const vel=(X,Y,Z,o)=>{ fieldAt(X,Y,Z,A,sc,f); o[0]=ca+f[0]*ex; o[1]=f[1]*ex; o[2]=sa+f[2]*ex; };
-  const v1=[0,0,0], v2=[0,0,0];
-  for(let n=0;n<steps;n++){
-    vel(x,y,z,v1); vel(x+v1[0]*h/2,y+v1[1]*h/2,z+v1[2]*h/2,v2);
-    p.push(x,y,z); spd.push(Math.hypot(v2[0],v2[1],v2[2]));
-    let hx=v2[0], hz=v2[2];
-    // i det turbulente kjølvannet går middelstrømmen saktere (hastighetsunderskudd)
-    if(tprev>0.01){ const k=1-Math.min(0.45,tprev*2.2); hx*=k; hz*=k; }
-    x+=hx*h; y+=v2[1]*h; z+=hz*h;
-    const c=collideW(x,y,z); x=c[0]; y=c[1]; z=c[2]; const sp=c[3]&1; sep.push(sp); if((c[3]&2) && !hit) hit=[x,y,z];
-    tprev=Math.max(c[4],tprev*0.997); tb.push(tprev);
-    const X=(x-P0.x)*ca+(z-P0.y)*sa, Yw=-(x-P0.x)*sa+(z-P0.y)*ca;
-    if(X>TX1||Yw<TY0+0.05||Yw>TY1-0.05||Math.abs(y)>TZ-0.05||!Number.isFinite(x)) break;
-  }
-  return {p,spd,sep,tb,hit};
-}
+function twGeom(){ if(TW.w) TW.w.postMessage({type:'geom',params:wingParams(),ac:st.ac}); }
 
 /* ---------------- Visningsmoduser ---------------- */
-// strømlinjer som rør (brukes av Virvler)
-const tubeMesh=new THREE.Mesh(new THREE.BufferGeometry(),tubeMat); tubeMesh.frustumCulled=false; overlay.add(tubeMesh);
-function makeTubes(lines,r,stride){
-  const RS=7, pos=[], nor=[], cpv=[], tv=[], idx=[]; let base=0;
-  const t=new THREE.Vector3(), n=new THREE.Vector3(), b=new THREE.Vector3(), up=new THREE.Vector3(0,1,0), prevN=new THREE.Vector3();
-  for(const L of lines){
-    const P3=L.p, cnt=Math.floor(P3.length/3); if(cnt<3) continue;
-    const ids=[]; for(let i=0;i<cnt;i+=stride) ids.push(i); if(ids[ids.length-1]!==cnt-1) ids.push(cnt-1);
-    let first=true;
-    for(let q=0;q<ids.length;q++){
-      const i=ids[q], i0=ids[Math.max(0,q-1)], i1=ids[Math.min(ids.length-1,q+1)];
-      t.set(P3[i1*3]-P3[i0*3],P3[i1*3+2]-P3[i0*3+2],P3[i1*3+1]-P3[i0*3+1]).normalize();
-      if(first){ n.crossVectors(t,up); if(n.lengthSq()<1e-6) n.set(0,0,1); n.normalize(); first=false; }
-      else { n.copy(prevN).addScaledVector(t,-prevN.dot(t)).normalize(); }
-      prevN.copy(n); b.crossVectors(t,n).normalize();
-      const x=P3[i*3], yy=P3[i*3+2], z=P3[i*3+1];
-      const cp=L.sep&&L.sep[i]? -0.2 : 1-L.spd[i]*L.spd[i];
-      for(let k=0;k<RS;k++){ const a=2*Math.PI*k/RS, ca=Math.cos(a), sa=Math.sin(a);
-        const nx=n.x*ca+b.x*sa, ny=n.y*ca+b.y*sa, nz=n.z*ca+b.z*sa;
-        pos.push(x+nx*r, yy+ny*r, z+nz*r); nor.push(nx,ny,nz); cpv.push(cp); tv.push(i); }
-      if(q>0){ for(let k=0;k<RS;k++){ const k2=(k+1)%RS, a=base+(q-1)*RS+k, bb=base+(q-1)*RS+k2, c=base+q*RS+k, d=base+q*RS+k2; idx.push(a,c,bb,bb,c,d); } }
-    }
-    base+=ids.length*RS;
-  }
-  const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));
-  g.setAttribute('cpv',new THREE.Float32BufferAttribute(cpv,1)); g.setAttribute('tv',new THREE.Float32BufferAttribute(tv,1)); g.setIndex(idx);
-  return g;
-}
 const sprite=(function(){ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d'); const r=g.createRadialGradient(32,32,0,32,32,32);
   r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(0.4,'rgba(255,255,255,.45)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=r; g.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
-const MAXL=LOW?600:1100, LSTEP=230, LH=0.11;
-let lines=[], job=null;
+const LH=0.11;            // tidssteg (fri strøm = 1, spenn = 10)
+let haveLines=false, job=null;
 /* røyk: kamerarettede, myke bånd langs strømlinjene fra røykraken */
 const smokeMat=T3D.smokeMaterial(THREE,LOW);
 const smokeMesh=new THREE.Mesh(new THREE.BufferGeometry(),smokeMat); smokeMesh.frustumCulled=false; smokeMesh.renderOrder=5; overlay.add(smokeMesh);
-// tette strømlinjer med lyspulser som viser retningen (Strømlinjer-visningen)
-const lineMat=new THREE.ShaderMaterial({
-  uniforms:{cmin:{value:CPMIN},cmax:{value:CPMAX},time:{value:0},width:{value:2.5},res:{value:new THREE.Vector2(1000,600)},bright:{value:1}},
-  vertexShader:`attribute vec3 other; attribute float side; attribute float cpv; attribute float tv; attribute float fd;
-    uniform float width; uniform vec2 res; varying float vCp; varying float vT; varying float vS; varying float vF;
-    void main(){ vCp=cpv; vT=tv; vS=side; vF=fd;
-      vec4 a=projectionMatrix*modelViewMatrix*vec4(position,1.0), b=projectionMatrix*modelViewMatrix*vec4(other,1.0);
-      vec2 d=(b.xy/b.w-a.xy/a.w)*res; float L=length(d); d= L>1e-5? d/L : vec2(1.0,0.0);
-      vec2 n=vec2(-d.y,d.x); a.xy+=n*side*width/res*a.w; gl_Position=a; }`,
-  fragmentShader:GLSL_CMAP+`
-    uniform float time; uniform float bright; varying float vCp; varying float vT; varying float vS; varying float vF;
-    void main(){ float c=clamp(vCp*2.2,cmin,cmax); vec3 col=cmap(cpT(c)); float dev=min(1.0,abs(vCp)*4.0);
-      float ph=fract(vT*0.055-time*0.75); float comet=pow(ph,5.0);
-      float edge=1.0-smoothstep(0.6,1.0,abs(vS));
-      float a=(0.16+0.5*dev)*(0.35+1.1*comet)*bright*(0.6+0.4*edge)*vF;
-      gl_FragColor=vec4(col*(0.75+0.45*comet),min(a,0.95)); }`,
-  transparent:true, depthWrite:false, side:THREE.DoubleSide
-});
-const lineMesh=new THREE.Mesh(new THREE.BufferGeometry(),lineMat); lineMesh.frustumCulled=false; overlay.add(lineMesh);
-// treffpunkter: der luften treffer flyet
-const impGeo=new THREE.BufferGeometry();
-const impGlow=new THREE.Points(impGeo,new THREE.PointsMaterial({size:0.4,map:sprite,color:0xff8a1f,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));
-const impCore=new THREE.Points(impGeo,new THREE.PointsMaterial({size:0.09,map:sprite,color:0xfff3d6,transparent:true,depthWrite:false}));
-impGlow.frustumCulled=impCore.frustumCulled=false; overlay.add(impGlow); overlay.add(impCore);
+/* strømlinjer: tynne rør med lys, svak glød og pulser som går med lokal fart (avstand mellom punkter = fart × tid) */
+const lineMat=CFD.lineMaterial(THREE,false), glowMat=CFD.lineMaterial(THREE,true);
+const lineMesh=new THREE.Mesh(new THREE.BufferGeometry(),lineMat); lineMesh.frustumCulled=false; lineMesh.renderOrder=3; overlay.add(lineMesh);
+const glowMesh=new THREE.Mesh(lineMesh.geometry,glowMat); glowMesh.frustumCulled=false; glowMesh.renderOrder=2; overlay.add(glowMesh);
+function visUniforms(){
+  for(const m of [lineMat,glowMat]){ const u=m.uniforms; u.width.value=st.lineW*(m===glowMat?6:1); u.bright.value=st.lineB*(m===glowMat?0.8:1); u.pulse.value=st.pulse?1:0; u.pulseRate.value=2.4; u.cmapId.value=st.cmap; u.cmin.value=CPMIN; u.cmax.value=CPMAX; u.vmin.value=VMIN; u.vmax.value=VMAX; }
+  smokeMat.uniforms.opac.value=0.55*st.lineB; cpU.cmapId.value=st.cmap; cpU.iso.value=st.iso?1:0;
+}
 // fysisk røykrake i tunnelen (verdensrammen): bærearmer, rør og dyser
 const rakeGroup=new THREE.Group(); scene.add(rakeGroup);
 const rakeMat=new THREE.MeshStandardMaterial({color:0x5d666f,roughness:0.35,metalness:0.8});
@@ -1122,72 +1092,103 @@ function buildRake(world){ // world: [[X,Y,Z],...]
   const nz=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.012,0.016,0.16,8).rotateZ(Math.PI/2).translate(0.03,0,0),rakeMat,world.length);
   const m4=new THREE.Matrix4(); world.forEach((p,i)=>{ m4.makeTranslation(X,p[1],p[2]); nz.setMatrixAt(i,m4); }); rakeGroup.add(nz);
 }
+// frørake som diskré gizmo (CFD-modus og strømlinjer): frøpunkter og rakestang
+const gizmo=new THREE.Group(); overlay.add(gizmo);
+const gzPts=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({color:0xe9eef2,size:2.6,sizeAttenuation:false,transparent:true,opacity:0.85,depthWrite:false}));
+const gzBar=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0xc7d0d8,transparent:true,opacity:0.4,depthWrite:false}));
+gzPts.frustumCulled=gzBar.frustumCulled=false; gizmo.add(gzBar); gizmo.add(gzPts);
+function showRake(sd){
+  const hw=sd.smoke && st.env==='tunnel';
+  if(hw) buildRake(sd.world); else clearRake();
+  rakeGroup.visible=hw; gizmo.visible=!hw && !SHOT;
+}
+/* gizmo: der linjene krysser rakeplanet oppstrøms (overlay-ramme), med stang langs hver rad */
+function rakeGizmo(starts,rows){
+  const pts=[], bars=[];
+  for(let k=0;k<starts.length;k++){ const a=starts[k]; if(!a||(rows&&rows[k]<0)) continue; pts.push(a[0],a[1],a[2]);
+    const b=starts[k+1]; if(b && rows && rows[k]>=0 && rows[k]===rows[k+1] && Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<0.9) bars.push(a[0],a[1],a[2],b[0],b[1],b[2]); }
+  gzPts.geometry.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); gzBar.geometry.setAttribute('position',new THREE.Float32BufferAttribute(bars,3));
+  gzPts.geometry.computeBoundingSphere(); gzBar.geometry.computeBoundingSphere();
+}
 function noseWorldX(){ return -AC0.model.xle*wing.k-P0.x; }
-function seedsW(){ // røykraken står fast i tunnelen; frøpunkter regnes om til vingerammen
-  const w=wing, s=w.s, smoke=st.view==='smoke', out=[], world=[];
-  const Xr=Math.min(-4.5,noseWorldX()-1.6), al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), H=st.rakeH;
+/* frøpunkter: raken står fast i luftstrømmen oppstrøms; punktene regnes om til vingerammen */
+function seedsW(){
+  const w=wing, s=w.s, v=st.view, smoke=v==='smoke', world=[], out=[];
+  // raken: i tunnelen foran nesen; i CFD-visningen nærmere vingen (linjene tones inn fra raken)
+  const Xr= st.env==='cfd'&&!smoke? Math.max(noseWorldX()+0.6,-3.6) : Math.min(-4.5,noseWorldX()-1.6), al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), H=st.rakeH;
   const toW=(X,Y,Z)=>{ const bx=X*ca-Y*sa, bz=X*sa+Y*ca; return [bx+P0.x,Z,bz+P0.y]; };
-  const add=(Y,Z)=>{ world.push([Xr,Y,Z]); out.push(toW(Xr,Y,Z)); };
-  const q=QL.smoke;
+  const dirs=[];
+  const add=(Y,Z)=>{ world.push([Xr,Y,Z]); out.push(...toW(Xr,Y,Z)); dirs.push(1); };
+  // frø i vingerammen (integreres begge veier): ringer rundt starten av tippvirvelen, rett bak tuppens bakkant
+  const addW=(x,y,z)=>{ out.push(x,y,z); dirs.push(2); const dx=x-P0.x, dz=z-P0.y; world.push([dx*ca+dz*sa,-dx*sa+dz*ca,y]); };
+  const tipRings=(radii,n)=>{ const xT=w.xle(s)+w.ct, zT=w.zw(s); for(const sg of (st.mirror?[-1,1]:[1])) radii.forEach((r,ri)=>{ for(let a=0;a<n;a++){ const ph=2*Math.PI*(a+0.5*(ri&1))/n; addW(xT+0.12,sg*(s-0.1+r*Math.cos(ph)),zT-0.02+r*Math.sin(ph)); } }); };
+  const rake= v==='vortex'? 'tips' : st.rake;
+  // spennintervall; «begge sider» speiler det (overlapp slås sammen)
+  const zc=st.rakeY*s, hw=0.5*st.rakeW*s, za=zc-hw, zb=zc+hw, spans=[];
+  if(st.mirror){ if(za<=0){ const m=Math.max(-za,zb); spans.push([-m,m]); } else spans.push([za,zb],[-zb,-za]); } else spans.push([za,zb]);
+  const along=(dz,fn)=>{ for(const [a,b] of spans){ const n=Math.max(2,Math.round((b-a)/dz)+1); for(let i=0;i<n;i++) fn(a+(b-a)*i/(n-1)); } };
   if(smoke){
-    if(st.rake==='volume'){ const nz=Math.round(26*q), ny=Math.round(11*q); for(let a=0;a<nz;a++) for(let b=0;b<ny;b++){ const z=-1.12*s+2.24*s*(a+0.5*(b%2))/(nz-0.5), y=H-1.0+2.0*b/(ny-1); add(y,z); } }
-    else if(st.rake==='span'){ for(const dy of [-0.3,0.16,0.4]) for(let a=0,n=Math.round(40*q);a<n;a++) add(H+dy,-1.12*s+2.24*s*(a+(dy>0.3?0.5:0))/(n-1)); }
-    else if(st.rake==='section'){ const y0=st.rakeY*s; for(const dz of [-0.06,0.06]) for(let b=0,n=Math.round(46*q);b<n;b++) add(-1.5+3.0*b/(n-1),y0+dz); }
-    else { for(const sg of [-1,1]) for(const r of [0.04,0.09,0.15,0.22,0.3,0.4]) for(let a=0,n=Math.round(14*q);a<n;a++){ const ph=2*Math.PI*a/n+r*4; add(H+0.3+r*Math.sin(ph), sg*0.93*s+r*Math.cos(ph)); } }
+    const q=QL.smoke;
+    if(rake==='plane'){ const ny=Math.round(11*q); for(let b=0;b<ny;b++) along(0.43/q,z=>add(H-1.0+2.0*b/(ny-1)+0.0*z,z)); }
+    else if(rake==='line'){ for(const dy of [-0.3,0.16,0.4]) along(0.28/q,z=>add(H+dy,z)); }
+    else if(rake==='section'){ const y0=st.rakeY*s; for(const dz of [-0.06,0.06]) for(let b=0,n=Math.round(46*q);b<n;b++) add(-1.5+3.0*b/(n-1)+H,y0+dz); }
+    else { for(const sg of (st.mirror?[-1,1]:[1])) for(const r of [0.04,0.09,0.15,0.22,0.3,0.4]) for(let a=0,n=Math.round(14*q);a<n;a++){ const ph=2*Math.PI*a/n+r*4; add(H+0.3+r*Math.sin(ph), sg*0.93*s+r*Math.cos(ph)); } }
   } else {
-    if(st.rake==='volume'){ for(let a=0;a<54;a++) for(let b=0;b<32;b++){ add(H+0.95*Math.sign(-1+2*b/31)*Math.pow(Math.abs(-1+2*b/31),1.6),-1.08*s+2.16*s*(a+0.5*(b%2))/53.5); } }
-    else if(st.rake==='span'){ for(const dz of [-0.36,-0.22,-0.1,0.02,0.14,0.28]) for(let a=0;a<170;a++) add(H+dz,-1.2*s+2.4*s*a/169); }
-    else if(st.rake==='section'){ const y0=st.rakeY*s; for(let q2=0;q2<8;q2++) for(let b=0;b<75;b++){ const u=-1+2*b/74; add(-1.6+3.3*Math.sign(u)*Math.pow(Math.abs(u),1.5)*0.5+1.6*0.5,y0-0.35+0.1*q2); } }
-    else { for(const sg of [-1,1]) for(const r of [0.05,0.12,0.2,0.3,0.42,0.56,0.72]) for(let a=0;a<40;a++){ const ph=2*Math.PI*a/40+r*4; add(H+0.25+r*Math.sin(ph),sg*s+r*Math.cos(ph)); } }
+    /* Strømlinjer: raken følger vingens forkant (høyden er relativ til forkanten, så samme høyde treffer hele
+       spennet trass i pilform, dihedral og vridning). Frøene ligger like foran forkanten og integreres begge veier;
+       linjene tegnes fra rakeplanet oppstrøms og nedstrøms gjennom kjølvannet. */
+    const q=QL.lines*st.dens, le=y=>{ const ay=Math.min(Math.abs(y),s), c=w.chord(ay); return [w.xle(ay)-0.3*c, w.zw(ay)+0.035]; };
+    let row=0; const rowOf=[]; const addL=(y,dz,r)=>{ const [x,z]=le(y); addW(x,y,z+dz); rowOf.push(r); };
+    if(rake==='line'){ for(const [a,b] of spans){ const n=Math.max(2,Math.round((b-a)/(0.19/q))+1); for(let i=0;i<n;i++) addL(a+(b-a)*i/(n-1),H,row); row++; }
+      const t0=dirs.length;
+      if(spans.some(([a,b])=>a<=0.98*s&&b>=0.9*s) || spans.some(([a,b])=>a<=-0.9*s&&b>=-0.98*s)) tipRings([0.07,0.15,0.25],Math.round(9*Math.sqrt(q)));
+      for(let i=t0;i<dirs.length;i++) rowOf.push(-1); }
+    else if(rake==='plane'){ const nr=Math.max(3,Math.round(7*Math.sqrt(q))); for(let k=0;k<nr;k++){ const u=-1+2*k/(nr-1), dz=H+0.9*Math.sign(u)*Math.pow(Math.abs(u),1.4);
+        for(const [a,b] of spans){ const n=Math.max(2,Math.round((b-a)/(0.34/Math.sqrt(q)))+1); for(let i=0;i<n;i++) addL(a+(b-a)*i/(n-1),dz,row); row++; } } }
+    else if(rake==='section'){ const y0=st.rakeY*s, n=Math.round(56*q); for(let k=0;k<n;k++){ const u=-1+2*k/(n-1); addL(y0,H+1.6*Math.sign(u)*Math.pow(Math.abs(u),1.5),0); } }
+    else { tipRings([0.05,0.11,0.18,0.27,0.38,0.52],Math.round(14*Math.sqrt(q))); for(let i=0;i<dirs.length;i++) rowOf.push(-1); }
+    var rowsOut=Int16Array.from(rowOf);
   }
-  return {seeds:out, world, smoke};
+  return {seeds:Float32Array.from(out), dirs:Uint8Array.from(dirs), rows:smoke? null : rowsOut, Xr, x0:toW(Xr,H,0)[0], world, smoke, kind:rake, steps:st.env==='cfd'?340:240, ex:st.exag};
 }
 function startTrace(){
-  const sd=seedsW(); job={sd:sd.seeds,i:0,out:[],smoke:sd.smoke};
-  if(sd.smoke) buildRake(sd.world); else clearRake();
-  rakeGroup.visible=sd.smoke;
-  document.getElementById('busy').hidden=false;
+  tracePending=false; if(!FIELD.ready) return;
+  const sd=seedsW(); showRake(sd);
+  const bnd=Object.assign(flowBounds(),{x0:sd.Xr}); FL.setBounds(bnd);
+  TW.meta={id:TW.id+1,rows:sd.rows,smoke:sd.smoke};
+  const req={type:'trace',id:++TW.id,alpha:res.alpha,wt:FIELD.wt,bounds:bnd,seeds:sd.seeds,dirs:sd.dirs,x0:sd.x0,steps:sd.steps,h:LH,ex:sd.ex,thin:!sd.smoke,smoke:sd.smoke};
+  if(TW.w){ job=null; if(TW.busy) TW.queued=req; else { TW.w.postMessage(req); TW.busy=true; TW.t0=performance.now(); } }
+  else job={req,i:0,parts:[],t0:performance.now()};   // reserve: hovedtråden i biter
+  busyUI();
 }
 function traceStep(budget){
   if(!job) return;
-  const t0=performance.now();
-  const filt=!job.smoke&&(st.rake==='volume'||st.rake==='span');
-  while(job.i<job.sd.length && job.out.length<MAXL && performance.now()-t0<budget){ const p=job.sd[job.i++], L=traceW(p[0],p[1],p[2],LSTEP,LH,st.exag);
-    if(filt){ let dmax=0; for(const v of L.spd) dmax=Math.max(dmax,Math.abs(1-v*v)); if(dmax<0.07 && !L.hit) continue; }
-    job.out.push(L); }
-  if(job.out.length>=MAXL) job.i=job.sd.length;
-  if(job.i>=job.sd.length){ lines=job.out; const sm=job.smoke; job=null; if(sm) buildSmokeGeo(); else buildLineGeo(); if(!pend) document.getElementById('busy').hidden=true; }
+  const t0=performance.now(), r=job.req, n=r.seeds.length/3;
+  while(job.i<n && performance.now()-t0<budget){ const i1=Math.min(n,job.i+4); job.parts.push(FL.traceMany(r.seeds.subarray(job.i*3,i1*3),r.steps,r.h,r.ex,r.thin,r.dirs.subarray(job.i,i1),r.x0)); job.i=i1; }
+  if(job.i>=n){ const m=mergeParts(job.parts); m.smoke=r.smoke; m.id=r.id; m.ms=Math.round(performance.now()-job.t0); PERF.trace=m.ms; job=null; acceptLines(m); busyUI(); }
 }
-function buildSmokeGeo(){
-  const L2=lines.map(L=>{ const n=L.p.length/3, p=new Float32Array(n*3); for(let i=0;i<n;i++){ p[i*3]=L.p[i*3]; p[i*3+1]=L.p[i*3+2]; p[i*3+2]=L.p[i*3+1]; } return {p,dt:LH,tb:L.tb}; });
-  smokeMesh.geometry.dispose(); smokeMesh.geometry=T3D.smokeGeometry(THREE,L2,1);
-  const imp=[]; for(const L of lines) if(L.hit) imp.push(L.hit[0],L.hit[2],L.hit[1]);
-  impGeo.setAttribute('position',new THREE.Float32BufferAttribute(imp,3)); impGeo.computeBoundingSphere();
+function mergeParts(parts){
+  let nl=0,np=0; for(const q of parts){ nl+=q.off.length-1; np+=q.spd.length; }
+  const off=new Uint32Array(nl+1), p=new Float32Array(np*3), spd=new Float32Array(np), sep=new Uint8Array(np), tb=new Float32Array(np), t=new Float32Array(np), hits=new Float32Array(nl*3);
+  let l=0,o=0; for(const q of parts){ const k=q.spd.length; p.set(q.p,o*3); spd.set(q.spd,o); sep.set(q.sep,o); tb.set(q.tb,o); t.set(q.t,o); hits.set(q.hits,l*3);
+    for(let i=1;i<q.off.length;i++) off[l+i]=q.off[i]+o; l+=q.off.length-1; o+=k; }
+  return {off,p,spd,sep,tb,t,hits};
 }
-function buildLineGeo(){
-  const ST=2, m=AC0.model, k=wing.k, Lf=m.st[m.st.length-1][0];
-  const xmin=-m.xle*k-1.2, xmax=(Lf-m.xle)*k+(st.rake==='tips'?7:3);
-  const rng=L=>{ const n=L.p.length/3; let i0=0,i1=n-1; while(i0<n-1 && L.p[i0*3]<xmin) i0++; while(i1>i0 && L.p[i1*3]>xmax) i1--; return [i0,i1]; };
-  let nseg=0; for(const L of lines){ const [i0,i1]=rng(L); if(i1>i0) nseg+=Math.ceil((i1-i0)/ST); }
-  const fdv=new Float32Array(nseg*4), pos=new Float32Array(nseg*12), oth=new Float32Array(nseg*12), sd=new Float32Array(nseg*4), cpv=new Float32Array(nseg*4), tv=new Float32Array(nseg*4), idx=new Uint32Array(nseg*6), imp=[];
-  let q=0;
-  const put=(v,o,L,j,k,sgn)=>{ pos.set([L.p[j*3],L.p[j*3+2],L.p[j*3+1]],v*3); oth.set([L.p[k*3],L.p[k*3+2],L.p[k*3+1]],v*3); sd[v]=sgn; cpv[v]=L.sep[j]? -0.2 : 1-L.spd[j]*L.spd[j]; tv[v]=j+L.off; };
-  for(const L of lines){
-    if(L.off===undefined) L.off=Math.random()*40;
-    const [i0,i1]=rng(L), fade=j=>Math.max(0,Math.min(1,(j-i0)/10,(i1-j)/10));
-    for(let i=i0;i<i1;i+=ST){
-      const j=Math.min(i1,i+ST), v=q*4;
-      put(v,0,L,i,j,1); put(v+1,0,L,i,j,-1); put(v+2,0,L,j,i,-1); put(v+3,0,L,j,i,1);
-      fdv[v]=fdv[v+1]=fade(i); fdv[v+2]=fdv[v+3]=fade(j);
-      idx.set([v,v+1,v+2, v,v+2,v+3],q*6); q++;
-    }
-    if(L.hit) imp.push(L.hit[0],L.hit[2],L.hit[1]);
+/* pakkede linjer → geometri (vingeramme x,y,z → three x,z,y) */
+function acceptLines(r){
+  const smoke=st.view==='smoke'; if(r.smoke!==smoke) return;
+  const nl=r.off.length-1, L=[], starts=[];
+  for(let k=0;k<nl;k++){
+    const a=r.off[k], b=r.off[k+1], n=b-a; starts.push(n? [r.p[a*3],r.p[a*3+2],r.p[a*3+1]] : null); if(n<2) continue;
+    const p=new Float32Array(n*3), cp=new Float32Array(n), t=new Float32Array(n), tb=new Float32Array(n);
+    for(let i=0;i<n;i++){ const j=a+i; p[i*3]=r.p[j*3]; p[i*3+1]=r.p[j*3+2]; p[i*3+2]=r.p[j*3+1]; cp[i]=r.spd[j]; t[i]=r.t[j]; tb[i]=r.tb[j]; }   // lokal fart V/V∞
+    L.push({p,cp,t,tb,sd:0,dt:LH});
   }
-  const g=new THREE.BufferGeometry();
-  g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('other',new THREE.BufferAttribute(oth,3)); g.setAttribute('side',new THREE.BufferAttribute(sd,1));
-  g.setAttribute('cpv',new THREE.BufferAttribute(cpv,1)); g.setAttribute('tv',new THREE.BufferAttribute(tv,1)); g.setAttribute('fd',new THREE.BufferAttribute(fdv,1)); g.setIndex(new THREE.BufferAttribute(idx,1));
-  lineMesh.geometry.dispose(); lineMesh.geometry=g;
-  impGeo.setAttribute('position',new THREE.Float32BufferAttribute(imp,3)); impGeo.computeBoundingSphere();
+  PERF.lines=L.length; PERF.pts=r.spd.length;
+  if(!(smoke&&st.env==='tunnel')) rakeGizmo(starts, TW.meta&&TW.meta.id===r.id? TW.meta.rows : null);
+  if(smoke){ smokeMesh.geometry.dispose(); smokeMesh.geometry=T3D.smokeGeometry(THREE,L,1); }
+  else { lineMesh.geometry.dispose(); lineMesh.geometry=CFD.lineGeometry(THREE,L,{fadeIn:st.env==='cfd'?2.2:1.2,fadeOut:2.6}); glowMesh.geometry=lineMesh.geometry; }
+  haveLines=true;
 }
 
 // stagnasjonslinje
@@ -1213,7 +1214,7 @@ const slice=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMater
 const sliceFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1,1)),new THREE.LineBasicMaterial({color:0x9fb3c6})); overlay.add(sliceFrame);
 let sliceInfo=null;
 function computeSlice(){
-  const w=wing, y=Math.min(st.rakeY,1.15)*w.s, inside=Math.abs(y)<w.s, c= inside? w.chord(y) : w.ct, xl=w.xle(Math.min(Math.abs(y),w.s)), zw=w.zw(Math.min(Math.abs(y),w.s));
+  const w=wing, y=Math.min(st.secY,1.15)*w.s, inside=Math.abs(y)<w.s, c= inside? w.chord(y) : w.ct, xl=w.xle(Math.min(Math.abs(y),w.s)), zw=w.zw(Math.min(Math.abs(y),w.s));
   const X0=xl-2.0, X1=xl+c+3.6, Z0=zw-1.7, Z1=zw+1.7, GW=180, GH=90;
   const al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), f=[0,0,0];
   const img=new ImageData(GW,GH), m=P.AIRCRAFT[st.ac].model, k=w.k;
@@ -1222,11 +1223,11 @@ function computeSlice(){
     const x=X0+(X1-X0)*(i+0.5)/GW, z=Z1-(Z1-Z0)*(j+0.5)/GH, o=(j*GW+i)*4;
     let col;
     if(solid(x,z)) col=[0.32,0.35,0.39];
-    else { fieldAt(x,y,z,al,res.scale,f); const u=ca+f[0], v=f[1], ww=sa+f[2]; col=cmapJS(bandT(cpT(1-(u*u+v*v+ww*ww)))); }
+    else { fieldAt(x,y,z,al,res.scale,f); const u=ca+f[0], v=f[1], ww=sa+f[2]; col=cmapJS(cpT(1-(u*u+v*v+ww*ww))); }
     img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]=255;
   }
   const g=slcCanvas.getContext('2d'), tmp=document.createElement('canvas'); tmp.width=GW; tmp.height=GH; tmp.getContext('2d').putImageData(img,0,0);
-  g.imageSmoothingEnabled=false; g.drawImage(tmp,0,0,slcCanvas.width,slcCanvas.height);
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(tmp,0,0,slcCanvas.width,slcCanvas.height);
   // strømlinjer i planet
   const sxp=x=>(x-X0)/(X1-X0)*slcCanvas.width, szp=z=>(Z1-z)/(Z1-Z0)*slcCanvas.height;
   g.lineWidth=1.6; g.strokeStyle='rgba(255,255,255,.85)'; g.fillStyle='rgba(255,255,255,.9)';
@@ -1245,43 +1246,61 @@ function computeSlice(){
   slcTex.needsUpdate=true;
   slice.scale.set(X1-X0,Z1-Z0,1); slice.position.set((X0+X1)/2,(Z0+Z1)/2,y);
   sliceFrame.scale.copy(slice.scale); sliceFrame.position.copy(slice.position);
-  sliceInfo={x:X0,z:Z1,y,pct:Math.round(st.rakeY*100)};
+  sliceInfo={x:X0,z:Z1,y,pct:Math.round(st.secY*100)};
 }
 
-// virvler: kjerner og nedvind-vektorer bak vingen
-const vortexGroup=new THREE.Group(); overlay.add(vortexGroup);
-const coreMat=new THREE.MeshStandardMaterial({color:0x7ab8ff,transparent:true,opacity:0.28,roughness:0.3,metalness:0,emissive:0x1d4a80,emissiveIntensity:0.6,depthWrite:false});
-let vortexInfo=null;
-function computeVortex(){
-  while(vortexGroup.children.length){ const o=vortexGroup.children.pop(); if(o.geometry) o.geometry.dispose(); }
-  const w=wing, s=w.s, xT=w.xle(s)+w.ct+2.6, zT=w.zw(s)*0.5;
-  const ex=Math.max(1,st.exag);
-  const helix=[], cores=[];
-  for(const sg of [-1,1]){
-    const tip=[w.xle(s)+w.ct*0.98, sg*s*0.985, w.zw(s)];
-    const core=traceW(tip[0],tip[1],tip[2],140,0.08,1); cores.push(core);
-    for(const r of [0.16,0.3]) for(let a=0;a<6;a++){ const ph=2*Math.PI*a/6; helix.push(traceW(w.xle(s)-0.6,sg*s+r*Math.cos(ph),w.zw(s)+r*Math.sin(ph),160,0.08,ex)); }
+// krysstrømsplan bak vingen: virvlighet ωx som farge (gjennomsiktig der den er liten) og hastighet i planet som vektorer
+const PL={busy:false,queued:null,id:0,info:null,geo:null};
+const PNY=LOW?121:181;
+let plTex=null;
+const planeMat=CFD.planeMaterial(THREE,null);
+const plane=new THREE.Mesh(new THREE.PlaneGeometry(1,1),planeMat); plane.rotation.y=-Math.PI/2; plane.renderOrder=4; plane.frustumCulled=false; overlay.add(plane);
+const plVec=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0xf4f7fa,transparent:true,opacity:0.62,depthWrite:false})); plVec.frustumCulled=false; plVec.renderOrder=5; overlay.add(plVec);
+const plFrame=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1,1)),new THREE.LineBasicMaterial({color:0xb4bec8,transparent:true,opacity:0.45,depthWrite:false})); plFrame.rotation.y=-Math.PI/2; overlay.add(plFrame);
+const planeOn=()=> st.view==='vortex' || (st.plane && (st.view==='stream'||st.view==='cp'));
+const OMREF=1.0;   // ωx som gir full farge (fri strøm / lengdeenhet; spenn = 10)
+function planeGeo(){
+  const w=wing, s=w.s, xte=w.xle(s)+w.ct, mac=w.mac*w.k, X0=xte+st.xp*mac;
+  const zc=w.zw(s)*0.75+(X0-xte)*Math.tan(Math.max(0,res.alpha-res.alphaInd*1.6)*DEG), Y=1.42*s, Zh=0.3*s;
+  const NY=PNY, NZ=Math.round(PNY*Zh/Y)|1;
+  return {X0,Y0:-Y,Y1:Y,Z0:zc-Zh,Z1:zc+Zh,NY,NZ};
+}
+function requestPlane(){
+  if(!wing||!res||!FIELD.ready||!planeOn()) return;
+  const g=planeGeo(), req=Object.assign({type:'plane',id:++PL.id,alpha:res.alpha,wt:FIELD.wt,ex:1},g); PL.geo=g; PL.t0=performance.now();
+  if(TW.w){ if(PL.busy) PL.queued=req; else { TW.w.postMessage(req); PL.busy=true; } }
+  else { FL.F.wt=FIELD.wt; const r=FL.crossPlane(g.X0,g.Y0,g.Y1,g.Z0,g.Z1,g.NY,g.NZ,1); acceptPlane(Object.assign(r,{id:req.id})); }
+}
+function acceptPlane(r){
+  const g=PL.geo; if(!g) return; const NY=g.NY, NZ=g.NZ;
+  if(r.om.length!==NY*NZ) return;   // utdatert størrelse
+  const data=new Uint8Array(NY*NZ*4);
+  let best=-1, bi=0;
+  for(let q=0;q<NY*NZ;q++){
+    const o=q*4;
+    if(r.solid[q]){ data[o]=92; data[o+1]=100; data[o+2]=110; data[o+3]=200; continue; }
+    const om=r.om[q], u=Math.max(-1,Math.min(1,om/OMREF)), c=CFD.coolwarm(0.5+0.5*u), a=Math.min(1,Math.pow(Math.abs(u),0.7)*1.35);
+    data[o]=c[0]*255; data[o+1]=c[1]*255; data[o+2]=c[2]*255; data[o+3]=Math.round((0.045+0.87*a)*255);
+    const a2=q%NY; if(a2>NY/2 && Math.abs(om)>best){ best=Math.abs(om); bi=q; }
   }
-  for(const c of cores){ const pts=[]; for(let i=0;i<c.p.length/3;i+=3) pts.push(new THREE.Vector3(c.p[i*3],c.p[i*3+2],c.p[i*3+1]));
-    if(pts.length>3) vortexGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),80,0.11,12,false),coreMat)); }
-  const tg=makeTubes(helix,0.014,2); vortexGroup.add(new THREE.Mesh(tg,tubeMat));
-  // vektorplan bak vingen (Trefftz-plan)
-  const al=res.alpha*DEG, f=[0,0,0], v=[], col=[];
-  const NY=27, NZ=11, Y0=-1.5*s, Y1=1.5*s, Z0=zT-1.6, Z1=zT+1.6, sc=0.9*ex;
-  for(let a=0;a<NY;a++) for(let b=0;b<NZ;b++){
-    const y=Y0+(Y1-Y0)*a/(NY-1), z=Z0+(Z1-Z0)*b/(NZ-1); fieldAt(xT,y,z,al,res.scale,f);
-    let dy=f[1]*sc*4, dz=f[2]*sc*4; const L=Math.hypot(dy,dz), mx=0.32; if(L>mx){ dy*=mx/L; dz*=mx/L; }
-    const down=f[2]<0, c=down? [1.0,0.62,0.45] : [0.45,0.66,1.0];
-    const ex2=xT, a0=[ex2,z,y], a1=[ex2,z+dz,y+dy], ang=Math.atan2(dz,dy), hl=Math.min(0.08,0.4*Math.hypot(dy,dz));
-    v.push(...a0,...a1, ...a1, ex2, a1[1]-hl*Math.sin(ang+0.5), a1[2]-hl*Math.cos(ang+0.5), ...a1, ex2, a1[1]-hl*Math.sin(ang-0.5), a1[2]-hl*Math.cos(ang-0.5));
-    for(let q=0;q<6;q++) col.push(...c);
+  if(plTex) plTex.dispose();
+  plTex=new THREE.DataTexture(data,NY,NZ,THREE.RGBAFormat); plTex.magFilter=plTex.minFilter=THREE.LinearFilter; plTex.needsUpdate=true;
+  planeMat.uniforms.map.value=plTex;
+  const W=g.Y1-g.Y0, Hh=g.Z1-g.Z0;
+  plane.scale.set(W,Hh,1); plane.position.set(g.X0,(g.Z0+g.Z1)/2,0); plFrame.scale.copy(plane.scale); plFrame.position.copy(plane.position);
+  // vektorer på et grovt gitter
+  const v=[], step=Math.max(2,Math.round(NY/(LOW?22:30))), dy=W/(NY-1), sc=3.2, cap=0.85*step*dy;
+  for(let b=Math.floor(step/2);b<NZ;b+=step) for(let a=Math.floor(step/2);a<NY;a+=step){
+    const q=b*NY+a; if(r.solid[q]) continue; let vy=r.v[q]*sc, vz=r.w[q]*sc; const L=Math.hypot(vy,vz); if(L<0.05) continue; if(L>cap){ vy*=cap/L; vz*=cap/L; }
+    const y=g.Y0+dy*a, z=g.Z0+(Hh/(NZ-1))*b, x=g.X0+0.01, ang=Math.atan2(vz,vy), hl=Math.min(0.09,0.35*Math.hypot(vy,vz));
+    const ey=y+vy, ez=z+vz;
+    v.push(x,z,y, x,ez,ey,  x,ez,ey, x,ez-hl*Math.sin(ang+0.45),ey-hl*Math.cos(ang+0.45),  x,ez,ey, x,ez-hl*Math.sin(ang-0.45),ey-hl*Math.cos(ang-0.45));
   }
-  const ag=new THREE.BufferGeometry(); ag.setAttribute('position',new THREE.Float32BufferAttribute(v,3)); ag.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  vortexGroup.add(new THREE.LineSegments(ag,new THREE.LineBasicMaterial({vertexColors:true})));
-  const fr=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(Y1-Y0,Z1-Z0)),new THREE.LineBasicMaterial({color:0x6c7a88}));
-  fr.rotation.y=Math.PI/2; fr.position.set(xT,(Z0+Z1)/2,0); vortexGroup.add(fr);
-  const lastCore=cores[1].p; const n=lastCore.length/3-1;
-  vortexInfo={tip:[lastCore[n*3],lastCore[n*3+2],lastCore[n*3+1]], down:[xT,zT,0], up:[xT,zT,1.3*s]};
+  plVec.geometry.dispose(); plVec.geometry=new THREE.BufferGeometry(); plVec.geometry.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
+  const ca=bi%NY, cb=Math.floor(bi/NY);
+  PL.info={core:[g.X0,g.Z0+(Hh/(NZ-1))*cb,g.Y0+dy*ca], mid:[g.X0,(g.Z0+g.Z1)/2+0.25,0], out:[g.X0,g.Z1-0.2,g.Y0+dy*ca+0.75], omMax:best};
+  PERF.plane=Math.round(performance.now()-PL.t0); PL.done=r.id; plane.visible=plVec.visible=plFrame.visible=planeOn(); if(SHOT){ if(QS.get('vec')==='0') plVec.visible=false; if(QS.get('frame')==='0') plFrame.visible=false; }
+  setLegend(); if(st.view==='vortex'||st.plane) buildLabels();
 }
 
 // ulltråder (tufts) på vingens overside: tynne garnstrenger som følger lokal strømning, flagrer nær separasjon og snur i separert strømning
@@ -1369,34 +1388,44 @@ demoBtn.addEventListener('click',()=>{
 });
 
 /* ---------------- oppdatering ---------------- */
-let flowDirty=true, traceTimer=0;
+let flowDirty=true, traceTimer=0, tracePending=false;
 function updateFlow(){ flowDirty=true; }
 function refreshFlow(){
   flowDirty=false; if(!wing||!res) return;
   overlay.position.copy(body.position);
-  const v=st.view;
-  for(const o of [wingMesh,...cpMeshes]) if(o) o.material= v==='cp'? cpMat : o.userData.paint;
-  wingCp(); bodyCp();
-  lineMesh.visible=(v==='stream'); smokeMesh.visible=(v==='smoke'); impGlow.visible=impCore.visible=(v==='stream'); rakeGroup.visible=(v==='smoke');
-  stagLine.visible=stagGlow.visible=(v==='cp'); slice.visible=sliceFrame.visible=(v==='slice'); vortexGroup.visible=(v==='vortex'); tufts.visible=tapes.visible=(v==='tufts');
+  const v=st.view, lin=(v==='stream'||v==='vortex'), smoke=v==='smoke';
+  const cpOn= v==='cp' || (st.surfCp && (lin||v==='slice'));
+  for(const o of [wingMesh,...cpMeshes]) if(o) o.material= cpOn? cpMat : o.userData.paint;
+  if(cpOn){ wingCp(); bodyCp(); }
+  lineMesh.visible=lin; glowMesh.visible=lin&&QL.glow; smokeMesh.visible=smoke;
+  if(!(lin||smoke)){ rakeGroup.visible=false; gizmo.visible=false; }
+  stagLine.visible=stagGlow.visible=(v==='cp'); slice.visible=sliceFrame.visible=(v==='slice');
+  const pOn=planeOn(); plane.visible=plVec.visible=plFrame.visible=pOn&&!!PL.done; if(SHOT){ if(QS.get('vec')==='0') plVec.visible=false; if(QS.get('frame')==='0') plFrame.visible=false; } tufts.visible=tapes.visible=(v==='tufts');
   buildSep();
   if(v==='cp') computeStag();
-  if(v==='stream'||v==='smoke'){ clearTimeout(traceTimer); traceTimer=setTimeout(startTrace, lines.length?140:0); }
+  if(lin||smoke){ clearTimeout(traceTimer); tracePending=true; traceTimer=setTimeout(startTrace, TW.w? 30 : (haveLines?140:0)); }
   if(v==='slice') computeSlice();
-  if(v==='vortex') computeVortex();
+  if(pOn) requestPlane();
   if(v==='tufts') computeTufts();
   setLegend(); buildLabels();
 }
 
-/* fargeskala */
+/* fargeskala: Cp til venstre, tilsvarende lokal fart V/V∞ og kt (TAS) til høyre; virvlighet i krysstrømsplanet under */
 function setLegend(){
   const el=document.getElementById('legend3d'), v=st.view;
-  const show= v==='cp'||v==='stream'||v==='slice'||v==='vortex';
-  el.hidden=!show; if(!show) return;
+  const show=!SHOT && (v==='cp'||v==='stream'||v==='slice'||v==='vortex'); el.hidden=!show; if(!show) return;
   const cv=document.getElementById('cbar'), g=cv.getContext('2d'), H=cv.height, W=cv.width;
-  for(let y=0;y<H;y++){ const cp=CPMAX-(CPMAX-CPMIN)*y/(H-1), c=cmapJS(bandT(cpT(cp))); g.fillStyle=`rgb(${c.map(x=>Math.round(x*255)).join(',')})`; g.fillRect(0,y,W,1); }
-  const title={cp:'Trykk på flyet, Cp',stream:'Strømlinjer farget etter trykk, Cp',slice:'Trykk i snittet, Cp',vortex:'Virvellinjer farget etter trykk, Cp'}[v];
-  document.getElementById('cbarTitle').textContent=T(title);
+  for(let y=0;y<H;y++){ const c=cmapJS(1-y/(H-1)); g.fillStyle=`rgb(${c.map(x=>Math.round(x*255)).join(',')})`; g.fillRect(0,y,W,1); }
+  const tas=out.tas||st.ias, cps=[1,0.5,0,-0.5,-1], vs=[1.25,1.125,1,0.875,0.75], sg=x=>(x>0?'+':'')+nf(x,1).replace('-','−');
+  const lines=v==='stream'||v==='vortex', surf=v==='cp'||(st.surfCp&&v!=='slice')||v==='slice';
+  document.getElementById('cbL').innerHTML=surf? cps.map(cp=>`<span style="top:${((1-cpT(cp))*100).toFixed(2)}%">${cp===0?'0':sg(cp)}</span>`).join('') : '';
+  document.getElementById('cbR').innerHTML=lines? vs.map(q=>`<span style="top:${((1-(q-VMIN)/(VMAX-VMIN))*100).toFixed(2)}%">${nf(q,2)} · ${nf(q*tas,0)}</span>`).join('') : '';
+  document.getElementById('cbarTitle').textContent=surf? (v==='slice'?'Cp':T('Cp flate')) : ''; document.getElementById('cbarTitle2').textContent=lines? T('V/V∞ · kt linjer') : '';
+  const wv=document.getElementById('cbW'), pOn=planeOn()&&!!PL.done; wv.hidden=!pOn;
+  if(pOn){ const wb=document.getElementById('wbar'), wg=wb.getContext('2d'); for(let x=0;x<wb.width;x++){ const c=CFD.coolwarm(x/(wb.width-1)); wg.fillStyle=`rgb(${c.map(q=>Math.round(q*255)).join(',')})`; wg.fillRect(x,0,1,wb.height); }
+    const om=OMREF*tas*KT/(st.b/10);   // 1/s i full skala
+    document.getElementById('cbWt').textContent=T('Virvlighet ωx'); document.getElementById('cbWu').textContent='1/s';
+    document.getElementById('cbWticks').innerHTML=`<span>−${nf(om,0)}</span><span>0</span><span>+${nf(om,0)}</span>`; }
 }
 
 /* forklaringer i 3D */
@@ -1413,16 +1442,14 @@ function buildLabels(){
     const nz=(P.fuselageAt(m,0.05).zc-m.zw)*k; add('Stagnasjon: luften treffer',[-m.xle*k-0.2,nz,0],'stag',true);
     const [xs,zs]=wingSurf(-0.8*s,0.0,false,0.05); add('Stagnasjonslinje',[xs-0.15,zs-0.12,-0.8*s],'stag',true);
   } else if(v==='stream'||v==='smoke'){
-    if(v==='stream'){ const nz=(P.fuselageAt(m,0.05).zc-m.zw)*k; add('Luften treffer flyet her',[-m.xle*k-0.25,nz+0.35,0],'stag',true);
-      add('Raskere over vingen',[w.xle(0.3*s)+0.4*w.chord(0.3*s),0.45,0.3*s],'suc',true); }
     add('Oppvind foran vingen',[w.xle(0.8*s)-1.4,0.75,0.8*s],'',true);
     add('Nedvind bak vingen',[w.xle(0.5*s)+w.chord(0.5*s)+2.6,-0.5,0.5*s],'',true);
     if(res.post>0){ const ys=wing.stallStation*s, cs=w.chord(ys); add('Turbulent kjølvann',[w.xle(Math.abs(ys))+cs*1.6,w.zw(ys)+0.55*cs,ys],'pres',true); }
-    if(st.rake==='tips'||st.rake==='span') add('Tippvirvel',[w.xle(s)+w.ct+2.5,0.1,1.05*s],'',true);
+    if(st.rake==='tips'||st.rake==='line'||st.rake==='plane') add('Tippvirvel',[w.xle(s)+w.ct+3.2,w.zw(s)+0.35,1.02*s],'',true);
   } else if(v==='slice'&&sliceInfo){
     labelList.push({t:T('Snitt ved {p} % av halvspennet').replace('{p}',sliceInfo.pct),p:new THREE.Vector3(sliceInfo.x,sliceInfo.z+0.15,sliceInfo.y),cls:'',local:true});
-  } else if(v==='vortex'&&vortexInfo){
-    add('Tippvirvel',vortexInfo.tip,'',true); add('Nedvind bak vingen',vortexInfo.down,'pres',true); add('Oppvind utenfor tuppen',vortexInfo.up,'suc',true);
+  } else if(v==='vortex'&&PL.info){
+    add('Tippvirvelkjerne',PL.info.core,'',true); add('Nedvind bak vingen',PL.info.mid,'pres',true); add('Oppvind utenfor tuppen',PL.info.out,'suc',true);
   } else if(v==='tufts'){
     add('Gule tråder følger strømningen. Røde = løsnet (stall)',[w.xle(ym)+0.5*cm,w.zw(ym)+0.45,ym],'',true);
   }
@@ -1435,7 +1462,8 @@ function placeLabels(){
   overlay.updateMatrixWorld(); const W=vp.clientWidth, H=vp.clientHeight;
   for(const l of labelList){ tmpV.copy(l.p); if(l.local) overlay.localToWorld(tmpV); tmpV.project(camera);
     if(tmpV.z>1){ l.el.style.display='none'; continue; } l.el.style.display='';
-    l.el.style.transform=`translate(${(tmpV.x*0.5+0.5)*W}px,${(-tmpV.y*0.5+0.5)*H}px) translate(-50%,-100%)`; }
+    if(!l.w) l.w=l.el.offsetWidth||80; const x=Math.max(l.w/2+6,Math.min(W-l.w/2-6,(tmpV.x*0.5+0.5)*W));
+    l.el.style.transform=`translate(${x}px,${(-tmpV.y*0.5+0.5)*H}px) translate(-50%,-100%)`; }
 }
 
 /* probe: vis Cp og lokal fart der musen peker */
@@ -1458,10 +1486,11 @@ function doProbe(){
 
 /* ---------------- Kamera ---------------- */
 // bane rundt modellen med demping og treghet; vegger mellom kamera og modell skjules automatisk
-const CAM0=[2.25,1.14,14.5];
+const CAM0=[2.55,1.02,14.2];
 const cam={th:CAM0[0],ph:CAM0[1],r:CAM0[2],tth:CAM0[0],tph:CAM0[1],tr:CAM0[2],tx:0.6,ty:-0.2,tz:0,vth:0,vph:0};
-const camPresets={q:CAM0,reset:CAM0,side:[Math.PI/2,1.5,15],front:[Math.PI-0.02,1.42,13],top:[Math.PI/2,0.08,17]};
-document.querySelectorAll('[data-cam]').forEach(b=>b.addEventListener('click',()=>{ const p=camPresets[b.dataset.cam]; cam.tth=p[0]; cam.tph=p[1]; cam.tr=p[2]; cam.vth=cam.vph=0; }));
+const camPresets={q:CAM0,reset:CAM0,side:[Math.PI/2,1.5,15],front:[Math.PI-0.02,1.42,13],top:[Math.PI/2,0.08,17],rear:[0.32,1.32,15],vq:[0.95,1.05,15.5],hero:[2.42,0.98,12.6]};
+function camTo(k){ const p=camPresets[k]; if(!p) return; cam.tth=p[0]+2*Math.PI*Math.round((cam.th-p[0])/(2*Math.PI)); cam.tph=p[1]; cam.tr=p[2]; cam.vth=cam.vph=0; }
+document.querySelectorAll('[data-cam]').forEach(b=>b.addEventListener('click',()=>camTo(b.dataset.cam)));
 canvas.addEventListener('dblclick',()=>{ cam.tth=CAM0[0]; cam.tph=CAM0[1]; cam.tr=CAM0[2]; cam.vth=cam.vph=0; });
 const ptrs=new Map(); let pinch0=0, r0=0, lastMove=0;
 canvas.addEventListener('pointerdown',e=>{ canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); cam.vth=cam.vph=0;
@@ -1475,13 +1504,14 @@ canvas.addEventListener('pointerup',up); canvas.addEventListener('pointercancel'
 canvas.addEventListener('wheel',e=>{ e.preventDefault(); cam.tr=Math.max(6,Math.min(36,cam.tr*Math.exp(e.deltaY*0.0012))); },{passive:false});
 function updateCamera(){
   if(!ptrs.size && (Math.abs(cam.vth)>1e-4||Math.abs(cam.vph)>1e-4)){ cam.tth+=cam.vth; cam.tph=Math.max(0.06,Math.min(Math.PI-0.06,cam.tph+cam.vph)); cam.vth*=0.92; cam.vph*=0.92; }
-  cam.th+=(cam.tth-cam.th)*0.14; cam.ph+=(cam.tph-cam.ph)*0.14; cam.r+=(cam.tr-cam.r)*0.14;
-  const rr=cam.r*Math.max(1,Math.pow(1.5/Math.max(0.3,camera.aspect),0.6));   // smale (stående) skjermer: trekk kameraet bakover så hele flyet er med
+  cam.th+=(cam.tth-cam.th)*0.12; cam.ph+=(cam.tph-cam.ph)*0.12; cam.r+=(cam.tr-cam.r)*0.12;
+  // smale (stående) skjermer: trekk kameraet bakover så hele flyet er med; smal synsvinkel (CFD) kompenseres med avstand
+  const rr=cam.r*Math.max(1,Math.pow(1.5/Math.max(0.3,camera.aspect),0.6))*Math.tan(21*DEG)/Math.tan(camera.fov/2*DEG);
   camera.position.set(cam.tx+rr*Math.sin(cam.ph)*Math.cos(cam.th), cam.ty+rr*Math.cos(cam.ph), cam.tz+rr*Math.sin(cam.ph)*Math.sin(cam.th));
   camera.lookAt(cam.tx,cam.ty,cam.tz);
-  tunnel.update(camera.position);
+  if(st.env==='tunnel') tunnel.update(camera.position);
 }
-function resize(){ const w=vp.clientWidth,h=vp.clientHeight; renderer.setSize(w,h,false); lineMat.uniforms.res.value.set(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+function resize(){ const w=vp.clientWidth,h=vp.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); lineMat.uniforms.res.value.set(w,h); glowMat.uniforms.res.value.set(w,h); camera.aspect=w/h; camera.updateProjectionMatrix(); }
 new ResizeObserver(()=>{resize(); drawCharts();}).observe(vp);
 
 /* ---------------- Beregning ---------------- */
@@ -1492,7 +1522,8 @@ function rebuild(){
   body.position.set(-P0.x,-P0.y,0);
   wingMesh=buildWingMesh(); body.add(wingMesh);
   buildAirframe();
-  buildFusTab();
+  FL.setWing(wing,wingParams(),AC0.model); FL.setBounds(flowBounds()); twGeom();
+  prepBodyCp();
   syncAll();
   if(window.SEC) SEC.geometry();
   compute();
@@ -1518,7 +1549,7 @@ function compute(){
     alpha=Math.max(-6,Math.min(24,alpha));
     st.alpha=+alpha.toFixed(2);
   }
-  res=P.evaluate(wing,alpha,a.cd0);
+  res=P.evaluate(wing,alpha,a.cd0); FL.setRes(res);
   const L=q*S*res.CL, D=q*S*res.CD;
   const tas=st.ias/Math.sqrt(atm.sigma);
   const vs1=Math.sqrt(2*W/(1.225*S*wing.CLmax))/KT, vsn=vs1*Math.sqrt(n);
@@ -1551,7 +1582,11 @@ function compute(){
   drawCharts();
   if(window.SEC) SEC.fromTunnel();
   if(window.WAKE) WAKE.sync();
-  document.getElementById('ovtl').innerHTML=`α <b>${nf(alpha,1)}°</b> · ${T('relativ vind fra venstre')}<br>IAS <b>${nf(st.ias,0)} kt</b> · TAS <b>${nf(tas,0)} kt</b>`;
+  // HUD: α, fart, CL, CDi og Reynolds-tall på middelkorden (Sutherland for viskositeten)
+  const mu=1.458e-6*Math.pow(atm.T,1.5)/(atm.T+110.4), Re=atm.rho*tas*KT*wing.mac/mu, ex=Math.floor(Math.log10(Re));
+  const H=(k,v,c)=>`<div${c?` class="${c}"`:''}><i>${k}</i><b>${v}</b></div>`;
+  document.getElementById('ovtl').innerHTML=H('α',nf(alpha,1)+'°')+H('V∞ TAS',nf(tas,0)+' kt')+H('CL',nf(res.CL,3))+H('CDi',nf(res.CDi,4),'hx')+H('Re · MAC',nf(Re/Math.pow(10,ex),1)+'·10<sup>'+ex+'</sup>','hx');
+  setLegend();
 }
 
 function updateArrows(L,D,Wn){
@@ -2250,7 +2285,7 @@ function secAlpha(a){ SEC.ps.alpha=+Math.max(-6,Math.min(24,a)).toFixed(1); SEC.
 let activeLesson=-1;
 const lb=document.getElementById('lessons');
 const triedL=new Set(); lessons.forEach((l,i)=>{ const b=document.createElement('button'); b.textContent=T(l.t); b.addEventListener('click',()=>{ resetAtm(); l.run(); activeLesson=i; markLesson(); triedL.add(i); if(window.NPROG) NPROG.award('tunnel:lessons',Math.min(100,triedL.size/5*100)); }); lb.appendChild(b); });
-function resetAtm(){ st.alt=0; st.isaDev=0; st.bank=0; st.exag=1; st.rake='span'; st.rakeH=0; st.rakeY=0.45; st.view='smoke'; SEC.ps.contam=0; SEC.ps.link=true; }
+function resetAtm(){ st.alt=0; st.isaDev=0; st.bank=0; st.exag=1; st.rake='line'; st.rakeH=0; st.rakeY=0; st.rakeW=2.3; st.view='stream'; SEC.ps.contam=0; SEC.ps.link=true; }
 function markLesson(){ [...lb.children].forEach((b,i)=>b.classList.toggle('on',i===activeLesson)); document.getElementById('ltext').textContent= activeLesson>=0? T(lessons[activeLesson].text) : ''; }
 function clearLesson(){ if(activeLesson>=0){ activeLesson=-1; markLesson(); } }
 
@@ -2274,16 +2309,35 @@ document.querySelectorAll('details.adv').forEach(d=>{ try{ if(localStorage.getIt
 
 /* ---------------- Start ---------------- */
 loadAircraft();
+// ?shot: bare 3D-bildet (forsidebildet). Valgfritt: a=α, cam=forhåndsvalg, view, rake, plane=1, xp, env, w (linjebredde)
+const QS=new URLSearchParams(location.search);
+if(SHOT){
+  document.body.classList.add('shot'); st.labels=false; st.mode='alpha';
+  if(QS.has('a')) st.alpha=+QS.get('a');
+  for(const k of ['view','rake','env']) if(QS.has(k)) st[k]=QS.get(k);
+  if(QS.has('plane')) st.plane=QS.get('plane')==='1';
+  for(const k of ['xp','rakeY','rakeW','rakeH','dens','lineW','lineB']) if(QS.has(k)) st[k]=+QS.get(k);
+  if(QS.has('mirror')) st.mirror=QS.get('mirror')==='1';
+  if(QS.has('pulse')) st.pulse=QS.get('pulse')==='1';
+}
+setEnv(); visUniforms();
 setLegend();
 rebuild();
+if(SHOT){ camTo(QS.get('cam')||'hero'); cam.th=cam.tth; cam.ph=cam.tph; cam.r=cam.tr; if(QS.has('th')) cam.th=cam.tth=+QS.get('th'); if(QS.has('ph')) cam.ph=cam.tph=+QS.get('ph'); if(QS.has('r')) cam.r=cam.tr=+QS.get('r');
+  if(QS.has('tx')) cam.tx=+QS.get('tx'); if(QS.has('ty')) cam.ty=+QS.get('ty'); if(QS.has('tz')) cam.tz=+QS.get('tz'); }
 resize();
 let last=performance.now(), secVisible=true, frame=0, tunnelVisible=false, ftAvg=16, ftN=0;
-new IntersectionObserver(es=>{ const on=es[0].isIntersecting; if(on&&!tunnelStarted){ tunnelStarted=true; resize(); if(fieldPending){ fieldPending=false; requestField(); } updateFlow(); } tunnelVisible=on; },{rootMargin:'200px 0px'}).observe(document.getElementById('vp'));
+// feltet regnes først når 3D-visningen nærmer seg skjermen; tegningen pauses når den er utenfor (LAB.visible)
+new IntersectionObserver(es=>{ const on=es[0].isIntersecting; if(on&&!tunnelStarted){ tunnelStarted=true; resize(); if(fieldPending){ fieldPending=false; requestField(); } updateFlow(); } if(!window.LAB) tunnelVisible=on; },{rootMargin:'200px 0px'}).observe(document.getElementById('vp'));
+if(window.LAB&&LAB.visible) LAB.visible(document.getElementById('vp'),on=>{ tunnelVisible=on; });
 new IntersectionObserver(es=>{ secVisible=es[0].isIntersecting; }).observe(document.getElementById('sec2d'));
 // adaptiv kvalitet: senk oppløsningen hvis bildefrekvensen faller over tid
+const NOADAPT=SHOT||QS.has('hq');
 function adapt(dt){
+  if(NOADAPT) return;
   ftAvg=ftAvg*0.97+dt*1000*0.03; if(++ftN<120) return;
   if(ftAvg>42 && PR>0.75){ PR=Math.max(0.75,PR-0.25); renderer.setPixelRatio(PR); resize(); ftN=0; }
+  else if(ftAvg>30 && QL.glow){ QL.glow=false; glowMesh.visible=false; ftN=0; }   // først: dropp glødpasset
 }
 function loop(now){
   requestAnimationFrame(loop);
@@ -2291,17 +2345,20 @@ function loop(now){
   if(document.hidden) return;
   frame++;
   if(tunnelVisible){ if(flowDirty) refreshFlow(); stepTufts(now/1000);
-    const ts=now/1000; tubeMat.uniforms.time.value=ts; sepMat.uniforms.time.value=ts; lineMat.uniforms.time.value=ts; smokeMat.uniforms.time.value=ts*2.4;
-    traceStep(LOW?8:11); impGlow.material.size=0.36+0.12*Math.sin(now*0.006); for(const h of props) h.rotation.x+=dt*14;
-    if(tunnel.group.userData.fan) tunnel.group.userData.fan.rotation.x+=dt*2.2;
-    updateCamera(); renderer.render(scene,camera); placeLabels(); doProbe(); adapt(dt); }
+    const ts=now/1000; sepMat.uniforms.time.value=ts; lineMat.uniforms.time.value=ts; glowMat.uniforms.time.value=ts; smokeMat.uniforms.time.value=ts*2.4;
+    traceStep(LOW?8:11); for(const h of props) h.rotation.x+=dt*14;
+    if(st.env==='tunnel'&&tunnel.group.userData.fan) tunnel.group.userData.fan.rotation.x+=dt*2.2;
+    updateCamera(); renderer.render(scene,camera);
+    if(st.env==='cfd'&&!SHOT){ const sz=Math.round(Math.min(88,vp.clientWidth*0.16)); triad.render(renderer,camera,6,6,sz); renderer.setViewport(0,0,vp.clientWidth,vp.clientHeight); }
+    placeLabels(); doProbe(); adapt(dt); if(frame%10===0) busyUI(); }
   if(secVisible){ SEC.step(dt); SEC.draw(); }
   WAKE.frame(dt);
 }
-// test-krok (brukes av automatiske skjermbildetester)
-window.__tun={cam,st,compute,rebuild,syncAll,setConf,updateFlow,P0:()=>P0,wing:()=>wing,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible]};
+// test-krok (brukes av automatiske skjermbildetester og ?shot)
+window.__tun={cam,st,compute,rebuild,syncAll,setConf,updateFlow,refreshFlow,setEnv,camTo,PERF,FL,seedsW,P0:()=>P0,wing:()=>wing,res:()=>res,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible],
+  ready:()=>!!FIELD.ready&&!pend&&!TW.busy&&!TW.queued&&!job&&!flowDirty&&!tracePending&&haveLines&&(!planeOn()||(PL.done===PL.id&&!PL.busy))};
 requestAnimationFrame(loop);
-window.addEventListener('pagehide',()=>{ workers.forEach(w=>w.terminate()); });
+window.addEventListener('pagehide',()=>{ workers.forEach(w=>w.terminate()); if(TW.w) TW.w.terminate(); });
 })();
 </script>
 <script>

@@ -400,7 +400,7 @@ float snoise(vec3 v){
           pos[v * 3] = P[i * 3]; pos[v * 3 + 1] = P[i * 3 + 1]; pos[v * 3 + 2] = P[i * 3 + 2];
           prv[v * 3] = P[ia * 3]; prv[v * 3 + 1] = P[ia * 3 + 1]; prv[v * 3 + 2] = P[ia * 3 + 2];
           nxt[v * 3] = P[ib * 3]; nxt[v * 3 + 1] = P[ib * 3 + 1]; nxt[v * 3 + 2] = P[ib * 3 + 2];
-          side[v] = sd; aT[v] = i * L.dt; aAge[v] = k / (n - 1); aTurb[v] = L.tb ? L.tb[i] : 0; aSeed[v] = seed; v++;
+          side[v] = sd; aT[v] = L.t ? L.t[i] : i * L.dt; aAge[v] = k / (n - 1); aTurb[v] = L.tb ? L.tb[i] : 0; aSeed[v] = seed; v++;
         }
         if (k > 0) { const a = base + (k - 1) * 2, b = a + 1, c = a + 2, d = a + 3; idx[q++] = a; idx[q++] = c; idx[q++] = b; idx[q++] = b; idx[q++] = c; idx[q++] = d; }
       }
