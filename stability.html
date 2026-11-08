@@ -10,7 +10,6 @@
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
-#cgCv{aspect-ratio:16/8.6}#envCv,#limCv{aspect-ratio:16/10}
 #stCv{aspect-ratio:16/9}#stAn{aspect-ratio:16/5.2}
 #pCv{aspect-ratio:16/7}#pTr{aspect-ratio:16/6}
 #lCv{aspect-ratio:16/8}#lTr{aspect-ratio:16/6}
@@ -18,7 +17,7 @@
 #ctCv{aspect-ratio:16/9.5}
 .mcard canvas{aspect-ratio:16/9}
 #rotCv{aspect-ratio:16/7}
-@media (max-width:600px){#cgCv{aspect-ratio:4/4.3}#stCv{aspect-ratio:4/3.6}#stAn{aspect-ratio:4/2.2}#pCv{aspect-ratio:4/2.8}#pTr{aspect-ratio:4/4.4}#lCv{aspect-ratio:4/3.2}#lTr{aspect-ratio:4/4.4}#vnCv{aspect-ratio:4/4.2}#ctCv{aspect-ratio:4/3.6}#rotCv{aspect-ratio:4/2.4}}
+@media (max-width:600px){#stCv{aspect-ratio:4/3.6}#stAn{aspect-ratio:4/2.2}#pCv{aspect-ratio:4/2.8}#pTr{aspect-ratio:4/4.4}#lCv{aspect-ratio:4/3.2}#lTr{aspect-ratio:4/4.4}#vnCv{aspect-ratio:4/4.2}#ctCv{aspect-ratio:4/3.6}#rotCv{aspect-ratio:4/2.4}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 @media (max-width:600px){.two{grid-template-columns:minmax(0,1fr)}}
 .ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 96px)}
@@ -76,8 +75,110 @@
 .fa>div.on{background:rgba(154,30,104,.06);color:var(--ink)}
 .fa .pl{color:#2E7D4F;font-weight:600}.fa .mi{color:#B03A2E;font-weight:600}
 @media (max-width:600px){.fa{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fa>div.k{grid-column:1/-1;background:var(--paper);padding-bottom:4px}.fa>div.h.k0{display:none}}
-#bsCv{aspect-ratio:16/8}@media (max-width:600px){#bsCv{aspect-ratio:4/3.6}}
 .bsl{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2);margin-top:-4px}
+.anc{display:block;height:0;scroll-margin-top:72px}
+/* template parts (as pressure.html) */
+.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
+#debrief .deepbox{max-width:none;display:flex;flex-direction:column;gap:12px}#debrief .deepbox .fa{margin:0}
+.terms{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+.terms>div{padding:10px 0;border-bottom:1px solid var(--rule-2)}
+.terms dt{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:var(--ink)}
+.terms dt b{font-family:var(--f-mono);font-weight:600;color:var(--accent);margin-right:6px;font-size:14px}
+.terms dd{margin:3px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.un-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px 32px;align-items:start}
+.un-fig{margin:0}.un-fig svg{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}
+.un-defs{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:22px}
+.un-defs>div:first-child,.un-defs>div:nth-child(2){padding-top:0}
+@media (max-width:900px){.un-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.un-defs{grid-template-columns:minmax(0,1fr)}.un-defs>div:nth-child(2){padding-top:10px}}
+.stagebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.cgm-ph{flex:1 1 360px;min-width:0}
+.cgm-ph.seg button{padding:9px 12px;font-size:14px}
+.pre{display:flex;flex-wrap:wrap;gap:6px}
+.pre .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;font-size:14px;line-height:1.45}
+.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
+.fb{display:block;margin-top:6px;font-size:14px;line-height:1.5;color:var(--ink-2)}.fb.ok{color:var(--ok)}
+/* 2 · the model */
+.cgm{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cgm-stage{position:relative}
+.mlegend{display:flex;flex-wrap:wrap;gap:4px 18px;margin:10px 0 0;font-size:12.5px;color:var(--ink-2)}
+.mlegend span{display:inline-flex;align-items:center;gap:6px}
+.mlegend i{display:inline-block;width:16px;height:3px;border-radius:2px;background:var(--c);filter:brightness(.8) saturate(1.2)}
+.mlegend i.dash{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.mlegend i.band{height:8px;opacity:.6}.mlegend i.dot{width:8px;height:8px;border-radius:50%;background:#E0A93B}
+.mhint{font-size:13.5px;line-height:1.5;color:var(--ink-2);margin:6px 0 0;max-width:90ch}.mhint b{color:var(--ink)}
+body.depth-instructor .mhint{display:none}
+#cmCv{aspect-ratio:16/8.6;touch-action:pan-y;cursor:default}
+#cmCv.drag{cursor:ew-resize}
+body.depth-instructor #cmCv{aspect-ratio:16/8.8}
+.cgm-ctl{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px 32px;align-items:start}
+.cgm-sl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px}
+.cgm-sl .ctl{margin:2px 0 4px}
+.cgm-ctl .grp{margin-top:0}
+.cgm-out{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;border-top:1px solid var(--rule)}
+.oc{padding:12px 0 12px 14px;border-bottom:1px solid var(--rule-2);border-left:3px solid var(--rule);min-width:0;display:flex;flex-direction:column;gap:4px}
+.oc.st-ok{border-left-color:#2E7D4F}.oc.st-cau{border-left-color:#B7791F}.oc.st-bad{border-left-color:#B03A2E}
+.oc.hot .oc-t{color:var(--accent)}
+.oc-h{display:flex;align-items:baseline;gap:8px}
+.oc-t{flex:1 1 auto;min-width:0;font-weight:600;font-size:15px;color:var(--ink);line-height:1.25}
+.oc-t small{display:block;font-weight:400;font-size:12px;color:var(--ink-3);margin-top:1px}
+.oc-v{white-space:nowrap}.oc-v b{font-family:var(--f-mono);font-weight:500;font-size:20px;color:var(--ink)}.oc-v small{font-size:12px;color:var(--ink-2)}
+.st-bad .oc-v b{color:#B03A2E}.st-cau .oc-v b{color:#8A5A12}
+.oc-st{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:999px;white-space:nowrap;align-self:center}
+.st-ok .oc-st{background:var(--ok-wash);color:#2E7D4F}.st-cau .oc-st{background:var(--caution-wash);color:#8A5A12}.st-bad .oc-st{background:#FBEAE7;color:#B03A2E}
+.oc-bar{position:relative;height:6px;border-radius:3px;background:#E8EDEE;margin:4px 0 2px}
+.oc-bar .z{position:absolute;top:0;bottom:0}
+.oc-bar .z.g{background:rgba(46,125,79,.22)}.oc-bar .z.c{background:rgba(183,121,31,.28)}.oc-bar .z.r{background:rgba(176,58,46,.28)}.oc-bar .z.n{background:linear-gradient(90deg,rgba(46,125,79,.18),rgba(183,121,31,.28))}
+.oc-bar em{position:absolute;top:50%;transform:translate(-50%,-50%);display:block}
+.oc-bar em.cur{width:10px;height:14px;border-radius:3px;background:var(--ink);box-shadow:0 0 0 2px var(--paper);transition:left .12s}
+.oc-bar em.ref{width:2px;height:12px;background:var(--ink-3)}
+.oc-w{margin:0;font-size:13.5px;line-height:1.4;color:var(--ink-2)}
+.oc-d{margin:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-3);line-height:1.4}
+.cgm-adv summary{cursor:pointer;font-size:14px;color:var(--ink-2);width:max-content}
+.cgm-adv summary:hover{color:var(--ink)}
+.cgm-tog{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:6px}
+.cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr);gap:12px;align-items:start}
+#cmEnv{aspect-ratio:16/11;touch-action:none;cursor:crosshair}#cmLim{aspect-ratio:16/11}
+.cgm-note p{font-size:14px}
+@media (max-width:1100px){.cgm-more{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cgm-note{grid-column:1/-1}}
+@media (max-width:1000px){.cgm-ctl{grid-template-columns:minmax(0,1fr)}.cgm-out{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){#cmCv{aspect-ratio:4/4.05}.cgm-sl{grid-template-columns:minmax(0,1fr)}.cgm-out{grid-template-columns:minmax(0,1fr)}.cgm-more{grid-template-columns:minmax(0,1fr)}
+  .cgm-ph{flex:1 1 100%}.cgm-ph.seg button{flex:1 1 0;padding:9px 4px;font-size:13px}.stagebar #cmPlay{flex:1 1 100%}}
+/* Instructor: presenter-sized controls and readouts */
+body.depth-instructor .cgm-ph.seg button{font-size:17px;padding:12px 16px}
+body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
+body.depth-instructor .oc-t{font-size:17px}body.depth-instructor .oc-v b{font-size:24px}body.depth-instructor .oc-w{font-size:15px}
+body.depth-instructor .ctl label{font-size:16px}body.depth-instructor .ctl .hint{display:none}
+/* 3 · Try */
+.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
+.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
+.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.task .opts button:hover{border-color:var(--ink)}
+.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.task .opts button.wrong{border-color:var(--warning);background:#FBEAE7}
+.task .btns{margin-top:auto}
+@media (max-width:480px){.task .opts{grid-template-columns:1fr}}
+/* 4 · Debrief */
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+body.depth-instructor .maid b{font-size:24px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
 </style>
 </head>
 <body data-title="Stability, Controls and Load Factor">
@@ -88,59 +189,72 @@
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
       <h1>Stability, controls and load factor</h1>
-      <p>Everything ATPL 081 asks about stability, control and manoeuvre loads, worked on one A320. Load it forward and aft, disturb it, pull g in turbulence and at altitude, and move every control surface. Each lab shows the classic aerodynamics the exam tests, and what fly-by-wire normal law does on top.</p>
+      <p>Start with where the CG and the mass sit, and watch stall speed, range, stability and control change together on one aircraft. Then disturb it, pull g in turbulence and at altitude, and move every control surface: the classic aerodynamics the ATPL exam tests, and what fly-by-wire normal law does on top.</p>
+      <p class="goal" id="goal"></p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#basics">Forward or aft CG</a><a href="#cg">CG and balance</a><a href="#static">Static stability</a><a href="#dynamic">Dynamic stability</a><a href="#vn">Load factor and V-n</a><a href="#controls">Flight controls</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">CG, lift and the tail</a><a href="#basics">CG and mass model</a><a href="#try">Try it</a><a href="#debrief">Debrief</a><a href="#static">Static stability</a><a href="#dynamic">Dynamic stability</a><a href="#vn">Load factor and V-n</a><a href="#controls">Flight controls</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
 
-  <!-- 0 basics -->
-  <section class="card" id="basics">
-    <div class="eyebrow">1 · Start here</div>
-    <h2>Forward or aft CG</h2>
-    <p class="lead" id="bsLead"></p>
-    <div class="split">
-      <div class="stack">
-        <div class="view"><canvas id="bsCv" aria-label="A320 side view: wing lift, weight at the CG and the tail download, which grows as the CG moves forward"></canvas></div>
-        <div id="bsCtl"></div>
-      </div>
-      <div class="rail">
-        <div class="grp" id="bsG"></div>
-        <div class="ro" id="bsR"></div>
-      </div>
+  <!-- 1 · UNDERSTAND -->
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>CG, lift and the tail: one balance</h2>
+    <p class="lead" id="unLead"></p>
+    <div class="un-grid">
+      <figure class="un-fig" id="unFig"></figure>
+      <dl class="terms un-defs" id="unDefs"></dl>
     </div>
-    <div class="fa" id="bsT"></div>
-    <div class="exam" id="bsE"></div>
+    <div class="deepbox deep" id="unDeep"></div>
   </section>
 
-  <!-- 1 CG -->
-  <span id="long" aria-hidden="true" style="display:block;scroll-margin-top:72px"></span>
-  <section class="card" id="cg">
-    <div class="eyebrow">2 · Interactive</div>
-    <h2>CG and balance</h2>
-    <p class="lead" id="cgLead"></p>
-    <div class="split">
-      <div class="stack">
-        <div class="view"><canvas id="cgCv" aria-label="A320 side view with wing lift at the centre of pressure, weight at the CG and the tail load on the THS, with moment arms and an enlarged % MAC scale"></canvas><div class="ovr" id="cgPh"></div></div>
-        <div class="kpis" id="cgK"></div>
+  <!-- 2 · EXPLORE: the CG and mass model -->
+  <span id="cg" class="anc" aria-hidden="true"></span>
+  <section class="card" id="basics" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>CG and mass: one aircraft, every effect</h2>
+    <p class="lead" id="cmLead"></p>
+    <div class="cgm" id="cgm" data-lab-model>
+      <div class="stagebar"><div id="cmPh" class="cgm-ph"></div><button type="button" class="btn pri" id="cmPlay">▶ Gust</button></div>
+      <div class="tbox" id="cmTask" hidden></div>
+      <div class="cgm-stagewrap"><div class="view cgm-stage"><canvas id="cmCv" aria-label="Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord."></canvas></div><div class="mlegend" id="cmLeg"></div><p class="mhint" id="cmHint"></p></div>
+      <div class="cgm-ctl">
+        <div class="cgm-sl" id="cmSl"></div>
+        <div><div class="grp" id="gPre">Scenarios</div><div class="pre" id="cmPre"></div></div>
       </div>
-      <div class="rail">
-        <div class="grp">Loading</div>
-        <div id="cgCtl"></div>
-        <div class="ro" id="cgR"></div>
-        <p class="callout info" id="cgX"></p>
-      </div>
+      <ul class="cgm-out" id="cmOut" aria-live="polite"></ul>
+      <details class="cgm-adv"><summary>Advanced</summary><div class="cgm-tog" id="cmTog"></div></details>
     </div>
-    <div class="two">
-      <div class="view"><canvas id="envCv" aria-label="Weight and CG envelope with the current loading"></canvas></div>
-      <div class="view"><canvas id="limCv" aria-label="What sets the CG limits: elevator needed in the flare and stick force per g against CG"></canvas></div>
+    <div class="cgm-more deep">
+      <div><div class="view"><canvas id="cmEnv" aria-label="Mass and CG envelope. Drag the dot to set mass and CG together."></canvas></div><p class="mhint" id="cmEnvH">The certified CG range at each mass. The dot is your loading: drag it to change mass and CG together.</p></div>
+      <div><div class="view"><canvas id="cmLim" aria-label="Flare elevator needed and stick force per g against CG, with the CG limits at this mass"></canvas></div><p class="mhint" id="cmLimH">Why the limits sit where they do: forward, the flare runs out of elevator (amber); aft, the stick force per g gets too light (blue).</p></div>
+      <div class="box cgm-note" id="cmNote"></div>
     </div>
-    <div class="exam" id="cgE"></div>
   </section>
 
-  <!-- 2 static -->
-  <section class="card" id="static">
-    <div class="eyebrow">3 · Interactive</div>
+  <!-- 3 · TRY -->
+  <section class="card" id="try" data-step="try">
+    <div class="eyebrow">3 · Try</div>
+    <h2>Try it</h2>
+    <p class="lead" id="tryLead"></p>
+    <ol class="tasks" id="tasks"></ol>
+  </section>
+
+  <!-- 4 · DEBRIEF -->
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">4 · Debrief</div>
+    <h2>What happened, and why it matters</h2>
+    <div class="cols why" id="dbCards"></div>
+    <div class="maid" id="maid"></div>
+    <h3 id="takeH">Pilot takeaways</h3>
+    <ul class="take" id="dbTake"></ul>
+    <div class="deepbox deep"><span class="k" id="dbDeepK">Deep dive · forward and aft CG side by side</span><div class="fa" id="bsT"></div><div class="exam" id="bsE"></div></div>
+  </section>
+
+  <!-- 5 static -->
+  <span id="long" class="anc" aria-hidden="true"></span>
+  <section class="card" id="static" data-step="explore">
+    <div class="eyebrow">5 · Interactive</div>
     <h2>Static longitudinal stability</h2>
     <p class="lead" id="stLead"></p>
     <div class="split">
@@ -159,8 +273,8 @@
   </section>
 
   <!-- 3 dynamic -->
-  <section class="card" id="dynamic">
-    <div class="eyebrow">4 · Interactive</div>
+  <section class="card" id="dynamic" data-step="explore">
+    <div class="eyebrow">6 · Interactive</div>
     <h2>Dynamic stability</h2>
     <p class="lead" id="dyLead"></p>
     <div class="h3row"><h3>Pitch: short period and phugoid</h3></div>
@@ -193,8 +307,8 @@
   </section>
 
   <!-- 4 V-n -->
-  <section class="card" id="vn">
-    <div class="eyebrow">5 · Interactive</div>
+  <section class="card" id="vn" data-step="explore">
+    <div class="eyebrow">7 · Interactive</div>
     <h2>Load factor, V-n and buffet</h2>
     <p class="lead" id="vnLead"></p>
     <div class="split">
@@ -215,8 +329,8 @@
   </section>
 
   <!-- 5 controls -->
-  <section class="card" id="controls">
-    <div class="eyebrow">6 · Interactive</div>
+  <section class="card" id="controls" data-step="explore">
+    <div class="eyebrow">8 · Interactive</div>
     <h2>Flight controls</h2>
     <p class="lead" id="ctLead"></p>
     <div class="split">
@@ -232,8 +346,8 @@
         <div class="ro" id="ctR"></div>
       </div>
     </div>
-    <div class="h3row sub"><h3>Classic controls the exam asks about</h3><p id="clLead"></p></div>
-    <div class="mgrid">
+    <div class="h3row sub deep"><h3>Classic controls the exam asks about</h3><p id="clLead"></p></div>
+    <div class="mgrid deep">
       <div class="mcard"><h3>Adverse yaw and its cures</h3><div class="view"><canvas id="mAy" aria-label="Wing seen from above while rolling right, with the drag on each wing"></canvas></div><div id="mAyS"></div><div id="mAyC"></div><div id="mAyT" class="mtx"></div></div>
       <div class="mcard"><h3>Aerodynamic balance</h3><div class="view"><canvas id="mAb" aria-label="Control surface with its hinge set back or a horn ahead of the hinge"></canvas></div><div id="mAbS"></div><div id="mAbC"></div><div id="mAbT" class="mtx"></div></div>
       <div class="mcard"><h3>Tabs</h3><div class="view"><canvas id="mTb" aria-label="Elevator and tab in section for trim, balance, anti-balance and servo tabs"></canvas></div><div id="mTbS"></div><div id="mTbC"></div><div id="mTbT" class="mtx"></div></div>
@@ -245,8 +359,8 @@
   </section>
 
   <!-- 6 ops -->
-  <section class="card" id="ops">
-    <div class="eyebrow">7 · Operations</div>
+  <section class="card" id="ops" data-step="debrief">
+    <div class="eyebrow">9 · Operations</div>
     <h2>In the aircraft</h2>
     <div class="split">
       <div class="stack">
@@ -263,23 +377,32 @@
     <div class="cards6" id="opsCards"></div>
   </section>
 
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">5 · Check</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=22"></script>
+<script src="lab.js?v=23"></script>
 <script src="stab.js?v=1"></script>
+<script src="cgmodel.js?v=1"></script>
 <script>
 (function(){
 'use strict';
 const {L,el,nf}=LAB, S=STAB, I=S.INK, AC=S.AC, D2R=S.D2R;
 const txt=S.txt, arrow=S.arrow;
 LAB.add({},{
+ 'The certified CG range at each mass. The dot is your loading: drag it to change mass and CG together.':'Det sertifiserte CG-området ved hver masse. Punktet er lastingen din: dra det for å endre masse og CG samtidig.','Why the limits sit where they do: forward, the flare runs out of elevator (amber); aft, the stick force per g gets too light (blue).':'Hvorfor grensene ligger der de gjør: foran går utflatingen tom for høyderor (gul); bak blir stikkekraften per g for lett (blå).',
+ 'What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Scenarios':'Scenarier','Advanced':'Avansert','Mass (t)':'Masse (t)','From empty (OEW 42 t) to MTOW 78 t':'Fra tomt (OEW 42 t) til MTOW 78 t','Or drag the CG on the wing chord':'Eller dra CG på vingekorden','Deep dive · forward and aft CG side by side':'Dypdykk · fremre og bakre CG side om side','5 · Check':'5 · Sjekk','▶ Gust':'▶ Vindkast',
+ 'CG, lift and the tail: one balance':'CG, løft og halen: én balanse','CG and mass: one aircraft, every effect':'CG og masse: ett fly, alle effektene','Try it':'Prøv selv','What the pilot takes away':'Det piloten tar med seg',
+ 'CG, lift and the tail':'CG, løft og halen','CG and mass model':'CG- og massemodell','Pilot takeaways':'Det piloten tar med seg','Presets':'Forhåndsvalg',
+ 'CG position (% MAC)':'CG-posisjon (% MAC)','Mass (t) · OEW 42 to MTOW 78':'Masse (t) · OEW 42 til MTOW 78','Cruise':'Marsj','Take-off rotation':'Rotasjon ved avgang','Landing flare':'Utflating',
+ '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Interactive':'5 · Interaktiv','7 · Interactive':'7 · Interaktiv','8 · Interactive':'8 · Interaktiv','9 · Operations':'9 · Operativt',
+ 'Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord.':'Sidebilde av et tomotors jetfly med vekten i CG, vingeløftet i trykksenteret og halekraften, over en forstørret midlere aerodynamisk korde med CG-grensene, nøytralpunktet og den statiske marginen. Dra CG langs korden.',
+ 'Mass and CG envelope. Drag the dot to set mass and CG together.':'Masse- og CG-konvolutt. Dra punktet for å sette masse og CG samtidig.','Flare elevator needed and stick force per g against CG, with the CG limits at this mass':'Høyderor nødvendig i utflatingen og stikkekraft per g mot CG, med CG-grensene ved denne massen',
  'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
- 'Everything ATPL 081 asks about stability, control and manoeuvre loads, worked on one A320. Load it forward and aft, disturb it, pull g in turbulence and at altitude, and move every control surface. Each lab shows the classic aerodynamics the exam tests, and what fly-by-wire normal law does on top.':'Alt ATPL 081 spør om stabilitet, styring og manøverlaster, regnet på én A320. Last den fremme og bak, forstyrr den, trekk g i turbulens og i høyden, og beveg hver rorflate. Hver lab viser den klassiske aerodynamikken eksamen tester, og hva fly-by-wire normal law gjør på toppen.',
+ 'Start with where the CG and the mass sit, and watch stall speed, range, stability and control change together on one aircraft. Then disturb it, pull g in turbulence and at altitude, and move every control surface: the classic aerodynamics the ATPL exam tests, and what fly-by-wire normal law does on top.':'Start med hvor CG og massen ligger, og se steilefart, rekkevidde, stabilitet og styring endre seg samtidig på ett fly. Forstyrr det så, trekk g i turbulens og i høyden, og beveg hver rorflate: den klassiske aerodynamikken ATPL-eksamen tester, og hva fly-by-wire normal law gjør på toppen.',
  'CG and balance':'CG og balanse','Static stability':'Statisk stabilitet','Dynamic stability':'Dynamisk stabilitet','Load factor and V-n':'Lastfaktor og V-n','Flight controls':'Flykontroller','In the aircraft':'I flyet','Test yourself':'Test deg selv',
  '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt','6 · Interactive':'6 · Interaktiv','7 · Operations':'7 · Operativt','1 · Start here':'1 · Start her','Forward or aft CG':'Fremre eller bakre CG','Check':'Sjekk',
  'Static longitudinal stability':'Statisk lengdestabilitet','Load factor, V-n and buffet':'Lastfaktor, V-n og buffet',
@@ -319,51 +442,8 @@ function vline(g,x,y0,y1,col,dash,w){ g.strokeStyle=col; g.lineWidth=w||1.2; g.s
 function dot(g,x,y,r,col,ring){ g.fillStyle=col; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); if(ring){ g.strokeStyle=ring; g.lineWidth=1.5; g.stroke(); } }
 
 
-/* ================= 0 · Forward or aft CG: the basics ================= */
-(function(){
-const M=64, rho=S.isa(35000).rho, ENV=S.envelope(M);
-const BS={h:ENV.fwd+ (ENV.aft-ENV.fwd)*0.5};
-const ctl=el('bsCtl');
-const s1=LAB.slider(ctl,{label:{en:'CG position (% MAC)',no:'CG-posisjon (% MAC)'}.en,min:Math.ceil(ENV.fwd*2)/2,max:Math.floor(ENV.aft*2)/2,step:0.5,v:Math.round(BS.h*2)/2,f:v=>nf(v,1)+' %',on:v=>{BS.h=v;draw();}});
-LAB.add({},{'CG position (% MAC)':'CG-posisjon (% MAC)'});
-const lim=document.createElement('div'); lim.className='bsl'; ctl.appendChild(lim);
-const val=h=>{ const x=h/100, st=S.stall(M,x,'full'), cr=S.cruise(M,x,35000,0.78), ref=S.cruise(M,0.25,35000,0.78), fl=S.flare(M,x);
-  return {sm:(S.hn-x)*100, vs:st.Vs, td:-st.Lt/(M*1000*S.g)*100, tdc:-cr.t.Lt/cr.t.W*100, fuel:(cr.D/ref.D-1)*100, sfg:S.sfg(M,x,rho)/S.sfg(M,ENV.fwd/100,rho)*100, fl:fl.frac*100, vapp:fl.Vapp}; };
-const F=val(ENV.fwd), A=val(ENV.aft);
-const st=fit('bsCv',g0=>paint(g0));
-function paint(stc){ const g=S.clear(stc), W=stc.w, H=stc.h, n=narrow(stc), v=val(BS.h), fs=n?10.5:12;
-  // --- aircraft, schematic: positions along the wing exaggerated ×3 ---
-  const pad=n?12:28, sc=(W-2*pad)/38.6, cx0=pad+17.9*sc, cy=H*(n?0.30:0.32), X=x=>cx0-x*sc, Z=z=>cy-z*sc;
-  g.fillStyle='#2A3946'; g.strokeStyle='#4A5D6C'; g.lineWidth=1;
-  g.beginPath(); g.moveTo(X(-11.6),Z(1.7)); g.lineTo(X(-16.3),Z(8)); g.lineTo(X(-18.9),Z(8)); g.lineTo(X(-19.4),Z(1.3)); g.closePath(); g.fill(); g.stroke();
-  g.fillStyle='#33444F'; g.beginPath(); g.moveTo(X(17.7),Z(-0.3)); g.quadraticCurveTo(X(17.6),Z(1.2),X(14),Z(1.98)); g.lineTo(X(-8),Z(1.98)); g.lineTo(X(-19.9),Z(1.55)); g.lineTo(X(-19.9),Z(1.15)); g.lineTo(X(-8),Z(-1.98)); g.lineTo(X(14),Z(-1.98)); g.quadraticCurveTo(X(17.6),Z(-1.6),X(17.7),Z(-0.3)); g.closePath(); g.fill(); g.stroke();
-  const EX=3, wc=0.6, xs=f=>wc-(f-0.4)*AC.c*EX, zw=-1.2;
-  g.fillStyle='#4E6272'; g.beginPath(); g.moveTo(X(xs(0)),Z(zw)); g.quadraticCurveTo(X(xs(0.12)),Z(zw+0.9),X(xs(0.45)),Z(zw+0.6)); g.lineTo(X(xs(1)),Z(zw)); g.quadraticCurveTo(X(xs(0.5)),Z(zw-0.3),X(xs(0)),Z(zw)); g.fill();
-  g.fillStyle='#9AA9B5'; g.fillRect(X(-13.4),Z(1.05),X(-18.2)-X(-13.4),3);
-  const x=BS.h/100, cpx=0.38, L0=H*(n?0.15:0.17), xcg=xs(x), xcp=xs(cpx), xt=-16.4;
-  const ly=Z(zw+0.6)-2; arrow(g,X(xcp),ly,X(xcp),ly-L0*(1+v.tdc/100),I.cyan,3,10);
-  txt(g,L({en:'wing lift ',no:'vingeløft '})+nf(100+v.tdc,1)+' % W',X(xcp)+7,ly-L0*(1+v.tdc/100)+10,{col:I.cyan,al:'left',size:fs});
-  arrow(g,X(xcg),Z(0),X(xcg),Z(0)+L0,I.white,3,10);
-  txt(g,L({en:'weight at CG',no:'vekt i CG'}),X(xcg)-8,Z(0)+L0-4,{col:I.white,al:'right',size:fs});
-  dot(g,X(xcg),Z(0),6,'#10171D',I.white);
-  const tl=Math.max(6,v.tdc/100*L0*8); arrow(g,X(xt),Z(1.1),X(xt),Z(1.1)+tl,I.mag,3,10);
-  txt(g,L({en:'tail pushes down ',no:'halen presser ned '})+nf(v.tdc,1)+' % W',X(xt)-8,Z(1.1)+tl+4,{col:I.mag,al:'right',size:fs});
-  // --- enlarged MAC ruler ---
-  const r0=10,r1=55, rx0=pad+(n?4:40), rx1=W-pad-(n?4:40), RX=f=>rx0+(f-r0)/(r1-r0)*(rx1-rx0), ry=H*(n?0.80:0.80);
-  txt(g,L({en:'CG along the wing, % MAC (enlarged)',no:'CG langs vingen, % MAC (forstørret)'}),rx0,ry-(n?54:60),{col:'#8B99A7',al:'left',size:n?9.5:11});
-  g.fillStyle='rgba(127,203,232,.13)'; g.fillRect(RX(ENV.fwd),ry-7,RX(ENV.aft)-RX(ENV.fwd),14);
-  g.strokeStyle='#5B6B78'; g.lineWidth=1; g.beginPath(); g.moveTo(rx0,ry); g.lineTo(rx1,ry); g.stroke();
-  for(let f=10;f<=55;f+=5){ vline(g,RX(f),ry-3,ry+3,'#5B6B78'); if(!n||f%10==0) txt(g,f+'',RX(f),ry+(n?15:17),{col:'#6B7884',al:'center',size:n?9:10}); }
-  const mk=(f,lab,col,up)=>{ vline(g,RX(f),ry-12,ry+12,col,[3,3],1.5); txt(g,lab,RX(f),up?ry-17:ry+(n?28:32),{col,al:'center',size:n?9.5:11}); };
-  mk(ENV.fwd,L({en:'FWD limit',no:'fremre grense'}),'#7FCBE8',false);
-  mk(ENV.aft,L({en:'AFT limit',no:'bakre grense'}),'#7FCBE8',false);
-  mk(cpx*100,L({en:'lift',no:'løft'}),I.cyan,true);
-  mk(S.hn*100,L({en:'neutral point',no:'nøytralpunkt'}),'#E07A5F',true);
-  g.fillStyle=I.white; g.beginPath(); g.moveTo(RX(BS.h),ry-8); g.lineTo(RX(BS.h)+7,ry); g.lineTo(RX(BS.h),ry+8); g.lineTo(RX(BS.h)-7,ry); g.closePath(); g.fill();
-  // stability margin bracket
-  g.strokeStyle='#8FD3A6'; g.lineWidth=1.5; g.beginPath(); g.moveTo(RX(BS.h),ry-33); g.lineTo(RX(S.hn*100),ry-33); g.stroke();
-  txt(g,L({en:'static margin ',no:'statisk margin '})+nf(v.sm,1)+' %',(RX(BS.h)+RX(S.hn*100))/2,ry-38,{col:'#8FD3A6',al:'center',size:n?9.5:11});
-}
+/* ================= 1–4 · Understand, CG and mass master model, Try, Debrief (cgmodel.js) ================= */
+CGM.init();
 const T3=[
  [{en:'Stability',no:'Stabilitet'},{en:'<span class="pl">More stable</span>: bigger static margin, the nose returns firmly after a disturbance',no:'<span class="pl">Mer stabilt</span>: større statisk margin, nesen kommer bestemt tilbake etter en forstyrrelse'},{en:'<span class="mi">Less stable</span>: margin shrinks towards the neutral point; behind it the aircraft is unstable',no:'<span class="mi">Mindre stabilt</span>: marginen krymper mot nøytralpunktet; bak det er flyet ustabilt'}],
  [{en:'Stall speed',no:'Stallfart'},{en:'<span class="mi">Higher</span>: the tail pushes down harder, so the wing must lift weight plus tail load',no:'<span class="mi">Høyere</span>: halen presser hardere ned, så vingen må løfte vekten pluss halelasten'},{en:'<span class="pl">Lower</span>: less tail download, less lift needed',no:'<span class="pl">Lavere</span>: mindre halelast, mindre løft trengs'}],
@@ -372,153 +452,32 @@ const T3=[
  [{en:'Rotation and flare',no:'Rotasjon og flare'},{en:'<span class="mi">More elevator needed</span> to lift the nose; sets the forward limit',no:'<span class="mi">Mer høyderor trengs</span> for å løfte nesen; dette setter fremre grense'},{en:'Easy rotation, but <span class="mi">tailstrike</span> risk and tail tipping on the ground at the extreme',no:'Lett rotasjon, men <span class="mi">tailstrike</span>-fare og at flyet tipper på halen på bakken helt bak'}],
  [{en:'Take-off and landing',no:'Avgang og landing'},{en:'<span class="mi">Higher V-speeds</span> (they follow VS), longer distances, slightly less climb',no:'<span class="mi">Høyere V-hastigheter</span> (de følger VS), lengre distanser, litt dårligere stigning'},{en:'<span class="pl">Slightly lower V-speeds</span> and better climb',no:'<span class="pl">Litt lavere V-hastigheter</span> og bedre stigning'}]
 ];
-function draw(){ el('bsLead').innerHTML=L({en:'The single most examined idea in this subject. Where the centre of gravity (CG) sits along the wing decides how stable the aircraft is, how fast it stalls, how much fuel it burns and how hard it is to rotate and flare. Slide the CG between the A320 forward and aft limits (64 t) and watch every effect move together.',no:'Det temaet eksamen spør mest om. Hvor tyngdepunktet (CG) ligger langs vingen bestemmer hvor stabilt flyet er, hvor fort det staller, hvor mye drivstoff det bruker og hvor tungt det er å rotere og flare. Flytt CG mellom fremre og bakre grense for A320 (64 t) og se alle effektene endre seg samtidig.'});
-el('bsG').textContent=L({en:'At this CG',no:'Ved denne CG-en'});
-EXT('bsE',[
+function debrief(){
+ el('cmLead').innerHTML=L({en:'Three controls: <b>CG</b>, <b>mass</b> and the <b>phase of flight</b>. Move them and watch the forces on the aircraft and the six results below change together. The scenarios set up the classic cases.',no:'Tre kontroller: <b>CG</b>, <b>masse</b> og <b>flygefase</b>. Endre dem og se kreftene på flyet og de seks resultatene under endre seg samtidig. Scenariene setter opp de klassiske tilfellene.'});
+ el('cmNote').innerHTML=`<b class="t">${L({en:'Where the CG comes from',no:'Hvor CG kommer fra'})}</b><p>${L({en:'The lit windows, cargo holds and wing fuel only illustrate where the load sits. To build a real CG from passengers, cargo and fuel and finish a load sheet, use the',no:'De opplyste vinduene, lasterommene og drivstoffet i vingen viser bare hvor lasten ligger. For å bygge en ekte CG fra passasjerer, last og drivstoff og fullføre et lasteark, bruk'})} <a href="massbalance.html#cg">${L({en:'Mass and balance lab',no:'labben for masse og balanse'})} →</a></p><p class="deep">${L({en:'Model: two-surface trim (wing lift + tail force = weight, moments about the CG), stall with the tail load at CLmax, induced drag ∝ CL², range ∝ 1/drag at M 0.78 and FL350, flare with the THS frozen at the approach trim and ground effect. Illustrative A320-size values, not AFM data.',no:'Modell: trim med to flater (vingeløft + halekraft = vekt, momenter om CG), steiling med halelasten ved CLmax, indusert motstand ∝ CL², rekkevidde ∝ 1/motstand ved M 0,78 og FL350, utflating med THS frosset på innflygingstrimmen og bakkeeffekt. Illustrative verdier for et fly på A320-størrelse, ikke AFM-data.'})}</p>`;
+ el('tryLead').textContent=L({en:'Four short tasks. The first two you solve in the model above; the last two you answer here, then see them in the model.',no:'Fire korte oppgaver. De to første løser du i modellen over; de to siste svarer du på her, og ser dem så i modellen.'});
+ el('goal').innerHTML=`<span class="k">${L({en:'Learning goal',no:'Læringsmål'})}</span>`+L({en:'Explain how the CG position and the mass change stall speed, range, stability and control, and why the CG has a forward and an aft limit.',no:'Forklar hvordan CG-posisjonen og massen endrer steilefart, rekkevidde, stabilitet og styring, og hvorfor CG har en fremre og en bakre grense.'});
+ const DB=[
+  [{en:'Forward CG',no:'Fremre CG'},{en:'The tail must push down harder, and the wing carries that extra load. The aircraft is <b>more stable and heavier in pitch</b>, stalls a little faster and burns more fuel. Far enough forward, the elevator cannot raise the nose for the flare: that sets the <b>forward limit</b>.',no:'Halen må presse hardere ned, og vingen bærer den ekstra lasten. Flyet blir <b>mer stabilt og tyngre i pitch</b>, staller ved litt høyere fart og bruker mer drivstoff. Langt nok frem klarer ikke høyderoret å løfte nesen i utflatingen: det setter <b>fremre grense</b>.'}],
+  [{en:'Aft CG',no:'Bakre CG'},{en:'Less tail down-force, less wing lift and less trim drag: <b>best range</b> and slightly lower stall speed. But the static margin shrinks, the controls get <b>light and easy to over-control</b>, and behind the neutral point the aircraft is unstable: that sets the <b>aft limit</b>.',no:'Mindre halekraft ned, mindre vingeløft og mindre trimmotstand: <b>best rekkevidde</b> og litt lavere steilefart. Men den statiske marginen krymper, rorene blir <b>lette og lette å overstyre</b>, og bak nøytralpunktet er flyet ustabilt: det setter <b>bakre grense</b>.'}],
+  [{en:'Mass',no:'Masse'},{en:'Mass moves the stall speed most: <b>VS ∝ √W</b>, so +50 % mass gives about +22 %. More mass also means more induced drag (fewer miles per tonne of fuel) and heavier forces per g. The CG envelope narrows at high mass. The neutral point does not move with mass.',no:'Massen flytter steilefarten mest: <b>VS ∝ √W</b>, så +50 % masse gir rundt +22 %. Mer masse gir også mer indusert motstand (færre mil per tonn drivstoff) og tyngre krefter per g. CG-konvolutten smalner ved høy masse. Nøytralpunktet flytter seg ikke med massen.'}]];
+ el('dbCards').innerHTML=DB.map(([t,d],i)=>`<div class="box"><b class="t"><i>${i+1}</i>${L(t)}</b><p>${L(d)}</p></div>`).join('');
+ const TK=[
+  {en:'<b>Check the loadsheet CG against the envelope for the actual mass.</b> The limits move with mass; a CG that is fine at 60 t can be outside at 78 t.',no:'<b>Sjekk CG fra lastearket mot konvolutten for den faktiske massen.</b> Grensene flytter seg med massen; en CG som er grei ved 60 t, kan være utenfor ved 78 t.'},
+  {en:'<b>Set the take-off trim for the real CG.</b> Forward CG and nose-down trim: heavy rotation. Aft CG and nose-up trim: quick rotation and tail-strike risk.',no:'<b>Sett avgangstrimmen for den faktiske CG-en.</b> Fremre CG og trim nese ned: tung rotasjon. Bakre CG og trim nese opp: rask rotasjon og fare for halenedslag.'},
+  {en:'<b>Heavy and forward means higher speeds.</b> V-speeds follow VS; expect longer distances and a heavier flare.',no:'<b>Tungt og fremre betyr høyere farter.</b> V-hastighetene følger VS; regn med lengre distanser og tyngre utflating.'},
+  {en:'<b>Aft (inside the limit) saves fuel,</b> a few per cent between the ends of the envelope. Many operators plan loading towards the aft part.',no:'<b>Bakre CG (innenfor grensen) sparer drivstoff,</b> noen prosent mellom endene av konvolutten. Mange operatører planlegger lastingen mot bakre del.'},
+  {en:'<b>Load the front first, unload the back first.</b> With the CG behind the main gear the aircraft tips onto its tail on the stand.',no:'<b>Last foran først, lass av bak først.</b> Med CG bak hovedunderstellet tipper flyet på halen ved gaten.'}];
+ el('maid').innerHTML=`<span class="k">${L({en:'Memory aid',no:'Huskeregel'})}</span><b>${L({en:'“Nose heavy flies, tail heavy dies.”',no:'«Tung nese flyr, tung hale dør.»'})}</b><p>${L({en:'Forward CG is stable, but heavier to control and costs fuel. Aft CG saves fuel and feels light, but beyond the aft limit the aircraft becomes unstable.',no:'Fremre CG er stabilt, men tyngre å styre og koster drivstoff. Bakre CG sparer drivstoff og føles lett, men bak bakre grense blir flyet ustabilt.'})}</p>`;
+ el('dbTake').innerHTML=TK.map(x=>`<li>${L(x)}</li>`).join('');
+ el('bsT').innerHTML=`<div class="h k0"></div><div class="h">${L({en:'Forward CG',no:'Fremre CG'})}</div><div class="h">${L({en:'Aft CG',no:'Bakre CG'})}</div>`+T3.map(t=>`<div class="k">${L(t[0])}</div><div>${L(t[1])}</div><div>${L(t[2])}</div>`).join('');
+ EXT('bsE',[
  {en:'<b>Forward CG</b>: more stable, higher stall speed, more drag and fuel (less range), heavier stick forces, more elevator to rotate and flare.',no:'<b>Fremre CG</b>: mer stabilt, høyere stallfart, mer motstand og drivstoff (kortere rekkevidde), tyngre stikkekrefter, mer høyderor for å rotere og flare.'},
  {en:'<b>Aft CG</b>: less stable, lower stall speed, less drag (better range and economy), lighter forces and more manoeuvrable, but easier to over-control.',no:'<b>Bakre CG</b>: mindre stabilt, lavere stallfart, mindre motstand (bedre rekkevidde og økonomi), lettere krefter og mer manøvrerbart, men lettere å overstyre.'},
  {en:'Why: with the CG ahead of the wing\'s lift the tail must push <b>down</b>. The further forward the CG, the bigger that download, and the wing has to carry it as extra lift.',no:'Hvorfor: med CG foran vingens løft må halen presse <b>ned</b>. Jo lenger frem CG, desto større halelast, og vingen må bære den som ekstra løft.'},
  {en:'<b>Forward limit</b> = enough elevator to rotate and flare (and acceptable forces). <b>Aft limit</b> = enough stability (minimum static margin and stick force per g).',no:'<b>Fremre grense</b> = nok høyderor til å rotere og flare (og akseptable krefter). <b>Bakre grense</b> = nok stabilitet (minste statiske margin og stikkekraft per g).'}
 ],{en:'The loadsheet gives the take-off CG; you enter it as the THS trim in the MCDU. Fuel and passenger movement shift the CG in flight, and some types move it aft with a trim tank to save fuel (not the A320).',no:'Loadsheeten gir avgangs-CG; du legger den inn som THS-trim i MCDU. Drivstoff og passasjerer flytter CG under flyging, og noen typer flytter den bakover med en trimtank for å spare drivstoff (ikke A320).'});
-const v=val(BS.h), fr=(BS.h-ENV.fwd)/(ENV.aft-ENV.fwd), side=fr<0.4?'f':fr>0.6?'a':'';
-  st.draw();
-  lim.innerHTML=`<span>◀ ${L({en:'FORWARD',no:'FREMOVER'})} ${nf(ENV.fwd,1)} %</span><span>${L({en:'AFT',no:'BAKOVER'})} ${nf(ENV.aft,1)} % ▶</span>`;
-  const r=(lab,cur,f,a)=>`<div class="rrow"><span>${L(lab)}</span><b>${cur}</b></div>`;
-  el('bsR').innerHTML=[
-   r({en:'Static margin (stability)',no:'Statisk margin (stabilitet)'},nf(v.sm,1)+' % MAC'),
-   r({en:'Tail download, cruise',no:'Halelast ned, marsj'},nf(v.tdc,1)+' % W'),
-   r({en:'Stall speed VS1g, CONF FULL',no:'Stallfart VS1g, CONF FULL'},nf(v.vs,1)+' kt'),
-   r({en:'Cruise fuel burn vs 25 % MAC',no:'Drivstofforbruk i marsj mot 25 % MAC'},(v.fuel>0?'+':'')+nf(v.fuel,1)+' %'),
-   r({en:'Stick force per g (vs fwd limit)',no:'Stikkekraft per g (mot fremre grense)'},nf(v.sfg,0)+' %'),
-   r({en:'Elevator needed in the flare',no:'Høyderor nødvendig i flaren'},nf(v.fl,0)+' %')
-  ].join('')+`<p class="callout info" style="margin-top:10px;font-size:14px">${side==='f'?L({en:'Forward half: stable and heavy, at the cost of stall speed and fuel.',no:'Fremre halvdel: stabilt og tungt, på bekostning av stallfart og drivstoff.'}):side==='a'?L({en:'Aft half: efficient and light, at the cost of stability.',no:'Bakre halvdel: effektivt og lett, på bekostning av stabilitet.'}):L({en:'Mid range: the usual compromise.',no:'Midt i: det vanlige kompromisset.'})} ${L({en:'Across the whole A320 range: stall speed',no:'Over hele A320-spennet: stallfart'})} ${nf(F.vs-A.vs,1)} kt, ${L({en:'fuel',no:'drivstoff'})} ${nf(F.fuel-A.fuel,1)} %.</p>`;
-  el('bsT').innerHTML=`<div class="h k0"></div><div class="h${side==='f'?' on':''}">${L({en:'Forward CG',no:'Fremre CG'})}</div><div class="h${side==='a'?' on':''}">${L({en:'Aft CG',no:'Bakre CG'})}</div>`+T3.map(t=>`<div class="k">${L(t[0])}</div><div class="${side==='f'?'on':''}">${L(t[1])}</div><div class="${side==='a'?'on':''}">${L(t[2])}</div>`).join('');
 }
-LAB.onLang&&LAB.onLang(draw);
-draw();
-})();
-
-/* ================= 1 · CG and balance ================= */
-const CG={h:28,m:64,ph:'cr'};
-function cgState(){ const h=CG.h/100, m=CG.m, A=S.isa(35000);
-  const cr=S.cruise(m,h,35000,0.78), ref=S.cruise(m,0.25,35000,0.78);
-  const Wn=m*1000*S.g, Vs=S.stall(m,h,'full'), Vs25=S.stall(m,0.25,'full'), C=S.CONF.full, Vapp=1.23*Math.sqrt(2*Wn/(S.R0*AC.S*C.CLmax));
-  const ap=S.trim({m,h,q:0.5*S.R0*Vapp*Vapp,conf:'full'});
-  const tr=CG.ph==='cr'? cr.t : ap;
-  const env=S.envelope(m), to=S.takeoff(m,h), fl=S.flare(m,h);
-  return {h,m,cr,ref,Vs,Vs25,ap,tr,env,to,fl,fuel:(cr.D/ref.D-1)*100,sm:(S.hn-h)*100,smF:(S.hnF-h)*100,hm:S.hm(m,A.rho)*100,hmF:S.hmF(m,A.rho)*100,perg:S.perG(m,h,cr.q,cr.rho),sfg:S.sfg(m,h,A.rho),inEnv:CG.h>=env.fwd-1e-6&&CG.h<=env.aft+1e-6};
-}
-const cgC=fit('cgCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st), E=cgState(), t=E.tr;
-  // aircraft side view, nose left. X(x) with x in m forward of the CG.
-  const pad=n?10:22, sc=(W-2*pad)/38.6, X=x=>pad+(17.9-x)*sc, cy=H*(n?0.30:0.33), Z=z=>cy-z*sc;
-  const ST=[[17.7,0.05,-0.35],[17.2,0.85,-0.25],[16.2,1.45,-0.1],[14.6,1.85,0],[12.6,1.98,0],[-8,1.98,0],[-11.5,1.75,0.2],[-14.5,1.3,0.5],[-17.4,0.75,0.95],[-19.9,0.22,1.35]];
-  g.fillStyle='#2A3946'; g.strokeStyle='#4A5D6C'; g.lineWidth=1;
-  // fin
-  g.beginPath(); g.moveTo(X(-11.6),Z(1.7)); g.lineTo(X(-16.3),Z(8.0)); g.lineTo(X(-18.9),Z(8.0)); g.lineTo(X(-19.4),Z(1.3)); g.closePath(); g.fill(); g.stroke();
-  // engine (far side) and fuselage
-  g.beginPath(); ST.forEach((s,i)=>{ const x=X(s[0]), y=Z(s[2]+s[1]); i?g.lineTo(x,y):g.moveTo(x,y); }); for(let i=ST.length-1;i>=0;i--){ const s=ST[i]; g.lineTo(X(s[0]),Z(s[2]-s[1])); } g.closePath(); g.fillStyle='#33444F'; g.fill(); g.stroke();
-  // windows line
-  g.strokeStyle='#4A5D6C'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(13),Z(0.55)); g.lineTo(X(-9),Z(0.55)); g.stroke(); g.setLineDash([]);
-  // wing (MAC) airfoil: LEMAC 1.05 m ahead of the CG reference at 25 %
-  const lem=0.25*AC.c, xm=f=>lem-f*AC.c, zw=-1.05;
-  g.fillStyle='#4E6272'; g.beginPath(); g.moveTo(X(xm(0)),Z(zw)); g.quadraticCurveTo(X(xm(0.15)),Z(zw+0.55),X(xm(0.45)),Z(zw+0.35)); g.lineTo(X(xm(1)),Z(zw+0.02)); g.quadraticCurveTo(X(xm(0.5)),Z(zw-0.18),X(xm(0)),Z(zw)); g.fill();
-  // engine
-  g.fillStyle='#2E3E4A'; g.beginPath(); g.moveTo(X(7.2),Z(-1.4)); g.lineTo(X(1.8),Z(-1.6)); g.lineTo(X(1.6),Z(-3.0)); g.lineTo(X(7.2),Z(-3.35)); g.closePath(); g.fill(); g.stroke();
-  // THS, angle drawn ×2
-  const it=t.it, piv=[-15.6,0.75], a=-(S.thsOf(it))*D2R*2; g.save(); g.translate(X(piv[0]),Z(piv[1])); g.rotate(a); g.fillStyle='#9AA9B5';
-  g.beginPath(); g.moveTo(2.2*sc,0); g.quadraticCurveTo(1.6*sc,-0.32*sc,0,-0.25*sc); g.lineTo(-2.4*sc,-0.04*sc); g.lineTo(-2.4*sc,0.04*sc); g.lineTo(0,0.2*sc); g.quadraticCurveTo(1.6*sc,0.3*sc,2.2*sc,0); g.fill(); g.restore();
-  // forces
-  const L0=H*(n?0.16:0.2), Wn=t.W, xcp=xm(t.cp), xt=xm(AC.hac)-AC.lt;
-  const ly=Z(zw)-4;
-  arrow(g,X(xcp),ly,X(xcp),ly-L0*t.Lw/Wn,I.cyan,3,10);
-  arrow(g,X(0),Z(0),X(0),Z(0)+L0,I.white,3,10);
-  const tl=t.Lt/Wn*5*L0, ty=Z(0.75); arrow(g,X(xt),ty,X(xt),ty-tl,tl<0?I.mag:I.green,3,10);
-  dot(g,X(0),Z(0),6,'#10171D',I.white); g.fillStyle=I.white; g.beginPath(); g.moveTo(X(0),Z(0)); g.arc(X(0),Z(0),6,-Math.PI/2,0); g.closePath(); g.fill(); g.beginPath(); g.moveTo(X(0),Z(0)); g.arc(X(0),Z(0),6,Math.PI/2,Math.PI); g.closePath(); g.fill();
-  const fs=n?10.5:12;
-  txt(g,L({en:'lift ',no:'løft '})+nf(t.Lw/Wn*100,1)+' % W',X(xcp)+(xcp<0?6:-6),ly-L0*t.Lw/Wn+10,{col:I.cyan,al:xcp<0?'left':'right',size:fs});
-  txt(g,L({en:'weight',no:'vekt'}),X(0)+7,Z(0)+L0*1.05,{col:I.white,size:fs});
-  txt(g,(n?'THS ':(t.Lt<0?L({en:'THS pushes down ',no:'THS presser ned '}):L({en:'THS lifts ',no:'THS løfter '})))+(n?(t.Lt<0?'↓ ':'↑ '):'')+nf(Math.abs(t.Lt)/Wn*100,1)+' % W',X(xt)+8,Math.max(ty-tl,Z(-1.4))+16,{col:t.Lt<0?I.mag:I.green,al:'right',size:fs});
-  if(!n) txt(g,L({en:'tail force drawn ×5 · THS angle ×2',no:'halekraft tegnet ×5 · THS-vinkel ×2'}),X(xt)+4,Z(8.6),{mono:1,col:I.mute,al:'right',size:10});
-  // moment arms
-  const ay=Z(0)+L0*1.05+ (n?16:22);
-  const arm=(x0,x1,y,s,col)=>{ g.strokeStyle=col; g.lineWidth=1; g.beginPath(); g.moveTo(X(x0),y); g.lineTo(X(x1),y); g.moveTo(X(x0),y-4); g.lineTo(X(x0),y+4); g.moveTo(X(x1),y-4); g.lineTo(X(x1),y+4); g.stroke(); txt(g,s,(X(x0)+X(x1))/2,y-4,{mono:1,col,al:'center',size:10}); };
-  arm(0,xt,ay,L({en:'tail arm ',no:'halearm '})+nf(Math.abs(xt),1)+' m',I.mute);
-  if(Math.abs(xcp)*sc>14) arm(0,xcp,ay+(n?20:24),nf(Math.abs(xcp),2)+' m',I.cyan);
-  // enlarged MAC strip
-  const sy=H-(n?62:58), sx0=pad+(n?6:40), sx1=W-pad-(n?6:40), P=p=>sx0+p/60*(sx1-sx0);
-  g.fillStyle='rgba(127,203,232,.05)'; g.beginPath(); g.moveTo(X(xm(0)),Z(zw)+2); g.lineTo(X(xm(0.6)),Z(zw)+2); g.lineTo(P(60),sy-14); g.lineTo(P(0),sy-14); g.closePath(); g.fill();
-  band(g,P(E.env.fwd),P(E.env.aft),sy-10,sy+10,'rgba(113,204,147,.20)');
-  g.strokeStyle=I.rule; g.lineWidth=1; g.beginPath(); g.moveTo(P(0),sy); g.lineTo(P(60),sy); g.stroke();
-  for(let v=0;v<=60;v+=10){ g.beginPath(); g.moveTo(P(v),sy-3); g.lineTo(P(v),sy+3); g.stroke(); if(!n||v%20===0) txt(g,v+'%',P(v),sy+16,{mono:1,col:I.dim,al:'center',size:9.5}); }
-  if(!n) txt(g,'% MAC',P(60)+8,sy+4,{mono:1,col:I.dim,size:9.5});
-  const mk=(v,col,lab,row,dash)=>{ const x=P(Math.min(60,v)); vline(g,x,sy-12,sy+12,col,dash,1.6); if(lab) txt(g,lab,x,row<0?sy-16+row*12:sy+30+row*12,{mono:1,col,al:'center',size:n?9:10}); };
-  mk(S.hnF*100,I.red,n?'NP free':L({en:'NP stick free',no:'NP fri stikke'}),-1,[3,3]); mk(S.hn*100,I.red,n?'NP':L({en:'NP stick fixed',no:'NP fast stikke'}),0); mk(E.hm,I.amber,n?'MP':L({en:'manoeuvre pt',no:'manøverpunkt'}),1);
-  mk(t.cp*100,I.cyan,L({en:'CP',no:'CP'}),-1);
-  const cx=P(CG.h); g.fillStyle=E.inEnv?I.white:I.red; g.beginPath(); g.moveTo(cx,sy-9); g.lineTo(cx+7,sy); g.lineTo(cx,sy+9); g.lineTo(cx-7,sy); g.closePath(); g.fill();
-  txt(g,'CG '+nf(CG.h,1)+' %',cx,sy-(n?30:30)+(Math.abs(CG.h-t.cp*100)<6?-12:0),{col:E.inEnv?I.white:I.red,al:'center',size:fs});
-  txt(g,L({en:'limits at this mass',no:'grenser ved denne massen'}),P(E.env.fwd),sy+(n?42:44),{mono:1,col:I.green,size:n?9:10});
-});
-const envC=fit('envCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, E=cgState();
-  txt(g,L({en:'Mass and CG envelope',no:'Masse- og CG-konvolutt'}),10,16,{col:I.ink,size:12});
-  const ax=S.axes(g,{x:38,y:28,w:W-50,h:H-52},[10,55],[38,80],{xt:[10,20,30,40,50],yt:[40,50,60,70,80],xf:v=>v+'%'});
-  const ms=[]; for(let m=40;m<=78;m+=1) ms.push(m);
-  g.beginPath(); ms.forEach((m,i)=>{ const e=S.envelope(m); i?g.lineTo(ax.X(e.fwd),ax.Y(m)):g.moveTo(ax.X(e.fwd),ax.Y(m)); }); ms.slice().reverse().forEach(m=>{ const e=S.envelope(m); g.lineTo(ax.X(e.aft),ax.Y(m)); }); g.closePath();
-  g.fillStyle='rgba(113,204,147,.13)'; g.fill(); g.strokeStyle=I.green; g.lineWidth=1.6; g.stroke();
-  [[78,'MTOW'],[66,'MLW']].forEach(([m,s])=>{ S.line(g,[[ax.X(10),ax.Y(m)],[ax.X(55),ax.Y(m)]],I.dim,1,[4,4]); txt(g,s,ax.X(54),ax.Y(m)-4,{mono:1,col:I.mute,al:'right',size:9.5}); });
-  vline(g,ax.X(S.hn*100),ax.Y(80),ax.Y(38),I.red,[4,3]); txt(g,'NP',ax.X(S.hn*100)-3,ax.Y(41),{mono:1,col:I.red,al:'right',size:10});
-  dot(g,ax.X(CG.h),ax.Y(CG.m),6,E.inEnv?I.mag:I.red,'#10171D');
-  txt(g,'t',30,28,{mono:1,col:I.dim,al:'right',size:9.5});
-});
-const limC=fit('limCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, E=cgState(), A=S.isa(35000);
-  txt(g,L({en:'What sets the limits',no:'Hva som setter grensene'}),10,16,{col:I.ink,size:12});
-  const ax=S.axes(g,{x:38,y:28,w:W-50,h:H-52},[10,55],[0,110],{xt:[10,20,30,40,50],yt:[0,25,50,75,100],xf:v=>v+'%',yf:v=>v+'%'});
-  band(g,ax.X(E.env.fwd),ax.X(E.env.aft),ax.Y(110),ax.Y(0),'rgba(113,204,147,.10)');
-  const fl=[],sf=[]; for(let h=10;h<=55;h+=0.5){ fl.push([ax.X(h),ax.Y(Math.min(110,S.flare(CG.m,h/100).frac*100))]); const v=S.sfg(CG.m,h/100,A.rho)/S.sfg(CG.m,0.15,A.rho)*100; if(v>=-2) sf.push([ax.X(h),ax.Y(Math.max(0,v))]); }
-  S.line(g,[[ax.X(10),ax.Y(100)],[ax.X(55),ax.Y(100)]],I.dim,1,[2,3]);
-  g.save(); g.beginPath(); g.rect(38,28,W-50,H-52); g.clip(); S.line(g,fl,I.amber,2.2); S.line(g,sf,I.cyan,2.2); g.restore();
-  vline(g,ax.X(S.hn*100),ax.Y(110),ax.Y(0),I.red,[4,3]); vline(g,ax.X(E.hmF),ax.Y(110),ax.Y(0),I.cyan,[2,3],1);
-  vline(g,ax.X(CG.h),ax.Y(110),ax.Y(0),I.white,null,1.4);
-  const n=narrow(st)||W<400;
-  txt(g,L({en:'flare elevator needed',no:'høyderor for utflating'}),ax.X(11.5),ax.Y(20),{col:I.amber,size:n?10:11});
-  txt(g,L({en:'stick force per g',no:'stikkekraft per g'}),ax.X(11.5),ax.Y(8),{col:I.cyan,size:n?10:11});
-  txt(g,'NP',ax.X(S.hn*100)+3,ax.Y(104),{mono:1,col:I.red,size:10});
-});
-function cgRead(){ const E=cgState(), t=E.cr.t, dV=E.Vs.Vs-E.Vs25.Vs;
-  kpis('cgK',[
-   [{en:'Tail load, cruise',no:'Halelast, marsj'},(t.Lt<0?'↓ ':'↑ ')+nf(Math.abs(t.Lt)/1000,1)+'<small>kN</small>',t.Lt<0?'hl':'good',{en:nf(Math.abs(t.Lt)/t.W*100,1)+' % of weight',no:nf(Math.abs(t.Lt)/t.W*100,1)+' % av vekten'}],
-   [{en:'VS1g, CONF FULL',no:'VS1g, CONF FULL'},nf(E.Vs.Vs,1)+'<small>kt</small>','',{en:(dV>=0?'+':'−')+nf(Math.abs(dV),1)+' kt vs 25 % MAC',no:(dV>=0?'+':'−')+nf(Math.abs(dV),1)+' kt mot 25 % MAC'}],
-   [{en:'Cruise fuel burn',no:'Forbruk i marsj'},(E.fuel>=0?'+':'−')+nf(Math.abs(E.fuel),1)+'<small>%</small>',E.fuel>0.05?'warn':'good',{en:'vs 25 % MAC, M 0.78 FL350',no:'mot 25 % MAC, M 0,78 FL350'}],
-   [{en:'Static margin',no:'Statisk margin'},nf(E.sm,1)+'<small>% MAC</small>',E.sm<=0?'bad':E.sm<12?'warn':'',{en:'NP − CG, stick fixed',no:'NP − CG, fast stikke'}]]);
-  rows('cgR',[
-   [{en:'Inside the envelope',no:'Innenfor konvolutten'},E.inEnv?L({en:'yes',no:'ja'})+` (${nf(E.env.fwd,1)}–${nf(E.env.aft,1)} %)`:L({en:'no',no:'nei'})+` (${nf(E.env.fwd,1)}–${nf(E.env.aft,1)} %)`,E.inEnv?'good':'bad'],
-   [{en:'Wing lift, cruise',no:'Vingeløft, marsj'},nf(t.Lw/t.W*100,1)+' % W'],
-   [{en:'Centre of pressure (wing-body)',no:'Trykksenter (vinge og kropp)'},nf(t.cp*100,1)+' % MAC'],
-   [{en:'THS for 1 g, cruise',no:'THS for 1 g, marsj'},ths(t.ths)],
-   [{en:'Takeoff THS (trim at V2)',no:'THS for avgang (trim ved V2)'},ths(E.to.thsTrim)],
-   [{en:'Trim drag, cruise',no:'Trimmotstand, marsj'},nf(E.cr.Dtrim/1000,2)+' kN · '+nf(E.cr.Dtrim/E.cr.D*100,1)+' %'],
-   [{en:'Static margin, stick free',no:'Statisk margin, fri stikke'},nf(E.smF,1)+' % MAC',E.smF<=0?'bad':''],
-   [{en:'Manoeuvre point, FL350',no:'Manøverpunkt, FL350'},nf(E.hm,1)+' % MAC'],
-   [{en:'Elevator per g, cruise',no:'Høyderor per g, marsj'},nf(E.perg,1)+'° / g',E.perg<=0?'bad':E.perg<3?'warn':''],
-   [{en:'Stick force per g (reversible controls)',no:'Stikkekraft per g (reversible ror)'},E.sfg<=0?L({en:'zero or reversed',no:'null eller reversert'}):pct(E.sfg*100)+L({en:' of 15 % MAC, 64 t',no:' av 15 % MAC, 64 t'}),E.sfg<=0.15?'bad':''],
-   [{en:'Flare elevator, THS frozen',no:'Høyderor i utflating, THS frosset'},nf(E.fl.elev,1)+'° '+L({en:'of',no:'av'})+' 30°',E.fl.frac>0.9?'bad':E.fl.frac>0.75?'warn':'']]);
-  let x;
-  if(CG.h<E.env.fwd) x={en:'Ahead of the forward limit. The tail must push down so hard that, with flaps out and the THS frozen for the flare, the elevator can run out of travel before the wing reaches its maximum lift in ground effect. Stall speed, trim drag and control forces are also at their highest.',no:'Foran fremre grense. Halen må presse så hardt ned at høyderoret, med klaff ute og THS frosset for utflatingen, kan gå tomt for utslag før vingen når maks løft i bakkeeffekt. Steilefart, trimmotstand og rorkrefter er også størst her.'};
-  else if(CG.h>E.env.aft) x=CG.h>=S.hn*100?{en:'At or behind the neutral point: the basic aircraft has no static stability left. A nose-up gust raises the nose further, and with reversible controls the stick force per g would be zero or reversed. The aft limit sits well ahead of this point.',no:'I eller bak nøytralpunktet: flyet alene har ingen statisk stabilitet igjen. Et vindkast som løfter nesen, løfter den mer, og med reversible ror ville stikkekraften per g vært null eller reversert. Bakre grense ligger godt foran dette punktet.'}:{en:'Behind the aft limit. Static margin and stick force per g are getting small: the aircraft is easy to over-control and slow to settle after a gust. On the ground an aft CG also risks the tail tipping during loading and a pitch-up on go-around.',no:'Bak bakre grense. Statisk margin og stikkekraft per g blir små: flyet er lett å overstyre og roer seg sakte etter et vindkast. På bakken gir bakre CG også fare for at flyet tipper på halen under lasting, og pitch opp ved go-around.'};
-  else x=CG.ph==='cr'?{en:'Inside the envelope. Move the CG forward: more tail download, more wing lift, higher stall speed and fuel burn, more stability and heavier forces. Move it aft: the opposite, until the stability margins run out. The envelope keeps you between those two ends.',no:'Innenfor konvolutten. Flytt CG fremover: mer halelast ned, mer vingeløft, høyere steilefart og forbruk, mer stabilitet og tyngre krefter. Flytt den bakover: det motsatte, til stabilitetsmarginene tar slutt. Konvolutten holder deg mellom de to endene.'}:{en:'Approach in CONF FULL: the flaps add a large nose-down pitching moment and move the centre of pressure aft, so the THS needs far more nose-up trim and the tail download is larger than in cruise. This is where the forward limit bites.',no:'Innflyging i CONF FULL: klaffene gir et stort nese-ned-moment og flytter trykksenteret bakover, så THS trenger mye mer nese-opp-trim, og halelasten ned er større enn i marsj. Det er her fremre grense biter.'};
-  el('cgX').textContent=L(x);
-}
-function cgAll(){ cgC.draw(); envC.draw(); limC.draw(); cgRead(); }
-sl('cgCtl',{label:'CG (% MAC)',min:8,max:56,step:0.5,v:CG.h,f:v=>nf(v,1)+' %',on:v=>{ CG.h=v; cgAll(); }});
-sl('cgCtl',{label:'Mass (t)',min:40,max:78,step:0.5,v:CG.m,f:v=>nf(v,1)+' t',on:v=>{ CG.m=v; cgAll(); }});
-(function(){ const b=el('cgPh'); const draw=()=>{ b.innerHTML=[['cr','Cruise FL350'],['ap','Approach FULL']].map(([k,t])=>`<button class="vbtn ${CG.ph===k?'on':''}" data-v="${k}">${LAB.T(t)}</button>`).join(''); }; b.onclick=e=>{ const x=e.target.closest('button'); if(!x) return; CG.ph=x.dataset.v; draw(); cgAll(); }; draw(); on(draw); })();
-on(()=>{ el('cgLead').textContent=L({en:'The wing’s lift acts at its centre of pressure, the weight at the CG, and the trimmable horizontal stabiliser (THS) balances the difference. Slide the CG through the A320 envelope and watch the tail load, the wing lift, the trim, the stall speed and the fuel burn follow, along with the stability margins and the forces you would feel. The flight figures are for M 0.78 at FL350.',no:'Vingens løft virker i trykksenteret, vekten i CG, og den trimbare horisontale stabilisatoren (THS) tar forskjellen. Skyv CG gjennom A320-konvolutten og se halelast, vingeløft, trim, steilefart og forbruk følge med, sammen med stabilitetsmarginene og kreftene du ville kjent. Flytallene gjelder M 0,78 i FL350.'});
- EXT('cgE',[
-  {en:'With the centre of pressure behind the CG the tail must push down. The wing then carries the weight plus that download, so a <b>forward CG</b> means more wing lift, a <b>higher stall speed</b>, more induced and trim drag and a <b>higher fuel burn</b>.',no:'Med trykksenteret bak CG må halen presse ned. Vingen bærer da vekten pluss halelasten, så <b>fremre CG</b> gir mer vingeløft, <b>høyere steilefart</b>, mer indusert motstand og trimmotstand, og <b>høyere forbruk</b>.'},
-  {en:'Forward CG: <b>more stable</b>, larger static margin, <b>higher stick force per g</b> and more elevator per g; rotation and flare need more elevator. <b>Aft CG</b>: less stable, lighter forces, less drag.',no:'Fremre CG: <b>mer stabilt</b>, større statisk margin, <b>høyere stikkekraft per g</b> og mer høyderor per g; rotasjon og utflating krever mer høyderor. <b>Bakre CG</b>: mindre stabilt, lettere krefter, mindre motstand.'},
-  {en:'The <b>forward limit</b> is set by elevator and stabiliser authority (rotation, flare and full-flap stall in ground effect) and by control forces. The <b>aft limit</b> is set by a minimum static margin and minimum stick force per g.',no:'<b>Fremre grense</b> settes av autoriteten til høyderor og stabilisator (rotasjon, utflating og steiling med full klaff i bakkeeffekt) og av rorkreftene. <b>Bakre grense</b> settes av en minste statisk margin og minste stikkekraft per g.'},
-  {en:'Static margin = distance from the CG to the <b>neutral point</b>. The stick force per g falls linearly as the CG moves aft and is <b>zero at the manoeuvre point</b>, which lies behind the neutral point (pitch damping from the tail).',no:'Statisk margin = avstanden fra CG til <b>nøytralpunktet</b>. Stikkekraften per g faller lineært når CG flyttes bakover og er <b>null i manøverpunktet</b>, som ligger bak nøytralpunktet (pitchdemping fra halen).'}],
-  {en:'In normal law the sidestick commands load factor and auto-trim moves the THS, so the force per g you feel comes from the sidestick springs and does not change with CG. The aerodynamics underneath are unchanged, and the CG limits still apply, because the aircraft must be flyable in alternate and direct law and on the mechanical trim.',no:'I normal law kommanderer sidesticken lastfaktor, og autotrim flytter THS, så kraften per g du kjenner kommer fra fjærene i sidesticken og endrer seg ikke med CG. Aerodynamikken under er uendret, og CG-grensene gjelder fortsatt, fordi flyet må kunne flys i alternate og direct law og på mekanisk trim.'});
-});
 
 /* ================= 2 · Static stability ================= */
 const STA={h:28,free:'fixed',t0:-1,sim:null};
@@ -1007,12 +966,18 @@ function opsCards(){ const c=[
  [{en:'THS for takeoff',no:'THS for avgang'},{en:'The takeoff CG gives the THS setting (FLAPS/THS on the PERF TAKE OFF page, for example 1/UP1.0). It is set by hand on the pitch trim wheel and cross-checked. The T.O CONFIG test catches a THS outside the takeoff range, not one that is wrong for your CG.',no:'CG for avgang gir THS-innstillingen (FLAPS/THS på PERF TAKE OFF-siden, for eksempel 1/UP1.0). Den settes manuelt på pitchtrimhjulet og kryssjekkes. T.O CONFIG-testen fanger en THS utenfor avgangsområdet, ikke en som er feil for din CG.'}],
  [{en:'Mistrim on rotation',no:'Feiltrim ved rotasjon'},{en:'Nose-down mistrim: heavy rotation, delayed lift-off, longer roll. Nose-up mistrim: early or rapid rotation and a tail strike risk. Rotate at the normal rate whatever the feel, and do not chase it with large inputs.',no:'Feiltrim nese ned: tung rotasjon, sen avgang, lengre rull. Feiltrim nese opp: tidlig eller rask rotasjon og fare for halenedslag. Roter med normal rate uansett følelse, og ikke jag den med store utslag.'}],
  [{en:'Turbulence speed',no:'Turbulensfart'},{en:'In severe turbulence fly the recommended turbulence speed, typically around 250 kt lower down and 275 kt / M 0.76 higher up (check your FCOM), keep the autopilot on, and accept height and speed excursions. It keeps you between the stall and the gust limits.',no:'I kraftig turbulens flyr du anbefalt turbulensfart, typisk rundt 250 kt lavere ned og 275 kt / M 0,76 høyere opp (sjekk FCOM), behold autopiloten og godta avvik i høyde og fart. Den holder deg mellom steiling og vindkastgrensene.'}],
- [{en:'Aft CG saves fuel',no:'Bakre CG sparer drivstoff'},{en:'Less tail download means less wing lift and trim drag: lab 1 shows a few per cent between the forward and aft ends. Some operators load towards the aft part of the envelope for this.',no:'Mindre halelast betyr mindre vingeløft og trimmotstand: lab 1 viser noen prosent mellom fremre og bakre ende. Noen operatører laster mot bakre del av konvolutten av denne grunnen.'}],
+ [{en:'Aft CG saves fuel',no:'Bakre CG sparer drivstoff'},{en:'Less tail download means less wing lift and trim drag: the CG and mass model shows a few per cent between the forward and aft ends. Some operators load towards the aft part of the envelope for this.',no:'Mindre halelast betyr mindre vingeløft og trimmotstand: CG- og massemodellen viser noen prosent mellom fremre og bakre ende. Noen operatører laster mot bakre del av konvolutten av denne grunnen.'}],
  [{en:'Altitude and bank',no:'Høyde og krengning'},{en:'Near REC MAX the buffet margin is down to 1.3 g: about 40° of bank. Keep turns shallow at high level, and descend before you need a big margin.',no:'Nær REC MAX er buffetmarginen nede i 1,3 g: rundt 40° krengning. Hold svingene slake høyt oppe, og gå ned før du trenger stor margin.'}]];
  el('opsCards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
 
 /* ================= 7 · Quiz ================= */
 const Q=[
+ {q:{en:'At the same CG, the mass is increased by 21 %. The 1 g stall speed (IAS) increases by about…',no:'Ved samme CG øker massen med 21 %. Steilefarten ved 1 g (IAS) øker med rundt …'},a:[{en:'10 %',no:'10 %'},{en:'21 %',no:'21 %'},{en:'4.6 %',no:'4,6 %'},{en:'0 %; the stall depends only on angle of attack',no:'0 %; steilingen avhenger bare av anstigningsvinkelen'}],c:0,e:{en:'VS ∝ √W, so √1.21 = 1.10. The stall angle of attack is unchanged; the speed needed to reach CLmax rises.',no:'VS ∝ √W, så √1,21 = 1,10. Steilevinkelen er uendret; farten som trengs for å nå CLmax, øker.'}},
+ {q:{en:'Why does moving the CG aft (inside the envelope) reduce the fuel burn in cruise?',no:'Hvorfor gir en bakre CG (innenfor konvolutten) lavere drivstofforbruk i marsj?'},a:[{en:'The tail download falls, so the wing needs less lift and makes less induced (trim) drag',no:'Halelasten nedover blir mindre, så vingen trenger mindre løft og lager mindre indusert motstand (trimmotstand)'},{en:'The parasite drag of the fuselage falls',no:'Den parasittiske motstanden til flykroppen synker'},{en:'The aircraft becomes lighter',no:'Flyet blir lettere'},{en:'The engines run at a higher thrust setting and are more efficient',no:'Motorene går på høyere skyv og er mer effektive'}],c:0,e:{en:'L = W + T: less tail down-force means less wing lift. Induced drag grows with CL², so the saving is a few per cent between the forward and aft limits.',no:'L = W + T: mindre halekraft nedover gir mindre vingeløft. Indusert motstand øker med CL², så besparelsen er noen prosent mellom fremre og bakre grense.'}},
+ {q:{en:'The aft CG limit is mainly determined by…',no:'Bakre CG-grense bestemmes hovedsakelig av …'},a:[{en:'a minimum static margin and a minimum stick force per g',no:'en minste statisk margin og en minste stikkekraft per g'},{en:'elevator authority in the landing flare',no:'høyderorets autoritet i utflatingen'},{en:'the maximum take-off mass',no:'største startmasse'},{en:'the stall speed in the landing configuration',no:'steilefarten i landingskonfigurasjon'}],c:0,e:{en:'Aft CG reduces stability and control forces. The limit keeps enough margin ahead of the neutral point and enough force per g to prevent over-control. Elevator authority sets the forward limit.',no:'Bakre CG gir mindre stabilitet og mindre rorkrefter. Grensen sikrer nok margin foran nøytralpunktet og nok kraft per g til å unngå overstyring. Høyderorets autoritet setter fremre grense.'}},
+ {q:{en:'With the CG behind the neutral point, after a small nose-up gust the aircraft will…',no:'Med CG bak nøytralpunktet vil flyet, etter et lite vindkast som løfter nesen, …'},a:[{en:'pitch further nose-up: it is statically unstable',no:'løfte nesen videre: det er statisk ustabilt'},{en:'return to trim with a lightly damped oscillation',no:'gå tilbake til trim med en svakt dempet svingning'},{en:'stay at the new attitude: it is neutrally stable',no:'bli liggende i den nye attityden: det er nøytralt stabilt'},{en:'pitch nose-down and enter a phugoid',no:'senke nesen og gå inn i en fugoide'}],c:0,e:{en:'Behind the neutral point the extra lift from the gust acts ahead of the CG, so the moment increases the disturbance. At the neutral point the aircraft is neutrally stable.',no:'Bak nøytralpunktet virker det ekstra løftet fra vindkastet foran CG, så momentet forsterker forstyrrelsen. I nøytralpunktet er flyet nøytralt stabilt.'}},
+ {q:{en:'The position of the (stick-fixed) neutral point depends mainly on…',no:'Plasseringen av nøytralpunktet (fast stikke) avhenger hovedsakelig av …'},a:[{en:'the aircraft geometry: tailplane area and arm, downwash and lift slopes',no:'flyets geometri: haleflate og arm, nedvind og løftekurvenes helning'},{en:'the CG position',no:'CG-posisjonen'},{en:'the aircraft mass',no:'flyets masse'},{en:'the airspeed',no:'farten'}],c:0,e:{en:'Loading moves the CG, not the neutral point. A bigger tailplane, a longer tail arm or less downwash at the tail move the neutral point aft.',no:'Lasting flytter CG, ikke nøytralpunktet. Større haleflate, lengre halearm eller mindre nedvind ved halen flytter nøytralpunktet bakover.'}},
+ {q:{en:'On a cambered wing, as the angle of attack increases (below the stall), the centre of pressure…',no:'På en krum vinge, når anstigningsvinkelen øker (under steiling), vil trykksenteret …'},a:[{en:'moves forward towards the aerodynamic centre',no:'flytte seg fremover mot det aerodynamiske senteret'},{en:'moves aft towards the trailing edge',no:'flytte seg bakover mot bakkanten'},{en:'stays fixed at 25 % MAC',no:'ligge fast på 25 % MAC'},{en:'moves to the CG',no:'flytte seg til CG'}],c:0,e:{en:'CP = ac − Cm0/CL. With a nose-down Cm0 the CP lies behind the aerodynamic centre and approaches it as CL rises. The aerodynamic centre itself stays put; that is why stability is analysed about it.',no:'CP = ac − Cm0/CL. Med negativ Cm0 ligger CP bak det aerodynamiske senteret og nærmer seg det når CL øker. Det aerodynamiske senteret ligger i ro; derfor analyseres stabilitet om det.'}},
  {q:{en:'Compared with an aft CG, a forward CG gives…',no:'Sammenlignet med bakre CG gir fremre CG …'},a:[{en:'a higher stall speed, more drag and more longitudinal stability',no:'høyere steilefart, mer motstand og mer lengdestabilitet'},{en:'a lower stall speed, less drag and less stability',no:'lavere steilefart, mindre motstand og mindre stabilitet'},{en:'a higher stall speed and less stability',no:'høyere steilefart og mindre stabilitet'},{en:'no change in stall speed, only in stability',no:'ingen endring i steilefart, bare i stabilitet'}],c:0,e:{en:'The tail download grows as the CG moves forward, so the wing must lift more: higher stall speed and induced drag. The larger static margin means more stability.',no:'Halelasten ned øker når CG flyttes fremover, så vingen må løfte mer: høyere steilefart og indusert motstand. Større statisk margin gir mer stabilitet.'}},
  {q:{en:'The static margin is the distance between…',no:'Den statiske marginen er avstanden mellom …'},a:[{en:'the CG and the neutral point',no:'CG og nøytralpunktet'},{en:'the forward and aft CG limits',no:'fremre og bakre CG-grense'},{en:'the centre of pressure and the aerodynamic centre',no:'trykksenteret og det aerodynamiske senteret'},{en:'the CG and the manoeuvre point',no:'CG og manøverpunktet'}],c:0,e:{en:'With the CG at the neutral point the static margin is zero and the aircraft is neutrally stable.',no:'Med CG i nøytralpunktet er den statiske marginen null og flyet nøytralt stabilt.'}},
  {q:{en:'Moving the CG aft (still ahead of the neutral point) makes the stick force per g…',no:'Når CG flyttes bakover (fortsatt foran nøytralpunktet), blir stikkekraften per g …'},a:[{en:'smaller, reaching zero at the manoeuvre point',no:'mindre, og null i manøverpunktet'},{en:'larger',no:'større'},{en:'unchanged; it depends only on speed',no:'uendret; den avhenger bare av farten'},{en:'zero at the forward CG limit',no:'null ved fremre CG-grense'}],c:0,e:{en:'Stick force per g falls linearly with CG position and is zero at the manoeuvre point, which lies behind the neutral point.',no:'Stikkekraften per g faller lineært med CG-posisjonen og er null i manøverpunktet, som ligger bak nøytralpunktet.'}},
@@ -1039,7 +1004,7 @@ LAB.quiz(el('qbox'),'stability',()=>LAB.shuffle(Q.slice()),15);
 /* ---------- start ---------- */
 function foot(){ el('foot').textContent=L({en:'Teaching model of an A320-size aircraft. Masses, CG envelope, neutral point, trim settings, speeds, derivatives and limits are illustrative training values, rounded and simplified, not AFM, FCOM or certification data. Use the numbers to understand relationships; the limits for your aircraft come from its AFM, FCOM, weight and balance manual and loadsheet.',no:'Opplæringsmodell av et fly på A320-størrelse. Masser, CG-konvolutt, nøytralpunkt, triminnstillinger, farter, derivater og grenser er illustrative opplæringsverdier, avrundet og forenklet, ikke AFM-, FCOM- eller sertifiseringsdata. Bruk tallene til å forstå sammenhenger; grensene for ditt fly står i AFM, FCOM, vekt- og balansehåndboken og lastearket.'}); }
 LAB.start('stab');
-function all(){ hooks.forEach(f=>f()); cgAll(); stAll(); pRead(); pC.draw(); pT.draw(); lRead(); lC.draw(); lT.draw(); vnAll(); ctC.draw(); ctRead(); mAy.draw(); mAyT(); mAb.draw(); mAbT(); mTb.draw(); mTbT(); mFl.draw(); mFlT(); mRv.draw(); mRvT(); mTh.draw(); mThT(); opAll(); opsCards(); foot(); padDraw(); }
+function all(){ hooks.forEach(f=>f()); debrief(); stAll(); pRead(); pC.draw(); pT.draw(); lRead(); lC.draw(); lT.draw(); vnAll(); ctC.draw(); ctRead(); mAy.draw(); mAyT(); mAb.draw(); mAbT(); mTb.draw(); mTbT(); mFl.draw(); mFlT(); mRv.draw(); mRvT(); mTh.draw(); mThT(); opAll(); opsCards(); foot(); padDraw(); }
 pSim(); lSim(); vnBuild(); all();
 LAB.onLang(()=>{ all(); });
 if(!reduce){ PD.t0=-1; LD.t0=-1; }
