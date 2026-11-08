@@ -114,3 +114,145 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:0}
 @media (prefers-reduced-motion:reduce){.qbar i{transition:none}}
 .hright{display:flex;align-items:center;gap:10px}
 .view+.note,.paper+.note,.view+.legend,.paper+.legend,.view+p,.paper+p{margin-top:10px}
+
+/* ---------------- Explore app: the wind-tunnel layout, shared by every lab model ----------------
+   .xapp           grid: control panel (left, sticky) + the model column
+   .xpanel         <details open> (or <aside>): .xsum = "Controls" summary (phones only), .xbody, groups .xsec
+   .xsec           a group: <details open><summary>Conditions</summary>…</details> or <div><h3>…</h3>…</div>
+   .xvp            the dark viewport: .vbar (.vtabs view tabs + .vtools) on top, then .vcv (canvas + .vchip readout in its top-left corner),
+                   canvas(es), .vleg legend at the bottom. .xsee = one line "What you're seeing" under it
+   .xbench/.xcard  result cards under the viewport; .tryblk/.tasks/.task the "Try it" boxes
+   Phones (≤980 px): one column, the panel becomes a collapsible "Controls" sheet right below the viewport. */
+.xapp{display:grid;grid-template-columns:288px minmax(0,1fr);column-gap:18px;row-gap:0;align-items:start;margin-top:10px}
+.xapp>*{grid-column:2;min-width:0}
+.xapp>:not(.xpanel):not(:last-child){margin-bottom:14px}
+.xapp>.xpanel{grid-column:1;grid-row:1/span 40;align-self:start}
+.xpanel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);position:sticky;top:58px;max-height:calc(100vh - 70px);overflow:auto;min-width:0;scrollbar-width:thin}
+.xpanel>.xsum{display:none}
+.xsec{padding:12px 14px;border-bottom:1px solid var(--rule-2)}
+.xsec:last-child{border-bottom:0}
+.xsec>h3,.xsec>summary{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;margin:0 0 8px;line-height:1.2;color:var(--ink)}
+details.xsec>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;margin:0}
+details.xsec>summary::-webkit-details-marker{display:none}
+details.xsec>summary::before{content:"▸";display:inline-block;width:12px;color:var(--accent);font-size:12px;transition:transform .15s}
+details.xsec[open]>summary::before{transform:rotate(90deg)}
+details.xsec[open]>summary{margin-bottom:8px}
+details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:12px;font-weight:400;color:var(--ink-3)}
+.xsec .grp{margin:8px 0 4px}
+.xsec .grp:first-of-type{margin-top:0}
+.xsec .ctl{margin:6px 0 8px}
+.xsec .ctl label{font-size:13px}
+.xsec .seg button{font-size:13px;padding:6px 8px}
+.xsec .rrow{font-size:13.5px;padding:5px 0}
+.xsec .pre,.xsec .btns{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.xsec .pre .btn,.xsec .btns .btn{font-size:12.5px;padding:6px 10px;min-height:32px}
+.xsec .pre .k{display:none}
+.xsec .note,.xsec .hint{font-size:12px;color:var(--ink-2);line-height:1.4}
+.xpanel .tbox{margin:12px 14px 0}
+/* toggles in the Show group (checkbox or pressed button) */
+.xtogs{display:flex;flex-wrap:wrap;gap:6px}
+.xtog{font-family:var(--f-body);font-size:12.5px;font-weight:500;background:var(--sheet);color:var(--ink-2);border:1px solid var(--rule);border-radius:var(--radius);padding:6px 10px;cursor:pointer;line-height:1.25;min-height:32px}
+.xtog:hover{color:var(--ink);border-color:var(--ink-3)}
+.xtog.on,.xtog[aria-pressed=true]{color:#fff;background:var(--ink);border-color:var(--ink);font-weight:600}
+.xchk{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);cursor:pointer;margin:3px 0}
+.xchk input{accent-color:var(--accent);margin:0}
+
+/* the dark viewport (tunnel.html "CFD" look) */
+.xvp{position:relative;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(120% 90% at 50% 35%,#2a3542 0%,#18212b 55%,#0f151b 100%);color:#E2E8EE;min-width:0}
+.xvp canvas{display:block;width:100%}
+.xvp .view{border:0;border-radius:0;background:transparent}
+.vbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:10px 10px 4px;position:relative;z-index:3}
+.vtabs,.vtools{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.vtools{margin-left:auto}
+.vtabs button,.vtabs.seg button,.vtools button{font-family:var(--f-body);font-size:12.5px;font-weight:500;line-height:1.3;background:rgba(18,22,26,.62);color:#AEB8C1;border:1px solid rgba(255,255,255,.1);border-radius:4px;margin:0;padding:5px 10px;cursor:pointer;min-height:30px;flex:0 0 auto;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.vtabs.seg button:first-child,.vtabs.seg button:last-child{border-radius:4px}
+.vtabs button:hover,.vtools button:hover{color:#E2E8EE;border-color:rgba(255,255,255,.28);background:rgba(18,22,26,.8)}
+.vtabs button.on,.vtabs.seg button.on{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
+.vtools button{font-family:var(--f-mono);font-size:11px}
+.vtools button.on,.vtools button[aria-pressed=true]{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
+.vtools button.go{border-color:rgba(236,90,71,.6);color:#FFB4A8}
+.vtools button.go:hover{background:rgba(236,90,71,.18)}
+.vtabs button:focus-visible,.vtools button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+/* readout chip, top-left over the model (tunnel HUD): <span><i>label</i><b>value</b></span> … */
+.vcv{position:relative}
+.vchip{position:absolute;left:10px;top:8px;z-index:2;display:flex;flex-wrap:wrap;gap:2px 16px;max-width:calc(100% - 20px);background:rgba(12,15,18,.55);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:10.5px;line-height:1.35;color:#8E99A4;pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.vchip:empty{display:none}
+.vchip>span{display:block}
+.vchip i{font-style:normal;color:#8E99A4;display:block;font-size:9.5px;letter-spacing:.04em}
+.vchip b{color:#EEF2F5;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.vchip b.r,.vchip .r{color:#EC5A47}.vchip b.g,.vchip .g{color:#71CC93}.vchip b.a{color:#F0B440}
+.vchip.inbar{position:static;display:block;max-width:none;align-self:center;font-size:11px;line-height:1.5;padding:3px 8px;border-radius:4px}
+.vchip.inbar>span{display:inline}
+/* legend inside the viewport, at the bottom */
+.vleg{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:6px 12px 10px;font-family:var(--f-mono);font-size:11px;color:#8B99A7;border-top:1px solid rgba(255,255,255,.06)}
+.vleg:empty{display:none}
+.vleg span{white-space:nowrap;display:inline-flex;align-items:center}
+.vleg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;background:var(--c,currentColor);font-style:normal}
+.vleg i.d,.vleg i.dash{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
+.vleg i.a,.vleg i.band{height:9px;opacity:.75}
+.vleg i.dot{width:8px;height:8px;border-radius:50%}
+.vleg i.sq{width:10px;height:10px;border-radius:2px}
+.xsee{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2);max-width:96ch}
+.xsee b{color:var(--ink);font-weight:600}
+/* result cards under the viewport (tunnel balance / polars / A-B) */
+.xbench{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;align-items:stretch}
+.xcard{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.xcard>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:var(--ink-2);margin:0;line-height:1.25}
+.xcard .rrow{font-size:13.5px;padding:5px 0}
+.xcard.wide{grid-column:1/-1}
+.xcard .kpis{border-top:0;border-bottom:0}
+.xcard .view{border-radius:var(--radius)}
+/* Try it: small task boxes under the model (one component on every lab) */
+.tryblk{padding-top:14px;border-top:1px solid var(--rule-2)}
+.tryblk>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 2px;color:var(--ink)}
+.tryblk>.note,.tryblk>.lead{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);max-width:80ch}
+.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.task .q,.task h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15.5px;line-height:1.3;color:var(--ink);margin:0}
+.task p:not(.q){margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
+.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.task .opts button{font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.task .opts button:hover{border-color:var(--ink)}
+.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.task .btns{margin-top:auto}
+.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
+.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
+.task .fb,.tbox .fb{display:block;margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-2)}
+.task .fb.ok,.tbox .fb.ok{color:var(--ok)}.task .fb b,.tbox .fb b{color:inherit}
+@media (max-width:520px){.task .opts{grid-template-columns:minmax(0,1fr)}}
+/* phones and small tablets: one column, panel as a collapsible sheet under the viewport, tabs scroll sideways */
+@media (max-width:980px){
+  .xapp{grid-template-columns:minmax(0,1fr)}
+  .xapp>*,.xapp>.xpanel{grid-column:1;grid-row:auto}
+  .xapp>.xpanel{margin-bottom:14px}
+  .xpanel{position:static;max-height:none;overflow:visible}
+  .xpanel>.xsum{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;list-style:none;font-weight:600;font-size:14px;color:var(--ink)}
+  .xpanel>.xsum::-webkit-details-marker{display:none}
+  .xpanel>.xsum>span:first-child::before{content:"▸";display:inline-block;width:16px;color:var(--accent);transition:transform .15s}
+  .xpanel[open]>.xsum>span:first-child::before{transform:rotate(90deg)}
+  .xpanel[open]>.xsum{border-bottom:1px solid var(--rule-2)}
+  .xpanel>.xsum .xsv{font-family:var(--f-mono);font-size:11.5px;font-weight:500;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+}
+@media (max-width:640px){
+  .vbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 8px 4px}
+  .vbar::-webkit-scrollbar{display:none}
+  .vtabs,.vtools{flex-wrap:nowrap}
+  .vtabs button,.vtools button{padding:4px 8px;font-size:12px;white-space:nowrap}
+  .vtools button{font-size:10.5px}
+  .vcv{display:flex;flex-direction:column}
+  .vcv>.vchip{position:static;order:-1;align-self:flex-start;margin:2px 8px 6px;gap:2px 10px;padding:4px 8px;font-size:10px;max-width:calc(100% - 16px)}
+  .vchip .hx{display:none}
+  .vleg{font-size:10.5px;gap:3px 10px;padding:5px 10px 8px}
+}
+/* Instructor: a bigger viewport and presenter-sized tabs */
+body.depth-instructor .xapp{grid-template-columns:248px minmax(0,1fr)}
+body.depth-instructor .vtabs button{font-size:15px;padding:8px 14px}
+body.depth-instructor .vtools button{font-size:13px;padding:7px 11px}
+body.depth-instructor .vchip{font-size:12.5px}
+body.depth-instructor .vchip i{font-size:11px}
+body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
+@media (max-width:980px){body.depth-instructor .xapp{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){details.xsec>summary::before,.xpanel>.xsum>span:first-child::before{transition:none}}

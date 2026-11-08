@@ -57,6 +57,7 @@ LAB.add({},{'Forces in Flight':'Krefter i flyging','Forces in flight':'Krefter i
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Check':'5 · Sjekk','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv','What happened, and why it matters':'Hva skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg','You set':'Du styrer','Forces':'Krefter',
  'Indicated airspeed (kt)':'Indikert fart (kt)','Mass (kg)':'Masse (kg)','Power (%)':'Effekt (%)','Flight path angle (°)':'Banevinkel (°)','Bank angle (°)':'Krengning (°)','Wind (kt, + = headwind)':'Vind (kt, + = motvind)','Height above ground (ft)':'Høyde over bakken (ft)',
  'Power':'Effekt','Path angle':'Banevinkel','Drag':'Motstand','Advanced':'Avansert',
+ 'Controls':'Kontroller','Conditions':'Forhold','Show':'Vis','Scenarios':'Scenarier','Key numbers':'Nøkkeltall','Drag and power':'Motstand og effekt','Flight path over the ground':'Flybanen over bakken','Thrust and drag are small next to lift and weight, so they are drawn longer.':'Skyv og motstand er små ved siden av løft og vekt, så de tegnes lengre.',
  'In power mode: the result':'I effektmodus: resultatet','In path mode: the power needed':'I banemodus: effekten som trengs','Used for the glide distance and the profile':'Brukes til glidedistansen og profilen'});
 
 /* ---------------- drawing helpers ---------------- */
@@ -189,7 +190,7 @@ function sideView(st,g,n){ const W=st.w, H=st.h, fs=n?10:11.5;
   const nose=[cx+u[0]*sc*3.9,cy+u[1]*sc*3.9], tail=[cx-u[0]*sc*4.9,cy-u[1]*sc*4.9];
   if(Tp>1){ arrow(g,nose[0],nose[1],nose[0]+u[0]*Tp,nose[1]+u[1]*Tp,COL.T,3,10); txt(g,'T '+nf(R.T/1000,2)+' kN',clamp(nose[0]+u[0]*Tp,44,W-44),nose[1]+u[1]*Tp-10,{col:COL.T,al:'center',size:fs,bg:BG}); }
   arrow(g,tail[0],tail[1],tail[0]-u[0]*Dp,tail[1]-u[1]*Dp,COL.D,3,10); txt(g,'D '+nf(R.D/1000,2)+' kN',clamp(tail[0]-u[0]*Dp,44,W-44),tail[1]-u[1]*Dp-10,{col:COL.D,al:'center',size:fs,bg:BG});
-  el('mag').textContent='T, D ×'+MAG(n); if(F.mag) txt(g,L({en:'T and D drawn ×',no:'T og D tegnet ×'})+MAG(n),W-10,H-10,{col:INK.mute,al:'right',size:10,mono:1});
+  el('mag').textContent=L({en:'Thrust and drag ×',no:'Skyv og motstand ×'})+MAG(n); if(F.mag) txt(g,L({en:'T and D drawn ×',no:'T og D tegnet ×'})+MAG(n),W-10,H-10,{col:INK.mute,al:'right',size:10,mono:1});
   // force polygon: true scale, closed when steady
   polygon(g,n?{x:62,y:H*0.06,s:H*0.15}:{x:W-118,y:H*0.13,s:H*0.2},fs);
   if(R.stall) txt(g,L({en:'STALL',no:'STEILING'}),cx,H*0.12,{col:INK.red,al:'center',size:n?14:18,w:700,bg:BG});
@@ -347,7 +348,7 @@ let cur='level';
 const phase=()=>F.phi>0.5?'turn':R.gam>0.3?'climb':R.gam<-0.3?'glide':'level';
 function setF(o,k){ Object.assign(F,o); cur=k||null; modeSeg.set(F.mode); all(); }
 function drawPre(){ el('pre').innerHTML=`<span class="k">${L({en:'Presets',no:'Forhåndsvalg'})}</span>`+PRE.map(([k,,t])=>`<button class="btn sm${k===cur?' on':''}" type="button" data-k="${k}">${L(t)}</button>`).join('');
-  const p=phase(); el('ph').innerHTML=PH.map(([k,t])=>`<button type="button" data-p="${k}" class="${k===p?'on':''}">${L(t)}</button>`).join(''); }
+  const p=phase(); el('ph').innerHTML=PH.map(([k,t])=>`<button type="button" role="tab" aria-selected="${k===p}" data-p="${k}" class="${k===p?'on':''}">${L(t)}</button>`).join(''); }
 el('pre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const p=PRE.find(x=>x[0]===b.dataset.k); if(p) setF(p[3](),p[0]); });
 el('ph').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const p=PRE.find(x=>x[1]===b.dataset.p&&x[0]!=='slow'); const q=b.dataset.p==='climb'?PRE.find(x=>x[0]==='vy'):p; if(q) setF(q[3](),q[0]); });
 
@@ -416,7 +417,9 @@ function maid(id,h,p){ const c=el(id); if(!c) return; c.querySelector('.eyebrow'
 on(()=>{ maid('maV',{en:'Vx = best angle, Vy = best rate',no:'Vx = beste vinkel, Vy = beste stigehastighet'},{en:'The <b>x</b> has the angles. Vx clears the obstacle (most height per mile); Vy reaches altitude soonest (most height per minute). Vx is always the slower of the two.',no:'<b>x</b> har vinklene. Vx klarer hindringen (mest høyde per distanse); Vy når høyden raskest (mest høyde per minutt). Vx er alltid den laveste av de to.'});
   maid('maR',{en:'Rate-one turn: bank ≈ TAS/10 + 7',no:'Rate one-sving: krengning ≈ TAS/10 + 7'},{en:'3° per second, 360° in 2 minutes. At 100 kt that is about 17°; at 120 kt about 19°.',no:'3° per sekund, 360° på 2 minutter. Ved 100 kt er det omtrent 17°; ved 120 kt omtrent 19°.'}); });
 on(()=>{ const sw=c=>`<i style="background:${c}"></i>`;
-  el('cM').innerHTML=sw(COL.L)+L({en:'lift',no:'løft'})+sw(COL.W)+L({en:'weight',no:'vekt'})+sw(COL.T)+L({en:'thrust',no:'skyv'})+sw(COL.D)+L({en:'drag',no:'motstand'})+'. '+L({en:'Drawn to scale. The small force polygon closes when the flight is steady. Bank the aircraft to see the turn from behind and from above.',no:'Tegnet i skala. Det lille kraftpolygonet lukker seg når flygingen er stasjonær. Krengt flyet for å se svingen bakfra og ovenfra.'});
+  const lg=(c,t)=>`<span><i style="--c:${c}"></i>${L(t)}</span>`;
+  el('cM').innerHTML=lg(COL.L,{en:'lift',no:'løft'})+lg(COL.W,{en:'weight',no:'vekt'})+lg(COL.T,{en:'thrust',no:'skyv'})+lg(COL.D,{en:'drag',no:'motstand'});
+  el('mSee').innerHTML='<b>'+L({en:'What you are seeing:',no:'Dette ser du:'})+'</b> '+L({en:'the four forces drawn to scale. The small force polygon closes when the flight is steady. Bank the aircraft to see the turn from behind and from above.',no:'de fire kreftene tegnet i skala. Det lille kraftpolygonet lukker seg når flygingen er stasjonær. Krengt flyet for å se svingen bakfra og ovenfra.'});
   el('cP').innerHTML=L({en:'Your path over the ground from the set height (Advanced).',no:'Banen din over bakken fra valgt høyde (Avansert).'})+sw('#8B99A7')+L({en:'dashed: still air',no:'stiplet: stille luft'});
   el('cD').innerHTML=sw(INK.red)+L({en:'total drag',no:'total motstand'})+' = '+sw(INK.cyan)+L({en:'parasite',no:'parasitt'})+' + '+sw(INK.violet)+L({en:'induced',no:'indusert'})+sw(INK.mag)+L({en:'thrust available',no:'tilgjengelig skyv'})+'. '+L({en:'The dot is you. Switch to Power to find Vy.',no:'Prikken er deg. Bytt til Effekt for å finne Vy.'}); });
 /* ---------------- Try tasks ---------------- */

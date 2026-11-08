@@ -303,6 +303,14 @@
     start();
   }
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  /* Explore app (lab.css .xapp): the control panel is always open on desktop; on phones it is a "Controls" sheet
+     under the viewport that starts closed and opens when a Try-it task sends you to the model. */
+  (function xpanels(){
+    const mq=matchMedia('(max-width:980px)'), ps=()=>document.querySelectorAll('details.xpanel');
+    const sync=first=>ps().forEach(d=>{ if(!mq.matches) d.open=true; else if(first) d.open=false; });
+    sync(true); if(mq.addEventListener) mq.addEventListener('change',()=>sync(false));
+    document.addEventListener('click',e=>{ if(e.target.closest('.tasks [data-go]')) ps().forEach(d=>{ d.open=true; }); });
+  })();
 
   window.LAB={ PATH, AREAS, MORE, FLAT, TOP, LV, LVX, LVTIP, done, get depth(){ return depth; }, setDepth:d=>setDepth(d,true), T, L, nf, el, add(dict,no){ Object.assign(D,dict); if(no) Object.assign(NO,no); }, start(page){ header(page); scan(); apply(); }, head(page){ header(page); const n=document.querySelector('.labnav'); if(n) scan(n); apply(); },
     onLang(f){ hooks.push(f); }, tx(dict){ Object.assign(TXD,dict); txApply(); }, get lang(){ return lang; }, slider, seg, fit, visible, quiz, shuffle };

@@ -235,7 +235,7 @@ function drawCh(){ const st=chS; if(!st.w||!C) return; const g=S.clear(st), W=st
 }
 
 /* controls */
-const feS=LAB.seg(el('ltFe'),[['L','Left engine'],['R','Right engine']],T.fail,v=>{ T.fail=v; all(); });
+const feS=LAB.seg(el('ltFe'),[['L','Left engine failed'],['R','Right engine failed']],T.fail,v=>{ T.fail=v; all(); });
 const ftSeg=LAB.seg(el('ltFt'),[['w','Windmilling'],['f','Feathered']],'w',v=>{ T.feather=v==='f'; all(); });
 const sl=o=>LAB.slider(el('ltCtl'),o), sl2=o=>LAB.slider(el('ltCtl2'),o);
 const S_v=sl({label:'Indicated airspeed (KIAS)',min:50,max:125,step:1,v:T.v,f:v=>v+' kt',on:v=>{ T.v=v; all(); }});
@@ -244,7 +244,7 @@ const S_w=sl2({label:'Power on the live engine (%)',min:40,max:100,step:5,v:T.pw
 const S_c=sl2({label:'CG position',min:0,max:100,step:5,v:T.cg*100,f:v=>v<=0?L({en:'fwd limit',no:'fremre grense'}):v>=100?L({en:'aft limit',no:'bakre grense'}):v+' %',on:v=>{ T.cg=v/100; all(); },hint:'Aft CG = shorter arm to the fin'});
 // layers
 const LAY=[['pf',{en:'P-factor',no:'P-faktor'}],['as',{en:'Slipstream',no:'Slipstrøm'}],['ss',{en:'Spiral',no:'Spiral'}],['tq',{en:'Torque',no:'Dreiemoment'}],['rec',{en:'Recovery',no:'Gjenoppretting'}]];
-function drawLay(){ el('ltLay').innerHTML=`<span class="k">${L({en:'Layers',no:'Lag'})}</span>`+LAY.map(([k,t])=>`<button class="vbtn${T.lay[k]?' on':''}" type="button" data-k="${k}" aria-pressed="${!!T.lay[k]}">${L(t)}</button>`).join(''); }
+function drawLay(){ el('ltLay').innerHTML=LAY.map(([k,t])=>`<button class="xtog${T.lay[k]?' on':''}" type="button" data-k="${k}" aria-pressed="${!!T.lay[k]}">${L(t)}</button>`).join(''); }
 el('ltLay').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; T.lay[b.dataset.k]=!T.lay[b.dataset.k]; drawLay(); drawLT(); });
 // presets
 const PRE=[['crit',{en:'Left engine fails',no:'Venstre motor stopper'},{fail:'L',v:80,phi:5,feather:false,cg:1,pw:1}],
@@ -281,7 +281,8 @@ function read(){ const P=C.P, lv=P.live==='R';
   ];
   const rr=r=>`<div class="rrow"><span>${L(r[0])}</span><b class="${r[2]||''}">${r[1]}</b></div>`;
   el('ltR').innerHTML=[rows[3],rows[4],rows[5]].map(rr).join('')+`<div class="deep">${[rows[0],rows[1],rows[2],rows[6],rows[7]].map(rr).join('')}</div>`;
-  el('ltOv').innerHTML=`<b>${T.fail==='L'?L({en:'LEFT',no:'VENSTRE'}):L({en:'RIGHT',no:'HØYRE'})}</b> ${L({en:'engine failed',no:'motor ute'})} · ${nf(T.v,0)} kt · φ ${nf(T.phi,1)}° · <span class="${C.ok?'g':'r'}">${C.ok?L({en:'controllable',no:'styrbart'}):L({en:'not controllable',no:'ikke styrbart'})}</span>`;
+  { const H2=(k,v,c,hx)=>`<span${hx?' class="hx"':''}><i>${k}</i><b${c?` class="${c}"`:''}>${v}</b></span>`;
+    el('ltOv').innerHTML=H2(L({en:'Failed',no:'Ute'}),T.fail==='L'?L({en:'LEFT engine',no:'VENSTRE motor'}):L({en:'RIGHT engine',no:'HØYRE motor'}),'',1)+H2('IAS',nf(T.v,0)+' kt')+H2('φ',nf(T.phi,1)+'°')+H2('VMCA',kt(C.vm),'',1)+H2(L({en:'Status',no:'Status'}),C.ok?L({en:'controllable',no:'styrbart'}):L({en:'not controllable',no:'ikke styrbart'}),C.ok?'g':'r'); }
 }
 function all(){ calc(); read(); drawLT(); drawCh(); if(curPre&&!PRE.some(p=>p[0]===curPre&&match(p[2]))) curPre=null; drawPre(); if(typeof live==='function') live(); }
 const match=o=>Object.keys(o).every(k=>T[k]===o[k]);
@@ -429,7 +430,8 @@ function maid(id,h,p){ const c=el(id); if(!c) return; c.querySelector('.eyebrow'
 on(()=>{ maid('maPast',{en:'PAST makes the left engine critical',no:'PAST gjør venstre motor kritisk'},{en:'<b>P</b>-factor, <b>A</b>ccelerated slipstream, <b>S</b>piralling slipstream, <b>T</b>orque: with both propellers turning clockwise from behind, all four make losing the left engine worse.',no:'<b>P</b>-faktor, <b>A</b>kselerert slipstrøm, <b>S</b>piralslipstrøm, <b>T</b> (dreiemoment): når begge propellene går med klokka sett bakfra, gjør alle fire det verre å miste venstre motor.'});
   maid('maDead',{en:'Dead foot, dead engine. Raise the dead.',no:'Død fot, død motor. Løft den døde.'},{en:'The foot that is <b>not</b> pushing the rudder is on the side of the failed engine. Then bank about 5° toward the live engine, so the dead engine’s wing comes up.',no:'Foten som <b>ikke</b> trykker på sideroret er på samme side som motoren som har stoppet. Krengt så omtrent 5° mot den gode motoren, slik at vingen med den døde motoren kommer opp.'}); });
 on(()=>{ const sw=c=>`<i style="background:${c}"></i>`;
-  el('cLt').innerHTML=L({en:'<b>Left:</b> from above, with the thrust line and its arm. <b>Right:</b> from behind, with bank, lift and the ball.',no:'<b>Venstre:</b> ovenfra, med skyvlinjen og armen. <b>Høyre:</b> bakfra, med krengning, løft og kula.'})+'<br>'+sw(I.mag)+L({en:'engine thrust and yaw',no:'motorskyv og gir'})+sw(I.cyan)+L({en:'rudder and fin',no:'ror og finne'})+sw(I.red)+L({en:'dead propeller',no:'død propell'})+sw(I.amber)+L({en:'P-factor',no:'P-faktor'})+sw(I.green)+L({en:'lift',no:'løft'});
+  el('cLt').innerHTML=L({en:'<b>Left:</b> from above, with the thrust line and its arm. <b>Right:</b> from behind, with bank, lift and the ball.',no:'<b>Venstre:</b> ovenfra, med skyvlinjen og armen. <b>Høyre:</b> bakfra, med krengning, løft og kula.'});
+  { const lg=(c,t)=>`<span><i style="--c:${c}"></i>${L(t)}</span>`; el('ltLeg').innerHTML=lg(I.mag,{en:'engine thrust and yaw',no:'motorskyv og gir'})+lg(I.cyan,{en:'rudder and fin',no:'ror og finne'})+lg(I.red,{en:'dead propeller',no:'død propell'})+lg(I.amber,{en:'P-factor',no:'P-faktor'})+lg(I.green,{en:'lift',no:'løft'}); }
   el('cCh').innerHTML=sw(I.mag)+L({en:'rudder moment needed',no:'rormoment som trengs'})+sw(I.cyan)+L({en:'rudder moment available (∝ V²)',no:'tilgjengelig rormoment (∝ V²)'})+sw('#8B99A7')+L({en:'other engine failed',no:'den andre motoren ute'})+'. '+L({en:'They cross at VMCA; red shading is below the stall.',no:'De krysser ved VMCA; rød skravering er under steilefarten.'});
   el('cPw').innerHTML=L({en:'One blade section at 75 % of the radius. ',no:'Ett bladsnitt ved 75 % av radien. '})+sw(I.cyan)+L({en:'U rotation',no:'U rotasjon'})+sw(I.green)+L({en:'V true airspeed',no:'V sann fart'})+sw(I.white)+L({en:'relative wind',no:'relativ vind'})+sw(I.mag)+L({en:'thrust',no:'skyv'})+sw(I.amber)+L({en:'torque force',no:'dreiemomentkraft'})+'. α = β − φ.'; });
 /* start */

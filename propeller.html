@@ -5,7 +5,7 @@
 <meta name="description" content="Engine failure on the A320 for ATPL 081 and the type rating: slow down until the rudder runs out and find VMCA, see why bank, thrust, altitude, CG and weight move it, and how CS-25 turns it into VMCG, VMCL, V1, VR and V2.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Engine Failure and Minimum Control Speeds</title>
-<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -18,14 +18,19 @@
 @media (max-width:600px){#acCv{aspect-ratio:4/4.1}#trCv{aspect-ratio:4/4.2}#mvCv,#vbCv{aspect-ratio:4/3.5}#spCv{aspect-ratio:4/3.3}#gCv{aspect-ratio:4/3.9}#gTr{aspect-ratio:4/2.4}#laCv{aspect-ratio:4/3.4}#lsCv{aspect-ratio:4/2.6}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 @media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
 .ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 150px)}
 .ovl b{color:#D7E1E6;font-weight:500}.ovl .r{color:#EC5A47}.ovl .g{color:#71CC93}
-.ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
-.vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:#D7E1E6;border:1px solid #2A3742;border-radius:3px;padding:4px 9px;cursor:pointer;line-height:1.3}
-.vbtn:hover{border-color:#7FCBE8}.vbtn.on{background:#E46BAE;color:#10171D;border-color:#E46BAE;font-weight:600}
-.vbtn.go{border-color:#EC5A47;color:#FFB4A9}
+.vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(18,22,26,.62);color:#D5DCE2;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 9px;cursor:pointer;line-height:1.3}
+.vbtn:hover{border-color:rgba(255,255,255,.28)}.vbtn.on{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
+.vbtn.go{border-color:rgba(236,90,71,.6);color:#FFB4A8}
 .vbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
 @media (max-width:600px){.ovl{font-size:10px;max-width:calc(100% - 16px);top:auto;bottom:6px}.ovr{max-width:100%}}
+.pbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:1180px){.pbench{grid-template-columns:minmax(0,1fr)}}
+.xcard .kpi{padding:8px 14px 10px}.xcard .kpi b{font-size:22px}
+.xcard .bal{margin:2px 0 6px}
+.xcard .callout{margin:8px 0 0;font-size:13.5px}
 .exam{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--sheet);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px 14px;max-width:none}
 .exam .ct{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .exam ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14.5px;line-height:1.5;color:var(--ink)}
@@ -57,22 +62,6 @@
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
-.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
-.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
-.fb{display:block;margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-2)}
-.fb.ok{color:var(--ok)}
-.fb b{color:inherit}
-.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
-.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
-.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left}
-.task .opts button:hover{border-color:var(--ink)}
-.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
-.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
-.task .btns{margin-top:auto}
 .why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
 .take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
 .take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
@@ -82,11 +71,10 @@
 .adv{border-top:1px solid var(--rule-2);margin-top:2px;padding-top:6px}
 .adv summary{cursor:pointer;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 0}
 .adv[open] summary{margin-bottom:6px}
-body.depth-short .ltpre{display:none}
+body.depth-short .presec{display:none}
 /* Instructor: presenter-sized readouts */
-body.depth-instructor #lt .rrow,body.depth-instructor #pwing .rrow{font-size:17px;padding:9px 0}
-body.depth-instructor .ltpre .btn{font-size:15px;padding:11px 16px}
-body.depth-instructor #lt .atl-split>.rail{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 32px;align-items:start}
+body.depth-instructor #pwing .rrow{font-size:17px;padding:9px 0}
+body.depth-instructor .ltpre .btn,body.depth-instructor .presec .btn{font-size:15px;padding:11px 16px}
 .maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg,6px) var(--radius-lg,6px) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
 .maid .eyebrow{margin-bottom:4px}
 .maid h3{margin:0 0 4px;font-size:17px}
@@ -128,7 +116,7 @@ ol.steps li{margin:4px 0}
 .past .box .lt{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:var(--accent);float:right;margin:-2px 0 0 8px;opacity:.85}
 .past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:#10171D}
 #ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}
-@media (max-width:600px){#ltOv{display:none}#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
+@media (max-width:600px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
 .lays{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:-4px}
 .lays .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
 .lays .vbtn{font-size:12px;padding:6px 11px;min-height:32px}
@@ -137,14 +125,6 @@ ol.steps li{margin:4px 0}
 .ltpre button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .stat{display:inline-block;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:3px}
 .stat.ok{background:rgba(113,204,147,.16);color:var(--ok)}.stat.ko{background:rgba(236,90,71,.14);color:var(--warning)}
-.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
-.task{border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
-.task h3{margin:0;font-size:16px;line-height:1.3}
-.task p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
-.task .tb{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-.task .ans{border-top:1px solid var(--rule-2);padding-top:8px;font-size:14px;line-height:1.5;color:var(--ink)}
-.task .ans[hidden]{display:none}
 </style>
 </head>
 <body data-title="Engine Failure and Minimum Control Speeds">
@@ -188,25 +168,28 @@ ol.steps li{margin:4px 0}
     <div class="eyebrow">2 · Explore · light-twin teaching model</div>
     <h2>Light twin: lose an engine</h2>
     <p class="lead" id="ltLead"></p>
-    <div class="btns ltpre" id="ltPre"></div>
-    <div class="split">
-      <div class="stack">
-        <div class="view" data-lab-model><canvas id="ltCv" aria-label="Light twin seen from above and from behind with one engine failed: thrust lines, P-factor, slipstream, torque, rudder force, bank, ball and the dead propeller"></canvas><div class="ovl" id="ltOv"></div></div>
-        <p class="cap" id="cLt"></p>
-        <div class="lays" id="ltLay"></div>
-        <div class="kpis" id="ltK"></div>
-        <div class="view"><canvas id="ltCh" aria-label="Rudder moment needed and available against airspeed for the light twin; they cross at VMCA"></canvas></div>
-        <p class="cap" id="cCh"></p>
+    <div class="xapp">
+      <div class="xvp" id="ltVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="ltFe" role="tablist" aria-label="Failed engine"></div></div>
+        <div class="vcv"><canvas id="ltCv" aria-label="Light twin seen from above and from behind with one engine failed: thrust lines, P-factor, slipstream, torque, rudder force, bank, ball and the dead propeller"></canvas><div class="vchip" id="ltOv" aria-live="polite"></div></div>
+        <div class="vleg" id="ltLeg"></div>
       </div>
-      <div class="rail">
+      <p class="xsee" id="cLt"></p>
+      <details class="xpanel" id="xpanelLt" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv"></span></summary>
         <div class="tbox" id="tbox" hidden></div>
-        <div class="grp">Failed engine</div><div id="ltFe"></div>
-        <div class="grp">Dead propeller</div><div id="ltFt"></div>
-        <div id="ltCtl" style="margin-top:8px"></div>
-        <details class="adv"><summary>Advanced</summary><div id="ltCtl2"></div></details>
-        <div class="grp">Yawing moment</div>
-        <div class="bal" id="ltBal"></div>
-        <div class="ro" id="ltR"></div>
+        <details class="xsec" open><summary>Conditions</summary>
+          <div class="grp">Dead propeller</div><div id="ltFt"></div>
+          <div id="ltCtl" style="margin-top:8px"></div>
+        </details>
+        <details class="xsec" open><summary>Show</summary><div class="xtogs" id="ltLay"></div></details>
+        <details class="xsec presec" open><summary>Scenarios</summary><div class="pre" id="ltPre"></div></details>
+        <details class="xsec"><summary>Advanced</summary><div id="ltCtl2"></div></details>
+      </details>
+      <div class="xcard"><h3>Controllable?</h3><div class="kpis" id="ltK"></div></div>
+      <div class="pbench">
+        <div class="xcard"><h3>VMCA: rudder against engine</h3><div class="view"><canvas id="ltCh" aria-label="Rudder moment needed and available against airspeed for the light twin; they cross at VMCA"></canvas></div><p class="cap" id="cCh"></p></div>
+        <div class="xcard"><h3>Yawing moment</h3><div class="bal" id="ltBal"></div><div class="ro" id="ltR"></div></div>
       </div>
     </div>
     <div class="maid" id="maDead"><div class="eyebrow"></div><h3></h3><p></p></div>
@@ -240,27 +223,33 @@ ol.steps li{margin:4px 0}
     <div class="eyebrow">2 · Explore · A320 model</div>
     <h2>VMCA on the A320: when the rudder runs out</h2>
     <p class="lead" id="vmLead"></p>
-    <div class="split">
-      <div class="stack">
-        <div class="view"><canvas id="acCv" aria-label="A320 with one engine failed, seen from above or from behind: live-engine thrust, windmilling drag, rudder deflection and fin side force, sideslip, bank and the weight component"></canvas><div class="ovl" id="acOv"></div><div class="ovr"><button class="vbtn on" id="vTop" type="button">Top</button><button class="vbtn" id="vBack" type="button">Behind</button><button class="vbtn go" id="vGo" type="button">Fail engine</button></div></div>
-        <div class="view"><canvas id="trCv" aria-label="Heading, bank and rudder after a sudden engine failure at the selected speed"></canvas></div>
-        <div class="kpis" id="vmK"></div>
+    <div class="xapp">
+      <div class="xvp" id="acVp">
+        <div class="vbar"><div class="vtabs" role="tablist" aria-label="View"><button class="on" id="vTop" type="button">Top</button><button id="vBack" type="button">Behind</button></div><div class="vtools"><button class="go" id="vGo" type="button">Fail engine</button></div></div>
+        <div class="vcv"><canvas id="acCv" aria-label="A320 with one engine failed, seen from above or from behind: live-engine thrust, windmilling drag, rudder deflection and fin side force, sideslip, bank and the weight component"></canvas><div class="vchip" id="acOv" aria-live="polite"></div></div>
+        <div class="vleg" id="acLeg"></div>
       </div>
-      <div class="rail">
-        <div class="grp">Failed engine</div><div id="fe"></div>
-        <div class="grp">Thrust on the live engine</div><div id="thr"></div>
-        <div id="vmCtl" style="margin-top:8px"></div>
-        <details class="adv"><summary>Advanced</summary><div id="vmCtl2"></div></details>
-        <label class="chk"><input type="checkbox" id="wm" checked> <span>Windmilling drag of the failed engine</span></label>
-        <div class="grp">Yawing moment</div>
-        <div class="bal" id="vmBal"></div>
-        <div class="ro" id="vmR"></div>
-        <p class="callout info" id="vmX"></p>
+      <details class="xpanel" id="xpanelVm" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv"></span></summary>
+        <details class="xsec" open><summary>Conditions</summary>
+          <div class="grp">Failed engine</div><div id="fe"></div>
+          <div class="grp">Thrust on the live engine</div><div id="thr"></div>
+          <div id="vmCtl" style="margin-top:8px"></div>
+        </details>
+        <details class="xsec" open><summary>Show</summary>
+          <label class="xchk"><input type="checkbox" id="wm" checked> <span>Windmilling drag of the failed engine</span></label>
+        </details>
+        <details class="xsec"><summary>Advanced</summary><div id="vmCtl2"></div></details>
+      </details>
+      <div class="xcard"><h3>Can the rudder hold it?</h3><div class="kpis" id="vmK"></div></div>
+      <div class="pbench">
+        <div class="xcard"><h3>After a sudden failure</h3><div class="view"><canvas id="trCv" aria-label="Heading, bank and rudder after a sudden engine failure at the selected speed"></canvas></div></div>
+        <div class="xcard"><h3>Yawing moment</h3><div class="bal" id="vmBal"></div><div class="ro" id="vmR"></div><p class="callout info" id="vmX"></p></div>
       </div>
-    </div>
-    <div class="two">
-      <div class="view"><canvas id="mvCv" aria-label="Rudder moment needed and rudder moment available against airspeed; they cross at VMCA"></canvas></div>
-      <div class="view"><canvas id="vbCv" aria-label="VMCA against bank angle, airfield altitude or thrust, with the current point"></canvas><div class="ovr" id="vbMode"><button class="vbtn on" data-m="bank" type="button">Bank</button><button class="vbtn" data-m="alt" type="button">Altitude</button><button class="vbtn" data-m="thr" type="button">Thrust</button></div></div>
+      <div class="two">
+        <div class="xcard"><div class="view"><canvas id="mvCv" aria-label="Rudder moment needed and rudder moment available against airspeed; they cross at VMCA"></canvas></div></div>
+        <div class="xcard"><div class="view"><canvas id="vbCv" aria-label="VMCA against bank angle, airfield altitude or thrust, with the current point"></canvas><div class="ovr" id="vbMode"><button class="vbtn on" data-m="bank" type="button">Bank</button><button class="vbtn" data-m="alt" type="button">Altitude</button><button class="vbtn" data-m="thr" type="button">Thrust</button></div></div></div>
+      </div>
     </div>
     <div class="exam deep" id="vmE"></div>
     <details class="also" id="twin">
@@ -349,7 +338,7 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=26"></script>
+<script src="lab.js?v=27"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="concepts.js?v=1"></script>
 <script src="stab.js?v=1"></script>
@@ -364,7 +353,7 @@ LAB.add({},{
  'Debrief · Certification':'Debrief · Sertifisering','Debrief · Operations':'Debrief · Operativt','Try':'Prøv','Try it':'Prøv selv','VMCA on the A320: when the rudder runs out':'VMCA på A320: når sideroret ikke strekker til',
  'Light twin: engine failure':'Lett tomotors: motorstans','Propeller as a wing':'Propellen som vinge',
  'Dead propeller':'Død propell','Propeller':'Propell','Windmilling':'Vindmølle','Feathered':'Fløyet',
- 'Left engine':'Venstre motor','Right engine':'Høyre motor','Fixed pitch':'Fast stigning','Constant speed':'Konstant turtall',
+ 'Left engine':'Venstre motor','Right engine':'Høyre motor','Left engine failed':'Venstre motor ute','Right engine failed':'Høyre motor ute','Controls':'Kontroller','Conditions':'Forhold','Show':'Vis','Scenarios':'Scenarier','Controllable?':'Styrbart?','VMCA: rudder against engine':'VMCA: ror mot motor','Yawing moment':'Girmoment','Can the rudder hold it?':'Klarer sideroret å holde det?','After a sudden failure':'Etter en brå motorstans','Fixed pitch':'Fast stigning','Constant speed':'Konstant turtall',
  'Indicated airspeed (KIAS)':'Indikert fart (KIAS)','Bank (° toward the live engine)':'Krengning (° mot den gode motoren)','Power on the live engine (%)':'Effekt på den gode motoren (%)','CG position':'CG-posisjon',
  'Aft CG = shorter arm to the fin':'Bakre CG = kortere arm til halefinnen','RPM':'Turtall (RPM)','True airspeed (kt)':'Sann fart (kt)','Blade angle β (°)':'Bladvinkel β (°)',
  'Set by the governor in constant-speed mode':'Settes av regulatoren i konstant-turtall-modus'
@@ -485,10 +474,13 @@ const acC=fit('acCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); if
     const de=at(0,dead,-2.35); txt(g,L({en:'DEAD',no:'DØD'}),de[0],de[1]+sc*2.6,{col:I.red,al:'center',size:10,mono:1,bg:BG});
   }
   // overlay text
-  const st2=t!=null?`<b>t ${nf(Math.min(t,Tend),1)} s</b> · ψ <b>${nf(f.ps,1)}°</b> · φ <b>${nf(f.ph,1)}°</b> · ${L({en:'rudder',no:'ror'})} <b>${nf(Math.abs(f.dr),1)}°</b>`
-    : CUR.below? `<span class="r">${L({en:'Below VMCA: full rudder is not enough',no:'Under VMCA: fullt sideror er ikke nok'})}</span>`
-    : `β <b>${nf(P.beta,1)}°</b> · ${L({en:'rudder',no:'ror'})} <b>${nf(P.dreq,1)}°</b> ${L({en:'of',no:'av'})} ${nf(P.dav,0)}° · φ <b>${nf(A.phi,1)}°</b>`;
-  el('acOv').innerHTML=`<b>${A.eng==='1'?'ENG 1':'ENG 2'} ${L({en:'failed',no:'stoppet'})}</b> · ${A.thr==='toga'?'TOGA':'FLX'} · ${nf(A.v,0)} kt<br>${st2}`;
+  const H2=(k,v,c,hx)=>`<span${hx?' class="hx"':''}><i>${k}</i><b${c?` class="${c}"`:''}>${v}</b></span>`;
+  const st2=t!=null?H2('t',nf(Math.min(t,Tend),1)+' s')+H2('ψ',nf(f.ps,1)+'°')+H2('φ',nf(f.ph,1)+'°')+H2(L({en:'Rudder',no:'Ror'}),nf(Math.abs(f.dr),1)+'°')
+    : CUR.below? H2(L({en:'Status',no:'Status'}),L({en:'Below VMCA: full rudder is not enough',no:'Under VMCA: fullt sideror er ikke nok'}),'r')
+    : H2('β',nf(P.beta,1)+'°')+H2(L({en:'Rudder',no:'Ror'}),nf(P.dreq,1)+'° '+L({en:'of',no:'av'})+' '+nf(P.dav,0)+'°')+H2('φ',nf(A.phi,1)+'°');
+  el('acOv').innerHTML=H2(L({en:'Failed',no:'Stoppet'}),A.eng==='1'?'ENG 1':'ENG 2','',1)+H2(L({en:'Thrust',no:'Skyv'}),A.thr==='toga'?'TOGA':'FLX','',1)+H2('IAS',nf(A.v,0)+' kt')+st2;
+  { const lg=(c,tx)=>`<span><i style="--c:${c}"></i>${L(tx)}</span>`, lh=lg(I.mag,{en:'live-engine thrust',no:'skyv, god motor'})+lg(I.red,{en:'windmilling drag',no:'vindmøllemotstand'})+lg(I.cyan,{en:'rudder and fin force',no:'ror og finnekraft'})+lg(I.amber,{en:'sideslip force',no:'sideslipkraft'});
+    const lgEl=el('acLeg'); if(lgEl&&lgEl._h!==lh){ lgEl.innerHTML=lh; lgEl._h=lh; } }
 });
 /* --- time history after the failure --- */
 const trC=fit('trCv',st=>{ const g=S.clear(st), W=st.w, H=st.h, n=narrow(st); if(!CUR) return; const tr=CUR.sim.tr, t=simT();
@@ -866,7 +858,7 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
   txt(); LAB.onLang(txt);
 })();
 </script>
-<script src="twin.js?v=3"></script>
+<script src="twin.js?v=4"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;

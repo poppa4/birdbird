@@ -254,9 +254,8 @@ function paint(){
   }
   // phase chip and status
   const chip=ph==='cr'?L({en:'CRUISE · FL350 · M 0.78 · CLEAN',no:'MARSJ · FL350 · M 0,78 · RENT'}):ph==='to'?L({en:'TAKE-OFF ROTATION · CONF 1+F · VR ',no:'ROTASJON VED AVGANG · CONF 1+F · VR '})+nf(E.to.VR,0)+' kt':L({en:'LANDING FLARE · CONF FULL · VAPP ',no:'UTFLATING · CONF FULL · VAPP '})+nf(E.fl.Vapp,0)+' kt';
-  if(!n) txt(g,chip,14,22,{mono:1,col:I.mute,size:F(10.5)});
-  else txt(g,chip,W-8,15,{mono:1,col:I.mute,al:'right',size:9});
-  if(msg){ const y=n?top+26:44; pill(g,msg.t,n?8:12,y,{col:msg.c,bd:msg.c,al:'left',size:F(n?10:11.5),bg:'rgba(13,20,27,.92)'}); }
+  void chip; // the phase now sits in the readout chip over the canvas (#cmChip)
+  if(msg){ const y=n?top+34:62; pill(g,msg.t,n?8:12,y,{col:msg.c,bd:msg.c,al:'left',size:F(n?10:11.5),bg:'rgba(13,20,27,.92)'}); }
   // pitch trace (cruise)
   if(ph==='cr'&&!n&&A.trace.length>2){ const bx={x:W-206,y:80,w:190,h:74}; g.fillStyle='rgba(13,20,27,.75)'; g.fillRect(bx.x-8,bx.y-16,bx.w+14,bx.h+30); g.strokeStyle=I.rule; g.strokeRect(bx.x-8,bx.y-16,bx.w+14,bx.h+30);
     txt(g,L({en:'pitch after a gust, 8 s',no:'pitch etter vindkast, 8 s'}),bx.x-2,bx.y-3,{mono:1,col:I.mute,size:F(9.5)});
@@ -402,6 +401,10 @@ function outcomes(){
   el('cmOut').innerHTML=CARDS.map(k=>{ const x=c[k]; return `<li class="oc st-${x.st}${hot.includes(k)?' hot':''}" id="oc-${k}">
     <div class="oc-h"><span class="oc-t">${x.t}<small>${x.s}</small></span><span class="oc-v"><b>${x.v}</b>${x.u?` <small>${x.u}</small>`:''}</span><span class="oc-st">${stT[x.st]}</span></div>
     ${x.b}<p class="oc-w">${x.w}</p><p class="oc-d deep">${x.d}</p></li>`; }).join('');
+  const ch=el('cmChip'); if(ch){ const H2=(k,v,cl,hx)=>`<span${hx?' class="hx"':''}><i>${k}</i><b${cl?` class="${cl}"`:''}>${v}</b></span>`, e=E, ph=ST.ph;
+    const cfg=ph==='cr'?'FL350 · M '+nf(0.78,2):ph==='to'?'CONF 1+F · VR '+nf(e.to.VR,0)+' kt':'CONF FULL · VAPP '+nf(e.fl.Vapp,0)+' kt';
+    const inE=e.inEnv;
+    ch.innerHTML=H2(ph==='cr'?L({en:'Cruise',no:'Marsj'}):ph==='to'?L({en:'Take-off',no:'Avgang'}):L({en:'Landing',no:'Landing'}),cfg,'',1)+H2('CG',nf(ST.h,1)+' % MAC',inE?'':'a')+H2(L({en:'Mass',no:'Masse'}),nf(ST.m,1)+' t')+H2(L({en:'Static margin',no:'Statisk margin'}),nf(e.sm,1)+' %',e.sm<=0?'r':''); }
   liveTask();
 }
 

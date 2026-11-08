@@ -5,49 +5,22 @@
 <meta name="description" content="A jet transport lives between two limits: drag and stall at the slow end, compressibility and buffet at the fast end. Fly an A320-sized wing through the drag curve, push the Mach number until shock waves form, find the coffin corner at altitude, and see what the swept wing buys and what it costs.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>High-speed flight and drag</title>
-<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
 .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
 /* explore: one dark viewport with view tabs and a sticky control panel (tunnel.html layout) */
-.xapp{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start;margin-top:10px}
-@media (min-width:981px){.xapp>.xpanel{order:-1}}
 .xmain{display:flex;flex-direction:column;gap:12px;min-width:0}
 .viewport{position:relative;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(120% 90% at 50% 35%,#2a3542 0%,#18212b 55%,#0f151b 100%);color:#E2E8EE}
 .viewport canvas{display:block;width:100%}
-.vbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:10px 10px 2px}
-.vtabs{display:flex;flex-wrap:wrap;gap:3px}
-.vtabs button{font-family:var(--f-body);font-size:12.5px;font-weight:500;background:rgba(20,28,36,.82);color:#8B99A7;border:1px solid #263340;border-radius:4px;padding:5px 10px;cursor:pointer;min-height:30px}
-.vtabs button:hover{color:#E2E8EE;border-color:#E46BAE}
-.vtabs button.on{background:#E46BAE;color:#0D1319;border-color:#E46BAE;font-weight:600}
-.vtabs button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
 .vchip{font-family:var(--f-mono);font-size:11px;color:#8B99A7;background:rgba(15,23,29,.55);border:1px solid #263340;border-radius:4px;padding:3px 8px;line-height:1.5}
 .vchip b{color:#E2E8EE;font-weight:500}
 .vchip:empty{display:none}
 .vv canvas+canvas,.vv>.deep{border-top:1px solid rgba(255,255,255,.07)}
-.vleg{display:flex;flex-wrap:wrap;gap:4px 14px;padding:6px 12px 10px;font-family:var(--f-mono);font-size:11px;color:#8B99A7}
-.vleg span{white-space:nowrap}
-.vleg i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:3px;background:var(--c)}
-.vleg i.d{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
-.vleg i.a{height:9px;vertical-align:0;opacity:.85}
 #cvD,#cvS{aspect-ratio:16/9.4}#cvF{aspect-ratio:16/7.2}#cvM{aspect-ratio:16/4.4}#cvCt{aspect-ratio:16/3.3}#cvC{aspect-ratio:16/8.4}#cvW{aspect-ratio:16/9}#cvR{aspect-ratio:16/4.2}#cvU{aspect-ratio:16/7}#cvA{aspect-ratio:16/4.4}
 @media (max-width:600px){#cvD,#cvS{aspect-ratio:4/3.8}#cvF{aspect-ratio:4/3}#cvM{aspect-ratio:16/9}#cvCt{aspect-ratio:16/6.4}#cvC{aspect-ratio:4/3.6}#cvW{aspect-ratio:4/3.6}#cvR{aspect-ratio:16/8}#cvU{aspect-ratio:4/3}#cvA{aspect-ratio:16/9}}
-.xpanel{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);position:sticky;top:58px;max-height:calc(100vh - 70px);overflow:auto}
-@media (max-width:980px){.xapp{grid-template-columns:minmax(0,1fr)}.xpanel{position:static;max-height:none}}
-.xsec{padding:12px 14px;border-bottom:1px solid var(--rule-2)}
-.xsec:last-child{border-bottom:0}
-.xsec h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;margin:0 0 8px;line-height:1.2}
-.xsec.ro h3{margin-bottom:2px}
-.xsec .grp{margin:8px 0 4px}
-.xsec .ctl{margin:6px 0 8px}
-.xadv summary{cursor:pointer;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;list-style:none}
-.xadv summary::-webkit-details-marker{display:none}
-.xadv summary::before{content:"▸ ";color:var(--accent)}.xadv[open] summary::before{content:"▾ "}
-.xadv[open] summary{margin-bottom:6px}
-.xpanel .tbox{margin:12px 14px 0}
 .xpanel .pre{margin:0}
 body.depth-short .presec{display:none}
-.tryblk{margin-top:10px;padding-top:14px;border-top:1px solid var(--rule-2)}
 .tryblk h3{margin:0 0 2px}.tryblk>.note{margin-bottom:10px}
 .rrow b{white-space:normal;text-align:right}
 .rrow span{flex:1 1 auto}
@@ -63,22 +36,7 @@ body.depth-short .presec{display:none}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
-.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
-.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
-.fb{display:block;margin-top:6px;font-size:14px;line-height:1.45;color:var(--ink-2)}
 .fb.ok{color:var(--ok)}.fb b{color:inherit}
-.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
-.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15.5px;line-height:1.3;color:var(--ink);margin:0}
-.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-@media (max-width:520px){.task .opts{grid-template-columns:minmax(0,1fr)}}
-.task .opts button{font-size:13.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left}
-.task .opts button:hover{border-color:var(--ink)}
-.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
-.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
-.task .btns{margin-top:auto}
 .why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
 .take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
 .take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
@@ -127,9 +85,7 @@ body.depth-short .presec{display:none}
 .ectm .rule{margin:12px 0 0;font-size:14px;line-height:1.55;color:var(--ink)}
 @media (max-width:520px){.etiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.etile .l{font-size:28px}}
 /* Instructor: big viewport, presenter-sized controls */
-body.depth-instructor .xapp{grid-template-columns:280px minmax(0,1fr)}
 body.depth-instructor #cvD,body.depth-instructor #cvS,body.depth-instructor #cvC,body.depth-instructor #cvW,body.depth-instructor #cvF{max-height:min(70vh,760px)}
-body.depth-instructor .vtabs button{font-size:15px;padding:8px 14px}
 body.depth-instructor .vchip{font-size:13px}
 body.depth-instructor .xpanel .rrow{font-size:16px;padding:8px 0}
 body.depth-instructor .pre .btn{font-size:14px;padding:9px 13px}
@@ -182,7 +138,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
         <div class="viewport" id="vport" data-lab-model>
           <div class="vbar">
             <div class="vtabs" id="vtabs" role="tablist"></div>
-            <div class="vchip" id="vchip" aria-live="polite"></div>
+            <div class="vchip inbar" id="vchip" aria-live="polite"></div>
           </div>
           <div class="vv" data-v="drag" id="drag"><canvas id="cvD" aria-label="Drag curve: induced, parasite and total drag against calibrated airspeed"></canvas></div>
           <div class="vv" data-v="climb" id="mach" hidden><canvas id="cvS" aria-label="IAS, EAS, TAS and the speed of sound against altitude in a climb"></canvas></div>
@@ -312,7 +268,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
-<script src="lab.js?v=26"></script>
+<script src="lab.js?v=27"></script>
 <script>
 (function(){
 'use strict';

@@ -5,7 +5,7 @@
 <meta name="description" content="A320 stability, controls and load factor for EASA ATPL 081 Principles of Flight: CG and balance, static and dynamic stability, V-n and gust loads, buffet, flight controls and what normal law changes.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stability, Controls and Load Factor</title>
-<link rel="stylesheet" href="lab.css?v=6">
+<link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -95,34 +95,17 @@
 .un-defs>div:first-child,.un-defs>div:nth-child(2){padding-top:0}
 @media (max-width:900px){.un-grid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:520px){.un-defs{grid-template-columns:minmax(0,1fr)}.un-defs>div:nth-child(2){padding-top:10px}}
-.stagebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
-.cgm-ph{flex:1 1 360px;min-width:0}
-.cgm-ph.seg button{padding:9px 12px;font-size:14px}
 .pre{display:flex;flex-wrap:wrap;gap:6px}
 .pre .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;font-size:14px;line-height:1.45}
-.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
-.fb{display:block;margin-top:6px;font-size:14px;line-height:1.5;color:var(--ink-2)}.fb.ok{color:var(--ok)}
 /* 2 · the model */
-.cgm{display:flex;flex-direction:column;gap:14px;min-width:0}
-.cgm-stage{position:relative}
-.mlegend{display:flex;flex-wrap:wrap;gap:4px 18px;margin:10px 0 0;font-size:12.5px;color:var(--ink-2)}
-.mlegend span{display:inline-flex;align-items:center;gap:6px}
-.mlegend i{display:inline-block;width:16px;height:3px;border-radius:2px;background:var(--c);filter:brightness(.8) saturate(1.2)}
-.mlegend i.dash{background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px)}
-.mlegend i.band{height:8px;opacity:.6}.mlegend i.dot{width:8px;height:8px;border-radius:50%;background:#E0A93B}
 .mhint{font-size:13.5px;line-height:1.5;color:var(--ink-2);margin:6px 0 0;max-width:90ch}.mhint b{color:var(--ink)}
+.xsee.mhint{margin:0}
 body.depth-instructor .mhint{display:none}
 #cmCv{aspect-ratio:16/8.6;touch-action:pan-y;cursor:default}
 #cmCv.drag{cursor:ew-resize}
 body.depth-instructor #cmCv{aspect-ratio:16/8.8}
-.cgm-ctl{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px 32px;align-items:start}
-.cgm-sl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 22px}
-.cgm-sl .ctl{margin:2px 0 4px}
-.cgm-ctl .grp{margin-top:0}
-.cgm-out{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;border-top:1px solid var(--rule)}
-.oc{padding:12px 0 12px 14px;border-bottom:1px solid var(--rule-2);border-left:3px solid var(--rule);min-width:0;display:flex;flex-direction:column;gap:4px}
+.cgm-out{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.oc{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:4px}
 .oc.st-ok{border-left-color:#2E7D4F}.oc.st-cau{border-left-color:#B7791F}.oc.st-bad{border-left-color:#B03A2E}
 .oc.hot .oc-t{color:var(--accent)}
 .oc-h{display:flex;align-items:baseline;gap:8px}
@@ -140,33 +123,19 @@ body.depth-instructor #cmCv{aspect-ratio:16/8.8}
 .oc-bar em.ref{width:2px;height:12px;background:var(--ink-3)}
 .oc-w{margin:0;font-size:13.5px;line-height:1.4;color:var(--ink-2)}
 .oc-d{margin:0;font-family:var(--f-mono);font-size:11px;color:var(--ink-3);line-height:1.4}
-.cgm-adv summary{cursor:pointer;font-size:14px;color:var(--ink-2);width:max-content}
-.cgm-adv summary:hover{color:var(--ink)}
-.cgm-tog{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:6px}
-.cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 20px;align-items:start}.cgm-note{grid-column:1/-1}
+.cgm-tog{display:flex;flex-direction:column;gap:2px}
+.cgm-tog .chk{margin:2px 0;font-size:13px}
+.cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.cgm-note{grid-column:1/-1}
 #cmEnv{aspect-ratio:16/11;touch-action:none;cursor:crosshair}#cmLim{aspect-ratio:16/11}
 .cgm-note p{font-size:14px}
 @media (max-width:1100px){.cgm-more{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cgm-note{grid-column:1/-1}}
-@media (max-width:1000px){.cgm-ctl{grid-template-columns:minmax(0,1fr)}.cgm-out{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:600px){#cmCv{aspect-ratio:4/4.05}.cgm-sl{grid-template-columns:minmax(0,1fr)}.cgm-out{grid-template-columns:minmax(0,1fr)}.cgm-more{grid-template-columns:minmax(0,1fr)}
-  .cgm-ph{flex:1 1 100%}.cgm-ph.seg button{flex:1 1 0;padding:9px 4px;font-size:13px}.stagebar #cmPlay{flex:1 1 100%}}
+@media (max-width:1180px){.cgm-out{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){#cmCv{aspect-ratio:4/4.05}.cgm-out{grid-template-columns:minmax(0,1fr)}.cgm-more{grid-template-columns:minmax(0,1fr)}}
 /* Instructor: presenter-sized controls and readouts */
-body.depth-instructor .cgm-ph.seg button{font-size:17px;padding:12px 16px}
 body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
 body.depth-instructor .oc-t{font-size:17px}body.depth-instructor .oc-v b{font-size:24px}body.depth-instructor .oc-w{font-size:15px}
-body.depth-instructor .ctl label{font-size:16px}body.depth-instructor .ctl .hint{display:none}
+body.depth-instructor .ctl label{font-size:15px}body.depth-instructor .ctl .hint{display:none}
 /* 3 · Try */
-.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
-.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
-.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
-.task .opts button:hover{border-color:var(--ink)}
-.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
-.task .opts button.wrong{border-color:var(--warning);background:#FBEAE7}
-.task .btns{margin-top:auto}
-@media (max-width:480px){.task .opts{grid-template-columns:1fr}}
 /* 4 · Debrief */
 .maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
 .maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
@@ -216,30 +185,32 @@ body.depth-instructor .maid b{font-size:24px}
     <div class="eyebrow">2 · Explore</div>
     <h2>CG and mass: one aircraft, every effect</h2>
     <p class="lead" id="cmLead"></p>
-    <div class="cgm" id="cgm" data-lab-model>
-      <div class="stagebar"><div id="cmPh" class="cgm-ph"></div><button type="button" class="btn pri" id="cmPlay">▶ Gust</button></div>
-      <div class="tbox" id="cmTask" hidden></div>
-      <div class="cgm-stagewrap"><div class="view cgm-stage"><canvas id="cmCv" aria-label="Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord."></canvas></div><div class="mlegend" id="cmLeg"></div><p class="mhint" id="cmHint"></p></div>
-      <div class="cgm-ctl">
-        <div class="cgm-sl" id="cmSl"></div>
-        <div><div class="grp" id="gPre">Scenarios</div><div class="pre" id="cmPre"></div></div>
+    <div class="xapp cgm" id="cgm">
+      <div class="xvp view" id="cmVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="cmPh" role="tablist" aria-label="Phase of flight"></div><div class="vtools"><button type="button" class="go" id="cmPlay">▶ Gust</button></div></div>
+        <div class="vcv"><canvas id="cmCv" aria-label="Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord."></canvas><div class="vchip" id="cmChip" aria-live="polite"></div></div>
+        <div class="vleg" id="cmLeg"></div>
       </div>
+      <p class="xsee mhint" id="cmHint"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv"></span></summary>
+        <div class="tbox" id="cmTask" hidden></div>
+        <details class="xsec" open><summary>Conditions</summary><div id="cmSl"></div></details>
+        <details class="xsec" open><summary>Show</summary><div class="cgm-tog" id="cmTog"></div></details>
+        <details class="xsec presec" open><summary id="gPre">Scenarios</summary><div class="pre" id="cmPre"></div></details>
+      </details>
       <ul class="cgm-out" id="cmOut" aria-live="polite"></ul>
-      <details class="cgm-adv"><summary>Advanced</summary><div class="cgm-tog" id="cmTog"></div></details>
+      <div class="cgm-more deep">
+        <div class="xcard"><div class="view"><canvas id="cmEnv" aria-label="Mass and CG envelope. Drag the dot to set mass and CG together."></canvas></div><p class="mhint" id="cmEnvH">The certified CG range at each mass. The dot is your loading: drag it to change mass and CG together.</p></div>
+        <div class="xcard"><div class="view"><canvas id="cmLim" aria-label="Flare elevator needed and stick force per g against CG, with the CG limits at this mass"></canvas></div><p class="mhint" id="cmLimH">Why the limits sit where they do: forward, the flare runs out of elevator (amber); aft, the stick force per g gets too light (blue).</p></div>
+        <div class="box cgm-note" id="cmNote"></div>
+      </div>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <ol class="tasks" id="tasks"></ol>
+      </div>
     </div>
-    <div class="cgm-more deep">
-      <div><div class="view"><canvas id="cmEnv" aria-label="Mass and CG envelope. Drag the dot to set mass and CG together."></canvas></div><p class="mhint" id="cmEnvH">The certified CG range at each mass. The dot is your loading: drag it to change mass and CG together.</p></div>
-      <div><div class="view"><canvas id="cmLim" aria-label="Flare elevator needed and stick force per g against CG, with the CG limits at this mass"></canvas></div><p class="mhint" id="cmLimH">Why the limits sit where they do: forward, the flare runs out of elevator (amber); aft, the stick force per g gets too light (blue).</p></div>
-      <div class="box cgm-note" id="cmNote"></div>
-    </div>
-  </section>
-
-  <!-- 3 · TRY -->
-  <section class="card" id="try" data-step="try">
-    <div class="eyebrow">2 · Explore · Try it</div>
-    <h2>Try it</h2>
-    <p class="lead" id="tryLead"></p>
-    <ol class="tasks" id="tasks"></ol>
   </section>
 
   <!-- 4 · DEBRIEF -->
@@ -386,11 +357,11 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=26"></script>
+<script src="lab.js?v=27"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="concepts.js?v=1"></script>
 <script src="stab.js?v=1"></script>
-<script src="cgmodel.js?v=2"></script>
+<script src="cgmodel.js?v=3"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;
@@ -428,7 +399,7 @@ const {L,el,nf}=LAB, S=STAB, I=S.INK, AC=S.AC, D2R=S.D2R;
 const txt=S.txt, arrow=S.arrow;
 LAB.add({},{
  'The certified CG range at each mass. The dot is your loading: drag it to change mass and CG together.':'Det sertifiserte CG-området ved hver masse. Punktet er lastingen din: dra det for å endre masse og CG samtidig.','Why the limits sit where they do: forward, the flare runs out of elevator (amber); aft, the stick force per g gets too light (blue).':'Hvorfor grensene ligger der de gjør: foran går utflatingen tom for høyderor (gul); bak blir stikkekraften per g for lett (blå).',
- 'What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Scenarios':'Scenarier','Advanced':'Avansert','Mass (t)':'Masse (t)','From empty (OEW 42 t) to MTOW 78 t':'Fra tomt (OEW 42 t) til MTOW 78 t','Or drag the CG on the wing chord':'Eller dra CG på vingekorden','Deep dive · forward and aft CG side by side':'Dypdykk · fremre og bakre CG side om side','5 · Check':'5 · Sjekk','▶ Gust':'▶ Vindkast',
+ 'What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Scenarios':'Scenarier','Advanced':'Avansert','Controls':'Kontroller','Conditions':'Forhold','Show':'Vis','Mass (t)':'Masse (t)','From empty (OEW 42 t) to MTOW 78 t':'Fra tomt (OEW 42 t) til MTOW 78 t','Or drag the CG on the wing chord':'Eller dra CG på vingekorden','Deep dive · forward and aft CG side by side':'Dypdykk · fremre og bakre CG side om side','5 · Check':'5 · Sjekk','▶ Gust':'▶ Vindkast',
  'CG, lift and the tail: one balance':'CG, løft og halen: én balanse','CG and mass: one aircraft, every effect':'CG og masse: ett fly, alle effektene','Try it':'Prøv selv','What the pilot takes away':'Det piloten tar med seg',
  'CG, lift and the tail':'CG, løft og halen','CG and mass model':'CG- og massemodell','Pilot takeaways':'Det piloten tar med seg','Presets':'Forhåndsvalg',
  'CG position (% MAC)':'CG-posisjon (% MAC)','Mass (t) · OEW 42 to MTOW 78':'Masse (t) · OEW 42 til MTOW 78','Cruise':'Marsj','Take-off rotation':'Rotasjon ved avgang','Landing flare':'Utflating',
