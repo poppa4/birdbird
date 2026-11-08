@@ -8,7 +8,7 @@
    Tegning: hver dyse eier en ring av partikler; nabopartikler fra samme dyse bindes sammen til myke,
    kamerarettede bånd (sammenhengende filamenter), og turbulente partikler tegnes i tillegg som myke skyer.
    Bredden vokser og tettheten avtar nedstrøms, båndene skyggelegges som rør av nøkkellyset, og et valgfritt
-   laserark lar bare røyken inne i arket lyse. Posisjonene ligger i typede tabeller (vingeramme) og skrives til
+   laserark lar bare røyken inne i arket lyse (tverrsnitt: eksakte krysningspunkter filament–ark som lysende prikker). Posisjonene ligger i typede tabeller (vingeramme) og skrives til
    GPU-bufferne hvert bilde (simulering og opplasting adskilt). */
 (function (root) {
   'use strict';
@@ -27,7 +27,7 @@
       size0: { value: 0.035 }, grow: { value: 2.2 }, pxScale: { value: 1000 }, maxPx: { value: 110 }, opac: { value: 0.62 },
       tint: { value: new THREE.Color(0.93, 0.95, 0.98) }, Lw: { value: new THREE.Vector3(-0.3, 0.9, 0.3).normalize() },
       laserOn: { value: 0 }, laserN: { value: new THREE.Vector3(1, 0, 0) }, laserD: { value: 0 }, laserTh: { value: 0.07 }, laserCol: { value: new THREE.Color(0.45, 1.0, 0.55) }, laserDim: { value: 0.05 },
-      bright: { value: 1 }, minPx: { value: 1.6 }, sheetPuff: { value: 0 }
+      bright: { value: 1 }, minPx: { value: 1.6 }, sheetPuff: { value: 0 }, dotPx: { value: 2.6 }, dotGain: { value: 1 }
     };
     const blend = { transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
       blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor };
@@ -57,7 +57,7 @@
       uniforms: U,
       vertexShader: COMMON + `
         attribute vec3 aOther; attribute float aSide; attribute float aAge; attribute float aTb; attribute float aA; uniform float minPx;
-        varying float vS; varying float vA; varying float vIn; varying vec3 vSd; varying vec3 vN;
+        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN;
         void main(){
           vec4 wp=modelMatrix*vec4(position,1.0), wo=modelMatrix*vec4(aOther,1.0);
           vec4 mv=viewMatrix*wp, mo=viewMatrix*wo;
@@ -67,20 +67,21 @@
           float tbv=clamp(aTb,0.0,1.0), w=widthOf(aAge,tbv);
           float wpx=w*pxScale/max(0.2,-mv.z), k=max(1.0,minPx/max(wpx,1e-4));   // minst ~1,6 px bred, tynnere → svakere
           mv.xyz+=s*aSide*w*k;
-          vIn=laserIn(wp.xyz); vS=aSide;
-          float a=opac*aA*fades(aAge)*pow(size0/w,0.85)/k*(1.0-smoothstep(0.15,0.55,tbv))*smoothstep(0.04,0.22,sn);   // sett på langs: tones ut (ingen pigger)
-          vA= laserOn>0.5? a*mix(laserDim,1.15,vIn) : a;
+          vDd=dot(laserN,wp.xyz)-laserD; vS=aSide;   // avstand til laserarket: lineær over båndet, testes per fragment
+          vA=opac*aA*fades(aAge)*pow(size0/w,0.85)/k*(1.0-smoothstep(0.15,0.55,tbv))*smoothstep(0.04,0.22,sn);   // sett på langs: tones ut (ingen pigger)
           vSd=s; vN=normalize(-mv.xyz);
           gl_Position=projectionMatrix*mv;
         }`,
       fragmentShader: FRAG_COL + `
-        varying float vS; varying float vA; varying float vIn; varying vec3 vSd; varying vec3 vN; uniform vec3 Lw;
+        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN; uniform vec3 Lw; uniform float laserTh; uniform float laserDim;
         void main(){
+          float vIn= laserOn>0.5? exp(-vDd*vDd/(laserTh*laserTh)) : 0.0;
+          float aa= laserOn>0.5? vA*mix(laserDim,1.15,vIn) : vA;
           float s=vS, prof=exp(-2.6*s*s)*(1.0-smoothstep(0.8,1.0,abs(s)));
           vec3 n=normalize(vSd*s+vN*sqrt(max(0.0,1.0-s*s)));
           vec3 L=normalize((viewMatrix*vec4(Lw,0.0)).xyz);
           float sh=0.6+0.34*max(dot(n,L),0.0)+0.16*pow(max(0.0,-L.z),3.0);
-          float a=clamp(vA*prof,0.0,1.0);
+          float a=clamp(aa*prof,0.0,1.0);
           gl_FragColor=vec4(smokeCol(sh,vIn)*a,a);
         }`,
       side: THREE.DoubleSide
@@ -128,16 +129,58 @@
         }`
     }, blend));
     const puffs = new THREE.Points(pGeo, pMat); puffs.frustumCulled = false; puffs.renderOrder = 7;
-    const group = new THREE.Group(); group.add(ribbons); group.add(puffs);
+
+    /* ---- laserark (tverrsnitt): der et filament krysser arket lyser røyken som en skarp prikk ----
+       Krysningspunktet regnes eksakt per lenke (partikkel → eldre nabo) i upload(), så prikkene står stille og
+       blinker ikke selv om arket er mye tynnere enn avstanden mellom partiklene. Faste buffere, ingen allokering. */
+    const sPos = new Float32Array(MAX * 3), sAge = new Float32Array(MAX), sTb = new Float32Array(MAX), sSd = new Float32Array(MAX);
+    const sGeo = new THREE.BufferGeometry();
+    const sa_ = { pos: new THREE.BufferAttribute(sPos, 3), age: new THREE.BufferAttribute(sAge, 1), tb: new THREE.BufferAttribute(sTb, 1), sd: new THREE.BufferAttribute(sSd, 1) };
+    for (const k in sa_) sa_[k].setUsage(THREE.DynamicDrawUsage);
+    sGeo.setAttribute('position', sa_.pos); sGeo.setAttribute('aAge', sa_.age); sGeo.setAttribute('aTb', sa_.tb); sGeo.setAttribute('aSeed', sa_.sd); sGeo.setDrawRange(0, 0);
+    const sMat = new THREE.ShaderMaterial({
+      uniforms: U,
+      vertexShader: COMMON + `
+        attribute float aAge; attribute float aTb; attribute float aSeed; uniform float maxPx; uniform float dotPx; uniform float dotGain;
+        varying float vA; varying float vTb;
+        void main(){
+          vec4 mv=modelViewMatrix*vec4(position,1.0);
+          float tbv=clamp(aTb,0.0,1.0), w=widthOf(aAge,tbv);
+          float fill=aSeed<0.0? 1.0 : 0.0;   // fyllprikker mellom nabodyser: tett pakket, så hver for seg svake
+          float ps=(2.0-0.5*fill)*w*pxScale/max(0.2,-mv.z), q=min(1.0,ps/dotPx);
+          gl_PointSize=clamp(ps,dotPx,maxPx*0.5);
+          // tynn røyk sprer lyset over et større areal: svakere per piksel, men aldri helt borte
+          vA=dotGain*mix(0.85,0.2,fill)*fades(aAge)*(0.55+0.45*q)*(1.0-0.55*tbv)*(0.8+0.4*fract(abs(aSeed)*7.31))/(1.0+0.9*aAge);
+          vTb=tbv; gl_Position=projectionMatrix*mv;
+        }`,
+      fragmentShader: `
+        uniform vec3 laserCol; varying float vA; varying float vTb;
+        void main(){
+          vec2 c=gl_PointCoord*2.0-1.0; float r2=dot(c,c); if(r2>1.0) discard;
+          float core=exp(-7.0*r2), halo=exp(-2.2*r2)*(1.0-r2);
+          vec3 col=laserCol*(1.35*core+0.45*halo)+vec3(0.55,0.6,0.5)*core*core*(1.0-vTb);   // mettet kjerne blir nesten hvit
+          gl_FragColor=vec4(col*vA,0.0);
+        }`,
+      transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
+      blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor
+    });
+    const dots = new THREE.Points(sGeo, sMat); dots.frustumCulled = false; dots.renderOrder = 8; dots.visible = false;
+    const group = new THREE.Group(); group.add(ribbons); group.add(puffs); group.add(dots);
 
     /* ---- dyser: hver dyse eier en ring av «per» plasser ---- */
     let E = null, nE = 0, acc = null, rn = null, per = 1, ds = 0.1, life = 6, ready = false, Tsim = 0;
+    /* laserark: dyser som står ved siden av hverandre (samme rad i kammen, samme eike rundt tuppen) bindes sammen,
+       så krysningene i arket blir sammenhengende kurver – som et røykteppe fra en spalte, ikke enkeltprikker */
+    let CH = null, cOk = null, inCh = null, cX = null, cY = null, cZ = null, cA = null, cT = null, cS = null, gap = 0.5;
     const S = { U: o.speed || 5.5, ex: 1, jitter: 0.012, travel: 27, planar: null };
     /* keep: samme rake (bare α er endret) – behold partiklene og flytt bare dysene */
     function setEmitters(seeds, opt, keep) {
       opt = opt || {};
       const n = seeds.length / 3; keep = keep && n === nE;
       E = Float32Array.from(seeds); S.ex = opt.ex || 1; S.jitter = opt.jitter || 0.012; S.planar = opt.planar == null ? null : opt.planar;
+      CH = opt.chain && opt.chain.length === n ? Int32Array.from(opt.chain) : null; gap = opt.gap || 0.5;
+      if (!cOk || cOk.length < n) { cOk = new Uint8Array(n); inCh = new Uint8Array(n); cX = new Float32Array(n); cY = new Float32Array(n); cZ = new Float32Array(n); cA = new Float32Array(n); cT = new Float32Array(n); cS = new Float32Array(n); }
+      inCh.fill(0); if (CH) for (let e = 0; e < n; e++) if (CH[e] >= 0) { inCh[e] = 1; inCh[CH[e]] = 1; }
       if (keep) return;
       nE = n; acc = new Float32Array(nE); rn = new Uint32Array(nE);
       for (let i = 0; i < nE; i++) acc[i] = Math.random();
@@ -154,7 +197,7 @@
       if (rn) for (let e = 0; e < nE; e++) rn[e] %= per;
     }
     function used() { return Math.min(MAX, per * nE); }
-    function clear() { alive.fill(0); gAge.fill(2); rA.fill(0); pa.age.needsUpdate = true; ra.a.needsUpdate = true; if (rn) rn.fill(0); Tsim = 0; draw(); }
+    function clear() { alive.fill(0); gAge.fill(2); rA.fill(0); pa.age.needsUpdate = true; ra.a.needsUpdate = true; if (rn) rn.fill(0); Tsim = 0; sGeo.setDrawRange(0, 0); draw(); }
     function draw() { const n = nE ? used() : 0; pGeo.setDrawRange(0, n); rGeo.setDrawRange(0, n * 6); }
     function setCap(n) { n = Math.max(1000, Math.min(MAX, n | 0)); if (n === cap) return; cap = n; if (nE) { layout(S.travel); clear(); } }
     /* modellen er dreid fra a0 til a1 (rad) om P0: behold partiklenes posisjon i vindrammen */
@@ -287,8 +330,57 @@
           rAge[b + c] = c < 2 ? ai : aj; rTb[b + c] = tb[me]; rA[b + c] = 1;
         }
       }
+      sheetDots(n);
       for (const k in pa) pa[k].needsUpdate = true;
       for (const k in ra) ra[k].needsUpdate = true;
+    }
+    /* laserarket i gruppens lokale ramme: avstand = a·x + b·y + c·z − d (gruppen dreies med α) */
+    function sheetDots(n) {
+      const on = U.laserOn.value > 0.5 && S.planar === null && nE > 0;
+      dots.visible = on; if (!on) { sGeo.setDrawRange(0, 0); return; }
+      ribbons.updateWorldMatrix(true, false);
+      const e = ribbons.matrixWorld.elements, N = U.laserN.value, nx = N.x, ny = N.y, nz = N.z;
+      const a = nx * e[0] + ny * e[1] + nz * e[2], b = nx * e[4] + ny * e[5] + nz * e[6], c = nx * e[8] + ny * e[9] + nz * e[10];
+      const d = U.laserD.value - (nx * e[12] + ny * e[13] + nz * e[14]), th = U.laserTh.value;
+      let m = 0; if (CH) cOk.fill(0, 0, nE);
+      for (let i = 0; i < n; i++) {
+        if (!alive[i]) continue;
+        const fi = a * px[i] + b * pz[i] + c * py[i] - d;
+        let X, Y, Z, A_, T_;
+        if (lk[i]) {
+          const e2 = (i / per) | 0, k = i - e2 * per, j = e2 * per + (k ? k - 1 : per - 1);
+          const fj = a * px[j] + b * pz[j] + c * py[j] - d;
+          if ((fi > 0) === (fj > 0) || fi === fj) continue;   // lenken krysser ikke arket
+          const t = fi / (fi - fj);
+          X = px[i] + (px[j] - px[i]) * t; Y = pz[i] + (pz[j] - pz[i]) * t; Z = py[i] + (py[j] - py[i]) * t;
+          A_ = (age[i] + (age[j] - age[i]) * t) / life; T_ = tb[i] + (tb[j] - tb[i]) * t;
+          // første (yngste) krysning per dyse huskes for kurvene mellom nabodyser
+          if (CH && (!cOk[e2] || A_ < cA[e2])) { cOk[e2] = 1; cX[e2] = X; cY[e2] = Y; cZ[e2] = Z; cA[e2] = A_; cT[e2] = T_; cS[e2] = sd[i]; }
+        } else {
+          // løs (turbulent) røyk uten nabo: lyser bare når partikkelen selv ligger i arket
+          if (fi > th || fi < -th) continue;
+          X = px[i]; Y = pz[i]; Z = py[i]; A_ = age[i] / life; T_ = tb[i];
+        }
+        // på en kurve (bundet til nabodyser) like svak som fyllprikkene, så kurven blir jevn og ikke perlete
+        const o3 = 3 * m; sPos[o3] = X; sPos[o3 + 1] = Y; sPos[o3 + 2] = Z; sAge[m] = A_; sTb[m] = T_; sSd[m] = CH && inCh[(i / per) | 0] ? -0.1 - 0.8 * sd[i] : sd[i]; m++;
+      }
+      // sammenhengende kurver: fyll inn prikker mellom krysningene til nabodyser (kortere enn «gap»)
+      if (CH) {
+        const stp = 0.022, g2 = gap * gap;
+        for (let e = 0; e < nE && m < MAX - 16; e++) {
+          const f2 = CH[e]; if (f2 < 0 || !cOk[e] || !cOk[f2]) continue;
+          const dx = cX[f2] - cX[e], dy = cY[f2] - cY[e], dz = cZ[f2] - cZ[e], L2 = dx * dx + dy * dy + dz * dz;
+          if (L2 > g2 || Math.abs(cA[f2] - cA[e]) * life > 4 * gap) continue;
+          const K = Math.min(14, Math.floor(Math.sqrt(L2) / stp));
+          for (let q = 1; q < K; q++) {
+            const u = q / K, o3 = 3 * m;
+            sPos[o3] = cX[e] + dx * u; sPos[o3 + 1] = cY[e] + dy * u; sPos[o3 + 2] = cZ[e] + dz * u;
+            sAge[m] = cA[e] + (cA[f2] - cA[e]) * u; sTb[m] = cT[e] + (cT[f2] - cT[e]) * u; sSd[m] = -0.1 - 0.8 * cS[e]; m++;   // < 0: fyllprikk
+          }
+        }
+      }
+      sGeo.setDrawRange(0, m);
+      for (const k in sa_) { sa_[k].needsUpdate = true; sa_[k].updateRange.offset = 0; sa_[k].updateRange.count = m * sa_[k].itemSize; }
     }
     /* fyll kanalen raskt (uten tegning), innenfor et tidsbudsjett i ms */
     function prewarm(sec, budget) {
@@ -298,7 +390,7 @@
     }
     function count() { let c = 0; const n = used(); for (let i = 0; i < n; i++) c += alive[i]; return c; }
     return {
-      group, ribbons, puffs, U, S, setEmitters, rebase, step, prewarm, clear, setCap, count,
+      group, ribbons, puffs, dots, U, S, setEmitters, rebase, step, prewarm, clear, setCap, count,
       get cap() { return cap; }, get ready() { return ready; }, get nE() { return nE; }, get ds() { return ds; }, get life() { return life; }
     };
   }

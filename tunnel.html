@@ -455,7 +455,7 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="physics.js?v=11"></script>
 <script src="section.js?v=10"></script>
 <script src="flow3d.js?v=3"></script>
-<script src="smoke3d.js?v=12"></script>
+<script src="smoke3d.js?v=16"></script>
 <script>
 (function(){
 'use strict';
@@ -544,7 +544,7 @@ const NO2EN={
 'Vekt':'Weight','Sug – lavt trykk':'Suction – low pressure','Høyere trykk under':'Higher pressure below','Stagnasjon: luften treffer':'Stagnation: the air hits here',
 'Stagnasjonslinje':'Stagnation line','Oppvind foran vingen':'Upwash ahead of the wing','Raskere over vingen':'Faster over the wing','Nedvind bak vingen':'Downwash behind the wing',
 'Tippvirvel':'Tip vortex','Snitt ved {p} % av halvspennet':'Slice at {p} % of semi-span','Oppvind utenfor tuppen':'Upwash outboard of the tip',
-'Gule tråder følger strømningen. Røde = løsnet (stall)':'Yellow tufts follow the flow. Red = separated (stall)',
+'Flagrende, snudde tråder = stall':'Fluttering, reversed tufts = stall',
 'Trykk på flyet, Cp':'Pressure on the aircraft, Cp','Strømlinjer farget etter trykk, Cp':'Streamlines coloured by pressure, Cp',
 'Trykk i snittet, Cp':'Pressure in the slice, Cp','Virvellinjer farget etter trykk, Cp':'Vortex lines coloured by pressure, Cp',
 'Lokal fart':'Local speed','× fri strøm':'× freestream','sug':'suction','trykk':'pressure',
@@ -624,7 +624,7 @@ const defs = {
   secCtl:[
     {k:'secY', label:'Snittstasjon langs spennet', min:0.05,max:1.15,step:0.01, f:v=>nf(v*100,0)+T(' % av halvspenn'), flow:1}],
   laserCtl:[
-    {k:'laserX', label:'Laserarkets posisjon bak tuppen', min:-0.5,max:8,step:0.1, f:v=>nf(v,1)+T(' korder'), laser:1},
+    {k:'laserX', label:'Laserarkets posisjon bak tuppen', min:-0.5,max:8,step:0.1, f:v=>nf(v,1)+T(' korder')+(wing?' · '+nf(v*wing.mac,1)+' m':''), laser:1},
     {k:'laserY', label:'Laserarkets posisjon langs spennet', min:0.05,max:1.2,step:0.01, f:v=>nf(v*100,0)+T(' % av halvspenn'), laser:1}],
   planeCtl:[
     {k:'xp', label:'Planets posisjon bak vingetippen', min:0.2,max:8,step:0.1, f:v=>nf(v,1)+T(' korder'), plane:1}],
@@ -645,7 +645,7 @@ for (const [box,list] of Object.entries(defs)){
     el.appendChild(w);
     const inp=w.querySelector('input'), o=w.querySelector('output');
     sliders[d.k]={inp,o,d,wrap:w};
-    inp.addEventListener('input',()=>{ st[d.k]=parseFloat(inp.value); o.textContent=d.f(st[d.k]); clearLesson(); if(d.geo) rebuildSoon(); else if(d.vis) visUniforms(); else if(d.laser){ if(d.k==='laserY'&&st.rake==='section'){ st.rakeY=st.laserY; syncSliders(); updateFlow(); } else if(d.k==='laserX'&&st.view==='smoke'){ setLaser(); updateFlow(); } else setLaser(); } else if(d.plane) requestPlane(); else if(d.flow) updateFlow(); else compute(); });
+    inp.addEventListener('input',()=>{ st[d.k]=parseFloat(inp.value); o.textContent=d.f(st[d.k]); clearLesson(); if(d.geo) rebuildSoon(); else if(d.vis) visUniforms(); else if(d.laser){ if(d.k==='laserY'&&st.rake==='section'){ st.rakeY=st.laserY; syncSliders(); updateFlow(); } else if(d.k==='laserX'&&st.view==='smoke'){ const x0=wing&&res?laserGeom().d:0; setLaser(); updateFlow(); if(wing&&res&&Math.cos(cam.th)>0.7) cam.tx=Math.max(0.6,cam.tx+laserGeom().d-x0); } else setLaser(); } else if(d.plane) requestPlane(); else if(d.flow) updateFlow(); else compute(); });
   }
 }
 function ctlVis(){ const v=st.view, lin=v==='stream'||v==='vortex'||v==='smoke';
@@ -675,7 +675,7 @@ syncs.push(segment('segLaser', null, 'laser', v=>{ st.laser=v;
   if(v!=='off'&&st.view==='smoke') camTo(v==='cross'?'lcross':'lspan');
   syncAll(); updateFlow(); }));
 syncs.push(segment('segExag', null, 'exag', v=>{st.exag=parseFloat(v); syncAll(); updateFlow();}));
-syncs.push(segment('segView', null, 'view', v=>{ const was=st.view; st.view=v; clearLesson(); syncAll(); updateFlow(); if(v==='vortex'&&was!=='vortex') camTo('vq'); }));
+syncs.push(segment('segView', null, 'view', v=>{ const was=st.view; st.view=v; clearLesson(); syncAll(); updateFlow(); if(v==='vortex'&&was!=='vortex') camTo('vq'); if(v==='tufts'&&was!=='tufts') camTo('tq'); }));
 syncs.push(segment('segEnv', null, 'env', v=>{st.env=v; syncAll(); setEnv(); updateFlow();}));
 syncs.push(segment('segCmap', null, 'cmap', v=>{st.cmap=+v; syncAll(); visUniforms(); setLegend(); requestPlane();}));
 const CHK={showForces:'forces',showLabels:'labels',showPulse:'pulse',showMirror:'mirror',showSurf:'surfCp',showPlane:'plane',showIso:'iso'};
@@ -1099,10 +1099,13 @@ const laserMat=new THREE.ShaderMaterial({uniforms:{col:{value:new THREE.Color(0.
   fragmentShader:`uniform vec3 col; uniform float op; varying vec2 vUv;
     void main(){ float e=smoothstep(0.0,0.06,vUv.x)*smoothstep(1.0,0.94,vUv.x)*smoothstep(0.0,0.05,vUv.y);
       float src=0.35+0.65*pow(vUv.y,1.5); float edge=exp(-pow((1.0-vUv.y)*60.0,2.0));
-      float a=(0.022*src+0.25*edge)*e*op; gl_FragColor=vec4(col*a,0.0); }`,
+      float a=(0.042*src+0.25*edge)*e*op; gl_FragColor=vec4(col*a,0.0); }`,
   transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.CustomBlending,blendEquation:THREE.AddEquation,
   blendSrc:THREE.OneFactor,blendDst:THREE.OneFactor,blendSrcAlpha:THREE.ZeroFactor,blendDstAlpha:THREE.OneFactor});
 const laserSheet=new THREE.Mesh(new THREE.PlaneGeometry(1,1),laserMat); laserSheet.renderOrder=7; laserSheet.visible=false; laserSheet.frustumCulled=false; scene.add(laserSheet);
+// lys kant rundt arket (der lyset treffer vegger/gulv og der arket slutter)
+const laserEdge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(1,1)),new THREE.LineBasicMaterial({color:new THREE.Color(0.45,1.0,0.55),transparent:true,opacity:0.7,depthWrite:false,blending:THREE.AdditiveBlending}));
+laserEdge.renderOrder=7; laserEdge.frustumCulled=false; laserSheet.add(laserEdge);
 // laserhode (kilde) i taket/veggen
 const laserHead=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.22,0.22),new THREE.MeshStandardMaterial({color:0x1d2228,roughness:0.4,metalness:0.6})); laserHead.visible=false; scene.add(laserHead);
 const laserOn=()=> st.view==='smoke' && st.laser!=='off';
@@ -1119,9 +1122,9 @@ function laserGeom(){
 }
 function setLaser(){
   const on=laserOn()&&!!wing&&!!res; laserSheet.visible=on; laserHead.visible=on&&st.env==='tunnel'; SMK.U.laserOn.value=on?1:0;
-  SMK.U.sheetPuff.value= on&&st.laser==='cross'? 1 : 0; SMK.U.grow.value= on&&st.laser==='span'? 1.1 : 2.2;
+  SMK.U.sheetPuff.value= on&&st.laser==='cross'? 0.35 : 0; SMK.U.grow.value= on&&st.laser==='span'? 1.1 : 2.2;
   setClip(on&&st.laser==='span'? laserGeom() : null);
-  if(on){ const g=laserGeom(); SMK.U.laserN.value.set(...g.n); SMK.U.laserD.value=g.d; SMK.U.laserTh.value=st.laser==='cross'?0.35:0.1;
+  if(on){ const g=laserGeom(); SMK.U.laserN.value.set(...g.n); SMK.U.laserD.value=g.d; SMK.U.laserTh.value=st.laser==='cross'?0.06:0.1;
     laserSheet.position.set(...g.pos); laserSheet.rotation.set(...g.rot); laserSheet.scale.set(g.size[0],g.size[1],1); laserHead.position.set(...g.head); laserHead.rotation.y=g.rot[1]; }
   // i tunnelen dempes hallbelysningen når laseren er på (som i et ekte røyklaboratorium)
   lightDim(on?0.32:1);
@@ -1203,7 +1206,7 @@ function seedsW(){
   const Xr= st.env==='cfd'&&!smoke? Math.max(noseWorldX()+0.6,-3.6) : Math.min(-4.5,noseWorldX()-1.6), al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al);
   let H=st.rakeH;
   const toW=(X,Y,Z)=>{ const bx=X*ca-Y*sa, bz=X*sa+Y*ca; return [bx+P0.x,Z,bz+P0.y]; };
-  const dirs=[];
+  const dirs=[], chain=[];
   const add=(Y,Z)=>{ world.push([Xr,Y,Z]); out.push(...toW(Xr,Y,Z)); dirs.push(1); };
   // frø i vingerammen (integreres begge veier): ringer rundt starten av tippvirvelen, rett bak tuppens bakkant
   const addW=(x,y,z)=>{ out.push(x,y,z); dirs.push(2); const dx=x-P0.x, dz=z-P0.y; world.push([dx*ca+dz*sa,-dx*sa+dz*ca,y]); };
@@ -1219,7 +1222,7 @@ function seedsW(){
     const q=Math.sqrt(QL.smoke)*st.dens, leY=(y)=>{ const ay=Math.min(Math.abs(y),s); return -(w.xle(ay)-P0.x)*sa+(w.zw(ay)-P0.y)*ca; };
     const Hb=rake==='section'? leY(st.rakeY*s) : leY(0.55*s), H=st.rakeH+Hb;
     if(rake==='plane'){ const ny=Math.max(3,Math.round(5*Math.sqrt(q))); for(let b=0;b<ny;b++) along(0.5/q,z=>add(H-0.9+1.8*b/(ny-1),z)); }
-    else if(rake==='line'&&st.laser==='cross'){ for(const dy of [-0.2,0.06]) along(0.2/q,z=>add(H+dy,z)); }   // tett kam for tverrsnittet
+    else if(rake==='line'&&st.laser==='cross'){ for(const dy of [-0.2,0.06]) for(const [a,b] of spans){ const n=Math.max(2,Math.round((b-a)/(0.2/q))+1); for(let i=0;i<n;i++){ chain.push(i<n-1?out.length/3+1:-1); add(H+dy,a+(b-a)*i/(n-1)); } } }   // tett kam for tverrsnittet; nabodysene bindes sammen i laserarket
     else if(rake==='line'){ along(0.32/q,z=>add(H-0.06,z)); }
     else if(rake==='section'){ const y0=st.rakeY*s, ls=st.laser==='span', hh=ls?0.75:1.4; for(let b=0,n=Math.round((ls?17:30)*q);b<n;b++) add(-hh+2*hh*b/(n-1)+H,y0); }
     /* tippdyser legges til i setupSmoke (sporet bakover fra ringer rundt starten av virvelkjernen) */
@@ -1239,7 +1242,7 @@ function seedsW(){
     else { tipRings([0.05,0.11,0.18,0.27,0.38,0.52],Math.round(14*Math.sqrt(q))); for(let i=0;i<dirs.length;i++) rowOf.push(-1); }
     var rowsOut=Int16Array.from(rowOf);
   }
-  return {seeds:Float32Array.from(out), dirs:Uint8Array.from(dirs), rows:smoke? null : rowsOut, Xr, x0:toW(Xr,H,0)[0], world, smoke, kind:rake, steps:st.env==='cfd'?340:240, ex:st.exag};
+  return {seeds:Float32Array.from(out), dirs:Uint8Array.from(dirs), rows:smoke? null : rowsOut, chain, Xr, x0:toW(Xr,H,0)[0], world, smoke, kind:rake, steps:st.env==='cfd'?340:240, ex:st.exag};
 }
 function startTrace(){
   tracePending=false; if(!FIELD.ready) return;
@@ -1428,62 +1431,87 @@ function acceptPlane(r){
   setLegend(); if(st.view==='vortex'||st.plane) buildLabels();
 }
 
-// ulltråder (tufts) på vingens overside: korte ullgarn festet med tape. Rette og rolige i festet strømning, uroligere
-// nær separasjonslinjen (sepFrac fra stallmarginen per stripe), og i separert strømning snur de, løfter seg og flagrer.
-const TS=LOW?[11,5]:[17,7], NTF=2*TS[0]*TS[1], TSEG=9;
-function tuftBuf(){ const g=new THREE.BufferGeometry(), pos=new Float32Array(NTF*TSEG*2*3), col=new Float32Array(NTF*TSEG*2*3), idx=[];
+// ulltråder (tufts) på vingens og klaffens overside: korte, mørkerøde ullgarn festet med tape i et rutenett.
+// Hver tråd peker langs den lokale overflatehastigheten (fra rutenettet, projisert på flaten). Der strømmen er festet
+// ligger de rette og rolige; nær separasjonslinjen (sepFrac fra stallmarginen per stripe i physics.js) begynner de å
+// flagre, og bak den snur de, løfter seg og peker tilfeldig. Uroen glir mot målet, så stallen synes å spre seg.
+const TS=LOW?[10,5]:[12,6], NTF=2*TS[0]*TS[1], TSEG=8, NZS=12;
+function tuftBuf(){ const g=new THREE.BufferGeometry(), pos=new Float32Array(NTF*TSEG*2*3), col=new Float32Array(NTF*TSEG*2*3), nrm=new Float32Array(NTF*TSEG*2*3), idx=[];
   for(let i=0;i<NTF;i++) for(let k=0;k<TSEG-1;k++){ const a=(i*TSEG+k)*2; idx.push(a,a+2,a+1,a+1,a+2,a+3); }
-  g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.setIndex(idx); return {g,pos,col}; }
+  for(let i=1;i<nrm.length;i+=3) nrm[i]=1;   // trådene ligger på flaten: fast normal opp (ingen normalberegning per bilde)
+  g.setAttribute('position',new THREE.BufferAttribute(pos,3)); g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.setAttribute('normal',new THREE.BufferAttribute(nrm,3)); g.setIndex(idx);
+  g.attributes.position.setUsage(THREE.DynamicDrawUsage); return {g,pos,col}; }
 const TB=tuftBuf(), TSB=tuftBuf(), tuftGeo=TB.g, tuftPos=TB.pos, tuftCol=TB.col;
-const tufts=new THREE.Mesh(tuftGeo,new THREE.MeshStandardMaterial({vertexColors:true,side:THREE.DoubleSide,roughness:0.92,metalness:0,emissive:0x000000})); tufts.frustumCulled=false; tufts.renderOrder=2; overlay.add(tufts);
+const tufts=new THREE.Mesh(tuftGeo,new THREE.MeshStandardMaterial({vertexColors:true,side:THREE.DoubleSide,roughness:0.95,metalness:0,emissive:0x1a0402})); tufts.frustumCulled=false; tufts.renderOrder=2; overlay.add(tufts);
 // kontaktskygge under hver tråd (gjør dem lesbare på den hvite lakken)
-const tuftShadow=new THREE.Mesh(TSB.g,new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.22,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})); tuftShadow.frustumCulled=false; tuftShadow.renderOrder=1; overlay.add(tuftShadow);
+const tuftShadow=new THREE.Mesh(TSB.g,new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.2,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})); tuftShadow.frustumCulled=false; tuftShadow.renderOrder=1; overlay.add(tuftShadow);
 // tapebiter som holder trådene
-const tapeGeo=new THREE.BufferGeometry(); const tapes=new THREE.Points(tapeGeo,new THREE.PointsMaterial({size:0.05,color:0xd9dde0,sizeAttenuation:true})); tapes.frustumCulled=false; overlay.add(tapes);
-let tuftData=[];
+const tapeGeo=new THREE.BufferGeometry(); const tapes=new THREE.Points(tapeGeo,new THREE.PointsMaterial({size:0.045,color:0xc9d0d6,sizeAttenuation:true})); tapes.frustumCulled=false; overlay.add(tapes);
+// per tråd (faste tabeller): rot, retning, lengde, flatehøyde langs korden, mål og nåverdi for uro (ag) og omvending (rv)
+const TF={x:new Float32Array(NTF),y:new Float32Array(NTF),c:new Float32Array(NTF),xc:new Float32Array(NTF),dx:new Float32Array(NTF),dy:new Float32Array(NTF),L:new Float32Array(NTF),
+  ph:new Float32Array(NTF),sw:new Float32Array(NTF),zy:new Float32Array(NTF),zr:new Float32Array(NTF),zt:new Float32Array(NTF*NZS),
+  tg:new Float32Array(NTF),ag:new Float32Array(NTF),tr:new Float32Array(NTF),rv:new Float32Array(NTF),n:0,t:0,init:false};
+// glatt verdistøy i (−1, 1): tilfeldig, ikke periodisk, og billig
+function vn(x){ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f), a=Math.sin(i*127.1+311.7)*43758.5453, b=Math.sin((i+1)*127.1+311.7)*43758.5453; return 2*((a-Math.floor(a))*(1-u)+(b-Math.floor(b))*u)-1; }
 function computeTufts(){
-  const w=wing, al=res.alpha*DEG, ca=Math.cos(al), f=[0,0,0]; tuftData=[]; const tp=[];
-  for(const sg of [-1,1]) for(let a=0;a<TS[0];a++) for(let b=0;b<TS[1];b++){
-    const xc=0.1+0.76*b/(TS[1]-1), ly=sg*w.s*(0.14+0.82*a/(TS[0]-1)), c=w.chord(ly), [x,z]=wingSurf(ly,xc,true,0.006);
-    fieldAt(x,ly,z+0.04*c,al,res.scale,f);
-    let dx=ca+f[0], dy=f[1]*1.6; const L=Math.hypot(dx,dy)||1; dx/=L; dy/=L;
-    const j=stripAt(ly), xs=sepFrac(j), state= xc>xs+0.02? 2 : xc>xs-0.14 && xs<0.995? 1 : 0;
-    tuftData.push({x,z,ly,c,xc,dx,dy,state,ph:hash(a*7+b,sg+3)*6.28,sev:Math.min(1,(1-xs)*2),near:Math.max(0,1-Math.abs(xc-xs)/0.14)}); tp.push(x,z+0.004,ly);
+  const w=wing, al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), f=[0,0,0], tp=[], first=!TF.init; let i=0;
+  for(const sg of [-1,1]) for(let a=0;a<TS[0];a++) for(let b=0;b<TS[1];b++,i++){
+    const xc=0.1+0.82*b/(TS[1]-1), ly=sg*w.s*(0.15+0.8*a/(TS[0]-1)), c=w.chord(ly), [x,z]=wingSurf(ly,xc,true,0.004);
+    // flatens helning langs korden og spennet (for projeksjonen og for høyden langs tråden)
+    const h=0.01, zA=wingSurf(ly,xc-h,true,0.004)[1], zB=wingSurf(ly,xc+h,true,0.004)[1], dzdx=(zB-zA)/(2*h*c);
+    const dzdy=(wingSurf(ly+0.02,xc,true,0.004)[1]-wingSurf(ly-0.02,xc,true,0.004)[1])/0.04, dxle=(w.xle(Math.abs(ly)+0.02)-w.xle(Math.abs(ly)-0.02))/0.04*sg;
+    // lokal hastighet like over flaten (rutenettet, fri strøm i vingerammen), projisert på flaten: v − (v·n)n
+    fieldAt(x,ly,z+0.03*c,al,res.scale,f);
+    let vx=ca+f[0], vy=f[1], vz=sa+f[2]; const nl=Math.hypot(dzdx,dzdy,1), nx=-dzdx/nl, ny=-dzdy/nl, nz=1/nl, vn_=vx*nx+vy*ny+vz*nz;
+    vx-=vn_*nx; vy-=vn_*ny; vz-=vn_*nz; const L=Math.hypot(vx,vy)||1;
+    const Lt=Math.max(0.1,Math.min(0.3,0.13*c));
+    TF.x[i]=x; TF.y[i]=ly; TF.c[i]=c; TF.xc[i]=xc; TF.dx[i]=vx/L; TF.dy[i]=vy/L; TF.L[i]=Lt; TF.zy[i]=dzdy; TF.sw[i]=dxle;
+    if(first) TF.ph[i]=hash(a*7+b,sg+3);
+    // flatehøyde i NZS punkter langs korden rundt roten (tråden kan peke forover når den snur)
+    const r=1.15*Lt/c; TF.zr[i]=r; for(let q=0;q<NZS;q++) TF.zt[i*NZS+q]=wingSurf(ly,xc+(2*q/(NZS-1)-1)*r,true,0.004)[1];
+    // uro fra stallmarginen: bak separasjonslinjen snur tråden; foran den flagrer den mer jo nærmere den er
+    const j=stripAt(ly), xs=sepFrac(j), m=Math.max(0,Math.min(1,(res.ratio[j]-0.82)/0.18));
+    let tg, tr;
+    if(xc>xs+0.02){ tg=1; tr=Math.min(1,0.55+(xc-xs)*3); }
+    else if(xs<0.995&&xc>xs-0.16){ tg=0.3+0.45*(1-(xs-xc)/0.16); tr=0; }
+    else { tg=0.1*m*m*(0.4+xc); tr=0; }
+    TF.tg[i]=tg; TF.tr[i]=tr; if(first){ TF.ag[i]=tg; TF.rv[i]=tr; }
+    tp.push(x-0.25*Lt*TF.dx[i],z+0.002,ly-0.25*Lt*TF.dy[i]);
+    // farge: mørk rød/oransje ull, litt ulik fra tråd til tråd; skyggelagt langs fibrene (settes bare her)
+    const hv=hash(b*13+a,sg+11), cr=0.62+0.18*hv, cg=0.12+0.12*hv*hv, cb=0.05+0.03*hv;
+    for(let k=0;k<TSEG;k++){ const sh=0.8+0.2*Math.cos(k*1.9+TF.ph[i]*6), o=(i*TSEG+k)*6;
+      const R=Math.pow(cr*sh,2.2), G=Math.pow(cg*sh,2.2), B=Math.pow(cb*sh,2.2); tuftCol[o]=tuftCol[o+3]=R; tuftCol[o+1]=tuftCol[o+4]=G; tuftCol[o+2]=tuftCol[o+5]=B; }
   }
-  tapeGeo.setAttribute('position',new THREE.Float32BufferAttribute(tp,3));
+  TF.n=i; TF.init=true;
+  tapeGeo.setAttribute('position',new THREE.Float32BufferAttribute(tp,3)); tuftGeo.attributes.color.needsUpdate=true;
+  if(!tufts.visible) return; stepTufts(TF.t||0, true);
 }
-function stepTufts(t){
-  if(st.view!=='tufts') return;
-  let i=0; const sp=TSB.pos;
-  for(const d of tuftData){
-    const base=Math.atan2(d.dy,d.dx), Lt=Math.min(0.3,0.8*0.76/(TS[1]-1)*d.c), ls=Lt/(TSEG-1), wd=0.0095;
-    let px=d.x, py=d.ly, lift=0, ang0=base;
-    const sep=d.state===2, near=d.state===1;
-    const col= sep? [0.86,0.1,0.07] : near? [0.98,0.5,0.04] : [0.98,0.74,0.04];
-    // hele tråden peker (fra festet) i én retning som vandrer, og bølger langs lengden
-    if(sep){ ang0=Math.PI+base+1.2*Math.sin(t*5.7+d.ph)+0.7*Math.sin(t*9.3+d.ph*1.7); }
-    else if(near){ ang0=base+(0.35+0.4*d.near)*Math.sin(t*7.1+d.ph)+0.2*Math.sin(t*12.7+d.ph*2.3); }
-    else ang0=base+0.03*Math.sin(t*13+d.ph);
+function stepTufts(t, force){
+  if(st.view!=='tufts'||!TF.init) return;
+  const dt=Math.min(0.1,Math.max(0,t-TF.t)); TF.t=t; const sp=TSB.pos, ka=Math.min(1,dt*1.6), kr=Math.min(1,dt*1.2);
+  for(let i=0;i<TF.n;i++){
+    const ag=TF.ag[i]+=(TF.tg[i]-TF.ag[i])*(force?0:ka), rv=TF.rv[i]+=(TF.tr[i]-TF.rv[i])*(force?0:kr), ph=TF.ph[i]*97;
+    const base=Math.atan2(TF.dy[i],TF.dx[i]), Lt=TF.L[i], ls=Lt/(TSEG-1), c=TF.c[i], x0=TF.x[i], y0=TF.y[i], xc0=TF.xc[i], zr=TF.zr[i], zo=i*NZS;
+    const n1=vn(t*2.3+ph), n2=vn(t*6.1+ph*1.7), n3=vn(t*15+ph*2.9);
+    // retning ved festet: rolig skjelving når festet, flagring nær separasjon, snudd og tilfeldig i separert strømning
+    const dir=base+rv*(Math.PI+1.5*n1)+ag*(0.5*n2+0.25*n3)+0.02*n3;
+    const lift=ag*(0.03+rv*(0.12+0.22*Math.max(0,n2)));
+    let px=x0-0.25*Lt*TF.dx[i], py=y0-0.25*Lt*TF.dy[i];   // tapen holder tråden litt bak roten
     for(let k=0;k<TSEG;k++){
-      const u=k/(TSEG-1);
-      let ang=ang0;
-      if(sep){ ang+=u*(0.9*Math.sin(t*11.7+d.ph*2.1-k*0.8)+0.5*Math.sin(t*19+k*1.3)); lift=0.18+0.16*Math.sin(t*8+d.ph+k*0.6); }
-      else if(near){ ang+=u*0.45*Math.sin(t*10+d.ph-k*0.9); lift=0.03; }
-      else ang+=u*0.04*Math.sin(t*15+d.ph-k);
+      const u=k/(TSEG-1), ang=dir+u*(ag*(0.95*vn(t*11+ph*0.7-k*0.55)+0.4*vn(t*23+ph-k))+0.03*n3);
       if(k>0){ px+=Math.cos(ang)*ls; py+=Math.sin(ang)*ls; }
-      const xc=(px-wing.xle(py))/d.c, zs=wingSurf(py,Math.max(0,Math.min(1,xc)),true,0.004)[1], zz=zs+u*Lt*lift+0.002;
-      const ww=wd*(1-0.45*u), nx=-Math.sin(ang)*ww, ny=Math.cos(ang)*ww, o=(i*TSEG+k)*2;
-      tuftPos[o*3]=px+nx; tuftPos[o*3+1]=zz; tuftPos[o*3+2]=py+ny; tuftPos[o*3+3]=px-nx; tuftPos[o*3+4]=zz; tuftPos[o*3+5]=py-ny;
-      // skygge: rett under tråden, litt bredere og forskjøvet bort fra lyset
-      const sw=1.5+3*u*lift, so=0.006+0.06*u*lift;
-      sp[o*3]=px+nx*sw+so; sp[o*3+1]=zs+0.0015; sp[o*3+2]=py+ny*sw-so*0.4; sp[o*3+3]=px-nx*sw+so; sp[o*3+4]=zs+0.0015; sp[o*3+5]=py-ny*sw-so*0.4;
-      const sh=0.78+0.22*Math.cos(k*1.7+d.ph), lc=lin3(col.map(c=>c*sh)); tuftCol.set(lc,o*3); tuftCol.set(lc,(o+1)*3);
+      // flatehøyde fra tabellen (langs korden, rettet for pilform) pluss helningen langs spennet
+      let q=((px-x0-TF.sw[i]*(py-y0))/c/zr+1)*0.5*(NZS-1); q=q<0?0:q>NZS-1.001?NZS-1.001:q; const q0=q|0, fq=q-q0;
+      const zs=TF.zt[zo+q0]*(1-fq)+TF.zt[zo+q0+1]*fq+TF.zy[i]*(py-y0), zz=zs+u*u*Lt*lift*2+0.0015;
+      const ww=0.016*(1-0.5*u), nx=-Math.sin(ang)*ww, ny=Math.cos(ang)*ww, o=(i*TSEG+k)*6;
+      tuftPos[o]=px+nx; tuftPos[o+1]=zz; tuftPos[o+2]=py+ny; tuftPos[o+3]=px-nx; tuftPos[o+4]=zz; tuftPos[o+5]=py-ny;
+      // skygge: rett under tråden, bredere og forskjøvet når den løfter seg
+      const sw=1.4+3*u*lift, so=0.004+0.05*u*lift;
+      sp[o]=px+nx*sw+so; sp[o+1]=zs+0.001; sp[o+2]=py+ny*sw-so*0.4; sp[o+3]=px-nx*sw+so; sp[o+4]=zs+0.001; sp[o+5]=py-ny*sw-so*0.4;
     }
-    i++;
   }
-  tuftGeo.attributes.position.needsUpdate=true; tuftGeo.attributes.color.needsUpdate=true; tuftGeo.computeVertexNormals(); TSB.g.attributes.position.needsUpdate=true;
+  tuftGeo.attributes.position.needsUpdate=true; TSB.g.attributes.position.needsUpdate=true;
 }
-const lin3=c=>c.map(v=>Math.pow(v,2.2));
 
 /* separert område (samme form som i røyken), svakt markert i Trykk-, Strømlinje-, Snitt- og Virvelvisning */
 const sepMat=new THREE.ShaderMaterial({uniforms:{time:{value:0}},
@@ -1530,20 +1558,24 @@ function setupSmoke(){
   if(!FIELD.ready) return;
   const sd=seedsW();
   const bnd=Object.assign(flowBounds(),{x0:sd.Xr}); FL.setBounds(bnd);
-  if(sd.kind==='line'||sd.kind==='tips') tipNozzles(sd, sd.kind==='tips'? [0.1,0.18,0.28,0.4,0.55] : [0.16,0.3], sd.kind==='tips'? (LOW?8:12) : (LOW?5:8));
+  // laserark på tvers: tette ringer av dyser rundt virvelstarten; nabodysene i hver ring bindes sammen, så arket viser
+  // røykringene rundt virvelkjernen (mørk kjerne, lysende ringer som vokser og forskyves nedstrøms)
+  if(st.laser==='cross'&&(sd.kind==='line'||sd.kind==='tips')) tipNozzles(sd, LOW?[0.12,0.22,0.34,0.48]:[0.11,0.17,0.24,0.32,0.42,0.54], LOW?12:18, true);
+  else if(sd.kind==='line'||sd.kind==='tips') tipNozzles(sd, sd.kind==='tips'? [0.1,0.18,0.28,0.4,0.55] : [0.16,0.3], sd.kind==='tips'? (LOW?8:12) : (LOW?5:8));
   showRake(sd);
   const key=[st.env,sd.kind,st.rakeY,st.rakeW,st.rakeH,st.mirror,st.dens,P0.x.toFixed(4),wing.s,FIELD.job,st.laser,st.laser==='cross'?st.laserX:0].join(':'), keep=key===SMKP.key;
   if(keep&&SMKP.alpha!=null&&SMKP.alpha!==res.alpha) SMK.rebase(SMKP.alpha*DEG,res.alpha*DEG,P0.x,P0.y);
   // tverrsnitt: røyken trenger bare å nå litt forbi arket (tettere partikler der det teller)
   let travel=Math.min(bnd.x1-sd.Xr,LOW?22:27); if(st.laser==='cross'){ const g=laserGeom(); travel=Math.min(travel,Math.max(8,g.d-sd.Xr+2.5)); }
   const planar= st.laser==='span'&&sd.kind==='section'? st.rakeY*wing.s : null;
-  SMK.setEmitters(sd.seeds,{ex:sd.ex,travel,jitter:0.002,planar},keep);
+  const nS=sd.seeds.length/3; while(sd.chain.length<nS) sd.chain.push(-1);
+  SMK.setEmitters(sd.seeds,{ex:sd.ex,travel,jitter:0.002,planar,chain:st.laser==='cross'?sd.chain:null,gap:0.5},keep);
   SMKP.key=key; SMKP.alpha=res.alpha;
   if(!keep&&!NOADAPT) SMK.prewarm(2.5,70);
 }
 /* dyser for tippvirvelen: start i ringer rundt virvelkjernen like bak tippens bakkant og integrer bakover (RK4) til
    rakeplanet. Røyken fra disse dysene passerer tuppen i riktig avstand og vikles opp i virvelen. */
-function tipNozzles(sd,radii,n){
+function tipNozzles(sd,radii,n,rings){
   const w=wing, s=w.s, xT=w.xle(s)+w.ct, zT=w.zw(s), al=res.alpha*DEG, ca=Math.cos(al), sa=Math.sin(al), seeds=Array.from(sd.seeds), o={p:[],spd:[],sep:[],tb:[]};
   FL.ensureCore();
   for(const sg of (st.mirror?[-1,1]:[1])) radii.forEach((r,ri)=>{ for(let a=0;a<n;a++){ const ph=2*Math.PI*(a+0.5*(ri&1))/n;
@@ -1552,6 +1584,7 @@ function tipNozzles(sd,radii,n){
     const m=o.p.length/3; let x=o.p[3*m-3], y=o.p[3*m-2], z=o.p[3*m-1], dx=x-P0.x, dz=z-P0.y, X=dx*ca+dz*sa;
     if(!(m>3)||X>sd.Xr+0.5){ // nådde ikke raken (traff flyet): rett oppstrøms i stedet, så antallet dyser er fast
       x=xT+0.25; y=sg*(0.985*s+r*Math.cos(ph)); z=zT+r*Math.sin(ph); dx=x-P0.x; dz=z-P0.y; const back=dx*ca+dz*sa-sd.Xr; x-=back*ca; z-=back*sa; dx=x-P0.x; dz=z-P0.y; X=sd.Xr; }
+    if(rings){ const e=seeds.length/3; while(sd.chain.length<e) sd.chain.push(-1); sd.chain.push(a<n-1? e+1 : e-(n-1)); }
     seeds.push(x,y,z); sd.world.push([X,-dx*sa+dz*ca,y]); } });
   sd.seeds=Float32Array.from(seeds);
 }
@@ -1624,7 +1657,7 @@ function buildLabels(){
   } else if(v==='vortex'&&PL.info){
     add('Tippvirvelkjerne',PL.info.core,'',true); add('Nedvind bak vingen',PL.info.mid,'pres',true); add('Oppvind utenfor tuppen',PL.info.out,'suc',true);
   } else if(v==='tufts'){
-    add('Gule tråder følger strømningen. Røde = løsnet (stall)',[w.xle(ym)+0.5*cm,w.zw(ym)+0.45,ym],'',true);
+    add('Flagrende, snudde tråder = stall',[w.xle(ym)+0.5*cm,w.zw(ym)+0.45,ym],'',true);
   }
   labelsEl.innerHTML=labelList.map((l,i)=>`<div class="lbl ${l.cls}" id="lb${i}">${l.t}</div>`).join('');
   labelList.forEach((l,i)=>l.el=document.getElementById('lb'+i));
@@ -1661,12 +1694,15 @@ function doProbe(){
 // bane rundt modellen med demping og treghet; vegger mellom kamera og modell skjules automatisk
 const CAM0=[2.55,1.02,14.2];
 const cam={th:CAM0[0],ph:CAM0[1],r:CAM0[2],tth:CAM0[0],tph:CAM0[1],tr:CAM0[2],tx:0.6,ty:-0.2,tz:0,vth:0,vph:0};
-const camPresets={q:CAM0,reset:CAM0,side:[Math.PI/2,1.5,15],front:[Math.PI-0.02,1.42,13],top:[Math.PI/2,0.08,17],rear:[0.32,1.32,15],vq:[0.95,1.05,15.5],lcross:[0.1,1.42,11],lspan:[Math.PI/2,1.54,5.2],hero:[2.42,0.98,12.6]};
+const camPresets={q:CAM0,reset:CAM0,side:[Math.PI/2,1.5,15],front:[Math.PI-0.02,1.42,13],top:[Math.PI/2,0.08,17],rear:[0.32,1.32,15],vq:[0.95,1.05,15.5],lcross:[0.1,1.42,11],lspan:[Math.PI/2,1.54,5.2],tq:[0.62,0.8,9],hero:[2.42,0.98,12.6]};
 function camTo(k){ const p=camPresets[k]; if(!p) return; cam.tth=p[0]+2*Math.PI*Math.round((cam.th-p[0])/(2*Math.PI)); cam.tph=p[1]; cam.tr=p[2]; cam.vth=cam.vph=0;
   // laserark langs korden: sikt mot snittet av vingen; ellers mot flyet
   cam.tx=0.6; cam.ty=-0.2; cam.tz=0;
+  // ulltråder: tett over høyre vinge, bakfra og ovenfra
+  if(k==='tq'&&wing&&res){ const y=0.55*wing.s, al=res.alpha*DEG, x=wing.xle(y)+0.5*wing.chord(y)-P0.x, z=wing.zw(y)-P0.y; cam.tx=x*Math.cos(al)+z*Math.sin(al); cam.ty=-x*Math.sin(al)+z*Math.cos(al); cam.tz=y; }
   if(k==='lspan'&&wing&&res){ const y=st.laserY*wing.s, al=res.alpha*DEG, x=wing.xle(y)+0.5*wing.chord(y)-P0.x, z=wing.zw(y)-P0.y; cam.tx=x*Math.cos(al)+z*Math.sin(al)+0.8; cam.ty=-x*Math.sin(al)+z*Math.cos(al); cam.tz=y; }
-  if(k==='lcross') cam.ty=0.2; }
+  // laserark på tvers: se oppstrøms gjennom arket, litt foran det (arket og flyet i samme bilde)
+  if(k==='lcross'){ cam.ty=0.2; if(wing&&res&&st.laser==='cross'){ const nar=camera.aspect<1; cam.tx=Math.max(0.6,laserGeom().d-(nar?0:2.2)); if(nar) cam.tr=15; } } }
 document.querySelectorAll('[data-cam]').forEach(b=>b.addEventListener('click',()=>camTo(b.dataset.cam)));
 canvas.addEventListener('dblclick',()=>{ cam.tth=CAM0[0]; cam.tph=CAM0[1]; cam.tr=CAM0[2]; cam.vth=cam.vph=0; });
 const ptrs=new Map(); let pinch0=0, r0=0, lastMove=0;
@@ -2531,7 +2567,7 @@ function loop(now){
   if(tunnelVisible){ if(flowDirty) refreshFlow(); stepTufts(now/1000);
     const ts=now/1000; sepMat.uniforms.time.value=ts; lineMat.uniforms.time.value=ts; glowMat.uniforms.time.value=ts; 
     traceStep(LOW?8:11); for(const h of props) h.rotation.x+=dt*14;
-    if(SMK.group.visible){ const bs=renderer.getDrawingBufferSize(tmpV2); SMK.U.pxScale.value=bs.y/(2*Math.tan(camera.fov/2*DEG)); SMK.U.maxPx.value=Math.min(96,48*PR)*SMKP.pxk;
+    if(SMK.group.visible){ const bs=renderer.getDrawingBufferSize(tmpV2); SMK.U.pxScale.value=bs.y/(2*Math.tan(camera.fov/2*DEG)); SMK.U.maxPx.value=Math.min(96,48*PR)*SMKP.pxk; SMK.U.dotPx.value=1.2+1.1*PR;
       SMK.U.Lw.value.copy(key.position).normalize(); const ms=SMK.step(dt); SMKP.step=SMKP.step*0.9+ms*0.1; }
     if(st.env==='tunnel'&&tunnel.group.userData.fan) tunnel.group.userData.fan.rotation.x+=dt*2.2;
     updateCamera(); if(clipOn) updClip(); renderer.render(scene,camera);
@@ -2541,7 +2577,7 @@ function loop(now){
   WAKE.frame(dt);
 }
 // test-krok (brukes av automatiske skjermbildetester og ?shot)
-window.__tun={SMK,SMKP,setLaser,smokeWarm:(sec)=>{ refreshFlow(); return SMK.prewarm(sec||4); },cam,st,compute,rebuild,syncAll,setConf,updateFlow,refreshFlow,setEnv,camTo,PERF,FL,seedsW,P0:()=>P0,wing:()=>wing,res:()=>res,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible],
+window.__tun={TF,SMK,SMKP,setLaser,smokeWarm:(sec)=>{ refreshFlow(); return SMK.prewarm(sec||4); },cam,st,compute,rebuild,syncAll,setConf,updateFlow,refreshFlow,setEnv,camTo,PERF,FL,seedsW,P0:()=>P0,wing:()=>wing,res:()=>res,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible],
   ready:()=>!!FIELD.ready&&!pend&&!TW.busy&&!TW.queued&&!job&&!flowDirty&&!tracePending&&(st.view==='smoke'?SMK.ready:haveLines)&&(!planeOn()||(PL.done===PL.id&&!PL.busy))};
 requestAnimationFrame(loop);
 window.addEventListener('pagehide',()=>{ workers.forEach(w=>w.terminate()); if(TW.w) TW.w.terminate(); });
