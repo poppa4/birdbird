@@ -24,7 +24,7 @@
 </style>
 </head>
 <body data-title="Holding Trainer">
-<script src="site.js?v=34"></script>
+<script src="site.js?v=35"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -64,7 +64,8 @@
 
   <section class="card" id="entry">
     <div><div class="eyebrow">2 · Direct, parallel or teardrop</div><h2>Entry trainer</h2>
-      <p class="lead">Set the hold and your heading towards the fix, or click anywhere around the compass to come from that direction. The coloured ring shows which entry applies from every direction. Press <b>Fly the entry</b> to watch it.</p></div>
+      <p class="lead">Set the hold and your heading towards the fix, or click anywhere around the compass to come from that direction. The coloured ring shows which entry applies from every direction. Press <b>Fly the entry</b> to watch it.</p>
+    <p class="note" data-tx="nslink">Fly any entry with wind in the <a href="radionav.html?lesson=holding">radio navigation simulator</a>: the autopilot flies the hold over a real VOR and the instruments show every step.</p></div>
     <div class="split">
       <div class="view"><canvas id="map" aria-label="Plan view of the hold, entry sectors and the aircraft path"></canvas></div>
       <div class="panel">
@@ -101,7 +102,7 @@
   <p class="foot">Teaching model. Use the numbers to understand relationships, not for operational decisions. Always follow the AIP, the aircraft flight manual and your instructor.</p>
 </div>
 
-<script src="lab.js?v=31"></script>
+<script src="lab.js?v=32"></script>
 <script>
 (function(){
 'use strict';
@@ -349,5 +350,6 @@ function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t; if(vis&&sim.run
 requestAnimationFrame(loop);
 })();
 </script>
+<script>LAB.tx({nslink:'Fly hvilken som helst innflyging med vind i <a href="radionav.html?lesson=holding">radionavigasjonssimulatoren</a>: autopiloten flyr holdingen over en ekte VOR, og instrumentene viser hvert steg.'});</script>
 </body>
 </html>

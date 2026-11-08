@@ -25,7 +25,7 @@
 </style>
 </head>
 <body data-title="General Navigation">
-<script src="site.js?v=34"></script>
+<script src="site.js?v=35"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -42,6 +42,7 @@
     <div class="eyebrow">1 · Interactive</div>
     <h2>The wind triangle</h2>
     <p class="lead">Air vector (heading and TAS) plus wind vector equals ground vector (track and groundspeed). Drag the tip of the blue or magenta vector, and drag the wind in the wind rose. One arrowhead for heading, two for track, three for wind.</p>
+    <p class="note" data-tx="nslink">See the wind triangle while you fly: the <a href="radionav.html?lesson=wind">radio navigation simulator</a> draws it at the aircraft and holds a track for you in TRK mode.</p>
     <div class="split">
       <div class="paper"><canvas id="tri" aria-label="Wind triangle. Drag the vector tips and the wind rose."></canvas></div>
       <div class="panel">
@@ -215,7 +216,7 @@
   </section>
   <p class="foot">Teaching model. Spherical Earth with a radius of 3440 NM, no ellipsoid. Mach to TAS uses the ISA temperature lapse plus your deviation. Sunrise and twilight use a simple solar declination formula and ignore the equation of time (up to about 16 minutes), so times can be several minutes off. A320 speeds, fuel flows and failure-case TAS are rounded, illustrative teaching values, not FCOM data. Use the operational flight plan, the FMS and the operations manual for real planning.</p>
 </div>
-<script src="lab.js?v=31"></script>
+<script src="lab.js?v=32"></script>
 <script>
 (function(){
 'use strict';
@@ -636,5 +637,6 @@ LAB.start('gnav'); tu(); sxu(); eu(); ptab(); yu(); pu(); cards();
 LAB.onLang(()=>{ tu(); sxu(); eu(); ptab(); yu(); pu(); cards(); });
 })();
 </script>
+<script>LAB.tx({nslink:'Se vindtrekanten mens du flyr: <a href="radionav.html?lesson=wind">radionavigasjonssimulatoren</a> tegner den ved flyet og holder en track for deg i TRK-modus.'});</script>
 </body>
 </html>

@@ -18,7 +18,7 @@
 </style>
 </head>
 <body data-title="Instrument Approach">
-<script src="site.js?v=34"></script>
+<script src="site.js?v=35"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -34,6 +34,7 @@
   <section class="card" id="lab">
     <div class="eyebrow">1 · Interactive</div>
     <h2>Needles and geometry</h2>
+    <p class="note" data-tx="nslink">Fly the localiser and glide slope with a CDI and an HSI in the <a href="radionav.html?lesson=ils">radio navigation simulator</a> (ILS RWY 17 at Bergen, with the back course).</p>
     <div class="split">
       <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
         <div class="paper"><canvas id="geo" aria-label="Final approach seen from above and from the side"></canvas></div>
@@ -113,7 +114,7 @@
   </section>
   <p class="foot">Teaching model. Full-scale deflections are typical values (localizer about ±2.5°, glide path about ±0.7°, RNP final ±0.3 NM, shown here on a 2-dot display; on the classic 5-dot display one dot is about 0.5° on the localizer and 0.14° on the glide path) and vary by installation and avionics. The A320 PFD is a simplified drawing; real displays differ by standard and software. ILS: on-course modulation 20 % per tone on the localizer and 40 % on the glide path; full scale is DDM 0.155 (localizer) and 0.175 (glide path); the glide path lobes are modelled as DDM ∝ sin(π·angle/3°). Protected-area bends and the cockpit cut-off (20°, pitch +2.5°) are typical illustrative values. CAT definitions follow ICAO Annex 6; operator and aerodrome minima can be higher. Fly the published procedure and your aircraft’s limitations.</p>
 </div>
-<script src="lab.js?v=31"></script>
+<script src="lab.js?v=32"></script>
 <script>
 (function(){
 'use strict';
@@ -423,5 +424,6 @@ LAB.start('approach'); au(); rtab(); segs(); cards(); ilsU(); catU();
 LAB.onLang(()=>{ au(); rtab(); segs(); cards(); ilsU(); catU(); });
 })();
 </script>
+<script>LAB.tx({nslink:'Fly localizer og glidebane med CDI og HSI i <a href="radionav.html?lesson=ils">radionavigasjonssimulatoren</a> (ILS RWY 17 på Bergen, med baksiden).'});</script>
 </body>
 </html>
