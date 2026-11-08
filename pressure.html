@@ -2,21 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="Why air flows from high to low pressure, why it ends up blowing along the isobars, and what friction does near the ground. Build the wind one force at a time on a weather chart: pressure gradient, Coriolis, friction, Buys Ballot and the altimeter.">
+<meta name="description" content="Why air flows from high to low pressure, why it ends up blowing along the isobars, and what friction does near the ground. Build the wind one force at a time on a weather chart: pressure gradient, Coriolis, friction, Buys Ballot, the altimeter from high to low, and local winds.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressure and Wind</title>
 <link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-/* learning goal under the page lead */
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
-.prose{max-width:68ch;font-size:16px;line-height:1.6;color:var(--ink);margin:0}
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.prose{max-width:72ch;font-size:15px;line-height:1.6;color:var(--ink);margin:16px 0 0}
 .prose b{font-weight:600}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
-.deepbox>.k,.k-deep{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
+.deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
-/* Understand: diagram + terms */
+.kfull .deepbox{margin-top:16px}
+.kfull>summary{width:auto!important;max-width:100%}
+/* Understand, in full: diagram + terms */
 .ugrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 36px;align-items:start}
 @media (max-width:980px){.ugrid{grid-template-columns:minmax(0,1fr)}}
 .ufig{margin:0;background:#FBFBF8;border:1px solid var(--rule);border-radius:var(--radius-lg);padding:8px}
@@ -26,229 +28,184 @@
 .terms>div:first-child{padding-top:0}
 .terms dt{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;color:var(--ink)}
 .terms dd{margin:3px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
-/* Explore: the model */
-.stagebar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 12px}
-.stage{flex:1 1 360px;min-width:0}
-.stage button{display:inline-flex;align-items:baseline;justify-content:center;gap:7px;padding:9px 12px;font-size:14px}
-.stage button i{font-style:normal;font-family:var(--f-mono);font-size:11.5px;opacity:.7}
-.stage .ls{display:none}
-#cv{display:block;width:100%;aspect-ratio:16/11;max-height:620px;touch-action:pan-y pinch-zoom;outline:none}
-#cv:focus-visible{box-shadow:inset 0 0 0 2px var(--accent)}
-@media (max-width:600px){#cv{aspect-ratio:1/1.1}
-  .stagebar{gap:8px}.stage{flex:1 1 100%;flex-wrap:nowrap}.stage button{flex:1 1 0;min-width:0;padding:9px 4px;font-size:13px;gap:4px;white-space:nowrap}
-  .stagebar #rel{flex:1 1 100%}.stage .lf{display:none}.stage .ls{display:inline}}
-@media (max-width:420px){.panel .two{grid-template-columns:1fr}}
-.mlegend{display:flex;flex-wrap:wrap;gap:4px 16px;margin:10px 0 0;font-size:12.5px;color:var(--ink-2)}
-.mlegend span{display:inline-flex;align-items:center;gap:6px}
-.mlegend i{display:inline-block;width:16px;height:3px;border-radius:2px}
-.mhint{font-size:12.5px;color:var(--ink-2);margin:6px 0 0}
-.stx{font-size:15px;line-height:1.55;color:var(--ink);margin:2px 0 6px;border-left:3px solid var(--info);padding:2px 0 2px 12px;max-width:72ch}
-.mwrap .stx{margin-top:16px}
-.stx b{font-weight:600}
-.ro .rrow small{display:block;font-size:11.5px;color:var(--ink-3);font-weight:400;margin-top:1px}
-.ro .rrow.cur{background:var(--accent-wash);box-shadow:-8px 0 0 var(--accent-wash),8px 0 0 var(--accent-wash)}
+/* Explore: one viewport, three views */
+.vv[hidden],.vp[hidden]{display:none!important}
+#cv{aspect-ratio:16/10.2;max-height:640px;touch-action:pan-y pinch-zoom;outline:none;cursor:crosshair}
+#cv:focus-visible{box-shadow:inset 0 0 0 2px #7FCBE8}
+#alt,#lw{aspect-ratio:16/9.4;max-height:600px}
+@media (max-width:640px){#cv{aspect-ratio:1/1.12}#alt,#lw{aspect-ratio:4/3.9}}
+.xsee b{color:var(--ink)}
+.xpanel .seg.stage button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 6px;line-height:1.2}
+.xpanel .seg.stage button i{font-style:normal;font-family:var(--f-mono);font-size:10.5px;opacity:.7}
+.xpanel .two{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.ro .rrow small{display:block;font-size:11px;color:var(--ink-3);font-weight:400;margin-top:1px}
+.ro .rrow.cur{background:var(--accent-wash);box-shadow:-6px 0 0 var(--accent-wash),6px 0 0 var(--accent-wash)}
 .ro .rrow.cur span{color:var(--ink)}
-.ro .rrow b{white-space:normal;text-align:right;font-family:var(--f-mono);font-weight:500}
-.pre{display:flex;flex-wrap:wrap;gap:6px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.tbox{border:1px solid var(--accent);background:var(--sheet);border-radius:var(--radius);padding:10px 12px;margin:0 0 10px;font-size:14px;line-height:1.45}
-.tbox .k{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.tbox .k button{background:none;border:0;color:var(--ink-2);font-size:18px;line-height:1;cursor:pointer;padding:2px 6px;min-height:0}
-.fb{display:block;margin-top:6px;font-size:14px;color:var(--ink-2)}
-.fb.ok{color:var(--ok)}
-.fb b{color:inherit}
-/* Try */
-.tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:16px;max-width:1100px}
-.task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.task .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0}
-.task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.task .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 10px;cursor:pointer;color:var(--ink)}
-.task .opts button:hover{border-color:var(--ink)}
-.task .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
-.task .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.ro .rrow b{white-space:normal;text-align:right;font-family:var(--f-mono);font-weight:500;font-size:12.5px}
+.ro .rrow b.warn{color:var(--caution)}.ro .rrow b.bad{color:var(--warning)}
+.xsec .ro{margin:0}
+/* Try: answer box with inputs */
 .task .inp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .task .inp label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-2)}
 .task .inp input{width:72px;font:500 15px var(--f-mono);padding:7px 8px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
-.task .btns{margin-top:auto}
-/* Debrief */
-.why{counter-reset:w}
+/* Key points */
 .why .box b.t i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);margin-right:6px}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
 .take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
 .take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
 .take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
 .take li b{font-weight:600}
-#alt{display:block;width:100%;aspect-ratio:16/8.5;max-height:460px}
-@media (max-width:600px){#alt{aspect-ratio:4/3.4}}
-#lw{display:block;width:100%;aspect-ratio:16/8;max-height:420px}
 .foot b{color:var(--ink)}
-/* Instructor: presenter-sized controls and readouts, panel laid out under the model */
-body.depth-instructor .stage button{font-size:17px;padding:12px 16px}
-body.depth-instructor #explore .atl-split>.panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 32px;align-items:start}
-body.depth-instructor #explore .rrow{font-size:17px;padding:9px 0}
-body.depth-instructor #explore .ro .rrow b{font-size:17px;white-space:nowrap}
-body.depth-instructor .stx{font-size:16px}
-body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
-body.depth-instructor .mhint{display:none}
-body.depth-instructor #explore .two{grid-template-columns:1fr}
+/* Instructor: presenter-sized */
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .xpanel .ctl label{font-size:15px}
+body.depth-instructor .ro .rrow b{font-size:15px}
 </style>
 </head>
 <body data-title="Pressure and Wind">
-<script src="site.js?v=30"></script>
+<script src="site.js?v=31"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
       <h1>Pressure and wind</h1>
-      <p data-tx="lead">Why air flows from high towards low pressure, why it ends up blowing along the isobars instead, and what friction does near the ground. Build the wind one force at a time on a weather chart, then use it: find the low, estimate the surface wind and know when your altimeter reads too high.</p>
+      <p data-tx="lead">Why air flows from high towards low pressure, why it ends up blowing along the isobars instead, and what friction does near the ground. Build the wind one force at a time on a weather chart, then use it: find the low, estimate the surface wind, know when your altimeter reads too high, and read the local winds.</p>
       <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain how the pressure gradient, the Coriolis effect and friction set the wind, and use it in the cockpit.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#understand">Pressure, highs and lows</a><a href="#explore">Build the wind</a><a href="#try">Try it</a><a href="#debrief">Debrief</a><a href="#altimeter">High to low</a><a href="#local">Local winds</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">Build the wind</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
   <!-- 1 · UNDERSTAND -->
   <section class="card" id="understand" data-step="understand">
     <div class="eyebrow">1 · Understand</div>
-    <h2>Pressure, highs and lows</h2>
-    <p class="lead" data-tx="u1">Air has weight. The pressure at any point is the weight of all the air above it, pressing on each square metre. In aviation we measure it in <b>hectopascals (hPa)</b>: 1 hPa is 100 pascals, the same as the old millibar. At mean sea level in the standard atmosphere (ISA) it is <b>1013.25 hPa</b>.</p>
-    <div class="ugrid">
-      <figure class="ufig" id="ufig" aria-label="Pressure falls with height, and the pressure measured at an aerodrome is reduced to sea level as QNH"></figure>
-      <dl class="terms" data-tx="terms">
-        <div><dt>Pressure falls with height</dt><dd>The higher you are, the less air is above you. Near the ground pressure falls about 1 hPa every 27 ft (pilots round it to 30 ft). At about 18 000 ft it has halved.</dd></div>
-        <div><dt>Station pressure and QFE</dt><dd>The pressure measured at the aerodrome. With QFE set, the altimeter shows height above the aerodrome: zero on the runway.</dd></div>
-        <div><dt>QNH</dt><dd>Station pressure reduced to mean sea level (MSL) using the standard atmosphere. With QNH set, the altimeter shows altitude above MSL: the aerodrome elevation on the ground.</dd></div>
-        <div><dt>QFF</dt><dd>Station pressure reduced to MSL using the actual temperature. Meteorologists use it to draw the isobars on surface charts. It can differ from QNH by a few hPa, most at high aerodromes in cold weather.</dd></div>
-        <div><dt>1013.25 hPa (standard)</dt><dd>Set above the transition altitude, so that all aircraft fly flight levels on the same reference.</dd></div>
-      </dl>
-    </div>
-    <p class="prose" data-tx="u2"><b>Highs and lows.</b> A weather chart joins places with the same MSL pressure by lines called <b>isobars</b>, normally every 4 hPa. A <b>low</b> (depression) has the lowest pressure in the middle: air converges near the ground and rises, so lows bring cloud, rain and stronger wind, and the fronts belong to them. A <b>high</b> (anticyclone) has the highest pressure in the middle: air sinks and warms, so highs bring settled weather and light wind, but in winter they can trap fog, low stratus and haze under an inversion for days. The change of pressure with distance is the <b>pressure gradient</b>: where the isobars are close together, it is steep.</p>
-    <div class="deepbox deep" data-tx="u3"><span class="k">Deep dive</span>
-      <p><b>Why about 27 ft per hPa?</b> The weight of a thin layer of air equals the pressure difference across it: Δp = ρ·g·Δh. At sea level ρ = 1.225 kg/m³, so 1 hPa (100 Pa) is 100 / (1.225 × 9.81) = 8.3 m ≈ 27 ft. Higher up the air is thinner, so 1 hPa is a thicker layer: about 36 ft at 10 000 ft, 50 ft at FL180 and more than 70 ft at FL300.</p>
-      <p><b>Standard pressure levels (ISA).</b> 850 hPa ≈ FL050, 700 hPa ≈ FL100, 500 hPa ≈ FL180, 300 hPa ≈ FL300, 250 hPa ≈ FL340, 200 hPa ≈ FL390. Upper-air wind and temperature charts are drawn on these levels.</p>
-      <p><b>Other shapes on the chart.</b> A <b>ridge</b> is a tongue of high pressure, usually fair weather. A <b>trough</b> is a tongue of low pressure, often with a line of showers or a front. A <b>col</b> is the flat area between two highs and two lows: light and variable wind, with fog in winter or thunderstorms in summer.</p>
-    </div>
+    <h2>Key concepts</h2>
+    <p class="kintro" data-tx="u0">Air has weight, so it presses on everything below it. Differences in that pressure push the air around, and the turning Earth and the ground decide where it really goes. Each card links to the place in the model where it is shown.</p>
+    <div id="kcGrid"></div>
+    <details class="kfull"><summary>Pressure, highs and lows in one diagram, and every term in full</summary><div>
+      <div class="ugrid">
+        <figure class="ufig" id="ufig" aria-label="Pressure falls with height, and the pressure measured at an aerodrome is reduced to sea level as QNH"></figure>
+        <dl class="terms" data-tx="terms">
+          <div><dt>Pressure falls with height</dt><dd>The higher you are, the less air is above you. Near the ground pressure falls about 1 hPa every 27 ft (pilots round it to 30 ft). At about 18 000 ft it has halved.</dd></div>
+          <div><dt>Station pressure and QFE</dt><dd>The pressure measured at the aerodrome. With QFE set, the altimeter shows height above the aerodrome: zero on the runway.</dd></div>
+          <div><dt>QNH</dt><dd>Station pressure reduced to mean sea level (MSL) using the standard atmosphere. With QNH set, the altimeter shows altitude above MSL: the aerodrome elevation on the ground.</dd></div>
+          <div><dt>QFF</dt><dd>Station pressure reduced to MSL using the actual temperature. Meteorologists use it to draw the isobars on surface charts. It can differ from QNH by a few hPa, most at high aerodromes in cold weather.</dd></div>
+          <div><dt>1013.25 hPa (standard)</dt><dd>Set above the transition altitude, so that all aircraft fly flight levels on the same reference.</dd></div>
+        </dl>
+      </div>
+      <p class="prose" data-tx="u2"><b>Highs and lows.</b> A weather chart joins places with the same MSL pressure by lines called <b>isobars</b>, normally every 4 hPa. A <b>low</b> (depression) has the lowest pressure in the middle: air converges near the ground and rises, so lows bring cloud, rain and stronger wind, and the fronts belong to them. A <b>high</b> (anticyclone) has the highest pressure in the middle: air sinks and warms, so highs bring settled weather and light wind, but in winter they can trap fog, low stratus and haze under an inversion for days. The change of pressure with distance is the <b>pressure gradient</b>: where the isobars are close together, it is steep.</p>
+      <div class="deepbox deep" data-tx="u3"><span class="k">Deep dive</span>
+        <p><b>Why about 27 ft per hPa?</b> The weight of a thin layer of air equals the pressure difference across it: Δp = ρ·g·Δh. At sea level ρ = 1.225 kg/m³, so 1 hPa (100 Pa) is 100 / (1.225 × 9.81) = 8.3 m ≈ 27 ft. Higher up the air is thinner, so 1 hPa is a thicker layer: about 36 ft at 10 000 ft, 50 ft at FL180 and more than 70 ft at FL300.</p>
+        <p><b>Standard pressure levels (ISA).</b> 850 hPa ≈ FL050, 700 hPa ≈ FL100, 500 hPa ≈ FL180, 300 hPa ≈ FL300, 250 hPa ≈ FL340, 200 hPa ≈ FL390. Upper-air wind and temperature charts are drawn on these levels.</p>
+        <p><b>Other shapes on the chart.</b> A <b>ridge</b> is a tongue of high pressure, usually fair weather. A <b>trough</b> is a tongue of low pressure, often with a line of showers or a front. A <b>col</b> is the flat area between two highs and two lows: light and variable wind, with fog in winter or thunderstorms in summer.</p>
+      </div>
+    </div></details>
   </section>
 
-  <!-- 2 · EXPLORE: the main model -->
+  <!-- 2 · EXPLORE: one viewport, three views -->
   <section class="card" id="explore" data-step="explore">
     <div class="eyebrow">2 · Explore</div>
     <h2>Build the wind</h2>
-    <p class="lead" data-tx="e1">A weather chart, north up. Switch on the forces one at a time and watch the air respond. Drag the <b>H</b>, the <b>L</b> and the probe ⊕ to change the isobars and see the numbers where you are. Release a parcel to follow one piece of air.</p>
-    <div class="split">
-      <div class="mwrap" data-lab-model style="min-width:0">
-        <div class="stagebar"><div class="stage" id="stage" role="group" aria-label="Forces"></div><button class="btn pri" id="rel" type="button">Release a parcel</button></div>
-        <div class="paper"><canvas id="cv" tabindex="0" aria-label="Weather chart with a high, a low, isobars and the wind. Drag the H, the L and the probe; arrow keys move the probe."></canvas></div>
-        <div class="mlegend" id="mleg"></div>
-        <p class="mhint" id="mhint"></p>
-        <p class="stx" id="stx"></p>
+    <p class="lead" data-tx="e1">A weather chart, north up. Switch on the forces one at a time and watch the air respond. Drag the <b>H</b>, the <b>L</b> and the probe ⊕, or release a parcel and follow one piece of air. The other two views use the same pressure: the altimeter flying from high to low, and the winds the sun makes on its own.</p>
+    <div class="xapp" id="papp">
+      <div class="xvp" id="pvp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="pTabs" role="tablist" aria-label="View"></div><div class="vtools" id="pTools"><button type="button" class="go" id="rel">▶ Release a parcel</button><button type="button" id="lPlay" hidden>▶ Run the day</button></div></div>
+        <div class="vcv vv" data-v="chart"><canvas id="cv" tabindex="0" aria-label="Weather chart with a high, a low, isobars and the wind. Drag the H, the L and the probe; arrow keys move the probe."></canvas><div class="vchip" id="chip" aria-live="polite"></div></div>
+        <div class="vcv vv" data-v="alt" id="altimeter" hidden><canvas id="alt" aria-label="Cross-section from a departure under high pressure to a destination under low pressure, with the indicated and true altitude"></canvas><div class="vchip" id="achip" aria-live="polite"></div></div>
+        <div class="vcv vv" data-v="local" id="local" hidden><canvas id="lw" aria-label="Sea breeze, valley winds or föhn through the day"></canvas><div class="vchip" id="lchip" aria-live="polite"></div></div>
+        <div class="vleg" id="mleg"></div>
       </div>
-      <div class="panel">
+      <p class="xsee" id="stx"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <div class="tbox" id="tbox" hidden></div>
-        <div class="ro" id="ro">
-          <div class="rrow" id="rowP"><span id="lP"></span><b id="rP"></b></div>
-          <div class="rrow" id="rowG"><span id="lG"></span><b id="rG"></b></div>
-          <div class="rrow" id="rowN"><span id="lN"></span><b id="rN"></b></div>
-          <div class="rrow" id="rowV"><span id="lV"></span><b id="rV"></b></div>
-          <div class="rrow" id="rowSL"><span id="lSL"></span><b id="rSL"></b></div>
-          <div class="rrow" id="rowSS"><span id="lSS"></span><b id="rSS"></b></div>
+        <!-- chart -->
+        <div class="vp" data-v="chart">
+          <details class="xsec" open><summary id="gForces">Forces</summary><div id="stage" role="group" aria-label="Forces"></div><p class="note" id="mhint" style="margin:8px 0 0"></p></details>
+          <details class="xsec" open><summary id="gCond">Conditions</summary><div id="ctl"></div><div class="two"><div><div class="grp" id="gHemi">Hemisphere</div><div id="hemi"></div></div><div><div class="grp" id="gSurf">Surface</div><div id="surf"></div></div></div></details>
+          <details class="xsec" open><summary id="gVal">Values at the probe</summary>
+            <div class="ro" id="ro">
+              <div class="rrow" id="rowP"><span id="lP"></span><b id="rP"></b></div>
+              <div class="rrow" id="rowG"><span id="lG"></span><b id="rG"></b></div>
+              <div class="rrow deep" id="rowN"><span id="lN"></span><b id="rN"></b></div>
+              <div class="rrow" id="rowV"><span id="lV"></span><b id="rV"></b></div>
+              <div class="rrow" id="rowSL"><span id="lSL"></span><b id="rSL"></b></div>
+              <div class="rrow" id="rowSS"><span id="lSS"></span><b id="rSS"></b></div>
+            </div></details>
+          <details class="xsec presec" open><summary id="gPre">Scenarios</summary><div class="pre" id="pre"></div></details>
+          <details class="xsec"><summary id="gAdv">Advanced</summary><div class="grp" id="gRho" style="margin-top:0">Air density (kg/m³)</div><div id="rho"></div></details>
         </div>
-        <div>
-          <div class="grp" id="gChart">Chart</div>
-          <div id="ctl"></div>
-          <div class="two"><div><div class="grp" id="gHemi">Hemisphere</div><div id="hemi"></div></div><div><div class="grp" id="gSurf">Surface</div><div id="surf"></div></div></div>
-          <div class="grp" id="gRho">Air density (kg/m³)</div><div id="rho"></div>
+        <!-- high to low -->
+        <div class="vp" data-v="alt" hidden>
+          <details class="xsec" open><summary id="gCondA">Conditions</summary><div id="actl"></div></details>
+          <details class="xsec" open><summary id="gValA">Values</summary>
+            <div class="ro">
+              <div class="rrow"><span id="alA"></span><b id="arA"></b></div>
+              <div class="rrow"><span id="alB"></span><b id="arB"></b></div>
+              <div class="rrow"><span id="alC"></span><b id="arC"></b></div>
+              <div class="rrow"><span id="alD"></span><b id="arD"></b></div>
+            </div></details>
+          <details class="xsec presec" open><summary id="gPreA">Scenarios</summary><div class="pre" id="preA"></div><p class="note" data-tx="a2" style="margin-top:8px">The full instrument side, with QFE, standard setting, density altitude and cold-temperature corrections, is in <a href="altimetry.html">Pressure and altitude</a>.</p></details>
         </div>
-        <div>
-          <div class="grp" id="gPre">Scenarios</div>
-          <div class="pre" id="pre"></div>
+        <!-- local winds -->
+        <div class="vp" data-v="local" hidden>
+          <details class="xsec" open><summary id="gCondL">Conditions</summary><div class="grp" id="gWhere" style="margin-top:0">Where</div><div id="where"></div><div id="c2" style="margin-top:8px"></div></details>
+          <details class="xsec" open><summary id="gValL">Values</summary><div class="ro" id="lro"></div></details>
         </div>
+      </details>
+      <div class="deepbox deep" data-tx="e2"><span class="k">Deep dive · the formula behind the numbers</span>
+        <p>Geostrophic wind: <b>V<sub>g</sub> = Δp / (ρ · f · Δn)</b>, where Δp/Δn is the pressure gradient, ρ the air density and f = 2Ω sin φ the Coriolis parameter (Ω = 7.29 × 10⁻⁵ s⁻¹, φ = latitude).</p>
+        <p>Worked example: 4 hPa per 100 NM (400 Pa over 185 200 m) at 60°N with ρ = 1.225 kg/m³: f = 1.26 × 10⁻⁴ s⁻¹, so V<sub>g</sub> = 400 / (1.225 × 1.26 × 10⁻⁴ × 185 200) = 14 m/s ≈ <b>27 kt</b>. The same gradient at 30°N gives about 47 kt, and at FL100 (ρ ≈ 0.91) about 37 kt.</p>
+        <p>So for the same isobar spacing the wind is <b>stronger at low latitude</b> and <b>stronger higher up</b>. Near the equator f approaches zero, the balance breaks down and isobars say little about the wind.</p>
+      </div>
+      <div class="tryblk" id="try" data-step="try">
+        <h3 id="tryH">Try it</h3>
+        <p class="note" data-tx="t1">Five short tasks. Three you solve in the model, with live feedback; two you answer here, then see them in the model.</p>
+        <ol class="tasks" id="tasks"></ol>
       </div>
     </div>
-    <div class="deepbox deep" data-tx="e2"><span class="k">Deep dive · the formula behind the numbers</span>
-      <p>Geostrophic wind: <b>V<sub>g</sub> = Δp / (ρ · f · Δn)</b>, where Δp/Δn is the pressure gradient, ρ the air density and f = 2Ω sin φ the Coriolis parameter (Ω = 7.29 × 10⁻⁵ s⁻¹, φ = latitude).</p>
-      <p>Worked example: 4 hPa per 100 NM (400 Pa over 185 200 m) at 60°N with ρ = 1.225 kg/m³: f = 1.26 × 10⁻⁴ s⁻¹, so V<sub>g</sub> = 400 / (1.225 × 1.26 × 10⁻⁴ × 185 200) = 14 m/s ≈ <b>27 kt</b>. The same gradient at 30°N gives about 47 kt, and at FL100 (ρ ≈ 0.91) about 37 kt.</p>
-      <p>So for the same isobar spacing the wind is <b>stronger at low latitude</b> and <b>stronger higher up</b>. Near the equator f approaches zero, the balance breaks down and isobars say little about the wind.</p>
-    </div>
   </section>
 
-  <!-- 3 · TRY -->
-  <section class="card" id="try" data-step="try">
-    <div class="eyebrow">3 · Try</div>
-    <h2>Try it</h2>
-    <p class="lead" data-tx="t1">Four short tasks. The first two are solved in the model above; the last two you answer here, then check them in the model.</p>
-    <ol class="tasks" id="tasks"></ol>
-  </section>
-
-  <!-- 4 · DEBRIEF -->
+  <!-- 3 · KEY POINTS -->
   <section class="card" id="debrief" data-step="debrief">
-    <div class="eyebrow">4 · Debrief</div>
+    <div class="eyebrow">3 · Key points</div>
     <h2>What happened, and why it matters</h2>
     <div class="cols why" data-tx="d1">
       <div class="box"><b class="t"><i>1</i>Pressure gradient</b><p>Pressure differences push air from high towards low pressure, straight across the isobars. The closer the isobars, the stronger the push. On its own it would accelerate the air into the low.</p></div>
       <div class="box"><b class="t"><i>2</i>Coriolis</b><p>The Earth turns under the moving air, which turns it right in the northern hemisphere (left in the southern). It grows with wind speed and latitude, and is zero at the equator. When it balances the pressure gradient, the wind blows along the isobars: the geostrophic wind.</p></div>
       <div class="box"><b class="t"><i>3</i>Friction</b><p>Below about 2000–3000 ft the ground slows the wind. Slower wind means weaker Coriolis, so the pressure gradient wins a little and the wind crosses the isobars towards the low: more over rough land, less over the smooth sea.</p></div>
     </div>
+    <div class="maid" id="maid"></div>
     <h3 id="takeH">Pilot takeaways</h3>
     <ul class="take" data-tx="d2">
-      <li><b>Buys Ballot’s law.</b> In the northern hemisphere, stand with your back to the wind and the low is on your left (at the surface, left and slightly ahead). In the southern hemisphere it is on your right.</li>
       <li><b>The wind veers and increases with height</b> through the friction layer in the northern hemisphere. Climbing out, expect it to turn clockwise and pick up; on the approach it backs and drops. In the southern hemisphere the turn is the other way.</li>
       <li><b>The surface wind backs</b> (NH) and slows: over land about 30° and roughly half the 2000 ft wind, over the sea about 10–15° and roughly 70 %.</li>
       <li><b>Tight isobars mean strong wind</b>, gusts, mechanical turbulence and strong crosswind near the ground, and wind shear at the top of the friction layer.</li>
-      <li><b>Flying towards a low</b> in the northern hemisphere the wind comes from the left, so you drift right. And the pressure falls ahead of you: see <a href="#altimeter">high to low</a> below.</li>
+      <li><b>High to low, look out below.</b> Flying towards a low without updating the QNH, the altimeter reads too high: about 27 ft per hPa. Set the new QNH as soon as you get it. In the northern hemisphere the wind then comes from the left, so you drift right.</li>
+      <li><b>Local winds can beat the chart.</b> A sea breeze can turn the runway wind round by the afternoon, katabatic wind brings early-morning tailwind and turbulence to valley and fjord airports, and föhn brings strong, gusty and turbulent wind on the lee side of mountains.</li>
     </ul>
     <div class="deepbox deep" data-tx="d3"><span class="k">Deep dive</span>
       <p><b>Curved isobars: the gradient wind.</b> Around a low part of the pressure force is used to turn the air, so the real wind is weaker than geostrophic (subgeostrophic). Around a high it is stronger (supergeostrophic), but highs have weak gradients. This model ignores curvature, so it overestimates the wind close to a tight low.</p>
       <p><b>Diurnal variation.</b> By day, heating mixes the faster wind aloft down to the surface: over land the surface wind veers and increases in the afternoon. At night the air near the ground becomes stable and decouples: the surface wind backs and drops, and the wind just above the inversion can be much stronger (a low-level jet and wind shear at night).</p>
-      <p><b>Higher up.</b> Pressure gradients change with height because cold air is denser than warm air. Where cold and warm air meet, the gradient aloft grows with height and the wind strengthens up to the tropopause: the jet streams. See <a href="fronts.html#press">Fronts and air masses</a>.</p>
+      <p><b>Higher up.</b> Pressure gradients change with height because cold air is denser than warm air. Where cold and warm air meet, the gradient aloft grows with height and the wind strengthens up to the tropopause: the jet streams. See <a href="fronts.html">Fronts and air masses</a>.</p>
     </div>
   </section>
 
-  <section class="card" id="altimeter" data-step="debrief">
-    <div class="eyebrow">4 · Debrief</div>
-    <h2>High to low, look out below</h2>
-    <p class="lead" data-tx="a1">Pressure differences also fool the altimeter. It measures pressure, not height. Fly from a high towards a low without updating QNH and every indicated altitude puts you lower than you think. Set the two QNHs and see the error.</p>
-    <div class="split">
-      <div class="paper"><canvas id="alt" aria-label="Cross-section from a departure under high pressure to a destination under low pressure, with the indicated and true altitude"></canvas></div>
-      <div class="panel">
-        <div id="actl"></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span id="alA"></span><b id="arA"></b></div>
-          <div class="rrow"><span id="alB"></span><b id="arB"></b></div>
-          <div class="rrow"><span id="alC"></span><b id="arC"></b></div>
-          <div class="rrow"><span id="alD"></span><b id="arD"></b></div>
-        </div>
-        <p class="stx" id="ax"></p>
-        <p class="note" data-tx="a2">The full instrument side, with QFE, standard setting, density altitude and cold-temperature corrections, is in <a href="altimetry.html">Pressure and altitude</a>.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="card deep" id="local" data-step="debrief">
-    <div class="eyebrow">4 · Debrief · Deep dive</div>
-    <h2>Local winds</h2>
-    <p class="lead" data-tx="l1">The sun can make its own pressure gradient over a few tens of kilometres: land and sea, or valley floor and slopes, heat and cool at different rates. Move the clock and watch the circulation turn.</p>
-    <div class="split">
-      <div class="paper"><canvas id="lw" aria-label="Sea breeze or valley winds through the day"></canvas></div>
-      <div class="panel">
-        <div class="grp" id="gWhere">Where</div><div id="where"></div>
-        <div id="c2"></div>
-        <div class="ro" style="margin-top:6px"><div class="rrow"><span id="lW1">Wind now</span><b id="w1"></b></div></div>
-        <p class="stx" id="x2"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5 · CHECK -->
+  <!-- TEST YOURSELF -->
   <section class="card" id="quiz" data-step="check">
-    <div class="eyebrow">5 · Check</div>
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. For real flights use the METAR, TAF, wind charts and AIP.</p>
+  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
-<script src="lab.js?v=28"></script>
+<script src="lab.js?v=29"></script>
+<script src="concepts.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -257,37 +214,39 @@ const t2=(en,no)=>({en,no});
 const D2R=Math.PI/180, OMEGA=7.2921e-5, KT=1.943844;
 const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 const isIns=()=>document.body.classList.contains('depth-instructor');
-const COL={pgf:'#B42318',cor:'#1D4E9E',fr:'#8A6D3B',wind:'#9A1E68',ink:'#13202A',ink2:'#4C5B66',ink3:'#7D8B95',iso:'#5E6B74',paper:'#FBFBF8',low:'#B42318',high:'#1D4E9E',flow:'29,78,158'};
+/* dark instrument palette (the viewport), and the light one for the paper figure in Understand */
+const COL={pgf:'#F07B6A',cor:'#7FCBE8',fr:'#F0B440',wind:'#E46BAE',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95',low:'#F07B6A',high:'#8FB8F0',flow:'127,203,232',dark:'#10171D',pill:'rgba(12,16,20,.86)'};
+const UC={ink:'#13202A',ink2:'#4C5B66',wind:'#9A1E68'};
 
 /* ---------- strings ---------- */
 LAB.add({},{
  'Pressure and Wind':'Trykk og vind','Pressure and wind':'Trykk og vind','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
- '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','4 · Debrief · Deep dive':'4 · Debrief · Dypdykk','5 · Check':'5 · Sjekk',
- 'Pressure, highs and lows':'Trykk, høytrykk og lavtrykk','Build the wind':'Bygg vinden','Try it':'Prøv selv','What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg',
- 'High to low, look out below':'Fra høyt til lavt trykk: se opp','Local winds':'Lokale vinder','Test yourself':'Test deg selv','Debrief':'Debrief','High to low':'Fra høyt til lavt',
- 'Release a parcel':'Slipp en luftpakke','Chart':'Kart','Hemisphere':'Halvkule','Air density (kg/m³)':'Lufttetthet (kg/m³)','Surface':'Underlag','Scenarios':'Scenarier',
+ '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv',
+ 'Key concepts':'Nøkkelbegreper','Build the wind':'Bygg vinden','Try it':'Prøv selv','What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg',
+ 'Key points':'Det viktigste','Test yourself':'Test deg selv','Controls':'Kontroller','Forces':'Krefter','Conditions':'Forhold','Values at the probe':'Verdier ved sonden','Values':'Verdier','Advanced':'Avansert',
+ 'Pressure, highs and lows in one diagram, and every term in full':'Trykk, høytrykk og lavtrykk i ett diagram, og alle begrepene i sin helhet',
+ 'Hemisphere':'Halvkule','Air density (kg/m³)':'Lufttetthet (kg/m³)','Surface':'Underlag','Scenarios':'Scenarier',
  'Pressure difference H – L (hPa)':'Trykkforskjell H – L (hPa)','Latitude':'Breddegrad','Northern':'Nordlig','Southern':'Sørlig','Land':'Land','Sea':'Sjø',
  'Sea level 1.225':'Havnivå 1,225','FL050 1.06':'FL050 1,06','FL100 0.91':'FL100 0,91',
- 'Where':'Hvor','Wind now':'Vind nå','Coast':'Kyst','Valley':'Dal','Time of day':'Tid på døgnet',
+ 'Where':'Hvor','Sea breeze':'Sjøbris','Valley':'Dal','Föhn':'Føhn','Time of day':'Tid på døgnet','Height of the ridge (ft)':'Høyde på fjellryggen (ft)','Temperature at the windward foot (°C)':'Temperatur ved foten på lo side (°C)','Dew point at the windward foot (°C)':'Duggpunkt ved foten på lo side (°C)',
  'Departure QNH (high)':'QNH ved avgang (høytrykk)','Destination QNH (low)':'QNH ved destinasjon (lavtrykk)','Indicated altitude (ft)':'Indikert høyde (ft)'
 });
 LAB.tx({
- lead:'Hvorfor luft strømmer fra høyt mot lavt trykk, hvorfor den likevel ender opp med å blåse langs isobarene, og hva friksjonen gjør nær bakken. Bygg vinden én kraft om gangen på et værkart, og bruk den: finn lavtrykket, anslå bakkevinden og vit når høydemåleren viser for høyt.',
+ lead:'Hvorfor luft strømmer fra høyt mot lavt trykk, hvorfor den likevel ender opp med å blåse langs isobarene, og hva friksjonen gjør nær bakken. Bygg vinden én kraft om gangen på et værkart, og bruk den: finn lavtrykket, anslå bakkevinden, vit når høydemåleren viser for høyt, og les de lokale vindene.',
  goal:'<span class="k">Læringsmål</span>Forklar hvordan trykkgradienten, Coriolis-kraften og friksjonen bestemmer vinden, og bruk det i cockpit.',
- u1:'Luft har vekt. Trykket i et punkt er vekten av all luften over, som presser på hver kvadratmeter. I luftfarten måler vi det i <b>hektopascal (hPa)</b>: 1 hPa er 100 pascal, det samme som den gamle millibaren. Ved middelvannstand i standardatmosfæren (ISA) er det <b>1013,25 hPa</b>.',
+ u0:'Luft har vekt, så den presser på alt under seg. Forskjeller i dette trykket skyver luften rundt, og jordrotasjonen og bakken bestemmer hvor den faktisk går. Hvert kort lenker til stedet i modellen der det vises.',
  terms:'<div><dt>Trykket faller med høyden</dt><dd>Jo høyere du er, jo mindre luft er det over deg. Nær bakken faller trykket rundt 1 hPa per 27 ft (piloter runder av til 30 ft). Rundt 18 000 ft er det halvert.</dd></div><div><dt>Stasjonstrykk og QFE</dt><dd>Trykket målt på flyplassen. Med QFE satt viser høydemåleren høyde over flyplassen: null på rullebanen.</dd></div><div><dt>QNH</dt><dd>Stasjonstrykket redusert til middelvannstand (MSL) med standardatmosfæren. Med QNH satt viser høydemåleren høyde over MSL: flyplassens elevasjon på bakken.</dd></div><div><dt>QFF</dt><dd>Stasjonstrykket redusert til MSL med den faktiske temperaturen. Meteorologene bruker det til å tegne isobarene på bakkekart. Det kan avvike fra QNH med noen hPa, mest på høyt beliggende flyplasser i kaldt vær.</dd></div><div><dt>1013,25 hPa (standard)</dt><dd>Settes over overgangshøyden, slik at alle fly flyr flygenivåer med samme referanse.</dd></div>',
  u2:'<b>Høytrykk og lavtrykk.</b> Et værkart binder sammen steder med samme MSL-trykk med linjer som kalles <b>isobarer</b>, normalt for hver 4 hPa. Et <b>lavtrykk</b> har lavest trykk i midten: luften strømmer sammen nær bakken og stiger, så lavtrykk gir skyer, regn og sterkere vind, og frontene hører til dem. Et <b>høytrykk</b> har høyest trykk i midten: luften synker og varmes, så høytrykk gir stabilt vær og svak vind, men om vinteren kan de holde tåke, lav stratus og dis under en inversjon i dagevis. Endringen i trykk med avstand er <b>trykkgradienten</b>: der isobarene ligger tett, er den bratt.',
  u3:'<span class="k">Dypdykk</span><p><b>Hvorfor rundt 27 ft per hPa?</b> Vekten av et tynt luftlag er lik trykkforskjellen over det: Δp = ρ·g·Δh. Ved havnivå er ρ = 1,225 kg/m³, så 1 hPa (100 Pa) er 100 / (1,225 × 9,81) = 8,3 m ≈ 27 ft. Høyere opp er luften tynnere, så 1 hPa er et tykkere lag: rundt 36 ft i 10 000 ft, 50 ft i FL180 og over 70 ft i FL300.</p><p><b>Standard trykkflater (ISA).</b> 850 hPa ≈ FL050, 700 hPa ≈ FL100, 500 hPa ≈ FL180, 300 hPa ≈ FL300, 250 hPa ≈ FL340, 200 hPa ≈ FL390. Vind- og temperaturkart for høyden tegnes på disse flatene.</p><p><b>Andre former på kartet.</b> En <b>rygg</b> er en tunge av høytrykk, vanligvis pent vær. Et <b>tråg</b> er en tunge av lavtrykk, ofte med en bygelinje eller en front. Et <b>sadelpunkt</b> (col) er det flate området mellom to høytrykk og to lavtrykk: svak og variabel vind, med tåke om vinteren eller tordenvær om sommeren.</p>',
- e1:'Et værkart med nord opp. Slå på kreftene én om gangen og se hvordan luften svarer. Dra <b>H</b>, <b>L</b> og sonden ⊕ for å endre isobarene og se tallene der du er. Slipp en luftpakke for å følge én bit luft.',
+ e1:'Et værkart med nord opp. Slå på kreftene én om gangen og se hvordan luften svarer. Dra <b>H</b>, <b>L</b> og sonden ⊕, eller slipp en luftpakke og følg én bit luft. De to andre visningene bruker det samme trykket: høydemåleren når du flyr fra høyt til lavt, og vindene solen lager på egen hånd.',
  e2:'<span class="k">Dypdykk · formelen bak tallene</span><p>Geostrofisk vind: <b>V<sub>g</sub> = Δp / (ρ · f · Δn)</b>, der Δp/Δn er trykkgradienten, ρ lufttettheten og f = 2Ω sin φ Coriolis-parameteren (Ω = 7,29 × 10⁻⁵ s⁻¹, φ = breddegraden).</p><p>Regneeksempel: 4 hPa per 100 NM (400 Pa over 185 200 m) på 60°N med ρ = 1,225 kg/m³: f = 1,26 × 10⁻⁴ s⁻¹, så V<sub>g</sub> = 400 / (1,225 × 1,26 × 10⁻⁴ × 185 200) = 14 m/s ≈ <b>27 kt</b>. Samme gradient på 30°N gir rundt 47 kt, og i FL100 (ρ ≈ 0,91) rundt 37 kt.</p><p>Med samme avstand mellom isobarene er vinden altså <b>sterkere på lav breddegrad</b> og <b>sterkere høyere opp</b>. Nær ekvator går f mot null, balansen bryter sammen, og isobarene sier lite om vinden.</p>',
- t1:'Fire korte oppgaver. De to første løser du i modellen over; de to siste svarer du på her, og sjekker så i modellen.',
+ t1:'Fem korte oppgaver. Tre løser du i modellen, med direkte tilbakemelding; to svarer du på her, og ser dem så i modellen.',
  d1:'<div class="box"><b class="t"><i>1</i>Trykkgradient</b><p>Trykkforskjeller skyver luft fra høyt mot lavt trykk, rett på tvers av isobarene. Jo tettere isobarene ligger, jo sterkere skyv. Alene ville trykkgradientkraften akselerert luften rett inn i lavtrykket.</p></div><div class="box"><b class="t"><i>2</i>Coriolis</b><p>Jorda dreier under luften som beveger seg, og det bøyer den mot høyre på nordlig halvkule (mot venstre på sørlig). Coriolis-kraften øker med vindfarten og breddegraden, og er null ved ekvator. Når den balanserer trykkgradientkraften, blåser vinden langs isobarene: den geostrofiske vinden.</p></div><div class="box"><b class="t"><i>3</i>Friksjon</b><p>Under rundt 2000–3000 ft bremser bakken vinden. Lavere fart gir svakere Coriolis-kraft, så trykkgradienten vinner litt, og vinden krysser isobarene inn mot lavtrykket: mer over ujevnt land, mindre over den glatte sjøen.</p></div>',
- d2:'<li><b>Buys Ballots lov.</b> På nordlig halvkule: stå med ryggen mot vinden, og lavtrykket er til venstre (ved bakken til venstre og litt foran). På sørlig halvkule er det til høyre.</li><li><b>Vinden dreier til høyre (veerer) og øker med høyden</b> gjennom friksjonslaget på nordlig halvkule. Når du stiger ut, må du regne med at den dreier med klokka og tar seg opp; på innflygingen dreier den til venstre (backer) og avtar. På sørlig halvkule dreier den motsatt vei.</li><li><b>Bakkevinden dreier til venstre (backer)</b> (NH) og avtar: over land rundt 30° og omtrent halvparten av vinden i 2000 ft, over sjø rundt 10–15° og omtrent 70 %.</li><li><b>Tette isobarer betyr sterk vind</b>, kast, mekanisk turbulens og sterk sidevind nær bakken, og vindskjær i toppen av friksjonslaget.</li><li><b>Flyr du mot et lavtrykk</b> på nordlig halvkule, kommer vinden fra venstre, så du får avdrift til høyre. Og trykket faller foran deg: se <a href="#altimeter">fra høyt til lavt</a> under.</li>',
- d3:'<span class="k">Dypdykk</span><p><b>Krumme isobarer: gradientvinden.</b> Rundt et lavtrykk går en del av trykkraften med til å svinge luften, så den virkelige vinden er svakere enn den geostrofiske (subgeostrofisk). Rundt et høytrykk er den sterkere (supergeostrofisk), men høytrykk har svake gradienter. Denne modellen ser bort fra krumningen, så den overdriver vinden nær et dypt lavtrykk.</p><p><b>Døgnvariasjon.</b> Om dagen blander oppvarmingen den sterkere vinden fra høyden ned til bakken: over land dreier bakkevinden til høyre og øker utover ettermiddagen. Om natten blir luften nær bakken stabil og kobles fra: bakkevinden dreier til venstre og avtar, og vinden like over inversjonen kan være mye sterkere (en lavtliggende jet og vindskjær om natten).</p><p><b>Høyere opp.</b> Trykkgradienten endrer seg med høyden fordi kald luft er tettere enn varm. Der kald og varm luft møtes, øker gradienten med høyden, og vinden blir sterkere helt opp til tropopausen: jetstrømmene. Se <a href="fronts.html#press">Fronter og luftmasser</a>.</p>',
+ d2:'<li><b>Vinden dreier til høyre (veerer) og øker med høyden</b> gjennom friksjonslaget på nordlig halvkule. Når du stiger ut, må du regne med at den dreier med klokka og tar seg opp; på innflygingen dreier den til venstre (backer) og avtar. På sørlig halvkule dreier den motsatt vei.</li><li><b>Bakkevinden dreier til venstre (backer)</b> (NH) og avtar: over land rundt 30° og omtrent halvparten av vinden i 2000 ft, over sjø rundt 10–15° og omtrent 70 %.</li><li><b>Tette isobarer betyr sterk vind</b>, kast, mekanisk turbulens og sterk sidevind nær bakken, og vindskjær i toppen av friksjonslaget.</li><li><b>Fra høyt til lavt, se opp nedover.</b> Flyr du mot et lavtrykk uten å oppdatere QNH, viser høydemåleren for høyt: rundt 27 ft per hPa. Sett ny QNH så snart du får den. På nordlig halvkule kommer vinden da fra venstre, så du får avdrift til høyre.</li><li><b>Lokale vinder kan slå kartet.</b> Sjøbris kan snu banevinden utover ettermiddagen, katabatisk vind gir medvind og turbulens tidlig om morgenen på dal- og fjordflyplasser, og føhn gir sterk, byig og turbulent vind på lesiden av fjell.</li>',
+ d3:'<span class="k">Dypdykk</span><p><b>Krumme isobarer: gradientvinden.</b> Rundt et lavtrykk går en del av trykkraften med til å svinge luften, så den virkelige vinden er svakere enn den geostrofiske (subgeostrofisk). Rundt et høytrykk er den sterkere (supergeostrofisk), men høytrykk har svake gradienter. Denne modellen ser bort fra krumningen, så den overdriver vinden nær et dypt lavtrykk.</p><p><b>Døgnvariasjon.</b> Om dagen blander oppvarmingen den sterkere vinden fra høyden ned til bakken: over land dreier bakkevinden til høyre og øker utover ettermiddagen. Om natten blir luften nær bakken stabil og kobles fra: bakkevinden dreier til venstre og avtar, og vinden like over inversjonen kan være mye sterkere (en lavtliggende jet og vindskjær om natten).</p><p><b>Høyere opp.</b> Trykkgradienten endrer seg med høyden fordi kald luft er tettere enn varm. Der kald og varm luft møtes, øker gradienten med høyden, og vinden blir sterkere helt opp til tropopausen: jetstrømmene. Se <a href="fronts.html">Fronter og luftmasser</a>.</p>',
  a1:'Trykkforskjeller lurer også høydemåleren. Den måler trykk, ikke høyde. Flyr du fra et høytrykk mot et lavtrykk uten å oppdatere QNH, er du lavere enn du tror ved hver indikerte høyde. Still de to QNH-ene og se feilen.',
  a2:'Instrumentsiden, med QFE, standardinnstilling, tetthetshøyde og kuldekorreksjon, finner du i <a href="altimetry.html">Trykk og høyde</a>.',
- l1:'Solen kan lage sin egen trykkgradient over noen titalls kilometer: land og sjø, eller dalbunn og lier, varmes og kjøles i ulikt tempo. Flytt klokka og se sirkulasjonen snu.',
- foot:'<b>Modell og begrensninger.</b> Opplæringsmodell av to idealiserte trykksystemer på et flatt kart, nord opp, 2000–2600 km bredt. Den geostrofiske vinden bruker V<sub>g</sub> = Δp / (ρ f Δn) med f = 2Ω sin φ og ser bort fra krumningen på isobarene, så den overdriver vinden nær et dypt lavtrykk. Bakkevinden bruker typiske, illustrerende verdier: dreid rundt 30° og omtrent halv fart over land, rundt 10° og 70 % over sjø; virkelige verdier avhenger av terreng, stabilitet og tid på døgnet. Kraftpilene viser retninger, ikke nøyaktige størrelser, og luftpakkens sving er dempet så den faller raskt til ro (virkelig luft svinger fram og tilbake mens den tilpasser seg). Høydemålerfeilen bruker rundt 27 ft per hPa og ISA-temperaturer. Bruk METAR, TAF, vindkart og AIP for virkelige flyginger.'
+ foot:'<b>Modell og begrensninger.</b> Opplæringsmodell av to idealiserte trykksystemer på et flatt kart, nord opp, 2000–2600 km bredt. Den geostrofiske vinden bruker V<sub>g</sub> = Δp / (ρ f Δn) med f = 2Ω sin φ og ser bort fra krumningen på isobarene, så den overdriver vinden nær et dypt lavtrykk. Bakkevinden bruker typiske, illustrerende verdier: dreid rundt 30° og omtrent halv fart over land, rundt 10° og 70 % over sjø; virkelige verdier avhenger av terreng, stabilitet og tid på døgnet. Kraftpilene viser retninger, ikke nøyaktige størrelser, og luftpakkens sving er dempet så den faller raskt til ro (virkelig luft svinger fram og tilbake mens den tilpasser seg). Høydemålerfeilen bruker rundt 27 ft per hPa og ISA-temperaturer. De lokale vindene er skjematiske, med typiske styrker; føhnen bruker 3 °C per 1000 ft tørt og rundt 1,8 °C per 1000 ft mettet. Bruk METAR, TAF, vindkart og AIP for virkelige flyginger.',
 });
 
 /* ---------- shared drawing helpers ---------- */
@@ -301,12 +260,39 @@ const dir3=d=>{ let v=Math.round((((d%360)+360)%360)/10)*10; if(v===0) v=360; re
 const bearingTo=(vx,vy)=>Math.atan2(vx,vy)/D2R;   /* math frame: x east, y north */
 const rot=(v,a)=>({x:v.x*Math.cos(a)-v.y*Math.sin(a),y:v.x*Math.sin(a)+v.y*Math.cos(a)});
 
+/* ---------- the viewport: three views, a readout chip, the legend and "What you're seeing" ---------- */
+const VIEWS=[['chart',t2('Weather chart','Værkart')],['alt',t2('High to low','Fra høyt til lavt')],['local',t2('Local winds','Lokale vinder')]];
+let view='chart';
+const SEE={chart:'',alt:'',local:''};
+let seeLast='';
+function see(){ const h=SEE[view]||''; if(h!==seeLast){ seeLast=h; el('stx').innerHTML=h; } }
+const chipLast={};
+function chip(id,items){ const h=items.map(([k,v,c])=>`<span><i>${L(k)}</i><b${c?` class="${c}"`:''}>${v}</b></span>`).join(''); if(chipLast[id]!==h){ chipLast[id]=h; el(id).innerHTML=h; } }
+const LEG={
+ chart:()=>[[COL.pgf,t2('Pressure gradient force','Trykkgradientkraft')],[COL.cor,t2('Coriolis','Coriolis')],[COL.fr,t2('Friction','Friksjon')],[COL.wind,t2('Wind at the probe','Vind ved sonden')],[`rgb(${COL.flow})`,t2('Moving air','Luft i bevegelse')]],
+ alt:()=>[[COL.ink2,t2('Indicated altitude (what you think)','Indikert høyde (det du tror)'),'d'],[COL.wind,t2('True altitude','Sann høyde')],['#6B6450',t2('Terrain','Terreng'),'sq']],
+ local:()=>LW.w==='foehn'?[[COL.wind,t2('Airflow','Luftstrøm')],['#DDE5EC',t2('Cloud','Sky'),'sq'],[COL.fr,t2('Rotor and turbulence','Rotor og turbulens'),'dot']]:[[COL.wind,t2('Circulation','Sirkulasjon')],['#DDE5EC',t2('Cloud or fog','Sky eller tåke'),'sq']]};
+function legend(){ el('mleg').innerHTML=LEG[view]().map(([c,n,k])=>`<span><i class="${k||''}" style="--c:${c}"></i>${L(n)}</span>`).join(''); }
+function drawTabs(){ el('pTabs').innerHTML=VIEWS.map(([k,n])=>`<button type="button" role="tab" data-v="${k}" class="${k===view?'on':''}" aria-selected="${k===view}">${L(n)}</button>`).join('');
+  el('rel').textContent='▶ '+L(matchMedia('(max-width:640px)').matches?t2('Parcel','Luftpakke'):t2('Release a parcel','Slipp en luftpakke')); el('lPlay').textContent=(lwPlay?'❚❚ ':'▶ ')+L(t2('Run the day','Kjør døgnet'));
+  el('rel').hidden=view!=='chart'; el('lPlay').hidden=view!=='local'||LW.w==='foehn';
+  const sv=VIEWS.find(x=>x[0]===view); el('xsv').textContent=L(sv[1]); }
+function setView(v){ if(!VIEWS.some(x=>x[0]===v)) return; view=v;
+  document.querySelectorAll('#pvp .vv, #papp .vp').forEach(e=>{ e.hidden=e.dataset.v!==v; });
+  if(v!=='local') lwPlay=false;
+  drawTabs(); legend();
+  if(v==='chart') changed(); else if(v==='alt') altU(); else lu(); }
+el('pTabs').addEventListener('click',e=>{ const b=e.target.closest('button[data-v]'); if(b) setView(b.dataset.v); });
+/* old anchors (#altimeter, #local) open their view */
+function fromHash(){ const h=location.hash.slice(1), v=h==='altimeter'?'alt':h==='local'?'local':null; if(!v) return; setView(v); requestAnimationFrame(()=>el('explore').scrollIntoView({block:'start'})); }
+addEventListener('hashchange',fromHash);
+
 /* =====================================================================
    1 · Understand: diagram (pressure falls with height, QFE → QNH)
    ===================================================================== */
 function ufig(){ const box=el('ufig'), narrow=box.clientWidth<520;
   const Wd=narrow?360:600, Hd=narrow?560:300, fs=narrow?13:12;
-  const t=(x,y,s,o={})=>`<text x="${x}" y="${y}" font-size="${o.fs||fs}" ${o.anchor?`text-anchor="${o.anchor}"`:''} fill="${o.c||COL.ink}" font-family="${o.mono?'IBM Plex Mono, monospace':'Public Sans, sans-serif'}" ${o.w?`font-weight="${o.w}"`:''}>${s}</text>`;
+  const t=(x,y,s,o={})=>`<text x="${x}" y="${y}" font-size="${o.fs||fs}" ${o.anchor?`text-anchor="${o.anchor}"`:''} fill="${o.c||UC.ink}" font-family="${o.mono?'IBM Plex Mono, monospace':'Public Sans, sans-serif'}" ${o.w?`font-weight="${o.w}"`:''}>${s}</text>`;
   let s=`<svg viewBox="0 0 ${Wd} ${Hd}" role="img" aria-label="${L(t2('Pressure falls with height; QFE measured at the aerodrome is reduced to sea level as QNH','Trykket faller med høyden; QFE målt på flyplassen reduseres til havnivå som QNH'))}">`;
   s+=`<defs><linearGradient id="ucol" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#6F8FB0" stop-opacity=".55"/><stop offset="1" stop-color="#6F8FB0" stop-opacity=".06"/></linearGradient></defs>`;
   /* panel A: the column */
@@ -315,30 +301,30 @@ function ufig(){ const box=el('ufig'), narrow=box.clientWidth<520;
   s+=`<rect x="${cx}" y="${Y(20000)}" width="${cw}" height="${ah}" fill="url(#ucol)" rx="3"/>`;
   let seed=7; const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
   for(let i=0;i<150;i++){ const h=-Math.log(1-rnd()*0.93)*0.38*20000/1.6; if(h>20000) continue; s+=`<circle cx="${(cx+3+rnd()*(cw-6)).toFixed(1)}" cy="${Y(h).toFixed(1)}" r="1.3" fill="#3E5D7E" opacity=".55"/>`; }
-  s+=`<line x1="${ax+8}" y1="${base}" x2="${cx+cw+150}" y2="${base}" stroke="${COL.ink}" stroke-width="1.2"/>`;
+  s+=`<line x1="${ax+8}" y1="${base}" x2="${cx+cw+150}" y2="${base}" stroke="${UC.ink}" stroke-width="1.2"/>`;
   [[0,'1013 hPa','MSL'],[4781,'850 hPa','≈ FL050'],[9882,'700 hPa','≈ FL100'],[18289,'500 hPa','≈ FL180']].forEach(([ft,p,fl],i)=>{ const y=Y(ft), ty=i?y+4:y-6;
-    if(i) s+=`<line x1="${cx-6}" y1="${y}" x2="${cx+cw+6}" y2="${y}" stroke="${COL.ink2}" stroke-width="1" stroke-dasharray="3 3"/>`;
-    s+=t(cx-10,ty,fl,{anchor:'end',mono:1,fs:fs-1,c:COL.ink2});
+    if(i) s+=`<line x1="${cx-6}" y1="${y}" x2="${cx+cw+6}" y2="${y}" stroke="${UC.ink2}" stroke-width="1" stroke-dasharray="3 3"/>`;
+    s+=t(cx-10,ty,fl,{anchor:'end',mono:1,fs:fs-1,c:UC.ink2});
     s+=t(cx+cw+12,ty,p,{mono:1,w:500});
   });
-  s+=t(cx+cw+12,Y(18289)+20,L(t2('half the air is below','halvparten av luften er under')),{fs:fs-1,c:COL.ink2});
-  s+=t(cx+cw+12,Y(2500)+4,L(t2('≈ 1 hPa per 27 ft','≈ 1 hPa per 27 ft')),{fs:fs-1,c:COL.ink2});
+  s+=t(cx+cw+12,Y(18289)+20,L(t2('half the air is below','halvparten av luften er under')),{fs:fs-1,c:UC.ink2});
+  s+=t(cx+cw+12,Y(2500)+4,L(t2('≈ 1 hPa per 27 ft','≈ 1 hPa per 27 ft')),{fs:fs-1,c:UC.ink2});
   /* panel B: aerodrome, QFE and QNH */
   const bx=narrow?20:300, by=narrow?310:28, bw=narrow?320:280, bb=by+(narrow?220:235), msl=bb-20, elev=msl-92;
   s+=t(bx,by-10,L(t2('From the aerodrome to sea level','Fra flyplassen til havnivå')),{w:600,fs:fs+1});
-  s+=`<path d="M${bx} ${msl} L${bx+40} ${msl} C${bx+80} ${msl} ${bx+90} ${elev} ${bx+130} ${elev} L${bx+bw} ${elev} L${bx+bw} ${bb} L${bx} ${bb} Z" fill="#E9E4D8" stroke="${COL.ink2}" stroke-width="1"/>`;
+  s+=`<path d="M${bx} ${msl} L${bx+40} ${msl} C${bx+80} ${msl} ${bx+90} ${elev} ${bx+130} ${elev} L${bx+bw} ${elev} L${bx+bw} ${bb} L${bx} ${bb} Z" fill="#E9E4D8" stroke="${UC.ink2}" stroke-width="1"/>`;
   s+=`<rect x="${bx}" y="${msl}" width="40" height="${bb-msl}" fill="#C9DAE8"/>`;
-  const ad=bx+bw-90; s+=`<rect x="${ad-34}" y="${elev-3}" width="68" height="3" fill="${COL.ink}"/><rect x="${ad+40}" y="${elev-22}" width="6" height="19" fill="${COL.ink2}"/><rect x="${ad+36}" y="${elev-28}" width="14" height="7" fill="${COL.ink2}"/>`;
-  s+=`<line x1="${ad}" y1="${elev}" x2="${ad}" y2="${msl}" stroke="${COL.wind}" stroke-width="1.6" stroke-dasharray="4 3"/><line x1="${ad-34}" y1="${msl}" x2="${bx+bw}" y2="${msl}" stroke="${COL.wind}" stroke-width="1" stroke-dasharray="2 3"/>`;
-  s+=`<circle cx="${ad}" cy="${elev}" r="4" fill="${COL.ink}"/><circle cx="${ad}" cy="${msl}" r="4" fill="${COL.wind}"/>`;
-  s+=t(ad-8,elev+18,L(t2('elevation 1000 ft','elevasjon 1000 ft')),{anchor:'end',fs:fs-1,c:COL.ink2});
+  const ad=bx+bw-90; s+=`<rect x="${ad-34}" y="${elev-3}" width="68" height="3" fill="${UC.ink}"/><rect x="${ad+40}" y="${elev-22}" width="6" height="19" fill="${UC.ink2}"/><rect x="${ad+36}" y="${elev-28}" width="14" height="7" fill="${UC.ink2}"/>`;
+  s+=`<line x1="${ad}" y1="${elev}" x2="${ad}" y2="${msl}" stroke="${UC.wind}" stroke-width="1.6" stroke-dasharray="4 3"/><line x1="${ad-34}" y1="${msl}" x2="${bx+bw}" y2="${msl}" stroke="${UC.wind}" stroke-width="1" stroke-dasharray="2 3"/>`;
+  s+=`<circle cx="${ad}" cy="${elev}" r="4" fill="${UC.ink}"/><circle cx="${ad}" cy="${msl}" r="4" fill="${UC.wind}"/>`;
+  s+=t(ad-8,elev+18,L(t2('elevation 1000 ft','elevasjon 1000 ft')),{anchor:'end',fs:fs-1,c:UC.ink2});
   s+=t(ad-6,elev-38,'QFE 980 hPa',{anchor:'end',mono:1,w:500});
-  s+=t(ad-6,elev-22,L(t2('measured here','målt her')),{anchor:'end',fs:fs-1,c:COL.ink2});
-  s+=t(ad-8,msl+18,'QNH 1016 hPa',{anchor:'end',mono:1,w:500,c:COL.wind});
-  s+=t(ad-8,msl+33,L(t2('reduced to MSL with ISA','redusert til MSL med ISA')),{anchor:'end',fs:fs-1,c:COL.ink2});
-  s+=t(bx+6,msl-8,'MSL',{mono:1,fs:fs-1,c:COL.ink2});
-  s+=t(bx,by+22,L(t2('Standard 1013.25 hPa:','Standard 1013,25 hPa:')),{fs:fs-1,c:COL.ink2,w:600});
-  s+=t(bx,by+38,L(t2('above the transition altitude','over overgangshøyden')),{fs:fs-1,c:COL.ink2});
+  s+=t(ad-6,elev-22,L(t2('measured here','målt her')),{anchor:'end',fs:fs-1,c:UC.ink2});
+  s+=t(ad-8,msl+18,'QNH 1016 hPa',{anchor:'end',mono:1,w:500,c:UC.wind});
+  s+=t(ad-8,msl+33,L(t2('reduced to MSL with ISA','redusert til MSL med ISA')),{anchor:'end',fs:fs-1,c:UC.ink2});
+  s+=t(bx+6,msl-8,'MSL',{mono:1,fs:fs-1,c:UC.ink2});
+  s+=t(bx,by+22,L(t2('Standard 1013.25 hPa:','Standard 1013,25 hPa:')),{fs:fs-1,c:UC.ink2,w:600});
+  s+=t(bx,by+38,L(t2('above the transition altitude','over overgangshøyden')),{fs:fs-1,c:UC.ink2});
   s+='</svg>'; box.innerHTML=s; }
 new ResizeObserver(()=>{ const w=el('ufig').clientWidth; if(w&&w!==ufig.w){ ufig.w=w; ufig(); } }).observe(el('ufig'));
 
@@ -385,13 +371,13 @@ function buildBg(){ const W=C.w,H=C.h,d=C.dpr; if(!W) return; centres();
   let pmin=1e9,pmax=-1e9; for(let j=0;j<=NY;j++) for(let i=0;i<=NX;i++){ const p=field(i*cs*k,j*cs*k).p; v[j*(NX+1)+i]=p; if(p<pmin) pmin=p; if(p>pmax) pmax=p; }
   /* shading: cool towards the low, warm towards the high */
   const sc=document.createElement('canvas'); sc.width=NX+1; sc.height=NY+1; const sg=sc.getContext('2d'), im=sg.createImageData(NX+1,NY+1);
-  const lo=[222,231,239], mid=[251,251,248], hi=[248,243,232];
+  const lo=[20,40,64], mid=[24,33,43], hi=[58,44,30];
   for(let q=0;q<v.length;q++){ const p=v[q], tl=Math.max(0,Math.min(1,(1013-p)/26)), th=Math.max(0,Math.min(1,(p-1013)/26)), o=q*4; for(let c=0;c<3;c++) im.data[o+c]=mid[c]+(lo[c]-mid[c])*tl+(hi[c]-mid[c])*th; im.data[o+3]=255; }
   sg.putImageData(im,0,0); g.imageSmoothingEnabled=true; g.drawImage(sc,0,0,(NX+1)*cs,(NY+1)*cs);
   /* graticule (every 500 km) */
-  g.strokeStyle='rgba(19,32,42,.05)'; g.lineWidth=1; const st=500/k; g.beginPath(); for(let x=st;x<W;x+=st){ g.moveTo(x,0); g.lineTo(x,H); } for(let y=st;y<H;y+=st){ g.moveTo(0,y); g.lineTo(W,y); } g.stroke();
+  g.strokeStyle='rgba(255,255,255,.04)'; g.lineWidth=1; const st=500/k; g.beginPath(); for(let x=st;x<W;x+=st){ g.moveTo(x,0); g.lineTo(x,H); } for(let y=st;y<H;y+=st){ g.moveTo(0,y); g.lineTo(W,y); } g.stroke();
   const fsz=isIns()?1.25:1;
-  g.strokeStyle='rgba(76,91,102,.85)'; g.lineWidth=1.15*fsz; g.lineJoin='round';
+  g.strokeStyle='rgba(214,224,232,.5)'; g.lineWidth=1.15*fsz; g.lineJoin='round';
   for(let lv=Math.ceil(pmin/4)*4; lv<=pmax; lv+=4){ g.beginPath();
     for(let j=0;j<NY;j++) for(let i=0;i<NX;i++){ const a=v[j*(NX+1)+i]-lv, b=v[j*(NX+1)+i+1]-lv, c=v[(j+1)*(NX+1)+i+1]-lv, dd=v[(j+1)*(NX+1)+i]-lv; const pts=[];
       if((a<0)!==(b<0)) pts.push((i+a/(a-b))*cs,j*cs); if((b<0)!==(c<0)) pts.push((i+1)*cs,(j+b/(b-c))*cs); if((dd<0)!==(c<0)) pts.push((i+dd/(dd-c))*cs,(j+1)*cs); if((a<0)!==(dd<0)) pts.push(i*cs,(j+a/(a-dd))*cs);
@@ -400,7 +386,7 @@ function buildBg(){ const W=C.w,H=C.h,d=C.dpr; if(!W) return; centres();
   /* isobar labels along the line through L and H */
   const pL=toPx(cL), pH=toPx(cH), dx=pH.x-pL.x, dy=pH.y-pL.y, font=`500 ${Math.round(10.5*fsz)}px IBM Plex Mono, monospace`, done=new Set(), placed=[];
   const run=(t0,t1)=>{ let prev=null; for(let i=0;i<=500;i++){ const tt=t0+(t1-t0)*i/500, x=pL.x+dx*tt, y=pL.y+dy*tt; if(x<18||y<12||x>W-18||y>H-12){ prev=null; continue; }
-    const p=field(x*k,y*k).p; if(prev!==null){ const lv=Math.floor(Math.max(p,prev)/4)*4; if(lv>Math.min(p,prev)&&lv<=Math.max(p,prev)&&!done.has(lv)&&placed.every(q=>Math.hypot(x-q.x,y-q.y)>30*fsz)&&Math.hypot(x-pL.x,y-pL.y)>48*fsz&&Math.hypot(x-pH.x,y-pH.y)>48*fsz){ pill(g,x,y,String(lv),font,COL.ink2,'rgba(251,251,248,.92)'); placed.push({x,y}); done.add(lv); } }
+    const p=field(x*k,y*k).p; if(prev!==null){ const lv=Math.floor(Math.max(p,prev)/4)*4; if(lv>Math.min(p,prev)&&lv<=Math.max(p,prev)&&!done.has(lv)&&placed.every(q=>Math.hypot(x-q.x,y-q.y)>30*fsz)&&Math.hypot(x-pL.x,y-pL.y)>48*fsz&&Math.hypot(x-pH.x,y-pH.y)>48*fsz){ pill(g,x,y,String(lv),font,COL.ink2,'rgba(24,33,43,.92)'); placed.push({x,y}); done.add(lv); } }
     prev=p; } };
   run(0,-2); run(1,3); run(0,1);
   buildFlow(); let gm=0; for(let j=2;j<FG.m-2;j++) for(let i=2;i<FG.n-2;i++){ const G=FG.a[(j*FG.n+i)*3+2]; if(G>gm) gm=G; } GMAX=Math.max(1e-4,gm); bgDirty=false; }
@@ -432,7 +418,7 @@ function stepParcel(dt){ const p=parcel; if(!p||p.done) return; const n=6, h=dt*
 
 /* overlay: centres, probe, forces, wind, parcel */
 function drawCentre(g,c,isL,fs){ const p=toPx(isL?cL:cH), w=windAt(isL?cL.x:cH.x,isL?cL.y:cH.y); const col=isL?COL.low:COL.high;
-  if(drag&&drag.k===(isL?'L':'H')){ g.fillStyle='rgba(154,30,104,.10)'; g.beginPath(); g.arc(p.x,p.y,30*fs,0,7); g.fill(); }
+  if(drag&&drag.k===(isL?'L':'H')){ g.fillStyle='rgba(228,107,174,.16)'; g.beginPath(); g.arc(p.x,p.y,30*fs,0,7); g.fill(); }
   g.font=`700 ${Math.round(30*fs)}px Archivo, sans-serif`; g.textAlign='center'; g.fillStyle=col; g.fillText(isL?'L':'H',p.x,p.y+10*fs);
   g.font=`500 ${Math.round(11*fs)}px IBM Plex Mono, monospace`; g.fillStyle=col; g.fillText(Math.round(w.p),p.x,p.y+26*fs); g.textAlign='start'; }
 function frame(){ const W=C.w,H=C.h; if(!W) return; if(bgDirty) buildBg(); const g=C.ctx, fs=isIns()?1.3:(W<480?0.92:1);
@@ -446,28 +432,28 @@ function frame(){ const W=C.w,H=C.h; if(!W) return; if(bgDirty) buildBg(); const
   g.fillStyle=COL.ink; g.beginPath(); g.moveTo(W-20,12); g.lineTo(W-26,28); g.lineTo(W-20,24); g.lineTo(W-14,28); g.closePath(); g.fill(); g.textAlign='center'; g.fillText('N',W-20,42); g.textAlign='right';
   g.fillStyle=COL.ink2; g.fillText(S.lat+'°'+(S.hemi==='N'?'N':'S'),W-40,24); g.textAlign='start';
   /* parcel */
-  if(parcel&&parcel.trail.length>1){ g.strokeStyle=parcel.done?'rgba(154,30,104,.45)':COL.wind; g.lineWidth=2.6*fs; g.lineJoin='round'; g.lineCap='round'; g.beginPath(); parcel.trail.forEach((q,i)=>i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y)); g.stroke();
+  if(parcel&&parcel.trail.length>1){ g.strokeStyle=parcel.done?'rgba(228,107,174,.45)':COL.wind; g.lineWidth=2.6*fs; g.lineJoin='round'; g.lineCap='round'; g.beginPath(); parcel.trail.forEach((q,i)=>i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y)); g.stroke();
     const q=parcel.trail[parcel.trail.length-1]; g.fillStyle='#fff'; g.strokeStyle=COL.wind; g.lineWidth=2.4; g.beginPath(); g.arc(q.x,q.y,6*fs,0,7); g.fill(); g.stroke();
-    if(!parcel.done){ const sp=Math.hypot(parcel.vx,parcel.vy)*KT; pill(g,q.x+10*fs,q.y+16*fs,Math.round(sp)+' kt',`600 ${Math.round(11*fs)}px IBM Plex Mono, monospace`,'#fff',COL.wind,'left'); } }
+    if(!parcel.done){ const sp=Math.hypot(parcel.vx,parcel.vy)*KT; pill(g,q.x+10*fs,q.y+16*fs,Math.round(sp)+' kt',`600 ${Math.round(11*fs)}px IBM Plex Mono, monospace`,COL.dark,COL.wind,'left'); } }
   /* probe: forces and wind */
   const P=toPx(toKm(S.P)), w=windAt(P.x*k,P.y*k);
   if(w.G>GMAX*0.03){ const Lp=(46+62*Math.min(1,w.G/GMAX))*fs, th=Math.abs(A.th)*D2R, pg=w.pgf, s=hs();
     const wd=rot(pg,A.th*D2R), right={x:wd.y*s,y:-wd.x*s};          /* Coriolis: right of the wind (NH), left (SH) */
     const corM=Lp*Math.sin(th), frM=Lp*Math.cos(th)*A.fr;
-    const lab=(x,y,txt,col)=>pill(g,x,y,txt,`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,col,'rgba(255,255,255,.88)');
+    const lab=(x,y,txt,col)=>pill(g,x,y,txt,`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,col,COL.pill);
     const side=s*(A.th<=0?1:-1)*(showBack?-1:1), px_=-pg.y*side, py_=-pg.x*side;   /* screen offset to the side away from the wind */
     arrow(g,P.x,P.y,pg.x*Lp,-pg.y*Lp,COL.pgf,2.6*fs); lab(P.x+pg.x*Lp*0.62+px_*30*fs,P.y-pg.y*Lp*0.62+py_*30*fs,L(t2('Pressure gradient','Trykkgradient')),COL.pgf);
     if(corM>3){ arrow(g,P.x,P.y,right.x*corM,-right.y*corM,COL.cor,2.6*fs); lab(P.x+right.x*(corM+26*fs),P.y-right.y*(corM+14*fs),'Coriolis',COL.cor); }
     if(frM>3){ arrow(g,P.x,P.y,-wd.x*frM,wd.y*frM,COL.fr,2.6*fs); lab(P.x-wd.x*(frM+26*fs),P.y+wd.y*(frM+14*fs),L(t2('Friction','Friksjon')),COL.fr); }
     const kt=w.kt*A.k, Lw=Math.max(26,Math.min(Math.min(130,C.w*0.2),kt*1.7))*fs;
-    if(S.both&&S.stage===2){ ['land','sea'].forEach(sf=>{ const d=w[sf], ln=Math.max(24,Math.min(130,w.kt*SURF[sf].k*1.7))*fs; arrow(g,P.x,P.y,d.x*ln,-d.y*ln,sf==='land'?COL.fr:'#0F766E',3.2*fs); pill(g,P.x+d.x*(ln+8),P.y-d.y*(ln+8)-10,L(sf==='land'?t2('land','land'):t2('sea','sjø'))+' '+Math.round(w.kt*SURF[sf].k)+' kt',`600 ${Math.round(11*fs)}px Public Sans, sans-serif`,'#fff',sf==='land'?COL.fr:'#0F766E','left'); }); }
+    if(S.both&&S.stage===2){ ['land','sea'].forEach(sf=>{ const d=w[sf], ln=Math.max(24,Math.min(130,w.kt*SURF[sf].k*1.7))*fs; arrow(g,P.x,P.y,d.x*ln,-d.y*ln,sf==='land'?COL.fr:'#5FD0B8',3.2*fs); pill(g,P.x+d.x*(ln+8),P.y-d.y*(ln+8)-10,L(sf==='land'?t2('land','land'):t2('sea','sjø'))+' '+Math.round(w.kt*SURF[sf].k)+' kt',`600 ${Math.round(11*fs)}px Public Sans, sans-serif`,COL.dark,sf==='land'?COL.fr:'#5FD0B8','left'); }); }
     else if(Math.abs(A.th)>12){ arrow(g,P.x,P.y,wd.x*Lw,-wd.y*Lw,COL.wind,4.2*fs,13*fs);
-      pill(g,P.x+wd.x*(Lw+10*fs),P.y-wd.y*(Lw+10*fs),L(t2('wind','vind'))+' '+Math.round(kt)+' kt',`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,'#fff',COL.wind,wd.x>=-0.2?'left':'right'); }
-    else pill(g,P.x-px_*26*fs,P.y-py_*26*fs,L(t2('air accelerates towards the low','luften akselererer mot lavtrykket')),`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,'#fff',COL.wind);
+      pill(g,P.x+wd.x*(Lw+10*fs),P.y-wd.y*(Lw+10*fs),L(t2('wind','vind'))+' '+Math.round(kt)+' kt',`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,COL.dark,COL.wind,wd.x>=-0.2?'left':'right'); }
+    else pill(g,P.x-px_*26*fs,P.y-py_*26*fs,L(t2('air accelerates towards the low','luften akselererer mot lavtrykket')),`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,COL.dark,COL.wind);
     if(showBack) backFig(g,P,w,fs); }
-  g.fillStyle='#fff'; g.strokeStyle=COL.ink; g.lineWidth=2; g.beginPath(); g.arc(P.x,P.y,7*fs,0,7); g.fill(); g.stroke();
+  g.fillStyle=COL.dark; g.strokeStyle=COL.ink; g.lineWidth=2; g.beginPath(); g.arc(P.x,P.y,7*fs,0,7); g.fill(); g.stroke();
   g.beginPath(); g.moveTo(P.x-11*fs,P.y); g.lineTo(P.x+11*fs,P.y); g.moveTo(P.x,P.y-11*fs); g.lineTo(P.x,P.y+11*fs); g.lineWidth=1.2; g.stroke();
-  if(drag&&drag.k==='P'){ g.strokeStyle='rgba(154,30,104,.35)'; g.lineWidth=8; g.beginPath(); g.arc(P.x,P.y,16*fs,0,7); g.stroke(); } }
+  if(drag&&drag.k==='P'){ g.strokeStyle='rgba(228,107,174,.4)'; g.lineWidth=8; g.beginPath(); g.arc(P.x,P.y,16*fs,0,7); g.stroke(); } }
 /* reduced motion: a static field of small wind arrows instead of moving air */
 function staticFlow(g){ rc=Math.cos(A.th*D2R); rs=Math.sin(A.th*D2R); g2kt=0.1/(S.rho*fcor())*KT; const st=C.w<500?34:44; for(let y=st/2;y<C.h;y+=st) for(let x=st/2;x<C.w;x+=st){ const v=flowAt(x,y), m=Math.hypot(v.x,v.y); if(m<3) continue; const l=Math.min(st*0.75,12+m*0.3); arrow(g,x-v.x/m*l/2,y-v.y/m*l/2,v.x/m*l,v.y/m*l,`rgba(${COL.flow},.5)`,1.4,5); } }
 /* task 3: "back to the wind" figure at the probe */
@@ -475,7 +461,7 @@ let showBack=false;
 function backFig(g,P,w,fs){ const d=rot(w.pgf,A.th*D2R), to={x:d.x,y:-d.y}; const r=22*fs, bx=P.x-to.x*r*2.6, by=P.y-to.y*r*2.6;
   g.save(); g.translate(bx,by); g.rotate(Math.atan2(to.y,to.x)); g.fillStyle=COL.ink; g.beginPath(); g.ellipse(0,0,7*fs,13*fs,0,0,7); g.fill(); g.beginPath(); g.arc(0,0,6*fs,0,7); g.fillStyle='#F2D6B3'; g.fill(); g.restore();
   const left={x:to.y,y:-to.x}, lx=bx+left.x*54*fs, ly=by+left.y*54*fs; arrow(g,bx,by,left.x*42*fs,left.y*42*fs,COL.low,2.2*fs);
-  pill(g,lx,ly,L(t2('low on your left','lavtrykket til venstre')),`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,'#fff',COL.low); }
+  pill(g,lx,ly,L(t2('low on your left','lavtrykket til venstre')),`600 ${Math.round(11.5*fs)}px Public Sans, sans-serif`,COL.dark,COL.low); }
 
 /* the loop: runs while the model is on screen and something moves */
 let running=false, last=0, onScreen=true;
@@ -486,7 +472,7 @@ function tick(now){ const dt=Math.min(0.05,(now-last)/1000); last=now; const T=t
   rc=Math.cos(A.th*D2R); rs=Math.sin(A.th*D2R); g2kt=0.1/(S.rho*fcor())*KT;
   if(!reduced()){ const W=C.w,H=C.h,d=1; if(tr.width!==Math.round(W*d)||tr.height!==Math.round(H*d)){ tr.width=W*d; tr.height=H*d; seedParts(); }
     trx.setTransform(d,0,0,d,0,0); trx.globalCompositeOperation='destination-in'; trx.fillStyle='rgba(0,0,0,.94)'; trx.fillRect(0,0,W,H); trx.globalCompositeOperation='source-over';
-    trx.strokeStyle=`rgba(${COL.flow},.55)`; trx.lineWidth=isIns()?1.8:1.3; trx.lineCap='round'; trx.beginPath();
+    trx.strokeStyle=`rgba(${COL.flow},.5)`; trx.lineWidth=isIns()?1.8:1.3; trx.lineCap='round'; trx.beginPath();
     for(const p of parts){ const v=flowAt(p.x,p.y), nx=p.x+v.x*dt, ny=p.y+v.y*dt; trx.moveTo(p.x,p.y); trx.lineTo(nx,ny); p.x=nx; p.y=ny; p.age+=dt;
       if(p.age>p.life||nx<0||ny<0||nx>W||ny>H||(Math.abs(v.x)+Math.abs(v.y))<0.4) Object.assign(p,newPart(false)); }
     trx.stroke(); }
@@ -512,8 +498,9 @@ cv.addEventListener('keydown',e=>{ const m={ArrowLeft:[-1,0],ArrowRight:[1,0],Ar
 
 /* controls */
 const stageBox=el('stage');
-function drawStage(){ const it=[[0,t2('Pressure gradient','Trykkgradient'),t2('Gradient','Gradient')],[1,t2('+ Coriolis','+ Coriolis')],[2,t2('+ Friction','+ Friksjon')]];
-  stageBox.className='seg stage'; stageBox.innerHTML=it.map(([k,n,sh])=>`<button type="button" data-v="${k}" class="${S.stage===k?'on':''}" aria-pressed="${S.stage===k}"><i>${k+1}</i>${sh?`<span class="lf">${L(n)}</span><span class="ls">${L(sh)}</span>`:L(n)}</button>`).join(''); }
+function drawStage(){ const it=[[0,t2('Gradient','Gradient')],[1,t2('+ Coriolis','+ Coriolis')],[2,t2('+ Friction','+ Friksjon')]];
+  stageBox.className='seg stage'; stageBox.innerHTML=it.map(([k,n])=>`<button type="button" data-v="${k}" class="${S.stage===k?'on':''}" aria-pressed="${S.stage===k}"><i>${k+1}</i>${L(n)}</button>`).join(''); }
+function setStage(k){ S.stage=k; if(k!==2) S.both=false; drawStage(); changed(); }
 stageBox.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; S.stage=+b.dataset.v; if(S.stage!==2) S.both=false; drawStage(); changed(); });
 const sDp=LAB.slider(el('ctl'),{label:'Pressure difference H – L (hPa)',min:8,max:72,step:1,v:S.dp,f:v=>v+' hPa',on:v=>{ S.dp=v; bgDirty=true; parcel=null; changed(); }});
 const sLat=LAB.slider(el('ctl'),{label:'Latitude',min:10,max:85,step:1,v:S.lat,f:v=>v+'°'+(S.hemi==='N'?'N':'S'),on:v=>{ S.lat=v; parcel=null; changed(); }});
@@ -538,26 +525,26 @@ function readouts(){ centres(); const k=toKm(S.P), w=windAt(k.x,k.y), per100nm=w
   el('lP').textContent=L(t2('Pressure at the probe','Trykk ved sonden')); el('rP').textContent=Math.round(w.p)+' hPa';
   el('lG').innerHTML=`${L(t2('Pressure gradient','Trykkgradient'))}`; el('rG').innerHTML=`${nf(per100nm,1)} hPa / 100 NM<small>${nf(per100km,1)} hPa / 100 km</small>`;
   el('lN').textContent=L(t2('Isobar spacing (4 hPa)','Avstand mellom isobarer (4 hPa)')); el('rN').textContent= sp>2000?L(t2('very wide','svært stor')):Math.round(sp)+' NM';
-  const tooHigh=w.kt>250;
+  const tooHigh=w.kt>250, nh=S.hemi==='N';
   el('lV').innerHTML=`${L(t2('Geostrophic wind','Geostrofisk vind'))}<small>${S.lat}°${S.hemi} · ρ ${nf(S.rho,S.rho===1.225?3:2)}</small>`;
   el('rV').textContent= tooHigh?'> 250 kt':wtxt(w.gdir,w.kt);
-  const nh0=S.hemi==='N';
-  el('lSL').innerHTML=`${L(t2('Surface wind, land','Bakkevind, land'))}<small>${L(nh0?t2('backed 30°, about half','dreid 30° mot venstre, omtrent halvparten'):t2('veered 30°, about half','dreid 30° mot høyre, omtrent halvparten'))}</small>`;
+  el('lSL').innerHTML=`${L(t2('Surface wind, land','Bakkevind, land'))}<small>${L(nh?t2('backed 30°, about half','dreid 30° mot venstre, omtrent halvparten'):t2('veered 30°, about half','dreid 30° mot høyre, omtrent halvparten'))}</small>`;
   el('rSL').textContent= tooHigh?'–':wtxt(w.land,w.kt*0.5);
-  el('lSS').innerHTML=`${L(t2('Surface wind, sea','Bakkevind, sjø'))}<small>${L(nh0?t2('backed 10°, about 70 %','dreid 10° mot venstre, omtrent 70 %'):t2('veered 10°, about 70 %','dreid 10° mot høyre, omtrent 70 %'))}</small>`;
+  el('lSS').innerHTML=`${L(t2('Surface wind, sea','Bakkevind, sjø'))}<small>${L(nh?t2('backed 10°, about 70 %','dreid 10° mot venstre, omtrent 70 %'):t2('veered 10°, about 70 %','dreid 10° mot høyre, omtrent 70 %'))}</small>`;
   el('rSS').textContent= tooHigh?'–':wtxt(w.sea,w.kt*0.7);
   const cur=S.stage===0?'rowG':S.stage===1?'rowV':(S.both?null:S.surf==='land'?'rowSL':'rowSS');
   ['rowP','rowG','rowN','rowV','rowSL','rowSS'].forEach(r=>el(r).classList.toggle('cur',r===cur||(S.stage===2&&S.both&&(r==='rowSL'||r==='rowSS'))));
-  const nh=S.hemi==='N';
-  el('stx').innerHTML=L([
-    t2('<b>Pressure gradient force only.</b> Air is pushed from high towards low pressure, straight across the isobars, hardest where they are closest. With nothing else acting it would keep accelerating into the low and fill it within hours. It does not, because the Earth turns underneath the moving air.','<b>Bare trykkgradientkraften.</b> Luften skyves fra høyt mot lavt trykk, rett på tvers av isobarene, hardest der de ligger tettest. Uten noe annet ville den akselerert inn i lavtrykket og fylt det i løpet av timer. Det skjer ikke, fordi jorda dreier under luften som beveger seg.'),
-    nh?t2('<b>Add the Coriolis effect.</b> Moving air is turned to the right in the northern hemisphere, more the faster it moves and the higher the latitude. It turns until Coriolis balances the pressure gradient: the <b>geostrophic wind</b> blows along the isobars, anticlockwise round the low and clockwise round the high. This is the wind above the friction layer, from about 2000–3000 ft.','<b>Legg til Coriolis-kraften.</b> Luft i bevegelse bøyes mot høyre på nordlig halvkule, mer jo fortere den går og jo høyere breddegraden er. Den svinger til Coriolis-kraften balanserer trykkgradienten: den <b>geostrofiske vinden</b> blåser langs isobarene, mot klokka rundt lavtrykket og med klokka rundt høytrykket. Dette er vinden over friksjonslaget, fra rundt 2000–3000 ft.')
-      :t2('<b>Add the Coriolis effect.</b> In the southern hemisphere moving air is turned to the <b>left</b>. The geostrophic wind still blows along the isobars, but clockwise round the low and anticlockwise round the high. Back to the wind, the low is on your right.','<b>Legg til Coriolis-kraften.</b> På sørlig halvkule bøyes luft i bevegelse mot <b>venstre</b>. Den geostrofiske vinden blåser fortsatt langs isobarene, men med klokka rundt lavtrykket og mot klokka rundt høytrykket. Med ryggen mot vinden er lavtrykket til høyre.'),
-    t2(`<b>Add surface friction.</b> Near the ground friction slows the wind, so Coriolis weakens and the pressure gradient wins a little: the wind crosses the isobars towards the low and spirals into it (and out of the high). It is ${nh?'backed':'veered'} relative to the wind aloft: typically about 30° and half the speed over land, 10–15° and 70 % over the sea (illustrative values).`,`<b>Legg til friksjon mot bakken.</b> Nær bakken bremser friksjonen vinden, så Coriolis-kraften blir svakere og trykkgradienten vinner litt: vinden krysser isobarene inn mot lavtrykket og spiraler inn i det (og ut av høytrykket). Den er dreid ${nh?'mot venstre (backet)':'mot høyre (veeret)'} i forhold til vinden over: typisk rundt 30° og halv fart over land, 10–15° og 70 % over sjø (illustrerende verdier).`)][S.stage]);
-  el('rel').textContent=L(t2('Release a parcel','Slipp en luftpakke'));
+  /* readout chip in the viewport corner */
+  const wNow=S.stage===0?null:S.stage===1?(tooHigh?'> 250 kt':wtxt(w.gdir,w.kt)):(tooHigh?'–':S.surf==='land'?wtxt(w.land,w.kt*0.5):wtxt(w.sea,w.kt*0.7));
+  chip('chip',[[t2('Probe','Sonde'),Math.round(w.p)+' hPa'],[t2('Gradient','Gradient'),nf(per100nm,1)+' hPa/100 NM'],
+    S.stage===0?[t2('Wind','Vind'),L(t2('accelerating','akselererer')),'a']:[S.stage===1?t2('Geostrophic wind','Geostrofisk vind'):(S.surf==='land'?t2('Surface wind, land','Bakkevind, land'):t2('Surface wind, sea','Bakkevind, sjø')),wNow]]);
+  SEE.chart=L([
+    t2('<b>Pressure gradient only:</b> air is pushed from high to low, straight across the isobars, hardest where they are closest. Alone it would fill the low within hours.','<b>Bare trykkgradienten:</b> luften skyves fra høyt mot lavt, rett på tvers av isobarene, hardest der de ligger tettest. Alene ville den fylt lavtrykket i løpet av timer.'),
+    nh?t2('<b>+ Coriolis:</b> the moving air turns right until Coriolis balances the gradient. The <b>geostrophic wind</b> blows along the isobars, anticlockwise round the low: the wind above about 2000–3000 ft.','<b>+ Coriolis:</b> luften i bevegelse bøyes mot høyre til Coriolis balanserer gradienten. Den <b>geostrofiske vinden</b> blåser langs isobarene, mot klokka rundt lavtrykket: vinden over rundt 2000–3000 ft.')
+      :t2('<b>+ Coriolis (southern hemisphere):</b> the moving air turns <b>left</b>. The wind still blows along the isobars, but clockwise round the low. Back to the wind, the low is on your right.','<b>+ Coriolis (sørlig halvkule):</b> luften bøyes mot <b>venstre</b>. Vinden blåser fortsatt langs isobarene, men med klokka rundt lavtrykket. Med ryggen mot vinden er lavtrykket til høyre.'),
+    t2(`<b>+ Friction:</b> near the ground the wind slows, Coriolis weakens and the wind crosses the isobars into the low. It is ${nh?'backed':'veered'}: about 30° and half the speed over land, 10–15° and 70 % over the sea.`,`<b>+ Friksjon:</b> nær bakken avtar vinden, Coriolis svekkes, og vinden krysser isobarene inn i lavtrykket. Den er dreid ${nh?'mot venstre':'mot høyre'}: rundt 30° og halv fart over land, 10–15° og 70 % over sjø.`)][S.stage]);
   el('mhint').textContent=L(t2('Drag H, L or ⊕ · tap the chart to move the probe · arrow keys move the probe','Dra H, L eller ⊕ · trykk på kartet for å flytte sonden · piltastene flytter sonden'));
-  el('mleg').innerHTML=[[COL.pgf,t2('Pressure gradient force','Trykkgradientkraft')],[COL.cor,t2('Coriolis','Coriolis')],[COL.fr,t2('Friction','Friksjon')],[COL.wind,t2('Wind at the probe','Vind ved sonden')],[`rgb(${COL.flow})`,t2('Moving air','Luft i bevegelse')]].map(([c,n])=>`<span><i style="background:${c}"></i>${L(n)}</span>`).join('');
-  live(w); }
+  see(); live(); }
 function changed(){ readouts(); if(running) return; loop(); frame(); }
 
 /* =====================================================================
@@ -565,21 +552,23 @@ function changed(){ readouts(); if(running) return; loop(); frame(); }
    ===================================================================== */
 let active=null; const ans={};
 const TASKS=[
- {k:'strong',model:1,q:t2('Find the strongest wind on the chart. Move the probe there.','Finn den sterkeste vinden på kartet. Flytt sonden dit.'),
+ {k:'strong',model:1,v:'chart',q:t2('Find the strongest wind on the chart. Move the probe there.','Finn den sterkeste vinden på kartet. Flytt sonden dit.'),
   check:w=>{ const r=w.G/GMAX; return r>=0.9?{ok:1,m:t2(`Yes: ${nf(w.G*185.2,1)} hPa per 100 NM, where the isobars are closest. Tight isobars mean strong wind, and near the ground gusts and mechanical turbulence.`,`Ja: ${nf(w.G*185.2,1)} hPa per 100 NM, der isobarene ligger tettest. Tette isobarer betyr sterk vind, og nær bakken kast og mekanisk turbulens.`)}
     :{ok:0,m:t2(`Now ${nf(w.G*185.2,1)} hPa per 100 NM. The strongest on this chart is ${nf(GMAX*185.2,1)}. Look where the isobars are closest together.`,`Nå ${nf(w.G*185.2,1)} hPa per 100 NM. Den sterkeste på dette kartet er ${nf(GMAX*185.2,1)}. Se etter der isobarene ligger tettest.`)}; }},
- {k:'25kt',model:1,q:t2('Make a 25 kt geostrophic wind at 60°N, sea-level density. Use the probe, the H and L, or the pressure difference.','Lag en geostrofisk vind på 25 kt på 60°N, lufttetthet ved havnivå. Bruk sonden, H og L eller trykkforskjellen.'),
-  check:w=>{ const miss=[]; if(S.hemi!=='N'||Math.abs(S.lat-60)>1) miss.push(t2('set the latitude to 60°N','sett breddegraden til 60°N')); if(S.rho!==1.225) miss.push(t2('choose sea-level density','velg lufttetthet ved havnivå')); if(S.stage===0) miss.push(t2('switch on Coriolis (step 2)','slå på Coriolis (steg 2)'));
+ {k:'25kt',model:1,v:'chart',q:t2('Make a 25 kt geostrophic wind at 60°N, sea-level density. Use the probe, the H and L, or the pressure difference.','Lag en geostrofisk vind på 25 kt på 60°N, lufttetthet ved havnivå. Bruk sonden, H og L eller trykkforskjellen.'),
+  check:w=>{ const miss=[]; if(S.hemi!=='N'||Math.abs(S.lat-60)>1) miss.push(t2('set the latitude to 60°N','sett breddegraden til 60°N')); if(S.rho!==1.225) miss.push(t2('choose sea-level density (Advanced)','velg lufttetthet ved havnivå (Avansert)')); if(S.stage===0) miss.push(t2('switch on Coriolis (Forces, step 2)','slå på Coriolis (Krefter, steg 2)'));
     const kt=w.kt, ok=!miss.length&&kt>=23&&kt<=27;
     if(ok){ const f=fcor(), dpn=w.G*185.2; return {ok:1,m:t2(`Yes: ${Math.round(kt)} kt. Check: V<sub>g</sub> = ${nf(dpn*100,0)} Pa / (1.225 × ${nf(f*1e4,3)}×10⁻⁴ × 185 200 m) = ${nf(w.vg,1)} m/s = ${Math.round(kt)} kt.`,`Ja: ${Math.round(kt)} kt. Kontroll: V<sub>g</sub> = ${nf(dpn*100,0)} Pa / (1,225 × ${nf(f*1e4,3)}×10⁻⁴ × 185 200 m) = ${nf(w.vg,1)} m/s = ${Math.round(kt)} kt.`)}; }
-    const tip=kt>27?t2(`now ${Math.round(kt)} kt: find wider isobars or reduce the pressure difference`,`nå ${Math.round(kt)} kt: finn større avstand mellom isobarene eller reduser trykkforskjellen`):t2(`now ${Math.round(kt)} kt: find tighter isobars or increase the pressure difference`,`nå ${Math.round(kt)} kt: finn tettere isobarer eller øk trykkforskjellen`);
-    if(!miss.length||kt<23||kt>27) miss.push(tip);
+    if(kt<23||kt>27) miss.push(kt>27?t2(`now ${Math.round(kt)} kt: find wider isobars or reduce the pressure difference`,`nå ${Math.round(kt)} kt: finn større avstand mellom isobarene eller reduser trykkforskjellen`):t2(`now ${Math.round(kt)} kt: find tighter isobars or increase the pressure difference`,`nå ${Math.round(kt)} kt: finn tettere isobarer eller øk trykkforskjellen`));
     return {ok:0,m:{en:'Still to do: '+miss.map(x=>x.en).join('; ')+'.',no:'Gjenstår: '+miss.map(x=>x.no).join('; ')+'.'}}; }},
  {k:'back',q:t2('Northern hemisphere. You stand with your back to the wind. Where is the low?','Nordlig halvkule. Du står med ryggen mot vinden. Hvor er lavtrykket?'),
   opts:[t2('On your left','Til venstre'),t2('On your right','Til høyre'),t2('Straight ahead','Rett fram'),t2('Behind you','Bak deg')],c:0,
   e:[t2('Yes. Buys Ballot’s law: back to the wind, the low is on your left in the northern hemisphere (at the surface, left and slightly ahead, because the wind crosses the isobars towards the low).','Ja. Buys Ballots lov: med ryggen mot vinden er lavtrykket til venstre på nordlig halvkule (ved bakken til venstre og litt foran, fordi vinden krysser isobarene inn mot lavtrykket).'),
      t2('Not quite. Coriolis turns the air to the right in the northern hemisphere, so the wind blows with the low on its left. Show it in the model.','Ikke helt. Coriolis-kraften bøyer luften mot høyre på nordlig halvkule, så vinden blåser med lavtrykket på venstre side. Se det i modellen.')]},
- {k:'surf',q:t2('Over land, the wind at 2000 ft is 270/30. Estimate the surface wind.','Over land er vinden i 2000 ft 270/30. Anslå bakkevinden.'),input:1}
+ {k:'surf',q:t2('Over land, the wind at 2000 ft is 270/30. Estimate the surface wind.','Over land er vinden i 2000 ft 270/30. Anslå bakkevinden.'),input:1},
+ {k:'hilo',model:1,v:'alt',q:t2('High to low: make the altimeter read at least 1000 ft too high at the destination: your whole planned clearance over the ridge.','Fra høyt til lavt: få høydemåleren til å vise minst 1000 ft for høyt ved destinasjonen: hele den planlagte klaringen over ryggen.'),
+  check:()=>{ const R=altCalc(), d=AL.dep-AL.dst; return R.err>=1000?{ok:1,m:t2(`Yes: ${d} hPa × 27 ft ≈ ${Math.round(R.err)} ft. The altimeter still says ${AL.ind} ft, but you are at ${Math.round(R.tru)} ft. That is why you set each new QNH as you get it.`,`Ja: ${d} hPa × 27 ft ≈ ${Math.round(R.err)} ft. Høydemåleren viser fortsatt ${AL.ind} ft, men du er i ${Math.round(R.tru)} ft. Derfor setter du hver nye QNH så snart du får den.`)}
+    :{ok:0,m:t2(`Now ${d} hPa, about ${Math.round(Math.max(0,R.err))} ft. Each hPa is about 27 ft: lower the destination QNH or raise the departure QNH.`,`Nå ${d} hPa, rundt ${Math.round(Math.max(0,R.err))} ft. Hver hPa er rundt 27 ft: senk QNH ved destinasjonen eller øk QNH ved avgang.`)}; }}
 ];
 function drawTasks(){ el('tasks').innerHTML=TASKS.map((t,i)=>`<li class="task" id="task-${t.k}"><span class="n">${L(t2('Task','Oppgave'))} ${i+1}</span><p class="q">${L(t.q)}</p>`+
    (t.model?`<div class="btns"><button type="button" class="btn pri sm" data-go="${t.k}">${L(t2('Do it in the model','Gjør det i modellen'))} ↑</button></div><span class="fb" id="fb-${t.k}"></span>`:'')+
@@ -589,14 +578,18 @@ function drawTasks(){ el('tasks').innerHTML=TASKS.map((t,i)=>`<li class="task" i
 function setFb(k,ok,html){ const f=el('fb-'+k); if(!f) return; f.innerHTML=html; f.classList.toggle('ok',!!ok); }
 function drawTbox(){ const b=el('tbox'); if(!active){ b.hidden=true; return; } const i=TASKS.findIndex(t=>t.k===active);
   b.hidden=false; b.innerHTML=`<span class="k">${L(t2('Task','Oppgave'))} ${i+1}<button type="button" aria-label="${L(t2('Close the task','Lukk oppgaven'))}" id="tclose">×</button></span>${L(TASKS[i].q)}<span class="fb" id="tfb"></span>`;
-  el('tclose').onclick=()=>{ active=null; drawTbox(); }; const k=toKm(S.P); live(windAt(k.x,k.y)); }
+  el('tclose').onclick=()=>{ active=null; drawTbox(); }; live(); }
 const touched={};
-function live(w){ TASKS.filter(t=>t.model&&touched[t.k]).forEach(t=>{ const r=t.check(w), html=L(r.m); setFb(t.k,r.ok,html); if(active===t.k){ const f=el('tfb'); if(f){ f.innerHTML=html; f.classList.toggle('ok',!!r.ok); } } }); }
+const fbLast={};
+function live(){ const k=toKm(S.P), w=windAt(k.x,k.y);
+  TASKS.filter(t=>t.model&&touched[t.k]).forEach(t=>{ const r=t.check(w), html=L(r.m); if(fbLast[t.k]!==html){ fbLast[t.k]=html; setFb(t.k,r.ok,html); }
+    if(active===t.k){ const f=el('tfb'); if(f&&f.innerHTML!==html){ f.innerHTML=html; f.classList.toggle('ok',!!r.ok); } } }); }
+const toModel=()=>el('explore').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'});
 el('tasks').addEventListener('click',e=>{ const go=e.target.closest('[data-go]'), o=e.target.closest('[data-o]'), sh=e.target.closest('[data-show]');
-  if(go){ active=go.dataset.go; touched[active]=1; showBack=false; drawTbox(); el('explore').scrollIntoView({behavior:reduced()?'auto':'smooth'}); return; }
+  if(go){ const t=TASKS.find(x=>x.k===go.dataset.go); active=t.k; touched[active]=1; delete fbLast[active]; showBack=false; setView(t.v); drawTbox(); toModel(); return; }
   if(o){ ans.back=+o.dataset.o; drawTasks(); return; }
-  if(sh&&sh.dataset.show==='back'){ Object.assign(S,{hemi:'N',stage:1,both:false}); syncCtl(); showBack=true; active=null; drawTbox(); changed(); el('explore').scrollIntoView({behavior:reduced()?'auto':'smooth'}); return; }
-  if(sh&&sh.dataset.show==='surf'){ westerly30(); el('explore').scrollIntoView({behavior:reduced()?'auto':'smooth'}); return; }
+  if(sh&&sh.dataset.show==='back'){ Object.assign(S,{hemi:'N',stage:1,both:false}); syncCtl(); showBack=true; active=null; drawTbox(); setView('chart'); toModel(); return; }
+  if(sh&&sh.dataset.show==='surf'){ setView('chart'); westerly30(); toModel(); return; }
   if(e.target.id==='iChk') checkSurf(); });
 el('tasks').addEventListener('input',e=>{ if(e.target.id==='iDir') ans.dir=e.target.value; if(e.target.id==='iSpd') ans.spd=e.target.value; });
 el('tasks').addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.target.id==='iDir'||e.target.id==='iSpd')) checkSurf(); });
@@ -617,69 +610,141 @@ const AL={dep:1030,dst:1000,ind:3000};
 const CA=LAB.fit(el('alt'),()=>altDraw(),2);
 const XR=0.68, ER=(XR-0.04)/0.94;   /* the ridge sits about two-thirds of the way along the route */
 function altCalc(){ const err=(AL.dep-AL.dst)*27, ridge=Math.max(500,AL.ind-1000), atR=AL.ind-err*ER; return {err,tru:AL.ind-err,ridge,clr:atR-ridge}; }
-function altDraw(){ const g=CA.ctx,W=CA.w,H=CA.h; if(!W) return; const R=altCalc(), narrow=W<520, fs=narrow?0.9:1;
-  g.clearRect(0,0,W,H); const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#E4ECF2'); sky.addColorStop(1,'#F7F6F1'); g.fillStyle=sky; g.fillRect(0,0,W,H);
-  const L0=narrow?44:56, R0=narrow?14:24, T0=narrow?40:34, B0=narrow?34:32, top=7000, Y=ft=>T0+(1-ft/top)*(H-T0-B0), X=f=>L0+f*(W-L0-R0);
-  /* terrain near the destination */
+let altSky=null, altSkyH=0;
+function altDraw(){ const g=CA.ctx,W=CA.w,H=CA.h; if(!W||view!=='alt') return; const R=altCalc(), narrow=W<520, fs=narrow?0.9:1;
+  if(!altSky||altSkyH!==H){ altSky=g.createLinearGradient(0,0,0,H); altSky.addColorStop(0,'#1E2A36'); altSky.addColorStop(1,'#121A22'); altSkyH=H; }
+  g.clearRect(0,0,W,H); g.fillStyle=altSky; g.fillRect(0,0,W,H);
+  const L0=narrow?44:56, R0=narrow?14:24, T0=narrow?92:70, B0=narrow?34:32, top=7000, Y=ft=>T0+(1-ft/top)*(H-T0-B0), X=f=>L0+f*(W-L0-R0);
+  /* pressure surfaces: the altimeter follows the one it is set to, and it sags towards the low */
+  g.strokeStyle='rgba(143,184,240,.16)'; g.lineWidth=1; for(let q=1;q<=6;q++){ const base=q*1000; g.beginPath(); for(let i=0;i<=40;i++){ const f=0.04+i/40*0.94, e=(f-0.04)/0.94, ft=base-R.err*e; i?g.lineTo(X(f),Y(ft)):g.moveTo(X(f),Y(ft)); } g.stroke(); }
   const ridge=R.ridge;
-  g.fillStyle='#DCD5C4'; g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(XR-0.2),Y(0)); g.quadraticCurveTo(X(XR-0.07),Y(ridge*1.02),X(XR),Y(ridge)); g.quadraticCurveTo(X(XR+0.08),Y(ridge*0.98),X(XR+0.16),Y(0)); g.lineTo(X(1),Y(0)); g.lineTo(X(1),H); g.lineTo(X(0),H); g.closePath(); g.fill();
-  g.strokeStyle=COL.ink; g.lineWidth=1; g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(1),Y(0)); g.stroke();
-  /* axis */
-  g.font=`${Math.round(10.5*fs)}px IBM Plex Mono, monospace`; g.fillStyle=COL.ink3; for(let a=0;a<=top;a+=1000){ g.fillText(a===0?'MSL':String(a),4,Y(a)+3); g.strokeStyle='rgba(19,32,42,.06)'; g.beginPath(); g.moveTo(L0,Y(a)); g.lineTo(W-R0,Y(a)); g.stroke(); }
-  /* indicated (what you think) and true path */
+  g.fillStyle='#4A4536'; g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(XR-0.2),Y(0)); g.quadraticCurveTo(X(XR-0.07),Y(ridge*1.02),X(XR),Y(ridge)); g.quadraticCurveTo(X(XR+0.08),Y(ridge*0.98),X(XR+0.16),Y(0)); g.lineTo(X(1),Y(0)); g.lineTo(X(1),H); g.lineTo(X(0),H); g.closePath(); g.fill();
+  g.strokeStyle='rgba(230,235,239,.5)'; g.lineWidth=1; g.beginPath(); g.moveTo(X(0),Y(0)); g.lineTo(X(1),Y(0)); g.stroke();
+  g.font=`${Math.round(10.5*fs)}px IBM Plex Mono, monospace`; g.fillStyle=COL.ink3; for(let a=0;a<=top;a+=1000){ g.fillText(a===0?'MSL':String(a),4,Y(a)+3); }
   g.setLineDash([6,5]); g.strokeStyle=COL.ink2; g.lineWidth=1.6; g.beginPath(); g.moveTo(X(0.04),Y(AL.ind)); g.lineTo(X(0.98),Y(AL.ind)); g.stroke(); g.setLineDash([]);
   g.strokeStyle=COL.wind; g.lineWidth=3; g.beginPath(); for(let i=0;i<=40;i++){ const f=0.04+i/40*0.94, e=(f-0.04)/0.94, ft=AL.ind-R.err*e; i?g.lineTo(X(f),Y(ft)):g.moveTo(X(f),Y(ft)); } g.stroke();
   const ex=X(XR), ey=Y(AL.ind-R.err*ER);
-  /* aircraft at the ridge */
   g.save(); g.translate(ex,ey); g.fillStyle=COL.ink; g.beginPath(); g.moveTo(-16,0); g.bezierCurveTo(-13,-3,-5,-4,4,-3); g.lineTo(13,-1); g.bezierCurveTo(15,0,16,0,16,1); g.lineTo(-10,2); g.closePath(); g.fill(); g.fillRect(-15,-8,2.5,7); g.restore();
-  const clear=ey<Y(ridge)-2; if(!clear){ g.fillStyle='rgba(180,35,24,.14)'; g.beginPath(); g.arc(ex,ey,22,0,7); g.fill(); }
-  /* labels */
-  const f2=`600 ${Math.round(12*fs)}px Public Sans, sans-serif`;
-  g.font=`700 ${Math.round(22*fs)}px Archivo, sans-serif`; g.fillStyle=COL.high; g.fillText('H',X(0.04),T0-6); g.fillStyle=COL.low; g.textAlign='right'; g.fillText('L',X(0.98),T0-6);
-  g.font=`500 ${Math.round(11*fs)}px IBM Plex Mono, monospace`; g.fillStyle=COL.ink2; g.textAlign='left'; g.fillText('QNH '+AL.dep,X(0.04)+18*fs,T0-8); g.textAlign='right'; g.fillText('QNH '+AL.dst,X(0.98)-18*fs,T0-8); g.textAlign='start';
-  pill(g,X(0.06),Y(AL.ind)-12,L(t2('indicated ','indikert '))+AL.ind+' ft',f2,COL.ink2,'rgba(255,255,255,.85)','left');
-  pill(g,X(0.97),Math.min(Y(R.tru)+16,Y(0)-10),L(t2('true ','sann '))+Math.round(R.tru)+' ft',f2,'#fff',COL.wind,'right');
-  pill(g,X(XR),Y(ridge)+18,L(t2('ridge ','rygg '))+Math.round(ridge)+' ft',`500 ${Math.round(11*fs)}px Public Sans, sans-serif`,COL.ink2,'rgba(255,255,255,.75)');
-  g.font=`${Math.round(11*fs)}px Public Sans, sans-serif`; g.fillStyle=COL.ink2; g.fillText(narrow?L(t2('planned 1000 ft above the ridge','planlagt 1000 ft over ryggen')):L(t2('altimeter left on departure QNH · planned 1000 ft above the ridge','høydemåleren står på QNH fra avgang · planlagt 1000 ft over ryggen')),L0,H-12); }
+  const clear=ey<Y(ridge)-2; if(!clear){ g.fillStyle='rgba(240,123,106,.22)'; g.beginPath(); g.arc(ex,ey,22,0,7); g.fill(); }
+  const f2=`600 ${Math.round(12*fs)}px Public Sans, sans-serif`, hy=T0-26;
+  g.font=`700 ${Math.round(22*fs)}px Archivo, sans-serif`; g.fillStyle=COL.high; g.fillText('H',X(0.04),hy); g.fillStyle=COL.low; g.textAlign='right'; g.fillText('L',X(0.98),hy);
+  g.font=`500 ${Math.round(11*fs)}px IBM Plex Mono, monospace`; g.fillStyle=COL.ink2; g.textAlign='left'; g.fillText('QNH '+AL.dep,X(0.04)+18*fs,hy-2); g.textAlign='right'; g.fillText('QNH '+AL.dst,X(0.98)-18*fs,hy-2); g.textAlign='start';
+  pill(g,X(0.06),Y(AL.ind)-12,L(t2('indicated ','indikert '))+AL.ind+' ft',f2,COL.ink2,COL.pill,'left');
+  pill(g,X(0.97),Math.min(Y(R.tru)+16,Y(0)-10),L(t2('true ','sann '))+Math.round(R.tru)+' ft',f2,COL.dark,COL.wind,'right');
+  pill(g,X(XR),Y(ridge)+18,L(t2('ridge ','rygg '))+Math.round(ridge)+' ft',`500 ${Math.round(11*fs)}px Public Sans, sans-serif`,COL.ink2,COL.pill);
+  g.font=`${Math.round(11*fs)}px Public Sans, sans-serif`; g.fillStyle=COL.ink3; g.fillText(narrow?L(t2('planned 1000 ft above the ridge','planlagt 1000 ft over ryggen')):L(t2('altimeter left on departure QNH · planned 1000 ft above the ridge · thin lines: pressure levels','høydemåleren står på QNH fra avgang · planlagt 1000 ft over ryggen · tynne linjer: trykkflater')),L0,H-12); }
 function altRO(){ const R=altCalc(); el('alA').textContent=L(t2('Pressure difference','Trykkforskjell')); el('arA').textContent=(AL.dep-AL.dst)+' hPa';
   el('alB').textContent=L(t2('Altimeter reads too high by','Høydemåleren viser for høyt med')); el('arB').textContent=R.err>=0?Math.round(R.err)+' ft':L(t2('reads low by ','viser lavt med '))+Math.round(-R.err)+' ft';
   el('alC').textContent=L(t2('True altitude at destination','Sann høyde ved destinasjonen')); el('arC').textContent=Math.round(R.tru)+' ft'; el('arC').className=R.err>0?'warn':'';
   el('alD').textContent=L(t2('Clearance over the ridge (planned 1000 ft)','Klaring over ryggen (planlagt 1000 ft)')); el('arD').textContent=R.clr>0?Math.round(R.clr)+' ft':L(t2('none: below the ridge','ingen: under ryggen')); el('arD').className=R.clr<300?'bad':R.clr<900?'warn':'';
-  el('ax').innerHTML=R.err>0?L(t2(`<b>High to low, look out below.</b> ${AL.dep-AL.dst} hPa × 27 ft ≈ ${Math.round(R.err)} ft. The altimeter still reads ${AL.ind} ft, but you are at ${Math.round(R.tru)} ft, and the 1000 ft you planned over the ridge is ${R.clr>0?'down to '+Math.round(R.clr)+' ft':'gone'}. Set the new QNH as soon as you get it, and keep the minimum altitudes with margin when the pressure is falling.`,`<b>Fra høyt til lavt, se opp nedover.</b> ${AL.dep-AL.dst} hPa × 27 ft ≈ ${Math.round(R.err)} ft. Høydemåleren viser fortsatt ${AL.ind} ft, men du er i ${Math.round(R.tru)} ft, og de 1000 ft du planla over ryggen er ${R.clr>0?'redusert til '+Math.round(R.clr)+' ft':'borte'}. Sett ny QNH så snart du får den, og hold minstehøydene med margin når trykket faller.`))
-    :L(t2(`<b>Low to high:</b> the altimeter now reads lower than you are. Safe, but you are not where ATC and other traffic think you are. Always set the current QNH.`,`<b>Fra lavt til høyt:</b> høydemåleren viser nå lavere enn du er. Trygt, men du er ikke der flygeleder og annen trafikk tror. Sett alltid gjeldende QNH.`)); }
+  chip('achip',[[t2('ΔQNH','ΔQNH'),(AL.dep-AL.dst)+' hPa'],[t2('Indicated','Indikert'),AL.ind+' ft'],[t2('True at destination','Sann ved destinasjon'),Math.round(R.tru)+' ft',R.err>0?'a':''],[t2('Over the ridge','Over ryggen'),R.clr>0?Math.round(R.clr)+' ft':L(t2('below it','under den')),R.clr<300?'r':R.clr<900?'a':'g']]);
+  SEE.alt=R.err>0?L(t2(`<b>High to low, look out below:</b> ${AL.dep-AL.dst} hPa × 27 ft ≈ ${Math.round(R.err)} ft. The altimeter follows its pressure level down towards the low, so the 1000 ft you planned over the ridge is ${R.clr>0?'down to '+Math.round(R.clr)+' ft':'gone'}.`,`<b>Fra høyt til lavt, se opp nedover:</b> ${AL.dep-AL.dst} hPa × 27 ft ≈ ${Math.round(R.err)} ft. Høydemåleren følger trykkflaten sin ned mot lavtrykket, så de 1000 ft du planla over ryggen er ${R.clr>0?'redusert til '+Math.round(R.clr)+' ft':'borte'}.`))
+    :L(t2(`<b>Low to high:</b> the altimeter now reads lower than you are. Safe, but you are not where ATC and other traffic think you are. Always set the current QNH.`,`<b>Fra lavt til høyt:</b> høydemåleren viser nå lavere enn du er. Trygt, men du er ikke der flygeleder og annen trafikk tror. Sett alltid gjeldende QNH.`));
+  see(); live(); }
 function altU(){ altDraw(); altRO(); }
-LAB.slider(el('actl'),{label:'Departure QNH (high)',min:995,max:1045,step:1,v:AL.dep,f:v=>v+' hPa',on:v=>{ AL.dep=v; altU(); }});
-LAB.slider(el('actl'),{label:'Destination QNH (low)',min:975,max:1040,step:1,v:AL.dst,f:v=>v+' hPa',on:v=>{ AL.dst=v; altU(); }});
-LAB.slider(el('actl'),{label:'Indicated altitude (ft)',min:1500,max:6000,step:100,v:AL.ind,f:v=>v+' ft',on:v=>{ AL.ind=v; altU(); }});
+const aDep=LAB.slider(el('actl'),{label:'Departure QNH (high)',min:995,max:1045,step:1,v:AL.dep,f:v=>v+' hPa',on:v=>{ AL.dep=v; altU(); }});
+const aDst=LAB.slider(el('actl'),{label:'Destination QNH (low)',min:975,max:1040,step:1,v:AL.dst,f:v=>v+' hPa',on:v=>{ AL.dst=v; altU(); }});
+const aInd=LAB.slider(el('actl'),{label:'Indicated altitude (ft)',min:1500,max:6000,step:100,v:AL.ind,f:v=>v+' ft',on:v=>{ AL.ind=v; altU(); }});
+const PREA=[['deep',t2('Deep low ahead','Dypt lavtrykk foran'),{dep:1035,dst:990,ind:3000}],['small',t2('Small change','Liten endring'),{dep:1016,dst:1010,ind:3000}],['l2h',t2('Low to high','Fra lavt til høyt'),{dep:1000,dst:1025,ind:3000}]];
+function drawPreA(){ el('preA').innerHTML=PREA.map(([k,n])=>`<button type="button" class="btn sm" data-p="${k}">${L(n)}</button>`).join(''); }
+el('preA').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; Object.assign(AL,PREA.find(p=>p[0]===b.dataset.p)[2]); aDep.set(AL.dep); aDst.set(AL.dst); aInd.set(AL.ind); altU(); });
 
 /* =====================================================================
    Local winds (moved here from the old fronts lab)
    ===================================================================== */
-const LW={w:'coast',h:14};
-const CL=LAB.fit(el('lw'),()=>ld(),2);
-function lstate(){ const h=LW.h, day=h>=10&&h<=18, night=h>=21||h<=6; const str= day? Math.round(4+10*Math.sin((h-10)/8*Math.PI)) : night? 4 : 1; return {day,night,str}; }
-function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W) return; const S_=lstate(); const sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,S_.day?'#CFE2F3':S_.night?'#22324A':'#E6D2B5'); sky.addColorStop(1,S_.day?'#F4F7F9':S_.night?'#3B4B63':'#F2E6D3'); g.fillStyle=sky; g.fillRect(0,0,W,H);
-  const gy=H*0.78; const tt=reduced()?0:performance.now()/900; const narrow=W<520;
-  if(LW.w==='coast'){ g.fillStyle='#4E7FA8'; g.fillRect(0,gy,W*0.45,H-gy); g.fillStyle='#C9B48A'; g.fillRect(W*0.45,gy-6,W*0.55,H-gy+6);
-    if(S_.day){ g.fillStyle='#fff'; g.beginPath(); g.ellipse(W*0.72,H*0.3,60,20,0,0,7); g.ellipse(W*0.78,H*0.26,40,18,0,0,7); g.fill(); }
-    const dir= S_.day?1:S_.night?-1:0; if(dir){
-      const pts=[[W*0.15,gy-14],[W*0.8,gy-14],[W*0.8,H*0.28],[W*0.15,H*0.28]]; const seq= dir>0? [pts[0],pts[1],pts[2],pts[3]] : [pts[1],pts[0],pts[3],pts[2]];
-      g.strokeStyle='rgba(154,30,104,.75)'; g.lineWidth=2.6; g.setLineDash([10,8]); g.lineDashOffset=-tt*20; g.beginPath(); seq.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.stroke(); g.setLineDash([]); for(let i=0;i<4;i++){ const p0=seq[i], p1=seq[(i+1)%4], mx=(p0[0]+p1[0])/2, my=(p0[1]+p1[1])/2, an=Math.atan2(p1[1]-p0[1],p1[0]-p0[0]); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(mx+10*Math.cos(an),my+10*Math.sin(an)); g.lineTo(mx-8*Math.cos(an-0.6),my-8*Math.sin(an-0.6)); g.lineTo(mx-8*Math.cos(an+0.6),my-8*Math.sin(an+0.6)); g.closePath(); g.fill(); } }
-    g.font=`600 ${narrow?12:13}px "Public Sans", sans-serif`; g.fillStyle=S_.night?'#E6EDF1':'#13202A'; g.textAlign='center'; g.fillText(S_.day?L({en:narrow?'land heats faster: sea breeze onshore':'land heats faster: air rises over land, sea breeze blows onshore',no:narrow?'land varmes raskere: sjøbris inn':'land varmes raskere: luften stiger over land, sjøbrisen blåser inn'}):S_.night?L({en:narrow?'land cools faster: land breeze':'land cools faster: weak land breeze blows offshore',no:narrow?'land kjøles raskere: landbris':'land kjøles raskere: svak landbris blåser ut'}):L({en:'calm while the temperatures even out',no:'stille mens temperaturene jevner seg ut'}),W*0.5,22); g.textAlign='start'; }
-  else {
-    g.fillStyle=S_.night?'#55604F':'#8FA27A'; g.beginPath(); g.moveTo(0,H*0.25); g.lineTo(W*0.42,gy); g.lineTo(W*0.58,gy); g.lineTo(W,H*0.25); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
-    const dir=S_.day?-1:S_.night?1:0; if(dir){ g.strokeStyle='rgba(154,30,104,.8)'; g.lineWidth=2.6; g.setLineDash([10,8]); g.lineDashOffset=-tt*20; [[W*0.06,H*0.3,W*0.38,gy-10],[W*0.94,H*0.3,W*0.62,gy-10]].forEach(([x0,y0,x1,y1])=>{ const a0=dir>0?[x0,y0-12]:[x1,y1-12], a1=dir>0?[x1,y1-12]:[x0,y0-12]; g.beginPath(); g.moveTo(a0[0],a0[1]); g.lineTo(a1[0],a1[1]); g.stroke(); const an=Math.atan2(a1[1]-a0[1],a1[0]-a0[0]); g.fillStyle='#9A1E68'; g.beginPath(); g.moveTo(a1[0],a1[1]); g.lineTo(a1[0]-12*Math.cos(an-0.5),a1[1]-12*Math.sin(an-0.5)); g.lineTo(a1[0]-12*Math.cos(an+0.5),a1[1]-12*Math.sin(an+0.5)); g.closePath(); g.fill(); }); g.setLineDash([]);
-      if(S_.night){ g.fillStyle='rgba(220,230,240,.55)'; g.fillRect(W*0.42,gy-18,W*0.16,18); } }
-    g.font=`600 ${narrow?12:13}px "Public Sans", sans-serif`; g.fillStyle=S_.night?'#E6EDF1':'#13202A'; g.textAlign='center'; g.fillText(S_.day?L({en:narrow?'anabatic: up the slopes':'sun-warmed slopes: anabatic wind flows up the slopes',no:narrow?'anabatisk: opp liene':'solvarme skråninger: anabatisk vind strømmer opp liene'}):S_.night?L({en:narrow?'katabatic: down the slopes':'cold air drains down: katabatic wind, fog in the valley floor',no:narrow?'katabatisk: ned liene':'kald luft renner ned: katabatisk vind, tåke i dalbunnen'}):L({en:'turning',no:'snur'}),W*0.5,22); g.textAlign='start'; }
-  g.font='11px IBM Plex Mono, monospace'; g.fillStyle=S_.night?'#E6EDF1':'#5E6B74'; g.fillText(String(LW.h).padStart(2,'0')+':00',8,H-8); }
-function lro(){ const S_=lstate(); el('w1').textContent= LW.w==='coast'? (S_.day? L({en:'onshore, about',no:'pålands, rundt'})+' '+S_.str+' kt' : S_.night? L({en:'offshore, about',no:'fralands, rundt'})+' '+S_.str+' kt' : L({en:'light and variable',no:'svak og variabel'})) : (S_.day? L({en:'up the slopes, light',no:'opp liene, svak'}) : S_.night? L({en:'down the slopes, can be strong under glaciers',no:'ned liene, kan være sterk under breer'}) : L({en:'light and variable',no:'svak og variabel'}));
-  el('x2').innerHTML= LW.w==='coast'? L({en:'<b>Sea breeze.</b> On a sunny day the land heats up much faster than the sea. Air rises over the land, and cooler sea air flows in underneath: an onshore wind of typically 10–15 kt, starting late morning, reaching 1000–2000 ft deep and up to 20–40 km inland, strongest in the afternoon. A runway that had a crosswind or tailwind in the morning can have a headwind in the afternoon, and the sea-breeze front can bring a line of cumulus and turbulence inland. At night the process reverses into a weaker land breeze.',no:'<b>Sjøbris.</b> En solrik dag varmes land opp mye raskere enn sjøen. Luften stiger over land, og kjøligere sjøluft strømmer inn under: en pålandsvind på typisk 10–15 kt, som starter utpå formiddagen, blir 1000–2000 ft dyp og når 20–40 km inn i landet, sterkest om ettermiddagen. En bane som hadde sidevind eller medvind om morgenen, kan ha motvind om ettermiddagen, og sjøbrisfronten kan gi en rekke cumulus og turbulens innover land. Om natten snur prosessen til en svakere landbris.'})
-   : L({en:'<b>Valley winds.</b> By day the sun warms the slopes, and air flows up them (anabatic wind), usually gentle. At night the slopes cool, and the cold, dense air drains downhill (katabatic wind) and pools in the valley floor, where it can form fog and frost. Under glaciers and in fjords, katabatic winds can be strong and gusty, and they are a classic cause of unexpected tailwind and turbulence on approach to valley airports in the early morning.',no:'<b>Dalvinder.</b> Om dagen varmer solen liene, og luft strømmer opp (anabatisk vind), vanligvis svakt. Om natten kjøles liene, og den kalde, tunge luften renner nedover (katabatisk vind) og samler seg i dalbunnen, der den kan gi tåke og rim. Under breer og i fjorder kan katabatiske vinder være sterke og kastevise, og de er en klassisk årsak til uventet medvind og turbulens på innflyging til dalflyplasser tidlig om morgenen.'}); }
-function lu(){ ld(); lro(); }
-LAB.seg(el('where'),[['coast','Coast'],['valley','Valley']],LW.w,v=>{ LW.w=v; lu(); });
-LAB.slider(el('c2'),{label:'Time of day',min:0,max:23,step:1,v:LW.h,f:v=>String(v).padStart(2,'0')+':00',on:v=>{ LW.h=v; lu(); }});
+const LW={w:'coast',h:14,ridge:8000,t:10,td:6};
+let lwPlay=false, lwLast=0;
+const CL=LAB.fit(el('lw'),()=>{ LG=null; if(LS.st){ LS.f2=`600 ${CL.w<520?12:13}px "Public Sans", sans-serif`; lbuild(); } ld(); },2);
+const DASH=[10,8], NODASH=[];
+let LG=null;            /* cached gradients, rebuilt on resize */
+const LS={};            /* the scene's numbers and strings, rebuilt by lu() (nothing is allocated per frame) */
+function lstate(h){ const day=h>=10&&h<=18, night=h>=21||h<=6, land=12+8*Math.cos((h-15)/24*2*Math.PI), sea=13;
+  const str= day? Math.round(4+10*Math.sin((h-10)/8*Math.PI)) : night? 4 : 1; return {day,night,str,land,sea}; }
+function foehn(){ const lcl=Math.max(0,(LW.t-LW.td)*400), r=LW.ridge, wet=lcl<r;
+  const tSum= wet? LW.t-3*lcl/1000-1.8*(r-lcl)/1000 : LW.t-3*r/1000, tdSum= wet? tSum : LW.td-0.5*r/1000;
+  const tLee=tSum+3*r/1000, tdLee=tdSum+0.5*r/1000, baseLee=Math.max(0,(tLee-tdLee)*400);
+  return {lcl,wet,tSum,tLee,tdLee,baseLee,warm:tLee-LW.t}; }
+function lgrads(g,H){ const mk=(a,b)=>{ const q=g.createLinearGradient(0,0,0,H); q.addColorStop(0,a); q.addColorStop(1,b); return q; };
+  LG={day:mk('#2C4864','#5E7A92'),night:mk('#0C1420','#1B2838'),dusk:mk('#2E2A40','#6A5462'),fo:mk('#22303E','#46586A')}; }
+function lu(){ const h=LW.h, st=lstate(h), f=foehn(); LS.st=st; LS.f=f; const hh=String(h).padStart(2,'0')+':00'; LS.clock=hh;
+  if(LW.w==='coast'){ LS.title=L(st.day?t2('Land heats faster: air rises over land, the sea breeze blows onshore','Land varmes raskere: luften stiger over land, sjøbrisen blåser inn'):st.night?t2('Land cools faster: a weak land breeze blows offshore','Land kjøles raskere: en svak landbris blåser ut'):t2('Calm while land and sea even out','Stille mens land og sjø jevner seg ut'));
+    LS.wind=st.day?L(t2('onshore','pålands'))+' '+st.str+' kt':st.night?L(t2('offshore','fralands'))+' '+st.str+' kt':L(t2('light and variable','svak og variabel'));
+    chip('lchip',[[t2('Time','Tid'),hh],[t2('Land','Land'),Math.round(st.land)+' °C'],[t2('Sea','Sjø'),st.sea+' °C'],[t2('Wind at the coast','Vind ved kysten'),LS.wind]]);
+    SEE.local=L(t2('<b>Sea breeze:</b> by day the land heats faster than the sea, air rises over the land and cooler sea air flows in underneath: typically 10–15 kt, from late morning, strongest in the afternoon, often with a line of cumulus inland. At night a weaker land breeze blows the other way.','<b>Sjøbris:</b> om dagen varmes land raskere enn sjøen, luften stiger over land, og kjøligere sjøluft strømmer inn under: typisk 10–15 kt, fra utpå formiddagen, sterkest om ettermiddagen, ofte med en rekke cumulus innover land. Om natten blåser en svakere landbris motsatt vei.')); }
+  else if(LW.w==='valley'){ LS.title=L(st.day?t2('Sun-warmed slopes: anabatic wind flows gently up the slopes','Solvarme lier: anabatisk vind strømmer svakt opp liene'):st.night?t2('Cold air drains down: katabatic wind, fog and frost in the valley floor','Kald luft renner ned: katabatisk vind, tåke og rim i dalbunnen'):t2('The slope wind is turning','Liavinden snur'));
+    LS.wind=st.day?L(t2('up the slopes, light','opp liene, svak')):st.night?L(t2('down the slopes, gusty','ned liene, byig')):L(t2('light and variable','svak og variabel'));
+    chip('lchip',[[t2('Time','Tid'),hh],[t2('Slope wind','Liavind'),LS.wind],[t2('Valley floor','Dalbunnen'),st.night?L(t2('fog risk','fare for tåke')):'—',st.night?'a':'']]);
+    SEE.local=L(t2('<b>Valley winds:</b> by day the sun warms the slopes and air flows gently up them (anabatic). At night the slopes cool, cold dense air drains downhill (katabatic) and pools in the valley floor, with fog and frost. Under glaciers and in fjords it can be strong and gusty: early-morning tailwind and turbulence on approach.','<b>Dalvinder:</b> om dagen varmer solen liene, og luft strømmer svakt opp (anabatisk). Om natten kjøles liene, kald, tung luft renner ned (katabatisk) og samler seg i dalbunnen, med tåke og rim. Under breer og i fjorder kan den være sterk og byig: medvind og turbulens på innflyging tidlig om morgenen.')); }
+  else { LS.title=L(f.wet?t2('Föhn: moist air rises and rains out, then descends warm and dry','Føhn: fuktig luft stiger og regner ut, så synker den varm og tørr'):t2('Dry air over the ridge: no cloud, no föhn warming','Tørr luft over ryggen: ingen sky, ingen føhnoppvarming'));
+    chip('lchip',[[t2('Cloud base, windward','Skybase, lo side'),f.wet?Math.round(f.lcl/100)*100+' ft':'—'],[t2('Summit','Toppen'),nf(f.tSum,1)+' °C'],[t2('Lee foot','Foten på le side'),nf(f.tLee,1)+' °C',f.warm>2?'a':''],[t2('Warmer by','Varmere med'),(f.warm>=0?'+':'')+nf(f.warm,1)+' °C']]);
+    SEE.local=f.wet?L(t2(`<b>Föhn:</b> on the way up the air cools 3 °C per 1000 ft to the cloud base, then only about 1.8 °C per 1000 ft in cloud, and drops its moisture as rain. On the way down it warms 3 °C per 1000 ft all the way: ${nf(f.warm,1)} °C warmer and much drier in the lee, with strong, gusty wind, lee waves and rotor turbulence.`,`<b>Føhn:</b> på vei opp kjøles luften 3 °C per 1000 ft til skybasen, så bare rundt 1,8 °C per 1000 ft i skyen, og slipper fuktigheten som regn. På vei ned varmes den 3 °C per 1000 ft hele veien: ${nf(f.warm,1)} °C varmere og mye tørrere på le side, med sterk, byig vind, lebølger og rotorturbulens.`))
+      :L(t2('<b>No cloud on the way up:</b> the air stays dry, cools and warms at the same 3 °C per 1000 ft, and arrives in the lee at the same temperature. Raise the dew point or the ridge to make cloud on the windward side.','<b>Ingen sky på vei opp:</b> luften forblir tørr, kjøles og varmes med de samme 3 °C per 1000 ft, og kommer ned på le side med samme temperatur. Øk duggpunktet eller ryggen for å få sky på lo side.')); }
+  LS.f2=`600 ${CL.w<520?12:13}px "Public Sans", sans-serif`; LS.f3='11px IBM Plex Mono, monospace';
+  const rows=LW.w==='foehn'?[[t2('Windward foot','Foten på lo side'),LW.t+' / '+LW.td+' °C'],[t2('Cloud base, windward','Skybase, lo side'),f.wet?Math.round(f.lcl/100)*100+' ft':L(t2('none','ingen'))],[t2('Summit temperature','Temperatur på toppen'),nf(f.tSum,1)+' °C'],[t2('Lee foot','Foten på le side'),nf(f.tLee,1)+' / '+nf(f.tdLee,1)+' °C'],[t2('Cloud base in the lee','Skybase på le side'),f.wet?Math.round(f.baseLee/100)*100+' ft':'—']]
+    :[[t2('Time','Tid'),hh],[t2('Wind now','Vind nå'),LS.wind]];
+  el('lro').innerHTML=rows.map(([k,v])=>`<div class="rrow"><span>${L(k)}</span><b>${v}</b></div>`).join('');
+  lbuild(); ld(); see(); legend(); drawTabs(); }
+/* static layers of the scene go to an offscreen canvas when something changes; each frame only adds the moving air */
+const lbg=document.createElement('canvas'), lbx=lbg.getContext('2d');
+function lgeo(){ const W=CL.w,H=CL.h, gy=H*0.8, top=Math.max(12000,LW.ridge*1.45), cx=W*0.5, hw=W*0.3; return {W,H,gy,cx,hw,Y:ft=>gy-ft/top*(gy-H*0.14),hill:x=>{ const u=(x-cx)/hw; return Math.abs(u)>=1?0:LW.ridge*Math.pow(Math.cos(u*Math.PI/2),2); }}; }
+function puff(g,x,y,r){ g.moveTo(x+r,y); g.arc(x,y,r,0,7); }
+function lbuild(){ const W=CL.w,H=CL.h,d=CL.dpr; if(!W||!LS.st) return; if(!LG) lgrads(CL.ctx,H);
+  lbg.width=W*d; lbg.height=H*d; const g=lbx; g.setTransform(d,0,0,d,0,0); const st=LS.st, gy=H*0.8;
+  if(LW.w==='coast'){ g.fillStyle=st.day?LG.day:st.night?LG.night:LG.dusk; g.fillRect(0,0,W,H);
+    g.fillStyle='#1D4566'; g.fillRect(0,gy,W*0.45,H-gy); g.fillStyle='#4F4838'; g.fillRect(W*0.45,gy-6,W*0.55,H-gy+6);
+    g.fillStyle='#C9D3DB'; g.fillRect(W*0.6,gy-8,W*0.14,2);
+    if(st.day){ const k=Math.max(0.5,st.str/14); g.fillStyle='#E9EEF2'; g.beginPath(); puff(g,W*0.72,H*0.33,22*k); puff(g,W*0.75,H*0.28,26*k); puff(g,W*0.79,H*0.31,20*k); puff(g,W*0.69,H*0.34,15*k); g.fill(); g.fillRect(W*0.69-14*k,H*0.33,W*0.1+18*k,10*k);
+      g.fillStyle='#F2C14E'; g.beginPath(); g.arc(W*0.9,H*0.13,12,0,7); g.fill(); }
+    else if(st.night){ g.fillStyle='#E6EBEF'; g.beginPath(); g.arc(W*0.88,H*0.13,9,0,7); g.fill(); }
+    g.font=LS.f3; g.fillStyle='#C9D3DB'; g.fillText(L(t2('sea ','sjø '))+st.sea+' °C',W*0.03,gy+24); g.fillText(L(t2('land ','land '))+Math.round(st.land)+' °C',W*0.47,gy+24); }
+  else if(LW.w==='valley'){ g.fillStyle=st.day?LG.day:st.night?LG.night:LG.dusk; g.fillRect(0,0,W,H);
+    g.fillStyle=st.night?'#3A4436':'#4D5E40'; g.beginPath(); g.moveTo(0,H*0.3); g.lineTo(W*0.42,gy); g.lineTo(W*0.58,gy); g.lineTo(W,H*0.3); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
+    g.fillStyle='#DDE5EC'; g.beginPath(); g.moveTo(0,H*0.3); g.lineTo(W*0.08,H*0.3+H*0.06); g.lineTo(0,H*0.42); g.closePath(); g.fill(); g.beginPath(); g.moveTo(W,H*0.3); g.lineTo(W*0.92,H*0.36); g.lineTo(W,H*0.42); g.closePath(); g.fill();
+    g.fillStyle='#C9D3DB'; g.fillRect(W*0.45,gy-2,W*0.1,2);
+    if(st.night){ g.fillStyle='rgba(221,229,236,.55)'; g.beginPath(); g.moveTo(W*0.4,gy-22); g.lineTo(W*0.6,gy-22); g.lineTo(W*0.62,gy); g.lineTo(W*0.38,gy); g.closePath(); g.fill(); }
+    if(st.day){ g.fillStyle='#F2C14E'; g.beginPath(); g.arc(W*0.82,H*0.13,12,0,7); g.fill(); } }
+  else { const f=LS.f, G=lgeo(), Y=G.Y, cx=G.cx, hw=G.hw; g.fillStyle=LG.fo; g.fillRect(0,0,W,H);
+    if(f.wet){ /* cloud from the windward cloud base up over the crest (the föhn wall), rain below it, a lenticular in the lee */
+      const x0=cx-hw*1.05, x1=cx+hw*0.16, peak=LW.ridge*1.3+500, topf=x=>{ const u=Math.max(0,Math.min(1,(x-x0)/(x1-x0))); return Math.max(G.hill(x)+300,f.lcl+(peak-f.lcl)*Math.pow(Math.sin(Math.PI*u*0.9),0.7)); };
+      g.fillStyle='#D3DCE4'; g.beginPath(); g.moveTo(x0,Y(f.lcl)); for(let x=x0;x<=x1;x+=6) g.lineTo(x,Y(topf(x))); for(let x=x1;x>=x0;x-=6) g.lineTo(x,Y(Math.max(f.lcl,G.hill(x)))); g.closePath(); g.fill();
+      g.beginPath(); for(let x=x0+8;x<=x1-4;x+=16) puff(g,x,Y(topf(x))+4,10+4*Math.sin(x*0.7)); puff(g,x0+6,Y(f.lcl)-10,12); g.fill();
+      g.fillStyle='rgba(221,229,236,.75)'; g.beginPath(); g.ellipse(cx+hw*1.3,Y(LW.ridge*1.2),hw*0.3,7,0,0,7); g.fill(); }
+    g.fillStyle='#4A4A3C'; g.beginPath(); g.moveTo(0,G.gy); for(let x=0;x<=W;x+=4) g.lineTo(x,Y(G.hill(x))); g.lineTo(W,H); g.lineTo(0,H); g.closePath(); g.fill();
+    g.strokeStyle='rgba(240,180,64,.85)'; g.lineWidth=1.6; g.beginPath(); g.arc(cx+hw*1.12,Y(LW.ridge*0.3),13,0.4,5.9); g.stroke();
+    g.font=LS.f3; g.fillStyle='#F0B440'; g.fillText(L(t2('rotor','rotor')),cx+hw*1.12+17,Y(LW.ridge*0.3)+4);
+    const lab=(x,y,t,al)=>{ g.font=LS.f3; const w=g.measureText(t).width; const x0=al==='r'?x-w-10:al==='c'?x-w/2-5:x; g.fillStyle='rgba(12,16,20,.8)'; g.fillRect(x0,y-12,w+10,17); g.fillStyle='#E6EBEF'; g.fillText(t,x0+5,y); };
+    lab(W*0.03,G.gy+24,LW.t+' / '+LW.td+' °C'); lab(cx+hw*0.22,Y(LW.ridge)+2,L(t2('top ','topp '))+nf(f.tSum,1)+' °C'); lab(W*0.97,G.gy+24,nf(f.tLee,1)+' / '+nf(f.tdLee,1)+' °C','r');
+    if(f.wet){ g.setLineDash([3,3]); g.strokeStyle='rgba(230,235,239,.45)'; g.lineWidth=1; g.beginPath(); g.moveTo(W*0.02,Y(f.lcl)); g.lineTo(cx-hw*0.4,Y(f.lcl)); g.stroke(); g.setLineDash(NODASH); lab(W*0.03,Y(f.lcl)-6,L(t2('cloud base ','skybase '))+Math.round(f.lcl/100)*100+' ft'); } }
+  if(W>=520){ g.font=LS.f2; g.fillStyle='#E6EBEF'; g.textAlign='center'; g.fillText(LS.title,W*0.5,H-14,W-130); g.textAlign='start'; }
+  if(LW.w!=='foehn'){ g.font=LS.f3; g.fillStyle='#C9D3DB'; g.textAlign='right'; g.fillText(LS.clock,W-10,H-10); g.textAlign='start'; } }
+function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W||view!=='local'||!LS.st) return; if(lbg.width!==Math.round(W*CL.dpr)) lbuild();
+  const st=LS.st, tt=reduced()?0:performance.now()/900, gy=H*0.8;
+  g.clearRect(0,0,W,H); g.drawImage(lbg,0,0,W,H);
+  g.strokeStyle='rgba(228,107,174,.85)'; g.lineDashOffset=-tt*20; g.setLineDash(DASH);
+  if(LW.w==='coast'){ const dir= st.day?1:st.night?-1:0; if(dir){ const x0=W*0.15,x1=W*0.8,y0=gy-16,y1=H*0.42; const P=dir>0?LP1:LP2; P[0]=dir>0?x0:x1; P[1]=y0; P[2]=dir>0?x1:x0; P[3]=y0; P[4]=P[2]; P[5]=y1; P[6]=P[0]; P[7]=y1;
+      g.lineWidth=dir>0?2.6:1.8; g.beginPath(); g.moveTo(P[0],P[1]); g.lineTo(P[2],P[3]); g.lineTo(P[4],P[5]); g.lineTo(P[6],P[7]); g.closePath(); g.stroke(); g.setLineDash(NODASH);
+      for(let i=0;i<4;i++){ const ax=P[i*2],ay=P[i*2+1],bx=P[(i*2+2)%8],by=P[(i*2+3)%8]; head(g,(ax+bx)/2,(ay+by)/2,Math.atan2(by-ay,bx-ax)); } } }
+  else if(LW.w==='valley'){ const dir=st.day?-1:st.night?1:0; if(dir){ g.lineWidth=2.6;
+      for(let k=0;k<2;k++){ const xa=k?W*0.94:W*0.06, ya=H*0.38, xb=k?W*0.62:W*0.38, yb=gy-14, sx=dir>0?xa:xb, sy=(dir>0?ya:yb)-12, ex=dir>0?xb:xa, ey=(dir>0?yb:ya)-12; g.setLineDash(DASH); g.beginPath(); g.moveTo(sx,sy); g.lineTo(ex,ey); g.stroke(); g.setLineDash(NODASH); head(g,ex,ey,Math.atan2(ey-sy,ex-sx)); } } }
+  else { const f=LS.f, G=lgeo(), Y=G.Y, cx=G.cx, hw=G.hw; g.lineWidth=2.4; g.lineDashOffset=-tt*24; g.beginPath();
+    for(let x=W*0.02;x<=W*0.98;x+=6){ const v=x>cx+hw*0.6?0.12*Math.sin((x-cx-hw*0.6)/(hw*0.5)*Math.PI)*Math.exp(-(x-cx)/(hw*2)):0; const y=Y(G.hill(x)+LW.ridge*(0.2+v)); x<=W*0.02?g.moveTo(x,y):g.lineTo(x,y); } g.stroke(); g.setLineDash(NODASH); head(g,W*0.98,Y(LW.ridge*0.2),0);
+    if(f.wet){ g.strokeStyle='rgba(127,203,232,.55)'; g.lineWidth=1; g.beginPath(); for(let i=0;i<16;i++){ const x=cx-hw*0.98+i*hw*0.055, b=Math.max(f.lcl,G.hill(x)); if(b>f.lcl+50) continue; const y=Y(f.lcl)+4+((tt*28+i*13)%Math.max(8,Y(G.hill(x))-Y(f.lcl)-6)); g.moveTo(x,y); g.lineTo(x-2,y+6); } g.stroke(); } }
+  g.setLineDash(NODASH); }
+const LP1=new Float32Array(8), LP2=new Float32Array(8);
+function head(g,x,y,an){ g.fillStyle='#E46BAE'; g.beginPath(); g.moveTo(x+9*Math.cos(an),y+9*Math.sin(an)); g.lineTo(x-7*Math.cos(an-0.6),y-7*Math.sin(an-0.6)); g.lineTo(x-7*Math.cos(an+0.6),y-7*Math.sin(an+0.6)); g.closePath(); g.fill(); }
+LAB.seg(el('where'),[['coast','Sea breeze'],['valley','Valley'],['foehn','Föhn']],LW.w,v=>{ LW.w=v; lwPlay=false; syncLw(); lu(); });
+const cT=document.createElement('div'), cF=document.createElement('div'); el('c2').append(cT,cF);
+const sHr=LAB.slider(cT,{label:'Time of day',min:0,max:23,step:1,v:LW.h,f:v=>String(v).padStart(2,'0')+':00',on:v=>{ LW.h=v; lwPlay=false; drawTabs(); lu(); }});
+LAB.slider(cF,{label:'Height of the ridge (ft)',min:4000,max:12000,step:500,v:LW.ridge,f:v=>v+' ft',on:v=>{ LW.ridge=v; lu(); }});
+const sFT=LAB.slider(cF,{label:'Temperature at the windward foot (°C)',min:0,max:25,step:1,v:LW.t,f:v=>v+' °C',on:v=>{ LW.t=v; if(LW.td>v){ LW.td=v; sFD.set(v); } lu(); }});
+const sFD=LAB.slider(cF,{label:'Dew point at the windward foot (°C)',min:-10,max:25,step:1,v:LW.td,f:v=>v+' °C',on:v=>{ LW.td=Math.min(v,LW.t); if(v>LW.t) sFD.set(LW.t); lu(); }});
+function syncLw(){ cT.hidden=LW.w==='foehn'; cF.hidden=LW.w!=='foehn'; }
+el('lPlay').addEventListener('click',()=>{ lwPlay=!lwPlay; lwLast=performance.now(); drawTabs(); if(lwPlay&&!lvis) lp(); });
 let lvis=false; new IntersectionObserver(es=>{ const was=lvis; lvis=es[0].isIntersecting&&!!el('lw').offsetParent; if(lvis&&!was) lp(); }).observe(el('lw'));
-function lp(){ if(!lvis||document.hidden) return; ld(); if(!reduced()) requestAnimationFrame(lp); }
+let lacc=0;
+function lp(){ if(!lvis||document.hidden||view!=='local') return; const now=performance.now();
+  if(lwPlay){ lacc+=(now-lwLast)/500; lwLast=now; if(lacc>=1){ lacc=0; LW.h=(LW.h+1)%24; sHr.set(LW.h); lu(); } }
+  ld(); if(!reduced()||lwPlay) requestAnimationFrame(lp); }
 
 /* =====================================================================
    5 · Check
@@ -691,13 +756,46 @@ LAB.quiz(el('qbox'),'pressure',()=>LAB.shuffle([
  {q:t2('You fly from an area of high pressure towards a low and do not update the QNH. Your true altitude is…','Du flyr fra et høytrykksområde mot et lavtrykk og oppdaterer ikke QNH. Den sanne høyden din er …'),a:[t2('lower than indicated','lavere enn indikert'),t2('higher than indicated','høyere enn indikert'),t2('the same as indicated','den samme som indikert'),t2('higher, but only in cold air','høyere, men bare i kald luft')],c:0,e:t2('The altimeter holds a constant pressure level, which lies lower over the low. About 27 ft per hPa: 20 hPa ≈ 540 ft too high on the altimeter. High to low, look out below.','Høydemåleren holder et konstant trykknivå, som ligger lavere over lavtrykket. Rundt 27 ft per hPa: 20 hPa ≈ 540 ft for høy visning. Fra høyt til lavt, se opp nedover.')},
  {q:t2('Same pressure gradient and latitude, but at FL100 instead of near sea level. The geostrophic wind is…','Samme trykkgradient og breddegrad, men i FL100 i stedet for nær havnivå. Den geostrofiske vinden er …'),a:[t2('stronger, because the air density is lower','sterkere, fordi lufttettheten er lavere'),t2('weaker, because the air density is lower','svakere, fordi lufttettheten er lavere'),t2('the same: density does not matter','den samme: tettheten spiller ingen rolle'),t2('weaker, because Coriolis is stronger higher up','svakere, fordi Coriolis er sterkere høyere opp')],c:0,e:t2('ρ is in the denominator of V<sub>g</sub> = Δp/(ρ f Δn). At FL100 ρ ≈ 0.91 instead of 1.225, so the same gradient gives about 35 % more wind.','ρ står i nevneren i V<sub>g</sub> = Δp/(ρ f Δn). I FL100 er ρ ≈ 0,91 i stedet for 1,225, så samme gradient gir rundt 35 % mer vind.')},
  {q:t2('Northern hemisphere. Climbing out through the friction layer, the wind typically…','Nordlig halvkule. Når du stiger ut gjennom friksjonslaget, vil vinden typisk …'),a:[t2('veers and increases','dreie til høyre (veere) og øke'),t2('backs and increases','dreie til venstre (backe) og øke'),t2('veers and decreases','dreie til høyre og avta'),t2('backs and decreases','dreie til venstre og avta')],c:0,e:t2('Friction slows the surface wind and backs it towards the low. Above the friction layer it is geostrophic: so with height it veers (turns clockwise) and increases.','Friksjonen bremser bakkevinden og dreier den mot venstre inn mot lavtrykket. Over friksjonslaget er den geostrofisk: med høyden dreier den derfor til høyre (med klokka) og øker.')}
-]),6);
+,
+ {q:t2('Which pressure is reduced to mean sea level using the actual temperature, and is used to draw the isobars on a surface chart?','Hvilket trykk reduseres til middelvannstand med den faktiske temperaturen, og brukes til å tegne isobarene på et bakkekart?'),a:[t2('QFF','QFF'),t2('QNH','QNH'),t2('QFE','QFE'),t2('QNE','QNE')],c:0,e:t2('QFF uses the actual temperature; QNH uses the ISA. QFE is the pressure at the aerodrome itself.','QFF bruker den faktiske temperaturen; QNH bruker ISA. QFE er trykket på selve flyplassen.')},
+ {q:t2('A coastal aerodrome on a sunny summer day. When is the sea breeze usually strongest?','En kystflyplass en solrik sommerdag. Når er sjøbrisen vanligvis sterkest?'),a:[t2('In the early afternoon','Tidlig på ettermiddagen'),t2('Just before sunrise','Like før soloppgang'),t2('Around midnight','Rundt midnatt'),t2('It is the same all day','Den er lik hele dagen')],c:0,e:t2('It follows the temperature difference between land and sea, which is largest in the afternoon. At night the land is colder and a weaker land breeze blows offshore.','Den følger temperaturforskjellen mellom land og sjø, som er størst om ettermiddagen. Om natten er land kaldere, og en svakere landbris blåser utover.')},
+ {q:t2('Early morning approach to an airport in a narrow valley below a glacier. What wind should you be ready for?','Innflyging tidlig om morgenen til en flyplass i en trang dal under en bre. Hvilken vind må du være forberedt på?'),a:[t2('A katabatic wind down the valley, possibly strong and gusty','En katabatisk vind ned dalen, muligens sterk og byig'),t2('An anabatic wind up the slopes','En anabatisk vind opp liene'),t2('A sea breeze','En sjøbris'),t2('Calm, because the air is stable','Stille, fordi luften er stabil')],c:0,e:t2('At night cold, dense air drains downhill and is strongest under glaciers and in narrow valleys and fjords: tailwind, shear and turbulence on approach.','Om natten renner kald, tung luft nedover, sterkest under breer og i trange daler og fjorder: medvind, vindskjær og turbulens på innflygingen.')},
+ {q:t2('Moist air crosses a mountain range and rains out on the windward side. On the lee side, compared with the same height on the windward side, the air is…','Fuktig luft krysser en fjellkjede og regner ut på lo side. På le side er luften, sammenlignet med samme høyde på lo side, …'),a:[t2('warmer and drier (föhn)','varmere og tørrere (føhn)'),t2('colder and moister','kaldere og fuktigere'),t2('the same, because the process is adiabatic','den samme, fordi prosessen er adiabatisk'),t2('colder, because it descends','kaldere, fordi den synker')],c:0,e:t2('It cooled at the slower saturated rate in cloud and lost its moisture as rain, then warms at the dry rate (3 °C per 1000 ft) all the way down.','Den ble kjølt med den langsommere mettede gradienten i skyen og mistet fuktigheten som regn, og varmes så med den tørre gradienten (3 °C per 1000 ft) hele veien ned.')}
+]),9);
+
+/* ---------- Understand: key concept cards ---------- */
+(function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS;
+  const iso=`<path d="M20,52 C60,30 120,46 180,20" fill="none" stroke="#5B6B78"/><path d="M20,38 C60,16 120,32 180,8" fill="none" stroke="#5B6B78"/>`;
+  const go=(v,fn)=>()=>{ setView(v); if(fn) fn(); };
+  const K=[
+   {k:'hpa',t:t2('Pressure and hPa','Trykk og hPa'),d:t2('Pressure is the weight of the air above, measured in <b>hectopascals (hPa)</b>. The ISA sea-level value is <b>1013.25 hPa</b>.','Trykk er vekten av luften over, målt i <b>hektopascal (hPa)</b>. ISA-verdien ved havnivå er <b>1013,25 hPa</b>.'),
+    ill:()=>sv(`<rect x="86" y="6" width="28" height="44" fill="rgba(143,184,240,.2)" stroke="#8FB8F0"/>${ar(100,14,100,48,'#8FB8F0')}<line x1="30" y1="52" x2="170" y2="52" stroke="#5B6B78"/>${tx(100,62,'1013 hPa','#c9d2da','middle')}`),click:go('chart',()=>setStage(0)),to:'#pvp'},
+   {k:'height',t:t2('Pressure falls with height','Trykket faller med høyden'),d:t2('Near the ground about <b>1 hPa per 27 ft</b> (≈ 30 ft). At about 18 000 ft half the air is below you.','Nær bakken rundt <b>1 hPa per 27 ft</b> (≈ 30 ft). Rundt 18 000 ft er halvparten av luften under deg.'),
+    ill:()=>sv(`<line x1="40" y1="56" x2="40" y2="6" stroke="#5B6B78"/>${[0,1,2,3].map(i=>`<line x1="40" y1="${54-i*14}" x2="${170-i*30}" y2="${54-i*14}" stroke="rgba(143,184,240,${.7-i*.15})"/>`).join('')}${tx(176,57,'1013','#c9d2da','end')}${tx(84,15,'500 hPa','#c9d2da')}`),click:go('alt'),to:'#pvp'},
+   {k:'hl',t:t2('Highs and lows','Høytrykk og lavtrykk'),d:t2('A <b>low</b>: rising air, cloud, rain and wind. A <b>high</b>: sinking air, settled weather, but fog and haze under its inversion in winter.','Et <b>lavtrykk</b>: stigende luft, skyer, regn og vind. Et <b>høytrykk</b>: synkende luft, stabilt vær, men tåke og dis under inversjonen om vinteren.'),
+    ill:()=>sv(`<circle cx="60" cy="32" r="22" fill="none" stroke="#5B6B78"/><circle cx="60" cy="32" r="12" fill="none" stroke="#5B6B78"/><circle cx="145" cy="32" r="22" fill="none" stroke="#5B6B78"/>${tx(60,37,'L','#F07B6A','middle',14)}${tx(145,37,'H','#8FB8F0','middle',14)}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
+   {k:'grad',t:t2('Pressure gradient','Trykkgradient'),d:t2('The change of pressure with distance. <b>Close isobars</b> mean a steep gradient and strong wind.','Endringen i trykk med avstand. <b>Tette isobarer</b> betyr en bratt gradient og sterk vind.'),
+    ill:()=>sv(`${iso}${ar(100,44,96,22,'#F07B6A')}${tx(108,30,'PGF','#F07B6A')}`),click:'#pre button[data-p="strong"]',to:'#pvp'},
+   {k:'cor',t:t2('Coriolis','Coriolis'),d:t2('The Earth turns under moving air: it is turned <b>right in the northern hemisphere</b>, more with speed and latitude, and not at all at the equator.','Jorda dreier under luft i bevegelse: den bøyes <b>mot høyre på nordlig halvkule</b>, mer med fart og breddegrad, og ikke i det hele tatt ved ekvator.'),
+    ill:()=>sv(`<path d="M40,52 C70,52 110,44 130,18" fill="none" stroke="#7FCBE8" stroke-width="1.6"/>${ar(126,24,132,14,'#7FCBE8')}<line x1="40" y1="52" x2="140" y2="52" stroke="#5B6B78" stroke-dasharray="3 3"/>${tx(146,40,L(t2('NH: right','NH: høyre')),'#7FCBE8')}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
+   {k:'geo',t:t2('Geostrophic wind','Geostrofisk vind'),d:t2('When Coriolis balances the gradient, the wind blows <b>along the isobars</b>: the wind above the friction layer. V<sub>g</sub> = Δp / (ρ f Δn).','Når Coriolis balanserer gradienten, blåser vinden <b>langs isobarene</b>: vinden over friksjonslaget. V<sub>g</sub> = Δp / (ρ f Δn).'),
+    ill:()=>sv(`${iso}${ar(60,30,140,22,'#E46BAE',2)}${tx(100,58,'Vg','#E46BAE','middle')}`),click:go('chart',()=>setStage(1)),to:'#pvp'},
+   {k:'fr',t:t2('Friction','Friksjon'),d:t2('Below about 2000–3000 ft the ground slows the wind; it <b>backs</b> (NH) and crosses the isobars towards the low: about 30° over land, 10–15° over the sea.','Under rundt 2000–3000 ft bremser bakken vinden; den <b>dreier mot venstre</b> (NH) og krysser isobarene inn mot lavtrykket: rundt 30° over land, 10–15° over sjø.'),
+    ill:()=>sv(`${iso}${ar(60,34,132,36,'#F0B440',2)}${tx(150,54,'30°','#F0B440')}`),click:go('chart',()=>setStage(2)),to:'#pvp'},
+   {k:'bb',t:t2('Buys Ballot’s law','Buys Ballots lov'),d:t2('Northern hemisphere: <b>back to the wind, the low is on your left</b>. In the southern hemisphere, on your right.','Nordlig halvkule: <b>ryggen mot vinden, lavtrykket til venstre</b>. På sørlig halvkule til høyre.'),
+    ill:()=>sv(`<circle cx="110" cy="40" r="6" fill="#c9d2da"/>${ar(150,40,120,40,'#E46BAE')}${ar(108,32,108,8,'#F07B6A')}${tx(114,12,'L','#F07B6A',null,12)}${tx(156,36,L(t2('wind','vind')),'#E46BAE')}`),click:()=>{ document.querySelector('#task-back [data-show]')?.click(); },to:'#pvp'},
+   {k:'q',t:t2('QNH, QFE and QFF','QNH, QFE og QFF'),d:t2('<b>QFE</b>: pressure at the aerodrome (height above it). <b>QNH</b>: reduced to MSL with ISA (altitude). <b>QFF</b>: reduced with the real temperature (the chart).','<b>QFE</b>: trykket på flyplassen (høyde over den). <b>QNH</b>: redusert til MSL med ISA (høyde over havet). <b>QFF</b>: redusert med virkelig temperatur (kartet).'),
+    ill:()=>sv(`<path d="M10,54 L70,54 C90,54 96,30 120,30 L190,30 L190,64 L10,64 Z" fill="#3b3a33"/><line x1="150" y1="30" x2="150" y2="54" stroke="#E46BAE" stroke-dasharray="3 2"/>${tx(146,24,'QFE','#c9d2da','end')}${tx(156,52,'QNH','#E46BAE')}${tx(16,48,'MSL','#8b99a7')}`),click:go('alt'),to:'#pvp',dp:false},
+   {k:'loc',t:t2('Local winds','Lokale vinder'),d:t2('The sun makes its own small pressure gradients: <b>sea breeze</b> and land breeze, <b>anabatic and katabatic</b> slope winds, and the warm, dry <b>föhn</b> in the lee of mountains.','Solen lager sine egne små trykkgradienter: <b>sjøbris</b> og landbris, <b>anabatiske og katabatiske</b> liavinder, og den varme, tørre <b>føhnen</b> på le side av fjell.'),
+    ill:()=>sv(`<rect x="0" y="48" width="90" height="16" fill="#1D4566"/><rect x="90" y="46" width="110" height="18" fill="#4F4838"/><path d="M40,40 L140,40 L140,16 L40,16 Z" fill="none" stroke="#E46BAE" stroke-dasharray="4 3"/>${ar(60,40,110,40,'#E46BAE')}`),click:go('local'),to:'#pvp'}];
+  KCS.render(el('kcGrid'),K); })();
+function drawMaid(){ el('maid').innerHTML=`<span class="k">${L(t2('Memory aid','Huskeregel'))}</span><b>${L(t2('“Back to the wind, the low is on your left.”','«Ryggen mot vinden, lavtrykket til venstre.»'))}</b><p>${L(t2('Buys Ballot’s law, northern hemisphere. At the surface the low is left and slightly ahead, because friction turns the wind in towards it. In the southern hemisphere it is on your right.','Buys Ballots lov, nordlig halvkule. Ved bakken er lavtrykket til venstre og litt foran, fordi friksjonen dreier vinden inn mot det. På sørlig halvkule er det til høyre.'))}</p>`; }
 
 /* ---------- start ---------- */
 LAB.start('pressure');
-drawStage(); drawPre(); drawTasks(); ufig(); readouts(); altU(); lu();
+syncLw(); drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); ufig(); drawTabs(); legend(); readouts(); altRO(); lu(); fromHash();
 document.addEventListener('labdepth',()=>{ bgDirty=true; changed(); ufig(); });
-LAB.onLang(()=>{ drawStage(); drawPre(); drawTasks(); ufig(); bgDirty=true; changed(); altU(); lu(); });
+LAB.onLang(()=>{ drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); drawTabs(); legend(); ufig(); bgDirty=true; changed(); altU(); lu(); });
 })();
 </script>
 </body>
