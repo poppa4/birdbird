@@ -531,7 +531,7 @@ body.depth-instructor .memo h3{font-size:20px}
         <div class="ovbar"><div class="ovrow"><div class="ov ov-tabs" role="tablist" id="segView">
           <button data-v="stream">Strømlinjer</button><button data-v="cp">Trykk</button><button data-v="vortex">Virvler</button><button data-v="slice">Snitt</button><button data-v="smoke">Røyk</button><button data-v="tufts">Ulltråder</button>
         </div><div class="ov ov-tr">
-          <span class="envseg" id="segEnv"><button data-v="cfd" title="CFD-visning">CFD</button><button data-v="tunnel">Tunnel</button></span>
+          <span class="envseg" id="segEnv"><button data-v="cfd" title="Idealisert strømning: potensialstrøm med forenklet stallmodell, ikke en full CFD-simulering">Ideell strøm</button><button data-v="tunnel">Tunnel</button></span>
           <span class="envseg" id="segLook"><button data-v="studio" title="Lys studiobakgrunn">Studio</button><button data-v="dark" title="Mørk bakgrunn">Mørk</button></span>
           <button class="camb demo" id="stallDemo" onclick="window.NPROG&&NPROG.award('tunnel:stall',100)">Fly inn i stall</button>
           <button class="camb" data-cam="q">3/4</button>
@@ -715,7 +715,7 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="three.min.js"></script>
 <script src="tunnel3d.js?v=2"></script>
 <script src="cfd3d.js?v=4"></script>
-<script src="lab.js?v=27"></script>
+<script src="lab.js?v=28"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="physics.js?v=12"></script>
 <script src="section.js?v=11"></script>
@@ -773,7 +773,7 @@ const NO2EN={
 'Laserarkets posisjon bak tuppen':'Laser sheet position behind the tip','Laserarkets posisjon langs spennet':'Laser sheet position along the span',
 'Laserark: bare røyken i planet lyser':'Laser sheet: only smoke inside the plane is lit','Røykrake':'Smoke rake',
 // CFD-visning
-'CFD-visning':'CFD view','Tunnel':'Tunnel','Bak':'Rear','RK4 · virvelgitter':'RK4 · vortex lattice','Frørake':'Seed rake','Linje':'Line','Plan':'Plane',
+'CFD-visning':'CFD view','Ideell strøm':'Ideal flow','Idealisert strømning: potensialstrøm med forenklet stallmodell, ikke en full CFD-simulering':'Idealised flow: potential flow with a simplified stall model, not a full CFD simulation','Tunnel':'Tunnel','Bak':'Rear','RK4 · virvelgitter':'RK4 · vortex lattice','Frørake':'Seed rake','Linje':'Line','Plan':'Plane',
 'Pulser':'Pulses','Begge sider':'Both sides','Cp på flyet':'Cp on the aircraft','Krysstrømsplan':'Cross-flow plane','Fargekart':'Colour map','Kjølig–varm':'Cool–warm','Turbo':'Turbo',
 'Isolinjer for Cp':'Cp isolines','Rakens midtpunkt langs spennet':'Rake centre along the span','Rakebredde':'Rake width','Linjetetthet':'Line density',
 'Planets posisjon bak vingetippen':'Plane position behind the wingtip',' korder':' chords','Dra raken gjennom tuppen og se virvelen rulle seg opp.':'Sweep the rake through the tip and watch the vortex roll up.',
@@ -1085,7 +1085,14 @@ const LOW=!SHOT&&!/[?&]hq\b/.test(location.search)&&((window.innerWidth<760)||CO
 const DPR=Math.min(window.devicePixelRatio||1,2);
 // kvalitet: oppløsning (maks 2), skygger, antall linjer (justeres for enhet og pikseltetthet), glød
 const QL={pr:LOW?Math.min(DPR,1.5):2, shadows:!LOW, smoke:LOW?0.55:1, physical:!LOW, lines:LOW?(DPR>1.5?0.55:0.7):1, glow:!LOW};
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+/* No WebGL (old/locked-down browser): keep the rest of the page working and say so plainly instead of a technical error. */
+let renderer, NOGL=false;
+try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'}); }
+catch(e){ NOGL=true; const stub=()=>{ const f=function(){}; const p=new Proxy(f,{get:(t,k)=>k===Symbol.toPrimitive?(()=>0):(k==='then'?undefined:p),apply:()=>p,set:()=>true}); return p; }; renderer=stub();
+  const n=document.createElement('div'); n.className='nogl'; n.setAttribute('role','status');
+  n.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;background:#fff;color:#13202A;border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.5;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:5;text-align:center';
+  n.textContent=LANG==='en'?'The 3D wind tunnel needs WebGL, which this browser has turned off or does not support. Try another browser or device. The 2D aerofoil section further down still works.':'3D-vindtunnelen trenger WebGL, som denne nettleseren har slått av eller ikke støtter. Prøv en annen nettleser eller enhet. 2D-profilsnittet lenger ned fungerer fortsatt.';
+  (vp||canvas.parentNode).appendChild(n); console.warn('3D wind tunnel: WebGL unavailable',e); }
 let PR=Math.min(window.devicePixelRatio||1,QL.pr);
 renderer.setPixelRatio(PR);
 renderer.setClearColor(0x000000,0);

@@ -268,7 +268,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
-<script src="lab.js?v=27"></script>
+<script src="lab.js?v=28"></script>
 <script>
 (function(){
 'use strict';
@@ -873,7 +873,7 @@ function debrief(){
   const TK=[t2('<b>Below Vmd the speed runs away.</b> On the approach, manage thrust actively, or let autothrust in SPEED mode do it. Never sit at idle on short final.','<b>Under Vmd løper farten løpsk.</b> På innflyging styrer du skyvekraften aktivt, eller lar autothrust i SPEED-modus gjøre det. Stå aldri på tomgang på kort finale.'),
    t2('<b>Climb on IAS, then Mach.</b> Above the crossover the IAS falls while the Mach is held; up high, watch the Mach and MMO.','<b>Stig på IAS, så Mach.</b> Over crossover faller IAS mens Mach holdes; høyt oppe følger du med på Mach og MMO.'),
    t2('<b>Respect the buffet margin.</b> Near REC MAX there is little room: fly the turbulence speed, keep the bank small and consider a lower level.','<b>Respekter buffetmarginen.</b> Nær REC MAX er det lite rom: fly turbulensfarten, hold liten krengning og vurder et lavere nivå.'),
-   t2('<b>High-altitude stall: angle of attack first.</b> Push to unload, then roll level, then thrust. The engines cannot pull you out up there.','<b>Stall i stor høyde: angrepsvinkelen først.</b> Trykk for å avlaste, rull så rett, så skyvekraft. Motorene kan ikke dra deg ut der oppe.'),
+   t2('<b>High-altitude stall: angle of attack first.</b> As a general principle: push to unload, then roll level, then thrust; the engines cannot pull you out up there. Always fly your aircraft type\'s stall recovery procedure (QRH/FCOM).','<b>Stall i stor høyde: angrepsvinkelen først.</b> Som et generelt prinsipp: trykk for å avlaste, rull så rett, så skyvekraft; motorene kan ikke dra deg ut der oppe. Fly alltid flytypens stall recovery-prosedyre (QRH/FCOM).'),
    t2('<b>Sweep has a price.</b> It buys a higher Mcrit but costs CLmax, brings tip stall and Dutch roll: slats, flaps and the yaw damper are there for that.','<b>Pilform har en pris.</b> Den gir høyere Mcrit, men koster CLmax og gir tippstall og Dutch roll: slats, flaps og girdemperen er der for det.')];
   el('take').innerHTML=TK.map(x=>`<li>${L(x)}</li>`).join('');
   el('opsK').textContent=L(t2('Deep dive · in the A320','Dypdykk · i A320')); }

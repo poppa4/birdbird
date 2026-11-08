@@ -173,7 +173,7 @@
       side.classList.toggle('open',open); spy(); };
     const drawBar=()=>{
       bar.setAttribute('aria-label',Lx(t2('Steps in this lab','Steg i denne labben')));
-      bar.innerHTML=`<div class="atl-steps">${STEPS.map(([k,n],i)=>{ const tg=k==='next'?{id:'next'}:steps.find(s=>s.step===k);
+      bar.innerHTML=`<div class="atl-steps">${STEPS.map(([k,n],i)=>{ const tg=k==='check'?(steps.find(s=>s.id==='quiz')||steps.find(s=>s.step===k)):steps.find(s=>s.step===k); /* Test yourself goes to the quiz, like the sidebar */
         return tg?`<a href="#${esc(tg.id)}" data-step-link="${k}"><i>${i+1}</i>${esc(Lx(n))}</a>`:`<span class="off" data-step-link="${k}" aria-disabled="true" title="${esc(Lx(t2('Not yet in this lab','Ikke i denne labben ennå')))}"><i>${i+1}</i>${esc(Lx(n))}</span>`; }).join('')}</div>${depthHTML('d-bar')}`;
       spy(); };
     side.addEventListener('click',e=>{ if(e.target.closest('.atl-tog')){ open=!open; side.classList.toggle('open',open); side.querySelector('.atl-tog').setAttribute('aria-expanded',String(open)); return; }
