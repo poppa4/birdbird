@@ -404,11 +404,6 @@
     <p class="srcnote" id="srcnote"></p>
   </div>
 
-  <!-- welcome back (only with progress) -->
-  <section class="wb" id="wb" aria-label="Your progress">
-    <div><div class="wk">Welcome back</div><div class="wn" id="wbN"></div></div>
-    <div><div class="wbar"><i id="wbBar" style="width:0"></i></div><div class="wnext" id="wbNext"></div></div>
-  </section>
 
   <!-- 3. How it fits together -->
   <section class="hsec" id="parts" aria-labelledby="h-pa">
@@ -644,7 +639,7 @@ const byKey=k=>FLAT.find(x=>x.k===k);
 })();
 
 /* ---------- welcome back ---------- */
-function prog(){
+function prog(){ if(!el('wb')) return;
   const doneLabs=FLAT.filter(x=>LAB.done(x.k)>=60), nxt=FLAT.find(x=>LAB.done(x.k)<60);
   let xp=0, rk=null; if(window.NPROG){ try{ const d=NPROG.load(); xp=NPROG.xpOf(d); rk=NPROG.rankOf(xp); }catch(e){} }
   const on=doneLabs.length>0||xp>0; el('wb').classList.toggle('on',on); if(!on) return;
