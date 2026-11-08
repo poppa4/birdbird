@@ -302,6 +302,7 @@
 
 
 
+.hsec[hidden]{display:none!important}
 .hk{--navy:#0B2545;padding:56px 0 24px}
 .hk-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 64px;align-items:end}
 .hk-eye{font-size:12.5px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--h-acc,#9A1E68);margin:0 0 14px;display:flex;align-items:center;gap:10px}.hk-eye::before{content:'';width:22px;height:2px;background:currentColor;border-radius:1px}
@@ -435,7 +436,7 @@
   </section>
 
   <!-- 2. Tracks -->
-  <section class="hsec" id="tracks" aria-labelledby="h-tr">
+  <section class="hsec" id="tracks" hidden aria-labelledby="h-tr">
     <header><div><span class="kick">Where to start</span><h2 id="h-tr">Choose your track</h2><p class="sub">Each track starts with three items. Everything stays open, so move between them as your training needs it.</p></div><a class="more" href="lab.html">See the full learning path →</a></header>
     <div class="who-pick" role="group" aria-labelledby="wq"><span id="wq">Who are you?</span><div class="seg" id="trSeg"><button type="button" data-t="found" aria-pressed="false">Student pilot, PPL and IR</button><button type="button" data-t="atpl" aria-pressed="false">ATPL, heading to the airlines</button><button type="button" data-t="type" aria-pressed="false">Type rating and instructors</button></div></div>
     <div class="tracks" id="trList">
@@ -470,7 +471,7 @@
   </section>
 
   <!-- 4. Mini lab -->
-  <section class="hsec" id="try" aria-labelledby="h-try">
+  <section class="hsec" id="try" hidden aria-labelledby="h-try">
     <header><div><span class="kick">Try one now</span><h2 id="h-try">How high does your aircraft think it is?</h2><p class="sub">Set the field elevation, the QNH and the temperature. The wing and the engine perform at the density altitude, not at the height on the chart.</p></div></header>
     <div class="mini">
       <div class="mfig"><svg id="da" viewBox="0 0 560 300" role="img" aria-label="Field elevation, pressure altitude and density altitude on one scale"></svg></div>
@@ -486,7 +487,7 @@
   </section>
 
   <!-- 5. Coverage and proof -->
-  <section class="hsec" id="coverage" aria-labelledby="h-cov">
+  <section class="hsec" id="coverage" hidden aria-labelledby="h-cov">
     <header><div><span class="kick">Coverage</span><h2 id="h-cov">Mapped to the EASA ATPL syllabus</h2><p class="sub">Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.</p></div></header>
     <div class="stats">
       <div><b id="nLabs">25</b><span>interactive labs</span></div>
