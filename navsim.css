@@ -140,3 +140,34 @@ body.depth-instructor .ns-guide{font-size:16px}
 body.depth-instructor .nsg-do{font-size:17px}
 body.depth-instructor .ns-dme .dw output{font-size:30px}
 @media (prefers-reduced-motion:reduce){.nsg-why,.nsg-ck{animation:none}.ns-g,.ns-mapw,.ns-dme{transition:none}}
+/* ---- control drawer (desktop): the panel folds into a slim rail so the instruments can grow ---- */
+.ns-drawer{display:none}
+@media (min-width:981px){
+  .ns .xpanel{transition:none}
+  .ns-drawer{display:flex;align-items:center;gap:8px;width:100%;border:0;border-bottom:1px solid var(--rule-2);background:var(--wash);color:var(--ink-2);font:500 12.5px var(--f-body);padding:8px 14px;cursor:pointer;text-align:left}
+  .ns-drawer:hover{color:var(--ink);background:#E9EEEA}
+  .ns-drawer:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+  .ns-dri{width:14px;height:14px;flex:0 0 auto;position:relative}
+  .ns-dri::before,.ns-dri::after{content:"";position:absolute;top:3px;width:6px;height:6px;border-left:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(45deg)}
+  .ns-dri::before{left:3px}.ns-dri::after{left:8px}
+  .ns.ns-collapsed{grid-template-columns:46px minmax(0,1fr)}
+  .ns.ns-collapsed>.xpanel{overflow:hidden;max-height:none}
+  .ns.ns-collapsed>.xpanel>.xbody{display:none}
+  .ns.ns-collapsed .ns-drawer{flex-direction:column;justify-content:flex-start;height:min(70vh,560px);padding:14px 0;border-bottom:0;background:var(--sheet)}
+  .ns.ns-collapsed .ns-dri{transform:rotate(180deg)}
+  .ns.ns-collapsed .ns-drt{writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.04em;font-weight:600;color:var(--ink)}
+  .ns.ns-collapsed .ns-body{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+  .ns.ns-collapsed .ns-inst{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ns.ns-collapsed .ns-sixg{max-width:none}
+}
+@media (min-width:981px) and (max-width:1240px){ .ns.ns-collapsed .ns-body{grid-template-columns:minmax(0,1fr)} .ns.ns-collapsed .ns-inst{grid-template-columns:repeat(4,minmax(0,1fr))} }
+body.depth-instructor .ns.ns-collapsed{grid-template-columns:46px minmax(0,1fr)}
+/* ---- phone: focused instruments large, the rest in a swipe strip ---- */
+.ns-strip[hidden]{display:none}
+.ns-strip{min-width:0}
+.ns-strh{margin:0 0 4px;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#7D8B95}
+.ns-strw{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:thin}
+.ns-strw .ns-g{flex:0 0 40%;scroll-snap-align:start}
+.ns-strw .ns-g .ns-gc{min-height:0}
+.ns-strw .ns-g .ns-kn{display:none}
+@media (max-width:640px){ .ns-inst.one{grid-template-columns:minmax(0,1fr)} .ns-inst.one .ns-g{max-width:330px;width:100%;justify-self:center} }

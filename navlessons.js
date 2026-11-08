@@ -452,6 +452,7 @@ top.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) ret
 
 function setMode(m){ S.mode=m; A.run(false); A.focus(null); document.querySelectorAll('#nsModes [data-m]').forEach(b=>{ b.classList.toggle('on',b.dataset.m===m); b.setAttribute('aria-selected',String(b.dataset.m===m)); });
   el('nsvp').dataset.mode=m;
+  A.panel();
   if(m==='learn'){ S.guide=true; S.view.hideAns=false; S.view.hideMap=false; startLesson(G.li); }
   else if(m==='practice'){ S.guide=true; S.view.hideAns=false; newTask(G.pt?G.pi:0); }
   else if(m==='explore'){ S.guide=false; S.view.hideAns=false; S.view.hideMap=false; G.why=null; A.redraw(); }

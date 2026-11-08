@@ -43,10 +43,23 @@ function buildArea(){ const A=AREAS[S.area], [la0,lo0]=A.ref; ST={}; NAV=[]; ILS
     const thr={x:p.x-u[0]*h,y:p.y-u[1]*h}, end={x:p.x+u[0]*h,y:p.y+u[1]*h};
     const o={id:i.id,name:i.name,type:'ILS',apt:i.apt,crs:i.crs,elev:i.elev,thr,end,x:end.x+u[0]*0.16,y:end.y+u[1]*0.16,gp:{x:thr.x+u[0]*0.16,y:thr.y+u[1]*0.16},gpa:3,var:S.varE};
     ST[o.id]=o; ILS.push(o); NAV.push(o); });
-  LAND=(COAST[S.area]||[]).map(a=>Float32Array.from(a));
+  LAND=(COAST[S.area]||[]).map(a=>Float32Array.from(a)); loadTerrain();
   if(!ST[S.nav1]||ST[S.nav1].type==='NDB') S.nav1=NAV.find(n=>n.type==='VOR').id;
   if(!ST[S.adf]||ST[S.adf].type!=='NDB') S.adf=NAV.find(n=>n.type==='NDB').id;
   bgDirty=true; }
+/* local relief and coastline (Mapzen/AWS Terrain Tiles via terrain/hr, prepared per area in data/navsim-<area>.png/.json):
+   a grey relief image (0 = sea) coloured once into a dark canvas, and a coastline Path2D in NM (y flipped) drawn under the view transform */
+const TER={area:null,cv:null,path:null,R:62};
+const TLO=[19,29,37], THI=[56,69,78];
+function loadTerrain(){ const a=S.area; if(TER.area===a) return; TER.area=a; TER.cv=null; TER.path=null;
+  fetch('data/navsim-'+a+'.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j||TER.area!==a) return; const u=j.unit, p=new Path2D();
+    for(const q of j.rings){ for(let i=0;i<q.length;i+=2){ const x=q[i]*u, y=-q[i+1]*u; if(i) p.lineTo(x,y); else p.moveTo(x,y); } p.closePath(); }
+    TER.path=p; TER.R=j.R; bgDirty=true; redraw(); }).catch(()=>{});
+  const im=new Image(); im.onload=()=>{ if(TER.area!==a) return; try{ const c=document.createElement('canvas'); c.width=im.width; c.height=im.height; const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(im,0,0);
+      const id=g.getImageData(0,0,c.width,c.height), d=id.data;
+      for(let i=0;i<d.length;i+=4){ const v=d[i]; const t=v?Math.min(1,(v-6)/249):0; d[i]=TLO[0]+(THI[0]-TLO[0])*t; d[i+1]=TLO[1]+(THI[1]-TLO[1])*t; d[i+2]=TLO[2]+(THI[2]-TLO[2])*t; d[i+3]=255; }
+      g.putImageData(id,0,0); TER.cv=c; bgDirty=true; redraw(); }catch(e){} };
+  im.src='data/navsim-'+a+'.png'; }
 function setVar(v){ S.varE=v; NAV.forEach(n=>n.var=v); }
 const nav1=()=>ST[S.nav1], adfSt=()=>ST[S.adf], isILS=()=>nav1()&&nav1().type==='ILS';
 /* the VOR/DME used for position fields: NAV1 if it is a VOR, else the area's main VOR */
@@ -82,7 +95,7 @@ function holdFix(){ const v=refVor(); if(S.hold.fix==='st'){ HF.x=v.x; HF.y=v.y;
 /* ---------- flight model and autopilot ---------- */
 const HS={mode:'tofix',ph:0,tm:0,laps:0,entry:'',fixD:99};
 function holdReset(){ HS.mode='tofix'; HS.ph=0; HS.tm=0; HS.laps=0; HS.entry=''; }
-let lastHdg=0, rateNow=0, navCap=false;
+let lastHdg=0, rateNow=0, navCap=false, apWant=0, apDir=0;
 function turnToward(want,dir,dt){ const a=S.ac, r=N.turnRate(a.tas)*dt; let d=diff(want,a.th);
   if(dir>0&&d<-1) d+=360; if(dir<0&&d>1) d-=360;
   if(Math.abs(d)<=r){ a.th=norm(want); return true; } a.th=norm(a.th+Math.sign(d)*r); return false; }
@@ -102,7 +115,7 @@ function apStep(dt){
       break; }
     case 'HOLD': { const r=holdStep(dt); want=r.want; dir=r.dir; break; }
   }
-  turnToward(want,dir,dt);
+  apWant=want; apDir=dir; turnToward(want,dir,dt);
   /* vertical: selected altitude at the selected rate, or the glide path in APP */
   let tvs=0; const dAlt=S.sel.alt-a.alt;
   if(S.ap==='APP'&&isILS()){ const n=nav1(), g=N.gs(n,a,a.alt); if(g.valid&&g.dev<0.7){ const gsk=Math.hypot(D.vx||0,D.vy||0)||tas; tvs=-gsk*101.27*Math.tan(3*D2R)+(g.pathFt-a.alt)*1.2; if(a.alt<n.elev+60) tvs=0; } else tvs=clamp(dAlt*2,-S.sel.vs,S.sel.vs); }
@@ -152,11 +165,20 @@ let bgDirty=true, mapDirty=true, profDirty=true, instDirty=true;
 const BG=document.createElement('canvas');
 /* view transform (module-level numbers, no allocation) */
 const M={cx:0,cy:0,k:1,ox:0,oy:0,c:1,s:0,rot:0};
-function setView(){ const W=MC.w,H=MC.h, v=S.view, a=S.ac;
-  M.k=Math.min(W,H)/2/v.range*0.92; M.rot= v.north?0:a.th; M.c=Math.cos(M.rot*D2R); M.s=Math.sin(M.rot*D2R);
-  if(!v.north){ M.ox=a.x; M.oy=a.y; M.cx=W/2; M.cy=H*0.62; }
-  else if(v.centre==='ac'){ M.ox=a.x; M.oy=a.y; M.cx=W/2; M.cy=H/2; }
-  else { const c=refCentre(); M.ox=c.x; M.oy=c.y; M.cx=W/2; M.cy=H/2; } }
+/* camera: the view eases to its new target after a zoom, North-up/Heading-up or centre change, then follows directly */
+const CT={k:1,rot:0,ox:0,oy:0,cx:0,cy:0}, CF={k:1,rot:0,ox:0,oy:0,cx:0,cy:0}, CAM={t:1};
+function camTarget(){ const W=MC.w,H=MC.h, v=S.view, a=S.ac;
+  CT.k=Math.min(W,H)/2/v.range*0.92; CT.rot= v.north?0:a.th;
+  if(!v.north){ CT.ox=a.x; CT.oy=a.y; CT.cx=W/2; CT.cy=H*0.62; }
+  else if(v.centre==='ac'){ CT.ox=a.x; CT.oy=a.y; CT.cx=W/2; CT.cy=H/2; }
+  else { const c=refCentre(); CT.ox=c.x; CT.oy=c.y; CT.cx=W/2; CT.cy=H/2; } }
+function camStart(){ if(reduced()||!MC.w){ CAM.t=1; return; } CF.k=M.k; CF.rot=M.rot; CF.ox=M.ox; CF.oy=M.oy; CF.cx=M.cx; CF.cy=M.cy; CAM.t=0; kick(); }
+function setView(){ camTarget();
+  if(CAM.t<1){ const t=CAM.t, e=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2, l=(a,b)=>a+(b-a)*e;
+    /* zoom in log space so it feels even */
+    M.k=Math.exp(l(Math.log(CF.k),Math.log(CT.k))); M.rot=norm(CF.rot+diff(CT.rot,CF.rot)*e); M.ox=l(CF.ox,CT.ox); M.oy=l(CF.oy,CT.oy); M.cx=l(CF.cx,CT.cx); M.cy=l(CF.cy,CT.cy); }
+  else { M.k=CT.k; M.rot=CT.rot; M.ox=CT.ox; M.oy=CT.oy; M.cx=CT.cx; M.cy=CT.cy; }
+  M.c=Math.cos(M.rot*D2R); M.s=Math.sin(M.rot*D2R); }
 const refCentre=()=>{ const n=nav1(); return n.type==='ILS'?n.thr:n; };
 let SX=0, SY=0;
 function P(x,y){ const dx=x-M.ox, dy=y-M.oy; const rx=dx*M.c-dy*M.s, ry=dx*M.s+dy*M.c; SX=M.cx+rx*M.k; SY=M.cy-ry*M.k; }
@@ -165,11 +187,16 @@ function unP(sx,sy){ const rx=(sx-M.cx)/M.k, ry=(M.cy-sy)/M.k; return {x:M.ox+rx
 const SA=b=>(b-M.rot)*D2R;
 
 /* ---------- labels that never overlap ---------- */
-const LB=[]; for(let i=0;i<48;i++) LB.push({x:0,y:0,w:0,h:0,t:'',c:'',bg:'',f:'',pr:0});
+const LB=[]; for(let i=0;i<44;i++) LB.push({x:0,y:0,w:0,h:0,t:'',c:'',bg:'',f:'',pr:0});
 const PLACED=new Float32Array(48*4); let lbN=0;
 function label(x,y,t,c,f,bg){ if(lbN>=LB.length) return; const o=LB[lbN++]; o.x=x; o.y=y; o.t=t; o.c=c; o.f=f||`500 11px ${FM}`; o.bg=bg||'rgba(9,13,17,.78)'; }
 const OFFS=[[9,-9],[9,13],[-9,-9],[-9,13],[0,-16],[0,20],[16,3],[-16,3]];
+const CHIP=document.getElementById('nsChip'); let chipW=0, chipH=0;
+function reserve(np,x,y,w,h){ PLACED[np*4]=x; PLACED[np*4+1]=y; PLACED[np*4+2]=w; PLACED[np*4+3]=h; return np+1; }
 function flushLabels(g,W,H){ let np=0; g.textBaseline='middle';
+  /* keep clear of the chip, the wind badge, the north arrow and scale, and the orientation text */
+  if(chipW) np=reserve(np,0,0,chipW+12,chipH+10);
+  np=reserve(np,W-82,0,82,92); np=reserve(np,0,H-72,140,72); np=reserve(np,W-120,H-26,120,26);
   for(let i=0;i<lbN;i++){ const o=LB[i]; g.font=o.f; const w=g.measureText(o.t).width+10, h=17; let ok=false, bx=0, by=0;
     for(let j=0;j<OFFS.length&&!ok;j++){ const ox=OFFS[j][0], oy=OFFS[j][1]; bx= ox>0?o.x+ox: ox<0? o.x+ox-w : o.x-w/2; by=o.y+oy-h/2;
       if(bx<2||by<2||bx+w>W-2||by+h>H-2) continue; ok=true;
@@ -184,9 +211,13 @@ function arrowHead(g,x,y,ang,sz,col){ g.fillStyle=col; g.beginPath(); g.moveTo(x
 /* ---------- the plan view ---------- */
 function drawBg(g,W,H){
   const gr=g.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.5,Math.max(W,H)*0.75); gr.addColorStop(0,COL.bg1); gr.addColorStop(1,COL.bg0); g.fillStyle=gr; g.fillRect(0,0,W,H);
-  /* land */
-  g.fillStyle=COL.land; g.strokeStyle=COL.landE; g.lineWidth=1;
-  for(const poly of LAND){ g.beginPath(); for(let i=0;i<poly.length;i+=2){ P(poly[i],poly[i+1]); if(i) g.lineTo(SX,SY); else g.moveTo(SX,SY); } g.closePath(); g.fill(); g.stroke(); }
+  /* land: relief and coastline when loaded, else the coarse Natural Earth outline */
+  if(TER.path){ g.save(); g.translate(M.cx,M.cy); g.rotate(-M.rot*D2R); g.scale(M.k,M.k); g.translate(-M.ox,M.oy);
+    if(TER.path){ if(TER.cv){ g.save(); g.clip(TER.path,'evenodd'); g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(TER.cv,-TER.R,-TER.R,2*TER.R,2*TER.R); g.restore(); } else { g.fillStyle=COL.land; g.fill(TER.path,'evenodd'); } }
+    if(TER.path){ g.strokeStyle='rgba(150,182,204,.38)'; g.lineWidth=1/M.k; g.lineJoin='round'; g.stroke(TER.path); }
+    g.restore(); }
+  else { g.fillStyle=COL.land; g.strokeStyle=COL.landE; g.lineWidth=1;
+  for(const poly of LAND){ g.beginPath(); for(let i=0;i<poly.length;i+=2){ P(poly[i],poly[i+1]); if(i) g.lineTo(SX,SY); else g.moveTo(SX,SY); } g.closePath(); g.fill(); g.stroke(); } }
   /* faint grid every 10 NM */
   g.strokeStyle='rgba(255,255,255,.025)'; const step=S.view.range>40?20:10, ext=S.view.range*2;
   for(let i=-ext;i<=ext;i+=step){ P(M.ox+i-((M.ox)%step),M.oy-ext); const x1=SX,y1=SY; P(M.ox+i-((M.ox)%step),M.oy+ext); g.beginPath(); g.moveTo(x1,y1); g.lineTo(SX,SY); g.stroke();
@@ -219,7 +250,7 @@ function acShape(g,sz){ /* top view of a light twin, nose up, size = half span *
 let hoverAc=false;
 function drawMap(){
   const g=MC.ctx, W=MC.w, H=MC.h; if(!W) return; setView();
-  const fixedBg=S.view.north&&S.view.centre!=='ac';
+  const fixedBg=S.view.north&&S.view.centre!=='ac'&&CAM.t>=1;
   if(fixedBg){ if(bgDirty||BG.width!==Math.round(W*MC.dpr)){ BG.width=Math.round(W*MC.dpr); BG.height=Math.round(H*MC.dpr); const bg=BG.getContext('2d'); bg.setTransform(MC.dpr,0,0,MC.dpr,0,0); drawBg(bg,W,H); bgDirty=false; }
     g.setTransform(1,0,0,1,0,0); g.drawImage(BG,0,0); g.setTransform(MC.dpr,0,0,MC.dpr,0,0); }
   else drawBg(g,W,H);
@@ -259,7 +290,7 @@ function drawMap(){
     /* ADF bearing */
     if(S.view.brg){ const s=adfSt(); P(s.x,s.y); g.strokeStyle='rgba(245,188,76,.5)'; g.lineWidth=1.1; g.setLineDash([1,5]); g.beginPath(); g.moveTo(ax,ay); g.lineTo(SX,SY); g.stroke(); g.setLineDash([]); }
     /* predicted track (2 min) */
-    const tr=N.toTrue(D.trk,S.varE), L2=D.gs/30*M.k, ta=SA(tr); g.strokeStyle='rgba(230,235,239,.35)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ax,ay); g.lineTo(ax+Math.sin(ta)*L2,ay-Math.cos(ta)*L2); g.stroke(); g.setLineDash([]);
+    if(S.run&&Math.abs(diff(apWant,a.th))>1.5) predictor(g); else { const tr=N.toTrue(D.trk,S.varE), L2=D.gs/30*M.k, ta=SA(tr); g.strokeStyle='rgba(230,235,239,.35)'; g.lineWidth=1; g.setLineDash([4,4]); g.beginPath(); g.moveTo(ax,ay); g.lineTo(ax+Math.sin(ta)*L2,ay-Math.cos(ta)*L2); g.stroke(); g.setLineDash([]); }
     /* wind triangle */
     if(S.view.tri) drawTri(g,ax,ay);
     /* aircraft */
@@ -281,6 +312,19 @@ function drawMap(){
   g.textAlign='left'; g.fillText(nmL+' NM',20+px,H-15);
   g.textAlign='right'; g.fillStyle=COL.ink3; g.font=`500 10px ${FM}`; g.fillText(S.view.north?L(t2('NORTH UP','NORD OPP')):L(t2('HEADING UP','KURS OPP')),W-10,H-12);
   mapDirty=false; }
+/* predictor: where the aircraft will be over the next 90 s (dots every 30 s), rolling out on the autopilot's target heading (wind included) */
+const PRN=91, PR=new Float32Array(PRN*2);
+function predictor(g){ const a=S.ac, W=S.wind; let x=a.x, y=a.y, h=a.th; const r=N.turnRate(a.tas);
+  for(let i=0;i<PRN;i++){ P(x,y); PR[i*2]=SX; PR[i*2+1]=SY;
+    let d=diff(apWant,h); if(apDir>0&&d<-1) d+=360; if(apDir<0&&d>1) d-=360; h=Math.abs(d)<=r?apWant:norm(h+Math.sign(d)*r);
+    const sh=Math.sin(h*D2R), ch=Math.cos(h*D2R), ws=Math.sin(W.dir*D2R), wc=Math.cos(W.dir*D2R);
+    x+=(a.tas*sh-W.spd*ws)/3600; y+=(a.tas*ch-W.spd*wc)/3600; }
+  g.save(); g.lineCap='round'; g.lineJoin='round';
+  /* soft halo, then a tapering cyan arc */
+  g.strokeStyle='rgba(127,203,232,.16)'; g.lineWidth=7; g.beginPath(); g.moveTo(PR[0],PR[1]); for(let i=1;i<PRN;i++) g.lineTo(PR[i*2],PR[i*2+1]); g.stroke();
+  for(let s0=0;s0<PRN-1;s0+=15){ g.strokeStyle=`rgba(127,203,232,${(0.95-s0/PRN*0.7).toFixed(2)})`; g.lineWidth=2.2-s0/PRN*1.2; g.beginPath(); g.moveTo(PR[s0*2],PR[s0*2+1]); for(let i=s0+1;i<=Math.min(PRN-1,s0+15);i++) g.lineTo(PR[i*2],PR[i*2+1]); g.stroke(); }
+  g.fillStyle='#7FCBE8'; for(let i=30;i<PRN;i+=30){ g.beginPath(); g.arc(PR[i*2],PR[i*2+1],2.4,0,TAU); g.fill(); }
+  g.restore(); }
 function windBadge(g,W){ const x=W-40, y=42; g.fillStyle='rgba(9,13,17,.7)'; g.beginPath(); g.arc(x,y,26,0,TAU); g.fill(); g.strokeStyle='rgba(127,203,232,.25)'; g.lineWidth=1; g.stroke();
   if(S.wind.spd>0){ const an=SA(S.wind.dir+180); g.strokeStyle=COL.wind; g.lineWidth=2; g.beginPath(); g.moveTo(x-Math.sin(an)*16,y+Math.cos(an)*16); g.lineTo(x+Math.sin(an)*12,y-Math.cos(an)*12); g.stroke(); arrowHead(g,x+Math.sin(an)*16,y-Math.cos(an)*16,an,7,COL.wind); }
   g.fillStyle=COL.ink; g.font=`600 10.5px ${FM}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(S.wind.spd>0?d3(S.wind.dir)+'/'+Math.round(S.wind.spd):L(t2('CALM','STILLE')),x,y+38); g.fillStyle=COL.ink3; g.font=`500 9px ${FM}`; g.fillText(L(t2('WIND','VIND')),x,y-34); }
@@ -370,7 +414,7 @@ function readouts(){ const v=D.ils?refVor():nav1(), hide=S.view.hideAns&&S.mode!
     h+=`<span class="hx"><i>DME</i><b>${nf(D.slant,1)}</b></span>`; }
   h+=`<span><i>HDG</i><b>${d3(D.mh)}</b></span><span><i>TRK</i><b>${d3(D.trk)}</b></span><span class="hx"><i>GS</i><b>${Math.round(D.gs)}</b></span>`;
   if(S.ap==='TRK'&&!D.trkOk) h+=`<span><i>TRK</i><b class="a">${L(t2('wind too strong','for sterk vind'))}</b></span>`;
-  if(TXT.chip!==h){ TXT.chip=h; c.innerHTML=h; } }
+  if(TXT.chip!==h){ TXT.chip=h; c.innerHTML=h; chipW=c.offsetWidth; chipH=c.offsetHeight; } }
 
 /* ---------- main loop ---------- */
 let lastT=0, uiT=0, visible=true, flagPrev='';
@@ -382,6 +426,7 @@ function frame(t){ raf=0; const dt=Math.min(0.1,lastT?(t-lastT)/1000:0.016); las
   if(S.run){ let sim=dt*S.speed; while(sim>1e-6){ const h=Math.min(0.1,sim); simStep(h); sim-=h; } mapDirty=true; profDirty=true; instDirty=true; }
   if(instDirty||mapDirty){ derive(); setGauges(); instDirty=false; }
   for(const k in GA){ if(GA[k].tick(dt)) moving=true; if(GA[k].dirty||moving) GA[k].draw(); }
+  if(CAM.t<1){ CAM.t=Math.min(1,CAM.t+dt/0.5); mapDirty=true; if(CAM.t>=1) bgDirty=true; moving=true; }
   if(mapDirty) drawMap(); if(S.view.profile&&profDirty) drawProf();
   uiT+=dt; if(uiT>0.1||!S.run){ uiT=0; readouts(); if(API.onTick) API.onTick(dt); fieldsSync(); }
   if(D.flag!==flagPrev){ if(flagPrev&&S.run&&API.onFlag) API.onFlag(flagPrev,D.flag); flagPrev=D.flag; }
@@ -444,7 +489,8 @@ function sec(id,title,open,extra){ const d=document.createElement('details'); d.
 function grp(box,t){ const e=document.createElement('div'); e.className='grp'; box.appendChild(e); const dr=()=>{ e.textContent=L(t); }; dr(); LAB.onLang(dr); return e; }
 function div(box,cls){ const e=document.createElement('div'); if(cls) e.className=cls; box.appendChild(e); return e; }
 function buildPanel(){
-  PN.innerHTML=`<summary class="xsum"><span></span><span class="xsv" id="nsSv"></span></summary><div class="xbody"></div>`;
+  PN.innerHTML=`<summary class="xsum"><span></span><span class="xsv" id="nsSv"></span></summary><button type="button" class="ns-drawer" id="nsDrawer" aria-controls="nsPanel"><span class="ns-dri" aria-hidden="true"></span><span class="ns-drt"></span></button><div class="xbody"></div>`;
+  el('nsDrawer').addEventListener('click',()=>panelSet(!APP.classList.contains('ns-collapsed'),true));
   const sm=PN.querySelector('.xsum span'); const ds=()=>{ sm.textContent=L(t2('Controls','Kontroller')); }; ds(); LAB.onLang(ds);
   /* mode-specific block (lesson list, practice tasks, scenarios) lives at the top */
   const top=sec('nsTopSec',t2('Lessons','Leksjoner'),true); top.id='nsTop';
@@ -504,9 +550,25 @@ function buildPanel(){
   grp(adv,t2('Magnetic variation','Misvisning'));
   segment(div(adv),()=>[['0',t2('None','Ingen')],['a',t2(`Area (${AREAS[S.area].varW}° E)`,`Område (${AREAS[S.area].varW}° Ø)`)]],()=>S.varE?'a':'0',v=>{ setVar(v==='a'?AREAS[S.area].varW:0); bgDirty=true; },'var');
   const vn=div(adv,'note'); const vnd=()=>{ vn.textContent=L(t2('Variation from the World Magnetic Model 2025 for 2026. Radials, headings and courses are magnetic; the wind is true. One value is used for the whole area.','Misvisning fra World Magnetic Model 2025 for 2026. Radialer, kurser og kurslinjer er magnetiske; vinden er rettvisende. Én verdi brukes for hele området.')); }; vnd(); LAB.onLang(vnd);
-  grp(adv,t2('Map','Kart')); segment(div(adv),()=>[['st',t2('Centre on the station','Midt på stasjonen')],['ac',t2('Centre on the aircraft','Midt på flyet')]],()=>S.view.centre,v=>{ S.view.centre=v; bgDirty=true; },'view');
+  grp(adv,t2('Map','Kart')); segment(div(adv),()=>[['st',t2('Centre on the station','Midt på stasjonen')],['ac',t2('Centre on the aircraft','Midt på flyet')]],()=>S.view.centre,v=>{ camStart(); S.view.centre=v; bgDirty=true; },'view');
 }
 const APN=[];
+/* the control panel folds into a slim drawer on desktop, so the instruments can grow.
+   Default: open in Learn and Practice, folded in Explore and Instructor; a choice the user makes is remembered per mode. */
+const APP=el('nsapp');
+function panelPref(){ try{ const v=localStorage.getItem('birdbird-navsim-panel-'+S.mode); if(v==='1'||v==='0') return v==='1'; }catch(e){} return S.mode==='explore'||S.mode==='instructor'; }
+function panelSet(col,save){ APP.classList.toggle('ns-collapsed',!!col); if(save){ try{ localStorage.setItem('birdbird-navsim-panel-'+S.mode,col?'1':'0'); }catch(e){} }
+  const b=el('nsDrawer'); if(b){ b.setAttribute('aria-expanded',String(!col)); b.querySelector('.ns-drt').textContent=col?L(t2('Controls','Kontroller')):L(t2('Hide controls','Skjul kontroller')); b.title=col?L(t2('Show the controls','Vis kontrollene')):L(t2('Fold the controls away for bigger instruments','Legg bort kontrollene for større instrumenter')); }
+  bgDirty=true; redraw(); }
+/* phones: the instruments the current step needs stay large; the others go into a strip you swipe sideways */
+const PHONE=matchMedia('(max-width:640px)'), STRIP=el('nsStrip'), INST=el('nsInst'), DME=el('nsDme'); let focusList=null;
+function phoneLayout(){ const gs=['cdi','hsi','rmi','adf'].map(k=>INST.querySelector(`[data-g="${k}"]`)||STRIP.querySelector(`[data-g="${k}"]`));
+  const strip=PHONE.matches&&focusList&&focusList.length&&gs.some(w=>focusList.includes(w.dataset.g));
+  let nf=0; gs.forEach(w=>{ const inF=!strip||focusList.includes(w.dataset.g); if(inF) nf++; const tgt=inF?INST:STRIP.querySelector('.ns-strw'); if(w.parentNode!==tgt){ if(inF) INST.insertBefore(w,DME); else tgt.appendChild(w); } });
+  /* keep the original order inside each container */
+  gs.forEach(w=>{ w.parentNode.appendChild(w); }); INST.appendChild(DME);
+  STRIP.hidden=!strip; INST.classList.toggle('one',!!strip&&nf===1); }
+if(PHONE.addEventListener) PHONE.addEventListener('change',phoneLayout);
 function apSync(){ segsSync(); APN.forEach(f=>f()); }
 
 /* ---------- viewport bar: modes and tools ---------- */
@@ -523,10 +585,10 @@ function toolsSync(){ const r=el('nsRun'); if(!r) return; r.textContent=S.run?L(
   el('nsNorth').textContent=S.view.north?L(t2('North up','Nord opp')):L(t2('Heading up','Kurs opp')); el('nsProfB').textContent=L(t2('Profile','Profil')); el('nsProfB').setAttribute('aria-pressed',String(S.view.profile));
   el('nsRng').textContent=S.view.range+' NM'; TOGS.forEach(f=>f()); }
 const RANGES=[5,10,20,40,80];
-function zoom(d){ const i=RANGES.indexOf(S.view.range); S.view.range=RANGES[clamp((i<0?2:i)+d,0,RANGES.length-1)]; bgDirty=true; toolsSync(); redraw(); }
+function zoom(d){ camStart(); const i=RANGES.indexOf(S.view.range); S.view.range=RANGES[clamp((i<0?2:i)+d,0,RANGES.length-1)]; bgDirty=true; toolsSync(); redraw(); }
 function run(on){ S.run=on===undefined?!S.run:on; if(S.run){ S.sel.hdg=Math.round(D.mh); if(S.ap==='TRK'&&!S.sel.trk) S.sel.trk=Math.round(D.trk); S.sel.alt=Math.round(S.ac.alt); if(S.ap==='HOLD'&&HS.mode==='tofix') holdReset(); } toolsSync(); redraw(); if(API.onRun) API.onRun(S.run); }
 el('nsTools').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
-  if(b.id==='nsRun') run(); else if(b.id==='nsNorth'){ S.view.north=!S.view.north; bgDirty=true; toolsSync(); redraw(); }
+  if(b.id==='nsRun') run(); else if(b.id==='nsNorth'){ camStart(); S.view.north=!S.view.north; bgDirty=true; toolsSync(); redraw(); }
   else if(b.id==='nsProfB'){ S.view.profile=!S.view.profile; profSync(); toolsSync(); redraw(); } else if(b.id==='nsZo') zoom(1); else if(b.id==='nsZi') zoom(-1); else if(b.id==='nsKeys') keysSheet(); });
 function profSync(){ el('nsProfW').hidden=!S.view.profile; profDirty=true; }
 
@@ -578,7 +640,7 @@ VP.addEventListener('keydown',e=>{ const tg=e.target; if(tg.closest('input,selec
   if(k==='ArrowLeft'||k==='ArrowRight') act('hdg',()=>setHdg(Math.round((S.run?S.sel.hdg:D.mh)+(k==='ArrowRight'?1:-1)*(sh?1:5))));
   else if(k==='ArrowUp'||k==='ArrowDown') act('alt',()=>setAlt((S.run?S.sel.alt:S.ac.alt)+(k==='ArrowUp'?1:-1)*(sh?100:500)));
   else if(k==='['||k===']') act('obs',()=>{ S.obs=norm(S.obs+(k===']'?1:-1)*(sh?1:5)); });
-  else if(k===' '){ run(); } else if(k==='n'||k==='N'){ S.view.north=!S.view.north; bgDirty=true; toolsSync(); redraw(); }
+  else if(k===' '){ run(); } else if(k==='n'||k==='N'){ camStart(); S.view.north=!S.view.north; bgDirty=true; toolsSync(); redraw(); }
   else if(k==='p'||k==='P'){ S.view.profile=!S.view.profile; profSync(); toolsSync(); redraw(); }
   else if(k==='t'||k==='T'){ S.view.trace=!S.view.trace; toolsSync(); redraw(); } else if(k==='w'||k==='W'){ S.view.tri=!S.view.tri; toolsSync(); redraw(); }
   else if(k==='+'||k==='=') zoom(-1); else if(k==='-'||k==='_') zoom(1);
@@ -602,12 +664,12 @@ function snapLoad(){ let j=null; try{ j=JSON.parse(localStorage.getItem(SNK)||'n
 function snapNote(m){ const n=el('nsSnapN'); n.textContent=L(m); }
 
 /* ---------- focus (dim what the current activity does not use) and masks ---------- */
-function focus(list,mask){ document.querySelectorAll('.ns-inst .ns-g,.ns-dme,.ns-mapw').forEach(w=>{ const k=w.dataset.g||(w.classList.contains('ns-dme')?'dme':'map'); w.classList.toggle('is-dim',!!(list&&list.length&&!list.includes(k))); w.classList.toggle('is-focus',!!(list&&list.includes(k))); w.classList.toggle('is-mask',!!(mask&&mask.includes(k))); });
+function focus(list,mask){ focusList=list&&list.length?list:null; phoneLayout(); if(PHONE.matches&&focusList&&focusList.includes('dg')){ const six=el('nsSix'); if(six) six.open=true; } document.querySelectorAll('.ns-inst .ns-g,.ns-strip .ns-g,.ns-dme,.ns-mapw').forEach(w=>{ const k=w.dataset.g||(w.classList.contains('ns-dme')?'dme':'map'); w.classList.toggle('is-dim',!!(list&&list.length&&!list.includes(k))); w.classList.toggle('is-focus',!!(list&&list.includes(k))); w.classList.toggle('is-mask',!!(mask&&mask.includes(k))); });
   const six=el('nsSix'); if(six) six.classList.toggle('is-dim',!!(list&&list.length&&!list.includes('six'))); }
 
 /* ---------- API for navlessons.js ---------- */
 const API={S,D,N,ST,HS,t2,L,d3,nf,AREAS,get NAV(){ return NAV; },nav1,adfSt,refVor,holdFix,holdReset,derive,redraw,act,placeRel,setPos,setHdg,setAlt,setVar,buildArea,run,toolsSync,apSync,segsSync,fieldsSync,profSync,trClear,focus,zoom,
-  setArea(a){ S.area=a; buildArea(); }, kick, keysSheet, uncap(){ navCap=false; },
+  setArea(a){ S.area=a; buildArea(); }, kick, keysSheet, panel(c,save){ panelSet(c===undefined?panelPref():c,save); }, get panelFolded(){ return APP.classList.contains('ns-collapsed'); }, uncap(){ navCap=false; },
   /* fast-forward the simulation (tests and "Show me"): sec of sim time in 0.1 s steps, with the lesson ticks */
   ff(sec){ const n=Math.round(sec/0.1); for(let i=0;i<n;i++){ if(!S.run) break; simStep(0.1); derive(); if(API.onTick) API.onTick(0.1/S.speed); } redraw(); },
   /* a clean state for a lesson or task */
@@ -616,12 +678,12 @@ const API={S,D,N,ST,HS,t2,L,d3,nf,AREAS,get NAV(){ return NAV; },nav1,adfSt,refV
     const v=refVor(); placeRel(o.at||v,o.rad??90,o.dme??15); S.ac.th=N.toTrue(o.hdg??90,S.varE); S.sel.hdg=o.hdg??90; S.sel.trk=o.trk??(o.hdg??90);
     Object.assign(S.view,{north:true,range:o.range||20,profile:!!o.profile,trace:true,course:o.course!==false,tofrom:!!o.tofrom,rings:true,tri:!!o.tri,brg:o.brg!==false,sectors:!!o.sectors,hideMap:!!o.hideMap,centre:'st'});
     if(S.mode!=='instructor') S.view.hideAns=!!(o.hideMap||o.hideAns);
-    if(o.hold) Object.assign(S.hold,o.hold); holdReset(); trClear(); bgDirty=true; profSync(); derive(); apSync(); toolsSync(); segsSync(); fieldsSync(true); redraw(); }};
+    if(o.hold) Object.assign(S.hold,o.hold); holdReset(); trClear(); bgDirty=true; CAM.t=1; profSync(); derive(); apSync(); toolsSync(); segsSync(); fieldsSync(true); redraw(); }};
 API.GA=GA; window.NSIM=API;
 
 /* ---------- start ---------- */
-buildArea(); buildPanel(); toolsDraw(); modesDraw();
-LAB.onLang(()=>{ modesDraw(); toolsSync(); FIELDS.forEach(f=>f.lang()); bgDirty=true; redraw(); });
+buildArea(); buildPanel(); toolsDraw(); modesDraw(); if(PHONE.matches){ const six=el('nsSix'); if(six) six.open=false; }
+LAB.onLang(()=>{ modesDraw(); toolsSync(); FIELDS.forEach(f=>f.lang()); panelSet(APP.classList.contains('ns-collapsed')); bgDirty=true; redraw(); });
 placeRel('FLS',90,15); S.ac.th=270; S.sel.hdg=270; S.obs=270; derive(); for(const k in GA) GA[k].snap();
 if(window.NAVLESSONS&&!API.LESSONS) window.NAVLESSONS(API);
 redraw();
