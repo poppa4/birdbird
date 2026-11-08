@@ -246,6 +246,102 @@ html body .nsearch .res{max-width:var(--container);left:var(--gl);right:var(--gr
 .vlpath .steps i.c{background:var(--accent)}
 @media (max-width:600px){.vlpath .pr{grid-template-columns:1fr}.vlpath .pr a+a{text-align:left}.vlpath .pr a.x{display:none}}
 
+/* ---------------- Atlas shell (Virtual Labs; lab.js builds it, see LAB-TEMPLATE.md) ---------------- */
+/* .page > aside.atl-side (area topics) + div.atl-main (everything the page had). Before lab.js runs the
+   grid already reserves the sidebar column, so nothing jumps when the shell appears. */
+html.vlab .labnav,html.vlab .page .snav{display:none}
+.atl-main{display:flex;flex-direction:column;gap:0;min-width:0}
+.atl-side{font-size:14px;min-width:0;background:none;border:0;border-radius:0;box-shadow:none;position:static;max-height:none;overflow:visible}
+.atl-all{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2);text-decoration:none;font-weight:500;font-size:13.5px;white-space:nowrap}
+.atl-all:hover{color:var(--accent)}
+.atl-tog{display:none}
+.atl-area{margin:22px 0 10px;padding:0 0 12px;border-bottom:1px solid var(--rule)}
+.atl-area .no{display:block;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.atl-area b{display:block;font-family:var(--f-display);font-stretch:88%;font-size:21px;font-weight:700;line-height:1.15;text-wrap:balance}
+.atl-area b a{color:var(--ink);text-decoration:none}.atl-area b a:hover{color:var(--accent)}
+.atl-topics{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.atl-topics>li>a{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;padding:8px 10px;border-radius:var(--radius);color:var(--ink-2);text-decoration:none;line-height:1.3}
+.atl-topics>li>a i{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--ink-3);padding-top:1px}
+.atl-topics>li>a:hover{background:var(--wash);color:var(--ink)}
+.atl-topics>li.on>a{background:var(--sheet);color:var(--ink);font-weight:600;box-shadow:inset 2px 0 0 var(--accent),0 0 0 1px var(--rule-2)}
+.atl-topics>li.on>a i{color:var(--accent)}
+.atl-secs{list-style:none;margin:6px 0 10px 19px;padding:0;border-left:1px solid var(--rule-2)}
+.atl-secs a{display:block;padding:4px 8px 4px 12px;margin-left:-1px;border-left:1px solid transparent;font-size:13px;color:var(--ink-2);text-decoration:none;line-height:1.35}
+.atl-secs a:hover{color:var(--ink)}
+.atl-secs a.on{color:var(--ink);border-left-color:var(--accent);font-weight:500}
+.atl-other{display:flex;flex-direction:column;margin:26px 0 0;padding-top:12px;border-top:1px solid var(--rule-2)}
+.atl-other .h{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.atl-other a{display:flex;gap:8px;align-items:baseline;padding:3px 0;font-size:13px;color:var(--ink-2);text-decoration:none;line-height:1.35}
+.atl-other a i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.atl-other a:hover{color:var(--accent)}
+@media (min-width:1200px){
+  html.vlab{--container:1520px}
+  html.vlab .page{display:grid;grid-template-columns:228px minmax(0,1fr);column-gap:48px;align-items:start}
+  html.vlab .page>*{grid-column:2;min-width:0}
+  html.vlab .page>.atl-side{grid-column:1;grid-row:1;position:sticky;top:0;max-height:100vh;overflow-y:auto;overscroll-behavior:contain;padding:44px 6px 32px 0;scrollbar-width:thin}
+  .atl-panel{display:block!important}
+}
+@media (max-width:1199px){
+  .atl-side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:18px 0 0;padding:0 0 14px;border-bottom:1px solid var(--rule)}
+  .atl-side .atl-all{font-size:13px}
+  .atl-tog{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 10px;flex:1 1 220px;min-width:0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 12px;font:inherit;text-align:left;cursor:pointer;color:var(--ink);min-height:44px}
+  .atl-tog:hover,.atl-side.open .atl-tog{border-color:var(--ink)}
+  .atl-tog .a{grid-column:1;font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .atl-tog .t{grid-column:1;font-size:14.5px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .atl-tog .car{grid-column:2;grid-row:1/span 2;width:8px;height:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg)}
+  .atl-side.open .atl-tog .car{transform:translateY(2px) rotate(-135deg)}
+  .atl-panel{display:none;flex-basis:100%;min-width:0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:4px 14px 14px;box-shadow:var(--shadow-pop)}
+  .atl-side.open .atl-panel{display:block}
+  .atl-area{margin:10px 0 8px;padding-bottom:10px}
+  .atl-area b{font-size:19px}
+  .atl-topics>li>a{padding:10px}
+  .atl-secs a{padding:7px 8px 7px 12px;font-size:14px}
+  .atl-other{margin-top:16px}
+  .atl-other a{padding:6px 0;font-size:14px}
+}
+
+/* step bar: Understand · Explore · Try · Debrief · Check · Next, plus the depth switch */
+.atl-bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px 24px;margin:24px 0 0;background:var(--paper);border-bottom:1px solid var(--rule);box-shadow:0 -1px 0 var(--paper)}
+.atl-steps{display:flex;gap:0 24px;min-width:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.atl-steps::-webkit-scrollbar{display:none}
+.atl-steps>*{flex:0 0 auto;display:inline-flex;align-items:baseline;gap:7px;font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;padding:12px 0 10px;border-bottom:2px solid transparent;white-space:nowrap}
+.atl-steps i{font-style:normal;font-family:var(--f-mono);font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.atl-steps a:hover{color:var(--ink)}
+.atl-steps a.on{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.atl-steps a.on i{color:var(--accent)}
+.atl-steps .off{color:#A7B2B8;cursor:default}
+.atl-steps .off i{color:#BCC5CA}
+.atl-depth{display:flex;flex:0 0 auto}
+.atl-depth button{flex:0 0 auto;font-size:12.5px;font-weight:500;line-height:1.2;background:var(--sheet);color:var(--ink-2);border:1px solid var(--rule);margin-left:-1px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.atl-depth button:first-child{margin-left:0;border-radius:var(--radius) 0 0 var(--radius)}
+.atl-depth button:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.atl-depth button:hover{color:var(--ink);background:var(--wash)}
+.atl-depth button.on{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600;position:relative;z-index:1}
+.lmeta .atl-depth{display:none}
+.lmeta .atl-lim{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.lmeta .atl-lim:hover{color:var(--accent);border-bottom-color:currentColor}
+.foot.atl-limits{scroll-margin-top:72px}
+.foot.atl-limits:target{background:var(--sheet);box-shadow:inset 3px 0 0 var(--info);padding:10px 14px}
+@media (max-width:999px){
+  .atl-bar .atl-depth{display:none}
+  .lmeta .atl-depth{display:flex}
+  .lmeta .mi:has(+.atl-depth){padding-right:0}
+}
+@media (max-width:760px){
+  .atl-bar{margin-top:16px}
+  .atl-steps{gap:0 18px;mask-image:linear-gradient(90deg,#000 86%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 86%,transparent)}
+  .atl-steps>*{padding:11px 0 9px}
+  .lmeta .atl-depth button{min-height:36px;padding:6px 12px}
+}
+
+/* depth: Short hides .deep; Instructor hides .deep and most prose, and gives the primary model (.atl-model) the full width */
+body.depth-short .deep,body.depth-instructor .deep{display:none!important}
+body.depth-instructor .atl-main .card .lead,body.depth-instructor .atl-main .callout,body.depth-instructor .atl-main .ntip,
+body.depth-instructor .atl-main .card>p:not([id]):not(:has([id])),body.depth-instructor .atl-main .lhead .brand>p:not([id]){display:none}
+body.depth-instructor .atl-split{grid-template-columns:minmax(0,1fr)}
+body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
+@media print{.atl-side,.atl-bar{display:none!important}html.vlab .page{display:block}}
+
 /* touch: larger targets (iPad, phone) */
 @media (pointer:coarse){
   .site .lang button,.site .lang a{min-height:36px;min-width:44px}

@@ -34,51 +34,163 @@
   function setLang(l){ lang=l; try{ localStorage.setItem('vlab-lang',l); }catch(e){} apply(); hooks.forEach(f=>f()); }
 
   // header: lab-navigasjon + språk
-  /* Læringsløp: moduler i anbefalt rekkefølge. [fil, sidenøkkel, EN, NO, nivå] nivå: 'la' = småfly (DA42), 'jet' = tall fra A320-undervisningsmodell, 'mix' = A320 + lett tomotors, '' = gjelder alle fly */
+  /* Virtual Labs information architecture ("Atlas"): seven subject areas, then "More" (not an area card).
+     Lab tuple: [file, page key, EN, NO, level]. level: 'jet' = numbers from the A320 teaching model, 'mix' = A320 + light twin, 'la' = light twin, '' = all aircraft.
+     Area meta: d = one-line description, c = 3–4 concepts you learn (EN/NO). The first lab of an area is its recommended start. */
+  const t2=(en,no)=>({en,no});
   const PATH=[
-   {k:'pof',en:'Principles of flight',no:'Aerodynamikk',labs:[['tunnel.html','tunnel','Wind tunnel','Vindtunnel','jet'],['stability.html','stab','Stability, controls and load factor','Stabilitet, ror og lastfaktor','jet'],['propeller.html','prop','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter','mix'],['highspeed.html','hs','High-speed flight and drag','Høyfart og motstand','jet']]},
-   {k:'air',en:'Atmosphere and air data',no:'Atmosfære og luftdata',labs:[['altimetry.html','alt','Pressure and altitude','Trykk og høyde',''],['pitot.html','pitot','Pitot-static and unreliable airspeed','Pitot-statisk og upålitelig fart','jet']]},
-   {k:'met',en:'Meteorology',no:'Meteorologi',labs:[['clouds.html','clouds','Clouds, stability and fog','Skyer, stabilitet og tåke',''],['fronts.html','fronts','Pressure, fronts and wind','Trykk, fronter og vind',''],['storms.html','storms','Thunderstorms and weather radar','Tordenvær og værradar',''],['hazards.html','hazards','Icing, turbulence and de-icing','Ising, turbulens og avising','']]},
-   {k:'sys',en:'Aircraft and engines',no:'Fly og motorer',labs:[['engines.html','engines','The turbofan engine','Turbofanmotoren','jet'],['jetsystems.html','jets','Jet transport systems','Systemer på jetfly','jet'],['pressurisation.html','press','Pressurisation and hypoxia','Trykkabin og hypoksi','jet']]},
-   {k:'inst',en:'Instruments and automation',no:'Instrumenter og automatikk',labs:[['gyros.html','gyro','Compass, gyros and ADIRS','Kompass, gyroer og ADIRS','jet'],['autoflight.html','af','Autoflight and warnings','Autoflight og varsling','jet']]},
-   {k:'perf',en:'Mass, balance and performance',no:'Masse, balanse og ytelse',labs:[['massbalance.html','mb','Mass and balance','Masse og balanse','jet'],['performance.html','perf','Performance','Ytelse','jet']]},
-   {k:'nav',en:'Navigation',no:'Navigasjon',labs:[['gennav.html','gnav','General navigation','Generell navigasjon',''],['radionav.html','radionav','Radio navigation and radar','Radionavigasjon og radar',''],['gnss.html','gnss','GNSS and RNAV','GNSS og RNAV',''],['holding.html','hold','Holding','Holding',''],['approach.html','approach','Instrument approach and ILS','Instrumentinnflyging og ILS','']]},
-   {k:'fpl',en:'Flight planning',no:'Flyplanlegging',labs:[['flightplanning.html','fpl','Flight planning and fuel','Flyplanlegging og drivstoff','jet']]},
-   {k:'hf',en:'Human performance',no:'Menneskelige faktorer',labs:[['orientation.html','ori','Spatial orientation','Romlig orientering',''],['humanperf.html','hp','Attention, workload, error and fatigue','Oppmerksomhet, arbeidsbelastning, feil og tretthet','']]}];
+   {k:'pof',en:'Aerodynamics',no:'Aerodynamikk',d:t2('How a wing makes lift, what keeps the aircraft stable and controllable, and what changes at high speed.','Hvordan vingen lager løft, hva som holder flyet stabilt og styrbart, og hva som endrer seg i høy fart.'),
+    c:[t2('Lift, drag and stall','Løft, motstand og stall'),t2('Stability and load factor','Stabilitet og lastfaktor'),t2('Engine failure and VMC','Motorstans og VMC'),t2('Mach and buffet','Mach og buffet')],
+    labs:[['tunnel.html','tunnel','Wind tunnel','Vindtunnel','jet'],['stability.html','stab','Stability, controls and load factor','Stabilitet, ror og lastfaktor','jet'],['propeller.html','prop','Engine failure and minimum control speeds','Motorstans og minste kontrollfarter','mix'],['highspeed.html','hs','High-speed flight and drag','Høyfart og motstand','jet']]},
+   {k:'met',en:'Meteorology and the atmosphere',no:'Meteorologi og atmosfæren',d:t2('Pressure and wind first, then the clouds, storms and hazards that shape every flight.','Trykk og vind først, så skyene, uværet og farene som former hver flytur.'),
+    c:[t2('Pressure systems and wind','Trykksystemer og vind'),t2('Fronts and air masses','Fronter og luftmasser'),t2('Cloud, stability and fog','Skyer, stabilitet og tåke'),t2('Thunderstorms, icing and turbulence','Tordenvær, ising og turbulens')],
+    labs:[['fronts.html','fronts','Pressure, fronts and wind','Trykk, fronter og vind',''],['clouds.html','clouds','Clouds, stability and fog','Skyer, stabilitet og tåke',''],['storms.html','storms','Thunderstorms and weather radar','Tordenvær og værradar',''],['hazards.html','hazards','Icing, turbulence and de-icing','Ising, turbulens og avising','']]},
+   {k:'inst',en:'Instruments',no:'Instrumenter',d:t2('What the altimeter, airspeed and attitude references really measure, and how they mislead you.','Hva høydemåler, fartsmåler og attitydereferanser egentlig måler, og hvordan de kan lure deg.'),
+    c:[t2('Altimeter settings and errors','Høydemålerinnstillinger og feil'),t2('Pitot-static faults','Feil i pitot-statisk system'),t2('Compass and gyros','Kompass og gyroer'),t2('ADIRS','ADIRS')],
+    labs:[['altimetry.html','alt','Pressure and altitude','Trykk og høyde',''],['pitot.html','pitot','Pitot-static and unreliable airspeed','Pitot-statisk og upålitelig fart','jet'],['gyros.html','gyro','Compass, gyros and ADIRS','Kompass, gyroer og ADIRS','jet']]},
+   {k:'nav',en:'Navigation and instrument procedures',no:'Navigasjon og instrumentprosedyrer',d:t2('From the wind triangle to the ILS: knowing where you are and flying the published procedure.','Fra vindtrekanten til ILS: vite hvor du er og fly den publiserte prosedyren.'),
+    c:[t2('Wind triangle and 1 in 60','Vindtrekanten og 1 av 60'),t2('VOR, DME and radar','VOR, DME og radar'),t2('GNSS and RNAV','GNSS og RNAV'),t2('Holding and approach','Holding og innflyging')],
+    labs:[['gennav.html','gnav','General navigation','Generell navigasjon',''],['radionav.html','radionav','Radio navigation and radar','Radionavigasjon og radar',''],['gnss.html','gnss','GNSS and RNAV','GNSS og RNAV',''],['holding.html','hold','Holding','Holding',''],['approach.html','approach','Instrument approach and ILS','Instrumentinnflyging og ILS','']]},
+   {k:'sys',en:'Aircraft and engine systems',no:'Fly- og motorsystemer',d:t2('The turbofan, hydraulics, electrics and pressurisation, and the autoflight that ties them together.','Turbofanmotoren, hydraulikk, elektrisk og trykkabin, og autoflighten som binder dem sammen.'),
+    c:[t2('Turbofan and thrust rating','Turbofan og skyvkraft'),t2('Hydraulics and fly-by-wire','Hydraulikk og fly-by-wire'),t2('Cabin altitude and hypoxia','Kabinhøyde og hypoksi'),t2('FMA and autoflight modes','FMA og autoflight-moduser')],
+    labs:[['engines.html','engines','The turbofan engine','Turbofanmotoren','jet'],['jetsystems.html','jets','Jet transport systems','Systemer på jetfly','jet'],['pressurisation.html','press','Pressurisation and hypoxia','Trykkabin og hypoksi','jet'],['autoflight.html','af','Autoflight and warnings','Autoflight og varsling','jet']]},
+   {k:'perf',en:'Performance',no:'Ytelse',d:t2('Take-off, climb, cruise and landing numbers, and the fuel you plan to carry.','Tall for start, stigning, cruise og landing, og drivstoffet du planlegger å ha med.'),
+    c:[t2('V1 and runway limits','V1 og rullebanebegrensninger'),t2('Climb and cruise','Stigning og cruise'),t2('Landing distance','Landingsdistanse'),t2('Fuel planning','Drivstoffplanlegging')],
+    labs:[['performance.html','perf','Performance','Ytelse','jet'],['flightplanning.html','fpl','Flight planning and fuel','Flyplanlegging og drivstoff','jet']]},
+   {k:'mb',en:'Mass and balance',no:'Masse og balanse',d:t2('Masses, limits and the centre of gravity, through to a finished load sheet.','Masser, grenser og tyngdepunkt, helt fram til et ferdig lasteark.'),
+    c:[t2('Structural mass limits','Strukturelle massegrenser'),t2('Centre of gravity','Tyngdepunkt'),t2('Load sheet','Lasteark'),t2('Trim setting','Trimsetting')],
+    labs:[['massbalance.html','mb','Mass and balance','Masse og balanse','jet']]},
+   /* not one of the seven areas: reachable from "More" at the bottom of lab.html */
+   {k:'hf',more:true,en:'Human factors',no:'Menneskelige faktorer',d:t2('Spatial orientation, attention, workload, error and fatigue.','Romlig orientering, oppmerksomhet, arbeidsbelastning, feil og tretthet.'),c:[],
+    labs:[['orientation.html','ori','Spatial orientation','Romlig orientering',''],['humanperf.html','hp','Attention, workload, error and fatigue','Oppmerksomhet, arbeidsbelastning, feil og tretthet','']]}];
+  const AREAS=PATH.filter(m=>!m.more), MORE=PATH.filter(m=>m.more);
   const FLAT=PATH.flatMap((m,mi)=>m.labs.map((l,li)=>({m,mi,li,f:l[0],k:l[1],en:l[2],no:l[3],lv:l[4]})));
+  /* Sections of every lab: [anchor id, EN, NO, type]  type: sim | drill | read | quiz  (also used by lab.html's topic search) */
+  const TOP=/*TOPICS*/{"tunnel.html":[["profil","Aerofoil section and stall","Profilsnitt og stall","sim"],["tunnel","3D wind tunnel","3D-vindtunnel","sim"],["try","Things to try","Prøv dette","read"],["wake","Wingtip vortices","Vingetippvirvler","sim"],["ground","Ground effect","Bakkeeffekt","sim"],["quiz","Test yourself","Test deg selv","quiz"]],"stability.html":[["long","Longitudinal stability","Lengdestabilitet","sim"],["lat","Lateral and directional","Tverr- og retningsstabilitet","sim"],["vn","Load factor","Lastfaktor","sim"],["controls","Flight controls","Flykontroller","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"propeller.html":[["single","VMCA lab","VMCA-lab","sim"],["cert","Certification and speeds","Sertifisering og farter","read"],["twin","VMCG and VMCL","VMCG og VMCL","sim"],["ops","Failure after V1","Motorstans etter V1","read"],["quiz","Test yourself","Test deg selv","quiz"]],"highspeed.html":[["drag","Drag and speed stability","Motstand og fartsstabilitet","sim"],["mach","Mach and compressibility","Mach og kompressibilitet","sim"],["coffin","Buffet boundary","Buffetgrense","sim"],["swept","The swept wing","Pilvingen","sim"],["upset","Upset recovery","Upset recovery","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"altimetry.html":[["xs","Why the altimeter lies","Hvorfor høydemåleren lyver","sim"],["set","Altimeter settings","Høydemålerinnstillinger","sim"],["da","Density altitude","Tetthetshøyde","sim"],["cold","Cold temperature","Kulde","sim"],["quiz","Test yourself","Test deg selv","quiz"]],"pitot.html":[["lab","The lab","Labben","sim"],["table","What each fault does","Hva hver feil gjør","read"],["wind","Wind and weather","Vind og vær","sim"],["uas","Unreliable airspeed","Upålitelig fart","sim"],["quiz","Test yourself","Test deg selv","quiz"]],"clouds.html":[["lift","Lift a parcel","Løft en luftpakke","sim"],["fog","Fog overnight","Tåke gjennom natten","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"fronts.html":[["lab","Fly through a front","Fly gjennom en front","sim"],["table","The fronts side by side","Frontene side om side","read"],["stab","Highs and lows","Høytrykk og lavtrykk","sim"],["forces","Why the wind blows","Hvorfor vinden blåser","sim"],["local","Local winds","Lokale vinder","sim"],["press","Air masses, jet streams and charts","Luftmasser, jetstrømmer og kart","read"],["global","Global circulation","Global sirkulasjon","sim"],["quiz","Test yourself","Test deg selv","quiz"]],"storms.html":[["life","The life of a CB","Livet til en CB","sim"],["radar","Around a cell","Rundt en celle","sim"],["shear","Microburst on final","Mikroburst på finalen","sim"],["wxr","Weather radar","Værradar","sim"],["types","Types and warnings","Typer og varsler","read"],["quiz","Test yourself","Test deg selv","quiz"]],"hazards.html":[["icing","Icing","Ising","sim"],["deice","De-icing","Avising","sim"],["turb","Turbulence","Turbulens","sim"],["wake","Wake turbulence","Vaketurbulens","sim"],["more","Other hazards","Andre farer","read"],["quiz","Test yourself","Test deg selv","quiz"]],"engines.html":[["eng","Take it apart","Ta den fra hverandre","sim"],["start","Start and spool-up","Start og spoling","sim"],["rating","Flat rating and FLEX","Flat rating og FLEX","sim"],["cmp","A320 engines","A320-motorer","read"],["ops","In the cockpit","I cockpit","read"],["quiz","Test yourself","Test deg selv","quiz"]],"jetsystems.html":[["hyd","Hydraulics","Hydraulikk","sim"],["fbw","Fly-by-wire","Fly-by-wire","sim"],["elec","Electrics","Elektrisk","sim"],["gear","Gear and brakes","Understell og bremser","sim"],["fuelbleed","Fuel, bleed and fire","Drivstoff, bleed og brann","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"pressurisation.html":[["cabin","Cabin altitude","Kabinhøyde","sim"],["decomp","Decompression","Dekompresjon","sim"],["hypoxia","Hypoxia","Hypoksi","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"gyros.html":[["compass","Magnetic compass","Magnetkompass","sim"],["gyro","Gyroscopes","Gyroskoper","sim"],["irs","From gyros to ADIRS","Fra gyro til ADIRS","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"autoflight.html":[["fma","Reading the FMA","Lese FMA-en","sim"],["traps","Mode traps","Modusfeller","drill"],["tcas","TCAS","TCAS","sim"],["gpws","EGPWS","EGPWS","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"massbalance.html":[["masses","Masses and limits","Masser og grenser","sim"],["cg","Centre of gravity","Tyngdepunkt","sim"],["loadsheet","Load sheet","Lasteark","drill"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"performance.html":[["takeoff","Take-off and V1","Start og V1","sim"],["limits","Take-off mass limits","Begrensninger for startvekt","sim"],["climb","Climb and cruise","Stigning og cruise","sim"],["enroute","Engine failure en route","Motorstans underveis","sim"],["landing","Landing distance","Landingsdistanse","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"gennav.html":[["triangle","Wind triangle","Vindtrekanten","sim"],["sixty","1 in 60","1 av 60","sim"],["earth","Earth and directions","Jorden og retninger","sim"],["charts","Chart projections","Kartprojeksjoner","sim"],["time","Time","Tid","sim"],["pet","PET and PNR","PET og PNR","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"radionav.html":[["lab","Move the aircraft","Flytt flyet","sim"],["chal","Where am I?","Hvor er jeg?","drill"],["radar","Radar and ADS-B","Radar og ADS-B","sim"],["notes","What to remember","Det du må huske","read"],["quiz","Test yourself","Test deg selv","quiz"]],"gnss.html":[["sat","Satellite geometry","Satellittgeometri","sim"],["wp","Waypoints and turns","Veipunkter og svinger","sim"],["spec","Specifications and minima","Spesifikasjoner og minima","read"],["risk","Threats","Trusler","read"],["quiz","Test yourself","Test deg selv","quiz"]],"holding.html":[["anatomy","Anatomy of a hold","Oppbygningen av en holding","read"],["entry","Entry trainer","Entry-trener","sim"],["wind","Wind correction","Vindkorreksjon","sim"],["drill","Entry drill","Entry-drill","drill"],["quiz","Test yourself","Test deg selv","quiz"]],"approach.html":[["lab","Needles and geometry","Nåler og geometri","sim"],["rod","Rate of descent","Sinkrate","sim"],["ils","Inside the ILS signal","Inne i ILS-signalet","sim"],["seg","Segments and minima","Segmenter og minima","read"],["quiz","Test yourself","Test deg selv","quiz"]],"flightplanning.html":[["fuel","Fuel make-up","Drivstoffsammensetning","sim"],["alternates","Alternates and minima","Alternativer og minima","sim"],["inflight","In-flight fuel","Drivstoff under flyging","drill"],["tanker","Tankering","Tankering","sim"],["cruise","Level and cost index","Høyde og kostindeks","sim"],["atc","ATC flight plan","ATC-færdselsplan","read"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]],"orientation.html":[["senses","The three senses","De tre sansene","read"],["ear","Inner ear simulator","Indre øre-simulator","sim"],["trainer","Trainer","Trener","drill"],["approach","Approach illusions","Illusjoner på innflyging","sim"],["other","Other illusions","Andre illusjoner","read"],["quiz","Test yourself","Test deg selv","quiz"]],"humanperf.html":[["info","Information processing","Informasjonsbehandling","sim"],["workload","Workload","Arbeidsbelastning","sim"],["fatigue","Fatigue","Tretthet","sim"],["tem","Threat and error","Trusler og feil","drill"],["vision","Vision","Syn","sim"],["ops","In the aircraft","I flyet","read"],["quiz","Test yourself","Test deg selv","quiz"]]}/*END*/;
   const LV={la:{en:'Light twin',no:'Småfly'},jet:{en:'A320 model',no:'A320-modell'},mix:{en:'A320 + light twin',no:'A320 + lett tomotors'},gen:{en:'All aircraft',no:'Alle fly'}};
   let curPage=null;
   const done=k=>{ try{ return parseInt(localStorage.getItem('vlab-done-'+k)||'0',10)||0; }catch(e){ return 0; } };
   const LVX={la:{en:'Light twin',no:'Småfly',c:'lt'},jet:{en:'A320 model',no:'A320-modell',c:'a320'},mix:{en:'A320 + light twin',no:'A320 + lett tomotors',c:'a320'},'':{en:'All aircraft',no:'Alle fly',c:'core'}};
+  const LVTIP={jet:t2('Principles apply to every aircraft; the numbers come from an illustrative A320 teaching model, not manufacturer data.','Prinsippene gjelder alle fly; tallene kommer fra en illustrerende A320-undervisningsmodell, ikke produsentdata.'),
+    mix:t2('Uses an illustrative A320 model and a light twin; the numbers are teaching values, not manufacturer data.','Bruker en illustrerende A320-modell og et lett tomotors fly; tallene er undervisningsverdier, ikke produsentdata.'),
+    la:t2('Numbers from an illustrative light twin.','Tall fra et illustrerende lett tomotors fly.'),'':t2('General principles that apply to every aircraft.','Generelle prinsipper som gjelder alle fly.')};
   /* live status chips in the page header get a label (data-label on the chip wins) */
   const STLAB={alt:{en:'Terrain clearance at B',no:'Terrengklaring ved B'},tunnel:{en:'Airflow',no:'Luftstrøm'}};
   const Lx=o=>lang==='en'?o.en:o.no;
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const areaNo=m=>{ const i=AREAS.indexOf(m); return i>=0?i+1:0; };
+  const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ---------- Atlas shell: depth (Short / Deep dive / Instructor) ---------- */
+  const DEPTHS=[['short',t2('Short','Kort')],['deep',t2('Deep dive','Dypdykk')],['instructor',t2('Instructor','Instruktør')]];
+  const STEPS=[['understand',t2('Understand','Forstå')],['explore',t2('Explore','Utforsk')],['try',t2('Try','Prøv')],['debrief',t2('Debrief','Debrief')],['check',t2('Check','Sjekk')],['next',t2('Next','Gå videre')]];
+  let depth='deep'; try{ const d=localStorage.getItem('vlab-depth'); if(DEPTHS.some(x=>x[0]===d)) depth=d; }catch(e){}
+  function setDepth(d,save){ if(!DEPTHS.some(x=>x[0]===d)) return; depth=d; if(save){ try{ localStorage.setItem('vlab-depth',d); }catch(e){} }
+    const b=document.body; if(!b) return; DEPTHS.forEach(([k])=>b.classList.toggle('depth-'+k,k===d));
+    document.querySelectorAll('.atl-depth button').forEach(x=>{ x.classList.toggle('on',x.dataset.d===d); x.setAttribute('aria-pressed',String(x.dataset.d===d)); });
+    if(save){ document.dispatchEvent(new CustomEvent('labdepth',{detail:d})); window.dispatchEvent(new Event('resize')); } }
+  const depthHTML=cls=>`<div class="atl-depth ${cls}" role="group" aria-label="${esc(Lx(t2('Depth','Dybde')))}">${DEPTHS.map(([k,n])=>`<button type="button" data-d="${k}" class="${k===depth?'on':''}" aria-pressed="${k===depth}">${esc(Lx(n))}</button>`).join('')}</div>`;
+
+  /* Sections of this page with their step. Explicit hook wins: any element with data-step="understand|explore|try|debrief|check".
+     Otherwise the step comes from the section type in TOP: quiz → check, drill (or #try) → try, sim → explore,
+     reading before the first sim → understand, reading after it → debrief. */
+  function pageSections(me){
+    const byId=id=>{ try{ return document.getElementById(id); }catch(e){ return null; } };
+    let list=(TOP[me.f]||[]).map(([id,en,no,ty])=>({id,el:byId(id),n:id==='quiz'?t2('Test yourself','Test deg selv'):t2(en,no),ty}));
+    if(!list.length) list=[...document.querySelectorAll('.snav a[href^="#"]')].map(a=>{ const id=a.getAttribute('href').slice(1), x=a.textContent.trim(); return {id,el:byId(id),n:t2(x,x),ty:id==='quiz'?'quiz':'read'}; });
+    list=list.filter(s=>s.el);
+    const explicit=[...document.querySelectorAll('[data-step]')].filter(e=>e.id&&!e.closest('.atl-bar'));
+    let sim=false;
+    list.forEach(s=>{ const d=s.el.dataset.step;
+      if(d) s.step=d; else if(explicit.length) s.step=null;
+      else if(s.ty==='quiz'||s.id==='quiz') s.step='check';
+      else if(s.ty==='drill'||s.id==='try') s.step='try';
+      else if(s.ty==='sim'){ s.step='explore'; sim=true; }
+      else s.step=sim?'debrief':'understand'; });
+    const steps=list.filter(s=>s.step).map(s=>({step:s.step,el:s.el,id:s.id}));
+    explicit.forEach(e=>{ if(!steps.some(s=>s.el===e)) steps.push({step:e.dataset.step,el:e,id:e.id}); });
+    steps.sort((a,b)=>a.el.compareDocumentPosition(b.el)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
+    return {list,steps};
+  }
+
   function header(page){
     curPage=page;
     const me=FLAT.find(x=>x.k===page);
     const nav=document.querySelector('.labnav');
-    if(nav){
-      const draw=()=>{ const i=me?FLAT.indexOf(me):-1, p=i>0?FLAT[i-1]:null, n=i>=0&&i<FLAT.length-1?FLAT[i+1]:null, nm=x=>lang==='en'?x.en:x.no;
-        const open=nav.querySelector('.lb-mod.open');
-        nav.innerHTML=`<a class="lb-home" href="lab.html">Virtual Lab</a><span class="lb-sep" aria-hidden="true">/</span>`+
-          `<div class="lb-mod"><button type="button" class="lb-btn" aria-expanded="false" aria-haspopup="true"><span class="n">${T('Modul')} ${me?me.mi+1:''}</span>${me?`<span class="nm">${Lx(me.m)}</span>`:''}<span class="car" aria-hidden="true"></span></button>`+
-          `<div class="lb-menu" role="menu">${PATH.map((m,mi)=>`<div class="lb-g"><b><i>${String(mi+1).padStart(2,'0')}</i><a href="lab.html#${m.k}">${Lx(m)}</a></b>${m.labs.map(l=>`<a href="${l[0]}" class="${l[1]===page?'on':''}"${l[1]===page?' aria-current="page"':''}><span>${lang==='en'?l[2]:l[3]}</span>${done(l[1])>=60?'<i class="d" title="Done"></i>':(l[4]?`<span class="tag ${LVX[l[4]].c}">${Lx(LVX[l[4]])}</span>`:'')}</a>`).join('')}</div>`).join('')}</div></div>`+
-          (me?`<span class="lb-cur">${T('Lab')} ${me.li+1} ${T('av')} ${me.m.labs.length}</span>`:'')+
-          `<div class="lb-pn">${p?`<a href="${p.f}" title="${nm(p)}" aria-label="${T('Forrige')}: ${nm(p)}">←<span>${nm(p)}</span></a>`:''}${n?`<a class="nx" href="${n.f}" title="${nm(n)}" aria-label="${T('Neste')}: ${nm(n)}"><span>${T('Neste')}: ${nm(n)}</span>→</a>`:''}</div>`;
-        if(open) setOpen(true); };
-      const setOpen=o=>{ const g=nav.querySelector('.lb-mod'); if(!g) return; g.classList.toggle('open',o); g.querySelector('.lb-btn').setAttribute('aria-expanded',o); const mn=g.querySelector('.lb-menu'), on=mn&&mn.querySelector('a.on'); if(o&&on&&mn.scrollHeight>mn.clientHeight) mn.scrollTop=Math.max(0,on.offsetTop-90); };
-      draw(); hooks.push(draw);
-      nav.addEventListener('click',e=>{ if(e.target.closest('.lb-btn')){ setOpen(!nav.querySelector('.lb-mod').classList.contains('open')); } });
-      document.addEventListener('click',e=>{ if(!nav.contains(e.target)) setOpen(false); });
-      document.addEventListener('keydown',e=>{ if(e.key==='Escape') setOpen(false); }); }
+    if(nav&&me) nav.hidden=true;   /* replaced by the Atlas sidebar */
+    else if(nav) legacyNav(nav,page,me);
     pageHeader(page,me);
-    inPageNav();
+    if(me) atlas(me); else inPageNav();
     pathbar(page);
     const hr=document.querySelector('.hright');
     if(hr && !hr.querySelector('.langseg')) hr.insertAdjacentHTML('afterbegin','<div class="seg langseg" aria-label="Språk"><button data-v="en">EN</button><button data-v="no">NO</button></div>');
     document.querySelectorAll('.langseg').forEach(s=>s.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setLang(b.dataset.v); }));
   }
-  /* PageHeader: eyebrow "Virtual Lab · Module N · <module>", H1, lead, meta row (level, sections, progress, live status) */
+  /* old module dropdown, only for a page with a .labnav that is not one of the labs */
+  function legacyNav(nav,page){
+    const draw=()=>{ nav.innerHTML=`<a class="lb-home" href="lab.html">Virtual Labs</a>`; };
+    draw(); hooks.push(draw);
+  }
+
+  /* The Atlas shell: left sidebar (area topics), sticky step bar + depth switch, model hook, limitations link. */
+  function atlas(me){
+    const pg=document.querySelector('.page'); if(!pg||pg.querySelector('.atl-main')) return;
+    const main=document.createElement('div'); main.className='atl-main';
+    while(pg.firstChild) main.appendChild(pg.firstChild);
+    const side=document.createElement('aside'); side.className='atl-side';
+    pg.appendChild(side); pg.appendChild(main); pg.classList.add('atlas');
+    setDepth(depth,false);
+    const {list,steps}=pageSections(me);
+    /* primary model: [data-lab-model] wins, else the first instrument view outside the quiz */
+    let model=document.querySelector('[data-lab-model]');
+    if(!model) model=[...main.querySelectorAll('.lab-model,.view,.paper,.viewport')].find(e=>!e.closest('#quiz'));
+    if(model){ model.classList.add('atl-model'); const sp=model.closest('.split'); if(sp) sp.classList.add('atl-split'); }
+    /* model and limitations: the page footnote */
+    const foot=main.querySelector('p.foot'); if(foot&&!foot.id) foot.id='limits';
+    if(foot) foot.classList.add('atl-limits');
+    /* step bar after the page header */
+    const bar=document.createElement('nav'); bar.className='atl-bar'; bar.setAttribute('aria-label','Steps');
+    const hd=main.querySelector('header.lhead'); if(hd) hd.after(bar); else main.insertBefore(bar,main.firstChild);
+    let open=false;
+    const drawSide=()=>{
+      const area=me.m, n=areaNo(area);
+      const secs=`<ul class="atl-secs">${list.map(s=>`<li><a href="#${esc(s.id)}" data-sec="${esc(s.id)}">${esc(Lx(s.n))}</a></li>`).join('')}</ul>`;
+      side.setAttribute('aria-label',Lx(t2('Topics in this area','Emner i dette området')));
+      side.innerHTML=`<a class="atl-all" href="lab.html"><span aria-hidden="true">←</span> ${esc(Lx(t2('All areas','Alle områder')))}</a>`+
+        `<button type="button" class="atl-tog" aria-expanded="${open}"><span class="a">${esc(Lx(area))}</span><span class="t">${esc(Lx(me))}</span><span class="car" aria-hidden="true"></span></button>`+
+        `<div class="atl-panel"><div class="atl-area"><span class="no">${area.more?esc(Lx(t2('More','Mer'))):`${esc(Lx(t2('Area','Område')))} ${String(n).padStart(2,'0')} / ${String(AREAS.length).padStart(2,'0')}`}</span>`+
+        `<b><a href="lab.html#${area.k}">${esc(Lx(area))}</a></b></div>`+
+        `<ol class="atl-topics">${area.labs.map((l,i)=>{ const on=l[1]===me.k; return `<li class="${on?'on':''}"><a href="${l[0]}"${on?' aria-current="page"':''}><i>${i+1}</i><span>${esc(lang==='en'?l[2]:l[3])}</span></a>${on?secs:''}</li>`; }).join('')}</ol>`+
+        `<div class="atl-other"><span class="h">${esc(Lx(t2('Other areas','Andre områder')))}</span>${AREAS.filter(a=>a!==area).map(a=>`<a href="${a.labs[0][0]}"><i>${String(areaNo(a)).padStart(2,'0')}</i>${esc(Lx(a))}</a>`).join('')}</div></div>`;
+      side.classList.toggle('open',open); spy(); };
+    const drawBar=()=>{
+      bar.setAttribute('aria-label',Lx(t2('Steps in this lab','Steg i denne labben')));
+      bar.innerHTML=`<div class="atl-steps">${STEPS.map(([k,n],i)=>{ const tg=k==='next'?{id:'next'}:steps.find(s=>s.step===k);
+        return tg?`<a href="#${esc(tg.id)}" data-step-link="${k}"><i>${i+1}</i>${esc(Lx(n))}</a>`:`<span class="off" data-step-link="${k}" aria-disabled="true" title="${esc(Lx(t2('Not yet in this lab','Ikke i denne labben ennå')))}"><i>${i+1}</i>${esc(Lx(n))}</span>`; }).join('')}</div>${depthHTML('d-bar')}`;
+      spy(); };
+    side.addEventListener('click',e=>{ if(e.target.closest('.atl-tog')){ open=!open; side.classList.toggle('open',open); side.querySelector('.atl-tog').setAttribute('aria-expanded',String(open)); return; }
+      const a=e.target.closest('a[data-sec]'); if(a){ open=false; side.classList.remove('open'); const b=side.querySelector('.atl-tog'); if(b) b.setAttribute('aria-expanded','false'); } });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open){ open=false; side.classList.remove('open'); } });
+    document.addEventListener('click',e=>{ const b=e.target.closest('.atl-depth button'); if(b) setDepth(b.dataset.d,true); });
+    /* scroll spy: current section (sidebar) and current step (bar) */
+    const nextEl=()=>document.getElementById('next');
+    function spy(){
+      const y=(bar.getBoundingClientRect().bottom||0)+90; let cur=null, st=null;
+      list.forEach(s=>{ if(s.el.getBoundingClientRect().top<y) cur=s; });
+      steps.forEach(s=>{ if(s.el.getBoundingClientRect().top<y) st=s.step; });
+      const nx=nextEl(); if(nx&&(nx.getBoundingClientRect().top<y||innerHeight+scrollY>=document.documentElement.scrollHeight-4)) st='next';
+      side.querySelectorAll('a[data-sec]').forEach(a=>{ const on=!!cur&&a.dataset.sec===cur.id; a.classList.toggle('on',on); if(on) a.setAttribute('aria-current','location'); else a.removeAttribute('aria-current'); });
+      bar.querySelectorAll('[data-step-link]').forEach(a=>{ const on=a.dataset.stepLink===st; a.classList.toggle('on',on); if(a.tagName==='A'){ if(on) a.setAttribute('aria-current','step'); else a.removeAttribute('aria-current'); } });
+      const on=bar.querySelector('.atl-steps .on'), sc=bar.querySelector('.atl-steps');
+      if(on&&sc&&sc.scrollWidth>sc.clientWidth){ const l=on.offsetLeft-sc.offsetLeft, r=l+on.offsetWidth; if(l<sc.scrollLeft||r>sc.scrollLeft+sc.clientWidth) sc.scrollLeft=Math.max(0,l-24); }
+    }
+    let raf=0; addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; spy(); }); },{passive:true});
+    drawSide(); drawBar(); hooks.push(drawSide,drawBar);
+    /* smooth anchor jumps inside the shell */
+    pg.addEventListener('click',e=>{ const a=e.target.closest('.atl-bar a[href^="#"],.atl-side a[href^="#"],.lmeta a[href^="#"]'); if(!a) return; const t=document.getElementById(a.getAttribute('href').slice(1)); if(!t) return; e.preventDefault(); t.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); history.replaceState(null,'','#'+t.id); });
+  }
+
+  /* PageHeader: eyebrow "Virtual Labs · Area N · <area>", H1, lead, meta row (applies to, model and limitations, depth, live status) */
   function pageHeader(page,me){
     const hd=document.querySelector('.page header.lhead')||document.querySelector('header.lhead'); if(!hd||!me) return;
     const brand=hd.querySelector('.brand')||hd;
@@ -87,16 +199,16 @@
     let meta=brand.querySelector('.lmeta'); if(!meta){ meta=document.createElement('div'); meta.className='lmeta'; brand.appendChild(meta); }
     const st=hd.querySelector('.hright .status');
     let stw=null; if(st){ stw=document.createElement('span'); stw.className='mi mst'; stw.innerHTML='<span class="k"></span>'; stw.appendChild(st); }
-    const nsec=document.querySelectorAll('.snav a').length;
-    const draw=()=>{ const d=done(page), lv=LVX[me.lv]||LVX[''];
-      eb.innerHTML=`<a href="lab.html">Virtual Lab</a> · ${T('Modul')} ${me.mi+1} · <a href="lab.html#${me.m.k}">${Lx(me.m)}</a>`;
-      const keep=meta.querySelector('.mst'); meta.innerHTML=`<span class="mi"><span class="tag ${lv.c}">${Lx(lv)}</span></span>`+
-        (nsec?`<span class="mi"><span class="v">${nsec}</span><span class="k">${lang==='en'?'sections':'seksjoner'}</span></span>`:'')+
-        '';
+    const draw=()=>{ const lv=LVX[me.lv]||LVX[''], n=areaNo(me.m), foot=document.querySelector('.page p.foot');
+      eb.innerHTML=`<a href="lab.html">Virtual Labs</a> · ${me.m.more?esc(Lx(t2('More','Mer'))):`${esc(Lx(t2('Area','Område')))} ${n}`} · <a href="lab.html#${me.m.k}">${esc(Lx(me.m))}</a>`;
+      const keep=meta.querySelector('.mst');
+      meta.innerHTML=`<span class="mi"><span class="k">${esc(Lx(t2('Applies to','Gjelder')))}</span><span class="tag ${lv.c}" title="${esc(Lx(LVTIP[me.lv]||LVTIP['']))}">${esc(Lx(lv))}</span></span>`+
+        (foot?`<span class="mi"><a class="atl-lim" href="#${foot.id||'limits'}">${esc(Lx(t2('Model and limitations','Modell og begrensninger')))} <span aria-hidden="true">↓</span></a></span>`:'')+
+        depthHTML('d-meta');
       const w=keep||stw; if(w){ const lab=st&&st.dataset.label?{en:st.dataset.label,no:st.dataset.labelNo||st.dataset.label}:(STLAB[page]||{en:'Simulator',no:'Simulator'}); w.querySelector('.k').textContent=Lx(lab)+':'; meta.appendChild(w); } };
     draw(); hooks.push(draw); document.addEventListener('nprog',draw);
   }
-  /* InPageNav: active section + compact "On this page" select on narrow screens */
+  /* InPageNav (pages outside the Atlas shell): active section + compact "On this page" select on narrow screens */
   function inPageNav(){
     const sn=document.querySelector('.snav'); if(!sn||sn.dataset.ipn) return; sn.dataset.ipn='1';
     const links=[...sn.querySelectorAll('a[href^="#"]')]; if(!links.length) return;
@@ -104,19 +216,25 @@
     const sel=wrap.querySelector('select');
     const fill=()=>{ wrap.querySelector('span').textContent=lang==='en'?'On this page':'På denne siden'; const v=sel.value; sel.innerHTML=links.map(a=>`<option value="${a.getAttribute('href')}">${a.textContent.trim()}</option>`).join(''); if(v) sel.value=v; };
     fill(); hooks.push(()=>setTimeout(fill,0));
-    sel.addEventListener('change',()=>{ const t=document.querySelector(sel.value); if(t) t.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'}); history.replaceState(null,'',sel.value); });
+    sel.addEventListener('change',()=>{ const t=document.querySelector(sel.value); if(t) t.scrollIntoView({behavior:reduced()?'auto':'smooth'}); history.replaceState(null,'',sel.value); });
     const secs=links.map(a=>{ try{ return document.querySelector(a.getAttribute('href')); }catch(e){ return null; } });
     const mark=()=>{ const y=sn.getBoundingClientRect().bottom+80; let k=-1; secs.forEach((s,i)=>{ if(s&&s.getBoundingClientRect().top<y) k=i; });
       links.forEach((a,i)=>a.classList.toggle('on',i===k)); if(k>=0&&sel.selectedIndex!==k) sel.selectedIndex=k; };
     let raf=0; addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; mark(); }); },{passive:true}); mark();
   }
-  // forrige / neste i læringsløpet, nederst på hver lab
+  /* "Next" at the end of every lab (the step bar's last step): next topic in the area, then the next area */
   function pathbar(page){
-    const i=FLAT.findIndex(x=>x.k===page); if(i<0) return; const secs=document.querySelectorAll('section'); const pg=document.querySelector('.page')||(secs.length&&secs[secs.length-1].parentElement); if(!pg) return;
-    let box=document.querySelector('.vlpath'); if(!box){ box=document.createElement('nav'); box.className='vlpath'; box.setAttribute('aria-label','Learning path'); pg.appendChild(box); }
-    const draw=()=>{ const c=FLAT[i], p=FLAT[i-1], n=FLAT[i+1], nm=x=>lang==='en'?x.en:x.no;
-      const ml=c.m.labs.length;
-      box.innerHTML=`<div class="ph"><span>${T('Modul')} ${c.mi+1} · ${Lx(c.m)}</span><span>${T('Lab')} ${c.li+1} ${T('av')} ${ml}</span></div><div class="pr">${p?`<a href="${p.f}"><small>← ${T('Forrige')}</small><b>${nm(p)}</b></a>`:'<a class="x"></a>'}${n?`<a class="nx" href="${n.f}"><small>${n.mi!==c.mi?T('Neste modul')+': '+Lx(n.m):T('Neste')} →</small><b>${nm(n)}</b></a>`:`<a class="nx" href="lab.html"><small>${T('Ferdig')} →</small><b>Virtual Lab</b></a>`}</div><div class="steps" title="${T('Læringsløpet')}">${FLAT.map((x,j)=>`<i class="${j===i?'c':(done(x.k)>=60?'d':'')}"></i>`).join('')}</div>`; };
+    const i=FLAT.findIndex(x=>x.k===page); if(i<0) return;
+    const pg=document.querySelector('.atl-main')||document.querySelector('.page'); if(!pg) return;
+    let box=document.querySelector('.vlpath'); if(!box){ box=document.createElement('nav'); box.className='vlpath'; box.id='next'; pg.appendChild(box); }
+    const draw=()=>{ const c=FLAT[i], nm=x=>lang==='en'?x.en:x.no;
+      const inA=FLAT.filter(x=>x.m===c.m), p=inA[c.li-1]||null;
+      let n=inA[c.li+1]||null, nArea=null;
+      if(!n&&!c.m.more){ const a=AREAS[areaNo(c.m)]; if(a){ nArea=a; n=FLAT.find(x=>x.m===a); } }
+      box.setAttribute('aria-label',Lx(t2('Next','Gå videre')));
+      box.innerHTML=`<div class="ph"><span>${esc(Lx(t2('Next','Gå videre')))}</span><span>${c.m.more?esc(Lx(t2('More','Mer'))):`${esc(Lx(t2('Area','Område')))} ${areaNo(c.m)}`} · ${esc(Lx(c.m))} · ${esc(Lx(t2('topic','emne')))} ${c.li+1} ${T('av')} ${inA.length}</span></div>`+
+        `<div class="pr">${p?`<a href="${p.f}"><small>← ${esc(Lx(t2('Previous in this area','Forrige i området')))}</small><b>${esc(nm(p))}</b></a>`:'<a class="x" aria-hidden="true" tabindex="-1"></a>'}`+
+        (n?`<a class="nx" href="${n.f}"><small>${nArea?esc(Lx(t2('Next area','Neste område')))+': '+esc(Lx(nArea)):esc(Lx(t2('Next in this area','Neste i området')))} →</small><b>${esc(nm(n))}</b></a>`:`<a class="nx" href="lab.html"><small>${esc(Lx(t2('All areas','Alle områder')))} →</small><b>Virtual Labs</b></a>`)+`</div>`; };
     draw(); hooks.push(draw);
   }
   // glidebryter
@@ -177,6 +295,6 @@
   }
   function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-  window.LAB={ PATH, FLAT, LV, done, T, L, nf, el, add(dict,no){ Object.assign(D,dict); if(no) Object.assign(NO,no); }, start(page){ header(page); scan(); apply(); }, head(page){ header(page); const n=document.querySelector('.labnav'); if(n) scan(n); apply(); },
+  window.LAB={ PATH, AREAS, MORE, FLAT, TOP, LV, LVX, LVTIP, done, get depth(){ return depth; }, setDepth:d=>setDepth(d,true), T, L, nf, el, add(dict,no){ Object.assign(D,dict); if(no) Object.assign(NO,no); }, start(page){ header(page); scan(); apply(); }, head(page){ header(page); const n=document.querySelector('.labnav'); if(n) scan(n); apply(); },
     onLang(f){ hooks.push(f); }, get lang(){ return lang; }, slider, seg, fit, visible, quiz, shuffle };
 })();

@@ -41,5 +41,5 @@ for (const alg of [-7, -257]) {
 }
 const bad = await fetch(BASE + '/api/sync', { method: 'PUT', headers: { 'content-type': 'application/json', origin: 'https://evil.example' }, body: '{}' });
 console.log((bad.status === 403 ? 'ok  ' : 'FAIL') + ' cross-origin PUT → ' + bad.status);
-for (const p of ['/SETUP-ACCOUNTS.md', '/migrations/0001_accounts.sql', '/tests/api.test.mjs']) { const r = await fetch(BASE + p); console.log((r.status === 404 ? 'ok  ' : 'FAIL') + ' ' + p + ' → ' + r.status); }
+for (const p of ['/SETUP-ACCOUNTS.md', '/LAB-TEMPLATE.md', '/migrations/0001_accounts.sql', '/tests/api.test.mjs']) { const r = await fetch(BASE + p); console.log((r.status === 404 ? 'ok  ' : 'FAIL') + ' ' + p + ' → ' + r.status); }
 console.log('e2e done');

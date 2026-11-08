@@ -6,7 +6,7 @@
 <title>For flight schools and operators · Birdbird</title>
 <meta name="description" content="How a flight school or operator can use Birdbird: interactive theory mapped to the EASA ATPL subjects, a standard briefing pack, type-rating preparation and a document-grounded instructor.">
 <link rel="stylesheet" href="lab.css?v=6">
-<link rel="stylesheet" href="site.css?v=11">
+<link rel="stylesheet" href="site.css?v=12">
 <style>
 /* schools.html – page-local layout on top of the shared design system */
 .ip-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
@@ -67,7 +67,7 @@
 </style>
 </head>
 <body data-title="For flight schools and operators">
-<script src="site.js?v=27"></script>
+<script src="site.js?v=28"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -92,7 +92,7 @@
     <h2>What Birdbird offers a school</h2>
     <p class="lead">Everything below works today, in a normal web browser, on a classroom screen, a laptop or a phone.</p>
     <div class="ip-cols">
-      <div class="box"><span class="k">Learn</span><b class="t">A learning path aligned to the ATPL subjects</b><p>25 interactive labs in 9 modules, from principles of flight to human performance. Each module follows an EASA ATPL theory subject, and every lab uses the A320 as its reference aircraft.</p><a class="go" href="lab.html">Open the learning path →</a></div>
+      <div class="box"><span class="k">Learn</span><b class="t">A learning path aligned to the ATPL subjects</b><p>25 interactive labs: 23 in seven subject areas, from aerodynamics to mass and balance, plus two on human factors. Each area follows EASA ATPL theory subjects, and the labs use an illustrative A320 as their reference aircraft where they show numbers.</p><a class="go" href="lab.html">Open the learning path →</a></div>
       <div class="box"><span class="k">Teach</span><b class="t">Labs an instructor can project</b><p>Each lab is one page built around a live model: move a slider and the drawing and the numbers change with it. A ground school lesson can start from the same picture the student later revises with.</p><a class="go" href="altimetry.html">Example: pressure and altitude →</a></div>
       <div class="box"><span class="k">Plan</span><b class="t">One standard briefing pack</b><p>VFR and IFR versions with planning minima, performance, mass and balance and fuel, plus printable kneeboard sheets. Route Explorer adds a terrain profile, 3D terrain and airspace for the planned route.</p><a class="go" href="prep.html">Open the briefing pack →</a></div>
       <div class="box"><span class="k">Practise</span><b class="t">Practice in a fixed order</b><p>Gate to gate, structured briefings (TSADMM and T-RIBETS), radio drills, a simulator and preparation for the A320 simulator assessment. The order of things is practised until it runs on its own.</p><a class="go" href="radio.html">Open training →</a></div>
@@ -145,20 +145,19 @@
     </div>
   </section>
 </div>
-<script src="lab.js?v=20"></script>
+<script src="lab.js?v=21"></script>
 <script>
 (function(){
 'use strict';
 const {L,el}=LAB;
 /* Modules from the learning path (lab.js LAB.PATH) mapped to EASA ATPL(A) theory subjects */
-const SUBJ={air:[{c:'022',en:'Instrumentation',no:'Instrumentering'},{c:'050',en:'Meteorology',no:'Meteorologi'}],
+const SUBJ={mb:[{c:'031',en:'Mass and balance',no:'Masse og balanse'}],
   pof:[{c:'081',en:'Principles of flight',no:'Aerodynamikk'}],
   sys:[{c:'021',en:'Airframe, systems, electrics, power plant',no:'Flyskrog, systemer, elektrisk, motor'}],
-  perf:[{c:'031',en:'Mass and balance',no:'Masse og balanse'},{c:'032',en:'Performance',no:'Ytelse'}],
+  perf:[{c:'032',en:'Performance',no:'Ytelse'},{c:'033',en:'Flight planning and monitoring',no:'Flyplanlegging og overvåking'}],
   met:[{c:'050',en:'Meteorology',no:'Meteorologi'}],
   inst:[{c:'022',en:'Instrumentation',no:'Instrumentering'}],
   nav:[{c:'061',en:'General navigation',no:'Generell navigasjon'},{c:'062',en:'Radio navigation',no:'Radionavigasjon'}],
-  fpl:[{c:'033',en:'Flight planning and monitoring',no:'Flyplanlegging og overvåking'}],
   hf:[{c:'040',en:'Human performance and limitations',no:'Menneskelig ytelse og begrensninger'}]};
 const LV={la:{c:'lt',en:'Light twin',no:'Småfly'},jet:{c:'a320',en:'A320',no:'A320'},'':{c:'core',en:'Core',no:'Grunnlag'}};
 function subj(){
@@ -188,7 +187,7 @@ LAB.add({'Sections':'Sections'},{
  'Everything below works today, in a normal web browser, on a classroom screen, a laptop or a phone.':'Alt under virker i dag, i en vanlig nettleser, på en klasseromsskjerm, en bærbar PC eller en telefon.',
  'Learn':'Lær','Teach':'Undervis','Plan':'Planlegg','Practise':'Øv','Type rating':'Typerating','Instructor':'Instruktør',
  'A learning path aligned to the ATPL subjects':'Et læringsløp som følger ATPL-fagene',
- '25 interactive labs in 9 modules, from principles of flight to human performance. Each module follows an EASA ATPL theory subject, and every lab uses the A320 as its reference aircraft.':'25 interaktive labber i 9 moduler, fra aerodynamikk til menneskelige faktorer. Hver modul følger et EASA ATPL-fag, og alle labbene bruker A320 som referansefly.',
+ '25 interactive labs: 23 in seven subject areas, from aerodynamics to mass and balance, plus two on human factors. Each area follows EASA ATPL theory subjects, and the labs use an illustrative A320 as their reference aircraft where they show numbers.':'25 interaktive labber: 23 i sju fagområder, fra aerodynamikk til masse og balanse, pluss to om menneskelige faktorer. Hvert område følger EASA ATPL-fag, og labbene bruker en illustrerende A320 som referansefly der de viser tall.',
  'Open the learning path →':'Åpne læringsløpet →',
  'Labs an instructor can project':'Labber en instruktør kan vise på storskjerm',
  'Each lab is one page built around a live model: move a slider and the drawing and the numbers change with it. A ground school lesson can start from the same picture the student later revises with.':'Hver lab er én side bygget rundt en levende modell: flytt en glidebryter, så endres tegningen og tallene med den. En teoritime kan starte fra det samme bildet som eleven repeterer med senere.',

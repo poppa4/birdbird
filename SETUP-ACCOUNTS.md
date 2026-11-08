@@ -76,7 +76,7 @@ Bindings only take effect on a new deployment.
 - **Nothing to configure.** No secrets or environment variables are needed. The passkey site id is
   `birdbird.eu` (also valid on www.birdbird.eu). Optional variable `RP_ID` overrides it if the domain changes.
 - **Not served to visitors:** `/functions` is never published by Cloudflare Pages, and small Functions
-  answer 404 for `/migrations/*`, `/tests/*` and `/SETUP-ACCOUNTS.md` (Pages' `_redirects` cannot return a 404).
+  answer 404 for `/migrations/*`, `/tests/*`, `/SETUP-ACCOUNTS.md` and `/LAB-TEMPLATE.md` (Pages' `_redirects` cannot return a 404).
 - **Free plan limits:** D1 free plan (5 GB, 5 million row reads a day) and Pages Functions (100,000 requests
   a day) are far above what Birdbird needs. Visitors who are not signed in do not call the API, except
   once on My training.
