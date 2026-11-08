@@ -368,7 +368,7 @@ function oaLayers(src){ const s=n=>({source:src,'source-layer':n}), g=k=>['coale
       'text-field':['step',['zoom'],g('name_label'),10,['coalesce',['get','name_label_full'],['get','name_label'],'']],'text-offset':[0.9,0],'text-anchor':'left'},tx('#1F4E8C'),['!',['has','icao_code']]),
     sym('bb-oa-nv','navaids',6,{'icon-image':['match',['get','type'],'ndb','bb-ndb','bb-vor'],'text-field':['step',['zoom'],g('identifier'),9,['coalesce',['get','name_label_full'],['get','identifier'],'']],'text-offset':[0.9,0.6],'text-anchor':'top-left'},tx('#24706A')),
     dot('bb-oa-hs','hotspots','#A0620A',8), dot('bb-oa-hg','hang_glidings','#3F6E3A',8), dot('bb-oa-rc','rc_airfields','#5B6C7C',10),
-    sym('bb-oa-rp','reporting_points',10,{'icon-image':['match',['get','type'],'compulsory','bb-rp-c','bb-rp-r'],'text-field':['step',['zoom'],'',11,g('name')],'text-font':FONT_B,'text-size':10.5,'text-offset':[0.8,-0.1],'text-anchor':'left'},tx('#1D4E9E'))
+    sym('bb-oa-rp','reporting_points',8,{'icon-image':['match',['get','type'],'compulsory','bb-rp-c','bb-rp-r'],'icon-size':['interpolate',['linear'],['zoom'],8,0.8,10,1,13,1.25],'symbol-sort-key':0,'text-field':['step',['zoom'],'',9,g('name')],'text-font':FONT_B,'text-size':['interpolate',['linear'],['zoom'],9,11,13,13.5],'text-offset':[0.95,-0.05],'text-anchor':'left','text-optional':false,'text-allow-overlap':false},{'text-color':'#123E86','text-halo-color':'#fff','text-halo-width':2.2})
   ]; }
 function addAirspace(map,cb){ const key=oaipKey(); cb=cb||(()=>{}); if(!key){ map.__bb.oaip='none'; cb('none'); return false; }
   if(map.getSource('bb-oaip')) return true;
@@ -391,9 +391,9 @@ function addImages(map){
   icon(map,'bb-my',12,12,g=>{ g.beginPath(); g.moveTo(6,1); g.lineTo(11,10.4); g.lineTo(1,10.4); g.closePath(); g.fillStyle='#fff'; g.fill(); g.strokeStyle=P.accent; g.lineWidth=1.5; g.stroke(); });
   icon(map,'bb-note',16,24,g=>{ g.beginPath(); g.moveTo(8,23); g.lineTo(2,13); g.lineTo(2,1.5); g.lineTo(14,1.5); g.lineTo(14,13); g.closePath(); g.fillStyle='#F2C230'; g.fill(); g.strokeStyle='#8A6D00'; g.lineWidth=1; g.stroke(); });
   // openAIP points: VFR reporting points (filled triangle = compulsory, open = on request), obstacles, small airfields
-  const RP='#1D4E9E', OB='#2B3440', OA='#1F4E8C';
-  icon(map,'bb-rp-c',14,13,g=>{ g.beginPath(); g.moveTo(7,1.2); g.lineTo(12.8,11.6); g.lineTo(1.2,11.6); g.closePath(); g.fillStyle=RP; g.fill(); g.strokeStyle='#fff'; g.lineWidth=1; g.stroke(); });
-  icon(map,'bb-rp-r',14,13,g=>{ g.beginPath(); g.moveTo(7,1.6); g.lineTo(12.4,11.2); g.lineTo(1.6,11.2); g.closePath(); g.fillStyle='rgba(255,255,255,.9)'; g.fill(); g.strokeStyle=RP; g.lineWidth=1.6; g.stroke(); });
+  const RP='#123E86', OB='#2B3440', OA='#1F4E8C';
+  icon(map,'bb-rp-c',20,19,g=>{ g.lineJoin='round'; g.beginPath(); g.moveTo(10,1.5); g.lineTo(18.5,17); g.lineTo(1.5,17); g.closePath(); g.strokeStyle='#fff'; g.lineWidth=3.2; g.stroke(); g.fillStyle=RP; g.fill(); });
+  icon(map,'bb-rp-r',20,19,g=>{ g.lineJoin='round'; const t=()=>{ g.beginPath(); g.moveTo(10,2.2); g.lineTo(17.8,16.4); g.lineTo(2.2,16.4); g.closePath(); }; t(); g.strokeStyle='#fff'; g.lineWidth=5; g.stroke(); g.fillStyle='rgba(255,255,255,.95)'; g.fill(); t(); g.strokeStyle=RP; g.lineWidth=2.4; g.stroke(); g.beginPath(); g.arc(10,11.6,1.6,0,7); g.fillStyle=RP; g.fill(); });
   icon(map,'bb-ob',12,14,g=>{ g.beginPath(); g.moveTo(1.5,13); g.lineTo(6,1.5); g.lineTo(10.5,13); g.strokeStyle='#fff'; g.lineWidth=3; g.stroke(); g.strokeStyle=OB; g.lineWidth=1.4; g.stroke(); g.beginPath(); g.arc(6,10.6,1.3,0,7); g.fillStyle=OB; g.fill(); });
   icon(map,'bb-ob-wt',14,16,g=>{ g.lineCap='round'; const bl=()=>{ g.beginPath(); g.moveTo(7,15); g.lineTo(7,6); for(let a=0;a<3;a++){ const t=-Math.PI/2+a*2*Math.PI/3; g.moveTo(7,6); g.lineTo(7+5*Math.cos(t),6+5*Math.sin(t)); } }; bl(); g.strokeStyle='#fff'; g.lineWidth=3; g.stroke(); bl(); g.strokeStyle=OB; g.lineWidth=1.3; g.stroke(); });
   const ad=(name,mark)=>icon(map,name,14,14,g=>{ g.beginPath(); g.arc(7,7,5.4,0,7); g.fillStyle='#fff'; g.fill(); g.strokeStyle=OA; g.lineWidth=1.4; g.stroke(); g.strokeStyle=OA; g.fillStyle=OA; g.lineWidth=1.3; mark(g); });
