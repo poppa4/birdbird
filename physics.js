@@ -97,6 +97,11 @@
     // forkantlameller (slats) øker kritisk α og cl maks, men gir lite ekstra løft ved samme α
     const sl = g.slatDeg || 0, dClS = Math.min(0.75, 0.027 * sl), slFrom = 0.11 * s;
     const fs = g.flapSpan * s;
+    /* Spoilere (valgfritt, g.spoiler = { deg, side: 0 begge | 1 høyre | −1 venstre, panels: [[fra, til], …] i andel av halvspennet }):
+       modellert som et oppoverbøyd bakre kordesegment med empirisk effektivitet (avkrumning → mindre løft), lavere cl maks og
+       ekstra profilmotstand på stripene bak panelene. Separasjonen bak panelet tegnes fra samme maske (flow3d.sepFrac). */
+    const SP = g.spoiler && g.spoiler.deg > 0 ? g.spoiler : null, spD = SP ? SP.deg * DEG : 0, spEff = SP ? Math.atan(0.42 * Math.sin(spD)) : 0;
+    const spMask = new Uint8Array(NS);
 
     const NP = NS * NC;
     const Pa = new Float64Array(NP * 6);               // bundet virvel A,B
@@ -111,6 +116,9 @@
       c[j] = chord(y); dy[j] = yb - ya; ym[j] = y;
       const inS = sl > 0 && Math.abs(y) >= slFrom && Math.abs(y) <= 0.985 * s;
       clmax[j] = af.clmax + (inF ? dCl : 0) + (inS ? dClS : 0); cd0[j] = af.cd0 + (inF ? dCd : 0) + (inS ? 0.0002 * sl : 0);
+      if (SP && (!SP.side || SP.side * y > 0) && SP.panels.some(r => Math.abs(y) >= r[0] * s && Math.abs(y) <= r[1] * s)) {
+        spMask[j] = 1; clmax[j] -= 0.55 * Math.sin(spD); cd0[j] += 0.11 * Math.sin(spD);
+      }
       const theta = g.twist * DEG * Math.abs(y) / s;
       const ny = y >= 0 ? -sD : sD;
       for (let q = 0; q < NC; q++) {
@@ -123,6 +131,7 @@
         Pn[2 * p] = ny; Pn[2 * p + 1] = cD;
         let slope = sl;
         if (inF && xcp > 0.75) slope -= Math.tan(dEff) * fowl;
+        if (spMask[j] && xcp > 0.6) slope += Math.tan(spEff);
         rhsA[p] = -cD; rhsB[p] = -(theta - slope) * cD;
       }
     }
@@ -186,7 +195,7 @@
     return {
       SL, PT, N: NS, NC, NP, s, k, yk, slat: sl, slFrom, ye, c, dy, ym, clmax, cd0, flap, Ga, Gb, Sa, Sb, wa, wb, S, CLa, CLb, Pa,
       alphaStall: aS, stallStation: ym[jS] / s, CLmax: CLa * aS + CLb, chord, xle, zw, cr, ct, af,
-      Sreal, AR: g.b * g.b / Sreal, mac: Sreal / g.b, dEff: dEff / DEG, fs, fowl
+      Sreal, AR: g.b * g.b / Sreal, mac: Sreal / g.b, dEff: dEff / DEG, fs, fowl, spMask, spDeg: SP ? SP.deg : 0
     };
   }
 

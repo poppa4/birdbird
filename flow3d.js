@@ -87,9 +87,11 @@
       if (!res) return 1; const r = res.ratio[j], thin = P.AIRFOILS[G.af].t < 0.05;
       /* on: stallmargin der bakkantseparasjonen starter (0,86 med ren forkant; tidligere med ruhet/is, se applyLE) */
       const on = G && G.leOn ? G.leOn : 0.86;
-      if (r >= 1) return thin ? 0.03 : Math.max(0.03, 0.68 - 1.5 * (r - 1));
-      if (r > on) return thin ? 1 : 1 - 0.32 * Math.pow((r - on) / (1 - on), 2);
-      return 1;
+      /* utfelt spoiler: strømningen løsner fra panelets bakkant (≈ 66 % korde) og danner en separert sone til bakkanten */
+      const sp = wing.spMask && wing.spMask[j] && wing.spDeg > 4 ? 0.66 : 1;
+      if (r >= 1) return thin ? 0.03 : Math.min(sp, Math.max(0.03, 0.68 - 1.5 * (r - 1)));
+      if (r > on) return Math.min(sp, thin ? 1 : 1 - 0.32 * Math.pow((r - on) / (1 - on), 2));
+      return sp;
     }
     /* Cp på vingeflaten per stripe fra virvelgitteret (ΔCp per panel) pluss tykkelsesbidrag; samme som fargene på vingen.
        Over separasjonspunktet: trykkplatå. x = andel av korden, up = oversiden. */
