@@ -86,17 +86,17 @@
   };
   AIRCRAFT.a320.confs = null; AIRCRAFT.a320.flapType = 'fowler'; AIRCRAFT.a320.spoilers = true;
   AIRCRAFT.a320.speeds = { vs1: null, cruise: 450, mtom: 78000 };
-  /* Klaffinnstillinger (typiske A320-verdier): lamell (slat) og klaff i grader, VFE i kt */
+  /* Flap settings (typical A320 values): slat and flap in degrees, VFE in kt. k: CLmax calibration so VS1g at 64 t is typical (CONF 3 ≈ 115 kt, CONF FULL ≈ 109 kt, from VLS = 1.23 VS1g) */
   const CONFS = [
     { id: '0', s: 0, f: 0, vfe: null }, { id: '1', s: 18, f: 0, vfe: 230 }, { id: '1+F', s: 18, f: 10, vfe: 215 },
-    { id: '2', s: 22, f: 15, vfe: 200 }, { id: '3', s: 22, f: 20, vfe: 185 }, { id: 'FULL', s: 27, f: 35, vfe: 177 }];
+    { id: '2', s: 22, f: 15, vfe: 200 }, { id: '3', s: 22, f: 20, vfe: 185, k: 1.101 }, { id: 'FULL', s: 27, f: 40, vfe: 177, k: 1.109 }];
   AIRCRAFT.a320.confs = CONFS;
   const confsFor = ac => (AIRCRAFT[ac] && AIRCRAFT[ac].confs) || CONFS;
   /* parametre til buildWing for et fly og en konfigurasjon (o: overstyringer, f.eks. twist, leK, spoiler) */
   function wingParamsFor(ac, conf, o) {
     const A = AIRCRAFT[ac], c = confsFor(ac)[conf] || confsFor(ac)[0];
     return Object.assign({ b: A.b, cr: A.cr, ck: A.ck, yk: A.yk, ct: A.ct, sweep: A.sweep, dih: A.dih, twist: A.twist, af: A.af, afTip: A.afTip || null,
-      flapDeg: c.f, slatDeg: c.s, flapSpan: A.flapSpan, fowler: A.fowler, flapType: A.flapType || (A.fowler ? 'fowler' : 'plain'), stallStrip: A.stallStrip || null }, o || {});
+      flapDeg: c.f, slatDeg: c.s, flapK: c.k || 1, flapSpan: A.flapSpan, fowler: A.fowler, flapType: A.flapType || (A.fowler ? 'fowler' : 'plain'), stallStrip: A.stallStrip || null }, o || {});
   }
 
   /* Middellinjen: firesifret NACA (m, p) eller femsifret 230 (r = 0,2025, k1 = 15,957). Returnerer [yc, dyc/dx]. */
@@ -186,7 +186,7 @@
       flap[j] = inF ? 1 : 0;
       c[j] = chord(y); dy[j] = yb - ya; ym[j] = y;
       const inS = sl > 0 && Math.abs(y) >= slFrom && Math.abs(y) <= 0.985 * s;
-      clmax[j] = lerpAf('clmax', y) + (inF ? dCl : 0) + (inS ? dClS : 0); cd0[j] = lerpAf('cd0', y) + (inF ? dCd : 0) + (inS ? 0.0002 * sl : 0);
+      clmax[j] = (lerpAf('clmax', y) + (inF ? dCl : 0) + (inS ? dClS : 0)) * (g.flapK || 1); cd0[j] = lerpAf('cd0', y) + (inF ? dCd : 0) + (inS ? 0.0002 * sl : 0);
       // stallstriper på den indre forkanten (King Air): lavere cl maks innerst, så roten staller først
       if (g.stallStrip && Math.abs(y) <= g.stallStrip.to * s) clmax[j] -= g.stallStrip.dcl;
       if (SP && (!SP.side || SP.side * y > 0) && SP.panels.some(r => Math.abs(y) >= r[0] * s && Math.abs(y) <= r[1] * s)) {

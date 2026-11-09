@@ -28,11 +28,12 @@ for(const ac of ['a320','b200','da42']){ const w=P.buildWing(P.wingParamsFor(ac,
   // span efficiency from the Trefftz plane at moderate CL: 0.75 < e < 1.03
   const r=P.evaluate(w,6,0), e=r.CL*r.CL/(Math.PI*A*r.CDi); eq(ac+' Oswald e plausible',e>0.75&&e<1.03,true); }
 
-/* 3. A320 regression: every CONF unchanged (CONF FULL stall speed is an owner decision) */
-const A320REF=[[15.68524464930516,1.412766822352397],[20.515582133598837,1.8165830669233518],[19.002332727300324,1.9658740345549268],[19.150672914672846,2.1279056651159007],[18.125519002852368,2.2014550144345915],[17.949064276631955,2.429957518113138]];
+/* 3. A320 regression: raw wing geometry per CONF (CONF FULL = slats 27°, flaps 40°); the calibrated VS1g is checked below */
+const A320REF=[[15.68524464930516,1.412766822352397],[20.515582133598837,1.8165830669233518],[19.002332727300324,1.9658740345549268],[19.150672914672846,2.1279056651159007],[18.125519002852368,2.2014550144345915],[17.752464865501548,2.444062481863802]];
 P.CONFS.forEach((c,i)=>{ const A=P.AIRCRAFT.a320, w=P.buildWing({b:A.b,cr:A.cr,ck:A.ck,yk:A.yk,ct:A.ct,sweep:A.sweep,dih:A.dih,twist:A.twist,af:A.af,flapDeg:c.f,slatDeg:c.s,flapSpan:A.flapSpan,fowler:A.fowler});
   eq('A320 CONF '+c.id+' α stall',w.alphaStall/DEG,A320REF[i][0],1e-9); eq('A320 CONF '+c.id+' CL max',w.CLmax,A320REF[i][1],1e-9); });
-{ const A=P.AIRCRAFT.a320, w=P.buildWing(P.wingParamsFor('a320',5)); eq('A320 CONF FULL VS1g @64 t (unchanged)',Math.sqrt(2*64000*G0/(1.225*w.Sreal*w.CLmax))/KT,114.00557092850521,1e-6); void A; }
+{ const A=P.AIRCRAFT.a320, w=P.buildWing(P.wingParamsFor('a320',5)); eq('A320 CONF FULL VS1g @64 t ≈ 109 kt (typical)',Math.sqrt(2*64000*G0/(1.225*w.Sreal*w.CLmax))/KT,109,0.3);
+  const w3=P.buildWing(P.wingParamsFor('a320',4)); eq('A320 CONF 3 VS1g @64 t ≈ 115 kt (typical)',Math.sqrt(2*64000*G0/(1.225*w3.Sreal*w3.CLmax))/KT,115,0.3); void A; }
 
 /* 4. Twins: stall speeds within 6 % of book values (B200: green arc 99 KIAS, white arc 75 KIAS at 12 500 lb); root stalls first, flaps up */
 { const vs=(ac,i,m)=>{ const w=P.buildWing(P.wingParamsFor(ac,i)); return Math.sqrt(2*m*G0/(1.225*w.Sreal*w.CLmax))/KT; };
