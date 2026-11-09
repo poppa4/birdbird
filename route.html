@@ -423,6 +423,81 @@
 .rx .mlwarn code{flex-basis:100%;font-size:11px;color:var(--ink-2);word-break:break-word}.rx .mlwarn code[hidden]{display:none}
 @media (max-width:900px){.rx .mlwarn{bottom:10px}}
 .mapw:has(.mlwarn) .maplg{display:none}
+
+/* ===== map-first layout (SkyVector-style): floating route card, profile strip, layers behind one button ===== */
+.rx{--rcw:356px}
+.rx .seg3,.rx .lybtn,.rx .rx-ly,.rx .mapctl,.rx .edbar,.rx .x3w{border-radius:0!important}
+.rx .seg3 button,.rx .bmg button{border-radius:0}
+.rx-top{left:auto;justify-content:flex-end}
+.rcard{position:absolute;left:12px;top:12px;width:var(--rcw);z-index:6;background:#fff;border:1px solid rgba(11,37,69,.2);box-shadow:0 6px 20px rgba(11,37,69,.13);font-size:13.5px;color:#0B2545}
+.rc-hd{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;border:0;background:#0B2545;color:#fff;font:inherit;padding:7px 10px;cursor:pointer;text-align:left}
+.rc-k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;flex:0 0 auto}
+.rc-line{flex:1;min-width:0;font-family:var(--f-mono);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.92}
+.rc-chev{flex:0 0 auto;font-size:12px}.rc-chev::before{content:"▴"}.rcard.col .rc-chev::before{content:"▾"}
+.rcard.col .rc-body{display:none}
+.rx:not(.has) .rcard.col .rc-body{display:block}
+.rx.d3 .rcard:not(.x3o) .rc-body{display:none}.rx.d3 .rcard.x3o .rc-body{display:block}.rx.d3 .rcard.x3o .rc-chev::before{content:"▴"}.rx.d3 .rcard:not(.x3o) .rc-chev::before{content:"▾"}
+.rcard .rx-r{max-width:none;margin:0;border:0;border-bottom:1px solid rgba(11,37,69,.12);border-radius:0;box-shadow:none}
+.rcard .rx-rl{padding:6px}
+.rcard .libbtn{border-radius:0;box-shadow:none;height:auto;flex-basis:34px}
+.rcard .btn{border-radius:0}
+.rcard .qres{border-radius:0}
+.rc-ft{padding:7px 10px 6px;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 8px;align-items:baseline;border-bottom:1px solid rgba(11,37,69,.12)}
+.rc-ft[hidden]{display:none}
+.rc-ft .l{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C}
+.rc-ft b{font-family:var(--f-mono);font-size:13px;color:#9A1E68}
+.rc-ft span.n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;color:#3A4D60}
+.rc-cr{padding:7px 10px;border-bottom:1px solid rgba(11,37,69,.12)}
+.rc-cr .shcr{flex-wrap:wrap;color:#3A4D60}.rc-cr .shcr .stp{border-radius:0}.rc-cr .shcr input{border-radius:0}
+.rc-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid rgba(11,37,69,.12)}
+.rc-sum[hidden]{display:none}
+.rc-sum>div{padding:6px 10px;border-right:1px solid rgba(11,37,69,.12);min-width:0}.rc-sum>div:last-child{border-right:0}
+.rc-sum small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C;white-space:nowrap}
+.rc-sum b{font-family:var(--f-mono);font-size:14px;font-weight:600;white-space:nowrap}
+.rc-btns{display:flex;gap:6px;padding:8px 10px}.rc-btns .btn{flex:1;padding:6px 10px;font-size:13px}
+.rx:not(.has) .rc-btns{display:none}
+.rc-btns .sh-nl[aria-pressed="true"]{background:#0B2545;color:#fff}
+@media (min-width:901px){
+  .rcard{max-height:calc(100% - var(--shh,0px) - 24px);overflow:visible}
+  .rcard .packpop{left:calc(100% + 8px);right:auto;top:0;bottom:auto;border-radius:0}
+  .rx-side{left:calc(var(--rcw) + 24px);top:12px;border-radius:0}
+  .rx .edbar{left:50%;transform:translateX(-50%);top:12px}
+}
+.rx-ly .lymm{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 10px;margin-bottom:4px;border-bottom:1px solid rgba(11,37,69,.09)}
+.rx-ly .lymm .seg3{box-shadow:none;border:1px solid rgba(11,37,69,.15)}
+/* profile: slim strip by default, expands over the lower part of the map */
+.rx-sheet[data-s="min"]{height:112px}
+.rx-sheet.empty[data-s="min"]{height:44px}
+.rx-sheet[data-s="min"] .sh-bar{border-bottom:0;padding:3px 10px}
+.rx-sheet[data-s="min"] #pmode,.rx-sheet[data-s="min"] .sh-adv{display:none}
+.rx-sheet[data-s="min"] .sh-t span{font-size:12px}
+.pmini{display:none;flex:1 1 auto;width:100%;min-height:0;overflow:visible}
+.rx-sheet[data-s="min"]:not(.empty) .pmini{display:block}
+.sh-grip{position:absolute;left:0;right:0;top:-6px;height:12px;cursor:ns-resize;z-index:3;touch-action:none}
+.sh-grip::after{content:"";position:absolute;left:50%;top:4px;width:44px;height:4px;margin-left:-22px;background:rgba(11,37,69,.28)}
+.rx-sheet.drag{transition:none}
+@media (max-width:900px){
+  .rx,.rx.has,.rx.has.d3{height:calc(100svh - var(--rxtop,112px));min-height:460px;overflow:hidden;--mh:100%}
+  .rx .mapw{position:absolute;inset:0;height:auto}
+  .rx-top{left:auto;right:8px}
+  .rcard{left:0;right:0;top:auto;bottom:0;width:auto;max-height:72%;overflow:auto;border-left:0;border-right:0;border-bottom:0;box-shadow:0 -6px 20px rgba(11,37,69,.16);z-index:7}
+  .rc-hd{padding:11px 14px;position:sticky;top:0;z-index:2}
+  .rcard .qres{position:static;max-height:38vh;margin:0 6px 6px}
+  .rx-sheet,.rx-sheet[data-s="mid"],.rx-sheet[data-s="full"],.rx-sheet.empty[data-s="mid"]{position:absolute;left:0;right:0;bottom:0;height:66%;z-index:9;box-shadow:0 -8px 24px rgba(11,37,69,.2);border-top:1px solid var(--rule)}
+  .rx-sheet[data-s="full"]{height:100%}
+  .rx-sheet[data-s="min"],.rx-sheet[data-s="off"]{display:none}
+  .rx-sheet .sh-body{overflow:auto}
+  .rx.has #shX{display:inline-block}
+  .sh-grip{display:none}
+  .rx-open{top:auto;bottom:calc(var(--rch,52px) + 10px);left:10px;transform:none}
+  .rx:not(.has) .rx-open{display:none}
+  .rx-side{top:auto;bottom:calc(var(--rch,52px) + 8px);transform:none;max-height:55%}
+  .rx .maplibregl-ctrl-bottom-right{bottom:var(--rch,52px)}
+  .x3w{bottom:calc(var(--rch,52px) + 8px)}
+  .rx .edbar{left:8px;top:var(--tch,56px)}
+  .rc-sum small{overflow:hidden;text-overflow:ellipsis}
+  .rx .mlwarn,.bb-satnote{bottom:calc(var(--rch,52px) + 10px)}
+}
 </style>
 </head>
 <body data-title="Route Explorer">
@@ -449,20 +524,31 @@
   </div>
   <div class="simhud noprint" id="simhud" hidden></div>
   <div class="simload noprint" id="simload" role="status" hidden><div class="slt">Loading terrain and imagery along the route… <b id="simloadp">0 %</b></div><div class="slb"><i id="simloadb"></i></div><button class="btn" id="simskip" type="button">Skip</button></div>
-  <div class="rx-top noprint">
-    <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★</button><input id="rtxt" type="search" placeholder="Search an airport or fix, or paste a route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
-      <div class="qres" id="qres" hidden></div>
-      <div class="rx-rx" id="routex" hidden>
-        <div class="btns"><select id="sel" aria-label="Your routes"></select><button class="btn" id="new">New</button><button class="btn" id="dup">Duplicate</button><button class="btn" id="del">Delete</button><span class="saved" id="saved"></span></div>
-        <div class="sugg" id="sugg"></div>
-        <div class="sum" id="sum"></div>
-        <details class="note exd"><summary>Route format and typical gradients</summary><p style="margin:6px 0 0">For example <code>N0140F070 ENTO DCT SKI/5000 5930N01045E ENGM</code>. A 3° descent is about 318 ft/NM; departures are designed for at least 200 ft/NM (3.3 %). Your aircraft’s real climb comes from the AFM.</p></details>
-        
+  <div class="rcard noprint" id="rcard">
+    <button class="rc-hd" id="rcTog" type="button" aria-expanded="true" aria-controls="rcbody" title="Show or hide the route card"><span class="rc-k">Route</span><span class="rc-line" id="rcline"></span><span class="rc-chev" aria-hidden="true"></span></button>
+    <div class="rc-body" id="rcbody">
+      <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★</button><input id="rtxt" type="search" placeholder="Search an airport or fix, or paste a route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
+        <div class="qres" id="qres" hidden></div>
+        <div class="rx-rx" id="routex" hidden>
+          <div class="btns"><select id="sel" aria-label="Your routes"></select><button class="btn" id="new">New</button><button class="btn" id="dup">Duplicate</button><button class="btn" id="del">Delete</button><span class="saved" id="saved"></span></div>
+          <div class="sugg" id="sugg"></div>
+          <div class="sum" id="sum"></div>
+          <details class="note exd"><summary>Route format and typical gradients</summary><p style="margin:6px 0 0">For example <code>N0140F070 ENTO DCT SKI/5000 5930N01045E ENGM</code>. A 3° descent is about 318 ft/NM; departures are designed for at least 200 ft/NM (3.3 %). Your aircraft’s real climb comes from the AFM.</p></details>
+          
+        </div>
       </div>
+      <div class="rc-ft" id="rcft" hidden></div>
+      <div class="rc-cr"><span class="shcr" id="shcr"><label for="s_cr">Cruise</label><span class="stp"><button type="button" id="crdn" aria-label="500 ft lower" title="500 ft lower">−</button><input id="s_cr" placeholder="6500" list="crlist" autocomplete="off" spellcheck="false" aria-label="Cruise altitude, feet or FL" title="Cruise altitude: feet (6500) or flight level (FL75)"><button type="button" id="crup" aria-label="500 ft higher" title="500 ft higher">+</button></span><label for="s_gs" class="gsl">GS</label><input id="s_gs" inputmode="decimal" placeholder="100" aria-label="Ground speed, knots" title="Ground speed (kt)"><span class="u">kt</span></span><datalist id="crlist"><option value="1500"><option value="2500"><option value="3500"><option value="4500"><option value="5500"><option value="6500"><option value="FL75"><option value="FL85"><option value="FL95"><option value="FL115"><option value="FL150"><option value="FL200"></datalist></div>
+      <div class="rc-sum" id="rcsum" hidden></div>
+      <div class="rc-btns"><button class="btn sh-nl" id="shNl" aria-pressed="false" title="Navigation log: headings, times and fuel with your wind">Navlog</button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button></div>
+      <div class="packpop" id="packpop" hidden><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
     </div>
-    <div class="rx-m"><div class="seg3" id="v23" role="group" aria-label="2D or 3D"><button data-v="2" class="on">2D</button><button data-v="3">3D</button></div> <div class="seg3" id="mmode" role="group" aria-label="Chart style"><button data-m="vfr" class="on" title="VFR chart: terrain colours, relief and contours">VFR</button><button data-m="ifr" title="IFR chart: low ink, faint relief">IFR</button></div><button class="btn lybtn" id="lybtn" aria-expanded="false">Layers</button></div>
+  </div>
+  <div class="rx-top noprint">
+    <div class="rx-m"><div class="seg3" id="v23" role="group" aria-label="2D or 3D"><button data-v="2" class="on">2D</button><button data-v="3">3D</button></div> <button class="btn lybtn" id="lybtn" aria-expanded="false">Layers</button></div>
   </div>
   <div class="rx-ly noprint" id="layers" hidden>
+    <div class="lymm"><span class="lysub">Chart style</span> <div class="seg3" id="mmode" role="group" aria-label="Chart style"><button data-m="vfr" class="on" title="VFR chart: terrain colours, relief and contours">VFR</button><button data-m="ifr" title="IFR chart: low ink, faint relief">IFR</button></div></div>
     <div class="lypre" role="group" aria-label="Layer presets"><button type="button" data-pre="clean" title="VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.">Clean VFR</button><button type="button" data-pre="all" title="Every layer on">Everything</button></div>
     <details class="lyg mlonly" data-g="base" id="bmsel" hidden><summary>Base map</summary><div class="bmg" role="group" aria-label="Base map"><button type="button" data-b="vfr" class="on">VFR chart</button><button type="button" data-b="ifr">IFR (low ink)</button><button type="button" data-b="chart">Plain</button><button type="button" data-b="terrain">Terrain</button><button type="button" data-b="sat">Satellite</button><button type="button" data-b="topo">Norway topo</button></div></details>
     <details class="lyg" data-g="relief"><summary>Relief <span class="lyc"></span></summary>
@@ -491,13 +577,15 @@
   </div>
   <aside class="rx-side noprint" id="side" hidden></aside>
   <aside class="rx-side rx-lib noprint" id="lib" hidden></aside>
-  <div class="rx-sheet" id="sheet" data-s="mid">
-    <div class="sh-bar"><button class="sh-t" id="shTog" aria-expanded="true"><b>Terrain profile</b> <span id="shsum"></span></button>
+  <div class="rx-sheet" id="sheet" data-s="min">
+    <div class="sh-grip noprint" id="shGrip" title="Drag to resize the profile, or click to open or close it" aria-hidden="true"></div>
+    <div class="sh-bar"><button class="sh-t" id="shTog" aria-expanded="false"><b>Terrain profile</b> <span id="shsum"></span></button>
       <div class="seg3" id="pmode" role="group" aria-label="What the profile shows"><button data-p="ter">Terrain</button><button data-p="alt">Altitude line</button><button data-p="adv">Climb and descent</button></div>
-      <span class="shcr" id="shcr"><label for="s_cr">Cruise</label><span class="stp"><button type="button" id="crdn" aria-label="500 ft lower" title="500 ft lower">−</button><input id="s_cr" placeholder="6500" list="crlist" autocomplete="off" spellcheck="false" aria-label="Cruise altitude, feet or FL" title="Cruise altitude: feet (6500) or flight level (FL75)"><button type="button" id="crup" aria-label="500 ft higher" title="500 ft higher">+</button></span><label for="s_gs" class="gsl">GS</label><input id="s_gs" inputmode="decimal" placeholder="100" aria-label="Ground speed, knots" title="Ground speed (kt)"><span class="u">kt</span></span><datalist id="crlist"><option value="1500"><option value="2500"><option value="3500"><option value="4500"><option value="5500"><option value="6500"><option value="FL75"><option value="FL85"><option value="FL95"><option value="FL115"><option value="FL150"><option value="FL200"></datalist><button class="btn pri sh-sim" id="simbtn" type="button" title="Fly the route in 3D at your planned altitude">▶ Simulate flight</button>
-      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙<span> Advanced</span></button><button class="btn sh-adv sh-nl" id="shNl" aria-pressed="false" title="Navigation log: headings, times and fuel with your wind">Navlog</button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
+      <button class="btn pri sh-sim" id="simbtn" type="button" title="Fly the route in 3D at your planned altitude">▶ Simulate flight</button>
+      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙<span> Advanced</span></button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
     </div>
-    <div class="packpop" id="packpop" hidden><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
+    <svg id="pmini" class="pmini" role="img" aria-label="Terrain under the route" preserveAspectRatio="none"></svg>
+    
     <div class="sh-body">
     <div id="advp" class="advp" hidden><p class="note" style="margin:0 0 10px">Optional settings. They change the profile when it shows Climb and descent, and some of them (MSA, corridor, clearance) in every view.</p>
       <div class="panel rp" style="margin-bottom:14px"><label class="f wxf">METAR / TAF <span class="opt">(optional, drawn on the profile)</span><textarea id="wxin" rows="3" spellcheck="false" placeholder="METAR ENGM 031150Z 01008KT 9999 FEW012 BKN035 05/02 Q1012&#10;TAF ENTO 031100Z 0312/0412 22010KT 9999 SCT020 BKN040"></textarea></label><p class="note" id="wxmsg" style="margin:4px 0 0"></p><p class="note" style="margin:6px 0 0">Weather is drawn when the profile shows Climb and descent. For forecasts, use the Windy button on the map.</p></div>
@@ -965,7 +1053,16 @@ function render(){
   terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
 }
 function hm(h){ if(!Number.isFinite(h)) return ''; const m=Math.round(h*60); return Math.floor(m/60)+':'+String(m%60).padStart(2,'0'); }
-function drawSum(M){ const sm=el('sum'); if(!M) M=compute(); if(M.C.length<2){ sm.innerHTML=`<span>${L({en:'No route yet. Paste a route string or click on the map.',no:'Ingen rute ennå. Lim inn en rutestreng eller klikk på kartet.'})}</span>`; return; }
+function rcSum(M,dep,dst,ter,gs){ // route card: one-line summary, from/to with names, distance / time / highest terrain
+  const ft=el('rcft'), su=el('rcsum'), ln=el('rcline'); if(!ft) return;
+  if(!M||M.C.length<2){ ft.hidden=su.hidden=true; ln.textContent=L({en:'No route yet',no:'Ingen rute ennå'}); return; }
+  const to=dst?dst.p:M.C[M.C.length-1].p, nm=p=>{ const a=p&&NAV&&NAV.apI&&NAV.apI[p.n]; return a?a[1]:(p&&p.t==='rwy'?'':L({en:'Point',no:'Punkt'})); };
+  const row=(l,p)=>`<span class="l">${l}</span><b>${esc(p.n||'–')}</b><span class="n" title="${esc(nm(p))}">${esc(nm(p))}</span>`;
+  ft.innerHTML=row(L({en:'From',no:'Fra'}),dep)+row(L({en:'To',no:'Til'}),to); ft.hidden=false;
+  const t=gs?hm(M.total/gs):'–';
+  su.innerHTML=`<div><small>${L({en:'Distance',no:'Distanse'})}</small><b>${fx(M.total,1)} NM</b></div><div><small>${L({en:'Time',no:'Tid'})}${gs?'':' ('+L({en:'set GS',no:'sett GS'})+')'}</small><b id="rcte">${t}</b></div><div title="${L({en:'Highest terrain within',no:'Høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM"><small>${L({en:'Highest terrain',no:'Høyeste terreng'})}</small><b>${ter!=null?fx(ter)+' ft':'…'}</b></div>`; su.hidden=false;
+  ln.textContent=`${dep.n||''} → ${to.n||''} · ${fx(M.total,1)} NM`+(gs?` · ${t}`:''); }
+function drawSum(M){ const sm=el('sum'); if(!M) M=compute(); if(M.C.length<2){ rcSum(M); sm.innerHTML=`<span>${L({en:'No route yet. Paste a route string or click on the map.',no:'Ingen rute ennå. Lim inn en rutestreng eller klikk på kartet.'})}</span>`; return; }
   const gs=+R.gs||0, dep=M.C[0].p, dst=[...M.C].reverse().find(c=>c.p.t==='rwy'&&c.i>0);
   const ter=TP&&TP.pts.some(p=>p.e!=null)? Math.max(...TP.pts.map(p=>p.e||0)) : null;
   const el_=p=>p&&p.t==='rwy'? (pnum(p.elev)!=null? fx(pnum(p.elev))+' ft' : '') : '';
@@ -975,8 +1072,9 @@ function drawSum(M){ const sm=el('sum'); if(!M) M=compute(); if(M.C.length<2){ s
     M.cr!=null?`<span>${L({en:'Cruise',no:'Marsj'})} <b>${altTxt(M.cr)}</b></span>`:'',
     el_(dep)?`<span>${esc(dep.n)} <b>${el_(dep)}</b></span>`:'', dst&&el_(dst.p)?`<span>${esc(dst.p.n)} <b>${el_(dst.p)}</b></span>`:'',
     ter!=null?`<span>${L({en:'Highest terrain within',no:'Høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM <b>${fx(ter)} ft</b></span>`:''].filter(Boolean).join('');
+  rcSum(M,dep,dst,ter,gs);
   { const ss=el('shsum'); if(ss) ss.textContent=`${dep.n||''} → ${dst?dst.p.n:(M.C[M.C.length-1].p.n||'')} · ${fx(M.total,1)} NM`+(ter!=null?` · ${L({en:'highest terrain',no:'høyeste terreng'})} ±${fx(sNum('cw',4.3),1)} NM: ${fx(ter)} ft`:''); }
-  const g=el('gs'); g.addEventListener('input',()=>{ R.gs=pnum(g.value)||''; el('sumt').textContent=R.gs?hm(M.total/R.gs):'–'; const sg=el('s_gs'); if(sg) sg.value=g.value; simUI(); queueSave(); }); }
+  const g=el('gs'); g.addEventListener('input',()=>{ R.gs=pnum(g.value)||''; el('sumt').textContent=R.gs?hm(M.total/R.gs):'–'; { const rt=el('rcte'); if(rt) rt.textContent=el('sumt').textContent; } const sg=el('s_gs'); if(sg) sg.value=g.value; simUI(); queueSave(); }); }
 function drawSrc(){ const PMs=pmode(); const t=window.TERRAIN&&TERRAIN.status? TERRAIN.status() : '';
   el('srcl').innerHTML=[R&&R.noTer&&PMs!=='ter'?`<span>${L({en:'Terrain hidden',no:'Terreng skjult'})}</span>`:`<span><i style="background:#E2D8C3;border:1px solid #9C7646"></i>${L({en:'Terrain under the route',no:'Terreng under ruten'})}</span>`,
    PMs==='adv'?`<span><i style="background:repeating-linear-gradient(45deg,#D5DCE0 0 3px,#EEF1F3 3px 6px)"></i>${L({en:'Departure / approach: not checked',no:'Avgang / innflyging: ikke sjekket'})}</span>`:'',
@@ -991,6 +1089,7 @@ function pDim(){ if(PACKDIM) return [1000,420]; const pw=el('profw'), sh=el('she
   if(sh&&sh.dataset.s!=='off'){ const bar=sh.querySelector('.sh-bar'); ah=sh.clientHeight-(bar?bar.offsetHeight:46)-(window.innerWidth<=900?70:100); if(sh.dataset.s==='full') ah=Math.min(ah,cw*0.5); }
   const W=Math.max(cw,600), sc=W/cw; return [Math.round(W),Math.round(Math.max(200,Math.min(560,ah))*sc)]; }
 function drawProfile(M,tp,target){
+  if(!target) setTimeout(()=>drawMini(M,tp),0);
   const sv=target||psv; sv.innerHTML=''; let [W0,H0]=target?[1000,420]:pDim(); if(!target){ sv.setAttribute('viewBox',`0 0 ${W0} ${H0}`); sv._W0=W0; sv._H0=H0; }
   const add=(tag,a,par)=>{ const e=document.createElementNS(NSV,tag); for(const k in a) e.setAttribute(k,a[k]); (par||sv).appendChild(e); return e; };
   const tx=(t,x,y,o)=>{ const e=add('text',Object.assign({x,y,'font-family':'Archivo, Arial Narrow, sans-serif','font-size':12,fill:'#13202A'},o||{})); e.textContent=t; return e; };
@@ -1445,9 +1544,10 @@ function drawMapNow(){ if(!R) return; if(ML){ windyHref(); try{ ptPop(); hBtns()
 }
 function fit(){ const P=R.pts.filter(p=>p.la!=null); if(!P.length) return; let a0=90,a1=-90,o0=180,o1=-180; P.forEach(p=>{ a0=Math.min(a0,p.la); a1=Math.max(a1,p.la); o0=Math.min(o0,p.lo); o1=Math.max(o1,p.lo); });
   if(ML){ mlFit(a0,a1,o0,o1); return; }
-  V.la=(a0+a1)/2; V.lo=(o0+o1)/2; const k=Math.cos(V.la*D2R); const w=mapEl.clientWidth, h=mapEl.clientHeight; const top=w<900?120:70, bot=shTarget(h), vh=Math.max(120,h-top-bot);
-  V.z=Math.max(4,Math.min(400,Math.min((vh-70)/Math.max(0.05,a1-a0),(w-90)/Math.max(0.05,(o1-o0)*k)))); const ty=top+vh/2; V.la=(a0+a1)/2+(ty-h/2)/V.z; drawMap(); }
-function shTarget(h){ const sh=el('sheet'); if(!sh) return 0; const s=sh.dataset.s; if(window.innerWidth<=900) return 0; return s==='off'?0:s==='min'?46:s==='full'?0:h*(window.innerHeight<=820?0.38:0.44); }
+  V.la=(a0+a1)/2; V.lo=(o0+o1)/2; const k=Math.cos(V.la*D2R); const w=mapEl.clientWidth, h=mapEl.clientHeight; const top=w<900?120:70, bot=shTarget(h), vh=Math.max(120,h-top-bot), lp=rcPad();
+  V.z=Math.max(4,Math.min(400,Math.min((vh-70)/Math.max(0.05,a1-a0),(w-90-lp)/Math.max(0.05,(o1-o0)*k)))); const ty=top+vh/2; V.la=(a0+a1)/2+(ty-h/2)/V.z; V.lo=(o0+o1)/2-(lp/2)/(k*V.z); drawMap(); }
+function rcPad(){ const c=el('rcard'); if(!c||window.innerWidth<=900||!c.offsetWidth) return 0; return c.offsetLeft+c.offsetWidth+12; } // map space the route card covers on the left
+function shTarget(h){ const sh=el('sheet'); if(!sh) return 0; const s=sh.dataset.s; if(window.innerWidth<=900){ const c=el('rcard'); return c?Math.min(h*0.4,c.offsetHeight):0; } return s==='off'?0:s==='min'?(sh.offsetHeight||112):s==='full'?0:h*(window.innerHeight<=820?0.38:0.44); }
 let drag=null, moved=false; const ptrs=new Map();
 let ptDrag=null;
 function routePtAt(mx,my){ let bi=-1, bd=10; R.pts.forEach((p,i)=>{ if(p.la==null) return; const [x,y]=prj(p.la,p.lo); const d=Math.hypot(x-mx,y-my); if(d<bd){ bd=d; bi=i; } }); return bi; }
@@ -1798,7 +1898,8 @@ LAB.add({},{
  'Weather in Windy':'Vær i Windy','Weather in Windy (opens a new tab)':'Vær i Windy (åpnes i ny fane)','What the profile shows':'Hva profilen viser','Your routes':'Rutene dine','Zoom in':'Zoom inn','Zoom out':'Zoom ut',
  'Zoom in on the height scale':'Zoom inn på høydeskalaen','Zoom out on the height scale':'Zoom ut på høydeskalaen','name':'navn','Route Explorer':'Route Explorer',
  'e.g. ILS 30 via HE. Hold at HE if busy. Watch the hills north of the field.':'f.eks. ILS 30 via HE. Holding ved HE hvis travelt. Se opp for åsene nord for plassen.',
- 'e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn.':'f.eks. OBOLA 2A, RWY 17. Stig rett frem til 1500, så høyresving.'});
+ 'e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn.':'f.eks. OBOLA 2A, RWY 17. Stig rett frem til 1500, så høyresving.',
+ 'Show or hide the route card':'Vis eller skjul rutekortet','Drag to resize the profile, or click to open or close it':'Dra for å endre størrelsen på profilen, eller klikk for å åpne eller lukke den','Terrain under the route':'Terrenget under ruten'});
 /* title, placeholder and aria-label in the page: lab.js only swaps text (and aria-labels it has an English entry for), so the
    English originals are kept here and looked up in the Norwegian dictionary on every language change */
 const TRA=['title','placeholder','aria-label'];
@@ -1940,11 +2041,47 @@ function pmode(){ if(!R) return 'ter'; const m=R.pm||(R.s.cr?(advUsed()?'adv':'a
 function pmUI(){ const m=pmode(); ptUI(); el('pmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.p===m));  const t=document.querySelector('.rx-sheet .ptools'); if(t) t.hidden=m!=='adv'; const pg=document.querySelector('.rx-sheet .pgrid'); if(pg) pg.classList.toggle('np',m!=='adv'); }
 el('pmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; R.pm=b.dataset.p; if(R.pm!=='ter'&&!R.s.cr){ R.s.cr=String(Math.max(3000,Math.ceil(((TP&&Math.max(0,...TP.pts.map(q=>q.e||0)))||0)/500)*500+1000)); el('s_cr').value=R.s.cr; } pmUI(); render(); queueSave(); });
 // profil-skuff
-let SHS='mid'; try{ new ResizeObserver(()=>{ const sh=el('sheet'); el('rx').style.setProperty('--shh',(sh.dataset.s==='off'||window.innerWidth<=900?0:sh.offsetHeight)+'px'); }).observe(el('sheet')); }catch(e){}
-function setSheet(st){ const sh=el('sheet'); sh.dataset.s=st; el('shOpen').hidden=st!=='off'; if(st!=='off') SHS=st;
+const MOB=()=>window.innerWidth<=900;
+let SHS='min'; try{ const v=localStorage.getItem('bb-rx-sheet'); if(['min','mid','full'].includes(v)) SHS=v; }catch(e){}
+if(!MOB()) el('sheet').dataset.s=SHS;
+try{ new ResizeObserver(()=>{ const sh=el('sheet'); el('rx').style.setProperty('--shh',(sh.dataset.s==='off'||window.innerWidth<=900?0:sh.offsetHeight)+'px'); }).observe(el('sheet')); }catch(e){}
+function setSheet(st){ const sh=el('sheet'); sh.dataset.s=st; el('shOpen').hidden=!(st==='off'||(st==='min'&&MOB())); if(st!=='off'){ SHS=st; if(!MOB()) try{ localStorage.setItem('bb-rx-sheet',st); }catch(e){} } if(st==='min') setTimeout(()=>drawMini(),0);
   el('shTog').setAttribute('aria-expanded',String(sh.dataset.s!=='min')); setTimeout(shH,220); shH(); }
-function shH(){ if(!R) return; const sh=el('sheet'); el('rx').style.setProperty('--shh',(sh.dataset.s==='off'||window.innerWidth<=900?0:sh.offsetHeight)+'px'); if(sh.dataset.s!=='min'&&sh.dataset.s!=='off') drawProfile(compute(),TP); }
-function sheetAuto(){ const sh=el('sheet'); if(sh.dataset.s==='off'&&!el('shOpen').dataset.user) setSheet(SHS==='off'?'mid':SHS); else if(sh.dataset.s==='off') el('shOpen').hidden=false; else shH(); }
+function shH(){ if(!R) return; const sh=el('sheet'); el('rx').style.setProperty('--shh',(sh.dataset.s==='off'||window.innerWidth<=900?0:sh.offsetHeight)+'px'); if(sh.dataset.s!=='min'&&sh.dataset.s!=='off') drawProfile(compute(),TP); else if(sh.dataset.s==='min') drawMini(); }
+function sheetAuto(){ const sh=el('sheet'); if(MOB()&&sh.dataset.s==='min') el('shOpen').hidden=false; if(sh.dataset.s==='off'&&!el('shOpen').dataset.user) setSheet(MOB()?'min':SHS==='off'?'mid':SHS); else if(sh.dataset.s==='off') el('shOpen').hidden=false; else shH(); }
+/* ---------- profile strip (collapsed profile): terrain, route line, highest point ---------- */
+function drawMini(M,tp){ const sv=el('pmini'); if(!sv||el('sheet').dataset.s!=='min'||!R) return; M=M||compute(); tp=tp===undefined?TP:tp;
+  const W=Math.round(sv.clientWidth), H=Math.round(sv.clientHeight); sv.innerHTML=''; if(W<50||H<20||!M.total||M.C.length<2) return; sv.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const add=(t,a)=>{ const e=document.createElementNS(NSV,t); for(const k in a) e.setAttribute(k,a[k]); sv.appendChild(e); return e; };
+  const P=tp&&tp.pts?tp.pts.filter(p=>p.e!=null||p.c!=null):[]; const mx=P.length?Math.max(...P.map(p=>p.e||0)):0;
+  const alt=M.PM!=='ter'&&M.altAt; const cr=M.cr||0; const top=niceTop(Math.max(mx,cr,1000)); const L0=10, R0=W-10, T0=14, B0=H-14;
+  const X=x=>L0+(R0-L0)*x/M.total, Y=a=>B0-(B0-T0)*Math.max(0,a)/top;
+  for(let a=0;a<=top;a+=axStep(top)*2) add('line',{x1:L0,x2:R0,y1:Y(a),y2:Y(a),stroke:'rgba(11,37,69,.07)'});
+  if(P.length){ const d=P.map((p,i)=>(i?'L':'M')+X(p.x).toFixed(1)+' '+Y(p.c!=null?p.c:p.e).toFixed(1)).join(''); add('path',{d:d+`L${X(P[P.length-1].x).toFixed(1)} ${B0}L${X(P[0].x).toFixed(1)} ${B0}Z`,fill:'#C9B79A',stroke:'#8A6F4A','stroke-width':1});
+    add('path',{d:P.map((p,i)=>(i?'L':'M')+X(p.x).toFixed(1)+' '+Y(p.e||0).toFixed(1)).join(''),fill:'none',stroke:'#8A6F4A','stroke-width':.8,'stroke-dasharray':'2 2',opacity:.7}); }
+  add('line',{x1:L0,x2:R0,y1:B0,y2:B0,stroke:'rgba(11,37,69,.35)'});
+  if(alt){ const n=120, pts=[]; for(let i=0;i<=n;i++){ const x=M.total*i/n; const a=M.altAt(x); if(a!=null&&Number.isFinite(a)) pts.push(X(x).toFixed(1)+' '+Y(a).toFixed(1)); } if(pts.length>1) add('path',{d:'M'+pts.join('L'),fill:'none',stroke:'#9A1E68','stroke-width':2}); }
+  else if(cr) add('line',{x1:L0,x2:R0,y1:Y(cr),y2:Y(cr),stroke:'#9A1E68','stroke-width':1.5,'stroke-dasharray':'6 4'});
+  const tx=(t,x,y,o)=>{ const e=add('text',Object.assign({x,y,'font-family':'IBM Plex Mono, monospace','font-size':10.5,fill:'#0B2545'},o||{})); e.textContent=t; return e; };
+  const C=M.C.filter(c=>c.p.la!=null), few=C.length<=10;
+  C.forEach((c,i)=>{ const x=X(c.x); add('line',{x1:x,x2:x,y1:T0-2,y2:B0,stroke:'rgba(11,37,69,.18)'}); if(few||i===0||i===C.length-1) tx(c.p.n||'',Math.min(R0,Math.max(L0,x)),H-3,{'text-anchor':i===0?'start':i===C.length-1?'end':'middle','font-size':10,fill:'#3A4D60'}); });
+  if(P.length&&mx>0){ const hp=P.reduce((a,b)=>(b.e||0)>(a.e||0)?b:a); const x=X(hp.x), y=Y(hp.e); add('path',{d:`M${x-5} ${y-1}L${x+5} ${y-1}L${x} ${y+6}Z`,fill:'#B3261E'});
+    tx(`${L({en:'Highest',no:'Høyeste'})} ${fx(mx)} ft`,Math.min(R0-4,Math.max(L0+4,x)),Math.max(11,y-4),{'text-anchor':x>W*0.8?'end':x<W*0.2?'start':'middle','font-weight':600,fill:'#B3261E',stroke:'#fff','stroke-width':3,'paint-order':'stroke'}); }
+  if(cr&&!alt) tx(altTxt(cr),R0,Math.max(11,Y(cr)-3),{'text-anchor':'end',fill:'#9A1E68','font-weight':600,stroke:'#fff','stroke-width':3,'paint-order':'stroke'});
+}
+el('pmini').addEventListener('click',()=>setSheet('mid'));
+/* drag the top edge of the profile to resize it; it snaps to strip, half or full */
+{ const g=el('shGrip'), sh=el('sheet'); let y0=null, h0=0, moved=false;
+  g.addEventListener('pointerdown',e=>{ if(MOB()) return; y0=e.clientY; h0=sh.offsetHeight; moved=false; sh.classList.add('drag'); g.setPointerCapture(e.pointerId); e.preventDefault(); });
+  g.addEventListener('pointermove',e=>{ if(y0==null) return; const dy=y0-e.clientY; if(Math.abs(dy)>3) moved=true; if(!moved) return; const H=el('rx').clientHeight; sh.style.height=Math.max(44,Math.min(H,h0+dy))+'px'; });
+  const end=()=>{ if(y0==null) return; y0=null; sh.classList.remove('drag'); const H=el('rx').clientHeight, h=sh.offsetHeight; sh.style.height='';
+    if(!moved){ setSheet(sh.dataset.s==='min'?'mid':'min'); return; } setSheet(h<H*0.25?'min':h<H*0.72?'mid':'full'); };
+  g.addEventListener('pointerup',end); g.addEventListener('pointercancel',end); }
+/* route card: collapse to one line, remembered; in 3D it folds away so the flight panel has room */
+{ const c=el('rcard'), b=el('rcTog'); let col=null; try{ col=localStorage.getItem('bb-rx-card'); }catch(e){} c.classList.toggle('col',col==null?MOB():col==='1');
+  const aria=()=>b.setAttribute('aria-expanded',String(el('rx').classList.contains('d3')?c.classList.contains('x3o'):!c.classList.contains('col')));
+  b.onclick=()=>{ if(el('rx').classList.contains('d3')) c.classList.toggle('x3o'); else { c.classList.toggle('col'); try{ localStorage.setItem('bb-rx-card',c.classList.contains('col')?'1':'0'); }catch(e){} } aria(); };
+  aria(); try{ new ResizeObserver(()=>el('rx').style.setProperty('--rch',c.offsetHeight+'px')).observe(c); }catch(e){} }
 el('shUp').onclick=()=>{ const s=el('sheet').dataset.s; setSheet(s==='min'?'mid':'full'); };
 el('shDn').onclick=()=>{ const s=el('sheet').dataset.s; setSheet(s==='full'?'mid':'min'); };
 el('shFull').onclick=()=>{ setSheet(el('sheet').dataset.s==='full'?'mid':'full'); };
@@ -2293,7 +2430,7 @@ function mlMef(){ if(!ML) return; const q=LY.mef&&window.TERRAIN&&!T3.on? (V.z>=
     if((la1-qa0)/q*(lo1-qo0)/q<900){ for(let la=qa0;la<la1;la+=q) for(let lo=qo0;lo<lo1;lo+=q){ const v=mefOf(q,la,lo); if(!v) continue; const th=Math.floor(v/1000), hu=Math.round((v%1000)/100); pts.push(mlF(mlP(la+q/2,lo+q/2),{th:th?String(th):'',hu:String(hu)})); }
       if(q===0.5){ for(let lo=qo0;lo<=lo1;lo+=q) gl.push(mlF({type:'LineString',coordinates:[[lo,la0],[lo,la1]]})); for(let la=qa0;la<=la1;la+=q) gl.push(mlF({type:'LineString',coordinates:[[lo0,la],[lo1,la]]})); } } }
   mlPut('bb-mef',mlC(pts)); mlPut('bb-mefg',mlC(gl)); }
-function mlFit(a0,a1,o0,o1){ const m=ML, w=mapEl.clientWidth, h=mapEl.clientHeight; const pad={top:(w<900?120:70)+30,bottom:shTarget(h)+35,left:45,right:60};
+function mlFit(a0,a1,o0,o1){ const m=ML, w=mapEl.clientWidth, h=mapEl.clientHeight; const pad={top:(w<900?120:70)+30,bottom:shTarget(h)+35,left:45+rcPad(),right:60};
   if(pad.top+pad.bottom>h-80){ const k=(h-80)/(pad.top+pad.bottom); pad.top*=k; pad.bottom*=k; }
   const bearing=T3.on?m.getBearing():0; let cam=null; try{ cam=m.cameraForBounds([[o0,a0],[o1,a1]],{padding:pad,maxZoom:11.5,bearing}); }catch(e){}
   if(!cam){ m.easeTo({center:[(o0+o1)/2,(a0+a1)/2],duration:500}); return; }
@@ -2448,7 +2585,7 @@ function crStep(d){ const a0=pnum(R.s.cr); const a=Math.max(500,(a0==null?autoCr
 el('crup').onclick=()=>crStep(500); el('crdn').onclick=()=>crStep(-500);
 el('s_cr').addEventListener('input',()=>{ if(pnum(el('s_cr').value)!=null&&(!R.pm||R.pm==='ter')){ R.pm='adv'; pmUI(); render(); } }); // a cruise level shows the climb, cruise and descent
 el('s_cr').addEventListener('keydown',e=>{ if(e.key==='ArrowUp'||e.key==='ArrowDown'){ e.preventDefault(); crStep(e.key==='ArrowUp'?500:-500); } });
-el('s_gs').addEventListener('input',()=>{ R.gs=pnum(el('s_gs').value)||''; const g=el('gs'); if(g){ g.value=R.gs; const M=compute(); const t=el('sumt'); if(t) t.textContent=R.gs?hm(M.total/R.gs):'–'; } simUI(); simHud(T3.play?T3.x:(HOV??T3.x)); queueSave(); });
+el('s_gs').addEventListener('input',()=>{ R.gs=pnum(el('s_gs').value)||''; const g=el('gs'); if(g){ g.value=R.gs; const M=compute(); const t=el('sumt'); if(t) t.textContent=R.gs?hm(M.total/R.gs):'–'; } drawSum(); simUI(); simHud(T3.play?T3.x:(HOV??T3.x)); queueSave(); });
 function simUI(M){ if(!R) return; const g=el('s_gs'); if(g&&document.activeElement!==g) g.value=R.gs||''; const gs=gsOf();
   const f=(id,k,d)=>{ const e=el(id); if(!e) return; const v=sNum(k,d); e.textContent=`≈ ${fx(Math.round(v*gs/60/10)*10)} fpm ${L({en:'at',no:'ved'})} ${fx(gs)} kt`; };
   f('clfpm','cl',400); f('dsfpm','ds',318); }
