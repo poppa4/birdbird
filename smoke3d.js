@@ -3,8 +3,12 @@
    3D-rutenettet (trilineært, blandet for gjeldende α – ingen virvelgitterberegning per partikkel), tippvirvelens
    Lamb–Oseen-kjerne og nærfeltet ved vingen (samme funksjoner som strømlinjene i flow3d.js). Midtpunktmetoden
    (RK2) med delsteg der farten endrer seg raskt (virvelkjernen, nesen). Bak separasjonslinjen (stallmarginen per
-   stripe i physics.js → sepFrac) blir røyken turbulent: tilfeldig gange og koherente virvler som vokser,
-   hastighetsunderskudd i kjølvannet og resirkulasjon i den døde sonen over vingen.
+   stripe i physics.js → sepFrac) blir røyken turbulent. Turbulensmodell (dokumentert i siden): hver partikkel har en
+   fluktuasjonshastighet u′ som følger en Langevin-likning (Ornstein–Uhlenbeck, homogen form av Thomson 1987):
+   u′(t+h) = u′·e^(−h/T_L) + σ·√(1 − e^(−2h/T_L))·ξ, med turbulensintensitet σ fra modellens separasjons- og kjølvannsamplitude
+   (σ ≤ 0,2 V∞ i separerte skjærlag, ≈ 0,3 × hastighetsunderskuddet i kjølvannet bak festet strømning) og Lagrange-tid
+   T_L = ℓ/σ (ℓ ≈ 0,1 korde). Bak en stallet stripe kommer i tillegg koherent virvelavløsning med Strouhal-tall 0,2 basert på
+   projisert høyde c·sin α. Hastighetsunderskudd i kjølvannet og resirkulasjon i den døde sonen over vingen.
    Tegning: hver dyse eier en ring av partikler; nabopartikler fra samme dyse bindes sammen til myke,
    kamerarettede bånd (sammenhengende filamenter), og turbulente partikler tegnes i tillegg som myke skyer.
    Bredden vokser og tettheten avtar nedstrøms, båndene skyggelegges som rør av nøkkellyset, og et valgfritt
@@ -21,6 +25,7 @@
     const px = new Float32Array(MAX), py = new Float32Array(MAX), pz = new Float32Array(MAX);
     const age = new Float32Array(MAX), tb = new Float32Array(MAX), sd = new Float32Array(MAX), alive = new Uint8Array(MAX);
     const vx = new Float32Array(MAX), vy = new Float32Array(MAX), vz = new Float32Array(MAX);
+    const fx = new Float32Array(MAX), fy = new Float32Array(MAX), fz = new Float32Array(MAX), wdA = new Float32Array(MAX);   // u′ (Langevin) og kjølvannsunderskudd
 
     /* ---- felles uniformer ---- */
     const U = {
@@ -236,7 +241,9 @@
       v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex;
       FL.coreSwirl(x, y, z, v, ex); coreFollow(x, y, z, v);
       if (x > bx0 && x < bx1 && y < s && y > -s) FL.nearWall(x, y, z, v, ex);
+      if (FL.propAdd) FL.propAdd(x, y, z, v);
     }
+    const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) * 2;   // ≈ N(0, 1)
     const rnd = () => Math.random() + Math.random() - 1;   // trekantfordelt (−1, 1)
 
     /* ett steg på dt sekunder (vegg-tid). Flytiden går S.U ganger raskere. */
@@ -254,7 +261,7 @@
           acc[e] -= 1; const i = e * per + rn[e]; rn[e] = (rn[e] + 1) % per;
           const back = acc[e] * ds, j = S.jitter, ph = Math.random() * 6.283, rr = j * Math.sqrt(Math.random());
           px[i] = E[3 * e] + back * ca; py[i] = E[3 * e + 1] + rr * Math.cos(ph); pz[i] = E[3 * e + 2] + back * sa + rr * Math.sin(ph);
-          age[i] = back; tb[i] = 0; sd[i] = Math.random(); alive[i] = 1; vx[i] = ca; vy[i] = 0; vz[i] = sa;
+          age[i] = back; tb[i] = 0; sd[i] = Math.random(); alive[i] = 1; vx[i] = ca; vy[i] = 0; vz[i] = sa; fx[i] = fy[i] = fz[i] = wdA[i] = 0;
         }
       }
       const decay = Math.exp(-h0 * 0.1), T = Tsim, n = used();
@@ -271,19 +278,19 @@
           vel(x + k1[0] * h * 0.5, y + k1[1] * h * 0.5, z + k1[2] * h * 0.5, k2);
           let ux = k2[0], uy = k2[1], uz = k2[2];
           const t = tb[i];
-          if (t > 0.01) {
-            // turbulent kjølvann: hastighetsunderskudd og koherente virvler (skala ~0,3) som driver med strømmen
-            ux *= 1 - 0.38 * t;
-            const ph = sd[i] * 6.283, Av = 0.5 * t;
-            ux += Av * 0.6 * Math.sin(3.1 * x - 4.6 * T + ph);
-            uy += Av * Math.sin(2.3 * x + 4.1 * z - 5.7 * T + 2 * ph);
-            uz += Av * Math.cos(2.7 * x + 3.3 * y - 5.1 * T + 3 * ph);
-          }
+          ux *= (1 - 0.38 * t) * (1 - Math.min(0.4, wdA[i]));   // hastighetsunderskudd: separert sone og kjølvann bak festet strømning
+          if (t > 0.005) {
+            // Langevin-fluktuasjon (Ornstein–Uhlenbeck): σ = 0,2·tb (V∞ = 1), T_L = ℓ/σ med ℓ = 0,12 (≈ 0,1 korde), 0,15 ≤ T_L ≤ 1,5
+            const sig = 0.2 * t, TL = Math.max(0.15, Math.min(1.5, 0.12 / sig)), a = Math.exp(-h / TL), b = sig * Math.sqrt(1 - a * a);
+            fx[i] = fx[i] * a + b * gauss(); fy[i] = fy[i] * a + b * gauss(); fz[i] = fz[i] * a + b * gauss();
+            ux += fx[i]; uy += fy[i]; uz += fz[i];
+            // koherent avløsning bak en stallet stripe: St = f·h_p/V = 0,2, h_p = c·sin α; bølgen går med ≈ 0,8 V∞
+            if (t > 0.3 && sa > 0.12) { const cc = wing.chord(Math.min(Math.abs(y), s)), om = 2 * Math.PI * 0.2 / Math.max(0.05, cc * sa);
+              uz += 0.12 * (t - 0.3) * Math.sin(om * (T - x / 0.8) + 3 * y); }
+          } else { fx[i] *= 0.9; fy[i] *= 0.9; fz[i] *= 0.9; }
           if (S.planar !== null) uy = 0;   // laserark langs korden: røyken holdes i arket (bevegelsen i planet)
           x += ux * h; y += uy * h; z += uz * h;
-          // diffusjon: laminær røyk sprer seg i bredden (tegnes bredere), turbulent røyk vandrer tilfeldig
-          if (t > 0.02) { const sg = Math.sqrt(h) * 0.07 * t; x += sg * rnd(); y += sg * rnd(); z += sg * rnd(); }
-          const c = FL.collide(x, y, z, true); x = c[0]; y = c[1]; z = c[2];
+          const c = FL.collide(x, y, z, true); x = c[0]; y = c[1]; z = c[2]; wdA[i] = c[5] || 0;
           // separert sone: resirkulasjon (luften over vingen går sakte bakover og løftes mot skjærlaget)
           if (c[3] & 4) { x -= 0.3 * h + 0.03 * Math.sqrt(h) * rnd(); z += 0.12 * h * Math.sin(T * 3 + sd[i] * 20); tb[i] = 1; }
           tb[i] = Math.max(Math.min(1, c[4] / 0.09), tb[i] * decay);

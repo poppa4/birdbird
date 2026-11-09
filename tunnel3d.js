@@ -138,6 +138,29 @@
         poly([[2.85, m(0.336)], [3.3, m(0.33)], [3.25, m(0.385)], [2.82, m(0.4)]]);      // sidevindu 2
       }
     }
+    // tomotorsflyene: kabinvinduer (avrundede firkanter), frontrute eller kanopé
+    if (o.cabin) {
+      const cb = o.cabin, dx = (cb.x1 - cb.x0) / Math.max(1, cb.n - 1);
+      g.fillStyle = '#1d262f';
+      for (const vW of [0.25 + cb.z * 0.1 + 0.02, 0.75 - cb.z * 0.1 - 0.02]) for (let i = 0; i < cb.n; i++) {
+        const xx = U(cb.x0 + i * dx), w = U(cb.w), h = cb.h * 0.11 * H, r = Math.min(w, h) * (cb.round || 0.3);
+        const x0 = xx - w / 2, y0 = V(vW) - h / 2;
+        g.beginPath(); g.moveTo(x0 + r, y0); g.arcTo(x0 + w, y0, x0 + w, y0 + h, r); g.arcTo(x0 + w, y0 + h, x0, y0 + h, r); g.arcTo(x0, y0 + h, x0, y0, r); g.arcTo(x0, y0, x0 + w, y0, r); g.closePath(); g.fill();
+      }
+    }
+    if (o.cockpit) {
+      const ck = o.cockpit; g.fillStyle = '#141b22';
+      if (ck.canopy) {   // stor kanopé (DA42): mørk flate over toppen, med en rammelinje
+        g.beginPath(); g.moveTo(U(ck.x0), V(0.47)); g.quadraticCurveTo(U(ck.x0 + 0.35), V(0.36), U(ck.x0 + 0.8), V(0.33));
+        g.lineTo(U(ck.x1), V(0.36)); g.lineTo(U(ck.x1), V(0.64)); g.lineTo(U(ck.x0 + 0.8), V(0.67)); g.quadraticCurveTo(U(ck.x0 + 0.35), V(0.64), U(ck.x0), V(0.53)); g.closePath(); g.fill();
+        g.strokeStyle = 'rgba(200,210,220,0.5)'; g.lineWidth = 2; g.beginPath(); g.moveTo(U(ck.x0 + 0.95), V(0.33)); g.lineTo(U(ck.x0 + 0.95), V(0.67)); g.stroke();
+      } else {           // frontrute og sidevinduer i cockpiten (King Air)
+        const poly = pp => { g.beginPath(); pp.forEach(([x, v], i) => i ? g.lineTo(U(x), V(v)) : g.moveTo(U(x), V(v))); g.closePath(); g.fill(); };
+        for (const sd of [1, -1]) { const m = v => sd > 0 ? v : 1 - v, a = ck.x0, b = ck.x1, L2 = b - a;
+          poly([[a, m(0.42)], [a + 0.35 * L2, m(0.36)], [a + 0.42 * L2, m(0.49)], [a + 0.05 * L2, m(0.5)]]);
+          poly([[a + 0.45 * L2, m(0.35)], [b, m(0.33)], [b - 0.03 * L2, m(0.41)], [a + 0.48 * L2, m(0.44)]]); }
+      }
+    }
     // registrering/logo-felt: diskré "BIRDBIRD LAB" i grått
     g.fillStyle = 'rgba(80,90,100,0.35)'; g.font = '600 15px Arial, sans-serif';
     g.save(); g.translate(U(6.5), V(0.34)); g.scale(1, -1); g.restore();
@@ -162,7 +185,7 @@
       // lameller (slats) på forkanten
       if (o.slats) { line(0.13, sg * 0.12, 0.13, sg * 0.97, up); for (const f of [0.12, 0.33, 0.52, 0.7, 0.85, 0.97]) line(0, sg * f, 0.13, sg * f, up); }
       // spoilere på oversiden
-      if (up) { for (let i = 0; i < 5; i++) { const f0 = 0.22 + i * 0.1, f1 = f0 + 0.095; line(0.6, sg * f0, 0.6, sg * f1, true); line(0.6, sg * f0, 0.75, sg * f0, true); line(0.6, sg * f1, 0.75, sg * f1, true); } }
+      if (up && o.spoilers !== false) { for (let i = 0; i < 5; i++) { const f0 = 0.22 + i * 0.1, f1 = f0 + 0.095; line(0.6, sg * f0, 0.6, sg * f1, true); line(0.6, sg * f0, 0.75, sg * f0, true); line(0.6, sg * f1, 0.75, sg * f1, true); } }
     }
     // tynne panellinjer langs bjelkene
     g.strokeStyle = 'rgba(55,65,75,0.12)'; g.lineWidth = 1;

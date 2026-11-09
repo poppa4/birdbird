@@ -17,7 +17,14 @@
     n4412: { name: 'NACA 4412', m: 0.04, p: 0.4, t: 0.12, clmax: 1.68, cd0: 0.0068, note: 'Høy krumning' },
     nlf:   { name: 'Laminarprofil', m: 0.025, p: 0.5, t: 0.15, clmax: 1.50, cd0: 0.0048, note: 'Lav motstand' },
     sc:    { name: 'Superkritisk', m: 0.018, p: 0.7, t: 0.11, clmax: 1.55, cd0: 0.0060, note: 'Jetfly' },
-    flat:  { name: 'Flat plate', m: 0, p: 0.4, t: 0.02, clmax: 0.85, cd0: 0.0120, note: 'Ingen profil' }
+    flat:  { name: 'Flat plate', m: 0, p: 0.4, t: 0.02, clmax: 0.85, cd0: 0.0120, note: 'Ingen profil' },
+    /* NACA 230-serien (femsifret, middellinje 230: cl design 0,3, maks krumning ≈ 1,8 % ved 15 %). cl maks og cd0: omtrentlige
+       verdier ved Re ≈ 6·10⁶ (Abbott & von Doenhoff); 23012 har brå forkantstall, 23018 mykere bakkantstall. */
+    n23018: { name: 'NACA 23018', five: true, m: 0.0183, p: 0.15, t: 0.18, clmax: 1.60, cd0: 0.0068, note: 'King Air rot' },
+    n23012: { name: 'NACA 23012', five: true, m: 0.0183, p: 0.15, t: 0.12, clmax: 1.72, cd0: 0.0060, note: 'King Air tipp' },
+    /* Wortmann FX 63-137 (13,7 % tykk, høy krumning ≈ 6 % ved ≈ 53 % korde). Geometrien er tilnærmet med en firesifret
+       middellinje og NACA-tykkelse; tallene er omtrentlige. */
+    fx63: { name: 'Wortmann FX 63-137', m: 0.06, p: 0.53, t: 0.137, clmax: 1.70, cd0: 0.0072, note: 'Høyløft (tilnærmet)' }
   };
 
   /* Flytyper. Mål i meter, x fra nesen, z fra skrogets referanselinje.
@@ -36,14 +43,70 @@
         nac: [{ y: 5.75, x0: -2.75, L: 4.45, r: 1.12, dz: -1.42, fan: true }],
         winglet: { h: 2.43, tc: 0.32, sweep: 52, cant: 82 },
         vt: { x: 29.4, z: 1.75, c0: 5.9, c1: 1.95, h: 5.85, sweep: 36, t: 0.11 },
-        ht: { x: 31.7, z: 0.55, c0: 3.75, c1: 1.3, span: 12.45, sweep: 31, dih: 6, t: 0.1 } } }
+        ht: { x: 31.7, z: 0.55, c0: 3.75, c1: 1.3, span: 12.45, sweep: 31, dih: 6, t: 0.1 } } },
+    /* Beechcraft King Air B200. Spenn 16,61 m og vingeareal ≈ 28,2 m² (flugzeuginfo.net), NACA 23018 ved roten → 23012 i tippen
+       (US-patent 7 980 515), MTOM 5670 kg (EASA IM.A.277), semi-Fowler-klaffer, fullt ute 35° (King Air Magazine), APPROACH = 40 %
+       av vandringen (≈ 14°, avledet). Planform (konstant korde innenfor gondolene, så avsmalning), V-form og vridning er omtrentlige.
+       Propell: 4 blader, Ø 94 in = 2,39 m (McCauley 4HFR34C771-94LA, EASA IM.A.277). Begge propellene roterer med klokka sett bakfra. */
+    b200: { name: 'B200', full: 'Beechcraft King Air B200', b: 16.61, cr: 2.18, ck: 2.18, yk: 0.289, ct: 0.85, sweep: 3, dih: 6, twist: -4.5,
+      af: 'n23018', afTip: 'n23012', mass: 5300, massRange: [3800, 5670], ias: 180, iasRange: [70, 260], cd0: 0.020, slats: false, fowler: false,
+      flapType: 'semi', flapSpan: 0.62, spoilers: false, twin: true, stallStrip: { to: 0.32, dcl: 0.22 },
+      confs: [{ id: 'UP', s: 0, f: 0, vfe: null }, { id: 'APPR', s: 0, f: 14, vfe: 200 }, { id: 'DOWN', s: 0, f: 35, vfe: 157 }],
+      speeds: { vs1: 99, vs0: 75, vmca: '86–91', vyse: 121, vmo: 259, cruise: 270, mtom: 5670 },
+      prop: { d: 2.39, blades: 4, rpm: 2000, P: 634e3, n: 2, sense: 1 },
+      model: {
+        xle: 4.65, zw: -0.62, n: 2.1,
+        st: [[0, 0.04, 0.02, -0.08], [0.3, 0.24, 0.17, -0.25], [0.8, 0.42, 0.34, -0.43], [1.5, 0.56, 0.47, -0.58], [2.2, 0.68, 0.66, -0.7],
+             [2.9, 0.76, 0.84, -0.77], [3.6, 0.79, 0.9, -0.8], [8.4, 0.79, 0.9, -0.8], [9.6, 0.72, 0.87, -0.64], [10.8, 0.55, 0.82, -0.33],
+             [12.0, 0.33, 0.74, 0.07], [12.9, 0.15, 0.66, 0.32], [13.36, 0.05, 0.6, 0.44]],
+        cockpit: { x0: 1.9, x1: 3.0 }, cabin: { x0: 4.4, x1: 8.9, n: 7, z: 0.28, w: 0.42, h: 0.38, round: 0.45 },
+        nac: [{ y: 2.55, x0: -2.2, L: 4.1, r: 0.42, dz: -0.06, tp: true }],
+        winglet: null,
+        vt: { x: 10.55, z: 0.82, c0: 2.6, c1: 1.35, h: 2.15, sweep: 38, t: 0.12 },
+        ht: { x: 12.15, z: 2.97, c0: 1.45, c1: 0.85, span: 5.61, sweep: 12, dih: 0, t: 0.1, tTail: true } } },
+    /* Diamond DA42 NG. Spenn 13,42 m, vingeareal 16,29 m², klaffer UP 0° / APP 20° / LDG 42°, VFE 135/110 KEAS, VMCA 75 KEAS,
+       MTOM 1900 kg, MT-propell 3 blader Ø 1,87 m, rotasjon CW (EASA TCDS A.005). Profilet er oppgitt som Wortmann FX 63-137 i
+       sekundærkilder (ikke i TCDS); planform, V-form, vridning og winglet-mål er omtrentlige. Klafftypen er modellert som enkel spalteklaff. */
+    da42: { name: 'DA42', full: 'Diamond DA42 NG Twin Star', b: 13.42, cr: 1.45, ck: 1.45, yk: 0.25, ct: 0.8, sweep: 2, dih: 5, twist: -2,
+      af: 'fx63', afTip: 'fx63', mass: 1750, massRange: [1450, 1999], ias: 140, iasRange: [50, 195], cd0: 0.017, slats: false, fowler: false,
+      flapType: 'slotted', flapSpan: 0.6, spoilers: false, twin: true,
+      confs: [{ id: 'UP', s: 0, f: 0, vfe: null }, { id: 'APP', s: 0, f: 20, vfe: 135 }, { id: 'LDG', s: 0, f: 42, vfe: 110 }],
+      speeds: { vmca: '75', vne: 192, vno: 155, cruise: 176, mtom: 1900 },
+      prop: { d: 1.87, blades: 3, rpm: 2300, P: 125e3, n: 2, sense: 1 },
+      model: {
+        xle: 2.55, zw: -0.4, n: 2.2,
+        st: [[0, 0.04, 0.0, -0.06], [0.25, 0.21, 0.14, -0.19], [0.7, 0.37, 0.29, -0.35], [1.3, 0.5, 0.41, -0.47], [1.9, 0.58, 0.55, -0.54],
+             [2.6, 0.62, 0.8, -0.56], [3.4, 0.62, 0.84, -0.56], [4.2, 0.57, 0.73, -0.5], [5.2, 0.42, 0.5, -0.32], [6.4, 0.26, 0.36, -0.12],
+             [7.5, 0.17, 0.3, 0.0], [8.4, 0.1, 0.28, 0.06], [8.56, 0.05, 0.26, 0.1]],
+        cockpit: { x0: 1.85, x1: 3.75, canopy: true },
+        nac: [{ y: 1.72, x0: -1.3, L: 2.55, r: 0.3, dz: -0.03, tp: true }],
+        winglet: { h: 0.36, tc: 0.55, sweep: 32, cant: 74 },
+        vt: { x: 6.85, z: 0.3, c0: 1.45, c1: 0.85, h: 1.35, sweep: 32, t: 0.12 },
+        ht: { x: 7.62, z: 1.65, c0: 0.95, c1: 0.62, span: 3.2, sweep: 8, dih: 0, t: 0.1, tTail: true } } }
   };
+  AIRCRAFT.a320.confs = null; AIRCRAFT.a320.flapType = 'fowler'; AIRCRAFT.a320.spoilers = true;
+  AIRCRAFT.a320.speeds = { vs1: null, cruise: 450, mtom: 78000 };
   /* Klaffinnstillinger (typiske A320-verdier): lamell (slat) og klaff i grader, VFE i kt */
   const CONFS = [
     { id: '0', s: 0, f: 0, vfe: null }, { id: '1', s: 18, f: 0, vfe: 230 }, { id: '1+F', s: 18, f: 10, vfe: 215 },
     { id: '2', s: 22, f: 15, vfe: 200 }, { id: '3', s: 22, f: 20, vfe: 185 }, { id: 'FULL', s: 27, f: 35, vfe: 177 }];
+  AIRCRAFT.a320.confs = CONFS;
+  const confsFor = ac => (AIRCRAFT[ac] && AIRCRAFT[ac].confs) || CONFS;
+  /* parametre til buildWing for et fly og en konfigurasjon (o: overstyringer, f.eks. twist, leK, spoiler) */
+  function wingParamsFor(ac, conf, o) {
+    const A = AIRCRAFT[ac], c = confsFor(ac)[conf] || confsFor(ac)[0];
+    return Object.assign({ b: A.b, cr: A.cr, ck: A.ck, yk: A.yk, ct: A.ct, sweep: A.sweep, dih: A.dih, twist: A.twist, af: A.af, afTip: A.afTip || null,
+      flapDeg: c.f, slatDeg: c.s, flapSpan: A.flapSpan, fowler: A.fowler, flapType: A.flapType || (A.fowler ? 'fowler' : 'plain'), stallStrip: A.stallStrip || null }, o || {});
+  }
 
+  /* Middellinjen: firesifret NACA (m, p) eller femsifret 230 (r = 0,2025, k1 = 15,957). Returnerer [yc, dyc/dx]. */
+  const R230 = 0.2025, K230 = 15.957;
   function camber(af, x) {
+    if (af.five) {
+      const r = R230, k = K230;
+      if (x < r) return [k / 6 * (x * x * x - 3 * r * x * x + r * r * (3 - r) * x), k / 6 * (3 * x * x - 6 * r * x + r * r * (3 - r))];
+      return [k * r * r * r / 6 * (1 - x), -k * r * r * r / 6];
+    }
     const { m, p } = af;
     if (m === 0) return [0, 0];
     if (x < p) return [m / (p * p) * (2 * p * x - x * x), 2 * m / (p * p) * (p - x)];
@@ -92,8 +155,16 @@
     const d = g.flapDeg, eta = d <= 20 ? 1 : Math.max(0.55, 1 - (d - 20) / 60);
     const dEff = d * 0.72 * eta * DEG;                       // viskøst redusert klaffeffekt
     // Fowler-klaff: korden forlenges i tillegg, så økningen i cl maks er større enn for en enkel klaff
-    const dCl = g.fowler ? Math.min(1.5, 0.043 * d) : Math.min(0.85, 0.022 * d), dCd = 0.00012 * Math.pow(d, 1.5);
-    const fowl = g.fowler ? 1 + 0.0045 * d : 1;              // effektiv kordeforlengelse (≈ +16 % ved 35°)
+    /* klafftyper (empiriske økninger i profilets cl maks, jf. Raymer/ESDU-størrelsesordener): Fowler (A320, uendret),
+       semi-Fowler (King Air: litt kordeforlengelse), enkel spalteklaff (DA42) og vanlig klaff */
+    const ft = g.flapType || (g.fowler ? 'fowler' : 'plain');
+    const dCl = ft === 'fowler' ? Math.min(1.5, 0.043 * d) : ft === 'semi' ? Math.min(1.45, 0.041 * d) : ft === 'slotted' ? Math.min(1.05, 0.026 * d) : Math.min(0.85, 0.022 * d);
+    const dCd = 0.00012 * Math.pow(d, 1.5);
+    const fowl = ft === 'fowler' ? 1 + 0.0045 * d : ft === 'semi' ? 1 + 0.003 * d : 1;   // effektiv kordeforlengelse (≈ +16 % ved 35° for Fowler)
+    /* profil fra rot til tipp (King Air: 23018 → 23012): tykkelse, cl maks og cd0 interpoleres lineært langs spennet;
+       middellinjen er den samme (230) for begge, så krumningen i virvelgitteret er rotprofilets */
+    const afT = g.afTip ? AIRFOILS[g.afTip] : null, lerpAf = (k, y) => afT ? af[k] + (afT[k] - af[k]) * Math.min(1, Math.abs(y) / s) : af[k];
+    const tAt = y => lerpAf('t', y);
     // forkantlameller (slats) øker kritisk α og cl maks, men gir lite ekstra løft ved samme α
     const sl = g.slatDeg || 0, dClS = Math.min(0.75, 0.027 * sl), slFrom = 0.11 * s;
     const fs = g.flapSpan * s;
@@ -115,7 +186,9 @@
       flap[j] = inF ? 1 : 0;
       c[j] = chord(y); dy[j] = yb - ya; ym[j] = y;
       const inS = sl > 0 && Math.abs(y) >= slFrom && Math.abs(y) <= 0.985 * s;
-      clmax[j] = af.clmax + (inF ? dCl : 0) + (inS ? dClS : 0); cd0[j] = af.cd0 + (inF ? dCd : 0) + (inS ? 0.0002 * sl : 0);
+      clmax[j] = lerpAf('clmax', y) + (inF ? dCl : 0) + (inS ? dClS : 0); cd0[j] = lerpAf('cd0', y) + (inF ? dCd : 0) + (inS ? 0.0002 * sl : 0);
+      // stallstriper på den indre forkanten (King Air): lavere cl maks innerst, så roten staller først
+      if (g.stallStrip && Math.abs(y) <= g.stallStrip.to * s) clmax[j] -= g.stallStrip.dcl;
       if (SP && (!SP.side || SP.side * y > 0) && SP.panels.some(r => Math.abs(y) >= r[0] * s && Math.abs(y) <= r[1] * s)) {
         spMask[j] = 1; clmax[j] -= 0.55 * Math.sin(spD); cd0[j] += 0.11 * Math.sin(spD);
       }
@@ -192,10 +265,15 @@
       PT[4 * p] = xle(ya) + chord(ya); PT[4 * p + 1] = zw(ya); PT[4 * p + 2] = xle(yb) + chord(yb); PT[4 * p + 3] = zw(yb);
     }
     const Sreal = S / (k * k);
-    return {
+    let c2 = 0; for (let i = 0; i <= 400; i++) { const y = s * i / 400, cc = chord(y); c2 += cc * cc * (i === 0 || i === 400 ? 0.5 : 1) * s / 400; }
+    const macG = 2 * c2 / S / k;   // geometrisk middelkorde (m): (2/S)∫₀^{b/2} c² dy
+    return { macG,
       SL, PT, N: NS, NC, NP, s, k, yk, slat: sl, slFrom, ye, c, dy, ym, clmax, cd0, flap, Ga, Gb, Sa, Sb, wa, wb, S, CLa, CLb, Pa,
       alphaStall: aS, stallStation: ym[jS] / s, CLmax: CLa * aS + CLb, chord, xle, zw, cr, ct, af,
-      Sreal, AR: g.b * g.b / Sreal, mac: Sreal / g.b, dEff: dEff / DEG, fs, fowl, spMask, spDeg: SP ? SP.deg : 0
+      Sreal, AR: g.b * g.b / Sreal, mac: Sreal / g.b, dEff: dEff / DEG, fs, fowl, spMask, spDeg: SP ? SP.deg : 0,
+      /* tAt: fysisk tykkelse/korde langs spennet; tf: tegnet tykkelse som faktor på rotprofilets t (A320: 15 % ved roten → 11 % i tippen,
+         bare i tegningen som før; fly med oppgitt tipprofil: samme som tAt) */
+      tAt, tf: afT ? (y => tAt(y) / af.t) : (y => 1.32 - 0.32 * Math.min(1, Math.abs(y) / s)), afTip: afT, flapType: ft, b: g.b,
     };
   }
 
@@ -286,7 +364,8 @@
       const y = w.ym[j], c = w.chord(y), xl = w.xle(y), z0 = w.zw(y);
       for (let i = 0; i < NT; i++) {
         const xa = i / NT, xb2 = (i + 1) / NT, xm = (xa + xb2) / 2;
-        const Q = (thick(af, xb2) - thick(af, xa)) * c * w.dy[j];
+        const afj = w.afTip ? { t: w.tAt(y) } : af;
+        const Q = (thick(afj, xb2) - thick(afj, xa)) * c * w.dy[j];
         out.push(xl + c * xm, y, z0 + c * camber(af, xm)[0], Q, 0.6 * Math.max(c / NT, Math.abs(w.dy[j])));
       }
     }
@@ -410,7 +489,30 @@
     return out;
   }
 
-  root.VLab = { DEG, NC, AIRFOILS, AIRCRAFT, CONFS, atmosphere, buildWing, evaluate, clCurve, sources, axis, fieldKernel,
+  /* ---------- Propellstrøm: ideell aktuatorskive (Rankine–Froude) ----------
+     T = 2ρA·vi·(V + vi) → vi = (−V + √(V² + 2T/(ρA)))/2. Langs aksen for en jevnt belastet skive: Δu(x) = vi·(1 + x/√(x² + R²)),
+     x fra skiven (positiv nedstrøms), altså vi i skiven og 2vi langt bak. Kontinuitet gir strålens radius R(x) = R·√((V + vi)/(V + Δu)).
+     Rotasjon: dreiemomentet Q = P/Ω gir en fri virvel vθ = K/r med K = Q/(ρ(V + vi)A) (vθ·r bevares langs strålen). */
+  function actuatorDisc(T, rho, V, R) {
+    const A = Math.PI * R * R, vi = 0.5 * (-V + Math.sqrt(V * V + 2 * Math.max(0, T) / (rho * A)));
+    return { vi, a: vi / V, A, farWake: V + 2 * vi, Rw: R * Math.sqrt((V + vi) / (V + 2 * vi)), Pideal: T * (V + vi) };
+  }
+  function slipAxial(x, R, a) { return a * (1 + x / Math.sqrt(x * x + R * R)); }   // Δu/V langs aksen
+  function slipRadius(x, R, a) { return R * Math.sqrt((1 + a) / (1 + slipAxial(x, R, a))); }
+  /* skyvekraft fra akseleffekt: T = η·P/V, begrenset av statisk skyvekraft fra impulsteorien med «figure of merit» FM:
+     T0 = (FM·P)^(2/3)·(2ρA)^(1/3) */
+  function propThrust(P, V, rho, R, eta, fm) {
+    const A = Math.PI * R * R, T0 = Math.pow((fm || 0.7) * P, 2 / 3) * Math.pow(2 * rho * A, 1 / 3);
+    return Math.min(T0, (eta || 0.8) * P / Math.max(1, V));
+  }
+  /* Lamb–Oseen-virvel: ω(r) = Γ/(πrc²)·exp(−r²/rc²). Radien der |ω| = ωiso: r = rc·√ln(ω0/ωiso) (0 hvis ω0 ≤ ωiso).
+     Q-kriteriet (Q = ½(|Ω|² − |S|²)) er positivt innenfor r ≈ 1,121·rc, uavhengig av Γ. */
+  function lambOseenIso(G, rc, w) { const w0 = Math.abs(G) / (Math.PI * rc * rc); return w0 > w ? rc * Math.sqrt(Math.log(w0 / w)) : 0; }
+  const LAMB_Q0 = 1.1209;
+  /* NACA-middellinjens maks krumning og plassering (tallsøk), brukes i testene */
+  function camberMax(af) { let best = -1, xb = 0; for (let i = 0; i <= 2000; i++) { const x = i / 2000, y = camber(af, x)[0]; if (y > best) { best = y; xb = x; } } return { m: best, p: xb }; }
+
+  root.VLab = { actuatorDisc, slipAxial, slipRadius, propThrust, lambOseenIso, LAMB_Q0, camberMax, DEG, NC, AIRFOILS, AIRCRAFT, CONFS, confsFor, wingParamsFor, atmosphere, buildWing, evaluate, clCurve, sources, axis, fieldKernel,
     camber, thick, fuselageAt, nacelleRadius, lerpSt };
   if (typeof module !== 'undefined') module.exports = root.VLab;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -19,7 +19,11 @@
     const { m, p, t } = af;
     const yt = 5 * t * (0.2969 * Math.sqrt(x) - 0.1260 * x - 0.3516 * x * x + 0.2843 * x * x * x - 0.1036 * x * x * x * x);
     let yc = 0, dyc = 0;
-    if (m > 0) {
+    if (af.five) {   // NACA 230-middellinjen (femsifret): r = 0,2025, k1 = 15,957
+      const r = 0.2025, k = 15.957;
+      if (x < r) { yc = k / 6 * (x * x * x - 3 * r * x * x + r * r * (3 - r) * x); dyc = k / 6 * (3 * x * x - 6 * r * x + r * r * (3 - r)); }
+      else { yc = k * r * r * r / 6 * (1 - x); dyc = -k * r * r * r / 6; }
+    } else if (m > 0) {
       if (x < p) { yc = m / (p * p) * (2 * p * x - x * x); dyc = 2 * m / (p * p) * (p - x); }
       else { yc = m / ((1 - p) * (1 - p)) * ((1 - 2 * p) + 2 * p * x - x * x); dyc = 2 * m / ((1 - p) * (1 - p)) * (p - x); }
     }

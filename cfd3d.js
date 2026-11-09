@@ -1,5 +1,5 @@
 /* Virtual Lab – CFD-etterbehandling i three.js (r128)
-   Vitenskapelige fargekart (Turbo som standard, som i Fluent/STAR-CCM+/ParaView; kjølig–varm som alternativ), strømlinjer som skjermrettede rør med lys, glød og
+   Vitenskapelige fargekart (Turbo, Viridis og Morelands kjølig–varm), strømlinjer som skjermrettede rør med lys, glød og
    pulser som går med lokal fart, rutenettgulv, nøytralt studiomiljø, aksekors og krysstrømsplan. */
 (function (root) {
   'use strict';
@@ -16,14 +16,21 @@
             0.09140261 + 2.19418839 * x + 4.84296658 * x2 - 14.18503333 * x3 + 4.27729857 * x4 + 2.82956604 * x5,
             0.10667330 + 12.64194608 * x - 60.58204836 * x2 + 110.36276771 * x3 - 89.90310912 * x4 + 27.34824973 * x5].map(v => Math.max(0, Math.min(1, v)));
   }
-  CFD.coolwarm = coolwarm; CFD.turbo = turbo;
-  CFD.cmap = (id, t) => id === 1 ? turbo(t) : coolwarm(t);
-  // nøytral grå nær fri strøm bare i det divergerende kartet; Turbo (ingeniørstandard) vises i full farge over hele skalaen
-  CFD.cmapN = (id, t, k) => { if (id === 1) return turbo(t); const c = CFD.cmap(id, t), u = Math.min(1, Math.max(0, (Math.abs(t - 0.5) * 2 - 0.06) / 0.36)), w = k * (1 - u * u * (3 - 2 * u)), g = [0.6, 0.64, 0.69]; return [c[0] + (g[0] - c[0]) * w, c[1] + (g[1] - c[1]) * w, c[2] + (g[2] - c[2]) * w]; };
+  // Viridis (perseptuelt jevnt, sekvensielt; polynomtilpasning av matplotlib-kartet)
+  const VR = [[0.2777273272234177, 0.005407344544966578, 0.3340998053353061], [0.1050930431085774, 1.404613529898575, 1.384590162594685],
+    [-0.3308618287255563, 0.214847559468213, 0.09509516302823659], [-4.634230498983486, -5.799100973351585, -19.33244095627987],
+    [6.228269936347081, 14.17993336680509, 56.69055260068105], [4.776384997670288, -13.74514537774601, -65.35303263337234],
+    [-5.435455855934631, 4.645852612178535, 26.3124352495832]];
+  function viridis(t) { t = Math.max(0, Math.min(1, t)); return [0, 1, 2].map(c => { let v = VR[6][c]; for (let k = 5; k >= 0; k--) v = VR[k][c] + t * v; return Math.max(0, Math.min(1, v)); }); }
+  CFD.coolwarm = coolwarm; CFD.turbo = turbo; CFD.viridis = viridis;
+  /* id: 0 = kjølig–varm (divergerende), 1 = Turbo, 2 = Viridis */
+  CFD.cmap = (id, t) => id === 2 ? viridis(t) : id === 1 ? turbo(t) : coolwarm(t);
+  // nøytral grå nær fri strøm bare i det divergerende kartet; Turbo og Viridis vises i full farge over hele skalaen
+  CFD.cmapN = (id, t, k) => { if (id >= 1) return CFD.cmap(id, t); const c = CFD.cmap(id, t), u = Math.min(1, Math.max(0, (Math.abs(t - 0.5) * 2 - 0.06) / 0.36)), w = k * (1 - u * u * (3 - 2 * u)), g = [0.6, 0.64, 0.69]; return [c[0] + (g[0] - c[0]) * w, c[1] + (g[1] - c[1]) * w, c[2] + (g[2] - c[2]) * w]; };
   // Cp → fargeposisjon, delt om Cp = 0: fri strøm ligger midt på skalaen (grønt i Turbo), sug [cmin, 0] i nedre halvdel og
   // trykk [0, cmax] i øvre (Cp = 1 = stagnasjon = rødt). Begge halvdelene er lineære; skalastrekene er merket med verdiene.
   /* free stream (Cp = 0) sits at t = 0.35 on Turbo (teal-green, the classic CFD look) and at the centre on cool-warm */
-  CFD.cpMid = id => id === 1 ? 0.35 : 0.5;
+  CFD.cpMid = id => id >= 1 ? 0.35 : 0.5;
   CFD.cpT = (id, cp, cmin, cmax) => { const m = CFD.cpMid(id); return Math.max(0, Math.min(1, cp < 0 ? m - m * cp / cmin : m + (1 - m) * cp / cmax)); };
   CFD.cpInv = (id, t, cmin, cmax) => { const m = CFD.cpMid(id); return t < m ? (m - t) / m * cmin : (t - m) / (1 - m) * cmax; };
   // CSS-gradient for fargeskalaer (nederst → øverst når dir = 'to top')
@@ -41,10 +48,16 @@ vec3 turbo(float x){ x=0.07+0.9*clamp(x,0.0,1.0);
   const vec2 kG2=vec2(4.27729857,2.82956604); const vec2 kB2=vec2(-89.90310912,27.34824973);
   vec4 v4=vec4(1.0,x,x*x,x*x*x); vec2 v2=v4.zw*v4.z;
   return clamp(vec3(dot(v4,kR)+dot(v2,kR2),dot(v4,kG)+dot(v2,kG2),dot(v4,kB)+dot(v2,kB2)),0.0,1.0); }
-vec3 cmap(float t){ return cmapId>0.5 ? turbo(t) : coolwarm(t); }
+vec3 viridis(float t){ t=clamp(t,0.0,1.0);
+  const vec3 c0=vec3(0.2777273272234177,0.005407344544966578,0.3340998053353061); const vec3 c1=vec3(0.1050930431085774,1.404613529898575,1.384590162594685);
+  const vec3 c2=vec3(-0.3308618287255563,0.214847559468213,0.09509516302823659); const vec3 c3=vec3(-4.634230498983486,-5.799100973351585,-19.33244095627987);
+  const vec3 c4=vec3(6.228269936347081,14.17993336680509,56.69055260068105); const vec3 c5=vec3(4.776384997670288,-13.74514537774601,-65.35303263337234);
+  const vec3 c6=vec3(-5.435455855934631,4.645852612178535,26.3124352495832);
+  return clamp(c0+t*(c1+t*(c2+t*(c3+t*(c4+t*(c5+t*c6))))),0.0,1.0); }
+vec3 cmap(float t){ return cmapId>1.5 ? viridis(t) : cmapId>0.5 ? turbo(t) : coolwarm(t); }
 uniform float neutral;
 // midten av skalaen (V = V∞, Cp = 0) blandes mot nøytral grå, så bare avvik fra fri strøm får farge
-vec3 cmapN(float t){ if(cmapId>0.5) return turbo(t); float dv=abs(t-0.5)*2.0; return mix(cmap(t), vec3(0.6,0.64,0.69), neutral*(1.0-smoothstep(0.06,0.42,dv))); }
+vec3 cmapN(float t){ if(cmapId>0.5) return cmap(t); float dv=abs(t-0.5)*2.0; return mix(cmap(t), vec3(0.6,0.64,0.69), neutral*(1.0-smoothstep(0.06,0.42,dv))); }
 float cpT(float cp){ float m=cmapId>0.5?0.35:0.5; return cp<0.0 ? m-m*cp/cmin : m+(1.0-m)*cp/cmax; }`;
 
   /* ---------- strømlinjer: skjermrettede bånd skyggelagt som rør ----------
@@ -98,7 +111,7 @@ float cpT(float cp){ float m=cmapId>0.5?0.35:0.5; return cp<0.0 ? m-m*cp/cmin : 
     return new THREE.ShaderMaterial({
       uniforms: { cmin: { value: -1.5 }, cmax: { value: 1 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, time: { value: 0 }, width: { value: 1.6 },
         res: { value: new THREE.Vector2(1000, 600) }, bright: { value: 1 }, pulse: { value: 1 }, pulseRate: { value: 1 }, opac: { value: 1 }, studio: { value: 1 }, dref: { value: 16 },
-        turb: { value: 1 }, neutral: { value: 0.75 }, solid: { value: new THREE.Vector3(-1, 0, 0) } },
+        turb: { value: 1 }, neutral: { value: 0.75 }, solid: { value: new THREE.Vector3(-1, 0, 0) }, cmode: { value: 0 } },
       vertexShader: `attribute vec3 prv; attribute vec3 nxt; attribute float side; attribute float cpv; attribute float tv; attribute float fd; attribute float sd; attribute float tbv;
         uniform float width; uniform vec2 res; uniform float dref; uniform float time; uniform float turb; varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN; varying float vTb;
         // uro bare der modellen har merket strømmen som separert (tbv > 0): billig, glatt, tidsavhengig forskyvning (illustrativ)
@@ -115,10 +128,10 @@ float cpT(float cp){ float m=cmapId>0.5?0.35:0.5; return cp<0.0 ? m-m*cp/cmin : 
           float w=width*clamp(dref/max(c.w,0.1),0.55,1.8)*mix(0.3,1.0,fd); vW=w;
           c.xy+=n*side*(w+1.0)/res*c.w; gl_Position=c; }`,
       fragmentShader: CFD.GLSL_CMAP + `
-        uniform float time; uniform float bright; uniform float pulse; uniform float pulseRate; uniform float opac; uniform float vmin; uniform float vmax; uniform float studio; uniform vec3 solid;
+        uniform float time; uniform float bright; uniform float pulse; uniform float pulseRate; uniform float opac; uniform float vmin; uniform float vmax; uniform float studio; uniform vec3 solid; uniform float cmode;
         varying float vV; varying float vT; varying float vS; varying float vF; varying float vSd; varying float vW; varying vec2 vN; varying float vTb;
-        // fargen nær V∞ blandes mot nøytral grå (fri strøm er ikke «grønn»); avvik fra V∞ får full farge
-        vec3 vcol(float v){ return cmapN(clamp((v-vmin)/(vmax-vmin),0.0,1.0)); }
+        // fargen nær V∞ blandes mot nøytral grå (fri strøm er ikke «grønn»); avvik fra V∞ får full farge. cmode = 1: farget etter Cp = 1 − (V/V∞)²
+        vec3 vcol(float v){ if(cmode>0.5) return cmapN(cpT(clamp(1.0-v*v,cmin,cmax))); return cmapN(clamp((v-vmin)/(vmax-vmin),0.0,1.0)); }
         void main(){
           float s=abs(vS)*(vW+1.0)/vW;                 // 0 i midten, 1 ved rørkanten (+1 px for kantutjevning)
           float cov=clamp((1.0-s)*vW*0.5+0.5,0.0,1.0);
@@ -169,18 +182,18 @@ float cpT(float cp){ float m=cmapId>0.5?0.35:0.5; return cp<0.0 ? m-m*cp/cmin : 
   CFD.speedSliceMaterial = function (THREE) {
     return new THREE.ShaderMaterial({
       uniforms: { map: { value: null }, smin: { value: 0 }, smax: { value: 2 }, vmin: { value: 0.7 }, vmax: { value: 1.3 }, cmapId: { value: 1 }, cmin: { value: -1 }, cmax: { value: 1 },
-        op: { value: 0.97 }, iso: { value: 1 }, studio: { value: 1 }, neutral: { value: 0.3 }, texel: { value: new THREE.Vector2(1 / 256, 1 / 128) } },
+        op: { value: 0.97 }, iso: { value: 1 }, studio: { value: 1 }, neutral: { value: 0.3 }, texel: { value: new THREE.Vector2(1 / 256, 1 / 128) }, isoK: { value: 20 }, isoK2: { value: 4 } },
       vertexShader: 'varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
       fragmentShader: CFD.GLSL_CMAP + `
-        uniform sampler2D map; uniform float smin; uniform float smax; uniform float vmin; uniform float vmax; uniform float op; uniform float iso; uniform float studio; uniform vec2 texel;
+        uniform sampler2D map; uniform float smin; uniform float smax; uniform float vmin; uniform float vmax; uniform float op; uniform float iso; uniform float studio; uniform vec2 texel; uniform float isoK; uniform float isoK2;
         varying vec2 vUv;
         void main(){
           vec4 t=texture2D(map,vUv);
           float sol=t.g; if(sol>0.5) discard;   // modellen selv vises der flaten skjærer planet
           float v=smin+(smax-smin)*(t.r*65280.0+t.b*255.0)/65535.0;   // 16 bit: høy byte i R, lav i B (bilineær filtrering er lineær, så det går)
           vec3 c=cmapN(clamp((v-vmin)/(vmax-vmin),0.0,1.0));
-          float f1=v*20.0, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5), l1=1.0-smoothstep(0.0,w1*1.2,d1);
-          float f2=v*4.0, w2=fwidth(f2), d2=abs(fract(f2-0.5)-0.5), l2=1.0-smoothstep(0.0,w2*1.5,d2);
+          float f1=v*isoK, w1=fwidth(f1), d1=abs(fract(f1-0.5)-0.5), l1=1.0-smoothstep(0.0,w1*1.2,d1);
+          float f2=v*isoK2, w2=fwidth(f2), d2=abs(fract(f2-0.5)-0.5), l2=1.0-smoothstep(0.0,w2*1.5,d2);
           // isolinjer bare der feltet faktisk varierer (ellers gir støy rundt et nivå prikker i flate områder)
           float g1=smoothstep(0.004,0.02,w1), g2=smoothstep(0.001,0.005,w2);
           c*=1.0-iso*(0.12*l1*step(w1,0.5)*g1+0.26*l2*step(w2,0.5)*g2);

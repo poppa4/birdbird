@@ -72,7 +72,7 @@
     }
 
     /* ---- geometri (samme som modellen i 3D-scenen) ---- */
-    const visTf = ly => 1.32 - 0.32 * Math.min(1, Math.abs(ly) / wing.s);
+    const visTf = ly => wing.tf ? wing.tf(ly) : 1.32 - 0.32 * Math.min(1, Math.abs(ly) / wing.s);
     function wingZ(ly, xx, c, upper, off) {
       const w = wing; let zc = w.zw(ly) + c * P.camber(w.af, xx)[0];
       if (G.flapDeg > 0 && Math.abs(ly) <= w.fs && xx > 0.75) zc -= (xx - 0.75) * c * Math.tan(G.flapDeg * DEG);
@@ -100,9 +100,10 @@
       const at = xx => { if (xx <= xc0) return d0[j * NC] * (1 + 1.4 * (xc0 - xx) / xc0);
         if (xx >= xcl) return d0[j * NC + NC - 1] * (1 - xx) / (1 - xcl);
         const f = xx * NC - 0.5, q = Math.floor(f), t = f - q; return d0[j * NC + q] * (1 - t) + d0[j * NC + q + 1] * t; };
-      const xs = sepFrac(j), d = at(x), tt = 2.2 * af.t * Math.sqrt(Math.max(x, 0)) * (1 - x);
+      const tj = wing.tAt ? wing.tAt(wing.ym[j]) : af.t;
+      const xs = sepFrac(j), d = at(x), tt = 2.2 * tj * Math.sqrt(Math.max(x, 0)) * (1 - x);
       if (up) { let cp = -d / 2 - tt;
-        if (xs < 1 && x > xs) { const cs = -at(xs) / 2 - 2.2 * af.t * Math.sqrt(xs) * (1 - xs); cp = Math.max(-1.1, Math.min(-0.25, cs * 0.75)); }
+        if (xs < 1 && x > xs) { const cs = -at(xs) / 2 - 2.2 * tj * Math.sqrt(xs) * (1 - xs); cp = Math.max(-1.1, Math.min(-0.25, cs * 0.75)); }
         if (xs < 0.1 && x < 0.08) cp = Math.max(cp, -1.2); return cp; }
       return Math.min(1, d / 2 - tt + (x < 0.02 ? (1 - x / 0.02) * 0.7 : 0));
     }
@@ -193,7 +194,50 @@
       DZ.amp = prox * sev * c * (0.035 + 0.11 * Math.min(1.6, dx / c));
       return DZ;
     }
-    const CR = [0, 0, 0, 0, 0];
+    /* Kjølvann bak bakkanten ved festet strømning (profilmotstanden): gaussisk hastighetsunderskudd med samme impulstap som
+       stripens profilmotstand, ∫u_d dz = cd·c/2 ⇒ u_d/V∞ = cd·c/(2√π·b), halvbredde b = √(b0² + 0.09·cd·c·Δx), b0 = 0,015c
+       (fjernkjølvann-likhet, b ∝ √(cd·c·x)). Senterlinjen følger lokal strømretning (α − ε, samme vinkel som de frie virvlene).
+       WK.def = underskudd (andel av V∞), WK.ti = turbulensintensitet ≈ 0,3·underskuddet (kjølvannet er turbulent fordi grensesjiktet
+       har slått om før bakkanten ved disse Reynolds-tallene). */
+    const WK = { def: 0, ti: 0 };
+    function attachedWake(lx, ly, lz) {
+      WK.def = 0; WK.ti = 0; const w = wing, ay = Math.abs(ly); if (!res || ay >= w.s * 0.99) return WK;
+      const c = w.chord(ly), xT = w.xle(ly) + c, dx = lx - xT; if (dx < -0.02 * c || dx > 40) return WK;
+      const j = stripAt(ly), cl = Math.min(res.cl[j] * res.scale, w.clmax[j]), cd = w.cd0[j] + 0.0075 * (cl - 0.35) * (cl - 0.35);
+      const th = F.wa[0] + F.wt * (F.wa[1] - F.wa[0]), zc = w.zw(ly) + Math.max(0, dx) * Math.tan(th) - 0.02 * c * Math.min(1, Math.max(0, dx) / c);
+      const b = Math.sqrt(0.000225 * c * c + 0.09 * cd * c * Math.max(0, dx)), u = (lz - zc) / b;
+      if (u * u > 16) return WK;
+      const tipF = Math.min(1, (w.s - ay) / (0.06 * w.s));
+      WK.def = tipF * cd * c / (2 * 1.7725 * b) * Math.exp(-u * u) * Math.min(1, (dx + 0.02 * c) / (0.04 * c));
+      WK.ti = 0.3 * WK.def; return WK;
+    }
+    /* Propellstrøm (aktuatorskive, se physics.actuatorDisc): aksial tilleggsfart Δu(ξ) = a·(1 + ξ/√(ξ² + R²)) innenfor strålens radius
+       R(ξ) = R·√((1 + a)/(1 + Δu)), radiell innstrømming fra kontinuiteten v_r = −(r/2)·dΔu/dξ, og rotasjon vθ = K/r (fast legeme innenfor
+       navet). Strålens akse følger den frie strømmen fra skiven (vingerammen: (cos α, sin α)). Rotasjon med klokka sett bakfra: toppen
+       går mot flyets høyre side (−y i vingerammen). SLIP.p: [{c:[x,y,z], R, a, K, rh}], SLIP.ex: forsterkning. Ingen tilbakekobling til løftet. */
+    let SLIP = null;
+    function propAdd(x, y, z, v) {
+      const S_ = SLIP; if (!S_ || !S_.p.length || !res) return;
+      const al = res.alpha * DEG, ex = Math.cos(al), ez = Math.sin(al);
+      for (const q of S_.p) {
+        const dx = x - q.c[0], dy = y - q.c[1], dz = z - q.c[2], xi = dx * ex + dz * ez;
+        if (xi < -1.5 * q.R || xi > 60) continue;
+        const rx = dx - xi * ex, rz = dz - xi * ez, r2 = rx * rx + dy * dy + rz * rz, r = Math.sqrt(r2);
+        const den = Math.sqrt(xi * xi + q.R * q.R), du = q.a * (1 + xi / den), Rx = q.R * Math.sqrt((1 + q.a) / (1 + du));
+        if (r > 1.25 * Rx) continue;
+        const e0 = 0.88 * Rx, sm = r <= e0 ? 1 : 1 - (r - e0) / (1.25 * Rx - e0), smo = sm * sm * (3 - 2 * sm);
+        const ddu = q.a * q.R * q.R / (den * den * den), vr = -0.5 * Math.min(r, Rx) * ddu * smo;
+        let ux = du * smo, rr = r > 1e-6 ? 1 / r : 0;
+        v[0] += (ux * ex + vr * rx * rr) ; v[1] += vr * dy * rr; v[2] += (ux * ez + vr * rz * rr);
+        if (xi > -0.05 * q.R && r > 1e-6) {
+          const vt = (r < q.rh ? q.K * r / (q.rh * q.rh) : q.K / r) * smo * Math.min(1, (xi + 0.05 * q.R) / (0.15 * q.R));
+          // tangent t = e × r̂ (e = strålens akse): med klokka sett bakfra
+          const tx = (0 * rz - ez * dy) * rr, ty = (ez * rx - ex * rz) * rr, tz = (ex * dy - 0 * rx) * rr;
+          v[0] += vt * tx; v[1] += vt * ty; v[2] += vt * tz;
+        }
+      }
+    }
+    const CR = [0, 0, 0, 0, 0, 0];
     /* skyv punktet ut av faste flater; CR[3]: bit 1 = separert, bit 2 = traff flaten; CR[4] = turbulensamplitude */
     /* noDead: røykpartikler skal kunne gå inn i den separerte sonen (resirkulasjon); da flyttes de ikke ut av den,
        men CR[3] bit 4 markerer at punktet er inne i sonen */
@@ -223,7 +267,8 @@
           if (r < R) { if (r < 1e-4) { lz = n.zc + R; } else { ly = n.yk + dy / r * R; lz = n.zc + dz / r * R; } moved = 2; }
         }
       }
-      CR[0] = lx; CR[1] = ly; CR[2] = lz; CR[3] = sep | moved; CR[4] = amp; return CR;
+      let wd = 0; if (!sep) { const wk = attachedWake(lx, ly, lz); wd = wk.def; amp = Math.max(amp, 0.14 * wk.def); }
+      CR[0] = lx; CR[1] = ly; CR[2] = lz; CR[3] = sep | moved; CR[4] = amp; CR[5] = wd; return CR;
     }
 
     /* én strømlinje i vingerammen med klassisk RK4 (fast tidssteg h, så punktindeks = flytid).
@@ -234,20 +279,21 @@
       const k1 = [0, 0, 0], k2 = [0, 0, 0], k3 = [0, 0, 0], k4 = [0, 0, 0];
       // blandet felt for denne α (3 tall per node, ingen binærsøk) – samme verdier som fieldAt, men flere ganger raskere
       const fast = ensureBlend(al, sc), full = !!o.full;   // full: oppviklet kjerne (strømlinjer); røykdysene bruker samme felt som røyken
-      const vel = (X, Y, Z, v) => { if (fast) fieldFast(X, Y, Z, f); else fieldAt(X, Y, Z, al, sc, f); v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(X, Y, Z, v, ex, full); nearWall(X, Y, Z, v, ex); };
+      const vel = (X, Y, Z, v) => { if (fast) fieldFast(X, Y, Z, f); else fieldAt(X, Y, Z, al, sc, f); v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(X, Y, Z, v, ex, full); nearWall(X, Y, Z, v, ex); propAdd(X, Y, Z, v); };
+      let wdef = 0;
       for (; n < steps; n++) {
         vel(x, y, z, k1);
         vel(x + k1[0] * h / 2, y + k1[1] * h / 2, z + k1[2] * h / 2, k2);
         vel(x + k2[0] * h / 2, y + k2[1] * h / 2, z + k2[2] * h / 2, k3);
         vel(x + k3[0] * h, y + k3[1] * h, z + k3[2] * h, k4);
         // i det turbulente kjølvannet går middelstrømmen saktere (hastighetsunderskudd); fargen viser det samme
-        const kd = tprev > 0.01 ? 1 - Math.min(0.45, tprev * 2.2) : 1;
+        const kd = (tprev > 0.01 ? 1 - Math.min(0.45, tprev * 2.2) : 1) * (1 - Math.min(0.4, wdef));
         p.push(x, y, z); spd.push(Math.hypot(k1[0], k1[1], k1[2]) * kd);
         let hx = (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]) / 6, hy = (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6, hz = (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2]) / 6;
         hx *= kd; hz *= kd;
         x += hx * h; y += hy * h; z += hz * h;
         const c = collide(x, y, z); x = c[0]; y = c[1]; z = c[2]; sep.push(c[3] & 1); if ((c[3] & 2) && !hit) hit = [x, y, z];
-        tprev = Math.max(c[4], tprev * 0.997); tb.push(tprev);
+        wdef = c[5]; tprev = Math.max(c[4], tprev * 0.997); tb.push(tprev);
         const X = (x - B.px) * ca + (z - B.py) * sa, Yw = -(x - B.px) * sa + (z - B.py) * ca;
         if (X > B.x1 || X < B.x0 || Yw < B.y0 + 0.05 || Yw > B.y1 - 0.05 || Math.abs(y) > B.z - 0.05 || !Number.isFinite(x)) { n++; break; }
       }
@@ -301,7 +347,7 @@
       const vv = new Float32Array(NY * NZ), ww = new Float32Array(NY * NZ), om = new Float32Array(NY * NZ), solid = new Uint8Array(NY * NZ);
       for (let b = 0; b < NZ; b++) for (let a = 0; a < NY; a++) {
         const y = Y0 + hy * a, z = Z0 + hz * b, q = b * NY + a;
-        fieldAt(X0, y, z, al, sc, f); cv[0] = 0; cv[1] = f[1]; cv[2] = f[2]; coreSwirl(X0, y, z, cv, 1); vv[q] = cv[1] * ex; ww[q] = cv[2] * ex;
+        fieldAt(X0, y, z, al, sc, f); cv[0] = 0; cv[1] = f[1]; cv[2] = f[2]; coreSwirl(X0, y, z, cv, 1); propAdd(X0, y, z, cv); vv[q] = cv[1] * ex; ww[q] = cv[2] * ex;
         const c = collide(X0, y, z); solid[q] = (c[3] & 2) ? 1 : 0;
       }
       for (let b = 0; b < NZ; b++) for (let a = 0; a < NY; a++) {
@@ -328,7 +374,9 @@
       ensureCore();
       const al = res.alpha * DEG, ca = Math.cos(al), sa = Math.sin(al), sc = res.scale, f = [0, 0, 0], v = [0, 0, 0];
       const fast = ensureBlend(al, sc);
-      const spd = new Float32Array(NU * NV), solid = new Uint8Array(NU * NV), fac = new Float32Array(NU * NV).fill(1);
+      const spd = new Float32Array(NU * NV), solid = new Uint8Array(NU * NV), fac = new Float32Array(NU * NV).fill(1), wdf = new Float32Array(NU * NV);
+      const VX = new Float32Array(NU * NV), VY = new Float32Array(NU * NV), VZ = new Float32Array(NU * NV);
+      let p0 = 0;   // tilført totaltrykk i propellstrømmen (Bernoulli gjelder ikke over skiven): ΔCp0 ≈ (1 + Δu)² − 1 i strålen
       for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) {
         const u = i / (NU - 1), w = j / (NV - 1), q = j * NU + i;
         const x = O[0] + U[0] * u + V[0] * w, y = O[1] + U[1] * u + V[1] * w, z = O[2] + U[2] * u + V[2] * w;
@@ -336,9 +384,14 @@
         if (c[3] & 2) { solid[q] = 1; continue; }
         if (fast) fieldFast(x, y, z, f); else fieldAt(x, y, z, al, sc, f);
         v[0] = ca + f[0] * ex; v[1] = f[1] * ex; v[2] = sa + f[2] * ex; coreSwirl(x, y, z, v, ex, true); nearWall(x, y, z, v, ex);
-        spd[q] = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-        if (c[3] & 4) fac[q] = 0.22; else if (c[4] > 0.002) fac[q] = 1 - Math.min(0.45, c[4] * 2.2);
+        const vb0 = v[0], vb1 = v[1], vb2 = v[2]; propAdd(x, y, z, v);
+        const vb = Math.sqrt(vb0 * vb0 + vb1 * vb1 + vb2 * vb2);
+        spd[q] = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); VX[q] = v[0]; VY[q] = v[1]; VZ[q] = v[2];
+        wdf[q] = spd[q] * spd[q] - vb * vb;   // ekstra totaltrykk fra propellen (ΔCp0 > 0)
+        if (c[3] & 4) fac[q] = 0.22; else if (c[4] > 0.002 && (c[3] & 1)) fac[q] = 1 - Math.min(0.45, c[4] * 2.2);
+        if (c[5] > 0) fac[q] *= 1 - Math.min(0.4, c[5]);
       }
+      void p0;
       /* Underskuddet kommer fra stallmodellen per stripe (trappetrinn langs spennet); det glattes over ~ én stripebredde
          (to omganger boksfilter ≈ gauss) før det legges på farten. Selve potensialfeltet glattes ikke. */
       const Rr = Math.max(1, Math.round(Math.min(NU, NV) / 40)), tmp = new Float32Array(NU * NV);
@@ -351,8 +404,19 @@
             if (o >= 0) { acc -= src[at(o)]; cnt--; } if (i2 < n) { acc += src[at(i2)]; cnt++; } } }
       };
       for (let it = 0; it < 2; it++) { box(fac, tmp, true); box(tmp, fac, false); }
-      for (let q = 0; q < NU * NV; q++) spd[q] *= fac[q];
-      return { spd, solid };
+      /* totaltrykktap Cp0,tap = 1 − (p0 − p∞)/q∞: statisk trykk i kjølvannet settes lik potensialstrømmens (tynt skjærlag), så
+         tapet er V_pot² − V² = V_pot²·(1 − fac²); propellens tilførte totaltrykk trekkes fra (negativt «tap» = gevinst) */
+      const cp0 = new Float32Array(NU * NV), om = new Float32Array(NU * NV);
+      for (let q = 0; q < NU * NV; q++) { const vp = spd[q]; spd[q] *= fac[q]; VX[q] *= fac[q]; VY[q] *= fac[q]; VZ[q] *= fac[q]; cp0[q] = solid[q] ? 0 : vp * vp * (1 - fac[q] * fac[q]) - wdf[q]; }
+      /* virvlighet normalt på planet (sentrerte differanser i planets akser; faste celler hoppes over): ω = ∂(v·V̂)/∂s_U − ∂(v·Û)/∂s_V */
+      const LU = Math.hypot(U[0], U[1], U[2]), LV = Math.hypot(V[0], V[1], V[2]), hu = LU / (NU - 1), hv = LV / (NV - 1);
+      const uh = [U[0] / LU, U[1] / LU, U[2] / LU], vh = [V[0] / LV, V[1] / LV, V[2] / LV];
+      const cU = q => VX[q] * uh[0] + VY[q] * uh[1] + VZ[q] * uh[2], cV = q => VX[q] * vh[0] + VY[q] * vh[1] + VZ[q] * vh[2];
+      for (let j = 1; j < NV - 1; j++) for (let i = 1; i < NU - 1; i++) {
+        const q = j * NU + i; if (solid[q] || solid[q - 1] || solid[q + 1] || solid[q - NU] || solid[q + NU]) continue;
+        om[q] = (cV(q + 1) - cV(q - 1)) / (2 * hu) - (cU(q + NU) - cU(q - NU)) / (2 * hv);
+      }
+      return { spd, solid, cp0, om };
     }
 
     /* Cp på overflaten fra feltet: tangentiell fart like utenfor flaten. pos/nor i vingerammen. */
@@ -375,6 +439,7 @@
       setRes(r) { res = r; },
       setField(f) { Object.assign(F, f); },
       setBounds(b) { Object.assign(B, b); },
+      setSlip(sl) { SLIP = sl && sl.p && sl.p.length ? sl : null; }, get slip() { return SLIP; }, propAdd, attachedWake,
       fieldAt, fieldFast, ensureBlend, wingZ, wingSurf, stripAt, sepFrac, stripCp, nearWall, coreSwirl, ensureCore, get core() { return CORE; }, deadZone, collide, trace, traceMany, crossPlane, speedPlane, surfaceCp
     };
   }
@@ -424,9 +489,10 @@
         if (d.type === 'init') { importScripts(d.physics); P = root.VLab; ctx = make(P); return; }
         if (d.type === 'geom') {
           params = d.params; ac = d.ac;
-          const w = applyLE(P.buildWing(params), params.leK || 1); ctx.setWing(w, params, P.AIRCRAFT[ac].model); resKey = ''; cur = null;
+          const w = applyLE(P.buildWing(params), params.leK || 1); ctx.setWing(w, params, P.AIRCRAFT[ac].model); ctx.setSlip(params.slip || null); resKey = ''; cur = null;
           return;
         }
+        if (d.type === 'slip') { if (ctx) ctx.setSlip(d.slip); return; }
         if (d.type === 'field') { ctx.setField({ data: d.data, xs: d.xs, ys: d.ys, zs: d.zs, nx: d.nx, ny: d.ny, nz: d.nz }); return; }
         if (d.type === 'cancel') { cur = null; return; }
         // felles tilstand per jobb: α, kjølvannsblanding, grenser
@@ -443,7 +509,7 @@
           root.postMessage({ type: 'plane', r }, [r.om.buffer, r.v.buffer, r.w.buffer, r.solid.buffer]);
         } else if (d.type === 'vslice') {
           const t0 = Date.now(), r = ctx.speedPlane(d.O, d.U, d.V, d.NU, d.NV, d.ex); r.id = d.id; r.ms = Date.now() - t0; r.NU = d.NU; r.NV = d.NV;
-          root.postMessage({ type: 'vslice', r }, [r.spd.buffer, r.solid.buffer]);
+          root.postMessage({ type: 'vslice', r }, [r.spd.buffer, r.solid.buffer, r.cp0.buffer, r.om.buffer]);
         } else if (d.type === 'cp') {
           const out = new Float32Array(d.pos.length / 3); ctx.surfaceCp(d.pos, d.nor, out);
           root.postMessage({ type: 'cp', id: d.id, cp: out }, [out.buffer]);
