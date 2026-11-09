@@ -9,7 +9,7 @@
   let page=(location.pathname.split('/').pop()||'index.html').replace(/\?.*/,''); if(!/\.html$/.test(page)) page=page+'.html';
   const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','airdata.html','orientation.html','holding.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
   /* Training hub: one sub-nav, same order everywhere */
-  const TRN=[['radio.html','Gate to gate'],['briefing.html','Briefings'],['radio-drills.html','Radio drills'],['cockpit.html','Simulator'],['simcheck.html','A320 sim assessment'],['typerating.html','Type rating'],['checkride.html','Check preparation']];
+  const TRN=[['radio.html','Gate to gate'],['briefing.html','Briefings'],['radio-drills.html','Radio drills'],['cockpit.html','DA42 simulator'],['b200.html','King Air B200'],['simcheck.html','A320 sim assessment'],['typerating.html','Type rating'],['checkride.html','Check preparation']];
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
   const PLN=[['prep.html','Briefing pack'],['essentials.html','VFR and IFR essentials'],['weather.html','METAR and TAF'],['sheets.html','Kneeboard sheets'],['planning.html','Navigation log']];
   const trn=TRN.some(x=>x[0]===page)||checkMode, pln=PLN.some(x=>x[0]===page);
