@@ -104,6 +104,22 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .apbtn:hover{border-color:rgba(255,255,255,.4)}
 .apbtn:focus-visible,.apbar input:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
 .apside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:13px;line-height:1.5;overflow:auto;background:rgba(6,9,12,.25)}
+.tour{padding:9px 12px 10px;border-top:1px solid rgba(255,255,255,.07);color:#C9D3DB;font-size:13.5px;line-height:1.5}
+.tour[hidden]{display:none}
+.tour .tlead{color:#8E99A4;margin-left:10px;font-size:13px}
+.tour .trow{display:flex;gap:10px;align-items:flex-start;min-height:3.2em}
+.tour .tnum{flex:0 0 auto;display:inline-flex;align-items:baseline;justify-content:center;line-height:26px;min-width:34px;height:26px;border-radius:13px;background:var(--c);color:#0f151b;font-family:var(--f-mono);font-weight:700;font-size:13px;padding:0 7px}
+.tour .tnum small{font-size:10px;font-weight:500;opacity:.7}
+.tour .ttxt{margin:2px 0 0;color:#E2E8EE}.tour .ttxt b{color:#fff}
+.tour .tsum{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.14);color:#AEB9C2}
+.tour .tnav{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}
+.tbtn{font-family:var(--f-body);font-size:12.5px;background:rgba(18,22,26,.62);color:#E2E8EE;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:5px 11px;cursor:pointer;min-height:32px}
+.tbtn:hover:not(:disabled){border-color:rgba(255,255,255,.4)}.tbtn:disabled{opacity:.4;cursor:default}
+.tbtn.pri{border-color:#7EC8F2;background:rgba(126,200,242,.16)}
+.tbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.tbtn.x{margin-left:auto;padding:5px 10px}
+.tour .tdots{display:inline-flex;gap:5px;margin:0 4px}.tour .tdots i{width:8px;height:8px;border-radius:50%;border:1px solid var(--c);opacity:.6}.tour .tdots i.done{background:var(--c);opacity:.45}.tour .tdots i.on{background:var(--c);opacity:1}
+@media (max-width:640px){.tour .tlead{display:block;margin:6px 0 0}.tour .tdots{display:none}}
 .aplay:empty{display:none}.aplay{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07)}.aplay h5{margin:0 0 5px}.aplay .b{display:flex;flex-direction:column;gap:4px}
 .aplay button{text-align:left;font-family:var(--f-body);font-size:12px;line-height:1.3;background:rgba(18,22,26,.62);color:#C6D0D8;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:5px 8px;cursor:pointer}.aplay button.on{border-color:#7EC8F2;color:#EEF2F5;background:rgba(126,200,242,.14)}.aplay button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}.aplay p{margin:6px 0 0;font-size:12px;line-height:1.45;color:#AEB9C2}
 .apcard{min-height:150px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
@@ -170,6 +186,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
         </div>
         <aside class="apside" id="apSide" hidden aria-label="Parts"><div class="aplay" id="apLay"></div><div class="apcard" id="apCard" aria-live="polite"></div><h5 id="apLH">Parts</h5><ul class="aplist" id="apList"></ul></aside>
         </div>
+        <div class="tour" id="tour" hidden></div>
         <div class="vleg" id="vleg"></div>
       </div>
       <p class="xsee" id="xsee"></p>
@@ -216,7 +233,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 <script src="lab.js?v=39"></script>
 <script src="concepts.js?v=2"></script>
 <script src="enginecore.js?v=1"></script>
-<script src="engparts.js?v=2"></script>
-<script src="engines.js?v=4"></script>
+<script src="engparts.js?v=3"></script>
+<script src="engines.js?v=5"></script>
 </body>
 </html>

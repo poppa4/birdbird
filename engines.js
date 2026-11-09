@@ -127,7 +127,7 @@ function drawJet(g,b,M,ph){ const G=geo(b), pw=M.frac??0.5;
 /* free-turbine turboprop, direct flow (the option): propeller on the left, intake just behind it, air flows straight back to the exhaust at the rear;
    the Np shaft runs forward from the power turbine through the hollow Ng shaft to the gearbox */
 function drawTPd(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh]), pw=Math.max(0.05,M.shp/850), sm=ST.w<640;
-  const X=G.X, Yt=G.Yt, Yb=G.Yb;
+  const X=G.X, Yt=G.Yt, Yb=G.Yb; g.save(); g.globalAlpha=TOUR.on?0.45:1;
   const Tin=stT(M,'in'), T3=stT(M,'comp'), Tb=stT(M,'burn'), Ti=stT(M,'itt'), Te=stT(M,'exh');
   /* casing */
   shell(g,G,[[0.05,0.42,0.0],[0.17,0.42,0.0]],'#2f3a45',C.edge);              // reduction gearbox
@@ -152,6 +152,7 @@ function drawTPd(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh
   g.fillStyle='#3a4652'; g.beginPath(); g.ellipse(hx,py,bw*0.022,G.R*0.3,0,0,Math.PI*2); g.fill();
   const pa=reduce?0.6:ph.a*2.2; for(let k=0;k<4;k++){ const a=pa+k*Math.PI/2, ext=Math.cos(a)*Rp, wdt=fe?1.5:Math.max(1.5,Math.abs(Math.sin(a))*bw*0.012+2);
     g.fillStyle=k%2?'rgba(201,182,242,.75)':'rgba(201,182,242,.55)'; g.beginPath(); g.ellipse(hx-bw*0.004,py-ext/2,wdt,Math.abs(ext)/2,0,0,Math.PI*2); g.fill(); }
+  g.restore(); if(TOUR.on){ tourDraw(g,G); return G; }
   if(!S.stnTags){
     lab(g,hx+6,Yt(1.05)-4,L(fe?t2('Propeller · feathered','Propell · fjæret'):t2('Propeller · Np','Propell · Np')),C.lp,'left');
     lab(g,X(0.11),Yb(0.62),L(t2('Gearbox','Girkasse')),C.mut);
@@ -163,53 +164,125 @@ function drawTPd(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh
   stations(g,G,M,[[0.24,'in'],[0.47,'comp'],[0.59,'burn'],[0.755,'itt'],[0.9,'exh']]);
   return G; }
 /* free-turbine turboprop, reverse flow (the default, most common in small turboprops): the propeller on the left, air enters at the back (right) and flows forward */
-function drawTP(g,b,M,ph){ const [bx,by,bw,bh]=b, G0=geo([bx+bw*0.1,by,bw*0.9,bh]), G={...G0}, pw=Math.max(0.05,M.shp/850);
-  const X=G.X, Yt=G.Yt, Yb=G.Yb;
+function drawTP(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh]), pw=Math.max(0.05,M.shp/850), sm=ST.w<640;
+  const X=G.X, Yt=G.Yt, Yb=G.Yb, TR=TOUR.on?0.45:1;
+  const Tin=stT(M,'in'), T3=stT(M,'comp'), Tb=stT(M,'burn'), Ti=stT(M,'itt'), Te=stT(M,'exh');
+  g.save(); g.globalAlpha=TR;
   /* casing */
   shell(g,G,[[0.05,0.42,0.0],[0.17,0.42,0.0]],'#2f3a45',C.edge);              // reduction gearbox
-  shell(g,G,[[0.2,0.5,0.47],[0.62,0.68,0.64],[0.8,0.62,0.58],[0.96,0.5,0.46]],C.casing,C.edge);
-  /* inlet plenum (air in from below/around, through a screen) */
-  const Tin=stT(M,'in'), T3=stT(M,'comp'), Tb=stT(M,'burn'), Ti=stT(M,'itt'), Te=stT(M,'exh');
-  const inl=[[0.94,0.46,0.16],[0.8,0.42,0.16],[0.66,0.3,0.15]];   // flows right → left
-  band(g,G,inl,[[0.94,Tin],[0.66,(Tin+T3)/2]]); flowDots(g,G,[[0.94,0.44,0.18],[0.66,0.3,0.15]],10,0.6+pw);
-  line(g,X(0.94),Yt(0.47),X(0.94),Yt(0.16),'rgba(214,226,236,.5)',1,[2,2]); line(g,X(0.94),Yb(0.47),X(0.94),Yb(0.16),'rgba(214,226,236,.5)',1,[2,2]);
-  /* centrifugal stage out to the diffuser, then back (right) outside the liner */
-  band(g,G,[[0.66,0.3,0.15],[0.6,0.6,0.15]],[[0.66,(Tin+T3)/2],[0.6,T3]]);
-  band(g,G,[[0.6,0.63,0.55],[0.42,0.6,0.53]],[[0.6,T3],[0.42,T3]],0.75);
-  /* combustor liner: the burning gas flows forward (left) */
-  band(g,G,[[0.42,0.53,0.27],[0.56,0.5,0.3]],[[0.56,Tb],[0.42,Ti+120]]);
-  /* turbines and the exhaust */
-  const turb=[[0.4,0.46,0.18],[0.28,0.47,0.18]]; band(g,G,turb,[[0.4,Ti+60],[0.355,Ti],[0.28,Te]]);
-  band(g,G,[[0.28,0.47,0.18],[0.22,0.5,0.2]],[[0.28,Te],[0.22,Te]]);
-  /* exhaust stacks */
-  for(const [hf,s] of [[Yt,-1],[Yb,1]]){ const gr=g.createLinearGradient(0,hf(0.45),0,hf(0.95)); gr.addColorStop(0,tcol(Te,0.9)); gr.addColorStop(1,tcol(Te-150,0.15));
-    g.fillStyle=gr; g.beginPath(); g.moveTo(X(0.27),hf(0.47)); g.lineTo(X(0.27),hf(0.85)); g.lineTo(X(0.19),hf(0.95)); g.lineTo(X(0.21),hf(0.5)); g.closePath(); g.fill(); void s; }
-  flowDots(g,G,[[0.6,0.59,0.57],[0.43,0.57,0.55]],6,0.6+pw); flowDots(g,G,[[0.55,0.45,0.32],[0.22,0.45,0.22]],12,0.7+pw);
+  shell(g,G,[[0.19,0.5,0.46],[0.28,0.66,0.62],[0.56,0.68,0.64],[0.6,0.66,0.62],[0.66,0.4,0.36],[0.8,0.4,0.36],[0.82,0.52,0.48],[0.96,0.52,0.48]],C.casing,C.edge);
+  /* intake duct (lower half only): scoop just behind the propeller, ducted back under the engine to the plenum at the rear */
+  const dO=[[0.28,0.96],[0.34,0.9],[0.9,0.9],[0.95,0.84],[0.95,0.5]], dI=[[0.3,0.78],[0.34,0.76],[0.84,0.76],[0.86,0.7],[0.86,0.5]];
+  g.beginPath(); dO.forEach(([u,r],i)=>i?g.lineTo(X(u),Yb(r)):g.moveTo(X(u),Yb(r))); for(let i=dI.length-1;i>=0;i--) g.lineTo(X(dI[i][0]),Yb(dI[i][1])); g.closePath();
+  g.fillStyle=tcol(Tin,0.45); g.fill(); g.strokeStyle=C.edge; g.lineWidth=1; g.stroke();
+  flowDots(g,{X:G.X,Yt:r=>-999,Yb:G.Yb},[[0.34,0.88,0.78],[0.84,0.88,0.78]],8,0.6+pw);
+  /* inlet screen around the plenum */
+  for(const hf of [Yt,Yb]) line(g,X(0.84),hf(0.5),X(0.95),hf(0.5),'rgba(214,226,236,.6)',1.2,[2,2]);
+  /* plenum, axial stages, impeller */
+  const inl=[[0.95,0.48,0.12],[0.84,0.47,0.13],[0.8,0.34,0.15],[0.66,0.3,0.17]];
+  band(g,G,inl,[[0.95,Tin],[0.8,Tin+10],[0.66,(Tin+T3)/2]]); flowDots(g,G,[[0.9,0.4,0.2],[0.66,0.28,0.18]],10,0.6+pw);
+  band(g,G,[[0.66,0.3,0.17],[0.6,0.6,0.48]],[[0.66,(Tin+T3)/2],[0.6,T3]]);
+  /* compressed air flows FORWARD outside the combustion liner */
+  band(g,G,[[0.6,0.63,0.48],[0.56,0.63,0.58],[0.3,0.63,0.58]],[[0.6,T3],[0.3,T3]],0.75); flowDots(g,G,[[0.57,0.625,0.585],[0.31,0.625,0.585]],7,0.6+pw);
+  /* liner around the turbines: closed (dome) end at the front; the gas burns flowing REARWARD */
+  band(g,G,[[0.31,0.55,0.37],[0.52,0.55,0.37]],[[0.31,Tb],[0.52,Ti+150]]); flowDots(g,G,[[0.32,0.53,0.39],[0.52,0.53,0.39]],7,0.7+pw);
+  for(const [hf,s] of [[Yt,1],[Yb,-1]]){ g.strokeStyle='rgba(214,226,236,.55)'; g.lineWidth=1.2; g.beginPath(); g.moveTo(X(0.52),hf(0.56)); g.lineTo(X(0.32),hf(0.56)); g.quadraticCurveTo(X(0.29),hf(0.46),X(0.32),hf(0.36)); g.lineTo(X(0.5),hf(0.36)); g.stroke(); void s;
+    /* exit duct: turns the gas 180° to flow forward into the turbines */
+    g.strokeStyle=tcol(Ti+120,0.9); g.lineWidth=Math.max(3,G.R*0.13); g.beginPath(); g.moveTo(X(0.51),hf(0.46)); g.quadraticCurveTo(X(0.58),hf(0.34),X(0.51),hf(0.22)); g.stroke(); }
+  /* turbines (inside the liner ring) and the exhaust */
+  band(g,G,[[0.51,0.3,0.13],[0.28,0.32,0.13]],[[0.51,Ti+100],[0.39,Ti],[0.28,Te]]); flowDots(g,G,[[0.5,0.29,0.15],[0.27,0.3,0.15]],8,0.8+pw);
+  band(g,G,[[0.28,0.32,0.13],[0.22,0.5,0.2]],[[0.28,Te],[0.22,Te]]);
+  for(const hf of [Yt,Yb]){ const gr=g.createLinearGradient(0,hf(0.45),0,hf(0.95)); gr.addColorStop(0,tcol(Te,0.9)); gr.addColorStop(1,tcol(Te-150,0.15));
+    g.fillStyle=gr; g.beginPath(); g.moveTo(X(0.27),hf(0.47)); g.lineTo(X(0.27),hf(0.85)); g.lineTo(X(0.19),hf(0.95)); g.lineTo(X(0.21),hf(0.5)); g.closePath(); g.fill(); }
   /* the two shafts: Ng (compressor turbine → compressor, backwards) and Np (power turbine → gearbox, forwards). No mechanical link. */
-  shell(g,G,[[0.36,0.08,0],[0.88,0.08,0]],'rgba(127,203,232,.5)'); shell(g,G,[[0.05,0.06,0],[0.32,0.06,0]],'rgba(201,182,242,.5)');
-  line(g,X(0.34),Yt(0.14),X(0.34),Yb(0.14),'#0f151b',3);
-  for(let i=0;i<3;i++){ const u=0.86-i*0.05, [ro,ri]=rIn(inl,u); row(g,G,u,ri+0.01,ro-0.01,C.hp,ph.b,1.8); }
-  /* centrifugal impeller (Ng) */
-  for(const hf of [Yt,Yb]){ g.fillStyle='rgba(127,203,232,.22)'; g.beginPath(); g.moveTo(X(0.66),hf(0.15)); g.quadraticCurveTo(X(0.66),hf(0.5),X(0.61),hf(0.58)); g.lineTo(X(0.61),hf(0.15)); g.closePath(); g.fill(); }
-  row(g,G,0.63,0.16,0.48,C.hp,ph.b,1.6);
-  row(g,G,0.37,0.18,0.46,C.hp,ph.b,2.6);              // compressor turbine
-  row(g,G,0.32,0.18,0.47,C.lp,ph.a,2.6); row(g,G,0.295,0.18,0.47,C.lp,ph.a,2.6);   // power turbine
-  glow(g,G,0.49,0.4,pw);
+  shell(g,G,[[0.395,0.08,0],[0.84,0.08,0]],'rgba(127,203,232,.5)'); shell(g,G,[[0.05,0.06,0],[0.355,0.06,0]],'rgba(201,182,242,.5)');
+  line(g,X(0.375),Yt(0.13),X(0.375),Yb(0.13),'#0f151b',3);
+  for(let i=0;i<3;i++){ const u=0.78-i*0.045, [ro,ri]=rIn(inl,u); row(g,G,u,ri+0.01,ro-0.01,C.hp,ph.b,1.8); }
+  for(const hf of [Yt,Yb]){ g.fillStyle='rgba(127,203,232,.22)'; g.beginPath(); g.moveTo(X(0.66),hf(0.17)); g.quadraticCurveTo(X(0.66),hf(0.5),X(0.61),hf(0.58)); g.lineTo(X(0.61),hf(0.12)); g.closePath(); g.fill(); }
+  row(g,G,0.635,0.18,0.46,C.hp,ph.b,1.6);
+  row(g,G,0.42,0.14,0.3,C.hp,ph.b,2.6);              // compressor turbine
+  row(g,G,0.335,0.14,0.31,C.lp,ph.a,2.6); row(g,G,0.31,0.14,0.315,C.lp,ph.a,2.6);   // power turbine
+  glow(g,G,0.4,0.46,pw);
   /* propeller (left of the gearbox): two blades drawn foreshortened as they turn; feathered = edge on */
   const hx=X(0.03), py=G.yc, Rp=Math.min(bh*0.46,G.R*1.6), fe=!M.np;
   g.fillStyle='#3a4652'; g.beginPath(); g.ellipse(hx,py,bw*0.022,G.R*0.3,0,0,Math.PI*2); g.fill();
   const pa=reduce?0.6:ph.a*2.2; for(let k=0;k<4;k++){ const a=pa+k*Math.PI/2, ext=Math.cos(a)*Rp, wdt=fe?1.5:Math.max(1.5,Math.abs(Math.sin(a))*bw*0.012+2);
     g.fillStyle=k%2?'rgba(201,182,242,.75)':'rgba(201,182,242,.55)'; g.beginPath(); g.ellipse(hx-bw*0.004,py-ext/2,wdt,Math.abs(ext)/2,0,0,Math.PI*2); g.fill(); }
-  if(!S.stnTags){ const sm=ST.w<640;
+  g.restore();
+  if(TOUR.on) tourDraw(g,G);
+  else { if(!S.stnTags){
     lab(g,hx+6,Yt(1.05)-4,L(fe?t2('Propeller · feathered','Propell · fjæret'):t2('Propeller · Np','Propell · Np')),C.lp,'left');
     lab(g,X(0.11),Yb(0.62),L(t2('Gearbox','Girkasse')),C.mut);
-    lab(g,X(0.3),Yt(0.98)+4,L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.235),Yb(1.02),L(t2('Exhaust','Eksos')),'#F2B8A8');
-    lab(g,X(0.49),Yb(0.8),L(t2('Combustor','Brennkammer')),C.amb); lab(g,X(0.73),Yt(0.82),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp);
-    lab(g,X(0.9),Yb(0.62),L(t2('Air in','Luft inn')),'#BFE3F5'); }
-  { const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.2,0.4,t2('4 Turbines · exhaust','4 Turbiner · eksos'),4],[0.4,0.6,t2('3 Combustion','3 Forbrenning'),3],[0.6,0.82,t2('2 Compression','2 Kompresjon'),2],[0.82,0.96,t2('1 Intake','1 Innsug'),1]], py0=G.Yb(0.98)+12;
-    if(ST.w<640){ phases(g,G,PL.filter((_,i)=>i%2===0),py0); phases(g,G,PL.filter((_,i)=>i%2===1),py0+22); } else phases(g,G,PL,py0); }
-  stations(g,G,M,[[0.9,'in'],[0.6,'comp'],[0.49,'burn'],[0.35,'itt'],[0.24,'exh']]);
+    lab(g,X(0.33),Yt(0.8),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.23),Yt(1.06),L(t2('Exhaust','Eksos')),'#F2B8A8');
+    lab(g,X(0.47),Yt(0.8),L(t2('Combustor','Brennkammer')),C.amb); lab(g,X(0.73),Yt(0.6),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp);
+    lab(g,X(0.6),Yb(0.83),L(t2('Air in (duct to the rear)','Luft inn (kanal bakover)')),'#BFE3F5'); }
+    const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.19,0.29,t2('4 Exhaust','4 Eksos'),4],[0.29,0.57,t2('3 Combustion · 4 turbines','3 Forbrenning · 4 turbiner'),3],[0.57,0.8,t2('2 Compression','2 Kompresjon'),2],[0.8,0.96,t2('1 Intake','1 Innsug'),1]], py0=G.Yb(0.98)+12;
+    if(sm){ phases(g,G,PL.filter((_,i)=>i%2===0),py0); phases(g,G,PL.filter((_,i)=>i%2===1),py0+22); } else phases(g,G,PL,py0);
+    stations(g,G,M,[[0.9,'in'],[0.6,'comp'],[0.45,'burn'],[0.375,'itt'],[0.24,'exh']]); }
   return G; }
+/* ---------------- "Follow the air": a step-through of the turboprop gas path ---------------- */
+/* each step: [path [[u,r]…], halves ('b' lower only, 'tb' both), stage colour index, text] */
+const TOURS={
+ rev:{steps:[
+  [[[0.27,0.86],[0.34,0.83],[0.86,0.83],[0.905,0.75],[0.905,0.52]],'b',1,t2('Air enters through the scoop just behind the propeller and is ducted <b>backward</b>, along the bottom of the engine, to the rear.','Luften kommer inn gjennom inntaket like bak propellen og ledes <b>bakover</b> langs undersiden av motoren, helt bak.'),[[0.33,-1.04,t2('Scoop · air in','Inntak · luft inn')],[0.62,-0.83,t2('Inlet duct','Inntakskanal')]]],
+  [[[0.905,0.5],[0.9,0.32],[0.8,0.25],[0.66,0.24],[0.63,0.4],[0.605,0.55]],'tb',2,t2('At the back it passes the inlet screen into a plenum and turns 180° to flow <b>forward</b> into the compressor: axial stages, then the centrifugal impeller (stage 1 → 2).','Bak går den gjennom inntaksgitteret inn i et plenum og snur 180° for å strømme <b>forover</b> inn i kompressoren: aksialtrinn, så sentrifugalimpelleren (trinn 1 → 2).'),[[0.89,0.66,t2('Screen + plenum','Gitter + plenum')],[0.7,0.56,t2('Compressor','Kompressor')]]],
+  [[[0.6,0.56],[0.57,0.605],[0.33,0.605],[0.31,0.52]],'tb',2,t2('The diffuser turns the compressed air again: it flows <b>forward</b> outside the combustion liner, cooling it, and goes into the liner through rows of holes.','Diffusoren snur den komprimerte luften igjen: den strømmer <b>forover</b> utenfor flammerøret, kjøler det, og går inn i flammerøret gjennom rader med hull.'),[[0.44,0.78,t2('Outside the liner','Utenfor flammerøret')]]],
+  [[[0.33,0.46],[0.5,0.46],[0.545,0.36],[0.51,0.24]],'tb',3,t2('Inside the ring-shaped liner the fuel burns while the gas flows <b>rearward</b>; at the back the exit duct turns it 180° to flow <b>forward</b> again (stage 3).','Inne i det ringformede flammerøret brenner drivstoffet mens gassen strømmer <b>bakover</b>; bak snur utløpskanalen den 180° så den strømmer <b>forover</b> igjen (trinn 3).'),[[0.38,0.78,t2('Liner','Flammerør')],[0.6,0.78,t2('Exit duct · 180°','Utløpskanal · 180°')]]],
+  [[[0.51,0.22],[0.42,0.22],[0.375,0.22],[0.3,0.22]],'tb',4,t2('The gas drives first the compressor turbine (Ng, it turns the compressor), then the free power turbine (Np), nearest the propeller, which drives the reduction gearbox on a short shaft. No shaft joins the two.','Gassen driver først kompressorturbinen (Ng, den dreier kompressoren), så den frie kraftturbinen (Np) nærmest propellen, som driver reduksjonsgiret på en kort aksel. Ingen aksel kobler de to.'),[[0.47,0.78,t2('Compressor turbine · Ng','Kompressorturbin · Ng')],[0.3,-0.68,t2('Power turbine · Np','Kraftturbin · Np')]]],
+  [[[0.29,0.22],[0.25,0.35],[0.235,0.6],[0.21,0.9]],'tb',4,t2('The exhaust turns 90° and leaves through the two exhaust stacks just behind the propeller (stage 4).','Eksosen svinger 90° og går ut gjennom de to eksosrørene like bak propellen (trinn 4).'),[[0.33,1.02,t2('Exhaust stacks','Eksosrør')]]]],
+  sum:t2('The engine is mounted “backwards”: cold inlet at the rear, hot section and power turbine at the front, right behind the gearbox. That makes it short, keeps the inlet away from debris, and lets the hot section be removed without disturbing the compressor.','Motoren er montert «baklengs»: kaldt innløp bak, varm del og kraftturbin foran, rett bak giret. Det gjør den kort, holder innløpet unna rusk, og den varme delen kan tas av uten å røre kompressoren.')},
+ dir:{steps:[
+  [[[0.17,0.56],[0.22,0.5],[0.3,0.36],[0.42,0.34],[0.47,0.56]],'tb',1,t2('Air enters the intake at the front, just behind the propeller, and goes straight into the compressor (stage 1 → 2).','Luften kommer inn i inntaket foran, like bak propellen, og går rett inn i kompressoren (trinn 1 → 2).'),[[0.24,0.8,t2('Intake','Inntak')]]],
+  [[[0.47,0.56],[0.53,0.48],[0.66,0.44],[0.7,0.35],[0.83,0.36]],'tb',3,t2('It keeps going the same way: it burns in the combustor, then drives the compressor turbine (Ng) and the power turbine (Np). It never turns back (stage 3).','Den fortsetter samme vei: den brenner i brennkammeret og driver så kompressorturbinen (Ng) og kraftturbinen (Np). Den snur aldri (trinn 3).'),[[0.6,0.82,t2('Combustor','Brennkammer')],[0.79,-0.7,t2('Ng · Np turbines','Ng- og Np-turbin')]]],
+  [[[0.83,0.36],[0.96,0.3],[1.0,0.22]],'tb',4,t2('The gas leaves at the back; the Np shaft runs forward through the hollow Ng shaft to the gearbox and the propeller (stage 4).','Gassen går ut bak; Np-akselen går forover gjennom den hule Ng-akselen til giret og propellen (trinn 4).'),[[0.9,0.68,t2('Exhaust','Eksos')],[0.45,-0.22,t2('Np shaft → gearbox','Np-aksel → gir')]]]],
+  sum:t2('One pass from front to back: a simple, straight path, but a longer engine, and the power turbine shaft must run forward through the gas generator.','Én tur fra front til bak: en enkel, rett vei, men en lengre motor, og kraftturbinakselen må gå forover gjennom gassgeneratoren.')}
+};
+const TOUR={on:false,i:0,play:false,t:0,timer:null};
+const tourDef=()=>TOURS[S.lay==='dir'?'dir':'rev'];
+function tourDraw(g,G){ const D=tourDef(), sm=ST.w<640;
+  const pts=(st,hf)=>st[0].map(([u,r])=>[G.X(u),hf(r)]);
+  /* earlier steps: faint trail; current: bright with moving particles */
+  D.steps.forEach((st,i)=>{ if(i>TOUR.i) return; const c=SC[st[2]], cur=i===TOUR.i;
+    for(const hf of st[1]==='b'?[G.Yb]:[G.Yt,G.Yb]){ const P=pts(st,hf);
+      g.save(); g.lineCap='round'; g.lineJoin='round';
+      if(cur) poly(g,P,'rgba(8,12,16,.7)',7);
+      poly(g,P,cur?c:'rgba(214,226,236,.35)',cur?2.4:1.4,cur?null:[3,3]);
+      /* arrow at the end */
+      const [x1,y1]=P[P.length-1], [x0,y0]=P[P.length-2], an=Math.atan2(y1-y0,x1-x0), a=cur?8:5;
+      g.fillStyle=cur?c:'rgba(214,226,236,.35)'; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-a*Math.cos(an-0.45),y1-a*Math.sin(an-0.45)); g.lineTo(x1-a*Math.cos(an+0.45),y1-a*Math.sin(an+0.45)); g.closePath(); g.fill();
+      if(cur){ const seg=[]; let tot=0; for(let k=1;k<P.length;k++){ const l=Math.hypot(P[k][0]-P[k-1][0],P[k][1]-P[k-1][1]); seg.push(l); tot+=l; }
+        const at=d=>{ d=Math.max(0,Math.min(tot,d)); let k=0; while(k<seg.length-1&&d>seg[k]){ d-=seg[k]; k++; } const f=seg[k]?d/seg[k]:0; return [P[k][0]+(P[k+1][0]-P[k][0])*f,P[k][1]+(P[k+1][1]-P[k][1])*f]; };
+        const n=4; for(let p=0;p<n;p++){ const head=((reduce?0.5:TOUR.t*0.45)+p/n)%1*tot;
+          for(let q=0;q<7;q++){ const [x,y]=at(head-q*5); dot(g,x,y,3.2-q*0.38,q?rgba(c,0.85-q*0.11):'#FFFFFF'); } } }
+      g.restore(); } });
+  /* extra highlights: the rotors and shafts that matter in this step */
+  const cs=D.steps[TOUR.i];
+  if(S.lay!=='dir'&&TOUR.i===4){ row(g,G,0.42,0.14,0.3,C.hp,PH.b,2.8); row(g,G,0.335,0.14,0.31,C.lp,PH.a,2.8); row(g,G,0.31,0.14,0.315,C.lp,PH.a,2.8);
+    shell(g,G,[[0.395,0.08,0],[0.84,0.08,0]],'rgba(127,203,232,.8)'); shell(g,G,[[0.05,0.06,0],[0.355,0.06,0]],'rgba(201,182,242,.85)'); line(g,G.X(0.375),G.Yt(0.13),G.X(0.375),G.Yb(0.13),'#0f151b',3); }
+  if(S.lay==='dir'&&TOUR.i===2){ shell(g,G,[[0.05,0.05,0],[0.82,0.05,0]],'rgba(201,182,242,.9)'); const y=G.yc, x0=G.X(0.8), x1=G.X(0.08); line(g,x0,y,x1+8,y,'#0f151b',2); line(g,x0,y,x1+8,y,'#FFFFFF',1,[5,4]);
+    g.fillStyle='#FFFFFF'; g.beginPath(); g.moveTo(x1,y); g.lineTo(x1+8,y-4); g.lineTo(x1+8,y+4); g.closePath(); g.fill(); }
+  (cs[4]||[]).forEach(([u,r,t])=>lab(g,G.X(u),r<0?G.Yb(-r):G.Yt(r),L(t),SC[cs[2]]));
+  /* numbered badges at the start of each step shown so far */
+  D.steps.forEach((st,i)=>{ if(i>TOUR.i) return; const hf=st[1]==='b'?G.Yb:G.Yt, [u,r]=st[0][0], c=SC[st[2]], x=G.X(u), y=hf(r), rr0=sm?7:8.5;
+    g.globalAlpha=i===TOUR.i?1:0.6; dot(g,x,y,rr0,i===TOUR.i?c:'#1a222a',c,1.5); txt(g,String(i+1),x,y+(sm?3.2:3.8),i===TOUR.i?'#0f151b':c,'center',sm?9:10.5,700,MONO); g.globalAlpha=1; });
+ }
+const rgba=(h,a)=>{ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; };
+function tourUI(){ const box=el('tour'); if(!box) return; const show=S.mode==='how'&&S.type==='tp'; box.hidden=!show; if(!show){ if(TOUR.on) tourStop(); return; }
+  const D=tourDef(), n=D.steps.length, i=TOUR.i, last=i===n-1;
+  if(!TOUR.on){ box.innerHTML=`<button type="button" class="tbtn pri" data-t="go">${L(t2('▶ Follow the air','▶ Følg luften'))}</button><span class="tlead">${L(S.lay==='dir'?t2('Step through the direct-flow path, 3 steps.','Gå gjennom den direkte gassveien, 3 steg.'):t2('Step through the reverse-flow path, 6 steps: where does the air actually go?','Gå gjennom motstrøms-veien, 6 steg: hvor går luften egentlig?'))}</span>`; return; }
+  const st=D.steps[i], c=SC[st[2]];
+  box.innerHTML=`<div class="trow"><span class="tnum" style="--c:${c}">${i+1}<small>/${n}</small></span><p class="ttxt" aria-live="polite">${L(st[3])}${last?`<span class="tsum">${L(D.sum)}</span>`:''}</p></div>
+  <div class="tnav"><button type="button" class="tbtn" data-t="back" ${i?'':'disabled'}>${L(t2('← Back','← Tilbake'))}</button><button type="button" class="tbtn pri" data-t="next">${L(last?t2('Start again','Start på nytt'):t2('Next →','Neste →'))}</button><button type="button" class="tbtn" data-t="play" aria-pressed="${TOUR.play}">${L(TOUR.play?t2('❚❚ Pause','❚❚ Pause'):t2('▶ Auto-play','▶ Spill av'))}</button><span class="tdots">${D.steps.map((s,k)=>`<i class="${k===i?'on':k<i?'done':''}" style="--c:${SC[s[2]]}"></i>`).join('')}</span><button type="button" class="tbtn x" data-t="stop" aria-label="${L(t2('Close','Lukk'))}">×</button></div>`; }
+function tourGo(i){ const n=tourDef().steps.length; TOUR.i=(i+n)%n; tourUI(); draw(); }
+function tourStop(){ TOUR.on=false; TOUR.play=false; clearInterval(TOUR.timer); TOUR.timer=null; }
+function tourPlay(on){ TOUR.play=on; clearInterval(TOUR.timer); TOUR.timer=on?setInterval(()=>{ const n=tourDef().steps.length; if(TOUR.i>=n-1){ tourPlay(false); tourUI(); return; } tourGo(TOUR.i+1); },5500):null; }
+el('tour').addEventListener('click',e=>{ const b=e.target.closest('button[data-t]'); if(!b) return; const a=b.dataset.t, n=tourDef().steps.length;
+  if(a==='go'){ TOUR.on=true; TOUR.i=0; tourPlay(false); }
+  else if(a==='stop'){ tourStop(); }
+  else if(a==='back'){ tourPlay(false); TOUR.i=Math.max(0,TOUR.i-1); }
+  else if(a==='next'){ tourPlay(false); TOUR.i=TOUR.i>=n-1?0:TOUR.i+1; }
+  else if(a==='play'){ if(!TOUR.play&&TOUR.i>=n-1) TOUR.i=0; tourPlay(!TOUR.play); }
+  tourUI(); draw(); const f=el('tour').querySelector(`[data-t="${a==='go'?'next':a==='stop'?'go':a}"]`); if(f&&!f.disabled) f.focus(); });
 function glow(g,G,u,r,pw){ if(pw<=0) return; const x=G.X(u); for(const y of [G.Yt(r),G.Yb(r)]){ const gr=g.createRadialGradient(x,y,1,x,y,G.R*0.16); gr.addColorStop(0,`rgba(255,240,200,${0.35+0.5*pw})`); gr.addColorStop(1,'rgba(255,160,60,0)'); g.fillStyle=gr; g.beginPath(); g.arc(x,y,G.R*0.16,0,Math.PI*2); g.fill(); } }
 function stations(g,G,M,list){ if(!S.stn) return; list.forEach(([u,k])=>{ const K=stT(M,k); tag(g,nf(K-273.15,0)+'°',G.X(u),G.yc,tcol(K),{sz:ST.w<640?8.5:9.5,al:'center'}); }); }
 
@@ -421,6 +494,7 @@ function loop(ts){ requestAnimationFrame(loop); const dt=Math.min(0.1,(ts-last)/
   if(!vis) return;
   if(S.mode==='apart'&&Math.abs(AP.e-AP.tgt)>0.002){ AP.e=reduce?AP.tgt:AP.e+(AP.tgt-AP.e)*Math.min(1,dt*4.5); if(Math.abs(AP.e-AP.tgt)<0.003) AP.e=AP.tgt; apSync(); need=true; }
   if(!reduce&&S.mode!=='cmp'&&S.mode!=='rat'&&S.mode!=='apart'){ const [a,b]=spoolRates(); PH.a+=dt*a*1.6; PH.b+=dt*b*2.4; PH.flow+=dt*0.25; const M=S.type==='pist'?(S.mode==='start'&&S.st?startModel():model()):null; if(M) PH.crank+=dt*(M.rpm/60)*2*Math.PI/100*(M.hp>2||M.rpm>50?1:0); need=true; }
+  if(TOUR.on){ TOUR.t+=dt; need=true; }
   if(need) draw(); }
 requestAnimationFrame(loop);
 
@@ -508,7 +582,7 @@ el('turboChk').addEventListener('change',e=>{ S.turbo=e.target.checked; upd(); }
 el('iceChk').addEventListener('change',e=>{ S.ice=e.target.checked; upd(); });
 el('stnChk').addEventListener('change',e=>{ S.stn=e.target.checked; upd(); });
 const laySeg=LAB.seg(el('laySeg'),[['rev','Reverse flow (most common in small turboprops)'],['dir','Direct flow (common on larger regional turboprops)']],S.lay,v=>setLay(v));
-function setLay(v){ S.lay=v==='dir'?'dir':'rev'; ENGP.layout(S.lay); laySeg.set(S.lay); layHint(); if(AP.sel&&!ENGP.part(S.type,AP.sel)) AP.sel=null; if(S.mode==='apart') apSide(); upd(); }
+function setLay(v){ if(v!==S.lay){ TOUR.i=0; tourPlay(false); } S.lay=v==='dir'?'dir':'rev'; ENGP.layout(S.lay); laySeg.set(S.lay); layHint(); if(AP.sel&&!ENGP.part(S.type,AP.sel)) AP.sel=null; if(S.mode==='apart') apSide(); upd(); }
 function layHint(){ el('layH').innerHTML=L(S.lay==='dir'
   ?t2('<b>Direct flow:</b> the air goes straight from the intake at the front to the exhaust at the back, with no turns: a longer engine, but a simple gas path that suits bigger, more powerful turboprops.','<b>Direkte strøm:</b> luften går rett fra inntaket foran til eksosen bak, uten å snu: en lengre motor, men en enkel gassvei som passer større og kraftigere turboproper.')
   :t2('<b>Reverse flow:</b> the air enters at the back and turns forward, so the engine is short, the inlet sits away from stones and debris thrown up near the propeller, and the hot section is easy to reach for inspection.','<b>Motstrøm:</b> luften kommer inn bak og snur forover, så motoren blir kort, innløpet sitter unna stein og rusk som virvles opp ved propellen, og den varme delen er lett å komme til for inspeksjon.')); }
@@ -546,7 +620,7 @@ el('stBtns').addEventListener('click',e=>{ const b=e.target.closest('button'); i
   if(a==='reset'){ resetStart(); upd(); return; } if(a==='start'&&(S.st.ph==='abort'||S.st.ph==='off')) { S.st.t=S.st.t||0; }
   S.st=E.startAct(S.st,a==='cut'&&S.type!=='tp'?'stop':a,S.type); drawStartBtns(); upd(); });
 
-function upd(){ readout(); legend(); see(); drawStartBtns(); draw(); }
+function upd(){ readout(); legend(); see(); drawStartBtns(); tourUI(); draw(); }
 
 /* ---------------- Take it apart: exploded view (drawing in engparts.js) ---------------- */
 const AP={e:0,tgt:1,sel:null,hov:null};
