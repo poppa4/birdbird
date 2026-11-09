@@ -369,12 +369,19 @@ CB3D.init=function(o){
   const ICE=[], TURB=[]; for(let k=0;k<7;k++){ const a=new THREE.Mesh(icGeo,icMat); a.visible=false; a.renderOrder=5; scene.add(a); ICE.push(a); const b=new THREE.Mesh(new THREE.SphereGeometry(1,40,24),tbMat); b.visible=false; b.renderOrder=4; scene.add(b); TURB.push(b); }
 
   /* ---------------- avoidance distances ---------------- */
-  function dashLine(col,dash,gap){ const N=200, g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(N*3),3)); g.setAttribute('lineDistance',new THREE.BufferAttribute(new Float32Array(N),1));
-    const l=new THREE.Line(g,new THREE.LineDashedMaterial({color:col,dashSize:dash,gapSize:gap,transparent:true,opacity:0.95,depthWrite:false})); l.renderOrder=6; l.visible=false; l.frustumCulled=false; scene.add(l); return l; }
-  const AV=[dashLine(0xe46bae,1.6,1.1),dashLine(0xe46bae,0.6,1.4),dashLine(0xe46bae,1.6,1.1),dashLine(0xe46bae,0.6,1.4)];
-  function capsule(line,x0,z0,x1,z1,d,y){ const p=line.geometry.attributes.position.array, ld=line.geometry.attributes.lineDistance.array, N=200; let px=0,pz=0,acc=0;
-    for(let i=0;i<N;i++){ const a=i/(N-1)*6.2831853, cx=Math.cos(a)>=0?x1:x0, cz=Math.cos(a)>=0?z1:z0, x=cx+d*Math.cos(a), z=cz+d*Math.sin(a); if(i) acc+=Math.hypot(x-px,z-pz); px=x; pz=z; p[i*3]=x; p[i*3+1]=y; p[i*3+2]=z; ld[i]=acc; }
-    line.geometry.attributes.position.needsUpdate=true; line.geometry.attributes.lineDistance.needsUpdate=true; line.geometry.computeBoundingSphere(); }
+  /* soft ground bands (a ribbon with feathered edges) instead of 1-px dashed lines, which alias badly */
+  const bandTex=(()=>{ const c=document.createElement('canvas'); c.width=4; c.height=64; const g=c.getContext('2d'), gr=g.createLinearGradient(0,0,0,64);
+    gr.addColorStop(0,'rgba(255,255,255,0)'); gr.addColorStop(0.35,'rgba(255,255,255,.9)'); gr.addColorStop(0.5,'rgba(255,255,255,1)'); gr.addColorStop(0.65,'rgba(255,255,255,.9)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+    g.fillStyle=gr; g.fillRect(0,0,4,64); const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter; return t; })();
+  const NB=160;
+  function band(col,op){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NB*2*3),3)); const uv=new Float32Array(NB*2*2); for(let i=0;i<NB;i++){ uv[i*4]=i/(NB-1); uv[i*4+1]=0; uv[i*4+2]=i/(NB-1); uv[i*4+3]=1; } g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+    const idx=[]; for(let i=0;i<NB-1;i++){ const a=i*2; idx.push(a,a+1,a+2, a+1,a+3,a+2); } g.setIndex(idx);
+    const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:col,alphaMap:bandTex,transparent:true,opacity:op,depthWrite:false,side:THREE.DoubleSide})); m.renderOrder=6; m.visible=false; m.frustumCulled=false; scene.add(m); return m; }
+  const AV=[band(0xe46bae,0.55),band(0xe46bae,0.85),band(0xe46bae,0.4)];
+  function capsule(mesh,x0,z0,x1,z1,d,y,w){ const p=mesh.geometry.attributes.position.array;
+    for(let i=0;i<NB;i++){ const a=i/(NB-1)*6.2831853, cx=Math.cos(a)>=0?x1:x0, cz=Math.cos(a)>=0?z1:z0, ca=Math.cos(a), sa=Math.sin(a);
+      p[i*6]=cx+(d-w)*ca; p[i*6+1]=y; p[i*6+2]=cz+(d-w)*sa; p[i*6+3]=cx+(d+w)*ca; p[i*6+4]=y; p[i*6+5]=cz+(d+w)*sa; }
+    mesh.geometry.attributes.position.needsUpdate=true; mesh.geometry.computeBoundingSphere(); }
 
   /* ---------------- aircraft ---------------- */
   function makeJet(){ const g=new THREE.Group(); const white=new THREE.MeshStandardMaterial({color:0xf3f5f7,roughness:0.32,metalness:0.06}), grey=new THREE.MeshStandardMaterial({color:0xa9b2bb,roughness:0.45,metalness:0.25}), dark=new THREE.MeshStandardMaterial({color:0x1b2530,roughness:0.25,metalness:0.4}), acc=new THREE.MeshStandardMaterial({color:0x9a1e68,roughness:0.4,metalness:0.1});
@@ -532,8 +539,7 @@ CB3D.init=function(o){
     /* avoidance */
     for(const l of AV) l.visible=false;
     if(show.avoid&&view==='storm'&&mainC&&mainC.st!=='cu'){ let x0,z0,x1,z1; if(E.type==='squall'){ x0=x1=1; z0=-28; z1=28; } else { x0=mainC.x; z0=z1=mainC.z; x1=mainC.x+E.anvL*mainC.anv*0.55; if(E.type==='multi'){ let mn=1e9,mx=-1e9,zn=1e9,zx=-1e9; for(const q of cells){ if(q.st==='none'||q.st==='cu') continue; mn=Math.min(mn,q.x); mx=Math.max(mx,q.x); zn=Math.min(zn,q.z); zx=Math.max(zx,q.z); } x0=mn; x1=Math.max(mx,mn)+8; z0=zn; z1=zx; } }
-      capsule(AV[0],x0,z0,x1,z1,18.5,0.08); capsule(AV[1],x0,z0,x1,z1,37,0.08); AV[0].visible=AV[1].visible=true;
-      const yc=(Math.min(mainC.top,TROPO)*FT2KM-1.2)*vx; capsule(AV[2],x0,z0,x1,z1,18.5,yc); AV[2].visible=true; AV[2].material.opacity=0.5; }
+      capsule(AV[0],x0,z0,x1,z1,18.5,0.06,0.45); capsule(AV[1],x0,z0,x1,z1,37,0.06,0.7); AV[0].visible=AV[1].visible=true; }
     buildLabels(); }
 
   /* radar curtain: the vertical slice along the track, what the beam sees (and, faint, what is really there) */

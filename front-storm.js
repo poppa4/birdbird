@@ -79,7 +79,7 @@
     try {
       if (!window.THREE) await load('three.min.js');
       if (!window.CBM) await load('cbmodel.js?v=1');
-      if (!window.CB3D) await load('cb3d.js?v=2');
+      if (!window.CB3D) await load('cb3d.js?v=3');
     } catch (e) { return; }
     model();
     V = CB3D.init({ host: view, canvas: cv, labels: lab, T: () => '', labelSet: labels });
