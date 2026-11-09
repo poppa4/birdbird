@@ -2,421 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="Your body was built for walking, not for flying in cloud. Here you see what the A320 really does next to what your inner ear tells you, and why…">
+<meta name="description" content="Spatial disorientation (EASA 040): what the inner ear feels against what the aircraft does. The leans, the graveyard spiral, the somatogravic false climb on a night go-around, approach illusions from runway slope and width and the black-hole approach, and the cure: instruments, scan and crosscheck.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Spatial Orientation</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-#vest{height:300px}
-#vplot{height:210px}
-#rwy{height:380px}
-.sense{display:flex;flex-direction:column;gap:6px}
-.sense .pct{font-family:var(--f-mono);font-size:22px;color:var(--smoke)}
-.illus .box b.t{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:4px 8px}
-.illus .tag{font-family:var(--f-mono);font-size:11px;font-weight:500;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.tag.low{color:var(--red)} .tag.high{color:var(--amber)}
-.scnote{min-height:96px}
-#trc{height:360px;outline:none}#trc:focus-visible{outline:2px solid var(--blue)}
-@media (max-width:560px){#trc{height:520px}}
-.trpad{display:flex;gap:8px;justify-content:center;align-items:center;user-select:none;-webkit-user-select:none;touch-action:none}.trpad .trv{display:flex;flex-direction:column;gap:6px}.trpad .btn{min-width:96px;min-height:44px}.trpad .btn.on{background:var(--ink);color:#fff}
+/* the orientation figure: real against felt (two attitude spheres and a time chart), or the approach picture */
+.or-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+#orv{display:block;width:100%;aspect-ratio:16/9.4;max-height:720px;touch-action:manipulation}
+.or-vp .vchip{max-width:min(560px,calc(100% - 20px))}
+@media (min-width:641px){.or-vp .vchip{flex-direction:column;flex-wrap:nowrap;gap:5px;max-width:178px;padding:8px 10px}.or-vp .vchip b{font-size:12.5px}body.depth-instructor .or-vp .vchip{max-width:220px}}
+.or-vp .vchip b.r{color:#FF8A78}.or-vp .vchip b.a{color:#F0C470}.or-vp .vchip b.g{color:#8EDDB0}.or-vp .vchip b.p{color:#C9B6F2}
+.vleg i.ln{height:3px;border-radius:2px}
+.vplay{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-top:1px solid rgba(255,255,255,.08)}
+.vplay .btn{min-height:40px}
+.vplay input[type=range]{flex:1 1 160px;min-width:120px;accent-color:#C9B6F2}
+.vplay output{font-family:var(--f-mono);font-size:12px;color:#AEB8C1;min-width:64px;text-align:right}
+@media (max-width:640px){#orv{aspect-ratio:1/1.3;max-height:none}.or-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
+.xsec .seg.wrap{flex-wrap:wrap}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px;flex-wrap:wrap}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.35;color:var(--ink);margin:0 0 10px}
+.tstep .ins{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;align-items:flex-end}
+.tstep .ins label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.tstep .ins input{font-family:var(--f-mono);font-size:15px;width:120px;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
+.tstep .ins input.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .ins input.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}.tstep .ins input{width:104px}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--panel-2,#F6F8F6);padding:6px 9px;border-radius:3px;margin:2px 0 10px;overflow-x:auto;white-space:nowrap}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Spatial Orientation">
-<script src="site.js?v=47"></script>
+<script src="site.js?v=48"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Human factors</div>
-      <h1>Spatial orientation</h1>
-      <p>Your body was built for walking, not for flying in cloud. Here you can see what the A320 really does next to what your inner ear tells you, and why you must trust the PFD.</p>
+      <h1>Spatial orientation and illusions</h1>
+      <p data-tx="lead">Without a horizon your sense of balance comes from the inner ear, and the inner ear can be fooled. Watch what the aircraft really does next to what you feel, see how a runway can trick your eyes on approach, and learn the one cure: fly the instruments.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#senses">The three senses</a><a href="#ear">Inner ear simulator</a><a href="#trainer">Trainer</a><a href="#approach">Approach illusions</a><a href="#other">Other illusions</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">Feel against reality</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="senses">
-    <div><div class="eyebrow">1 · How you know which way is up</div><h2>The three senses</h2></div>
-    <div class="cols">
-      <div class="box sense"><span class="pct">≈ 80 %</span><b class="t">Vision</b><p>The most reliable sense, as long as you can see a real horizon. In cloud, at night or over featureless terrain it is gone, and the instruments must replace it.</p></div>
-      <div class="box sense"><span class="pct">Inner ear</span><b class="t">Vestibular system</b><p>The semicircular canals sense rotation, but only changes in rotation. The otoliths sense linear acceleration and gravity, but cannot tell the two apart.</p></div>
-      <div class="box sense"><span class="pct">Body</span><b class="t">Proprioception, “seat of the pants”</b><p>Pressure on the seat and in the muscles. In a coordinated turn the force always points down through the seat, so it feels like level flight.</p></div>
+  <section class="card" id="understand" data-step="understand">
+    <span id="senses" aria-hidden="true"></span>
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kin"></p>
+    <div id="kcGrid"></div>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
     </div>
   </section>
 
-  <section class="card" id="ear">
-    <div><div class="eyebrow">2 · What you feel versus what happens</div><h2>Inner ear simulator</h2>
-      <p class="lead">Pick an A320 scenario and press play. Left: the attitude on the PFD, which shows the truth. Right: what your inner ear reports, without outside visual references.</p></div>
-    <div class="split">
-      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
-        <div class="view"><canvas id="vest" aria-label="PFD attitude next to the felt attitude"></canvas></div>
-        <div class="view"><canvas id="vplot" aria-label="Actual and felt bank and pitch over time"></canvas></div>
+  <section class="card" id="explore" data-step="explore">
+    <span id="ear" aria-hidden="true"></span><span id="trainer" aria-hidden="true"></span><span id="approach" aria-hidden="true"></span>
+    <div class="eyebrow">2 · Explore</div>
+    <h2>Feel against reality</h2>
+    <p class="lead" id="xLead"></p>
+    <div class="xapp">
+      <div class="xvp or-vp" id="orVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="Mode"></div></div>
+        <div class="vcv" id="vcv">
+          <canvas id="orv" aria-label="Two attitude spheres, the real attitude and the attitude you feel, over a time chart; or, for approaches, the view through the windscreen and a side view of the approach path."></canvas>
+          <div class="vchip" id="chip" aria-live="polite"></div>
+        </div>
+        <div class="vplay" id="vplay"><button type="button" class="btn sm pri" id="play">Play</button><button type="button" class="btn sm" id="restart">Restart</button><input type="range" id="scrub" min="0" max="1000" step="1" value="0" aria-label="Time"><output id="tOut"></output></div>
+        <div class="vleg" id="vleg"></div>
       </div>
-      <div class="panel">
-        <div id="scSeg"></div>
-        <div class="btns" style="margin:8px 0"><button class="btn pri" id="vPlay">Play</button><button class="btn" id="vRestart">Restart</button></div>
-        <div id="manCtl"></div>
-        <div class="box scnote"><b class="t" id="scT"></b><p id="scD"></p></div>
-        <div class="callout blue" id="scDo"></div>
-        <div class="ro box" id="vRo"></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="card" id="trainer">
-    <div><div class="eyebrow">3 · Fly it yourself</div><h2>Spatial orientation trainer</h2>
-      <p class="lead">Five short flights in cloud in the A320, hand-flown with the autopilot off. Your inner ear, on the right, will tell you one thing; the PFD attitude, on the left, tells the truth. Fly the instrument.</p></div>
-    <div class="split">
-      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
-        <div class="view"><canvas id="trc" tabindex="0" aria-label="Spatial orientation trainer: PFD attitude and what you feel"></canvas></div>
-        <div class="trpad" id="trPad"><button class="btn" data-k="l" aria-label="Roll left">◀ Roll left</button><div class="trv"><button class="btn" data-k="u" aria-label="Nose up">▲ Nose up</button><button class="btn" data-k="d" aria-label="Nose down">▼ Nose down</button></div><button class="btn" data-k="r" aria-label="Roll right">Roll right ▶</button></div>
-        <p class="small" style="margin:0;color:var(--ink-2);font-size:13px">Keyboard: click the display, then use the arrow keys (up is nose up). On a phone, hold the buttons.</p>
-      </div>
-      <div class="panel">
-        <p id="trHead" style="margin:0 0 12px;line-height:1.55"></p>
-        <button class="btn pri" id="trGo">Start</button>
-        <div class="callout blue" style="margin-top:14px" id="trRec"></div>
+      <p class="xsee" id="xsee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <details class="xsec" open data-pv="leans"><summary>The roll</summary><div id="leCtl"></div></details>
+        <details class="xsec" open data-pv="spiral"><summary>The turn</summary><div id="spCtl"></div></details>
+        <details class="xsec" open data-pv="soma"><summary>The go-around</summary><div id="soCtl"></div></details>
+        <details class="xsec" open data-pv="spiral soma"><summary>The pilot flies by</summary><div id="bySeg"></div><p class="hint" id="byH"></p></details>
+        <details class="xsec" open data-pv="app"><summary>The runway</summary><div id="rwCtl"></div><div id="nightSeg" style="margin-top:6px"></div></details>
+        <details class="xsec" open data-pv="app"><summary>The approach</summary><div id="apSeg"></div><div id="apCtl" style="margin-top:6px"></div></details>
+        <details class="xsec" open><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
       </div>
     </div>
   </section>
 
-  <section class="card" id="approach">
-    <div><div class="eyebrow">4 · The picture through the windscreen</div><h2>Approach illusions</h2>
-      <p class="lead">You judge the approach angle from the shape of the runway. Change the runway and watch how the same correct 3° approach can look too high or too low. The dashed outline shows a standard 45 m wide, flat runway seen from the same point.</p></div>
-    <div class="split">
-      <div class="view"><canvas id="rwy" aria-label="View of the runway from the cockpit on final approach"></canvas></div>
-      <div class="panel"><div id="rwCtl"></div><div id="nightSeg"></div><div class="kpis" id="rwK" style="margin-top:10px"></div></div>
-    </div>
-    <div class="callout" id="rwTxt"></div>
+  <section class="card" id="debrief" data-step="debrief">
+    <span id="other" aria-hidden="true"></span>
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
+    <div class="maid" id="maid"><span class="k"></span><b></b><p></p></div>
   </section>
 
-  <section class="card illus" id="other">
-    <div><div class="eyebrow">5 · Know them before you meet them</div><h2>Other illusions</h2>
-      <p class="lead">The tag shows what the illusion makes you believe, and the text what you will tend to do. The cure is the same every time: cross-check the instruments and the glide path guidance.</p></div>
-    <div class="cols" id="illus"></div>
-    <p class="callout blue" id="a320"></p>
-  </section>
-
-  <section class="card" id="quiz">
-    <div><div class="eyebrow">6 · Check your understanding</div><h2>Test yourself</h2></div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot">Teaching model of an A320 hand-flown in cloud, with typical, illustrative values (not FCOM data). Use it to understand the illusions, not for operational decisions. Always follow the FCOM, the QRH and your operator’s procedures.</p>
+  <p class="foot" id="foot"></p>
 </div>
-
-<script src="lab.js?v=44"></script>
-<script>
-(function(){
-'use strict';
-const {T,L,nf,el,slider,seg,fit,visible,quiz,shuffle}=LAB;
-LAB.add({},{
- 'Spatial Orientation':'Romlig orientering','Birdbird Virtual Lab · Human factors':'Birdbird Virtual Lab · Menneskelige faktorer','Spatial orientation':'Romlig orientering',
- 'Your body was built for walking, not for flying in cloud. Here you can see what the A320 really does next to what your inner ear tells you, and why you must trust the PFD.':'Kroppen din er laget for å gå, ikke for å fly i skyer. Her ser du hva A320 faktisk gjør ved siden av hva det indre øret forteller deg, og hvorfor du må stole på PFD-en.',
- 'The three senses':'De tre sansene','Trainer':'Trener','3 · Fly it yourself':'3 · Fly selv','Spatial orientation trainer':'Trener for romlig orientering',
- 'Five short flights in cloud in the A320, hand-flown with the autopilot off. Your inner ear, on the right, will tell you one thing; the PFD attitude, on the left, tells the truth. Fly the instrument.':'Fem korte flyginger i sky i A320, håndfløyet med autopiloten av. Det indre øret, til høyre, forteller deg én ting; attityden på PFD-en, til venstre, forteller sannheten. Fly etter instrumentet.',
- '◀ Roll left':'◀ Rull venstre','Roll right ▶':'Rull høyre ▶','▲ Nose up':'▲ Nese opp','▼ Nose down':'▼ Nese ned','Start':'Start','PFD attitude (the truth)':'Attitude på PFD (sannheten)',
- 'Keyboard: click the display, then use the arrow keys (up is nose up). On a phone, hold the buttons.':'Tastatur: klikk på skjermen og bruk piltastene (opp er nese opp). På telefon: hold inne knappene.',
-'Inner ear simulator':'Indre øre-simulator','Approach illusions':'Illusjoner på innflyging','Other illusions':'Andre illusjoner','Test yourself':'Test deg selv','Sections':'Seksjoner',
- '1 · How you know which way is up':'1 · Hvordan du vet hva som er opp','Vision':'Synet','Inner ear':'Indre øre','Body':'Kroppen',
- 'The most reliable sense, as long as you can see a real horizon. In cloud, at night or over featureless terrain it is gone, and the instruments must replace it.':'Den mest pålitelige sansen, så lenge du ser en ekte horisont. I skyer, om natten eller over terreng uten detaljer forsvinner den, og instrumentene må ta over.',
- 'Vestibular system':'Balanseorganet','The semicircular canals sense rotation, but only changes in rotation. The otoliths sense linear acceleration and gravity, but cannot tell the two apart.':'Buegangene merker rotasjon, men bare endringer i rotasjon. Otolittene merker lineær akselerasjon og tyngdekraft, men kan ikke skille dem fra hverandre.',
- 'Proprioception, “seat of the pants”':'Propriosepsjon, «baken»','Pressure on the seat and in the muscles. In a coordinated turn the force always points down through the seat, so it feels like level flight.':'Trykk mot setet og i musklene. I en koordinert sving peker kraften alltid rett ned gjennom setet, så det føles som rett flyging.',
- '2 · What you feel versus what happens':'2 · Hva du føler mot hva som skjer','Pick an A320 scenario and press play. Left: the attitude on the PFD, which shows the truth. Right: what your inner ear reports, without outside visual references.':'Velg et A320-scenario og trykk spill av. Venstre: attityden på PFD-en, som viser sannheten. Høyre: det det indre øret rapporterer når du ikke ser ut.',
- 'Play':'Spill av','Pause':'Pause','Restart':'Start på nytt',
- '4 · The picture through the windscreen':'4 · Bildet gjennom frontruten',
- 'You judge the approach angle from the shape of the runway. Change the runway and watch how the same correct 3° approach can look too high or too low. The dashed outline shows a standard 45 m wide, flat runway seen from the same point.':'Du bedømmer innflygingsvinkelen ut fra formen på rullebanen. Endre rullebanen og se hvordan den samme riktige 3°-innflygingen kan se for høy eller for lav ut. Den stiplede rammen viser en vanlig 45 m bred, flat rullebane sett fra samme punkt.',
- '5 · Know them before you meet them':'5 · Kjenn dem før du møter dem','The tag shows what the illusion makes you believe, and the text what you will tend to do. The cure is the same every time: cross-check the instruments and the glide path guidance.':'Merket viser hva illusjonen får deg til å tro, og teksten hva du vil ha lyst til å gjøre. Kuren er den samme hver gang: krysssjekk instrumentene og glidebaneveiledningen.',
- '6 · Check your understanding':'6 · Sjekk forståelsen',
- 'Teaching model of an A320 hand-flown in cloud, with typical, illustrative values (not FCOM data). Use it to understand the illusions, not for operational decisions. Always follow the FCOM, the QRH and your operator’s procedures.':'Pedagogisk modell av en A320 som håndflys i sky, med typiske, illustrative verdier (ikke FCOM-data). Bruk den til å forstå illusjonene, ikke til operative beslutninger. Følg alltid FCOM, QRH og operatørens prosedyrer.',
- 'The leans':'Krengningsillusjon (the leans)','Graveyard spiral':'Dødsspiral','Night go-around (somatogravic)':'Go-around i mørke (somatogravisk)','Manual':'Manuell',
- 'PFD: the truth':'PFD: sannheten','Your inner ear: the feeling':'Indre øre: følelsen','Bank':'Krengning','Pitch':'Pitch','Actual':'Faktisk','Felt':'Følt','Altitude':'Høyde','Vertical speed':'Vertikalfart',
- 'Actual bank':'Faktisk krengning','Felt bank':'Følt krengning','Actual pitch':'Faktisk pitch','Felt pitch':'Følt pitch','Time':'Tid',
- 'Roll rate (stick)':'Rullrate (stikke)','Forward acceleration':'Akselerasjon forover',
- 'What to do':'Hva du gjør',
- 'Runway width':'Rullebanebredde','Runway length':'Rullebanelengde','Runway slope':'Rullebanehelning','Actual approach angle':'Faktisk innflygingsvinkel','Day':'Dag','Night, no lights around':'Natt uten lys rundt',
- 'Looks like':'Ser ut som','You feel':'Du føler deg','Risk':'Risiko','too high':'for høy','too low':'for lav','correct':'riktig','fly too low':'flyr for lavt','fly too high':'flyr for høyt','none':'ingen',
- 'Reference: 45 m, flat, 3°':'Referanse: 45 m, flat, 3°','The picture matches a normal {g}° approach, so your eyes and the glide path agree.':'Bildet tilsvarer en normal {g}° innflyging, så øynene og glidebanen er enige.',
- 'This runway gives a picture that matches a {g}° approach on a normal runway. You feel {f}, and the natural reaction is to {r}. Fly the glide path guidance (ILS glideslope or PAPI), not the picture.':'Denne rullebanen gir et bilde som tilsvarer en {g}° innflyging på en vanlig rullebane. Du føler deg {f}, og den naturlige reaksjonen er at du {r}. Fly etter glidebaneveiledningen (ILS-glidebane eller PAPI), ikke bildet.',
- 'At night with no lights around the runway (a black-hole approach) you lose the ground and the horizon. Most pilots then feel high and fly a low, dangerous approach.':'Om natten uten lys rundt rullebanen (black hole-innflyging) mister du bakken og horisonten. De fleste piloter føler seg da høye og flyr en lav, farlig innflyging.'
-});
-LAB.start('ori');
-
-/* ---------- 2. indre øre ---------- */
-const SC={
- leans:{t:{en:'The leans',no:'Krengningsillusjon (the leans)'},
-   d:{en:'Hand-flying the A320 in cloud with the autopilot off, a small sidestick input rolls the aircraft very slowly to the right, below about 2 °/s, so the inner ear does not notice. In normal law the aircraft holds whatever bank it is given up to 33°, so nothing stops the drift. You spot the bank on the PFD and roll briskly back to wings level. That roll is felt, and now you feel banked to the left even though you are level.',no:'Når du håndflyr A320 i sky med autopiloten av, ruller et lite sidestick-utslag flyet veldig sakte til høyre, under omtrent 2 °/s, så det indre øret merker det ikke. I normal law holder flyet den krengningen det får, opp til 33°, så ingenting stopper glidningen. Du ser krengningen på PFD-en og ruller raskt tilbake til rett. Den rullingen kjennes, og nå føles det som du krenger til venstre selv om du er rett.'},
-   do:{en:'Believe the PFD, keep the wings level on it, and the false feeling fades within about 20 seconds. If it is strong, say so and hand over or engage the autopilot.',no:'Tro på PFD-en, hold vingene rett etter den, så forsvinner den falske følelsen i løpet av rundt 20 sekunder. Er den sterk, si det og gi fra deg kontrollen eller koble inn autopiloten.'},
-   dur:42, f:t=> t<3?{p:0}: t<23?{p:1.2}: t<25?{p:-12}:{p:0}},
- spiral:{t:{en:'Graveyard spiral',no:'Dødsspiral'},
-   d:{en:'At night, after a failure has put the A320 in alternate law, bank is no longer protected or held. You roll into a 30° bank and hold it. After 15–20 s the canals stop signalling, and the coordinated turn feels like level flight. The nose drops, the speed builds and you lose height. Pulling back to stop the descent only tightens the spiral.',no:'Om natten, etter at en feil har satt A320 i alternate law, er krengningen ikke lenger beskyttet eller holdt. Du ruller inn i 30° krengning og holder den. Etter 15–20 s slutter buegangene å gi signal, og den koordinerte svingen føles som rett flyging. Nesen synker, farten øker og du mister høyde. Å trekke tilbake for å stoppe synket strammer bare spiralen.'},
-   do:{en:'On the PFD: unload slightly and roll the wings level by the shortest way, thrust idle and speedbrakes as needed, then recover from the dive within the g limits. Never pull back to stop a descent while banked.',no:'Etter PFD-en: avlast litt og rull vingene rette korteste vei, skyvekraft til tomgang og luftbremser etter behov, og hent så flyet ut av dykket innenfor g-grensene. Trekk aldri tilbake for å stoppe et synk mens du krenger.'},
-   dur:40, f:t=> t<3?{p:0}: t<6?{p:10}: t<38?{p:0, sink:true, pull:t>24}:{p:0,sink:true,pull:true}},
- soma:{t:{en:'Night go-around (somatogravic)',no:'Go-around i mørke (somatogravisk)'},
-   d:{en:'A night go-around from minima in the A320: thrust levers to TOGA, the flight directors command the SRS pitch of about 15°, and the aircraft accelerates as the flaps come up. The acceleration presses you back in the seat, and the otoliths add it to the real pitch-up: it feels far steeper than 15°. A pilot who follows the feeling pushes the nose down, towards the dark ground. This is a known pattern in jet accidents at night.',no:'En go-around i mørke fra minima i A320: gasshendlene til TOGA, flight director ber om SRS-pitch på rundt 15°, og flyet akselererer mens klaffene tas inn. Akselerasjonen presser deg bakover i setet, og otolittene legger den til den faktiske pitchen: det føles mye brattere enn 15°. En pilot som følger følelsen, skyver nesen ned, mot den mørke bakken. Dette er et kjent mønster i ulykker med jetfly om natten.'},
-   do:{en:'Fly the go-around pitch on the PFD and follow the flight director. PM calls out any pitch or vertical-speed deviation; check that the altitude and vertical speed show a climb.',no:'Fly go-around-pitchen på PFD-en og følg flight director. PM roper ut avvik i pitch eller vertikalfart; sjekk at høyde og vertikalfart viser stigning.'},
-   dur:30, f:t=> t<3?{p:0,ax:0,q:0}: t<9?{p:0,ax:2.6,q:3}: t<17?{p:0,ax:2.6,q:-2.6}:{p:0,ax:1.2,q:0}},
- manual:{t:{en:'Manual',no:'Manuell'},
-   d:{en:'Use the sliders. Try a slow roll below 2 °/s, then a fast roll back, or hold a bank and wait. Add forward acceleration and watch the felt pitch.',no:'Bruk glidebryterne. Prøv en sakte rulling under 2 °/s og så en rask tilbake, eller hold en krengning og vent. Legg til akselerasjon og se på følt pitch.'},
-   do:{en:'Without a visual horizon only the instruments tell the truth.',no:'Uten synlig horisont er det bare instrumentene som forteller sannheten.'},
-   dur:1e9, f:()=>({p:man.p.v, ax:man.a.v, q:0})}
-};
-let sc='leans', play=true;
-const V={t:0,phi:0,th:0,phiF:0,thF:0,c:0,pPrev:0,alt:10000,vs:0,hist:[]};
-function reset(){ Object.assign(V,{t:0,phi:0,th:sc==='soma'?-3:0,phiF:0,thF:sc==='soma'?-3:0,c:0,pPrev:0,alt:sc==='soma'?250:10000,vs:sc==='soma'?-740:0,hist:[]}); }
-seg(el('scSeg'),[['leans','The leans'],['spiral','Graveyard spiral'],['soma','Night go-around (somatogravic)'],['manual','Manual']],sc,v=>{ sc=v; el('manCtl').hidden=sc!=='manual'; reset(); play=true; txt(); });
-const man={};
-man.p=slider(el('manCtl'),{label:'Roll rate (stick)',min:-15,max:15,step:0.5,v:0,f:v=>(v>0?'+':'')+nf(v,1)+' °/s'});
-man.a=slider(el('manCtl'),{label:'Forward acceleration',min:-3,max:5,step:0.1,v:0,f:v=>nf(v/9.81,2)+' g'});
-el('manCtl').hidden=true;
-el('vPlay').onclick=()=>{ play=!play; txt(); }; el('vRestart').onclick=()=>{ reset(); play=true; txt(); };
-function txt(){ const s=SC[sc]; el('scT').textContent=L(s.t); el('scD').textContent=L(s.d); el('scDo').innerHTML=`<b>${T('What to do')}.</b> ${L(s.do)}`; el('vPlay').textContent=T(play?'Pause':'Play'); }
-LAB.onLang(()=>{ txt(); drawV(); });
-const TAU_C=10, THR=2, TAU_G=20, TAU_O=3, G=9.81;
-function step(dt){
-  const s=SC[sc]; if(V.t>s.dur){ return; }
-  const u=s.f(V.t);
-  V.phi+=u.p*dt; if(sc==='manual') V.phi=Math.max(-67,Math.min(67,V.phi)); // normal law bank limit
-  if(u.q!==undefined) V.th+=u.q*dt;
-  if(u.sink){ const want=-Math.min(25,(Math.abs(V.phi)-5)*0.9)-(u.pull?6:0); V.th+=(want-V.th)*dt*0.25; }
-  if(sc==='spiral'&&u.pull) V.phi=Math.min(55,V.phi+1.2*dt);
-  // buegang: høypass av rullrate, med terskel
-  const dp=(u.p-V.pPrev); V.pPrev=u.p; V.c+=dp - V.c/TAU_C*dt;
-  const felt=Math.abs(V.c)>THR? V.c : 0;
-  V.phiF+= felt*dt - V.phiF/TAU_G*dt;
-  // otolitter: følt pitch = faktisk + akselerasjonsvinkel, lavpass
-  const thO=V.th+Math.atan2(u.ax||0,G)*180/Math.PI;
-  V.thF+=(thO-V.thF)*dt/TAU_O;
-  // høyde
-  const tas=sc==='soma'?140:250; // kt, typical A320: approach/go-around and below FL100
-  V.vs=tas*1.6878*60*Math.sin(V.th*Math.PI/180); V.alt=Math.max(0,V.alt+V.vs/60*dt);
-  V.t+=dt;
-  V.hist.push([V.t,V.phi,V.phiF,V.th,V.thF]); if(V.hist.length>2400) V.hist.shift();
-}
-const vv=fit(el('vest'),()=>drawV()), pv=fit(el('vplot'),()=>drawV());
-function ai(g,cx,cy,R,phi,th,title,col,law){
-  g.save(); g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.clip();
-  g.translate(cx,cy); g.rotate(-phi*Math.PI/180); const off=th*R/30;
-  g.fillStyle='#3b7ac0'; g.fillRect(-R*2,-R*2+off,R*4,R*2); g.fillStyle='#7a5530'; g.fillRect(-R*2,off,R*4,R*2);
-  g.strokeStyle='#fff'; g.lineWidth=2; g.beginPath(); g.moveTo(-R*2,off); g.lineTo(R*2,off); g.stroke(); g.lineWidth=1;
-  g.font='10px "IBM Plex Mono", monospace'; g.fillStyle='#fff'; g.textAlign='left';
-  for(const p of [-20,-10,10,20]){ const y=off-p*R/30, w=p%20?R*0.18:R*0.32; g.beginPath(); g.moveTo(-w,y); g.lineTo(w,y); g.stroke(); g.fillText(String(Math.abs(p)),w+4,y+3); }
-  g.restore();
-  g.save(); g.translate(cx,cy);
-  g.strokeStyle='#cfd8e0'; for(const a of [-60,-45,-30,-20,-10,0,10,20,30,45,60]){ const r=a*Math.PI/180-Math.PI/2; g.beginPath(); g.moveTo(Math.cos(r)*R*0.92,Math.sin(r)*R*0.92); g.lineTo(Math.cos(r)*R*(a%30?0.99:1.04),Math.sin(r)*R*(a%30?0.99:1.04)); g.stroke(); }
-  if(law){ g.lineWidth=1.5; for(const a of [-67,67]){ const r=a*Math.PI/180-Math.PI/2, px=Math.cos(r)*R*0.96, py=Math.sin(r)*R*0.96, nx=-Math.sin(r), ny=Math.cos(r);
-    if(law==='alt'){ g.strokeStyle='#f0b440'; g.beginPath(); g.moveTo(px-4,py-4); g.lineTo(px+4,py+4); g.moveTo(px+4,py-4); g.lineTo(px-4,py+4); g.stroke(); }
-    else { g.strokeStyle='#3ec46d'; for(const o of [-2,2]){ g.beginPath(); g.moveTo(Math.cos(r)*R*0.9+nx*o,Math.sin(r)*R*0.9+ny*o); g.lineTo(Math.cos(r)*R*1.02+nx*o,Math.sin(r)*R*1.02+ny*o); g.stroke(); } } } g.lineWidth=1; } // A320 PFD: 67° bank marks, green = in normal law, amber X in alternate law
-  g.rotate(-phi*Math.PI/180); g.fillStyle='#fff'; g.beginPath(); g.moveTo(0,-R*0.9); g.lineTo(-6,-R*0.8); g.lineTo(6,-R*0.8); g.closePath(); g.fill();
-  g.restore();
-  g.strokeStyle=col; g.lineWidth=4; g.beginPath(); g.moveTo(cx-R*0.55,cy); g.lineTo(cx-R*0.18,cy); g.lineTo(cx-R*0.1,cy+8); g.moveTo(cx+R*0.55,cy); g.lineTo(cx+R*0.18,cy); g.lineTo(cx+R*0.1,cy+8); g.stroke();
-  g.fillStyle=col; g.beginPath(); g.arc(cx,cy,3,0,Math.PI*2); g.fill(); g.lineWidth=1;
-  g.strokeStyle='#3a4856'; g.lineWidth=3; g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2); g.stroke(); g.lineWidth=1;
-  g.fillStyle='#e2e8ee'; g.font='600 12px "Public Sans", sans-serif'; g.textAlign='center'; g.fillText(T(title),cx,cy-R-10);
-  g.font='11px "IBM Plex Mono", monospace'; g.fillStyle='#8b99a7';
-  const sB=`${T('Bank')} ${nf(Math.abs(phi),0)}° ${phi>0.5?'R':phi<-0.5?'L':''}`, sP=`${T('Pitch')} ${th>0?'+':''}${nf(th,0)}°`;
-  if(g.measureText(sB+' · '+sP).width>R*2.3){ g.fillText(sB,cx,cy+R+16); g.fillText(sP,cx,cy+R+30); } else g.fillText(sB+' · '+sP,cx,cy+R+18);
-}
-function drawV(){
-  const g=vv.ctx, W=vv.w, H=vv.h; if(!W) return; g.clearRect(0,0,W,H);
-  const R=Math.min(H/2-36,W/4-24);
-  ai(g,W*0.27,H/2-4,R,V.phi,V.th,'PFD: the truth','#f0b440',sc==='spiral'?'alt':'nrm');
-  ai(g,W*0.73,H/2-4,R,V.phiF,V.thF,'Your inner ear: the feeling','#ec5a47');
-  // plott
-  const p=pv.ctx, PW=pv.w, PH=pv.h; if(!PW) return; p.clearRect(0,0,PW,PH);
-  const pl=40, pr=10, half=(PH-30)/2, span=40, t1=Math.max(span,V.t), t0=t1-span;
-  const X=t=>pl+(t-t0)/span*(PW-pl-pr);
-  const panel=(y0,lab,ia,ib,rng)=>{
-    const Y=v=>y0+half/2-v/rng*(half/2-4);
-    p.strokeStyle='#1d2834'; p.beginPath(); p.moveTo(pl,Y(0)+0.5); p.lineTo(PW-pr,Y(0)+0.5); p.stroke();
-    p.fillStyle='#6f7e8d'; p.font='10px "IBM Plex Mono", monospace'; p.textAlign='right'; p.textBaseline='middle'; p.fillText('+'+rng+'°',pl-4,Y(rng)); p.fillText('−'+rng+'°',pl-4,Y(-rng)); p.fillText('0',pl-4,Y(0));
-    for(const [k,c] of [[ia,'#f0b440'],[ib,'#ec5a47']]){ p.strokeStyle=c; p.lineWidth=2; p.beginPath(); let f=true;
-      for(const h of V.hist){ if(h[0]<t0) continue; const x=X(h[0]), y=Y(Math.max(-rng,Math.min(rng,h[k]))); f?p.moveTo(x,y):p.lineTo(x,y); f=false; } p.stroke(); p.lineWidth=1; }
-    p.fillStyle='#e2e8ee'; p.textAlign='left'; p.textBaseline='top'; p.font='600 11px "Public Sans", sans-serif'; p.fillText(T(lab),pl+6,y0+2);
-  };
-  panel(4,'Bank',1,2,60); panel(4+half+8,'Pitch',3,4,30);
-  p.font='11px "Public Sans", sans-serif'; p.textAlign='right'; p.textBaseline='bottom';
-  p.fillStyle='#f0b440'; p.fillText('— '+T('Actual'),PW-70,PH-2); p.fillStyle='#ec5a47'; p.fillText('— '+T('Felt'),PW-12,PH-2);
-  el('vRo').innerHTML=R2('Actual bank',nf(Math.abs(V.phi),0)+'° '+(V.phi>0.5?'R':V.phi<-0.5?'L':''))+R2('Felt bank',nf(Math.abs(V.phiF),0)+'° '+(V.phiF>0.5?'R':V.phiF<-0.5?'L':''),Math.abs(V.phi-V.phiF)>10?'bad':'')+
-    R2('Actual pitch',nf(V.th,0)+'°')+R2('Felt pitch',nf(V.thF,0)+'°',Math.abs(V.th-V.thF)>8?'bad':'')+R2('Altitude',nf(V.alt,0)+' ft',V.alt<500?'bad':'')+R2('Vertical speed',nf(V.vs,0)+' ft/min',V.vs<-1500?'bad':'')+R2('Time',nf(V.t,0)+' s');
-}
-const R2=(l,v,c)=>`<div class="rrow"><span>${T(l)}</span><b class="${c||''}">${v}</b></div>`;
-let vVis=true; visible(el('vest'),v=>vVis=v);
-txt(); reset();
-
-/* ---------- 3. innflygingsillusjoner ---------- */
-const RW={w:45,l:3000,s:0,g:3,night:0};
-const rc=el('rwCtl');
-slider(rc,{label:'Runway width',min:20,max:80,step:1,v:RW.w,f:v=>nf(v,0)+' m',on:v=>{RW.w=v;drawR();}});
-slider(rc,{label:'Runway length',min:1000,max:4000,step:50,v:RW.l,f:v=>nf(v,0)+' m',on:v=>{RW.l=v;drawR();}});
-slider(rc,{label:'Runway slope',min:-3,max:3,step:0.1,v:RW.s,f:v=>(v>0?'+':'')+nf(v,1)+' % '+(v>0?'↗':v<0?'↘':''),on:v=>{RW.s=v;drawR();}});
-slider(rc,{label:'Actual approach angle',min:2,max:4.5,step:0.1,v:RW.g,f:v=>nf(v,1)+'°',on:v=>{RW.g=v;drawR();}});
-seg(el('nightSeg'),[['0','Day'],['1','Night, no lights around']],'0',v=>{RW.night=+v;drawR();});
-const rv=fit(el('rwy'),()=>drawR());
-const D=1100, AIM=300;
-function proj(x,y,z,g,f,cx,cy){ // kamera på glidebanen, ser mot siktepunktet
-  const gr=g*Math.PI/180, h=(D+AIM)*Math.tan(gr);
-  const vx=x+D, vy=y, vz=z-h, F=vx*Math.cos(gr)-vz*Math.sin(gr), U=vx*Math.sin(gr)+vz*Math.cos(gr);
-  return [cx+vy/F*f, cy-U/F*f, F];
-}
-function shape(w,l,s,g){ const f=1000; const a=proj(0,-w/2,0,g,f,0,0), b=proj(0,w/2,0,g,f,0,0), c=proj(l,0,l*s/100,g,f,0,0); return (a[1]-c[1])/(b[0]-a[0]); }
-function perceived(){ const r=shape(RW.w,RW.l,RW.s,RW.g); let lo=0.5, hi=12; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(shape(45,3000,0,m)<r) lo=m; else hi=m; } return (lo+hi)/2; }
-function drawR(){
-  const g=rv.ctx, W=rv.w, H=rv.h; if(!W) return; const f=Math.max(W,H*1.6)*2.4, cx=W/2, cy=H*0.56;
-  const night=RW.night, hz=cy-Math.tan(RW.g*Math.PI/180)*f;
-  g.fillStyle= night? '#05070a' : '#8fb4d6'; g.fillRect(0,0,W,H);
-  if(!night){ const gr=g.createLinearGradient(0,hz,0,H); gr.addColorStop(0,'#7d8f6a'); gr.addColorStop(1,'#4c6140'); g.fillStyle=gr; g.fillRect(0,hz,W,H-hz);
-    g.strokeStyle='rgba(255,255,255,.08)'; for(let i=-40;i<=40;i++){ const a=proj(-D+150,i*60,0,RW.g,f,cx,cy), b=proj(8000,i*60,0,RW.g,f,cx,cy); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke(); } }
-  else { g.fillStyle='rgba(255,255,255,.5)'; for(let i=0;i<60;i++){ const sx=(i*137.5)%W, sy=(i*61.3)%(hz-10); g.fillRect(sx,sy,1,1); } }
-  const P=(x,y)=>proj(x,y,x*RW.s/100,RW.g,f,cx,cy);
-  const c=[P(0,-RW.w/2),P(0,RW.w/2),P(RW.l,RW.w/2),P(RW.l,-RW.w/2)];
-  if(!night){ g.fillStyle='#3c4148'; g.beginPath(); c.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.fill();
-    g.fillStyle='#e9edf0'; for(let x=150;x<RW.l-100;x+=110){ const a=P(x,-0.45), b=P(x+45,0.45); g.fillRect(a[0],b[1],Math.max(1,b[0]-a[0]),a[1]-b[1]); }
-    for(let k=-6;k<=6;k++){ if(!k) continue; const y=k*RW.w/15, a=P(6,y-1), b=P(36,y+1); g.fillRect(Math.min(a[0],b[0]),b[1],Math.abs(b[0]-a[0])+1,a[1]-b[1]); } }
-  else { g.fillStyle='#fff6d0'; for(let x=0;x<=RW.l;x+=60){ for(const y of [-RW.w/2,RW.w/2]){ const p=P(x,y); const r=Math.max(0.8,2.2*800/p[2]); g.beginPath(); g.arc(p[0],p[1],r,0,Math.PI*2); g.fill(); } }
-    g.fillStyle='#7cf08a'; for(let y=-RW.w/2;y<=RW.w/2;y+=4){ const p=P(0,y); g.beginPath(); g.arc(p[0],p[1],1.8,0,Math.PI*2); g.fill(); } }
-  // referanse
-  const R0=(x,y)=>proj(x,y,0,3,f,cx,cy), rr=[R0(0,-22.5),R0(0,22.5),R0(3000,22.5),R0(3000,-22.5)];
-  g.strokeStyle='rgba(127,203,232,.9)'; g.setLineDash([6,5]); g.lineWidth=1.5; g.beginPath(); rr.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.stroke(); g.setLineDash([]); g.lineWidth=1;
-  g.fillStyle='rgba(13,19,25,.75)'; g.fillRect(10,H-30,250,20); g.fillStyle='#7fcbe8'; g.font='11px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='middle'; g.fillText('- - '+T('Reference: 45 m, flat, 3°'),18,H-20);
-  // glareskjerm
-  g.fillStyle='#0d1319'; g.beginPath(); g.moveTo(0,H); g.quadraticCurveTo(W/2,H*0.8,W,H); g.closePath(); g.fill();
-  // tall
-  let gp=perceived(); if(night) gp+=0.6;
-  const dd=gp-RW.g, feel= dd>0.25?'too high':dd<-0.25?'too low':'correct', risk= dd>0.25?'fly too low':dd<-0.25?'fly too high':'none';
-  el('rwK').innerHTML=`<div class="kpi"><span>${T('Looks like')}</span><b class="hl">${nf(gp,1)}°</b></div><div class="kpi"><span>${T('You feel')}</span><b class="${feel==='correct'?'good':'warn'}">${T(feel)}</b></div><div class="kpi"><span>${T('Risk')}</span><b class="${risk==='none'?'good':'bad'}" style="font-size:16px">${T(risk)}</b></div>`;
-  el('rwTxt').textContent= (risk==='none'? T('The picture matches a normal {g}° approach, so your eyes and the glide path agree.').replace('{g}',nf(gp,1)) : T('This runway gives a picture that matches a {g}° approach on a normal runway. You feel {f}, and the natural reaction is to {r}. Fly the glide path guidance (ILS glideslope or PAPI), not the picture.').replace('{g}',nf(gp,1)).replace('{f}',T(feel)).replace('{r}',T(risk)))+(night?' '+T('At night with no lights around the runway (a black-hole approach) you lose the ground and the horizon. Most pilots then feel high and fly a low, dangerous approach.'):'');
-}
-LAB.onLang(drawR);
-
-/* ---------- 4. andre illusjoner ---------- */
-const IL=[
- [{en:'Narrow runway',no:'Smal rullebane'},'high',{en:'Looks long and thin, as if you were high. You tend to fly a low approach.',no:'Ser lang og tynn ut, som om du er høy. Du har lyst til å fly en lav innflyging.'}],
- [{en:'Wide runway',no:'Bred rullebane'},'low',{en:'Looks short and wide, as if you were low. You tend to fly a high approach and land long.',no:'Ser kort og bred ut, som om du er lav. Du har lyst til å fly høyt og lande langt.'}],
- [{en:'Upsloping runway or terrain',no:'Oppoverbakke på bane eller terreng'},'high',{en:'The runway looks steeper, as if you were high. You tend to fly low.',no:'Banen ser brattere ut, som om du er høy. Du har lyst til å fly lavt.'}],
- [{en:'Downsloping runway',no:'Nedoverbakke på banen'},'low',{en:'Looks flatter, as if you were low. You tend to fly high.',no:'Ser flatere ut, som om du er lav. Du har lyst til å fly høyt.'}],
- [{en:'Black hole, water or snow',no:'Black hole, vann eller snø'},'high',{en:'No detail between you and the runway. Most pilots feel high and descend below the glide path.',no:'Ingen detaljer mellom deg og banen. De fleste føler seg høye og synker under glidebanen.'}],
- [{en:'Rain on the windscreen',no:'Regn på frontruten'},'high',{en:'Refraction can make you feel higher than you are, leading to a low approach.',no:'Lysbrytning kan få deg til å føle deg høyere enn du er, og gi en lav innflyging.'}],
- [{en:'Haze',no:'Dis'},'high',{en:'The runway seems farther away, so you tend to descend early and fly low.',no:'Banen virker lenger unna, så du har lyst til å synke tidlig og fly lavt.'}],
- [{en:'Bright runway lights',no:'Sterke rullebanelys'},'low',{en:'The runway seems closer, so you may fly a high approach.',no:'Banen virker nærmere, så du kan fly en høy innflyging.'}],
- [{en:'False horizon',no:'Falsk horisont'},'tilt',{en:'Sloping cloud tops or rows of ground lights are taken for the horizon, and you bank or pitch to match them.',no:'Skrå skytopper eller rekker av lys på bakken tas for horisonten, og du krenger eller pitcher for å følge dem.'}],
- [{en:'Autokinesis',no:'Autokinese'},'move',{en:'A single light stared at in the dark seems to move after a few seconds. Keep your eyes moving.',no:'Et enkelt lys du stirrer på i mørket ser ut til å bevege seg etter noen sekunder. Hold blikket i bevegelse.'}],
- [{en:'Coriolis',no:'Coriolis'},'tumble',{en:'Moving your head in a sustained turn triggers a violent tumbling sensation. Keep your head still in turns in cloud.',no:'Å bevege hodet i en vedvarende sving gir en kraftig følelse av å tumle. Hold hodet i ro i svinger i sky.'}],
- [{en:'Elevator illusion',no:'Heisillusjon'},'move',{en:'An updraft feels like a pitch-up, and you may push the nose down. A downdraft does the opposite.',no:'En oppvind kjennes som nese opp, og du kan skyve nesen ned. En nedvind gjør det motsatte.'}]
-];
-const TAGS={high:{en:'feels high',no:'føles høy'},low:{en:'feels low',no:'føles lav'},tilt:{en:'wrong horizon',no:'feil horisont'},move:{en:'false motion',no:'falsk bevegelse'},tumble:{en:'tumbling',no:'tumling'}};
-function drawIL(){ el('illus').innerHTML=IL.map(([t,k,d])=>`<div class="box"><b class="t">${L(t)}<span class="tag ${k==='high'?'high':k==='low'?'low':''}">${L(TAGS[k])}</span></b><p>${L(d)}</p></div>`).join(''); }
-drawIL(); LAB.onLang(drawIL);
-function a320(){ el('a320').innerHTML=L({en:'<b>On the A320.</b> The illusions are the same in a jet, and the somatogravic illusion in a night go-around is a known accident pattern. In normal law the protections limit bank to 67° and pitch to about 30° up and 15° down, and the aircraft rolls back to 33° when the sidestick is released, so a slow, unnoticed graveyard spiral is unlikely. After a failure to alternate or direct law those protections are reduced or gone. If an illusion has already led to an upset, the jet recovery order is: autopilot and autothrust off, reduce the angle of attack first if stalled, then roll the wings level, then thrust and speedbrakes as needed. See <a href="highspeed.html#upset">High-altitude stall and upset recovery</a>.',no:'<b>På A320.</b> Illusjonene er de samme i et jetfly, og den somatograviske illusjonen ved go-around i mørke er et kjent ulykkesmønster. I normal law begrenser beskyttelsene krengningen til 67° og pitch til rundt 30° opp og 15° ned, og flyet ruller tilbake til 33° når sidesticken slippes, så en langsom, ubemerket dødsspiral er lite sannsynlig. Etter en feil til alternate eller direct law er disse beskyttelsene redusert eller borte. Har en illusjon allerede ført til en upset, er rekkefølgen i jetfly: autopilot og autothrust av, reduser angrepsvinkelen først hvis flyet er stallet, rull så vingene rette, og deretter skyvekraft og luftbremser etter behov. Se <a href="highspeed.html#upset">Stall i stor høyde og upset recovery</a>.'}); }
-a320(); LAB.onLang(a320);
-
-/* ---------- 5. quiz ---------- */
-const Q=[
- {q:{en:'What do the semicircular canals sense?',no:'Hva merker buegangene?'},a:[{en:'Angular acceleration, changes in rotation',no:'Vinkelakselerasjon, endringer i rotasjon'},{en:'Linear acceleration and gravity',no:'Lineær akselerasjon og tyngdekraft'},{en:'Constant rate of turn indefinitely',no:'Konstant svinghastighet så lenge den varer'}],c:0,e:{en:'They sense the start and end of a rotation. In a steady turn the fluid catches up and the signal fades within about 20 s.',no:'De merker start og stopp av en rotasjon. I en jevn sving tar væsken igjen og signalet forsvinner i løpet av rundt 20 s.'}},
- {q:{en:'You roll slowly into a bank in cloud without noticing, then roll back briskly. What do you feel?',no:'Du ruller sakte inn i en krengning i sky uten å merke det, og ruller så raskt tilbake. Hva føler du?'},a:[{en:'Banked the opposite way while actually level',no:'Krenget motsatt vei mens du egentlig er rett'},{en:'Correctly level',no:'Riktig rett'},{en:'A strong nose-up pitch',no:'Kraftig nese opp'}],c:0,e:{en:'This is the leans. The slow roll went unnoticed, but the roll back was felt.',no:'Dette er «the leans». Den sakte rullingen ble ikke merket, men rullingen tilbake ble det.'}},
- {q:{en:'On a night go-around in the A320 with TOGA thrust, the acceleration feels like…',no:'Ved en go-around i mørke i A320 med TOGA kjennes akselerasjonen som…'},a:[{en:'a nose-down attitude',no:'nese ned'},{en:'a nose-up attitude',no:'nese opp'},{en:'a roll to the right',no:'rulling til høyre'}],c:1,e:{en:'The otoliths cannot tell acceleration from tilt, so the SRS pitch of about 15° feels much steeper. Following the feeling and pushing down is the danger: fly the PFD and the flight director.',no:'Otolittene kan ikke skille akselerasjon fra helling, så SRS-pitchen på rundt 15° kjennes mye brattere. Faren er å følge følelsen og skyve ned: fly etter PFD-en og flight director.'}},
- {q:{en:'In alternate law at night the A320 is in a nose-low spiral, speed increasing. The correct recovery is to…',no:'I alternate law om natten er A320 i en spiral med nesen lavt og økende fart. Riktig gjenoppretting er å…'},a:[{en:'pull back hard to stop the descent',no:'trekke hardt tilbake for å stoppe synket'},{en:'unload slightly, roll the wings level, thrust idle and speedbrakes as needed, then recover from the dive',no:'avlaste litt, rulle vingene rette, skyvekraft til tomgang og luftbremser etter behov, og så hente flyet ut av dykket'},{en:'select TOGA and wait for the feeling to settle',no:'velge TOGA og vente til følelsen roer seg'}],c:1,e:{en:'Pulling back while banked only tightens the spiral and loads the structure. Wings level first, then manage the speed, then recover.',no:'Å trekke tilbake mens du krenger strammer bare spiralen og belaster strukturen. Vinger rett først, så farten, så utrettingen.'}},
- {q:{en:'A narrow runway tends to make you feel…',no:'En smal rullebane får deg gjerne til å føle deg…'},a:[{en:'too high, so you fly low',no:'for høy, så du flyr lavt'},{en:'too low, so you fly high',no:'for lav, så du flyr høyt'},{en:'nothing, width does not matter',no:'ingenting, bredden betyr ikke noe'}],c:0,e:{en:'A narrow runway looks like a normal runway seen from higher up.',no:'En smal bane ser ut som en vanlig bane sett ovenfra.'}},
- {q:{en:'An upsloping runway gives the illusion of being…',no:'En bane med oppoverbakke gir en illusjon av å være…'},a:[{en:'high',no:'høy'},{en:'low',no:'lav'},{en:'off the centreline',no:'utenfor senterlinjen'}],c:0,e:{en:'The runway looks steeper, like a higher approach, so pilots tend to fly low.',no:'Banen ser brattere ut, som en høyere innflyging, så piloter har lyst til å fly lavt.'}},
- {q:{en:'On a black-hole approach at night, the most common error is…',no:'På en black hole-innflyging om natten er den vanligste feilen…'},a:[{en:'flying too high',no:'å fly for høyt'},{en:'flying too low',no:'å fly for lavt'},{en:'landing too fast',no:'å lande for fort'}],c:1,e:{en:'With no visible ground, pilots feel high and descend below a safe path. Use PAPI or ILS.',no:'Uten synlig bakke føler piloter seg høye og synker under en trygg bane. Bruk PAPI eller ILS.'}},
- {q:{en:'How do you reduce the risk of Coriolis illusion?',no:'Hvordan reduserer du risikoen for Coriolis-illusjon?'},a:[{en:'Avoid large head movements during turns',no:'Unngå store hodebevegelser i svinger'},{en:'Turn faster',no:'Sving fortere'},{en:'Close your eyes for a moment',no:'Lukk øynene et øyeblikk'}],c:0,e:{en:'Moving the head in a sustained turn stimulates several canals at once. Keep it still, and plan where charts and switches are.',no:'Å bevege hodet i en vedvarende sving stimulerer flere buegang samtidig. Hold det i ro, og planlegg hvor kart og brytere er.'}},
- {q:{en:'Which sense should you trust when flying in cloud?',no:'Hvilken sans skal du stole på når du flyr i sky?'},a:[{en:'The inner ear',no:'Det indre øret'},{en:'Your seat-of-the-pants feeling',no:'Følelsen i baken'},{en:'Vision, on the PFD',no:'Synet, på PFD-en'}],c:2,e:{en:'Without an outside reference only the instruments give the truth.',no:'Uten ytre referanse er det bare instrumentene som gir sannheten.'}},
- {q:{en:'Why is a slow, unnoticed graveyard spiral unlikely in the A320 in normal law?',no:'Hvorfor er en langsom, ubemerket dødsspiral lite sannsynlig i A320 i normal law?'},a:[{en:'Bank is limited to 67°, the aircraft rolls back to 33° when the sidestick is released, and the flight path is held',no:'Krengningen er begrenset til 67°, flyet ruller tilbake til 33° når sidesticken slippes, og flybanen holdes'},{en:'The inner ear works better in a jet',no:'Det indre øret virker bedre i et jetfly'},{en:'The autopilot cannot be disconnected in cloud',no:'Autopiloten kan ikke kobles fra i sky'}],c:0,e:{en:'The protections remove the slow nose drop and steepening bank. After a failure to alternate or direct law they are reduced or gone, and the illusion is fully back.',no:'Beskyttelsene fjerner det langsomme nesefallet og den økende krengningen. Etter en feil til alternate eller direct law er de redusert eller borte, og illusjonen er tilbake for fullt.'}},
- {q:{en:'The A320 is in alternate law and the stall warning sounds after an illusion led to an upset. What comes first?',no:'A320 er i alternate law, og stallvarselet lyder etter at en illusjon førte til en upset. Hva kommer først?'},a:[{en:'Reduce the angle of attack with nose-down pitch, even at the cost of altitude',no:'Redusere angrepsvinkelen med nese ned, selv om det koster høyde'},{en:'Roll the wings level, then push',no:'Rulle vingene rette, og så skyve'},{en:'TOGA thrust while holding the attitude',no:'TOGA mens du holder attityden'}],c:0,e:{en:'Ailerons and spoilers work poorly on a stalled wing, and thrust from engines under the wing can raise the nose. Only a lower angle of attack ends the stall; then roll level, then thrust.',no:'Balanseror og spoilere virker dårlig på en stallet vinge, og skyvekraft fra motorer under vingen kan løfte nesen. Bare lavere angrepsvinkel avslutter stallen; rull så rett, deretter skyvekraft.'}},
- {q:{en:'A single light stared at in the dark appears to move. This is…',no:'Et enkelt lys du stirrer på i mørket ser ut til å bevege seg. Dette er…'},a:[{en:'autokinesis',no:'autokinese'},{en:'the leans',no:'the leans'},{en:'a false horizon',no:'en falsk horisont'}],c:0,e:{en:'Keep your eyes moving and avoid fixating on one light.',no:'Hold blikket i bevegelse og unngå å feste det på ett lys.'}}
-];
-quiz(el('qbox'),'orientation',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
-
-/* ---------- trener ---------- */
-const TRR=[
- {k:'leans',dark:0,phi:0,th:2,dur:32,goal:'hold',brief:{en:'A320 in cloud at FL100, autopilot off, wings level. Keep them level on the PFD for 30 seconds.',no:'A320 i sky på FL100, autopiloten av, vingene rette. Hold dem rette på PFD-en i 30 sekunder.'},
-  drift:t=>t<16?1.3:0,
-  name:{en:'The leans',no:'Krengningsillusjon (the leans)'},
-  learn:{en:'The aircraft rolled slowly right, below what the inner ear can sense, so it felt level. When you rolled back you felt that roll, and level flight then felt like a bank to the left. Only the PFD showed the truth. In normal law the aircraft holds the bank it is given, so a slow drift is not stopped for you.',no:'Flyet rullet sakte til høyre, under det det indre øret merker, så det føltes rett. Da du rullet tilbake kjente du den rullingen, og rett flyging føltes deretter som krengning til venstre. Bare PFD-en viste sannheten. I normal law holder flyet den krengningen det får, så en langsom glidning blir ikke stoppet for deg.'}},
- {k:'spiral',dark:0,phi:30,th:-5,dur:28,goal:'rec',brief:{en:'Night, alternate law after a failure. You have been in a gentle turn for a while and it feels like level flight. Something is wrong with the altitude. Recover.',no:'Natt, alternate law etter en feil. Du har vært i en slak sving en stund, og det føles som rett flyging. Noe er galt med høyden. Rett opp.'},
-  name:{en:'Graveyard spiral',no:'Dødsspiral'},
-  learn:{en:'After a long turn the inner ear stops signalling and the bank feels like level flight. The nose drops and you lose height. Without the normal-law protections nothing stops it. Pulling back while banked only tightens the spiral: unload slightly, roll the wings level, thrust idle and speedbrakes as needed, then recover from the dive.',no:'Etter en lang sving slutter det indre øret å gi signal, og krengningen føles som rett flyging. Nesen faller og du taper høyde. Uten beskyttelsene i normal law er det ingenting som stopper det. Å trekke mens du krenger strammer bare spiralen: avlast litt, rull vingene rette, skyvekraft til tomgang og luftbremser etter behov, og hent så flyet ut av dykket.'}},
- {k:'soma',dark:0,phi:0,th:15,dur:22,goal:'hold',brief:{en:'Night go-around from minima, flight directors off: TOGA, speed building, flaps retracting. Hold the go-around attitude of about 15° nose up on the PFD.',no:'Go-around i mørke fra minima, flight director av: TOGA, farten øker, klaffene tas inn. Hold go-around-holdningen på rundt 15° nese opp på PFD-en.'},
-  name:{en:'Somatogravic illusion',no:'Somatogravisk illusjon'},
-  learn:{en:'The acceleration of a go-around presses you back into the seat and adds to the real pitch-up, so 15° feels far steeper. The natural reaction is to push the nose down, towards the dark ground. Hold the attitude on the PFD; PM calls out any pitch or vertical-speed deviation.',no:'Akselerasjonen i en go-around presser deg bakover i setet og legges til den faktiske pitchen, så 15° føles mye brattere. Den naturlige reaksjonen er å presse nesen ned, mot den mørke bakken. Hold holdningen på PFD-en; PM roper ut avvik i pitch eller vertikalfart.'}},
- {k:'nh',dark:1,phi:-35,th:24,dur:22,goal:'rec',brief:{en:'Alternate law. You have been head-down in the MCDU, and the aircraft has drifted into an unusual attitude. When you look up, recover.',no:'Alternate law. Du har hatt blikket nede i MCDU-en, og flyet har glidd inn i en uvanlig holdning. Når du ser opp, rett opp.'},
-  name:{en:'Unusual attitude: nose high',no:'Uvanlig holdning: nese høyt'},
-  learn:{en:'Nose high, speed decreasing: autopilot and autothrust off, push to unload (nose-down trim if needed), and if that is not enough, bank to let the nose fall. Reduce thrust if the pitch-up from the engines makes it worse. Roll level as the nose reaches the horizon. Pulling here only takes you closer to a stall.',no:'Nese høyt, farten faller: autopilot og autothrust av, skyv for å avlaste (nese-ned-trim om nødvendig), og er ikke det nok, krenge så nesen faller. Reduser skyvekraften hvis pitch-up fra motorene gjør det verre. Rull rett når nesen når horisonten. Å trekke her tar deg bare nærmere stall.'}},
- {k:'nl',dark:1,phi:55,th:-20,dur:22,goal:'rec',brief:{en:'Head-down again, still in alternate law. A different attitude this time. Recover when you look up.',no:'Blikket nede igjen, fortsatt i alternate law. En annen holdning denne gangen. Rett opp når du ser opp.'},
-  name:{en:'Unusual attitude: nose low',no:'Uvanlig holdning: nese lavt'},
-  learn:{en:'Nose low, speed increasing: autopilot and autothrust off, unload slightly and roll the wings level by the shortest way, thrust idle and speedbrakes as needed, then ease the nose up to the horizon within the g limits. Pulling before the wings are level tightens the spiral and can overstress the aircraft.',no:'Nese lavt, farten øker: autopilot og autothrust av, avlast litt og rull vingene rette korteste vei, skyvekraft til tomgang og luftbremser etter behov, og løft så nesen forsiktig til horisonten innenfor g-grensene. Å trekke før vingene er rette strammer spiralen og kan overbelaste flyet.'}}];
-const TR={ph:'idle',i:0,t:0,phi:0,th:0,alt:10000,fp:0,ft:0,pr:0,pp:0,ok:0,okT:0,rec:null,fl:[],res:[],dk:0};
-const KEY={l:0,r:0,u:0,d:0};
-const CT=fit(el('trc'),()=>trDraw(),2);
-function trStart(i){ const R=TRR[i]; Object.assign(TR,{i,t:0,phi:R.phi,th:R.th,alt:R.k==='soma'?400:10000,fp:0,ft:0,pr:R.phi,pp:R.th,ok:0,okT:0,rec:null,fl:[],dk:R.dark?3:0,ph:R.dark?'dark':'fly'}); trUi(); }
-function flag(k,m){ if(!TR.fl.some(f=>f.k===k)) TR.fl.push({k,m}); }
-function trStep(dt){ const R=TRR[TR.i]; if(TR.ph==='dark'){ TR.dk-=dt; if(TR.dk<=0){ TR.ph='fly'; } return; } if(TR.ph!=='fly') return;
-  TR.t+=dt; const inR=(KEY.r-KEY.l), inP=(KEY.u-KEY.d);
-  const oldPhi=TR.phi, oldTh=TR.th;
-  TR.phi+=(inR*30+(R.drift?R.drift(TR.t):0))*dt;
-  const bank=Math.abs(TR.phi)*Math.PI/180;
-  TR.th+=(inP*9 - Math.sin(bank)*Math.sin(bank)*7*(1-0.8*Math.max(0,inP)))*dt; // nesen faller i krengning
-  if(inP>0&&Math.abs(TR.phi)>30){ TR.phi+=Math.sign(TR.phi)*6*dt; } // trekking strammer spiralen
-  TR.phi=Math.max(-100,Math.min(100,TR.phi)); TR.th=Math.max(-50,Math.min(50,TR.th));
-  const vs=(R.k==='soma'?15000:25300)*Math.sin(TR.th*Math.PI/180)-(Math.abs(TR.phi)>25&&TR.th<0?600:0); TR.alt+=vs*dt/60; TR.vs=vs;
-  // indre øre: merker bare raske endringer, og venner seg til konstant krengning
-  const rr=(TR.phi-oldPhi)/dt, pr=(TR.th-oldTh)/dt; if(Math.abs(rr)>2) TR.fp+=rr*dt; TR.fp-=TR.fp*dt/10; if(Math.abs(pr)>2) TR.ft+=pr*dt; TR.ft-=TR.ft*dt/10;
-  // feil
-  if(inP>0&&Math.abs(TR.phi)>30&&TR.th<0) flag('pull',{en:'Pulled back with the wings still banked',no:'Trakk tilbake mens vingene fortsatt krenget'});
-  if(R.k==='soma'&&TR.th<5) flag('push',{en:'Pushed the nose well below the go-around attitude',no:'Presset nesen godt under go-around-holdningen'});
-  if(R.k==='nh'&&inP>0&&TR.th>12) flag('stall',{en:'Pulled while nose high and slow',no:'Trakk mens nesen var høyt og farten lav'});
-  if(Math.abs(TR.phi)>60) flag('bank',{en:'Bank went past 60°',no:'Krengningen gikk over 60°'});
-  const inside=Math.abs(TR.phi)<7&&TR.th>(R.k==='soma'?10:-4)&&TR.th<(R.k==='soma'?20:8); if(inside) TR.ok+=dt;
-  if(R.goal==='rec'){ TR.okT=inside?TR.okT+dt:0; if(TR.okT>=2&&TR.rec==null) TR.rec=TR.t-2; }
-  if(TR.t>=R.dur||(R.goal==='rec'&&TR.rec!=null&&TR.t>TR.rec+4)) trEnd(); }
-function trScore(){ const R=TRR[TR.i]; let s= R.goal==='rec'? (TR.rec==null?10:Math.max(40,100-Math.max(0,TR.rec-3)*5)) : Math.round(TR.ok/R.dur*100); s-=TR.fl.length*25; return Math.max(0,Math.min(100,Math.round(s))); }
-function trEnd(){ const s=trScore(); TR.res[TR.i]={s,fl:TR.fl.slice(),rec:TR.rec}; TR.ph='deb'; trUi(); }
-function feelTxt(){ const b=TR.fp, p=TR.ft+(TRR[TR.i].k==='soma'&&TR.t<14?16:0); const parts=[]; parts.push(Math.abs(b)<4?L({en:'wings level',no:'vingene rette'}):`${L({en:'banked',no:'krenget'})} ${b>0?L({en:'right',no:'til høyre'}):L({en:'left',no:'til venstre'})} ${Math.round(Math.abs(b))}°`);
-  parts.push(Math.abs(p)<4?L({en:'nose level',no:'nesen rett'}):p>0?L({en:'nose up',no:'nese opp'})+' '+Math.round(p)+'°':L({en:'nose down',no:'nese ned'})+' '+Math.round(-p)+'°'); return {b,p,t:parts.join(', ')}; }
-function trDraw(){ const g=CT.ctx,W=CT.w,H=CT.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#0F171D'; g.fillRect(0,0,W,H);
-  const narrow=W<560, R=narrow?Math.min(W*0.3,H*0.26):Math.min(H*0.36,W*0.2);
-  const ax=narrow?W*0.5:W*0.3, ay=narrow?R+30:H*0.48, fx=narrow?W*0.5:W*0.74, fy=narrow?H-R*0.95-24:H*0.46;
-  if(TR.ph==='dark'){ g.fillStyle='#05080A'; g.fillRect(0,0,W,H); g.fillStyle='#8b99a7'; g.font='600 16px "Public Sans", sans-serif'; g.textAlign='center'; g.fillText(L({en:'Head down in the MCDU…',no:'Blikket nede i MCDU-en …'}),W/2,H/2-6); g.font='13px "IBM Plex Mono", monospace'; g.fillText(Math.ceil(TR.dk)+'',W/2,H/2+20); g.textAlign='start'; return; }
-  ai(g,ax,ay,R,TR.phi,TR.th,'PFD attitude (the truth)','#F2C230',['spiral','nh','nl'].includes(TRR[TR.i].k)?'alt':'nrm');
-  g.fillStyle='#e2e8ee'; g.font='12px "IBM Plex Mono", monospace'; g.textAlign='center';
-  if(TR.ph==='fly'||TR.ph==='deb') g.fillText(`ALT ${Math.round(TR.alt/10)*10} ft · VS ${TR.vs>0?'+':''}${Math.round((TR.vs||0)/50)*50}`,ax,ay+R+36);
-  // følelse: hode og skuldre
-  const f=feelTxt(); g.save(); g.translate(fx,fy); g.rotate(f.b*Math.PI/180); const s=R*0.9;
-  g.strokeStyle='#3a4856'; g.setLineDash([4,4]); g.beginPath(); g.moveTo(-s,0); g.lineTo(s,0); g.stroke(); g.setLineDash([]);
-  g.fillStyle='#5BA3D9'; g.beginPath(); g.moveTo(-s*0.6,s*0.55); g.quadraticCurveTo(-s*0.55,s*0.12,0,s*0.1); g.quadraticCurveTo(s*0.55,s*0.12,s*0.6,s*0.55); g.closePath(); g.fill();
-  g.beginPath(); g.arc(0,-s*0.15,s*0.24,0,7); g.fill(); g.restore();
-  g.fillStyle='#e2e8ee'; g.font='600 12px "Public Sans", sans-serif'; g.textAlign='center'; g.fillText(L({en:'What your inner ear says',no:'Hva det indre øret sier'}),fx,fy-R*0.95-6);
-  g.fillStyle='#5BA3D9'; g.font='12px "IBM Plex Mono", monospace'; g.fillText(f.t,fx,fy+R*0.75+8); g.textAlign='start';
-  if(TR.ph==='idle'){ g.fillStyle='rgba(15,23,29,.78)'; g.fillRect(0,0,W,H); g.fillStyle='#e2e8ee'; g.font='600 16px "Public Sans", sans-serif'; g.textAlign='center'; g.fillText(L({en:'Press Start. Fly with the arrow keys or the buttons.',no:'Trykk Start. Fly med piltastene eller knappene.'}),W/2,H/2); g.textAlign='start'; }
-  if(TR.ph==='fly'){ const Rr=TRR[TR.i]; g.fillStyle='#8b99a7'; g.font='12px "IBM Plex Mono", monospace'; g.fillText(`${TR.i+1}/${TRR.length} · ${Math.max(0,Math.ceil(Rr.dur-TR.t))} s`,10,18); } }
-function trUi(){ const R=TRR[TR.i], r=TR.res[TR.i];
-  const head=el('trHead'); const btn=el('trGo');
-  if(TR.ph==='idle'){ head.innerHTML=`<b>${L({en:'Five short flights in cloud',no:'Fem korte flyginger i sky'})}</b><br>${L({en:'Each one hides a trap your body will fall for. Follow the PFD, not the feeling. The name of the trap is shown afterwards.',no:'Hver av dem skjuler en felle kroppen din går i. Følg PFD-en, ikke følelsen. Navnet på fellen vises etterpå.'})}`; btn.textContent=L({en:'Start',no:'Start'}); btn.hidden=false; }
-  else if(TR.ph==='fly'||TR.ph==='dark'){ head.innerHTML=`<b>${L({en:'Flight',no:'Flyging'})} ${TR.i+1} / ${TRR.length}</b><br>${L(R.brief)}`; btn.hidden=true; }
-  else if(TR.ph==='deb'){ head.innerHTML=`<b>${L(R.name)} · ${r.s} / 100</b><br>${L(R.learn)}`+(r.fl.length?`<br><span style="color:var(--red)">${r.fl.map(f=>'✗ '+L(f.m)).join('<br>')}</span>`:'')+(R.goal==='rec'?`<br><span style="color:var(--ink-2)">${r.rec==null?L({en:'Not recovered in time.',no:'Ikke rettet opp i tide.'}):L({en:'Recovered after',no:'Rettet opp etter'})+' '+nf(r.rec,1)+' s.'}</span>`:'');
-    btn.hidden=false; btn.textContent= TR.i<TRR.length-1? L({en:'Next flight',no:'Neste flyging'}) : L({en:'See the result',no:'Se resultatet'}); }
-  else if(TR.ph==='done'){ const tot=Math.round(TR.res.reduce((a,b)=>a+b.s,0)/TRR.length); head.innerHTML=`<b>${L({en:'Result',no:'Resultat'})}: ${tot} / 100</b><br>`+TRR.map((x,j)=>`${L(x.name)}: ${TR.res[j].s}`).join('<br>')+`<br>${tot>=80?L({en:'Good instrument discipline. In real cloud it is harder: your body adds the feeling for real.',no:'God instrumentdisiplin. I ekte sky er det vanskeligere: kroppen legger til følelsen på ordentlig.'}):L({en:'Try again and keep your eyes on the PFD. Level the wings first, then sort out the pitch (unless stalled: then the angle of attack comes first).',no:'Prøv igjen og hold øynene på PFD-en. Rett opp vingene først, ordne så nesen (unntatt ved stall: da kommer angrepsvinkelen først).'})}`;
-    btn.hidden=false; btn.textContent=L({en:'Fly again',no:'Fly igjen'}); try{ if(window.NPROG) NPROG.award('quiz:oritrainer',tot); }catch(e){} }
-  trDraw(); }
-el('trGo').addEventListener('click',()=>{ if(TR.ph==='idle'||TR.ph==='done'){ TR.res=[]; trStart(0); } else if(TR.ph==='deb'){ if(TR.i<TRR.length-1) trStart(TR.i+1); else { TR.ph='done'; trUi(); } } el('trc').focus({preventScroll:true}); });
-const KM={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d',a:'l',d:'r',w:'u',s:'d'};
-el('trc').addEventListener('keydown',e=>{ const k=KM[e.key]; if(k&&TR.ph==='fly'){ KEY[k]=1; e.preventDefault(); } });
-el('trc').addEventListener('keyup',e=>{ const k=KM[e.key]; if(k){ KEY[k]=0; } });
-el('trc').addEventListener('blur',()=>{ KEY.l=KEY.r=KEY.u=KEY.d=0; });
-el('trPad').querySelectorAll('button[data-k]').forEach(b=>{ const k=b.dataset.k; const on=e=>{ e.preventDefault(); KEY[k]=1; b.classList.add('on'); }, off=()=>{ KEY[k]=0; b.classList.remove('on'); };
-  b.addEventListener('pointerdown',on); ['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,off)); b.addEventListener('contextmenu',e=>e.preventDefault()); });
-let trVis=false; visible(el('trc'),v=>trVis=v);
-function trRec(){ el('trRec').innerHTML=L({en:'<b>Jet recovery order (A320, generic).</b> Autopilot and autothrust off. Stalled: reduce the angle of attack first. Nose high: push to unload, bank if needed to let the nose fall, roll level at the horizon. Nose low: unload slightly, roll the wings level, thrust idle and speedbrakes as needed, then recover. Details in <a href="highspeed.html#upset">upset recovery</a>.',no:'<b>Rekkefølge for gjenoppretting i jetfly (A320, generelt).</b> Autopilot og autothrust av. Stallet: reduser angrepsvinkelen først. Nese høyt: skyv for å avlaste, krenge om nødvendig så nesen faller, rull rett ved horisonten. Nese lavt: avlast litt, rull vingene rette, skyvekraft til tomgang og luftbremser etter behov, og hent så inn. Detaljer i <a href="highspeed.html#upset">upset recovery</a>.'}); }
-LAB.onLang(()=>{ trUi(); trRec(); }); trUi(); trRec();
-
-drawR();
-let last=performance.now();
-function loop(t){ const dt=Math.min(0.05,(t-last)/1000); last=t;
-  if(vVis){ if(play) for(let i=0;i<2;i++) step(dt/2); drawV(); }
-  if(TR.ph==='fly'||TR.ph==='dark'){ for(let i=0;i<2;i++) trStep(dt/2); if(TR.ph==='fly'||TR.ph==='dark') trDraw(); }
-  requestAnimationFrame(loop); }
-requestAnimationFrame(loop);
-})();
-</script>
+<script src="lab.js?v=45"></script>
+<script src="concepts.js?v=2"></script>
+<script src="hfcore.js?v=1"></script>
+<script src="orientation.js?v=1"></script>
 </body>
 </html>
