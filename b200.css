@@ -192,3 +192,16 @@
 /* rotate hint only on phones; tablets work in portrait with zoom */
 @media (orientation:portrait) and (max-width:900px){.rot{display:none}}
 @media (orientation:portrait) and (max-width:600px){.rot{display:grid}}
+/* full-panel additions (overhead, radios, pedestal controls) */
+.psvg .ovh{fill:url(#gOvh);stroke:#0f0d0b;stroke-width:1.4}
+.psvg .knob2{fill:url(#gKnob2);stroke:#0b0c0e;stroke-width:.8}
+.psvg .t-enc2 .mvi{transition:transform .1s}
+.psvg .gangb{fill:#1c1f23;stroke:#7f878f;stroke-width:1}.psvg .t-bar.on .mv{transform:translateY(1.4px)}.psvg .t-bar.on .gangb{fill:#2c3138}
+.psvg .pullk{fill:url(#gMetal);stroke:#333;stroke-width:.8}
+.psvg .pbtnr{fill:#a3271c;stroke:#3a0905}.psvg .t-push.on .pbtnr{fill:#6a1710}
+.psvg .an-b.on rect{fill:#2f8bff}.psvg .an-b.on text{fill:#fff}
+.psvg .syn,.psvg .cmp,.psvg .slv,.psvg .dhb,.psvg .aitr,.psvg .pctlp{transition:none}
+.psvg .t-tog3 .mv{transition:transform .12s}
+.psvg .dig[class*="rd-"],.psvg .dig[class*="dm-"]{opacity:var(--rbrt,1)}
+.psvg .rda{fill:#7fe08a}
+.psvg .t-sbtn.on circle{filter:brightness(1.7)}

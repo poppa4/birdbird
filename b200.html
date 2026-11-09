@@ -127,7 +127,7 @@
 </div>
 
 <script src="fdm.js?v=5"></script>
-<script src="b200panel.js?v=1"></script>
+<script src="b200panel.js?v=2"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=45"></script>
 <script>
@@ -179,110 +179,169 @@ const SIDES=['L','R'];
 /* ---------- systems state ---------- */
 const SYS={}; const E=[0,1].map(()=>({}));
 const NAVS={'110.30':'LOC','113.30':'VOR'};
-function engReset(e,run){ Object.assign(e,{ng:run?61:0,itt:run?560:15,np:run?800:0,tq:run?120:0,ff:run?150:0,oilP:run?95:0,oilT:run?55:15,lit:!!run,fail:false,fire:false,fireT:0,ext:false,ngLight:0,hotT:0,dmg:false,startT:0,hung:false,autoF:false,afCyc:0,afArm:false,vane:0,genOn:!!run,genRst:!!run,fwT:0,stT:0,fuel:1600,warnedEarly:false}); }
+const NDB={id:'AN',freq:375,N:-7600,E:0}, MKR=[{k:'O',N:-7600,E:0},{k:'M',N:-1100,E:0}];
+const XN=['xpdrMd','com1Md','com2Md','nav1Md','nav2Md','adfMd'];
+function engReset(e,run){ Object.assign(e,{ng:run?61:0,itt:run?560:15,np:run?800:0,tq:run?120:0,ff:run?150:0,oilP:run?95:0,oilT:run?55:15,lit:!!run,fail:false,fire:false,fireT:0,ext:false,ngLight:0,hotT:0,dmg:false,startT:0,hung:false,autoF:false,afCyc:0,afArm:false,vane:0,vaneT:0,genOn:!!run,genRst:!!run,fwT:0,stT:0,main:1180,aux:420,nxT:0,xfr:false,warnedEarly:false}); }
 function sysDefault(cold){
-  Object.assign(SYS,{bat:cold?0:1,genL:cold?1:0,genR:cold?1:0,avio:cold?0:1,ignL:0,ignR:0,aignL:0,aignR:0,afSw:0,sync:0,beacon:cold?0:1,strobe:0,navLt:cold?0:1,recog:0,taxi:0,ldg:0,dimPanel:0.8,dimInst:0.8,signs:0,park:cold?1:0,
-    vaneL:0,vaneR:0,surf:0,propDe:0,wsL:0,wsR:0,pitL:cold?0:1,pitR:cold?0:1,fvL:cold?0:1,fvR:cold?0:1,stallHt:cold?0:1,cabAlt:0,cabRate:0.4,pressSw:0,fireTest:0,annTest:0,
-    bleedL:-1,bleedR:-1,cabMode:1,cabTemp:0.5,blower:1,rudBoost:1,elTrim:1,mask:0,paxO2:0,inv:cold?0:-1,brakeDe:0,cabLt:0,micSel:0,stbyL:0,stbyR:0,xfeed:0,fwL:1,fwR:1,fwLG:0,fwRG:0,
-    pwrL:0,pwrR:0,propL:1,propR:1,condL:cold?0:0.5,condR:cold?0:0.5,trim:0.05,rudTrim:0,ailTrim:0.5,hdgK:0,crsK:0,baroK:0,comK:0,navK:0,altSel:0,xpdrMode:cold?1:3,
-    mwL:0,mcL:0,mwR:0,mcR:0,fireL:0,fireR:0,cb:{},yd:0,
-    cabSel:3500,cab:0,cabVS:0,decomp:false,battT:0,apFailT:0,hypT:0,com:{a:'118.10',s:'121.50'},nav:{a:'113.30',s:'110.30'},crs:360,xpdr:'7000',identT:0});
-  SYS.cab=S.h/F.FT||0; P.CBS.forEach((n,i)=>SYS.cb[i]=1);
+  const w=cold?0:1;
+  Object.assign(SYS,{bat:w,genL:cold?1:0,genR:cold?1:0,avio:w,ignL:0,ignR:0,aignL:0,aignR:0,afSw:0,sync:0,beacon:w,strobe:0,navLt:w,recog:0,taxi:0,landL:0,landR:0,iceLt:0,tailFl:0,park:cold?1:0,
+    engAIL:0,engAIR:0,actL:0,actR:0,surf:0,propDe:0,wsP:0,wsC:0,pitL:w,pitR:w,fvL:w,fvR:w,stallHt:w,govT:0,pilotAir:0,defrost:0,cabAir:0,copAir:0,
+    cabAlt:0,cabRate:0.4,pressSw:0,annTest:0,fireTest:2,stallTest:0,
+    bleedL:-1,bleedR:-1,cabMode:3,cabTemp:0.5,blower:1,manTemp:0,aftBlow:0,elecHeat:0,furn:w,cabLt:1,signs:cold?1:0,rudBoost:1,elTrim:1,mask:0,paxOvr:0,o2Ready:w,inv:cold?0:-1,brakeDe:0,micSel:1,micSelR:1,
+    stbyL:0,stbyR:0,xfeed:0,auxL:0,auxR:0,fqSel:1,fwL:1,fwR:1,fwLG:0,fwRG:0,altStatic:0,altStaticG:0,
+    pwrL:0,pwrR:0,propL:1,propR:1,condL:cold?0:0.5,condR:cold?0:0.5,trim:0.05,rudTrim:0,ailTrim:0.5,frPwr:0.5,frProp:0.5,frCond:0.5,frFlap:0.5,
+    hdgK:0,crsK:0,baroK:0,baro2K:0,crs2K:0,altSel:0,apPitch:0,apTurn:0.5,apSR:0,apHB:0,bcMode:0,
+    mpl:0,wiper:1,dimPF:0.75,dimEng:0.75,dimFlood:0.3,dimInd:0.6,dimAv:0.75,dimCons:0.6,dimSide:0.6,dimCG:0.75,dimCF:0.75,
+    gyroMode:0,gyro2Mode:0,hdgErr1:cold?14:0,hdgErr2:cold?-9:0,dmePwr:1,dme2Pwr:1,d1ch:1,d2ch:2,d1sel:0,d2sel:0,dhK:0.2,
+    autoCommP:1,autoCommC:1,spkrP:1,spkrC:1,audEmer:0,voiceP:0,voiceC:0,sideP:0.5,sideC:0.5,sensP:0.5,sensC:0.5,dmeV1:0.6,dmeV2:0.6,encAlt:1,pageVol:0.5,intphVol:0.5,hotIntph:0,mkrVol:0.6,annBrt:0.8,mkrHi:0,gndComm:0,micP:0,micC:1,volP:0.6,volC:0.6,xpdr12:1,oatF:0,
+    mem:{com1:['118.10','121.50','119.70','122.80','121.90','118.30'],com2:['119.70','119.10','121.50','122.80','121.90','118.30'],nav1:['113.30','110.30','112.10','114.50'],nav2:['110.30','113.30','112.10','114.50'],adf:['375','287','350','410']},memI:{com1:1,com2:1,nav1:1,nav2:1,adf:1},stoT:{},chgT:{},
+    com1Md:1,com2Md:1,nav1Md:1,nav2Md:1,adfMd:2,xpdrMd:cold?1:3,com1Act:0,com2Act:0,nav1Act:0,nav2Act:0,adfAct:0,
+    mwL:0,mcL:0,mwR:0,mcR:0,fireL:0,fireR:0,cb:{},yd:0,paxDep:0,hornSilOn:0,asF:0,asVs:0,trimHat:0,apClimb:0,apDsc:0,acRun:0,acLow:0,gearH:1,pumpN:0,hornSil:0,hobbs:1234.5,o2psi:1820,cabT:72,
+    cabSel:3500,cab:0,cabVS:0,decomp:false,battT:0,apFailT:0,hypT:0,
+    com1:{a:'118.10',s:'121.50'},com2:{a:'119.70',s:'119.10'},nav1:{a:'113.30',s:'110.30'},nav2:{a:'110.30',s:'113.30'},adf:{a:'375',s:'287'},crs:360,crs2:360,xpdr:'7000',xpre:'1200',identT:0,dmeHold:[null,null,null],dmeGs:[0,0,0],dmeLast:[null,null,null]});
+  [0,1,2,3,4,5,6,7,8].forEach(i=>{ SYS['auP'+i]=[1,0,1,0,1,0,1,0,0][i]; SYS['auC'+i]=[0,1,0,1,0,1,0,1,0][i]; });
+  ['com1','com2','nav1','nav2','adf'].forEach(k=>{ SYS[k+'Vol']=0.6; SYS[k+'X']=0; });
+  ['com1K','com2K','nav1K','nav2K','xpdrK','adfK'].forEach(k=>{ SYS[k+'O']=0; SYS[k+'I']=0; });
+  SYS.cab=S.h/F.FT||0; P.CBS.forEach(c=>SYS.cb[c.k]=1); SYS.cb.GEAR=1;
   E.forEach(e=>engReset(e,!cold)); S.eng.forEach(e=>{ e.fail=false; e.feather=false; });
   MW.ackR=new Set(); MW.ackA=new Set(); MW.w=false; MW.c=false;
 }
 const MW={ackR:new Set(),ackA:new Set(),w:false,c:false};
-const cbIn=n=>SYS.cb[P.CBS.indexOf(n)]!==0;
+const cbIn=n=>SYS.cb[n]!==0;
 const bus=()=>SYS.bat===1||E.some(e=>e.genOn);
-const avOn=()=>bus()&&SYS.avio===1;
+const avOn=()=>bus()&&(SYS.avio===1||!cbIn('AV MASTER'));
+const radOn=k=>{ const cb={com1:'COMM 1',com2:'COMM 2',nav1:'NAV 1',nav2:'NAV 2',xpdr:'XPDR',adf:'ADF'}[k]; if(k==='com1'&&SYS.gndComm&&SYS.bat===1&&!avOn()) return SYS.com1Md>0; return avOn()&&cbIn(cb)&&SYS[k+'Md']>0; };
 const feathered=i=>SYS['prop'+SIDES[i]]<0.03||E[i].autoF;
 const idleNg=i=>{ const c=SYS['cond'+SIDES[i]]; return 61+Math.max(0,(c-0.5)/0.5)*9; };
 
 /* ---------- panel ---------- */
 const PST=el('stage');
 const P=B200P.build(PST,{get:k=>ioGet(k),set:(k,v)=>ioSet(k,v),intercept:()=>false});
+const CBK={}; P.C.forEach(c=>{ if(c.t==='cb') CBK[c.id]=c.cb; });
 function ioGet(k){
-  if(k==='gear') return S.ctl.gear; if(k==='flaps') return S.ctl.flap; if(k==='trim') return S.ctl.trim;
-  if(k==='gearLights'){ if(!bus()) return 'off'; const g=S.ctl.gearPos; return g>0.99?(gearWarn()?'warn':'down'):g<0.01?(gearWarn()?'warn':'up'):'transit'; }
+  if(k==='gear') return SYS.gearH; if(k==='flaps') return S.ctl.flap; if(k==='trim') return S.ctl.trim;
+  if(k==='gearLights'){ if(!bus()||!cbIn('GEAR IND')) return 'off'; if(SYS.hdLt) return 'test'; const g=S.ctl.gearPos; return Math.abs(g-SYS.gearH)>0.01?'transit':gearWarn()?'warn':g>0.99?'down':'up'; }
   if(k.startsWith('led:')) return ledOf(k.slice(4));
   if(k.startsWith('txt:')) return txtOf(k.slice(4));
-  if(/^cb\d+$/.test(k)) return SYS.cb[+k.slice(2)];
-  if(k==='rudTrim') return SYS.rudTrim;
+  if(CBK[k]) return SYS.cb[CBK[k]];
   return SYS[k]??0;
 }
 function ledOf(id){ const b=bus(); if(!b) return false;
-  if(id==='mwL'||id==='mwR') return MW.w&&blinkOn(); if(id==='mcL'||id==='mcR') return MW.c&&blinkOn();
-  if(id==='fireL'||id==='fireR'){ const i=id==='fireL'?0:1; return E[i].fire||SYS.fireTest||SYS.annTest; }
-  if(id.startsWith('ap')){ const k=id.slice(2); if(!avOn()) return false; return k==='AP'?AP.on:k==='YD'?!!SYS.yd:k==='FD'?AP.fd:k==='HDG'?AP.lat==='HDG':k==='NAV'?(AP.lat==='VOR'||AP.latArm==='NAV'):k==='APR'?(AP.lat==='LOC'||AP.lat==='VAPP'||AP.latArm==='APR'):k==='ALT'?AP.vert==='ALT':k==='VS'?AP.vert==='VS':false; }
+  if(id==='mwL'||id==='mwR') return (MW.w&&blinkOn())||!!SYS.annTest; if(id==='mcL'||id==='mcR') return (MW.c&&blinkOn())||!!SYS.annTest;
+  if(id==='fireL'||id==='fireR'){ const i=id==='fireL'?0:1; return E[i].fire||SYS.fireTest===(i?3:1)||SYS.annTest; }
+  if(id==='dmePwr') return avOn()&&!!SYS.dmePwr; if(id==='dme2Pwr') return avOn()&&!!SYS.dme2Pwr;
+  if(id==='gyroMode') return !!SYS.gyroMode; if(id==='gyro2Mode') return !!SYS.gyro2Mode; if(id==='gndComm') return !!SYS.gndComm;
+  if(/^(com1|com2|nav1|nav2|adf)Act$/.test(id)) return radOn(id.slice(0,-3))&&!!SYS[id];
+  if(id==='xpdrId') return radOn('xpdr')&&SYS.identT>0;
+  if(id.startsWith('ap')){ const k=id.slice(2); if(!avOn()||!cbIn('AUTOPILOT')) return false; const n=AP.lat, a=AP.latArm, v=AP.vert;
+    return ({AP:AP.on,YD:!!SYS.yd,HDG:n==='HDG',NAV:(n==='VOR'||a==='NAV')&&!SYS.bcMode,APPR:n==='LOC'||n==='VAPP'||a==='APR',BC:!!SYS.bcMode&&(AP.fd||AP.on),CLIMB:v==='FLC'&&SYS.apClimb,DSC:v==='VS'&&SYS.apDsc,ALT:v==='ALT',ALTSEL:/ALTS/.test(AP.vertArm),VS:v==='VS'&&!SYS.apDsc,IAS:v==='FLC'&&!SYS.apClimb,SR:!!SYS.apSR,HB:!!SYS.apHB})[k]||false; }
   return false; }
 const blinkOn=()=>(performance.now()/350|0)%2===0;
+const fmtF=(v,d)=>(+v).toFixed(d);
 function txtOf(id){ const i=/[LR]$/.test(id)?(id.endsWith('L')?0:1):0;
   if(id.startsWith('pwr')){ const v=SYS[id]; return v>=0?Math.round(v*100)+' % (torque '+Math.round(E[i].tq)+' ft-lb)':v<-0.12?'REVERSE':'BETA'; }
-  if(id.startsWith('prop')){ const v=SYS[id]; return v<0.03?'FEATHER':Math.round(1600+400*Math.max(0,v-0.12)/0.88)+' RPM'; }
+  if(/^prop[LR]$/.test(id)){ const v=SYS[id]; return v<0.03?'FEATHER':Math.round(1600+400*Math.max(0,v-0.12)/0.88)+' RPM'; }
   if(id.startsWith('cond')){ const v=SYS[id]; return v<0.05?'FUEL CUTOFF':v<0.55?'LOW IDLE':v>0.95?'HIGH IDLE':'between LOW and HIGH IDLE'; }
-  if(id==='hdgK') return 'HDG '+String(Math.round(AP.hdg)).padStart(3,'0'); if(id==='crsK') return 'CRS '+String(SYS.crs).padStart(3,'0'); if(id==='baroK') return Math.round(S.baro)+' hPa';
-  if(id==='altSel') return AP.alt+' ft'; if(id==='cabAlt') return 'cabin '+SYS.cabSel+' ft'; if(id==='comK') return 'COM stby '+SYS.com.s; if(id==='navK') return 'NAV stby '+SYS.nav.s;
+  if(id==='hdgK') return 'HDG '+String(Math.round(AP.hdg)).padStart(3,'0'); if(id==='crsK') return 'CRS '+String(SYS.crs).padStart(3,'0'); if(id==='crs2K') return 'CRS '+String(SYS.crs2).padStart(3,'0');
+  if(id==='baroK'||id==='baro2K') return Math.round(S.baro)+' hPa';
+  if(id==='altSel') return AP.alt+' ft'; if(id==='cabAlt') return 'cabin '+SYS.cabSel+' ft';
+  if(id==='com1K'||id==='com2K'||id==='nav1K'||id==='nav2K'||id==='adfK'){ const r=SYS[id.slice(0,-1)]; return (SYS[id.slice(0,-1)+'Act']?'active ':'preset ')+(SYS[id.slice(0,-1)+'Act']?r.a:r.s); }
+  if(id==='xpdrK') return 'code '+SYS.xpdr; if(id==='dhK') return 'DH '+Math.round(dhFt())+' ft'; if(id==='apTurn') return Math.abs(SYS.apTurn-0.5)<0.04?'centre (detent)':(SYS.apTurn<0.5?'L ':'R ')+Math.round(Math.abs(SYS.apTurn-0.5)*50)+'°';
+  if(id==='cabTemp') return Math.round(60+SYS.cabTemp*25)+' °F'; if(id==='cabRate') return Math.round(200+SYS.cabRate*1800)+' ft/min';
+  if(id==='ailTrim') return SYS.ailTrim<0.47?'L wing down':SYS.ailTrim>0.53?'R wing down':'neutral';
+  if(id.startsWith('vol')) return Math.round(SYS[id]*100)+' %';
   return ''; }
-const NAME={bat:'BATTERY',genL:'GEN L',genR:'GEN R',avio:'AVIONICS MASTER',ignL:'IGN & START L',ignR:'IGN & START R',aignL:'AUTO IGNITION L',aignR:'AUTO IGNITION R',afSw:'AUTOFEATHER',fwL:'FIREWALL VALVE L',fwR:'FIREWALL VALVE R',stbyL:'STBY PUMP L',stbyR:'STBY PUMP R',xfeed:'CROSSFEED',pressSw:'CABIN PRESS',bleedL:'BLEED AIR L',bleedR:'BLEED AIR R',park:'PARKING BRAKE',gear:'GEAR',flaps:'FLAPS',inv:'INVERTER',mask:'CREW O2 MASK',paxO2:'PAX OXYGEN'};
-function descr(k){ const o=P.byId[k]; if(!o) return null; const c=o.c, v=ioGet(k), n=NAME[k]||c.l;
-  const st=c.t==='rotsel'?c.vals[v]:c.t==='tog3'?c.vals[v+1]:c.t==='flap'?c.vals[v]:c.t==='lev'?txtOf(k):c.t==='pull'?(v?'SET':'RELEASED'):c.t==='guard'?(v?(c.up||'ON'):'CLOSED'):c.t==='gear'?(v?'DOWN':'UP'):(v?(c.up||'ON'):'OFF'); return n+' '+st; }
+const dhFt=()=>Math.round(SYS.dhK*1000/10)*10;
+const NAME={bat:'BATTERY',genL:'GEN 1',genR:'GEN 2',avio:'AVIONICS MASTER',ignL:'IGN & START L',ignR:'IGN & START R',aignL:'AUTO IGNITION L',aignR:'AUTO IGNITION R',afSw:'AUTOFEATHER',fwL:'FIREWALL VALVE L',fwR:'FIREWALL VALVE R',stbyL:'STBY PUMP L',stbyR:'STBY PUMP R',xfeed:'CROSSFEED',pressSw:'CABIN PRESS',bleedL:'BLEED AIR L',bleedR:'BLEED AIR R',park:'PARKING BRAKE',gear:'GEAR',flaps:'FLAPS',inv:'INVERTER',mask:'CREW O2 MASK',paxOvr:'PAX O2 MANUAL OVERRIDE',micSel:'PILOT MIC',altStatic:"PILOT'S STATIC AIR SOURCE"};
+function descr(k){ const o=P.byId[k]; if(!o) return null; const c=o.c, v=ioGet(k), n=NAME[k]||c.lbl||c.l;
+  const st=c.t==='rotsel'?c.vals[v]:c.t==='tog3'?(c.vals[v+1]||'CENTRE'):c.t==='flap'?c.vals[v]:c.t==='lev'?txtOf(k):c.t==='pull'?(v?'PULLED':'IN'):c.t==='cb'?(v?'IN':'PULLED'):c.t==='guard'?(v?(c.up||'ON'):(k==='altStatic'?'NORMAL':'CLOSED')):c.t==='gear'?(v?'DOWN':'UP'):c.t==='abtn'?(v?'ON':'OFF'):(v?(c.up||'ON'):(c.dn||'OFF')); return n+' '+st; }
 function ioSet(k,v){
   ensureAudio();
   if(k==='stick'){ inp.stick=v; return; }
-  if(k==='apDisc'){ if(v&&AP.on){ AP.on=false; apDiscFx(); } return; }
-  if(k==='trimUp'||k==='trimDn'){ SYS.trimHat=v?(k==='trimUp'?1:-1):0; return; }
+  if(k==='apDisc'){ SYS[k]=v; if(v&&AP.on){ AP.on=false; apDiscFx(); } return; }
+  if(k==='trimUp'||k==='trimDn'){ SYS[k]=v; SYS.trimHat=v?(k==='trimUp'?1:-1):0; return; }
   if(k.endsWith(':d')){ encTurn(k.slice(0,-2),v); return; }
+  if(k.endsWith(':o')||k.endsWith(':i')){ enc2Turn(k.slice(0,-2),k.endsWith(':i'),v); return; }
   const o=P.byId[k];
-  if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); procTouch(k); } return; }
-  if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); procTouch(k); } return; }
-  if(k==='fireL'||k==='fireR'){ if(v){ const i=k==='fireL'?0:1; if(bus()&&!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
-  if(/^ap(AP|YD|FD|HDG|NAV|APR|ALT|VS|UP|DN)$/.test(k)){ if(v) apPress(k.slice(2)); return; }
-  if(k==='comSw'){ if(v&&avOn()){ [SYS.com.a,SYS.com.s]=[SYS.com.s,SYS.com.a]; click(); } return; }
-  if(k==='navSw'){ if(v&&avOn()){ [SYS.nav.a,SYS.nav.s]=[SYS.nav.s,SYS.nav.a]; click(); procTouch('navSw'); } return; }
-  if(k==='xpdrId'){ if(v&&avOn()){ SYS.identT=18; click(); } return; }
-  if(/^cb\d+$/.test(k)){ SYS.cb[+k.slice(2)]=v; click(); flash(P.CBS[+k.slice(2)]+' CB '+(v?'IN':'PULLED')); return; }
-  if(k==='gear'){ if(v!==S.ctl.gear) toggleGear(); procTouch('gear'); return; }
+  if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); procTouch(k); } SYS[k]=v; return; }
+  if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); procTouch(k); } SYS[k]=v; return; }
+  if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; if(bus()&&!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
+  if(/^ap(AP|YD|HDG|NAV|APPR|BC|CLIMB|ALT|ALTSEL|VS|IAS|DSC)$/.test(k)){ SYS[k]=v; if(v) apPress(k.slice(2)); return; }
+  if(k==='gang'){ SYS.gang=v; if(v){ SYS.bat=0; SYS.genL=1; SYS.genR=1; beep(260,0.04,0.06); flash(L(tr2('MASTER SWITCH gang bar: battery and both generators OFF','MASTER SWITCH-stangen: batteri og begge generatorer AV'))); procTouch('bat'); } return; }
+  if(/^(com1|com2|nav1|nav2|adf)X$/.test(k)){ SYS[k]=v; const r=k.slice(0,-1); if(v&&radOn(r)){ const f=SYS[r];
+      if(v<0){ [f.a,f.s]=[f.s,f.a]; SYS.chgT[r]=performance.now(); click(); procTouch('navSw'); }
+      else { const m=SYS.mem[r]; SYS.memI[r]=(SYS.memI[r]+1)%m.length; f.s=m[SYS.memI[r]]; click(); flash(r.toUpperCase().replace(/(\d)/,' $1')+' — MEM CH '+(SYS.memI[r]+1)+': '+f.s); } } return; }
+  if(/^(com1|com2|nav1|nav2|adf)Sto$/.test(k)){ SYS[k]=v; const r=k.slice(0,-3); if(v&&radOn(r)){ click(); const t=performance.now();
+      if(t-(SYS.stoT[r]||-1e9)<5000){ SYS.mem[r][SYS.memI[r]]=SYS[r].s; SYS.stoT[r]=-1e9; flash(L(tr2('Stored in memory channel ','Lagret i minnekanal '))+(SYS.memI[r]+1)+': '+SYS[r].s); }
+      else { SYS.stoT[r]=t; flash(L(tr2('STO: push again within 5 s to store the preset in channel ','STO: trykk igjen innen 5 s for å lagre forvalgt i kanal '))+(SYS.memI[r]+1)); } } return; }
+  if(k==='oatF'){ SYS[k]=v; if(v) click(); return; }
+  if(k==='micC'&&SYS.autoCommC&&v<2){ SYS.auC0=v===0?1:0; SYS.auC1=v===1?1:0; }
+  if(k==='encAlt'||k==='xpdr12'||k==='audEmer'){ setTimeout(()=>{ if(k==='audEmer'&&SYS.audEmer) msg(tr2('AUDIO EMER: amplifiers bypassed — COMM 1, COMM 2, sidetone and warning tones go to the headsets only; no NAV/ADF/DME/marker audio.','AUDIO EMER: forsterkerne forbikoblet — COMM 1, COMM 2, sidetone og varseltoner bare til hodetelefonene; ingen NAV/ADF/DME/markør-lyd.')); },0); }
+  if(k==='xpdrId'){ SYS[k]=v; if(v&&radOn('xpdr')&&SYS.xpdrMd>1){ SYS.identT=18; click(); } return; }
+  if(k==='xpdrPre'){ SYS[k]=v; if(v&&radOn('xpdr')){ [SYS.xpdr,SYS.xpre]=[SYS.xpre,SYS.xpdr]; click(); } return; }
+  if(k==='dmeCh'||k==='dme2Ch'){ SYS[k]=v; if(v){ const n=k==='dmeCh'?'d1ch':'d2ch'; SYS[n]=SYS[n]%3+1; click(); flash('DME '+(n==='d1ch'?'1':'2')+' — CH '+SYS[n]); } return; }
+  if(k==='dmeSel'||k==='dme2Sel'){ SYS[k]=v; if(v){ const n=k==='dmeSel'?'d1sel':'d2sel'; SYS[n]=(SYS[n]+1)%3; click(); } return; }
+  if(k==='slewL'||k==='slewR'||k==='slew2L'||k==='slew2R'||k==='fastErect'||k==='raT'||k==='hydT'||k==='hdLt'||k==='stallTest'||/^(com1|com2|nav1|nav2|xpdr|adf)T$/.test(k)||/^v(LoadL|LoadR|Batt|AC)$/.test(k)){ SYS[k]=v; if(v){ click(); if(k==='fastErect') flash(L(tr2('Attitude gyro fast erect','Attitydegyro hurtigoppretting'))); if(k==='stallTest'&&bus()) procTouch('stallTest'); } return; }
+  if(k==='hornSil'){ SYS[k]=v; if(v&&gearWarn()&&!flapHorn()){ SYS.hornSilOn=1; click(); flash(L(tr2('Gear warning horn silenced (power-lever warning only)','Understellsvarsel dempet (bare effekthendel-varselet)'))); } return; }
+  if(k==='dlRel'){ SYS[k]=v; if(v&&S.ground) flash(L(tr2('Down-lock release: overrides the ground lock — never on the ground with the handle up','Down-lock release: overstyrer bakkelåsen — aldri på bakken med hendelen oppe'))); return; }
+  if(k==='gearPump'){ SYS[k]=v; if(v){ click(); if(SYS.gearH===1&&S.ctl.gear===0){ SYS.pumpN++; if(SYS.pumpN>=30){ S.ctl.gear=1; msg(tr2('Alternate extension: gear pumped down — check three green','Alternativ utfelling: understellet pumpet ned — sjekk tre grønne')); } else if(SYS.pumpN%5===0) flash(L(tr2('Pumping: ','Pumper: '))+SYS.pumpN+'/30'); } else flash(L(tr2('Alternate extension: handle DOWN first, then pump (only needed when the normal system fails)','Alternativ utfelling: hendelen NED først, pump så (bare når normalsystemet svikter)'))); } return; }
+  if(CBK[k]){ SYS.cb[CBK[k]]=v; click(); flash(P.byId[k].c.l+' CB '+(v?'IN':'PULLED')); return; }
+  if(k==='gear'){ if(v!==SYS.gearH) toggleGear(); procTouch('gear'); return; }
   if(k==='flaps'){ setFlap(v); procTouch('flaps'); return; }
   if(k==='trim'){ S.ctl.trim=v; holdPitch=null; procTouch('trim'); return; }
+  if(k==='apTurn'){ if(Math.abs(v-0.5)<0.05) v=0.5; SYS.apTurn=v; if(v!==0.5&&(AP.on||AP.fd)){ AP.lat='ROL'; AP.latArm=''; SYS.bcMode=0; } return; }
   if(/^pwr[LR]$/.test(k)&&v<0&&!S.ground){ v=0; if(!ioSet.gw||performance.now()-ioSet.gw>3000){ ioSet.gw=performance.now(); msg(tr2('Beta and reverse are for ground use only.','Beta og revers er bare for bruk på bakken.')); } }
   if(/^cond[LR]$/.test(k)){ if(v<0.25) v=v<0.12?0:v; }
+  if(k==='micP'&&SYS.autoCommP&&v<2){ SYS.auP0=v===0?1:0; SYS.auP1=v===1?1:0; }
+  if(k==='nav1Md'&&v===2) SYS.dmeHold[1]=SYS.nav1.a; if(k==='nav1Md'&&v!==2) SYS.dmeHold[1]=null;
+  if(k==='nav2Md'&&v===2) SYS.dmeHold[2]=SYS.nav2.a; if(k==='nav2Md'&&v!==2) SYS.dmeHold[2]=null;
   const old=SYS[k]; SYS[k]=v;
-  if(o&&!['push','lev','vwheel','hwheel','rot','enc','sbtn','mbtn','abtn','yoke'].includes(o.c.t)){ if(old!==v) beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
+  if(o&&!['push','lev','vwheel','hwheel','rot','enc','enc2','sbtn','mbtn','abtn','yoke','bar'].includes(o.c.t)){ if(old!==v) beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
+  if(o&&o.c.t==='abtn'){ click(); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
   if(o&&o.c.t==='lev'&&old!==undefined&&Math.abs(old-v)>0.001){ flashT=1.2; el('stat2').textContent=descr(k); el('stat2').classList.add('chg'); }
   if(k==='annTest'&&v) PR.m.annT=1;
-  if(k==='fireTest'&&v) PR.m.fireT=1;
+  if(k==='fireTest'&&v!==2) PR.m.fireT=1;
   if(k==='avio'&&!v){ AP.on=false; AP.fd=false; }
   if(k==='afSw'&&v===0) E.forEach(e=>{ e.autoF=false; });
   if(k==='pressSw'&&v===-1) msg(tr2('Cabin pressure DUMP: the outflow valve opens and the cabin climbs to the aircraft altitude.','Kabintrykk DUMP: utstrømningsventilen åpner og kabinen stiger til flyets høyde.'));
+  if(k==='altStatic') msg(v?tr2("Pilot's static source ALTERNATE: pilot's airspeed, altimeter and VSI now read from cabin static — expect small errors.",'Pilotens statiske kilde ALTERNATE: pilotens fartsmåler, høydemåler og VSI leser nå kabinstatisk — forvent små feil.'):tr2("Pilot's static source NORMAL.",'Pilotens statiske kilde NORMAL.'));
+  if(k==='wsP'||k==='wsC'||k==='cabMode') { if((SYS.wsP||SYS.wsC||SYS.cabMode===1||SYS.cabMode===3)&&!ioSet.cmpT){ ioSet.cmpT=1; flash(L(tr2('Standby compass is unreliable with windshield heat or air conditioning on','Standbykompasset er upålitelig med vindusvarme eller klimaanlegg på'))); } }
   procTouch(k);
 }
 function encTurn(id,d){ click();
   if(id==='hdgK'){ AP.hdg=F.wrap360(Math.round(AP.hdg)+d)||360; SYS.hdgK+=d; }
   else if(id==='crsK'){ SYS.crs=F.wrap360(SYS.crs+d)||360; SYS.crsK+=d; procTouch('crsK'); }
-  else if(id==='baroK'){ S.baro=F.clamp(Math.round(S.baro)+d,940,1060); SYS.baroK+=d; }
+  else if(id==='crs2K'){ SYS.crs2=F.wrap360(SYS.crs2+d)||360; SYS.crs2K+=d; }
+  else if(id==='baroK'||id==='baro2K'){ S.baro=F.clamp(Math.round(S.baro)+d,940,1060); SYS[id]+=d; }
   else if(id==='altSel'){ AP.alt=F.clamp(AP.alt+d*100,0,35000); SYS.altSel+=d; }
   else if(id==='cabAlt'){ SYS.cabSel=F.clamp(SYS.cabSel+d*100,-1000,14000); SYS.cabAlt+=d; procTouch('cabAlt'); }
-  else if(id==='comK'){ SYS.com.s=stepFreq(SYS.com.s,d,118,136.975,0.025); SYS.comK+=d; }
-  else if(id==='navK'){ SYS.nav.s=stepFreq(SYS.nav.s,d,108,117.95,0.05); SYS.navK+=d; procTouch('navK'); }
+  else if(id==='apPitch'){ SYS.apPitch+=d; if(avOn()&&(AP.on||AP.fd)){ const o=F.readouts(S); for(let n=0;n<Math.min(5,Math.abs(d));n++) F.apSet(AP,S,o,d>0?'DN':'UP',curNav); } }
 }
-function stepFreq(f,d,lo,hi,st){ let v=+f+d*st; if(v>hi+1e-6) v=lo; if(v<lo-1e-6) v=hi; return v.toFixed(st<0.05?3:2).replace(/(\.\d\d)0$/,'$1'); }
+function enc2Turn(id,inner,d){ click(); const r=id.slice(0,-1); SYS[id+(inner?'I':'O')]+=d; SYS.chgT[r]=performance.now();
+  if(r==='xpdr'){ const c=SYS.xpdr.split('').map(Number); const pair=inner?2:0; let v=c[pair]*8+c[pair+1]; v=(v+d+64*8)%64; c[pair]=v>>3; c[pair+1]=v&7; SYS.xpdr=c.join(''); return; }
+  const f=SYS[r], key=SYS[r+'Act']?'a':'s';
+  if(r==='adf'){ let v=+f[key]+(inner?d:d*10); if(v>1799) v=190; if(v<190) v=1799; f[key]=String(v); return; }
+  const isCom=r.startsWith('com');
+  f[key]=stepFreq(f[key],d,isCom?118:108,isCom?136:117,isCom?0.025:0.05,isCom?3:2,inner); if(r==='nav1') procTouch('navK');
+}
+function stepFreq(f,d,lo,hiI,st,dec,inner){ let m=Math.floor(+f+1e-6), k=+f-m; if(inner){ const n=Math.round(1/st); let q=Math.round(k/st)+d; q=((q%n)+n)%n; k=q*st; } else { const n=hiI-lo+1; m=lo+(((m-lo+d)%n)+n)%n; } return (m+k).toFixed(dec).replace(/(\.\d\d)0$/,'$1'); }
 
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
-const ZN=[['overview',tr2('Panel','Panel')],['glare',tr2('Glareshield','Glareskjerm')],['flight',tr2('Flight instruments','Flygeinstrumenter')],['engines',tr2('Engine gauges','Motorinstrumenter')],['radio',tr2('Radios · AP','Radio · AP')],['copilot',tr2('Right panel','Høyre panel')],['lower',tr2('Left subpanel','Venstre underpanel')],['center',tr2('Annunciators · press','Varsellys · trykk')],['right',tr2('Right subpanel','Høyre underpanel')],['pedestal',tr2('Pedestal','Pidestall')],['fuel',tr2('Fuel panel','Drivstoffpanel')]];
+const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot instruments (upper)','Pilotinstrumenter (øvre)')],['flightB',tr2('Pilot instruments (lower)','Pilotinstrumenter (nedre)')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators','Varsellys')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('Pedestal · autopilot','Pidestall · autopilot')],['fuelT',tr2('Fuel panel','Drivstoffpanel')],['fuelB',tr2('Fuel circuit breakers · OAT','Drivstoff-sikringer · OAT')],['audio',tr2('Audio panel','Lydpanel')],['radio1',tr2('COMM · NAV','COMM · NAV')],['radio2',tr2('Transponder · ADF','Transponder · ADF')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead (meters)','Takpanel (målere)')],['overheadR',tr2('Overhead (lights)','Takpanel (lys)')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower)','Andrepilot (nedre)')],['cosubL',tr2('Copilot left subpanel','Andrepilot venstre underpanel')],['cosubR',tr2('Copilot right subpanel','Andrepilot høyre underpanel')],['rsideT',tr2('Right side breakers','Høyre sidepanel – sikringer')],['rsideB',tr2('Right side · static source','Høyre side · statisk kilde')]];
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   const r=P.REG[reg]||P.REG.overview, w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
   const ov=reg==='overview'; let s=Math.min(w/r[2],h/r[3])*(ov?1:0.95);
-  const s0=Math.min(w/P.W,h/(P.H-52)); if(!ov) s=Math.max(s0,Math.min(s,s0*4.2,4.5));
+  const r0=P.REG.overview, s0=Math.min(w/r0[2],h/r0[3]); if(!ov) s=Math.max(s0,Math.min(s,4.5));
   let tx=w/2-(r[0]+r[2]/2)*s, ty=h/2-(r[1]+r[3]/2)*s;
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
-  tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,-52*s);
+  tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,0);
   if(ov){ tx=w/2-(r[0]+r[2]/2)*s; ty=Math.max(h/2-(r[1]+r[3]/2)*s,h-P.H*s); }
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
-  P.world.style.setProperty('--ls',ov?1:1.1);
+  P.world.style.setProperty('--ls',ov?1:Math.max(1.1,Math.min(1.45,8.5/(s*5))).toFixed(2));
   PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null);
 }
 function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
@@ -291,7 +350,7 @@ const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlR.style.opacity=0; return; } const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); hlR.style.opacity=1; }
 const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
-const MAGP={lower:[574,598],center:[948,598],right:[1560,598],pedestal:[1100,808],fuel:[226,816],glare:[1430,70]};
+const MAGP={lower:[464,742],rsub:[1000,742],center:[1326,742],cosubL:[1720,742],cosubR:[1982,742],pedT:[1250,972],fuelT:[352,972],rsideT:[1984,972],overheadL:[600,22],overheadR:[1404,22],audio:[1331,298],glare:[1286,214]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
 magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
@@ -326,6 +385,7 @@ el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElem
 /* ---------- engines and systems ---------- */
 const pA=h=>1013.25*Math.pow(Math.max(0.01,1-6.8756e-6*h),5.2559);
 const hP=p=>(1-Math.pow(p/1013.25,1/5.2559))/6.8756e-6;
+const RAD_={nav1:null,nav2:null};
 function sysTick(dt,o){
   const b=bus(), ias=o.ias, sig=F.isa(S.h,S.env.isa).sig, dens=Math.min(1,sig/0.62);
   const af=SYS.afSw, afPow=b&&cbIn('AUTOFEATHER'), afSys=afPow&&((af===-1&&SYS.pwrL>=0.88&&SYS.pwrR>=0.88)||af===1);
@@ -334,129 +394,184 @@ function sysTick(dt,o){
     const autoIgn=SYS['aign'+s]&&b&&e.tq<400&&e.ng>50;
     e.ignOn=b&&cbIn('IGN '+s)&&(ign===-1||autoIgn);
     if(!SYS['fw'+s]) e.fwT+=dt; else e.fwT=0;
-    const fuelAv=e.fwT<3&&e.fuel>0;
-    e.press=SYS['fw'+s]&&((SYS['stby'+s]&&cbIn('STBY PUMP '+s))||e.ng>8);
+    const fuelAv=e.fwT<3&&(e.main+e.aux)>0;
+    e.press=SYS['fw'+s]&&((SYS['stby'+s]&&b&&cbIn('STBY PUMP '+s))||e.ng>8);
     const fuelOn=cond>=0.45&&fuelAv;
     if(starter) e.stT+=dt; else e.stT=Math.max(0,e.stT-dt*0.5);
-    // light-off and flame-out
     if(!e.lit&&fuelOn&&e.ignOn&&e.ng>=10&&!e.fail){ e.lit=true; e.ngLight=e.ng; e.startT=0; e.hung=false; if(e.ng<12&&!e.warnedEarly){ e.warnedEarly=true; msg(tr2(s+' engine: fuel introduced below 12 % N1 — expect a hotter start.',s+' motor: drivstoff gitt under 12 % N1 — forvent en varmere start.')); procBad(); } }
     if(e.lit&&(!fuelOn||e.fail||e.ng<8)){ e.lit=false; if(e.ng>40&&!e.fail&&cond>=0.45) msg(tr2(s+' engine flamed out (no fuel).',s+' motor sluknet (ikke drivstoff).')); }
-    // N1
     if(e.lit){ if(e.ng<idle-2){ e.hung=e.ng<45&&!starter; const rate=e.hung?0.12:1.9+(starter?0.8:0)-(e.dmg?0.8:0); e.ng+=rate*dt; e.startT+=dt; }
       else { const ngT=pl>=0? idle+pl*(101.5-idle) : pl<-0.12? idle+(-pl-0.12)/0.28*(88-idle) : idle; e.ng+=(ngT-e.ng)*Math.min(1,dt/1.6); } }
     else if(starter){ e.ng+=(19-e.ng)*Math.min(1,dt/5); }
     else { e.ng+=(Math.min(6,ias/25)-e.ng)*Math.min(1,dt*0.16); }
     e.ng=Math.max(0,e.ng);
-    // ITT
     let ittT;
-    if(e.lit){ if(e.ng<idle-2){ const peak=700+75*Math.max(0,12-e.ngLight)+(cond>0.9?170:0)+(SYS.bat&&!b?0:0); ittT=e.hung?Math.min(1150,e.itt+60):(e.startT<5?peak:Math.max(560,peak-(e.startT-5)*30)); }
-      else ittT=520+(e.ng-61)*6.1+Math.max(0,o.oat-15)*1.2+(pl<-0.12?40:0)+(e.dmg?60:0); }
+    if(e.lit){ if(e.ng<idle-2){ const peak=700+75*Math.max(0,12-e.ngLight)+(cond>0.9?170:0); ittT=e.hung?Math.min(1150,e.itt+60):(e.startT<5?peak:Math.max(560,peak-(e.startT-5)*30)); }
+      else ittT=520+(e.ng-61)*6.1+Math.max(0,o.oat-15)*1.2+(pl<-0.12?40:0)+(e.dmg?60:0)+e.vane*15; }
     else ittT=Math.max(o.oat,15);
     e.itt+=(ittT-e.itt)*Math.min(1,dt*(e.lit?(e.ng<idle-2?1.1:0.8):(starter?0.25:0.06)));
     if(e.itt>1000){ e.hotT+=dt; if(!e.hotMsg){ e.hotMsg=true; msg(tr2(s+' ENGINE HOT START — ITT above 1000 °C. Condition lever FUEL CUTOFF, keep the starter running to cool it.',s+' MOTOR «HOT START» — ITT over 1000 °C. Condition-hendel FUEL CUTOFF, la starteren gå for å kjøle.')); procBad(); } if(e.hotT>5&&!e.dmg){ e.dmg=true; msg(tr2(s+' engine over-temperature for more than 5 s: an inspection is required after flight.',s+' motor overtemperatur i mer enn 5 s: krever inspeksjon etter flyging.')); } } else { e.hotT=0; if(e.itt<900) e.hotMsg=false; }
     if(e.stT>40&&!e.stMsg){ e.stMsg=true; msg(tr2('Starter limit: about 40 s on, then let it cool (typical — check the AFM).','Startergrense: ca. 40 s på, la den så kjøle seg (typisk — sjekk AFM).')); } if(e.stT<1) e.stMsg=false;
-    // autofeather
     const o2=E[1-i]; e.afArm=afSys&&o2.tq>=400&&!e.autoF;
     if(e.afArm&&e.tq<200){ if(af===-1){ e.autoF=true; e.afArm=false; msg(tr2(s+' propeller autofeathered.',s+' propell autofløyd.')); } else e.afCyc+=dt; } else if(af!==1) e.afCyc=0;
     if(af!==1&&e.afCyc) e.afCyc=0;
-    // torque and propeller
     const fth=feathered(i), base=F.clamp((e.ng-idle)/(101.5-idle),0,1);
-    let tqT=0; if(e.lit&&e.ng>=idle-3){ tqT=fth?50+250*base:(pl<-0.12?150+900*(-pl-0.12)/0.28:120+2110*Math.pow(base,1.25)*dens); }
+    let tqT=0; if(e.lit&&e.ng>=idle-3){ tqT=fth?50+250*base:(pl<-0.12?150+900*(-pl-0.12)/0.28:120+2110*Math.pow(base,1.25)*dens*(1-0.05*e.vane)); }
     e.tq+=(tqT-e.tq)*Math.min(1,dt*2.5);
     const pp=SYS['prop'+s], npSet=1600+400*F.clamp((pp-0.12)/0.88,0,1);
     let npT; if(fth) npT=e.lit?380:(ias>40?60:0);
     else if(e.lit) npT=pl<-0.12?npSet*0.95:pl<0?1000:Math.min(npSet,800+(e.ng-61)*26+ias*3.2);
     else npT=Math.min(npSet,ias*11);
+    if(SYS.govT&&b&&cbIn('PROP GOV')&&npT>1870) npT=1870+(npT-1870)*0.1;
+    if(i===1&&SYS.sync&&b&&cbIn('PROP SYNC')&&E[0].lit&&e.lit&&!fth&&Math.abs(E[0].np-npT)<30) npT=E[0].np;
     if(af===1&&e.afCyc>0) npT-=150*(0.5+0.5*Math.sin(e.afCyc*5));
     e.np+=(npT-e.np)*Math.min(1,dt*(fth?0.35:1.0));
     e.ff=e.lit?Math.max(60,95+7.2*(e.ng-56)*Math.max(0.55,dens)):0;
     e.oilP+=((e.lit?60+60*F.clamp((e.ng-56)/40,0,1):e.ng*2.2)-e.oilP)*Math.min(1,dt*1.5);
     e.oilT+=((e.lit?45+28*base:Math.max(15,o.oat))-e.oilT)*dt/60;
-    // fuel burn (crossfeed draws from the selected side)
-    const src=SYS.xfeed===-1?0:SYS.xfeed===1?1:i; E[src].fuel=Math.max(0,E[src].fuel-e.ff*dt/3600);
+    // fuel: crossfeed draws from the other side; auxiliary fuel is used first while it transfers
+    const xf=b&&cbIn('CROSSFEED')?SYS.xfeed:0, src=xf===-1?0:xf===1?1:i, T=E[src], burn=e.ff*dt/3600;
+    if(T.aux>0&&T.xfr){ T.aux=Math.max(0,T.aux-burn); } else T.main=Math.max(0,T.main-burn);
+    e.xfr=e.aux>0&&b&&cbIn('AUX XFR '+s)&&(e.lit||SYS['aux'+s]===1);
+    if(e.aux>0&&e.lit&&!e.xfr) e.nxT+=dt; else e.nxT=0;
     // generator
     const gs=SYS['gen'+s]; if(gs===-1){ if(e.ng>=50&&e.lit) e.genRst=true; e.rstT=(e.rstT||0)+dt; if(e.rstT>0.7){ SYS['gen'+s]=0; e.rstT=0; } } else e.rstT=0; if(gs===1){ e.genRst=false; }
     const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ SYS.battT=Math.max(SYS.battT,20); procTouch('gen'+s+'On'); }
-    // ice vane
-    e.vane=F.clamp(e.vane+(SYS['vane'+s]?1:-1)*dt/12,0,1);
-    // fire
+    // engine anti-ice (inertial vane): main actuator needs ENG ANTI-ICE power, standby its own
+    const tgt=SYS['engAI'+s]?1:0, act=SYS['act'+s]?(b&&cbIn('STBY ANTI-ICE')):(b&&cbIn('ENG ANTI-ICE'));
+    if(act) e.vane=F.clamp(e.vane+(tgt?1:-1)*dt/(SYS['act'+s]?18:12),0,1);
+    if(Math.abs(tgt-e.vane)>0.01) e.vaneT+=dt; else e.vaneT=0;
     if(e.fire){ if(cond<0.05&&!SYS['fw'+s]){ e.fireT+=dt*(e.ext?3:1); if(e.fireT>9){ e.fire=false; e.fireT=0; msg(tr2(s+' engine fire out.',s+' motorbrann slukket.')); } } }
-    // flight model link
     const fe=S.eng[i]; fe.fail=false; fe.off=!e.lit; fe.feather=fth; fe.thr=e.lit&&pl>=0?F.clamp(e.tq*e.np/(2230*2000),0,1):0;
   });
   SYS.battT=Math.max(0,SYS.battT-dt);
   if(SYS.identT>0) SYS.identT-=dt;
+  // gear: the handle drives the hydraulic gear only with power and the relay breaker in
+  if(b&&cbIn('GEAR')&&S.ctl.gear!==SYS.gearH&&!(S.ground&&SYS.gearH===0)){ S.ctl.gear=SYS.gearH; SYS.pumpN=0; }
+  { const asT=SYS.altStatic?1:0, a0=SYS.asF||0; SYS.asF=a0+(asT-a0)*Math.min(1,dt*0.8); SYS.asVs=(SYS.asVs||0)+(((SYS.asF-a0)*45/Math.max(dt,1e-3)*60)-(SYS.asVs||0))*Math.min(1,dt*3); }
+  if(SYS.hornSilOn&&(SYS.pwrL>0.2||SYS.pwrR>0.2||S.ctl.gearPos>0.99)) SYS.hornSilOn=0;
   // pressurisation
   const acAlt=o.altTrue, ground=S.ground;
   const supply=E.filter((e,i)=>SYS['bleed'+SIDES[i]]===-1&&e.lit&&e.ng>=60).length;
-  const pres=supply>0&&!SYS.decomp&&((SYS.pressSw===0&&!ground)||SYS.pressSw===1);
+  const pres=supply>0&&!SYS.decomp&&cbIn('PRESS CONT')&&((SYS.pressSw===0&&!ground)||SYS.pressSw===1);
   const maxDiff=hP(pA(acAlt)+6.5*68.95);
   const tgt=pres?Math.min(acAlt,Math.max(SYS.cabSel,maxDiff)):acAlt;
   const rate=pres?200+SYS.cabRate*1800:(SYS.decomp?7000:SYS.pressSw===-1?3000:supply?1500:2200);
   const c0=SYS.cab; SYS.cab+=F.clamp(tgt-SYS.cab,-rate*dt/60,rate*dt/60); SYS.cabVS+=(((SYS.cab-c0)/Math.max(dt,1e-3))*60-SYS.cabVS)*Math.min(1,dt*2);
   SYS.diff=Math.max(0,(pA(SYS.cab)-pA(acAlt))/68.95);
-  if(SYS.cab>12500&&!SYS.mask){ SYS.hypT+=dt; if(SYS.hypT>20&&!SYS.hypMsg){ SYS.hypMsg=true; msg(tr2('Cabin above 12,500 ft without oxygen: masks ON now — hypoxia degrades judgement within minutes.','Kabin over 12 500 ft uten oksygen: masker PÅ nå — hypoksi svekker dømmekraften i løpet av minutter.')); } } else { SYS.hypT=0; SYS.hypMsg=false; }
-  if(SYS.trimHat&&b&&SYS.elTrim){ S.ctl.trim=F.clamp(S.ctl.trim+SYS.trimHat*dt*0.18,-1,1); holdPitch=null; }
+  // oxygen: masks only help with the system-ready handle pulled; passenger masks auto-deploy at 12,500 ft
+  const o2=SYS.o2Ready&&SYS.o2psi>50; if(o2&&(SYS.mask||SYS.paxDep)) SYS.o2psi=Math.max(0,SYS.o2psi-dt*(SYS.paxDep?0.8:0.15));
+  if(o2&&(SYS.cab>12500||SYS.paxOvr)) SYS.paxDep=1;
+  if(SYS.cab>12500&&!(SYS.mask&&o2)){ SYS.hypT+=dt; if(SYS.hypT>20&&!SYS.hypMsg){ SYS.hypMsg=true; msg(SYS.mask?tr2('Mask on but no oxygen: pull the OXYGEN SYSTEM READY handle on the pedestal.','Maske på, men ikke oksygen: trekk OXYGEN SYSTEM READY-håndtaket på pidestallen.'):tr2('Cabin above 12,500 ft without oxygen: masks ON now — hypoxia degrades judgement within minutes.','Kabin over 12 500 ft uten oksygen: masker PÅ nå — hypoksi svekker dømmekraften i løpet av minutter.')); } } else { SYS.hypT=0; SYS.hypMsg=false; }
+  // cabin temperature
+  const heatOn=SYS.cabMode===0||(SYS.cabMode===3&&SYS.cabT<60+SYS.cabTemp*25-1), coolOn=SYS.cabMode===1||(SYS.cabMode===3&&SYS.cabT>60+SYS.cabTemp*25+1);
+  if(SYS.manTemp&&SYS.cabMode<2) SYS.cabTemp=F.clamp(SYS.cabTemp-SYS.manTemp*dt*0.08,0,1);
+  SYS.acRun=coolOn&&E[1].lit&&b; SYS.acLow=coolOn&&b&&E[1].ng<62;
+  SYS.cabT+=((heatOn&&supply?95:SYS.acRun?55:Math.max(40,o.oat*1.8+32+20))-SYS.cabT)*dt*0.01;
+  // trims, autopilot power
+  if(SYS.trimHat&&b&&SYS.elTrim&&cbIn('PITCH TRIM')){ S.ctl.trim=F.clamp(S.ctl.trim+SYS.trimHat*dt*0.18,-1,1); holdPitch=null; }
   if(!avOn()&&(AP.on||AP.fd)){ AP.on=false; AP.fd=false; }
-  if(!cbIn('AUTOPILOT')&&AP.on){ AP.on=false; apDiscFx(); }
+  if(!cbIn('AUTOPILOT')&&(AP.on||SYS.yd)){ if(AP.on){ AP.on=false; apDiscFx(); } SYS.yd=0; }
   if(AP.on&&!SYS.yd) SYS.yd=1;
   if(SYS.apFailT>0) SYS.apFailT-=dt;
-  document.documentElement.style.setProperty('--bl',(0.35+0.62*(b?SYS.dimPanel:0.1)).toFixed(2));
+  // compass systems: slaved card drifts back to magnetic, free gyro precesses; slew only in FREE
+  [1,2].forEach(n=>{ const free=n===1?SYS.gyroMode:SYS.gyro2Mode, k='hdgErr'+n, sl=n===1?(SYS.slewR-SYS.slewL):(SYS.slew2R-SYS.slew2L);
+    if(!b) return; if(free){ SYS[k]+=dt*0.02+(sl*dt*3); } else SYS[k]-=F.clamp(SYS[k],-dt*(Math.abs(SYS[k])>5?3:0.1),dt*(Math.abs(SYS[k])>5?3:0.1)); });
+  // flight hour meter
+  if(!S.ground) SYS.hobbs+=dt/3600*20;
+  // DME (channel 1 = NAV 1, 2 = NAV 2, 3 = no station) with ground speed from the change in distance
+  [1,2].forEach(n=>{ const ch=SYS['d'+n+'ch'], nv=ch===1?'nav1':ch===2?'nav2':null; let f=nv?(SYS.dmeHold[ch]||SYS[nv].a):null; const ok=f&&NAVS[f]&&avOn()&&cbIn('DME');
+    const r=ok?F.nav(S,NAVS[f],0):null; const d=r&&r.dist!=null&&r.dist<199?r.dist:null; SYS['dmeD'+n]=d; SYS['dmeId'+n]=r?r.id:'';
+    if(d!=null&&SYS.dmeLast[n]!=null&&dt>0){ const g=Math.abs(SYS.dmeLast[n]-d)/dt*3600; SYS.dmeGs[n]+=(g-SYS.dmeGs[n])*Math.min(1,dt*0.6); } SYS.dmeLast[n]=d; });
+  document.documentElement.style.setProperty('--bl',(0.35+0.62*(b?(SYS.mpl?SYS.dimPF:0.9):0.1)).toFixed(2));
 }
+function flapHorn(){ return !S.ground&&S.ctl.gearPos<0.99&&S.ctl.flapPos>1.2; }
 function gearWarn(){ const o=S.o||{}; return !S.ground&&S.ctl.gearPos<0.99&&((SYS.pwrL<0.12&&SYS.pwrR<0.12&&o.ias<140)||S.ctl.flapPos>1.2); }
 
+/* ---------- radios: ADF, markers, idents ---------- */
+function adfNow(){ if(!radOn('adf')||SYS.adfMd<2||+SYS.adf.a!==NDB.freq) return null; const dN=NDB.N-S.N, dE=NDB.E-S.E; if(Math.hypot(dN,dE)/F.NM>80) return null; return F.wrap360(Math.atan2(dE,dN)*180/Math.PI); }
+function mkrNow(){ if(!radOn('nav1')) return null; const r=(SYS.mkrHi?1.5:1)*Math.max(250,S.h*0.45); for(const m of MKR){ if(Math.hypot(m.N-S.N,m.E-S.E)<r&&S.h<2500) return m.k; } return null; }
+const MORSE={A:'.-',N:'-.',S:'...',I:'..'};
+let identT=0, mkrT=0;
+function audioTick(dt){ if(!AC||!UI.sound||UI.paused) return; identT-=dt; mkrT-=dt; const vol=(0.02+0.05*SYS.volP)*(SYS.spkrP?1:0.7);
+  if(SYS.audEmer) return; // emergency bypass: only COMM audio, sidetone and warning tones reach the headsets
+  const range=SYS.voiceP!==-1; // VOICE filter removes the Morse identifier
+  if(identT<=0){ identT=9; let id=null, f=1020, v=vol;
+    if(range&&SYS.auP2&&radOn('nav1')&&curNav.valid){ id=(NAVS[SYS.nav1.a]==='LOC'?'IASN':'ASN'); v*=0.3+SYS.nav1Vol; }
+    else if(range&&SYS.auP8&&radOn('adf')&&SYS.adfMd>0&&+SYS.adf.a===NDB.freq){ id=NDB.id; v*=0.3+SYS.adfVol; }
+    else if(SYS.auP6&&SYS.dmeD1!=null){ id=SYS.dmeId1; f=1350; v*=0.2+SYS.dmeV1; }
+    if(id) morse(id.replace(/[^A-Z]/g,''),f,v*0.8); }
+  const mk=mkrNow(); if(mk&&(SYS.auP4||SYS.auP5)&&mkrT<=0){ mkrT=mk==='O'?0.5:0.4; beep(mk==='O'?400:1300,mk==='O'?0.3:0.12,vol*(0.2+SYS.mkrVol)); } }
+function morse(t,f,v){ if(!AC) return; let at=AC.currentTime+0.05; const u=0.09; for(const ch of t){ for(const s of (MORSE[ch]||'')){ const d=s==='.'?u:3*u; try{ const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=f; g.gain.value=v; o.connect(g).connect(AC.destination); o.start(at); o.stop(at+d); }catch(e){} at+=d+u; } at+=2*u; } }
 /* ---------- annunciators and master warning / caution ---------- */
 let curR=[], curA=[], annLit={};
 const RSET=new Set(B200P.WARN.flat().filter(Boolean)), ASET=new Set(); B200P.CAUT.flat().forEach(x=>{ if(typeof x==='string') ASET.add(x); else if(x&&x[2]==='a') ASET.add(x[0]); });
 function annCompute(o){
   const A={}; if(!bus()){ annLit=A; curR=[]; curA=[]; return A; }
+  const fd=cbIn('FIRE DET');
   E.forEach((e,i)=>{ const s=SIDES[i];
-    if(e.fire) A[s+' ENG FIRE']=1;
-    if(!e.press) A[s+' FUEL PRESS']=1;
+    if(e.fire&&fd) A[s+' ENG FIRE']=1;
+    if(!e.press&&cbIn('PRESS WARN '+s)) A[s+' FUEL PRESS']=1;
     if(e.oilP<60) A[s+' OIL PRESS']=1;
     if(!e.genOn) A[s+' DC GEN']=1;
     if(e.ignOn) A[s+' IGNITION ON']=1;
     if(SYS['bleed'+s]!==-1) A[s+' BL AIR OFF']=1;
     if(e.afArm) A[s+' AUTOFEATHER']=(SYS.afSw===1&&e.afCyc>0)?'blink':1;
-    if(e.vane>0.99) A[s+' ICE VANE EXT']=1;
-    if(SYS['vane'+s]&&e.vane<0.99&&e.vane>0&&e.vaneT>15) A[s+' ENG ICE FAIL']=1;
-    if(SYS['stby'+s]&&cbIn('STBY PUMP '+s)) A[s+' STBY PUMP']=1;
+    if(e.vane>0.99) A[s+' ENG ANTI-ICE']=1;
+    if(e.vaneT>15) A[s+' ENG ICE FAIL']=1;
     if(e.ext) A[s+' EXT D']=1;
-    if(SYS.fireTest){ A[s+' ENG FIRE']=1; A[s+' EXT D']=1; A[s+' EXT OK']=1; }
+    if(SYS.fireTest===(i?3:1)&&fd) A[s+' ENG FIRE']=1;
+    if(SYS.fireTest===(i?4:0)){ A[s+' EXT D']=1; A[s+' EXT OK']=1; }
+    if(e.nxT>30) A['x:nx'+s]=1;
   });
   if(SYS.inv===0) A['INVERTER']=1;
   if(SYS.cab>=12500) A['ALT WARN']=1;
-  if(SYS.cab>=10000) A['CABIN ALT 10K']=1;
-  if(SYS.diff>6.7) A['CABIN DIFF HI']=1;
-  if(SYS.cab>=12500||SYS.paxO2) A['PASS OXYGEN ON']=1;
+  if(SYS.paxDep) A['PASS OXY ON']=1;
   if(SYS.battT>0) A['BATTERY CHARGE']=1;
-  if(!SYS.elTrim) A['ELEC TRIM OFF']=1;
+  if(!SYS.elTrim||!cbIn('PITCH TRIM')) A['ELEC TRIM OFF']=1;
   if(SYS.apFailT>0) A['A/P FAIL']='blink';
-  if(S.ctl.gearPos>0.5&&(SYS.propL<0.97||SYS.propR<0.97)) A['RVS NOT READY']=1;
-  if(SYS.xfeed!==0) A['FUEL CROSSFEED']=1;
-  if(SYS.sync&&!S.ground) A['PROP SYNC ON']=1;
+  if(S.ctl.gearPos>0.5&&(SYS.propL<0.97||SYS.propR<0.97)&&!S.ground&&cbIn('GEAR')) A['RVS NOT READY']=1;
+  if(SYS.hydT&&cbIn('GEAR')) A['HYD FLUID LOW']=1;
+  if(SYS.xfeed!==0&&cbIn('CROSSFEED')) A['FUEL CROSSFEED']=1;
   if(SYS.brakeDe) A['BRAKE DEICE ON']=1;
-  if(AP.on) A['AP TRIM']=1;
-  if(avOn()){ if(AP.on) A['ap:AP']=1; if(SYS.yd) A['ap:YD']=1; if(AP.fd) A['ap:FD']=1; if(AP.lat==='HDG') A['ap:HDG']=1; if(AP.lat==='VOR'||AP.latArm==='NAV') A['ap:NAV']=AP.latArm?'blink':1; if(AP.lat==='LOC'||AP.latArm==='APR') A['ap:APR']=AP.latArm?'blink':1; if(AP.vert==='ALT') A['ap:ALT']=1; if(AP.vert==='VS') A['ap:VS']=1; if(AP.vert==='GS'||/GS/.test(AP.vertArm)) A['ap:GS']=AP.vert==='GS'?1:'blink'; if(AP.on) A['ap:ARM']=1; }
-  curR=Object.keys(A).filter(k=>RSET.has(k)); curA=Object.keys(A).filter(k=>ASET.has(k));
+  if((SYS.landL||SYS.landR||SYS.taxi)&&S.ctl.gearPos<0.01) A['LDG/TAXI LIGHT']=1;
+  if(SYS.acLow) A['AIR COND N1 LOW']=1;
+  if(SYS.elecHeat) A['ELEC HEAT ON']=1;
+  if(SYS.trimHat&&AP.on) A['A/P TRIM FAIL']=1;
+  if(avOn()&&cbIn('AUTOPILOT')){ if(AP.on) A['ap:AP']=1; if(SYS.yd) A['ap:YD']=1; if(AP.lat==='HDG') A['ap:HDG']=1; if((AP.lat==='VOR'||AP.latArm==='NAV')&&!SYS.bcMode) A['ap:NAV']=AP.latArm?'blink':1; if(SYS.bcMode&&(AP.fd||AP.on)) A['ap:B/C']=1; if(AP.lat==='LOC'||AP.lat==='VAPP'||AP.latArm==='APR') A['ap:APR']=AP.latArm?'blink':1; if(AP.vert==='ALT') A['ap:ALT']=1; if(/ALTS/.test(AP.vertArm)) A['ap:ALTS']=1; if(AP.vert==='VS') A['ap:VS']=1; if(AP.vert==='FLC') A['ap:IAS']=1; if(AP.vert==='GS'||/GS/.test(AP.vertArm)) A['ap:GS']=AP.vert==='GS'?1:'blink'; if(AP.on) A['ap:TRIM']=1; }
+  // marker beacons, altitude alerter and decision height (copilot radar altimeter)
+  const mk=mkrNow(); if(mk){ A['x:mkr'+mk+'1']=1; A['x:mkr'+mk+'2']=1; }
+  if(avOn()){ const d=Math.abs(AP.alt-o.alt); if(d>250&&d<1000&&!S.ground) A['x:altAl1']=A['x:altAl2']=1; }
+  if(avOn()&&!S.ground&&o.agl<dhFt()&&o.agl<2500) A['x:dh1']=A['x:dh2']=1;
+  if(SYS.raT&&avOn()) A['x:dh1']=A['x:dh2']=1;
+  if(bus()&&cbIn('GEAR IND')&&!SYS.hdLt){ const g=S.ctl.gearPos; if(g>0.99) A['x:gN']=A['x:gL']=A['x:gR']=1; }
+  if(!cbIn('ANN POWER')){ annLit={}; curR=[]; curA=[]; MW.w=MW.c=false; return annLit; }
+  curR=Object.keys(A).filter(k=>RSET.has(k)&&A[k]); curA=Object.keys(A).filter(k=>ASET.has(k)&&A[k]);
   [...MW.ackR].forEach(k=>{ if(!A[k]) MW.ackR.delete(k); }); [...MW.ackA].forEach(k=>{ if(!A[k]) MW.ackA.delete(k); });
   if(curR.some(k=>!MW.ackR.has(k))){ if(!MW.w) beep(990,0.18,0.05); MW.w=true; } if(curA.some(k=>!MW.ackA.has(k))){ if(!MW.c) beep(700,0.1,0.04); MW.c=true; }
   annLit=A; return A;
 }
-E.forEach(e=>{ e.vaneT=0; });
 
-/* ---------- autopilot ---------- */
-let curNav={valid:false};
-function navNow(){ const t=NAVS[SYS.nav.a]; if(!t||!avOn()) return {src:'VOR',valid:false,dev:0,crs:SYS.crs}; return F.nav(S,t,SYS.crs); }
+/* ---------- autopilot / flight director controller ---------- */
+let curNav={valid:false}, curNav2={valid:false};
+function navNow(n){ const r=n===2?'nav2':'nav1', crs=n===2?SYS.crs2:SYS.crs, t=NAVS[SYS[r].a]; if(!t||!radOn(r)) return {src:'VOR',valid:false,dev:0,crs}; const x=F.nav(S,t,crs); if(SYS.bcMode&&n!==2&&x.src==='LOC') x.dev=-x.dev; return x; }
 function apPress(k){ if(!avOn()||!cbIn('AUTOPILOT')){ msg(tr2('Autopilot unavailable: avionics power or circuit breaker.','Autopilot utilgjengelig: avionikkstrøm eller sikring.')); return; }
   if(k==='YD'){ SYS.yd=SYS.yd?0:1; if(!SYS.yd&&AP.on){ AP.on=false; apDiscFx(); } beep(1200,0.04,0.05); return; }
   if(k==='AP'&&AP.on){ AP.on=false; apDiscFx(); return; }
-  const o=F.readouts(S); F.apSet(AP,S,o,k,curNav); if(k==='AP'&&AP.on) SYS.yd=1; beep(1200,0.04,0.05); }
+  const o=F.readouts(S); SYS.apClimb=SYS.apDsc=0;
+  if(k==='APPR') k='APR';
+  if(k==='BC'){ SYS.bcMode=SYS.bcMode?0:1; if(SYS.bcMode){ F.apSet(AP,S,o,'NAV',curNav); } else if(AP.latArm==='NAV'||AP.lat==='LOC'){ AP.lat='ROL'; AP.latArm=''; AP.rollRef=0; } beep(1200,0.04,0.05); return; }
+  if(k==='NAV'||k==='APR') SYS.bcMode=0;
+  if(k==='ALTSEL'){ AP.fd=true; if(!AP.vert){ F.apSet(AP,S,o,'VS',curNav); AP.vsRef=0; } if(/ALTS/.test(AP.vertArm)) AP.vertArm=AP.vertArm.replace('ALTS','').trim(); else AP.vertArm=(AP.vertArm+' ALTS').trim(); beep(1200,0.04,0.05); return; }
+  if(k==='CLIMB'||k==='DSC'){ if(k==='CLIMB'){ if(AP.vert!=='FLC') F.apSet(AP,S,o,'FLC',curNav); AP.iasRef=140; SYS.apClimb=1; } else { if(AP.vert!=='VS') F.apSet(AP,S,o,'VS',curNav); AP.vsRef=-1000; SYS.apDsc=1; } beep(1200,0.04,0.05); return; }
+  if(k==='IAS') k='FLC';
+  F.apSet(AP,S,o,k,curNav); if(k==='AP'&&AP.on) SYS.yd=1; beep(1200,0.04,0.05); }
 function apDiscFx(){ SYS.apFailT=2.5; beep(500,0.35,0.05); flash('AP DISCONNECT'); }
-
+function apText(){ if(!avOn()||!cbIn('AUTOPILOT')) return ''; const lat={HDG:'HDG',VOR:'NAV',LOC:SYS.bcMode?'B/C':'APPR',VAPP:'APPR',ROL:'ROLL'}[AP.lat]||''; const vt={ALT:'ALT',VS:'VS '+AP.vsRef,FLC:'IAS '+Math.round(AP.iasRef),GS:'GS',PIT:'PITCH'}[AP.vert]||'';
+  return [SYS.yd?'YAW':'',AP.on?'AP':'',lat,AP.latArm?'('+AP.latArm+')':'',vt,/ALTS/.test(AP.vertArm)?'(ALT SEL)':'',/GS/.test(AP.vertArm)?'(GS)':'',SYS.apHB?'½':'',SYS.apSR?'SR':''].filter(Boolean).join('  '); }
 /* ---------- flaps, gear, failures ---------- */
-function setFlap(n){ n=F.clamp(n,0,2); if(n!==S.ctl.flap&&(!bus()||!cbIn('FLAP'))){ msg(tr2('Flaps need electrical power.','Flaps trenger strøm.')); return; } S.ctl.flap=n; }
-function toggleGear(){ if(!bus()||!cbIn('GEAR')){ msg(tr2('The gear motor needs electrical power.','Understellsmotoren trenger strøm.')); return; } if(S.ground&&S.ctl.gear===1){ msg(tr2('The gear handle is locked on the ground.','Understellshendelen er låst på bakken.')); return; } S.ctl.gear=S.ctl.gear?0:1; beep(400,0.08,0.06); }
+function setFlap(n){ n=F.clamp(n,0,2); if(n!==S.ctl.flap&&(!bus()||!cbIn('FLAP')||!cbIn('FLAP CTL'))){ msg(tr2('Flaps need electrical power.','Flaps trenger strøm.')); return; } S.ctl.flap=n; }
+function toggleGear(){ if(S.ground&&SYS.gearH===1){ msg(tr2('The gear handle is locked on the ground.','Understellshendelen er låst på bakken.')); return; } SYS.gearH=SYS.gearH?0:1; beep(400,0.08,0.06); if(!bus()||!cbIn('GEAR')) msg(tr2('No power to the gear hydraulics (LANDING GEAR RELAY breaker or bus). Handle DOWN, then use the alternate extension pump.','Ingen strøm til understellshydraulikken (LANDING GEAR RELAY-sikring eller skinne). Hendel NED, bruk så den alternative pumpen.')); }
 const brk=el('brk'); brk.addEventListener('pointerdown',()=>inp.brakeHeld=true); ['pointerup','pointerleave','pointercancel'].forEach(ev=>brk.addEventListener(ev,()=>inp.brakeHeld=false));
 el('autoTrim').onchange=e=>S.autotrim=e.target.checked;
 el('failL').onclick=()=>{ E[0].fail=true; }; el('failR').onclick=()=>{ E[1].fail=true; };
@@ -562,7 +677,7 @@ const PROCS=[
    st(tr2('Bleed air — OPEN both · cabin pressure — PRESS · set the cabin altitude','Tappeluft — OPEN begge · kabintrykk — PRESS · still kabinhøyden'),'cabAlt',()=>SYS.bleedL===-1&&SYS.bleedR===-1&&SYS.pressSw===0&&PR.m.cabSet),
    chk(tr2('Prop levers — FULL FORWARD · condition levers — LOW IDLE','Propellhendler — HELT FREM · condition — LOW IDLE'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97&&SYS.condL>=0.45),
    chk(tr2('Crossfeed — OFF · firewall valves — OPEN','Crossfeed — AV · brannskottventiler — ÅPNE'),'xfeed',()=>SYS.xfeed===0&&SYS.fwL&&SYS.fwR),
-   st(tr2('Strobe and landing lights — ON','Strobe- og landingslys — PÅ'),'strobe',()=>SYS.strobe&&SYS.ldg),
+   st(tr2('Strobe and landing lights — ON','Strobe- og landingslys — PÅ'),'strobe',()=>SYS.strobe&&SYS.landL&&SYS.landR),
    st(tr2('Parking brake — RELEASE','Parkeringsbrems — LØS'),'park',()=>!SYS.park)]},
  {k:'efato',t:tr2('Engine failure at rotation (autofeather)','Motorstans ved rotasjon (autofeather)'),set:'runway',brief:tr2('Lined up on runway 36, flaps APPROACH, autofeather ARM. Set take-off power and rotate at about 100 KIAS. One engine fails at lift-off. Fly first: rudder, wings level, pitch for V2 then blue line (121 KIAS). Verify the autofeather, then clean up.','Oppstilt på bane 36, flaps APPROACH, autofeather ARM. Sett startkraft og roter ved ca. 100 KIAS. En motor stopper ved løft. Fly først: sideror, vingene vannrett, nese for V2 og så blå linje (121 KIAS). Bekreft autofeather, rydd så opp.'),fail:'liftoff',
   steps:[st(tr2('Power levers — TAKE-OFF power (about 2,230 ft-lb, ITT and N1 in limits)','Effekthendler — STARTKRAFT (ca. 2230 ft-lb, ITT og N1 innenfor grenser)'),'pwrL',()=>SYS.pwrL>0.9&&SYS.pwrR>0.9),
@@ -588,8 +703,8 @@ const PROCS=[
    st(tr2('Battery — OFF, then evacuate','Batteri — AV, evakuer så'),'bat',()=>!SYS.bat)]},
  {k:'press',t:tr2('Pressurisation loss and emergency descent','Tap av kabintrykk og nødnedstigning'),set:'fl250',fail:'decomp',brief:tr2('Cruise at FL250 on the autopilot. The cabin will lose pressure. Masks first, then an emergency descent: idle power, props forward, flaps APPROACH below 200 KIAS, gear down below 181 KIAS, about 20° nose down at first, then hold VLE. Level off at or below 12,500 ft.','Cruise i FL250 på autopilot. Kabinen vil miste trykket. Masker først, så nødnedstigning: tomgang, propeller frem, flaps APPROACH under 200 KIAS, understell ned under 181 KIAS, ca. 20° nese ned først, hold så VLE. Flat ut i eller under 12 500 ft.'),
   steps:[st(tr2('Crew oxygen masks — ON, 100 %','Oksygenmasker — PÅ, 100 %'),'mask',()=>PR.failed&&SYS.mask),
-   st(tr2('Mic selector — MASK','Mikrofonvelger — MASK'),'micSel',()=>SYS.micSel),
-   st(tr2('Passenger oxygen — ON (PASS OXYGEN ON light)','Passasjeroksygen — PÅ (PASS OXYGEN ON)'),'paxO2',()=>SYS.paxO2||SYS.cab>=12500),
+   st(tr2('Pilot MIC switch — OXY MASK','Pilotens MIC-bryter — OXY MASK'),'micSel',()=>SYS.micSel===0),
+   st(tr2('Passenger oxygen — check deployed, or pull the MANUAL OVERRIDE (PASS OXY ON light)','Passasjeroksygen — sjekk utløst, eller trekk MANUAL OVERRIDE (PASS OXY ON)'),'paxOvr',()=>SYS.paxOvr||SYS.paxDep),
    st(tr2('Autopilot — DISCONNECT','Autopilot — KOBLE UT'),'apAP',()=>!AP.on),
    st(tr2('Power levers — IDLE','Effekthendler — IDLE'),'pwrL',()=>SYS.pwrL<0.05&&SYS.pwrR<0.05),
    st(tr2('Prop levers — FULL FORWARD','Propellhendler — HELT FREM'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97),
@@ -599,7 +714,7 @@ const PROCS=[
    st(tr2('Level off at or below 12,500 ft (start the level-off 500 ft early)','Flat ut i eller under 12 500 ft (start utflatingen 500 ft før)'),'yokeL',()=>S.o.alt<=12600&&Math.abs(S.o.vs)<700)]},
  {k:'seapp',t:tr2('Single-engine approach','Enmotors innflyging'),set:'seapp',brief:tr2('8 NM final for runway 36 at 2,500 ft, one engine feathered and secured. Trim the rudder, tune the ILS (110.30) with course 360, keep blue line or more until landing is assured, gear down at the glideslope, then land.','8 NM finale til bane 36 i 2500 ft, én motor fløyd og sikret. Trim sideroret, still inn ILS (110.30) med kurs 360, hold blå linje eller mer til landing er sikret, understell ned ved glidebanen, og land.'),
   steps:[st(tr2('Rudder trim — towards the live engine (ball centred)','Sideror-trim — mot motoren som går (kula i midten)'),'rudTrim',()=>Math.sign(SYS.rudTrim)===(D()===1?-1:1)&&Math.abs(SYS.rudTrim)>0.12),
-   st(tr2('NAV 1 — 110.30 active (⇄), course 360 on the HSI','NAV 1 — 110.30 aktiv (⇄), kurs 360 på HSI-en'),'navSw',()=>SYS.nav.a==='110.30'&&SYS.crs===360),
+   st(tr2('NAV 1 — 110.30 active (XFR), course 360 on the HSI','NAV 1 — 110.30 aktiv (XFR), kurs 360 på HSI-en'),'nav1X',()=>SYS.nav1.a==='110.30'&&SYS.crs===360),
    chk(tr2('Speed — blue line 121 KIAS or more until landing is assured','Fart — blå linje 121 KIAS eller mer til landing er sikret'),'yokeL',()=>S.o.ias>=115),
    st(tr2('Flaps — APPROACH','Flaps — APPROACH'),'flaps',()=>S.ctl.flap===1),
    st(tr2('Prop lever (live engine) — FULL FORWARD','Propellhendel (levende motor) — HELT FREM'),()=>'prop'+Ls(),()=>SYS['prop'+Ls()]>0.97),
@@ -616,15 +731,15 @@ function procSet(kind){
   S.env.wdir=windDir.v; S.env.wspd=windSpd.v; S.env.turb=turb.v/100; S.baro=S.env.qnh=1013;
   const ramp={ground:true,N:-260,E:-120,hdg:90,thr:0,flap:0,gear:1};
   if(kind==='cold'||kind==='running'){ F.place(S,ramp); S.Vg=0; F.readouts(S); sysDefault(kind==='cold'); if(kind==='running'){ SYS.park=1; SYS.beacon=1; } }
-  else if(kind==='runway'){ F.place(S,{ground:true,N:20,E:0,hdg:360,thr:0,flap:1,gear:1}); sysDefault(false); S.ctl.flap=S.ctl.flapPos=1; SYS.afSw=-1; SYS.aignL=SYS.aignR=1; SYS.strobe=SYS.ldg=1; SYS.park=0; PR.dead=Math.random()<0.5?0:1; }
+  else if(kind==='runway'){ F.place(S,{ground:true,N:20,E:0,hdg:360,thr:0,flap:1,gear:1}); sysDefault(false); S.ctl.flap=S.ctl.flapPos=1; SYS.afSw=-1; SYS.aignL=SYS.aignR=1; SYS.strobe=SYS.landL=SYS.landR=1; SYS.park=0; PR.dead=Math.random()<0.5?0:1; }
   else if(kind==='fl250'){ F.place(S,{N:-60000,E:0,alt:25000,ias:165,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=SYS.cabSel=6000; SYS.strobe=1; SYS.aignL=SYS.aignR=1; const o=F.readouts(S); F.apSet(AP,S,o,'AP',curNav); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=25000; SYS.yd=1; }
   else if(kind==='seapp'){ PR.dead=Math.random()<0.5?0:1; F.place(S,{N:-14800,E:0,alt:2500,ias:140,hdg:360,gear:0,flap:0,fail:PR.dead?[0,1]:[1,0]}); sysDefault(false); const d=SIDES[PR.dead]; S.eng[PR.dead].fail=false;
-    Object.assign(E[PR.dead],{lit:false,ng:2,itt:80,np:0,tq:0,ff:0,oilP:0,genOn:false,genRst:false}); SYS['cond'+d]=0; SYS['prop'+d]=0; SYS['fw'+d]=0; SYS['gen'+d]=1; SYS['pwr'+d]=0; trimEngines(); SYS.nav={a:'113.30',s:'110.30'}; SYS.crs=330; SYS.cab=2500; SYS.strobe=SYS.ldg=1; }
+    Object.assign(E[PR.dead],{lit:false,ng:2,itt:80,np:0,tq:0,ff:0,oilP:0,genOn:false,genRst:false}); SYS['cond'+d]=0; SYS['prop'+d]=0; SYS['fw'+d]=0; SYS['gen'+d]=1; SYS['pwr'+d]=0; trimEngines(); SYS.nav1={a:'113.30',s:'110.30'}; SYS.crs=330; SYS.cab=2500; SYS.strobe=SYS.landL=SYS.landR=1; SYS.gearH=0; }
   else { F.place(S,{N:-30000,E:2000,alt:5000,ias:180,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=5000; SYS.strobe=1; }
   if(!S.ground&&kind!=='fl250') Object.assign(AP,F.mkAP());
   if(kind!=='fl250'){ Object.assign(AP,F.mkAP()); AP.alt=kind==='seapp'?2500:5000; }
   AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; if(kind==='fl250'){ AP.hdg=360; }
-  S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
+  SYS.gearH=S.ctl.gear; S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
 }
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
@@ -689,30 +804,70 @@ renderLim();
 function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
 
 /* ---------- instruments ---------- */
-let turnRate=0, lastHdg=null;
+let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now();
+const raF=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.55:0.55+Math.log10(v/500)/Math.log10(5)*0.45; };
+function radTxt(k,a){ if(!radOn(k)) return ''; if(SYS[k+'T']) return k.startsWith('com')?'888.888':k==='adf'?'8888':'888.88'; return a; }
 function draw(o){
-  const b=bus();
-  B200P.flight(P,{ias:o.ias,alt:o.alt,baro:S.baro,roll:o.roll,pitch:o.pitch,slip:o.slip},'');
+  const b=bus(), av=avOn(), now=performance.now(), dt=Math.min(0.1,(now-lastDraw)/1000); lastDraw=now;
+  const asF=SYS.asF||0;
+  B200P.flight(P,{ias:o.ias+3*asF,alt:o.alt+45*asF,baro:S.baro,roll:o.roll,pitch:o.pitch,slip:o.slip},'');
   B200P.flight(P,{ias:o.ias,alt:o.alt,baro:S.baro,roll:o.roll,pitch:o.pitch,slip:o.slip},'2');
-  B200P.needle(P,'vsi',o.vs);
-  B200P.rot(P,'tcp-tc',F.clamp(turnRate/3*20,-40,40)); B200P.tr(P,'ball-tc',`translateX(${(F.clamp(o.slip,-1,1)*20).toFixed(1)}px)`);
-  const h=o.hdg; B200P.rot(P,'hcard-hsi',-h); B200P.rot(P,'hbug-hsi',AP.hdg-h); B200P.rot(P,'hcrs-hsi',SYS.crs-h);
-  const n=curNav; B200P.tr(P,'hdev-hsi',`translateX(${((n.valid?F.clamp(n.dev,-1.2,1.2):0)*0.34*72).toFixed(1)}px)`); B200P.vis(P,'hflag-hsi',!n.valid); B200P.vis(P,'htf-hsi',n.valid&&n.toFrom==='TO');
-  B200P.vis(P,'hgs-hsi',!!(n.valid&&n.gs)); if(n.gs) B200P.tr(P,'hgs-hsi',`translateY(${(F.clamp(n.gs.dev,-1.2,1.2)*0.34*72).toFixed(1)}px)`);
-  const vb=F.nav(S,'VOR',0).brg, ab=F.wrap360(Math.atan2(F.WORLD.loc.E-S.E,F.WORLD.loc.N-S.N)*180/Math.PI);
-  B200P.rot(P,'rcard-rmi',-h); B200P.rot(P,'rn1-rmi',avOn()?vb-h:90); B200P.rot(P,'rn2-rmi',avOn()?ab-h:90);
-  if(AP.fd&&avOn()) B200P.tr(P,'fdb-adi',`translateY(${(F.clamp(o.pitch-AP.thCmd,-12,12)*72*0.04).toFixed(1)}px) rotate(${F.clamp(AP.phiCmd-o.roll,-30,30).toFixed(1)}deg)`); B200P.vis(P,'fdb-adi',AP.fd&&avOn());
+  B200P.vis(P,'altflag-alt',asF>0.5);
+  B200P.needle(P,'vsi',o.vs+(SYS.asVs||0)); B200P.needle(P,'vsi2',o.vs);
+  const tsOk=b&&cbIn('TURN & SLIP'); B200P.rot(P,'tcp-ts',tsOk?F.clamp(turnRate/3*20,-40,40):0); B200P.vis(P,'tsflag-ts',!tsOk); B200P.tr(P,'ball-ts',`translateX(${(F.clamp(o.slip,-1,1)*14).toFixed(1)}px)`);
+  B200P.rot(P,'tcp-ts2',b?F.clamp(turnRate/3*20,-40,40):0); B200P.vis(P,'tsflag-ts2',!b); B200P.tr(P,'ball-ts2',`translateX(${(F.clamp(o.slip,-1,1)*14).toFixed(1)}px)`);
+  const h=o.hdg, h1=F.wrap360(h+SYS.hdgErr1), h2=F.wrap360(h+SYS.hdgErr2);
+  [[1,'',h1,curNav,SYS.crs,74],[2,'2',h2,curNav2,SYS.crs2,66]].forEach(([n,sf,hc,nv,crs,r])=>{ const id='hsi'+sf;
+    B200P.rot(P,'hcard-'+id,-hc); B200P.rot(P,'hbug-'+id,AP.hdg-hc); B200P.rot(P,'hcrs-'+id,crs-hc);
+    B200P.tr(P,'hdev-'+id,`translateX(${((nv.valid?F.clamp(nv.dev,-1.2,1.2):0)*0.34*r).toFixed(1)}px)`); B200P.vis(P,'hflag-'+id,!nv.valid); B200P.vis(P,'htf-'+id,nv.valid&&nv.toFrom==='TO'); B200P.vis(P,'hhdg-'+id,!b);
+    B200P.vis(P,'hgs-'+id,!!(nv.valid&&nv.gs)); if(nv.gs) B200P.tr(P,'hgs-'+id,`translateY(${(F.clamp(nv.gs.dev,-1.2,1.2)*0.34*r).toFixed(1)}px)`);
+    const rv=n===1?'nav1':'nav2', t=NAVS[SYS[rv].a], vb=radOn(rv)&&t==='VOR'?F.nav(S,'VOR',0):null, ab=adfNow();
+    B200P.rot(P,'rcard-rmi'+sf,-hc); B200P.rot(P,'rn1-rmi'+sf,vb&&vb.valid?vb.brg-h:90); B200P.rot(P,'rn2-rmi'+sf,ab!=null?ab-h:90);
+    B200P.rot(P,'slv-'+n,b?F.clamp((n===1?SYS.hdgErr1:SYS.hdgErr2)*4,-40,40):0); });
+  if(AP.fd&&av) B200P.tr(P,'fdb-adi',`translateY(${(F.clamp(o.pitch-AP.thCmd,-12,12)*74*0.04).toFixed(1)}px) rotate(${F.clamp(AP.phiCmd-o.roll,-30,30).toFixed(1)}deg)`); B200P.vis(P,'fdb-adi',AP.fd&&av);
   E.forEach((e,i)=>{ const s=SIDES[i]; B200P.needle(P,'TQ'+s,e.tq); B200P.needle(P,'ITT'+s,e.itt); B200P.needle(P,'NP'+s,e.np); B200P.needle(P,'NG'+s,e.ng); B200P.needle(P,'FF'+s,e.ff); B200P.needle(P,'OIL'+s,e.oilP,'P'); B200P.needle(P,'OIL'+s,e.oilT,'T');
-    B200P.text(P,'dg-TQ'+s,String(Math.round(e.tq/10)*10)); B200P.text(P,'dg-ITT'+s,String(Math.round(e.itt))); B200P.text(P,'dg-NP'+s,String(Math.round(e.np/10)*10)); B200P.text(P,'dg-NG'+s,e.ng.toFixed(1)); });
-  B200P.needle(P,'fq',b?E[0].fuel:0,'L'); B200P.needle(P,'fq',b?E[1].fuel:0,'R');
+    B200P.text(P,'dg-TQ'+s,String(Math.round(e.tq/10)*10)); B200P.text(P,'dg-ITT'+s,String(Math.round(e.itt))); B200P.text(P,'dg-NP'+s,String(Math.round(e.np/10)*10)); B200P.text(P,'dg-NG'+s,e.ng.toFixed(1));
+    B200P.needle(P,'fq'+s,b&&cbIn('QTY IND '+s)?(SYS.fqSel?e.main:e.aux):0); });
   B200P.needle(P,'cab',SYS.cab,'A'); B200P.needle(P,'cab',SYS.diff||0,'D'); B200P.needle(P,'cvs',SYS.cabVS);
-  const fp=S.ctl.flapPos; B200P.needle(P,'flp',b?(fp<=1?fp*40:40+(fp-1)*60):0); B200P.needle(P,'volt',E.some(e=>e.genOn)?28.2:SYS.bat?(E.some(e=>e.ng>3&&!e.lit)?21.5:24.3):0); B200P.needle(P,'oat',o.oat);
-  const av=avOn(); B200P.text(P,'rd-comA',av?SYS.com.a:''); B200P.text(P,'rd-comS',av?SYS.com.s:''); B200P.text(P,'rd-navA',av?SYS.nav.a:''); B200P.text(P,'rd-navS',av?SYS.nav.s:''); B200P.text(P,'rd-xpdr',av&&SYS.xpdrMode>0?(SYS.identT>0&&blinkOn()?'IDNT':SYS.xpdr):''); B200P.text(P,'rd-alt',av?'ALT '+AP.alt:'');
-  B200P.text(P,'rd-cab1',b?'CAB '+SYS.cabSel:''); B200P.text(P,'rd-cab2',b?'ACFT '+Math.max(0,Math.round(hP(pA(SYS.cabSel)-6.5*68.95)/100)*100):'');
-  B200P.ann(P,annLit,SYS.annTest&&b,blinkOn());
-  if(PST.closest('.ckp')) el('engRead').innerHTML=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi`;
+  const fp=S.ctl.flapPos; B200P.needle(P,'flp',b?(fp<=1?fp*40:40+(fp-1)*60):0);
+  // overhead meters (push for volts)
+  const gv=i=>E[i].genOn?28.2:0, bv=E.some(e=>e.genOn)?28.2:SYS.bat?(E.some(e=>e.ng>3&&!e.lit&&e.stT>0)?21.5:24.3):0;
+  const load=(av?14:4)+(SYS.wsP?9:0)+(SYS.wsC?9:0)+(SYS.propDe?12:0)+(SYS.landL+SYS.landR+SYS.taxi)*4+(SYS.elecHeat?20:0)+(SYS.battT>0?18:0)+(SYS.inv?6:0);
+  const nG=E.filter(e=>e.genOn).length;
+  B200P.needle(P,'ldL',SYS.vLoadL?gv(0)/30*100:E[0].genOn?load/nG:0); B200P.needle(P,'ldR',SYS.vLoadR?gv(1)/30*100:E[1].genOn?load/nG:0);
+  B200P.needle(P,'bam',SYS.vBatt?-60+bv/30*120:!SYS.bat?0:nG?(SYS.battT>0?SYS.battT*2:2):-F.clamp(load*0.8+(E.some(e=>e.stT>0&&!e.genOn&&(SYS.ignL||SYS.ignR))?60:0),0,60));
+  const acOn=b&&SYS.inv!==0; B200P.needle(P,'acm',acOn?(SYS.vAC?380+(115-100)/30*40:400):380);
+  // standby compass (erratic with windshield heat or air conditioning)
+  const jit=(SYS.wsP||SYS.wsC||SYS.acRun)?Math.sin(now/180)*6+Math.sin(now/57)*3:0; B200P.tr(P,'cmp',`translateX(${(-(F.wrap180(h+jit))*0.9).toFixed(1)}px)`);
+  // synchroscope
+  if(b&&E[0].lit&&E[1].lit) synA+=(E[0].np-E[1].np)*dt*8; B200P.rot(P,'syn',synA%360);
+  // copilot radar altimeter and DME indicators
+  const raV=SYS.raT?100:o.agl; B200P.needle(P,'ra',av?raV:2500); B200P.vis(P,'raflag',!av); B200P.rot(P,'dhb',-150+raF(dhFt())*300);
+  [1,2].forEach(n=>{ const on=av&&cbIn('DME')&&SYS[n===1?'dmePwr':'dme2Pwr'], d=SYS['dmeD'+n], sel=SYS['d'+n+'sel'], ch=SYS['d'+n+'ch'], hold=ch<3&&SYS.dmeHold[ch];
+    B200P.text(P,'dm-d'+n+'a',on?(d!=null?d.toFixed(1):'---.-'):''); B200P.text(P,'dm-d'+n+'u',on?'NM':'');
+    const gs=SYS.dmeGs[n]; B200P.text(P,'dm-d'+n+'b',!on||d==null?'':sel===0?Math.round(gs)+' KT':sel===1?(gs>30?Math.min(99,Math.round(d/gs*60))+' MIN':'-- MIN'):SYS['dmeId'+n]);
+    B200P.text(P,'dm-d'+n+'c',on?'CH '+ch+(hold?'  HLD':''):''); });
+  // radios
+  const tNow=performance.now();
+  ['com1','com2','nav1','nav2','adf'].forEach(k=>{ const on=radOn(k), act=!!SYS[k+'Act'], hld=k.startsWith('nav')&&SYS[k+'Md']===2;
+    B200P.text(P,'rd-'+k+'A',radTxt(k,SYS[k].a)); B200P.text(P,'rd-'+k+'S',!on?'':act&&!SYS[k+'T']?'------':hld&&!SYS[k+'T']?SYS.dmeHold[k==='nav1'?1:2]||SYS[k].s:radTxt(k,SYS[k].s));
+    const chg=on&&(tNow-(SYS.chgT[k]||-1e9)<900||SYS[k+'T']), mem=on&&!act&&SYS.mem[k][SYS.memI[k]]===SYS[k].s;
+    B200P.text(P,'rd-'+k+'N0',chg?'ACT':''); B200P.text(P,'rd-'+k+'N1',mem?'MEM':'');
+    if(k!=='adf') B200P.text(P,'rd-'+k+'N2',!on?'':k.startsWith('nav')?(hld?'HLD':''):''); });
+  const xo=radOn('xpdr'), xm=SYS.xpdrMd; B200P.text(P,'rd-xpdrA',xo?(SYS.xpdrT?'8888':SYS.xpdr):''); const xr=xo&&xm>1&&(SYS.identT>0?blinkOn():Math.random()<0.15); B200P.text(P,'rd-xpdrN0',xo&&tNow-(SYS.chgT.xpdr||-1e9)<900?'ACT':''); B200P.text(P,'rd-xpdrN1',xr?'TX':''); B200P.text(P,'rd-xpdrS',xo?('ATC '+(SYS.xpdr12?1:2)+'  '+['','SBY','ON','ALT'][xm]+(xm===3?(cbIn('ENCD ALTM')?' · ALTM '+(SYS.encAlt?1:2):' FAIL'):'')):'');
+  B200P.text(P,'rd-altsel',av?String(AP.alt):''); B200P.text(P,'rd-apm',apText());
+  B200P.rot(P,'pctlp',-150+F.clamp((SYS.cabSel+1000)/11000,0,1)*300); B200P.text(P,'rd-cab2',b?'ACFT '+Math.max(0,Math.round(hP(pA(SYS.cabSel)-6.5*68.95)/100)*100):'');
+  { const br=(0.45+0.55*SYS.annBrt).toFixed(2); if(P.svg._br!==br){ P.svg._br=br; P.svg.style.setProperty('--rbrt',br); } }
+  B200P.text(P,'rd-oat',b&&cbIn('OAT')?(SYS.oatF?Math.round(o.oat*9/5+32)+' °F':Math.round(o.oat)+' °C'):'');
+  B200P.text(P,'rd-hobbs',String(SYS.hobbs.toFixed(1)).padStart(6,'0'));
+  // copilot subpanel gauges
+  const pd=SYS.propDe; B200P.needle(P,'pamp',b&&cbIn('PROP DEICE')&&E.some(e=>e.lit)?(pd===-1?20+2*Math.sin(now/900):pd===1?22:0):0);
+  const pneu=E.some((e,i)=>e.lit&&e.ng>55&&SYS['bleed'+SIDES[i]]!==1); B200P.needle(P,'suct',pneu?5.1:0); B200P.needle(P,'pneu',pneu?(SYS.surf&&Math.sin(now/1500)>0?15.5:18):0);
+  B200P.needle(P,'ctemp',SYS.cabT); B200P.needle(P,'oxy',SYS.o2psi);
+  B200P.tr(P,'aitr',`translateX(${((SYS.ailTrim-0.5)*44).toFixed(1)}px)`);
+  B200P.ann(P,annLit,SYS.annTest&&b&&cbIn('ANN POWER'),blinkOn());
+  if(PST.closest('.ckp')) el('engRead').innerHTML=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`;
 }
-
 /* ---------- loop ---------- */
 let holdRoll=null, holdPitch=null, last=performance.now(), slow=0, panelT=1;
 function pilotInput(dt){
@@ -743,9 +898,9 @@ function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); last=t;
   if(!UI.paused&&!S.crash){
     pilotInput(dt);
-    const o0=F.readouts(S); curNav=navNow(); sysTick(dt,o0); procTick(dt);
-    const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.3;
-    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); S.ctl.rud+=rt; F.step(S,h); S.ctl.rud-=rt; }
+    const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); audioTick(dt);
+    const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.3, at=(SYS.ailTrim-0.5)*0.12;
+    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); S.ctl.rud+=rt; S.ctl.ail+=at; F.step(S,h); S.ctl.rud-=rt; S.ctl.ail-=at; }
     if(S.ground){ let rev=0; E.forEach((e,i)=>{ const pl=SYS['pwr'+SIDES[i]]; if(e.lit&&pl<0) rev+=pl<-0.12?2500+6500*(-pl-0.12)/0.28:1200*(-pl/0.12); }); if(rev&&S.Vg>0) S.Vg=Math.max(0,S.Vg-rev/F.AC.m*dt); }
     if(AP.msgT>0&&!AP.on&&AP.msg==='AP OFF'){ AP.msg=''; apDiscFx(); }
   }
@@ -753,7 +908,7 @@ function loop(t){
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   annCompute(o);
   if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
-  hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, gearWarn()&&!UI.paused);
+  const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest), bb&&cbIn('GEAR WARN')&&gearWarn()&&!(SYS.hornSilOn&&!flapHorn())&&!UI.paused);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);
 }
