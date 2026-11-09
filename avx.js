@@ -1,5 +1,5 @@
 /* Birdbird – avionikk-logikk for glass cockpit-treneren: radioer, CDI, FMS-vinduer, softkeys og bezel-kontroller.
-   Funksjonene følger G1000-arbeidsflyten (NAV/COM, CRS/BARO, FMS, D→, FPL, PROC, MENU, CLR, ENT). Grafikken er vår egen. */
+   Funksjonene følger vanlig glass-cockpit-arbeidsflyt (NAV/COM, CRS/BARO, FMS, D→, FPL, PROC, MENU, CLR, ENT). Grafikken er vår egen. */
 (function(G){
 'use strict';
 const F=G.FDM, M=G.FMS;
@@ -34,7 +34,7 @@ function navNow(s,gsKt){
   n.label=cdiLabel(); n.color='grn'; n.crs=A.crs[i]; if(n.src==='LOC') n.locCrs=(navStation(i)||{}).crs;
   return {cdi:n,gps:g};
 }
-/* automatisk bytte fra GPS til LOC på ILS (som G1000 når LOC er innstilt) */
+/* automatisk bytte fra GPS til LOC på ILS (når LOC er innstilt) */
 function autoSlew(s,cdi){
   const fp=A.fp; if(A.cdi!=='GPS'||!fp.appr||fp.appr.kind!=='ILS'||!fp.apprActive) return false;
   if(navAct(0)!==fp.appr.loc) return false;
@@ -134,7 +134,7 @@ function fms(d,which,step,ctx){
   if(W.type==='DTO'||W.type==='WPT'){
     const e=W.e; if(W.type==='DTO') W.stage=0;
     if(which==='inner'){ const c=e.chars[e.cur]||' '; let i=CH.indexOf(c); i=((i+step)%CH.length+CH.length)%CH.length; e.chars[e.cur]=CH[i];
-      // fyll ut automatisk som G1000
+      // fyll ut automatisk som i en typisk glass cockpit
       const pre=e.chars.slice(0,e.cur+1).join('').trim(); const m=M.match(pre); if(m){ for(let k=e.cur+1;k<e.chars.length;k++) e.chars[k]=m[k]||' '; } }
     else e.cur=clamp(e.cur+step,0,e.chars.length-1);
     return; }

@@ -17,6 +17,7 @@ function box(g,x,y,w,h,fill,stroke){ g.fillStyle=fill; g.fillRect(x,y,w,h); if(s
 /* ---------- toppfelt ---------- */
 function topBar(g,d,center){
   box(g,0,0,VW,40,COL.bar); g.fillStyle='#2b323a'; g.fillRect(0,39,VW,1);
+  if(d.avOff){ [0,1].forEach(i=>{ const y=i?30:12; txt(g,'NAV'+(i+1),8,y,COL.txt,F(600,12)); txt(g,'---.--',56,y,COL.gray,F(500,13)); txt(g,'COM'+(i+1),VW-8,y,COL.txt,F(600,12),'right'); txt(g,'---.---',VW-60,y,COL.gray,F(500,13),'right'); }); if(center) center(); return; }
   const R=d.radio, cdi=d.cdiKey;
   [0,1].forEach(i=>{ const y=i?30:12, n=R.nav[i], sel=R.navSel===i, used=(cdi==='NAV'+(i+1));
     txt(g,'NAV'+(i+1),8,y,COL.txt,F(600,12));
@@ -25,7 +26,7 @@ function topBar(g,d,center){
     txt(g,n.act,132,y,used?COL.grn:COL.txt,F(700,14)); const st=d.navIds[i]; if(st) txt(g,st,192,y,used?COL.grn:COL.gray,F(600,11)); });
   [0,1].forEach(i=>{ const y=i?30:12, c=R.com[i], sel=R.comSel===i;
     txt(g,'COM'+(i+1),VW-8,y,COL.txt,F(600,12),'right');
-    // aktiv frekvens mot midten, standby ytterst (som i G1000)
+    // aktiv frekvens mot midten, standby ytterst 
     txt(g,c.act,VW-146,y,sel?COL.grn:COL.txt,F(700,14),'right'); txt(g,'⇄',VW-132,y,COL.gray,F(500,11),'left');
     if(sel){ g.strokeStyle=COL.cyan; g.lineWidth=1.5; g.strokeRect(VW-124,y-8,66,16); }
     txt(g,c.stby,VW-60,y,sel?COL.cyan:COL.txt,F(500,13),'right'); });
@@ -423,5 +424,10 @@ function mfd(st,d){
   softkeys(g,d.softMFD);
 }
 
-G.GLASS={pfd,mfd,VW,VH};
+function blank(st){ if(!st.w) return; const g=begin(st); g.fillStyle='#020303'; g.fillRect(0,0,VW,VH); }
+function splash(st,t,line){ if(!st.w) return; const g=begin(st); g.fillStyle='#000'; g.fillRect(0,0,VW,VH);
+  txt(g,'BIRDBIRD AVIONICS',VW/2,VH/2-60,'#cfd6dc',F(700,30),'center'); txt(g,'Training display system',VW/2,VH/2-22,COL.gray,F(500,16),'center');
+  if(line){ txt(g,line,VW/2,VH/2+40,COL.cyan,F(700,18),'center'); return; }
+  const w=360, p=Math.min(1,t/4); box(g,VW/2-w/2,VH/2+30,w,10,'#1d2228'); box(g,VW/2-w/2,VH/2+30,w*p,10,COL.cyan); txt(g,'SELF TEST',VW/2,VH/2+64,COL.gray,F(600,13),'center'); }
+G.GLASS={pfd,mfd,blank,splash,VW,VH};
 })(window);

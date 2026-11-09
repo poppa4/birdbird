@@ -93,21 +93,21 @@ function engines(s,dt,V,at){
   const q=0.5*at.rho*V*V, pa=Math.min(1,at.sig/0.74);
   let Tl=0,Tr=0;
   s.eng.forEach((e,i)=>{
-    const alive=!e.fail && e.fuel>0;
+    const alive=!e.fail && !e.off && e.fuel>0;
     const tgt=alive? e.thr : 0;
     e.load+=(tgt-e.load)*Math.min(1,dt/1.1);
     let T;
     if(alive){ const P=e.load*AC.Pmax*pa, eta=0.82*(1-Math.exp(-Math.max(V,1)/18)); T=Math.min(AC.Tstatic*Math.max(e.load,0.03), eta*P/Math.max(V,1)); }
     else T= -(e.feather?0.012:0.13)*q*AC.Aprop;
     e.T=T;
-    const rpmT= alive ? 900+1400*smooth(0,0.55,e.load) : (e.feather?0:Math.min(1900,V*30));
+    const rpmT= alive ? (e.test? 1850 : 710+1590*smooth(0,0.55,e.load)) : (e.crank? 280 : (e.feather?0:Math.min(1900,V*30)));
     e.rpm+=(rpmT-e.rpm)*Math.min(1,dt/(alive?0.8:(e.feather?3:1.5)));
     e.ff= alive? 0.7+9.0*Math.pow(e.load,1.1) : 0;
     e.fuel=Math.max(0,e.fuel-e.ff*dt/3600);
     e.oilT+=((alive?72+28*e.load:Math.max(15,e.oilT-5))-e.oilT)*dt/90;
     e.coolT+=((alive?70+26*e.load:Math.max(15,e.coolT-5))-e.coolT)*dt/70;
     e.gbT=(e.gbT??40)+(((alive?48+32*e.load:Math.max(15,(e.gbT??40)-5)))-(e.gbT??40))*dt/80; e.fuelT=(e.fuelT??18)+((alive?20+6*e.load:15)-(e.fuelT??18))*dt/300;
-    e.volts=e.rpm>1100?28.1:24.2; e.amps=e.rpm>1100?8+6*e.load:0;
+    const chg=e.rpm>600&&e.alt!==false; e.volts=chg?28.1:24.2; e.amps=chg?8+6*e.load:0;
     e.oilP+=((alive?2.2+2.6*smooth(0,0.6,e.load):(e.rpm>300?0.6:0))-e.oilP)*Math.min(1,dt/0.8);
     if(i===0) Tl=T; else Tr=T;
   });
