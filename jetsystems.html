@@ -2,840 +2,187 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="The systems of an A320-family jet, simplified: three hydraulic systems and the PTU, fly-by-wire control laws and their protections, the AC and DC…">
+<meta name="description" content="Aircraft systems (EASA 021): electrics, hydraulics, fuel, flight controls and landing gear and brakes, compared across a light piston twin, a turboprop twin and a jet transport. One live system schematic with failures: generator, pump, leak, bus fault, fuel imbalance and crossfeed, gear extension failure, and what still works.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Jet Transport Systems</title>
+<title>Aircraft Systems</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
-.paper svg{display:block;width:100%;height:auto}
-.paper canvas{display:block;width:100%}
-#fbwcv{height:470px}
-#skidcv{aspect-ratio:16/10;max-height:420px}
-@media (max-width:600px){#skidcv{aspect-ratio:auto;height:300px}}
-.rrow b{white-space:normal;text-align:right}
-.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
-.sw{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 8px}
-.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer}
-.chk input{accent-color:var(--magenta);margin:0}
-.ann{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.ann span{font:600 12px 'IBM Plex Mono',monospace;padding:4px 8px;border-radius:3px;background:#1B2329;color:#5E6B74}
-.ann span.am{color:#F2B33D}.ann span.rd{color:#FF5A4F}.ann span.gn{color:#4ED17A}.ann span.cy{color:#5BC8E8}
-.tablewrap{overflow-x:auto}
-table.ct{border-collapse:collapse;width:100%;font-size:13.5px}
-table.ct th,table.ct td{padding:6px 8px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
-table.ct th{color:var(--ink-2);font-weight:500;font-size:12.5px}
-.chip{display:inline-block;font:600 11px 'IBM Plex Mono',monospace;padding:1px 6px;border-radius:2px;margin:0 3px 2px 0;color:#fff}
-.chip.G{background:#2C7A4B}.chip.B{background:#1E5E9E}.chip.Y{background:#B07A06}
-.chip.off{background:#E3E7E8;color:#8C989E;text-decoration:line-through}
-.prot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;font-size:13.5px}
-.prot span{padding:4px 0;border-bottom:1px solid var(--rule-2);color:var(--ink-2)}
-.prot b{padding:4px 0;border-bottom:1px solid var(--rule-2);text-align:right;font-weight:600}
+/* the systems figure: one dark synoptic canvas with a status column beside it (under it on phones) */
+.sy-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+.sy-vp .vcvw{display:grid;grid-template-columns:minmax(0,1fr) 250px;align-items:stretch}
+#syv{display:block;width:100%;aspect-ratio:16/11;max-height:640px;touch-action:manipulation}
+.sy-vp .vtools button{font-family:var(--f-body);font-size:12px}
+.sside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:12.5px;line-height:1.45;background:rgba(6,9,12,.25);min-width:0}
+.sside h4{margin:0 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:#EEF2F5;line-height:1.25}
+.sside .sum{margin:0 0 10px;color:#AEB9C2;font-size:12.5px}
+.sside h5{margin:10px 0 4px;font-family:var(--f-mono);font-weight:500;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99}
+.sside ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
+.sside li{position:relative;padding-left:18px}
+.sside li::before{position:absolute;left:0;top:0;font-family:var(--f-mono);font-weight:700}
+.sside li.ok::before{content:"✓";color:#71CC93}.sside li.dg::before{content:"!";color:#F0B440;left:3px}.sside li.no::before{content:"✗";color:#EC5A47}
+.sside li.no{color:#9AA6B1}.sside li.dg{color:#F3D69B}
+.sside .kv{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sside .kv b{font-family:var(--f-mono);font-weight:500;color:#EEF2F5;text-align:right}
+.sside .kv b.r{color:#FF8A78}.sside .kv b.a{color:#F0C470}.sside .kv b.g{color:#8EDDB0}
+.vleg i.ln{height:3px;border-radius:2px}
+.xsec .fails{display:flex;flex-wrap:wrap;gap:6px}
+.xsec .fails .btn{font-size:12.5px;padding:6px 10px;min-height:34px}
+.xsec .fails .btn.on{border-color:#C8412F;background:#FBE9E5;color:#9E2A1B;font-weight:600}
+.xsec .fails .btn.on::before{content:"✗ "}
+.xsec .act{display:flex;flex-direction:column;gap:2px}
+.xsec .act .grp{font-size:12.5px;color:var(--ink-2);margin:4px 0 0}
+.xsec .act .seg button{font-size:12.5px}
+.xsec .act .btn{font-size:12.5px;padding:6px 10px;min-height:34px;align-self:flex-start}
+.xsec .act .xchk{min-height:30px}
+.xsec .hint{margin:6px 0 0}
+.typeseg{display:grid!important;grid-template-columns:1fr;gap:4px}
+.typeseg button{border-radius:var(--radius)!important;text-align:left}
+@media (pointer:coarse){.xsec .fails .btn,.xsec .act .btn,.xsec .act .seg button,.typeseg button{min-height:40px}.xsec .act .xchk{min-height:40px}.sy-vp .vtabs button,.sy-vp .vtools button{min-height:40px}}
+/* at a glance: the three classes side by side */
+.glance{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:16px}
+.glance th,.glance td{border-bottom:1px solid var(--rule-2);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.45}
+.glance thead th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.glance tbody th{font-weight:600;color:var(--ink);white-space:nowrap}
+.glance td{color:var(--ink-2)}
+.glance .gb{background:none;border:0;padding:0;font:inherit;color:var(--smoke,#9A1E68);cursor:pointer;text-align:left}
+.glance .gb:hover{text-decoration:underline}
+h3.gh{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:22px 0 0}
+@media (max-width:980px){.sy-vp .vcvw{grid-template-columns:minmax(0,1fr)}.sside{border-left:0;border-top:1px solid rgba(255,255,255,.07)}}
+@media (max-width:980px) and (min-width:641px){.sside{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.sside>.c1{grid-column:1}.sside>.c2{grid-column:2;grid-row:1/span 3}}
+@media (max-width:640px){#syv{aspect-ratio:1/1.12;max-height:none}.sy-vp .vtools{margin-left:0;width:100%}.glance{font-size:12.5px}.glance th,.glance td{padding:6px 5px}}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px;flex-wrap:wrap}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.35;color:var(--ink);margin:0 0 10px}
+.tstep .ins{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;align-items:flex-end}
+.tstep .ins label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.tstep .ins input{font-family:var(--f-mono);font-size:15px;width:120px;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
+.tstep .ins input.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .ins input.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}.tstep .ins input{width:104px}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--panel-2,#F6F8F6);padding:6px 9px;border-radius:3px;margin:2px 0 10px;overflow-x:auto;white-space:nowrap}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
-<body data-title="Jet Transport Systems">
-<script src="site.js?v=43"></script>
+<body data-title="Aircraft Systems">
+<script src="site.js?v=44"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aircraft systems</div>
-      <h1>Jet transport systems</h1>
-      <p>The systems of an A320-family jet, simplified: three hydraulic systems and the PTU, fly-by-wire control laws and their protections, the AC and DC electrical network, the brakes, and fuel, bleed air, ice protection and fire protection. Fail things and see what is left.</p>
+      <div class="eyebrow">Birdbird Virtual Lab · Aircraft and engine systems</div>
+      <h1>Aircraft systems: hydraulics, electrics, fuel, flight controls and landing gear</h1>
+      <p data-tx="lead">Every aircraft has the same jobs to do: make electricity, move heavy things, get fuel to the engines, connect the pilot to the control surfaces, and lower the gear. How it does them changes with size. A light piston twin does them with alternators, cables and an electric gear motor; a turboprop adds a hydraulic system and inverters; a jet transport has three hydraulic systems, AC power and fly-by-wire. See each one live, fail parts of it, and see what still works.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#hyd">Hydraulics</a><a href="#fbw">Fly-by-wire</a><a href="#elec">Electrics</a><a href="#gear">Gear and brakes</a><a href="#fuelbleed">Fuel, bleed and fire</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">The systems lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="hyd">
-    <div class="eyebrow">1 · Interactive</div>
-    <h2>Hydraulics: green, blue and yellow</h2>
-    <p class="lead">Three independent systems at about 3000 psi. Green is driven by engine 1, yellow by engine 2 (with an electric pump as backup), and blue by an electric pump, with the ram air turbine (RAT) as the emergency source. The power transfer unit (PTU) lets green and yellow help each other without exchanging fluid.</p>
-    <div class="split">
-      <div class="paper" id="hsvg"></div>
-      <div class="panel">
-        <div class="btns" id="hpre"></div>
-        <div class="grp">Engines and power</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="h_e1" checked> <span>Engine 1 running</span></label><label class="chk"><input type="checkbox" id="h_e2" checked> <span>Engine 2 running</span></label><label class="chk"><input type="checkbox" id="h_apu"> <span>APU generator on line</span></label></div>
-        <div class="grp">Failures</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="h_gEdp"> <span>Green engine pump fails</span></label><label class="chk"><input type="checkbox" id="h_yEdp"> <span>Yellow engine pump fails</span></label><label class="chk"><input type="checkbox" id="h_bPump"> <span>Blue electric pump fails</span></label></div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="h_gLeak"> <span>Green fluid loss</span></label><label class="chk"><input type="checkbox" id="h_bLeak"> <span>Blue fluid loss</span></label><label class="chk"><input type="checkbox" id="h_yLeak"> <span>Yellow fluid loss</span></label></div>
-        <div class="grp">Cockpit switches</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="h_ptu" checked> <span>PTU in AUTO</span></label><label class="chk"><input type="checkbox" id="h_yElec"> <span>Yellow electric pump ON</span></label><label class="chk"><input type="checkbox" id="h_rat"> <span>RAT manual extension</span></label></div>
-        <div class="ann" id="hann"></div>
-        <p class="callout blue" id="hx"></p>
-      </div>
-    </div>
-    <div class="box tablewrap"><table class="ct" id="htab"></table></div>
-    <p class="note">Consumers shown are typical of the A320 family and simplified. Where a consumer has two or three systems, it keeps working on any one of them, sometimes slower (flaps and slats run at half speed on one motor).</p>
-  </section>
-
-  <section class="card" id="fbw">
-    <div class="eyebrow">2 · Interactive</div>
-    <h2>Fly-by-wire and control laws</h2>
-    <p class="lead">The sidestick does not move the surfaces directly. In normal law, pitch input is a load factor demand and roll input is a roll rate demand; the computers move the elevators, the trimmable horizontal stabiliser (THS), the ailerons and the spoilers to deliver it, inside a protected envelope. As failures add up, the law degrades and the protections go away one by one.</p>
-    <div class="split">
-      <div class="view"><canvas id="fbwcv" aria-label="Time history of pitch attitude, load factor, angle of attack, speed and bank after a sidestick input"></canvas></div>
-      <div class="panel">
-        <div class="grp">Failures</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="f_adr2"> <span>Two air data references (ADRs) fail</span></label><label class="chk"><input type="checkbox" id="f_elac2"> <span>Both ELACs fail</span></label><label class="chk"><input type="checkbox" id="f_gy"> <span>Green and yellow hydraulics lost</span></label><label class="chk"><input type="checkbox" id="f_ir3"> <span>All three IRs fail</span></label><label class="chk"><input type="checkbox" id="f_mech"> <span>All flight control computers lost</span></label><label class="chk"><input type="checkbox" id="f_gear"> <span>Landing gear down</span></label></div>
-        <div class="grp">Sidestick input</div>
-        <div id="fctl"></div>
-        <div class="ro">
-          <div class="rrow"><span>Control law</span><b id="f_law"></b></div>
-          <div class="rrow"><span>Pitch</span><b id="f_p"></b></div>
-          <div class="rrow"><span>Roll</span><b id="f_r"></b></div>
-          <div class="rrow"><span>Pitch trim</span><b id="f_t"></b></div>
-        </div>
-      </div>
-    </div>
-    <div class="cols">
-      <div class="box"><b class="t">Protections now</b><div class="prot" id="fprot" style="margin-top:6px"></div></div>
-      <div class="box"><b class="t">What happened</b><div class="ann" id="fann"></div><p id="fx"></p></div>
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kin"></p>
+    <div id="kcGrid"></div>
+    <h3 class="gh" id="glH">Three classes at a glance</h3>
+    <div class="wrapx"><table class="glance" id="glance"></table></div>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
     </div>
   </section>
 
-  <section class="card" id="elec">
-    <div class="eyebrow">3 · Interactive</div>
-    <h2>AC and DC electrics</h2>
-    <p class="lead">Two engine-driven generators (each with an integrated drive generator, IDG, that gives constant frequency) normally feed AC bus 1 and AC bus 2. Transformer rectifiers (TRs) turn AC into 28 V DC. The essential buses carry what you need to fly safely, and they are the last to lose power.</p>
-    <div class="split">
-      <div class="paper" id="esvg"></div>
-      <div class="panel">
-        <div class="grp">Phase</div><div id="ephase"></div>
-        <div class="grp">Sources</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="e_g1"> <span>Generator 1 fails</span></label><label class="chk"><input type="checkbox" id="e_g2"> <span>Generator 2 fails</span></label><label class="chk"><input type="checkbox" id="e_apu"> <span>APU generator on line</span></label><label class="chk"><input type="checkbox" id="e_ext"> <span>External power connected</span></label></div>
-        <div class="grp">Other failures</div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="e_tr1"> <span>TR 1 fails</span></label><label class="chk"><input type="checkbox" id="e_tr2"> <span>TR 2 fails</span></label><label class="chk"><input type="checkbox" id="e_emer"> <span>Emergency generator not available</span></label></div>
-        <div class="ann" id="eann"></div>
-        <div class="ro">
-          <div class="rrow"><span>Configuration</span><b id="e_cfg"></b></div>
-          <div class="rrow"><span>AC ESS bus from</span><b id="e_aess"></b></div>
-          <div class="rrow"><span>DC ESS bus from</span><b id="e_dess"></b></div>
-          <div class="rrow"><span>Batteries</span><b id="e_bat"></b></div>
+  <section class="card" id="explore" data-step="explore">
+    <span id="hyd" aria-hidden="true"></span><span id="fbw" aria-hidden="true"></span><span id="elec" aria-hidden="true"></span><span id="gear" aria-hidden="true"></span><span id="fuelbleed" aria-hidden="true"></span><span id="fuel" aria-hidden="true"></span>
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The systems lab</h2>
+    <p class="lead" id="xLead"></p>
+    <div class="xapp">
+      <div class="xvp sy-vp" id="syVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="System"></div><div class="vtools" id="vtools" aria-label="Aircraft class"></div></div>
+        <div class="vcvw">
+          <div class="vcv" id="vcv">
+            <canvas id="syv" aria-label="System schematic of the selected aircraft class: sources, buses or systems, valves and users, with live power, pressure or fuel flow."></canvas>
+            <div class="vchip" id="chip" aria-live="polite"></div>
+          </div>
+          <aside class="sside" id="side" aria-live="polite"></aside>
         </div>
-        <p class="callout" id="ex"></p>
+        <div class="vleg" id="vleg"></div>
+      </div>
+      <p class="xsee" id="xsee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <details class="xsec" open><summary>Aircraft</summary><div id="clsSeg" class="typeseg"></div></details>
+        <details class="xsec" open><summary>Failures</summary><div class="fails" id="fails"></div><div class="btns" style="margin-top:8px"><button type="button" class="btn sm" id="reset">Reset all</button></div><p class="hint" id="failH"></p></details>
+        <details class="xsec" open><summary>Pilot actions</summary><div class="act" id="acts"></div></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
       </div>
     </div>
   </section>
 
-  <section class="card" id="gear">
-    <div class="eyebrow">4 · Interactive</div>
-    <h2>Landing gear, brakes and anti-skid</h2>
-    <p class="lead">A tyre brakes best with a little slip, typically 10 to 20 percent. Push harder and the wheel goes past the peak, the friction falls, and a locked wheel gives no cornering force at all. Anti-skid keeps each wheel near the peak; autobrake picks a deceleration and lets anti-skid do the rest.</p>
-    <div class="split">
-      <div class="paper"><canvas id="skidcv" aria-label="Friction coefficient against wheel slip, with the operating point"></canvas></div>
-      <div class="panel">
-        <div class="grp">Runway</div><div id="grwy"></div>
-        <div class="grp">Braking system</div><div id="gsys"></div>
-        <div class="grp">Brake command</div><div id="gmode"></div>
-        <div id="gctl"></div>
-        <div class="ro">
-          <div class="rrow"><span>Wheel slip</span><b id="g1"></b></div>
-          <div class="rrow"><span>Braking friction used</span><b id="g2"></b></div>
-          <div class="rrow"><span>Deceleration</span><b id="g3"></b></div>
-          <div class="rrow"><span>Stop from 130 kt (brakes only)</span><b id="g4"></b></div>
-          <div class="rrow"><span>Directional control</span><b id="g5"></b></div>
-        </div>
-        <p class="callout blue" id="gx"></p>
-      </div>
-    </div>
-    <div class="cols" id="gcards"></div>
-    <div class="split" id="hydro" style="margin-top:16px">
-      <div class="box"><b class="t">Hydroplaning (aquaplaning)</b><p>On standing water deeper than the tyre tread can drain, typically more than about 3 mm, a water wedge lifts the tyre off the runway and braking and cornering friction almost disappear. The speed at which a rotating tyre starts to hydroplane follows a rule of thumb: about 9 × √p kt, with p the tyre pressure in psi. A tyre that is not yet turning, such as at touchdown before spin-up, hydroplanes at a lower speed, about 7.7 × √p kt. Reverted-rubber hydroplaning, on a locked wheel whose rubber melts from the steam it creates, can last down to very low speeds. That is one more reason never to land with the brakes on and to keep anti-skid working.</p></div>
-      <div class="panel"><div id="hpctl"></div>
-        <div class="ro">
-          <div class="rrow"><span>Rotating tyre (9 √p)</span><b id="hp1"></b></div>
-          <div class="rrow"><span>Non-rotating tyre at touchdown (7.7 √p)</span><b id="hp2"></b></div>
-          <div class="rrow"><span>Compared with a typical A320 touchdown (about 130 kt)</span><b id="hp3"></b></div>
-        </div></div>
-    </div>
+  <section class="card" id="debrief" data-step="debrief">
+    <span id="ops" aria-hidden="true"></span>
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
   </section>
 
-  <section class="card" id="fuelbleed">
-    <div class="eyebrow">5 · Interactive</div>
-    <h2>Fuel, bleed, ice protection and fire</h2>
-    <p class="lead">Three systems that every engine failure touches. The fuel system feeds the engines from five tank cells in a fixed order. The bleed air system takes hot compressed air from the engines or the APU for the packs and the wing anti-ice. The fire protection system detects a fire with two loops and puts it out with agent bottles. Choose a system, fail something and follow the logic.</p>
-    <div class="split">
-      <div class="paper" id="fbsvg"></div>
-      <div class="panel">
-        <div class="grp">System</div><div id="fbsys"></div>
-        <div id="fbFuel">
-          <div id="fuctl"></div>
-          <div class="grp">Failures (at 30 min)</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="u_ctr"> <span>Both centre tank pumps fail</span></label><label class="chk"><input type="checkbox" id="u_lwp"> <span>Both left wing pumps fail</span></label><label class="chk"><input type="checkbox" id="u_leak"> <span>Fuel leak at engine 1</span></label></div>
-          <div class="grp">Crew actions (at 60 min)</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="u_e1off"> <span>Engine 1 shut down</span></label><label class="chk"><input type="checkbox" id="u_xf"> <span>Crossfeed open</span></label><label class="chk"><input type="checkbox" id="u_rpoff"> <span>Right wing pumps OFF</span></label></div>
-        </div>
-        <div id="fbBleed" hidden>
-          <div class="grp">Phase</div><div id="blph"></div>
-          <div class="grp">Sources</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="b_e1" checked> <span>Engine 1 running</span></label><label class="chk"><input type="checkbox" id="b_e2" checked> <span>Engine 2 running</span></label><label class="chk"><input type="checkbox" id="b_apu"> <span>APU bleed ON</span></label></div>
-          <div class="grp">Failures</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="b_f1"> <span>Engine 1 bleed fault</span></label><label class="chk"><input type="checkbox" id="b_leak"> <span>Bleed leak, left wing</span></label></div>
-          <div class="grp">Crossbleed valve</div><div id="blx"></div>
-          <div class="grp">Cockpit switches</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="b_p1" checked> <span>Pack 1 ON</span></label><label class="chk"><input type="checkbox" id="b_p2" checked> <span>Pack 2 ON</span></label><label class="chk"><input type="checkbox" id="b_wai"> <span>Wing anti-ice ON</span></label><label class="chk"><input type="checkbox" id="b_eai"> <span>Engine anti-ice ON</span></label></div>
-        </div>
-        <div id="fbFire" hidden>
-          <div class="grp">Engine 1 nacelle</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="r_fire" checked> <span>Fire</span></label><label class="chk"><input type="checkbox" id="r_big"> <span>Large fire</span></label><label class="chk"><input type="checkbox" id="r_false"> <span>False signal on loop A (no fire)</span></label></div>
-          <div class="grp">Detection failures</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="r_fa"> <span>Loop A fault</span></label><label class="chk"><input type="checkbox" id="r_fb"> <span>Loop B fault</span></label></div>
-          <div class="grp">Crew actions</div>
-          <div class="sw"><label class="chk"><input type="checkbox" id="r_pb"> <span>ENG 1 FIRE pushbutton pushed</span></label><label class="chk"><input type="checkbox" id="r_a1"> <span>Agent 1 discharged</span></label><label class="chk"><input type="checkbox" id="r_a2"> <span>Agent 2 discharged</span></label></div>
-        </div>
-        <div class="ann" id="fbann"></div>
-        <div class="ro" id="fbro"></div>
-        <p class="callout blue" id="fbx"></p>
-      </div>
-    </div>
-    <div class="cols" id="fbcards"></div>
-  </section>
-
-  <section class="card" id="ops">
-    <div class="eyebrow">6 · Operations</div>
-    <h2>In the aircraft</h2>
-    <div class="cols" id="cards"></div>
-  </section>
-
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot">Teaching model of a generic A320-family aircraft. System layouts, pressures, consumers, control law logic, protection limits, electrical priorities and brake values are simplified and illustrative, not FCOM data. The aircraft FCOM, QRH and your operator’s procedures give the real logic and limits.</p>
+  <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=42"></script>
-<script>
-(function(){
-'use strict';
-const {T,L,el,nf}=LAB;
-LAB.add({},{
- 'Jet Transport Systems':'Systemer på jetfly','Jet transport systems':'Systemer på jetfly','Birdbird Virtual Lab · Aircraft systems':'Birdbird Virtual Lab · Flysystemer',
- 'The systems of an A320-family jet, simplified: three hydraulic systems and the PTU, fly-by-wire control laws and their protections, the AC and DC electrical network, the brakes, and fuel, bleed air, ice protection and fire protection. Fail things and see what is left.':'Systemene i et jetfly i A320-familien, forenklet: tre hydraulikksystemer og PTU, fly-by-wire-styrelover og beskyttelsene deres, det elektriske AC- og DC-nettet, bremsene, og drivstoff, bleed-luft, isbeskyttelse og brannvern. La ting svikte og se hva som er igjen.',
- 'Fuel, bleed and fire':'Drivstoff, bleed og brann','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt',
- 'Fuel, bleed, ice protection and fire':'Drivstoff, bleed-luft, isbeskyttelse og brann',
- 'Three systems that every engine failure touches. The fuel system feeds the engines from five tank cells in a fixed order. The bleed air system takes hot compressed air from the engines or the APU for the packs and the wing anti-ice. The fire protection system detects a fire with two loops and puts it out with agent bottles. Choose a system, fail something and follow the logic.':'Tre systemer som enhver motorstans berører. Drivstoffsystemet forsyner motorene fra fem tankceller i en fast rekkefølge. Bleed-systemet tar varm, komprimert luft fra motorene eller APU til pakkene og vingeantiisen. Brannvernsystemet oppdager brann med to sløyfer og slukker den med slokkeflasker. Velg et system, la noe svikte og følg logikken.',
- 'System':'System','Fuel':'Drivstoff','Bleed and anti-ice':'Bleed og antiis','Fire':'Brann',
- 'Failures (at 30 min)':'Feil (etter 30 min)','Both centre tank pumps fail':'Begge sentertankpumpene svikter','Both left wing pumps fail':'Begge venstre vingepumper svikter','Fuel leak at engine 1':'Drivstofflekkasje ved motor 1',
- 'Crew actions (at 60 min)':'Besetningens tiltak (etter 60 min)','Engine 1 shut down':'Motor 1 stoppet','Crossfeed open':'Crossfeed åpen','Right wing pumps OFF':'Høyre vingepumper AV',
- 'Fuel at take-off':'Drivstoff ved avgang','Time since take-off':'Tid siden avgang',
- 'Ground':'Bakken','Climb':'Stigning','Cruise':'Cruise','APU bleed ON':'APU-bleed PÅ','Engine 1 bleed fault':'Bleed-feil motor 1','Bleed leak, left wing':'Bleed-lekkasje, venstre vinge',
- 'Crossbleed valve':'Crossbleed-ventil','AUTO':'AUTO','OPEN':'ÅPEN','SHUT':'STENGT','Pack 1 ON':'Pakke 1 PÅ','Pack 2 ON':'Pakke 2 PÅ','Wing anti-ice ON':'Vingeantiis PÅ','Engine anti-ice ON':'Motorantiis PÅ',
- 'Engine 1 nacelle':'Motor 1-nacellen','Large fire':'Stor brann','False signal on loop A (no fire)':'Falskt signal på sløyfe A (ingen brann)','Detection failures':'Feil i deteksjonen','Loop A fault':'Feil på sløyfe A','Loop B fault':'Feil på sløyfe B',
- 'Crew actions':'Besetningens tiltak','ENG 1 FIRE pushbutton pushed':'ENG 1 FIRE-knappen trykket inn','Agent 1 discharged':'Slokkemiddel 1 utløst','Agent 2 discharged':'Slokkemiddel 2 utløst',
- 'Hydroplaning (aquaplaning)':'Vannplaning (aquaplaning)',
- 'On standing water deeper than the tyre tread can drain, typically more than about 3 mm, a water wedge lifts the tyre off the runway and braking and cornering friction almost disappear. The speed at which a rotating tyre starts to hydroplane follows a rule of thumb: about 9 × √p kt, with p the tyre pressure in psi. A tyre that is not yet turning, such as at touchdown before spin-up, hydroplanes at a lower speed, about 7.7 × √p kt. Reverted-rubber hydroplaning, on a locked wheel whose rubber melts from the steam it creates, can last down to very low speeds. That is one more reason never to land with the brakes on and to keep anti-skid working.':'På stående vann dypere enn dekkmønsteret klarer å drenere, typisk mer enn rundt 3 mm, løfter en vannkile dekket fra banen, og friksjonen for bremsing og sidekraft nesten forsvinner. Farten der et roterende dekk begynner å vannplane, følger en tommelfingerregel: rundt 9 × √p kt, der p er dekktrykket i psi. Et dekk som ennå ikke roterer, for eksempel ved setting før det har spunnet opp, vannplaner ved lavere fart, rundt 7,7 × √p kt. Vannplaning med smeltet gummi (reverted rubber), på et låst hjul der gummien smelter av dampen det lager, kan vare ned til svært lave farter. Det er enda en grunn til aldri å lande med bremsene på og til å holde antiskrens i drift.',
- 'Rotating tyre (9 √p)':'Roterende dekk (9 √p)','Non-rotating tyre at touchdown (7.7 √p)':'Dekk som ikke roterer ved setting (7,7 √p)','Compared with a typical A320 touchdown (about 130 kt)':'Sammenlignet med typisk setting på A320 (rundt 130 kt)','Tyre pressure':'Dekktrykk',
- 'Hydraulics':'Hydraulikk','Fly-by-wire':'Fly-by-wire','Electrics':'Elektrisk','Gear and brakes':'Understell og bremser','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Operations':'Operativt','Check':'Sjekk',
- '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Operations':'5 · Operativt',
- 'Hydraulics: green, blue and yellow':'Hydraulikk: grønn, blå og gul',
- 'Three independent systems at about 3000 psi. Green is driven by engine 1, yellow by engine 2 (with an electric pump as backup), and blue by an electric pump, with the ram air turbine (RAT) as the emergency source. The power transfer unit (PTU) lets green and yellow help each other without exchanging fluid.':'Tre uavhengige systemer på rundt 3000 psi. Grønt drives av motor 1, gult av motor 2 (med en elektrisk pumpe som reserve), og blått av en elektrisk pumpe, med ram air-turbinen (RAT) som nødkilde. Kraftoverføringsenheten (PTU) lar grønt og gult hjelpe hverandre uten å utveksle væske.',
- 'Engines and power':'Motorer og strøm','Engine 1 running':'Motor 1 går','Engine 2 running':'Motor 2 går','APU generator on line':'APU-generator tilkoblet',
- 'Failures':'Feil','Green engine pump fails':'Grønn motorpumpe svikter','Yellow engine pump fails':'Gul motorpumpe svikter','Blue electric pump fails':'Blå elektrisk pumpe svikter',
- 'Green fluid loss':'Grønt væsketap','Blue fluid loss':'Blått væsketap','Yellow fluid loss':'Gult væsketap',
- 'Cockpit switches':'Brytere i cockpit','PTU in AUTO':'PTU i AUTO','Yellow electric pump ON':'Gul elektrisk pumpe PÅ','RAT manual extension':'RAT manuelt ut',
- 'Consumers shown are typical of the A320 family and simplified. Where a consumer has two or three systems, it keeps working on any one of them, sometimes slower (flaps and slats run at half speed on one motor).':'Forbrukerne som vises er typiske for A320-familien og forenklet. Der en forbruker har to eller tre systemer, virker den på hvilket som helst av dem, noen ganger saktere (klaffer og slats går med halv fart på én motor).',
- 'Fly-by-wire and control laws':'Fly-by-wire og styrelover',
- 'The sidestick does not move the surfaces directly. In normal law, pitch input is a load factor demand and roll input is a roll rate demand; the computers move the elevators, the trimmable horizontal stabiliser (THS), the ailerons and the spoilers to deliver it, inside a protected envelope. As failures add up, the law degrades and the protections go away one by one.':'Sidestikken beveger ikke rorflatene direkte. I normal lov er pitch-utslag et krav om lastfaktor og roll-utslag et krav om rullrate; datamaskinene beveger høyderorene, den trimbare horisontale stabilisatoren (THS), balanserorene og spoilerne for å levere det, innenfor en beskyttet konvolutt. Når feilene hoper seg opp, degraderes loven og beskyttelsene forsvinner én etter én.',
- 'Two air data references (ADRs) fail':'To luftdatareferanser (ADR) svikter','Both ELACs fail':'Begge ELAC svikter','Green and yellow hydraulics lost':'Grønn og gul hydraulikk tapt','All three IRs fail':'Alle tre IR svikter','All flight control computers lost':'Alle styredatamaskiner tapt','Landing gear down':'Understell nede',
- 'Sidestick input':'Sidestikk-utslag','Control law':'Styrelov','Pitch':'Pitch','Roll':'Roll','Pitch trim':'Pitch-trim','Protections now':'Beskyttelser nå','What happened':'Hva som skjedde',
- 'AC and DC electrics':'AC- og DC-elektrisk',
- 'Two engine-driven generators (each with an integrated drive generator, IDG, that gives constant frequency) normally feed AC bus 1 and AC bus 2. Transformer rectifiers (TRs) turn AC into 28 V DC. The essential buses carry what you need to fly safely, and they are the last to lose power.':'To motordrevne generatorer (hver en integrert drivgenerator, IDG, som gir konstant frekvens) forsyner normalt AC-skinne 1 og AC-skinne 2. Transformator-likerettere (TR) gjør AC om til 28 V DC. De essensielle skinnene har det du trenger for å fly trygt, og de er de siste som mister strøm.',
- 'Phase':'Fase','Sources':'Kilder','Generator 1 fails':'Generator 1 svikter','Generator 2 fails':'Generator 2 svikter','External power connected':'Bakkestrøm tilkoblet',
- 'Other failures':'Andre feil','TR 1 fails':'TR 1 svikter','TR 2 fails':'TR 2 svikter','Emergency generator not available':'Nødgenerator ikke tilgjengelig',
- 'Configuration':'Konfigurasjon','AC ESS bus from':'AC ESS-skinne fra','DC ESS bus from':'DC ESS-skinne fra','Batteries':'Batterier',
- 'Landing gear, brakes and anti-skid':'Understell, bremser og antiskrens',
- 'A tyre brakes best with a little slip, typically 10 to 20 percent. Push harder and the wheel goes past the peak, the friction falls, and a locked wheel gives no cornering force at all. Anti-skid keeps each wheel near the peak; autobrake picks a deceleration and lets anti-skid do the rest.':'Et dekk bremser best med litt slipp, typisk 10 til 20 prosent. Bremser du hardere, går hjulet forbi toppen, friksjonen faller, og et låst hjul gir ingen sidekraft i det hele tatt. Antiskrens holder hvert hjul nær toppen; autobrems velger en retardasjon og lar antiskrens gjøre resten.',
- 'Runway':'Rullebane','Braking system':'Bremsesystem','Brake command':'Bremsekommando','Wheel slip':'Hjulslipp','Braking friction used':'Bremsefriksjon brukt','Deceleration':'Retardasjon','Stop from 130 kt (brakes only)':'Stopp fra 130 kt (bare bremser)','Directional control':'Retningskontroll',
- 'Teaching model of a generic A320-family aircraft. System layouts, pressures, consumers, control law logic, protection limits, electrical priorities and brake values are simplified and illustrative, not FCOM data. The aircraft FCOM, QRH and your operator’s procedures give the real logic and limits.':'Opplæringsmodell av et generelt fly i A320-familien. Systemoppsett, trykk, forbrukere, logikk for styrelover, beskyttelsesgrenser, elektriske prioriteringer og bremseverdier er forenklet og illustrative, ikke FCOM-data. Flyets FCOM, QRH og operatørens prosedyrer gir den virkelige logikken og grensene.',
- // dynamic via T
- 'In flight':'I lufta','On ground':'På bakken','Dry':'Tørr','Wet':'Våt','Compacted snow':'Pakket snø','Ice':'Is',
- 'Normal (green)':'Normal (grønn)','Alternate with anti-skid':'Alternativ med antiskrens','Alternate, no anti-skid':'Alternativ, uten antiskrens','Accumulator only':'Bare akkumulator',
- 'Pedals':'Pedaler','Pedal brake pressure':'Bremsetrykk på pedalene',
- 'Pitch input (aft +, forward −)':'Pitch-utslag (bak +, fram −)','Roll input (right +, left −)':'Roll-utslag (høyre +, venstre −)','Held for':'Holdt i','Initial speed':'Startfart',
- 'Normal':'Normal','Engine 1 fails':'Motor 1 svikter','Green fluid loss + PTU':'Grønt væsketap + PTU','Green + yellow lost':'Grønn + gul tapt','Both engines fail':'Begge motorer svikter'
-});
-
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const chip=(s,on)=>`<span class="chip ${on?s:'off'}">${s}</span>`;
-
-/* =================== 1. HYDRAULIKK =================== */
-const H={e1:true,e2:true,apu:false,gEdp:false,yEdp:false,bPump:false,gLeak:false,bLeak:false,yLeak:false,ptu:true,yElec:false,rat:false};
-function hydState(){
-  const ac=H.e1||H.e2||H.apu; const rat=H.rat||!ac;
-  const S={G:{src:null,p:0},B:{src:null,p:0},Y:{src:null,p:0},ptu:null,rat,ac};
-  if(!H.gLeak && H.e1 && !H.gEdp) S.G={src:'EDP',p:3000};
-  if(!H.yLeak){ if(H.e2 && !H.yEdp) S.Y={src:'EDP',p:3000}; else if(H.yElec && ac) S.Y={src:'ELEC',p:3000}; }
-  if(!H.bLeak){ if(!H.bPump && ac && (H.e1||H.e2)) S.B={src:'ELEC',p:3000}; else if(rat) S.B={src:'RAT',p:2500}; }
-  if(H.ptu && !H.gLeak && !H.yLeak){
-    if(S.G.src && !S.Y.src){ S.Y={src:'PTU',p:2900}; S.ptu='GY'; }
-    else if(S.Y.src && !S.G.src){ S.G={src:'PTU',p:2900}; S.ptu='YG'; }
-  }
-  return S;
-}
-const HC={G:'#2C7A4B',B:'#1E5E9E',Y:'#C98A0B'};
-function hsvg(){ const S=hydState(), W=640, H2=350;
-  const name={G:L({en:'GREEN',no:'GRØNN'}),B:L({en:'BLUE',no:'BLÅ'}),Y:L({en:'YELLOW',no:'GUL'})};
-  const X={G:110,B:320,Y:530};
-  const leak={G:H.gLeak,B:H.bLeak,Y:H.yLeak};
-  let s=`<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="${L({en:'Hydraulic system diagram',no:'Diagram av hydraulikksystemet'})}" font-family="'Public Sans',sans-serif">`;
-  const ln=(d,on,c)=>`<path d="${d}" fill="none" stroke="${on?c:'#C9D2D5'}" stroke-width="${on?5:3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const pump=(x,y,w,lab,st,on,c)=>{ const col=st==='FAIL'?'#B3261E':on?c:'#9AA6AC'; return `<rect x="${x}" y="${y}" width="${w}" height="44" rx="5" fill="${on?'#fff':'#F3F4F4'}" stroke="${col}" stroke-width="${on?2:1.2}"/><text x="${x+w/2}" y="${y+18}" text-anchor="middle" font-size="11" font-weight="700" fill="#13202A">${lab}</text><text x="${x+w/2}" y="${y+34}" text-anchor="middle" font-size="10.5" font-family="'IBM Plex Mono',monospace" font-weight="600" fill="${col}">${st}</text>`; };
-  // PTU-ledning
-  const ptuOn=!!S.ptu;
-  s+=ln('M110 262 V305 H285',ptuOn,'#5B4BB0')+ln('M355 305 H530 V262',ptuOn,'#5B4BB0');
-  s+=`<rect x="285" y="288" width="70" height="34" rx="5" fill="#fff" stroke="${ptuOn?'#5B4BB0':(H.ptu?'#9AA6AC':'#B3261E')}" stroke-width="${ptuOn?2:1.2}"/><text x="320" y="303" text-anchor="middle" font-size="12" font-weight="700">PTU</text><text x="320" y="316" text-anchor="middle" font-size="10" font-family="'IBM Plex Mono',monospace" fill="${ptuOn?'#5B4BB0':'#5E6B74'}">${S.ptu==='GY'?'G → Y':S.ptu==='YG'?'Y → G':H.ptu?'AUTO':'OFF'}</text>`;
-  if(ptuOn) s+=`<text x="320" y="340" text-anchor="middle" font-size="11" fill="#5B4BB0">${L({en:'mechanical link, no fluid exchanged',no:'mekanisk kobling, ingen væske utveksles'})}</text>`;
-  for(const k of ['G','B','Y']){ const x=X[k], c=HC[k], on=!!S[k].src;
-    s+=`<text x="${x}" y="22" text-anchor="middle" font-size="13" font-weight="800" fill="${c}" letter-spacing=".06em">${name[k]}</text>`;
-    // reservoar
-    const f=leak[k]?0.12:0.75;
-    s+=`<rect x="${x-50}" y="32" width="100" height="44" rx="6" fill="#fff" stroke="#13202A"/><rect x="${x-48}" y="${34+40*(1-f)}" width="96" height="${40*f}" rx="4" fill="${c}" opacity=".28"/><text x="${x}" y="58" text-anchor="middle" font-size="10.5" font-family="'IBM Plex Mono',monospace" fill="${leak[k]?'#B3261E':'#13202A'}" font-weight="600">${leak[k]?'LO LVL':L({en:'reservoir',no:'reservoar'})}</text>`;
-    // trykkboks
-    s+=`<rect x="${x-60}" y="204" width="120" height="58" rx="6" fill="${on?'#fff':'#F3F4F4'}" stroke="${on?c:'#9AA6AC'}" stroke-width="${on?2.5:1.2}"/><text x="${x}" y="229" text-anchor="middle" font-size="18" font-family="'IBM Plex Mono',monospace" font-weight="600" fill="${on?c:'#B3261E'}">${nf(S[k].p,0)} psi</text><text x="${x}" y="249" text-anchor="middle" font-size="10.5" fill="#4C5B66">${on?({EDP:L({en:'engine pump',no:'motorpumpe'}),ELEC:L({en:'electric pump',no:'elektrisk pumpe'}),PTU:L({en:'via PTU',no:'via PTU'}),RAT:L({en:'RAT (reduced)',no:'RAT (redusert)'})})[S[k].src]:L({en:'no pressure',no:'ikke trykk'})}</text>`;
-  }
-  // pumper
-  const gS=H.gEdp?'FAIL':!H.e1?(L({en:'ENG OFF',no:'MOTOR AV'})):H.gLeak?'LO PR':'ON';
-  s+=ln('M110 76 V112',S.G.src==='EDP',HC.G)+ln('M110 156 V204',S.G.src==='EDP',HC.G);
-  s+=pump(55,112,110,L({en:'ENG 1 PUMP',no:'MOTOR 1-PUMPE'}),gS,S.G.src==='EDP',HC.G);
-  const bS=H.bPump?'FAIL':!S.ac?L({en:'NO AC',no:'INGEN AC'}):!(H.e1||H.e2)?'OFF':H.bLeak?'LO PR':'ON';
-  const rS=S.rat?(H.bLeak?'LO PR':L({en:'EXTENDED',no:'UTE'})):L({en:'STOWED',no:'INNE'});
-  s+=ln('M290 76 V112',S.B.src==='ELEC',HC.B)+ln('M350 76 V112',S.B.src==='RAT',HC.B)+ln('M290 156 V180 H320 V204',S.B.src==='ELEC',HC.B)+ln('M350 156 V180 H320 V204',S.B.src==='RAT',HC.B);
-  s+=pump(255,112,70,L({en:'ELEC',no:'ELEKTR.'}),bS,S.B.src==='ELEC',HC.B)+pump(330,112,64,'RAT',rS,S.B.src==='RAT',HC.B);
-  const yS=H.yEdp?'FAIL':!H.e2?L({en:'ENG OFF',no:'MOTOR AV'}):H.yLeak?'LO PR':'ON';
-  const eS=!H.yElec?'OFF':!S.ac?L({en:'NO AC',no:'INGEN AC'}):H.yLeak?'LO PR':'ON';
-  s+=ln('M500 76 V112',S.Y.src==='EDP',HC.Y)+ln('M560 76 V112',S.Y.src==='ELEC',HC.Y)+ln('M500 156 V180 H530 V204',S.Y.src==='EDP',HC.Y)+ln('M560 156 V180 H530 V204',S.Y.src==='ELEC',HC.Y);
-  s+=pump(460,112,80,L({en:'ENG 2 PUMP',no:'MOTOR 2-PUMPE'}),yS,S.Y.src==='EDP',HC.Y)+pump(546,112,70,L({en:'ELEC',no:'ELEKTR.'}),eS,S.Y.src==='ELEC',HC.Y);
-  return s+'</svg>'; }
-const CONS=[
- [{en:'Ailerons',no:'Balanseror'},'GB'],[{en:'Elevator, left',no:'Høyderor, venstre'},'BG'],[{en:'Elevator, right',no:'Høyderor, høyre'},'BY'],[{en:'Rudder',no:'Sideror'},'GBY'],[{en:'Stabiliser (THS)',no:'Stabilisator (THS)'},'GY'],
- [{en:'Spoilers 1 and 5',no:'Spoilere 1 og 5'},'G'],[{en:'Spoilers 2 and 4',no:'Spoilere 2 og 4'},'Y'],[{en:'Spoiler 3',no:'Spoiler 3'},'B'],
- [{en:'Slats',no:'Slats'},'GB','slow'],[{en:'Flaps',no:'Klaffer'},'GY','slow'],[{en:'Landing gear',no:'Understell'},'G','gear'],[{en:'Normal brakes, anti-skid, autobrake',no:'Normalbremser, antiskrens, autobrems'},'G','nbrk'],
- [{en:'Alternate brakes',no:'Alternative bremser'},'Y','abrk'],[{en:'Nosewheel steering',no:'Nesehjulstyring'},'Y'],[{en:'Reverser 1 / reverser 2',no:'Reverser 1 / reverser 2'},'GY','rev'],[{en:'Emergency generator',no:'Nødgenerator'},'B'],[{en:'Cargo doors (ground)',no:'Lasteromsdører (bakken)'},'Y']];
-function hyd(){ const S=hydState(); el('hsvg').innerHTML=hsvg();
-  const on=k=>!!S[k].src;
-  el('htab').innerHTML=`<thead><tr><th>${L({en:'Consumer',no:'Forbruker'})}</th><th>${L({en:'Systems',no:'Systemer'})}</th><th>${L({en:'Status',no:'Status'})}</th></tr></thead><tbody>`+CONS.map(([n,sys,sp])=>{
-    const a=[...sys].filter(on).length, m=sys.length; let st, cl;
-    if(a===m){ st=L({en:'Normal',no:'Normal'}); cl='ok'; } else if(a>0){ st= sp==='slow'? L({en:'Slow (one motor)',no:'Sakte (én motor)'}) : sp==='rev'? (on('G')?L({en:'Reverser 1 only',no:'Bare reverser 1'}):L({en:'Reverser 2 only',no:'Bare reverser 2'})) : L({en:'Reduced redundancy',no:'Redusert redundans'}); cl='wa'; }
-    else { st=L({en:'Lost',no:'Tapt'}); cl='ko';
-      if(sp==='gear') st=L({en:'Lost: gravity extension',no:'Tapt: gravitasjonsutfelling'});
-      if(sp==='nbrk') st=on('Y')?L({en:'Lost: alternate brakes take over',no:'Tapt: alternative bremser overtar'}):L({en:'Lost',no:'Tapt'});
-      if(sp==='abrk') st=on('G')?L({en:'Not needed (normal brakes)',no:'Ikke nødvendig (normalbremser)'}):L({en:'Accumulator only (a few applications)',no:'Bare akkumulator (noen få bremsinger)'});
-      if(sp==='abrk'&&on('G')) cl='wa'; }
-    return `<tr><td>${L(n)}</td><td>${[...sys].map(k=>chip(k,on(k))).join('')}</td><td><span class="${cl}">${st}</span></td></tr>`; }).join('')+'</tbody>';
-  const a=[]; for(const k of ['G','B','Y']) if(!S[k].src) a.push(['am',{G:'HYD G SYS LO PR',B:'HYD B SYS LO PR',Y:'HYD Y SYS LO PR'}[k]]);
-  if(H.gLeak) a.push(['am','HYD G RSVR LO LVL']); if(H.bLeak) a.push(['am','HYD B RSVR LO LVL']); if(H.yLeak) a.push(['am','HYD Y RSVR LO LVL']);
-  if(S.rat) a.push(['cy','RAT OUT']); if(S.ptu) a.push(['gn','PTU '+(S.ptu==='GY'?'G→Y':'Y→G')]);
-  if(!a.length) a.push(['gn','HYD NORMAL']);
-  el('hann').innerHTML=a.map(([c,t])=>`<span class="${c}">${t}</span>`).join('');
-  const n=['G','B','Y'].filter(on).length; let t;
-  if(!S.ac) t=L({en:'<b>No AC power: the RAT drops out.</b> With both engines and the APU generator gone, the ram air turbine extends automatically and pressurises blue only, at reduced pressure. Blue drives the emergency generator, so the RAT is also your electrical source. Green and yellow are lost; their engine pumps give little or nothing on a windmilling engine.',no:'<b>Ingen AC-strøm: RAT kommer ut.</b> Når begge motorene og APU-generatoren er borte, felles ram air-turbinen ut automatisk og gir trykk bare til blått, med redusert trykk. Blått driver nødgeneratoren, så RAT er også din strømkilde. Grønt og gult er tapt; motorpumpene gir lite eller ingenting på en motor som vindmøller.'});
-  else if((H.gLeak&&S.Y.src&&!S.G.src)||(H.yLeak&&S.G.src&&!S.Y.src)) t=L({en:'<b>Fluid lost: the PTU cannot help.</b> The PTU only transfers power. It cannot fill an empty system, and running it against an empty system would overheat it, so the checklist switches it off. The affected system stays lost.',no:'<b>Væske tapt: PTU kan ikke hjelpe.</b> PTU overfører bare kraft. Den kan ikke fylle et tomt system, og å kjøre den mot et tomt system ville overopphete den, så sjekklisten slår den av. Det berørte systemet forblir tapt.'});
-  else if(S.ptu) t=L({en:'<b>The PTU is working.</b> It runs automatically when the pressure difference between green and yellow exceeds about 500 psi: a hydraulic motor on the healthy side drives a pump on the other. You hear it on the ground as the barking dog. The lost side gets its pressure back, but both systems now depend on one engine pump.',no:'<b>PTU arbeider.</b> Den går automatisk når trykkforskjellen mellom grønt og gult overstiger rundt 500 psi: en hydraulisk motor på den friske siden driver en pumpe på den andre. På bakken hører du den som «the barking dog». Den tapte siden får trykket tilbake, men begge systemene henger nå på én motorpumpe.'});
-  else if(n===3) t=L({en:'<b>All three systems pressurised.</b> Every primary surface (ailerons, elevators, rudder) and the THS has at least two systems, and the rudder has three. Each spoiler has only one, so a single hydraulic loss removes some spoilers: roll, speedbrake and ground-spoiler effect is reduced, but you keep full control.',no:'<b>Alle tre systemene har trykk.</b> Alle primære rorflater (balanseror, høyderor, sideror) og THS har minst to systemer, og sideroret har tre. Hver spoiler har bare ett, så et enkelt hydraulikktap fjerner noen spoilere: virkningen i roll, som luftbrems og som bakkespoiler blir redusert, men du beholder full kontroll.'});
-  else if(n===1) t=L({en:'<b>Dual hydraulic failure.</b> Only one system is left. The aircraft is still controllable, but the flight control law degrades, flaps or slats may be slow or lost, and landing distances grow. This is a QRH case with landing distance factors and a carefully flown approach.',no:'<b>Dobbel hydraulikkfeil.</b> Bare ett system er igjen. Flyet er fortsatt styrbart, men styreloven degraderes, klaffer eller slats kan gå sakte eller være tapt, og landingsdistansene øker. Dette er et QRH-tilfelle med faktorer for landingsdistanse og en nøye flydd innflyging.'});
-  else if(n===0) t=L({en:'<b>All hydraulics lost.</b> Extremely remote by design. The surfaces have no power; the A320 has no mechanical reversion that works without hydraulics.',no:'<b>All hydraulikk tapt.</b> Ekstremt usannsynlig etter konstruksjonen. Rorflatene har ingen kraft; A320 har ingen mekanisk reserve som virker uten hydraulikk.'});
-  else t=L({en:'<b>One system lost.</b> Every primary flight control and the THS still has a source; some spoilers do not. Look at the table: what you lose are single-system consumers, and that decides the landing configuration and the braking.',no:'<b>Ett system tapt.</b> Alle primære rorflater og THS har fortsatt en kilde; noen spoilere har ikke. Se tabellen: det du mister er forbrukere med bare ett system, og det avgjør landingskonfigurasjonen og bremsingen.'});
-  el('hx').innerHTML=t; }
-const hk=['e1','e2','apu','gEdp','yEdp','bPump','gLeak','bLeak','yLeak','ptu','yElec','rat'];
-hk.forEach(k=>el('h_'+k).onchange=e=>{ H[k]=e.target.checked; hyd(); });
-const HP=[['Normal',{}],['Engine 1 fails',{e1:false}],['Green fluid loss + PTU',{gLeak:true}],['Green + yellow lost',{gLeak:true,yLeak:true,ptu:false}],['Both engines fail',{e1:false,e2:false}]];
-function hpre(){ el('hpre').innerHTML=HP.map((p,i)=>`<button class="btn" data-i="${i}">${T(p[0])}</button>`).join(''); }
-el('hpre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; Object.assign(H,{e1:true,e2:true,apu:false,gEdp:false,yEdp:false,bPump:false,gLeak:false,bLeak:false,yLeak:false,ptu:true,yElec:false,rat:false},HP[+b.dataset.i][1]); hk.forEach(k=>el('h_'+k).checked=H[k]); hyd(); });
-
-/* =================== 2. FLY-BY-WIRE =================== */
-const F={adr2:false,elac2:false,gy:false,ir3:false,mech:false,gear:false,s:1,r:0,hold:5,v0:250};
-const VMO=350, AP=9.5, AFL=11, AMAX=12, ASTALL=13.5;
-function law(){ if(F.mech) return 'mech'; if(F.ir3) return 'direct'; if(F.adr2||F.elac2||F.gy) return F.gear?'altdir':'alt'; return 'normal'; }
-function sim(){ const lw=law(), g=9.81, rad=Math.PI/180, dt=0.02; let V=F.v0, gam=0, phi=0, n=1, thr=0, hspAct=false; const ev=new Set(), out=[];
-  for(let i=0;i<=800;i++){ const t=i*dt, act=t<F.hold, s=act?F.s:0, r=act?F.r:0, q=(V/250)**2, cg=Math.cos(gam*rad), cp=Math.cos(phi*rad);
-    let nd; const a=3.5*n/q, th=gam+a;
-    if(lw==='normal'||lw==='alt'){
-      const nN=Math.abs(phi)<=33? cg/Math.max(0.5,cp) : cg;
-      nd=clamp(nN+(s>0?1.5*s:2.0*s),-1,2.5);
-      if(lw==='normal'){
-        if(th>30){ nd=Math.min(nd,cg-0.1*(th-30)); ev.add('pitch'); }
-        if(th<-15){ nd=Math.max(nd,cg+0.1*(-15-th)); ev.add('pitch'); }
-        if(3.5*nd/q>AP){ const tgt=AP+Math.max(0,s)*(AMAX-AP); nd=Math.min(nd,tgt*q/3.5); ev.add('aprot'); }
-        if(a>AFL){ thr=0.25; ev.add('afloor'); }
-        hspAct=V>VMO+6; if(hspAct){ nd=Math.max(nd,cg+0.05*(V-VMO-6)); ev.add('hsp'); }
-      } else if(!F.adr2){
-        if(a>AP){ nd-=0.12*(a-AP); ev.add('lss'); }
-        if(V>VMO+6){ nd+=0.04*(V-VMO-6); ev.add('hss'); }
-      }
-    } else {
-      const se=lw==='mech'?0:s;
-      nd=(V/F.v0)**2+1.6*se*q;
-    }
-    const nMax=ASTALL*q/3.5, nMin=-ASTALL*q/3.5*0.6; if(nd>nMax){ nd=nMax; ev.add('stall'); } if(nd<nMin) nd=nMin;
-    n+=(nd-n)*dt/0.45;
-    if(lw!=='normal' && 3.5*n/q>AFL) ev.add('stallw');
-    if(n>2.55||n<-1.05) ev.add('over');
-    if(V>VMO+4) ev.add('vmo');
-    if(lw==='normal'){ let p=15*r; if(!act && Math.abs(phi)>33) p=-Math.sign(phi)*Math.min(5,(Math.abs(phi)-33)*2); phi+=p*dt; const lim=hspAct?45:67; if(Math.abs(phi)>=lim-0.1&&r) ev.add('bank'); phi=clamp(phi,-lim,lim); }
-    else if(lw!=='mech'){ phi=clamp(phi+15*r*Math.min(1.3,V/250)*dt,-90,90); }
-    gam+=g*(n*cp-cg)/(V*0.5144)*dt/rad; gam=clamp(gam,-80,80);
-    V+=g*(thr-Math.sin(gam*rad)-0.035*(n*n-1))/0.5144*dt; V=Math.max(110,V);
-    out.push({t,th:gam+3.5*n/((V/250)**2),n,a:3.5*n/((V/250)**2),V,phi});
-  }
-  return {out,ev,lw}; }
-const FC=LAB.fit(el('fbwcv'),()=>fbw(),2);
-const fc=el('fctl');
-const fs=[];
-fs.push(LAB.slider(fc,{label:'Pitch input (aft +, forward −)',min:-1,max:1,step:0.05,v:F.s,f:v=>(v>0?'+':'')+nf(v*100,0)+' %',on:v=>{F.s=v;fbw();}}));
-fs.push(LAB.slider(fc,{label:'Roll input (right +, left −)',min:-1,max:1,step:0.05,v:F.r,f:v=>(v>0?'+':'')+nf(v*100,0)+' %',on:v=>{F.r=v;fbw();}}));
-fs.push(LAB.slider(fc,{label:'Held for',min:1,max:16,step:0.5,v:F.hold,f:v=>nf(v,1)+' s',on:v=>{F.hold=v;fbw();}}));
-fs.push(LAB.slider(fc,{label:'Initial speed',min:180,max:340,step:5,v:F.v0,f:v=>nf(v,0)+' kt',on:v=>{F.v0=v;fbw();}}));
-['adr2','elac2','gy','ir3','mech','gear'].forEach(k=>el('f_'+k).onchange=e=>{ F[k]=e.target.checked; fbw(); });
-function fbw(){ const R=sim(), lw=R.lw, ev=R.ev, o=R.out;
-  const LN={normal:{en:'Normal law',no:'Normal lov'},alt:{en:'Alternate law',no:'Alternativ lov'},altdir:{en:'Direct law (alternate, gear down)',no:'Direkte lov (alternativ, understell nede)'},direct:{en:'Direct law',no:'Direkte lov'},mech:{en:'Mechanical backup',no:'Mekanisk reserve'}};
-  const cls={normal:'ok',alt:'wa',altdir:'wa',direct:'ko',mech:'ko'}[lw];
-  el('f_law').innerHTML=`<span class="${cls}">${L(LN[lw])}</span>`;
-  el('f_p').textContent=L({normal:{en:'load factor demand',no:'krav om lastfaktor'},alt:{en:'load factor demand',no:'krav om lastfaktor'},altdir:{en:'stick to elevator',no:'stikke til høyderor'},direct:{en:'stick to elevator',no:'stikke til høyderor'},mech:{en:'manual trim wheel only',no:'bare manuelt trimhjul'}}[lw]);
-  el('f_r').textContent=L({normal:{en:'roll rate demand',no:'krav om rullrate'},alt:{en:'direct (stick to surface)',no:'direkte (stikke til rorflate)'},altdir:{en:'direct (stick to surface)',no:'direkte (stikke til rorflate)'},direct:{en:'direct (stick to surface)',no:'direkte (stikke til rorflate)'},mech:{en:'rudder pedals only',no:'bare sideror-pedaler'}}[lw]);
-  el('f_t').textContent=L({normal:{en:'automatic',no:'automatisk'},alt:{en:'automatic',no:'automatisk'},altdir:{en:'manual (trim wheel)',no:'manuell (trimhjul)'},direct:{en:'manual (trim wheel)',no:'manuell (trimhjul)'},mech:{en:'manual (trim wheel)',no:'manuell (trimhjul)'}}[lw]);
-  const A=(x)=>`<span class="ok">${L({en:'Active',no:'Aktiv'})}</span>`, Xl=()=>`<span class="ko">${L({en:'Lost',no:'Tapt'})}</span>`, Wd=(t)=>`<span class="wa">${L(t)}</span>`;
-  const nrm=lw==='normal', alt=lw==='alt'||lw==='altdir';
-  const rows=[
-   [{en:'Pitch attitude (+30° / −15°)',no:'Pitch-holdning (+30° / −15°)'}, nrm?A():Xl()],
-   [{en:'Bank angle (67°, back to 33° when released)',no:'Krengning (67°, tilbake til 33° når sluppet)'}, nrm?A():Xl()],
-   [{en:'Load factor (+2.5 g / −1 g, clean)',no:'Lastfaktor (+2,5 g / −1 g, rent)'}, nrm||lw==='alt'?A():Xl()],
-   [{en:'High angle of attack (alpha prot, alpha max)',no:'Høy innfallsvinkel (alpha prot, alpha max)'}, nrm?A():alt&&!F.adr2?Wd({en:'Low speed stability',no:'Lavfartsstabilitet'}):Xl()],
-   [{en:'Alpha floor (TOGA thrust)',no:'Alpha floor (TOGA-skyvekraft)'}, nrm?A():Xl()],
-   [{en:'High speed protection',no:'Høyfartsbeskyttelse'}, nrm?A():alt&&!F.adr2?Wd({en:'High speed stability',no:'Høyfartsstabilitet'}):Xl()]];
-  el('fprot').innerHTML=rows.map(([a,b])=>`<span>${L(a)}</span><b>${b}</b>`).join('');
-  const EV={pitch:['gn',{en:'Pitch attitude limit reached',no:'Pitch-grense nådd'}],aprot:['gn',{en:'Alpha protection active',no:'Alpha-beskyttelse aktiv'}],afloor:['am',{en:'A.FLOOR: TOGA thrust',no:'A.FLOOR: TOGA-skyvekraft'}],hsp:['gn',{en:'High speed protection: nose up',no:'Høyfartsbeskyttelse: nese opp'}],bank:['gn',{en:'Bank limited',no:'Krengning begrenset'}],
-    lss:['am',{en:'Low speed stability: nose-down push',no:'Lavfartsstabilitet: nese-ned-dytt'}],hss:['am',{en:'High speed stability: nose-up push',no:'Høyfartsstabilitet: nese-opp-dytt'}],stallw:['rd',{en:'STALL warning',no:'STALL-varsel'}],stall:['rd',{en:'Stall: lift limit reached',no:'Steiling: løftegrensen nådd'}],over:['rd',{en:'Load factor limit exceeded',no:'Lastfaktorgrense overskredet'}],vmo:['rd',{en:'Overspeed (VMO)',no:'Overfart (VMO)'}]};
-  const evs=[...ev].filter(k=>!(k==='stall'&&nrm));
-  el('fann').innerHTML=(evs.length?evs:['none']).map(k=>k==='none'?`<span class="gn">${L({en:'Inside the envelope',no:'Innenfor konvolutten'})}</span>`:`<span class="${EV[k][0]}">${L(EV[k][1])}</span>`).join('');
-  let t;
-  if(lw==='normal') t=L({en:'In normal law you can pull full back and hold it: the computers give you the most the aircraft can safely deliver, and nothing more. Release the stick and the flight path is held, with automatic trim. Above 33° of bank the aircraft rolls back when you let go.',no:'I normal lov kan du dra helt bak og holde: datamaskinene gir deg det meste flyet trygt kan levere, og ikke mer. Slipp stikken, så holdes flybanen, med automatisk trim. Over 33° krengning ruller flyet tilbake når du slipper.'});
-  else if(lw==='alt') t=L({en:'Alternate law still gives a load factor demand in pitch, but the hard protections are gone. A sustained pull now trades speed for height until the stall warning; the low speed stability only pushes gently and can be overridden. In roll the stick moves the surfaces directly, and the bank stays where you leave it.',no:'Alternativ lov gir fortsatt krav om lastfaktor i pitch, men de harde beskyttelsene er borte. Et vedvarende drag bytter nå fart mot høyde til steilevarselet; lavfartsstabiliteten dytter bare forsiktig og kan overstyres. I roll beveger stikken rorflatene direkte, og krengningen blir der du lar den være.'});
-  else if(lw==='altdir') t=L({en:'In alternate law, extending the landing gear changes pitch to direct law, so the flare feels like a conventional aircraft. The PFD tells you: USE MAN PITCH TRIM. The response now depends on speed and configuration.',no:'I alternativ lov skifter pitch til direkte lov når understellet felles ut, så utflatingen føles som i et vanlig fly. PFD sier det: USE MAN PITCH TRIM. Responsen avhenger nå av fart og konfigurasjon.'});
-  else if(lw==='direct') t=L({en:'Direct law: stick deflection gives surface deflection, nothing more. The same input gives more g at higher speed, nothing stops you from overstressing or stalling, there is no automatic trim, and the aircraft does not hold its flight path in a turn. Only the stall and overspeed warnings remain.',no:'Direkte lov: stikkeutslag gir rorutslag, ikke noe mer. Samme utslag gir mer g i høyere fart, ingenting hindrer deg i å overbelaste eller steile, det er ingen automatisk trim, og flyet holder ikke flybanen i en sving. Bare steile- og overfartsvarsel er igjen.'});
-  else t=L({en:'Mechanical backup: the sidestick does nothing. Pitch is controlled with the manual trim wheel (THS) and lateral control with the rudder pedals, both needing hydraulics. It exists to keep the aircraft under control while the computers are restored, not to land with.',no:'Mekanisk reserve: sidestikken gjør ingenting. Pitch styres med det manuelle trimhjulet (THS) og sidekontroll med sideror-pedalene, begge avhengig av hydraulikk. Det finnes for å holde flyet under kontroll mens datamaskinene gjenopprettes, ikke for å lande med.'});
-  el('fx').textContent=t;
-  // tegning
-  const g=FC.ctx, W=FC.w, Ht=FC.h; if(!W) return; g.clearRect(0,0,W,Ht);
-  const pl=54, pr=12, pt=10, pb=26, rows2=[
-    {k:'th',lab:L({en:'Pitch °',no:'Pitch °'}),min:-25,max:45,lim:nrm?[30,-15]:[],c:'#7fcbe8'},
-    {k:'n',lab:L({en:'Load g',no:'Last g'}),min:-1.5,max:4,lim:[2.5,-1],c:'#f0b440'},
-    {k:'a',lab:L({en:'AoA °',no:'AoA °'}),min:0,max:15,lim:[AP,ASTALL],c:'#c9a6ff'},
-    {k:'V',lab:L({en:'IAS kt',no:'IAS kt'}),min:100,max:400,lim:[VMO],c:'#71cc93'},
-    {k:'phi',lab:L({en:'Bank °',no:'Krengning °'}),min:-90,max:90,lim:nrm?[67,-67,33,-33]:[],c:'#ec8a6a'}];
-  const sh=(Ht-pt-pb)/rows2.length, X=t=>pl+t/16*(W-pl-pr);
-  g.fillStyle='rgba(127,203,232,.08)'; g.fillRect(X(0),pt,X(Math.min(16,F.hold))-X(0),Ht-pt-pb);
-  g.font='10px "IBM Plex Mono", monospace'; g.textBaseline='middle';
-  rows2.forEach((rw,i)=>{ const y0=pt+i*sh, y1=y0+sh-8, Y=v=>y1-(clamp(v,rw.min,rw.max)-rw.min)/(rw.max-rw.min)*(y1-y0);
-    g.strokeStyle='#1d2834'; g.strokeRect(pl+.5,y0+.5,W-pl-pr-1,y1-y0);
-    if(rw.min<0&&rw.max>0){ g.strokeStyle='#2a3a48'; g.beginPath(); g.moveTo(pl,Y(0)+.5); g.lineTo(W-pr,Y(0)+.5); g.stroke(); }
-    g.setLineDash([4,4]); g.strokeStyle='rgba(236,90,71,.55)'; rw.lim.forEach(v=>{ g.beginPath(); g.moveTo(pl,Y(v)+.5); g.lineTo(W-pr,Y(v)+.5); g.stroke(); }); g.setLineDash([]);
-    g.fillStyle='#8b99a7'; g.textAlign='right'; g.fillText(rw.lab,pl-6,(y0+y1)/2);
-    g.fillStyle='#6f7e8d'; g.fillText(nf(rw.max,rw.k==='n'?1:0),pl-6,y0+6); g.fillText(nf(rw.min,rw.k==='n'?1:0),pl-6,y1-4);
-    g.strokeStyle=rw.c; g.lineWidth=2; g.beginPath(); o.forEach((p,j)=>{ const x=X(p.t), y=Y(p[rw.k]); j?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); g.lineWidth=1;
-    const last=o[o.length-1][rw.k]; g.fillStyle=rw.c; g.textAlign='right'; g.fillText(nf(last,rw.k==='n'?2:0),W-pr-4,y0+9);
-  });
-  g.fillStyle='#6f7e8d'; g.textAlign='center'; g.textBaseline='top';
-  for(let t=0;t<=16;t+=2) g.fillText(t+' s',X(t),Ht-pb+6);
-  g.fillStyle='rgba(127,203,232,.8)'; g.textAlign='left'; g.fillText(L({en:'stick held',no:'stikke holdt'}),X(0)+4,pt+2);
-}
-
-/* =================== 3. ELEKTRISK =================== */
-const E={phase:'air',g1:false,g2:false,apu:false,ext:false,tr1:false,tr2:false,emer:false};
-function elecState(){ const air=E.phase==='air', ext=E.ext&&!air;
-  const G1=!E.g1, G2=!E.g2;
-  const ac1=G1?'GEN 1':ext?'EXT PWR':E.apu?'APU GEN':G2?'GEN 2':null;
-  const ac2=G2?'GEN 2':ext?'EXT PWR':E.apu?'APU GEN':G1?'GEN 1':null;
-  const emerCfg=!ac1&&!ac2; const emerGen=emerCfg&&air&&!E.emer; const batOnly=emerCfg&&!emerGen;
-  const aess=ac1?'AC BUS 1':ac2?'AC BUS 2':emerGen?'EMER GEN':'STAT INV';
-  const tr1=!!ac1&&!E.tr1, tr2=!!ac2&&!E.tr2;
-  const dc1=tr1?'TR 1':tr2?'TR 2':null, dc2=tr2?'TR 2':tr1?'TR 1':null;
-  const dcbat=dc1?'DC BUS 1':'BAT';
-  const essTr=(emerGen)||(!!(ac1||ac2)&&(E.tr1||E.tr2));
-  const dess=essTr?'ESS TR':dc1?'DC BAT BUS':'BAT';
-  return {air,ext,G1,G2,ac1,ac2,emerCfg,emerGen,batOnly,aess,tr1,tr2,dc1,dc2,dcbat,essTr,dess,shed:!batOnly}; }
-function esvg(){ const S=elecState(), W=680, Hh=372;
-  const on='#2C7A4B', off='#C9D2D5';
-  let s=`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${L({en:'Electrical system diagram',no:'Diagram av det elektriske systemet'})}" font-family="'Public Sans',sans-serif">`;
-  const ln=(d,a,dash)=>`<path d="${d}" fill="none" stroke="${a?on:off}" stroke-width="${a?3.5:2.5}" stroke-linecap="round" ${dash?'stroke-dasharray="5 4"':''}/>`;
-  const src=(x,y,w,t,st,a,fail)=>`<rect x="${x}" y="${y}" width="${w}" height="40" rx="5" fill="${a?'#EAF3EE':'#F3F4F4'}" stroke="${fail?'#B3261E':a?on:'#9AA6AC'}" stroke-width="${a?2:1.2}"/><text x="${x+w/2}" y="${y+17}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#13202A">${t}</text><text x="${x+w/2}" y="${y+32}" text-anchor="middle" font-size="10" font-family="'IBM Plex Mono',monospace" font-weight="600" fill="${fail?'#B3261E':a?on:'#5E6B74'}">${st}</text>`;
-  const bus=(x0,x1,y,t,a)=>`<rect x="${x0}" y="${y}" width="${x1-x0}" height="12" rx="2" fill="${a?on:'#E0E4E5'}" stroke="${a?on:'#B9C2C6'}"/><text x="${(x0+x1)/2}" y="${y+26}" text-anchor="middle" font-size="10.5" font-family="'IBM Plex Mono',monospace" font-weight="600" fill="${a?'#13202A':'#B3261E'}">${t}</text>`;
-  const used=n=>S.ac1===n||S.ac2===n;
-  // kilder → skinner
-  s+=ln('M70 56 V96',S.ac1==='GEN 1')+ln('M610 56 V96',S.ac2==='GEN 2');
-  const tieL=S.ac1&&S.ac1!=='GEN 1', tieR=S.ac2&&S.ac2!=='GEN 2';
-  s+=ln('M190 56 V76',used('APU GEN'))+ln('M490 56 V76',used('EXT PWR'));
-  s+=ln('M120 76 H330',tieL||tieR)+ln('M350 76 H560',tieL||tieR);
-  s+=ln('M120 76 V96',tieL)+ln('M560 76 V96',tieR);
-  s+=ln('M340 56 V96',S.aess==='EMER GEN');
-  s+=ln('M230 102 H270',S.aess==='AC BUS 1')+ln('M410 102 H450',S.aess==='AC BUS 2',true);
-  s+=src(20,16,100,'GEN 1 (IDG)',E.g1?'FAIL':'ON',S.G1,E.g1)+src(140,16,100,'APU GEN',E.apu?(used('APU GEN')?'ON':'AVAIL'):'OFF',used('APU GEN'),false);
-  s+=src(290,16,100,'EMER GEN',S.emerGen?L({en:'RAT',no:'RAT'}):E.emer&&S.emerCfg?L({en:'N/A',no:'IKKE TILGJ.'}):L({en:'standby',no:'standby'}),S.emerGen,E.emer&&S.emerCfg);
-  s+=src(440,16,100,'EXT PWR',S.air?L({en:'in flight',no:'i lufta'}):E.ext?(used('EXT PWR')?'ON':'AVAIL'):'OFF',used('EXT PWR'),false)+src(560,16,100,'GEN 2 (IDG)',E.g2?'FAIL':'ON',S.G2,E.g2);
-  s+=bus(20,230,96,'AC BUS 1',!!S.ac1)+bus(270,410,96,'AC ESS',true)+bus(450,660,96,'AC BUS 2',!!S.ac2);
-  // TR-er
-  s+=ln('M80 108 V150',S.tr1)+ln('M600 108 V150',S.tr2)+ln('M395 108 V150',S.essTr)+ln('M285 150 V108',S.aess==='STAT INV');
-  s+=src(60,150,100,'TR 1',E.tr1?'FAIL':S.tr1?'ON':'OFF',S.tr1,E.tr1)+src(520,150,100,'TR 2',E.tr2?'FAIL':S.tr2?'ON':'OFF',S.tr2,E.tr2);
-  s+=src(250,150,70,'STAT INV',S.aess==='STAT INV'?'ON':'OFF',S.aess==='STAT INV',false)+src(355,150,80,'ESS TR',S.essTr?'ON':'OFF',S.essTr,false);
-  // DC
-  s+=ln('M80 190 V226',!!S.dc1&&S.dc1==='TR 1')+ln('M610 190 V226',!!S.dc2&&S.dc2==='TR 2')+ln('M395 190 V226',S.essTr);
-  s+=ln('M40 238 V268 H640 V238',(S.dc1==='TR 2')||(S.dc2==='TR 1'),true);
-  s+=ln('M190 232 H210',S.dcbat==='DC BUS 1')+ln('M320 232 H345',S.dess==='DC BAT BUS');
-  s+=ln('M285 226 V190',S.aess==='STAT INV',true);
-  s+=bus(20,190,226,'DC BUS 1',!!S.dc1)+bus(210,320,226,'DC BAT BUS',true)+bus(345,455,226,'DC ESS',true)+bus(480,660,226,'DC BUS 2',!!S.dc2);
-  // batterier
-  const bdis=S.dcbat==='BAT';
-  s+=ln('M218 300 V238',true)+ln('M314 300 V238',true);
-  s+=src(205,300,70,'BAT 1',bdis?L({en:'discharging',no:'utlades'}):L({en:'charging',no:'lades'}),true,false)+src(282,300,70,'BAT 2',bdis?L({en:'discharging',no:'utlades'}):L({en:'charging',no:'lades'}),true,false);
-  s+=`<text x="20" y="364" font-size="10.5" font-family="'IBM Plex Mono',monospace" fill="#5E6B74">${L({en:'green = powered · dashed = alternate path',no:'grønn = strøm · stiplet = alternativ vei'})}</text>`;
-  return s+'</svg>'; }
-function elec(){ const S=elecState(); el('esvg').innerHTML=esvg();
-  let cfg, cc='ok';
-  if(S.batOnly){ cfg=L({en:'Batteries only',no:'Bare batterier'}); cc='ko'; }
-  else if(S.emerGen){ cfg=L({en:'Emergency electrical configuration',no:'Elektrisk nødkonfigurasjon'}); cc='ko'; }
-  else if(S.ac1==='EXT PWR'&&S.ac2==='EXT PWR'){ cfg=L({en:'External power',no:'Bakkestrøm'}); }
-  else if(S.ac1==='APU GEN'&&S.ac2==='APU GEN'){ cfg=L({en:'APU generator only',no:'Bare APU-generator'}); cc='wa'; }
-  else if(S.ac1===S.ac2){ cfg=L({en:'One generator supplies both sides',no:'Én generator forsyner begge sider'}); cc='wa'; }
-  else if(!S.G1||!S.G2){ cfg=L({en:'Generator replaced',no:'Generator erstattet'}); cc='wa'; }
-  else cfg=L({en:'Normal: each side on its own generator',no:'Normal: hver side på sin generator'});
-  el('e_cfg').innerHTML=`<span class="${cc}">${cfg}</span>`;
-  el('e_aess').textContent=S.aess+(S.aess==='STAT INV'?' · '+L({en:'from BAT 1',no:'fra BAT 1'}):'');
-  el('e_dess').textContent=S.dess;
-  el('e_bat').innerHTML=S.batOnly?`<span class="ko">${L({en:'only source, about 30 min (typical)',no:'eneste kilde, rundt 30 min (typisk)'})}</span>`:S.dcbat==='BAT'?`<span class="wa">${L({en:'supplying DC BAT BUS',no:'forsyner DC BAT BUS'})}</span>`:`<span class="ok">${L({en:'charging as needed',no:'lades ved behov'})}</span>`;
-  const a=[]; if(E.g1) a.push(['am','ELEC GEN 1 FAULT']); if(E.g2) a.push(['am','ELEC GEN 2 FAULT']); if(!S.ac1&&!S.emerCfg) a.push(['am','ELEC AC BUS 1 FAULT']); if(!S.ac2&&!S.emerCfg) a.push(['am','ELEC AC BUS 2 FAULT']);
-  if(S.emerCfg) a.push(['rd','ELEC EMER CONFIG']); if(E.tr1&&S.ac1) a.push(['am','ELEC TR 1 FAULT']); if(E.tr2&&S.ac2) a.push(['am','ELEC TR 2 FAULT']); if(S.emerGen) a.push(['cy','RAT OUT · EMER GEN']); if(!S.shed) a.push(['am','AC/DC ESS SHED']);
-  if(!a.length) a.push(['gn','ELEC NORMAL']);
-  el('eann').innerHTML=a.map(([c,t])=>`<span class="${c}">${t}</span>`).join('');
-  let t;
-  if(S.batOnly) t=L({en:'<b>Batteries only.</b> The static inverter makes AC for the AC ESS bus from battery 1, and the batteries carry the DC ESS bus. The shed buses are dropped to stretch the time. In flight this is what happens if the emergency generator cannot run (RAT not giving power, or blue lost). Land as soon as possible.',no:'<b>Bare batterier.</b> Den statiske inverteren lager AC til AC ESS-skinnen fra batteri 1, og batteriene bærer DC ESS-skinnen. Avlastningsskinnene kobles ut for å strekke tiden. I lufta er det dette som skjer hvis nødgeneratoren ikke kan gå (RAT gir ikke strøm, eller blått er tapt). Land så snart som mulig.'});
-  else if(S.emerGen) t=L({en:'<b>Emergency electrical configuration.</b> AC bus 1 and 2 are lost. The RAT extends and drives the blue hydraulic system, which turns the emergency generator. It powers only the AC ESS bus, and through the ESS TR the DC ESS bus: the captain’s instruments, one radio, one MCDU and what is essential. In the seconds before it comes on line, the batteries hold the essential buses.',no:'<b>Elektrisk nødkonfigurasjon.</b> AC-skinne 1 og 2 er tapt. RAT felles ut og driver det blå hydraulikksystemet, som igjen driver nødgeneratoren. Den forsyner bare AC ESS-skinnen, og gjennom ESS TR også DC ESS-skinnen: kapteinens instrumenter, én radio, én MCDU og det som er essensielt. I sekundene før den er på linje, holder batteriene de essensielle skinnene.'});
-  else if(S.ac1===S.ac2) t=L({en:'<b>One source feeds both AC buses through the bus tie.</b> A single generator can carry the whole aircraft (some galley load is shed). Onside generator first, then external power, then the APU generator, then the opposite generator. In flight, start the APU to restore a second source.',no:'<b>Én kilde forsyner begge AC-skinnene gjennom skinnekoblingen.</b> Én generator klarer hele flyet (noe byssalast kobles ut). Egen generator først, så bakkestrøm, så APU-generator, så generatoren på motsatt side. I lufta starter du APU for å få en ekstra kilde.'});
-  else if(E.tr1||E.tr2) t=L({en:'<b>A TR has failed.</b> The other TR supplies both DC buses through the DC tie, and the ESS TR takes over the DC ESS bus. You lose nothing you can see, but you have used up one layer of redundancy.',no:'<b>En TR har sviktet.</b> Den andre TR forsyner begge DC-skinnene gjennom DC-koblingen, og ESS TR overtar DC ESS-skinnen. Du mister ikke noe du ser, men ett lag med redundans er brukt opp.'});
-  else t=L({en:'<b>Generators are never connected in parallel.</b> Each one feeds its own side; the bus tie only closes to let one source take over a side that has lost its own. The AC ESS bus normally hangs on AC bus 1.',no:'<b>Generatorene kobles aldri i parallell.</b> Hver forsyner sin side; skinnekoblingen lukkes bare for å la én kilde ta over en side som har mistet sin egen. AC ESS-skinnen henger normalt på AC-skinne 1.'});
-  el('ex').innerHTML=t; }
-const ephase=LAB.seg(el('ephase'),[['air','In flight'],['gnd','On ground']],'air',v=>{ E.phase=v; elec(); });
-['g1','g2','apu','ext','tr1','tr2','emer'].forEach(k=>el('e_'+k).onchange=e=>{ E[k]=e.target.checked; elec(); });
-
-/* =================== 4. BREMSER =================== */
-const B={rwy:'wet',sys:'norm',mode:'ped',ped:60};
-const MU={dry:0.6,wet:0.35,snow:0.2,ice:0.08};
-const BC=1.65, BB=Math.tan(Math.PI/(2*BC))/0.12; // topp ved 12 % slipp
-const muCurve=(s,pk)=>pk*Math.sin(BC*Math.atan(BB*s));
-const latCurve=(s,pk)=>pk*0.95*Math.pow(Math.max(0,1-s),1.6);
-const sPk=0.12;
-function brake(){ const pk=MU[B.rwy]; const as=B.sys==='norm'||B.sys==='alt'; const auto=B.sys==='norm'&&B.mode!=='ped';
-  const ACC={lo:1.7,med:3.0,max:6.0}; let dem;
-  if(auto) dem=ACC[B.mode]/(9.81*0.9); else dem=B.ped/100*0.8;
-  let s, mu, mod=false;
-  if(dem<=pk*0.995){ // finn slipp på stigende side
-    let lo=0, hi=sPk; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(muCurve(m,pk)<dem) lo=m; else hi=m; } s=(lo+hi)/2; mu=dem; }
-  else if(as){ s=sPk*0.9; mu=muCurve(s,pk); mod=true; }
-  else { s=1; mu=muCurve(1,pk); }
-  if(dem===0){ s=0; mu=0; }
-  const dec=mu*9.81*0.9; const v=130*0.5144; const dist=dec>0.05? v*v/(2*dec) : Infinity;
-  return {pk,as,auto,dem,s,mu,mod,dec,dist,lat:latCurve(s,pk)}; }
-const GC=LAB.fit(el('skidcv'),()=>gear(),2);
-const gctl=el('gctl');
-const pedS=LAB.slider(gctl,{label:'Pedal brake pressure',min:0,max:100,step:1,v:B.ped,f:v=>nf(v,0)+' %',on:v=>{B.ped=v;gear();}});
-LAB.seg(el('grwy'),[['dry','Dry'],['wet','Wet'],['snow','Compacted snow'],['ice','Ice']],B.rwy,v=>{B.rwy=v;gear();});
-LAB.seg(el('gsys'),[['norm','Normal (green)'],['alt','Alternate with anti-skid'],['altn','Alternate, no anti-skid'],['acc','Accumulator only']],B.sys,v=>{B.sys=v; if(v!=='norm'&&B.mode!=='ped'){ B.mode='ped'; gmode.set('ped'); } gear();});
-const gmode=LAB.seg(el('gmode'),[['ped','Pedals'],['lo','LO'],['med','MED'],['max','MAX']],B.mode,v=>{ if(B.sys!=='norm'&&v!=='ped'){ gmode.set('ped'); B.mode='ped'; } else B.mode=v; gear();});
-function gear(){ const R=brake();
-  pedS.inp.disabled=R.auto; pedS.el.style.opacity=R.auto?.45:1;
-  el('g1').innerHTML=`<span class="${R.s>0.5?'ko':R.mod?'wa':''}">${nf(R.s*100,0)} %${R.mod?' · '+L({en:'anti-skid cycling',no:'antiskrens arbeider'}):''}</span>`;
-  el('g2').textContent=nf(R.mu,2)+' / '+L({en:'peak',no:'topp'})+' '+nf(R.pk,2);
-  el('g3').innerHTML=`${nf(R.dec,1)} m/s²`+(R.auto&&R.dem>R.pk*0.995?` <span class="wa">${L({en:'(target not reached)',no:'(målet nås ikke)'})}</span>`:'');
-  el('g4').innerHTML=Number.isFinite(R.dist)?`<span class="${R.dist>1800?'ko':R.dist>1200?'wa':''}">${nf(Math.round(R.dist/10)*10,0)} m</span>`:'–';
-  const lr=R.lat/R.pk; el('g5').innerHTML= R.s>0.5?`<span class="ko">${L({en:'none: locked wheels',no:'ingen: låste hjul'})}</span>`:lr>0.6?`<span class="ok">${L({en:'good',no:'god'})}</span>`:`<span class="wa">${L({en:'reduced',no:'redusert'})}</span>`;
-  let t;
-  if(B.sys==='acc') t=L({en:'<b>Accumulator only.</b> With green and yellow both gone, the brake accumulator gives a limited number of full applications (on the A320 about seven, typical) and no anti-skid. Brake once, firmly, and progressively; do not pump the pedals.',no:'<b>Bare akkumulator.</b> Når både grønt og gult er borte, gir bremseakkumulatoren et begrenset antall fulle bremsinger (rundt sju på A320, typisk) og ingen antiskrens. Brems én gang, bestemt og gradvis; ikke pump pedalene.'});
-  else if(B.sys==='altn') t=L({en:'<b>No anti-skid.</b> This happens with the A/SKID and N/W STRG switch off, or after some failures. The pilot must limit the brake pressure (about 1000 psi on the brake pressure indicator, typical) or the wheels lock: the slip jumps to 100 %, the tyres can burst, and you lose directional control. Nosewheel steering is also lost with that switch off.',no:'<b>Ingen antiskrens.</b> Det skjer med A/SKID- og N/W STRG-bryteren av, eller etter noen feil. Flygeren må begrense bremsetrykket (rundt 1000 psi på bremsetrykkindikatoren, typisk), ellers låser hjulene: slippen hopper til 100 %, dekkene kan sprekke, og du mister retningskontrollen. Nesehjulstyringen forsvinner også med den bryteren av.'});
-  else if(R.auto) t=L({en:'<b>Autobrake commands a deceleration, not a pressure.</b> LO and MED are landing settings (about 1.7 and 3 m/s², typical); MAX is armed for take-off and gives maximum braking in a rejected take-off. On a slippery runway the target may be more than the friction can give: then anti-skid holds the wheels at the peak and the aircraft decelerates less than selected.',no:'<b>Autobrems ber om en retardasjon, ikke et trykk.</b> LO og MED er landingsinnstillinger (rundt 1,7 og 3 m/s², typisk); MAX armeres for avgang og gir maksimal bremsing ved avbrutt avgang. På en glatt bane kan målet være mer enn friksjonen kan gi: da holder antiskrens hjulene ved toppen og flyet bremser mindre enn valgt.'});
-  else if(R.mod) t=L({en:'<b>Anti-skid at work.</b> You are asking for more than the runway can give. Anti-skid compares each wheel’s speed with the aircraft’s speed and releases pressure on any wheel that starts to slow too fast, keeping the slip near the peak of the curve. Full pedal is now the shortest stop, and you keep steering.',no:'<b>Antiskrens arbeider.</b> Du ber om mer enn banen kan gi. Antiskrens sammenligner hvert hjuls fart med flyets fart og letter trykket på hjul som begynner å bremse for fort, så slippen holdes nær toppen av kurven. Full pedal gir nå kortest stopp, og du beholder styringen.'});
-  else t=L({en:'<b>Below the peak.</b> The tyre gives exactly the friction you ask for, with a small slip, and there is cornering force left for steering and crosswind.',no:'<b>Under toppen.</b> Dekket gir akkurat den friksjonen du ber om, med litt slipp, og det er sidekraft igjen til styring og sidevind.'});
-  el('gx').innerHTML=t;
-  // graf
-  const g=GC.ctx, W=GC.w, Hh=GC.h; if(!W) return; g.clearRect(0,0,W,Hh); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,Hh);
-  const pl=46, pr=14, pt=16, pb=38, X=s=>pl+s*(W-pl-pr), Y=m=>Hh-pb-m/0.7*(Hh-pt-pb);
-  g.strokeStyle='#DCE3E4'; g.font='10.5px "IBM Plex Mono", monospace'; g.fillStyle='#5E6B74'; g.textAlign='right'; g.textBaseline='middle';
-  for(let m=0;m<=0.7001;m+=0.1){ g.beginPath(); g.moveTo(pl,Y(m)+.5); g.lineTo(W-pr,Y(m)+.5); g.stroke(); g.fillText(nf(m,1),pl-6,Y(m)); }
-  g.textAlign='center'; g.textBaseline='top'; for(let s=0;s<=1.001;s+=0.2){ g.fillText(nf(s*100,0)+' %',X(s),Hh-pb+6); }
-  g.fillText(L({en:'wheel slip (0 = free rolling, 100 % = locked)',no:'hjulslipp (0 = fritt rullende, 100 % = låst)'}),pl+(W-pl-pr)/2,Hh-pb+21);
-  if(R.as){ g.fillStyle='rgba(44,122,75,.10)'; g.fillRect(X(0.08),pt,X(0.16)-X(0.08),Hh-pt-pb); g.fillStyle='#2C7A4B'; g.textAlign='center'; g.textBaseline='top'; g.font='600 11px "Public Sans", sans-serif'; g.fillText(L({en:'anti-skid band',no:'antiskrens-bånd'}),X(0.12),pt+2); }
-  // andre baner, svakt
-  for(const k of ['dry','wet','snow','ice']) if(k!==B.rwy){ g.strokeStyle='rgba(30,94,158,.18)'; g.lineWidth=1; g.beginPath(); for(let i=0;i<=200;i++){ const s=i/200; i?g.lineTo(X(s),Y(muCurve(s,MU[k]))):g.moveTo(X(s),Y(muCurve(s,MU[k]))); } g.stroke(); }
-  g.strokeStyle='#1E5E9E'; g.lineWidth=2.5; g.beginPath(); for(let i=0;i<=300;i++){ const s=i/300; i?g.lineTo(X(s),Y(muCurve(s,R.pk))):g.moveTo(X(s),Y(muCurve(s,R.pk))); } g.stroke();
-  g.strokeStyle='#2C7A4B'; g.setLineDash([6,4]); g.lineWidth=2; g.beginPath(); for(let i=0;i<=300;i++){ const s=i/300; i?g.lineTo(X(s),Y(latCurve(s,R.pk))):g.moveTo(X(s),Y(latCurve(s,R.pk))); } g.stroke(); g.setLineDash([]); g.lineWidth=1;
-  // demand
-  if(R.dem>0){ g.strokeStyle='rgba(154,30,104,.55)'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(pl,Y(Math.min(0.7,R.dem))); g.lineTo(W-pr,Y(Math.min(0.7,R.dem))); g.stroke(); g.setLineDash([]); g.fillStyle='#9A1E68'; g.textAlign='right'; g.textBaseline='bottom'; g.font='600 11px "Public Sans", sans-serif'; g.fillText(L({en:'friction demanded',no:'friksjon etterspurt'}),W-pr-4,Y(Math.min(0.7,R.dem))-3); }
-  g.fillStyle='#9A1E68'; g.beginPath(); g.arc(X(R.s),Y(R.mu),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); g.lineWidth=1;
-  g.font='600 13px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='alphabetic';
-  g.fillStyle='#1E5E9E'; g.fillText(L({en:'braking friction',no:'bremsefriksjon'}),X(0.45),Y(muCurve(0.45,R.pk))-8);
-  g.fillStyle='#2C7A4B'; g.fillText(L({en:'cornering friction',no:'sidefriksjon'}),X(0.3)+6,Y(latCurve(0.3,R.pk))+18);
-}
-function gcards(){ const c=[
- [{en:'Normal and alternate braking',no:'Normal og alternativ bremsing'},{en:'Normal braking uses green pressure, with anti-skid and autobrake. If green is lost, the brakes switch automatically to the yellow alternate system, still with anti-skid but without autobrake. Behind it all sits a brake accumulator on yellow, which also holds the parking brake.',no:'Normal bremsing bruker grønt trykk, med antiskrens og autobrems. Mistes grønt, går bremsene automatisk over til det gule alternative systemet, fortsatt med antiskrens men uten autobrems. Bak alt sitter en bremseakkumulator på gult, som også holder parkeringsbremsen.'}],
- [{en:'Gear extension',no:'Utfelling av understell'},{en:'The gear is retracted and extended by green. Without green it is lowered by gravity with the crank handle: the doors and uplocks are released mechanically, and the legs fall and lock with help from the airflow. There is no way to retract it again.',no:'Understellet felles inn og ut med grønt. Uten grønt senkes det ved hjelp av tyngdekraften med sveiven: dørene og opplåsene frigjøres mekanisk, og beina faller ned og låses med hjelp fra luftstrømmen. Det kan ikke felles inn igjen.'}],
- [{en:'Nosewheel steering',no:'Nesehjulstyring'},{en:'Hydraulic steering from yellow, commanded by the tillers (large angles for taxiing) and by the rudder pedals (a few degrees, for take-off and landing roll). Without it, steer with differential braking, and be aware it is lost with the A/SKID and N/W STRG switch off.',no:'Hydraulisk styring fra gult, styrt av tillerne (store vinkler for taksing) og av sideror-pedalene (noen få grader, for avgangs- og landingsrull). Uten den styrer du med differensialbremsing, og husk at den forsvinner med A/SKID- og N/W STRG-bryteren av.'}],
- [{en:'Brake temperature',no:'Bremsetemperatur'},{en:'Braking turns kinetic energy into heat in the carbon brakes. Hot brakes after a short turnaround or a high-energy stop can limit the next departure, because a rejected take-off needs cool brakes to absorb the energy. Brake fans, where fitted, shorten the cooling time.',no:'Bremsing gjør bevegelsesenergi om til varme i karbonbremsene. Varme bremser etter en kort snuoperasjon eller et hardt stopp kan begrense neste avgang, fordi en avbrutt avgang trenger kalde bremser til å ta opp energien. Bremsevifter, der de finnes, gir kortere avkjøling.'}]];
- el('gcards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
-
-/* =================== 4b. VANNPLANING =================== */
-const hpS=LAB.slider(el('hpctl'),{label:'Tyre pressure',min:100,max:220,step:5,v:200,f:v=>nf(v,0)+' psi'+(v>=180?' · '+L({en:'typical A320',no:'typisk A320'}):v<=150?' · '+L({en:'well below normal',no:'godt under normalt'}):''),on:()=>hydro()});
-function hydro(){ const p=hpS.v, v1=9*Math.sqrt(p), v2=7.7*Math.sqrt(p);
-  el('hp1').textContent=nf(v1,0)+' kt'; el('hp2').textContent=nf(v2,0)+' kt';
-  el('hp3').innerHTML= v2<130? `<span class="ko">${L({en:'touchdown above the spin-up hydroplaning speed',no:'setting over vannplaningsfarten for dekk som ikke roterer'})}</span>` : v1<130? `<span class="wa">${L({en:'margin only for a rotating tyre',no:'margin bare for et roterende dekk'})}</span>` : `<span class="ok">${L({en:'below both speeds',no:'under begge fartene'})}</span>`; }
-
-/* =================== 5. DRIVSTOFF, BLEED, BRANN =================== */
-const FB={sys:'fuel'};
-// --- drivstoff ---
-const CAP={o:690,i:5440,c:6480};
-const U={tof:15000,t:90,ctr:false,lwp:false,leak:false,e1off:false,xf:false,rpoff:false};
-function fill(tot){ const T={Lo:0,Li:0,C:0,Ri:0,Ro:0}; let r=tot; const put=(k1,k2,cap)=>{ const a=Math.min(cap*2,r); T[k1]+=a/2; T[k2]+=a/2; r-=a; };
-  put('Lo','Ro',CAP.o); put('Li','Ri',CAP.i); T.C=Math.min(CAP.c,r); return T; }
-function fuelRun(){ const T=fill(U.tof), hist=[]; let used=0, leaked=0, unusable=0; const src={e1:'',e2:''};
-  for(let m=0;m<=300;m++){
-    const fail=m>=30, act=m>=60;
-    const e1=!(U.e1off&&act), e2=true, slats=m<3;
-    const ctrOK=!(U.ctr&&fail), lOK=!(U.lwp&&fail), rOn=!(U.rpoff&&act), xf=U.xf&&act;
-    const cRun=!slats&&ctrOK&&T.C>1;
-    const lPump=lOK&&T.Li>1, rPump=rOn&&T.Ri>1;
-    const ff=m<10?2000/60:1250/60, leak=(U.leak&&fail&&e1)?1800/60:0;
-    // kilder per motor
-    const take=(k,a)=>{ const x=Math.min(T[k],a); T[k]-=x; return a-x; };
-    const feed=(side,amt)=>{ // returnerer kildenavn
-      if(amt<=0) return '';
-      if(cRun){ const rest=take('C',amt); if(rest<=0) return 'CTR'; amt=rest; }
-      const own=side===1?'Li':'Ri', opp=side===1?'Ri':'Li', ownP=side===1?lPump:rPump, oppP=side===1?rPump:lPump;
-      if(xf){ const srcs=[]; if(lPump) srcs.push('Li'); if(rPump) srcs.push('Ri');
-        if(srcs.length){ srcs.forEach(k=>take(k,amt/srcs.length)); return srcs.length===2?'L+R':(srcs[0]==='Li'?'L WING':'R WING'); } }
-      if(ownP){ take(own,amt); return side===1?'L WING':'R WING'; }
-      if(T[own]>1){ take(own,amt); return 'GRAV'; }
-      return 'NONE'; };
-    if(m>0){ src.e1=e1?feed(1,ff+leak):'OFF'; src.e2=feed(2,ff); used+=(e1?ff:0)+ff; leaked+=leak; }
-    else { src.e1='L WING'; src.e2='R WING'; }
-    // overføring ytre -> indre
-    for(const [o,i] of [['Lo','Li'],['Ro','Ri']]) if(T[i]<750&&T[o]>0){ const x=Math.min(T[o],200); T[o]-=x; T[i]+=x; }
-    if(m===U.t){ hist.snap={...T,src:{...src},used,leaked,ctrUnus:!ctrOK&&T.C>1,cRun,lPump,rPump,xf,e1,m}; }
-    hist.push([m,T.Lo+T.Li,T.C,T.Ro+T.Ri]);
-  }
-  return hist; }
-function fuelSvg(H){ const S=H.snap, W=640, Hh=360; let s=`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${L({en:'Fuel system diagram',no:'Diagram av drivstoffsystemet'})}" font-family="'Public Sans',sans-serif">`;
-  const tank=(x,w,q,cap,lab)=>{ const f=Math.max(0,Math.min(1,q/cap)); return `<rect x="${x}" y="34" width="${w}" height="70" rx="4" fill="#fff" stroke="#13202A"/><rect x="${x+2}" y="${36+66*(1-f)}" width="${w-4}" height="${66*f}" rx="2" fill="#5BA4CF" opacity=".35"/><text x="${x+w/2}" y="26" text-anchor="middle" font-size="10.5" font-weight="700" fill="#13202A">${lab}</text><text x="${x+w/2}" y="74" text-anchor="middle" font-size="11.5" font-family="'IBM Plex Mono',monospace" font-weight="600">${nf(Math.round(q/10)*10,0)}</text>`; };
-  s+=tank(14,64,S.Lo,CAP.o,L({en:'L OUTER',no:'V YTRE'}))+tank(84,150,S.Li,CAP.i,L({en:'L INNER',no:'V INDRE'}))+tank(245,150,S.C,CAP.c,L({en:'CENTRE',no:'SENTER'}))+tank(406,150,S.Ri,CAP.i,L({en:'R INNER',no:'H INDRE'}))+tank(562,64,S.Ro,CAP.o,L({en:'R OUTER',no:'H YTRE'}));
-  const on='#1E5E9E', off='#C9D2D5';
-  const ln=(d,a)=>`<path d="${d}" fill="none" stroke="${a?on:off}" stroke-width="${a?4:2.5}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const pump=(x,lab,st,a,bad)=>`<rect x="${x-24}" y="112" width="48" height="26" rx="4" fill="${a?'#EAF1F8':'#F3F4F4'}" stroke="${bad?'#B3261E':a?on:'#9AA6AC'}"/><text x="${x}" y="124" text-anchor="middle" font-size="9.5" font-weight="700">${lab}</text><text x="${x}" y="134" text-anchor="middle" font-size="9" font-family="'IBM Plex Mono',monospace" fill="${bad?'#B3261E':'#4C5B66'}">${st}</text>`;
-  const f1=S.src.e1, f2=S.src.e2, ctrF=f1==='CTR'||f2==='CTR';
-  const lUse=(f1==='L WING'||f1==='L+R'||f1==='GRAV'||f2==='L WING'||f2==='L+R'), rUse=(f2==='R WING'||f2==='L+R'||f1==='R WING'||f1==='L+R');
-  s+=pump(130,'L1/L2',U.lwp&&S.m>=30?'FAIL':S.lPump?'ON':'—',S.lPump&&lUse,U.lwp&&S.m>=30)+pump(320,'C1/C2',S.ctrUnus?'FAIL':S.cRun?'ON':S.m<3?'SLATS':'OFF',S.cRun,S.ctrUnus)+pump(510,'R1/R2',!S.rPump&&U.rpoff&&S.m>=60?'OFF':S.rPump?'ON':'—',S.rPump&&rUse,false);
-  // manifold
-  s+=ln('M130 138 V170 H170',lUse)+ln('M510 138 V170 H470',rUse)+ln('M320 138 V170',ctrF)+ln('M320 170 H290',ctrF&&(f1==='CTR'))+ln('M320 170 H350',ctrF&&(f2==='CTR'));
-  s+=ln('M170 170 H290',(f1!=='OFF'&&f1!=='NONE'&&f1!=='')||f2==='L+R'||f2==='L WING')+ln('M350 170 H470',(f2!=='NONE')||f1==='L+R'||f1==='R WING');
-  s+=ln('M170 170 V205',f1!=='OFF'&&f1!=='NONE')+ln('M470 170 V205',f2!=='NONE');
-  // crossfeed
-  s+=`<circle cx="320" cy="200" r="15" fill="#fff" stroke="${S.xf?'#2C7A4B':'#13202A'}" stroke-width="1.6"/><path d="${S.xf?'M308 200 H332':'M320 188 V212'}" stroke="${S.xf?'#2C7A4B':'#13202A'}" stroke-width="3"/><text x="320" y="230" text-anchor="middle" font-size="10" font-family="'IBM Plex Mono',monospace" fill="#4C5B66">X FEED</text>`+ln('M170 200 H305',S.xf)+ln('M335 200 H470',S.xf);
-  const eng=(x,lab,st,ok)=>`<rect x="${x-50}" y="205" width="100" height="34" rx="6" fill="${ok?'#EAF3EE':'#F8E1DE'}" stroke="#13202A"/><text x="${x}" y="220" text-anchor="middle" font-size="11" font-weight="700">${lab}</text><text x="${x}" y="233" text-anchor="middle" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="#4C5B66">${st}</text>`;
-  const sl=f=>({CTR:L({en:'from centre',no:'fra senter'}),'L WING':L({en:'from left wing',no:'fra venstre vinge'}),'R WING':L({en:'from right wing',no:'fra høyre vinge'}),'L+R':L({en:'from both wings',no:'fra begge vinger'}),GRAV:L({en:'gravity feed',no:'tyngdekraftmating'}),NONE:L({en:'no fuel',no:'tomt'}),OFF:L({en:'shut down',no:'stoppet'})}[f]||'');
-  s+=eng(170,'ENG 1',sl(f1),f1!=='NONE'&&f1!=='OFF')+eng(470,'ENG 2',sl(f2),f2!=='NONE');
-  if(U.leak&&S.m>=30&&S.e1) s+=`<path d="M150 241 q-6 10 0 16 q6 -6 0 -16z" fill="#B3261E"/><text x="140" y="258" text-anchor="end" font-size="10.5" fill="#B3261E" font-weight="700">${L({en:'leak',no:'lekkasje'})}</text>`;
-  // historikk
-  const x0=46, x1=W-14, y0=282, y1=342, X=t=>x0+t/300*(x1-x0), Y=q=>y1-q/7000*(y1-y0);
-  s+=`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" fill="#fff" stroke="#DCE3E4"/>`;
-  [0,60,120,180,240,300].forEach(t=>{ s+=`<text x="${X(t)}" y="${y1+12}" text-anchor="middle" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="#7D8B95">${t}</text>`; });
-  s+=`<text x="${x0-4}" y="${y0+8}" text-anchor="end" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="#7D8B95">7 t</text><text x="${x0-4}" y="${y1}" text-anchor="end" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="#7D8B95">0</text>`;
-  const pl=(k,c,dash)=>`<polyline fill="none" stroke="${c}" stroke-width="2" ${dash?'stroke-dasharray="5 3"':''} points="${H.filter((_,i)=>i%3===0).map(r=>X(r[0]).toFixed(1)+','+Y(r[k]).toFixed(1)).join(' ')}"/>`;
-  s+=pl(2,'#9AA6AC')+pl(1,'#1E5E9E')+pl(3,'#C98A0B',true);
-  s+=`<line x1="${X(U.t)}" x2="${X(U.t)}" y1="${y0}" y2="${y1}" stroke="#9A1E68" stroke-width="1.5"/>`;
-  s+=`<text x="${x0+6}" y="${y0-6}" font-size="10" fill="#1E5E9E" font-weight="700">${L({en:'left wing',no:'venstre vinge'})}</text><text x="${x0+80}" y="${y0-6}" font-size="10" fill="#C98A0B" font-weight="700">${L({en:'right wing',no:'høyre vinge'})}</text><text x="${x0+160}" y="${y0-6}" font-size="10" fill="#7D8B95" font-weight="700">${L({en:'centre',no:'senter'})}</text><text x="${x1-4}" y="${y0-6}" text-anchor="end" font-size="10" fill="#7D8B95">${L({en:'kg vs minutes after take-off',no:'kg mot minutter etter avgang'})}</text>`;
-  return s+'</svg>'; }
-function fuel(){ const H=fuelRun(), S=H.snap; el('fbsvg').innerHTML=fuelSvg(H);
-  const lw=S.Lo+S.Li, rw=S.Ro+S.Ri, fob=lw+rw+S.C, imb=lw-rw;
-  const k=v=>nf(Math.round(v/10)*10,0)+' kg';
-  const miss=U.tof-fob-S.used;
-  el('fbro').innerHTML=[[{en:'Left wing / centre / right wing',no:'Venstre vinge / senter / høyre vinge'},`${nf(Math.round(lw/10)*10,0)} / ${nf(Math.round(S.C/10)*10,0)} / ${nf(Math.round(rw/10)*10,0)}`],
-    [{en:'Wing imbalance',no:'Ubalanse mellom vingene'},`<span class="${Math.abs(imb)>1500?'ko':Math.abs(imb)>500?'wa':''}">${k(Math.abs(imb))}${Math.abs(imb)>50?' '+L(imb>0?{en:'left heavy',no:'venstre tyngst'}:{en:'right heavy',no:'høyre tyngst'}):''}</span>`],
-    [{en:'Fuel on board (FOB)',no:'Drivstoff om bord (FOB)'},k(fob)+(S.ctrUnus?' · <span class="wa">'+L({en:'centre unusable',no:'senter ubrukelig'})+'</span>':'')],
-    [{en:'Fuel check: FOB + fuel used',no:'Drivstoffsjekk: FOB + brukt'},miss>100?`<span class="ko">${k(fob+S.used)} · ${L({en:'missing',no:'mangler'})} ${k(miss)}</span>`:`<span class="ok">${k(fob+S.used)} · ${L({en:'matches',no:'stemmer'})}</span>`]]
-    .map(([a,b])=>`<div class="rrow"><span>${L(a)}</span><b>${b}</b></div>`).join('');
-  const a=[]; if(S.ctrUnus) a.push(['am','FUEL CTR TK PUMP 1+2 LO PR']); if(U.lwp&&S.m>=30) a.push(['am','FUEL L WING TK PUMP 1+2 LO PR']);
-  if(S.Li<750&&S.Lo<1) a.push(['am','FUEL L WING TK LO LVL']); if(S.Ri<750&&S.Ro<1) a.push(['am','FUEL R WING TK LO LVL']);
-  if(S.xf) a.push(['gn','FUEL X FEED']); if(!S.e1) a.push(['am','ENG 1 SHUT DOWN']); if(Math.abs(imb)>1500) a.push(['am',L({en:'IMBALANCE: check limit',no:'UBALANSE: sjekk grense'})]);
-  if(S.m<3) a.push(['cy',L({en:'SLATS OUT: CTR PUMPS OFF',no:'SLATS UTE: CTR-PUMPER AV'})]);
-  if(!a.length) a.push(['gn','FUEL NORMAL']); el('fbann').innerHTML=a.map(([c,t])=>`<span class="${c}">${t}</span>`).join('');
-  let t;
-  if(U.leak&&S.m>=30&&S.e1&&S.xf) t={en:'<b>You are feeding the leak from both sides.</b> With the crossfeed open, the leaking engine draws from both wings, so the leak now empties the good side too. Never open the crossfeed to correct an imbalance before the leak has been located and ruled out, or the leaking engine has been shut down.',no:'<b>Du forsyner lekkasjen fra begge sider.</b> Med crossfeed åpen trekker motoren som lekker fra begge vingene, så lekkasjen tømmer nå også den gode siden. Åpne aldri crossfeed for å rette en ubalanse før lekkasjen er funnet og utelukket, eller motoren som lekker er stoppet.'};
-  else if(U.leak&&S.m>=30&&S.e1) t={en:'<b>A leak shows up in the numbers before anywhere else.</b> FOB plus fuel used no longer equals the fuel at take-off, and an imbalance grows on the leaking side. The fuel imbalance looks like a reason to open the crossfeed, which is exactly the trap. The QRH FUEL LEAK procedure locates the leak first; a leak from the engine means shutting it down.',no:'<b>En lekkasje viser seg i tallene før noe annet sted.</b> FOB pluss brukt drivstoff stemmer ikke lenger med drivstoffet ved avgang, og en ubalanse vokser på siden som lekker. Ubalansen ser ut som en grunn til å åpne crossfeed, og det er nettopp fellen. QRH-prosedyren FUEL LEAK finner lekkasjen først; en lekkasje fra motoren betyr at den stoppes.'};
-  else if(U.leak&&!S.e1) t={en:'<b>Engine shut down, leak stopped.</b> With the leak on the engine side of the LP valve, shutting the engine down stops it. The fuel lost so far is gone; now the crossfeed may be used to balance the wings.',no:'<b>Motoren stoppet, lekkasjen stoppet.</b> Når lekkasjen er på motorsiden av LP-ventilen, stanser den når motoren stoppes. Drivstoffet som er tapt, er borte; nå kan crossfeed brukes til å balansere vingene.'};
-  else if(!S.e1&&!S.xf) t={en:'<b>One engine out, crossfeed closed.</b> Engine 2 burns only the right wing, so the left wing stays heavy and the imbalance grows. Open the crossfeed and switch off the pumps on the light side: engine 2 then burns from the heavy side.',no:'<b>Én motor ute, crossfeed stengt.</b> Motor 2 bruker bare høyre vinge, så venstre vinge forblir tung og ubalansen vokser. Åpne crossfeed og slå av pumpene på den lette siden: da bruker motor 2 fra den tunge siden.'};
-  else if(!S.e1&&S.xf&&U.rpoff) t={en:'<b>Correcting the imbalance.</b> With the crossfeed open and the right pumps off, engine 2 is fed from the left wing. Watch the imbalance and switch the pumps back on when the wings are level.',no:'<b>Retter opp ubalansen.</b> Med crossfeed åpen og høyre pumper av forsynes motor 2 fra venstre vinge. Følg med på ubalansen og slå pumpene på igjen når vingene er like.'};
-  else if(S.ctrUnus) t={en:'<b>Centre tank fuel is unusable.</b> With both centre pumps lost, the fuel in the centre tank cannot reach the engines on this teaching aircraft. It still counts in the FOB, so the usable fuel is less than the gauge suggests: recompute the endurance from the wing fuel alone.',no:'<b>Drivstoffet i sentertanken er ubrukelig.</b> Når begge senterpumpene er borte, kan drivstoffet i sentertanken ikke nå motorene på dette opplæringsflyet. Det teller fortsatt i FOB, så brukbart drivstoff er mindre enn måleren antyder: regn ut utholdenheten fra vingedrivstoffet alene.'};
-  else if(U.lwp&&S.m>=30&&!S.xf) t={en:'<b>Left pumps lost: gravity feed.</b> Engine 1 now sucks fuel from its own tank by gravity, which is reliable only at lower altitudes. Opening the crossfeed lets the right pumps feed both engines, at the cost of a growing imbalance as the left fuel stays behind.',no:'<b>Venstre pumper tapt: tyngdekraftmating.</b> Motor 1 suger nå drivstoff fra egen tank ved tyngdekraft, noe som bare er pålitelig i lavere høyder. Å åpne crossfeed lar høyre pumper forsyne begge motorene, men da vokser ubalansen fordi venstre drivstoff blir liggende.'};
-  else if(S.m<3) t={en:'<b>Take-off: wing tanks only.</b> With the slats extended the centre pumps are stopped, so the engines are fed from the inner wing tanks during take-off. The centre tank starts feeding when the slats are retracted.',no:'<b>Avgang: bare vingetanker.</b> Med slats ute er senterpumpene stoppet, så motorene forsynes fra de indre vingetankene under avgangen. Sentertanken begynner å forsyne når slatsene er tatt inn.'};
-  else if(S.C>1) t={en:'<b>Centre tank first.</b> When the centre pumps run, they take priority and the wing fuel stays in the wings. Fuel in the wing counteracts the bending of the wing root, so it is kept there as long as possible.',no:'<b>Sentertanken først.</b> Når senterpumpene går, får de prioritet, og vingedrivstoffet blir liggende i vingene. Drivstoff i vingen motvirker bøyningen av vingeroten, så det beholdes der så lenge som mulig.'};
-  else t={en:'<b>Centre empty: wing tanks now.</b> When an inner tank gets down to about 750 kg, the transfer valves open and the outer cell drains into it. Outer fuel is kept until last for the same reason as wing fuel: wing bending relief, and flutter margin.',no:'<b>Senter tomt: nå vingetankene.</b> Når en indre tank kommer ned i rundt 750 kg, åpner overføringsventilene, og den ytre cellen renner inn i den. Ytre drivstoff beholdes til sist av samme grunn som vingedrivstoff: avlastning av vingebøyningen og fluttermargin.'};
-  el('fbx').innerHTML=L(t); }
-const fuS1=LAB.slider(el('fuctl'),{label:'Fuel at take-off',min:5000,max:18700,step:100,v:U.tof,f:v=>nf(v,0)+' kg',on:v=>{U.tof=v; fuel();}});
-const fuS2=LAB.slider(el('fuctl'),{label:'Time since take-off',min:0,max:300,step:1,v:U.t,f:v=>nf(v,0)+' min',on:v=>{U.t=v; fuel();}});
-['ctr','lwp','leak','e1off','xf','rpoff'].forEach(k=>el('u_'+k).onchange=e=>{ U[k]=e.target.checked; fuel(); });
-
-// --- bleed ---
-const BL={ph:'cruise',e1:true,e2:true,apu:false,f1:false,leak:false,x:'auto',p1:true,p2:true,wai:false,eai:false};
-function bleedState(){ const gnd=BL.ph==='gnd', apuAvail=BL.apu&&(BL.ph!=='cruise');
-  const apuV=apuAvail; // APU-ventil
-  const e1b=BL.e1&&!BL.f1&&!apuV&&!BL.leak, e2b=BL.e2&&!apuV;
-  const xOpen= BL.x==='open' || (BL.x==='auto'&&apuV&&!BL.leak);
-  let left= e1b?'ENG 1':apuV&&!BL.leak?'APU':null, right= e2b?'ENG 2':null;
-  if(xOpen){ if(!left&&right) left=right; else if(!right&&left) right=left; }
-  if(apuV&&!right&&xOpen) right='APU';
-  const leakFed= BL.leak && xOpen && !!right;
-  if(BL.leak) left= leakFed? right : null;
-  const pack1=BL.p1&&!!left&&!BL.leak, pack2=BL.p2&&!!right;
-  const waiL=BL.wai&&!!left&&left!=='APU'&&!BL.leak, waiR=BL.wai&&!!right&&right!=='APU';
-  const eai1=BL.eai&&BL.e1, eai2=BL.eai&&BL.e2;
-  return {gnd,apuV,e1b,e2b,xOpen,left,right,pack1,pack2,waiL,waiR,eai1,eai2,leakFed}; }
-function bleedSvg(){ const S=bleedState(), W=640, Hh=272, hot='#C2571A', off='#C9D2D5';
-  let s=`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${L({en:'Bleed air system diagram',no:'Diagram av bleed-systemet'})}" font-family="'Public Sans',sans-serif">`;
-  const ln=(d,a,c)=>`<path d="${d}" fill="none" stroke="${a?(c||hot):off}" stroke-width="${a?5:3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const box=(x,y,w,h,t,st,a,bad)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${a?'#FBEDE4':'#F3F4F4'}" stroke="${bad?'#B3261E':a?hot:'#9AA6AC'}" stroke-width="${a?2:1.2}"/><text x="${x+w/2}" y="${y+h/2-2}" text-anchor="middle" font-size="11.5" font-weight="700">${t}</text><text x="${x+w/2}" y="${y+h/2+12}" text-anchor="middle" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="${bad?'#B3261E':'#4C5B66'}">${st}</text>`;
-  const valve=(x,y,open,lab)=>`<circle cx="${x}" cy="${y}" r="11" fill="#fff" stroke="#13202A" stroke-width="1.4"/><path d="${open?`M${x-8} ${y} H${x+8}`:`M${x} ${y-8} V${y+8}`}" stroke="${open?'#2C7A4B':'#13202A'}" stroke-width="3"/>${lab?`<text x="${x}" y="${y-16}" text-anchor="middle" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="#4C5B66">${lab}</text>`:''}`;
-  // motorer
-  s+=box(70,30,120,48,'ENG 1',!BL.e1?L({en:'shut down',no:'stoppet'}):BL.f1?'BLEED FAULT':S.e1b?L({en:'bleed ON',no:'bleed PÅ'}):S.apuV?L({en:'bleed closed (APU)',no:'bleed stengt (APU)'}):L({en:'bleed closed',no:'bleed stengt'}),S.e1b,BL.f1);
-  s+=box(450,30,120,48,'ENG 2',!BL.e2?L({en:'shut down',no:'stoppet'}):S.e2b?L({en:'bleed ON',no:'bleed PÅ'}):L({en:'bleed closed (APU)',no:'bleed stengt (APU)'}),S.e2b,false);
-  s+=box(265,30,110,44,'APU',S.apuV?L({en:'bleed ON',no:'bleed PÅ'}):BL.apu&&BL.ph==='cruise'?L({en:'above APU bleed limit',no:'over APU-bleedgrensen'}):'OFF',S.apuV,false);
-  // kanaler
-  s+=ln('M130 78 V150 H309',!!S.left)+ln('M331 150 H510 V78',!!S.right);
-  s+=ln('M320 74 V108 H280 V150',S.apuV&&(S.left==='APU'||S.right==='APU'));
-  s+=valve(320,150,S.xOpen,'X BLEED');
-  // pakker
-  s+=ln('M190 150 V200',S.pack1)+ln('M450 150 V200',S.pack2);
-  s+=box(140,200,100,40,'PACK 1',BL.p1?(S.pack1?'ON':BL.leak?L({en:'isolated',no:'isolert'}):L({en:'no air',no:'ingen luft'})):'OFF',S.pack1,BL.p1&&!S.pack1);
-  s+=box(400,200,100,40,'PACK 2',BL.p2?(S.pack2?'ON':L({en:'no air',no:'ingen luft'})):'OFF',S.pack2,BL.p2&&!S.pack2);
-  s+=ln('M240 220 H270',S.pack1,'#1E5E9E')+ln('M400 220 H370',S.pack2,'#1E5E9E');
-  s+=`<rect x="270" y="202" width="100" height="36" rx="5" fill="${S.pack1||S.pack2?'#EAF1F8':'#F8E1DE'}" stroke="#13202A"/><text x="320" y="224" text-anchor="middle" font-size="11" font-weight="700">${L({en:'CABIN',no:'KABIN'})}</text>`;
-  // vinger
-  s+=ln('M100 150 H22',S.waiL)+ln('M540 150 H618',S.waiR);
-  s+=`<text x="22" y="140" font-size="10" fill="${S.waiL?hot:'#7D8B95'}" font-weight="700">${L({en:'L WING A.ICE',no:'V VINGE ANTIIS'})}</text><text x="618" y="140" text-anchor="end" font-size="10" fill="${S.waiR?hot:'#7D8B95'}" font-weight="700">${L({en:'R WING A.ICE',no:'H VINGE ANTIIS'})}</text>`;
-  if(BL.leak) s+=`<path d="M60 150 l-6 -14 l12 4 l2 -14 l8 14" fill="none" stroke="#B3261E" stroke-width="2"/><text x="40" y="176" font-size="10.5" fill="#B3261E" font-weight="700">${L({en:'LEAK',no:'LEKKASJE'})}</text>`;
-  // motorantiis
-  s+=`<text x="138" y="96" text-anchor="start" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="${S.eai1?hot:'#7D8B95'}">${L({en:'ENG A.ICE',no:'MOTOR ANTIIS'})} ${S.eai1?'ON':'OFF'}</text><text x="502" y="96" text-anchor="end" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="${S.eai2?hot:'#7D8B95'}">${L({en:'ENG A.ICE',no:'MOTOR ANTIIS'})} ${S.eai2?'ON':'OFF'}</text>`;
-  s+=`<text x="20" y="264" font-size="10" font-family="'IBM Plex Mono',monospace" fill="#5E6B74">${L({en:'orange = hot bleed air · blue = conditioned air',no:'oransje = varm bleed-luft · blå = kondisjonert luft'})}</text>`;
-  return s+'</svg>'; }
-function bleed(){ const S=bleedState(); el('fbsvg').innerHTML=bleedSvg();
-  const src=x=>x?x:L({en:'none',no:'ingen'});
-  el('fbro').innerHTML=[[{en:'Left side supplied by',no:'Venstre side forsynt av'},src(S.left)],[{en:'Right side supplied by',no:'Høyre side forsynt av'},src(S.right)],[{en:'Crossbleed valve',no:'Crossbleed-ventil'},S.xOpen?L({en:'open',no:'åpen'}):L({en:'shut',no:'stengt'})],
-    [{en:'Packs',no:'Pakker'},(S.pack1&&S.pack2)?L({en:'both',no:'begge'}):(S.pack1||S.pack2)?`<span class="wa">${L({en:'one: cabin still pressurised',no:'én: kabinen har fortsatt trykk'})}</span>`:`<span class="ko">${L({en:'none: cabin altitude climbs',no:'ingen: kabinhøyden stiger'})}</span>`],
-    [{en:'Wing anti-ice L / R',no:'Vingeantiis V / H'},BL.wai?`${S.waiL?'ON':`<span class="ko">${L({en:'lost',no:'tapt'})}</span>`} / ${S.waiR?'ON':`<span class="ko">${L({en:'lost',no:'tapt'})}</span>`}`:'OFF'],
-    [{en:'Engine anti-ice 1 / 2',no:'Motorantiis 1 / 2'},BL.eai?`${S.eai1?'ON':'–'} / ${S.eai2?'ON':'–'}`:'OFF']].map(([a,b])=>`<div class="rrow"><span>${L(a)}</span><b>${b}</b></div>`).join('');
-  const a=[]; if(BL.f1) a.push(['am','AIR ENG 1 BLEED FAULT']); if(BL.leak) a.push(['am','AIR L WING LEAK']); if(S.leakFed) a.push(['rd',L({en:'X BLEED OPEN INTO LEAK',no:'X BLEED ÅPEN MOT LEKKASJE'})]);
-  if(BL.p1&&!S.pack1) a.push(['am','AIR PACK 1 OFF']); if(BL.p2&&!S.pack2) a.push(['am','AIR PACK 2 OFF']); if(BL.wai&&(!S.waiL||!S.waiR)) a.push(['am','ANTI ICE L+R WING FAULT']); if(S.apuV) a.push(['gn','APU BLEED']);
-  if(!a.length) a.push(['gn','BLEED NORMAL']); el('fbann').innerHTML=a.map(([c,t])=>`<span class="${c}">${t}</span>`).join('');
-  let t;
-  if(S.leakFed) t={en:'<b>The crossbleed is feeding the leak.</b> Hot air at about 200 °C is now blowing into the left wing from the right engine. A leak is isolated by closing the bleed valve on that side and keeping the crossbleed shut; one pack is enough to keep the cabin pressurised.',no:'<b>Crossbleed forsyner lekkasjen.</b> Varm luft på rundt 200 °C blåser nå inn i venstre vinge fra høyre motor. En lekkasje isoleres ved å stenge bleed-ventilen på den siden og holde crossbleed stengt; én pakke er nok til å holde trykket i kabinen.'};
-  else if(BL.leak) t={en:'<b>Leak isolated.</b> The left bleed is closed, the crossbleed stays shut, pack 1 is off and the left wing anti-ice is lost. One pack keeps the cabin pressurised, but avoid icing conditions: an unprotected wing collects ice.',no:'<b>Lekkasjen er isolert.</b> Venstre bleed er stengt, crossbleed holdes stengt, pakke 1 er av, og venstre vingeantiis er tapt. Én pakke holder trykket i kabinen, men unngå ising: en vinge uten beskyttelse samler is.'};
-  else if(BL.wai&&S.apuV&&(!S.waiL||!S.waiR)) t={en:'<b>No wing anti-ice from the APU.</b> APU bleed can run the packs, but on this teaching aircraft the wing anti-ice needs engine bleed. On the ground the wing anti-ice valves only open for a short test.',no:'<b>Ingen vingeantiis fra APU.</b> APU-bleed kan drive pakkene, men på dette opplæringsflyet trenger vingeantiisen motorbleed. På bakken åpner vingeantiis-ventilene bare for en kort test.'};
-  else if(BL.wai&&(!S.waiL||!S.waiR)) t={en:'<b>One side has no bleed, so one wing has no anti-ice.</b> After an engine failure or a bleed fault, open the crossbleed so the remaining engine supplies both wings. An asymmetric ice load is something to avoid.',no:'<b>Én side har ikke bleed, så én vinge har ikke antiis.</b> Etter motorstans eller bleed-feil åpner du crossbleed, så den gjenværende motoren forsyner begge vingene. Asymmetrisk is er noe du vil unngå.'};
-  else if(S.apuV) t={en:'<b>APU bleed.</b> When the APU bleed valve opens, the engine bleed valves close and the crossbleed opens automatically, so the APU can supply both packs. It is used on the ground and in the climb up to the APU bleed limit (about 20,000 ft, typical), for example to keep the engines at full thrust for take-off.',no:'<b>APU-bleed.</b> Når APU-bleedventilen åpner, stenger motorbleedventilene, og crossbleed åpner automatisk, så APU kan forsyne begge pakkene. Den brukes på bakken og i stigningen opp til APU-bleedgrensen (rundt 20 000 ft, typisk), for eksempel for å holde full skyvekraft til avgang.'};
-  else if(BL.eai) t={en:'<b>Engine anti-ice is independent.</b> Each engine heats its own air intake lip with its own high-pressure air, so it works even when the bleed system on that side has failed. It does cost thrust, so the thrust limits drop a little with it on.',no:'<b>Motorantiis er uavhengig.</b> Hver motor varmer sin egen innløpsleppe med egen høytrykksluft, så den virker selv om bleed-systemet på den siden har sviktet. Den koster skyvekraft, så skyvekraftgrensene synker litt når den er på.'};
-  else if(!S.left||!S.right) t={en:'<b>One side without bleed.</b> The crossbleed in AUTO only opens for APU bleed. With one source lost, the other pack still pressurises the cabin. Open the crossbleed manually when the other side also needs air, for example for the wing anti-ice.',no:'<b>Én side uten bleed.</b> Crossbleed i AUTO åpner bare for APU-bleed. Når én kilde er borte, holder den andre pakken fortsatt trykket i kabinen. Åpne crossbleed manuelt når den andre siden også trenger luft, for eksempel til vingeantiisen.'};
-  else t={en:'<b>Normal: each engine supplies its own side.</b> Bleed air is taken from the intermediate or high-pressure compressor stage, cooled in a precooler, and fed to the pack on that side and to the wing anti-ice. The crossbleed stays shut so a failure on one side cannot spread to the other.',no:'<b>Normalt: hver motor forsyner sin side.</b> Bleed-luft tas fra mellom- eller høytrykkskompressoren, kjøles i en forkjøler og føres til pakken på den siden og til vingeantiisen. Crossbleed holdes stengt, så en feil på én side ikke sprer seg til den andre.'};
-  el('fbx').innerHTML=L(t); }
-const blph=LAB.seg(el('blph'),[['gnd','Ground'],['climb','Climb'],['cruise','Cruise']],BL.ph,v=>{BL.ph=v; bleed();});
-LAB.seg(el('blx'),[['auto','AUTO'],['open','OPEN'],['shut','SHUT']],BL.x,v=>{BL.x=v; bleed();});
-['e1','e2','apu','f1','leak','p1','p2','wai','eai'].forEach(k=>el('b_'+k).onchange=e=>{ BL[k]=e.target.checked; bleed(); });
-
-// --- brann ---
-const RF={fire:true,big:false,false:false,fa:false,fb:false,pb:false,a1:false,a2:false};
-function fireState(){ const armed=RF.pb, d1=RF.a1&&armed, d2=RF.a2&&armed;
-  const out=RF.fire&&d1&&(!RF.big||d2), burning=RF.fire&&!out;
-  const A=(burning||RF.false)&&!RF.fa, B=burning&&!RF.fb;
-  let warn; if(RF.fa&&RF.fb) warn=burning; else if(RF.fa) warn=B; else if(RF.fb) warn=A; else warn=A&&B;
-  return {A,B,warn,armed,d1,d2,out,burning,wasted:(RF.a1||RF.a2)&&!armed}; }
-function fireSvg(){ const S=fireState(), W=640, Hh=360;
-  let s=`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${L({en:'Engine fire detection and extinguishing diagram',no:'Diagram av branndeteksjon og slokking i motoren'})}" font-family="'Public Sans',sans-serif">`;
-  s+=`<path d="M70 70 Q70 40 110 40 H500 Q560 40 580 80 V160 Q560 200 500 200 H110 Q70 200 70 170 Z" fill="#F1F3F2" stroke="#13202A" stroke-width="1.5"/>`;
-  s+=`<text x="90" y="62" font-size="12" font-weight="700">${L({en:'ENGINE 1 NACELLE',no:'MOTOR 1-NACELLE'})}</text>`;
-  if(S.burning) s+=`<ellipse cx="330" cy="125" rx="${RF.big?120:60}" ry="${RF.big?45:26}" fill="#F08A3C" opacity=".55"/><ellipse cx="330" cy="128" rx="${RF.big?70:32}" ry="${RF.big?26:14}" fill="#E0451F" opacity=".6"/>`;
-  else if(S.out) s+=`<ellipse cx="330" cy="125" rx="80" ry="30" fill="#DDE6EA" opacity=".9"/><text x="330" y="130" text-anchor="middle" font-size="12" fill="#4C5B66">${L({en:'fire out',no:'brannen er slokket'})}</text>`;
-  const loop=(y,lab,det,fault)=>`<path d="M95 ${y} H500" stroke="${fault?'#9AA6AC':det?'#B3261E':'#2C7A4B'}" stroke-width="3" ${fault?'stroke-dasharray="6 5"':''}/><text x="506" y="${y+4}" font-size="11" font-family="'IBM Plex Mono',monospace" font-weight="600" fill="${fault?'#9AA6AC':det?'#B3261E':'#2C7A4B'}">${lab} ${fault?'FAULT':det?'DET':'OK'}</text>`;
-  s+=loop(85,'A',S.A,RF.fa)+loop(170,'B',S.B,RF.fb);
-  // flasker
-  const bot=(x,lab,dis,armed)=>`<rect x="${x}" y="250" width="70" height="80" rx="30" fill="${dis?'#E3E7E8':'#C62F2F'}" stroke="#13202A"/><text x="${x+35}" y="285" text-anchor="middle" font-size="11" font-weight="700" fill="${dis?'#5E6B74':'#fff'}">${lab}</text><text x="${x+35}" y="300" text-anchor="middle" font-size="9.5" font-family="'IBM Plex Mono',monospace" fill="${dis?'#5E6B74':'#fff'}">${dis?'DISCH':armed?'ARMED':'—'}</text><path d="M${x+35} 250 V200" stroke="${dis?'#9AA6AC':'#13202A'}" stroke-width="2" stroke-dasharray="${dis?'':'3 3'}"/>`;
-  s+=bot(240,L({en:'AGENT 1',no:'MIDDEL 1'}),S.d1,S.armed)+bot(350,L({en:'AGENT 2',no:'MIDDEL 2'}),S.d2,S.armed);
-  // knapp
-  s+=`<rect x="490" y="262" width="110" height="56" rx="4" fill="${S.warn?'#B3261E':'#2A3138'}" stroke="#13202A"/><text x="545" y="285" text-anchor="middle" font-size="12" font-weight="800" fill="${S.warn?'#fff':'#8C989E'}">ENG 1 FIRE</text><text x="545" y="304" text-anchor="middle" font-size="10" font-family="'IBM Plex Mono',monospace" fill="${S.warn?'#fff':'#8C989E'}">${RF.pb?L({en:'PUSHED',no:'TRYKKET'}):L({en:'guarded',no:'beskyttet'})}</text>`;
-  s+=`<text x="40" y="240" font-size="10" font-family="'IBM Plex Mono',monospace" fill="#5E6B74">${L({en:'two detection loops, AND logic',no:'to deteksjonssløyfer, OG-logikk'})}</text>`;
-  return s+'</svg>'; }
-function fire(){ const S=fireState(); el('fbsvg').innerHTML=fireSvg();
-  const iso=RF.pb? L({en:'LP fuel valve, hydraulic fire valve, bleed and pack valves closed; IDG off; FADEC power cut; squibs armed',no:'LP-drivstoffventil, hydraulisk brannventil, bleed- og pakkeventiler stengt; IDG av; FADEC uten strøm; tennsatser armert'}) : L({en:'none yet',no:'ingen ennå'});
-  el('fbro').innerHTML=[[{en:'Loop A / loop B',no:'Sløyfe A / sløyfe B'},`${RF.fa?'FAULT':S.A?'DET':'–'} / ${RF.fb?'FAULT':S.B?'DET':'–'}`],[{en:'Fire warning',no:'Brannvarsel'},S.warn?`<span class="ko">ENG 1 FIRE</span>`:L({en:'none',no:'ingen'})],[{en:'Isolated',no:'Isolert'},iso],[{en:'Fire',no:'Brann'},S.burning?`<span class="ko">${L({en:'burning',no:'brenner'})}</span>`:S.out?`<span class="ok">${L({en:'out',no:'slokket'})}</span>`:L({en:'none',no:'ingen'})]]
-   .map(([a,b])=>`<div class="rrow"><span>${L(a)}</span><b>${b}</b></div>`).join('');
-  const a=[]; if(S.warn) a.push(['rd','ENG 1 FIRE']); if(RF.fa&&!RF.fb) a.push(['am','ENG 1 LOOP A FAULT']); if(RF.fb&&!RF.fa) a.push(['am','ENG 1 LOOP B FAULT']); if(RF.fa&&RF.fb) a.push(['am','ENG 1 FIRE DET FAULT']);
-  if(S.d1) a.push(['cy','AGENT 1 DISCH']); if(S.d2) a.push(['cy','AGENT 2 DISCH']); if(!a.length) a.push(['gn',L({en:'NO WARNING',no:'INGEN VARSEL'})]);
-  el('fbann').innerHTML=a.map(([c,t])=>`<span class="${c}">${t}</span>`).join('');
-  let t;
-  if(S.wasted) t={en:'<b>The agent did not fire.</b> The squibs are only armed when the ENG FIRE pushbutton has been pushed. The order is: thrust lever idle, engine master OFF, fire pushbutton, then agent.',no:'<b>Slokkemiddelet gikk ikke.</b> Tennsatsene armeres bare når ENG FIRE-knappen er trykket inn. Rekkefølgen er: gasshendel tomgang, motor-master AV, brannknappen, så slokkemiddel.'};
-  else if(RF.false&&!RF.fire) t={en:'<b>One loop alone does not give a warning.</b> Loop A sees "fire", loop B does not. With the AND logic, a single loop signal is treated as a loop problem, not a fire, so a damaged or wet sensor does not shut down a good engine.',no:'<b>Én sløyfe alene gir ikke varsel.</b> Sløyfe A ser «brann», sløyfe B gjør det ikke. Med OG-logikken behandles et signal fra én sløyfe som et sløyfeproblem, ikke en brann, så en skadet eller våt sensor stopper ikke en god motor.'};
-  else if(RF.fire&&RF.fa&&RF.fb) t={en:'<b>Both loops lost.</b> If both loops fail at almost the same time (within about 5 s), the system assumes the fire has burnt through them and gives the fire warning. If they fail far apart, detection is simply lost.',no:'<b>Begge sløyfene tapt.</b> Svikter begge sløyfene nesten samtidig (innen rundt 5 s), antar systemet at brannen har brent gjennom dem og gir brannvarsel. Svikter de med lang tid imellom, er deteksjonen bare tapt.'};
-  else if(RF.fire&&(RF.fa||RF.fb)&&S.burning&&!RF.pb) t={en:'<b>One loop is enough when the other is faulty.</b> A loop with a fault is deselected automatically, and the healthy loop alone can trigger the warning. You keep detection, but you have used up the protection against a false warning.',no:'<b>Én sløyfe holder når den andre har feil.</b> En sløyfe med feil kobles ut automatisk, og den friske sløyfen alene kan utløse varselet. Du beholder deteksjonen, men har brukt opp beskyttelsen mot falske varsler.'};
-  else if(S.burning&&!RF.pb) t={en:'<b>Fire warning: both loops agree.</b> Master warning, continuous repetitive chime and the ENG 1 FIRE pushbutton lit. In flight the crew sets the thrust lever to idle, the engine master OFF, then pushes the fire pushbutton.',no:'<b>Brannvarsel: begge sløyfene er enige.</b> Master warning, kontinuerlig varsellyd og ENG 1 FIRE-knappen tent. I lufta setter besetningen gasshendelen på tomgang, motor-master AV, og trykker så inn brannknappen.'};
-  else if(S.burning&&RF.pb&&!S.d1) t={en:'<b>Engine isolated, agent armed.</b> Pushing the fire pushbutton cuts fuel, hydraulics, bleed and electrics to the engine and arms both bottles. In flight agent 1 is discharged after a short delay, which lets the engine run down and the airflow through the nacelle drop.',no:'<b>Motoren isolert, slokkemiddel armert.</b> Brannknappen kutter drivstoff, hydraulikk, bleed og strøm til motoren og armerer begge flaskene. I lufta utløses middel 1 etter en kort forsinkelse, slik at motoren spinner ned og luftstrømmen gjennom nacellen avtar.'};
-  else if(S.burning&&S.d1&&!S.d2) t={en:'<b>Still burning after agent 1.</b> If the fire warning stays on about 30 s after the first agent, discharge agent 2. After that there is nothing more to put on an engine fire: land as soon as possible.',no:'<b>Brenner fortsatt etter middel 1.</b> Står brannvarselet fortsatt etter rundt 30 s etter første middel, utløses middel 2. Etter det er det ikke mer å sette inn mot en motorbrann: land så snart som mulig.'};
-  else if(S.out) t={en:'<b>Fire out.</b> The warning goes out when the loops cool down. The engine stays shut down; on the A320 each engine has two agent bottles and the APU one, so a second engine fire would have its own.',no:'<b>Brannen er slokket.</b> Varselet slukker når sløyfene kjøles ned. Motoren forblir stoppet; på A320 har hver motor to slokkeflasker og APU én, så en brann i den andre motoren har sine egne.'};
-  else t={en:'<b>No fire.</b> Both loops healthy and quiet. Add a fire or a loop fault to see the logic.',no:'<b>Ingen brann.</b> Begge sløyfene er friske og stille. Legg inn brann eller sløyfefeil for å se logikken.'};
-  el('fbx').innerHTML=L(t); }
-['fire','big','false','fa','fb','pb','a1','a2'].forEach(k=>el('r_'+k).onchange=e=>{ RF[k]=e.target.checked; fire(); });
-
-function fbDraw(){ el('fbFuel').hidden=FB.sys!=='fuel'; el('fbBleed').hidden=FB.sys!=='bleed'; el('fbFire').hidden=FB.sys!=='fire'; ({fuel,bleed,fire})[FB.sys](); }
-LAB.seg(el('fbsys'),[['fuel','Fuel'],['bleed','Bleed and anti-ice'],['fire','Fire']],FB.sys,v=>{FB.sys=v; fbDraw();});
-function fbcards(){ const c=[
- [{en:'Why centre first',no:'Hvorfor senter først'},{en:'Fuel in the wings bends them down and counters the upward bending from lift, which unloads the wing root. So the aircraft burns the centre tank first and the outer cells last. It is the same idea as the maximum zero fuel mass in the mass and balance lab.',no:'Drivstoff i vingene bøyer dem ned og motvirker bøyningen oppover fra løftet, som avlaster vingeroten. Derfor brukes sentertanken først og de ytre cellene sist. Det er samme idé som maksimal masse uten drivstoff i masse og balanse-labben.'}],
- [{en:'Cold fuel and imbalance',no:'Kald drivstoff og ubalanse'},{en:'On long flights at high altitude the fuel cools towards the outside air temperature. Jet A-1 has a freezing point of −47 °C or lower, so a low fuel temperature is a reason to descend or speed up. A lateral imbalance has limits (they depend on how full the outer cells are) and is corrected with the crossfeed, never before a leak is ruled out.',no:'På lange flyginger i stor høyde kjøles drivstoffet mot temperaturen ute. Jet A-1 har frysepunkt på −47 °C eller lavere, så lav drivstofftemperatur er en grunn til å gå ned eller øke farten. Ubalanse mellom sidene har grenser (de avhenger av hvor fulle de ytre cellene er) og rettes med crossfeed, aldri før en lekkasje er utelukket.'}],
- [{en:'Wing and engine anti-ice',no:'Vinge- og motorantiis'},{en:'Hot bleed air heats the outer slats on the A320 (wing anti-ice) and each engine air intake lip (engine anti-ice). Both cost thrust and fuel, and the performance calculation accounts for that. Ice on the unheated parts is covered in the icing lab.',no:'Varm bleed-luft varmer de ytre slatsene på A320 (vingeantiis) og innløpsleppen på hver motor (motorantiis). Begge koster skyvekraft og drivstoff, og ytelsesberegningen tar hensyn til det. Is på de uoppvarmede delene dekkes i isingslabben.'}],
- [{en:'Fire protection in brief',no:'Brannvern i korte trekk'},{en:'Engines and APU have two detection loops each, and the cargo holds and lavatories have smoke detectors. Engines have two agent bottles each, the APU one. On the ground an APU fire is extinguished automatically. The cargo smoke detection and its own extinguisher belong to the same family.',no:'Motorene og APU har to deteksjonssløyfer hver, og lasterommene og toalettene har røykdetektorer. Motorene har to slokkeflasker hver, APU én. På bakken slokkes en APU-brann automatisk. Røykdeteksjonen i lasterommet og slokkeanlegget der hører til samme familie.'}]];
- el('fbcards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('').replace(L({en:'the mass and balance lab',no:'masse og balanse-labben'}),`<a href="massbalance.html#masses">${L({en:'the mass and balance lab',no:'masse og balanse-labben'})}</a>`).replace(L({en:'the icing lab',no:'isingslabben'}),`<a href="hazards.html">${L({en:'the icing lab',no:'isingslabben'})}</a>`); }
-
-/* =================== 6. KORT =================== */
-function cards(){ const c=[
- [{en:'Reading the ECAM',no:'Å lese ECAM'},{en:'The HYD page shows each system’s pressure, its pumps and the PTU arrow; the ELEC page shows which source feeds which bus. After a failure, the ECAM action list comes first, then the STATUS page, which lists what is inoperative and the approach and landing consequences. The models above are a way to understand that page, not to replace it.',no:'HYD-siden viser trykket i hvert system, pumpene og PTU-pilen; ELEC-siden viser hvilken kilde som forsyner hvilken skinne. Etter en feil kommer ECAM-handlingslisten først, så STATUS-siden, som lister hva som er ute av drift og konsekvensene for innflyging og landing. Modellene over er en måte å forstå den siden på, ikke å erstatte den.'}],
- [{en:'Why the RAT matters twice',no:'Hvorfor RAT betyr noe to ganger'},{en:'The RAT drives a blue hydraulic pump, and blue drives the emergency generator. One small turbine therefore gives you both flight control power and essential electrics after a dual engine failure. It needs airspeed: keep the speed up during the glide, and expect the batteries to take over at low speed on the approach.',no:'RAT driver en blå hydraulikkpumpe, og blått driver nødgeneratoren. Én liten turbin gir deg dermed både kraft til styringen og essensiell strøm etter dobbel motorstans. Den trenger fart: hold farten oppe i glidet, og regn med at batteriene overtar ved lav fart på innflygingen.'}],
- [{en:'Protections are not permission',no:'Beskyttelser er ikke tillatelse'},{en:'Normal law lets you pull full back in a windshear or terrain escape and trust that the aircraft gives maximum performance without stalling. But protections rely on valid data. With unreliable airspeed or angle of attack the law degrades on purpose, because a protection fed with wrong data is worse than none. See the pitot-static lab for how air data goes wrong.',no:'Normal lov lar deg dra helt bak ved vindskjær eller terrengunnvikelse og stole på at flyet gir maksimal ytelse uten å steile. Men beskyttelsene bygger på gyldige data. Med upålitelig fart eller innfallsvinkel degraderes loven med vilje, fordi en beskyttelse som får feil data er verre enn ingen. Se pitot-statisk-labben for hvordan luftdata går galt.'}],
- [{en:'Load factor limits',no:'Lastfaktorgrenser'},{en:'The +2.5 g / −1 g limits in normal law (flaps up) are the structural manoeuvring limits of a transport aircraft, the same numbers you meet on the V-n diagram. With flaps out the limits become +2 g / 0 g. In alternate law the load factor limit stays; in direct law it is gone.',no:'Grensene +2,5 g / −1 g i normal lov (klaffer inne) er de strukturelle manøvergrensene for et transportfly, de samme tallene du møter i V-n-diagrammet. Med klaffer ute blir grensene +2 g / 0 g. I alternativ lov beholdes lastfaktorgrensen; i direkte lov er den borte.'}],
- [{en:'Alpha floor and its limits',no:'Alpha floor og begrensningene'},{en:'Alpha floor commands TOGA thrust through the autothrust when the angle of attack gets very high, even with autothrust disengaged, in normal law. It is lost in alternate and direct law, and it is not a substitute for monitoring speed on the approach.',no:'Alpha floor gir TOGA-skyvekraft gjennom autothrust når innfallsvinkelen blir svært høy, også med autothrust frakoblet, i normal lov. Den forsvinner i alternativ og direkte lov, og den erstatter ikke det å følge med på farten på innflygingen.'}],
- [{en:'Engines and bleed',no:'Motorer og bleed'},{en:'The engines drive the generators and the main hydraulic pumps, and they also supply bleed air for pressurisation, air conditioning and anti-ice. An engine failure is therefore always a systems event too. The engines lab covers the turbofan itself; the pressurisation lab covers what bleed air does in the cabin, and the section above shows the bleed system itself.',no:'Motorene driver generatorene og hovedhydraulikkpumpene, og de leverer også bleed-luft til trykkabin, klimaanlegg og antiis. En motorstans er derfor alltid også en systemhendelse. Motorlabben dekker selve turbofanen; trykkabinlabben dekker hva bleed-luften gjør i kabinen, og seksjonen over viser selve bleed-systemet.'}]];
- el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('').replace(L({en:'See the pitot-static lab',no:'Se pitot-statisk-labben'}),`<a href="airdata.html#blockages">${L({en:'See the pitot-static lab',no:'Se pitot-statisk-labben'})}</a>`).replace(L({en:'V-n diagram',no:'V-n-diagrammet'}),`<a href="stability.html#vn">${L({en:'V-n diagram',no:'V-n-diagrammet'})}</a>`).replace(L({en:'The engines lab',no:'Motorlabben'}),`<a href="engines.html">${L({en:'The engines lab',no:'Motorlabben'})}</a>`).replace(L({en:'the pressurisation lab',no:'trykkabinlabben'}),`<a href="pressurisation.html">${L({en:'the pressurisation lab',no:'trykkabinlabben'})}</a>`); }
-
-/* =================== QUIZ =================== */
-const Q=[
- {q:{en:'Engine 1 fails in flight. How does the green system keep its pressure?',no:'Motor 1 svikter i lufta. Hvordan beholder det grønne systemet trykket?'},a:[{en:'The PTU, driven by yellow pressure, pressurises green',no:'PTU, drevet av gult trykk, gir trykk til grønt'},{en:'Yellow fluid is pumped across into the green reservoir',no:'Gul væske pumpes over i det grønne reservoaret'},{en:'The RAT extends automatically',no:'RAT felles ut automatisk'},{en:'It does not; green is lost until engine 1 is relit',no:'Det gjør det ikke; grønt er tapt til motor 1 er startet igjen'}],c:0,e:{en:'The PTU transfers power, not fluid: a hydraulic motor on the yellow side drives a pump on the green side.',no:'PTU overfører kraft, ikke væske: en hydraulisk motor på den gule siden driver en pumpe på den grønne siden.'}},
- {q:{en:'Green has lost its fluid. Why does the PTU not restore it?',no:'Grønt har mistet væsken. Hvorfor gjenoppretter ikke PTU det?'},a:[{en:'A PTU can only transfer power to a system that still has fluid',no:'En PTU kan bare overføre kraft til et system som fortsatt har væske'},{en:'The PTU only works on the ground',no:'PTU virker bare på bakken'},{en:'The PTU only works from green to yellow',no:'PTU virker bare fra grønt til gult'},{en:'The blue system has priority',no:'Det blå systemet har prioritet'}],c:0,e:{en:'With no fluid there is nothing to pressurise, and the PTU would overheat, so it is switched off.',no:'Uten væske er det ingenting å gi trykk til, og PTU ville blitt overopphetet, så den slås av.'}},
- {q:{en:'After a dual engine failure, what does the RAT provide?',no:'Hva gir RAT etter dobbel motorstans?'},a:[{en:'Blue hydraulic pressure, which also drives the emergency generator',no:'Blått hydraulisk trykk, som også driver nødgeneratoren'},{en:'Green hydraulic pressure for the landing gear',no:'Grønt hydraulisk trykk til understellet'},{en:'Bleed air for pressurisation',no:'Bleed-luft til trykkabinen'},{en:'Electrical power directly to AC bus 1 and 2',no:'Strøm direkte til AC-skinne 1 og 2'}],c:0,e:{en:'On the A320 family the RAT drives a blue pump; the emergency generator is hydraulically driven from blue and feeds the essential buses only.',no:'I A320-familien driver RAT en blå pumpe; nødgeneratoren drives hydraulisk fra blått og forsyner bare de essensielle skinnene.'}},
- {q:{en:'In normal law you hold the sidestick fully back. What happens?',no:'I normal lov holder du sidestikken helt bak. Hva skjer?'},a:[{en:'The aircraft pulls up to the protection limits and does not stall',no:'Flyet trekker opp til beskyttelsesgrensene og steiler ikke'},{en:'The elevator goes to full deflection and the aircraft stalls',no:'Høyderoret går til fullt utslag og flyet steiler'},{en:'The autopilot engages',no:'Autopiloten kobles inn'},{en:'Nothing, the sidestick needs to be released first',no:'Ingenting, sidestikken må slippes først'}],c:0,e:{en:'Full aft stick demands the maximum available: load factor, pitch attitude and angle of attack are all limited, and alpha floor adds thrust.',no:'Full stikke bak ber om det maksimale tilgjengelige: lastfaktor, pitch-holdning og innfallsvinkel er begrenset, og alpha floor gir skyvekraft.'}},
- {q:{en:'What does a pitch input on the sidestick command in normal law?',no:'Hva ber et pitch-utslag på sidestikken om i normal lov?'},a:[{en:'A load factor',no:'En lastfaktor'},{en:'An elevator angle',no:'En høyderorvinkel'},{en:'A pitch attitude',no:'En pitch-holdning'},{en:'A vertical speed',no:'En vertikalfart'}],c:0,e:{en:'Pitch input is a load factor demand. With the stick released the computers hold 1 g corrected for pitch and bank, so the flight path stays put.',no:'Pitch-utslag er et krav om lastfaktor. Med stikken sluppet holder datamaskinene 1 g korrigert for pitch og krengning, så flybanen ligger fast.'}},
- {q:{en:'Which protection remains in alternate law?',no:'Hvilken beskyttelse er igjen i alternativ lov?'},a:[{en:'Load factor limitation',no:'Lastfaktorbegrensning'},{en:'Bank angle protection',no:'Krengningsbeskyttelse'},{en:'Pitch attitude protection',no:'Pitch-holdningsbeskyttelse'},{en:'Alpha floor',no:'Alpha floor'}],c:0,e:{en:'Alternate law keeps the load factor limit; the hard angle of attack protection is replaced by a low speed stability that can be overridden.',no:'Alternativ lov beholder lastfaktorgrensen; den harde innfallsvinkelbeskyttelsen erstattes av en lavfartsstabilitet som kan overstyres.'}},
- {q:{en:'You fly in alternate law and extend the landing gear. What changes?',no:'Du flyr i alternativ lov og feller ut understellet. Hva endres?'},a:[{en:'Pitch reverts to direct law, with manual trim',no:'Pitch går over til direkte lov, med manuell trim'},{en:'Normal law is restored',no:'Normal lov gjenopprettes'},{en:'Mechanical backup engages',no:'Mekanisk reserve kobles inn'},{en:'Nothing changes',no:'Ingenting endres'}],c:0,e:{en:'With the gear down in alternate law, pitch goes to direct law so the flare is conventional. The PFD shows USE MAN PITCH TRIM.',no:'Med understellet ute i alternativ lov går pitch til direkte lov, så utflatingen blir konvensjonell. PFD viser USE MAN PITCH TRIM.'}},
- {q:{en:'In direct law, the same sidestick input at a higher speed gives…',no:'I direkte lov gir samme sidestikk-utslag i høyere fart…'},a:[{en:'a larger load factor',no:'en større lastfaktor'},{en:'the same load factor',no:'samme lastfaktor'},{en:'a smaller load factor',no:'en mindre lastfaktor'},{en:'no response until trimmed',no:'ingen respons før trimmet'}],c:0,e:{en:'Stick is linked to surface deflection, and the force from a surface grows with dynamic pressure. Nothing limits the result.',no:'Stikken er knyttet til rorutslag, og kraften fra en rorflate øker med dynamisk trykk. Ingenting begrenser resultatet.'}},
- {q:{en:'Generator 1 fails in flight with the APU not running. What powers AC bus 1?',no:'Generator 1 svikter i lufta og APU går ikke. Hva forsyner AC-skinne 1?'},a:[{en:'Generator 2, through the bus tie',no:'Generator 2, gjennom skinnekoblingen'},{en:'The emergency generator',no:'Nødgeneratoren'},{en:'The static inverter',no:'Den statiske inverteren'},{en:'Nothing until the APU is started',no:'Ingenting før APU startes'}],c:0,e:{en:'One generator can carry both AC buses; the bus tie closes automatically. Starting the APU gives you a second source again.',no:'Én generator klarer begge AC-skinnene; skinnekoblingen lukkes automatisk. Å starte APU gir deg en ekstra kilde igjen.'}},
- {q:{en:'What is the job of a TR?',no:'Hva er jobben til en TR?'},a:[{en:'To convert AC into 28 V DC',no:'Å gjøre AC om til 28 V DC'},{en:'To convert DC from the batteries into AC',no:'Å gjøre DC fra batteriene om til AC'},{en:'To keep the generator frequency constant',no:'Å holde generatorfrekvensen konstant'},{en:'To connect the two generators in parallel',no:'Å koble de to generatorene i parallell'}],c:0,e:{en:'A transformer rectifier makes DC from AC. The static inverter does the opposite, and the IDG keeps the frequency constant.',no:'En transformator-likeretter lager DC fra AC. Den statiske inverteren gjør det motsatte, og IDG holder frekvensen konstant.'}},
- {q:{en:'Why does anti-skid give a shorter stop on a wet runway than maximum pedal pressure without it?',no:'Hvorfor gir antiskrens kortere stopp på våt bane enn maksimalt pedaltrykk uten den?'},a:[{en:'It holds the wheels near the slip that gives peak friction instead of letting them lock',no:'Den holder hjulene nær slippen som gir høyest friksjon i stedet for å la dem låse'},{en:'It increases the brake pressure above what the pedals can give',no:'Den øker bremsetrykket over det pedalene kan gi'},{en:'It deploys the spoilers',no:'Den feller ut spoilerne'},{en:'It heats the tyres for better grip',no:'Den varmer dekkene for bedre grep'}],c:0,e:{en:'A locked wheel slides at a lower friction and gives no cornering force. Anti-skid keeps the slip near the peak.',no:'Et låst hjul glir med lavere friksjon og gir ingen sidekraft. Antiskrens holder slippen nær toppen.'}},
- {q:{en:'Autobrake MED is selected for landing on a contaminated runway. The deceleration is lower than selected. Why?',no:'Autobrems MED er valgt for landing på en forurenset bane. Retardasjonen blir lavere enn valgt. Hvorfor?'},a:[{en:'The runway cannot give the friction needed; anti-skid limits the braking',no:'Banen kan ikke gi friksjonen som trengs; antiskrens begrenser bremsingen'},{en:'Autobrake is inhibited on contaminated runways',no:'Autobrems er sperret på forurensede baner'},{en:'MED only works with the reversers in idle',no:'MED virker bare med reverserne på tomgang'},{en:'The yellow system has taken over',no:'Det gule systemet har tatt over'}],c:0,e:{en:'Autobrake demands a deceleration, but it cannot create friction. On a slippery runway the anti-skid holds the wheels at the peak and you get what the surface allows.',no:'Autobrems ber om en retardasjon, men kan ikke skape friksjon. På en glatt bane holder antiskrens hjulene ved toppen, og du får det underlaget tillater.'}},
- {q:{en:'Green hydraulics are lost. How is the landing gear extended?',no:'Grønn hydraulikk er tapt. Hvordan felles understellet ut?'},a:[{en:'By gravity, using the gravity extension handle',no:'Ved tyngdekraften, med håndtaket for gravitasjonsutfelling'},{en:'By the PTU running backwards',no:'Ved at PTU går baklengs'},{en:'By the blue system',no:'Med det blå systemet'},{en:'It cannot be extended',no:'Det kan ikke felles ut'}],c:0,e:{en:'The crank releases the doors and uplocks mechanically and the gear falls and locks. It cannot be retracted afterwards.',no:'Sveiven frigjør dørene og opplåsene mekanisk, og understellet faller ned og låses. Det kan ikke felles inn etterpå.'}}
-,
- {q:{en:'Why does the A320 burn the centre tank before the wing tanks?',no:'Hvorfor bruker A320 sentertanken før vingetankene?'},a:[{en:'Fuel kept in the wings relieves the bending load at the wing root',no:'Drivstoff som blir i vingene avlaster bøyningen i vingeroten'},{en:'The centre tank fuel gets too cold in cruise',no:'Drivstoffet i sentertanken blir for kaldt i cruise'},{en:'The wing pumps are only for take-off',no:'Vingepumpene er bare for avgang'},{en:'To move the CG forward during the flight',no:'For å flytte CG fremover under flygingen'}],c:0,e:{en:'Wing fuel counters the upward bending from lift, so it is kept as long as possible, with the outer cells last.',no:'Vingedrivstoff motvirker bøyningen oppover fra løftet, så det beholdes så lenge som mulig, med de ytre cellene sist.'}},
- {q:{en:'An imbalance grows and FOB plus fuel used is less than the fuel at take-off. What must you not do first?',no:'En ubalanse vokser, og FOB pluss brukt drivstoff er mindre enn drivstoffet ved avgang. Hva må du ikke gjøre først?'},a:[{en:'Open the crossfeed to balance the wings',no:'Åpne crossfeed for å balansere vingene'},{en:'Check for signs of a leak',no:'Se etter tegn på lekkasje'},{en:'Follow the fuel leak procedure',no:'Følge prosedyren for drivstofflekkasje'},{en:'Compare the fuel figures with the flight plan',no:'Sammenligne drivstofftallene med flyplanen'}],c:0,e:{en:'The numbers point to a leak. With the crossfeed open, the leak would drain the good side as well.',no:'Tallene peker mot en lekkasje. Med crossfeed åpen ville lekkasjen tømme den gode siden også.'}},
- {q:{en:'Only one engine fire loop signals fire; the other loop is healthy and quiet. What happens?',no:'Bare én brannsløyfe melder brann; den andre er frisk og stille. Hva skjer?'},a:[{en:'No fire warning: both loops must agree while both are serviceable',no:'Ikke noe brannvarsel: begge sløyfene må være enige så lenge begge virker'},{en:'An immediate fire warning',no:'Et brannvarsel med en gang'},{en:'The agent is discharged automatically',no:'Slokkemiddelet utløses automatisk'},{en:'The engine shuts down automatically',no:'Motoren stopper automatisk'}],c:0,e:{en:'The AND logic protects against false warnings. If one loop is faulty, the other alone can give the warning.',no:'OG-logikken beskytter mot falske varsler. Har én sløyfe feil, kan den andre alene gi varselet.'}},
- {q:{en:'An engine fails in icing conditions. Why open the crossbleed?',no:'En motor stanser under ising. Hvorfor åpne crossbleed?'},a:[{en:'So the remaining engine supplies wing anti-ice to both wings',no:'Så den gjenværende motoren forsyner vingeantiis til begge vingene'},{en:'To restart the failed engine',no:'For å starte den stansede motoren igjen'},{en:'To heat the failed engine’s intake',no:'For å varme innløpet på den stansede motoren'},{en:'It is never opened in flight',no:'Den åpnes aldri i lufta'}],c:0,e:{en:'Each engine normally feeds its own side. Without crossbleed, the wing on the dead side would be unprotected.',no:'Hver motor forsyner normalt sin side. Uten crossbleed ville vingen på den døde siden vært ubeskyttet.'}},
- {q:{en:'A main tyre is inflated to 200 psi. Roughly at what speed does a rotating tyre begin to hydroplane on deep standing water?',no:'Et hoveddekk har 200 psi. Omtrent ved hvilken fart begynner et roterende dekk å vannplane på dypt, stående vann?'},a:[{en:'About 127 kt',no:'Rundt 127 kt'},{en:'About 60 kt',no:'Rundt 60 kt'},{en:'About 200 kt',no:'Rundt 200 kt'},{en:'Hydroplaning does not depend on tyre pressure',no:'Vannplaning avhenger ikke av dekktrykket'}],c:0,e:{en:'9 × √200 ≈ 127 kt. A non-rotating tyre at touchdown starts lower, about 7.7 × √200 ≈ 109 kt.',no:'9 × √200 ≈ 127 kt. Et dekk som ikke roterer ved setting begynner lavere, rundt 7,7 × √200 ≈ 109 kt.'}}
-];
-LAB.quiz(el('qbox'),'jetsystems',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),14);
-
-LAB.start('jets');
-hpre(); hyd(); fbw(); elec(); gear(); gcards(); hydro(); fbDraw(); fbcards(); cards();
-LAB.onLang(()=>{ hpre(); hyd(); fbw(); elec(); gear(); gcards(); hydro(); fbDraw(); fbcards(); cards(); });
-})();
-</script>
+<script src="lab.js?v=43"></script>
+<script src="concepts.js?v=2"></script>
+<script src="jetsyscore.js?v=1"></script>
+<script src="jetsystems.js?v=1"></script>
 </body>
 </html>
