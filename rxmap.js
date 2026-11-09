@@ -161,7 +161,7 @@ function hillPaint(bm,lt){ const d=(lt==null?315:lt)-315, r=a=>((a+d)%360+360)%3
     'hillshade-highlight-color':['rgba(255,255,248,.5)','rgba(255,255,255,.1)','rgba(255,255,255,.1)']};
   // over satellite: imagery already has its own sun shading, so a low, cool key light and soft fill lights just
   // deepen the shaded slopes and lift the sunny ones enough for ridges, valleys and fjord sides to read in 3D
-  if(bm==='sat') return {'hillshade-method':'multidirectional','hillshade-exaggeration':0.5,'hillshade-illumination-anchor':'map',
+  if(bm==='sat') return {'hillshade-method':'multidirectional','hillshade-exaggeration':0.2,'hillshade-illumination-anchor':'map',
     'hillshade-illumination-direction':[r(315),r(255),r(15)],'hillshade-illumination-altitude':[32,45,45],
     'hillshade-shadow-color':['rgba(12,22,38,.5)','rgba(16,26,40,.2)','rgba(16,26,40,.2)'],
     'hillshade-highlight-color':['rgba(255,246,226,.16)','rgba(255,255,255,.05)','rgba(255,255,255,.05)']};
@@ -172,11 +172,19 @@ function hillPaint(bm,lt){ const d=(lt==null?315:lt)-315, r=a=>((a+d)%360+360)%3
 }
 /* atmosphere in 3D: blue-grey aerial haze that thickens toward the horizon, so ridges behind ridges step back.
    fog-ground-blend: where the fog starts on the ground, 0 = map centre … 1 = horizon. */
-function skyFor(bm){
+function skyFor(bm,sun){
+  if(sun) return skySun(bm,sun);
   if(bm==='sat') return {'sky-color':'#7FA7CF','horizon-color':'#DCE6EE','fog-color':'#BCCBD8','sky-horizon-blend':0.75,'horizon-fog-blend':0.75,'fog-ground-blend':0.45,'atmosphere-blend':0};
   if(bm==='topo') return {'sky-color':'#A9C6DF','horizon-color':'#E6EDF1','fog-color':'#DDE5EA','sky-horizon-blend':0.7,'horizon-fog-blend':0.65,'fog-ground-blend':0.5,'atmosphere-blend':0};
   return {'sky-color':'#AFCBE2','horizon-color':'#E9EFF1','fog-color':'#E3EAED','sky-horizon-blend':0.7,'horizon-fog-blend':0.6,'fog-ground-blend':0.5,'atmosphere-blend':0};
 }
+/* with a sun (the simulation): sky and haze from its elevation. High sun: deep blue zenith, pale blue-grey horizon;
+   low sun (Nordic winter noon is 5–15°): warmer, paler horizon and a warm haze. The haze starts close to the camera
+   (fog-ground-blend low) and thickens to the horizon, so distant ridges fade out like aerial perspective. */
+const mixc=(a,b,f)=>{ const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)), x=p(a), y=p(b); return '#'+x.map((v,i)=>Math.round(v+(y[i]-v)*f).toString(16).padStart(2,'0')).join(''); };
+function skySun(bm,sun){ const lo=Math.max(0,Math.min(1,(22-(sun.el||0))/18)), sat=bm==='sat'||bm==='topo';
+  return {'sky-color':mixc(sat?'#4F86C6':'#8DB6DC','#7D9CC4',lo*0.6),'horizon-color':mixc(sat?'#D3E1EC':'#E4ECF0','#F3DCC0',lo),'fog-color':mixc(sat?'#BFD0DE':'#DDE6EB','#E2D3C2',lo*0.8),
+    'sky-horizon-blend':0.62,'horizon-fog-blend':0.55,'fog-ground-blend':sat?0.18:0.3,'atmosphere-blend':0}; }
 function imgKey(){ let k=IMAGERY_KEY; try{ const s=localStorage.getItem('bb-imagery-key'); if(s) k=s==='off'?'':s; }catch(e){} return String(k||'').trim(); }
 /* Pixel ratio: sharp on retina without paying for it in frame rate. Capped at 2, which is already one image pixel per
    device pixel on most laptops and 2.25× fewer pixels to draw than 3 on phones; 3 only on high-end devices
@@ -188,9 +196,8 @@ function glMax(){ if(GLMAX) return GLMAX; let m=4096; try{ const c=document.crea
 function dprOf(){ const d=window.devicePixelRatio||1, hi=(navigator.deviceMemory||0)>=8&&(navigator.hardwareConcurrency||0)>=8; return Math.max(1,Math.min(hi?3:2,d)); }
 function buildStyle(base,o){
   const st=JSON.parse(JSON.stringify(base));
-  const vid=Object.keys(st.sources||{}).find(k=>st.sources[k].type==='vector');
-  if(!vid) throw new Error('style has no vector source');
-  st.sources[vid].attribution=ATT.ofm;
+  const vid=Object.keys(st.sources||{}).find(k=>st.sources[k].type==='vector')||null; // null: the built-in base (MIN_STYLE)
+  if(vid) st.sources[vid].attribution=ATT.ofm;
   const out=[]; (st.layers||[]).forEach(L=>{ const r=restyle(L); if(r) out.push(r); });
   // relief from AWS Terrain Tiles; separate sources for hillshade and 3D terrain, as MapLibre recommends
   const dem={type:'raster-dem',tiles:[DEM_URL],encoding:'terrarium',tileSize:256,maxzoom:15,attribution:ATT.dem};
@@ -219,7 +226,7 @@ function buildStyle(base,o){
   out.splice(si>=0?si:out.length,0,topo);
   // coastline: thin outline of the water polygons, under the labels
   const ci=out.findIndex(l=>l.metadata['bb:g']==='water')+1;
-  out.splice(ci>0?ci:out.length,0,{id:'bb-coast',type:'line',source:vid,'source-layer':'water',metadata:{'bb:g':'coast'},paint:{'line-color':P.coast,'line-width':lin(3,0.5,12,1.1)}});
+  if(vid) out.splice(ci>0?ci:out.length,0,{id:'bb-coast',type:'line',source:vid,'source-layer':'water',metadata:{'bb:g':'coast'},paint:{'line-color':P.coast,'line-width':lin(3,0.5,12,1.1)}});
   // first paint: the VFR chart starts on its lowland green (not grey) before 'load' applies the basemap; setBasemap
   // gets the plain-chart colour back as the original (map.__bb.ch, see create)
   const bgL=out.find(l=>l.metadata['bb:g']==='bg'); if(bgL&&(!o||!o.bm||o.bm==='vfr')) bgL.paint=Object.assign({},bgL.paint,{'background-color':VFR.land});
@@ -228,6 +235,11 @@ function buildStyle(base,o){
   return st;
 }
 
+/* Built-in base when the OpenFreeMap style cannot be fetched (blocked, down or slow): no vector chart, but relief,
+   satellite, topo, 3D terrain and every aviation overlay still work, so 3D and the simulation stay on MapLibre
+   (the canvas fallback is only for browsers without WebGL). Glyphs from OpenFreeMap when they load. */
+const MIN_STYLE={version:8,name:'bb-min',glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',sources:{},layers:[{id:'background',type:'background',paint:{'background-color':P.land}}]};
+const STYLE_MS=7000;
 /* ---------- create the map, or reject within the time limit ---------- */
 function create(container,o){
   o=o||{}; const deadline=Date.now()+(o.timeout||6000); const lg=o.log||(()=>{});
@@ -237,8 +249,9 @@ function create(container,o){
     const tm=setTimeout(()=>fail(new Error('timeout')),Math.max(500,deadline-Date.now()));
     if(!window.maplibregl) return fail(new Error('maplibre-gl not loaded'));
     if(navigator.onLine===false) return fail(new Error('offline'));
-    const ac=window.AbortController?new AbortController():null; setTimeout(()=>ac&&ac.abort(),Math.max(500,deadline-Date.now()));
-    lg('fetch style'); fetch(o.styleUrl||STYLE_URL,{signal:ac&&ac.signal,credentials:'omit'}).then(r=>{ lg('style http '+r.status); if(!r.ok) throw new Error('style '+r.status); return r.json(); }).then(base=>{
+    const ac=window.AbortController?new AbortController():null; setTimeout(()=>ac&&ac.abort(),Math.max(500,Math.min(STYLE_MS,deadline-Date.now()-3000)));
+    lg('fetch style'); fetch(o.styleUrl||STYLE_URL,{signal:ac&&ac.signal,credentials:'omit'}).then(r=>{ lg('style http '+r.status); if(!r.ok) throw new Error('style '+r.status); return r.json(); })
+      .catch(e=>{ lg('style failed ('+((e&&e.message)||e)+'): built-in base'); return JSON.parse(JSON.stringify(MIN_STYLE)); }).then(base=>{
       if(done) return; const style=buildStyle(base,o); lg('style built, '+style.layers.length+' layers');
       /* sharpness: pixel ratio (dprOf), a canvas up to the GPU limit, antialiasing, anisotropic filtering when pitched.
          speed: no world copies, short label fade, and a tile cache that keeps the tiles just flown past (6 zoom levels of
@@ -257,7 +270,7 @@ function create(container,o){
       const sc=new maplibregl.ScaleControl({unit:'nautical',maxWidth:110}); map.addControl(sc,'bottom-right');
       // narrow screens: attribution starts folded behind its (i) button; it opens on tap
       if(container.clientWidth<640) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
-      map.__bb={bm:'vfr',relief:'on',ly:{},vid:style.metadata['bb:vid'],ex:1.5,t3:false,oaip:'none',lt:315,sc,satBad:{}};
+      map.__bb={bm:'vfr',relief:'on',ly:{},vid:style.metadata['bb:vid'],ex:1.2,t3:false,oaip:'none',lt:315,sc,satBad:{}};
       if(style.metadata['bb:bg']) map.__bb.ch={[style.metadata['bb:bg']]:{'background-color':P.land}};
       satWatch(map,lg);
       let loaded=false, tile=false; const chk=()=>{ if(loaded&&!done){ done=true; clearTimeout(tm); ok(map); } };
@@ -325,7 +338,9 @@ function set3D(map,on,ex){ map.__bb.t3=!!on; if(ex) map.__bb.ex=ex; applyRelief(
     map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); map.touchPitch.enable(); }
   else { map.setTerrain(null); map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); map.touchPitch.disable(); }
   map.triggerRepaint(); }
-function setSky(map){ try{ map.setSky(skyFor(map.__bb.bm)); }catch(e){} }
+function setSky(map){ try{ map.setSky(skyFor(map.__bb.bm,map.__bb.sun)); }catch(e){} }
+// sun for the 3D sky: {az, el} in degrees, or null for the plain chart sky
+function setSun(map,sun){ map.__bb.sun=sun||null; if(map.__bb.t3) setSky(map); }
 function exag(map){ const t=map.getTerrain&&map.getTerrain(); return t?(t.exaggeration||1):0; }
 
 /* contour lines in feet, computed in the browser from the same AWS DEM tiles (maplibre-contour, BSD-3) */
@@ -576,10 +591,11 @@ function pathLayer(){
       gl.disableVertexAttribArray(this.loc.k); gl.disableVertexAttribArray(this.loc.c);
       // the aircraft at the hover/fly position: a DOM symbol turned to the track on screen, with a line down to the ground
       const h=this.hov, ac=this.ac; if(!h||!ac||h.hide){ this.hideAc(); return; }
+      if(h.model){ if(!ac.hidden) ac.hidden=true; } // the 3D aircraft (simac3d.js) is drawn instead of the symbol
       const W=map.transform.width, H=map.transform.height, p=this.q; // CSS px, without a DOM read (no forced layout per frame)
       if(!this.scr(h.la,h.lo,h.alt,ex,W,H,p)){ this.hideAc(); return; }
       let rot=0; if(h.tr!=null){ const t=h.tr*Math.PI/180, d=0.25/60, q=this.q2; if(this.scr(h.la+d*Math.cos(t),h.lo+d*Math.sin(t)/Math.cos(h.la*Math.PI/180),h.alt,ex,W,H,q)) rot=Math.atan2(q[0]-p[0],-(q[1]-p[1]))*180/Math.PI; }
-      this.css(ac,'transform',`translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`); if(ac.hidden) ac.hidden=false;
+      this.css(ac,'transform',`translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) rotate(${rot.toFixed(1)}deg)`); if(ac.hidden&&!h.model) ac.hidden=false;
       const dl=this.dl, g=this.g2;
       if(dl&&h.gnd!=null&&this.scr(h.la,h.lo,h.gnd,ex,W,H,g)){ const dx=g[0]-p[0], dy=g[1]-p[1], len=Math.hypot(dx,dy); this.css(dl,'height',len.toFixed(1)+'px'); this.css(dl,'transform',`translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) rotate(${(Math.atan2(-dx,dy)*180/Math.PI).toFixed(1)}deg)`); const hd=len<3; if(dl.hidden!==hd) dl.hidden=hd; } else if(dl&&!dl.hidden) dl.hidden=true; }
   };
@@ -610,6 +626,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,asRoute,limOf,WXC,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={create,asRoute,limOf,WXC,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();

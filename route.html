@@ -426,6 +426,9 @@
 .rx .mlwarn code{flex-basis:100%;font-size:11px;color:var(--ink-2);word-break:break-word}.rx .mlwarn code[hidden]{display:none}
 @media (max-width:900px){.rx .mlwarn{bottom:10px}}
 .mapw:has(.mlwarn) .maplg{display:none}
+/* map hint: shown on the first two visits, fades after ~6 s or the first touch of the map; the ? button brings it back */
+.rx .maplg{transition:opacity .5s,visibility .5s,bottom .2s}.rx .maplg.lgoff{opacity:0;visibility:hidden}
+#lghelp{font-size:15px;font-weight:700}#lghelp[aria-pressed="true"]{background:#0B2545;color:#fff}
 
 /* ===== map-first layout (SkyVector-style): floating route card, profile strip, layers behind one button ===== */
 .rx{--rcw:356px}
@@ -509,7 +512,7 @@
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
   <div class="mapw" id="map"><canvas id="mcv"></canvas>
-    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
+    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><button id="lghelp" type="button" aria-label="Show map help" title="Show map help" aria-pressed="false">?</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
     <div class="edbar noprint" id="edbar" hidden><button id="undo" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button id="redo" type="button" disabled title="Redo (Ctrl+Shift+Z)">↷ Redo</button><button id="clr" type="button" title="Remove all points from the route">✕ Clear route</button></div>
     <div class="ptpop noprint" id="ptpop" hidden><b id="ptpopn"></b><button id="ptdel" type="button">✕ Remove point</button><button id="ptx" type="button" aria-label="Close">×</button></div>
     <div class="maplg" id="maplg">Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it</div>
@@ -518,11 +521,11 @@
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
     <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
-      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5">×5</option><option value="10" selected>×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label></div>
+      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5">×5</option><option value="10" selected>×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="auto" selected>Auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
-    <div class="x3row x3s"><label><span id="x3ex">Terrain ×1.5</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.5" selected>×1.5</option><option value="2">×2</option><option value="3">×3</option></select></label><label id="x3ltl" hidden>Light <select id="x3lt" aria-label="Direction of the relief shading light"><option value="315" selected>from NW</option><option value="225">from SW</option><option value="135">from SE</option><option value="45">from NE</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0">Off</option><option value="500">500 ft</option><option value="1000" selected>1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
+    <div class="x3row x3s"><label><span id="x3ex">Terrain ×1.2</span> <select id="x3exs" aria-label="Terrain exaggeration"><option value="1">×1</option><option value="1.2" selected>×1.2</option><option value="1.5">×1.5</option><option value="2">×2</option><option value="3">×3</option></select></label><label id="x3ltl" hidden>Light <select id="x3lt" aria-label="Direction of the relief shading light"><option value="315" selected>from NW</option><option value="225">from SW</option><option value="135">from SE</option><option value="45">from NE</option></select></label><label>Contours <select id="x3ct" aria-label="Contour lines"><option value="0" selected>Off</option><option value="500">500 ft</option><option value="1000">1000 ft</option></select></label><button class="btn" id="x3reset">Reset view</button></div>
     <p class="note x3h" id="x3d"></p><p class="note x3h" id="x3hint">Drag to rotate · right-drag, Shift-drag or two fingers to move · scroll or pinch to zoom</p><p class="note x3h" id="x3hml" hidden>Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom</p>
   </div>
   <div class="simhud noprint" id="simhud" hidden></div>
@@ -755,7 +758,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=12"></script>
+<script src="rxmap.js?v=13"></script>
 <script>
 (function(){
 'use strict';
@@ -1576,7 +1579,7 @@ mapEl.addEventListener('wheel',e=>{ if(ML) return; e.preventDefault(); const r=m
    The route, fixes and notes are kept; clearing the route is a separate, confirmed action offered in the note. */
 async function resetMap(){ if(T3.on){ T3.play=false; await set3(false); }
   MM='vfr'; BM='vfr'; LY=Object.assign({},LYD.vfr); saveLY();
-  T3.ex=1.5; el('x3exs').value='1.5'; el('x3lt').value='315'; T3.cm='chase'; camUI(); lookHome(); HOV=null;
+  T3.ex=1.2; el('x3exs').value='1.2'; el('x3lt').value='315'; T3.cm='chase'; camUI(); lookHome(); HOV=null;
   if(ML){ RXMAP.setBasemap(ML,'vfr'); RXMAP.setLight(ML,315); MLK.ly=''; if(LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); }
   bmUI(); lyUI(); if(R){ delete R.pm; pmUI(); render(); queueSave(); }
   if(R&&R.pts.filter(p=>p.la!=null).length) fit();
@@ -1825,7 +1828,7 @@ LAB.add({},{
  'VFR':'VFR','IFR':'IFR','VFR chart: terrain colours, relief and contours':'VFR-kart: terrengfarger, relieff og koter','IFR chart: low ink, faint relief':'IFR-kart: lite blekk, svakt relieff','Chart style':'Kartstil',
  'VFR chart':'VFR-kart','IFR (low ink)':'IFR (lite blekk)','Relief':'Relieff','Aviation':'Luftfart','Terrain numbers':'Terrengtall','Mine':'Mine','Terrain colours and shading':'Terrengfarger og skygge','Contour lines (ft)':'Koter (fot)','Airspace (openAIP)':'Luftrom (openAIP)','IFR points (Finland, Iceland)':'IFR-punkter (Finland, Island)','My fixes':'Mine fixes',
  'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til nærmeste 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
- 'Cruise':'Marsj','GS':'GS','kt':'kt','500 ft lower':'500 ft lavere','500 ft higher':'500 ft høyere','Cruise altitude, feet or FL':'Marsjhøyde, fot eller FL','Cruise altitude: feet (6500) or flight level (FL75)':'Marsjhøyde: fot (6500) eller flygenivå (FL75)','Ground speed, knots':'Fart over bakken, knop','Ground speed (kt)':'Fart over bakken (kt)',
+ 'Cruise':'Marsj','Aircraft':'Fly','Aircraft model':'Flymodell','Auto':'Auto','Show map help':'Vis karthjelp','GS':'GS','kt':'kt','500 ft lower':'500 ft lavere','500 ft higher':'500 ft høyere','Cruise altitude, feet or FL':'Marsjhøyde, fot eller FL','Cruise altitude: feet (6500) or flight level (FL75)':'Marsjhøyde: fot (6500) eller flygenivå (FL75)','Ground speed, knots':'Fart over bakken, knop','Ground speed (kt)':'Fart over bakken (kt)',
  '▶ Simulate flight':'▶ Simuler flygingen','Fly the route in 3D at your planned altitude':'Fly ruten i 3D i den planlagte høyden','Simulate the flight':'Simuler flygingen','Camera':'Kamera','Chase':'Bak flyet','Cockpit':'Cockpit','Overview':'Oversikt','Speed':'Fart','Simulation speed':'Simuleringsfart',
  'Behind and above the aircraft':'Bak og over flyet','From the aircraft, looking ahead along the track':'Fra flyet, fremover langs kursen','The whole route':'Hele ruten',
  'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Norway topo':'Norge topo','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
@@ -2095,7 +2098,7 @@ el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
-const T3={on:false,ready:null,ex:1.5,ct:1000,follow:true,cm:'chase',spd:10,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
+const T3={on:false,ready:null,ex:1.2,act:'auto',ct:0,follow:true,cm:'chase',spd:10,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
 const FT3=0.0003048; // fot → km
 const PHONE3=()=>window.innerWidth<=900||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
@@ -2111,16 +2114,22 @@ async function hr3(A,max){ await HR.ready; const I=HR.idx; if(!I) return false; 
 // bilineær høyde (fot) i en flis
 function bil3(t,n,top,left,deg,la,lo){ const fr=Math.max(0,Math.min(n-1,(top-la)/deg*n-0.5)), fc=Math.max(0,Math.min(n-1,(lo-left)/deg*n-0.5)); const r=Math.floor(fr), c=Math.floor(fc), r1=Math.min(n-1,r+1), c1=Math.min(n-1,c+1), u=fr-r, v=fc-c;
   return (t[r*n+c]*(1-v)+t[r*n+c1]*v)*(1-u)+(t[r1*n+c]*(1-v)+t[r1*n+c1]*v)*u; }
+/* bikubisk høyde (Catmull-Rom, 4×4 celler): myke skråninger og avrundede rygger mellom cellene, i stedet for
+   knekk ved hver celle (bilineært) som gir et kantete «klosslandskap» når rutenettet er finere enn dataene */
+function cub3(t,n,top,left,deg,la,lo){ const fr=Math.max(0,Math.min(n-1,(top-la)/deg*n-0.5)), fc=Math.max(0,Math.min(n-1,(lo-left)/deg*n-0.5)), r=Math.floor(fr), c=Math.floor(fc), u=fr-r, v=fc-c;
+  const w=x=>{ const x2=x*x, x3=x2*x; return [(-x3+2*x2-x)/2,(3*x3-5*x2+2)/2,(-3*x3+4*x2+x)/2,(x3-x2)/2]; }, wu=w(u), wv=w(v); let s=0;
+  for(let i=0;i<4;i++){ const rr=Math.max(0,Math.min(n-1,r-1+i))*n; let row=0; for(let j=0;j<4;j++) row+=t[rr+Math.max(0,Math.min(n-1,c-1+j))]*wv[j]; s+=row*wu[i]; }
+  return Math.max(0,s); }
 // detaljerte nordiske data der de finnes, ellers det grove rutenettet
-function e3(la,lo,hr){ const I=HR.idx; if(hr&&I){ const d=I.deg, a=Math.floor(la/d)*d, o=Math.floor(lo/d)*d, t=HR.T[a+'_'+o]; if(t) return {e:bil3(t,I.n,a+d,o,d,la,lo),h:1}; }
+function e3(la,lo,hr){ const I=HR.idx; if(hr&&I){ const d=I.deg, a=Math.floor(la/d)*d, o=Math.floor(lo/d)*d, t=HR.T[a+'_'+o]; if(t) return {e:cub3(t,I.n,a+d,o,d,la,lo),h:1}; }
   const n=TERRAIN.n(); if(!n) return {e:0,h:0}; const a=Math.floor(la/5)*5, o=Math.floor(lo/5)*5, t=TERRAIN.raw(a+'_'+o); return {e:t?bil3(t,n,a+5,o,5,la,lo):0,h:0}; }
 // høydegitter for området (gjenbrukes når bare overdrivelse, koter eller ruten endres)
-async function grid3(A,tok){ const ph=PHONE3(), NV=ph?60000:160000; const la0=(A.a0+A.a1)/2, lo0=(A.o0+A.o1)/2, kx=111.32*Math.cos(la0*D2R), kz=111.32;
+async function grid3(A,tok){ const ph=PHONE3(), NV=ph?110000:380000; const la0=(A.a0+A.a1)/2, lo0=(A.o0+A.o1)/2, kx=111.32*Math.cos(la0*D2R), kz=111.32;
   const key=[A.a0,A.a1,A.o0,A.o1].map(v=>v.toFixed(3)).join(',')+'|'+NV; if(T3.G&&T3.G.key===key) return T3.G;
   const keys=new Set(); for(let a=Math.floor(A.a0/5)*5;a<=A.a1;a+=5) for(let o=Math.floor(A.o0/5)*5;o<=A.o1;o+=5) keys.add(a+'_'+o);
   await TERRAIN.ready; await TERRAIN.load([...keys]); const hr=await hr3(A,ph?12:24); if(tok!==T3.tok) return null;
-  // rutenett innenfor et fast antall hjørner (mobil: 60 000), aldri finere enn dataene (≈ 0,45 km detaljert, ≈ 0,9 km grovt)
-  const W=(A.o1-A.o0)*kx, H=(A.a1-A.a0)*kz, stp=Math.max(Math.sqrt(W*H/NV),hr?0.45:0.9,Math.max(W,H)/1400), ro=Math.max(2,Math.round(W/stp)+1), ra=Math.max(2,Math.round(H/stp)+1);
+  // rutenett innenfor et fast antall hjørner (mobil: 110 000); dataene interpoleres bikubisk ned til ≈ 0,22 km (detaljert) / 0,6 km (grovt)
+  const W=(A.o1-A.o0)*kx, H=(A.a1-A.a0)*kz, stp=Math.max(Math.sqrt(W*H/NV),hr?0.22:0.6,Math.max(W,H)/2400), ro=Math.max(2,Math.round(W/stp)+1), ra=Math.max(2,Math.round(H/stp)+1);
   const raw=new Float32Array(ra*ro); let nh=0; for(let i=0;i<ra;i++){ const la=A.a1-i*(A.a1-A.a0)/(ra-1); for(let j=0;j<ro;j++){ const s=e3(la,A.o0+j*(A.o1-A.o0)/(ro-1),hr); raw[i*ro+j]=Math.max(0,s.e); nh+=s.h; } }
   // utjevning: grove celler er «høyeste punkt», som gir kantete topper; sjø (0) beholdes
   let h=raw; for(let p=0;p<(hr?1:2);p++){ const o=new Float32Array(ra*ro); for(let i=0;i<ra;i++) for(let j=0;j<ro;j++){ const k=i*ro+j; if(raw[k]<1){ o[k]=0; continue; } let s=0,w=0; for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){ const ii=i+di, jj=j+dj; if(ii<0||jj<0||ii>=ra||jj>=ro) continue; const ww=(di||dj)?((di&&dj)?1:2):4; s+=h[ii*ro+jj]*ww; w+=ww; } o[k]=s/w; } h=o; }
@@ -2260,6 +2269,7 @@ function x3ro(x){ simHud(x); const M=ML?compute():(T3.S&&T3.S.M); if(!M) return;
   el('x3o').textContent=`${fx(x,1)} / ${fx(M.total,1)} NM`+(t!=null?` · ${L({en:'terrain',no:'terreng'})} ${fx(Math.round(t))} ft`:'')+(a!=null?` · ${L({en:'line',no:'linje'})} ${altTxt(Math.round(a/10)*10)}`:'')+(a!=null&&t!=null?` (${a-t>=0?'+':'−'}${fx(Math.abs(Math.round((a-t)/10)*10))} ft)`:''); }
 el('x3r').addEventListener('input',()=>{ const x=+el('x3r').value; T3.x=x; T3.drive=T3.cm!=='ov'; setHov(x,true); x3ro(x); kick3(); });
 el('x3play').onclick=()=>{ const tot=ML?simM().total:(T3.S&&T3.S.M.total); if(!tot) return; if(T3.loading){ el('simskip').click(); return; } /* during buffering, Fly (or Space) skips it */ T3.play=!T3.play; if(T3.play){ if(T3.x>=tot-1e-6) T3.x=0; T3.drive=T3.cm!=='ov'; T3.t=0; if(ML&&!T3.pf) T3.pf={zc:Math.max(8,Math.min(15,ML.getZoom())),toX:T3.x,readyX:T3.x+0.5,busy:false}; } ui3p(); kick3(); };
+el('x3ac').addEventListener('change',()=>{ T3.act=el('x3ac').value; if(ML){ if(T3.on&&T3.cm==='chase') ac3Load(); mlKick3(); } });
 el('x3cam').addEventListener('click',e=>{ const b=e.target.closest('[data-c]'); if(b) setCam(b.dataset.c); });
 el('x3spd').addEventListener('change',()=>{ T3.spd=+el('x3spd').value||10; try{ localStorage.setItem('bb-rx-simspd2',String(T3.spd)); }catch(e){} });
 try{ const v=+localStorage.getItem('bb-rx-simspd2'); if([1,5,10,20,30,60].includes(v)){ T3.spd=v; el('x3spd').value=String(v); } }catch(e){}
@@ -2302,9 +2312,9 @@ el('lib').addEventListener('click',async e=>{ const t=e.target.closest('button')
   if(t.dataset.n){ const n=NOTES.find(x=>x.id===t.dataset.n); if(n){ V.la=n.la; V.lo=n.lo; V.z=Math.max(V.z,120); if(T3.on) await set3(false); drawMap(); noteInfo(n); } libOpen(false); return; } });
 async function openView(v){ if(v.rid){ const r=ALL.find(x=>x.id===v.rid); if(r&&r!==R) load(r); }
   MM=v.mm==='ifr'?'ifr':'vfr'; LY=Object.assign({},LY0,v.ly||{}); saveLY(); lyUI(); V.la=v.la; V.lo=v.lo; V.z=v.z;
-  if(ML){ if(v.ml&&v.ml.bm) setBM(v.ml.bm); if(v.d3){ T3.ex=v.d3.ex||1.5; el('x3exs').value=String(T3.ex); if(!T3.on) await set3(true); else RXMAP.set3D(ML,true,T3.ex); } else if(T3.on) await set3(false);
+  if(ML){ if(v.ml&&v.ml.bm) setBM(v.ml.bm); if(v.d3){ T3.ex=v.d3.ex||1.2; el('x3exs').value=String(T3.ex); if(!T3.on) await set3(true); else RXMAP.set3D(ML,true,T3.ex); } else if(T3.on) await set3(false);
     MLV={la:v.la,lo:v.lo,z:v.z}; ML.jumpTo({center:[v.lo,v.la],zoom:mlZ(v.z,v.la),pitch:v.ml?v.ml.p:(v.d3?60:0),bearing:v.ml?v.ml.b:0}); if(v.d3&&v.d3.x){ el('x3r').value=v.d3.x; T3.x=v.d3.x; setHov(v.d3.x,true); x3ro(v.d3.x); } drawMap(); return; }
-  if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||1.5; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
+  if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||1.2; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
   else { if(T3.on) await set3(false); V.la=v.la; V.lo=v.lo; V.z=v.z; drawMap(); } }
 // notater på kartet
 function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
@@ -2382,7 +2392,7 @@ const MDBG=/[?&]mapdebug\b/.test(location.search); let mdBox=null;
 function mlog(t){ if(!MDBG) return; if(!mdBox){ mdBox=document.createElement('pre'); mdBox.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;max-width:94vw;max-height:45vh;overflow:auto;background:#10171D;color:#D7E1E6;font:11px/1.4 monospace;padding:8px;border-radius:4px;white-space:pre-wrap;margin:0'; document.body.appendChild(mdBox); } mdBox.textContent+=((performance.now()/1000).toFixed(1))+'s '+t+'\n'; }
 async function mlStart(){ mlog('RXMAP '+(!!window.RXMAP)+' · online '+navigator.onLine+' · webgl '+(()=>{ try{ return !!document.createElement('canvas').getContext('webgl2')||!!document.createElement('canvas').getContext('webgl'); }catch(e){ return false; } })()+' · '+navigator.userAgent.slice(0,80)); if(!mlWanted()){ mlog('not wanted -> canvas'); mapEl.dataset.map='canvas'; return; } const t0=Date.now(); mapEl.dataset.map='loading';
   const div=document.createElement('div'); div.className='mlmap wait'; div.id='mlmap'; mapEl.insertBefore(div,mapEl.firstChild);
-  try{ await mlLib(); mlog('maplibre-gl loaded '+(window.maplibregl&&maplibregl.getVersion?maplibregl.getVersion():'')); const m=await RXMAP.create(div,{log:mlog,center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(4000,15000-(Date.now()-t0))});
+  try{ await mlLib(); mlog('maplibre-gl loaded '+(window.maplibregl&&maplibregl.getVersion?maplibregl.getVersion():'')); const m=await RXMAP.create(div,{log:mlog,center:[V.lo,V.la],zoom:mlZ(V.z,V.la),bm:BM,relief:mlRelief(),timeout:Math.max(12000,25000-(Date.now()-t0))});
     if(T3.on) await set3(false); ML=m; mlInit(); mlog('MapLibre active'); }
   catch(e){ div.remove(); ML=null; mapEl.dataset.map='canvas'; const why=(e&&e.message)||String(e); mlog('FALLBACK: '+why); try{ console.info('Route Explorer: using the built-in canvas map ('+why+')'); }catch(_){} drawMap();
     if(navigator.onLine!==false&&location.protocol.startsWith('http')){ const gl=/webgl|context|gpu/i.test(why); const n=document.createElement('div'); n.className='mlwarn'; n.setAttribute('role','status');
@@ -2444,9 +2454,21 @@ function setBM(b){ if(!BMS.includes(b)) b='vfr'; BM=b; if((b==='vfr'||b==='ifr')
 el('bmsel').addEventListener('click',e=>{ const b=e.target.closest('[data-b]'); if(b) setBM(b.dataset.b); });
 // 3D i MapLibre: terreng fra AWS, ruten draperes, planlagt bane som gardin i høyden
 function ml3(on){ T3.on=on; el('rx').classList.toggle('d3',on); setTimeout(()=>{ rxTop(); try{ ML.resize(); }catch(e){} },30); el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on; el('m3msg').hidden=true;
-  { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3ltl').hidden=false; el('x3hint').hidden=true; el('x3hml').hidden=false;
-  if(!on){ mlNoPad(); mlFov(); simStop(); mlDrive(false); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
-  RXMAP.set3D(ML,true,T3.ex); ml3Fit(); MLK.p3=''; drawMap(); return Promise.resolve(); }
+  { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3ltl').hidden=false; el('x3acl').hidden=false; el('x3hint').hidden=true; el('x3hml').hidden=false;
+  if(!on){ if(AC3.L) AC3.L.set({on:false}); mlNoPad(); mlFov(); simStop(); mlDrive(false); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
+  T3.sun=sun3(); if(RXMAP.setSun) RXMAP.setSun(ML,T3.sun); RXMAP.set3D(ML,true,T3.ex); ml3Fit(); MLK.p3=''; drawMap(); return Promise.resolve(); }
+/* the 3D aircraft (simac3d.js + three.js, as a MapLibre custom layer): loaded the first time the simulation starts */
+const AC3={st:null,L:null,bank:0,pitch:0};
+const RM3=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+function acType(){ if(T3.act&&T3.act!=='auto') return T3.act; const g=gsOf(); return g>=200?'a320':g>=150?'b200':'da42'; }
+const acLen=()=>({da42:8.6,b200:13.3,a320:37.6})[acType()]||9;
+function ac3Load(){ if(AC3.st||!ML) return AC3.st; AC3.st=load3().then(()=>window.SIMAC?0:new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='simac3d.js?v=1'; sc.onload=ok; sc.onerror=()=>ko(new Error('simac3d.js')); document.head.appendChild(sc); }))
+  .then(()=>{ if(!ML||!window.SIMAC) return; if(!ML.getLayer('bb-ac3d')){ const L=SIMAC.layer(); ML.addLayer(L); AC3.L=L; } mlKick3(); })
+  .catch(e=>{ AC3.st=null; try{ console.info('Route Explorer: no 3D aircraft ('+((e&&e.message)||e)+')'); }catch(_){} }); return AC3.st; }
+/* sun for the sky: local solar noon today at the middle of the route (no departure time is stored); in the Nordic
+   winter that is a low, warm sun, in summer a high one */
+function sun3(){ const P=R.pts.filter(p=>p.la!=null), la=P.length?P.reduce((s,p)=>s+p.la,0)/P.length:60, d=new Date(), doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);
+  const dec=-23.44*Math.cos(2*Math.PI/365*(doy+10)); return {az:la>=dec?180:0,el:Math.max(2,90-Math.abs(la-dec))}; }
 function ml3Fit(){ mlNoPad(); mlFov(); if(T3.dvOn) mlDrive(false); T3.drive=false; T3.mb=null; try{ ML.setCenterClampedToGround(true); }catch(e){} const m=ML, P=R.pts.filter(p=>p.la!=null&&!['missed','alt'].includes(p.t)); let b=m.getBearing();
   if(P.length>=2){ b=((brg(P[0],P[P.length-1])-70)%360+540)%360-180; let a0=90,a1=-90,o0=180,o1=-180; P.forEach(p=>{ a0=Math.min(a0,p.la); a1=Math.max(a1,p.la); o0=Math.min(o0,p.lo); o1=Math.max(o1,p.lo); });
     let cam=null; try{ cam=m.cameraForBounds([[o0,a0],[o1,a1]],{padding:{top:60,bottom:Math.min(shTarget(mapEl.clientHeight)+40,mapEl.clientHeight/2),left:pw3()+40,right:60},bearing:b,maxZoom:11}); }catch(e){}
@@ -2475,8 +2497,8 @@ function simPad(now){ if(T3.padT&&now-T3.padT<500&&T3.pad) return T3.pad; T3.pad
 // camera field of view: cockpit ≈ 80° across the screen (a pilot's view), chase ≈ 64°, otherwise MapLibre's 36.87°.
 // Kept within 36.87–70° vertical so portrait phones do not get a fish-eye view.
 const FOV0=36.87;
-function mlFov(cm){ if(!ML||!ML.setVerticalFieldOfView) return; const tr=ML.transform||{}, W=tr.width||1, H=tr.height||1; // map size without a DOM read (no forced layout per frame)
-  const v=h=>2*Math.atan(Math.tan(h/2*D2R)*H/W)/D2R, want=cm==='cockpit'?Math.max(45,Math.min(70,v(80))):cm==='chase'?Math.max(FOV0,Math.min(55,v(64))):FOV0;
+function mlFov(cm,add){ if(!ML||!ML.setVerticalFieldOfView) return; const tr=ML.transform||{}, W=tr.width||1, H=tr.height||1; // map size without a DOM read (no forced layout per frame)
+  const v=h=>2*Math.atan(Math.tan(h/2*D2R)*H/W)/D2R, want=cm==='cockpit'?Math.max(45,Math.min(70,v(80))):cm==='chase'?Math.max(FOV0,Math.min(60,v(64)+(add||0))):FOV0;
   if(Math.abs(ML.getVerticalFieldOfView()-want)>0.2) try{ ML.setVerticalFieldOfView(want); }catch(e){} }
 function mlNoPad(){ if(ML&&T3.padded){ T3.padded=false; try{ ML.setPadding({top:0,bottom:0,left:0,right:0}); }catch(e){} } }
 // free look while flying: T3.lkT is the target (from drag, keys, look pad), T3.lk follows it with easing
@@ -2489,31 +2511,44 @@ function mlFrame3(now){ T3.raf=0; if(!T3.on||!ML) return; const t0=performance.n
   // ease the look offsets toward the target (about 0.15 s), wrapping yaw the short way round
   { const e=dt>0?1-Math.exp(-dt*7):1, dy=((T3.lkT.y-T3.lk.y+540)%360)-180, dp=T3.lkT.p-T3.lk.p; T3.lk.y+=dy*e; T3.lk.p+=dp*e; if(Math.abs(dy)>0.05||Math.abs(dp)>0.05) more=true; }
   const at=T3.play?T3.x:(HOV!=null?HOV:(T3.dvOn?T3.x:null));
-  if(at!=null&&tot>0){ const tb=trkAt(M,at); if(tb!=null){ if(T3.mb==null||!dt) T3.mb=T3.mb==null?tb:T3.mb; const db=((tb-T3.mb)%360+540)%360-180; T3.mb=(T3.mb+db*(dt>0?1-Math.exp(-dt*(T3.cm==='cockpit'?1.6:2.5)):1)+360)%360; if(Math.abs(db)>0.3) more=true; }
+  let showM=false;
+  if(at!=null&&tot>0){ const tb=trkAt(M,at); if(tb!=null){ if(T3.mb==null){ T3.mb=tb; T3.ch=tb; } const db=((tb-T3.mb)%360+540)%360-180; T3.mb=(T3.mb+db*(dt>0?1-Math.exp(-dt*(T3.cm==='cockpit'?1.6:2.5)):1)+360)%360; if(Math.abs(db)>0.3) more=true;
+      // the chase camera swings round after the aircraft in a turn (lag), so the turn and the bank are seen from outside
+      if(T3.ch==null) T3.ch=T3.mb; const dc=((T3.mb-T3.ch)%360+540)%360-180; T3.ch=(T3.ch+dc*(dt>0?1-Math.exp(-dt*(RM3()?8:1.25)):1)+360)%360; if(Math.abs(dc)>0.2) more=true; }
     const q=M.posAt(at);
+    // attitude: bank from the turn rate along the (smoothed) track, pitch from the flight-path angle plus a little angle of attack
+    { let bank=0, pit=0; const d=0.3, ta=trkAt(M,Math.max(0,at-d)), tc=trkAt(M,Math.min(tot,at+d)), gs=gsOf();
+      if(ta!=null&&tc!=null){ const w=(((tc-ta)%360+540)%360-180)/(2*d)*D2R*gs/3600*2.5; bank=Math.max(-25,Math.min(25,Math.atan(gs*0.5144*w/9.81)/D2R)); }
+      pit=Math.atan((ml3Alt(M,Math.min(tot,at+0.1))-ml3Alt(M,Math.max(0,at-0.1)))/0.2/6076)/D2R+(acType()==='a320'?2.5:2);
+      const ke=dt>0?1-Math.exp(-dt*1.8):1; AC3.bank+=(bank-AC3.bank)*ke; AC3.pitch+=(pit-AC3.pitch)*ke; if(Math.abs(bank-AC3.bank)>0.1||Math.abs(pit-AC3.pitch)>0.1) more=true; }
+    showM=!!(AC3.L&&q&&q.la!=null&&dv&&T3.cm==='chase'&&T3.mb!=null);
+    if(showM) AC3.L.set({on:true,la:q.la,lo:q.lo,ft:ml3Alt(M,at),hd:T3.mb,bank:AC3.bank,pitch:AC3.pitch,type:acType(),sun:T3.sun,spin:T3.play&&!RM3()});
     if(q&&q.la!=null&&dv&&T3.mb!=null){ const ex=RXMAP.exag(ML)||1, a=ml3Alt(M,at)*0.3048*ex, ly=T3.lk.y, lp=T3.lk.p;
-      try{ ML.setCenterClampedToGround(false); mlFov(T3.cm);
+      const tq=tpq(at), gnd=tq?(tq.c!=null?tq.c:tq.e):0, agl=ml3Alt(M,at)-(gnd||0);
+      try{ ML.setCenterClampedToGround(false); mlFov(T3.cm,showM?7*Math.max(0,Math.min(1,1-agl/3000)):0);
         if(T3.cm==='cockpit'){ // at the aircraft, looking along the track (plus free look), about 7° below the horizon by default
           const f=Math.max(3,Math.min(8,tot*0.05)), [tla,tlo]=offs(q.la,q.lo,T3.mb+ly,f);
           ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([q.lo,q.la],a+25,[tlo,tla],a+25-f*1852*Math.tan((7-lp)*D2R)),{padding:{top:0,bottom:0,left:0,right:0}})); T3.padded=false; }
         else { // chase: behind and above; free look orbits the camera round the aircraft
-          const back=Math.max(1.6,Math.min(5,tot*0.035))*T3.zk, el0=Math.atan(0.42)/D2R, elv=Math.max(4,Math.min(80,el0+lp)), cb=T3.mb+180+ly;
-          const [cla,clo]=offs(q.la,q.lo,cb,back*Math.cos(elv*D2R)/Math.cos(el0*D2R)), ah=back*0.3*Math.max(0,Math.cos(ly*D2R)), [tla,tlo]=offs(q.la,q.lo,T3.mb,ah);
-          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([clo,cla],a+back*1852*Math.sin(elv*D2R)/Math.cos(el0*D2R),[tlo,tla],a-back*1852*0.05),{padding:simPad(now)})); T3.padded=true; } }catch(e){} } }
-  RXMAP.setPath3D(ML,undefined,acHov(M,at)); if(!T3.play||!T3.hudT||now-T3.hudT>100){ T3.hudT=now; simHud(at!=null?at:T3.x); }
+          // with the 3D aircraft: a close, low chase (about 5½ lengths back, 9° above), the wheel pulls back to the route view
+          const back=showM? acLen()*5.5*T3.zk/1852 : Math.max(1.6,Math.min(5,tot*0.035))*T3.zk, el0=showM?9:Math.atan(0.42)/D2R, elv=Math.max(showM?2:4,Math.min(80,el0+lp)), cb=(showM?T3.ch:T3.mb)+180+ly;
+          const [cla,clo]=offs(q.la,q.lo,cb,back*Math.cos(elv*D2R)/Math.cos(el0*D2R)), ah=back*(showM?0.6:0.3)*Math.max(0,Math.cos(ly*D2R)), [tla,tlo]=offs(q.la,q.lo,T3.mb,ah);
+          ML.jumpTo(Object.assign(ML.calculateCameraOptionsFromTo([clo,cla],a+back*1852*Math.sin(elv*D2R)/Math.cos(el0*D2R),[tlo,tla],a-back*1852*(showM?0:0.05)),{padding:simPad(now)})); T3.padded=true; } }catch(e){} } }
+  if(!showM&&AC3.L) AC3.L.set({on:false});
+  { const h=acHov(M,at); if(h&&showM) h.model=true; RXMAP.setPath3D(ML,undefined,h); } if(!T3.play||!T3.hudT||now-T3.hudT>100){ T3.hudT=now; simHud(at!=null?at:T3.x); }
   T3.ft=performance.now()-t0; if(T3.play||more) mlKick3(); else T3.t=0; }
 /* flying camera: drag looks around (chase: orbits), wheel moves the chase camera in and out, double-click recentres.
    MapLibre's own pan/zoom/rotate are off meanwhile, and the pitch limit opens to 105° so you can look above the horizon. */
 function mlDrive(on){ T3.dvOn=on; const m=ML; if(!m) return; const c=m.getCanvasContainer();
-  try{ if(on){ m.dragPan.disable(); m.dragRotate.disable(); m.scrollZoom.disable(); m.doubleClickZoom.disable(); m.touchZoomRotate.disable(); m.touchPitch.disable(); m.keyboard.disable(); m.setMaxPitch(105); c.classList.add('bb-look'); }
-    else { m.setMaxPitch(85); if(m.getPitch()>85) m.jumpTo({pitch:85}); m.dragPan.enable(); m.scrollZoom.enable(); m.doubleClickZoom.enable(); m.touchZoomRotate.enable(); m.keyboard.enable(); if(T3.on){ m.dragRotate.enable(); m.touchPitch.enable(); } else m.touchZoomRotate.disableRotation(); c.classList.remove('bb-look'); } }catch(e){} }
+  try{ if(on){ m.dragPan.disable(); m.dragRotate.disable(); m.scrollZoom.disable(); m.doubleClickZoom.disable(); m.touchZoomRotate.disable(); m.touchPitch.disable(); m.keyboard.disable(); m.setMaxPitch(105); m.setMaxZoom(20); c.classList.add('bb-look'); }
+    else { m.setMaxPitch(85); m.setMaxZoom(17.5); if(m.getPitch()>85) m.jumpTo({pitch:85}); m.dragPan.enable(); m.scrollZoom.enable(); m.doubleClickZoom.enable(); m.touchZoomRotate.enable(); m.keyboard.enable(); if(T3.on){ m.dragRotate.enable(); m.touchPitch.enable(); } else m.touchZoomRotate.disableRotation(); c.classList.remove('bb-look'); } }catch(e){} }
 let lkP=null;
 function lookInit(){ const c=ML.getCanvasContainer();
   c.addEventListener('pointerdown',e=>{ if(!T3.dvOn||(e.pointerType==='mouse'&&e.button!==0)) return; lkP={id:e.pointerId,x:e.clientX,y:e.clientY}; try{ c.setPointerCapture(e.pointerId); }catch(_){} });
   c.addEventListener('pointermove',e=>{ if(!lkP||e.pointerId!==lkP.id) return; const dx=e.clientX-lkP.x, dy=e.clientY-lkP.y; lkP.x=e.clientX; lkP.y=e.clientY; lookBy(-dx*0.3,dy*0.25); },{passive:true});
   const up=e=>{ if(lkP&&e.pointerId===lkP.id) lkP=null; }; c.addEventListener('pointerup',up); c.addEventListener('pointercancel',up);
   c.addEventListener('dblclick',e=>{ if(T3.dvOn){ e.preventDefault(); lookHome(); } });
-  c.addEventListener('wheel',e=>{ if(!T3.dvOn) return; e.preventDefault(); if(T3.cm==='chase'){ T3.zk=Math.max(0.35,Math.min(4,T3.zk*(e.deltaY>0?1.12:1/1.12))); mlKick3(); } },{passive:false}); }
+  c.addEventListener('wheel',e=>{ if(!T3.dvOn) return; e.preventDefault(); if(T3.cm==='chase'){ T3.zk=Math.max(0.35,Math.min(AC3.L?60:4,T3.zk*(e.deltaY>0?1.15:1/1.15))); mlKick3(); } },{passive:false}); }
 // arrow keys look around while flying (Shift = faster), C or 0 recentres
 document.addEventListener('keydown',e=>{ if(!T3.on||!T3.dvOn||e.target.closest('input,textarea,select,[contenteditable]')) return; const k=e.shiftKey?12:4;
   const m={ArrowLeft:[-k,0],ArrowRight:[k,0],ArrowUp:[0,k*0.8],ArrowDown:[0,-k*0.8]}[e.key]; if(m){ e.preventDefault(); lookBy(m[0],m[1]); return; }
@@ -2567,7 +2602,7 @@ function simHud(x){ const h=el('simhud'); if(!h) return; const M=ML?simM():(T3.S
     +c(L({en:'To go',no:'Igjen'}),fx(dtg,1),'NM'+(nx?'<span class="nx"> · '+esc(nx.p.n||'')+'</span>':''))+c('ETE',hmsOf(dtg/gs),'')+warn+(T3.play&&T3.k<0.85?`<div class="hw nt">${L({en:'Loading ahead: speed',no:'Laster inn foran: fart'})} ×${fx(T3.spd*T3.k,T3.spd*T3.k<10?1:0)}</div>`:''); }
 function simBtnUI(){ const b=el('simbtn'); if(!b) return; const on=T3.on&&T3.play; b.textContent=on?'❚❚ '+L({en:'Pause',no:'Pause'}):'▶ '+L({en:'Simulate flight',no:'Simuler flygingen'}); b.setAttribute('aria-pressed',String(on)); }
 function camUI(){ el('x3cam').querySelectorAll('[data-c]').forEach(b=>{ const on=b.dataset.c===T3.cm; b.classList.toggle('on',on); b.setAttribute('aria-pressed',String(on)); }); }
-function setCam(c){ T3.cm=c; camUI(); T3.mb=null;
+function setCam(c){ T3.cm=c; camUI(); T3.mb=null; if(ML&&T3.on&&c==='chase') ac3Load();
   if(c==='ov'){ T3.drive=false; if(ML) ml3Fit(); else { cam3(); } }
   else { T3.drive=true; if(!T3.play&&HOV==null){ HOV=T3.x; } if(!ML) T3.snap=false; }
   kick3(); }
@@ -2578,7 +2613,7 @@ async function simStart(){ if(T3.loading){ el('simskip').click(); return; } if(T
   if(pmode()!=='adv'){ R.pm='adv'; ch=true; } if(ch){ pmUI(); render(); queueSave(); }
   if(!T3.on){ await set3(true); }
   T3.x=0; T3.mb=null; T3.k=1; lookHome(); el('x3r').value=0; camUI();
-  if(ML){ // put the camera at the start, let it settle, then buffer the tiles along the route at the zoom it uses
+  if(ML){ ac3Load(); T3.ch=null; // put the camera at the start, let it settle, then buffer the tiles along the route at the zoom it uses
     T3.play=false; HOV=0; T3.drive=T3.cm!=='ov'; kick3(); await new Promise(r=>setTimeout(r,400)); if(!T3.on) return;
     T3.loading=true; ui3p(); await simPreload(); T3.loading=false; if(!T3.on) return; }
   T3.play=true; T3.drive=T3.cm!=='ov'; T3.t=0; ui3p(); kick3(); }
@@ -2601,6 +2636,11 @@ psv.addEventListener('click',e=>{ if(!T3.on||justDragged||!psv._XI||!psv._box) r
 function rxTop(){ const r=el('rx'); const tp=document.querySelector('.rx-top'); if(tp) r.style.setProperty('--tch',(tp.offsetTop+tp.offsetHeight+8)+'px'); const t=r.getBoundingClientRect().top+window.scrollY; r.style.setProperty('--rxtop',Math.max(0,Math.min(200,t))+'px'); }
 window.addEventListener('resize',()=>{ rxTop(); shH(); drawMap(); }); setTimeout(rxTop,0); setTimeout(rxTop,600);
 lyUI();
+{ const lg=el('maplg'), hb=el('lghelp'); let n=0; try{ n=+localStorage.getItem('bb-rx-hint')||0; localStorage.setItem('bb-rx-hint',String(n+1)); }catch(e){}
+  const set=on=>{ lg.classList.toggle('lgoff',!on); hb.setAttribute('aria-pressed',String(on)); };
+  if(n>=2) set(false); else { set(true); const off=()=>{ set(false); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.removeEventListener(t,off)); clearTimeout(tm); };
+    const tm=setTimeout(off,6000); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.addEventListener(t,off,{passive:true})); }
+  hb.addEventListener('pointerdown',e=>e.stopPropagation()); hb.addEventListener('click',e=>{ e.stopPropagation(); set(lg.classList.contains('lgoff')); }); }
 LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
 Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; load(ALL[0]); mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
