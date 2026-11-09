@@ -166,7 +166,8 @@ P('clouds.html#lift','Clouds and stability lab','Sky- og stabilitetslabben','lif
  P('radio-drills.html','Radio drills','Radiodriller','radio drill readback tilbakelesing atc calls','Short radio exercises','Korte radioøvelser'),
  P('fi.html','Flight Intelligence','Flight Intelligence','flight intelligence instructor instruktør afm poh fcom qrh sop aircraft systems systemer limitations begrensninger oral exam muntlig scenario revision repetisjon documents dokumenter','Your own instructor that answers from your documents','Din egen instruktør som svarer fra dokumentene dine'),
  P('checkride.html','Check preparation','Kontrollforberedelse','checkride pc skill test oral muntlig examiner eksaminator easa questions spørsmål','The instructor questions you like an examiner, from your documents','Instruktøren spør deg ut som en eksaminator, fra dokumentene dine'),
- P('cockpit.html','Glass cockpit simulator','Glass cockpit-simulator','g1000 simulator cockpit pfd mfd autopilot da42 ils take-off avgang','Fly the DA42 with a G1000-style panel','Fly DA42 med et G1000-lignende panel'),
+ P('cockpit.html','Glass cockpit simulator','Glass cockpit-simulator','glass cockpit simulator pfd mfd autopilot da42 ils vor take-off avgang procedures prosedyrer','Fly the DA42 with a glass-cockpit panel','Fly DA42 med et G1000-lignende panel'),
+ P('b200.html','King Air B200 cockpit trainer','King Air B200 cockpittrener','king air b200 turboprop autofeather engine start motorstart emergency descent nøddescent pressurisation trykkabin beta reverse procedures prosedyrer','Classic analog panel, procedures and emergencies','Klassisk analogt panel, prosedyrer og nødprosedyrer'),
  P('profile.html','Your progress','Din progresjon','profile profil progress progresjon rank rang xp','Rank, points and what to do next','Rang, poeng og hva du bør gjøre nå')
 ];
 /* ---------- utregninger ---------- */
