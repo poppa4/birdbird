@@ -1,5 +1,6 @@
 /* Birdbird – navsim.js: the radio navigation simulator (plan view, profile, instrument panel, controls, guide).
-   Geometry comes from navcore.js (NAVCORE), the gauges from navgauges.js (NAVG), the lessons, practice tasks,
+   Geometry comes from navcore.js (NAVCORE), the gauges from navgauges.js (NAVG), the plan-view map (relief, symbols, labels,
+   scale) from navmap.js (NAVMAP), the lessons, practice tasks,
    scenarios and the "Why?" sentences from navlessons.js (NAVLESSONS). Strings are EN/NO through LAB.L.
    Model: flat local projection around the area's main VOR, one magnetic variation for the whole area,
    a rate-one turn (max 25° bank), constant TAS, no instrument errors except DME slant range, the VOR cone of
@@ -12,54 +13,21 @@ const D2R=Math.PI/180, TAU=Math.PI*2;
 const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 const d3=N.d3, norm=N.norm, diff=N.diff, clamp=N.clamp;
 const FM='"IBM Plex Mono", ui-monospace, monospace', FB='"Public Sans", system-ui, sans-serif', FD='Archivo, "Public Sans", sans-serif';
-const COL={bg0:'#0d151c',bg1:'#121d26',land:'#1a2833',landE:'rgba(140,170,190,.3)',ring:'rgba(160,190,210,.13)',ringT:'rgba(170,195,215,.55)',rose:'rgba(200,215,228,.55)',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95',
-  crs:'#F06BB4',to:'rgba(90,160,240,.10)',from:'rgba(99,217,160,.09)',vor:'#63D9A0',ndb:'#E8A85C',adf:'#F5BC4C',ils:'#7FCBE8',ac:'#FFFFFF',trace:'240,107,180',wind:'#7FCBE8',air:'#E6EBEF',gnd:'#63D9A0',hold:'#C9A6F5',warn:'#F0B440',bad:'#EC5A47'};
+const NM_=window.NAVMAP, COL=Object.assign({},NM_.COL,{crs:'#F06BB4',to:'rgba(90,160,240,.10)',from:'rgba(99,217,160,.09)',adf:'#F5BC4C',trace:'240,107,180',air:'#E6EBEF',gnd:'#63D9A0'});
 
-/* ---------- navaids (OurAirports, public domain, as used by Route Explorer) ---------- */
-const AREAS={
- bergen:{n:t2('Bergen (ENBR)','Bergen (ENBR)'),ref:[60.3113,5.2122],varW:2.8,
-  nav:[['FLS','Flesland','VOR',115.55,60.3113,5.2122,213],['VOO','Vollo','VOR',114.85,60.5489,5.1288,1050],['STD','Stord','VOR',113.40,59.7873,5.3443,222],
-       ['ASK','Askøy','NDB',360,60.422,5.1803,187],['BTA','Bratta','NDB',336,60.0491,5.3005,157]],
-  apt:[['ENBR',60.2934,5.2181,170]],
-  ils:[{id:'I17',name:'ILS RWY 17',apt:'ENBR',arp:[60.2934,5.2181],len:1.614,crs:174,elev:170}]},
- oslo:{n:t2('Oslo (ENGM)','Oslo (ENGM)'),ref:[60.1918,11.0744],varW:5.2,
-  nav:[['GRM','Gardermoen','VOR',115.95,60.1918,11.0744,692],['BBU','Brandbu','VOR',112.75,60.4718,10.3389,2148],['DRA','Drammen','VOR',114.80,59.7333,10.1125,1398],
-       ['SLB','Solberg','NDB',414,60.0125,10.9739,600],['OPA','Oppaker','NDB',334,60.2043,11.52,500]],
-  apt:[['ENGM',60.1939,11.1004,681]], ils:[]}
-};
-/* coastline (Natural Earth 1:50m, public domain), clipped to ±60 NM and projected to NM around each area's VOR */
-const COAST={"bergen":[[-7.5,46.1,-10.2,45.5,-12.2,46.1,-11.7,52.1,-10.5,52.7,-8.7,53.3,-7.2,50.3,-7.5,46.1],[-3.6,-0.1,-3.6,-7.3,-6.3,-6.7,-7.5,-4.3,-8.1,-2.5,-7.8,1.7,-8.4,5.9,-7.5,8.3,-6.6,8.3,-4.8,4.7,-3.6,-0.1],[22.4,-60.0,24.9,-56.5,29.4,-52.3,32.6,-48.1,35.9,-45.7,35.3,-45.1,31.7,-46.9,28.2,-49.3,24.0,-54.1,19.0,-57.7,15.1,-58.9,13.4,-60.0,-1.8,-60.0,-0.7,-51.7,0.8,-45.1,2.6,-40.3,5.6,-39.1,7.7,-36.1,9.4,-36.1,10.9,-37.3,16.6,-39.1,19.5,-34.9,23.1,-34.3,29.9,-29.5,29.7,-28.9,25.2,-29.5,22.5,-30.1,18.4,-31.3,16.3,-30.1,15.4,-27.1,16.9,-24.1,23.4,-16.9,25.5,-13.9,26.7,-10.9,26.7,-8.5,27.6,-4.9,33.8,2.3,38.9,5.9,40.4,2.9,39.2,-6.1,39.2,-9.7,43.0,3.5,44.8,6.5,46.9,8.3,51.6,10.1,53.1,11.9,47.5,11.3,33.8,6.5,27.9,2.3,26.4,-1.3,22.5,-6.1,20.4,-9.7,19.8,-14.5,17.5,-16.9,14.5,-18.1,10.3,-24.1,8.3,-28.9,4.1,-33.1,1.4,-36.1,0.5,-37.3,-0.7,-40.3,-1.8,-40.3,-3.0,-38.5,-3.3,-34.9,-2.7,-28.9,-0.7,-24.1,0.2,-19.9,-1.3,-15.7,-0.1,-13.3,1.7,-13.3,5.0,-14.5,8.3,-14.5,14.2,-11.5,13.3,-9.7,10.6,-9.1,6.2,-9.7,2.3,-6.1,-1.0,-0.1,-2.1,8.3,-1.3,10.1,10.0,18.5,13.0,22.7,11.2,22.7,7.1,18.5,0.8,15.5,-2.7,19.7,-4.8,23.9,-6.0,32.9,-5.7,37.7,-6.0,43.7,-3.3,45.5,-0.7,44.3,2.3,44.3,8.8,44.9,22.8,48.5,32.0,46.1,35.9,46.1,41.5,49.7,46.6,49.7,50.2,47.3,52.2,44.9,52.5,40.7,54.3,38.3,55.5,39.5,54.6,42.5,54.3,46.7,60.0,48.7,60.0,51.9,58.2,51.5,51.3,50.9,46.9,52.7,43.0,53.9,41.5,55.1,42.1,58.1,41.2,58.7,39.5,55.7,38.0,50.3,34.7,49.1,25.8,51.5,13.0,50.3,7.1,47.3,3.2,47.9,-3.0,52.7,-5.7,56.3,-6.1,60.0,60.0,60.0,60.0,-60.0]],"oslo":[[-7.6,-60.0,-10.0,-53.5,-13.0,-48.1,-13.3,-45.7,-13.3,-35.5,-14.1,-30.7,-14.1,-25.9,-16.2,-29.5,-15.0,-36.1,-17.4,-39.1,-20.1,-40.3,-19.8,-43.9,-18.6,-45.1,-18.6,-48.7,-19.2,-54.7,-21.5,-60.0,-60.0,-60.0,-60.0,60.0,60.0,60.0,60.0,-60.0]]};
+/* ---------- navaids and coastline: navmap.js (NAVMAP.REGIONS) ---------- */
+const AREAS=NM_.REGIONS;
 
 /* ---------- state ---------- */
 const S={area:'bergen',ac:{x:0,y:0,th:90,alt:4000,tas:120,vs:0},sel:{hdg:90,trk:90,alt:4000,vs:1000},ap:'HDG',nav1:'FLS',obs:90,adf:'ASK',adfMov:false,adfCard:0,
   wind:{dir:270,spd:0},varE:0,run:false,speed:1,t:0,
   view:{north:true,range:20,profile:false,trace:true,course:true,tofrom:false,rings:true,labels:true,sectors:false,tri:false,brg:true,hideMap:false,hideAns:false,centre:'st'},
   hold:{fix:'st',rad:180,dme:10,inb:360,dir:1,leg:1},mode:'learn',guide:true};
-let ST={}, NAV=[], ILS=[], APT=[], LAND=[];
-function buildArea(){ const A=AREAS[S.area], [la0,lo0]=A.ref; ST={}; NAV=[]; ILS=[]; APT=[];
-  A.nav.forEach(n=>{ const p=N.proj(n[4],n[5],la0,lo0); const o={id:n[0],name:n[1],type:n[2],f:n[3],x:p.x,y:p.y,elev:n[6],var:S.varE}; ST[o.id]=o; NAV.push(o); });
-  A.apt.forEach(a=>{ const p=N.proj(a[1],a[2],la0,lo0); APT.push({id:a[0],x:p.x,y:p.y,elev:a[3]}); });
-  A.ils.forEach(i=>{ const p=N.proj(i.arp[0],i.arp[1],la0,lo0), u=[Math.sin(i.crs*D2R),Math.cos(i.crs*D2R)], h=i.len/2;
-    const thr={x:p.x-u[0]*h,y:p.y-u[1]*h}, end={x:p.x+u[0]*h,y:p.y+u[1]*h};
-    const o={id:i.id,name:i.name,type:'ILS',apt:i.apt,crs:i.crs,elev:i.elev,thr,end,x:end.x+u[0]*0.16,y:end.y+u[1]*0.16,gp:{x:thr.x+u[0]*0.16,y:thr.y+u[1]*0.16},gpa:3,var:S.varE};
-    ST[o.id]=o; ILS.push(o); NAV.push(o); });
-  LAND=(COAST[S.area]||[]).map(a=>Float32Array.from(a)); loadTerrain();
+let ST={}, NAV=[], ILS=[], APT=[];
+function buildArea(){ const B=NM_.build(S.area,S.varE); ST=B.ST; NAV=B.NAV; ILS=B.ILS; APT=B.APT; map.setRegion(S.area);
   if(!ST[S.nav1]||ST[S.nav1].type==='NDB') S.nav1=NAV.find(n=>n.type==='VOR').id;
   if(!ST[S.adf]||ST[S.adf].type!=='NDB') S.adf=NAV.find(n=>n.type==='NDB').id;
   bgDirty=true; }
-/* local relief and coastline (Mapzen/AWS Terrain Tiles via terrain/hr, prepared per area in data/navsim-<area>.png/.json):
-   a grey relief image (0 = sea) coloured once into a dark canvas, and a coastline Path2D in NM (y flipped) drawn under the view transform */
-const TER={area:null,cv:null,path:null,R:62};
-const TLO=[19,29,37], THI=[56,69,78];
-function loadTerrain(){ const a=S.area; if(TER.area===a) return; TER.area=a; TER.cv=null; TER.path=null;
-  fetch('data/navsim-'+a+'.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j||TER.area!==a) return; const u=j.unit, p=new Path2D();
-    for(const q of j.rings){ for(let i=0;i<q.length;i+=2){ const x=q[i]*u, y=-q[i+1]*u; if(i) p.lineTo(x,y); else p.moveTo(x,y); } p.closePath(); }
-    TER.path=p; TER.R=j.R; bgDirty=true; redraw(); }).catch(()=>{});
-  const im=new Image(); im.onload=()=>{ if(TER.area!==a) return; try{ const c=document.createElement('canvas'); c.width=im.width; c.height=im.height; const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(im,0,0);
-      const id=g.getImageData(0,0,c.width,c.height), d=id.data;
-      for(let i=0;i<d.length;i+=4){ const v=d[i]; const t=v?Math.min(1,(v-6)/249):0; d[i]=TLO[0]+(THI[0]-TLO[0])*t; d[i+1]=TLO[1]+(THI[1]-TLO[1])*t; d[i+2]=TLO[2]+(THI[2]-TLO[2])*t; d[i+3]=255; }
-      g.putImageData(id,0,0); TER.cv=c; bgDirty=true; redraw(); }catch(e){} };
-  im.src='data/navsim-'+a+'.png'; }
 function setVar(v){ S.varE=v; NAV.forEach(n=>n.var=v); }
 const nav1=()=>ST[S.nav1], adfSt=()=>ST[S.adf], isILS=()=>nav1()&&nav1().type==='ILS';
 /* the VOR/DME used for position fields: NAV1 if it is a VOR, else the area's main VOR */
@@ -163,8 +131,8 @@ const mapCv=el('nsMap'), profCv=el('nsProf');
 const MC=LAB.fit(mapCv,()=>{ bgDirty=true; mapDirty=true; },2.5), PC=LAB.fit(profCv,()=>{ profDirty=true; },2.5);
 let bgDirty=true, mapDirty=true, profDirty=true, instDirty=true;
 const BG=document.createElement('canvas');
-/* view transform (module-level numbers, no allocation) */
-const M={cx:0,cy:0,k:1,ox:0,oy:0,c:1,s:0,rot:0};
+/* the map (navmap.js) and its view transform M (numbers, no allocation) */
+const map=NM_.create(mapCv,{onLoad:()=>{ bgDirty=true; redraw(); }}), M=map.v;
 /* camera: the view eases to its new target after a zoom, North-up/Heading-up or centre change, then follows directly */
 const CT={k:1,rot:0,ox:0,oy:0,cx:0,cy:0}, CF={k:1,rot:0,ox:0,oy:0,cx:0,cy:0}, CAM={t:1};
 function camTarget(){ const W=MC.w,H=MC.h, v=S.view, a=S.ac;
@@ -174,79 +142,37 @@ function camTarget(){ const W=MC.w,H=MC.h, v=S.view, a=S.ac;
   else { const c=refCentre(); CT.ox=c.x; CT.oy=c.y; CT.cx=W/2; CT.cy=H/2; } }
 function camStart(){ if(reduced()||!MC.w){ CAM.t=1; return; } CF.k=M.k; CF.rot=M.rot; CF.ox=M.ox; CF.oy=M.oy; CF.cx=M.cx; CF.cy=M.cy; CAM.t=0; kick(); }
 function setView(){ camTarget();
-  if(CAM.t<1){ const t=CAM.t, e=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2, l=(a,b)=>a+(b-a)*e;
-    /* zoom in log space so it feels even */
-    M.k=Math.exp(l(Math.log(CF.k),Math.log(CT.k))); M.rot=norm(CF.rot+diff(CT.rot,CF.rot)*e); M.ox=l(CF.ox,CT.ox); M.oy=l(CF.oy,CT.oy); M.cx=l(CF.cx,CT.cx); M.cy=l(CF.cy,CT.cy); }
-  else { M.k=CT.k; M.rot=CT.rot; M.ox=CT.ox; M.oy=CT.oy; M.cx=CT.cx; M.cy=CT.cy; }
-  M.c=Math.cos(M.rot*D2R); M.s=Math.sin(M.rot*D2R); }
+  /* zoom in log space so it feels even */
+  if(CAM.t<1){ const t=CAM.t, e=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; NM_.lerpView(CF,CT,e,M); }
+  else map.set(CT); }
 const refCentre=()=>{ const n=nav1(); return n.type==='ILS'?n.thr:n; };
 let SX=0, SY=0;
-function P(x,y){ const dx=x-M.ox, dy=y-M.oy; const rx=dx*M.c-dy*M.s, ry=dx*M.s+dy*M.c; SX=M.cx+rx*M.k; SY=M.cy-ry*M.k; }
-function unP(sx,sy){ const rx=(sx-M.cx)/M.k, ry=(M.cy-sy)/M.k; return {x:M.ox+rx*M.c+ry*M.s, y:M.oy-rx*M.s+ry*M.c}; }
+function P(x,y){ map.P(x,y); SX=map.sx; SY=map.sy; }
+const unP=map.unP;
 /* screen angle (radians, canvas rotate) for a true bearing */
-const SA=b=>(b-M.rot)*D2R;
+const SA=map.sa;
 
-/* ---------- labels that never overlap ---------- */
-const LB=[]; for(let i=0;i<44;i++) LB.push({x:0,y:0,w:0,h:0,t:'',c:'',bg:'',f:'',pr:0});
-const PLACED=new Float32Array(48*4); let lbN=0;
-function label(x,y,t,c,f,bg){ if(lbN>=LB.length) return; const o=LB[lbN++]; o.x=x; o.y=y; o.t=t; o.c=c; o.f=f||`500 11px ${FM}`; o.bg=bg||'rgba(9,13,17,.78)'; }
-const OFFS=[[9,-9],[9,13],[-9,-9],[-9,13],[0,-16],[0,20],[16,3],[-16,3]];
+/* ---------- labels that never overlap (navmap.js), symbols ---------- */
+const label=map.label, arrowHead=NM_.arrowHead, vorSym=NM_.drawVor, ndbSym=NM_.drawNdb;
 const CHIP=document.getElementById('nsChip'); let chipW=0, chipH=0;
-function reserve(np,x,y,w,h){ PLACED[np*4]=x; PLACED[np*4+1]=y; PLACED[np*4+2]=w; PLACED[np*4+3]=h; return np+1; }
-function flushLabels(g,W,H){ let np=0; g.textBaseline='middle';
-  /* keep clear of the chip, the wind badge, the north arrow and scale, and the orientation text */
-  if(chipW) np=reserve(np,0,0,chipW+12,chipH+10);
-  np=reserve(np,W-82,0,82,92); np=reserve(np,0,H-72,140,72); np=reserve(np,W-120,H-26,120,26);
-  for(let i=0;i<lbN;i++){ const o=LB[i]; g.font=o.f; const w=g.measureText(o.t).width+10, h=17; let ok=false, bx=0, by=0;
-    for(let j=0;j<OFFS.length&&!ok;j++){ const ox=OFFS[j][0], oy=OFFS[j][1]; bx= ox>0?o.x+ox: ox<0? o.x+ox-w : o.x-w/2; by=o.y+oy-h/2;
-      if(bx<2||by<2||bx+w>W-2||by+h>H-2) continue; ok=true;
-      for(let k=0;k<np;k++){ const px=PLACED[k*4],py=PLACED[k*4+1],pw=PLACED[k*4+2],ph=PLACED[k*4+3]; if(bx<px+pw&&bx+w>px&&by<py+ph&&by+h>py){ ok=false; break; } } }
-    if(!ok) continue;
-    PLACED[np*4]=bx; PLACED[np*4+1]=by; PLACED[np*4+2]=w; PLACED[np*4+3]=h; np++;
-    g.fillStyle=o.bg; rrect(g,bx,by,w,h,3); g.fill(); g.fillStyle=o.c; g.textAlign='left'; g.fillText(o.t,bx+5,by+h/2+0.5); }
-  lbN=0; }
-function rrect(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
-function arrowHead(g,x,y,ang,sz,col){ g.fillStyle=col; g.beginPath(); g.moveTo(x+Math.sin(ang)*sz,y-Math.cos(ang)*sz); g.lineTo(x+Math.sin(ang+2.6)*sz*0.8,y-Math.cos(ang+2.6)*sz*0.8); g.lineTo(x+Math.sin(ang-2.6)*sz*0.8,y-Math.cos(ang-2.6)*sz*0.8); g.closePath(); g.fill(); }
+function flushLabels(g,W,H){
+  /* keep clear of the chip, the wind badge and the orientation text (navmap keeps the north arrow and scale clear) */
+  if(chipW) map.reserve(0,0,chipW+12,chipH+10);
+  map.reserve(W-82,0,82,92); map.reserve(W-120,H-26,120,26); map.flushLabels(g,W,H); }
 
 /* ---------- the plan view ---------- */
 function drawBg(g,W,H){
-  const gr=g.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.5,Math.max(W,H)*0.75); gr.addColorStop(0,COL.bg1); gr.addColorStop(1,COL.bg0); g.fillStyle=gr; g.fillRect(0,0,W,H);
-  /* land: relief and coastline when loaded, else the coarse Natural Earth outline */
-  if(TER.path){ g.save(); g.translate(M.cx,M.cy); g.rotate(-M.rot*D2R); g.scale(M.k,M.k); g.translate(-M.ox,M.oy);
-    if(TER.path){ if(TER.cv){ g.save(); g.clip(TER.path,'evenodd'); g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(TER.cv,-TER.R,-TER.R,2*TER.R,2*TER.R); g.restore(); } else { g.fillStyle=COL.land; g.fill(TER.path,'evenodd'); } }
-    if(TER.path){ g.strokeStyle='rgba(150,182,204,.38)'; g.lineWidth=1/M.k; g.lineJoin='round'; g.stroke(TER.path); }
-    g.restore(); }
-  else { g.fillStyle=COL.land; g.strokeStyle=COL.landE; g.lineWidth=1;
-  for(const poly of LAND){ g.beginPath(); for(let i=0;i<poly.length;i+=2){ P(poly[i],poly[i+1]); if(i) g.lineTo(SX,SY); else g.moveTo(SX,SY); } g.closePath(); g.fill(); g.stroke(); } }
-  /* faint grid every 10 NM */
-  g.strokeStyle='rgba(255,255,255,.025)'; const step=S.view.range>40?20:10, ext=S.view.range*2;
-  for(let i=-ext;i<=ext;i+=step){ P(M.ox+i-((M.ox)%step),M.oy-ext); const x1=SX,y1=SY; P(M.ox+i-((M.ox)%step),M.oy+ext); g.beginPath(); g.moveTo(x1,y1); g.lineTo(SX,SY); g.stroke();
-    P(M.ox-ext,M.oy+i-((M.oy)%step)); const x2=SX,y2=SY; P(M.ox+ext,M.oy+i-((M.oy)%step)); g.beginPath(); g.moveTo(x2,y2); g.lineTo(SX,SY); g.stroke(); }
+  /* background, relief and coastline, grid */
+  map.drawBase(g,W,H,{range:S.view.range});
   const v=refVor();
   /* DME rings */
-  if(S.view.rings){ const rs=S.view.range<=10?2:S.view.range<=20?5:S.view.range<=40?10:20; P(v.x,v.y); const cx=SX, cy=SY;
-    g.font=`500 10px ${FM}`; g.textAlign='center'; g.textBaseline='middle';
-    for(let r=rs;r<=S.view.range*2.2;r+=rs){ g.strokeStyle=COL.ring; g.lineWidth=1; g.setLineDash(r%(rs*2)?[2,5]:[]); g.beginPath(); g.arc(cx,cy,r*M.k,0,TAU); g.stroke(); g.setLineDash([]);
-      const a=SA(N.toTrue(135,S.varE)); g.fillStyle=COL.ringT; g.fillText(String(r),cx+Math.sin(a)*r*M.k,cy-Math.cos(a)*r*M.k); } }
+  if(S.view.rings){ const rs=S.view.range<=10?2:S.view.range<=20?5:S.view.range<=40?10:20; map.drawRings(g,v.x,v.y,rs,S.view.range*2.2,N.toTrue(135,S.varE)); }
   /* compass rose round the VOR (magnetic) */
-  P(v.x,v.y); roseAt(g,SX,SY,Math.min(W,H)*0.36,v.var);
+  map.drawRose(g,v.x,v.y,Math.min(W,H)*0.36,v.var);
   /* airports and runways */
-  for(const ap of APT){ P(ap.x,ap.y); g.strokeStyle='rgba(230,235,239,.5)'; g.lineWidth=1.2; g.beginPath(); g.arc(SX,SY,5,0,TAU); g.stroke(); }
-  for(const i of ILS){ P(i.thr.x,i.thr.y); const x1=SX,y1=SY; P(i.end.x,i.end.y); g.strokeStyle='#C9D2D8'; g.lineWidth=Math.max(3,0.03*M.k); g.lineCap='butt'; g.beginPath(); g.moveTo(x1,y1); g.lineTo(SX,SY); g.stroke(); }
+  for(const ap of APT){ P(ap.x,ap.y); NM_.drawAirport(g,SX,SY); }
+  for(const i of ILS) map.drawRunway(g,i.thr,i.end);
 }
-function roseAt(g,cx,cy,R,vr){ g.save(); g.translate(cx,cy); g.rotate(SA(N.toTrue(0,vr)));
-  g.strokeStyle=COL.rose; g.fillStyle=COL.rose; g.font=`500 10px ${FM}`; g.textAlign='center'; g.textBaseline='middle';
-  for(let a=0;a<360;a+=5){ const t=a*D2R, l=a%30===0?10:a%10===0?6:3; g.lineWidth=a%30===0?1.3:0.8; g.globalAlpha=a%10===0?1:0.6; g.beginPath(); g.moveTo(Math.sin(t)*R,-Math.cos(t)*R); g.lineTo(Math.sin(t)*(R-l),-Math.cos(t)*(R-l)); g.stroke(); }
-  g.globalAlpha=1; for(let a=0;a<360;a+=30){ const t=a*D2R; g.save(); g.translate(Math.sin(t)*(R-20),-Math.cos(t)*(R-20)); g.rotate(-SA(N.toTrue(0,vr))); g.fillText(a===0?'N':d3(a),0,0); g.restore(); }
-  g.restore(); }
-function vorSym(g,x,y,sel){ g.save(); g.translate(x,y); g.strokeStyle=sel?COL.vor:'rgba(99,217,160,.6)'; g.lineWidth=1.6; g.fillStyle='rgba(10,16,20,.9)';
-  g.beginPath(); for(let i=0;i<6;i++){ const t=i*Math.PI/3; if(i) g.lineTo(Math.cos(t)*8,Math.sin(t)*8); else g.moveTo(8,0); } g.closePath(); g.fill(); g.stroke();
-  g.strokeRect(-10,-8,20,16); g.fillStyle=sel?COL.vor:'rgba(99,217,160,.6)'; g.beginPath(); g.arc(0,0,1.8,0,TAU); g.fill(); g.restore(); }
-function ndbSym(g,x,y,sel){ g.fillStyle=sel?COL.ndb:'rgba(232,168,92,.55)'; for(let r=4;r<=12;r+=4){ const n=r*1.6|0; for(let i=0;i<n;i++){ const t=i*TAU/n; g.beginPath(); g.arc(x+Math.cos(t)*r,y+Math.sin(t)*r,1.1,0,TAU); g.fill(); } } g.beginPath(); g.arc(x,y,2.2,0,TAU); g.fill(); }
-function acShape(g,sz){ /* top view of a light twin, nose up, size = half span */
-  const s=sz/12; g.beginPath(); g.moveTo(0,-11*s); g.bezierCurveTo(1.4*s,-10.5*s,1.6*s,-8*s,1.6*s,-5*s); g.lineTo(1.6*s,-2.4*s); g.lineTo(12*s,-0.6*s); g.lineTo(12*s,1.2*s); g.lineTo(1.6*s,1.6*s);
-  g.lineTo(1.1*s,7*s); g.lineTo(4.6*s,8.2*s); g.lineTo(4.6*s,9.6*s); g.lineTo(0,9.2*s); g.lineTo(-4.6*s,9.6*s); g.lineTo(-4.6*s,8.2*s); g.lineTo(-1.1*s,7*s); g.lineTo(-1.6*s,1.6*s); g.lineTo(-12*s,1.2*s); g.lineTo(-12*s,-0.6*s); g.lineTo(-1.6*s,-2.4*s); g.lineTo(-1.6*s,-5*s); g.bezierCurveTo(-1.6*s,-8*s,-1.4*s,-10.5*s,0,-11*s); g.closePath();
-  g.moveTo(5.6*s,-3.4*s); g.lineTo(5.6*s,-0.6*s); g.moveTo(-5.6*s,-3.4*s); g.lineTo(-5.6*s,-0.6*s); }
 let hoverAc=false;
 function drawMap(){
   const g=MC.ctx, W=MC.w, H=MC.h; if(!W) return; setView();
@@ -267,10 +193,7 @@ function drawMap(){
     for(const f of [0.35,0.75]){ arrowHead(g,cx+Math.sin(an)*M.k*S.view.range*f,cy-Math.cos(an)*M.k*S.view.range*f,an,8,COL.crs); arrowHead(g,cx-Math.sin(an)*M.k*S.view.range*f,cy+Math.cos(an)*M.k*S.view.range*f,an,8,COL.crs); }
     if(!hideA) label(cx+Math.sin(an)*M.k*S.view.range*0.55,cy-Math.cos(an)*M.k*S.view.range*0.55,'CRS '+d3(S.obs),COL.crs,`600 11px ${FM}`); }
   /* ILS feather and centreline */
-  for(const i of ILS){ const sel=n===i, back=N.norm(i.crs+180); P(i.x,i.y); const lx=SX, ly=SY; const an=SA(back);
-    g.save(); g.strokeStyle=sel?'rgba(127,203,232,.9)':'rgba(127,203,232,.35)'; g.lineWidth=1.2; g.setLineDash([8,6]); g.beginPath(); g.moveTo(lx,ly); g.lineTo(lx+Math.sin(an)*M.k*18,ly-Math.cos(an)*M.k*18); g.stroke(); g.setLineDash([]);
-    const f=M.k*12, sp=2.5*D2R; g.fillStyle=sel?'rgba(127,203,232,.16)':'rgba(127,203,232,.06)'; g.beginPath(); g.moveTo(lx,ly); g.lineTo(lx+Math.sin(an-sp)*f,ly-Math.cos(an-sp)*f); g.lineTo(lx+Math.sin(an)*f*0.94,ly-Math.cos(an)*f*0.94); g.lineTo(lx+Math.sin(an+sp)*f,ly-Math.cos(an+sp)*f); g.closePath(); g.fill(); g.stroke(); g.restore();
-    label(lx+Math.sin(an)*f,ly-Math.cos(an)*f,i.name,COL.ils); }
+  for(const i of ILS) map.drawIls(g,i,n===i,{label:i.name});
   /* hold */
   if(S.view.sectors||S.ap==='HOLD') drawHold(g);
   /* navaids */
@@ -294,22 +217,16 @@ function drawMap(){
     /* wind triangle */
     if(S.view.tri) drawTri(g,ax,ay);
     /* aircraft */
-    const ha=SA(a.th); g.save(); g.translate(ax,ay); g.rotate(ha);
-    if(hoverAc||drag){ g.strokeStyle='rgba(127,203,232,.5)'; g.lineWidth=1; g.beginPath(); g.arc(0,0,22,0,TAU); g.stroke(); }
-    g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=6; g.shadowOffsetY=2; g.fillStyle=COL.ac; acShape(g,15); g.fill(); g.shadowBlur=0; g.shadowOffsetY=0;
-    g.strokeStyle='rgba(13,21,28,.8)'; g.lineWidth=0.8; g.stroke();
-    /* heading handle */
-    g.strokeStyle='rgba(127,203,232,.7)'; g.lineWidth=1.2; g.beginPath(); g.moveTo(0,-18); g.lineTo(0,-30); g.stroke(); g.fillStyle='#7FCBE8'; g.beginPath(); g.arc(0,-34,4.5,0,TAU); g.fill(); g.restore();
+    /* aircraft, with its heading handle (and a ring while hovered or dragged) */
+    NM_.aircraftAt(g,ax,ay,SA(a.th),{size:15,ring:!!(hoverAc||drag),handle:true});
     if(!hideA) label(ax,ay,'HDG '+d3(D.mh),COL.ink,`600 11px ${FM}`);
     /* off the map: an arrow on the edge */
     if(ax<0||ay<0||ax>W||ay>H){ const cx=W/2, cy=H/2, an=Math.atan2(ax-cx,cy-ay), ex=clamp(ax,18,W-18), ey=clamp(ay,18,H-18); arrowHead(g,ex,ey,an,12,COL.warn); label(ex,ey,L(t2('aircraft','flyet'))+' '+nf(Math.hypot(a.x-M.ox,a.y-M.oy),0)+' NM',COL.warn); }
   } else { g.fillStyle='rgba(9,13,17,.7)'; g.fillRect(0,H-40,W,40); g.fillStyle=COL.warn; g.font=`600 13px ${FB}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(L(t2('Map hidden: read the instruments','Kartet er skjult: les instrumentene')),W/2,H-20); }
+  /* north arrow and scale (they keep their corner clear of labels), labels, wind arrow (top right) */
+  map.drawNorth(g,H); map.drawScaleBar(g,H,S.view.range>=40?10:S.view.range>=20?5:S.view.range>=10?2:1);
   flushLabels(g,W,H);
-  /* wind arrow (top right), north arrow, scale */
   windBadge(g,W);
-  g.save(); g.translate(22,H-46); g.rotate(SA(0)); g.fillStyle=COL.ink2; g.beginPath(); g.moveTo(0,-11); g.lineTo(5,5); g.lineTo(0,2); g.lineTo(-5,5); g.closePath(); g.fill(); g.restore(); g.fillStyle=COL.ink2; g.font=`600 10px ${FM}`; g.textAlign='center'; g.fillText('N',22,H-62);
-  const nmL=S.view.range>=40?10:S.view.range>=20?5:S.view.range>=10?2:1, px=nmL*M.k; g.strokeStyle=COL.ink2; g.lineWidth=1.4; g.beginPath(); g.moveTo(14,H-16); g.lineTo(14+px,H-16); g.moveTo(14,H-20); g.lineTo(14,H-12); g.moveTo(14+px,H-20); g.lineTo(14+px,H-12); g.stroke();
-  g.textAlign='left'; g.fillText(nmL+' NM',20+px,H-15);
   g.textAlign='right'; g.fillStyle=COL.ink3; g.font=`500 10px ${FM}`; g.fillText(S.view.north?L(t2('NORTH UP','NORD OPP')):L(t2('HEADING UP','KURS OPP')),W-10,H-12);
   mapDirty=false; }
 /* predictor: where the aircraft will be over the next 90 s (dots every 30 s), rolling out on the autopilot's target heading (wind included) */
@@ -325,9 +242,7 @@ function predictor(g){ const a=S.ac, W=S.wind; let x=a.x, y=a.y, h=a.th; const r
   for(let s0=0;s0<PRN-1;s0+=15){ g.strokeStyle=`rgba(127,203,232,${(0.95-s0/PRN*0.7).toFixed(2)})`; g.lineWidth=2.2-s0/PRN*1.2; g.beginPath(); g.moveTo(PR[s0*2],PR[s0*2+1]); for(let i=s0+1;i<=Math.min(PRN-1,s0+15);i++) g.lineTo(PR[i*2],PR[i*2+1]); g.stroke(); }
   g.fillStyle='#7FCBE8'; for(let i=30;i<PRN;i+=30){ g.beginPath(); g.arc(PR[i*2],PR[i*2+1],2.4,0,TAU); g.fill(); }
   g.restore(); }
-function windBadge(g,W){ const x=W-40, y=42; g.fillStyle='rgba(9,13,17,.7)'; g.beginPath(); g.arc(x,y,26,0,TAU); g.fill(); g.strokeStyle='rgba(127,203,232,.25)'; g.lineWidth=1; g.stroke();
-  if(S.wind.spd>0){ const an=SA(S.wind.dir+180); g.strokeStyle=COL.wind; g.lineWidth=2; g.beginPath(); g.moveTo(x-Math.sin(an)*16,y+Math.cos(an)*16); g.lineTo(x+Math.sin(an)*12,y-Math.cos(an)*12); g.stroke(); arrowHead(g,x+Math.sin(an)*16,y-Math.cos(an)*16,an,7,COL.wind); }
-  g.fillStyle=COL.ink; g.font=`600 10.5px ${FM}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(S.wind.spd>0?d3(S.wind.dir)+'/'+Math.round(S.wind.spd):L(t2('CALM','STILLE')),x,y+38); g.fillStyle=COL.ink3; g.font=`500 9px ${FM}`; g.fillText(L(t2('WIND','VIND')),x,y-34); }
+const windBadge=(g,W)=>map.drawWind(g,W,S.wind.dir,S.wind.spd);
 function drawTri(g,ax,ay){ const a=S.ac, k=Math.min(MC.w,MC.h)*0.26/Math.max(80,a.tas); /* px per kt */
   const ha=SA(a.th), hx=ax+Math.sin(ha)*a.tas*k, hy=ay-Math.cos(ha)*a.tas*k;
   const wa=SA(S.wind.dir+180), wx=hx+Math.sin(wa)*S.wind.spd*k, wy=hy-Math.cos(wa)*S.wind.spd*k;
@@ -339,17 +254,11 @@ function drawTri(g,ax,ay){ const a=S.ac, k=Math.min(MC.w,MC.h)*0.26/Math.max(80,
     const mid=ha+dr/2; label(ax+Math.sin(mid)*r,ay-Math.cos(mid)*r,L(t2('drift ','avdrift '))+nf(Math.abs(D.drift),0)+'°',COL.warn); }
   label(hx,hy,'HDG '+d3(D.mh)+' · TAS '+Math.round(a.tas),COL.air); if(S.wind.spd>0.5) label((hx+wx)/2,(hy+wy)/2,'W/V '+d3(S.wind.dir)+'/'+Math.round(S.wind.spd),COL.wind); label(wx,wy,'TRK '+d3(D.trk)+' · GS '+Math.round(D.gs),COL.gnd); }
 function drawHold(g){ const f=holdFix(), I=N.toTrue(S.hold.inb,S.varE), d=S.hold.dir, tas=S.ac.tas, R=N.turnRadius(tas), legNm=tas/3600*S.hold.leg*60;
-  const u=[Math.sin(I*D2R),Math.cos(I*D2R)], nn=[u[1]*d,-u[0]*d];
   P(f.x,f.y); const fx=SX, fy=SY;
   /* racetrack: inbound leg ends at the fix; outbound leg offset 2R to the holding side */
-  const p1x=f.x-u[0]*legNm, p1y=f.y-u[1]*legNm, c1x=f.x+nn[0]*R, c1y=f.y+nn[1]*R, c2x=p1x+nn[0]*R, c2y=p1y+nn[1]*R;
-  g.strokeStyle=COL.hold; g.fillStyle='rgba(201,166,245,.07)'; g.lineWidth=2.2; g.lineJoin='round'; g.beginPath(); P(p1x,p1y); g.moveTo(SX,SY); P(f.x,f.y); g.lineTo(SX,SY);
-  const steps=24; for(let i=1;i<=steps;i++){ const t=(i/steps)*Math.PI, cx=c1x-nn[0]*R*Math.cos(t)+u[0]*R*Math.sin(t), cy=c1y-nn[1]*R*Math.cos(t)+u[1]*R*Math.sin(t); P(cx,cy); g.lineTo(SX,SY); }
-  P(c2x+nn[0]*R,c2y+nn[1]*R); g.lineTo(SX,SY);
-  for(let i=1;i<=steps;i++){ const t=(i/steps)*Math.PI, cx=c2x+nn[0]*R*Math.cos(t)-u[0]*R*Math.sin(t), cy=c2y+nn[1]*R*Math.cos(t)-u[1]*R*Math.sin(t); P(cx,cy); g.lineTo(SX,SY); }
-  g.closePath(); g.fill(); g.stroke(); arrowHead(g,fx,fy,SA(I),9,COL.hold);
+  map.racetrack(g,f,I,d,R,legNm,{col:COL.hold,fill:'rgba(201,166,245,.07)',lw:2.2,arrow:'fix',sz:9});
   /* fix */
-  g.fillStyle=COL.hold; g.beginPath(); g.moveTo(fx,fy-7); g.lineTo(fx+6,fy+5); g.lineTo(fx-6,fy+5); g.closePath(); g.fill();
+  NM_.drawFix(g,fx,fy,COL.hold);
   if(S.view.sectors){ /* entry sectors: the inbound course line and the 70° line through the fix */
     const Rr=M.k*S.view.range*2; g.save(); g.strokeStyle='rgba(201,166,245,.55)'; g.setLineDash([5,5]); g.lineWidth=1.2;
     const l1=SA(I), l2=SA(norm(I+180-d*70)); for(const an of [l1,l2]){ g.beginPath(); g.moveTo(fx-Math.sin(an)*Rr,fy+Math.cos(an)*Rr); g.lineTo(fx+Math.sin(an)*Rr,fy-Math.cos(an)*Rr); g.stroke(); } g.restore();

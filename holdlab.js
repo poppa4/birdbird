@@ -1,6 +1,6 @@
 /* Birdbird – holdlab.js: the Explore model of the holding and instrument approach lab (holding.html).
-   One figure: a plan view over Bergen (relief and coastline from the radio navigation simulator's data,
-   FLS VOR/DME and ILS RWY 17 geometry as in navsim.js), the side profile of the approach under it, and an HSI and
+   One figure: a plan view over Bergen (navmap.js: the radio navigation simulator's map, relief, coastline,
+   FLS VOR/DME and ILS RWY 17 geometry), the side profile of the approach under it, and an HSI and
    a CDI (navgauges.js) beside it. Paths are computed in advance by holdcore.js / navcore.js and played back,
    so the scrubber can move freely. Strings are EN/NO through LAB.L. Training model, not for navigation. */
 (function(){
@@ -10,15 +10,10 @@ const tr=o=>{ LAB.add({},{[o.en]:o.no}); return o.en; };
 const D2R=Math.PI/180, TAU=Math.PI*2, FT_NM=N.K.FT_NM, norm=N.norm, diff=N.diff, clamp=N.clamp, d3=N.d3;
 const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 const FM='"IBM Plex Mono", ui-monospace, monospace', FB='"Public Sans", system-ui, sans-serif';
-const COL={bg0:'#0d151c',bg1:'#121d26',ink:'#E6EBEF',ink2:'#AEB8C1',ink3:'#7D8B95',vor:'#63D9A0',ils:'#7FCBE8',hold:'#C9A6F5',ac:'#FFFFFF',
-  direct:'#71CC93',parallel:'#7FCBE8',teardrop:'#F0B440',entry:'#F0B440',flown:'#F06BB4',wind:'#7FCBE8',warn:'#F0B440',bad:'#EC5A47',fix:'#E6EBEF',ga:'#EC8A5A'};
+const COL=Object.assign({},NAVMAP.COL,{direct:'#71CC93',parallel:'#7FCBE8',teardrop:'#F0B440',entry:'#F0B440',flown:'#F06BB4',fix:'#E6EBEF',ga:'#EC8A5A'});
 
-/* ---------- Bergen: FLS VOR/DME and ILS RWY 17 (same data and geometry as navsim.js AREAS.bergen) ---------- */
-const REF=[60.3113,5.2122];
-const FLS={id:'FLS',f:115.55,x:0,y:0,elev:213,var:0};
-const ILS=(()=>{ const p=N.proj(60.2934,5.2181,REF[0],REF[1]), crs=174, len=1.614, u=[Math.sin(crs*D2R),Math.cos(crs*D2R)], h=len/2;
-  const thr={x:p.x-u[0]*h,y:p.y-u[1]*h}, end={x:p.x+u[0]*h,y:p.y+u[1]*h};
-  return {crs,elev:170,thr,end,u,x:end.x+u[0]*0.16,y:end.y+u[1]*0.16,gp:{x:thr.x+u[0]*0.16,y:thr.y+u[1]*0.16},gpa:3}; })();
+/* ---------- Bergen: FLS VOR/DME and ILS RWY 17 (navmap.js NAVMAP.REGIONS.bergen, as in the radio navigation simulator) ---------- */
+const BGN=NAVMAP.build('bergen'), FLS=BGN.ST.FLS, ILS=BGN.ILS[0];
 /* a point on the extended centreline d NM out from the threshold */
 const onCl=d=>({x:ILS.thr.x-ILS.u[0]*d,y:ILS.thr.y-ILS.u[1]*d});
 /* the illustrative procedure (not the published Bergen chart) */
@@ -68,54 +63,26 @@ function build(keepK){ PA=isHold()?holdPath():approachPath(); if(!keepK) S.k=0; 
 /* ---------- canvases ---------- */
 const mapCv=el('hlMap'), profCv=el('hlProf');
 const MC=LAB.fit(mapCv,()=>{ fitView(); drawMap(); },2.5), PC=LAB.fit(profCv,()=>drawProf(),2.5);
-const V={k:1,ox:0,oy:0,cx:0,cy:0};
-let SX=0, SY=0; function P(x,y){ SX=V.cx+(x-V.ox)*V.k; SY=V.cy-(y-V.oy)*V.k; }
-function unP(sx,sy){ return {x:V.ox+(sx-V.cx)/V.k,y:V.oy-(sy-V.cy)/V.k}; }
+const map=NAVMAP.create(mapCv,{region:'bergen',onLoad:()=>drawMap()}), V=map.v;
+let SX=0, SY=0; function P(x,y){ map.P(x,y); SX=map.sx; SY=map.sy; }
+const unP=map.unP;
 function fitView(){ if(!PA||!MC.w) return; let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; const inc=(x,y)=>{ x0=Math.min(x0,x); x1=Math.max(x1,x); y0=Math.min(y0,y); y1=Math.max(y1,y); };
   for(let i=0;i<PA.n;i+=4) inc(PA.x[i],PA.y[i]);
   if(isHold()&&S.sc==='entry'){ const r=ringR(); inc(FLS.x-r,FLS.y-r); inc(FLS.x+r,FLS.y+r); }
   if(!isHold()){ inc(ILS.end.x,ILS.end.y); inc(ILS.thr.x-1.5,ILS.thr.y); inc(ILS.thr.x+1.5,ILS.thr.y); }
-  const W=MC.w, Hh=MC.h, ml=isHold()?60:24, mr=isHold()?72:24, top=18, bot=28; const k=Math.min((W-ml-mr)/Math.max(1,x1-x0),(Hh-top-bot)/Math.max(1,y1-y0));
-  V.k=Math.min(k,140); V.ox=(x0+x1)/2; V.oy=(y0+y1)/2; V.cx=ml+(W-ml-mr)/2; V.cy=top+(Hh-top-bot)/2; }
+  map.set(NAVMAP.fit({x0,x1,y0,y1},MC.w,MC.h,isHold()?{l:60,r:72,t:18,b:28}:{l:24,r:24,t:18,b:28},{min:1,maxK:140})); }
 const ringR=()=>{ const rt=H.racetrack(S.tas,legS()); return Math.max(4.6,rt.leg+2*rt.R+1.2); };
 
-/* relief and coastline: the radio navigation simulator's prepared files (data/navsim-bergen.*) */
-const TER={cv:null,path:null,R:62}, TLO=[19,29,37], THI=[56,69,78];
-fetch('data/navsim-bergen.json').then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; const u=j.unit, p=new Path2D();
-  for(const q of j.rings){ for(let i=0;i<q.length;i+=2){ const x=q[i]*u, y=-q[i+1]*u; if(i) p.lineTo(x,y); else p.moveTo(x,y); } p.closePath(); } TER.path=p; TER.R=j.R; drawMap(); }).catch(()=>{});
-{ const im=new Image(); im.onload=()=>{ try{ const c=document.createElement('canvas'); c.width=im.width; c.height=im.height; const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(im,0,0);
-    const id=g.getImageData(0,0,c.width,c.height), d=id.data; for(let i=0;i<d.length;i+=4){ const v=d[i], t=v?Math.min(1,(v-6)/249):0; d[i]=TLO[0]+(THI[0]-TLO[0])*t; d[i+1]=TLO[1]+(THI[1]-TLO[1])*t; d[i+2]=TLO[2]+(THI[2]-TLO[2])*t; d[i+3]=255; }
-    g.putImageData(id,0,0); TER.cv=c; drawMap(); }catch(e){} }; im.src='data/navsim-bergen.png'; }
-
 /* ---------- drawing helpers ---------- */
-function arrowHead(g,x,y,ang,sz,col){ g.fillStyle=col; g.beginPath(); g.moveTo(x+Math.sin(ang)*sz,y-Math.cos(ang)*sz); g.lineTo(x+Math.sin(ang+2.6)*sz*0.8,y-Math.cos(ang+2.6)*sz*0.8); g.lineTo(x+Math.sin(ang-2.6)*sz*0.8,y-Math.cos(ang-2.6)*sz*0.8); g.closePath(); g.fill(); }
-function tag(g,x,y,txt,col,al,bg){ g.font=`600 11px ${FM}`; const w=g.measureText(txt).width+10, h=17; let bx= al==='l'?x-w-6 : al==='c'?x-w/2 : x+8; const by=y-h/2;
-  bx=clamp(bx,2,MC.w-w-2); g.fillStyle=bg||'rgba(9,13,17,.8)'; rr(g,bx,by,w,h,3); g.fill(); g.fillStyle=col; g.textAlign='left'; g.textBaseline='middle'; g.fillText(txt,bx+5,by+h/2+0.5); }
-function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
-function vorSym(g,x,y){ g.save(); g.translate(x,y); g.strokeStyle=COL.vor; g.lineWidth=1.6; g.fillStyle='rgba(10,16,20,.9)'; g.beginPath(); for(let i=0;i<6;i++){ const t=i*Math.PI/3; if(i) g.lineTo(Math.cos(t)*7,Math.sin(t)*7); else g.moveTo(7,0); } g.closePath(); g.fill(); g.stroke(); g.strokeRect(-9,-7,18,14); g.fillStyle=COL.vor; g.beginPath(); g.arc(0,0,1.6,0,TAU); g.fill(); g.restore(); }
-function fixSym(g,x,y,col){ g.fillStyle=col; g.strokeStyle='rgba(9,13,17,.9)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(x,y-7); g.lineTo(x+6,y+4.5); g.lineTo(x-6,y+4.5); g.closePath(); g.fill(); g.stroke(); }
-function acShape(g,sz){ const s=sz/12; g.beginPath(); g.moveTo(0,-11*s); g.bezierCurveTo(1.4*s,-10.5*s,1.6*s,-8*s,1.6*s,-5*s); g.lineTo(1.6*s,-2.4*s); g.lineTo(12*s,-0.6*s); g.lineTo(12*s,1.2*s); g.lineTo(1.6*s,1.6*s);
-  g.lineTo(1.1*s,7*s); g.lineTo(4.6*s,8.2*s); g.lineTo(4.6*s,9.6*s); g.lineTo(0,9.2*s); g.lineTo(-4.6*s,9.6*s); g.lineTo(-4.6*s,8.2*s); g.lineTo(-1.1*s,7*s); g.lineTo(-1.6*s,1.6*s); g.lineTo(-12*s,1.2*s); g.lineTo(-12*s,-0.6*s); g.lineTo(-1.6*s,-2.4*s); g.lineTo(-1.6*s,-5*s); g.bezierCurveTo(-1.6*s,-8*s,-1.4*s,-10.5*s,0,-11*s); g.closePath(); }
+const LF=`600 11px ${FM}`;
 /* racetrack (still air) with the inbound leg ending at the fix */
-function racetrack(g,f,inb,dir,tas,ls,col,dash,lw){ const R=N.turnRadius(tas), Lg=tas/3600*ls, u=[Math.sin(inb*D2R),Math.cos(inb*D2R)], nn=[u[1]*dir,-u[0]*dir];
-  const p1={x:f.x-u[0]*Lg,y:f.y-u[1]*Lg}, c1={x:f.x+nn[0]*R,y:f.y+nn[1]*R}, c2={x:p1.x+nn[0]*R,y:p1.y+nn[1]*R};
-  g.save(); g.strokeStyle=col; g.lineWidth=lw||1.6; g.setLineDash(dash||[]); g.lineJoin='round'; g.beginPath(); P(p1.x,p1.y); g.moveTo(SX,SY); P(f.x,f.y); g.lineTo(SX,SY);
-  for(let i=1;i<=24;i++){ const t=i/24*Math.PI; P(c1.x-nn[0]*R*Math.cos(t)+u[0]*R*Math.sin(t),c1.y-nn[1]*R*Math.cos(t)+u[1]*R*Math.sin(t)); g.lineTo(SX,SY); }
-  P(c2.x+nn[0]*R,c2.y+nn[1]*R); g.lineTo(SX,SY);
-  for(let i=1;i<=24;i++){ const t=i/24*Math.PI; P(c2.x+nn[0]*R*Math.cos(t)-u[0]*R*Math.sin(t),c2.y+nn[1]*R*Math.cos(t)-u[1]*R*Math.sin(t)); g.lineTo(SX,SY); }
-  g.closePath(); g.stroke(); g.restore();
-  P(f.x-u[0]*Lg*0.5,f.y-u[1]*Lg*0.5); arrowHead(g,SX,SY,inb*D2R,7,col);
-  return {mid:{x:f.x-u[0]*Lg*0.5+nn[0]*R,y:f.y-u[1]*Lg*0.5+nn[1]*R},nn,u,R,Lg}; }
+const racetrack=(g,f,inb,dir,tas,ls,col,dash,lw)=>map.racetrack(g,f,inb,dir,N.turnRadius(tas),tas/3600*ls,{col,dash,lw,arrow:'mid',sz:7});
 
 /* ---------- plan view ---------- */
 function drawMap(){ const g=MC.ctx, W=MC.w, Hh=MC.h; if(!W||!PA) return;
-  const gr=g.createRadialGradient(W*0.5,Hh*0.4,0,W*0.5,Hh*0.5,Math.max(W,Hh)*0.75); gr.addColorStop(0,COL.bg1); gr.addColorStop(1,COL.bg0); g.fillStyle=gr; g.fillRect(0,0,W,Hh);
-  if(TER.path){ g.save(); g.translate(V.cx,V.cy); g.scale(V.k,V.k); g.translate(-V.ox,V.oy);
-    if(TER.cv){ g.save(); g.clip(TER.path,'evenodd'); g.imageSmoothingEnabled=true; g.drawImage(TER.cv,-TER.R,-TER.R,2*TER.R,2*TER.R); g.restore(); } else { g.fillStyle='#1a2833'; g.fill(TER.path,'evenodd'); }
-    g.strokeStyle='rgba(150,182,204,.38)'; g.lineWidth=1/V.k; g.stroke(TER.path); g.restore();
-    g.fillStyle='rgba(13,21,28,.35)'; g.fillRect(0,0,W,Hh); }
+  map.drawBase(g,W,Hh);
   /* runway */
-  P(ILS.thr.x,ILS.thr.y); const rx=SX, ry=SY; P(ILS.end.x,ILS.end.y); g.strokeStyle='#C9D2D8'; g.lineWidth=Math.max(3,0.035*V.k); g.lineCap='butt'; g.beginPath(); g.moveTo(rx,ry); g.lineTo(SX,SY); g.stroke();
+  map.drawRunway(g,ILS.thr,ILS.end);
   const cur=Math.round(S.k);
   if(isHold()) holdLayer(g,W,Hh); else appLayer(g,W,Hh);
   /* the whole path faint, the flown part bright */
@@ -123,18 +90,15 @@ function drawMap(){ const g=MC.ctx, W=MC.w, Hh=MC.h; if(!W||!PA) return;
   for(let i=0;i<PA.n;i+=2){ P(PA.x[i],PA.y[i]); if(i) g.lineTo(SX,SY); else g.moveTo(SX,SY); } g.stroke(); g.setLineDash([]);
   let pc=null; g.lineWidth=2.6; for(let i=0;i<=cur;i+=1){ const c=phCol(PA.phs[i]); if(c!==pc){ if(pc) g.stroke(); g.strokeStyle=c; g.beginPath(); P(PA.x[Math.max(0,i-1)],PA.y[Math.max(0,i-1)]); g.moveTo(SX,SY); pc=c; } P(PA.x[i],PA.y[i]); g.lineTo(SX,SY); } if(pc) g.stroke(); g.restore();
   /* VOR */
-  P(FLS.x,FLS.y); vorSym(g,SX,SY); if(!isHold()) tag(g,SX-8,SY+18,'FLS VOR/DME',COL.vor,'l');
+  P(FLS.x,FLS.y); map.drawVor(g,SX,SY,true); if(!isHold()) map.label(SX,SY,'FLS VOR/DME',COL.vor,LF);
   /* aircraft */
-  P(PA.x[cur],PA.y[cur]); g.save(); g.translate(SX,SY); g.rotate(PA.h[cur]*D2R); g.shadowColor='rgba(0,0,0,.6)'; g.shadowBlur=6; g.shadowOffsetY=2; g.fillStyle=COL.ac; acShape(g,14); g.fill(); g.shadowBlur=0; g.shadowOffsetY=0; g.strokeStyle='rgba(13,21,28,.8)'; g.lineWidth=0.8; g.stroke(); g.restore();
-  windBadge(g,W);
-  /* north and scale */
-  g.fillStyle=COL.ink2; g.beginPath(); g.moveTo(20,Hh-46); g.lineTo(25,Hh-30); g.lineTo(20,Hh-33); g.lineTo(15,Hh-30); g.closePath(); g.fill(); g.font=`600 10px ${FM}`; g.textAlign='center'; g.fillText('N',20,Hh-54);
-  const nmL=V.k>60?1:V.k>25?2:5, px=nmL*V.k; g.strokeStyle=COL.ink2; g.lineWidth=1.4; g.beginPath(); g.moveTo(12,Hh-14); g.lineTo(12+px,Hh-14); g.moveTo(12,Hh-18); g.lineTo(12,Hh-10); g.moveTo(12+px,Hh-18); g.lineTo(12+px,Hh-10); g.stroke(); g.textAlign='left'; g.fillText(nmL+' NM',18+px,Hh-13);
+  map.drawAircraft(g,PA.x[cur],PA.y[cur],PA.h[cur],{size:15});
+  if(isHold()){ map.drawWind(g,W,S.wdir,S.wspd); map.reserve(W-82,0,82,92); }
+  /* north and scale, then the labels (clear of them and of the chip) */
+  map.drawNorth(g,Hh); map.drawScaleBar(g,Hh);
+  map.reserveEl(el('hlChip')); map.flushLabels(g,W,Hh);
 }
 function phCol(p){ if(!p) return COL.ink; if(p.startsWith('e_')) return COL.entry; if(p==='tofix'||p==='init'||p==='inter') return 'rgba(230,235,239,.85)'; if(p==='final'||p==='visual'||p==='landed') return COL.ils; if(p==='ga'||p==='ma_turn') return COL.ga; return COL.flown; }
-function windBadge(g,W){ if(!isHold()) return; const x=W-40, y=44; g.fillStyle='rgba(9,13,17,.72)'; g.beginPath(); g.arc(x,y,24,0,TAU); g.fill(); g.strokeStyle='rgba(127,203,232,.25)'; g.lineWidth=1; g.stroke();
-  if(S.wspd>0){ const an=(S.wdir+180)*D2R; g.strokeStyle=COL.wind; g.lineWidth=2; g.beginPath(); g.moveTo(x-Math.sin(an)*14,y+Math.cos(an)*14); g.lineTo(x+Math.sin(an)*10,y-Math.cos(an)*10); g.stroke(); arrowHead(g,x+Math.sin(an)*14,y-Math.cos(an)*14,an,7,COL.wind); }
-  g.fillStyle=COL.ink; g.font=`600 10.5px ${FM}`; g.textAlign='center'; g.textBaseline='middle'; g.fillText(S.wspd>0?d3(S.wdir)+'/'+Math.round(S.wspd):L(t2('CALM','STILLE')),x,y+36); g.fillStyle=COL.ink3; g.font=`500 9px ${FM}`; g.fillText(L(t2('WIND','VIND')),x,y-32); }
 function holdLayer(g){ const f=FLS, I=S.inb, d=S.dir;
   if(S.sc==='entry'&&S.sectors){ /* entry sectors: a ring coloured by the entry for an aircraft arriving from that side */
     const r1=ringR()*0.8*V.k, r2=ringR()*V.k; P(f.x,f.y); const cx=SX, cy=SY;
@@ -144,23 +108,21 @@ function holdLayer(g){ const f=FLS, I=S.inb, d=S.dir;
     g.save(); g.strokeStyle='rgba(230,235,239,.5)'; g.setLineDash([5,5]); g.lineWidth=1.1;
     for(const an of [I,norm(I+180-d*70)]){ const s=Math.sin(an*D2R), c=Math.cos(an*D2R); g.beginPath(); g.moveTo(cx-s*r2,cy+c*r2); g.lineTo(cx+s*r2,cy-c*r2); g.stroke(); } g.restore();
     /* names in the middle of each sector (by the bearing the aircraft comes from) */
-    const out=norm(I+180), rm=(r1+r2)/2, put=(hd,txt,col)=>{ const b=norm(hd+180)*D2R; tag(g,cx+Math.sin(b)*rm,cy-Math.cos(b)*rm,txt,col,'c','rgba(9,13,17,.82)'); };
+    const out=norm(I+180), rm=(r1+r2)/2, put=(hd,txt,col)=>{ const b=norm(hd+180)*D2R; map.label(cx+Math.sin(b)*rm,cy-Math.cos(b)*rm,txt,col,LF,'rgba(9,13,17,.82)',true); };
     put(norm(out-d*35),L(t2('TEARDROP 70°','DRÅPE 70°')),COL.teardrop); put(norm(out+d*55),L(t2('PARALLEL 110°','PARALLELL 110°')),COL.parallel); put(norm(out-d*160),L(t2('DIRECT 180°','DIREKTE 180°')),COL.direct);
-    const hb=norm(I+180-d*70); tag(g,cx+Math.sin(hb*D2R)*(r2+2),cy-Math.cos(hb*D2R)*(r2+2),'70°','#E6EBEF','c'); }
-  const rt=racetrack(g,f,I,d,S.tas,legS(),'rgba(201,166,245,.85)',[6,4],1.6);
-  P(f.x,f.y); fixSym(g,SX,SY,COL.hold);
-  P(f.x,f.y); tag(g,SX-10,SY+16,'FLS · '+L(t2('inbound','inngående'))+' '+d3(I)+' '+(d>0?'R':'L'),COL.hold);
+    const hb=norm(I+180-d*70); map.label(cx+Math.sin(hb*D2R)*(r2+2),cy-Math.cos(hb*D2R)*(r2+2),'70°',COL.ink,LF,null,true); }
+  racetrack(g,f,I,d,S.tas,legS(),'rgba(201,166,245,.85)',[6,4],1.6);
+  P(f.x,f.y); NAVMAP.drawFix(g,SX,SY,COL.hold);
+  map.label(SX,SY,'FLS · '+L(t2('inbound','inngående'))+' '+d3(I)+' '+(d>0?'R':'L'),COL.hold,LF);
   }
 function hexA(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
-function appLayer(g){ /* centreline, localiser feather, fixes, missed approach hold */
-  P(ILS.thr.x,ILS.thr.y); const tx=SX, ty=SY, far=onCl(16); P(far.x,far.y);
-  g.save(); g.strokeStyle='rgba(127,203,232,.55)'; g.setLineDash([8,6]); g.lineWidth=1.1; g.beginPath(); g.moveTo(tx,ty); g.lineTo(SX,SY); g.stroke(); g.setLineDash([]);
-  const an=(ILS.crs+180)*D2R, sp=2.5*D2R, fl=12*V.k; P(ILS.x,ILS.y); const lx=SX, ly=SY;
-  g.fillStyle='rgba(127,203,232,.10)'; g.beginPath(); g.moveTo(lx,ly); g.lineTo(lx+Math.sin(an-sp)*fl,ly-Math.cos(an-sp)*fl); g.lineTo(lx+Math.sin(an)*fl*0.94,ly-Math.cos(an)*fl*0.94); g.lineTo(lx+Math.sin(an+sp)*fl,ly-Math.cos(an+sp)*fl); g.closePath(); g.fill(); g.restore();
+function appLayer(g){ /* centreline and localiser feather, fixes, missed approach hold */
+  map.drawIls(g,ILS,true);
   const fx=[[APP.iaf,'IAF'],[APP.if_,'IF'],[APP.fap,S.sc==='npa'?'FAF':'FAP']];
-  for(const [dd,n] of fx){ const p=onCl(dd); P(p.x,p.y); fixSym(g,SX,SY,COL.fix); tag(g,SX+6,SY,n+' · '+nf(dd,1)+' NM',COL.ink); }
-  if(S.sc==='npa'){ P(ILS.thr.x,ILS.thr.y); tag(g,SX-12,SY-4,'MAPt',COL.warn,'l'); }
-  tag(g,tx+10,ty+16,'RWY 17 · ENBR',COL.ink2);
+  for(const [dd,n] of fx){ const p=onCl(dd); P(p.x,p.y); NAVMAP.drawFix(g,SX,SY,COL.fix); map.label(SX,SY,n+' · '+nf(dd,1)+' NM',COL.ink,LF); }
+  P(ILS.thr.x,ILS.thr.y);
+  if(S.sc==='npa') map.label(SX,SY,'MAPt',COL.warn,LF);
+  map.label(SX,SY,'RWY 17 · ENBR',COL.ink2,LF);
   if(PA.miss) racetrack(g,FLS,354,-1,S.gs,60,'rgba(236,138,90,.75)',[6,4],1.4); }
 
 /* ---------- profile (approach) ---------- */
