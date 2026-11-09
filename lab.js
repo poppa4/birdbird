@@ -92,7 +92,7 @@
   /* Three steps: Try is part of Explore, Debrief ("the key points") opens Test yourself; Next is a link at the end, not a step. */
   const STEPS=[['understand',t2('Understand','Forstå')],['explore',t2('Explore','Utforsk')],['check',t2('Test yourself','Test deg selv')]];
   const STEP3={understand:'understand',explore:'explore',try:'explore',debrief:'check',check:'check'};
-  let depth='deep'; try{ const d=localStorage.getItem('vlab-depth'); if(DEPTHS.some(x=>x[0]===d)) depth=d; }catch(e){}
+  let depth='short'; try{ const d=localStorage.getItem('vlab-depth'); if(DEPTHS.some(x=>x[0]===d)) depth=d; }catch(e){}
   function setDepth(d,save){ if(!DEPTHS.some(x=>x[0]===d)) return; depth=d; if(save){ try{ localStorage.setItem('vlab-depth',d); }catch(e){} }
     const b=document.body; if(!b) return; DEPTHS.forEach(([k])=>b.classList.toggle('depth-'+k,k===d));
     document.querySelectorAll('.atl-depth button').forEach(x=>{ x.classList.toggle('on',x.dataset.d===d); x.setAttribute('aria-pressed',String(x.dataset.d===d)); });
