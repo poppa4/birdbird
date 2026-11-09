@@ -45,7 +45,7 @@ function render(grid,items){
   grid.addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; const it=items.find(x=>x.k===b.dataset.k); if(!it) return;
     if(typeof it.click==='function') it.click(); else if(it.click){ const c=document.querySelector(it.click); if(c) c.click(); }
     const t=it.to?document.querySelector(it.to):null; if(!t) return;
-    const tg=t.closest('.view')||t; tg.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'center'});
+    const tg=t.closest('.view')||t; tg.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:tg.getBoundingClientRect().height>innerHeight-120?'start':'center'}); /* a model taller than the screen: show its top (tabs) below the sticky step bar */
     tg.classList.remove('kc-flash'); void tg.offsetWidth; tg.classList.add('kc-flash'); });
 }
 window.KCS={render,sv,tx,ar};

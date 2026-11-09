@@ -403,6 +403,8 @@ body.depth-instructor .memo h3{font-size:20px}
 .kflash{animation:kflash 1.6s ease-out 1}
 @keyframes kflash{0%{box-shadow:0 0 0 0 rgba(154,30,104,.55)}100%{box-shadow:0 0 0 14px rgba(154,30,104,0)}}
 @media (prefers-reduced-motion:reduce){.kflash{animation:none}}
+/* touch: larger targets for the panel buttons and chart toggles; the overlay buttons on the 3D view stay compact (36px) so they cover less of the model */
+@media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:40px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
 </style>
 
 </head>

@@ -171,3 +171,5 @@ body.depth-instructor .ns.ns-collapsed{grid-template-columns:46px minmax(0,1fr)}
 .ns-strw .ns-g .ns-gc{min-height:0}
 .ns-strw .ns-g .ns-kn{display:none}
 @media (max-width:640px){ .ns-inst.one{grid-template-columns:minmax(0,1fr)} .ns-inst.one .ns-g{max-width:330px;width:100%;justify-self:center} }
+/* touch: 40px targets for the lesson list, the zoom buttons and the guide switch */
+@media (pointer:coarse){ .ns-list button{padding:10px 6px} .ns-vp .vtools button{min-width:40px} .nsg-gt{min-height:36px} .ns-sec .nseg button,.nfb{min-height:40px} }

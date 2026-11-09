@@ -5,7 +5,7 @@
 <meta name="description" content="Holding and instrument approach in one lab: fly hold entries and holds in wind at the FLS VOR, then an ILS, a non-precision CDFA and a missed approach to runway 17 at Bergen, with the plan view, the profile, an HSI and a CDI together.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Holding and Instrument Approach</title>
-<link rel="stylesheet" href="lab.css?v=7">
+<link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
 /* the figure: plan view + profile on the left, HSI and CDI on the right */
@@ -26,6 +26,7 @@
 .hl-play button.go{border-color:rgba(236,90,71,.6);color:#FFB4A8;min-width:96px}
 .hl-play button:hover{background:rgba(18,22,26,.85)}
 .hl-play input{flex:1;min-width:60px;accent-color:#F06BB4}
+@media (pointer:coarse){.hl-play button{min-height:40px}}
 .hl-play output{font-family:var(--f-mono);font-size:11px;color:#AEB8C1;white-space:nowrap;font-variant-numeric:tabular-nums}
 /* the panel's result card */
 .ent{border-left:3px solid var(--ink-3);padding:2px 0 2px 10px;margin:0 0 8px}
@@ -175,7 +176,7 @@ body.depth-instructor .vchip.hl-ro{font-size:12.5px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training model, not for navigation. Holding rules from ICAO Doc 8168 (PANS-OPS) Vol I: entry sectors with 5° flexibility, 1 min outbound at or below 14 000 ft and 1.5 min above, turns at 25° bank or rate one, whichever needs less bank. The hold is flown at constant TAS; outbound it uses three times the inbound drift correction and an outbound time that counts the along-track drift in the turns, so the inbound leg comes out at about the planned time. The approach is illustrative, not the published Bergen chart: IAF 14 NM, IF 10 NM, FAP where 2000 ft meets the 3° path, DA 370 ft (DH 200 ft), localiser-only MDA 600 ft, missed approach climbing straight ahead at 4 % to 3000 ft and back to a hold at FLS. FLS position and the ILS RWY 17 geometry are the radio navigation simulator’s (OurAirports data, approximate threshold); relief and coastline from Mapzen/AWS Terrain Tiles. No magnetic variation, no wind on the approach, constant ground speed, no instrument errors. Classifications from ICAO Annex 6; operator and aerodrome minima can be higher.</p>
 </div>
 <script src="lab.js?v=37"></script>
-<script src="concepts.js?v=1"></script>
+<script src="concepts.js?v=2"></script>
 <script src="navcore.js?v=2"></script>
 <script src="navgauges.js?v=2"></script>
 <script src="holdcore.js?v=2"></script>

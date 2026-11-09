@@ -304,7 +304,7 @@ function frame(t){ raf=0; const dt=Math.min(0.1,lastT?(t-lastT)/1000:0.016); las
   if(more) kick(); else lastT=0; }
 let uiT=0, lastPh='';
 function slowUi(dt){ uiT+=dt; if(uiT<0.12&&X.ph===lastPh) return; uiT=0; chip(); drawProf(); turnRo(); if(X.ph!==lastPh){ lastPh=X.ph; tabs(); see(); drawRo(); drawSky(); } else see(); live(); }
-function update(){ derive(); setHsi(); drawSky(); drawRo(); chip(); see(); legend(); tabs(); tools(); turnRo(); hints(); drawProf(); lastPh=X.ph; live(); kick(); }
+function update(){ derive(); setHsi(); drawSky(); drawRo(); chip(); see(); legend(); tabs(); tools(); turnRo(); hints(); drawProf(); el('gnVp').dataset.ph=X.ph; lastPh=X.ph; live(); kick(); }
 
 /* ---------- set the lab up (cards, tasks) ---------- */
 function setS(o){ o=o||{}; S.fly=false;
@@ -312,7 +312,7 @@ function setS(o){ o=o||{}; S.fly=false;
   if(o.off!=null) S.off=o.off; if(o.voff!=null) S.voff=o.voff; if(o.min) S.min=o.min; if(o.jam!=null) S.jam=o.jam; if(o.show) Object.assign(S.show,o.show);
   build(); preSync(); maskSl.set(S.mask); sbSeg.set(S.sbas); wpSeg.set(S.wpT); gsSl.set(S.gs); bkSl.set(S.bank); offSl.set(S.off); minSeg.set(S.min); vSl.set(S.voff); togs();
   if(o.ph) goPhase(o.ph); else update(); }
-const toModel=()=>{ const t=el('gnVp'); if(t) t.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'center'}); document.querySelectorAll('details.xpanel').forEach(d=>{ d.open=true; }); };
+const toModel=()=>{ const t=el('gnVp'); if(t) t.scrollIntoView({behavior:reduced()?'auto':'smooth',block:t.getBoundingClientRect().height>innerHeight-120?'start':'center'}); document.querySelectorAll('details.xpanel').forEach(d=>{ d.open=true; }); };
 
 /* ---------- Understand: key concept cards ---------- */
 if(window.KCS){ const {sv,tx,ar}=KCS;

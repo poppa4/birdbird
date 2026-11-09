@@ -185,7 +185,7 @@ function buildXS(g,W,H){
   if(S.lay.ice){ const r=rng(S.drop==='large'?3:S.drop==='sld'?5:11), n=S.drop==='large'?260:220; const c=CLD[S.drop];
     for(let i=0;i<n*5;i++){ const u=c.u0+r()*(S.drop==='large'?0.30:c.u1-c.u0), z=c.b+r()*(c.t-c.b+800); if(!cloudAt(u,z)) continue; const x=X(u), y=Y(z), T=temp(z), rr=(narrow()?5:7)+r()*(narrow()?6:9);
       const col=T>0?'222,228,234':T>=-20?'192,230,247':'206,216,232', sh=0.55+0.45*clamp((z-c.b)/2500,0,1); const gr=g.createRadialGradient(x,y-rr*0.3,0,x,y,rr); gr.addColorStop(0,`rgba(${col},${(0.3*sh).toFixed(3)})`); gr.addColorStop(1,`rgba(${col},0)`); g.fillStyle=gr; g.beginPath(); g.arc(x,y,rr,0,Math.PI*2); g.fill(); }
-    if(lab){ const cname=S.drop==='large'?t2('cumulus (heap cloud)','cumulus (haugsky)'):S.drop==='sld'?t2('nimbostratus','nimbostratus'):t2('stratocumulus (layer cloud)','stratocumulus (lagsky)'); txt(g,L(cname),X((c.u0+c.u1)/2),Y(S.drop==='large'?c.t:c.t+600)-8,{size:sm,col:INK.white,al:'center'});
+    if(lab){ const cname=S.drop==='large'?t2('cumulus (heap cloud)','cumulus (haugsky)'):S.drop==='sld'?t2('nimbostratus','nimbostratus'):t2('stratocumulus (layer cloud)','stratocumulus (lagsky)'); let yn=Y(S.drop==='large'?c.t:c.t+600)-8; /* keep clear of the isotherm labels at the left */ for(const z of [...(R.fz||[]),...(R.m20||[])]){ const yi=Y(z)-5; if(Math.abs(yi-yn)<16) yn=yi-18; } txt(g,L(cname),X((c.u0+c.u1)/2),yn,{size:sm,col:INK.white,al:'center'});
     } }
   // isotherms
   if(S.lay.ice){ const iso=(arr,col,label)=>arr.forEach(z=>{ const y=Y(z); dline(g,box.l,y,box.l+box.w,y,col,1.2,[7,5]); if(lab) txt(g,label+' · '+nf(Math.round(z/100)*100,0)+' ft',box.l+6,y-5,{mono:1,size:narrow()?8.5:10,col,bg:BGL}); });

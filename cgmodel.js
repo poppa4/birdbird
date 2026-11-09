@@ -241,7 +241,8 @@ function paint(){
     const tx=n?pT[0]-4:Q(20.9,0)[0], ty=n?Math.max(pT[1]+22,pT[1]-Tpx+12):t.Lt<0?Math.max(pT[1]+14,pT[1]-Tpx+4):Math.min(pT[1]-Tpx+4,pT[1]-10);
     txt(g,tlab,tx,ty,{col:tc,size:fs,al:n?'right':'left'});
     // tail moment arm (CG → THS) below the fuselage
-    if(ph==='cr'){ const ya=pCG[1]+Wpx+(n?8:12);
+    const ya=pCG[1]+Wpx+(n?8:12);
+    if(ph==='cr'&&ya+(n?16:20)<=acH+(n?8:14)){ /* only when it clears the MAC ruler below (not on a narrow phone) */
       dim(g,pCG[0],pT[0],ya,'rgba(228,107,174,.75)',L({en:'tail moment arm ',no:'halens momentarm '})+nf(17.6-E.h*AC.c,1)+' m',{below:true,size:F(n?9.5:10.5)}); }
   }
   // callouts on the aircraft
@@ -330,7 +331,7 @@ function paint(){
     if(Math.abs(cgx-cpx)>tw+24) dim(g,cgx,cpx,ay,'rgba(127,203,232,.8)',lab,{size:fsA});
     else { dim(g,cgx,cpx,ay,'rgba(127,203,232,.8)','',{}); const lft=cpx>cgx; txt(g,lab,lft?Math.min(cgx,cpx)-8:Math.max(cgx,cpx)+8,ay+4,{mono:1,col:'rgba(127,203,232,.9)',al:lft?'right':'left',size:fsA}); } }
   // static margin bracket
-  const smy=ry-R(n?62:70); const smc=E.sm<=0?K.bad:E.inEnv?K.ok:K.cau;
+  const smy=Math.max(ry-R(n?62:70),ly0+(n?32:40)); /* below the ruler's title line */ const smc=E.sm<=0?K.bad:E.inEnv?K.ok:K.cau;
   if(Math.abs(npx-cgx)>4){ dim(g,cgx,npx,smy,smc,(E.sm<=0?(n?'':L({en:'negative margin ',no:'negativ margin '})):det?(n?'SM ':L({en:'static margin ',no:'statisk margin '})):(n?'':L({en:'stability margin ',no:'stabilitetsmargin '})))+nf(E.sm,1)+' %',{size:F(n?9.5:11)}); }
   // instructor hint on the stage
   geo.cgHit={x:cgx,y:ry};

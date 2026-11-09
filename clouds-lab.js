@@ -246,6 +246,9 @@ function lDraw(now){ const g=CL.ctx, {W,H,yg,Y,fs}=G; if(!W||view!=='lift') retu
   /* the cloud, revealed below the leading parcel while it grows */
   const e=1-Math.pow(1-grow,2), hl=hAt(e), yl=grow>=1?0:Math.max(0,Y(hl)-4);
   if(R.cloud&&hl>=R.base){ const sy=yl*d; g.drawImage(clL,0,sy,clL.width,clL.height-sy,0,yl,W,H-yl); }
+  /* height labels stay readable on top of the cloud and the sun */
+  { const step=H<420?10000:5000; g.font=`${Math.round(10*fs)}px ${MONO}`; g.lineWidth=3; g.lineJoin='round'; g.strokeStyle='rgba(14,23,34,.8)'; g.fillStyle='rgba(174,184,193,.85)';
+    for(let h=step;h<HTOP;h+=step){ const s=h>=10000?(h/1000)+' 000 ft':h+' ft', y=Y(h)-3; g.strokeText(s,6,y); g.fillText(s,6,y); } }
   /* rain streaks under precipitating cloud */
   const ty=R.type; if(R.cloud&&grow>=1&&(ty==='cb'||ty==='tcu'||ty==='ns')&&!reduced()){ const yb=Y(R.base), x=ty==='ns'&&S.mode==='front'?frontX(R.base)-40:PX[Math.round(R.base/DZ)], w=ty==='cb'?48:ty==='ns'?60:26, t=now/1000;
     g.strokeStyle='rgba(170,200,225,.45)'; g.lineWidth=1; g.beginPath(); for(let k=0;k<22;k++){ const xx=x-w+((k*37)%(w*2)), yy=yb+((t*220+k*53)%Math.max(10,yg-yb)); g.moveTo(xx,yy); g.lineTo(xx-2,yy+7); } g.stroke(); }

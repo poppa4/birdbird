@@ -158,7 +158,7 @@ details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:
 .xchk input{accent-color:var(--accent);margin:0}
 
 /* the dark viewport (tunnel.html "CFD" look) */
-.xvp{position:relative;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(120% 90% at 50% 35%,#2a3542 0%,#18212b 55%,#0f151b 100%);color:#E2E8EE;min-width:0}
+.xvp{scroll-margin-top:56px;position:relative;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(120% 90% at 50% 35%,#2a3542 0%,#18212b 55%,#0f151b 100%);color:#E2E8EE;min-width:0}
 .xvp canvas{display:block;width:100%}
 .xvp .view{border:0;border-radius:0;background:transparent}
 .vbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:10px 10px 4px;position:relative;z-index:3}
@@ -237,9 +237,8 @@ details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:
   .xpanel>.xsum .xsv{font-family:var(--f-mono);font-size:11.5px;font-weight:500;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 }
 @media (max-width:640px){
-  .vbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:8px 8px 4px}
-  .vbar::-webkit-scrollbar{display:none}
-  .vtabs,.vtools{flex-wrap:nowrap}
+  /* phone: wrap the view tabs and tools instead of scrolling them sideways, so every tab is visible */
+  .vbar{padding:8px 8px 4px;gap:4px 8px}
   .vtabs button,.vtools button{padding:4px 8px;font-size:12px;white-space:nowrap}
   .vtools button{font-size:10.5px}
   .vcv{display:flex;flex-direction:column}
@@ -256,3 +255,5 @@ body.depth-instructor .vchip i{font-size:11px}
 body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 @media (max-width:980px){body.depth-instructor .xapp{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){details.xsec>summary::before,.xpanel>.xsum>span:first-child::before{transition:none}}
+/* touch: 40px targets in the viewport bar, toggles, small buttons and the concept-card link */
+@media (pointer:coarse){.vtabs button,.vtabs.seg button,.vtools button,.xtog,.btn.sm,.xsec .pre .btn,.xsec .btns .btn,html .vbtn,html .cn-tog{min-height:40px}.kgo{min-height:40px;display:inline-flex;align-items:center}}
