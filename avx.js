@@ -258,7 +258,8 @@ function bindKnob(el,on){
   const ko=el.querySelector('.ko'), ki=el.querySelector('.ki'); let rot={outer:0,inner:0};
   const spin=(which,st)=>{ rot[which]+=st*15; const t=which==='inner'?ki:ko; if(t) t.querySelector('i').style.transform=`rotate(${rot[which]}deg)`; on(which,st); };
   const whichOf=t=> ki&&t.closest('.ki')?'inner':(ki?'outer':'inner');
-  el.addEventListener('wheel',e=>{ e.preventDefault(); spin(whichOf(e.target),e.deltaY<0?1:-1); },{passive:false});
+  let wacc=0;
+  el.addEventListener('wheel',e=>{ e.preventDefault(); if(e.ctrlKey) return; wacc+=e.deltaY*(e.deltaMode?40:1); if(Math.abs(wacc)<30) return; spin(whichOf(e.target),wacc<0?1:-1); wacc=0; },{passive:false});
   let drag=null;
   el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.focus({preventScroll:true}); drag={w:whichOf(e.target),y:e.clientY,x:e.clientX,moved:false}; el.setPointerCapture(e.pointerId); });
   el.addEventListener('pointermove',e=>{ if(!drag) return; const dy=(drag.y-e.clientY)+(e.clientX-drag.x); if(Math.abs(dy)>=12){ const st=Math.trunc(dy/12); spin(drag.w,st); drag.y=e.clientY; drag.x=e.clientX; drag.moved=true; } });

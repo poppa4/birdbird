@@ -7,7 +7,7 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
 /* ---------- regions for zoom ---------- */
 const REG={
-  overview:[0,0,W,H],
+  overview:[10,92,1580,888],
   top:[290,92,1020,128],
   pfd:[30,205,800,450],
   mfd:[770,205,800,450],
@@ -36,6 +36,11 @@ add({id:'ecuR',t:'push',x:162,y:472,l:'ECU TEST',r:12});
 add({id:'voterR',t:'rotsel',x:208,y:470,l:'VOTER R',vals:['ECU A','AUTO','ECU B'],ang:[-50,0,50]});
 add({id:'altL',t:'tog',x:100,y:585,l:'L'}); add({id:'altR',t:'tog',x:178,y:585,l:'R'});
 add({id:'micJack',t:'deco',x:60,y:625});
+add({id:'oxy',t:'rot',x:205,y:624,l:'O2 (IF FITTED)',r:8});
+add({id:'ventL',t:'vent',x:138,y:370,r:36,l:'VENT'}); add({id:'ventR',t:'vent',x:1480,y:620,r:36,l:'VENT'});
+add({id:'iceLight',t:'rocker',x:1535,y:530,l:'ICE LT'});
+add({id:'stickL',t:'stick',x:300,y:850,l:'STICK'}); add({id:'stickR',t:'stick',x:1300,y:850,l:'STICK',co:1});
+add({id:'apDisc',t:'sbtn',x:300,y:850,l:'AP DISC',dx:-15,dy:-22,col:'#c62a1d'}); add({id:'trimDn',t:'sbtn',x:300,y:850,l:'TRIM NOSE DN',dx:5,dy:-38,col:'#59616b',r:4}); add({id:'trimUp',t:'sbtn',x:300,y:850,l:'TRIM NOSE UP',dx:5,dy:-28,col:'#59616b',r:4});
 // bottom switch row (under PFD)
 add({id:'altStatic',t:'pull',x:262,y:700,l:'ALT STATIC'});
 add({id:'pitot',t:'tog',x:322,y:700,l:'PITOT HEAT'});
@@ -57,22 +62,22 @@ add({id:'audBackup',t:'abtn',x:820,y:614,l:'DISPLAY BACKUP',red:1});
 // right column: circuit breakers and de-ice
 const CBS=['ESS BUS','ENG L','ENG R','ECU L A','ECU L B','ECU R A','ECU R B','START','PFD','MFD','COM1','COM2','NAV1','NAV2','XPDR','AUDIO','AUTOPILOT','FLAPS','LDG GEAR','PITOT','FUEL PUMP L','FUEL PUMP R','LIGHTS','AV BUS'];
 CBS.forEach((n,i)=>add({id:'cb'+i,t:'cb',x:1418+(i%4)*40,y:242+Math.floor(i/4)*40,l:n,cb:n}));
-add({id:'deice',t:'rotsel',x:1430,y:530,l:'DE-ICE',vals:['OFF','NORM','HIGH','MAX'],ang:[-60,-20,20,60]});
-add({id:'wshield',t:'push',x:1492,y:530,l:'WINDSHIELD',r:10});
-add({id:'deiceTest',t:'tog',x:1535,y:530,l:'ANN TEST'});
+add({id:'deice',t:'rotsel',x:1428,y:540,l:'DE-ICE',vals:['OFF','NORM','HIGH','MAX'],ang:[-60,-20,20,60]});
+add({id:'wshield',t:'push',x:1462,y:540,l:'W/SHIELD',r:9});
+add({id:'deiceTest',t:'tog',x:1500,y:532,l:'ANN TEST',s:6});
 // console
 add({id:'rudTrim',t:'hwheel',x:800,y:772,l:'RUDDER TRIM'});
 add({id:'park',t:'park',x:640,y:812,l:'PARKING BRAKE'});
 add({id:'pwr',t:'power',x:760,y:810,l:'POWER'});
 add({id:'trim',t:'vwheel',x:942,y:858,l:'ELEVATOR TRIM'});
-add({id:'fselL',t:'fsel',x:705,y:946,l:'FUEL L'}); add({id:'fselR',t:'fsel',x:855,y:946,l:'FUEL R'});
+add({id:'fselL',t:'fsel',x:705,y:938,l:'FUEL L'}); add({id:'fselR',t:'fsel',x:855,y:938,l:'FUEL R'});
 add({id:'auxPumpL',t:'tog',x:1000,y:920,l:'AUX L',s:6.5}); add({id:'auxPumpR',t:'tog',x:1040,y:920,l:'AUX R',s:6.5});
 add({id:'heat',t:'slide',x:600,y:900,l:'CABIN HEAT'}); add({id:'defrost',t:'slide',x:640,y:900,l:'DEFROST'});
 add({id:'altAir',t:'pull',x:1060,y:800,l:'ALTERNATE AIR',lever:1});
 add({id:'gearEmer',t:'pull',x:560,y:800,l:'EMERG GEAR',lever:1,red:1});
 
 /* ---------- SVG building ---------- */
-function lab(x,y,t,o){ o=o||{}; return `<text x="${x}" y="${y}" class="pl ${o.c||''}" font-size="${o.s||7.5}" text-anchor="${o.a||'middle'}">${esc(t)}</text>`; }
+function lab(x,y,t,o){ o=o||{}; return `<text x="${x}" y="${y}" class="pl ${o.c||''}" style="font-size:calc(var(--ls,1)*${o.s||7.5}px)" text-anchor="${o.a||'middle'}">${esc(t)}</text>`; }
 function plate(x,y,w,h,r,cls){ return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r||6}" class="${cls||'sub'}"/>`; }
 function screw(x,y){ return `<g class="screw"><circle cx="${x}" cy="${y}" r="3.2"/><path d="M${x-2} ${y-1}l4 2"/></g>`; }
 
@@ -89,7 +94,7 @@ function ctlSVG(c){
     case 'abtn': { const w=c.l.length>9?34:30; s=`<g class="mv pb"><rect x="${x-w/2}" y="${y-9}" width="${w}" height="18" rx="2.5" class="${c.red?'abtnr':'abtn'}"/><rect class="aled" x="${x-5}" y="${y-7}" width="10" height="2" rx="1"/><text x="${x}" y="${y+5}" class="pl" font-size="${c.l.length>8?4.4:5.4}" text-anchor="middle">${esc(c.l)}</text></g>`; break; }
     case 'key': s=`<circle cx="${x}" cy="${y}" r="15" class="ring0"/><circle cx="${x}" cy="${y}" r="12" class="keyb"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><rect x="${x-3}" y="${y-18}" width="6" height="36" rx="2.5" class="keyh"/><circle cx="${x}" cy="${y}" r="3" class="nut2"/></g>${lab(x-22,y-14,'L',{s:7})}${lab(x+22,y-14,'R',{s:7})}${lab(x,y-22,'OFF',{s:5.5,c:'dim'})}${lab(x,y+25,c.l)}`; break;
     case 'gear': s=`<rect x="${x-9}" y="${y-36}" width="18" height="72" rx="8" class="slot"/>${lab(x-18,y-28,'UP',{s:6.5,a:'end'})}${lab(x-18,y+33,'DN',{s:6.5,a:'end'})}<g class="mv gk"><rect x="${x-2.2}" y="${y-30}" width="4.4" height="30" class="rod"/><circle cx="${x}" cy="${y-30}" r="11" class="wheelk"/><circle cx="${x}" cy="${y-30}" r="5" class="wheelh"/></g>
-      <g class="glights"><circle class="gl gN" cx="${x+28}" cy="${y-20}" r="4.2"/><circle class="gl gL" cx="${x+22}" cy="${y-9}" r="4.2"/><circle class="gl gR" cx="${x+34}" cy="${y-9}" r="4.2"/><circle class="gl gU" cx="${x+28}" cy="${y+12}" r="4.2"/>${lab(x+28,y+26,'GEAR UNSAFE',{s:4.6})}</g>${lab(x,y+46,c.l)}`; break;
+      <g class="glights"><circle class="gl gN" cx="${x+28}" cy="${y-20}" r="4.2"/><circle class="gl gL" cx="${x+22}" cy="${y-9}" r="4.2"/><circle class="gl gR" cx="${x+34}" cy="${y-9}" r="4.2"/><circle class="gl gU" cx="${x+28}" cy="${y+12}" r="4.2"/>${lab(x+28,y+26,'GEAR UNSAFE',{s:4.6})}</g>${lab(x,y+52,c.l)}`; break;
     case 'flap': s=`<rect x="${x-8}" y="${y-36}" width="16" height="72" rx="7" class="slot"/>${['UP','APP','LDG'].map((v,i)=>lab(x-16,y-30+i*30+2,v,{s:6.5,a:'end'})).join('')}<g class="mv fk"><rect x="${x-14}" y="${y-36}" width="28" height="12" rx="3" class="flapk"/><path d="M${x-10} ${y-30}h20" class="flapl"/></g><g>${['UP','APP','LDG'].map((v,i)=>`<circle class="fl f${i}" cx="${x+28}" cy="${y-30+i*30}" r="4.2"/>`).join('')}</g>${lab(x,y+46,c.l)}`; break;
     case 'cb': s=`<circle cx="${x}" cy="${y}" r="8" class="cbcol"/><g class="mv cbk"><circle cx="${x}" cy="${y}" r="6" class="cbh"/></g><text x="${x}" y="${y+16}" class="pl" font-size="4.3" text-anchor="middle">${esc(c.l)}</text>`; break;
     case 'pull': s=c.lever?`<rect x="${x-26}" y="${y-8}" width="52" height="16" rx="6" class="slot"/><g class="mv pk"><rect x="${x-20}" y="${y-6}" width="40" height="12" rx="5" class="${c.red?'batr':'tbar'}"/></g>${lab(x,y+20,c.l,{s:6.5})}`:`<circle cx="${x}" cy="${y}" r="11" class="ring0"/><g class="mv pk" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="8.5" class="knob"/><circle cx="${x}" cy="${y}" r="4" class="knobtop"/></g>${lab(x,y+21,c.l,{s:6.2})}`; break;
@@ -103,9 +108,12 @@ function ctlSVG(c){
     case 'vwheel': s=`<rect x="${x-14}" y="${y-58}" width="28" height="116" rx="8" class="slot"/><svg x="${x-10}" y="${y-54}" width="20" height="108" overflow="hidden"><g class="mv wr">${Array.from({length:36},(_,i)=>`<rect x="0" y="${i*6-54}" width="20" height="3" rx="1" class="ridge"/>`).join('')}</g></svg><path d="M${x+16} ${y}h7" class="tomark"/>${lab(x+26,y+2.5,'T/O',{s:6,a:'start'})}${lab(x,y-64,'NOSE DN',{s:5.6})}${lab(x,y+68,'NOSE UP',{s:5.6})}<path class="mv trind" d="M${x-24} ${y}l6-4v8z"/>${lab(x,y+80,c.l,{s:6})}`; break;
     case 'hwheel': s=`<rect x="${x-50}" y="${y-10}" width="100" height="20" rx="8" class="slot"/><svg x="${x-46}" y="${y-7}" width="92" height="14" overflow="hidden"><g class="mv wr">${Array.from({length:32},(_,i)=>`<rect y="0" x="${i*6-48}" width="3" height="14" rx="1" class="ridge"/>`).join('')}</g></svg><path d="M${x} ${y-12}v-5" class="tomark"/><path class="mv trind" d="M${x} ${y+12}l-4 6h8z"/>${lab(x-56,y+3,'L',{s:7,a:'end'})}${lab(x+56,y+3,'R',{s:7,a:'start'})}${lab(x,y+28,c.l,{s:6})}`; break;
     case 'fsel': s=`<circle cx="${x}" cy="${y}" r="20" class="quad"/>${lab(x-25,y+2,'ON',{s:6,a:'end'})}${lab(x,y-25,'XFEED',{s:5.6})}${lab(x+25,y+2,'OFF',{s:6,a:'start',c:'red'})}<path class="fguard" d="M${x+12} ${y-16}l10 8"/><g class="mv rt" style="transform-origin:${x}px ${y}px"><path d="M${x-5} ${y+12}L${x-3} ${y-18}h6L${x+5} ${y+12}z" class="lever"/><circle cx="${x}" cy="${y}" r="5" class="nut2"/></g>${lab(x,y+29,c.l,{s:6.5})}`; break;
+    case 'vent': { const r=c.r; s=`<circle cx="${x}" cy="${y}" r="${r+6}" class="bezel1"/><circle cx="${x}" cy="${y}" r="${r}" class="ventb"/><g class="mv" style="transform-origin:${x}px ${y}px"><circle cx="${x}" cy="${y}" r="${r*0.62}" class="ventc"/>${Array.from({length:8},(_,i)=>`<path d="M${x} ${y}l${Math.cos(i*Math.PI/4)*r*0.6} ${Math.sin(i*Math.PI/4)*r*0.6}" class="vfin"/>`).join('')}<circle cx="${x}" cy="${y}" r="${r*0.18}" class="knobtop"/><rect x="${x-2}" y="${y-r*0.6}" width="4" height="${r*0.3}" class="ptr"/></g>${lab(x,y+r+16,c.l,{s:6})}`; break; }
+    case 'stick': s=`<ellipse cx="${x}" cy="${H-14}" rx="44" ry="8" class="boot0"/><path d="M${x-38} ${H-8}Q${x-30} ${H-64} ${x-12} ${H-78}H${x+12}Q${x+30} ${H-64} ${x+38} ${H-8}Z" class="boot"/><g class="mv skg"><path class="shaft" d="M${x} ${H-74}L${x} ${y+40}"/><path d="M${x-17} ${y-30}q0-14 17-14q19 0 19 15l-3 66q-1 8-16 8q-14 0-15-9z" class="grip"/><path d="M${x-12} ${y-14}h24M${x-12} ${y-6}h24M${x-12} ${y+2}h24M${x-12} ${y+10}h24" class="gripl"/></g>${c.co?'':''}`; break;
+    case 'sbtn': { const r=c.r||5.5; s=`<g class="mv sbm"><circle cx="${x+c.dx}" cy="${y+c.dy}" r="${r}" fill="${c.col}" stroke="#000"/></g>`; break; }
     case 'deco': s=`<circle cx="${x}" cy="${y}" r="7" class="nut"/><circle cx="${x}" cy="${y}" r="2.6" fill="#050607"/>${lab(x,y+15,'MIC',{s:5})}`; break;
   }
-  const role=({tog:'switch',rocker:'switch',guard:'switch',push:'button',abtn:'button',cb:'switch',pull:'switch',park:'switch',gear:'switch'})[c.t]||'slider';
+  const role=({vent:'switch',stick:'application',sbtn:'button',tog:'switch',rocker:'switch',guard:'switch',push:'button',abtn:'button',cb:'switch',pull:'switch',park:'switch',gear:'switch'})[c.t]||'slider';
   if(c.t==='deco') return `<g>${s}</g>`;
   return `<g class="ctl t-${c.t}" data-id="${c.id}" tabindex="0" role="${role}" aria-label="${esc(c.l)}">${s}</g>`;
 }
@@ -158,13 +166,13 @@ ${standby()}
 <!-- left column -->
 ${plate(48,232,182,388,10)}
 ${lab(138,248,'FUEL PUMPS',{s:6.5,c:'gp'})}
-${vent(138,370,36)}
+
 ${plate(56,424,166,120,6,'sub2')}${lab(98,436,'L ENGINE',{s:6})}${lab(180,436,'R ENGINE',{s:6})}
 ${lab(138,560,'ALTERNATOR',{s:6.5,c:'gp'})}
 <!-- right column -->
 ${plate(1400,222,160,262,8)}${lab(1480,230,'CIRCUIT BREAKERS',{s:6,c:'gp'})}
 ${plate(1400,494,160,70,8,'sub2')}${lab(1480,506,'DE-ICE (IF FITTED)',{s:5.6,c:'gp'})}
-${vent(1480,620,36)}
+
 <!-- audio panel -->
 ${plate(784,226,72,400,8,'sub2')}
 <!-- switch row -->
@@ -188,18 +196,30 @@ function build(stage,io){
   const svg=world.querySelector('svg'), byId={};
   svg.querySelectorAll('g.ctl').forEach(g=>{ const c=C.find(k=>k.id===g.dataset.id); byId[c.id]={c,g}; });
   // highlight rings from bounding boxes
-  requestAnimationFrame(()=>{ Object.values(byId).forEach(o=>{ try{ const b=o.g.getBBox(); const r=document.createElementNS(NS,'rect'); r.setAttribute('class','hlr'); r.setAttribute('x',b.x-5); r.setAttribute('y',b.y-5); r.setAttribute('width',b.width+10); r.setAttribute('height',b.height+10); r.setAttribute('rx',8); o.g.insertBefore(r,o.g.firstChild); const h=document.createElementNS(NS,'rect'); h.setAttribute('class','hit'); ['x','y','width','height'].forEach(k=>h.setAttribute(k,r.getAttribute(k))); o.g.insertBefore(h,o.g.firstChild); }catch(e){} }); });
+  // highlight rings + non-overlapping hit zones in a layer below every control
+  requestAnimationFrame(()=>{ const layer=document.createElementNS(NS,'g'); layer.setAttribute('class','hits'); const host=svg.querySelector('g.ctls'); host.insertBefore(layer,host.firstChild);
+    const Z=[]; Object.values(byId).forEach(o=>{ try{ const b=o.g.getBBox(); const r=document.createElementNS(NS,'rect'); r.setAttribute('class','hlr');
+      const x0=Math.max(1,b.x-5), y0=Math.max(1,b.y-5), x1=Math.min(W-1,b.x+b.width+5), y1=Math.min(H-1,b.y+b.height+5);
+      r.setAttribute('x',x0); r.setAttribute('y',y0); r.setAttribute('width',x1-x0); r.setAttribute('height',y1-y0); r.setAttribute('rx',8); o.g.insertBefore(r,o.g.firstChild);
+      if(o.c.t==='sbtn') return; const cx=b.x+b.width/2, cy=b.y+b.height/2, hw=Math.max(b.width+10,34)/2, hh=Math.max(b.height+10,34)/2; Z.push({o,cx,cy,x0:cx-hw,x1:cx+hw,y0:cy-hh,y1:Math.min(H-1,cy+hh)}); }catch(e){} });
+    for(let a=0;a<Z.length;a++) for(let k=a+1;k<Z.length;k++){ const A=Z[a], B=Z[k]; if(A.x1<=B.x0||B.x1<=A.x0||A.y1<=B.y0||B.y1<=A.y0) continue;
+      const dx=B.cx-A.cx, dy=B.cy-A.cy;
+      if(Math.abs(dx)>=Math.abs(dy)){ const m=(A.cx+B.cx)/2; if(dx>=0){ A.x1=Math.min(A.x1,m); B.x0=Math.max(B.x0,m); } else { A.x0=Math.max(A.x0,m); B.x1=Math.min(B.x1,m); } }
+      else { const m=(A.cy+B.cy)/2; if(dy>=0){ A.y1=Math.min(A.y1,m); B.y0=Math.max(B.y0,m); } else { A.y0=Math.max(A.y0,m); B.y1=Math.min(B.y1,m); } } }
+    Z.forEach(z=>{ if(z.x1<=z.x0||z.y1<=z.y0) return; const h=document.createElementNS(NS,'rect'); h.setAttribute('class','hit'); h.dataset.for=z.o.c.id; h.setAttribute('x',z.x0); h.setAttribute('y',z.y0); h.setAttribute('width',z.x1-z.x0); h.setAttribute('height',z.y1-z.y0); layer.appendChild(h); }); });
   bind(world,byId,io);
   return {world,svg,byId,W,H,REG,REG_ORDER,C,AUD,CBS};
 }
 
 /* ---------- interaction ---------- */
+function ctlFromBy(byId,t){ if(!t||!t.closest) return null; const g=t.closest('g.ctl'); if(g) return g; const h=t.closest('.hit'); return h&&byId[h.dataset.for]?byId[h.dataset.for].g:null; }
 function bind(world,byId,io){
+  const ctlFrom=t=>ctlFromBy(byId,t);
   const svg=world.querySelector('svg'); const pt0=svg.createSVGPoint();
   io.toWorld=e=>{ pt0.x=e.clientX; pt0.y=e.clientY; const p=pt0.matrixTransform(svg.getScreenCTM().inverse()); return {x:p.x,y:p.y}; };
   const step=(o,d)=>{ const c=o.c, v=io.get(c.id);
     switch(c.t){
-      case 'tog': case 'rocker': case 'cb': case 'pull': case 'park': case 'abtn': if(c.t==='abtn'&&!c.red&&false) return; io.set(c.id,d>0?1:d<0?0:(v?0:1)); return;
+      case 'tog': case 'rocker': case 'vent': case 'cb': case 'pull': case 'park': case 'abtn': if(c.t==='abtn'&&!c.red&&false) return; io.set(c.id,d>0?1:d<0?0:(v?0:1)); return;
       case 'guard': { if(!io.get('emerG')){ io.set('emerG',1); return; } if(d===0){ if(v) io.set(c.id,0); else io.set(c.id,1); } else io.set(c.id,d>0?1:0); return; }
       case 'tog3': io.set(c.id,Math.max(-1,Math.min(1,(v||0)+(d||1)*-1))); return;
       case 'rotsel': io.set(c.id,Math.max(0,Math.min(c.vals.length-1,v+(d||1)))); return;
@@ -211,34 +231,41 @@ function bind(world,byId,io){
       case 'vwheel': case 'hwheel': io.set(c.id,Math.max(-1,Math.min(1,v+d*0.04))); return;
       case 'power': io.set('pwr',[Math.max(0,Math.min(1,io.get('pwrL')+d*0.05)),Math.max(0,Math.min(1,io.get('pwrR')+d*0.05))]); return;
     } };
-  world.addEventListener('wheel',e=>{ const g=e.target.closest('g.ctl'); if(!g) return; const o=byId[g.dataset.id]; if(!['rot','rotsel','vwheel','hwheel','power','flap','slide','fsel'].includes(o.c.t)) return; e.preventDefault(); e.stopPropagation(); const d=e.deltaY<0?1:-1;
+  let wacc=0;
+  world.addEventListener('wheel',e=>{ const g=ctlFrom(e.target); if(!g) return; const o=byId[g.dataset.id]; if(!['rot','rotsel','vwheel','hwheel','power','flap','slide','fsel'].includes(o.c.t)) return; e.preventDefault(); e.stopPropagation(); if(e.ctrlKey) return; const raw=(Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:-e.deltaX)*(e.deltaMode?40:1); wacc+=raw; if(Math.abs(wacc)<30) return; const d=wacc<0?1:-1; wacc=0;
     if(o.c.t==='power'){ const lv=e.target.closest('.lv0')?0:e.target.closest('.lv1')?1:-1; if(lv>=0){ io.set(lv?'pwrR':'pwrL',Math.max(0,Math.min(1,io.get(lv?'pwrR':'pwrL')+d*0.04))); return; } }
     if(o.c.t==='vwheel') return step(o,-d);
     step(o,d); },{passive:false});
   let drag=null;
-  world.addEventListener('pointerdown',e=>{ const g=e.target.closest('g.ctl'); if(!g) return; if(io.intercept&&io.intercept(e,g)) return; const o=byId[g.dataset.id], c=o.c; e.preventDefault(); e.stopPropagation(); g.focus({preventScroll:true});
+  world.addEventListener('pointerdown',e=>{ const g=ctlFrom(e.target); if(!g) return; if(io.intercept&&io.intercept(e,g)) return; const o=byId[g.dataset.id], c=o.c; e.preventDefault(); e.stopPropagation(); g.focus({preventScroll:true});
     const pt=io.toWorld(e);
     if(c.t==='push'||(c.t==='abtn'&&c.momentary)){ io.set(c.id,1); drag={o,mom:1}; g.setPointerCapture(e.pointerId); return; }
     if(c.t==='key'){ const d=pt.x<c.x?-1:1; io.set('start',d); drag={o,mom:1}; g.setPointerCapture(e.pointerId); return; }
-    if(c.t==='power'){ const lv=e.target.closest('.lv0')?'pwrL':e.target.closest('.lv1')?'pwrR':(e.target.closest('.both')?'both':null); if(!lv) return; drag={o,lv,y:pt.y,v:[io.get('pwrL'),io.get('pwrR')]}; g.setPointerCapture(e.pointerId); g.classList.add('drag'); return; }
+    if(c.t==='power'){ let lv=e.target.closest('.lv0')?'pwrL':e.target.closest('.lv1')?'pwrR':(e.target.closest('.both')?'both':null);
+      if(!lv){ lv=pt.x<c.x-5?'pwrL':'pwrR'; const v=Math.max(0,Math.min(1,(c.y+92-pt.y)/92)); io.set(lv,v); }
+      drag={o,lv,y:pt.y,v:[io.get('pwrL'),io.get('pwrR')]}; g.setPointerCapture(e.pointerId); g.classList.add('drag'); return; }
     if(c.t==='vwheel'||c.t==='hwheel'||c.t==='rot'||c.t==='slide'){ drag={o,x:pt.x,y:pt.y,v:io.get(c.id),moved:0}; g.setPointerCapture(e.pointerId); return; }
     if(c.t==='rotsel'||c.t==='fsel'){ // pick nearest detent by angle
       const a=Math.atan2(pt.x-c.x,-(pt.y-c.y))*180/Math.PI; if(c.t==='fsel'){ const t=a<-25?0:a<25?1:2; if(t===2&&io.get(c.id)!==2&&!io.get(c.id+'G')){ io.set(c.id+'G',1); return; } io.set(c.id,t); return; }
       const v=io.get(c.id); if(Math.hypot(pt.x-c.x,pt.y-c.y)>34){ let best=0; c.ang.forEach((x,i)=>{ if(Math.abs(x-a)<Math.abs(c.ang[best]-a)) best=i; }); io.set(c.id,best); return; } io.set(c.id,Math.max(0,Math.min(c.vals.length-1,v+(pt.x<c.x?-1:1)))); return; }
     if(c.t==='flap'){ const idx=Math.max(0,Math.min(2,Math.round((pt.y-(c.y-30))/30))); io.set(c.id,idx); return; }
-    if(c.t==='tog'||c.t==='rocker'){ const d=pt.y<c.y-(c.t==='rocker'?0:4)?1:0; io.set(c.id,c.t==='rocker'?(d?1:0):(io.get(c.id)?0:1)); return; }
+    if(c.t==='tog'||c.t==='rocker'||c.t==='vent'){ drag={o,tg:1,y:pt.y,done:0}; g.setPointerCapture(e.pointerId); return; }
+    if(c.t==='stick'){ drag={o,stk:1,x:pt.x,y:pt.y}; g.setPointerCapture(e.pointerId); g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
+    if(c.t==='sbtn'){ io.set(c.id,1); drag={o,mom:1}; g.setPointerCapture(e.pointerId); return; }
     if(c.t==='tog3'){ io.set(c.id,pt.y<c.y-8?-1:pt.y>c.y+8?1:0); return; }
     if(c.t==='guard'){ const onGuard=e.target.closest('.gd'); if(onGuard||!io.get('emerG')){ io.set('emerG',io.get('emerG')?0:1); return; } io.set(c.id,io.get(c.id)?0:1); return; }
     step(o,0);
   });
   world.addEventListener('pointermove',e=>{ if(!drag||drag.mom) return; const c=drag.o.c, pt=io.toWorld(e);
+    if(drag.tg){ const dy=pt.y-drag.y; if(!drag.done&&Math.abs(dy)>7&&c.t!=='vent'){ drag.done=1; io.set(c.id,dy<0?1:0); } return; }
+    if(drag.stk){ io.set('stick',{x:Math.max(-1,Math.min(1,(pt.x-drag.x)/45)),y:Math.max(-1,Math.min(1,(pt.y-drag.y)/40))}); return; }
     if(c.t==='power'){ const dv=-(pt.y-drag.y)/92; if(drag.lv==='both') io.set('pwr',[Math.max(0,Math.min(1,drag.v[0]+dv)),Math.max(0,Math.min(1,drag.v[1]+dv))]); else io.set(drag.lv,Math.max(0,Math.min(1,drag.v[drag.lv==='pwrL'?0:1]+dv))); return; }
     if(c.t==='vwheel') io.set(c.id,Math.max(-1,Math.min(1,drag.v+(pt.y-drag.y)/110)));
     if(c.t==='hwheel') io.set(c.id,Math.max(-1,Math.min(1,drag.v+(pt.x-drag.x)/90)));
-    if(c.t==='rot') io.set(c.id,Math.max(0,Math.min(1,drag.v+((pt.x-drag.x)-(pt.y-drag.y))/60)));
+    if(c.t==='rot') io.set(c.id,Math.max(0,Math.min(1,drag.v+(pt.x-drag.x)/60)));
     if(c.t==='slide') io.set(c.id,Math.max(0,Math.min(1,drag.v-(pt.y-drag.y)/50)));
   });
-  const end=()=>{ if(!drag) return; if(drag.mom){ const c=drag.o.c; io.set(c.t==='key'?'start':c.id,0); } drag.o.g.classList.remove('drag'); drag=null; };
+  const end=()=>{ if(!drag) return; if(drag.tg&&!drag.done) io.set(drag.o.c.id,io.get(drag.o.c.id)?0:1); if(drag.stk) io.set('stick',null); if(drag.mom){ const c=drag.o.c; io.set(c.t==='key'?'start':c.id,0); } drag.o.g.classList.remove('drag'); drag=null; };
   world.addEventListener('pointerup',end); world.addEventListener('pointercancel',end);
   // keyboard
   const held=new Set();
@@ -258,8 +285,11 @@ function sync(P,io){
   for(const id in P.byId){ const {c,g}=P.byId[id]; let v=io.get(id); if(c.t==='guard') v=v+'|'+io.get('emerG'); if(c.t==='fsel') v=v+'|'+io.get(id+'G'); if(c.t==='power') v=io.get('pwrL').toFixed(3)+'|'+io.get('pwrR').toFixed(3); if(c.t==='gear') v=v+'|'+io.get('gearLights');  if(c.t==='flap') v=v+'|'+io.get('flapLights'); if(c.t==='abtn') v=v+'|'+io.get('audLed:'+id);
     if(cache[id]===v) continue; cache[id]=v; const m=g.querySelector('.mv'); const val=io.get(id);
     switch(c.t){
-      case 'tog': case 'guard': setT(m,val?'scaleY(1)':'scaleY(-1)'); g.classList.toggle('on',!!val); if(c.t==='guard'){ setT(g.querySelector('.gd'),io.get('emerG')?'translateY(-28px) scaleY(.35)':'none'); } g.setAttribute('aria-checked',val?'true':'false'); break;
-      case 'tog3': setT(m,val<0?'scaleY(1)':val>0?'scaleY(-1)':'scaleY(.25)'); break;
+      case 'tog': case 'guard': setT(m,val?'scaleY(1)':'scaleY(-1)'); g.classList.toggle('on',!!val); if(c.t==='guard'){ setT(g.querySelector('.gd'),io.get('emerG')?'translateY(-28px) scaleY(.35)':'none'); g.setAttribute('aria-label',c.l+(io.get('emerG')?' (guard open)':' (guard closed)')); } g.setAttribute('aria-checked',val?'true':'false'); break;
+      case 'tog3': g.setAttribute('aria-valuetext',val<0?'ON':val>0?'RESET':'ARM'); setT(m,val<0?'scaleY(1)':val>0?'scaleY(-1)':'scaleY(.25)'); break;
+      case 'vent': setT(m,val?'rotate(35deg)':'none'); g.classList.toggle('on',!!val); g.setAttribute('aria-checked',val?'true':'false'); break;
+      case 'stick': break;
+      case 'sbtn': g.classList.toggle('on',!!val); break;
       case 'rocker': g.classList.toggle('on',!!val); g.setAttribute('aria-checked',val?'true':'false'); break;
       case 'rot': setT(m,`rotate(${-135+val*270}deg)`); g.setAttribute('aria-valuetext',Math.round(val*100)+' %'); break;
       case 'rotsel': setT(m,`rotate(${c.ang[val]}deg)`); g.setAttribute('aria-valuetext',c.vals[val]); break;
@@ -267,10 +297,10 @@ function sync(P,io){
       case 'key': setT(m,`rotate(${val*40}deg)`); break;
       case 'gear': { setT(m,val?'translateY(60px)':'none'); const L=io.get('gearLights'); g.querySelectorAll('.gl').forEach(x=>x.classList.remove('g','r')); if(L==='down') ['gN','gL','gR'].forEach(k=>g.querySelector('.'+k).classList.add('g')); else if(L==='transit') g.querySelector('.gU').classList.add('r'); g.setAttribute('aria-checked',val?'true':'false'); g.setAttribute('aria-valuetext',val?'DOWN':'UP'); break; }
       case 'flap': { setT(m,`translateY(${val*30}px)`); const fl=io.get('flapLights'); g.querySelectorAll('.fl').forEach((x,i)=>x.classList.toggle(i?'a':'g',fl===i)); g.querySelectorAll('.fl').forEach((x,i)=>{ if(fl!==i) x.classList.remove('a','g'); }); g.setAttribute('aria-valuetext',['UP','APP','LDG'][val]); break; }
-      case 'cb': g.classList.toggle('out',!val); g.setAttribute('aria-checked',val?'true':'false'); break;
-      case 'pull': setT(m,c.lever?(val?'translateY(10px)':'none'):(val?'scale(1.18)':'none')); g.classList.toggle('on',!!val); break;
+      case 'cb': g.classList.toggle('out',!val); g.setAttribute('aria-valuetext',val?'IN':'PULLED'); g.setAttribute('aria-pressed',val?'false':'true'); break;
+      case 'pull': g.setAttribute('aria-valuetext',val?'OPEN':'CLOSED'); setT(m,c.lever?(val?'translateY(10px)':'none'):(val?'scale(1.18)':'none')); g.classList.toggle('on',!!val); break;
       case 'slide': setT(m,`translateY(${-(val-0.5)*44}px)`); break;
-      case 'park': setT(m,val?'translateY(47px)':'none'); g.setAttribute('aria-checked',val?'true':'false'); break;
+      case 'park': setT(m,val?'translateY(47px)':'none'); g.setAttribute('aria-valuetext',val?'SET':'RELEASED'); g.setAttribute('aria-pressed',val?'true':'false'); break;
       case 'power': { const a=io.get('pwrL'), b=io.get('pwrR'); setT(g.querySelector('.lv0'),`translateY(${(1-a)*92}px)`); setT(g.querySelector('.lv1'),`translateY(${(1-b)*92}px)`); g.setAttribute('aria-valuetext',`L ${Math.round(a*100)} %, R ${Math.round(b*100)} %`); break; }
       case 'vwheel': setT(m,`translateY(${(val*60)%6}px)`); setT(g.querySelector('.trind'),`translateY(${-val*50}px)`); g.setAttribute('aria-valuetext',Math.round(val*100)+''); break;
       case 'hwheel': setT(m,`translateX(${(val*60)%6}px)`); setT(g.querySelector('.trind'),`translateX(${val*44}px)`); break;
@@ -278,6 +308,7 @@ function sync(P,io){
     }
   }
 }
+function syncSticks(P,x,y){ ['stickL','stickR','apDisc','trimUp','trimDn'].forEach(id=>{ const o=P.byId[id]; if(!o) return; const m=o.g.querySelector('.skg')||o.g.querySelector('.sbm'); setT(m,`translate(${(x*22).toFixed(1)}px,${(y*16).toFixed(1)}px)`); }); }
 /* standby instrument needles */
 function syncStby(P,o,baro){
   const s=P.svg; const q=k=>s.querySelector(k);
@@ -287,5 +318,5 @@ function syncStby(P,o,baro){
   const t=q('.sbKol'); const b=String(Math.round(baro)); if(t.textContent!==b) t.textContent=b;
   const h=((o.hdg%360)+360)%360; setT(q('.sbCmp'),`translateX(${34-(h<180?h+360:h)*1.6+ (h<180?0:0)}px)`);
 }
-G.DA42P={build,sync,syncStby,REG,REG_ORDER,W,H};
+G.DA42P={ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
 })(window);

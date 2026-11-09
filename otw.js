@@ -78,11 +78,11 @@ function init(canvas){
   for(let x=-15;x<=15;x+=3){ addL(x,0.5,1,[0.2,1,0.3]); addL(x,0.5,-1501,[1,0.2,0.15]); }
   for(let m=30;m<=720;m+=30){ for(let x=-2;x<=2;x+=2) addL(x,0.6,m,[1,1,0.92]); if(m===300) for(let x=-15;x<=15;x+=2.5) addL(x,0.6,m,[1,1,0.92]); }
   const lg=new THREE.BufferGeometry(); lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3)); lg.setAttribute('color',new THREE.Float32BufferAttribute(lc,3));
-  rwyLights=new THREE.Points(lg,new THREE.PointsMaterial({size:3,sizeAttenuation:false,vertexColors:true,fog:false})); scene.add(rwyLights);
+  rwyLights=new THREE.Points(lg,new THREE.PointsMaterial({size:1.1,sizeAttenuation:true,vertexColors:true,fog:true,transparent:true,opacity:0.85,depthWrite:false})); scene.add(rwyLights);
   // PAPI på venstre side, 300 m inn
   papiPos=[]; const pp=[]; for(let i=0;i<4;i++){ const x=-22-i*9; pp.push(x,1.2,-300); papiPos.push(x); }
   const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.Float32BufferAttribute(pp,3)); papiCol=new Float32Array(12); pg.setAttribute('color',new THREE.BufferAttribute(papiCol,3));
-  papi=new THREE.Points(pg,new THREE.PointsMaterial({size:6,sizeAttenuation:false,vertexColors:true,fog:false})); scene.add(papi);
+  papi=new THREE.Points(pg,new THREE.PointsMaterial({size:2.4,sizeAttenuation:true,vertexColors:true,fog:true,depthWrite:false})); scene.add(papi);
   // skyer (FEW 2500 ft)
   const cloudT=canvasTex(256,128,(g,w,h)=>{ for(let i=0;i<14;i++){ const x=40+Math.random()*(w-80), y=50+Math.random()*30, r=22+Math.random()*30; const gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); } });
   const cm=new THREE.SpriteMaterial({map:cloudT,transparent:true,depthWrite:false,fog:true});
