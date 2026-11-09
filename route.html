@@ -521,7 +521,7 @@
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
     <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
-      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
+      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" class="on" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
@@ -1579,7 +1579,7 @@ mapEl.addEventListener('wheel',e=>{ if(ML) return; e.preventDefault(); const r=m
    The route, fixes and notes are kept; clearing the route is a separate, confirmed action offered in the note. */
 async function resetMap(){ if(T3.on){ T3.play=false; await set3(false); }
   MM='vfr'; BM='vfr'; LY=Object.assign({},LYD.vfr); saveLY();
-  T3.ex=1.2; el('x3exs').value='1.2'; el('x3lt').value='315'; T3.cm='chase'; camUI(); lookHome(); HOV=null;
+  T3.ex=1.2; el('x3exs').value='1.2'; el('x3lt').value='315'; T3.cm='ov'; camUI(); lookHome(); HOV=null;
   if(ML){ RXMAP.setBasemap(ML,'vfr'); RXMAP.setLight(ML,315); MLK.ly=''; if(LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); }
   bmUI(); lyUI(); if(R){ delete R.pm; pmUI(); render(); queueSave(); }
   if(R&&R.pts.filter(p=>p.la!=null).length) fit();
@@ -2098,7 +2098,7 @@ el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
-const T3={on:false,ready:null,ex:1.2,act:'off',ct:0,follow:true,cm:'chase',spd:5,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
+const T3={on:false,ready:null,ex:1.2,act:'off',ct:0,follow:true,cm:'ov',spd:5,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
 const FT3=0.0003048; // fot → km
 const PHONE3=()=>window.innerWidth<=900||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
@@ -2567,12 +2567,12 @@ function simSpeed(dt){ const base=gsOf()/3600*T3.spd, look=Math.max(0.5,base*14)
   T3.k+=(k-T3.k)*(dt>0?1-Math.exp(-dt*(k<T3.k?3:0.8)):1); }
 function simAhead(){ const pf=T3.pf; if(!pf||!ML||pf.busy) return; if(T3.x>pf.toX){ pf.toX=T3.x; pf.readyX=Math.max(pf.readyX,T3.x); } if(pf.toX>=simM().total) return; if(T3.x+Math.max(6,gsOf()/3600*T3.spd*40)<pf.toX) return;
   const M=simM(), from=pf.toX, to=Math.min(M.total,from+12); pf.busy=true;
-  const c=RXMAP.prefetch(ML,simPts(M,from,to),T3.cm==='overview'?pf.zc:14.5,{max:700,onProgress:k=>{ pf.readyX=Math.max(pf.readyX,k.readyX); }}); pf.ctl=c;
+  const c=RXMAP.prefetch(ML,simPts(M,from,to),T3.cm==='ov'?pf.zc:14.5,{max:700,onProgress:k=>{ pf.readyX=Math.max(pf.readyX,k.readyX); }}); pf.ctl=c;
   c.promise.then(()=>{ pf.busy=false; pf.toX=to; pf.readyX=Math.max(pf.readyX,to); }); }
 function simStop(){ if(T3.pf&&T3.pf.ctl) T3.pf.ctl.stop(); T3.pf=null; const o=el('simload'); if(o) o.hidden=true; }
 // before take-off: fetch tiles for the first part of the route (all of it on short routes), showing progress
 function simPreload(){ return new Promise(res=>{ if(!ML){ res(); return; } const M=simM(); simStop();
-  const zc=T3.cm==='overview'?Math.max(8,Math.min(15,ML.getZoom())):14.5, first=Math.min(M.total,Math.max(25,gsOf()/3600*T3.spd*90));
+  const zc=T3.cm==='ov'?Math.max(8,Math.min(15,ML.getZoom())):14.5, first=Math.min(M.total,Math.max(25,gsOf()/3600*T3.spd*90));
   const pf=T3.pf={zc,toX:first,readyX:0,busy:true}; const o=el('simload'), bar=el('simloadb'), pct=el('simloadp'); o.hidden=false; let fin=false;
   const end=()=>{ if(fin) return; fin=true; o.hidden=true; pf.busy=false; res(); };
   el('simskip').onclick=()=>{ pf.readyX=Infinity; end(); };
