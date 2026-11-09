@@ -44,7 +44,7 @@
     ['lab','quiz:jetsystems',150,'jetsystems.html#quiz',{en:'Jet transport systems test',no:'Test: systemer på jetfly'}],
     ['lab','quiz:pressurisation',150,'pressurisation.html#quiz',{en:'Pressurisation and hypoxia test',no:'Test: trykkabin og hypoksi'}],
     ['lab','quiz:gyros',150,'gyros.html#quiz',{en:'Compass and gyros test',no:'Test: kompass og gyroer'}],
-    ['lab','quiz:autoflight',150,'autoflight.html#quiz',{en:'Autoflight and warnings test',no:'Test: autoflight og varsling'}],
+    ['lab','quiz:autoflight',150,'autoflight.html#quiz',{en:'Automation and warnings test',no:'Test: automatikk og varsling'}],
     ['lab','quiz:gennav',150,'gennav.html#quiz',{en:'General navigation test',no:'Test: generell navigasjon'}],
     ['lab','quiz:flightplanning',150,'flightplanning.html#quiz',{en:'Flight planning and fuel test',no:'Test: flyplanlegging og drivstoff'}],
     ['lab','quiz:humanperf',150,'humanperf.html#quiz',{en:'Human performance test',no:'Test: menneskelige faktorer'}],
@@ -135,7 +135,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=30'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=31'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
