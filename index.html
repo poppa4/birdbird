@@ -75,6 +75,30 @@
 .fp-plate figcaption a{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(255,255,255,.4);white-space:nowrap}
 .fp-plate figcaption a:hover{text-decoration-color:#fff}
 .fp-credit{position:absolute;right:0;bottom:14px;text-align:right;font-size:11.5px;line-height:1.45;color:#C3CEDA;text-shadow:0 0 4px #0B2545,0 0 10px #0B2545}
+/* the live aerofoil (hero-foil.js): the Aerodynamics lab's 2D section, frameless; the field dissolves into the navy.
+   data-hero-visual="aerofoil" (default) or "tunnel" (?hero=tunnel: the 3D wind-tunnel plate above) */
+.fp-hero[data-hero-visual="aerofoil"] .fp-tun,.fp-hero[data-hero-visual="tunnel"] .fp-foil{display:none}
+.fp-foil{margin:0;min-width:0;position:relative}
+.ff{position:relative;aspect-ratio:4/3}
+.ff canvas{position:absolute;left:-16%;top:-22%;width:150%;height:140%;display:block;opacity:0;transition:opacity 1.2s ease;
+  -webkit-mask-image:radial-gradient(ellipse 50% 50% at 44% 52%,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse 50% 50% at 44% 52%,#000 72%,transparent 100%)}
+.ff.live canvas{opacity:1}
+.ff .fp-lab-hit{z-index:2}
+.ff-ro{left:0;top:-6px}
+.ff-ro dt{color:#AEBBC8}
+.ff-st{position:absolute;z-index:1;left:0;top:20px;margin:0;font-size:13px;color:#DDE5EC;pointer-events:none;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity .6s}
+.ff.live .ff-st,.ff.live .ff-cbar{opacity:1}
+.ff-st::before{content:'';width:7px;height:7px;border-radius:50%;background:#58C98B}
+.ff-st.warn::before{background:#F0B440}.ff-st.stall::before{background:#FF6B57}
+.ff-cbar{position:absolute;z-index:1;right:0;bottom:-4px;width:190px;font-family:var(--mono);font-size:10.5px;color:#C3CEDA;pointer-events:none;opacity:0;transition:opacity .6s}
+.ff-cbar .t{display:block;color:#fff;font-weight:600;margin-bottom:5px}
+.ff-cbar .bar{display:block;height:6px;border-radius:1px}
+.ff-cbar .tk{position:relative;display:block;height:16px}
+.ff-cbar .tk i{position:absolute;top:4px;font-style:normal;transform:translateX(-50%)}
+.ff-cbar .tk i::before{content:'';position:absolute;left:50%;top:-4px;width:1px;height:3px;background:rgba(255,255,255,.55)}
+.fp-foil figcaption{position:relative;z-index:1;margin:22px 0 0;max-width:560px;font-size:14px;line-height:1.55;color:var(--on-navy-2);text-shadow:0 0 6px #0B2545,0 0 14px #0B2545}
+.fp-foil figcaption a{color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:4px;text-decoration-color:rgba(255,255,255,.4);white-space:nowrap}
+.fp-foil figcaption a:hover{text-decoration-color:#fff}
 /* service index: four steps, in the order you prepare a flight */
 .fp-svc{background:var(--navy);border-top:1px solid var(--navy-rule);position:relative}
 .fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -106,13 +130,60 @@
 .fp-index .d{grid-column:2/4;font-size:14.5px;line-height:1.5;color:var(--ink2)}
 .fp-index em{font-style:normal;font-size:13.5px;color:var(--ink2);white-space:nowrap;text-align:right}
 .fp-index .foot{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:20px;font-size:15px}
-.fp-labs{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px 64px;align-items:center;margin-top:96px}
-.fp-labs .txt h3{margin-bottom:22px}
-.fp-steps{list-style:none;margin:0;padding:0;counter-reset:st;border-top:1px solid var(--rule)}
-.fp-steps li{counter-increment:st;display:grid;grid-template-columns:34px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--rule);font-size:15.5px;line-height:1.5;color:var(--ink2)}
+.fp-labs{margin-top:104px}
+.fp-labs .txt{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:8px 64px;align-items:start;margin-bottom:40px}
+.fp-labs .txt h3{grid-column:1;grid-row:1}
+.fp-labs .fp-depth{grid-column:1;grid-row:2}
+.fp-steps{grid-column:2;grid-row:1/3;list-style:none;margin:0;padding:0;counter-reset:st;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px}
+.fp-steps li{counter-increment:st;display:grid;grid-template-columns:30px minmax(0,1fr);padding:14px 0 0;border-top:2px solid var(--navy);font-size:15px;line-height:1.5;color:var(--ink2)}
 .fp-steps li::before{content:counter(st);font-family:var(--disp);font-stretch:86%;font-weight:600;color:var(--acc);font-size:17px}
 .fp-steps b{display:block;color:var(--ink);font-weight:600}
-.fp-depth{margin-top:18px!important;font-size:15.5px;color:var(--ink2)}
+.fp-depth{margin-top:14px!important;font-size:15px;line-height:1.55;color:var(--ink2)}
+/* the storm film: the real storm lab scene (front-storm.js) with the lab's stage panel attached */
+.fp-storm{margin:0;display:grid;grid-template-columns:minmax(0,1fr) 312px;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6)}
+.fs-view{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(180deg,#2f5788 0%,#8fa9c4 62%,#56605f 100%)}
+.fs-view img,.fs-view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.fs-view img{object-fit:cover;transition:opacity .8s ease}
+.fs-view canvas{opacity:0;transition:opacity .8s ease}
+.fs-view.live canvas{opacity:1}.fs-view.live img{opacity:0}
+.fs-view.live.cut canvas{opacity:0;transition-duration:.35s}
+.fs-view .fp-lab-hit{z-index:3}
+.fs-view::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;background:linear-gradient(180deg,rgba(8,16,28,.42) 0%,rgba(8,16,28,0) 20%)}
+.fs-ro{position:absolute;z-index:2;left:18px;top:14px;display:flex;gap:22px;margin:0;font-family:var(--mono);font-size:13.5px;color:#F2F5F8;pointer-events:none}
+.fs-ro div{display:flex;gap:7px;align-items:baseline}.fs-ro dt{font-size:10.5px;letter-spacing:.06em;color:#C5D2DE}.fs-ro dd{margin:0;font-variant-numeric:tabular-nums}
+.fs-note{position:absolute;z-index:2;right:14px;bottom:10px;font-family:var(--mono);font-size:11px;color:rgba(240,244,248,.8);text-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none}
+.fs-lbl{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.fs-lbl svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.fs-lbl svg line{stroke:rgba(255,255,255,.75);stroke-width:1}
+.fs-lbl svg circle{fill:#fff;stroke:rgba(0,0,0,.45);stroke-width:1}
+.fs-lbl .lbl{position:absolute;left:0;top:0;white-space:nowrap;font-size:12.5px;font-weight:600;color:#fff;background:rgba(11,37,69,.78);border-left:2px solid #E07DB6;padding:3px 9px;will-change:transform}
+.fs-lbl .lbl.dn{border-left-color:#6eb4f0}
+.fs-panel{background:var(--sheet);border-left:1px solid var(--rule);padding:22px 22px 20px;display:flex;flex-direction:column;min-width:0}
+.fs-k{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:10px!important}
+.fs-stages{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
+.fs-stages button{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:baseline;width:100%;padding:10px 10px 10px 12px;border:0;border-bottom:1px solid var(--rule);border-left:3px solid transparent;background:none;font:inherit;font-size:14.5px;line-height:1.3;text-align:left;color:var(--ink);cursor:pointer;transition:background-color .2s,color .2s}
+.fs-stages i{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2)}
+.fs-stages b{font-weight:500}
+.fs-stages span{font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+.fs-stages button:hover{background:rgba(11,37,69,.05)}
+.fs-stages button.on{background:var(--navy);color:#fff;border-left-color:#E07DB6}
+.fs-stages button.on i,.fs-stages button.on span{color:#BFCAD6}.fs-stages button.on b{font-weight:600}
+.fs-stages button:focus-visible{outline:2px solid var(--info);outline-offset:-2px}
+.fs-time{display:flex;align-items:center;gap:10px;margin-top:14px}
+.fs-track{flex:1;height:3px;background:var(--rule);position:relative;overflow:hidden}
+.fs-track span{position:absolute;inset:0;background:var(--acc);transform-origin:0 50%;transform:scaleX(.43)}
+.fs-clock{font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.fs-play{font:inherit;font-size:13px;font-weight:600;color:var(--navy);background:none;border:1px solid var(--rule);padding:4px 10px;min-height:30px;cursor:pointer}
+.fs-play:hover{border-color:var(--navy)}
+.fs-card{margin-top:14px!important;font-size:14px;line-height:1.5;color:var(--ink2);min-height:6.2em}
+.fs-card b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+.fs-lay{margin-top:auto;padding-top:14px}.fs-lay[hidden]{display:none}
+.fs-lay .fs-k{margin-bottom:8px!important}
+.fs-togs{display:flex;flex-wrap:wrap;gap:6px}
+.fs-togs button{font:inherit;font-size:13px;color:var(--ink);background:none;border:1px solid var(--rule);padding:4px 10px;min-height:32px;cursor:pointer}
+.fs-togs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.fp-storm figcaption{grid-column:1/-1;padding:14px 18px 16px;background:var(--sheet);border-top:1px solid var(--rule);font-size:14.5px;line-height:1.55;color:var(--ink2)}
+.fp-storm figcaption b{color:var(--ink);font-weight:600}
 
 /* ---------- 3. Theory to the flight deck ---------- */
 .fp-row{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px 64px;align-items:center}
@@ -175,6 +246,7 @@
   .fp-relief img{object-position:30% 50%}
   .fp-copy{max-width:640px}
   .fp-plate{max-width:720px}
+  .fp-foil{max-width:640px;margin-top:24px}
   .fp-credit{position:static;max-width:none;padding:0 0 18px;background:none}
   .fp-svc ol{grid-template-columns:repeat(2,minmax(0,1fr))}
   .fp-svc li:nth-child(3) a{padding-left:0;border-left:0}
@@ -182,7 +254,12 @@
   .fp-head,.fp-areas-grid,.fp-labs,.fp-row,.fp-row.flip,.fp-end{grid-template-columns:minmax(0,1fr)}
   .fp-head{align-items:start}
   .fp-row.flip .fp-fig{order:0}
-  .fp-labs .fp-fig{order:-1}
+  .fp-labs .txt{grid-template-columns:minmax(0,1fr);margin-bottom:32px}
+  .fp-labs .fp-depth{grid-row:3}
+  .fp-steps{grid-column:1;grid-row:2;margin-top:14px}
+  .fp-storm{grid-template-columns:minmax(0,1fr)}
+  .fs-panel{border-left:0;border-top:1px solid var(--rule)}
+  .fs-card{min-height:0}
   .fp-row .fig-bp .shot{margin-left:0}
   .fp-labs,.fp-row+.fp-row{margin-top:72px}
 }
@@ -199,6 +276,14 @@
   .fp-plate figcaption{padding:12px var(--gr,24px) 16px var(--gl,24px)}
   .fp-plate{box-shadow:none}
   .fp-lab{aspect-ratio:5/4;box-shadow:none}
+  .fp-foil{margin-top:36px}
+  .ff{aspect-ratio:5/4}
+  .ff canvas{left:-12%;width:124%;top:-26%;height:150%}
+  .ff .ff-ro{left:0;top:-8px;font-size:12.5px;gap:16px}
+  .ff .ff-st{top:18px;font-size:12.5px}
+  .ff-cbar{width:150px;bottom:-10px}
+  .ff-cbar .tk i:nth-child(2),.ff-cbar .tk i:nth-child(4){display:none}
+  .fp-foil figcaption{margin-top:30px;font-size:13.5px}
   .fp-ro{left:14px;top:12px;gap:16px;font-size:12.5px}
   .fp-svc ol{grid-template-columns:minmax(0,1fr)}
   .fp-svc a,.fp-svc li+li a,.fp-svc li:nth-child(3) a{padding:16px 0 18px;border-left:0;border-top:1px solid var(--navy-rule)}
@@ -214,6 +299,15 @@
   .fp-index b{font-size:16px}
   .fp-index .d{font-size:14px}
   .fp-src{grid-template-columns:minmax(0,1fr)}
+  .fp-steps{grid-template-columns:minmax(0,1fr);gap:0}
+  .fp-steps li{padding:12px 0;border-top:1px solid var(--rule)}
+  .fp-steps li:first-child{border-top:2px solid var(--navy)}
+  .fp-storm{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
+  .fs-view{aspect-ratio:4/3.6}
+  .fs-ro{left:14px;top:12px;gap:14px;font-size:12px}
+  .fs-panel{padding:18px var(--gr,24px) 18px var(--gl,24px)}
+  .fs-stages button{padding:11px 8px 11px 10px;font-size:14.5px}
+  .fp-storm figcaption{padding:14px var(--gr,24px) 16px var(--gl,24px);font-size:14px}
   .fp-src div,.fp-src div+div{padding:18px 0 20px;border-left:0}
   .fp-src div+div{border-top:1px solid var(--rule)}
   .fp-ex{padding:20px 18px}
@@ -224,7 +318,7 @@
   .fp-schools .fp-btn{width:100%;justify-content:center}
   .fp-maker{padding:30px 22px 28px}
 }
-@media (prefers-reduced-motion:reduce){.tun img,.tun canvas,.fp-btn{transition:none}}
+@media (prefers-reduced-motion:reduce){.ff canvas,.ff-st,.ff-cbar,.tun img,.tun canvas,.fp-btn,.fs-view img,.fs-view canvas,.fs-stages button{transition:none}}
 </style>
 </head>
 <body data-home="1" data-title="Birdbird · Aviation theory and flight preparation, built in Norway">
@@ -232,7 +326,8 @@
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
-  <section class="fp-hero fp-band" aria-labelledby="fp-h1">
+  <section class="fp-hero fp-band" id="fpHero" data-hero-visual="aerofoil" aria-labelledby="fp-h1">
+    <script>/* ?hero=tunnel brings back the 3D wind-tunnel plate */ if(/[?&]hero=tunnel\b/.test(location.search)) document.getElementById('fpHero').dataset.heroVisual='tunnel';</script>
     <div class="fp-relief" aria-hidden="true">
       <img src="img/front/vestland-1400.webp" srcset="img/front/vestland-760.webp 760w, img/front/vestland-1400.webp 1400w" sizes="(max-width:980px) 100vw, 60vw" width="1400" height="1396" alt="" fetchpriority="high" decoding="async">
     </div>
@@ -243,16 +338,26 @@
           <p class="fp-lede" data-tx="lede">Birdbird is an aviation platform built in Norway for pilots, students and flight schools: <b><span class="nLabs">27</span> interactive labs</b> on the EASA ATPL syllabus, a briefing pack you can print, and an instructor that answers from your own documents.</p>
           <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="prep.html">Make a briefing pack</a></div>
         </div>
-        <figure class="fp-plate">
+        <figure class="fp-plate fp-tun">
           <div class="fp-lab" id="objLab">
             <div class="tun" id="hxTun">
-              <img id="hxTunImg" src="img/hero-tunnel.webp" srcset="img/hero-tunnel-800.webp 800w, img/hero-tunnel.webp 1400w" sizes="(max-width:640px) 100vw, (max-width:980px) 92vw, 640px" width="1400" height="1011" decoding="async" alt="The Birdbird 3D wind tunnel: an A320 with surface pressure and streamlines coloured by local speed, with the wingtip vortices trailing behind." data-alt-no="Birdbirds 3D-vindtunnel: en A320 med trykket på overflaten og strømlinjer farget etter lokal fart, med vingetippvirvlene bak.">
+              <img id="hxTunImg" src="img/hero-tunnel.webp" loading="lazy" srcset="img/hero-tunnel-800.webp 800w, img/hero-tunnel.webp 1400w" sizes="(max-width:640px) 100vw, (max-width:980px) 92vw, 640px" width="1400" height="1011" decoding="async" alt="The Birdbird 3D wind tunnel: an A320 with surface pressure and streamlines coloured by local speed, with the wingtip vortices trailing behind." data-alt-no="Birdbirds 3D-vindtunnel: en A320 med trykket på overflaten og strømlinjer farget etter lokal fart, med vingetippvirvlene bak.">
               <canvas id="hxTunCv" aria-hidden="true"></canvas>
             </div>
             <dl class="fp-ro" aria-hidden="true"><div><dt>α</dt><dd>5.0°</dd></div><div><dt>CL</dt><dd>0.52</dd></div><div><dt>TAS</dt><dd>250 kt</dd></div></dl>
             <a class="fp-lab-hit" href="tunnel.html#tunnel" tabindex="-1" aria-hidden="true"></a>
           </div>
           <figcaption><span data-tx="capTun">The 3D wind tunnel from Virtual Labs: the A320 teaching model at 5° angle of attack, with surface pressure and streamlines. It runs live in your browser.</span><a href="tunnel.html#tunnel">Open the wind tunnel</a></figcaption>
+        </figure>
+        <figure class="fp-foil">
+          <div class="ff" id="ffBox">
+            <canvas id="ffCv" aria-hidden="true"></canvas>
+            <dl class="fp-ro ff-ro" id="ffRo" aria-hidden="true"><div><dt>α</dt><dd>13.0°</dd></div><div><dt>CL</dt><dd>1.63</dd></div><div><dt>SEP.</dt><dd>–</dd></div></dl>
+            <p class="ff-st ok" id="ffSt" aria-hidden="true"></p>
+            <div class="ff-cbar" aria-hidden="true"><span class="t">Cp</span><span class="bar"></span><span class="tk"><i style="left:0">−3</i><i style="left:23.33%">−1</i><i style="left:35%">0</i><i style="left:67.5%">+0.5</i><i style="left:100%">+1</i></span></div>
+            <a class="fp-lab-hit" href="tunnel.html#profil" tabindex="-1" aria-hidden="true"></a>
+          </div>
+          <figcaption><span data-tx="capFoil">The wing in profile at 13° angle of attack: the aerofoil section from the Aerodynamics lab, computed live in your browser. Pressure field (Cp) and streamlines from a panel method, transition and separation from a boundary-layer model.</span> <a href="tunnel.html#profil" data-tx="goFoil">Open the aerofoil section</a></figcaption>
         </figure>
       </div>
       <p class="fp-credit" data-tx="credit">Vestland, 59.5–61.8° N. Terrain: Mapzen/AWS Terrain Tiles (SRTM, GMTED, EU-DEM © Copernicus), shaded by Birdbird.</p>
@@ -277,8 +382,8 @@
       </header>
       <div class="fp-areas-grid">
         <figure class="fp-fig">
-          <div class="shot"><img src="img/front/radionav-1080.webp" srcset="img/front/radionav-600.webp 600w, img/front/radionav-1080.webp 1080w" sizes="(max-width:980px) 100vw, 700px" width="1080" height="865" loading="lazy" decoding="async"
-            alt="The radio navigation simulator: a plan view of the coast around Bergen Flesland with the VOR, NDB and ILS, beside a VOR indicator, an HSI, an RMI and an ADF, and the first lesson open." data-alt-no="Radionavigasjonssimulatoren: kysten rundt Bergen lufthavn Flesland sett ovenfra med VOR, NDB og ILS, ved siden av VOR-indikator, HSI, RMI og ADF, med første leksjon åpen."></div>
+          <div class="shot"><img src="img/front/radionav-1400.webp" srcset="img/front/radionav-700.webp 700w, img/front/radionav-1400.webp 1400w" sizes="(max-width:980px) 100vw, 700px" width="1400" height="989" loading="lazy" decoding="async"
+            alt="The radio navigation simulator in Explore mode: a plan view of the coast around Bergen Flesland with the VOR, NDB and ILS, beside a VOR indicator, an HSI, an RMI, an ADF and the DME." data-alt-no="Radionavigasjonssimulatoren i utforskmodus: kysten rundt Bergen lufthavn Flesland sett ovenfra med VOR, NDB og ILS, ved siden av VOR-indikator, HSI, RMI, ADF og DME."></div>
           <figcaption data-tx="capRn"><b>Radio navigation simulator.</b> VOR, ADF, DME, HSI and ILS over the real coastline and relief around Bergen Flesland, with ten guided lessons. <a class="tl" href="radionav.html">Open the simulator</a></figcaption>
         </figure>
         <div class="fp-index">
@@ -297,10 +402,24 @@
           </ol>
           <p class="fp-depth" data-tx="depth">Read each lab at the depth you need: Short, Deep dive or Instructor. In English and Norwegian.</p>
         </div>
-        <figure class="fp-fig">
-          <div class="shot"><img src="img/front/storms-1000.webp" srcset="img/front/storms-560.webp 560w, img/front/storms-1000.webp 1000w" sizes="(max-width:980px) 100vw, 700px" width="1000" height="739" loading="lazy" decoding="async"
-            alt="The storm lab: a mature cumulonimbus in 3D with its anvil, overshooting top, mammatus, flanking line and shelf cloud labelled, and a readout of cloud top, updraft, hail and gust front." data-alt-no="Uværslabben: en moden cumulonimbus i 3D med ambolt, overskytende topp, mammatus, flankelinje og hylleskyer merket, og avlesning av skytopp, oppvind, hagl og vindkast."></div>
-          <figcaption data-tx="capSt"><b>Thunderstorms and wind shear.</b> A mature cumulonimbus in 3D, cloud top FL385. Grow it from a cumulus, fly an approach through its microburst, or aim the weather radar at it. <a class="tl" href="storms.html">Open the storm lab</a></figcaption>
+        <figure class="fp-storm" id="fpStorm" aria-labelledby="fsCap">
+          <div class="fs-view" id="fsView">
+            <img class="fs-poster" src="img/front/storm-mature-1480.webp" srcset="img/front/storm-mature-800.webp 800w, img/front/storm-mature-1480.webp 1480w" sizes="(max-width:980px) 100vw, 930px" width="1485" height="930" loading="lazy" decoding="async"
+              alt="The storm lab: a mature cumulonimbus in 3D in daylight, with its anvil spreading downwind and the rain shaft under it." data-alt-no="Uværslabben: en moden cumulonimbus i 3D i dagslys, med ambolten som sprer seg med vinden og regnsjakten under.">
+            <canvas id="fsCv" aria-hidden="true"></canvas>
+            <div class="fs-lbl" id="fsLbl" aria-hidden="true"></div>
+            <dl class="fs-ro" id="fsRo" aria-hidden="true"><div><dt>T+</dt><dd>26 min</dd></div><div><dt>TOP</dt><dd>FL385</dd></div></dl>
+            <p class="fs-note" data-tx="fsNote">Heights drawn 1.5 times taller</p>
+            <a class="fp-lab-hit" href="storms.html#explore" tabindex="-1" aria-hidden="true"></a>
+          </div>
+          <div class="fs-panel">
+            <p class="fs-k" data-tx="fsK">Development · single cell</p>
+            <ol class="fs-stages" id="fsStages" aria-label="Stage"></ol>
+            <div class="fs-time"><span class="fs-track"><span id="fsBar"></span></span><span class="fs-clock" id="fsClock">26 / 60 min</span><button type="button" class="fs-play" id="fsPlay" hidden>Pause</button></div>
+            <p class="fs-card" id="fsCard" aria-live="polite"></p>
+            <div class="fs-lay" hidden><p class="fs-k" data-tx="fsLay">Show</p><div class="fs-togs" id="fsTogs"></div></div>
+          </div>
+          <figcaption id="fsCap"><span data-tx="capSt"><b>Thunderstorms and wind shear.</b> The storm lab’s single cell, from a fair-weather cumulus to a mature cumulonimbus and its decay, an hour of storm time in half a minute. Pick a stage in the panel, or open the lab to fly through it.</span> <a class="tl" href="storms.html" data-tx="goSt">Open the storm lab</a></figcaption>
         </figure>
       </div>
     </div>
@@ -316,8 +435,8 @@
 
       <div class="fp-row">
         <figure class="fp-fig">
-          <div class="shot"><img src="img/front/route-1000.webp" srcset="img/front/route-600.webp 600w, img/front/route-1000.webp 1000w" sizes="(max-width:980px) 100vw, 700px" width="1000" height="513" loading="lazy" decoding="async"
-            alt="Route Explorer in 3D: the route from ENBR to ENSG drawn over the terrain with contour lines, the highest point under the track marked at 4,715 ft, and the terrain profile below." data-alt-no="Route Explorer i 3D: ruten fra ENBR til ENSG tegnet over terrenget med høydekurver, høyeste punkt under sporet merket med 4715 ft, og terrengprofilen under."></div>
+          <div class="shot"><img src="img/front/route-1400.webp" srcset="img/front/route-700.webp 700w, img/front/route-1400.webp 1400w" sizes="(max-width:980px) 100vw, 700px" width="1400" height="779" loading="lazy" decoding="async"
+            alt="Route Explorer in 3D: the route from ENBR to ENSG drawn over the terrain with contour lines, the highest point under the track marked at 4,715 ft, and the terrain profile below with the transition altitude." data-alt-no="Route Explorer i 3D: ruten fra ENBR til ENSG tegnet over terrenget med høydekurver, høyeste punkt under sporet merket med 4715 ft, og terrengprofilen under."></div>
           <figcaption data-tx="capRt"><b>Route Explorer, 3D view.</b> ENBR to ENSG over the terrain, with the profile under the route. Terrain drawn 1.5 times taller.</figcaption>
         </figure>
         <div class="txt">
@@ -335,9 +454,9 @@
 
       <div class="fp-row flip">
         <figure class="fp-fig fig-bp">
-          <div class="shot"><img src="img/front/briefing-760.webp" srcset="img/front/briefing-440.webp 440w, img/front/briefing-760.webp 760w" sizes="(max-width:980px) 100vw, 560px" width="760" height="742" loading="lazy" decoding="async"
-            alt="The cover of an IFR briefing pack, ENBR to ENSG, with fields for pilot, aircraft and alternates and a contents list of the pack's pages." data-alt-no="Forsiden av en IFR-briefingpakke, ENBR til ENSG, med felt for pilot, fly og alternativer og en innholdsliste over sidene i pakken."></div>
-          <figcaption data-tx="capBp"><b>Briefing pack, cover page.</b> The route came across from Route Explorer with its terrain profile and navigation log.</figcaption>
+          <div class="shot"><img src="img/front/briefing-1120.webp" srcset="img/front/briefing-560.webp 560w, img/front/briefing-1120.webp 1120w" sizes="(max-width:980px) 100vw, 560px" width="1120" height="1082" loading="lazy" decoding="async"
+            alt="The cover of an IFR briefing pack, ENBR to ENSG, with fields for pilot, aircraft and alternates, a contents list of the pack's twelve pages and signature lines." data-alt-no="Forsiden av en IFR-briefingpakke, ENBR til ENSG, med felt for pilot, fly og alternativer, en innholdsliste over pakkens tolv sider og signaturlinjer."></div>
+          <figcaption data-tx="capBp"><b>Briefing pack, cover page.</b> An IFR training flight, ENBR to ENSG: the contents follow the fixed order of the pack, and the cover is signed by pilot and instructor.</figcaption>
         </figure>
         <div class="txt">
           <h3 data-tx="h3bp">Briefing pack</h3>
@@ -407,6 +526,7 @@
 
 </main>
 <script src="lab.js?v=37"></script>
+<script src="front-storm.js?v=1" defer></script>
 <script>
 (function(){
 'use strict';
@@ -422,6 +542,8 @@ LAB.add({},{
 LAB.tx({
  h1:'Forstå hvert tall før du flyr',
  lede:'Birdbird er en flyplattform laget i Norge for piloter, elever og flyskoler: <b><span class="nLabs">27</span> interaktive labber</b> på EASA ATPL-pensumet, en briefingpakke du kan skrive ut, og en instruktør som svarer ut fra dine egne dokumenter.',
+ capFoil:'Vingen sett fra siden med 13° anstigningsvinkel: profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din. Trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell.',
+ goFoil:'Åpne profilsnittet',
  capTun:'3D-vindtunnelen fra Virtual Labs: A320-undervisningsmodellen med 5° angrepsvinkel, med trykket på overflaten og strømlinjer. Den kjører direkte i nettleseren din.',
  credit:'Vestland, 59,5–61,8° N. Terreng: Mapzen/AWS Terrain Tiles (SRTM, GMTED, EU-DEM © Copernicus), skyggelagt av Birdbird.',
  s1:'<span class="nLabs">27</span> interaktive labber på EASA ATPL-teorifagene.',
@@ -438,14 +560,15 @@ LAB.tx({
  st2:'<b>Utforsk</b>Selve modellen. Endre verdiene, og bildet og tallene endrer seg med dem.',
  st3:'<b>Test deg selv</b>Korte spørsmål som krever at du resonnerer, ikke at du kjenner igjen et pugget svar.',
  depth:'Les hver lab på det nivået du trenger: Kort, Fordypning eller Instruktør. På engelsk og norsk.',
- capSt:'<b>Tordenvær og vindskjær.</b> En moden cumulonimbus i 3D, skytopp FL385. La den vokse fra en cumulus, fly en innflyging gjennom mikroburst-fallvinden, eller rett værradaren mot den. <a class="tl" href="storms.html">Åpne uværslabben</a>',
+ capSt:'<b>Tordenvær og vindskjær.</b> Uværslabbens enkeltcelle, fra en godværscumulus til en moden cumulonimbus og oppløsningen, en time stormtid på et halvt minutt. Velg et stadium i panelet, eller åpne labben for å fly gjennom den.',
+ goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
  h2b:'Fra teori til cockpit',
  p2b:'Én rute, Bergen lufthavn Flesland til Sogndal, fulgt fra kartet til den utskrevne pakken. Flight Intelligence svarer på spørsmålene underveis.',
  capRt:'<b>Route Explorer, 3D-visning.</b> ENBR til ENSG over terrenget, med profilen under ruten. Terrenget er tegnet 1,5 ganger høyere.',
  rt:'Tegn ruten på et VFR-kart i 2D eller 3D, med luftrom, flyplasser og navigasjonshjelpemidler, og les terrenget under den. Profilen beregnes fra offentlige høydedata.',
  d2:'76,5 NM', d3:'5 493 ft', d4:'4 715 ft',
  f1:'Rute', f2:'Distanse', f3:'Høyeste terreng innen 4,3 NM', f4:'Høyeste punkt under sporet', goRt:'Åpne Route Explorer',
- capBp:'<b>Briefingpakke, forside.</b> Ruten ble sendt over fra Route Explorer med terrengprofil og navigasjonslogg.',
+ capBp:'<b>Briefingpakke, forside.</b> En IFR-treningsflyging, ENBR til ENSG: innholdet følger pakkens faste rekkefølge, og forsiden signeres av pilot og instruktør.',
  h3bp:'Briefingpakke',
  bp:'Én pakke per flyging, i fast rekkefølge: fly, NOTAM, vær, minima, profil, ytelse, drivstoff, masse og balanse, radiosvikt og flyplanen. VFR eller IFR. Legg til eller fjern sider etter behov, og skriv den ut som et hefte.',
  goBp:'Lag en briefingpakke',
@@ -494,17 +617,23 @@ LAB.start('home');
 all(); LAB.onLang(all);
 })();
 
-/* ---------- hero: the live 3D wind tunnel ----------
-   The still (img/hero-tunnel.webp, a ?shot render of tunnel.html) paints first. hero-tunnel.js swaps in the live scene,
-   only when the plate is on screen, the page has loaded, WebGL works, and neither reduced motion nor Save-Data is asked for. */
+/* ---------- hero visual ----------
+   aerofoil (default): hero-foil.js draws the Aerodynamics lab's 2D section live (canvas 2D, ~25 kB gzipped with section.js,
+   physics.js and cfd3d.js), loaded as soon as the page has parsed; it renders a single still frame under reduced motion.
+   tunnel (?hero=tunnel): the still (img/hero-tunnel.webp, a ?shot render of tunnel.html) paints first, and hero-tunnel.js
+   swaps in the live scene only when the plate is on screen, the page has loaded, WebGL works, and neither reduced motion
+   nor Save-Data is asked for. */
 (function(){
+const hero=document.getElementById('fpHero'); if(!hero) return;
+const ric=window.requestIdleCallback||(f=>setTimeout(f,200));
+const add=src=>{ const s=document.createElement('script'); s.src=src; s.async=true; document.head.appendChild(s); };
+if(hero.dataset.heroVisual!=='tunnel'){ ric(()=>add('hero-foil.js?v=1'),{timeout:400}); return; }
 const hx=document.getElementById('objLab'); if(!hx) return;
 const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches, SD=navigator.connection&&navigator.connection.saveData;
 function gl(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){ return false; } }
 if(RM||SD||!('IntersectionObserver' in window)||!window.DecompressionStream||!gl()) return;
 let want=false, loaded=document.readyState==='complete', go=false;
-const kick=()=>{ if(go||!want||!loaded) return; go=true; const ric=window.requestIdleCallback||(f=>setTimeout(f,200));
-  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=2'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
+const kick=()=>{ if(go||!want||!loaded) return; go=true; ric(()=>add('hero-tunnel.js?v=2'),{timeout:2500}); };
 if(!loaded) window.addEventListener('load',()=>{ loaded=true; kick(); },{once:true});
 const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ want=true; io.disconnect(); kick(); } },{rootMargin:'200px 0px'}); io.observe(hx);
 })();

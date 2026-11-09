@@ -554,7 +554,7 @@ CB3D.init=function(o){
       if(v==='wx'){ const s=4.5; jet.scale.set(s,s,s); } else if(v==='mb'){ jet.scale.set(0.75,0.75,0.75); }
       for(let i=0;i<NP;i++) fa[i]=99; camTo('q',true); },
     frame(){ if(view!=='storm'||interacted||!(preset==='q'||preset==='side')||(ST.cond&&(ST.cond.type==='multi'||ST.cond.type==='squall'))) return; const c=M.main(ST.cells); if(!c) return; const top=(Math.min(c.top,TROPO)+c.over)*FT2KM*VEX.storm, wide=c.anv>0.2?E0():0;
-      const p=PRE.storm[preset]; const k=clamp((top+wide*0.4)/22,0.32,1); cam.tr=p[2]*(0.35+0.65*k); cam.tty=Math.max(2.5,p[4]*(0.25+0.75*k)); cam.ttx=c.x+(p[3]-0)*(c.anv>0.2?1:0.3); },
+      const p=PRE.storm[preset]; const k=clamp((top+wide*0.4)/22,0.32,1); cam.tr=p[2]*(0.35+0.65*k)*(api.zoom||1); cam.tty=Math.max(2.5,p[4]*(0.25+0.75*k)); cam.ttx=c.x+(p[3]-0)*(c.anv>0.2?1:0.3); },
     setStorm(E,cells,cond){ ST.E=E; ST.cells=cells; ST.cond=cond; ST.ltg=false; for(const c of cells) if(c.st==='mat'&&c.ltg>0.5) ST.ltg=true; if(view==='storm'){ rebuildStorm(); api.frame(); } },
     rebuild(){ rebuildStorm(); },
     setShow(s){ Object.assign(show,s); cU.op.value=show.cloud==='off'?0:show.cloud==='see'?0.32:1; rebuildStorm(); if(view==='wx') drawCurtain(); },
@@ -571,6 +571,8 @@ CB3D.init=function(o){
     resize(){ const w=host.clientWidth, h=canvas.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); for(const S of [flow,bolt,glow,pathSeg]) S.u.res.value.set(w,h); hailU.scale.value=h*0.9; LOB.t=0; buildLabels(); },
     W:(x,hft,z,o2)=>{ const vx=VEX[view]||1; o2.set(x,hft*FT2KM*vx,z); return o2; },
     get view(){ return view; }, get show(){ return show; }, VEX,
+    /* front page (front-storm.js): set the orbit angles (eased unless inst), for its slow camera move */
+    zoom:1, aim(th,ph,inst){ if(interacted) return; cam.tth=th; cam.tph=ph; if(inst){ cam.th=th; cam.ph=ph; } },
     tick(dt,t,anim){ const moved=updCam(); if(moved&&(camera.position.distanceToSquared(lastCam)>(view==='mb'?0.04:1))) sortDirty=true; if(sortDirty) sortPuffs();
       sky.position.copy(camera.position);
       const sv=SUN[view]; cU.sunV.value.copy(sv).transformDirection(camera.matrixWorldInverse); cU.upV.value.set(0,1,0).transformDirection(camera.matrixWorldInverse);
