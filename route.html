@@ -504,6 +504,9 @@
   .rc-sum small{overflow:hidden;text-overflow:ellipsis}
   .rx .mlwarn,.bb-satnote{bottom:calc(var(--rch,52px) + 10px)}
 }
+
+/* phone: the 3D/simulation panel sits above the route sheet and the profile button, never behind them */
+@media (max-width:900px){.rx .x3w{top:auto!important;transform:none!important;bottom:104px!important;max-height:55svh;overflow:auto;z-index:8}}
 </style>
 </head>
 <body data-title="Route Explorer">
