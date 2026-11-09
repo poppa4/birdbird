@@ -364,6 +364,9 @@
 .rx .bmg button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
 .rx .x3w{border:0;border-radius:16px;box-shadow:var(--lift)}
 .rx .simhud{border-radius:14px;background:rgba(11,37,69,.86);box-shadow:0 8px 24px rgba(11,37,69,.25)}
+/* simulation readout: docked at the bottom above the profile (desktop), so the view ahead stays clear */
+@media (min-width:901px){.rx .simhud{top:auto;bottom:calc(var(--shh,0px) + 14px);left:344px;right:60px;padding:5px 12px 6px;gap:1px 14px;background:rgba(11,37,69,.72);backdrop-filter:none;border-radius:6px}.rx .simhud b{font-size:14px}.rx .simhud i{font-size:9.5px}.rx:has(#simhud:not([hidden])) .maplg{display:none}}
+
 .rx .mlmap .maplibregl-ctrl-attrib{border-radius:8px 0 0 0}
 /* phones: the Layers panel is a bottom sheet with large touch targets */
 @media (max-width:640px){
@@ -2465,10 +2468,10 @@ function trkAt(M,x){ const tot=M.total||0, d=Math.max(0.4,Math.min(1.5,tot*0.01)
 function acHov(M,at){ if(at==null||!M.total) return null; const q=M.posAt(at); if(!q||q.la==null) return null; const tq=tpq(at);
   return {la:q.la,lo:q.lo,alt:ml3Alt(M,at),tr:T3.mb!=null&&(T3.play||T3.drive)?T3.mb:trkAt(M,at),gnd:tq?(tq.c!=null?tq.c:tq.e):null,hide:T3.cm==='cockpit'&&T3.drive}; }
 function simPad(now){ if(T3.padT&&now-T3.padT<500&&T3.pad) return T3.pad; T3.padT=now; const mr=mapEl.getBoundingClientRect(), H=mr.height, h=el('simhud');
-  let top=0; if(h&&!h.hidden){ const r=h.getBoundingClientRect(); top=Math.max(0,r.bottom-mr.top); }
+  let top=0, hudB=0; if(h&&!h.hidden){ const r=h.getBoundingClientRect(); if(r.top>mr.top+H/2) hudB=Math.max(0,mr.bottom-r.top); else top=Math.max(0,r.bottom-mr.top); }
   const xw=el('x3w'), xr=xw&&!xw.hidden?xw.getBoundingClientRect():null;
   const bottom=window.innerWidth<=900? (xr?Math.max(0,Math.min(H*0.45,mr.bottom-xr.top)):0) : Math.min(H*0.5,parseFloat(getComputedStyle(el('rx')).getPropertyValue('--shh'))||0), left=Math.min(mr.width*0.4,pw3());
-  top=Math.min(top,Math.max(0,H-bottom-140)); return T3.pad={top:Math.round(top*(window.innerWidth<=900?0.9:0.6)),bottom:Math.round(bottom),left:Math.round(left),right:0}; }
+  top=Math.min(top,Math.max(0,H-bottom-140)); return T3.pad={top:Math.round(top*(window.innerWidth<=900?0.9:0.6)),bottom:Math.round(Math.max(bottom,hudB*0.6)),left:Math.round(left),right:0}; }
 // camera field of view: cockpit ≈ 80° across the screen (a pilot's view), chase ≈ 64°, otherwise MapLibre's 36.87°.
 // Kept within 36.87–70° vertical so portrait phones do not get a fish-eye view.
 const FOV0=36.87;
