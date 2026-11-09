@@ -2,208 +2,210 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="Move satellites round the sky and see how geometry decides accuracy, when RAIM can protect you and what SBAS adds. Then fly a turn at a waypoint, fly-by…">
+<meta name="description" content="How GNSS finds your position and how far you can trust it, and what RNAV and RNP ask of it. Move satellites and see DOP, RAIM and SBAS change, then fly an RNAV route and an RNP approach into Bergen with fly-by and fly-over turns, RNP containment, a GPS HSI with the right scaling, LNAV, LNAV/VNAV and LPV minima, and GNSS jamming.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GNSS and RNAV</title>
 <link rel="stylesheet" href="lab.css?v=7">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
-.paper canvas{display:block;width:100%}
-#sky{aspect-ratio:1/0.82;max-height:520px;touch-action:none;cursor:grab}#turn{aspect-ratio:16/8;max-height:440px}
-.rrow b{white-space:normal;text-align:right}
-.ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
-.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}
+/* the combined figure: sky plot + readout (left), map with the HSI inset and the approach profile (right) */
+.gn-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+.gn-body{display:grid;grid-template-columns:minmax(200px,244px) minmax(0,1fr);gap:12px;padding:4px 12px 12px;align-items:start}
+.gn-skyc{display:flex;flex-direction:column;gap:8px;min-width:0}
+.gn-h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8E99A4;margin:2px 2px 0}
+#gnSky{display:block;width:100%;aspect-ratio:1/1;touch-action:none;cursor:grab;border-radius:8px;background:rgba(6,10,13,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);outline:none}
+#gnSky.drag{cursor:grabbing}
+#gnSky:focus-visible,#gnMap:focus-visible{box-shadow:inset 0 0 0 2px #7FCBE8}
+.gn-ro{background:rgba(8,12,15,.55);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 10px;font-size:12.5px;color:#C9D2D8}
+.gn-ro .r{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.gn-ro .r:last-child{border-bottom:0}
+.gn-ro .r>span{color:#8E99A4}
+.gn-ro .r>b{font-family:var(--f-mono);font-weight:500;font-size:12px;color:#EEF2F5;text-align:right;font-variant-numeric:tabular-nums}
+.gn-ro b.g{color:#71CC93}.gn-ro b.a{color:#F0B440}.gn-ro b.x{color:#EC5A47}
+.gn-ap{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.gn-ap i{font-style:normal;font-family:var(--f-mono);font-size:10.5px;padding:1px 6px;border-radius:3px;border:1px solid rgba(113,204,147,.55);color:#B9F0D2;white-space:nowrap}
+.gn-ap i.no{border-color:rgba(236,90,71,.4);color:#E58C80;text-decoration:line-through}
+.gn-main{display:flex;flex-direction:column;gap:8px;min-width:0}
+.gn-mapw{position:relative;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 8px 24px -12px rgba(0,0,0,.6)}
+#gnMap{display:block;width:100%;aspect-ratio:1/0.86;max-height:640px;touch-action:none;cursor:ew-resize;outline:none}
+.gn-low{display:grid;grid-template-columns:minmax(0,1fr) clamp(150px,30%,196px);gap:10px;align-items:stretch}
+.gn-ph{display:flex;justify-content:space-between;gap:8px}.gn-ph #profM{text-transform:none;letter-spacing:0;color:#7FCBE8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gn-ph #profM.n{color:#AEB8C1}
+.gn-profw{display:flex;flex-direction:column;gap:4px;min-width:0}
+.gn-hsi{min-width:0}
+.gn-hsi canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:10%}
+#gnProf{display:block;width:100%;flex:1 1 auto;min-height:110px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);background:rgba(6,10,13,.45)}
+.gn-vp .vtools button.go[aria-pressed=true]{background:rgba(236,90,71,.2);color:#FFD2CA}
+.gn-vp .vtools button.jam[aria-pressed=true]{background:#EC5A47;color:#fff;border-color:#EC5A47}
+.gnturn{margin-top:6px}.gnturn .rrow b{font-family:var(--f-mono);font-weight:500;font-size:12px}
+.xsec .hint{margin:4px 0 0}
+@media (max-width:640px){
+  .gn-body{grid-template-columns:minmax(0,1fr);padding:4px 8px 10px}
+  .gn-skyc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:start;order:2}
+  .gn-skyc .gn-h{grid-column:1/-1}
+  .gn-ro{font-size:11px;padding:3px 7px}.gn-ro .r{padding:3px 0;gap:2px 6px;flex-wrap:wrap}.gn-ro .r>b{font-size:10.5px}
+  .gn-ap{justify-content:flex-start}
+  #gnMap{aspect-ratio:1/1}
+  .gn-mapw{display:flex;flex-direction:column}.gn-mapw .vchip{position:static;order:-1;margin:6px 6px 6px;max-width:none}
+  .gn-low{grid-template-columns:minmax(0,1fr)}
+  #gnProf{min-height:0;aspect-ratio:3/1}
+  .gn-hsi{width:min(200px,62%);margin:0 auto}
+}
+/* Try it: one task at a time (storms.html) */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.3;color:var(--ink);margin:0 0 10px}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}}
+/* Understand and Test yourself (radionav.html / storms.html) */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.disc{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--caution);border:1px solid currentColor;border-radius:3px;padding:1px 6px;margin-top:10px}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
+body.depth-instructor .gn-ro{font-size:14.5px}body.depth-instructor .gn-ro .r>b{font-size:14px}
+body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32%,250px)}
 </style>
 </head>
 <body data-title="GNSS and RNAV">
-<script src="site.js?v=35"></script>
+<script src="site.js?v=37"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Navigation and approach</div>
+      <div class="eyebrow">Birdbird Virtual Lab · Navigation and instrument procedures</div>
       <h1>GNSS and RNAV</h1>
-      <p>Move satellites round the sky and see how geometry decides accuracy, when RAIM can protect you and what SBAS adds. Then fly a turn at a waypoint, fly-by and fly-over, and sort out RNAV 5, RNP 1, LNAV and LPV.</p>
+      <p data-tx="lead">GNSS tells you where you are; RAIM and SBAS tell you whether you can trust it; RNAV and RNP decide how accurately you must fly. Move the satellites, then fly an RNAV route and an RNP approach into Bergen and watch the HSI, the containment and the minima respond.</p>
+      <span class="disc" id="disc">Training simulation · not for navigation</span>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#sat">Satellite geometry</a><a href="#wp">Waypoints and turns</a><a href="#spec">Specifications and minima</a><a href="#risk">Threats</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">GNSS and RNP lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="sat">
-    <div class="eyebrow">1 · Interactive</div>
-    <h2>Satellite geometry</h2>
-    <div class="split">
-      <div class="paper"><canvas id="sky" aria-label="Sky plot with satellites. Drag them."></canvas></div>
-      <div class="panel">
-        <div id="sctl"></div>
-        <div class="grp">SBAS (EGNOS)</div><div id="sbas"></div>
-        <div class="btns" style="margin-top:8px"><button class="btn" id="spread">Spread out</button><button class="btn" id="bunch">Bunch together</button></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>Satellites used</span><b id="gN"></b></div>
-          <div class="rrow"><span>HDOP / VDOP</span><b id="gDop"></b></div>
-          <div class="rrow"><span>Typical error (95 %)</span><b id="gErr"></b></div>
-          <div class="rrow"><span>RAIM</span><b id="gRaim"></b></div>
-          <div class="rrow"><span>Approaches available</span><b id="gApp"></b></div>
+  <!-- 1 · UNDERSTAND -->
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" data-tx="u0">Two questions run through this whole topic: <b>how accurate</b> is my position, and <b>how do I know</b> it is right? Each card shows the idea in the lab.</p>
+    <div id="kcGrid"></div>
+    <div class="dd deep">
+      <h3 id="ddH">Deep dive</h3>
+      <details class="dfold"><summary><span id="sp1">PBN navigation specifications</span> <small id="sp1s">accuracy and where they are used</small></summary><div><div class="wrapx"><table class="ftab" id="stab"></table></div><p id="stabN"></p></div></details>
+      <details class="dfold"><summary><span id="sp2">RNP APCH minima</span> <small id="sp2s">LNAV, LNAV/VNAV, LP, LPV</small></summary><div><div class="wrapx"><table class="ftab" id="mtab"></table></div><p id="mtabN"></p></div></details>
+      <details class="dfold"><summary><span id="sp3">How RAIM decides</span> <small id="sp3s">the protection level</small></summary><div data-tx="raimdd"><p>With five or more satellites the receiver has more measurements than unknowns. It solves the position by least squares and looks at what is left over (the residuals). A large residual means one range does not agree with the others.</p><p>From the geometry alone, before any fault, it works out the largest position error a fault could cause without being noticed: the <b>horizontal protection level (HPL)</b>. If HPL is larger than the <b>alert limit</b> for the phase (2 NM en route, 1 NM terminal, 0.3 NM approach), RAIM is <b>not available</b> and the receiver says so. With six or more it can test each subset without one satellite and so <b>exclude</b> the faulty one (FDE).</p><p>So geometry matters twice: a high DOP makes the position less accurate, and a weak geometry makes a fault harder to see.</p></div></details>
+    </div>
+  </section>
+
+  <!-- 2 · EXPLORE -->
+  <section class="card" id="explore" data-step="explore">
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The GNSS and RNP lab</h2>
+    <p class="lead" data-tx="e1">In the sky plot, <b>drag the satellites</b> and watch accuracy and integrity change. On the map, an RNAV route and an RNP approach to runway 17 at Bergen: pick a phase or press Fly, <b>drag sideways on the map</b> to move off track, and read the HSI.</p>
+    <div class="xapp">
+      <div class="xvp gn-vp" id="gnVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="gnTabs" role="tablist" aria-label="Phase"></div><div class="vtools" id="gnTools"></div></div>
+        <div class="gn-body">
+          <div class="gn-skyc">
+            <p class="gn-h" id="skyH">Sky above you</p>
+            <canvas id="gnSky" tabindex="0" aria-label="Sky plot: the satellites seen from the aircraft. The centre is overhead, the edge the horizon. Drag a satellite to move it."></canvas>
+            <div class="gn-ro" id="gnRo" aria-live="polite"></div>
+          </div>
+          <div class="gn-main">
+            <div class="gn-mapw" id="gnMapW"><canvas id="gnMap" tabindex="0" aria-label="Plan view of the route and the approach. Drag sideways to move the aircraft off track; arrow keys move it along and across the route."></canvas><div class="vchip" id="gnChip" aria-live="off"></div></div>
+            <div class="gn-low"><div class="gn-profw"><p class="gn-h gn-ph"><span id="profH">Final approach</span><span id="profM"></span></p><canvas id="gnProf" aria-label="Profile of the final approach: the path, the minimum and your aircraft"></canvas></div>
+              <div class="gn-hsi"><canvas id="gnHsi" aria-label="HSI in GPS mode: course, cross-track deviation and, on an approach with vertical guidance, the glide path"></canvas></div></div>
+          </div>
         </div>
-        <p class="callout blue" id="gEx"></p>
+        <div class="vleg" id="gnLeg"></div>
+      </div>
+      <p class="xsee" id="gnSee" aria-live="polite"></p>
+      <details class="xpanel" id="gnPanel" open aria-label="Controls">
+        <summary class="xsum"><span id="ctlS">Controls</span><span class="xsv" id="xsv"></span></summary>
+        <div class="tbox" id="tbox" hidden></div>
+        <details class="xsec" open><summary id="hSat">Satellites</summary>
+          <div id="cPre"></div>
+          <div id="cMask"></div>
+          <div class="grp" id="gSbas">SBAS (EGNOS)</div><div id="cSbas"></div>
+          <p class="hint" id="hintSky"></p>
+        </details>
+        <details class="xsec" open><summary id="hRoute">Route and turns</summary>
+          <div class="grp" id="gWp">Turn waypoints</div><div id="cWp"></div>
+          <div id="cTurn"></div>
+          <div class="ro gnturn" id="turnRo"></div>
+        </details>
+        <details class="xsec" open><summary id="hApp">Approach</summary>
+          <div class="grp" id="gMin">Minima</div><div id="cMin"></div>
+          <div id="cOff"></div>
+          <p class="hint" id="minHint"></p>
+        </details>
+        <details class="xsec" open><summary id="hShow">Show</summary>
+          <div class="xtogs" id="cShow"></div>
+        </details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3 id="tryH">Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
       </div>
     </div>
   </section>
 
-  <section class="card" id="wp">
-    <div class="eyebrow">2 · Interactive</div>
-    <h2>Waypoints and turns</h2>
-    <div class="split">
-      <div class="paper"><canvas id="turn" aria-label="Fly-by and fly-over turn at a waypoint"></canvas></div>
-      <div class="panel">
-        <div class="grp">Waypoint</div><div id="wtype"></div>
-        <div id="wctl"></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>Turn radius</span><b id="wR"></b></div>
-          <div class="rrow"><span>Turn starts before the waypoint</span><b id="wLead"></b></div>
-        </div>
-        <p class="callout" id="wEx"></p>
-      </div>
-    </div>
+  <!-- 3 · KEY POINTS -->
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
+    <div class="maid" id="maid"></div>
   </section>
 
-  <section class="card" id="spec">
-    <div class="eyebrow">3 · Summary</div>
-    <h2>Specifications and minima</h2>
-    <div class="wrapx" style="overflow-x:auto"><table class="ftab" id="stab"></table></div>
-    <div class="wrapx" style="overflow-x:auto"><table class="ftab" id="mtab"></table></div>
-  </section>
-
-  <section class="card" id="risk">
-    <div class="eyebrow">4 · Operations</div>
-    <h2>Threats and checks</h2>
-    <div class="cols" id="cards"></div>
-  </section>
-
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot">Teaching model. DOP is computed from the geometry you set; error figures use typical range errors (about 4 m without SBAS, about 1 m with). Real receivers, integrity limits and approvals are defined by the avionics, the AFM supplement and the AIP.</p>
+  <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles).</p>
 </div>
-<script src="lab.js?v=34"></script>
-<script>
-(function(){
-'use strict';
-const {T,L,el,nf}=LAB;
-LAB.add({},{
- '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Summary':'3 · Sammendrag','4 · Operations':'4 · Drift',
-  'GNSS and RNAV':'GNSS og RNAV','Birdbird Virtual Lab · Navigation and approach':'Birdbird Virtual Lab · Navigasjon og innflyging',
- 'Move satellites round the sky and see how geometry decides accuracy, when RAIM can protect you and what SBAS adds. Then fly a turn at a waypoint, fly-by and fly-over, and sort out RNAV 5, RNP 1, LNAV and LPV.':'Flytt satellitter rundt på himmelen og se hvordan geometrien bestemmer nøyaktigheten, når RAIM kan beskytte deg og hva SBAS tilfører. Fly så en sving ved et veipunkt, fly-by og fly-over, og få orden på RNAV 5, RNP 1, LNAV og LPV.',
- 'Satellite geometry':'Satellittgeometri','Waypoints and turns':'Veipunkter og svinger','Specifications and minima':'Spesifikasjoner og minima','Threats':'Trusler','Threats and checks':'Trusler og sjekker','Test yourself':'Test deg selv','Interactive':'Interaktiv','Summary':'Sammendrag','Operations':'Drift','Check':'Sjekk',
- 'Satellites in view':'Satellitter i sikte','Mask angle (°)':'Maskevinkel (°)','Spread out':'Spre ut','Bunch together':'Samle',
- 'Satellites used':'Satellitter brukt','Typical error (95 %)':'Typisk feil (95 %)','Approaches available':'Tilgjengelige innflyginger','On':'På','Off':'Av',
- 'Waypoint':'Veipunkt','Fly-by':'Fly-by','Fly-over':'Fly-over','Turn radius':'Svingradius','Turn starts before the waypoint':'Svingen starter før veipunktet',
- 'Groundspeed (kt)':'Groundspeed (kt)','Track change (°)':'Kursendring (°)','Bank angle (°)':'Krengning (°)',
- 'Teaching model. DOP is computed from the geometry you set; error figures use typical range errors (about 4 m without SBAS, about 1 m with). Real receivers, integrity limits and approvals are defined by the avionics, the AFM supplement and the AIP.':'Opplæringsmodell. DOP regnes ut fra geometrien du setter; feiltallene bruker typiske avstandsfeil (rundt 4 m uten SBAS, rundt 1 m med). Virkelige mottakere, integritetsgrenser og godkjenninger bestemmes av avionikken, AFM-supplementet og AIP.'
-});
-/* ---------- satellitter ---------- */
-const G={n:8,mask:5,sbas:'on',sats:[]};
-function seed(kind){ G.sats=[]; for(let i=0;i<12;i++){ if(kind==='bunch') G.sats.push({az:40+i*9+Math.random()*6,el:30+Math.random()*30}); else G.sats.push({az:(i*360/8+(i>=8?22:0)+Math.random()*12)%360,el:i===0?80:(i%2?18:45)+Math.random()*12}); } }
-seed('spread');
-function used(){ return G.sats.slice(0,G.n).filter(s=>s.el>=G.mask); }
-function dop(S){ if(S.length<4) return null; const A=S.map(s=>{ const a=s.az*Math.PI/180,e=s.el*Math.PI/180; return [Math.cos(e)*Math.sin(a),Math.cos(e)*Math.cos(a),Math.sin(e),1]; });
-  const M=[0,1,2,3].map(i=>[0,1,2,3].map(j=>A.reduce((t,r)=>t+r[i]*r[j],0))); const Q=inv4(M); if(!Q) return null; return {h:Math.sqrt(Math.max(0,Q[0][0]+Q[1][1])),v:Math.sqrt(Math.max(0,Q[2][2]))}; }
-function inv4(m){ const n=4, a=m.map((r,i)=>[...r,...[0,1,2,3].map(j=>i===j?1:0)]); for(let c=0;c<n;c++){ let p=c; for(let r=c+1;r<n;r++) if(Math.abs(a[r][c])>Math.abs(a[p][c])) p=r; if(Math.abs(a[p][c])<1e-9) return null; [a[c],a[p]]=[a[p],a[c]]; const d=a[c][c]; for(let k=0;k<2*n;k++) a[c][k]/=d; for(let r=0;r<n;r++){ if(r===c) continue; const f=a[r][c]; for(let k=0;k<2*n;k++) a[r][k]-=f*a[c][k]; } } return a.map(r=>r.slice(n)); }
-const C1=LAB.fit(el('sky'),()=>sky(),2); let R0=1,CX=0,CY=0;
-function sky(){ const g=C1.ctx,W=C1.w,H=C1.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H); CX=W/2; CY=H/2; R0=Math.min(W,H)/2-26;
-  const rr=el_=>R0*(90-el_)/90;
-  g.fillStyle='rgba(176,138,90,.14)'; g.beginPath(); g.arc(CX,CY,R0,0,Math.PI*2); g.moveTo(CX+rr(G.mask),CY); g.arc(CX,CY,rr(G.mask),0,Math.PI*2); g.fill('evenodd');
-  g.strokeStyle='#E3E8EA'; for(const e of [0,30,60]){ g.beginPath(); g.arc(CX,CY,rr(e),0,7); g.stroke(); } g.beginPath(); g.moveTo(CX-R0,CY); g.lineTo(CX+R0,CY); g.moveTo(CX,CY-R0); g.lineTo(CX,CY+R0); g.stroke();
-  g.fillStyle='#7D8B95'; g.font='11px IBM Plex Mono, monospace'; g.textAlign='center'; g.fillText('N',CX,CY-R0-8); g.fillText('S',CX,CY+R0+16); g.fillText('E',CX+R0+10,CY+4); g.fillText('W',CX-R0-10,CY+4); g.fillText('30°',CX+4,CY-rr(30)+12); g.fillText('60°',CX+4,CY-rr(60)+12); g.textAlign='start';
-  const U=used(); G.sats.forEach((s,i)=>{ const a=s.az*Math.PI/180, r=rr(s.el), x=CX+Math.sin(a)*r, y=CY-Math.cos(a)*r; const on=i<G.n, ok=on&&s.el>=G.mask; s.x=x; s.y=y; if(!on) return;
-    g.fillStyle=ok?'#1E5E9E':'#C9D2D5'; g.beginPath(); g.arc(x,y,9,0,7); g.fill(); g.fillStyle='#fff'; g.font='600 10px IBM Plex Mono, monospace'; g.textAlign='center'; g.fillText(String(i+1),x,y+3.5); g.textAlign='start'; });
-  // feilellipse ved senter
-  const D=dop(U); if(D){ const err=Math.min(R0*0.45,D.h*(G.sbas==='on'?1:4)*2*6); g.strokeStyle='#9A1E68'; g.lineWidth=2; g.setLineDash([4,3]); g.beginPath(); g.arc(CX,CY,Math.max(4,err),0,7); g.stroke(); g.setLineDash([]); }
-  g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(L({en:'you, with the error circle',no:'du, med feilsirkelen'}),CX+12,CY+28); g.fillStyle='#8A6D3B'; g.fillText(L({en:'below the mask angle: ignored',no:'under maskevinkelen: ignoreres'}),12,H-12); }
-function sro(){ const U=used(), D=dop(U), sb=G.sbas==='on'; el('gN').textContent=U.length;
-  el('gDop').textContent= D? nf(D.h,1)+' / '+nf(D.v,1) : '—';
-  el('gErr').textContent= D? `${L({en:'horizontal',no:'horisontalt'})} ≈ ${nf(D.h*(sb?1:4)*2,0)} m · ${L({en:'vertical',no:'vertikalt'})} ≈ ${nf(D.v*(sb?1:4)*2,0)} m` : L({en:'No 3D fix: at least 4 satellites needed',no:'Ingen 3D-posisjon: minst 4 satellitter trengs'});
-  const raim= U.length>=6? L({en:'Detects and excludes a faulty satellite (FDE)',no:'Oppdager og utelater en feil satellitt (FDE)'}) : U.length===5? L({en:'Can detect a fault, not exclude it',no:'Kan oppdage en feil, ikke utelate den'}) : L({en:'Not available',no:'Ikke tilgjengelig'});
-  el('gRaim').innerHTML=`<span class="${U.length>=5?'ok':'ko'}">${raim}</span>`;
-  const bad=!D||D.h>4; const ap=[]; if(D&&U.length>=5&&!bad) ap.push('LNAV'); if(D&&U.length>=5&&!bad) ap.push('LNAV/VNAV (baro)'); if(D&&sb&&D.v<4) ap.push('LP, LPV');
-  el('gApp').innerHTML= ap.length? ap.join(' · ') : `<span class="ko">${L({en:'None: use a conventional approach',no:'Ingen: bruk en konvensjonell innflyging'})}</span>`;
-  el('gEx').textContent= !D? L({en:'Each satellite gives one range. Three unknowns for position plus one for the receiver clock means four satellites for a 3D fix.',no:'Hver satellitt gir én avstand. Tre ukjente for posisjon pluss én for mottakerens klokke betyr fire satellitter for en 3D-posisjon.'})
-   : D.h>4? L({en:'The satellites are bunched: the range circles cross at shallow angles, so a small range error moves the fix a lot. That is a high DOP. Spread them out and watch the error circle shrink.',no:'Satellittene er samlet: avstandssirklene krysser i spisse vinkler, så en liten avstandsfeil flytter posisjonen mye. Det er høy DOP. Spre dem ut og se feilsirkelen krympe.'})
-   : (sb? L({en:'Good geometry and SBAS: EGNOS corrects the range errors and adds integrity messages, which is what makes LPV with ILS-like minima possible.',no:'God geometri og SBAS: EGNOS korrigerer avstandsfeilene og legger til integritetsmeldinger, og det er dette som gjør LPV med ILS-lignende minima mulig.'}) : L({en:'Good geometry without SBAS: fine for en route and LNAV, protected by RAIM, which needs a fifth satellite to check the others. No LPV without SBAS.',no:'God geometri uten SBAS: greit underveis og for LNAV, beskyttet av RAIM, som trenger en femte satellitt for å sjekke de andre. Ingen LPV uten SBAS.'})); }
-function su(){ sky(); sro(); }
-LAB.slider(el('sctl'),{label:'Satellites in view',min:3,max:12,step:1,v:G.n,f:v=>String(v),on:v=>{ G.n=v; su(); }});
-LAB.slider(el('sctl'),{label:'Mask angle (°)',min:0,max:30,step:1,v:G.mask,f:v=>v+'°',on:v=>{ G.mask=v; su(); }});
-LAB.seg(el('sbas'),[['on','On'],['off','Off']],G.sbas,v=>{ G.sbas=v; su(); });
-el('spread').onclick=()=>{ seed('spread'); su(); }; el('bunch').onclick=()=>{ seed('bunch'); su(); };
-const cv=el('sky'); let dg=-1;
-cv.addEventListener('pointerdown',e=>{ const r=cv.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top; let b=-1,bd=20; G.sats.slice(0,G.n).forEach((s,i)=>{ const d=Math.hypot(s.x-x,s.y-y); if(d<bd){ bd=d; b=i; } }); dg=b; if(b>=0) cv.setPointerCapture(e.pointerId); });
-cv.addEventListener('pointermove',e=>{ if(dg<0) return; const r=cv.getBoundingClientRect(), x=e.clientX-r.left-CX, y=e.clientY-r.top-CY; const d=Math.min(R0,Math.hypot(x,y)); G.sats[dg].az=(Math.atan2(x,-y)*180/Math.PI+360)%360; G.sats[dg].el=90-d/R0*90; su(); });
-cv.addEventListener('pointerup',()=>dg=-1); cv.addEventListener('pointercancel',()=>dg=-1);
-/* ---------- svinger ---------- */
-const P={t:'by',gs:250,dt:60,bank:25};
-const C2=LAB.fit(el('turn'),()=>turn(),2);
-function rad(){ const v=P.gs*0.5144; return v*v/(9.81*Math.tan(P.bank*Math.PI/180))/1852; }
-function turn(){ const g=C2.ctx,W=C2.w,H=C2.h; if(!W) return; g.clearRect(0,0,W,H); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,H);
-  const r=rad(), d=P.dt*Math.PI/180, sc=Math.min(W,H)/ (Math.max(4,r*4.2)); const wx=W*0.48, wy=H*0.62;
-  const leg1=[-Math.max(3,r*2.4),0], u2=[Math.sin(d),-Math.cos(d)]; // første etappe østover, andre dreid
-  const P2=(x,y)=>[wx+x*sc, wy+y*sc];
-  // planlagt
-  g.strokeStyle='#9AA6AC'; g.lineWidth=1.4; g.setLineDash([6,5]); g.beginPath(); g.moveTo(...P2(leg1[0],0)); g.lineTo(...P2(0,0)); const e2=[Math.cos(-d)*Math.max(3,r*2.4),Math.sin(-d)*Math.max(3,r*2.4)]; g.lineTo(...P2(e2[0],e2[1])); g.stroke(); g.setLineDash([]);
-  // flydd bane
-  g.strokeStyle='#9A1E68'; g.lineWidth=3; g.lineJoin='round'; g.beginPath();
-  const dir2=[Math.cos(-d),Math.sin(-d)];
-  if(P.t==='by'){ const lead=r*Math.tan(d/2); g.moveTo(...P2(leg1[0],0)); g.lineTo(...P2(-lead,0)); const cx=-lead, cy=-r; for(let a=0;a<=d+1e-6;a+=d/30){ const x=cx+Math.sin(a)*r, y=cy+Math.cos(a)*r; g.lineTo(...P2(x,y)); } g.lineTo(...P2(e2[0],e2[1])); }
-  else { g.moveTo(...P2(leg1[0],0)); g.lineTo(...P2(0,0)); const cx=0, cy=-r; let x=0,y=0; for(let a=0;a<=d+1e-6;a+=d/30){ x=cx+Math.sin(a)*r; y=cy+Math.cos(a)*r; g.lineTo(...P2(x,y)); }
-    // tilbake til etappen: sving videre 'd' ekstra og så inn i 45°? forenklet: S-sving tilbake til linjen
-    const off=(x*dir2[1]-y*dir2[0]); const back=Math.abs(off)*1.6+r; g.quadraticCurveTo(...P2(x+dir2[0]*back*0.5,y+dir2[1]*back*0.5),...P2(dir2[0]*(Math.hypot(x,y)+back),dir2[1]*(Math.hypot(x,y)+back))); g.lineTo(...P2(e2[0]*1.2,e2[1]*1.2)); }
-  g.stroke();
-  // veipunkt
-  const [px,py]=P2(0,0); g.strokeStyle='#13202A'; g.lineWidth=1.6; g.fillStyle='#fff';
-  if(P.t==='by'){ g.beginPath(); for(let i=0;i<4;i++){ const a=i*Math.PI/2+Math.PI/4; g.lineTo(px+Math.cos(a)*8,py+Math.sin(a)*8); } g.closePath(); g.fill(); g.stroke(); g.beginPath(); g.arc(px,py,3,0,7); g.stroke(); }
-  else { g.beginPath(); g.arc(px,py,9,0,7); g.fill(); g.stroke(); g.beginPath(); for(let i=0;i<4;i++){ const a=i*Math.PI/2+Math.PI/4; g.lineTo(px+Math.cos(a)*7,py+Math.sin(a)*7); } g.closePath(); g.stroke(); }
-  g.font='600 14px "Public Sans", sans-serif'; g.fillStyle='#1D4E9E'; g.fillText(P.t==='by'?L({en:'turn starts early and cuts the corner',no:'svingen starter tidlig og kutter hjørnet'}):L({en:'overhead first, then back onto the next leg',no:'over punktet først, så tilbake til neste etappe'}),16,24);
-  g.fillStyle='#7D8B95'; g.font='10px IBM Plex Mono, monospace'; g.fillText('1 NM',16,H-14); g.strokeStyle='#7D8B95'; g.beginPath(); g.moveTo(16,H-24); g.lineTo(16+sc,H-24); g.stroke(); }
-function wro(){ const r=rad(), lead=r*Math.tan(P.dt*Math.PI/360); el('wR').textContent=nf(r,2)+' NM'; el('wLead').textContent= P.t==='by'? nf(lead,2)+' NM' : L({en:'0: overhead',no:'0: over punktet'});
-  el('wEx').textContent= P.t==='by'? L({en:'Most RNAV waypoints are fly-by: the FMGS starts the turn early so you roll out on the next leg. The faster you fly and the bigger the turn, the earlier it starts, and the more the path cuts inside the waypoint.',no:'De fleste RNAV-veipunkter er fly-by: FMGS starter svingen tidlig så du ruller ut på neste etappe. Jo raskere du flyr og jo større svingen er, jo tidligere starter den, og jo mer kutter banen innenfor veipunktet.'}) : L({en:'A fly-over waypoint (circled symbol) must be overflown, for example a missed approach point. The turn starts overhead, so you overshoot the next leg and have to come back to it: more airspace is needed.',no:'Et fly-over-veipunkt (symbol med ring) skal overflys, for eksempel et missed approach-punkt. Svingen starter over punktet, så du skyter over neste etappe og må tilbake til den: det trengs mer luftrom.'}); }
-function wu(){ turn(); wro(); }
-LAB.seg(el('wtype'),[['by','Fly-by'],['over','Fly-over']],P.t,v=>{ P.t=v; wu(); });
-LAB.slider(el('wctl'),{label:'Groundspeed (kt)',min:140,max:480,step:10,v:P.gs,f:v=>v+' kt',on:v=>{ P.gs=v; wu(); }});
-LAB.slider(el('wctl'),{label:'Track change (°)',min:10,max:120,step:5,v:P.dt,f:v=>v+'°',on:v=>{ P.dt=v; wu(); }});
-LAB.slider(el('wctl'),{label:'Bank angle (°)',min:10,max:30,step:1,v:P.bank,f:v=>v+'°',on:v=>{ P.bank=v; wu(); }});
-/* ---------- tabeller ---------- */
-function tabs(){ const R=[['RNAV 5',{en:'En route (formerly B-RNAV)',no:'Underveis (tidligere B-RNAV)'},'±5 NM',{en:'No',no:'Nei'}],['RNAV 1',{en:'SID, STAR (formerly P-RNAV)',no:'SID, STAR (tidligere P-RNAV)'},'±1 NM',{en:'No',no:'Nei'}],['RNP 1',{en:'SID, STAR, initial approach',no:'SID, STAR, initial innflyging'},'±1 NM',{en:'Yes',no:'Ja'}],['RNP APCH',{en:'Approach; ±0.3 NM on final',no:'Innflyging; ±0,3 NM på finalen'},'1 / 0.3 NM',{en:'Yes',no:'Ja'}],['RNP AR APCH',{en:'Special approval, tight curved paths',no:'Særskilt godkjenning, trange, svingte baner'},{en:'down to 0.1 NM',no:'ned til 0,1 NM'},{en:'Yes',no:'Ja'}]];
-  el('stab').innerHTML=`<tr><th>${L({en:'Specification',no:'Spesifikasjon'})}</th><th>${L({en:'Used for',no:'Brukes til'})}</th><th>${L({en:'Accuracy (95 %)',no:'Nøyaktighet (95 %)'})}</th><th>${L({en:'On-board monitoring and alerting',no:'Overvåking og varsling om bord'})}</th></tr>`+R.map(r=>`<tr><td><b>${r[0]}</b></td><td>${L(r[1])}</td><td>${L(r[2])}</td><td>${L(r[3])}</td></tr>`).join('');
-  const M=[['LNAV',{en:'2D',no:'2D'},{en:'GNSS (RAIM)',no:'GNSS (RAIM)'},'MDA',{en:'Fly as CDFA',no:'Flys som CDFA'}],['LNAV/VNAV',{en:'3D',no:'3D'},{en:'GNSS + baro-VNAV (or SBAS)',no:'GNSS + baro-VNAV (eller SBAS)'},'DA',{en:'Temperature limits for baro-VNAV',no:'Temperaturgrenser for baro-VNAV'}],['LP',{en:'2D',no:'2D'},{en:'SBAS',no:'SBAS'},'MDA',{en:'Angular lateral guidance, no vertical',no:'Vinkelbasert sideledning, ingen vertikal'}],['LPV',{en:'3D',no:'3D'},{en:'SBAS',no:'SBAS'},'DA',{en:'ILS-like, down to 200 ft',no:'ILS-lignende, ned til 200 ft'}]];
-  el('mtab').innerHTML=`<tr><th>${L({en:'RNP APCH minima',no:'RNP APCH-minima'})}</th><th>2D/3D</th><th>${L({en:'Needs',no:'Krever'})}</th><th>${L({en:'Minimum',no:'Minimum'})}</th><th>${L({en:'Note',no:'Merknad'})}</th></tr>`+M.map(r=>`<tr><td><b>${r[0]}</b></td><td>${L(r[1])}</td><td>${L(r[2])}</td><td>${r[3]}</td><td>${L(r[4])}</td></tr>`).join(''); }
-function cards(){ const c=[
- [{en:'Jamming and spoofing',no:'Jamming og spoofing'},{en:'GNSS interference is common in parts of Europe, including Northern Norway and around the Baltic. Signs: loss of integrity, jumping positions, wrong time or groundspeed. On the A320 the FMGS falls back to IRS/DME-DME or IRS-only navigation, with GPS PRIMARY LOST on the ND and MCDU. Have a conventional plan (VOR, DME, ILS, radar vectors) and report it.',no:'GNSS-forstyrrelser er vanlige i deler av Europa, også Nord-Norge og rundt Østersjøen. Tegn: tap av integritet, posisjoner som hopper, feil tid eller groundspeed. På A320 faller FMGS tilbake til IRS/DME-DME eller bare IRS, med GPS PRIMARY LOST på ND og MCDU. Ha en konvensjonell plan (VOR, DME, ILS, radarvektorer) og rapporter det.'}],
- [{en:'Database',no:'Database'},{en:'The navigation database follows the AIRAC cycle of 28 days. An approach must come from a current database and must not be edited by the pilot. Check the waypoints and altitudes against the chart.',no:'Navigasjonsdatabasen følger AIRAC-syklusen på 28 dager. En innflyging må komme fra en gyldig database og skal ikke redigeres av piloten. Sjekk veipunkter og høyder mot kartet.'}],
- [{en:'RAIM prediction',no:'RAIM-prediksjon'},{en:'Before an RNP approach without SBAS, check that RAIM is predicted for the ETA (NOTAM, a prediction service or the PREDICTIVE GPS page on the MCDU). Make sure that, if GNSS is lost, you can still fly an approach that does not use GNSS, at the destination or at the alternate.',no:'Før en RNP-innflyging uten SBAS, sjekk at RAIM er forventet tilgjengelig ved ETA (NOTAM, en prediksjonstjeneste eller siden PREDICTIVE GPS på MCDU). Sørg for at du, hvis GNSS faller ut, fortsatt kan fly en innflyging som ikke bruker GNSS, på destinasjonen eller alternativet.'}],
- [{en:'RNP and accuracy in the FMGS',no:'RNP og nøyaktighet i FMGS'},{en:'The FMGS sets a required navigation performance for the phase of flight (typically 2 NM en route, 1 NM terminal, 0.3 NM approach) and compares it with its estimated position error. The MCDU PROG page shows REQUIRED and ESTIMATED with HIGH or LOW accuracy; L/DEV and V/DEV on the PFD show the deviation on final. Check GPS PRIMARY and HIGH accuracy before the FAF; if not, do not descend on the approach.',no:'FMGS setter en påkrevd navigasjonsytelse for fasen (typisk 2 NM underveis, 1 NM terminal, 0,3 NM innflyging) og sammenligner den med sin beregnede posisjonsfeil. MCDU-siden PROG viser REQUIRED og ESTIMATED med HIGH eller LOW nøyaktighet; L/DEV og V/DEV på PFD viser avviket på finalen. Sjekk GPS PRIMARY og HIGH nøyaktighet før FAF; hvis ikke, ikke start nedstigningen på innflygingen.'}],
- [{en:'Leg types',no:'Etappetyper'},{en:'TF: track between two fixes, the most common. DF: direct to a fix. CF: course to a fix. RF: constant-radius turn around a fixed centre. It is an optional function in RNP 1, RNP APCH and A-RNP, and an integral part of many RNP AR procedures; either way the aircraft must be RF-capable and the crew trained and approved for it. Holds and some legs end at an altitude rather than a fix.',no:'TF: track mellom to fixer, den vanligste. DF: direkte til en fix. CF: kurs til en fix. RF: sving med fast radius rundt et fast senter. Det er en valgfri funksjon i RNP 1, RNP APCH og A-RNP, og en fast del av mange RNP AR-prosedyrer; uansett må flyet være RF-kapabelt og besetningen trent og godkjent for det. Holdinger og noen etapper ender på en høyde i stedet for en fix.'}],
- [{en:'Cold and baro-VNAV',no:'Kulde og baro-VNAV'},{en:'A baro-VNAV path follows the altimeter, so in cold air it lies too low; below the temperature limit on the chart use LNAV minima, or LPV if available.',no:'En baro-VNAV-bane følger høydemåleren, så i kald luft ligger den for lavt; under temperaturgrensen på kartet bruker du LNAV-minima, eller LPV hvis tilgjengelig.'},{en:'Why, and how much: altimetry lab',no:'Hvorfor, og hvor mye: høydemålerlabben'},'altimetry.html#cold']];
- el('cards').innerHTML=c.map(([t,d,lt,lh])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p>${lh?`<p><a href="${lh}">${L(lt)} →</a></p>`:''}</div>`).join(''); }
-LAB.quiz(el('qbox'),'gnss',()=>LAB.shuffle([
- {q:{en:'How many satellites does RAIM need to detect a fault?',no:'Hvor mange satellitter trenger RAIM for å oppdage en feil?'},a:[{en:'5',no:'5'},{en:'4',no:'4'},{en:'3',no:'3'}],c:0,e:{en:'Four for a fix, a fifth to cross-check. Six to exclude the faulty one.',no:'Fire for en posisjon, en femte for å kryssjekke. Seks for å utelate den som er feil.'}},
- {q:{en:'Which minima need SBAS?',no:'Hvilke minima krever SBAS?'},a:[{en:'LPV',no:'LPV'},{en:'LNAV',no:'LNAV'},{en:'LNAV/VNAV with baro-VNAV',no:'LNAV/VNAV med baro-VNAV'}],c:0,e:{en:'LPV uses SBAS for vertical guidance and integrity.',no:'LPV bruker SBAS for vertikal ledning og integritet.'}},
- {q:{en:'All satellites are low in the same part of the sky. The DOP will be…',no:'Alle satellittene står lavt i samme del av himmelen. DOP blir …'},a:[{en:'high, poor accuracy',no:'høy, dårlig nøyaktighet'},{en:'low, good accuracy',no:'lav, god nøyaktighet'},{en:'unchanged',no:'uendret'}],c:0,e:{en:'Poor geometry multiplies range errors.',no:'Dårlig geometri forstørrer avstandsfeilene.'}},
- {q:{en:'What separates RNP from RNAV?',no:'Hva skiller RNP fra RNAV?'},a:[{en:'On-board performance monitoring and alerting',no:'Overvåking av ytelse og varsling om bord'},{en:'RNP only uses VOR/DME',no:'RNP bruker bare VOR/DME'},{en:'RNAV is more accurate',no:'RNAV er mer nøyaktig'}],c:0,e:{en:'RNP tells you when it cannot meet the required performance.',no:'RNP sier fra når den ikke klarer den påkrevde ytelsen.'}},
- {q:{en:'At a fly-by waypoint at higher speed, the turn starts…',no:'Ved et fly-by-veipunkt i høyere fart starter svingen …'},a:[{en:'earlier',no:'tidligere'},{en:'later',no:'senere'},{en:'overhead',no:'over punktet'}],c:0,e:{en:'A bigger radius needs a longer lead.',no:'Større radius krever lengre forvarsel.'}},
- {q:{en:'It is −25 °C and the chart says baro-VNAV not below −15 °C. You…',no:'Det er −25 °C og kartet sier baro-VNAV ikke under −15 °C. Du …'},a:[{en:'use LNAV (or LPV) minima',no:'bruker LNAV- (eller LPV-) minima'},{en:'fly LNAV/VNAV but add 50 ft',no:'flyr LNAV/VNAV, men legger til 50 ft'},{en:'set a lower QNH',no:'setter lavere QNH'}],c:0,e:{en:'Below the limit the baro path is too low.',no:'Under grensen blir baro-banen for lav.'}},
- {q:{en:'Why does a GNSS receiver need four satellites for a 3D position, not three?',no:'Hvorfor trenger en GNSS-mottaker fire satellitter for en 3D-posisjon, ikke tre?'},a:[{en:'The receiver clock error is a fourth unknown',no:'Feilen i mottakerens klokke er en fjerde ukjent'},{en:'One satellite is always kept in reserve',no:'Én satellitt holdes alltid i reserve'},{en:'The fourth gives the magnetic variation',no:'Den fjerde gir misvisningen'}],c:0,e:{en:'Three position coordinates plus the clock offset: four unknowns, four ranges.',no:'Tre posisjonskoordinater pluss klokkefeilen: fire ukjente, fire avstander.'}},
- {q:{en:'Besides better accuracy, what does SBAS give that makes LPV possible?',no:'Hva gir SBAS, i tillegg til bedre nøyaktighet, som gjør LPV mulig?'},a:[{en:'Integrity: a warning within seconds if a satellite cannot be trusted',no:'Integritet: varsel i løpet av sekunder hvis en satellitt ikke kan stoles på'},{en:'More satellites in the sky',no:'Flere satellitter på himmelen'},{en:'A backup when GNSS is jammed',no:'En reserve når GNSS blir jammet'}],c:0,e:{en:'Vertical guidance close to the ground needs both small errors and a fast, reliable alarm. SBAS uses the same GNSS signals, so it does not help against jamming.',no:'Vertikal ledning nær bakken krever både små feil og en rask, pålitelig alarm. SBAS bruker de samme GNSS-signalene, så det hjelper ikke mot jamming.'}},
- {q:{en:'Near the Baltic your groundspeed jumps, the position drifts and integrity is lost. Best action?',no:'Nær Østersjøen hopper groundspeed, posisjonen driver og integriteten forsvinner. Beste handling?'},a:[{en:'Treat it as interference: navigate on conventional aids or radar, tell ATC and report it',no:'Behandle det som forstyrrelse: naviger på konvensjonelle hjelpemidler eller radar, si fra til ATC og rapporter det'},{en:'Reset the FMGC and continue the RNP approach',no:'Tilbakestill FMGC og fortsett RNP-innflygingen'},{en:'Switch SBAS off',no:'Slå av SBAS'}],c:0,e:{en:'These are typical signs of jamming or spoofing. Do not trust GNSS-derived positions until the signal is clean again.',no:'Dette er typiske tegn på jamming eller spoofing. Ikke stol på GNSS-baserte posisjoner før signalet er rent igjen.'}},
- {q:{en:'Approaching the FAF on an RNP approach in the A320, the MCDU PROG page shows LOW accuracy and GPS PRIMARY is lost. You…',no:'På vei mot FAF på en RNP-innflyging i A320 viser MCDU-siden PROG LOW nøyaktighet, og GPS PRIMARY er tapt. Du …'},a:[{en:'do not start the final descent on the RNP approach',no:'starter ikke sluttnedstigningen på RNP-innflygingen'},{en:'descend anyway, the accuracy will recover',no:'går ned likevel, nøyaktigheten kommer tilbake'},{en:'switch to LNAV/VNAV minima',no:'bytter til LNAV/VNAV-minima'}],c:0,e:{en:'The estimated position error no longer meets the 0.3 NM the approach was built for, so the approach is not available.',no:'Den beregnede posisjonsfeilen oppfyller ikke lenger de 0,3 NM innflygingen er bygget for, så innflygingen er ikke tilgjengelig.'}},
- {q:{en:'May you insert or move a waypoint in a published RNP approach in the FMS?',no:'Kan du legge inn eller flytte et veipunkt i en publisert RNP-innflyging i FMS-en?'},a:[{en:'No: the approach must come unmodified from a current database',no:'Nei: innflygingen må komme uendret fra en gyldig database'},{en:'Yes, if ATC agrees',no:'Ja, hvis ATC godtar det'},{en:'Yes, on the intermediate segment only',no:'Ja, bare på intermediate-segmentet'}],c:0,e:{en:'The procedure is only protected as coded and checked. Check it against the chart, but do not edit it.',no:'Prosedyren er bare beskyttet slik den er kodet og kontrollert. Sjekk den mot kartet, men ikke rediger den.'}},
- {q:{en:'Which is true of RF (radius to fix) legs?',no:'Hva stemmer om RF-etapper (radius to fix)?'},a:[{en:'They can appear in RNP 1, RNP APCH and A-RNP as well as RNP AR, and need RF capability and crew approval',no:'De kan finnes i RNP 1, RNP APCH og A-RNP i tillegg til RNP AR, og krever RF-kapabilitet og godkjent besetning'},{en:'They exist only in RNP AR',no:'De finnes bare i RNP AR'},{en:'Any GNSS receiver can fly them',no:'Alle GNSS-mottakere kan fly dem'}],c:0,e:{en:'RF is an optional function in several specifications. Without it, the procedure or that part of it is not available to you.',no:'RF er en valgfri funksjon i flere spesifikasjoner. Uten den er prosedyren, eller den delen av den, ikke tilgjengelig for deg.'}},
- {q:{en:'Why does a fly-over waypoint need more airspace than a fly-by?',no:'Hvorfor trenger et fly-over-veipunkt mer luftrom enn et fly-by?'},a:[{en:'The turn starts overhead, so you overshoot the next leg and have to come back to it',no:'Svingen starter over punktet, så du skyter over neste etappe og må tilbake til den'},{en:'You must fly it slower',no:'Du må fly det saktere'},{en:'It is always followed by a hold',no:'Det følges alltid av en holding'}],c:0,e:{en:'A fly-by turn starts early and cuts the corner; a fly-over turn cannot.',no:'En fly-by-sving starter tidlig og kutter hjørnet; en fly-over-sving kan ikke det.'}}
-]));
-LAB.start('gnss'); su(); wu(); tabs(); cards();
-LAB.onLang(()=>{ su(); wu(); tabs(); cards(); });
-})();
-</script>
+<script src="lab.js?v=36"></script>
+<script src="concepts.js?v=1"></script>
+<script src="navcore.js?v=1"></script>
+<script src="navgauges.js?v=2"></script>
+<script src="gnsscore.js?v=1"></script>
+<script src="gnsslab.js?v=1"></script>
 </body>
 </html>

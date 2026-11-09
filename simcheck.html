@@ -78,7 +78,7 @@
 </style>
 </head>
 <body data-title="A320 simulator assessment">
-<script src="site.js?v=35"></script>
+<script src="site.js?v=37"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -180,7 +180,7 @@
   </section>
   <p class="foot">Teaching model. Attitudes, N1 values and speeds are typical, rounded values for a light-to-medium A320 at low altitude: not FCOM data and not the values of any particular assessment. Tolerances are commonly used ones, not assessment criteria. The candidate guide you receive is the reference.</p>
 </div>
-<script src="lab.js?v=34"></script>
+<script src="lab.js?v=36"></script>
 <script>
 (function(){
 'use strict';
@@ -405,7 +405,7 @@ const MAN={
  npa:{t:F('2D approach (LOC or VOR, CDFA)','2D-innflyging (LOC eller VOR, CDFA)'),
   goal:F('Fly a non-precision approach as a continuous descent final approach: one stable descent from the final approach fix to the derived decision altitude, with no level-off at the minimum.','Fly en ikke-presisjonsinnflyging som continuous descent final approach: én stabil nedstigning fra final approach fix til avledet beslutningshøyde, uten utflating på minimum.'),
   tgt:F('Landing configuration and VAPP before the final approach fix. Rate from the chart or groundspeed × 5 for a 3° path. Pitch about +2.5° and N1 about 55–60 % in CONF FULL, as on the ILS. The derived decision altitude is the MDA plus the operator’s add-on.','Landingskonfigurasjon og VAPP før final approach fix. Rate fra kartet eller groundspeed × 5 for en 3°-bane. Pitch rundt +2,5° og N1 rundt 55–60 % i CONF FULL, som på ILS. Avledet beslutningshøyde er MDA pluss operatørens tillegg.'),
-  how:F('At the fix, lower the nose about 3° and reduce thrust in one movement. Compare altitude with the chart’s distance table every mile and adjust the rate by 100–200 ft/min. At the derived decision altitude: visual reference, continue; not, go around. The <a href="approach.html#rod">approach lab</a> has the rate table.','Ved fixen, senk nesen rundt 3° og reduser thrust i én bevegelse. Sammenlign høyden med avstandstabellen på kartet hver mil og juster raten med 100–200 ft/min. På avledet beslutningshøyde: visuell referanse, fortsett; ikke, go-around. <a href="approach.html#rod">Innflygingslaben</a> har ratetabellen.'),
+  how:F('At the fix, lower the nose about 3° and reduce thrust in one movement. Compare altitude with the chart’s distance table every mile and adjust the rate by 100–200 ft/min. At the derived decision altitude: visual reference, continue; not, go around. The <a href="holding.html#explore">holding and approach lab</a> shows the rates.','Ved fixen, senk nesen rundt 3° og reduser thrust i én bevegelse. Sammenlign høyden med avstandstabellen på kartet hver mil og juster raten med 100–200 ft/min. På avledet beslutningshøyde: visuell referanse, fortsett; ikke, go-around. <a href="holding.html#explore">Holding- og innflygingslaben</a> viser ratene.'),
   tol:F('Commonly used: track within half scale (about ±5° on a VOR), on the altitude profile within about ±100 ft, speed VAPP +10/−5 kt.','Vanlig brukt: spor innenfor halv skala (rundt ±5° på VOR), på høydeprofilen innenfor rundt ±100 ft, fart VAPP +10/−5 kt.'),
   err:F('Starting down early or late; levelling at the minimum and looking for the runway (dive and drive); no distance-altitude check; chasing a VOR needle that becomes sensitive near the station.','Begynner nedstigningen for tidlig eller sent; flater ut på minimum og leter etter banen («dive and drive»); ingen avstand-høydesjekk; jager en VOR-viser som blir følsom nær stasjonen.')},
  land:{t:F('Landing','Landing'),
@@ -669,7 +669,7 @@ const RD=[
 ];
 function ready(){
   el('rcards').innerHTML=RD.map(([t,d,c],i)=>`<div class="box${c?' '+c:''}"><span class="n">${String(i+1).padStart(2,'0')}</span><b class="t">${esc(L(t))}</b><p>${L(d)}</p></div>`).join('');
-  el('rmore').innerHTML=L(F('Background: <a href="approach.html">Instrument approach</a> (needles, rates, CDFA), <a href="holding.html">Holding</a>, <a href="autoflight.html">Autoflight and FMA</a>, <a href="performance.html">Performance</a>, <a href="highspeed.html">High-speed flight</a>.','Bakgrunn: <a href="approach.html">Instrumentinnflyging</a> (visere, rater, CDFA), <a href="holding.html">Holding</a>, <a href="autoflight.html">Autoflight og FMA</a>, <a href="performance.html">Ytelse</a>, <a href="highspeed.html">Høyfartsflyging</a>.'));
+  el('rmore').innerHTML=L(F('Background: <a href="holding.html">Holding and instrument approach</a> (entries, needles, rates, CDFA), <a href="autoflight.html">Autoflight and FMA</a>, <a href="performance.html">Performance</a>, <a href="highspeed.html">High-speed flight</a>.','Bakgrunn: <a href="holding.html">Holding og instrumentinnflyging</a> (innflyginger, visere, rater, CDFA), <a href="autoflight.html">Autoflight og FMA</a>, <a href="performance.html">Ytelse</a>, <a href="highspeed.html">Høyfartsflyging</a>.'));
 }
 
 /* ================= 7 · Quiz ================= */

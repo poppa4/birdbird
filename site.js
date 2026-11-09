@@ -27,15 +27,13 @@
   const ITEMS=[
     ['lab','quiz:altimetry',150,'altimetry.html#quiz',{en:'Pressure and altitude test',no:'Test: trykk og høyde'}],
     ['lab','quiz:orientation',150,'orientation.html#quiz',{en:'Spatial orientation test',no:'Test: romlig orientering'}],
-    ['lab','quiz:holding',150,'holding.html#quiz',{en:'Holding test',no:'Test: holding'}],
-    ['lab','quiz:holding-drill',150,'holding.html#drill',{en:'Holding entry drill',no:'Drill: holding-innflyging'}],
+    ['lab','quiz:holding',150,'holding.html#quiz',{en:'Holding and approach test',no:'Test: holding og innflyging'}],
     ['lab','quiz:pitot',150,'pitot.html#quiz',{en:'Pitot-static test',no:'Test: pitot-statisk system'}],
     ['lab','quiz:clouds',150,'clouds.html#quiz',{en:'Clouds, stability and fog test',no:'Test: skyer, stabilitet og tåke'}],
     ['lab','quiz:pressure',150,'pressure.html#quiz',{en:'Pressure and wind test',no:'Test: trykk og vind'}],
     ['lab','quiz:fronts',150,'fronts.html#quiz',{en:'Fronts and air masses test',no:'Test: fronter og luftmasser'}],
     ['lab','quiz:storms',150,'storms.html#quiz',{en:'Thunderstorms and wind shear test',no:'Test: tordenvær og vindskjær'}],
     ['lab','quiz:hazards',150,'hazards.html#quiz',{en:'Icing and turbulence test',no:'Test: ising og turbulens'}],
-    ['lab','quiz:approach',150,'approach.html#quiz',{en:'Instrument approach test',no:'Test: instrumentinnflyging'}],
     ['lab','quiz:radionav',150,'radionav.html#quiz',{en:'Radio navigation test',no:'Test: radionavigasjon'}],
     ['lab','quiz:propeller',150,'propeller.html#quiz',{en:'Engine failure and minimum control speeds test',no:'Test: motorstans og minste kontrollfarter'}],
     ['lab','quiz:stability',150,'stability.html#quiz',{en:'CG and stability test',no:'Test: CG og stabilitet'}],
@@ -139,7 +137,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=21'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=23'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }

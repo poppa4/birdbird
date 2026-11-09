@@ -144,7 +144,10 @@ K.hsi={ springs:{hdg:[6,0.95,1],crs:[10,0.9,1],dev:[7,0.62,0],gs:[7,0.62,0],bug:
     /* GS pointer */
     if(v.ils&&v.gsValid){ const gy=c-Math.max(-2.3,Math.min(2.3,G.sp.gs.x))*r*0.17, gx=c+r*0.82; g.fillStyle=C.vor; g.beginPath(); g.moveTo(gx-s*0.022,gy); g.lineTo(gx+s*0.02,gy-s*0.022); g.lineTo(gx+s*0.02,gy+s*0.022); g.closePath(); g.fill(); }
     else if(v.ils) stripes(g,c+r*0.66,c-r*0.06,s*0.075,s*0.05,'GS',s);
-    if(v.flag==='OFF') stripes(g,c-r*0.55,c-r*0.38,s*0.1,s*0.06,'NAV',s);
+    if(v.flag==='OFF') stripes(g,c-r*0.55,c-r*0.38,s*(v.flagTxt?0.12:0.1),s*0.06,v.flagTxt||'NAV',s);
+    /* optional source/mode annunciation (GNSS lab: 'GPS', 'TERM', 'LPV' …), drawn only when given */
+    if(v.ann){ font(g,600,s*0.044,FM); g.textAlign='center'; g.textBaseline='middle'; const tw=g.measureText(v.ann).width+s*0.03;
+      const ax=c-r*0.52, ay=c+r*0.56; g.fillStyle='rgba(0,0,0,.72)'; rr(g,ax-tw/2,ay-s*0.03,tw,s*0.06,s*0.01); g.fill(); g.fillStyle=v.annC||C.vor; g.fillText(v.ann,ax,ay+s*0.002); }
     font(g,500,s*0.042,FM); g.textBaseline='alphabetic'; g.fillStyle=C.crs; g.textAlign='left'; g.fillText('CRS '+d3(v.crs),s*0.05,s*0.065); g.fillStyle=C.bug; g.textAlign='right'; g.fillText('HDG '+d3(v.bug),s*0.95,s*0.065);
   },
   set(G,v){ const lim=2.3; G.sp.hdg.to(v.hdg); G.sp.crs.to(v.crs); G.sp.dev.to(Math.max(-lim,Math.min(lim,v.hsiDots))); G.sp.gs.to(v.gsDots2||0); G.sp.bug.to(v.bug); },
