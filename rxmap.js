@@ -258,7 +258,7 @@ function create(container,o){
          screens, at most 400 tiles per source; 5 levels / 160 tiles on phones) without holding hundreds of MB of textures. */
       const small=Math.min(screen.width||9999,screen.height||9999)<700;
       try{ map=new maplibregl.Map({container,style,center:o.center||[10,60],zoom:o.zoom==null?4:o.zoom,minZoom:2,maxZoom:17.5,maxPitch:85,attributionControl:false,dragRotate:false,pitchWithRotate:false,
-        touchPitch:false,fadeDuration:150,maxTileCacheSize:1200,canvasContextAttributes:{antialias:true},cooperativeGestures:false,refreshExpiredTiles:false,renderWorldCopies:false,
+        touchPitch:false,fadeDuration:150,canvasContextAttributes:{antialias:true},cooperativeGestures:false,refreshExpiredTiles:false,renderWorldCopies:false,
         locale:/^nb|^no/.test(document.documentElement.lang||'')?{'AttributionControl.ToggleAttribution':'Vis eller skjul kildene','AttributionControl.MapFeedback':'Tilbakemelding på kartet','ScaleControl.Meters':'m','ScaleControl.Kilometers':'km'}:undefined,pixelRatio:dprOf(),maxCanvasSize:[glMax(),glMax()],maxTileCacheZoomLevels:small?5:6,maxTileCacheSize:small?160:400,anisotropicFilterPitch:20}); }
       catch(e){ return fail(e); }
       map.touchZoomRotate.disableRotation();

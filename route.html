@@ -521,7 +521,7 @@
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
     <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
-      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="auto" selected>Auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
+      <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" class="on" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
       <p class="note x3h" id="x3pm" hidden>Choose Altitude line or Climb and descent in the profile to colour the route by terrain margin.</p></div>
@@ -758,7 +758,7 @@
 <script src="store.js?v=2"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=14"></script>
+<script src="rxmap.js?v=15"></script>
 <script>
 (function(){
 'use strict';
@@ -1828,7 +1828,7 @@ LAB.add({},{
  'VFR':'VFR','IFR':'IFR','VFR chart: terrain colours, relief and contours':'VFR-kart: terrengfarger, relieff og koter','IFR chart: low ink, faint relief':'IFR-kart: lite blekk, svakt relieff','Chart style':'Kartstil',
  'VFR chart':'VFR-kart','IFR (low ink)':'IFR (lite blekk)','Relief':'Relieff','Aviation':'Luftfart','Terrain numbers':'Terrengtall','Mine':'Mine','Terrain colours and shading':'Terrengfarger og skygge','Contour lines (ft)':'Koter (fot)','Airspace (openAIP)':'Luftrom (openAIP)','IFR points (Finland, Iceland)':'IFR-punkter (Finland, Island)','My fixes':'Mine fixes',
  'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til nærmeste 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
- 'Cruise':'Marsj','Aircraft':'Fly','Aircraft model':'Flymodell','Auto':'Auto','Show map help':'Vis karthjelp','GS':'GS','kt':'kt','500 ft lower':'500 ft lavere','500 ft higher':'500 ft høyere','Cruise altitude, feet or FL':'Marsjhøyde, fot eller FL','Cruise altitude: feet (6500) or flight level (FL75)':'Marsjhøyde: fot (6500) eller flygenivå (FL75)','Ground speed, knots':'Fart over bakken, knop','Ground speed (kt)':'Fart over bakken (kt)',
+ 'Cruise':'Marsj','Aircraft':'Fly','Aircraft model':'Flymodell','Auto':'Auto','Symbol':'Symbol','3D: auto':'3D: auto','Show map help':'Vis karthjelp','GS':'GS','kt':'kt','500 ft lower':'500 ft lavere','500 ft higher':'500 ft høyere','Cruise altitude, feet or FL':'Marsjhøyde, fot eller FL','Cruise altitude: feet (6500) or flight level (FL75)':'Marsjhøyde: fot (6500) eller flygenivå (FL75)','Ground speed, knots':'Fart over bakken, knop','Ground speed (kt)':'Fart over bakken (kt)',
  '▶ Simulate flight':'▶ Simuler flygingen','Fly the route in 3D at your planned altitude':'Fly ruten i 3D i den planlagte høyden','Simulate the flight':'Simuler flygingen','Camera':'Kamera','Chase':'Bak flyet','Cockpit':'Cockpit','Overview':'Oversikt','Speed':'Fart','Simulation speed':'Simuleringsfart',
  'Behind and above the aircraft':'Bak og over flyet','From the aircraft, looking ahead along the track':'Fra flyet, fremover langs kursen','The whole route':'Hele ruten',
  'Base map':'Bakgrunnskart','Chart':'Kart','Satellite':'Satellitt','Norway topo':'Norge topo','Drag to move · right-drag or two fingers to turn and tilt · scroll or pinch to zoom':'Dra for å flytte · høyreklikk-dra eller to fingre for å snu og tilte · scroll eller knip for å zoome',
@@ -2098,7 +2098,7 @@ el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
-const T3={on:false,ready:null,ex:1.2,act:'auto',ct:0,follow:true,cm:'chase',spd:5,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
+const T3={on:false,ready:null,ex:1.2,act:'off',ct:0,follow:true,cm:'chase',spd:5,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
 const FT3=0.0003048; // fot → km
 const PHONE3=()=>window.innerWidth<=900||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
 function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
@@ -2462,7 +2462,7 @@ const AC3={st:null,L:null,bank:0,pitch:0};
 const RM3=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 function acType(){ if(T3.act&&T3.act!=='auto') return T3.act; const g=gsOf(); return g>=200?'a320':g>=150?'b200':'da42'; }
 const acLen=()=>({da42:8.6,b200:13.3,a320:37.6})[acType()]||9;
-function ac3Load(){ if(AC3.st||!ML) return AC3.st; AC3.st=load3().then(()=>window.SIMAC?0:new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='simac3d.js?v=1'; sc.onload=ok; sc.onerror=()=>ko(new Error('simac3d.js')); document.head.appendChild(sc); }))
+function ac3Load(){ if(T3.act==='off') return null; if(AC3.st||!ML) return AC3.st; AC3.st=load3().then(()=>window.SIMAC?0:new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='simac3d.js?v=1'; sc.onload=ok; sc.onerror=()=>ko(new Error('simac3d.js')); document.head.appendChild(sc); }))
   .then(()=>{ if(!ML||!window.SIMAC) return; if(!ML.getLayer('bb-ac3d')){ const L=SIMAC.layer(); ML.addLayer(L); AC3.L=L; } mlKick3(); })
   .catch(e=>{ AC3.st=null; try{ console.info('Route Explorer: no 3D aircraft ('+((e&&e.message)||e)+')'); }catch(_){} }); return AC3.st; }
 /* sun for the sky: local solar noon today at the middle of the route (no departure time is stored); in the Nordic
@@ -2521,7 +2521,7 @@ function mlFrame3(now){ T3.raf=0; if(!T3.on||!ML) return; const t0=performance.n
       if(ta!=null&&tc!=null){ const w=(((tc-ta)%360+540)%360-180)/(2*d)*D2R*gs/3600*2.5; bank=Math.max(-25,Math.min(25,Math.atan(gs*0.5144*w/9.81)/D2R)); }
       pit=Math.atan((ml3Alt(M,Math.min(tot,at+0.1))-ml3Alt(M,Math.max(0,at-0.1)))/0.2/6076)/D2R+(acType()==='a320'?2.5:2);
       const ke=dt>0?1-Math.exp(-dt*1.8):1; AC3.bank+=(bank-AC3.bank)*ke; AC3.pitch+=(pit-AC3.pitch)*ke; if(Math.abs(bank-AC3.bank)>0.1||Math.abs(pit-AC3.pitch)>0.1) more=true; }
-    showM=!!(AC3.L&&q&&q.la!=null&&dv&&T3.cm==='chase'&&T3.mb!=null);
+    showM=!!(T3.act!=='off'&&AC3.L&&q&&q.la!=null&&dv&&T3.cm==='chase'&&T3.mb!=null); if(!showM&&AC3.L&&T3.act==='off') AC3.L.set({on:false});
     if(showM) AC3.L.set({on:true,la:q.la,lo:q.lo,ft:ml3Alt(M,at),hd:T3.mb,bank:AC3.bank,pitch:AC3.pitch,type:acType(),sun:T3.sun,spin:T3.play&&!RM3()});
     if(q&&q.la!=null&&dv&&T3.mb!=null){ const ex=RXMAP.exag(ML)||1, a=ml3Alt(M,at)*0.3048*ex, ly=T3.lk.y, lp=T3.lk.p;
       const tq=tpq(at), gnd=tq?(tq.c!=null?tq.c:tq.e):0, agl=ml3Alt(M,at)-(gnd||0);
@@ -2567,7 +2567,7 @@ function simSpeed(dt){ const base=gsOf()/3600*T3.spd, look=Math.max(0.5,base*14)
   T3.k+=(k-T3.k)*(dt>0?1-Math.exp(-dt*(k<T3.k?3:0.8)):1); }
 function simAhead(){ const pf=T3.pf; if(!pf||!ML||pf.busy) return; if(T3.x>pf.toX){ pf.toX=T3.x; pf.readyX=Math.max(pf.readyX,T3.x); } if(pf.toX>=simM().total) return; if(T3.x+Math.max(6,gsOf()/3600*T3.spd*40)<pf.toX) return;
   const M=simM(), from=pf.toX, to=Math.min(M.total,from+12); pf.busy=true;
-  const c=RXMAP.prefetch(ML,simPts(M,from,to),T3.cm==='overview'?pf.zc:14.5,{max:1200,onProgress:k=>{ pf.readyX=Math.max(pf.readyX,k.readyX); }}); pf.ctl=c;
+  const c=RXMAP.prefetch(ML,simPts(M,from,to),T3.cm==='overview'?pf.zc:14.5,{max:700,onProgress:k=>{ pf.readyX=Math.max(pf.readyX,k.readyX); }}); pf.ctl=c;
   c.promise.then(()=>{ pf.busy=false; pf.toX=to; pf.readyX=Math.max(pf.readyX,to); }); }
 function simStop(){ if(T3.pf&&T3.pf.ctl) T3.pf.ctl.stop(); T3.pf=null; const o=el('simload'); if(o) o.hidden=true; }
 // before take-off: fetch tiles for the first part of the route (all of it on short routes), showing progress
@@ -2576,7 +2576,7 @@ function simPreload(){ return new Promise(res=>{ if(!ML){ res(); return; } const
   const pf=T3.pf={zc,toX:first,readyX:0,busy:true}; const o=el('simload'), bar=el('simloadb'), pct=el('simloadp'); o.hidden=false; let fin=false;
   const end=()=>{ if(fin) return; fin=true; o.hidden=true; pf.busy=false; res(); };
   el('simskip').onclick=()=>{ pf.readyX=Infinity; end(); };
-  const c=RXMAP.prefetch(ML,simPts(M,0,first),zc,{max:1800,onProgress:k=>{ const f=k.n?k.done/k.n:1; bar.style.width=(f*100).toFixed(0)+'%'; pct.textContent=Math.round(f*100)+' %'; pf.readyX=k.readyX; }}); pf.ctl=c;
+  const c=RXMAP.prefetch(ML,simPts(M,0,first),zc,{max:1000,onProgress:k=>{ const f=k.n?k.done/k.n:1; bar.style.width=(f*100).toFixed(0)+'%'; pct.textContent=Math.round(f*100)+' %'; pf.readyX=k.readyX; }}); pf.ctl=c;
   if(!c.n){ pf.readyX=first; end(); return; }
   c.promise.then(()=>{ pf.readyX=Math.max(pf.readyX,first); setTimeout(end,150); }); }); }
 const simAdv=()=>gsOf()/3600*T3.spd*(T3.k||1); // NM per second of screen time (T3.k < 1 while tiles ahead are still loading)
