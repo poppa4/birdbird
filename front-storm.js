@@ -27,9 +27,9 @@
   };
   const DEVK = ['hum', 'tcu', 'calvus', 'incus', 'dis'];
   const START = { hum: 0, tcu: 6, calvus: 14, incus: 20, dis: 35 };   // cbmodel: stage boundaries for a single cell, low shear
-  const LAYERS = [['flow', t2('Air motion', 'Luftbevegelse')], ['gust', t2('Gust front', 'Vindkastfront')], ['ltg', t2('Lightning', 'Lyn')]];
+  const LAYERS = [['flow', t2('Air motion', 'Luftbevegelse')], ['gust', t2('Gust front', 'Vindkastfront')], ['ltg', t2('Lightning', 'Lyn')], ['avoid', t2('Avoid 10 / 20 NM', 'Unngå 10 / 20 NM')]];
   const COND = { cape: 'mod', td: 16, shear: 'low', fzl: 10000, uw: 50, type: 'single', t: 26 };
-  const show = { flow: false, hail: false, gust: false, ring: false, ltg: true, ice: false, turb: false, avoid: false, levels: false, labels: true, cloud: 'solid', truth: false };
+  const show = { flow: false, hail: false, gust: false, ring: false, ltg: true, ice: false, turb: false, avoid: true, levels: false, labels: true, cloud: 'solid', truth: false };
   const E = {}, CELLS = [], TEND = 60, RATE = 60 / 36;   // storm minutes per second of film
   let cur = 'incus', V = null, live = false, play = !RM, vis = false, last = 0, acc = 0, tNow = 0, hold = 0;
   const M = () => window.CBM, TH0 = 1.75, PH0 = 1.52;   // camera: the lab's 3/4 view swung round so the anvil streams across the frame
@@ -61,6 +61,7 @@
     if (api.view !== 'storm') return; const m = M(), c = m.main(CELLS); if (!c || !(c.dev in DEV)) return;
     const FT = m.FT2KM, vx = api.VEX.storm || 1, hb = E.base * FT, top = Math.min(c.top, m.TROPO);
     lbl(DEV[c.dev].ab + ' · ' + L(DEV[c.dev].n), c.x + E.tilt * (top * FT - hb), (top + (c.over || 0)) * FT * vx, c.z, 'up', narrow ? 0 : -90, -38, 4);
+    if (show.avoid && c.st !== 'cu') { lbl('10 NM', c.x - 18.5, 0.2, c.z, 'av', 0, -18, 2); lbl('20 NM', c.x - 37, 0.2, c.z, 'av', 0, -18, 2); }
     if (show.gust && c.gust > 2) { m.downCentre(E, c, DCe); lbl(L(t2('Gust front', 'Vindkastfront')), DCe.x + c.gust, 0.9 * vx, DCe.z, 'dn', 30, -34, 3); }
   }
   const DCe = { x: 0, z: 0 };
