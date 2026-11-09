@@ -269,6 +269,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
 <script src="lab.js?v=37"></script>
+<script src="cfd3d.js?v=6"></script>
 <script>
 (function(){
 'use strict';
@@ -342,8 +343,11 @@ const CDw=(M,CL)=>{ const x=M-Mcr(CL); return x>0? 20*x*x*x*x : 0; };
 const Mdd=CL=>Mcr(CL)+0.108;
 const VMO=350, MMO=0.82, CEIL=39800;
 function arrow(g,x0,y0,x1,y1,c,w,hd){ g.strokeStyle=c; g.fillStyle=c; g.lineWidth=w||2; g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); const a=Math.atan2(y1-y0,x1-x0), s=hd||8; g.beginPath(); g.moveTo(x1,y1); g.lineTo(x1-s*Math.cos(a-.4),y1-s*Math.sin(a-.4)); g.lineTo(x1-s*Math.cos(a+.4),y1-s*Math.sin(a+.4)); g.closePath(); g.fill(); }
-function hand(g,t,x,y,c,al,sz){ g.font='600 '+Math.round((sz||17)*0.76*(g.canvas.clientWidth<520?0.82:1))+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
-function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; g.fillText(t,x,y); g.textAlign='start'; }
+// HALO: mørk kant rundt teksten, så etiketter kan leses oppå fargefeltet (settes bare mens Mach-feltet tegnes)
+let HALO=false;
+function halo(g,t,x,y){ if(!HALO) return; g.save(); g.lineJoin='round'; g.lineWidth=3.2; g.strokeStyle='rgba(8,12,16,.82)'; g.strokeText(t,x,y); g.restore(); }
+function hand(g,t,x,y,c,al,sz){ g.font='600 '+Math.round((sz||17)*0.76*(g.canvas.clientWidth<520?0.82:1))+'px "Public Sans", sans-serif'; g.fillStyle=c||'#1D4E9E'; g.textAlign=al||'start'; halo(g,t,x,y); g.fillText(t,x,y); g.textAlign='start'; }
+function mono(g,t,x,y,c,al,sz){ g.font=(sz||11)+'px IBM Plex Mono, monospace'; g.fillStyle=c||'#5E6B74'; g.textAlign=al||'start'; halo(g,t,x,y); g.fillText(t,x,y); g.textAlign='start'; }
 function bg(C){ const g=C.ctx; g.setTransform(C.dpr,0,0,C.dpr,0,0); g.clearRect(0,0,C.w,C.h); g.fillStyle='#FBFBF8'; g.fillRect(0,0,C.w,C.h); return g; }
 const ft=v=>nf(Math.round(v/100)*100,0)+' ft', FL=v=>'FL'+String(Math.round(v/1000)*10).padStart(3,'0');
 
@@ -434,15 +438,77 @@ const F={M:0.78,CL:0.5};
 const CF_=fitD(el('cvF'),()=>dF(),2), CM_=fitD(el('cvM'),()=>dM(),2);
 function fstate(){ const mc=Mcr(F.CL), x=F.M-mc, sup=x>0, peak= F.M/mc, xs= sup? Math.min(0.88,0.32+x*3.2) : 0, sep= x>0.085, low= x>0.06, tuck= x>0.11; return {mc,x,sup,peak,xs,sep,low,tuck,mdd:Mdd(F.CL),cdw:CDw(F.M,F.CL)}; }
 function foil(x){ const t=0.12, c=0.035; const yt=5*t*(0.2969*Math.sqrt(x)-0.126*x-0.3516*x*x+0.2843*x*x*x-0.1036*x*x*x*x); const yc= c*(1-Math.pow(2*x-1,2))*0.9; return {u:yc+yt,l:yc-yt*0.8}; }
+/* Lokalt Machtall rundt profilet som fargefelt (Turbo, som i CFD-etterbehandling), med isolinjer og lydlinjen M = 1.
+   Illustrativt felt bygd av modellens egne tall: toppfarten over oversiden (F.M/Mcrit), sjokkets plass xs og lommens
+   høyde (samme som før), normalsjokk-relasjonen bak sjokket, stagnasjon ved forkanten og et svakt kjølvann. */
+const MF={m0:0.2,m1:1.4};
+const mT=m=>Math.max(0,Math.min(1,(m-MF.m0)/(MF.m1-MF.m0)));
+const nShock=m=> m>1? Math.sqrt((1+0.2*m*m)/(1.4*m*m-0.2)) : m;
+function machField(g,W,H,s,x0,cw,cy,sc,hgt){
+  if(!window.CFD) return null;
+  const Minf=F.M, dU=Math.max(0,s.peak-Minf), rise=c=>1-Math.exp(-Math.max(0,c)/0.035);
+  // lommens høyde i kordelengder → avklingslengde λ, så lydlinjen M = 1 når samme høyde som før
+  const hc=(hgt||0)/cw, lam= s.sup&&s.peak>1.0005? Math.max(0.08,Math.min(0.6,hc/Math.log((s.peak-Minf)/(1-Minf)))) : 0.3;
+  const xl=Math.min(0.9,s.xs+0.05), dL=dU*(s.low?0.72:0.35), lamL=lam*0.6;
+  // avklingslengden varierer langs korden, så lydlinjen blir en kuppel (lavest ved forkanten og ved sjokket)
+  const lamAt=(c,up)=>{ const xe=up? (s.sup?s.xs:0) : (s.low?xl:0), base=up?lam:lamL, cc=Math.max(0,Math.min(1,c));
+    return base*(xe? 0.22+0.78*Math.sin(Math.PI*Math.min(1,cc/(xe*1.22))) : 0.4+0.6*Math.sin(Math.PI*cc)); };
+  function surf(c,up){   // Mach langs flaten før og etter sjokket
+    const xs=up? (s.sup?s.xs:0) : (s.low?xl:0), d=up? dU : dL, cc=Math.max(0,Math.min(1,c));
+    const pre=cc2=>Minf+d*rise(cc2)*(xs? (cc2<=xs? 0.9+0.1*cc2/xs : Math.max(0,1-(cc2-xs)/(1-xs))) : Math.pow(1-cc2,0.9)*Math.min(1,1.6*(1-Math.exp(-cc2/0.12))));
+    if(!xs||cc<=xs) return [pre(cc),pre(cc),xs];
+    const M1=pre(xs), M2=nShock(M1), post=M2+(Minf-0.02-M2)*Math.pow((cc-xs)/(1-xs),0.7);
+    return [post,pre(cc),xs]; }
+  const sx=3, nx=Math.ceil(W/sx), ny=Math.ceil(H/sx), M=new Float32Array(nx*ny), img=new ImageData(nx,ny);
+  for(let j=0;j<ny;j++) for(let i=0;i<nx;i++){
+    const px=i*sx+sx/2, py=j*sx+sx/2, c=(px-x0)/cw, cc=Math.max(0,Math.min(1,c)), f=foil(cc), yu=cy-f.u*sc, yl=cy-f.l*sc, k=j*nx+i;
+    if(c>=0&&c<=1&&py>yu&&py<yl){ M[k]=NaN; continue; }
+    const up= py<=(yu+yl)/2, hh=(up? yu-py : py-yl)/cw, dx= c<0? -c : c>1? c-1 : 0, d=Math.sqrt(dx*dx+hh*hh), L=Math.max(0.03,lamAt(c,up));
+    const [post,pre,xs]=surf(c,up), e=Math.exp(-d/L);
+    let m=Minf+(pre-Minf)*e;
+    if(xs&&cc>xs){ // bak sjokket: subsonisk nær flaten, glatt over i feltet over lydlinjen
+      const hs=lamAt(xs,up)*Math.log(Math.max(1.0001,(surf(xs,up)[1]-Minf)/(1-Minf))), w=Math.max(0,Math.min(1,(hh-hs*0.85)/(hs*0.5+0.02)));
+      m=(Minf+(post-Minf)*e)*(1-w*w*(3-2*w))+m*(w*w*(3-2*w)); }
+    const rl=Math.hypot(c,(py-cy)/cw), rt=Math.hypot(c-1,(py-(cy-foil(1).u*sc))/cw);
+    m*=1-Math.exp(-(rl*rl)/(0.05*0.05));                       // stagnasjon ved forkanten
+    m*=1-0.22*Math.exp(-(rt*rt)/(0.05*0.05));                  // bakkanten
+    if(c>1){ const hw=(py-(cy-foil(1).u*sc))/cw; m*=1-(s.sep?0.32:0.12)*Math.exp(-(hw*hw)/((0.025+0.05*(c-1))**2))*Math.exp(-(c-1)/1.2); }   // kjølvann
+    M[k]=m; const col=CFD.turbo(mT(m)), o=k*4; img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]=255; }
+  const tmp=document.createElement('canvas'); tmp.width=nx; tmp.height=ny; tmp.getContext('2d').putImageData(img,0,0);
+  g.save(); g.imageSmoothingEnabled=true; g.globalAlpha=0.86; g.drawImage(tmp,0,0,nx*sx,ny*sx); g.globalAlpha=1;
+  // isolinjer hver 0,1 (tynne, mørke) og lydlinjen M = 1 (hvit, stiplet)
+  const iso=(L,style,w,dash)=>{ g.strokeStyle=style; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath();
+    for(let j=0;j<ny-1;j++) for(let i=0;i<nx-1;i++){ const k=j*nx+i, a=M[k], b=M[k+1], d=M[k+nx], e=M[k+nx+1]; if(!(a===a&&b===b&&d===d&&e===e)) continue;
+      if(Math.min(a,b,d,e)>L||Math.max(a,b,d,e)<L) continue; const X0=i*sx+sx/2, Y0=j*sx+sx/2, p=[];
+      const ed=(v1,v2,X1,Y1,X2,Y2)=>{ if((v1-L)*(v2-L)<0){ const t=(L-v1)/(v2-v1); p.push([X1+(X2-X1)*t,Y1+(Y2-Y1)*t]); } };
+      ed(a,b,X0,Y0,X0+sx,Y0); ed(b,e,X0+sx,Y0,X0+sx,Y0+sx); ed(e,d,X0+sx,Y0+sx,X0,Y0+sx); ed(d,a,X0,Y0+sx,X0,Y0);
+      if(p.length>=2){ g.moveTo(p[0][0],p[0][1]); g.lineTo(p[1][0],p[1][1]); } }
+    g.stroke(); g.setLineDash([]); };
+  for(let L=0.3;L<1.39;L+=0.1){ if(Math.abs(L-1)<1e-6) continue; iso(+L.toFixed(1),'rgba(8,12,16,.28)',1); }
+  iso(1,'rgba(255,255,255,.92)',1.6,[5,4]);
+  const vg=g.createRadialGradient(W*0.5,H*0.55,Math.min(W,H)*0.3,W*0.5,H*0.55,Math.max(W,H)*0.72); vg.addColorStop(0,'rgba(5,8,11,0)'); vg.addColorStop(1,'rgba(5,8,11,.4)'); g.fillStyle=vg; g.fillRect(0,0,W,H);
+  g.restore(); return M; }
+function machBar(g,W,H){   // loddrett fargeskala nederst til høyre, som i laboratoriets vindtunnel
+  const sm=W<520, bh=Math.round(Math.min(sm?90:140,H*0.5)), bw=sm?8:10, tw=sm?34:42, bx=W-(sm?10:16)-tw-bw, by=H-(sm?12:18)-bh, pad=sm?6:8, th=sm?14:18;
+  g.save(); g.fillStyle='rgba(10,14,18,.66)'; g.beginPath(); if(g.roundRect) g.roundRect(bx-pad,by-pad-th,bw+tw+pad*2,bh+pad*2+th,6); else g.rect(bx-pad,by-pad-th,bw+tw+pad*2,bh+pad*2+th); g.fill();
+  for(let y=0;y<bh;y++){ const c=CFD.turbo(1-y/(bh-1)); g.fillStyle=`rgb(${c.map(v=>Math.round(v*255)).join(',')})`; g.fillRect(bx,by+y,bw,1); }
+  g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=1; g.strokeRect(bx-0.5,by-0.5,bw+1,bh+1);
+  g.font=(sm?9.5:10)+'px IBM Plex Mono, monospace'; g.textBaseline='middle'; g.textAlign='left';
+  for(const m of [1.4,1.2,1.0,0.8,0.6,0.4,0.2]){ if(sm&&(Math.round(m*10)%4!==2&&m!==1.0)) continue; const y=by+(1-mT(m))*(bh-1); g.fillStyle=m===1?'#ffffff':'rgba(255,255,255,.55)'; g.fillRect(bx+bw,y-0.5,m===1?5:3,1);
+    g.fillStyle=m===1?'#ffffff':'#d3dae0'; g.fillText(nf(m,1),bx+bw+6,y); }
+  g.font='600 '+(sm?10:10.5)+'px IBM Plex Mono, monospace'; g.fillStyle='#eef2f5'; g.textBaseline='bottom'; g.fillText(L({en:'Mach M',no:'Mach M'}),bx,by-(sm?5:7));
+  g.restore(); }
 function dF(){ const C=CF_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fstate(); const x0=W*0.2, cw=W*0.56, cy=H*0.6, sc=cw*1.2, X=x=>x0+x*cw, Yu=x=>cy-foil(x).u*sc, Yl=x=>cy-foil(x).l*sc;
+  const hgt0= s.sup? Math.min(H*0.42,(0.02+s.x*1.5)*cw) : 0, MFD=machField(g,W,H,s,x0,cw,cy,sc,hgt0); HALO=!!MFD;
   // strømlinjer
   g.strokeStyle='#D3DBDE'; g.lineWidth=1; for(let k=-3;k<=4;k++){ if(!k) continue; g.beginPath(); for(let i=0;i<=120;i++){ const xx=-0.35+i/120*1.75, xc=Math.min(1,Math.max(0,xx)); const hump=Math.exp(-Math.pow((xx-0.3)/0.45,2)); const bump= k>0? 0.085*sc*hump*Math.exp(-k*0.35) : -0.03*sc*hump*Math.exp(k*0.35); const y=cy-k*H*0.085-bump; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); }
   // supersonisk område
   if(s.sup){ const hgt=Math.min(H*0.42,(0.02+s.x*1.5)*cw), xa=Math.max(0.04,0.22-s.x*0.6);
-    const gr=g.createLinearGradient(0,cy-hgt,0,cy); gr.addColorStop(0,'rgba(154,30,104,.10)'); gr.addColorStop(1,'rgba(154,30,104,.30)'); g.fillStyle=gr;
+    const gr=g.createLinearGradient(0,cy-hgt,0,cy); gr.addColorStop(0,'rgba(154,30,104,.10)'); gr.addColorStop(1,'rgba(154,30,104,.30)'); g.fillStyle=MFD?'rgba(0,0,0,0)':gr;
     g.beginPath(); g.moveTo(X(xa),Yu(xa)); for(let i=0;i<=40;i++){ const t=i/40, xx=xa+(s.xs-xa)*t; g.lineTo(X(xx),Yu(xx)-hgt*Math.sin(Math.PI*Math.pow(t,0.8))*(t<0.98?1:0.6)); } g.lineTo(X(s.xs),Yu(s.xs)); for(let i=40;i>=0;i--){ const xx=xa+(s.xs-xa)*i/40; g.lineTo(X(xx),Yu(xx)); } g.closePath(); g.fill();
-    hand(g,'M > 1',X((xa+s.xs)/2),Yu((xa+s.xs)/2)-hgt*0.45,'#9A1E68','center');
+    hand(g,'M > 1',X((xa+s.xs)/2),Yu((xa+s.xs)/2)-hgt*0.45,MFD?'#ffffff':'#9A1E68','center');
     // sjokk
+    if(MFD){ g.strokeStyle='rgba(8,12,16,.75)'; g.lineWidth=5.5; g.beginPath(); g.moveTo(X(s.xs),Yu(s.xs)); g.lineTo(X(s.xs)+4,Yu(s.xs)-hgt*0.85); g.stroke(); }
     g.strokeStyle='#B3261E'; g.lineWidth=3; g.beginPath(); g.moveTo(X(s.xs),Yu(s.xs)); g.lineTo(X(s.xs)+4,Yu(s.xs)-hgt*0.85); g.stroke(); hand(g,L({en:'shock wave',no:'sjokkbølge'}),X(s.xs)+8,Yu(s.xs)-hgt*0.85,'#B3261E');
     if(s.low){ const xl=Math.min(0.9,s.xs+0.05), hl=Math.min(H*0.25,(s.x-0.06)*4*cw); g.fillStyle='rgba(154,30,104,.18)'; g.beginPath(); g.moveTo(X(xl-0.3),Yl(xl-0.3)); g.quadraticCurveTo(X(xl-0.12),Yl(xl-0.12)+hl,X(xl),Yl(xl)); g.closePath(); g.fill(); g.strokeStyle='#B3261E'; g.lineWidth=2.4; g.beginPath(); g.moveTo(X(xl),Yl(xl)); g.lineTo(X(xl)+3,Yl(xl)+hl*0.9+6); g.stroke(); }
     if(s.sep){ g.strokeStyle='#B3261E'; g.lineWidth=1.4; for(let j=0;j<3;j++){ g.beginPath(); for(let i=0;i<=30;i++){ const xx=s.xs+i/30*(1.25-s.xs), y=Yu(Math.min(1,xx))-6-j*7-Math.sin(i*1.2+j)*4; i?g.lineTo(X(xx),y):g.moveTo(X(xx),y); } g.stroke(); } hand(g,L({en:'separated flow behind the shock: buffet',no:'separert strømning bak sjokket: buffet'}),X(1.02),Yu(1)-34,'#B3261E','start',16); }
@@ -451,8 +517,19 @@ function dF(){ const C=CF_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fsta
   g.fillStyle='#DDE3E6'; g.strokeStyle='#4C5B66'; g.lineWidth=1.4; g.beginPath(); for(let i=0;i<=80;i++){ const x=1-Math.cos(i/80*Math.PI/2); i?g.lineTo(X(x),Yu(x)):g.moveTo(X(x),Yu(x)); } for(let i=80;i>=0;i--){ const x=1-Math.cos(i/80*Math.PI/2); g.lineTo(X(x),Yl(x)); } g.closePath(); g.fill(); g.stroke();
   // trykksentrum
   const cp=0.25+(s.sup?Math.min(0.2,s.x*1.6):0); g.fillStyle='#1E5E9E'; arrow(g,X(cp),cy-6,X(cp),cy-6-H*0.17,'#1E5E9E',3,9); hand(g,L({en:'↑ centre of pressure (lift)',no:'↑ trykksentrum (løft)'}),X(cp)+8,Yl(cp)+20,'#1E5E9E','end',15);
-  arrow(g,W*0.03,H*0.2,W*0.13,H*0.2,'#13202A',2); mono(g,'M '+nf(F.M,2),W*0.03,H*0.2-8,'#13202A',null,12);
-  hand(g, s.tuck? L({en:'Mach tuck: centre of pressure moves aft, nose drops',no:'Mach tuck: trykksentrum flytter seg bakover, nesen synker'}) : !s.sup? L({en:'subsonic everywhere',no:'subsonisk overalt'}) : L({en:'transonic: a pocket of supersonic flow',no:'transonisk: en lomme med supersonisk strømning'}),W*0.03,H-12,s.tuck?'#B3261E':'#13202A','start',17); }
+  const hy= MFD&&W<520&&document.body.classList.contains('depth-short')? H*0.2+26 : H*0.2;   // plass til «slik leser du» over
+  arrow(g,W*0.03,hy,W*0.13,hy,'#13202A',2); mono(g,'M '+nf(F.M,2),W*0.03,hy-8,'#13202A',null,12);
+  hand(g, s.tuck? L({en:'Mach tuck: centre of pressure moves aft, nose drops',no:'Mach tuck: trykksentrum flytter seg bakover, nesen synker'}) : !s.sup? L({en:'subsonic everywhere',no:'subsonisk overalt'}) : L({en:'transonic: a pocket of supersonic flow',no:'transonisk: en lomme med supersonisk strømning'}),W*0.03,H-12,s.tuck?'#B3261E':'#13202A','start',17);
+  if(MFD){ machBar(g,W,H);
+    if(document.body.classList.contains('depth-short')){ const t=L({en:'How to read: red/yellow = faster than sound (M > 1) · green ≈ free stream · blue = slowed air',no:'Slik leser du: rødt/gult = raskere enn lyden (M > 1) · grønt ≈ fri strøm · blått = bremset luft'});
+      g.font='500 '+(W<520?10:11)+'px "Public Sans", sans-serif'; g.textBaseline='middle'; g.textAlign='left';
+      // for smalt for én linje: del ved « · » og fyll så mange ledd per linje som får plass
+      const parts=t.split(' · '), lines=[]; let cur='';
+      for(const p of parts){ const tryL=cur? cur+' · '+p : p; if(cur&&g.measureText(tryL).width>W-120) { lines.push(cur); cur=p; } else cur=tryL; } lines.push(cur);
+      const tw=Math.max(...lines.map(x=>g.measureText(x).width));
+      g.fillStyle='rgba(10,14,18,.66)'; g.fillRect(8,7,Math.min(W-16,tw+12),4+15*lines.length); g.fillStyle='#e6ecf1'; lines.forEach((x,i)=>g.fillText(x,14,16+15*i,W-28)); g.textBaseline='alphabetic'; } }
+  HALO=false; }
+document.addEventListener('labdepth',()=>{ try{ dF(); }catch(e){} });
 function dM(){ const C=CM_; if(!C.w) return; const g=bg(C), W=C.w, H=C.h, s=fstate(); const L0=46,R0=14,T0=14,B0=26, PW=W-L0-R0, PH=H-T0-B0, m0=0.5, m1=0.92, X=m=>L0+(m-m0)/(m1-m0)*PW, cd=m=>0.020+0.040*F.CL*F.CL+CDw(m,F.CL), ymax=0.06, Y=c=>T0+PH-c/ymax*PH;
   g.strokeStyle='#EEF1EF'; for(let m=0.5;m<=0.92;m+=0.05){ g.beginPath(); g.moveTo(X(m),T0); g.lineTo(X(m),T0+PH); g.stroke(); mono(g,nf(m,2),X(m),T0+PH+14,null,'center'); }
   for(let c=0.02;c<=ymax;c+=0.02) mono(g,nf(c,2),L0-6,Y(c)+4,null,'right'); mono(g,'CD',6,T0+PH/2);

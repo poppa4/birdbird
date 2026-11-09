@@ -27,8 +27,11 @@
       size0: { value: 0.035 }, grow: { value: 2.2 }, pxScale: { value: 1000 }, maxPx: { value: 110 }, opac: { value: 0.62 },
       tint: { value: new THREE.Color(0.93, 0.95, 0.98) }, Lw: { value: new THREE.Vector3(-0.3, 0.9, 0.3).normalize() },
       laserOn: { value: 0 }, laserN: { value: new THREE.Vector3(1, 0, 0) }, laserD: { value: 0 }, laserTh: { value: 0.07 }, laserCol: { value: new THREE.Color(0.45, 1.0, 0.55) }, laserDim: { value: 0.05 },
-      bright: { value: 1 }, minPx: { value: 1.6 }, sheetPuff: { value: 0 }, dotPx: { value: 2.6 }, dotGain: { value: 1 }
+      bright: { value: 1 }, minPx: { value: 1.6 }, sheetPuff: { value: 0 }, dotPx: { value: 2.6 }, dotGain: { value: 1 },
+      // farge etter lokal fart |V|/V∞ (colorBy = 1) gjennom fargekartet i cfd3d.js; 0 = hvit røyk som i en ekte tunnel
+      colorBy: { value: 0 }, cmapId: { value: 1 }, vmin: { value: 0.75 }, vmax: { value: 1.25 }, cmin: { value: -1.5 }, cmax: { value: 1 }, neutral: { value: 0 }
     };
+    const GLSL_CMAP = root.CFD && root.CFD.GLSL_CMAP ? root.CFD.GLSL_CMAP : 'uniform float cmapId; vec3 cmapN(float t){ return vec3(1.0); }';
     const blend = { transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
       blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneMinusSrcAlphaFactor };
     const COMMON = `
@@ -37,28 +40,29 @@
       float widthOf(float ag, float t){ return size0*(1.0+grow*ag)*(1.0+3.0*t); }
       float laserIn(vec3 wp){ float dd=dot(laserN,wp)-laserD; return laserOn>0.5? exp(-dd*dd/(laserTh*laserTh)) : 0.0; }
       float fades(float ag){ return smoothstep(0.0,0.02,ag)*(1.0-smoothstep(0.72,1.0,ag)); }`;
-    const FRAG_COL = `
-      uniform vec3 tint; uniform vec3 laserCol; uniform float laserOn; uniform float bright;
-      vec3 smokeCol(float sh, float vIn){ vec3 c=tint*sh*bright; return laserOn>0.5? mix(c*0.55,laserCol*1.25,vIn) : c; }`;
+    const FRAG_COL = GLSL_CMAP + `
+      uniform vec3 tint; uniform vec3 laserCol; uniform float laserOn; uniform float bright; uniform float colorBy; uniform float vmin; uniform float vmax;
+      vec3 smokeCol(float sh, float vIn, float sp){ vec3 base= colorBy>0.5 ? cmapN(clamp((sp-vmin)/(vmax-vmin),0.0,1.0))*1.08 : tint;
+        vec3 c=base*sh*bright; return laserOn>0.5? mix(c*0.55,laserCol*1.25,vIn) : c; }`;
 
     /* ---- bånd: fire hjørner per lenke (partikkel → eldre nabo i samme dyse) ---- */
-    const rPos = new Float32Array(MAX * 4 * 3), rOth = new Float32Array(MAX * 4 * 3), rAge = new Float32Array(MAX * 4), rTb = new Float32Array(MAX * 4), rA = new Float32Array(MAX * 4), rSide = new Float32Array(MAX * 4);
+    const rPos = new Float32Array(MAX * 4 * 3), rOth = new Float32Array(MAX * 4 * 3), rAge = new Float32Array(MAX * 4), rTb = new Float32Array(MAX * 4), rA = new Float32Array(MAX * 4), rSide = new Float32Array(MAX * 4), rSp = new Float32Array(MAX * 4).fill(1);
     const rIdx = new Uint32Array(MAX * 6);
     for (let i = 0; i < MAX; i++) {
       for (let c = 0; c < 4; c++) rSide[4 * i + c] = (c & 1) ? 1 : -1;
       const b = 4 * i; rIdx.set([b, b + 2, b + 1, b + 1, b + 2, b + 3], 6 * i);
     }
     const rGeo = new THREE.BufferGeometry();
-    const ra = { pos: new THREE.BufferAttribute(rPos, 3), oth: new THREE.BufferAttribute(rOth, 3), age: new THREE.BufferAttribute(rAge, 1), tb: new THREE.BufferAttribute(rTb, 1), a: new THREE.BufferAttribute(rA, 1) };
+    const ra = { pos: new THREE.BufferAttribute(rPos, 3), oth: new THREE.BufferAttribute(rOth, 3), age: new THREE.BufferAttribute(rAge, 1), tb: new THREE.BufferAttribute(rTb, 1), a: new THREE.BufferAttribute(rA, 1), sp: new THREE.BufferAttribute(rSp, 1) };
     for (const k in ra) ra[k].setUsage(THREE.DynamicDrawUsage);
-    rGeo.setAttribute('position', ra.pos); rGeo.setAttribute('aOther', ra.oth); rGeo.setAttribute('aAge', ra.age); rGeo.setAttribute('aTb', ra.tb); rGeo.setAttribute('aA', ra.a);
+    rGeo.setAttribute('position', ra.pos); rGeo.setAttribute('aOther', ra.oth); rGeo.setAttribute('aAge', ra.age); rGeo.setAttribute('aTb', ra.tb); rGeo.setAttribute('aA', ra.a); rGeo.setAttribute('aSp', ra.sp);
     rGeo.setAttribute('aSide', new THREE.BufferAttribute(rSide, 1)); rGeo.setIndex(new THREE.BufferAttribute(rIdx, 1)); rGeo.setDrawRange(0, 0);
     const rMat = new THREE.ShaderMaterial(Object.assign({
       uniforms: U,
       vertexShader: COMMON + `
-        attribute vec3 aOther; attribute float aSide; attribute float aAge; attribute float aTb; attribute float aA; uniform float minPx;
-        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN;
-        void main(){
+        attribute vec3 aOther; attribute float aSide; attribute float aAge; attribute float aTb; attribute float aA; attribute float aSp; uniform float minPx;
+        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN; varying float vSp;
+        void main(){ vSp=aSp;
           vec4 wp=modelMatrix*vec4(position,1.0), wo=modelMatrix*vec4(aOther,1.0);
           vec4 mv=viewMatrix*wp, mo=viewMatrix*wo;
           vec3 t=mo.xyz-mv.xyz; vec3 s=cross(t,mv.xyz); float L=length(s);
@@ -73,7 +77,7 @@
           gl_Position=projectionMatrix*mv;
         }`,
       fragmentShader: FRAG_COL + `
-        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN; uniform vec3 Lw; uniform float laserTh; uniform float laserDim;
+        varying float vS; varying float vA; varying float vDd; varying vec3 vSd; varying vec3 vN; varying float vSp; uniform vec3 Lw; uniform float laserTh; uniform float laserDim;
         void main(){
           float vIn= laserOn>0.5? exp(-vDd*vDd/(laserTh*laserTh)) : 0.0;
           float aa= laserOn>0.5? vA*mix(laserDim,1.15,vIn) : vA;
@@ -82,25 +86,25 @@
           vec3 L=normalize((viewMatrix*vec4(Lw,0.0)).xyz);
           float sh=0.6+0.34*max(dot(n,L),0.0)+0.16*pow(max(0.0,-L.z),3.0);
           float a=clamp(aa*prof,0.0,1.0);
-          gl_FragColor=vec4(smokeCol(sh,vIn)*a,a);
+          gl_FragColor=vec4(smokeCol(sh,vIn,vSp)*a,a);
         }`,
       side: THREE.DoubleSide
     }, blend));
     const ribbons = new THREE.Mesh(rGeo, rMat); ribbons.frustumCulled = false; ribbons.renderOrder = 6;
 
     /* ---- skyer: én myk sprite per partikkel, synlig der røyken er turbulent (pluss en svak glorie rundt filamentene) ---- */
-    const gPos = new Float32Array(MAX * 3), gAge = new Float32Array(MAX), gTb = new Float32Array(MAX), gSd = new Float32Array(MAX);
+    const gPos = new Float32Array(MAX * 3), gAge = new Float32Array(MAX), gTb = new Float32Array(MAX), gSd = new Float32Array(MAX), gSp = new Float32Array(MAX).fill(1);
     const pGeo = new THREE.BufferGeometry();
-    const pa = { pos: new THREE.BufferAttribute(gPos, 3), age: new THREE.BufferAttribute(gAge, 1), tb: new THREE.BufferAttribute(gTb, 1), sd: new THREE.BufferAttribute(gSd, 1) };
+    const pa = { pos: new THREE.BufferAttribute(gPos, 3), age: new THREE.BufferAttribute(gAge, 1), tb: new THREE.BufferAttribute(gTb, 1), sd: new THREE.BufferAttribute(gSd, 1), sp: new THREE.BufferAttribute(gSp, 1) };
     for (const k in pa) pa[k].setUsage(THREE.DynamicDrawUsage);
-    pGeo.setAttribute('position', pa.pos); pGeo.setAttribute('aAge', pa.age); pGeo.setAttribute('aTb', pa.tb); pGeo.setAttribute('aSeed', pa.sd); pGeo.setDrawRange(0, 0);
+    pGeo.setAttribute('position', pa.pos); pGeo.setAttribute('aAge', pa.age); pGeo.setAttribute('aTb', pa.tb); pGeo.setAttribute('aSeed', pa.sd); pGeo.setAttribute('aSp', pa.sp); pGeo.setDrawRange(0, 0);
     gAge.fill(2);
     const pMat = new THREE.ShaderMaterial(Object.assign({
       uniforms: U,
       vertexShader: COMMON + `
-        attribute float aAge; attribute float aTb; attribute float aSeed; uniform float maxPx; uniform float sheetPuff;
-        varying float vA; varying float vIn; varying float vSeed;
-        void main(){
+        attribute float aAge; attribute float aTb; attribute float aSeed; attribute float aSp; uniform float maxPx; uniform float sheetPuff;
+        varying float vA; varying float vIn; varying float vSeed; varying float vSp;
+        void main(){ vSp=aSp;
           float tbv=clamp(aTb,0.0,1.0);
           vec4 wp=modelMatrix*vec4(position,1.0);
           vIn=laserIn(wp.xyz)*sheetPuff;
@@ -116,7 +120,7 @@
           gl_Position=projectionMatrix*mv;
         }`,
       fragmentShader: FRAG_COL + `
-        varying float vA; varying float vIn; varying float vSeed; uniform vec3 Lw;
+        varying float vA; varying float vIn; varying float vSeed; varying float vSp; uniform vec3 Lw;
         void main(){
           vec2 c=gl_PointCoord*2.0-1.0; c.y=-c.y; float r2=dot(c,c); if(r2>1.0) discard;
           // ujevn sky: litt vinkelavhengig tetthet så skyene ikke ser ut som perfekte kuler
@@ -125,7 +129,7 @@
           vec3 n=vec3(c,sqrt(1.0-r2)); vec3 L=normalize((viewMatrix*vec4(Lw,0.0)).xyz);
           float sh=0.55+0.4*max(dot(n,L),0.0);
           float a=clamp(vA*prof,0.0,1.0);
-          gl_FragColor=vec4(smokeCol(sh,vIn)*a,a);
+          gl_FragColor=vec4(smokeCol(sh,vIn,vSp)*a,a);
         }`
     }, blend));
     const puffs = new THREE.Points(pGeo, pMat); puffs.frustumCulled = false; puffs.renderOrder = 7;
@@ -315,6 +319,7 @@
         const a = lk[i] ? j : i, b = lk[m] ? m : i;
         tx[i] = px[a] - px[b]; ty[i] = py[a] - py[b]; tz[i] = pz[a] - pz[b];
       }
+      for (let i = 0; i < n; i++) if (alive[i]) gSp[i] = Math.sqrt(vx[i] * vx[i] + vy[i] * vy[i] + vz[i] * vz[i]);
       for (let i = 0; i < n; i++) {
         const o3 = 3 * i;
         if (!alive[i]) { gAge[i] = 2; } else {
@@ -327,7 +332,7 @@
           const me = c < 2 ? i : j, q = 3 * (b + c);
           rPos[q] = px[me]; rPos[q + 1] = pz[me]; rPos[q + 2] = py[me];
           rOth[q] = px[me] + tx[me]; rOth[q + 1] = pz[me] + tz[me]; rOth[q + 2] = py[me] + ty[me];
-          rAge[b + c] = c < 2 ? ai : aj; rTb[b + c] = tb[me]; rA[b + c] = 1;
+          rAge[b + c] = c < 2 ? ai : aj; rTb[b + c] = tb[me]; rA[b + c] = 1; rSp[b + c] = gSp[me];
         }
       }
       sheetDots(n);

@@ -221,7 +221,7 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
 .viewport.cfd .camb{background:rgba(18,22,26,.62);border-color:rgba(255,255,255,.1);color:#d5dce2}
 .viewport.cfd .camb.demo{border-color:rgba(236,90,71,.6);color:#ffb4a8}
 .viewport.cfd .camb.demo.on{background:#ec5a47;color:#fff}
-.cbar{top:auto;bottom:34px;transform:none;background:rgba(12,15,18,.55);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 10px 9px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.cbar{top:auto;bottom:34px;transform:none;background:rgba(12,15,18,.72);border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:8px 10px 9px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .cbt{font-family:var(--f-mono);font-size:10.5px;font-weight:500;color:#dfe5ea;max-width:none;display:flex;justify-content:space-between;gap:14px;margin-bottom:7px;letter-spacing:.02em}
 .cbt span:last-child{color:#8e99a4}
 .cbrow{gap:6px;align-items:stretch}
@@ -233,6 +233,13 @@ input[type=range]{width:100%;accent-color:var(--smoke);margin:0}
 .cbw{margin-top:9px;border-top:1px solid rgba(255,255,255,.08);padding-top:7px}
 .cbw .wbar{height:6px;width:100%;border-radius:1px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
 .cbw .wt{display:flex;justify-content:space-between;font-size:9.5px;color:#8e99a4;margin-top:3px;font-variant-numeric:tabular-nums}
+/* «slik leser du»: én linje under fargeskalaen, bare i Kort */
+.cbhow span{display:block}.cbhow{display:none;max-width:230px;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08);font-family:var(--f-body);font-size:10.5px;line-height:1.35;color:#dfe5ea;letter-spacing:0}
+body.depth-short .cbhow:not(:empty){display:block}
+.viewport.studio .cbhow{color:#1d262f;border-top-color:rgba(20,30,40,.1)}
+.cbticks span{text-shadow:0 0 3px rgba(0,0,0,.55)}.viewport.studio .cbticks span{text-shadow:none}
+.pfm{margin:4px 0 0}.pfm button{font-size:11.5px;padding:3px 8px}.pfm.dis{opacity:.45}
+@media (max-width:640px){.cbhow{max-width:128px;font-size:9.5px;margin-top:5px;padding-top:4px}}
 .lbl{font-size:11px;font-weight:500;letter-spacing:.01em;color:#eef2f5;background:rgba(12,15,18,.58);border:0;border-left:2px solid rgba(230,235,239,.7);border-radius:2px;padding:2px 7px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .lbl.suc{border-left-color:#7ea6f4;color:#d6e2ff}.lbl.pres{border-left-color:#f08a6c;color:#ffd9cc}.lbl.stag{border-left-color:#ffc433;color:#ffe9b0}.lbl.lift{border-left-color:#4fbf7f;color:#c6f0d6}.lbl.wind{border-left-color:#9fb3c6}
 .ov-busy{background:rgba(12,15,18,.6);color:#c9d1d8;border-radius:999px;padding:3px 10px;top:auto;bottom:12px;right:auto;left:50%;transform:translateX(-50%)}
@@ -449,7 +456,8 @@ body.depth-instructor .memo h3{font-size:20px}
         <div class="ctl"><label><span>Forkant</span></label>
           <div class="seg" id="segContam"></div></div>
         <div class="ctl"><label><span>Vis</span></label>
-          <label class="tog"><input type="checkbox" id="p_field" checked> Trykkfelt</label>
+          <label class="tog"><input type="checkbox" id="p_field" checked> Fargefelt</label>
+          <div class="seg pfm" id="pFieldM"><button data-v="cp" class="on">Trykk Cp</button><button data-v="v">Fart V/V∞</button></div>
           <label class="tog"><input type="checkbox" id="p_flow" checked> Røyklinjer</label>
           <label class="tog"><input type="checkbox" id="p_press"> Trykkpiler</label></div>
         <div class="ctl pconf"><label><span>Klaffkonfigurasjon <i class="tm">A320-lignende</i></span><output id="pConfH"></output></label>
@@ -550,7 +558,8 @@ body.depth-instructor .memo h3{font-size:20px}
   
         <div class="ov cbar" id="legend3d"><div class="cbt"><span id="cbarTitle">Cp</span><span id="cbarTitle2">V/V∞ · kt</span></div><div class="cbrow"><div class="cbticks l" id="cbL"></div><canvas id="cbar" width="10" height="256"></canvas>
           <div class="cbticks r" id="cbR"></div></div>
-          <div class="cbw" id="cbW" hidden><div class="cbt"><span id="cbWt">ωx</span><span id="cbWu">1/s</span></div><canvas class="wbar" id="wbar" width="128" height="6"></canvas><div class="wt" id="cbWticks"></div></div></div>
+          <div class="cbw" id="cbW" hidden><div class="cbt"><span id="cbWt">ωx</span><span id="cbWu">1/s</span></div><canvas class="wbar" id="wbar" width="128" height="6"></canvas><div class="wt" id="cbWticks"></div></div>
+          <div class="cbhow" id="cbHow"></div></div>
         <div class="ov ov-busy" id="busy" hidden>Beregner strømningsfelt …</div>
         <div class="ov ov-br" id="ovbr">Dra for å rotere · scroll/knip for å zoome</div>
       </div>
@@ -694,8 +703,8 @@ body.depth-instructor .memo h3{font-size:20px}
     </details>
     <details class="sec adv" data-k="Visning">
       <summary><h2>Visning</h2></summary>
-      <div class="ctl"><label>Fargekart</label>
-        <div class="seg" id="segCmap"><button data-v="0">Kjølig–varm</button><button data-v="1">Turbo</button></div>
+      <div class="ctl deep"><label>Fargekart</label>
+        <div class="seg" id="segCmap"><button data-v="1">Ingeniør (Turbo)</button><button data-v="0">Divergerende (kjølig–varm)</button></div>
       </div>
       <div id="visCtl"></div>
       <label class="tog"><input type="checkbox" id="showIso" checked> Isolinjer for Cp</label>
@@ -716,13 +725,13 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 </script>
 <script src="three.min.js"></script>
 <script src="tunnel3d.js?v=2"></script>
-<script src="cfd3d.js?v=4"></script>
+<script src="cfd3d.js?v=6"></script>
 <script src="lab.js?v=37"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="physics.js?v=12"></script>
 <script src="section.js?v=11"></script>
 <script src="flow3d.js?v=6"></script>
-<script src="smoke3d.js?v=16"></script>
+<script src="smoke3d.js?v=17"></script>
 <script>
 (function(){
 'use strict';
@@ -791,7 +800,13 @@ const NO2EN={
 '{n} strømlinjer':'{n} streamlines','Linjer fra hele spennet, skroget og tippvirvlene.':'Lines from the whole span, the fuselage and the tip vortices.','Tett rundt tuppen: se tippvirvelen rulle seg opp.':'Dense around the tip: watch the tip vortex roll up.','Rundt skroget, vingeroten og halen.':'Around the fuselage, wing root and tail.','Snittstasjon langs spennet':'Slice station along the span','Cp flate':'Cp surface','V/V∞ · kt linjer':'V/V∞ · kt lines','Sug på oversiden':'Suction on the upper side',
 // fly, profiler, forurensning
 ' · typiske verdier, omtrentlig geometri':' · typical values, approximate geometry','Konfigurasjon':'Configuration','Tilbakestill visning':'Reset view',
-'Trykkfelt':'Pressure field','Røyklinjer':'Smoke lines','lameller':'slats','klaff':'flaps','VFE typisk':'VFE typical','over VFE':'above VFE',
+'Trykkfelt':'Pressure field','Fargefelt':'Colour field','Trykk Cp':'Pressure Cp','Fart V/V∞':'Speed V/V∞',
+'Ingeniør (Turbo)':'Engineering (Turbo)','Divergerende (kjølig–varm)':'Diverging (cool–warm)',
+'Slik leser du: rødt = høyt trykk · blått = lavt trykk (sug)':'How to read: red = high pressure · blue = low pressure (suction)',
+'Slik leser du: rødt = raskere enn V∞ · blått = saktere':'How to read: red = faster than V∞ · blue = slower',
+'Slik leser du: rødt og blått = virvlene roterer hver sin vei':'How to read: red and blue = the vortices turn opposite ways',
+'Flate: rødt = høyt trykk, blått = sug':'Surface: red = high pressure, blue = suction','Linjer: rødt = rask luft, blått = sakte':'Lines: red = fast air, blue = slow',
+'Trykkoeffisient Cp':'Pressure coefficient Cp','Lokal fart |V|/V∞':'Local speed |V|/V∞','V/V∞ · kt røyk':'V/V∞ · kt smoke','Røyklinjer':'Smoke lines','lameller':'slats','klaff':'flaps','VFE typisk':'VFE typical','over VFE':'above VFE',
 'Røyk: røykrake oppstrøms, pulserende røyk viser farten':'Smoke: rake upstream, pulsed smoke shows the speed','Sug (Cp < 0)':'Suction (Cp < 0)','Trykk (Cp > 0)':'Pressure (Cp > 0)',
 'Turbulent kjølvann':'Turbulent wake','Separert sone':'Separated region','Boble gjenfester':'Bubble reattaches','Skjærlag':'Shear layer',
 'Ulltråder: følger strømmen der den er festet, snur og flagrer der den har løsnet':'Tufts follow the flow where it is attached, reverse and flutter where it has separated',
@@ -941,7 +956,7 @@ const AC0=P.AIRCRAFT.a320;
 const st = { ac:'a320', mode:'speed', alpha:4, ias:AC0.ias, bank:0, mass:AC0.mass, conf:0,
   b:AC0.b, cr:AC0.cr, ck:AC0.ck, yk:AC0.yk, ct:AC0.ct, sweep:AC0.sweep, dih:AC0.dih, twist:AC0.twist, af:AC0.af, flapDeg:0, slatDeg:0, flapSpan:AC0.flapSpan,
   alt:0, isaDev:0, rake:'line', rakeY:0, secY:0.45, rakeW:2.3, rakeH:0, dens:1, exag:1, view:'stream', labels:true, forces:false, lineW:1.1, lineB:1,
-  env:'cfd', laser:'off', laserX:1.5, laserY:0.55, pulse:true, mirror:true, surfCp:true, plane:false, xp:1.0, iso:true, cmap:0,
+  env:'cfd', laser:'off', laserX:1.5, laserY:0.55, pulse:true, mirror:true, surfCp:true, plane:false, xp:1.0, iso:true, cmap:1,
   look:'dark', seed:'span', sdir:'long', sliceX:2.0,
   le:0, sp:'off', lines:true, smokeL:false, parr:false, sepOn:true, cores:true, oil:false, vcon:0, wandY:0.62 };
 /* Spoilere (A320-lignende, pedagogisk): fem paneler per vinge over klaffene, i andel av halvspennet. Fartsbrems: panel 2–4;
@@ -1029,11 +1044,11 @@ syncs.push(segment('segLaser', null, 'laser', v=>{ st.laser=v;
   if(v==='cross'&&st.rake==='section') Object.assign(st,{rake:'line'},RAKE0.line);
   if(v==='span'){ st.rake='section'; st.rakeY=st.laserY; }
   if(v!=='off'&&st.view==='smoke') camTo(v==='cross'?'lcross':'lspan');
-  syncAll(); updateFlow(); }));
+  syncAll(); updateFlow(); setLegend(); }));
 syncs.push(segment('segExag', null, 'exag', v=>{st.exag=parseFloat(v); syncAll(); updateFlow();}));
 syncs.push(segment('segView', null, 'view', v=>{ const was=st.view; st.view=v; clearLesson(); syncAll(); updateFlow(); if(v==='vortex'&&was!=='vortex') camTo('vq'); if(v==='tufts'&&was!=='tufts') camTo('tq'); }));
-syncs.push(segment('segEnv', null, 'env', v=>{st.env=v; syncAll(); setEnv(); updateFlow();}));
-syncs.push(segment('segCmap', null, 'cmap', v=>{st.cmap=+v; syncAll(); visUniforms(); setLegend(); requestPlane();}));
+syncs.push(segment('segEnv', null, 'env', v=>{st.env=v; syncAll(); setEnv(); updateFlow(); visUniforms(); setLegend();}));
+syncs.push(segment('segCmap', null, 'cmap', v=>{st.cmap=+v; syncAll(); visUniforms(); setLegend(); requestPlane(); if(window.SEC&&SEC.redraw) SEC.redraw();}));
 syncs.push(segment('segLook', null, 'look', v=>{st.look=v; syncAll(); setEnv(); updateFlow();}));
 syncs.push(segment('segSeed', null, 'seed', v=>{ const was=st.seed; st.seed=v; clearLesson(); syncAll(); updateFlow(); if(v==='tip'&&was!=='tip') camTo('tip'); else if(was==='tip'&&v!=='tip') camTo('q'); }));
 syncs.push(segment('segSdir', null, 'sdir', v=>{st.sdir=v; clearLesson(); syncAll(); updateFlow();}));
@@ -1187,15 +1202,16 @@ function applyLights(){
 function flowBounds(){ const b= st.env==='cfd'? CFDB : {x0:TUN.x0+0.3,x1:TX1,y0:TY0,y1:TY1,z:TZ}; return {px:P0.x,py:P0.y,x0:b.x0,x1:b.x1,y0:b.y0,y1:b.y1,z:b.z}; }
 
 /* ---- fargeskala: Cp med vitenskapelig fargekart (kjølig–varm eller turbo); blått = sug/høy fart, rødt = trykk/lav fart ---- */
-const CPMIN=-1.2, CPMAX=1; let VMIN=0.75, VMAX=1.25;   // Cp på flaten, V/V∞ på strømlinjene; rødt = høy verdi for begge (sug er blått på flaten, høy fart rødt på linjene)
+const CPMIN0=-1.2, CPMAX=1; let CPMIN=-1.5, VMIN=0.75, VMAX=1.25;   // Cp delt om 0 (fri strøm midt på skalaen): Turbo −1,5…+1 (streker hver 0,5), kjølig–varm −1,2…+1
+const cpRange=()=>{ CPMIN= st.cmap===1? -1.5 : CPMIN0; };   // Cp på flaten, V/V∞ på strømlinjene; rødt = høy verdi for begge (sug er blått på flaten, høy fart rødt på linjene)
 const GLSL_CMAP=CFD.GLSL_CMAP;
 function cmapJS(t){ return CFD.cmap(st.cmap,t); }
-const cpT=cp=> cp<0? 0.5-0.5*cp/CPMIN : 0.5+0.5*cp/CPMAX;
-const tInv=t=> t<0.5? (0.5-t)/0.5*CPMIN : (t-0.5)/0.5*CPMAX;   // fargeposisjon → Cp (for skalaen)
+const cpT=cp=> CFD.cpT(st.cmap,cp,CPMIN,CPMAX);
+const tInv=t=> CFD.cpInv(st.cmap,t,CPMIN,CPMAX);   // fargeposisjon → Cp (for skalaen)
 
 /* Cp på overflaten med ekte (PBR) belysning: diffusfargen hentes fra Cp; tynne isolinjer hver 0,1 (kraftigere hver 0,5) */
 const cpMat=new THREE.MeshStandardMaterial({roughness:0.5,metalness:0.0,envMapIntensity:0.35,side:THREE.DoubleSide});
-const cpU={cmin:{value:CPMIN},cmax:{value:CPMAX},cmapId:{value:0},iso:{value:1},neutral:{value:0.55}};
+const cpU={cmin:{value:CPMIN},cmax:{value:CPMAX},cmapId:{value:1},iso:{value:1},neutral:{value:0.55}};
 cpMat.onBeforeCompile=sh=>{
   Object.assign(sh.uniforms,cpU);
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float cp; varying float vCp;').replace('#include <begin_vertex>','#include <begin_vertex>\nvCp=cp;');
@@ -1572,9 +1588,12 @@ const lineMat=CFD.lineMaterial(THREE,false), glowMat=CFD.lineMaterial(THREE,true
 const lineMesh=new THREE.Mesh(new THREE.BufferGeometry(),tubeMat); lineMesh.frustumCulled=false; lineMesh.renderOrder=3; overlay.add(lineMesh);
 const glowMesh=new THREE.Mesh(lineMesh.geometry,glowMat); glowMesh.frustumCulled=false; glowMesh.renderOrder=2; overlay.add(glowMesh);
 function visUniforms(){
+  cpRange(); cpU.cmin.value=CPMIN;
   for(const m of [lineMat,glowMat,tubeMat]){ const u=m.uniforms; u.width.value=st.lineW*(m===glowMat?5:1); u.bright.value=st.lineB*(m===glowMat?0.45:1); u.pulse.value=st.pulse?(m===tubeMat?0.8:1):0; u.pulseRate.value=2.4; u.cmapId.value=st.cmap; u.cmin.value=CPMIN; u.cmax.value=CPMAX; u.vmin.value=VMIN; u.vmax.value=VMAX; }
   sliceMat.uniforms.cmapId.value=st.cmap; sliceMat.uniforms.iso.value=st.iso?1:0; tubeMat.uniforms.neutral.value=st.vcon?0.6:0.75;
   SMK.U.bright.value=Math.min(1.3,0.6+0.4*st.lineB); cpU.cmapId.value=st.cmap; cpU.iso.value=st.iso?1:0;
+  // røyk: i idealisert strøm farget etter lokal fart (samme skala som strømlinjene); i tunnelen hvit, som ekte røyk
+  SMK.U.colorBy.value=st.env==='cfd'?1:0; SMK.U.cmapId.value=st.cmap; SMK.U.vmin.value=VMIN; SMK.U.vmax.value=VMAX;
 }
 // fysisk røykrake i tunnelen (verdensrammen): bærearmer, rør og dyser
 const rakeGroup=new THREE.Group(); scene.add(rakeGroup);
@@ -1875,6 +1894,8 @@ const OMREF=1.0;   // ωx som gir full farge (fri strøm / lengdeenhet; spenn = 
 /* divergerende fargekart med mørk midte (blå = med klokka sett bakfra … rød = mot klokka) */
 const DD=[[0.62,0.86,1.0],[0.2,0.45,0.95],[0.1,0.16,0.34],[0.07,0.08,0.1],[0.36,0.1,0.08],[0.92,0.3,0.16],[1.0,0.86,0.55]];
 function darkDiv(u){ const t=(Math.max(-1,Math.min(1,u))+1)*3, i=Math.min(5,Math.floor(t)), f=t-i, a=DD[i], b=DD[i+1]; return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f]; }
+/* ωx-farge: Turbo over −ωmax…+ωmax (blå = med klokka, rød = mot klokka sett bakfra) eller det mørke divergerende kartet */
+const vortCol=u=> st.cmap===1? CFD.turbo((Math.max(-1,Math.min(1,u))+1)/2) : darkDiv(u);
 function planeGeo(){
   const w=wing, s=w.s, xte=w.xle(s)+w.ct, mac=w.mac*w.k, X0=xte+st.xp*mac;
   const zc=w.zw(s)*0.75+(X0-xte)*Math.tan(Math.max(0,res.alpha-res.alphaInd*1.6)*DEG), Y=1.42*s, Zh=0.3*s;
@@ -1900,8 +1921,8 @@ function acceptPlane(r){
   for(let q=0;q<NY*NZ;q++){
     const o=q*4;
     if(r.solid[q]){ data[o]=92; data[o+1]=100; data[o+2]=110; data[o+3]=220; continue; }
-    const om=r.om[q], u=Math.sign(om)*Math.min(1,Math.log(1+Math.abs(om)/w0)/lnorm), c=darkDiv(u);
-    data[o]=c[0]*255; data[o+1]=c[1]*255; data[o+2]=c[2]*255; data[o+3]=Math.round((0.5+0.45*Math.abs(u))*255);
+    const om=r.om[q], u=Math.sign(om)*Math.min(1,Math.log(1+Math.abs(om)/w0)/lnorm), c=vortCol(u);
+    data[o]=c[0]*255; data[o+1]=c[1]*255; data[o+2]=c[2]*255; data[o+3]=Math.round((st.cmap===1? 0.4+0.58*Math.abs(u) : 0.5+0.45*Math.abs(u))*255);
     const a2=q%NY; if(a2>NY/2 && Math.abs(om)>best){ best=Math.abs(om); bi=q; }
   }
   if(plTex) plTex.dispose();
@@ -2111,22 +2132,26 @@ function refreshFlow(){
 
 /* fargeskala: Cp til venstre, tilsvarende lokal fart V/V∞ og kt (TAS) til høyre; virvlighet i krysstrømsplanet under */
 function setLegend(){
-  const el=document.getElementById('legend3d'), v=st.view;
-  const show=!SHOT && (v==='cp'||v==='stream'||v==='slice'||v==='vortex'); el.hidden=!show; if(!show) return;
+  const el=document.getElementById('legend3d'), v=st.view, smk=v==='smoke'&&st.env==='cfd'&&!laserOn();
+  const show=!SHOT && (v==='cp'||v==='stream'||v==='slice'||v==='vortex'||smk); el.hidden=!show; if(!show) return;
   const cv=document.getElementById('cbar'), g=cv.getContext('2d'), H=cv.height, W=cv.width;
   for(let y=0;y<H;y++){ const c=CFD.cmapN(st.cmap,1-y/(H-1),0.65); g.fillStyle=`rgb(${c.map(x=>Math.round(x*255)).join(',')})`; g.fillRect(0,y,W,1); }
-  const sl=v==='slice', tas=out.tas||st.ias, cps=[1,0.5,0,-0.5,-1], a0=sl?SL.vmin:VMIN, a1=sl?SL.vmax:VMAX, vs=[a1,(1+a1)/2,1,(1+a0)/2,a0];
-  const lines=v==='stream'||v==='vortex'||sl, surf=v==='cp'||(st.surfCp&&(v==='stream'||v==='vortex'));
+  const sl=v==='slice', tas=out.tas||st.ias, a0=sl?SL.vmin:VMIN, a1=sl?SL.vmax:VMAX, vs=[a1,(1+a1)/2,1,(1+a0)/2,a0];
+  const cps=[]; for(let c=CPMAX;c>=CPMIN-1e-9;c-=0.5) cps.push(+c.toFixed(2));
+  const lines=v==='stream'||v==='vortex'||sl||smk, surf=v==='cp'||(st.surfCp&&(v==='stream'||v==='vortex'));
   const fmt=x=>(x>0?'+':'')+nf(x,1).replace('-','−');
   document.getElementById('cbL').innerHTML=surf? cps.map(cp=>`<span style="top:${((1-cpT(cp))*100).toFixed(2)}%">${Math.abs(cp)<1e-9?'0':fmt(cp)}</span>`).join('') : '';
   document.getElementById('cbR').innerHTML=lines? vs.map(q=>`<span style="top:${((1-(q-a0)/(a1-a0))*100).toFixed(2)}%">${nf(q,2)} · ${nf(q*tas,0)}</span>`).join('') : '';
-  document.getElementById('cbarTitle').textContent=surf? T('Cp flate') : ''; document.getElementById('cbarTitle2').textContent=sl? T('Fart |V|/V∞ · kt') : lines? T('V/V∞ · kt linjer') : '';
+  document.getElementById('cbarTitle').textContent=surf? T('Cp flate') : ''; document.getElementById('cbarTitle2').textContent=sl? T('Fart |V|/V∞ · kt') : smk? T('V/V∞ · kt røyk') : lines? T('V/V∞ · kt linjer') : '';
   el.classList.toggle('one',!(surf&&lines));
   const wv=document.getElementById('cbW'), pOn=planeOn()&&!!PL.done; wv.hidden=!pOn;
-  if(pOn){ const wb=document.getElementById('wbar'), wg=wb.getContext('2d'); for(let x=0;x<wb.width;x++){ const c=darkDiv(2*x/(wb.width-1)-1); wg.fillStyle=`rgb(${c.map(q=>Math.round(q*255)).join(',')})`; wg.fillRect(x,0,1,wb.height); }
+  if(pOn){ const wb=document.getElementById('wbar'), wg=wb.getContext('2d'); for(let x=0;x<wb.width;x++){ const c=vortCol(2*x/(wb.width-1)-1); wg.fillStyle=`rgb(${c.map(q=>Math.round(q*255)).join(',')})`; wg.fillRect(x,0,1,wb.height); }
     const om=(PL.wmax||OMREF)*tas*KT/(st.b/10);   // 1/s i full skala (auto)
     document.getElementById('cbWt').textContent=T('Virvlighet ωx'); document.getElementById('cbWu').textContent=T('1/s · log');
     document.getElementById('cbWticks').innerHTML=`<span>−${nf(om,0)}</span><span>0</span><span>+${nf(om,0)}</span>`; }
+  // «slik leser du» (vises bare i Kort, se CSS): én linje for skalaen som er i bruk
+  const hw=document.getElementById('cbHow');
+  if(surf&&lines){ hw.innerHTML=`<span>${T('Flate: rødt = høyt trykk, blått = sug')}</span><span>${T('Linjer: rødt = rask luft, blått = sakte')}</span>`; } else hw.textContent= surf? T('Slik leser du: rødt = høyt trykk · blått = lavt trykk (sug)') : lines? T('Slik leser du: rødt = raskere enn V∞ · blått = saktere') : pOn? T('Slik leser du: rødt og blått = virvlene roterer hver sin vei') : '';
 }
 
 /* forklaringer i 3D: hver etikett er festet til et punkt på detaljen den beskriver (prikk + ledelinje), og etikettene
@@ -2726,7 +2751,7 @@ function drawCharts(){
 const SEC=window.SEC=(function(){
   const V=window.VSection;
   const cv=document.getElementById('sec2d'); let ctx=cv.getContext('2d'); const ctx0=ctx;
-  const ps={alpha:6, logRe:6.7, link:true, contam:0, press:false, flow:true, field:true};
+  const ps={alpha:6, logRe:6.7, link:true, contam:0, press:false, flow:true, field:true, fm:'cp'};
   const LOW2D=(window.innerWidth<700)||((navigator.hardwareConcurrency||4)<=4);
   let g=null, inv=null, vis=null, pol=null, polKey='', dirty=true, W=0, H=0, dpr=1;
   const XR=[-0.7,2.1], YR=[-0.7,0.7], GX=72, GY=38;
@@ -2742,7 +2767,9 @@ const SEC=window.SEC=(function(){
   link.addEventListener('change',()=>{ ps.link=link.checked; if(ps.link) fromTunnel(); else update(true); });
   el('p_press').addEventListener('change',e=>{ps.press=e.target.checked; dirty=true;});
   el('p_flow').addEventListener('change',e=>{ps.flow=e.target.checked; dirty=true;});
-  el('p_field').addEventListener('change',e=>{ps.field=e.target.checked; dirty=true;});
+  el('p_field').addEventListener('change',e=>{ps.field=e.target.checked; el('pFieldM').classList.toggle('dis',!ps.field); dirty=true;});
+  el('pFieldM').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; ps.fm=b.dataset.v; for(const x of el('pFieldM').children) x.classList.toggle('on',x===b); if(!ps.field){ ps.field=true; el('p_field').checked=true; el('pFieldM').classList.remove('dis'); } dirty=true; });
+  document.addEventListener('labdepth',()=>{ dirty=true; });
 
   function reTunnel(){
     const atm=out.atm||P.atmosphere(st.alt,st.isaDev), tas=st.ias*KT/Math.sqrt(atm.sigma);
@@ -2953,14 +2980,19 @@ const SEC=window.SEC=(function(){
       SL2.push({x:Float32Array.from(xs),y:Float32Array.from(ys),n:xs.length,turb});
     }
   }
+  // fast skala for fargefeltet: Cp −3…+1 (Cp = 1 − (V/V∞)², så samme spenn som V/V∞ 0…2)
+  let DW=null;   // vekt for død luft per node (fra cpGrid)
+  const FR2=()=> ps.fm==='v'? [0,2] : [-3,1];
+  // fargeposisjon: fri strøm (Cp = 0 / V = V∞) midt på skalaen (grønt i Turbo, nøytralt i kjølig–varm); Cp delt om 0
+  const fieldT=(v,R)=>{ if(ps.fm==='v') return Math.max(0,Math.min(1,v/2)); const m=CFD.cpMid(st.cmap); return Math.max(0,Math.min(1, v<0? m+m*v/3 : m+(1-m)*v)); };
   function cpGrid(){ // Cp per node (profilramme); i separert område: trykkplatå
-    const F=GF, n=F.U.length, cp=new Float32Array(n); let plateau=-0.5;
+    const F=GF, n=F.U.length, cp=new Float32Array(n); let plateau=-0.5; if(!DW||DW.length!==n) DW=new Float32Array(n); DW.fill(0);
     if(DZ2){ const si=sepInfo(); let best=1e9,bi=0; const half=g.N/2; for(let i=0;i<g.N;i++){ if((i>=half)!==si.up) continue; const d=Math.abs(g.xc[i]-si.x0); if(d<best){best=d;bi=i;} }
       plateau=Math.max(-1.2,Math.min(-0.2,inv.Cp[bi]*0.8)); }
     for(let j=0;j<F.ny;j++) for(let i=0;i<F.nx;i++){ const k=j*F.nx+i; if(F.M[k]===1){ cp[k]=NaN; continue; }
       let c=1-(F.U[k]*F.U[k]+F.V[k]*F.V[k]);
       if(DZ2){ const [dx,dy]=rotD(AX0+i*GD,AY0+j*GD), r=dzAt(dx);
-        if(r&&r.ff<1){ const d=Math.min((dy-r.surf)*DZ2.sgn,(r.edge-dy)*DZ2.sgn), w=Math.max(0,Math.min(1,0.5+d/0.05))*(1-r.ff*r.ff); c=c+(plateau-c)*w; } }
+        if(r&&r.ff<1){ const d=Math.min((dy-r.surf)*DZ2.sgn,(r.edge-dy)*DZ2.sgn), w=Math.max(0,Math.min(1,0.5+d/0.05))*(1-r.ff*r.ff); c=c+(plateau-c)*w; DW[k]=w; } }
       cp[k]=c; }
     return cp;
   }
@@ -2970,24 +3002,34 @@ const SEC=window.SEC=(function(){
     const bg=c.createRadialGradient(W*0.42,H*0.45,10,W*0.5,H*0.5,W*0.75); bg.addColorStop(0,'#121a22'); bg.addColorStop(0.6,'#0b1117'); bg.addColorStop(1,'#05080b');
     c.fillStyle=bg; c.fillRect(0,0,W,H);
     if(ps.field){
-      const F=GF, cp=cpGrid(), img=new ImageData(F.nx,F.ny);
-      for(let k=0;k<cp.length;k++){ const o=k*4; if(!Number.isFinite(cp[k])){ img.data[o+3]=0; continue; }
-        const t=cpT(Math.max(CPMIN*1.5,Math.min(CPMAX,cp[k]))), col=cmapJS(t), dev=Math.abs(2*t-1);
-        img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]=255*Math.min(0.55,0.03+0.62*dev); }
+      /* fargefelt som i CFD-etterbehandling: Cp (−3…+1, rødt = stagnasjon Cp = 1, blått = sug) eller lokal fart |V|/V∞ (0…2),
+         fylt jevnt gjennom fargekartet, med isolinjer. Samme potensialfelt som røyklinjene; i separert område trykkplatå og lav fart. */
+      const F=GF, cp=cpGrid(), vm=ps.fm==='v', R2=FR2(), img=new ImageData(F.nx,F.ny), q=new Float32Array(cp.length);
+      for(let k=0;k<cp.length;k++){ if(!Number.isFinite(cp[k])){ q[k]=NaN; continue; }
+        if(!vm){ q[k]=cp[k]; continue; }
+        // fart: |V| fra feltet; i død luft (der cpGrid la på platået) dempes farten mot ~0,15 V∞
+        const u=Math.hypot(F.U[k],F.V[k]); q[k]=u+(0.15-u)*DW[k]; }
+      for(let k=0;k<q.length;k++){ const o=k*4; if(!Number.isFinite(q[k])){ img.data[o+3]=0; continue; }
+        const t=fieldT(q[k],R2), col=cmapJS(t);
+        // Turbo: heldekkende felt; kjølig–varm: som før, gjennomsiktig nær fri strøm så bare avvikene farges
+        img.data[o]=col[0]*255; img.data[o+1]=col[1]*255; img.data[o+2]=col[2]*255; img.data[o+3]= st.cmap===1? 255 : 255*Math.min(0.55,0.03+0.62*Math.abs(2*t-1)); }
       const tmp=document.createElement('canvas'); tmp.width=F.nx; tmp.height=F.ny; tmp.getContext('2d').putImageData(img,0,0);
-      withFoilT(c,()=>{ c.imageSmoothingEnabled=true; c.globalAlpha=0.85; c.drawImage(tmp,AX0-GD/2,AY0-GD/2,F.nx*GD,F.ny*GD); c.globalAlpha=1;
-        // isobarer (marsjerende kvadrater)
-        c.lineWidth=0.0022; c.strokeStyle='rgba(255,255,255,0.13)'; c.beginPath();
-        const nx=F.nx, lv=[]; for(let v=-4;v<=1.001;v+=0.25){ const q=+v.toFixed(2); if(q>-0.5&&q<0.5) continue; lv.push(q); }
-        for(let j=0;j<F.ny-1;j++) for(let i=0;i<nx-1;i++){
-          const k=j*nx+i, a=cp[k], b=cp[k+1], d=cp[k+nx], e=cp[k+nx+1]; if(!(Number.isFinite(a)&&Number.isFinite(b)&&Number.isFinite(d)&&Number.isFinite(e))) continue;
-          const mn=Math.min(a,b,d,e), mx=Math.max(a,b,d,e); if(mx-mn<1e-4) continue;
-          const x0=AX0+i*GD, y0=AY0+j*GD;
-          for(const L of lv){ if(L<mn||L>mx) continue; const p=[];
-            const ed=(v1,v2,X1,Y1,X2,Y2)=>{ if((v1-L)*(v2-L)<0){ const t=(L-v1)/(v2-v1); p.push([X1+(X2-X1)*t,Y1+(Y2-Y1)*t]); } };
-            ed(a,b,x0,y0,x0+GD,y0); ed(b,e,x0+GD,y0,x0+GD,y0+GD); ed(e,d,x0+GD,y0+GD,x0,y0+GD); ed(d,a,x0,y0+GD,x0,y0);
-            if(p.length>=2){ c.moveTo(p[0][0],p[0][1]); c.lineTo(p[1][0],p[1][1]); } if(p.length===4){ c.moveTo(p[2][0],p[2][1]); c.lineTo(p[3][0],p[3][1]); } } }
-        c.stroke(); });
+      withFoilT(c,()=>{ c.imageSmoothingEnabled=true; c.globalAlpha=st.cmap===1?0.84:0.85; c.drawImage(tmp,AX0-GD/2,AY0-GD/2,F.nx*GD,F.ny*GD); c.globalAlpha=1;
+        // isolinjer (marsjerende kvadrater): tynne mørke streker hver 0,25 (Cp) / 0,1 (V/V∞), tydeligere på hele tall / 0,5
+        const nx=F.nx, step=vm?0.1:0.25, lv=[]; for(let v=R2[0];v<=R2[1]+1e-6;v+=step){ const qq=+v.toFixed(2); if(!vm&&Math.abs(qq)<1e-6) continue; if(vm&&Math.abs(qq-1)<1e-6) continue; lv.push(qq); }
+        for(const major of [false,true]){
+          c.lineWidth=major?0.0034:0.0019; c.strokeStyle=major?'rgba(8,12,16,0.5)':'rgba(8,12,16,0.26)'; c.beginPath();
+          for(let j=0;j<F.ny-1;j++) for(let i=0;i<nx-1;i++){
+            const k=j*nx+i, a=q[k], b=q[k+1], d=q[k+nx], e=q[k+nx+1]; if(!(Number.isFinite(a)&&Number.isFinite(b)&&Number.isFinite(d)&&Number.isFinite(e))) continue;
+            const mn=Math.min(a,b,d,e), mx=Math.max(a,b,d,e); if(mx-mn<1e-4) continue;
+            const x0=AX0+i*GD, y0=AY0+j*GD;
+            for(const L of lv){ if(L<mn||L>mx) continue; const isM=Math.abs(L/(vm?0.5:1)-Math.round(L/(vm?0.5:1)))<1e-6; if(isM!==major) continue; const p=[];
+              const ed=(v1,v2,X1,Y1,X2,Y2)=>{ if((v1-L)*(v2-L)<0){ const t=(L-v1)/(v2-v1); p.push([X1+(X2-X1)*t,Y1+(Y2-Y1)*t]); } };
+              ed(a,b,x0,y0,x0+GD,y0); ed(b,e,x0+GD,y0,x0+GD,y0+GD); ed(e,d,x0+GD,y0+GD,x0,y0+GD); ed(d,a,x0,y0+GD,x0,y0);
+              if(p.length>=2){ c.moveTo(p[0][0],p[0][1]); c.lineTo(p[1][0],p[1][1]); } if(p.length===4){ c.moveTo(p[2][0],p[2][1]); c.lineTo(p[3][0],p[3][1]); } } }
+          c.stroke(); } });
+      // lett vignett i kantene så feltet glir over i bakgrunnen
+      const vg=c.createRadialGradient(W*0.45,H*0.5,Math.min(W,H)*0.35,W*0.45,H*0.5,Math.max(W,H)*0.75); vg.addColorStop(0,'rgba(5,8,11,0)'); vg.addColorStop(1,'rgba(5,8,11,0.45)'); c.fillStyle=vg; c.fillRect(0,0,W,H);
     }
     // røyklinjer: mykt, fotografisk – bred svak glød + tynn kjerne, sprer seg og blekner nedstrøms
     if(ps.flow){
@@ -3082,11 +3124,26 @@ const SEC=window.SEC=(function(){
     if(HLE&&W>420){ const lb=(k,xp,up,dy)=>{ const q=HLE.at(xp,up), t=TP(q[0],q[1]); label(k,t[0],t[1]+dy,'#d4dbe2','center'); };
       if(g.slat>0){ const q=HLE.at(0.02,false), t=TP(q[0],q[1]); label('Lamell (slat)',t[0]-18,t[1]+40,'#d4dbe2','right'); } if(g.fowler) lb('Fowler-klaff',0.9,false,26);
       if(HLE.jets.length){ const j=HLE.jets[HLE.jets.length-1], q=j[j.length-1], t=TP(q[0],q[1]); label('Spalte: luft fra undersiden',t[0]+6,t[1]-30,'#9ff0ff','left'); } }
-    // Cp-fargeskala
-    if(ps.field){ const bw=Math.min(150,W*0.22), bx=W-bw-14, by=H-24;
-      for(let i=0;i<bw;i++){ const cp=CPMIN+(CPMAX-CPMIN)*i/(bw-1), col=cmapJS(cpT(cp)); ctx.fillStyle=`rgb(${col.map(v=>Math.round(v*255)).join(',')})`; ctx.fillRect(bx+i,by,1,7); }
-      ctx.font='10px "IBM Plex Mono", monospace'; ctx.fillStyle='#b9c4ce'; ctx.textBaseline='bottom'; ctx.textAlign='left'; ctx.fillText('Cp −2',bx,by-3); ctx.textAlign='right'; ctx.fillText('+1',bx+bw,by-3);
-      ctx.textAlign='center'; ctx.fillText('0',bx+bw*2/3,by-3); }
+    // fargeskala: loddrett, med tittel, enhet og streker (som i Fluent/ParaView), nederst til høyre
+    if(ps.field){ const vm=ps.fm==='v', R2=FR2(), sm=W<520, bh=Math.round(Math.min(sm?96:150,H*0.5)), bw=sm?8:10, tw=sm?30:36;
+      const bx=W-(sm?10:16)-tw-bw, by=H-(sm?12:18)-bh, pad=sm?6:8;
+      ctx.fillStyle='rgba(10,14,18,.62)'; ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1;
+      ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(bx-pad,by-pad-(sm?14:18),bw+tw+pad*2,bh+pad*2+(sm?14:18),6); else ctx.rect(bx-pad,by-pad-(sm?14:18),bw+tw+pad*2,bh+pad*2+(sm?14:18)); ctx.fill(); ctx.stroke();
+      for(let y=0;y<bh;y++){ const col=cmapJS(1-y/(bh-1)); ctx.fillStyle=`rgb(${col.map(x=>Math.round(x*255)).join(',')})`; ctx.fillRect(bx,by+y,bw,1); }
+      ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.strokeRect(bx-0.5,by-0.5,bw+1,bh+1);
+      ctx.font=`${sm?9.5:10}px "IBM Plex Mono", ui-monospace, monospace`; ctx.textBaseline='middle'; ctx.textAlign='left';
+      const tk=vm? [2,1.5,1,0.5,0] : [1,0.5,0,-1,-2,-3];
+      for(const v of tk){ const y=by+(1-fieldT(v,R2))*(bh-1); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fillRect(bx+bw,y-0.5,3,1);
+        ctx.fillStyle='#d3dae0'; ctx.fillText(vm? nf(v,1) : (v>0?'+':'')+nf(v,Math.abs(v%1)>0?1:0).replace('-','−'),bx+bw+5,y); }
+      ctx.font=`600 ${sm?10:10.5}px "IBM Plex Mono", ui-monospace, monospace`; ctx.fillStyle='#eef2f5'; ctx.textBaseline='bottom';
+      ctx.fillText(vm?'V/V∞':'Cp',bx,by-(sm?5:7));
+      // «slik leser du» bare i Kort
+      if(document.body.classList.contains('depth-short')){
+        const t=T(vm?'Slik leser du: rødt = raskere enn V∞ · blått = saktere':'Slik leser du: rødt = høyt trykk · blått = lavt trykk (sug)');
+        ctx.font=`500 ${sm?10:11}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline='middle'; ctx.textAlign='left';
+        const x0=sm?8:14, y0=sm?14:18, parts=t.split(' · '), lines=[]; let cur='';
+        for(const p of parts){ const tryL=cur? cur+' · '+p : p; if(cur&&ctx.measureText(tryL).width>W-x0-14){ lines.push(cur); cur=p; } else cur=tryL; } lines.push(cur);
+        const tw2=Math.max(...lines.map(x=>ctx.measureText(x).width)); ctx.fillStyle='rgba(10,14,18,.66)'; ctx.fillRect(x0-6,y0-9,Math.min(W-x0-8,tw2+12),3+15*lines.length); ctx.fillStyle='#e6ecf1'; lines.forEach((x,i)=>ctx.fillText(x,x0,y0+15*i,W-x0-14)); } }
   }
 
   /* turbulent kjølvann: røykpartikler som rulles opp av virvler som kastes av vekselvis fra skjærlaget og bakkanten */
@@ -3168,7 +3225,7 @@ const SEC=window.SEC=(function(){
       else { const r=10+((e*1.4)%1)*18; ctx.strokeStyle=`rgba(255,214,102,${(1-((e*1.4)%1))*0.95})`; ctx.lineWidth=2.4; ctx.beginPath(); ctx.arc(q[0],q[1],r,0,Math.PI*2); ctx.stroke(); } }
   }
 
-  return {geometry,fromTunnel,step,draw,ps,update,ui,resize,focus,crit:()=>pol.alphaCrit};
+  return {geometry,fromTunnel,step,draw,ps,update,ui,resize,focus,crit:()=>pol.alphaCrit,redraw:()=>{ dirty=true; }};
 })();
 
 /* ---------------- Wake turbulence (sett bakfra) ---------------- */
@@ -3432,7 +3489,7 @@ function setLang(l){
   [...lb.children].forEach((b,i)=>b.textContent=T(lessons[i].t)); markLesson(); drawPre();
   document.getElementById('preH').textContent=T('Forhåndsvalg for undervisning'); document.getElementById('expH').textContent=T('Eksperimenter');
   document.getElementById('acFull').textContent=T(AC0.full)+T(' · typiske verdier, omtrentlig geometri');
-  syncSliders(); ctlVis(); confHint(); compute(); SEC.ui(); updateFlow(); WAKE.sync(); demoLabel(); if(PIN.on){ PIN.on=false; } buildLabels();
+  syncSliders(); ctlVis(); confHint(); compute(); SEC.ui(); updateFlow(); WAKE.sync(); demoLabel(); if(PIN.on){ PIN.on=false; } buildLabels(); setLegend(); SEC.redraw();
 }
 applyStatic(); document.title=T('Vindtunnelen');
 
@@ -3512,7 +3569,7 @@ window.__tunGo=function(k){
   else if(k==='clcd'||k==='ld') go('t3Bal'); else if(k==='hl') go('pConf'); else if(k==='vs') go('stall');
 };
 // test-krok (brukes av automatiske skjermbildetester og ?shot)
-window.__tun={overlay,t3:{REC,setLE,saveA:()=>saveA(),startSweep,stopSweep,probeAt,PIN,WD,traceWand,LEF,get AB(){return AB;},blState,cmWing,setProbe:v=>{probeMode=v; if(!v) PIN.on=false; buildLabels(); t3Sync();},labels:()=>labelList.map(l=>({t:l.t,x:l.x,y:l.y,w:l.w,h:l.h,vis:l.vis,ax:l.ax,ay:l.ay}))},TF,SMK,SMKP,seedsDense:()=>seedsDense(),LCACHE,SL,setLaser,smokeWarm:(sec)=>{ refreshFlow(); return SMK.prewarm(sec||4); },cam,st,compute,rebuild,syncAll,setConf,updateFlow,refreshFlow,setEnv,camTo,PERF,FL,seedsW,P0:()=>P0,wing:()=>wing,res:()=>res,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible],
+window.__tun={overlay,cpU,t3:{REC,setLE,saveA:()=>saveA(),startSweep,stopSweep,probeAt,PIN,WD,traceWand,LEF,get AB(){return AB;},blState,cmWing,setProbe:v=>{probeMode=v; if(!v) PIN.on=false; buildLabels(); t3Sync();},labels:()=>labelList.map(l=>({t:l.t,x:l.x,y:l.y,w:l.w,h:l.h,vis:l.vis,ax:l.ax,ay:l.ay}))},TF,SMK,SMKP,seedsDense:()=>seedsDense(),LCACHE,SL,setLaser,smokeWarm:(sec)=>{ refreshFlow(); return SMK.prewarm(sec||4); },cam,st,compute,rebuild,syncAll,setConf,updateFlow,refreshFlow,setEnv,camTo,PERF,FL,seedsW,P0:()=>P0,wing:()=>wing,res:()=>res,renderer,scene,camera,vis:()=>[tunnelVisible,secVisible],
   ready:()=>!!FIELD.ready&&!pend&&!TW.busy&&!TW.queued&&!job&&!flowDirty&&!tracePending&&(st.view==='smoke'?SMK.ready:haveLines)&&(!planeOn()||(PL.done===PL.id&&!PL.busy))&&(st.view!=='slice'||(SL.done===SL.id&&!SL.busy))};
 requestAnimationFrame(loop);
 window.addEventListener('pagehide',()=>{ workers.forEach(w=>w.terminate()); if(TW.w) TW.w.terminate(); });

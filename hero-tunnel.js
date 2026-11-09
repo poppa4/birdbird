@@ -29,8 +29,8 @@
 
   async function start() {
     if (!window.THREE) await load('three.min.js');
-    if (!window.CFD) await load('cfd3d.js?v=4');
-    const h = await data('data/hero-tunnel.bin.gz?v=1');
+    if (!window.CFD) await load('cfd3d.js?v=6');
+    const h = await data('data/hero-tunnel.bin.gz?v=3');
     const THREE = window.THREE, CFD = window.CFD;
 
     let renderer;
@@ -45,8 +45,9 @@
       if (L.t !== 'HemisphereLight') l.position.fromArray(L.p); scene.add(l);
     }
 
-    /* aircraft: same surface shader as the lab (Cp through the cool–warm map, thin isobars) */
-    const cpU = { cmin: { value: -1.2 }, cmax: { value: 1 }, cmapId: { value: 0 }, iso: { value: 1 }, neutral: { value: 0.55 } };
+    /* aircraft: same surface shader as the lab (Cp through the lab's colour map and range, as baked; thin isobars) */
+    const cpU = { cmin: { value: -1.5 }, cmax: { value: 1 }, cmapId: { value: 1 }, iso: { value: 1 }, neutral: { value: 0.55 } };
+    if (h.cpU) for (const k in cpU) if (h.cpU[k] != null) cpU[k].value = h.cpU[k];
     for (const m of h.meshes) {
       const g = new THREE.BufferGeometry(), idx = undelta(h.get(m.idx), 1);
       g.setAttribute('position', new THREE.BufferAttribute(dequant(h, h.get(m.pos)), 3)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals();

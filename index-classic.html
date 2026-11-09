@@ -940,7 +940,7 @@ function gl(){ try{ const c=document.createElement('canvas'); return !!(window.W
 if(RM||SD||!('IntersectionObserver' in window)||!window.DecompressionStream||!gl()) return;
 let want=false, loaded=document.readyState==='complete', go=false;
 const kick=()=>{ if(go||!want||!loaded) return; go=true; const ric=window.requestIdleCallback||(f=>setTimeout(f,200));
-  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=1'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
+  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=2'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
 if(!loaded) window.addEventListener('load',()=>{ loaded=true; kick(); },{once:true});
 const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ want=true; io.disconnect(); kick(); } },{rootMargin:'200px 0px'}); io.observe(hx);
 })();

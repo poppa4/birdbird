@@ -1,5 +1,5 @@
 /* Virtual Lab – CFD-etterbehandling i three.js (r128)
-   Vitenskapelige fargekart (kjølig–varm, turbo), strømlinjer som skjermrettede rør med lys, glød og
+   Vitenskapelige fargekart (Turbo som standard, som i Fluent/STAR-CCM+/ParaView; kjølig–varm som alternativ), strømlinjer som skjermrettede rør med lys, glød og
    pulser som går med lokal fart, rutenettgulv, nøytralt studiomiljø, aksekors og krysstrømsplan. */
 (function (root) {
   'use strict';
@@ -18,7 +18,16 @@
   }
   CFD.coolwarm = coolwarm; CFD.turbo = turbo;
   CFD.cmap = (id, t) => id === 1 ? turbo(t) : coolwarm(t);
-  CFD.cmapN = (id, t, k) => { const c = CFD.cmap(id, t), u = Math.min(1, Math.max(0, (Math.abs(t - 0.5) * 2 - 0.06) / 0.36)), w = k * (1 - u * u * (3 - 2 * u)), g = [0.6, 0.64, 0.69]; return [c[0] + (g[0] - c[0]) * w, c[1] + (g[1] - c[1]) * w, c[2] + (g[2] - c[2]) * w]; };
+  // nøytral grå nær fri strøm bare i det divergerende kartet; Turbo (ingeniørstandard) vises i full farge over hele skalaen
+  CFD.cmapN = (id, t, k) => { if (id === 1) return turbo(t); const c = CFD.cmap(id, t), u = Math.min(1, Math.max(0, (Math.abs(t - 0.5) * 2 - 0.06) / 0.36)), w = k * (1 - u * u * (3 - 2 * u)), g = [0.6, 0.64, 0.69]; return [c[0] + (g[0] - c[0]) * w, c[1] + (g[1] - c[1]) * w, c[2] + (g[2] - c[2]) * w]; };
+  // Cp → fargeposisjon, delt om Cp = 0: fri strøm ligger midt på skalaen (grønt i Turbo), sug [cmin, 0] i nedre halvdel og
+  // trykk [0, cmax] i øvre (Cp = 1 = stagnasjon = rødt). Begge halvdelene er lineære; skalastrekene er merket med verdiene.
+  /* free stream (Cp = 0) sits at t = 0.35 on Turbo (teal-green, the classic CFD look) and at the centre on cool-warm */
+  CFD.cpMid = id => id === 1 ? 0.35 : 0.5;
+  CFD.cpT = (id, cp, cmin, cmax) => { const m = CFD.cpMid(id); return Math.max(0, Math.min(1, cp < 0 ? m - m * cp / cmin : m + (1 - m) * cp / cmax)); };
+  CFD.cpInv = (id, t, cmin, cmax) => { const m = CFD.cpMid(id); return t < m ? (m - t) / m * cmin : (t - m) / (1 - m) * cmax; };
+  // CSS-gradient for fargeskalaer (nederst → øverst når dir = 'to top')
+  CFD.cssGrad = (id, dir, n) => { n = n || 16; const st = []; for (let i = 0; i <= n; i++) { const c = CFD.cmapN(id, i / n, 0.65); st.push(`rgb(${c.map(v => Math.round(v * 255)).join(',')}) ${(i / n * 100).toFixed(1)}%`); } return `linear-gradient(${dir || 'to top'},${st.join(',')})`; };
   CFD.GLSL_CMAP = `
 uniform float cmin; uniform float cmax; uniform float cmapId;
 vec3 coolwarm(float t){ t=clamp(t,0.0,1.0)*8.0;
@@ -35,8 +44,8 @@ vec3 turbo(float x){ x=0.07+0.9*clamp(x,0.0,1.0);
 vec3 cmap(float t){ return cmapId>0.5 ? turbo(t) : coolwarm(t); }
 uniform float neutral;
 // midten av skalaen (V = V∞, Cp = 0) blandes mot nøytral grå, så bare avvik fra fri strøm får farge
-vec3 cmapN(float t){ float dv=abs(t-0.5)*2.0; return mix(cmap(t), vec3(0.6,0.64,0.69), neutral*(1.0-smoothstep(0.06,0.42,dv))); }
-float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
+vec3 cmapN(float t){ if(cmapId>0.5) return turbo(t); float dv=abs(t-0.5)*2.0; return mix(cmap(t), vec3(0.6,0.64,0.69), neutral*(1.0-smoothstep(0.06,0.42,dv))); }
+float cpT(float cp){ float m=cmapId>0.5?0.35:0.5; return cp<0.0 ? m-m*cp/cmin : m+(1.0-m)*cp/cmax; }`;
 
   /* ---------- strømlinjer: skjermrettede bånd skyggelagt som rør ----------
      Per punkt to hjørner (side ±1). Attributter: prv/nxt (naboer), cpv (Cp), tv (flytid), fd (inn/ut-fading), sd (frø). */
@@ -122,7 +131,8 @@ float cpT(float cp){ return cp<0.0 ? 0.5-0.5*cp/cmin : 0.5+0.5*cp/cmax; }`;
           vec3 col=base*(0.42+0.7*dif)+sp*(0.25+0.2*studio);
           col*=1.0-(0.28+0.12*studio)*smoothstep(0.5,1.0,s);    // mørk rørkant skiller linjen fra flaten og nabolinjene bak
           float dev=clamp(abs(vV-1.0)/max(0.02,0.6*(vmax-vmin)),0.0,1.0);
-          a*=mix(0.2+0.14*(1.0-studio),1.0,max(dev*dev,vTb));         // nesten fri strøm tones ned, forstyrret strøm fremheves
+          // nesten fri strøm tones ned, forstyrret strøm fremheves (Turbo: fri strøm er grønn og lysterk, så den dempes litt mer)
+          a*=mix(cmapId>0.5 && solid.x<0.0 ? 0.15+0.1*(1.0-studio) : 0.2+0.14*(1.0-studio),1.0,max(dev*dev,vTb));
           float ph=fract(vT*0.22-time*pulseRate*0.22+vSd);
           float head=exp(-(1.0-ph)*26.0)*smoothstep(1.0,0.992,ph);
           col=mix(col,vec3(1.0),0.45*pulse*head);

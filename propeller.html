@@ -116,6 +116,8 @@ ol.steps li{margin:4px 0}
 .past .box .lt{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:var(--accent);float:right;margin:-2px 0 0 8px;opacity:.85}
 .past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:#10171D}
 #ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}
+/* «slik leser du» for fargeskinnet på bladet: bare i Kort */
+.cphow{display:none;margin:8px 2px 0;font-size:13px;line-height:1.45;color:var(--muted,#5E6B74)}body.depth-short .cphow{display:block}
 @media (max-width:600px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
 .lays{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:-4px}
 .lays .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
@@ -205,7 +207,7 @@ ol.steps li{margin:4px 0}
     <div class="btns ltpre" id="pwPre"></div>
     <div class="split">
       <div class="stack">
-        <div class="view"><canvas id="pwCv" aria-label="Blade section at 75 % radius with the rotational speed, the true airspeed, the relative wind, blade angle, angle of attack, lift, drag, thrust and torque"></canvas><div class="ovl" id="pwOv"></div></div>
+        <div class="view"><canvas id="pwCv" aria-label="Blade section at 75 % radius with the rotational speed, the true airspeed, the relative wind, blade angle, angle of attack, lift, drag, thrust and torque"></canvas><div class="ovl" id="pwOv"></div></div><p class="cphow" id="pwHow"></p>
         <p class="cap" id="cPw"></p>
       </div>
       <div class="rail">
@@ -858,7 +860,8 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
   txt(); LAB.onLang(txt);
 })();
 </script>
-<script src="twin.js?v=5"></script>
+<script src="cfd3d.js?v=6"></script>
+<script src="twin.js?v=6"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;

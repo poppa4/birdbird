@@ -6,12 +6,13 @@ Run from the repo root with a local server on :8987 (python3 -m http.server 8987
 Writes data/hero-tunnel.bin.gz (airframe + Cp, streamlines, vortex cores, lights, camera) and the still
 img/hero-tunnel.webp / img/hero-tunnel-800.webp (a ?shot render of tunnel.html from the same camera).
 Run it again whenever the lab's model or look changes; then bump ?v= of the .bin.gz in hero-tunnel.js.
+Another port: BAKE_URL=http://localhost:8988/ python3 tools/bake-hero-tunnel.py
 The bake uses the lab's low-quality mesh (300 seed lines x dens 1.0), which equals ?shot with dens=1/3.
 """
-import asyncio, base64, gzip, io, json, struct
+import asyncio, base64, gzip, io, json, os, struct
 from playwright.async_api import async_playwright
 from PIL import Image
-URL = 'http://localhost:8987/'; ALPHA = 5; DENS = 1.0
+URL = os.environ.get('BAKE_URL', 'http://localhost:8987/'); ALPHA = 5; DENS = 1.0
 CHROME = dict(executable_path='/usr/bin/google-chrome', args=['--use-gl=swiftshader', '--enable-unsafe-swiftshader'])
 BAKE_JS = r"""// runs in tunnel.html page context; returns {header, b64}
 ((KEEP, TOL) => {
@@ -92,6 +93,8 @@ BAKE_JS = r"""// runs in tunnel.html page context; returns {header, b64}
   if (cores.length) header.cores = packLines(cores, 'c');
   const U = m => { const o = {}; for (const k in m.uniforms) { const v = m.uniforms[k].value; o[k] = v && v.isVector2 ? null : v && v.isVector3 ? [v.x, v.y, v.z] : v && v.isColor ? [v.r, v.g, v.b] : v; } return o; };
   header.lineU = lineMesh && U(lineMesh.material); header.coreU = coreMesh && U(coreMesh.material);
+  // surface Cp colour map and range as the lab draws them (cmapId 1 = Turbo, 0 = cool-warm)
+  header.cpU = T.cpU ? Object.fromEntries(Object.entries(T.cpU).map(([k, u]) => [k, u.value])) : null;
   header.grid = grid && { p: grid.position.toArray(), size: grid.geometry.parameters.width, u: U(grid.material) };
   header.blob = blob && { p: blob.getWorldPosition(new THREE.Vector3()).toArray(), s: blob.getWorldScale(new THREE.Vector3()).toArray(), w: blob.geometry.parameters.width, h: blob.geometry.parameters.height, op: blob.material.opacity, rot: blob.rotation.toArray().slice(0, 3) };
   const lights = []; sc.traverse(o => { if (o.isLight && o.visible) lights.push({ t: o.type, c: '#' + o.color.getHexString(), g: o.groundColor ? '#' + o.groundColor.getHexString() : null, i: o.intensity, p: o.position.toArray() }); });

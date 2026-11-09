@@ -304,6 +304,29 @@ const B={mode:'fp',rpm:2500,tas:90,beta:24};
 const pwS=LAB.fit(el('pwCv'),()=>drawPW(),2);
 const aerofoil=(()=>{ const pts=[]; for(let i=0;i<=24;i++){ const x=i/24, t=0.12*5*(0.2969*Math.sqrt(x)-0.126*x-0.3516*x*x+0.2843*x**3-0.1036*x**4), cmb=0.04*(x<0.4?(0.8*x-x*x)/0.16:(0.2+0.8*x-x*x)/0.36); pts.push([x,cmb+t]); } for(let i=24;i>=0;i--){ const x=i/24, t=0.12*5*(0.2969*Math.sqrt(x)-0.126*x-0.3516*x*x+0.2843*x**3-0.1036*x**4), cmb=0.04*(x<0.4?(0.8*x-x*x)/0.16:(0.2+0.8*x-x*x)/0.36); pts.push([x,cmb-t]); } return pts; })();
 function bState(){ const o=Object.assign({},B); if(B.mode==='cs'){ const ph=Math.atan2(B.tas*M.KT,Math.max(1e-6,B.rpm*2*Math.PI/60*0.75*LT.R))/D2R; o.beta=clamp(ph+5,8,60); } return Object.assign(M.blade(o),{beta:o.beta}); }
+/* Trykk på bladflaten som fargeskinn (Turbo, Cp delt om 0 som i vindtunnelen: −3 … 0 … +1). Illustrativt: tynnprofilteori
+   med snittets egen cl, Cp = ∓(cl/π)·√((1−x)/x) på forsiden/baksiden. Blått på forsiden = sug = skyv; ved vindmølle snur det. */
+const cpPos=cp=>Math.max(0,Math.min(1,cp<0? 0.5+0.5*cp/3 : 0.5+0.5*cp));
+function bladeCp(g,b,Pc,W,H,n,fs){
+  if(!window.CFD||b.U+b.V<=0||B.rpm<50&&b.beta>78) return;
+  const N=aerofoil.length, half=(N/2)|0, k=b.cl/Math.PI;
+  g.save(); g.lineCap='round'; g.lineWidth=n?3.2:4.2;
+  for(let i=0;i<N-1;i++){ const p=aerofoil[i], q=aerofoil[i+1], x=Math.max(0.006,(p[0]+q[0])/2), up=i<half;
+    const cp=Math.max(-3,Math.min(1,(up?-1:1)*k*Math.sqrt((1-x)/x))), c=CFD.turbo(cpPos(cp)), a=Pc(p), bq=Pc(q);
+    g.strokeStyle=`rgb(${c.map(v=>Math.round(v*255)).join(',')})`; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(bq[0],bq[1]); g.stroke(); }
+  g.restore();
+  // fargeskala øverst til venstre (loddrett, med tittel og streker)
+  const bh=Math.round(Math.min(n?70:110,H*0.28)), bw=n?7:9, bx=n?14:18, by=n?50:58, pad=n?5:7;
+  g.save(); g.fillStyle='rgba(10,14,18,.66)'; g.beginPath(); const bwid=bw+(n?36:42)+pad*2; if(g.roundRect) g.roundRect(bx-pad,by-pad-16,bwid,bh+pad*2+16,6); else g.rect(bx-pad,by-pad-16,bwid,bh+pad*2+16); g.fill();
+  for(let y=0;y<bh;y++){ const c=CFD.turbo(1-y/(bh-1)); g.fillStyle=`rgb(${c.map(v=>Math.round(v*255)).join(',')})`; g.fillRect(bx,by+y,bw,1); }
+  g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=1; g.strokeRect(bx-0.5,by-0.5,bw+1,bh+1);
+  g.font=(n?9:10)+'px "IBM Plex Mono", ui-monospace, monospace'; g.textBaseline='middle'; g.textAlign='left';
+  for(const v of (n?[1,0,-3]:[1,0,-1,-2,-3])){ const y=by+(1-cpPos(v))*(bh-1); g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(bx+bw,y-0.5,3,1); g.fillStyle='#d3dae0'; g.fillText((v>0?'+':'')+String(v).replace('-','−'),bx+bw+5,y); }
+  g.font='600 '+(n?9.5:10.5)+'px "IBM Plex Mono", ui-monospace, monospace'; g.fillStyle='#eef2f5'; g.textBaseline='bottom'; g.fillText(L({en:'Cp blade',no:'Cp blad'}),bx,by-(n?4:6));
+  g.restore();
+  const hw=el('pwHow'); if(hw) hw.textContent=L({en:'How to read the blade colours: blue = suction (low pressure), red = high pressure. Blue on the forward face pulls the blade forward: thrust.',no:'Slik leser du fargene på bladet: blått = sug (lavt trykk), rødt = høyt trykk. Blått på forsiden trekker bladet framover: skyv.'});
+}
+document.addEventListener('labdepth',()=>{ try{ drawPW(); }catch(e){} });
 function drawPW(){ const st=pwS; if(!st.w) return; const g=S.clear(st), W=st.w, H=st.h, n=narrow(st), fs=n?10:11.5, b=bState();
   const Ox=W*(n?0.38:0.40), Oy=H*(n?0.64:0.62);
   // plane of rotation and the direction of flight
@@ -321,6 +344,7 @@ function drawPW(){ const st=pwS; if(!st.w) return; const g=S.clear(st), W=st.w, 
   const ch=Math.min(W,H)*(n?0.34:0.3), be=b.beta*D2R;
   const Pc=([x,y])=>{ const u=(0.25-x)*ch, v=y*ch; return [Ox+u*Math.cos(be)-v*Math.sin(be), Oy-(u*Math.sin(be)+v*Math.cos(be))]; };
   g.beginPath(); aerofoil.forEach((p,i)=>{ const q=Pc(p); i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]); }); g.closePath(); g.fillStyle='#8B99A7'; g.fill(); g.strokeStyle='#D7E1E6'; g.lineWidth=1; g.stroke();
+  bladeCp(g,b,Pc,W,H,n,fs);
   // chord line extended
   const c0=Pc([-0.9,0]), c1=Pc([1.5,0]); g.strokeStyle='rgba(215,225,230,.35)'; g.setLineDash([3,4]); g.beginPath(); g.moveTo(c0[0],c0[1]); g.lineTo(c1[0],c1[1]); g.stroke(); g.setLineDash([]);
   // angle arcs: β from plane, φ from plane, α between
