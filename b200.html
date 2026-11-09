@@ -7,7 +7,7 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="b200.css?v=2">
+<link rel="stylesheet" href="b200.css?v=3">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=46"></script>
@@ -473,10 +473,10 @@ const tStk=el('tStk');
 function setTouch(on){ el('touch').hidden=!on; el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
 el('bTouch').onclick=()=>setTouch(el('touch').hidden);
 { let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':false); }
-function tStkAt(e){ const r=tStk.getBoundingClientRect(); const x=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1), y=F.clamp((e.clientY-r.top)/r.height*2-1,-1,1); inp.stick={x,y}; const k=tStk.querySelector('i'); k.style.left=(50+x*50)+'%'; k.style.top=(50+y*50)+'%'; }
-tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tStkAt(e); ensureAudio(); });
-tStk.addEventListener('pointermove',e=>{ if(inp.stick) tStkAt(e); });
-['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width*0.42; let dx=(e.clientX-tO.x)/R, dy=(e.clientY-tO.y)/R; const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } const sh=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; }; inp.stick={x:sh(dx),y:sh(dy)}; const k=tStk.querySelector('i'); k.style.left=((tO.x-r.left)+dx*R)/r.width*100+'%'; k.style.top=((tO.y-r.top)+dy*R)/r.height*100+'%'; }
+tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
+tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
+['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
 const stick=el('stick'), dot=stick.querySelector('.dot');
 function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:F.clamp((e.clientX-r.left)/r.width*2-1,-1,1),y:F.clamp((e.clientY-r.top)/r.height*2-1,-1,1)}; }
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });

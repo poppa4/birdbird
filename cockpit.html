@@ -159,7 +159,7 @@
 .touch{position:absolute;inset:0;pointer-events:none;z-index:4}
 .tz{position:absolute;pointer-events:auto;touch-action:none;border:1px dashed rgba(255,255,255,.35);border-radius:14px;background:rgba(0,0,0,.25)}
 .tz i{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:rgba(127,203,232,.85);box-shadow:0 0 0 5px rgba(127,203,232,.25);left:50%;top:50%}
-.tstk{left:calc(10px + env(safe-area-inset-left));bottom:10px;width:min(22vh,180px);aspect-ratio:1}
+.tstk{left:calc(10px + env(safe-area-inset-left));bottom:10px;width:min(44vh,220px);aspect-ratio:1}
 .rot{position:absolute;inset:0;z-index:30;display:none;place-items:center;text-align:center;background:#0b0d10;color:#fff;font:600 16px system-ui;padding:24px}
 .rot b{display:block;font-size:44px;margin-bottom:8px}
 @media (orientation:portrait) and (max-width:900px){.rot{display:grid}}
@@ -701,10 +701,10 @@ const tStk=el('tStk');
 function setTouch(on){ el('touch').hidden=!on; el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
 el('bTouch').onclick=()=>setTouch(el('touch').hidden);
 { let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':matchMedia('(pointer:coarse)').matches); }
-function tStkAt(e){ const r=tStk.getBoundingClientRect(); const x=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1), y=F.clamp((e.clientY-r.top)/r.height*2-1,-1,1); inp.stick={x,y}; const k=tStk.querySelector('i'); k.style.left=(50+x*50)+'%'; k.style.top=(50+y*50)+'%'; }
-tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tStkAt(e); ensureAudio(); });
-tStk.addEventListener('pointermove',e=>{ if(inp.stick) tStkAt(e); });
-['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width*0.42; let dx=(e.clientX-tO.x)/R, dy=(e.clientY-tO.y)/R; const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } const sh=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; }; inp.stick={x:sh(dx),y:sh(dy)}; const k=tStk.querySelector('i'); k.style.left=((tO.x-r.left)+dx*R)/r.width*100+'%'; k.style.top=((tO.y-r.top)+dy*R)/r.height*100+'%'; }
+tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
+tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
+['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
 
 /* ---------- styrestikke ---------- */
 const stick=el('stick'), dot=stick.querySelector('.dot');
