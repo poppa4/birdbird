@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Virtual Lab · Birdbird</title>
-<meta name="description" content="26 interactive labs in seven subject areas, from aerodynamics and meteorology to performance and mass and balance. Principles for every aircraft; numbers from an illustrative A320 model.">
+<meta name="description" content="25 interactive labs in six subject areas, from aerodynamics and meteorology to engines and performance. Principles for every aircraft; numbers from an illustrative A320 model.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-/* Virtual Labs start page: seven subject areas (Atlas), full topic list behind an expander, quiet "More". */
+/* Virtual Labs start page: six subject areas (Atlas), full topic list behind an expander, quiet "More". */
 .lhead .stats{display:flex;flex-wrap:wrap;gap:0;margin:28px 0 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
 .lhead .stats div{padding:12px 28px 14px 0;margin-right:28px;border-right:1px solid var(--rule-2)}
 .lhead .stats div:last-child{border-right:0}
@@ -73,7 +73,7 @@ mark{background:#F3DCE9;color:inherit;padding:0 1px}
 </style>
 </head>
 <body data-title="Virtual Labs">
-<script src="site.js?v=39"></script>
+<script src="site.js?v=40"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -89,7 +89,7 @@ mark{background:#F3DCE9;color:inherit;padding:0 1px}
   <section class="moreq" id="more" aria-labelledby="moreH"></section>
   <p class="foot note" id="foot"></p>
 </div>
-<script src="lab.js?v=39"></script>
+<script src="lab.js?v=40"></script>
 <script>
 (function(){
 'use strict';
@@ -106,7 +106,7 @@ let q='';
 
 function draw(){
   const no=LAB.lang==='no';
-  el('lead').textContent=L(t(`The theory behind flying, as interactive models you can adjust. ${ALL.length+NMORE} labs: ${ALL.length} in seven subject areas, and ${NMORE} on human factors under More. Pick an area and start with its first lab; every lab is tagged with what it applies to.`,`Teorien bak flygingen, som interaktive modeller du kan stille på. ${ALL.length+NMORE} labber: ${ALL.length} i sju fagområder, og ${NMORE} om menneskelige faktorer under Mer. Velg et område og start med den første labben; hver lab er merket med hva den gjelder.`));
+  el('lead').textContent=L(t(`The theory behind flying, as interactive models you can adjust. ${ALL.length+NMORE} labs: ${ALL.length} in six subject areas, and ${NMORE} on human factors under More. Pick an area and start with its first lab; every lab is tagged with what it applies to.`,`Teorien bak flygingen, som interaktive modeller du kan stille på. ${ALL.length+NMORE} labber: ${ALL.length} i seks fagområder, og ${NMORE} om menneskelige faktorer under Mer. Velg et område og start med den første labben; hver lab er merket med hva den gjelder.`));
   el('stats').innerHTML=`<div><b>${AREAS.length}</b><span>${no?'fagområder':'subject areas'}</span></div><div><b>${ALL.length+NMORE}</b><span>${no?'labber':'labs'}</span></div><div><b>${NTOP}</b><span>${no?'emner':'topics'}</span></div>`;
   el('areas').setAttribute('aria-label',L(t('Subject areas','Fagområder')));
   el('areas').innerHTML=AREAS.map((m,i)=>{ const f=m.labs[0];

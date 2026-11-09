@@ -38,7 +38,7 @@
   function setLang(l){ lang=l; try{ localStorage.setItem('vlab-lang',l); }catch(e){} apply(); hooks.forEach(f=>f()); }
 
   // header: lab-navigasjon + språk
-  /* Virtual Labs information architecture ("Atlas"): seven subject areas, then "More" (not an area card).
+  /* Virtual Labs information architecture ("Atlas"): six subject areas, then "More" (not an area card).
      Lab tuple: [file, page key, EN, NO, level]. level: 'jet' = numbers from the A320 teaching model, 'mix' = A320 + light twin, 'la' = light twin, '' = all aircraft.
      Area meta: d = one-line description, c = 3–4 concepts you learn (EN/NO). The first lab of an area is its recommended start. */
   const t2=(en,no)=>({en,no});
@@ -61,10 +61,7 @@
    {k:'perf',en:'Performance',no:'Ytelse',d:t2('Take-off, climb, cruise and landing numbers, and the fuel you plan to carry.','Tall for start, stigning, cruise og landing, og drivstoffet du planlegger å ha med.'),
     c:[t2('V1 and runway limits','V1 og rullebanebegrensninger'),t2('Climb and cruise','Stigning og cruise'),t2('Landing distance','Landingsdistanse'),t2('Fuel planning','Drivstoffplanlegging')],
     labs:[['performance.html','perf','Performance','Ytelse','jet'],['flightplanning.html','fpl','Flight planning and fuel','Flyplanlegging og drivstoff','jet']]},
-   {k:'mb',en:'Mass and balance',no:'Masse og balanse',d:t2('Masses, limits and the centre of gravity, through to a finished load sheet.','Masser, grenser og tyngdepunkt, helt fram til et ferdig lasteark.'),
-    c:[t2('Structural mass limits','Strukturelle massegrenser'),t2('Centre of gravity','Tyngdepunkt'),t2('Load sheet','Lasteark'),t2('Trim setting','Trimsetting')],
-    labs:[['massbalance.html','mb','Mass and balance','Masse og balanse','jet']]},
-   /* not one of the seven areas: reachable from "More" at the bottom of lab.html */
+   /* not one of the six areas: reachable from "More" at the bottom of lab.html */
    {k:'hf',more:true,en:'Human factors',no:'Menneskelige faktorer',d:t2('Spatial orientation, attention, workload, error and fatigue.','Romlig orientering, oppmerksomhet, arbeidsbelastning, feil og tretthet.'),c:[],
     labs:[['orientation.html','ori','Spatial orientation','Romlig orientering',''],['humanperf.html','hp','Attention, workload, error and fatigue','Oppmerksomhet, arbeidsbelastning, feil og tretthet','']]}];
   const AREAS=PATH.filter(m=>!m.more), MORE=PATH.filter(m=>m.more);

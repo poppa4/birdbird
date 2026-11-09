@@ -40,7 +40,6 @@
     ['lab','quiz:gnss',150,'gnss.html#quiz',{en:'GNSS and RNAV test',no:'Test: GNSS og RNAV'}],
     ['lab','quiz:tunnel',150,'tunnel.html#quiz',{en:'Wind tunnel test',no:'Test: vindtunnel'}],
     ['lab','quiz:highspeed',150,'highspeed.html#quiz',{en:'High-speed flight test',no:'Test: høyfart'}],
-    ['lab','quiz:massbalance',150,'massbalance.html#quiz',{en:'Mass and balance test',no:'Test: masse og balanse'}],
     ['lab','quiz:performance',150,'performance.html#quiz',{en:'Performance test',no:'Test: ytelse'}],
     ['lab','quiz:jetsystems',150,'jetsystems.html#quiz',{en:'Jet transport systems test',no:'Test: systemer på jetfly'}],
     ['lab','quiz:pressurisation',150,'pressurisation.html#quiz',{en:'Pressurisation and hypoxia test',no:'Test: trykkabin og hypoksi'}],
@@ -136,7 +135,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=25'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=26'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
