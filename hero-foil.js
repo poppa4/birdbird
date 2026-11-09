@@ -1,5 +1,5 @@
-/* Birdbird front page: the live aerofoil in the hero.
-   The Aerodynamics lab's 2D section (tunnel.html, "Aerofoil section and stall"), drawn large and frameless on the navy:
+/* Birdbird front page: the live aerofoil on the navy plate in the subject areas (#ffBox).
+   The Aerodynamics lab's 2D section (tunnel.html, "Aerofoil section and stall"), drawn large on the navy:
    - the panel method and the boundary-layer model are section.js (VSection.build / inviscid / viscous / polar / velAt),
      on the lab's A320-like supercritical section (physics.js VLab.AIRFOILS.sc) at the lab's default Reynolds number;
    - the pressure field is Cp = 1 − (V/V∞)² from the same potential field on a grid in the aerofoil frame, coloured with
@@ -8,12 +8,15 @@
      (ported from tunnel.html SEC: deadGeo, dzAt, cpGrid, traceLines, step), so the picture and the numbers are the lab's.
    It rests at α = 13° and breathes ±0.8° around it while the smoke flows; the lab's teaching annotations are drawn on
    it (stagnation point, relative wind, α, suction above, high pressure below, transition, separation, lift at the
-   centre of pressure), each on a dark halo and kept apart. Far from the aerofoil the field fades into the page, where
-   it is free stream (Cp = 0) anyway. Loaded on demand by index.html; paused off screen; reduced motion: one still at 13°. */
+   centre of pressure), each on a dark halo and kept apart. Far from the aerofoil the field fades into the navy plate, where
+   it is free stream (Cp = 0) anyway. The canvas fills the plate; the section is laid out in the plate's .ff-frame (the
+   area clear of the readout and the colour bar), or in the plate itself if there is none.
+   Loaded by index.html when the plate comes near the screen; paused off screen; reduced motion: one still at 13°. */
 (function () {
   'use strict';
   const box = document.getElementById('ffBox'), cv = document.getElementById('ffCv');
   if (!box || !cv || window.__heroFoil) return;
+  const fbox = box.querySelector('.ff-frame') || box;
   window.__heroFoil = {};
   const DEG = Math.PI / 180;
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -150,7 +153,7 @@
     const F = GF, c = bctx;
     if (baseC.width !== Math.round(W * dpr) || baseC.height !== Math.round(H * dpr)) { baseC.width = Math.round(W * dpr); baseC.height = Math.round(H * dpr); }
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
-    // a navy pool under the field, so the terrain relief behind the hero gives way around the aerofoil
+    // a navy pool under the field (the plate's own navy), so whatever is behind gives way around the aerofoil
     c.save(); c.translate(sx(0.5), sy(0)); c.scale(1.7, 1); const pool = c.createRadialGradient(0, 0, 0, 0, 0, K * 1.15);
     pool.addColorStop(0, 'rgba(11,37,69,.97)'); pool.addColorStop(0.62, 'rgba(11,37,69,.88)'); pool.addColorStop(1, 'rgba(11,37,69,0)');
     c.fillStyle = pool; c.fillRect(-K * 2, -K * 2, K * 4, K * 4); c.restore();
@@ -267,7 +270,7 @@
     ctx.font = `600 ${sm ? 11.5 : 12.5}px "Public Sans", system-ui, sans-serif`; ctx.textBaseline = 'middle';
     const boxes = [];
     for (const [t, x, y0, col, al] of LB) {
-      const w = ctx.measureText(t).width, x0 = Math.max(BX0 - K * 0.15, Math.min(BX1 - w - 4, al === 'right' ? x - w : al === 'center' ? x - w / 2 : x)); let y = y0;
+      const w = ctx.measureText(t).width, x0 = Math.max(Math.max(BX0 - K * 0.15, 8), Math.min(BX1 - w - 4, al === 'right' ? x - w : al === 'center' ? x - w / 2 : x)); let y = y0;
       for (let it = 0; it < 12; it++) { const hit = boxes.find(q => x0 < q[0] + q[2] + 6 && x0 + w + 6 > q[0] && Math.abs(y - q[1]) < 17); if (!hit) break; y = y <= hit[1] ? hit[1] - 18 : hit[1] + 18; }
       boxes.push([x0, y, w]);
       ctx.lineJoin = 'round'; ctx.lineWidth = 4.5; ctx.strokeStyle = 'rgba(7,18,34,.88)'; ctx.textAlign = 'left'; ctx.strokeText(t, x0, y);
@@ -309,11 +312,11 @@
 
   /* ---------- layout ---------- */
   function layout() {
-    const r = cv.getBoundingClientRect(), b = box.getBoundingClientRect(); if (!r.width) return false;
+    const r = cv.getBoundingClientRect(), b = fbox.getBoundingClientRect(); if (!r.width || !b.width) return false;
     dpr = Math.min(window.devicePixelRatio || 1, LOW ? 1.5 : 2); W = r.width; H = r.height;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     BX0 = b.left - r.left; BX1 = b.right - r.left;
-    const narrow = b.width < 520; K = b.width * (narrow ? 0.62 : 0.72);
+    const narrow = b.width < 520; K = b.width * (narrow ? 0.62 : (+fbox.dataset.k || 0.72));   // data-k: chord as a share of the frame
     OX = (b.left - r.left) + b.width * 0.5 - K * (narrow ? 0.3 : 0.36); OY = (b.top - r.top) + b.height * 0.52;
     XR = [(0 - OX) / K, (W - OX) / K]; YR = [(OY - H) / K, OY / K];
     return true;
