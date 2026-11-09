@@ -88,6 +88,42 @@ body.et-pist .xsec [data-for~=pist],body.et-tp .xsec [data-for~=tp],body.et-jet 
 .typeseg button{border-radius:var(--radius)!important}
 .dfold .ftab td:first-child{font-weight:600;white-space:nowrap}
 @media (max-width:640px){#env{aspect-ratio:1/1.62}}
+/* in Take it apart the Controls column only repeats the engine choice: the figure takes the full width */
+body.ap-wide .xapp>.xpanel{display:none}
+body.ap-wide .xapp>*{grid-column:1/-1}
+/* Take it apart: exploded view with a part list beside it (below on a phone) */
+.en-vp.apart .vcvw{display:grid;grid-template-columns:minmax(0,1fr) 264px;align-items:start}
+.en-vp.apart #env{aspect-ratio:16/11.2;max-height:none}
+.en-vp.apart .vchip{display:none}
+#env:focus-visible{outline:2px solid #7FCBE8;outline-offset:-2px}
+.apbar{display:flex;align-items:center;gap:10px;padding:7px 12px;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8B99A7;border-bottom:1px solid rgba(255,255,255,.06)}
+.apbar[hidden],.apside[hidden]{display:none}
+.apbar input{flex:1 1 auto;max-width:420px;accent-color:#7EC8F2;min-height:0}
+.apbtn{margin-left:auto;font-family:var(--f-body);font-size:12px;text-transform:none;letter-spacing:0;background:rgba(18,22,26,.62);color:#E2E8EE;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:5px 12px;cursor:pointer;min-height:30px}
+.apbtn:hover{border-color:rgba(255,255,255,.4)}
+.apbtn:focus-visible,.apbar input:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.apside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:13px;line-height:1.5;overflow:auto;background:rgba(6,9,12,.25)}
+.apcard{min-height:150px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
+.apcard h4{margin:0;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;line-height:1.25;color:#EEF2F5}
+.apcard .aph{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+.apcard .apx{background:transparent;border:0;color:#8B99A7;font-size:18px;line-height:1;padding:0 2px;cursor:pointer;min-height:0}
+.apcard .apx:hover{color:#EEF2F5}
+.apcard p{margin:6px 0 0}
+.apcard .apf i{display:block;font-family:var(--f-mono);font-style:normal;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99;margin-bottom:1px}
+.apcard .apf.dp{color:#AEB9C2}
+.apst{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:10.5px;font-weight:600;color:var(--c);border:1px solid var(--c);border-radius:999px;padding:1px 9px 1px 2px;margin:7px 4px 0 0;white-space:nowrap}
+.apst b{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--c);color:#0f151b;font-size:10px}
+.apsts{display:flex;flex-wrap:wrap;margin-top:2px}
+.apside h5{margin:0 0 4px;font-family:var(--f-mono);font-weight:500;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99}
+.aplist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.aplist button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 6px;color:#C6D0D8;font-family:var(--f-body);font-size:12.5px;line-height:1.3;cursor:pointer;min-height:28px}
+.aplist button:hover{background:rgba(255,255,255,.05);color:#EEF2F5}
+.aplist button.on{background:rgba(255,255,255,.08);border-color:var(--c);color:#fff}
+.aplist button:focus-visible{outline:2px solid #7FCBE8;outline-offset:1px}
+.aplist .k{font-family:var(--f-mono);font-size:10.5px;color:#7F8D99;width:11px;flex:0 0 auto}
+.aplist .nm{flex:1 1 auto}
+.aplist .sn{flex:0 0 auto;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--c);color:#0f151b;font-family:var(--f-mono);font-weight:700;font-size:10px}
+@media (max-width:640px){.en-vp.apart .vcvw{display:block}.en-vp.apart #env{aspect-ratio:1/1.42}.apside{border-left:0;border-top:1px solid rgba(255,255,255,.07);max-height:none!important}.aplist{display:grid;grid-template-columns:1fr 1fr;gap:1px 6px}.apbar{flex-wrap:wrap;gap:6px 10px}.apbar input{order:3;flex-basis:100%;max-width:none}body.et-pist .en-vp.apart #env{aspect-ratio:1/1.12}.apcard{min-height:0}}
 </style>
 </head>
 <body data-title="Aircraft Engines" class="et-tp">
@@ -123,9 +159,13 @@ body.et-pist .xsec [data-for~=pist],body.et-tp .xsec [data-for~=tp],body.et-jet 
     <div class="xapp">
       <div class="xvp en-vp" id="enVp" data-lab-model>
         <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="Mode"></div><div class="vtools" id="vtools" aria-label="Engine"></div></div>
+        <div class="apbar" id="apBar" hidden><span id="apA">Assembled</span><input type="range" id="apEx" min="0" max="100" value="100" aria-label="Assembled to exploded"><span id="apE">Exploded</span><button type="button" class="apbtn" id="apBtn">Assemble</button></div>
+        <div class="vcvw">
         <div class="vcv" id="vcv">
           <canvas id="env" aria-label="Cutaway of the selected engine with the gas path coloured by temperature, its cockpit gauges, and in the other modes comparison and rating charts."></canvas>
           <div class="vchip" id="chip" aria-live="polite"></div>
+        </div>
+        <aside class="apside" id="apSide" hidden aria-label="Parts"><div class="apcard" id="apCard" aria-live="polite"></div><h5 id="apLH">Parts</h5><ul class="aplist" id="apList"></ul></aside>
         </div>
         <div class="vleg" id="vleg"></div>
       </div>
@@ -172,6 +212,7 @@ body.et-pist .xsec [data-for~=pist],body.et-tp .xsec [data-for~=tp],body.et-jet 
 <script src="lab.js?v=39"></script>
 <script src="concepts.js?v=2"></script>
 <script src="enginecore.js?v=1"></script>
-<script src="engines.js?v=2"></script>
+<script src="engparts.js?v=1"></script>
+<script src="engines.js?v=3"></script>
 </body>
 </html>

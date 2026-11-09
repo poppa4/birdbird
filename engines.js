@@ -353,6 +353,7 @@ function drawHist(g,b){ const [x0,y0,w,h]=b, ph=ST.w<640, P=E.SP[S.type]; panel(
 /* ---------------- the figure ---------------- */
 function draw(){ if(!ST.w) return; const g=ST.ctx, W=ST.w, H=ST.h; g.setTransform(ST.dpr,0,0,ST.dpr,0,0); g.clearRect(0,0,W,H);
   FS=depth()==='instructor'?1.12:W<420?0.9:1; const ph=W<640;
+  if(S.mode==='apart') return drawApart(g,W,H);
   const chip=el('chip'); let cl=0; if(!ph&&chip&&getComputedStyle(chip).position==='absolute'&&chip.offsetWidth) cl=chip.offsetLeft+chip.offsetWidth+10;
   if(S.mode==='cmp') return drawCompare(g,W,H,cl);
   if(S.mode==='rat') return drawRatings(g,W,H,cl);
@@ -379,13 +380,15 @@ function loop(ts){ requestAnimationFrame(loop); const dt=Math.min(0.1,(ts-last)/
   if(S.mode==='start'&&S.st&&(S.st.ph!=='off'||S.st.ng>0.2)){ let k=dt; while(k>0){ const h=Math.min(0.02,k); S.st=E.startStep(S.st,h,S.type,S.fault,S.type==='fan'||S.type==='jet'); k-=h; }
     if(!S.hist.length||S.st.t-S.hist[S.hist.length-1][0]>=0.2) S.hist.push([S.st.t,S.st.ng,S.st.temp]); if(S.hist.length>400) S.hist.shift(); need=true; if(Math.floor(S.st.t*4)!==Math.floor((S.st.t-dt)*4)) { readout(); see(); drawStartBtns(); } }
   if(!vis) return;
-  if(!reduce&&S.mode!=='cmp'&&S.mode!=='rat'){ const [a,b]=spoolRates(); PH.a+=dt*a*1.6; PH.b+=dt*b*2.4; PH.flow+=dt*0.25; const M=S.type==='pist'?(S.mode==='start'&&S.st?startModel():model()):null; if(M) PH.crank+=dt*(M.rpm/60)*2*Math.PI/100*(M.hp>2||M.rpm>50?1:0); need=true; }
+  if(S.mode==='apart'&&Math.abs(AP.e-AP.tgt)>0.002){ AP.e=reduce?AP.tgt:AP.e+(AP.tgt-AP.e)*Math.min(1,dt*4.5); if(Math.abs(AP.e-AP.tgt)<0.003) AP.e=AP.tgt; apSync(); need=true; }
+  if(!reduce&&S.mode!=='cmp'&&S.mode!=='rat'&&S.mode!=='apart'){ const [a,b]=spoolRates(); PH.a+=dt*a*1.6; PH.b+=dt*b*2.4; PH.flow+=dt*0.25; const M=S.type==='pist'?(S.mode==='start'&&S.st?startModel():model()):null; if(M) PH.crank+=dt*(M.rpm/60)*2*Math.PI/100*(M.hp>2||M.rpm>50?1:0); need=true; }
   if(need) draw(); }
 requestAnimationFrame(loop);
 
 /* ---------------- readout chip, legend, "what you're seeing" ---------------- */
 const ch=(i,b,cls)=>`<span><i>${i}</i><b${cls?` class="${cls}"`:''}>${b}</b></span>`;
 function readout(){ const d=deepOn(); let h='';
+  if(S.mode==='apart'){ el('chip').innerHTML=''; const v=VIEWS.find(v=>v[0]===S.mode); el('xsv').textContent=L(v[1])+' · '+L(TN[S.type]); return; }
   if(S.mode==='how'){ const M=model(), at=atm();
     if(M.type==='pist') h=ch(L(t2('Power','Effekt')),nf(M.hp,0)+' hp · '+nf(M.hp/1.8,0)+' %')+ch(L(t2('Fuel flow','Drivstoff')),nf(M.ffl,0)+' L/h')+ch(L(t2('Mixture','Blanding')),M.lam<0.97?L(t2('lean of peak','magert av topp')):M.lam<1.04?L(t2('peak EGT','topp-EGT')):M.lam<1.33?L(t2('rich of peak','rikt av topp')):L(t2('very rich','svært rik')),M.rough?'r':'')+(d?ch('BSFC',nf(M.bsfc,0)+' g/kWh'):'')+ch(L(t2('Thrust','Skyv')),nf(M.thrust/1000,2)+' kN');
     else if(M.type==='tp') h=ch(L(t2('Shaft power','Akselkraft')),nf(M.shp,0)+' shp',M.over.tq?'r':'')+ch(L(t2('Limit here','Grense her')),M.limit==='tq'?L(t2('torque','moment')):'ITT',M.limit==='itt'?'a':'')+ch(L(t2('Fuel flow','Drivstoff')),nf(M.ffkg,0)+' kg/h')+(d?ch('SFC',nf(E.gkWh(M.ffkg,M.kW),0)+' g/kWh'):'')+ch(L(t2('Thrust','Skyv')),nf(M.thrust/1000,1)+' kN',M.thrust<0?'a':'');
@@ -401,7 +404,8 @@ function readout(){ const d=deepOn(); let h='';
   el('chip').innerHTML=h; const v=VIEWS.find(v=>v[0]===S.mode); el('xsv').textContent=(v?L(v[1]):'')+' · '+L(TN[S.type]); }
 function phaseName(s){ const m={off:t2('stopped','stoppet'),crank:t2('cranking','motorerer'),lit:t2('lit, accelerating','tent, akselererer'),run:t2('running at idle','går på tomgang'),dry:t2('dry motoring','tørrmotorering'),abort:t2('stopped','stoppet')}; return L(m[s.ph]||m.off); }
 function legend(){ const lg=(c,t,k)=>`<span><i class="${k||''}" style="--c:${c}"></i>${L(t)}</span>`; let s='';
-  if(S.mode==='cmp'||S.mode==='rat') s=TYPES.map(t=>lg(TC[t],TN[t],t==='jet'&&S.mode==='rat'?'d':'')).join('')+lg('#F4F7F9',S.mode==='rat'?t2('today (OAT, speed)','i dag (OAT, fart)'):t2('you are here','du er her'),'d');
+  if(S.mode==='apart') s=[1,2,3,4,5].map(i=>lg(ENGP.SC[i],{en:i+' '+ENGP.SN[i].en,no:i+' '+ENGP.SN[i].no},'a')).join('')+lg('rgba(200,215,225,.5)',t2('engine axis','motorakse'),'d');
+  else if(S.mode==='cmp'||S.mode==='rat') s=TYPES.map(t=>lg(TC[t],TN[t],t==='jet'&&S.mode==='rat'?'d':'')).join('')+lg('#F4F7F9',S.mode==='rat'?t2('today (OAT, speed)','i dag (OAT, fart)'):t2('you are here','du er her'),'d');
   else { s=`<span><i class="a" style="background:linear-gradient(90deg,${tcol(240)},${tcol(500)},${tcol(900)},${tcol(1300)},${tcol(1800)})"></i>${L(t2('gas temperature: cold → hot','gasstemperatur: kald → varm'))}</span>`;
     if(S.type==='fan') s+=lg(C.lp,t2('LP spool (N1): fan + LP turbine','LP-spole (N1): fan + LP-turbin'))+lg(C.hp,t2('HP spool (N2): compressor + HP turbine','HP-spole (N2): kompressor + HP-turbin'));
     else if(S.type==='tp') s+=lg(C.lp,t2('Np: power turbine + propeller','Np: kraftturbin + propell'))+lg(C.hp,t2('Ng: compressor + its turbine','Ng: kompressor + dens turbin'));
@@ -418,6 +422,7 @@ function see(){ let t;
       : t2(`<b>What you're seeing:</b> the gas generator (compressor and its turbine, Ng) makes hot gas; a separate <b>free power turbine</b> (Np) takes the work out and drives the propeller through the gearbox. No shaft connects them. You set power by torque and watch ITT: here the ${M.limit==='tq'?'torque (gearbox) limit comes first':'ITT (hot section) limit comes first'}.`,`<b>Det du ser:</b> gassgeneratoren (kompressoren og dens turbin, Ng) lager varm gass; en egen <b>fri kraftturbin</b> (Np) henter ut arbeidet og driver propellen gjennom girkassen. Ingen aksel kobler dem. Du setter kraft etter moment og følger ITT: her kommer ${M.limit==='tq'?'momentgrensen (girkassen) først':'ITT-grensen (den varme delen) først'}.`);
     else if(M.type==='fan') t=t2(`<b>What you're seeing:</b> the fan (N1) pushes most of the air around the core as cold bypass air, and that makes most of the thrust. The core (N2) is a small gas turbine that drives the fan. Thrust here is ${nf(M.thrust/1000,1)} kN of ${nf(M.tmax/1000,1)} kN available: it falls with height and with speed.`,`<b>Det du ser:</b> fanen (N1) skyver det meste av luften rundt kjernen som kald omløpsluft, og den lager det meste av skyvet. Kjernen (N2) er en liten gassturbin som driver fanen. Skyvet her er ${nf(M.thrust/1000,1)} kN av ${nf(M.tmax/1000,1)} kN tilgjengelig: det faller med høyde og med fart.`);
     else t=t2('<b>What you\'re seeing:</b> all the air goes through the core and leaves as one fast, hot jet. Simple and slim, but the fast jet wastes energy at airliner speeds, so it burns much more fuel than a turbofan.','<b>Det du ser:</b> all luften går gjennom kjernen og forlater motoren som én rask, varm stråle. Enkel og slank, men den raske strålen kaster bort energi ved trafikkflyfart, så den bruker mye mer drivstoff enn en turbofan.'); }
+  else if(S.mode==='apart') t=deepOn()?t2('<b>Take it apart:</b> slide from assembled to exploded and the engine comes apart along its axis, the way it is built in modules. Every part has the number and colour of its stage, the same as in the other modes. Pick a part to see what it does; the upper half of each module is cut open, the lower half shows the outside.','<b>Ta den fra hverandre:</b> skyv fra sammensatt til sprengskisse, så går motoren fra hverandre langs aksen, slik den er bygd i moduler. Hver del har nummeret og fargen til trinnet sitt, det samme som i de andre modusene. Velg en del for å se hva den gjør; den øvre halvdelen av hver modul er skåret opp, den nedre viser utsiden.'):t2('<b>Take it apart:</b> slide to pull the engine apart. Each part has the number and colour of its stage. Pick a part to see what it does.','<b>Ta den fra hverandre:</b> skyv for å ta motoren fra hverandre. Hver del har nummeret og fargen til trinnet sitt. Velg en del for å se hva den gjør.');
   else if(S.mode==='cmp') t=t2('<b>Read it like this:</b> left, how much each engine has left as you climb (the piston loses it fastest, the flat-rated turboprop and fans hold on longer). Right, how well each turns its work into push at each speed: propellers win low and slow, fans win high and fast.','<b>Les det slik:</b> til venstre, hvor mye hver motor har igjen når du stiger (stempelmotoren mister det fortest, den flat-ratede turbopropen og fanene holder lenger). Til høyre, hvor godt hver gjør arbeidet om til skyv ved hver fart: propeller vinner lavt og sakte, fan vinner høyt og fort.');
   else if(S.mode==='start'){ const s=S.st, P=E.SP[S.type], tp=S.type==='tp';
     t= s.msg==='hot'? t2('<b>Hot start:</b> too much fuel for the air (a weak starter or a tailwind into the exhaust): the temperature raced towards the limit. The FADEC cut the fuel and is blowing cold air through.','<b>Varm start:</b> for mye drivstoff i forhold til luften (svak starter eller medvind inn i eksosen): temperaturen løp mot grensen. FADEC kuttet drivstoffet og blåser kald luft gjennom.')
@@ -433,16 +438,18 @@ function see(){ let t;
   el('xsee').innerHTML=L(t); }
 
 /* ---------------- tabs, engine choice ---------------- */
-const VIEWS=[['how',t2('How it works','Slik virker den')],['cmp',t2('Compare the four','Sammenlign de fire')],['start',t2('Start the engine','Start motoren')],['rat',t2('Ratings and limits','Rating og grenser'),1]];
+const VIEWS=[['how',t2('How it works','Slik virker den')],['apart',t2('Take it apart','Ta den fra hverandre')],['cmp',t2('Compare the four','Sammenlign de fire')],['start',t2('Start the engine','Start motoren')],['rat',t2('Ratings and limits','Rating og grenser'),1]];
 function drawTabs(){ el('vtabs').innerHTML=VIEWS.map(([k,t,dp])=>`<button type="button" role="tab" data-v="${k}" class="${dp?'dp ':''}${k===S.mode?'on':''}" aria-selected="${k===S.mode}">${L(t)}</button>`).join('');
   el('vtools').innerHTML=TYPES.map(t=>`<button type="button" data-t="${t}" class="${t===S.type?'on':''}" aria-pressed="${t===S.type}">${L(TN[t])}</button>`).join(''); }
 el('vtabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setMode(b.dataset.v); });
 el('vtools').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setType(b.dataset.t); });
 function setMode(m){ if(!VIEWS.some(v=>v[0]===m)) m='how'; if(m==='rat'&&!deepOn()) m='how'; const prev=S.mode; S.mode=m;
   el('xpanel').querySelectorAll('[data-pv]').forEach(d=>{ d.hidden=!d.dataset.pv.split(' ').includes(m); });
+  const ap=m==='apart'; el('enVp').classList.toggle('apart',ap); document.body.classList.toggle('ap-wide',ap); el('apBar').hidden=!ap; el('apSide').hidden=!ap; cv.tabIndex=ap?0:-1; cv.style.cursor='';
+  if(ap&&prev!=='apart'){ AP.e=reduce?1:0; AP.tgt=1; } if(ap) apSide(); apSync();
   if(m==='cmp'&&prev!==m&&S.tas<40){ S.tas=220; if(S.alt<5000) S.alt=10000; sl.alt&&sl.alt.set(S.alt); sl.tas&&sl.tas.set(S.tas); }
   if(m==='start'&&!S.st) resetStart(); el('wxS').textContent=L(m==='rat'?t2('Airport','Flyplass'):t2('Conditions','Forhold')); syncWx(); drawTabs(); upd(); }
-function setType(t){ if(!TYPES.includes(t)) return; S.type=t; TYPES.forEach(x=>document.body.classList.toggle('et-'+x,x===t)); typeSeg.set(t); buildLevers(); resetStart(); drawFaults(); drawTabs(); upd(); }
+function setType(t){ if(!TYPES.includes(t)) return; if(t!==S.type) AP.sel=null; S.type=t; if(S.mode==='apart') setTimeout(apSide); TYPES.forEach(x=>document.body.classList.toggle('et-'+x,x===t)); typeSeg.set(t); buildLevers(); resetStart(); drawFaults(); drawTabs(); upd(); }
 const typeSeg=LAB.seg(el('typeSeg'),TYPES.map(t=>[t,TN[t].en]),S.type,v=>setType(v));
 
 /* ---------------- controls ---------------- */
@@ -497,10 +504,50 @@ el('stBtns').addEventListener('click',e=>{ const b=e.target.closest('button'); i
 
 function upd(){ readout(); legend(); see(); drawStartBtns(); draw(); }
 
+/* ---------------- Take it apart: exploded view (drawing in engparts.js) ---------------- */
+const AP={e:0,tgt:1,sel:null,hov:null};
+function drawApart(g,W,H){ ENGP.draw(g,W,H,{type:S.type,e:AP.e,sel:AP.sel,hov:AP.hov,L,FS});
+  if(W>=640){ const sd=el('apSide'); if(sd) sd.style.maxHeight=cv.clientHeight+'px'; } }
+function apSync(){ const r=el('apEx'); if(r&&document.activeElement!==r) r.value=Math.round(AP.e*100); const b=el('apBtn'); if(b) b.textContent=L(AP.tgt>0.5?t2('Assemble','Sett sammen'):t2('Explode','Ta fra hverandre')); }
+function apSel(id,focus){ AP.sel=id||null; apSide(); draw(); if(focus&&id){ const b=el('apList').querySelector(`[data-p="${id}"]`); if(b) b.focus(); } }
+function apSide(){ const list=ENGP.parts(S.type), p=AP.sel&&ENGP.part(S.type,AP.sel), d=deepOn();
+  const stg=st=>`<span class="apst" style="--c:${ENGP.SC[st]}"><b>${st}</b>${L(ENGP.SN[st])}</span>`;
+  el('apCard').innerHTML=p?`<div class="aph"><h4>${L(p.n)}</h4><button type="button" class="apx" data-x="1" aria-label="${L(t2('Clear selection','Fjern valget'))}">×</button></div>${stg(p.st)}<p>${L(p.d)}</p><p class="apf"><i>${L(t2('Key fact','Nøkkelfakta'))}</i>${L(p.f)}</p>${d?`<p class="apf dp"><i>${L(t2('Deep dive','Dypdykk'))}</i>${L(p.x)}</p>`:''}`
+    :`<h4>${L(t2('Pick a part','Velg en del'))}</h4><p>${L(t2('Tap a part in the drawing or in the list (Tab, then the arrow keys, work too). Each part has the number and colour of its stage:','Trykk på en del i tegningen eller i lista (Tab og så piltastene virker også). Hver del har nummeret og fargen til trinnet sitt:'))}</p><div class="apsts">${[1,2,3,4,5].map(stg).join('')}</div>`;
+  el('apLH').textContent=L(t2('Parts','Deler'))+' · '+list.length;
+  el('apList').innerHTML=list.map((q,i)=>`<li><button type="button" data-p="${q.id}" aria-pressed="${q.id===AP.sel}" class="${q.id===AP.sel?'on':''}" style="--c:${ENGP.SC[q.st]}" tabindex="${(AP.sel?q.id===AP.sel:i===0)?0:-1}"><span class="k">${q.letter}</span><span class="nm">${L(q.n)}</span><span class="sn" aria-label="${L(t2('stage','trinn'))} ${q.st}">${q.st}</span></button></li>`).join(''); }
+el('apList').addEventListener('click',e=>{ const b=e.target.closest('button[data-p]'); if(b) apSel(AP.sel===b.dataset.p?null:b.dataset.p,true); });
+el('apCard').addEventListener('click',e=>{ if(e.target.closest('[data-x]')){ const id=AP.sel; apSel(null); const b=el('apList').querySelector(`[data-p="${id}"]`); if(b) b.focus(); } });
+function apStep(dir,focus){ const list=ENGP.parts(S.type), i=list.findIndex(q=>q.id===AP.sel); const n=i<0?(dir>0?0:list.length-1):(i+dir+list.length)%list.length; apSel(list[n].id,focus); }
+el('apList').addEventListener('keydown',e=>{ const k=e.key; if(k==='ArrowDown'||k==='ArrowRight'){ e.preventDefault(); apStep(1,true); } else if(k==='ArrowUp'||k==='ArrowLeft'){ e.preventDefault(); apStep(-1,true); }
+  else if(k==='Home'||k==='End'){ e.preventDefault(); const l=ENGP.parts(S.type); apSel(l[k==='Home'?0:l.length-1].id,true); } else if(k==='Escape'){ apSel(null); } });
+cv.addEventListener('keydown',e=>{ if(S.mode!=='apart') return; const k=e.key; if(k==='ArrowRight'||k==='ArrowDown'){ e.preventDefault(); apStep(1); } else if(k==='ArrowLeft'||k==='ArrowUp'){ e.preventDefault(); apStep(-1); } else if(k==='Escape') apSel(null); });
+const cvXY=e=>{ const r=cv.getBoundingClientRect(); return [e.clientX-r.left,e.clientY-r.top]; };
+cv.addEventListener('click',e=>{ if(S.mode!=='apart') return; const id=ENGP.hit(...cvXY(e)); apSel(id&&id!==AP.sel?id:null); });
+cv.addEventListener('pointermove',e=>{ if(S.mode!=='apart'||e.pointerType==='touch') return; const id=ENGP.hit(...cvXY(e)); cv.style.cursor=id?'pointer':''; if(id!==AP.hov){ AP.hov=id; draw(); } });
+cv.addEventListener('pointerleave',()=>{ if(AP.hov){ AP.hov=null; draw(); } });
+el('apEx').addEventListener('input',e=>{ AP.tgt=AP.e=(+e.target.value)/100; apSync(); draw(); });
+el('apBtn').addEventListener('click',()=>{ AP.tgt=AP.tgt>0.5?0:1; apSync(); });
+
 /* ---------------- Try it: one task at a time ---------------- */
 let ti=0; const ansv={}, done={};
 const goModel=()=>{ const t=el('enVp'); if(t) t.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'}); };
 const TASKS=[
+ {k:'apart',q:t2('Take the turboprop apart and find the part that drives the propeller. Select it, then press Check.','Ta turbopropen fra hverandre og finn delen som driver propellen. Velg den, og trykk Sjekk.'),
+  pre:{type:'tp',mode:'apart'},
+  live:()=>{ if(S.type!=='tp'||S.mode!=='apart') return [0,t2('Choose Turboprop and Take it apart.','Velg Turboprop og Ta den fra hverandre.')]; const s=AP.sel;
+    if(!s) return [0,t2('Select a part first: in the drawing or in the list.','Velg en del først: i tegningen eller i lista.')];
+    if(s==='pt') return [1,t2('Right: the power turbine (stage 4) takes the energy out of the gas and turns the propeller through its own Np shaft and the reduction gearbox. Nothing connects it to the compressor: only the gas.','Riktig: kraftturbinen (trinn 4) henter energien ut av gassen og dreier propellen gjennom sin egen Np-aksel og reduksjonsgiret. Ingenting kobler den til kompressoren: bare gassen.')];
+    if(s==='rgb'||s==='tsh') return [0,t2('Close: that part passes the drive on. Which part makes the turning force in the first place?','Nærme: den delen fører drivkraften videre. Hvilken del lager dreiekraften i utgangspunktet?')];
+    if(s==='ct') return [0,t2('That turbine drives the compressor (Ng). Look one turbine further forward.','Den turbinen driver kompressoren (Ng). Se én turbin lenger fram.')];
+    return [0,t2('Not that one. Follow the gas: after it has been burnt, which part takes its energy and sends it forward to the propeller?','Ikke den. Følg gassen: etter at den er brent, hvilken del tar energien og sender den fram til propellen?')]; }},
+ {k:'apart2',q:t2('Take the piston engine apart. Which part makes the high voltage for the spark, even with the master switch off? Select it, then press Check.','Ta stempelmotoren fra hverandre. Hvilken del lager høyspenningen til gnisten, selv med hovedbryteren av? Velg den, og trykk Sjekk.'),
+  pre:{type:'pist',mode:'apart'},
+  live:()=>{ if(S.type!=='pist'||S.mode!=='apart') return [0,t2('Choose Piston and Take it apart.','Velg Stempel og Ta den fra hverandre.')]; const s=AP.sel;
+    if(!s) return [0,t2('Select a part first: in the drawing or in the list.','Velg en del først: i tegningen eller i lista.')];
+    if(s==='mag') return [1,t2('Right: the two magnetos (stage 3) are engine-driven generators. Each feeds one of the two plugs in every cylinder, so the ignition needs no battery and has a backup.','Riktig: de to magnetene (trinn 3) er motordrevne generatorer. Hver forsyner én av de to pluggene i hver sylinder, så tenningen trenger ikke batteri og har en reserve.')];
+    if(s==='plug') return [0,t2('The plugs only deliver the spark into the cylinder. Where does the high voltage come from? Follow the thin leads.','Pluggene leverer bare gnisten inn i sylinderen. Hvor kommer høyspenningen fra? Følg de tynne ledningene.')];
+    return [0,t2('Not that one. Look for the stage 3 parts (combustion), and follow the thin ignition leads.','Ikke den. Se etter delene i trinn 3 (forbrenning), og følg de tynne tenningsledningene.')]; }},
  {k:'four',q:t2('In which stroke of a four-stroke engine does the spark fire, just before top dead centre?','I hvilket takt i en firetaktsmotor tenner gnisten, rett før øvre dødpunkt?'),
   opts:[t2('At the end of compression','På slutten av kompresjonen'),t2('At the start of intake','I starten av innsuget'),t2('In the middle of exhaust','Midt i eksostaktet'),t2('At the end of the power stroke','På slutten av arbeidstaktet')],c:0,pre:{type:'pist',mode:'how',alt:0,dT:0,tas:0,thr:0.7,rpm:2400,mix:1},
   e:t2('The charge is squeezed, the plugs fire just before the piston reaches the top, and the burning gas pushes it down in the power stroke. Two plugs, fed by two independent magnetos, burn it faster and keep it running if one fails.','Ladningen klemmes, pluggene tenner rett før stempelet når toppen, og den brennende gassen presser det ned i arbeidstaktet. To plugger, med hver sin uavhengige magnet, brenner den raskere og holder motoren i gang hvis én svikter.')},
@@ -632,6 +679,8 @@ function drawTake(){ const TK=[
   m.querySelector('p').textContent=L(t2('Intake, compression, combustion, exhaust. In a piston engine they follow each other in the same cylinder; in a gas turbine they run side by side, all the time: intake, compressor, combustor, turbine and nozzle.','Innsug, kompresjon, forbrenning, eksos. I en stempelmotor følger de etter hverandre i samme sylinder; i en gassturbin går de side om side, hele tiden: innløp, kompressor, brennkammer, turbin og dyse.')); }
 
 LAB.quiz(el('qbox'),'engines',()=>LAB.shuffle([
+ {q:t2('In a free-turbine turboprop, what drives the propeller?','Hva driver propellen på en turboprop med fri turbin?'),a:[t2('The power turbine, through its own shaft and the reduction gearbox','Kraftturbinen, gjennom sin egen aksel og reduksjonsgiret'),t2('The compressor turbine, on the same shaft as the compressor','Kompressorturbinen, på samme aksel som kompressoren'),t2('The exhaust jet, pushing on the blades','Eksosstrålen, som skyver på bladene')],c:0,e:t2('The gas generator (compressor, combustor, compressor turbine) only makes hot gas. A separate power turbine takes the energy and drives the propeller; only the gas links the two shafts (Ng and Np).','Gassgeneratoren (kompressor, brennkammer, kompressorturbin) lager bare varm gass. En egen kraftturbin tar energien og driver propellen; bare gassen kobler de to akslene (Ng og Np).')},
+ {q:t2('What do the nozzle guide vanes (NGV) just in front of a turbine rotor do?','Hva gjør ledeskovlene (NGV) like foran en turbinrotor?'),a:[t2('Speed up the hot gas and aim it at the rotor blades','Øker farten på den varme gassen og retter den mot rotorbladene'),t2('Slow the air down so its pressure rises','Bremser luften så trykket stiger'),t2('Spray the fuel into the gas','Sprøyter drivstoffet inn i gassen')],c:0,e:t2('They are fixed vanes shaped as nozzles: the gas leaves them fast and at the right angle, so the rotor can take out its energy. Slowing the air to raise pressure is the diffuser\'s job.','De er faste skovler formet som dyser: gassen forlater dem raskt og med riktig vinkel, så rotoren kan hente ut energien. Å bremse luften for å øke trykket er diffusorens jobb.')},
  {q:t2('In a four-stroke engine, how many turns of the crankshaft does one full cycle take?','Hvor mange omdreininger av veivakselen tar én hel syklus i en firetaktsmotor?'),a:[t2('Two','To'),t2('One','Én'),t2('Four','Fire')],c:0,e:t2('Four strokes of the piston, two up and two down per turn: two turns. Only the power stroke makes work.','Fire takt med stempelet, to opp og to ned per omdreining: to omdreininger. Bare arbeidstaktet gjør arbeid.')},
  {q:t2('You climb from 2 000 to 9 000 ft without touching the mixture. The mixture becomes…','Du stiger fra 2 000 til 9 000 ft uten å røre blandingen. Blandingen blir …'),a:[t2('too rich','for rik'),t2('too lean','for mager'),t2('unchanged','uendret')],c:0,e:t2('The air thins but the carburettor meters nearly the same fuel. Lean to get the power back and save fuel.','Luften blir tynnere, men forgasseren gir nesten like mye drivstoff. Len for å få effekten tilbake og spare drivstoff.')},
  {q:t2('With a constant-speed propeller, carburettor ice shows first as…','Med konstantturtallspropell viser forgasserising seg først som …'),a:[t2('a slow fall in manifold pressure','et sakte fall i innsugstrykket'),t2('a fall in RPM','et fall i RPM'),t2('a rise in oil temperature','en økning i oljetemperaturen')],c:0,e:t2('The governor holds RPM by flattening the blades, so the loss shows on the MAP gauge. With a fixed-pitch propeller RPM falls.','Governoren holder RPM ved å gjøre bladene flatere, så tapet vises på MAP-måleren. Med fast propell faller RPM.')},
@@ -651,7 +700,7 @@ LAB.quiz(el('qbox'),'engines',()=>LAB.shuffle([
 LAB.add({},{'Aircraft Engines':'Flymotorer','Powerplant: piston, turboprop and jet':'Motorer: stempel, turboprop og jet','Birdbird Virtual Lab · Aircraft and engine systems':'Birdbird Virtual Lab · Fly- og motorsystemer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The engine lab':'Motorlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Engine':'Motor','Levers':'Hendler','Start':'Start','Conditions':'Forhold','Reduced take-off thrust':'Redusert startskyv','Scenarios':'Scenarier','Advanced':'Avansert','Mode':'Modus','Sections':'Seksjoner',
- 'Lean to peak EGT':'Len til topp-EGT','Carburettor heat':'Forgasservarme','Condition lever':'Kondisjonshendel','Start fault':'Startfeil','Piston: turbo-normalised':'Stempel: turbo-normalisert','Piston: carburettor ice forming':'Stempel: forgasseris dannes','Show temperatures along the gas path':'Vis temperaturer langs gasstrømmen',
+ 'Assembled':'Sammensatt','Exploded':'Sprengskisse','Assembled to exploded':'Sammensatt til sprengskisse','Parts':'Deler','Lean to peak EGT':'Len til topp-EGT','Carburettor heat':'Forgasservarme','Condition lever':'Kondisjonshendel','Start fault':'Startfeil','Piston: turbo-normalised':'Stempel: turbo-normalisert','Piston: carburettor ice forming':'Stempel: forgasseris dannes','Show temperatures along the gas path':'Vis temperaturer langs gasstrømmen',
  'Cutaway of the selected engine with the gas path coloured by temperature, its cockpit gauges, and in the other modes comparison and rating charts.':'Snitt av valgt motor med gasstrømmen farget etter temperatur, motorinstrumentene, og i de andre modusene sammenlignings- og ratingdiagrammer.'});
 LAB.tx({lead:'Alle flymotorer gjør de samme fire tingene med luft: suger den inn, klemmer den, brenner drivstoff i den og blåser den ut. En stempelmotor gjør dem etter hverandre i samme sylinder; en gassturbin gjør alle samtidig, hver i sin del av motoren. Det den varme gassen så driver, gjør forskjellen: en propell gjennom en aksel (stempel og turboprop) eller en luftstråle rett ut bak (turbojet og turbofan). Se hver av dem virke, les instrumentene, sammenlign dem i samme høyde og fart, og start dem.'});
 function texts(){
