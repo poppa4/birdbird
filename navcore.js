@@ -113,7 +113,7 @@ const oneIn60=(off,along)=>along>0?60*off/along:0;
 
 /* ---------- holding ---------- */
 /* ICAO entry for a hold with inbound course `inb` (same reference as hdg), turns dir (+1 right, −1 left),
-   aircraft heading to the fix `hdg`. rel = heading measured from the outbound course towards the non-holding side.
+   aircraft heading to the fix `hdg`. rel = heading measured from the outbound course towards the holding side.
    Sector 1 parallel (110°), sector 2 teardrop/offset (70°), sector 3 direct (180°). near = within 5° of a boundary. */
 function holdEntry(inb,dir,hdg){
   const out=norm(inb+180), rel= dir>0? norm(out-hdg) : norm(hdg-out);

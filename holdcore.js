@@ -21,7 +21,7 @@ function holdSpeed(altFt,o){ o=o||{};
   return {kt:null,mach:0.83}; }
 
 /* entry with the 5° flexibility: alt is the neighbouring entry when within 5° of a sector boundary.
-   rel (from NAVCORE.holdEntry) = heading measured from the outbound course towards the non-holding side:
+   rel (from NAVCORE.holdEntry) = heading measured from the outbound course towards the holding side:
    0–70 offset (teardrop), 70–250 direct, 250–360 parallel. */
 function entry(inb,dir,hdg){ const e=N.holdEntry(inb,dir,hdg), r=e.rel; let alt=null;
   if(Math.abs(r-70)<=5) alt= e.entry==='teardrop'?'direct':'teardrop';

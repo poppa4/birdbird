@@ -160,7 +160,7 @@ body.depth-instructor .maid b{font-size:24px}
       <li><b>Lead the turn.</b> Start rolling onto the course as the needle comes alive from the stop, before it is centred, or you overshoot.</li>
       <li><b>DME is slant range.</b> Overhead at 6000 ft it reads about 1 NM. DME ground speed and time are only right flying directly to or from the station.</li>
       <li><b>Homing is not tracking.</b> Keeping the ADF needle on the nose in a crosswind curves your path; hold a heading into wind with the needle offset by the drift instead.</li>
-      <li><b>Hold entries by heading.</b> Measure your heading from the outbound course towards the non-holding side: 0–70° teardrop, 70–250° direct, 250–360° parallel, with 5° of flexibility at the boundaries.</li>
+      <li><b>Hold entries by heading.</b> Measure your heading from the outbound course towards the holding side: 0–70° teardrop, 70–250° direct, 250–360° parallel, with 5° of flexibility at the boundaries.</li>
       <li><b>The localiser is four times sharper.</b> Make small corrections, and remember that behind the antenna (back course) a CDI reads reversed.</li>
     </ul>
   </section>
@@ -175,7 +175,7 @@ body.depth-instructor .maid b{font-size:24px}
 </div>
 <script src="lab.js?v=37"></script>
 <script src="concepts.js?v=1"></script>
-<script src="navcore.js?v=1"></script>
+<script src="navcore.js?v=2"></script>
 <script src="navgauges.js?v=2"></script>
 <script>
 (function(){
@@ -204,14 +204,14 @@ LAB.tx({
  strip:'Andre instrumenter: sveip sidelengs',
  r1:'VOR, NDB og DME forteller deg hvor du er. Overvåking forteller ATC hvor du er. Velg hva bakkestasjonen bruker og hvordan transponderen din er stilt, og se hva som kommer opp på flygelederens skjerm.',
  d1:'<div class="box"><b class="t"><i>1</i>Posisjon, ikke kurs</b><p>En VOR-nål og TO/FROM-flagget avhenger bare av hvor du er og kursen du har satt. Drei flyet, og de flytter seg ikke. Bare RMI- og ADF-nålene, og HSI-bildet, har med kursen å gjøre.</p></div><div class="box"><b class="t"><i>2</i>Fly mot nålen</b><p>Når kursen du har satt omtrent stemmer med retningen du flyr, peker CDI-nålen mot kursen. Flyr du motsatt vei, viser den omvendt. En HSI viser alltid kursen på riktig side.</p></div><div class="box"><b class="t"><i>3</i>Vinden skiller kurs og track</b><p>Holder du en kurs i sidevind, driver du av linjen. Finn kursen opp mot vinden som holder nålen i ro: omtrent asin(sidevind / TAS).</p></div>',
- d2:'<li><b>Identifiser før du bruker.</b> Sjekk morseidenten på hver VOR, NDB, DME og ILS; en stasjon under vedlikehold kan fortsatt sende et signal som ser brukbart ut, men er feil.</li><li><b>Sett kursen du skal fly.</b> Inngående: kurs TIL stasjonen. Utgående: radialen med FROM. Fly så mot nålen.</li><li><b>Led svingen.</b> Begynn å rulle inn på kursen når nålen slipper stoppen, før den er sentrert, ellers skyter du over.</li><li><b>DME er skrådistanse.</b> Rett over i 6000 ft viser den rundt 1 NM. DME-fart og tid stemmer bare når du flyr rett mot eller fra stasjonen.</li><li><b>Homing er ikke tracking.</b> Holder du ADF-nålen på nesen i sidevind, blir banen buet; hold heller en kurs opp mot vinden med nålen forskjøvet like mye som avdriften.</li><li><b>Holding-innflyging etter kurs.</b> Mål kursen din fra utgående kurs mot ikke-holdingsiden: 0–70° dråpe, 70–250° direkte, 250–360° parallell, med 5° slingringsmonn ved grensene.</li><li><b>Localizeren er fire ganger skarpere.</b> Gjør små korreksjoner, og husk at bak antennen (baksiden) viser en CDI omvendt.</li>',
+ d2:'<li><b>Identifiser før du bruker.</b> Sjekk morseidenten på hver VOR, NDB, DME og ILS; en stasjon under vedlikehold kan fortsatt sende et signal som ser brukbart ut, men er feil.</li><li><b>Sett kursen du skal fly.</b> Inngående: kurs TIL stasjonen. Utgående: radialen med FROM. Fly så mot nålen.</li><li><b>Led svingen.</b> Begynn å rulle inn på kursen når nålen slipper stoppen, før den er sentrert, ellers skyter du over.</li><li><b>DME er skrådistanse.</b> Rett over i 6000 ft viser den rundt 1 NM. DME-fart og tid stemmer bare når du flyr rett mot eller fra stasjonen.</li><li><b>Homing er ikke tracking.</b> Holder du ADF-nålen på nesen i sidevind, blir banen buet; hold heller en kurs opp mot vinden med nålen forskjøvet like mye som avdriften.</li><li><b>Holding-innflyging etter kurs.</b> Mål kursen din fra utgående kurs mot holdingsiden: 0–70° dråpe, 70–250° direkte, 250–360° parallell, med 5° slingringsmonn ved grensene.</li><li><b>Localizeren er fire ganger skarpere.</b> Gjør små korreksjoner, og husk at bak antennen (baksiden) viser en CDI omvendt.</li>',
  foot:'<b>Modell og begrensninger.</b> Forenklet opplæringssimulering, ikke for navigasjon. Posisjoner, identer og frekvenser kommer fra OurAirports (fritt tilgjengelig, som i Route Explorer); geometrien for ILS RWY 17 på Bergen er omtrentlig, og frekvensen vises ikke; kystlinje og relieff kommer fra Mapzen/AWS Terrain Tiles-høydedataene nettstedet allerede bruker i Route Explorer (rundt 0,25′ oppløsning; se Kilder). Geometrien bruker en flat lokal projeksjon rundt områdets VOR (under 0,2° og 0,1 NM feil innenfor 40 NM) og én misvisning for hele området (WMM 2025, valgfritt). VOR: ±10° fullt utslag (2° per prikk på CDI, 5° per prikk på HSI), OFF-flagg innenfor 2° av tvers, i en 45°-kjegle over stasjonen og utenfor siktlinje. Localizer ±2,5° fullt utslag, glidebane 3° med ±0,7° fullt utslag; dekningen er forenklet. DME: skrådistanse fra høyde og stasjonens elevasjon, fart fra endringen i avstand. Flyet holder konstant TAS med standardsvinger (maks 25° krengning); ingen instrumentfeil, ingen natteffekt eller kystrefraksjon på NDB, ingen turbulens.'
 });
 LAB.start('radionav');
 })();
 </script>
 <script src="navsim.js?v=2"></script>
-<script src="navlessons.js?v=2"></script>
-<script src="navpage.js?v=1"></script>
+<script src="navlessons.js?v=3"></script>
+<script src="navpage.js?v=2"></script>
 </body>
 </html>
