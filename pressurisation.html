@@ -2,420 +2,163 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="Why a jet at FL370 carries a cabin at about 8000 ft, what happens to that cabin when a window or a door seal lets go, and how fast the lack of oxygen…">
+<meta name="description" content="Pressurisation and oxygen (EASA 021/040): cabin altitude, differential pressure, the outflow valve and the cabin controller, rapid and slow decompression, hypoxia and time of useful consciousness, crew and passenger oxygen and the EASA oxygen rules, for unpressurised pistons, pressurised turboprops and jet transports.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pressurisation and Hypoxia</title>
+<title>Pressurisation and Oxygen</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
-.paper canvas{display:block;width:100%}
-#cabcv{aspect-ratio:16/10;max-height:470px}
-#deccv{aspect-ratio:16/10;max-height:470px}
-#hypcv{aspect-ratio:16/9;max-height:400px}
-.rrow b{white-space:normal;text-align:right}
-.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
-.sw{display:flex;flex-wrap:wrap;gap:6px 14px;margin:4px 0 8px}
-.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);cursor:pointer}
-.chk input{accent-color:var(--magenta);margin:0}
-.tablewrap{overflow-x:auto}
-table.ct{border-collapse:collapse;width:100%;font-size:13.5px}
-table.ct th,table.ct td{padding:6px 8px;border-bottom:1px solid var(--rule-2);text-align:right;font-variant-numeric:tabular-nums}
-table.ct th{color:var(--ink-2);font-weight:500;font-size:12.5px}
-table.ct td:first-child,table.ct th:first-child{text-align:left}
-@media (max-width:600px){#cabcv,#deccv{aspect-ratio:auto;height:330px}#hypcv{aspect-ratio:auto;height:290px}}
-table.ct tr.cur td{background:#F6EDF2;font-weight:600}
+/* the pressurisation figure: one dark canvas with the cut-away fuselage, the altitude–time chart and the hypoxia panel */
+.pr-vp{background:radial-gradient(130% 100% at 30% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+#prv{display:block;width:100%;aspect-ratio:16/10.4;max-height:760px;touch-action:manipulation}
+.pr-vp .vchip{max-width:min(44%,420px)}
+.pr-vp .vchip b.m{color:#F09AC8}
+.pr-vp .vtabs button[aria-disabled=true]{opacity:.38;cursor:not-allowed}
+.pr-vp .vtools button{min-width:40px}
+@media (max-width:640px){#prv{aspect-ratio:1/1.62;max-height:none}.pr-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
+@media (pointer:coarse){.pr-vp .vtabs button,.pr-vp .vtools button{min-height:40px}.xsec .seg button{min-height:40px}}
+.xsec .seg.wrap{flex-wrap:wrap}
+.xsec .seg.wrap button{flex:1 1 30%}
+.xsec .hint{font-size:12.5px;color:var(--ink-3);margin:6px 0 0;line-height:1.45}
+.xsec .ro2{margin-top:6px}
+.xsec .ro2 .rrow{font-size:12.5px;padding:4px 0}
+.xsec .ro2 .rrow b{font-family:var(--f-mono);font-weight:500;font-size:12px}
+.xsec .grp{margin-top:8px}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px;flex-wrap:wrap}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.35;color:var(--ink);margin:0 0 10px}
+.tstep .ins{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;align-items:flex-end}
+.tstep .ins label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.tstep .ins input{font-family:var(--f-mono);font-size:15px;width:120px;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
+.tstep .ins input.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .ins input.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}.tstep .ins input{width:104px}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--panel-2,#F6F8F6);padding:6px 9px;border-radius:3px;margin:2px 0 10px;overflow-x:auto;white-space:nowrap}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
+
+.dfold .ftab td:first-child{white-space:nowrap}
 </style>
 </head>
-<body data-title="Pressurisation and Hypoxia">
-<script src="site.js?v=41"></script>
+<body data-title="Pressurisation and Oxygen">
+<script src="site.js?v=42"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aircraft systems · Human factors</div>
-      <h1>Pressurisation and hypoxia</h1>
-      <p>Why a jet at FL370 carries a cabin at about 8000 ft, what happens to that cabin when a window or a door seal lets go, and how fast the lack of oxygen takes away your ability to act. Built around an A320-family aircraft.</p>
+      <div class="eyebrow">Birdbird Virtual Lab · Aircraft and engine systems</div>
+      <h1>Pressurisation and oxygen</h1>
+      <p data-tx="lead">Why a jet at FL370 carries a cabin at about 7000 ft, what the outflow valve and the cabin controller do, what happens when a window or a door seal lets go, how fast the lack of oxygen takes away your ability to act, and who must have oxygen when. Compared across an unpressurised piston, a pressurised turboprop and a jet transport.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#cabin">Cabin altitude</a><a href="#decomp">Decompression</a><a href="#hypoxia">Hypoxia</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">The pressurisation lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="cabin">
-    <div class="eyebrow">1 · Interactive</div>
-    <h2>Cabin altitude and differential pressure</h2>
-    <p class="lead">Bleed air from the engines goes through the air conditioning packs into the cabin, and an outflow valve lets it out again. By closing the valve the controller holds the air in and keeps the cabin pressure higher than outside. The difference is the differential pressure (ΔP), and the fuselage is built for a maximum of it. The higher you fly, the higher the cabin has to go.</p>
-    <div class="split">
-      <div class="paper"><canvas id="cabcv" aria-label="Aircraft altitude and cabin altitude through a flight, with differential pressure below"></canvas></div>
-      <div class="panel">
-        <div id="cctl"></div>
-        <div class="grp">Landing elevation (LDG ELEV)</div><div id="cldg"></div>
-        <div id="cctl2"></div>
-        <div class="ro" style="margin-top:6px">
-          <div class="rrow"><span>Phase</span><b id="c1"></b></div>
-          <div class="rrow"><span>Aircraft altitude</span><b id="c2"></b></div>
-          <div class="rrow"><span>Cabin altitude</span><b id="c3"></b></div>
-          <div class="rrow"><span>Differential pressure</span><b id="c4"></b></div>
-          <div class="rrow"><span>Cabin vertical speed</span><b id="c5"></b></div>
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kin"></p>
+    <div id="kcGrid"></div>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
+    </div>
+  </section>
+
+  <section class="card" id="explore" data-step="explore">
+    <span id="cabin" aria-hidden="true"></span><span id="decomp" aria-hidden="true"></span><span id="hypoxia" aria-hidden="true"></span><span id="ops" aria-hidden="true"></span>
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The pressurisation lab</h2>
+    <p class="lead" id="xLead"></p>
+    <div class="xapp">
+      <div class="xvp pr-vp" id="prVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="Mode"></div><div class="vtools" id="vtools"></div></div>
+        <div class="vcv" id="vcv">
+          <canvas id="prv" aria-label="Cut-away fuselage with the air flowing in through the packs and out through the outflow valve, an altitude–time chart of the aircraft and the cabin, and a hypoxia panel with the time of useful consciousness."></canvas>
+          <div class="vchip" id="chip" aria-live="polite"></div>
         </div>
+        <div class="vleg" id="vleg"></div>
+      </div>
+      <p class="xsee" id="xsee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <details class="xsec" open><summary>Aircraft</summary><div id="clsSeg" class="seg wrap"></div><p class="hint" id="clsH"></p></details>
+        <details class="xsec" open data-pv="norm"><summary>The flight</summary><div id="flCtl"></div>
+          <div class="grp" id="ldgL">Landing elevation in the controller</div><div id="ldgSeg"></div><div id="ldgCtl"></div></details>
+        <details class="xsec" open data-pv="rapid"><summary>Decompression</summary><div class="grp" id="holeL">Opening</div><div id="holeSeg" class="seg wrap"></div><div id="rpCtl"></div></details>
+        <details class="xsec" open data-pv="slow"><summary>Leak</summary><div id="lkCtl"></div><div class="grp" id="pkL">Packs running</div><div id="pkSeg"></div></details>
+        <details class="xsec" open data-pv="oxy"><summary>Oxygen</summary><div class="grp" id="mkL">Crew mask regulator</div><div id="mkSeg" class="seg wrap"></div>
+          <div class="grp" id="gnL">Passenger oxygen (chemical generators)</div><div id="gnSeg"></div><div class="grp" id="ruL">Rules</div><div id="ruSeg"></div><div id="oxCtl"></div></details>
+        <details class="xsec" open><summary>Time</summary><div id="tCtl"></div></details>
+        <details class="xsec" open><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
+        <details class="xsec deep"><summary>Advanced</summary><div id="adv2"></div><div class="ro2" id="advRo"></div></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
       </div>
     </div>
-    <div class="kpis" id="cK"></div>
-    <p class="callout blue" id="cx"></p>
-    <div class="cols">
-      <div class="box"><b class="t">Limits on ΔP</b><p>On the A320 family the normal maximum differential pressure is about 8 psi, and safety valves open at about 8.6 psi (typical values). At FL390 the outside pressure is under 3 psi, so 8 psi of ΔP gives a cabin of about 8000 ft. That is the design trade: a stronger, heavier fuselage could keep the cabin lower.</p></div>
-      <div class="box"><b class="t">Cabin rate</b><p>Ears feel the rate of change, not the altitude. The controller spreads the cabin climb over the whole aircraft climb, and the cabin descent over the whole descent, so the rates stay at a few hundred feet per minute even when the aircraft climbs or descends at 2000 to 3000 ft/min.</p></div>
-      <div class="box"><b class="t">Negative ΔP</b><p>The fuselage is not built to have higher pressure outside than inside. If the aircraft descends faster than the cabin can follow, negative relief valves open and let air in. Normally the controller prevents this by keeping the cabin a little below the aircraft path.</p></div>
-      <div class="box"><b class="t">Ditching</b><p>The DITCHING pushbutton closes the outflow valve and the openings below the floor line, so water does not flood the fuselage through the valves after a water landing.</p></div>
-    </div>
   </section>
 
-  <section class="card" id="decomp">
-    <div class="eyebrow">2 · Interactive</div>
-    <h2>Decompression and emergency descent</h2>
-    <p class="lead">A leak is a hole the packs have to fill. Small holes are absorbed: the outflow valve closes a little more and nobody notices. A larger hole beats the packs and the cabin climbs; a big one empties the cabin in seconds. The size of the hole compared with the cabin volume decides how fast.</p>
-    <div class="split">
-      <div class="paper"><canvas id="deccv" aria-label="Cabin altitude and aircraft altitude after a decompression, with the emergency descent"></canvas></div>
-      <div class="panel">
-        <div id="dctl"></div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="d_sb" checked> <span>Speedbrakes extended</span></label><label class="chk"><input type="checkbox" id="d_pk" checked> <span>Packs running</span></label></div>
-        <div class="ro" style="margin-top:6px">
-          <div class="rrow"><span>Type</span><b id="d1"></b></div>
-          <div class="rrow"><span>Cabin above 9550 ft after</span><b id="d2"></b></div>
-          <div class="rrow"><span>Passenger masks after</span><b id="d3"></b></div>
-          <div class="rrow"><span>Highest cabin altitude</span><b id="d4"></b></div>
-          <div class="rrow"><span>Time with cabin above 14,000 ft</span><b id="d5"></b></div>
-          <div class="rrow"><span>Time of useful consciousness</span><b id="d6"></b></div>
-        </div>
-        <p class="callout" id="dx"></p>
-      </div>
-    </div>
-    <div class="cols">
-      <div class="box"><b class="t">Explosive, rapid and slow</b><p>Teaching definitions vary, but roughly: explosive decompression is over in less than about half a second, faster than the lungs can empty; rapid takes from a few seconds to tens of seconds; slow, or gradual, takes long enough that it may not be noticed without the warnings. Rapid decompression comes with a bang, fog as the air cools, flying debris and a strong outflow of air towards the hole. In this lab anything up to about a minute counts as rapid, and for it the time of useful consciousness is roughly halved.</p></div>
-      <div class="box"><b class="t">The emergency descent</b><p>Masks on and communication established first. Then descend: thrust idle, speedbrakes out, and fly at MMO and then VMO (unless structural damage is suspected, when a lower speed is wiser), towards 10,000 ft or the minimum safe altitude if that is higher. Most of the height is lost in the first few minutes.</p></div>
-      <div class="box"><b class="t">Why the time scale is stretched</b><p>The horizontal axis is a square-root time scale. It shows the first seconds of a rapid decompression and the minutes of the descent on the same picture.</p></div>
-    </div>
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
   </section>
 
-  <section class="card" id="hypoxia">
-    <div class="eyebrow">3 · Interactive</div>
-    <h2>Hypoxia and time of useful consciousness</h2>
-    <p class="lead">The air holds about 21 % oxygen at every altitude. What falls is the pressure, and with it the partial pressure of oxygen that pushes oxygen from the lungs into the blood. Above about 10,000 ft the blood starts to carry noticeably less, and above 20,000 ft the time you can act sensibly is measured in minutes, then seconds.</p>
-    <div class="split">
-      <div class="paper"><canvas id="hypcv" aria-label="Blood oxygen saturation against altitude, breathing air and breathing oxygen"></canvas></div>
-      <div class="panel">
-        <div class="grp">Breathing</div><div id="hbr"></div>
-        <div id="hctl"></div>
-        <div class="sw"><label class="chk"><input type="checkbox" id="h_rd"> <span>After a rapid decompression</span></label></div>
-        <div class="ro" style="margin-top:6px">
-          <div class="rrow"><span>Ambient pressure</span><b id="y1"></b></div>
-          <div class="rrow"><span>Partial pressure of oxygen</span><b id="y2"></b></div>
-          <div class="rrow"><span>Alveolar oxygen (estimate)</span><b id="y3"></b></div>
-          <div class="rrow"><span>Blood oxygen saturation</span><b id="y4"></b></div>
-          <div class="rrow"><span>Stage</span><b id="y5"></b></div>
-          <div class="rrow"><span>Time of useful consciousness</span><b id="y6"></b></div>
-        </div>
-      </div>
-    </div>
-    <div class="split">
-      <div class="box tablewrap"><table class="ct" id="tuc"></table><p class="note" style="margin-top:8px">Typical values for a person at rest, from aviation physiology training material. Individual tolerance varies a lot with fitness, fatigue, smoking, activity and the rate of the climb.</p></div>
-      <div class="box"><b class="t">Time of useful consciousness</b><p>TUC is the time from the loss of oxygen until you can no longer act effectively, not until you pass out. You may still be awake and feel fine after it has run out. After a rapid decompression it is roughly halved, because the lungs dump their oxygen at once and you start from a lower level.</p></div>
-    </div>
-    <div class="cols" id="hcards"></div>
-  </section>
-
-  <section class="card" id="ops">
-    <div class="eyebrow">4 · Operations</div>
-    <h2>In the aircraft</h2>
-    <div class="cols" id="cards"></div>
-  </section>
-
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot">Teaching model. The ISA atmosphere, a cabin of about 330 m³, constant temperature, an ideal orifice and constant pack flow are assumed; the pressurisation schedule, warning thresholds, descent rates and physiological values are typical and illustrative, not FCOM or medical data. Individual tolerance to hypoxia varies widely. Follow the FCOM, QRH and your operator’s procedures.</p>
+  <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=40"></script>
-<script>
-(function(){
-'use strict';
-const {T,L,el,nf}=LAB;
-LAB.add({},{
- 'Pressurisation and Hypoxia':'Trykkabin og hypoksi','Pressurisation and hypoxia':'Trykkabin og hypoksi','Birdbird Virtual Lab · Aircraft systems · Human factors':'Birdbird Virtual Lab · Flysystemer · Menneskelige faktorer',
- 'Why a jet at FL370 carries a cabin at about 8000 ft, what happens to that cabin when a window or a door seal lets go, and how fast the lack of oxygen takes away your ability to act. Built around an A320-family aircraft.':'Hvorfor et jetfly i FL370 har en kabin på rundt 8000 ft, hva som skjer med kabinen når et vindu eller en dørpakning slipper, og hvor raskt mangel på oksygen tar fra deg evnen til å handle. Bygget rundt et fly i A320-familien.',
-'Cabin altitude':'Kabinhøyde','Decompression':'Dekompresjon','Hypoxia':'Hypoksi','In the aircraft':'I flyet','Test yourself':'Test deg selv',
- '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Operations':'4 · Operativt','Check':'Sjekk',
- 'Cabin altitude and differential pressure':'Kabinhøyde og differansetrykk',
- 'Bleed air from the engines goes through the air conditioning packs into the cabin, and an outflow valve lets it out again. By closing the valve the controller holds the air in and keeps the cabin pressure higher than outside. The difference is the differential pressure (ΔP), and the fuselage is built for a maximum of it. The higher you fly, the higher the cabin has to go.':'Bleed-luft fra motorene går gjennom klimaanleggets pakker inn i kabinen, og en utløpsventil slipper den ut igjen. Ved å lukke ventilen holder kontrolleren luften inne og trykket i kabinen høyere enn utenfor. Forskjellen er differansetrykket (ΔP), og flykroppen er bygget for et maksimum av det. Jo høyere du flyr, desto høyere må kabinen gå.',
- 'Landing elevation (LDG ELEV)':'Landingshøyde (LDG ELEV)','Phase':'Fase','Aircraft altitude':'Flyets høyde','Differential pressure':'Differansetrykk','Cabin vertical speed':'Kabinens vertikalfart',
- 'Limits on ΔP':'Grenser for ΔP','On the A320 family the normal maximum differential pressure is about 8 psi, and safety valves open at about 8.6 psi (typical values). At FL390 the outside pressure is under 3 psi, so 8 psi of ΔP gives a cabin of about 8000 ft. That is the design trade: a stronger, heavier fuselage could keep the cabin lower.':'I A320-familien er normalt maksimalt differansetrykk rundt 8 psi, og sikkerhetsventilene åpner ved rundt 8,6 psi (typiske verdier). I FL390 er trykket utenfor under 3 psi, så 8 psi ΔP gir en kabin på rundt 8000 ft. Det er konstruksjonsavveiningen: en sterkere og tyngre flykropp kunne holdt kabinen lavere.',
- 'Cabin rate':'Kabinrate','Ears feel the rate of change, not the altitude. The controller spreads the cabin climb over the whole aircraft climb, and the cabin descent over the whole descent, so the rates stay at a few hundred feet per minute even when the aircraft climbs or descends at 2000 to 3000 ft/min.':'Ørene kjenner endringshastigheten, ikke høyden. Kontrolleren sprer kabinens stigning over hele flyets stigning, og kabinens nedstigning over hele nedstigningen, så ratene holder seg på noen hundre fot i minuttet selv når flyet stiger eller synker med 2000 til 3000 ft/min.',
- 'Negative ΔP':'Negativ ΔP','The fuselage is not built to have higher pressure outside than inside. If the aircraft descends faster than the cabin can follow, negative relief valves open and let air in. Normally the controller prevents this by keeping the cabin a little below the aircraft path.':'Flykroppen er ikke bygget for høyere trykk utenfor enn innenfor. Synker flyet raskere enn kabinen kan følge, åpner ventiler for negativt trykk og slipper luft inn. Normalt hindrer kontrolleren dette ved å holde kabinen litt under flyets bane.',
- 'Ditching':'Nødlanding på vann','The DITCHING pushbutton closes the outflow valve and the openings below the floor line, so water does not flood the fuselage through the valves after a water landing.':'DITCHING-knappen lukker utløpsventilen og åpningene under gulvnivå, så vann ikke strømmer inn i flykroppen gjennom ventilene etter en landing på vann.',
- 'Decompression and emergency descent':'Dekompresjon og nødnedstigning',
- 'A leak is a hole the packs have to fill. Small holes are absorbed: the outflow valve closes a little more and nobody notices. A larger hole beats the packs and the cabin climbs; a big one empties the cabin in seconds. The size of the hole compared with the cabin volume decides how fast.':'En lekkasje er et hull pakkene må fylle. Små hull tas opp: utløpsventilen lukker litt mer og ingen merker noe. Et større hull er mer enn pakkene klarer, og kabinen stiger; et stort hull tømmer kabinen på sekunder. Størrelsen på hullet sammenlignet med kabinvolumet avgjør hvor fort.',
- 'Speedbrakes extended':'Luftbremser ute','Packs running':'Pakker går','Type':'Type','Cabin above 9550 ft after':'Kabin over 9550 ft etter','Passenger masks after':'Passasjermasker etter','Highest cabin altitude':'Høyeste kabinhøyde','Time with cabin above 14,000 ft':'Tid med kabin over 14 000 ft','Time of useful consciousness':'Tid med nyttig bevissthet',
- 'Explosive, rapid and slow':'Eksplosiv, rask og langsom','Teaching definitions vary, but roughly: explosive decompression is over in less than about half a second, faster than the lungs can empty; rapid takes from a few seconds to tens of seconds; slow, or gradual, takes long enough that it may not be noticed without the warnings. Rapid decompression comes with a bang, fog as the air cools, flying debris and a strong outflow of air towards the hole. In this lab anything up to about a minute counts as rapid, and for it the time of useful consciousness is roughly halved.':'Definisjonene varierer, men omtrent: eksplosiv dekompresjon er over på mindre enn rundt et halvt sekund, raskere enn lungene klarer å tømmes; rask tar fra noen sekunder til titalls sekunder; langsom, eller gradvis, tar så lang tid at den kanskje ikke merkes uten varslene. Rask dekompresjon kommer med et smell, tåke når luften avkjøles, ting som flyr og en kraftig luftstrøm mot hullet. I denne labben regnes alt opp til rundt ett minutt som rask, og da er tiden med nyttig bevissthet omtrent halvert.',
- 'The emergency descent':'Nødnedstigningen','Masks on and communication established first. Then descend: thrust idle, speedbrakes out, and fly at MMO and then VMO (unless structural damage is suspected, when a lower speed is wiser), towards 10,000 ft or the minimum safe altitude if that is higher. Most of the height is lost in the first few minutes.':'Masker på og kommunikasjon etablert først. Så ned: skyvekraft tomgang, luftbremser ute, og fly på MMO og deretter VMO (med mindre du mistenker strukturskade, da er lavere fart klokere), mot 10 000 ft eller minste sikre høyde hvis den er høyere. Mesteparten av høyden tapes de første minuttene.',
- 'Why the time scale is stretched':'Hvorfor tidsaksen er strukket','The horizontal axis is a square-root time scale. It shows the first seconds of a rapid decompression and the minutes of the descent on the same picture.':'Den vannrette aksen er en kvadratrot-tidsskala. Den viser de første sekundene av en rask dekompresjon og minuttene i nedstigningen i samme bilde.',
- 'Hypoxia and time of useful consciousness':'Hypoksi og tid med nyttig bevissthet',
- 'The air holds about 21 % oxygen at every altitude. What falls is the pressure, and with it the partial pressure of oxygen that pushes oxygen from the lungs into the blood. Above about 10,000 ft the blood starts to carry noticeably less, and above 20,000 ft the time you can act sensibly is measured in minutes, then seconds.':'Luften har rundt 21 % oksygen i alle høyder. Det som faller, er trykket, og med det partialtrykket av oksygen som presser oksygenet fra lungene over i blodet. Over rundt 10 000 ft begynner blodet å bære merkbart mindre, og over 20 000 ft måles tiden du kan handle fornuftig i minutter, så i sekunder.',
- 'Breathing':'Pusting','After a rapid decompression':'Etter en rask dekompresjon','Ambient pressure':'Omgivelsestrykk','Partial pressure of oxygen':'Partialtrykk av oksygen','Alveolar oxygen (estimate)':'Oksygen i alveolene (anslag)','Blood oxygen saturation':'Oksygenmetning i blodet','Stage':'Stadium',
- 'Typical values for a person at rest, from aviation physiology training material. Individual tolerance varies a lot with fitness, fatigue, smoking, activity and the rate of the climb.':'Typiske verdier for en person i ro, fra opplæringsmateriell i flyfysiologi. Den individuelle toleransen varierer mye med form, tretthet, røyking, aktivitet og hvor raskt høyden endres.',
- 'TUC is the time from the loss of oxygen until you can no longer act effectively, not until you pass out. You may still be awake and feel fine after it has run out. After a rapid decompression it is roughly halved, because the lungs dump their oxygen at once and you start from a lower level.':'TUC er tiden fra oksygenet forsvinner til du ikke lenger kan handle effektivt, ikke til du besvimer. Du kan fortsatt være våken og føle deg fin etter at den har løpt ut. Etter en rask dekompresjon halveres den omtrent, fordi lungene tømmes for oksygen med en gang og du starter fra et lavere nivå.',
- '4 · Operations':'4 · Operativt',
- 'Teaching model. The ISA atmosphere, a cabin of about 330 m³, constant temperature, an ideal orifice and constant pack flow are assumed; the pressurisation schedule, warning thresholds, descent rates and physiological values are typical and illustrative, not FCOM or medical data. Individual tolerance to hypoxia varies widely. Follow the FCOM, QRH and your operator’s procedures.':'Opplæringsmodell. ISA-atmosfæren, en kabin på rundt 330 m³, konstant temperatur, en ideell åpning og konstant luftstrøm fra pakkene er forutsatt; trykkplanen, varselgrensene, synkeratene og de fysiologiske verdiene er typiske og illustrative, ikke FCOM- eller medisinske data. Den individuelle toleransen for hypoksi varierer mye. Følg FCOM, QRH og operatørens prosedyrer.',
- // via T
- 'Auto (from FMS)':'Auto (fra FMS)','Manual':'Manuell','Air':'Luft','100 % oxygen':'100 % oksygen',
- 'Cruise level':'Marsjhøyde','Departure elevation':'Avgangsflyplassens høyde','Destination elevation':'Destinasjonens høyde','LDG ELEV selected':'LDG ELEV valgt','Point in the flight':'Punkt i flygingen',
- 'Altitude at the decompression':'Høyde ved dekompresjonen','Hole size (equivalent area)':'Hullstørrelse (ekvivalent areal)','Crew reaction time':'Besetningens reaksjonstid',
- 'Cabin pressure altitude':'Kabinens trykkhøyde'
-});
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-/* ISA, psi og ft */
-const pAlt=h=> h<=36089? 14.696*Math.pow(1-6.87559e-6*h,5.25588) : 3.2828*Math.exp(-(h-36089)/20806);
-const altP=p=> p>=3.2828? (1-Math.pow(p/14.696,1/5.25588))/6.87559e-6 : 36089-20806*Math.log(p/3.2828);
-const DPMAX=8.06, DPSAFE=8.6;
-const ft=v=>nf(Math.round(v/10)*10,0)+' ft';
-const K=(l,v,c)=>`<div class="kpi"><span>${L(l)}</span><b class="${c||''}">${v}</b></div>`;
-
-/* =================== 1. KABINHØYDE =================== */
-const C={fl:370,dep:0,dest:2000,mode:'auto',ldg:0,cur:40};
-function profile(){ const H=C.fl*100, ldgSel=C.mode==='auto'?C.dest:C.ldg;
-  const Ccr=Math.max(altP(pAlt(H)+DPMAX),Math.min(C.dep,ldgSel));
-  const tc=(H-C.dep)/2500, tcr=30, td=(H-C.dest)/2000, tg=4, total=tc+tcr+td+tg;
-  const tgt=ldgSel-200; // litt trykk ved landing
-  const pts=[];
-  for(let i=0;i<=600;i++){ const t=i/600*total; let h, cab, ph;
-    if(t<tc){ h=C.dep+2500*t; cab=C.dep+(Ccr-C.dep)*(h-C.dep)/Math.max(1,H-C.dep); ph='climb'; }
-    else if(t<tc+tcr){ h=H; cab=Ccr; ph='cruise'; }
-    else if(t<tc+tcr+td){ h=H-2000*(t-tc-tcr); cab=tgt+(Ccr-tgt)*(h-C.dest)/Math.max(1,H-C.dest); ph='descent'; }
-    else { h=C.dest; const k=Math.min(1,(t-tc-tcr-td)/1.0); const pc=pAlt(tgt)+(pAlt(C.dest)-pAlt(tgt))*k; cab=altP(pc); ph='ground'; }
-    let dp=pAlt(cab)-pAlt(h);
-    if(dp>DPSAFE){ dp=DPSAFE; cab=altP(pAlt(h)+DPSAFE); }
-    if(dp<-1){ dp=-1; cab=altP(pAlt(h)-1); }
-    pts.push({t,h,cab,dp,ph}); }
-  for(let i=0;i<pts.length;i++){ const a=pts[Math.max(0,i-1)], b=pts[Math.min(pts.length-1,i+1)]; pts[i].vs=(b.cab-a.cab)/Math.max(1e-6,b.t-a.t); }
-  const tdIdx=pts.findIndex(p=>p.ph==='ground'); const tdP=pts[Math.max(0,tdIdx)];
-  return {pts,Ccr,total,ldgSel,tdP,tc,tcr,td}; }
-const CC=LAB.fit(el('cabcv'),()=>cab(),2);
-const cc=el('cctl');
-LAB.slider(cc,{label:'Cruise level',min:100,max:390,step:10,v:C.fl,f:v=>'FL'+v,on:v=>{C.fl=v;cab();}});
-LAB.slider(cc,{label:'Departure elevation',min:0,max:6000,step:100,v:C.dep,f:v=>ft(v),on:v=>{C.dep=v;cab();}});
-LAB.slider(cc,{label:'Destination elevation',min:0,max:8000,step:100,v:C.dest,f:v=>ft(v),on:v=>{C.dest=v;cab();}});
-LAB.seg(el('cldg'),[['auto','Auto (from FMS)'],['man','Manual']],C.mode,v=>{C.mode=v;cab();});
-const ldgS=LAB.slider(el('cctl2'),{label:'LDG ELEV selected',min:-500,max:8000,step:100,v:C.ldg,f:v=>ft(v),on:v=>{C.ldg=v;cab();}});
-LAB.slider(el('cctl2'),{label:'Point in the flight',min:0,max:100,step:0.5,v:C.cur,f:v=>nf(v,0)+' %',on:v=>{C.cur=v;cab();}});
-function cab(){ const P=profile(), pts=P.pts;
-  ldgS.inp.disabled=C.mode==='auto'; ldgS.el.style.opacity=C.mode==='auto'?.45:1;
-  const cur=pts[Math.round(C.cur/100*(pts.length-1))];
-  const PH={climb:{en:'Climb',no:'Stigning'},cruise:{en:'Cruise',no:'Marsj'},descent:{en:'Descent',no:'Nedstigning'},ground:{en:'Landed',no:'Landet'}};
-  el('c1').textContent=L(PH[cur.ph]); el('c2').textContent=ft(cur.h); el('c3').innerHTML=`<span class="${cur.cab>9550?'ko':''}">${ft(cur.cab)}</span>`;
-  el('c4').innerHTML=`<span class="${cur.dp>=DPSAFE-0.01||cur.dp<-0.05?'ko':cur.dp>DPMAX+0.05?'wa':''}">${nf(cur.dp,2)} psi</span>`;
-  el('c5').textContent=(cur.vs>=0?'+':'')+nf(Math.round(cur.vs/10)*10,0)+' ft/min';
-  const maxDp=Math.max(...pts.map(p=>p.dp)), maxCab=Math.max(...pts.map(p=>p.cab)), maxUp=Math.max(...pts.filter(p=>p.ph!=='ground').map(p=>p.vs)), maxDn=Math.min(...pts.filter(p=>p.ph!=='ground').map(p=>p.vs));
-  const tdDp=pAlt(P.ldgSel-200)-pAlt(C.dest);
-  el('cK').innerHTML=K({en:'Cabin altitude in cruise',no:'Kabinhøyde i marsj'},ft(P.Ccr),P.Ccr>8000?'warn':'hl')+K({en:'Max ΔP',no:'Maks ΔP'},nf(maxDp,2)+' psi',maxDp>DPMAX+0.05?'warn':'')+K({en:'Max cabin climb',no:'Maks kabinstigning'},nf(Math.round(maxUp/10)*10,0)+' ft/min')+K({en:'Max cabin descent',no:'Maks kabinnedstigning'},nf(Math.round(-maxDn/10)*10,0)+' ft/min',-maxDn>750?'warn':'')+K({en:'ΔP at touchdown',no:'ΔP ved landing'},nf(tdDp,2)+' psi',Math.abs(tdDp)>0.5?'bad':'good');
-  let t;
-  if(C.mode==='man'&&P.ldgSel<C.dest-500) t=L({en:'<b>LDG ELEV set too low.</b> The controller brings the cabin down to the selected elevation, so the aircraft touches down with the cabin still well pressurised. The cabin descent rate is also higher than needed. On the ground the outflow valve opens and dumps the pressure, but a door must never be opened while there is residual pressure: a cabin crew member can be thrown out with the door. The A320 warns of excess residual pressure, and the selected value should always be checked against the chart.',no:'<b>LDG ELEV satt for lavt.</b> Kontrolleren tar kabinen ned til valgt høyde, så flyet lander med kabinen fortsatt godt under trykk. Kabinens synkerate blir også høyere enn nødvendig. På bakken åpner utløpsventilen og slipper ut trykket, men en dør må aldri åpnes mens det er resttrykk: et kabinbesetningsmedlem kan bli kastet ut med døren. A320 varsler om for høyt resttrykk, og verdien som er valgt skal alltid sjekkes mot kartet.'});
-  else if(C.mode==='man'&&P.ldgSel>C.dest+500) t=L({en:'<b>LDG ELEV set too high.</b> The cabin is planned to be higher than the runway, so during the final part of the descent the aircraft goes below the cabin: the differential pressure turns negative and the negative relief opens. Passengers get a sudden, uncomfortable pressure change late in the approach.',no:'<b>LDG ELEV satt for høyt.</b> Kabinen er planlagt høyere enn rullebanen, så i siste del av nedstigningen kommer flyet under kabinen: differansetrykket blir negativt og ventilene for negativt trykk åpner. Passasjerene får en brå og ubehagelig trykkendring sent i innflygingen.'});
-  else if(C.fl>=330) t=L({en:'<b>High cruise, high cabin.</b> With about 8 psi available, the cabin has to sit around 6000 to 8000 ft at the highest flight levels. The ΔP curve below sits right on the normal maximum in cruise.',no:'<b>Høy marsjhøyde, høy kabin.</b> Med rundt 8 psi til rådighet må kabinen ligge på rundt 6000 til 8000 ft i de høyeste flygenivåene. ΔP-kurven under ligger rett på normalt maksimum i marsj.'});
-  else t=L({en:'<b>Lower cruise, lower cabin.</b> At lower levels the same structure can keep the cabin close to the ground. The controller uses the landing elevation from the FMS so that the cabin arrives at the destination at the right pressure.',no:'<b>Lavere marsjhøyde, lavere kabin.</b> I lavere nivåer kan den samme strukturen holde kabinen nær bakken. Kontrolleren bruker landingshøyden fra FMS så kabinen kommer fram til destinasjonen med riktig trykk.'});
-  el('cx').innerHTML=t;
-  // tegning
-  const g=CC.ctx, W=CC.w, Hh=CC.h; if(!W) return; g.clearRect(0,0,W,Hh); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,Hh);
-  const pl=66, pr=14, pt=14, split=Hh*0.68, pb=30, X=t=>pl+t/P.total*(W-pl-pr);
-  const top=42000, Y=h=>split-14-(h+1000)/(top+1000)*(split-14-pt);
-  const dY=dp=>Hh-pb-(dp+1.2)/(9.8+1.2)*(Hh-pb-split-6);
-  g.font='10.5px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='middle';
-  for(let h=0;h<=top;h+=10000){ g.strokeStyle='#DCE3E4'; g.beginPath(); g.moveTo(pl,Y(h)+.5); g.lineTo(W-pr,Y(h)+.5); g.stroke(); g.fillStyle='#5E6B74'; g.fillText(nf(h,0),pl-6,Y(h)); }
-  g.save(); g.translate(11,(pt+split)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText(L({en:'altitude (ft)',no:'høyde (ft)'}),0,0); g.restore();
-  // varsel 9550
-  g.strokeStyle='rgba(179,38,30,.55)'; g.setLineDash([4,4]); g.beginPath(); g.moveTo(pl,Y(9550)); g.lineTo(W-pr,Y(9550)); g.stroke(); g.setLineDash([]);
-  g.fillStyle='#B3261E'; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(L({en:'cabin warning 9550 ft',no:'kabinvarsel 9550 ft'}),W-pr-4,Y(9550)-2);
-  // fly og kabin
-  const line=(k,c,w,dash)=>{ g.strokeStyle=c; g.lineWidth=w; g.setLineDash(dash||[]); g.beginPath(); pts.forEach((p,i)=>{ const x=X(p.t), y=Y(p[k]); i?g.lineTo(x,y):g.moveTo(x,y); }); g.stroke(); g.setLineDash([]); g.lineWidth=1; };
-  g.fillStyle='rgba(154,30,104,.07)'; g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(X(p.t),Y(p.h)):g.moveTo(X(p.t),Y(p.h)); }); for(let i=pts.length-1;i>=0;i--) g.lineTo(X(pts[i].t),Y(pts[i].cab)); g.closePath(); g.fill();
-  line('h','#13202A',2.5); line('cab','#9A1E68',2.5);
-  g.font='600 13px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='alphabetic';
-  const mid=pts[Math.round(pts.length*0.42)];
-  g.fillStyle='#13202A'; g.fillText(L({en:'aircraft',no:'fly'}),X(mid.t),Y(mid.h)-8);
-  g.fillStyle='#9A1E68'; g.fillText(L({en:'cabin',no:'kabin'}),X(mid.t),Y(mid.cab)-8);
-  if(P.ldgSel!==C.dest){ g.strokeStyle='#9A1E68'; g.setLineDash([2,3]); g.beginPath(); g.moveTo(X(P.tc+P.tcr),Y(P.ldgSel)); g.lineTo(W-pr,Y(P.ldgSel)); g.stroke(); g.setLineDash([]); }
-  // ΔP-stripe
-  g.font='10.5px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='middle';
-  g.strokeStyle='#C6D0D3'; g.strokeRect(pl+.5,split+.5,W-pl-pr-1,Hh-pb-split);
-  [[0,'#9AA6AC'],[DPMAX,'#A86A00'],[DPSAFE,'#B3261E']].forEach(([v,c])=>{ g.strokeStyle=c; g.setLineDash(v?[4,3]:[]); g.beginPath(); g.moveTo(pl,dY(v)+.5); g.lineTo(W-pr,dY(v)+.5); g.stroke(); g.setLineDash([]); g.fillStyle='#5E6B74'; if(v!==DPMAX) g.fillText(nf(v,v%1?1:0),pl-6,dY(v)); });
-  g.save(); g.translate(11,(split+Hh-pb)/2); g.rotate(-Math.PI/2); g.textAlign='center'; g.fillText('ΔP psi',0,0); g.restore();
-  g.strokeStyle='#1E5E9E'; g.lineWidth=2; g.beginPath(); pts.forEach((p,i)=>{ i?g.lineTo(X(p.t),dY(p.dp)):g.moveTo(X(p.t),dY(p.dp)); }); g.stroke(); g.lineWidth=1;
-  g.textAlign='center'; g.textBaseline='top'; g.fillStyle='#5E6B74';
-  for(let m=0;m<=P.total;m+=15) g.fillText(m+' min',X(m),Hh-pb+6);
-  // markør
-  g.strokeStyle='rgba(19,32,42,.5)'; g.beginPath(); g.moveTo(X(cur.t)+.5,pt); g.lineTo(X(cur.t)+.5,Hh-pb); g.stroke();
-  g.fillStyle='#13202A'; g.beginPath(); g.arc(X(cur.t),Y(cur.h),4.5,0,7); g.fill(); g.fillStyle='#9A1E68'; g.beginPath(); g.arc(X(cur.t),Y(cur.cab),4.5,0,7); g.fill(); g.fillStyle='#1E5E9E'; g.beginPath(); g.arc(X(cur.t),dY(cur.dp),4,0,7); g.fill();
-}
-
-/* =================== 2. DEKOMPRESJON =================== */
-const D={fl:370,lg:Math.log10(0.09),react:15,sb:true,pk:true};
-const VOL=330, TK=293, RG=287, CD=0.65, MIN=1.0, PSI=6894.76;
-function orifice(p1,p2,A){ // kg/s fra p1 til p2 (Pa), positiv om p1>p2
-  const sgn=p1>=p2?1:-1, hi=Math.max(p1,p2), lo=Math.min(p1,p2), r=lo/hi;
-  const m= r<0.5283? CD*A*hi*0.0404/Math.sqrt(TK) : CD*A*hi*Math.sqrt(7/(RG*TK)*(Math.pow(r,2/1.4)-Math.pow(r,2.4/1.4)));
-  return sgn*m; }
-function dsim(){ const H=D.fl*100, A=Math.pow(10,D.lg);
-  const cab0=Math.max(0,altP(pAlt(H)+DPMAX)); const pT=pAlt(cab0)*PSI;
-  let m=pT*VOL/(RG*TK), h=H, t=0; const rate=D.sb?6500:4200; const out=[]; let tEnd=null;
-  let t9=null, t14=null, peak=cab0, above=0, teq=null; const dp0=pT-pAlt(H)*PSI;
-  while(t<1500){ const dt=t<3?0.002:t<20?0.01:0.1;
-    const pa=pAlt(h)*PSI; let pc=m*RG*TK/VOL;
-    const out1=orifice(pc,pa,A), inflow=D.pk?MIN:0;
-    m+=(inflow-out1)*dt; pc=m*RG*TK/VOL;
-    if(pc>pT){ pc=pT; m=pc*VOL/(RG*TK); } // utløpsventilen holder planlagt trykk
-    const ca=altP(pc/PSI);
-    if(ca>peak) peak=ca; if(ca>9550&&t9===null) t9=t; if(ca>14000&&t14===null) t14=t; if(ca>14000) above+=dt;
-    if(teq===null && (pc-pa)<0.1*dp0) teq=t;
-    // fly
-    if(t>D.react){ const ramp=Math.min(1,(t-D.react)/12); if(h>10000) h=Math.max(10000,h-rate/60*ramp*dt); }
-    if(h<=10000 && tEnd===null) tEnd=t;
-    if(out.length===0||t-out[out.length-1].t>=(t<3?0.01:t<20?0.05:0.5)) out.push({t,h,ca});
-    t+=dt;
-    if(tEnd!==null && t>tEnd+90) break; }
-  return {out,cab0,peak,t9,t14,above,teq,tEnd,A,end:t}; }
-const DC=LAB.fit(el('deccv'),()=>dec(),2);
-const fmtA=a=> a<0.01? nf(a*1e4,0)+' cm²' : a<1? nf(a*1e4,0)+' cm²' : nf(a,1)+' m²';
-const fmtT=s=>{ if(s===null) return '–'; if(s<1) return nf(s,2)+' s'; const r=Math.round(s); return r<60? r+' s' : Math.floor(r/60)+' min '+String(r%60).padStart(2,'0')+' s'; };
-const dctl=el('dctl');
-LAB.slider(dctl,{label:'Altitude at the decompression',min:200,max:410,step:10,v:D.fl,f:v=>'FL'+v,on:v=>{D.fl=v;dec();}});
-LAB.slider(dctl,{label:'Hole size (equivalent area)',min:-3,max:Math.log10(2),step:0.02,v:D.lg,f:v=>{ const a=Math.pow(10,v); return fmtA(a)+' · '+L(a<0.006?{en:'seal leak',no:'pakningslekkasje'}:a<0.03?{en:'small crack',no:'liten sprekk'}:a<0.2?{en:'window',no:'vindu'}:a<1?{en:'hatch',no:'luke'}:{en:'door',no:'dør'}); },on:v=>{D.lg=v;dec();}});
-LAB.slider(dctl,{label:'Crew reaction time',min:5,max:60,step:1,v:D.react,f:v=>nf(v,0)+' s',on:v=>{D.react=v;dec();}});
-el('d_sb').onchange=e=>{ D.sb=e.target.checked; dec(); }; el('d_pk').onchange=e=>{ D.pk=e.target.checked; dec(); };
-function tucAt(h){ const tb=[[18000,1500],[22000,450],[25000,240],[28000,165],[30000,90],[35000,45],[40000,18],[43000,10],[50000,10]];
-  if(h<tb[0][0]) return null; for(let i=1;i<tb.length;i++) if(h<=tb[i][0]){ const [a,ta]=tb[i-1],[b,tb2]=tb[i]; const f=(h-a)/(b-a); return Math.exp(Math.log(ta)+(Math.log(tb2)-Math.log(ta))*f); } return 10; }
-function dec(){ const R=dsim();
-  const held=R.peak<R.cab0+300;
-  let type, tc;
-  if(held){ type=L({en:'Leak absorbed: cabin held',no:'Lekkasjen tas opp: kabinen holdes'}); tc='ok'; }
-  else if(R.teq!==null&&R.teq<0.5){ type=L({en:'Explosive',no:'Eksplosiv'}); tc='ko'; }
-  else if(R.teq!==null&&R.teq<10){ type=L({en:'Rapid',no:'Rask'}); tc='ko'; }
-  else if(R.teq!==null&&R.teq<60){ type=L({en:'Rapid (tens of seconds)',no:'Rask (titalls sekunder)'}); tc='ko'; }
-  else { type=L({en:'Slow (gradual)',no:'Langsom (gradvis)'}); tc='wa'; }
-  el('d1').innerHTML=`<span class="${tc}">${type}</span>`;
-  el('d2').textContent=fmtT(R.t9); el('d3').textContent=R.t14===null?L({en:'not deployed',no:'ikke utløst'}):fmtT(R.t14);
-  el('d4').innerHTML=`<span class="${R.peak>14000?'ko':R.peak>9550?'wa':''}">${ft(R.peak)}</span>`;
-  el('d5').textContent=R.above>0?fmtT(R.above):'–';
-  const tu=tucAt(R.peak); el('d6').innerHTML= tu===null? L({en:'not limiting',no:'ikke begrensende'}) : `<span class="ko">${fmtT(tu*(R.teq!==null&&R.teq<60?0.5:1))}</span>`+(R.teq!==null&&R.teq<60?' '+L({en:'(halved: rapid decompression)',no:'(halvert: rask dekompresjon)'}):'');
-  let t;
-  if(held) t=L({en:'<b>The packs win.</b> The hole lets out less air than the packs bring in, so the outflow valve simply closes a bit further and the cabin altitude does not move. Many small leaks in a real fuselage are handled exactly like this. Switch the packs off and see what the same hole does.',no:'<b>Pakkene vinner.</b> Hullet slipper ut mindre luft enn pakkene tar inn, så utløpsventilen lukker bare litt mer og kabinhøyden endres ikke. Mange små lekkasjer i en virkelig flykropp håndteres akkurat slik. Slå av pakkene og se hva det samme hullet gjør.'});
-  else if(R.teq!==null&&R.teq<10) t=L({en:'<b>Rapid decompression.</b> The cabin reaches the outside altitude within seconds, long before any crew could react. The warning, the masks and the descent all come after the fact: what saves the crew is having the mask on within the first seconds, before the much shorter TUC runs out.',no:'<b>Rask dekompresjon.</b> Kabinen når høyden utenfor i løpet av sekunder, lenge før noen i besetningen rekker å reagere. Varslet, maskene og nedstigningen kommer i etterkant: det som redder besetningen, er å ha masken på i løpet av de første sekundene, før den mye kortere TUC løper ut.'});
-  else if(R.teq!==null&&R.teq<60) t=L({en:'<b>Fast, but not instant.</b> The cabin climbs thousands of feet in seconds and reaches the outside altitude within a minute or so. The masks drop almost at once, but the cabin is still climbing when the crew gets the masks on. This still counts as a rapid decompression, so the time of useful consciousness shown is roughly halved, as in the hypoxia section below. Only a slow decompression, lasting more than about a minute, leaves it at the normal value.',no:'<b>Raskt, men ikke øyeblikkelig.</b> Kabinen stiger tusenvis av fot på sekunder og når høyden utenfor i løpet av et minutt eller så. Maskene faller nesten med en gang, men kabinen stiger fortsatt når besetningen får maskene på. Dette regnes fortsatt som en rask dekompresjon, så tiden med nyttig bevissthet som vises er omtrent halvert, som i hypoksi-seksjonen under. Bare en langsom dekompresjon, som varer mer enn rundt ett minutt, lar den beholde normalverdien.'});
-  else t=L({en:'<b>Slow decompression.</b> The cabin climbs over tens of seconds or minutes. This is the sneaky one: it can go unnoticed, and the first sign may be the cabin altitude warning or the hypoxia itself. Treat a cabin altitude warning as real, masks on first, and only then troubleshoot.',no:'<b>Langsom dekompresjon.</b> Kabinen stiger over titalls sekunder eller minutter. Dette er den lumske: den kan gå ubemerket hen, og det første tegnet kan være kabinvarselet eller selve hypoksien. Behandle et kabinvarsel som ekte, masker på først, og feilsøk først etterpå.'});
-  el('dx').innerHTML=t;
-  // tegning, kvadratrot-tid
-  const g=DC.ctx, W=DC.w, Hh=DC.h; if(!W) return; g.clearRect(0,0,W,Hh); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,Hh);
-  const pl=58, pr=14, pt=14, pb=34, Te=R.end, X=t=>pl+Math.sqrt(Math.max(0,t)/Te)*(W-pl-pr), top=Math.ceil((D.fl*100+3000)/5000)*5000, Y=h=>Hh-pb-h/top*(Hh-pt-pb);
-  g.font='10.5px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='middle';
-  for(let h=0;h<=top;h+=5000){ g.strokeStyle='#DCE3E4'; g.beginPath(); g.moveTo(pl,Y(h)+.5); g.lineTo(W-pr,Y(h)+.5); g.stroke(); g.fillStyle='#5E6B74'; g.fillText(nf(h,0),pl-6,Y(h)); }
-  g.textAlign='center'; g.textBaseline='top';
-  [0,1,5,15,30,60,120,240,480,900].filter(s=>s<=Te).forEach(s=>{ g.strokeStyle='#E6EAEB'; g.beginPath(); g.moveTo(X(s)+.5,pt); g.lineTo(X(s)+.5,Hh-pb); g.stroke(); g.fillStyle='#5E6B74'; g.fillText(s<60?s+' s':(s/60)+' min',X(s),Hh-pb+6); });
-  // terskler
-  [[9550,'#A86A00',{en:'cabin altitude warning 9550 ft',no:'kabinvarsel 9550 ft'}],[14000,'#B3261E',{en:'passenger masks 14,000 ft',no:'passasjermasker 14 000 ft'}]].forEach(([h,c,lab])=>{ g.strokeStyle=c; g.setLineDash([4,4]); g.beginPath(); g.moveTo(pl,Y(h)+.5); g.lineTo(W-pr,Y(h)+.5); g.stroke(); g.setLineDash([]); g.fillStyle=c; g.textAlign='right'; g.textBaseline='bottom'; g.fillText(L(lab),W-pr-4,Y(h)-2); });
-  // reaksjon
-  g.fillStyle='rgba(168,106,0,.08)'; g.fillRect(X(0),pt,X(D.react)-X(0),Hh-pt-pb);
-  g.fillStyle='#8A5A00'; g.textAlign='left'; g.textBaseline='top'; g.font='600 11px "Public Sans", sans-serif'; g.fillText(L({en:'masks on, communication',no:'masker på, kommunikasjon'}),X(0)+4,pt+2);
-  const ln=(k,c,w)=>{ g.strokeStyle=c; g.lineWidth=w; g.beginPath(); R.out.forEach((p,i)=>{ i?g.lineTo(X(p.t),Y(p[k])):g.moveTo(X(p.t),Y(p[k])); }); g.stroke(); g.lineWidth=1; };
-  ln('h','#13202A',2.5); ln('ca','#9A1E68',2.5);
-  g.font='600 13px "Public Sans", sans-serif'; g.textBaseline='alphabetic';
-  g.fillStyle='#13202A'; g.fillText(L({en:'aircraft',no:'fly'}),X(D.react)+6,Y(D.fl*100)-8);
-  const pm=R.out.find(p=>p.t>Math.min(Te*0.02,2))||R.out[0]; g.fillStyle='#9A1E68'; g.fillText(L({en:'cabin',no:'kabin'}),X(pm.t)+6,Y(pm.ca)+20);
-  // MMO/VMO
-  const tx=R.out.find(p=>p.h<29000), t2=R.out.find(p=>p.h<D.fl*100-1500&&p.t>D.react);
-  g.font='600 11px "Public Sans", sans-serif'; g.fillStyle='#4C5B66'; g.textAlign='left';
-  if(t2&&D.fl>=300) g.fillText('MMO'+(D.sb?' · '+L({en:'speedbrakes',no:'luftbremser'}):''),X(t2.t)+8,Y(t2.h));
-  if(tx) g.fillText('VMO',X(tx.t)+8,Y(tx.h));
-  if(R.tEnd) { g.fillText(L({en:'FL100 or MSA',no:'FL100 eller MSA'}),X(R.tEnd)-20,Y(10000)-24); }
-}
-
-/* =================== 3. HYPOKSI =================== */
-const Y2={h:25000,br:'air',rd:false};
-const MMHG=51.715;
-// PaCO2 faller med hyperventilering i høyden (grovt, akutt eksponering)
-const PCO=[[0,40],[5000,38],[10000,34],[15000,30],[20000,26],[25000,23],[30000,21],[45000,20]];
-function paco2(h,o2){ if(o2) return 35; for(let i=1;i<PCO.length;i++) if(h<=PCO[i][0]){ const [a,va]=PCO[i-1],[b,vb]=PCO[i]; return va+(vb-va)*(h-a)/(b-a); } return 20; }
-function pao2(h,o2){ const pb=pAlt(h)*MMHG; if(o2) return pb-47-paco2(h,true); const f=1.2-0.2*Math.min(1,h/20000); return 0.2095*(pb-47)-f*paco2(h,false); }
-const sat=po2=> po2<=0?0:100/(23400/(po2*po2*po2+150*po2)+1);
-const HC=LAB.fit(el('hypcv'),()=>hyp(),2);
-LAB.seg(el('hbr'),[['air','Air'],['o2','100 % oxygen']],Y2.br,v=>{Y2.br=v;hyp();});
-LAB.slider(el('hctl'),{label:'Cabin pressure altitude',min:0,max:45000,step:500,v:Y2.h,f:v=>ft(v),on:v=>{Y2.h=v;hyp();}});
-el('h_rd').onchange=e=>{ Y2.rd=e.target.checked; hyp(); };
-const TUCT=[[18000,{en:'20–30 min',no:'20–30 min'}],[22000,{en:'5–10 min',no:'5–10 min'}],[25000,{en:'3–5 min',no:'3–5 min'}],[28000,{en:'2.5–3 min',no:'2,5–3 min'}],[30000,{en:'1–2 min',no:'1–2 min'}],[35000,{en:'30–60 s',no:'30–60 s'}],[40000,{en:'15–20 s',no:'15–20 s'}],[43000,{en:'9–12 s',no:'9–12 s'}]];
-function stage(h){ return h<10000?['ok',{en:'Indifferent: night vision first',no:'Indifferent: nattsynet først'}]:h<15000?['wa',{en:'Compensatory: body compensates, judgement suffers',no:'Kompensatorisk: kroppen kompenserer, dømmekraften svekkes'}]:h<20000?['ko',{en:'Disturbance: clear symptoms, performance falls',no:'Forstyrrelse: tydelige symptomer, prestasjonen faller'}]:['ko',{en:'Critical: rapid incapacitation',no:'Kritisk: rask uførhet'}]; }
-function eqAir(pa){ let lo=0,hi=45000; for(let i=0;i<40;i++){ const m=(lo+hi)/2; if(pao2(m,false)>pa) lo=m; else hi=m; } return (lo+hi)/2; }
-function hyp(){ const o2=Y2.br==='o2', h=Y2.h, pb=pAlt(h)*MMHG, pa=pao2(h,o2), s=sat(pa);
-  const heq=o2? eqAir(pa) : h; const st=stage(heq);
-  el('y1').textContent=nf(pAlt(h)*68.9476,0)+' hPa'; el('y2').textContent=nf((o2?1:0.2095)*pb,0)+' mmHg';
-  el('y3').textContent=nf(Math.max(0,pa),0)+' mmHg'; el('y4').innerHTML=`<span class="${s<80?'ko':s<90?'wa':'ok'}">${nf(s,0)} %</span>`;
-  el('y5').innerHTML=`<span class="${st[0]}">${L(st[1])}</span>`+(o2?`<br><small>${L({en:'like breathing air at',no:'som å puste luft i'})} ${ft(heq)}</small>`:'');
-  const tu=tucAt(heq); el('y6').innerHTML= tu===null? L({en:'not limiting at rest',no:'ikke begrensende i ro'}) : `<span class="ko">${L({en:'about',no:'rundt'})} ${fmtT(tu*(Y2.rd?0.5:1))}</span>`;
-  // tabell
-  let cur=-1; TUCT.forEach((r,i)=>{ if(heq>=r[0]-1) cur=i; });
-  el('tuc').innerHTML=`<thead><tr><th>${L({en:'Altitude',no:'Høyde'})}</th><th>${L({en:'TUC, typical',no:'TUC, typisk'})}</th><th>${L({en:'After rapid decompression',no:'Etter rask dekompresjon'})}</th></tr></thead><tbody>`+TUCT.map(([a,v],i)=>{ const half=L(v).replace(/[\d.,]+/g,x=>{ const n=parseFloat(x.replace(',','.'))/2; return nf(n,n%1?1:0); }); return `<tr class="${i===cur?'cur':''}"><td>FL${a/100}</td><td>${L(v)}</td><td>${half}</td></tr>`; }).join('')+'</tbody>';
-  // graf
-  const g=HC.ctx, W=HC.w, Hh=HC.h; if(!W) return; g.clearRect(0,0,W,Hh); g.fillStyle='#FBFBF8'; g.fillRect(0,0,W,Hh);
-  const pl=46, pr=14, pt=30, pB=34, X=a=>pl+a/45000*(W-pl-pr), Yv=v=>Hh-pB-v/100*(Hh-pt-pB);
-  const bands=[[0,10000,'rgba(44,122,75,.07)',{en:'indifferent',no:'indifferent'}],[10000,15000,'rgba(168,106,0,.08)',{en:'compensatory',no:'kompensatorisk'}],[15000,20000,'rgba(179,38,30,.07)',{en:'disturbance',no:'forstyrrelse'}],[20000,45000,'rgba(179,38,30,.12)',{en:'critical',no:'kritisk'}]];
-  g.font='600 11px "Public Sans", sans-serif'; g.textAlign='center'; g.textBaseline='top';
-  bands.forEach(([a,b,c,t])=>{ g.fillStyle=c; g.fillRect(X(a),pt,X(b)-X(a),Hh-pt-pB); g.fillStyle='#4C5B66'; if(g.measureText(L(t)).width<X(b)-X(a)-4) g.fillText(L(t),(X(a)+X(b))/2,8); });
-  g.font='10.5px "IBM Plex Mono", monospace'; g.textAlign='right'; g.textBaseline='middle';
-  for(let v=0;v<=100;v+=20){ g.strokeStyle='#DCE3E4'; g.beginPath(); g.moveTo(pl,Yv(v)+.5); g.lineTo(W-pr,Yv(v)+.5); g.stroke(); g.fillStyle='#5E6B74'; g.fillText(v+' %',pl-6,Yv(v)); }
-  g.textAlign='center'; g.textBaseline='top'; for(let a=0;a<=45000;a+=5000) g.fillText(a/1000+'k',X(a),Hh-pB+6);
-  g.fillText(L({en:'pressure altitude (ft)',no:'trykkhøyde (ft)'}),pl+(W-pl-pr)/2,Hh-pB+19);
-  const curve=(o,c,dash)=>{ g.strokeStyle=c; g.lineWidth=2.5; g.setLineDash(dash||[]); g.beginPath(); for(let a=0;a<=45000;a+=250){ const v=sat(pao2(a,o)); a?g.lineTo(X(a),Yv(v)):g.moveTo(X(a),Yv(v)); } g.stroke(); g.setLineDash([]); g.lineWidth=1; };
-  curve(false,'#1E5E9E'); curve(true,'#2C7A4B',[6,4]);
-  g.font='600 13px "Public Sans", sans-serif'; g.textAlign='left'; g.textBaseline='alphabetic';
-  g.fillStyle='#1E5E9E'; g.fillText(L({en:'breathing air',no:'puster luft'}),X(21000)+10,Yv(sat(pao2(21000,false)))+4);
-  g.fillStyle='#2C7A4B'; g.textAlign='right'; g.fillText(L({en:'breathing 100 % oxygen',no:'puster 100 % oksygen'}),X(36000),Yv(100)+20); g.textAlign='left';
-  g.fillStyle='#9A1E68'; g.beginPath(); g.arc(X(h),Yv(s),7,0,7); g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke(); g.lineWidth=1;
-}
-function hcards(){ const c=[
- [{en:'Four kinds of hypoxia',no:'Fire typer hypoksi'},{en:'Hypoxic hypoxia: too little oxygen reaches the blood, as at altitude. Anaemic (hypaemic) hypoxia: the blood cannot carry it, for example after carbon monoxide or blood loss. Stagnant hypoxia: the blood does not circulate well, for example under high g. Histotoxic hypoxia: the cells cannot use the oxygen, for example after alcohol or some poisons.',no:'Hypoksisk hypoksi: for lite oksygen kommer over i blodet, som i høyden. Anemisk (hypemisk) hypoksi: blodet kan ikke bære det, for eksempel etter karbonmonoksid eller blodtap. Stagnant hypoksi: blodet sirkulerer dårlig, for eksempel under høy g. Histotoksisk hypoksi: cellene kan ikke bruke oksygenet, for eksempel etter alkohol eller noen giftstoffer.'}],
- [{en:'Symptoms',no:'Symptomer'},{en:'Often pleasant: euphoria and overconfidence, so you do not feel the danger. Then impaired judgement and memory, slow thinking, poor coordination, tunnel and reduced night vision, tingling, warmth, cyanosis (blue lips and nails), and finally loss of consciousness. Each person has a personal pattern, which is why altitude chamber training is valuable.',no:'Ofte behagelige: eufori og overmot, så du ikke kjenner faren. Så svekket dømmekraft og hukommelse, treg tenkning, dårlig koordinasjon, tunnelsyn og dårligere nattsyn, prikking, varmefølelse, cyanose (blå lepper og negler), og til slutt bevisstløshet. Hver person har sitt eget mønster, og derfor er trening i trykkammer verdifull.'}],
- [{en:'Trapped gas',no:'Innestengt gass'},{en:'Gas expands as the pressure falls: at about 18,000 ft it has doubled in volume. Ears and sinuses usually vent on the way up and hurt on the way down if blocked, which is why you should not fly with a cold. Gas in the stomach and intestines expands too, and so can gas trapped under a dental filling.',no:'Gass utvider seg når trykket faller: ved rundt 18 000 ft er volumet doblet. Ører og bihuler lufter seg som regel på vei opp og gjør vondt på vei ned hvis de er tette, og derfor bør du ikke fly forkjølet. Gass i mage og tarm utvider seg også, og det kan gass under en tannfylling også gjøre.'}],
- [{en:'Decompression sickness',no:'Trykkfallssyke'},{en:'Nitrogen dissolved in the body comes out of solution when the pressure drops, like bubbles in a bottle you open. It is rare below about 18,000 ft cabin altitude unless you have been diving. Symptoms include joint pain (the bends), skin itching, chest symptoms (the chokes) and neurological signs. Common guidance: wait at least 12 hours after diving before flying, and 24 hours after dives that needed decompression stops. Treatment is oxygen, descent and recompression.',no:'Nitrogen som er løst i kroppen, frigjøres når trykket faller, som bobler i en flaske du åpner. Det er sjelden under rundt 18 000 ft kabinhøyde med mindre du har dykket. Symptomer er leddsmerter («the bends»), kløe i huden, brystsymptomer («the chokes») og nevrologiske tegn. Vanlig veiledning: vent minst 12 timer etter dykking før du flyr, og 24 timer etter dykk som krevde dekompresjonsstopp. Behandlingen er oksygen, nedstigning og rekompresjon.'}]];
- el('hcards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
-
-/* =================== 4. KORT =================== */
-function cards(){ const c=[
- [{en:'Your own mask first',no:'Din egen maske først'},{en:'Crew oxygen masks first, always. A pilot who helps someone else first can be useless within seconds at FL370. The quick-donning mask goes on with one hand, and the first phase of every depressurisation procedure is masks on and communication established, before any troubleshooting.',no:'Besetningens oksygenmasker først, alltid. En flyger som hjelper noen andre først, kan være ubrukelig i løpet av sekunder i FL370. Hurtigmasken settes på med én hånd, og første fase av alle prosedyrer ved trykkfall er masker på og kommunikasjon etablert, før noen feilsøking.'}],
- [{en:'Cabin altitude warning',no:'Kabinhøydevarsel'},{en:'On the A320 family the excessive cabin altitude warning comes at about 9550 ft cabin altitude (typical value, with a higher threshold for high-elevation airports). It is a red warning with a continuous chime. Treat it as a decompression until proven otherwise.',no:'I A320-familien kommer varselet for for høy kabinhøyde ved rundt 9550 ft kabinhøyde (typisk verdi, med høyere terskel for høyt beliggende flyplasser). Det er et rødt varsel med kontinuerlig signal. Behandle det som en dekompresjon til det motsatte er bevist.'}],
- [{en:'Passenger oxygen',no:'Passasjeroksygen'},{en:'Passenger masks drop automatically when the cabin altitude exceeds about 14,000 ft, and can be released manually. Most A320s use chemical oxygen generators that run for a fixed time once started, typically around 15 minutes depending on the installation. That time is one reason the descent must start at once, and why terrain routes need special escape planning.',no:'Passasjermaskene faller automatisk ned når kabinhøyden overstiger rundt 14 000 ft, og kan utløses manuelt. De fleste A320 bruker kjemiske oksygengeneratorer som går en fast tid når de er startet, typisk rundt 15 minutter avhengig av installasjonen. Den tiden er én grunn til at nedstigningen må starte straks, og hvorfor ruter over høyt terreng trenger egen planlegging for nødnedstigning.'}],
- [{en:'Smoke and fumes',no:'Røyk og gass'},{en:'In smoke, the crew masks are set to 100 % oxygen, and the emergency pressure setting gives an overpressure in the mask so smoke cannot leak in around the seal. Smoke goggles protect the eyes. With 100 % oxygen the crew bottle runs down faster, which matters on a long diversion.',no:'Ved røyk settes besetningsmaskene på 100 % oksygen, og nødtrykksinnstillingen gir overtrykk i masken så røyk ikke lekker inn rundt tetningen. Røykbriller beskytter øynene. Med 100 % oksygen tømmes besetningsflasken raskere, og det betyr noe på en lang omdirigering.'}],
- [{en:'Oxygen above 40,000 ft',no:'Oksygen over 40 000 ft'},{en:'Breathing 100 % oxygen at 40,000 ft gives roughly the same alveolar oxygen as breathing air at 10,000 ft. Above that, even pure oxygen is not enough without pressure breathing. Try it in the hypoxia model above with 100 % oxygen selected.',no:'Å puste 100 % oksygen i 40 000 ft gir omtrent samme oksygen i alveolene som å puste luft i 10 000 ft. Over det er ikke engang rent oksygen nok uten overtrykksånding. Prøv det i hypoksimodellen over med 100 % oksygen valgt.'}],
- [{en:'Where the air comes from',no:'Hvor luften kommer fra'},{en:'The pressurisation air is engine bleed air, conditioned by the packs. Losing both packs or both bleeds means the cabin cannot be held at altitude, so the QRH sends you down. The engines and jet systems labs cover the sources of bleed and power.',no:'Luften til trykkabinen er bleed-luft fra motorene, behandlet i pakkene. Mister du begge pakkene eller begge bleed-kildene, kan ikke kabinen holdes i høyden, og QRH sender deg ned. Motorlabben og labben for jetsystemer dekker kildene til bleed og kraft.'}]];
- el('cards').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join('').replace(L({en:'The engines and jet systems labs',no:'Motorlabben og labben for jetsystemer'}),L({en:'The <a href="engines.html">engines</a> and <a href="jetsystems.html">jet systems</a> labs',no:'<a href="engines.html">Motorlabben</a> og labben for <a href="jetsystems.html">jetsystemer</a>'})); }
-
-/* =================== QUIZ =================== */
-const Q=[
- {q:{en:'Why does an A320 cabin sit at about 8000 ft at FL390 rather than at sea level?',no:'Hvorfor ligger kabinen i en A320 på rundt 8000 ft i FL390 i stedet for ved havnivå?'},a:[{en:'The fuselage is designed for a maximum differential pressure of about 8 psi',no:'Flykroppen er konstruert for et maksimalt differansetrykk på rundt 8 psi'},{en:'The packs cannot deliver more air at high altitude',no:'Pakkene kan ikke levere mer luft i stor høyde'},{en:'A higher cabin altitude saves oxygen',no:'En høyere kabinhøyde sparer oksygen'},{en:'Regulations require a cabin altitude of 8000 ft',no:'Regelverket krever en kabinhøyde på 8000 ft'}],c:0,e:{en:'Outside pressure at FL390 is under 3 psi. With about 8 psi of ΔP the cabin pressure is about 11 psi, which is roughly 8000 ft.',no:'Trykket utenfor i FL390 er under 3 psi. Med rundt 8 psi ΔP blir kabintrykket rundt 11 psi, som tilsvarer omtrent 8000 ft.'}},
- {q:{en:'What controls the cabin pressure in normal operation?',no:'Hva styrer kabintrykket ved normal drift?'},a:[{en:'The outflow valve, opening and closing against a constant inflow from the packs',no:'Utløpsventilen, som åpner og lukker mot en jevn innstrømning fra pakkene'},{en:'The pack flow, varied by the engines',no:'Luftstrømmen fra pakkene, variert av motorene'},{en:'The safety valves',no:'Sikkerhetsventilene'},{en:'The negative relief valves',no:'Ventilene for negativt trykk'}],c:0,e:{en:'The packs bring roughly constant flow; the controller sets the cabin pressure by how far the outflow valve is open. The safety valves are only a backstop.',no:'Pakkene gir omtrent jevn luftstrøm; kontrolleren bestemmer kabintrykket med hvor mye utløpsventilen er åpen. Sikkerhetsventilene er bare en sikring.'}},
- {q:{en:'The landing elevation is set manually to 0 ft for an aerodrome at 5000 ft. What is the result?',no:'Landingshøyden er satt manuelt til 0 ft for en flyplass på 5000 ft. Hva blir resultatet?'},a:[{en:'The aircraft lands with the cabin still pressurised',no:'Flyet lander med kabinen fortsatt under trykk'},{en:'The cabin altitude is higher than the aerodrome at touchdown',no:'Kabinhøyden er høyere enn flyplassen ved landing'},{en:'Nothing, the controller ignores the setting below 10,000 ft',no:'Ingenting, kontrolleren ser bort fra innstillingen under 10 000 ft'},{en:'The passenger masks drop during the descent',no:'Passasjermaskene faller ned under nedstigningen'}],c:0,e:{en:'The controller brings the cabin to the selected 0 ft, which is higher pressure than the aerodrome. The residual pressure must be gone before doors are opened.',no:'Kontrolleren tar kabinen til valgte 0 ft, som er høyere trykk enn på flyplassen. Resttrykket må være borte før dører åpnes.'}},
- {q:{en:'A small leak develops in cruise and the cabin altitude does not change. Why?',no:'En liten lekkasje oppstår i marsj og kabinhøyden endres ikke. Hvorfor?'},a:[{en:'The outflow valve closes further and the packs make up for the leak',no:'Utløpsventilen lukker mer og pakkene tar igjen lekkasjen'},{en:'Air cannot flow out through small holes at altitude',no:'Luft kan ikke strømme ut gjennom små hull i høyden'},{en:'The safety valves close the leak',no:'Sikkerhetsventilene tetter lekkasjen'},{en:'The cabin altitude indication is wrong',no:'Visningen av kabinhøyden er feil'}],c:0,e:{en:'As long as the leak is smaller than the pack inflow, the controller just lets less air out through the valve.',no:'Så lenge lekkasjen er mindre enn innstrømningen fra pakkene, slipper kontrolleren bare ut mindre luft gjennom ventilen.'}},
- {q:{en:'What mostly decides how fast the cabin depressurises?',no:'Hva avgjør i hovedsak hvor raskt kabinen mister trykket?'},a:[{en:'The size of the opening compared with the cabin volume, and the pressure difference',no:'Størrelsen på åpningen sammenlignet med kabinvolumet, og trykkforskjellen'},{en:'The outside air temperature',no:'Temperaturen ute'},{en:'The airspeed',no:'Farten'},{en:'The number of passengers',no:'Antall passasjerer'}],c:0,e:{en:'A large hole in a small volume empties fastest. That is why a door-sized hole in a small business jet is far more violent than a window in a wide-body.',no:'Et stort hull i et lite volum tømmes raskest. Derfor er et hull på størrelse med en dør i et lite forretningsjetfly mye voldsommere enn et vindu i et widebody-fly.'}},
- {q:{en:'After a rapid decompression at FL350, about how long is the time of useful consciousness?',no:'Etter en rask dekompresjon i FL350, omtrent hvor lang er tiden med nyttig bevissthet?'},a:[{en:'Roughly 15–30 seconds',no:'Omtrent 15–30 sekunder'},{en:'About 3–5 minutes',no:'Rundt 3–5 minutter'},{en:'About 10 minutes',no:'Rundt 10 minutter'},{en:'There is no limit as long as you stay calm',no:'Det finnes ingen grense så lenge du holder deg rolig'}],c:0,e:{en:'TUC at FL350 is typically 30–60 s, and roughly half that after a rapid decompression.',no:'TUC i FL350 er typisk 30–60 s, og omtrent halvparten etter en rask dekompresjon.'}},
- {q:{en:'Why is time of useful consciousness shorter after a rapid decompression?',no:'Hvorfor er tiden med nyttig bevissthet kortere etter en rask dekompresjon?'},a:[{en:'The lungs lose their oxygen at once as the air in them expands and rushes out',no:'Lungene mister oksygenet med en gang når luften i dem utvider seg og strømmer ut'},{en:'The temperature drop slows the brain',no:'Temperaturfallet gjør hjernen tregere'},{en:'The noise causes panic',no:'Støyen skaper panikk'},{en:'The masks take longer to drop',no:'Maskene bruker lengre tid på å falle ned'}],c:0,e:{en:'The oxygen reserve in the lungs is lost with the expanding air, and oxygen can even flow back from the blood.',no:'Oksygenreserven i lungene forsvinner med luften som utvider seg, og oksygen kan til og med strømme tilbake fra blodet.'}},
- {q:{en:'The proportion of oxygen in the air at FL300 is…',no:'Andelen oksygen i luften i FL300 er…'},a:[{en:'about 21 %, the same as at sea level',no:'rundt 21 %, det samme som ved havnivå'},{en:'about 7 %',no:'rundt 7 %'},{en:'about 10 %',no:'rundt 10 %'},{en:'zero',no:'null'}],c:0,e:{en:'The percentage is the same. The partial pressure falls because the total pressure falls, and it is the partial pressure that drives oxygen into the blood.',no:'Prosenten er den samme. Partialtrykket faller fordi totaltrykket faller, og det er partialtrykket som driver oksygenet inn i blodet.'}},
- {q:{en:'Which type of hypoxia does carbon monoxide cause?',no:'Hvilken type hypoksi gir karbonmonoksid?'},a:[{en:'Anaemic (hypaemic) hypoxia',no:'Anemisk (hypemisk) hypoksi'},{en:'Hypoxic hypoxia',no:'Hypoksisk hypoksi'},{en:'Stagnant hypoxia',no:'Stagnant hypoksi'},{en:'Histotoxic hypoxia',no:'Histotoksisk hypoksi'}],c:0,e:{en:'CO binds to haemoglobin far more strongly than oxygen, so the blood cannot carry enough oxygen even if there is plenty in the lungs.',no:'CO binder seg mye sterkere til hemoglobinet enn oksygen, så blodet kan ikke bære nok oksygen selv om det er nok i lungene.'}},
- {q:{en:'The cabin altitude warning sounds in cruise. What comes first?',no:'Kabinvarselet går i marsj. Hva kommer først?'},a:[{en:'Crew oxygen masks on and communication established',no:'Besetningens oksygenmasker på og kommunikasjon etablert'},{en:'Check the outflow valve position on the ECAM',no:'Sjekk utløpsventilens stilling på ECAM'},{en:'Call the cabin crew to check the doors',no:'Ring kabinbesetningen for å sjekke dørene'},{en:'Start the emergency descent before putting on the masks',no:'Start nødnedstigningen før maskene settes på'}],c:0,e:{en:'Hypoxia removes your ability to handle anything else. Masks on first, then the descent, then the troubleshooting.',no:'Hypoksi tar fra deg evnen til å håndtere noe annet. Masker på først, så nedstigningen, så feilsøkingen.'}},
- {q:{en:'Breathing 100 % oxygen at 40,000 ft is roughly equivalent to breathing air at…',no:'Å puste 100 % oksygen i 40 000 ft tilsvarer omtrent å puste luft i…'},a:[{en:'10,000 ft',no:'10 000 ft'},{en:'sea level',no:'havnivå'},{en:'25,000 ft',no:'25 000 ft'},{en:'40,000 ft, oxygen makes no difference',no:'40 000 ft, oksygen gjør ingen forskjell'}],c:0,e:{en:'The total pressure is so low that even pure oxygen only gives an alveolar oxygen pressure like air at about 10,000 ft. Higher than that needs pressure breathing.',no:'Totaltrykket er så lavt at selv rent oksygen bare gir et alveolært oksygentrykk som luft i rundt 10 000 ft. Høyere enn det krever overtrykksånding.'}},
- {q:{en:'Why is a cold a reason not to fly?',no:'Hvorfor er forkjølelse en grunn til ikke å fly?'},a:[{en:'Blocked ears and sinuses cannot equalise, especially during the descent',no:'Tette ører og bihuler klarer ikke å utligne trykket, særlig under nedstigningen'},{en:'The virus spreads faster at altitude',no:'Viruset sprer seg raskere i høyden'},{en:'It causes decompression sickness',no:'Det gir trykkfallssyke'},{en:'It lowers the cabin altitude',no:'Det senker kabinhøyden'}],c:0,e:{en:'On the way down the outside pressure rises, and air must get into the middle ear and sinuses. If the passages are blocked, it hurts and can damage the eardrum.',no:'På vei ned øker trykket utenfor, og luft må inn i mellomøret og bihulene. Er kanalene tette, gjør det vondt og kan skade trommehinnen.'}}
-];
-LAB.quiz(el('qbox'),'pressurisation',()=>LAB.shuffle(Q.slice()).map(q=>{ const idx=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }),10);
-
-LAB.start('press');
-cab(); dec(); hyp(); hcards(); cards();
-LAB.onLang(()=>{ cab(); dec(); hyp(); hcards(); cards(); });
-})();
-</script>
+<script src="lab.js?v=41"></script>
+<script src="concepts.js?v=2"></script>
+<script src="presscore.js?v=1"></script>
+<script src="press.js?v=1"></script>
 </body>
 </html>
