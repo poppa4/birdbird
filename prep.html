@@ -307,7 +307,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=37"></script>
+<script src="site.js?v=38"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -345,7 +345,7 @@ body:not(.nofab) #askbar{display:none}
   <div class="alog" id="alog"><p class="note">Ask about anything in your preparation: “What is the pressure altitude?”, “Is 1.25 × TODR inside TORA?”, “What fuel do I need for 1 h 40 min with a 30 min alternate?”. The instructor sees what you have filled in and reads your documents from Flight Intelligence.</p></div>
   <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
 </div>
-<script src="lab.js?v=37"></script>
+<script src="lab.js?v=38"></script>
 <script src="ai.js?v=1"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=1"></script>
@@ -508,13 +508,13 @@ const SECTIONS=[
 const IFRONLY=['grad'];
 const TPL={cat:{n:{en:'Commercial or airline flight',no:'Kommersiell flyging eller airline'},f:{rules:'IFR',purpose:'Commercial flight','al.reg':'cat','fu.unit':'kg','fu.eng':'turbine'},hide:['check','pilot','mb','air','nav','risk']},pc:{n:{en:'Skill test or proficiency check',no:'Praktisk prøve eller ferdighetskontroll'},f:{rules:'IFR',purpose:'Proficiency check'},hide:['air','crew','load']},ifr:{n:{en:'IFR flight (standard)',no:'IFR-tur (standard)'},f:{rules:'IFR',purpose:'Navigation flight'},hide:['check','crew','load','pilot','nav','air','risk','brief','charts']},vfr:{n:{en:'VFR flight',no:'VFR-tur'},f:{rules:'VFR',purpose:'Navigation flight'},hide:['check','grad','crew','load']},local:{n:{en:'Local VFR training',no:'Lokal VFR-trening'},f:{rules:'VFR',purpose:'Training flight'},hide:['check','grad','nav','minima','air','crew','load']},blank:{n:{en:'Everything',no:'Alt'},f:{},hide:[]}};
 const WHY={
- aircraft:[['pitot.html','Pitot-static system','Pitot-statisk system']],
+ aircraft:[['airdata.html#blockages','Pitot-static system','Pitot-statisk system']],
  met:[['weather.html','Read a METAR or TAF','Les en METAR eller TAF'],['fronts.html','Fronts and cloud','Fronter og skyer'],['hazards.html','Icing, CB and wind shear','Ising, CB og vindskjær']],
  minima:[['holding.html#understand','Approach types and minima','Innflygingstyper og minima'],['essentials.html','VMC and IFR minima','VMC- og IFR-minima']],
  nav:[['radionav.html','VOR, NDB and DME','VOR, NDB og DME'],['gnss.html','GNSS and RNAV','GNSS og RNAV']],
  air:[['essentials.html','Airspace and VMC','Luftrom og VMC']],
- xsec:[['route.html','Build it on the map','Bygg den på kartet'],['altimetry.html','Cold temperature and altitude','Kulde og høyde']],
- rwy:[['altimetry.html','Pressure and density altitude','Trykk- og tetthetshøyde'],['tunnel.html','Lift, stall and take-off','Løft, stall og avgang'],['hazards.html#wake','Wake turbulence on the runway','Vaketurbulens på banen']],
+ xsec:[['route.html','Build it on the map','Bygg den på kartet'],['airdata.html','Cold temperature and altitude','Kulde og høyde']],
+ rwy:[['airdata.html','Pressure and density altitude','Trykk- og tetthetshøyde'],['tunnel.html','Lift, stall and take-off','Løft, stall og avgang'],['hazards.html#wake','Wake turbulence on the runway','Vaketurbulens på banen']],
  grad:[['holding.html#explore','Gradients, ft/NM and ft/min','Gradienter, ft/NM og ft/min'],['gnss.html#wp','Turns at waypoints','Svinger ved veipunkter']],
  check:[['holding.html','Holding entries','Holding-entry'],['holding.html#explore','ILS and LOC needles','ILS- og LOC-nåler'],['briefing.html','Practise the briefings','Øv på briefingene'],['fi.html?mode=check#aircraft','Check preparation with the instructor','Kontrollforberedelse med instruktøren']],
  rcf:[['essentials.html','Radio failure procedures','Prosedyrer ved radiosvikt']],
@@ -1060,7 +1060,7 @@ const WXCOV={dep:'depapt',dest:'destapt',alt1:'alt1apt',alt2:'alt2apt'};
 const WXVFR={dep:'vd',dest:'va',alt1:'vl'};
 const icaoOf=v=>{ const m=String(v||'').toUpperCase().match(/\b[A-Z]{4}\b/); return m?m[0]:''; };
 const wxIcao=k=>icaoOf(P.f['mt.'+k+'.icao'])||icaoOf(P.f[WXCOV[k]]);
-const WXLAB={xw:['weather.html#xwind','Crosswind and headwind','Sidevind og motvind'],gust:['storms.html#shear','Gusts and wind shear','Vindkast og vindskjær'],fog:['clouds.html#fog','Fog and low cloud','Tåke og lave skyer'],ice:['hazards.html#icing','Airframe icing','Ising på flyet'],deice:['hazards.html#deice','De-icing and holdover','Avising og holdover'],ts:['storms.html#life','Thunderstorms','Tordenvær'],qnh:['altimetry.html#set','Altimeter setting','Høydemålerinnstilling'],cold:['altimetry.html#cold','Cold temperature corrections','Kuldekorreksjon'],da:['altimetry.html#da','Density altitude','Tetthetshøyde'],min:['holding.html#understand','Approach minima','Innflygingsminima'],alt:['flightplanning.html#alternates','Alternates','Alternativer'],vmc:['essentials.html#vfr','VMC and VFR minima','VMC- og VFR-minima'],ils:['holding.html#explore','ILS and non-precision approaches','ILS og ikke-presisjonsinnflyging'],nav:['radionav.html','Radio navigation','Radionavigasjon'],gnss:['gnss.html#risk','GNSS outages','GNSS-bortfall'],perf:['performance.html#landing','Landing performance','Landingsytelse'],taf:['weather.html#decode','Read a TAF line by line','Les en TAF linje for linje']};
+const WXLAB={xw:['weather.html#xwind','Crosswind and headwind','Sidevind og motvind'],gust:['storms.html#shear','Gusts and wind shear','Vindkast og vindskjær'],fog:['clouds.html#fog','Fog and low cloud','Tåke og lave skyer'],ice:['hazards.html#icing','Airframe icing','Ising på flyet'],deice:['hazards.html#deice','De-icing and holdover','Avising og holdover'],ts:['storms.html#life','Thunderstorms','Tordenvær'],qnh:['airdata.html#set','Altimeter setting','Høydemålerinnstilling'],cold:['airdata.html#cold','Cold temperature corrections','Kuldekorreksjon'],da:['airdata.html#da','Density altitude','Tetthetshøyde'],min:['holding.html#understand','Approach minima','Innflygingsminima'],alt:['flightplanning.html#alternates','Alternates','Alternativer'],vmc:['essentials.html#vfr','VMC and VFR minima','VMC- og VFR-minima'],ils:['holding.html#explore','ILS and non-precision approaches','ILS og ikke-presisjonsinnflyging'],nav:['radionav.html','Radio navigation','Radionavigasjon'],gnss:['gnss.html#risk','GNSS outages','GNSS-bortfall'],perf:['performance.html#landing','Landing performance','Landingsytelse'],taf:['weather.html#decode','Read a TAF line by line','Les en TAF linje for linje']};
 const labB=k=>{ const x=WXLAB[k]; return x?`<button type="button" class="whyb wxl noprint" data-u="${x[0]}" data-en="${esc(x[1])}" data-no="${esc(x[2])}">${esc(LAB.lang==='no'?x[2]:x[1])}</button>`:''; };
 const ech=id=>{ try{ const x=EASA.get(id); return x?EASA.chip(x):''; }catch(e){ return ''; } };
 const lw=()=>LAB.lang==='no'?'no':'en';

@@ -7,7 +7,7 @@
     'Birdbird':'Birdbird','About me':'Om meg','Made by Daniel Nilsson, pilot, for everyone learning to fly.':'Laget av Daniel Nilsson, pilot, for alle som lærer å fly.',"Daniel's tip":'Daniels tips','Your rank and progress':'Din rang og progresjon','Progress':'Progresjon','Training material only. Always follow the AIP, the flight manual and your operator’s procedures.':'Kun opplæringsmateriell. Følg alltid AIP, flyhåndboken og operatørens prosedyrer.'};
   const t=s=> document.documentElement.lang==='nb'? (NO[s]||s) : s;
   let page=(location.pathname.split('/').pop()||'index.html').replace(/\?.*/,''); if(!/\.html$/.test(page)) page=page+'.html';
-  const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','altimetry.html','orientation.html','holding.html','pitot.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
+  const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','airdata.html','orientation.html','holding.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
   /* Training hub: one sub-nav, same order everywhere */
   const TRN=[['radio.html','Gate to gate'],['briefing.html','Briefings'],['radio-drills.html','Radio drills'],['cockpit.html','Simulator'],['simcheck.html','A320 sim assessment'],['typerating.html','Type rating'],['checkride.html','Check preparation']];
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
@@ -25,10 +25,9 @@
   /* ---------- rang og progresjon (lokalt; klar for synk mot konto senere) ---------- */
   const PK='naeroson-prog';
   const ITEMS=[
-    ['lab','quiz:altimetry',150,'altimetry.html#quiz',{en:'Pressure and altitude test',no:'Test: trykk og høyde'}],
+    ['lab','quiz:airdata',150,'airdata.html#quiz',{en:'Air data test',no:'Test: luftdata'}],
     ['lab','quiz:orientation',150,'orientation.html#quiz',{en:'Spatial orientation test',no:'Test: romlig orientering'}],
     ['lab','quiz:holding',150,'holding.html#quiz',{en:'Holding and approach test',no:'Test: holding og innflyging'}],
-    ['lab','quiz:pitot',150,'pitot.html#quiz',{en:'Pitot-static test',no:'Test: pitot-statisk system'}],
     ['lab','quiz:clouds',150,'clouds.html#quiz',{en:'Clouds, stability and fog test',no:'Test: skyer, stabilitet og tåke'}],
     ['lab','quiz:pressure',150,'pressure.html#quiz',{en:'Pressure and wind test',no:'Test: trykk og vind'}],
     ['lab','quiz:fronts',150,'fronts.html#quiz',{en:'Fronts and air masses test',no:'Test: fronter og luftmasser'}],
@@ -123,7 +122,7 @@
   }
   const TIPS={
     'tunnel.html':{en:'Most training aircraft are built to stall at the wing root first, so the ailerons keep working. Pull the speed back and watch where the red starts on each aircraft.',no:'De fleste skolefly er bygget for å stalle ved vingeroten først, så balanserorene fortsatt virker. Ta farten av og se hvor det røde starter på hvert fly.'},
-    'altimetry.html':{en:'High to low, look out below. Set a cold day with low pressure and see how much lower you really are over the hill.',no:'Fra høyt til lavt, se deg for. Still inn en kald dag med lavt trykk, og se hvor mye lavere du egentlig er over åsen.'},
+    'airdata.html':{en:'High to low, look out below. Set a cold day with low pressure and see how much lower you really are over the hill.',no:'Fra høyt til lavt, se deg for. Still inn en kald dag med lavt trykk, og se hvor mye lavere du egentlig er over åsen.'},
     'orientation.html':{en:'In cloud the leans feel completely real. Trust the attitude indicator, even when every part of you disagrees.',no:'I skyene føles «the leans» helt ekte. Stol på kunstig horisont, selv når hele kroppen er uenig.'},
     'holding.html':{en:'Don\u2019t calculate in the air. Picture your heading on the fix and use the 70\u00b0 line. Run the drill until the answer comes before you think.',no:'Ikke regn i lufta. Se for deg kursen din på fiksen og bruk 70\u00b0-linjen. Kjør drillen til svaret kommer før du rekker å tenke.'},
     'cockpit.html':{en:'Start with the ILS mission and let the autopilot fly it. Watch the modes change on the top bar. Then fly it again by hand.',no:'Start med ILS-oppdraget og la autopiloten fly. Følg med på modene som skifter på toppen. Fly den så igjen for hånd.'},
@@ -137,7 +136,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=23'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=24'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }

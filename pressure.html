@@ -67,7 +67,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
 </style>
 </head>
 <body data-title="Pressure and Wind">
-<script src="site.js?v=37"></script>
+<script src="site.js?v=38"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -150,7 +150,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
               <div class="rrow"><span id="alC"></span><b id="arC"></b></div>
               <div class="rrow"><span id="alD"></span><b id="arD"></b></div>
             </div></details>
-          <details class="xsec presec" open><summary id="gPreA">Scenarios</summary><div class="pre" id="preA"></div><p class="note" data-tx="a2" style="margin-top:8px">The full instrument side, with QFE, standard setting, density altitude and cold-temperature corrections, is in <a href="altimetry.html">Pressure and altitude</a>.</p></details>
+          <details class="xsec presec" open><summary id="gPreA">Scenarios</summary><div class="pre" id="preA"></div><p class="note" data-tx="a2" style="margin-top:8px">The full instrument side, with QFE, standard setting, density altitude and cold-temperature corrections, is in <a href="airdata.html">Pressure and altitude</a>.</p></details>
         </div>
         <!-- local winds -->
         <div class="vp" data-v="local" hidden>
@@ -204,7 +204,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
-<script src="lab.js?v=37"></script>
+<script src="lab.js?v=38"></script>
 <script src="concepts.js?v=2"></script>
 <script>
 (function(){
@@ -245,7 +245,7 @@ LAB.tx({
  d2:'<li><b>Vinden dreier til høyre (veerer) og øker med høyden</b> gjennom friksjonslaget på nordlig halvkule. Når du stiger ut, må du regne med at den dreier med klokka og tar seg opp; på innflygingen dreier den til venstre (backer) og avtar. På sørlig halvkule dreier den motsatt vei.</li><li><b>Bakkevinden dreier til venstre (backer)</b> (NH) og avtar: over land rundt 30° og omtrent halvparten av vinden i 2000 ft, over sjø rundt 10–15° og omtrent 70 %.</li><li><b>Tette isobarer betyr sterk vind</b>, kast, mekanisk turbulens og sterk sidevind nær bakken, og vindskjær i toppen av friksjonslaget.</li><li><b>Fra høyt til lavt, se opp nedover.</b> Flyr du mot et lavtrykk uten å oppdatere QNH, viser høydemåleren for høyt: rundt 27 ft per hPa. Sett ny QNH så snart du får den. På nordlig halvkule kommer vinden da fra venstre, så du får avdrift til høyre.</li><li><b>Lokale vinder kan slå kartet.</b> Sjøbris kan snu banevinden utover ettermiddagen, katabatisk vind gir medvind og turbulens tidlig om morgenen på dal- og fjordflyplasser, og føhn gir sterk, byig og turbulent vind på lesiden av fjell.</li>',
  d3:'<span class="k">Dypdykk</span><p><b>Krumme isobarer: gradientvinden.</b> Rundt et lavtrykk går en del av trykkraften med til å svinge luften, så den virkelige vinden er svakere enn den geostrofiske (subgeostrofisk). Rundt et høytrykk er den sterkere (supergeostrofisk), men høytrykk har svake gradienter. Denne modellen ser bort fra krumningen, så den overdriver vinden nær et dypt lavtrykk.</p><p><b>Døgnvariasjon.</b> Om dagen blander oppvarmingen den sterkere vinden fra høyden ned til bakken: over land dreier bakkevinden til høyre og øker utover ettermiddagen. Om natten blir luften nær bakken stabil og kobles fra: bakkevinden dreier til venstre og avtar, og vinden like over inversjonen kan være mye sterkere (en lavtliggende jet og vindskjær om natten).</p><p><b>Høyere opp.</b> Trykkgradienten endrer seg med høyden fordi kald luft er tettere enn varm. Der kald og varm luft møtes, øker gradienten med høyden, og vinden blir sterkere helt opp til tropopausen: jetstrømmene. Se <a href="fronts.html">Fronter og luftmasser</a>.</p>',
  a1:'Trykkforskjeller lurer også høydemåleren. Den måler trykk, ikke høyde. Flyr du fra et høytrykk mot et lavtrykk uten å oppdatere QNH, er du lavere enn du tror ved hver indikerte høyde. Still de to QNH-ene og se feilen.',
- a2:'Instrumentsiden, med QFE, standardinnstilling, tetthetshøyde og kuldekorreksjon, finner du i <a href="altimetry.html">Trykk og høyde</a>.',
+ a2:'Instrumentsiden, med QFE, standardinnstilling, tetthetshøyde og kuldekorreksjon, finner du i <a href="airdata.html">Trykk og høyde</a>.',
  foot:'<b>Modell og begrensninger.</b> Opplæringsmodell av to idealiserte trykksystemer på et flatt kart, nord opp, 2000–2600 km bredt. Den geostrofiske vinden bruker V<sub>g</sub> = Δp / (ρ f Δn) med f = 2Ω sin φ og ser bort fra krumningen på isobarene, så den overdriver vinden nær et dypt lavtrykk. Bakkevinden bruker typiske, illustrerende verdier: dreid rundt 30° og omtrent halv fart over land, rundt 10° og 70 % over sjø; virkelige verdier avhenger av terreng, stabilitet og tid på døgnet. Kraftpilene viser retninger, ikke nøyaktige størrelser, og luftpakkens sving er dempet så den faller raskt til ro (virkelig luft svinger fram og tilbake mens den tilpasser seg). Høydemålerfeilen bruker rundt 27 ft per hPa og ISA-temperaturer. De lokale vindene er skjematiske, med typiske styrker; føhnen bruker 3 °C per 1000 ft tørt og rundt 1,8 °C per 1000 ft mettet. Bruk METAR, TAF, vindkart og AIP for virkelige flyginger.',
 });
 

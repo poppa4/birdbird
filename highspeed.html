@@ -93,7 +93,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
 </style>
 </head>
 <body data-title="High-speed flight and drag">
-<script src="site.js?v=37"></script>
+<script src="site.js?v=38"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
@@ -268,7 +268,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
-<script src="lab.js?v=37"></script>
+<script src="lab.js?v=38"></script>
 <script src="cfd3d.js?v=7"></script>
 <script>
 (function(){
@@ -642,7 +642,7 @@ const segWy=LAB.seg(el('wyd'),[['off','Off'],['on','On']],Wg.yd,v=>{ Wg.yd=v; uW
 function machm(){ const c=[
  [{en:'How it measures',no:'Slik måler det'},{en:'Mach is a function of the ratio of dynamic (pitot minus static) to static pressure, (Pt − Ps) / Ps. A mechanical machmeter combines an airspeed capsule with an aneroid altitude capsule through a ratio arm; on the A320 the ADRs compute the same ratio and the PFD shows the Mach number under the speed tape. Temperature cancels out, so no temperature probe is needed.',no:'Mach er en funksjon av forholdet mellom dynamisk trykk (pitot minus statisk) og statisk trykk, (Pt − Ps) / Ps. Et mekanisk machmeter kombinerer en fartskapsel og en aneroid høydekapsel gjennom en forholdsarm; på A320 regner ADR-ene ut det samme forholdet, og PFD viser Machtallet under fartstapen. Temperaturen faller bort, så ingen temperaturføler trengs.'}],
  [{en:'Errors it has',no:'Feil det har'},{en:'Instrument error and position (pressure) error, because the static source is never perfect; on the A320 the ADRs correct for the known position error. There is no density or temperature error. Compressibility is already part of the Mach relationship, so there is no separate correction for it.',no:'Instrumentfeil og posisjonsfeil (trykkfeil), fordi den statiske kilden aldri er perfekt; på A320 korrigerer ADR-ene for den kjente posisjonsfeilen. Det er ingen tetthets- eller temperaturfeil. Kompressibilitet er allerede en del av Mach-sammenhengen, så det finnes ingen egen korreksjon for den.'}],
- [{en:'Blockages',no:'Blokkeringer'},{en:'It fails like the airspeed indicator. Static blocked: reads low in a climb and high in a descent. Pitot and drain blocked: reads high in a climb. With a blocked static source the dangerous case is the climb: the Mach reads low, and the real Mach can pass MMO unnoticed. See <a href="pitot.html#lab">the pitot-static lab</a>.',no:'Det svikter som fartsmåleren. Statisk blokkert: viser for lite i stigning og for mye i nedstigning. Pitot og drenering blokkert: viser for mye i stigning. Med blokkert statisk kilde er stigningen det farlige tilfellet: Mach viser for lavt, og virkelig Mach kan passere MMO uten at noen merker det. Se <a href="pitot.html#lab">pitot-statisk-labben</a>.'}],
+ [{en:'Blockages',no:'Blokkeringer'},{en:'It fails like the airspeed indicator. Static blocked: reads low in a climb and high in a descent. Pitot and drain blocked: reads high in a climb. With a blocked static source the dangerous case is the climb: the Mach reads low, and the real Mach can pass MMO unnoticed. See <a href="airdata.html#blockages">the pitot-static lab</a>.',no:'Det svikter som fartsmåleren. Statisk blokkert: viser for lite i stigning og for mye i nedstigning. Pitot og drenering blokkert: viser for mye i stigning. Med blokkert statisk kilde er stigningen det farlige tilfellet: Mach viser for lavt, og virkelig Mach kan passere MMO uten at noen merker det. Se <a href="airdata.html#blockages">pitot-statisk-labben</a>.'}],
  [{en:'Mach, TAS and temperature',no:'Mach, TAS og temperatur'},{en:'Mach does not need temperature, but turning Mach into TAS does: TAS = M × a, and the local speed of sound a depends only on the static air temperature. On a cold day the same M 0.78 is fewer knots of TAS, which is why the flight plan uses the forecast temperature.',no:'Mach trenger ikke temperatur, men å regne Mach om til TAS gjør det: TAS = M × a, og den lokale lydhastigheten a avhenger bare av lufttemperaturen. En kald dag er den samme M 0,78 færre knop TAS, og derfor bruker den operative flygeplanen den varslede temperaturen.'}]];
  el('machm').innerHTML=c.map(([t,d])=>`<div class="box"><b class="t">${L(t)}</b><p>${L(d)}</p></div>`).join(''); }
 

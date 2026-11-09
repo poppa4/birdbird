@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Air data (EASA 022): static and total pressure, the altimeter as a barometer, QNH, QFE and flight levels, pressure and temperature errors, IAS, CAS, EAS, TAS and Mach, the VSI and its lag, and what pitot and static blockages do to the instruments.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Air Data</title>
+<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="site.css?v=12">
+<style>
+/* the air data figure: one dark canvas with the pitot-static schematic, the instruments and a side profile */
+.ad-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+#adv{display:block;width:100%;aspect-ratio:16/9.6;max-height:720px;touch-action:manipulation}
+.ad-vp .vtabs button.dp{display:none}
+body.depth-deep .ad-vp .vtabs button.dp,body.depth-instructor .ad-vp .vtabs button.dp,.ad-vp .vtabs button.dp.on{display:inline-block}
+.ad-vp .vchip{max-width:min(560px,calc(100% - 20px))}
+@media (min-width:641px){.ad-vp .vchip{flex-direction:column;flex-wrap:nowrap;gap:5px;max-width:178px;padding:8px 10px}.ad-vp .vchip b{font-size:12.5px}body.depth-instructor .ad-vp .vchip{max-width:220px}}
+.ad-vp .vchip b.r{color:#FF8A78}.ad-vp .vchip b.a{color:#F0C470}.ad-vp .vchip b.g{color:#8EDDB0}
+.ad-vp .vchip small{color:#7FCBE8;font-size:9.5px}
+.vleg i.ln{height:3px;border-radius:2px}
+.xsec .ro2{margin-top:6px}
+.xsec .ro2 .rrow{font-size:12.5px;padding:4px 0}
+.xsec .ro2 .rrow b{font-family:var(--f-mono);font-weight:500;font-size:12px}
+.xsec .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0 2px;cursor:pointer}
+.xsec .chk input{width:16px;height:16px;accent-color:var(--accent)}
+.xsec .seg.wrap{flex-wrap:wrap}
+.xsec .seg.wrap button{flex:1 1 46%}
+@media (max-width:640px){#adv{aspect-ratio:1/1.5;max-height:none}.ad-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px;flex-wrap:wrap}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.35;color:var(--ink);margin:0 0 10px}
+.tstep .ins{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;align-items:flex-end}
+.tstep .ins label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.tstep .ins input{font-family:var(--f-mono);font-size:15px;width:120px;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
+.tstep .ins input.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .ins input.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}.tstep .ins input{width:104px}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--panel-2,#F6F8F6);padding:6px 9px;border-radius:3px;margin:2px 0 10px;overflow-x:auto;white-space:nowrap}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
+</style>
+</head>
+<body data-title="Air Data">
+<script src="site.js?v=38"></script>
+<div class="page">
+  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Virtual Lab · Instruments</div>
+      <h1>Air data: pressure, altitude and airspeed</h1>
+      <p data-tx="lead">Two pressures run the basic flight instruments. The static ports feel the still air around you, the pitot tube feels the air rammed into it. From them the altimeter, the airspeed indicator and the VSI work out height, speed and climb. See what each setting means, where the altimeter lies, how IAS becomes TAS, and what a blocked tube does.</p>
+    </div>
+    <div class="hright"></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">The air data lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
+
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kin"></p>
+    <div id="kcGrid"></div>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
+    </div>
+  </section>
+
+  <section class="card" id="explore" data-step="explore">
+    <span id="settings" aria-hidden="true"></span><span id="errors" aria-hidden="true"></span><span id="speeds" aria-hidden="true"></span><span id="blockages" aria-hidden="true"></span>
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The air data lab</h2>
+    <p class="lead" id="xLead"></p>
+    <div class="xapp">
+      <div class="xvp ad-vp" id="adVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="Mode"></div></div>
+        <div class="vcv" id="vcv">
+          <canvas id="adv" aria-label="Pitot-static system wired to the airspeed indicator, altimeter and VSI, with a side view of the aircraft over the terrain."></canvas>
+          <div class="vchip" id="chip" aria-live="polite"></div>
+        </div>
+        <div class="vleg" id="vleg"></div>
+      </div>
+      <p class="xsee" id="xsee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <details class="xsec" open data-pv="blk" hidden><summary>Faults</summary><div id="faultSeg"></div>
+          <label class="chk"><input type="checkbox" id="altSt"> <span id="altStL">Alternate static open</span></label><p class="hint" id="faultH"></p></details>
+        <details class="xsec" open data-pv="set err blk"><summary>Altimeter</summary><div id="setSeg"></div><div id="setCtl" style="margin-top:6px"></div>
+          <div class="btns" style="margin-top:4px"><button type="button" class="btn sm" id="setQnh">Set the actual QNH</button></div></details>
+        <details class="xsec" open><summary>Conditions</summary><div id="wxCtl"></div></details>
+        <details class="xsec" open><summary>The flight</summary><div id="flCtl"></div><div class="btns" id="vsBtns"></div></details>
+        <details class="xsec" open><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
+        <details class="xsec deep"><summary>Advanced</summary><div id="adv2"></div><div class="ro2" id="advRo"></div></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
+    <div class="maid" id="maid"><span class="k"></span><b></b><p></p></div>
+  </section>
+
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+  <p class="foot" id="foot"></p>
+</div>
+<script src="lab.js?v=38"></script>
+<script src="concepts.js?v=2"></script>
+<script src="airdatacore.js?v=1"></script>
+<script src="airdata.js?v=1"></script>
+</body>
+</html>
