@@ -2,165 +2,186 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="From the liquid compass to the laser gyros in an A320 ADIRU. Accelerate and turn at Norwegian latitudes and see the compass lie, watch a directional gyro…">
+<meta name="description" content="Attitude and heading (EASA 022): the magnetic compass with variation, deviation, dip and its turning and acceleration errors; gyroscopes, rigidity, precession and apparent drift; the attitude indicator, heading indicator and turn coordinator; and the inertial and AHRS systems behind glass cockpits.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Compass and Gyro Instruments</title>
+<title>Attitude and Heading</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
-.paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
-.paper canvas,.view canvas{display:block;width:100%}
-#cmp{aspect-ratio:16/7.2;max-height:380px}#cerr{aspect-ratio:16/5.5;max-height:300px}
-#prec{aspect-ratio:16/9;max-height:330px}#di{aspect-ratio:16/7;max-height:300px}#dch{aspect-ratio:16/6.5;max-height:300px}
-#ali{aspect-ratio:16/9;max-height:380px}#drf{aspect-ratio:16/10;max-height:420px}
-@media (max-width:600px){#cmp{aspect-ratio:auto;height:330px}#cerr,#dch{aspect-ratio:auto;height:230px}#prec,#ali{aspect-ratio:auto;height:270px}#di{aspect-ratio:auto;height:220px}#drf{aspect-ratio:auto;height:320px}}
-.rrow b{white-space:normal;text-align:right}
-.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
-.ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}.wa{color:#8A5A00;font-weight:700}
-.prog{height:8px;background:var(--rule-2);border-radius:2px;overflow:hidden;margin:6px 0}.prog i{display:block;height:100%;background:var(--chart-blue);width:0}
-.ftab{border-collapse:collapse;width:100%;font-size:14px}.ftab th,.ftab td{border-bottom:1px solid var(--rule-2);padding:7px 8px;text-align:left;vertical-align:top}.ftab th{font-size:12px;color:var(--ink-2);font-weight:500}
+/* the attitude and heading figure: one dark canvas, four modes */
+.gy-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
+#gyv{display:block;width:100%;aspect-ratio:16/9.6;max-height:720px;touch-action:manipulation}
+.gy-vp .vtabs button.dp{display:none}
+body.depth-deep .gy-vp .vtabs button.dp,body.depth-instructor .gy-vp .vtabs button.dp,.gy-vp .vtabs button.dp.on{display:inline-block}
+.gy-vp .vchip{max-width:calc(100% - 20px)}
+@media (min-width:641px){.gy-vp .vchip{gap:2px 18px}}
+.gy-vp .vchip b.r{color:#FF8A78}.gy-vp .vchip b.a{color:#F0C470}.gy-vp .vchip b.g{color:#8EDDB0}
+.gy-vp .vchip small{color:#7FCBE8;font-size:9.5px}
+.vleg i.ln{height:3px;border-radius:2px}
+.xsec .ro2{margin-top:6px}
+.xsec .ro2 .rrow{font-size:12.5px;padding:4px 0}
+.xsec .ro2 .rrow b{font-family:var(--f-mono);font-weight:500;font-size:12px}
+.xsec .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0 2px;cursor:pointer}
+.xsec .chk input{width:16px;height:16px;accent-color:var(--accent)}
+.xsec .seg.wrap{flex-wrap:wrap}
+.xsec .seg.wrap button{flex:1 1 46%}
+@media (max-width:640px){#gyv{aspect-ratio:1/1.5;max-height:none}.gy-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
+/* Try it: one task at a time */
+.tstep{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px 16px;max-width:860px}
+.tstep .th{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+.tstep .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tstep .dots{display:flex;gap:6px;flex-wrap:wrap}
+.tstep .dots button{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-3);background:transparent;padding:0;cursor:pointer;min-height:0}
+.tstep .dots button.on{background:var(--accent);border-color:var(--accent)}
+.tstep .q{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:17px;line-height:1.35;color:var(--ink);margin:0 0 10px}
+.tstep .ins{display:flex;flex-wrap:wrap;gap:10px 16px;margin:0 0 10px;align-items:flex-end}
+.tstep .ins label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
+.tstep .ins input{font-family:var(--f-mono);font-size:15px;width:120px;padding:7px 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink)}
+.tstep .ins input.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .ins input.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tstep .opts button{font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:9px 11px;cursor:pointer;color:var(--ink);text-align:left;line-height:1.35}
+.tstep .opts button:hover{border-color:var(--ink)}
+.tstep .opts button.right{border-color:var(--ok);background:var(--ok-wash)}
+.tstep .opts button.wrong{border-color:var(--warning);background:var(--warning-wash)}
+.tstep .fb{display:block;font-size:14px;line-height:1.5;color:var(--ink-2);margin:2px 0 8px}
+.tstep .fb:empty{display:none}
+.tstep .fb.ok{color:var(--ok)}
+.tstep .nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule-2);padding-top:10px;margin-top:4px}
+.tstep .nav .sp{flex:1}
+@media (max-width:520px){.tstep .opts{grid-template-columns:minmax(0,1fr)}.tstep .ins input{width:104px}}
+/* Understand and Test yourself */
+.kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
+.dd{margin-top:18px}
+.dd>h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:var(--t-md);margin:0 0 8px}
+.dfold{border:1px solid var(--rule-2);border-radius:var(--radius);background:var(--sheet);margin:0 0 6px;max-width:980px}
+.dfold>summary{cursor:pointer;list-style:none;padding:10px 14px;font-weight:600;font-size:14.5px;color:var(--ink);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.dfold>summary::-webkit-details-marker{display:none}
+.dfold>summary::before{content:"▸";color:var(--accent);font-size:12px;transition:transform .15s}
+.dfold[open]>summary::before{transform:rotate(90deg)}
+.dfold>summary small{font-weight:400;color:var(--ink-3);font-size:13px}
+.dfold>div{padding:0 16px 12px 36px;font-size:14.5px;line-height:1.6;color:var(--ink);max-width:86ch}
+.dfold>div p{margin:0 0 8px}
+.dfold .fx{font-family:var(--f-mono);font-size:13px;color:var(--ink);background:var(--panel-2,#F6F8F6);padding:6px 9px;border-radius:3px;margin:2px 0 10px;overflow-x:auto;white-space:nowrap}
+.dfold .ftab{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0 8px}
+.dfold .ftab th,.dfold .ftab td{border-bottom:1px solid var(--rule-2);padding:6px 8px;text-align:left;vertical-align:top}
+.dfold .ftab th{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.wrapx{overflow-x:auto}
+@media (max-width:520px){.dfold>div{padding:0 12px 12px 14px}}
+.take{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 36px;max-width:1100px}
+.take li{padding:12px 0 12px 28px;border-bottom:1px solid var(--rule-2);position:relative;font-size:15px;line-height:1.5}
+.take li::before{content:"";position:absolute;left:4px;top:19px;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent)}
+.take li b{font-weight:600}
+.maid{border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius-lg) var(--radius-lg) 0;background:var(--sheet);padding:14px 18px;max-width:80ch;margin-top:16px}
+.maid .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.maid b{display:block;font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:20px;color:var(--ink);line-height:1.25}
+.maid p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.55}
+.foot b{color:var(--ink)}
+body.depth-instructor .maid b{font-size:24px}
+body.depth-instructor .xsee{font-size:16px}
+body.depth-instructor .tstep .q{font-size:20px}
+.gy-vp .vtabs button.dp::after{content:" · deep";font-size:10.5px;opacity:.7}
+#gyv{cursor:default}#gyv.push{cursor:pointer}
+.xsec .note2{font-size:12px;color:var(--ink-3);margin:6px 0 0;line-height:1.45}
+.cls3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:4px 0 8px}
+.cls3 div{padding:8px 10px;border-left:1px solid var(--rule-2);font-size:13.5px;line-height:1.5}
+.cls3 div:first-child{border-left:0}
+.cls3 b{display:block;font-size:12px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+@media (max-width:640px){.cls3{grid-template-columns:minmax(0,1fr)}.cls3 div{border-left:0;border-top:1px solid var(--rule-2)}.cls3 div:first-child{border-top:0}}
 </style>
 </head>
+<<<<<<< ours
 <body data-title="Compass and Gyro Instruments">
-<script src="site.js?v=42"></script>
+<script src="site.js?v=43"></script>
+=======
+<body data-title="Attitude and Heading">
+<script src="site.js?v=41"></script>
+>>>>>>> theirs
 <div class="page">
   <nav class="labnav" aria-label="Virtual Lab"></nav>
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Virtual Lab · Instruments</div>
-      <h1>Compass and gyro instruments</h1>
-      <p>From the liquid compass to the laser gyros in an A320 ADIRU. Accelerate and turn at Norwegian latitudes and see the compass lie, watch a directional gyro drift away from north, and align an inertial reference system.</p>
+      <h1>Attitude and heading: compass, gyros and inertial systems</h1>
+      <p data-tx="lead">Which way am I pointing, and which way is up? The magnetic compass answers the first question but lies when you turn or accelerate. Spinning gyros answer both, but drift and topple. Inertial systems and AHRS do it with lasers and silicon. See each one work, and see where it fails.</p>
     </div>
     <div class="hright"></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#compass">Magnetic compass</a><a href="#gyro">Gyroscopes</a><a href="#irs">From gyros to ADIRS</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#understand">Key concepts</a><a href="#explore">The attitude and heading lab</a><a href="#try">Try it</a><a href="#debrief">Key points</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="compass">
-    <div class="eyebrow">1 · Interactive</div>
-    <h2>The magnetic compass and its errors</h2>
-    <p class="lead">The compass magnets hang from a pivot and try to line up with the earth’s field. That field points down into the ground at high latitudes (dip), so the assembly is built with its centre of gravity off the pivot. Accelerate or turn and that offset makes the card swing: the compass shows a heading you are not flying.</p>
-    <div class="split">
-      <div class="stack">
-        <div class="view"><canvas id="cmp" aria-label="Plan view of the field and the compass card"></canvas></div>
-        <div class="paper"><canvas id="cerr" aria-label="Compass error against heading"></canvas></div>
-      </div>
-      <div class="panel">
-        <div class="grp">Manoeuvre</div><div id="cMan"></div>
-        <div id="cctl"></div>
-        <div class="btns"><button class="btn" id="cTurn"></button></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>True heading</span><b id="c1"></b></div>
-          <div class="rrow"><span>Magnetic heading</span><b id="c2"></b></div>
-          <div class="rrow"><span>Compass heading (steady)</span><b id="c3"></b></div>
-          <div class="rrow"><span>Dip</span><b id="c4"></b></div>
-          <div class="rrow"><span>Compass shows now</span><b id="c5"></b></div>
-        </div>
-      </div>
-    </div>
-    <p class="callout blue" id="cEx"></p>
-    <div class="cols">
-      <div class="box"><b class="t">True, magnetic, compass</b><p>True heading minus easterly variation gives magnetic heading; minus easterly deviation gives compass heading (add westerly). Variation comes from the earth and is on the chart; deviation comes from the aircraft’s own magnetism and is on the deviation card next to the compass.</p></div>
-      <div class="box"><b class="t">ANDS: acceleration errors</b><p>Northern hemisphere, on easterly or westerly headings: Accelerate, the compass shows a turn towards North; Decelerate, towards South. Zero on north and south headings, largest on east and west.</p></div>
-      <div class="box"><b class="t">UNOS: turning errors</b><p>Northern hemisphere: the compass lags when turning through north and leads through south. So Undershoot North (roll out before the compass reaches the heading) and Overshoot South. Largest on north and south, zero through east and west. Both errors reverse in the southern hemisphere.</p></div>
+  <section class="card" id="understand" data-step="understand">
+    <div class="eyebrow">1 · Understand</div>
+    <h2>Key concepts</h2>
+    <p class="kintro" id="kin"></p>
+    <div id="kcGrid"></div>
+    <div class="dd deep" id="full">
+      <h3 id="ddH">Deep dive</h3>
+      <div id="ddList"></div>
     </div>
   </section>
 
-  <section class="card" id="gyro">
-    <div class="eyebrow">2 · Interactive</div>
-    <h2>Gyroscopes: rigidity, precession and drift</h2>
-    <p class="lead">A spinning rotor keeps its axis fixed in space (rigidity), and a force on it does not tilt it where you push but 90° further round in the direction of rotation (precession). Fixed in space is not fixed to the earth, which turns under it.</p>
-    <div class="split">
-      <div class="paper"><canvas id="prec" aria-label="Rotor with an applied force and the resulting precession"></canvas></div>
-      <div class="panel">
-        <div class="grp">Force applied at</div><div id="pAt"></div>
-        <div id="pctl"></div>
-        <div class="ro">
-          <div class="rrow"><span>Angular momentum (rigidity)</span><b id="p1"></b></div>
-          <div class="rrow"><span>Precession rate</span><b id="p2"></b></div>
+  <section class="card" id="explore" data-step="explore">
+    <span id="compass" aria-hidden="true"></span><span id="gyro" aria-hidden="true"></span><span id="ops" aria-hidden="true"></span><span id="irs" aria-hidden="true"></span>
+    <div class="eyebrow">2 · Explore</div>
+    <h2>The attitude and heading lab</h2>
+    <p class="lead" id="xLead"></p>
+    <div class="xapp">
+      <div class="xvp gy-vp" id="gyVp" data-lab-model>
+        <div class="vbar"><div class="vtabs" id="vtabs" role="tablist" aria-label="Mode"></div></div>
+        <div class="vcv" id="vcv">
+          <canvas id="gyv" aria-label="Magnetic compass, gyroscope, flight instruments and inertial reference, one mode at a time."></canvas>
+          <div class="vchip" id="chip" aria-live="polite"></div>
         </div>
+        <div class="vleg" id="vleg"></div>
       </div>
-    </div>
-    <h3>Directional gyro: apparent drift</h3>
-    <p class="note">The A320 has no directional gyro: heading comes from the IRs. The classic DI is shown because its drift is the same earth-rate and transport-wander physics that an inertial system has to compute and remove. The default groundspeed is a typical A320 cruise value.</p>
-    <div class="split">
-      <div class="stack">
-        <div class="view"><canvas id="di" aria-label="Directional gyro compared with the magnetic heading"></canvas></div>
-        <div class="paper"><canvas id="dch" aria-label="Heading error over time"></canvas></div>
-      </div>
-      <div class="panel">
-        <div id="dctl"></div>
-        <div class="grp">Latitude nut</div><div id="dNut"></div>
-        <div class="btns" style="margin-top:8px"><button class="btn" id="dRe">Realign with the compass</button></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>Earth rate</span><b id="d1"></b></div>
-          <div class="rrow"><span>Transport wander</span><b id="d2"></b></div>
-          <div class="rrow"><span>Latitude nut correction</span><b id="d3"></b></div>
-          <div class="rrow"><span>Total drift of the reading</span><b id="d4"></b></div>
-          <div class="rrow"><span>Heading error now</span><b id="d5"></b></div>
+      <p class="xsee" id="xsee"></p>
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
+        <div data-pv="cmp">
+          <details class="xsec" open><summary>Fly it</summary><div class="btns" id="cBtns"></div><p class="note2" id="cNote"></p></details>
+          <details class="xsec" open><summary>Conditions</summary><div id="cCtl"></div></details>
+          <details class="xsec deep"><summary>Advanced</summary><div id="cAdv"></div></details>
         </div>
+        <div data-pv="gyr">
+          <details class="xsec" open><summary>The rotor</summary><div id="gRot"></div><div id="gDrive" style="margin-top:6px"></div><div class="btns" id="gBtns" style="margin-top:8px"></div></details>
+          <details class="xsec" open><summary>Heading indicator drift</summary><div id="gDi"></div><div id="gNut"></div><div class="btns" id="gDiBtns" style="margin-top:8px"></div></details>
+          <details class="xsec deep"><summary>Advanced</summary><div id="gAdv"></div></details>
+        </div>
+        <div data-pv="ins">
+          <details class="xsec" open><summary>Aircraft</summary><div id="iCls"></div></details>
+          <details class="xsec" open><summary>Fly it</summary><div id="iCtl"></div><div class="btns" id="iBtns"></div></details>
+          <details class="xsec" open><summary>Faults</summary><div id="iFault"></div><p class="note2" id="iFaultH"></p></details>
+        </div>
+        <div data-pv="irs">
+          <details class="xsec" open><summary>Alignment</summary><div id="rAli"></div><div class="btns" id="rBtns" style="margin-top:8px"></div></details>
+          <details class="xsec" open><summary>In flight</summary><div id="rFly"></div></details>
+        </div>
+        <details class="xsec" open><summary>Scenarios</summary><div class="pre" id="pre"></div></details>
+      </details>
+      <div class="tryblk" id="try" data-step="try">
+        <h3>Try it</h3>
+        <p class="note" id="tryLead"></p>
+        <div class="tstep" id="tstep"></div>
       </div>
-    </div>
-    <p class="callout" id="dEx"></p>
-    <div class="cols">
-      <div class="box"><b class="t">Rigidity</b><p>Proportional to the rotor’s moment of inertia and its spin speed. A heavy rotor with its mass at the rim, spinning fast, is hard to disturb. A slowing rotor (loss of its power supply) loses rigidity gradually, so the failure is quiet and the instrument lies slowly. The laser gyros in the A320 have no rotor and no such failure mode.</p></div>
-      <div class="box"><b class="t">Real and apparent wander</b><p>Real wander is the axis actually moving, from bearing friction and imbalance. Apparent wander is the axis staying fixed while the earth turns under it (earth rate, 15° per hour × sin latitude) and while you fly over a curved, rotating earth (transport wander). The DI has no north-seeking ability, so it must be realigned with the compass, typically every 10 to 15 minutes in steady flight.</p></div>
-      <div class="box"><b class="t">Attitude indicator errors</b><p>The horizon gyro is kept vertical by an erection system that senses gravity, so it is fooled by sustained accelerations. In the classic instrument, accelerating on take-off gives a small false nose-up and right bank, and prolonged turns leave small pitch and bank errors that slowly erect out afterwards. Older instruments also topple beyond their pitch and bank limits. The A320’s IRs have no erection system and cannot topple.</p></div>
     </div>
   </section>
 
-  <section class="card" id="irs">
-    <div class="eyebrow">3 · Interactive</div>
-    <h2>From gyros to AHRS, IRS and the A320 ADIRS</h2>
-    <p class="lead">An inertial reference system has no spinning rotor. Ring laser gyros measure rotation from the time difference between two light beams travelling opposite ways round a closed path (the Sagnac effect), and accelerometers measure acceleration. To start, the system must find north by sensing the earth’s rotation while the aircraft stands still: that is the alignment.</p>
-    <div class="split">
-      <div class="paper"><canvas id="ali" aria-label="Earth rotation and its horizontal component at your latitude"></canvas></div>
-      <div class="panel">
-        <div id="actl"></div>
-        <div class="grp">During the alignment</div><div id="aMove"></div>
-        <div class="grp">Position entered on the MCDU</div><div id="aPos"></div>
-        <div class="btns" style="margin-top:8px"><button class="btn pri" id="aGo">Start alignment</button></div>
-        <div class="prog"><i id="aBar"></i></div>
-        <div class="ro">
-          <div class="rrow"><span>Horizontal earth rate</span><b id="a1"></b></div>
-          <div class="rrow"><span>Alignment time, typical</span><b id="a2"></b></div>
-          <div class="rrow"><span>IR status</span><b id="a3"></b></div>
-        </div>
-      </div>
-    </div>
-    <h3>Drift, GPS mixing and failures</h3>
-    <div class="split">
-      <div class="paper"><canvas id="drf" aria-label="Position error of the three IRSs and the FMS position"></canvas></div>
-      <div class="panel">
-        <div id="rctl"></div>
-        <div class="grp">GPS</div><div id="rGps"></div>
-        <div class="grp">IR mode</div><div id="rMode"></div>
-        <div class="grp">Failure</div><div id="rFail"></div>
-        <div class="ro" style="margin-top:8px">
-          <div class="rrow"><span>Pure inertial error (mean of 3)</span><b id="r1"></b></div>
-          <div class="rrow"><span>FMS position from</span><b id="r2"></b></div>
-          <div class="rrow"><span>FMS position error, approx.</span><b id="r3"></b></div>
-          <div class="rrow"><span>Navigation accuracy</span><b id="r4"></b></div>
-        </div>
-      </div>
-    </div>
-    <p class="callout blue" id="rEx"></p>
-    <div style="overflow-x:auto"><table class="ftab" id="rTab"></table></div>
+  <section class="card" id="debrief" data-step="debrief">
+    <div class="eyebrow">3 · Test yourself</div>
+    <h2>Key points</h2>
+    <ul class="take" id="take"></ul>
+    <div class="maid" id="maid"><span class="k"></span><b></b><p></p></div>
   </section>
 
-  <section class="card" id="ops">
-    <div class="eyebrow">4 · Operations</div>
-    <h2>In the aircraft</h2>
-    <div class="cols" id="cards"></div>
-  </section>
-
-  <section class="card" id="quiz">
-    <div class="eyebrow">Check</div>
+  <section class="card" id="quiz" data-step="check">
+    <div class="eyebrow">3 · Test yourself</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
-  <p class="foot">Teaching model. Dip uses a simple dipole field (real dip in Norway is about 70–80°), compass errors use a simplified pendulous-magnet model and are illustrative in size. Gyro drift uses the textbook earth-rate and transport-wander formulas. IRS alignment times, drift rates and latitude limits are typical values, not data for a specific ADIRU; the A320 details are simplified and are not FCOM data. Follow the aircraft documentation and your operator’s procedures.</p>
+  <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=41"></script>
+<<<<<<< ours
+<script src="lab.js?v=42"></script>
 <script>
 (function(){
 'use strict';
@@ -452,5 +473,11 @@ LAB.start('gyro'); cBtn(); cu(); pu(); du(); au(); ru(); cards();
 LAB.onLang(()=>{ cBtn(); cu(); pu(); du(); au(); ru(); cards(); });
 })();
 </script>
+=======
+<script src="lab.js?v=40"></script>
+<script src="concepts.js?v=2"></script>
+<script src="gyrocore.js?v=1"></script>
+<script src="gyros.js?v=1"></script>
+>>>>>>> theirs
 </body>
 </html>
