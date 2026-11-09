@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The previous front page, kept as it was. To restore it: cp index-classic.html index.html (and remove the noindex line). -->
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birdbird · Aviation theory, flight planning and training</title>
+<meta name="description" content="Briefing pack, theory and instructor in one place. Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.">
+<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="site.css?v=12">
+<style>
+/* ---------- Birdbird home. Chart-room tokens with fallbacks ---------- */
+.home{
+  --h-ink:var(--ink,#13202A); --h-ink2:var(--ink-2,#4C5B66); --h-rule:var(--rule,#C6D0D3); --h-rule2:var(--rule-2,#DCE3E4);
+  --h-sheet:var(--sheet,#FFFFFF); --h-paper:var(--paper,#EDF1EE);
+  --h-acc:var(--accent,var(--magenta,#9A1E68)); --h-info:var(--info,var(--chart-blue,#1D4E9E));
+  --h-panel:var(--instrument,#10171D); --h-pink:var(--instrument-ink,#D7E1E6);
+  --h-disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif);
+  --h-mono:var(--f-mono,"IBM Plex Mono",ui-monospace,Menlo,monospace);
+  width:100%;max-width:1240px;margin:0 auto;color:var(--h-ink)}
+.home a{color:inherit}
+.home .kick{display:block;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--h-acc);margin:0 0 14px}
+.home h2{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(28px,3vw,34px);line-height:1.1;letter-spacing:-.01em;margin:0;text-wrap:balance}
+.home .sub{font-size:17px;line-height:1.5;color:var(--h-ink2);max-width:62ch;margin:12px 0 0}
+.home .num{font-family:var(--h-mono);font-variant-numeric:tabular-nums}
+.hsec{border-top:1px solid var(--h-rule);padding:64px 0 72px;scroll-margin-top:24px}
+.hsec>header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px 40px;flex-wrap:wrap;margin-bottom:32px}
+.hsec>header>div{max-width:720px}
+.more{font-size:15px;font-weight:600;color:var(--h-acc)!important;text-decoration:none;white-space:nowrap}
+.more:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- hero: come prepared ---------- */
+.hero{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,13fr);grid-template-areas:"copy stage" "note note";grid-template-rows:auto auto;gap:0 48px;align-items:center;padding:44px 0 60px}
+.hero .hc{grid-area:copy;align-self:center}.hero .stage{grid-area:stage}.hero .three{grid-area:three;align-self:start}
+.hero h1{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:clamp(34px,3.3vw,48px);line-height:1.05;letter-spacing:-.02em;margin:0}
+.hero .lede{font-size:17px;line-height:1.6;color:var(--h-ink);max-width:46ch;margin:18px 0 0}
+.hero .btns{margin-top:26px;gap:12px}
+.hero .btn{font-size:15px;padding:11px 18px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;border-radius:3px}
+.hero .btn.pri{color:#fff}
+.three{list-style:none;margin:30px 0 0;padding:0;border-top:1px solid var(--h-rule);max-width:520px}
+.three li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding:11px 0;border-bottom:1px solid var(--h-rule2);font-size:14.5px;line-height:1.45;color:var(--h-ink2)}
+.three b{color:var(--h-ink);font-weight:600}
+.three a{text-decoration:none}.three a:hover b{color:var(--h-acc)}
+@media (max-width:520px){.three li{grid-template-columns:minmax(0,1fr);gap:2px}}
+@media (max-width:980px){.hero{grid-template-columns:minmax(0,1fr);grid-template-areas:"copy" "stage" "note";grid-template-rows:auto;gap:40px;padding:32px 0 48px}.hero .three{margin-top:0}.hero .lede{font-size:17px}.hero h1{font-size:31px}}
+
+.srcnote{grid-area:note;display:flex;gap:12px;margin:28px 0 0;padding:10px 12px;border:1px solid var(--h-rule,#C6D0D3);border-left:3px solid var(--info,#1D4E9E);background:var(--h-sheet,#fff);font-size:13.5px;line-height:1.5;color:var(--h-ink2,#4C5B66)}.srcnote .sn-k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--info,#1D4E9E);white-space:nowrap;padding-top:2px}.srcnote b{color:var(--h-ink,#13202A);font-weight:600}.srcnote a{white-space:nowrap}
+/* composed visual: briefing pack + Flight Intelligence answer */
+.stage{margin:0;position:relative;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr;gap:16px;padding:0}
+.stage::before{content:"";position:absolute;inset:-8% -6%;background:radial-gradient(55% 50% at 62% 35%,rgba(70,110,200,.16),transparent 70%),radial-gradient(45% 45% at 22% 70%,rgba(154,30,104,.08),transparent 70%);pointer-events:none;z-index:0}
+.stage .sc,.stage .fic{position:relative;inset:auto;width:auto;margin:0;rotate:0deg;z-index:1}
+.stage .sc{display:block;border-radius:12px;overflow:hidden;text-decoration:none;color:inherit;box-shadow:0 24px 50px -20px rgba(19,32,42,.30),0 8px 18px -10px rgba(19,32,42,.16),0 0 0 1px rgba(19,32,42,.07);transition:box-shadow .3s,transform .3s}
+.stage .sc:hover{box-shadow:0 30px 60px -20px rgba(19,32,42,.36),0 10px 22px -10px rgba(19,32,42,.2),0 0 0 1px rgba(19,32,42,.1)}
+.stage .sc-bp{grid-column:1;grid-row:1/3;background:#fff;align-self:stretch;display:flex;align-items:flex-start}
+.stage .sc-bp svg{display:block;width:100%;height:auto}
+.stage .sc-wt{grid-column:2;grid-row:1;aspect-ratio:2/1;background:#0A1015}
+.stage .sc-wt img{display:block;width:100%;height:100%;object-fit:cover}
+.stage .fic{grid-column:2;grid-row:2;align-self:stretch;border-radius:12px}
+.stage svg text{font-family:var(--h-mono)}
+.stage svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}
+.stage svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
+.stage .sct{position:absolute;top:10px;right:10px;white-space:nowrap;display:flex;align-items:baseline;gap:8px;background:rgba(16,23,29,.6);color:#D7E1E6;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 11px;font-size:12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.stage .sct b{color:#fff;font-weight:650;font-size:12px}
+.stage .sct span{font-family:var(--h-mono);font-size:10.5px;color:#9FB0BC}
+.stage .sc:focus-visible{outline:2px solid var(--h-acc);outline-offset:3px}
+.stage .fic .fh .own{display:none}
+.fic .lab a{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;color:var(--h-acc);background:#F6E7EF;border:1px solid #E0B4C9;border-radius:999px;padding:3px 10px;text-decoration:none}
+.stage .hud{position:absolute;left:12px;bottom:10px;display:flex;gap:14px;font-family:var(--h-mono);font-size:11px;color:#E6EDF2}
+.stage .hud i{font-style:normal;color:#8FA3B4;margin-right:5px;font-size:9.5px;letter-spacing:.06em}
+.stage .link{position:absolute;z-index:3;left:44.4%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:var(--h-acc);color:#fff;font-size:11.5px;font-weight:600;padding:5px 11px 5px 9px;border-radius:999px;box-shadow:0 6px 16px rgba(154,30,104,.28)}
+.stage .link::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff;opacity:.85}
+.stage .l1{top:12%}.stage .l2{top:54%}
+.stage figcaption{grid-column:1/-1;position:static;margin:0;font-size:12.5px;color:var(--h-ink2)}
+.fic{background:var(--h-sheet);border:1px solid rgba(19,32,42,.08);border-radius:12px;
+  box-shadow:0 1px 1px rgba(19,32,42,.05),0 28px 56px -26px rgba(19,32,42,.45);font-size:14px;line-height:1.5;will-change:transform}
+.fic .fh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--h-rule2)}
+.fic .fh b{font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.fic .fh b::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--h-info);box-shadow:0 0 0 3px #E2EAF5}
+.fic .own{display:inline-flex;align-items:center;gap:6px;font-family:var(--h-mono);font-size:10.5px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:#2E7D4F;background:#EAF4EE;border:1px solid #C3DECC;border-radius:2px;padding:3px 7px;white-space:nowrap}
+.fic .own svg{width:11px;height:11px;flex:0 0 11px}
+.fic .bd{padding:14px 16px 14px;display:flex;flex-direction:column;gap:12px}
+.fic .q{align-self:flex-end;background:#E8EEF3;border-radius:8px 8px 2px 8px;padding:8px 12px;max-width:92%;font-size:14px;line-height:1.4}
+.fic .a{border-left:3px solid var(--h-info);padding:1px 0 1px 13px;color:var(--h-ink)}
+.fic .fwho{display:block;font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--h-info);margin-bottom:4px}
+.fic .a p{margin:0}.fic .a p+p{margin-top:6px}
+.fic .cite{display:inline-block;font-family:var(--h-mono);font-size:11px;font-weight:600;line-height:1.55;color:var(--h-info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 6px;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.fic .ft{display:flex;align-items:center;gap:7px;padding:9px 16px;border-top:1px solid var(--h-rule2);background:#F6F8F7;border-radius:0 0 12px 12px;font-size:12px;color:var(--h-ink2)}
+.fic .ft svg{width:11px;height:11px;flex:0 0 11px}
+@media (min-width:981px) and (max-width:1240px){.fic .q{font-size:13.5px}}
+@media (max-width:980px){.stage{max-width:640px;margin-bottom:26px}}
+@media (max-width:640px){
+  .stage{grid-template-columns:minmax(0,.78fr) minmax(0,1fr);gap:10px}
+  .stage .sc-wt{grid-column:1/-1;grid-row:1}
+  .stage .sc-bp{grid-column:1;grid-row:2}
+  .stage .fic{grid-column:2;grid-row:2;font-size:12px}
+  .fic .bd{padding:9px 10px;gap:7px}.fic .q{font-size:12px;padding:6px 9px}.fic .fh{padding:8px 10px}.fic .fh .own{display:none}.fic .ft{padding:7px 10px;font-size:10.5px}.fic .a{padding-left:9px;font-size:12px}.fic .a p+p:not(.lab){display:none}.fic .cite{font-size:9.5px}.fic .lab a{font-size:9.5px;padding:2px 7px}
+  .stage .link{display:none}
+  .stage .sct{font-size:10px;padding:4px 9px;gap:6px}.stage .sct b{font-size:11px}.stage .sct span{font-size:9px}
+  .stage .hud{font-size:10px;gap:10px}
+}
+@media (prefers-reduced-motion:reduce){.stage .pg,.fic{will-change:auto}}
+
+/* welcome back */
+.wb{display:none;grid-template-columns:auto minmax(0,1fr) auto;gap:16px 32px;align-items:center;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;padding:18px 24px;margin:0 0 56px}
+.wb.on{display:grid}
+.wb .wk{font-size:13px;color:var(--h-ink2)}
+.wb .wn{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:26px;line-height:1.1}
+.wb .wbar{height:6px;background:var(--h-rule2);border-radius:3px;overflow:hidden;margin-top:6px;max-width:460px}
+.wb .wbar i{display:block;height:100%;background:var(--h-acc)}
+.wb .wnext{font-size:15px;color:var(--h-ink2);margin-top:8px}
+.wb .wnext a{color:var(--h-ink);font-weight:600}
+.wb .btn{text-decoration:none;white-space:nowrap}
+@media (max-width:760px){.wb{grid-template-columns:minmax(0,1fr)}}
+
+/* tracks */
+.tracks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media (max-width:1020px){.tracks{grid-template-columns:minmax(0,1fr)}.tracks .track.pick{order:-1}}
+.track{background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;display:flex;flex-direction:column;min-width:0;transition:border-color .15s,box-shadow .15s}
+.track:hover{border-color:#9FB0B8;box-shadow:0 16px 32px -24px rgba(19,32,42,.45)}
+.track .tt{padding:24px 24px 20px;border-bottom:1px solid var(--h-rule2)}
+.track .tag{display:inline-block;font-family:var(--h-mono);font-size:12px;letter-spacing:.02em;color:var(--h-ink2);border:1px solid var(--h-rule);border-radius:2px;padding:2px 7px}
+.track h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:24px;line-height:1.15;margin:14px 0 8px}
+.track .tt p{margin:0;font-size:15px;color:var(--h-ink2);line-height:1.5}
+.track .tm{margin-top:14px;font-size:13px;color:var(--h-ink2)}
+.track .tm b{font-family:var(--h-mono);font-weight:500;color:var(--h-ink)}
+.track ol{list-style:none;margin:0;padding:8px 0;counter-reset:ts;flex:1}
+.track li{counter-increment:ts}
+.track li a{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:0 10px;align-items:start;padding:12px 24px;text-decoration:none}
+.track li a::before{content:counter(ts);font-family:var(--h-mono);font-size:13px;line-height:22px;width:22px;height:22px;text-align:center;border-radius:50%;border:1px solid var(--h-rule);color:var(--h-ink2)}
+.track li a:hover{background:#F5F7F6}
+.track li a:hover::before{border-color:var(--h-acc);color:var(--h-acc)}
+.track li a:hover b{color:var(--h-acc)}
+.track li b{display:block;font-size:15.5px;font-weight:600;line-height:1.35}
+.track li span{display:block;font-size:14px;color:var(--h-ink2);line-height:1.4;margin-top:2px}
+.track li em{font-style:normal;font-size:12px;color:var(--h-ink2);border:1px solid var(--h-rule2);border-radius:2px;padding:1px 6px;margin-top:2px;white-space:nowrap}
+.track .tf{border-top:1px solid var(--h-rule2);padding:16px 24px}
+
+.who-pick{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin:-8px 0 24px}
+.who-pick>span{font-size:15px;font-weight:600}
+.who-pick .seg button{font-size:14px;padding:8px 14px}
+.who-pick .seg button[aria-pressed=true]{background:var(--h-ink);color:#fff;border-color:var(--h-ink)}
+@media (max-width:640px){.who-pick .seg{flex-direction:column;width:100%}.who-pick .seg button{margin-left:0;margin-top:-1px;border-radius:0;text-align:left}.who-pick .seg button:first-child{border-radius:3px 3px 0 0}.who-pick .seg button:last-child{border-radius:0 0 3px 3px}}
+.track .mine{display:none;margin-left:8px;font-size:12px;font-weight:600;color:#fff;background:var(--h-acc);border-radius:2px;padding:3px 7px;vertical-align:1px}
+.track.pick{border-color:var(--h-acc);box-shadow:0 0 0 1px var(--h-acc)}
+.track.pick .mine{display:inline-block}
+.tracks.chosen .track:not(.pick){opacity:.82}
+.tracks.chosen .track:not(.pick):hover{opacity:1}
+/* schools strip and small links */
+.schools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 40px;align-items:center;background:var(--h-ink);color:#fff;border-radius:6px;padding:32px 36px}
+.schools h2{color:#fff;font-size:clamp(24px,2.4vw,30px)}
+.schools p{margin:10px 0 0;font-size:16px;line-height:1.55;color:#C9D4DA;max-width:66ch}
+.schools .btn{text-decoration:none;white-space:nowrap;background:#fff;color:var(--h-ink);border-color:#fff;font-size:15px;padding:11px 18px}
+.schools .btn:hover{background:#E9EEF0}
+@media (max-width:760px){.schools{grid-template-columns:minmax(0,1fr);padding:24px}}
+.smalllinks{display:flex;flex-wrap:wrap;gap:6px 24px;margin:28px 0 0;font-size:14px}
+.smalllinks a{color:var(--h-ink2);text-decoration:none}
+.smalllinks a:hover{color:var(--h-acc);text-decoration:underline}
+/* four parts */
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;counter-reset:fc}
+@media (max-width:980px){.flow{grid-template-columns:minmax(0,1fr);max-width:620px}}
+.fc{position:relative;display:flex;flex-direction:column;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:8px;padding:14px 14px 20px;min-width:0;transition:border-color .2s,transform .2s}
+.fc:hover{border-color:#AEB9BE}
+.fc:not(:last-child)::after{content:"";position:absolute;right:-17px;top:96px;width:14px;height:14px;border-top:2px solid var(--h-acc);border-right:2px solid var(--h-acc);transform:rotate(45deg);opacity:.55}
+@media (max-width:980px){.fc:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-15px;margin-left:-6px;transform:rotate(135deg)}}
+.fc .fill{background:var(--h-paper);border-radius:5px;margin-bottom:18px;overflow:hidden}
+.fc .fill svg{display:block;width:100%;height:auto}
+.fc .pk,.prac .pk{font-family:var(--h-mono);font-size:12px;color:var(--h-acc);letter-spacing:.06em;text-transform:uppercase;padding:0 6px}
+.fc .pk i{font-style:normal;color:var(--h-ink2);margin-right:8px}
+.fc h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:24px;line-height:1.15;margin:6px 6px 8px}
+.fc p{margin:0 6px;font-size:15px;color:var(--h-ink2);line-height:1.55;flex:1}
+.fc .act{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin:18px 6px 0;min-height:76px}
+.fc .btn.pri{font-size:14.5px;padding:10px 16px;text-decoration:none;border-radius:3px;color:#fff}
+.fc .sec{display:flex;flex-wrap:wrap;gap:4px 14px}
+.fc .sec a{font-size:14px;color:var(--h-ink);text-underline-offset:3px;text-decoration-color:var(--h-rule)}
+.fc .sec a:hover{color:var(--h-acc)}
+.prac{display:grid;grid-template-columns:96px minmax(0,1fr) minmax(0,1.2fr);gap:22px;align-items:center;margin-top:20px;padding:16px 20px;border:1px solid var(--h-rule);border-radius:8px;background:transparent}
+.prac svg{width:96px;height:auto;display:block;background:var(--h-sheet);border:1px solid var(--h-rule2);border-radius:4px}
+.prac .pk{padding:0}
+.prac h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:20px;margin:4px 0 4px}
+.prac p{margin:0;font-size:14.5px;color:var(--h-ink2);line-height:1.5}
+.pchips{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.pchips a{font-size:13.5px;padding:7px 11px;border:1px solid var(--h-rule);border-radius:3px;background:var(--h-sheet);color:var(--h-ink);text-decoration:none}
+.pchips a:hover{border-color:var(--h-acc);color:var(--h-acc)}
+@media (max-width:980px){.prac{grid-template-columns:72px minmax(0,1fr)}.prac svg{width:72px}.pchips{grid-column:1/-1;justify-content:flex-start}}
+.parts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--h-rule)}
+@media (max-width:860px){.parts{grid-template-columns:minmax(0,1fr)}}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;padding:32px 32px 32px 0;border-bottom:1px solid var(--h-rule);min-width:0}
+.part:nth-child(even){padding:32px 0 32px 32px;border-left:1px solid var(--h-rule)}
+@media (max-width:860px){.part,.part:nth-child(even){padding:28px 0;border-left:0}}
+.part svg{display:block;width:100%;height:auto;background:var(--h-sheet);border:1px solid var(--h-rule2);border-radius:4px}
+.parts .part:nth-last-child(-n+2){border-bottom:0}
+@media (max-width:860px){.parts .part:nth-last-child(2){border-bottom:1px solid var(--h-rule)}}
+@media (max-width:520px){.part{grid-template-columns:84px minmax(0,1fr);gap:16px}}
+.part .pk{font-family:var(--h-mono);font-size:12px;color:var(--h-acc);letter-spacing:.04em}
+.part h3{font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.15;margin:6px 0 8px}
+.part p{margin:0;font-size:15.5px;color:var(--h-ink2);line-height:1.55;max-width:56ch}
+.part .pl{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:16px}
+.part .pl a.go{background:var(--h-acc);border-color:var(--h-acc);color:#fff;font-weight:600}.part .pl a.go:hover{color:#fff;filter:brightness(1.08)}
+.part .pl a{font-size:14px;text-decoration:none;border:1px solid var(--h-rule);border-radius:3px;padding:5px 10px;background:var(--h-sheet)}
+.part .pl a:first-child{border-color:var(--h-ink);font-weight:600}
+.part .pl a:hover{border-color:var(--h-acc);color:var(--h-acc)}
+
+/* mini lab */
+.mini{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:0;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;overflow:hidden}
+@media (max-width:900px){.mini{grid-template-columns:minmax(0,1fr)}}
+.mini .mfig{border-right:1px solid var(--h-rule2);padding:20px 20px 12px;min-width:0}
+@media (max-width:900px){.mini .mfig{border-right:0;border-bottom:1px solid var(--h-rule2)}}
+.mini .mfig svg{display:block;width:100%;height:auto}
+.mini .mrail{padding:20px 24px 24px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mini .mrail .seg{margin-bottom:10px}
+.mini .mrail .seg button{font-size:13px;padding:7px 8px}
+.mini .mhint{margin:auto 0 0;padding-top:12px;font-size:13px;color:var(--h-ink2)}
+.mro{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--h-rule2)}
+.mro div{padding:14px 20px;border-left:1px solid var(--h-rule2);min-width:0}
+.mro div:first-child{border-left:0}
+.mro small{display:block;font-size:12.5px;color:var(--h-ink2)}
+.mro b{display:block;font-family:var(--h-mono);font-weight:500;font-size:22px;margin-top:4px;white-space:nowrap}
+.mro b.hi{color:#B7791F}
+@media (max-width:640px){.mro{grid-template-columns:repeat(2,minmax(0,1fr))}.mro div:nth-child(3){border-left:0}.mro div:nth-child(n+3){border-top:1px solid var(--h-rule2)}}
+.mnote{grid-column:1/-1;border-top:1px solid var(--h-rule2);padding:14px 20px;font-size:14.5px;color:var(--h-ink2);display:flex;justify-content:space-between;gap:8px 24px;flex-wrap:wrap}
+.mnote a{font-weight:600;color:var(--h-acc);text-decoration:none;white-space:nowrap}
+.mnote a:hover{text-decoration:underline}
+
+/* coverage and proof */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:2px solid var(--h-ink);border-bottom:1px solid var(--h-rule);margin-bottom:40px}
+.stats div{padding:20px 20px 22px 0}
+.stats div+div{padding-left:20px;border-left:1px solid var(--h-rule)}
+.stats b{display:block;font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:48px;line-height:1}
+.stats span{display:block;font-size:14px;color:var(--h-ink2);margin-top:8px;line-height:1.4}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats div:nth-child(3){padding-left:0;border-left:0}.stats div:nth-child(n+3){border-top:1px solid var(--h-rule)}.stats b{font-size:38px}}
+.cov{width:100%;border-collapse:collapse;font-size:15px}
+.cov th{text-align:left;font-size:13px;font-weight:600;color:var(--h-ink2);padding:0 16px 10px 0;border-bottom:1px solid var(--h-ink)}
+.cov td{padding:12px 16px 12px 0;border-bottom:1px solid var(--h-rule2);vertical-align:top}
+.cov td.c{font-family:var(--h-mono);font-size:14px;color:var(--h-ink2);width:56px}
+.cov td.s{font-weight:600;width:30%}
+.cov td.l a{color:var(--h-ink);text-decoration:none;border-bottom:1px solid var(--h-rule)}
+.cov td.l a:hover{color:var(--h-acc);border-color:var(--h-acc)}
+.cov td.t{width:120px;text-align:right;padding-right:0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--h-ink2);white-space:nowrap}
+.st i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--h-acc)}
+.st.s-lab i{background:var(--h-acc)}
+.st.s-part i{background:linear-gradient(90deg,var(--h-acc) 50%,transparent 50%)}
+@media (max-width:700px){.cov thead{display:none}.cov tr{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:2px 10px;padding:12px 0;border-bottom:1px solid var(--h-rule2)}.cov td{border:0;padding:0;width:auto!important}.cov td.l{grid-column:2/-1}.cov td.t{grid-column:3;grid-row:1}}
+.proof{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:40px}
+@media (max-width:860px){.proof{grid-template-columns:minmax(0,1fr)}}
+.who{display:grid;grid-template-columns:88px minmax(0,1fr);gap:20px;align-items:start;background:var(--h-sheet);border:1px solid var(--h-rule);border-radius:4px;padding:24px}
+.face{width:88px;height:88px;border-radius:50%;background:var(--h-ink);color:#fff;display:grid;place-items:center;font-family:var(--h-disp);font-stretch:88%;font-weight:700;font-size:28px;position:relative;overflow:hidden}
+.face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.who b{display:block;font-size:17px;font-weight:650}
+.who p{margin:8px 0 0;font-size:15px;color:var(--h-ink2);line-height:1.55}
+.honest{background:var(--h-sheet);border:1px solid var(--h-rule);border-left:3px solid var(--h-info);border-radius:4px;padding:24px}
+.honest b{display:block;font-size:17px;font-weight:650}
+.honest ul{margin:10px 0 0;padding-left:18px;font-size:15px;color:var(--h-ink2);line-height:1.55}
+.honest li+li{margin-top:6px}
+
+/* ===== hero: Scandinavian, product tiles ===== */
+.desk{position:relative;margin-top:48px;height:clamp(460px,44vw,600px)}
+.desk-links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible}
+.desk-links path{fill:none;stroke:#9A1E68;stroke-width:1.3;stroke-dasharray:3 4;opacity:.75;animation:dk 1.4s linear infinite}
+.desk-links circle{fill:#9A1E68}
+@keyframes dk{to{stroke-dashoffset:-14}}
+.obj{position:absolute;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.obj .tag{position:absolute;font-size:12px;font-weight:600;color:#0B2545;background:#fff;border:1px solid #C9D3DA;border-radius:999px;padding:4px 11px;z-index:3}
+.obj-lab{left:20%;right:21%;top:0;bottom:12%;border-radius:6px;overflow:hidden;background:#F3F6F8;box-shadow:0 30px 60px -30px rgba(11,37,69,.35),0 0 0 1px rgba(11,37,69,.08);z-index:1;cursor:ns-resize}
+.obj-lab canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.lab-ui{position:absolute;left:16px;top:14px;display:flex;align-items:center;gap:16px;z-index:2}
+.lab-ui .tag{position:static}
+.lab-ui .ro{display:flex;flex-direction:row;align-items:baseline;gap:6px;font-family:var(--h-mono);font-size:15px;color:#0B2545}
+.lab-ui .ro i{font-style:normal;font-size:11px;color:#6B7B88}
+.lab-ui .ro b{font-weight:500;font-variant-numeric:tabular-nums}
+.lab-hint{position:absolute;left:16px;bottom:12px;margin:0;font-size:12.5px;color:#6B7B88;z-index:2}
+.lab-go{position:absolute;right:14px;top:12px;font-size:13px;font-weight:600;color:#9A1E68;text-decoration:none;z-index:2;background:rgba(255,255,255,.85);padding:5px 10px;border-radius:3px}
+.lab-go:hover{text-decoration:underline}
+.obj-bp{left:0;top:16%;width:26%;aspect-ratio:236/334;z-index:3;display:block}
+.obj-bp .sheet{position:absolute;inset:0;background:#fff;border-radius:3px;box-shadow:0 24px 44px -24px rgba(11,37,69,.45),0 0 0 1px rgba(11,37,69,.08);transition:transform .55s cubic-bezier(.2,.7,.2,1)}
+.obj-bp .s3{transform:rotate(-1deg) translate(10px,8px)}
+.obj-bp .s2{transform:rotate(-3deg) translate(5px,4px)}
+.obj-bp .s1{transform:rotate(-6deg)}
+.obj-bp .s1 svg{display:block;width:100%;height:100%}
+.obj-bp svg text{font-family:var(--h-mono)}.obj-bp svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}.obj-bp svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
+.obj-bp .tag{left:12px;top:-14px;rotate:-6deg}
+.obj-bp:hover .s1{transform:rotate(-9deg) translate(-14px,-10px)}
+.obj-bp:hover .s2{transform:rotate(0deg) translate(16px,-2px)}
+.obj-bp:hover .s3{transform:rotate(6deg) translate(40px,10px)}
+.obj-bp:focus-visible{outline:2px solid #0B2545;outline-offset:8px}
+.obj-fi{right:0;bottom:0;width:min(400px,34%);z-index:3}
+.obj-fi .fic{position:relative;inset:auto;width:100%;margin:0;transform:none!important;border-radius:8px;box-shadow:0 30px 60px -28px rgba(11,37,69,.45),0 0 0 1px rgba(11,37,69,.08)}
+.obj-fi .fic .more{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease}
+.obj-fi:hover .fic .more,.obj-fi:focus-within .fic .more{max-height:90px;opacity:1}
+.obj-fi .fic .lab .lk{display:inline-block;font-family:var(--h-mono);font-weight:600;color:#9A1E68;background:#F6E7EF;border:1px solid #E0B4C9;border-radius:999px;font-size:11px;padding:3px 10px;text-decoration:none}
+.obj-fi:hover{transform:translateY(-6px)}
+@media (max-width:860px){
+  .desk{height:auto;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1fr);gap:14px;margin-top:32px}
+  .desk-links{display:none}
+  .obj{position:relative;inset:auto;width:auto}
+  .obj-lab{grid-column:1/-1;aspect-ratio:16/10;cursor:auto}
+  .obj-bp{aspect-ratio:236/334;margin:16px 8px 0}
+  .obj-fi .fic{font-size:12px}.obj-fi .fic .fh .own,.obj-fi .fic .ft{display:none}.obj-fi .fic .bd{padding:10px;gap:8px}.obj-fi .fic .q{font-size:12px;padding:6px 9px}.obj-fi .fic .a{font-size:12px;padding-left:9px}.obj-fi .fic .cite{font-size:9.5px}.obj-fi .fic .lab .lk{font-size:9.5px;padding:2px 7px}
+  .lab-hint,.lab-go{display:none}
+  .obj .tag{font-size:10.5px;padding:3px 9px}.lab-ui .ro{font-size:12.5px}
+}
+@media (prefers-reduced-motion:reduce){.desk-links path{animation:none}.obj,.obj-bp .sheet{transition:none}}
+/* hero visual, tunnel variant: the real 3D wind tunnel (poster still, then live three.js; see hero-tunnel.js) */
+.tun{position:absolute;inset:0;display:none}
+.hk[data-hero-visual="tunnel"] .tun{display:block}
+.hk[data-hero-visual="tunnel"] #flow{display:none}
+.hk[data-hero-visual="tunnel"] .obj-lab{cursor:pointer;background:radial-gradient(130% 95% at 50% 28%,#3a4048 0%,#23282e 46%,#121518 100%);box-shadow:0 34px 64px -30px rgba(11,37,69,.6),0 0 0 1px rgba(11,37,69,.2)}
+.tun img,.tun canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.tun img{object-fit:cover;transition:opacity .9s ease}
+.tun canvas{opacity:0;transition:opacity .9s ease}
+.tun.live canvas{opacity:1}.tun.live img{opacity:0}
+.tun::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(18,21,24,.5) 0%,rgba(18,21,24,0) 22%,rgba(18,21,24,0) 78%,rgba(18,21,24,.45) 100%)}
+.tun-hit{position:absolute;inset:0;z-index:1}
+.hk[data-hero-visual="tunnel"] .lab-ui .ro{color:#E6EBEF}
+.hk[data-hero-visual="tunnel"] .lab-ui .ro i{color:#8D99A5}
+.hk[data-hero-visual="tunnel"] .lab-hint{color:#AEB8C1;display:flex;align-items:center;gap:8px;pointer-events:none}
+.hk[data-hero-visual="tunnel"] .lab-hint::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:#7FE3C4;box-shadow:0 0 0 0 rgba(127,227,196,.55);animation:tunlive 2.4s ease-out infinite}
+@keyframes tunlive{0%{box-shadow:0 0 0 0 rgba(127,227,196,.55)}70%,100%{box-shadow:0 0 0 7px rgba(127,227,196,0)}}
+.hk[data-hero-visual="tunnel"] .lab-go{color:#fff;background:rgba(18,22,26,.62);border:1px solid rgba(255,255,255,.16);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hk[data-hero-visual="tunnel"] .obj-lab:hover .lab-go{background:#fff;color:#0B2545;border-color:#fff;text-decoration:none}
+.hk[data-hero-visual="tunnel"] .lab-go:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@media (max-width:860px){
+  .hk[data-hero-visual="tunnel"] .lab-go{display:block;top:auto;bottom:10px;right:10px;font-size:11.5px;padding:4px 9px}
+  .hk[data-hero-visual="tunnel"] .lab-hint{display:none}
+}
+@media (min-width:861px){.hk[data-hero-visual="tunnel"] .lab-hint{left:15%}}
+@media (prefers-reduced-motion:reduce){.tun img,.tun canvas{transition:none}.hk[data-hero-visual="tunnel"] .lab-hint::before{animation:none}}
+
+
+
+.hsec[hidden]{display:none!important}
+.hk{--navy:#0B2545;padding:56px 0 24px}
+.hk-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 64px;align-items:end}
+.hk-eye{font-size:12.5px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--h-acc,#9A1E68);margin:0 0 14px;display:flex;align-items:center;gap:10px}.hk-eye::before{content:'';width:22px;height:2px;background:currentColor;border-radius:1px}
+.hk h1{font-family:var(--h-disp);font-weight:650;font-stretch:100%;font-size:clamp(36px,4vw,58px);line-height:1.02;letter-spacing:-.028em;color:var(--navy);margin:0}
+.hk .lede{font-size:17px;line-height:1.6;color:var(--h-ink2);margin:0;max-width:46ch}
+.hk .btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.hk .btn{font-size:15px;padding:12px 20px;border-radius:2px;text-decoration:none;display:inline-flex;align-items:center}
+.hk .btn.pri{background:var(--h-acc);border:1px solid var(--h-acc);color:#fff}
+.hk .btn.pri:hover{background:#B02A7B;border-color:#B02A7B}
+.hk .btn:not(.pri){background:transparent;border:1px solid #9AA8B3;color:var(--navy)}
+.hk .btn:not(.pri):hover{border-color:var(--navy)}
+.hk-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:56px}
+.tile{display:block;text-decoration:none;color:inherit}
+.tile .pic{position:relative;aspect-ratio:4/3;overflow:hidden;background:#E9EEF1;border-radius:2px}
+.tile .pic img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.tile:hover .pic img{transform:scale(1.03)}
+.tile h3{font-family:var(--h-disp);font-weight:650;font-size:22px;letter-spacing:-.01em;color:var(--navy);margin:18px 0 6px}
+.tile p{margin:0;font-size:15px;line-height:1.55;color:var(--h-ink2);max-width:40ch}
+.tile:hover h3{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+.tile:focus-visible{outline:2px solid var(--navy);outline-offset:6px}
+.pic-bp{display:flex;align-items:flex-start;justify-content:center;padding-top:9%}
+.pic-bp svg{width:58%;height:auto;box-shadow:0 22px 40px -22px rgba(11,37,69,.45),0 0 0 1px rgba(11,37,69,.08);background:#fff;rotate:-3deg;transition:rotate .6s cubic-bezier(.2,.7,.2,1),translate .6s}
+.tile:hover .pic-bp svg{rotate:-1deg;translate:0 -4px}
+.pic-bp svg text{font-family:var(--h-mono)}.pic-bp svg .ttl{font-family:var(--h-disp);font-stretch:88%;font-weight:700}.pic-bp svg .sans{font-family:var(--f-body,"Public Sans",system-ui,sans-serif)}
+.pic-fi{display:flex;align-items:center;justify-content:center;padding:7%}
+.pic-fi .fic{position:relative;inset:auto;width:100%;margin:0;font-size:12.5px;border-radius:4px;box-shadow:0 22px 40px -22px rgba(11,37,69,.45),0 0 0 1px rgba(11,37,69,.08);transform:none!important}
+.pic-fi .fic .fh{padding:9px 12px}.pic-fi .fic .fh .own{display:none}.pic-fi .fic .bd{padding:11px 12px;gap:8px}.pic-fi .fic .q{font-size:12.5px;padding:7px 10px}.pic-fi .fic .a{font-size:12.5px;padding-left:10px}.pic-fi .fic .cite{font-size:10px}.pic-fi .fic .ft{display:none}.pic-fi .fic .lab .lk{display:inline-block;font-family:var(--h-mono);font-weight:600;color:var(--h-acc);background:#F6E7EF;border:1px solid #E0B4C9;border-radius:999px;font-size:10px;padding:2px 8px}
+@media (max-width:980px){.hk-top{grid-template-columns:minmax(0,1fr);align-items:start}.hk-tiles{gap:16px}}
+@media (max-width:760px){.hk{padding:36px 0 8px}.hk-tiles{grid-template-columns:minmax(0,1fr);gap:32px;margin-top:36px}.pic-bp svg{width:50%}.pic-fi{padding:6% 10%}}
+</style>
+</head>
+<body data-home="1" data-title="Birdbird · Aviation theory, flight planning and training">
+<script src="site.js?v=37"></script>
+<div class="page"><main class="home">
+
+  <!-- 1. Hero -->
+  <!-- Hero visual switch (the large "Theory" box): data-hero-visual="tunnel" (default) shows the live 3D wind tunnel
+       from the Aerodynamics lab (hero-tunnel.js, still image img/hero-tunnel.webp); "aerofoil" shows the 2D Joukowski
+       potential-flow canvas. Compare without editing: index.html?hero=aerofoil or ?hero=tunnel. -->
+  <section class="hk" aria-labelledby="h1" data-hero-visual="tunnel">
+    <script>(function(){ var m=/[?&]hero=(tunnel|aerofoil)\b/.exec(location.search), s=document.currentScript.parentNode; if(m) s.setAttribute('data-hero-visual',m[1]); })();</script>
+    <div class="hk-top">
+      <div class="hk-head"><p class="hk-eye">The aviation platform</p>
+      <h1 id="h1">Briefing pack, theory<br>and instructor in one place</h1></div>
+      <div class="hk-side">
+        <p class="lede">Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.</p>
+        <div class="btns"><a class="btn pri" href="prep.html">Make a briefing pack</a><a class="btn" href="fi.html">Ask Flight Intelligence</a></div>
+      </div>
+    </div>
+    <div class="desk" id="desk">
+      <svg class="desk-links" id="deskLinks" aria-hidden="true"></svg>
+      <div class="obj obj-lab" id="objLab">
+        <canvas id="flow" aria-label="Live streamlines around an aerofoil. Move the pointer up and down to change the angle of attack."></canvas>
+        <div class="tun" id="hxTun">
+          <img id="hxTunImg" src="img/hero-tunnel.webp" srcset="img/hero-tunnel-800.webp 800w, img/hero-tunnel.webp 1400w" sizes="(max-width:860px) 92vw, 740px" width="1400" height="1011" fetchpriority="high" decoding="async" alt="The Birdbird 3D wind tunnel: an A320 with surface pressure and streamlines coloured by local speed, with the wingtip vortices trailing behind.">
+          <canvas id="hxTunCv" aria-hidden="true"></canvas>
+          <a class="tun-hit" href="tunnel.html#tunnel" tabindex="-1" aria-hidden="true"></a>
+        </div>
+        <div class="lab-ui"><span class="tag">Theory</span><span class="ro"><i>α</i><b id="hxA">6.0°</b></span><span class="ro"><i>CL</i><b id="hxC">1.22</b></span></div>
+        <p class="lab-hint" id="hxHint">Move your pointer up and down to change the angle of attack</p>
+        <a class="lab-go" href="tunnel.html">Open the Virtual Lab</a>
+      </div>
+      <a class="obj obj-bp" id="objBp" href="prep.html" aria-label="Briefing pack, IFR, ENGM to ENBR">
+        <span class="sheet s3"></span><span class="sheet s2"></span>
+        <span class="sheet s1"><svg viewBox="0 0 236 334" role="img" aria-label="Briefing pack cover: IFR, ENGM to ENBR, with its contents">
+        <defs>
+          <filter id="psh" x="-25%" y="-20%" width="150%" height="150%" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="1" stdDeviation=".6" flood-color="#13202A" flood-opacity=".18"/>
+            <feDropShadow dx="0" dy="14" stdDeviation="13" flood-color="#13202A" flood-opacity=".13"/>
+          </filter>
+          <pattern id="cgrid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#E4ECE8" stroke-width=".6"/></pattern>
+          <pattern id="cgrid2" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#D3DFDA" stroke-width=".7"/></pattern>
+          <symbol id="tick" viewBox="-7 -7 14 14"><circle r="6.2" fill="#EAF4EE" stroke="#2E7D4F" stroke-width="1"/><path d="M-3 .2 L-.8 2.4 L3.2 -2.2" fill="none" stroke="#2E7D4F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        </defs>
+        <g>
+          <rect x="0" y="2" width="236" height="334" rx="3" fill="#13202A" opacity=".06"/><rect width="236" height="334" rx="2" fill="#fff" stroke="#13202A" stroke-opacity=".10" stroke-width=".6"/>
+          <rect width="236" height="4" fill="#9A1E68"/>
+          <text x="16" y="24" font-size="6.5" fill="#7D8B95" letter-spacing=".8">BIRDBIRD</text><text x="220" y="24" font-size="6.5" fill="#7D8B95" text-anchor="end">1 / 14</text>
+          <text x="16" y="56" font-size="8" fill="#9A1E68" letter-spacing="1.3" font-weight="500">IFR BRIEFING PACK</text>
+          <text class="ttl" x="15" y="88" font-size="30" fill="#13202A" letter-spacing="-.2">ENGM</text><path d="M18 96 V104 H40" fill="none" stroke="#9A1E68" stroke-width="1.6"/><path d="M38 100.5 L43 104 L38 107.5" fill="none" stroke="#9A1E68" stroke-width="1.6" stroke-linejoin="round"/><text class="ttl" x="48" y="114" font-size="30" fill="#13202A" letter-spacing="-.2">ENBR</text>
+          <text class="sans" x="16" y="130" font-size="7.6" fill="#4C5B66">Oslo Gardermoen to Bergen Flesland</text>
+          <line x1="16" y1="138.0" x2="220" y2="138.0" stroke="#13202A" stroke-width=".8"/>
+          <g font-size="5.6" fill="#7D8B95" letter-spacing=".5"><text x="16" y="152">DATE</text><text x="86" y="152">ETD</text><text x="156" y="152">EET</text><text x="16" y="180">LEVEL</text><text x="86" y="180">ALTN</text><text x="156" y="180">RULES</text></g>
+          <g font-size="9.5" fill="#13202A" font-weight="500"><text x="16" y="164">14 NOV</text><text x="86" y="164">0830 Z</text><text x="156" y="164">0:58</text><text x="16" y="192">FL120</text><text x="86" y="192">ENZV</text><text x="156" y="192">IFR</text></g>
+          <line x1="16" y1="206.0" x2="220" y2="206.0" stroke="#DCE3E4" stroke-width=".8"/>
+          <text x="16" y="224" font-size="6.5" fill="#4C5B66" letter-spacing=".8" font-weight="500">CONTENTS</text>
+          <g class="sans" font-size="7.6" fill="#13202A">
+            <text x="30" y="241">Aircraft</text><text x="30" y="255">NOTAM</text><text x="30" y="269">Meteorology</text><text x="30" y="283">Planning minima</text><text x="30" y="297">Flight cross-section</text><text x="30" y="311">Runway performance</text><text x="30" y="325">Fuel</text>
+          </g>
+          <g font-size="6.5" fill="#7D8B95"><text x="16" y="241">1</text><text x="16" y="255">2</text><text x="16" y="269">3</text><text x="16" y="283">4</text><text x="16" y="297">5</text><text x="16" y="311">6</text><text x="16" y="325">7</text></g>
+          <g font-family="IBM Plex Mono,monospace" font-size="5.8" font-weight="600"><rect x="178" y="290" width="38" height="10" rx="5" fill="#F6E7EF" stroke="#E0B4C9" stroke-width=".6"/><text x="197" y="297" text-anchor="middle" fill="#9A1E68">LAB →</text><rect x="178" y="304" width="38" height="10" rx="5" fill="#F6E7EF" stroke="#E0B4C9" stroke-width=".6"/><text x="197" y="311" text-anchor="middle" fill="#9A1E68">LAB →</text></g>
+          <g stroke="#C6D0D3" stroke-width=".7" stroke-dasharray="1 2"><path d="M112 240H200M100 254H200M120 268H200M132 282H200M140 296H174M140 310H174M90 324H200"/></g>
+          <g><use href="#tick" x="204" y="233" width="10" height="10"/><use href="#tick" x="204" y="247" width="10" height="10"/><use href="#tick" x="204" y="261" width="10" height="10"/><use href="#tick" x="204" y="275" width="10" height="10"/></g>
+        </g>
+        </svg></span>
+        <span class="tag">Briefing pack</span>
+      </a>
+      <div class="obj obj-fi" id="objFi">
+        <div class="fic" id="fic" role="group" aria-label="Flight Intelligence: an example answer">
+        <div class="fh"><b>Flight Intelligence</b><span class="own"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1h4.8L9.5 3.2V11h-7z M7.2 1v2.3h2.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>From your documents</span></div>
+        <div class="bd">
+          <div class="q">What is the maximum crosswind for landing?</div>
+          <div class="a"><span class="fwho">Instructor</span><p><span>The maximum demonstrated crosswind is 25 kt.</span><span class="cite">AFM 2.10 · p. 2-14</span></p><p class="more"><span>It is a demonstrated value, not a limit. Your SOP may set a lower one.</span><span class="cite">SOP 4.3 · p. 4-7</span></p><p class="lab"><a class="lk" href="performance.html">Lab · Crosswind</a></p></div>
+        </div>
+        <div class="ft"><svg viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M4 5.2V3.6a2 2 0 0 1 4 0v1.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg><span>Your AFM, QRH and SOP stay in this browser.</span></div>
+      </div>
+      </div>
+    </div>
+  </section>
+  <div class="hk-after">
+    <p class="srcnote" id="srcnote"></p>
+  </div>
+
+
+  <!-- 3. How it fits together -->
+  <section class="hsec" id="parts" aria-labelledby="h-pa">
+    <header><div><span class="kick">How it fits together</span><h2 id="h-pa">Plan it, understand it, ask about it</h2><p class="sub">The briefing pack is the centre. Every page links to the theory behind it, and Flight Intelligence answers from your own documents when a number does not add up.</p></div></header>
+    <div class="parts">
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M6 80 L22 74 L34 62 L46 68 L58 52 L70 60 L84 50 L98 64 L112 70 L126 76 L126 90 L6 90Z" fill="#E9E4D8" stroke="#B08A5A" stroke-width=".8"/><path d="M12 78 L30 40 L100 40 L120 78" fill="none" stroke="#9A1E68" stroke-width="2.2" stroke-linejoin="round"/><circle cx="30" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="66" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><circle cx="100" cy="40" r="3.5" fill="#fff" stroke="#13202A" stroke-width="1.5"/><rect x="14" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M19 16 H43 M19 21 H38 M19 26 H41" stroke="#4C5B66"/><rect x="84" y="10" width="34" height="20" rx="1" fill="#fff" stroke="#13202A"/><path d="M89 16 H113 M89 21 H106 M89 26 H110" stroke="#4C5B66"/></svg>
+        <div><span class="pk">01 · PLAN</span><h3>Briefing pack</h3><p>Draw the route in Route Explorer and see it over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, VFR or IFR, and print it as a booklet.</p>
+          <div class="pl"><a class="go" href="prep.html">Make a briefing pack →</a><a href="route.html">Route Explorer</a><a href="weather.html">METAR and TAF</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><path d="M8 58 C30 56 54 44 120 36" fill="none" stroke="#C6D0D3"/><path d="M8 70 C40 70 70 64 120 70" fill="none" stroke="#C6D0D3"/><path d="M8 46 C30 44 60 28 120 24" fill="none" stroke="#C6D0D3"/><path d="M26 56 C36 44 62 40 108 50 C80 54 50 58 26 56Z" fill="#13202A"/><path d="M62 50 L62 16" stroke="#9A1E68" stroke-width="2.4"/><path d="M57 22 L62 12 L67 22Z" fill="#9A1E68"/><path d="M14 84 L118 84" stroke="#13202A"/><path d="M30 84 V80 M50 84 V80 M70 84 V80 M90 84 V80" stroke="#13202A"/><circle cx="74" cy="84" r="4" fill="#fff" stroke="#9A1E68" stroke-width="2"/></svg>
+        <div><span class="pk">02 · UNDERSTAND</span><h3>Virtual Lab</h3><p id="pLab">Interactive labs on the EASA ATPL syllabus. Principles for every aircraft, numbers from an illustrative A320 model.</p>
+          <div class="pl"><a class="go" href="lab.html">Open the learning path →</a><a href="lab.html#all">All topics</a><a href="tunnel.html">Wind tunnel</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="12" y="12" width="46" height="60" rx="2" fill="#fff" stroke="#13202A"/><path d="M19 22 H50 M19 30 H46 M19 38 H50 M19 46 H42 M19 54 H48" stroke="#C6D0D3"/><rect x="18" y="35" width="34" height="6" fill="#9A1E68" opacity=".18"/><path d="M66 30 H120 a4 4 0 0 1 4 4 V66 a4 4 0 0 1 -4 4 H84 L74 80 L76 70 H66 a4 4 0 0 1 -4 -4 V34 a4 4 0 0 1 4 -4Z" fill="#fff" stroke="#13202A"/><path d="M72 42 H114 M72 50 H110 M72 58 H98" stroke="#4C5B66"/><rect x="100" y="54" width="18" height="9" rx="2" fill="#1D4E9E"/><path d="M52 38 C58 38 60 52 100 58" fill="none" stroke="#1D4E9E" stroke-dasharray="2 3"/><path d="M28 80 v4 a3 3 0 0 0 3 3 h8 a3 3 0 0 0 3 -3 v-4 a7 7 0 0 0 -14 0Z" fill="#13202A"/></svg>
+        <div><span class="pk">03 · ASK</span><h3>Flight Intelligence</h3><p>An instructor that answers from your AFM, QRH, SOP and the EASA rules, and shows the page each answer comes from. Your documents stay private in your browser.</p>
+          <div class="pl"><a class="go" href="fi.html">Ask Flight Intelligence →</a><a href="checkride.html">Check preparation</a></div></div>
+      </article>
+      <article class="part">
+        <svg viewBox="0 0 132 96" aria-hidden="true"><rect x="10" y="10" width="72" height="76" rx="3" fill="#10171D"/><path d="M10 50 L82 42 L82 86 L10 86Z" fill="#6B4A2B"/><path d="M10 10 L82 10 L82 42 L10 50Z" fill="#2A6A9E"/><path d="M28 47 H40 V51 M64 43 H52 V47" stroke="#F0B95A" stroke-width="2.4" fill="none"/><circle cx="46" cy="47" r="2" fill="#F0B95A"/><rect x="90" y="10" width="32" height="76" rx="3" fill="#fff" stroke="#13202A"/><path d="M96 22 H116 M96 32 H112 M96 42 H116 M96 52 H110 M96 62 H116 M96 72 H108" stroke="#4C5B66"/><path d="M95 21 l2 2 4 -4 M95 31 l2 2 4 -4 M95 41 l2 2 4 -4" stroke="#2E7D4F" stroke-width="1.6" fill="none"/></svg>
+        <div><span class="pk">04 · PRACTISE</span><h3>Training</h3><p>Fly a whole trip gate to gate, brief out loud, drill the radio, and prepare for the sim assessment and the type rating.</p>
+          <div class="pl"><a class="go" href="radio.html">Gate to gate →</a><a href="briefing.html">Briefings</a><a href="radio-drills.html">Radio drills</a><a href="cockpit.html">Simulator</a><a href="simcheck.html">A320 sim assessment</a><a href="typerating.html">Type rating (B200)</a></div></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 2. Tracks -->
+  <section class="hsec" id="tracks" hidden aria-labelledby="h-tr">
+    <header><div><span class="kick">Where to start</span><h2 id="h-tr">Choose your track</h2><p class="sub">Each track starts with three items. Everything stays open, so move between them as your training needs it.</p></div><a class="more" href="lab.html">See the full learning path →</a></header>
+    <div class="who-pick" role="group" aria-labelledby="wq"><span id="wq">Who are you?</span><div class="seg" id="trSeg"><button type="button" data-t="found" aria-pressed="false">Student pilot, PPL and IR</button><button type="button" data-t="atpl" aria-pressed="false">ATPL, heading to the airlines</button><button type="button" data-t="type" aria-pressed="false">Type rating and instructors</button></div></div>
+    <div class="tracks" id="trList">
+      <article class="track" data-t="found">
+        <div class="tt"><span class="tag">PPL · IR · ME</span><span class="mine">Your track</span><h3>Foundations</h3><p>The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures. The principles apply to every aircraft; worked numbers use an A320 teaching model.</p><div class="tm" id="tmF">Core labs · A320 reference</div></div>
+        <ol>
+          <li><a href="altimetry.html"><div><b>Pressure and altitude</b><span>QNH, QFE, density altitude and the cold-temperature error.</span></div><em>Lab</em></a></li>
+          <li><a href="propeller.html"><div><b>Propeller effects and Vmca</b><span>The critical engine, and what keeps a twin straight.</span></div><em>Lab</em></a></li>
+          <li><a href="briefing.html"><div><b>Briefings</b><span>Departure and approach briefings, out loud, against a chart.</span></div><em>Practise</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="lab.html#pof">Aerodynamics area →</a></div>
+      </article>
+      <article class="track" data-t="atpl">
+        <div class="tt"><span class="tag">ATPL theory · A320</span><span class="mine">Your track</span><h3>ATPL theory on the A320</h3><p>The full ATPL theory syllabus, taught with a jet transport as the reference aircraft: high-speed flight, systems, performance and automation.</p><div class="tm" id="tmA">25 labs · 7 areas</div></div>
+        <ol>
+          <li><a href="highspeed.html"><div><b>High-speed flight and drag</b><span>The drag curve, Mach number and the buffet margin.</span></div><em>Lab</em></a></li>
+          <li><a href="jetsystems.html"><div><b>Jet transport systems</b><span>Three hydraulic systems, the PTU, electrics, bleed and fuel.</span></div><em>Lab</em></a></li>
+          <li><a href="performance.html"><div><b>Performance</b><span>V1, accelerate-stop and take-off distance, climb and landing.</span></div><em>Lab</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="lab.html">All 7 subject areas →</a></div>
+      </article>
+      <article class="track" data-t="type">
+        <div class="tt"><span class="tag">Type rating · Airline</span><span class="mine">Your track</span><h3>Type rating and airline prep</h3><p>Preparation for the next seat: a full type rating trainer for the King Air B200, and the A320 simulator assessment used in airline selection.</p><div class="tm">B200 trainer · A320 sim assessment</div></div>
+        <ol>
+          <li><a href="typerating.html"><div><b>Type rating trainer: King Air B200</b><span>Systems by module, limitations, flows and a question trainer.</span></div><em>Trainer</em></a></li>
+          <li><a href="simcheck.html"><div><b>A320 simulator assessment</b><span>The manoeuvres, the configuration and the go-around.</span></div><em>Practise</em></a></li>
+          <li><a href="autoflight.html"><div><b>Autoflight and warnings</b><span>Read the FMA, selected against managed modes.</span></div><em>Lab</em></a></li>
+        </ol>
+        <div class="tf"><a class="more" href="checkride.html">Check preparation →</a></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4. Mini lab -->
+  <section class="hsec" id="try" hidden aria-labelledby="h-try">
+    <header><div><span class="kick">Try one now</span><h2 id="h-try">How high does your aircraft think it is?</h2><p class="sub">Set the field elevation, the QNH and the temperature. The wing and the engine perform at the density altitude, not at the height on the chart.</p></div></header>
+    <div class="mini">
+      <div class="mfig"><svg id="da" viewBox="0 0 560 300" role="img" aria-label="Field elevation, pressure altitude and density altitude on one scale"></svg></div>
+      <div class="mrail"><div id="daSeg"></div><div id="sEl"></div><div id="sQ"></div><div id="sT"></div><p class="mhint">ISA model, dry air. Humidity raises the density altitude a little further.</p></div>
+      <div class="mro" style="grid-column:1/-1">
+        <div><small>Pressure altitude</small><b id="dPA">–</b></div>
+        <div><small>ISA deviation</small><b id="dIsa">–</b></div>
+        <div><small>Density altitude</small><b id="dDA">–</b></div>
+        <div><small>Air density, % of ISA sea level</small><b id="dSig">–</b></div>
+      </div>
+      <div class="mnote"><span id="dTxt"></span><a href="altimetry.html">Full lab: Pressure and altitude →</a></div>
+    </div>
+  </section>
+
+  <!-- 5. Coverage and proof -->
+  <section class="hsec" id="coverage" hidden aria-labelledby="h-cov">
+    <header><div><span class="kick">Coverage</span><h2 id="h-cov">Mapped to the EASA ATPL syllabus</h2><p class="sub">Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.</p></div></header>
+    <div class="stats">
+      <div><b id="nLabs">26</b><span>interactive labs</span></div>
+      <div><b id="nMods">7</b><span>subject areas in Virtual Labs</span></div>
+      <div><b id="nSub">10 / 13</b><span>ATPL subjects with a dedicated lab</span></div>
+      <div><b>3</b><span>aircraft: the A320 in the labs, the King Air B200 type rating and a light twin in the training tools</span></div>
+    </div>
+    <table class="cov">
+      <thead><tr><th>Code</th><th>Subject</th><th>Where it is taught</th><th></th></tr></thead>
+      <tbody id="covBody"></tbody>
+    </table>
+    <div class="proof" id="about">
+      <div class="who">
+        <div class="face" aria-hidden="true">DN<img src="daniel.jpg" alt="" onerror="this.remove()"></div>
+        <div><b>Made by Daniel Nilsson, pilot</b><p>I trained as an airline pilot. The hard parts were rarely the flying itself: they were the order of things, and the things you cannot see, like the air over the wing or why the altimeter is wrong on a cold day. Birdbird is the set of tools I wanted, and it keeps growing.</p></div>
+      </div>
+      <div class="honest">
+        <b>Teaching models, not operational data</b>
+        <ul>
+          <li>The labs use simplified physics and typical values. A320 and B200 figures are illustrative, not manufacturer data.</li>
+          <li>Use Birdbird to understand and to prepare. Always follow the AFM, the AIP and your operator’s procedures.</li>
+          <li>Progress and documents are stored in your own browser.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- For schools -->
+  <section class="hsec" id="schools" aria-labelledby="h-sch" style="padding-bottom:24px">
+    <div class="schools">
+      <div><span class="kick" style="color:#E7A9CF">For flight schools and operators</span><h2 id="h-sch">Use Birdbird in ground school and type training</h2><p>The labs work on a classroom screen, and the briefing pack and the training follow a fixed order that students can repeat on their own. See how a school or an operator can use it.</p></div>
+      <a class="btn" href="schools.html">For schools and operators →</a>
+    </div>
+    <nav class="smalllinks" aria-label="About Birdbird"><a href="about.html">About Birdbird</a><a href="privacy.html">Privacy</a><a href="sources.html">Sources and licences</a></nav>
+  </section>
+
+</main></div>
+<script src="lab.js?v=37"></script>
+<script>
+(function(){
+'use strict';
+const {L,el,nf}=LAB;
+const NS='http://www.w3.org/2000/svg';
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mk(tag,a,p){ const e=document.createElementNS(NS,tag); for(const k in a) e.setAttribute(k,a[k]); if(p) p.appendChild(e); return e; }
+function tx(p,s,x,y,o){ const e=mk('text',Object.assign({x,y,'font-size':12,'font-family':'"Public Sans",system-ui,sans-serif'},o||{}),p); e.textContent=s; return e; }
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+LAB.add({},{'Sources':'Kilder','All data sources →':'Alle datakilder →',
+ 'Birdbird · Aviation theory, flight planning and training':'Birdbird · Flyteori, flyplanlegging og trening',
+ 'Flight preparation for pilots':'Flyforberedelse for piloter',
+ 'The aviation platform':'Flyplattformen','Briefing pack, theory':'Briefingpakke, teori','and instructor in one place':'og instruktør på ett sted',
+ 'Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.':'Birdbird er stedet der du forbereder en flyging og forstår hvert tall i den: briefingpakken, teorien bak hver side, og en instruktør som svarer ut fra dine egne dokumenter.',
+ 'Make a briefing pack':'Lag en briefingpakke','Ask Flight Intelligence':'Spør Flight Intelligence',
+ 'Aircraft, NOTAM, weather, minima, profile, fuel, mass and balance, in a fixed order. VFR or IFR, printed as a booklet.':'Fly, NOTAM, vær, minima, profil, drivstoff, masse og balanse, i fast rekkefølge. VFR eller IFR, skrevet ut som et hefte.',
+ 'The theory':'Teorien','Every page links to the interactive lab that explains it.':'Hver side lenker til den interaktive labben som forklarer den.',
+ 'Answers from your AFM, QRH and SOP, and shows the page it came from.':'Svarer ut fra AFM, QRH og SOP-en din, og viser siden svaret kommer fra.',
+ 'An IFR briefing pack from ENGM to ENBR: cover, planning minima, flight cross-section and fuel':'En IFR-briefingpakke fra ENGM til ENBR: forside, planleggingsminima, tverrsnitt av turen og drivstoff',
+ 'IFR BRIEFING PACK':'IFR-BRIEFINGPAKKE','Oslo Gardermoen to Bergen Flesland':'Oslo Gardermoen til Bergen Flesland',
+ 'DATE':'DATO','LEVEL':'NIVÅ','RULES':'REGLER','CONTENTS':'INNHOLD','14 NOV':'14. NOV',
+ 'Aircraft':'Fly','Meteorology':'Meteorologi','Planning minima':'Planleggingsminima','Flight cross-section':'Tverrsnitt av turen','Runway performance':'Rullebaneytelse','Fuel':'Drivstoff','Mass and balance':'Masse og balanse',
+ 'ETA ± 1 h · forecast against required':'ETA ± 1 t · prognose mot krav','REQUIRED':'KRAV','FORECAST':'PROGNOSE',
+ 'DESTINATION ALTERNATES':'DESTINASJONSALTERNATIVER','One required. ENZV selected.':'Ett kreves. ENZV er valgt.',
+ 'Taxi':'Taxi','Trip':'Tur','Cont.':'Kont.','Altn':'Altn','Final res.':'Sluttres.','Extra':'Ekstra',
+ 'Block fuel':'Blokkdrivstoff','Required 185':'Påkrevd 185','ON BOARD':'OM BORD','EXAMPLE VALUES':'EKSEMPELVERDIER',
+ 'Flight Intelligence: an example answer':'Flight Intelligence: et eksempelsvar','From your documents':'Fra dine dokumenter',
+ 'What is the maximum crosswind for landing?':'Hva er maksimal sidevind for landing?','Instructor':'Instruktør',
+ 'The maximum demonstrated crosswind is 25 kt.':'Maksimal demonstrert sidevind er 25 kt.',
+ 'It is a demonstrated value, not a limit. Your SOP may set a lower one.':'Det er en demonstrert verdi, ikke en begrensning. SOP-en din kan sette en lavere grense.',
+ 'Your AFM, QRH and SOP stay in this browser.':'AFM, QRH og SOP-en din blir i denne nettleseren.',
+ 'Illustration with example values.':'Illustrasjon med eksempelverdier.',
+ 'Mapped to the EASA ATPL syllabus':'Knyttet til EASA ATPL-pensum',
+ 'Welcome back':'Velkommen tilbake','My training':'Min trening',
+ 'Where to start':'Hvor du starter','Who are you?':'Hvem er du?','Student pilot, PPL and IR':'Flyelev, PPL og IR','ATPL, heading to the airlines':'ATPL, på vei til flyselskap','Type rating and instructors':'Typerating og instruktører','Your track':'Ditt løp','For flight schools and operators':'For flyskoler og operatører','Use Birdbird in ground school and type training':'Bruk Birdbird i teoriundervisning og typeopplæring','The labs work on a classroom screen, and the briefing pack and the training follow a fixed order that students can repeat on their own. See how a school or an operator can use it.':'Labbene fungerer på en skjerm i klasserommet, og briefingpakken og treningen følger en fast rekkefølge som elevene kan gjenta på egen hånd. Se hvordan en skole eller en operatør kan bruke det.','For schools and operators →':'For skoler og operatører →','About Birdbird':'Om Birdbird','Privacy':'Personvern','Sources and licences':'Kilder og lisenser','Choose your track':'Velg ditt løp',
+ 'Each track starts with three items. Everything stays open, so move between them as your training needs it.':'Hvert løp starter med tre ting. Alt er åpent, så du kan bevege deg mellom dem etter hva opplæringen din trenger.',
+ 'See the full learning path →':'Se hele læringsløpet →',
+ 'Foundations':'Grunnlag','The core theory behind every flight: the wing, the atmosphere, instruments, weather and instrument procedures. The principles apply to every aircraft; worked numbers use an A320 teaching model.':'Kjerneteorien bak hver flyging: vingen, atmosfæren, instrumenter, vær og instrumentprosedyrer. Prinsippene gjelder alle fly; regneeksemplene bruker en A320-undervisningsmodell.',
+ 'Pressure and altitude':'Trykk og høyde','QNH, QFE, density altitude and the cold-temperature error.':'QNH, QFE, tetthetshøyde og kuldefeilen.',
+ 'Propeller effects and Vmca':'Propelleffekter og Vmca','The critical engine, and what keeps a twin straight.':'Kritisk motor, og hva som holder et tomotors fly rett.',
+ 'Briefings':'Briefinger','Departure and approach briefings, out loud, against a chart.':'Avgangs- og innflygingsbriefinger, høyt, mot et kart.',
+ 'Lab':'Lab','Practise':'Øv','Trainer':'Trener','Atmosphere module →':'Modul: atmosfære →','Aerodynamics area →':'Området aerodynamikk →',
+ 'ATPL theory · A320':'ATPL-teori · A320','ATPL theory on the A320':'ATPL-teori på A320',
+ 'The full ATPL theory syllabus, taught with a jet transport as the reference aircraft: high-speed flight, systems, performance and automation.':'Hele ATPL-teoripensumet, undervist med et jetfly som referansefly: høyfart, systemer, ytelse og automatikk.',
+ 'High-speed flight and drag':'Høyfart og motstand','The drag curve, Mach number and the buffet margin.':'Motstandskurven, machtall og buffetmarginen.',
+ 'Jet transport systems':'Systemer på jetfly','Three hydraulic systems, the PTU, electrics, bleed and fuel.':'Tre hydraulikksystemer, PTU, elektrisk, bleed og drivstoff.',
+ 'Performance':'Ytelse','V1, accelerate-stop and take-off distance, climb and landing.':'V1, akselerasjon-stopp- og startdistanse, stigning og landing.',
+ 'All 7 subject areas →':'Alle 7 fagområder →',
+ 'Type rating · Airline':'Typerating · Flyselskap','Type rating and airline prep':'Typerating og flyselskapsforberedelse',
+ 'Preparation for the next seat: a full type rating trainer for the King Air B200, and the A320 simulator assessment used in airline selection.':'Forberedelse til neste sete: en komplett typeratingtrener for King Air B200, og A320-simulatortesten som brukes i opptak til flyselskap.',
+ 'B200 trainer · A320 sim assessment':'B200-trener · A320-simulatortest',
+ 'Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Systems by module, limitations, flows and a question trainer.':'Systemer modul for modul, begrensninger, flows og spørsmålstrener.',
+ 'A320 simulator assessment':'A320-simulatortest','The manoeuvres, the configuration and the go-around.':'Manøvrene, konfigurasjonen og avbrutt innflyging.',
+ 'Autoflight and warnings':'Autoflight og varsling','Read the FMA, selected against managed modes.':'Les FMA-en, selected mot managed moduser.',
+ 'Check preparation →':'Kontrollforberedelse →',
+ 'Lab · Crosswind →':'Lab · Sidevind →','Each page links to its lab':'Hver side lenker til sin lab','Ask about any number':'Spør om hvert tall','Theory':'Teori','Why is the MSA 7,400 ft?':'Hvorfor er MSA 7400 ft?','Pressure and altitude lab →':'Lab: trykk og høyde →',
+ 'How it fits together':'Slik henger det sammen','Plan it, understand it, ask about it':'Planlegg, forstå og spør',
+ 'The briefing pack is the centre. Every page links to the theory behind it, and Flight Intelligence answers from your own documents when a number does not add up.':'Briefingpakken er midtpunktet. Hver side lenker til teorien bak, og Flight Intelligence svarer fra dine egne dokumenter når et tall ikke stemmer.',
+ '01 · PLAN':'01 · PLANLEGG','02 · UNDERSTAND':'02 · FORSTÅ','03 · ASK':'03 · SPØR','04 · PRACTISE':'04 · ØV','Make a briefing pack →':'Lag en briefingpakke →','Open the learning path →':'Åpne læringsløpet →','Ask Flight Intelligence →':'Spør Flight Intelligence →','Gate to gate →':'Gate to gate →',
+ 'Draw the route in Route Explorer and see it over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, VFR or IFR, and print it as a booklet.':'Tegn ruten i Route Explorer og se den over terrenget. Gå så gjennom fly, NOTAM, vær, minima, ytelse, drivstoff, masse og balanse i fast rekkefølge, VFR eller IFR, og skriv det ut som et hefte.',
+ 'Open the learning path':'Åpne læringsløpet',
+ 'An instructor that answers from your AFM, QRH, SOP and the EASA rules, and shows the page each answer comes from. Your documents stay private in your browser.':'En instruktør som svarer fra din AFM, QRH, SOP og EASA-reglene, og viser siden hvert svar kommer fra. Dokumentene dine blir værende i nettleseren din.',
+ 'When you are ready to practise':'Når du er klar til å øve',
+ 'Fly a whole trip gate to gate, brief out loud, drill the radio, and prepare for the sim assessment and the type rating.':'Fly en hel tur gate to gate, brief høyt, drill radioen, og forbered deg til simulatortesten og typeratingen.',
+
+ 'What is here':'Hva som finnes her','Four parts, one flight':'Fire deler, én flyging',
+ 'Learn why it works, plan the flight, practise the procedures, and ask when something does not add up.':'Lær hvorfor det virker, planlegg flygingen, øv på prosedyrene, og spør når noe ikke stemmer.',
+ 'LEARN':'LÆR','PLAN':'PLANLEGG','PRACTISE':'ØV','ASK':'SPØR',
+ 'Virtual Lab':'Virtual Lab','Learning path':'Læringsløp','All topics':'Alle emner','Wind tunnel':'Vindtunnel',
+ 'Briefing pack and Route Explorer':'Briefingpakke og Route Explorer',
+ 'Draw the route and see the profile over the terrain. Then work through aircraft, NOTAM, weather, minima, performance, fuel, mass and balance in a fixed order, and print it as a booklet.':'Tegn ruten og se profilen over terrenget. Gå så gjennom fly, NOTAM, vær, minima, ytelse, drivstoff, masse og balanse i fast rekkefølge, og skriv det ut som et hefte.',
+ 'Briefing pack':'Briefingpakke','Route Explorer':'Route Explorer','Navigation log':'Navigasjonslogg','METAR and TAF':'METAR og TAF',
+ 'Training':'Trening',
+ 'Fly a whole trip gate to gate, brief the departure and the approach out loud, drill radio calls, fly the glass-cockpit simulator, and prepare for the A320 sim assessment and the type rating.':'Fly en hel tur gate to gate, brief avgangen og innflygingen høyt, drill radiooppkall, fly glass cockpit-simulatoren, og forbered deg til A320-simulatortesten og typeratingen.',
+ 'Gate to gate':'Gate to gate','Radio drills':'Radiodriller','Simulator':'Simulator','A320 sim assessment':'A320-simulatortest','Type rating (B200)':'Typerating (B200)',
+ 'Flight Intelligence':'Flight Intelligence',
+ 'Your instructor, grounded in your own documents: the flight manual, your SOP, the checklists and the regulations. Each answer shows where it comes from, and your documents stay private in your browser.':'Din instruktør, forankret i dine egne dokumenter: flyhåndboken, SOP-en din, sjekklistene og regelverket. Hvert svar viser hvor det kommer fra, og dokumentene dine forblir private i nettleseren.',
+ 'Open Flight Intelligence':'Åpne Flight Intelligence','Check preparation':'Kontrollforberedelse',
+ 'Try one now':'Prøv en nå','How high does your aircraft think it is?':'Hvor høyt tror flyet ditt at det er?',
+ 'Set the field elevation, the QNH and the temperature. The wing and the engine perform at the density altitude, not at the height on the chart.':'Still inn flyplasshøyden, QNH og temperaturen. Vingen og motoren yter etter tetthetshøyden, ikke høyden på kartet.',
+ 'Field elevation':'Flyplasshøyde','Outside air temperature':'Utetemperatur','Standard day':'Standarddag','Hot and high':'Varmt og høyt','Cold, high pressure':'Kaldt, høytrykk',
+ 'Pressure altitude':'Trykkhøyde','ISA deviation':'ISA-avvik','Density altitude':'Tetthetshøyde','Air density, % of ISA sea level':'Lufttetthet, % av ISA ved havet',
+ 'Full lab: Pressure and altitude →':'Hele labben: Trykk og høyde →',
+ 'Coverage':'Dekning','Mapped to the EASA ATPL syllabus':'Knyttet til EASA ATPL-pensum',
+ 'Each theoretical knowledge subject and where it is taught. Air law and communications are covered by reference pages and practice rather than a lab.':'Hvert teorifag og hvor det undervises. Luftfartsrett og kommunikasjon dekkes av oppslagssider og øving i stedet for en lab.',
+ 'interactive labs':'interaktive labber','subject areas in Virtual Labs':'fagområder i Virtual Labs','ATPL subjects with a dedicated lab':'ATPL-fag med egen lab','aircraft: the A320 in the labs, the King Air B200 type rating and a light twin in the training tools':'fly: A320 i labbene, King Air B200 i typeratingen og et tomotors småfly i treningsverktøyene','ISA model, dry air. Humidity raises the density altitude a little further.':'ISA-modell, tørr luft. Fuktighet øker tetthetshøyden litt til.',
+ 'Code':'Kode','Subject':'Fag','Where it is taught':'Hvor det undervises',
+ 'Made by Daniel Nilsson, pilot':'Laget av Daniel Nilsson, pilot',
+ 'I trained as an airline pilot. The hard parts were rarely the flying itself: they were the order of things, and the things you cannot see, like the air over the wing or why the altimeter is wrong on a cold day. Birdbird is the set of tools I wanted, and it keeps growing.':'Jeg er utdannet trafikkflyger. Det vanskeligste var sjelden selve flygingen: det var rekkefølgen på ting, og det du ikke kan se, som luften over vingen eller hvorfor høydemåleren tar feil på en kald dag. Birdbird er verktøyene jeg ønsket meg, og det vokser hele tiden.',
+ 'Teaching models, not operational data':'Pedagogiske modeller, ikke operative data',
+ 'The labs use simplified physics and typical values. A320 and B200 figures are illustrative, not manufacturer data.':'Labbene bruker forenklet fysikk og typiske verdier. Tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
+ 'Use Birdbird to understand and to prepare. Always follow the AFM, the AIP and your operator’s procedures.':'Bruk Birdbird til å forstå og forberede deg. Følg alltid AFM, AIP og operatørens prosedyrer.',
+ 'Progress and documents are stored in your own browser.':'Progresjon og dokumenter lagres i din egen nettleser.'
+});
+
+/* ---------- counts from the learning path ---------- */
+const FLAT=LAB.FLAT||[], PATH=LAB.PATH||[];
+const nLabs=FLAT.length||26, nMods=(LAB.AREAS||PATH).length||7, nLight=FLAT.filter(x=>x.lv!=="jet").length||20;
+const byKey=k=>FLAT.find(x=>x.k===k);
+
+/* ---------- 1. Hero: briefing pack with a gentle depth on pointer move ---------- */
+(function(){ const st=el('stage'); if(!st||RM||!window.matchMedia||!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  const L=[...st.querySelectorAll('.pg')].map(e=>({e,d:+e.dataset.d})), fic=el('fic');
+  let r=null, tx=0, ty=0, cx=0, cy=0, run=false;
+  function step(){ cx+=(tx-cx)*.1; cy+=(ty-cy)*.1;
+    for(const p of L) p.e.style.transform=`translate(${(cx*p.d).toFixed(2)}px,${(cy*p.d*.6).toFixed(2)}px)`;
+    if(fic) fic.style.transform=`translate3d(${(-cx*8).toFixed(2)}px,${(-cy*6).toFixed(2)}px,0)`;
+    if(Math.abs(tx-cx)>.0008||Math.abs(ty-cy)>.0008) requestAnimationFrame(step); else run=false; }
+  const kick=()=>{ if(!run){ run=true; requestAnimationFrame(step); } };
+  const inv=()=>{ r=null; }; window.addEventListener('resize',inv,{passive:true}); window.addEventListener('scroll',inv,{passive:true});
+  st.addEventListener('pointermove',e=>{ if(!r) r=st.getBoundingClientRect(); tx=(e.clientX-r.left)/r.width-.5; ty=(e.clientY-r.top)/r.height-.5; kick(); },{passive:true});
+  st.addEventListener('pointerleave',()=>{ tx=0; ty=0; kick(); });
+})();
+
+/* ---------- welcome back ---------- */
+function prog(){ if(!el('wb')) return;
+  const doneLabs=FLAT.filter(x=>LAB.done(x.k)>=60), nxt=FLAT.find(x=>LAB.done(x.k)<60);
+  let xp=0, rk=null; if(window.NPROG){ try{ const d=NPROG.load(); xp=NPROG.xpOf(d); rk=NPROG.rankOf(xp); }catch(e){} }
+  const on=doneLabs.length>0||xp>0; el('wb').classList.toggle('on',on); if(!on) return;
+  el('wbN').textContent=L({en:`${doneLabs.length} of ${nLabs} labs done`,no:`${doneLabs.length} av ${nLabs} labber fullført`});
+  el('wbBar').style.width=Math.round(doneLabs.length/nLabs*100)+'%';
+  const nx=el('wbNext'); nx.textContent='';
+  if(nxt){ nx.append(L({en:'Next in the learning path: ',no:'Neste i læringsløpet: '})); const a=document.createElement('a'); a.href=nxt.f; a.textContent=L({en:nxt.en,no:nxt.no}); nx.append(a); }
+  if(rk&&xp>0) nx.append(' · '+rk.name+' · '+rk.xp+' XP');
+}
+document.addEventListener('nprog',prog);
+
+/* ---------- tracks and counts ---------- */
+function counts(){
+  el('tmF').textContent=L({en:`Core labs · A320 reference`,no:`Kjernelabber · A320 som referanse`});
+  el('tmA').textContent=L({en:`${nLabs} labs · ${nMods} areas`,no:`${nLabs} labber · ${nMods} områder`});
+  el('pLab').textContent=L({en:`${nLabs} interactive labs, most of them in ${nMods} subject areas that follow the EASA ATPL syllabus. Each lab is tagged with what it applies to: all aircraft, or numbers from an illustrative A320 model. Every briefing page links to the lab that explains it: change the conditions and watch the numbers respond.`,no:`${nLabs} interaktive labber, de fleste i ${nMods} fagområder som følger EASA ATPL-pensum. Hver lab er merket med hva den gjelder: alle fly, eller tall fra en illustrerende A320-modell. Hver side i briefingpakken lenker til labben som forklarer den: endre forholdene og se tallene svare.`});
+  el('nLabs').textContent=nLabs; el('nMods').textContent=nMods;
+}
+
+/* ---------- 4. Density altitude mini-lab ---------- */
+// ISA: PA from station pressure, density ratio from pressure and temperature, DA from density ratio.
+const D={el:2000,q:1013,t:15};
+const ISA=(pa)=>15-1.98*pa/1000;
+function calcDA(){ const ps=D.q*Math.pow(1-6.8756e-6*D.el,5.2559); const pa=(1-Math.pow(ps/1013.25,1/5.2559))/6.8756e-6;
+  const sig=(ps/1013.25)*(288.15/(D.t+273.15)); const da=(1-Math.pow(sig,1/4.2559))/6.8756e-6; return {ps,pa,sig,da,dev:D.t-ISA(pa)}; }
+const dsv=el('da'); const MQ2=window.matchMedia?matchMedia('(max-width:560px)'):null;
+const fmtFt=v=>(LAB.lang==='en'?Math.round(v/10)*10:Math.round(v/10)*10).toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO')+' ft';
+function drawDA(){
+  const r=calcDA();
+  const VW=(MQ2&&MQ2.matches)?360:560, XL=VW===360?44:70, XR=VW-10, LX=VW-122, M1=VW-250+(VW===360?40:0), M2=VW-140;
+  dsv.setAttribute('viewBox',`0 0 ${VW} 300`);
+  const AMAX=clamp(Math.ceil((Math.max(r.da,D.el,r.pa)+2500)/2000)*2000,8000,16000);
+  const y0=272, y1=30, Y=v=>y0-(clamp(v,-1000,AMAX)/AMAX)*(y0-y1);
+  dsv.innerHTML='';
+  // sky
+  const defs=mk('defs',{},dsv), lg=mk('linearGradient',{id:'dsky',x1:0,y1:0,x2:0,y2:1},defs);
+  mk('stop',{offset:0,'stop-color':'#E4ECF2'},lg); mk('stop',{offset:1,'stop-color':'#FFFFFF'},lg);
+  mk('rect',{x:XL,y:y1-14,width:XR-XL,height:y0-y1+14,fill:'url(#dsky)'},dsv);
+  // scale
+  for(let a=0;a<=AMAX;a+=1000){ const y=Y(a), maj=a%2000===0;
+    mk('line',{x1:XL,y1:y,x2:XR,y2:y,stroke:maj?'#DCE3E4':'#EEF2F3'},dsv);
+    mk('line',{x1:XL-8,y1:y,x2:XL,y2:y,stroke:'#4C5B66'},dsv);
+    if(maj) tx(dsv,a.toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO'),XL-12,y+4,{'text-anchor':'end','font-size':11,fill:'#4C5B66','font-family':'"IBM Plex Mono",ui-monospace,monospace'}); }
+  tx(dsv,'ft',XL-12,y1-10,{'text-anchor':'end','font-size':11,fill:'#4C5B66'});
+  mk('line',{x1:XL,y1:y1-14,x2:XL,y2:y0,stroke:'#13202A'},dsv);
+  // terrain and runway at field elevation
+  const ye=Y(D.el);
+  mk('path',{d:`M${XL} ${y0} L${XL} ${ye+30} L${XL+30} ${ye+12} L${XL+60} ${ye} L${M1-10} ${ye} L${M1+20} ${ye+14} L${M2} ${ye+8} L${LX+20} ${ye+26} L${XR} ${ye+40} L${XR} ${y0}Z`,fill:'#E9E4D8',stroke:'#B08A5A','stroke-width':1},dsv);
+  mk('rect',{x:XL+70,y:ye-3,width:M1-XL-90,height:4,fill:'#13202A'},dsv);
+  mk('line',{x1:XL,y1:y0,x2:XR,y2:y0,stroke:'#13202A'},dsv);
+  // markers
+  const M=[[D.el,L({en:'Field elevation',no:'Flyplasshøyde'}),'#13202A',0],[r.pa,L({en:'Pressure altitude',no:'Trykkhøyde'}),'#1D4E9E',1],[r.da,L({en:'Density altitude',no:'Tetthetshøyde'}),r.da-D.el>1500?'#B7791F':'#9A1E68',2]];
+  // spread labels so they do not overlap
+  const ys=M.map(m=>Y(m[0])); const order=[0,1,2].sort((i,j)=>ys[j]-ys[i]); const ly=ys.slice();
+  for(let k=1;k<3;k++){ const i=order[k], p=order[k-1]; if(ly[p]-ly[i]<32) ly[i]=ly[p]-32; }
+  M.forEach((m,i)=>{ const y=ys[i], col=m[2];
+    if(i>0) mk('line',{x1:M1,y1:y,x2:M2,y2:y,stroke:col,'stroke-width':2,'stroke-dasharray':i===1?'5 4':''},dsv);
+    mk('circle',{cx:M1,cy:y,r:4,fill:col},dsv);
+    mk('path',{d:`M${M2} ${y} L${M2+8} ${ly[i]} L${LX-4} ${ly[i]}`,fill:'none',stroke:col,'stroke-width':1},dsv);
+    tx(dsv,m[1],LX,ly[i]-3,{fill:col,'font-size':12.5,'font-weight':650});
+    tx(dsv,fmtFt(m[0]),LX,ly[i]+12,{fill:col,'font-size':12,'font-family':'"IBM Plex Mono",ui-monospace,monospace'}); });
+  // aircraft symbol at density altitude
+  const yd=Y(r.da); const g=mk('g',{transform:`translate(${(XL+M1)/2} ${Math.min(yd,ye-14)})`},dsv);
+  mk('path',{d:'M-26 0 C-22 -4 -8 -5 6 -4 L20 -3 C23 -2 25 -1 26 0 C25 2 21 2 16 2 L-16 2 C-21 2 -25 1 -26 0Z',fill:'#9A1E68'},g);
+  mk('path',{d:'M-23 -1 L-28 -11 L-23 -11 L-18 -2Z',fill:'#9A1E68'},g);
+  mk('path',{d:'M-6 1 L14 1',stroke:'#13202A','stroke-width':2.4},g);
+  // readouts
+  el('dPA').textContent=fmtFt(r.pa);
+  const dv=Math.round(r.dev); el('dIsa').textContent=(dv>0?'ISA+':dv<0?'ISA−':'ISA')+(dv?Math.abs(dv):'')+(dv?' °C':'');
+  const dd=el('dDA'); dd.textContent=fmtFt(r.da); dd.className=r.da-D.el>1500?'hi':'';
+  el('dSig').textContent=nf(r.sig*100,0)+' %';
+  const tas=100/Math.sqrt(r.sig);
+  el('dTxt').textContent=L({en:`At 100 KIAS the true airspeed is about ${Math.round(tas)} kt, so the take-off and landing rolls are ${tas>101?'longer':(tas<99?'shorter':'as published for sea level ISA')} at the same indicated speeds.`,no:`Ved 100 KIAS er sann fart omtrent ${Math.round(tas)} kt, så start- og landingsdistansen blir ${tas>101?'lengre':(tas<99?'kortere':'som publisert for ISA ved havnivå')} ved de samme indikerte fartene.`});
+}
+const PRE={std:[0,1013,15],hot:[5000,1008,32],cold:[0,1040,-20]};
+const sEl=LAB.slider(el('sEl'),{label:'Field elevation',min:0,max:10000,step:100,v:D.el,f:v=>v.toLocaleString(LAB.lang==='en'?'en-GB':'nb-NO')+' ft',on:v=>{D.el=v;drawDA();}});
+const sQ=LAB.slider(el('sQ'),{label:'QNH',min:950,max:1050,step:1,v:D.q,f:v=>v+' hPa',on:v=>{D.q=v;drawDA();}});
+const sT=LAB.slider(el('sT'),{label:'Outside air temperature',min:-30,max:45,step:1,v:D.t,f:v=>(v>0?'+':v<0?'−':'')+Math.abs(v)+' °C',on:v=>{D.t=v;drawDA();}});
+const seg=LAB.seg(el('daSeg'),[['std','Standard day'],['hot','Hot and high'],['cold','Cold, high pressure']],'',k=>{ const p=PRE[k]; D.el=p[0];D.q=p[1];D.t=p[2]; sEl.set(p[0]); sQ.set(p[1]); sT.set(p[2]); drawDA(); });
+[sEl,sQ,sT].forEach(s=>s.inp.addEventListener('input',()=>seg.set('')));
+
+/* ---------- 5. Syllabus coverage ---------- */
+const COV=[
+ ['010',{en:'Air law',no:'Luftfartsrett'},[['essentials.html',{en:'VFR and IFR essentials',no:'Det viktigste i VFR og IFR'}]],'ref'],
+ ['021',{en:'Aircraft general knowledge',no:'Flykunnskap'},['engines','systems','jets','press'],'lab'],
+ ['022',{en:'Instrumentation',no:'Instrumentering'},['alt','pitot','gyro','af'],'lab'],
+ ['031',{en:'Mass and balance',no:'Masse og balanse'},['mb'],'lab'],
+ ['032',{en:'Performance',no:'Ytelse'},['perf'],'lab'],
+ ['033',{en:'Flight planning and monitoring',no:'Flyplanlegging og overvåking'},['fpl',['planning.html',{en:'Navigation log',no:'Navigasjonslogg'}]],'lab'],
+ ['040',{en:'Human performance and limitations',no:'Menneskelig ytelse og begrensninger'},['ori','hp'],'lab'],
+ ['050',{en:'Meteorology',no:'Meteorologi'},['clouds','fronts','storms','hazards'],'lab'],
+ ['061',{en:'General navigation',no:'Generell navigasjon'},['gnav'],'lab'],
+ ['062',{en:'Radio navigation',no:'Radionavigasjon'},['radionav','gnss','hold','approach'],'lab'],
+ ['070',{en:'Operational procedures',no:'Operative prosedyrer'},['hazards',['simcheck.html',{en:'A320 simulator assessment',no:'A320-simulatortest'}]],'part'],
+ ['081',{en:'Principles of flight',no:'Aerodynamikk'},['tunnel','stab','prop','hs'],'lab'],
+ ['090',{en:'Communications',no:'Kommunikasjon'},[['radio-drills.html',{en:'Radio drills',no:'Radiodriller'}],['radio.html',{en:'Gate to gate',no:'Gate to gate'}]],'prac']
+];
+const STL={lab:{en:'Lab',no:'Lab'},part:{en:'Partly',no:'Delvis'},ref:{en:'Reference',no:'Oppslag'},prac:{en:'Practice',no:'Øving'}};
+function drawCov(){
+  const tb=el('covBody'); tb.innerHTML='';
+  COV.forEach(([c,s,items,st])=>{
+    const tr=document.createElement('tr');
+    const links=items.map(it=>{ if(typeof it==='string'){ const x=byKey(it); return x?`<a href="${x.f}">${L({en:x.en,no:x.no})}</a>`:''; } return `<a href="${it[0]}">${L(it[1])}</a>`; }).filter(Boolean).join(', ');
+    tr.innerHTML=`<td class="c">${c}</td><td class="s">${L(s)}</td><td class="l">${links}</td><td class="t"><span class="st s-${st}"><i></i>${L(STL[st])}</span></td>`;
+    tb.appendChild(tr); });
+  el('nSub').textContent=COV.filter(r=>r[3]==='lab').length+' / '+COV.length;
+}
+
+/* ---------- track choice (first-visit onboarding, remembered) ---------- */
+const TK='bb-track';
+function getTrack(){ try{ return localStorage.getItem(TK)||''; }catch(e){ return ''; } }
+function showTrack(){ const t=getTrack();
+  document.querySelectorAll('#trSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===t)));
+  document.querySelectorAll('#trList .track').forEach(c=>c.classList.toggle('pick',c.dataset.t===t));
+  el('trList').classList.toggle('chosen',!!t); }
+function setTrack(t){ try{ localStorage.setItem(TK,t); }catch(e){} showTrack(); }
+el('trSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; setTrack(b.dataset.t);
+  const c=document.querySelector(`#trList .track[data-t="${b.dataset.t}"]`); if(c&&window.innerWidth<1020) c.scrollIntoView({behavior:RM?'auto':'smooth',block:'start'}); });
+el('trList').addEventListener('click',e=>{ const a=e.target.closest('a'), c=e.target.closest('.track'); if(a&&c) setTrack(c.dataset.t); });
+showTrack();
+
+LAB.start('home');
+function all(){ drawDA(); drawCov(); counts(); prog(); }
+all(); LAB.onLang(all);
+if(MQ2&&MQ2.addEventListener) MQ2.addEventListener('change',drawDA);
+})();
+
+(function(){ const el=LAB.el, L=LAB.L; const n=el('srcnote'); if(!n) return; const d=()=>{ n.innerHTML=L({en:'<span class="sn-k">Sources</span><span>Flight Intelligence answers from your own AFM, QRH and SOP first. Regulations follow the <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, March 2026) and ICAO; airspace and procedures come from your national <b>AIP</b>. Not a live feed: always check the current revision. <a href="sources.html">All data sources →</a></span>',no:'<span class="sn-k">Kilder</span><span>Flight Intelligence svarer først fra din egen AFM, QRH og SOP. Regelverket følger <b>EASA Easy Access Rules</b> (Air Operations, Rev. 24, mars 2026) og ICAO; luftrom og prosedyrer kommer fra ditt nasjonale <b>AIP</b>. Ikke en direkte kobling: sjekk alltid gjeldende revisjon. <a href="sources.html">Alle datakilder →</a></span>'}); }; d(); LAB.onLang(d); })();
+
+
+
+
+/* ===== hero visual: "tunnel" (default) or "aerofoil", from data-hero-visual on the hero section (?hero= overrides, see the markup) ===== */
+const HERO_VISUAL=(document.querySelector('[data-hero-visual]')||{dataset:{}}).dataset.heroVisual==='aerofoil'?'aerofoil':'tunnel';
+
+/* ===== hero: live potential flow (Joukowski aerofoil, exact) — used when HERO_VISUAL is "aerofoil" ===== */
+(function(){ const el=LAB.el, L=LAB.L;
+const hx=el('objLab'), cv=el('flow'); if(HERO_VISUAL!=='aerofoil'||!hx||!cv||!cv.getContext) return;
+const ctx=cv.getContext('2d'); const RMq=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MU=[-0.10,0.08], R=Math.hypot(1-MU[0],MU[1]), BETA=Math.asin(MU[1]/R), CH=4.0113;
+const cm=(a,b)=>[a[0]*b[0]-a[1]*b[1],a[0]*b[1]+a[1]*b[0]], cd=(a,b)=>{const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d]}, ca=(a,b)=>[a[0]+b[0],a[1]+b[1]], cs=(a,b)=>[a[0]-b[0],a[1]-b[1]];
+const csq=a=>{const r=Math.hypot(a[0],a[1]); let x=Math.sqrt((r+a[0])/2), y=Math.sqrt(Math.max(0,(r-a[0])/2)); if(a[1]<0) y=-y; return [x,y]};
+let A=6*Math.PI/180, G, ROT, ROTi, EA, EAi;
+function setA(a){ A=a; G=4*Math.PI*R*Math.sin(a+BETA); ROT=[Math.cos(-a),Math.sin(-a)]; ROTi=[Math.cos(a),Math.sin(a)]; EA=ROTi; EAi=ROT; }
+function inv(z){ const s=csq(cs(cm(z,z),[4,0])); const z1=[(z[0]+s[0])/2,(z[1]+s[1])/2], z2=[(z[0]-s[0])/2,(z[1]-s[1])/2]; return Math.hypot(z1[0]-MU[0],z1[1]-MU[1])>=Math.hypot(z2[0]-MU[0],z2[1]-MU[1])?z1:z2; }
+// velocity in display (pitched) frame at display point p=[x,y]; returns [vx,vy,|zp|]
+function vel(x,y){ const zo=cm([x,y],ROTi), zt=inv(zo), zp=cs(zt,MU); const zp2=cm(zp,zp);
+  let dW=cs(EAi,cm(EA,cd([R*R,0],zp2))); dW=ca(dW,cd([0,G/(2*Math.PI)],zp));
+  const den=cs([1,0],cd([1,0],cm(zt,zt))); const w=cd(dW,den); const v=cm([w[0],-w[1]],ROT); return [v[0],v[1],Math.hypot(zp[0],zp[1])]; }
+let W=0,H=0,DPR=1,S=1,OX=0,OY=0, lines=[], field=null, foil=[], parts=[], mobile=false;
+const toS=(x,y)=>[OX+x*S,OY-y*S], toM=(sx,sy)=>[(sx-OX)/S,(OY-sy)/S];
+function layout(){ const r=hx.getBoundingClientRect(); W=r.width; H=r.height; DPR=Math.min(2,window.devicePixelRatio||1); cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  mobile=W<520; const chord=W*.6; S=chord/CH; OX=W*.53; OY=H*.5; }
+const lerp=(a,b,t)=>a+(b-a)*t;
+function colSpeed(v){ // slow → mist blue, fast → warm white/peach
+  const t=Math.max(0,Math.min(1,(v-.7)/(1.65-.7)));
+  const k=[[96,128,166],[176,196,214],[236,242,247],[255,214,170],[255,160,98]], i=Math.min(3,Math.floor(t*4)), f=t*4-i;
+  return k[i].map((c,j)=>Math.round(lerp(c,k[i+1][j],f))); }
+const STEP=0.25*Math.PI/180, cache=new Map(), sCache=new Map(); let curKey=null, cur=null, linkT=0;
+function compute(key){ const a=key*STEP; setA(a);
+  const foil=[]; for(let i=0;i<=240;i++){ const t=i/240*2*Math.PI, zt=[MU[0]+R*Math.cos(t),MU[1]+R*Math.sin(t)], z=ca(zt,cd([1,0],zt)), p=cm(z,ROT); foil.push(toS(p[0],p[1])); }
+  const fw=Math.ceil(W/9), fh=Math.ceil(H/9), field=document.createElement('canvas'); field.width=fw; field.height=fh; const fx=field.getContext('2d'), id=fx.createImageData(fw,fh);
+  for(let j=0;j<fh;j++) for(let i=0;i<fw;i++){ const m=toM((i+.5)*W/fw,(j+.5)*H/fh), v=vel(m[0],m[1]); const cp=v[2]<R*1.001?0:1-(v[0]*v[0]+v[1]*v[1]); const o=(j*fw+i)*4;
+    if(cp<0){ const t=Math.min(1,-cp/2.2); id.data[o]=70; id.data[o+1]=120; id.data[o+2]=225; id.data[o+3]=Math.round(110*Math.pow(t,.8)); }
+    else { const t=Math.min(1,cp); id.data[o]=235; id.data[o+1]=130; id.data[o+2]=90; id.data[o+3]=Math.round(150*t*t*t); } }
+  fx.putImageData(id,0,0);
+  const lines=[], gap=mobile?10:12, ds=6/S, x0=toM(-20,0)[0], xEnd=toM(W+20,0)[0];
+  const f=(x,y)=>{ const v=vel(x,y), sp=Math.hypot(v[0],v[1]), n=Math.max(sp,.15); return [v[0]/n,v[1]/n,sp,v[2]]; };
+  for(let sy=-gap*2; sy<H+gap*4; sy+=gap){ let p=toM(-20,sy); p[0]=x0; const pts=[], sp=[];
+    for(let k=0;k<900;k++){ const k1=f(p[0],p[1]); if(k1[3]<R*1.003) break; pts.push(toS(p[0],p[1])); sp.push(k1[2]);
+      const k2=f(p[0]+ds/2*k1[0],p[1]+ds/2*k1[1]), k3=f(p[0]+ds/2*k2[0],p[1]+ds/2*k2[1]), k4=f(p[0]+ds*k3[0],p[1]+ds*k3[1]);
+      p=[p[0]+ds/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]), p[1]+ds/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1])]; if(p[0]>xEnd) break; }
+    if(pts.length>8){ const cum=[0]; for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])); lines.push({pts,sp,cum,len:cum[cum.length-1]}); } }
+  const d={key,a,foil,field,lines,cl:8*Math.PI*R*Math.sin(a+BETA)/CH}; cache.set(key,d); return d; }
+function data(key){ return cache.get(key)||compute(key); }
+function staticFor(d){ let c=sCache.get(d.key); if(c) return c;
+  c=document.createElement('canvas'); c.width=Math.round(W*DPR); c.height=Math.round(H*DPR); const g=c.getContext('2d'); g.setTransform(DPR,0,0,DPR,0,0);
+  g.imageSmoothingEnabled=true; g.imageSmoothingQuality='high'; g.drawImage(d.field,0,0,W,H);
+  g.lineWidth=1; g.strokeStyle='rgba(11,37,69,.3)'; g.beginPath(); for(const l of d.lines){ const p=l.pts; g.moveTo(p[0][0],p[0][1]); for(let i=1;i<p.length;i++) g.lineTo(p[i][0],p[i][1]); } g.stroke();
+  const fg=g.createLinearGradient(0,OY-40,0,OY+40); fg.addColorStop(0,'#FFFFFF'); fg.addColorStop(1,'#DCE4EA');
+  g.beginPath(); d.foil.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.closePath(); g.save(); g.translate(0,6); g.fillStyle='rgba(11,37,69,.08)'; g.fill(); g.translate(0,-3); g.fill(); g.restore(); g.fillStyle=fg; g.fill(); g.strokeStyle='#0B2545'; g.lineWidth=1.3; g.stroke();
+  sCache.set(d.key,c); if(sCache.size>45) sCache.delete(sCache.keys().next().value); return c; }
+function use(key){ if(key===curKey) return; curKey=key; cur=data(key); foil=cur.foil; lines=cur.lines;
+  if(parts.length<lines.length*2){ for(let i=parts.length;i<lines.length*2;i++) parts.push({l:i>>1,s:Math.random()}); }
+  el('hxA').textContent=(cur.a*180/Math.PI).toFixed(1)+'°'; el('hxC').textContent=cur.cl.toFixed(2); }
+function build(){ cache.clear(); sCache.clear(); curKey=null; use(Math.round(A/STEP)); links(); idle(); }
+function idle(){ const ric=window.requestIdleCallback||(f=>setTimeout(()=>f({timeRemaining:()=>8}),60)); const todo=[]; for(let k=Math.round(1/0.25);k<=Math.round(11/0.25);k++) if(!cache.has(k)) todo.push(k);
+  const c=Math.round(A/STEP); todo.sort((x,y)=>Math.abs(x-c)-Math.abs(y-c)); const run=dl=>{ while(todo.length&&dl.timeRemaining()>6){ const k=todo.shift(); if(!cache.has(k)) compute(k); } setA(A0()); if(todo.length) ric(run); }; ric(run); }
+let Acur=6*Math.PI/180; const A0=()=>Acur;
+function drawStatic(){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); if(cur) ctx.drawImage(staticFor(cur),0,0); ctx.setTransform(DPR,0,0,DPR,0,0); }
+function shade(){}
+function drawFoil(){}
+function at(l,s){ let lo=0,hi=l.cum.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(l.cum[m]<s) lo=m; else hi=m; } return lo; }
+let last=0, raf=0, vis=true;
+function frame(t){ raf=0; if(!vis) return; const dt=Math.min(.05,(t-(last||t))/1000); last=t;
+  if(Math.abs(targetA-Acur)>.0005){ Acur+=(targetA-Acur)*Math.min(1,dt*4); use(Math.round(Acur/STEP)); if(t-linkT>250){ linkT=t; links(); } }
+  drawStatic();
+  if(!RMq&&cur){ const tail=new Path2D(), head=new Path2D(), sp=(mobile?55:80);
+    const P=(l,s)=>{ const i=at(l,s), a=l.pts[i], b=l.pts[Math.min(i+1,l.pts.length-1)], seg=(l.cum[i+1]||l.cum[i])-l.cum[i], f=seg>0?Math.min(1,Math.max(0,(s-l.cum[i])/seg)):0; return [a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,i]; };
+    const run=(path,l,s0,s1)=>{ const A0=P(l,s0), B0=P(l,s1); path.moveTo(A0[0],A0[1]); for(let k=A0[2]+1;k<=B0[2];k++) path.lineTo(l.pts[k][0],l.pts[k][1]); path.lineTo(B0[0],B0[1]); };
+    for(const q of parts){ const l=lines[q.l]; if(!l) continue; const s0=q.s*l.len, v=l.sp[at(l,s0)]||1; q.s+=dt*v*sp/l.len; if(q.s>1) q.s-=1;
+      run(tail,l,Math.max(0,s0-34*v),Math.max(0,s0-12*v)); run(head,l,Math.max(0,s0-12*v),s0); }
+    ctx.lineCap='round'; ctx.lineWidth=1.5; ctx.strokeStyle='rgba(154,30,104,.28)'; ctx.stroke(tail); ctx.strokeStyle='rgba(154,30,104,.85)'; ctx.stroke(head); }
+  if(!RMq) raf=requestAnimationFrame(frame);
+}
+let targetA=A, hover=false, auto=0, lastBuild=0;
+function links(){ const sv=el('deskLinks'), desk=el('desk'); if(!sv||!desk) return; if(innerWidth<860){ sv.innerHTML=''; return; } const dr=desk.getBoundingClientRect(), lr=hx.getBoundingClientRect();
+  const hn=(foil.length-1)>>1, up=foil.slice(0,hn+1), pick=f=>{ const p=up[Math.round((1-f)*hn)]||up[0]; return [p[0]+lr.left-dr.left,p[1]+lr.top-dr.top-3]; };
+  const tags=[...document.querySelectorAll('#objBp rect[fill="#F6E7EF"]')], lk=document.querySelector('#objFi .lk');
+  let d=''; const add=(elx,f,fromRight)=>{ if(!elx) return; const b=elx.getBoundingClientRect(); const s=[(fromRight?b.right:b.left+b.width/2)-dr.left,(fromRight?b.top+b.height/2:b.top)-dr.top]; const e=pick(f);
+    const c1=[s[0]+(fromRight?70:0),s[1]-(fromRight?0:70)], c2=[e[0],e[1]-50];
+    d+=`<path d="M${s[0].toFixed(1)} ${s[1].toFixed(1)} C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${e[0].toFixed(1)} ${e[1].toFixed(1)}"/><circle cx="${s[0].toFixed(1)}" cy="${s[1].toFixed(1)}" r="2.5"/><circle cx="${e[0].toFixed(1)}" cy="${e[1].toFixed(1)}" r="3.2"/>`; };
+  add(tags[0],.28,true); add(lk,.66,false); sv.innerHTML=d; }
+function start(){ layout(); setA(Acur); build(); last=0; if(RMq){ drawStatic(); } else if(!raf) raf=requestAnimationFrame(frame); }
+let rz=0; window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(start,120); },{passive:true});
+hx.addEventListener('pointermove',e=>{ if(e.pointerType!=='mouse') return; hover=true; const r=hx.getBoundingClientRect(); const fy=(e.clientY-r.top)/r.height; targetA=(11-10*Math.max(0,Math.min(1,fy)))*Math.PI/180; },{passive:true});
+hx.addEventListener('pointerleave',()=>{ hover=false; targetA=6*Math.PI/180; });
+if('IntersectionObserver' in window) new IntersectionObserver(es=>{ vis=es[0].isIntersecting; if(vis&&!RMq&&!raf) raf=requestAnimationFrame(frame); }).observe(hx);
+LAB.add({},{'Open the Virtual Lab':'Åpne Virtual Lab','Lab · Crosswind':'Lab · Sidevind','Angle of attack':'Angstigningsvinkel','Lift coefficient':'Løftekoeffisient','Move your pointer over the flow to change the angle of attack':'Beveg pekeren over strømningen for å endre angstigningsvinkelen'});
+const tx=()=>{ el('hxHint').textContent=L({en:'Move your pointer up and down to change the angle of attack',no:'Beveg pekeren opp og ned for å endre angrepsvinkelen'}); };
+tx(); LAB.onLang&&LAB.onLang(tx);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>links());
+start();
+})();
+
+/* ===== hero: the 3D wind tunnel (real lab scene) — used when HERO_VISUAL is "tunnel" =====
+   Still first (img/hero-tunnel.webp, a ?shot render of tunnel.html), then hero-tunnel.js swaps in the live scene, but only when
+   the box is on screen, the page has loaded, WebGL works, and neither reduced motion nor Save-Data is asked for. */
+(function(){ const el=LAB.el, L=LAB.L;
+const hx=el('objLab'), wrap=el('hxTun'); if(HERO_VISUAL!=='tunnel'||!hx||!wrap) return;
+const ST={a:'5.0°',cl:'0.52'};   // the lab state the scene was baked at (A320, 250 kt, α 5°)
+el('hxA').textContent=ST.a; el('hxC').textContent=ST.cl;
+hx.querySelectorAll('a[href="tunnel.html"]').forEach(a=>a.href='tunnel.html#tunnel');
+LAB.add({},{'Open the Virtual Lab':'Åpne Virtual Lab','Lab · Crosswind':'Lab · Sidevind'});
+const tx=()=>{ hx.querySelector('.lab-go').textContent=L({en:'Open the Virtual Lab',no:'Åpne Virtual Lab'}); el('hxHint').textContent=L({en:'Live from the 3D wind tunnel: streamlines and wingtip vortices',no:'Direkte fra 3D-vindtunnelen: strømlinjer og vingetippvirvler'});
+  el('hxTunImg').alt=L({en:'The Birdbird 3D wind tunnel: an A320 with surface pressure and streamlines coloured by local speed, with the wingtip vortices trailing behind.',no:'Birdbirds 3D-vindtunnel: en A320 med trykket på overflaten og strømlinjer farget etter lokal fart, med vingetippvirvlene bak.'});
+};
+tx(); LAB.onLang&&LAB.onLang(tx);
+/* dashed connectors from the briefing pack and Flight Intelligence: to the far wing and to the near wingtip (vortex) */
+const AP=1400/1011, A0=[[0.392,0.398],[0.861,0.594]];   // anchors in the still image (fractions of its width/height)
+let P=null;
+function links(pts){ const sv=el('deskLinks'), desk=el('desk'); if(!sv||!desk) return; if(innerWidth<860){ if(P){ sv.innerHTML=''; P=null; } return; }
+  const dr=desk.getBoundingClientRect(), lr=hx.getBoundingClientRect(), W=lr.width, H=lr.height;
+  if(!pts){ const fw=Math.max(W,H*AP), fh=fw/AP; pts=A0.map(a=>[a[0]*fw-(fw-W)/2,a[1]*fh-(fh-H)/2]); }
+  const src=[document.querySelector('#objBp rect[fill="#F6E7EF"]'),document.querySelector('#objFi .lk')];
+  if(!P){ sv.innerHTML=''; P=src.map(()=>{ const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.innerHTML='<path/><circle r="2.5"/><circle r="3.2"/>'; sv.appendChild(g); return g.children; }); }
+  src.forEach((e,i)=>{ if(!e) return; const b=e.getBoundingClientRect(), fromRight=i===0, s=[(fromRight?b.right:b.left+b.width/2)-dr.left,(fromRight?b.top+b.height/2:b.top)-dr.top], p=pts[i], t=[p[0]+lr.left-dr.left,p[1]+lr.top-dr.top];
+    const c1=[s[0]+(fromRight?70:0),s[1]-(fromRight?0:70)], c2=[t[0],t[1]-50], f=v=>v.toFixed(1);
+    P[i][0].setAttribute('d',`M${f(s[0])} ${f(s[1])} C${f(c1[0])} ${f(c1[1])} ${f(c2[0])} ${f(c2[1])} ${f(t[0])} ${f(t[1])}`);
+    P[i][1].setAttribute('cx',f(s[0])); P[i][1].setAttribute('cy',f(s[1])); P[i][2].setAttribute('cx',f(t[0])); P[i][2].setAttribute('cy',f(t[1])); }); }
+// live: follow the projected 3D points (far wing = leftmost wing anchor, near tip = rightmost tip anchor)
+let lt=0; hx.addEventListener('herotun:frame',()=>{ const n=performance.now(); if(n-lt<33) return; lt=n; const a=window.__heroTun&&__heroTun.anchors; if(!a||a.length<4) return;
+  links([a[0][0]<a[1][0]?a[0]:a[1], a[2][0]>a[3][0]?a[2]:a[3]]); });
+const relink=()=>{ if(!(window.__heroTun&&__heroTun.live)) links(); };
+relink(); window.addEventListener('resize',relink,{passive:true}); if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relink);
+/* lazy live scene */
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches, SD=navigator.connection&&navigator.connection.saveData;
+function gl(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){ return false; } }
+if(RM||SD||!('IntersectionObserver' in window)||!window.DecompressionStream||!gl()) return;
+let want=false, loaded=document.readyState==='complete', go=false;
+const kick=()=>{ if(go||!want||!loaded) return; go=true; const ric=window.requestIdleCallback||(f=>setTimeout(f,200));
+  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=1'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
+if(!loaded) window.addEventListener('load',()=>{ loaded=true; kick(); },{once:true});
+const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ want=true; io.disconnect(); kick(); } },{rootMargin:'200px 0px'}); io.observe(hx);
+})();
+
+window.addEventListener('load',()=>setTimeout(()=>{ try{ window.dispatchEvent(new Event('resize')); }catch(e){} },300));
+</script>
+</body>
+</html>
