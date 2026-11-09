@@ -19,7 +19,7 @@ const deepOn=()=>depth()!=='short';
 const sg=v=>(v>0?'+':v<0?'−':'±')+nf(Math.abs(v),0);
 
 /* ---------------- state ---------------- */
-const S={mode:'how',type:'tp',thr:0.75,pl:0.7,tl:0.8,rpm:2400,np:1900,mix:1,cond:'lo',alt:0,dT:0,tas:0,turbo:false,heat:false,ice:false,stn:false,flexT:45,fault:'none',st:null,hist:[]};
+const S={mode:'how',type:'tp',thr:0.75,pl:0.7,tl:0.8,rpm:2400,np:1900,mix:1,cond:'lo',alt:0,dT:0,tas:0,turbo:false,heat:false,ice:false,stn:false,lay:'rev',flexT:45,fault:'none',st:null,hist:[]};
 function model(type){ type=type||S.type; const c={alt:S.alt,dT:S.dT,tas:S.tas};
   if(type==='pist') return E.piston(Object.assign(c,{thr:S.thr,rpm:S.rpm,mix:S.mix,turbo:S.turbo,heat:S.heat,ice:S.ice}));
   if(type==='tp') return E.tprop(Object.assign(c,{pl:S.pl,np:S.np<1550?0:S.np,cond:S.cond}));
@@ -124,7 +124,45 @@ function drawJet(g,b,M,ph){ const G=geo(b), pw=M.frac??0.5;
   phases(g,G,[[0,0.1,t2('1 Intake · suck','1 Innsug · sug'),1],[0.1,0.43,t2('2 Compression · squeeze','2 Kompresjon · klem'),2],[0.43,0.56,t2('3 Combustion · bang','3 Forbrenning · smell'),3],[0.56,0.95,t2('4 Exhaust · blow','4 Eksos · blås'),4]],G.Yb(0.72)+14);
   stations(g,G,M,[[0.06,'in'],[0.42,'comp'],[0.5,'burn'],[0.62,'egt'],[0.9,'exh']]);
   return G; }
-/* free-turbine turboprop, reverse flow: the propeller on the left, air enters at the back (right) and flows forward */
+/* free-turbine turboprop, direct flow (the option): propeller on the left, intake just behind it, air flows straight back to the exhaust at the rear;
+   the Np shaft runs forward from the power turbine through the hollow Ng shaft to the gearbox */
+function drawTPd(g,b,M,ph){ const [bx,by,bw,bh]=b, G=geo([bx+bw*0.1,by,bw*0.9,bh]), pw=Math.max(0.05,M.shp/850), sm=ST.w<640;
+  const X=G.X, Yt=G.Yt, Yb=G.Yb;
+  const Tin=stT(M,'in'), T3=stT(M,'comp'), Tb=stT(M,'burn'), Ti=stT(M,'itt'), Te=stT(M,'exh');
+  /* casing */
+  shell(g,G,[[0.05,0.42,0.0],[0.17,0.42,0.0]],'#2f3a45',C.edge);              // reduction gearbox
+  shell(g,G,[[0.19,0.66,0.6],[0.26,0.57,0.52],[0.3,0.52,0.48],[0.42,0.46,0.42],[0.47,0.67,0.63],[0.52,0.67,0.63],[0.66,0.62,0.58],[0.7,0.52,0.48],[0.84,0.54,0.5],[0.96,0.5,0.46]],C.casing,C.edge);
+  /* gas path, front to back */
+  const path=[[0.19,0.6,0.44],[0.26,0.52,0.3],[0.3,0.48,0.24],[0.42,0.42,0.25],[0.47,0.63,0.5],[0.52,0.63,0.36],[0.66,0.58,0.3],[0.7,0.48,0.22],[0.84,0.5,0.22],[0.96,0.46,0.12]];
+  band(g,G,path,[[0.19,Tin],[0.3,Tin+5],[0.42,(Tin+T3)/2],[0.48,T3],[0.53,Tb],[0.64,Tb],[0.71,Ti+60],[0.755,Ti],[0.84,Te],[0.96,Te]]);
+  band(g,G,[[0.96,0.44,0],[1.0,0.36,0]],[[0.96,Te],[1.0,Te-200]],0.22);
+  flowDots(g,G,path,22,0.7+pw);
+  /* shafts: Ng a hollow tube (compressor → its turbine), Np inside it from the power turbine forward to the gearbox */
+  shell(g,G,[[0.05,0.05,0],[0.82,0.05,0]],'rgba(201,182,242,.55)'); shell(g,G,[[0.3,0.12,0.07],[0.73,0.12,0.07]],'rgba(127,203,232,.5)');
+  for(const hf of [Yt,Yb]) line(g,X(0.755),hf(0.08),X(0.755),hf(0.22),'#0f151b',3);   // the gap: no link between the turbines
+  /* axial stages and the impeller (Ng) */
+  for(const u of [0.33,0.36,0.39]){ const [ro,ri]=rIn(path,u); row(g,G,u,ri+0.01,ro-0.01,C.hp,ph.b,1.8); }
+  for(const hf of [Yt,Yb]){ g.fillStyle='rgba(127,203,232,.22)'; g.beginPath(); g.moveTo(X(0.42),hf(0.25)); g.quadraticCurveTo(X(0.46),hf(0.3),X(0.47),hf(0.5)); g.lineTo(X(0.47),hf(0.12)); g.lineTo(X(0.42),hf(0.12)); g.closePath(); g.fill(); }
+  row(g,G,0.445,0.26,0.5,C.hp,ph.b,1.6);
+  row(g,G,0.72,0.22,0.48,C.hp,ph.b,2.6);              // compressor turbine
+  row(g,G,0.785,0.22,0.49,C.lp,ph.a,2.6); row(g,G,0.81,0.22,0.495,C.lp,ph.a,2.6);   // power turbine
+  glow(g,G,0.59,0.45,pw);
+  /* propeller */
+  const hx=X(0.03), py=G.yc, Rp=Math.min(bh*0.46,G.R*1.6), fe=!M.np;
+  g.fillStyle='#3a4652'; g.beginPath(); g.ellipse(hx,py,bw*0.022,G.R*0.3,0,0,Math.PI*2); g.fill();
+  const pa=reduce?0.6:ph.a*2.2; for(let k=0;k<4;k++){ const a=pa+k*Math.PI/2, ext=Math.cos(a)*Rp, wdt=fe?1.5:Math.max(1.5,Math.abs(Math.sin(a))*bw*0.012+2);
+    g.fillStyle=k%2?'rgba(201,182,242,.75)':'rgba(201,182,242,.55)'; g.beginPath(); g.ellipse(hx-bw*0.004,py-ext/2,wdt,Math.abs(ext)/2,0,0,Math.PI*2); g.fill(); }
+  if(!S.stnTags){
+    lab(g,hx+6,Yt(1.05)-4,L(fe?t2('Propeller · feathered','Propell · fjæret'):t2('Propeller · Np','Propell · Np')),C.lp,'left');
+    lab(g,X(0.11),Yb(0.62),L(t2('Gearbox','Girkasse')),C.mut);
+    lab(g,X(0.22),Yt(0.8),L(t2('Air in','Luft inn')),'#BFE3F5');
+    lab(g,X(0.38),Yb(0.66),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp); lab(g,X(0.59),Yb(0.82),L(t2('Combustor','Brennkammer')),C.amb);
+    lab(g,X(0.79),Yt(0.7),L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.92),Yb(0.62),L(t2('Exhaust','Eksos')),'#F2B8A8'); }
+  const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.18,0.3,t2('1 Intake','1 Innsug'),1],[0.3,0.48,t2('2 Compression','2 Kompresjon'),2],[0.48,0.68,t2('3 Combustion','3 Forbrenning'),3],[0.68,0.98,t2('4 Turbines · exhaust','4 Turbiner · eksos'),4]], py0=G.Yb(0.98)+12;
+  if(sm){ phases(g,G,PL.filter((_,i)=>i%2===0),py0); phases(g,G,PL.filter((_,i)=>i%2===1),py0+22); } else phases(g,G,PL,py0);
+  stations(g,G,M,[[0.24,'in'],[0.47,'comp'],[0.59,'burn'],[0.755,'itt'],[0.9,'exh']]);
+  return G; }
+/* free-turbine turboprop, reverse flow (the default, most common in small turboprops): the propeller on the left, air enters at the back (right) and flows forward */
 function drawTP(g,b,M,ph){ const [bx,by,bw,bh]=b, G0=geo([bx+bw*0.1,by,bw*0.9,bh]), G={...G0}, pw=Math.max(0.05,M.shp/850);
   const X=G.X, Yt=G.Yt, Yb=G.Yb;
   /* casing */
@@ -168,7 +206,8 @@ function drawTP(g,b,M,ph){ const [bx,by,bw,bh]=b, G0=geo([bx+bw*0.1,by,bw*0.9,bh
     lab(g,X(0.3),Yt(0.98)+4,L(t2('Power turbine','Kraftturbin')),C.lp); if(!sm) lab(g,X(0.235),Yb(1.02),L(t2('Exhaust','Eksos')),'#F2B8A8');
     lab(g,X(0.49),Yb(0.8),L(t2('Combustor','Brennkammer')),C.amb); lab(g,X(0.73),Yt(0.82),L(t2('Compressor · Ng','Kompressor · Ng')),C.hp);
     lab(g,X(0.9),Yb(0.62),L(t2('Air in','Luft inn')),'#BFE3F5'); }
-  phases(g,G,[[0.82,0.96,t2('1 Intake','1 Innsug'),1],[0.6,0.82,t2('2 Compression','2 Kompresjon'),2],[0.4,0.6,t2('3 Combustion','3 Forbrenning'),3],[0.2,0.4,t2('4 Turbines · exhaust','4 Turbiner · eksos'),4],[0.0,0.18,t2('5 Prop','5 Propell'),5]],G.Yb(0.98)+12);
+  { const PL=[[0.0,0.18,t2('5 Prop','5 Propell'),5],[0.2,0.4,t2('4 Turbines · exhaust','4 Turbiner · eksos'),4],[0.4,0.6,t2('3 Combustion','3 Forbrenning'),3],[0.6,0.82,t2('2 Compression','2 Kompresjon'),2],[0.82,0.96,t2('1 Intake','1 Innsug'),1]], py0=G.Yb(0.98)+12;
+    if(ST.w<640){ phases(g,G,PL.filter((_,i)=>i%2===0),py0); phases(g,G,PL.filter((_,i)=>i%2===1),py0+22); } else phases(g,G,PL,py0); }
   stations(g,G,M,[[0.9,'in'],[0.6,'comp'],[0.49,'burn'],[0.35,'itt'],[0.24,'exh']]);
   return G; }
 function glow(g,G,u,r,pw){ if(pw<=0) return; const x=G.X(u); for(const y of [G.Yt(r),G.Yb(r)]){ const gr=g.createRadialGradient(x,y,1,x,y,G.R*0.16); gr.addColorStop(0,`rgba(255,240,200,${0.35+0.5*pw})`); gr.addColorStop(1,'rgba(255,160,60,0)'); g.fillStyle=gr; g.beginPath(); g.arc(x,y,G.R*0.16,0,Math.PI*2); g.fill(); } }
@@ -361,7 +400,7 @@ function draw(){ if(!ST.w) return; const g=ST.ctx, W=ST.w, H=ST.h; g.setTransfor
   let eng,gau,his=null;
   if(S.mode==='start'){ if(ph){ eng=[4,4,W-8,H*0.36]; gau=[4,H*0.38,W-8,H*0.34]; his=[8,H*0.73,W-16,H*0.27-8]; } else { eng=[cl||8,8,W-(cl||8)-8,H*0.56]; gau=[8,H*0.6,W*0.56,H*0.4-8]; his=[W*0.58,H*0.6,W*0.42-10,H*0.4-10]; } }
   else if(ph){ eng=[4,4,W-8,H*0.5]; gau=[4,H*0.52,W-8,H*0.48-6]; } else { eng=[cl||8,8,W-(cl||8)-8,H*0.6]; gau=[8,H*0.64,W-16,H*0.36-8]; }
-  const t=S.type; if(t==='pist') drawPiston(g,eng,M); else if(t==='tp') drawTP(g,eng,M,PH); else if(t==='jet') drawJet(g,eng,M,PH); else drawFan(g,eng,M,PH);
+  const t=S.type; if(t==='pist') drawPiston(g,eng,M); else if(t==='tp') (S.lay==='dir'?drawTPd:drawTP)(g,eng,M,PH); else if(t==='jet') drawJet(g,eng,M,PH); else drawFan(g,eng,M,PH);
   line(g,gau[0]+8,gau[1]-4,gau[0]+gau[2]-8,gau[1]-4,'rgba(255,255,255,.06)',1);
   drawGauges(g,gau,M); if(his) drawHist(g,his);
   if(S.mode==='how'&&(t==='tp'||t==='fan'||t==='jet')&&!ph){ const lim=limitNote(M); if(lim) tag(g,lim[0],W-12,gau[1]+10,lim[1],{al:'right',sz:11}); }
@@ -468,6 +507,11 @@ el('heatChk').addEventListener('change',e=>{ S.heat=e.target.checked; upd(); });
 el('turboChk').addEventListener('change',e=>{ S.turbo=e.target.checked; upd(); });
 el('iceChk').addEventListener('change',e=>{ S.ice=e.target.checked; upd(); });
 el('stnChk').addEventListener('change',e=>{ S.stn=e.target.checked; upd(); });
+const laySeg=LAB.seg(el('laySeg'),[['rev','Reverse flow (most common in small turboprops)'],['dir','Direct flow (common on larger regional turboprops)']],S.lay,v=>setLay(v));
+function setLay(v){ S.lay=v==='dir'?'dir':'rev'; ENGP.layout(S.lay); laySeg.set(S.lay); layHint(); if(AP.sel&&!ENGP.part(S.type,AP.sel)) AP.sel=null; if(S.mode==='apart') apSide(); upd(); }
+function layHint(){ el('layH').innerHTML=L(S.lay==='dir'
+  ?t2('<b>Direct flow:</b> the air goes straight from the intake at the front to the exhaust at the back, with no turns: a longer engine, but a simple gas path that suits bigger, more powerful turboprops.','<b>Direkte strøm:</b> luften går rett fra inntaket foran til eksosen bak, uten å snu: en lengre motor, men en enkel gassvei som passer større og kraftigere turboproper.')
+  :t2('<b>Reverse flow:</b> the air enters at the back and turns forward, so the engine is short, the inlet sits away from stones and debris thrown up near the propeller, and the hot section is easy to reach for inspection.','<b>Motstrøm:</b> luften kommer inn bak og snur forover, så motoren blir kort, innløpet sitter unna stein og rusk som virvles opp ved propellen, og den varme delen er lett å komme til for inspeksjon.')); }
 el('leanBtn').addEventListener('click',()=>{ S.mix=E.peakMix({alt:S.alt,dT:S.dT,tas:S.tas,thr:S.thr,rpm:S.rpm,turbo:S.turbo,heat:S.heat,ice:S.ice}); sl.mix&&sl.mix.set(S.mix); upd(); });
 sl.alt=LAB.slider(el('wxCtl'),{label:'Altitude',min:0,max:41000,step:500,v:S.alt,f:v=>nf(v,0)+' ft',on:v=>{ S.alt=v; upd(); }});
 sl.dT=LAB.slider(el('wxCtl'),{label:'Temperature vs ISA',min:-30,max:40,step:1,v:S.dT,f:v=>'ISA '+sg(v)+' °C · OAT '+nf(E.isa(S.alt,v).Tc,0)+' °C',on:v=>{ S.dT=v; upd(); }});
@@ -475,7 +519,7 @@ sl.tas=LAB.slider(el('wxCtl'),{label:'True airspeed',min:0,max:520,step:5,v:S.ta
 function syncWx(){ const lab=sl.alt.el.querySelector('label span'); if(lab) lab.textContent=L(S.mode==='rat'?t2('Airport elevation','Flyplasshøyde'):t2('Altitude','Høyde')); sl.dT.set(S.dT); }
 sl.flex=LAB.slider(el('ratCtl'),{label:'FLEX (assumed) temperature',min:0,max:75,step:1,v:S.flexT,f:v=>v+' °C',on:v=>{ S.flexT=v; upd(); }});
 function syncCtl(){ for(const k of ['thr','rpm','mix','pl','np','tl']) if(sl[k]&&document.contains(sl[k].el)) sl[k].set(S[k]); sl.alt.set(S.alt); sl.dT.set(S.dT); sl.tas.set(S.tas); sl.flex.set(S.flexT); condSeg.set(S.cond);
-  el('heatChk').checked=S.heat; el('turboChk').checked=S.turbo; el('iceChk').checked=S.ice; el('stnChk').checked=S.stn; }
+  laySeg.set(S.lay); ENGP.layout(S.lay); layHint(); el('heatChk').checked=S.heat; el('turboChk').checked=S.turbo; el('iceChk').checked=S.ice; el('stnChk').checked=S.stn; }
 /* scenarios */
 const PRE=[['to',t2('Take-off, sea level','Avgang, havnivå'),{alt:0,dT:0,tas:0,thr:1,mix:1,rpm:2700,pl:0.86,np:2000,tl:1,cond:'lo'}],
   ['hot',t2('Hot and high','Varmt og høyt'),{alt:6000,dT:25,tas:0,thr:1,mix:0.7,rpm:2700,pl:1,np:2000,tl:1,cond:'lo'}],
@@ -511,11 +555,13 @@ function drawApart(g,W,H){ ENGP.draw(g,W,H,{type:S.type,e:AP.e,sel:AP.sel,hov:AP
 function apSync(){ const r=el('apEx'); if(r&&document.activeElement!==r) r.value=Math.round(AP.e*100); const b=el('apBtn'); if(b) b.textContent=L(AP.tgt>0.5?t2('Assemble','Sett sammen'):t2('Explode','Ta fra hverandre')); }
 function apSel(id,focus){ AP.sel=id||null; apSide(); draw(); if(focus&&id){ const b=el('apList').querySelector(`[data-p="${id}"]`); if(b) b.focus(); } }
 function apSide(){ const list=ENGP.parts(S.type), p=AP.sel&&ENGP.part(S.type,AP.sel), d=deepOn();
+  layHint(); el('apLay').innerHTML=S.type!=='tp'?'':`<h5>${L(t2('Layout','Oppbygning'))}</h5><div class="b">${[['rev',t2('Reverse flow (most common in small turboprops)','Motstrøm (vanligst i små turboproper)')],['dir',t2('Direct flow (common on larger regional turboprops)','Direkte strøm (vanlig på større regionale turboproper)')]].map(([k,t])=>`<button type="button" data-lay="${k}" aria-pressed="${S.lay===k}" class="${S.lay===k?'on':''}">${L(t)}</button>`).join('')}</div><p>${el('layH').innerHTML}</p>`;
   const stg=st=>`<span class="apst" style="--c:${ENGP.SC[st]}"><b>${st}</b>${L(ENGP.SN[st])}</span>`;
   el('apCard').innerHTML=p?`<div class="aph"><h4>${L(p.n)}</h4><button type="button" class="apx" data-x="1" aria-label="${L(t2('Clear selection','Fjern valget'))}">×</button></div>${stg(p.st)}<p>${L(p.d)}</p><p class="apf"><i>${L(t2('Key fact','Nøkkelfakta'))}</i>${L(p.f)}</p>${d?`<p class="apf dp"><i>${L(t2('Deep dive','Dypdykk'))}</i>${L(p.x)}</p>`:''}`
     :`<h4>${L(t2('Pick a part','Velg en del'))}</h4><p>${L(t2('Tap a part in the drawing or in the list (Tab, then the arrow keys, work too). Each part has the number and colour of its stage:','Trykk på en del i tegningen eller i lista (Tab og så piltastene virker også). Hver del har nummeret og fargen til trinnet sitt:'))}</p><div class="apsts">${[1,2,3,4,5].map(stg).join('')}</div>`;
   el('apLH').textContent=L(t2('Parts','Deler'))+' · '+list.length;
   el('apList').innerHTML=list.map((q,i)=>`<li><button type="button" data-p="${q.id}" aria-pressed="${q.id===AP.sel}" class="${q.id===AP.sel?'on':''}" style="--c:${ENGP.SC[q.st]}" tabindex="${(AP.sel?q.id===AP.sel:i===0)?0:-1}"><span class="k">${q.letter}</span><span class="nm">${L(q.n)}</span><span class="sn" aria-label="${L(t2('stage','trinn'))} ${q.st}">${q.st}</span></button></li>`).join(''); }
+el('apLay').addEventListener('click',e=>{ const b=e.target.closest('button[data-lay]'); if(b){ setLay(b.dataset.lay); const n=el('apLay').querySelector(`[data-lay="${b.dataset.lay}"]`); if(n) n.focus(); } });
 el('apList').addEventListener('click',e=>{ const b=e.target.closest('button[data-p]'); if(b) apSel(AP.sel===b.dataset.p?null:b.dataset.p,true); });
 el('apCard').addEventListener('click',e=>{ if(e.target.closest('[data-x]')){ const id=AP.sel; apSel(null); const b=el('apList').querySelector(`[data-p="${id}"]`); if(b) b.focus(); } });
 function apStep(dir,focus){ const list=ENGP.parts(S.type), i=list.findIndex(q=>q.id===AP.sel); const n=i<0?(dir>0?0:list.length-1):(i+dir+list.length)%list.length; apSel(list[n].id,focus); }
@@ -608,7 +654,7 @@ const KC=[
   ill:()=>sv(`<rect x="12" y="22" width="176" height="20" rx="3" fill="url(#gtg)"/><defs><linearGradient id="gtg"><stop offset="0" stop-color="${cold}"/><stop offset=".45" stop-color="#e8d46a"/><stop offset=".6" stop-color="#e8503a"/><stop offset="1" stop-color="${hot}"/></linearGradient></defs>${tx(30,16,'C','#c9d2da','middle')}${tx(100,16,'burn','#c9d2da','middle')}${tx(150,16,'T','#c9d2da','middle')}${tx(100,58,'suck · squeeze · bang · blow','#8b99a7','middle')}`)},go({type:'jet',mode:'how',alt:0,dT:0,tas:0,tl:0.8})),
  Object.assign({k:'fan',t:t2('Turbojet vs turbofan','Turbojet og turbofan'),d:t2('A turbojet sends all its air through the core as one fast jet; a <b>turbofan</b> uses a big fan to push most of the air around the core (the <b>bypass ratio</b>), slower but much more of it.','En turbojet sender all luften gjennom kjernen som én rask stråle; en <b>turbofan</b> bruker en stor fan til å skyve det meste av luften rundt kjernen (<b>omløpsforholdet</b>), saktere, men mye mer av den.'),dd:t2('High-bypass fans have bypass ratios of about 5 to 12; the fan makes most of the thrust. Two spools: N1 (fan + LP turbine) and N2 (core). Gauges: N1 (thrust), EGT, N2, fuel flow; some engines use EPR for thrust.','Fan med høyt omløpsforhold har omløpsforhold på rundt 5 til 12; fanen lager det meste av skyvet. To spoler: N1 (fan + LP-turbin) og N2 (kjerne). Instrumenter: N1 (skyv), EGT, N2, drivstoffstrøm; noen motorer bruker EPR for skyv.'),
   ill:()=>sv(`<rect x="60" y="24" width="90" height="16" fill="${hot}" opacity=".8"/><rect x="40" y="8" width="110" height="12" fill="${cold}" opacity=".5"/><rect x="40" y="44" width="110" height="12" fill="${cold}" opacity=".5"/><line x1="44" y1="6" x2="44" y2="58" stroke="#c9b6f2" stroke-width="3"/>${tx(160,18,'bypass',cold)}${tx(160,36,'core',hot)}`)},go({type:'fan',mode:'how',alt:0,dT:0,tas:0,tl:0.8})),
- Object.assign({k:'tp',t:t2('Turboprop: the free power turbine','Turboprop: den frie kraftturbinen'),d:t2('A gas generator (compressor + its turbine, <b>Ng</b>) makes hot gas; a separate <b>power turbine</b> (<b>Np</b>) drives the propeller through a reduction gearbox, with no shaft between them.','En gassgenerator (kompressor + dens turbin, <b>Ng</b>) lager varm gass; en egen <b>kraftturbin</b> (<b>Np</b>) driver propellen gjennom en reduksjonsgirkasse, uten aksel mellom dem.'),dd:t2('Nearly all the energy goes to the shaft; the exhaust gives only a little thrust. The power lever sets Ng (gas power), the propeller lever sets Np through a governor, the condition lever is fuel cut-off and idle. Gauges: torque, ITT, Ng, Np, fuel flow.','Nesten all energi går til akselen; eksosen gir bare litt skyv. Krafthendelen setter Ng (gasskraft), propellhendelen setter Np gjennom en governor, kondisjonshendelen er drivstoffkutt og tomgang. Instrumenter: moment, ITT, Ng, Np, drivstoffstrøm.'),
+ Object.assign({k:'tp',t:t2('Turboprop: the free power turbine','Turboprop: den frie kraftturbinen'),d:t2('A gas generator (compressor + its turbine, <b>Ng</b>) makes hot gas; a separate <b>power turbine</b> (<b>Np</b>) drives the propeller through a reduction gearbox, with no shaft between them.','En gassgenerator (kompressor + dens turbin, <b>Ng</b>) lager varm gass; en egen <b>kraftturbin</b> (<b>Np</b>) driver propellen gjennom en reduksjonsgirkasse, uten aksel mellom dem.'),dd:t2('Nearly all the energy goes to the shaft; the exhaust gives only a little thrust. The power lever sets Ng (gas power), the propeller lever sets Np through a governor, the condition lever is fuel cut-off and idle. Gauges: torque, ITT, Ng, Np, fuel flow. Most small turboprops use <b>reverse flow</b> (air in at the back, flowing forward to exhaust stacks behind the propeller); many larger ones use <b>direct flow</b> (intake at the front, exhaust at the back).','Nesten all energi går til akselen; eksosen gir bare litt skyv. Krafthendelen setter Ng (gasskraft), propellhendelen setter Np gjennom en governor, kondisjonshendelen er drivstoffkutt og tomgang. Instrumenter: moment, ITT, Ng, Np, drivstoffstrøm. De fleste små turboproper har <b>motstrøm</b> (luft inn bak, som strømmer forover til eksosrør bak propellen); mange større har <b>direkte strøm</b> (inntak foran, eksos bak).'),
   ill:()=>sv(`<rect x="40" y="22" width="64" height="20" fill="#7fcbe8" opacity=".5"/><rect x="112" y="22" width="16" height="20" fill="#c9b6f2" opacity=".8"/><line x1="108" y1="16" x2="108" y2="48" stroke="#ec5a47" stroke-dasharray="2 2"/><line x1="16" y1="10" x2="16" y2="54" stroke="#c9b6f2" stroke-width="3"/>${tx(72,58,'Ng','#7fcbe8','middle')}${tx(120,58,'Np','#c9b6f2','middle')}${tx(150,36,'no shaft','#ec5a47')}`)},go({type:'tp',mode:'how',alt:0,dT:0,tas:0,pl:0.6,np:1900,cond:'lo'})),
  Object.assign({k:'mix',t:t2('Mixture and EGT','Blanding og EGT'),d:t2('The air thins as you climb but a carburettor keeps feeding nearly the same fuel, so you <b>lean</b> the mixture; the EGT peaks at the chemically perfect mixture.','Luften blir tynnere når du stiger, men forgasseren gir nesten like mye drivstoff, så du <b>lener</b> blandingen; EGT topper ved den kjemisk perfekte blandingen.'),dd:t2('Full rich at take-off cools the cylinders with extra fuel. Best power is about 50–100 °C rich of peak EGT; best economy at or a little lean of peak. Too lean: rough running, high cylinder temperatures and detonation.','Full rik ved avgang kjøler sylindrene med ekstra drivstoff. Best effekt er rundt 50–100 °C rikt av topp-EGT; best økonomi ved eller litt magert av topp. For magert: ujevn gange, høy sylindertemperatur og detonasjon.'),
   ill:()=>sv(`<path d="M20,52 Q100,4 180,40" stroke="${hot}" stroke-width="2" fill="none"/><line x1="96" y1="8" x2="96" y2="56" stroke="#c9d2da" stroke-dasharray="3 3"/>${tx(100,16,'peak EGT','#c9d2da')}${tx(20,62,'lean','#8b99a7')}${tx(150,62,'rich','#8b99a7')}`)},go({type:'pist',mode:'how',alt:8000,dT:0,tas:115,thr:1,rpm:2400,mix:1,ice:false})),
@@ -700,7 +746,7 @@ LAB.quiz(el('qbox'),'engines',()=>LAB.shuffle([
 LAB.add({},{'Aircraft Engines':'Flymotorer','Powerplant: piston, turboprop and jet':'Motorer: stempel, turboprop og jet','Birdbird Virtual Lab · Aircraft and engine systems':'Birdbird Virtual Lab · Fly- og motorsystemer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The engine lab':'Motorlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Engine':'Motor','Levers':'Hendler','Start':'Start','Conditions':'Forhold','Reduced take-off thrust':'Redusert startskyv','Scenarios':'Scenarier','Advanced':'Avansert','Mode':'Modus','Sections':'Seksjoner',
- 'Assembled':'Sammensatt','Exploded':'Sprengskisse','Assembled to exploded':'Sammensatt til sprengskisse','Parts':'Deler','Lean to peak EGT':'Len til topp-EGT','Carburettor heat':'Forgasservarme','Condition lever':'Kondisjonshendel','Start fault':'Startfeil','Piston: turbo-normalised':'Stempel: turbo-normalisert','Piston: carburettor ice forming':'Stempel: forgasseris dannes','Show temperatures along the gas path':'Vis temperaturer langs gasstrømmen',
+ 'Assembled':'Sammensatt','Exploded':'Sprengskisse','Assembled to exploded':'Sammensatt til sprengskisse','Parts':'Deler','Lean to peak EGT':'Len til topp-EGT','Carburettor heat':'Forgasservarme','Condition lever':'Kondisjonshendel','Start fault':'Startfeil','Piston: turbo-normalised':'Stempel: turbo-normalisert','Piston: carburettor ice forming':'Stempel: forgasseris dannes','Show temperatures along the gas path':'Vis temperaturer langs gasstrømmen','Layout':'Oppbygning','Reverse flow (most common in small turboprops)':'Motstrøm (vanligst i små turboproper)','Direct flow (common on larger regional turboprops)':'Direkte strøm (vanlig på større regionale turboproper)',
  'Cutaway of the selected engine with the gas path coloured by temperature, its cockpit gauges, and in the other modes comparison and rating charts.':'Snitt av valgt motor med gasstrømmen farget etter temperatur, motorinstrumentene, og i de andre modusene sammenlignings- og ratingdiagrammer.'});
 LAB.tx({lead:'Alle flymotorer gjør de samme fire tingene med luft: suger den inn, klemmer den, brenner drivstoff i den og blåser den ut. En stempelmotor gjør dem etter hverandre i samme sylinder; en gassturbin gjør alle samtidig, hver i sin del av motoren. Det den varme gassen så driver, gjør forskjellen: en propell gjennom en aksel (stempel og turboprop) eller en luftstråle rett ut bak (turbojet og turbofan). Se hver av dem virke, les instrumentene, sammenlign dem i samme høyde og fart, og start dem.'});
 function texts(){

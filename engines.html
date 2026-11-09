@@ -83,6 +83,7 @@ body.depth-instructor .tstep .q{font-size:20px}
 .en-vp .vtools button{font-family:var(--f-body);font-size:12px}
 .xsec .lev+.lev{margin-top:4px}
 .xsec [data-for]{display:none}
+.xsec.lay{display:none}body.et-tp .xsec.lay:not([hidden]){display:block}
 body.et-pist .xsec [data-for~=pist],body.et-tp .xsec [data-for~=tp],body.et-jet .xsec [data-for~=jet],body.et-fan .xsec [data-for~=fan]{display:block}
 .typeseg{display:grid!important;grid-template-columns:1fr 1fr;gap:4px}
 .typeseg button{border-radius:var(--radius)!important}
@@ -103,6 +104,8 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .apbtn:hover{border-color:rgba(255,255,255,.4)}
 .apbtn:focus-visible,.apbar input:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
 .apside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:13px;line-height:1.5;overflow:auto;background:rgba(6,9,12,.25)}
+.aplay:empty{display:none}.aplay{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07)}.aplay h5{margin:0 0 5px}.aplay .b{display:flex;flex-direction:column;gap:4px}
+.aplay button{text-align:left;font-family:var(--f-body);font-size:12px;line-height:1.3;background:rgba(18,22,26,.62);color:#C6D0D8;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:5px 8px;cursor:pointer}.aplay button.on{border-color:#7EC8F2;color:#EEF2F5;background:rgba(126,200,242,.14)}.aplay button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}.aplay p{margin:6px 0 0;font-size:12px;line-height:1.45;color:#AEB9C2}
 .apcard{min-height:150px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
 .apcard h4{margin:0;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;line-height:1.25;color:#EEF2F5}
 .apcard .aph{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
@@ -165,7 +168,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
           <canvas id="env" aria-label="Cutaway of the selected engine with the gas path coloured by temperature, its cockpit gauges, and in the other modes comparison and rating charts."></canvas>
           <div class="vchip" id="chip" aria-live="polite"></div>
         </div>
-        <aside class="apside" id="apSide" hidden aria-label="Parts"><div class="apcard" id="apCard" aria-live="polite"></div><h5 id="apLH">Parts</h5><ul class="aplist" id="apList"></ul></aside>
+        <aside class="apside" id="apSide" hidden aria-label="Parts"><div class="aplay" id="apLay"></div><div class="apcard" id="apCard" aria-live="polite"></div><h5 id="apLH">Parts</h5><ul class="aplist" id="apList"></ul></aside>
         </div>
         <div class="vleg" id="vleg"></div>
       </div>
@@ -177,6 +180,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
           <div data-for="pist"><div class="btns" style="margin:2px 0 4px"><button type="button" class="btn sm" id="leanBtn">Lean to peak EGT</button></div>
           <label class="xchk"><input type="checkbox" id="heatChk"> <span id="heatL">Carburettor heat</span></label></div>
           <div data-for="tp"><div class="grp" id="condL">Condition lever</div><div id="condSeg"></div></div></details>
+        <details class="xsec lay" open data-pv="how apart"><summary>Layout</summary><div id="laySeg" class="seg wrap"></div><p class="hint" id="layH"></p></details>
         <details class="xsec" open data-pv="start"><summary>Start</summary><div class="btns" id="stBtns"></div>
           <div data-for="tp jet fan"><div class="grp" id="faultL">Start fault</div><div id="faultSeg" class="seg wrap"></div></div><p class="hint" id="stH"></p></details>
         <details class="xsec" open data-pv="how cmp rat"><summary id="wxS">Conditions</summary><div id="wxCtl"></div></details>
@@ -212,7 +216,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 <script src="lab.js?v=39"></script>
 <script src="concepts.js?v=2"></script>
 <script src="enginecore.js?v=1"></script>
-<script src="engparts.js?v=1"></script>
-<script src="engines.js?v=3"></script>
+<script src="engparts.js?v=2"></script>
+<script src="engines.js?v=4"></script>
 </body>
 </html>
