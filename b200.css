@@ -11,11 +11,16 @@
 .ctop .sp{flex:1 1 auto}
 .ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
 .cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
-.stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);touch-action:none;user-select:none;-webkit-user-select:none}
+.stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
 .stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
-.stage.nootw>canvas#otw,.stage.nogl>canvas#otw{display:none}.stage.zoomed>canvas#otw{visibility:hidden}
+/* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
+   pointer): Chrome keeps a touch-action region for every painted panel part and rebuilds it on each repaint */
+@media (any-pointer:coarse){.stage{touch-action:none}}.stage.tact{touch-action:none}
+.stage.nootw>canvas#otw,.stage.nogl>canvas#otw,.stage.zoomed>canvas#otw{display:none}
 .world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
 .world.nt{transition:none}
+.wlay{position:absolute;inset:0;pointer-events:none}.wlay>.world{pointer-events:auto}
+.stage:not(.zoomed):not(.nootw):not(.nogl)>.wlay{will-change:transform}
 .psvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .otwmsg{position:absolute;left:10px;top:10px;max-width:min(200px,calc(50% - 120px));z-index:1;pointer-events:none;font-size:12px;line-height:1.35;color:#9fb0bd}
 .stage.zoomed .otwmsg,.stage.nootw .otwmsg{display:none}
@@ -24,9 +29,9 @@
 .psvg .sub{fill:url(#gSub);stroke:#15181b;stroke-width:1.2}
 .psvg .sub2{fill:#2a2e33;stroke:#15181b;stroke-width:1}
 .psvg .plc{fill:#1b1e22;stroke:#3b4249;stroke-width:.8}
-.psvg .screw circle{fill:url(#gMetal);opacity:.55}.psvg .screw path{stroke:#333;stroke-width:.8}
-.psvg .pl{fill:#eef2f4;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-weight:600;letter-spacing:.04em;opacity:var(--bl,.92);filter:url(#fGlow)}
-.psvg .pl.dim{opacity:.6}.psvg .pl.gp{letter-spacing:.12em}.psvg .pl.red{fill:#ff8b7d}
+.psvg .screw circle{fill:url(#gMetal);fill-opacity:.55}.psvg .screw path{stroke:#333;stroke-width:.8}
+.psvg .pl{fill:#eef2f4;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-weight:600;letter-spacing:.04em;fill-opacity:var(--bl,.92);stroke-opacity:var(--bl,.92);filter:url(#fGlow)}
+.psvg .pl.dim{fill-opacity:.6;stroke-opacity:.6}.psvg .pl.gp{letter-spacing:.12em}.psvg .pl.red{fill:#ff8b7d}
 .psvg .grpl{stroke:#eef2f4;stroke-opacity:.5;stroke-width:.8;fill:none}
 .psvg .nut{fill:url(#gMetal)}.psvg .nut2{fill:#8c939a;stroke:#3a3f45;stroke-width:.6}
 .psvg .batg{fill:url(#gBat);stroke:#4b5157;stroke-width:.5}.psvg .batr{fill:url(#gBatR);stroke:#4a0e09;stroke-width:.5}
@@ -40,7 +45,7 @@
 .psvg .ring0{fill:#15181b;stroke:#000;stroke-width:1}
 .psvg .knob{fill:url(#gKnob);stroke:#0b0c0e;stroke-width:1}.psvg .knobtop{fill:#30353b}
 .psvg .ptr{fill:#f2f4f6}.psvg .ptrbar{fill:#e8ecef;stroke:#222;stroke-width:.5}
-.psvg .pbtn{fill:url(#gKnob);stroke:#000}.psvg .spec{fill:#fff;opacity:.12}
+.psvg .pbtn{fill:url(#gKnob);stroke:#000}.psvg .spec{fill:#fff;fill-opacity:.12}
 .psvg .t-push .mv,.psvg .t-abtn .mv{transition:transform .06s}
 .psvg .t-push.on .mv,.psvg .t-abtn.on .mv{transform:translateY(1.2px)}
 .psvg .t-push.on .pbtn{fill:#1b1e22}
@@ -53,8 +58,8 @@
 .psvg .gl{fill:#23282a;stroke:#000;stroke-width:.6}.psvg .gl.g,.psvg .fl.g{fill:#3cff6e;filter:url(#fLed)}.psvg .gl.r{fill:#ff3b2b;filter:url(#fLed)}
 .psvg .fl{fill:#23282a;stroke:#000;stroke-width:.6}.psvg .fl.a{fill:#ffc02a;filter:url(#fLed)}
 .psvg .flapk{fill:#e9ecee;stroke:#666}.psvg .flapl{stroke:#888;stroke-width:1.5}
-.psvg .cbcol{fill:#e8e8e2;opacity:.2}.psvg .cbh{fill:#141618;stroke:#000}
-.psvg .t-cb.out .cbcol{opacity:.95}.psvg .t-cb.out .mv{transform:scale(1.12);transform-box:fill-box;transform-origin:center}
+.psvg .cbcol{fill:#e8e8e2;fill-opacity:.2}.psvg .cbh{fill:#141618;stroke:#000}
+.psvg .t-cb.out .cbcol{fill-opacity:.95}.psvg .t-cb.out .mv{transform:scale(1.12);transform-box:fill-box;transform-origin:center}
 .psvg .tbar{fill:#1b1e22;stroke:#596069}
 .psvg .quad{fill:#16181b;stroke:#000;stroke-width:1.2}
 .psvg .lever{fill:url(#gLever);stroke:#000;stroke-width:1}.psvg .grip{stroke:#5d646c;stroke-width:1}.psvg .gabtn{fill:#2a2f35;stroke:#000}
@@ -69,7 +74,8 @@
 .psvg .acsym{stroke:#ffb000;stroke-width:2.6;fill:none;stroke-linejoin:round}
 .psvg .sbAtt,.psvg .sbAsi,.psvg .sbAlt0,.psvg .sbAlt1,.psvg .sbCmp{transition:none}
 .psvg g.ctl{cursor:pointer;outline:none}
-.psvg .hit{fill:transparent;cursor:pointer}.psvg .hlr{pointer-events:none}
+/* touch zones: hit-testable (pointer-events:all) but not painted, so they add nothing to repaints and event regions */
+.psvg .hit{fill:transparent;cursor:pointer;visibility:hidden;pointer-events:all}.psvg .hit.hitw{visibility:visible}.psvg .hlr{pointer-events:none}
 .psvg .hlr{fill:none;stroke:#7fcbe8;stroke-width:2;opacity:0;transition:opacity .15s}
 .psvg g.ctl:focus-visible .hlr{opacity:.9}
 .psvg g.ctl.hl .hlr{opacity:1;stroke:#ffcf3a;stroke-width:3.5}
@@ -202,11 +208,11 @@
 .psvg .an-b.on rect{fill:#2f8bff}.psvg .an-b.on text{fill:#fff}
 .psvg .syn,.psvg .cmp,.psvg .slv,.psvg .dhb,.psvg .aitr,.psvg .pctlp{transition:none}
 .psvg .t-tog3 .mv{transition:transform .12s}
-.psvg .dig[class*="rd-"],.psvg .dig[class*="dm-"]{opacity:var(--rbrt,1)}
+.psvg .dig[class*="rd-"],.psvg .dig[class*="dm-"]{fill-opacity:var(--rbrt,1)}
 .psvg .rda{fill:#7fe08a}
 .psvg .t-sbtn.on circle{filter:brightness(1.7)}
 /* ---------- reference-layout panel (beige face, grey subpanels, EFIS) ---------- */
-.psvg .pl{fill:#f6f5f2;filter:none;font-weight:700;letter-spacing:.02em;paint-order:stroke;stroke:rgba(30,26,22,.42);stroke-width:.45px;opacity:var(--bl,.95)}
+.psvg .pl{fill:#f6f5f2;filter:none;font-weight:700;letter-spacing:.02em;paint-order:stroke;stroke:rgba(30,26,22,.42);stroke-width:.45px;fill-opacity:var(--bl,.95);stroke-opacity:var(--bl,.95)}
 .psvg .pl.gn{fill:#2fd25e}
 .psvg .grpl{stroke:#f2f1ee;stroke-opacity:.85;stroke-width:.7;fill:none}
 .psvg .ovh{fill:url(#gOvh);stroke:#5d5242;stroke-width:1.4}.psvg .ovhl{stroke:#6d604d;stroke-width:1}
@@ -256,7 +262,7 @@
 .psvg .ballk{fill:url(#gBall);stroke:#000;stroke-width:.8}
 .psvg .pbtno{fill:#ff7a4a;stroke:#5a1a06}
 .psvg .pullring{fill:url(#gChrome);stroke:#444;stroke-width:.8}.psvg .pullk{fill:url(#gMetal);stroke:#444;stroke-width:.6}.psvg .tee{fill:#1a1819;stroke:#000}
-.psvg .cbcol{fill:#e8e8e2;opacity:.18}.psvg .cbh{fill:#141213;stroke:#000}.psvg .cbh2{fill:#2a2728;stroke:#4a4748;stroke-width:.6}.psvg .cbt{fill:#fff;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .cbcol{fill:#e8e8e2;fill-opacity:.18}.psvg .cbh{fill:#141213;stroke:#000}.psvg .cbh2{fill:#2a2728;stroke:#4a4748;stroke-width:.6}.psvg .cbt{fill:#fff;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
 .psvg .cbpan{fill:#4a4748;stroke:#9a8a6a;stroke-width:3}.psvg .fuelp{fill:#252223;stroke:#0e0d0d;stroke-width:1.2}
 .psvg .ped{fill:url(#gCons);stroke:#000;stroke-opacity:.6}.psvg .pedp{fill:#2c292a;stroke:#0d0c0c;stroke-width:1}
 .psvg .slot2{fill:#2a2728;stroke:#000;stroke-width:.6}.psvg .wheelk{fill:url(#gWheel);stroke:#8a8270;stroke-width:1}.psvg .wheelr{stroke:#b9b29a;stroke-width:.6}.psvg .gl.gU{fill:#5a1410}
@@ -326,3 +332,30 @@
 .psvg .ykh{fill:#d9d3c8;stroke:#4a443d;stroke-width:1.2}
 /* pilot's control column is drawn see-through: the engine anti-ice group sits behind it on the subpanel */
 .psvg g.ctl[data-id="yokeL"]{opacity:.5}
+/* Performance. Static see-through parts above use fill-/stroke-opacity: an "opacity" on each of ~1,000 SVG labels gives each
+   its own paint effect and splits the panel into hundreds of paint chunks and layers. Moving parts below animate through
+   registered custom properties (class "cpt", set by b200panel.js where @property works): Chrome runs a CSS transition of
+   "transform" or "opacity" on an SVG element on the compositor, which lifts that part and every overlapping part painted after
+   it into its own layer (100+ layers, hundreds of ms of layerisation per frame on a slow CPU). Custom-property transitions run on
+   the main thread and repaint only the moving part. Same durations, easing and end positions as the rules above. */
+@property --bbx{syntax:"<length>";inherits:false;initial-value:0px}
+@property --bby{syntax:"<length>";inherits:false;initial-value:0px}
+@property --bbr{syntax:"<angle>";inherits:false;initial-value:0deg}
+@property --bbsx{syntax:"<number>";inherits:false;initial-value:1}
+@property --bbsy{syntax:"<number>";inherits:false;initial-value:1}
+@property --bbo{syntax:"<number>";inherits:false;initial-value:1}
+.psvg.cpt .bat,.psvg.cpt .gd,.psvg.cpt .mv,.psvg.cpt .mvi{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));transition:none;transition-property:--bbx,--bby,--bbr,--bbsx,--bbsy;transition-duration:.14s;transition-timing-function:cubic-bezier(.4,1.4,.6,1)}
+.psvg.cpt .t-push .mv,.psvg.cpt .t-abtn .mv{transition-duration:.06s;transition-timing-function:ease}
+.psvg.cpt .t-push.on .mv,.psvg.cpt .t-abtn.on .mv,.psvg.cpt .t-mbtn.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:1.2px}
+.psvg.cpt .t-bar.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:1.4px}
+.psvg.cpt .t-key.on .mv,.psvg.cpt .t-lbtn.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:.8px}
+.psvg.cpt .t-cb.out .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bbsx:1.12;--bbsy:1.12}
+.psvg.cpt .t-lev .mv{transition-duration:.05s;transition-timing-function:linear}
+.psvg.cpt .t-yoke .mv,.psvg.cpt .t-sbtn .mv{transition-duration:.06s;transition-timing-function:linear}
+.psvg.cpt .t-tog3 .mv{transition-duration:.12s;transition-timing-function:ease}
+.psvg.cpt .t-enc2 .mvi{transition-duration:.1s;transition-timing-function:ease}
+.psvg.cpt .hlr{opacity:1;stroke-opacity:0;visibility:hidden;transition:stroke-opacity .15s,visibility .15s}
+.psvg.cpt g.ctl:focus-visible .hlr{opacity:1;stroke-opacity:.9;visibility:visible}
+.psvg.cpt g.ctl.hl .hlr,.psvg.cpt g.ctl.bad .hlr{opacity:1;stroke-opacity:1;visibility:visible}
+.psvg.cpt .areahl{opacity:var(--bbo);--bbo:0;transition:--bbo .15s}
+.psvg.cpt .mag{opacity:var(--bbo);--bbo:.7;transition:--bbo .15s}.psvg.cpt .mag:hover,.psvg.cpt .mag:focus-visible{--bbo:1}

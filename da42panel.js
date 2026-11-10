@@ -192,8 +192,11 @@ function build(stage,io){
   const world=document.createElement('div'); world.className='world'; world.style.width=W+'px'; world.style.height=H+'px';
   world.innerHTML=panelSVG()+
    `<div class="gdu" id="bzP" style="left:242px;top:228px;width:536px;height:400px"></div><div class="gdu" id="bzM" style="left:862px;top:228px;width:536px;height:400px"></div>`;
-  stage.appendChild(world);
-  const svg=world.querySelector('svg'), byId={};
+  /* the panel sits in an unscaled full-stage wrapper; CSS composites it while the outside view is drawn behind the panel, so the
+     WebGL canvas below does not split the panel into overlap layers (the panel itself keeps its scale and stays sharp) */
+  const wlay=document.createElement('div'); wlay.className='wlay'; wlay.appendChild(world);
+  stage.appendChild(wlay);
+  const svg=world.querySelector('svg'), byId={}; if(CPT) svg.classList.add('cpt');
   svg.querySelectorAll('g.ctl').forEach(g=>{ const c=C.find(k=>k.id===g.dataset.id); byId[c.id]={c,g}; });
   // highlight rings from bounding boxes
   // highlight rings + non-overlapping hit zones in a layer below every control
@@ -206,12 +209,23 @@ function build(stage,io){
       const dx=B.cx-A.cx, dy=B.cy-A.cy;
       if(Math.abs(dx)>=Math.abs(dy)){ const m=(A.cx+B.cx)/2; if(dx>=0){ A.x1=Math.min(A.x1,m); B.x0=Math.max(B.x0,m); } else { A.x0=Math.max(A.x0,m); B.x1=Math.min(B.x1,m); } }
       else { const m=(A.cy+B.cy)/2; if(dy>=0){ A.y1=Math.min(A.y1,m); B.y0=Math.max(B.y0,m); } else { A.y0=Math.max(A.y0,m); B.y1=Math.min(B.y1,m); } } }
-    Z.forEach(z=>{ if(z.x1<=z.x0||z.y1<=z.y0) return; const h=document.createElementNS(NS,'rect'); h.setAttribute('class','hit'); h.dataset.for=z.o.c.id; h.setAttribute('x',z.x0); h.setAttribute('y',z.y0); h.setAttribute('width',z.x1-z.x0); h.setAttribute('height',z.y1-z.y0); layer.appendChild(h); }); });
-  bind(world,byId,io);
+    Z.forEach(z=>{ if(z.x1<=z.x0||z.y1<=z.y0) return; const h=document.createElementNS(NS,'rect'); const wh=WHT.includes(z.o.c.t); h.setAttribute('class',wh?'hit hitw':'hit'); if(wh) fineWheel(h,onWheel); h.dataset.for=z.o.c.id; h.setAttribute('x',z.x0); h.setAttribute('y',z.y0); h.setAttribute('width',z.x1-z.x0); h.setAttribute('height',z.y1-z.y0); layer.appendChild(h); }); });
+  const onWheel=bind(world,byId,io);
   return {world,svg,byId,W,H,REG,REG_ORDER,C,AUD,CBS};
 }
 
 /* ---------- interaction ---------- */
+/* A blocking (non-passive) wheel listener makes Chrome keep a wheel-event region for every painted part below it and rebuild it on
+   every repaint (the main cost of a repaint on a desktop, worst when zoomed in). Wheel events only come from a mouse or touchpad.
+   So the knob listener sits on the knobs and their touch zones only (the only targets it ever acted on), attached while the device
+   has a fine pointer; the stage-wide Ctrl+wheel guard (no browser zoom over the panel) is attached while the Ctrl key is held. */
+const WH=[]; let whMq=null, whOn=null;
+function whSync(){ const on=!whMq||whMq.matches; if(on===whOn) return; whOn=on; WH.forEach(([el,fn])=>{ if(on) el.addEventListener('wheel',fn,{passive:false}); else el.removeEventListener('wheel',fn,{passive:false}); }); }
+function fineWheel(el,fn){ if(whOn===null){ whMq=G.matchMedia?G.matchMedia('(any-pointer:fine)'):null; if(whMq){ if(whMq.addEventListener) whMq.addEventListener('change',whSync); else if(whMq.addListener) whMq.addListener(whSync); } whSync(); }
+  WH.push([el,fn]); if(whOn) el.addEventListener('wheel',fn,{passive:false}); }
+function ctrlWheel(el){ const fn=e=>{ if(e.ctrlKey) e.preventDefault(); }; let on=false; const set=v=>{ if(v===on) return; on=v; if(v) el.addEventListener('wheel',fn,{passive:false}); else el.removeEventListener('wheel',fn,{passive:false}); };
+  G.addEventListener('keydown',e=>{ if(e.key==='Control'||e.ctrlKey) set(true); },true); G.addEventListener('keyup',e=>{ if(e.key==='Control'||!e.ctrlKey) set(false); },true); G.addEventListener('blur',()=>set(false)); }
+const WHT=['rot','rotsel','vwheel','hwheel','power','flap','slide','fsel'];
 function ctlFromBy(byId,t){ if(!t||!t.closest) return null; const g=t.closest('g.ctl'); if(g) return g; const h=t.closest('.hit'); return h&&byId[h.dataset.for]?byId[h.dataset.for].g:null; }
 function bind(world,byId,io){
   const ctlFrom=t=>ctlFromBy(byId,t);
@@ -232,10 +246,11 @@ function bind(world,byId,io){
       case 'power': io.set('pwr',[Math.max(0,Math.min(1,io.get('pwrL')+d*0.05)),Math.max(0,Math.min(1,io.get('pwrR')+d*0.05))]); return;
     } };
   let wacc=0;
-  world.addEventListener('wheel',e=>{ const g=ctlFrom(e.target); if(!g) return; const o=byId[g.dataset.id]; if(!['rot','rotsel','vwheel','hwheel','power','flap','slide','fsel'].includes(o.c.t)) return; e.preventDefault(); e.stopPropagation(); if(e.ctrlKey) return; const raw=(Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:-e.deltaX)*(e.deltaMode?40:1); wacc+=raw; if(Math.abs(wacc)<30) return; const d=wacc<0?1:-1; wacc=0;
+  const onWheel=e=>{ const g=ctlFrom(e.target); if(!g) return; const o=byId[g.dataset.id]; if(!WHT.includes(o.c.t)) return; e.preventDefault(); e.stopPropagation(); if(e.ctrlKey) return; const raw=(Math.abs(e.deltaY)>=Math.abs(e.deltaX)?e.deltaY:-e.deltaX)*(e.deltaMode?40:1); wacc+=raw; if(Math.abs(wacc)<30) return; const d=wacc<0?1:-1; wacc=0;
     if(o.c.t==='power'){ const lv=e.target.closest('.lv0')?0:e.target.closest('.lv1')?1:-1; if(lv>=0){ io.set(lv?'pwrR':'pwrL',Math.max(0,Math.min(1,io.get(lv?'pwrR':'pwrL')+d*0.04))); return; } }
     if(o.c.t==='vwheel') return step(o,-d);
-    step(o,d); },{passive:false});
+    step(o,d); };
+  Object.values(byId).forEach(o=>{ if(WHT.includes(o.c.t)) fineWheel(o.g,onWheel); });
   let drag=null;
   world.addEventListener('pointerdown',e=>{ const g=ctlFrom(e.target); if(!g) return; if(io.intercept&&io.intercept(e,g)) return; const o=byId[g.dataset.id], c=o.c; e.preventDefault(); e.stopPropagation(); g.focus({preventScroll:true});
     const pt=io.toWorld(e);
@@ -276,11 +291,28 @@ function bind(world,byId,io){
     if(k===' '||k==='Enter'){ step(o,0); e.preventDefault(); e.stopPropagation(); return; }
     if(d!=null){ if(c.t==='vwheel') d=-d; if(c.t==='flap') d=d; step(o,d); e.preventDefault(); e.stopPropagation(); } });
   world.addEventListener('keyup',e=>{ const g=e.target.closest&&e.target.closest('g.ctl'); if(!g) return; const c=byId[g.dataset.id].c; if(held.has(c.id)){ held.delete(c.id); io.set(c.t==='key'?'start':c.id,0); } });
+  return onWheel;
 }
 
 /* ---------- render state ---------- */
 const cache={};
-function setT(el,t){ if(el&&el._t!==t){ el._t=t; el.style.transform=t; } }
+/* moving parts (.mv/.mvi/.gd/.lv0/.lv1) take their transform as custom properties (--bbx/--bby/--bbr/--bbsx/--bbsy, see the panel CSS)
+   when the browser supports @property, so their transitions run on the main thread and do not lift half the panel into compositor layers */
+const CPT=typeof CSS!=='undefined'&&!!G.CSSPropertyRule, TPN=['--bbx','--bby','--bbr','--bbsx','--bbsy'], TID=['0px','0px','0deg','1','1'];
+function tProps(t){ const v=TID.slice(); if(t==='none'||t==='') return v; let i=0; const re=/(\w+)\(([^)]*)\)\s*/y; let m;
+  while(i<t.length&&(m=(re.lastIndex=i,re.exec(t)))){ i=re.lastIndex; const a=m[2].split(',').map(x=>x.trim()), f=m[1];
+    if(f==='translateX'&&!v.o) v[0]=a[0]; else if(f==='translateY'&&!v.o) v[1]=a[0]; else if(f==='translate'&&!v.o){ v[0]=a[0]; v[1]=a[1]||'0px'; }
+    else if(f==='rotate'&&v.o!==2&&v.o!==3){ v[2]=a[0]; v.o=2; } else if(f==='scale'&&v.o!==3){ v[3]=a[0]; v[4]=a[1]||a[0]; v.o=3; } else if(f==='scaleX'&&v.o!==3){ v[3]=a[0]; v.o=3; } else if(f==='scaleY'&&v.o!==3){ v[4]=a[0]; v.o=3; }
+    else return null; }
+  return i===t.length?v:null; }
+function setT(el,t){ if(!el||el._t===t) return; el._t=t;
+  if(el._cp===undefined) el._cp=CPT&&(el.classList.contains('mv')||el.classList.contains('mvi')||el.classList.contains('gd')||el.classList.contains('lv0')||el.classList.contains('lv1'));
+  const v=el._cp?tProps(t):null;
+  if(v){ /* driven continuously (stick or yoke, trim wheel, lever drag): no easing between 30 Hz updates, so the part is not animated (and
+       repainted) on every frame in between; a single change still eases as before */
+    const now=performance.now(), cont=now-(el._lt||-1e9)<120; el._lt=now; if(cont!==!!el._cn){ el._cn=cont; el.style.transitionDuration=cont?'0s':''; }
+    if(el._ti){ el._ti=0; el.style.transform=''; } for(let i=0;i<5;i++){ const k=TPN[i], x=String(v[i]); if((el['_p'+i]||TID[i])!==x){ el['_p'+i]=x; el.style.setProperty(k,x); } } }
+  else { el._ti=1; el.style.transform=t; } }
 function sync(P,io){
   for(const id in P.byId){ const {c,g}=P.byId[id]; let v=io.get(id); if(c.t==='guard') v=v+'|'+io.get('emerG'); if(c.t==='fsel') v=v+'|'+io.get(id+'G'); if(c.t==='power') v=io.get('pwrL').toFixed(3)+'|'+io.get('pwrR').toFixed(3); if(c.t==='gear') v=v+'|'+io.get('gearLights');  if(c.t==='flap') v=v+'|'+io.get('flapLights'); if(c.t==='abtn') v=v+'|'+io.get('audLed:'+id);
     if(cache[id]===v) continue; cache[id]=v; const m=g.querySelector('.mv'); const val=io.get(id);
@@ -311,12 +343,12 @@ function sync(P,io){
 function syncSticks(P,x,y){ ['stickL','stickR','apDisc','trimUp','trimDn'].forEach(id=>{ const o=P.byId[id]; if(!o) return; const m=o.g.querySelector('.skg')||o.g.querySelector('.sbm'); setT(m,`translate(${(x*22).toFixed(1)}px,${(y*16).toFixed(1)}px)`); }); }
 /* standby instrument needles */
 function syncStby(P,o,baro){
-  const s=P.svg; const q=k=>s.querySelector(k);
+  const s=P.svg, c=P._sbq||(P._sbq={}); const q=k=>c[k]!==undefined?c[k]:(c[k]=s.querySelector(k));
   setT(q('.sbAsi'),`rotate(${asiAng(o.ias)}deg)`);
   setT(q('.sbAtt'),`rotate(${-o.roll}deg) translateY(${Math.max(-40,Math.min(40,o.pitch*1.6))}px)`);
   setT(q('.sbAlt0'),`rotate(${(o.alt%1000)/1000*360}deg)`); setT(q('.sbAlt1'),`rotate(${(o.alt%10000)/10000*360}deg)`);
   const t=q('.sbKol'); const b=String(Math.round(baro)); if(t.textContent!==b) t.textContent=b;
   const h=((o.hdg%360)+360)%360; setT(q('.sbCmp'),`translateX(${34-(h<180?h+360:h)*1.6+ (h<180?0:0)}px)`);
 }
-G.DA42P={ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
+G.DA42P={fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
 })(window);

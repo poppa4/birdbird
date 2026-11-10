@@ -7,7 +7,7 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="b200.css?v=9">
+<link rel="stylesheet" href="b200.css?v=10">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=54"></script>
@@ -132,8 +132,8 @@
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=7"></script>
-<script src="otw.js?v=6"></script>
-<script src="b200panel.js?v=6"></script>
+<script src="otw.js?v=7"></script>
+<script src="b200panel.js?v=7"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=46"></script>
 <script>
@@ -284,8 +284,9 @@ const dhFt=()=>Math.round(SYS.dhK*1000/10)*10;
 const NAME={bat:'BATTERY',genL:'GEN 1',genR:'GEN 2',avio:'AVIONICS MASTER',ignL:'IGN & START L',ignR:'IGN & START R',aignL:'AUTO IGNITION L',aignR:'AUTO IGNITION R',afSw:'AUTOFEATHER',fwL:'FIREWALL VALVE L',fwR:'FIREWALL VALVE R',stbyL:'STBY PUMP L',stbyR:'STBY PUMP R',xfeed:'CROSSFEED',pressSw:'CABIN PRESS',bleedL:'BLEED AIR L',bleedR:'BLEED AIR R',park:'PARKING BRAKE',gear:'GEAR',flaps:'FLAPS',inv:'INVERTER',mask:'CREW O2 MASK',paxOvr:'PAX O2 MANUAL OVERRIDE',micSel:'PILOT MIC',altStatic:"PILOT'S STATIC AIR SOURCE"};
 function descr(k){ const o=P.byId[k]; if(!o) return null; const c=o.c, v=ioGet(k), n=NAME[k]||c.lbl||c.l;
   const st=c.t==='rotsel'?c.vals[v]:c.t==='tog3'?(c.vals[v+1]||'CENTRE'):c.t==='flap'?c.vals[v]:c.t==='lev'?txtOf(k):c.t==='pull'?(v?'PULLED':'IN'):c.t==='cb'?(v?'IN':'PULLED'):c.t==='guard'?(v?(c.up||'ON'):(k==='altStatic'?'NORMAL':'CLOSED')):c.t==='gear'?(v?'DOWN':'UP'):c.t==='abtn'?(v?'ON':'OFF'):(c.t==='key'||c.t==='lbtn')?(txtOf(k)||(v?'ON':'OFF')):(v?(c.up||'ON'):(c.dn||'OFF')); return String(n+' '+st).replace(/\n/g,' '); }
+var slowForce=true; // panel: refresh the 10 Hz read-outs on the next frame (set by any control input)
 function ioSet(k,v){
-  ensureAudio();
+  ensureAudio(); slowForce=true;
   if(k==='stick'){ inp.stick=v; return; }
   if(k==='apDisc'){ SYS[k]=v; if(v&&AP.on){ AP.on=false; apDiscFx(); } return; }
   if(k==='trimUp'||k==='trimDn'){ SYS[k]=v; SYS.trimHat=v?(k==='trimUp'?1:-1):0; return; }
@@ -403,7 +404,8 @@ function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
-function areaHL(k){ if(!k||Z.reg!=='overview'){ hlR.style.opacity=0; return; } const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); hlR.style.opacity=1; }
+const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
+function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
 const MAGP={lower:[360,826],rsub:[812,890],center:[1112,884],cosubL:[1536,892],cosubR:[1972,840],pedT:[1296,1118],fuelT:[512,1120],fuelB:[438,1274],rsideT:[1984,1120],overheadL:[1164,10],overheadR:[1168,150],audio:[1330,398],glare:[1160,218],mfd:[1228,566]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
@@ -434,7 +436,9 @@ PST.addEventListener('pointerover',e=>{ const g=B200P.ctlFrom(P,e.target); if(!g
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; tip.textContent=tipText(tipG); const r=PST.getBoundingClientRect(); tip.style.left=Math.max(4,Math.min(r.width-240,e.clientX-r.left+14))+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
-PST.addEventListener('wheel',e=>{ if(e.ctrlKey) e.preventDefault(); },{passive:false});
+B200P.ctrlWheel(PST);
+// touch-action:none comes from CSS on touch screens; a pen (or touch the media query missed) turns it on at its first hover/contact
+{ const tact=e=>{ if(e.pointerType&&e.pointerType!=='mouse'){ PST.classList.add('tact'); PST.removeEventListener('pointerover',tact,true); PST.removeEventListener('pointerdown',tact,true); } }; PST.addEventListener('pointerover',tact,true); PST.addEventListener('pointerdown',tact,true); }
 /* ---------- outside view (shared three.js scene, otw.js) ---------- */
 // The canvas sits behind the panel (it never covers a control): the view shows through the windshield gaps beside the
 // overhead console, above the glareshield and beside the panel. It reaches down to mid-panel (~46 % of the stage, as
@@ -446,7 +450,13 @@ function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview') return; const h
 // 2.5° lower line of sight, so the level-flight horizon shows above the King Air's taller glareshield
 const OTW_EYE={dh:1.05,left:0.45,look:0.045}, otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
 function otwState(){ const c=Math.cos(S.psi), s=Math.sin(S.psi); otwS.N=S.N+OTW_EYE.left*s; otwS.E=S.E-OTW_EYE.left*c; otwS.h=S.h+OTW_EYE.dh; otwS.th=S.th-OTW_EYE.look; otwS.phi=S.phi; otwS.psi=S.psi; return otwS; }
-let otwOn=true, otwReady=false, otwSkip=0, ftAvg=16;
+let otwOn=true, otwReady=false, otwSkip=0;
+/* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
+   device pixels per CSS pixel. Level 1 (frames over 24 ms, as before): panel 20 Hz, outside view every 2nd frame at 1 pixel.
+   Level 2 (frames over 45 ms): panel 15 Hz, outside view every 3rd frame at 0.75 pixel. Hysteresis and a 2 s dwell avoid hunting. */
+const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
+  const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; } },
+  get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
 let otwTried=false;
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
@@ -456,9 +466,8 @@ el('bOtw').onclick=()=>setOtw(!otwOn);
 // default on; off on phones (small touch screens), where the strip of sky is tiny and the GPU is better spent on the panel
 { let pr=null; try{ pr=localStorage.getItem('bb-b200-otw'); }catch(e){} const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; setOtw(pr?pr==='1':!phone); }
 function otwTick(dt){
-  ftAvg+=(dt*1000-ftAvg)*0.05;
   if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
-  const slowDev=ftAvg>24; if(!slowDev||(++otwSkip%2===0)) OTW.render(otwState(),''); if(slowDev!==OTW.low) OTW.quality(slowDev);
+  const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
 }
 el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg(tr2('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.'))); }catch(e){} };
 
@@ -466,6 +475,7 @@ el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElem
 const pA=h=>1013.25*Math.pow(Math.max(0.01,1-6.8756e-6*h),5.2559);
 const hP=p=>(1-Math.pow(p/1013.25,1/5.2559))/6.8756e-6;
 const RAD_={nav1:null,nav2:null};
+let blLast=null;
 function sysTick(dt,o){
   const b=bus(), ias=o.ias, sig=F.isa(S.h,S.env.isa).sig, dens=Math.min(1,sig/0.62);
   const af=SYS.afSw, afPow=b&&cbIn('AUTOFEATHER'), afSys=afPow&&((af===-1&&SYS.pwrL>=0.88&&SYS.pwrR>=0.88)||af===1);
@@ -566,7 +576,7 @@ function sysTick(dt,o){
   [1,2].forEach(n=>{ const ch=SYS['d'+n+'ch'], nv=ch===1?'nav1':ch===2?'nav2':null; let f=nv?(SYS.dmeHold[ch]||SYS[nv].a):null; const ok=f&&NAVS[f]&&avOn()&&cbIn('DME');
     const r=ok?F.nav(S,NAVS[f],0):null; const d=r&&r.dist!=null&&r.dist<199?r.dist:null; SYS['dmeD'+n]=d; SYS['dmeId'+n]=r?r.id:'';
     if(d!=null&&SYS.dmeLast[n]!=null&&dt>0){ const g=Math.abs(SYS.dmeLast[n]-d)/dt*3600; SYS.dmeGs[n]+=(g-SYS.dmeGs[n])*Math.min(1,dt*0.6); } SYS.dmeLast[n]=d; });
-  document.documentElement.style.setProperty('--bl',(0.35+0.62*(b?(SYS.mpl?SYS.dimPF:0.9):0.1)).toFixed(2));
+  { const bl=(0.35+0.62*(b?(SYS.mpl?SYS.dimPF:0.9):0.1)).toFixed(2); if(bl!==blLast){ blLast=bl; document.documentElement.style.setProperty('--bl',bl); } }
 }
 const efisMain=()=>avOn()&&cbIn('DSPL PRCSR');
 const efisOnAux=()=>!efisMain()&&SYS.efisAux===-1&&cbIn('EFIS AUX BAT')&&SYS.auxBat>0&&SYS.efisWasOn;
@@ -942,12 +952,14 @@ renderLim();
 function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
 
 /* ---------- instruments ---------- */
-let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now();
+let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now(), lastSlow=-1e9, engTxt='';
 const raF2=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.62:0.62+Math.log10(v/500)/Math.log10(5)*0.38; };
 const raF=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.55:0.55+Math.log10(v/500)/Math.log10(5)*0.45; };
 function radTxt(k,a){ if(!radOn(k)) return ''; if(SYS[k+'T']) return k.startsWith('com')?'888.888':k==='adf'?'8888':'888.88'; return a; }
 function draw(o){
   const b=bus(), av=avOn(), now=performance.now(), dt=Math.min(0.1,(now-lastDraw)/1000); lastDraw=now;
+  // slow-changing read-outs (DME, counters, MFD and GPS maps and pages, engine read-out) at 10 Hz; at once after any control input
+  const slowDo=slowForce||now-lastSlow>=100; if(slowDo){ lastSlow=now; slowForce=false; }
   const asF=SYS.asF||0;
   B200P.flight(P,{ias:o.ias+3*asF,alt:o.alt+45*asF,baro:S.baro,roll:o.roll,pitch:o.pitch,slip:o.slip},'');
   B200P.flight(P,{ias:o.ias,alt:o.alt,baro:S.baro,roll:o.roll,pitch:o.pitch,slip:o.slip},'2');
@@ -982,7 +994,7 @@ function draw(o){
   if(b&&E[0].lit&&E[1].lit) synA+=(E[0].np-E[1].np)*dt*8; B200P.rot(P,'syn',synA%360);
   // copilot radar altimeter and DME indicators
   const raV=SYS.raT?100:o.agl; B200P.needle(P,'ra',av?raV:2500); B200P.vis(P,'raflag',!av); B200P.rot(P,'dhb',-30+raF2(dhFt())*300);
-  [1,2].forEach(n=>{ const on=av&&cbIn('DME')&&SYS[n===1?'dmePwr':'dme2Pwr'], d=SYS['dmeD'+n], sel=SYS['d'+n+'sel'], ch=SYS['d'+n+'ch'], hold=ch<3&&SYS.dmeHold[ch];
+  if(slowDo) [1,2].forEach(n=>{ const on=av&&cbIn('DME')&&SYS[n===1?'dmePwr':'dme2Pwr'], d=SYS['dmeD'+n], sel=SYS['d'+n+'sel'], ch=SYS['d'+n+'ch'], hold=ch<3&&SYS.dmeHold[ch];
     B200P.text(P,'dm-d'+n+'a',on?(d!=null?d.toFixed(1):'---.-'):''); B200P.text(P,'dm-d'+n+'u',on?'NM':'');
     const gs=SYS.dmeGs[n]; B200P.text(P,'dm-d'+n+'b',!on||d==null?'':sel===0?Math.round(gs)+' KT':sel===1?(gs>30?Math.min(99,Math.round(d/gs*60))+' MIN':'-- MIN'):SYS['dmeId'+n]);
     B200P.text(P,'dm-d'+n+'c',on?'CH '+ch+(hold?'  HLD':''):''); });
@@ -995,23 +1007,23 @@ function draw(o){
     if(k!=='adf') B200P.text(P,'rd-'+k+'N2',!on?'':k.startsWith('nav')?(hld?'HLD':''):''); });
   const xo=radOn('xpdr'), xm=SYS.xpdrMd; B200P.text(P,'rd-xpdrA',xo?(SYS.xpdrT?'8888':SYS.xpdr):''); const xr=xo&&xm>1&&(SYS.identT>0?blinkOn():Math.random()<0.15); B200P.text(P,'rd-xpdrN0',xo&&tNow-(SYS.chgT.xpdr||-1e9)<900?'ACT':''); B200P.text(P,'rd-xpdrN1',xr?'TX':''); B200P.text(P,'rd-xpdrS',xo?('ATC '+(SYS.xpdr12?1:2)+'  '+['','SBY','ON','ALT'][xm]+(xm===3?(cbIn('ENCD ALTM')?' · ALTM '+(SYS.encAlt?1:2):' FAIL'):'')):'');
   B200P.text(P,'rd-altsel',av?(AP.alt/1000).toFixed(1):''); B200P.text(P,'rd-apm',apText()); B200P.text(P,'rd-apm2',apText());
-  B200P.text(P,'rd-fcons',b?String(Math.round(Math.max(0,fuelUsed()-(SYS.fcOff||0)))).padStart(4,'0'):'');
+  if(slowDo) B200P.text(P,'rd-fcons',b?String(Math.round(Math.max(0,fuelUsed()-(SYS.fcOff||0)))).padStart(4,'0'):'');
   { const d=new Date(), mn=d.getMinutes()+d.getSeconds()/60, hr=(d.getHours()%12)+mn/60; ['c1','c2'].forEach(c=>{ B200P.rot(P,'clkh-'+c,hr*30); B200P.rot(P,'clkm-'+c,mn*6); }); }
   B200P.rot(P,'pctlp',-150+F.clamp((SYS.cabSel+1000)/11000,0,1)*300); B200P.text(P,'rd-cab2',b?'ACFT '+Math.max(0,Math.round(hP(pA(SYS.cabSel)-6.5*68.95)/100)*100):'');
   { const br=(0.45+0.55*SYS.annBrt).toFixed(2); if(P.svg._br!==br){ P.svg._br=br; P.svg.style.setProperty('--rbrt',br); } }
-  B200P.text(P,'rd-oat',b&&cbIn('OAT')?(SYS.oatF?Math.round(o.oat*9/5+32)+' °F':Math.round(o.oat)+' °C'):'');
-  B200P.text(P,'rd-hobbs',String(SYS.hobbs.toFixed(1)).padStart(6,'0'));
+  if(slowDo){ B200P.text(P,'rd-oat',b&&cbIn('OAT')?(SYS.oatF?Math.round(o.oat*9/5+32)+' °F':Math.round(o.oat)+' °C'):'');
+  B200P.text(P,'rd-hobbs',String(SYS.hobbs.toFixed(1)).padStart(6,'0')); }
   // copilot subpanel gauges
   const pd=SYS.propDe; B200P.needle(P,'pamp',b&&cbIn('PROP DEICE')&&E.some(e=>e.lit)?(pd===-1?20+2*Math.sin(now/900):pd===1?22:0):0);
   const pneu=E.some((e,i)=>e.lit&&e.ng>55&&SYS['bleed'+SIDES[i]]!==1); B200P.needle(P,'suct',pneu?5.1:0); B200P.needle(P,'pneu',pneu?(SYS.surf&&Math.sin(now/1500)>0?15.5:18):0);
   B200P.needle(P,'ctemp',SYS.cabT); B200P.needle(P,'oxy',SYS.o2psi);
   B200P.tr(P,'aitr',`translateX(${((SYS.ailTrim-0.5)*44).toFixed(1)}px)`);
   B200P.ann(P,annLit,SYS.annTest&&b&&cbIn('ANN POWER'),blinkOn());
-  drawEfis(o,h1,h2); drawMfd(o,h1); drawGps(o);
+  drawEfis(o,h1,h2); if(slowDo){ drawMfd(o,h1); drawGps(o); }
   B200P.vis(P,'alttest-alt',!!SYS.altT);
   [['','tcasM','tcasRng'],['2','tcasM2','tcasRng2']].forEach(([n,m,r])=>{ const on=radOn('xpdr')&&SYS.xpdrMd===3&&cbIn('TCAS'); B200P.vis(P,'tcasoff-vsi'+n,!on); B200P.text(P,'tcasm-vsi'+n,on?(['','ABV ','BLW '][SYS[m]]+SYS[r]+' NM'):''); });
-  { const d2=SYS.dmeD2, on=av&&cbIn('DME')&&SYS.dme2Pwr; B200P.text(P,'h2-dme',on&&d2!=null?d2.toFixed(1):'---'); B200P.text(P,'h2-crs',String(SYS.crs2).padStart(3,'0')); B200P.text(P,'h2-gsp',on&&d2!=null?String(Math.round(SYS.dmeGs[2])):'---'); B200P.text(P,'h2-src',radOn('nav2')?(NAVS[SYS.nav2.a]==='LOC'?'LOC2':'VOR2'):''); }
-  if(PST.closest('.ckp')) el('engRead').innerHTML=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`;
+  if(slowDo){ const d2=SYS.dmeD2, on=av&&cbIn('DME')&&SYS.dme2Pwr; B200P.text(P,'h2-dme',on&&d2!=null?d2.toFixed(1):'---'); B200P.text(P,'h2-crs',String(SYS.crs2).padStart(3,'0')); B200P.text(P,'h2-gsp',on&&d2!=null?String(Math.round(SYS.dmeGs[2])):'---'); B200P.text(P,'h2-src',radOn('nav2')?(NAVS[SYS.nav2.a]==='LOC'?'LOC2':'VOR2'):''); }
+  if(slowDo&&PST.closest('.ckp')){ const t=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`; if(t!==engTxt){ engTxt=t; el('engRead').innerHTML=t; } }
 }
 /* ---------- EFIS, multifunction display and GPS ---------- */
 const MKN={O:'OM',M:'MM',I:'IM'};
@@ -1099,7 +1111,7 @@ function pilotInput(dt){
   if(S.autotrim&&!S.ground){ if(Math.abs(y)>0.03) holdPitch=null; else { const o=S.o; if(holdPitch===null) holdPitch=o.pitch; S.ctl.trim=F.clamp(S.ctl.trim+F.clamp(0.06*(holdPitch-o.pitch)-1.2*S.q,-0.4,0.4)*dt*3,-1,1); } } else holdPitch=null;
 }
 function loop(t){
-  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); last=t;
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
   if(!UI.paused&&!S.crash){
     pilotInput(dt);
     const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); audioTick(dt);
@@ -1112,7 +1124,7 @@ function loop(t){
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   annCompute(o); if(!UI.paused) gpwsTick(Math.max(0,Math.min(0.05,dt)),o);
   otwTick(dt);
-  if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
+  if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest===-1), bb&&cbIn('GEAR WARN')&&((gearWarn()&&!(SYS.hornSilOn&&!flapHorn()))||SYS.stallTest===1)&&!UI.paused);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);

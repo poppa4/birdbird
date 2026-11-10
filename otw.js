@@ -120,6 +120,7 @@ function render3d(S,qHead,fov,dpr,after){
   if(after){ R.autoClear=false; R.clearDepth(); after(R,cam); R.autoClear=true; }
   return true;
 }
-function quality(low){ if(!R) return; low=!!low; if(low===G.OTW.low) return; G.OTW.low=low; R.setPixelRatio(low?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; }
-G.OTW={init,render,render3d,quality,low:false,renderer:()=>R};
+// quality(false|true|2): normal (device pixels, at most 1.5 per CSS pixel), low (1 per CSS pixel), very low (0.75 per CSS pixel)
+function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.lvl) return; G.OTW.lvl=lv; G.OTW.low=lv>0; R.setPixelRatio(lv===2?0.75:lv?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; }
+G.OTW={init,render,render3d,quality,low:false,lvl:0,renderer:()=>R};
 })(window);

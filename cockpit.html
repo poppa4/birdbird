@@ -20,11 +20,16 @@
 .ctop .sp{flex:1 1 auto}
 .ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
 .cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
-.stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);touch-action:none;user-select:none;-webkit-user-select:none}
+.stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
 .stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
+/* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
+   pointer): Chrome keeps a touch-action region for every painted panel part and rebuilds it on each repaint */
+@media (any-pointer:coarse){.stage{touch-action:none}}.stage.tact{touch-action:none}
 .stage.nootw>canvas#otw{display:none}
 .world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
 .world.nt{transition:none}
+.wlay{position:absolute;inset:0;pointer-events:none}.wlay>.world{pointer-events:auto}
+.stage:not(.nootw):not(.nogl)>.wlay{will-change:transform}
 .psvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .otwmsg{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:12px;color:#9fb0bd}
 /* panel materials */
@@ -32,7 +37,7 @@
 .psvg .sub{fill:url(#gSub);stroke:#15181b;stroke-width:1.2}
 .psvg .sub2{fill:#2a2e33;stroke:#15181b;stroke-width:1}
 .psvg .plc{fill:#1b1e22;stroke:#3b4249;stroke-width:.8}
-.psvg .screw circle{fill:url(#gMetal);opacity:.55}.psvg .screw path{stroke:#333;stroke-width:.8}
+.psvg .screw circle{fill:url(#gMetal);fill-opacity:.55}.psvg .screw path{stroke:#333;stroke-width:.8}
 .psvg .pl{fill:#eef2f4;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-weight:600;letter-spacing:.04em;opacity:var(--bl,.92);filter:url(#fGlow)}
 .psvg .pl.dim{opacity:.6}.psvg .pl.gp{letter-spacing:.12em}.psvg .pl.red{fill:#ff8b7d}
 .psvg .grpl{stroke:#eef2f4;stroke-opacity:.5;stroke-width:.8;fill:none}
@@ -48,7 +53,7 @@
 .psvg .ring0{fill:#15181b;stroke:#000;stroke-width:1}
 .psvg .knob{fill:url(#gKnob);stroke:#0b0c0e;stroke-width:1}.psvg .knobtop{fill:#30353b}
 .psvg .ptr{fill:#f2f4f6}.psvg .ptrbar{fill:#e8ecef;stroke:#222;stroke-width:.5}
-.psvg .pbtn{fill:url(#gKnob);stroke:#000}.psvg .spec{fill:#fff;opacity:.12}
+.psvg .pbtn{fill:url(#gKnob);stroke:#000}.psvg .spec{fill:#fff;fill-opacity:.12}
 .psvg .t-push .mv,.psvg .t-abtn .mv{transition:transform .06s}
 .psvg .t-push.on .mv,.psvg .t-abtn.on .mv{transform:translateY(1.2px)}
 .psvg .t-push.on .pbtn{fill:#1b1e22}
@@ -61,8 +66,8 @@
 .psvg .gl{fill:#23282a;stroke:#000;stroke-width:.6}.psvg .gl.g,.psvg .fl.g{fill:#3cff6e;filter:url(#fLed)}.psvg .gl.r{fill:#ff3b2b;filter:url(#fLed)}
 .psvg .fl{fill:#23282a;stroke:#000;stroke-width:.6}.psvg .fl.a{fill:#ffc02a;filter:url(#fLed)}
 .psvg .flapk{fill:#e9ecee;stroke:#666}.psvg .flapl{stroke:#888;stroke-width:1.5}
-.psvg .cbcol{fill:#e8e8e2;opacity:.2}.psvg .cbh{fill:#141618;stroke:#000}
-.psvg .t-cb.out .cbcol{opacity:.95}.psvg .t-cb.out .mv{transform:scale(1.12);transform-box:fill-box;transform-origin:center}
+.psvg .cbcol{fill:#e8e8e2;fill-opacity:.2}.psvg .cbh{fill:#141618;stroke:#000}
+.psvg .t-cb.out .cbcol{fill-opacity:.95}.psvg .t-cb.out .mv{transform:scale(1.12);transform-box:fill-box;transform-origin:center}
 .psvg .tbar{fill:#1b1e22;stroke:#596069}
 .psvg .quad{fill:#16181b;stroke:#000;stroke-width:1.2}
 .psvg .lever{fill:url(#gLever);stroke:#000;stroke-width:1}.psvg .grip{stroke:#5d646c;stroke-width:1}.psvg .gabtn{fill:#2a2f35;stroke:#000}
@@ -77,7 +82,9 @@
 .psvg .acsym{stroke:#ffb000;stroke-width:2.6;fill:none;stroke-linejoin:round}
 .psvg .sbAtt,.psvg .sbAsi,.psvg .sbAlt0,.psvg .sbAlt1,.psvg .sbCmp{transition:none}
 .psvg g.ctl{cursor:pointer;outline:none}
-.psvg .hit{fill:transparent;cursor:pointer}.psvg .hlr{pointer-events:none}
+/* touch zones: hit-testable (pointer-events:all) but not painted, so they add nothing to repaints and event regions; knob zones stay
+   painted (transparent) because they carry the knobs' wheel listener */
+.psvg .hit{fill:transparent;cursor:pointer;visibility:hidden;pointer-events:all}.psvg .hit.hitw{visibility:visible}.psvg .hlr{pointer-events:none}
 .psvg .hlr{fill:none;stroke:#7fcbe8;stroke-width:2;opacity:0;transition:opacity .15s}
 .psvg g.ctl:focus-visible .hlr{opacity:.9}
 .psvg g.ctl.hl .hlr{opacity:1;stroke:#ffcf3a;stroke-width:3.5}
@@ -184,6 +191,36 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
 .legend .box b.t{display:flex;gap:8px;align-items:center}
 .sw{display:inline-block;width:12px;height:12px;border-radius:2px;flex:0 0 12px}
+/* Performance. Static see-through parts above use fill-/stroke-opacity where that looks the same: an "opacity" on each of hundreds
+   of SVG parts gives each its own paint effect and splits the panel into many paint chunks and layers. Moving parts below animate
+   through registered custom properties (class "cpt", set by da42panel.js where @property works): Chrome runs a CSS transition of
+   "transform" or "opacity" on an SVG element on the compositor, which lifts that part and every overlapping part painted after
+   it into its own layer (100+ layers, hundreds of ms of layerisation per frame on a slow CPU). Custom-property transitions run on
+   the main thread and repaint only the moving part. Same durations, easing and end positions as the rules above. */
+@property --bbx{syntax:"<length>";inherits:false;initial-value:0px}
+@property --bby{syntax:"<length>";inherits:false;initial-value:0px}
+@property --bbr{syntax:"<angle>";inherits:false;initial-value:0deg}
+@property --bbsx{syntax:"<number>";inherits:false;initial-value:1}
+@property --bbsy{syntax:"<number>";inherits:false;initial-value:1}
+@property --bbo{syntax:"<number>";inherits:false;initial-value:1}
+.psvg.cpt .bat,.psvg.cpt .gd,.psvg.cpt .mv,.psvg.cpt .mvi{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));transition:none;transition-property:--bbx,--bby,--bbr,--bbsx,--bbsy;transition-duration:.14s;transition-timing-function:cubic-bezier(.4,1.4,.6,1)}
+.psvg.cpt .t-push .mv,.psvg.cpt .t-abtn .mv{transition-duration:.06s;transition-timing-function:ease}
+.psvg.cpt .t-push.on .mv,.psvg.cpt .t-abtn.on .mv,.psvg.cpt .t-mbtn.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:1.2px}
+.psvg.cpt .t-bar.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:1.4px}
+.psvg.cpt .t-key.on .mv,.psvg.cpt .t-lbtn.on .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bby:.8px}
+.psvg.cpt .t-cb.out .mv{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));--bbsx:1.12;--bbsy:1.12}
+.psvg.cpt .t-lev .mv{transition-duration:.05s;transition-timing-function:linear}
+.psvg.cpt .t-yoke .mv,.psvg.cpt .t-sbtn .mv{transition-duration:.06s;transition-timing-function:linear}
+.psvg.cpt .t-tog3 .mv{transition-duration:.12s;transition-timing-function:ease}
+.psvg.cpt .t-enc2 .mvi{transition-duration:.1s;transition-timing-function:ease}
+.psvg.cpt .hlr{opacity:1;stroke-opacity:0;visibility:hidden;transition:stroke-opacity .15s,visibility .15s}
+.psvg.cpt g.ctl:focus-visible .hlr{opacity:1;stroke-opacity:.9;visibility:visible}
+.psvg.cpt g.ctl.hl .hlr,.psvg.cpt g.ctl.bad .hlr{opacity:1;stroke-opacity:1;visibility:visible}
+.psvg.cpt .areahl{opacity:var(--bbo);--bbo:0;transition:--bbo .15s}
+.psvg.cpt .mag{opacity:var(--bbo);--bbo:.7;transition:--bbo .15s}.psvg.cpt .mag:hover,.psvg.cpt .mag:focus-visible{--bbo:1}
+.psvg.cpt .lv0,.psvg.cpt .lv1{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));transition:none;transition-property:--bbx,--bby,--bbr,--bbsx,--bbsy;transition-duration:.06s;transition-timing-function:linear}
+.psvg.cpt .rkTop,.psvg.cpt .rkBot{opacity:1;fill-opacity:0;transition:fill-opacity .12s}.psvg.cpt .t-rocker:not(.on) .rkTop,.psvg.cpt .t-rocker.on .rkBot{opacity:1;fill-opacity:.16}
+.psvg.cpt .fguard{transform:rotate(var(--bbr));transition:--bbr .2s}.psvg.cpt .fguard.open{--bbr:-40deg}
 </style>
 </head>
 <body data-title="Glass Cockpit Trainer">
@@ -323,8 +360,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="fms.js?v=3"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
-<script src="da42panel.js?v=3"></script>
-<script src="otw.js?v=6"></script>
+<script src="da42panel.js?v=4"></script>
+<script src="otw.js?v=7"></script>
 <script src="lab.js?v=46"></script>
 <script>
 (function(){
@@ -556,7 +593,8 @@ function overviewTap(){ return false; }
 /* area highlight, magnifiers, double-click on empty panel */
 const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
-function areaHL(k){ if(!k||Z.reg!=='overview'){ hlR.style.opacity=0; return; } const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); hlR.style.opacity=1; }
+const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
+function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
 const MAGP={top:[1290,116],switches:[804,664],flaps:[1364,664],console:[1010,790]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="13"/><circle cx="${x-2}" cy="${y-2}" r="5" class="mgl"/><path d="M${x+2} ${y+2}l5 5" class="mgl"/></g>`; }).join('');
@@ -591,12 +629,14 @@ PST.addEventListener('pointerover',e=>{ const g=DA42P.ctlFrom(P,e.target); if(!g
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; const r=PST.getBoundingClientRect(); tip.style.left=Math.min(r.width-180,e.clientX-r.left+14)+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
-PST.addEventListener('wheel',e=>{ if(e.ctrlKey) e.preventDefault(); },{passive:false});
+DA42P.ctrlWheel(PST);
+// touch-action:none comes from CSS on touch screens; a pen (or touch the media query missed) turns it on at its first hover/contact
+{ const tact=e=>{ if(e.pointerType&&e.pointerType!=='mouse'){ PST.classList.add('tact'); PST.removeEventListener('pointerover',tact,true); PST.removeEventListener('pointerdown',tact,true); } }; PST.addEventListener('pointerover',tact,true); PST.addEventListener('pointerdown',tact,true); }
 /* bezels */
 ['P','M'].forEach(d=>{ el('bz'+d).innerHTML=`<div class="bcolw" data-side="L"></div><div class="mid"><div class="bname">${d==='P'?'PFD':'MFD'}</div><div class="screen"><canvas id="${d==='P'?'pfd':'mfd'}" aria-label="${d==='P'?'Primary flight display':'Multi-function display'}"></canvas></div><div class="skw"></div></div><div class="bcolw" data-side="R"></div>`; });
 /* crisp screens: backing store follows the zoom */
 const scr={P:{ctx:null,w:0,h:0,dpr:1},M:{ctx:null,w:0,h:0,dpr:1}};
-function sizeScreens(){ ['P','M'].forEach(d=>{ const cv=el(d==='P'?'pfd':'mfd'), st=scr[d]; st.ctx=st.ctx||cv.getContext('2d'); const w=cv.offsetWidth, h=cv.offsetHeight; if(!w) return; let k=Z.s*(window.devicePixelRatio||1); k=Math.min(k,2400/w); k=Math.max(k,0.5);
+function sizeScreens(){ ['P','M'].forEach(d=>{ const cv=el(d==='P'?'pfd':'mfd'), st=scr[d]; st.ctx=st.ctx||cv.getContext('2d'); const w=cv.offsetWidth, h=cv.offsetHeight; if(!w) return; let k=Z.s*Math.min(window.devicePixelRatio||1,typeof GOV==='undefined'?99:GOV_DPR[GOV.lvl]); k=Math.min(k,2400/w); k=Math.max(k,0.5);
   const bw=Math.round(w*k), bh=Math.round(h*k); if(cv.width!==bw||cv.height!==bh){ cv.width=bw; cv.height=bh; } st.w=w; st.h=h; st.dpr=k; }); mfdForce=true; }
 /* ---------- systems tick ---------- */
 function sysTick(dt){
@@ -622,7 +662,7 @@ function sysTick(dt){
   if(!SYS.emerG) SYS.emer=0;
   if(!avOn()&&(AP.on||AP.fd)){ AP.on=false; AP.fd=false; }
   if(!cbIn('AUTOPILOT')&&AP.on){ AP.on=false; X.msg('AP circuit breaker pulled'); }
-  document.documentElement.style.setProperty('--bl',(0.35+0.62*(pw?SYS.dimInst:0.1)).toFixed(2));
+  { const bl=(0.35+0.62*(pw?SYS.dimInst:0.1)).toFixed(2); if(bl!==sysTick._bl){ sysTick._bl=bl; document.documentElement.style.setProperty('--bl',bl); } }
 }
 const ecuWarned=[0,0];
 function sysAlerts(o,L){
@@ -976,7 +1016,7 @@ function pilotInput(dt){
   return active;
 }
 function loop(t){
-  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); last=t;
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
   if(!UI.paused && !S.crash){
     pilotInput(dt);
     S.baro=XA.baroStd?1013.25:XA.baro;
@@ -991,16 +1031,24 @@ function loop(t){
   if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
   lastO={ias:o.ias,hdg:o.hdg};
   if(!UI.paused&&!S.crash&&!PR.k) updMission(dt,o,n);
-  if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; DA42P.sync(P,{get:ioGet}); DA42P.syncSticks(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); if(power()) DA42P.syncStby(P,o,XA.baroStd?1013:XA.baro); } }
+  if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; DA42P.sync(P,{get:ioGet}); DA42P.syncSticks(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); if(power()) DA42P.syncStby(P,o,XA.baroStd?1013:XA.baro); } }
   if(noteT>0){ noteT-=dt; if(noteT<=0) renderMission(); }
   hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, alerts(o).some(a=>a.t==='GEAR UP')&&!UI.paused);
-  if(cockpitVis) draw(o,n);
-  ftAvg+=((dt*1000||16)-ftAvg)*0.05;
-  if(otwReady&&otwOn&&cockpitVis&&(Z.reg==='overview'||Z.reg==='top')){ const slowDev=ftAvg>24; if(!slowDev||(++otwSkip%2===0)) OTW.render(S,otwView); if(slowDev!==OTW.low) OTW.quality(slowDev); }
+  if(cockpitVis){ pfdT+=dt; if(pfdT>=GOV_PFD[GOV.lvl]){ pfdT=0; draw(o,n); } else if(!avOn()) AP.on=false; }
+  if(otwReady&&otwOn&&cockpitVis&&(Z.reg==='overview'||Z.reg==='top')){ const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(S,otwView); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0); }
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);
 }
-let panelT=1, wasCrash=null, mfdTick=0, mfdForce=true, ftAvg=16, otwSkip=0;
+let panelT=1, pfdT=1, wasCrash=null, mfdTick=0, mfdForce=true, otwSkip=0;
+/* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
+   device pixels per CSS pixel. Level 1 (frames over 24 ms, as before): panel 20 Hz, outside view every 2nd frame at 1 pixel.
+   Level 2 (frames over 45 ms): panel 15 Hz, outside view every 3rd frame at 0.75 pixel. Hysteresis and a 2 s dwell avoid hunting. */
+var GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
+  const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; sizeScreens(); } },
+  get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
+// glass screens: every frame at level 0 (as before), 30 Hz at level 1, 20 Hz at level 2; backing store at most 2 / 1.5 device pixels
+// per CSS pixel at levels 1 / 2
+var GOV_PFD=[0,0.033,0.05], GOV_DPR=[99,2,1.5];
 function slowUI(o){
   KN.forEach(f=>f()); apLights();
   if(Math.abs(rud.v/100-S.ctl.rud)>0.005) rud.set(Math.round(S.ctl.rud*100));
