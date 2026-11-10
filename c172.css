@@ -366,3 +366,42 @@
 .psvg .digw{fill:#050505;stroke:#2c2a28}
 .psvg .t-pull.on .pullk{fill:#cfd4d8}
 .stage{--rbrt:1}
+/* ---------- C172N/P rebuild: charcoal panel with round cut-outs, padded glareshield, ram's-horn wheels ---------- */
+.psvg .pillarR{fill:url(#gPillarR)}
+.psvg .glare{fill:url(#gGlare)}.psvg .glarelip{fill:url(#gLip);stroke:#000;stroke-width:1.2}
+.psvg .stitch{fill:none;stroke:#4a4744;stroke-width:1;stroke-dasharray:5 4;opacity:.7}
+.psvg .ipanel{fill:url(#gPanel);stroke:#121110;stroke-width:2}
+.psvg .lpanel{fill:url(#gLow);stroke:#0b0a0a;stroke-width:1.5}
+.psvg .seam{stroke:#0a0909;stroke-width:2;fill:none}.psvg .seamhi{stroke:#fff;stroke-opacity:.06;stroke-width:1;fill:none}
+.psvg .ihole{fill:#1d1c1b;stroke:#4a4743;stroke-width:1}
+.psvg .icase{fill:url(#gBezel);stroke:#000;stroke-width:1.2}
+.psvg .cscr{fill:#8a8783;stroke:#1a1918;stroke-width:.7}.psvg .cscrs{stroke:#2a2827;stroke-width:.9}
+.psvg .dial{fill:#121111}
+.psvg .stackbay{fill:#0c0b0b;stroke:#444039;stroke-width:1.2}
+.psvg .avu{fill:#151414;stroke:#000;stroke-width:1.2}.psvg .avu2{fill:#1e1d1c;stroke:#2e2c2a;stroke-width:.8}
+.psvg .avscr{fill:#56534f;stroke:#000;stroke-width:.5}.psvg .avslot{fill:#080808;stroke:#3a3835;stroke-width:.8}
+.psvg .blankp{fill:#2b2a28;stroke:#141312;stroke-width:1.2}.psvg .blankp2{fill:none;stroke:#454240;stroke-width:1}
+.psvg .colbush{fill:#161514;stroke:#55514c;stroke-width:2}.psvg .colhole{fill:#030303}
+.psvg .coltube{fill:url(#gTube);stroke:#222;stroke-width:1}.psvg .coltubeh{stroke:#fff;stroke-opacity:.35;stroke-width:2}
+.psvg .colcoll{fill:#1b1a19;stroke:#000}
+.psvg .pedal{fill:#26241f;stroke:#000;stroke-width:1.2}.psvg .pedalr{stroke:#4c4840;stroke-width:3;stroke-linecap:round}.psvg .pedalb{stroke:#111;stroke-width:6;stroke-linecap:round}
+.psvg .plq{fill:#121111;stroke:#a9a59d;stroke-width:.9}.psvg .plqs{fill:#d9d6cf;stroke:#555;stroke-width:.8}
+.psvg .plqt{fill:#e9e6df;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700;letter-spacing:.03em}.psvg .plqt.dk{fill:#1a1918}
+.psvg .altst{fill:#b8231a;stroke:#3a0905}
+.psvg .hobbsc{fill:#121111;stroke:#5a5650;stroke-width:1}
+.psvg .eltp{fill:#151414;stroke:#5a5650;stroke-width:1}
+.psvg .glove{fill:url(#gDoor);stroke:#0c0b0b;stroke-width:2}.psvg .glove2{fill:none;stroke:#4a4743;stroke-width:1.2}
+.psvg .latch{fill:#6e6a64;stroke:#1a1817}.psvg .latchk{fill:#1a1817}
+.psvg .fric{fill:#1a1918;stroke:#6e6a64;stroke-width:1.2}
+.psvg .lighter{fill:url(#gChrome);stroke:#333}.psvg .lighter2{fill:#2a2827}.psvg .jack{fill:#050505;stroke:#8a8680;stroke-width:1.6}
+.psvg .knee{fill:#000;opacity:.45}.psvg .pedp{fill:#262422;stroke:#0a0909;stroke-width:1}.psvg .micbr{fill:#111;stroke:#55514c}
+.psvg .cbpan{fill:#121110;stroke:#3a3633;stroke-width:1}
+.psvg .ykC{fill:url(#gYoke);stroke:#050505;stroke-width:1.6}.psvg .ykG{fill:url(#gGrip);stroke:#000;stroke-width:1}
+.psvg .ykRib{stroke:#3a3836;stroke-width:1.4}.psvg .ykHi{fill:none;stroke:#fff;stroke-opacity:.18;stroke-width:3;stroke-linecap:round}
+.psvg .ykPl{fill:#262422;stroke:#000;stroke-width:1.4}.psvg .ykEm{fill:#3a3734;stroke:#8d8880;stroke-width:1}
+.psvg .ykHub{fill:#8d8880;stroke:#2a2826}.psvg .ykBtn{fill:#1a1a1a;stroke:#6a6660;stroke-width:1}
+.psvg .avcov{fill:#1a1918;stroke:#000;stroke-width:1.2}
+.psvg g.ctl[data-id="carb"] .pullring{fill:#2a2928;stroke:#000}.psvg g.ctl[data-id="carb"] .pullk{fill:url(#gKnob2);stroke:#000}.psvg g.ctl[data-id="carb"].on .pullk{fill:#6e737a}
+.psvg g.ctl[data-id="cabHeat"] .pullring,.psvg g.ctl[data-id="cabAir"] .pullring{fill:#1d1c1b;stroke:#000}.psvg g.ctl[data-id="cabHeat"] .pullk,.psvg g.ctl[data-id="cabAir"] .pullk{fill:url(#gBlackK);stroke:#000}
+.psvg g.ctl[data-id="cabHeat"].on .pullk,.psvg g.ctl[data-id="cabAir"].on .pullk{fill:#4a4846}
+.psvg .sidew{fill:#24221f}.psvg .sidetrim{stroke:#3d3a35;stroke-width:14;fill:none}.psvg .sidewin{fill:none}

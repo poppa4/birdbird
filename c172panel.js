@@ -10,91 +10,98 @@ const W=2000, H=1320, NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-/* ---------- geometry ---------- */
-const SX=[300,460,620], SY=[380,550], IR=62;                 // six-pack centres and dial radius
-const LX=112, NX=780, STK={x:870,w:340};                       // left column, NAV column, radio stack
-const RU={aud:[278,56],nc1:[340,78],nc2:[424,78],adf:[508,54],dme:[568,40],xp:[614,54]};
-const YK={L:[460,1100],R:[1540,1100]};
+/* ---------- geometry ----------
+   Laid out to a typical 172N/P panel at ~1.9 world units per mm (panel ~1 m wide = x 40..1960):
+   3 1/8" instruments 156 u bezel on a 162 u pitch, gyros over the pilot's control column, engine gauges at the left edge,
+   radio stack on the centreline, second radio column and extra instruments on the right, switch and control panel below. */
+const SX=[318,480,642], SY=[390,555], IR=66;                 // six-pack centres and dial radius
+const LX=135, NX=804, STK={x:894,w:340}, STK2={x:1256,w:340};  // left column, NAV column, centre stack, right radio column
+const RU={aud:[302,72],nc1:[382,104],nc2:[494,104],adf:[302,100],dme:[410,64],xp:[482,84]};
+const PT=296, PB=905, LB=1080;                                 // glareshield lip, panel / subpanel seam, subpanel bottom
+const YK={L:[480,1184],R:[1528,1184]}, COLY=812;                // control wheel hubs, column holes through the panel
+const SUBY=962;                                                // switch row on the subpanel
 
 /* ---------- regions for zoom ---------- */
 const REG={
   overview:[0,0,W,H],
-  six:[190,190,530,460], left:[20,282,380,598], low6:[190,640,700,240], nav:[690,290,180,590],
-  audio:[864,270,352,240], radios:[864,500,352,172], flaps:[864,668,352,212], right:[1220,282,760,598],
-  switches:[20,880,600,200], cbs:[600,880,262,125], quad:[860,880,420,125], rlower:[1280,880,700,125],
-  pedestal:[780,1005,440,315], compass:[860,10,280,240]
+  six:[214,286,532,368], left:[30,286,250,620], low6:[226,650,520,256], nav:[716,286,180,560],
+  audio:[884,286,360,330], radios:[1246,286,360,300], flaps:[1250,596,250,306], right:[1606,286,370,620],
+  switches:[30,905,790,215], cbs:[40,1018,760,62], quad:[850,905,420,175], rlower:[1270,905,420,175],
+  pedestal:[850,1080,300,240], compass:[880,40,240,230]
 };
-const REG_ORDER=['compass','cbs','quad','audio','radios','flaps','pedestal','rlower','switches','nav','low6','left','six','right'];
+const REG_ORDER=['compass','cbs','quad','rlower','audio','radios','flaps','pedestal','switches','nav','low6','left','six','right'];
 
 /* ---------- controls ---------- */
 const C=[]; const add=o=>{ C.push(o); return o; };
 /* instrument knobs */
-add({id:'aiK',t:'enc',x:SX[1],y:SY[0]+IR+4,r:7,l:'ATTITUDE INDICATOR – MINIATURE AIRPLANE ADJUST',d:'',deg:20});
-add({id:'baroK',t:'enc',x:SX[2]-IR+2,y:SY[0]+IR+2,r:8,l:'ALTIMETER SETTING KNOB',d:''});
-add({id:'dgK',t:'enc',x:SX[1]-IR+2,y:SY[1]+IR+2,r:8,l:'HEADING INDICATOR – PUSH TO SET',d:''});
-add({id:'obs1',t:'enc',x:NX-52,y:SY[0]+52,r:8,l:'NAV 1 OBS (COURSE SELECT)',d:''});
-add({id:'obs2',t:'enc',x:NX-52,y:SY[1]+52,r:8,l:'NAV 2 OBS (COURSE SELECT)',d:''});
-add({id:'adfCard',t:'enc',x:NX-50,y:722+50,r:8,l:'ADF CARD – HEADING SET',d:''});
-add({id:'egtK',t:'enc',x:SX[2]+38,y:722+40,r:6,l:'EGT REFERENCE POINTER',d:''});
-add({id:'covAI',t:'key',x:SX[1]-26,y:712,w:44,h:20,l:'AI COVER',alt:1,led:1,lbl:'INSTRUMENT COVER – ATTITUDE INDICATOR (PARTIAL PANEL PRACTICE)'});
-add({id:'covDG',t:'key',x:SX[1]+26,y:712,w:44,h:20,l:'HI COVER',alt:1,led:1,lbl:'INSTRUMENT COVER – HEADING INDICATOR (PARTIAL PANEL PRACTICE)'});
+add({id:'aiK',t:'enc',x:SX[1],y:SY[0]+IR+3,r:7,l:'ATTITUDE INDICATOR – MINIATURE AIRPLANE ADJUST',d:'',deg:20});
+add({id:'baroK',t:'enc',x:SX[2]-IR+4,y:SY[0]+IR+2,r:9,l:'ALTIMETER SETTING KNOB',d:''});
+add({id:'dgK',t:'enc',x:SX[1]-IR+4,y:SY[1]+IR+2,r:9,l:'HEADING INDICATOR – PUSH TO SET',d:''});
+add({id:'obs1',t:'enc',x:NX-IR+4,y:SY[0]+IR+2,r:9,l:'NAV 1 OBS (COURSE SELECT)',d:''});
+add({id:'obs2',t:'enc',x:NX-IR+4,y:SY[1]+IR+2,r:9,l:'NAV 2 OBS (COURSE SELECT)',d:''});
+add({id:'adfCard',t:'enc',x:NX-IR+4,y:740+IR+2,r:9,l:'ADF CARD – HEADING SET',d:''});
+add({id:'egtK',t:'enc',x:1712+38,y:392+38,r:6,l:'EGT REFERENCE POINTER',d:''});
+add({id:'covAI',t:'key',x:SX[2]-24,y:716,w:40,h:18,l:'AI COVER',alt:1,led:1,lbl:'INSTRUMENT COVER – ATTITUDE INDICATOR (PARTIAL PANEL PRACTICE)'});
+add({id:'covDG',t:'key',x:SX[2]+24,y:716,w:40,h:18,l:'HI COVER',alt:1,led:1,lbl:'INSTRUMENT COVER – HEADING INDICATOR (PARTIAL PANEL PRACTICE)'});
 /* audio panel */
 { const x0=STK.x, y0=RU.aud[0];
-  add({id:'mkrSw',t:'tog3',x:x0+64,y:y0+30,l:'MARKER BEACON SENSITIVITY (HI / LO / TEST)',d:'',vals:['HI','LO','TEST'],sm3:1,s:4,lay:'right'});
+  add({id:'mkrSw',t:'tog3',x:x0+76,y:y0+42,l:'MARKER BEACON SENSITIVITY (HI / LO / TEST)',d:'',vals:['HI','LO','TEST'],sm3:1,s:4.2,lay:'right'});
   [['auC1','COM 1'],['auC2','COM 2'],['auN1','NAV 1'],['auN2','NAV 2'],['auAdf','ADF'],['auDme','DME'],['auMkr','MKR']].forEach(([id,n],i)=>
-    add({id,t:'tog',x:x0+118+i*25,y:y0+30,l:'AUDIO '+n+' (SPEAKER / OFF)',d:'',xs:1,up:n.replace(' ','\n'),s:3.8}));
-  add({id:'micSel',t:'rotsel',x:x0+310,y:y0+30,r:10,l:'MICROPHONE SELECTOR (COM 1 / COM 2)',d:'',vals:['COM1','COM2'],ang:[-45,45],s:3.8}); }
+    add({id,t:'tog',x:x0+132+i*25,y:y0+44,l:'AUDIO '+n+' (SPEAKER / OFF)',d:'',xs:1,up:n.replace(' ','\n'),s:3.9}));
+  add({id:'micSel',t:'rotsel',x:x0+312,y:y0+42,r:11,l:'MICROPHONE SELECTOR (COM 1 / COM 2)',d:'',vals:['COM1','COM2'],ang:[-45,45],s:3.8}); }
 /* NAV/COM 1 and 2 */
 [['1',RU.nc1[0]],['2',RU.nc2[0]]].forEach(([n,y0])=>{ const x0=STK.x;
-  add({id:'pwr'+n,t:'rot',x:x0+20,y:y0+56,r:9,l:'NAV/COM '+n+' POWER / VOLUME',d:'',s:3.6});
-  add({id:'comX'+n,t:'key',x:x0+152,y:y0+56,w:20,h:12,l:'⇆',lbl:'COM '+n+' FREQUENCY TRANSFER (ACTIVE ⇆ STANDBY)'});
-  add({id:'navX'+n,t:'key',x:x0+188,y:y0+56,w:20,h:12,l:'⇆',lbl:'NAV '+n+' FREQUENCY TRANSFER (ACTIVE ⇆ STANDBY)'});
-  add({id:'comK'+n,t:'enc2',x:x0+118,y:y0+56,r:13,l:'COM '+n+' FREQUENCY (OUTER MHz / INNER kHz)',d:''});
-  add({id:'navK'+n,t:'enc2',x:x0+310,y:y0+56,r:13,l:'NAV '+n+' FREQUENCY (OUTER MHz / INNER kHz)',d:''});
-  add({id:'navId'+n,t:'key',x:x0+268,y:y0+60,w:22,h:12,l:'ID',alt:1,led:1,lbl:'NAV '+n+' IDENT (MORSE ON / OFF)'}); });
-/* ADF receiver */
-{ const x0=STK.x, y0=RU.adf[0];
-  add({id:'adfPwr',t:'rot',x:x0+20,y:y0+30,r:9,l:'ADF POWER / VOLUME',d:'',s:3.6});
-  add({id:'adfMd',t:'key',x:x0+196,y:y0+16,w:22,h:12,l:'ADF',alt:1,led:1,lbl:'ADF MODE (ADF / ANT)'});
-  add({id:'adfX',t:'key',x:x0+196,y:y0+38,w:22,h:12,l:'FRQ',lbl:'ADF FREQUENCY TRANSFER (FRQ)'});
-  add({id:'adfK',t:'enc2',x:x0+310,y:y0+28,r:13,l:'ADF FREQUENCY (OUTER 100s / INNER 1s)',d:''}); }
+  add({id:'pwr'+n,t:'rot',x:x0+24,y:y0+74,r:10,l:'NAV/COM '+n+' POWER / VOLUME',d:'',s:3.6});
+  add({id:'comX'+n,t:'key',x:x0+154,y:y0+74,w:22,h:14,l:'⇆',lbl:'COM '+n+' FREQUENCY TRANSFER (ACTIVE ⇆ STANDBY)'});
+  add({id:'navX'+n,t:'key',x:x0+196,y:y0+74,w:22,h:14,l:'⇆',lbl:'NAV '+n+' FREQUENCY TRANSFER (ACTIVE ⇆ STANDBY)'});
+  add({id:'comK'+n,t:'enc2',x:x0+116,y:y0+74,r:15,l:'COM '+n+' FREQUENCY (OUTER MHz / INNER kHz)',d:''});
+  add({id:'navK'+n,t:'enc2',x:x0+308,y:y0+74,r:15,l:'NAV '+n+' FREQUENCY (OUTER MHz / INNER kHz)',d:''});
+  add({id:'navId'+n,t:'key',x:x0+262,y:y0+78,w:24,h:14,l:'ID',alt:1,led:1,lbl:'NAV '+n+' IDENT (MORSE ON / OFF)'}); });
+/* ADF receiver (right radio column) */
+{ const x0=STK2.x, y0=RU.adf[0];
+  add({id:'adfPwr',t:'rot',x:x0+24,y:y0+72,r:10,l:'ADF POWER / VOLUME',d:'',s:3.6});
+  add({id:'adfMd',t:'key',x:x0+200,y:y0+58,w:24,h:14,l:'ADF',alt:1,led:1,lbl:'ADF MODE (ADF / ANT)'});
+  add({id:'adfX',t:'key',x:x0+200,y:y0+82,w:24,h:14,l:'FRQ',lbl:'ADF FREQUENCY TRANSFER (FRQ)'});
+  add({id:'adfK',t:'enc2',x:x0+306,y:y0+70,r:15,l:'ADF FREQUENCY (OUTER 100s / INNER 1s)',d:''}); }
 /* DME */
-{ const x0=STK.x, y0=RU.dme[0];
-  add({id:'dmePwr',t:'tog',x:x0+22,y:y0+20,l:'DME POWER',d:'',xs:1,up:'',dn:'',s:3.4});
-  add({id:'dmeMd',t:'rotsel',x:x0+300,y:y0+20,r:9,l:'DME MODE (N1 / HOLD / N2)',d:'',vals:['N1','HLD','N2'],ang:[-60,0,60],s:3.4}); }
+{ const x0=STK2.x, y0=RU.dme[0];
+  add({id:'dmePwr',t:'tog',x:x0+24,y:y0+38,l:'DME POWER',d:'',xs:1,up:'',dn:'',s:3.4});
+  add({id:'dmeMd',t:'rotsel',x:x0+300,y:y0+36,r:10,l:'DME MODE (N1 / HOLD / N2)',d:'',vals:['N1','HLD','N2'],ang:[-60,0,60],s:3.6}); }
 /* transponder */
-{ const x0=STK.x, y0=RU.xp[0];
-  add({id:'xpMd',t:'rotsel',x:x0+30,y:y0+28,r:11,l:'TRANSPONDER MODE',d:'',vals:['OFF','SBY','ON','ALT','TST'],ang:[-110,-55,0,55,110],s:3.6,lr:13});
-  [0,1,2,3].forEach(i=>add({id:'xp'+i,t:'enc',x:x0+176+i*34,y:y0+38,r:8,l:'TRANSPONDER CODE DIGIT '+(i+1),d:'',deg:45}));
-  add({id:'xpId',t:'key',x:x0+316,y:y0+16,w:30,h:13,l:'IDENT',lbl:'TRANSPONDER IDENT'}); }
-/* flaps (preselect lever with follow-up) */
-add({id:'flaps',t:'flap',x:1190,y:772,l:'WING FLAP SWITCH',vals:['UP','10°','20°','FULL'],sp:30,d:'FLAP'});
-/* lower switch and control panel */
-add({id:'primer',t:'pull',x:72,y:930,r:13,l:'PRIMER (PULL – PUSH = ONE STROKE; IN AND LOCKED)',d:'PRIMER',s:5});
-add({id:'mag',t:'rotsel',x:158,y:948,r:22,keyk:1,l:'IGNITION (OFF / R / L / BOTH / START)',d:'',vals:['OFF','R','L','BOTH','START'],ang:[-80,-40,0,40,80],s:5,lr:40,spring:4,springTo:3,loop:0});
-add({id:'altSw',t:'tog',rk:1,red:1,x:229,y:950,rw:16,rh:30,l:'MASTER – ALT (LEFT HALF)',d:'',top:'',bot:'ALT'});
-add({id:'batSw',t:'tog',rk:1,red:1,x:247,y:950,rw:16,rh:30,l:'MASTER – BAT (RIGHT HALF)',d:'',top:'',bot:'BAT'});
-add({id:'avio',t:'tog',x:304,y:952,l:'AVIONICS POWER (SWITCH / BREAKER)',d:'',sm:1,up:'AVIONICS\nPOWER',dn:'OFF',s:4.6});
+{ const x0=STK2.x, y0=RU.xp[0];
+  add({id:'xpMd',t:'rotsel',x:x0+34,y:y0+46,r:12,l:'TRANSPONDER MODE',d:'',vals:['OFF','SBY','ON','ALT','TST'],ang:[-110,-55,0,55,110],s:3.6,lr:14});
+  [0,1,2,3].forEach(i=>add({id:'xp'+i,t:'enc',x:x0+180+i*36,y:y0+58,r:9,l:'TRANSPONDER CODE DIGIT '+(i+1),d:'',deg:45}));
+  add({id:'xpId',t:'key',x:x0+312,y:y0+22,w:32,h:14,l:'IDENT',lbl:'TRANSPONDER IDENT'}); }
+/* flaps (preselect lever with follow-up), right of centre below the stack */
+add({id:'flaps',t:'flap',x:1370,y:760,l:'WING FLAP SWITCH',vals:['UP','10°','20°','FULL'],sp:30,d:'FLAP'});
+/* switch and control panel (subpanel): left = primer, key, master, avionics, lights, breakers */
+add({id:'primer',t:'pull',x:76,y:SUBY,r:12,l:'PRIMER (PULL – PUSH = ONE STROKE; IN AND LOCKED)',d:'PRIMER',s:5});
+add({id:'mag',t:'rotsel',x:172,y:SUBY+4,r:22,keyk:1,l:'IGNITION (OFF / R / L / BOTH / START)',d:'',vals:['OFF','R','L','BOTH','START'],ang:[-80,-40,0,40,80],s:5,lr:40,spring:4,springTo:3,loop:0});
+add({id:'altSw',t:'tog',rk:1,red:1,x:262,y:SUBY+4,rw:17,rh:32,l:'MASTER – ALT (LEFT HALF)',d:'',top:'',bot:'ALT'});
+add({id:'batSw',t:'tog',rk:1,red:1,x:281,y:SUBY+4,rw:17,rh:32,l:'MASTER – BAT (RIGHT HALF)',d:'',top:'',bot:'BAT'});
+add({id:'avio',t:'tog',x:352,y:SUBY+6,l:'AVIONICS POWER (SWITCH / BREAKER)',d:'',sm:1,up:'AVIONICS\nPOWER',dn:'OFF',s:4.6});
 [['bcn','BEACON','BCN'],['land','LANDING LIGHT','LAND'],['taxi','TAXI LIGHT','TAXI'],['navL','NAVIGATION LIGHTS','NAV'],['strobe','STROBE LIGHTS','STROBE'],['pitot','PITOT HEAT','PITOT\nHEAT']]
-  .forEach(([id,l,t],i)=>add({id,t:'tog',rk:1,x:366+i*44,y:950,rw:17,rh:28,l,d:'',top:t,bot:'',s:5}));
-add({id:'park',t:'pull',x:228,y:1052,r:9,tee:1,l:'PARKING BRAKE (PULL AND TURN)',d:'PARKING BRAKE',s:5});
+  .forEach(([id,l,t],i)=>add({id,t:'tog',rk:1,x:548+i*46,y:SUBY+4,rw:18,rh:30,l,d:'',top:t,bot:'',s:5}));
+add({id:'park',t:'pull',x:236,y:1108,r:9,tee:1,l:'PARKING BRAKE (PULL AND TURN)',d:'PARKING BRAKE',s:5});
 const CBS=[]; const cbAdd=(k,l,x,y,o)=>{ const i=CBS.length; CBS.push({k,l}); add(Object.assign({id:'cb'+i,t:'cb',x,y,l:l+' CIRCUIT BREAKER',cb:k,ds:''},o||{})); };
-[['ALT','ALT','ALT','60'],['FLAP','FLAP','FLAP','15'],['INST','INSTRUMENTS (FUEL / OIL TEMP GAUGES)','INST','5'],['TURN','TURN COORDINATOR','TURN\nCOORD','5'],['NAV LT','NAV LIGHTS','NAV\nLT','5'],['STROBE','STROBE','STRB','5'],['BCN','BEACON','BCN','5'],['LAND LT','LANDING LIGHT','LDG\nLT','15'],['TAXI LT','TAXI LIGHT','TAXI\nLT','10']]
-  .forEach(([k,l,la,amp],i)=>cbAdd(k,l,634+i*25,914,{la,amp,fs:3.5}));
-[['PITOT HT','PITOT HEAT','PITOT\nHT','10'],['COM 1','COM 1','COM 1','5'],['NAV 1','NAV 1','NAV 1','2'],['COM 2','COM 2','COM 2','5'],['NAV 2','NAV 2','NAV 2','2'],['ADF','ADF','ADF','2'],['DME','DME','DME','2'],['XPDR','TRANSPONDER','XPDR','2'],['AUDIO','AUDIO PANEL','AUDIO','2']]
-  .forEach(([k,l,lb,amp],i)=>cbAdd(k,l,634+i*25,972,{lb,amp,fs:3.5}));
-add({id:'carb',t:'pull',x:902,y:936,r:14,l:'CARBURETTOR HEAT (PULL ON)',d:'',top:'CARB\nHEAT',s:5});
-add({id:'thr',t:'lev',kind:'pp',x:982,y:930,len:46,min:0,max:1,r:14,l:'THROTTLE (PUSH OPEN)',top:'THROTTLE',marks:[[1],[0]]});
-add({id:'mix',t:'lev',kind:'pp',red:1,x:1062,y:930,len:46,min:0,max:1,r:13,l:'MIXTURE (PUSH RICH, PULL LEAN – IDLE CUT-OFF)',top:'MIXTURE',side:'RICH',marks:[[1],[0]]});
-add({id:'cabHeat',t:'pull',x:1332,y:936,r:13,l:'CABIN HEAT (PULL ON)',d:'',top:'CABIN\nHEAT',s:5});
-add({id:'cabAir',t:'pull',x:1404,y:936,r:13,l:'CABIN AIR (PULL ON)',d:'',top:'CABIN\nAIR',s:5});
-add({id:'dimPanel',t:'rot',x:1490,y:942,r:12,l:'PANEL LIGHTS DIMMER',d:'',top:'PANEL LT',s:4.6});
-add({id:'dimRadio',t:'rot',x:1556,y:942,r:12,l:'RADIO LIGHTS DIMMER',d:'',top:'RADIO LT',s:4.6});
-add({id:'elt',t:'tog3',x:1300,y:446,l:'ELT REMOTE SWITCH (ON / ARM / TEST-RESET)',d:'',vals:['ON','ARM','TEST/RESET'],s:4.4,lay:'right'});
+{ const L=[['ALT','ALT','ALT','60'],['FLAP','FLAP','FLAP','15'],['INST','INSTRUMENTS (FUEL / OIL TEMP GAUGES)','INST','5'],['TURN','TURN COORDINATOR','TURN\nCOORD','5'],['NAV LT','NAV LIGHTS','NAV\nLT','5'],['STROBE','STROBE','STRB','5'],['BCN','BEACON','BCN','5'],['LAND LT','LANDING LIGHT','LDG\nLT','15'],['TAXI LT','TAXI LIGHT','TAXI\nLT','10'],
+    ['PITOT HT','PITOT HEAT','PITOT\nHT','10'],['COM 1','COM 1','COM 1','5'],['NAV 1','NAV 1','NAV 1','2'],['COM 2','COM 2','COM 2','5'],['NAV 2','NAV 2','NAV 2','2'],['ADF','ADF','ADF','2'],['DME','DME','DME','2'],['XPDR','TRANSPONDER','XPDR','2'],['AUDIO','AUDIO PANEL','AUDIO','2']];
+  /* one row along the bottom of the switch panel, with a gap where the control column passes */
+  L.forEach(([k,l,la,amp],i)=>{ const x=i<10?60+i*37:528+(i-10)*37; cbAdd(k,l,x,1052,{la,amp,fs:3.6}); }); }
+/* centre: carb heat, throttle, mixture over the pedestal; light rheostats */
+add({id:'carb',t:'pull',x:926,y:SUBY+2,r:15,l:'CARBURETTOR HEAT (PULL ON)',d:'',top:'CARB\nHEAT',s:5});
+add({id:'thr',t:'lev',kind:'pp',x:1000,y:SUBY-6,len:46,min:0,max:1,r:16,l:'THROTTLE (PUSH OPEN)',top:'THROTTLE',marks:[[1],[0]]});
+add({id:'mix',t:'lev',kind:'pp',red:1,x:1082,y:SUBY-6,len:46,min:0,max:1,r:14,l:'MIXTURE (PUSH RICH, PULL LEAN – IDLE CUT-OFF)',top:'MIXTURE',side:'RICH',marks:[[1],[0]]});
+add({id:'dimPanel',t:'rot',x:1170,y:SUBY+6,r:12,l:'PANEL LIGHTS DIMMER',d:'',top:'PANEL LT',s:4.6});
+add({id:'dimRadio',t:'rot',x:1234,y:SUBY+6,r:12,l:'RADIO LIGHTS DIMMER',d:'',top:'RADIO LT',s:4.6});
+/* right: cabin heat and air (cigar lighter drawn), map compartment */
+add({id:'cabHeat',t:'pull',x:1336,y:SUBY+2,r:13,l:'CABIN HEAT (PULL ON)',d:'',top:'CABIN\nHEAT',s:5});
+add({id:'cabAir',t:'pull',x:1404,y:SUBY+2,r:13,l:'CABIN AIR (PULL ON)',d:'',top:'CABIN\nAIR',s:5});
+add({id:'elt',t:'tog3',x:1872,y:424,l:'ELT REMOTE SWITCH (ON / ARM / TEST-RESET)',d:'',vals:['ON','ARM','TEST/RESET'],s:4.4,lay:'right'});
 /* pedestal and floor */
-add({id:'trim',t:'vwheel',x:1000,y:1092,nolab:1,l:'ELEVATOR TRIM WHEEL'});
-add({id:'fuelSel',t:'rotsel',x:1000,y:1240,r:30,fuelh:1,l:'FUEL SELECTOR VALVE (LEFT / BOTH / RIGHT / OFF)',d:'',vals:['LEFT','BOTH','RIGHT','OFF'],ang:[-90,0,90,180],s:6,lr:38});
-/* control wheels (seen end-on) */
+add({id:'trim',t:'vwheel',x:1000,y:1146,nolab:1,l:'ELEVATOR TRIM WHEEL'});
+add({id:'fuelSel',t:'rotsel',x:1000,y:1266,r:24,fuelh:1,l:'FUEL SELECTOR VALVE (LEFT / BOTH / RIGHT / OFF)',d:'',vals:['LEFT','BOTH','RIGHT','OFF'],ang:[-90,0,90,180],s:5,lr:29});
+/* control wheels (seen from the seat) */
 add({id:'yokeL',t:'yoke',ces:1,x:YK.L[0],y:YK.L[1],l:'CONTROL WHEEL (LEFT) – DRAG TO FLY'});
 add({id:'yokeR',t:'yoke',ces:1,x:YK.R[0],y:YK.R[1],l:'CONTROL WHEEL (RIGHT) – DRAG TO FLY'});
 
@@ -192,8 +199,13 @@ function ctlSVG(c){
         :c.kind==='prop'?`<rect x="${x-hw}" y="${y-9}" width="${2*hw}" height="16" rx="3" class="levP"/><path d="M${x-hw+4} ${y-4}h${2*hw-8}M${x-hw+4} ${y}h${2*hw-8}" class="gripP"/>`
         :`<path d="M${x-hw} ${y-6}q0-4 4-4h${2*hw-8}q4 0 4 4v9h-${2*hw}z" class="levC"/><path d="M${x-hw+3} ${y-1}h${2*hw-6}" class="gripP"/>`;
       s=`<rect x="${x-5}" y="${y-10}" width="10" height="${L+20}" rx="4" class="slot"/>${c.mk?c.marks.map(([v,t])=>`<path d="M${x-20} ${ly(v)}h8" class="tick"/>${lab(x-22,ly(v)+1.6,t,{s:4.2,a:'end'})}`).join(''):''}<g class="mv lv"><rect x="${x-2.2}" y="${y}" width="4.4" height="14" class="rod"/>${knob}</g>${lab(x,y+L+18,c.l.slice(-1),{s:5.4})}`; break; }
-    case 'yoke': if(c.ces){ const X=x;
-        s=`<g class="mv skg" style="transform-origin:${X}px ${y}px"><path d="M${X-118} ${y-46}q-6 0-6 8v58q0 12 12 14l40 4q22 2 34-12l16-18q8-8 26-8h-0q18 0 26 8l16 18q12 14 34 12l40-4q12-2 12-14v-58q0-8-6-8h-14q-6 0-6 8v34q0 10-10 11l-26 3q-16 2-24-8l-14-16q-14-14-48-14q-34 0-48 14l-14 16q-8 10-24 8l-26-3q-10-1-10-11v-34q0-8-6-8z" class="ykC"/><rect x="${X-124}" y="${y-48}" width="26" height="52" rx="10" class="ykG"/><rect x="${X+98}" y="${y-48}" width="26" height="52" rx="10" class="ykG"/><rect x="${X-30}" y="${y-8}" width="60" height="30" rx="6" class="ykPl"/><circle cx="${X}" cy="${y+7}" r="8" class="ykHub"/><circle cx="${X-112}" cy="${y-36}" r="4" class="ykBtn"/></g>`; break; }
+    case 'yoke': if(c.ces){ const X=x, Y=y;
+        /* Cessna ram's-horn control wheel seen from the seat: centre hub with a plate, arms drooping out to upturned horn grips */
+        const half=`M0 -24H44C84 -24 112 -18 130 -30L140 -80Q144 -98 160 -98Q178 -98 182 -80L190 6Q192 34 166 38C128 44 88 34 46 28H0Z`;
+        const grip=`M138 -72L142 -84Q146 -96 160 -96Q176 -96 180 -82L186 -10Q170 -2 148 -6Z`;
+        const ribs=[0,1,2,3,4,5,6].map(i=>`<path d="M${141+i*0.6} ${-66+i*9}h${40-i*0.4}" class="ykRib"/>`).join('');
+        const side=k=>`<g transform="scale(${k} 1)"><path d="${half}" class="ykC"/><path d="${grip}" class="ykG"/>${ribs}<path d="M48 -16C86 -16 112 -12 128 -20" class="ykHi"/></g>`;
+        s=`<g class="mv skg" style="transform-origin:${X}px ${Y}px"><g transform="translate(${X} ${Y})">${side(1)}${side(-1)}<rect x="-46" y="-32" width="92" height="62" rx="14" class="ykPl"/><rect x="-32" y="-20" width="64" height="30" rx="5" class="ykEm"/><circle cx="0" cy="-5" r="6" class="ykHub"/><rect x="${c.id==='yokeL'?-167:155}" y="-101" width="12" height="7" rx="2.5" class="ykBtn"/></g></g>`; break; }
     case 'yoke': { const X=x, R=56, sh=c.co?-1:1; let bolts=''; for(let k=0;k<8;k++){ const [bx,by]=pol(X,y,R*0.8,k*45+22.5); bolts+=`<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="3.4" class="ykb"/>`; }
       s=`<path d="M${X+sh*14} ${y-50}L${X+sh*70} ${y-96}L${X+sh*104} ${y-62}L${X+sh*48} ${y+8}Z" class="ykshaft"/><ellipse cx="${X+sh*87}" cy="${y-79}" rx="24" ry="28" transform="rotate(${sh*-42} ${X+sh*87} ${y-79})" class="ykshaft2"/><g class="mv skg" style="transform-origin:${X}px ${y}px"><circle cx="${X}" cy="${y}" r="${R+4}" class="ykrim"/><circle cx="${X}" cy="${y}" r="${R}" class="ykf"/>${bolts}<path d="M${X-33} ${y-33}L${X+33} ${y+33}M${X+33} ${y-33}L${X-33} ${y+33}" class="ykx"/><rect x="${X-22}" y="${y-22}" width="44" height="44" rx="6" class="ykp"/><circle cx="${X}" cy="${y}" r="14" class="ykh"/><circle cx="${X}" cy="${y}" r="5" class="ykb"/></g>`; break; }
     case 'sbtn': { const r=c.r||5; s=`<g class="mv sbm" style="transform-origin:${x}px ${y}px"><circle cx="${x+c.dx}" cy="${y+c.dy}" r="${r}" fill="${c.col}" stroke="#000"/></g>`; break; }
@@ -228,19 +240,20 @@ function lab0(x,y,t,fs,cls){ return String(t).split('\n').map((ln,i)=>`<text x="
 function angOf(sc,v){ const f=sc.f?sc.f(v):(clamp(v,sc.min,sc.max)-sc.min)/(sc.max-sc.min); return sc.a0+f*(sc.a1-sc.a0); }
 
 /* ---------- instruments ---------- */
-function sqcase(cx,cy,w,h,r){ return `<rect x="${cx-w/2}" y="${cy-h/2}" width="${w}" height="${h}" rx="${r}" class="icase"/>${[[-1,-1],[1,-1],[-1,1],[1,1]].map(([a,b])=>`<circle cx="${(cx+a*(w/2-7)).toFixed(1)}" cy="${(cy+b*(h/2-7)).toFixed(1)}" r="2.8" class="cscr"/>`).join('')}`; }
-function rcase(cx,cy,r){ return `<circle cx="${cx}" cy="${cy}" r="${r+9}" class="icase"/>${[45,135,225,315].map(a=>{ const [x,y]=pol(cx,cy,r+5,a); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" class="cscr"/>`; }).join('')}`; }
+/* 3 1/8" instrument behind a round panel cut-out: black bezel ring and four mounting screws on the panel */
+function sqcase(cx,cy,w,h,r){ const R=w/2-8, k=w/2-6; return `<circle cx="${cx}" cy="${cy}" r="${R+2}" class="ihole"/><circle cx="${cx}" cy="${cy}" r="${R}" class="icase"/>${[[-1,-1],[1,-1],[-1,1],[1,1]].map(([a,b])=>`<circle cx="${(cx+a*k).toFixed(1)}" cy="${(cy+b*k).toFixed(1)}" r="3.2" class="cscr"/><path d="M${(cx+a*k-2).toFixed(1)} ${(cy+b*k-1).toFixed(1)}l4 2" class="cscrs"/>`).join('')}`; }
+function rcase(cx,cy,r){ return `<circle cx="${cx}" cy="${cy}" r="${r+9}" class="ihole"/><circle cx="${cx}" cy="${cy}" r="${r+7}" class="icase"/>${[45,135,225,315].map(a=>{ const [x,y]=pol(cx,cy,r+13,a); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" class="cscr"/>`; }).join('')}`; }
 const nd=(cls,x,y,path,extra)=>`<g class="ndx ${cls}" style="transform-origin:${x}px ${y}px">${path}</g>${extra||''}`;
 function card(x,y,r,cls,o){ o=o||{}; let t=''; for(let d=0;d<360;d+=5){ const L=d%30===0?r*0.16:d%10===0?r*0.11:r*0.06; const [a0,b0]=pol(x,y,r,d),[a1,b1]=pol(x,y,r-L,d); t+=`<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}L${a1.toFixed(1)} ${b1.toFixed(1)}" stroke="${o.col||'#f2f2f2'}" stroke-width="${d%10?0.8:1.3}"/>`; if(d%30===0){ const [lx,ly]=pol(x,y,r*0.7,d); const s={0:'N',90:'E',180:'S',270:'W'}[d]||d/10; t+=`<text x="${lx.toFixed(1)}" y="${(ly+r*0.06).toFixed(1)}" fill="${o.col||'#f2f2f2'}" font-size="${(r*(d%90?0.15:0.19)).toFixed(1)}" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,system-ui,sans-serif" transform="rotate(${d} ${lx.toFixed(1)} ${ly.toFixed(1)})">${s}</text>`; } } return `<g class="${cls}" style="transform-origin:${x}px ${y}px">${t}</g>`; }
 /* airspeed indicator: knots, white / green / yellow arcs and red line */
-function asiSVG(x,y,r){ return sqcase(x,y,150,150,10)+dial('asi',x,y,r,{bz:'none',sc:[{min:30,max:170,a0:12,a1:348,maj:20,mnr:5,lab:v=>v>=40&&v<=160?v:null,fs:0.15,lr:0.66,
+function asiSVG(x,y,r){ return sqcase(x,y,156,156,10)+dial('asi',x,y,r,{bz:'none',sc:[{min:30,max:170,a0:12,a1:348,maj:20,mnr:5,lab:v=>v>=40&&v<=160?v:null,fs:0.15,lr:0.66,
   arcs:[[33,85,'awhite',0.88],[44,127,'agreen'],[127,158,'ayellow']],red:[158]}],title:'AIRSPEED',ty:-0.14,tfs:0.1,unit:'KNOTS',uy:0.22,ufs:0.11}); }
 /* attitude indicator (vacuum): bank scale on the moving sky/ground card, fixed index, adjustable miniature airplane */
 function aiSVG(x,y,r){ let lad=''; [[-20,0.44],[-10,0.44],[-5,0.2],[5,0.2],[10,0.44],[20,0.44]].forEach(([p,w])=>{ const yy=y-p*r*0.03; lad+=`<path d="M${x-w*r/2} ${yy}h${w*r}" stroke="#fff" stroke-width="1.5"/>${Math.abs(p)%10?'':`<text x="${x+w*r/2+4}" y="${yy+3}" fill="#fff" font-size="${r*0.12}" font-family="IBM Plex Sans,sans-serif" font-weight="700">${Math.abs(p)}</text>`}`; });
   let ring=''; [-60,-30,-20,-10,10,20,30,60].forEach(b=>{ const [a0,b0]=pol(x,y,r*0.98,b), [a1,b1]=pol(x,y,r*(Math.abs(b)%30?0.88:0.84),b); ring+=`<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}L${a1.toFixed(1)} ${b1.toFixed(1)}" stroke="#fff" stroke-width="${Math.abs(b)%30?1.6:2.6}"/>`; });
   [-45,45].forEach(b=>{ const [a0,b0]=pol(x,y,r*0.97,b); ring+=`<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}l${(-Math.cos(b*Math.PI/180)*4).toFixed(1)} ${(6).toFixed(1)}h${(Math.cos(b*Math.PI/180)*8).toFixed(1)}z" fill="#fff" transform="rotate(${b} ${a0.toFixed(1)} ${b0.toFixed(1)})"/>`; });
   ring+=`<path d="M${x} ${y-r*0.84}l-5 -9h10z" fill="#fff"/>`;
-  return sqcase(x,y,150,150,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><clipPath id="cAIo"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath><clipPath id="cAIi"><circle cx="${x}" cy="${y}" r="${r*0.82}"/></clipPath>
+  return sqcase(x,y,156,156,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><clipPath id="cAIo"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath><clipPath id="cAIi"><circle cx="${x}" cy="${y}" r="${r*0.82}"/></clipPath>
   <g clip-path="url(#cAIo)"><g class="att att-ai" style="transform-origin:${x}px ${y}px"><path d="M${x-r} ${y}A${r} ${r} 0 0 1 ${x+r} ${y}z" fill="#4f86c6"/><path d="M${x-r} ${y}A${r} ${r} 0 0 0 ${x+r} ${y}z" fill="#6b4a2c"/>${ring}
    <g clip-path="url(#cAIi)"><g class="attp attp-ai"><rect x="${x-r*2}" y="${y-r*2.2}" width="${r*4}" height="${r*2.2}" fill="#5b95d6"/><rect x="${x-r*2}" y="${y}" width="${r*4}" height="${r*2.2}" fill="#7a5532"/><path d="M${x-r*2} ${y}h${r*4}" stroke="#fff" stroke-width="2"/>${lad}</g></g></g></g>
   <path d="M${x} ${y-r+1}l-6 11h12z" fill="#ff8a1a" stroke="#000" stroke-width=".6"/>
@@ -253,10 +266,10 @@ function altSVG(x,y,r){ const face=dial('alt',x,y,r,{bz:'none',sc:[{min:0,max:10
   const T=nd('nd-altT',x,y,`<path d="M${x-0.9} ${y}V${y-r*0.9}h1.8V${y}z" fill="#f2f2f2"/><path d="M${x} ${y-r*0.98}l-4.5 9h9z" fill="#f2f2f2"/>`);
   const K=nd('nd-altK',x,y,`<path d="M${x-3.4} ${y+r*0.1}L${x-3.8} ${y-r*0.4}L${x} ${y-r*0.52}L${x+3.8} ${y-r*0.4}L${x+3.4} ${y+r*0.1}z" fill="#f2f2f2" stroke="#000" stroke-width=".5"/>`);
   const Hh=nd('nd-altH',x,y,`<path d="M${x-2} ${y+r*0.16}L${x-1.6} ${y-r*0.82}L${x} ${y-r*0.92}L${x+1.6} ${y-r*0.82}L${x+2} ${y+r*0.16}z" fill="#f2f2f2" stroke="#000" stroke-width=".5"/>`);
-  return sqcase(x,y,150,150,10)+face.replace(/<\/g>$/,'')+T+K+Hh+`<circle cx="${x}" cy="${y}" r="4" class="hub"/></g>`; }
+  return sqcase(x,y,156,156,10)+face.replace(/<\/g>$/,'')+T+K+Hh+`<circle cx="${x}" cy="${y}" r="4" class="hub"/></g>`; }
 /* turn coordinator (electric) */
 function tcSVG(x,y,r){ const mk=(a)=>{ const [a0,b0]=pol(x,y,r*0.98,a), [a1,b1]=pol(x,y,r*0.8,a); return `<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}L${a1.toFixed(1)} ${b1.toFixed(1)}" stroke="#fff" stroke-width="3"/>`; };
-  return sqcase(x,y,150,150,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${mk(-90)}${mk(90)}${mk(-105)}${mk(105)}
+  return sqcase(x,y,156,156,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${mk(-90)}${mk(90)}${mk(-105)}${mk(105)}
   <text x="${x-r*0.72}" y="${y+r*0.42}" class="dnum" font-size="${r*0.16}" text-anchor="middle">L</text><text x="${x+r*0.72}" y="${y+r*0.42}" class="dnum" font-size="${r*0.16}" text-anchor="middle">R</text>
   <text x="${x}" y="${y-r*0.52}" class="dnum" font-size="${r*0.11}" text-anchor="middle">TURN COORDINATOR</text><text x="${x}" y="${y+r*0.33}" class="dnum" font-size="${r*0.11}" text-anchor="middle">2 MIN</text>
   <g class="tcp tcp-tc" style="transform-origin:${x}px ${y}px"><rect x="${x-r*0.7}" y="${y-1.8}" width="${r*1.4}" height="3.6" rx="1.2" fill="#f2f2f2"/><circle cx="${x}" cy="${y}" r="${r*0.1}" fill="#f2f2f2"/><rect x="${x-1.6}" y="${y-r*0.24}" width="3.2" height="${r*0.16}" fill="#f2f2f2"/><rect x="${x-r*0.16}" y="${y-r*0.2}" width="${r*0.32}" height="2.4" fill="#f2f2f2"/></g>
@@ -266,10 +279,10 @@ function tcSVG(x,y,r){ const mk=(a)=>{ const [a0,b0]=pol(x,y,r*0.98,a), [a1,b1]=
   <g class="tcflag" style="opacity:0"><rect x="${x+r*0.24}" y="${y-r*0.36}" width="${r*0.42}" height="${r*0.2}" fill="#d0281c" stroke="#000" stroke-width=".6"/><text x="${x+r*0.45}" y="${y-r*0.22}" font-size="${r*0.13}" fill="#fff" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">OFF</text></g></g>`; }
 /* heading indicator (directional gyro): rotating card, fixed airplane */
 function dgSVG(x,y,r){ let lub=''; [45,135,225,315].forEach(a=>{ const [a0,b0]=pol(x,y,r+1,a),[a1,b1]=pol(x,y,r-7,a); lub+=`<path d="M${a0.toFixed(1)} ${b0.toFixed(1)}L${a1.toFixed(1)} ${b1.toFixed(1)}" stroke="#ff8a1a" stroke-width="2.4"/>`; });
-  return sqcase(x,y,150,150,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-2,'hcard hcard-dg')}${lub}
+  return sqcase(x,y,156,156,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-2,'hcard hcard-dg')}${lub}
   <path d="M${x} ${y-r-1}l-4 8h8z" fill="#ff8a1a"/><path d="M${x} ${y-r*0.42}l3 6v8l${r*0.24} ${r*0.16}v4l-${r*0.24}-${r*0.08}v${r*0.18}l7 5v3l-10-3-10 3v-3l7-5v-${r*0.18}l-${r*0.24} ${r*0.08}v-4l${r*0.24}-${r*0.16}v-8z" fill="#ff8a1a" stroke="#000" stroke-width=".5"/></g>`; }
 /* vertical speed indicator */
-function vsiSVG(x,y,r){ return sqcase(x,y,150,150,10)+dial('vsi',x,y,r,{bz:'none',sc:[{min:-2000,max:2000,a0:-260,a1:80,maj:500,mnr:100,lab:v=>v===0?'0':Math.abs(v)/100,fs:0.16,lr:0.68}],
+function vsiSVG(x,y,r){ return sqcase(x,y,156,156,10)+dial('vsi',x,y,r,{bz:'none',sc:[{min:-2000,max:2000,a0:-260,a1:80,maj:500,mnr:100,lab:v=>v===0?'0':Math.abs(v)/100,fs:0.16,lr:0.68}],
   extra:`<text x="${x+r*0.3}" y="${y-r*0.2}" class="dnum" font-size="${r*0.085}" text-anchor="middle">VERTICAL SPEED</text><text x="${x+r*0.3}" y="${y+r*0.27}" class="dnum" font-size="${r*0.07}" text-anchor="middle">100 FEET PER MINUTE</text><text x="${x-r*0.3}" y="${y-r*0.2}" class="dnum" font-size="${r*0.1}" text-anchor="middle">UP</text><text x="${x-r*0.3}" y="${y+r*0.3}" class="dnum" font-size="${r*0.1}" text-anchor="middle">DOWN</text>`}); }
 /* engine and electrical gauges */
 function tachSVG(x,y,r){ return rcase(x,y,r)+dial('tach',x,y,r,{bz:'none',sc:[{min:0,max:3500,a0:-135,a1:135,maj:500,mnr:100,lab:v=>v/100,fs:0.16,lr:0.68,arcs:[[2100,2700,'agreen']],red:[2700]}],title:'RPM',ty:-0.3,tfs:0.12,unit:'X 100',uy:-0.16,ufs:0.1,
@@ -285,7 +298,7 @@ function oilSVG(x,y,r){ return rcase(x,y,r)+dial('oil',x,y,r,{bz:'none',sc:[{min
 function egtSVG(x,y,r){ return rcase(x,y,r)+dial('egt',x,y,r,{bz:'none',sc:[{min:1000,max:1600,a0:-120,a1:120,maj:100,mnr:25,nolab:1},{min:1000,max:1600,a0:-120,a1:120,nd:'R',ncls:'amb',nl:r*0.92}],title:'EGT',ty:0.3,tfs:0.17,unit:'25°F PER DIV',uy:0.52,ufs:0.09}); }
 /* VOR/LOC indicator with glideslope (NAV 1) or without (NAV 2) */
 function cdiSVG(n,x,y,r,gs){ let dots=''; for(let k=-5;k<=5;k++){ if(!k) continue; dots+=`<circle cx="${x+k*r*0.115}" cy="${y+r*0.08}" r="${Math.abs(k)%5?1.5:2.1}" fill="none" stroke="#f2f2f2" stroke-width="1"/>`; if(gs) dots+=`<circle cx="${x+r*0.5}" cy="${y+r*0.08+k*r*0.1}" r="${Math.abs(k)%5?1.3:1.8}" fill="none" stroke="#f2f2f2" stroke-width=".9"/>`; }
-  return sqcase(x,y,150,150,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-1,'ocard ocard-'+n)}
+  return sqcase(x,y,156,156,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-1,'ocard ocard-'+n)}
   <path d="M${x} ${y-r+1}l-5 -8h10z" fill="#fff" transform="translate(0 ${r*0.0})"/><path d="M${x} ${y+r-1}l-4 8h8z" fill="#fff"/><circle cx="${x}" cy="${y+r*0.08}" r="${r*0.62}" fill="#1a1819" stroke="#555" stroke-width=".8"/>
   ${dots}<circle cx="${x}" cy="${y+r*0.08}" r="3.4" fill="none" stroke="#f2f2f2" stroke-width="1.1"/>
   <g class="cdin cdin-${n}"><rect x="${x-1.5}" y="${y-r*0.5}" width="3" height="${r*1.12}" fill="#f2f2f2"/></g>
@@ -295,7 +308,7 @@ function cdiSVG(n,x,y,r,gs){ let dots=''; for(let k=-5;k<=5;k++){ if(!k) continu
   ${gs?`<g class="gflag gflag-${n}"><rect x="${x+r*0.3}" y="${y+r*0.2}" width="${r*0.26}" height="${r*0.16}" fill="#d0281c" stroke="#000" stroke-width=".5"/><text x="${x+r*0.43}" y="${y+r*0.32}" font-size="${r*0.12}" fill="#fff" font-weight="700" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">GS</text></g>`:''}
   <text x="${x}" y="${y+r*0.5}" class="dnum" font-size="${r*0.075}" text-anchor="middle">${gs?'NAV 1 · VOR LOC GS':'NAV 2 · VOR LOC'}</text></g>`; }
 /* ADF relative bearing indicator */
-function adfSVG(x,y,r){ return sqcase(x,y,150,150,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-1,'acard')}
+function adfSVG(x,y,r){ return sqcase(x,y,156,156,10)+`<g class="gauge"><circle cx="${x}" cy="${y}" r="${r+3}" class="sbz2"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${card(x,y,r-1,'acard')}
   <path d="M${x} ${y-r+1}l-5 -8h10z" fill="#ff8a1a"/><g class="adfn" style="transform-origin:${x}px ${y}px"><path d="M${x} ${y-r*0.8}l-6 14h4v${r*1.4}h4v-${r*1.4}h4z" fill="#ffcf3a" stroke="#000" stroke-width=".6"/></g>
   <path d="M${x} ${y-r*0.26}v${r*0.5}M${x-r*0.22} ${y-r*0.04}h${r*0.44}M${x-r*0.09} ${y+r*0.2}h${r*0.18}" stroke="#ff8a1a" stroke-width="2.4" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="3" class="hub"/>
   <text x="${x}" y="${y+r*0.52}" class="dnum" font-size="${r*0.13}" text-anchor="middle">ADF</text></g>`; }
@@ -311,36 +324,50 @@ function compassSVG(x,y){ const w=150,h=56, k=1.9; let s='';
 function flapIndSVG(x,y){ const sp=30, y0=y-45; let t=`<rect x="${x-14}" y="${y0-16}" width="28" height="${3*sp+32}" rx="4" class="fplate"/><rect x="${x-4}" y="${y0-4}" width="8" height="${3*sp+8}" rx="3" class="slot"/>`;
   ['0°','10°','20°','30°'].forEach((v,i)=>{ t+=`<path d="M${x-12} ${y0+i*sp}h6" stroke="#f2f2f2" stroke-width="1.4"/>`+lab(x-16,y0+i*sp+2.4,v,{s:6.4,a:'end'}); });
   return t+`<g class="flapp" style="transform:translateY(0px)"><path d="M${x+6} ${y0}l-10 -5v10z" fill="#ffcf3a" stroke="#000" stroke-width=".6"/></g>${lab(x-8,y0+3*sp+26,'FLAP POSITION',{s:5})}`; }
-/* radio stack units */
-function rUnit(x0,y0,w,h){ return `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" rx="3" class="avu"/>`; }
+/* radio stack units: dark faceplates with mounting screws, recessed windows */
+function rUnit(x0,y0,w,h){ return `<rect x="${x0}" y="${y0}" width="${w}" height="${h}" rx="3" class="avu"/><rect x="${x0+3}" y="${y0+3}" width="${w-6}" height="${h-6}" rx="2" class="avu2"/>${[[x0+8,y0+8],[x0+w-8,y0+8],[x0+8,y0+h-8],[x0+w-8,y0+h-8]].map(([a,b])=>`<circle cx="${a}" cy="${b}" r="2.2" class="avscr"/>`).join('')}`; }
 function rWin(x,y,w,h,cls,txt,fs){ return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" class="digw"/><text class="dig ${cls}" x="${x+w-5}" y="${y+h*0.74}" font-size="${fs||h*0.68}" text-anchor="end">${txt}</text>`; }
-function stackSVG(){ const x0=STK.x, w=STK.w; let s=`<rect x="${x0-6}" y="${RU.aud[0]-6}" width="${w+12}" height="${RU.xp[0]+RU.xp[1]-RU.aud[0]+12}" rx="4" class="stackbay"/>`;
-  { const [y0,h]=RU.aud; s+=rUnit(x0,y0,w,h)+lab(x0+12,y0+12,'AUDIO',{s:4.6,a:'start'});
-    [['O','b',0],['M','a',1],['A','w',2]].forEach(([t,c,i])=>{ const cx=x0+20+i*14, cy=y0+32; s+=`<g class="an an-${c}" data-a="mk${t}"><circle cx="${cx}" cy="${cy}" r="6"/><text x="${cx}" y="${cy+2.6}" font-size="7.4" text-anchor="middle">${t}</text></g>`; });
-    s+=lab(x0+40,y0+50,'MARKER',{s:3.8}); }
-  [['1',RU.nc1],['2',RU.nc2]].forEach(([n,[y0,h]])=>{ s+=rUnit(x0,y0,w,h)+lab(x0+12,y0+10,'COMM '+n,{s:4.2,a:'start'})+lab(x0+200,y0+10,'NAV '+n,{s:4.2,a:'start'});
-    s+=rWin(x0+34,y0+15,68,22,'rc'+n+'a','118.100',13.5)+rWin(x0+106,y0+15,64,22,'rc'+n+'s','121.500',12.5)+rWin(x0+196,y0+15,56,22,'rn'+n+'a','110.30',13.5)+rWin(x0+256,y0+15,54,22,'rn'+n+'s','113.30',12.5);
-    s+=lab(x0+68,y0+45,'USE',{s:3.6})+lab(x0+138,y0+45,'STBY',{s:3.6})+lab(x0+224,y0+45,'USE',{s:3.6})+lab(x0+283,y0+45,'STBY',{s:3.6})+lab(x0+20,y0+74,'PWR · VOL',{s:3.4}); });
-  { const [y0,h]=RU.adf; s+=rUnit(x0,y0,w,h)+lab(x0+12,y0+10,'ADF',{s:4.2,a:'start'})+rWin(x0+40,y0+14,56,24,'radfa','375')+rWin(x0+104,y0+14,56,24,'radfs','287',14)+lab(x0+68,y0+47,'USE',{s:3.6})+lab(x0+132,y0+47,'STBY',{s:3.6})+lab(x0+236,y0+30,'ANT / ADF\nFRQ ⇆',{s:3.6,a:'start'}); }
-  { const [y0,h]=RU.dme; s+=rUnit(x0,y0,w,h)+lab(x0+12,y0+9,'DME',{s:4.2,a:'start'})+rWin(x0+50,y0+8,62,24,'dmed','---.-')+rWin(x0+124,y0+8,48,24,'dmek','---')+rWin(x0+184,y0+8,48,24,'dmem','--')+lab(x0+81,y0+38,'NM',{s:3.6})+lab(x0+148,y0+38,'KT',{s:3.6})+lab(x0+208,y0+38,'MIN',{s:3.6})+lab(x0+22,y0+38,'PWR',{s:3.4}); }
-  { const [y0,h]=RU.xp; s+=rUnit(x0,y0,w,h)+lab(x0+60,y0+10,'TRANSPONDER',{s:4.2,a:'start'})+rWin(x0+66,y0+16,74,26,'rxp','1200',16)+`<text class="dig rxpm" x="${x0+70}" y="${y0+26}" font-size="6.5">ALT</text>`+`<g class="an an-a" data-a="xpR"><circle cx="${x0+150}" cy="${y0+22}" r="4.2"/></g>`+lab(x0+150,y0+34,'R',{s:3.6})+lab(x0+228,y0+12,'CODE',{s:3.8})+lab(x0+100,y0+50,'ALT · PRESSURE ALTITUDE',{s:3.2}); }
+function stackSVG(){ let s='';
+  const bay=(x0,w,y0,y1)=>`<rect x="${x0-7}" y="${y0-6}" width="${w+14}" height="${y1-y0+12}" rx="3" class="stackbay"/>`;
+  s+=bay(STK.x,STK.w,RU.aud[0],700)+bay(STK2.x,STK2.w,RU.adf[0],640);
+  /* blanking plates in the unused radio slots ("additional radio space") */
+  const cover=(x0,y0,w,h)=>`<rect x="${x0}" y="${y0}" width="${w}" height="${h}" rx="3" class="avcov"/>${[[x0+8,y0+8],[x0+w-8,y0+8],[x0+8,y0+h-8],[x0+w-8,y0+h-8]].map(([a,b])=>`<circle cx="${a}" cy="${b}" r="2.2" class="avscr"/>`).join('')}`;
+  s+=cover(STK.x,606,STK.w,94)+cover(STK2.x,574,STK2.w,66);
+  { const x0=STK.x, [y0,h]=RU.aud; s+=rUnit(x0,y0,STK.w,h)+lab(x0+18,y0+16,'AUDIO · MARKER',{s:4.4,a:'start'});
+    [['O','b',0],['M','a',1],['A','w',2]].forEach(([t,c,i])=>{ const cx=x0+22+i*15, cy=y0+42; s+=`<g class="an an-${c}" data-a="mk${t}"><circle cx="${cx}" cy="${cy}" r="6.4"/><text x="${cx}" y="${cy+2.6}" font-size="7.4" text-anchor="middle">${t}</text></g>`; });
+    s+=lab(x0+37,y0+60,'MARKER',{s:3.8})+lab(x0+212,y0+16,'SPEAKER',{s:3.8})+lab(x0+312,y0+16,'MIC',{s:3.8}); }
+  [['1',RU.nc1],['2',RU.nc2]].forEach(([n,[y0,h]])=>{ const x0=STK.x; s+=rUnit(x0,y0,STK.w,h)+lab(x0+16,y0+15,'COMM '+n,{s:4.4,a:'start'})+lab(x0+204,y0+15,'NAV '+n,{s:4.4,a:'start'});
+    s+=`<rect x="${x0+32}" y="${y0+20}" width="${142}" height="34" rx="2" class="avslot"/><rect x="${x0+194}" y="${y0+20}" width="${126}" height="34" rx="2" class="avslot"/>`;
+    s+=rWin(x0+36,y0+24,68,26,'rc'+n+'a','118.100',15)+rWin(x0+106,y0+24,64,26,'rc'+n+'s','121.500',14)+rWin(x0+198,y0+24,58,26,'rn'+n+'a','110.30',15)+rWin(x0+258,y0+24,58,26,'rn'+n+'s','113.30',14);
+    s+=lab(x0+70,y0+62,'USE',{s:3.6})+lab(x0+138,y0+62,'STBY',{s:3.6})+lab(x0+227,y0+62,'USE',{s:3.6})+lab(x0+287,y0+62,'STBY',{s:3.6})+lab(x0+24,y0+96,'PULL IDENT',{s:3})+lab(x0+24,y0+58,'PWR',{s:3.4}); });
+  { const x0=STK2.x, [y0,h]=RU.adf; s+=rUnit(x0,y0,STK2.w,h)+lab(x0+16,y0+15,'ADF',{s:4.4,a:'start'})+`<rect x="${x0+40}" y="${y0+20}" width="140" height="36" rx="2" class="avslot"/>`+rWin(x0+44,y0+24,62,28,'radfa','375',16)+rWin(x0+112,y0+24,62,28,'radfs','287',15)+lab(x0+75,y0+66,'USE',{s:3.6})+lab(x0+143,y0+66,'STBY',{s:3.6})+lab(x0+228,y0+60,'ANT / ADF',{s:3.6,a:'start'})+lab(x0+228,y0+84,'FRQ ⇆',{s:3.6,a:'start'})+lab(x0+24,y0+56,'PWR',{s:3.4}); }
+  { const x0=STK2.x, [y0,h]=RU.dme; s+=rUnit(x0,y0,STK2.w,h)+lab(x0+16,y0+14,'DME',{s:4.4,a:'start'})+`<rect x="${x0+54}" y="${y0+14}" width="196" height="34" rx="2" class="avslot"/>`+rWin(x0+58,y0+18,66,26,'dmed','---.-',15)+rWin(x0+128,y0+18,56,26,'dmek','---',15)+rWin(x0+188,y0+18,58,26,'dmem','--',15)+lab(x0+91,y0+56,'NM',{s:3.6})+lab(x0+156,y0+56,'KT',{s:3.6})+lab(x0+217,y0+56,'MIN',{s:3.6})+lab(x0+24,y0+20,'PWR',{s:3.4}); }
+  { const x0=STK2.x, [y0,h]=RU.xp; s+=rUnit(x0,y0,STK2.w,h)+lab(x0+70,y0+15,'TRANSPONDER',{s:4.4,a:'start'})+`<rect x="${x0+70}" y="${y0+20}" width="${86}" height="32" rx="2" class="avslot"/>`+rWin(x0+74,y0+23,78,26,'rxp','1200',17)+`<text class="dig rxpm" x="${x0+78}" y="${y0+33}" font-size="6.5">ALT</text>`+`<g class="an an-a" data-a="xpR"><circle cx="${x0+166}" cy="${y0+32}" r="4.6"/></g>`+lab(x0+166,y0+45,'R',{s:3.6})+lab(x0+234,y0+38,'CODE',{s:3.8})+lab(x0+110,y0+74,'ALT · PRESSURE ALTITUDE',{s:3.2}); }
   return s; }
 const ANN={};
 
 /* ---------- the panel ---------- */
-const MAGS={compass:[1112,24],cbs:[846,892],quad:[1266,892],audio:[1206,282],radios:[1206,512],flaps:[1206,680],pedestal:[1206,1018],rlower:[1966,892],switches:[600,892],nav:[856,300],low6:[700,652],left:[200,292],six:[700,292],right:[1966,292]};
+const MAGS={}; Object.keys(REG).forEach(k=>{ if(k==='overview') return; const r=REG[k]; MAGS[k]=[r[0]+r[2]-13,r[1]+13]; });
+Object.assign(MAGS,{six:[734,298],left:[268,298],nav:[884,298],audio:[1232,640],radios:[1594,598],flaps:[1488,610],right:[1962,298],low6:[728,662],switches:[812,918],cbs:[440,1030],quad:[1256,918],rlower:[1500,918],pedestal:[1136,1092],compass:[1106,62]});
 function panelSVG(){
-  const PT=280, PB=880, LB=1005;
-  const placard=(x,y,w,h,lines,fs)=>{ const hh=Math.min(h,fs*0.9+lines.length*fs*1.32+fs*0.6); return `<rect x="${x}" y="${y}" width="${w}" height="${hh.toFixed(1)}" rx="3" class="plq"/>`+lines.map((t,i)=>lab(x+w/2,y+fs*1.5+i*fs*1.32,t,{s:fs})).join(''); };
+  /* small engraved placard: black plate, silver rim, tiny white text */
+  const plq=(x,y,w,lines,fs,cls)=>{ const h=fs*0.9+lines.length*fs*1.25+fs*0.3; return `<rect x="${x}" y="${y}" width="${w}" height="${h.toFixed(1)}" rx="1.5" class="${cls||'plq'}"/>`+lines.map((t,i)=>`<text x="${x+w/2}" y="${(y+fs*1.35+i*fs*1.25).toFixed(1)}" class="plqt${cls==='plqs'?' dk':''}" font-size="${fs}" text-anchor="middle">${esc(t)}</text>`).join(''); };
+  const blank=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" class="blankp"/><circle cx="${x}" cy="${y}" r="${r-4}" class="blankp2"/>${[45,135,225,315].map(a=>{ const [px,py]=pol(x,y,r+7,a); return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" class="cscr"/>`; }).join('')}`;
+  const colHole=(x)=>`<ellipse cx="${x}" cy="${COLY}" rx="34" ry="30" class="colbush"/><ellipse cx="${x}" cy="${COLY}" rx="22" ry="19" class="colhole"/>`;
+  const colTube=(x,y)=>`<path d="M${x-15} ${COLY}V${y-20}h30V${COLY}z" class="coltube"/><path d="M${x-6} ${COLY+4}V${y-24}" class="coltubeh"/><rect x="${x-19}" y="${COLY+2}" width="38" height="16" rx="5" class="colcoll"/>`;
+  const pedal=(x,y)=>`<path d="M${x-26} ${y-30}h52l6 58h-64z" class="pedal"/>${[0,1,2,3,4].map(i=>`<path d="M${x-22+i*0.6} ${y-22+i*11}h${44-i*1.2+i*2}" class="pedalr"/>`).join('')}<path d="M${x-30} ${y+30}h60" class="pedalb"/>`;
   return `<svg class="psvg" viewBox="0 0 ${W} ${H}" xmlns="${NS}">
 <defs>
- <linearGradient id="gPanel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34302d"/><stop offset="1" stop-color="#2a2725"/></linearGradient>
- <linearGradient id="gLow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22201f"/><stop offset="1" stop-color="#181716"/></linearGradient>
- <linearGradient id="gGlare" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2826"/><stop offset=".7" stop-color="#1b1918"/><stop offset="1" stop-color="#0f0e0d"/></linearGradient>
- <linearGradient id="gHead" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c968c"/><stop offset="1" stop-color="#6e6961"/></linearGradient>
- <linearGradient id="gPillar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4a4640"/><stop offset="1" stop-color="#2a2724"/></linearGradient>
- <linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c1b1a"/><stop offset="1" stop-color="#2a2622"/></linearGradient>
- <linearGradient id="gPed" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f1d1c"/><stop offset=".5" stop-color="#34302d"/><stop offset="1" stop-color="#1f1d1c"/></linearGradient>
+ <linearGradient id="gPanel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d3b38"/><stop offset=".55" stop-color="#363431"/><stop offset="1" stop-color="#2e2c2a"/></linearGradient>
+ <linearGradient id="gLow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232221"/><stop offset="1" stop-color="#181716"/></linearGradient>
+ <linearGradient id="gGlare" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2827"/><stop offset=".55" stop-color="#1a1918"/><stop offset=".9" stop-color="#0c0b0b"/><stop offset="1" stop-color="#050505"/></linearGradient>
+ <linearGradient id="gLip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d2b29"/><stop offset=".5" stop-color="#151414"/><stop offset="1" stop-color="#060606"/></linearGradient>
+ <linearGradient id="gHead" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7b1a6"/><stop offset="1" stop-color="#8a847a"/></linearGradient>
+ <linearGradient id="gPillar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#57534c"/><stop offset="1" stop-color="#2e2b27"/></linearGradient>
+ <linearGradient id="gPillarR" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#57534c"/><stop offset="1" stop-color="#2e2b27"/></linearGradient>
+ <linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#121111"/><stop offset=".25" stop-color="#1f1d1b"/><stop offset="1" stop-color="#2c2925"/></linearGradient>
+ <linearGradient id="gPed" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a1918"/><stop offset=".5" stop-color="#34312e"/><stop offset="1" stop-color="#1a1918"/></linearGradient>
+ <linearGradient id="gTube" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4d4f52"/><stop offset=".35" stop-color="#c9ccce"/><stop offset=".6" stop-color="#8d9195"/><stop offset="1" stop-color="#3a3c3e"/></linearGradient>
  <linearGradient id="gCmpGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient>
  <radialGradient id="gKnob" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#6a6f76"/><stop offset=".6" stop-color="#2a2d31"/><stop offset="1" stop-color="#121417"/></radialGradient>
  <radialGradient id="gKnob2" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#7a828c"/><stop offset=".7" stop-color="#363b42"/><stop offset="1" stop-color="#1a1d21"/></radialGradient>
@@ -348,69 +375,91 @@ function panelSVG(){
  <radialGradient id="gChrome" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#9a9fa5"/><stop offset=".8" stop-color="#e2e4e6"/><stop offset="1" stop-color="#6d7277"/></radialGradient>
  <radialGradient id="gRed" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ff6a5a"/><stop offset=".6" stop-color="#b8231a"/><stop offset="1" stop-color="#5a0c06"/></radialGradient>
  <radialGradient id="gBlackK" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#5a5a5a"/><stop offset=".6" stop-color="#1c1c1c"/><stop offset="1" stop-color="#050505"/></radialGradient>
+ <radialGradient id="gBezel" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#050505"/><stop offset=".94" stop-color="#2a2928"/><stop offset="1" stop-color="#121111"/></radialGradient>
+ <radialGradient id="gHub" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#4a4744"/><stop offset="1" stop-color="#121110"/></radialGradient>
  <linearGradient id="gBat" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d949b"/><stop offset=".45" stop-color="#f4f6f8"/><stop offset="1" stop-color="#6f767d"/></linearGradient>
  <linearGradient id="gBatR" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f1d14"/><stop offset=".45" stop-color="#ef4a3a"/><stop offset="1" stop-color="#7d160f"/></linearGradient>
- <linearGradient id="gYoke" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#55504a"/><stop offset="1" stop-color="#1e1c1a"/></linearGradient>
+ <linearGradient id="gYoke" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b5752"/><stop offset=".45" stop-color="#34312e"/><stop offset="1" stop-color="#191817"/></linearGradient>
+ <linearGradient id="gGrip" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0d0d0d"/><stop offset=".45" stop-color="#2c2b2a"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient>
+ <linearGradient id="gDoor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3c3a37"/><stop offset="1" stop-color="#2c2a28"/></linearGradient>
  <filter id="fLed" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
  <filter id="fShadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity=".6"/></filter>
+ <filter id="fSoft" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-opacity=".55"/></filter>
 </defs>
-<!-- cabin: headliner, windshield posts, centre strip with the magnetic compass, OAT probe -->
-<path d="M0 0H${W}V30Q${W/2} 52 0 30Z" class="headl"/>
-<path d="M0 0H64L30 ${PT}H0Z" class="pillar"/><path d="M${W} 0H${W-64}L${W-30} ${PT}H${W}Z" class="pillar"/>
-<path d="M0 30Q240 58 520 60" class="wshl"/><path d="M${W} 30Q${W-240} 58 ${W-520} 60" class="wshl"/>
-${compassSVG(1000,120)}
-${oatSVG(300,206,24)}
-<!-- glareshield and instrument panel -->
-<path d="M14 ${PT}V262Q${W/2} 196 ${W-14} 262V${PT}Z" class="glare"/>
-<path d="M14 ${PT}H${W-14}" stroke="#000" stroke-width="2"/>
-<rect x="14" y="${PT}" width="${W-28}" height="${PB-PT}" rx="6" class="ipanel"/>
-<rect x="14" y="${PB}" width="${W-28}" height="${LB-PB}" rx="4" class="lpanel"/>
-<path d="M14 ${PB}H${W-14}" class="seam"/>
-${[[30,296],[W-30,296],[30,PB-14],[W-30,PB-14],[850,296],[1230,296],[850,PB-14],[1230,PB-14]].map(([x,y])=>screw(x,y)).join('')}
-<!-- left column: clock, suction, ammeter, LOW VOLTAGE light, fuel quantity, oil -->
-${clockSVG(LX,345,38)}${suctionSVG(LX,445,34)}${ammSVG(LX,545,34)}
-${lampBox('lowv',LX-30,594,60,18,['LOW','VOLTAGE'],'r',6.4)}
-${fuelSVG(LX,690,40)}${oilSVG(LX,808,40)}
+<!-- cabin: headliner, door posts, windshield centre strip with the magnetic compass, OAT probe -->
+<path d="M0 0H${W}V26Q${W/2} 46 0 26Z" class="headl"/>
+<path d="M0 0H70L34 ${PT-30}H0Z" class="pillar"/><path d="M${W} 0H${W-70}L${W-34} ${PT-30}H${W}Z" class="pillarR"/>
+<path d="M${W/2-9} 30V210h18V30z" class="cmpstrip"/>
+${compassSVG(1000,152)}
+${oatSVG(372,190,24)}
+<!-- cabin side walls and door frames beyond the panel ends (seen on wide screens) -->
+<path d="M-900 ${PT-30}H34L44 ${PT+6}V${H}H-900Z" class="sidew"/><path d="M${W+900} ${PT-30}H${W-34}L${W-44} ${PT+6}V${H}H${W+900}Z" class="sidew"/>
+<path d="M-900 ${PT-30}H34" class="sidetrim"/><path d="M${W+900} ${PT-30}H${W-34}" class="sidetrim"/>
+<path d="M-900 0H0V${PT-30}H-900Z" class="sidewin" /><path d="M${W+900} 0H${W}V${PT-30}H${W+900}Z" class="sidewin"/>
+<path d="M-40 0H70L34 ${PT-30}H-40Z" class="pillar"/><path d="M${W+40} 0H${W-70}L${W-34} ${PT-30}H${W+40}Z" class="pillarR"/>
+<!-- glareshield: padded shroud with a rounded lip over the panel -->
+<path d="M${PT-262} ${PT+6}L44 262Q${W/2} 216 ${W-44} 262L${W-PT+262} ${PT+6}Z" class="glare"/>
+<path d="M30 ${PT-14}Q${W/2} ${PT-60} ${W-30} ${PT-14}L${W-34} ${PT+6}Q${W/2} ${PT-34} 34 ${PT+6}Z" class="glarelip"/>
+<path d="M44 ${PT-10}Q${W/2} ${PT-55} ${W-44} ${PT-10}" class="stitch"/>
+<!-- instrument panel and the switch and control panel -->
+<path d="M34 ${PT+2}Q${W/2} ${PT-30} ${W-34} ${PT+2}V${PB}H34Z" class="ipanel"/>
+<rect x="34" y="${PB}" width="${W-68}" height="${LB-PB}" rx="3" class="lpanel"/>
+<path d="M34 ${PB}H${W-34}" class="seam"/><path d="M36 ${PB+3}H${W-36}" class="seamhi"/>
+${[[46,PT+14],[W-46,PT+14],[46,PB-12],[W-46,PB-12],[880,PB-12],[1248,PB-12],[1610,PB-12],[44,PB+12],[W-44,PB+12],[44,LB-10],[W-44,LB-10]].map(([x,y])=>screw(x,y)).join('')}
+<!-- left edge: clock, fuel quantity, oil temperature / pressure, suction, ammeter, LOW VOLTAGE light -->
+${clockSVG(LX,366,38)}${fuelSVG(LX,494,46)}${oilSVG(LX,624,46)}${suctionSVG(LX,748,36)}${ammSVG(LX,848,36)}
+${lampBox('lowv',196,870,52,20,['LOW','VOLTAGE'],'r',6.4)}
 <!-- six-pack -->
 ${asiSVG(SX[0],SY[0],IR)}${aiSVG(SX[1],SY[0],IR)}${altSVG(SX[2],SY[0],IR)}
 ${tcSVG(SX[0],SY[1],IR)}${dgSVG(SX[1],SY[1],IR)}${vsiSVG(SX[2],SY[1],IR)}
 <g class="cov cov-ai" style="opacity:0"><circle cx="${SX[1]}" cy="${SY[0]}" r="${IR+6}" class="covr"/><text x="${SX[1]}" y="${SY[0]+5}" class="covt" font-size="13" text-anchor="middle">INOP</text></g>
 <g class="cov cov-dg" style="opacity:0"><circle cx="${SX[1]}" cy="${SY[1]}" r="${IR+6}" class="covr"/><text x="${SX[1]}" y="${SY[1]+5}" class="covt" font-size="13" text-anchor="middle">INOP</text></g>
-<!-- below the six-pack: tachometer, EGT, covers, control column -->
-${tachSVG(SX[0],722,56)}${egtSVG(SX[2],722,40)}
-${lab(SX[1],694,'INSTRUMENT COVERS',{s:4.4})}
-<circle cx="${YK.L[0]}" cy="838" r="26" class="colbush"/><circle cx="${YK.L[0]}" cy="838" r="16" class="colhole"/>
+<!-- below the six-pack: tachometer, control column, instrument covers, registration and speed placards -->
+${tachSVG(SX[0],744,58)}
+${colHole(YK.L[0])}${colHole(YK.R[0])}
+${lab(SX[2],696,'INSTRUMENT COVERS',{s:4.2})}
+${plq(SX[2]-62,756,124,['MANEUVERING SPEED','99 KIAS AT 2,400 LB'],5.2)}
+
 <!-- NAV indicators and ADF -->
-${cdiSVG('1',NX,SY[0],58,true)}${cdiSVG('2',NX,SY[1],58,false)}${adfSVG(NX,722,54)}
-<!-- radio stack -->
+${cdiSVG('1',NX,SY[0],IR-6,true)}${cdiSVG('2',NX,SY[1],IR-6,false)}${adfSVG(NX,740,IR-6)}
+<!-- radio stack (centre) and second radio column (right) -->
 ${stackSVG()}
-<!-- below the stack: flap position, placards -->
-${flapIndSVG(1132,772)}
-${placard(880,700,200,52,['MANEUVERING SPEED 99 KIAS','(AT 2,400 LB)'],6)}
-${placard(880,740,200,58,['FLAP LIMITS','10° — 110 KIAS','10°–30° — 85 KIAS'],6)}
-${placard(880,790,200,52,['NO INTENTIONAL SPINS','WITH FLAPS EXTENDED'],6)}
-<!-- right panel: hour meter, ELT, limitations placard, vent, glove box -->
-<rect x="1252" y="318" width="96" height="40" rx="3" class="plq"/>${rWin(1262,326,76,20,'hobbs','1234.5',13)}${lab(1300,370,'FLIGHT HOURS',{s:4.6})}
-<rect x="1262" y="404" width="86" height="88" rx="4" class="plq"/>${lab(1305,416,'ELT',{s:6})}
-${placard(1380,318,500,126,['THIS AIRPLANE MUST BE OPERATED AS A NORMAL OR UTILITY CATEGORY','AIRPLANE IN COMPLIANCE WITH THE OPERATING LIMITATIONS STATED IN','THE FORM OF PLACARDS, MARKINGS AND MANUALS.','—  TYPICAL TRAINING PLACARD (GENERIC WORDING)  —','DAY · NIGHT · VFR · IFR — NO FLIGHT INTO KNOWN ICING'],7)}
-${placard(1380,392,500,84,['FUEL: 40 U.S. GAL USABLE (20 PER TANK) — 100LL','TAKE-OFF AND LANDING ON "BOTH"','CARBURETTOR HEAT: FULL HOT OR FULL COLD'],7)}
-${placard(1380,446,240,76,['UTILITY CATEGORY','NO SPINS ABOVE 2,100 LB','NO ACROBATIC MANEUVERS'],6)}
-<circle cx="1930" cy="330" r="24" class="vent"/><circle cx="1930" cy="330" r="13" class="vent2"/>
-<rect x="1560" y="680" width="380" height="182" rx="10" class="glove"/><rect x="1715" y="694" width="70" height="12" rx="5" class="latch"/>${lab(1750,790,'MAP COMPARTMENT',{s:7,c:'dim'})}
-<circle cx="${YK.R[0]}" cy="838" r="26" class="colbush"/><circle cx="${YK.R[0]}" cy="838" r="16" class="colhole"/>
-<!-- lower switch and control panel labels -->
-${lab(238,920,'MASTER',{s:5.4})}<path d="M218 925h40" class="grpl"/>
-${brk(342,598,906,'LIGHTS',{s:4.6})}
-${lab(158,992,'IGNITION',{s:4.4})}
-<rect x="616" y="890" width="236" height="104" rx="4" class="cbpan"/>${lab(734,902+44,'CIRCUIT BREAKERS',{s:4.2,c:'dim'})}
-<path d="M940 ${PB+4}V${LB-4}M1104 ${PB+4}V${LB-4}" class="seam"/>
-${lab(1062,996,'LEAN ↓',{s:4.2})}${lab(982,996,'CLOSED ↓',{s:4.2})}
-<!-- floor, pedestal, rudder pedals, fuel selector plate -->
+<!-- below the stack: speed / flap placards, flap position indicator and switch -->
+${plq(964,722,210,['AVIONICS POWER OFF FOR','ENGINE START AND SHUTDOWN'],5.4)}
+${plq(1258,846,150,['FLAP LIMITS: 10° 110 KIAS','10°–30° 85 KIAS'],4.8)}
+<circle cx="1180" cy="858" r="10" class="ring0"/><circle cx="1180" cy="858" r="7.5" class="altst"/>${lab(1180,838,'ALT STATIC AIR',{s:4})}${lab(1180,880,'PULL ON',{s:4})}
+${flapIndSVG(1318,760)}
+<!-- copilot side: blank instrument holes, column, placards, hour meter, EGT, ELT, map compartment -->
+${plq(1652,604,140,['THIS AIRPLANE MUST BE OPERATED IN THE','NORMAL OR UTILITY CATEGORY IN COMPLIANCE','WITH THE OPERATING LIMITATIONS STATED','IN PLACARDS, MARKINGS AND MANUALS'],4)}
+${plq(1802,604,124,['FUEL: 40 GAL USABLE · 100LL','BOTH FOR TAKE-OFF','AND LANDING'],4.2)}
+${egtSVG(1712,392,42)}
+<rect x="1800" y="318" width="112" height="44" rx="3" class="hobbsc"/>${rWin(1810,324,92,24,'hobbs','1234.5',15)}${lab(1856,357,'HOURS',{s:4.4})}
+<rect x="1822" y="378" width="104" height="86" rx="4" class="eltp"/>${lab(1874,392,'ELT',{s:6})}
+${blank(1712,536,44)}${blank(1868,536,44)}
+${plq(1268,650,92,['N 0000'],10,'plqs')}
+${plq(1652,646,274,['UTILITY CATEGORY: NO SPINS · NO ACROBATIC MANEUVERS','NORMAL CATEGORY: NO ACROBATIC MANEUVERS INCL. SPINS'],4.2)}
+<g filter="url(#fSoft)"><rect x="1610" y="682" width="320" height="196" rx="12" class="glove"/></g>
+<rect x="1622" y="694" width="296" height="172" rx="9" class="glove2"/>
+<rect x="1742" y="700" width="56" height="16" rx="7" class="latch"/><circle cx="1770" cy="708" r="4" class="latchk"/>
+<!-- switch and control panel: labels, breaker strip, cigar lighter -->
+${lab(272,SUBY-24,'MASTER',{s:5.4})}<path d="M250 ${SUBY-19}h44" class="grpl"/>
+${brk(526,790,SUBY-38,'LIGHTS',{s:4.6})}
+${lab(172,SUBY+40,'IGNITION',{s:4.4})}
+<rect x="44" y="1020" width="760" height="54" rx="3" class="cbpan"/>${lab(460,1072,'CIRCUIT BREAKERS – PUSH TO RESET',{s:3.6,c:'dim'})}
+<path d="M${YK.L[0]-26} ${PB}V${LB}M${YK.L[0]+26} ${PB}V${LB}" class="seam"/>
+${lab(1000,SUBY+44,'CLOSED ↓  FRICTION ⟲',{s:4})}${lab(1082,SUBY+44,'LEAN ↓',{s:4})}
+<circle cx="1000" cy="${SUBY+54}" r="7" class="fric"/>
+<circle cx="1474" cy="${SUBY+2}" r="13" class="ring0"/><circle cx="1474" cy="${SUBY+2}" r="10" class="lighter"/><circle cx="1474" cy="${SUBY+2}" r="4" class="lighter2"/>${labUp(1474,SUBY-17,'LIGHTER',{s:4.6})}
+${lab(1544,SUBY-8,'MIC',{s:4})}<circle cx="1544" cy="${SUBY+4}" r="6" class="jack"/>${lab(1580,SUBY-8,'PHONE',{s:4})}<circle cx="1580" cy="${SUBY+4}" r="7" class="jack"/>
+<!-- floor, pedestal, rudder pedals, fuel selector -->
 <rect x="0" y="${LB}" width="${W}" height="${H-LB}" class="floor"/>
-<path d="M930 ${LB}h140l18 ${H-LB}h-176z" class="ped"/>
-${[[300,1250],[380,1250],[1620,1250],[1700,1250]].map(([x,y])=>`<rect x="${x-24}" y="${y-30}" width="48" height="60" rx="8" class="pedal"/><path d="M${x-16} ${y-20}h32M${x-16} ${y-8}h32M${x-16} ${y+4}h32M${x-16} ${y+16}h32" class="pedalr"/>`).join('')}
-<circle cx="1000" cy="1240" r="58" class="fsplate"/>${lab(1000,1312,'FUEL SELECTOR — 40 GAL USABLE',{s:5})}${lab(930,1206,'20 GAL',{s:4.2})}${lab(1070,1206,'20 GAL',{s:4.2})}
-${lab(1000,1028,'NOSE DOWN',{s:4.6})}${lab(1000,1162,'NOSE UP',{s:4.6})}${lab(958,1096,'ELEVATOR\nTRIM',{s:4.4,a:'end'})}
+<path d="M0 ${LB}H${W}V${LB+16}H0z" class="knee"/>
+<path d="M928 ${LB}h144l28 ${H-LB}h-200z" class="ped"/><path d="M946 ${LB+6}h108l8 ${130}h-124z" class="pedp"/>
+${[[400,1262],[560,1262],[1448,1262],[1608,1262]].map(([x,y])=>pedal(x,y)).join('')}
+<ellipse cx="1000" cy="1268" rx="66" ry="44" class="fsplate"/>${lab(948,1242,'20 GAL',{s:3.8})}${lab(1052,1242,'20 GAL',{s:3.8})}
+${lab(970,1098,'NOSE\nDOWN',{s:4.2,a:'end'})}${lab(970,1192,'NOSE\nUP',{s:4.2,a:'end'})}${lab(966,1150,'TRIM',{s:4.4,a:'end'})}
+<path d="M1040 1104h22v10h-22z" class="micbr"/>
+${colTube(YK.L[0],YK.L[1])}${colTube(YK.R[0],YK.R[1])}
 <g class="ctls">${C.map(ctlSVG).join('')}</g>
 <g class="mags">${Object.keys(MAGS).map(k=>{ const [x,y]=MAGS[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('')}</g>
 </svg>`;

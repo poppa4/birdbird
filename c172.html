@@ -7,7 +7,7 @@
 <title>Cessna 172 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="c172.css?v=1">
+<link rel="stylesheet" href="c172.css?v=2">
 </head>
 <body data-title="Cessna 172 cockpit procedure trainer">
 <script src="site.js?v=54"></script>
@@ -136,7 +136,7 @@
 <script src="fdm.js?v=7"></script>
 <script src="otw.js?v=4"></script>
 <script src="c172core.js?v=1"></script>
-<script src="c172panel.js?v=1"></script>
+<script src="c172panel.js?v=2"></script>
 <script src="lab.js?v=46"></script>
 <script>
 (function(){
@@ -281,7 +281,7 @@ function enc2Turn(id,inner,d){ click(); SYS[id+(inner?'I':'O')]+=d; const n=id.s
 
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
-const ZN=[['overview',tr2('Panel','Panel')],['six',tr2('Six-pack · OAT','Six-pack · OAT')],['left',tr2('Engine and electrical gauges · tachometer','Motor- og elektriske instrumenter · turteller')],['low6',tr2('Tachometer · EGT · instrument covers','Turteller · EGT · instrumentdeksler')],['nav',tr2('NAV indicators · ADF','NAV-indikatorer · ADF')],['audio',tr2('Audio panel · NAV/COM 1 and 2','Lydpanel · NAV/COM 1 og 2')],['radios',tr2('ADF · DME · transponder','ADF · DME · transponder')],['flaps',tr2('Flap position · placards','Flapsposisjon · skilt')],['switches',tr2('Master · ignition · lights · primer','Hovedbryter · tenning · lys · primer')],['cbs',tr2('Circuit breakers','Sikringer')],['quad',tr2('Carb heat · throttle · mixture','Forgasservarme · gass · blanding')],['rlower',tr2('Cabin heat and air · dimmers','Kabinvarme og -luft · dimmere')],['pedestal',tr2('Trim wheel · fuel selector','Trimhjul · drivstoffvelger')],['right',tr2('Right panel · ELT · hour meter','Høyre panel · ELT · timeteller')],['compass',tr2('Magnetic compass','Magnetkompass')]];
+const ZN=[['overview',tr2('Panel','Panel')],['six',tr2('Six-pack · OAT','Six-pack · OAT')],['left',tr2('Engine and electrical gauges · tachometer','Motor- og elektriske instrumenter · turteller')],['low6',tr2('Tachometer · instrument covers','Turteller · instrumentdeksler')],['nav',tr2('NAV indicators · ADF','NAV-indikatorer · ADF')],['audio',tr2('Audio panel · NAV/COM 1 and 2','Lydpanel · NAV/COM 1 og 2')],['radios',tr2('ADF · DME · transponder','ADF · DME · transponder')],['flaps',tr2('Flap switch and position','Flapsbryter og -posisjon')],['switches',tr2('Master · ignition · lights · primer','Hovedbryter · tenning · lys · primer')],['cbs',tr2('Circuit breakers','Sikringer')],['quad',tr2('Carb heat · throttle · mixture','Forgasservarme · gass · blanding')],['rlower',tr2('Cabin heat and air · dimmers','Kabinvarme og -luft · dimmere')],['pedestal',tr2('Trim wheel · fuel selector','Trimhjul · drivstoffvelger')],['right',tr2('Right panel · EGT · ELT · hour meter','Høyre panel · EGT · ELT · timeteller')],['compass',tr2('Magnetic compass','Magnetkompass')]];
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   const r=P.REG[reg]||P.REG.overview, w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
