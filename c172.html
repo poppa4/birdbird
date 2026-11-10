@@ -7,7 +7,7 @@
 <title>Cessna 172 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="c172.css?v=2">
+<link rel="stylesheet" href="c172.css?v=3">
 </head>
 <body data-title="Cessna 172 cockpit procedure trainer">
 <script src="site.js?v=54"></script>
@@ -136,7 +136,7 @@
 <script src="fdm.js?v=7"></script>
 <script src="otw.js?v=7"></script>
 <script src="c172core.js?v=1"></script>
-<script src="c172panel.js?v=2"></script>
+<script src="c172panel.js?v=3"></script>
 <script src="lab.js?v=46"></script>
 <script>
 (function(){
@@ -301,7 +301,8 @@ function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
-function areaHL(k){ if(!k||Z.reg!=='overview'){ hlR.style.opacity=0; return; } const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); hlR.style.opacity=1; }
+const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
+function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const magG=P.svg.querySelector('g.mags');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
 magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
@@ -330,7 +331,9 @@ PST.addEventListener('pointerover',e=>{ const g=C172P.ctlFrom(P,e.target); if(!g
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; tip.textContent=tipText(tipG); const r=PST.getBoundingClientRect(); tip.style.left=Math.max(4,Math.min(r.width-260,e.clientX-r.left+14))+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
-PST.addEventListener('wheel',e=>{ if(e.ctrlKey) e.preventDefault(); },{passive:false});
+C172P.ctrlWheel(PST);
+// touch-action:none comes from CSS on touch screens; a pen (or touch the media query missed) turns it on at its first hover/contact
+{ const tact=e=>{ if(e.pointerType&&e.pointerType!=='mouse'){ PST.classList.add('tact'); PST.removeEventListener('pointerover',tact,true); PST.removeEventListener('pointerdown',tact,true); } }; PST.addEventListener('pointerover',tact,true); PST.addEventListener('pointerdown',tact,true); }
 
 /* ---------- outside view (shared three.js scene, otw.js) ---------- */
 // The canvas sits behind the panel and shows through the windshield above the glareshield. In a C172 the pilot sits
@@ -340,7 +343,13 @@ const OTW_BOTTOM_Y=640;
 function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview') return; const h=PST.clientHeight; c.style.height=Math.max(0,Math.min(h,Math.round(Z.ty+OTW_BOTTOM_Y*Z.s)))+'px'; }
 const OTW_EYE={dh:-0.35,left:0.3,look:0.02}, otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
 function otwState(){ const c=Math.cos(S.psi), s=Math.sin(S.psi); otwS.N=S.N+OTW_EYE.left*s; otwS.E=S.E-OTW_EYE.left*c; otwS.h=S.h+OTW_EYE.dh; otwS.th=S.th-OTW_EYE.look; otwS.phi=S.phi; otwS.psi=S.psi; return otwS; }
-let otwOn=true, otwReady=false, otwSkip=0, ftAvg=16, otwTried=false;
+let otwOn=true, otwReady=false, otwSkip=0, otwTried=false;
+/* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
+   device pixels per CSS pixel. Level 1 (frames over 24 ms, as before): panel 20 Hz, outside view every 2nd frame at 1 pixel.
+   Level 2 (frames over 45 ms): panel 15 Hz, outside view every 3rd frame at 0.75 pixel. Hysteresis and a 2 s dwell avoid hunting. */
+const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
+  const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; } },
+  get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
 (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); },{timeout:400});
@@ -348,9 +357,8 @@ function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').set
 el('bOtw').onclick=()=>setOtw(!otwOn);
 { let pr=null; try{ pr=localStorage.getItem('bb-c172-otw'); }catch(e){} const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; setOtw(pr?pr==='1':!phone); }
 function otwTick(dt){
-  ftAvg+=(dt*1000-ftAvg)*0.05;
   if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
-  const slowDev=ftAvg>24; if(!slowDev||(++otwSkip%2===0)) OTW.render(otwState(),''); if(slowDev!==OTW.low) OTW.quality(slowDev);
+  const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
 }
 el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg(tr2('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.'))); }catch(e){} };
 
@@ -685,7 +693,7 @@ renderLim();
 function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
 
 /* ---------- instruments ---------- */
-let vsF=0, lastDraw=performance.now();
+let vsF=0, lastDraw=performance.now(), rbLast=null, engTxt='', st2Txt='';
 const D={ai:{},tc:{},cdi1:{},cdi2:{},adf:{},clock:{},rad:{},lamps:{}};
 function radStr(n,k,dec){ return navRad(n)||comRad(n)?SYS[k+n][dec]:''; }
 function draw(o){
@@ -712,7 +720,7 @@ function draw(o){
   const xpOn=radOn('xp'); R.xp=xpOn?(SYS.xpMd===4?'8888':SYS.xpc.join('')):''; R.xpm=xpOn?['','SBY','ON','ALT','TST'][SYS.xpMd]:'';
   const L_=D.lamps; L_.lowv=SYS.batSw&&EL.volts>6&&EL.low; const mk=mkrNow(), mt=SYS.mkrSw===1&&avOn()&&cbIn('AUDIO'); L_.mkO=mt||mk==='O'; L_.mkM=mt||mk==='M'; L_.mkA=mt; L_.xpR=xpOn&&(SYS.xpMd===4||SYS.identT>0||(SYS.xpMd>=2&&Math.random()<0.25));
   C172P.gauges(P,D);
-  const dim=b?SYS.dimRadio:0.25; P.world.style.setProperty('--rbrt',(0.35+0.65*dim).toFixed(2));
+  const dim=b?SYS.dimRadio:0.25, rbv=(0.35+0.65*dim).toFixed(2); if(rbv!==rbLast){ rbLast=rbv; P.world.style.setProperty('--rbrt',rbv); }
 }
 
 /* ---------- loop ---------- */
@@ -739,7 +747,7 @@ function pilotInput(dt){
   if(S.autotrim&&!S.ground){ if(Math.abs(y)>0.03) holdPitch=null; else { const o=S.o; if(holdPitch===null) holdPitch=o.pitch; S.ctl.trim=F.clamp(S.ctl.trim+F.clamp(0.06*(holdPitch-o.pitch)-1.2*S.q,-0.4,0.4)*dt*3,-1,1); } } else holdPitch=null;
 }
 function loop(t){
-  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); last=t;
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
   const o0=F.readouts(S);
   if(!UI.paused&&!S.crash){
     pilotInput(dt);
@@ -752,7 +760,7 @@ function loop(t){
   const o=F.readouts(S);
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   otwTick(dt);
-  if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; C172P.sync(P,{get:ioGet}); C172P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
+  if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; C172P.sync(P,{get:ioGet}); C172P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const stall=!S.ground&&S.alpha!=null&&S.aS!=null&&S.alpha>S.aS-0.075;
   soundTick(stall);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
@@ -762,13 +770,13 @@ let wasCrash=null;
 function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
-  sEl.textContent=T(sKey); sEl.className='status'+(S.crash||UI.paused?'':' ok');
-  if(flashT>0) flashT-=0.12; else { el('stat2').classList.remove('chg'); el('stat2').textContent=T(sKey)+' · '+Math.round(D.ias||0)+' KIAS · '+Math.round(o.alt)+' FT · '+Math.round(ENG.rpm)+' RPM'; }
+  { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; }
+  if(flashT>0) flashT-=0.12; else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(D.ias||0)+' KIAS · '+Math.round(o.alt)+' FT · '+Math.round(ENG.rpm)+' RPM'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
   if(S.landed&&S.landed.field&&!PR.m.fieldMsg){ PR.m.fieldMsg=1; pill(L(tr2('Landed in a field — well done. Secure the aircraft.','Landet på et jorde — godt jobbet. Sikre flyet.')),'ok'); }
-  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
+  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
   const fe=(v,d)=>(+v).toFixed(d);
-  el('engRead').innerHTML=`RPM ${Math.round(ENG.rpm)} · ${Math.round(ENG.pwr*100)} % · ${fe(ENG.ff,1)} gal/h<br>EGT ${Math.round(ENG.egt)} °F · ${L(tr2('oil','olje'))} ${Math.round(ENG.oilT)} °F / ${Math.round(ENG.oilP)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${fe(FUEL.L,1)} · R ${fe(FUEL.R,1)} gal · ${CC.SEL[SYS.fuelSel]}<br>${fe(EL.volts,1)} V · ${EL.amps>=0?'+':''}${fe(EL.amps,1)} A · ${L(tr2('battery','batteri'))} ${Math.round(EL.soc*100)} %<br>${L(tr2('Suction','Sug'))} ${fe(VAC.suction,1)} in Hg · ${L(tr2('carb ice (hidden in the real aircraft)','forgasseris (skjult i virkeligheten)'))} ${Math.round(ENG.ice*100)} %`;
+  { const et=`RPM ${Math.round(ENG.rpm)} · ${Math.round(ENG.pwr*100)} % · ${fe(ENG.ff,1)} gal/h<br>EGT ${Math.round(ENG.egt)} °F · ${L(tr2('oil','olje'))} ${Math.round(ENG.oilT)} °F / ${Math.round(ENG.oilP)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${fe(FUEL.L,1)} · R ${fe(FUEL.R,1)} gal · ${CC.SEL[SYS.fuelSel]}<br>${fe(EL.volts,1)} V · ${EL.amps>=0?'+':''}${fe(EL.amps,1)} A · ${L(tr2('battery','batteri'))} ${Math.round(EL.soc*100)} %<br>${L(tr2('Suction','Sug'))} ${fe(VAC.suction,1)} in Hg · ${L(tr2('carb ice (hidden in the real aircraft)','forgasseris (skjult i virkeligheten)'))} ${Math.round(ENG.ice*100)} %`; if(et!==engTxt){ engTxt=et; el('engRead').innerHTML=et; } }
   if(slow===0&&Math.random()<0.05) riskText();
 }
 
