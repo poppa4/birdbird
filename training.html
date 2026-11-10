@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Training · Birdbird</title>
+<meta name="description" content="Birdbird training: Cessna 172, DA42 and King Air B200 cockpit trainers, an IFR trainer, briefings, gate-to-gate flights, radio drills, type rating study, A320 sim assessment and check preparation.">
+<meta name="theme-color" content="#0B2545">
+<link rel="preload" as="image" href="img/training/hero-da42-1600.webp" imagesrcset="img/training/hero-da42-960.webp 960w, img/training/hero-da42-1600.webp 1600w" imagesizes="(max-width:820px) 100vw, 72vw" type="image/webp" fetchpriority="high">
+<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="site.css?v=12">
+<style>
+/* ===== Training overview. Page-scoped under .tr =====
+   Front-page tokens: navy for the flight deck, paper for reading, one magenta for actions.
+   The page reads as one route: hero (the sim, moving) → three cockpits → the path → the IFR trainer → the tools around them. */
+.tr{
+  --navy:#0B2545; --deep:#071A33; --night:#06142A; --on-navy:#FFFFFF; --on-navy-2:#BFCAD6; --on-navy-3:#8C9BAD; --navy-rule:rgba(255,255,255,.14);
+  --ink2:var(--ink-2,#4C5B66); --rule2:var(--rule-2,#DCE3E4); --acc:var(--accent,#9A1E68); --amber:#F0B440; --cyan:#7FCBE8;
+  --disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif); --mono:var(--f-mono,"IBM Plex Mono",ui-monospace,monospace);
+  --wrap:var(--container,1240px);
+  display:block;color:var(--ink);font-size:17px;line-height:1.6;
+}
+.tr *{box-sizing:border-box}
+.tr-band{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:0 var(--gr,24px) 0 var(--gl,24px)}
+.tr-wrap{max-width:var(--wrap);margin:0 auto;position:relative}
+.tr h1,.tr h2,.tr h3{font-family:var(--disp);font-weight:650;margin:0;text-wrap:balance}
+.tr h2{font-size:clamp(32px,3.6vw,52px);line-height:1.02;letter-spacing:-.022em;font-stretch:84%;color:var(--navy)}
+.tr h3{font-size:clamp(22px,1.9vw,26px);line-height:1.12;letter-spacing:-.015em;font-stretch:86%;color:var(--navy)}
+.tr p{margin:0}
+.tr a{color:inherit}
+.tr .tl{color:var(--acc);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+.tr .tl:hover{text-decoration-color:currentColor;text-decoration-thickness:2px}
+.tr a:focus-visible,.tr button:focus-visible{outline:2px solid var(--info);outline-offset:3px}
+.tr .vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tr-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;font-size:16px;font-weight:600;text-decoration:none;border-radius:2px;border:1px solid transparent;transition:background-color .15s,border-color .15s;white-space:nowrap}
+.tr-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.tr-btn.pri:hover{background:#B02A7B;border-color:#B02A7B}
+.tr-btn.out{color:var(--navy);border-color:var(--rule)}
+.tr-btn.out:hover{border-color:var(--navy)}
+.tr-btn.ghost{color:#fff;border-color:rgba(255,255,255,.5)}
+.tr-btn.ghost:hover{border-color:#fff;background:rgba(255,255,255,.06)}
+.dk .tr-btn:focus-visible,.dk a:focus-visible{outline-color:#fff}
+.tr .ill{display:block;width:100%;height:auto}
+.dk{background:var(--navy);color:var(--on-navy)}
+.dk h2,.dk h3{color:#fff}
+
+/* ---------- 1. Hero: the DA42 trainer in a turn, moving ---------- */
+.th{position:relative;background:var(--deep);overflow:hidden;isolation:isolate}
+.th-media{position:absolute;inset:0 0 0 33%;z-index:-2;background:#10161D}
+.th-media img,.th-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:58% 50%}
+.th-media video{opacity:0;transition:opacity .6s ease}
+.th-media video.on{opacity:1}
+/* the navy field the words sit on, feathered into the cockpit */
+.th::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(90deg,var(--deep) 0%,var(--deep) 33%,rgba(7,26,51,.7) 40%,rgba(7,26,51,.25) 50%,rgba(7,26,51,0) 60%),
+             linear-gradient(0deg,rgba(7,26,51,.9) 0%,rgba(7,26,51,0) 26%)}
+.th-in{display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(560px,calc(100svh - 125px - 118px),760px);padding:72px 0 56px}
+.th h1{color:#fff;font-size:clamp(50px,5.7vw,90px);line-height:.94;letter-spacing:-.026em;font-stretch:80%;font-weight:700;max-width:7em}
+.th-lede{margin-top:22px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:26em}
+.th-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.th-cap{position:absolute;right:var(--gr,24px);bottom:14px;font-size:12.5px;color:rgba(255,255,255,.72);text-shadow:0 1px 2px rgba(0,0,0,.6);margin:0}
+/* proof: four true numbers, in the front page's band */
+.tp{background:var(--deep);border-top:1px solid var(--navy-rule)}
+.tp dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 auto}
+.tp div{padding:26px 28px 28px;border-left:1px solid var(--navy-rule)}
+.tp div:first-child{border-left:0;padding-left:0}
+.tp dt{font-family:var(--disp);font-stretch:78%;font-weight:650;font-size:clamp(34px,3.2vw,46px);line-height:1;letter-spacing:-.02em;color:#fff}
+.tp dd{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--on-navy-2);max-width:17em}
+
+/* ---------- 2. Three cockpits ---------- */
+.ts{padding-top:112px;padding-bottom:120px;background:var(--navy)}
+.ts-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px 64px;align-items:end;margin-bottom:64px}
+.ts-head p{font-size:18px;line-height:1.6;color:var(--on-navy-2);max-width:30em}
+.ac{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:40px 56px;align-items:center}
+.ac+.ac{margin-top:96px}
+.ac.flip{grid-template-columns:minmax(0,4fr) minmax(0,8fr)}
+.ac.flip .ac-fig{order:2}
+.ac-fig{position:relative;margin:0;aspect-ratio:16/10;background:#10161D;overflow:hidden;border-radius:6px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px -40px rgba(0,0,0,.7)}
+.ac-fig img,.ac-fig .ill{display:block;width:100%;height:100%;object-fit:cover}
+.ac-fig a{position:absolute;inset:0}
+.ac-fig a:focus-visible{outline:2px solid #fff!important;outline-offset:-4px!important}
+.ac h3{font-size:clamp(36px,3.6vw,54px);line-height:.98;letter-spacing:-.03em;font-stretch:76%;font-weight:680}
+.ac h3 a{text-decoration:none}
+.ac h3 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
+.ac-cls{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--on-navy-3);margin-bottom:14px!important}
+.ac-cls i{font-style:normal;font-size:12px;font-weight:600;color:#fff;border:1px solid rgba(255,255,255,.4);padding:0 6px;line-height:1.55;border-radius:2px}
+.ac-tag{margin-top:16px!important;font-size:18px;line-height:1.5;color:var(--on-navy-2);max-width:22em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:24px 0 0;padding:0}
+.chips li{font-size:14px;line-height:1.3;padding:7px 11px;border-radius:3px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}
+.chips b{font-weight:600}
+.ac-act{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-top:30px}
+.dk .tl{color:#fff;text-decoration-color:rgba(255,255,255,.45);font-size:15.5px}
+.dk .tl:hover{text-decoration-color:#fff}
+.beta{font-size:12px;font-weight:600;color:#fff;border:1px solid rgba(255,255,255,.4);padding:0 6px;line-height:1.55;border-radius:2px;margin-left:-12px}
+
+/* ---------- 3. The training path: a climb profile ---------- */
+.tw{padding-top:112px;padding-bottom:108px}
+.tw-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px 64px;align-items:end;margin-bottom:24px}
+.tw-head p{font-size:18px;line-height:1.6;color:var(--ink2);max-width:30em}
+.tw-route{position:relative;margin-top:24px}
+.tw ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.tw-prof{position:absolute;left:0;right:0;top:0;height:132px;width:100%;pointer-events:none;overflow:visible}
+.tw-st{position:relative;padding:0 22px 0 0}
+.tw-alt{position:relative;height:132px}
+.tw-node{position:absolute;left:-7px;width:16px;height:16px;transform:translateY(50%)}
+.tw-st:nth-child(1) .tw-node{bottom:14px}.tw-st:nth-child(2) .tw-node{bottom:38px}.tw-st:nth-child(3) .tw-node{bottom:62px}.tw-st:nth-child(4) .tw-node{bottom:86px}.tw-st:nth-child(5) .tw-node{bottom:110px}
+.tw-stage{font-size:14px;color:var(--ink2);margin-top:22px!important}
+.tw h3{margin-top:4px}
+.tw-line{margin-top:8px!important;font-size:15.5px;line-height:1.5;color:var(--ink2);max-width:15em}
+.tw-go{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:6px}
+.tw-go a{font-size:15.5px}
+
+/* ---------- 4. IFR trainer ---------- */
+.ti{background:var(--night);color:#fff;padding-top:112px;padding-bottom:120px;overflow:hidden}
+.ti-grid{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:48px 56px;align-items:center}
+.ti h2{color:#fff;font-size:clamp(40px,4.6vw,68px);font-stretch:74%;letter-spacing:-.03em;line-height:.95}
+.ti-lede{margin-top:20px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:25em}
+.ti-steps{list-style:none;margin:34px 0 0;padding:0;counter-reset:s;border-top:1px solid var(--navy-rule)}
+.ti-steps li{counter-increment:s;display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 8px;padding:14px 0 15px;border-bottom:1px solid var(--navy-rule);font-size:17px;line-height:1.45}
+.ti-steps li::before{content:counter(s);font-family:var(--disp);font-weight:650;font-size:17px;color:var(--amber)}
+.ti-steps b{font-weight:600;color:#fff}
+.ti-steps span{color:var(--on-navy-2)}
+.ti-lvl{margin-top:30px}
+.ti-lvl p{font-size:14px;color:var(--on-navy-3)}
+.ti-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0 8px}
+.ti-bar i{height:6px;border-radius:1px;background:var(--amber)}
+.ti-bar i:nth-child(1){opacity:.22}.ti-bar i:nth-child(2){opacity:.4}.ti-bar i:nth-child(3){opacity:.58}.ti-bar i:nth-child(4){opacity:.78}
+.ti-ends{display:flex;justify-content:space-between;gap:16px;font-size:14.5px;color:#fff}
+.ti-ends span:last-child{text-align:right}
+.ti-cov{margin-top:22px!important;font-size:15.5px;line-height:1.55;color:var(--on-navy-2)}
+.ti .ac-act{margin-top:30px}
+.ti-fig{margin:0;position:relative}
+@media (min-width:1280px){.ti-fig{margin-right:-40px}}
+.ti-fig svg{display:block;width:100%;height:auto}
+.ti-fig figcaption{margin-top:12px;font-size:13.5px;color:var(--on-navy-3)}
+
+/* ---------- 5. Around the cockpit: briefings, the whole trip, the check ---------- */
+.tt{padding-top:112px}
+.tt-brief{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,6fr);gap:40px 72px;align-items:center}
+.tt-chart{margin:0;position:relative;aspect-ratio:16/11;overflow:hidden;border-radius:6px;background:#DDE5EA}
+.tt-chart img{position:absolute;left:50%;top:7%;width:64%;height:auto;transform:translateX(-50%) rotate(-2deg);box-shadow:0 0 0 1px rgba(19,32,42,.12),0 30px 60px -30px rgba(11,37,69,.55)}
+.tt-chart a{position:absolute;inset:0}
+.tt-brief .txt>p{font-size:18px;line-height:1.6;color:var(--ink2);margin-top:16px;max-width:30em}
+.tt .chips li{background:var(--sheet);color:var(--ink);border-color:var(--rule)}
+.tt-brief .tr-btn{margin-top:28px}
+.tt-grp{margin-top:112px}
+.tt-gh{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px 64px;align-items:end;margin-bottom:36px}
+.tt-gh p{font-size:18px;line-height:1.6;color:var(--ink2);max-width:30em}
+.tg{display:grid;gap:40px 28px}
+.tg.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tg.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tc{position:relative;min-width:0}
+.tc-plate{background:var(--navy);aspect-ratio:16/9;overflow:hidden;border-radius:6px;transition:transform .2s ease}
+.tc h3{margin-top:20px}
+.tc h3 a{text-decoration:none}
+.tc h3 a::after{content:"";position:absolute;inset:0;z-index:1}
+.tc h3 a:focus-visible{outline:none}
+.tc:has(h3 a:focus-visible){outline:2px solid var(--info);outline-offset:6px}
+.tc:hover h3 a{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.tc:hover .tc-plate{transform:translateY(-3px)}
+.tc-line{margin-top:8px!important;font-size:16px;line-height:1.55;color:var(--ink2);max-width:28em}
+.tc-go{margin-top:12px!important;font-size:15.5px;color:var(--acc);font-weight:600}
+.tr .tr-note{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px 32px;margin:96px 0 0;padding:18px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);font-size:15px;color:var(--ink2)}
+.tr-note b{color:var(--ink);font-weight:600}
+
+/* ---------- responsive ---------- */
+@media (max-width:1180px){
+  .ac,.ac.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px 40px}
+  .ac.flip{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+  .tw ol{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .tw-st{padding-right:16px}
+  .ti-grid{grid-template-columns:minmax(0,1fr);gap:56px}
+  .ti-fig{max-width:880px}
+}
+@media (max-width:980px){
+  .th-media{left:18%}
+  .ts-head,.tw-head,.tt-gh,.tt-brief{grid-template-columns:minmax(0,1fr)}
+  .ac,.ac.flip{grid-template-columns:minmax(0,1fr);gap:28px}
+  .ac.flip .ac-fig{order:0}
+  .ac+.ac{margin-top:80px}
+  .ac-tag{max-width:34em}
+  .tp dl{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tp div{padding:22px 24px 24px 0;border-left:0;border-top:1px solid var(--navy-rule)}
+  .tp div:nth-child(-n+2){border-top:0}
+  .tp div:nth-child(even){padding-left:24px;border-left:1px solid var(--navy-rule)}
+  /* the path turns vertical: a rail on the left */
+  .tw ol{grid-template-columns:minmax(0,1fr)}
+  .tw-route{margin-top:36px}
+  .tw-prof{display:none}
+  .tw-st{padding:0 0 30px 40px}
+  .tw-st::before{content:"";position:absolute;left:7px;top:10px;bottom:-10px;width:2px;background:var(--navy)}
+  .tw-st:last-child::before{display:none}
+  .tw-alt{position:absolute;left:0;top:0;height:auto}
+  .tw-st .tw-node{position:absolute;left:0!important;top:4px;bottom:auto!important;transform:none}
+  .tw-stage{margin-top:0!important}
+  .tw-line{max-width:34em}
+  .tw-go{display:flex;flex-wrap:wrap;gap:6px 20px}
+  .tt-chart{max-width:640px}
+}
+@media (max-width:820px){
+  .th{display:flex;flex-direction:column}
+  .th-media{position:relative;inset:auto;order:-2;aspect-ratio:16/10;width:auto;margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px))}
+  .th::before{display:none}
+  .th-media::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,var(--deep),rgba(7,26,51,0))}
+  .th-in{min-height:0;padding:22px 0 44px;width:100%}
+  .th-cap{position:static;order:-1;margin:8px 0 0;font-size:12px;color:var(--on-navy-3);text-shadow:none}
+}
+@media (max-width:720px){
+  .tg.c2,.tg.c3{grid-template-columns:minmax(0,1fr);gap:36px}
+}
+@media (max-width:640px){
+  .tr{font-size:16px}
+  .th-media{aspect-ratio:4/3}
+  .th-media img,.th-media video{object-position:50% 50%}
+  .ti-fig{margin:0 calc(-1*var(--gr,24px) + 6px) 0 calc(-1*var(--gl,24px) + 6px)}
+  .ti-fig figcaption{padding:0 18px}
+  .th h1{font-size:clamp(44px,13vw,58px)}
+  .th-lede{font-size:17px;margin-top:16px!important}
+  .th-cta .tr-btn{flex:1 1 100%}
+  .tp dt{font-size:34px}
+  .tp dd{font-size:14px}
+  .tp div{padding:20px 16px 22px 0}
+  .tp div:nth-child(even){padding-left:16px}
+  .ts,.tw,.ti{padding-top:80px;padding-bottom:88px}
+  .tt{padding-top:80px}
+  .ts-head{margin-bottom:44px}
+  .ts-head p,.tw-head p,.tt-gh p,.tt-brief .txt>p{font-size:16.5px}
+  .ac-fig{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));border-radius:0}
+  .ac h3{font-size:40px}
+  .ac-act .tr-btn{flex:1 1 100%}
+  .ac+.ac{margin-top:64px}
+  .ti-lede{font-size:17px}
+  .ti-steps li{font-size:16px}
+  .ti .ac-act .tr-btn,.tt-brief .tr-btn{width:100%}
+  .tt-grp{margin-top:80px}
+  .tr-note{margin-top:64px}
+}
+@media (prefers-reduced-motion:reduce){.tr-btn,.tc-plate,.th-media video{transition:none}.th-media video{display:none}}
+</style>
+</head>
+<body data-title="Training">
+<script src="site.js?v=51"></script>
+<main class="tr" id="main">
+
+  <!-- 1. Hero -->
+  <section class="th tr-band" aria-labelledby="tr-h1">
+    <div class="th-media">
+      <img src="img/training/hero-da42-1600.webp" srcset="img/training/hero-da42-960.webp 960w, img/training/hero-da42-1600.webp 1600w" sizes="(max-width:820px) 100vw, 74vw" width="1600" height="900" fetchpriority="high" decoding="async"
+        alt="The DA42 trainer in a left turn at 3,000 ft: the horizon tilted through the windscreen, the standby instruments on the glareshield and the two glass displays below." data-alt-no="DA42-treneren i venstresving i 3000 fot: horisonten på skrå gjennom frontruta, reserveinstrumentene på glareshielden og de to glasskjermene under.">
+      <video id="heroVid" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" width="1600" height="900"
+        data-src-webm="img/training/hero-da42-1600.webm" data-src-mp4="img/training/hero-da42-1600.mp4" data-src-webm-s="img/training/hero-da42-960.webm" data-src-mp4-s="img/training/hero-da42-960.mp4"></video>
+    </div>
+    <div class="tr-wrap th-in">
+      <h1 id="tr-h1" data-tx="h1">Sit in the cockpit before you fly it</h1>
+      <p class="th-lede" data-tx="lede">Three cockpit trainers and an IFR trainer, with the briefings, the radio and the check preparation around them. In your browser.</p>
+      <div class="th-cta"><a class="tr-btn pri" href="cockpit.html" data-tx="cta1">Open the DA42 simulator</a><a class="tr-btn ghost" href="#path" data-tx="cta2">See the training path</a></div>
+    </div>
+    <p class="th-cap" data-tx="cap">Recorded in the DA42 trainer, free flight at 3,000 ft.</p>
+  </section>
+  <section class="tp tr-band dk" aria-labelledby="tp-h">
+    <h2 class="vh" id="tp-h" data-tx="tpH">Training in numbers</h2>
+    <dl class="tr-wrap">
+      <div><dt>3</dt><dd data-tx="p1">aircraft, from a single piston to a twin turboprop</dd></div>
+      <div><dt>400+</dt><dd data-tx="p2">working switches, knobs and levers in the King Air B200</dd></div>
+      <div><dt>14</dt><dd data-tx="p3">DA42 missions and procedure flows</dd></div>
+      <div><dt>320</dt><dd data-tx="p4">type rating questions, with an exam mode</dd></div>
+    </dl>
+  </section>
+
+  <!-- 2. Three cockpits -->
+  <section class="ts tr-band dk" id="sims" aria-labelledby="h-sims">
+    <div class="tr-wrap">
+      <header class="ts-head">
+        <h2 id="h-sims" data-tx="simsH">Three cockpits, each one working</h2>
+        <p data-tx="simsP">Switches, knobs and levers do what they do in the aircraft. Start on the ramp or in the air, alone or with a scenario.</p>
+      </header>
+
+      <article class="ac" aria-labelledby="s-c172">
+        <figure class="ac-fig">
+          <svg class="ill" viewBox="0 0 640 400" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="spSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9CC9"/><stop offset="1" stop-color="#B9CFE0"/></linearGradient><linearGradient id="spPan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B3036"/><stop offset="1" stop-color="#1D2126"/></linearGradient><radialGradient id="spBez" cx=".5" cy=".4" r=".6"><stop offset=".8" stop-color="#3A4047"/><stop offset="1" stop-color="#15181B"/></radialGradient></defs>
+<rect width="640" height="400" fill="url(#spSky)"/>
+<path d="M0 64Q320 22 640 64V400H0z" fill="url(#spPan)"/>
+<path d="M0 64Q320 22 640 64" fill="none" stroke="#0E1013" stroke-width="10"/>
+<circle cx="178" cy="150" r="71" fill="url(#spBez)"/>
+<circle cx="178" cy="150" r="62" fill="#0E1114"/>
+<path d="M199.7 104.9A50 50 0 0 1 219.2 178.3" fill="none" stroke="#E8ECEF" stroke-width="3"/>
+<path d="M223.4 117.2A56 56 0 0 1 151.6 199.4" fill="none" stroke="#3FAE5A" stroke-width="5"/>
+<path d="M151.6 199.4A56 56 0 0 1 122.1 147.4" fill="none" stroke="#E3B23C" stroke-width="5"/>
+<path d="M118.1 147.2L130.1 147.7" stroke="#E5484D" stroke-width="3"/>
+<path d="M198.2 94.6L194.8 104" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M207.1 98.6L204.6 103" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M215.1 104.1L208.8 111.9" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M222.2 110.9L218.4 114.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M228 118.7L219.6 124" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M232.5 127.4L227.9 129.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M235.5 136.7L225.7 139" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M236.9 146.4L231.9 146.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M236.7 156.2L226.7 155.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M234.9 165.8L230 164.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M231.5 174.9L222.4 170.7" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M226.6 183.4L222.5 180.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M220.4 191L213.2 184" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M213.1 197.4L210.1 193.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M204.8 202.6L200.2 193.7" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M195.7 206.3L194.2 201.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M186.2 208.4L184.8 198.5" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M176.5 209L176.6 204" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M166.7 207.9L168.7 198.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M157.3 205.3L159.1 200.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M148.5 201.1L153.5 192.4" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M140.5 195.5L143.7 191.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M133.5 188.7L141 182.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M127.7 180.8L132 178.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M123.3 172.1L132.6 168.4" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M120.4 162.8L125.3 161.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M119.1 153.1L129.1 152.6" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M119.4 143.3L124.3 143.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M121.3 133.7L130.9 136.5" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M124.7 124.6L129.3 126.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M129.7 116.2L137.9 121.9" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M135.9 108.6L139.5 112.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M143.3 102.3L149.2 110.4" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M151.7 97.2L153.9 101.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M160.8 93.6L163.7 103.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<text x="201.3" y="121.2" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">40</text>
+<text x="214.1" y="141.7" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">60</text>
+<text x="211.5" y="165.6" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">80</text>
+<text x="194.8" y="183" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">100</text>
+<text x="170.9" y="186.3" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">120</text>
+<text x="150.1" y="174.3" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">140</text>
+<text x="141.1" y="151.9" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">160</text>
+<text x="147.7" y="128.8" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">180</text>
+<path d="M178 150L185 199.5" stroke="#F4F6F8" stroke-width="3" stroke-linecap="round"/><circle cx="178" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
+<text x="178" y="172" fill="#9AA7B3" font-size="8" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">KNOTS</text>
+<circle cx="320" cy="150" r="71" fill="url(#spBez)"/>
+<circle cx="320" cy="150" r="62" fill="#0E1114"/>
+<clipPath id="spAi"><circle cx="320" cy="150" r="60"/></clipPath><g clip-path="url(#spAi)" transform="rotate(-10 320 150)"><rect x="258" y="88" width="124" height="68" fill="#3A78C2"/><rect x="258" y="156" width="124" height="62" fill="#7A532F"/><path d="M258 156H382" stroke="#fff" stroke-width="1.6"/><path d="M311 145h18" stroke="#fff" stroke-width="1.3"/><path d="M304 134h32" stroke="#fff" stroke-width="1.3"/><path d="M311 123h18" stroke="#fff" stroke-width="1.3"/></g>
+<path d="M286 150h20l6 7 6-7h20" fill="none" stroke="#F0B440" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M320 92l-6 10h12z" fill="#F0B440"/>
+<circle cx="462" cy="150" r="71" fill="url(#spBez)"/>
+<circle cx="462" cy="150" r="62" fill="#0E1114"/>
+<path d="M462 91L462 101" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M469.4 91.5L468.8 96.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M476.7 92.9L475.4 97.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M483.7 95.1L481.9 99.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M490.4 98.3L488 102.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M496.7 102.3L490.8 110.4" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M502.4 107L499 110.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M507.5 112.4L503.6 115.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M511.8 118.4L507.6 121.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M515.4 124.9L510.9 127" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M518.1 131.8L508.6 134.9" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M520 138.9L515 139.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M520.9 146.3L515.9 146.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M520.9 153.7L515.9 153.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M520 161.1L515 160.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M518.1 168.2L508.6 165.1" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M515.4 175.1L510.9 173" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M511.8 181.6L507.6 178.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M507.5 187.6L503.6 184.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M502.4 193L499 189.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M496.7 197.7L490.8 189.6" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M490.4 201.7L488 197.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M483.7 204.9L481.9 200.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M476.7 207.1L475.4 202.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M469.4 208.5L468.8 203.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M462 209L462 199" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M454.6 208.5L455.2 203.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M447.3 207.1L448.6 202.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M440.3 204.9L442.1 200.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M433.6 201.7L436 197.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M427.3 197.7L433.2 189.6" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M421.6 193L425 189.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M416.5 187.6L420.4 184.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M412.2 181.6L416.4 178.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M408.6 175.1L413.1 173" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M405.9 168.2L415.4 165.1" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M404 161.1L409 160.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M403.1 153.7L408.1 153.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M403.1 146.3L408.1 146.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M404 138.9L409 139.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M405.9 131.8L415.4 134.9" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M408.6 124.9L413.1 127" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M412.2 118.4L416.4 121.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M416.5 112.4L420.4 115.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M421.6 107L425 110.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M427.3 102.3L433.2 110.4" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M433.6 98.3L436 102.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M440.3 95.1L442.1 99.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M447.3 92.9L448.6 97.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M454.6 91.5L455.2 96.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M462 91L462 101" stroke="#E8ECEF" stroke-width="1.8"/>
+<text x="462" y="110" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">0</text>
+<text x="485.5" y="117.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">1</text>
+<text x="500" y="137.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">2</text>
+<text x="500" y="162.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">3</text>
+<text x="485.5" y="182.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">4</text>
+<text x="462" y="190" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
+<text x="438.5" y="182.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">6</text>
+<text x="424" y="162.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">7</text>
+<text x="424" y="137.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">8</text>
+<text x="438.5" y="117.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">9</text>
+<path d="M462 150L494.3 160.5" stroke="#F4F6F8" stroke-width="5" stroke-linecap="round"/><circle cx="462" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
+<path d="M462 150L462 98" stroke="#F4F6F8" stroke-width="2.4" stroke-linecap="round"/><circle cx="462" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
+<rect x="447" y="165" width="30" height="13" fill="#000" stroke="#555"/>
+<text x="462" y="171.5" fill="#E8ECEF" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">1013</text>
+<circle cx="178" cy="294" r="71" fill="url(#spBez)"/>
+<circle cx="178" cy="294" r="62" fill="#0E1114"/>
+<path d="M152 324h52" stroke="#E8ECEF" stroke-width="1.2"/><rect x="148" y="320" width="60" height="12" rx="6" fill="#E9E2C7"/><circle cx="182" cy="326" r="5" fill="#111"/>
+<path d="M120 294L130 294" stroke="#fff" stroke-width="2.4"/>
+<path d="M123.5 274.2L132.9 277.6" stroke="#fff" stroke-width="2.4"/>
+<path d="M232.5 274.2L223.1 277.6" stroke="#fff" stroke-width="2.4"/>
+<path d="M236 294L226 294" stroke="#fff" stroke-width="2.4"/>
+<g transform="rotate(-12 178 294)"><path d="M138 294h80M178 286v12" stroke="#F4F6F8" stroke-width="4" stroke-linecap="round"/><circle cx="178" cy="294" r="7" fill="#F4F6F8"/></g>
+<text x="144" y="260" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">L</text>
+<text x="212" y="260" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">R</text>
+<circle cx="320" cy="294" r="71" fill="url(#spBez)"/>
+<circle cx="320" cy="294" r="62" fill="#0E1114"/>
+<path d="M282.1 248.8L287.2 254.9" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M290.5 242.9L292 245.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M299.8 238.6L300.8 241.4" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M309.8 235.9L311.1 243.8" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M320 235L320 238" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M330.2 235.9L329.7 238.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M340.2 238.6L337.4 246.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M349.5 242.9L348 245.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M357.9 248.8L356 251.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M365.2 256.1L359.1 261.2" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M371.1 264.5L368.5 266" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M375.4 273.8L372.6 274.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M378.1 283.8L370.2 285.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M379 294L376 294" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M378.1 304.2L375.1 303.7" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M375.4 314.2L367.9 311.4" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M371.1 323.5L368.5 322" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M365.2 331.9L362.9 330" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M357.9 339.2L352.8 333.1" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M349.5 345.1L348 342.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M340.2 349.4L339.2 346.6" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M330.2 352.1L328.9 344.2" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M320 353L320 350" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M309.8 352.1L310.3 349.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M299.8 349.4L302.6 341.9" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M290.5 345.1L292 342.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M282.1 339.2L284 336.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M274.8 331.9L280.9 326.8" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M268.9 323.5L271.5 322" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M264.6 314.2L267.4 313.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M261.9 304.2L269.8 302.9" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M261 294L264 294" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M261.9 283.8L264.9 284.3" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M264.6 273.8L272.1 276.6" stroke="#E8ECEF" stroke-width="1.6"/>
+<path d="M268.9 264.5L271.5 266" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M274.8 256.1L277.1 258" stroke="#E8ECEF" stroke-width="1"/>
+<text x="293.6" y="262.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(-40 293.6 262.6)" font-family="IBM Plex Mono,ui-monospace,monospace">N</text>
+<text x="351.4" y="267.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(50 351.4 267.6)" font-family="IBM Plex Mono,ui-monospace,monospace">E</text>
+<text x="346.4" y="325.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(140 346.4 325.4)" font-family="IBM Plex Mono,ui-monospace,monospace">S</text>
+<text x="288.6" y="320.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(230 288.6 320.4)" font-family="IBM Plex Mono,ui-monospace,monospace">W</text>
+<text x="312.9" y="253.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(-10 312.9 253.6)" font-family="IBM Plex Mono,ui-monospace,monospace">3</text>
+<text x="334" y="255.5" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(20 334 255.5)" font-family="IBM Plex Mono,ui-monospace,monospace">6</text>
+<text x="360.4" y="286.9" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(80 360.4 286.9)" font-family="IBM Plex Mono,ui-monospace,monospace">12</text>
+<text x="358.5" y="308" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(110 358.5 308)" font-family="IBM Plex Mono,ui-monospace,monospace">15</text>
+<text x="327.1" y="334.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(170 327.1 334.4)" font-family="IBM Plex Mono,ui-monospace,monospace">21</text>
+<text x="306" y="332.5" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(200 306 332.5)" font-family="IBM Plex Mono,ui-monospace,monospace">24</text>
+<text x="279.6" y="301.1" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(260 279.6 301.1)" font-family="IBM Plex Mono,ui-monospace,monospace">30</text>
+<text x="281.5" y="280" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(290 281.5 280)" font-family="IBM Plex Mono,ui-monospace,monospace">33</text>
+<path d="M320 278v30M306 292h28M314 306h12" stroke="#F0B440" stroke-width="3" stroke-linecap="round"/><path d="M320 234l-5 9h10z" fill="#F0B440"/>
+<circle cx="462" cy="294" r="71" fill="url(#spBez)"/>
+<circle cx="462" cy="294" r="62" fill="#0E1114"/>
+<path d="M520.1 304.2L510.3 302.5" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M514.6 320.8L510.1 318.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M504.4 335L500.8 331.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M490.6 345.6L488.2 341.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M474.3 351.7L473.2 346.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M456.9 352.8L457.7 342.8" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M439.9 348.7L441.8 344.1" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M424.9 339.9L428 336" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M413.1 327L417.2 324.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M405.6 311.2L410.4 309.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M403 294L413 294" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M405.6 276.8L410.4 278.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M413.1 261L417.2 263.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M424.9 248.1L428 252" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M439.9 239.3L441.8 243.9" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M456.9 235.2L457.7 245.2" stroke="#E8ECEF" stroke-width="1.8"/>
+<path d="M474.3 236.3L473.2 241.2" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M490.6 242.4L488.2 246.8" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M504.4 253L500.8 256.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M514.6 267.2L510.1 269.5" stroke="#E8ECEF" stroke-width="1"/>
+<path d="M520.1 283.8L510.3 285.5" stroke="#E8ECEF" stroke-width="1.8"/>
+<text x="422" y="294" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">0</text>
+<text x="458.5" y="254.2" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
+<text x="501.4" y="287.1" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">10</text>
+<text x="458.5" y="333.8" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
+<path d="M462 294L410.8 285" stroke="#F4F6F8" stroke-width="3" stroke-linecap="round"/><circle cx="462" cy="294" r="5" fill="#2A2F35" stroke="#C8CED3"/>
+<text x="476" y="318" fill="#9AA7B3" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">FPM</text>
+<circle cx="82" cy="120" r="5" fill="#4A5158"/><circle cx="82" cy="330" r="5" fill="#4A5158"/>
+<circle cx="558" cy="120" r="5" fill="#4A5158"/><circle cx="558" cy="330" r="5" fill="#4A5158"/>
+</svg>
+          <a href="c172.html" tabindex="-1" aria-hidden="true"></a>
+        </figure>
+        <div>
+          <p class="ac-cls"><span data-tx="e2">Single-engine piston</span></p>
+          <h3 id="s-c172"><a href="c172.html">Cessna 172</a></h3>
+          <!-- TODO(c172): confirm facts against c172.html when it ships -->
+          <p class="ac-tag" data-tx="e3">The classic six-pack: learn the scan, fly by attitude, then fly the circuit.</p>
+          <ul class="chips">
+            <li data-tx="e4">Six-pack instruments</li>
+            <li data-tx="e5">Throttle, mixture, flaps, trim</li>
+            <li data-tx="e6">Basic handling to the circuit</li>
+          </ul>
+          <div class="ac-act"><a class="tr-btn pri" href="c172.html" data-tx="open">Open simulator</a></div>
+        </div>
+      </article>
+
+      <article class="ac flip" aria-labelledby="s-da42">
+        <figure class="ac-fig">
+          <img src="img/training/da42-1000.webp" srcset="img/training/da42-1000.webp 1000w, img/training/da42-2000.webp 2000w" sizes="(max-width:980px) 100vw, 820px" width="2000" height="1250" loading="lazy" decoding="async"
+            alt="The DA42 trainer on the ILS 36 mission at 2,000 ft: the windscreen view, the standby instruments, the primary flight display and the moving map, and the switch row below." data-alt-no="DA42-treneren på oppdraget ILS 36 i 2000 fot: utsikten gjennom frontruta, reserveinstrumentene, primært flyinstrument og det bevegelige kartet, og bryterraden under.">
+          <a href="cockpit.html" tabindex="-1" aria-hidden="true"></a>
+        </figure>
+        <div>
+          <p class="ac-cls"><span data-tx="d2">Multi-engine piston</span><i>Beta</i></p>
+          <h3 id="s-da42"><a href="cockpit.html">DA42</a></h3>
+          <p class="ac-tag" data-tx="d3">A two-screen glass cockpit with autopilot. Fly the approaches and the engine failures.</p>
+          <ul class="chips">
+            <li data-tx="d4">Glass cockpit, autopilot</li>
+            <li data-tx="d5"><b>9</b> missions, <b>5</b> flows</li>
+            <li data-tx="d6">ILS, RNAV and VOR</li>
+            <li data-tx="d7">Engine failure, stall</li>
+          </ul>
+          <div class="ac-act"><a class="tr-btn pri" href="cockpit.html" data-tx="open">Open simulator</a><a class="tl" href="da42-3d.html" data-tx="d8">Try it in 3D</a><span class="beta">Beta</span></div>
+        </div>
+      </article>
+
+      <article class="ac" aria-labelledby="s-b200">
+        <figure class="ac-fig">
+          <img src="img/training/b200-1000.webp" srcset="img/training/b200-1000.webp 1000w, img/training/b200-2000.webp 2000w" sizes="(max-width:980px) 100vw, 820px" width="2000" height="1250" loading="lazy" decoding="async"
+            alt="The King Air B200 trainer's flight deck at 5,000 ft: attitude and HSI displays for both pilots, round engine gauges in the centre, the annunciators on the glareshield and the subpanels below." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot: attityde- og HSI-skjermer for begge piloter, runde motorinstrumenter i midten, varsellysene på glareshielden og underpanelene nede.">
+          <a href="b200.html" tabindex="-1" aria-hidden="true"></a>
+        </figure>
+        <div>
+          <p class="ac-cls"><span data-tx="b2">Twin turboprop</span><i>Beta</i></p>
+          <h3 id="s-b200"><a href="b200.html">King Air B200</a></h3>
+          <p class="ac-tag" data-tx="b3">A full two-pilot flight deck, from battery start to the single-engine approach.</p>
+          <ul class="chips">
+            <li data-tx="b4"><b>400+</b> working controls</li>
+            <li data-tx="b5">EFIS for both pilots</li>
+            <li data-tx="b6"><b>6</b> procedure flows</li>
+            <li data-tx="b7">Engine fire, emergency descent</li>
+          </ul>
+          <div class="ac-act"><a class="tr-btn pri" href="b200.html" data-tx="open">Open simulator</a><a class="tl" href="typerating.html" data-tx="b9">Study the type rating</a></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. The path -->
+  <section class="tw" id="path" aria-labelledby="h-path">
+    <div class="tr-wrap">
+      <header class="tw-head">
+        <h2 id="h-path" data-tx="pathH">From the first circuit to the airline check</h2>
+        <p data-tx="pathP">Each stage has its own tool. Take them in order, or start where you are.</p>
+      </header>
+      <div class="tw-route">
+        <svg class="tw-prof" viewBox="0 0 1000 132" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 118H150L200 94H350L400 70H550L600 46H750L800 22H1000" fill="none" stroke="#0B2545" stroke-width="2" vector-effect="non-scaling-stroke"/><path d="M0 131.5H1000" stroke="#C6D0D3" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>
+        <ol>
+        <li class="tw-st"><div class="tw-alt"><svg class="tw-node" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0L10.2 5.8L16 8L10.2 10.2L8 16L5.8 10.2L0 8L5.8 5.8Z" fill="#0B2545"/><circle cx="8" cy="8" r="2.2" fill="#EDF1EE"/></svg></div>
+          <p class="tw-stage" data-tx="w1s">Private pilot</p><h3 data-tx="w1">PPL basics</h3><p class="tw-line" data-tx="w1l">The scan, attitude flying and the circuit.</p>
+          <ul class="tw-go"><li><a class="tl" href="c172.html">Cessna 172</a></li><li><a class="tl" href="radio-drills.html" data-tx="lRadio">Radio drills</a></li></ul></li>
+        <li class="tw-st"><div class="tw-alt"><svg class="tw-node" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0L10.2 5.8L16 8L10.2 10.2L8 16L5.8 10.2L0 8L5.8 5.8Z" fill="#0B2545"/><circle cx="8" cy="8" r="2.2" fill="#EDF1EE"/></svg></div>
+          <p class="tw-stage" data-tx="w2s">Instrument rating</p><h3 data-tx="w2">Instrument</h3><p class="tw-line" data-tx="w2l">Tracking, holding and approaches on instruments.</p>
+          <ul class="tw-go"><li><a class="tl" href="ifr.html" data-tx="lIfr">IFR trainer</a></li><li><a class="tl" href="briefing.html" data-tx="lBrief">Briefings</a></li></ul></li>
+        <li class="tw-st"><div class="tw-alt"><svg class="tw-node" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0L10.2 5.8L16 8L10.2 10.2L8 16L5.8 10.2L0 8L5.8 5.8Z" fill="#0B2545"/><circle cx="8" cy="8" r="2.2" fill="#EDF1EE"/></svg></div>
+          <p class="tw-stage" data-tx="w3s">Multi-engine</p><h3 data-tx="w3">Two engines</h3><p class="tw-line" data-tx="w3l">Glass cockpit, autopilot and the engine failure.</p>
+          <ul class="tw-go"><li><a class="tl" href="cockpit.html">DA42</a></li><li><a class="tl" href="radio.html" data-tx="lG2g">Gate to gate</a></li></ul></li>
+        <li class="tw-st"><div class="tw-alt"><svg class="tw-node" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0L10.2 5.8L16 8L10.2 10.2L8 16L5.8 10.2L0 8L5.8 5.8Z" fill="#0B2545"/><circle cx="8" cy="8" r="2.2" fill="#EDF1EE"/></svg></div>
+          <p class="tw-stage" data-tx="w4s">Turboprop and type rating</p><h3 data-tx="w4">Turboprop</h3><p class="tw-line" data-tx="w4l">A two-pilot flight deck, its systems and the exam.</p>
+          <ul class="tw-go"><li><a class="tl" href="b200.html">King Air B200</a></li><li><a class="tl" href="typerating.html" data-tx="lType">Type rating</a></li></ul></li>
+        <li class="tw-st"><div class="tw-alt"><svg class="tw-node" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0L10.2 5.8L16 8L10.2 10.2L8 16L5.8 10.2L0 8L5.8 5.8Z" fill="#0B2545"/><circle cx="8" cy="8" r="2.2" fill="#EDF1EE"/></svg></div>
+          <p class="tw-stage" data-tx="w5s">Airline check</p><h3 data-tx="w5">The check</h3><p class="tw-line" data-tx="w5l">The simulator assessment and the oral.</p>
+          <ul class="tw-go"><li><a class="tl" href="simcheck.html" data-tx="lA320">A320 sim assessment</a></li><li><a class="tl" href="checkride.html" data-tx="lCheck">Check preparation</a></li></ul></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. IFR trainer -->
+  <section class="ti tr-band" id="ifr" aria-labelledby="h-ifr">
+    <div class="tr-wrap ti-grid">
+      <div>
+        <h2 id="h-ifr" data-tx="iH">IFR trainer</h2>
+        <p class="ti-lede" data-tx="iP">Instrument procedures, one idea at a time, on an HSI and a plan view.</p>
+        <ol class="ti-steps">
+          <li><p><b data-tx="i1">Learn the idea.</b> <span data-tx="i1b">What the needle and the DME are telling you.</span></p></li>
+          <li><p><b data-tx="i2">Fly it.</b> <span data-tx="i2b">Intercept, track, hold and fly the approach.</span></p></li>
+          <li><p><b data-tx="i3">See your mistake on the replay.</b> <span data-tx="i3b">Where you turned late, and by how much.</span></p></li>
+        </ol>
+        <div class="ti-lvl">
+          <p data-tx="iLv">Levels</p>
+          <div class="ti-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="ti-ends"><span data-tx="iL1">Map shown, no wind</span><span data-tx="iL2">Map hidden, gusty wind</span></div>
+        </div>
+        <p class="ti-cov" data-tx="iCov">Radials, intercepts, NDB, DME arcs, holding and procedure turns, then VOR/DME and ILS approaches.</p>
+        <div class="ac-act"><a class="tr-btn pri" href="ifr.html" data-tx="iGo">Open the IFR trainer</a></div>
+      </div>
+      <figure class="ti-fig">
+        <svg id="ifrSvg" viewBox="0 0 1000 560" role="img" aria-labelledby="ifrT" xmlns="http://www.w3.org/2000/svg"><title id="ifrT">An HSI and a plan view replaying a flight along a 10 DME arc onto the final course; the turn onto the course starts late and the track goes through it before coming back.</title><defs><radialGradient id="hsiG" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#0D2342"/><stop offset="1" stop-color="#040B17"/></radialGradient><pattern id="pgrid" width="34" height="34" patternUnits="userSpaceOnUse" x="690" y="58"><path d="M34 0H0V34" fill="none" stroke="rgba(255,255,255,.05)"/></pattern><clipPath id="plClip"><rect x="520" y="16" width="478" height="528" rx="8"/></clipPath></defs><circle cx="250" cy="280" r="236" fill="#0A1A31" stroke="rgba(255,255,255,.12)"/><circle cx="250" cy="280" r="222" fill="url(#hsiG)"/><g id="hsiRose"><path d="M250.0 72.0L250.0 92.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M268.1 72.8L267.4 80.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M286.1 75.2L283.7 88.9" stroke="#E8EEF4" stroke-width="2.2"/><path d="M303.8 79.1L301.8 86.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M321.1 84.5L316.4 97.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M337.9 91.5L334.5 98.7" stroke="#E8EEF4" stroke-width="1.2"/><path d="M354.0 99.9L344.0 117.2" stroke="#E8EEF4" stroke-width="2.2"/><path d="M369.3 109.6L364.7 116.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M383.7 120.7L374.7 131.4" stroke="#E8EEF4" stroke-width="2.2"/><path d="M397.1 132.9L391.4 138.6" stroke="#E8EEF4" stroke-width="1.2"/><path d="M409.3 146.3L398.6 155.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M420.4 160.7L413.8 165.3" stroke="#E8EEF4" stroke-width="1.2"/><path d="M430.1 176.0L412.8 186.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M438.5 192.1L431.3 195.5" stroke="#E8EEF4" stroke-width="1.2"/><path d="M445.5 208.9L432.3 213.6" stroke="#E8EEF4" stroke-width="2.2"/><path d="M450.9 226.2L443.2 228.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M454.8 243.9L441.1 246.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M457.2 261.9L449.2 262.6" stroke="#E8EEF4" stroke-width="1.2"/><path d="M458.0 280.0L438.0 280.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M457.2 298.1L449.2 297.4" stroke="#E8EEF4" stroke-width="1.2"/><path d="M454.8 316.1L441.1 313.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M450.9 333.8L443.2 331.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M445.5 351.1L432.3 346.4" stroke="#E8EEF4" stroke-width="2.2"/><path d="M438.5 367.9L431.3 364.5" stroke="#E8EEF4" stroke-width="1.2"/><path d="M430.1 384.0L412.8 374.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M420.4 399.3L413.8 394.7" stroke="#E8EEF4" stroke-width="1.2"/><path d="M409.3 413.7L398.6 404.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M397.1 427.1L391.4 421.4" stroke="#E8EEF4" stroke-width="1.2"/><path d="M383.7 439.3L374.7 428.6" stroke="#E8EEF4" stroke-width="2.2"/><path d="M369.3 450.4L364.7 443.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M354.0 460.1L344.0 442.8" stroke="#E8EEF4" stroke-width="2.2"/><path d="M337.9 468.5L334.5 461.3" stroke="#E8EEF4" stroke-width="1.2"/><path d="M321.1 475.5L316.4 462.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M303.8 480.9L301.8 473.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M286.1 484.8L283.7 471.1" stroke="#E8EEF4" stroke-width="2.2"/><path d="M268.1 487.2L267.4 479.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M250.0 488.0L250.0 468.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M231.9 487.2L232.6 479.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M213.9 484.8L216.3 471.1" stroke="#E8EEF4" stroke-width="2.2"/><path d="M196.2 480.9L198.2 473.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M178.9 475.5L183.6 462.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M162.1 468.5L165.5 461.3" stroke="#E8EEF4" stroke-width="1.2"/><path d="M146.0 460.1L156.0 442.8" stroke="#E8EEF4" stroke-width="2.2"/><path d="M130.7 450.4L135.3 443.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M116.3 439.3L125.3 428.6" stroke="#E8EEF4" stroke-width="2.2"/><path d="M102.9 427.1L108.6 421.4" stroke="#E8EEF4" stroke-width="1.2"/><path d="M90.7 413.7L101.4 404.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M79.6 399.3L86.2 394.7" stroke="#E8EEF4" stroke-width="1.2"/><path d="M69.9 384.0L87.2 374.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M61.5 367.9L68.7 364.5" stroke="#E8EEF4" stroke-width="1.2"/><path d="M54.5 351.1L67.7 346.4" stroke="#E8EEF4" stroke-width="2.2"/><path d="M49.1 333.8L56.8 331.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M45.2 316.1L58.9 313.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M42.8 298.1L50.8 297.4" stroke="#E8EEF4" stroke-width="1.2"/><path d="M42.0 280.0L62.0 280.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M42.8 261.9L50.8 262.6" stroke="#E8EEF4" stroke-width="1.2"/><path d="M45.2 243.9L58.9 246.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M49.1 226.2L56.8 228.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M54.5 208.9L67.7 213.6" stroke="#E8EEF4" stroke-width="2.2"/><path d="M61.5 192.1L68.7 195.5" stroke="#E8EEF4" stroke-width="1.2"/><path d="M69.9 176.0L87.2 186.0" stroke="#E8EEF4" stroke-width="2.2"/><path d="M79.6 160.7L86.2 165.3" stroke="#E8EEF4" stroke-width="1.2"/><path d="M90.7 146.3L101.4 155.3" stroke="#E8EEF4" stroke-width="2.2"/><path d="M102.9 132.9L108.6 138.6" stroke="#E8EEF4" stroke-width="1.2"/><path d="M116.3 120.7L125.3 131.4" stroke="#E8EEF4" stroke-width="2.2"/><path d="M130.7 109.6L135.3 116.2" stroke="#E8EEF4" stroke-width="1.2"/><path d="M146.0 99.9L156.0 117.2" stroke="#E8EEF4" stroke-width="2.2"/><path d="M162.1 91.5L165.5 98.7" stroke="#E8EEF4" stroke-width="1.2"/><path d="M178.9 84.5L183.6 97.7" stroke="#E8EEF4" stroke-width="2.2"/><path d="M196.2 79.1L198.2 86.8" stroke="#E8EEF4" stroke-width="1.2"/><path d="M213.9 75.2L216.3 88.9" stroke="#E8EEF4" stroke-width="2.2"/><path d="M231.9 72.8L232.6 80.8" stroke="#E8EEF4" stroke-width="1.2"/><text x="250.0" y="110.0" transform="rotate(0 250.0 110.0)" fill="#FFFFFF" font-size="26" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">N</text><text x="335.0" y="132.8" transform="rotate(30 335.0 132.8)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">3</text><text x="397.2" y="195.0" transform="rotate(60 397.2 195.0)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">6</text><text x="420.0" y="280.0" transform="rotate(90 420.0 280.0)" fill="#FFFFFF" font-size="26" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">E</text><text x="397.2" y="365.0" transform="rotate(120 397.2 365.0)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">12</text><text x="335.0" y="427.2" transform="rotate(150 335.0 427.2)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">15</text><text x="250.0" y="450.0" transform="rotate(180 250.0 450.0)" fill="#FFFFFF" font-size="26" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">S</text><text x="165.0" y="427.2" transform="rotate(210 165.0 427.2)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">21</text><text x="102.8" y="365.0" transform="rotate(240 102.8 365.0)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">24</text><text x="80.0" y="280.0" transform="rotate(270 80.0 280.0)" fill="#FFFFFF" font-size="26" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">W</text><text x="102.8" y="195.0" transform="rotate(300 102.8 195.0)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">30</text><text x="165.0" y="132.8" transform="rotate(330 165.0 132.8)" fill="#FFFFFF" font-size="22" font-weight="600" text-anchor="middle" dominant-baseline="central" font-family="Archivo,Arial Narrow,sans-serif">33</text><path d="M250 84l-13 26h8v44h10v-44h8z" fill="#3FD07A"/><path d="M245 406h10v68h-10z" fill="#3FD07A"/><circle cx="130" cy="280" r="6" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="154" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="178" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="202" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="226" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="274" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="298" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="322" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="346" cy="280" r="4.5" fill="none" stroke="#E8EEF4" stroke-width="2"/><circle cx="370" cy="280" r="6" fill="none" stroke="#E8EEF4" stroke-width="2"/><path d="M250 160l-9 16h18z" fill="#E8EEF4"/><g id="hsiCdi"><path d="M245 176h10v208h-10z" fill="#3FD07A"/></g></g><path d="M250 72l-9-18h18z" fill="#F0B440"/><path d="M250 254v52M220 278h60M236 304h28" stroke="#F0B440" stroke-width="5" stroke-linecap="round"/><text x="250" y="22" fill="#8C9BAD" font-size="14" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">HDG</text><text id="hsiHdg" x="250" y="44" fill="#FFFFFF" font-size="22" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">218°</text><text x="22" y="22" fill="#8C9BAD" font-size="14" font-family="IBM Plex Mono,ui-monospace,monospace">DME</text><text id="hsiDme" x="22" y="44" fill="#FFFFFF" font-size="22" font-family="IBM Plex Mono,ui-monospace,monospace">10.0</text><text x="478" y="22" fill="#8C9BAD" font-size="14" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">CRS</text><text x="478" y="44" fill="#3FD07A" font-size="22" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">360°</text><g clip-path="url(#plClip)"><rect x="520" y="16" width="478" height="528" fill="#08182E"/><rect x="520" y="16" width="478" height="528" fill="url(#pgrid)"/><path d="M1005.2 185.4A340 340 0 0 1 573.7 377.5" fill="none" stroke="rgba(255,255,255,.62)" stroke-width="2"/><path d="M690 398V560" stroke="rgba(255,255,255,.35)" stroke-width="1.5" stroke-dasharray="6 6"/><path d="M690 398V58" stroke="#FFFFFF" stroke-width="2.5"/><path d="M718.1 378.8L721.2 414.6" stroke="#7FCBE8" stroke-width="2"/><text x="729.6" y="370.7" fill="#7FCBE8" font-size="13" font-family="IBM Plex Mono,ui-monospace,monospace">LR 175</text><path d="M690 58V30a19 19 0 0 1 38 0V58a19 19 0 0 1 -38 0" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5" stroke-dasharray="5 5"/><text x="720" y="86" fill="#8C9BAD" font-size="13" font-family="IBM Plex Mono,ui-monospace,monospace">HOLD</text><path d="M690 219l8 15h-16z" fill="none" stroke="#FFFFFF" stroke-width="2"/><text x="704" y="233" fill="#BFCAD6" font-size="13" font-family="IBM Plex Mono,ui-monospace,monospace">D5.0</text><text x="894.1" y="343.9" fill="#BFCAD6" font-size="13" font-family="IBM Plex Mono,ui-monospace,monospace">10 DME</text><text x="700" y="518" fill="#BFCAD6" font-size="13" font-family="IBM Plex Mono,ui-monospace,monospace">R-180</text><rect x="677" y="47" width="26" height="22" fill="#08182E" stroke="#FFFFFF" stroke-width="1.6"/><polygon points="699.0,58.0 694.5,65.8 685.5,65.8 681.0,58.0 685.5,50.2 694.5,50.2" fill="none" stroke="#FFFFFF" stroke-width="1.6"/><circle cx="690" cy="58" r="2" fill="#FFFFFF"/><polyline id="ifrTrack" points="" fill="none" stroke="#F0B440" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><g id="ifrPeak" style="transition:opacity .4s"><circle r="13" fill="none" stroke="#F0B440" stroke-width="1.6"/><path d="M0 13V46" stroke="#F0B440" stroke-width="1.6"/><text id="ifrNote" x="-6" y="66" fill="#FFFFFF" font-size="14" font-family="Public Sans,system-ui,sans-serif"><tspan font-weight="600">Turned late</tspan><tspan x="-6" dy="19" fill="#BFCAD6">0.6 NM through the course</tspan></text></g><g id="ifrAc"><path d="M0 -11L2.4 -3L11 2V5L2.4 2.4L1.8 8L5 10.5V12.5L0 11.2L-5 12.5V10.5L-1.8 8L-2.4 2.4L-11 5V2L-2.4 -3Z" fill="#FFFFFF" stroke="#08182E" stroke-width="1"/></g></g><rect x="520" y="16" width="478" height="528" rx="8" fill="none" stroke="rgba(255,255,255,.14)"/></svg>
+        <figcaption data-tx="iCap">Illustration: a 10 DME arc onto the final course, with the turn started late.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 5. Around the cockpit -->
+  <section class="tt" id="tools" aria-labelledby="h-br">
+    <div class="tr-wrap">
+      <div class="tt-brief" id="briefings">
+        <figure class="tt-chart">
+          <img src="img/training/briefing-chart-600.webp" srcset="img/training/briefing-chart-600.webp 600w, img/training/briefing-chart-1200.webp 1200w" sizes="(max-width:980px) 64vw, 400px" width="1200" height="1356" loading="lazy" decoding="async"
+            alt="A fictional ILS approach chart for runway 36: frequencies and the briefing strip at the top, the plan view with the initial approach fixes, the final approach fix and the missed approach hold, and the profile view below." data-alt-no="Et fiktivt ILS-innflygingskart for rullebane 36: frekvenser og briefingstripen øverst, planvisningen med initialfiksene, sluttinnflygingsfiksen og holdingen for avbrutt innflyging, og profilen under.">
+          <a href="briefing.html#reading" tabindex="-1" aria-hidden="true"></a>
+        </figure>
+        <div class="txt">
+          <h2 id="h-br" data-tx="brH">Briefings</h2>
+          <p data-tx="brP">Brief a departure or an approach out loud, against today’s weather and a training chart. The AI instructor scores the structure, the numbers and the threats.</p>
+          <ul class="chips">
+            <li data-tx="br1">Departure and approach</li>
+            <li data-tx="br2">TSADMM</li>
+            <li data-tx="br3">New weather every time</li>
+            <li data-tx="br4">A model briefing to compare</li>
+          </ul>
+          <a class="tr-btn pri" href="briefing.html" data-tx="brGo">Open Briefings</a>
+        </div>
+      </div>
+
+      <div class="tt-grp" id="trip">
+        <header class="tt-gh">
+          <h2 id="h-trip" data-tx="tpH2">Fly the whole trip</h2>
+          <p data-tx="tpP">The order of a flight and the words on the radio, until they run on their own.</p>
+        </header>
+        <div class="tg c2">
+          <article class="tc">
+            <div class="tc-plate"><svg class="ill" viewBox="0 0 480 270" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<rect width="480" height="270" fill="#0B2545"/>
+<path d="M24 196H456" stroke="rgba(255,255,255,.22)"/>
+<path d="M40 196H118C136 196 150 190 166 172L222 74H286L338 178C344 190 350 196 360 196H440" fill="none" stroke="#E07DB6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="40" cy="196" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="96" cy="196" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="152" cy="184" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="194" cy="118" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="254" cy="74" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="312" cy="128" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="350" cy="192" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<circle cx="440" cy="196" r="5.5" fill="#0B2545" stroke="#FFFFFF" stroke-width="2"/>
+<path d="M40 206v8" stroke="rgba(255,255,255,.22)"/><text x="40" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">GATE</text>
+<path d="M96 206v8" stroke="rgba(255,255,255,.22)"/><text x="96" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">TAXI</text>
+<path d="M152 206v8" stroke="rgba(255,255,255,.22)"/><text x="152" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">T/O</text>
+<path d="M194 206v8" stroke="rgba(255,255,255,.22)"/><text x="194" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">CLB</text>
+<path d="M254 206v8" stroke="rgba(255,255,255,.22)"/><text x="254" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">CRZ</text>
+<path d="M312 206v8" stroke="rgba(255,255,255,.22)"/><text x="312" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">DES</text>
+<path d="M350 206v8" stroke="rgba(255,255,255,.22)"/><text x="350" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">LDG</text>
+<path d="M440 206v8" stroke="rgba(255,255,255,.22)"/><text x="440" y="230" fill="#BFCAD6" font-size="12.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">CHOCKS</text>
+<rect x="150" y="22" width="40" height="3" fill="#58C98B"/>
+<text x="150" y="44" fill="#FFFFFF" font-size="11.5" font-family="IBM Plex Mono,ui-monospace,monospace">FLOW</text>
+<rect x="198" y="22" width="40" height="3" fill="#58C98B"/>
+<text x="198" y="44" fill="#FFFFFF" font-size="11.5" font-family="IBM Plex Mono,ui-monospace,monospace">CHECK</text>
+<rect x="246" y="22" width="40" height="3" fill="#58C98B"/>
+<text x="246" y="44" fill="#FFFFFF" font-size="11.5" font-family="IBM Plex Mono,ui-monospace,monospace">BRIEF</text>
+<rect x="294" y="22" width="40" height="3" fill="#58C98B"/>
+<text x="294" y="44" fill="#FFFFFF" font-size="11.5" font-family="IBM Plex Mono,ui-monospace,monospace">CALL</text>
+</svg></div>
+            <h3><a href="radio.html" data-tx="g1">Gate to gate</a></h3>
+            <p class="tc-line" data-tx="g2">A whole DA42 trip in order, with the AI as ATC and instructor.</p>
+          </article>
+          <article class="tc">
+            <div class="tc-plate"><svg class="ill" viewBox="0 0 480 270" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<rect width="480" height="270" fill="#0B2545"/>
+<text x="28" y="44" fill="#7F93A8" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">TWR</text><text x="66" y="44" fill="#FFFFFF" font-size="13" font-weight="600" font-family="IBM Plex Mono,ui-monospace,monospace">118.300</text>
+<rect x="28" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="34" y="71.3" width="3" height="5.3" rx="1" fill="#BFCAD6"/>
+<rect x="40" y="62.4" width="3" height="23.2" rx="1" fill="#BFCAD6"/>
+<rect x="46" y="68" width="3" height="12.1" rx="1" fill="#BFCAD6"/>
+<rect x="52" y="64.4" width="3" height="19.1" rx="1" fill="#BFCAD6"/>
+<rect x="58" y="70.2" width="3" height="7.6" rx="1" fill="#BFCAD6"/>
+<rect x="64" y="69.5" width="3" height="9" rx="1" fill="#BFCAD6"/>
+<rect x="70" y="70.1" width="3" height="7.8" rx="1" fill="#BFCAD6"/>
+<rect x="76" y="62.1" width="3" height="23.8" rx="1" fill="#BFCAD6"/>
+<rect x="82" y="66.4" width="3" height="15.2" rx="1" fill="#BFCAD6"/>
+<rect x="88" y="64.7" width="3" height="18.6" rx="1" fill="#BFCAD6"/>
+<rect x="94" y="69.2" width="3" height="9.6" rx="1" fill="#BFCAD6"/>
+<rect x="100" y="70.2" width="3" height="7.7" rx="1" fill="#BFCAD6"/>
+<rect x="106" y="61.6" width="3" height="24.8" rx="1" fill="#BFCAD6"/>
+<rect x="112" y="67.5" width="3" height="13.1" rx="1" fill="#BFCAD6"/>
+<rect x="118" y="66.9" width="3" height="14.1" rx="1" fill="#BFCAD6"/>
+<rect x="124" y="65.4" width="3" height="17.1" rx="1" fill="#BFCAD6"/>
+<rect x="130" y="66.4" width="3" height="15.2" rx="1" fill="#BFCAD6"/>
+<rect x="136" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="142" y="67" width="3" height="14" rx="1" fill="#BFCAD6"/>
+<rect x="148" y="72.2" width="3" height="3.5" rx="1" fill="#BFCAD6"/>
+<rect x="154" y="63.1" width="3" height="21.8" rx="1" fill="#BFCAD6"/>
+<rect x="160" y="72.1" width="3" height="3.7" rx="1" fill="#BFCAD6"/>
+<rect x="166" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="172" y="70.8" width="3" height="6.4" rx="1" fill="#BFCAD6"/>
+<rect x="178" y="68.1" width="3" height="11.8" rx="1" fill="#BFCAD6"/>
+<rect x="184" y="65.4" width="3" height="17.2" rx="1" fill="#BFCAD6"/>
+<rect x="190" y="61.8" width="3" height="24.5" rx="1" fill="#BFCAD6"/>
+<rect x="196" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="202" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="208" y="71" width="3" height="5.9" rx="1" fill="#BFCAD6"/>
+<rect x="214" y="65.7" width="3" height="16.7" rx="1" fill="#BFCAD6"/>
+<rect x="220" y="67.9" width="3" height="12.3" rx="1" fill="#BFCAD6"/>
+<rect x="226" y="65.2" width="3" height="17.7" rx="1" fill="#BFCAD6"/>
+<rect x="232" y="69.6" width="3" height="8.8" rx="1" fill="#BFCAD6"/>
+<rect x="238" y="71.9" width="3" height="4.2" rx="1" fill="#BFCAD6"/>
+<rect x="244" y="62.8" width="3" height="22.5" rx="1" fill="#BFCAD6"/>
+<rect x="250" y="64" width="3" height="20.1" rx="1" fill="#BFCAD6"/>
+<rect x="256" y="66.2" width="3" height="15.5" rx="1" fill="#BFCAD6"/>
+<rect x="262" y="66.5" width="3" height="14.9" rx="1" fill="#BFCAD6"/>
+<rect x="268" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="274" y="68.9" width="3" height="10.3" rx="1" fill="#BFCAD6"/>
+<rect x="280" y="71.1" width="3" height="5.7" rx="1" fill="#BFCAD6"/>
+<rect x="286" y="69.1" width="3" height="9.7" rx="1" fill="#BFCAD6"/>
+<rect x="292" y="65.8" width="3" height="16.5" rx="1" fill="#BFCAD6"/>
+<rect x="298" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="304" y="70.3" width="3" height="7.3" rx="1" fill="#BFCAD6"/>
+<rect x="310" y="62" width="3" height="24" rx="1" fill="#BFCAD6"/>
+<rect x="316" y="61" width="3" height="26.1" rx="1" fill="#BFCAD6"/>
+<rect x="322" y="65.8" width="3" height="16.4" rx="1" fill="#BFCAD6"/>
+<rect x="328" y="60.4" width="3" height="27.1" rx="1" fill="#BFCAD6"/>
+<rect x="334" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="340" y="72.1" width="3" height="3.9" rx="1" fill="#BFCAD6"/>
+<rect x="346" y="71.9" width="3" height="4.3" rx="1" fill="#BFCAD6"/>
+<rect x="352" y="63.1" width="3" height="21.9" rx="1" fill="#BFCAD6"/>
+<rect x="358" y="67.5" width="3" height="13" rx="1" fill="#BFCAD6"/>
+<rect x="364" y="65.5" width="3" height="17" rx="1" fill="#BFCAD6"/>
+<rect x="370" y="70.8" width="3" height="6.3" rx="1" fill="#BFCAD6"/>
+<rect x="376" y="65" width="3" height="18.1" rx="1" fill="#BFCAD6"/>
+<rect x="382" y="63.6" width="3" height="20.9" rx="1" fill="#BFCAD6"/>
+<rect x="388" y="58.9" width="3" height="30.2" rx="1" fill="#BFCAD6"/>
+<rect x="394" y="66.6" width="3" height="14.8" rx="1" fill="#BFCAD6"/>
+<rect x="400" y="66" width="3" height="16.1" rx="1" fill="#BFCAD6"/>
+<rect x="406" y="71.9" width="3" height="4.2" rx="1" fill="#BFCAD6"/>
+<rect x="412" y="71.4" width="3" height="5.2" rx="1" fill="#BFCAD6"/>
+<rect x="418" y="67" width="3" height="14" rx="1" fill="#BFCAD6"/>
+<rect x="424" y="70.8" width="3" height="6.3" rx="1" fill="#BFCAD6"/>
+<rect x="430" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="436" y="72.5" width="3" height="3" rx="1" fill="#BFCAD6"/>
+<rect x="442" y="68" width="3" height="11.9" rx="1" fill="#BFCAD6"/>
+<rect x="448" y="70.6" width="3" height="6.8" rx="1" fill="#BFCAD6"/>
+<rect x="454" y="61.1" width="3" height="25.9" rx="1" fill="#BFCAD6"/>
+<text x="28" y="122" fill="#7F93A8" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">PILOT</text><text x="80" y="122" fill="#E07DB6" font-size="13" font-weight="600" font-family="IBM Plex Mono,ui-monospace,monospace">PTT</text>
+<rect x="28" y="148.5" width="3" height="7.1" rx="1" fill="#E07DB6"/>
+<rect x="34" y="139.9" width="3" height="24.3" rx="1" fill="#E07DB6"/>
+<rect x="40" y="138.5" width="3" height="27" rx="1" fill="#E07DB6"/>
+<rect x="46" y="143.6" width="3" height="16.8" rx="1" fill="#E07DB6"/>
+<rect x="52" y="144.1" width="3" height="15.7" rx="1" fill="#E07DB6"/>
+<rect x="58" y="144.8" width="3" height="14.4" rx="1" fill="#E07DB6"/>
+<rect x="64" y="147.1" width="3" height="9.8" rx="1" fill="#E07DB6"/>
+<rect x="70" y="147.6" width="3" height="8.8" rx="1" fill="#E07DB6"/>
+<rect x="76" y="141.6" width="3" height="20.8" rx="1" fill="#E07DB6"/>
+<rect x="82" y="140.8" width="3" height="22.4" rx="1" fill="#E07DB6"/>
+<rect x="88" y="142.6" width="3" height="18.9" rx="1" fill="#E07DB6"/>
+<rect x="94" y="149.2" width="3" height="5.6" rx="1" fill="#E07DB6"/>
+<rect x="100" y="150.5" width="3" height="3" rx="1" fill="#E07DB6"/>
+<rect x="106" y="146.1" width="3" height="11.8" rx="1" fill="#E07DB6"/>
+<rect x="112" y="142.5" width="3" height="19.1" rx="1" fill="#E07DB6"/>
+<rect x="118" y="137.6" width="3" height="28.7" rx="1" fill="#E07DB6"/>
+<rect x="124" y="149.6" width="3" height="4.8" rx="1" fill="#E07DB6"/>
+<rect x="130" y="150" width="3" height="4" rx="1" fill="#E07DB6"/>
+<rect x="136" y="150.3" width="3" height="3.4" rx="1" fill="#E07DB6"/>
+<rect x="142" y="150.5" width="3" height="3" rx="1" fill="#E07DB6"/>
+<rect x="148" y="148.5" width="3" height="7.1" rx="1" fill="#E07DB6"/>
+<rect x="154" y="150.3" width="3" height="3.4" rx="1" fill="#E07DB6"/>
+<rect x="160" y="147.3" width="3" height="9.3" rx="1" fill="#E07DB6"/>
+<rect x="166" y="150.3" width="3" height="3.3" rx="1" fill="#E07DB6"/>
+<rect x="172" y="146.4" width="3" height="11.2" rx="1" fill="#E07DB6"/>
+<rect x="178" y="137.5" width="3" height="29.1" rx="1" fill="#E07DB6"/>
+<rect x="184" y="136.1" width="3" height="31.8" rx="1" fill="#E07DB6"/>
+<rect x="190" y="147.2" width="3" height="9.5" rx="1" fill="#E07DB6"/>
+<rect x="196" y="150.5" width="3" height="3" rx="1" fill="#E07DB6"/>
+<rect x="202" y="148.7" width="3" height="6.6" rx="1" fill="#E07DB6"/>
+<rect x="208" y="144.5" width="3" height="15.1" rx="1" fill="#E07DB6"/>
+<rect x="214" y="144.9" width="3" height="14.1" rx="1" fill="#E07DB6"/>
+<rect x="220" y="146.3" width="3" height="11.3" rx="1" fill="#E07DB6"/>
+<rect x="226" y="145.4" width="3" height="13.2" rx="1" fill="#E07DB6"/>
+<rect x="232" y="147" width="3" height="10.1" rx="1" fill="#E07DB6"/>
+<rect x="238" y="147.5" width="3" height="8.9" rx="1" fill="#E07DB6"/>
+<rect x="244" y="144.3" width="3" height="15.5" rx="1" fill="#E07DB6"/>
+<rect x="250" y="140.4" width="3" height="23.2" rx="1" fill="#E07DB6"/>
+<rect x="256" y="137" width="3" height="29.9" rx="1" fill="#E07DB6"/>
+<rect x="262" y="143.3" width="3" height="17.3" rx="1" fill="#E07DB6"/>
+<rect x="268" y="150" width="3" height="3.9" rx="1" fill="#E07DB6"/>
+<rect x="274" y="150.4" width="3" height="3.1" rx="1" fill="#E07DB6"/>
+<rect x="280" y="147.8" width="3" height="8.4" rx="1" fill="#E07DB6"/>
+<rect x="286" y="139.9" width="3" height="24.2" rx="1" fill="#E07DB6"/>
+<rect x="292" y="150.5" width="3" height="3" rx="1" fill="#E07DB6"/>
+<rect x="298" y="150.3" width="3" height="3.3" rx="1" fill="#E07DB6"/>
+<rect x="304" y="144.4" width="3" height="15.2" rx="1" fill="#E07DB6"/>
+<rect x="310" y="140.9" width="3" height="22.3" rx="1" fill="#E07DB6"/>
+<rect x="316" y="142.7" width="3" height="18.5" rx="1" fill="#E07DB6"/>
+<rect x="322" y="142.5" width="3" height="18.9" rx="1" fill="#E07DB6"/>
+<rect x="328" y="148.3" width="3" height="7.4" rx="1" fill="#E07DB6"/>
+<rect x="334" y="146.6" width="3" height="10.8" rx="1" fill="#E07DB6"/>
+<rect x="340" y="146.1" width="3" height="11.9" rx="1" fill="#E07DB6"/>
+<rect x="346" y="142.1" width="3" height="19.8" rx="1" fill="#E07DB6"/>
+<rect x="352" y="141.7" width="3" height="20.6" rx="1" fill="#E07DB6"/>
+<rect x="358" y="141.8" width="3" height="20.4" rx="1" fill="#E07DB6"/>
+<rect x="364" y="146.9" width="3" height="10.2" rx="1" fill="#E07DB6"/>
+<rect x="370" y="148.2" width="3" height="7.5" rx="1" fill="#E07DB6"/>
+<rect x="28" y="198" width="79.6" height="30" fill="none" stroke="#58C98B" stroke-opacity=".7"/>
+<path d="M38 213l4 4 8-9" fill="none" stroke="#58C98B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="56" y="217.5" fill="#FFFFFF" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">RWY 36</text>
+<rect x="115.6" y="198" width="94.8" height="30" fill="none" stroke="#58C98B" stroke-opacity=".7"/>
+<path d="M125.6 213l4 4 8-9" fill="none" stroke="#58C98B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="143.6" y="217.5" fill="#FFFFFF" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">QNH 1013</text>
+<rect x="218.39999999999998" y="198" width="79.6" height="30" fill="none" stroke="#F0B440" stroke-opacity=".7"/>
+<path d="M229.39999999999998 208l9 10M238.39999999999998 208l-9 10" stroke="#F0B440" stroke-width="2" stroke-linecap="round"/>
+<text x="246.39999999999998" y="217.5" fill="#FFFFFF" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">SQUAWK</text>
+<rect x="306.0" y="198" width="94.8" height="30" fill="none" stroke="#58C98B" stroke-opacity=".7"/>
+<path d="M316.0 213l4 4 8-9" fill="none" stroke="#58C98B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="334.0" y="217.5" fill="#FFFFFF" font-size="12" font-family="IBM Plex Mono,ui-monospace,monospace">CALLSIGN</text>
+</svg></div>
+            <h3><a href="radio-drills.html" data-tx="r1">Radio drills</a></h3>
+            <p class="tc-line" data-tx="r2">From a VFR departure to a MAYDAY, with every readback checked.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="tt-grp" id="check">
+        <header class="tt-gh">
+          <h2 id="h-chk" data-tx="ckH">Prepare for the check</h2>
+          <p data-tx="ckP">Each one built around what the examiner looks for.</p>
+        </header>
+        <div class="tg c3">
+          <article class="tc">
+            <div class="tc-plate"><svg class="ill" viewBox="0 0 480 270" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<rect width="480" height="270" fill="#0B2545"/>
+<rect x="28" y="40" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="28" y="86" width="52" height="4" fill="#58C98B"/>
+<text x="36" y="60" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">01</text>
+<rect x="88" y="40" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="88" y="86" width="49.4" height="4" fill="#58C98B"/>
+<text x="96" y="60" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">02</text>
+<rect x="148" y="40" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="148" y="86" width="46.8" height="4" fill="#58C98B"/>
+<text x="156" y="60" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">03</text>
+<rect x="208" y="40" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="208" y="86" width="44.7" height="4" fill="#58C98B"/>
+<text x="216" y="60" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">04</text>
+<rect x="268" y="40" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="268" y="86" width="41.6" height="4" fill="#58C98B"/>
+<text x="276" y="60" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">05</text>
+<rect x="28" y="100" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="28" y="146" width="37.4" height="4" fill="#E07DB6"/>
+<text x="36" y="120" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">06</text>
+<rect x="88" y="100" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="88" y="146" width="34.3" height="4" fill="#E07DB6"/>
+<text x="96" y="120" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">07</text>
+<rect x="148" y="100" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="148" y="146" width="28.6" height="4" fill="#E07DB6"/>
+<text x="156" y="120" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">08</text>
+<rect x="208" y="100" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="208" y="146" width="20.8" height="4" fill="#E07DB6"/>
+<text x="216" y="120" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">09</text>
+<rect x="268" y="100" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="268" y="146" width="15.6" height="4" fill="#E07DB6"/>
+<text x="276" y="120" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">10</text>
+<rect x="28" y="160" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="28" y="206" width="10.4" height="4" fill="#E07DB6"/>
+<text x="36" y="180" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">11</text>
+<rect x="88" y="160" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<rect x="88" y="206" width="6.2" height="4" fill="#E07DB6"/>
+<text x="96" y="180" fill="#FFFFFF" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">12</text>
+<rect x="148" y="160" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<text x="156" y="180" fill="#7F93A8" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">13</text>
+<rect x="208" y="160" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<text x="216" y="180" fill="#7F93A8" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">14</text>
+<rect x="268" y="160" width="52" height="50" fill="#0F2D52" stroke="rgba(255,255,255,.22)"/>
+<text x="276" y="180" fill="#7F93A8" font-size="12.5" font-family="IBM Plex Mono,ui-monospace,monospace">15</text>
+<circle cx="404" cy="100" r="58" fill="#071A33" stroke="rgba(255,255,255,.22)"/>
+<path d="M365.8 138.2L372.2 131.8" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M352.6 116.7L356.4 115.5" stroke="#FFFFFF" stroke-width="1"/>
+<path d="M350.7 91.6L359.6 93" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M360.3 68.3L363.5 70.6" stroke="#FFFFFF" stroke-width="1"/>
+<path d="M379.5 51.9L383.6 59.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M404 46L404 50" stroke="#FFFFFF" stroke-width="1"/>
+<path d="M428.5 51.9L424.4 59.9" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M447.7 68.3L444.5 70.6" stroke="#FFFFFF" stroke-width="1"/>
+<path d="M457.3 91.6L448.4 93" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M455.4 116.7L451.6 115.5" stroke="#FFFFFF" stroke-width="1"/>
+<path d="M442.2 138.2L435.8 131.8" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M350.7 91.6A54 54 0 0 1 457.3 91.6" fill="none" stroke="#58C98B" stroke-width="4"/>
+<path d="M452 99.2l0 0" stroke="#FF6B57" stroke-width="7" stroke-linecap="round"/>
+<path d="M404 100L423.1 62.6" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/><circle cx="404" cy="100" r="5" fill="#FFFFFF"/>
+<text x="404" y="132" fill="#BFCAD6" font-size="11" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">TORQUE</text>
+<text x="404" y="208" fill="#FFFFFF" font-size="26" font-weight="600" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">320</text>
+<text x="404" y="228" fill="#BFCAD6" font-size="11.5" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">Q · EXAM</text>
+</svg></div>
+            <h3><a href="typerating.html" data-tx="t1">Type rating: King Air B200</a></h3>
+            <p class="tc-line" data-tx="t2">15 modules, five system simulators and 320 questions.</p>
+          </article>
+          <article class="tc">
+            <div class="tc-plate"><svg class="ill" viewBox="0 0 480 270" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<rect width="480" height="270" fill="#0B2545"/>
+<defs><clipPath id="adiC"><rect x="178" y="62" width="124" height="124" rx="10"/></clipPath></defs>
+<g clip-path="url(#adiC)"><g transform="rotate(-8 240 124)"><rect x="120" y="-16" width="240" height="152" fill="#2F5C93"/><rect x="120" y="136" width="240" height="152" fill="#6B4E31"/><path d="M120 136H360" stroke="#FFFFFF" stroke-width="1.6"/>
+<path d="M230.0 122h20" stroke="#FFFFFF" stroke-width="1.4"/>
+<path d="M223.0 108h34" stroke="#FFFFFF" stroke-width="1.4"/>
+<path d="M230.0 150h20" stroke="#FFFFFF" stroke-width="1.4"/>
+<path d="M223.0 164h34" stroke="#FFFFFF" stroke-width="1.4"/>
+</g></g>
+<rect x="178" y="62" width="124" height="124" rx="10" fill="none" stroke="rgba(255,255,255,.22)"/>
+<path d="M200 124h22l6 8M280 124h-22l-6 8" fill="none" stroke="#F0B440" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="237" y="121" width="6" height="6" fill="#F0B440"/>
+<rect x="90" y="62" width="58" height="124" fill="#071A33" stroke="rgba(255,255,255,.22)"/>
+<path d="M136 76h12" stroke="#BFCAD6"/><text x="130" y="80" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">180</text>
+<path d="M136 100h12" stroke="#BFCAD6"/><text x="130" y="104" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">170</text>
+<path d="M136 124h12" stroke="#BFCAD6"/><text x="130" y="128" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">160</text>
+<path d="M136 148h12" stroke="#BFCAD6"/><text x="130" y="152" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">150</text>
+<path d="M136 172h12" stroke="#BFCAD6"/><text x="130" y="176" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">140</text>
+<rect x="92" y="113" width="54" height="22" fill="#0B2545" stroke="#FFFFFF"/><text x="119" y="129" fill="#FFFFFF" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">160</text>
+<text x="119" y="52" fill="#7F93A8" font-size="11" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">SPD</text>
+<rect x="332" y="62" width="58" height="124" fill="#071A33" stroke="rgba(255,255,255,.22)"/>
+<path d="M378 76h12" stroke="#BFCAD6"/><text x="372" y="80" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">3200</text>
+<path d="M378 100h12" stroke="#BFCAD6"/><text x="372" y="104" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">3100</text>
+<path d="M378 124h12" stroke="#BFCAD6"/><text x="372" y="128" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">3000</text>
+<path d="M378 148h12" stroke="#BFCAD6"/><text x="372" y="152" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">2900</text>
+<path d="M378 172h12" stroke="#BFCAD6"/><text x="372" y="176" fill="#BFCAD6" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">2800</text>
+<rect x="334" y="113" width="54" height="22" fill="#0B2545" stroke="#FFFFFF"/><text x="361" y="129" fill="#FFFFFF" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">3000</text>
+<text x="361" y="52" fill="#7F93A8" font-size="11" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">ALT</text>
+<rect x="196" y="208" width="88" height="34" fill="#071A33" stroke="rgba(255,255,255,.22)"/><text x="240" y="230" fill="#FFFFFF" font-size="13" font-weight="600" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,monospace">HDG 090</text>
+<path d="M170 94L152 94" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/><path d="M152 94l7.7 -4.6M152 94l7.7 4.6" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M310 94L328 94" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/><path d="M328 94l-7.7 4.6M328 94l-7.7 -4.6" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M240 192L240 204" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/><path d="M240 204l-4.6 -7.7M240 204l4.6 -7.7" stroke="#E07DB6" stroke-width="2.2" stroke-linecap="round"/>
+</svg></div>
+            <h3><a href="simcheck.html" data-tx="a1">A320 sim assessment</a></h3>
+            <p class="tc-line" data-tx="a2">9 raw-data manoeuvres with targets, technique and typical errors.</p>
+          </article>
+          <article class="tc">
+            <div class="tc-plate"><svg class="ill" viewBox="0 0 480 270" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+<rect width="480" height="270" fill="#0B2545"/>
+<rect x="36" y="26" width="220" height="224" fill="#F4F6F5"/>
+<rect x="36" y="26" width="220" height="30" fill="#E3E8E6"/><text x="50" y="46" fill="#13202A" font-size="12" font-weight="600" font-family="IBM Plex Mono,ui-monospace,monospace">AFM 2.10</text><text x="242" y="46" fill="#4C5B66" font-size="11.5" text-anchor="end" font-family="IBM Plex Mono,ui-monospace,monospace">p. 2-14</text>
+<rect x="54" y="74" width="170" height="6" fill="#C6D0D3"/>
+<rect x="54" y="93" width="150" height="6" fill="#C6D0D3"/>
+<rect x="54" y="112" width="184" height="6" fill="#C6D0D3"/>
+<rect x="54" y="131" width="120" height="6" fill="#C995B4"/>
+<rect x="54" y="150" width="176" height="6" fill="#C995B4"/>
+<rect x="54" y="169" width="160" height="6" fill="#C995B4"/>
+<rect x="54" y="188" width="140" height="6" fill="#C6D0D3"/>
+<rect x="54" y="207" width="182" height="6" fill="#C6D0D3"/>
+<rect x="54" y="226" width="110" height="6" fill="#C6D0D3"/>
+<rect x="44" y="127" width="3" height="59" fill="#9A1E68"/>
+<rect x="290" y="50" width="22" height="22" fill="none" stroke="#58C98B" stroke-width="1.6"/>
+<path d="M295 61l4 5 8-10" fill="none" stroke="#58C98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="326" y="58" width="120" height="6" fill="#BFCAD6" opacity="0.8"/>
+<rect x="290" y="98" width="22" height="22" fill="none" stroke="#58C98B" stroke-width="1.6"/>
+<path d="M295 109l4 5 8-10" fill="none" stroke="#58C98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="326" y="106" width="96" height="6" fill="#BFCAD6" opacity="0.8"/>
+<rect x="290" y="146" width="22" height="22" fill="none" stroke="#58C98B" stroke-width="1.6"/>
+<path d="M295 157l4 5 8-10" fill="none" stroke="#58C98B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="326" y="154" width="132" height="6" fill="#BFCAD6" opacity="0.8"/>
+<rect x="290" y="194" width="22" height="22" fill="none" stroke="#BFCAD6" stroke-width="1.6"/>
+<rect x="326" y="202" width="108" height="6" fill="#7F93A8" opacity="0.6"/>
+</svg></div>
+            <h3><a href="checkride.html" data-tx="c1">Check preparation</a></h3>
+            <p class="tc-line" data-tx="c2">An oral from your own AFM and SOP, each answer graded.</p>
+          </article>
+        </div>
+      </div>
+      <p class="tr-note"><span data-tx="note"><b>Teaching models, not certified simulators.</b> Procedures are generic; your AFM, SOP and checklists come first.</span><a class="tl" href="sources.html" data-tx="noteGo">Data sources and licences</a></p>
+    </div>
+  </section>
+
+</main>
+<script src="lab.js?v=46"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({},{'Training':'Trening'});
+LAB.tx({
+ h1:'Sitt i cockpit før du flyr', lede:'Tre cockpittrenere og en IFR-trener, med briefingene, radioen og forberedelsene til sjekken rundt dem. I nettleseren.',
+ cta1:'Åpne DA42-simulatoren', cta2:'Se treningsløpet', cap:'Tatt opp i DA42-treneren, fri flyging i 3000 fot.',
+ tpH:'Trening i tall', p1:'fly, fra enmotors stempelfly til tomotors turboprop', p2:'brytere, knapper og hendler som virker i King Air B200', p3:'oppdrag og prosedyreflows i DA42', p4:'spørsmål til typeratingen, med eksamensmodus',
+ simsH:'Tre cockpiter, og alt virker', simsP:'Brytere, knapper og hendler gjør det de gjør i flyet. Start på oppstillingsplassen eller i lufta, alene eller med et scenario.',
+ open:'Åpne simulatoren',
+ e2:'Enmotors stempelfly', e3:'Den klassiske six-packen: lær scanen, fly etter attityde, og fly så landingsrunden.', e4:'Six-pack-instrumenter', e5:'Gass, blanding, flaps, trim', e6:'Fra grunnleggende flyging til landingsrunden',
+ d2:'Flermotors stempelfly', d3:'Glass cockpit med to skjermer og autopilot. Fly innflygingene og motorstansene.', d4:'Glass cockpit, autopilot', d5:'<b>9</b> oppdrag, <b>5</b> flows', d6:'ILS, RNAV og VOR', d7:'Motorstans, stall', d8:'Prøv den i 3D',
+ b2:'Tomotors turboprop', b3:'En full tomannscockpit, fra batteristart til innflyging på én motor.', b4:'<b>400+</b> kontroller som virker', b5:'EFIS for begge piloter', b6:'<b>6</b> prosedyreflows', b7:'Motorbrann, nødnedstigning', b9:'Studer typeratingen',
+ pathH:'Fra første landingsrunde til sjekken i flyselskapet', pathP:'Hvert trinn har sitt eget verktøy. Ta dem i rekkefølge, eller start der du er.',
+ w1s:'Privatflyger', w1:'PPL-grunnlag', w1l:'Scanen, attitydeflyging og landingsrunden.',
+ w2s:'Instrumentbevis', w2:'Instrument', w2l:'Tracking, holding og innflyginger på instrumenter.',
+ w3s:'Flermotors', w3:'To motorer', w3l:'Glass cockpit, autopilot og motorstansen.',
+ w4s:'Turboprop og typerating', w4:'Turboprop', w4l:'En tomannscockpit, systemene og eksamen.',
+ w5s:'Sjekken i flyselskapet', w5:'Sjekken', w5l:'Simulatortesten og den muntlige delen.',
+ lRadio:'Radiodriller', lIfr:'IFR-trener', lBrief:'Briefinger', lG2g:'Gate to gate', lType:'Typerating', lA320:'A320 simulatortest', lCheck:'Kontrollforberedelse',
+ iH:'IFR-trener', iP:'Instrumentprosedyrer, ett prinsipp om gangen, på en HSI og et kart.',
+ i1:'Lær prinsippet.', i1b:'Hva nålen og DME-en forteller deg.', i2:'Fly det.', i2b:'Avskjær, track, hold og fly innflygingen.', i3:'Se feilen din i reprisen.', i3b:'Hvor du svingte for sent, og hvor mye.',
+ iLv:'Nivåer', iL1:'Kart synlig, ingen vind', iL2:'Kart skjult, byig vind',
+ iCov:'Radialer, avskjæring, NDB, DME-buer, holding og prosedyresvinger, og så VOR/DME- og ILS-innflyginger.', iGo:'Åpne IFR-treneren',
+ iCap:'Illustrasjon: en 10 DME-bue inn på sluttinnflygingskursen, med svingen startet for sent.',
+ brH:'Briefinger', brP:'Brief en avgang eller en innflyging høyt, mot dagens vær og et treningskart. AI-instruktøren gir poeng for strukturen, tallene og truslene.',
+ br1:'Avgang og innflyging', br2:'TSADMM', br3:'Nytt vær hver gang', br4:'En modellbriefing å sammenligne med', brGo:'Åpne Briefinger',
+ tpH2:'Fly hele turen', tpP:'Rekkefølgen på en flytur og ordene på radioen, til de går av seg selv.',
+ g1:'Gate to gate', g2:'En hel tur i DA42 i riktig rekkefølge, med AI-en som flygeleder og instruktør.',
+ r1:'Radiodriller', r2:'Fra VFR-avgang til MAYDAY, med hver tilbakelesning sjekket.',
+ ckH:'Forbered deg til sjekken', ckP:'Hver av dem bygd rundt det eksaminatoren ser etter.',
+ t1:'Typerating: King Air B200', t2:'15 moduler, fem systemsimulatorer og 320 spørsmål.',
+ a1:'A320 simulatortest', a2:'9 manøvrer på rådata, med mål, teknikk og typiske feil.',
+ c1:'Kontrollforberedelse', c2:'Muntlig fra din egen AFM og SOP, med hvert svar vurdert.',
+ note:'<b>Pedagogiske modeller, ikke sertifiserte simulatorer.</b> Prosedyrene er generelle; din AFM, SOP og sjekklister kommer først.',
+ noteGo:'Datakilder og lisenser'
+});
+function attrs(){ const no=LAB.lang==='no';
+  document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
+  ifrText(); }
+const RM=matchMedia('(prefers-reduced-motion: reduce)');
+
+/* hero video: attached after load so it never competes with the poster for LCP; reduced motion and Save-Data keep the still */
+function heroVideo(){
+  const v=document.getElementById('heroVid'); if(!v||RM.matches) return;
+  const c=navigator.connection; if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||''))) return;
+  const small=innerWidth<=820, d=v.dataset;
+  const add=(src,type)=>{ const s=document.createElement('source'); s.src=src; s.type=type; v.appendChild(s); };
+  add(small?d.srcWebmS:d.srcWebm,'video/webm'); add(small?d.srcMp4S:d.srcMp4,'video/mp4');
+  v.addEventListener('playing',()=>v.classList.add('on'),{once:true});
+  v.load(); const p=v.play(); if(p&&p.catch) p.catch(()=>{});
+  new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) { const q=v.play(); if(q&&q.catch) q.catch(()=>{}); } else v.pause(); })).observe(v);
+  RM.addEventListener&&RM.addEventListener('change',()=>{ if(RM.matches){ v.pause(); v.classList.remove('on'); } });
+}
+if(document.readyState==='complete') setTimeout(heroVideo,200); else addEventListener('load',()=>setTimeout(heroVideo,200));
+
+/* IFR illustration: a 10 DME arc onto the final course (360° inbound), the turn started late.
+   A small kinematic model flies it once; the HSI and the plan view replay it in a loop. */
+const SV=document.getElementById('ifrSvg');
+let T=[], peak=null;
+function sim(){
+  const R=10, V=150/3600, dt=1, d2r=Math.PI/180, w=a=>((a%360)+360)%360, wd=a=>{a=w(a); return a>180?a-360:a;};
+  // station at 0,0, y north; bearing FROM the station b puts the aircraft at R(sin b, cos b); flying the arc clockwise, heading is b+90
+  const b0=128; let x=R*Math.sin(b0*d2r), y=R*Math.cos(b0*d2r), h=w(b0+90), ph=0;
+  for(let i=0;i<520;i++){
+    const dist=Math.hypot(x,y), brg=w(Math.atan2(x,y)/d2r);
+    let want;
+    if(ph===0){ want=brg+90+Math.max(-25,Math.min(25,(dist-R)*40)); if(brg>=178.6) ph=1; }
+    else want=Math.max(-40,Math.min(40,-x*70));
+    const e=wd(want-h); h=w(h+Math.max(-3*dt,Math.min(3*dt,e)));
+    x+=V*dt*Math.sin(h*d2r); y+=V*dt*Math.cos(h*d2r);
+    T.push({x,y,h,dist:Math.hypot(x,y),brg:w(Math.atan2(x,y)/d2r)});
+    if(ph===1&&(!peak||x<peak.x)) peak={x,y,i:T.length-1};
+    if(y>-2.2) break;
+  }
+}
+const PX=34, OX=690, OY=58, px=p=>[OX+p.x*PX, OY-p.y*PX];
+function ifrText(){ if(!SV||!peak) return; const t=SV.querySelector('#ifrNote'); if(!t) return;
+  const nm=Math.abs(peak.x).toFixed(1).replace('.',LAB.lang==='no'?',':'.');
+  const no=LAB.lang==='no', s=t.querySelectorAll('tspan');
+  s[0].textContent=no?'Svingte for sent':'Turned late'; s[1].textContent=no?`${nm} NM gjennom kursen`:`${nm} NM through the course`; }
+function setup(){
+  if(!SV) return; sim();
+  const pts=T.map(p=>px(p).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const tr=SV.querySelector('#ifrTrack'); tr.setAttribute('points',pts);
+  const L=T.reduce((a,p,i)=>i?a+Math.hypot(...px(p).map((v,k)=>v-px(T[i-1])[k])):0,0);
+  tr.style.strokeDasharray=L; tr.dataset.len=L;
+  const [nx,ny]=px(peak); const g=SV.querySelector('#ifrPeak'); g.setAttribute('transform',`translate(${nx.toFixed(1)} ${ny.toFixed(1)})`);
+  ifrText(); frame(RM.matches?T.length-1:0, true);
+}
+let cum=null;
+function frame(i,full){
+  const p=T[i]; if(!p) return;
+  if(!cum){ cum=[0]; for(let k=1;k<T.length;k++) cum[k]=cum[k-1]+Math.hypot(...px(T[k]).map((v,j)=>v-px(T[k-1])[j])); }
+  const tr=SV.querySelector('#ifrTrack'); tr.style.strokeDashoffset=(+tr.dataset.len-cum[i]).toFixed(1);
+  const [ax,ay]=px(p); SV.querySelector('#ifrAc').setAttribute('transform',`translate(${ax.toFixed(1)} ${ay.toFixed(1)}) rotate(${p.h.toFixed(1)})`);
+  SV.querySelector('#hsiRose').setAttribute('transform',`rotate(${(-p.h).toFixed(2)} 250 280)`);
+  let dev=p.brg-180; dev=Math.max(-10,Math.min(10,dev)); SV.querySelector('#hsiCdi').setAttribute('transform',`translate(${(dev/2*24).toFixed(1)} 0)`);
+  SV.querySelector('#hsiHdg').textContent=String(Math.round(p.h)%360||360).padStart(3,'0')+'°';
+  SV.querySelector('#hsiDme').textContent=p.dist.toFixed(1);
+  SV.querySelector('#ifrPeak').style.opacity=(full||i>=peak.i+6)?1:0;
+}
+let raf=0, t0=0, vis=false;
+const DUR=15000, HOLD=2600;
+function tick(t){ if(!t0) t0=t; const e=(t-t0)%(DUR+HOLD); frame(Math.min(T.length-1,Math.floor(e/DUR*T.length))); raf=requestAnimationFrame(tick); }
+function run(on){ if(on&&!raf&&!RM.matches){ t0=0; raf=requestAnimationFrame(tick); } else if(!on&&raf){ cancelAnimationFrame(raf); raf=0; } }
+if(SV){ setup(); new IntersectionObserver(es=>es.forEach(e=>{ vis=e.isIntersecting; run(vis&&!document.hidden); }),{rootMargin:'80px'}).observe(SV);
+  document.addEventListener('visibilitychange',()=>run(vis&&!document.hidden));
+  RM.addEventListener&&RM.addEventListener('change',()=>{ run(false); if(RM.matches) frame(T.length-1,true); else run(vis); }); }
+
+LAB.start('training');
+attrs(); LAB.onLang(attrs);
+})();
+</script>
+<script>
+/* Pages still being built: show "Coming soon" instead of a dead link. Remove a page from SOON when it ships. */
+(function(){ const SOON=['c172.html','da42-3d.html'];
+  const sel=SOON.map(h=>'a[href="'+h+'"]').join(','); const els=[...document.querySelectorAll(sel)];
+  els.forEach(a=>{ const s=document.createElement('span'); s.className=a.className+' soon'; s.dataset.soon=a.classList.contains('tr-btn')?'btn':(a.getAttribute('aria-hidden')?'hide':'txt'); s.dataset.orig=a.innerHTML; if(s.dataset.soon==='hide'){ a.remove(); return; } a.replaceWith(s); });
+  const lab=()=>{ const no=document.documentElement.lang==='nb'; document.querySelectorAll('span.soon').forEach(s=>{ if(s.dataset.soon==='btn') s.textContent=no?'Kommer snart':'Coming soon'; else s.innerHTML=s.dataset.orig+' <small>'+(no?'(kommer)':'(soon)')+'</small>'; }); };
+  lab(); new MutationObserver(lab).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+})();
+</script>
+<style>span.tr-btn.soon{opacity:.55;cursor:default;pointer-events:none}span.soon small{font-size:.8em;opacity:.7}</style>
+</body>
+</html>
