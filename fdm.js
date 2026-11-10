@@ -26,6 +26,25 @@ const AC={
   V:{ s0:62, s1:66, fe1:133, fe2:113, no:151, ne:188, mc:76, yse:85, r:80, y:90, le:188, lo:152 } // DA42 NG, KIAS
 };
 
+/* andre flytyper på samme modell. Siden kopierer typen inn i AC (FDM.useType) før create(); DA42 er standard. */
+const TYPES={
+  /* typisk klassisk Cessna 172 (172P-lignende: 160 hk med forgasser, fast propell, flaps 0/10/20/30, fast understell).
+     Tallene er tilnærmede og pedagogiske; motor, turtall og drivstoff styres av c172core.js via eng.thr og eng.off. */
+  C172:{ name:'C172', nEng:1, field:true, m:1000, S:16.2, b:11.0, c:1.49, Ixx:1285, Iyy:1825, Izz:2670,
+    CL0:0.31, CLa:4.6, CLmax:1.56,
+    flaps:[ {n:'UP',dCL:0,dCLmax:0,dCD:0,dCm:0},
+            {n:'10',dCL:0.15,dCLmax:0.15,dCD:0.006,dCm:0.01},
+            {n:'20',dCL:0.30,dCLmax:0.27,dCD:0.026,dCm:0.02},
+            {n:'30',dCL:0.42,dCLmax:0.36,dCD:0.075,dCm:0.03} ],
+    CD0:0.023, k:0.055, gearCD:0.007,
+    Cm0:0.046, Cma:-1.0, Cmq:-14, CmE:0.36, CmT:0.17,
+    Clb:-0.09, Clp:-0.47, Clr:0.10, ClA:0.058, ClR:0.008,
+    Cnb:0.065, Cnr:-0.10, Cnp:-0.03, CnA:-0.006, CnR:0.040, CYb:-0.45, CYR:0.08,
+    Pmax:119300, Tstatic:2000, Aprop:1.2, yEng:0, xMain:0.35, wheelbase:1.65, fuelCap:1e6,
+    V:{ s0:33, s1:44, fe1:110, fe2:85, no:127, ne:158, a:99, x:60, y:76, r:55, g:65 } } // KIAS, typiske verdier
+};
+function useType(n){ const t=TYPES[n]; if(!t) return AC; Object.assign(AC,JSON.parse(JSON.stringify(t))); return AC; }
+
 /* ---------- verden ---------- */
 const WORLD={
   elev:0,
@@ -42,7 +61,7 @@ function mkEng(){ return {thr:0, load:0, rpm:0, fail:false, feather:false, ff:0,
 function create(){
   return { N:0,E:0,h:0, u:0,v:0,w:0, p:0,q:0,r:0, phi:0,th:0,psi:0,
     ctl:{ail:0,ele:0,rud:0,trim:0,flap:0,gear:1,brake:0,flapPos:0,gearPos:1},
-    eng:[mkEng(),mkEng()], ground:true, Vg:0, crash:null, t:0, stall:0, buffet:0, asym:0,
+    eng:Array.from({length:AC.nEng||2},mkEng), ground:true, Vg:0, crash:null, t:0, stall:0, buffet:0, asym:0,
     env:{wdir:0,wspd:0,isa:0,qnh:1013.25,turb:0}, baro:1013.25, autotrim:true,
     trail:[], trailT:0, o:{} };
 }
@@ -68,7 +87,7 @@ function place(s,o){
 
 /* aerodynamiske koeffisienter */
 function aero(s,a,b,V,phat,qhat,rhat,hAGL){
-  const fl=AC.flaps[0]; const fp=s.ctl.flapPos, i0=Math.floor(fp), i1=Math.min(2,i0+1), t=fp-i0;
+  const fl=AC.flaps[0]; const fp=s.ctl.flapPos, i0=Math.floor(fp), i1=Math.min(AC.flaps.length-1,i0+1), t=fp-i0;
   const F=k=>AC.flaps[i0][k]*(1-t)+AC.flaps[i1][k]*t;
   const CL0=AC.CL0+F('dCL'), CLmax=AC.CLmax+F('dCLmax');
   const aS=(CLmax-CL0)/AC.CLa;                    // statisk stallvinkel (lineær)
@@ -175,8 +194,8 @@ function touchdown(s){
   if(vs< -3.6) return crash(s,'Hard landing (more than 700 ft/min)');
   if(phi>10) return crash(s,'Wingtip strike: bank too steep at touchdown');
   if(s.th< -3*D2R) return crash(s,'Nose-wheel first: pitch too low at touchdown');
-  if(!inRwy) return crash(s,'Landed off the runway');
-  s.ground=true; s.landed={vs:vs/FPM, t:s.t}; s.phi=0; s.p=s.r=0; s.th=Math.max(0,s.th);
+  if(!inRwy&&!AC.field) return crash(s,'Landed off the runway');
+  s.ground=true; s.landed={vs:vs/FPM, t:s.t, field:!inRwy}; s.phi=0; s.p=s.r=0; s.th=Math.max(0,s.th);
   s.Vg=s.vN*Math.cos(s.psi)+s.vE*Math.sin(s.psi);
 }
 function crash(s,msg){ s.crash=msg; s.u=s.v=s.w=s.p=s.q=s.r=0; }
@@ -192,7 +211,7 @@ function stepGround(s,dt,at,wN,wE){
   const {Tl,Tr}=engines(s,dt,V,at);
   const L=qb*AC.S*A.CL, D=qb*AC.S*A.CD*Math.sign(Va);
   const N=Math.max(0,W-L-(Tl+Tr)*Math.sin(a));
-  const mu=0.025+0.45*C.brake;
+  const mu=(AC.field&&!onRunway(s)?0.07:0.025)+0.45*C.brake;
   let Fx=Tl+Tr-D-mu*N*Math.sign(s.Vg||1);
   if(Math.abs(s.Vg)<0.3 && Math.abs(Tl+Tr-D)<mu*N){ Fx=0; s.Vg=0; }
   s.Vg+=Fx/AC.m*dt;
@@ -212,7 +231,7 @@ function stepGround(s,dt,at,wN,wE){
   s.N+=s.Vg*hx*dt; s.E+=s.Vg*hy*dt; s.h=WORLD.elev;
   s.vN=s.Vg*hx; s.vE=s.Vg*hy; s.vD=0; s.nz=1; s.ny=0; s.alpha=a; s.beta=0; s.aS=A.aS; s.stall=0; s.buffet=0;
   s.u=Va; s.v=0; s.w=0;
-  if(Math.abs(s.Vg)>3 && !onRunway(s)) return crash(s,'Ran off the runway');
+  if(Math.abs(s.Vg)>3 && !onRunway(s) && !AC.field) return crash(s,'Ran off the runway');
   // løft av
   if(L+(Tl+Tr)*Math.sin(a)>W*1.01 && Va>25){
     s.ground=false; s.h=WORLD.elev+0.05; s.u=Va*Math.cos(a); s.w=Va*Math.sin(a); s.v=0; s.p=0; s.r=0; s.landed=null;
@@ -361,5 +380,5 @@ function apRun(ap,s,o,navS,dt){
   }
 }
 
-G.FDM={navFreq,AC,WORLD,KT,FT,FPM,NM,D2R,R2D,create,place,step,readouts,nav,isa,mkAP,apSet,apRun,wrap180,wrap360,clamp,onRunway};
+G.FDM={navFreq,AC,TYPES,useType,WORLD,KT,FT,FPM,NM,D2R,R2D,create,place,step,readouts,nav,isa,mkAP,apSet,apRun,wrap180,wrap360,clamp,onRunway};
 })(window);

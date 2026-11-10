@@ -9,7 +9,7 @@
   let page=(location.pathname.split('/').pop()||'index.html').replace(/\?.*/,''); if(!/\.html$/.test(page)) page=page+'.html';
   const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','airdata.html','orientation.html','holding.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
   /* Training hub: one sub-nav, same order everywhere */
-  const TRN=[['training.html','Overview'],['cockpit.html','DA42 simulator'],['da42-3d.html','DA42 3D (beta)'],['b200.html','King Air B200'],['ifr.html','IFR trainer'],['briefing.html','Briefings'],['radio.html','Gate to gate'],['radio-drills.html','Radio drills'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
+  const TRN=[['training.html','Overview'],['c172.html','Cessna 172'],['cockpit.html','DA42 simulator'],['da42-3d.html','DA42 3D (beta)'],['b200.html','King Air B200'],['ifr.html','IFR trainer'],['briefing.html','Briefings'],['radio.html','Gate to gate'],['radio-drills.html','Radio drills'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
   const PLN=[['prep.html','Briefing pack'],['essentials.html','VFR and IFR essentials'],['weather.html','METAR and TAF'],['sheets.html','Kneeboard sheets'],['planning.html','Navigation log']];
   const trn=TRN.some(x=>x[0]===page)||checkMode, pln=PLN.some(x=>x[0]===page);
@@ -135,7 +135,7 @@
   function tip(){ return; const T0=TIPS[page]; if(!T0) return; const h=document.querySelector('.lhead')||document.querySelector('header:not(.site)'); if(!h) return; let a=document.querySelector('aside.ntip');
     if(!a){ a=document.createElement('aside'); a.className='ntip'; h.insertAdjacentElement('afterend',a); }
     const no=document.documentElement.lang==='nb'; a.innerHTML=`<span class="nh">${t("Daniel's tip")}</span><p>${no?T0.no:T0.en}</p>`; }
-  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=36'; document.head.appendChild(sj); }
+  function mount(){ document.body.insertBefore(head,document.body.firstChild); render(); if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=37'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
