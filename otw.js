@@ -103,6 +103,23 @@ function render(S,view){
   papi.geometry.attributes.color.needsUpdate=true;
   R.render(scene,cam);
 }
+/* 3D-cockpit (da42-3d.html): same world, camera = aircraft attitude × head rotation; `after` draws the cockpit on top */
+let _e3=null;
+function render3d(S,qHead,fov,dpr,after){
+  if(!ok||!cv) return false; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return false;
+  if(Math.abs(R.getPixelRatio()-dpr)>1e-3){ R.setPixelRatio(dpr); W=0; }
+  if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); }
+  if(cam.aspect!==w/h||cam.fov!==fov){ cam.aspect=w/h; cam.fov=fov; cam.updateProjectionMatrix(); }
+  const eye=1.55; cam.position.set(S.E,(S.h||0)+eye,-S.N);
+  _e3=_e3||new THREE.Euler(0,0,0,'YXZ'); _e3.set(S.th||0,-(S.psi||0),-(S.phi||0),'YXZ'); cam.quaternion.setFromEuler(_e3).multiply(qHead);
+  scene.userData.sky.position.copy(cam.position);
+  const d=Math.hypot(S.N-300,S.E+30), ang=Math.atan2((S.h||0)+eye-1.2,Math.max(1,d))/D2R;
+  const th=[3.5,3.17,2.83,2.5]; for(let i=0;i<4;i++){ const white=ang>th[i]; papiCol[i*3]=1; papiCol[i*3+1]=white?1:0.12; papiCol[i*3+2]=white?1:0.1; }
+  papi.geometry.attributes.color.needsUpdate=true;
+  R.autoClear=true; R.render(scene,cam);
+  if(after){ R.autoClear=false; R.clearDepth(); after(R,cam); R.autoClear=true; }
+  return true;
+}
 function quality(low){ if(!R) return; low=!!low; if(low===G.OTW.low) return; G.OTW.low=low; R.setPixelRatio(low?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; }
-G.OTW={init,render,quality,low:false};
+G.OTW={init,render,render3d,quality,low:false,renderer:()=>R};
 })(window);

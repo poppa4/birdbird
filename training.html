@@ -240,7 +240,7 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=51"></script>
+<script src="site.js?v=53"></script>
 <main class="tr" id="main">
 
   <!-- 1. Hero -->
@@ -1091,7 +1091,7 @@ attrs(); LAB.onLang(attrs);
 </script>
 <script>
 /* Pages still being built: show "Coming soon" instead of a dead link. Remove a page from SOON when it ships. */
-(function(){ const SOON=['c172.html','da42-3d.html'];
+(function(){ const SOON=['c172.html'];
   const sel=SOON.map(h=>'a[href="'+h+'"]').join(','); const els=[...document.querySelectorAll(sel)];
   els.forEach(a=>{ const s=document.createElement('span'); s.className=a.className+' soon'; s.dataset.soon=a.classList.contains('tr-btn')?'btn':(a.getAttribute('aria-hidden')?'hide':'txt'); s.dataset.orig=a.innerHTML; if(s.dataset.soon==='hide'){ a.remove(); return; } a.replaceWith(s); });
   const lab=()=>{ const no=document.documentElement.lang==='nb'; document.querySelectorAll('span.soon').forEach(s=>{ if(s.dataset.soon==='btn') s.textContent=no?'Kommer snart':'Coming soon'; else s.innerHTML=s.dataset.orig+' <small>'+(no?'(kommer)':'(soon)')+'</small>'; }); };
