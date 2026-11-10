@@ -6,7 +6,7 @@
 <title>Training · Birdbird</title>
 <meta name="description" content="Birdbird training: Cessna 172, DA42 and King Air B200 cockpit trainers, an IFR trainer, briefings, gate-to-gate flights, radio drills, type rating study, A320 sim assessment and check preparation.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/training/hero-da42-1600.webp" imagesrcset="img/training/hero-da42-960.webp 960w, img/training/hero-da42-1600.webp 1600w" imagesizes="(max-width:820px) 100vw, 72vw" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="img/training/hero-da42-ils-1600.webp" imagesrcset="img/training/hero-da42-ils-960.webp 960w, img/training/hero-da42-ils-1600.webp 1600w, img/training/hero-da42-ils-2400.webp 2400w" imagesizes="(max-width:820px) 100vw, 70vw" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
@@ -46,19 +46,18 @@
 
 /* ---------- 1. Hero: the DA42 trainer in a turn, moving ---------- */
 .th{position:relative;background:var(--deep);overflow:hidden;isolation:isolate}
-.th-media{position:absolute;inset:0 0 0 33%;z-index:-2;background:#10161D}
-.th-media img,.th-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:58% 50%}
-.th-media video{opacity:0;transition:opacity .6s ease}
-.th-media video.on{opacity:1}
+.th-media{position:absolute;inset:0 0 0 30%;z-index:-2;background:#10161D;margin:0}
+.th-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:56% 62%}
 /* the navy field the words sit on, feathered into the cockpit */
 .th::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(90deg,var(--deep) 0%,var(--deep) 33%,rgba(7,26,51,.7) 40%,rgba(7,26,51,.25) 50%,rgba(7,26,51,0) 60%),
-             linear-gradient(0deg,rgba(7,26,51,.9) 0%,rgba(7,26,51,0) 26%)}
+  background:linear-gradient(90deg,var(--deep) 0%,var(--deep) 30%,rgba(7,26,51,.82) 35%,rgba(7,26,51,.4) 44%,rgba(7,26,51,0) 56%),
+             linear-gradient(0deg,rgba(7,26,51,.85) 0%,rgba(7,26,51,0) 22%)}
 .th-in{display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(560px,calc(100svh - 125px - 118px),760px);padding:72px 0 56px}
 .th h1{color:#fff;font-size:clamp(50px,5.7vw,90px);line-height:.94;letter-spacing:-.026em;font-stretch:80%;font-weight:700;max-width:7em}
 .th-lede{margin-top:22px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:26em}
 .th-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-.th-cap{position:absolute;right:var(--gr,24px);bottom:14px;font-size:12.5px;color:rgba(255,255,255,.72);text-shadow:0 1px 2px rgba(0,0,0,.6);margin:0}
+.th-cap{position:absolute;right:var(--gr,24px);top:20px;font-size:12.5px;line-height:1.5;color:#E6ECF2;margin:0;max-width:36em;padding:6px 10px 7px;background:rgba(7,26,51,.72);border-radius:2px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.th-cap .lbl{color:var(--amber);margin-right:6px}
 /* proof: four true numbers, in the front page's band */
 .tp{background:var(--deep);border-top:1px solid var(--navy-rule)}
 .tp dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 auto}
@@ -67,32 +66,43 @@
 .tp dt{font-family:var(--disp);font-stretch:78%;font-weight:650;font-size:clamp(34px,3.2vw,46px);line-height:1;letter-spacing:-.02em;color:#fff}
 .tp dd{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--on-navy-2);max-width:17em}
 
-/* ---------- 2. Three cockpits ---------- */
-.ts{padding-top:112px;padding-bottom:120px;background:var(--navy)}
-.ts-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px 64px;align-items:end;margin-bottom:64px}
+/* ---------- 2. Three cockpits: plates, captions and a spec sheet per aircraft ---------- */
+.ts{padding-top:112px;padding-bottom:112px;background:var(--navy)}
+.ts-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:20px 64px;align-items:end;margin-bottom:72px}
 .ts-head p{font-size:18px;line-height:1.6;color:var(--on-navy-2);max-width:30em}
-.ac{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:40px 56px;align-items:center}
+.lbl{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy-3)}
+.ts-head .lbl{display:block;margin-bottom:16px}
+.ac{padding-top:28px;border-top:1px solid var(--navy-rule)}
 .ac+.ac{margin-top:96px}
-.ac.flip{grid-template-columns:minmax(0,4fr) minmax(0,8fr)}
-.ac.flip .ac-fig{order:2}
-.ac-fig{position:relative;margin:0;aspect-ratio:16/10;background:#10161D;overflow:hidden;border-radius:6px;
-  box-shadow:0 0 0 1px rgba(255,255,255,.1),0 40px 80px -40px rgba(0,0,0,.7)}
-.ac-fig img,.ac-fig .ill{display:block;width:100%;height:100%;object-fit:cover}
-.ac-fig a{position:absolute;inset:0}
-.ac-fig a:focus-visible{outline:2px solid #fff!important;outline-offset:-4px!important}
-.ac h3{font-size:clamp(36px,3.6vw,54px);line-height:.98;letter-spacing:-.03em;font-stretch:76%;font-weight:680}
+/* the two plates: a whole-cockpit view and a detail, heights matched (16:10 beside 8:7) */
+.ac-figs{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:start}
+.ac-fig{margin:0;min-width:0}
+.ac-ph{position:relative;display:block;overflow:hidden;border-radius:2px;background:#151C24;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 36px 70px -44px rgba(0,0,0,.85)}
+.ac-ph img{display:block;width:100%;height:auto}
+.ac-ph:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.ac-fig figcaption{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 12px;margin-top:12px;font-size:13.5px;line-height:1.5;color:var(--on-navy-2);max-width:46em}
+.ac-fig figcaption .lbl{line-height:1.75;color:var(--amber)}
+/* the sheet: number and name, the facts, the actions */
+.ac-sheet{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,5fr) minmax(0,3fr);gap:32px 48px;margin-top:40px;align-items:start}
+.ac-id .lbl{display:block;margin-bottom:12px}
+.ac h3{font-size:clamp(34px,3.2vw,48px);line-height:1;letter-spacing:-.03em;font-stretch:76%;font-weight:680}
 .ac h3 a{text-decoration:none}
 .ac h3 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:6px}
-.ac-cls{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--on-navy-3);margin-bottom:14px!important}
-.ac-cls i{font-style:normal;font-size:12px;font-weight:600;color:#fff;border:1px solid rgba(255,255,255,.4);padding:0 6px;line-height:1.55;border-radius:2px}
-.ac-tag{margin-top:16px!important;font-size:18px;line-height:1.5;color:var(--on-navy-2);max-width:22em}
+.ac-tag{margin-top:14px!important;font-size:17px;line-height:1.55;color:var(--on-navy-2);max-width:24em}
+.spec{margin:0;border-top:1px solid var(--navy-rule)}
+.spec div{display:grid;grid-template-columns:minmax(96px,30%) minmax(0,1fr);gap:0 16px;padding:10px 0 11px;border-bottom:1px solid var(--navy-rule)}
+.spec dt{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy-3);line-height:2}
+.spec dd{margin:0;font-size:15.5px;line-height:1.5;color:#fff}
+.ac-act{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px}
+.ac-sheet .ac-act{flex-direction:column;align-items:flex-start;gap:16px}
+.ac-sheet .ac-act .tr-btn{width:100%}
+.dk .tl{color:#fff;text-decoration-color:rgba(255,255,255,.45);font-size:15.5px}
+.dk .tl:hover{text-decoration-color:#fff}
+.beta{font-size:12px;font-weight:600;color:#fff;border:1px solid rgba(255,255,255,.4);padding:0 6px;line-height:1.55;border-radius:2px;margin-left:8px;vertical-align:1px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:24px 0 0;padding:0}
 .chips li{font-size:14px;line-height:1.3;padding:7px 11px;border-radius:3px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.12)}
 .chips b{font-weight:600}
-.ac-act{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin-top:30px}
-.dk .tl{color:#fff;text-decoration-color:rgba(255,255,255,.45);font-size:15.5px}
-.dk .tl:hover{text-decoration-color:#fff}
-.beta{font-size:12px;font-weight:600;color:#fff;border:1px solid rgba(255,255,255,.4);padding:0 6px;line-height:1.55;border-radius:2px;margin-left:-12px}
+.ts-note{margin-top:88px!important;padding-top:18px;border-top:1px solid var(--navy-rule);font-size:14px;line-height:1.55;color:var(--on-navy-3);max-width:60em}
 
 /* ---------- 3. The training path: a climb profile ---------- */
 .tw{padding-top:112px;padding-bottom:108px}
@@ -166,8 +176,9 @@
 
 /* ---------- responsive ---------- */
 @media (max-width:1180px){
-  .ac,.ac.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px 40px}
-  .ac.flip{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+  .ac-sheet{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px 40px}
+  .ac-sheet .ac-act{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:12px 24px}
+  .ac-sheet .ac-act .tr-btn{width:auto}
   .tw ol{grid-template-columns:repeat(5,minmax(0,1fr))}
   .tw-st{padding-right:16px}
   .ti-grid{grid-template-columns:minmax(0,1fr);gap:56px}
@@ -176,10 +187,7 @@
 @media (max-width:980px){
   .th-media{left:18%}
   .ts-head,.tw-head,.tt-gh,.tt-brief{grid-template-columns:minmax(0,1fr)}
-  .ac,.ac.flip{grid-template-columns:minmax(0,1fr);gap:28px}
-  .ac.flip .ac-fig{order:0}
   .ac+.ac{margin-top:80px}
-  .ac-tag{max-width:34em}
   .tp dl{grid-template-columns:repeat(2,minmax(0,1fr))}
   .tp div{padding:22px 24px 24px 0;border-left:0;border-top:1px solid var(--navy-rule)}
   .tp div:nth-child(-n+2){border-top:0}
@@ -204,15 +212,17 @@
   .th::before{display:none}
   .th-media::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,var(--deep),rgba(7,26,51,0))}
   .th-in{min-height:0;padding:22px 0 44px;width:100%}
-  .th-cap{position:static;order:-1;margin:8px 0 0;font-size:12px;color:var(--on-navy-3);text-shadow:none}
+  .th-cap{position:static;order:-1;margin:10px 0 0;padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:12.5px;color:var(--on-navy-2);max-width:none}
 }
 @media (max-width:720px){
   .tg.c2,.tg.c3{grid-template-columns:minmax(0,1fr);gap:36px}
+  .ac-figs{grid-template-columns:minmax(0,1fr);gap:28px}
+  .ac-figs .ac-fig:first-child .ac-ph{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));border-radius:0;box-shadow:none}
 }
 @media (max-width:640px){
   .tr{font-size:16px}
   .th-media{aspect-ratio:4/3}
-  .th-media img,.th-media video{object-position:50% 50%}
+  .th-media img{object-position:54% 70%}
   .ti-fig{margin:0 calc(-1*var(--gr,24px) + 6px) 0 calc(-1*var(--gl,24px) + 6px)}
   .ti-fig figcaption{padding:0 18px}
   .th h1{font-size:clamp(44px,13vw,58px)}
@@ -226,17 +236,18 @@
   .tt{padding-top:80px}
   .ts-head{margin-bottom:44px}
   .ts-head p,.tw-head p,.tt-gh p,.tt-brief .txt>p{font-size:16.5px}
-  .ac-fig{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));border-radius:0}
   .ac h3{font-size:40px}
-  .ac-act .tr-btn{flex:1 1 100%}
+  .ac-sheet .ac-act .tr-btn{width:100%;flex:1 1 100%}
   .ac+.ac{margin-top:64px}
+  .ac-sheet{grid-template-columns:minmax(0,1fr);gap:28px;margin-top:28px}
+  .ts-note{margin-top:64px!important}
   .ti-lede{font-size:17px}
   .ti-steps li{font-size:16px}
   .ti .ac-act .tr-btn,.tt-brief .tr-btn{width:100%}
   .tt-grp{margin-top:80px}
   .tr-note{margin-top:64px}
 }
-@media (prefers-reduced-motion:reduce){.tr-btn,.tc-plate,.th-media video{transition:none}.th-media video{display:none}}
+@media (prefers-reduced-motion:reduce){.tr-btn,.tc-plate{transition:none}}
 </style>
 </head>
 <body data-title="Training">
@@ -245,18 +256,16 @@
 
   <!-- 1. Hero -->
   <section class="th tr-band" aria-labelledby="tr-h1">
-    <div class="th-media">
-      <img src="img/training/hero-da42-1600.webp" srcset="img/training/hero-da42-960.webp 960w, img/training/hero-da42-1600.webp 1600w" sizes="(max-width:820px) 100vw, 74vw" width="1600" height="900" fetchpriority="high" decoding="async"
-        alt="The DA42 trainer in a left turn at 3,000 ft: the horizon tilted through the windscreen, the standby instruments on the glareshield and the two glass displays below." data-alt-no="DA42-treneren i venstresving i 3000 fot: horisonten på skrå gjennom frontruta, reserveinstrumentene på glareshielden og de to glasskjermene under.">
-      <video id="heroVid" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" width="1600" height="900"
-        data-src-webm="img/training/hero-da42-1600.webm" data-src-mp4="img/training/hero-da42-1600.mp4" data-src-webm-s="img/training/hero-da42-960.webm" data-src-mp4-s="img/training/hero-da42-960.mp4"></video>
-    </div>
+    <figure class="th-media">
+      <img src="img/training/hero-da42-ils-1600.webp" srcset="img/training/hero-da42-ils-960.webp 960w, img/training/hero-da42-ils-1600.webp 1600w, img/training/hero-da42-ils-2400.webp 2400w" sizes="(max-width:820px) 100vw, 70vw" width="2400" height="1500" fetchpriority="high" decoding="async"
+        alt="The DA42 3D cockpit on short final for runway 36: the runway straight ahead over the glareshield, the standby instruments, and the PFD showing the autopilot on the localizer and glideslope at 460 ft." data-alt-no="DA42 3D-cockpiten på kort finale til rullebane 36: rullebanen rett fram over glareshielden, reserveinstrumentene, og PFD-en som viser autopiloten på localizer og glidebane i 460 fot.">
+    </figure>
     <div class="tr-wrap th-in">
       <h1 id="tr-h1" data-tx="h1">Sit in the cockpit before you fly it</h1>
       <p class="th-lede" data-tx="lede">Three cockpit trainers and an IFR trainer, with the briefings, the radio and the check preparation around them. In your browser.</p>
       <div class="th-cta"><a class="tr-btn pri" href="cockpit.html" data-tx="cta1">Open the DA42 simulator</a><a class="tr-btn ghost" href="#path" data-tx="cta2">See the training path</a></div>
     </div>
-    <p class="th-cap" data-tx="cap">Recorded in the DA42 trainer, free flight at 3,000 ft.</p>
+    <p class="th-cap"><span class="lbl">Fig. 1</span> <span data-tx="cap">DA42 3D cockpit (beta), ILS 36 coupled: LOC and GS captured, 460 ft, gear down.</span></p>
   </section>
   <section class="tp tr-band dk" aria-labelledby="tp-h">
     <h2 class="vh" id="tp-h" data-tx="tpH">Training in numbers</h2>
@@ -272,288 +281,101 @@
   <section class="ts tr-band dk" id="sims" aria-labelledby="h-sims">
     <div class="tr-wrap">
       <header class="ts-head">
-        <h2 id="h-sims" data-tx="simsH">Three cockpits, each one working</h2>
+        <div><span class="lbl" data-tx="simsL">Simulators</span><h2 id="h-sims" data-tx="simsH">Three cockpits, each one working</h2></div>
         <p data-tx="simsP">Switches, knobs and levers do what they do in the aircraft. Start on the ramp or in the air, alone or with a scenario.</p>
       </header>
 
       <article class="ac" aria-labelledby="s-c172">
-        <figure class="ac-fig">
-          <svg class="ill" viewBox="0 0 640 400" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="spSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9CC9"/><stop offset="1" stop-color="#B9CFE0"/></linearGradient><linearGradient id="spPan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B3036"/><stop offset="1" stop-color="#1D2126"/></linearGradient><radialGradient id="spBez" cx=".5" cy=".4" r=".6"><stop offset=".8" stop-color="#3A4047"/><stop offset="1" stop-color="#15181B"/></radialGradient></defs>
-<rect width="640" height="400" fill="url(#spSky)"/>
-<path d="M0 64Q320 22 640 64V400H0z" fill="url(#spPan)"/>
-<path d="M0 64Q320 22 640 64" fill="none" stroke="#0E1013" stroke-width="10"/>
-<circle cx="178" cy="150" r="71" fill="url(#spBez)"/>
-<circle cx="178" cy="150" r="62" fill="#0E1114"/>
-<path d="M199.7 104.9A50 50 0 0 1 219.2 178.3" fill="none" stroke="#E8ECEF" stroke-width="3"/>
-<path d="M223.4 117.2A56 56 0 0 1 151.6 199.4" fill="none" stroke="#3FAE5A" stroke-width="5"/>
-<path d="M151.6 199.4A56 56 0 0 1 122.1 147.4" fill="none" stroke="#E3B23C" stroke-width="5"/>
-<path d="M118.1 147.2L130.1 147.7" stroke="#E5484D" stroke-width="3"/>
-<path d="M198.2 94.6L194.8 104" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M207.1 98.6L204.6 103" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M215.1 104.1L208.8 111.9" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M222.2 110.9L218.4 114.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M228 118.7L219.6 124" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M232.5 127.4L227.9 129.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M235.5 136.7L225.7 139" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M236.9 146.4L231.9 146.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M236.7 156.2L226.7 155.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M234.9 165.8L230 164.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M231.5 174.9L222.4 170.7" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M226.6 183.4L222.5 180.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M220.4 191L213.2 184" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M213.1 197.4L210.1 193.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M204.8 202.6L200.2 193.7" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M195.7 206.3L194.2 201.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M186.2 208.4L184.8 198.5" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M176.5 209L176.6 204" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M166.7 207.9L168.7 198.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M157.3 205.3L159.1 200.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M148.5 201.1L153.5 192.4" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M140.5 195.5L143.7 191.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M133.5 188.7L141 182.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M127.7 180.8L132 178.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M123.3 172.1L132.6 168.4" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M120.4 162.8L125.3 161.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M119.1 153.1L129.1 152.6" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M119.4 143.3L124.3 143.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M121.3 133.7L130.9 136.5" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M124.7 124.6L129.3 126.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M129.7 116.2L137.9 121.9" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M135.9 108.6L139.5 112.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M143.3 102.3L149.2 110.4" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M151.7 97.2L153.9 101.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M160.8 93.6L163.7 103.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<text x="201.3" y="121.2" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">40</text>
-<text x="214.1" y="141.7" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">60</text>
-<text x="211.5" y="165.6" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">80</text>
-<text x="194.8" y="183" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">100</text>
-<text x="170.9" y="186.3" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">120</text>
-<text x="150.1" y="174.3" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">140</text>
-<text x="141.1" y="151.9" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">160</text>
-<text x="147.7" y="128.8" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">180</text>
-<path d="M178 150L185 199.5" stroke="#F4F6F8" stroke-width="3" stroke-linecap="round"/><circle cx="178" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
-<text x="178" y="172" fill="#9AA7B3" font-size="8" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">KNOTS</text>
-<circle cx="320" cy="150" r="71" fill="url(#spBez)"/>
-<circle cx="320" cy="150" r="62" fill="#0E1114"/>
-<clipPath id="spAi"><circle cx="320" cy="150" r="60"/></clipPath><g clip-path="url(#spAi)" transform="rotate(-10 320 150)"><rect x="258" y="88" width="124" height="68" fill="#3A78C2"/><rect x="258" y="156" width="124" height="62" fill="#7A532F"/><path d="M258 156H382" stroke="#fff" stroke-width="1.6"/><path d="M311 145h18" stroke="#fff" stroke-width="1.3"/><path d="M304 134h32" stroke="#fff" stroke-width="1.3"/><path d="M311 123h18" stroke="#fff" stroke-width="1.3"/></g>
-<path d="M286 150h20l6 7 6-7h20" fill="none" stroke="#F0B440" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M320 92l-6 10h12z" fill="#F0B440"/>
-<circle cx="462" cy="150" r="71" fill="url(#spBez)"/>
-<circle cx="462" cy="150" r="62" fill="#0E1114"/>
-<path d="M462 91L462 101" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M469.4 91.5L468.8 96.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M476.7 92.9L475.4 97.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M483.7 95.1L481.9 99.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M490.4 98.3L488 102.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M496.7 102.3L490.8 110.4" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M502.4 107L499 110.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M507.5 112.4L503.6 115.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M511.8 118.4L507.6 121.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M515.4 124.9L510.9 127" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M518.1 131.8L508.6 134.9" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M520 138.9L515 139.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M520.9 146.3L515.9 146.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M520.9 153.7L515.9 153.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M520 161.1L515 160.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M518.1 168.2L508.6 165.1" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M515.4 175.1L510.9 173" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M511.8 181.6L507.6 178.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M507.5 187.6L503.6 184.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M502.4 193L499 189.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M496.7 197.7L490.8 189.6" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M490.4 201.7L488 197.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M483.7 204.9L481.9 200.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M476.7 207.1L475.4 202.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M469.4 208.5L468.8 203.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M462 209L462 199" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M454.6 208.5L455.2 203.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M447.3 207.1L448.6 202.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M440.3 204.9L442.1 200.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M433.6 201.7L436 197.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M427.3 197.7L433.2 189.6" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M421.6 193L425 189.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M416.5 187.6L420.4 184.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M412.2 181.6L416.4 178.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M408.6 175.1L413.1 173" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M405.9 168.2L415.4 165.1" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M404 161.1L409 160.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M403.1 153.7L408.1 153.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M403.1 146.3L408.1 146.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M404 138.9L409 139.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M405.9 131.8L415.4 134.9" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M408.6 124.9L413.1 127" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M412.2 118.4L416.4 121.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M416.5 112.4L420.4 115.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M421.6 107L425 110.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M427.3 102.3L433.2 110.4" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M433.6 98.3L436 102.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M440.3 95.1L442.1 99.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M447.3 92.9L448.6 97.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M454.6 91.5L455.2 96.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M462 91L462 101" stroke="#E8ECEF" stroke-width="1.8"/>
-<text x="462" y="110" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">0</text>
-<text x="485.5" y="117.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">1</text>
-<text x="500" y="137.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">2</text>
-<text x="500" y="162.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">3</text>
-<text x="485.5" y="182.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">4</text>
-<text x="462" y="190" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
-<text x="438.5" y="182.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">6</text>
-<text x="424" y="162.4" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">7</text>
-<text x="424" y="137.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">8</text>
-<text x="438.5" y="117.6" fill="#E8ECEF" font-size="12" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">9</text>
-<path d="M462 150L494.3 160.5" stroke="#F4F6F8" stroke-width="5" stroke-linecap="round"/><circle cx="462" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
-<path d="M462 150L462 98" stroke="#F4F6F8" stroke-width="2.4" stroke-linecap="round"/><circle cx="462" cy="150" r="5" fill="#2A2F35" stroke="#C8CED3"/>
-<rect x="447" y="165" width="30" height="13" fill="#000" stroke="#555"/>
-<text x="462" y="171.5" fill="#E8ECEF" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">1013</text>
-<circle cx="178" cy="294" r="71" fill="url(#spBez)"/>
-<circle cx="178" cy="294" r="62" fill="#0E1114"/>
-<path d="M152 324h52" stroke="#E8ECEF" stroke-width="1.2"/><rect x="148" y="320" width="60" height="12" rx="6" fill="#E9E2C7"/><circle cx="182" cy="326" r="5" fill="#111"/>
-<path d="M120 294L130 294" stroke="#fff" stroke-width="2.4"/>
-<path d="M123.5 274.2L132.9 277.6" stroke="#fff" stroke-width="2.4"/>
-<path d="M232.5 274.2L223.1 277.6" stroke="#fff" stroke-width="2.4"/>
-<path d="M236 294L226 294" stroke="#fff" stroke-width="2.4"/>
-<g transform="rotate(-12 178 294)"><path d="M138 294h80M178 286v12" stroke="#F4F6F8" stroke-width="4" stroke-linecap="round"/><circle cx="178" cy="294" r="7" fill="#F4F6F8"/></g>
-<text x="144" y="260" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">L</text>
-<text x="212" y="260" fill="#E8ECEF" font-size="10" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">R</text>
-<circle cx="320" cy="294" r="71" fill="url(#spBez)"/>
-<circle cx="320" cy="294" r="62" fill="#0E1114"/>
-<path d="M282.1 248.8L287.2 254.9" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M290.5 242.9L292 245.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M299.8 238.6L300.8 241.4" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M309.8 235.9L311.1 243.8" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M320 235L320 238" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M330.2 235.9L329.7 238.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M340.2 238.6L337.4 246.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M349.5 242.9L348 245.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M357.9 248.8L356 251.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M365.2 256.1L359.1 261.2" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M371.1 264.5L368.5 266" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M375.4 273.8L372.6 274.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M378.1 283.8L370.2 285.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M379 294L376 294" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M378.1 304.2L375.1 303.7" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M375.4 314.2L367.9 311.4" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M371.1 323.5L368.5 322" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M365.2 331.9L362.9 330" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M357.9 339.2L352.8 333.1" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M349.5 345.1L348 342.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M340.2 349.4L339.2 346.6" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M330.2 352.1L328.9 344.2" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M320 353L320 350" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M309.8 352.1L310.3 349.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M299.8 349.4L302.6 341.9" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M290.5 345.1L292 342.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M282.1 339.2L284 336.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M274.8 331.9L280.9 326.8" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M268.9 323.5L271.5 322" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M264.6 314.2L267.4 313.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M261.9 304.2L269.8 302.9" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M261 294L264 294" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M261.9 283.8L264.9 284.3" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M264.6 273.8L272.1 276.6" stroke="#E8ECEF" stroke-width="1.6"/>
-<path d="M268.9 264.5L271.5 266" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M274.8 256.1L277.1 258" stroke="#E8ECEF" stroke-width="1"/>
-<text x="293.6" y="262.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(-40 293.6 262.6)" font-family="IBM Plex Mono,ui-monospace,monospace">N</text>
-<text x="351.4" y="267.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(50 351.4 267.6)" font-family="IBM Plex Mono,ui-monospace,monospace">E</text>
-<text x="346.4" y="325.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(140 346.4 325.4)" font-family="IBM Plex Mono,ui-monospace,monospace">S</text>
-<text x="288.6" y="320.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(230 288.6 320.4)" font-family="IBM Plex Mono,ui-monospace,monospace">W</text>
-<text x="312.9" y="253.6" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(-10 312.9 253.6)" font-family="IBM Plex Mono,ui-monospace,monospace">3</text>
-<text x="334" y="255.5" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(20 334 255.5)" font-family="IBM Plex Mono,ui-monospace,monospace">6</text>
-<text x="360.4" y="286.9" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(80 360.4 286.9)" font-family="IBM Plex Mono,ui-monospace,monospace">12</text>
-<text x="358.5" y="308" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(110 358.5 308)" font-family="IBM Plex Mono,ui-monospace,monospace">15</text>
-<text x="327.1" y="334.4" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(170 327.1 334.4)" font-family="IBM Plex Mono,ui-monospace,monospace">21</text>
-<text x="306" y="332.5" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(200 306 332.5)" font-family="IBM Plex Mono,ui-monospace,monospace">24</text>
-<text x="279.6" y="301.1" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(260 279.6 301.1)" font-family="IBM Plex Mono,ui-monospace,monospace">30</text>
-<text x="281.5" y="280" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" transform="rotate(290 281.5 280)" font-family="IBM Plex Mono,ui-monospace,monospace">33</text>
-<path d="M320 278v30M306 292h28M314 306h12" stroke="#F0B440" stroke-width="3" stroke-linecap="round"/><path d="M320 234l-5 9h10z" fill="#F0B440"/>
-<circle cx="462" cy="294" r="71" fill="url(#spBez)"/>
-<circle cx="462" cy="294" r="62" fill="#0E1114"/>
-<path d="M520.1 304.2L510.3 302.5" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M514.6 320.8L510.1 318.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M504.4 335L500.8 331.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M490.6 345.6L488.2 341.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M474.3 351.7L473.2 346.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M456.9 352.8L457.7 342.8" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M439.9 348.7L441.8 344.1" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M424.9 339.9L428 336" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M413.1 327L417.2 324.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M405.6 311.2L410.4 309.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M403 294L413 294" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M405.6 276.8L410.4 278.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M413.1 261L417.2 263.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M424.9 248.1L428 252" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M439.9 239.3L441.8 243.9" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M456.9 235.2L457.7 245.2" stroke="#E8ECEF" stroke-width="1.8"/>
-<path d="M474.3 236.3L473.2 241.2" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M490.6 242.4L488.2 246.8" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M504.4 253L500.8 256.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M514.6 267.2L510.1 269.5" stroke="#E8ECEF" stroke-width="1"/>
-<path d="M520.1 283.8L510.3 285.5" stroke="#E8ECEF" stroke-width="1.8"/>
-<text x="422" y="294" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">0</text>
-<text x="458.5" y="254.2" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
-<text x="501.4" y="287.1" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">10</text>
-<text x="458.5" y="333.8" fill="#E8ECEF" font-size="11" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">5</text>
-<path d="M462 294L410.8 285" stroke="#F4F6F8" stroke-width="3" stroke-linecap="round"/><circle cx="462" cy="294" r="5" fill="#2A2F35" stroke="#C8CED3"/>
-<text x="476" y="318" fill="#9AA7B3" font-size="8.5" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,ui-monospace,monospace">FPM</text>
-<circle cx="82" cy="120" r="5" fill="#4A5158"/><circle cx="82" cy="330" r="5" fill="#4A5158"/>
-<circle cx="558" cy="120" r="5" fill="#4A5158"/><circle cx="558" cy="330" r="5" fill="#4A5158"/>
-</svg>
-          <a href="c172.html" tabindex="-1" aria-hidden="true"></a>
-        </figure>
-        <div>
-          <p class="ac-cls"><span data-tx="e2">Single-engine piston</span></p>
-          <h3 id="s-c172"><a href="c172.html">Cessna 172</a></h3>
-          <!-- TODO(c172): confirm facts against c172.html when it ships -->
-          <p class="ac-tag" data-tx="e3">The classic six-pack: learn the scan, fly by attitude, then fly the circuit.</p>
-          <ul class="chips">
-            <li data-tx="e4">Six-pack instruments</li>
-            <li data-tx="e5">Throttle, mixture, flaps, trim</li>
-            <li data-tx="e6">Basic handling to the circuit</li>
-          </ul>
+        <div class="ac-figs">
+          <figure class="ac-fig">
+            <a class="ac-ph" href="c172.html" tabindex="-1" aria-hidden="true"><img src="img/training/c172-800.webp" srcset="img/training/c172-800.webp 800w, img/training/c172-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
+              alt="The Cessna 172 trainer in a gentle left turn at 3,000 ft: the windscreen with the compass and the outside air thermometer, the six-pack, the radio stack, the switch row and both yokes." data-alt-no="Cessna 172-treneren i en slak venstresving i 3000 fot: frontruta med kompasset og termometeret, six-packen, radiostakken, bryterraden og begge rattene."></a>
+            <figcaption><span class="lbl">Fig. 2a</span><span data-tx="e7">Cessna 172 trainer, 3,000 ft, about 15° of left bank.</span></figcaption>
+          </figure>
+          <figure class="ac-fig">
+            <span class="ac-ph"><img src="img/training/c172-sixpack-560.webp" srcset="img/training/c172-sixpack-560.webp 560w, img/training/c172-sixpack-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
+              alt="Detail of the six-pack: airspeed, attitude, altimeter, turn coordinator, heading indicator and vertical speed, with the two VOR indicators, the ADF, the tachometer and the EGT." data-alt-no="Utsnitt av six-packen: fartsmåler, attityde, høydemåler, svingkoordinator, kursgyro og variometer, med de to VOR-indikatorene, ADF-en, turtelleren og EGT-en."></span>
+            <figcaption><span class="lbl">Fig. 2b</span><span data-tx="e8">The six-pack, with both VOR indicators and the ADF.</span></figcaption>
+          </figure>
+        </div>
+        <div class="ac-sheet">
+          <div class="ac-id">
+            <span class="lbl">01</span>
+            <h3 id="s-c172"><a href="c172.html">Cessna 172</a></h3>
+            <p class="ac-tag" data-tx="e3">The classic six-pack: learn the scan, fly by attitude, then fly the circuit.</p>
+          </div>
+          <dl class="spec">
+            <div><dt data-tx="kCls">Class</dt><dd data-tx="e2">Single-engine piston</dd></div>
+            <div><dt data-tx="kPan">Panel</dt><dd data-tx="e4">Six-pack, two NAV/COM, ADF, DME and transponder</dd></div>
+            <div><dt data-tx="kEng">Engine</dt><dd data-tx="e5">Throttle, mixture, carburettor heat, magnetos and primer</dd></div>
+            <div><dt data-tx="kFail">Failures</dt><dd data-tx="e6">Carburettor ice, vacuum, alternator, engine after take-off</dd></div>
+            <div><dt data-tx="kScn">Scenarios</dt><dd data-tx="e9">9, from a cold start to the ILS</dd></div>
+          </dl>
           <div class="ac-act"><a class="tr-btn pri" href="c172.html" data-tx="open">Open simulator</a></div>
         </div>
       </article>
 
-      <article class="ac flip" aria-labelledby="s-da42">
-        <figure class="ac-fig">
-          <img src="img/training/da42-1000.webp" srcset="img/training/da42-1000.webp 1000w, img/training/da42-2000.webp 2000w" sizes="(max-width:980px) 100vw, 820px" width="2000" height="1250" loading="lazy" decoding="async"
-            alt="The DA42 trainer on the ILS 36 mission at 2,000 ft: the windscreen view, the standby instruments, the primary flight display and the moving map, and the switch row below." data-alt-no="DA42-treneren på oppdraget ILS 36 i 2000 fot: utsikten gjennom frontruta, reserveinstrumentene, primært flyinstrument og det bevegelige kartet, og bryterraden under.">
-          <a href="cockpit.html" tabindex="-1" aria-hidden="true"></a>
-        </figure>
-        <div>
-          <p class="ac-cls"><span data-tx="d2">Multi-engine piston</span><i>Beta</i></p>
-          <h3 id="s-da42"><a href="cockpit.html">DA42</a></h3>
-          <p class="ac-tag" data-tx="d3">A two-screen glass cockpit with autopilot. Fly the approaches and the engine failures.</p>
-          <ul class="chips">
-            <li data-tx="d4">Glass cockpit, autopilot</li>
-            <li data-tx="d5"><b>9</b> missions, <b>5</b> flows</li>
-            <li data-tx="d6">ILS, RNAV and VOR</li>
-            <li data-tx="d7">Engine failure, stall</li>
-          </ul>
-          <div class="ac-act"><a class="tr-btn pri" href="cockpit.html" data-tx="open">Open simulator</a><a class="tl" href="da42-3d.html" data-tx="d8">Try it in 3D</a><span class="beta">Beta</span></div>
+      <article class="ac" aria-labelledby="s-da42">
+        <div class="ac-figs">
+          <figure class="ac-fig">
+            <a class="ac-ph" href="da42-3d.html" tabindex="-1" aria-hidden="true"><img src="img/training/da42-800.webp" srcset="img/training/da42-800.webp 800w, img/training/da42-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
+              alt="The DA42 3D cockpit on the ILS 36 at 460 ft: the runway ahead over the glareshield, the standby instruments, the PFD and the MFD, the switch row and the power levers." data-alt-no="DA42 3D-cockpiten på ILS 36 i 460 fot: rullebanen rett fram over glareshielden, reserveinstrumentene, PFD og MFD, bryterraden og effekthendlene."></a>
+            <figcaption><span class="lbl">Fig. 3a</span><span data-tx="d9">DA42 3D cockpit (beta), ILS 36 coupled, 460 ft.</span></figcaption>
+          </figure>
+          <figure class="ac-fig">
+            <span class="ac-ph"><img src="img/training/da42-pfd-560.webp" srcset="img/training/da42-pfd-560.webp 560w, img/training/da42-pfd-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
+              alt="Detail of the PFD: autopilot on, LOC and GS captured, 119 knots, 460 ft, course 360, the localizer and glideslope centred." data-alt-no="Utsnitt av PFD-en: autopilot på, LOC og GS fanget, 119 knop, 460 fot, kurs 360, localizer og glidebane sentrert."></span>
+            <figcaption><span class="lbl">Fig. 3b</span><span data-tx="d10">PFD: LOC and GS captured by the autopilot, 119 KIAS.</span></figcaption>
+          </figure>
+        </div>
+        <div class="ac-sheet">
+          <div class="ac-id">
+            <span class="lbl">02</span>
+            <h3 id="s-da42"><a href="cockpit.html">DA42</a></h3>
+            <p class="ac-tag" data-tx="d3">A two-screen glass cockpit with autopilot. Fly the approaches and the engine failures.</p>
+          </div>
+          <dl class="spec">
+            <div><dt data-tx="kCls">Class</dt><dd data-tx="d2">Multi-engine piston</dd></div>
+            <div><dt data-tx="kPan">Panel</dt><dd data-tx="d4">PFD and MFD, standby airspeed, attitude and altimeter</dd></div>
+            <div><dt data-tx="kAp">Autopilot</dt><dd>HDG, NAV, APR, ALT, VS, FLC</dd></div>
+            <div><dt data-tx="kAppr">Approaches</dt><dd data-tx="d6">ILS, RNAV (LPV) and VOR</dd></div>
+            <div><dt data-tx="kScn">Scenarios</dt><dd data-tx="d5"><b>9</b> missions, <b>5</b> flows, engine failures and the stall</dd></div>
+          </dl>
+          <div class="ac-act"><a class="tr-btn pri" href="cockpit.html" data-tx="open">Open simulator</a><span><a class="tl" href="da42-3d.html" data-tx="d8">Fly it in the 3D cockpit</a><span class="beta">Beta</span></span></div>
         </div>
       </article>
 
       <article class="ac" aria-labelledby="s-b200">
-        <figure class="ac-fig">
-          <img src="img/training/b200-1000.webp" srcset="img/training/b200-1000.webp 1000w, img/training/b200-2000.webp 2000w" sizes="(max-width:980px) 100vw, 820px" width="2000" height="1250" loading="lazy" decoding="async"
-            alt="The King Air B200 trainer's flight deck at 5,000 ft: attitude and HSI displays for both pilots, round engine gauges in the centre, the annunciators on the glareshield and the subpanels below." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot: attityde- og HSI-skjermer for begge piloter, runde motorinstrumenter i midten, varsellysene på glareshielden og underpanelene nede.">
-          <a href="b200.html" tabindex="-1" aria-hidden="true"></a>
-        </figure>
-        <div>
-          <p class="ac-cls"><span data-tx="b2">Twin turboprop</span><i>Beta</i></p>
-          <h3 id="s-b200"><a href="b200.html">King Air B200</a></h3>
-          <p class="ac-tag" data-tx="b3">A full two-pilot flight deck, from battery start to the single-engine approach.</p>
-          <ul class="chips">
-            <li data-tx="b4"><b>400+</b> working controls</li>
-            <li data-tx="b5">EFIS for both pilots</li>
-            <li data-tx="b6"><b>6</b> procedure flows</li>
-            <li data-tx="b7">Engine fire, emergency descent</li>
-          </ul>
+        <div class="ac-figs">
+          <figure class="ac-fig">
+            <a class="ac-ph" href="b200.html" tabindex="-1" aria-hidden="true"><img src="img/training/b200-800.webp" srcset="img/training/b200-800.webp 800w, img/training/b200-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
+              alt="The King Air B200 trainer's flight deck at 5,000 ft: the overhead and the annunciators on the glareshield, EFIS for both pilots, the round engine instruments in the centre and the subpanels below." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot: takpanelet og varsellysene på glareshielden, EFIS for begge piloter, de runde motorinstrumentene i midten og underpanelene."></a>
+            <figcaption><span class="lbl">Fig. 4a</span><span data-tx="b8">King Air B200 trainer, 5,000 ft, autopilot in HDG and ALT.</span></figcaption>
+          </figure>
+          <figure class="ac-fig">
+            <span class="ac-ph"><img src="img/training/b200-efis-560.webp" srcset="img/training/b200-efis-560.webp 560w, img/training/b200-efis-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
+              alt="Detail of the left seat: the electronic ADI and HSI, the altimeter at 5,000 ft and the vertical speed, beside the torque, propeller, turbine, fuel flow and oil gauges for both engines." data-alt-no="Utsnitt av venstre sete: elektronisk ADI og HSI, høydemåleren på 5000 fot og variometeret, ved siden av dreiemoment, propell, turbin, drivstofforbruk og olje for begge motorer."></span>
+            <figcaption><span class="lbl">Fig. 4b</span><span data-tx="b10">Left-seat EFIS and altimeter, beside the engine instruments.</span></figcaption>
+          </figure>
+        </div>
+        <div class="ac-sheet">
+          <div class="ac-id">
+            <span class="lbl">03</span>
+            <h3 id="s-b200"><a href="b200.html">King Air B200</a></h3>
+            <p class="ac-tag" data-tx="b3">A full two-pilot flight deck, from battery start to the single-engine approach.</p>
+          </div>
+          <dl class="spec">
+            <div><dt data-tx="kCls">Class</dt><dd data-tx="b2">Twin turboprop, two pilots</dd></div>
+            <div><dt data-tx="kPan">Panel</dt><dd data-tx="b5">EFIS for both pilots, round engine instruments</dd></div>
+            <div><dt data-tx="kCtl">Controls</dt><dd data-tx="b4"><b>400+</b> working switches, knobs and levers</dd></div>
+            <div><dt data-tx="kSys">Systems</dt><dd data-tx="b7">Autofeather, pressurisation, fire protection, beta and reverse</dd></div>
+            <div><dt data-tx="kScn">Scenarios</dt><dd data-tx="b6"><b>6</b> procedure flows, engine fire, emergency descent</dd></div>
+          </dl>
           <div class="ac-act"><a class="tr-btn pri" href="b200.html" data-tx="open">Open simulator</a><a class="tl" href="typerating.html" data-tx="b9">Study the type rating</a></div>
         </div>
       </article>
+
+      <p class="ts-note" data-tx="simsNote">Figures 1 to 4 are captures of our own simulators in flight, cropped and colour-graded. Nothing has been drawn in.</p>
     </div>
   </section>
 
@@ -981,13 +803,15 @@
 LAB.add({},{'Training':'Trening'});
 LAB.tx({
  h1:'Sitt i cockpit før du flyr', lede:'Tre cockpittrenere og en IFR-trener, med briefingene, radioen og forberedelsene til sjekken rundt dem. I nettleseren.',
- cta1:'Åpne DA42-simulatoren', cta2:'Se treningsløpet', cap:'Tatt opp i DA42-treneren, fri flyging i 3000 fot.',
+ cta1:'Åpne DA42-simulatoren', cta2:'Se treningsløpet', cap:'DA42 3D-cockpit (beta), ILS 36 koblet: LOC og GS fanget, 460 fot, understell ute.',
  tpH:'Trening i tall', p1:'fly, fra enmotors stempelfly til tomotors turboprop', p2:'brytere, knapper og hendler som virker i King Air B200', p3:'oppdrag og prosedyreflows i DA42', p4:'spørsmål til typeratingen, med eksamensmodus',
- simsH:'Tre cockpiter, og alt virker', simsP:'Brytere, knapper og hendler gjør det de gjør i flyet. Start på oppstillingsplassen eller i lufta, alene eller med et scenario.',
+ simsL:'Simulatorer', simsH:'Tre cockpiter, og alt virker', simsP:'Brytere, knapper og hendler gjør det de gjør i flyet. Start på oppstillingsplassen eller i lufta, alene eller med et scenario.',
  open:'Åpne simulatoren',
- e2:'Enmotors stempelfly', e3:'Den klassiske six-packen: lær scanen, fly etter attityde, og fly så landingsrunden.', e4:'Six-pack-instrumenter', e5:'Gass, blanding, flaps, trim', e6:'Fra grunnleggende flyging til landingsrunden',
- d2:'Flermotors stempelfly', d3:'Glass cockpit med to skjermer og autopilot. Fly innflygingene og motorstansene.', d4:'Glass cockpit, autopilot', d5:'<b>9</b> oppdrag, <b>5</b> flows', d6:'ILS, RNAV og VOR', d7:'Motorstans, stall', d8:'Prøv den i 3D',
- b2:'Tomotors turboprop', b3:'En full tomannscockpit, fra batteristart til innflyging på én motor.', b4:'<b>400+</b> kontroller som virker', b5:'EFIS for begge piloter', b6:'<b>6</b> prosedyreflows', b7:'Motorbrann, nødnedstigning', b9:'Studer typeratingen',
+ kCls:'Klasse', kPan:'Panel', kEng:'Motor', kFail:'Feil', kScn:'Scenarioer', kAp:'Autopilot', kAppr:'Innflyginger', kCtl:'Kontroller', kSys:'Systemer',
+ simsNote:'Figur 1 til 4 er opptak fra våre egne simulatorer i lufta, beskåret og fargejustert. Ingenting er tegnet inn.',
+ e2:'Enmotors stempelfly', e3:'Den klassiske six-packen: lær scanen, fly etter attityde, og fly så landingsrunden.', e4:'Six-pack, to NAV/COM, ADF, DME og transponder', e5:'Gass, blanding, forgasservarme, magneter og primer', e6:'Forgasserising, vakuum, generator, motorstopp etter avgang', e7:'Cessna 172-treneren, 3000 fot, rundt 15° venstre krengning.', e8:'Six-packen, med begge VOR-indikatorene og ADF-en.', e9:'9, fra kaldstart til ILS',
+ d2:'Flermotors stempelfly', d3:'Glass cockpit med to skjermer og autopilot. Fly innflygingene og motorstansene.', d4:'PFD og MFD, reserveinstrumenter for fart, attityde og høyde', d5:'<b>9</b> oppdrag, <b>5</b> flows, motorstans og stall', d6:'ILS, RNAV (LPV) og VOR', d8:'Fly den i 3D-cockpiten', d9:'DA42 3D-cockpit (beta), ILS 36 koblet, 460 fot.', d10:'PFD: LOC og GS fanget av autopiloten, 119 KIAS.',
+ b2:'Tomotors turboprop, to piloter', b3:'En full tomannscockpit, fra batteristart til innflyging på én motor.', b4:'<b>400+</b> brytere, knapper og hendler som virker', b5:'EFIS for begge piloter, runde motorinstrumenter', b6:'<b>6</b> prosedyreflows, motorbrann, nødnedstigning', b7:'Autofeather, kabintrykk, brannvern, beta og revers', b8:'King Air B200-treneren, 5000 fot, autopilot i HDG og ALT.', b9:'Studer typeratingen', b10:'EFIS og høydemåler i venstre sete, ved siden av motorinstrumentene.',
  pathH:'Fra første landingsrunde til sjekken i flyselskapet', pathP:'Hvert trinn har sitt eget verktøy. Ta dem i rekkefølge, eller start der du er.',
  w1s:'Privatflyger', w1:'PPL-grunnlag', w1l:'Scanen, attitydeflyging og landingsrunden.',
  w2s:'Instrumentbevis', w2:'Instrument', w2l:'Tracking, holding og innflyginger på instrumenter.',
@@ -1016,20 +840,6 @@ function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
   ifrText(); }
 const RM=matchMedia('(prefers-reduced-motion: reduce)');
-
-/* hero video: attached after load so it never competes with the poster for LCP; reduced motion and Save-Data keep the still */
-function heroVideo(){
-  const v=document.getElementById('heroVid'); if(!v||RM.matches) return;
-  const c=navigator.connection; if(c&&(c.saveData||/(^|-)2g$/.test(c.effectiveType||''))) return;
-  const small=innerWidth<=820, d=v.dataset;
-  const add=(src,type)=>{ const s=document.createElement('source'); s.src=src; s.type=type; v.appendChild(s); };
-  add(small?d.srcWebmS:d.srcWebm,'video/webm'); add(small?d.srcMp4S:d.srcMp4,'video/mp4');
-  v.addEventListener('playing',()=>v.classList.add('on'),{once:true});
-  v.load(); const p=v.play(); if(p&&p.catch) p.catch(()=>{});
-  new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) { const q=v.play(); if(q&&q.catch) q.catch(()=>{}); } else v.pause(); })).observe(v);
-  RM.addEventListener&&RM.addEventListener('change',()=>{ if(RM.matches){ v.pause(); v.classList.remove('on'); } });
-}
-if(document.readyState==='complete') setTimeout(heroVideo,200); else addEventListener('load',()=>setTimeout(heroVideo,200));
 
 /* IFR illustration: a 10 DME arc onto the final course (360° inbound), the turn started late.
    A small kinematic model flies it once; the HSI and the plan view replay it in a loop. */
