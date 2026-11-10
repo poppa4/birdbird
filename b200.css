@@ -13,11 +13,12 @@
 .cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);touch-action:none;user-select:none;-webkit-user-select:none}
 .stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
-.stage.nootw>canvas#otw{display:none}
+.stage.nootw>canvas#otw,.stage.nogl>canvas#otw{display:none}.stage.zoomed>canvas#otw{visibility:hidden}
 .world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
 .world.nt{transition:none}
 .psvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.otwmsg{position:absolute;left:0;right:0;top:10px;text-align:center;font-size:12px;color:#9fb0bd}
+.otwmsg{position:absolute;left:10px;top:10px;max-width:min(200px,calc(50% - 120px));z-index:1;pointer-events:none;font-size:12px;line-height:1.35;color:#9fb0bd}
+.stage.zoomed .otwmsg,.stage.nootw .otwmsg{display:none}
 /* panel materials */
 .psvg .frame{fill:#0c0e10}
 .psvg .sub{fill:url(#gSub);stroke:#15181b;stroke-width:1.2}
@@ -81,8 +82,7 @@
 .tip{position:absolute;z-index:8;pointer-events:none;background:rgba(10,12,15,.94);color:#fff;border:1px solid #3d4650;border-radius:6px;padding:4px 8px;font:600 12.5px system-ui;white-space:nowrap}
 .more{position:absolute;right:8px;top:6px;z-index:9;display:flex;flex-direction:column;gap:4px;background:#14181c;border:1px solid #333a42;border-radius:8px;padding:6px}
 .ctop .stat.chg{color:#ffcf3a}
-.ctop .zsel{display:none}
-@media (max-width:1720px){.ctop .zs{display:none}.ctop .zsel{display:block}}
+.ctop .zs{display:none}.ctop .zsel{display:block;max-width:290px;text-overflow:ellipsis}
 .ctop #scenSel{max-width:240px}
 .psvg .boot{fill:#111316;stroke:#000}.psvg .boot0{fill:#000;opacity:.5}.psvg .shaft{stroke:#2a2e33;stroke-width:9;stroke-linecap:round}
 .psvg .grip{fill:url(#gLever);stroke:#000;stroke-width:1.2}.psvg .gripl{stroke:#000;stroke-opacity:.5;stroke-width:1.4}
@@ -205,3 +205,122 @@
 .psvg .dig[class*="rd-"],.psvg .dig[class*="dm-"]{opacity:var(--rbrt,1)}
 .psvg .rda{fill:#7fe08a}
 .psvg .t-sbtn.on circle{filter:brightness(1.7)}
+/* ---------- reference-layout panel (beige face, grey subpanels, EFIS) ---------- */
+.psvg .pl{fill:#f6f5f2;filter:none;font-weight:700;letter-spacing:.02em;paint-order:stroke;stroke:rgba(30,26,22,.42);stroke-width:.45px;opacity:var(--bl,.95)}
+.psvg .pl.gn{fill:#2fd25e}
+.psvg .grpl{stroke:#f2f1ee;stroke-opacity:.85;stroke-width:.7;fill:none}
+.psvg .ovh{fill:url(#gOvh);stroke:#5d5242;stroke-width:1.4}.psvg .ovhl{stroke:#6d604d;stroke-width:1}
+.psvg .plcd{fill:#7a6c58;stroke:#5d5242;stroke-width:.6}
+.psvg .cmpcase{fill:#b8a888;stroke:#6d604d;stroke-width:1}
+.psvg .subp{fill:url(#gSub);stroke:#3e3b3c;stroke-width:1}
+.psvg .knee{fill:#211e1f}.psvg .spk{fill:#2c292a;stroke:#4b4849;stroke-width:3}.psvg .seam{stroke:#3a3738;stroke-width:1.2;fill:none}
+.psvg .glare{fill:#231f20}
+.psvg .hplate{fill:#8c898a;stroke:#3a3738;stroke-width:.8}
+.psvg .firebz{fill:#3a3738;stroke:#c9c7c8;stroke-width:1.4}
+.psvg .ear{fill:#2a2728}
+.psvg .sbz{fill:#2b2829;stroke:#8f8b88;stroke-width:1.4}.psvg .sbz2{fill:#1d1b1c;stroke:#000;stroke-width:.8}.psvg .dial{fill:#262324}
+.psvg .obz{fill:#3a3637;stroke:#1a1819;stroke-width:1}.psvg .obz2{fill:#232021;stroke:#6c6869;stroke-width:1}
+.psvg .ebz{fill:#4d4a4b;stroke:#2b2829;stroke-width:1.2}.psvg .ebz2{fill:#1d1b1c;stroke:#9a9798;stroke-width:1.6}
+.psvg .eslide{fill:#8f8c8d;stroke:#3a3738}.psvg .eslot{fill:#1a1819}
+.psvg .avbox{fill:none;stroke:#5c564e;stroke-width:1.2}
+.psvg .rhead{fill:#2b2829;stroke:#151314;stroke-width:1}.psvg .rglass{fill:#0a0909;stroke:#3d3a3b;stroke-width:.8}.psvg .rdl{fill:#ff9d2e;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .mbz{fill:#2b2829;stroke:#151314;stroke-width:1.2}.psvg .mbz2{fill:#1f1d1e;stroke:#6c6869;stroke-width:1}
+.psvg .altsetb{fill:#1f1d1e;stroke:#0f0e0e}.psvg .altsetf{fill:#8ea2ad;stroke:#3a4a52;stroke-width:1}
+.psvg .auxp{fill:#1d1b1c;stroke:#e9e7e4;stroke-width:1.2}
+.psvg .lampb{fill:#2b2829;stroke:#111;stroke-width:.8}
+.psvg .an rect,.psvg .an circle{fill:#1c1a1b;stroke:#000;stroke-width:.5}.psvg .an text{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700;fill:#4a4446}
+.psvg .an-r text{fill:#6e2d2a}.psvg .an-a text{fill:#6a5a22}.psvg .an-g text{fill:#2c5a38}.psvg .an-b text{fill:#2b4a6c}.psvg .an-w text{fill:#5a5a5a}.psvg .an-o text{fill:#6a4a22}
+.psvg .an-blank rect{fill:#141213}.psvg .anbl{stroke:#3a3536;stroke-width:1}
+.psvg .an-r.on rect{fill:#e3261b}.psvg .an-r.on text{fill:#fff}
+.psvg .an-a.on rect,.psvg .an-a.on circle{fill:#f2c20f}.psvg .an-a.on text{fill:#1b1500}
+.psvg .an-o.on rect{fill:#ff8a1a}.psvg .an-o.on text{fill:#1b0b00}
+.psvg .an-g.on rect{fill:#18b552}.psvg .an-g.on text{fill:#eafff0}
+.psvg .an-w.on rect{fill:#e8edf1}.psvg .an-w.on text{fill:#0d1319}
+.psvg .an-b.on rect{fill:#2f8bff}.psvg .an-b.on text{fill:#fff}
+.psvg .lk{fill:#1c1a1b;stroke:#000;stroke-width:.5}.psvg .lkt{font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .lkt-w{fill:#e9e9e9}.psvg .lkt-o{fill:#8a4c1e}.psvg .lkt-g{fill:#2c6a3e}.psvg .lkt-a{fill:#7a6a22}.psvg .lkt-b{fill:#2b5a8c}
+.psvg .t-lbtn.la .lba{fill:#ff8a1a}.psvg .t-lbtn.lb .lbb{fill:#2fe06a}
+.psvg .t-lbtn .lba.lkt-w{fill:#6a6a6a}.psvg .t-lbtn.la .lba.lkt-w{fill:#fff}
+.psvg .t-key.led .lk-b{fill:#2f9bff}.psvg .t-key.led .lkt-b{fill:#fff}.psvg .t-key .lk-b{fill:#183654}.psvg .t-key .lkt-b{fill:#7fb6ee}
+.psvg .t-key.led .lk-g{fill:#0e2a17}.psvg .t-key.led .lkt-g{fill:#41ff7a}.psvg .t-key .lk-g{fill:#16201a}.psvg .t-key .lkt-g{fill:#2a6a3a}
+.psvg .t-key .lk-a{fill:#5a3810}.psvg .t-key .lkt-a{fill:#d08a3a}.psvg .t-key.led .lk-a{fill:#ff9d1a}.psvg .t-key.led .lkt-a{fill:#1b0b00}
+.psvg .keyw{fill:#141213;stroke:#e8e8e8;stroke-width:.8}.psvg .keyg{fill:#3a3738;stroke:#0e0d0d;stroke-width:.8}.psvg .keyo{fill:#141213;stroke:#e8e8e8;stroke-width:.7}
+.psvg .keyr{fill:#7a7778;stroke:#222}.psvg .t-key.led .keyr{fill:#e8e8e8}
+.psvg .kt{fill:#f2f2f2;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .kled{fill:#2a2f2a}.psvg .t-key.led .kled{fill:#55ff86;filter:url(#fLed)}
+.psvg .t-key.on .mv,.psvg .t-lbtn.on .mv{transform:translateY(.8px)}.psvg .t-key.on .keyw,.psvg .t-key.on .keyg,.psvg .t-key.on .keyo{fill:#5a5758}
+.psvg .ringR{fill:#c8231a;stroke:#5a0c06;stroke-width:.8}
+.psvg .batk{fill:url(#gBatK);stroke:#111;stroke-width:.5}
+.psvg .knobk{fill:#141213;stroke:#000;stroke-width:1}.psvg .knobw{fill:url(#gChrome);stroke:#333;stroke-width:.8}
+.psvg .volar{stroke:#fff;stroke-width:1.1;fill:none}.psvg .halfw{fill:#e8e8e8}.psvg .selbar{fill:#3a3d41;stroke:#000;stroke-width:.8}
+.psvg .ballk{fill:url(#gBall);stroke:#000;stroke-width:.8}
+.psvg .pbtno{fill:#ff7a4a;stroke:#5a1a06}
+.psvg .pullring{fill:url(#gChrome);stroke:#444;stroke-width:.8}.psvg .pullk{fill:url(#gMetal);stroke:#444;stroke-width:.6}.psvg .tee{fill:#1a1819;stroke:#000}
+.psvg .cbcol{fill:#e8e8e2;opacity:.18}.psvg .cbh{fill:#141213;stroke:#000}.psvg .cbh2{fill:#2a2728;stroke:#4a4748;stroke-width:.6}.psvg .cbt{fill:#fff;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .cbpan{fill:#4a4748;stroke:#9a8a6a;stroke-width:3}.psvg .fuelp{fill:#252223;stroke:#0e0d0d;stroke-width:1.2}
+.psvg .ped{fill:url(#gCons);stroke:#000;stroke-opacity:.6}.psvg .pedp{fill:#2c292a;stroke:#0d0c0c;stroke-width:1}
+.psvg .slot2{fill:#2a2728;stroke:#000;stroke-width:.6}.psvg .wheelk{fill:url(#gWheel);stroke:#8a8270;stroke-width:1}.psvg .wheelr{stroke:#b9b29a;stroke-width:.6}.psvg .gl.gU{fill:#5a1410}
+.psvg .digy{fill:#ffe600;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .dig2{fill:#f2f2f2;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}.psvg .drumw{fill:#0b0a0a;stroke:#7a7778;stroke-width:.7}
+.psvg .lcdg{fill:#2ce36a;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .tcasTag{fill:#ffe600}.psvg .tcasT{fill:#111;font-weight:700;font-family:"IBM Plex Sans",system-ui,sans-serif}.psvg .tcasOff{fill:#141213;stroke:#fff;stroke-width:.8}
+.psvg .dt.cy{fill:#3fb8ff}
+.psvg .barber{stroke:#fff;fill:none}.psvg .barber2{stroke:#e3261b;stroke-dasharray:3 3;fill:none}
+.psvg .acw{stroke:#fff;stroke-width:2.6;fill:none;stroke-linejoin:round}
+.psvg .efis text{font-family:"IBM Plex Sans",system-ui,sans-serif}
+.psvg .mf-all text,.psvg .gp-off+text{font-family:"IBM Plex Sans",system-ui,sans-serif}
+.psvg .gangb{fill:#2b2829;stroke:#0e0d0d;stroke-width:1}
+.psvg .mb{stroke:#000;stroke-width:.8}.psvg .mb-r{fill:#4a1512}.psvg .mb-a{fill:#4a3c0e}
+.psvg .mbt{fill:#b9a8a0}
+.psvg .t-mbtn.led .mb-r{fill:#ff2a1d}.psvg .t-mbtn.led .mb-a{fill:#ffc61a}.psvg .t-mbtn.led .mbt{fill:#140600}
+.psvg .ea-att,.psvg .ea-pit,.psvg .ea-fd,.psvg .ea-gs,.psvg .ea-rwy,.psvg .ea-spd,.psvg .ea-ball,.psvg .eh-card,.psvg .eh-bug,.psvg .eh-crs,.psvg .eh-dev,.psvg .eh-b1,.psvg .eh-b2,.psvg .eh-gs,.psvg .eh-rose,.psvg .mf-rose,.psvg [class^="mf-st"]{transition:none}
+/* ---------- reference photo layout: cream upper panel, black subpanels, centre avionics units ---------- */
+.psvg .pl.dk,.psvg g.ctl.dk .pl{fill:#1d1b19;stroke:none}
+.psvg .avu{fill:#1b1a1a;stroke:#050505;stroke-width:1.2}.psvg .avslot{fill:#0b0b0b;stroke:#2c2b2b;stroke-width:.6}
+.psvg .avplate{fill:#1f1e1d;stroke:#0a0a0a;stroke-width:1}.psvg .nvbz{fill:#2a2929;stroke:#555;stroke-width:.8}
+.psvg .nvf .dig{fill:#0c2340}.psvg .nvf .dig.rda{fill:#14612c}.psvg .nvl{fill:#4a5258;font-family:"IBM Plex Sans",system-ui,sans-serif;font-weight:700}
+.psvg .rhdl{fill:#c8231a;stroke:#5a0c06;stroke-width:.8}.psvg .rhdlb{fill:#6d6a66;stroke:#222;stroke-width:.6}
+.psvg .annhous{fill:#151414;stroke:#4a4748;stroke-width:1.2}
+.psvg .cvrp{fill:#2a2828;stroke:#0d0c0c;stroke-width:1}.psvg .cvrr{fill:#3a3838;stroke:#8a877f;stroke-width:1.4}.psvg .cvrg{fill:#d8d4c4;stroke:#555;stroke-width:.6}
+.psvg .lampd{fill:#3a1410;stroke:#000;stroke-width:.5}
+.psvg .plq{fill:#1a1919;stroke:#bdb8ae;stroke-width:1}
+.psvg .subp{stroke:#000}.psvg .knee{fill:#0f0e0e}.psvg .fuelp{fill:#1c1b1b}.psvg .pedp{fill:#1e1d1d}
+.psvg .ea2-att,.psvg .ea2-pit,.psvg .ea2-fd,.psvg .ea2-gs,.psvg .ea2-rwy,.psvg .ea2-spd,.psvg .ea2-ball,.psvg .eh2-card,.psvg .eh2-bug,.psvg .eh2-crs,.psvg .eh2-dev,.psvg .eh2-b1,.psvg .eh2-b2,.psvg .eh2-gs,.psvg .eh2-rose,.psvg .clkh,.psvg .clkm{transition:none}
+/* second pass: materials matched to the reference photo */
+.psvg .pback{fill:#0d0b0b}
+.psvg .glare{fill:url(#gGlare)}
+.psvg .subp{fill:#0f0d0d;stroke:#000;stroke-width:1}
+.psvg .icase{fill:#121011;stroke:#000;stroke-width:1.2}
+.psvg .cscr{fill:#3b3838;stroke:#000;stroke-width:.6}
+.psvg .sbz{fill:#141213;stroke:#4a4646;stroke-width:1.4}
+.psvg .sbz2{fill:#0d0c0c;stroke:#000;stroke-width:.8}
+.psvg .obz{fill:#151314;stroke:#000;stroke-width:1.2}
+.psvg .obz2{fill:#0f0d0e;stroke:#4a4646;stroke-width:1}
+.psvg .ebz{fill:#151314;stroke:#000;stroke-width:1.2}
+.psvg .ebz2{fill:#0c0b0b;stroke:#8a8686;stroke-width:1.8}
+.psvg .mbz{fill:#141213;stroke:#000;stroke-width:1.2}
+.psvg .mbz2{fill:#0d0c0c;stroke:#bdb9b6;stroke-width:1.8}
+.psvg .avu{fill:#151414;stroke:#000;stroke-width:1.2}
+.psvg .nvu{fill:#141313;stroke:#000;stroke-width:1.2}
+.psvg .nvbz{fill:#262424;stroke:#8a8686;stroke-width:1}
+.psvg .rivet{fill:#2b2622;stroke:#0a0909;stroke-width:1}
+.psvg .rvt{fill:#4a433c;stroke:#181513;stroke-width:.6}
+.psvg .decok{fill:#1d1c1c;stroke:#cfcac4;stroke-width:1}
+.psvg .lampd0{fill:#1a1818;stroke:#000;stroke-width:.6}
+.psvg .gplate{fill:#5b534a;stroke:#2b2622;stroke-width:1.4}
+.psvg .wface .sbz{fill:#2a2622;stroke:#0d0c0c}
+.psvg .wface .sbz2{fill:#3a342e}
+.psvg .wface .dial{fill:#ece8de}
+.psvg .wface .dtick{stroke:#1d1b19}
+.psvg .wface .dnum,.psvg .wface .dt{fill:#1d1b19}
+.psvg .wface .needle{fill:#151311;stroke:#000}
+.psvg .wface .needle.amb{fill:#c26a12}
+.psvg .wface .hub{fill:#2a2622}
+.psvg .ykshaft{fill:#1c1a19;stroke:#000;stroke-width:1.2}
+.psvg .ykshaft2{fill:#2a2725;stroke:#000;stroke-width:1}
+.psvg .ykrim{fill:#e8e4dc;stroke:#59544d;stroke-width:1.6}
+.psvg .ykf{fill:#cfc9be;stroke:#6e675e;stroke-width:1}
+.psvg .ykb{fill:#1a1817;stroke:#000;stroke-width:.6}
+.psvg .ykx{stroke:#5a4a3a;stroke-width:9;stroke-linecap:round}
+.psvg .ykp{fill:#8f877b;stroke:#3b352f;stroke-width:1.2}
+.psvg .ykh{fill:#d9d3c8;stroke:#4a443d;stroke-width:1.2}

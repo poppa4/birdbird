@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="A classic analog King Air B200-style cockpit procedure trainer: round gauges, engine start with ignition and starter, autofeather, generators, pressurisation, annunciators and generic normal and emergency flows in the browser.">
+<meta name="description" content="A King Air B200-style cockpit procedure trainer: EFIS pilot displays, round engine gauges, weather radar display, engine start with ignition and starter, autofeather, generators, pressurisation, annunciators and generic normal and emergency flows in the browser.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="b200.css?v=3">
+<link rel="stylesheet" href="b200.css?v=8">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=49"></script>
@@ -16,7 +16,7 @@
     <div class="brand">
       <div class="eyebrow">Birdbird Simulators · Beta</div>
       <h1>King Air B200 cockpit procedure trainer</h1>
-      <p>A classic analog twin-turboprop panel: round flight and engine gauges, annunciators, the subpanel switches and the pedestal levers. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.</p>
+      <p>A typical twin-turboprop panel: EFIS attitude and HSI displays for both pilots, a centre navigator and radar/multifunction display, round engine gauges, annunciators, subpanels and pedestal. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.</p>
     </div>
     <div class="hright"><div class="status ok" id="stat">On ground</div></div>
   </header>
@@ -31,11 +31,12 @@
       <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
       <span class="stat" id="stat2" aria-live="polite"></span>
       <span class="sp"></span>
-      <button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
+      <button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
       <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
+        <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack">← Whole panel</button>
         <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
@@ -126,8 +127,11 @@
   <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. Procedures here are generic and for training only — follow the AFM/POH and your operator's SOP. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.</p>
 </div>
 
+<script src="three.min.js"></script>
+<script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=5"></script>
-<script src="b200panel.js?v=2"></script>
+<script src="otw.js?v=4"></script>
+<script src="b200panel.js?v=5"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=46"></script>
 <script>
@@ -137,9 +141,9 @@ const {T,L,el,slider,visible,quiz,shuffle}=LAB;
 const tr2=(en,no)=>({en,no});
 LAB.add({},{
  'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
- 'A classic analog twin-turboprop panel: round flight and engine gauges, annunciators, the subpanel switches and the pedestal levers. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.':'Et klassisk analogt tomotors turboproppanel: runde flyge- og motorinstrumenter, varsellys, bryterne på underpanelene og hendlene på pidestallen. Start motorene, test autofeather og øv på motorstans, brann og trykkabin.',
+ 'A typical twin-turboprop panel: EFIS attitude and HSI displays for both pilots, a centre navigator and radar/multifunction display, round engine gauges, annunciators, subpanels and pedestal. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.':'Tomotors turbopropp-panelet slik det er lagt opp i typeratingmaterialet: EFIS-attityde og -HSI for piloten, analoge instrumenter for andrepiloten, radar/flerfunksjonsskjerm i midten, runde motorinstrumenter, varsellys, underpaneler og pidestall. Start motorene, test autofeather og fly øvelsene for motorsvikt, brann og trykkfall.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv','B200 type rating':'B200-typerating',
- 'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','← Whole panel':'← Hele panelet',
+ 'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Pick an area in the toolbar, double-click an empty part of the panel, or press 0–9. Esc or the back button zooms out. Lock view keeps the zoom while you work.':'Velg et område i verktøylinjen, dobbeltklikk på en tom del av panelet, eller trykk 0–9. Esc eller tilbakeknappen zoomer ut. «Lås visning» holder zoomen mens du jobber.',
@@ -198,15 +202,19 @@ function sysDefault(cold){
     com1Md:1,com2Md:1,nav1Md:1,nav2Md:1,adfMd:2,xpdrMd:cold?1:3,com1Act:0,com2Act:0,nav1Act:0,nav2Act:0,adfAct:0,
     mwL:0,mcL:0,mwR:0,mcR:0,fireL:0,fireR:0,cb:{},yd:0,paxDep:0,hornSilOn:0,asF:0,asVs:0,trimHat:0,apClimb:0,apDsc:0,acRun:0,acLow:0,gearH:1,pumpN:0,hornSil:0,hobbs:1234.5,o2psi:1820,cabT:72,
     cabSel:3500,cab:0,cabVS:0,decomp:false,battT:0,apFailT:0,hypT:0,
-    com1:{a:'118.10',s:'121.50'},com2:{a:'119.70',s:'119.10'},nav1:{a:'113.30',s:'110.30'},nav2:{a:'110.30',s:'113.30'},adf:{a:'375',s:'287'},crs:360,crs2:360,xpdr:'7000',xpre:'1200',identT:0,dmeHold:[null,null,null],dmeGs:[0,0,0],dmeLast:[null,null,null]});
+    com1:{a:'118.10',s:'121.50'},com2:{a:'119.70',s:'119.10'},nav1:{a:'113.30',s:'110.30'},nav2:{a:'110.30',s:'113.30'},adf:{a:'375',s:'287'},crs:360,crs2:360,xpdr:'7000',xpre:'1200',identT:0,dmeHold:[null,null,null],dmeGs:[0,0,0],dmeLast:[null,null,null],
+    efisAux:cold?0:-1,efisHorn:0,efisDim:0.85,auxBat:1800,auxTestT:0,auxHornSil:0,altT:0,tcasAB:0,tcasR:0,tcasAB2:0,tcasR2:0,tcasM:0,tcasRng:6,tcasM2:0,tcasRng2:6,gpwsT:0,bgsC:0,gpwsT2:0,bgsC2:0,gpwsFlap:0,gpwsTestT:0,gsCxl:0,gpwsW:0,bgsW:0,
+    gpsCrs:0,gpsApr:0,gpsOn:1,gpsInitT:0,gpsPgL:0,gpsPgR:0,gpsCurL:0,gpsCurR:0,gpsMsgT:0,gpsAltT:0,gpsWpt:'RW36',gpsDtoPend:0,altAck:0,altCx:0,propDeA:0,propDeM:0,
+    mfdPwr:1,mfdMode:cold?0:1,mfdNavOn:1,mfdPage:'map',mfdPrev:'map',mfdRng:2,mfdNup:0,mfdWx:1,mfdGain:0,mfdData:0.85,mfdTilt:0,mfdChk:0,efisSrc:0,brgSel1:1,brgSel2:0,efisArc:0,etState:0,etT:0});
   [0,1,2,3,4,5,6,7,8].forEach(i=>{ SYS['auP'+i]=[1,0,1,0,1,0,1,0,0][i]; SYS['auC'+i]=[0,1,0,1,0,1,0,1,0][i]; });
   ['com1','com2','nav1','nav2','adf'].forEach(k=>{ SYS[k+'Vol']=0.6; SYS[k+'X']=0; });
   ['com1K','com2K','nav1K','nav2K','xpdrK','adfK'].forEach(k=>{ SYS[k+'O']=0; SYS[k+'I']=0; });
-  SYS.cab=S.h/F.FT||0; P.CBS.forEach(c=>SYS.cb[c.k]=1); SYS.cb.GEAR=1;
+  SYS.fcOff=0; SYS.cab=S.h/F.FT||0; P.CBS.forEach(c=>SYS.cb[c.k]=1); SYS.cb.GEAR=1;
   E.forEach(e=>engReset(e,!cold)); S.eng.forEach(e=>{ e.fail=false; e.feather=false; });
   MW.ackR=new Set(); MW.ackA=new Set(); MW.w=false; MW.c=false;
 }
 const MW={ackR:new Set(),ackA:new Set(),w:false,c:false};
+const fuelUsed=()=>E.reduce((a,e)=>a+Math.max(0,1600-(e.main+e.aux)),0);
 const cbIn=n=>SYS.cb[n]!==0;
 const bus=()=>SYS.bat===1||E.some(e=>e.genOn);
 const avOn=()=>bus()&&(SYS.avio===1||!cbIn('AV MASTER'));
@@ -232,8 +240,15 @@ function ledOf(id){ const b=bus(); if(!b) return false;
   if(id==='dmePwr') return avOn()&&!!SYS.dmePwr; if(id==='dme2Pwr') return avOn()&&!!SYS.dme2Pwr;
   if(id==='gyroMode') return !!SYS.gyroMode; if(id==='gyro2Mode') return !!SYS.gyro2Mode; if(id==='gndComm') return !!SYS.gndComm;
   if(/^(com1|com2|nav1|nav2|adf)Act$/.test(id)) return radOn(id.slice(0,-3))&&!!SYS[id];
+  if(id==='gpsCrs') return gpsOk()?(SYS.gpsCrs?1:2):0;
+  if(id==='gpsApr') return gpsOk()&&SYS.gpsApr?(gpsAprActive()?2:1):0;
+  if(id==='gpwsFlap') return !!SYS.gpwsFlap;
+  if(id==='gpwsT'||id==='gpwsT2') return !!SYS.gpwsW||SYS.gpwsTestT>0||!!SYS.annTest;
+  if(id==='bgsC'||id==='bgsC2') return !!SYS.bgsW||SYS.gpwsTestT>0||!!SYS.annTest;
+  if(id==='altAck') return !!annLit['x:altAl1'];
+  if(id==='mfdPwr') return avOn()&&!!SYS.mfdPwr&&cbIn('MFD');
   if(id==='xpdrId') return radOn('xpdr')&&SYS.identT>0;
-  if(id.startsWith('ap')){ const k=id.slice(2); if(!avOn()||!cbIn('AUTOPILOT')) return false; const n=AP.lat, a=AP.latArm, v=AP.vert;
+  if(id.startsWith('ap')){ const k=id.replace(/^ap2?/,''); if(!avOn()||!cbIn('AUTOPILOT')) return false; const n=AP.lat, a=AP.latArm, v=AP.vert;
     return ({AP:AP.on,YD:!!SYS.yd,HDG:n==='HDG',NAV:(n==='VOR'||a==='NAV')&&!SYS.bcMode,APPR:n==='LOC'||n==='VAPP'||a==='APR',BC:!!SYS.bcMode&&(AP.fd||AP.on),CLIMB:v==='FLC'&&SYS.apClimb,DSC:v==='VS'&&SYS.apDsc,ALT:v==='ALT',ALTSEL:/ALTS/.test(AP.vertArm),VS:v==='VS'&&!SYS.apDsc,IAS:v==='FLC'&&!SYS.apClimb,SR:!!SYS.apSR,HB:!!SYS.apHB})[k]||false; }
   return false; }
 const blinkOn=()=>(performance.now()/350|0)%2===0;
@@ -244,7 +259,12 @@ function txtOf(id){ const i=/[LR]$/.test(id)?(id.endsWith('L')?0:1):0;
   if(id.startsWith('cond')){ const v=SYS[id]; return v<0.05?'FUEL CUTOFF':v<0.55?'LOW IDLE':v>0.95?'HIGH IDLE':'between LOW and HIGH IDLE'; }
   if(id==='hdgK') return 'HDG '+String(Math.round(AP.hdg)).padStart(3,'0'); if(id==='crsK') return 'CRS '+String(SYS.crs).padStart(3,'0'); if(id==='crs2K') return 'CRS '+String(SYS.crs2).padStart(3,'0');
   if(id==='baroK'||id==='baro2K') return Math.round(S.baro)+' hPa';
-  if(id==='altSel') return AP.alt+' ft'; if(id==='cabAlt') return 'cabin '+SYS.cabSel+' ft';
+  if(id==='altSel') return AP.alt+' ft';
+  if(id==='mfdTilt') return 'TILT '+(SYS.mfdTilt>0?'UP ':SYS.mfdTilt<0?'DN ':'')+Math.abs(SYS.mfdTilt/2).toFixed(1)+'°';
+  if(id==='gpsKL') return ['NAV','FPL','MODE','TRIP'][SYS.gpsPgL]; if(id==='gpsKR') return ['APT','VOR','NDB','INT','SUPL'][SYS.gpsPgR];
+  if(id==='gpsCrs') return SYS.gpsCrs?'OBS':'LEG'; if(id==='gpsApr') return SYS.gpsApr?(gpsAprActive()?'ACTV':'ARM'):'OFF';
+  if(id==='efisCrsSel') return 'NAV '+(SYS.efisSrc+1); if(id==='efisBrg1') return ['OFF','NAV 1','ADF'][SYS.brgSel1]; if(id==='efisBrg2') return ['OFF','NAV 2','ADF'][SYS.brgSel2]; if(id==='efisFmt') return SYS.efisArc?'ARC':'FULL'; if(id==='efisEt') return ['RESET','RUN','STOP'][SYS.etState];
+  if(id==='tcasAB') return ['NORMAL','ABOVE','BELOW'][SYS.tcasM]; if(id==='tcasR') return SYS.tcasRng+' NM'; if(id==='tcasAB2') return ['NORMAL','ABOVE','BELOW'][SYS.tcasM2]; if(id==='tcasR2') return SYS.tcasRng2+' NM'; if(id==='cabAlt') return 'cabin '+SYS.cabSel+' ft';
   if(id==='com1K'||id==='com2K'||id==='nav1K'||id==='nav2K'||id==='adfK'){ const r=SYS[id.slice(0,-1)]; return (SYS[id.slice(0,-1)+'Act']?'active ':'preset ')+(SYS[id.slice(0,-1)+'Act']?r.a:r.s); }
   if(id==='xpdrK') return 'code '+SYS.xpdr; if(id==='dhK') return 'DH '+Math.round(dhFt())+' ft'; if(id==='apTurn') return Math.abs(SYS.apTurn-0.5)<0.04?'centre (detent)':(SYS.apTurn<0.5?'L ':'R ')+Math.round(Math.abs(SYS.apTurn-0.5)*50)+'°';
   if(id==='cabTemp') return Math.round(60+SYS.cabTemp*25)+' °F'; if(id==='cabRate') return Math.round(200+SYS.cabRate*1800)+' ft/min';
@@ -254,7 +274,7 @@ function txtOf(id){ const i=/[LR]$/.test(id)?(id.endsWith('L')?0:1):0;
 const dhFt=()=>Math.round(SYS.dhK*1000/10)*10;
 const NAME={bat:'BATTERY',genL:'GEN 1',genR:'GEN 2',avio:'AVIONICS MASTER',ignL:'IGN & START L',ignR:'IGN & START R',aignL:'AUTO IGNITION L',aignR:'AUTO IGNITION R',afSw:'AUTOFEATHER',fwL:'FIREWALL VALVE L',fwR:'FIREWALL VALVE R',stbyL:'STBY PUMP L',stbyR:'STBY PUMP R',xfeed:'CROSSFEED',pressSw:'CABIN PRESS',bleedL:'BLEED AIR L',bleedR:'BLEED AIR R',park:'PARKING BRAKE',gear:'GEAR',flaps:'FLAPS',inv:'INVERTER',mask:'CREW O2 MASK',paxOvr:'PAX O2 MANUAL OVERRIDE',micSel:'PILOT MIC',altStatic:"PILOT'S STATIC AIR SOURCE"};
 function descr(k){ const o=P.byId[k]; if(!o) return null; const c=o.c, v=ioGet(k), n=NAME[k]||c.lbl||c.l;
-  const st=c.t==='rotsel'?c.vals[v]:c.t==='tog3'?(c.vals[v+1]||'CENTRE'):c.t==='flap'?c.vals[v]:c.t==='lev'?txtOf(k):c.t==='pull'?(v?'PULLED':'IN'):c.t==='cb'?(v?'IN':'PULLED'):c.t==='guard'?(v?(c.up||'ON'):(k==='altStatic'?'NORMAL':'CLOSED')):c.t==='gear'?(v?'DOWN':'UP'):c.t==='abtn'?(v?'ON':'OFF'):(v?(c.up||'ON'):(c.dn||'OFF')); return n+' '+st; }
+  const st=c.t==='rotsel'?c.vals[v]:c.t==='tog3'?(c.vals[v+1]||'CENTRE'):c.t==='flap'?c.vals[v]:c.t==='lev'?txtOf(k):c.t==='pull'?(v?'PULLED':'IN'):c.t==='cb'?(v?'IN':'PULLED'):c.t==='guard'?(v?(c.up||'ON'):(k==='altStatic'?'NORMAL':'CLOSED')):c.t==='gear'?(v?'DOWN':'UP'):c.t==='abtn'?(v?'ON':'OFF'):(c.t==='key'||c.t==='lbtn')?(txtOf(k)||(v?'ON':'OFF')):(v?(c.up||'ON'):(c.dn||'OFF')); return String(n+' '+st).replace(/\n/g,' '); }
 function ioSet(k,v){
   ensureAudio();
   if(k==='stick'){ inp.stick=v; return; }
@@ -266,7 +286,7 @@ function ioSet(k,v){
   if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); procTouch(k); } SYS[k]=v; return; }
   if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); procTouch(k); } SYS[k]=v; return; }
   if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; if(bus()&&!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
-  if(/^ap(AP|YD|HDG|NAV|APPR|BC|CLIMB|ALT|ALTSEL|VS|IAS|DSC)$/.test(k)){ SYS[k]=v; if(v) apPress(k.slice(2)); return; }
+  if(/^ap2?(AP|YD|HDG|NAV|APPR|BC|CLIMB|ALT|ALTSEL|VS|IAS|DSC)$/.test(k)){ SYS[k]=v; if(v) apPress(k.replace(/^ap2?/,'')); return; }
   if(k==='gang'){ SYS.gang=v; if(v){ SYS.bat=0; SYS.genL=1; SYS.genR=1; beep(260,0.04,0.06); flash(L(tr2('MASTER SWITCH gang bar: battery and both generators OFF','MASTER SWITCH-stangen: batteri og begge generatorer AV'))); procTouch('bat'); } return; }
   if(/^(com1|com2|nav1|nav2|adf)X$/.test(k)){ SYS[k]=v; const r=k.slice(0,-1); if(v&&radOn(r)){ const f=SYS[r];
       if(v<0){ [f.a,f.s]=[f.s,f.a]; SYS.chgT[r]=performance.now(); click(); procTouch('navSw'); }
@@ -275,6 +295,22 @@ function ioSet(k,v){
       if(t-(SYS.stoT[r]||-1e9)<5000){ SYS.mem[r][SYS.memI[r]]=SYS[r].s; SYS.stoT[r]=-1e9; flash(L(tr2('Stored in memory channel ','Lagret i minnekanal '))+(SYS.memI[r]+1)+': '+SYS[r].s); }
       else { SYS.stoT[r]=t; flash(L(tr2('STO: push again within 5 s to store the preset in channel ','STO: trykk igjen innen 5 s for å lagre forvalgt i kanal '))+(SYS.memI[r]+1)); } } return; }
   if(k==='oatF'){ SYS[k]=v; if(v) click(); return; }
+  if(k==='fcRst'){ SYS[k]=v; if(v){ click(); SYS.fcOff=fuelUsed(); } return; }
+  if(k==='gpwsT'||k==='gpwsT2'){ SYS[k]=v; if(v){ click(); if(avOn()&&cbIn('GPWS')){ SYS.gpwsTestT=S.ground?4:1.2; beep(620,0.5,0.05); flash(L(tr2('GPWS self-test: GPWS, BELOW G/S and GPWS INOP lights, "glideslope" and "pull up" tones','GPWS selvtest: GPWS-, BELOW G/S- og GPWS INOP-lys, «glideslope»- og «pull up»-toner'))); } } return; }
+  if(k==='bgsC'||k==='bgsC2'){ SYS[k]=v; if(v){ click(); if(avOn()&&cbIn('GPWS')&&(SYS.bgsW||(curNav.gs&&S.o&&S.o.agl<2000))){ SYS.gsCxl=1; flash(L(tr2('Below-glideslope alert cancelled (G/S CANCLD)','Under-glidebane-varsel kansellert (G/S CANCLD)'))); } } return; }
+  if(k==='altAck'){ SYS[k]=v; if(v){ click(); if(annLit['x:altAl1']) SYS.altCx=1; } return; }
+  if(k==='efisHorn'){ SYS[k]=v; if(v){ click(); SYS.auxHornSil=1; } return; }
+  if(k==='altT'){ SYS[k]=v; if(v) click(); return; }
+  if(/^tcas(AB|R)2?$/.test(k)){ SYS[k]=v; if(v){ click(); const n=k.endsWith('2')?'2':''; if(k.startsWith('tcasAB')) SYS['tcasM'+n]=(SYS['tcasM'+n]+1)%3; else SYS['tcasRng'+n]=({6:12,12:3,3:6})[SYS['tcasRng'+n]]||6; } return; }
+  if(/^mfd(Rdr|Nav|Rmt|Pge|Emg|L1|L2|L3|L4|Up|Dn|Rcl|Skp|Clr)$/.test(k)){ SYS[k]=v; if(v){ click(); mfdKey(k.slice(3)); } return; }
+  if(/^gps(CrsrL|CrsrR|Msg|Alt|Dto|Clr|Ent|Pwr)$/.test(k)){ SYS[k]=v; if(v){ click(); gpsKey(k.slice(3)); } return; }
+  if(/^efis(CrsSel|Brg1|Brg2|Fmt|Et)$/.test(k)){ SYS[k]=v; if(v){ click(); const m=k.slice(4);
+      if(m==='CrsSel'){ SYS.efisSrc=1-SYS.efisSrc; flash('EFIS CRS — NAV '+(SYS.efisSrc+1)); }
+      if(m==='Brg1'){ SYS.brgSel1=(SYS.brgSel1+1)%3; flash('BRG ○ — '+['OFF','NAV 1','ADF'][SYS.brgSel1]); }
+      if(m==='Brg2'){ SYS.brgSel2=(SYS.brgSel2+1)%3; flash('BRG ◇ — '+['OFF','NAV 2','ADF'][SYS.brgSel2]); }
+      if(m==='Fmt'){ SYS.efisArc=1-SYS.efisArc; flash('EHSI — '+(SYS.efisArc?'ARC':'FULL')); }
+      if(m==='Et'){ SYS.etState=(SYS.etState+1)%3; if(SYS.etState===0) SYS.etT=0; flash('ET — '+['RESET','RUN','STOP'][SYS.etState]); } } return; }
+  if(k==='propDeA'||k==='propDeM'){ SYS[k]=v; SYS.propDe=SYS.propDeA?-1:SYS.propDeM?1:0; beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); procTouch('propDe'); return; }
   if(k==='micC'&&SYS.autoCommC&&v<2){ SYS.auC0=v===0?1:0; SYS.auC1=v===1?1:0; }
   if(k==='encAlt'||k==='xpdr12'||k==='audEmer'){ setTimeout(()=>{ if(k==='audEmer'&&SYS.audEmer) msg(tr2('AUDIO EMER: amplifiers bypassed — COMM 1, COMM 2, sidetone and warning tones go to the headsets only; no NAV/ADF/DME/marker audio.','AUDIO EMER: forsterkerne forbikoblet — COMM 1, COMM 2, sidetone og varseltoner bare til hodetelefonene; ingen NAV/ADF/DME/markør-lyd.')); },0); }
   if(k==='xpdrId'){ SYS[k]=v; if(v&&radOn('xpdr')&&SYS.xpdrMd>1){ SYS.identT=18; click(); } return; }
@@ -313,7 +349,10 @@ function encTurn(id,d){ click();
   else if(id==='crsK'){ SYS.crs=F.wrap360(SYS.crs+d)||360; SYS.crsK+=d; procTouch('crsK'); }
   else if(id==='crs2K'){ SYS.crs2=F.wrap360(SYS.crs2+d)||360; SYS.crs2K+=d; }
   else if(id==='baroK'||id==='baro2K'){ S.baro=F.clamp(Math.round(S.baro)+d,940,1060); SYS[id]+=d; }
-  else if(id==='altSel'){ AP.alt=F.clamp(AP.alt+d*100,0,35000); SYS.altSel+=d; }
+  else if(id==='altSel'){ AP.alt=F.clamp(AP.alt+d*100,0,35000); SYS.altSel+=d; SYS.altCx=0; }
+  else if(id==='mfdTilt'){ SYS.mfdTilt=F.clamp(SYS.mfdTilt+d,-15,15); }
+  else if(id==='gpsKL'){ SYS.gpsPgL=(SYS.gpsPgL+d+400)%4; SYS.gpsKL=(SYS.gpsKL||0)+d; }
+  else if(id==='gpsKR'){ SYS.gpsPgR=(SYS.gpsPgR+d+500)%5; SYS.gpsKR=(SYS.gpsKR||0)+d; }
   else if(id==='cabAlt'){ SYS.cabSel=F.clamp(SYS.cabSel+d*100,-1000,14000); SYS.cabAlt+=d; procTouch('cabAlt'); }
   else if(id==='apPitch'){ SYS.apPitch+=d; if(avOn()&&(AP.on||AP.fd)){ const o=F.readouts(S); for(let n=0;n<Math.min(5,Math.abs(d));n++) F.apSet(AP,S,o,d>0?'DN':'UP',curNav); } }
 }
@@ -328,7 +367,7 @@ function stepFreq(f,d,lo,hiI,st,dec,inner){ let m=Math.floor(+f+1e-6), k=+f-m; i
 
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
-const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot instruments (upper)','Pilotinstrumenter (øvre)')],['flightB',tr2('Pilot instruments (lower)','Pilotinstrumenter (nedre)')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators','Varsellys')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('Pedestal · autopilot','Pidestall · autopilot')],['fuelT',tr2('Fuel panel','Drivstoffpanel')],['fuelB',tr2('Fuel circuit breakers · OAT','Drivstoff-sikringer · OAT')],['audio',tr2('Audio panel','Lydpanel')],['radio1',tr2('COMM · NAV','COMM · NAV')],['radio2',tr2('Transponder · ADF','Transponder · ADF')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead (meters)','Takpanel (målere)')],['overheadR',tr2('Overhead (lights)','Takpanel (lys)')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower)','Andrepilot (nedre)')],['cosubL',tr2('Copilot left subpanel','Andrepilot venstre underpanel')],['cosubR',tr2('Copilot right subpanel','Andrepilot høyre underpanel')],['rsideT',tr2('Right side breakers','Høyre sidepanel – sikringer')],['rsideB',tr2('Right side · static source','Høyre side · statisk kilde')]];
+const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')]];
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   const r=P.REG[reg]||P.REG.overview, w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
@@ -341,8 +380,8 @@ function zoomTo(reg,instant,force){
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
-  P.world.style.setProperty('--ls',ov?1:Math.max(1.1,Math.min(1.45,8.5/(s*5))).toFixed(2));
-  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null);
+  P.world.style.setProperty('--ls',ov?1:1.06);
+  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit();
 }
 function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
@@ -350,7 +389,7 @@ const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlR.style.opacity=0; return; } const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); hlR.style.opacity=1; }
 const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
-const MAGP={lower:[464,742],rsub:[1000,742],center:[1326,742],cosubL:[1720,742],cosubR:[1982,742],pedT:[1250,972],fuelT:[352,972],rsideT:[1984,972],overheadL:[600,22],overheadR:[1404,22],audio:[1331,298],glare:[1286,214]};
+const MAGP={lower:[360,826],rsub:[812,890],center:[1112,884],cosubL:[1536,892],cosubR:[1972,840],pedT:[1296,1118],fuelT:[512,1120],fuelB:[438,1274],rsideT:[1984,1120],overheadL:[1164,10],overheadR:[1168,150],audio:[1330,398],glare:[1160,218],mfd:[1228,566]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
 magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
@@ -380,6 +419,31 @@ PST.addEventListener('pointermove',e=>{ if(!tipG) return; tip.textContent=tipTex
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
 PST.addEventListener('wheel',e=>{ if(e.ctrlKey) e.preventDefault(); },{passive:false});
+/* ---------- outside view (shared three.js scene, otw.js) ---------- */
+// The canvas sits behind the panel (it never covers a control): the view shows through the windshield gaps beside the
+// overhead console, above the glareshield and beside the panel. It reaches down to mid-panel (~46 % of the stage, as
+// in the DA42) so the camera has a useful vertical field of view and the level-flight horizon sits just above the glareshield.
+const OTW_BOTTOM_Y=850; // world units
+function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview') return; const h=PST.clientHeight; c.style.height=Math.max(0,Math.min(h,Math.round(Z.ty+OTW_BOTTOM_Y*Z.s)))+'px'; }
+// adapter: the shared FDM state already uses N/E metres, h metres MSL and th/phi/psi radians on the same runway 36,
+// so only the eye point changes — left seat (0.45 m left of the centre line), about 2.6 m above the ground — plus a
+// 2.5° lower line of sight, so the level-flight horizon shows above the King Air's taller glareshield
+const OTW_EYE={dh:1.05,left:0.45,look:0.045}, otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
+function otwState(){ const c=Math.cos(S.psi), s=Math.sin(S.psi); otwS.N=S.N+OTW_EYE.left*s; otwS.E=S.E-OTW_EYE.left*c; otwS.h=S.h+OTW_EYE.dh; otwS.th=S.th-OTW_EYE.look; otwS.phi=S.phi; otwS.psi=S.psi; return otwS; }
+let otwOn=true, otwReady=false, otwSkip=0, ftAvg=16;
+function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
+let otwTried=false;
+function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
+(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); },{timeout:400});
+function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); otwMsgSync(); try{ localStorage.setItem('bb-b200-otw',on?'1':'0'); }catch(e){} }
+el('bOtw').onclick=()=>setOtw(!otwOn);
+// default on; off on phones (small touch screens), where the strip of sky is tiny and the GPU is better spent on the panel
+{ let pr=null; try{ pr=localStorage.getItem('bb-b200-otw'); }catch(e){} const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; setOtw(pr?pr==='1':!phone); }
+function otwTick(dt){
+  ftAvg+=(dt*1000-ftAvg)*0.05;
+  if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
+  const slowDev=ftAvg>24; if(!slowDev||(++otwSkip%2===0)) OTW.render(otwState(),''); if(slowDev!==OTW.low) OTW.quality(slowDev);
+}
 el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg(tr2('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.'))); }catch(e){} };
 
 /* ---------- engines and systems ---------- */
@@ -438,7 +502,7 @@ function sysTick(dt,o){
     const gs=SYS['gen'+s]; if(gs===-1){ if(e.ng>=50&&e.lit) e.genRst=true; e.rstT=(e.rstT||0)+dt; if(e.rstT>0.7){ SYS['gen'+s]=0; e.rstT=0; } } else e.rstT=0; if(gs===1){ e.genRst=false; }
     const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ SYS.battT=Math.max(SYS.battT,20); procTouch('gen'+s+'On'); }
     // engine anti-ice (inertial vane): main actuator needs ENG ANTI-ICE power, standby its own
-    const tgt=SYS['engAI'+s]?1:0, act=SYS['act'+s]?(b&&cbIn('STBY ANTI-ICE')):(b&&cbIn('ENG ANTI-ICE'));
+    const tgt=SYS['engAI'+s]?1:0, act=SYS['act'+s]?(b&&cbIn('STBY ANTI-ICE '+s)):(b&&cbIn('ENG ANTI-ICE '+s));
     if(act) e.vane=F.clamp(e.vane+(tgt?1:-1)*dt/(SYS['act'+s]?18:12),0,1);
     if(Math.abs(tgt-e.vane)>0.01) e.vaneT+=dt; else e.vaneT=0;
     if(e.fire){ if(cond<0.05&&!SYS['fw'+s]){ e.fireT+=dt*(e.ext?3:1); if(e.fireT>9){ e.fire=false; e.fireT=0; msg(tr2(s+' engine fire out.',s+' motorbrann slukket.')); } } }
@@ -484,6 +548,50 @@ function sysTick(dt,o){
     const r=ok?F.nav(S,NAVS[f],0):null; const d=r&&r.dist!=null&&r.dist<199?r.dist:null; SYS['dmeD'+n]=d; SYS['dmeId'+n]=r?r.id:'';
     if(d!=null&&SYS.dmeLast[n]!=null&&dt>0){ const g=Math.abs(SYS.dmeLast[n]-d)/dt*3600; SYS.dmeGs[n]+=(g-SYS.dmeGs[n])*Math.min(1,dt*0.6); } SYS.dmeLast[n]=d; });
   document.documentElement.style.setProperty('--bl',(0.35+0.62*(b?(SYS.mpl?SYS.dimPF:0.9):0.1)).toFixed(2));
+}
+const efisMain=()=>avOn()&&cbIn('DSPL PRCSR');
+const efisOnAux=()=>!efisMain()&&SYS.efisAux===-1&&cbIn('EFIS AUX BAT')&&SYS.auxBat>0&&SYS.efisWasOn;
+const gpsOk=()=>!!SYS.gpsOn&&avOn()&&cbIn('GPS');
+const GPSW={RW36:{N:0,E:0,id:'RW36'},ASN:{N:900,E:-2600,id:'ASN'},AN:{N:-7600,E:0,id:'AN'}};
+const gpsTo=w=>{ const p=GPSW[w]||GPSW.RW36, dN=p.N-S.N, dE=p.E-S.E; return {d:Math.hypot(dN,dE)/F.NM,brg:F.wrap360(Math.atan2(dE,dN)*180/Math.PI)}; };
+const gpsAprActive=()=>!!SYS.gpsApr&&SYS.gpsWpt==='RW36'&&gpsTo('RW36').d<2.2&&!S.ground;
+const MFDM=['OFF','STBY','TEST','WX'], MFDR=[10,25,50,100,150,300];
+const WXC=[{n:22,e:-10,r:2.6,l:1},{n:24,e:-9,r:1.4,l:2},{n:24.5,e:-8.6,r:0.6,l:3},{n:31,e:6,r:3.5,l:0},{n:33,e:7.5,r:1.8,l:1},{n:40,e:-3,r:4.5,l:0},{n:42,e:-2,r:2,l:1},{n:15,e:14,r:2.5,l:0},{n:-12,e:18,r:3,l:0},{n:55,e:12,r:5,l:1},{n:57,e:13,r:2.4,l:2},{n:58,e:13.5,r:1,l:3},{n:80,e:-30,r:7,l:0},{n:90,e:20,r:6,l:1}];
+function mfdKey(m){ if(!(avOn()&&SYS.mfdPwr&&cbIn('MFD'))) return;
+  const pg=p=>{ SYS.mfdPrev=SYS.mfdPage; SYS.mfdPage=SYS.mfdPage===p?'map':p; SYS.mfdChk=0; };
+  switch(m){
+    case 'Rdr': SYS.mfdMode=cbIn('RADAR')?(SYS.mfdMode+1)%4:0; if(SYS.mfdPage!=='map'){ SYS.mfdPrev=SYS.mfdPage; SYS.mfdPage='map'; } flash('RADAR — '+MFDM[SYS.mfdMode]); break;
+    case 'Nav': SYS.mfdNavOn=1-SYS.mfdNavOn; flash('NAV OVERLAY — '+(SYS.mfdNavOn?'ON':'OFF')); break;
+    case 'Rmt': pg('rmt'); break;
+    case 'Pge': { const o=['map','nav','chk'], i=o.indexOf(SYS.mfdPage); SYS.mfdPrev=SYS.mfdPage; SYS.mfdPage=o[(i+1)%3]; SYS.mfdChk=0; break; }
+    case 'Emg': pg('emg'); break;
+    case 'L1': SYS.mfdWx=1-SYS.mfdWx; break; case 'L2': SYS.mfdNup=1-SYS.mfdNup; break; case 'L3': SYS.mfdGain=(SYS.mfdGain+1)%3; break; case 'L4': SYS.mfdTilt=0; break;
+    case 'Up': SYS.mfdRng=Math.min(MFDR.length-1,SYS.mfdRng+1); flash('RANGE '+MFDR[SYS.mfdRng]+' NM'); break; case 'Dn': SYS.mfdRng=Math.max(0,SYS.mfdRng-1); flash('RANGE '+MFDR[SYS.mfdRng]+' NM'); break;
+    case 'Rcl': { const p=SYS.mfdPrev; SYS.mfdPrev=SYS.mfdPage; SYS.mfdPage=p; break; }
+    case 'Skp': SYS.mfdChk++; break;
+    case 'Clr': SYS.mfdPrev=SYS.mfdPage; SYS.mfdPage='map'; break; } }
+function gpsKey(m){
+  if(m==='Pwr'){ if(!avOn()||!cbIn('GPS')){ msg(tr2('GPS: no avionics power or GPS breaker out.','GPS: ingen avionikkstrøm eller GPS-sikring ute.')); return; } SYS.gpsOn=1-SYS.gpsOn; if(SYS.gpsOn) SYS.gpsInitT=6; flash('GPS '+(SYS.gpsOn?'ON':'OFF')); return; }
+  if(!gpsOk()) return;
+  if(m==='CrsrL') SYS.gpsCurL=1-SYS.gpsCurL; if(m==='CrsrR') SYS.gpsCurR=1-SYS.gpsCurR;
+  if(m==='Msg') SYS.gpsMsgT=4; if(m==='Alt') SYS.gpsAltT=6;
+  if(m==='Dto') SYS.gpsDtoPend=SYS.gpsWpt==='RW36'?'ASN':SYS.gpsWpt==='ASN'?'AN':'RW36';
+  if(m==='Ent'&&SYS.gpsDtoPend){ SYS.gpsWpt=SYS.gpsDtoPend; SYS.gpsDtoPend=0; flash('GPS — direct to '+SYS.gpsWpt); }
+  if(m==='Clr'){ SYS.gpsDtoPend=0; SYS.gpsMsgT=0; SYS.gpsAltT=0; } }
+let gpwsSnd=0, auxSnd=0;
+function gpwsTick(dt,o){ const gOk=avOn()&&cbIn('GPWS'), nv=curNav; SYS.bgsW=0; SYS.gpwsW=0;
+  if(gOk&&!S.ground){ const agl=o.agl;
+    if(nv.valid&&nv.gs&&agl<1000&&agl>30&&nv.gs.dev<-1.0&&!SYS.gsCxl) SYS.bgsW=1;
+    if(agl>2000||!nv.gs) SYS.gsCxl=0;
+    if(agl<2450&&-o.vs>1000+agl*1.6) SYS.gpwsW=1;
+    if(agl<500&&S.ctl.gearPos<0.99&&o.ias<190&&o.vs<-100) SYS.gpwsW=1;
+    if(agl<200&&S.ctl.flapPos<0.5&&!SYS.gpwsFlap&&S.ctl.gearPos>0.99&&o.vs<-100&&o.ias<160) SYS.gpwsW=1; }
+  if(SYS.gpwsTestT>0) SYS.gpwsTestT-=dt;
+  gpwsSnd-=dt; if((SYS.gpwsW||SYS.bgsW)&&gpwsSnd<=0){ gpwsSnd=1.6; beep(SYS.gpwsW?760:420,0.3,0.035); }
+  // EFIS auxiliary battery: keeps the EFIS alive when main power is lost (switch ON); horn until silenced
+  if(efisMain()){ SYS.efisWasOn=1; SYS.auxHornSil=0; SYS.auxBat=Math.min(1800,SYS.auxBat+dt*2); }
+  else if(efisOnAux()){ SYS.auxBat-=dt; auxSnd-=dt; if(!SYS.auxHornSil&&auxSnd<=0){ auxSnd=2; beep(880,0.15,0.03); } }
+  if(SYS.etState===1) SYS.etT+=dt; if(SYS.gpsInitT>0) SYS.gpsInitT-=dt; if(SYS.gpsMsgT>0) SYS.gpsMsgT-=dt; if(SYS.gpsAltT>0) SYS.gpsAltT-=dt;
 }
 function flapHorn(){ return !S.ground&&S.ctl.gearPos<0.99&&S.ctl.flapPos>1.2; }
 function gearWarn(){ const o=S.o||{}; return !S.ground&&S.ctl.gearPos<0.99&&((SYS.pwrL<0.12&&SYS.pwrR<0.12&&o.ias<140)||S.ctl.flapPos>1.2); }
@@ -541,7 +649,11 @@ function annCompute(o){
   if(avOn()&&cbIn('AUTOPILOT')){ if(AP.on) A['ap:AP']=1; if(SYS.yd) A['ap:YD']=1; if(AP.lat==='HDG') A['ap:HDG']=1; if((AP.lat==='VOR'||AP.latArm==='NAV')&&!SYS.bcMode) A['ap:NAV']=AP.latArm?'blink':1; if(SYS.bcMode&&(AP.fd||AP.on)) A['ap:B/C']=1; if(AP.lat==='LOC'||AP.lat==='VAPP'||AP.latArm==='APR') A['ap:APR']=AP.latArm?'blink':1; if(AP.vert==='ALT') A['ap:ALT']=1; if(/ALTS/.test(AP.vertArm)) A['ap:ALTS']=1; if(AP.vert==='VS') A['ap:VS']=1; if(AP.vert==='FLC') A['ap:IAS']=1; if(AP.vert==='GS'||/GS/.test(AP.vertArm)) A['ap:GS']=AP.vert==='GS'?1:'blink'; if(AP.on) A['ap:TRIM']=1; }
   // marker beacons, altitude alerter and decision height (copilot radar altimeter)
   const mk=mkrNow(); if(mk){ A['x:mkr'+mk+'1']=1; A['x:mkr'+mk+'2']=1; }
-  if(avOn()){ const d=Math.abs(AP.alt-o.alt); if(d>250&&d<1000&&!S.ground) A['x:altAl1']=A['x:altAl2']=1; }
+  if(avOn()){ const d=Math.abs(AP.alt-o.alt); if(d<=250||d>=1000) SYS.altCx=0; if(d>250&&d<1000&&!S.ground&&!SYS.altCx) A['x:altAl1']=A['x:altAl2']=1; }
+  if(SYS.sync&&S.ctl.gearPos>0.5&&cbIn('PROP SYNC')) A['PROP SYNC ON']=1;
+  { const gOk=avOn()&&cbIn('GPWS'); if(!gOk||SYS.gpwsTestT>0) A['x:gpwsInop']=1; if(gOk&&(SYS.gsCxl||SYS.gpwsTestT>0)) A['x:gsCx']=1; }
+  if(avOn()&&(!gpsOk()||SYS.gpsInitT>0)) A['x:gpsInteg']=1;
+  if(efisOnAux()||SYS.efisAux===1){ A['x:efisAux']=1; A['x:auxDrive']=1; }
   if(avOn()&&!S.ground&&o.agl<dhFt()&&o.agl<2500) A['x:dh1']=A['x:dh2']=1;
   if(SYS.raT&&avOn()) A['x:dh1']=A['x:dh2']=1;
   if(bus()&&cbIn('GEAR IND')&&!SYS.hdLt){ const g=S.ctl.gearPos; if(g>0.99) A['x:gN']=A['x:gL']=A['x:gR']=1; }
@@ -554,7 +666,7 @@ function annCompute(o){
 
 /* ---------- autopilot / flight director controller ---------- */
 let curNav={valid:false}, curNav2={valid:false};
-function navNow(n){ const r=n===2?'nav2':'nav1', crs=n===2?SYS.crs2:SYS.crs, t=NAVS[SYS[r].a]; if(!t||!radOn(r)) return {src:'VOR',valid:false,dev:0,crs}; const x=F.nav(S,t,crs); if(SYS.bcMode&&n!==2&&x.src==='LOC') x.dev=-x.dev; return x; }
+function navNow(n){ const r=n===2?'nav2':(SYS.efisSrc?'nav2':'nav1'), crs=n===2?SYS.crs2:SYS.crs, t=NAVS[SYS[r].a]; if(!t||!radOn(r)) return {src:'VOR',valid:false,dev:0,crs}; const x=F.nav(S,t,crs); if(SYS.bcMode&&n!==2&&x.src==='LOC') x.dev=-x.dev; return x; }
 function apPress(k){ if(!avOn()||!cbIn('AUTOPILOT')){ msg(tr2('Autopilot unavailable: avionics power or circuit breaker.','Autopilot utilgjengelig: avionikkstrøm eller sikring.')); return; }
   if(k==='YD'){ SYS.yd=SYS.yd?0:1; if(!SYS.yd&&AP.on){ AP.on=false; apDiscFx(); } beep(1200,0.04,0.05); return; }
   if(k==='AP'&&AP.on){ AP.on=false; apDiscFx(); return; }
@@ -739,6 +851,7 @@ function procSet(kind){
   if(!S.ground&&kind!=='fl250') Object.assign(AP,F.mkAP());
   if(kind!=='fl250'){ Object.assign(AP,F.mkAP()); AP.alt=kind==='seapp'?2500:5000; }
   AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; if(kind==='fl250'){ AP.hdg=360; }
+  if(kind==='free'){ const o=F.readouts(S); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=7000; AP.vertArm='ALTS'; SYS.yd=1; }
   SYS.gearH=S.ctl.gear; S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
 }
 function procStart(k){
@@ -805,6 +918,7 @@ function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
 
 /* ---------- instruments ---------- */
 let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now();
+const raF2=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.62:0.62+Math.log10(v/500)/Math.log10(5)*0.38; };
 const raF=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.55:0.55+Math.log10(v/500)/Math.log10(5)*0.45; };
 function radTxt(k,a){ if(!radOn(k)) return ''; if(SYS[k+'T']) return k.startsWith('com')?'888.888':k==='adf'?'8888':'888.88'; return a; }
 function draw(o){
@@ -825,8 +939,8 @@ function draw(o){
     B200P.rot(P,'rcard-rmi'+sf,-hc); B200P.rot(P,'rn1-rmi'+sf,vb&&vb.valid?vb.brg-h:90); B200P.rot(P,'rn2-rmi'+sf,ab!=null?ab-h:90);
     B200P.rot(P,'slv-'+n,b?F.clamp((n===1?SYS.hdgErr1:SYS.hdgErr2)*4,-40,40):0); });
   if(AP.fd&&av) B200P.tr(P,'fdb-adi',`translateY(${(F.clamp(o.pitch-AP.thCmd,-12,12)*74*0.04).toFixed(1)}px) rotate(${F.clamp(AP.phiCmd-o.roll,-30,30).toFixed(1)}deg)`); B200P.vis(P,'fdb-adi',AP.fd&&av);
-  E.forEach((e,i)=>{ const s=SIDES[i]; B200P.needle(P,'TQ'+s,e.tq); B200P.needle(P,'ITT'+s,e.itt); B200P.needle(P,'NP'+s,e.np); B200P.needle(P,'NG'+s,e.ng); B200P.needle(P,'FF'+s,e.ff); B200P.needle(P,'OIL'+s,e.oilP,'P'); B200P.needle(P,'OIL'+s,e.oilT,'T');
-    B200P.text(P,'dg-TQ'+s,String(Math.round(e.tq/10)*10)); B200P.text(P,'dg-ITT'+s,String(Math.round(e.itt))); B200P.text(P,'dg-NP'+s,String(Math.round(e.np/10)*10)); B200P.text(P,'dg-NG'+s,e.ng.toFixed(1));
+  E.forEach((e,i)=>{ const s=SIDES[i], ep=b&&cbIn('ENG INSTR '+s), ci=k=>ep&&cbIn(k+' '+s); B200P.needle(P,'TQ'+s,ci('TQ')?e.tq:0); B200P.needle(P,'ITT'+s,ci('ITT')?e.itt:100); B200P.needle(P,'NP'+s,ci('NP')?e.np:0); B200P.needle(P,'NG'+s,ci('NG')?e.ng:0); B200P.needle(P,'FF'+s,ci('FF')?e.ff:0); B200P.needle(P,'OIL'+s,ci('OILP')?e.oilP:0,'P'); B200P.needle(P,'OIL'+s,ci('OILT')?e.oilT:-40,'T');
+    B200P.text(P,'dg-TQ'+s,ci('TQ')?String(Math.round(e.tq/10)*10):''); B200P.text(P,'dg-NG'+s,ci('NG')?e.ng.toFixed(1):'');
     B200P.needle(P,'fq'+s,b&&cbIn('QTY IND '+s)?(SYS.fqSel?e.main:e.aux):0); });
   B200P.needle(P,'cab',SYS.cab,'A'); B200P.needle(P,'cab',SYS.diff||0,'D'); B200P.needle(P,'cvs',SYS.cabVS);
   const fp=S.ctl.flapPos; B200P.needle(P,'flp',b?(fp<=1?fp*40:40+(fp-1)*60):0);
@@ -842,7 +956,7 @@ function draw(o){
   // synchroscope
   if(b&&E[0].lit&&E[1].lit) synA+=(E[0].np-E[1].np)*dt*8; B200P.rot(P,'syn',synA%360);
   // copilot radar altimeter and DME indicators
-  const raV=SYS.raT?100:o.agl; B200P.needle(P,'ra',av?raV:2500); B200P.vis(P,'raflag',!av); B200P.rot(P,'dhb',-150+raF(dhFt())*300);
+  const raV=SYS.raT?100:o.agl; B200P.needle(P,'ra',av?raV:2500); B200P.vis(P,'raflag',!av); B200P.rot(P,'dhb',-30+raF2(dhFt())*300);
   [1,2].forEach(n=>{ const on=av&&cbIn('DME')&&SYS[n===1?'dmePwr':'dme2Pwr'], d=SYS['dmeD'+n], sel=SYS['d'+n+'sel'], ch=SYS['d'+n+'ch'], hold=ch<3&&SYS.dmeHold[ch];
     B200P.text(P,'dm-d'+n+'a',on?(d!=null?d.toFixed(1):'---.-'):''); B200P.text(P,'dm-d'+n+'u',on?'NM':'');
     const gs=SYS.dmeGs[n]; B200P.text(P,'dm-d'+n+'b',!on||d==null?'':sel===0?Math.round(gs)+' KT':sel===1?(gs>30?Math.min(99,Math.round(d/gs*60))+' MIN':'-- MIN'):SYS['dmeId'+n]);
@@ -855,7 +969,9 @@ function draw(o){
     B200P.text(P,'rd-'+k+'N0',chg?'ACT':''); B200P.text(P,'rd-'+k+'N1',mem?'MEM':'');
     if(k!=='adf') B200P.text(P,'rd-'+k+'N2',!on?'':k.startsWith('nav')?(hld?'HLD':''):''); });
   const xo=radOn('xpdr'), xm=SYS.xpdrMd; B200P.text(P,'rd-xpdrA',xo?(SYS.xpdrT?'8888':SYS.xpdr):''); const xr=xo&&xm>1&&(SYS.identT>0?blinkOn():Math.random()<0.15); B200P.text(P,'rd-xpdrN0',xo&&tNow-(SYS.chgT.xpdr||-1e9)<900?'ACT':''); B200P.text(P,'rd-xpdrN1',xr?'TX':''); B200P.text(P,'rd-xpdrS',xo?('ATC '+(SYS.xpdr12?1:2)+'  '+['','SBY','ON','ALT'][xm]+(xm===3?(cbIn('ENCD ALTM')?' · ALTM '+(SYS.encAlt?1:2):' FAIL'):'')):'');
-  B200P.text(P,'rd-altsel',av?String(AP.alt):''); B200P.text(P,'rd-apm',apText());
+  B200P.text(P,'rd-altsel',av?(AP.alt/1000).toFixed(1):''); B200P.text(P,'rd-apm',apText()); B200P.text(P,'rd-apm2',apText());
+  B200P.text(P,'rd-fcons',b?String(Math.round(Math.max(0,fuelUsed()-(SYS.fcOff||0)))).padStart(4,'0'):'');
+  { const d=new Date(), mn=d.getMinutes()+d.getSeconds()/60, hr=(d.getHours()%12)+mn/60; ['c1','c2'].forEach(c=>{ B200P.rot(P,'clkh-'+c,hr*30); B200P.rot(P,'clkm-'+c,mn*6); }); }
   B200P.rot(P,'pctlp',-150+F.clamp((SYS.cabSel+1000)/11000,0,1)*300); B200P.text(P,'rd-cab2',b?'ACFT '+Math.max(0,Math.round(hP(pA(SYS.cabSel)-6.5*68.95)/100)*100):'');
   { const br=(0.45+0.55*SYS.annBrt).toFixed(2); if(P.svg._br!==br){ P.svg._br=br; P.svg.style.setProperty('--rbrt',br); } }
   B200P.text(P,'rd-oat',b&&cbIn('OAT')?(SYS.oatF?Math.round(o.oat*9/5+32)+' °F':Math.round(o.oat)+' °C'):'');
@@ -866,7 +982,70 @@ function draw(o){
   B200P.needle(P,'ctemp',SYS.cabT); B200P.needle(P,'oxy',SYS.o2psi);
   B200P.tr(P,'aitr',`translateX(${((SYS.ailTrim-0.5)*44).toFixed(1)}px)`);
   B200P.ann(P,annLit,SYS.annTest&&b&&cbIn('ANN POWER'),blinkOn());
+  drawEfis(o,h1,h2); drawMfd(o,h1); drawGps(o);
+  B200P.vis(P,'alttest-alt',!!SYS.altT);
+  [['','tcasM','tcasRng'],['2','tcasM2','tcasRng2']].forEach(([n,m,r])=>{ const on=radOn('xpdr')&&SYS.xpdrMd===3&&cbIn('TCAS'); B200P.vis(P,'tcasoff-vsi'+n,!on); B200P.text(P,'tcasm-vsi'+n,on?(['','ABV ','BLW '][SYS[m]]+SYS[r]+' NM'):''); });
+  { const d2=SYS.dmeD2, on=av&&cbIn('DME')&&SYS.dme2Pwr; B200P.text(P,'h2-dme',on&&d2!=null?d2.toFixed(1):'---'); B200P.text(P,'h2-crs',String(SYS.crs2).padStart(3,'0')); B200P.text(P,'h2-gsp',on&&d2!=null?String(Math.round(SYS.dmeGs[2])):'---'); B200P.text(P,'h2-src',radOn('nav2')?(NAVS[SYS.nav2.a]==='LOC'?'LOC2':'VOR2'):''); }
   if(PST.closest('.ckp')) el('engRead').innerHTML=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`;
+}
+/* ---------- EFIS, multifunction display and GPS ---------- */
+const MKN={O:'OM',M:'MM',I:'IM'};
+function drawEfis(o,hc,hc2){
+  const onM=efisMain(), aux=efisOnAux(), on=onM||aux, nv=curNav, srcR=SYS.efisSrc?'nav2':'nav1';
+  const fd=(AP.fd||AP.on)&&avOn()&&cbIn('AUTOPILOT');
+  const latT={HDG:'HDG',VOR:'VOR',LOC:SYS.bcMode?'B/C':'LOC',VAPP:'APR',ROL:'ROL'}[AP.lat]||'', vertT={ALT:'ALT',VS:'VS',FLC:'IAS',GS:'GS',PIT:'PIT'}[AP.vert]||'';
+  const ra=avOn()&&cbIn('RAD ALTM')?(SYS.raT?100:o.agl):null, dh=dhFt(), mk=mkrNow();
+  const gs=nv.valid&&nv.gs?nv.gs.dev:null, loc=nv.valid&&nv.src==='LOC'?nv.dev:null;
+  const brgOf=(sel,n)=>{ if(sel===2){ const a=adfNow(); return a; } if(sel===1){ const r=n===1?'nav1':'nav2', t=NAVS[SYS[r].a]; if(radOn(r)&&t==='VOR'){ const x=F.nav(S,'VOR',0); return x.valid?x.brg:null; } } return null; };
+  const b1=brgOf(SYS.brgSel1,1), b2=brgOf(SYS.brgSel2,2);
+  const st=NAVS[SYS[srcR].a], dme=radOn(srcR)&&st&&cbIn('DME')?F.nav(S,st,0):null;
+  const et=Math.floor(SYS.etT), etx=String(Math.floor(et/60)).padStart(2,'0')+':'+String(et%60).padStart(2,'0');
+  B200P.efis(P,{onA:on&&cbIn('EADI'),onH:on&&cbIn('EHSI'),dim:SYS.efisDim,roll:o.roll,pitch:o.pitch,fd,fdP:o.pitch-AP.thCmd,fdR:AP.phiCmd-o.roll,
+    lat:fd?latT:'',latA:fd?(AP.latArm||''):'',vert:fd?vertT:'',vertA:fd?(AP.vertArm||'').replace('ALTS','ALT').trim():'',ap:AP.on?'AP':SYS.yd?'YD':'',
+    gs,loc,ra,dh,dhA:ra!=null&&!S.ground&&ra<dh,mkr:mk?MKN[mk]:'',spd:fd&&AP.vert==='FLC'?(o.ias-AP.iasRef)/10:null,slip:o.slip,
+    hdg:hc,bug:AP.hdg,crs:SYS.crs,dev:nv.dev,valid:!!nv.valid,tf:nv.toFrom,b1,b2,arc:!!SYS.efisArc,
+    dist:dme&&dme.dist!=null&&dme.dist<199?dme.dist.toFixed(1):'----',et:etx,src:(st==='LOC'?'LOC':'VOR')+(SYS.efisSrc+1),brg:['---','VOR1','ADF'][SYS.brgSel1],brgFail:true,flag:radOn(srcR)&&nv.valid?'':'NAV'});
+  /* copilot's EADI / EHSI: same flight-director data, own heading (compass 2), course 2 and NAV 2 */
+  const nv2=curNav2, st2=NAVS[SYS.nav2.a], dme2=radOn('nav2')&&st2&&cbIn('DME')?F.nav(S,st2,0):null;
+  const gs2=nv2.valid&&nv2.gs?nv2.gs.dev:null, loc2=nv2.valid&&nv2.src==='LOC'?nv2.dev:null;
+  /* copilot displays: avionics bus no 2 only (not on the EFIS aux battery), copilot EHSI breaker, display processor */
+  const onC=avOn()&&cbIn('AV BUS 2')&&cbIn('COPLT EHSI')&&cbIn('DSPL PRCSR');
+  B200P.efis(P,{onA:onC,onH:onC,dim:SYS.efisDim,roll:o.roll,pitch:o.pitch,fd,fdP:o.pitch-AP.thCmd,fdR:AP.phiCmd-o.roll,
+    lat:fd?latT:'',latA:fd?(AP.latArm||''):'',vert:fd?vertT:'',vertA:fd?(AP.vertArm||'').replace('ALTS','ALT').trim():'',ap:AP.on?'AP':SYS.yd?'YD':'',
+    gs:gs2,loc:loc2,ra,dh,dhA:ra!=null&&!S.ground&&ra<dh,mkr:mk?MKN[mk]:'',spd:fd&&AP.vert==='FLC'?(o.ias-AP.iasRef)/10:null,slip:o.slip,
+    hdg:hc2,bug:AP.hdg,crs:SYS.crs2,dev:nv2.dev,valid:!!nv2.valid,tf:nv2.toFrom,b1,b2,arc:!!SYS.efisArc,
+    dist:dme2&&dme2.dist!=null&&dme2.dist<199?dme2.dist.toFixed(1):'----',et:etx,src:(st2==='LOC'?'LOC':'VOR')+'2',brg:['---','VOR1','ADF'][SYS.brgSel1],brgFail:true,flag:radOn('nav2')&&nv2.valid?'':'NAV'},'2');
+}
+function drawMfd(o,hc){
+  const on=avOn()&&!!SYS.mfdPwr&&cbIn('MFD'), m=cbIn('RADAR')?SYS.mfdMode:0, rng=MFDR[SYS.mfdRng];
+  const rel=p=>({e:(p.E-S.E)/F.NM,n:(p.N-S.N)/F.NM});
+  const t1=NAVS[SYS.nav1.a]==='LOC'?{N:1800,E:0}:{N:900,E:-2600}, wp=GPSW[SYS.gpsWpt]||GPSW.RW36;
+  const sE=S.E/F.NM, sN=S.N/F.NM, att=F.clamp(1-Math.abs(SYS.mfdTilt)*0.055,0.15,1);
+  const wx=SYS.mfdWx?WXC.map(c=>({e:c.e-sE,n:c.n-sN,r:c.r,l:Math.min(3,c.l+(SYS.mfdGain===2?1:0)),a:att*(SYS.mfdGain===1?0.7:1)})):[];
+  const lines=[], p=SYS.mfdPage, f=(k)=>SYS[k]; let cur=-1;
+  if(p==='rmt') lines.push('RADIO DATA','COM 1  '+SYS.com1.a+'  /  '+SYS.com1.s,'COM 2  '+SYS.com2.a+'  /  '+SYS.com2.s,'NAV 1  '+SYS.nav1.a+'  /  '+SYS.nav1.s,'NAV 2  '+SYS.nav2.a+'  /  '+SYS.nav2.s,'ADF    '+SYS.adf.a+'  /  '+SYS.adf.s,'XPDR   '+SYS.xpdr+'  '+['OFF','SBY','ON','ALT'][SYS.xpdrMd],'DME    CH '+SYS.d1ch+' / CH '+SYS.d2ch);
+  if(p==='nav'){ const g=gpsTo(SYS.gpsWpt), gsk=Math.max(1,o.gs); lines.push('NAV DATA','WPT    '+SYS.gpsWpt,'DIS    '+g.d.toFixed(1)+' NM','BRG    '+String(Math.round(g.brg)).padStart(3,'0')+'°','GS     '+Math.round(o.gs)+' KT','ETE    '+Math.floor(g.d/gsk*60)+':'+String(Math.floor(g.d/gsk*3600)%60).padStart(2,'0'),'TAS    '+Math.round(o.tas)+' KT','SAT    '+Math.round(o.oat)+' °C'); }
+  if(p==='chk'){ const L=['NORMAL – BEFORE TAKEOFF','AUTOFEATHER ........... ARM','TRIM ............... SET','FLAPS ........ AS REQUIRED','PROP LEVERS ...... FULL FWD','PITOT HEAT ............ ON','TRANSPONDER ......... ALT','LIGHTS ....... AS REQUIRED']; lines.push(...L); cur=1+SYS.mfdChk%(L.length-1); }
+  if(p==='emg'){ const L=['EMERGENCY – ENGINE FIRE','POWER LEVER ......... IDLE','PROP LEVER ...... FEATHER','CONDITION LEVER .. CUTOFF','FIREWALL VALVE ...... CLOSE','FIRE EXTINGUISHER .. ACTUATE','GENERATOR ........... OFF','(follow the AFM/POH)']; lines.push(...L); cur=1+SYS.mfdChk%(L.length-2); }
+  B200P.mfd(P,{on,dim:SYS.mfdData,page:p,lines,cur,lk:p==='map'?['WX '+(SYS.mfdWx?'ON':'OFF'),SYS.mfdNup?'N UP':'HDG UP',['CAL','PRE','MAX'][SYS.mfdGain],'TILT 0']:['','','',''],
+    mode:cbIn('RADAR')?MFDM[m]:'FAIL',nav:!!SYS.mfdNavOn,hdg:hc,nup:!!SYS.mfdNup,range:rng,tilt:(SYS.mfdTilt>=0?'+':'')+(SYS.mfdTilt/2).toFixed(1),gain:m===3?['CAL','PRE','MAX'][SYS.mfdGain]:'',
+    st:[Object.assign(rel(t1),{line:true}),rel(wp),rel({N:-7600,E:0})],wx:m===3?wx:[],
+    b1:radOn('nav1')?(NAVS[SYS.nav1.a]==='LOC'?'LOC ':'VOR ')+SYS.nav1.a:'',b2:gpsOk()?'GPS '+SYS.gpsWpt:''});
+}
+function drawGps(o){ const on=gpsOk(); if(!on){ B200P.gps(P,{on:false}); return; }
+  if(SYS.gpsInitT>0){ B200P.gps(P,{on:true,l:['SELF TEST','','',''],r:['GPS','INIT','',''],pl:'',pr:''}); return; }
+  const g=gpsTo(SYS.gpsWpt), gsk=Math.max(1,o.gs), ete=g.d/gsk*60;
+  const L=[['DIS '+g.d.toFixed(1)+'NM','GS  '+Math.round(o.gs)+'KT','DTK '+String(Math.round(g.brg)).padStart(3,'0')+'°','ETE '+Math.floor(ete)+':'+String(Math.floor(ete*60)%60).padStart(2,'0')],['FPL 0','1 AN','2 ASN','3 RW36'],['MODE','CRS '+(SYS.gpsCrs?'OBS':'LEG'),'APR '+(SYS.gpsApr?(gpsAprActive()?'ACTV':'ARM'):'OFF'),''],['TRIP','FF '+Math.round(E[0].ff+E[1].ff)+'PPH','FUEL '+Math.round(E[0].main+E[0].aux+E[1].main+E[1].aux),'']][SYS.gpsPgL];
+  const sAN=gpsTo('AN'), sASN=gpsTo('ASN');
+  let R=[['RW36','BIRDBIRD','ELEV 0FT','RWY 36'],['ASN VOR','113.30','BRG '+String(Math.round(sASN.brg)).padStart(3,'0'),'DIS '+sASN.d.toFixed(1)],['AN NDB','375.0','BRG '+String(Math.round(sAN.brg)).padStart(3,'0'),'DIS '+sAN.d.toFixed(1)],['INT','----','',''],['SUPL','',''+'','']][SYS.gpsPgR];
+  let Lx=L; if(SYS.gpsAltT>0) Lx=['ALT '+Math.round(o.alt)+'FT','BARO '+(S.baro/33.8639).toFixed(2),'MSA 2500FT',''];
+  if(SYS.gpsMsgT>0) R=['NO','MESSAGES','',''];
+  if(SYS.gpsDtoPend) R=['DIRECT TO:',SYS.gpsDtoPend,'ENT?',''];
+  /* default page: moving map (route AN → ASN → RW36, magenta leg to the active waypoint); page knobs, cursors and messages show the text pages */
+  const mapPg=!SYS.gpsPgL&&!SYS.gpsPgR&&!SYS.gpsCurL&&!SYS.gpsCurR&&!(SYS.gpsMsgT>0)&&!(SYS.gpsAltT>0)&&!SYS.gpsDtoPend;
+  if(mapPg){ const rt=['AN','ASN','RW36'], rel=k=>({id:k,e:(GPSW[k].E-S.E)/F.NM,n:(GPSW[k].N-S.N)/F.NM}), rng=g.d>9?20:g.d>4?10:5;
+    B200P.gps(P,{on:true,map:true,trk:o.hdg||0,rng,wp:rt.map(rel),act:Math.max(0,rt.indexOf(SYS.gpsWpt)),mf:[L[0].replace('NM',''),'DTK '+String(Math.round(g.brg)).padStart(3,'0'),'GS '+Math.round(o.gs),'>'+SYS.gpsWpt]}); return; }
+  B200P.gps(P,{on:true,l:Lx,r:R,pl:['NAV','FPL','MODE','TRIP'][SYS.gpsPgL]+' '+(SYS.gpsCrs?'OBS':'LEG'),pr:['APT','VOR','NDB','INT','SUPL'][SYS.gpsPgR]+' >'+SYS.gpsWpt,cl:!!SYS.gpsCurL,cr:!!SYS.gpsCurR});
 }
 /* ---------- loop ---------- */
 let holdRoll=null, holdPitch=null, last=performance.now(), slow=0, panelT=1;
@@ -906,7 +1085,8 @@ function loop(t){
   }
   const o=F.readouts(S);
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
-  annCompute(o);
+  annCompute(o); if(!UI.paused) gpwsTick(Math.max(0,Math.min(0.05,dt)),o);
+  otwTick(dt);
   if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest), bb&&cbIn('GEAR WARN')&&gearWarn()&&!(SYS.hornSilOn&&!flapHorn())&&!UI.paused);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
