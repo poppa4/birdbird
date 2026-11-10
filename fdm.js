@@ -121,7 +121,7 @@ function engines(s,dt,V,at){
     e.T=T;
     const rpmT= alive ? (e.test? 1850 : 710+1590*smooth(0,0.55,e.load)) : (e.crank? 280 : (e.feather?0:Math.min(1900,V*30)));
     e.rpm+=(rpmT-e.rpm)*Math.min(1,dt/(alive?0.8:(e.feather?3:1.5)));
-    e.ff= alive? 0.7+9.0*Math.pow(e.load,1.1) : 0;
+    e.ff= alive? 0.7+9.0*Math.pow(Math.max(0,e.load),1.1) : 0;
     e.fuel=Math.max(0,e.fuel-e.ff*dt/3600);
     e.oilT+=((alive?72+28*e.load:Math.max(15,e.oilT-5))-e.oilT)*dt/90;
     e.coolT+=((alive?70+26*e.load:Math.max(15,e.coolT-5))-e.coolT)*dt/70;
@@ -280,7 +280,7 @@ function nav(s,src,crs,st){
     const ang=Math.atan2(r.xtk,-r.along)*R2D;
     if(R.dist<20 && r.along<0 && Math.abs(ang)<35){ R.valid=true; const crsErr=wrap180(crs-l.crs); const sgn=Math.abs(crsErr)>90?-1:1; R.dev=clamp(-sgn*ang/l.fs,-1.2,1.2); R.toFrom='TO'; R.xtk=r.xtk; R.locAng=ang; }
     const g=WORLD.gs, rg=navRel(s,g.N,g.E,l.crs), d=-rg.along;
-    if(R.valid && d>200){ const el=Math.atan2(s.h-WORLD.elev,d)*R2D; R.gs={dev:clamp((el-g.ang)/g.fs,-1.2,1.2), targetH:WORLD.elev+d*Math.tan(g.ang*D2R), d}; }
+    if(R.valid && d>200 && !WORLD.gsOut){ const el=Math.atan2(s.h-WORLD.elev,d)*R2D; R.gs={dev:clamp((el-g.ang)/g.fs,-1.2,1.2), targetH:WORLD.elev+d*Math.tan(g.ang*D2R), d}; }
     R.brg=wrap360(Math.atan2(l.E-s.E,l.N-s.N)*R2D);
   }
   return R;

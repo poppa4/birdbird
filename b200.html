@@ -131,7 +131,8 @@
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=7"></script>
+<script src="fdm.js?v=8"></script>
+<script src="airproc.js?v=1"></script>
 <script src="otw.js?v=8"></script>
 <script src="b200panel.js?v=7"></script>
 <script src="b200-qbank.js"></script>
@@ -581,7 +582,7 @@ function sysTick(dt,o){
 const efisMain=()=>avOn()&&cbIn('DSPL PRCSR');
 const efisOnAux=()=>!efisMain()&&SYS.efisAux===-1&&cbIn('EFIS AUX BAT')&&SYS.auxBat>0&&SYS.efisWasOn;
 const gpsOk=()=>!!SYS.gpsOn&&avOn()&&cbIn('GPS');
-const GPSW={RW36:{N:0,E:0,id:'RW36'},ASN:{N:900,E:-2600,id:'ASN'},AN:{N:-7600,E:0,id:'AN'}};
+const GPSW=Object.assign({RW36:{N:0,E:0,id:'RW36'},ASN:{N:900,E:-2600,id:'ASN'},AN:{N:-7600,E:0,id:'AN'}},AIRPROC.FIX);
 const gpsTo=w=>{ const p=GPSW[w]||GPSW.RW36, dN=p.N-S.N, dE=p.E-S.E; return {d:Math.hypot(dN,dE)/F.NM,brg:F.wrap360(Math.atan2(dE,dN)*180/Math.PI)}; };
 const gpsAprActive=()=>!!SYS.gpsApr&&SYS.gpsWpt==='RW36'&&gpsTo('RW36').d<2.2&&!S.ground;
 const MFDM=['OFF','STBY','TEST','WX'], MFDR=[10,25,50,100,150,300];
@@ -793,6 +794,7 @@ function startSteps(s){ const i=s==='L'?0:1; return [
   chk(tr2(`Oil pressure ${s} — rising, ${s} OIL PRESS out; idle N1 about 61 %`,`Oljetrykk ${s} — stiger, ${s} OIL PRESS slukker; tomgang ca. 61 % N1`),'ign'+s,()=>E[i].oilP>=60&&E[i].ng>58),
   st(tr2(`GEN ${s} — RESET, then ON (${s} DC GEN out)`,`GEN ${s} — RESET, så ON (${s} DC GEN slukker)`),'gen'+s,()=>E[i].genOn)]; }
 const PROCS=[
+ {k:'air',t:tr2('Airborne: procedure and auto-fly','I lufta: prosedyre og autofly'),set:'air',brief:tr2('',''),steps:[]},
  {k:'free',t:tr2('Free flight','Fri flyging'),set:'free',brief:tr2('5,000 ft, 180 KIAS on the localizer side of the field. Explore the panel: autopilot HDG and ALT, the HSI, propeller rpm, or fail an engine from the Failures section.','5000 ft, 180 KIAS. Utforsk panelet: autopilot HDG og ALT, HSI-en, propellturtall, eller stopp en motor under Feil.'),steps:[]},
  {k:'start',t:tr2('Engine start (both)','Motorstart (begge)'),set:'cold',brief:tr2('Cold aircraft on the ramp, battery start. This flow starts the right engine first, then the left. Watch N1 and ITT through every start.','Kaldt fly på oppstillingsplassen, batteristart. Denne flyten starter høyre motor først, så venstre. Følg N1 og ITT gjennom hver start.'),
   steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
@@ -881,19 +883,55 @@ function procSet(kind){
   else if(kind==='fl250'){ F.place(S,{N:-60000,E:0,alt:25000,ias:165,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=SYS.cabSel=6000; SYS.strobe=1; SYS.aignL=SYS.aignR=1; const o=F.readouts(S); F.apSet(AP,S,o,'AP',curNav); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=25000; SYS.yd=1; }
   else if(kind==='seapp'){ PR.dead=Math.random()<0.5?0:1; F.place(S,{N:-14800,E:0,alt:2500,ias:140,hdg:360,gear:0,flap:0,fail:PR.dead?[0,1]:[1,0]}); sysDefault(false); const d=SIDES[PR.dead]; S.eng[PR.dead].fail=false;
     Object.assign(E[PR.dead],{lit:false,ng:2,itt:80,np:0,tq:0,ff:0,oilP:0,genOn:false,genRst:false}); SYS['cond'+d]=0; SYS['prop'+d]=0; SYS['fw'+d]=0; SYS['gen'+d]=1; SYS['pwr'+d]=0; trimEngines(); SYS.nav1={a:'113.30',s:'110.30'}; SYS.crs=330; SYS.cab=2500; SYS.strobe=SYS.landL=SYS.landR=1; SYS.gearH=0; }
+  else if(kind==='air'){ const D=AF.D, st=D.start, to=D.cfg==='to'; F.WORLD.gsOut=!!D.gsOut;
+    F.place(S,{N:st.N,E:st.E,alt:st.alt,ias:st.ias,hdg:st.hdg,gear:to?1:0,flap:to?1:0,gam:st.gam||0,thr:to?0.85:undefined}); sysDefault(false); SYS.propL=SYS.propR=to?1:0.88; trimEngines();
+    SYS.cab=Math.min(st.alt,3000); SYS.strobe=1; SYS.aignL=SYS.aignR=1; SYS.recog=1; if(to){ SYS.landL=SYS.landR=1; SYS.afSw=-1; }
+    SYS.nav1={a:'110.30',s:'113.30'}; SYS.nav2={a:'113.30',s:'110.30'}; SYS.crs=360; SYS.crs2=D.k==='sid'?324:360; SYS.adf={a:'375',s:'287'}; SYS.adfMd=2; SYS.d1ch=1;
+    SYS.gpsWpt=(D.fpl&&D.fpl[0])||'RW36'; SYS.gpsApr=/^rnp/.test(D.k)?1:0; SYS.gpsCrs=0; }
   else { F.place(S,{N:-30000,E:2000,alt:5000,ias:180,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=5000; SYS.strobe=1; }
+  if(kind!=='air') F.WORLD.gsOut=false;
   if(!S.ground&&kind!=='fl250') Object.assign(AP,F.mkAP());
   if(kind!=='fl250'){ Object.assign(AP,F.mkAP()); AP.alt=kind==='seapp'?2500:5000; }
   AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; if(kind==='fl250'){ AP.hdg=360; }
   if(kind==='free'){ const o=F.readouts(S); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=7000; AP.vertArm='ALTS'; SYS.yd=1; }
+  if(kind==='air'){ const o=F.readouts(S), st=AF.D.start; AP.on=true; AP.fd=true; AP.lat='HDG'; AP.hdg=st.hdg||360; AP.phiCmd=0; AP.thCmd=o.pitch;
+    if(AF.D.cfg==='to'){ AP.vert='VS'; AP.vsRef=1500; AP.alt=3000; AP.vertArm='ALTS'; } else { AP.vert='ALT'; AP.altHold=Math.round(o.alt); AP.alt=Math.round(o.alt); } SYS.yd=1; }
   if(!S.ground&&GPU.on){ GPU.on=false; gpuLbl(); }
   SYS.gearH=S.ctl.gear; S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
 }
+/* ---------- airborne procedures and auto-fly (airproc.js) ---------- */
+const AIRCAPS={gps:'nav',adf:true}; let AIRK='ils';
+const AF=AIRPROC.autofly({type:'B200',S,F,AP,nav:()=>curNav,power:{get:()=>Math.max(0,(SYS.pwrL+SYS.pwrR)/2),set:v=>{ SYS.pwrL=SYS.pwrR=F.clamp(v,0,1); }},
+  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:S.ctl.gear,flap:S.ctl.flap}),
+  useLoc:()=>{ SYS.efisSrc=0; if(SYS.nav1.a!=='110.30') SYS.nav1={a:'110.30',s:SYS.nav1.a}; SYS.crs=360; },apOn:()=>{ SYS.yd=1; },apOff:()=>apDiscFx(),onOff:()=>airUI()});
+function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
+  if(k==='sid') return [st(tr2('Landing gear — UP (positive rate)','Understell — OPP (positiv stigning)'),'gear',()=>S.ctl.gear===0),
+    st(tr2('Yaw damper — ON','Yaw damper — PÅ'),'apYD',()=>!!SYS.yd),
+    st(tr2('Flaps — UP (above about 130 KIAS)','Flaps — UP (over ca. 130 KIAS)'),'flaps',()=>S.ctl.flap===0&&S.ctl.flapPos<0.05),
+    st(tr2('Climb power — props 1900 RPM (prop levers back a little)','Stigeeffekt — propeller 1900 o/min (propellhendlene litt tilbake)'),'propL',()=>SYS.propL<0.95&&SYS.propR<0.95),
+    st(tr2('Landing lights — OFF','Landingslys — AV'),'landL',()=>!SYS.landL&&!SYS.landR),
+    st(tr2('Autofeather — OFF after the climb is established','Autofeather — AV når stigningen er etablert'),'afSw',()=>SYS.afSw===0)];
+  if(k==='hold') return [chk(tr2('Holding speed — about 160 KIAS (auto-fly sets the power)','Ventefart — ca. 160 KIAS (autofly setter effekten)'),'pwrL',()=>S.o.ias<175),
+    st(tr2('Pitot heat — ON both','Pitotvarme — PÅ begge'),'pitL',()=>SYS.pitL&&SYS.pitR),
+    st(tr2('Prop levers — 1900 RPM or less for the hold','Propellhendler — 1900 o/min eller mindre i ventingen'),'propL',()=>SYS.propL<0.95&&SYS.propR<0.95)];
+  if(!app) return [];
+  return [chk(tr2('NAV 1 — IASN 110.30 active, course 360','NAV 1 — IASN 110.30 aktiv, kurs 360'),'crsK',()=>SYS.nav1.a==='110.30'&&SYS.crs===360),
+    st(tr2('Recognition and landing lights — ON','Gjenkjennings- og landingslys — PÅ'),'landL',()=>SYS.landL&&SYS.landR),
+    st(tr2('Prop levers — FULL FORWARD','Propellhendler — HELT FREM'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97),
+    st(tr2('Flaps — APPROACH (below 200 KIAS)','Flaps — APPROACH (under 200 KIAS)'),'flaps',()=>S.ctl.flap>=1,{bad:()=>S.ctl.flap>0&&S.o.ias>205}),
+    st(tr2('Landing gear — DOWN at the glide path or FAF (three green)','Understell — NED ved glidebanen eller FAF (tre grønne)'),'gear',()=>S.ctl.gear===1&&S.ctl.gearPos>0.99,{bad:()=>S.ctl.gear===1&&S.o.ias>186}),
+    st(tr2('Flaps — DOWN for landing (below 157 KIAS)','Flaps — DOWN for landing (under 157 KIAS)'),'flaps',()=>S.ctl.flap===2),
+    st(tr2('Minimums: land (autopilot off) or go around','Minima: land (autopilot av) eller gå rundt'),'apAP',()=>!AP.on&&(S.ground||!!AF.rec.decision))]; }
+function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
+function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
+function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
+let AIRUI=null;
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
   if(UI.paused) togglePause(); S.crash=null;
+  AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:p.k==='free'?'free':'free',AIRCAPS); if(p.k==='air'){ p.steps=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'B200'); }
   Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,failT:0,m:{},bad:0}); p.steps.forEach(s=>{ delete s.b; s.okT=0; });
-  procSet(p.set); renderProc(); procFocus(); drawScenSel();
+  procSet(p.set); renderProc(); procFocus(); drawScenSel(); airUI();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -1104,22 +1142,24 @@ function pilotInput(dt){
   let rudA=0; if(S.autotrim&&!S.ground){ const bta=S.beta||0; inp.rudI=F.clamp((inp.rudI||0)+bta*dt*3,-0.9,0.9); rudA=F.clamp(3*bta+inp.rudI-0.5*S.r,-1,1); } else inp.rudI=0;
   if(SYS.yd&&!S.ground) rudA+=F.clamp(-0.6*S.r,-0.2,0.2);
   S.ctl.rud=F.clamp(inp.rudUser+rudA,-1,1);
+  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15){ AF.off('stick'); if(AP.on){ AP.on=false; apDiscFx(); } airUI(); } else if(AF.hands()) return; }
   if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35){ AP.on=false; apDiscFx(); } else return; }
   if(S.autotrim&&!S.ground&&Math.abs(x)<0.03){ const o=S.o||{}; if(holdRoll===null) holdRoll=Math.abs(o.roll)<6?0:F.clamp(o.roll,-30,30); x=F.clamp((holdRoll-(o.roll||0))*0.03-(S.p||0)*0.8,-0.4,0.4); } else holdRoll=null;
   if(S.autotrim) x=F.clamp(x,-0.8,0.8);
   S.ctl.ail=x; S.ctl.ele=y;
   if(S.autotrim&&!S.ground){ if(Math.abs(y)>0.03) holdPitch=null; else { const o=S.o; if(holdPitch===null) holdPitch=o.pitch; S.ctl.trim=F.clamp(S.ctl.trim+F.clamp(0.06*(holdPitch-o.pitch)-1.2*S.q,-0.4,0.4)*dt*3,-1,1); } } else holdPitch=null;
 }
-function loop(t){
-  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
-  if(!UI.paused&&!S.crash){
+function simTick(dt){
     pilotInput(dt);
-    const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); audioTick(dt);
+    const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); AF.tick(dt);
     const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.3, at=(SYS.ailTrim-0.5)*0.12;
-    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); S.ctl.rud+=rt; S.ctl.ail+=at; F.step(S,h); S.ctl.rud-=rt; S.ctl.ail-=at; }
+    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); AF.sub(o,h); S.ctl.rud+=rt; S.ctl.ail+=at; F.step(S,h); S.ctl.rud-=rt; S.ctl.ail-=at; }
     if(S.ground){ let rev=0; E.forEach((e,i)=>{ const pl=SYS['pwr'+SIDES[i]]; if(e.lit&&pl<0) rev+=pl<-0.12?2500+6500*(-pl-0.12)/0.28:1200*(-pl/0.12); }); if(rev&&S.Vg>0) S.Vg=Math.max(0,S.Vg-rev/F.AC.m*dt); }
     if(AP.msgT>0&&!AP.on&&AP.msg==='AP OFF'){ AP.msg=''; apDiscFx(); }
-  }
+}
+function loop(t){
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
+  if(!UI.paused&&!S.crash){ simTick(dt); audioTick(dt); }
   const o=F.readouts(S);
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   annCompute(o); if(!UI.paused) gpwsTick(Math.max(0,Math.min(0.05,dt)),o);
@@ -1137,6 +1177,8 @@ function slowUI(o){
   if(flashT>0) flashT-=0.12; else { el('stat2').classList.remove('chg'); el('stat2').textContent=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
   ['L','R'].forEach((s,i)=>{ el('fail'+s).disabled=E[i].fail; });
+  if(AF.on&&AF.fix&&GPSW[AF.fix]&&SYS.gpsWpt!==AF.fix) SYS.gpsWpt=AF.fix;
+  if(AIRUI){ AIRUI.banner(AF.on,L(tr2('AUTO-FLY','AUTOFLY'))+' · '+L(tr2('autopilot flies, you run the checklists','autopiloten flyr, du tar sjekklistene')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
 }
 
@@ -1146,8 +1188,12 @@ if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).m
 
 LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart;
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
-const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1];
-procStart(PROCS.some(p=>p.k===q0)?q0:'start');
+const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
+AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+if(qp&&AIRPROC.list('B200',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
+procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
+if(/[?&]af=1/.test(location.search)) toggleAuto();
+window.__air={AF,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('B200',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null){ SYS.gearH=g; S.ctl.gear=g; } if(f!=null) S.ctl.flap=f; }};
 requestAnimationFrame(loop);
 })();
 </script>

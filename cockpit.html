@@ -356,8 +356,9 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=7"></script>
-<script src="fms.js?v=3"></script>
+<script src="fdm.js?v=8"></script>
+<script src="fms.js?v=4"></script>
+<script src="airproc.js?v=1"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
 <script src="da42panel.js?v=4"></script>
@@ -394,7 +395,7 @@ LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knott
 });
 
 const F=FDM, S=F.create(), AP=F.mkAP(), KT=F.KT;
-const UI={hdg:360,paused:false,sound:true,scen:'free'};
+const UI={hdg:360,paused:false,sound:true,scen:'air'};
 const X=AVX, XA=AVX.A, FM=FMS;
 let curNav={cdi:{valid:false},gps:{valid:false}};
 function navCur(o){ return X.navNow(S,(o||S.o||{}).gs||0); }
@@ -403,6 +404,7 @@ let lastO=null, iasTrend=0, turnRate=0, missionState=null, completeShown=false;
 
 /* ---------- oppdrag ---------- */
 const SCEN=[
+ {k:'air', t:{en:'Airborne: procedure and auto-fly',no:'I lufta: prosedyre og autofly'}, brief:{en:'',no:''}, set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]}, checks:[]},
  {k:'free', t:{en:'Free flight',no:'Fri flyging'}, brief:{en:'3000 ft, 9 NM south of Birdbird Field. Try the autopilot: set the heading bug, press HDG, set an altitude, press VS or FLC and watch ALTS capture it.',no:'3000 ft, 9 NM sør for Birdbird Field. Prøv autopiloten: still kursmerket, trykk HDG, velg en høyde, trykk VS eller FLC og se ALTS fange den.'},
   set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:['NAER'],dto:'NAER'},
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
@@ -463,8 +465,46 @@ const SCEN=[
            {t:{en:'Lose less than 300 ft',no:'Mist mindre enn 300 ft'},f:c=>c.m.stalled&&c.o.ias>85&&c.o.vs>0&&c.m.stallAlt-c.m.minAlt<300, bad:c=>c.m.stalled&&c.m.stallAlt-c.m.minAlt>=300} ]}
 ];
 
+/* ---------- airborne procedures and auto-fly (airproc.js) ---------- */
+const AIRCAPS={gps:'fms',adf:false}; let AIRK='ils';
+const AF=AIRPROC.autofly({type:'DA42',S,F,AP,nav:()=>curNav.cdi,gps:()=>curNav.gps,power:{get:()=>{ const l=S.eng.filter(e=>!e.fail); return l.length?l.reduce((a,e)=>a+e.thr,0)/l.length:0; },set:v=>{ S.eng.forEach(e=>{ if(!e.fail) e.thr=F.clamp(v,0,1); }); }},
+  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:S.ctl.gear,flap:S.ctl.flap}),
+  useLoc:()=>{ const n=XA.radio.nav[0]; if(n.act!=='110.30'){ n.stby=n.act; n.act='110.30'; } XA.cdi='NAV1'; XA.crs[0]=360; },apOff:()=>{ beep(500,0.35,0.05); },onOff:why=>{ if(why==='landed'||S.ground){ S.ctl.rud=0; rud.set(0); } holdRoll=null; holdPitch=null; airUI(); }});
+const RONAXd=()=>Math.hypot(S.N+10*1852,S.E)/1852;
+function airChecks(k){ const app=AIRPROC.isApp(k)||k==='star', mins=AIRPROC.MINS[k]||210;
+  if(k==='sid') return [ {t:{en:'Gear up with a positive rate of climb',no:'Understell opp med positiv stigning'},f:c=>c.s.ctl.gear===0&&!c.s.ground, bad:c=>c.s.ctl.gear===0&&c.o.vs<0&&c.o.agl<300},
+    {t:{en:'Landing light and fuel pumps OFF above 1000 ft',no:'Landingslys og drivstoffpumper AV over 1000 ft'},f:c=>c.o.alt>1000&&!SYS.land&&!SYS.pumpL&&!SYS.pumpR},
+    {t:{en:'At 1500 ft: left turn direct OSVIK (about 320°)',no:'Ved 1500 ft: venstresving direkte OSVIK (ca. 320°)'},f:c=>c.o.alt>1400&&Math.abs(F.wrap180(c.o.trk-320))<12&&c.s.N>2000},
+    {t:{en:'Level at 3000 ft (±100 ft)',no:'Planflukt i 3000 ft (±100 ft)'},f:c=>Math.abs(c.o.alt-3000)<100&&Math.abs(c.o.vs)<200} ];
+  if(k==='hold') return [ {t:{en:'Holding speed 120 KIAS or less',no:'Ventefart 120 KIAS eller mindre'},f:c=>c.o.ias<=125&&c.t>5},
+    {t:{en:'Over RONAX: turn right to the outbound heading 180',no:'Over RONAX: sving til høyre til utgående kurs 180'},f:c=>c.m.over&&Math.abs(F.wrap180(c.o.hdg-180))<15, pre:c=>{ if(RONAXd()<0.6) c.m.over=1; }},
+    {t:{en:'One full circuit back over RONAX at 3000 ft (±200 ft)',no:'Én hel runde tilbake over RONAX i 3000 ft (±200 ft)'},f:c=>c.m.out&&RONAXd()<0.6&&Math.abs(c.o.alt-3000)<200, pre:c=>{ if(c.m.over&&Math.abs(F.wrap180(c.o.hdg-180))<15) c.m.out=1; }} ];
+  if(!app) return [];
+  return [ {t:{en:'Approach checklist: fuel pumps ON',no:'Sjekkliste for innflyging: drivstoffpumper PÅ'},f:c=>SYS.pumpL&&SYS.pumpR},
+    {t:{en:'Landing light ON',no:'Landingslys PÅ'},f:c=>SYS.land},
+    {t:{en:'Gear down by the final approach fix (FAPSO, D5)',no:'Understell ute senest ved FAPSO (D5)'},f:c=>c.s.ctl.gear===1&&c.s.ctl.gearPos>0.99, bad:c=>c.s.ctl.gear===0&&AIRPROC.dThr(c.s)<4.5*1852&&c.s.N<0&&c.o.agl<1500},
+    {t:{en:'Flaps LDG before minimums',no:'Flaps LDG før minima'},f:c=>c.s.ctl.flap===2},
+    {t:{en:`At minimums (${mins} ft): land or go around`,no:`Ved minima (${mins} ft): land eller gå rundt`},f:c=>!!AF.rec.decision||(c.s.ground&&!c.s.crash)||(c.m.belowMin&&c.o.vs>300), pre:c=>{ if(c.o.alt<mins+20&&!c.s.ground) c.m.belowMin=1; }} ]; }
+function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
+  AP.on=true; AP.fd=true; AP.lat='HDG'; AP.hdg=UI.hdg=st.hdg; AP.phiCmd=0; const o=F.readouts(S); AP.thCmd=o.pitch;
+  if(to){ AP.vert='VS'; AP.vsRef=800; AP.alt=3000; AP.vertArm='ALTS'; } else { AP.vert='ALT'; AP.altHold=Math.round(o.alt); AP.alt=Math.round(o.alt); }
+  const n=XA.radio.nav; n[0]={act:'110.30',stby:'113.30'}; n[1]={act:'113.30',stby:'116.50'}; XA.crs=[360,k==='sid'?324:360]; XA.mins={on:true,ft:D.mins||200};
+  const fp=XA.fp=FM.mkFP(), A=FM.APPR.NAER;
+  if(/^rnp/.test(k)){ FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[1],'ALPOR',true,S); fp.appr.vmode=D.vmode; fp.appr.lpv=D.vmode!=='LNAV'; XA.cdi='GPS'; const g=X.navNow(S,o.gs).gps; AP.lat='GPS'; AP.latArm=''; AP.aprMode=true; if(fp.appr.lpv) AP.vertArm='GP'; }
+  else if(k==='sid'){ FM.setRoute(fp,['OSVIK'],S); XA.cdi='GPS'; }
+  else if(k==='star'){ FM.setRoute(fp,['TUSKA','ALPOR','RONAX'],S); fp.act=0; fp.dto={N:S.N,E:S.E}; XA.cdi='GPS'; }
+  else if(k==='hold'){ FM.setRoute(fp,['RONAX'],S); FM.directTo(fp,'RONAX',S); XA.cdi='NAV1'; }
+  else { FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[0],'VECTORS',true,S); XA.cdi='NAV1'; }
+  if(to){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; } }
+function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on); }
+function pickProc(k){ if(k!=='free') AIRK=k; if(PR.k){ PR.k=null; hlCtl(null); pill(null); renderProc(); } UI.scen=k==='free'?'free':'air'; resetMission(); drawScen(); drawScenSel(); }
+function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k||(UI.scen!=='air'&&UI.scen!=='free')) pickProc(AIRK); AF.engage(); } airUI(); }
+let AIRUI=null;
 function resetMission(){
   const sc=SCEN.find(x=>x.k===UI.scen);
+  AF.off('reset',true); AF.setProc(sc.k==='air'?AIRK:'free',AIRCAPS); F.WORLD.gsOut=false;
+  if(sc.k==='air'){ const D=AF.D, st=D.start, to=D.cfg==='to'; F.WORLD.gsOut=!!D.gsOut; sc.brief=AIRPROC.brief(AIRK,'DA42'); sc.checks=airChecks(AIRK);
+    sc.set={N:st.N,E:st.E,alt:st.alt,ias:st.ias,hdg:st.hdg,gear:to?1:0,flap:D.cfg==='app'?1:0,gam:st.gam||0,thr:to?0.92:undefined}; sc.ui={hdg:st.hdg,alt:to?3000:st.alt,fp:[]}; }
   S.env.wdir=windDir.v; S.env.wspd=windSpd.v; S.env.turb=turb.v/100; S.env.isa=isaDev.v; S.env.qnh=qnhAct.v; S.baro=XA.baro=qnhAct.v; XA.baroStd=false;
   F.place(S,sc.set); F.readouts(S);
   Object.assign(AP,F.mkAP()); AP.hdg=UI.hdg=sc.ui.hdg; AP.alt=sc.ui.alt;
@@ -474,7 +514,8 @@ function resetMission(){
   missionState={m:{}, t:0, done:sc.checks.map(()=>0)}; completeShown=false;
   S.autotrim=el('autoTrim').checked; holdPitch=null;
   sysDefault(false); if(sc.k==='takeoff'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.park=0; } if(!S.ground) SYS.pitot=1;
-  PR.k=null; hlCtl(null); pill(null); renderProc(); renderMission(); lastO=null;
+  if(sc.k==='air') airSetup();
+  PR.k=null; hlCtl(null); pill(null); renderProc(); renderMission(); lastO=null; airUI();
 }
 
 /* ---------- glidere og segmenter ---------- */
@@ -886,7 +927,7 @@ function procStart(k){
   const p=PROCS.find(x=>x.k===k); if(!p){ PR.k=null; renderProc(); hlCtl(null); return; }
   if(UI.paused) togglePause(); if(S.crash) S.crash=null;
   PR.k=k; PR.i=0; PR.done=p.steps.map(()=>0); PR.t=0; PR.failAt=0; p.steps.forEach(s=>delete s.b);
-  procSet(p.set); renderProc(); procFocus();
+  AF.off('reset',true); F.WORLD.gsOut=false; procSet(p.set); renderProc(); procFocus(); airUI();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -1004,6 +1045,7 @@ function pilotInput(dt){
   // trim
   if(K.has('[')) trimStep(-dt*0.25); if(K.has(']')) trimStep(dt*0.25);
   const active=Math.abs(x)>0.02||Math.abs(y)>0.02;
+  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15){ AF.off('stick'); if(AP.on) apPress('AP'); airUI(); } else if(AF.hands()) return active; }
   if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35){ apPress('AP'); } else return; }
   if(S.autotrim&&!S.ground&&Math.abs(x)<0.03){ const o=S.o||{}; if(holdRoll===null) holdRoll=Math.abs(o.roll)<6?0:F.clamp(o.roll,-30,30); x=F.clamp((holdRoll-(o.roll||0))*0.025-(S.p||0)*0.6,-0.35,0.35); } else holdRoll=null;
   if(S.autotrim){ x=F.clamp(x,-0.75,0.75); }
@@ -1015,18 +1057,19 @@ function pilotInput(dt){
   } else holdPitch=null;
   return active;
 }
-function loop(t){
-  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
-  if(!UI.paused && !S.crash){
+function simTick(dt){
     pilotInput(dt);
     S.baro=XA.baroStd?1013.25:XA.baro;
     { const o0=F.readouts(S); const r=FM.sequence(XA.fp,S,o0.gs,o0.trk); if(r==='SEQ') beep(900,0.05,0.03); if(r==='SUSP') X.msg('SUSP at missed approach point'); X.autoSlew(S); }
     if(XA.timer.run) XA.timer.t+=dt; if(XA.ident>0) XA.ident-=dt;
-    sysTick(dt); procTick(dt);
+    sysTick(dt); procTick(dt); AF.tick(dt);
     const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.25;
-    for(let i=0;i<N;i++){ const o=F.readouts(S); if(i%8===0) curNav=navCur(o); F.apRun(AP,S,o,curNav.cdi,h); S.ctl.rud+=rt; F.step(S,h); S.ctl.rud-=rt; }
+    for(let i=0;i<N;i++){ const o=F.readouts(S); if(i%8===0) curNav=navCur(o); F.apRun(AP,S,o,curNav.cdi,h); AF.sub(o,h); S.ctl.rud+=rt; F.step(S,h); S.ctl.rud-=rt; }
     S.trailT+=dt; if(S.trailT>2 && !S.ground){ S.trailT=0; S.trail.push([S.N,S.E]); if(S.trail.length>900) S.trail.shift(); }
-  }
+}
+function loop(t){
+  const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
+  if(!UI.paused && !S.crash) simTick(dt);
   const o=F.readouts(S); curNav=navCur(o); const n=curNav.cdi;
   if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
   lastO={ias:o.ias,hdg:o.hdg};
@@ -1056,6 +1099,7 @@ function slowUI(o){
   st.textContent=T(sKey); st.className='status'+(S.crash?'':(UI.paused?'':' ok')); if(flashT>0){ flashT-=0.12; } else { el('stat2').classList.remove('chg'); el('stat2').textContent=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; renderMission(); }
   ['L','R'].forEach((s,i)=>{ el('feat'+s).classList.toggle('on',S.eng[i].feather); el('fail'+s).disabled=S.eng[i].fail; });
+  if(AIRUI){ AIRUI.banner(AF.on,L({en:'AUTO-FLY',no:'AUTOFLY'})+' · '+L({en:'autopilot flies, you run the checklists',no:'autopiloten flyr, du tar sjekklistene'}),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
 }
 
@@ -1074,7 +1118,14 @@ quiz(el('qbox'),'cockpit',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.
 
 LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS;
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
-resetMission();
+{ const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
+  AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+  if(qp&&AIRPROC.list('DA42',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
+  if(q0&&SCEN.some(x=>x.k===q0)) UI.scen=q0; else if(qp==='free') UI.scen='free';
+  drawScen(); drawScenSel(); resetMission();
+  if(q0&&PROCS.some(x=>x.k===q0)) procStart(q0);
+  if(/[?&]af=1/.test(location.search)) toggleAuto(); }
+window.__air={AF,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
 requestAnimationFrame(loop);
 })();
 </script>

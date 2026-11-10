@@ -94,7 +94,7 @@ function gps(fp,s,gsKt){
   if(fp.apprActive&&fp.appr&&fafI>=0){
     const faf=fp.wps[fafI], dFaf=Math.hypot(faf.N-s.N,faf.E-s.E)/NM;
     const onFinal = fp.act===mapI || (fp.act===fafI && dFaf<2.2);
-    if(onFinal){ mode= fp.appr.kind==='RNAV' ? (fp.appr.lpv?'LPV':'LNAV') : 'LNAV'; fs=0.3; if(fp.act===fafI) fs=0.3+ (Math.max(0,dFaf)/2)*0.7; }
+    if(onFinal){ mode= fp.appr.kind==='RNAV' ? (fp.appr.vmode||(fp.appr.lpv?'LPV':'LNAV')) : 'LNAV'; fs=0.3; if(fp.act===fafI) fs=0.3+ (Math.max(0,dFaf)/2)*0.7; }
     // glidebane (LPV)
     if(fp.appr.kind==='RNAV'&&fp.appr.lpv&&(fp.act===mapI||fp.act===fafI)){
       const thr=fp.wps[mapI], d=Math.max(0,(s.N-thr.N)*-1); // langs finalen (RWY 36 => sør for terskelen)
