@@ -366,3 +366,8 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 .site .mytr.on{border-color:var(--accent);color:var(--accent)}
 .site nav a.mob{display:none}
 @media (max-width:900px){.site .mytr{display:none}.site nav a.mob{display:block}}
+/* My workspace button next to My page (separate class: account.js decorates .mytr with the sync dot) */
+.site .myws{font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--rule);border-radius:var(--radius,3px);background:var(--sheet);white-space:nowrap}
+.site .myws:hover{border-color:var(--ink)}
+.site .myws.on{border-color:var(--accent);color:var(--accent)}
+@media (max-width:900px){.site .myws{display:none}}

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=8">
-<link rel="stylesheet" href="site.css?v=12">
+<link rel="stylesheet" href="site.css?v=13">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -510,7 +510,7 @@
 </style>
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=54"></script>
+<script src="site.js?v=55"></script>
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
@@ -2645,7 +2645,7 @@ lyUI();
     const tm=setTimeout(off,6000); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.addEventListener(t,off,{passive:true})); }
   hb.addEventListener('pointerdown',e=>e.stopPropagation()); hb.addEventListener('click',e=>{ e.stopPropagation(); set(lg.classList.contains('lgoff')); }); }
 LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
-Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; load(ALL[0]); mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
+Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; { const rid=new URLSearchParams(location.search).get('id'); load((rid&&ALL.find(x=>x.id===rid))||ALL[0]); } mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>
 <script>try{ if(matchMedia("(max-width:480px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass, punkt eller rute":"Airport, fix or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My workspace · Birdbird</title>
+<meta name="description" content="Your own flight bag on Birdbird: aircraft, AFM and SOP documents, briefing packs, notes and saved routes in one place. Files stay on your device; the index, aircraft and notes sync to your account.">
+<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="site.css?v=13">
+<link rel="stylesheet" href="workspace.css?v=1">
+</head>
+<body data-title="My workspace">
+<script src="site.js?v=55"></script>
+<div class="page ws">
+  <header class="ws-head" id="top">
+    <div class="ws-title">
+      <span class="ws-eb">Birdbird</span>
+      <h1 id="wsH1">My workspace</h1>
+    </div>
+    <form class="ws-search" id="wsSearchForm" role="search" autocomplete="off">
+      <label for="wsQ" id="wsQLabel">Search your workspace</label>
+      <div class="ws-q">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12.8 12.8 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input id="wsQ" type="search" enterkeyhint="search" spellcheck="false">
+        <kbd aria-hidden="true">/</kbd>
+      </div>
+    </form>
+    <div class="ws-status" id="wsStatus" role="status" aria-live="polite"></div>
+  </header>
+
+  <div class="ws-body">
+    <nav class="ws-rail" id="wsRail" aria-label="My workspace"></nav>
+    <main class="ws-main" id="wsMain" tabindex="-1">
+      <p class="ws-loading" id="wsLoading">Opening your workspace…</p>
+    </main>
+  </div>
+  <noscript><p class="ws-loading">My workspace needs JavaScript: everything in it is stored in this browser.</p></noscript>
+</div>
+
+<dialog class="ws-dlg" id="wsDlg" aria-labelledby="wsDlgH"></dialog>
+<div class="ws-toast" id="wsToast" role="status" aria-live="polite" hidden></div>
+<input type="file" id="wsFile" multiple hidden accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg,.webp,application/pdf,text/plain,image/*">
+<input type="file" id="wsBackupFile" hidden accept=".zip,application/zip">
+
+<script src="lab.js?v=46"></script>
+<script src="store.js?v=2"></script>
+<script src="workspacecore.js?v=1"></script>
+<script src="workspace.js?v=1"></script>
+</body>
+</html>

@@ -29,206 +29,351 @@ const W={
   side:{R:t2('right','høyre'),L:t2('left','venstre')},
   entry:{direct:t2('direct','direkte'),parallel:t2('parallel','parallell'),teardrop:t2('teardrop','teardrop'),unclear:t2('unclear','uklar')},
   inst:{cdi:'CDI',rmi:'RMI',rbi:'RBI',hsi:'HSI',pfd:'PFD'},
-  instLong:{cdi:t2('CDI: the VOR needle','CDI: VOR-nålen'),rmi:t2('RMI: needles to the stations','RMI: nåler mot stasjonene'),rbi:t2('RBI: the ADF needle, fixed card','RBI: ADF-nålen, fast skive'),hsi:t2('HSI: one picture','HSI: ett bilde'),pfd:t2('PFD: glass cockpit','PFD: glasscockpit')},
-  group:{basics:t2('Basics','Grunnlag'),track:t2('Tracking','Følge kurs'),intercept:t2('Intercepts','Interception'),ndb:t2('NDB','NDB'),arc:t2('DME arcs','DME-buer'),hold:t2('Holding','Holding'),
-    rev:t2('Procedure turns and reversals','Prosedyresvinger og snuprosedyrer'),app:t2('Approaches','Innflyginger'),route:t2('Departures and arrivals','Utflyging og innflygingsruter'),math:t2('Mental maths','Hoderegning'),pp:t2('Partial panel','Delvis panel')},
-  groupSub:{basics:t2('Where am I? Read the instruments quickly and right.','Hvor er jeg? Les instrumentene raskt og riktig.'),track:t2('Stay on a line in wind, and know when you pass the station.','Bli på en linje i vind, og vit når du passerer stasjonen.'),
-    intercept:t2('Join a course at the right angle and turn on at the right moment.','Kom inn på en kurs med riktig vinkel og sving inn i riktig øyeblikk.'),ndb:t2('Track to and from a beacon with heading plus needle.','Følg kurs til og fra et fyr med kurs pluss nål.'),
-    arc:t2('Join, fly and leave a DME arc.','Inn på, fly og forlat en DME-bue.'),hold:t2('Entries, wind correction and timing, at any fix.','Innganger, vindkorreksjon og timing, ved hvilken som helst fiks.'),
-    rev:t2('Turn around onto the final course inside the protected area.','Snu inn på sluttkursen innenfor det beskyttede området.'),app:t2('Down to the minimums, then the missed approach.','Ned til minima, så missed approach.'),
-    route:t2('Follow an RNAV departure and arrival with altitude constraints.','Følg en RNAV-utflyging og -innflyging med høydebegrensninger.'),math:t2('The rules of thumb, quick-fire, with the method.','Tommelfingerreglene, raskt, med metoden.'),
-    pp:t2('Heading indicator failed: the compass and timed turns.','Kursindikatoren svikter: kompasset og tidsstyrte svinger.')},
-  level:[null,t2('Map, no wind','Kart, ingen vind'),t2('Map and wind','Kart og vind'),t2('Map hidden','Skjult kart'),t2('Hidden map, gusty hidden wind','Skjult kart, skjult byget vind')],
+  instLong:{cdi:t2('CDI: the VOR needle','CDI: VOR-nålen'),rmi:t2('RMI: needles that point to the stations','RMI: nåler som peker mot stasjonene'),rbi:t2('RBI: the ADF needle on a card that does not turn','RBI: ADF-nålen på en skive som ikke dreier'),hsi:t2('HSI: compass and course needle in one','HSI: kompass og kursnål i ett'),pfd:t2('PFD: the glass cockpit screen','PFD: skjermen i en glasscockpit')},
+  group:{basics:t2('Basics','Grunnlag'),track:t2('Tracking','Følge en kurs'),intercept:t2('Intercepts','Skjære inn på en kurs'),ndb:t2('NDB','NDB'),arc:t2('DME arcs','DME-buer'),hold:t2('Holding','Holding'),
+    rev:t2('Reversals','Snuprosedyrer'),app:t2('Approaches','Innflyginger'),route:t2('Departures and arrivals','Ut- og innflygingsruter'),math:t2('Mental maths','Hoderegning'),pp:t2('Partial panel','Delvis panel')},
+  groupSub:{basics:t2('Where am I? Read your position off the instruments.','Hvor er jeg? Les posisjonen din av instrumentene.'),track:t2('Stay on a line in wind, and know when you pass the station.','Bli på en linje i vind, og vit når du passerer stasjonen.'),
+    intercept:t2('Get onto a course from the side and turn at the right moment.','Kom inn på en kurs fra siden og sving i riktig øyeblikk.'),ndb:t2('Fly straight lines to and from a beacon.','Fly rette linjer til og fra et fyr.'),
+    arc:t2('Fly round a station at a fixed distance.','Fly rundt en stasjon i fast avstand.'),hold:t2('Entries, wind and timing in the racetrack pattern.','Innganger, vind og tid i holdingmønsteret.'),
+    rev:t2('Turn round and come back on the final course.','Snu og kom tilbake på sluttkursen.'),app:t2('Down to the minimum, then land or climb away.','Ned til minimum, og så land eller stig ut.'),
+    route:t2('Follow a GPS route and cross each waypoint at its altitude.','Følg en GPS-rute og kryss hvert waypoint i riktig høyde.'),math:t2('The rules of thumb, with the method shown.','Tommelfingerreglene, med metoden vist.'),
+    pp:t2('The heading indicator has failed: compass and clock.','Kursgyroen har sviktet: kompass og klokke.')},
+  level:[null,t2('Map, no wind','Kart, ingen vind'),t2('Map and wind','Kart og vind'),t2('Map hidden','Skjult kart'),t2('Hidden map, gusty hidden wind','Skjult kart, skjult vind med kast')],
   area:{practice:t2('Practice area','Øvingsområde'),bergen:t2('Bergen','Bergen'),oslo:t2('Oslo','Oslo')},
-  help:{guided:t2('Guided','Veiledet'),hints:t2('Hints','Hint'),off:t2('Off','Av')},
-  helpSub:{guided:t2('The next action, a target on the instrument, the path on the map and a pause before each key moment.','Neste handling, et mål på instrumentet, banen på kartet og en pause før hvert viktig øyeblikk.'),
-    hints:t2('Help only when you ask for it: press Hint or H. Each press says a little more.','Hjelp bare når du ber om det: trykk Hint eller H. Hvert trykk sier litt mer.'),
-    off:t2('Fly alone. “Why?” still explains what the step is about.','Fly alene. «Hvorfor?» forklarer fortsatt hva steget handler om.')},
+  help:{guided:t2('Guided','Veiledet'),hints:t2('Hints','Hint'),off:t2('On my own','På egen hånd')},
+  helpSub:{guided:t2('The instructor tells you each step and pauses before the key moments.','Instruktøren sier hvert steg og stopper før de viktige øyeblikkene.'),
+    hints:t2('You fly. Ask for a hint when you are stuck.','Du flyr selv. Be om et hint når du står fast.'),
+    off:t2('No help while you fly. The debrief shows how it went.','Ingen hjelp mens du flyr. Debriefen viser hvordan det gikk.')},
   diff:[null,t2('Easy','Lett'),t2('Medium','Middels'),t2('Hard','Krevende')]
 };
 const sideW=s=>L(W.side[s]||W.side.R), dirW=d=>sideW(d>0||d==='R'?'R':'L');
-const SCAN={cdi:t2('Needle, then the heading below','Nålen, så kursen under'),rmi:t2('Needle head to the station, tail is your radial','Nålhodet mot stasjonen, halen er radialen'),
-  rbi:t2('Heading + needle = bearing to the beacon','Kurs + nål = peiling til fyret'),hsi:t2('The course bar against the aircraft','Kursstreken mot flyet'),pfd:t2('Attitude in the centre, navigation below','Attityde i midten, navigasjon under')};
+const SCAN={cdi:t2('Look at the needle first, then the heading below','Se på nålen først, så headingen under'),rmi:t2('The head of the needle points to the station; the tail is your radial','Hodet på nålen peker mot stasjonen; halen er radialen din'),
+  rbi:t2('Heading + needle = bearing to the beacon','Heading + nål = peiling til fyret'),hsi:t2('The course bar shows where the course is, seen from the aircraft','Kursstreken viser hvor kursen ligger, sett fra flyet'),pfd:t2('Attitude in the centre, navigation below','Flystilling i midten, navigasjon under')};
+
+/* ---------- the glossary: every abbreviation and piece of jargon, one tap away ----------
+   GLO: id → the term, what it stands for in plain words, one line. GPAT: what to look for in a text (per language where the
+   word differs). gl(text) escapes the text and turns the first mention of each term into a small button (a "chip"). */
+const GLO={
+ vor:['VOR',t2('radio station for navigation','radiostasjon for navigasjon'),t2('A station on the ground that sends out 360 lines (radials). The VOR needle shows whether the line you chose is to your left or right.','En stasjon på bakken som sender ut 360 linjer (radialer). VOR-nålen viser om linjen du har valgt, ligger til venstre eller høyre for deg.')],
+ ndb:['NDB',t2('radio beacon','radiofyr'),t2('A simple beacon on the ground. The ADF needle in the aircraft points straight at it.','Et enkelt fyr på bakken. ADF-nålen i flyet peker rett mot det.')],
+ adf:['ADF',t2('the receiver for NDB beacons','mottakeren for NDB-fyr'),t2('The instrument whose needle points at the beacon you have tuned.','Instrumentet med nålen som peker mot fyret du har stilt inn.')],
+ dme:['DME',t2('distance to the station','avstand til stasjonen'),t2('Shows how far you are from the station, in nautical miles (NM).','Viser hvor langt du er fra stasjonen, i nautiske mil (NM).')],
+ cdi:['CDI',t2('course deviation indicator','kursavviksindikator'),t2('The VOR needle. It moves left or right to show which side the course you set is on.','VOR-nålen. Den går til venstre eller høyre og viser hvilken side kursen du har stilt inn, ligger på.')],
+ hsi:['HSI',t2('horizontal situation indicator','horisontal situasjonsindikator'),t2('A compass card and the course needle in one instrument. You see the course as a line, the way it lies seen from the aircraft.','En kompasskive og kursnålen i ett instrument. Du ser kursen som en strek, slik den ligger sett fra flyet.')],
+ rmi:['RMI',t2('radio magnetic indicator','radiomagnetisk indikator'),t2('A compass card with needles that point to the stations. Head of the needle: direction to the station. Tail: direction from it.','En kompasskive med nåler som peker mot stasjonene. Hodet på nålen: retningen til stasjonen. Halen: retningen fra den.')],
+ rbi:['RBI',t2('relative bearing indicator','relativ peileindikator'),t2('An ADF whose card does not turn. The needle shows the beacon counted from the nose, so you add your heading yourself.','En ADF der skiven ikke dreier. Nålen viser fyret målt fra nesen, så du må legge til headingen selv.')],
+ pfd:['PFD',t2('primary flight display','hovedskjerm for flyging'),t2('The main screen in a glass cockpit: attitude, speed, altitude and navigation together.','Hovedskjermen i en glasscockpit: flystilling, fart, høyde og navigasjon samlet.')],
+ obs:['OBS',t2('the course knob','kursknappen'),t2('The knob that sets the course on a VOR instrument. On some instruments it is labelled CRS.','Knappen som stiller inn kursen på et VOR-instrument. På noen instrumenter heter den CRS.')],
+ crs:['CRS',t2('course','kurs'),t2('The course you have set with the course knob: the line you want to fly along.','Kursen du har stilt inn med kursknappen: linjen du vil fly langs.')],
+ hdg:['HDG',t2('heading','heading (styrekurs)'),t2('The direction the nose points. It is not always the direction you move: wind pushes you sideways.','Retningen nesen peker. Det er ikke alltid retningen du beveger deg: vinden skyver deg sideveis.')],
+ heading:['heading',t2('where the nose points','dit nesen peker (styrekurs)'),t2('The direction the nose points, in degrees. Course is the line you want to follow. In wind the two differ by a few degrees.','Retningen nesen peker, i grader. Kurs er linjen du vil følge. I vind skiller de to seg med noen grader.')],
+ qdm:['QDM',t2('bearing to the station','peiling til stasjonen'),t2('The direction to fly to get to the station. For an NDB: heading + ADF needle = QDM.','Retningen du må fly for å komme til stasjonen. For en NDB: heading + ADF-nål = QDM.')],
+ qdr:['QDR',t2('bearing from the station','peiling fra stasjonen'),t2('The direction from the station to you. For a VOR this is your radial. QDR = QDM ± 180.','Retningen fra stasjonen til deg. For en VOR er dette radialen din. QDR = QDM ± 180.')],
+ radial:['radial',t2('a line out from a VOR','en linje ut fra en VOR'),t2('One of 360 lines that leave a VOR station. It is named after its direction from the station: radial 090 points east.','Én av 360 linjer som går ut fra en VOR-stasjon. Den har navn etter retningen fra stasjonen: radial 090 peker østover.')],
+ flag:['TO / FROM',t2('the flag on the VOR instrument','flagget på VOR-instrumentet'),t2('TO: the course you set leads to the station. FROM: it leads away from the station.','TO: kursen du har stilt inn, fører til stasjonen. FROM: den fører bort fra stasjonen.')],
+ faf:['FAF',t2('final approach fix','final approach fix'),t2('The point on an approach where the final descent towards the runway starts.','Punktet på en innflyging der den siste nedstigningen mot rullebanen starter.')],
+ mda:['MDA',t2('minimum descent altitude','minste nedstigningshøyde'),t2('The lowest altitude on an approach without a glide path. Level off there. Never go below it unless you see the runway.','Laveste høyde på en innflyging uten glidebane. Flat ut der. Gå aldri under den uten at du ser rullebanen.')],
+ da:['DA',t2('decision altitude','beslutningshøyde'),t2('On an approach with a glide path: the altitude where you decide. Runway in sight: land. If not: go around at once.','På en innflyging med glidebane: høyden der du bestemmer deg. Rullebanen i sikte: land. Hvis ikke: avbryt med en gang.')],
+ ils:['ILS',t2('instrument landing system','instrumentlandingssystem'),t2('Two radio beams to the runway: the localiser (left and right) and the glide slope (up and down).','To radiostråler mot rullebanen: localiseren (venstre og høyre) og glidebanen (opp og ned).')],
+ loc:['localiser',t2('the beam along the runway','strålen langs rullebanen'),t2('The part of an ILS that shows left and right of the runway centre line. Its needle is four times as sensitive as a VOR needle.','Den delen av en ILS som viser venstre og høyre for rullebanens senterlinje. Nålen er fire ganger så følsom som en VOR-nål.')],
+ gs:['glide slope',t2('the beam down to the runway','strålen ned mot rullebanen'),t2('The part of an ILS that slopes down to the runway at about 3°. Its needle shows whether you are above or below that path.','Den delen av en ILS som skrår ned mot rullebanen med rundt 3°. Nålen viser om du er over eller under banen.')],
+ gp:['glide path',t2('the path down to the runway','banen ned mot rullebanen'),t2('A sloping path to the runway, about 3°. On an ILS it is a radio beam (the glide slope). On a GPS approach it is calculated.','En skrå bane ned mot rullebanen, rundt 3°. På en ILS er den en radiostråle (glide slope). På en GPS-innflyging er den beregnet.')],
+ lnav:['LNAV',t2('GPS guidance left and right','GPS-veiledning sideveis'),t2('A GPS approach with no glide path. You manage the descent yourself, down to an MDA.','En GPS-innflyging uten glidebane. Du styrer nedstigningen selv, ned til en MDA.')],
+ vnav:['VNAV',t2('guidance up and down','veiledning opp og ned'),t2('A glide path worked out by the aircraft, here from the altimeter (baro-VNAV). Flown down to a DA.','En glidebane som flyet regner ut, her fra høydemåleren (baro-VNAV). Flys ned til en DA.')],
+ lpv:['LPV',t2('satellite approach like an ILS','satellittinnflyging som en ILS'),t2('The most precise GPS approach. Needles for left/right and up/down that behave like an ILS.','Den mest presise GPS-innflygingen. Nåler for venstre/høyre og opp/ned som oppfører seg som en ILS.')],
+ rnp:['RNP',t2('approach flown with GPS','innflyging fløyet med GPS'),t2('An approach that uses satellite navigation instead of a station on the ground. LNAV, LNAV/VNAV and LPV are three kinds.','En innflyging som bruker satellittnavigasjon i stedet for en stasjon på bakken. LNAV, LNAV/VNAV og LPV er tre typer.')],
+ rnav:['RNAV',t2('navigation from waypoint to waypoint','navigasjon fra waypoint til waypoint'),t2('Flying straight lines between GPS waypoints instead of from station to station.','Å fly rette linjer mellom GPS-waypoints i stedet for fra stasjon til stasjon.')],
+ sid:['SID',t2('standard instrument departure','standard utflygingsrute'),t2('A published route from the runway out to the en-route airway.','En publisert rute fra rullebanen og ut til luftleden.')],
+ star:['STAR',t2('standard arrival route','standard innflygingsrute'),t2('A published route from the en-route airway in to the approach.','En publisert rute fra luftleden og inn til innflygingen.')],
+ tas:['TAS',t2('true airspeed','sann flyhastighet'),t2('Your real speed through the air. A little higher than the speed on the airspeed indicator, more so the higher you fly.','Den virkelige farten din gjennom lufta. Litt høyere enn farten på fartsmåleren, mer jo høyere du flyr.')],
+ gsp:['ground speed',t2('speed over the ground','fart over bakken'),t2('Your airspeed plus or minus the wind. It decides how fast you must descend on an approach.','Flyhastigheten pluss eller minus vinden. Den bestemmer hvor fort du må gå ned på en innflyging.')],
+ vs:['VS',t2('vertical speed','vertikal hastighet'),t2('How fast you climb or descend, in feet per minute.','Hvor fort du stiger eller går ned, i fot per minutt.')],
+ abeam:['abeam',t2('straight out to the side','rett ut til siden (tvers)'),t2('A point is abeam when it is level with your wingtip, 90° from the nose.','Et punkt er tvers når det ligger rett ut for vingetippen, 90° fra nesen.')],
+ homing:['homing',t2('following the needle','å følge nålen'),t2('Keeping the nose pointed at the beacon. In a crosswind you fly a curve, not a line.','Å holde nesen pekende mot fyret. I sidevind flyr du en bue, ikke en linje.')],
+ tracking:['tracking',t2('flying a straight line over the ground','å fly en rett linje over bakken'),t2('Holding a heading a little into the wind so that your path over the ground is straight.','Å holde en heading litt opp mot vinden, slik at banen din over bakken blir rett.')],
+ bracketing:['bracketing',t2('finding the heading for the wind','å finne headingen for vinden'),t2('Try a correction, watch the needle, then halve the change. Repeat until the needle stays still.','Prøv en korreksjon, se på nålen, og halver endringen. Gjenta til nålen står i ro.')],
+ lead:['lead radial',t2('the radial where you start the turn','radialen der du starter svingen'),t2('A radial a few degrees before the one you want. Start the turn there and you finish it on the course.','En radial noen grader før den du skal ha. Start svingen der, så ender den på kursen.')],
+ rate1:[t2('standard turn','standardsving'),t2('3° every second','3° i sekundet'),t2('The normal turn in instrument flying (rate one). Half a circle, 180°, takes 1 minute.','Den vanlige svingen i instrumentflyging (rate one). En halv sirkel, 180°, tar 1 minutt.')],
+ teardrop:['teardrop',t2('an entry shaped like a drop','en inngang formet som en dråpe'),t2('A holding entry. Fly out 30° off the outbound course for 1 minute, then turn back onto the inbound course.','En inngang til holding. Fly ut 30° fra kursen ut i 1 minutt, og sving så tilbake inn på kursen inn.')],
+ dot:[t2('dot','prikk'),t2('a mark on the needle scale','et merke på nålens skala'),t2('On a VOR each dot is 2°, and five dots (the needle at the side) is 10°. On a localiser each dot is only about 0.5°.','På en VOR er hver prikk 2°, og fem prikker (nålen helt ute) er 10°. På en localiser er hver prikk bare rundt 0,5°.')],
+ fix:[t2('fix','fiks'),t2('a named point in the air','et navngitt punkt i lufta'),t2('A position you can find with your instruments: over a station, or on a radial at a DME distance.','En posisjon du kan finne med instrumentene: over en stasjon, eller på en radial i en DME-avstand.')],
+ waypoint:['waypoint',t2('a point in the GPS','et punkt i GPS-en'),t2('A named position stored in the GPS. Routes are flown from waypoint to waypoint.','En navngitt posisjon lagret i GPS-en. Ruter flys fra waypoint til waypoint.')],
+ flyby:['fly-by',t2('turn before the waypoint','sving før waypointet'),t2('You start the turn just before the waypoint and cut the corner, so the turn ends on the next leg.','Du starter svingen like før waypointet og kutter hjørnet, så svingen ender på neste legg.')],
+ inbound:[t2('inbound','inn'),t2('towards the station or fix','mot stasjonen eller fiksen'),t2('Flying towards the station or the fix. The inbound course is the line that leads to it.','Å fly mot stasjonen eller fiksen. Kursen inn er linjen som fører dit.')],
+ outbound:[t2('outbound','ut'),t2('away from the station or fix','bort fra stasjonen eller fiksen'),t2('Flying away from the station or the fix.','Å fly bort fra stasjonen eller fiksen.')],
+ missed:[t2('missed approach','avbrutt innflyging'),t2('the route you climb away on','ruten du stiger ut på'),t2('What you fly when you reach the minimum and cannot see the runway: climb straight ahead, then turn as published.','Det du flyr når du når minimum og ikke ser rullebanen: stig rett frem, og sving så som publisert.')],
+ intercept:[t2('intercept','skjære inn'),t2('get onto a course from the side','komme inn på en kurs fra siden'),t2('Fly towards the course at an angle, usually 30° to 45°, and turn onto it when you get there.','Fly mot kursen på skrå, vanligvis 30° til 45°, og sving inn på den når du er fremme.')],
+ locator:[t2('locator','lokator'),t2('a small NDB near the runway','en liten NDB nær rullebanen'),t2('A low-power beacon on the final course. Passing it tells you where you are on the approach.','Et svakt fyr på sluttkursen. Når du passerer det, vet du hvor du er på innflygingen.')],
+ clearance:[t2('clearance','klarering'),t2('the instruction from air traffic control','instruksen fra flygelederen'),t2('What the controller tells you to fly. In this trainer it is the task for the exercise.','Det flygelederen ber deg fly. I denne treneren er det oppgaven for øvelsen.')]
+};
+const GPAT=[['VOR','vor'],['NDB','ndb'],['ADF','adf'],['DME','dme'],['CDI','cdi'],['HSI','hsi'],['RMI','rmi'],['RBI','rbi'],['PFD','pfd'],['OBS','obs'],['CRS','crs'],['HDG','hdg'],['QDM','qdm'],['QDR','qdr'],
+  ['FROM','flag'],['FAF','faf'],['MDA','mda'],['DA','da'],['ILS','ils'],['LNAV','lnav'],['VNAV','vnav'],['LPV','lpv'],['RNP','rnp'],['RNAV','rnav'],['SID','sid'],['STAR','star'],['TAS','tas'],['VS','vs'],
+  ['[Ll]ead radial|[Ll]ead-radial(?:en)?','lead'],['[Rr]adial(?:s|en|er|ene)?','radial'],['[Ll]ocali[sz]er(?:en)?','loc'],['[Gg]lide slope|[Gg]lidebanenål(?:en)?','gs'],['[Gg]lide path|[Gg]lidebane(?:n)?','gp'],
+  ['[Gg]round speed|[Ff]art over bakken','gsp'],['[Aa]beam|[Tt]vers','abeam'],['[Hh]oming','homing'],['[Tt]racking','tracking'],['[Bb]racketing','bracketing'],
+  ['[Ss]tandard turns?|[Ss]tandardsving(?:er|en)?','rate1'],['[Tt]eardrop(?:-inngang)?','teardrop'],['dots?|prikk(?:er|en)?','dot'],['[Ff]ly-by','flyby'],['[Ww]aypoints?|[Ww]aypoint(?:et|ene)','waypoint'],
+  ['[Mm]issed approach|[Aa]vbrutt innflyging','missed'],['[Ll]ocator(?:en)?|[Ll]okator(?:en)?','locator'],['[Hh]eading(?:en)?','heading'],['[Ii]ntercept(?:s|ed)?|[Ss]kjær(?:e|er)? inn','intercept'],
+  ['[Ii]nbound','inbound'],['[Oo]utbound','outbound'],['[Ff]ix|[Ff]iks(?:en)?','fix'],['[Cc]learance|[Kk]larering(?:en)?','clearance']];
+const GRE=new RegExp('(^|[^A-Za-zÆØÅæøå0-9])(?:'+GPAT.map(p=>'('+p[0]+')').join('|')+')(?![A-Za-zÆØÅæøå0-9])','g');
+/* text → HTML with glossary chips: the first mention of each term, at most `max` in one text. skip: ids not to mark. */
+function gl(s,max,skip){ s=String(s==null?'':s); const seen=Object.assign({},skip||{}); let out='', i=0, n=0, m; max=max===undefined?3:max; GRE.lastIndex=0;
+  while(n<max&&(m=GRE.exec(s))){ let k=-1; for(let j=0;j<GPAT.length;j++) if(m[j+2]!==undefined){ k=j; break; } if(k<0) continue; const id=GPAT[k][1], w=m[k+2], at=m.index+m[1].length;
+    GRE.lastIndex=at+w.length; if(seen[id]) continue; seen[id]=1; n++;
+    out+=esc(s.slice(i,at))+`<button type="button" class="gl" data-gl="${id}" aria-haspopup="dialog">${esc(w)}</button>`; i=at+w.length; }
+  return out+esc(s.slice(i)); }
+/* the same for text that already holds simple markup (<b>…</b>): only the text between the tags is searched */
+function glH(h,max){ const seen={}; let n=0; max=max===undefined?3:max; return String(h).split(/(<[^>]+>)/).map(part=>{ if(part.charAt(0)==='<'||n>=max) return part;
+    let out='', i=0, m; GRE.lastIndex=0;
+    while(n<max&&(m=GRE.exec(part))){ let k=-1; for(let j=0;j<GPAT.length;j++) if(m[j+2]!==undefined){ k=j; break; } if(k<0) continue; const id=GPAT[k][1], w=m[k+2], at=m.index+m[1].length;
+      GRE.lastIndex=at+w.length; if(seen[id]) continue; seen[id]=1; n++; out+=part.slice(i,at)+`<button type="button" class="gl" data-gl="${id}" aria-haspopup="dialog">${w}</button>`; i=at+w.length; }
+    return out+part.slice(i); }).join(''); }
+const gloTerm=id=>{ const g=GLO[id]; return g?(typeof g[0]==='string'?g[0]:L(g[0])):''; };
+/* one shared pop-up; it lives in <body>, or inside the open dialog so it is not hidden behind it */
+let glBtn=null;
+function glClose(){ const p=document.getElementById('glPop'); if(p) p.hidden=true; if(glBtn){ glBtn.setAttribute('aria-expanded','false'); glBtn=null; } }
+function glOpen(b){ const id=b.dataset.gl, g=GLO[id]; if(!g) return; let p=document.getElementById('glPop');
+  if(!p){ p=document.createElement('div'); p.id='glPop'; p.className='glpop'; p.setAttribute('role','dialog'); p.setAttribute('aria-live','polite'); }
+  const host=b.closest('dialog')||document.body; if(p.parentNode!==host) host.appendChild(p);
+  p.innerHTML=`<div class="gh"><b>${esc(gloTerm(id))}</b><button type="button" class="gx" aria-label="${esc(tx('Close','Lukk'))}">×</button></div><span class="gn">${esc(L(g[1]))}</span><p>${esc(L(g[2]))}</p>`;
+  p.hidden=false; glBtn=b; b.setAttribute('aria-expanded','true'); p.querySelector('.gx').onclick=e=>{ e.stopPropagation(); const f=glBtn; glClose(); if(f) f.focus({preventScroll:true}); };
+  const r=b.getBoundingClientRect(), pw0=Math.min(320,innerWidth-16); p.style.width=pw0+'px'; const ph=p.offsetHeight;
+  let x=Math.round(r.left+r.width/2-pw0/2); x=Math.max(8,Math.min(innerWidth-pw0-8,x)); let y=r.bottom+8; if(y+ph>innerHeight-8&&r.top-ph-8>8) y=r.top-ph-8;
+  p.style.left=x+'px'; p.style.top=Math.round(y)+'px'; }
+document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('.gl'); if(b){ e.preventDefault(); e.stopPropagation(); if(glBtn===b) glClose(); else { glClose(); glOpen(b); } return; }
+  if(glBtn&&!(e.target.closest&&e.target.closest('#glPop'))) glClose(); },true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&glBtn){ const f=glBtn; glClose(); f.focus({preventScroll:true}); e.stopPropagation(); } },true);
+addEventListener('scroll',()=>{ if(glBtn) glClose(); },{passive:true}); addEventListener('resize',()=>{ if(glBtn) glClose(); });
 
 /* ---------- the catalogue: name and one plain sentence per item ---------- */
 const IT={
- orient:{n:t2('Which radial am I on?','Hvilken radial er jeg på?'),s:t2('Centre the needle with FROM and read your radial off the CDI.','Sentrer nålen med FROM og les radialen din på CDI-en.')},
- orientRmi:{n:t2('RMI: radial from the tail','RMI: radialen fra halen'),s:t2('The tail of the RMI needle is your radial. Read it in seconds.','Halen på RMI-nålen er radialen din. Les den på sekunder.')},
- orientRbi:{n:t2('RBI: bearing to the beacon','RBI: peiling til fyret'),s:t2('Heading plus needle is the bearing to the NDB. Add it up fast.','Kurs pluss nål er peilingen til NDB-en. Regn det ut raskt.')},
- orientDrill:{n:t2('Ten-position drill','Drill med ti posisjoner'),s:t2('Ten positions against the clock on the HSI. Speed and no reciprocals.','Ti posisjoner mot klokka på HSI. Fart og ingen motsatte radialer.')},
- trackIn:{n:t2('Track to the station','Følg kurs inn til stasjonen'),s:t2('Set the course, find the heading that holds the needle in wind.','Still inn kursen, finn kursen som holder nålen i vind.')},
- trackOut:{n:t2('Track away from the station','Følg radial ut fra stasjonen'),s:t2('The same rule outbound: set the radial you fly, bracket the wind.','Samme regel ut: still inn radialen du flyr, og finn vinden.')},
- pass:{n:t2('Station passage','Stasjonspassering'),s:t2('Recognise the moment you pass the VOR: the flag flips.','Kjenn igjen øyeblikket du passerer VOR-en: flagget skifter.')},
- tts:{n:t2('Time to the station','Tid til stasjonen'),s:t2('Wingtip method: time a 10° bearing change and work out the minutes.','Vingetippmetoden: ta tiden på 10° peilingsendring og regn ut minuttene.')},
- intIn:{n:t2('Intercept a course inbound','Fang en kurs inn'),s:t2('Point 30° to 45° across the course, turn on as the needle moves.','Pek 30° til 45° inn mot kursen, sving inn når nålen beveger seg.')},
- intOut:{n:t2('Intercept a radial outbound','Fang en radial ut'),s:t2('Close to the station the needle moves fast: lead the turn.','Nær stasjonen beveger nålen seg fort: start svingen tidlig.')},
- int90:{n:t2('Intercept at 90°','Interception på 90°'),s:t2('A steep intercept needs a big lead: start the turn a turn radius early.','En bratt interception trenger stor ledning: start svingen én svingradius før.')},
- intPass:{n:t2('New radial after the station','Ny radial etter stasjonen'),s:t2('Hold the heading through the station, then intercept the new radial.','Hold kursen gjennom stasjonen, og fang så den nye radialen.')},
- intNdbIn:{n:t2('Intercept a QDM (NDB)','Fang en QDM (NDB)'),s:t2('Intercept a bearing to the beacon with the RMI.','Fang en peiling til fyret med RMI-en.')},
- intNdbOut:{n:t2('Intercept a QDR (NDB)','Fang en QDR (NDB)'),s:t2('Intercept a bearing from the beacon on the fixed-card RBI.','Fang en peiling fra fyret på RBI med fast skive.')},
- locInt:{n:t2('Intercept the localiser','Fang localiseren'),s:t2('Four times as sensitive as a VOR: turn on as soon as it comes alive.','Fire ganger så følsom som en VOR: sving inn så snart den blir levende.')},
- ndb:{n:t2('NDB inbound: homing or tracking','NDB inn: homing eller tracking'),s:t2('Hold a heading into the wind with the needle off the nose.','Hold en kurs opp mot vinden med nålen litt fra nesen.')},
- ndbOut:{n:t2('NDB outbound (QDR)','NDB ut (QDR)'),s:t2('Track away from a beacon: the needle tail tells you the side.','Følg kurs ut fra et fyr: halen på nålen viser siden.')},
- dmeJoin:{n:t2('Join a DME arc','Inn på en DME-bue'),s:t2('From a radial onto the arc: start the 90° turn one turn radius early.','Fra en radial inn på buen: start svingen på 90° én svingradius før.')},
- dme:{n:t2('Fly a DME arc','Fly en DME-bue'),s:t2('Radial, arc, radial: the whole manoeuvre in wind.','Radial, bue, radial: hele manøveren i vind.')},
- dmeLeave:{n:t2('Leave an arc for a radial','Fra buen inn på en radial'),s:t2('Use a lead radial so you roll out on the course.','Bruk en ledende radial så du ruller ut på kursen.')},
- holdEntry:{n:t2('Holding entry','Inngang til holding'),s:t2('Direct, parallel or teardrop: your heading at the fix decides.','Direkte, parallell eller teardrop: kursen over fiksen bestemmer.')},
- hold:{n:t2('Holding pattern','Holdingmønster'),s:t2('Triple the drift outbound and fix the timing lap by lap.','Tredobbel avdriften ut og juster tiden runde for runde.')},
- holdLeft:{n:t2('Left-hand hold','Holding med venstresvinger'),s:t2('Non-standard turns: every turn goes left, the sectors flip.','Ikke-standard svinger: alle svinger går til venstre, sektorene speiles.')},
- holdNdb:{n:t2('Hold at an NDB','Holding ved en NDB'),s:t2('Enter and fly a hold on a beacon with the RMI.','Gå inn i og fly en holding ved et fyr med RMI-en.')},
- holdDme:{n:t2('Hold at a DME fix','Holding ved en DME-fiks'),s:t2('A fix in the air: a radial and a distance.','En fiks i lufta: en radial og en avstand.')},
- holdDmeLim:{n:t2('DME-limited hold','DME-begrenset holding'),s:t2('Turn inbound at the DME limit, not by the clock.','Sving inn ved DME-grensen, ikke etter klokka.')},
- pt:{n:t2('Procedure turn 45°/180°','Prosedyresving 45°/180°'),s:t2('Out, 45° away for a minute, then 180° the other way.','Ut, 45° vekk i ett minutt, så 180° den andre veien.')},
- pt80:{n:t2('Procedure turn 80°/260°','Prosedyresving 80°/260°'),s:t2('80° to the chart side, then straight into 260° the other way.','80° mot siden på kartet, så rett inn i 260° den andre veien.')},
- base:{n:t2('Base turn','Base turn'),s:t2('Out on an offset leg, then one big turn onto final.','Ut på et forskjøvet legg, så én stor sving inn på finalen.')},
- racetrack:{n:t2('Racetrack procedure','Racetrack-prosedyre'),s:t2('Enter like a hold, fly one lap, and you are inbound on final.','Gå inn som i en holding, fly én runde, og du er inne på finalen.')},
- vorApp:{n:t2('VOR approach','VOR-innflyging'),s:t2('No DME: the locator marks the FAF, then descend by time.','Ingen DME: lokatoren markerer FAF, sink så etter tid.')},
- vordme:{n:t2('VOR/DME approach','VOR/DME-innflyging'),s:t2('Descend on the profile and check the table every mile.','Sink på profilen og sjekk tabellen hver mil.')},
- ndbApp:{n:t2('NDB approach','NDB-innflyging'),s:t2('Track the QDM, cross the beacon, track the QDR down to the MDA.','Følg QDM-en, passer fyret, følg QDR-en ned til MDA.')},
- locApp:{n:t2('Localiser approach','Localiser-innflyging'),s:t2('ILS lateral precision, no glide slope: descend on the table.','ILS-presisjon sideveis, ingen glidebane: sink etter tabellen.')},
- ils:{n:t2('ILS approach','ILS-innflyging'),s:t2('Localiser and glide slope to the DA, then the missed approach.','Localiser og glidebane til DA, så missed approach.')},
- lnav:{n:t2('RNP approach (LNAV)','RNP-innflyging (LNAV)'),s:t2('GPS lateral guidance, an MDA and a descent table.','GPS-veiledning sideveis, en MDA og en nedstigningstabell.')},
- lnavVnav:{n:t2('RNP approach (LNAV/VNAV)','RNP-innflyging (LNAV/VNAV)'),s:t2('A baro-VNAV glide path down to a DA.','En baro-VNAV-glidebane ned til en DA.')},
- lpv:{n:t2('RNP approach (LPV)','RNP-innflyging (LPV)'),s:t2('ILS-like needles from satellites, down to 200 ft.','ILS-lignende nåler fra satellitter, ned til 200 ft.')},
- sid:{n:t2('Departure (SID)','Utflyging (SID)'),s:t2('Climb out on RNAV legs and meet the “at or above” constraints.','Stig ut på RNAV-legg og møt «i eller over»-kravene.')},
- star:{n:t2('Arrival (STAR)','Innflygingsrute (STAR)'),s:t2('Follow the arrival and plan the descent to meet each altitude.','Følg ruten og planlegg nedstigningen så du møter hver høyde.')},
- math:{n:t2('Quick-fire maths: everything','Hoderegning: alt'),s:t2('Intercepts, wind, 1 in 60, time to station, descents, leads.','Interception, vind, 1 av 60, tid til stasjon, nedstigning, ledning.')},
- mathNav:{n:t2('Quick-fire maths: navigation','Hoderegning: navigasjon'),s:t2('Intercept headings, drift, 1 in 60, time to station, lead radials.','Interceptkurser, avdrift, 1 av 60, tid til stasjon, ledende radialer.')},
- mathApp:{n:t2('Quick-fire maths: descents','Hoderegning: nedstigning'),s:t2('Rate of descent on 3° and where to start down.','Sinkrate på 3° og hvor du starter ned.')},
- ppTrack:{n:t2('Partial panel: track inbound','Delvis panel: følg kurs inn'),s:t2('No heading indicator: steer with timed turns and the compass.','Ingen kursindikator: styr med tidsstyrte svinger og kompasset.')},
- ppNdb:{n:t2('Partial panel: NDB','Delvis panel: NDB'),s:t2('The RBI and the compass only: bearing = compass + needle.','Bare RBI og kompass: peiling = kompass + nål.')},
- ppHold:{n:t2('Partial panel: holding','Delvis panel: holding'),s:t2('Fly the hold on timed rate-one turns: 3° a second.','Fly holdingen på tidsstyrte standardsvinger: 3° i sekundet.')}
+ orient:{n:t2('Which radial am I on?','Hvilken radial er jeg på?'),s:t2('Centre the VOR needle and read which line from the station you are on.','Sentrer VOR-nålen og les hvilken linje fra stasjonen du er på.')},
+ orientRmi:{n:t2('Read your radial on the RMI','Les radialen på RMI'),s:t2('The RMI needle points to the station. Its tail shows your radial.','RMI-nålen peker mot stasjonen. Halen viser radialen din.')},
+ orientRbi:{n:t2('Bearing to a beacon (RBI)','Peiling til et fyr (RBI)'),s:t2('Add your heading and the needle to get the direction to the NDB.','Legg sammen headingen og nålen, så har du retningen til NDB-en.')},
+ orientDrill:{n:t2('Ten positions against the clock','Ti posisjoner på tid'),s:t2('Ten quick radial readings on the HSI. Do not mix up TO and FROM.','Ti raske radialavlesninger på HSI. Ikke bland TO og FROM.')},
+ trackIn:{n:t2('Track to the station','Følg en kurs inn til stasjonen'),s:t2('Follow one course to a VOR and hold it against the wind.','Følg én kurs inn til en VOR og hold den mot vinden.')},
+ trackOut:{n:t2('Track away from the station','Følg en radial ut fra stasjonen'),s:t2('Follow a radial away from the VOR and correct for the wind.','Følg en radial bort fra VOR-en og korriger for vinden.')},
+ pass:{n:t2('Station passage','Stasjonspassering'),s:t2('Spot the moment you fly over the VOR: the flag changes from TO to FROM.','Se øyeblikket du flyr over VOR-en: flagget skifter fra TO til FROM.')},
+ tts:{n:t2('Time to the station','Tid til stasjonen'),s:t2('No DME? Time a 10° change of bearing and work out the minutes to the station.','Ingen DME? Ta tiden på 10° endring i peilingen og regn ut minuttene til stasjonen.')},
+ intIn:{n:t2('Intercept a course inbound','Skjær inn på en kurs mot stasjonen'),s:t2('Fly towards the course at an angle, then turn onto it as the needle moves in.','Fly mot kursen på skrå, og sving inn på den når nålen kommer inn mot midten.')},
+ intOut:{n:t2('Intercept a radial outbound','Skjær inn på en radial ut'),s:t2('Join a radial that leads away from the station. Close in, the needle moves fast.','Kom inn på en radial som går bort fra stasjonen. Nær stasjonen går nålen fort.')},
+ int90:{n:t2('Intercept at 90°','Skjær inn med 90°'),s:t2('Meet the course at a right angle and start the turn early enough.','Møt kursen i rett vinkel og start svingen tidlig nok.')},
+ intPass:{n:t2('New radial after the station','Ny radial etter stasjonen'),s:t2('Fly over the station first. Then join a new radial on the other side.','Fly over stasjonen først. Kom så inn på en ny radial på den andre siden.')},
+ intNdbIn:{n:t2('Intercept a course to a beacon (QDM)','Skjær inn på en kurs til et fyr (QDM)'),s:t2('Join a line that leads to an NDB, using the RMI.','Kom inn på en linje som fører til en NDB, med RMI.')},
+ intNdbOut:{n:t2('Intercept a course from a beacon (QDR)','Skjær inn på en kurs fra et fyr (QDR)'),s:t2('Join a line that leads away from an NDB, using the fixed-card ADF (RBI).','Kom inn på en linje som går bort fra en NDB, med ADF med fast skive (RBI).')},
+ locInt:{n:t2('Intercept the localiser','Skjær inn på localiseren'),s:t2('Turn onto the runway centre line. The needle is four times as sensitive as a VOR.','Sving inn på rullebanens senterlinje. Nålen er fire ganger så følsom som en VOR.')},
+ ndb:{n:t2('Track to a beacon (NDB)','Følg en kurs inn til et fyr (NDB)'),s:t2('Fly a straight line to an NDB in a crosswind, not a curve.','Fly en rett linje til en NDB i sidevind, ikke en bue.')},
+ ndbOut:{n:t2('Track away from a beacon (NDB)','Følg en kurs ut fra et fyr (NDB)'),s:t2('Fly a straight line away from an NDB. The tail of the needle shows where you are.','Fly en rett linje bort fra en NDB. Halen på nålen viser hvor du er.')},
+ dmeJoin:{n:t2('Join a DME arc','Inn på en DME-bue'),s:t2('Turn from a radial onto a circle round the station at a fixed distance.','Sving fra en radial inn på en sirkel rundt stasjonen i fast avstand.')},
+ dme:{n:t2('Fly a DME arc','Fly en DME-bue'),s:t2('Out on a radial, round the station at a fixed distance, back in on another radial.','Ut på en radial, rundt stasjonen i fast avstand, inn igjen på en annen radial.')},
+ dmeLeave:{n:t2('Leave a DME arc','Ut av en DME-bue'),s:t2('Turn off the arc a few degrees early, so the turn ends on the new radial.','Sving av buen noen grader før, så svingen ender på den nye radialen.')},
+ holdEntry:{n:t2('Holding entry','Inngang til holding'),s:t2('Direct, parallel or teardrop: your heading as you reach the fix decides.','Direkte, parallell eller teardrop: headingen din når du kommer til fiksen, bestemmer.')},
+ hold:{n:t2('Holding pattern','Holdingmønster'),s:t2('Fly the racetrack in wind: correct the heading and adjust the time each lap.','Fly mønsteret i vind: korriger headingen og juster tiden for hver runde.')},
+ holdLeft:{n:t2('Left-hand hold','Holding med venstresvinger'),s:t2('The same pattern mirrored: every turn goes left.','Samme mønster speilvendt: alle svinger går til venstre.')},
+ holdNdb:{n:t2('Hold at a beacon (NDB)','Holding ved et fyr (NDB)'),s:t2('Enter and fly a hold over an NDB, using the RMI needle.','Gå inn i og fly en holding over en NDB, med RMI-nålen.')},
+ holdDme:{n:t2('Hold at a DME fix','Holding ved en DME-fiks'),s:t2('The fix is a point in the air: one radial and one DME distance.','Fiksen er et punkt i lufta: én radial og én DME-avstand.')},
+ holdDmeLim:{n:t2('Hold with a DME limit','Holding med DME-grense'),s:t2('End the outbound leg at a DME distance instead of after one minute.','Avslutt legget ut ved en DME-avstand i stedet for etter ett minutt.')},
+ pt:{n:t2('Procedure turn 45°/180°','Prosedyresving 45°/180°'),s:t2('Turn round to come back on the same line: 45° off for a minute, then 180° back.','Snu for å komme tilbake på samme linje: 45° ut i ett minutt, så 180° tilbake.')},
+ pt80:{n:t2('Procedure turn 80°/260°','Prosedyresving 80°/260°'),s:t2('Turn round with two turns and no straight leg: 80° one way, 260° the other.','Snu med to svinger uten rett legg: 80° den ene veien, 260° den andre.')},
+ base:{n:t2('Base turn','Base turn'),s:t2('Fly out at an angle to the final course, then make one long turn back onto it.','Fly ut på skrå i forhold til sluttkursen, og gjør én lang sving tilbake inn på den.')},
+ racetrack:{n:t2('Racetrack procedure','Racetrack-prosedyre'),s:t2('Enter like a hold and fly one lap. It ends on the final course.','Gå inn som i en holding og fly én runde. Den ender på sluttkursen.')},
+ vorApp:{n:t2('VOR approach','VOR-innflyging'),s:t2('No DME: a beacon marks where the descent starts, then you check altitude against time.','Ingen DME: et fyr viser hvor nedstigningen starter, og så sjekker du høyden mot tiden.')},
+ vordme:{n:t2('VOR/DME approach','VOR/DME-innflyging'),s:t2('Descend along the final course and check your altitude against the DME every mile.','Gå ned langs sluttkursen og sjekk høyden mot DME for hver nautiske mil.')},
+ ndbApp:{n:t2('NDB approach','NDB-innflyging'),s:t2('Track to the beacon, cross it, and descend on the line away from it.','Følg kursen til fyret, kryss det, og gå ned på linjen bort fra det.')},
+ locApp:{n:t2('Localiser approach','Localiser-innflyging'),s:t2('An ILS without the glide slope: you control the descent yourself.','En ILS uten glidebane: du styrer nedstigningen selv.')},
+ ils:{n:t2('ILS approach','ILS-innflyging'),s:t2('Follow two needles down to the runway. No runway in sight at the minimum: climb away.','Følg to nåler ned mot rullebanen. Ser du ikke banen ved minimum, stiger du ut igjen.')},
+ lnav:{n:t2('RNP approach (LNAV)','RNP-innflyging (LNAV)'),s:t2('GPS shows left and right only. You control the descent yourself.','GPS viser bare venstre og høyre. Du styrer nedstigningen selv.')},
+ lnavVnav:{n:t2('RNP approach (LNAV/VNAV)','RNP-innflyging (LNAV/VNAV)'),s:t2('GPS left and right, plus a glide path worked out from the altimeter.','GPS sideveis, pluss en glidebane regnet ut fra høydemåleren.')},
+ lpv:{n:t2('RNP approach (LPV)','RNP-innflyging (LPV)'),s:t2('Satellite needles that look and fly like an ILS.','Satellittnåler som ser ut og flys som en ILS.')},
+ sid:{n:t2('Departure (SID)','Utflygingsrute (SID)'),s:t2('Climb out from waypoint to waypoint and cross each one high enough.','Stig ut fra waypoint til waypoint og kryss hvert av dem høyt nok.')},
+ star:{n:t2('Arrival (STAR)','Innflygingsrute (STAR)'),s:t2('Descend from waypoint to waypoint and cross each one at the right altitude.','Gå ned fra waypoint til waypoint og kryss hvert av dem i riktig høyde.')},
+ math:{n:t2('Mental maths: everything','Hoderegning: alt'),s:t2('Short sums with one rule of thumb each. The method is shown when you need it.','Korte regnestykker med én tommelfingerregel hver. Metoden vises når du trenger den.')},
+ mathNav:{n:t2('Mental maths: navigation','Hoderegning: navigasjon'),s:t2('Intercept headings, wind correction, track error and when to start a turn.','Heading for å skjære inn, vindkorreksjon, sporfeil og når du starter en sving.')},
+ mathApp:{n:t2('Mental maths: descents','Hoderegning: nedstigning'),s:t2('How fast to descend on a 3° path, and how far out to start.','Hvor fort du går ned på en bane på 3°, og hvor langt ute du starter.')},
+ ppTrack:{n:t2('Partial panel: track to the station','Delvis panel: følg en kurs inn'),s:t2('The heading indicator has failed. Turn by the clock and check the compass.','Kursgyroen har sviktet. Sving etter klokka og sjekk kompasset.')},
+ ppNdb:{n:t2('Partial panel: track to a beacon','Delvis panel: inn til et fyr'),s:t2('Only the ADF needle and the compass: add them to get the direction to the beacon.','Bare ADF-nålen og kompasset: legg dem sammen, så har du retningen til fyret.')},
+ ppHold:{n:t2('Partial panel: holding','Delvis panel: holding'),s:t2('Fly the hold with turns by the clock: 3° every second.','Fly holdingen med svinger på tid: 3° i sekundet.')}
 };
 const itemName=id=>L((IT[id]||IT.trackIn).n);
 
 /* ---------- Understand: a short animated walk-through per exercise ----------
-   Each step: one sentence, a part of the instructor's path to animate (fractions of the run, or the judge's phases) and what
-   to draw. The last step is always "Your turn": drag the aircraft and watch the instrument. Plain words first, the term second. */
+   Each step: one or two short sentences, a part of the instructor's path to animate (fractions of the run, or the judge's
+   phases) and what to draw (one or more of: radials, brg, wedge, arrows, homing, arc, sectors). Every one of the 46 exercises
+   has its own three steps. The last step is always "Your turn": drag the aircraft and watch the instrument.
+   Plain words first, the term second in brackets. */
 const U=(s,seg,show)=>({s,seg,show});
 const UW={
- orient:[U(t2('A VOR sends 360 lines, like the spokes of a wheel: they are the radials.','En VOR sender 360 linjer, som eikene i et hjul: det er radialene.'),[0,0.02],'radials'),
-   U(t2('Your radial depends only on where you are, never on where the nose points.','Radialen din avhenger bare av hvor du er, aldri av hvor nesen peker.'),[0,0.3],'radials'),
-   U(t2('Turn the course knob until the needle centres with FROM: the number at the top is your radial. On the RMI it is the tail of the needle.','Vri kursknappen til nålen står midt med FROM: tallet øverst er radialen din. På RMI er det halen av nålen.'),[0.3,0.6],'radials')],
- orientRbi:[U(t2('The ADF needle points at the beacon, measured from the nose: the relative bearing.','ADF-nålen peker mot fyret, målt fra nesen: den relative peilingen.'),[0,0.02],'brg'),
-   U(t2('Add it to your heading: heading + needle = the bearing to the beacon (QDM).','Legg den til kursen: kurs + nål = peilingen til fyret (QDM).'),[0,0.3],'brg'),
-   U(t2('More than 360? Take 360 away. That is the answer you report.','Mer enn 360? Trekk fra 360. Det er svaret du rapporterer.'),[0.3,0.6],'brg')],
- trackIn:[U(t2('Set the course you want to fly. Flying to the station the flag shows TO.','Still inn kursen du vil fly. Når du flyr mot stasjonen, viser flagget TO.'),[0,0.25],'wedge'),
-   U(t2('Needle right means the course is to your right: turn towards the needle.','Nål til høyre betyr at kursen ligger til høyre: sving mot nålen.'),[0.15,0.55],'wedge'),
-   U(t2('Then find the heading that keeps the needle still. The difference from the course is your wind correction (bracketing).','Finn så kursen som holder nålen i ro. Forskjellen fra kursen er vindkorreksjonen din (bracketing).'),[0.55,1],'wedge')],
- trackOut:[U(t2('Outbound, set the radial you fly. The flag shows FROM and the needle still points to the course.','Ut fra stasjonen still inn radialen du flyr. Flagget viser FROM, og nålen peker fortsatt mot kursen.'),[0,0.3],'wedge'),
-   U(t2('Wind shows up as a slow drift of the needle. Correct 10°, watch, then halve it.','Vind viser seg som en langsom avdrift av nålen. Korriger 10°, se, og halver så.'),[0.3,0.7],'wedge'),
-   U(t2('When the needle stands still, the heading you hold is the answer.','Når nålen står i ro, er kursen du holder svaret.'),[0.7,1],'wedge')],
- pass:[U(t2('Close to the station the needle gets lively: hold your heading, do not chase it.','Nær stasjonen blir nålen urolig: hold kursen, ikke jag den.'),[0.55,0.85],'wedge'),
-   U(t2('Right over the station the flag flips from TO to FROM: that is station passage.','Rett over stasjonen skifter flagget fra TO til FROM: det er stasjonspassering.'),[0.85,0.97],'wedge'),
-   U(t2('Press “Station passage” when you see the flip, and start the clock if the procedure needs it.','Trykk «Stasjonspassering» når du ser skiftet, og start klokken hvis prosedyren krever det.'),[0.9,1],'wedge')],
- tts:[U(t2('Turn so the station sits on your wingtip: 90° to the bearing.','Sving så stasjonen står på vingetippen: 90° på peilingen.'),[0,0.05],'brg'),
-   U(t2('Start the stopwatch and fly straight. The needle tail slides back.','Start stoppeklokken og fly rett frem. Halen på nålen glir bakover.'),[0,0.6],'brg'),
-   U(t2('Time to the station in minutes = seconds ÷ degrees of change. 90 s for 10° is 9 minutes.','Tid til stasjonen i minutter = sekunder ÷ grader endring. 90 s for 10° er 9 minutter.'),[0.6,1],'brg')],
- intIn:[U(t2('The needle tells you which side the course is on.','Nålen forteller hvilken side kursen ligger på.'),[0,0.15],'arrows'),
-   U(t2('Point 30° to 45° across the course, towards the needle: the intercept heading.','Pek 30° til 45° inn mot kursen, mot nålen: interceptkursen.'),[0.1,0.5],'arrows'),
-   U(t2('When the needle comes off the side, start the turn: lead the turn and you roll out on the course.','Når nålen slipper fra siden, start svingen: led svingen, så ruller du ut på kursen.'),[0.5,1],'wedge')],
- intOut:[U(t2('Close to the station one degree is only a few hundred metres.','Nær stasjonen er én grad bare noen hundre meter.'),[0,0.2],'wedge'),
-   U(t2('Set the radial, check FROM, and point 45° towards the needle.','Still inn radialen, sjekk FROM, og pek 45° mot nålen.'),[0.1,0.5],'arrows'),
-   U(t2('The needle comes off the stop quickly here: turn on as soon as it moves.','Nålen slipper fort fra stoppen her: sving inn så snart den beveger seg.'),[0.5,1],'wedge')],
- intPass:[U(t2('Fly to the station on your course and hold the heading through the confusion over it.','Fly til stasjonen på kursen din og hold kursen gjennom uroen over den.'),[0,0.35],'wedge'),
-   U(t2('After the flag flips to FROM, set the new radial.','Etter at flagget skifter til FROM, still inn den nye radialen.'),[0.3,0.5],'wedge'),
-   U(t2('Then intercept it outbound: 45° towards the needle and an early turn on.','Fang den så ut: 45° mot nålen og en tidlig sving inn.'),[0.5,1],'wedge')],
- locInt:[U(t2('You fly a heading towards the localiser. Its needle sits on the stop for a long time.','Du flyr en kurs mot localiseren. Nålen står lenge på stoppen.'),[0,0.4],'loc'),
-   U(t2('Full scale is only about 2.5°: when the needle moves, it moves fast.','Fullt utslag er bare rundt 2,5°: når nålen beveger seg, går det fort.'),[0.35,0.65],'loc'),
-   U(t2('Turn onto the course as soon as it comes alive, then make 2° corrections.','Sving inn på kursen så snart den blir levende, og korriger så med 2°.'),[0.6,1],'loc')],
- ndb:[U(t2('The ADF needle always points at the beacon.','ADF-nålen peker alltid mot fyret.'),[0,0.2],'homing'),
-   U(t2('Keep it on the nose in a crosswind and the wind bends your path: that is homing.','Holder du den på nesen i sidevind, bøyer vinden banen din: det er homing.'),[0,0.4],'homing'),
-   U(t2('To track, turn into the wind until the needle sits a few degrees off the nose on the downwind side.','For å tracke svinger du opp mot vinden til nålen står noen grader fra nesen på lesiden.'),[0.4,1],'homing')],
- ndbOut:[U(t2('Outbound, the needle points behind you: read its tail.','Ut fra fyret peker nålen bak deg: les halen.'),[0,0.3],'wedge'),
-   U(t2('Heading + needle − 180 is the bearing from the beacon (QDR).','Kurs + nål − 180 er peilingen fra fyret (QDR).'),[0.3,0.6],'wedge'),
-   U(t2('Tail right of the tail position you want? You are left of track: turn right.','Halen til høyre for der du vil ha den? Du er til venstre for sporet: sving til høyre.'),[0.6,1],'wedge')],
- dme:[U(t2('Fly out on the radial. One turn radius before the arc, start a 90° turn.','Fly ut på radialen. Én svingradius før buen starter du en sving på 90°.'),[0,0.3],'arc'),
-   U(t2('On the arc the station stays on your wingtip. Flying straight, the DME grows: turn about 10° towards the station.','På buen står stasjonen på vingetippen. Flyr du rett frem, øker DME-en: sving rundt 10° mot stasjonen.'),[0.3,0.7],'arc'),
-   U(t2('Leave the arc at a lead radial a few degrees before the one you want.','Forlat buen på en ledende radial noen grader før den du skal ha.'),[0.7,1],'arc')],
- dmeJoin:[U(t2('Fly out on the radial and watch the DME count up.','Fly ut på radialen og se DME-en telle opp.'),[0,0.35],'arc'),
-   U(t2('A 90° turn takes about one turn radius, about 0.6 NM at 120 kt: start it that much early.','En sving på 90° tar omtrent én svingradius, rundt 0,6 NM i 120 kt: start den så mye før.'),[0.3,0.6],'arc'),
-   U(t2('Roll out with the station on the wingtip, then nudge 10° to keep the DME steady.','Rull ut med stasjonen på vingetippen, og juster 10° for å holde DME-en jevn.'),[0.6,1],'arc')],
- dmeLeave:[U(t2('On the arc, watch the radials count towards the one you want.','På buen ser du radialene telle mot den du skal ha.'),[0,0.4],'arc'),
-   U(t2('Lead radial: about 60 × turn radius ÷ DME degrees before it. On a 10 NM arc at 120 kt, about 4°.','Ledende radial: rundt 60 × svingradius ÷ DME grader før. På en bue på 10 NM i 120 kt, rundt 4°.'),[0.4,0.7],'arc'),
-   U(t2('Turn there, and you roll out on the inbound course instead of through it.','Sving der, så ruller du ut på kursen inn i stedet for gjennom den.'),[0.7,1],'arc')],
- holdEntry:[U(t2('Three sectors round the fix pick the entry: direct 180°, parallel 110°, teardrop 70°.','Tre sektorer rundt fiksen bestemmer inngangen: direkte 180°, parallell 110°, teardrop 70°.'),['tofix'],'sectors'),
-   U(t2('Crossing the fix, your heading tells you which sector you came from.','Over fiksen forteller kursen din hvilken sektor du kom fra.'),['tofix','entry'],'sectors'),
-   U(t2('Then fly that entry: here the instructor flies it in this wind.','Fly så den inngangen: her flyr instruktøren den i denne vinden.'),['entry','entryleg','back','outbound','turnIn','inbound','turnOut'],'sectors')],
- hold:[U(t2('Fly the inbound leg first: it teaches you the wind.','Fly inngående legg først: det lærer deg vinden.'),['tofix'],'race'),
-   U(t2('Outbound, hold three times the inbound correction the other way: triple the drift.','Ut holder du tre ganger den inngående korreksjonen motsatt vei: tredobbel avdrift.'),['turnOut','outbound'],'race'),
-   U(t2('Start the clock abeam the fix. Inbound leg short? Fly longer outbound next time.','Start klokken tvers av fiksen. Kort inngående legg? Fly lenger ut neste gang.'),['turnIn','inbound'],'race')],
- holdDmeLim:[U(t2('Fly the inbound leg first: it teaches you the wind.','Fly inngående legg først: det lærer deg vinden.'),['tofix'],'race'),
-   U(t2('Outbound, the leg ends at a DME distance, not after a minute.','Ut slutter legget ved en DME-avstand, ikke etter ett minutt.'),['turnOut','outbound'],'race'),
-   U(t2('At the DME limit, turn inbound at once, whatever the clock says.','Ved DME-grensen svinger du inn med en gang, uansett hva klokka sier.'),['turnIn','inbound'],'race')],
- racetrack:[U(t2('A racetrack is a hold flown once: enter it like a hold.','En racetrack er en holding fløyet én gang: gå inn som i en holding.'),['tofix'],'sectors'),
-   U(t2('Fly the entry the sector gives you.','Fly inngangen sektoren gir deg.'),['entry','entryleg','back'],'sectors'),
-   U(t2('One lap: outbound, the turn, and you are on the final course.','Én runde: ut, svingen, og du er på sluttkursen.'),['turnOut','outbound','turnIn','inbound'],'race')],
- pt:[U(t2('Overfly the station and fly outbound for the published time.','Overfly stasjonen og fly ut den publiserte tiden.'),['tofix','out'],'pt'),
-   U(t2('Turn 45° to the side on the chart and fly 1 minute.','Sving 45° mot siden på kartet og fly 1 minutt.'),['t45'],'pt'),
-   U(t2('Turn 180° the other way: you roll out at 45° to the inbound course and intercept it.','Sving 180° den andre veien: du ruller ut 45° på kursen inn og fanger den.'),['t180','in'],'pt')],
- pt80:[U(t2('Overfly the station and fly outbound for the published time.','Overfly stasjonen og fly ut den publiserte tiden.'),['tofix','out'],'pt'),
-   U(t2('Turn 80° to the side on the chart.','Sving 80° mot siden på kartet.'),['t45'],'pt'),
-   U(t2('Without a pause, turn 260° the other way: you roll out on the inbound course.','Uten pause svinger du 260° den andre veien: du ruller ut på kursen inn.'),['t180','in'],'pt')],
- base:[U(t2('Overfly the station and fly out on a radial offset from the final course.','Overfly stasjonen og fly ut på en radial forskjøvet fra sluttkursen.'),['tofix','out'],'base'),
-   U(t2('The offset is about 36° divided by the outbound minutes.','Forskyvningen er rundt 36° delt på antall minutter ut.'),['out'],'base'),
-   U(t2('When the time is up, turn towards the final course, through more than 180°.','Når tiden er ute, sving mot sluttkursen, mer enn 180°.'),['turn','in'],'base')],
- vordme:[U(t2('Stay level at the FAF altitude until the final approach fix.','Hold FAF-høyden plant til final approach fix.'),['initial'],'prof'),
-   U(t2('At the FAF descend at about ground speed × 5 ft/min.','Ved FAF sinker du med omtrent fart over bakken × 5 ft/min.'),['final'],'prof'),
-   U(t2('Compare each DME with the table and adjust a little. At the MDA with no runway: go around (missed approach).','Sammenlign hver DME med tabellen og juster litt. Ved MDA uten rullebane: gå rundt (missed approach).'),['min','miss'],'prof')],
- vorApp:[U(t2('Track to the VOR at the FAF altitude. The ADF needle on the locator marks the FAF.','Følg kurs mot VOR-en på FAF-høyden. ADF-nålen på lokatoren markerer FAF.'),['initial'],'prof'),
-   U(t2('When the ADF needle swings behind you, start the clock and descend at ground speed × 5.','Når ADF-nålen svinger bak deg, start klokken og sink med fart over bakken × 5.'),['final'],'prof'),
-   U(t2('Check altitude against time. At the MDA, no runway: missed approach.','Sjekk høyden mot tiden. Ved MDA, ingen rullebane: missed approach.'),['min','miss'],'prof')],
- ndbApp:[U(t2('Track the bearing to the locator (QDM) at the FAF altitude.','Følg peilingen til lokatoren (QDM) på FAF-høyden.'),['initial'],'prof'),
-   U(t2('Over the beacon the needle swings: now track the bearing from it (QDR) and descend.','Over fyret svinger nålen: følg nå peilingen fra det (QDR) og sink.'),['final'],'prof'),
-   U(t2('Hold the tail of the needle where you want it. At the MDA: missed approach.','Hold halen av nålen der du vil ha den. Ved MDA: missed approach.'),['min','miss'],'prof')],
- locApp:[U(t2('The localiser gives ILS precision left and right, but there is no glide slope.','Localiseren gir ILS-presisjon sideveis, men det er ingen glidebane.'),['initial'],'prof'),
-   U(t2('At the FAF start down and check the DME table every mile.','Ved FAF starter du ned og sjekker DME-tabellen hver mil.'),['final'],'prof'),
-   U(t2('The MDA is a floor. No runway: missed approach.','MDA er et gulv. Ingen rullebane: missed approach.'),['min','miss'],'prof')],
- ils:[U(t2('Two needles: the localiser for left and right, the glide slope for up and down.','To nåler: localiseren for venstre og høyre, glidebanen for opp og ned.'),[0,0.35],'prof'),
-   U(t2('Take the glide slope from below: hold altitude until it comes down to the centre, then descend at ground speed × 5.','Ta glidebanen nedenfra: hold høyden til den kommer ned til midten, og sink så med fart over bakken × 5.'),[0.35,0.75],'prof'),
-   U(t2('At the decision altitude with no runway in sight: go around and fly the missed approach.','På beslutningshøyden uten rullebanen i sikte: gå rundt og fly missed approach.'),['miss'],'prof')],
- lnav:[U(t2('The GPS draws the final course. Full scale shrinks from 1 NM to 0.3 NM before the FAF.','GPS-en tegner sluttkursen. Fullt utslag krymper fra 1 NM til 0,3 NM før FAF.'),['initial'],'prof'),
-   U(t2('LNAV has no glide path: at the FAF, descend and check the distance table.','LNAV har ingen glidebane: ved FAF sinker du og sjekker avstandstabellen.'),['final'],'prof'),
-   U(t2('The MDA is a floor. At the MDA without the runway: missed approach.','MDA er et gulv. Ved MDA uten rullebanen: missed approach.'),['min','miss'],'prof')],
- lnavVnav:[U(t2('LNAV/VNAV adds a glide path computed from the altimeter (baro-VNAV).','LNAV/VNAV legger til en glidebane regnet fra høydemåleren (baro-VNAV).'),['initial'],'prof'),
-   U(t2('Follow the vertical needle like a glide slope; it is linear, not angular.','Følg den vertikale nålen som en glidebane; den er lineær, ikke vinkelbasert.'),['final'],'prof'),
-   U(t2('At the DA without the runway: missed approach.','På DA uten rullebanen: missed approach.'),['min','miss'],'prof')],
- lpv:[U(t2('LPV looks and flies like an ILS, but the needles come from satellites.','LPV ser ut og flys som en ILS, men nålene kommer fra satellitter.'),['initial'],'prof'),
-   U(t2('Capture the glide path from below and keep corrections small.','Fang glidebanen nedenfra og hold korreksjonene små.'),['final'],'prof'),
-   U(t2('Down to a DA of about 200 ft, then the missed approach.','Ned til en DA på rundt 200 ft, så missed approach.'),['min','miss'],'prof')],
- sid:[U(t2('A departure is a chain of legs between waypoints, with altitudes to meet.','En utflyging er en kjede av legg mellom waypoints, med høyder du skal møte.'),[0,0.3],'route'),
-   U(t2('“At or above” means cross the waypoint no lower than that. Climb early.','«I eller over» betyr at du krysser waypointet ikke lavere enn det. Stig tidlig.'),[0.25,0.6],'route'),
-   U(t2('At each waypoint the course changes: turn as the GPS sequences, then track the new leg.','Ved hvert waypoint endrer kursen seg: sving når GPS-en går videre, og følg det nye legget.'),[0.6,1],'route')],
- star:[U(t2('An arrival brings you from the airway to the approach.','En innflygingsrute tar deg fra luftveien til innflygingen.'),[0,0.3],'route'),
-   U(t2('“At or below” and “at” constraints shape your descent: plan 3 NM per 1000 ft.','Krav om «i eller under» og «i» former nedstigningen: planlegg 3 NM per 1000 ft.'),[0.25,0.65],'route'),
-   U(t2('Turn at each waypoint and arrive at the last one at the right altitude.','Sving ved hvert waypoint og kom til det siste i riktig høyde.'),[0.65,1],'route')],
- ppTrack:[U(t2('The heading indicator has failed. The compass still works, but it swings.','Kursindikatoren har sviktet. Kompasset virker, men det svinger.'),[0,0.3],'wedge'),
-   U(t2('Turn by time instead: a rate-one turn is 3° a second, so 30° takes 10 seconds.','Sving etter tid i stedet: en standardsving er 3° i sekundet, så 30° tar 10 sekunder.'),[0.3,0.65],'wedge'),
-   U(t2('Use small timed turns and let the needle tell you if it worked.','Bruk små tidsstyrte svinger og la nålen fortelle om det virket.'),[0.65,1],'wedge')],
- ppNdb:[U(t2('No heading indicator: take the heading from the compass when it settles.','Ingen kursindikator: ta kursen fra kompasset når det roer seg.'),[0,0.3],'homing'),
-   U(t2('Bearing to the beacon = compass + needle.','Peiling til fyret = kompass + nål.'),[0.3,0.65],'homing'),
-   U(t2('Correct with timed turns: 3° a second.','Korriger med tidsstyrte svinger: 3° i sekundet.'),[0.65,1],'homing')],
- ppHold:[U(t2('The hold on partial panel: every turn is a timed rate-one turn.','Holding på delvis panel: hver sving er en tidsstyrt standardsving.'),['tofix'],'race'),
-   U(t2('180° takes one minute. Roll out on time, then check the compass.','180° tar ett minutt. Rull ut på tid, og sjekk så kompasset.'),['turnOut','outbound'],'race'),
-   U(t2('The needle tells you how well the timing worked.','Nålen forteller hvor godt timingen virket.'),['turnIn','inbound'],'race')]
+ orient:[U(t2('A VOR station sends out 360 lines, like the spokes of a wheel. Each line is called a radial.','En VOR-stasjon sender ut 360 linjer, som eikene i et hjul. Hver linje kalles en radial.'),[0,0.02],'radials'),
+   U(t2('Your radial depends only on where you are. It does not change when you turn the nose.','Radialen din avhenger bare av hvor du er. Den endrer seg ikke når du snur nesen.'),[0,0.3],'radials'),
+   U(t2('To find it, turn the course knob (OBS) until the needle is in the middle and the flag shows FROM. The number at the top is your radial.','For å finne den vrir du kursknappen (OBS) til nålen står i midten og flagget viser FROM. Tallet øverst er radialen din.'),[0.3,0.6],'radials')],
+ orientRmi:[U(t2('The RMI is a compass card with a needle on it. The needle always points to the station.','RMI er en kompasskive med en nål. Nålen peker alltid mot stasjonen.'),[0,0.02],'radials'),
+   U(t2('The head of the needle shows the direction to the station. The tail shows the direction from the station to you.','Hodet på nålen viser retningen til stasjonen. Halen viser retningen fra stasjonen til deg.'),[0,0.3],'radials'),
+   U(t2('So the number under the tail is your radial. There is nothing to turn: just read it.','Tallet under halen er altså radialen din. Du trenger ikke vri på noe: bare les av.'),[0.3,0.6],'radials')],
+ orientRbi:[U(t2('The ADF needle points at the beacon (NDB). Its number is counted clockwise from the nose: the relative bearing.','ADF-nålen peker mot fyret (NDB). Tallet telles med klokka fra nesen: den relative peilingen.'),[0,0.02],'brg'),
+   U(t2('Add that number to your heading. The sum is the direction to the beacon (QDM).','Legg det tallet til headingen din. Summen er retningen til fyret (QDM).'),[0,0.3],'brg'),
+   U(t2('Is the sum more than 360? Take 360 away. That is the bearing you report.','Ble summen over 360? Trekk fra 360. Det er peilingen du rapporterer.'),[0.3,0.6],'brg')],
+ orientDrill:[U(t2('The same task, ten times, on the HSI. The HSI shows the compass and the course needle in one picture.','Samme oppgave, ti ganger, på HSI. HSI viser kompasset og kursnålen i ett bilde.'),[0,0.02],'radials'),
+   U(t2('Turn the course knob until the middle part of the needle lines up with the rest. The small white triangle must point to the tail of the arrow: that means FROM.','Vri kursknappen til den midtre delen av nålen står på linje med resten. Den lille hvite trekanten skal peke mot halen på pilen: det betyr FROM.'),[0,0.3],'radials'),
+   U(t2('If the triangle points to the arrowhead, you have TO. Then the number is 180° wrong. Check the triangle every time.','Peker trekanten mot pilspissen, har du TO. Da er tallet 180° feil. Sjekk trekanten hver gang.'),[0.3,0.6],'radials')],
+ trackIn:[U(t2('Set the course you want to fly with the course knob. On the way to the station the flag shows TO.','Still inn kursen du vil fly, med kursknappen. På vei mot stasjonen viser flagget TO.'),[0,0.25],'wedge'),
+   U(t2('The needle shows where the course is. Needle to the right: the course is on your right, so turn right.','Nålen viser hvor kursen ligger. Nålen til høyre: kursen ligger til høyre for deg, så sving til høyre.'),[0.15,0.55],'wedge'),
+   U(t2('Then find the heading that keeps the needle still in the middle. In a crosswind it is a few degrees off the course: that is your wind correction.','Finn så headingen som holder nålen i ro i midten. I sidevind er den noen grader ved siden av kursen: det er vindkorreksjonen din.'),[0.55,1],'wedge')],
+ trackOut:[U(t2('Flying away from the station, set the radial you want to follow. The flag shows FROM.','Når du flyr bort fra stasjonen, stiller du inn radialen du vil følge. Flagget viser FROM.'),[0,0.3],'wedge'),
+   U(t2('The rule is the same: turn towards the needle. Wind shows up as a needle that slowly drifts to one side.','Regelen er den samme: sving mot nålen. Vind ser du som en nål som sakte driver til én side.'),[0.3,0.7],'wedge'),
+   U(t2('Turn 10° towards the needle and wait until it is back in the middle. Then take off half the correction and see if the needle stays still (bracketing).','Sving 10° mot nålen og vent til den er tilbake i midten. Ta så bort halve korreksjonen og se om nålen står i ro (bracketing).'),[0.7,1],'wedge')],
+ pass:[U(t2('Close to the station the needle gets nervous and swings. Hold your heading. Do not chase the needle.','Nær stasjonen blir nålen urolig og slår ut. Hold headingen. Ikke jag etter nålen.'),[0.55,0.85],'wedge'),
+   U(t2('Right over the station the flag changes from TO to FROM. That change is station passage.','Rett over stasjonen skifter flagget fra TO til FROM. Det skiftet er stasjonspasseringen.'),[0.85,0.97],'wedge'),
+   U(t2('Press “Station passage” the moment the flag changes. In a real procedure this is where you start the clock.','Trykk «Stasjonspassering» i det flagget skifter. I en ekte prosedyre er det her du starter klokka.'),[0.9,1],'wedge')],
+ tts:[U(t2('Turn until the station is straight out to the side, on your wingtip. The needle then points 90° left or right.','Sving til stasjonen ligger rett ut til siden, på vingetippen. Nålen peker da 90° til venstre eller høyre.'),[0,0.05],'brg'),
+   U(t2('Start the stopwatch and fly straight ahead. The needle slowly moves backwards.','Start stoppeklokka og fly rett frem. Nålen flytter seg sakte bakover.'),[0,0.6],'brg'),
+   U(t2('When it has moved 10°, read the clock. Minutes to the station = seconds ÷ degrees. Example: 90 seconds ÷ 10° = 9 minutes.','Når den har flyttet seg 10°, leser du av klokka. Minutter til stasjonen = sekunder ÷ grader. Eksempel: 90 sekunder ÷ 10° = 9 minutter.'),[0.6,1],'brg')],
+ intIn:[U(t2('You are beside the course, not on it. The needle shows which side the course is on.','Du er ved siden av kursen, ikke på den. Nålen viser hvilken side kursen ligger på.'),[0,0.15],'arrows'),
+   U(t2('Turn to a heading that crosses the course at 30° to 45°, towards the needle. This is the intercept heading.','Sving til en heading som krysser kursen med 30° til 45°, mot nålen. Dette er headingen du skjærer inn med.'),[0.1,0.5],'arrows'),
+   U(t2('Hold that heading. When the needle starts to move towards the middle, turn onto the course. Then the turn ends on the line, not past it.','Hold den headingen. Når nålen begynner å gå mot midten, svinger du inn på kursen. Da ender svingen på linjen, ikke forbi den.'),[0.5,1],'wedge')],
+ intOut:[U(t2('This course leads away from the station. Set the radial with the course knob and check that the flag shows FROM.','Denne kursen går bort fra stasjonen. Still inn radialen med kursknappen og sjekk at flagget viser FROM.'),[0,0.2],'wedge'),
+   U(t2('Turn to a heading that crosses the radial at 45°, towards the needle.','Sving til en heading som krysser radialen med 45°, mot nålen.'),[0.1,0.5],'arrows'),
+   U(t2('Close to the station the radials lie close together, so the needle moves fast. Turn onto the radial as soon as the needle moves.','Nær stasjonen ligger radialene tett, så nålen går fort. Sving inn på radialen så snart nålen rører seg.'),[0.5,1],'wedge')],
+ int90:[U(t2('Here you meet the course at a right angle, 90°. The needle stays at the side for a long time.','Her møter du kursen i rett vinkel, 90°. Nålen står lenge helt ute på siden.'),[0,0.4],'wedge'),
+   U(t2('Then it crosses to the middle in a few seconds. A 90° turn needs room: about 0.6 NM at 120 kt.','Så går den til midten på få sekunder. En sving på 90° trenger plass: rundt 0,6 NM i 120 kt.'),[0.35,0.65],'wedge'),
+   U(t2('So start the turn the moment the needle leaves the side. If you wait for the middle, you fly through the course.','Start derfor svingen i det nålen slipper siden. Venter du til den står i midten, flyr du gjennom kursen.'),[0.6,1],'wedge')],
+ intPass:[U(t2('First fly to the station on your course. Over it the needle swings: hold the heading.','Fly først til stasjonen på kursen din. Over den slår nålen ut: hold headingen.'),[0,0.35],'wedge'),
+   U(t2('When the flag has changed to FROM, set the new radial with the course knob.','Når flagget har skiftet til FROM, stiller du inn den nye radialen med kursknappen.'),[0.3,0.5],'wedge'),
+   U(t2('Then join it like any radial away from the station: turn 45° towards the needle and turn onto it early.','Kom så inn på den som på enhver radial ut: sving 45° mot nålen og sving inn tidlig.'),[0.5,1],'wedge')],
+ intNdbIn:[U(t2('An NDB has no course knob and no flag. The RMI needle simply points to the beacon.','En NDB har ingen kursknapp og ikke noe flagg. RMI-nålen peker ganske enkelt mot fyret.'),[0,0.15],'wedge brg'),
+   U(t2('The number under the head of the needle is your bearing to the beacon (QDM). You want it to show the course in the clearance.','Tallet under hodet på nålen er peilingen din til fyret (QDM). Du vil at det skal vise kursen i klareringen.'),[0.1,0.5],'wedge brg'),
+   U(t2('Fly a heading 30° to 45° across the line. The needle head creeps towards the number you want. Just before it gets there, turn onto the course.','Fly en heading 30° til 45° på skrå mot linjen. Nålhodet kryper mot tallet du vil ha. Like før det er fremme, svinger du inn på kursen.'),[0.5,1],'wedge brg')],
+ intNdbOut:[U(t2('This line leads away from the beacon, and the ADF card does not turn (RBI). The needle points behind you.','Denne linjen går bort fra fyret, og ADF-skiven dreier ikke (RBI). Nålen peker bak deg.'),[0,0.2],'wedge brg'),
+   U(t2('Heading + needle − 180 is your bearing from the beacon (QDR). You want it to show the course in the clearance.','Heading + nål − 180 er peilingen din fra fyret (QDR). Du vil at den skal vise kursen i klareringen.'),[0.1,0.5],'wedge brg'),
+   U(t2('Fly a heading 45° across the line. When the QDR is a few degrees from the one you want, turn onto the course.','Fly en heading 45° på skrå mot linjen. Når QDR er noen grader fra den du vil ha, svinger du inn på kursen.'),[0.5,1],'wedge brg')],
+ locInt:[U(t2('You fly a heading towards the runway centre line (the localiser). Its needle stays at the side for a long time.','Du flyr en heading mot rullebanens senterlinje (localiseren). Nålen står lenge helt ute på siden.'),[0,0.4],'loc'),
+   U(t2('From side to side the scale is only about 2.5°, a quarter of a VOR. So when the needle moves, it moves fast. The red GS flag only means: no glide slope in this exercise.','Fra side til side er skalaen bare rundt 2,5°, en firedel av en VOR. Når nålen rører seg, går det derfor fort. Det røde GS-flagget betyr bare: ingen glidebane i denne øvelsen.'),[0.35,0.65],'loc'),
+   U(t2('Turn onto the runway course as soon as the needle starts to move. Then correct with only 2° at a time.','Sving inn på rullebanekursen så snart nålen begynner å røre seg. Korriger deretter med bare 2° om gangen.'),[0.6,1],'loc')],
+ ndb:[U(t2('The ADF needle always points at the beacon (NDB).','ADF-nålen peker alltid mot fyret (NDB).'),[0,0.2],'homing'),
+   U(t2('If you just keep the needle on the nose, a crosswind pushes you sideways and you fly a curve. That is called homing.','Holder du bare nålen på nesen, skyver sidevinden deg ut, og du flyr en bue. Det kalles homing.'),[0,0.4],'homing'),
+   U(t2('Better: turn a little into the wind and hold that heading. The needle then sits a few degrees off the nose and stays there. You fly a straight line (tracking).','Bedre: sving litt opp mot vinden og hold den headingen. Da står nålen noen grader ved siden av nesen og blir der. Du flyr en rett linje (tracking).'),[0.4,1],'homing')],
+ ndbOut:[U(t2('Flying away from the beacon, the needle points behind you. Look at its tail.','Når du flyr bort fra fyret, peker nålen bak deg. Se på halen.'),[0,0.3],'wedge'),
+   U(t2('The tail shows your bearing from the beacon (QDR). On the RMI you read it under the tail. On the RBI: heading + needle − 180.','Halen viser peilingen din fra fyret (QDR). På RMI leser du den under halen. På RBI: heading + nål − 180.'),[0.3,0.6],'wedge'),
+   U(t2('Is the QDR bigger than the one you want? Then you are right of the line: turn left. Smaller: turn right.','Er QDR større enn den du vil ha? Da er du til høyre for linjen: sving til venstre. Mindre: sving til høyre.'),[0.6,1],'wedge')],
+ dme:[U(t2('A DME arc is part of a circle round the station, at a fixed distance. Fly out on the radial and turn 90° onto the arc about half a mile before you reach it.','En DME-bue er en del av en sirkel rundt stasjonen, i fast avstand. Fly ut på radialen og sving 90° inn på buen rundt en halv nautisk mil før du når den.'),[0,0.3],'arc'),
+   U(t2('On the arc the station stays out to the side, on your wingtip. Flying straight, the DME slowly grows. Then turn about 10° towards the station.','På buen ligger stasjonen ute til siden, på vingetippen. Flyr du rett frem, øker DME sakte. Sving da rundt 10° mot stasjonen.'),[0.3,0.7],'arc'),
+   U(t2('A few degrees before the radial you want, start the turn towards the station. That earlier radial is called the lead radial.','Noen grader før radialen du skal ha, starter du svingen mot stasjonen. Den tidligere radialen kalles lead-radialen.'),[0.7,1],'arc')],
+ dmeJoin:[U(t2('Fly out on the radial and watch the DME count up towards the distance of the arc.','Fly ut på radialen og se DME telle opp mot avstanden til buen.'),[0,0.35],'arc'),
+   U(t2('A 90° turn takes room: about 0.6 NM at 120 kt. Start the turn that much before the arc.','En sving på 90° tar plass: rundt 0,6 NM i 120 kt. Start svingen så mye før buen.'),[0.3,0.6],'arc'),
+   U(t2('End the turn with the station on your wingtip. Then use small turns of about 10° to keep the DME steady.','Avslutt svingen med stasjonen på vingetippen. Bruk så små svinger på rundt 10° for å holde DME jevn.'),[0.6,1],'arc')],
+ dmeLeave:[U(t2('On the arc you cross one radial after another. Watch them count towards the one you want.','På buen krysser du den ene radialen etter den andre. Se dem telle mot den du skal ha.'),[0,0.4],'arc'),
+   U(t2('Start the turn a few degrees early, on the lead radial. On a 10 NM arc at 120 kt that is about 4° before.','Start svingen noen grader før, på lead-radialen. På en bue på 10 NM i 120 kt er det rundt 4° før.'),[0.4,0.7],'arc'),
+   U(t2('Turn towards the station there. The turn then ends on the course to the station instead of past it.','Sving mot stasjonen der. Da ender svingen på kursen inn til stasjonen i stedet for forbi den.'),[0.7,1],'arc')],
+ holdEntry:[U(t2('There are three ways into a hold: direct, parallel and teardrop. The coloured sectors round the fix show which one applies.','Det er tre måter å gå inn i en holding på: direkte, parallell og teardrop. De fargede sektorene rundt fiksen viser hvilken som gjelder.'),['tofix'],'sectors'),
+   U(t2('Your heading as you cross the fix decides. Look at which coloured sector you arrive through.','Headingen din i det du krysser fiksen, bestemmer. Se hvilken farget sektor du kommer inn gjennom.'),['tofix','entry'],'sectors'),
+   U(t2('Then fly that entry. Here the instructor flies it in today’s wind and ends on the leg towards the fix.','Fly så den inngangen. Her flyr instruktøren den i dagens vind og ender på legget inn mot fiksen.'),['entry','entryleg','back','outbound','turnIn','inbound','turnOut'],'sectors')],
+ hold:[U(t2('A hold is a racetrack at a fix: two straight legs and two half-circle turns. Standard turns are to the right.','En holding er et ovalt mønster ved en fiks: to rette legg og to halvsirkler. Standard er høyresvinger.'),['turnOut','outbound','turnIn','inbound'],'race'),
+   U(t2('Fly the leg towards the fix (inbound) first. The heading that keeps you on it shows the wind correction.','Fly legget inn mot fiksen først. Headingen som holder deg på det, viser vindkorreksjonen.'),['tofix'],'race'),
+   U(t2('Flying away from the fix (outbound), use three times that correction, on the other side. Start the clock when the fix is level with your wingtip (abeam).','På legget bort fra fiksen bruker du tre ganger den korreksjonen, til den andre siden. Start klokka når fiksen ligger rett ut for vingetippen (tvers).'),['turnOut','outbound'],'race')],
+ holdLeft:[U(t2('In a standard hold every turn goes right. This hold is non-standard: every turn goes left.','I en standard holding går alle svinger til høyre. Denne holdingen er ikke-standard: alle svinger går til venstre.'),['tofix'],'race'),
+   U(t2('The whole pattern is mirrored. The holding side is now on the left of the course to the fix.','Hele mønsteret er speilvendt. Holdingsiden ligger nå til venstre for kursen inn mot fiksen.'),['turnOut','outbound'],'race'),
+   U(t2('The wind rules do not change: three times the correction on the leg away from the fix, and one minute towards it.','Vindreglene endrer seg ikke: tre ganger korreksjonen på legget bort fra fiksen, og ett minutt inn mot den.'),['turnIn','inbound'],'race')],
+ holdNdb:[U(t2('This fix is an NDB. There is no course needle: the RMI needle points to the beacon.','Denne fiksen er en NDB. Det er ingen kursnål: RMI-nålen peker mot fyret.'),['tofix'],'sectors'),
+   U(t2('The entry rules do not change. Your heading as you cross the beacon decides: direct, parallel or teardrop.','Reglene for inngang endrer seg ikke. Headingen din i det du krysser fyret, bestemmer: direkte, parallell eller teardrop.'),['tofix','entry'],'sectors'),
+   U(t2('On the leg towards the beacon, keep the head of the needle on the inbound course (QDM). When the needle swings round, you are over the beacon.','På legget inn mot fyret holder du hodet på nålen på kursen inn (QDM). Når nålen slår rundt, er du over fyret.'),['entry','entryleg','back','outbound','turnIn','inbound','turnOut'],'sectors')],
+ holdDme:[U(t2('This fix is not a station. It is a point on a radial, at a DME distance from the VOR.','Denne fiksen er ikke en stasjon. Den er et punkt på en radial, i en DME-avstand fra VOR-en.'),['tofix'],'sectors'),
+   U(t2('You are over the fix when the needle is centred and the DME shows the distance of the fix.','Du er over fiksen når nålen står i midten og DME viser avstanden til fiksen.'),['tofix','entry'],'sectors'),
+   U(t2('The entry rules are the same as at a station: your heading at the fix decides.','Reglene for inngang er de samme som ved en stasjon: headingen din over fiksen bestemmer.'),['entry','entryleg','back','outbound','turnIn','inbound','turnOut'],'sectors')],
+ holdDmeLim:[U(t2('Fly the leg towards the fix first. It shows you the wind.','Fly legget inn mot fiksen først. Det viser deg vinden.'),['tofix'],'race'),
+   U(t2('In this hold the leg away from the fix does not end after one minute. It ends at a DME distance.','I denne holdingen slutter ikke legget bort fra fiksen etter ett minutt. Det slutter ved en DME-avstand.'),['turnOut','outbound'],'race'),
+   U(t2('When the DME reaches the limit, turn back towards the fix at once, whatever the clock says.','Når DME når grensen, svinger du tilbake mot fiksen med en gang, uansett hva klokka sier.'),['turnIn','inbound'],'race')],
+ racetrack:[U(t2('A racetrack procedure is one lap of a hold. You use it to turn round onto the final course.','En racetrack-prosedyre er én runde i en holding. Du bruker den til å snu inn på sluttkursen.'),['tofix'],'sectors'),
+   U(t2('You enter it exactly like a hold: direct, parallel or teardrop.','Du går inn akkurat som i en holding: direkte, parallell eller teardrop.'),['entry','entryleg','back'],'sectors'),
+   U(t2('Then fly one lap: away from the fix, the turn, and you are on the final course.','Fly så én runde: bort fra fiksen, svingen, og du er på sluttkursen.'),['turnOut','outbound','turnIn','inbound'],'race')],
+ pt:[U(t2('A procedure turn reverses your direction, so you come back on the same line. First fly over the station and away from it for the published time.','En prosedyresving snur deg, så du kommer tilbake på samme linje. Fly først over stasjonen og bort fra den i den publiserte tiden.'),['tofix','out'],'pt'),
+   U(t2('Then turn 45° to the side shown on the chart and fly for 1 minute.','Sving så 45° til den siden kartet viser, og fly i 1 minutt.'),['t45'],'pt'),
+   U(t2('Now turn 180° the other way. You come out at 45° to the course back to the station and intercept it.','Sving nå 180° den andre veien. Du kommer ut 45° på kursen tilbake til stasjonen og skjærer inn på den.'),['t180','in'],'pt')],
+ pt80:[U(t2('The 80°/260° turn is another way to reverse your direction. First fly over the station and away from it for the published time.','80°/260°-svingen er en annen måte å snu på. Fly først over stasjonen og bort fra den i den publiserte tiden.'),['tofix','out'],'pt'),
+   U(t2('Then turn 80° to the side shown on the chart.','Sving så 80° til den siden kartet viser.'),['t45'],'pt'),
+   U(t2('As soon as you reach that heading, turn 260° the other way. There is no straight leg in between. You come out on the course back to the station.','Så snart du har nådd den headingen, svinger du 260° den andre veien. Det er ikke noe rett legg imellom. Du kommer ut på kursen tilbake til stasjonen.'),['t180','in'],'pt')],
+ base:[U(t2('A base turn is a quick way to turn round. Fly over the station and out on a radial that points a little to one side of the final course.','En base turn er en rask måte å snu på. Fly over stasjonen og ut på en radial som peker litt til siden for sluttkursen.'),['tofix','out'],'base'),
+   U(t2('The angle between the two lines is about 36° divided by the minutes you fly out. Here: 2 minutes, so 18°.','Vinkelen mellom de to linjene er rundt 36° delt på minuttene du flyr ut. Her: 2 minutter, altså 18°.'),['out'],'base'),
+   U(t2('When the time is up, make one long turn towards the final course, more than 180°, and intercept it.','Når tiden er ute, gjør du én lang sving mot sluttkursen, mer enn 180°, og skjærer inn på den.'),['turn','in'],'base')],
+ vordme:[U(t2('An approach brings you down along the final course in steps you can check. Stay level until the final approach fix (FAF).','En innflyging tar deg ned langs sluttkursen i steg du kan sjekke. Hold høyden til final approach fix (FAF).'),['initial'],'prof'),
+   U(t2('At the FAF start down. A 3° path needs about ground speed × 5 in feet per minute: 90 kt gives 450.','Ved FAF starter du ned. En bane på 3° krever rundt fart over bakken × 5 i fot per minutt: 90 kt gir 450.'),['final'],'prof'),
+   U(t2('Every mile, compare your altitude with the DME table and adjust a little. Never go below the minimum altitude (MDA). No runway in sight there: climb away on the missed approach.','For hver nautiske mil sammenligner du høyden med DME-tabellen og justerer litt. Gå aldri under minstehøyden (MDA). Ser du ikke rullebanen der, stiger du ut på avbrutt innflyging.'),['min','miss'],'prof')],
+ vorApp:[U(t2('This approach has no DME. A small beacon (locator) on the final course marks the final approach fix (FAF). Fly towards the VOR and stay level.','Denne innflygingen har ingen DME. Et lite fyr (lokator) på sluttkursen markerer final approach fix (FAF). Fly mot VOR-en og hold høyden.'),['initial'],'prof'),
+   U(t2('When the ADF needle swings from ahead to behind, you are over the locator. Start the clock and descend at ground speed × 5.','Når ADF-nålen slår fra foran til bak, er du over lokatoren. Start klokka og gå ned med fart over bakken × 5.'),['final'],'prof'),
+   U(t2('Check your altitude against the time table. At the minimum altitude (MDA) with no runway in sight: fly the missed approach.','Sjekk høyden mot tidstabellen. Ved minstehøyden (MDA) uten rullebanen i sikte: fly avbrutt innflyging.'),['min','miss'],'prof')],
+ ndbApp:[U(t2('The beacon sits on the final course. Fly to it on the bearing to the beacon (QDM) and stay level.','Fyret ligger på sluttkursen. Fly til det på peilingen til fyret (QDM) og hold høyden.'),['initial'],'prof'),
+   U(t2('Over the beacon the needle swings round. Now follow the bearing from the beacon (QDR) and start down.','Over fyret slår nålen rundt. Følg nå peilingen fra fyret (QDR) og start ned.'),['final'],'prof'),
+   U(t2('Keep the tail of the needle on the final course. At the minimum altitude (MDA) with no runway in sight: fly the missed approach.','Hold halen på nålen på sluttkursen. Ved minstehøyden (MDA) uten rullebanen i sikte: fly avbrutt innflyging.'),['min','miss'],'prof')],
+ locApp:[U(t2('The localiser gives ILS precision left and right. There is no glide slope here, so the red GS flag stays on.','Localiseren gir ILS-presisjon sideveis. Her er det ingen glidebane, så det røde GS-flagget blir stående.'),['initial'],'prof'),
+   U(t2('At the final approach fix (FAF) you start down yourself. Check the DME table every mile.','Ved final approach fix (FAF) starter du ned selv. Sjekk DME-tabellen for hver nautiske mil.'),['final'],'prof'),
+   U(t2('The minimum altitude (MDA) is a floor: level off there. No runway in sight: fly the missed approach.','Minstehøyden (MDA) er et gulv: flat ut der. Ser du ikke rullebanen: fly avbrutt innflyging.'),['min','miss'],'prof')],
+ ils:[U(t2('An ILS has two needles. The localiser shows left and right of the runway line. The glide slope shows above and below the 3° path.','En ILS har to nåler. Localiseren viser venstre og høyre for rullebanelinjen. Glidebanen viser over og under banen på 3°.'),[0,0.35],'prof'),
+   U(t2('Get onto the localiser first and stay level. The glide slope needle comes down from above. When it reaches the middle, descend at ground speed × 5.','Kom inn på localiseren først og hold høyden. Glidebanenålen kommer ned ovenfra. Når den når midten, går du ned med fart over bakken × 5.'),[0.35,0.75],'prof'),
+   U(t2('At the decision altitude (DA) you decide. Runway in sight: land. Not in sight: go around and fly the missed approach.','På beslutningshøyden (DA) bestemmer du deg. Rullebanen i sikte: land. Ikke i sikte: avbryt og fly avbrutt innflyging.'),['miss'],'prof')],
+ lnav:[U(t2('An RNP approach uses GPS instead of a station on the ground. LNAV shows left and right only. The needle gets more sensitive as you near the FAF.','En RNP-innflyging bruker GPS i stedet for en stasjon på bakken. LNAV viser bare venstre og høyre. Nålen blir mer følsom når du nærmer deg FAF.'),['initial'],'prof'),
+   U(t2('There is no glide path. At the final approach fix (FAF) start down and check the distance table.','Det er ingen glidebane. Ved final approach fix (FAF) starter du ned og sjekker avstandstabellen.'),['final'],'prof'),
+   U(t2('The minimum altitude (MDA) is a floor. No runway in sight there: fly the missed approach.','Minstehøyden (MDA) er et gulv. Ser du ikke rullebanen der: fly avbrutt innflyging.'),['min','miss'],'prof')],
+ lnavVnav:[U(t2('LNAV/VNAV adds a needle for up and down. Its glide path is worked out from your altimeter (baro-VNAV).','LNAV/VNAV legger til en nål for opp og ned. Glidebanen regnes ut fra høydemåleren din (baro-VNAV).'),['initial'],'prof'),
+   U(t2('Stay level until that needle comes down to the middle. Then follow it down, like a glide slope.','Hold høyden til den nålen kommer ned til midten. Følg den så ned, som en glidebane på en ILS.'),['final'],'prof'),
+   U(t2('This approach has a decision altitude (DA). No runway in sight there: go around at once.','Denne innflygingen har en beslutningshøyde (DA). Ser du ikke rullebanen der: avbryt med en gang.'),['min','miss'],'prof')],
+ lpv:[U(t2('LPV is the most precise GPS approach. The needles come from satellites, but look and behave like an ILS.','LPV er den mest presise GPS-innflygingen. Nålene kommer fra satellitter, men ser ut og oppfører seg som på en ILS.'),['initial'],'prof'),
+   U(t2('Stay level until the glide path needle reaches the middle. Then follow both needles with small corrections.','Hold høyden til glidebanenålen når midten. Følg så begge nålene med små korreksjoner.'),['final'],'prof'),
+   U(t2('The decision altitude (DA) can be as low as 200 ft above the runway. No runway in sight: go around.','Beslutningshøyden (DA) kan være så lav som 200 ft over rullebanen. Ser du ikke rullebanen: avbryt.'),['min','miss'],'prof')],
+ sid:[U(t2('A departure route (SID) is a chain of straight legs between waypoints. The needle shows the leg you are on.','En utflygingsrute (SID) er en kjede av rette legg mellom waypoints. Nålen viser legget du er på.'),[0,0.3],'route'),
+   U(t2('Some waypoints have a lowest altitude. “At or above 3000” means: cross it at 3000 ft or higher. So climb early.','Noen waypoints har en laveste høyde. «I eller over 3000» betyr: kryss det i 3000 ft eller høyere. Stig derfor tidlig.'),[0.25,0.6],'route'),
+   U(t2('At each waypoint the course changes. Start the turn just before the waypoint and follow the new leg.','Ved hvert waypoint endrer kursen seg. Start svingen like før waypointet og følg det nye legget.'),[0.6,1],'route')],
+ star:[U(t2('An arrival route (STAR) leads you from the en-route airway down to the approach.','En innflygingsrute (STAR) fører deg fra luftleden og ned til innflygingen.'),[0,0.3],'route'),
+   U(t2('Waypoints can have altitudes: “at or below”, or exactly “at”. Plan ahead: you need about 3 NM for every 1000 ft down.','Waypoints kan ha høyder: «i eller under», eller nøyaktig «i». Planlegg fremover: du trenger rundt 3 NM for hver 1000 ft ned.'),[0.25,0.65],'route'),
+   U(t2('Turn at each waypoint and reach the last one at its altitude.','Sving ved hvert waypoint og kom til det siste i riktig høyde.'),[0.65,1],'route')],
+ ppTrack:[U(t2('The heading indicator has failed. Only the magnetic compass shows your heading now, and it swings in turns.','Kursgyroen har sviktet. Bare magnetkompasset viser headingen din nå, og det svinger i svinger.'),[0,0.3],'wedge'),
+   U(t2('So turn by the clock. A standard turn is 3° every second: 30° takes 10 seconds.','Sving derfor etter klokka. En standardsving er 3° i sekundet: 30° tar 10 sekunder.'),[0.3,0.65],'wedge'),
+   U(t2('Make small timed turns. Then let the needle tell you whether the turn was enough.','Gjør små svinger på tid. La så nålen fortelle deg om svingen var nok.'),[0.65,1],'wedge')],
+ ppNdb:[U(t2('No heading indicator. Read your heading from the compass when you fly straight and it has settled.','Ingen kursgyro. Les headingen av kompasset når du flyr rett frem og det har roet seg.'),[0,0.3],'homing'),
+   U(t2('Compass heading + ADF needle = the bearing to the beacon (QDM).','Kompassheading + ADF-nål = peilingen til fyret (QDM).'),[0.3,0.65],'homing'),
+   U(t2('Correct with short timed turns: 3° every second. Then check the sum again.','Korriger med korte svinger på tid: 3° i sekundet. Sjekk så summen på nytt.'),[0.65,1],'homing')],
+ ppHold:[U(t2('A hold without the heading indicator. Every turn is flown by the clock.','En holding uten kursgyro. Hver sving flys etter klokka.'),['tofix'],'race'),
+   U(t2('A half turn of 180° takes one minute at the standard rate. Stop the turn on time, then check the compass.','En halv sving på 180° tar ett minutt som standardsving. Stopp svingen på tid, og sjekk så kompasset.'),['turnOut','outbound'],'race'),
+   U(t2('On the leg towards the fix, the needle shows how well the timing worked. Adjust the next lap.','På legget inn mot fiksen viser nålen hvor godt tiden stemte. Juster neste runde.'),['turnIn','inbound'],'race')]
 };
-/* exercises without their own walk-through borrow one */
-const UMAP={orientRmi:'orient',orientDrill:'orient',int90:'intIn',intNdbIn:'intIn',intNdbOut:'intOut',holdLeft:'hold',holdNdb:'holdEntry',holdDme:'holdEntry'};
-const uwFor=id=>UW[id]||UW[UMAP[id]]||UW[(I.ITEM[id]||{}).ex]||UW.trackIn;
-const TRY=t2('Your turn: drag the aircraft and turn it with the handle. Watch the instrument answer.','Din tur: dra flyet og snu det med håndtaket. Se hvordan instrumentet svarer.');
-/* mental maths: the methods, also the walk-through */
-const MATHU=[t2('Most IFR sums are one rule of thumb each. Learn the rule, then the number comes by itself.','De fleste IFR-regnestykker er én tommelfingerregel hver. Lær regelen, så kommer tallet av seg selv.'),
-  t2('Wind: crosswind × 60 ÷ TAS is the correction angle. 1 in 60: 1 NM off after 60 NM is 1°.','Vind: sidevind × 60 ÷ TAS er korreksjonsvinkelen. 1 av 60: 1 NM ute etter 60 NM er 1°.'),
-  t2('Descent: ground speed × 5 is the rate on 3°; you need 3 NM for every 1000 ft.','Nedstigning: fart over bakken × 5 er raten på 3°; du trenger 3 NM for hver 1000 ft.')];
+const uwFor=id=>UW[id]||UW[(I.ITEM[id]||{}).ex]||UW.trackIn;
+/* "Your turn": one concrete thing to try, per kind of exercise */
+const TRYX={
+ radial:t2('Your turn. Drag the aircraft: the radial changes. Turn it with the handle: the radial stays the same.','Din tur. Dra flyet: radialen endrer seg. Snu det med håndtaket: radialen er den samme.'),
+ rbi:t2('Your turn. Turn the aircraft with the handle. The needle number changes, but heading + needle stays the same.','Din tur. Snu flyet med håndtaket. Tallet på nålen endrer seg, men heading + nål er det samme.'),
+ line:t2('Your turn. Drag the aircraft to each side of the course line. Watch the needle point back towards the line.','Din tur. Dra flyet til hver side av kurslinjen. Se at nålen peker tilbake mot linjen.'),
+ cross:t2('Your turn. Drag the aircraft slowly across the course line. See how the needle moves in as you get close.','Din tur. Dra flyet sakte over kurslinjen. Se hvordan nålen kommer inn når du nærmer deg.'),
+ ndb:t2('Your turn. Turn the aircraft with the handle. The needle moves, but heading + needle still points at the beacon.','Din tur. Snu flyet med håndtaket. Nålen flytter seg, men heading + nål peker fortsatt mot fyret.'),
+ arc:t2('Your turn. Drag the aircraft along the arc. The DME stays the same and the station stays on the wingtip.','Din tur. Dra flyet langs buen. DME er den samme, og stasjonen blir liggende på vingetippen.'),
+ entry:t2('Your turn. Drag the aircraft round the fix. The entry changes when you move from one coloured sector to the next.','Din tur. Dra flyet rundt fiksen. Inngangen skifter når du går fra én farget sektor til den neste.'),
+ hold:t2('Your turn. Drag the aircraft round the pattern and turn it with the handle. Watch what the instrument shows on each leg.','Din tur. Dra flyet rundt mønsteret og snu det med håndtaket. Se hva instrumentet viser på hvert legg.'),
+ app:t2('Your turn. Drag the aircraft along the final course. Drag the white dot in the profile up and down to see “too high” and “too low”.','Din tur. Dra flyet langs sluttkursen. Dra den hvite prikken i profilen opp og ned for å se «for høyt» og «for lavt».'),
+ any:t2('Your turn. Drag the aircraft and turn it with the handle. Watch how the instrument answers.','Din tur. Dra flyet og snu det med håndtaket. Se hvordan instrumentet svarer.')
+};
+function tryFor(id){ const it=I.ITEM[id]||{}, ex=it.ex, p=it.p||{};
+  if(ex==='orient') return p.kind==='rbi'?TRYX.rbi:TRYX.radial; if(ex==='trackIn'&&!p.pp||ex==='trackOut'||ex==='pass') return TRYX.line;
+  if(ex==='intIn'||ex==='intOut'||ex==='intPass'||ex==='locInt') return p.ndb?TRYX.ndb:TRYX.cross; if(ex==='ndb'||ex==='ndbOut') return TRYX.ndb; if(ex==='dme') return TRYX.arc;
+  if(ex==='holdEntry') return TRYX.entry; if(ex==='hold') return TRYX.hold; if(isApp(ex)) return TRYX.app; return TRYX.any; }
+/* mental maths: the methods, also the walk-through (one set per topic) */
+const MATH1=t2('Each question uses one rule of thumb. Learn the rule, and the number comes by itself.','Hvert spørsmål bruker én tommelfingerregel. Lær regelen, så kommer tallet av seg selv.');
+const MATHR={
+ int:t2('Intercept heading: the course plus or minus 30° or 45°, towards the needle.','Heading for å skjære inn: kursen pluss eller minus 30° eller 45°, mot nålen.'),
+ wca:t2('Wind: crosswind × 60 ÷ your true airspeed (TAS) gives the correction in degrees.','Vind: sidevind × 60 ÷ den sanne flyhastigheten (TAS) gir korreksjonen i grader.'),
+ r160:t2('1 in 60: being 1 NM off after 60 NM is an error of 1°.','1 av 60: 1 NM ute etter 60 NM er en feil på 1°.'),
+ tts:t2('Time to the station: seconds ÷ degrees of bearing change = minutes.','Tid til stasjonen: sekunder ÷ grader peilingsendring = minutter.'),
+ lead:t2('A 90° turn needs one turn radius: about ground speed ÷ 200, in NM. On an arc that is 60 × radius ÷ DME degrees.','En sving på 90° trenger én svingradius: rundt fart over bakken ÷ 200, i NM. På en bue er det 60 × radius ÷ DME grader.'),
+ rod:t2('On a 3° path: ground speed × 5 gives the rate of descent in feet per minute. 100 kt gives 500.','På en bane på 3°: fart over bakken × 5 gir synkehastigheten i fot per minutt. 100 kt gir 500.'),
+ tod:t2('To lose 1000 ft on a 3° path you need 3 NM. So 3000 ft takes 9 NM.','For å tape 1000 ft på en bane på 3° trenger du 3 NM. 3000 ft krever altså 9 NM.')};
+const cat2=(a,b)=>({en:a.en+' '+b.en,no:a.no+' '+b.no});
+function mathU(id){ const mk=((I.ITEM[id]||{}).p||{}).mk, nav=Array.isArray(mk)&&mk.indexOf('int')>=0, app=Array.isArray(mk)&&mk.indexOf('rod')>=0;
+  if(nav) return [MATH1,cat2(MATHR.int,MATHR.wca),cat2(MATHR.r160,MATHR.lead)]; if(app) return [MATH1,MATHR.rod,MATHR.tod];
+  return [MATH1,cat2(MATHR.wca,MATHR.r160),cat2(MATHR.rod,MATHR.tod)]; }
+function mathRules(id){ const mk=((I.ITEM[id]||{}).p||{}).mk, nav=Array.isArray(mk)&&mk.indexOf('int')>=0, app=Array.isArray(mk)&&mk.indexOf('rod')>=0;
+  return app?[MATHR.rod,MATHR.tod]:nav?[MATHR.int,MATHR.wca,MATHR.r160,MATHR.tts,MATHR.lead]:[MATHR.int,MATHR.wca,MATHR.r160,MATHR.tts,MATHR.lead,MATHR.rod,MATHR.tod]; }
 const MATHQ={
- int:{q:t2('Course {crs}, needle {side}. Intercept at {ang}°: heading?','Kurs {crs}, nål til {side}. Interception på {ang}°: kurs?'),m:[t2('The course is on the side of the needle: {side}.','Kursen ligger på samme side som nålen: {side}.'),t2('Turn towards it: course {sgn} {ang}°.','Sving mot den: kurs {sgn} {ang}°.'),t2('{crs} {sgn} {ang} = {ans}.','{crs} {sgn} {ang} = {ans}.')]},
- wca:{q:t2('Crosswind {xw} kt from the {side}, TAS {tas} kt. Wind correction angle?','Sidevind {xw} kt fra {side}, TAS {tas} kt. Vindkorreksjonsvinkel?'),m:[t2('Rule: crosswind × 60 ÷ TAS.','Regel: sidevind × 60 ÷ TAS.'),t2('{xw} × 60 = {p60}.','{xw} × 60 = {p60}.'),t2('{p60} ÷ {tas} ≈ {ans}°, into the wind.','{p60} ÷ {tas} ≈ {ans}°, opp mot vinden.')]},
- r160:{q:t2('After {dist} NM you are {off} NM off track. Track error in degrees?','Etter {dist} NM er du {off} NM ute av sporet. Sporfeil i grader?'),m:[t2('1 in 60: 1 NM off at 60 NM is 1°.','1 av 60: 1 NM ute på 60 NM er 1°.'),t2('Error = 60 × off ÷ distance.','Feil = 60 × ute ÷ avstand.'),t2('60 × {off} ÷ {dist} = {ans}°.','60 × {off} ÷ {dist} = {ans}°.')]},
- tts:{q:t2('Station on the wingtip, the bearing changes {deg}° in {sec} s. Minutes to the station?','Stasjonen på vingetippen, peilingen endres {deg}° på {sec} s. Minutter til stasjonen?'),m:[t2('Minutes = seconds ÷ degrees.','Minutter = sekunder ÷ grader.'),t2('{sec} ÷ {deg}.','{sec} ÷ {deg}.'),t2('= {ans} minutes.','= {ans} minutter.')]},
- rod:{q:t2('Ground speed {gs} kt on a 3° path. Rate of descent?','Fart over bakken {gs} kt på en bane på 3°. Sinkrate?'),m:[t2('Rule: ground speed × 5.','Regel: fart over bakken × 5.'),t2('{gs} × 5.','{gs} × 5.'),t2('= {ans} ft/min (exactly about {ex}).','= {ans} ft/min (nøyaktig rundt {ex}).')]},
- tod:{q:t2('Descend from {from} ft to {to} ft on 3°. How many NM before?','Ned fra {from} ft til {to} ft på 3°. Hvor mange NM før?'),m:[t2('Rule: 3 NM per 1000 ft.','Regel: 3 NM per 1000 ft.'),t2('{from} − {to} = {dh} ft.','{from} − {to} = {dh} ft.'),t2('{dh} ÷ 1000 × 3 = {ans} NM.','{dh} ÷ 1000 × 3 = {ans} NM.')]},
- lead:{q:t2('{dme} DME arc, ground speed {gs} kt. Lead radial for the 90° turn (degrees before)?','{dme} DME-bue, fart over bakken {gs} kt. Ledende radial for svingen på 90° (grader før)?'),m:[t2('Turn radius ≈ ground speed ÷ 200 = {R} NM.','Svingradius ≈ fart over bakken ÷ 200 = {R} NM.'),t2('Lead = 60 × radius ÷ DME.','Ledning = 60 × radius ÷ DME.'),t2('60 × {R} ÷ {dme} ≈ {ans}°.','60 × {R} ÷ {dme} ≈ {ans}°.')]},
- leadd:{q:t2('Ground speed {gs} kt. Lead distance for a 90° turn onto a line?','Fart over bakken {gs} kt. Ledningsavstand for en sving på 90° inn på en linje?'),m:[t2('A 90° turn needs one turn radius.','En sving på 90° trenger én svingradius.'),t2('Radius ≈ ground speed ÷ 200.','Radius ≈ fart over bakken ÷ 200.'),t2('{gs} ÷ 200 = {ans} NM.','{gs} ÷ 200 = {ans} NM.')]}
+ int:{q:t2('Course {crs}, the needle is to the {side}. You want to cross the course at {ang}°. Which heading?','Kurs {crs}, nålen står til {side}. Du vil krysse kursen med {ang}°. Hvilken heading?'),m:[t2('The course is on the same side as the needle: {side}.','Kursen ligger på samme side som nålen: {side}.'),t2('Turn towards it: course {sgn} {ang}°.','Sving mot den: kurs {sgn} {ang}°.'),t2('{crs} {sgn} {ang} = {ans}.','{crs} {sgn} {ang} = {ans}.')]},
+ wca:{q:t2('Crosswind {xw} kt from the {side}, true airspeed (TAS) {tas} kt. How many degrees of wind correction?','Sidevind {xw} kt fra {side}, sann flyhastighet (TAS) {tas} kt. Hvor mange grader vindkorreksjon?'),m:[t2('Rule: crosswind × 60 ÷ TAS.','Regel: sidevind × 60 ÷ TAS.'),t2('{xw} × 60 = {p60}.','{xw} × 60 = {p60}.'),t2('{p60} ÷ {tas} ≈ {ans}°, into the wind.','{p60} ÷ {tas} ≈ {ans}°, opp mot vinden.')]},
+ r160:{q:t2('After {dist} NM you are {off} NM to the side of your track. How many degrees off?','Etter {dist} NM er du {off} NM til siden for sporet. Hvor mange grader feil?'),m:[t2('1 in 60: 1 NM off at 60 NM is 1°.','1 av 60: 1 NM ute etter 60 NM er 1°.'),t2('Error = 60 × distance off ÷ distance flown.','Feil = 60 × avstand ute ÷ fløyet avstand.'),t2('60 × {off} ÷ {dist} = {ans}°.','60 × {off} ÷ {dist} = {ans}°.')]},
+ tts:{q:t2('The station is on your wingtip. The bearing changes {deg}° in {sec} s. How many minutes to the station?','Stasjonen ligger på vingetippen. Peilingen endrer seg {deg}° på {sec} s. Hvor mange minutter til stasjonen?'),m:[t2('Minutes = seconds ÷ degrees.','Minutter = sekunder ÷ grader.'),t2('{sec} ÷ {deg}.','{sec} ÷ {deg}.'),t2('= {ans} minutes.','= {ans} minutter.')]},
+ rod:{q:t2('Ground speed {gs} kt on a 3° path. How fast do you descend, in ft/min?','Fart over bakken {gs} kt på en bane på 3°. Hvor fort går du ned, i ft/min?'),m:[t2('Rule: ground speed × 5.','Regel: fart over bakken × 5.'),t2('{gs} × 5.','{gs} × 5.'),t2('= {ans} ft/min (the exact figure is about {ex}).','= {ans} ft/min (det nøyaktige tallet er rundt {ex}).')]},
+ tod:{q:t2('You must descend from {from} ft to {to} ft on a 3° path. How many NM before the point do you start?','Du skal ned fra {from} ft til {to} ft på en bane på 3°. Hvor mange NM før punktet starter du?'),m:[t2('Rule: 3 NM for every 1000 ft.','Regel: 3 NM for hver 1000 ft.'),t2('{from} − {to} = {dh} ft.','{from} − {to} = {dh} ft.'),t2('{dh} ÷ 1000 × 3 = {ans} NM.','{dh} ÷ 1000 × 3 = {ans} NM.')]},
+ lead:{q:t2('You fly a {dme} DME arc at a ground speed of {gs} kt. How many degrees before your radial do you start the 90° turn?','Du flyr en {dme} DME-bue med {gs} kt fart over bakken. Hvor mange grader før radialen din starter du svingen på 90°?'),m:[t2('Turn radius ≈ ground speed ÷ 200 = {R} NM.','Svingradius ≈ fart over bakken ÷ 200 = {R} NM.'),t2('Degrees = 60 × radius ÷ DME.','Grader = 60 × radius ÷ DME.'),t2('60 × {R} ÷ {dme} ≈ {ans}°.','60 × {R} ÷ {dme} ≈ {ans}°.')]},
+ leadd:{q:t2('Ground speed {gs} kt. How many NM before a line do you start a 90° turn onto it?','Fart over bakken {gs} kt. Hvor mange NM før en linje starter du en sving på 90° inn på den?'),m:[t2('A 90° turn needs one turn radius.','En sving på 90° trenger én svingradius.'),t2('Radius ≈ ground speed ÷ 200.','Radius ≈ fart over bakken ÷ 200.'),t2('{gs} ÷ 200 = {ans} NM.','{gs} ÷ 200 = {ans} NM.')]}
 };
 function mathParams(Q){ const p=Object.assign({},Q.p,{ans:Q.unit==='°'&&Q.kind==='int'?d3(Q.ans):String(Q.ans).replace('.',no()?',':'.')});
   if(Q.kind==='int'){ p.crs=d3(Q.p.crs); p.sgn=Q.p.side==='R'?'+':'−'; p.side=sideW(Q.p.side); }
@@ -240,213 +385,212 @@ function mathParams(Q){ const p=Object.assign({},Q.p,{ans:Q.unit==='°'&&Q.kind=
 
 /* live coach lines (code → one line) and their "Why?" */
 const CO={
- 'orient.ask':t2('Position {n} of {of}: centre the needle with FROM, then report your radial.','Posisjon {n} av {of}: sentrer nålen med FROM, og rapporter radialen din.'),
- 'orient.askr':t2('Position {n} of {of}: read the tail of the green needle, then report your radial.','Posisjon {n} av {of}: les halen på den grønne nålen, og rapporter radialen din.'),
- 'orient.askq':t2('Position {n} of {of}: heading + needle = bearing to the beacon. Report it.','Posisjon {n} av {of}: kurs + nål = peiling til fyret. Rapporter den.'),
- 'orient.rmi.why':t2('The RMI needle head points to the station, so its tail points to where you are: your radial.','RMI-nålens hode peker mot stasjonen, så halen peker dit du er: radialen din.'),
- 'orient.rbi.why':t2('The needle is measured from the nose. Add your heading to turn it into a bearing; take away 360 if it goes over.','Nålen måles fra nesen. Legg til kursen for å gjøre den om til en peiling; trekk fra 360 hvis den går over.'),
- 'orient.to':t2('Centred with TO: that is the bearing to the station. Your radial is the other end.','Midt med TO: det er peilingen til stasjonen. Radialen din er den andre enden.'),
- 'orient.to.why':t2('With TO, the OBS shows the course that takes you to the station. The radial is where you are from it: add or take away 180.','Med TO viser OBS kursen som tar deg til stasjonen. Radialen er der du er fra den: legg til eller trekk fra 180.'),
- 'orient.centred':t2('Centred with FROM: you are on radial {obs}. Report it.','Midt med FROM: du er på radial {obs}. Rapporter den.'),
- 'track.reverse':t2('FROM while flying to the station: the needle works backwards. Set {crs}.','FROM mens du flyr mot stasjonen: nålen virker baklengs. Still inn {crs}.'),
- 'track.reverse.why':t2('Set the course you fly. Inbound that gives TO, and then a needle on the right always means the course is on your right.','Still inn kursen du flyr. Inn mot stasjonen gir det TO, og da betyr nål til høyre alltid at kursen er til høyre.'),
- 'track.setcrs':t2('Set the course first: OBS {crs}.','Still inn kursen først: OBS {crs}.'),
- 'track.setcrs.why':t2('The needle only means something once the OBS shows the course you want to fly.','Nålen betyr noe først når OBS viser kursen du vil fly.'),
- 'track.good':t2('On course. Hold this heading{wca}.','På kurs. Hold denne kursen{wca}.'),
- 'track.small':t2('Needle slightly {side}. Turn 5° {side}, then hold and watch.','Nålen litt til {side}. Sving 5° til {side}, hold og se.'),
- 'track.small.why':t2('Small corrections: 5° for a dot or less. Wait until the needle stops before you correct again.','Små korreksjoner: 5° for én prikk eller mindre. Vent til nålen stopper før du korrigerer igjen.'),
- 'track.big':t2('Needle well {side}. Turn towards it, heading {hdg}.','Nålen godt til {side}. Sving mot den, kurs {hdg}.'),
- 'track.big.why':t2('Turn towards the needle. The bigger the deflection, the bigger the correction, up to 30° to 45°.','Sving mot nålen. Jo større utslag, jo større korreksjon, opp til 30° til 45°.'),
- 'track.wind':t2('Heading on the course, but the needle drifts {side}: that is the wind. Hold a few degrees into it.','Kursen er lik sporet, men nålen driver til {side}: det er vinden. Hold noen grader opp mot den.'),
- 'track.wind.why':t2('Find the heading that keeps the needle still. Its difference from the course is your wind correction.','Finn kursen som holder nålen i ro. Forskjellen fra sporet er vindkorreksjonen din.'),
- 'track.cone':t2('Over the station: the needle is unreliable. Hold the heading until the flag changes.','Over stasjonen: nålen er upålitelig. Hold kursen til flagget skifter.'),
- 'int.pickA':t2('Course to your {side}. Turn to {a}, a {ang}° intercept.','Kursen ligger til {side}. Sving til {a}, en interception på {ang}°.'),
- 'int.pick':t2('Course to your {side}. Turn to {a} (30°) or {b} (45°).','Kursen ligger til {side}. Sving til {a} (30°) eller {b} (45°).'),
- 'int.pick.why':t2('Intercept heading = course ± 30° to 45°, towards the needle. Far out use 45°; close in, 30°.','Interceptkurs = kursen ± 30° til 45°, mot nålen. Langt ute 45°; nærme 30°.'),
- 'int.wait':t2('Hold the intercept heading. The needle will come off the stop.','Hold interceptkursen. Nålen kommer løs fra stoppen.'),
- 'int.wait.why':t2('Full scale means 10° or more off the course. Nothing to do yet but hold the heading.','Fullt utslag betyr 10° eller mer fra kursen. Ingenting å gjøre ennå annet enn å holde kursen.'),
- 'int.lead':t2('Needle moving: start the turn onto {crs} now.','Nålen beveger seg: start svingen inn på {crs} nå.'),
- 'int.lead.why':t2('A turn takes distance. Start it as the needle moves through 2 to 3 dots, and you roll out on the course instead of through it.','En sving tar plass. Start den når nålen passerer 2 til 3 prikker, så ruller du ut på kursen i stedet for gjennom den.'),
- 'ndb.homing':t2('Homing: the nose follows the needle and the wind bends your path.','Homing: nesen følger nålen og vinden bøyer banen din.'),
- 'ndb.homing.why':t2('Pointing at the beacon only works in still air. In wind, fly a heading into it and let the needle sit a few degrees off the nose.','Å peke på fyret virker bare i stille luft. I vind flyr du en kurs opp mot den og lar nålen stå noen grader fra nesen.'),
- 'ndb.good':t2('On track. The needle sits {rb}° {side} of the nose: that is your drift.','På sporet. Nålen står {rb}° til {side} for nesen: det er avdriften din.'),
- 'ndb.good.why':t2('Tracking with drift, the needle points at the station, not straight ahead. Its angle off the nose equals your wind correction.','Når du tracker med avdrift, peker nålen mot stasjonen, ikke rett frem. Vinkelen fra nesen er lik vindkorreksjonen.'),
- 'ndb.off':t2('Bearing to the beacon {qdm}, you want {crs}. Turn {side} to regain the track.','Peiling til fyret {qdm}, du vil ha {crs}. Sving til {side} for å komme inn på sporet.'),
- 'ndb.off.why':t2('Bearing to the station = heading + needle. Bearing bigger than the one you want: you are left of track, so turn right.','Peiling til stasjonen = kurs + nål. Større peiling enn ønsket: du er til venstre for sporet, sving til høyre.'),
- 'arc.out':t2('Track outbound. At {lead} DME turn {dir} onto the arc, heading about {hdg}.','Følg radialen ut. Ved {lead} DME svinger du til {dir} inn på buen, kurs rundt {hdg}.'),
- 'arc.turnsoon':t2('Arc ahead: turn {dir} at {lead} DME to roll out on {R} DME.','Buen kommer: sving til {dir} ved {lead} DME for å rulle ut på {R} DME.'),
- 'arc.lead.why':t2('A 90° turn takes about one turn radius. Start that much early and you roll out on the arc instead of outside it.','En sving på 90° tar omtrent én svingradius. Start så mye før, så ruller du ut på buen i stedet for utenfor.'),
- 'arc.good':t2('On the arc. Keep the station on the wingtip; nudge about 10° when the DME drifts.','På buen. Hold stasjonen på vingetippen; juster rundt 10° når DME-en driver.'),
- 'arc.outside':t2('{e} NM outside the arc: turn 10° to 20° towards the station.','{e} NM utenfor buen: sving 10° til 20° mot stasjonen.'),
- 'arc.inside':t2('{e} NM inside the arc: turn about 10° away from the station.','{e} NM innenfor buen: sving rundt 10° vekk fra stasjonen.'),
- 'arc.fly.why':t2('On an arc you never fly straight for long. Keep the RMI needle at the wingtip and correct in steps of about 10°.','På en bue flyr du aldri rett lenge. Hold RMI-nålen ved vingetippen og korriger i trinn på rundt 10°.'),
- 'arc.leadradial':t2('Lead radial: start the turn onto {crs} about {lead}° before radial {r1}.','Ledende radial: start svingen inn på {crs} rundt {lead}° før radial {r1}.'),
- 'arc.leadradial.why':t2('The turn from the arc onto the radial is 90°. Start it a few degrees early: about 60 × turn radius ÷ DME.','Svingen fra buen inn på radialen er 90°. Start den noen grader før: rundt 60 × svingradius ÷ DME.'),
- 'hold.tofix':t2('To the fix. Your heading now means a {entry} entry.','Mot fiksen. Kursen din nå betyr {entry} inngang.'),
- 'hold.entry.why':t2('The heading you cross the fix with picks the entry. Picture the 70° line through the fix on the holding side.','Kursen du krysser fiksen med bestemmer inngangen. Se for deg 70°-linjen gjennom fiksen på holdingsiden.'),
- 'hold.entry.direct':t2('Direct entry: turn {dir} into the hold, outbound {out}.','Direkte inngang: sving til {dir} inn i holdingen, ut {out}.'),
- 'hold.entry.direct.why':t2('Direct: you are already pointing roughly the right way. Follow the hold.','Direkte: du peker allerede omtrent riktig vei. Følg holdingen.'),
- 'hold.entry.parallel':t2('Parallel entry: turn to {out} on the non-holding side, time 1 minute.','Parallell inngang: sving til {out} på siden uten holding, ta tiden 1 minutt.'),
- 'hold.entry.parallel.why':t2('Parallel: fly outbound on the other side of the inbound course, then turn back through the holding side to the fix.','Parallell: fly ut på motsatt side av inngående kurs, og sving så tilbake gjennom holdingsiden til fiksen.'),
- 'hold.entry.teardrop':t2('Teardrop entry: fly {td}, 30° into the holding side, for 1 minute.','Teardrop-inngang: fly {td}, 30° inn mot holdingsiden, i 1 minutt.'),
- 'hold.entry.teardrop.why':t2('Teardrop: an offset leg 30° from the outbound course, then one turn in the hold direction onto the inbound course.','Teardrop: en legg 30° fra utgående kurs, så én sving i holdingretningen inn på inngående kurs.'),
- 'hold.entryleg':t2('{s} s to go on the entry leg.','{s} s igjen på inngangsleggen.'),
- 'hold.entryturn':t2('Time: turn {dir} back towards the fix.','Tiden er ute: sving til {dir} tilbake mot fiksen.'),
- 'hold.entryturn.why':t2('Teardrop: turn in the hold direction onto the inbound course. Parallel: turn towards the holding side, more than 180°, back to the fix.','Teardrop: sving i holdingretningen inn på inngående kurs. Parallell: sving mot holdingsiden, mer enn 180°, tilbake til fiksen.'),
- 'hold.back':t2('Back to the fix on {inb}.','Tilbake til fiksen på {inb}.'),
- 'hold.inbound':t2('Inbound {inb}. Hold about {hdg} to stay on the course.','Inn {inb}. Hold rundt {hdg} for å bli på kursen.'),
- 'hold.inbound.why':t2('The inbound leg teaches you the wind: the heading that keeps the needle centred gives the correction for the whole hold.','Inngående legg lærer deg vinden: kursen som holder nålen i midten gir korreksjonen for hele holdingen.'),
- 'hold.turnout':t2('Over the fix: turn {dir} to the outbound heading {hdg}.','Over fiksen: sving til {dir} til utgående kurs {hdg}.'),
- 'hold.turnout.why':t2('Outbound heading = outbound course with three times the inbound correction the other way. The triple also covers the drift in both turns.','Utgående kurs = utgående spor med tre ganger den inngående korreksjonen motsatt vei. Tredoblingen dekker også avdriften i begge svingene.'),
- 'hold.outbound':t2('Outbound {hdg}. Start the clock abeam the fix.','Ut {hdg}. Start klokken tvers av fiksen.'),
- 'hold.outbound.why':t2('Timing starts abeam the fix, or when the outbound turn is complete if that is later.','Tiden starter tvers av fiksen, eller når svingen ut er ferdig hvis det er senere.'),
- 'hold.timing':t2('Outbound {s} s of about {want} s.','Ut {s} s av rundt {want} s.'),
- 'hold.timing.why':t2('Set the outbound time so the inbound leg takes 1 minute. Inbound leg short? Fly longer outbound next time.','Juster tiden ut så inngående legg tar 1 minutt. Ble inngående legg kort? Fly lenger ut neste gang.'),
- 'hold.turnin':t2('Turn inbound to {inb}. Watch the needle as you roll out.','Sving inn til {inb}. Følg nålen når du ruller ut.'),
- 'pt.tofix':t2('Overfly the station, then outbound on {out}.','Overfly stasjonen, så ut på {out}.'),
- 'pt.tofix.why':t2('Start the clock over the station: the outbound time is published.','Start klokken over stasjonen: tiden ut er publisert.'),
- 'pt.out':t2('Outbound: {s} s to the 45° turn.','Ut: {s} s til 45°-svingen.'),
- 'pt.turn45':t2('Turn {dir} {a}° to {hdg}, and start the clock.','Sving {a}° til {dir} til {hdg}, og start klokken.'),
- 'pt.turn45.why':t2('The 45° turn and the 1-minute leg make room for the 180° turn. Turn to the side on the chart: that side is protected.','45°-svingen og legget på 1 minutt gir plass til 180°-svingen. Sving til siden på kartet: den siden er beskyttet.'),
- 'pt.leg45':t2('{s} s on the 45° leg.','{s} s på 45°-legget.'),
- 'pt.turn180':t2('Turn {dir} 180° to {hdg} to intercept inbound.','Sving 180° til {dir} til {hdg} for å fange kursen inn.'),
- 'pt.turn180.why':t2('The 180° turn goes the opposite way to the 45° turn, away from the station, so you stay in the protected area.','180°-svingen går motsatt vei av 45°-svingen, bort fra stasjonen, så du blir i det beskyttede området.'),
- 'pt.intercept':t2('Intercept {inb} inbound: turn on as the needle moves.','Fang {inb} inn: sving inn når nålen beveger seg.'),
- 'base.tofix':t2('Overfly the station, then outbound on radial {ro}.','Overfly stasjonen, så ut på radial {ro}.'),
- 'base.why':t2('A base turn is an outbound leg slightly off the final course, then one turn of more than 180° onto it.','En base turn er en legg ut litt til siden for sluttkursen, så én sving på mer enn 180° inn på den.'),
- 'base.out':t2('Outbound: {s} s to the base turn.','Ut: {s} s til base turn.'),
- 'base.turn':t2('Turn {dir} now, onto {inb} inbound.','Sving til {dir} nå, inn på {inb}.'),
- 'base.turn.why':t2('Turn towards the final course: the outbound leg is offset to that side so one turn brings you onto it.','Sving mot sluttkursen: legget ut er forskjøvet til den siden, så én sving tar deg inn på den.'),
- 'vor.initial':t2('Level at {alt} ft until the FAF at {faf} DME. Set the MDA, {mda} ft.','Plant på {alt} ft til FAF ved {faf} DME. Still inn MDA, {mda} ft.'),
- 'vor.initial.why':t2('No descent below the published altitude before the final approach fix.','Ingen nedstigning under publisert høyde før final approach fix.'),
- 'vor.faf':t2('FAF next: start down at about {rod} ft/min.','FAF nå: start ned med rundt {rod} ft/min.'),
- 'vor.faf.why':t2('At the FAF, descend on the 3° profile: rate ≈ ground speed × 5.','Ved FAF sinker du på 3°-profilen: rate ≈ fart over bakken × 5.'),
- 'vor.onprofile':t2('On profile. Next check {dme} DME, {alt} ft.','På profilen. Neste sjekk {dme} DME, {alt} ft.'),
- 'vor.high':t2('{pa} ft high. Increase the descent a little.','{pa} ft høyt. Øk sinket litt.'),
- 'vor.low':t2('{pa} ft low. Reduce the descent.','{pa} ft lavt. Reduser sinket.'),
- 'vor.profile.why':t2('Check the altitude against the table every mile. High or low: change the rate a little, then check again.','Sjekk høyden mot tabellen hver mil. Høyt eller lavt: endre raten litt, og sjekk igjen.'),
- 'app.minimums':t2('Minimums. Runway in sight: land.','Minima. Rullebanen i sikte: land.'),
- 'ils.vector':t2('Hold the heading. The localiser is not alive yet.','Hold kursen. Localiseren er ikke levende ennå.'),
- 'ils.vector.why':t2('Full scale on the localiser is about 2.5°: it comes alive late and moves fast.','Fullt utslag på localiseren er rundt 2,5°: den blir levende sent og beveger seg fort.'),
- 'ils.alive':t2('Localiser alive: turn onto {crs} now.','Localiseren lever: sving inn på {crs} nå.'),
- 'ils.waitgs':t2('Established. Hold {alt} ft until the glide slope comes down to the centre.','Etablert. Hold {alt} ft til glidebanen kommer ned til midten.'),
- 'ils.waitgs.why':t2('Take the glide slope from below. When the needle is centred, descend at about {rod} ft/min.','Ta glidebanen nedenfra. Når nålen er i midten, sinker du med rundt {rod} ft/min.'),
- 'ils.good':t2('On both needles. Keep the corrections small.','På begge nålene. Hold korreksjonene små.'),
- 'ils.low':t2('Below the glide slope: reduce the descent.','Under glidebanen: reduser sinket.'),
- 'ils.high':t2('Above the glide slope: increase the descent.','Over glidebanen: øk sinket.'),
- 'ils.loc':t2('Localiser {side}: turn 2° to 3° towards it.','Localiseren til {side}: sving 2° til 3° mot den.'),
- 'ils.fly.why':t2('Fly the needles with small changes: 2° to 3° of heading for the localiser, 100 to 200 ft/min for the glide slope.','Fly nålene med små endringer: 2° til 3° kurs for localiseren, 100 til 200 ft/min for glidebanen.'),
- 'pt.turn260':t2('Turn {dir} through 260° to {hdg}, onto the inbound course.','Sving 260° til {dir} til {hdg}, inn på kursen inn.'),
- 'pt.turn260.why':t2('80°/260°: no leg between the turns. The 260° turn goes the opposite way and ends on the inbound course.','80°/260°: ingen legg mellom svingene. Svingen på 260° går motsatt vei og ender på kursen inn.'),
- 'hold.dmeout':t2('Outbound {hdg}. Turn inbound at {D} DME (now {now}).','Ut {hdg}. Sving inn ved {D} DME (nå {now}).'),
- 'hold.dmeout.why':t2('A DME-limited hold ends the outbound leg at the DME limit, whatever the time.','En DME-begrenset holding avslutter utgående legg ved DME-grensen, uansett tid.'),
- 'miss.climb':t2('Go around: climb, track {crs}. At {ta} ft turn {dir} heading {hdg}.','Gå rundt: stig, følg {crs}. Ved {ta} ft sving til {dir}, kurs {hdg}.'),
- 'miss.turn':t2('Turn {dir} heading {hdg}, climb to {alt} ft.','Sving til {dir}, kurs {hdg}, stig til {alt} ft.'),
- 'miss.why':t2('At the minimums without the runway in sight, go around at once: power, pitch up, climb straight ahead, then the published turn.','Ved minima uten rullebanen i sikte går du rundt med en gang: kraft, nesen opp, stig rett frem, så den publiserte svingen.'),
- 'app.init':t2('Level at {alt} ft until the FAF. Minimums {mins} ft.','Plant på {alt} ft til FAF. Minima {mins} ft.'),
- 'app.init.cdfa.why':t2('No descent below the published altitude before the final approach fix. Then a constant descent to the MDA.','Ingen nedstigning under publisert høyde før final approach fix. Så en jevn nedstigning til MDA.'),
- 'app.init.gp.why':t2('Stay level and let the glide path come down to you; take it from below.','Hold deg plant og la glidebanen komme ned til deg; ta den nedenfra.'),
- 'app.faf':t2('FAF ({fix}) next: start down at about {rod} ft/min.','FAF ({fix}) nå: start ned med rundt {rod} ft/min.'),
- 'app.gpfaf':t2('Glide path coming down: when it centres, descend at about {rod} ft/min.','Glidebanen kommer ned: når den er i midten, sink med rundt {rod} ft/min.'),
- 'app.ontime':t2('On profile. Next: {t} s after the FAF, {alt} ft.','På profilen. Neste: {t} s etter FAF, {alt} ft.'),
- 'rt.next':t2('Track {crs} to {wp}, {d} NM.','Følg {crs} til {wp}, {d} NM.'),
- 'rt.alt':t2('Check the altitude: {wp} needs {cw} {alt} ft.','Sjekk høyden: {wp} krever {cw} {alt} ft.'),
- 'rt.turn':t2('{wp} ahead: turn {dir} onto {crs}.','{wp} foran: sving til {dir} inn på {crs}.'),
- 'rt.next.why':t2('Each leg is a straight line between waypoints. Hold the course bar centred and meet each altitude constraint.','Hvert legg er en rett linje mellom waypoints. Hold kursstreken i midten og møt hvert høydekrav.'),
- 'rt.turn.why':t2('Fly-by waypoints: turn before the waypoint so you roll out on the next leg.','Fly-by-waypoints: sving før waypointet så du ruller ut på neste legg.'),
- 'pass.watch':t2('Station close: hold the heading and watch the flag.','Stasjonen er nær: hold kursen og følg flagget.'),
- 'pass.after':t2('Station passed. Report it if you have not.','Stasjonen er passert. Rapporter hvis du ikke har gjort det.'),
- 'pass.why':t2('Over a VOR the needle swings and the flag flips from TO to FROM. The flip is the passage.','Over en VOR svinger nålen, og flagget skifter fra TO til FROM. Skiftet er passeringen.'),
- 'tts.time':t2('Station on the wingtip. Bearing changed {ch}° in {s} s.','Stasjonen på vingetippen. Peilingen er endret {ch}° på {s} s.'),
- 'tts.report':t2('10° done in {s} s: work out the minutes and report.','10° på {s} s: regn ut minuttene og rapporter.'),
- 'tts.why':t2('Minutes to the station = seconds for the change ÷ degrees of change.','Minutter til stasjonen = sekunder for endringen ÷ grader endring.'),
- 'ndbo.good':t2('On track: bearing from the beacon {qdr}.','På sporet: peiling fra fyret {qdr}.'),
- 'ndbo.off':t2('Bearing from the beacon {qdr}, you want {crs}. Turn {side}.','Peiling fra fyret {qdr}, du vil ha {crs}. Sving til {side}.'),
- 'ndbo.why':t2('Bearing from the beacon (QDR) = heading + needle − 180.','Peiling fra fyret (QDR) = kurs + nål − 180.'),
- 'ip.inbound':t2('Track {c0} to the station. After it, intercept radial {crs} outbound.','Følg {c0} til stasjonen. Etter den, fang radial {crs} ut.'),
- 'ip.wait':t2('Hold {c0} through the station. Turn only after the flag says FROM.','Hold {c0} gjennom stasjonen. Sving først når flagget viser FROM.'),
- 'ip.why':t2('Over the station the needle is unreliable. Hold the heading until the flag flips, then intercept.','Over stasjonen er nålen upålitelig. Hold kursen til flagget skifter, og fang så.'),
- 'loc.good':t2('On the localiser. Keep it with 2° changes.','På localiseren. Hold den med endringer på 2°.'),
+ 'orient.ask':t2('Position {n} of {of}. Turn the course knob until the needle is centred and the flag shows FROM. Then report your radial.','Posisjon {n} av {of}. Vri kursknappen til nålen står i midten og flagget viser FROM. Rapporter så radialen din.'),
+ 'orient.askr':t2('Position {n} of {of}. Read the number under the tail of the green needle. That is your radial: report it.','Posisjon {n} av {of}. Les tallet under halen på den grønne nålen. Det er radialen din: rapporter den.'),
+ 'orient.askq':t2('Position {n} of {of}. Add your heading and the needle. Report the bearing to the beacon.','Posisjon {n} av {of}. Legg sammen headingen og nålen. Rapporter peilingen til fyret.'),
+ 'orient.rmi.why':t2('The head of the RMI needle points to the station. So the tail points from the station to you: that is your radial.','Hodet på RMI-nålen peker mot stasjonen. Halen peker altså fra stasjonen til deg: det er radialen din.'),
+ 'orient.rbi.why':t2('The needle is counted from the nose of the aircraft. Add your heading to get a compass bearing. Take 360 away if the sum is over 360.','Nålen telles fra nesen på flyet. Legg til headingen for å få en kompasspeiling. Trekk fra 360 hvis summen blir over 360.'),
+ 'orient.to':t2('Centred, but the flag shows TO. That number is the course to the station. Keep turning the knob until the flag shows FROM.','I midten, men flagget viser TO. Det tallet er kursen til stasjonen. Vri videre på knappen til flagget viser FROM.'),
+ 'orient.to.why':t2('With TO, the number at the top is the course that takes you to the station. Your radial is the direction from the station to you: 180° different.','Med TO er tallet øverst kursen som tar deg til stasjonen. Radialen din er retningen fra stasjonen til deg: 180° forskjell.'),
+ 'orient.centred':t2('Needle centred with FROM: you are on radial {obs}. Report it.','Nålen i midten med FROM: du er på radial {obs}. Rapporter den.'),
+ 'track.reverse':t2('The flag shows FROM while you fly to the station, so the needle works the wrong way round. Set the course to {crs}.','Flagget viser FROM mens du flyr mot stasjonen, så nålen virker motsatt vei. Still inn kurs {crs}.'),
+ 'track.reverse.why':t2('Always set the course you are flying. Towards the station that gives TO. Then a needle on the right always means: the course is on your right.','Still alltid inn kursen du flyr. Mot stasjonen gir det TO. Da betyr nål til høyre alltid: kursen ligger til høyre.'),
+ 'track.setcrs':t2('First set the course: turn the course knob to {crs}.','Still inn kursen først: vri kursknappen til {crs}.'),
+ 'track.setcrs.why':t2('The needle only makes sense when the course knob shows the course you want to fly.','Nålen gir bare mening når kursknappen viser kursen du vil fly.'),
+ 'track.good':t2('On the course. Hold this heading{wca}.','På kursen. Hold denne headingen{wca}.'),
+ 'track.small':t2('The needle is a little to the {side}. Turn 5° {side}, then hold and watch.','Nålen står litt til {side}. Sving 5° til {side}, hold, og se.'),
+ 'track.small.why':t2('Use small corrections: 5° when the needle is one dot off or less. Wait until the needle stops moving before you correct again.','Bruk små korreksjoner: 5° når nålen er én prikk ute eller mindre. Vent til nålen står stille før du korrigerer igjen.'),
+ 'track.big':t2('The needle is far to the {side}. Turn towards it: heading {hdg}.','Nålen står langt til {side}. Sving mot den: heading {hdg}.'),
+ 'track.big.why':t2('Turn towards the needle. The further off it is, the bigger the turn: up to 30° to 45° from the course.','Sving mot nålen. Jo lenger ute den står, jo større sving: opptil 30° til 45° fra kursen.'),
+ 'track.wind':t2('Your heading is the same as the course, but the needle drifts {side}. That is the wind. Hold a few degrees into it.','Headingen er lik kursen, men nålen driver til {side}. Det er vinden. Hold noen grader opp mot den.'),
+ 'track.wind.why':t2('Find the heading that keeps the needle still. The difference between that heading and the course is your wind correction.','Finn headingen som holder nålen i ro. Forskjellen mellom den headingen og kursen er vindkorreksjonen din.'),
+ 'track.cone':t2('Over the station the needle cannot be trusted. Hold the heading until the flag changes.','Over stasjonen kan du ikke stole på nålen. Hold headingen til flagget skifter.'),
+ 'int.pickA':t2('The course is on your {side}. Turn to heading {a}: it crosses the course at {ang}°.','Kursen ligger til {side} for deg. Sving til heading {a}: den krysser kursen med {ang}°.'),
+ 'int.pick':t2('The course is on your {side}. Turn to heading {a} (30° across) or {b} (45° across).','Kursen ligger til {side} for deg. Sving til heading {a} (30° på skrå) eller {b} (45° på skrå).'),
+ 'int.pick.why':t2('Intercept heading = the course plus or minus 30° to 45°, towards the needle. Far from the course use 45°. Close to it, 30° is enough.','Heading for å skjære inn = kursen pluss eller minus 30° til 45°, mot nålen. Langt fra kursen bruker du 45°. Nær den holder det med 30°.'),
+ 'int.wait':t2('Hold this heading. The needle will start to move in from the side.','Hold denne headingen. Nålen begynner snart å komme inn fra siden.'),
+ 'int.wait.why':t2('A needle at the side means you are 10° or more from the course. There is nothing to do yet except hold the heading.','En nål helt ute på siden betyr at du er 10° eller mer fra kursen. Det er ingenting å gjøre ennå, annet enn å holde headingen.'),
+ 'int.lead':t2('The needle is moving: start the turn onto {crs} now.','Nålen rører seg: start svingen inn på {crs} nå.'),
+ 'int.lead.why':t2('A turn takes room. Start it when the needle passes the second or third dot. Then the turn ends on the course instead of past it.','En sving tar plass. Start den når nålen passerer andre eller tredje prikk. Da ender svingen på kursen i stedet for forbi den.'),
+ 'ndb.homing':t2('You are homing: the nose follows the needle and the wind bends your path.','Du flyr homing: nesen følger nålen, og vinden bøyer banen din.'),
+ 'ndb.homing.why':t2('Pointing the nose at the beacon only works without wind. In wind, hold a heading a little into the wind and let the needle sit a few degrees off the nose.','Å peke nesen mot fyret virker bare uten vind. I vind holder du en heading litt opp mot vinden og lar nålen stå noen grader ved siden av nesen.'),
+ 'ndb.good':t2('On the line. The needle sits {rb}° {side} of the nose: that is your wind correction.','På linjen. Nålen står {rb}° til {side} for nesen: det er vindkorreksjonen din.'),
+ 'ndb.good.why':t2('When you correct for wind, the nose does not point at the beacon. The needle shows the beacon a few degrees to one side, and it stays there.','Når du korrigerer for vind, peker ikke nesen mot fyret. Nålen viser fyret noen grader til siden, og den blir der.'),
+ 'ndb.off':t2('Your bearing to the beacon is {qdm}. You want {crs}. Turn {side} to get back on the line.','Peilingen din til fyret er {qdm}. Du vil ha {crs}. Sving til {side} for å komme tilbake på linjen.'),
+ 'ndb.off.why':t2('Bearing to the beacon (QDM) = heading + needle. Is it bigger than the one you want? Then you are left of the line: turn right. Smaller: turn left.','Peiling til fyret (QDM) = heading + nål. Er den større enn den du vil ha? Da er du til venstre for linjen: sving til høyre. Mindre: sving til venstre.'),
+ 'arc.out':t2('Follow the radial away from the station. At {lead} DME turn {dir} onto the arc, to a heading of about {hdg}.','Følg radialen bort fra stasjonen. Ved {lead} DME svinger du til {dir} inn på buen, til en heading på rundt {hdg}.'),
+ 'arc.turnsoon':t2('The arc is close. Turn {dir} at {lead} DME, so the turn ends at {R} DME.','Buen er nær. Sving til {dir} ved {lead} DME, så svingen ender på {R} DME.'),
+ 'arc.lead.why':t2('A 90° turn takes about one turn radius. Start that much early and the turn ends on the arc, not outside it.','En sving på 90° tar omtrent én svingradius. Start så mye før, så ender svingen på buen og ikke utenfor.'),
+ 'arc.good':t2('On the arc. Keep the station on your wingtip. When the DME changes, turn about 10°.','På buen. Hold stasjonen på vingetippen. Når DME endrer seg, svinger du rundt 10°.'),
+ 'arc.outside':t2('You are {e} NM outside the arc. Turn 10° to 20° towards the station.','Du er {e} NM utenfor buen. Sving 10° til 20° mot stasjonen.'),
+ 'arc.inside':t2('You are {e} NM inside the arc. Turn about 10° away from the station.','Du er {e} NM innenfor buen. Sving rundt 10° bort fra stasjonen.'),
+ 'arc.fly.why':t2('An arc is flown as a row of short straight lines. Keep the needle that points to the station near your wingtip, and correct about 10° at a time.','En bue flys som en rekke korte rette linjer. Hold nålen som peker mot stasjonen, nær vingetippen, og korriger rundt 10° om gangen.'),
+ 'arc.leadradial':t2('Start the turn onto {crs} about {lead}° before radial {r1}. That point is the lead radial.','Start svingen inn på {crs} rundt {lead}° før radial {r1}. Det punktet er lead-radialen.'),
+ 'arc.leadradial.why':t2('The turn from the arc onto the radial is 90° and takes room. Start a few degrees early: about 60 × turn radius ÷ DME.','Svingen fra buen inn på radialen er 90° og tar plass. Start noen grader før: rundt 60 × svingradius ÷ DME.'),
+ 'hold.tofix':t2('Fly to the fix. With this heading you get a {entry} entry.','Fly til fiksen. Med denne headingen får du {entry} inngang.'),
+ 'hold.entry.why':t2('The heading you cross the fix with decides the entry. Picture the 70° line through the fix on the holding side.','Headingen du krysser fiksen med, bestemmer inngangen. Se for deg 70°-linjen gjennom fiksen på holdingsiden.'),
+ 'hold.entry.direct':t2('Direct entry: over the fix, turn {dir} to heading {out}.','Direkte inngang: over fiksen svinger du til {dir} til heading {out}.'),
+ 'hold.entry.direct.why':t2('Direct: you already point roughly along the hold. Cross the fix and turn straight into the pattern.','Direkte: du peker allerede omtrent langs holdingen. Kryss fiksen og sving rett inn i mønsteret.'),
+ 'hold.entry.parallel':t2('Parallel entry: over the fix, turn to heading {out} and fly 1 minute beside the inbound course.','Parallell inngang: over fiksen svinger du til heading {out} og flyr 1 minutt ved siden av kursen inn.'),
+ 'hold.entry.parallel.why':t2('Parallel: fly away from the fix next to the inbound course, on the side without the hold. Then turn back through the holding side to the fix.','Parallell: fly bort fra fiksen ved siden av kursen inn, på siden uten holding. Sving så tilbake gjennom holdingsiden til fiksen.'),
+ 'hold.entry.teardrop':t2('Teardrop entry: over the fix, turn to heading {td} and fly 1 minute.','Teardrop-inngang: over fiksen svinger du til heading {td} og flyr 1 minutt.'),
+ 'hold.entry.teardrop.why':t2('Teardrop: fly away from the fix 30° off the outbound course, into the holding side. Then make one turn, in the hold direction, onto the inbound course.','Teardrop: fly bort fra fiksen 30° fra kursen ut, inn i holdingsiden. Gjør så én sving, i holdingens retning, inn på kursen inn.'),
+ 'hold.entryleg':t2('Entry leg: {s} s left.','Inngangslegget: {s} s igjen.'),
+ 'hold.entryturn':t2('Time is up: turn {dir}, back towards the fix.','Tiden er ute: sving til {dir}, tilbake mot fiksen.'),
+ 'hold.entryturn.why':t2('After a teardrop, turn in the hold direction onto the inbound course. After a parallel entry, turn towards the holding side, more than 180°, back to the fix.','Etter en teardrop svinger du i holdingens retning inn på kursen inn. Etter en parallell inngang svinger du mot holdingsiden, mer enn 180°, tilbake til fiksen.'),
+ 'hold.back':t2('Fly back to the fix on course {inb}.','Fly tilbake til fiksen på kurs {inb}.'),
+ 'hold.inbound':t2('Towards the fix on course {inb}. Hold a heading of about {hdg} to stay on the course.','Inn mot fiksen på kurs {inb}. Hold en heading på rundt {hdg} for å bli på kursen.'),
+ 'hold.inbound.why':t2('The leg towards the fix shows you the wind. The heading that keeps the needle centred gives the correction you need for the whole hold.','Legget inn mot fiksen viser deg vinden. Headingen som holder nålen i midten, gir korreksjonen du trenger i hele holdingen.'),
+ 'hold.turnout':t2('Over the fix: turn {dir} to heading {hdg}, away from the fix.','Over fiksen: sving til {dir} til heading {hdg}, bort fra fiksen.'),
+ 'hold.turnout.why':t2('Heading away from the fix = the outbound course with three times the wind correction, on the other side. Three times, because you cannot correct during the two turns.','Heading bort fra fiksen = kursen ut med tre ganger vindkorreksjonen, til den andre siden. Tre ganger, fordi du ikke kan korrigere i de to svingene.'),
+ 'hold.outbound':t2('Away from the fix on heading {hdg}. Start the clock when the fix is level with your wingtip (abeam).','Bort fra fiksen på heading {hdg}. Start klokka når fiksen ligger rett ut for vingetippen (tvers).'),
+ 'hold.outbound.why':t2('The time away from the fix starts abeam the fix. If the turn is not finished by then, it starts when the wings are level.','Tiden bort fra fiksen starter tvers av fiksen. Er ikke svingen ferdig da, starter den når vingene er i vater.'),
+ 'hold.timing':t2('Away from the fix: {s} s of about {want} s.','Bort fra fiksen: {s} s av rundt {want} s.'),
+ 'hold.timing.why':t2('Choose the time away from the fix so that the leg back takes 1 minute. Was the leg back too short? Fly longer away from the fix next lap.','Velg tiden bort fra fiksen slik at legget tilbake tar 1 minutt. Ble legget tilbake for kort? Fly lenger bort fra fiksen neste runde.'),
+ 'hold.turnin':t2('Turn back towards the fix, onto course {inb}. Watch the needle as the turn ends.','Sving tilbake mot fiksen, inn på kurs {inb}. Følg nålen når svingen ender.'),
+ 'pt.tofix':t2('Fly over the station, then away from it on radial {out}.','Fly over stasjonen, og så bort fra den på radial {out}.'),
+ 'pt.tofix.why':t2('Start the clock over the station. The time to fly away from it is on the chart.','Start klokka over stasjonen. Tiden du skal fly bort fra den, står på kartet.'),
+ 'pt.out':t2('Away from the station: {s} s to the {a}° turn.','Bort fra stasjonen: {s} s til svingen på {a}°.'),
+ 'pt.turn45':t2('Turn {dir} {a}° to heading {hdg}{clk}.','Sving {a}° til {dir} til heading {hdg}{clk}.'),
+ 'pt.turn45.why':t2('The first turn makes room for the turn back. Turn to the side shown on the chart: only that side is kept clear of obstacles.','Den første svingen gir plass til svingen tilbake. Sving til den siden kartet viser: bare den siden er holdt fri for hindringer.'),
+ 'pt.leg45':t2('{s} s left on the 45° leg.','{s} s igjen på 45°-legget.'),
+ 'pt.turn180':t2('Turn {dir} through 180° to heading {hdg}. Then intercept the course back to the station.','Sving 180° til {dir} til heading {hdg}. Skjær så inn på kursen tilbake til stasjonen.'),
+ 'pt.turn180.why':t2('The 180° turn goes the opposite way to the 45° turn, away from the station. That keeps you inside the protected area.','Svingen på 180° går motsatt vei av svingen på 45°, bort fra stasjonen. Da blir du innenfor det beskyttede området.'),
+ 'pt.intercept':t2('Intercept course {inb} back to the station: turn onto it when the needle moves in.','Skjær inn på kurs {inb} tilbake til stasjonen: sving inn når nålen kommer inn.'),
+ 'base.tofix':t2('Fly over the station, then away from it on radial {ro}.','Fly over stasjonen, og så bort fra den på radial {ro}.'),
+ 'base.why':t2('A base turn: fly out a little to one side of the final course, then make one turn of more than 180° onto it.','En base turn: fly ut litt til siden for sluttkursen, og gjør så én sving på mer enn 180° inn på den.'),
+ 'base.out':t2('Away from the station: {s} s to the base turn.','Bort fra stasjonen: {s} s til base turn.'),
+ 'base.turn':t2('Turn {dir} now, onto course {inb} back to the station.','Sving til {dir} nå, inn på kurs {inb} tilbake til stasjonen.'),
+ 'base.turn.why':t2('Turn towards the final course. The leg away from the station is set off to that side, so one turn brings you onto it.','Sving mot sluttkursen. Legget bort fra stasjonen ligger forskjøvet til den siden, så én sving tar deg inn på den.'),
+ 'vor.initial':t2('Stay level at {alt} ft until the final approach fix (FAF) at {faf} DME. The minimum altitude (MDA) is {mda} ft.','Hold {alt} ft til final approach fix (FAF) ved {faf} DME. Minstehøyden (MDA) er {mda} ft.'),
+ 'vor.initial.why':t2('You may not descend below the published altitude before the final approach fix.','Du kan ikke gå under den publiserte høyden før final approach fix.'),
+ 'vor.faf':t2('At the FAF: start down at about {rod} ft/min.','Ved FAF: start ned med rundt {rod} ft/min.'),
+ 'vor.faf.why':t2('From the FAF you descend on a 3° path. The rate is about ground speed × 5, in ft/min.','Fra FAF går du ned på en bane på 3°. Synkehastigheten er rundt fart over bakken × 5, i ft/min.'),
+ 'vor.onprofile':t2('On the path. Next check: {dme} DME, {alt} ft.','På banen. Neste sjekk: {dme} DME, {alt} ft.'),
+ 'vor.high':t2('{pa} ft too high. Descend a little faster.','{pa} ft for høyt. Gå ned litt fortere.'),
+ 'vor.low':t2('{pa} ft too low. Descend more slowly.','{pa} ft for lavt. Gå ned saktere.'),
+ 'vor.profile.why':t2('Every mile, compare your altitude with the table. Too high or too low: change the rate a little, then check again at the next mile.','For hver nautiske mil sammenligner du høyden med tabellen. For høyt eller for lavt: endre synkehastigheten litt, og sjekk igjen ved neste mil.'),
+ 'app.minimums':t2('You are at the minimum and the runway is in sight: land.','Du er på minimum og har rullebanen i sikte: land.'),
+ 'ils.vector':t2('Hold the heading. The localiser needle has not started to move yet.','Hold headingen. Localiser-nålen har ikke begynt å røre seg ennå.'),
+ 'ils.vector.why':t2('The localiser is narrow: only about 2.5° from side to side. The needle starts to move late, and then it moves fast.','Localiseren er smal: bare rundt 2,5° fra side til side. Nålen begynner å røre seg sent, og da går det fort.'),
+ 'ils.alive':t2('The localiser needle is moving: turn onto {crs} now.','Localiser-nålen rører seg: sving inn på {crs} nå.'),
+ 'ils.waitgs':t2('On the localiser. Stay at {alt} ft until the glide slope needle comes down to the middle.','På localiseren. Hold {alt} ft til glidebanenålen kommer ned til midten.'),
+ 'ils.waitgs.why':t2('You meet the glide slope from below. When its needle is centred, descend at about {rod} ft/min.','Du møter glidebanen nedenfra. Når nålen står i midten, går du ned med rundt {rod} ft/min.'),
+ 'ils.good':t2('Both needles centred. Keep the corrections small.','Begge nålene i midten. Hold korreksjonene små.'),
+ 'ils.low':t2('Below the glide slope: descend more slowly.','Under glidebanen: gå ned saktere.'),
+ 'ils.high':t2('Above the glide slope: descend a little faster.','Over glidebanen: gå ned litt fortere.'),
+ 'ils.loc':t2('The localiser needle is to the {side}: turn 2° to 3° towards it.','Localiser-nålen står til {side}: sving 2° til 3° mot den.'),
+ 'ils.fly.why':t2('Fly the needles with small changes: 2° to 3° of heading for the localiser, 100 to 200 ft/min for the glide slope.','Fly nålene med små endringer: 2° til 3° heading for localiseren, 100 til 200 ft/min for glidebanen.'),
+ 'pt.turn260':t2('Turn {dir} through 260° to heading {hdg}, onto the course back to the station.','Sving 260° til {dir} til heading {hdg}, inn på kursen tilbake til stasjonen.'),
+ 'pt.turn260.why':t2('In the 80°/260° there is no straight leg between the turns. The 260° turn goes the other way and ends on the course back to the station.','I 80°/260° er det ikke noe rett legg mellom svingene. Svingen på 260° går den andre veien og ender på kursen tilbake til stasjonen.'),
+ 'hold.dmeout':t2('Away from the fix on heading {hdg}. Turn back at {D} DME (now {now}).','Bort fra fiksen på heading {hdg}. Sving tilbake ved {D} DME (nå {now}).'),
+ 'hold.dmeout.why':t2('In this hold the leg away from the fix ends at the DME limit, whatever the clock says.','I denne holdingen slutter legget bort fra fiksen ved DME-grensen, uansett hva klokka sier.'),
+ 'miss.climb':t2('Go around: climb and follow {crs}. At {ta} ft turn {dir} to heading {hdg}.','Avbryt: stig og følg {crs}. Ved {ta} ft svinger du til {dir} til heading {hdg}.'),
+ 'miss.turn':t2('Turn {dir} to heading {hdg} and climb to {alt} ft.','Sving til {dir} til heading {hdg} og stig til {alt} ft.'),
+ 'miss.why':t2('At the minimum without the runway in sight you go around at once: full power, nose up, climb straight ahead, then the published turn.','På minimum uten rullebanen i sikte avbryter du med en gang: full motor, nesen opp, stig rett frem, og så den publiserte svingen.'),
+ 'app.init':t2('Stay level at {alt} ft until the final approach fix (FAF). The minimum is {mins} ft.','Hold {alt} ft til final approach fix (FAF). Minimum er {mins} ft.'),
+ 'app.init.cdfa.why':t2('You may not descend below the published altitude before the FAF. After it you descend at a steady rate to the minimum altitude (MDA).','Du kan ikke gå under den publiserte høyden før FAF. Etter den går du jevnt ned til minstehøyden (MDA).'),
+ 'app.init.gp.why':t2('Stay level and let the glide path come down to you. You always meet it from below.','Hold høyden og la glidebanen komme ned til deg. Du møter den alltid nedenfra.'),
+ 'app.faf':t2('At the FAF ({fix}): start down at about {rod} ft/min.','Ved FAF ({fix}): start ned med rundt {rod} ft/min.'),
+ 'app.gpfaf':t2('The glide path needle is coming down. When it is centred, descend at about {rod} ft/min.','Glidebanenålen kommer ned. Når den står i midten, går du ned med rundt {rod} ft/min.'),
+ 'app.ontime':t2('On the path. Next check: {t} s after the FAF, {alt} ft.','På banen. Neste sjekk: {t} s etter FAF, {alt} ft.'),
+ 'rt.next':t2('Follow course {crs} to {wp}, {d} NM.','Følg kurs {crs} til {wp}, {d} NM.'),
+ 'rt.alt':t2('Check your altitude: cross {wp} {cw} {alt} ft.','Sjekk høyden: kryss {wp} {cw} {alt} ft.'),
+ 'rt.turn':t2('{wp} is just ahead: turn {dir} onto course {crs}.','{wp} er like foran: sving til {dir} inn på kurs {crs}.'),
+ 'rt.next.why':t2('Each leg is a straight line between two waypoints. Keep the needle centred and cross each waypoint at its altitude.','Hvert legg er en rett linje mellom to waypoints. Hold nålen i midten og kryss hvert waypoint i riktig høyde.'),
+ 'rt.turn.why':t2('Start the turn just before the waypoint (fly-by). Then the turn ends on the next leg.','Start svingen like før waypointet (fly-by). Da ender svingen på neste legg.'),
+ 'pass.watch':t2('The station is close. Hold the heading and watch the flag.','Stasjonen er nær. Hold headingen og følg med på flagget.'),
+ 'pass.after':t2('You have passed the station. Report it if you have not done so.','Du har passert stasjonen. Rapporter hvis du ikke har gjort det.'),
+ 'pass.why':t2('Over a VOR the needle swings and the flag changes from TO to FROM. The change of the flag is the passage.','Over en VOR slår nålen ut, og flagget skifter fra TO til FROM. Flaggskiftet er passeringen.'),
+ 'tts.time':t2('The station is on your wingtip. The bearing has changed {ch}° in {s} s.','Stasjonen ligger på vingetippen. Peilingen har endret seg {ch}° på {s} s.'),
+ 'tts.report':t2('10° in {s} s. Work out the minutes and report.','10° på {s} s. Regn ut minuttene og rapporter.'),
+ 'tts.why':t2('Minutes to the station = the seconds it took ÷ the degrees the bearing changed.','Minutter til stasjonen = sekundene det tok ÷ gradene peilingen endret seg.'),
+ 'ndbo.good':t2('On the line: your bearing from the beacon is {qdr}.','På linjen: peilingen din fra fyret er {qdr}.'),
+ 'ndbo.off':t2('Your bearing from the beacon is {qdr}. You want {crs}. Turn {side}.','Peilingen din fra fyret er {qdr}. Du vil ha {crs}. Sving til {side}.'),
+ 'ndbo.why':t2('Bearing from the beacon (QDR) = heading + needle − 180. Is it bigger than the one you want? Then you are right of the line: turn left. Smaller: turn right.','Peiling fra fyret (QDR) = heading + nål − 180. Er den større enn den du vil ha? Da er du til høyre for linjen: sving til venstre. Mindre: sving til høyre.'),
+ 'ip.inbound':t2('Follow {c0} to the station. After it, intercept radial {crs} away from the station.','Følg {c0} til stasjonen. Etter den skjærer du inn på radial {crs} ut.'),
+ 'ip.wait':t2('Hold {c0} through the station. Turn only when the flag shows FROM.','Hold {c0} gjennom stasjonen. Sving først når flagget viser FROM.'),
+ 'ip.why':t2('Over the station the needle cannot be trusted. Hold the heading until the flag changes, then intercept.','Over stasjonen kan du ikke stole på nålen. Hold headingen til flagget skifter, og skjær så inn.'),
+ 'loc.good':t2('On the localiser. Stay on it with changes of 2° at a time.','På localiseren. Bli på den med endringer på 2° om gangen.'),
  'math.ask':t2('Question {n} of {of}.','Spørsmål {n} av {of}.'),
- 'math.int.why':t2('Intercept heading = course ± 30° or 45°, towards the needle.','Interceptkurs = kurs ± 30° eller 45°, mot nålen.'),
- 'math.wca.why':t2('Wind correction ≈ crosswind × 60 ÷ TAS.','Vindkorreksjon ≈ sidevind × 60 ÷ TAS.'),
- 'math.r160.why':t2('1 in 60: 1 NM off after 60 NM is 1°.','1 av 60: 1 NM ute etter 60 NM er 1°.'),
- 'math.tts.why':t2('Time to station (min) = seconds ÷ degrees of bearing change.','Tid til stasjonen (min) = sekunder ÷ grader peilingsendring.'),
- 'math.rod.why':t2('On 3°: rate of descent ≈ ground speed × 5.','På 3°: sinkrate ≈ fart over bakken × 5.'),
- 'math.tod.why':t2('On 3°: 3 NM for every 1000 ft.','På 3°: 3 NM for hver 1000 ft.'),
- 'math.lead.why':t2('Lead radial ≈ 60 × turn radius ÷ DME; radius ≈ ground speed ÷ 200.','Ledende radial ≈ 60 × svingradius ÷ DME; radius ≈ fart over bakken ÷ 200.'),
- 'math.leadd.why':t2('Lead for a 90° turn = one turn radius ≈ ground speed ÷ 200 NM.','Ledning for en sving på 90° = én svingradius ≈ fart over bakken ÷ 200 NM.')
+ 'math.int.why':t2('Intercept heading = the course plus or minus 30° or 45°, towards the needle.','Heading for å skjære inn = kursen pluss eller minus 30° eller 45°, mot nålen.'),
+ 'math.wca.why':t2('Wind correction ≈ crosswind × 60 ÷ true airspeed (TAS).','Vindkorreksjon ≈ sidevind × 60 ÷ sann flyhastighet (TAS).'),
+ 'math.r160.why':t2('1 in 60: being 1 NM off after 60 NM is 1°.','1 av 60: 1 NM ute etter 60 NM er 1°.'),
+ 'math.tts.why':t2('Time to the station in minutes = seconds ÷ degrees of bearing change.','Tid til stasjonen i minutter = sekunder ÷ grader peilingsendring.'),
+ 'math.rod.why':t2('On a 3° path: rate of descent ≈ ground speed × 5.','På en bane på 3°: synkehastighet ≈ fart over bakken × 5.'),
+ 'math.tod.why':t2('On a 3° path you need 3 NM for every 1000 ft.','På en bane på 3° trenger du 3 NM for hver 1000 ft.'),
+ 'math.lead.why':t2('Degrees before the radial ≈ 60 × turn radius ÷ DME. Turn radius ≈ ground speed ÷ 200.','Grader før radialen ≈ 60 × svingradius ÷ DME. Svingradius ≈ fart over bakken ÷ 200.'),
+ 'math.leadd.why':t2('A 90° turn needs one turn radius ≈ ground speed ÷ 200, in NM.','En sving på 90° trenger én svingradius ≈ fart over bakken ÷ 200, i NM.')
 };
-
 /* debrief: what happened, and what to do instead */
 const EV={
- reverse:{h:t2('Reverse sensing','Reversert nål'),w:t2('The OBS was set to {obs}, the reciprocal, while you flew towards the station. The flag showed FROM and the needle worked backwards.','OBS sto på {obs}, motsatt kurs, mens du fløy mot stasjonen. Flagget viste FROM og nålen virket baklengs.'),
-  d:t2('Set the course you fly, {crs}. Inbound that gives TO, and the needle points to the course.','Still inn kursen du flyr, {crs}. Inn mot stasjonen gir det TO, og nålen peker mot kursen.')},
- nocrs:{h:t2('Course not set','Kursen ikke innstilt'),w:t2('The OBS did not show the course for a long time.','OBS viste ikke kursen på lang tid.'),d:t2('Set the course before anything else: then every needle movement means something.','Still inn kursen før noe annet: da betyr hver nålbevegelse noe.')},
- outside:{h:t2('Off course','Utenfor kurs'),w:t2('You were {e}° off the course, outside the ±5° limit.','Du var {e}° fra kursen, utenfor grensen på ±5°.'),
-  d:t2('Correct early, at one dot: 5° to 10° towards the needle, then hold and watch.','Korriger tidlig, ved én prikk: 5° til 10° mot nålen, hold og se.')},
- drift:{h:t2('Wind drift','Vindavdrift'),w:t2('You flew the course as a heading, and the wind carried you {e}° off.','Du fløy kursen som kurs uten korreksjon, og vinden tok deg {e}° ut.'),
-  d:t2('Hold a heading into the wind. When the needle stays still, that heading is your answer.','Hold en kurs opp mot vinden. Når nålen står i ro, har du funnet riktig kurs.')},
- away:{h:t2('Turned away from the needle','Svingte vekk fra nålen'),w:t2('The needle was {side} and you flew further away from the course.','Nålen var til {side}, og du fløy lenger vekk fra kursen.'),
+ reverse:{h:t2('The needle worked backwards','Nålen virket motsatt vei'),w:t2('The course knob was set to {obs}, the opposite of your course, while you flew towards the station. The flag showed FROM, so the needle pointed away from the course (reverse sensing).','Kursknappen sto på {obs}, motsatt av kursen din, mens du fløy mot stasjonen. Flagget viste FROM, så nålen pekte bort fra kursen (reverse sensing).'),
+  d:t2('Set the course you are flying, {crs}. Towards the station that gives TO, and the needle points to the course.','Still inn kursen du flyr, {crs}. Mot stasjonen gir det TO, og nålen peker mot kursen.')},
+ nocrs:{h:t2('Course not set','Kursen var ikke stilt inn'),w:t2('For a long time the course knob did not show the course in the clearance.','Lenge viste ikke kursknappen kursen i klareringen.'),d:t2('Set the course before anything else. Only then does the needle tell you something.','Still inn kursen før du gjør noe annet. Først da forteller nålen deg noe.')},
+ outside:{h:t2('Off the course','Utenfor kursen'),w:t2('You were {e}° from the course. The limit is 5°.','Du var {e}° fra kursen. Grensen er 5°.'),
+  d:t2('Correct early, when the needle is one dot off: turn 5° to 10° towards the needle, then hold and watch.','Korriger tidlig, når nålen er én prikk ute: sving 5° til 10° mot nålen, hold, og se.')},
+ drift:{h:t2('The wind pushed you off','Vinden skjøv deg ut'),w:t2('Your heading was the same as the course. The wind carried you {e}° off the line.','Headingen din var lik kursen. Vinden tok deg {e}° ut fra linjen.'),
+  d:t2('Hold a heading a few degrees into the wind. When the needle stays still, you have found the right heading.','Hold en heading noen grader opp mot vinden. Når nålen står i ro, har du funnet riktig heading.')},
+ away:{h:t2('Turned away from the needle','Svingte bort fra nålen'),w:t2('The needle was to the {side}, and you flew further away from the course.','Nålen sto til {side}, og du fløy lenger bort fra kursen.'),
   d:t2('Turn towards the needle: needle {side}, turn {side}.','Sving mot nålen: nål til {side}, sving til {side}.')},
- alt:{h:t2('Altitude','Høyde'),w:t2('You were {e} ft off {target} ft, outside ±100 ft.','Du var {e} ft fra {target} ft, utenfor ±100 ft.'),d:t2('Include the altimeter in every scan. Catch it at 50 ft.','Ta med høydemåleren i hver skanning. Ta det ved 50 ft.')},
- 'orient.recip':{h:t2('The reciprocal','Motsatt retning'),w:t2('You reported {val}, the bearing to the station. You were on radial {truth}.','Du rapporterte {val}, peilingen til stasjonen. Du var på radial {truth}.'),
-  d:t2('Centre the needle with FROM, or read the tail of the RMI needle.','Sentrer nålen med FROM, eller les halen av RMI-nålen.')},
- 'orient.wrong':{h:t2('Wrong radial','Feil radial'),w:t2('You reported {val}; you were on radial {truth}.','Du rapporterte {val}; du var på radial {truth}.'),d:t2('Centre the needle with a FROM flag, then read the number at the top.','Sentrer nålen med FROM-flagg, og les tallet øverst.')},
+ alt:{h:t2('Altitude','Høyde'),w:t2('You were {e} ft away from {target} ft. The limit is 100 ft.','Du var {e} ft fra {target} ft. Grensen er 100 ft.'),d:t2('Look at the altimeter every time your eyes go round the instruments. Correct when it is 50 ft off.','Se på høydemåleren hver gang blikket går rundt instrumentene. Korriger når den er 50 ft ute.')},
+ 'orient.recip':{h:t2('180° wrong','180° feil'),w:t2('You reported {val}. That is the direction to the station. You were on radial {truth}.','Du rapporterte {val}. Det er retningen til stasjonen. Du var på radial {truth}.'),
+  d:t2('Centre the needle with the flag on FROM, or read the tail of the RMI needle.','Sentrer nålen med flagget på FROM, eller les halen på RMI-nålen.')},
+ 'orient.wrong':{h:t2('Wrong radial','Feil radial'),w:t2('You reported {val}. You were on radial {truth}.','Du rapporterte {val}. Du var på radial {truth}.'),d:t2('Centre the needle with the flag on FROM, then read the number at the top.','Sentrer nålen med flagget på FROM, og les så tallet øverst.')},
  'orient.ok':{h:t2('Correct','Riktig'),w:t2('Radial {truth}.','Radial {truth}.'),d:t2('','')},
- 'int.away':{h:t2('Turned away from the course','Svingte vekk fra kursen'),w:t2('The needle was {side}, so the course was on your {side}, and you turned the other way.','Nålen var til {side}, altså lå kursen til {side}, og du svingte den andre veien.'),
-  d:t2('Turn towards the needle: the course plus 30° to 45° towards it.','Sving mot nålen: kursen pluss 30° til 45° mot den.')},
- 'int.slow':{h:t2('Slow decision','Treg beslutning'),w:t2('It took a long time to set an intercept heading.','Det tok lang tid å sette en interceptkurs.'),d:t2('Decide within 10 s: which side is the needle, then course ± 30° or 45°.','Bestem deg innen 10 s: hvilken side er nålen, så kurs ± 30° eller 45°.')},
- 'int.steep':{h:t2('Steep intercept','Bratt interception'),w:t2('The intercept angle was {ang}°.','Interceptvinkelen var {ang}°.'),d:t2('Keep it at 30° to 45°. Steeper angles leave no time to turn on.','Hold den på 30° til 45°. Brattere vinkler gir ikke tid til å svinge inn.')},
- 'int.overshoot':{h:t2('Overshoot','Skjøt over'),w:t2('You flew through the course to {e}° on the other side.','Du fløy gjennom kursen til {e}° på den andre siden.'),
-  d:t2('Start the turn when the needle starts to move, at 2 to 3 dots, not when it is centred.','Start svingen når nålen begynner å bevege seg, ved 2 til 3 prikker, ikke når den står i midten.')},
- 'ndb.homing':{h:t2('Homing instead of tracking','Homing i stedet for tracking'),w:t2('You kept the nose on the needle. The wind pushed you {e}° off the track along a curve.','Du holdt nesen på nålen. Vinden presset deg {e}° ut fra sporet langs en kurve.'),
-  d:t2('Turn to regain the track, then hold a heading into the wind with the needle a few degrees off the nose.','Sving for å komme inn på sporet igjen, og hold så en kurs opp mot vinden med nålen noen grader fra nesen.')},
- 'arc.wrongdir':{h:t2('Wrong way onto the arc','Feil vei inn på buen'),w:t2('You turned the wrong way onto the arc.','Du svingte feil vei inn på buen.'),d:t2('Turn {dir} off the radial: clockwise the radials increase, anticlockwise they decrease.','Sving til {dir} fra radialen: med klokka øker radialene, mot klokka minker de.')},
- 'arc.late':{h:t2('Late onto the arc','Sent inn på buen'),w:t2('You were at {D} NM before the turn: past the arc.','Du var på {D} NM før svingen: forbi buen.'),d:t2('Start the turn about one turn radius early, about 0.6 NM at 120 kt.','Start svingen omtrent én svingradius før, rundt 0,6 NM ved 120 kt.')},
- 'arc.out':{h:t2('Off the arc','Utenfor buen'),w:t2('You were {e} NM off the {R} DME arc, outside ±1 NM.','Du var {e} NM fra {R} DME-buen, utenfor ±1 NM.'),
-  d:t2('Keep the station on the wingtip. When the DME grows, turn 10° to 20° towards the station.','Hold stasjonen på vingetippen. Når DME-en øker, sving 10° til 20° mot stasjonen.')},
- 'arc.missed':{h:t2('Missed the radial','Bommet på radialen'),w:t2('You flew past radial {r1} before turning inbound.','Du fløy forbi radial {r1} før du svingte inn.'),d:t2('Use a lead radial: start the turn a few degrees before.','Bruk en ledende radial: start svingen noen grader før.')},
- 'hold.wrongentry':{h:t2('Wrong entry','Feil inngang'),w:t2('Crossing the fix on heading {hdg} you flew a {flown} entry. That heading calls for {entry}{alt}.','Over fiksen på kurs {hdg} fløy du {flown} inngang. Den kursen krever {entry}{alt}.'),
-  d:t2('Before the fix, picture your heading and the 70° line, and say the entry out loud.','Før fiksen: se for deg kursen og 70°-linjen, og si inngangen høyt.')},
+ 'int.away':{h:t2('Turned away from the course','Svingte bort fra kursen'),w:t2('The needle was to the {side}, so the course was on your {side}. You turned the other way.','Nålen sto til {side}, altså lå kursen til {side} for deg. Du svingte den andre veien.'),
+  d:t2('Turn towards the needle: the course plus or minus 30° to 45°, on the side of the needle.','Sving mot nålen: kursen pluss eller minus 30° til 45°, til den siden nålen står.')},
+ 'int.slow':{h:t2('Slow to decide','Brukte lang tid på å bestemme deg'),w:t2('It took a long time before you turned to a heading across the course.','Det tok lang tid før du svingte til en heading på skrå mot kursen.'),d:t2('Decide within 10 seconds: which side is the needle on? Then the course plus or minus 30° or 45°.','Bestem deg innen 10 sekunder: hvilken side står nålen på? Så kursen pluss eller minus 30° eller 45°.')},
+ 'int.steep':{h:t2('Too steep an angle','For bratt vinkel'),w:t2('You crossed towards the course at {ang}°.','Du fløy mot kursen med {ang}°.'),d:t2('Keep the angle at 30° to 45°. With a steeper angle there is no time to turn onto the course.','Hold vinkelen på 30° til 45°. Med brattere vinkel rekker du ikke å svinge inn på kursen.')},
+ 'int.overshoot':{h:t2('Flew through the course','Fløy gjennom kursen'),w:t2('You went through the course and ended {e}° on the other side.','Du fløy gjennom kursen og endte {e}° på den andre siden.'),
+  d:t2('Start the turn when the needle starts to move, at the second or third dot. Do not wait until it is centred.','Start svingen når nålen begynner å røre seg, ved andre eller tredje prikk. Ikke vent til den står i midten.')},
+ 'ndb.homing':{h:t2('Followed the needle instead of a line','Fulgte nålen i stedet for en linje'),w:t2('You kept the nose on the needle (homing). The wind pushed you {e}° off the line and you flew a curve.','Du holdt nesen på nålen (homing). Vinden skjøv deg {e}° ut fra linjen, og du fløy en bue.'),
+  d:t2('Turn to get back on the line. Then hold a heading into the wind, with the needle a few degrees off the nose.','Sving for å komme tilbake på linjen. Hold så en heading opp mot vinden, med nålen noen grader ved siden av nesen.')},
+ 'arc.wrongdir':{h:t2('Wrong way onto the arc','Feil vei inn på buen'),w:t2('You turned the wrong way when you reached the arc.','Du svingte feil vei da du kom til buen.'),d:t2('Turn {dir} off the radial. Clockwise round the station the radial numbers go up. Anticlockwise they go down.','Sving til {dir} fra radialen. Med klokka rundt stasjonen øker radialtallene. Mot klokka minker de.')},
+ 'arc.late':{h:t2('Late onto the arc','Sent inn på buen'),w:t2('You were at {D} NM before you turned. That is past the arc.','Du var på {D} NM før du svingte. Det er forbi buen.'),d:t2('Start the turn about one turn radius early: about 0.6 NM at 120 kt.','Start svingen omtrent én svingradius før: rundt 0,6 NM i 120 kt.')},
+ 'arc.out':{h:t2('Off the arc','Utenfor buen'),w:t2('You were {e} NM away from the {R} DME arc. The limit is 1 NM.','Du var {e} NM fra {R} DME-buen. Grensen er 1 NM.'),
+  d:t2('Keep the station on your wingtip. When the DME grows, turn 10° to 20° towards the station.','Hold stasjonen på vingetippen. Når DME øker, svinger du 10° til 20° mot stasjonen.')},
+ 'arc.missed':{h:t2('Flew past the radial','Fløy forbi radialen'),w:t2('You flew past radial {r1} before you turned towards the station.','Du fløy forbi radial {r1} før du svingte mot stasjonen.'),d:t2('Start the turn a few degrees before the radial (the lead radial).','Start svingen noen grader før radialen (lead-radialen).')},
+ 'hold.wrongentry':{h:t2('Wrong entry','Feil inngang'),w:t2('You crossed the fix on heading {hdg} and flew a {flown} entry. That heading calls for {entry}{alt}.','Du krysset fiksen på heading {hdg} og fløy {flown} inngang. Den headingen krever {entry}{alt}.'),
+  d:t2('Before the fix, picture your heading and the 70° line, and say the entry out loud.','Før fiksen: se for deg headingen din og 70°-linjen, og si inngangen høyt.')},
  'hold.entryok':{h:t2('Entry','Inngang'),w:t2('{flown} entry.','{flown} inngang.'),d:t2('','')},
- 'hold.entrytime':{h:t2('Entry leg timing','Tid på inngangslegget'),w:t2('The entry leg lasted {v} s; it should be about {want} s.','Inngangslegget varte {v} s; det skal være rundt {want} s.'),d:t2('Start the clock over the fix, turn back at 1 minute.','Start klokken over fiksen, sving tilbake etter 1 minutt.')},
- 'hold.wrongturn':{h:t2('Turned the wrong way','Svingte feil vei'),w:t2('This hold uses {dir} turns, and you turned the other way.','Denne holdingen bruker {dir}svinger, og du svingte den andre veien.'),
-  d:t2('Every turn in the hold goes the way in the clearance. Standard is right turns.','Alle svinger i holdingen går veien i klareringen. Standard er høyresvinger.')},
- 'hold.nowca':{h:t2('No outbound correction','Ingen korreksjon ut'),w:t2('The outbound heading did not allow for the wind.','Utgående kurs tok ikke hensyn til vinden.'),d:t2('Outbound: three times the inbound correction, the other way, about {hdg}.','Ut: tre ganger den inngående korreksjonen, motsatt vei, rundt {hdg}.')},
- 'hold.legshort':{h:t2('Inbound leg short','Kort inngående legg'),w:t2('The inbound leg took {v} s; it should take {want} s.','Inngående legg tok {v} s; det skal ta {want} s.'),d:t2('Fly about {adj} s longer outbound next time.','Fly rundt {adj} s lenger ut neste gang.')},
- 'hold.leglong':{h:t2('Inbound leg long','Langt inngående legg'),w:t2('The inbound leg took {v} s; it should take {want} s.','Inngående legg tok {v} s; det skal ta {want} s.'),d:t2('Fly about {adj} s shorter outbound next time.','Fly rundt {adj} s kortere ut neste gang.')},
- 'pt.wrong45':{h:t2('45° turn to the wrong side','45°-svingen til feil side'),w:t2('The 45° turn went away from the side on the chart.','45°-svingen gikk vekk fra siden på kartet.'),d:t2('Turn {dir}, to the side on the chart: that is the protected side.','Sving til {dir}, til siden på kartet: det er den beskyttede siden.')},
- 'pt.wrong180':{h:t2('180° turn the wrong way','180°-svingen feil vei'),w:t2('The 180° turn went towards the station, out of the protected area.','180°-svingen gikk mot stasjonen, ut av det beskyttede området.'),d:t2('Turn {dir}, the opposite way to the 45° turn.','Sving til {dir}, motsatt vei av 45°-svingen.')},
- 'base.wrongturn':{h:t2('Base turn the wrong way','Base turn feil vei'),w:t2('You turned away from the final course.','Du svingte vekk fra sluttkursen.'),d:t2('Turn {dir}, towards the side the outbound leg is offset to.','Sving til {dir}, mot siden legget ut er forskjøvet til.')},
- 'app.early':{h:t2('Descent too early','For tidlig nedstigning'),w:t2('You went below {alt} ft before you were allowed to.','Du gikk under {alt} ft før du hadde lov.'),
-  d:t2('Hold the published altitude until the FAF, or on an ILS until the glide slope is centred. Then descend.','Hold publisert høyde til FAF, eller på ILS til glidebanen står i midten. Sink så.')},
- 'app.low':{h:t2('Below the profile','Under profilen'),w:t2('You were {pa} ft below the profile.','Du var {pa} ft under profilen.'),d:t2('Check the table every mile, and reduce the rate when low.','Sjekk tabellen hver mil, og reduser sinket når du er lav.')},
- 'app.high':{h:t2('Above the profile','Over profilen'),w:t2('You were {pa} ft above the profile.','Du var {pa} ft over profilen.'),d:t2('Start down at the FAF at about ground speed × 5 ft/min.','Start ned ved FAF med rundt fart over bakken × 5 ft/min.')},
- 'app.belowmda':{h:t2('Below the MDA','Under MDA'),w:t2('You went below the MDA of {mda} ft.','Du gikk under MDA på {mda} ft.'),d:t2('The MDA is a floor: level at or just above it, never below.','MDA er et gulv: plan ut på eller like over den, aldri under.')},
- 'app.mapt':{h:t2('Missed approach point','Missed approach-punktet'),w:t2('You reached the missed approach point above the MDA.','Du nådde missed approach-punktet over MDA.'),d:t2('Start down at the FAF and use about ground speed × 5 ft/min.','Start ned ved FAF og bruk rundt fart over bakken × 5 ft/min.')},
- 'ils.overshoot':{h:t2('Through the localiser','Gjennom localiseren'),w:t2('You flew through the localiser.','Du fløy gjennom localiseren.'),d:t2('Turn onto the course as soon as the needle comes alive: it moves fast.','Sving inn på kursen så snart nålen blir levende: den beveger seg fort.')},
- 'ils.loclimit':{h:t2('Localiser limit','Localisergrense'),w:t2('Localiser deviation reached {d} dots, beyond half scale.','Localiseravviket nådde {d} prikker, mer enn halvt utslag.'),d:t2('Fly the localiser with 2° to 3° corrections, early.','Fly localiseren med korreksjoner på 2° til 3°, tidlig.')},
- 'ils.gslimit':{h:t2('Glide slope limit','Glidebanegrense'),w:t2('Glide slope deviation reached {d} dots, beyond half scale.','Glidebaneavviket nådde {d} prikker, mer enn halvt utslag.'),d:t2('Change the descent rate by 100 to 200 ft/min and watch the needle.','Endre sinket med 100 til 200 ft/min og følg nålen.')},
- 'int.angle':{h:t2('Different intercept angle','Annen interceptvinkel'),w:t2('You intercepted at {ang}°; the task asked for {want}°.','Du fanget med {ang}°; oppgaven ba om {want}°.'),d:t2('Course ± {want}° towards the needle.','Kurs ± {want}° mot nålen.')},
- 'hold.dmepast':{h:t2('Past the DME limit','Forbi DME-grensen'),w:t2('The outbound leg went past {D} DME.','Utgående legg gikk forbi {D} DME.'),d:t2('Watch the DME outbound and start the turn at the limit.','Følg DME-en ut og start svingen ved grensen.')},
- 'miss.late':{h:t2('Late go-around','Sen go-around'),w:t2('You did not start climbing within about 10 s of the minimums.','Du startet ikke stigningen innen rundt 10 s etter minima.'),d:t2('At the minimums without the runway: power, pitch up, climb. Say “go around” out loud.','Ved minima uten rullebanen: kraft, nesen opp, stig. Si «go around» høyt.')},
- 'miss.below':{h:t2('Below the minimums','Under minima'),w:t2('You went well below {mins} ft before climbing.','Du gikk godt under {mins} ft før du steg.'),d:t2('Start the go-around at the minimums, not after.','Start go-around ved minima, ikke etter.')},
- 'miss.early':{h:t2('Early turn','Tidlig sving'),w:t2('You turned before {ta} ft.','Du svingte før {ta} ft.'),d:t2('Climb straight ahead to the turn altitude first.','Stig rett frem til svinghøyden først.')},
- 'miss.wrongturn':{h:t2('Missed approach turn the wrong way','Missed approach-sving feil vei'),w:t2('The missed approach turns {dir}; you turned the other way.','Missed approach svinger til {dir}; du svingte den andre veien.'),d:t2('Brief the missed approach before the FAF: turn direction, heading, altitude.','Brief missed approach før FAF: svingretning, kurs, høyde.')},
- 'miss.incomplete':{h:t2('Missed approach not flown','Missed approach ikke fløyet'),w:t2('The missed approach turn never came.','Svingen i missed approach kom aldri.'),d:t2('After the turn altitude, turn to the published heading.','Etter svinghøyden svinger du til publisert kurs.')},
- 'rt.off':{h:t2('Off the route','Utenfor ruten'),w:t2('You were {e} NM {side} of the leg, beyond 0.5 NM.','Du var {e} NM til {side} for legget, mer enn 0,5 NM.'),d:t2('Keep the course bar centred: small corrections towards it.','Hold kursstreken i midten: små korreksjoner mot den.')},
- 'rt.constraint':{h:t2('Altitude constraint missed','Høydekrav ikke møtt'),w:t2('You crossed {wp} at {was} ft; it needed {cw} {alt} ft.','Du krysset {wp} i {was} ft; den krevde {cw} {alt} ft.'),d:t2('Set the next constraint early and check the distance: 3 NM per 1000 ft down, about 2 NM per 1000 ft up.','Still inn neste krav tidlig og sjekk avstanden: 3 NM per 1000 ft ned, rundt 2 NM per 1000 ft opp.')},
- 'pass.early':{h:t2('Passage reported early','Passering rapportert for tidlig'),w:t2('You reported station passage {d} NM before the station.','Du rapporterte stasjonspassering {d} NM før stasjonen.'),d:t2('Wait for the flag to flip from TO to FROM. A lively needle alone is not passage.','Vent til flagget skifter fra TO til FROM. En urolig nål alene er ikke passering.')},
- 'pass.late':{h:t2('Passage not reported','Passering ikke rapportert'),w:t2('The station passed and no report came.','Stasjonen ble passert uten rapport.'),d:t2('Keep an eye on the flag as the DME goes low.','Følg med på flagget når DME-en blir lav.')},
+ 'hold.entrytime':{h:t2('Time on the entry leg','Tid på inngangslegget'),w:t2('The entry leg lasted {v} s. It should be about {want} s.','Inngangslegget varte {v} s. Det skal være rundt {want} s.'),d:t2('Start the clock over the fix and turn back after 1 minute.','Start klokka over fiksen og sving tilbake etter 1 minutt.')},
+ 'hold.wrongturn':{h:t2('Turned the wrong way','Svingte feil vei'),w:t2('This hold uses {dir} turns. You turned the other way.','Denne holdingen bruker svinger til {dir}. Du svingte den andre veien.'),
+  d:t2('Every turn in a hold goes the way the clearance says. Standard is right turns.','Alle svinger i en holding går den veien klareringen sier. Standard er høyresvinger.')},
+ 'hold.nowca':{h:t2('No wind correction away from the fix','Ingen vindkorreksjon bort fra fiksen'),w:t2('On the leg away from the fix your heading did not allow for the wind.','På legget bort fra fiksen tok ikke headingen din hensyn til vinden.'),d:t2('Away from the fix, use three times the correction you needed towards it, on the other side: about {hdg}.','Bort fra fiksen bruker du tre ganger korreksjonen du trengte inn mot den, til den andre siden: rundt {hdg}.')},
+ 'hold.legshort':{h:t2('The leg towards the fix was short','Legget inn mot fiksen ble kort'),w:t2('The leg towards the fix took {v} s. It should take {want} s.','Legget inn mot fiksen tok {v} s. Det skal ta {want} s.'),d:t2('Fly about {adj} s longer away from the fix next lap.','Fly rundt {adj} s lenger bort fra fiksen neste runde.')},
+ 'hold.leglong':{h:t2('The leg towards the fix was long','Legget inn mot fiksen ble langt'),w:t2('The leg towards the fix took {v} s. It should take {want} s.','Legget inn mot fiksen tok {v} s. Det skal ta {want} s.'),d:t2('Fly about {adj} s shorter away from the fix next lap.','Fly rundt {adj} s kortere bort fra fiksen neste runde.')},
+ 'pt.wrong45':{h:t2('First turn to the wrong side','Første sving til feil side'),w:t2('The first turn went to the side that is not on the chart.','Den første svingen gikk til den siden som ikke står på kartet.'),d:t2('Turn {dir}, to the side shown on the chart. Only that side is kept clear of obstacles.','Sving til {dir}, til den siden kartet viser. Bare den siden er holdt fri for hindringer.')},
+ 'pt.wrong180':{h:t2('Turned back the wrong way','Svingte tilbake feil vei'),w:t2('The turn back went towards the station, out of the protected area.','Svingen tilbake gikk mot stasjonen, ut av det beskyttede området.'),d:t2('Turn {dir}: the opposite way to the first turn.','Sving til {dir}: motsatt vei av den første svingen.')},
+ 'base.wrongturn':{h:t2('Base turn the wrong way','Base turn feil vei'),w:t2('You turned away from the final course.','Du svingte bort fra sluttkursen.'),d:t2('Turn {dir}: towards the side the leg away from the station is set off to.','Sving til {dir}: mot den siden legget bort fra stasjonen ligger forskjøvet til.')},
+ 'app.early':{h:t2('Started down too early','Startet ned for tidlig'),w:t2('You went below {alt} ft before you were allowed to.','Du gikk under {alt} ft før du hadde lov.'),
+  d:t2('Hold the published altitude until the FAF. On an ILS, hold it until the glide slope needle is centred. Then descend.','Hold den publiserte høyden til FAF. På en ILS holder du den til glidebanenålen står i midten. Gå så ned.')},
+ 'app.low':{h:t2('Below the path','Under banen'),w:t2('You were {pa} ft below the planned path.','Du var {pa} ft under den planlagte banen.'),d:t2('Check the table every mile. When you are low, descend more slowly.','Sjekk tabellen for hver nautiske mil. Når du er lav, går du ned saktere.')},
+ 'app.high':{h:t2('Above the path','Over banen'),w:t2('You were {pa} ft above the planned path.','Du var {pa} ft over den planlagte banen.'),d:t2('Start down at the FAF, at about ground speed × 5 ft/min.','Start ned ved FAF, med rundt fart over bakken × 5 ft/min.')},
+ 'app.belowmda':{h:t2('Below the minimum altitude','Under minstehøyden'),w:t2('You went below the minimum altitude (MDA) of {mda} ft.','Du gikk under minstehøyden (MDA) på {mda} ft.'),d:t2('The MDA is a floor. Level off at it or just above it, never below.','MDA er et gulv. Flat ut på den eller like over, aldri under.')},
+ 'app.mapt':{h:t2('Too high at the end','For høyt ved slutten'),w:t2('You reached the end of the approach (the missed approach point) still above the minimum altitude.','Du nådde slutten av innflygingen (punktet for avbrutt innflyging) og var fortsatt over minstehøyden.'),d:t2('Start down at the FAF and use about ground speed × 5 ft/min.','Start ned ved FAF og bruk rundt fart over bakken × 5 ft/min.')},
+ 'ils.overshoot':{h:t2('Flew through the localiser','Fløy gjennom localiseren'),w:t2('You flew through the runway centre line.','Du fløy gjennom rullebanens senterlinje.'),d:t2('Turn onto the course as soon as the needle starts to move. It moves fast.','Sving inn på kursen så snart nålen begynner å røre seg. Den går fort.')},
+ 'ils.loclimit':{h:t2('Too far off the localiser','For langt fra localiseren'),w:t2('The localiser needle reached {d} dots. The limit is half scale, 2.5 dots.','Localiser-nålen nådde {d} prikker. Grensen er halvt utslag, 2,5 prikker.'),d:t2('Correct early, with 2° to 3° of heading at a time.','Korriger tidlig, med 2° til 3° heading om gangen.')},
+ 'ils.gslimit':{h:t2('Too far off the glide slope','For langt fra glidebanen'),w:t2('The glide slope needle reached {d} dots. The limit is half scale, 2.5 dots.','Glidebanenålen nådde {d} prikker. Grensen er halvt utslag, 2,5 prikker.'),d:t2('Change the rate of descent by 100 to 200 ft/min and watch the needle.','Endre synkehastigheten med 100 til 200 ft/min og følg nålen.')},
+ 'int.angle':{h:t2('A different angle than asked for','En annen vinkel enn oppgaven ba om'),w:t2('You crossed towards the course at {ang}°. The task asked for {want}°.','Du fløy mot kursen med {ang}°. Oppgaven ba om {want}°.'),d:t2('The course plus or minus {want}°, on the side of the needle.','Kursen pluss eller minus {want}°, til den siden nålen står.')},
+ 'hold.dmepast':{h:t2('Past the DME limit','Forbi DME-grensen'),w:t2('The leg away from the fix went past {D} DME.','Legget bort fra fiksen gikk forbi {D} DME.'),d:t2('Watch the DME on the leg away from the fix and start the turn at the limit.','Følg DME på legget bort fra fiksen og start svingen ved grensen.')},
+ 'miss.late':{h:t2('Late go-around','Avbrøt for sent'),w:t2('You did not start to climb within about 10 seconds of reaching the minimum.','Du begynte ikke å stige innen rundt 10 sekunder etter at du nådde minimum.'),d:t2('At the minimum without the runway: full power, nose up, climb. Say “go around” out loud.','På minimum uten rullebanen: full motor, nesen opp, stig. Si «go around» høyt.')},
+ 'miss.below':{h:t2('Below the minimum','Under minimum'),w:t2('You went well below {mins} ft before you climbed.','Du gikk godt under {mins} ft før du steg.'),d:t2('Start the go-around at the minimum, not after it.','Avbryt på minimum, ikke etter.')},
+ 'miss.early':{h:t2('Turned too early','Svingte for tidlig'),w:t2('You turned before {ta} ft.','Du svingte før {ta} ft.'),d:t2('Climb straight ahead to the turn altitude first.','Stig rett frem til svinghøyden først.')},
+ 'miss.wrongturn':{h:t2('Missed approach: turned the wrong way','Avbrutt innflyging: svingte feil vei'),w:t2('The missed approach turns {dir}. You turned the other way.','Avbrutt innflyging svinger til {dir}. Du svingte den andre veien.'),d:t2('Go through the missed approach before the FAF: which way to turn, which heading, which altitude.','Gå gjennom avbrutt innflyging før FAF: hvilken vei du svinger, hvilken heading, hvilken høyde.')},
+ 'miss.incomplete':{h:t2('Missed approach not finished','Avbrutt innflyging ikke fullført'),w:t2('You never made the turn in the missed approach.','Du gjorde aldri svingen i avbrutt innflyging.'),d:t2('When you reach the turn altitude, turn to the published heading.','Når du når svinghøyden, svinger du til den publiserte headingen.')},
+ 'rt.off':{h:t2('Off the route','Utenfor ruten'),w:t2('You were {e} NM {side} of the leg. The limit is 0.5 NM.','Du var {e} NM til {side} for legget. Grensen er 0,5 NM.'),d:t2('Keep the needle centred with small corrections towards it.','Hold nålen i midten med små korreksjoner mot den.')},
+ 'rt.constraint':{h:t2('Wrong altitude at a waypoint','Feil høyde ved et waypoint'),w:t2('You crossed {wp} at {was} ft. It had to be {cw} {alt} ft.','Du krysset {wp} i {was} ft. Det skulle være {cw} {alt} ft.'),d:t2('Set the next altitude early and check the distance: 3 NM for every 1000 ft down, about 2 NM for every 1000 ft up.','Still inn neste høyde tidlig og sjekk avstanden: 3 NM for hver 1000 ft ned, rundt 2 NM for hver 1000 ft opp.')},
+ 'pass.early':{h:t2('Reported too early','Rapporterte for tidlig'),w:t2('You reported station passage {d} NM before the station.','Du rapporterte stasjonspassering {d} NM før stasjonen.'),d:t2('Wait until the flag changes from TO to FROM. A nervous needle alone is not passage.','Vent til flagget skifter fra TO til FROM. En urolig nål alene er ikke passering.')},
+ 'pass.late':{h:t2('Passage not reported','Passeringen ble ikke rapportert'),w:t2('You passed the station and did not report it.','Du passerte stasjonen uten å rapportere.'),d:t2('Keep an eye on the flag when the DME gets small.','Følg med på flagget når DME blir liten.')},
  'pass.ok':{h:t2('Passage','Passering'),w:t2('Reported.','Rapportert.'),d:t2('','')},
- 'pass.turnearly':{h:t2('Turned before the station','Svingte før stasjonen'),w:t2('You left the course before the station.','Du forlot kursen før stasjonen.'),d:t2('Hold the heading until the flag shows FROM, then intercept the new radial.','Hold kursen til flagget viser FROM, og fang så den nye radialen.')},
- 'tts.wrong':{h:t2('Time to station','Tid til stasjonen'),w:t2('You reported {val} min; it was about {truth} min.','Du rapporterte {val} min; det var rundt {truth} min.'),d:t2('Minutes = seconds ÷ degrees. 90 s for 10° is 9 min, not 90.','Minutter = sekunder ÷ grader. 90 s for 10° er 9 min, ikke 90.')},
- 'tts.ok':{h:t2('Time to station','Tid til stasjonen'),w:t2('{val} min (about {truth}).','{val} min (rundt {truth}).'),d:t2('','')},
- 'tts.slow':{h:t2('No report','Ingen rapport'),w:t2('The bearing changed 40° without a report.','Peilingen endret seg 40° uten rapport.'),d:t2('Start the stopwatch at once; report after 10°.','Start stoppeklokken med en gang; rapporter etter 10°.')},
- 'math.wrong':{h:t2('Wrong answer','Feil svar'),w:t2('You answered {val}; the answer is {ans}.','Du svarte {val}; svaret er {ans}.'),d:t2('','')},
+ 'pass.turnearly':{h:t2('Turned before the station','Svingte før stasjonen'),w:t2('You left the course before you had passed the station.','Du forlot kursen før du hadde passert stasjonen.'),d:t2('Hold the heading until the flag shows FROM. Then intercept the new radial.','Hold headingen til flagget viser FROM. Skjær så inn på den nye radialen.')},
+ 'tts.wrong':{h:t2('Time to the station','Tid til stasjonen'),w:t2('You reported {val} min. It was about {truth} min.','Du rapporterte {val} min. Det var rundt {truth} min.'),d:t2('Minutes = seconds ÷ degrees. 90 s for 10° is 9 min, not 90.','Minutter = sekunder ÷ grader. 90 s for 10° er 9 min, ikke 90.')},
+ 'tts.ok':{h:t2('Time to the station','Tid til stasjonen'),w:t2('{val} min (about {truth}).','{val} min (rundt {truth}).'),d:t2('','')},
+ 'tts.slow':{h:t2('No report','Ingen rapport'),w:t2('The bearing changed 40° and you did not report a time.','Peilingen endret seg 40° uten at du rapporterte en tid.'),d:t2('Start the stopwatch at once. Report when the bearing has changed 10°.','Start stoppeklokka med en gang. Rapporter når peilingen har endret seg 10°.')},
+ 'math.wrong':{h:t2('Wrong answer','Feil svar'),w:t2('You answered {val}. The answer is {ans}.','Du svarte {val}. Svaret er {ans}.'),d:t2('','')},
  'math.ok':{h:t2('Right','Riktig'),w:t2('{ans}.','{ans}.'),d:t2('','')},
- timeout:{h:t2('Out of time','Tiden ute'),w:t2('The run ended before the task was done.','Øvelsen tok slutt før oppgaven var ferdig.'),d:t2('Follow the coach line step by step, or watch “Show me” first.','Følg coach-linjen steg for steg, eller se «Vis meg» først.')}
+ timeout:{h:t2('The exercise was not finished','Øvelsen ble ikke fullført'),w:t2('The run ended before the task was done.','Runden tok slutt før oppgaven var ferdig.'),d:t2('Fly it with Guided help, or press “Watch the instructor” first.','Fly den med veiledning, eller trykk «Se instruktøren» først.')}
 };
 
 /* parameters → words */
@@ -456,12 +600,13 @@ function pw(p,raw){ const o=Object.assign({},p);
   if(o.entry) o.entry=L(W.entry[o.entry]||W.entry.unclear);
   if(o.flown) o.flown=L(W.entry[o.flown]||W.entry.unclear);
   if(o.alt===null) o.alt=''; else if(typeof o.alt==='string'&&W.entry[o.alt]) o.alt=no()?` (eller ${L(W.entry[o.alt])})`:` (or ${L(W.entry[o.alt])})`;
-  if(o.wca!==undefined&&typeof o.wca==='number'){ const w=o.wca; o.wca= Math.abs(w)<1? '' : no()? `, ${Math.abs(w)}° til ${sideW(w>0?'R':'L')} for kursen: det er vindkorreksjonen` : `, ${Math.abs(w)}° ${sideW(w>0?'R':'L')} of the course: that is your wind correction`; }
+  if(o.wca!==undefined&&typeof o.wca==='number'){ const w=o.wca; o.wca= Math.abs(w)<1? '' : no()? `, ${Math.abs(w)}° til ${sideW(w>0?'R':'L')} for kursen: det er vindkorreksjonen din` : `, ${Math.abs(w)}° ${sideW(w>0?'R':'L')} of the course: that is your wind correction`; }
   if(!raw) ['obs','crs','val','truth','hdg','qdm','r1','inb','out','ro','td','b'].forEach(k=>{ if(typeof o[k]==='number') o[k]=d3(o[k]); });
   if(typeof o.e==='number') o.e=String(Math.abs(o.e)).replace('.',no()?',':'.');
   if(typeof o.lead==='number') o.lead=String(o.lead).replace('.',no()?',':'.');
   if(typeof o.D==='number') o.D=String(o.D).replace('.',no()?',':'.');
   if(typeof o.adj==='number') o.adj=Math.abs(o.adj);
+  if(o.a!==undefined&&o.s!==undefined&&o.hdg!==undefined) o.clk=+o.a===45?(no()?', og start klokka':', and start the clock'):(no()?'. Gå rett over i neste sving':'. Then go straight into the next turn');
   if(o.t==='ge'||o.t==='le'||o.t==='at') o.cw=L({ge:t2('at or above','i eller over'),le:t2('at or below','i eller under'),at:t2('at','i')}[o.t]);
   if(raw&&typeof o.truth==='number') o.truth=String(o.truth).replace('.',no()?',':'.');
   if(typeof o.ans==='number') o.ans=String(o.ans).replace('.',no()?',':'.')+(o.unit&&o.unit!=='°'?' '+o.unit:'');
@@ -479,33 +624,68 @@ function clearance(X,A,ex){ const T=X.task, st=A.ST[T.st||T.ils], c={en:'',no:''
     case 'trackIn': case 'pass': c.en=`${cs}track inbound to ${st.id} on course ${d3(T.crs)}, maintain ${alt(T.alt)}${id==='pass'?', report station passage':''}.`; c.no=`${cs}følg kurs ${d3(T.crs)} inn til ${st.id}, hold ${alt(T.alt)}${id==='pass'?', rapporter stasjonspassering':''}.`; break;
     case 'trackOut': c.en=`${cs}track outbound from ${st.id} on radial ${d3(T.crs)} to ${T.to} DME, maintain ${alt(T.alt)}.`; c.no=`${cs}følg radial ${d3(T.crs)} ut fra ${st.id} til ${T.to} DME, hold ${alt(T.alt)}.`; break;
     case 'tts': c.en=`${cs}report your time to ${st.id}. Maintain ${alt(T.alt)}.`; c.no=`${cs}rapporter tiden din til ${st.id}. Hold ${alt(T.alt)}.`; break;
-    case 'intIn': c.en=`${cs}intercept ${T.ndb?'QDM':'course'} ${d3(T.crs)} inbound to ${st.id}${T.ang?`, ${T.ang}° intercept`:''}, maintain ${alt(T.alt)}.`; c.no=`${cs}fang ${T.ndb?'QDM':'kurs'} ${d3(T.crs)} inn til ${st.id}${T.ang?`, interception på ${T.ang}°`:''}, hold ${alt(T.alt)}.`; break;
-    case 'intOut': c.en=`${cs}intercept ${T.ndb?'QDR':'radial'} ${d3(T.crs)} outbound from ${st.id}${T.ang?`, ${T.ang}° intercept`:''}, maintain ${alt(T.alt)}.`; c.no=`${cs}fang ${T.ndb?'QDR':'radial'} ${d3(T.crs)} ut fra ${st.id}${T.ang?`, interception på ${T.ang}°`:''}, hold ${alt(T.alt)}.`; break;
-    case 'intPass': c.en=`${cs}track ${d3(T.c0)} to ${st.id}, after ${st.id} intercept radial ${d3(T.crs)} outbound, maintain ${alt(T.alt)}.`; c.no=`${cs}følg ${d3(T.c0)} til ${st.id}, etter ${st.id} fang radial ${d3(T.crs)} ut, hold ${alt(T.alt)}.`; break;
-    case 'locInt': c.en=`${cs}fly heading ${d3(X.ac.hdg)}, maintain ${alt(T.alt)}, intercept the localiser ${d3(T.crs)}.`; c.no=`${cs}fly kurs ${d3(X.ac.hdg)}, hold ${alt(T.alt)}, fang localiseren ${d3(T.crs)}.`; break;
+    case 'intIn': c.en=`${cs}intercept ${T.ndb?'QDM':'course'} ${d3(T.crs)} inbound to ${st.id}${T.ang?`, ${T.ang}° intercept`:''}, maintain ${alt(T.alt)}.`; c.no=`${cs}skjær inn på ${T.ndb?'QDM':'kurs'} ${d3(T.crs)} inn til ${st.id}${T.ang?`, med ${T.ang}° vinkel`:''}, hold ${alt(T.alt)}.`; break;
+    case 'intOut': c.en=`${cs}intercept ${T.ndb?'QDR':'radial'} ${d3(T.crs)} outbound from ${st.id}${T.ang?`, ${T.ang}° intercept`:''}, maintain ${alt(T.alt)}.`; c.no=`${cs}skjær inn på ${T.ndb?'QDR':'radial'} ${d3(T.crs)} ut fra ${st.id}${T.ang?`, med ${T.ang}° vinkel`:''}, hold ${alt(T.alt)}.`; break;
+    case 'intPass': c.en=`${cs}track ${d3(T.c0)} to ${st.id}, after ${st.id} intercept radial ${d3(T.crs)} outbound, maintain ${alt(T.alt)}.`; c.no=`${cs}følg ${d3(T.c0)} til ${st.id}, etter ${st.id} skjær inn på radial ${d3(T.crs)} ut, hold ${alt(T.alt)}.`; break;
+    case 'locInt': c.en=`${cs}fly heading ${d3(X.ac.hdg)}, maintain ${alt(T.alt)}, intercept the localiser ${d3(T.crs)}.`; c.no=`${cs}fly heading ${d3(X.ac.hdg)}, hold ${alt(T.alt)}, skjær inn på localiseren ${d3(T.crs)}.`; break;
     case 'ndb': c.en=`${cs}track inbound to ${st.id} on QDM ${d3(T.crs)}, maintain ${alt(T.alt)}.`; c.no=`${cs}følg QDM ${d3(T.crs)} inn til ${st.id}, hold ${alt(T.alt)}.`; break;
     case 'ndbOut': c.en=`${cs}track outbound from ${st.id} on QDR ${d3(T.crs)} for ${T.to} NM, maintain ${alt(T.alt)}.`; c.no=`${cs}følg QDR ${d3(T.crs)} ut fra ${st.id} i ${T.to} NM, hold ${alt(T.alt)}.`; break;
     case 'dme': { const cw=T.dir>0?t2('clockwise','med klokka'):t2('anticlockwise','mot klokka');
-      if(T.part==='leave'){ c.en=`${cs}continue the ${T.R} DME arc ${cw.en}, intercept radial ${d3(T.r1)} inbound.`; c.no=`${cs}fortsett ${T.R} DME-buen ${cw.no}, fang radial ${d3(T.r1)} inn.`; }
+      if(T.part==='leave'){ c.en=`${cs}continue the ${T.R} DME arc ${cw.en}, intercept radial ${d3(T.r1)} inbound.`; c.no=`${cs}fortsett ${T.R} DME-buen ${cw.no}, skjær inn på radial ${d3(T.r1)} inn.`; }
       else if(T.part==='join'){ c.en=`${cs}track outbound radial ${d3(T.r0)}, join the ${T.R} DME arc ${cw.en}.`; c.no=`${cs}følg radial ${d3(T.r0)} ut, gå inn på ${T.R} DME-buen ${cw.no}.`; }
-      else { c.en=`${cs}track outbound radial ${d3(T.r0)}, join the ${T.R} DME arc ${cw.en}, intercept radial ${d3(T.r1)} inbound.`; c.no=`${cs}følg radial ${d3(T.r0)} ut, gå inn på ${T.R} DME-buen ${cw.no}, fang radial ${d3(T.r1)} inn.`; } break; }
-    case 'holdEntry': case 'hold': { const turns=T.dir>0?t2('right turns','høyresvinger'):t2('left turns','venstresvinger'), leg=T.dmeLim?t2(`outbound limit ${T.dmeLim} DME`,`utgående grense ${T.dmeLim} DME`):t2('one-minute legs','legg på ett minutt');
-      const what=T.kind==='ndb'?t2(`on ${st.id}, inbound QDM ${d3(T.inb)}`,`ved ${st.id}, inngående QDM ${d3(T.inb)}`):t2(`on the ${d3(T.out)} radial${T.fx?' at '+T.D+' DME':''}, inbound course ${d3(T.inb)}`,`på radial ${d3(T.out)}${T.fx?' ved '+T.D+' DME':''}, inngående kurs ${d3(T.inb)}`);
+      else { c.en=`${cs}track outbound radial ${d3(T.r0)}, join the ${T.R} DME arc ${cw.en}, intercept radial ${d3(T.r1)} inbound.`; c.no=`${cs}følg radial ${d3(T.r0)} ut, gå inn på ${T.R} DME-buen ${cw.no}, skjær inn på radial ${d3(T.r1)} inn.`; } break; }
+    case 'holdEntry': case 'hold': { const turns=T.dir>0?t2('right turns','høyresvinger'):t2('left turns','venstresvinger'), leg=T.dmeLim?t2(`outbound limit ${T.dmeLim} DME`,`grense ut ${T.dmeLim} DME`):t2('one-minute legs','legg på ett minutt');
+      const what=T.kind==='ndb'?t2(`on ${st.id}, inbound QDM ${d3(T.inb)}`,`ved ${st.id}, QDM inn ${d3(T.inb)}`):t2(`on the ${d3(T.out)} radial${T.fx?' at '+T.D+' DME':''}, inbound course ${d3(T.inb)}`,`på radial ${d3(T.out)}${T.fx?' ved '+T.D+' DME':''}, kurs inn ${d3(T.inb)}`);
       const head=T.race?t2(`proceed direct ${fx}, racetrack procedure`,`direkte ${fx}, racetrack-prosedyre`):id==='hold'?t2('hold','hold'):t2(`proceed direct ${fx}, hold`,`direkte ${fx}, hold`);
       c.en=`${cs}${head.en} ${what.en}, ${turns.en}, ${leg.en}, maintain ${alt(T.alt)}.${id==='hold'?` ${T.laps} pattern${T.laps>1?'s':''}.`:''}`;
       c.no=`${cs}${head.no} ${what.no}, ${turns.no}, ${leg.no}, hold ${alt(T.alt)}.${id==='hold'?` ${T.laps} runde${T.laps>1?'r':''}.`:''}`; break; }
     case 'pt': { const a=T.a||45, b=a===80?260:180; c.en=`${cs}outbound radial ${d3(T.out)} 1 min, procedure turn ${a}°/${b}° ${T.side>0?'right':'left'} ${d3(norm(T.out+T.side*a))}, inbound course ${d3(T.inb)}, maintain ${alt(T.alt)}.`;
-      c.no=`${cs}radial ${d3(T.out)} ut 1 min, prosedyresving ${a}°/${b}° ${T.side>0?'høyre':'venstre'} ${d3(norm(T.out+T.side*a))}, inngående kurs ${d3(T.inb)}, hold ${alt(T.alt)}.`; break; }
+      c.no=`${cs}radial ${d3(T.out)} ut 1 min, prosedyresving ${a}°/${b}° ${T.side>0?'høyre':'venstre'} ${d3(norm(T.out+T.side*a))}, kurs inn ${d3(T.inb)}, hold ${alt(T.alt)}.`; break; }
     case 'base': c.en=`${cs}outbound radial ${d3(T.ro)} 2 min, base turn ${T.turn>0?'right':'left'}, inbound course ${d3(T.inb)}, maintain ${alt(T.alt)}.`;
-      c.no=`${cs}radial ${d3(T.ro)} ut 2 min, base turn ${T.turn>0?'høyre':'venstre'}, inngående kurs ${d3(T.inb)}, hold ${alt(T.alt)}.`; break;
+      c.no=`${cs}radial ${d3(T.ro)} ut 2 min, base turn ${T.turn>0?'høyre':'venstre'}, kurs inn ${d3(T.inb)}, hold ${alt(T.alt)}.`; break;
     case 'vordme': case 'ils': case 'vorApp': case 'ndbApp': case 'locApp': case 'lnav': case 'lnavVnav': case 'lpv': {
       const M=T.miss, nm={vordme:'VOR/DME',ils:'ILS',vorApp:'VOR',ndbApp:'NDB',locApp:'LOC',lnav:'RNP (LNAV)',lnavVnav:'RNP (LNAV/VNAV)',lpv:'RNP (LPV)'}[id], mins=T.da?`DA ${T.da} ft`:`MDA ${T.mda||T.mins} ft`;
-      const mEn=M?` Missed approach: climb straight ahead to ${M.ta} ft, turn ${M.dir>0?'right':'left'} heading ${d3(M.hdg)}, climb ${M.alt} ft.`:'', mNo=M?` Missed approach: stig rett frem til ${M.ta} ft, sving ${M.dir>0?'høyre':'venstre'} kurs ${d3(M.hdg)}, stig til ${M.alt} ft.`:'';
-      if(id==='ils'){ c.en=`${cs}fly heading ${d3(X.ac.hdg)}, maintain ${alt(T.alt)} until established, cleared ILS, course ${d3(T.crs)}. ${mins}.${mEn}`; c.no=`${cs}fly kurs ${d3(X.ac.hdg)}, hold ${alt(T.alt)} til etablert, klarert ILS, kurs ${d3(T.crs)}. ${mins}.${mNo}`; }
+      const mEn=M?` Missed approach: climb straight ahead to ${M.ta} ft, turn ${M.dir>0?'right':'left'} heading ${d3(M.hdg)}, climb ${M.alt} ft.`:'', mNo=M?` Avbrutt innflyging: stig rett frem til ${M.ta} ft, sving ${M.dir>0?'høyre':'venstre'} til heading ${d3(M.hdg)}, stig til ${M.alt} ft.`:'';
+      if(id==='ils'){ c.en=`${cs}fly heading ${d3(X.ac.hdg)}, maintain ${alt(T.alt)} until established, cleared ILS, course ${d3(T.crs)}. ${mins}.${mEn}`; c.no=`${cs}fly heading ${d3(X.ac.hdg)}, hold ${alt(T.alt)} til etablert, klarert ILS, kurs ${d3(T.crs)}. ${mins}.${mNo}`; }
       else { c.en=`${cs}cleared ${nm} approach, final course ${d3(T.crs)}. ${mins}.${mEn}`; c.no=`${cs}klarert ${nm}-innflyging, sluttkurs ${d3(T.crs)}. ${mins}.${mNo}`; } break; }
     case 'sid': case 'star': { const wp=T.wps.map(w=>w.id+(w.c?` ${w.c.t==='ge'?'+':w.c.t==='le'?'−':''}${w.c.alt}`:'')).join(', ');
-      c.en=`${cs}${id==='sid'?'cleared '+T.name+' departure, climb':'cleared '+T.name+' arrival, descend'} ${alt(T.alt)} (${wp}).`; c.no=`${cs}${id==='sid'?'klarert '+T.name+'-utflyging, stig til':'klarert '+T.name+'-innflygingsrute, sink til'} ${alt(T.alt)} (${wp}).`; break; }
+      c.en=`${cs}${id==='sid'?'cleared '+T.name+' departure, climb':'cleared '+T.name+' arrival, descend'} ${alt(T.alt)} (${wp}).`; c.no=`${cs}${id==='sid'?'klarert '+T.name+'-utflyging, stig til':'klarert '+T.name+'-innflygingsrute, gå ned til'} ${alt(T.alt)} (${wp}).`; break; }
     case 'math': c.en=`${T.n} quick questions. Work them out in your head, then type the answer.`; c.no=`${T.n} raske spørsmål. Regn i hodet, og skriv svaret.`; break;
+  }
+  return c; }
+
+/* the same task in plain words, shown under the clearance before the start */
+function plain(X,A,ex){ const T=X.task, st=A.ST[T.st||T.ils], id=st?st.id:'', c={en:'',no:''}, a=v=>Math.round(v)+' ft', fx=T.fx?T.fx.id:id;
+  switch(ex){
+    case 'orient': if(T.kind==='rbi'){ c.en=`Work out the direction to the beacon ${id} from your heading and the ADF needle. You do it ${T.n} times, from different places.`; c.no=`Finn retningen til fyret ${id} ut fra headingen din og ADF-nålen. Du gjør det ${T.n} ganger, fra forskjellige steder.`; }
+      else { c.en=`Find out which line from ${id} you are on (your radial). You do it ${T.n} times, from different places.`; c.no=`Finn ut hvilken linje fra ${id} du er på (radialen din). Du gjør det ${T.n} ganger, fra forskjellige steder.`; } break;
+    case 'trackIn': c.en=`Fly to ${id} along course ${d3(T.crs)} and stay on that line. Keep ${a(T.alt)}.`; c.no=`Fly til ${id} langs kurs ${d3(T.crs)} og bli på den linjen. Hold ${a(T.alt)}.`; break;
+    case 'pass': c.en=`Fly to ${id} along course ${d3(T.crs)}. Press “Station passage” the moment you fly over the station.`; c.no=`Fly til ${id} langs kurs ${d3(T.crs)}. Trykk «Stasjonspassering» i det du flyr over stasjonen.`; break;
+    case 'trackOut': c.en=`Fly away from ${id} along radial ${d3(T.crs)} and stay on that line until the DME shows ${T.to} NM.`; c.no=`Fly bort fra ${id} langs radial ${d3(T.crs)} og bli på den linjen til DME viser ${T.to} NM.`; break;
+    case 'tts': c.en=`Work out how many minutes you are from ${id}. Use only the needle and the stopwatch.`; c.no=`Finn ut hvor mange minutter du er fra ${id}. Bruk bare nålen og stoppeklokka.`; break;
+    case 'intIn': c.en=`You are to one side of the line that leads to ${id} on course ${d3(T.crs)}. Get onto that line, then follow it to the ${T.ndb?'beacon':'station'}.`; c.no=`Du er til siden for linjen som fører til ${id} på kurs ${d3(T.crs)}. Kom inn på den linjen, og følg den til ${T.ndb?'fyret':'stasjonen'}.`; break;
+    case 'intOut': c.en=`You are to one side of the line that leaves ${id} in direction ${d3(T.crs)}. Get onto that line, then follow it away from the ${T.ndb?'beacon':'station'}.`; c.no=`Du er til siden for linjen som går ut fra ${id} i retning ${d3(T.crs)}. Kom inn på den linjen, og følg den bort fra ${T.ndb?'fyret':'stasjonen'}.`; break;
+    case 'intPass': c.en=`Fly over ${id} on course ${d3(T.c0)}. After the station, get onto radial ${d3(T.crs)} and follow it away.`; c.no=`Fly over ${id} på kurs ${d3(T.c0)}. Etter stasjonen kommer du inn på radial ${d3(T.crs)} og følger den ut.`; break;
+    case 'locInt': c.en=`Keep heading ${d3(X.ac.hdg)} until the localiser needle starts to move. Then turn onto the runway course ${d3(T.crs)}.`; c.no=`Hold heading ${d3(X.ac.hdg)} til localiser-nålen begynner å røre seg. Sving så inn på rullebanekursen ${d3(T.crs)}.`; break;
+    case 'ndb': c.en=`Fly to the beacon ${id} along the line with bearing ${d3(T.crs)}. Hold a heading into the wind so that you fly straight.`; c.no=`Fly til fyret ${id} langs linjen med peiling ${d3(T.crs)}. Hold en heading opp mot vinden, så du flyr rett.`; break;
+    case 'ndbOut': c.en=`Fly away from the beacon ${id} along the line with bearing ${d3(T.crs)}, for ${T.to} NM.`; c.no=`Fly bort fra fyret ${id} langs linjen med peiling ${d3(T.crs)}, i ${T.to} NM.`; break;
+    case 'dme': { const cw=T.dir>0?t2('clockwise','med klokka'):t2('anticlockwise','mot klokka');
+      if(T.part==='leave'){ c.en=`You are on a circle ${T.R} NM from ${id}. Follow it ${cw.en}. Just before radial ${d3(T.r1)}, turn towards the station.`; c.no=`Du er på en sirkel ${T.R} NM fra ${id}. Følg den ${cw.no}. Like før radial ${d3(T.r1)} svinger du mot stasjonen.`; }
+      else if(T.part==='join'){ c.en=`Fly away from ${id} on radial ${d3(T.r0)}. Just before ${T.R} NM, turn onto the circle round the station and follow it ${cw.en}.`; c.no=`Fly bort fra ${id} på radial ${d3(T.r0)}. Like før ${T.R} NM svinger du inn på sirkelen rundt stasjonen og følger den ${cw.no}.`; }
+      else { c.en=`Fly away from ${id} on radial ${d3(T.r0)}. Turn onto the circle ${T.R} NM from the station and follow it ${cw.en}. Just before radial ${d3(T.r1)}, turn towards the station.`; c.no=`Fly bort fra ${id} på radial ${d3(T.r0)}. Sving inn på sirkelen ${T.R} NM fra stasjonen og følg den ${cw.no}. Like før radial ${d3(T.r1)} svinger du mot stasjonen.`; } break; }
+    case 'holdEntry': if(T.race){ c.en=`Fly to ${fx}. Enter the racetrack the way you would enter a hold, and fly one lap. You end on course ${d3(T.inb)}.`; c.no=`Fly til ${fx}. Gå inn i racetracken slik du ville gått inn i en holding, og fly én runde. Du ender på kurs ${d3(T.inb)}.`; }
+      else { c.en=`Fly to ${fx}. Choose the right entry for the heading you arrive with, fly it, and come back to the fix on course ${d3(T.inb)}.`; c.no=`Fly til ${fx}. Velg riktig inngang for headingen du kommer med, fly den, og kom tilbake til fiksen på kurs ${d3(T.inb)}.`; } break;
+    case 'hold': c.en=`Fly ${T.laps} lap${T.laps>1?'s':''} of the holding pattern at ${fx}, with ${T.dir>0?'right':'left'} turns. ${T.dmeLim?`The leg away from the fix ends at ${T.dmeLim} DME.`:'Correct for the wind, and make the leg towards the fix take one minute.'}`;
+      c.no=`Fly ${T.laps} runde${T.laps>1?'r':''} i holdingmønsteret ved ${fx}, med ${T.dir>0?'høyresvinger':'venstresvinger'}. ${T.dmeLim?`Legget bort fra fiksen slutter ved ${T.dmeLim} DME.`:'Korriger for vinden, og få legget inn mot fiksen til å ta ett minutt.'}`; break;
+    case 'pt': { const a0=T.a||45, b0=a0===80?260:180; c.en=`Fly over ${id} and away from it on radial ${d3(T.out)} for 1 minute. Turn round with the ${a0}°/${b0}° procedure turn and come back on course ${d3(T.inb)}.`; c.no=`Fly over ${id} og bort fra den på radial ${d3(T.out)} i 1 minutt. Snu med prosedyresvingen ${a0}°/${b0}° og kom tilbake på kurs ${d3(T.inb)}.`; break; }
+    case 'base': c.en=`Fly over ${id} and away from it on radial ${d3(T.ro)} for 2 minutes. Then make one long ${T.turn>0?'right':'left'} turn and come back on course ${d3(T.inb)}.`; c.no=`Fly over ${id} og bort fra den på radial ${d3(T.ro)} i 2 minutter. Gjør så én lang ${T.turn>0?'høyresving':'venstresving'} og kom tilbake på kurs ${d3(T.inb)}.`; break;
+    case 'ils': c.en=`Keep heading ${d3(X.ac.hdg)} until the localiser needle moves, then turn onto course ${d3(T.crs)}. Follow both needles down to ${T.da} ft. No runway in sight there: climb away on the missed approach.`;
+      c.no=`Hold heading ${d3(X.ac.hdg)} til localiser-nålen rører seg, og sving så inn på kurs ${d3(T.crs)}. Følg begge nålene ned til ${T.da} ft. Ser du ikke rullebanen der: stig ut på avbrutt innflyging.`; break;
+    case 'vordme': case 'vorApp': case 'ndbApp': case 'locApp': case 'lnav': case 'lnavVnav': case 'lpv': { const m=T.da||T.mda||T.mins;
+      c.en=`Follow the final course ${d3(T.crs)} towards the runway. Stay level until the FAF, then descend. Do not go below ${m} ft unless you see the runway. No runway in sight there: climb away on the missed approach.`;
+      c.no=`Følg sluttkursen ${d3(T.crs)} mot rullebanen. Hold høyden til FAF, og gå så ned. Gå ikke under ${m} ft uten at du ser rullebanen. Ser du den ikke der: stig ut på avbrutt innflyging.`; break; }
+    case 'sid': c.en='Climb along the route, from waypoint to waypoint. The numbers are altitudes to cross at: + means at or above, − means at or below.'; c.no='Stig langs ruten, fra waypoint til waypoint. Tallene er høyder du skal krysse i: + betyr i eller over, − betyr i eller under.'; break;
+    case 'star': c.en='Descend along the route, from waypoint to waypoint. The numbers are altitudes to cross at: + means at or above, − means at or below.'; c.no='Gå ned langs ruten, fra waypoint til waypoint. Tallene er høyder du skal krysse i: + betyr i eller over, − betyr i eller under.'; break;
   }
   return c; }
 
@@ -517,7 +697,7 @@ const save=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} 
 let PROG=load(PK)||(()=>{ const v1=load('bb-ifr-v1')||{}; return {ex:v1.ex||{},last:v1.last?{item:v1.last.ex,lv:v1.last.lv,area:v1.last.area}:null}; })(); PROG.ex=PROG.ex||{};
 const prog=id=>PROG.ex[id]||null, passed=id=>(PROG.ex[id]&&PROG.ex[id].lv)||0, best=id=>{ const p=PROG.ex[id]; if(!p||!p.best) return null; const v=Object.values(p.best); return v.length?Math.max(...v):null; };
 /* the short recommended path shown first; everything else behind "Show all" */
-const CORE=['orient','trackIn','intIn','ndb','holdEntry','hold','vordme','ils'];
+const CORE=['trackIn','intIn','ndb','dme','holdEntry','hold','pt','ils'];
 
 /* ---------- state ---------- */
 const S={item:'orient',ex:'orient',p:{},custom:false,lv:1,area:'practice',step:'understand',inst:null,seed:1,X:null,sim:null,J:null,P:null,GP:null,gc:null,
@@ -625,7 +805,7 @@ function drawGeom(m,g,X,Ar,id,W0,H0,opt){ opt=opt||{}; const T=X.task, C=COL.crs
 }
 /* the missed approach drawn after the runway: straight ahead, then the turn */
 function drawMissed(m,g,X,Ar,ils){ const M=X.task.miss; if(!M) return; const a=ils.end, b=I.at(a,M.crs,2.2), c=I.at(b,M.hdg,3); g.save(); g.globalAlpha=0.8;
-  line(m,g,a,b,'rgba(230,235,239,.55)',1.6,[6,4]); line(m,g,b,c,'rgba(230,235,239,.55)',1.6,[6,4]); m.P(c.x,c.y); m.arrowHead(g,m.sx,m.sy,m.sa(M.hdg),7,'rgba(230,235,239,.7)'); m.label(m.sx,m.sy,(no()?'Bomløp ':'Missed ')+d3(M.hdg)+' / '+M.alt,'rgba(230,235,239,.8)'); g.restore(); }
+  line(m,g,a,b,'rgba(230,235,239,.55)',1.6,[6,4]); line(m,g,b,c,'rgba(230,235,239,.55)',1.6,[6,4]); m.P(c.x,c.y); m.arrowHead(g,m.sx,m.sy,m.sa(M.hdg),7,'rgba(230,235,239,.7)'); m.label(m.sx,m.sy,(no()?'Avbrutt ':'Missed ')+d3(M.hdg)+' / '+M.alt,'rgba(230,235,239,.8)'); g.restore(); }
 
 /* ---------- pictograms: each group drawn as a small chart symbol ---------- */
 function pic(id){ const it=I.ITEM[id]||{g:'basics',ex:id}, e=it.ex, g=it.g; let b='';
@@ -643,37 +823,130 @@ function pic(id){ const it=I.ITEM[id]||{g:'basics',ex:id}, e=it.ex, g=it.g; let 
   else if(g==='pp') b=`<circle cx="24" cy="24" r="16" ${sw}/><path d="M24 12 L28 24 L24 36 L20 24Z" fill="currentColor" opacity=".55"/><path d="M10 38 L38 10" ${sw} stroke-width="2.4"/>`;
   return `<svg class="pic" viewBox="0 0 48 48" aria-hidden="true">${b}</svg>`; }
 
-/* ---------- home: nudges, the short path, the full catalogue ---------- */
-const HS=Object.assign({all:false,g:'all',st:'all'},load('bb-ifr-home')||{});
+/* ---------- home ----------
+   Top: what this is (three steps) beside a live miniature of the guided screen, flown by the instructor.
+   Then "Start here": the eight core exercises as a numbered path with a small chart diagram each.
+   Then every exercise, grouped by topic as cards that open in place, with a search box.
+   "Practise exactly this" (the builder) opens as a dialog from its card. */
+const HS=Object.assign({g:null,q:''},load('bb-ifr-home2')||{}); HS.q='';
 function recommended(){ return CORE.find(id=>!passed(id))||I.ITEMS.find(it=>!passed(it.id)&&I.itemOk(it,AREAS.practice))?.id||CORE[0]; }
-function renderNudge(){ const L0=PROG.last, rec=recommended(), box=el('nudge'); let h='';
-  if(L0&&I.ITEM[L0.item]){ h+=`<div class="ncard">${pic(L0.item)}<span class="k">${tx('Continue where you left off','Fortsett der du slapp')}</span><b>${esc(itemName(L0.item))}${L0.custom?` <span style="font-weight:500;color:var(--ink-3);font-size:15px">${tx('(your setup)','(ditt oppsett)')}</span>`:''}</b><button class="btn2" data-go="continue" type="button">${tx('Continue','Fortsett')}</button></div>`; }
-  h+=`<div class="ncard go">${pic(rec)}<span class="k">${L0?tx('Recommended next','Anbefalt neste'):tx('New here? Start with this','Ny her? Start med denne')}</span><b>${esc(itemName(rec))}</b><button class="btn2 pri" data-go="${rec}" type="button">${tx('Start','Start')}</button></div>`;
-  box.innerHTML=h; box.style.gridTemplateColumns=L0?'':'minmax(0,1fr)';
-  box.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ if(b.dataset.go==='continue'){ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); } else openItem(b.dataset.go,{}); }); }
-function rowHTML(it,rec){ const p=passed(it.id), bs=best(it.id), ok=I.itemOk(it,AREAS.practice);
-  return `<li class="row${rec?' rec':''}" data-id="${it.id}">${pic(it.id)}<div class="tx"><b>${esc(itemName(it.id))}${rec?`<em>${tx('Recommended next','Anbefalt neste')}</em>`:''}</b><span>${esc(L(IT[it.id].s))}</span></div>
-    <div class="st"><small>${esc(L(W.diff[it.d]))}</small>${bs===null?'':`<span class="pips" title="${esc(tx('Levels passed','Nivåer bestått'))}: ${p}/4" aria-label="${esc(tx('Levels passed','Nivåer bestått'))}: ${p} / 4">${[1,2,3,4].map(k=>`<i class="${k<=p?'on':''}"></i>`).join('')}</span><small>${tx('Best ','Beste ')+bs}</small>`}</div>
-    <div class="acts"><button class="btn2 sm ${rec?'pri':''}" data-start="${it.id}" type="button" ${ok?'':'disabled'}>${tx('Start','Start')}<span class="sr" style="position:absolute;left:-9999px">: ${esc(itemName(it.id))}</span></button><button class="btn2 sm q" data-setup="${it.id}" type="button" title="${esc(tx('Choose course, wind, start …','Velg kurs, vind, start …'))}">${tx('Set up','Sett opp')}</button></div></li>`; }
-function renderCat(){ const rec=recommended(), box=el('catList'), fl=el('filters');
-  if(!HS.all){ fl.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px"><b style="font-family:var(--f-display);font-stretch:88%;font-size:24px;font-weight:720;color:var(--ink)">${tx('Start here','Start her')}</b><span style="color:var(--ink-2);font-size:14.5px">${tx('Eight core exercises, in the order an instructor would teach them.','Åtte kjerneøvelser, i den rekkefølgen en instruktør ville lært dem bort.')}</span></div>`;
-    fl.style.position='static';
-    box.innerHTML=`<ol class="rows">${CORE.map(id=>rowHTML(I.ITEM[id],id===rec)).join('')}</ol><p style="margin:18px 0 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn2" id="showAll" type="button">${tx(`Show all ${I.ITEMS.length} exercises`,`Vis alle ${I.ITEMS.length} øvelsene`)}</button><span style="color:var(--ink-2);font-size:14px">${tx('Intercepts, NDB, holds at any fix, reversals, RNP approaches, SID and STAR, mental maths, partial panel.','Interception, NDB, holding ved hvilken som helst fiks, snuprosedyrer, RNP-innflyginger, SID og STAR, hoderegning, delvis panel.')}</span></p>`;
-    el('showAll').onclick=()=>{ HS.all=true; save('bb-ifr-home',HS); renderCat(); };
-  } else {
-    fl.style.position='';
-    fl.innerHTML=`<div class="chips" role="group" aria-label="${esc(tx('Group','Gruppe'))}">${['all'].concat(I.GROUPS).map(g=>`<button type="button" class="chip ${HS.g===g?'on':''}" data-g="${g}" aria-pressed="${HS.g===g}">${esc(g==='all'?tx('All','Alle'):L(W.group[g]))}</button>`).join('')}</div>
-      <div class="fsel" role="group" aria-label="${esc(tx('Progress','Fremgang'))}">${[['all',t2('Any','Alle')],['new',t2('Not flown','Ikke fløyet')],['open',t2('Not passed','Ikke bestått')],['done',t2('Passed','Bestått')]].map(([k,n])=>`<button type="button" class="${HS.st===k?'on':''}" data-st="${k}" aria-pressed="${HS.st===k}">${esc(L(n))}</button>`).join('')}</div>
-      <button class="btn2 sm q" id="showCore" type="button">${tx('Back to the short path','Tilbake til den korte veien')}</button>`;
-    const keep=it=>(HS.g==='all'||it.g===HS.g)&&(HS.st==='all'||(HS.st==='new'&&best(it.id)===null)||(HS.st==='open'&&!passed(it.id))||(HS.st==='done'&&passed(it.id)));
-    let n=0; box.innerHTML=I.GROUPS.map((g,gi)=>{ const its=I.ITEMS.filter(it=>it.g===g&&keep(it)); if(!its.length) return ''; n+=its.length;
-      return `<section class="cgrp" id="grp-${g}"><header><i>${String(gi+1).padStart(2,'0')}</i><h2>${esc(L(W.group[g]))}</h2><p>${esc(L(W.groupSub[g]))}</p></header><ol class="rows">${its.map(it=>rowHTML(it,it.id===rec)).join('')}</ol></section>`; }).join('')||'';
-    if(!n) box.innerHTML=`<p class="cat-empty">${tx('Nothing here with these filters. Choose “All” to see every exercise.','Ingenting her med disse filtrene. Velg «Alle» for å se alle øvelsene.')}</p>`;
-    fl.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{ HS.g=b.dataset.g; save('bb-ifr-home',HS); renderCat(); });
-    fl.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ HS.st=b.dataset.st; save('bb-ifr-home',HS); renderCat(); });
-    el('showCore').onclick=()=>{ HS.all=false; save('bb-ifr-home',HS); renderCat(); }; }
-  box.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>openItem(b.dataset.start,{}));
-  box.querySelectorAll('[data-setup]').forEach(b=>b.onclick=()=>{ bldSet(b.dataset.setup); el('bld').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); const f=el('bld').querySelector('select,input'); if(f) f.focus({preventScroll:true}); }); }
+const startBtnTxt=id=>best(id)===null?tx('Start','Start'):passed(id)>=4?tx('Fly again','Fly igjen'):tx('Continue','Fortsett');
+/* the small chart diagrams of the eight core manoeuvres (SVG, 160 × 100) */
+const THC={ink:'var(--ink)',dim:'var(--ink-3)',crs:'var(--accent)',fly:'var(--info)'};
+const thAc=(x,y,r,c)=>`<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0-8 1.6-2.5 8 1.8v2L1.6 2 1.2 6 3.6 7.6V9L0 8-3.6 9V7.6L-1.2 6-1.6 2-8 3.8v-2L-1.6-2.5Z" fill="${c||THC.ink}"/></g>`;
+const thVor=(x,y)=>`<g transform="translate(${x} ${y})"><path d="M-6.5 0-3.2-5.6h6.4L6.5 0 3.2 5.6h-6.4Z" fill="var(--sheet)" stroke="${THC.ink}" stroke-width="1.3"/><circle r="1.4" fill="${THC.ink}"/></g>`;
+const thNdb=(x,y)=>`<g transform="translate(${x} ${y})">${[4.5,8,11.5].map(r=>`<circle r="${r}" fill="none" stroke="${THC.ink}" stroke-width="1.4" stroke-dasharray="0.1 3.1" stroke-linecap="round"/>`).join('')}<circle r="1.8" fill="${THC.ink}"/></g>`;
+const thFix=(x,y)=>`<path d="M${x} ${y-5.5} ${x+5} ${y+3.5}h-10Z" fill="var(--sheet)" stroke="${THC.ink}" stroke-width="1.3" stroke-linejoin="round"/>`;
+const thHead=(x,y,r,c)=>`<path d="M-4-3.2 3 0-4 3.2Z" transform="translate(${x} ${y}) rotate(${r})" fill="${c}"/>`;
+const thLab=(x,y,t,a,c)=>`<text x="${x}" y="${y}" text-anchor="${a||'start'}" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="8.5" font-weight="500" fill="${c||THC.dim}">${t}</text>`;
+const thWind=(x,y,r)=>`<g transform="translate(${x} ${y}) rotate(${r})" stroke="${THC.dim}" stroke-width="1.2" fill="none" stroke-linecap="round"><path d="M-9-4h14M-9 0h18M-9 4h11"/><path d="M6-6.5 9-4 6-1.5M10-2.5 13 0l-3 2.5M3 1.5 6 4 3 6.5"/></g>`;
+function thumb(id){ let b=''; const C=`fill="none" stroke="${THC.crs}" stroke-width="2.2" stroke-linecap="round"`, F=`fill="none" stroke="${THC.fly}" stroke-width="1.6" stroke-dasharray="4 3.5" stroke-linecap="round"`, K=`fill="none" stroke="${THC.ink}" stroke-width="1.2"`;
+  switch(id){
+    case 'trackIn': b=`<path d="M18 84 122 24" ${C}/>${thHead(74,51.7,-30,THC.crs)}${thVor(126,22)}${thAc(48,66.7,45)}${thWind(34,26,35)}${thLab(96,58,'090 TO')}`; break;
+    case 'intIn': b=`<path d="M12 40H126" ${C}/>${thHead(96,40,0,THC.crs)}${thVor(134,40)}<path d="M30 86 58 58Q70 40 88 40" ${F}/>${thAc(34,82,45)}<path d="M52 40A14 14 0 0 0 47.9 49.9" ${K}/>${thLab(22,58,'30–45°')}`; break;
+    case 'ndb': b=`<path d="M20 82 124 26" ${C}/><path d="M20 82Q92 78 124 26" fill="none" stroke="${THC.dim}" stroke-width="1.4" stroke-dasharray="2 3.5" stroke-linecap="round"/>${thNdb(126,25)}${thAc(62,59.4,43)}${thWind(40,24,35)}${thLab(84,84,'homing')}`; break;
+    case 'dme': b=`<path d="M30 80H104" ${K} stroke-dasharray="3 3"/><path d="M30 80V16" ${K} stroke-dasharray="3 3"/><path d="M96 80A66 66 0 0 0 30 14" ${C}/>${thHead(54.5,18.7,-159,THC.crs)}${thVor(30,80)}${thAc(76.7,33.3,-45)}<path d="M72 38 36 74" fill="none" stroke="${THC.fly}" stroke-width="1.2" stroke-dasharray="2 3"/>${thLab(102,30,'10 DME')}`; break;
+    case 'holdEntry': b=`<path d="M64 50 77.7 12.4A40 40 0 0 1 104 50Z" fill="var(--caution)" opacity=".2"/><path d="M64 50H104A40 40 0 0 1 50.3 87.6Z" fill="var(--info)" opacity=".14"/><path d="M64 50 50.3 87.6A40 40 0 1 1 77.7 12.4Z" fill="var(--ok)" opacity=".14"/>
+      <path d="M50.3 87.6 77.7 12.4M24 50H104" fill="none" stroke="${THC.dim}" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="M122 50H64A9 9 0 0 1 64 32H122A9 9 0 0 1 122 50" ${C} stroke-width="1.8"/>${thHead(96,50,180,THC.crs)}${thFix(64,50)}${thAc(18,50,90)}
+      ${thLab(44,45,'direct','middle',THC.ink)}${thLab(84,26,'teardrop','start',THC.ink)}${thLab(74,74,'parallel','start',THC.ink)}`; break;
+    case 'hold': b=`<path d="M112 66H50A14 14 0 0 1 50 38H112A14 14 0 0 1 112 66" ${C}/>${thHead(78,66,180,THC.crs)}${thHead(84,38,0,THC.crs)}${thFix(50,66)}${thAc(104,66,-90)}${thLab(80,81,'1 min','middle')}${thLab(80,30,'wind × 3','middle')}${thWind(22,24,35)}`; break;
+    case 'pt': b=`<path d="M18 70H88" ${C}/>${thHead(54,70,180,THC.crs)}${thVor(16,70)}<path d="M88 70 118 40" ${F}/><path d="M118 40A12 12 0 0 1 135 57L122 70H96" ${F}/>${thAc(108,50,45)}${thLab(96,42,'45°','end')}${thLab(142,38,'180°')}${thLab(52,86,'1 min','middle')}`; break;
+    case 'ils': b=`<path d="M10 84H150" ${K}/><path d="M118 84h28" stroke="${THC.ink}" stroke-width="4"/><path d="M20 14 122 83 20 38Z" fill="${THC.crs}" opacity=".1"/><path d="M20 26 122 83" ${C}/>${thAc(62,49.5,119)}<path d="M98 68v16" ${K} stroke-dasharray="2 3"/>${thLab(101,64,'DA')}${thLab(40,30,'3°')}${thLab(132,96,'RWY','middle')}`; break; }
+  return `<svg class="thumb" viewBox="0 0 160 100" role="img" aria-label="${esc(tx('Diagram: ','Diagram: ')+itemName(id))}">${b}</svg>`; }
+const difHTML=d=>`<span class="dif" aria-hidden="true"><i class="on"></i><i class="${d>1?'on':''}"></i><i class="${d>2?'on':''}"></i></span>`;
+function progHTML(id){ const p=passed(id), bs=best(id); if(bs===null) return `<span class="pg none">${tx('Not flown yet','Ikke fløyet ennå')}</span>`;
+  return `<span class="pg"><span class="pips" role="img" aria-label="${esc(tx(`${p} of 4 levels passed`,`${p} av 4 nivåer bestått`))}">${[1,2,3,4].map(k=>`<i class="${k<=p?'on':''}"></i>`).join('')}</span>${tx('Best','Beste')} ${bs}</span>`; }
+function renderHero(){ const L0=PROG.last&&I.ITEM[PROG.last.item]?PROG.last:null, rec=recommended(), n=CORE.indexOf(rec)+1;
+  el('lead').textContent=tx('Learn one instrument procedure at a time. An instructor on screen tells you the next step, and the replay shows your first mistake.','Lær én instrumentprosedyre om gangen. En instruktør på skjermen sier neste steg, og reprisen viser den første feilen din.');
+  el('promise').innerHTML=[[t2('Learn it','Lær den'),t2('A short animated walk-through in plain words.','En kort, animert gjennomgang med vanlige ord.')],[t2('Fly it','Fly den'),t2('The instructor tells you the next step, and why.','Instruktøren sier neste steg, og hvorfor.')],[t2('See it','Se den'),t2('Your first mistake, marked on the replay.','Den første feilen din, markert i reprisen.')]]
+    .map(([a,b],i)=>`<li><i>${i+1}</i><b>${esc(L(a))}</b><span>${esc(L(b))}</span></li>`).join('');
+  const first=!L0&&!Object.keys(PROG.ex).length;
+  el('heroCta').innerHTML=(L0?`<button class="btn2 pri lg" type="button" data-go="continue"><span class="k">${tx('Continue','Fortsett')}</span>${esc(itemName(L0.item))}${L0.custom?` <small>${tx('(your setup)','(ditt oppsett)')}</small>`:''}</button>`:'')+
+    ((!L0||L0.item!==rec)?`<button class="btn2 ${L0?'':'pri'} lg" type="button" data-go="${rec}"><span class="k">${first?tx('Start with step 1','Start med steg 1'):n>0?tx(`Next on the path: step ${n}`,`Neste på veien: steg ${n}`):tx('Next for you','Neste for deg')}</span>${esc(itemName(rec))}</button>`:'')+
+    `<a class="btn2 q lg" href="#all" id="toAll">${tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`)}</a>`;
+  el('heroCta').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ if(b.dataset.go==='continue'){ const l=PROG.last; openItem(l.item,{p:l.custom?l.p:null,custom:l.custom,lv:l.lv,area:l.area,seed:l.custom?l.seed:undefined,step:'fly'}); } else openItem(b.dataset.go,{}); });
+  el('toAll').onclick=e=>{ e.preventDefault(); el('all').scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); };
+  el('figCap').innerHTML=`<b>${tx('The guided screen','Den veiledede skjermen')}</b><span>${tx('Here the instructor flies a holding entry. When you fly, the line at the top tells you what to do next.','Her flyr instruktøren en inngang til holding. Når du flyr selv, sier linjen øverst hva du skal gjøre nå.')}</span>`;
+  heroText(true); }
+function renderPath(){ const rec=recommended(), done=CORE.filter(id=>passed(id)).length;
+  el('pathH').textContent=tx('Start here','Start her');
+  el('pathSub').textContent=tx('Eight core exercises, in the order an instructor would teach them. Each one takes five to ten minutes.','Åtte kjerneøvelser, i den rekkefølgen en instruktør ville lært dem bort. Hver av dem tar fem til ti minutter.');
+  el('pathProg').innerHTML=done?`<b>${done}</b> ${tx('of 8 passed','av 8 bestått')}`:'';
+  el('path').innerHTML=CORE.map((id,i)=>{ const it=I.ITEM[id], p=passed(id), r=id===rec;
+    return `<li class="pstep${r?' rec':''}${p?' done':''}" data-id="${id}"><div class="pn"><i>${p?'<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':i+1}</i>${r?`<em>${best(id)===null&&!Object.keys(PROG.ex).length?tx('Start here','Start her'):tx('Next for you','Neste for deg')}</em>`:''}</div>
+      <div class="pth">${thumb(id)}</div><h3>${esc(itemName(id))}</h3><p>${gl(L(IT[id].s),2,{heading:1,fix:1,intercept:1})}</p>
+      <div class="pm">${difHTML(it.d)}<span>${esc(L(W.diff[it.d]))}</span>${progHTML(id)}</div>
+      <button class="btn2 ${r?'pri':''}" data-start="${id}" type="button">${startBtnTxt(id)}<span class="sr">: ${esc(itemName(id))}</span></button></li>`; }).join('');
+  el('warm').innerHTML=`${tx('Never used a VOR needle before? Warm up with','Aldri brukt en VOR-nål før? Varm opp med')} <button type="button" class="lk" data-start="orient">${esc(itemName('orient'))}</button>.`;
+  qa('#pathSec [data-start]').forEach(b=>b.onclick=()=>openItem(b.dataset.start,{})); }
+function rowHTML(it,rec){ const ok=I.itemOk(it,AREAS.practice);
+  return `<li class="row${rec?' rec':''}" data-id="${it.id}">${pic(it.id)}<div class="tx"><b>${esc(itemName(it.id))}${rec?`<em>${tx('Next for you','Neste for deg')}</em>`:''}</b><span>${gl(L(IT[it.id].s),2,{heading:1,fix:1,intercept:1})}</span></div>
+    <div class="st"><span class="dl">${difHTML(it.d)}${esc(L(W.diff[it.d]))}</span>${progHTML(it.id)}</div>
+    <div class="acts"><button class="btn2 sm ${rec?'pri':''}" data-start="${it.id}" type="button" ${ok?'':'disabled'}>${startBtnTxt(it.id)}<span class="sr">: ${esc(itemName(it.id))}</span></button><button class="btn2 sm q" data-setup="${it.id}" type="button" title="${esc(tx('Choose course, wind, start position …','Velg kurs, vind, startposisjon …'))}">${tx('Set up','Sett opp')}<span class="sr">: ${esc(itemName(it.id))}</span></button></div></li>`; }
+const BLDICON='<svg class="pic" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 14h32M8 24h32M8 34h32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="18" cy="14" r="4.5" fill="var(--sheet)" stroke="currentColor" stroke-width="2"/><circle cx="31" cy="24" r="4.5" fill="var(--sheet)" stroke="currentColor" stroke-width="2"/><circle cx="22" cy="34" r="4.5" fill="var(--sheet)" stroke="currentColor" stroke-width="2"/></svg>';
+function gridCols(){ const g=el('groups'); const t=getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length; return Math.max(1,t||1); }
+function renderCat(){ const rec=recommended(), box=el('groups'), res=el('catList'), q0=(HS.q||'').trim().toLowerCase();
+  el('allH').textContent=tx(`All ${I.ITEMS.length} exercises`,`Alle ${I.ITEMS.length} øvelsene`);
+  el('allSub').textContent=tx('Grouped by topic. Open a topic to see its exercises.','Gruppert etter emne. Åpne et emne for å se øvelsene.');
+  const si=el('catQ'); si.placeholder=tx('Search, e.g. hold or NDB','Søk, f.eks. holding eller NDB'); si.setAttribute('aria-label',tx('Search exercises','Søk i øvelsene')); if(si.value!==HS.q) si.value=HS.q||'';
+  el('catQx').hidden=!q0; el('catQx').setAttribute('aria-label',tx('Clear the search','Tøm søket'));
+  if(q0){ const hit=I.ITEMS.filter(it=>(L(IT[it.id].n)+' '+L(IT[it.id].s)+' '+L(W.group[it.g])+' '+it.id).toLowerCase().indexOf(q0)>=0);
+    box.hidden=true; res.hidden=false;
+    res.innerHTML=hit.length?`<p class="rescount">${hit.length} ${hit.length===1?tx('exercise matches','øvelse passer'):tx('exercises match','øvelser passer')}</p><ol class="rows">${hit.map(it=>rowHTML(it,it.id===rec)).join('')}</ol>`:`<p class="cat-empty">${tx('No exercise matches that. Try another word, or clear the search.','Ingen øvelse passer til det. Prøv et annet ord, eller tøm søket.')}</p>`;
+    wireRows(res); return; }
+  res.hidden=true; res.innerHTML=''; box.hidden=false;
+  const cards=I.GROUPS.map(g=>{ const its=I.ITEMS.filter(it=>it.g===g), np=its.filter(it=>passed(it.id)).length, open=HS.g===g;
+    return `<button type="button" class="gcard${open?' on':''}" data-g="${g}" aria-expanded="${open}" aria-controls="gpanel">${pic(its[0].id)}<b>${esc(L(W.group[g]))}</b><span class="gs">${esc(L(W.groupSub[g]))}</span>
+      <span class="gm"><span>${its.length} ${its.length===1?tx('exercise','øvelse'):tx('exercises','øvelser')}</span><span class="gbar" aria-hidden="true"><i style="width:${Math.round(np/its.length*100)}%"></i></span><span>${np?`${np} ${tx('passed','bestått')}`:tx('none passed yet','ingen bestått ennå')}</span></span>
+      <svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`; });
+  cards.push(`<button type="button" class="gcard build" id="openBld" aria-haspopup="dialog">${BLDICON}<b>${tx('Practise exactly this','Øv på akkurat dette')}</b><span class="gs">${tx('Choose the exercise, the course, the wind and where you start.','Velg øvelse, kurs, vind og hvor du starter.')}</span><span class="gm"><span class="go">${tx('Set up your own run','Sett opp din egen runde')}</span></span></button>`);
+  /* the open topic's exercises sit right under its row of cards */
+  const cols=gridCols(), gi=I.GROUPS.indexOf(HS.g);
+  if(gi>=0){ const g=HS.g, its=I.ITEMS.filter(it=>it.g===g), at=Math.min(cards.length,(Math.floor(gi/cols)+1)*cols);
+    cards.splice(at,0,`<section class="gpanel" id="gpanel" aria-label="${esc(L(W.group[g]))}"><header><h3>${esc(L(W.group[g]))}</h3><p>${esc(L(W.groupSub[g]))}</p><button type="button" class="btn2 sm q" id="gClose">${tx('Close','Lukk')}</button></header><ol class="rows">${its.map(it=>rowHTML(it,it.id===rec)).join('')}</ol></section>`); }
+  box.innerHTML=cards.join(''); box.dataset.cols=cols;
+  box.querySelectorAll('.gcard[data-g]').forEach(b=>b.onclick=()=>{ const g=b.dataset.g; HS.g=HS.g===g?null:g; save('bb-ifr-home2',{g:HS.g}); renderCat(); const nb=q(`.gcard[data-g="${g}"]`); if(nb) nb.focus({preventScroll:true});
+    const gp=el('gpanel'); if(gp&&HS.g){ const r=gp.getBoundingClientRect(); if(r.top>innerHeight*0.72||r.top<0) (nb||gp).scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); } });
+  if(el('gClose')) el('gClose').onclick=()=>{ const g=HS.g; HS.g=null; save('bb-ifr-home2',{g:null}); renderCat(); const nb=q(`.gcard[data-g="${g}"]`); if(nb) nb.focus({preventScroll:true}); };
+  el('openBld').onclick=()=>openBld();
+  wireRows(box); }
+function wireRows(root){ root.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>openItem(b.dataset.start,{}));
+  root.querySelectorAll('[data-setup]').forEach(b=>b.onclick=()=>{ bldSet(b.dataset.setup); openBld(); }); }
+function renderHome(){ renderHero(); renderPath(); renderCat(); }
+(function(){ const si=el('catQ'); si.addEventListener('input',()=>{ HS.q=si.value; renderCat(); }); el('catQx').onclick=()=>{ HS.q=''; si.value=''; renderCat(); si.focus(); };
+  let c0=0; addEventListener('resize',()=>{ if(document.body.classList.contains('v-trainer')) return; const c=gridCols(); if(c!==c0){ c0=c; if(HS.g&&!HS.q) renderCat(); } }); })();
+
+/* ---------- the live miniature at the top of the home page ----------
+   The real instrument and the real map, fed by the instructor's own path through a holding entry (ifrcore's scripted pilot).
+   The line at the top is the coach line for the phase the aircraft is in. Runs only while it is on screen. */
+const HERO={ok:false,t:0,W:0,H:0,dpr:1,cap:'',vis:true,last:0,hold:0};
+function heroInit(){ try{ const Ar=AREAS.practice; let r=null; for(const sd of [8,2,5,14]){ r=I.run('holdEntry',Ar,2,sd,{p:{}}); const e=H.entry(r.X.task.inb,r.X.task.dir,r.X.task.arr).entry; if(e==='teardrop'&&r.g.pass) break; }
+    HERO.X=r.X; HERO.P=r.path; HERO.end=r.path[r.path.length-1].t; HERO.Ar=Ar; HERO.G=NAVG.make(el('miniG'),'hsi'); HERO.map=NM.create(el('miniM'),{}); HERO.map.region=null;
+    HERO.entry=H.entry(r.X.task.inb,r.X.task.dir,r.X.task.arr).entry; { const F=I.fixOf(Ar,r.X.task), q0=r.path.find(p=>Math.hypot(p.x-F.x,p.y-F.y)<2.3); HERO.t0=q0?q0.t:0; } HERO.ok=true; HERO.t=reduced()?HERO.t0+(HERO.end-HERO.t0)*0.3:HERO.t0;
+    new ResizeObserver(heroSize).observe(el('miniM')); if('IntersectionObserver' in window) new IntersectionObserver(es=>{ HERO.vis=es[0].isIntersecting; }).observe(el('heroFig')); heroSize(); heroText(true); }catch(e){ HERO.ok=false; } }
+function heroSize(){ const c=el('miniM'), r=c.getBoundingClientRect(); HERO.W=Math.round(r.width); HERO.H=Math.round(r.height); if(HERO.W<40||HERO.H<40) return; HERO.dpr=Math.min(devicePixelRatio||1,2); c.width=Math.round(HERO.W*HERO.dpr); c.height=Math.round(HERO.H*HERO.dpr);
+  const F0=I.fixOf(HERO.Ar,HERO.X.task), P=[{x:F0.x+3,y:F0.y+3},{x:F0.x-3,y:F0.y-3}].concat(HERO.P.filter((p,i)=>i%8===0&&p.t>=HERO.t0).map(p=>({x:p.x,y:p.y}))), b={x0:Infinity,x1:-Infinity,y0:Infinity,y1:-Infinity}; P.forEach(p=>{ b.x0=Math.min(b.x0,p.x); b.x1=Math.max(b.x1,p.x); b.y0=Math.min(b.y0,p.y); b.y1=Math.max(b.y1,p.y); });
+  HERO.map.set(NM.fit(b,HERO.W,HERO.H,{l:16,r:16,t:16,b:16},{pad:0.45,min:3,maxK:260})); HERO.base=null; }
+function heroAt(t){ const P=HERO.P; let lo=0,hi=P.length-1; if(t<=P[0].t) return P[0]; if(t>=P[hi].t) return P[hi]; while(hi-lo>1){ const m=(lo+hi)>>1; if(P[m].t<=t) lo=m; else hi=m; } const a=P[lo], b=P[hi], k=(t-a.t)/Math.max(1e-6,b.t-a.t);
+  return {t,x:a.x+(b.x-a.x)*k,y:a.y+(b.y-a.y)*k,h:norm(a.h+diff(b.h,a.h)*k),ph:a.ph,obs:a.obs}; }
+function heroText(force){ if(!HERO.ok) return; const T=HERO.X.task, p=heroAt(HERO.t), e=HERO.entry, dir=T.dir>0?'R':'L'; let k, prm={};
+  switch(p.ph){ case 'tofix': k='hold.tofix'; prm={entry:e}; break; case 'entry': case 'entryleg': k='hold.entry.'+e; prm={out:T.out,td:norm(T.out-T.dir*30),dir}; break;
+    case 'back': k='hold.back'; prm={inb:T.inb}; break; case 'turnOut': case 'outbound': k='hold.outbound'; prm={hdg:Math.round(p.h)||360}; break; case 'turnIn': k='hold.turnin'; prm={inb:T.inb}; break;
+    default: k='hold.inbound'; prm={inb:T.inb,hdg:Math.round(p.h)||360}; }
+  const cap=fmt(CO[k]||t2('',''),pw(prm)); if(!force&&cap===HERO.cap) return; HERO.cap=cap; el('miniBig').textContent=cap;
+  if(force){ const c=clearance(HERO.X,HERO.Ar,'holdEntry'); el('miniClr').textContent=L(c); el('miniWhy').textContent=tx('Why?','Hvorfor?'); el('miniLab').textContent=tx('Guided','Veiledet'); el('miniName').textContent=itemName('holdEntry'); el('miniSteps').textContent=STEPS.map(x=>L(x[1])).join(' · '); } }
+function heroDraw(ts){ if(!HERO.ok||!HERO.vis||document.hidden||HERO.W<40) return; if(ts-HERO.last<32) return; const dt=Math.min(0.1,(ts-HERO.last)/1000); HERO.last=ts;
+  if(!reduced()){ if(HERO.hold>0){ HERO.hold-=dt; if(HERO.hold<=0) HERO.t=HERO.t0; } else { HERO.t+=dt*(HERO.end-HERO.t0)/36; if(HERO.t>=HERO.end){ HERO.t=HERO.end; HERO.hold=2.5; } } }
+  const p=heroAt(HERO.t), X=HERO.X, Ar=HERO.Ar, T=X.task, m=HERO.map, c=el('miniM'), g=c.getContext('2d'), Wm=HERO.W, Hm=HERO.H;
+  const s={x:p.x,y:p.y,hdg:p.h,alt:T.alt,gs:120,trk:p.h,t:0}, r=I.read(s,Ar,{nav:X.nav,obs:p.obs!==undefined?p.obs:X.obs,adf:X.adf,dme:X.dme,rnp:X.rnp,nogs:X.nogs,leg:X.leg});
+  HERO.G.set({hdg:p.h,crs:p.obs!==undefined?p.obs:X.obs,hsiDots:r.hsiDots||0,flag:r.flag||'OFF',ils:false,gsValid:false,gsDots2:0,bug:p.h}); HERO.G.tick(dt); HERO.G.draw();
+  if(!HERO.base){ HERO.base=document.createElement('canvas'); HERO.base.width=c.width; HERO.base.height=c.height; const bg=HERO.base.getContext('2d'); bg.setTransform(HERO.dpr,0,0,HERO.dpr,0,0);
+    m.drawBase(bg,Wm,Hm,{}); drawCoast(m,bg,Ar); const F=I.fixOf(Ar,T), R=Math.min(3,48/m.v.k); m.P(F.x,F.y); m.reserve(m.sx-R*m.v.k,m.sy-R*m.v.k,2*R*m.v.k,2*R*m.v.k); drawGeom(m,bg,X,Ar,'holdEntry',Wm,Hm); m.flushLabels(bg,Wm,Hm); bg.globalAlpha=0.7; drawSectors(m,bg,F,T.inb,T.dir,R); bg.globalAlpha=1;
+    bg.strokeStyle='rgba(127,224,255,.6)'; bg.lineWidth=1.6; bg.setLineDash([6,5]); bg.beginPath(); HERO.P.filter(q0=>q0.t>=HERO.t0).forEach((q0,i)=>{ m.P(q0.x,q0.y); if(i) bg.lineTo(m.sx,m.sy); else bg.moveTo(m.sx,m.sy); }); bg.stroke(); bg.setLineDash([]); }
+  g.setTransform(1,0,0,1,0,0); g.clearRect(0,0,c.width,c.height); g.drawImage(HERO.base,0,0); g.setTransform(HERO.dpr,0,0,HERO.dpr,0,0);
+  g.strokeStyle='rgba(255,255,255,.85)'; g.lineWidth=2.2; g.lineCap='round'; g.lineJoin='round'; g.beginPath(); let st=false; for(const q0 of HERO.P){ if(q0.t<HERO.t0) continue; if(q0.t>HERO.t) break; m.P(q0.x,q0.y); if(st) g.lineTo(m.sx,m.sy); else { g.moveTo(m.sx,m.sy); st=true; } } m.P(p.x,p.y); g.lineTo(m.sx,m.sy); g.stroke();
+  m.drawAircraft(g,p.x,p.y,p.h,{size:13}); heroText(false); }
 
 /* ---------- the builder: "Practise exactly this" ---------- */
 const BLD=Object.assign({item:'holdEntry',area:'practice',wind:'ex',wdir:270,wspd:20,gust:false,start:null,help:'guided',lv:1,more:false,seed:7},load(BK)||{});
@@ -692,8 +965,8 @@ function bVals(){ const it=I.ITEM[BLD.item], ex=it.ex, F=Object.assign({ex},it.p
   return r; }
 function bldSet(id){ if(!I.ITEM[id]) return; BLD.item=id; BLD.start=null; ['st','crs','radial','entry','dir','fix','D','dmeLim','ang','part','R','a','side','kind','n','mk'].forEach(k=>delete BLD[k]);
   if(!allowed(I.ITEM[id].ex,BLD.area)) BLD.area='practice'; save(BK,BLD); renderBld(); }
-const FL={kind:t2('What to read','Hva du leser'),n:t2('Positions','Posisjoner'),st:t2('Station','Stasjon'),crs:t2('Course','Kurs'),radial:t2('Hold on the radial','Hold på radial'),entry:t2('Entry','Inngang'),dir:t2('Turns','Svinger'),
-  fix:t2('Holding fix','Holdingfiks'),D:t2('DME of the fix','DME for fiksen'),dmeLim:t2('DME-limited outbound leg','DME-begrenset utgående legg'),ang:t2('Intercept angle','Interceptvinkel'),part:t2('Which part','Hvilken del'),R:t2('Arc distance (DME)','Buens avstand (DME)'),a:t2('Type','Type'),side:t2('First turn','Første sving'),mk:t2('Topic','Emne')};
+const FL={kind:t2('What to read','Hva du leser'),n:t2('Positions','Posisjoner'),st:t2('Station','Stasjon'),crs:t2('Course','Kurs'),radial:t2('Hold on the radial','Holding på radial'),entry:t2('Entry','Inngang'),dir:t2('Turns','Svinger'),
+  fix:t2('Holding fix','Holdingfiks'),D:t2('DME of the fix','DME for fiksen'),dmeLim:t2('The outbound leg ends at a DME distance','Legget ut slutter ved en DME-avstand'),ang:t2('Angle towards the course','Vinkel inn mot kursen'),part:t2('Which part','Hvilken del'),R:t2('Arc distance (DME)','Buens avstand (DME)'),a:t2('Type','Type'),side:t2('First turn','Første sving'),mk:t2('Topic','Emne')};
 function crsLabel(){ const ex=bEx(), it=I.ITEM[BLD.item]; return ex==='trackOut'||ex==='intOut'||ex==='intPass'?(it.p.ndb?t2('QDR (from the beacon)','QDR (fra fyret)'):t2('Radial (outbound)','Radial (ut)')):ex==='ndb'||(it.p.ndb&&ex==='intIn')?t2('QDM (to the beacon)','QDM (til fyret)'):ex==='ndbOut'?t2('QDR (from the beacon)','QDR (fra fyret)'):ex==='dme'?t2('Start radial','Startradial'):ex==='tts'?t2('Radial','Radial'):ex==='pt'||ex==='base'?t2('Final course (inbound)','Sluttkurs (inn)'):t2('Course (inbound)','Kurs (inn)'); }
 function seg(k,opts){ return `<div class="bseg" role="group" aria-label="${esc(L(FL[k]))}">${opts.map(([v,n])=>`<button type="button" data-k="${k}" data-v="${v}" class="${String(BLD[k]??'')===String(v)?'on':''}" aria-pressed="${String(BLD[k]??'')===String(v)}">${esc(typeof n==='string'?n:L(n))}</button>`).join('')}</div>`; }
 const AUTO=t2('Auto','Auto');
@@ -714,25 +987,29 @@ function fieldHTML(k){ const Ar=AREAS[BLD.area], it=I.ITEM[BLD.item], ex=bEx();
     case 'kind': return wrap(seg('kind',[['',AUTO],['vor','CDI'],['rmi','RMI'],['rbi','RBI']]),true);
     case 'mk': return `<label class="w"><span>${esc(L(FL.mk))}</span><select data-k="mk"><option value="">${esc(tx('Mixed','Blandet'))}</option>${I.MATHK.map(k2=>`<option value="${k2}" ${BLD.mk===k2?'selected':''}>${esc(L(MATHN[k2]))}</option>`).join('')}</select></label>`;
   } return ''; }
-const MATHN={int:t2('Intercept heading','Interceptkurs'),wca:t2('Wind correction angle','Vindkorreksjonsvinkel'),r160:t2('1 in 60','1 av 60'),tts:t2('Time to station','Tid til stasjonen'),rod:t2('Rate of descent (3°)','Sinkrate (3°)'),tod:t2('Top of descent','Start av nedstigning'),lead:t2('Lead radial','Ledende radial'),leadd:t2('Lead distance','Ledningsavstand')};
+const MATHN={int:t2('Intercept heading','Heading for å skjære inn'),wca:t2('Wind correction angle','Vindkorreksjonsvinkel'),r160:t2('1 in 60','1 av 60'),tts:t2('Time to station','Tid til stasjonen'),rod:t2('Rate of descent (3°)','Synkehastighet (3°)'),tod:t2('Top of descent','Start av nedstigning'),lead:t2('Lead radial','Lead-radial'),leadd:t2('Distance before a turn','Avstand før en sving')};
 function renderBld(){ const box=el('bld'), it=I.ITEM[BLD.item], ex=it.ex, E=I.EX[ex], [f1,f2]=bFields();
   const opts=I.GROUPS.map(g=>`<optgroup label="${esc(L(W.group[g]))}">${I.ITEMS.filter(x=>x.g===g).map(x=>`<option value="${x.id}" ${x.id===BLD.item?'selected':''}>${esc(itemName(x.id))}</option>`).join('')}</optgroup>`).join('');
   const insts=E.inst.filter(k=>!(it.p.pp&&['hsi','rmi','pfd'].indexOf(k)>=0));
-  box.innerHTML=`<h2 id="bldH">${tx('Practise exactly this','Øv på akkurat dette')}</h2><p class="lede">${tx('Choose the exercise and what matters to you. Everything else has a sensible default.','Velg øvelsen og det som betyr noe for deg. Alt annet har et fornuftig standardvalg.')}</p>
-   <div class="bf">
+  const foc=document.activeElement&&box.contains(document.activeElement)?(document.activeElement.id||(document.activeElement.dataset.k?`[data-k="${document.activeElement.dataset.k}"]${document.activeElement.dataset.v!==undefined?`[data-v="${document.activeElement.dataset.v}"]`:''}`:'')):'';
+  box.innerHTML=`<header class="bh"><div><h2 id="bldH">${tx('Practise exactly this','Øv på akkurat dette')}</h2><p class="lede">${tx('Choose the exercise and the things that matter to you. Everything you leave alone gets a sensible value.','Velg øvelsen og det som betyr noe for deg. Alt du lar stå, får en fornuftig verdi.')}</p></div><button type="button" class="bx" id="bClose" aria-label="${esc(tx('Close','Lukk'))}"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></header>
+   <div class="bcols"><div class="bf">
     <label class="w"><span>${tx('Exercise','Øvelse')}</span><select data-k="item">${opts}</select></label>
     ${f1.map(fieldHTML).join('')}
     <div class="lab w"><span>${tx('Wind','Vind')}</span>${seg('wind',[['ex',t2('Exercise decides','Øvelsen bestemmer')],['calm',t2('Calm','Stille')],['set',t2('Choose','Velg')],['random',t2('Random','Tilfeldig')]])}</div>
-    ${BLD.wind==='set'?`<div class="row3 w"><label><span>${tx('From (°)','Fra (°)')}</span><input type="number" data-k="wdir" min="1" max="360" value="${BLD.wdir}"></label><label><span>${tx('Speed (kt)','Fart (kt)')}</span><input type="number" data-k="wspd" min="0" max="60" value="${BLD.wspd}"></label><label class="chk"><input type="checkbox" data-k="gust" ${BLD.gust?'checked':''}><span>${tx('Gusts','Byger')}</span></label></div>`:''}
-    <div class="lab w"><span>${E.fixedStart?tx('The picture','Bildet'):tx('Where you start: drag the aircraft, turn it with the handle','Hvor du starter: dra flyet, snu det med håndtaket')}</span><div class="bmap" id="bmap"><canvas id="bmapC" aria-label="${esc(tx('Preview of the setup. Drag the aircraft to choose the start.','Forhåndsvisning av oppsettet. Dra flyet for å velge start.'))}"></canvas><span class="bm-note" id="bmNote"></span></div></div>
-    <div class="w" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><button type="button" class="btn3" id="bMore" aria-expanded="${!!BLD.more}">${BLD.more?tx('Fewer options','Færre valg'):tx('More options','Flere valg')}</button>${BLD.start?`<button type="button" class="btn3" id="bRstart">${tx('Random start again','Tilfeldig start igjen')}</button>`:''}</div>
+    ${BLD.wind==='set'?`<div class="row3 w"><label><span>${tx('From (°)','Fra (°)')}</span><input type="number" data-k="wdir" min="1" max="360" value="${BLD.wdir}"></label><label><span>${tx('Speed (kt)','Fart (kt)')}</span><input type="number" data-k="wspd" min="0" max="60" value="${BLD.wspd}"></label><label class="chk"><input type="checkbox" data-k="gust" ${BLD.gust?'checked':''}><span>${tx('Gusts','Vindkast')}</span></label></div>`:''}
+    <div class="lab w"><span>${tx('How much help?','Hvor mye hjelp?')}</span>${`<div class="bseg" role="group">${['guided','hints','off'].map(k=>`<button type="button" data-help="${k}" class="${BLD.help===k?'on':''}" aria-pressed="${BLD.help===k}">${esc(L(W.help[k]))}</button>`).join('')}</div>`}<span class="hint" style="margin:0">${esc(L(W.helpSub[BLD.help]))}</span></div>
+    <div class="w bmore"><button type="button" class="btn3" id="bMore" aria-expanded="${!!BLD.more}">${BLD.more?tx('Fewer options','Færre valg'):tx('More options: area, instrument, level','Flere valg: område, instrument, nivå')}</button></div>
     ${BLD.more?`<div class="lab w"><span>${tx('Area','Område')}</span>${`<div class="bseg" role="group">${['practice','bergen','oslo'].map(a=>`<button type="button" data-area="${a}" class="${BLD.area===a?'on':''}" ${allowed(ex,a)?'':'disabled'} aria-pressed="${BLD.area===a}">${esc(L(W.area[a]))}</button>`).join('')}</div>`}</div>
     ${f2.map(fieldHTML).join('')}
-    <div class="lab w"><span>${tx('Instrument','Instrument')}</span><div class="bseg" role="group">${['',...insts].map(k=>`<button type="button" data-k="inst" data-v="${k}" class="${(BLD.inst||'')===k?'on':''}" aria-pressed="${(BLD.inst||'')===k}">${k?W.inst[k]:esc(L(AUTO))}</button>`).join('')}</div></div>
-    <div class="lab w"><span>${tx('Level','Nivå')}</span>${`<div class="bseg" role="group">${[1,2,3,4].map(k=>`<button type="button" data-lv="${k}" class="${BLD.lv===k?'on':''}" aria-pressed="${BLD.lv===k}" title="${esc(L(W.level[k]))}">${k}</button>`).join('')}</div>`}<span class="hint" style="margin:0">${esc(L(W.level[BLD.lv]))}${BLD.wind!=='ex'?esc(tx('. Your wind choice replaces the level’s wind.','. Vindvalget ditt erstatter nivåets vind.')):''}</span></div>
-    <div class="lab w"><span>${tx('Help','Hjelp')}</span>${`<div class="bseg" role="group">${['guided','hints','off'].map(k=>`<button type="button" data-help="${k}" class="${BLD.help===k?'on':''}" aria-pressed="${BLD.help===k}">${esc(L(W.help[k]))}</button>`).join('')}</div>`}<span class="hint" style="margin:0">${esc(L(W.helpSub[BLD.help]))}</span></div>`:''}
+    <div class="lab w"><span>${tx('Instrument','Instrument')}</span><div class="bseg" role="group">${['',...insts].map(k=>`<button type="button" data-k="inst" data-v="${k}" class="${(BLD.inst||'')===k?'on':''}" aria-pressed="${(BLD.inst||'')===k}" ${k?`title="${esc(L(W.instLong[k]))}"`:''}>${k?W.inst[k]:esc(L(AUTO))}</button>`).join('')}</div>${BLD.inst?`<span class="hint" style="margin:0">${esc(L(W.instLong[BLD.inst]))}</span>`:''}</div>
+    <div class="lab w"><span>${tx('Level','Nivå')}</span>${`<div class="bseg" role="group">${[1,2,3,4].map(k=>`<button type="button" data-lv="${k}" class="${BLD.lv===k?'on':''}" aria-pressed="${BLD.lv===k}" title="${esc(L(W.level[k]))}">${k}</button>`).join('')}</div>`}<span class="hint" style="margin:0">${esc(L(W.level[BLD.lv]))}${BLD.wind!=='ex'?esc(tx('. Your wind choice replaces the level’s wind.','. Vindvalget ditt erstatter nivåets vind.')):''}</span></div>`:''}
    </div>
-   <div class="bacts"><button type="button" class="btn3 pri" id="bGo">${tx('Start this run','Start denne runden')}</button><button type="button" class="btn3" id="bRand" title="${esc(tx('A random exercise, start and wind','En tilfeldig øvelse, start og vind'))}"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="4.7" cy="4.7" r="1.1" fill="currentColor"/><circle cx="9.3" cy="9.3" r="1.1" fill="currentColor"/><circle cx="9.3" cy="4.7" r="1.1" fill="currentColor"/><circle cx="4.7" cy="9.3" r="1.1" fill="currentColor"/></svg>${tx('Random','Tilfeldig')}</button>${PROG.lastCustom?`<button type="button" class="btn3" id="bRep">${tx('Repeat last','Gjenta siste')}</button>`:''}</div>`;
+   <div class="bside"><span class="bl">${E.fixedStart?tx('What you will fly','Dette skal du fly'):tx('Where you start: drag the aircraft, turn it with the handle','Hvor du starter: dra flyet, snu det med håndtaket')}</span><div class="bmap" id="bmap"><canvas id="bmapC" aria-label="${esc(tx('Preview of the setup. Drag the aircraft to choose the start.','Forhåndsvisning av oppsettet. Dra flyet for å velge start.'))}"></canvas><span class="bm-note" id="bmNote"></span></div>
+    <p class="bsum">${esc(itemName(BLD.item))}: ${esc(L(IT[BLD.item].s))}</p>${BLD.start?`<button type="button" class="btn3" id="bRstart">${tx('Random start again','Tilfeldig start igjen')}</button>`:''}</div></div>
+   <div class="bacts"><button type="button" class="btn3 pri" id="bGo">${tx('Start this run','Start denne runden')}</button><button type="button" class="btn3" id="bRand" title="${esc(tx('A random exercise, start and wind','En tilfeldig øvelse, start og vind'))}"><svg viewBox="0 0 14 14" aria-hidden="true"><rect x="1.5" y="1.5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="4.7" cy="4.7" r="1.1" fill="currentColor"/><circle cx="9.3" cy="9.3" r="1.1" fill="currentColor"/><circle cx="9.3" cy="4.7" r="1.1" fill="currentColor"/><circle cx="4.7" cy="9.3" r="1.1" fill="currentColor"/></svg>${tx('Surprise me','Overrask meg')}</button>${PROG.lastCustom?`<button type="button" class="btn3" id="bRep">${tx('Repeat my last run','Gjenta min siste runde')}</button>`:''}</div>`;
+  el('bClose').onclick=()=>closeBld();
+  if(foc){ try{ const f=foc.charAt(0)==='['?box.querySelector(foc):document.getElementById(foc); if(f) f.focus({preventScroll:true}); }catch(e){} }
   const ch=()=>{ save(BK,BLD); renderBld(); };
   box.querySelector('[data-k="item"]').onchange=e=>bldSet(e.target.value);
   box.querySelectorAll('select[data-k]:not([data-k="item"])').forEach(s=>s.onchange=()=>{ BLD[s.dataset.k]=s.value; ch(); });
@@ -746,9 +1023,13 @@ function renderBld(){ const box=el('bld'), it=I.ITEM[BLD.item], ex=it.ex, E=I.EX
   if(el('bRstart')) el('bRstart').onclick=()=>{ BLD.start=null; BLD.seed=Math.floor(Math.random()*9000)+1; ch(); };
   el('bGo').onclick=startBuilder;
   el('bRand').onclick=()=>{ const pool=I.ITEMS.filter(x=>I.itemOk(x,AREAS[BLD.area])); bldSet(pool[Math.floor(Math.random()*pool.length)].id); BLD.seed=Math.floor(Math.random()*9000)+1; BLD.wind='random'; save(BK,BLD); renderBld(); };
-  if(el('bRep')) el('bRep').onclick=()=>{ const l=PROG.lastCustom; openItem(l.item,{p:l.p,custom:true,lv:l.lv,area:l.area,seed:l.seed,help:l.help,inst:l.inst,step:'fly'}); };
+  if(el('bRep')) el('bRep').onclick=()=>{ const l=PROG.lastCustom; closeBld(); openItem(l.item,{p:l.p,custom:true,lv:l.lv,area:l.area,seed:l.seed,help:l.help,inst:l.inst,step:'fly'}); };
   bPrev(); }
-function startBuilder(){ const r=bVals(); PROG.lastCustom={item:BLD.item,p:r.p,lv:BLD.lv,area:BLD.area,seed:BLD.seed,help:BLD.help,inst:BLD.inst||null}; save(PK,PROG);
+/* the builder lives in a dialog: opened from its card on the home page, from a row's "Set up", or from the trainer's Setup */
+function openBld(){ const d=el('bldDlg'); if(!d.open){ if(d.showModal) d.showModal(); else d.setAttribute('open',''); } renderBld(); const f=el('bld').querySelector('select'); if(f) f.focus({preventScroll:true}); requestAnimationFrame(bPrev); }
+function closeBld(){ const d=el('bldDlg'); glClose(); if(d.open){ if(d.close) d.close(); else d.removeAttribute('open'); } }
+el('bldDlg').addEventListener('click',e=>{ if(e.target===el('bldDlg')) closeBld(); });
+function startBuilder(){ closeBld(); const r=bVals(); PROG.lastCustom={item:BLD.item,p:r.p,lv:BLD.lv,area:BLD.area,seed:BLD.seed,help:BLD.help,inst:BLD.inst||null}; save(PK,PROG);
   openItem(BLD.item,{p:r.p,custom:true,lv:BLD.lv,area:BLD.area,seed:BLD.seed,help:BLD.help,inst:BLD.inst||null,step:'fly'}); }
 /* the builder's preview map: what you will fly, from where you will start */
 let bmap=null, bX=null, bDirty=true, bW=0, bH=0;
@@ -778,7 +1059,7 @@ function drawCoast(m,g,Ar){ g.fillStyle='#16242e'; g.strokeStyle='rgba(150,182,2
   document.addEventListener('pointerup',()=>{ if(drag){ drag=null; save(BK,BLD); renderBld(); } }); })();
 
 /* ---------- views: home and trainer ---------- */
-function openItem(id,o){ o=o||{}; const it=I.ITEM[id]; if(!it) return;
+function openItem(id,o){ o=o||{}; const it=I.ITEM[id]; if(!it) return; closeBld(); glClose();
   S.item=id; S.ex=it.ex; S.p=Object.assign({},o.p||it.p); S.custom=!!o.custom;
   S.lv=o.lv||clamp(passed(id)+1,1,4); S.area=o.area&&allowed(it.ex,o.area)?o.area:(allowed(it.ex,S.area)?S.area:'practice');
   if(o.help) S.help=o.help; S.instWant=o.inst||null; S.inst=null;
@@ -787,7 +1068,7 @@ function openItem(id,o){ o=o||{}; const it=I.ITEM[id]; if(!it) return;
   setup(o.seed||Math.floor(Math.random()*9000)+1); if((location.hash||'').slice(1)!==id) history.pushState(null,'','#'+id);
   S.uStep=0; go(o.step||'understand'); requestAnimationFrame(()=>{ el('trainer').scrollIntoView({block:'start'}); sizeAll(); }); }
 function showHome(push){ if(S.run){ S.run=false; S.started=false; } document.body.classList.remove('v-trainer'); closePops();
-  if(push&&location.hash) history.pushState(null,'',location.pathname+location.search); renderNudge(); renderCat(); renderBld(); scrollTo(0,0); }
+  if(push&&location.hash) history.pushState(null,'',location.pathname+location.search); renderHome(); scrollTo(0,0); }
 function route(){ const h=decodeURIComponent((location.hash||'').slice(1)); if(I.ITEM[h]){ if(!(document.body.classList.contains('v-trainer')&&S.item===h)) openItem(h,{}); } else if(document.body.classList.contains('v-trainer')) showHome(false); }
 
 /* ---------- setup of a run ---------- */
@@ -817,14 +1098,14 @@ function renderBar(){ const it=ITo();
   el('steps').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.disabled) return; if(b.dataset.s==='fly'&&(S.step==='debrief'||S.started)){ setup(S.seed); } go(b.dataset.s); });
   el('helpK').textContent=tx('Help','Hjelp');
   el('helpSeg').innerHTML=['guided','hints','off'].map(k=>`<button type="button" data-h="${k}" class="${k===S.help?'on':''}" aria-pressed="${k===S.help}" title="${esc(L(W.helpSub[k]))}">${esc(L(W.help[k]))}</button>`).join('');
-  el('helpSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{ S.help=b.dataset.h; PROG.help=S.help; save(PK,PROG); if(S.help!=='guided'&&S.pause) resumePause(); renderBar(); renderGuide(true); renderCtl(); renderLegend(); });
+  el('helpSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setHelp(b.dataset.h));
   el('setT').textContent=tx('Setup','Oppsett');
   el('mapBtn').textContent=S.mapOpen?tx('Hide map','Skjul kart'):tx('Map','Kart'); el('mapBtn').setAttribute('aria-pressed',S.mapOpen);
   renderItabs(); }
 function renderItabs(){ const ex=EXo(); const ks=['cdi','rmi','rbi','hsi','pfd'].filter(k=>ex.inst.indexOf(k)>=0);
   el('itabs').innerHTML=ks.map(k=>`<button type="button" data-i="${k}" class="${k===S.inst?'on':''}" ${instOk(k)?'':'disabled'} aria-pressed="${k===S.inst}" title="${esc(L(W.instLong[k]))}">${W.inst[k]}</button>`).join('');
   el('itabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.disabled) return; S.inst=S.instWant=b.dataset.i; renderItabs(); layoutInst(); });
-  el('scan').textContent=S.X&&S.X.pp?tx('Heading indicator failed: use the compass','Kursindikatoren har sviktet: bruk kompasset'):L(SCAN[S.inst]||SCAN.cdi); }
+  el('scan').innerHTML=S.X&&S.X.pp?esc(tx('The heading indicator has failed: use the compass','Kursgyroen har sviktet: bruk kompasset')):`${gl(W.inst[S.inst]||'CDI',1)}: ${esc(L(SCAN[S.inst]||SCAN.cdi))}`; }
 function closePops(){ el('setPop').hidden=true; el('setBtn').setAttribute('aria-expanded','false'); el('drawer').hidden=true; el('keysov').hidden=true; }
 el('setBtn').onclick=e=>{ const p=el('setPop'); if(!p.hidden){ closePops(); return; } closePops(); renderSetPop(); p.hidden=false; el('setBtn').setAttribute('aria-expanded','true');
   const r=el('setBtn').getBoundingClientRect(), st=el('trainer').getBoundingClientRect(); p.style.top=(r.bottom-st.top+6)+'px'; p.style.right=Math.max(8,st.right-r.right)+'px'; p.style.left='auto'; };
@@ -835,14 +1116,14 @@ function renderSetPop(){ const p=el('setPop'), ex=S.ex;
     <button type="button" class="dbtn" id="toBld">${tx('Choose course, wind and start','Velg kurs, vind og start')}</button>`;
   p.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{ S.lv=+b.dataset.l; setup(); go(S.step==='debrief'?'fly':S.step); renderSetPop(); });
   p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ if(b.disabled) return; S.area=b.dataset.a; map.region=null; if(A().real) map.setRegion(S.area); setup(); go(S.step==='debrief'?'fly':S.step); renderSetPop(); });
-  el('toBld').onclick=()=>{ bldSet(S.item); BLD.area=S.area; BLD.lv=S.lv; save(BK,BLD); showHome(true); requestAnimationFrame(()=>el('bld').scrollIntoView({block:'start'})); }; }
+  el('toBld').onclick=()=>{ bldSet(S.item); BLD.area=S.area; BLD.lv=S.lv; BLD.help=S.help; save(BK,BLD); showHome(true); openBld(); }; }
 el('keysBtn').onclick=()=>{ const o=el('keysov'); if(!o.hidden){ o.hidden=true; return; } closePops();
   o.innerHTML=`<div class="kc" role="dialog" aria-labelledby="kh"><h3 id="kh">${tx('Keyboard','Tastatur')}</h3><dl>
-   <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>${tx('Heading bug 1° (with Shift 10°)','Kursmarkør 1° (med Shift 10°)')}</dd>
+   <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>${tx('Heading 1° (with Shift 10°)','Heading 1° (med Shift 10°)')}</dd>
    <dt><kbd>,</kbd> <kbd>.</kbd></dt><dd>${tx('Course (CRS / OBS) 1° (with Shift 10°)','Kurs (CRS / OBS) 1° (med Shift 10°)')}</dd>
    <dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>${tx('Selected altitude 100 ft (with Shift 1000 ft)','Valgt høyde 100 ft (med Shift 1000 ft)')}</dd>
    <dt><kbd>Space</kbd></dt><dd>${tx('Start, pause and resume','Start, pause og fortsett')}</dd>
-   <dt><kbd>H</kbd></dt><dd>${tx('Hint (in Hints mode)','Hint (i Hint-modus)')}</dd>
+   <dt><kbd>H</kbd></dt><dd>${tx('Hint (when the help is set to Hints)','Hint (når hjelpen står på Hint)')}</dd>
    <dt><kbd>W</kbd></dt><dd>${tx('Why? for the current step','Hvorfor? for steget nå')}</dd>
    <dt><kbd>T</kbd></dt><dd>${tx('Stopwatch','Stoppeklokke')}</dd>
    <dt><kbd>Enter</kbd></dt><dd>${tx('Continue after a pause','Fortsett etter en pause')}</dd>
@@ -858,15 +1139,18 @@ function tblHTML(){ const T=S.X.task;
   if(S.ex==='vordme') return T.table.slice(0,6).map(r=>`<span>D${r.dme} <b>${r.alt}</b></span>`).join(' ');
   if(isApp(S.ex)&&T.table){ if(S.ex==='vorApp'||S.ex==='ndbApp') return T.table.slice(1,6).map(r=>`<span>+${r.t}s <b>${r.alt}</b></span>`).join(' '); if(S.ex==='locApp') return T.table.slice(0,6).map(r=>`<span>D${r.dme} <b>${r.alt}</b></span>`).join(' '); if(S.ex==='lnav') return T.table.slice(0,6).map(r=>`<span>${r.d} NM <b>${r.alt}</b></span>`).join(' '); }
   return ''; }
-function renderBrief(){ const c=clearance(S.X,A(),S.ex), tb=tblHTML(), cc=el('ccard'), strip=el('clr');
-  const meta=`<span>${tx('Wind','Vind')} <b>${windTxt()}</b></span><span>TAS <b>${Math.round(I.tasOf(S.X.ac.ias,S.X.ac.alt))}</b></span>${A().real?`<span>${tx('Real navaid data','Ekte navigasjonsdata')}</span>`:''}`;
+function renderBrief(){ const c=clearance(S.X,A(),S.ex), pl=plain(S.X,A(),S.ex), tb=tblHTML(), cc=el('ccard'), strip=el('clr');
+  const meta=`<span>${tx('Wind','Vind')} <b>${windTxt()}</b></span><span>${gl('TAS',1)} <b>${Math.round(I.tasOf(S.X.ac.ias,S.X.ac.alt))}</b></span>${A().real?`<span>${tx('Real navaid data','Ekte navigasjonsdata')}</span>`:''}`;
   if(S.step==='fly'&&!S.started){ strip.hidden=true; el('guide').hidden=true;
-    cc.innerHTML=`<div class="ccard"><div><div class="k">${S.ex==='math'?tx('The task','Oppgaven'):tx('Your clearance','Klareringen din')}</div><div class="ct">${esc(L(c))}</div>${tb?`<div class="tbl">${tb}</div>`:''}<div class="meta">${meta}<span>${tx('Help','Hjelp')} <b>${esc(L(W.help[S.help]))}</b></span></div></div>
+    cc.innerHTML=`<div class="ccard"><div class="cl"><div class="k">${S.ex==='math'?tx('The task','Oppgaven'):gl(tx('Your clearance','Klareringen din'),1)}</div><div class="ct">${gl(L(c),4,{clearance:1,heading:1,inbound:1,outbound:1,intercept:1,fix:1})}</div>${L(pl)?`<div class="pl"><b>${tx('In plain words','Med vanlige ord')}</b> ${gl(L(pl),2,{heading:1,fix:1,waypoint:1,intercept:1})}</div>`:''}${tb?`<div class="tbl">${tb}</div>`:''}<div class="meta">${meta}</div></div>
+      <div class="hlp" role="radiogroup" aria-labelledby="hlpK"><div class="k" id="hlpK">${tx('How much help?','Hvor mye hjelp?')}</div>${['guided','hints','off'].map(k=>`<button type="button" role="radio" aria-checked="${S.help===k}" class="${S.help===k?'on':''}" data-hp="${k}"><b>${esc(L(W.help[k]))}</b><span>${esc(L(W.helpSub[k]))}</span></button>`).join('')}</div>
       <div class="go"><button class="dbtn pri" type="button" data-a="start"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>${tx('Start','Start')}</button>${S.ex!=='math'?`<button class="dbtn lt" type="button" data-a="demo">${tx('Watch the instructor first','Se instruktøren først')}</button>`:''}</div></div>`;
-    cc.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a)); return; }
+    cc.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>act(b.dataset.a));
+    cc.querySelectorAll('[data-hp]').forEach(b=>b.onclick=()=>setHelp(b.dataset.hp)); return; }
   cc.innerHTML=''; strip.hidden=S.step!=='fly'; el('guide').hidden=S.step!=='fly';
   strip.classList.toggle('open',S.clrOpen); strip.setAttribute('aria-expanded',S.clrOpen);
-  strip.innerHTML=`<span class="ct">${esc(L(c))}${S.clrOpen&&tb?`<span class="tbl">${tb}</span>`:''}</span><span class="meta">${meta}</span>`; }
+  strip.innerHTML=`<span class="ct">${gl(L(c),S.clrOpen?4:3,{clearance:1,heading:1,inbound:1,outbound:1,intercept:1,fix:1})}${S.clrOpen&&L(pl)?`<span class="tbl pl2">${esc(L(pl))}</span>`:''}${S.clrOpen&&tb?`<span class="tbl">${tb}</span>`:''}</span><span class="meta">${meta}</span>`; }
+function setHelp(k){ S.help=k; PROG.help=S.help; save(PK,PROG); if(S.help!=='guided'&&S.pause) resumePause(); renderBar(); renderBrief(); renderGuide(true); if(S.step==='fly') renderCtl(); renderLegend(); renderQuiz(); }
 el('clr').onclick=()=>{ S.clrOpen=!S.clrOpen; renderBrief(); };
 el('clr').onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); S.clrOpen=!S.clrOpen; renderBrief(); } };
 
@@ -1017,21 +1301,21 @@ const coachTxt=()=>{ const c=S.J&&S.J.coach; return c?fmt(CO[c.k]||t2('',''),pw(
 const whyTxt=()=>{ const c=S.J&&S.J.coach; if(!c||!c.why||!CO[c.why]) return ''; return fmt(CO[c.why],pw(Object.assign({rod:Math.round(I.rodFor(S.sim.gs)/10)*10},c.p))); };
 const turnW=d=>d>0?tx('right','høyre'):tx('left','venstre');
 function action(){ const c=S.gc, s=S.sim, X=S.X, J=S.J, ex=S.ex; if(!c||!J) return null; const co=J.coach, sev=co?co.sev:'info', cl=coachTxt(), r=readNow();
-  if(ex==='math') return {big:tx('Work it out in your head, then type the answer.','Regn det ut i hodet, og skriv svaret.'),sm:'',sev:'info'};
+  if(ex==='math') return {big:tx('Work it out in your head, then type the answer.','Regn det ut i hodet, og skriv inn svaret.'),sm:'',sev:'info'};
   if(ex==='orient'){ const k=X.task.kind;
-    if(k==='rbi'){ const rb=Math.round(norm(r.rb)); return {big:tx(`Add them up: heading ${d3(s.hdg)} + needle ${rb}°`,`Legg sammen: kurs ${d3(s.hdg)} + nål ${rb}°`),sm:tx('Over 360? Take 360 away. Type the bearing and press Report.','Over 360? Trekk fra 360. Skriv peilingen og trykk Rapporter.'),sev:'info'}; }
-    if(k==='rmi') return {big:tx('Read the tail of the green needle: that is your radial','Les halen på den grønne nålen: det er radialen din'),sm:tx('Type it and press Report.','Skriv den og trykk Rapporter.'),sev:'info'};
+    if(k==='rbi'){ const rb=Math.round(norm(r.rb)); return {big:tx(`Add them up: heading ${d3(s.hdg)} + needle ${rb}°`,`Legg sammen: heading ${d3(s.hdg)} + nål ${rb}°`),sm:tx('Over 360? Take 360 away. Type the bearing and press Report.','Over 360? Trekk fra 360. Skriv inn peilingen og trykk Rapporter.'),sev:'info'}; }
+    if(k==='rmi') return {big:tx('Read the number under the tail of the green needle: that is your radial','Les tallet under halen på den grønne nålen: det er radialen din'),sm:tx('Type it in and press Report.','Skriv den inn og trykk Rapporter.'),sev:'info'};
     const want=c.obs, off=diff(want,X.obs);
-    if(Math.abs(off)>2) return {big:tx(`Turn the course knob ${off>0?'up':'down'} until the needle centres with FROM`,`Vri kursknappen ${off>0?'opp':'ned'} til nålen står midt med FROM`),sm:tx('The cyan mark on the card shows where to stop.','Det blå merket på skiven viser hvor du stopper.'),tgt:{crs:want},sev:'info'};
-    return {big:tx('Centred with FROM: the course at the top is your radial. Report it.','Midt med FROM: kursen øverst er radialen din. Rapporter den.'),sm:'',sev:'good'}; }
+    if(Math.abs(off)>2) return {big:tx(`Turn the course knob ${off>0?'up':'down'} until the needle is centred and the flag shows FROM`,`Vri kursknappen ${off>0?'opp':'ned'} til nålen står i midten og flagget viser FROM`),sm:tx('The pink mark on the card shows where to stop.','Det rosa merket på skiven viser hvor du stopper.'),tgt:{crs:want},sev:'info'};
+    return {big:tx('Centred with FROM: the number at the top is your radial. Report it.','I midten med FROM: tallet øverst er radialen din. Rapporter den.'),sm:'',sev:'good'}; }
   if(ex==='tts'){ const st=A().ST[X.task.st], b=N.bearing(s.x-st.x,s.y-st.y), ch=J.b0===undefined?0:Math.abs(diff(b,J.b0));
-    if(!S.watch.on&&S.watch.t<1) return {big:tx('Start the stopwatch now','Start stoppeklokken nå'),sm:tx('Press Stopwatch (or T), then fly straight.','Trykk Stoppeklokke (eller T), og fly rett frem.'),sev:'warn'};
-    if(ch<10) return {big:tx(`Fly straight. The bearing has changed ${Math.round(ch)}° of 10°.`,`Fly rett frem. Peilingen har endret seg ${Math.round(ch)}° av 10°.`),sm:tx('Watch the tail of the needle slide back.','Se halen av nålen gli bakover.'),sev:'info'};
-    return {big:tx(`10° done: minutes = ${Math.round(S.watch.t)} s ÷ 10. Report it.`,`10° nådd: minutter = ${Math.round(S.watch.t)} s ÷ 10. Rapporter.`),sm:'',sev:'warn'}; }
+    if(!S.watch.on&&S.watch.t<1) return {big:tx('Start the stopwatch now','Start stoppeklokka nå'),sm:tx('Press Stopwatch (or the T key), then fly straight ahead.','Trykk Stoppeklokke (eller tasten T), og fly rett frem.'),sev:'warn'};
+    if(ch<10) return {big:tx(`Fly straight. The bearing has changed ${Math.round(ch)}° of 10°.`,`Fly rett frem. Peilingen har endret seg ${Math.round(ch)}° av 10°.`),sm:tx('Watch the needle slowly move backwards.','Se nålen flytte seg sakte bakover.'),sev:'info'};
+    return {big:tx(`10° done: minutes = ${Math.round(S.watch.t)} s ÷ 10. Report it.`,`10° nådd: minutter = ${Math.round(S.watch.t)} s ÷ 10. Rapporter svaret.`),sm:'',sev:'warn'}; }
   /* course */
   const navT=X.nav&&A().ST[X.nav]?A().ST[X.nav].type:null;
-  if((navT==='VOR'||navT==='ILS')&&c.obs!=null&&Math.abs(diff(c.obs,X.obs))>2) return {big:tx(`Set the course to ${d3(c.obs)}`,`Still inn kursen ${d3(c.obs)}`),sm:tx('Turn the CRS knob, or use the , and . keys.','Vri CRS-knappen, eller bruk tastene , og .'),tgt:{crs:c.obs},sev:'info'};
-  if(ex==='pass'){ const st=A().ST[X.task.st]; if(Math.hypot(s.x-st.x,s.y-st.y)<2.6&&!J.rep) return {big:tx('Hold the heading and watch the flag: press Station passage when it shows FROM','Hold kursen og følg flagget: trykk Stasjonspassering når det viser FROM'),sm:'',sev:'warn'}; }
+  if((navT==='VOR'||navT==='ILS')&&c.obs!=null&&Math.abs(diff(c.obs,X.obs))>2) return {big:tx(`Set the course to ${d3(c.obs)}`,`Still inn kurs ${d3(c.obs)}`),sm:tx('Turn the course knob (CRS), or use the , and . keys.','Vri kursknappen (CRS), eller bruk tastene , og .'),tgt:{crs:c.obs},sev:'info'};
+  if(ex==='pass'){ const st=A().ST[X.task.st]; if(Math.hypot(s.x-st.x,s.y-st.y)<2.6&&!J.rep) return {big:tx('Hold the heading and watch the flag: press Station passage when it shows FROM','Hold headingen og følg med på flagget: trykk Stasjonspassering når det viser FROM'),sm:'',sev:'warn'}; }
   /* heading */
   let th=Math.round(c.hdg)||360; if(S.gTh===null||Math.abs(diff(th,S.gTh))>=3) S.gTh=th; th=S.gTh;
   const toGo=diff(th,s.hdg), dir=(c.dir&&Math.abs(toGo)>=45)?c.dir:Math.sign(toGo)||1;
@@ -1040,23 +1324,25 @@ function action(){ const c=S.gc, s=S.sim, X=S.X, J=S.J, ex=S.ex; if(!c||!J) retu
   let ta=c.alt!=null?Math.round(c.alt/10)*10:null; const mins=X.task.da||X.task.mda||X.task.mins; if(ta!=null&&mins&&isApp(ex)&&ta<mins&&!(J.miss)) ta=mins;
   const vsKey=ctlList().indexOf('vs')>=0, altNeed=ta!=null&&ctlList().indexOf('alt')>=0&&Math.abs(ta-s.sel.alt)>40, vsWant=Math.round((c.vs||0)/50)*50, vsNeed=vsKey&&ta!=null&&Math.abs(ta-s.alt)>150&&Math.abs(vsWant-s.sel.vs)>=100;
   if(altNeed) tgt.alt=ta; if(vsNeed) tgt.vs=vsWant;
-  if(X.pp){ const deg=Math.round(toGo/10)*10; if(Math.abs(deg)>=10&&!(S.tt&&s.t-S.tt.t0<S.tt.dur+1)) return {big:tx(`Timed turn ${turnW(deg)} ${Math.abs(deg)}° (${Math.abs(deg)/3} s)`,`Tidsstyrt sving ${turnW(deg)} ${Math.abs(deg)}° (${Math.abs(deg)/3} s)`),sm:cl,tgt:{},sev:'info'}; }
-  else if(Math.abs(diff(th,s.sel.hdg))>=3) return {big:tx(`Turn ${turnW(dir)} to heading ${d3(th)}${Math.abs(toGo)>25?' now':''}`,`Sving til ${turnW(dir)} til kurs ${d3(th)}${Math.abs(toGo)>25?' nå':''}`),sm:altNeed?altLine(ta,s):reasonTxt(r,co,cl),tgt,sev:Math.abs(toGo)>25?'warn':'info'};
-  if(altNeed) return {big:ta<s.alt?tx(`Descend: set altitude ${ta} ft`,`Sink: still inn høyde ${ta} ft`):tx(`Climb: set altitude ${ta} ft`,`Stig: still inn høyde ${ta} ft`),sm:vsNeed?rateLine(vsWant,ta<s.alt):cl,tgt,sev:'warn'};
+  if(X.pp){ const deg=Math.round(toGo/10)*10; if(Math.abs(deg)>=10&&!(S.tt&&s.t-S.tt.t0<S.tt.dur+1)) return {big:tx(`Timed turn: ${Math.abs(deg)}° to the ${turnW(deg)} (${Math.round(Math.abs(deg)/3)} s)`,`Sving på tid: ${Math.abs(deg)}° til ${turnW(deg)} (${Math.round(Math.abs(deg)/3)} s)`),sm:cl,tgt:{},sev:'info'}; }
+  else if(Math.abs(diff(th,s.sel.hdg))>=3) return {big:tx(`Turn ${turnW(dir)} to heading ${d3(th)}${Math.abs(toGo)>25?' now':''}`,`Sving til ${turnW(dir)} til heading ${d3(th)}${Math.abs(toGo)>25?' nå':''}`),sm:altNeed?altLine(ta,s):reasonTxt(r,co,cl),tgt,sev:Math.abs(toGo)>25?'warn':'info'};
+  if(altNeed) return {big:ta<s.alt?tx(`Descend: set altitude ${ta} ft`,`Gå ned: still inn høyde ${ta} ft`):tx(`Climb: set altitude ${ta} ft`,`Stig: still inn høyde ${ta} ft`),sm:vsNeed?rateLine(vsWant,ta<s.alt):cl,tgt,sev:'warn'};
   if(vsNeed) return {big:rateLine(vsWant,ta<s.alt),sm:cl,tgt,sev:'info'};
-  if(!X.pp&&Math.abs(toGo)>5) return {big:tx(`Turning ${turnW(dir)} to ${d3(th)}: let it come round`,`Svinger til ${turnW(dir)} til ${d3(th)}: la den komme rundt`),sm:cl,tgt,sev:'info'};
-  return {big:cl||tx('Hold it steady.','Hold det stødig.'),sm:'',tgt,sev}; }
+  if(!X.pp&&Math.abs(toGo)>5) return {big:tx(`Turning ${turnW(dir)} to heading ${d3(th)}. Wait for the turn to finish.`,`Svinger til ${turnW(dir)} til heading ${d3(th)}. Vent til svingen er ferdig.`),sm:cl,tgt,sev:'info'};
+  return {big:cl||tx('Hold this heading and altitude.','Hold denne headingen og høyden.'),sm:'',tgt,sev}; }
 /* a short reason under a turn instruction, without a competing number */
 function reasonTxt(r,co,cl){ if(co&&co.p&&co.p.hdg===undefined&&co.p.a===undefined) return cl;
-  if(r&&Number.isFinite(r.dots)&&Math.abs(r.dots)>0.3&&r.flag!=='OFF'){ const sd=r.dots>0?'R':'L'; return tx(`Needle ${sideW(sd)}: the course is on your ${sideW(sd)}.`,`Nål til ${sideW(sd)}: kursen ligger til ${sideW(sd)}.`); }
-  return tx('This is the heading the instructor would fly now.','Dette er kursen instruktøren ville fløyet nå.'); }
-const altLine=(ta,s)=>ta<s.alt?tx(`Then descend: set ${ta} ft.`,`Sink så: still inn ${ta} ft.`):tx(`Then climb: set ${ta} ft.`,`Stig så: still inn ${ta} ft.`);
-const rateLine=(v,down)=>down?tx(`Set the descent rate (VS) to ${v} ft/min`,`Still inn sinkraten (VS) ${v} ft/min`):tx(`Set the climb rate (VS) to ${v} ft/min`,`Still inn stigeraten (VS) ${v} ft/min`);
+  if(r&&Number.isFinite(r.dots)&&Math.abs(r.dots)>0.3&&r.flag!=='OFF'){ const sd=r.dots>0?'R':'L'; return tx(`The needle is to the ${sideW(sd)}: the course is on your ${sideW(sd)}.`,`Nålen står til ${sideW(sd)}: kursen ligger til ${sideW(sd)} for deg.`); }
+  return tx('This is the heading the instructor would fly now.','Dette er headingen instruktøren ville fløyet nå.'); }
+const altLine=(ta,s)=>ta<s.alt?tx(`Then descend: set ${ta} ft.`,`Gå så ned: still inn ${ta} ft.`):tx(`Then climb: set ${ta} ft.`,`Stig så: still inn ${ta} ft.`);
+const rateLine=(v,down)=>down?tx(`Set the rate of descent (VS) to ${v} ft/min`,`Still inn synkehastigheten (VS) på ${v} ft/min`):tx(`Set the rate of climb (VS) to ${v} ft/min`,`Still inn stigehastigheten (VS) på ${v} ft/min`);
 /* targets shown on the instrument and the controls: guided, a third hint, or the instructor flying */
 const showHelp=()=>S.help==='guided'||S.demo||(S.help==='hints'&&S.hint>=3);
 let ACT=null;
 function targetsNow(){ if(S.step!=='fly'||!S.started||!showHelp()||!ACT) return null; return ACT.tgt||null; }
 let guideKey='';
+/* in the live instruction line only the abbreviations and the jargon become chips, not everyday words like heading */
+const GSKIP={heading:1,fix:1,inbound:1,outbound:1,intercept:1,clearance:1,dot:1,waypoint:1};
 function renderGuide(force){ const g=el('guide'); if(S.step!=='fly'||!S.started){ g.hidden=true; return; } g.hidden=false;
   ACT=action(); const co=S.J.coach;
   if(S.help==='hints'&&co&&co.k!==S.hintK){ S.hintK=co.k; S.hint=0; }
@@ -1065,13 +1351,13 @@ function renderGuide(force){ const g=el('guide'); if(S.step!=='fly'||!S.started)
   if(S.demo){ big=ACT?tx('The instructor: ','Instruktøren: ')+ACT.big.charAt(0).toLowerCase()+ACT.big.slice(1):''; sm=coachTxt(); cls='info'; btns=whyB; }
   else if(S.help==='guided'){ if(ACT){ big=ACT.big; sm=ACT.sm; cls=ACT.sev||'info'; } btns=whyB; }
   else if(S.help==='hints'){ btns=`<button type="button" class="pill" id="gHint">${S.hint===0?tx('Hint','Hint'):S.hint<3?tx('More help','Mer hjelp'):tx('Hint','Hint')}<kbd>H</kbd></button>`+whyB;
-    if(S.hint===0){ big=tx('Flying with hints. Stuck? Ask for a hint.','Flyr med hint. Står du fast? Be om et hint.'); cls='quiet'; }
-    else if(S.hint===1){ big=coachTxt()||tx('Hold it steady.','Hold det stødig.'); cls=co?co.sev:'info'; }
+    if(S.hint===0){ big=tx('You are flying. Stuck? Press Hint.','Du flyr selv. Står du fast? Trykk Hint.'); cls='quiet'; }
+    else if(S.hint===1){ big=coachTxt()||tx('Hold this heading and altitude.','Hold denne headingen og høyden.'); cls=co?co.sev:'info'; }
     else { big=ACT?ACT.big:''; sm=coachTxt(); cls=ACT?ACT.sev:'info'; } }
-  else { big=tx('Flying alone. “Why?” explains the current step.','Flyr alene. «Hvorfor?» forklarer steget nå.'); cls='quiet'; btns=whyB; }
+  else { big=tx('You are flying on your own. “Why?” explains the current step.','Du flyr på egen hånd. «Hvorfor?» forklarer steget du er på.'); cls='quiet'; btns=whyB; }
   const key=[big,sm,cls,btns,S.showWhy,why].join('|'); if(!force&&key===guideKey) return; guideKey=key;
   g.className='guide '+cls;
-  g.innerHTML=`<span class="mk" aria-hidden="true">${cls==='good'?ICON.check:cls==='warn'?ICON.warn:cls==='quiet'?ICON.solo:ICON.arrow}</span><div class="gx"><span class="big">${esc(big)}</span>${sm?`<span class="sm">${esc(sm)}</span>`:''}${S.showWhy&&why?`<span class="wt">${esc(why)}</span>`:''}</div><div class="gb">${btns}</div>`;
+  g.innerHTML=`<span class="mk" aria-hidden="true">${cls==='good'?ICON.check:cls==='warn'?ICON.warn:cls==='quiet'?ICON.solo:ICON.arrow}</span><div class="gx"><span class="big">${gl(big,2,GSKIP)}</span>${sm?`<span class="sm">${gl(sm,2,GSKIP)}</span>`:''}${S.showWhy&&why?`<span class="wt">${gl(why,3,GSKIP)}</span>`:''}</div><div class="gb">${btns}</div>`;
   if(el('gWhy')) el('gWhy').onclick=()=>{ S.showWhy=!S.showWhy; renderGuide(true); };
   if(el('gHint')) el('gHint').onclick=hintMore;
   /* the controls that need touching glow */
@@ -1082,21 +1368,21 @@ function renderGuide(force){ const g=el('guide'); if(S.step!=='fly'||!S.started)
 function hintMore(){ if(S.hint<3){ S.hint++; S.hintsUsed++; } S.hintK=S.J.coach&&S.J.coach.k; renderGuide(true); }
 
 /* ---------- key moments: a short pause and the explanation (Guided) ---------- */
-const MOM={'int.lead':t2('The needle is moving','Nålen beveger seg'),'arc.turnsoon':t2('Onto the arc','Inn på buen'),'arc.leadradial':t2('The lead radial','Den ledende radialen'),
+const MOM={'int.lead':t2('The needle is moving','Nålen beveger seg'),'arc.turnsoon':t2('Onto the arc','Inn på buen'),'arc.leadradial':t2('Time to leave the arc','På tide å forlate buen'),
   'hold.entryturn':t2('Turn back to the fix','Sving tilbake til fiksen'),'hold.turnout':t2('Over the fix','Over fiksen'),'pt.turn45':t2('The first turn','Den første svingen'),'pt.turn180':t2('The turn back','Svingen tilbake'),
-  'pt.turn260':t2('The turn back','Svingen tilbake'),'base.turn':t2('Time is up','Tiden er ute'),'vor.faf':t2('The final approach fix','Final approach fix'),'app.faf':t2('The final approach fix','Final approach fix'),
-  'app.gpfaf':t2('The glide path','Glidebanen'),'ils.alive':t2('The localiser comes alive','Localiseren blir levende'),'ils.waitgs':t2('Established on the localiser','Etablert på localiseren'),
-  'miss.climb':t2('Minimums: no runway','Minima: ingen rullebane'),'rt.turn':t2('A waypoint ahead','Et waypoint foran'),'pass.watch':t2('Close to the station','Nær stasjonen'),'tts.report':t2('10° done','10° nådd'),
+  'pt.turn260':t2('The turn back','Svingen tilbake'),'base.turn':t2('Time is up','Tiden er ute'),'vor.faf':t2('The final approach fix (FAF)','Final approach fix (FAF)'),'app.faf':t2('The final approach fix (FAF)','Final approach fix (FAF)'),
+  'app.gpfaf':t2('The glide path is coming down','Glidebanen kommer ned'),'ils.alive':t2('The localiser needle is moving','Localiser-nålen rører seg'),'ils.waitgs':t2('On the localiser','På localiseren'),
+  'miss.climb':t2('At the minimum: no runway in sight','På minimum: ingen rullebane i sikte'),'rt.turn':t2('A waypoint just ahead','Et waypoint like foran'),'pass.watch':t2('Close to the station','Nær stasjonen'),'tts.report':t2('10° done','10° nådd'),
   'ip.wait':t2('Over the station','Over stasjonen'),'hold.near':t2('Before the fix: which entry?','Før fiksen: hvilken inngang?')};
 function checkMoment(){ if(S.help!=='guided'||S.demo||S.pause||!S.J) return; const co=S.J.coach; let k=co&&MOM[co.k]?co.k:null;
   if(S.ex==='holdEntry'&&S.J.phase==='tofix'){ const F=I.fixOf(A(),S.X.task); if(Math.hypot(S.sim.x-F.x,S.sim.y-F.y)<1.7) k='hold.near'; }
   if(k&&!S.moments[k]){ S.moments[k]=1; pauseAt(k); } }
 function pauseAt(k){ S.pause=k; S.paused=true; ACT=action(); const T=S.X.task;
   let txt=whyTxt(), doo=ACT?ACT.big:'';
-  if(k==='hold.near'){ const e=H.entry(T.inb,T.dir,S.sim.hdg), nm=L(W.entry[e.entry]); txt=tx(`You will cross the fix heading ${d3(S.sim.hdg)}. That puts you in the ${nm} sector.`,`Du krysser fiksen på kurs ${d3(S.sim.hdg)}. Det gir ${nm}-sektoren.`)+' '+L(CO['hold.entry.'+e.entry+'.why']);
+  if(k==='hold.near'){ const e=H.entry(T.inb,T.dir,S.sim.hdg), nm=L(W.entry[e.entry]); txt=tx(`You will cross the fix on heading ${d3(S.sim.hdg)}. That puts you in the ${nm} sector.`,`Du krysser fiksen på heading ${d3(S.sim.hdg)}. Da er du i sektoren for ${nm} inngang.`)+' '+L(CO['hold.entry.'+e.entry+'.why']);
     doo=fmt(CO['hold.entry.'+e.entry],pw({out:T.out,td:norm(T.out-T.dir*30),dir:T.dir>0?'R':'L'})); }
   const p=el('pausec'); p.hidden=false;
-  p.innerHTML=`<span class="k">${tx('Paused: a key moment','Pause: et viktig øyeblikk')}</span><b id="pauseB">${esc(L(MOM[k]))}</b>${txt?`<p>${esc(txt)}</p>`:''}${doo?`<p class="do">${esc(tx('Now: ','Nå: ')+doo)}</p>`:''}<div class="row2"><button type="button" class="dbtn pri" id="pGo">${tx('Continue','Fortsett')}</button><span style="font-size:12.5px;color:var(--ni3)">Enter</span></div>`;
+  p.innerHTML=`<span class="k">${tx('Paused: a key moment','Pause: et viktig øyeblikk')}</span><b id="pauseB">${esc(L(MOM[k]))}</b>${txt?`<p>${gl(txt,3,GSKIP)}</p>`:''}${doo?`<p class="do">${gl(tx('Now: ','Nå: ')+doo,2,GSKIP)}</p>`:''}<div class="row2"><button type="button" class="dbtn pri" id="pGo">${tx('Continue','Fortsett')}</button><span style="font-size:12.5px;color:var(--ni3)">Enter</span></div>`;
   el('pGo').onclick=resumePause; el('pGo').focus({preventScroll:true}); renderTbar(); }
 function resumePause(){ S.pause=null; S.paused=false; el('pausec').hidden=true; renderTbar(); }
 
@@ -1114,10 +1400,10 @@ function renderQuiz(){ const box=el('quiz'), mc=el('mathcard'); if(S.ex!=='math'
   const inp=el('mathIn'); if(inp){ const send=()=>{ const v=parseFloat(String(inp.value).replace(',','.')); if(!Number.isFinite(v)){ inp.focus(); return; } report(v); inp.value=''; };
     el('mathGo').onclick=send; inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } }); if(S.started&&document.activeElement.tagName!=='INPUT') inp.focus({preventScroll:true}); }
   mc.hidden=S.help==='off'&&S.started;
-  mc.innerHTML=`<h3>${tx('Rules of thumb','Tommelfingerregler')}</h3><ol>${MATHU.slice(1).concat([t2('Intercept: course ± 30° or 45°, towards the needle. Time to station: seconds ÷ degrees.','Interception: kurs ± 30° eller 45°, mot nålen. Tid til stasjon: sekunder ÷ grader.'),t2('Turn radius ≈ ground speed ÷ 200 NM. Lead radial ≈ 60 × radius ÷ DME.','Svingradius ≈ fart over bakken ÷ 200 NM. Ledende radial ≈ 60 × radius ÷ DME.')]).map(m=>`<li>${esc(L(m))}</li>`).join('')}</ol>`; }
+  mc.innerHTML=`<h3>${tx('Rules of thumb','Tommelfingerregler')}</h3><ol>${mathRules(S.item).map(m=>`<li>${gl(L(m),2)}</li>`).join('')}</ol>`; }
 
 /* ---------- Understand: the walk-through ---------- */
-const uSteps=()=>S.ex==='math'?MATHU.map(s=>({s,static:true})):uwFor(S.item).concat([{s:TRY,try:true}]);
+const uSteps=()=>S.ex==='math'?mathU(S.item).map(s=>({s,static:true})):uwFor(S.item).concat([{s:tryFor(S.item),try:true}]);
 function segIdx(st){ const P=S.ideal||[]; if(!P.length||!st.seg) return {i0:0,i1:Math.max(0,P.length-1)};
   if(typeof st.seg[0]==='number'){ const t1=P[P.length-1].t; const a=P.findIndex(p=>p.t>=st.seg[0]*t1), b=P.findIndex(p=>p.t>=st.seg[1]*t1); return {i0:Math.max(0,a),i1:b<0?P.length-1:Math.max(a+1,b)}; }
   let a=-1,b=-1; P.forEach((p,i)=>{ if(st.seg.indexOf(p.ph)>=0){ if(a<0) a=i; b=i; } }); if(a<0) return {i0:0,i1:P.length-1}; return {i0:a,i1:Math.max(a+1,b)}; }
@@ -1127,7 +1413,7 @@ function setUStep(i,quiet){ const st=uSteps(); S.uStep=clamp(i,0,st.length-1); S
 function uNext(){ const n=uSteps().length; if(S.uStep<n-1) setUStep(S.uStep+1); else act(S.think?'think':'fly'); }
 function renderLesson(){ const st=uSteps(), cur=st[S.uStep], n=st.length, last=S.uStep===n-1;
   el('lesson').innerHTML=`<div class="uh"><div class="udots" role="group" aria-label="${esc(tx('Steps','Steg'))}">${st.map((s,i)=>`<button type="button" data-u="${i}" class="${i===S.uStep?'on':i<S.uStep?'done':''}" aria-label="${tx('Step','Steg')} ${i+1}" aria-current="${i===S.uStep?'step':'false'}"></button>`).join('')}</div><span class="uc">${S.uStep+1} ${tx('of','av')} ${n}</span></div>
-    <p class="us" aria-live="polite">${esc(L(cur.s))}</p><div class="live" id="uLive"></div>
+    <p class="us" aria-live="polite">${gl(L(cur.s),4)}</p><div class="live" id="uLive"></div>
     <div class="unav">${S.uStep>0?`<button type="button" class="dbtn q" id="uBack">${tx('Back','Tilbake')}</button>`:''}<span class="sp"></span><button type="button" class="dbtn pri" id="uNext">${last?(S.think?tx('Think first','Tenk først'):tx('Fly it','Fly den')):tx('Next','Neste')}</button></div>`;
   el('lesson').querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>setUStep(+b.dataset.u));
   if(el('uBack')) el('uBack').onclick=()=>setUStep(S.uStep-1); el('uNext').onclick=uNext; }
@@ -1142,73 +1428,73 @@ function animU(dt){ const st=uSteps()[S.uStep]; if(!st||st.try||st.static||!S.id
 function renderThink(){ const T=S.think, box=el('think'); if(!T){ box.innerHTML=''; return; }
   const cap=x=>x.charAt(0).toUpperCase()+x.slice(1);
   const ans=S.thinkAns, X=S.X, opt=v=>typeof v==='number'?(T.kind==='arclead'?nf1(v)+' NM':T.kind==='profile'||T.kind==='proftime'?v+' ft':T.kind==='rod'?v+' ft/min':T.kind==='ttsq'?String(v).replace('.',no()?',':'.')+' min':T.kind==='locq'?v+'×':d3(v))
-    :T.kind==='passq'?L({flag:t2('The TO/FROM flag flips','TO/FROM-flagget skifter'),needle:t2('The needle swings','Nålen svinger'),dme:t2('The DME reads 0','DME-en viser 0')}[v]):cap(T.kind==='entry'?L(W.entry[v]):sideW(v));
+    :T.kind==='passq'?L({flag:t2('The flag changes from TO to FROM','Flagget skifter fra TO til FROM'),needle:t2('The needle swings','Nålen slår ut'),dme:t2('The DME shows 0','DME viser 0')}[v]):cap(T.kind==='entry'?L(W.entry[v]):sideW(v));
   let qx='';
   switch(T.kind){
     case 'radial': qx=tx(`The RMI needle points to <b>${d3(T.qdm)}</b>. Which radial are you on?`,`RMI-nålen peker på <b>${d3(T.qdm)}</b>. Hvilken radial er du på?`); break;
-    case 'qdm': qx=tx(`Heading <b>${d3(T.hdg)}</b>, the ADF needle shows <b>${T.rb}°</b>. Bearing to the beacon?`,`Kurs <b>${d3(T.hdg)}</b>, ADF-nålen viser <b>${T.rb}°</b>. Peiling til fyret?`); break;
-    case 'needle': qx=tx('Flying inbound with TO, the needle is right of centre. Where is the course?','Inn mot stasjonen med TO står nålen til høyre. Hvor ligger kursen?'); break;
-    case 'wca': qx=tx(`Course <b>${d3(T.crs)}</b>, TAS <b>${T.tas}</b> kt, wind <b>${d3(T.w.dir)}/${T.w.spd}</b>. Which heading holds the course?`,`Kurs <b>${d3(T.crs)}</b>, TAS <b>${T.tas}</b> kt, vind <b>${d3(T.w.dir)}/${T.w.spd}</b>. Hvilken kurs holder sporet?`); break;
-    case 'intercept': qx=tx(`You are on radial <b>${d3(T.radial)}</b>, cleared to intercept <b>${d3(T.crs)}</b> ${T.inbound?'inbound':'outbound'}. Intercept heading?`,`Du er på radial <b>${d3(T.radial)}</b> og skal fange <b>${d3(T.crs)}</b> ${T.inbound?'inn':'ut'}. Interceptkurs?`); break;
-    case 'arclead': qx=tx(`Joining a <b>${T.R} DME</b> arc at <b>${T.tas}</b> kt: how far before the arc do you start the 90° turn?`,`Inn på en <b>${T.R} DME</b>-bue i <b>${T.tas}</b> kt: hvor langt før buen starter du svingen på 90°?`); break;
-    case 'entry': qx=tx(`Inbound <b>${d3(T.inb)}</b>, ${T.dir>0?'right':'left'} turns. You will cross the fix heading <b>${d3(T.hdg)}</b>. Which entry?`,`Inngående <b>${d3(T.inb)}</b>, ${T.dir>0?'høyresvinger':'venstresvinger'}. Du krysser fiksen på kurs <b>${d3(T.hdg)}</b>. Hvilken inngang?`); break;
-    case 'holdwca': qx=tx(`Inbound you need <b>${Math.abs(T.wca)}°</b> of correction (heading <b>${d3(T.hdgIn)}</b>). Which heading outbound?`,`Inn trenger du <b>${Math.abs(T.wca)}°</b> korreksjon (kurs <b>${d3(T.hdgIn)}</b>). Hvilken kurs flyr du ut?`); break;
-    case 'ptdir': qx=tx(`After the ${T.a}° turn ${T.side>0?'right':'left'}: which way is the turn back?`,`Etter ${T.a}°-svingen til ${T.side>0?'høyre':'venstre'}: hvilken vei går svingen tilbake?`); break;
-    case 'basedir': qx=tx(`When the outbound time is up, which way do you turn onto course <b>${d3(X.task.inb)}</b>?`,`Når tiden ut er ferdig: hvilken vei svinger du inn på kurs <b>${d3(X.task.inb)}</b>?`); break;
-    case 'profile': qx=tx(`On the 3° profile, what altitude at <b>${T.dme} DME</b>?`,`På 3°-profilen: hvilken høyde ved <b>${T.dme} DME</b>?`); break;
-    case 'proftime': qx=tx(`On the 3° profile, what altitude <b>${T.t} s</b> after the FAF?`,`På 3°-profilen: hvilken høyde <b>${T.t} s</b> etter FAF?`); break;
-    case 'rod': qx=tx(`Ground speed <b>${T.gs}</b> kt on a 3° path. Rate of descent?`,`Fart over bakken <b>${T.gs}</b> kt på en bane på 3°. Sinkrate?`); break;
-    case 'rtturn': qx=tx(`At <b>${T.wp}</b> the next leg is <b>${d3(T.crs)}</b>. Which way do you turn?`,`Ved <b>${T.wp}</b> er neste legg <b>${d3(T.crs)}</b>. Hvilken vei svinger du?`); break;
-    case 'passq': qx=tx('How do you know you have passed a VOR?','Hvordan vet du at du har passert en VOR?'); break;
-    case 'ttsq': qx=tx('Station on the wingtip, the bearing changes 10° in 90 s. Time to the station?','Stasjonen på vingetippen, peilingen endres 10° på 90 s. Tid til stasjonen?'); break;
-    case 'locq': qx=tx('How much more sensitive is a localiser than a VOR?','Hvor mye mer følsom er en localiser enn en VOR?'); break;
+    case 'qdm': qx=tx(`Your heading is <b>${d3(T.hdg)}</b>. The ADF needle shows <b>${T.rb}°</b> from the nose. What is the bearing to the beacon?`,`Headingen din er <b>${d3(T.hdg)}</b>. ADF-nålen viser <b>${T.rb}°</b> fra nesen. Hva er peilingen til fyret?`); break;
+    case 'needle': qx=tx('You fly towards the station and the flag shows TO. The needle is right of centre. Where is the course?','Du flyr mot stasjonen, og flagget viser TO. Nålen står til høyre for midten. Hvor ligger kursen?'); break;
+    case 'wca': qx=tx(`Course <b>${d3(T.crs)}</b>, true airspeed (TAS) <b>${T.tas}</b> kt, wind from <b>${d3(T.w.dir)}</b> at <b>${T.w.spd}</b> kt. Which heading keeps you on the course?`,`Kurs <b>${d3(T.crs)}</b>, sann flyhastighet (TAS) <b>${T.tas}</b> kt, vind fra <b>${d3(T.w.dir)}</b> med <b>${T.w.spd}</b> kt. Hvilken heading holder deg på kursen?`); break;
+    case 'intercept': qx=tx(`You are on radial <b>${d3(T.radial)}</b>. You must intercept course <b>${d3(T.crs)}</b> ${T.inbound?'to the station':'away from the station'}. Which heading do you turn to?`,`Du er på radial <b>${d3(T.radial)}</b>. Du skal skjære inn på kurs <b>${d3(T.crs)}</b> ${T.inbound?'inn mot stasjonen':'ut fra stasjonen'}. Hvilken heading svinger du til?`); break;
+    case 'arclead': qx=tx(`You are about to turn onto a <b>${T.R} DME</b> arc at <b>${T.tas}</b> kt. How far before the arc do you start the 90° turn?`,`Du skal svinge inn på en <b>${T.R} DME</b>-bue i <b>${T.tas}</b> kt. Hvor langt før buen starter du svingen på 90°?`); break;
+    case 'entry': qx=tx(`The hold has inbound course <b>${d3(T.inb)}</b> and ${T.dir>0?'right':'left'} turns. You will cross the fix on heading <b>${d3(T.hdg)}</b>. Which entry?`,`Holdingen har kurs inn <b>${d3(T.inb)}</b> og ${T.dir>0?'høyresvinger':'venstresvinger'}. Du krysser fiksen på heading <b>${d3(T.hdg)}</b>. Hvilken inngang?`); break;
+    case 'holdwca': qx=tx(`Towards the fix you need <b>${Math.abs(T.wca)}°</b> of wind correction (heading <b>${d3(T.hdgIn)}</b>). Which heading do you fly away from the fix?`,`Inn mot fiksen trenger du <b>${Math.abs(T.wca)}°</b> vindkorreksjon (heading <b>${d3(T.hdgIn)}</b>). Hvilken heading flyr du bort fra fiksen?`); break;
+    case 'ptdir': qx=tx(`You have made the first turn: ${T.a}° to the ${T.side>0?'right':'left'}. Which way is the turn back?`,`Du har gjort den første svingen: ${T.a}° til ${T.side>0?'høyre':'venstre'}. Hvilken vei går svingen tilbake?`); break;
+    case 'basedir': qx=tx(`The time away from the station is up. Which way do you turn onto course <b>${d3(X.task.inb)}</b>?`,`Tiden bort fra stasjonen er ute. Hvilken vei svinger du inn på kurs <b>${d3(X.task.inb)}</b>?`); break;
+    case 'profile': qx=tx(`You descend on the 3° path. Which altitude should you have at <b>${T.dme} DME</b>?`,`Du går ned på banen på 3°. Hvilken høyde skal du ha ved <b>${T.dme} DME</b>?`); break;
+    case 'proftime': qx=tx(`You descend on the 3° path. Which altitude should you have <b>${T.t} s</b> after the FAF?`,`Du går ned på banen på 3°. Hvilken høyde skal du ha <b>${T.t} s</b> etter FAF?`); break;
+    case 'rod': qx=tx(`Your ground speed is <b>${T.gs}</b> kt on a 3° path. How fast do you descend?`,`Farten din over bakken er <b>${T.gs}</b> kt på en bane på 3°. Hvor fort går du ned?`); break;
+    case 'rtturn': qx=tx(`At <b>${T.wp}</b> the next leg has course <b>${d3(T.crs)}</b>. Which way do you turn?`,`Ved <b>${T.wp}</b> har neste legg kurs <b>${d3(T.crs)}</b>. Hvilken vei svinger du?`); break;
+    case 'passq': qx=tx('How do you know that you have passed over a VOR?','Hvordan vet du at du har passert over en VOR?'); break;
+    case 'ttsq': qx=tx('The station is on your wingtip. The bearing changes 10° in 90 seconds. How long to the station?','Stasjonen ligger på vingetippen. Peilingen endrer seg 10° på 90 sekunder. Hvor lenge er det til stasjonen?'); break;
+    case 'locq': qx=tx('How many times more sensitive is a localiser needle than a VOR needle?','Hvor mange ganger mer følsom er en localiser-nål enn en VOR-nål?'); break;
   }
   const why=()=>{ const a=opt(T.ans);
     switch(T.kind){
-      case 'radial': return tx(`The radial is the tail: ${d3(T.qdm)} ± 180 = ${a}.`,`Radialen er halen: ${d3(T.qdm)} ± 180 = ${a}.`);
-      case 'qdm': return tx(`Heading + needle: ${d3(T.hdg)} + ${T.rb} = ${a} (take 360 away if it goes over).`,`Kurs + nål: ${d3(T.hdg)} + ${T.rb} = ${a} (trekk fra 360 hvis den går over).`);
-      case 'needle': return tx('Needle right, course right. Turn towards the needle.','Nål til høyre, kurs til høyre. Sving mot nålen.');
-      case 'wca': return tx(`The wind is from the ${sideW(T.wca>0?'R':'L')}: point into it, about ${Math.abs(T.wca)}°, heading ${a}.`,`Vinden kommer fra ${sideW(T.wca>0?'R':'L')}: hold opp mot den, rundt ${Math.abs(T.wca)}°, kurs ${a}.`);
-      case 'intercept': return tx(`The course lies towards the needle; the course ± ${T.inbound?30:45}° towards it gives ${a}.`,`Kursen ligger mot nålen; kursen ± ${T.inbound?30:45}° mot den gir ${a}.`);
-      case 'arclead': return tx(`About one turn radius: ${a} at this speed.`,`Omtrent én svingradius: ${a} i denne farten.`);
-      case 'entry': return tx(`${a}${T.alt?` (within 5° of a line, so ${L(W.entry[T.alt])} is fine too)`:''}. Picture your heading on the fix and the 70° line.`,`${a}${T.alt?` (innenfor 5° av en linje, også ${L(W.entry[T.alt])})`:''}. Se for deg kursen din over fiksen og 70°-linjen.`);
-      case 'holdwca': return tx(`Three times, the other way: ${a}.`,`Tre ganger, motsatt vei: ${a}.`);
-      case 'ptdir': return tx(`The opposite way to the first turn: ${a}, away from the station.`,`Motsatt vei av den første svingen: ${a}, vekk fra stasjonen.`);
+      case 'radial': return tx(`Your radial is under the tail of the needle: ${d3(T.qdm)} ± 180 = ${a}.`,`Radialen din står under halen på nålen: ${d3(T.qdm)} ± 180 = ${a}.`);
+      case 'qdm': return tx(`Heading + needle: ${d3(T.hdg)} + ${T.rb} = ${a}. Take 360 away if the sum is over 360.`,`Heading + nål: ${d3(T.hdg)} + ${T.rb} = ${a}. Trekk fra 360 hvis summen blir over 360.`);
+      case 'needle': return tx('Needle right means the course is on your right. Turn towards the needle.','Nål til høyre betyr at kursen ligger til høyre for deg. Sving mot nålen.');
+      case 'wca': return tx(`The wind comes from your ${sideW(T.wca>0?'R':'L')}. Point the nose about ${Math.abs(T.wca)}° into it: heading ${a}.`,`Vinden kommer fra ${sideW(T.wca>0?'R':'L')}. Pek nesen rundt ${Math.abs(T.wca)}° opp mot den: heading ${a}.`);
+      case 'intercept': return tx(`Turn towards the course. The course plus or minus ${T.inbound?30:45}°, on the side where it lies, gives ${a}.`,`Sving mot kursen. Kursen pluss eller minus ${T.inbound?30:45}°, til den siden den ligger, gir ${a}.`);
+      case 'arclead': return tx(`A 90° turn needs about one turn radius: ${a} at this speed.`,`En sving på 90° trenger omtrent én svingradius: ${a} i denne farten.`);
+      case 'entry': return tx(`${a}${T.alt?` (you are within 5° of a sector line, so ${L(W.entry[T.alt])} is fine too)`:''}. Picture your heading over the fix and the 70° line.`,`${a}${T.alt?` (du er innenfor 5° av en sektorlinje, så ${L(W.entry[T.alt])} er også greit)`:''}. Se for deg headingen din over fiksen og 70°-linjen.`);
+      case 'holdwca': return tx(`Three times the correction, on the other side: ${a}.`,`Tre ganger korreksjonen, til den andre siden: ${a}.`);
+      case 'ptdir': return tx(`The opposite way to the first turn: ${a}. That is away from the station.`,`Motsatt vei av den første svingen: ${a}. Det er bort fra stasjonen.`);
       case 'basedir': return tx(`Towards the final course: ${a}.`,`Mot sluttkursen: ${a}.`);
-      case 'profile': case 'proftime': return tx(`From the table: ${a}.`,`Fra tabellen: ${a}.`);
-      case 'rod': return tx(`Ground speed × 5 ≈ ${T.gs*5}; exactly ${a}.`,`Fart over bakken × 5 ≈ ${T.gs*5}; nøyaktig ${a}.`);
-      case 'rtturn': return tx(`The new course is to the ${sideW(T.ans)}: turn ${sideW(T.ans)}.`,`Den nye kursen ligger til ${sideW(T.ans)}: sving til ${sideW(T.ans)}.`);
-      case 'passq': return tx('The flag flips from TO to FROM. The needle also swings before, so it alone is not enough.','Flagget skifter fra TO til FROM. Nålen svinger også før, så den alene er ikke nok.');
+      case 'profile': case 'proftime': return tx(`The table gives ${a}. A 3° path loses about 320 ft for every mile.`,`Tabellen gir ${a}. En bane på 3° taper rundt 320 ft for hver nautiske mil.`);
+      case 'rod': return tx(`Ground speed × 5 ≈ ${T.gs*5}. The exact figure is ${a}.`,`Fart over bakken × 5 ≈ ${T.gs*5}. Det nøyaktige tallet er ${a}.`);
+      case 'rtturn': return tx(`The new course is to your ${sideW(T.ans)}: turn ${sideW(T.ans)}.`,`Den nye kursen ligger til ${sideW(T.ans)} for deg: sving til ${sideW(T.ans)}.`);
+      case 'passq': return tx('The flag changes from TO to FROM. The needle also swings before the station, so the needle alone is not enough.','Flagget skifter fra TO til FROM. Nålen slår også ut før stasjonen, så nålen alene er ikke nok.');
       case 'ttsq': return tx('Seconds ÷ degrees: 90 ÷ 10 = 9 minutes.','Sekunder ÷ grader: 90 ÷ 10 = 9 minutter.');
-      case 'locq': return tx('Full scale is about 2.5° instead of 10°: four times.','Fullt utslag er rundt 2,5° i stedet for 10°: fire ganger.');
+      case 'locq': return tx('From side to side the localiser scale is about 2.5°. A VOR scale is 10°. That is four times.','Fra side til side er localiser-skalaen rundt 2,5°. En VOR-skala er 10°. Det er fire ganger.');
     } return ''; };
   const isTxt=typeof T.opts[0]==='string', answered=ans!==null&&ans!==undefined;
-  box.innerHTML=`<h3>${tx('Think first','Tenk først')}</h3><p class="q">${qx}</p><div class="opts">${T.opts.map((v,i)=>`<button type="button" data-i="${i}" class="${isTxt?'txt':''} ${answered?(v===T.ans||v===T.alt?'right':(i===ans?'wrong':'')):''}" ${answered?'disabled':''}>${esc(opt(v))}</button>`).join('')}</div>`+
-    (answered?`<p class="fb ${T.opts[ans]===T.ans||T.opts[ans]===T.alt?'':'no'}">${esc((T.opts[ans]===T.ans||T.opts[ans]===T.alt?tx('Right. ','Riktig. '):tx('Not quite. ','Ikke helt. '))+why())}</p>`:'');
+  box.innerHTML=`<h3>${tx('Think first','Tenk først')}</h3><p class="q">${glH(qx,3)}</p><div class="opts">${T.opts.map((v,i)=>`<button type="button" data-i="${i}" class="${isTxt?'txt':''} ${answered?(v===T.ans||v===T.alt?'right':(i===ans?'wrong':'')):''}" ${answered?'disabled':''}>${esc(opt(v))}</button>`).join('')}</div>`+
+    (answered?`<p class="fb ${T.opts[ans]===T.ans||T.opts[ans]===T.alt?'':'no'}">${gl((T.opts[ans]===T.ans||T.opts[ans]===T.alt?tx('Right. ','Riktig. '):tx('Not quite. ','Ikke helt. '))+why(),2)}</p>`:'');
   box.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ S.thinkAns=+b.dataset.i; renderThink(); renderTbar(); }); }
 
 /* ---------- Debrief ---------- */
 function scoreCls(v){ return v>=80?'':v>=55?'mid':'low'; }
 function renderDeb(){ const R=S.res, box=el('deb'); if(!R){ box.innerHTML=''; return; }
   const g=R.g, f=g.first, ev=S.J.ev;
-  const timeTxt={established:t2('time to get established','tid til etablert'),decision:t2('time to choose an intercept heading','tid til valgt interceptkurs'),answer:t2('time per answer','tid per svar'),arcjoin:t2('lead onto the arc','ledning inn på buen'),arcleave:t2('lead radial off the arc','ledende radial ut av buen'),
-    entryleg:t2('entry leg time','tid på inngangslegget'),inleg:t2('inbound leg times','tid på inngående legg'),ptout:t2('outbound time','tid ut'),pt45:t2('time on the first leg','tid på første legg'),baseout:t2('outbound time','tid ut'),descent:t2('descent started at the FAF','nedstigning startet ved FAF'),
+  const timeTxt={established:t2('time until you were on the course','tid til du var på kursen'),decision:t2('time to choose a heading towards the course','tid til du valgte heading mot kursen'),answer:t2('time per answer','tid per svar'),arcjoin:t2('turn onto the arc started in time','svingen inn på buen startet i tide'),arcleave:t2('turn off the arc started in time','svingen ut av buen startet i tide'),
+    entryleg:t2('entry leg time','tid på inngangslegget'),inleg:t2('time on the leg towards the fix','tid på legget inn mot fiksen'),ptout:t2('outbound time','tid ut'),pt45:t2('time on the first leg','tid på første legg'),baseout:t2('outbound time','tid ut'),descent:t2('descent started at the FAF','nedstigning startet ved FAF'),
     gsdescent:t2('descent started on the glide slope','nedstigning startet på glidebanen'),goaround:t2('go-around started at the minimums','go-around startet ved minima'),wp:t2('waypoints crossed on track','waypoints krysset på sporet'),passrep:t2('passage reported on time','passering rapportert i tide'),dmelim:t2('turn at the DME limit','sving ved DME-grensen')};
   const tk=[...new Set(S.J.times.map(x=>x.k))].map(k=>L(timeTxt[k]||t2(k,k))).join(', ');
-  const verdict=R.demo?tx('Demonstration','Demonstrasjon'):g.pass?tx(`Level ${S.lv} passed`,`Nivå ${S.lv} bestått`):tx('Not yet','Ikke helt ennå');
-  const sub=R.demo?tx('This is how the instructor flies it. Your turn now.','Slik flyr instruktøren den. Nå er det din tur.'):g.pass?(S.lv<4?tx(`Try level ${S.lv+1}: ${L(W.level[S.lv+1])}.`,`Prøv nivå ${S.lv+1}: ${L(W.level[S.lv+1])}.`):tx('All levels passed.','Alle nivåer bestått.')):tx('75 or more and no procedure error to pass.','75 eller mer og ingen prosedyrefeil for å bestå.');
+  const verdict=R.demo?tx('Demonstration','Demonstrasjon'):g.pass?tx(`Level ${S.lv} passed`,`Nivå ${S.lv} bestått`):tx('Not passed yet','Ikke bestått ennå');
+  const sub=R.demo?tx('This is how the instructor flies it. Your turn now.','Slik flyr instruktøren den. Nå er det din tur.'):g.pass?(S.lv<4?tx(`Try level ${S.lv+1}: ${L(W.level[S.lv+1])}.`,`Prøv nivå ${S.lv+1}: ${L(W.level[S.lv+1])}.`):tx('All levels passed.','Alle nivåer bestått.')):tx('To pass you need 75 points or more and no procedure mistake.','For å bestå trenger du 75 poeng eller mer og ingen prosedyrefeil.');
   let card;
   if(f){ const E=EV[f.code]||EV.outside, raw=/^(tts|math)\./.test(f.code), p=pw(f.p,raw);
     let extra=''; if(f.code==='math.wrong'){ const Q=S.X.task.qs[f.p.qi]; if(Q){ const P=mathParams(Q); extra=`<p>${esc(fmt(MATHQ[Q.kind].q,P))}</p><p class="do">${esc(MATHQ[Q.kind].m.map(m=>fmt(m,P)).join(' '))}</p>`; } }
-    card=`<div class="mist ${f.sev==='warn'?'warn':''}" id="mistCard" role="button" tabindex="0" aria-label="${esc(tx('Show it on the map','Vis det på kartet'))}"><div class="h"><b>${esc((f.sev==='err'?tx('First mistake: ','Første feil: '):tx('To tidy up: ','Å rydde opp i: '))+L(E.h))}</b><span>${mmss(f.t)}</span></div><p>${esc(fmt(E.w,p))}</p>${extra||(L(E.d)?`<p class="do">${esc(fmt(E.d,p))}</p>`:'')}</div>`; }
-  else card=`<div class="mist clean"><div class="h"><b>${tx('Clean run','Ren runde')}</b><span>${mmss(S.sim.t)}</span></div><p>${esc(S.ex==='math'?tx('Every answer right.','Alle svar riktige.'):tx('No mistakes. The dashed line is the instructor’s path: compare the shapes.','Ingen feil. Den stiplede linjen er instruktørens bane: sammenlign formene.'))}</p></div>`;
+    card=`<div class="mist ${f.sev==='warn'?'warn':''}" id="mistCard" role="button" tabindex="0" aria-label="${esc(tx('Show it on the map','Vis det på kartet'))}"><div class="h"><b>${esc((f.sev==='err'?tx('First mistake: ','Første feil: '):tx('To improve: ','Kan bli bedre: '))+L(E.h))}</b><span>${mmss(f.t)}</span></div><p>${gl(fmt(E.w,p),2,GSKIP)}</p>${extra||(L(E.d)?`<p class="do">${gl(fmt(E.d,p),2,GSKIP)}</p>`:'')}</div>`; }
+  else card=`<div class="mist clean"><div class="h"><b>${tx('Clean run','Ren runde')}</b><span>${mmss(S.sim.t)}</span></div><p>${esc(S.ex==='math'?tx('Every answer right.','Alle svar riktige.'):tx('No mistakes. The dashed line is the instructor’s path: compare it with yours.','Ingen feil. Den stiplede linjen er instruktørens bane: sammenlign den med din.'))}</p></div>`;
   const others=ev.filter(e=>e!==f&&e.sev!=='info'&&!/\.(ok|entryok)$/.test(e.code)).slice(0,5);
-  const help=R.demo?'':S.help==='guided'?tx('Flown with Guided help.','Fløyet med veiledning.'):S.help==='hints'?tx(`Flown with hints: ${S.hintsUsed} used.`,`Fløyet med hint: ${S.hintsUsed} brukt.`):tx('Flown alone.','Fløyet alene.');
+  const help=R.demo?'':S.help==='guided'?tx('Flown with Guided help.','Fløyet med veiledning.'):S.help==='hints'?tx(`Flown with hints: ${S.hintsUsed} used.`,`Fløyet med hint: ${S.hintsUsed} brukt.`):tx('Flown on your own.','Fløyet på egen hånd.');
   box.innerHTML=`<div class="res"><div class="tot">${g.total}<small>/100</small></div><div class="verdict ${g.pass||R.demo?'':'no'}">${esc(verdict)}</div><div class="sub">${esc(sub)} ${esc(help)}</div></div>
     <div class="bars">
-      <span>${tx('Accuracy','Nøyaktighet')}</span><div class="b"><i class="${scoreCls(g.acc)}" style="width:${g.acc}%"></i></div><b>${g.acc}</b><em>${esc(tx('Time inside the limits, weighted by how far out you were','Tid innenfor grensene, vektet mot hvor langt ute du var'))}</em>
+      <span>${tx('Accuracy','Nøyaktighet')}</span><div class="b"><i class="${scoreCls(g.acc)}" style="width:${g.acc}%"></i></div><b>${g.acc}</b><em>${esc(tx('How much of the time you were inside the limits, and how far outside','Hvor mye av tiden du var innenfor grensene, og hvor langt utenfor'))}</em>
       <span>${tx('Timing','Timing')}</span><div class="b"><i class="${scoreCls(g.time??100)}" style="width:${g.time??0}%"></i></div><b>${g.time===null?'–':g.time}</b><em>${esc(tk||tx('No timing items in this exercise','Ingen tidskrav i denne øvelsen'))}</em>
-      <span>${tx('Procedure','Prosedyre')}</span><div class="b"><i class="${scoreCls(g.proc)}" style="width:${g.proc}%"></i></div><b>${g.proc}</b><em>${esc(tx('Right direction, entry, order and altitudes','Riktig retning, inngang, rekkefølge og høyder'))}</em>
+      <span>${tx('Procedure','Prosedyre')}</span><div class="b"><i class="${scoreCls(g.proc)}" style="width:${g.proc}%"></i></div><b>${g.proc}</b><em>${esc(tx('The right direction, entry, order and altitudes','Riktig retning, inngang, rekkefølge og høyder'))}</em>
     </div>${card}
     ${others.length?`<ul class="evs">${others.map(e=>{ const E=EV[e.code]||EV.outside; return `<li data-t="${e.t}"><span class="t">${mmss(e.t)}</span><i class="${e.sev}"></i><span>${esc(L(E.h))}</span></li>`; }).join('')}</ul>`:''}
     ${S.peeks?`<p class="sub">${esc(tx(`You peeked at the map ${S.peeks} time${S.peeks>1?'s':''}.`,`Du kikket på kartet ${S.peeks} gang${S.peeks>1?'er':''}.`))}</p>`:''}`;
@@ -1351,9 +1637,9 @@ function readNow(){ const s=stateNow(), X=S.X; const obs=s.obs!==undefined&&S.st
   return I.read(Object.assign({gs:120,trk:s.hdg,t:0},s),A(),{nav:X.nav,obs,adf:X.adf,dme:X.dme,rnp:X.rnp,nogs:X.nogs,leg:X.leg}); }
 function feedGauges(){ const s=stateNow(), r=readNow(), X=S.X, obs=s.obs!==undefined&&S.step!=='fly'?s.obs:X.obs, bug=s.bug!==undefined?s.bug:(s.sel?s.sel.hdg:s.hdg);
   const k=kindsNow();
-  if(k.indexOf('cdi')>=0) GA.cdi.set({obs,dots:r.flag?r.dots:0,flag:r.flag||'OFF',ils:r.ils,gsValid:!!r.gsOk,gsDots:r.gsDots||0});
+  if(k.indexOf('cdi')>=0) GA.cdi.set({obs,dots:r.flag?r.dots:0,flag:r.flag||'OFF',ils:r.ils,gsValid:!!r.gsOk,gsDots:r.gsDots||0,gsHide:!r.ils});
   if(k.indexOf('hsi')>=0) GA.hsi.set({hdg:s.hdg,crs:obs,hsiDots:r.hsiDots||0,flag:r.flag||'OFF',ils:r.ils,gsValid:!!r.gsOk,gsDots2:clamp((r.gsDots||0)*0.4,-2.4,2.4),bug});
-  if(k.indexOf('rmi')>=0) GA.rmi.set({hdg:s.hdg,qdmV:r.qdmV||0,qdmA:r.qdmA||0,vorOk:!!r.vorOk&&!r.ils,adfOk:!!r.adfOk});
+  if(k.indexOf('rmi')>=0) GA.rmi.set({hdg:s.hdg,qdmV:r.qdmV||0,qdmA:r.qdmA||0,vorOk:!!r.vorOk&&!r.ils,adfOk:!!r.adfOk,vorHide:!(X.nav&&A().ST[X.nav]&&A().ST[X.nav].type==='VOR'),adfHide:!X.adf});
   if(k.indexOf('adf')>=0) GA.adf.set({movable:false,card:0,rb:r.rb||0,adfOk:!!r.adfOk});
   if(k.indexOf('dg')>=0) GA.dg.set({hdg:s.hdg,bug});
   if(k.indexOf('cmp')>=0) drawCompass(r.cmp);
@@ -1382,6 +1668,7 @@ function drawTargets(){ const T=targetsNow(); for(const k of ['cdi','hsi','rmi',
 function drawBaseLayer(){ const g=baseG, Ar=A(), X=S.X; g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,MW,MH);
   if(Ar.real){ if(map.region!==S.area) map.setRegion(S.area); }
   map.drawBase(g,MW,MH,{}); if(!Ar.real) drawCoast(map,g,Ar);
+  if(S.ex==='holdEntry'){ const F=I.fixOf(Ar,X.task), R=Math.min(4,(S.step==='fly'?70:80)/map.v.k)*map.v.k+4; map.P(F.x,F.y); map.reserve(map.sx-R,map.sy-R,2*R,2*R); }
   if(S.ex!=='math') drawGeom(map,g,X,Ar,S.ex,MW,MH);
   map.reserveEl(el('legend')); map.reserve(MW-90,0,90,96);
   map.drawNorth(g,MH); map.drawScaleBar(g,MH); map.flushLabels(g,MW,MH);
@@ -1406,8 +1693,16 @@ function drawMap(){ if(MW<80||MH<80||!(map.v.k>0)) return; const g=mapG; if(base
     if((S.started?help:S.help!=='off')&&S.ex==='holdEntry'&&S.J.phase!=='entry'&&S.J.phase!=='entryleg'&&S.J.phase!=='back') drawSectors(map,g,I.fixOf(Ar,T),T.inb,T.dir,Math.min(4,70/map.v.k));
     if(help||(!S.started&&S.help==='guided')){ drawIdeal(g,0.55); const nt=S.started?nextTurn():null;
       if(nt){ drawIdealSeg(g,nt.j,nt.e); map.P(nt.p.x,nt.p.y); g.strokeStyle=COL.tgt; g.lineWidth=2; g.beginPath(); g.arc(map.sx,map.sy,9,0,TAU); g.stroke();
-        const lab=`${tx('Turn','Sving')} ${turnW(nt.dir)} ${d3(nt.h)}`; g.font=`600 12px ${FB}`; const w=g.measureText(lab).width+12; let lx=map.sx+14, ly=map.sy-26; if(lx+w>MW-8) lx=map.sx-14-w; if(ly<6) ly=map.sy+14;
-        g.fillStyle='rgba(9,13,17,.88)'; map.rrect(g,lx,ly,w,20,3); g.fill(); g.strokeStyle=COL.tgt; g.lineWidth=1; map.rrect(g,lx,ly,w,20,3); g.stroke(); g.fillStyle=COL.tgt; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lab,lx+6,ly+10.5); } }
+        const lab=`${tx('Turn','Sving')} ${turnW(nt.dir)} ${d3(nt.h)}`; g.font=`600 12px ${FB}`; const w=g.measureText(lab).width+12, mx=map.sx, my=map.sy;
+        /* keep clear of: the marker, the aircraft, and (holding entry) the sector disc round the fix */
+        const keep=[[mx,my,13]]; map.P(S.sim.x,S.sim.y); keep.push([map.sx,map.sy,20]);
+        if(S.ex==='holdEntry'||S.ex==='hold'){ const F=I.fixOf(Ar,T); map.P(F.x,F.y); keep.push([map.sx,map.sy,S.ex==='holdEntry'?Math.min(4,70/map.v.k)*map.v.k+8:14]); }
+        let best=null; for(const dist of [22,40,64,96]){ for(let k=0;k<8;k++){ const an=(-45+k*45)*D2R, cx=mx+Math.sin(an)*(dist+w/2*Math.abs(Math.sin(an))), cy=my-Math.cos(an)*(dist+10*Math.abs(Math.cos(an))), lx=cx-w/2, ly=cy-10;
+            if(lx<8||ly<8||lx+w>MW-8||ly+20>MH-8) continue; let bad=0; for(const [kx,ky,kr] of keep){ const nx=clamp(kx,lx,lx+w), ny=clamp(ky,ly,ly+20); if(Math.hypot(kx-nx,ky-ny)<kr) bad++; }
+            if(!bad){ best=[lx,ly,cx,cy]; break; } } if(best) break; }
+        if(!best) best=[clamp(mx+16,8,MW-w-8),clamp(my-30,8,MH-28),mx+16+w/2,my-20];
+        const [lx,ly,lcx,lcy]=best; g.strokeStyle='rgba(127,224,255,.6)'; g.lineWidth=1; g.beginPath(); const la=Math.atan2(lcy-my,lcx-mx); g.moveTo(mx+Math.cos(la)*10,my+Math.sin(la)*10); g.lineTo(clamp(mx,lx,lx+w),clamp(my,ly,ly+20)); g.stroke();
+        g.fillStyle='rgba(9,13,17,.92)'; map.rrect(g,lx,ly,w,20,3); g.fill(); g.strokeStyle=COL.tgt; g.lineWidth=1; map.rrect(g,lx,ly,w,20,3); g.stroke(); g.fillStyle=COL.tgt; g.textAlign='left'; g.textBaseline='middle'; g.fillText(lab,lx+6,ly+10.5); } }
     trailPath(g,S.log,Infinity); const s=S.sim; map.drawAircraft(g,s.x,s.y,s.hdg,{size:15}); }
   if(S.step==='debrief'){ drawIdeal(g,0.75); trailPath(g,S.log,Infinity,p=>p.t<=S.scrub?nCol(p):'rgba(255,255,255,.18)');
     const f=S.res&&S.res.first; S.J.ev.filter(e=>e.sev==='err'||e.sev==='warn').forEach(e=>{ map.P(e.x,e.y); g.strokeStyle=e===f?COL.bad:e.sev==='err'?'rgba(239,100,80,.6)':'rgba(240,180,64,.7)'; g.lineWidth=e===f?3:1.6; g.beginPath(); g.arc(map.sx,map.sy,e===f?13:7,0,TAU); g.stroke(); });
@@ -1418,18 +1713,18 @@ function drawMap(){ if(MW<80||MH<80||!(map.v.k>0)) return; const g=mapG; if(base
   drawProfile(); }
 function drawIdealSeg(g,a,b){ const P=S.ideal; g.save(); g.strokeStyle=COL.tgt; g.lineWidth=3; g.lineCap='round'; g.beginPath(); for(let i=a;i<=b;i++){ map.P(P[i].x,P[i].y); if(i===a) g.moveTo(map.sx,map.sy); else g.lineTo(map.sx,map.sy); } g.stroke(); g.restore(); }
 /* the walk-through picture */
-function drawLesson(g){ const X=S.X, Ar=A(), T=X.task, u=S.u||{x:X.ac.x,y:X.ac.y,hdg:X.ac.hdg}, st=Ar.ST[T.st||X.nav]; const steps=uSteps(), cur=steps[S.uStep]||{}, show=cur.show||(uwFor(S.item)[0]||{}).show;
+function drawLesson(g){ const X=S.X, Ar=A(), T=X.task, u=S.u||{x:X.ac.x,y:X.ac.y,hdg:X.ac.hdg}, st=Ar.ST[T.st||X.nav]; const steps=uSteps(), cur=steps[S.uStep]||{}, show0=cur.show||(uwFor(S.item)[0]||{}).show||'', has=k=>(' '+show0+' ').indexOf(' '+k+' ')>=0;
   if(S.step==='think'){ map.drawAircraft(g,X.ac.x,X.ac.y,X.ac.hdg,{size:15}); return; }
-  if(show==='radials'&&st){ g.font=`500 10.5px ${FM}`; for(let a=0;a<360;a+=30){ const p=I.at(st,a,30); line(map,g,st,p,'rgba(99,217,160,.22)',1); const lp=I.at(st,a,11); map.P(lp.x,lp.y); g.fillStyle='rgba(99,217,160,.75)'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('R'+d3(a),map.sx,map.sy); }
+  if(has('radials')&&st){ g.font=`500 10.5px ${FM}`; for(let a=0;a<360;a+=30){ const p=I.at(st,a,30); line(map,g,st,p,'rgba(99,217,160,.22)',1); const lp=I.at(st,a,11); map.P(lp.x,lp.y); g.fillStyle='rgba(99,217,160,.75)'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('R'+d3(a),map.sx,map.sy); }
     const rad=N.radial(st,u); line(map,g,st,I.at(st,rad,Math.hypot(u.x-st.x,u.y-st.y)+6),COL.vor,2.4); }
-  if(show==='brg'&&st){ line(map,g,u,st,'rgba(245,188,76,.8)',1.8,[5,4]); }
-  if((show==='wedge'||show==='arrows')&&st&&T.crs!==undefined){ const crs=S.ex==='trackIn'||S.ex==='intIn'||S.ex==='pass'||S.ex==='ndb'?norm(T.crs+180):T.crs;
+  if(has('brg')&&st){ line(map,g,u,st,'rgba(245,188,76,.8)',1.8,[5,4]); }
+  if((has('wedge')||has('arrows'))&&st&&T.crs!==undefined){ const crs=S.ex==='trackIn'||S.ex==='intIn'||S.ex==='pass'||S.ex==='ndb'?norm(T.crs+180):T.crs;
     g.fillStyle='rgba(240,107,180,.10)'; g.beginPath(); map.P(st.x,st.y); g.moveTo(map.sx,map.sy); for(let a=-10;a<=10;a+=2){ const p=I.at(st,crs+a,30); map.P(p.x,p.y); g.lineTo(map.sx,map.sy); } g.closePath(); g.fill(); }
-  if(show==='arrows'&&st&&T.crs!==undefined){ const l=I.lineRel(st,T.crs,u); for(const [ang,col] of [[30,'#E6EBEF'],[45,'rgba(230,235,239,.55)']]){ const hh=I.interceptHdg(T.crs,l.xt,ang), p=I.at(u,hh,3.2); line(map,g,u,p,col,1.6,[4,4]); map.P(p.x,p.y); map.arrowHead(g,map.sx,map.sy,map.sa(hh),7,col); map.label(map.sx,map.sy,d3(hh)+' ('+ang+'°)',col); } }
-  if(show==='homing'&&st){ const w=X.wind.spd?X.wind:{dir:norm(T.crs+90),spd:25}; let p={x:X.ac.x,y:X.ac.y}; g.strokeStyle='rgba(245,188,76,.9)'; g.lineWidth=2; g.setLineDash([6,5]); g.beginPath(); map.P(p.x,p.y); g.moveTo(map.sx,map.sy);
+  if(has('arrows')&&st&&T.crs!==undefined){ const l=I.lineRel(st,T.crs,u); for(const [ang,col] of (T.ang?[[T.ang,'#E6EBEF']]:[[30,'#E6EBEF'],[45,'rgba(230,235,239,.55)']])){ const hh=I.interceptHdg(T.crs,l.xt,ang), p=I.at(u,hh,3.2); line(map,g,u,p,col,1.6,[4,4]); map.P(p.x,p.y); map.arrowHead(g,map.sx,map.sy,map.sa(hh),7,col); map.label(map.sx,map.sy,d3(hh)+' ('+ang+'°)',col); } }
+  if(has('homing')&&st){ const w=X.wind.spd?X.wind:{dir:norm(T.crs+90),spd:25}; let p={x:X.ac.x,y:X.ac.y}; g.strokeStyle='rgba(245,188,76,.9)'; g.lineWidth=2; g.setLineDash([6,5]); g.beginPath(); map.P(p.x,p.y); g.moveTo(map.sx,map.sy);
     for(let i=0;i<900;i++){ const b=N.bearing(st.x-p.x,st.y-p.y), wt=N.windTriangle(120,b,w.dir,w.spd); p.x+=wt.vx/3600*2; p.y+=wt.vy/3600*2; map.P(p.x,p.y); g.lineTo(map.sx,map.sy); if(Math.hypot(st.x-p.x,st.y-p.y)<0.3) break; } g.stroke(); g.setLineDash([]); }
-  if(show==='arc'&&st&&T.R){ g.strokeStyle='rgba(240,107,180,.35)'; g.lineWidth=1; map.P(st.x,st.y); g.beginPath(); g.arc(map.sx,map.sy,T.R*map.v.k,0,TAU); g.stroke(); line(map,g,u,st,'rgba(99,217,160,.6)',1.4,[3,4]); }
-  if(show==='sectors'){ drawSectors(map,g,I.fixOf(Ar,T),T.inb,T.dir,Math.min(4,80/map.v.k)); }
+  if(has('arc')&&st&&T.R){ g.strokeStyle='rgba(240,107,180,.35)'; g.lineWidth=1; map.P(st.x,st.y); g.beginPath(); g.arc(map.sx,map.sy,T.R*map.v.k,0,TAU); g.stroke(); line(map,g,u,st,'rgba(99,217,160,.6)',1.4,[3,4]); }
+  if(has('sectors')){ drawSectors(map,g,I.fixOf(Ar,T),T.inb,T.dir,Math.min(4,80/map.v.k)); }
   if(cur.try){ if(S.ideal) drawIdeal(g,0.35); }
   else if(S.ideal&&S.useg){ drawIdeal(g,0.28); const P=S.ideal, a=S.useg.i0; g.save(); g.strokeStyle='rgba(127,224,255,.95)'; g.lineWidth=2.6; g.lineCap='round'; g.beginPath(); map.P(P[a].x,P[a].y); g.moveTo(map.sx,map.sy);
     for(let i=a+1;i<=S.useg.i1&&P[i].t<=(u.t||Infinity);i++){ map.P(P[i].x,P[i].y); g.lineTo(map.sx,map.sy); } map.P(u.x,u.y); g.lineTo(map.sx,map.sy); g.stroke(); g.restore(); }
@@ -1437,17 +1732,23 @@ function drawLesson(g){ const X=S.X, Ar=A(), T=X.task, u=S.u||{x:X.ac.x,y:X.ac.y
   const live=el('uLive'); if(live) live.innerHTML=lessonLive(u,readNow()); }
 function lessonLive(u,r){ const X=S.X, T=X.task, Ar=A(), st=Ar.ST[T.st||X.nav];
   switch(S.ex){
-    case 'orient': return T.kind==='rbi'?`${tx('Needle','Nål')} <b>${Math.round(norm(r.rb))}°</b> + ${tx('heading','kurs')} <b>${d3(u.hdg)}</b> = <b>${d3(r.qdmA)}</b>`:`${tx('You are on radial','Du er på radial')} <b>${d3(N.radial(st,u))}</b> · ${tx('heading','kurs')} ${d3(u.hdg)}`;
-    case 'holdEntry': { const e=H.entry(T.inb,T.dir,u.hdg); return `${tx('Heading','Kurs')} <b>${d3(u.hdg)}</b> → <b>${esc(L(W.entry[e.entry]))}</b>${e.alt?` ${tx('(or','(eller')} ${esc(L(W.entry[e.alt]))})`:''}`; }
-    case 'ndb': case 'ndbOut': return `${tx('Needle','Nål')} <b>${Math.round(diff(r.rb,0))>0?'+':''}${Math.round(diff(r.rb,0))}°</b> · ${tx('heading + needle =','kurs + nål =')} QDM <b>${d3(r.qdmA)}</b>`;
-    case 'dme': return `DME <b>${nf1(r.dme)}</b> · ${tx('radial','radial')} <b>${d3(N.radial(st,u))}</b>`;
+    case 'orient': return T.kind==='rbi'?`${tx('Heading','Heading')} <b>${d3(u.hdg)}</b> + ${tx('needle','nål')} <b>${Math.round(norm(r.rb))}°</b> = <b>${d3(r.qdmA)}</b>`:`${tx('You are on radial','Du er på radial')} <b>${d3(N.radial(st,u))}</b> · ${tx('heading','heading')} ${d3(u.hdg)}`;
+    case 'holdEntry': { const e=H.entry(T.inb,T.dir,u.hdg); return `${tx('Heading','Heading')} <b>${d3(u.hdg)}</b> → <b>${esc(L(W.entry[e.entry]))}</b> ${tx('entry','inngang')}${e.alt?` ${tx('(or','(eller')} ${esc(L(W.entry[e.alt]))})`:''}`; }
+    case 'ndb': return `${tx('Needle','Nål')} <b>${Math.round(diff(r.rb,0))>0?'+':''}${Math.round(diff(r.rb,0))}°</b> ${tx('from the nose','fra nesen')} · ${tx('heading + needle = bearing to the beacon','heading + nål = peiling til fyret')} <b>${d3(r.qdmA)}</b>`;
+    case 'ndbOut': return `${tx('Bearing from the beacon','Peiling fra fyret')} <b>${d3(norm(r.qdmA+180))}</b> · ${tx('you want','du vil ha')} <b>${d3(T.crs)}</b>`;
+    case 'intIn': case 'intOut': if(T.ndb) return S.ex==='intIn'?`${tx('Bearing to the beacon','Peiling til fyret')} <b>${d3(r.qdmA)}</b> · ${tx('you want','du vil ha')} <b>${d3(T.crs)}</b>`:`${tx('Bearing from the beacon','Peiling fra fyret')} <b>${d3(norm(r.qdmA+180))}</b> · ${tx('you want','du vil ha')} <b>${d3(T.crs)}</b>`;
+      return lessonLiveVor(u,r);
+    case 'hold': return T.kind==='ndb'?`${tx('Bearing to the beacon','Peiling til fyret')} <b>${d3(r.qdmA)}</b> · ${tx('heading','heading')} <b>${d3(u.hdg)}</b>`:lessonLiveVor(u,r);
+    case 'dme': return `DME <b>${nf1(r.dme)}</b> NM · ${tx('the arc is at','buen ligger på')} <b>${T.R}</b> · ${tx('radial','radial')} <b>${d3(N.radial(st,u))}</b>`;
     case 'tts': return `${tx('Radial','Radial')} <b>${d3(r.radial||0)}</b> · DME <b>${nf1(r.dme)}</b>`;
-    case 'ils': case 'locInt': return `LOC <b>${nf1(r.dots)}</b> ${tx('dots','prikker')} · GS <b>${r.gsOk?nf1(r.gsDots):'—'}</b> · ${Math.round(u.alt)} ft`;
-    case 'sid': case 'star': return `${Math.round(u.alt/10)*10} ft · ${tx('heading','kurs')} ${d3(u.hdg)}`;
+    case 'ils': case 'locInt': return `${tx('Localiser','Localiser')} <b>${nf1(Math.abs(r.dots))}</b> ${tx('dots','prikker')} ${r.dots>0.05?tx('right','til høyre'):r.dots<-0.05?tx('left','til venstre'):''}${S.ex==='ils'?` · ${tx('glide slope','glidebane')} <b>${r.gsOk?nf1(Math.abs(r.gsDots))+' '+(r.gsDots>0.05?tx('above you','over deg'):r.gsDots<-0.05?tx('below you','under deg'):''):'—'}</b>`:''} · ${Math.round(u.alt/10)*10} ft`;
+    case 'sid': case 'star': return `${Math.round(u.alt/10)*10} ft · ${tx('heading','heading')} ${d3(u.hdg)}`;
     case 'math': return '';
     default: if(isApp(S.ex)) return `${Math.round(u.alt/10)*10} ft${r.dme!=null?` · ${nf1(r.dme)} NM`:''}`;
-      return `${r.flag||''} · ${tx('needle','nål')} <b>${nf1(Math.abs(r.dots||0))}</b> ${tx('dots','prikker')} ${(r.dots||0)>0.05?tx('right','høyre'):(r.dots||0)<-0.05?tx('left','venstre'):''} · OBS <b>${d3(u.obs!==undefined?u.obs:S.X.obs)}</b>`;
+      return lessonLiveVor(u,r);
   } }
+function lessonLiveVor(u,r){ const d=r.dots||0; if(!r.flag||r.flag==='OFF') return `${tx('heading','heading')} <b>${d3(u.hdg)}</b>`;
+  return `${tx('Flag','Flagg')} <b>${r.flag}</b> · ${Math.abs(d)<0.15?tx('needle <b>centred</b>','nålen <b>i midten</b>'):`${tx('needle','nål')} <b>${nf1(Math.abs(d))}</b> ${tx(Math.abs(d)<1.05&&Math.abs(d)>0.95?'dot':'dots','prikker')} ${d>0?tx('right','til høyre'):tx('left','til venstre')}`} · ${tx('course set','kurs stilt inn')} <b>${d3(u.obs!==undefined?u.obs:S.X.obs)}</b>`; }
 
 /* approach profile strip */
 const profC=el('prof'), profG=profC.getContext('2d'); let PW=0,PH=0;
@@ -1531,7 +1832,7 @@ function renderAll(){ renderBar(); renderBrief(); renderLegend();
   renderQuiz(); renderTbar(); renderGuide(true); renderPlay(); renderRd(true);
   el('pausec').hidden=!S.pause;
   el('veil').hidden=!(S.step==='fly'&&S.X.hidden); el('veilB').textContent=tx('Map hidden','Kartet er skjult'); el('veilP').textContent=tx('Build the picture from the instruments. Where are you, and where is the course?','Bygg bildet fra instrumentene. Hvor er du, og hvor er kursen?'); el('peek').textContent=tx('Hold to peek','Hold for å kikke');
-  if(S.ex==='math'&&S.step!=='fly') { el('mathcard').hidden=false; if(S.step==='understand'||S.step==='debrief'){ el('mathcard').innerHTML=`<h3>${tx('Rules of thumb','Tommelfingerregler')}</h3><ol>${MATHU.map(m=>`<li>${esc(L(m))}</li>`).join('')}</ol>`; } }
+  if(S.ex==='math'&&S.step!=='fly') { el('mathcard').hidden=false; if(S.step==='understand'||S.step==='debrief'){ el('mathcard').innerHTML=`<h3>${tx('Rules of thumb','Tommelfingerregler')}</h3><ol>${mathRules(S.item).map(m=>`<li>${gl(L(m),2)}</li>`).join('')}</ol>`; } }
   else if(S.ex!=='math') el('mathcard').hidden=true;
   requestAnimationFrame(sizeAll); }
 function sizeAll(){ layoutInst(); sizeMap(); sizeProf(); sizeTl(); }
@@ -1553,29 +1854,30 @@ function loop(ts){ const dt=Math.min(0.1,Math.max(0,(ts-lastT)/1000)); lastT=ts;
       const sw=el('swv'); if(sw) sw.textContent=mmss(S.watch.t); const dsw=el('dsw'); if(dsw){ dsw.textContent=mmss(S.watch.t); dsw.classList.toggle('run',S.watch.on); } }
     if(S.ex!=='math'){ feedGauges(); for(const k of kindsNow()) if(GA[k]){ GA[k].tick(dt); GA[k].draw(); } feedPFD(dt); drawTargets(); }
     drawMap(); drawTl(); if(S.step==='debrief'&&S.scrub!==S._icapT){ S._icapT=S.scrub; renderIcap(); } }
-  else if(bDirty) drawBPrev();
+  else { if(bDirty&&el('bldDlg').open) drawBPrev(); heroDraw(ts); }
   requestAnimationFrame(loop); }
 
 /* ---------- start ---------- */
 LAB.start('ifr');
 LAB.add({},{'Birdbird · Training':'Birdbird · Trening','IFR trainer':'IFR-trener','Training only · not for navigation':'Kun trening · ikke for navigasjon',
   'What the trainer models':'Hva treneren modellerer','Limits and tolerances':'Grenser og toleranser','Real and practice data':'Ekte data og øvingsdata',
-  'Pick any instrument procedure and fly it with an instructor beside you: it tells you the next step, explains why, and shows your first mistake on the replay.':'Velg en instrumentprosedyre og fly den med en instruktør ved siden av deg: den sier neste steg, forklarer hvorfor, og viser den første feilen din i reprisen.'});
+  'All exercises':'Alle øvelser','Start here':'Start her'});
 LAB.tx({n1:'Standardsvinger (høyst 25° krengning), stigning og sink til valgt høyde med valgt rate, sann fart som øker rundt 2 % per 1000 ft, og vind som er jevn eller byget og skiftende. Kursmarkøren virker som en enkel autopilot: flyet svinger mot den, samme vei som du vred den. Misvisningen er satt til null, så kart og instrumenter stemmer.',
   n2:'Poengene bruker grensene fra EASA IR-ferdighetsprøven: ±100 ft, kurs innenfor ±5°, halvt utslag på ILS, LOC og RNP, aldri under MDA. Holding følger ICAO PANS-OPS: høyresvinger om ikke annet er sagt, legg på 1 minutt til og med 14 000 ft, innganger bestemt av kurs med 5° slingringsmonn på hver side av en sektorlinje. Prosedyresvinger bruker Cat A/B-tiden på 1 minutt.',
   n3:'Bergen og Oslo bruker ekte posisjoner og frekvenser for navigasjonshjelpemidler (OurAirports), kun for trening. Prosedyrene som flys der er illustrasjoner, ikke publiserte kart. Øvingsområdet er fiktivt: Holmvik, Kvist, Fjell, Ravn, Holm og HV-waypointene finnes ikke. Bruk aldri treneren til navigasjon.'});
-LAB.onLang(()=>{ quizKey=''; guideKey=''; if(document.body.classList.contains('v-trainer')) renderAll(); else { renderNudge(); renderCat(); renderBld(); } });
+LAB.onLang(()=>{ quizKey=''; guideKey=''; glClose(); HERO.cap=''; if(document.body.classList.contains('v-trainer')) renderAll(); else { renderHome(); if(el('bldDlg').open) renderBld(); } });
 S.seed=Math.floor(Math.random()*9000)+1; S.item='orient'; S.ex='orient'; S.p=Object.assign({},I.ITEM.orient.p); setup();
-renderNudge(); renderCat(); renderBld();
+renderHome(); heroInit();
 addEventListener('popstate',route); addEventListener('hashchange',route); route();
 new ResizeObserver(()=>{ layoutInst(); }).observe(el('inst'));
 new ResizeObserver(()=>{ sizeMap(); }).observe(mapC);
 new ResizeObserver(()=>{ sizeProf(); }).observe(profC);
 new ResizeObserver(()=>{ sizeTl(); }).observe(tlC);
-let rzT=0; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(!document.body.classList.contains('v-trainer')) bPrev(); else renderCtl&&S.step==='fly'&&renderCtl(); },150); });
+let rzT=0; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=>{ if(!document.body.classList.contains('v-trainer')){ if(el('bldDlg').open) bPrev(); } else renderCtl&&S.step==='fly'&&renderCtl(); },150); });
 requestAnimationFrame(loop);
 /* test hooks (used by the browser tests) */
 window.__IFR={S,I,setup,go,start,finish,report,setCtl,act,AREAS,openItem,showHome,map,BLD,bldSet,startBuilder,bVals,hintMore,resumePause,action:()=>action(),
+  IT,UW,CO,EV,GLO,CORE,gl,uSteps:()=>uSteps(),setUStep,coachTxt:()=>coachTxt(),whyTxt:()=>whyTxt(),clearance:()=>clearance(S.X,A(),S.ex),plain:()=>plain(S.X,A(),S.ex),lessonLive:()=>lessonLive(S.u,readNow()),fmt,pw,
   /* a scripted student who does exactly what the guide says (the guide's command applied every tick) */
   followGuide(sec){ const end=S.sim.t+sec; let pauses=0; while(S.run&&S.step==='fly'&&S.sim.t<end){ if(S.pause){ pauses++; resumePause(); } const c=S.gc; if(c){ if(c.act) S.pendingAct=c.act; else if(S.ex==='orient'&&c.ans&&S.sim.t-(S._lr||-9)>4&&Math.abs(diff(S.X.obs,c.obs))<1){ S.pendingAct={type:'report',val:c.ans}; S._lr=S.sim.t; } I.apply(S.sim,S.X,c); } tick(0.1); } return pauses; },
   advance(sec){ const end=S.sim.t+sec; while(S.run&&S.step==='fly'&&S.sim.t<end){ if(S.pause) resumePause(); tick(0.1); } }};

@@ -106,8 +106,8 @@ K.cdi={ springs:{obs:[10,0.9,1],dev:[7,0.62,0],gs:[7,0.62,0]},
         if(up){ g.moveTo(tx,ty-wh*0.32); g.lineTo(tx-ww*0.16,ty+wh*0.28); g.lineTo(tx+ww*0.16,ty+wh*0.28); } else { g.moveTo(tx,ty+wh*0.32); g.lineTo(tx-ww*0.16,ty-wh*0.28); g.lineTo(tx+ww*0.16,ty-wh*0.28); }
         g.closePath(); g.fill(); font(g,700,wh*0.55,FD,true); g.textAlign='left'; g.textBaseline='middle'; g.fillText(up?'TO':'FR',wx+ww*0.44,ty+0.5); }
     else stripes(g,wx,wy,ww,wh,'NAV',s);
-    /* GS flag */
-    if(!(v.ils&&v.gsValid)) stripes(g,c-r*0.30-s*0.1,c-r*0.40,s*0.1,s*0.07,'GS',s);
+    /* GS flag (gsHide: no glide slope receiver in use, e.g. a VOR tuned, so no flag at all) */
+    if(!(v.ils&&v.gsValid)&&!v.gsHide) stripes(g,c-r*0.30-s*0.1,c-r*0.40,s*0.1,s*0.07,'GS',s);
     /* mode text */
     font(g,600,s*0.04,FM); g.fillStyle=v.ils?C.vor:C.ink3; g.textAlign='center'; g.textBaseline='middle'; g.fillText(v.ils?'LOC':'VOR',c+r*0.4,c+r*0.42);
   },
@@ -168,8 +168,9 @@ K.rmi={ springs:{hdg:[6,0.95,1],n1:[5,0.55,1],n2:[4,0.42,1]},
     if(v.vorOk){ g.save(); g.rotate((G.sp.n1.x-hd)*D2R); g.shadowColor='rgba(0,0,0,.7)'; g.shadowBlur=s*0.012; needle(g,r*0.86,r*0.86,s*0.014,C.vor,s*0.045); g.restore(); }
     g.fillStyle='#2a3036'; g.beginPath(); g.arc(0,0,s*0.035,0,TAU); g.fill(); g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=s*0.004; g.stroke();
     g.restore(); G.blit(g,G.overC);
-    if(!v.vorOk) stripes(g,c-r*0.62,c+r*0.1,s*0.1,s*0.055,'VOR',s);
-    if(!v.adfOk) stripes(g,c+r*0.62-s*0.1,c+r*0.1,s*0.1,s*0.055,'ADF',s); },
+    /* vorHide / adfHide: that receiver is not in use in this exercise, so no warning flag */
+    if(!v.vorOk&&!v.vorHide) stripes(g,c-r*0.62,c+r*0.1,s*0.1,s*0.055,'VOR',s);
+    if(!v.adfOk&&!v.adfHide) stripes(g,c+r*0.62-s*0.1,c+r*0.1,s*0.1,s*0.055,'ADF',s); },
   set(G,v){ G.sp.hdg.to(v.hdg); G.sp.n1.to(v.qdmV); G.sp.n2.to(v.qdmA); },
   knobs(){ return []; } };
 

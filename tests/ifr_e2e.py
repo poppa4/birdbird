@@ -1,12 +1,15 @@
-"""Browser tests for the IFR trainer (ifr.html). Run with the site served on :9151:
-     cd <repo> && python3 -m http.server 9151 &   then   python3 tests/ifr_e2e.py [--shots DIR] [--only 1470]
+"""Browser tests for the IFR trainer (ifr.html). Run with the site served (port 9151 unless --port is given):
+     cd <repo> && python3 -m http.server 9151 &   then   python3 tests/ifr_e2e.py [--port 9151] [--shots DIR] [--only 1470]
    At six viewports (1470×956, 1440×900, 1920×1080, 820×1180, 390×844, 844×390 touch): no console or page errors, no
-   horizontal overflow; the start screen (short path, then all exercises) starts every exercise; the builder runs a custom
+   horizontal overflow; the start screen (live miniature, the path of eight with diagrams, topic cards that open, search)
+   starts every exercise; every exercise has its own walk-through and plain text; glossary chips open and close; the
+   "How much help?" choice before the start; the builder (a dialog) runs a custom
    setup; Guided mode completes every exercise with a scripted student who does what the guide says; Hints and Off work;
    the debrief marks a scripted mistake (card, timeline, map); the walk-through steps; keyboard and stepper input; EN/NO."""
 import sys, asyncio, json, os
 from playwright.async_api import async_playwright
-URL='http://localhost:9151/ifr.html'
+PORT=sys.argv[sys.argv.index('--port')+1] if '--port' in sys.argv else '9151'
+URL=f'http://127.0.0.1:{PORT}/ifr.html'
 SHOTS=sys.argv[sys.argv.index('--shots')+1] if '--shots' in sys.argv else None
 VIEWS=[(1470,956,False),(1440,900,False),(1920,1080,False),(820,1180,False),(390,844,True),(844,390,True)]
 if '--only' in sys.argv: VIEWS=[v for v in VIEWS if str(v[0])==sys.argv[sys.argv.index('--only')+1]]
@@ -17,6 +20,8 @@ def ok(name,cond,info=''):
 
 async def shot(pg,name):
     if SHOTS: await pg.screenshot(path=os.path.join(SHOTS,name))
+async def shot_full(pg,name):
+    if SHOTS: await pg.screenshot(path=os.path.join(SHOTS,name),full_page=True)
 
 async def viewport(p,W,H,touch):
     b=await p.chromium.launch(executable_path='/usr/bin/google-chrome',args=['--no-sandbox'])
@@ -30,25 +35,51 @@ async def viewport(p,W,H,touch):
     desktop=W>=980 and H>=620
     # ---- start screen ----
     ok(f'{tag} home: no overflow',await ov()<=0)
-    n=await pg.evaluate("document.querySelectorAll('#catList .row').length"); ok(f'{tag} home: the short path shows 8 exercises',n==8,str(n))
-    nxt=await pg.evaluate("document.querySelector('.ncard.go b').textContent"); ok(f'{tag} home: a recommended next',len(nxt)>3,nxt)
-    if W==1470: await shot(pg,f'home-{tag}.png')
-    await pg.click('#showAll'); await pg.wait_for_timeout(150)
+    n=await pg.evaluate("document.querySelectorAll('#path .pstep').length"); ok(f'{tag} home: the path shows 8 exercises',n==8,str(n))
+    n=await pg.evaluate("document.querySelectorAll('#path .pstep svg.thumb path').length>8*3"); ok(f'{tag} home: each step has a diagram',n)
+    nxt=await pg.evaluate("(document.querySelector('#heroCta .btn2.pri')||{}).textContent||''"); ok(f'{tag} home: one obvious first action',len(nxt)>8,nxt)
+    await pg.wait_for_timeout(1200)
+    mv=await pg.evaluate("(()=>{const c=document.getElementById('miniM'); return c.width>50&&(document.getElementById('miniBig').textContent||'').length>10})()"); ok(f'{tag} home: the live miniature runs',mv)
+    if W in (1470,390): await shot(pg,f'home-{tag}.png'); await shot_full(pg,f'home-full-{tag}.png')
     items=await pg.evaluate("__IFR.I.ITEMS.map(x=>x.id)")
-    n=await pg.evaluate("document.querySelectorAll('#catList .row').length"); ok(f'{tag} home: show all lists every exercise',n==len(items),f'{n}/{len(items)}')
-    ok(f'{tag} home (all): no overflow',await ov()<=0)
-    await pg.click('.chip[data-g="hold"]'); await pg.wait_for_timeout(100)
-    n=await pg.evaluate("document.querySelectorAll('#catList .row').length"); ok(f'{tag} home: the group filter',n==6,str(n))
-    await pg.click('.chip[data-g="all"]')
-    if W==390: await shot(pg,f'home-all-{tag}.png')
+    n=await pg.evaluate("document.querySelectorAll('#groups .gcard[data-g]').length"); ok(f'{tag} home: one card per topic',n==11,str(n))
+    tot=await pg.evaluate("[...document.querySelectorAll('#groups .gcard[data-g] .gm span:first-child')].reduce((a,e)=>a+parseInt(e.textContent),0)"); ok(f'{tag} home: the topic counts add up',tot==len(items),str(tot))
+    gc=pg.locator('.gcard[data-g="hold"]'); await gc.scroll_into_view_if_needed()
+    if touch: await gc.tap()
+    else: await gc.click()
+    await pg.wait_for_timeout(150)
+    n=await pg.evaluate("document.querySelectorAll('#gpanel .row').length"); ok(f'{tag} home: opening a topic shows its exercises',n==6,str(n))
+    ok(f'{tag} home (topic open): no overflow',await ov()<=0)
+    if W in (1470,390): await shot(pg,f'home-topic-{tag}.png')
+    await pg.fill('#catQ','ndb'); await pg.wait_for_timeout(120)
+    n=await pg.evaluate("document.querySelectorAll('#catList .row').length"); ok(f'{tag} home: search finds the NDB exercises',n>=6,str(n))
+    await pg.click('#catQx'); await pg.wait_for_timeout(100)
+    # every exercise opens from its topic card
+    if full:
+        for g in await pg.evaluate("__IFR.I.GROUPS"):
+            await pg.evaluate(f"(()=>{{const b=document.querySelector('.gcard[data-g=\"{g}\"]'); if(!b.classList.contains('on')) b.click();}})()"); await pg.wait_for_timeout(40)
+            for it in await pg.evaluate(f"__IFR.I.ITEMS.filter(x=>x.g==='{g}').map(x=>x.id)"):
+                await pg.evaluate(f"document.querySelector('#gpanel [data-start=\"{it}\"]').click()"); await pg.wait_for_timeout(40)
+                r=await pg.evaluate("({v:document.body.classList.contains('v-trainer'),item:__IFR.S.item})"); ok(f'{tag} home: {it} opens from its topic',r['v'] and r['item']==it,json.dumps(r))
+                await pg.evaluate("__IFR.showHome(true)"); await pg.wait_for_timeout(30)
+        await pg.evaluate("(()=>{const b=document.querySelector('.gcard[data-g=\"hold\"]'); if(!b.classList.contains('on')) b.click();})()"); await pg.wait_for_timeout(60)
+    # a glossary chip on the start page opens and closes
+    chip=pg.locator('#path .gl').first; await chip.scroll_into_view_if_needed()
+    if touch: await chip.tap()
+    else: await chip.click()
+    await pg.wait_for_timeout(150)
+    gp=await pg.evaluate("(()=>{const p=document.getElementById('glPop'); if(!p||p.hidden) return null; const r=p.getBoundingClientRect(); return {t:p.textContent,in:r.left>=0&&r.right<=innerWidth+1}})()")
+    ok(f'{tag} glossary: a chip opens its explanation',gp is not None and len(gp['t'])>30 and gp['in'],json.dumps(gp))
+    await pg.keyboard.press('Escape'); await pg.wait_for_timeout(80)
+    ok(f'{tag} glossary: Escape closes it',await pg.evaluate("document.getElementById('glPop').hidden"))
     # start an exercise from its row (a real click)
-    btn=pg.locator('#catList [data-start="holdEntry"]'); await btn.scroll_into_view_if_needed()
+    btn=pg.locator('#gpanel [data-start="holdEntry"]'); await btn.scroll_into_view_if_needed()
     if touch: await btn.tap()
     else: await btn.click()
     await pg.wait_for_timeout(400)
     st=await pg.evaluate("({v:document.body.classList.contains('v-trainer'),item:__IFR.S.item,step:__IFR.S.step,hash:location.hash})")
     ok(f'{tag} the Start button opens the exercise',st['v'] and st['item']=='holdEntry' and st['step']=='understand' and st['hash']=='#holdEntry',json.dumps(st))
-    if W==1470: await pg.wait_for_timeout(1200); await shot(pg,f'understand-{tag}.png')
+    if W in (1470,390): await pg.evaluate('__IFR.setUStep(1)'); await pg.wait_for_timeout(1200); await shot(pg,f'understand-{tag}.png'); await pg.evaluate('__IFR.setUStep(0)')
     # walk-through: next, back, the last step is interactive
     steps=await pg.evaluate("document.querySelectorAll('.udots button').length"); ok(f'{tag} walk-through has 4 steps',steps==4,str(steps))
     await pg.click('#uNext'); await pg.wait_for_timeout(100); s1=await pg.evaluate('__IFR.S.uStep'); ok(f'{tag} walk-through Next',s1==1,str(s1))
@@ -61,9 +92,14 @@ async def viewport(p,W,H,touch):
     # ---- every exercise starts and every step fits ----
     for it in (items if full else ['orient','trackIn','holdEntry','ils','math','sid','ppHold']):
         await pg.evaluate(f"(()=>{{const F=__IFR; F.openItem('{it}',{{area:'practice',lv:1}});}})()"); await pg.wait_for_timeout(60)
+        c=await pg.evaluate(f"""(()=>{{const F=__IFR, st=F.uSteps(); return {{own:!!F.UW['{it}']||F.S.ex==='math',n:st.length,last:st[st.length-1].s.en||'',txt:(document.querySelector('#lesson .us')||{{}}).textContent||'',no:st.every(x=>x.s.no&&x.s.no!==x.s.en)}}; }})()""")
+        ok(f'{tag} {it}: its own walk-through, EN and NO',c['own'] and c['n']>=3 and c['no'] and len(c['txt'])>20,json.dumps(c)[:200])
         for step in (['understand','fly'] if full else ['understand','think','fly']):
             await pg.evaluate(f"__IFR.go('{step}')"); await pg.wait_for_timeout(70)
             o=await ov(); ok(f'{tag} {it} {step} no overflow',o<=0,str(o))
+            if step=='fly' and not it.startswith('math'):
+                h=await pg.evaluate("({n:document.querySelectorAll('#ccard .hlp button').length,pl:(document.querySelector('#ccard .pl')||{}).textContent||''})")
+                ok(f'{tag} {it}: the help choice and the plain words before the start',h['n']==3 and len(h['pl'])>30,json.dumps(h))
             if desktop:
                 fit=await pg.evaluate("""(()=>{const st=document.getElementById('trainer'), r=st.getBoundingClientRect(), p=st.querySelector('.pnl'); const tb=document.getElementById('tbar').getBoundingClientRect(); return {h:r.height, vh:innerHeight, pnl:p.scrollHeight-p.clientHeight, tb:tb.bottom}})()""")
                 ok(f'{tag} {it} {step} fits one screen',fit['h']<=fit['vh']+1 and fit['tb']<=fit['vh']+1,json.dumps(fit))
@@ -84,6 +120,21 @@ async def viewport(p,W,H,touch):
     pc=await pg.evaluate("({vis:!document.getElementById('pausec').hidden,txt:document.getElementById('pausec').textContent})"); ok(f'{tag} guided: pause before the fix',pc['vis'] and len(pc['txt'])>40,json.dumps(pc)[:200])
     if W==1470: await pg.wait_for_timeout(300); await shot(pg,f'pause-{tag}.png')
     await pg.keyboard.press('Enter'); await pg.wait_for_timeout(100); ok(f'{tag} Enter continues after the pause',await pg.evaluate("!__IFR.S.pause&&!__IFR.S.paused"))
+    # ---- the help choice before the start, and a glossary chip in the trainer ----
+    await pg.evaluate("(()=>{const F=__IFR; F.openItem('ils',{area:'practice',lv:1,help:'guided'}); F.go('fly');})()"); await pg.wait_for_timeout(200)
+    hb=pg.locator('#ccard [data-hp="hints"]')
+    if touch: await hb.tap()
+    else: await hb.click()
+    await pg.wait_for_timeout(100); ok(f'{tag} help choice: Hints picked before the start',await pg.evaluate("__IFR.S.help==='hints'&&document.querySelector('#helpSeg [data-h=hints]').classList.contains('on')"))
+    await pg.evaluate("document.querySelector('#ccard [data-hp=\"guided\"]').click()")
+    ch=pg.locator('#ccard .ct .gl').first
+    if touch: await ch.tap()
+    else: await ch.click()
+    await pg.wait_for_timeout(150); t=await pg.evaluate("(document.getElementById('glPop')||{hidden:true}).hidden?'':document.getElementById('glPop').textContent")
+    ok(f'{tag} glossary: a chip in the clearance explains the term',len(t)>30,t[:80])
+    if W in (1470,390): await shot(pg,f'glossary-{tag}.png')
+    await pg.mouse.click(3,3) if not touch else await pg.locator('#exName').tap()
+    await pg.wait_for_timeout(100); ok(f'{tag} glossary: a click elsewhere closes it',await pg.evaluate("document.getElementById('glPop').hidden"))
     # ---- Hints and Off ----
     await pg.evaluate("(()=>{const F=__IFR; F.openItem('trackIn',{area:'practice',lv:2,help:'hints',seed:5}); F.go('fly'); F.start(false); F.advance(15);})()"); await pg.wait_for_timeout(300)
     h0=await pg.evaluate("({big:document.querySelector('#guide .big').textContent,cls:document.getElementById('guide').className,t:JSON.stringify(__IFR.S.help)})")
@@ -100,11 +151,15 @@ async def viewport(p,W,H,touch):
     await pg.evaluate("(()=>{__IFR.S.help='guided';})()")
     # ---- the builder runs a custom setup ----
     await pg.evaluate("__IFR.showHome(true)"); await pg.wait_for_timeout(200)
+    ob=pg.locator('#openBld'); await ob.scroll_into_view_if_needed()
+    if touch: await ob.tap()
+    else: await ob.click()
+    await pg.wait_for_timeout(200); ok(f'{tag} builder: the card opens the dialog',await pg.evaluate("document.getElementById('bldDlg').open"))
     await pg.select_option('#bld select[data-k="item"]','holdEntry'); await pg.wait_for_timeout(100)
     await pg.fill('#bld input[data-k="radial"]','180'); await pg.dispatch_event('#bld input[data-k="radial"]','change'); await pg.wait_for_timeout(100)
     await pg.click('#bld button[data-k="entry"][data-v="teardrop"]'); await pg.click('#bld button[data-k="wind"][data-v="set"]'); await pg.wait_for_timeout(100)
     await pg.fill('#bld input[data-k="wdir"]','270'); await pg.dispatch_event('#bld input[data-k="wdir"]','change'); await pg.wait_for_timeout(100)
-    if W==1470: await pg.locator('#bld').scroll_into_view_if_needed(); await shot(pg,f'builder-{tag}.png')
+    if W in (1470,390): await shot(pg,f'builder-{tag}.png')
     ok(f'{tag} builder: no overflow',await ov()<=0)
     gb=pg.locator('#bGo'); await gb.scroll_into_view_if_needed()
     if touch: await gb.tap()
@@ -112,6 +167,7 @@ async def viewport(p,W,H,touch):
     await pg.wait_for_timeout(300)
     c=await pg.evaluate("(()=>{const X=__IFR.S.X; return {item:__IFR.S.item,custom:__IFR.S.custom,step:__IFR.S.step,inb:X.task.inb,wind:X.wind.dir,hdg:X.ac.hdg,dir:X.task.dir}})()")
     ent=await pg.evaluate(f"HOLDCORE.entry({c['inb']},{c['dir']},{c['hdg']}).entry")
+    ok(f'{tag} builder: the dialog closes when the run starts',not await pg.evaluate("document.getElementById('bldDlg').open"))
     ok(f'{tag} builder: runs the custom setup',c['custom'] and c['item']=='holdEntry' and c['step']=='fly' and c['inb']==360 and c['wind']==270 and ent=='teardrop',json.dumps(c)+ent)
     r=await pg.evaluate("(()=>{const F=__IFR; F.start(false); F.followGuide(900); return {step:F.S.step,pass:F.S.res&&F.S.res.g.pass}})()"); ok(f'{tag} builder: the custom run flies to the debrief',r['step']=='debrief' and r['pass'],json.dumps(r))
     # ---- the debrief marks a scripted mistake ----
@@ -149,7 +205,7 @@ async def viewport(p,W,H,touch):
     ok(f'{tag} partial panel: compass shown, heading indicator gone, timed turns',pp['cmp'] and pp['dg'] and ('Timed' in pp['lab'] or 'Tids' in pp['lab']),json.dumps(pp))
     # language switch
     await pg.evaluate("(()=>{const b=[...document.querySelectorAll('.langseg button')].find(x=>x.dataset.v==='no'); if(b) b.click();})()"); await pg.wait_for_timeout(300)
-    t=await pg.evaluate("document.getElementById('exName').textContent"); ok(f'{tag} Norwegian switch',t=='Delvis panel: følg kurs inn',t)
+    t=await pg.evaluate("document.getElementById('exName').textContent"); ok(f'{tag} Norwegian switch',t=='Delvis panel: følg en kurs inn',t)
     await pg.evaluate("(()=>{const b=[...document.querySelectorAll('.langseg button')].find(x=>x.dataset.v==='en'); if(b) b.click();})()"); await pg.wait_for_timeout(200)
     ok(f'{tag} no console or page errors',not errs,' | '.join(errs[:5]))
     await b.close()
