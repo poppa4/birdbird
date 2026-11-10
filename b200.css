@@ -324,3 +324,5 @@
 .psvg .ykx{stroke:#5a4a3a;stroke-width:9;stroke-linecap:round}
 .psvg .ykp{fill:#8f877b;stroke:#3b352f;stroke-width:1.2}
 .psvg .ykh{fill:#d9d3c8;stroke:#4a443d;stroke-width:1.2}
+/* pilot's control column is drawn see-through: the engine anti-ice group sits behind it on the subpanel */
+.psvg g.ctl[data-id="yokeL"]{opacity:.5}

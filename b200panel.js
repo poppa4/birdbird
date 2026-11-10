@@ -63,7 +63,7 @@ add({id:'dmeCh',t:'key',x:192,y:769,w:15,h:8,l:'CH',lbl:'DME (PILOT) – CHANNEL
 add({id:'dmeSel',t:'key',x:221,y:769,w:15,h:8,l:'SEL',lbl:'DME (PILOT) – SELECT KT / MIN / ID'});
 add({id:'dmePwr',t:'key',x:250,y:769,w:15,h:8,l:'PWR',alt:1,led:1,lbl:'DME (PILOT) – POWER'});
 add({id:'fastErect',t:'push',x:212,y:806,r:9,red:1,l:'ATTITUDE GYRO FAST ERECT',d:''});
-add({id:'efisDim',t:'rot',x:380,y:604,r:6,l:'EFIS DISPLAY DIMMING',d:''});
+add({id:'micSel',t:'tog',x:380,y:604,l:'PILOT MIC – NORMAL / OXYGEN MASK',d:'',up:'',dn:'',blk:1});
 add({id:'altT',t:'push',x:508,y:548,r:4,l:'ALTIMETER TEST',d:''});
 add({id:'baroK',t:'enc',x:596,y:548,r:8,l:'BARO (PULL)',d:''});
 add({id:'tcasAB',t:'push',x:510,y:704,r:5.5,l:'TCAS ABOVE / BELOW (A/B)',d:''});
@@ -163,8 +163,11 @@ add({id:'bgsC2',t:'mbtn',x:1928,y:447,w:26,h:25,l1:'BELOW G/S',l2:'P/CANCEL',col
 add({id:'crs2K',t:'enc',x:1148,y:576,r:12,l:'CRS 2',d:''});
 add({id:'tcasAB2',t:'push',x:1764,y:704,r:5.5,l:'TCAS ABOVE / BELOW (COPILOT)',d:''});
 add({id:'tcasR2',t:'push',x:1848,y:704,r:5.5,l:'TCAS RANGE (COPILOT)',d:''});
-add({id:'raT',t:'push',x:1600,y:604,r:4,l:'RADIO ALTIMETER TEST',d:''});
-add({id:'dhK',t:'rot',x:1648,y:604,r:5,l:'RADIO ALTIMETER DH SET',d:''});
+add({id:'fastErect2',t:'push',x:1600,y:604,r:4,l:'COPILOT ATTITUDE GYRO FAST ERECT',d:''});
+add({id:'dhK',t:'rot',x:1648,y:604,r:5,l:'PILOT EADI – DH SET',d:''});
+add({id:'raT',t:'push',x:1648,y:624,r:3,l:'PILOT EADI – TEST (RADIO ALTIMETER / DH)',d:''});
+add({id:'dhK2',t:'rot',x:1648,y:644,r:5,l:'COPILOT EADI – DH SET',d:''});
+add({id:'raT2',t:'push',x:1648,y:664,r:3,l:'COPILOT EADI – TEST (RADIO ALTIMETER / DH)',d:''});
 add({id:'dme2Ch',t:'key',x:1773,y:773,w:15,h:8,l:'CH',lbl:'DME (COPILOT) – CHANNEL 1 / 2 / 3'});
 add({id:'dme2Sel',t:'key',x:1806,y:773,w:15,h:8,l:'SEL',lbl:'DME (COPILOT) – SELECT KT / MIN / ID'});
 add({id:'dme2Pwr',t:'key',x:1839,y:773,w:15,h:8,l:'PWR',alt:1,led:1,lbl:'DME (COPILOT) – POWER'});
@@ -172,7 +175,7 @@ add({id:'slew2L',t:'key',x:1891,y:808,w:14,h:8,l:'◄',lbl:'GYRO SLAVING 2 – S
 add({id:'slew2R',t:'key',x:1910,y:808,w:14,h:8,l:'►',lbl:'GYRO SLAVING 2 – SLEW RIGHT'});
 add({id:'gyro2Mode',t:'key',x:1930,y:808,w:14,h:8,l:'DG',alt:1,led:1,lbl:'GYRO SLAVING 2 MODE (SLAVED / DG FREE)'});
 /* pilot's left subpanel */
-add({id:'micSel',t:'tog',x:119,y:858,l:'PILOT MIC – NORMAL / OXYGEN MASK',d:'',up:'MIC\nNORMAL',dn:'OXYGEN\nMASK'});
+add({id:'extPwr',t:'tog3',x:119,y:858,l:'EXTERNAL POWER (ON / OFF / RESET)',d:'',vals:['ON','OFF','RESET'],spring:'dn',lay:'none',red:1});
 add({id:'avio',t:'tog',x:161,y:858,l:'AVIONICS MASTER POWER',d:'',up:'AVIONICS\nMASTER PWR',dn:'OFF',red:1});
 add({id:'inv',t:'tog3',x:233,y:864,l:'INVERTER',d:'',vals:['NO 1','OFF','NO 2'],lay:'inv'});
 add({id:'aignL',t:'tog',x:277,y:860,l:'ENG AUTO IGNITION LEFT',d:'',up:'',dn:'LEFT',sm:1});
@@ -182,15 +185,14 @@ add({id:'genL',t:'tog3',x:141,y:930,l:'GEN 1 (LEFT)',d:'',vals:['RESET','ON','OF
 add({id:'genR',t:'tog3',x:205,y:930,l:'GEN 2 (RIGHT)',d:'',vals:['RESET','ON','OFF'],lay:'none',dn:'GEN 2'});
 add({id:'gang',t:'bar',x:144,y:904,w:160,h:22,l:'MASTER SWITCH (GANG BAR) – ALL OFF',d:'MASTER SWITCH'});
 
-add({id:'engAIL',t:'tog',x:268,y:924,l:'ENGINE ANTI-ICE LEFT',d:'',up:'LEFT',sm:1});
-add({id:'engAIR',t:'tog',x:320,y:924,l:'ENGINE ANTI-ICE RIGHT',d:'',up:'RIGHT',sm:1});
-add({id:'actL',t:'tog',x:268,y:976,l:'ENG ANTI-ICE ACTUATOR LEFT (STANDBY / MAIN)',d:'',sm:1,up:'',red:1});
-add({id:'actR',t:'tog',x:320,y:976,l:'ENG ANTI-ICE ACTUATOR RIGHT (STANDBY / MAIN)',d:'',sm:1,up:'',red:1});
+add({id:'busSense',t:'tog3',x:268,y:924,l:'BUS SENSE (RESET / TEST, spring-loaded to centre)',d:'',vals:['RESET','','TEST'],spring:1,lay:'none',red:1});
+add({id:'genTies',t:'tog3',x:320,y:924,l:'GEN TIES (MAN CLOSE / NORM / OPEN)',d:'',vals:['MAN CLOSE','NORM','OPEN'],spring:'up',lay:'none'});
 add({id:'pilotAir',t:'pull',x:361,y:966,r:15,l:'PILOT AIR (PULL ON)',d:'',top:'PILOT\nAIR',dn:'PULL\nON'});
 add({id:'ignL',t:'tog3',x:115,y:1027,l:'IGNITION AND ENGINE START LEFT',d:'',vals:['ON','OFF','STARTER ONLY'],lay:'none',big:1});
 add({id:'ignR',t:'tog3',x:160,y:1027,l:'IGNITION AND ENGINE START RIGHT',d:'',vals:['ON','OFF','STARTER ONLY'],lay:'none',big:1});
 add({id:'afSw',t:'tog3',x:256,y:1029,l:'AUTOFEATHER',d:'',vals:['ARM','OFF','TEST'],lay:'left',ring:1});
-add({id:'govT',t:'tog',x:307,y:1030,l:'PROP GOV TEST',d:'',sm:1,up:'',dn:'OFF',red:1});
+add({id:'govT',t:'tog',x:307,y:1030,l:'PROP TEST – GOV (OVERSPEED GOVERNOR TEST, HOLD)',d:'',sm:1,up:'',dn:'',red:1,mom:1});
+add({id:'gndIdle',t:'tog',x:330,y:1030,l:'PROP TEST – GND IDLE STOP (HOLD)',d:'',sm:1,up:'',dn:'',red:1,mom:1});
 add({id:'park',t:'pull',x:118,y:1090,r:9,l:'PARKING BRAKE',d:'',tee:1});
 /* pilot's right subpanel */
 add({id:'defrost',t:'pull',x:466,y:966,r:15,l:'DEFROST AIR (PULL ON)',d:'',top:'DEFROST\nAIR',dn:'PULL\nON'});
@@ -215,6 +217,7 @@ add({id:'beacon',t:'tog',x:761,y:931,l:'BEACON',d:'',sm:1,up:'',big:1});
 add({id:'strobe',t:'tog',x:795,y:931,l:'STROBE',d:'',sm:1,up:''});
 add({id:'tailFl',t:'tog',x:796,y:981,l:'TAIL FLOOD LIGHTS',d:'',sm:1,up:'',dn:'OFF'});
 add({id:'hydT',t:'push',x:790,y:1030,r:7,l:'HYD FLUID SENSOR TEST',d:''});
+add({id:'hornSil',t:'push',x:760,y:1030,r:7,l:'GEAR WARN SILENCE (LANDING GEAR WARNING HORN)',d:''});
 /* copilot's left subpanel */
 add({id:'furn',t:'tog',x:1158,y:926,l:'CABIN FURNISHING POWER',d:'',sm:1,up:'',dn:'OFF',red:1,ring:1});
 add({id:'cabLt',t:'tog3',x:1197,y:926,l:'CABIN LIGHTS (START/BRIGHT / DIM / OFF)',d:'',vals:['START/BRIGHT','DIM','OFF'],lay:'none',red:1,ring:1});
@@ -225,14 +228,17 @@ add({id:'cabTemp',t:'rot',x:1374,y:927,r:17,l:'CABIN TEMP',d:''});
 add({id:'cabMode',t:'rotsel',x:1454,y:920,l:'CABIN TEMP MODE',d:'',vals:['MAN HEAT','MAN COOL','OFF','AUTO'],ang:[-60,-112,0,60],r:17,s:4.4,big:1});
 add({id:'bleedL',t:'tog3',x:1268,y:984,l:'BLEED AIR VALVE LEFT',d:'',vals:['OPEN','ENVR OFF','INSTR & ENVIR OFF'],lay:'none',ball:1});
 add({id:'bleedR',t:'tog3',x:1320,y:984,l:'BLEED AIR VALVE RIGHT',d:'',vals:['OPEN','ENVR OFF','INSTR & ENVIR OFF'],lay:'none',ball:1});
-add({id:'stallTest',t:'tog',x:1262,y:1037,l:'STALL WARN TEST (SPRING-LOADED)',d:'',up:'',sm:1,mom:1,red:1,ring:1});
+add({id:'stallTest',t:'tog3',x:1262,y:1037,l:'STALL WARN TEST / OFF / LDG GEAR WARN TEST (SPRING-LOADED)',d:'',vals:['STALL WARN TEST','OFF','LDG GEAR WARN TEST'],spring:1,lay:'none',red:1,ring:1});
+add({id:'envBleed',t:'tog',x:1240,y:984,l:'ENVIRONMENTAL BLEED AIR (NORMAL / LOW)',d:'',up:'',dn:''});
+add({id:'aftHeat',t:'tog',x:1380,y:1037,l:'AFT HEAT',d:'',sm:1,up:'',dn:'OFF',red:1,ring:1});
 add({id:'aftBlow',t:'tog',x:1301,y:1037,l:'AFT BLOWER',d:'',sm:1,up:'',dn:'OFF',red:1,ring:1});
 add({id:'elecHeat',t:'tog',x:1340,y:1037,l:'ELECTRIC HEAT',d:'',sm:1,up:'',dn:'OFF',red:1,ring:1});
-add({id:'fireTest',t:'rotsel',x:1456,y:1013,l:'TEST SWITCH ENG FIRE SYS',d:'',vals:['EXT L','DET L','OFF','DET R','EXT R'],ang:[-58,58,180,122,-122],r:12,s:4,half:1});
-add({id:'cabAir',t:'pull',x:1522,y:970,r:15,l:'CABIN AIR (PULL DECR)',d:'',top:'CABIN\nAIR',dn:'PULL\nDECR'});
+add({id:'fireTestL',t:'tog3',x:1440,y:1013,l:'ENG FIRE TEST LEFT (DET / OFF / EXT)',d:'',vals:['DET','OFF','EXT'],spring:1,lay:'none'});
+add({id:'fireTestR',t:'tog3',x:1470,y:1013,l:'ENG FIRE TEST RIGHT (DET / OFF / EXT)',d:'',vals:['DET','OFF','EXT'],spring:1,lay:'none'});
+add({id:'cabAir',t:'pull',x:1522,y:970,r:15,l:'CABIN/COCKPIT AIR (PULL: INCR COCKPIT, DECR CABIN)',d:'',top:'CABIN/\nCOCKPIT\nAIR',dn:'PULL\nINCR COCKPIT\nDECR CABIN'});
 /* copilot's right subpanel */
 add({id:'copAir',t:'pull',x:1635,y:970,r:15,l:'COPILOT AIR (PULL ON)',d:'',top:'COPILOT\nAIR',dn:'PULL\nON'});
-add({id:'micSelR',t:'tog',x:1834,y:884,l:'COPILOT MIC – NORMAL / OXYGEN MASK',d:'',up:'MIC\nNORMAL',dn:'OXYGEN\nMASK'});
+add({id:'micSelR',t:'tog',x:1834,y:884,l:'COPILOT MIC – NORMAL / OXYGEN MASK',d:'',up:'',dn:'',blk:1});
 /* left sidewall: fuel control panel, fuel system breakers, free air temperature */
 add({id:'stbyL',t:'tog',x:34,y:1140,l:'STANDBY PUMP LEFT',d:'',sm:1,up:'STANDBY PUMP\nON',dn:'OFF'});
 add({id:'auxL',t:'tog',x:34,y:1192,l:'AUX TRANSFER LEFT (OVERRIDE / AUTO)',d:'',sm:1,up:'AUX TRANSFER\nOVERRIDE',dn:'AUTO'});
@@ -298,6 +304,7 @@ add({id:'paxOvr',t:'pull',x:1268,y:1300,r:9,l:'PASSENGER OXYGEN MANUAL OVERRIDE'
 /* EFIS display control panel */
 [['efisCrsSel','CRS 1/2','EFIS COURSE SOURCE (NAV 1 / NAV 2)'],['efisBrg1','BRG ○','EFIS BEARING POINTER ○ (OFF / NAV 1 / ADF)'],['efisBrg2','BRG ◇','EFIS BEARING POINTER ◇ (OFF / NAV 2 / ADF)'],['efisFmt','ARC','EHSI FORMAT (FULL / ARC)'],['efisEt','ET','ELAPSED TIME (START / STOP / RESET)']]
   .forEach(([id,l,lbl],i)=>add({id,t:'key',x:730+i*38,y:1358,w:30,h:14,l,lbl,kg:1}));
+add({id:'efisDim',t:'rot',x:924,y:1358,r:7,l:'EFIS DISPLAY DIMMING (DIM)',d:'DIM',s:3.6});
 add({id:'hdgK',t:'enc',x:1065,y:576,r:13,l:'HDG',d:''});
 add({id:'crsK',t:'enc',x:982,y:576,r:12,l:'CRS 1',d:''});
 /* autopilot / flight director: autopilot controller (top centre) and two mode selector panels */
@@ -320,6 +327,11 @@ add({id:'elTrim',t:'tog',x:888,y:1422,l:'ELEVATOR TRIM',d:'',sm:1,up:'',dn:'OFF'
 add({id:'yokeL',t:'yoke',x:585,y:1308,l:'CONTROL WHEEL'}); add({id:'yokeR',t:'yoke',x:1415,y:1308,l:'CONTROL WHEEL',co:1});
 add({id:'apDisc',t:'sbtn',x:585,y:1308,l:'AP DISC',dx:-84,dy:-30,col:'#c62a1d'});
 add({id:'trimDn',t:'sbtn',x:585,y:1308,l:'TRIM NOSE DN',dx:-70,dy:-42,col:'#59616b',r:4}); add({id:'trimUp',t:'sbtn',x:585,y:1308,l:'TRIM NOSE UP',dx:-70,dy:-32,col:'#59616b',r:4});
+/* engine anti-ice group: on the pilot's left subpanel behind the control column (drawn over the column so it can be reached) */
+add({id:'engAIL',t:'tog',x:268,y:924,l:'ENGINE ANTI-ICE LEFT (ON / OFF)',d:'',up:'',dn:'',sm:1});
+add({id:'engAIR',t:'tog',x:320,y:924,l:'ENGINE ANTI-ICE RIGHT (ON / OFF)',d:'',up:'',dn:'',sm:1});
+add({id:'actL',t:'tog',x:268,y:976,l:'ENG ANTI-ICE ACTUATOR LEFT (STANDBY / MAIN)',d:'',sm:1,up:'',dn:'',red:1});
+add({id:'actR',t:'tog',x:320,y:976,l:'ENG ANTI-ICE ACTUATOR RIGHT (STANDBY / MAIN)',d:'',sm:1,up:'',dn:'',red:1});
 
 /* group moves to the reference layout (control positions follow their drawn module) */
 const SHIFT=[[105,110,['mfdPwr','mfdRdr','mfdNav','mfdRmt','mfdPge','mfdEmg','mfdL1','mfdL2','mfdL3','mfdL4','mfdUp','mfdDn','mfdRcl','mfdSkp','mfdClr','mfdData','mfdTilt']],
@@ -338,10 +350,12 @@ at('fireL',565,115,{w:46,h:30,l2:'PUSH TO EXT'}); at('fireR',714,112,{w:46,h:30,
 /* pilot: lamp strip above the EADI, GPWS group in the dark corner, fast erect, EFIS dimming */
 at('gpsCrs',221,180,{w:24,h:26}); at('gpsApr',240,180,{w:24,h:26}); at('gpwsFlap',280,180,{w:24,h:26});
 at('gpwsT',62,163,{w:24,h:20}); at('bgsC',87,163,{w:24,h:20});
-at('fastErect',186,447,{r:10}); at('efisDim',156,457,{r:7});
+at('fastErect',186,447,{r:10}); at('micSel',157,455,{xs:1,s:3.2});
 at('sync',388,481,{xs:1});
 /* copilot: radio altimeter test / DH knob */
-at('raT',1096,428,{r:10,red:1}); at('dhK',1146,441,{r:7});
+at('fastErect2',1096,428,{r:10,red:1}); at('micSelR',1148,441,{xs:1,s:3.2});
+/* EADI bezel: DH SET knob with the TEST button beside it (both displays) */
+at('dhK',258,326,{r:5}); at('raT',272,326,{r:3.2}); at('dhK2',1027,313,{r:5}); at('raT2',1041,313,{r:3.2});
 at('gpwsT2',1213,172,{w:24,h:20}); at('bgsC2',1238,172,{w:24,h:20});
 /* autopilot controller, course / heading panel, altitude alerter, ground comm */
 at('apYD',638,173,{bw:20,bh:30,l:'YAW\nENG'}); at('apAP',659,173,{bw:20,bh:30,l:'AP\nENG'}); at('apTurn',690,178,{r:25}); at('apSR',719,165,{bw:20,bh:19}); at('apHB',719,187,{bw:20,bh:19}); at('apPitch',746,178,{r:12});
@@ -357,25 +371,26 @@ at('nav1K',554,454,{r:10}); at('com1K',553,475,{r:13});
 at('gpsPwr',687,364,{r:4}); ['gpsDto','gpsMsg','gpsClr','gpsEnt','gpsAlt'].forEach((id,i)=>at(id,687,381+i*14,{w:17,h:10}));
 at('gpsKL',687,455,{r:8}); at('gpsKR',689,476,{r:11});
 /* pilot's left subpanel */
-at('micSel',78,497,{xs:1,s:3.6}); at('avio',124,497,{xs:1,s:3.6}); at('inv',166,497,{sm3:1,s:3.6});
+at('extPwr',78,497,{sm3:1,ring:1}); at('avio',124,497,{xs:1,s:3.6}); at('inv',166,497,{sm3:1,s:3.6});
 at('aignL',201,500,{xs:1}); at('aignR',219,500,{xs:1});
 at('gang',115,523,{w:150,h:20}); at('bat',85,541,{xs:1}); at('genL',115,541,{sm3:1}); at('genR',145,541,{sm3:1});
-at('engAIL',143,573,{xs:1}); at('engAIR',163,573,{xs:1}); at('actL',66,578,{xs:1}); at('actR',86,578,{xs:1});
-at('ignL',107,611,{sm3:1,big:0}); at('ignR',133,611,{sm3:1,big:0}); at('afSw',182,611,{sm3:1}); at('govT',222,611,{xs:1});
+at('busSense',145,571,{sm3:1}); at('genTies',167,571,{sm3:1});
+at('engAIL',199,535,{xs:1}); at('engAIR',226,535,{xs:1}); at('actL',199,574,{xs:1}); at('actR',226,574,{xs:1});
+at('ignL',107,611,{sm3:1,big:0}); at('ignR',133,611,{sm3:1,big:0}); at('afSw',182,611,{sm3:1}); at('govT',216,612,{xs:1}); at('gndIdle',236,612,{xs:1});
 at('park',80,624); at('pilotAir',281,566,{r:11});
 /* pilot's right subpanel */
 at('defrost',333,573,{r:12});
 ['landL','landR','taxi','iceLt','navLt','recog'].forEach((id,i)=>at(id,[345,364,383,401,419,437][i],536,{xs:1,up:''}));
 [['wsP',352],['wsC',370],['propDeA',389],['propDeM',407],['fvL',425],['fvR',443]].forEach(([id,x])=>at(id,x,576,{xs:1,sm3:1,dn:''}));
 [['brakeDe',351],['surf',369],['stallHt',387],['pitL',405],['pitR',423]].forEach(([id,x])=>at(id,x,611,{xs:1,sm3:1,big:0,dn:''}));
-at('gearRelay',442,611,{big:0,la:'',lb:''}); at('gear',474,568); at('dlRel',456,598,{r:6}); at('hdLt',494,594,{r:5});
+at('gearRelay',442,611,{big:0,la:'',lb:''}); at('gear',474,568); at('dlRel',456,598,{r:6}); at('hdLt',494,594,{r:5}); at('hornSil',514,611,{r:6});
 at('beacon',511,532,{xs:1,big:0}); at('strobe',531,532,{xs:1}); at('tailFl',532,574,{xs:1,dn:''}); at('hydT',537,611,{r:6});
 /* copilot's environmental subpanel */
-at('stallTest',764,607,{xs:1}); at('manTemp',836,533,{sm3:1}); at('blower',860,533,{sm3:1}); at('cabTemp',885,536,{r:14}); at('cabMode',938,527,{r:17});
+at('stallTest',764,607,{sm3:1}); at('envBleed',792,578,{xs:1}); at('aftHeat',865,607,{xs:1}); at('manTemp',836,533,{sm3:1}); at('blower',860,533,{sm3:1}); at('cabTemp',885,536,{r:14}); at('cabMode',938,527,{r:17});
 at('bleedL',828,572); at('bleedR',857,572); at('aftBlow',818,607,{xs:1}); at('elecHeat',840,607,{xs:1});
-at('fireTest',930,583,{r:11}); at('cabAir',982,576,{r:13});
+at('fireTestL',913,585,{sm3:1}); at('fireTestR',940,585,{sm3:1}); at('cabAir',982,576,{r:13});
 /* copilot's right subpanel (column behind the copilot control column) */
-at('copAir',1044,600,{r:9}); at('furn',1139,500,{xs:1}); at('cabLt',1160,500,{sm3:1}); at('signs',1181,500,{sm3:1}); at('micSelR',1240,611,{xs:1,s:3.4});
+at('copAir',1044,600,{r:9}); at('furn',1139,500,{xs:1}); at('cabLt',1160,500,{sm3:1}); at('signs',1181,500,{sm3:1}); 
 /* control columns, seen end-on as in the photo */
 at('yokeL',217,546); at('yokeR',1077,533);
 [['apDisc',-40,-24],['trimDn',-42,14],['trimUp',-48,2]].forEach(([id,dx,dy])=>{ const c=CB(id); c.x=CB('yokeL').x; c.y=CB('yokeL').y; c.dx=dx; c.dy=dy; });
@@ -690,7 +705,7 @@ function annGrid(x0,y0,cols,cw,ch,gap,rows,cls,fs){ let t=`<rect x="${x0-4}" y="
 /* warning panel and caution/advisory panel (later B200 serials) */
 const WARN=[['L ENG FIRE','INVERTER','DOOR UNLOCKED','ALT WARN','R ENG FIRE'],['L FUEL PRESS',null,null,null,'R FUEL PRESS'],['L OIL PRESS','L GEN OVHT','A/P TRIM FAIL','R GEN OVHT','R OIL PRESS'],[null,'L BL AIR FAIL','A/P FAIL','R BL AIR FAIL',null]];
 const G_=k=>[k,k,'g'];
-const CAUT=[['L DC GEN',null,'HYD FLUID LOW','RVS NOT READY',null,'R DC GEN'],['L CHIP DETECT',null,'PROP SYNC ON','DUCT OVERTEMP',null,'R CHIP DETECT'],['L ENG ICE FAIL',null,'BATTERY CHARGE','EXT PWR',null,'R ENG ICE FAIL'],
+const CAUT=[['L DC GEN','L GEN TIE OPEN','HYD FLUID LOW','RVS NOT READY','R GEN TIE OPEN','R DC GEN'],['L CHIP DETECT','BATT TIE OPEN','PROP SYNC ON','DUCT OVERTEMP',null,'R CHIP DETECT'],['L ENG ICE FAIL',null,'BATTERY CHARGE','EXT PWR',null,'R ENG ICE FAIL'],
   [G_('L AUTOFEATHER'),null,G_('ELEC TRIM OFF'),G_('AIR COND N1 LOW'),null,G_('R AUTOFEATHER')],[G_('L ENG ANTI-ICE'),G_('BRAKE DEICE ON'),G_('LDG/TAXI LIGHT'),G_('PASS OXY ON'),G_('ELEC HEAT ON'),G_('R ENG ANTI-ICE')],
   [G_('L IGNITION ON'),G_('L BL AIR OFF'),null,G_('FUEL CROSSFEED'),G_('R BL AIR OFF'),G_('R IGNITION ON')]];
 
@@ -801,7 +816,7 @@ ${M('ehsi',`<g transform="translate(-52 22)"><rect x="335" y="615" width="194" h
 ${M('alt',`<g transform="translate(-44 6)">${ocase(596,492,125,127,16)}${alt('alt',596,494,52,{bz:'none'})}${lab(552,532,'TEST',{s:4})}${lab(640,528,'BARO',{s:4})}</g>`)}
 ${M('clk1',sqcase(102,610,80,80,12)+clock('c1',102,610,30))}${M('ts1',sqcase(108,702,76,76,12)+ts('ts',108,702,29))}${M('slv1',slaving(1,112,785,76,66))}
 ${M('rmi',`<g transform="translate(-44 6)">${ocase(264,644,124,118,16)}${rmi('rmi',264,642,47)}${lab(211,640,'A\nD\nF',{s:4})}${lab(317,640,'A\nD\nF',{s:4})}${lab(240,698,'NAV',{s:4})}${lab(288,698,'NAV',{s:4})}<path d="M209 688l6 6-6 6-6-6z M319 688l6 6-6 6-6-6z" fill="#f2f2f2"/></g>`)}
-${M('dme1',dme('d1',225,752,110,58))}${lab(PX(205),PY(445),'FAST\nERECT',{s:4.4,a:'start',c:'dk'})}${lab(PX(156),PY(468),'EFIS DIM',{s:3.8,c:'dk'})}
+${M('dme1',dme('d1',225,752,110,58))}${lab(PX(205),PY(445),'FAST\nERECT',{s:4.4,a:'start',c:'dk'})}${L(157,445.5,'MIC\nNORMAL',3.2,{c:'dk'})}${L(157,465,'OXY MASK',3.2,{c:'dk'})}
 ${M('vsi',`<g transform="translate(-43 30)">${ocase(595,629,120,128,16)}${vsi('vsi',595,622,47)}${lab(553,683,'A/B',{s:3.6})}${lab(637,683,'R',{s:3.6})}</g>`)}
 ${M('fcons',fcons(556,772))}
 <rect x="${PX(398)}" y="${PY(465)}" width="${(31*PK).toFixed(1)}" height="${(30*PK).toFixed(1)}" rx="3" class="lampb"/>${synchro(PX(413),PY(480),18)}${lab(PX(388),PY(470),'PROP SYNC',{s:3.6,c:'dk'})}
@@ -837,13 +852,16 @@ ${M('rmi2',`${ocase(1424,650,124,118,16)}${rmi('rmi2',1424,648,47)}${lab(1371,64
 ${M('vsi2',`${ocase(1806,659,120,128,16)}${vsi('vsi2',1806,652,47)}${lab(1764,713,'A/B',{s:3.6})}${lab(1848,713,'R',{s:3.6})}`)}
 ${M('xpdr',radioHead('xpdr','','ATC',1368,716))}
 ${M('dme2',dme('d2',1806,752,120,60,1))}
-${lab(PX(1096),PY(443),'RA TEST',{s:3.6,c:'dk'})}${lab(PX(1146),PY(452),'DH',{s:3.6,c:'dk'})}
+${lab(PX(1105),PY(425),'FAST\nERECT',{s:4.4,a:'start',c:'dk'})}${L(1148,431.5,'MIC\nNORMAL',3.2,{c:'dk'})}${L(1148,451,'OXY MASK',3.2,{c:'dk'})}
+${lab(PX(265),PY(331.5),'DH        TEST',{s:2.4})}${lab(PX(1034),PY(318.5),'DH        TEST',{s:2.4})}
 <!-- pilot's left subpanel -->
 ${GRP(190,481,236,514,'ENG AUTO\nIGNITION')}${L(210,494,'ARM',3.8)}${L(210,511,'OFF',3.8)}
 ${L(172,518,'GEN\nRESET',3.6)}${L(172,536,'ON',3.8)}${L(172,549,'OFF',3.8)}${L(66,541,'ON',3.8)}${L(66,551,'OFF',3.8)}
-${GRP(132,553,175,594,'ENG ANTI-ICE')}${GRP(55,560,96,598,'ACTUATOR')}${L(76,566,'STBY',3.6)}${L(76,595,'MAIN',3.6)}
+${L(78,484,'EXT PWR',3.6)}${L(78,490,'ON',3.2)}${L(84,499,'OFF',3.0,{a:'start'})}${L(84,508,'RESET',3.0,{a:'start'})}
+${L(145,557.5,'BUS SENSE\nRESET',3.0)}${L(145,583,'TEST',3.0)}${L(167,557.5,'GEN TIES\nMAN CLOSE',3.0)}${L(173,572,'NORM',2.4,{a:'start'})}${L(167,583,'OPEN',3.0)}
+${GRP(186,520,240,592,'ENGINE ANTI-ICE')}${L(199,526,'LEFT',3.0)}${L(226,526,'RIGHT',3.0)}${L(212.5,531,'ON',3.0)}${L(212.5,543,'OFF',3.0)}${L(212.5,557,'ACTUATOR\nSTANDBY',3.0)}${L(212.5,588,'MAIN',3.0)}
 ${GRP(95,592,146,630,'IGNITION AND\nENGINE START')}${L(120,606,'ON',3.6)}${L(120,615,'OFF',3.6)}${L(120,627,'STARTER ONLY',3.6)}${L(107,600,'LEFT',3.6)}${L(133,600,'RIGHT',3.6)}
-${GRP(160,594,201,630,'AUTOFEATHER')}${GRP(206,594,246,630,'PROP TEST\nGOV')}
+${GRP(160,594,201,630,'AUTOFEATHER')}${GRP(206,594,246,630,'PROP TEST')}${L(216,601,'GOV',3.0)}${L(236,598.5,'GND IDLE\nSTOP',2.7)}${L(226,628,'OFF',3.0)}
 ${L(80,614,'PARKING BRAKE',3.8)}
 <!-- pilot's right subpanel -->
 ${GRP(338,513,448,548,'LIGHTS')}${L(355,522,'LANDING',3.8)}${L(383,522,'TAXI',3.8)}${L(401,522,'ICE',3.8)}${L(419,522,'NAV',3.8)}${L(437,522,'RECOG',3.8)}${L(345,546,'LEFT',3.2)}${L(364,546,'RIGHT',3.2)}${L(410,547,'OFF',3.4)}
@@ -853,16 +871,17 @@ ${L(351,597,'BRAKE\nDEICE',3.2)}${L(369,597,'SURFACE\nDEICE',3.2)}${L(387,597,'S
 ${L(474,519,'LDG GEAR CONTROL',3.8)}${L(452,588,'DOWN\nLOCK REL',3.2)}${L(494,584,'HD LT\nTEST',3.2)}
 ${GRP(500,515,546,548,'LIGHTS')}${L(511,523,'BEACON',3.6)}${L(531,523,'STROBE',3.6)}
 ${L(513,554,'GEAR\nDOWN',3.4)}<rect x="${PX(505)}" y="${PY(562)}" width="${(17*PK).toFixed(1)}" height="${(18*PK).toFixed(1)}" rx="1" class="lampb"/>${annGrid(PX(506),PY(563),1,24,12,1,[[['x:gN','NOSE','g']]],null,5.4)}${annGrid(PX(506),PY(563)+13,2,11.5,13,1,[[['x:gL','L','g'],['x:gR','R','g']]],null,6.4)}
-${L(532,560,'TAIL\nFLOOD',3.4)}${L(537,599,'HYD FLUID\nSENSOR',3.2)}${L(537,622,'TEST',3.2)}
+${L(532,560,'TAIL\nFLOOD',3.4)}${L(514,598,'GEAR\nWARN',3.2)}${L(514,623,'SILENCE',3.2)}${L(537,599,'HYD FLUID\nSENSOR',3.2)}${L(537,622,'TEST',3.2)}
 <!-- centre: caution / advisory annunciators and the cabin gauges plate on the pedestal -->
 <rect x="${PX(556)}" y="${PY(507)}" width="${(184*PK).toFixed(1)}" height="${(74*PK).toFixed(1)}" rx="3" class="annhous"/>${annGrid(PX(566),PY(512),6,37,13,2.6,CAUT.concat([[null,null,null,null,null,null]]),'a')}
 <!-- copilot's environmental subpanel -->
-${GRP(780,509,906,622,'ENVIRONMENTAL')}${L(764,590,'STALL\nWARN TEST',3.4)}${L(764,622,'LDG GEAR\nWARN TEST',3.0)}
+${GRP(780,509,906,622,'ENVIRONMENTAL')}${L(764,590,'STALL\nWARN TEST',3.4)}${L(764,622,'LDG GEAR\nWARN TEST',3.0)}${L(771,608,'OFF',2.8,{a:'start'})}
+${L(792,563,'ENVR\nBLEED AIR\nNORMAL',2.8)}${L(792,589,'LOW',2.8)}${L(865,595,'AFT\nHEAT',3.2)}
 ${L(836,517,'MANUAL\nTEMP',3.4)}${L(848,528,'INCR',3.2)}${L(848,544,'DECR',3.2)}${L(860,517,'VENT\nBLOWER',3.4)}
 ${Array.from({length:7},(_,i)=>{ const a=-150+i*50; const [p,q]=pol(PX(885),PY(536),PK*14*1.62+4,a), [u,v]=pol(PX(885),PY(536),PK*14*1.62+8,a); return `<path d="M${p} ${q}L${u} ${v}" class="grpl"/>`; }).join('')}${L(892,520,'INCR',3.4)}${L(885,553,'CABIN TEMP',3.6)}${L(938,553,'CABIN TEMP MODE',3.6)}
 ${L(843,553,'BLEED AIR VALVES',3.6)}${L(828,559,'LEFT',3.2)}${L(857,559,'RIGHT',3.2)}${L(843,565,'OPEN',3.2)}${L(843,573,'ENVR\nOFF',3.0)}${L(843,588,'INSTR & ENVIR OFF',3.0)}
 ${L(818,595,'AFT\nBLOWER',3.2)}${L(840,595,'ELEC\nHEAT',3.2)}
-${GRP(906,559,958,612,'ENG FIRE TEST')}
+${GRP(906,559,958,612,'ENG FIRE TEST')}${L(926.5,576.5,'DET',3.0)}${L(926.5,586,'OFF',2.8)}${L(926.5,595.5,'EXT',3.0)}${L(913,601,'LEFT',3.0)}${L(940,601,'RIGHT',3.0)}<path d="M${PX(913)} ${PY(578)}V${PY(575.5)}H${PX(921)}M${PX(932)} ${PY(575.5)}H${PX(940)}V${PY(578)}M${PX(913)} ${PY(592)}V${PY(594.5)}H${PX(921)}M${PX(932)} ${PY(594.5)}H${PX(940)}V${PY(592)}" class="grpl"/>
 <!-- copilot's right subpanel: suction and cabin-air gauges sit behind the control column -->
 ${dial('suct',PX(1104),PY(506),30,{sc:[{min:2,max:7,a0:-60,a1:60,maj:1,mnr:0.25,lab:v=>v>=3&&v<=6?v:null,fs:0.24,lr:0.72,arcs:[[4.3,5.9,'agreen']]}],title:'SUCTION',ty:0.3,tfs:0.15})}
 ${dial('ctemp',PX(1097),PY(552),34,{sc:[{min:0,max:110,a0:-60,a1:60,maj:10,mnr:5,lab:v=>[0,50,80,100].includes(v)?v:null,fs:0.17,lr:0.8}],title:'°F',ty:0.06,tfs:0.15})}${L(1097,583,'CABIN AIR',4.2)}
@@ -870,7 +889,7 @@ ${dial('ctemp',PX(1097),PY(552),34,{sc:[{min:0,max:110,a0:-60,a1:60,maj:10,mnr:5
 ${GRP(1128,480,1193,526,'CABIN')}${L(1139,515,'FURN',3.2)}${L(1160,515,'LIGHTS',3.2)}${L(1181,515,'SIGNS',3.2)}
 ${dial('pneu',PX(1220),PY(505),42,{sc:[{min:0,max:24,a0:-110,a1:110,maj:10,mnr:2,lab:v=>v%10===0?v:null,fs:0.2,lr:0.72,arcs:[[12,20,'agreen']],red:[20]}],title:'PNEUMATIC\nPRESSURE',ty:0.38,tfs:0.11,unit:'PSI',uy:0.05})}
 <circle cx="${PX(1160)}" cy="${PY(570)}" r="48" class="sbz"/><circle cx="${PX(1160)}" cy="${PY(570)}" r="42" class="dial"/>${lab0(PX(1160),PY(564),'FLIGHT',10)}${lab0(PX(1153),PY(573),'HOURS',4.4)}${lab0(PX(1172),PY(573),'1/10',4.4)}<rect x="${PX(1160)-24}" y="${PY(576)}" width="48" height="12" rx="1" fill="#f2f2f2"/><text class="rd-hobbs" x="${PX(1160)}" y="${PY(576)+10}" font-size="9.5" fill="#111" font-family="IBM Plex Mono,monospace" text-anchor="middle">0000.0</text>
-${dial('oxy',PX(1216),PY(568),22,{sc:[{min:0,max:2000,a0:-110,a1:110,maj:500,mnr:250,lab:v=>v%1000===0?v/1000:null,fs:0.24,lr:0.66}],title:'OXYGEN',ty:0.5,tfs:0.17})}
+${dial('oxy',PX(1216),PY(568),22,{sc:[{min:0,max:2000,a0:-110,a1:110,maj:500,mnr:100,lab:v=>v%500===0?v:null,fs:0.15,lr:0.68}],title:'OXYGEN',ty:0.42,tfs:0.16,unit:'SUPPLY PRESSURE  PSI',uy:0.62,ufs:0.08})}
 <g transform="translate(0 ${DY})">
 <!-- left sidewall: fuel control panel, fuel system breakers, free air temperature -->
 <rect x="8" y="1112" width="438" height="152" rx="6" class="fuelp"/>${screw(16,1120)}${screw(438,1120)}${screw(16,1256)}${screw(438,1256)}
@@ -931,7 +950,7 @@ function build(stage,io){
     const Z=[]; Object.values(byId).forEach(o=>{ try{ const b=o.g.getBBox(); const r=document.createElementNS(NS,'rect'); r.setAttribute('class','hlr');
       const x0=Math.max(1,b.x-3), y0=Math.max(1,b.y-3), x1=Math.min(W-1,b.x+b.width+3), y1=Math.min(H-1,b.y+b.height+3);
       r.setAttribute('x',x0); r.setAttribute('y',y0); r.setAttribute('width',x1-x0); r.setAttribute('height',y1-y0); r.setAttribute('rx',5); o.g.insertBefore(r,o.g.firstChild);
-      if(o.c.t==='sbtn') return; const cx=b.x+b.width/2, cy=b.y+b.height/2, hw=Math.max(b.width+6,26)/2, hh=Math.max(b.height+6,26)/2; Z.push({o,cx,cy,x0:cx-hw,x1:cx+hw,y0:cy-hh,y1:Math.min(H-1,cy+hh)}); }catch(e){} });
+      if(o.c.t==='sbtn') return; const cx=b.x+b.width/2, cy=b.y+b.height/2, hw=Math.max(b.width+6,26)/2, hh=Math.max(b.height+6,26)/2; Z.push({o,cx,cy,x0:cx-hw,x1:cx+hw,y0:cy-hh,y1:Math.min(H-1,cy+hh)}); Object.assign(o.c,{_hx:cx,_hy:cy,_hw:hw,_hh:hh}); }catch(e){} });
     for(let a=0;a<Z.length;a++) for(let k=a+1;k<Z.length;k++){ const A=Z[a], B=Z[k]; if(A.x1<=B.x0||B.x1<=A.x0||A.y1<=B.y0||B.y1<=A.y0) continue;
       const dx=B.cx-A.cx, dy=B.cy-A.cy;
       if(Math.abs(dx)>=Math.abs(dy)){ const m=(A.cx+B.cx)/2; if(dx>=0){ A.x1=Math.min(A.x1,m); B.x0=Math.max(B.x0,m); } else { A.x0=Math.max(A.x0,m); B.x1=Math.min(B.x1,m); } }
@@ -954,7 +973,7 @@ function bind(world,byId,io){
     switch(c.t){
       case 'tog': case 'cb': case 'pull': case 'abtn': case 'key': case 'lbtn': io.set(c.id,d>0?1:d<0?0:(v?0:1)); return;
       case 'guard': { const gk=c.id+'G'; if(!io.get(gk)){ io.set(gk,1); return; } if(d===0) io.set(c.id,v?0:1); else io.set(c.id,d>0?1:0); return; }
-      case 'tog3': io.set(c.id,d? clamp((v||0)-d,-1,1) : (v!==0?0:-1)); return;
+      case 'tog3': { const nv=d? clamp((v||0)-d,-1,1) : (v!==0?0:-1); io.set(c.id,nv); if(c.spring&&nv!==0&&(c.spring===1||c.spring===true||(c.spring==='up'&&nv<0)||(c.spring==='dn'&&nv>0))) setTimeout(()=>{ if(io.get(c.id)===nv) io.set(c.id,0); },450); return; }
       case 'rotsel': io.set(c.id,clamp(v+(d||1),0,c.vals.length-1)); return;
       case 'rot': io.set(c.id,clamp(v+d*0.08,0,1)); return;
       case 'enc': io.set(c.id+':d',d||1); return;
@@ -977,7 +996,7 @@ function bind(world,byId,io){
     if(c.t==='flap'){ const idx=clamp(Math.round((pt.y-(c.y-30))/30),0,2); io.set(c.id,idx===io.get(c.id)?(idx+1)%3:idx); return; }
     if(c.t==='tog'){ drag={o,tg:1,y:pt.y,done:0}; try{ g.setPointerCapture(e.pointerId); }catch(_){} return; }
     if(c.t==='yoke'){ drag={o,stk:1,x:pt.x,y:pt.y}; try{ g.setPointerCapture(e.pointerId); }catch(_){} g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
-    if(c.t==='tog3'){ const v=io.get(c.id); const q=(c.horiz?pt.x-c.x:pt.y-c.y)/(c.sc||1); const t=q<-7?-1:q>7?1:(v!==0?0:-1); io.set(c.id,t===v?0:t); if(c.spring){ drag={o,spr:1}; try{ g.setPointerCapture(e.pointerId); }catch(_){} } return; }
+    if(c.t==='tog3'){ const v=io.get(c.id); /* thirds of the switch's own touch zone: top / centre / bottom */ const q=c.horiz?pt.x-(c._hx??c.x):pt.y-(c._hy??c.y), th=Math.max(4,(c.horiz?(c._hw||13):(c._hh||13))*0.34); const t=q<-th?-1:q>th?1:(v!==0?0:-1); io.set(c.id,t===v?0:t); if(c.spring){ drag={o,spr:1}; try{ g.setPointerCapture(e.pointerId); }catch(_){} } return; }
     if(c.t==='guard'){ const onGuard=e.target.closest('.gd'); const gk=c.id+'G'; if(onGuard||!io.get(gk)){ io.set(gk,io.get(gk)?0:1); return; } io.set(c.id,io.get(c.id)?0:1); return; }
     step(o,0);
   });
@@ -990,7 +1009,7 @@ function bind(world,byId,io){
     if(c.t==='rot') io.set(c.id,clamp(drag.v+(pt.x-drag.x)/60,0,1));
     if(c.t==='enc'||c.t==='enc2'){ const d=(pt.x-drag.x)-(pt.y-drag.y); const n=Math.trunc(d/6)-drag.acc; if(n){ drag.acc+=n; io.set(c.id+(c.t==='enc'?':d':drag.inn?':i':':o'),n); } }
   });
-  const end=()=>{ if(!drag) return; const c=drag.o.c; if(drag.tg&&!drag.done) io.set(c.id,io.get(c.id)?0:1); if(drag.stk) io.set('stick',null); if(drag.mom) io.set(c.id,0); if(drag.spr) io.set(c.id,0);
+  const end=()=>{ if(!drag) return; const c=drag.o.c; if(drag.tg&&!drag.done) io.set(c.id,io.get(c.id)?0:1); if(drag.stk) io.set('stick',null); if(drag.mom) io.set(c.id,0); if(drag.spr){ const sv=io.get(c.id); if(c.spring===1||c.spring===true||(c.spring==='up'&&sv<0)||(c.spring==='dn'&&sv>0)) io.set(c.id,0); }
     if(drag.lev) io.set(c.id,levSnap(c,io.get(c.id)));
     if(c.t==='enc'&&!drag.acc) io.set(c.id+':d',1);
     if(c.t==='enc2'&&!drag.acc) io.set(c.id+(drag.inn?':i':':o'),1);

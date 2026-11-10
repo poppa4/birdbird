@@ -7,7 +7,7 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
-<link rel="stylesheet" href="b200.css?v=8">
+<link rel="stylesheet" href="b200.css?v=9">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=49"></script>
@@ -89,6 +89,8 @@
         <div class="engbtns" style="margin-top:8px"><button class="btn warn" id="failL">Fail left</button><button class="btn warn" id="failR">Fail right</button><button class="btn warn" id="fireLb">Fire left</button><button class="btn warn" id="fireRb">Fire right</button><button class="btn" id="restore" style="grid-column:1/-1">Restore both engines</button></div></div>
       <div class="box"><b class="t">Pressurisation</b><p>Lose the cabin pressure. The cabin climbs towards the aircraft altitude; ALT WARN comes on at 12,500 ft cabin altitude.</p>
         <div class="btns" style="margin-top:8px"><button class="btn warn" id="decomp">Decompression</button></div></div>
+      <div class="box"><b class="t">Ground power</b><p>Plug a ground power unit in on the ramp (EXT PWR light). With the battery ON, EXT PWR — ON puts it on line.</p>
+        <div class="btns" style="margin-top:8px"><button class="btn" id="gpuBtn">Plug in ground power</button></div></div>
       <div class="box"><b class="t">Wind</b><div id="windBox"></div></div>
     </div>
   </section>
@@ -131,7 +133,7 @@
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=5"></script>
 <script src="otw.js?v=4"></script>
-<script src="b200panel.js?v=5"></script>
+<script src="b200panel.js?v=6"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=46"></script>
 <script>
@@ -153,7 +155,7 @@ LAB.add({},{
  'Control wheel':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Assisted handling (attitude hold, auto-trim, rudder assist)':'Assistert styring (attitydehold, auto-trim, sideror-hjelp)','Rudder and brakes':'Sideror og bremser','Hold for brakes':'Hold for bremser',
  'Make it harder':'Gjør det vanskeligere','Engines':'Motorer','Flame out an engine at any time. With the autofeather armed and both power levers forward, the failed propeller feathers itself.':'Stopp en motor når som helst. Med autofeather armert og begge effekthendlene fremme fløyes propellen på motoren som stoppet automatisk.',
  'Fail left':'Stopp venstre','Fail right':'Stopp høyre','Fire left':'Brann venstre','Fire right':'Brann høyre','Restore both engines':'Gjenopprett begge motorene',
- 'Pressurisation':'Trykkabin','Lose the cabin pressure. The cabin climbs towards the aircraft altitude; ALT WARN comes on at 12,500 ft cabin altitude.':'Mist kabintrykket. Kabinen stiger mot flyets høyde; ALT WARN tennes ved 12 500 ft kabinhøyde.','Decompression':'Trykkfall','Wind':'Vind',
+ 'Pressurisation':'Trykkabin','Ground power':'Bakkestrøm','Plug a ground power unit in on the ramp (EXT PWR light). With the battery ON, EXT PWR — ON puts it on line.':'Koble til en bakkestrømenhet på oppstillingsplassen (EXT PWR-lys). Med batteriet PÅ kobler EXT PWR — ON den inn.','Plug in ground power':'Koble til bakkestrøm','Unplug ground power':'Koble fra bakkestrøm','Lose the cabin pressure. The cabin climbs towards the aircraft altitude; ALT WARN comes on at 12,500 ft cabin altitude.':'Mist kabintrykket. Kabinen stiger mot flyets høyde; ALT WARN tennes ved 12 500 ft kabinhøyde.','Decompression':'Trykkfall','Wind':'Vind',
  'Understand':'Forstå','How the model works':'Slik virker modellen','Engine start':'Motorstart',
  'IGN & START ON runs the starter and the igniters (IGNITION ON). Introduce fuel with the condition lever at LOW IDLE at a stabilised 12 % N1 or more. Fuel too early, a weak start or high idle gives a hotter start; above 1,000 °C ITT is a hot start. Starter OFF at about 50 % N1, then GEN RESET and ON.':'IGN & START ON kjører starteren og tennpluggene (IGNITION ON). Gi drivstoff med condition-hendelen på LOW IDLE ved stabile 12 % N1 eller mer. For tidlig drivstoff, svak start eller high idle gir varmere start; over 1000 °C ITT er en «hot start». Starter AV ved rundt 50 % N1, deretter GEN RESET og ON.',
  'Autofeather':'Autofeather','Armed with the switch at ARM and both power levers above about 90 % N1: two green AUTOFEATHER lights. Below 400 ft-lb on one engine the other side disarms; below 200 ft-lb the failing propeller feathers. TEST bypasses the power-lever switches so you can check it at low power.':'Armert med bryteren på ARM og begge effekthendlene over ca. 90 % N1: to grønne AUTOFEATHER-lys. Under 400 ft-lb på én motor desarmeres den andre siden; under 200 ft-lb fløyes propellen på motoren som svikter. TEST forbigår hendelbryterne slik at du kan sjekke systemet på lav effekt.',
@@ -185,12 +187,12 @@ const SYS={}; const E=[0,1].map(()=>({}));
 const NAVS={'110.30':'LOC','113.30':'VOR'};
 const NDB={id:'AN',freq:375,N:-7600,E:0}, MKR=[{k:'O',N:-7600,E:0},{k:'M',N:-1100,E:0}];
 const XN=['xpdrMd','com1Md','com2Md','nav1Md','nav2Md','adfMd'];
-function engReset(e,run){ Object.assign(e,{ng:run?61:0,itt:run?560:15,np:run?800:0,tq:run?120:0,ff:run?150:0,oilP:run?95:0,oilT:run?55:15,lit:!!run,fail:false,fire:false,fireT:0,ext:false,ngLight:0,hotT:0,dmg:false,startT:0,hung:false,autoF:false,afCyc:0,afArm:false,vane:0,vaneT:0,genOn:!!run,genRst:!!run,fwT:0,stT:0,main:1180,aux:420,nxT:0,xfr:false,warnedEarly:false}); }
+function engReset(e,run){ Object.assign(e,{ng:run?61:0,itt:run?560:15,np:run?800:0,tq:run?120:0,ff:run?150:0,oilP:run?95:0,oilT:run?55:15,lit:!!run,fail:false,fire:false,fireT:0,ext:false,ngLight:0,hotT:0,dmg:false,startT:0,hung:false,autoF:false,fwShut:false,afCyc:0,afArm:false,vane:0,vaneT:0,genOn:!!run,genRst:!!run,fwT:0,stT:0,main:1180,aux:420,nxT:0,xfr:false,warnedEarly:false}); }
 function sysDefault(cold){
   const w=cold?0:1;
   Object.assign(SYS,{bat:w,genL:cold?1:0,genR:cold?1:0,avio:w,ignL:0,ignR:0,aignL:0,aignR:0,afSw:0,sync:0,beacon:w,strobe:0,navLt:w,recog:0,taxi:0,landL:0,landR:0,iceLt:0,tailFl:0,park:cold?1:0,
     engAIL:0,engAIR:0,actL:0,actR:0,surf:0,propDe:0,wsP:0,wsC:0,pitL:w,pitR:w,fvL:w,fvR:w,stallHt:w,govT:0,pilotAir:0,defrost:0,cabAir:0,copAir:0,
-    cabAlt:0,cabRate:0.4,pressSw:0,annTest:0,fireTest:2,stallTest:0,
+    cabAlt:0,cabRate:0.4,pressSw:0,annTest:0,fireTestL:0,fireTestR:0,stallTest:0,extPwr:0,busSense:0,genTies:0,tieOpen:0,gndIdle:0,envBleed:1,aftHeat:0,fastErect2:0,dhK2:0.2,raT2:0,
     bleedL:-1,bleedR:-1,cabMode:3,cabTemp:0.5,blower:1,manTemp:0,aftBlow:0,elecHeat:0,furn:w,cabLt:1,signs:cold?1:0,rudBoost:1,elTrim:1,mask:0,paxOvr:0,o2Ready:w,inv:cold?0:-1,brakeDe:0,micSel:1,micSelR:1,
     stbyL:0,stbyR:0,xfeed:0,auxL:0,auxR:0,fqSel:1,fwL:1,fwR:1,fwLG:0,fwRG:0,altStatic:0,altStaticG:0,
     pwrL:0,pwrR:0,propL:1,propR:1,condL:cold?0:0.5,condR:cold?0:0.5,trim:0.05,rudTrim:0,ailTrim:0.5,frPwr:0.5,frProp:0.5,frCond:0.5,frFlap:0.5,
@@ -217,6 +219,13 @@ const MW={ackR:new Set(),ackA:new Set(),w:false,c:false};
 const fuelUsed=()=>E.reduce((a,e)=>a+Math.max(0,1600-(e.main+e.aux)),0);
 const cbIn=n=>SYS.cb[n]!==0;
 const bus=()=>SYS.bat===1||E.some(e=>e.genOn);
+/* external power: the relay closes only with a unit plugged in, EXT PWR at ON and the battery switch ON (manual ch. 2, ground power) */
+const extOn=()=>!!GPU.on&&SYS.extPwr===-1&&SYS.bat===1&&S.ground;
+const GPU={on:false};
+/* five-bus ties: GEN TIES OPEN or a BUS SENSE test opens the generator ties (battery isolated from the generators) */
+const tiesOpen=()=>SYS.genTies===1||!!SYS.tieOpen;
+const fwOpen=i=>!!SYS['fw'+SIDES[i]]&&!E[i].fwShut;
+const fireDet=i=>SYS['fireTest'+SIDES[i]]===-1, fireExtT=i=>SYS['fireTest'+SIDES[i]]===1;
 const avOn=()=>bus()&&(SYS.avio===1||!cbIn('AV MASTER'));
 const radOn=k=>{ const cb={com1:'COMM 1',com2:'COMM 2',nav1:'NAV 1',nav2:'NAV 2',xpdr:'XPDR',adf:'ADF'}[k]; if(k==='com1'&&SYS.gndComm&&SYS.bat===1&&!avOn()) return SYS.com1Md>0; return avOn()&&cbIn(cb)&&SYS[k+'Md']>0; };
 const feathered=i=>SYS['prop'+SIDES[i]]<0.03||E[i].autoF;
@@ -228,7 +237,7 @@ const P=B200P.build(PST,{get:k=>ioGet(k),set:(k,v)=>ioSet(k,v),intercept:()=>fal
 const CBK={}; P.C.forEach(c=>{ if(c.t==='cb') CBK[c.id]=c.cb; });
 function ioGet(k){
   if(k==='gear') return SYS.gearH; if(k==='flaps') return S.ctl.flap; if(k==='trim') return S.ctl.trim;
-  if(k==='gearLights'){ if(!bus()||!cbIn('GEAR IND')) return 'off'; if(SYS.hdLt) return 'test'; const g=S.ctl.gearPos; return Math.abs(g-SYS.gearH)>0.01?'transit':gearWarn()?'warn':g>0.99?'down':'up'; }
+  if(k==='gearLights'){ if(!bus()||!cbIn('GEAR IND')) return 'off'; if(SYS.hdLt) return 'test'; const g=S.ctl.gearPos; return Math.abs(g-SYS.gearH)>0.01?'transit':(gearWarn()||(SYS.stallTest===1&&cbIn('GEAR WARN')))?'warn':g>0.99?'down':'up'; }
   if(k.startsWith('led:')) return ledOf(k.slice(4));
   if(k.startsWith('txt:')) return txtOf(k.slice(4));
   if(CBK[k]) return SYS.cb[CBK[k]];
@@ -236,7 +245,7 @@ function ioGet(k){
 }
 function ledOf(id){ const b=bus(); if(!b) return false;
   if(id==='mwL'||id==='mwR') return (MW.w&&blinkOn())||!!SYS.annTest; if(id==='mcL'||id==='mcR') return (MW.c&&blinkOn())||!!SYS.annTest;
-  if(id==='fireL'||id==='fireR'){ const i=id==='fireL'?0:1; return E[i].fire||SYS.fireTest===(i?3:1)||SYS.annTest; }
+  if(id==='fireL'||id==='fireR'){ const i=id==='fireL'?0:1; return E[i].fire||(fireDet(i)&&cbIn('FIRE DET'))||fireExtT(i)||SYS.annTest; }
   if(id==='dmePwr') return avOn()&&!!SYS.dmePwr; if(id==='dme2Pwr') return avOn()&&!!SYS.dme2Pwr;
   if(id==='gyroMode') return !!SYS.gyroMode; if(id==='gyro2Mode') return !!SYS.gyro2Mode; if(id==='gndComm') return !!SYS.gndComm;
   if(/^(com1|com2|nav1|nav2|adf)Act$/.test(id)) return radOn(id.slice(0,-3))&&!!SYS[id];
@@ -285,7 +294,13 @@ function ioSet(k,v){
   const o=P.byId[k];
   if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); procTouch(k); } SYS[k]=v; return; }
   if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); procTouch(k); } SYS[k]=v; return; }
-  if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; if(bus()&&!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
+  if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; E[i].fwShut=true; /* hot battery bus: works with the master switch off */ if(!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' firewall fuel valve closed and extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannskott-drivstoffventil lukket og brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
+  if(k==='extPwr'){ const o0=SYS.extPwr; SYS.extPwr=v; if(v!==o0) beep(260,0.025,0.06); if(v===1){ flash(L(tr2('EXT PWR RESET: resets the external power relay','EXT PWR RESET: tilbakestiller reléet for ekstern strøm'))); } else if(v===-1){ flash(GPU.on?(SYS.bat===1?L(tr2('External power ON line','Ekstern strøm tilkoblet')):L(tr2('EXT PWR: the relay closes only with the battery switch ON','EXT PWR: reléet lukker bare med batteribryteren PÅ'))):L(tr2('EXT PWR ON — no ground power unit plugged in','EXT PWR ON — ingen bakkestrømenhet tilkoblet'))); } else flash('EXT PWR OFF'); procTouch(k); return; }
+  if(k==='busSense'){ SYS.busSense=v; if(v){ beep(260,0.025,0.06); if(bus()){ if(v===1){ SYS.tieOpen=1; flash(L(tr2('BUS SENSE TEST: bus ties open — L/R GEN TIE OPEN and BATT TIE OPEN','BUS SENSE TEST: busskoblingene åpner — L/R GEN TIE OPEN og BATT TIE OPEN'))); } else { SYS.tieOpen=0; flash(L(tr2('BUS SENSE RESET: bus ties closed','BUS SENSE RESET: busskoblingene lukket'))); } } } procTouch(k); return; }
+  if(k==='genTies'){ const o0=SYS.genTies; SYS.genTies=v; if(v!==o0) beep(260,0.025,0.06); if(v===-1){ SYS.tieOpen=0; flash(L(tr2('GEN TIES MAN CLOSE: generator ties closed','GEN TIES MAN CLOSE: generatorkoblingene lukket'))); } else flash('GEN TIES '+(v===1?'OPEN':'NORM')); procTouch(k); return; }
+  if(k==='dhK2'){ SYS.dhK2=SYS.dhK=v; return; }
+  if(k==='raT2'){ SYS.raT2=v; SYS.raT=v; if(v) click(); return; }
+  if(k==='gndIdle'){ SYS[k]=v; if(v){ click(); flash(L(tr2('PROP TEST GND IDLE STOP: ground idle stop solenoids released (props to the flight idle stop)','PROP TEST GND IDLE STOP: bakketomgang-stoppet utløst (propellene til flight idle-stoppet)'))); } return; }
   if(/^ap2?(AP|YD|HDG|NAV|APPR|BC|CLIMB|ALT|ALTSEL|VS|IAS|DSC)$/.test(k)){ SYS[k]=v; if(v) apPress(k.replace(/^ap2?/,'')); return; }
   if(k==='gang'){ SYS.gang=v; if(v){ SYS.bat=0; SYS.genL=1; SYS.genR=1; beep(260,0.04,0.06); flash(L(tr2('MASTER SWITCH gang bar: battery and both generators OFF','MASTER SWITCH-stangen: batteri og begge generatorer AV'))); procTouch('bat'); } return; }
   if(/^(com1|com2|nav1|nav2|adf)X$/.test(k)){ SYS[k]=v; const r=k.slice(0,-1); if(v&&radOn(r)){ const f=SYS[r];
@@ -317,7 +332,7 @@ function ioSet(k,v){
   if(k==='xpdrPre'){ SYS[k]=v; if(v&&radOn('xpdr')){ [SYS.xpdr,SYS.xpre]=[SYS.xpre,SYS.xpdr]; click(); } return; }
   if(k==='dmeCh'||k==='dme2Ch'){ SYS[k]=v; if(v){ const n=k==='dmeCh'?'d1ch':'d2ch'; SYS[n]=SYS[n]%3+1; click(); flash('DME '+(n==='d1ch'?'1':'2')+' — CH '+SYS[n]); } return; }
   if(k==='dmeSel'||k==='dme2Sel'){ SYS[k]=v; if(v){ const n=k==='dmeSel'?'d1sel':'d2sel'; SYS[n]=(SYS[n]+1)%3; click(); } return; }
-  if(k==='slewL'||k==='slewR'||k==='slew2L'||k==='slew2R'||k==='fastErect'||k==='raT'||k==='hydT'||k==='hdLt'||k==='stallTest'||/^(com1|com2|nav1|nav2|xpdr|adf)T$/.test(k)||/^v(LoadL|LoadR|Batt|AC)$/.test(k)){ SYS[k]=v; if(v){ click(); if(k==='fastErect') flash(L(tr2('Attitude gyro fast erect','Attitydegyro hurtigoppretting'))); if(k==='stallTest'&&bus()) procTouch('stallTest'); } return; }
+  if(k==='slewL'||k==='slewR'||k==='slew2L'||k==='slew2R'||k==='fastErect'||k==='fastErect2'||k==='raT'||k==='hydT'||k==='hdLt'||k==='stallTest'||/^(com1|com2|nav1|nav2|xpdr|adf)T$/.test(k)||/^v(LoadL|LoadR|Batt|AC)$/.test(k)){ SYS[k]=v; if(v){ click(); if(k==='fastErect'||k==='fastErect2') flash(L(tr2('Attitude gyro fast erect','Attitydegyro hurtigoppretting'))); if(k==='stallTest'&&bus()) procTouch('stallTest'); } return; }
   if(k==='hornSil'){ SYS[k]=v; if(v&&gearWarn()&&!flapHorn()){ SYS.hornSilOn=1; click(); flash(L(tr2('Gear warning horn silenced (power-lever warning only)','Understellsvarsel dempet (bare effekthendel-varselet)'))); } return; }
   if(k==='dlRel'){ SYS[k]=v; if(v&&S.ground) flash(L(tr2('Down-lock release: overrides the ground lock — never on the ground with the handle up','Down-lock release: overstyrer bakkelåsen — aldri på bakken med hendelen oppe'))); return; }
   if(k==='gearPump'){ SYS[k]=v; if(v){ click(); if(SYS.gearH===1&&S.ctl.gear===0){ SYS.pumpN++; if(SYS.pumpN>=30){ S.ctl.gear=1; msg(tr2('Alternate extension: gear pumped down — check three green','Alternativ utfelling: understellet pumpet ned — sjekk tre grønne')); } else if(SYS.pumpN%5===0) flash(L(tr2('Pumping: ','Pumper: '))+SYS.pumpN+'/30'); } else flash(L(tr2('Alternate extension: handle DOWN first, then pump (only needed when the normal system fails)','Alternativ utfelling: hendelen NED først, pump så (bare når normalsystemet svikter)'))); } return; }
@@ -336,7 +351,8 @@ function ioSet(k,v){
   if(o&&o.c.t==='abtn'){ click(); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
   if(o&&o.c.t==='lev'&&old!==undefined&&Math.abs(old-v)>0.001){ flashT=1.2; el('stat2').textContent=descr(k); el('stat2').classList.add('chg'); }
   if(k==='annTest'&&v) PR.m.annT=1;
-  if(k==='fireTest'&&v!==2) PR.m.fireT=1;
+  if((k==='fireTestL'||k==='fireTestR')&&v!==0) PR.m.fireT=1;
+  if((k==='elecHeat'||k==='aftHeat')&&v&&!S.ground) msg(tr2('Electric heat is for ground use only: in flight the squat switch releases the solenoid-held switch to OFF.','Elektrisk varme er bare for bakken: i luften slipper squat-bryteren den solenoidholdte bryteren til OFF.'));
   if(k==='avio'&&!v){ AP.on=false; AP.fd=false; }
   if(k==='afSw'&&v===0) E.forEach(e=>{ e.autoF=false; });
   if(k==='pressSw'&&v===-1) msg(tr2('Cabin pressure DUMP: the outflow valve opens and the cabin climbs to the aircraft altitude.','Kabintrykk DUMP: utstrømningsventilen åpner og kabinen stiger til flyets høyde.'));
@@ -457,9 +473,9 @@ function sysTick(dt,o){
     const starter=(ign===-1||ign===1)&&b&&cbIn('START '+s)&&!e.genOn;
     const autoIgn=SYS['aign'+s]&&b&&e.tq<400&&e.ng>50;
     e.ignOn=b&&cbIn('IGN '+s)&&(ign===-1||autoIgn);
-    if(!SYS['fw'+s]) e.fwT+=dt; else e.fwT=0;
+    if(!fwOpen(i)) e.fwT+=dt; else e.fwT=0;
     const fuelAv=e.fwT<3&&(e.main+e.aux)>0;
-    e.press=SYS['fw'+s]&&((SYS['stby'+s]&&b&&cbIn('STBY PUMP '+s))||e.ng>8);
+    e.press=fwOpen(i)&&((SYS['stby'+s]&&b&&cbIn('STBY PUMP '+s))||e.ng>8);
     const fuelOn=cond>=0.45&&fuelAv;
     if(starter) e.stT+=dt; else e.stT=Math.max(0,e.stT-dt*0.5);
     if(!e.lit&&fuelOn&&e.ignOn&&e.ng>=10&&!e.fail){ e.lit=true; e.ngLight=e.ng; e.startT=0; e.hung=false; if(e.ng<12&&!e.warnedEarly){ e.warnedEarly=true; msg(tr2(s+' engine: fuel introduced below 12 % N1 — expect a hotter start.',s+' motor: drivstoff gitt under 12 % N1 — forvent en varmere start.')); procBad(); } }
@@ -471,7 +487,7 @@ function sysTick(dt,o){
     e.ng=Math.max(0,e.ng);
     let ittT;
     if(e.lit){ if(e.ng<idle-2){ const peak=700+75*Math.max(0,12-e.ngLight)+(cond>0.9?170:0); ittT=e.hung?Math.min(1150,e.itt+60):(e.startT<5?peak:Math.max(560,peak-(e.startT-5)*30)); }
-      else ittT=520+(e.ng-61)*6.1+Math.max(0,o.oat-15)*1.2+(pl<-0.12?40:0)+(e.dmg?60:0)+e.vane*15; }
+      else ittT=520+(e.ng-61)*6.1+Math.max(0,o.oat-15)*1.2+(pl<-0.12?40:0)+(e.dmg?60:0)+e.vane*15-(SYS.envBleed===0&&SYS['bleed'+s]===-1?10:0); }
     else ittT=Math.max(o.oat,15);
     e.itt+=(ittT-e.itt)*Math.min(1,dt*(e.lit?(e.ng<idle-2?1.1:0.8):(starter?0.25:0.06)));
     if(e.itt>1000){ e.hotT+=dt; if(!e.hotMsg){ e.hotMsg=true; msg(tr2(s+' ENGINE HOT START — ITT above 1000 °C. Condition lever FUEL CUTOFF, keep the starter running to cool it.',s+' MOTOR «HOT START» — ITT over 1000 °C. Condition-hendel FUEL CUTOFF, la starteren gå for å kjøle.')); procBad(); } if(e.hotT>5&&!e.dmg){ e.dmg=true; msg(tr2(s+' engine over-temperature for more than 5 s: an inspection is required after flight.',s+' motor overtemperatur i mer enn 5 s: krever inspeksjon etter flyging.')); } } else { e.hotT=0; if(e.itt<900) e.hotMsg=false; }
@@ -487,6 +503,7 @@ function sysTick(dt,o){
     else if(e.lit) npT=pl<-0.12?npSet*0.95:pl<0?1000:Math.min(npSet,800+(e.ng-61)*26+ias*3.2);
     else npT=Math.min(npSet,ias*11);
     if(SYS.govT&&b&&cbIn('PROP GOV')&&npT>1870) npT=1870+(npT-1870)*0.1;
+    if(S.ground&&e.lit&&!fth&&pl>=0&&pl<0.1&&b&&cbIn('PROP GOV')&&!SYS.gndIdle) npT+=60; /* ground idle stop solenoids energised on the ground: finer pitch, a little more rpm */
     if(i===1&&SYS.sync&&b&&cbIn('PROP SYNC')&&E[0].lit&&e.lit&&!fth&&Math.abs(E[0].np-npT)<30) npT=E[0].np;
     if(af===1&&e.afCyc>0) npT-=150*(0.5+0.5*Math.sin(e.afCyc*5));
     e.np+=(npT-e.np)*Math.min(1,dt*(fth?0.35:1.0));
@@ -500,15 +517,17 @@ function sysTick(dt,o){
     if(e.aux>0&&e.lit&&!e.xfr) e.nxT+=dt; else e.nxT=0;
     // generator
     const gs=SYS['gen'+s]; if(gs===-1){ if(e.ng>=50&&e.lit) e.genRst=true; e.rstT=(e.rstT||0)+dt; if(e.rstT>0.7){ SYS['gen'+s]=0; e.rstT=0; } } else e.rstT=0; if(gs===1){ e.genRst=false; }
-    const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ SYS.battT=Math.max(SYS.battT,20); procTouch('gen'+s+'On'); }
+    const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ if(!tiesOpen()) SYS.battT=Math.max(SYS.battT,20); procTouch('gen'+s+'On'); }
     // engine anti-ice (inertial vane): main actuator needs ENG ANTI-ICE power, standby its own
     const tgt=SYS['engAI'+s]?1:0, act=SYS['act'+s]?(b&&cbIn('STBY ANTI-ICE '+s)):(b&&cbIn('ENG ANTI-ICE '+s));
     if(act) e.vane=F.clamp(e.vane+(tgt?1:-1)*dt/(SYS['act'+s]?18:12),0,1);
     if(Math.abs(tgt-e.vane)>0.01) e.vaneT+=dt; else e.vaneT=0;
-    if(e.fire){ if(cond<0.05&&!SYS['fw'+s]){ e.fireT+=dt*(e.ext?3:1); if(e.fireT>9){ e.fire=false; e.fireT=0; msg(tr2(s+' engine fire out.',s+' motorbrann slukket.')); } } }
+    if(e.fire){ if(cond<0.05&&!fwOpen(i)){ e.fireT+=dt*(e.ext?3:1); if(e.fireT>9){ e.fire=false; e.fireT=0; msg(tr2(s+' engine fire out.',s+' motorbrann slukket.')); } } }
     const fe=S.eng[i]; fe.fail=false; fe.off=!e.lit; fe.feather=fth; fe.thr=e.lit&&pl>=0?F.clamp(e.tq*e.np/(2230*2000),0,1):0;
   });
-  SYS.battT=Math.max(0,SYS.battT-dt);
+  SYS.battT=Math.max(0,SYS.battT-dt); if(tiesOpen()) SYS.battT=0;
+  /* solenoid-held heat switches: released to OFF about a second after they are selected in flight */
+  if(!S.ground&&(SYS.elecHeat||SYS.aftHeat)){ SYS.ehT=(SYS.ehT||0)+dt; if(SYS.ehT>1.2){ SYS.elecHeat=0; SYS.aftHeat=0; SYS.ehT=0; } } else SYS.ehT=0;
   if(SYS.identT>0) SYS.identT-=dt;
   // gear: the handle drives the hydraulic gear only with power and the relay breaker in
   if(b&&cbIn('GEAR')&&S.ctl.gear!==SYS.gearH&&!(S.ground&&SYS.gearH===0)){ S.ctl.gear=SYS.gearH; SYS.pumpN=0; }
@@ -520,7 +539,7 @@ function sysTick(dt,o){
   const pres=supply>0&&!SYS.decomp&&cbIn('PRESS CONT')&&((SYS.pressSw===0&&!ground)||SYS.pressSw===1);
   const maxDiff=hP(pA(acAlt)+6.5*68.95);
   const tgt=pres?Math.min(acAlt,Math.max(SYS.cabSel,maxDiff)):acAlt;
-  const rate=pres?200+SYS.cabRate*1800:(SYS.decomp?7000:SYS.pressSw===-1?3000:supply?1500:2200);
+  const rate=pres?(200+SYS.cabRate*1800)*(SYS.envBleed===0?0.6:1):(SYS.decomp?7000:SYS.pressSw===-1?3000:supply?1500:2200);
   const c0=SYS.cab; SYS.cab+=F.clamp(tgt-SYS.cab,-rate*dt/60,rate*dt/60); SYS.cabVS+=(((SYS.cab-c0)/Math.max(dt,1e-3))*60-SYS.cabVS)*Math.min(1,dt*2);
   SYS.diff=Math.max(0,(pA(SYS.cab)-pA(acAlt))/68.95);
   // oxygen: masks only help with the system-ready handle pulled; passenger masks auto-deploy at 12,500 ft
@@ -628,8 +647,8 @@ function annCompute(o){
     if(e.vane>0.99) A[s+' ENG ANTI-ICE']=1;
     if(e.vaneT>15) A[s+' ENG ICE FAIL']=1;
     if(e.ext) A[s+' EXT D']=1;
-    if(SYS.fireTest===(i?3:1)&&fd) A[s+' ENG FIRE']=1;
-    if(SYS.fireTest===(i?4:0)){ A[s+' EXT D']=1; A[s+' EXT OK']=1; }
+    if(fireDet(i)&&fd) A[s+' ENG FIRE']=1;
+    if(fireExtT(i)){ A[s+' EXT D']=1; A[s+' EXT OK']=1; }
     if(e.nxT>30) A['x:nx'+s]=1;
   });
   if(SYS.inv===0) A['INVERTER']=1;
@@ -644,7 +663,10 @@ function annCompute(o){
   if(SYS.brakeDe) A['BRAKE DEICE ON']=1;
   if((SYS.landL||SYS.landR||SYS.taxi)&&S.ctl.gearPos<0.01) A['LDG/TAXI LIGHT']=1;
   if(SYS.acLow) A['AIR COND N1 LOW']=1;
-  if(SYS.elecHeat) A['ELEC HEAT ON']=1;
+  if((SYS.elecHeat||SYS.aftHeat)&&S.ground) A['ELEC HEAT ON']=1;
+  if(GPU.on) A['EXT PWR']=1;
+  if(tiesOpen()){ A['L GEN TIE OPEN']=1; A['R GEN TIE OPEN']=1; }
+  if(SYS.tieOpen) A['BATT TIE OPEN']=1;
   if(SYS.trimHat&&AP.on) A['A/P TRIM FAIL']=1;
   if(avOn()&&cbIn('AUTOPILOT')){ if(AP.on) A['ap:AP']=1; if(SYS.yd) A['ap:YD']=1; if(AP.lat==='HDG') A['ap:HDG']=1; if((AP.lat==='VOR'||AP.latArm==='NAV')&&!SYS.bcMode) A['ap:NAV']=AP.latArm?'blink':1; if(SYS.bcMode&&(AP.fd||AP.on)) A['ap:B/C']=1; if(AP.lat==='LOC'||AP.lat==='VAPP'||AP.latArm==='APR') A['ap:APR']=AP.latArm?'blink':1; if(AP.vert==='ALT') A['ap:ALT']=1; if(/ALTS/.test(AP.vertArm)) A['ap:ALTS']=1; if(AP.vert==='VS') A['ap:VS']=1; if(AP.vert==='FLC') A['ap:IAS']=1; if(AP.vert==='GS'||/GS/.test(AP.vertArm)) A['ap:GS']=AP.vert==='GS'?1:'blink'; if(AP.on) A['ap:TRIM']=1; }
   // marker beacons, altitude alerter and decision height (copilot radar altimeter)
@@ -688,8 +710,10 @@ const brk=el('brk'); brk.addEventListener('pointerdown',()=>inp.brakeHeld=true);
 el('autoTrim').onchange=e=>S.autotrim=e.target.checked;
 el('failL').onclick=()=>{ E[0].fail=true; }; el('failR').onclick=()=>{ E[1].fail=true; };
 el('fireLb').onclick=()=>{ E[0].fire=true; }; el('fireRb').onclick=()=>{ E[1].fire=true; };
+const gpuLbl=()=>{ el('gpuBtn').textContent=L(GPU.on?tr2('Unplug ground power','Koble fra bakkestrøm'):tr2('Plug in ground power','Koble til bakkestrøm')); };
+el('gpuBtn').onclick=()=>{ if(!S.ground&&!GPU.on){ msg(tr2('Ground power: on the ground only.','Bakkestrøm: bare på bakken.')); return; } GPU.on=!GPU.on; gpuLbl(); msg(GPU.on?tr2('Ground power unit plugged in: EXT PWR light on. Battery ON, then EXT PWR — ON.','Bakkestrømenhet tilkoblet: EXT PWR-lyset tennes. Batteri PÅ, så EXT PWR — ON.'):tr2('Ground power unit unplugged.','Bakkestrømenhet frakoblet.')); };
 el('decomp').onclick=()=>{ SYS.decomp=true; msg(tr2('Rapid decompression: the cabin is climbing.','Hurtig trykkfall: kabinen stiger.')); };
-el('restore').onclick=()=>{ E.forEach((e,i)=>{ e.fail=false; e.fire=false; e.dmg=false; e.autoF=false; SYS['fw'+SIDES[i]]=1; if(SYS['cond'+SIDES[i]]<0.45) SYS['cond'+SIDES[i]]=0.5; if(SYS['prop'+SIDES[i]]<0.12) SYS['prop'+SIDES[i]]=0.8; if(!e.lit){ e.lit=true; e.ng=Math.max(e.ng,62); e.itt=600; } SYS['gen'+SIDES[i]]=0; e.genRst=true; }); SYS.decomp=false; };
+el('restore').onclick=()=>{ E.forEach((e,i)=>{ e.fail=false; e.fire=false; e.dmg=false; e.autoF=false; e.fwShut=false; SYS['fw'+SIDES[i]]=1; if(SYS['cond'+SIDES[i]]<0.45) SYS['cond'+SIDES[i]]=0.5; if(SYS['prop'+SIDES[i]]<0.12) SYS['prop'+SIDES[i]]=0.8; if(!e.lit){ e.lit=true; e.ng=Math.max(e.ng,62); e.itt=600; } SYS['gen'+SIDES[i]]=0; e.genRst=true; }); SYS.decomp=false; };
 const rud=slider(el('rudBox'),{label:'Rudder',min:-100,max:100,step:1,v:0,f:v=>(v>0?'R ':v<0?'L ':'')+Math.abs(v)+' %',on:v=>{ inp.rudUser=v/100; }});
 const windDir=slider(el('windBox'),{label:'From',min:0,max:360,step:10,v:0,f:v=>String(v||360).padStart(3,'0')+'°',on:v=>S.env.wdir=v});
 const windSpd=slider(el('windBox'),{label:'Speed',min:0,max:40,step:1,v:0,f:v=>v+' kt',on:v=>S.env.wspd=v});
@@ -852,6 +876,7 @@ function procSet(kind){
   if(kind!=='fl250'){ Object.assign(AP,F.mkAP()); AP.alt=kind==='seapp'?2500:5000; }
   AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; if(kind==='fl250'){ AP.hdg=360; }
   if(kind==='free'){ const o=F.readouts(S); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=7000; AP.vertArm='ALTS'; SYS.yd=1; }
+  if(!S.ground&&GPU.on){ GPU.on=false; gpuLbl(); }
   SYS.gearH=S.ctl.gear; S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
 }
 function procStart(k){
@@ -945,11 +970,11 @@ function draw(o){
   B200P.needle(P,'cab',SYS.cab,'A'); B200P.needle(P,'cab',SYS.diff||0,'D'); B200P.needle(P,'cvs',SYS.cabVS);
   const fp=S.ctl.flapPos; B200P.needle(P,'flp',b?(fp<=1?fp*40:40+(fp-1)*60):0);
   // overhead meters (push for volts)
-  const gv=i=>E[i].genOn?28.2:0, bv=E.some(e=>e.genOn)?28.2:SYS.bat?(E.some(e=>e.ng>3&&!e.lit&&e.stT>0)?21.5:24.3):0;
-  const load=(av?14:4)+(SYS.wsP?9:0)+(SYS.wsC?9:0)+(SYS.propDe?12:0)+(SYS.landL+SYS.landR+SYS.taxi)*4+(SYS.elecHeat?20:0)+(SYS.battT>0?18:0)+(SYS.inv?6:0);
+  const gv=i=>E[i].genOn?28.2:0, bv=E.some(e=>e.genOn)&&!tiesOpen()?28.2:extOn()?28:SYS.bat?(E.some(e=>e.ng>3&&!e.lit&&e.stT>0)?21.5:24.3):0;
+  const load=(av?14:4)+(SYS.wsP?9:0)+(SYS.wsC?9:0)+(SYS.propDe?12:0)+(SYS.landL+SYS.landR+SYS.taxi)*4+(SYS.elecHeat?20:0)+(SYS.aftHeat?12:0)+(SYS.battT>0?18:0)+(SYS.inv?6:0);
   const nG=E.filter(e=>e.genOn).length;
   B200P.needle(P,'ldL',SYS.vLoadL?gv(0)/30*100:E[0].genOn?load/nG:0); B200P.needle(P,'ldR',SYS.vLoadR?gv(1)/30*100:E[1].genOn?load/nG:0);
-  B200P.needle(P,'bam',SYS.vBatt?-60+bv/30*120:!SYS.bat?0:nG?(SYS.battT>0?SYS.battT*2:2):-F.clamp(load*0.8+(E.some(e=>e.stT>0&&!e.genOn&&(SYS.ignL||SYS.ignR))?60:0),0,60));
+  B200P.needle(P,'bam',SYS.vBatt?-60+bv/30*120:!SYS.bat?0:extOn()?4:(nG&&tiesOpen())?-6:nG?(SYS.battT>0?SYS.battT*2:2):-F.clamp(load*0.8+(E.some(e=>e.stT>0&&!e.genOn&&(SYS.ignL||SYS.ignR))?60:0),0,60));
   const acOn=b&&SYS.inv!==0; B200P.needle(P,'acm',acOn?(SYS.vAC?380+(115-100)/30*40:400):380);
   // standby compass (erratic with windshield heat or air conditioning)
   const jit=(SYS.wsP||SYS.wsC||SYS.acRun)?Math.sin(now/180)*6+Math.sin(now/57)*3:0; B200P.tr(P,'cmp',`translateX(${(-(F.wrap180(h+jit))*0.9).toFixed(1)}px)`);
@@ -1088,7 +1113,7 @@ function loop(t){
   annCompute(o); if(!UI.paused) gpwsTick(Math.max(0,Math.min(0.05,dt)),o);
   otwTick(dt);
   if(cockpitVis){ panelT+=dt; if(panelT>0.033){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
-  const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest), bb&&cbIn('GEAR WARN')&&gearWarn()&&!(SYS.hornSilOn&&!flapHorn())&&!UI.paused);
+  const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest===-1), bb&&cbIn('GEAR WARN')&&((gearWarn()&&!(SYS.hornSilOn&&!flapHorn()))||SYS.stallTest===1)&&!UI.paused);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);
 }
