@@ -84,7 +84,14 @@ function init(canvas){
   const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.Float32BufferAttribute(pp,3)); papiCol=new Float32Array(12); pg.setAttribute('color',new THREE.BufferAttribute(papiCol,3));
   papi=new THREE.Points(pg,new THREE.PointsMaterial({size:2.4,sizeAttenuation:true,vertexColors:true,fog:true,depthWrite:false})); scene.add(papi);
   // skyer (FEW 2500 ft)
-  const cloudT=canvasTex(256,128,(g,w,h)=>{ for(let i=0;i<14;i++){ const x=40+Math.random()*(w-80), y=50+Math.random()*30, r=22+Math.random()*30; const gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); } });
+  // Cloud texture: alpha-only mask so colour stays pure white. (Drawing white with alpha on a 2D canvas and
+  // uploading it un-premultiplied quantises the faint edge pixels into coloured noise: the "rainbow" fringe.)
+  const cloudT=(()=>{ const w=256,h=128, c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+    g.fillStyle='#000'; g.fillRect(0,0,w,h);
+    for(let i=0;i<14;i++){ const x=40+Math.random()*(w-80), y=50+Math.random()*30, r=22+Math.random()*30; const gr=g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0,'rgba(255,255,255,.95)'); gr.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
+    const src=g.getImageData(0,0,w,h).data, d=new Uint8Array(w*h*4);
+    for(let i=0;i<w*h;i++){ const a=src[i*4]; d[i*4]=246; d[i*4+1]=248; d[i*4+2]=250; d[i*4+3]=a; }
+    const t=new THREE.DataTexture(d,w,h,THREE.RGBAFormat); t.flipY=true; t.generateMipmaps=true; t.minFilter=THREE.LinearMipmapLinearFilter; t.magFilter=THREE.LinearFilter; t.needsUpdate=true; return t; })();
   const cm=new THREE.SpriteMaterial({map:cloudT,transparent:true,depthWrite:false,fog:true});
   for(let i=0;i<70;i++){ const sp=new THREE.Sprite(cm); const s=1500+Math.random()*2500; sp.scale.set(s,s*0.45,1); sp.position.set((Math.random()-0.5)*90000,760+Math.random()*120,(Math.random()-0.5)*90000); scene.add(sp); }
   ok=true; return true;
