@@ -6,7 +6,7 @@
 <title>Training · Birdbird</title>
 <meta name="description" content="Birdbird training: Cessna 172, DA42 and King Air B200 cockpit trainers, an IFR trainer, briefings, gate-to-gate flights, radio drills, type rating study, A320 sim assessment and check preparation.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/training/hero-da42-ils-1600.webp" imagesrcset="img/training/hero-da42-ils-960.webp 960w, img/training/hero-da42-ils-1600.webp 1600w, img/training/hero-da42-ils-2400.webp 2400w" imagesizes="(max-width:820px) 100vw, 70vw" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="img/training/hero-wing-1600.webp" imagesrcset="img/training/hero-wing-1200.webp 1200w, img/training/hero-wing-1600.webp 1600w, img/training/hero-wing-2016.webp 2016w" imagesizes="100vw" type="image/webp" fetchpriority="high" media="(min-width:721px)">
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=12">
 <style>
@@ -44,27 +44,48 @@
 .dk{background:var(--navy);color:var(--on-navy)}
 .dk h2,.dk h3{color:#fff}
 
-/* ---------- 1. Hero: the DA42 trainer in a turn, moving ---------- */
+/* ---------- 1. Hero: the owner's photo, the title over the dark forest, the numbers ruled below ---------- */
 .th{position:relative;background:var(--deep);overflow:hidden;isolation:isolate}
-.th-media{position:absolute;inset:0 0 0 30%;z-index:-2;background:#10161D;margin:0}
-.th-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:56% 62%}
-/* the navy field the words sit on, feathered into the cockpit */
+.th-ph{position:absolute;inset:0;z-index:-2;margin:0}
+.th-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 40%}
+/* a dark field only where the words sit (lower right, over the forest); the sky and the wing stay untouched */
 .th::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(90deg,var(--deep) 0%,var(--deep) 30%,rgba(7,26,51,.82) 35%,rgba(7,26,51,.4) 44%,rgba(7,26,51,0) 56%),
-             linear-gradient(0deg,rgba(7,26,51,.85) 0%,rgba(7,26,51,0) 22%)}
-.th-in{display:flex;flex-direction:column;justify-content:flex-end;min-height:clamp(560px,calc(100svh - 125px - 118px),760px);padding:72px 0 56px}
-.th h1{color:#fff;font-size:clamp(50px,5.7vw,90px);line-height:.94;letter-spacing:-.026em;font-stretch:80%;font-weight:700;max-width:7em}
-.th-lede{margin-top:22px!important;font-size:19px;line-height:1.55;color:var(--on-navy-2);max-width:26em}
-.th-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-.th-cap{position:absolute;right:var(--gr,24px);top:20px;font-size:12.5px;line-height:1.5;color:#E6ECF2;margin:0;max-width:36em;padding:6px 10px 7px;background:rgba(7,26,51,.72);border-radius:2px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.th-cap .lbl{color:var(--amber);margin-right:6px}
-/* proof: four true numbers, in the front page's band */
-.tp{background:var(--deep);border-top:1px solid var(--navy-rule)}
-.tp dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 auto}
-.tp div{padding:26px 28px 28px;border-left:1px solid var(--navy-rule)}
-.tp div:first-child{border-left:0;padding-left:0}
-.tp dt{font-family:var(--disp);font-stretch:78%;font-weight:650;font-size:clamp(34px,3.2vw,46px);line-height:1;letter-spacing:-.02em;color:#fff}
-.tp dd{margin:10px 0 0;font-size:15px;line-height:1.45;color:var(--on-navy-2);max-width:17em}
+  background:linear-gradient(270deg,rgba(6,20,42,.72) 0%,rgba(6,20,42,.5) 30%,rgba(6,20,42,0) 52%),
+             linear-gradient(0deg,rgba(6,20,42,.55) 0%,rgba(6,20,42,0) 45%)}
+.th-in{display:flex;justify-content:flex-end;align-items:flex-end;min-height:clamp(520px,calc(100svh - 172px - 118px),720px);padding:64px 0 60px}
+.th-txt{width:min(100%,500px)}
+.th .eyebrow{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--on-navy-2);margin:0 0 12px}
+.th h1{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:clamp(44px,5vw,72px);letter-spacing:-.02em;line-height:1;color:#fff}
+.th-lede{margin-top:16px!important;font-size:var(--t-md,17px);line-height:1.55;color:#E6ECF2;max-width:30em}
+.th-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.th-cr{position:absolute;right:max(var(--gr,24px),calc((100% - var(--wrap))/2));bottom:14px;margin:0;font-size:12px;line-height:1.4;color:rgba(255,255,255,.82);text-shadow:0 1px 2px rgba(0,0,0,.55)}
+/* the numbers, ruled as on Virtual Labs */
+.trh-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 auto;padding:6px 0 8px}
+.trh-stats div{padding:16px 24px 18px;border-left:1px solid var(--rule2)}
+.trh-stats div:first-child{border-left:0;padding-left:0}
+.trh-stats b{display:block;font-family:var(--mono);font-weight:500;font-size:28px;letter-spacing:-.02em;line-height:1.1;color:var(--ink)}
+.trh-stats span{display:block;margin-top:2px;font-size:13.5px;line-height:1.4;color:var(--ink2)}
+/* tablet and phone: the photo on top, the words below it on navy, never over the wing */
+@media (max-width:980px){
+  .th{display:flex;flex-direction:column}
+  .th-ph{position:relative;inset:auto;order:-1;aspect-ratio:2016/920;margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px))}
+  .th-ph img{object-position:50% 50%}
+  .th-ph::after{content:"";position:absolute;left:0;right:0;bottom:0;height:28%;background:linear-gradient(0deg,var(--deep),rgba(7,26,51,0))}
+  .th::before{display:none}
+  .th-in{min-height:0;padding:12px 0 44px;justify-content:flex-start;width:100%}
+  .th-txt{width:100%;max-width:560px}
+  .th-cr{position:absolute;left:auto;right:var(--gr,24px);bottom:auto;top:calc(100vw*920/2016 - 28px)}
+}
+@media (max-width:720px){
+  .th-ph{aspect-ratio:4/3}
+  .th-cr{top:calc(100vw*.75 - 28px)}
+  .th-cta .tr-btn{flex:1 1 100%}
+  .trh-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .trh-stats div{padding:12px 12px 14px 0;border-left:0}
+  .trh-stats div:nth-child(even){padding-left:14px;border-left:1px solid var(--rule2)}
+  .trh-stats div:nth-child(n+3){border-top:1px solid var(--rule2)}
+  .trh-stats b{font-size:22px}
+}
 
 /* ---------- 2. Three cockpits: plates, captions and a spec sheet per aircraft ---------- */
 .ts{padding-top:112px;padding-bottom:112px;background:var(--navy)}
@@ -185,13 +206,8 @@
   .ti-fig{max-width:880px}
 }
 @media (max-width:980px){
-  .th-media{left:18%}
   .ts-head,.tw-head,.tt-gh,.tt-brief{grid-template-columns:minmax(0,1fr)}
   .ac+.ac{margin-top:80px}
-  .tp dl{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tp div{padding:22px 24px 24px 0;border-left:0;border-top:1px solid var(--navy-rule)}
-  .tp div:nth-child(-n+2){border-top:0}
-  .tp div:nth-child(even){padding-left:24px;border-left:1px solid var(--navy-rule)}
   /* the path turns vertical: a rail on the left */
   .tw ol{grid-template-columns:minmax(0,1fr)}
   .tw-route{margin-top:36px}
@@ -206,13 +222,6 @@
   .tw-go{display:flex;flex-wrap:wrap;gap:6px 20px}
   .tt-chart{max-width:640px}
 }
-@media (max-width:820px){
-  .th{display:flex;flex-direction:column}
-  .th-media{position:relative;inset:auto;order:-2;aspect-ratio:16/10;width:auto;margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px))}
-  .th::before{display:none}
-  .th-media::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,var(--deep),rgba(7,26,51,0))}
-  .th-in{min-height:0;padding:22px 0 44px;width:100%}
-  .th-cap{position:static;order:-1;margin:10px 0 0;padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none;font-size:12.5px;color:var(--on-navy-2);max-width:none}
 }
 @media (max-width:720px){
   .tg.c2,.tg.c3{grid-template-columns:minmax(0,1fr);gap:36px}
@@ -221,17 +230,8 @@
 }
 @media (max-width:640px){
   .tr{font-size:16px}
-  .th-media{aspect-ratio:4/3}
-  .th-media img{object-position:54% 70%}
   .ti-fig{margin:0 calc(-1*var(--gr,24px) + 6px) 0 calc(-1*var(--gl,24px) + 6px)}
   .ti-fig figcaption{padding:0 18px}
-  .th h1{font-size:clamp(44px,13vw,58px)}
-  .th-lede{font-size:17px;margin-top:16px!important}
-  .th-cta .tr-btn{flex:1 1 100%}
-  .tp dt{font-size:34px}
-  .tp dd{font-size:14px}
-  .tp div{padding:20px 16px 22px 0}
-  .tp div:nth-child(even){padding-left:16px}
   .ts,.tw,.ti{padding-top:80px;padding-bottom:88px}
   .tt{padding-top:80px}
   .ts-head{margin-bottom:44px}
@@ -256,26 +256,30 @@
 
   <!-- 1. Hero -->
   <section class="th tr-band" aria-labelledby="tr-h1">
-    <figure class="th-media">
-      <img src="img/training/hero-da42-ils-1600.webp" srcset="img/training/hero-da42-ils-960.webp 960w, img/training/hero-da42-ils-1600.webp 1600w, img/training/hero-da42-ils-2400.webp 2400w" sizes="(max-width:820px) 100vw, 70vw" width="2400" height="1500" fetchpriority="high" decoding="async"
-        alt="The DA42 3D cockpit on short final for runway 36: the runway straight ahead over the glareshield, the standby instruments, and the PFD showing the autopilot on the localizer and glideslope at 460 ft." data-alt-no="DA42 3D-cockpiten på kort finale til rullebane 36: rullebanen rett fram over glareshielden, reserveinstrumentene, og PFD-en som viser autopiloten på localizer og glidebane i 460 fot.">
-    </figure>
+    <picture class="th-ph">
+      <source media="(max-width:720px)" srcset="img/training/hero-wing-m-780.webp 780w, img/training/hero-wing-m-1170.webp 1170w" sizes="100vw" width="1170" height="878">
+      <img src="img/training/hero-wing-1600.webp" srcset="img/training/hero-wing-1200.webp 1200w, img/training/hero-wing-1600.webp 1600w, img/training/hero-wing-2016.webp 2016w" sizes="100vw" width="2016" height="920" fetchpriority="high" decoding="async"
+        alt="Looking out along the wing of a light aircraft at sunset: the low sun on the horizon, fjords and forested hills below, and the evening light reflecting gold on the white wing." data-alt-no="Utsikt langs vingen på et småfly i solnedgang: sola lavt i horisonten, fjorder og skogkledde åser under, og kveldslyset som speiler seg gyllent i den hvite vingen.">
+    </picture>
     <div class="tr-wrap th-in">
-      <h1 id="tr-h1" data-tx="h1">Sit in the cockpit before you fly it</h1>
-      <p class="th-lede" data-tx="lede">Three cockpit trainers and an IFR trainer, with the briefings, the radio and the check preparation around them. In your browser.</p>
-      <div class="th-cta"><a class="tr-btn pri" href="cockpit.html" data-tx="cta1">Open the DA42 simulator</a><a class="tr-btn ghost" href="#path" data-tx="cta2">See the training path</a></div>
+      <div class="th-txt">
+        <span class="eyebrow" data-tx="eb">Birdbird · Training</span>
+        <h1 id="tr-h1" data-tx="h1">Training</h1>
+        <p class="th-lede" data-tx="lede">Cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR procedures trainer, and preparation for briefings, the radio and the check, in your browser.</p>
+        <div class="th-cta"><a class="tr-btn pri" href="#sims" data-tx="cta1">Open a simulator</a><a class="tr-btn ghost" href="ifr.html" data-tx="cta2">Start the IFR trainer</a></div>
+      </div>
     </div>
-    <p class="th-cap"><span class="lbl">Fig. 1</span> <span data-tx="cap">DA42 3D cockpit (beta), ILS 36 coupled: LOC and GS captured, 460 ft, gear down.</span></p>
+    <p class="th-cr" data-tx="cr">Photo: Daniel Nilsson</p>
   </section>
-  <section class="tp tr-band dk" aria-labelledby="tp-h">
-    <h2 class="vh" id="tp-h" data-tx="tpH">Training in numbers</h2>
-    <dl class="tr-wrap">
-      <div><dt>3</dt><dd data-tx="p1">aircraft, from a single piston to a twin turboprop</dd></div>
-      <div><dt>400+</dt><dd data-tx="p2">working switches, knobs and levers in the King Air B200</dd></div>
-      <div><dt>14</dt><dd data-tx="p3">DA42 missions and procedure flows</dd></div>
-      <div><dt>320</dt><dd data-tx="p4">type rating questions, with an exam mode</dd></div>
-    </dl>
-  </section>
+  <div class="tr-wrap">
+    <h2 class="vh" data-tx="tpH">Training in numbers</h2>
+    <div class="trh-stats">
+      <div><b>3</b><span data-tx="p1">cockpit trainers</span></div>
+      <div><b>400+</b><span data-tx="p2">working controls in the King Air B200</span></div>
+      <div><b>46</b><span data-tx="p3">IFR exercises</span></div>
+      <div><b>320</b><span data-tx="p4">type rating questions, with an exam mode</span></div>
+    </div>
+  </div>
 
   <!-- 2. Three cockpits -->
   <section class="ts tr-band dk" id="sims" aria-labelledby="h-sims">
@@ -289,13 +293,13 @@
         <div class="ac-figs">
           <figure class="ac-fig">
             <a class="ac-ph" href="c172.html" tabindex="-1" aria-hidden="true"><img src="img/training/c172-800.webp" srcset="img/training/c172-800.webp 800w, img/training/c172-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
-              alt="The Cessna 172 trainer in a gentle left turn at 3,000 ft: the windscreen with the compass and the outside air thermometer, the six-pack, the radio stack, the switch row and both yokes." data-alt-no="Cessna 172-treneren i en slak venstresving i 3000 fot: frontruta med kompasset og termometeret, six-packen, radiostakken, bryterraden og begge rattene."></a>
-            <figcaption><span class="lbl">Fig. 2a</span><span data-tx="e7">Cessna 172 trainer, 3,000 ft, about 15° of left bank.</span></figcaption>
+              alt="The Cessna 172 trainer's panel in a gentle left turn at 3,000 ft: the six-pack, the engine gauges, the radio stack, the switch row and both yokes." data-alt-no="Panelet i Cessna 172-treneren i en slak venstresving i 3000 fot: six-packen, motorinstrumentene, radiostakken, bryterraden og begge rattene."></a>
+            <figcaption><span class="lbl">Fig. 1a</span><span data-tx="e7">Cessna 172 trainer, 3,000 ft, about 15° of left bank.</span></figcaption>
           </figure>
           <figure class="ac-fig">
             <span class="ac-ph"><img src="img/training/c172-sixpack-560.webp" srcset="img/training/c172-sixpack-560.webp 560w, img/training/c172-sixpack-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
               alt="Detail of the six-pack: airspeed, attitude, altimeter, turn coordinator, heading indicator and vertical speed, with the two VOR indicators, the ADF, the tachometer and the EGT." data-alt-no="Utsnitt av six-packen: fartsmåler, attityde, høydemåler, svingkoordinator, kursgyro og variometer, med de to VOR-indikatorene, ADF-en, turtelleren og EGT-en."></span>
-            <figcaption><span class="lbl">Fig. 2b</span><span data-tx="e8">The six-pack, with both VOR indicators and the ADF.</span></figcaption>
+            <figcaption><span class="lbl">Fig. 1b</span><span data-tx="e8">The six-pack, with both VOR indicators and the ADF.</span></figcaption>
           </figure>
         </div>
         <div class="ac-sheet">
@@ -318,14 +322,14 @@
       <article class="ac" aria-labelledby="s-da42">
         <div class="ac-figs">
           <figure class="ac-fig">
-            <a class="ac-ph" href="da42-3d.html" tabindex="-1" aria-hidden="true"><img src="img/training/da42-800.webp" srcset="img/training/da42-800.webp 800w, img/training/da42-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
-              alt="The DA42 3D cockpit on the ILS 36 at 460 ft: the runway ahead over the glareshield, the standby instruments, the PFD and the MFD, the switch row and the power levers." data-alt-no="DA42 3D-cockpiten på ILS 36 i 460 fot: rullebanen rett fram over glareshielden, reserveinstrumentene, PFD og MFD, bryterraden og effekthendlene."></a>
-            <figcaption><span class="lbl">Fig. 3a</span><span data-tx="d9">DA42 3D cockpit (beta), ILS 36 coupled, 460 ft.</span></figcaption>
+            <a class="ac-ph" href="cockpit.html" tabindex="-1" aria-hidden="true"><img src="img/training/da42-800.webp" srcset="img/training/da42-800.webp 800w, img/training/da42-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
+              alt="The DA42 trainer on the ILS 36 at 1,160 ft: the standby instruments, the PFD and the MFD with the engine page and the map, the switch row, the flap lever and the power levers." data-alt-no="DA42-treneren på ILS 36 i 1160 fot: reserveinstrumentene, PFD og MFD med motorsiden og kartet, bryterraden, flapshendelen og effekthendlene."></a>
+            <figcaption><span class="lbl">Fig. 2a</span><span data-tx="d9">DA42 trainer, ILS 36 coupled, 1,160 ft.</span></figcaption>
           </figure>
           <figure class="ac-fig">
             <span class="ac-ph"><img src="img/training/da42-pfd-560.webp" srcset="img/training/da42-pfd-560.webp 560w, img/training/da42-pfd-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
-              alt="Detail of the PFD: autopilot on, LOC and GS captured, 119 knots, 460 ft, course 360, the localizer and glideslope centred." data-alt-no="Utsnitt av PFD-en: autopilot på, LOC og GS fanget, 119 knop, 460 fot, kurs 360, localizer og glidebane sentrert."></span>
-            <figcaption><span class="lbl">Fig. 3b</span><span data-tx="d10">PFD: LOC and GS captured by the autopilot, 119 KIAS.</span></figcaption>
+              alt="Detail of the PFD: autopilot on, LOC and GS captured, 114 knots, 1,160 ft, descending at 600 ft/min, course 360, the localizer and glideslope centred." data-alt-no="Utsnitt av PFD-en: autopilot på, LOC og GS fanget, 114 knop, 1160 fot, synker 600 fot/min, kurs 360, localizer og glidebane sentrert."></span>
+            <figcaption><span class="lbl">Fig. 2b</span><span data-tx="d10">PFD: LOC and GS captured, 114 KIAS, 600 ft/min down.</span></figcaption>
           </figure>
         </div>
         <div class="ac-sheet">
@@ -350,12 +354,12 @@
           <figure class="ac-fig">
             <a class="ac-ph" href="b200.html" tabindex="-1" aria-hidden="true"><img src="img/training/b200-800.webp" srcset="img/training/b200-800.webp 800w, img/training/b200-1600.webp 1600w" sizes="(max-width:720px) 100vw, (max-width:1288px) 57vw, 710px" width="1600" height="1000" loading="lazy" decoding="async"
               alt="The King Air B200 trainer's flight deck at 5,000 ft: the overhead and the annunciators on the glareshield, EFIS for both pilots, the round engine instruments in the centre and the subpanels below." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot: takpanelet og varsellysene på glareshielden, EFIS for begge piloter, de runde motorinstrumentene i midten og underpanelene."></a>
-            <figcaption><span class="lbl">Fig. 4a</span><span data-tx="b8">King Air B200 trainer, 5,000 ft, autopilot in HDG and ALT.</span></figcaption>
+            <figcaption><span class="lbl">Fig. 3a</span><span data-tx="b8">King Air B200 trainer, 5,000 ft, autopilot in HDG and ALT.</span></figcaption>
           </figure>
           <figure class="ac-fig">
             <span class="ac-ph"><img src="img/training/b200-efis-560.webp" srcset="img/training/b200-efis-560.webp 560w, img/training/b200-efis-1120.webp 1120w" sizes="(max-width:720px) 100vw, (max-width:1288px) 41vw, 507px" width="1120" height="980" loading="lazy" decoding="async"
               alt="Detail of the left seat: the electronic ADI and HSI, the altimeter at 5,000 ft and the vertical speed, beside the torque, propeller, turbine, fuel flow and oil gauges for both engines." data-alt-no="Utsnitt av venstre sete: elektronisk ADI og HSI, høydemåleren på 5000 fot og variometeret, ved siden av dreiemoment, propell, turbin, drivstofforbruk og olje for begge motorer."></span>
-            <figcaption><span class="lbl">Fig. 4b</span><span data-tx="b10">Left-seat EFIS and altimeter, beside the engine instruments.</span></figcaption>
+            <figcaption><span class="lbl">Fig. 3b</span><span data-tx="b10">Left-seat EFIS and altimeter, beside the engine instruments.</span></figcaption>
           </figure>
         </div>
         <div class="ac-sheet">
@@ -375,7 +379,7 @@
         </div>
       </article>
 
-      <p class="ts-note" data-tx="simsNote">Figures 1 to 4 are captures of our own simulators in flight, cropped and colour-graded. Nothing has been drawn in.</p>
+      <p class="ts-note" data-tx="simsNote">Figures 1 to 3 are captures of our own simulators in flight, cropped and lightly colour-graded. Nothing has been drawn in. The photo at the top is from a real flight.</p>
     </div>
   </section>
 
@@ -802,15 +806,15 @@
 'use strict';
 LAB.add({},{'Training':'Trening'});
 LAB.tx({
- h1:'Sitt i cockpit før du flyr', lede:'Tre cockpittrenere og en IFR-trener, med briefingene, radioen og forberedelsene til sjekken rundt dem. I nettleseren.',
- cta1:'Åpne DA42-simulatoren', cta2:'Se treningsløpet', cap:'DA42 3D-cockpit (beta), ILS 36 koblet: LOC og GS fanget, 460 fot, understell ute.',
- tpH:'Trening i tall', p1:'fly, fra enmotors stempelfly til tomotors turboprop', p2:'brytere, knapper og hendler som virker i King Air B200', p3:'oppdrag og prosedyreflows i DA42', p4:'spørsmål til typeratingen, med eksamensmodus',
+ eb:'Birdbird · Trening', h1:'Trening', lede:'Cockpittrenere for Cessna 172, DA42 og King Air B200, en IFR-prosedyretrener og forberedelse til briefing, radio og sjekken, i nettleseren.',
+ cta1:'Åpne en simulator', cta2:'Start IFR-treneren',
+ tpH:'Trening i tall', cr:'Foto: Daniel Nilsson', p1:'cockpittrenere', p2:'kontroller som virker i King Air B200', p3:'IFR-øvelser', p4:'typeratingspørsmål, med eksamensmodus',
  simsL:'Simulatorer', simsH:'Tre cockpiter, og alt virker', simsP:'Brytere, knapper og hendler gjør det de gjør i flyet. Start på oppstillingsplassen eller i lufta, alene eller med et scenario.',
  open:'Åpne simulatoren',
  kCls:'Klasse', kPan:'Panel', kEng:'Motor', kFail:'Feil', kScn:'Scenarioer', kAp:'Autopilot', kAppr:'Innflyginger', kCtl:'Kontroller', kSys:'Systemer',
- simsNote:'Figur 1 til 4 er opptak fra våre egne simulatorer i lufta, beskåret og fargejustert. Ingenting er tegnet inn.',
+ simsNote:'Figur 1 til 3 er opptak fra våre egne simulatorer i lufta, beskåret og lett fargejustert. Ingenting er tegnet inn. Bildet øverst er fra en ekte flytur.',
  e2:'Enmotors stempelfly', e3:'Den klassiske six-packen: lær scanen, fly etter attityde, og fly så landingsrunden.', e4:'Six-pack, to NAV/COM, ADF, DME og transponder', e5:'Gass, blanding, forgasservarme, magneter og primer', e6:'Forgasserising, vakuum, generator, motorstopp etter avgang', e7:'Cessna 172-treneren, 3000 fot, rundt 15° venstre krengning.', e8:'Six-packen, med begge VOR-indikatorene og ADF-en.', e9:'9, fra kaldstart til ILS',
- d2:'Flermotors stempelfly', d3:'Glass cockpit med to skjermer og autopilot. Fly innflygingene og motorstansene.', d4:'PFD og MFD, reserveinstrumenter for fart, attityde og høyde', d5:'<b>9</b> oppdrag, <b>5</b> flows, motorstans og stall', d6:'ILS, RNAV (LPV) og VOR', d8:'Fly den i 3D-cockpiten', d9:'DA42 3D-cockpit (beta), ILS 36 koblet, 460 fot.', d10:'PFD: LOC og GS fanget av autopiloten, 119 KIAS.',
+ d2:'Flermotors stempelfly', d3:'Glass cockpit med to skjermer og autopilot. Fly innflygingene og motorstansene.', d4:'PFD og MFD, reserveinstrumenter for fart, attityde og høyde', d5:'<b>9</b> oppdrag, <b>5</b> flows, motorstans og stall', d6:'ILS, RNAV (LPV) og VOR', d8:'Fly den i 3D-cockpiten', d9:'DA42-treneren, ILS 36 koblet, 1160 fot.', d10:'PFD: LOC og GS fanget, 114 KIAS, 600 fot/min ned.',
  b2:'Tomotors turboprop, to piloter', b3:'En full tomannscockpit, fra batteristart til innflyging på én motor.', b4:'<b>400+</b> brytere, knapper og hendler som virker', b5:'EFIS for begge piloter, runde motorinstrumenter', b6:'<b>6</b> prosedyreflows, motorbrann, nødnedstigning', b7:'Autofeather, kabintrykk, brannvern, beta og revers', b8:'King Air B200-treneren, 5000 fot, autopilot i HDG og ALT.', b9:'Studer typeratingen', b10:'EFIS og høydemåler i venstre sete, ved siden av motorinstrumentene.',
  pathH:'Fra første landingsrunde til sjekken i flyselskapet', pathP:'Hvert trinn har sitt eget verktøy. Ta dem i rekkefølge, eller start der du er.',
  w1s:'Privatflyger', w1:'PPL-grunnlag', w1l:'Scanen, attitydeflyging og landingsrunden.',
