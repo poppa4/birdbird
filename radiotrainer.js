@@ -119,14 +119,17 @@ function startScenario(sc){
   AU.init(); hush();
   if(sc==='quick'){ const db=jget(K.srs,{}); const pool=S.QUICK_POOL(); const ids=R.SRS.due(db).concat(R.SRS.weak(db)).filter(id=>pool.includes(id));
     const seed=(Date.now()>>>0)^0x5bd1; const V=S.vars(seed,{callsign:P.callsign});
-    cur={k:'quick',t:GROUPS.quick.t,group:'quick'}; ses=new R.Session(cur,{level:P.level,V,steps:S.quick(V,R.rng(seed),ids),callsign:P.callsign}); }
+    cur={k:'quick',t:GROUPS.quick.t,group:'quick',basis:['SERA.8015(e)','AMC1 SERA.14001']}; ses=new R.Session(cur,{level:P.level,V,steps:S.quick(V,R.rng(seed),ids),callsign:P.callsign}); }
   else if(sc&&sc.k==='retry'){ cur=sc; ses=new R.Session(cur,{level:P.level,V:sc.V,steps:sc.steps}); }
   else { cur=sc; ses=new R.Session(sc,{level:P.level,callsign:P.callsign}); }
-  el('sessT').textContent=L(cur.t); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
+  el('sessT').textContent=L(cur.t); drawBasis(); el('log').innerHTML=''; el('fbBox').innerHTML=`<p class="muted">${L({en:'Feedback on each call appears here: what was right, what was missing, and why.',no:'Tilbakemelding på hvert oppkall kommer her: hva som var riktig, hva som manglet, og hvorfor.'})}</p>`;
   el('sitBox').innerHTML=''; el('fq').textContent='———.———'; el('stn').textContent='';
   show('sess'); run(ses.start());
   el('say').focus({preventScroll:true}); window.scrollTo({top:el('trainer').offsetTop-70,behavior:'smooth'});
 }
+/* "Based on": the rules and documents the scenario's calls and readbacks are checked against (radioscen.js BASIS) */
+function drawBasis(){ const b=el('sessBasis'); if(!b) return; const list=(cur&&cur.basis)||[];
+  b.hidden=!list.length; b.innerHTML=list.length? `${L({en:'Based on',no:'Basert på'})}: ${list.map(esc).join(' · ')} <a href="#sources">${L({en:'Sources',no:'Kilder'})}</a>` : ''; }
 let queue=Promise.resolve();
 function run(ev){ queue=queue.then(()=>play(ev)).then(()=>{ drawTurn(); }); return queue; }
 async function play(ev){
@@ -246,7 +249,7 @@ function init(){
   el('debHome').onclick=()=>{ drawHome(); show('home'); };
   el('debAgain').onclick=()=>{ if(cur.k==='quick') startScenario('quick'); else if(cur.k==='retry') startScenario(cur); else startScenario(cur); };
   el('btnWeak').onclick=()=>{ const sm=ses.summary(); const steps=sm.weak.map(w=>ses.steps[w.n]).filter(Boolean).map(s=>Object.assign({},s,{abbrOK:true}));
-    if(!steps.length) return; const V=ses.V; startScenario({k:'retry',t:tr('Practise these again','Øv på disse igjen'),steps:R.prep(steps.map(s=>Object.assign({},s)),V),V}); };
+    if(!steps.length) return; const V=ses.V; startScenario({k:'retry',t:tr('Practise these again','Øv på disse igjen'),basis:cur&&cur.basis,steps:R.prep(steps.map(s=>Object.assign({},s)),V),V}); };
   el('btnTx').onclick=()=>transmit(false);
   el('say').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); transmit(false); } });
   el('btnAgain').onclick=()=>{ if(ses) run(ses.sayAgain()); };
@@ -270,7 +273,7 @@ function init(){
   el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, Birdbird Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
   if(!TTS){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   drawHome(); show('home'); aiSetup();
-  LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
+  LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });
   // test hooks (headless browsers cannot speak): type and transmit
   window.__radio={get ses(){ return ses; },say(t){ el('say').value=t; return transmit(false); },model(){ return ses&&ses.step?ses.step.model:''; },start:k=>startScenario(k==='quick'?'quick':S.byKey(k)),idle:()=>queue};
 }

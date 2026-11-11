@@ -1,0 +1,586 @@
+{
+ "aircraft": "B200",
+ "file": "b200-cockpit.glb",
+ "units": "metres",
+ "frame": "x right, y up, z aft (forward = \u2212z); same frame as b200-3d.js/cockpit3d.js",
+ "origin": "aircraft centre line at the cabin reference height (12 cm below the left-seat design eye)",
+ "eye": {
+  "left": [
+   -0.37,
+   0.12,
+   0.0
+  ],
+  "right": [
+   0.37,
+   0.12,
+   0.0
+  ]
+ },
+ "triangles": 49256,
+ "nodes": [
+  "b200_cockpit",
+  "cb_panel_face",
+  "condition_L",
+  "condition_R",
+  "exterior",
+  "flap_lever",
+  "fuel_panel_face",
+  "gear_handle",
+  "glass",
+  "glass_side",
+  "panel_face",
+  "pedal_L_l",
+  "pedal_L_r",
+  "pedal_R_l",
+  "pedal_R_r",
+  "pedestal_face",
+  "power_L",
+  "power_R",
+  "prop_L",
+  "prop_R",
+  "rudder_pedals",
+  "shell",
+  "trim_wheel",
+  "upper_panel_face",
+  "yoke_L",
+  "yoke_R"
+ ],
+ "faces": {
+  "panel_face": {
+   "rect": [
+    0,
+    218,
+    2000,
+    1048
+   ],
+   "uv_rect": [
+    0,
+    218,
+    2000,
+    1048
+   ],
+   "origin": [
+    -0.58,
+    0.072713,
+    -0.99043
+   ],
+   "ex": [
+    0.00058,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000571188,
+    0.000100716
+   ],
+   "pos": [
+    0.0,
+    -0.351109,
+    -0.915698
+   ],
+   "pitch": -10,
+   "yaw": 0,
+   "ps": 0.00058,
+   "drawing": "b200panel.js 2000\u00d71780",
+   "drawing_size": [
+    2000,
+    1780
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)",
+   "top_edge": "follows path.glare of the drawing; UV still spans the whole rect"
+  },
+  "pedestal_face": {
+   "rect": [
+    664,
+    1246,
+    660,
+    534
+   ],
+   "uv_rect": [
+    664,
+    1246,
+    660,
+    534
+   ],
+   "origin": [
+    -0.497,
+    -0.33425,
+    -1.398648
+   ],
+   "ex": [
+    0.0005,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.00025,
+    0.000433013
+   ],
+   "pos": [
+    0.0,
+    -0.7125,
+    -0.7435
+   ],
+   "pitch": -60,
+   "yaw": 0,
+   "ps": 0.0005,
+   "drawing": "b200panel.js 2000\u00d71780",
+   "drawing_size": [
+    2000,
+    1780
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)"
+  },
+  "upper_panel_face": {
+   "rect": [
+    814,
+    0,
+    366,
+    242
+   ],
+   "uv_rect": [
+    814,
+    0,
+    366,
+    242
+   ],
+   "origin": [
+    -0.7976,
+    0.349294,
+    -0.684478
+   ],
+   "ex": [
+    0.0008,
+    0.0,
+    0.0
+   ],
+   "ey": [
+    0.0,
+    -0.000655322,
+    -0.000458861
+   ],
+   "pos": [
+    0.0,
+    0.27,
+    -0.74
+   ],
+   "pitch": 35,
+   "yaw": 0,
+   "ps": 0.0008,
+   "drawing": "b200panel.js 2000\u00d71780",
+   "drawing_size": [
+    2000,
+    1780
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)"
+  },
+  "fuel_panel_face": {
+   "rect": [
+    4,
+    1246,
+    520,
+    374
+   ],
+   "uv_rect": [
+    4,
+    1246,
+    520,
+    374
+   ],
+   "origin": [
+    -0.99025,
+    0.120507,
+    -0.528
+   ],
+   "ex": [
+    0.0,
+    0.0,
+    -0.0005
+   ],
+   "ey": [
+    0.00025,
+    -0.000433013,
+    0.0
+   ],
+   "pos": [
+    -0.632,
+    -0.5,
+    -0.66
+   ],
+   "pitch": -30,
+   "yaw": 90,
+   "ps": 0.0005,
+   "drawing": "b200panel.js 2000\u00d71780",
+   "drawing_size": [
+    2000,
+    1780
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)"
+  },
+  "cb_panel_face": {
+   "rect": [
+    1522,
+    1246,
+    476,
+    534
+   ],
+   "uv_rect": [
+    1522,
+    1246,
+    476,
+    534
+   ],
+   "origin": [
+    1.01025,
+    0.155148,
+    -1.5
+   ],
+   "ex": [
+    0.0,
+    0.0,
+    0.0005
+   ],
+   "ey": [
+    -0.00025,
+    -0.000433013,
+    0.0
+   ],
+   "pos": [
+    0.632,
+    -0.5,
+    -0.62
+   ],
+   "pitch": -30,
+   "yaw": -90,
+   "ps": 0.0005,
+   "drawing": "b200panel.js 2000\u00d71780",
+   "drawing_size": [
+    2000,
+    1780
+   ],
+   "uv": "u = (x \u2212 rect.x)/rect.w, v = (y \u2212 rect.y)/rect.h (glTF UV, v down: texture.flipY = false)"
+  }
+ },
+ "controls": {
+  "yoke_L": {
+   "pivot": [
+    -0.39266,
+    -0.52463,
+    -0.68104
+   ],
+   "translate": {
+    "axis": [
+     0,
+     0,
+     1
+    ],
+    "min": -0.08,
+    "max": 0.08,
+    "note": "+ = pull (aft); 0 = neutral"
+   },
+   "rotate": {
+    "axis": [
+     0,
+     0,
+     1
+    ],
+    "min": -45,
+    "max": 45,
+    "unit": "deg",
+    "note": "angle = \u2212roll command \u00d7 45\u00b0 (right roll turns the wheel clockwise as seen by the pilot)"
+   }
+  },
+  "yoke_R": {
+   "pivot": [
+    0.38106,
+    -0.51263,
+    -0.68316
+   ],
+   "translate": {
+    "axis": [
+     0,
+     0,
+     1
+    ],
+    "min": -0.08,
+    "max": 0.08,
+    "note": "+ = pull (aft); 0 = neutral"
+   },
+   "rotate": {
+    "axis": [
+     0,
+     0,
+     1
+    ],
+    "min": -45,
+    "max": 45,
+    "unit": "deg",
+    "note": "angle = \u2212roll command \u00d7 45\u00b0 (right roll turns the wheel clockwise as seen by the pilot)"
+   }
+  },
+  "power_L": {
+   "pivot": [
+    -0.098,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "MAX": -14.04,
+     "IDLE": 6.12,
+     "BETA": 8.53,
+     "REV": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 -0.4)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "power_R": {
+   "pivot": [
+    -0.078,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "MAX": -14.04,
+     "IDLE": 6.12,
+     "BETA": 8.53,
+     "REV": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 -0.4)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "prop_L": {
+   "pivot": [
+    -0.041,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "2000": -14.04,
+     "1600": 10.76,
+     "FTHR": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 0)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "prop_R": {
+   "pivot": [
+    -0.024,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "2000": -14.04,
+     "1600": 10.76,
+     "FTHR": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 0)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "condition_L": {
+   "pivot": [
+    0.014,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "HI IDLE": -14.04,
+     "LO IDLE": -0.0,
+     "CUTOFF": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 0)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "condition_R": {
+   "pivot": [
+    0.031,
+    -0.75335,
+    -0.87274
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "HI IDLE": -14.04,
+     "LO IDLE": -0.0,
+     "CUTOFF": 14.04
+    },
+    "value_to_angle": "angle = \u2212atan((1330 \u2212 v)\u00b70.0005 / 0.10) with v = 1280 + (1 \u2212 value)/(1 \u2212 0)\u00b7100 (panel slot units); \u2212 = knob forward",
+    "note": "modelled at the slot centre (0\u00b0)"
+   }
+  },
+  "flap_lever": {
+   "pivot": [
+    0.084,
+    -0.71621,
+    -0.85707
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "UP": -14.04,
+     "APPROACH": 0.0,
+     "DOWN": 14.04
+    }
+   }
+  },
+  "gear_handle": {
+   "pivot": [
+    -0.17052,
+    -0.47279,
+    -0.9044
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "positions": {
+     "UP": -14,
+     "DOWN": 14
+    },
+    "note": "+ = knob down; modelled mid-gate"
+   }
+  },
+  "trim_wheel": {
+   "pivot": [
+    -0.136,
+    -0.69596,
+    -0.83614
+   ],
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "min": -540,
+    "max": 540,
+    "note": "+ = top of wheel moves aft (nose up)"
+   }
+  },
+  "rudder_pedals": {
+   "pivot": [
+    0.0,
+    -1.06,
+    -1.13
+   ],
+   "children": {
+    "pedal_L_l": {
+     "pivot": [
+      -0.45999999999999996,
+      -1.06,
+      -1.13
+     ],
+     "axis": [
+      1,
+      0,
+      0
+     ]
+    },
+    "pedal_L_r": {
+     "pivot": [
+      -0.28,
+      -1.06,
+      -1.13
+     ],
+     "axis": [
+      1,
+      0,
+      0
+     ]
+    },
+    "pedal_R_l": {
+     "pivot": [
+      0.28,
+      -1.06,
+      -1.13
+     ],
+     "axis": [
+      1,
+      0,
+      0
+     ]
+    },
+    "pedal_R_r": {
+     "pivot": [
+      0.45999999999999996,
+      -1.06,
+      -1.13
+     ],
+     "axis": [
+      1,
+      0,
+      0
+     ]
+    }
+   },
+   "rotate": {
+    "axis": [
+     1,
+     0,
+     0
+    ],
+    "unit": "deg",
+    "min": -16,
+    "max": 16,
+    "note": "per pedal; left rudder: pedal_*_l \u2212\u03b8 (top forward), pedal_*_r +\u03b8"
+   }
+  }
+ },
+ "materials_note": "PBR (metal/rough) with tiling detail maps on TEXCOORD_0 and a baked AO atlas as occlusionTexture on TEXCOORD_1 (three r128: aoMap via uv2).",
+ "compression": "EXT_meshopt_compression + KHR_mesh_quantization (gltfpack -c); needs GLTFLoader.setMeshoptDecoder(MeshoptDecoder)"
+}
