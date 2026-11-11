@@ -18,7 +18,7 @@
 .brief{font-size:13px;color:var(--muted)}
 .brief b{color:var(--fg)}
 .atis{font-family:var(--f-mono);font-size:12.5px;background:#070a0d;border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:#d7f5e1;line-height:1.55}
-.radio{background:linear-gradient(#1f2328,#16191d);border:1px solid #363c44;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.radio{color:#E4E9ED;--fg:#E4E9ED;--muted:#9AA5AE;--line:#3A4048;--green:#4FCB7C;background:linear-gradient(#1f2328,#16191d);border:1px solid #363c44;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .rhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .freq{display:flex;gap:10px;align-items:baseline;font-family:var(--f-mono)}
 .freq .act{font-size:24px;color:#29e05a;letter-spacing:.04em}
@@ -68,7 +68,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </style>
 </head>
 <body data-title="Radio drills">
-<script src="site.js?v=61"></script>
+<script src="site.js?v=62"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -217,7 +217,7 @@ const sp3=s=>s;
 
 /* ---------- elementer ---------- */
 const CS={l:{en:'Your callsign (LN-NAE, or L-AE once ATC has shortened it)',no:'Kallesignalet ditt (LN-NAE, eller L-AE når ATC har forkortet det)'},t:csOK};
-const ST=u=>({l:{en:`The station you call: Birdbird ${u}`,no:`Stasjonen du kaller: Birdbird ${u}`},t:n=>has(n,/(n?aero|nero|narrow|nairo|naro|nair) ?s[oau]n/)&&has(n,new RegExp('\\b'+u.toLowerCase()+'\\b'))});
+const ST=u=>({l:{en:`The station you call: Birdbird ${u}`,no:`Stasjonen du kaller: Birdbird ${u}`},t:n=>has(n,/(bird ?bird|bert ?bird|(n?aero|nero|narrow|nairo|naro|nair) ?s[oau]n)/)&&has(n,new RegExp('\\b'+u.toLowerCase()+'\\b'))});
 const N=(en,no,v)=>({l:{en:en+' '+v,no:no+' '+v},t:n=>num(n,v)});
 const W=(en,no,re,opt)=>({l:{en,no},t:n=>has(n,re),opt});
 const INFO=v=>({l:{en:'The ATIS letter: information '+v.info,no:'ATIS-bokstaven: information '+v.info},t:n=>new RegExp('information '+v.info[0].toLowerCase()+'\\b|info '+v.info[0].toLowerCase()+'\\b|information '+v.info[0].toLowerCase()+'[a-z]*').test(n.s)});

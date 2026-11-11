@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Training · Birdbird</title>
-<meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, briefings, gate-to-gate flights, radio drills, type rating study, A320 simulator assessment and check preparation.">
+<meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
 <meta name="theme-color" content="#EDF1EE">
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=17">
 <style>
 /* ===== Training overview, page-scoped under .tv =====
    The overview of all Birdbird training, in the order of the Training menu:
-   header with an index → 01 simulators → 02 IFR trainer → 03 procedures → 04 type rating and checks → for institutions → the disclaimer.
-   One card system for everything; the pictures are the three panels and one IFR trainer capture. */
+   header with an index → 01 simulators → 02 IFR trainer → 03 briefing → 04 radio → a quiet row for type rating and checks → for institutions → the disclaimer.
+   02–04 share one feature block (.ifr); the pictures are the three panels and one capture each of the IFR trainer, the briefing trainer and the radio drills. */
 .tv{
   --ink2:var(--ink-2,#4C5B66); --ink3:var(--ink-3,#7D8B95); --rule1:var(--rule,#C6D0D3); --rule2:var(--rule-2,#DCE3E4); --acc:var(--accent,#9A1E68);
   --disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif); --mono:var(--f-mono,"IBM Plex Mono",ui-monospace,monospace);
@@ -89,7 +89,7 @@
 .sy-go{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:auto;padding-top:20px}
 .sy-go .tv-btn .st{margin-left:2px}
 
-/* ---------- 02 IFR trainer: a feature block on a sheet ---------- */
+/* ---------- 02 IFR trainer: a feature block on a sheet (also used by 03 and 04) ---------- */
 .ifr{background:var(--sheet0);border:1px solid var(--rule2);border-radius:10px;padding:40px}
 .ifr-top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px 48px;align-items:start}
 .ifr-lede{font-size:17px;line-height:1.6;color:var(--ink)}
@@ -99,6 +99,7 @@
 .ifr-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px;margin-top:22px}
 .ifr-f dt{font-size:14.5px;font-weight:650;color:var(--ink);line-height:1.4}
 .ifr-f dd{margin-top:3px!important;font-size:14px;line-height:1.5;color:var(--ink2)}
+.ifr-lede+.ifr-f{margin-top:26px}
 .ifr-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
 .ifr-fig{min-width:0}
 .ifr-ph{display:block;border-radius:8px;overflow:hidden;background:var(--frame);box-shadow:0 0 0 1px rgba(16,23,29,.9),0 1px 2px rgba(19,32,42,.10),0 22px 44px -30px rgba(19,32,42,.55)}
@@ -118,24 +119,41 @@
 .ifr-path li:first-child a:hover i{color:#fff}
 .ifr-path a:hover b{color:var(--acc)}
 
-/* ---------- 03 and 04: the card system ---------- */
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
-.tc{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--sheet0);border:1px solid var(--rule2);border-radius:8px;padding:24px 24px 22px;transition:border-color .15s,box-shadow .15s}
-.tc:hover{border-color:var(--rule1);box-shadow:0 14px 30px -24px rgba(19,32,42,.45)}
-.tc-ic{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:6px;background:var(--accent-wash,#F6EDF2);color:var(--acc)}
-.tc-ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.tc-h{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-top:18px}
-.tc h3{font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:22px;line-height:1.15;letter-spacing:-.01em}
-.tc h3 a{text-decoration:none}
-.tc h3 a::after{content:"";position:absolute;inset:0;border-radius:8px}
-.tc p{margin-top:8px!important;font-size:15px;line-height:1.55;color:var(--ink)}
-.tc .tv-wh{margin-top:16px}
-.tc-go{margin-top:auto;padding-top:18px;font-size:14.5px;font-weight:600;color:var(--acc)}
-.tc-go span{display:inline-block;transition:transform .15s}
-.tc:hover .tc-go span{transform:translateX(3px)}
-.tc:hover h3 a{color:var(--acc)}
-.tc:has(a:focus-visible){outline:2px solid var(--info);outline-offset:3px}
-.tc h3 a:focus-visible{outline:0}
+/* the same feature block for 03 Briefing (picture first on wide screens) and 04 Radio */
+.ifr.flip .ifr-top{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.ifr.flip .ifr-fig{order:-1}
+.ifr-in ul{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:14px;border-top:1px solid var(--rule2)}
+.ifr-in li+li{border-left:1px solid var(--rule2)}
+.ifr-in a{display:flex;flex-direction:column;gap:2px;height:100%;padding:14px 16px 4px;text-decoration:none}
+.ifr-in li:first-child a{padding-left:0}
+.ifr-in b{margin:0;font-size:14.5px;font-weight:600;line-height:1.35;color:var(--ink)}
+.ifr-in small{font-size:13.5px;line-height:1.45;color:var(--ink3)}
+.ifr-in a:hover b{color:var(--acc)}
+/* radio: two doors under the feature */
+.dr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:36px}
+.dr-c{display:flex;flex-direction:column;padding:22px 24px 20px;border:1px solid var(--rule2);border-radius:8px;text-decoration:none;transition:border-color .15s,box-shadow .15s}
+.dr-c:hover{border-color:var(--rule1);box-shadow:0 14px 30px -24px rgba(19,32,42,.45)}
+.dr-k{color:var(--ink3)}
+.dr-c b{margin-top:8px;font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:22px;line-height:1.15;letter-spacing:-.01em;color:var(--ink)}
+.dr-d{margin-top:6px;font-size:15px;line-height:1.55;color:var(--ink2)}
+.dr-go{margin-top:auto;padding-top:16px;font-size:14.5px;font-weight:600;color:var(--acc)}
+.dr-go span:last-child{display:inline-block;transition:transform .15s}
+.dr-c:hover b{color:var(--acc)}
+.dr-c:hover .dr-go span:last-child{transform:translateX(3px)}
+
+/* ---------- type rating and checks: a quiet row of links ---------- */
+.tv-more{margin-top:72px;display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:16px 48px;align-items:start;padding-top:24px;border-top:1px solid var(--rule1)}
+.tv-more h2{font-size:22px;line-height:1.2}
+.tv-more-h p{margin-top:6px!important;font-size:14.5px;line-height:1.55;color:var(--ink3)}
+.tv-more-l li+li{border-top:1px solid var(--rule2)}
+.tv-more-l a{display:grid;grid-template-columns:15.5em minmax(0,1fr) auto;align-items:baseline;gap:4px 20px;padding:12px 4px;text-decoration:none}
+.tv-more-l li:first-child a{padding-top:2px}
+.tv-more-l .t{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.tv-more-l b{font-size:15.5px;font-weight:650;color:var(--ink)}
+.tv-more-l .d{font-size:14.5px;line-height:1.5;color:var(--ink2)}
+.tv-more-l .ar{color:var(--acc);transition:transform .15s}
+.tv-more-l a:hover b{color:var(--acc)}
+.tv-more-l a:hover .ar{transform:translateX(3px)}
 
 /* ---------- for institutions ---------- */
 .tv-inst{display:flex;align-items:center;justify-content:space-between;gap:20px 40px;margin-top:88px;padding:28px 32px;background:var(--sheet0);border:1px solid var(--rule2);border-left:3px solid var(--acc);border-radius:8px}
@@ -155,6 +173,7 @@
   .ifr-fig{order:-1}
   .ifr-path ol{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 0}
   .ifr-path ol::before{display:none}
+  .ifr.flip .ifr-top{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:980px){
   .tv-hero{grid-template-columns:minmax(0,1fr)}
@@ -168,12 +187,12 @@
   .sy{display:grid;grid-template-columns:minmax(0,44fr) minmax(0,56fr)}
   .sy-ph{border-bottom:0;border-right:1px solid var(--frame);height:100%}
   .sy-ph img{height:100%}
-  .cards{grid-template-columns:minmax(0,1fr)}
-  .tc{display:grid;grid-template-columns:44px minmax(0,1fr);gap:0 20px}
-  .tc>*{grid-column:2}
-  .tc-ic{grid-column:1;grid-row:1/span 4}
-  .tc-h{margin-top:0}
-  .tc-go{padding-top:14px}
+  .ifr-in ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ifr-in li:nth-child(3){border-left:0}
+  .ifr-in li:nth-child(3) a{padding-left:0}
+  .ifr-in li:nth-child(n+3){border-top:1px solid var(--rule2)}
+  .ifr-in a{padding-bottom:12px}
+  .tv-more{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:640px){
   .tv-crumb{padding-top:18px}
@@ -200,16 +219,22 @@
   .ifr-path i{flex:none}
   .ifr-path b{margin-top:0;font-size:14px}
   .ifr-path h3 .sub{display:block;margin:4px 0 0}
-  .tc{display:flex;padding:20px}
-  .tc-h{margin-top:14px}
+  .ifr-in a{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:12px 10px 12px}
+  .ifr-in li:nth-child(odd) a{padding-left:0}
+  .dr{grid-template-columns:minmax(0,1fr);gap:14px;margin-top:24px}
+  .dr-c{padding:18px 18px 16px}
+  .tv-more{margin-top:56px}
+  .tv-more-l a{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 0}
+  .tv-more-l .d{grid-column:1;grid-row:2}
+  .tv-more-l .ar{grid-column:2;grid-row:1/3;align-self:center}
   .tv-inst{flex-direction:column;align-items:flex-start;padding:22px 20px;margin-top:64px}
   .tv-inst .tv-btn{width:100%}
 }
-@media (prefers-reduced-motion:reduce){.tv-btn,.tv-idx a,.tc,.tc-go span,.sy-ph img,.ifr-path i{transition:none}.sy-ph:hover img{transform:none}}
+@media (prefers-reduced-motion:reduce){.tv-btn,.tv-idx a,.dr-c,.dr-go span,.tv-more-l .ar,.sy-ph img,.ifr-path i{transition:none}.sy-ph:hover img{transform:none}}
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=61"></script>
+<script src="site.js?v=62"></script>
 <main class="tv" id="main">
 
   <nav class="tv-crumb tv-mono" aria-label="Breadcrumb">
@@ -219,8 +244,8 @@
   <header class="tv-hero">
     <div>
       <span class="tv-eb tv-mono" data-tx="eb">Birdbird training</span>
-      <h1 data-tx="h1">Cockpit trainers, IFR procedures and check preparation</h1>
-      <p class="tv-lede" data-tx="lede">Everything Birdbird offers for training, in one place: working cockpits for three aircraft, an IFR trainer that teaches one procedure at a time, briefing and radio practice, and preparation for type ratings, simulator assessments and checks.</p>
+      <h1 data-tx="h1">Cockpit trainers, IFR procedures, briefing and radio</h1>
+      <p class="tv-lede" data-tx="lede">Everything Birdbird offers for training, in one place: working cockpits for three aircraft, an IFR trainer that teaches one procedure at a time, briefings scored by the instructor, and radio practice from single calls to a whole flight. Type rating study and check preparation are here too.</p>
     </div>
     <dl class="tv-facts">
       <div><dt data-tx="fA">Aircraft</dt><dd>Cessna 172, DA42, King Air B200</dd></div>
@@ -233,8 +258,8 @@
     <ol>
       <li><a href="#simulators"><span class="n">01</span><b data-tx="x1">Simulators</b><small data-tx="x1s">3 aircraft, 2D and 3D</small></a></li>
       <li><a href="#ifr"><span class="n">02</span><b data-tx="x2">IFR trainer</b><small data-tx="x2s">46 exercises</small></a></li>
-      <li><a href="#procedures"><span class="n">03</span><b data-tx="x3">Procedures</b><small data-tx="x3s">Briefings, gate to gate, radio</small></a></li>
-      <li><a href="#checks"><span class="n">04</span><b data-tx="x4">Type rating and checks</b><small data-tx="x4s">Type rating, A320, checks</small></a></li>
+      <li><a href="#briefing"><span class="n">03</span><b data-tx="x3">Briefing</b><small data-tx="x3s">Departures and approaches, scored</small></a></li>
+      <li><a href="#radio"><span class="n">04</span><b data-tx="x4">Radio</b><small data-tx="x4s">Radio drills and gate to gate</small></a></li>
     </ol>
   </nav>
 
@@ -329,66 +354,98 @@
     </div>
   </section>
 
-  <!-- 03 procedures -->
-  <section class="tv-sec" id="procedures" aria-labelledby="h-pro">
+  <!-- 03 briefing -->
+  <section class="tv-sec" id="briefing" aria-labelledby="h-brf">
     <div class="tv-sh">
-      <div><span class="n" aria-hidden="true">03</span><h2 id="h-pro" data-tx="proH">Procedures</h2></div>
-      <p data-tx="proP">The parts of a flight that are spoken and done in order: the briefing, the flows and checklists, and the radio.</p>
+      <div><span class="n" aria-hidden="true">03</span><h2 id="h-brf" data-tx="brfH">Briefing</h2></div>
+      <p data-tx="brfP">Brief a departure or an approach out loud, the way you will in the aircraft, and get it scored.</p>
     </div>
-    <div class="cards">
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8.5 7.5h7M8.5 11h4.5"/><path d="M8.5 17.5l2.6-2.2 2 1.2 2.9-3"/></svg></span>
-        <div class="tc-h"><h3><a href="briefing.html" data-tx="brH">Briefings</a></h3></div>
-        <p data-tx="brD">Brief a departure or an approach out loud with today’s weather, a training chart and the aircraft numbers. The AI instructor scores it.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="brP">Reading an approach chart, the briefing order from the top of the plate down, the numbers and the threats.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2"/><circle cx="18.5" cy="6.5" r="2"/><path d="M7.5 17.5h4a3 3 0 0 0 3-3v-5a3 3 0 0 1 2-2.8"/></svg></span>
-        <div class="tc-h"><h3><a href="radio.html" data-tx="g2H">Gate to gate</a></h3></div>
-        <p data-tx="g2D">Fly a whole DA42 training trip in the right order, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="g2P">Flows from memory, checklists, briefings and every radio call, phase by phase.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2"/><rect x="3.5" y="13.5" width="4" height="6" rx="1"/><rect x="16.5" y="13.5" width="4" height="6" rx="1"/><path d="M18.5 19.5c0 1.3-1.7 2-4.5 2"/></svg></span>
-        <div class="tc-h"><h3><a href="radio-drills.html" data-tx="rdH">Radio drills</a></h3></div>
-        <p data-tx="rdD">Two-way radio practice with EASA and ICAO phraseology. Every call is checked: what you read back, what you missed and what a good call sounds like.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="rdP">Guided scenarios, free practice with an AI controller, readbacks, the phonetic alphabet and a short test.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
+    <div class="ifr flip">
+      <div class="ifr-top">
+        <div>
+          <p class="ifr-lede" data-tx="brfL">Every scenario gives you today’s weather, a training chart and the aircraft numbers. You brief in a fixed order, by voice or keyboard, and the instructor tells you what you covered, what you missed and whether the numbers are right.</p>
+          <p class="ifr-n"><b>3</b><span data-tx="brfN">briefings: the departure (T-RIBETS), the instrument approach (TSADMM) and the VFR arrival, each with a model briefing to compare with.</span></p>
+          <dl class="ifr-f">
+            <div><dt data-tx="bf1">A new scenario every time</dt><dd data-tx="bf1d">Fresh weather, ATIS, mass and speeds, and now and then a glide path out of service, so you never brief from memory.</dd></div>
+            <div><dt data-tx="bf2">Learn to read the plate</dt><dd data-tx="bf2d">Tap any number on the training chart to see what it means and where it goes in the briefing.</dd></div>
+            <div><dt data-tx="bf3">Scored as you finish</dt><dd data-tx="bf3d">A built-in check marks each element at once; the AI instructor judges whether your plan is right and safe.</dd></div>
+            <div><dt data-tx="bf4">One minute, not five</dt><dd data-tx="bf4d">A short method for working through a plate from the top down, ending with the missed approach.</dd></div>
+          </dl>
+          <div class="ifr-cta"><a class="tv-btn" href="briefing.html#app" data-tx="brfGo">Brief an approach</a><a class="tv-btn ghost" href="briefing.html#dep" data-tx="brfDep">Brief a departure</a></div>
+        </div>
+        <figure class="ifr-fig">
+          <a class="ifr-ph" href="briefing.html#app" tabindex="-1" aria-hidden="true">
+            <img src="img/training/briefing-approach-1216.webp" srcset="img/training/briefing-approach-608.webp 608w, img/training/briefing-approach-1216.webp 1216w, img/training/briefing-approach-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 72px), (max-width:1180px) calc(100vw - 160px), 640px" width="1824" height="1094" loading="lazy" decoding="async"
+              alt="The briefing trainer set up for an approach: today’s weather, ATIS and speeds above a fictional ILS training chart on the left, and on the right the approach briefing in order, threats, setup, arrival, descent and minimums, each with an example of what to say." data-alt-no="Briefingtreneren satt opp for en innflyging: dagens vær, ATIS og farter over et fiktivt ILS-treningskart til venstre, og til høyre innflygingsbriefingen i rekkefølge, trusler, oppsett, ankomst, nedstigning og minima, hver med et eksempel på hva du sier.">
+          </a>
+          <figcaption data-tx="brfCap">An approach briefing on the ILS at the practice airport. The airport, the chart and the numbers are fictional.</figcaption>
+        </figure>
+      </div>
+      <div class="ifr-path ifr-in">
+        <h3 id="h-brin"><span data-tx="brinH">On the page</span></h3>
+        <ul aria-labelledby="h-brin">
+          <li><a href="briefing.html#trainer"><b data-tx="bi1">Trainer</b><small data-tx="bi1s">Brief and get scored</small></a></li>
+          <li><a href="briefing.html#reading"><b data-tx="bi2">Reading an approach chart</b><small data-tx="bi2s">Every number explained</small></a></li>
+          <li><a href="briefing.html#plate"><b data-tx="bi3">How to brief a plate</b><small data-tx="bi3s">The order, step by step</small></a></li>
+          <li><a href="briefing.html#speeds"><b data-tx="bi4">A320 speed card</b><small data-tx="bi4s">Typical speeds by mass</small></a></li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <!-- 04 type rating and checks -->
-  <section class="tv-sec" id="checks" aria-labelledby="h-chk">
+  <!-- 04 radio -->
+  <section class="tv-sec" id="radio" aria-labelledby="h-rad">
     <div class="tv-sh">
-      <div><span class="n" aria-hidden="true">04</span><h2 id="h-chk" data-tx="chkH">Type rating and checks</h2></div>
+      <div><span class="n" aria-hidden="true">04</span><h2 id="h-rad" data-tx="radH">Radio</h2></div>
+      <p data-tx="radP">Two-way radio practice with EASA and ICAO phraseology, from single calls to a whole flight.</p>
+    </div>
+    <div class="ifr">
+      <div class="ifr-top">
+        <div>
+          <p class="ifr-lede" data-tx="radL">Make the call, the controller answers, and every transmission is checked: what you read back, what you missed and what a good call sounds like. Hold the push-to-talk button and speak, or type.</p>
+          <dl class="ifr-f">
+            <div><dt data-tx="rf1">Guided scenarios</dt><dd data-tx="rf1d">VFR departure and arrival, an IFR clearance, an IFR arrival with the ILS, and a MAYDAY. QNH and squawk change every time.</dd></div>
+            <div><dt data-tx="rf2">An AI controller</dt><dd data-tx="rf2d">Free practice with tower, ground, approach, flight information or an emergency, at three levels of difficulty.</dd></div>
+            <div><dt data-tx="rf3">Phraseology at hand</dt><dd data-tx="rf3d">What to always read back, the first call, words to avoid, standard words and the phonetic alphabet.</dd></div>
+            <div><dt data-tx="rf4">A whole flight, in order</dt><dd data-tx="rf4d">Gate to gate puts the radio where it belongs: between the flows, the checklists and the briefings.</dd></div>
+          </dl>
+        </div>
+        <figure class="ifr-fig">
+          <a class="ifr-ph" href="radio-drills.html#train" tabindex="-1" aria-hidden="true">
+            <img src="img/training/radio-drills-1216.webp" srcset="img/training/radio-drills-608.webp 608w, img/training/radio-drills-1216.webp 1216w, img/training/radio-drills-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 72px), (max-width:1180px) calc(100vw - 160px), 640px" width="1824" height="1032" loading="lazy" decoding="async"
+              alt="A guided VFR departure in the radio drills: the scenario list, the situation and the ATIS on the left, and on the right the radio with the tower frequency, the pilot’s readbacks each ticked off item by item, the controller’s replies and the next task." data-alt-no="En veiledet VFR-avgang i radiodrillene: scenariolisten, situasjonen og ATIS til venstre, og til høyre radioen med tårnfrekvensen, pilotens tilbakelesninger krysset av punkt for punkt, flygelederens svar og neste oppgave.">
+          </a>
+          <figcaption data-tx="radCap">A guided VFR departure: taxi readback checked, frequency change to the tower, now the call at the holding point.</figcaption>
+        </figure>
+      </div>
+      <div class="dr">
+        <a class="dr-c" href="radio-drills.html">
+          <span class="tv-mono dr-k" data-tx="drK1">Single calls</span>
+          <b data-tx="rdH">Radio drills</b>
+          <span class="dr-d" data-tx="rdD">Guided scenarios, the AI controller, phraseology and a short test.</span>
+          <span class="dr-go"><span data-tx="rdGo">Open radio drills</span> <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="dr-c" href="radio.html">
+          <span class="tv-mono dr-k" data-tx="drK2">A whole flight</span>
+          <b data-tx="g2H">Gate to gate</b>
+          <span class="dr-d" data-tx="g2D">A DA42 training trip from the planning room to the chocks, IFR or VFR, in Learn or Check mode. The AI plays ATC and your instructor.</span>
+          <span class="dr-go"><span data-tx="g2Go">Fly gate to gate</span> <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- type rating and checks: a quieter row -->
+  <section class="tv-more" id="checks" aria-labelledby="h-chk">
+    <div class="tv-more-h">
+      <h2 id="h-chk" data-tx="chkH">Type rating and checks</h2>
       <p data-tx="chkP">Study a type in depth, then prepare for the assessment in front of you.</p>
     </div>
-    <div class="cards">
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5A1.5 1.5 0 0 1 6 4h13.5v13.5H6a1.5 1.5 0 0 0-1.5 1.5z"/><path d="M4.5 19A1.5 1.5 0 0 0 6 20.5h13.5v-3"/><path d="M8.5 8h7M8.5 11h4.5"/></svg></span>
-        <div class="tc-h"><h3><a href="typerating.html" data-tx="trH">Type rating</a></h3><span class="st lang" data-tx="enOnly">English only</span></div>
-        <p data-tx="trD">A King Air B200 type rating trainer: fifteen modules in a sensible order, from the systems to the oral exam.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="trP">Systems with cockpit simulators, flashcards for the numbers, a question trainer with exam mode and an oral exam.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.7 13.2 20.3 10.8"/><path d="M7.5 15.2h3l1.5 1.3 1.5-1.3h3"/></svg></span>
-        <div class="tc-h"><h3><a href="simcheck.html" data-tx="saH">A320 sim assessment</a></h3></div>
-        <p data-tx="saD">Prepare for an airline A320 recruitment check in the simulator, hand-flown on raw data, as pilot flying and as pilot monitoring.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="saP">The manoeuvres, pitch and thrust targets, configuration and speed, PF and PM calls and the raw-data scan.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
-      <article class="tc">
-        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="1.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.7 12.7l2.2 2.2 4.4-4.6"/></svg></span>
-        <div class="tc-h"><h3><a href="checkride.html" data-tx="cpH">Check preparation</a></h3></div>
-        <p data-tx="cpD">Prepare for a proficiency check or a skill test: an oral with the instructor from your own documents, and a list of what to have ready on the day.</p>
-        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="cpP">Examiner-style oral questions, each answer graded with its source, and the checklist for the day.</dd></dl>
-        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
-      </article>
-    </div>
+    <ul class="tv-more-l">
+      <li><a href="typerating.html"><span class="t"><b data-tx="trH">Type rating</b><span class="st lang" data-tx="enOnly">English only</span></span><span class="d" data-tx="trD">King Air B200: fifteen modules, from the systems to the oral exam.</span><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="simcheck.html"><span class="t"><b data-tx="saH">A320 sim assessment</b></span><span class="d" data-tx="saD">An airline recruitment check, hand-flown on raw data, as PF and PM.</span><span class="ar" aria-hidden="true">→</span></a></li>
+      <li><a href="checkride.html"><span class="t"><b data-tx="cpH">Check preparation</b></span><span class="d" data-tx="cpD">An oral from your own documents and a list for the day.</span><span class="ar" aria-hidden="true">→</span></a></li>
+    </ul>
   </section>
 
   <section class="tv-inst" aria-labelledby="h-inst">
@@ -407,10 +464,10 @@
 LAB.add({},{'Training':'Trening'});
 LAB.tx({
  cr1:'Trening', cr2:'Oversikt', eb:'Trening i Birdbird',
- h1:'Cockpittrenere, IFR-prosedyrer og kontrollforberedelse',
- lede:'Alt Birdbird tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefing- og radiotrening, og forberedelse til typerating, simulatortester og kontroller.',
+ h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
+ lede:'Alt Birdbird tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
  fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
- x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Prosedyrer', x3s:'Briefinger, gate to gate, radio', x4:'Typerating og sjekk', x4s:'Typerating, A320, kontroller',
+ x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Briefing', x3s:'Avganger og innflyginger, med poeng', x4:'Radio', x4s:'Radiodriller og gate to gate',
  simH:'Simulatorer',
  simP:'Fungerende cockpiter for tre flytyper, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Alle kjører som 2D-panel; 3D-cockpitene er i beta.',
  stB:'Beta', tr:'Trener', o2:'Åpne 2D',
@@ -432,29 +489,36 @@ LAB.tx({
  ifrCap:'Fly en DME-bue, steg 4 på veien. Her flyr instruktøren; den stiplede linjen er instruktørens bane.',
  pathH:'Veien', pathS:'Åtte kjerneøvelser i den rekkefølgen de læres bort, fem til ti minutter hver',
  p1:'Følge kurs', p2:'Skjære inn', p4:'DME-bue', p5:'Inngang til holding', p6:'Holding', p7:'Prosedyresving',
- proH:'Prosedyrer',
- proP:'De delene av en flyging som skal sies og gjøres i riktig rekkefølge: briefingen, flows og sjekklister, og radioen.',
- yp:'Du øver på', go:'Åpne',
- brH:'Briefinger',
- brD:'Brief en avgang eller en innflyging høyt med dagens vær, et treningskart og flyets tall. AI-instruktøren gir deg poeng.',
- brP:'Å lese et innflygingskart, briefingrekkefølgen ovenfra og ned på kartet, tallene og truslene.',
- g2H:'Gate to gate',
- g2D:'Fly en hel treningstur med DA42 i riktig rekkefølge, fra planleggingsrommet til klossene. AI-en er både flygeleder og instruktør, med tale eller tastatur.',
- g2P:'Flows fra hukommelsen, sjekklister, briefinger og hvert radiokall, fase for fase.',
- rdH:'Radiodriller',
- rdD:'Toveis radiotrening med EASA- og ICAO-fraseologi. Hvert kall sjekkes: hva du leste tilbake, hva du gikk glipp av og hvordan et godt kall høres ut.',
- rdP:'Veiledede scenarioer, fri trening med en AI-flygeleder, tilbakelesninger, det fonetiske alfabetet og en kort test.',
+ brfH:'Briefing',
+ brfP:'Brief en avgang eller en innflyging høyt, slik du gjør det i flyet, og få den vurdert.',
+ brfL:'Hvert scenario gir deg dagens vær, et treningskart og flyets tall. Du brifer i fast rekkefølge, med tale eller tastatur, og instruktøren forteller hva du fikk med, hva du glemte og om tallene stemmer.',
+ brfN:'briefinger: avgangen (T-RIBETS), instrumentinnflygingen (TSADMM) og VFR-ankomsten, hver med en modellbriefing å sammenligne med.',
+ bf1:'Nytt scenario hver gang', bf1d:'Nytt vær, ny ATIS, ny masse og nye farter, og innimellom en glidebane som er ute av drift, så du aldri brifer på rutine.',
+ bf2:'Lær å lese kartet', bf2d:'Trykk på et tall på treningskartet for å se hva det betyr og hvor det hører hjemme i briefingen.',
+ bf3:'Vurdert når du er ferdig', bf3d:'En innebygd sjekk krysser av hvert element med en gang; AI-instruktøren vurderer om planen er riktig og trygg.',
+ bf4:'Ett minutt, ikke fem', bf4d:'En kort metode for å gå gjennom kartet ovenfra og ned, med avbrutt innflyging til slutt.',
+ brfGo:'Brief en innflyging', brfDep:'Brief en avgang',
+ brfCap:'En innflygingsbriefing for ILS på øvingsflyplassen. Flyplassen, kartet og tallene er fiktive.',
+ brinH:'På siden', bi1:'Trener', bi1s:'Brief og få poeng', bi2:'Lese et innflygingskart', bi2s:'Hvert tall forklart', bi3:'Slik brifer du et kart', bi3s:'Rekkefølgen, steg for steg', bi4:'A320-fartskort', bi4s:'Typiske farter etter masse',
+ radH:'Radio',
+ radP:'Toveis radiotrening med EASA- og ICAO-fraseologi, fra enkeltkall til en hel flyging.',
+ radL:'Du gjør kallet, flygelederen svarer, og hver sending sjekkes: hva du leste tilbake, hva du gikk glipp av og hvordan et godt kall høres ut. Hold inne sendeknappen og snakk, eller skriv.',
+ rf1:'Veiledede scenarioer', rf1d:'VFR-avgang og -ankomst, en IFR-klarering, en IFR-ankomst med ILS og en MAYDAY. QNH og squawk endres hver gang.',
+ rf2:'En AI-flygeleder', rf2d:'Fri trening med tårn, bakkekontroll, innflygingskontroll, flygeinformasjon eller en nødsituasjon, på tre vanskelighetsgrader.',
+ rf3:'Fraseologien for hånden', rf3d:'Hva som alltid skal leses tilbake, førstekallet, ord du bør unngå, standardord og det fonetiske alfabetet.',
+ rf4:'En hel flyging, i riktig rekkefølge', rf4d:'Gate to gate setter radioen der den hører hjemme: mellom flows, sjekklister og briefinger.',
+ radCap:'En veiledet VFR-avgang: tilbakelesningen av taksiklareringen er sjekket, frekvensskifte til tårnet, og nå kallet ved venteposisjonen.',
+ drK1:'Enkeltkall', drK2:'En hel flyging',
+ rdH:'Radiodriller', rdD:'Veiledede scenarioer, AI-flygelederen, fraseologi og en kort test.', rdGo:'Åpne radiodrillene',
+ g2H:'Gate to gate', g2D:'En treningstur med DA42 fra planleggingsrommet til klossene, IFR eller VFR, i Lær- eller Sjekk-modus. AI-en er både flygeleder og instruktør.', g2Go:'Fly gate to gate',
  chkH:'Typerating og sjekk',
  chkP:'Studer en flytype i dybden, og forbered deg til vurderingen du har foran deg.',
  trH:'Typerating', enOnly:'Bare engelsk',
- trD:'En typeratingtrener for King Air B200: femten moduler i fornuftig rekkefølge, fra systemene til den muntlige eksamenen.',
- trP:'Systemer med cockpitsimulatorer, flashcards for tallene, en spørsmålstrener med eksamensmodus og en muntlig eksamen.',
+ trD:'King Air B200: femten moduler, fra systemene til den muntlige eksamenen.',
  saH:'A320 simulatortest',
- saD:'Forbered deg til en A320-simulatortest ved rekruttering til et flyselskap, håndfløyet på rådata, som pilot flying og som pilot monitoring.',
- saP:'Manøvrene, pitch- og skyvekraftverdier, konfigurasjon og fart, PF- og PM-kall og rådata-scanen.',
+ saD:'En rekrutteringstest til et flyselskap, håndfløyet på rådata, som PF og PM.',
  cpH:'Kontrollforberedelse',
- cpD:'Forbered deg til en ferdighetskontroll eller en ferdighetsprøve: en muntlig med instruktøren ut fra dine egne dokumenter, og en liste over hva du må ha klart på dagen.',
- cpP:'Muntlige spørsmål slik en sensor stiller dem, hvert svar vurdert med kilden vist, og sjekklisten for dagen.',
+ cpD:'En muntlig ut fra dine egne dokumenter og en liste til dagen.',
  iH:'For flyskoler, operatører og luftfartsinstitusjoner',
  iP:'En uavhengig plattform, åpen for strukturert gjennomgang og samarbeid.',
  iGo:'Diskuter samarbeid',
