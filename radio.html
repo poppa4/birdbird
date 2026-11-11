@@ -127,6 +127,7 @@
       <tbody id="otab"></tbody>
     </table>
     <p class="note">Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.</p>
+    <p class="note"><a href="radio-drills.html">Radio drills</a>: practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.</p>
   </section>
 </div>
 <script src="lab.js?v=47"></script>
@@ -135,6 +136,7 @@
 <script src="chart.js?v=4"></script>
 <script src="g2g-steps.js?v=2"></script>
 <script src="ai.js?v=1"></script>
+<script src="radiocore.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -146,7 +148,7 @@ LAB.add({},{
  'The rhythm is the same in every phase: do the flow from memory, verify with the checklist, brief what is coming, then talk. The checklist is read in full on the ground, and kept short below 1000 ft.':'Rytmen er den samme i hver fase: gjør flowen fra hukommelsen, verifiser med sjekklisten, brief det som kommer, og snakk så. Sjekklisten leses fullt ut på bakken, og holdes kort under 1000 ft.',
  'When':'Når','What you do':'Hva du gjør','Radio':'Radio',
  'Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.':'Basert på flyhåndboken for Diamond DA42 NG/VI og en typisk ATO-SOP for DA42-VI. Skolens egen SOP og sjekkliste går alltid foran. Birdbird, prosedyrene, kartene og frekvensene er oppdiktet.',
- 'IFR training flight':'IFR-treningstur','VFR local flight':'VFR lokaltur','Learn':'Lær','Check':'Sjekk'
+ 'IFR training flight':'IFR-treningstur','Radio drills':'Radiodriller',': practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.':': øv bare på radiooppkallene, med stemme eller tastatur, med VFR, IFR, nødsituasjoner og grunnleggende.','VFR local flight':'VFR lokaltur','Learn':'Lær','Check':'Sjekk'
 });
 const KEY='naeroson-g2g';
 const S={scen:'ifr',mode:'learn',V:null,steps:[],i:0,res:[],K:{},done:false};
@@ -167,7 +169,9 @@ function newFlight(scen){ if(scen) S.scen=scen; S.V=OPS.flight({rules:S.scen}); 
 const PHON={alfa:'a',alpha:'a',bravo:'b',charlie:'c',delta:'d',echo:'e',foxtrot:'f',golf:'g',hotel:'h',india:'i',juliett:'j',juliet:'j',kilo:'k',lima:'l',mike:'m',november:'n',oscar:'o',papa:'p',quebec:'q',romeo:'r',sierra:'s',tango:'t',uniform:'u',victor:'v',whiskey:'w',whisky:'w',xray:'x','x-ray':'x',yankee:'y',zulu:'z'};
 function rnorm(t){ const n=BRIEF.norm(String(t).replace(/-/g,' ').replace(/\balpha\b/gi,'alfa').replace(/\bjuliet\b/gi,'juliett').replace(/\bwhisky\b/gi,'whiskey').replace(/x-ray/gi,'xray'));
   const sp=n.replace(/\b(?:(?:alfa|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliett|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\s+){2,}(?:alfa|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliett|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\b/g,m=>m.split(/\s+/).map(w=>PHON[w]).join(''));
-  return n+' | '+sp; }
+  // shared radio engine: spoken numbers and phonetics ("one two one decimal seven" -> 121.7) also match
+  let rc=''; try{ rc=window.RADIOCORE? ' | '+RADIOCORE.norm(t).text : ''; }catch(e){}
+  return n+' | '+sp+rc; }
 function hasCS(t){ const c=String(t).toLowerCase().replace(/[a-z-]+/g,w=>PHON[w]||w).replace(/[^a-z0-9]/g,''); return /lnnae|lnae|lae|nae/.test(c); }
 function rule(step,txt){ const n=rnorm(txt); return step.items.map(it=> it.cs? hasCS(txt) : (it.re.test(n) && !(it.not&&it.not.test(n)))); }
 
