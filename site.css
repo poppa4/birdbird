@@ -115,6 +115,25 @@ html body .nsearch .res{max-width:var(--container);left:var(--gl);right:var(--gr
 .trnav a{flex:0 0 auto;font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;padding:12px 0 11px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .trnav a:hover{color:var(--ink)}
 .trnav a.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.trnav .tg{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:14px;font-weight:500;color:var(--ink-2);background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 0 11px;cursor:pointer;white-space:nowrap}
+.trnav .tg:hover,.trnav .tg[aria-expanded=true]{color:var(--ink)}
+.trnav .tg.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.trnav .tg .cur{font-weight:500;color:var(--ink-3)}
+.trnav .tg .cur::before{content:"·";margin:0 6px 0 0;color:var(--rule)}
+.trnav .tg svg{width:10px;height:6px;fill:none;stroke:currentColor;stroke-width:1.5;opacity:.6;transition:transform .15s}
+.trnav .tg[aria-expanded=true] svg{transform:rotate(180deg)}
+.tgm{position:fixed;z-index:80;min-width:230px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);box-shadow:0 14px 34px rgba(19,32,42,.14);padding:6px}
+.tgm a{display:block;padding:9px 10px;border-radius:var(--radius,3px);font-size:14px;color:var(--ink);text-decoration:none;white-space:nowrap}
+.tgm a:hover,.tgm a:focus-visible{background:var(--wash);outline:none}
+.trnav .tgm a,.trnav .tgm a.on{border-bottom:0;margin-bottom:0}
+.tgm a.on{color:var(--accent);font-weight:600}
+.tgm .tgr{display:flex;align-items:center;gap:14px;justify-content:space-between}
+.tgm .tgr>a{flex:1}
+.tgm .md{display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;flex:none}
+.tgm .md a{padding:5px 9px;font-size:12px;font-weight:600;color:var(--ink-2);border-radius:0;display:inline-flex;align-items:center;gap:4px}
+.tgm .md a+a{border-left:1px solid var(--rule)}
+.tgm .md a.on{background:var(--ink);color:#fff}
+.tgm .md small{font:700 8px/1 var(--f-mono,monospace);letter-spacing:.08em;text-transform:uppercase;background:#ffcf3a;color:#0d1319;border-radius:3px;padding:2px 3px}
 .site:has(+.trnav){border-bottom-color:var(--rule-2)}
 @media (max-width:760px){.trnav>.in{gap:0 20px;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}}
 
