@@ -6,11 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cessna 172 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
-<link rel="stylesheet" href="site.css?v=14">
+<link rel="stylesheet" href="site.css?v=15">
 <link rel="stylesheet" href="c172.css?v=4">
 </head>
 <body data-title="Cessna 172 cockpit procedure trainer">
-<script src="site.js?v=58"></script>
+<script src="site.js?v=59"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -24,7 +24,7 @@
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="da42-3d.html">DA42 3D (beta)</option><option value="b200.html">King Air B200</option><option value="b200-3d.html">King Air B200 3D (beta)</option><option value="c172.html" selected>Cessna 172</option><option value="c172-3d.html">Cessna 172 3D (beta)</option></select><a class="cb" id="b3d" href="c172-3d.html" title="Look around in a 3D cockpit (beta)">3D (beta)</a>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html">King Air B200</option><option value="c172.html" selected>Cessna 172</option></select><span class="dseg" role="group" aria-label="View"><a href="c172.html" class=on aria-current=page>2D</a><a href="c172-3d.html">3D<small>beta</small></a></span>
       <select class="cb" id="scenSel" aria-label="Scenario"></select>
       <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
       <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>

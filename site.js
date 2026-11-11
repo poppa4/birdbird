@@ -9,11 +9,11 @@
   let page=(location.pathname.split('/').pop()||'index.html').replace(/\?.*/,''); if(!/\.html$/.test(page)) page=page+'.html';
   const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','airdata.html','orientation.html','holding.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
   /* Training hub: one sub-nav, same order everywhere */
-  const TRN=[['training.html','Overview'],['c172.html','Cessna 172'],['c172-3d.html','Cessna 172 3D (beta)'],['cockpit.html','DA42 simulator'],['da42-3d.html','DA42 3D (beta)'],['b200.html','King Air B200'],['b200-3d.html','King Air B200 3D (beta)'],['ifr.html','IFR trainer'],['briefing.html','Briefings'],['radio.html','Gate to gate'],['radio-drills.html','Radio drills'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
+  const TRN=[['training.html','Overview'],['c172.html','Cessna 172'],['cockpit.html','DA42'],['b200.html','King Air B200'],['ifr.html','IFR trainer'],['briefing.html','Briefings'],['radio.html','Gate to gate'],['radio-drills.html','Radio drills'],['typerating.html','Type rating'],['simcheck.html','A320 sim assessment'],['checkride.html','Check preparation']];
   const checkMode=page==='fi.html'&&/[?&]mode=check/.test(location.search);
   const PLN=[['prep.html','Briefing pack'],['essentials.html','VFR and IFR essentials'],['weather.html','METAR and TAF'],['sheets.html','Kneeboard sheets'],['planning.html','Navigation log']];
-  const trn=TRN.some(x=>x[0]===page)||checkMode, pln=PLN.some(x=>x[0]===page);
-  const trnOn=h=> h===page || (checkMode&&h==='checkride.html');
+  const trn=TRN.some(x=>x[0]===page)||['c172-3d.html','da42-3d.html','b200-3d.html'].includes(page)||checkMode, pln=PLN.some(x=>x[0]===page);
+  const D3={'c172.html':'c172-3d.html','cockpit.html':'da42-3d.html','b200.html':'b200-3d.html'}; const trnOn=h=> h===page || D3[h]===page || (checkMode&&h==='checkride.html');
   /* page-family classes for the design system (set early, before first paint) */
   document.documentElement.classList.add(page==='lab.html'?'vlab-home':(lab?'vlab':'site-page'));
   /* Virtual Labs depth (Short / Deep dive / Instructor) as a body class before first paint; lab.js keeps it in sync */
