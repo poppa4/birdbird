@@ -16,7 +16,7 @@ LAB.add({},{
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
  'Levers':'Hendler','Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.':'Dra effekt-, propell- og condition-hendlene opp og ned; de smetter inn i hakkene. Beta og revers (under IDLE) virker bare på bakken. Musehjulet og piltastene flytter en hendel i små steg.',
  'Knobs':'Knotter','Scroll on a knob or drag across it. HDG and CRS set the heading bug and the course on the HSI, ALT SEL the altitude alerter, CABIN ALT and RATE the pressurisation controller.':'Rull på en knott eller dra over den. HDG og CRS stiller kursmerket og kursen på HSI-en, ALT SEL høydevarsleren, CABIN ALT og RATE trykkontrolleren.',
- 'Control wheel':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Assisted handling (attitude hold, auto-trim, rudder assist)':'Assistert styring (attitydehold, auto-trim, sideror-hjelp)','Rudder and brakes':'Sideror og bremser','Hold for brakes':'Hold for bremser',
+ 'Control wheel':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Assisted handling (attitude hold, auto-trim, rudder assist; no rudder assist with an engine out)':'Assistert styring (attitydehold, auto-trim, sideror-hjelp; ingen sideror-hjelp med en motor ute)','Rudder trim left and right':'Sideror-trim venstre og høyre','Rudder and brakes':'Sideror og bremser','Hold for brakes':'Hold for bremser',
  'Make it harder':'Gjør det vanskeligere','Engines':'Motorer','Flame out an engine at any time. With the autofeather armed and both power levers forward, the failed propeller feathers itself.':'Stopp en motor når som helst. Med autofeather armert og begge effekthendlene fremme fløyes propellen på motoren som stoppet automatisk.',
  'Fail left':'Stopp venstre','Fail right':'Stopp høyre','Fire left':'Brann venstre','Fire right':'Brann høyre','Restore both engines':'Gjenopprett begge motorene',
  'Pressurisation':'Trykkabin','Ground power':'Bakkestrøm','Plug a ground power unit in on the ramp (EXT PWR light). With the battery ON, EXT PWR — ON puts it on line.':'Koble til en bakkestrømenhet på oppstillingsplassen (EXT PWR-lys). Med batteriet PÅ kobler EXT PWR — ON den inn.','Plug in ground power':'Koble til bakkestrøm','Unplug ground power':'Koble fra bakkestrøm','Lose the cabin pressure. The cabin climbs towards the aircraft altitude; ALT WARN comes on at 12,500 ft cabin altitude.':'Mist kabintrykket. Kabinen stiger mot flyets høyde; ALT WARN tennes ved 12 500 ft kabinhøyde.','Decompression':'Trykkfall','Wind':'Vind',
@@ -39,7 +39,7 @@ LAB.add({},{
 const F=FDM, KT=F.KT;
 Object.assign(F.AC,{name:'B200',m:5300,S:28.15,b:16.61,c:1.98,Ixx:26000,Iyy:30000,Izz:50000,CL0:0.25,CLa:5.2,CLmax:1.30,
   flaps:[{n:'UP',dCL:0,dCLmax:0,dCD:0,dCm:0},{n:'APPR',dCL:0.22,dCLmax:0.30,dCD:0.012,dCm:-0.03},{n:'DN',dCL:0.50,dCLmax:0.80,dCD:0.055,dCm:-0.06}],
-  CD0:0.024,k:0.045,gearCD:0.018,CnR:0.06,Pmax:634000,Tstatic:11000,Aprop:Math.PI*1.25*1.25,yEng:2.6,xMain:0.2,wheelbase:4.5,fuelCap:1e6,
+  CD0:0.024,k:0.045,gearCD:0.018,CnR:0.046 /* rudder power: Vmca ≈ 86 KIAS (5° bank, take-off power, windmilling), tests/calib.test.mjs */,Pmax:634000,Tstatic:11000,Aprop:Math.PI*1.25*1.25,yEng:2.6,xMain:0.2,wheelbase:4.5,fuelCap:1e6,
   V:{s0:75,s1:99,fe1:200,fe2:157,no:259,ne:259,mc:86,yse:121,r:100,y:125,le:181,lo:163}});
 const S=F.create(), AP=F.mkAP();
 const UI={paused:false,sound:true};
@@ -629,6 +629,12 @@ let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width
 tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
 tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
 ['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+/* touch rudder strip (twins: engine-out practice on a phone): drag sideways, it stays where you leave it; double-tap centres */
+const tRud=el('tRud');
+if(tRud){ const rAt=e=>{ const r=tRud.getBoundingClientRect(), v=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1); inp.rudUser=Math.abs(v)<0.06?0:v; };
+  tRud.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); tRud.setPointerCapture(e.pointerId); rAt(e); ensureAudio(); });
+  tRud.addEventListener('pointermove',e=>{ if(tRud.hasPointerCapture(e.pointerId)) rAt(e); });
+  tRud.addEventListener('dblclick',()=>{ inp.rudUser=0; }); }
 const stick=el('stick'), dot=stick.querySelector('.dot');
 function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:FK.shapePad((e.clientX-r.left)/r.width*2-1),y:FK.shapePad((e.clientY-r.top)/r.height*2-1)}; } // expo: gentle near centre
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
@@ -646,7 +652,7 @@ window.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('g.ctl:not(.t-yoke)')&&/^Arrow| |Enter/.test(e.key)) return;
   const k=e.key.length===1?e.key.toLowerCase():e.key;
   if(!cockpitVis&&k!=='p') return;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End',' ','+','-','=','[',']','f','v','g','p','x','q','e','b','w','a','s','d'].includes(k)) e.preventDefault();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End',' ','+','-','=','[',']','f','v','g','p','x','q','e','b','w','a','s','d',',','.'].includes(k)) e.preventDefault();
   ensureAudio();
   if(e.repeat&&['f','v','g','p',' ','x'].includes(k)) return;
   inp.keys.add(k);
@@ -731,12 +737,14 @@ const PROCS=[
    st(tr2('Condition lever (failed) — FUEL CUTOFF','Condition-hendel (død motor) — FUEL CUTOFF'),dz('cond'),()=>SYS['cond'+Ds()]<0.05),
    st(tr2('Firewall valve (failed) — CLOSED','Brannskottventil (død motor) — LUKKET'),dz('fw'),()=>!SYS['fw'+Ds()]),
    st(tr2('Generator (failed) — OFF','Generator (død motor) — AV'),dz('gen'),()=>SYS['gen'+Ds()]===1),
-   st(tr2('Autofeather — OFF · electrical load — check','Autofeather — AV · elektrisk last — sjekk'),'afSw',()=>SYS.afSw===0)]},
+   st(tr2('Autofeather — OFF · electrical load — check','Autofeather — AV · elektrisk last — sjekk'),'afSw',()=>SYS.afSw===0),
+   st(tr2('Prop sync — OFF','Propellsynkronisering — AV'),'sync',()=>!SYS.sync)]},
  {k:'fire',t:tr2('Engine fire on the ground','Motorbrann på bakken'),set:'running',fail:'fire',brief:tr2('Both engines at idle on the ramp. A fire warning will come on. Identify the engine from the red fire light, then shut off its fuel and extinguish. Evacuate when the aircraft is shut down.','Begge motorer på tomgang. En brannvarsling vil tennes. Identifiser motoren på det røde brannlyset, steng drivstoffet og slukk. Evakuer når flyet er slått av.'),
   steps:[st(tr2('Fire warning — identify the engine (red ENG FIRE light)','Brannvarsling — identifiser motoren (rødt ENG FIRE-lys)'),dz('fire'),()=>PR.failed&&PR.t>PR.failT+1.5),
    st(tr2('Condition lever (fire) — FUEL CUTOFF','Condition-hendel (brann) — FUEL CUTOFF'),dz('cond'),()=>SYS['cond'+Ds()]<0.05),
    st(tr2('Firewall valve (fire) — CLOSED','Brannskottventil (brann) — LUKKET'),dz('fw'),()=>!SYS['fw'+Ds()]),
    st(tr2('Fire extinguisher (fire) — PUSH (D light)','Brannslukker (brann) — TRYKK (D-lys)'),dz('fire'),()=>E[D()].ext),
+   chk(tr2('If the fire persists: ignition and engine start (fire) — STARTER ONLY, motor the engine to clear it','Hvis brannen fortsetter: tenning og motorstart (brann) — STARTER ONLY, drei motoren for å blåse den ut'),dz('ign'),()=>true),
    st(tr2('Other engine: condition lever — FUEL CUTOFF','Andre motor: condition-hendel — FUEL CUTOFF'),()=>'cond'+Ls(),()=>SYS['cond'+Ls()]<0.05),
    st(tr2('Generators — OFF','Generatorer — AV'),'genL',()=>SYS.genL===1&&SYS.genR===1),
    st(tr2('Battery — OFF, then evacuate','Batteri — AV, evakuer så'),'bat',()=>!SYS.bat)]},
@@ -872,8 +880,8 @@ el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
 el('drawer').querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; el('drawer').querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b)); el('tabProc').hidden=b.dataset.t!=='proc'; el('tabLim').hidden=b.dataset.t!=='lim'; });
-const LIM=[[tr2('Torque, maximum','Moment, maks'),'2,230 ft-lb'],[tr2('ITT, take-off and maximum continuous','ITT, avgang og maks kontinuerlig'),'800 °C'],[tr2('ITT, starting (5 s)','ITT, start (5 s)'),'1,000 °C'],[tr2('N1, maximum','N1, maks'),'101.5 %'],[tr2('N1, low idle (minimum, varies by serial)','N1, low idle (minimum, varierer)'),'≈ 56–61 %'],[tr2('N1, high idle','N1, high idle'),'≈ 70 %'],[tr2('Propeller rpm, maximum','Propellturtall, maks'),'2,000'],[tr2('N1, maximum reverse','N1, maks revers'),'88 %'],[tr2('Oil pressure, normal (minimum at idle 60)','Oljetrykk, normalt (minst 60 på tomgang)'),'100–135 psi'],[tr2('Oil temperature','Oljetemperatur'),'0–99 °C'],[tr2('Autofeather: other side disarms / feather','Autofeather: andre side desarmeres / fløying'),'400 / 200 ft-lb'],[tr2('Auto-ignition active below','Auto-tenning aktiv under'),'400 ft-lb'],
- ['VMCA','86 KIAS'],[tr2('VYSE (blue line)','VYSE (blå linje)'),'121 KIAS'],['VMO','259 KIAS'],[tr2('VFE approach / full flaps','VFE approach / fulle flaps'),'200 / 157 KIAS'],[tr2('VLO extend and VLE','VLO ut og VLE'),'181 KIAS'],[tr2('VLO retract','VLO inn'),'163 KIAS'],[tr2('Cabin differential, maximum','Kabintrykkforskjell, maks'),'6.6 psi'],[tr2('Cabin altitude warning (ALT WARN)','Kabinhøydevarsel (ALT WARN)'),'12,500 ft']];
+const LIM=[[tr2('Torque, maximum','Moment, maks'),'2,230 ft-lb'],[tr2('ITT, take-off and maximum continuous','ITT, avgang og maks kontinuerlig'),'800 °C'],[tr2('ITT, starting (5 s)','ITT, start (5 s)'),'1,000 °C'],[tr2('N1, maximum','N1, maks'),'101.5 %'],[tr2('N1, low idle (minimum, varies by serial)','N1, low idle (minimum, varierer)'),'≈ 56–61 %'],[tr2('N1, high idle','N1, high idle'),'≈ 70 %'],[tr2('Propeller rpm, maximum','Propellturtall, maks'),'2,000'],[tr2('N1, maximum reverse','N1, maks revers'),'88 %'],[tr2('Oil pressure, normal (minimum at idle 60)','Oljetrykk, normalt (minst 60 på tomgang)'),'100–135 psi'],[tr2('Oil temperature, normal range (above 99 °C: up to 104 °C for 10 min)','Oljetemperatur, normalområde (over 99 °C: opptil 104 °C i 10 min)'),'0–99 °C'],[tr2('Autofeather: other side disarms / feather (varies by serial)','Autofeather: andre side desarmeres / fløying (varierer med serienummer)'),'≈ 400 / 200 ft-lb'],[tr2('Auto-ignition active below','Auto-tenning aktiv under'),'400 ft-lb'],
+ ['VMCA','86 KIAS'],[tr2('VYSE (blue line)','VYSE (blå linje)'),'121 KIAS'],['VMO','259 KIAS'],[tr2('VFE approach / full flaps','VFE approach / fulle flaps'),'200 / 157 KIAS'],[tr2('VLO extend and VLE','VLO ut og VLE'),'181 KIAS'],[tr2('VLO retract','VLO inn'),'163 KIAS'],[tr2('Cabin differential, normal maximum (red line 6.6)','Kabintrykkforskjell, normal maks (rød strek 6,6)'),'6.5 psi'],[tr2('Cabin altitude warning (ALT WARN)','Kabinhøydevarsel (ALT WARN)'),'12,500 ft']];
 function renderLim(){ el('tabLim').innerHTML=`<p class="warnline">${L(tr2('Typical King Air B200 values for learning — verify in your AFM/POH; they vary with serial number.','Typiske King Air B200-verdier for læring — kontroller i AFM/POH; de varierer med serienummer.'))}</p><table class="lim">${LIM.map(([a,b])=>`<tr><td>${L(a)}</td><td>${b}</td></tr>`).join('')}</table>`; }
 renderLim();
 
@@ -1026,8 +1034,12 @@ function pilotInput(dt){
   if(td){ ['pwrL','pwrR'].forEach(k=>{ SYS[k]=F.clamp(Math.max(0,SYS[k])+td*dt*0.4,0,1); }); }
   S.ctl.brake=(K.has('b')||inp.brakeHeld||SYS.park)?1:0;
   if(kb.trim&&SYS.elTrim) S.ctl.trim=F.clamp(S.ctl.trim+kb.trim*dt*0.25,-1,1);
-  // rudder: pilot + optional assist (integrating sideslip, like a firm foot)
-  let rudA=0; if(S.autotrim&&!S.ground){ const bta=S.beta||0; inp.rudI=F.clamp((inp.rudI||0)+bta*dt*3,-0.9,0.9); rudA=F.clamp(3*bta+inp.rudI-0.5*S.r,-1,1); } else inp.rudI=0;
+  if(kb.rtrim) SYS.rudTrim=F.clamp(SYS.rudTrim+kb.rtrim*dt*0.35,-1,1); // , and . (rudder trim wheel)
+  // rudder: pilot + optional assist (integrating sideslip, like a firm foot). With an engine failed, shut down or feathered, or the
+  // power clearly split, the assist stays out: the asymmetric yaw is the pilot's to hold with rudder and rudder trim (EFATO, Vmc).
+  const asym=!S.ground&&(S.eng.some(e=>e.fail||e.off||e.feather)||Math.abs((S.eng[0].T||0)-(S.eng[1].T||0))>0.2*F.AC.Tstatic);
+  if(asym!==inp.asym){ inp.asym=asym; if(asym&&S.autotrim) flash(L(tr2('Rudder assist off: engine out. Rudder (Q / E) and rudder trim (, / .) are yours.','Sideror-hjelp av: motor ute. Sideror (Q / E) og sideror-trim (, / .) er dine.'))); }
+  let rudA=0; if(S.autotrim&&!S.ground&&!asym){ const bta=S.beta||0; inp.rudI=F.clamp((inp.rudI||0)+bta*dt*3,-0.9,0.9); rudA=F.clamp(3*bta+inp.rudI-0.5*S.r,-1,1); } else inp.rudI=0;
   if(SYS.yd&&!S.ground) rudA+=F.clamp(-0.6*S.r,-0.2,0.2);
   S.ctl.rud=F.clamp(inp.rudUser+rudA,-1,1);
   if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15||kb.held){ AF.off('stick'); if(AP.on){ AP.on=false; apDiscFx(); } airUI(); } else if(AF.hands()) return; }
@@ -1041,7 +1053,7 @@ function simTick(dt){
     pilotInput(dt);
     const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); AF.tick(dt);
     const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.3, at=(SYS.ailTrim-0.5)*0.12;
-    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); AF.sub(o,h); S.ctl.rud+=rt; S.ctl.ail+=at; F.step(S,h); S.ctl.rud-=rt; S.ctl.ail-=at; }
+    for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); AF.sub(o,h); const r0=S.ctl.rud; S.ctl.rud=F.clamp(r0+rt,-1,1); S.ctl.ail+=at; F.step(S,h); S.ctl.rud=r0; S.ctl.ail-=at; } // trim adds to the pedals, never past full rudder
     if(S.ground){ let rev=0; E.forEach((e,i)=>{ const pl=SYS['pwr'+SIDES[i]]; if(e.lit&&pl<0) rev+=pl<-0.12?2500+6500*(-pl-0.12)/0.28:1200*(-pl/0.12); }); if(rev&&S.Vg>0) S.Vg=Math.max(0,S.Vg-rev/F.AC.m*dt); }
     if(AP.msgT>0&&!AP.on&&AP.msg==='AP OFF'){ AP.msg=''; apDiscFx(); }
 }
@@ -1060,6 +1072,7 @@ function loop(t){
 let wasCrash=null;
 function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
+  if(tRud&&!el('touch').hidden){ const k=tRud.firstChild, l=(50+inp.rudUser*44)+'%'; if(k._l!==l){ k._l=l; k.style.left=l; tRud.setAttribute('aria-valuenow',Math.round(inp.rudUser*100)); } }
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
   { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; } // write only on change: each write is a layout
   if(flashT>0) flashT-=0.12; else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; if(s2.textContent!==tx2) s2.textContent=tx2; }

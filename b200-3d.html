@@ -7,7 +7,7 @@
 <title>King Air B200 3D (beta) · cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=17">
-<link rel="stylesheet" href="b200.css?v=11">
+<link rel="stylesheet" href="b200.css?v=12">
 <style>
 /* ---------- 3D cockpit (beta) ---------- */
 .stage.d3wait .world{visibility:hidden}
@@ -40,7 +40,7 @@
       <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
       <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
       <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
-      <span class="stat" id="stat2" aria-live="polite"></span>
+      <span class="stat" id="stat2"></span>
       <span class="sp"></span>
       <button class="cb" id="bAhead" hidden>Look ahead</button><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
       <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
@@ -51,7 +51,7 @@
         <button class="zback" id="zBack">← Whole panel</button>
         <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
-        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div></div>
+        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div><div class="tz trud" id="tRud" role="slider" aria-label="Rudder" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"><i></i><small>Rudder</small></div></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures and limitations"><div class="din">
@@ -82,7 +82,7 @@
       <div class="box">
         <b class="t">Control wheel</b>
         <div class="stick" id="stick"><span class="dot"></span><small>Drag · releases to centre</small></div>
-        <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="autoTrim" checked> Assisted handling (attitude hold, auto-trim, rudder assist)</label>
+        <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="autoTrim" checked> Assisted handling (attitude hold, auto-trim, rudder assist; no rudder assist with an engine out)</label>
       </div>
       <div class="box">
         <b class="t">Rudder and brakes</b>
@@ -122,6 +122,7 @@
       <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Nose down and nose up (W pushes, S pulls) · roll left and right. Hold to move the control further, tap for small corrections; let go and it eases back to centre (your trim).</td></tr>
       <tr><td><kbd>Shift</kbd></td><td>Faster, and full travel, with the flight keys</td></tr>
       <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right · centre the rudder</td></tr>
+      <tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>Rudder trim left and right</td></tr>
       <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Both power levers forward and back (not below IDLE)</td></tr>
       <tr><td><kbd>Home</kbd> <kbd>End</kbd> or <kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
       <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up · gear · brakes while held</td></tr>
@@ -144,8 +145,8 @@
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=8"></script>
-<script src="flightkeys.js?v=1"></script>
+<script src="fdm.js?v=9"></script>
+<script src="flightkeys.js?v=2"></script>
 <script src="airproc.js?v=2"></script>
 <script src="otw.js?v=10"></script>
 <script src="cockpit3d.js?v=3"></script>
@@ -162,6 +163,6 @@ LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','King A
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D King Air B200 trainer':'den klassiske 2D-treneren for King Air B200'});
 </script>
-<script src="b200-app.js?v=3"></script>
+<script src="b200-app.js?v=4"></script>
 </body>
 </html>

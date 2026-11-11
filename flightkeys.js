@@ -1,7 +1,7 @@
 /* Birdbird – shared keyboard and mouse flying for all six simulator pages (2D and 3D).
    W / S (or ↑ / ↓): nose down / nose up, like pushing and pulling a control wheel.
    A / D (or ← / →): roll left / right. Q / E rudder (pages keep their own rudder logic).
-   Home / End (or [ / ]): elevator trim nose down / nose up.
+   Home / End (or [ / ]): elevator trim nose down / nose up. , / . : rudder trim left / right (the twins; the pages apply it).
    Holding a key moves the control gradually (about half travel in 0.6 s, full in 1.5 s); a short tap is a small
    correction; letting go returns the control smoothly to centre. In the flight model the elevator works on top of
    the trim, so "centre" is the trimmed position. Shift moves the controls twice as fast and allows full travel.
@@ -33,16 +33,17 @@ function dirs(K){ return {
   x:(has(K,'d','ArrowRight')?1:0)-(has(K,'a','ArrowLeft')?1:0),
   y:(has(K,'s','ArrowDown')?1:0)-(has(K,'w','ArrowUp')?1:0),   // +y = pull = nose up
   trim:(has(K,'End',']')?1:0)-(has(K,'Home','[')?1:0),         // +trim = nose up
+  rtrim:(has(K,'.')?1:0)-(has(K,',')?1:0),                      // +rtrim = rudder trim right (nose right)
   fast:has(K,'Shift','shift') }; }
 
 /* per-aircraft authority: what a fully held key gives without Shift (Shift always allows 1.0) */
 const AUTH={C172:{x:0.7,y:0.28}, DA42:{x:0.7,y:0.28}, B200:{x:0.75,y:0.32}};
 function create(type){ const au=AUTH[type]||AUTH.C172;
-  const s={x:0,y:0,rx:0,ry:0,held:false,trim:0,
+  const s={x:0,y:0,rx:0,ry:0,held:false,trim:0,rtrim:0,
     tick(K,dt){ const d=dirs(K), f=d.fast?2:1; s.rx=step(s.rx,d.x,dt,f); s.ry=step(s.ry,d.y,dt,f);
       const gx=d.fast?1:au.x, gy=d.fast?1:au.y; // authority blends smoothly, no jump when Shift is pressed
       s.gx=(s.gx==null?gx:s.gx+clamp(gx-s.gx,-dt*2,dt*2)); s.gy=(s.gy==null?gy:s.gy+clamp(gy-s.gy,-dt*2,dt*2));
-      s.x=s.rx*s.gx; s.y=s.ry*s.gy; s.held=!!(d.x||d.y); s.trim=d.trim; return s; },
+      s.x=s.rx*s.gx; s.y=s.ry*s.gy; s.held=!!(d.x||d.y); s.trim=d.trim; s.rtrim=d.rtrim; return s; },
     reset(){ s.x=s.y=s.rx=s.ry=0; s.held=false; } };
   return s; }
 
@@ -90,7 +91,7 @@ function hint(host){
   if(G.matchMedia&&!G.matchMedia('(pointer:fine)').matches) return null;
   host=host||document.body; const d=document.createElement('div'); d.className='fkhint'; d.setAttribute('role','note');
   if(!document.getElementById('fkhintcss')){ const st=document.createElement('style'); st.id='fkhintcss';
-    st.textContent='.fkhint{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:30;max-width:min(560px,calc(100% - 24px));display:flex;gap:10px;align-items:center;padding:8px 10px 8px 14px;border-radius:10px;background:rgba(14,20,27,.88);border:1px solid rgba(255,255,255,.14);color:#dfe7ee;font:12.5px/1.45 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35);pointer-events:auto}.fkhint kbd{font:11px/1 ui-monospace,monospace;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}.fkhint button{flex:none;font:inherit;font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:inherit;cursor:pointer}.fkhint button:hover{background:rgba(255,255,255,.16)}';
+    st.textContent='.fkhint{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:30;max-width:min(560px,calc(100% - 24px));display:flex;gap:10px;align-items:center;padding:8px 10px 8px 14px;border-radius:10px;background:rgba(14,20,27,.88);border:1px solid rgba(255,255,255,.14);color:#dfe7ee;font:12.5px/1.45 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35);pointer-events:auto}.fkhint kbd{color:inherit;font:11px/1 ui-monospace,monospace;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}.fkhint button{flex:none;font:inherit;font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:inherit;cursor:pointer}.fkhint button:hover{background:rgba(255,255,255,.16)}';
     document.head.appendChild(st); }
   const fill=()=>{ const l=lang(); d.innerHTML=`<span>${TXT.hint[l]}</span><button type="button">${TXT.ok[l]}</button>`; d.querySelector('button').onclick=close; };
   const close=()=>{ try{ localStorage.setItem(KEY,'1'); }catch(e){} d.remove(); };

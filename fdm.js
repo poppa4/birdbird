@@ -19,7 +19,7 @@ const AC={
   CD0:0.026, k:0.038, gearCD:0.016,
   Cm0:0.046, Cma:-1.0, Cmq:-14, CmE:0.36, CmT:0.17,
   Clb:-0.07, Clp:-0.50, Clr:0.10, ClA:0.052, ClR:0.006,
-  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.027, CYb:-0.62, CYR:0.075,
+  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.030, CYb:-0.62, CYR:0.075, // CnR: Vmca 76 KIAS (5° bank, windmilling), tests/calib.test.mjs
   Pmax:125000, Tstatic:2450, Aprop:Math.PI*0.95*0.95, yEng:2.55,
   xMain:0.16, wheelbase:1.9,
   fuelCap:25, // US gal per side (brukbart, omtrent)
@@ -103,7 +103,7 @@ function aero(s,a,b,V,phat,qhat,rhat,hAGL){
   const ClpEff=AC.Clp*(1-0.85*st);
   const Cl=AC.Clb*b+ClpEff*phat+AC.Clr*rhat+AC.ClA*s.ctl.ail*(1-0.4*st)+AC.ClR*s.ctl.rud+st*s.asym;
   const Cn=AC.Cnb*b+AC.Cnr*rhat+AC.Cnp*phat+AC.CnA*s.ctl.ail+AC.CnR*s.ctl.rud;
-  const CY=AC.CYb*b+AC.CYR*s.ctl.rud;
+  const CY=AC.CYb*b-AC.CYR*s.ctl.rud;              // the fin pushes the tail the other way: right rudder (nose right) is a side force to the left
   return {CL,CD,Cm,Cl,Cn,CY,st,aS};
 }
 
@@ -133,6 +133,22 @@ function engines(s,dt,V,at){
   return {Tl,Tr};
 }
 
+/* turbulens (Dryden-lignende): hver komponent er første ordens filtrert hvit støy (Ornstein–Uhlenbeck) med eksakt diskretisering,
+   så styrken er den samme ved 60 og 240 Hz. env.turb 0..1: σw ≈ 0,4 m/s (lett) ved 0,15 til 2,6 m/s (moderat) ved 1.
+   Lengdeskalaer følger høyden nær bakken (Lw ≈ h), ellers 530 m; σp = 1,9 σw / √(Lw b) (MIL-HDBK-1797). */
+const TURB={sw:2.6, uv:1.2, p:0.45}; // tuned: 50 % gives about 2° RMS roll hands-off and ±0.2 g; 100 % about ±0.4 g (tests/calib.test.mjs)
+function gauss(rnd){ let u=0; while(u<1e-12) u=rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd()); }
+function gusts(s,dt,V,hAGL){
+  const g=s.gust||(s.gust={u:0,v:0,w:0,p:0}), k=clamp(s.env.turb||0,0,1);
+  if(!(k>0)){ g.u=g.v=g.w=g.p=0; return g; }
+  if(!(dt>0)) return g;
+  const rnd=s.rng||Math.random, h=Math.max(15,hAGL), sw=TURB.sw*k, su=sw*TURB.uv;
+  const Luv=Math.min(530,Math.max(60,h*1.6)), Lw=Math.min(530,Math.max(30,h)), Lp=4*AC.b/Math.PI;
+  const ou=(x,sig,L)=>{ const e=Math.exp(-dt*V/L); return e*x+sig*Math.sqrt(1-e*e)*gauss(rnd); };
+  g.u=ou(g.u,su,Luv); g.v=ou(g.v,su,Luv); g.w=ou(g.w,sw,Lw); g.p=ou(g.p,TURB.p*1.9*sw/Math.sqrt(Lw*AC.b),Lp);
+  return g;
+}
+
 function windNE(s){ const d=s.env.wdir*D2R, w=s.env.wspd*KT; return [-w*Math.cos(d),-w*Math.sin(d)]; }
 
 /* ett integrasjonssteg */
@@ -146,12 +162,13 @@ function step(s,dt){
   const [wN,wE]=windNE(s);
   if(s.ground) return stepGround(s,dt,at,wN,wE);
 
-  const V=Math.max(1,Math.hypot(s.u,s.v,s.w));
-  const a=Math.atan2(s.w,s.u), b=Math.asin(clamp(s.v/V,-1,1));
+  // turbulens: vindkast som luftmassens fart (u, v, w) og rulling (p), se gusts(); flyet ser luften relativt til seg selv
+  const gu=gusts(s,dt,Math.max(1,Math.hypot(s.u,s.v,s.w)),hAGL);
+  const ua=s.u-gu.u, va=s.v-gu.v, wa=s.w-gu.w;
+  const V=Math.max(1,Math.hypot(ua,va,wa));
+  const a=Math.atan2(wa,ua), b=Math.asin(clamp(va/V,-1,1));
   const qb=0.5*at.rho*V*V, b2v=AC.b/(2*V), c2v=AC.c/(2*V);
-  // turbulens (enkel)
-  if(s.env.turb>0){ const k=s.env.turb; s.q+=(Math.random()-0.5)*0.05*k*dt*60*dt; s.p+=(Math.random()-0.5)*0.12*k*dt*60*dt; s.w+=(Math.random()-0.5)*0.6*k*dt*60*dt; }
-  const A=aero(s,a,b,V,s.p*b2v,s.q*c2v,s.r*b2v,hAGL);
+  const A=aero(s,a,b,V,(s.p-gu.p)*b2v,s.q*c2v,s.r*b2v,hAGL);
   if(A.st>0.3 && s.stall<0.3) s.asym=(Math.random()<0.5?-1:1)*(0.006+0.01*Math.random())+0.04*s.v/V;
   s.stall=A.st; s.buffet=smooth(A.aS-0.03,A.aS+0.03,a);
   const {Tl,Tr}=engines(s,dt,V,at);
@@ -241,7 +258,7 @@ function stepGround(s,dt,at,wN,wE){
 /* ---------- avledede verdier for instrumenter ---------- */
 function readouts(s){
   const at=isa(s.h,s.env.isa);
-  const Va=Math.hypot(s.u,s.v,s.w);
+  const gu=s.gust&&!s.ground?s.gust:null, Va=gu?Math.hypot(s.u-gu.u,s.v-gu.v,s.w-gu.w):Math.hypot(s.u,s.v,s.w);
   const ias=Va*Math.sqrt(at.sig)/KT;
   const o=s.o;
   o.ias=s.ground? Math.max(0,s.u*Math.sqrt(at.sig)/KT) : ias;
@@ -380,5 +397,5 @@ function apRun(ap,s,o,navS,dt){
   }
 }
 
-G.FDM={navFreq,AC,TYPES,useType,WORLD,KT,FT,FPM,NM,D2R,R2D,create,place,step,readouts,nav,isa,mkAP,apSet,apRun,wrap180,wrap360,clamp,onRunway};
+G.FDM={TURB,gusts,navFreq,AC,TYPES,useType,WORLD,KT,FT,FPM,NM,D2R,R2D,create,place,step,readouts,nav,isa,mkAP,apSet,apRun,wrap180,wrap360,clamp,onRunway};
 })(window);

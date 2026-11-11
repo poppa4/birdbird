@@ -231,6 +231,10 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .psvg.cpt .lv0,.psvg.cpt .lv1{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));transition:none;transition-property:--bbx,--bby,--bbr,--bbsx,--bbsy;transition-duration:.06s;transition-timing-function:linear}
 .psvg.cpt .rkTop,.psvg.cpt .rkBot{opacity:1;fill-opacity:0;transition:fill-opacity .12s}.psvg.cpt .t-rocker:not(.on) .rkTop,.psvg.cpt .t-rocker.on .rkBot{opacity:1;fill-opacity:.16}
 .psvg.cpt .fguard{transform:rotate(var(--bbr));transition:--bbr .2s}.psvg.cpt .fguard.open{--bbr:-40deg}
+/* the toolbar wraps onto a second row instead of clipping Pause / Restart off the edge (it has outgrown one line below about 1,700 px);
+   phone landscape (≤932 px): compact rows, and the live readout moves out of the way */
+.ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
+@media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 </style>
 </head>
 <body data-title="DA42 3D (beta)">
@@ -252,7 +256,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
       <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
       <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
-      <span class="stat" id="stat2" aria-live="polite"></span>
+      <span class="stat" id="stat2"></span>
       <span class="sp"></span>
       <button class="cb" id="bAhead" hidden>Look ahead</button><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
       <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
@@ -342,6 +346,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Nose down and nose up (W pushes, S pulls) · roll left and right. Hold to move the control further, tap for small corrections; let go and it eases back to centre (your trim).</td></tr>
       <tr><td><kbd>Shift</kbd></td><td>Faster, and full travel, with the flight keys</td></tr>
       <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right (stays where you leave it) · centre the rudder</td></tr>
+      <tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>Rudder trim left and right</td></tr>
       <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Power up and down, both levers</td></tr>
       <tr><td><kbd>Home</kbd> <kbd>End</kbd> or <kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
       <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up · gear · brakes while held</td></tr>
@@ -367,8 +372,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=8"></script>
-<script src="flightkeys.js?v=1"></script>
+<script src="fdm.js?v=9"></script>
+<script src="flightkeys.js?v=2"></script>
 <script src="fms.js?v=4"></script>
 <script src="airproc.js?v=2"></script>
 <script src="glass.js?v=5"></script>
@@ -400,7 +405,7 @@ LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knott
  'Speed tape colours':'Farger på fartstapen','White arc: flap range. Green: normal range. Yellow: caution, smooth air only. Red: never exceed and below stall.':'Hvit bue: flapsområdet. Grønn: normalt område. Gul: forsiktig, kun i rolig luft. Rød: aldri overskrid, og under stall.',
  'Autopilot modes':'Autopilotmoder','HDG follows the heading bug. NAV and APR capture a VOR or localizer course. ALT holds altitude, VS holds a climb or descent rate, FLC holds a speed. ALTS means the selected altitude is armed for capture.':'HDG følger kursmerket. NAV og APR fanger en VOR- eller localizer-kurs. ALT holder høyden, VS holder stige- eller synkehastighet, FLC holder en fart. ALTS betyr at valgt høyde er armert for innfanging.',
  'Keyboard':'Tastatur','Pitch and roll. Up is nose down, like a yoke. Hold':'Stigning og krengning. Opp er nese ned, som et ratt. Hold','for full deflection.':'for fullt utslag.',
- 'Rudder left and right (stays where you leave it) · centre the rudder':'Sideror venstre og høyre (blir stående) · sentrer sideroret','Power up and down, both levers':'Mer og mindre effekt, begge hendlene','Elevator trim nose down and up':'Trim nese ned og opp',
+ 'Rudder left and right (stays where you leave it) · centre the rudder':'Sideror venstre og høyre (blir stående) · sentrer sideroret','Rudder trim left and right':'Sideror-trim venstre og høyre','Power up and down, both levers':'Mer og mindre effekt, begge hendlene','Elevator trim nose down and up':'Trim nese ned og opp',
  'Flaps down and up · gear · brakes while held':'Flaps ned og opp · understell · bremser mens du holder','Autopilot disconnect · engage autopilot':'Koble ut autopilot · koble inn autopilot','Heading bug left and right · selected altitude down and up':'Kursmerke venstre og høyre · valgt høyde ned og opp',
  'A gamepad also works: left stick for pitch and roll, right stick sideways for rudder, triggers for power.':'Spillkontroll fungerer også: venstre stikke for stigning og krengning, høyre stikke sideveis for sideror, avtrekkerne for effekt.',
  'Check':'Sjekk','or':'eller','Zoom to a part of the panel · back to the whole panel':'Zoom til en del av panelet · tilbake til hele panelet','Move between panel controls; arrows, Space and Enter operate them':'Flytt mellom kontrollene på panelet; piltaster, mellomrom og Enter betjener dem',
@@ -424,7 +429,7 @@ const SCEN=[
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
            {t:{en:'Fly a heading with HDG mode',no:'Fly en kurs med HDG-moden'},f:c=>c.ap.on&&c.ap.lat==='HDG'},
            {t:{en:'Climb or descend with VS or FLC and let ALTS capture',no:'Stig eller synk med VS eller FLC og la ALTS fange høyden'},f:c=>c.m.altsSeen&&c.ap.vert==='ALT'&&Math.abs(c.o.alt-c.ap.alt)<60, pre:c=>{ if(/ALTS/.test(c.ap.vertArm)) c.m.altsSeen=true; }} ]},
- {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Flaps UP, fuel pumps on. Full power on both engines, rotate at 76 KIAS or a little above, climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway.',no:'Rullebane 36, vindstille. Flaps UP, drivstoffpumper på. Full effekt på begge motorene, roter ved 76 KIAS eller litt over, stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen.'},
+ {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Flaps UP, fuel pumps on. Full power on both engines, rotate at 80 KIAS (VR), climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway.',no:'Rullebane 36, vindstille. Flaps UP, drivstoffpumper på. Full effekt på begge motorene, roter ved 80 KIAS (VR), stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen.'},
   set:{ground:true,N:20,E:0,hdg:360,thr:0,flap:0,gear:1}, ui:{hdg:360,alt:3000,fp:['NAER','KORPA','VSTB']},
   checks:[ {t:{en:'Full power (both levers above 95 %)',no:'Full effekt (begge hendler over 95 %)'},f:c=>c.s.eng.every(e=>e.thr>0.95)},
            {t:{en:'Rotate and lift off',no:'Roter og løft av'},f:c=>!c.s.ground},
@@ -829,7 +834,7 @@ stick.addEventListener('pointermove',e=>{ if(inp.stick) stickAt(e); });
 
 /* ---------- tastatur ---------- */
 const typing=FK.typing, KB=FK.create('DA42');
-const flightKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','w','a','s','d','q','e','b',' ','+','-','=','[',']']);
+const flightKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','w','a','s','d','q','e','b',' ','+','-','=','[',']',',','.']);
 window.addEventListener('keydown',e=>{
   if(typing()||e.metaKey||e.ctrlKey||e.altKey) return;
   { const dsp=['P','M'].find(d=>XA.win[d]&&(XA.win[d].type==='DTO'||XA.win[d].type==='WPT'));
@@ -1073,6 +1078,7 @@ function pilotInput(dt){
   S.ctl.brake=(K.has('b')||inp.brakeHeld||SYS.park)?1:0;
   // trim
   if(kb.trim) trimStep(kb.trim*dt*0.25);
+  if(kb.rtrim) SYS.rudTrim=F.clamp(SYS.rudTrim+kb.rtrim*dt*0.35,-1,1); // , and . (rudder trim wheel)
   const active=Math.abs(x)>0.02||Math.abs(y)>0.02;
   if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15||kb.held){ AF.off('stick'); if(AP.on) apPress('AP'); airUI(); } else if(AF.hands()) return active; }
   if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35||Math.max(Math.abs(kb.rx),Math.abs(kb.ry))>0.35){ apPress('AP'); } else return; }
