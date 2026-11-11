@@ -365,7 +365,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
 <script src="da42panel.js?v=5"></script>
-<script src="otw.js?v=9"></script>
+<script src="otw.js?v=10"></script>
 <script src="lab.js?v=47"></script>
 <script>
 (function(){
@@ -1099,11 +1099,12 @@ function slowUI(o){
   KN.forEach(f=>f()); apLights();
   if(Math.abs(rud.v/100-S.ctl.rud)>0.005) rud.set(Math.round(S.ctl.rud*100));
   const st=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
-  st.textContent=T(sKey); st.className='status'+(S.crash?'':(UI.paused?'':' ok')); if(flashT>0){ flashT-=0.12; } else { el('stat2').classList.remove('chg'); el('stat2').textContent=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; }
+  { const tx=T(sKey), cn='status'+(S.crash?'':(UI.paused?'':' ok')); if(st.textContent!==tx) st.textContent=tx; if(st.className!==cn) st.className=cn; } // write only on change: each write is a layout
+  if(flashT>0){ flashT-=0.12; } else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; renderMission(); }
-  ['L','R'].forEach((s,i)=>{ el('feat'+s).classList.toggle('on',S.eng[i].feather); el('fail'+s).disabled=S.eng[i].fail; });
+  ['L','R'].forEach((s,i)=>{ el('feat'+s).classList.toggle('on',S.eng[i].feather); { const b=el('fail'+s), f=!!S.eng[i].fail; if(b.disabled!==f) b.disabled=f; } });
   if(AIRUI){ AIRUI.banner(AF.on,L({en:'AUTO-FLY',no:'AUTOFLY'})+' · '+L({en:'autopilot flies, you run the checklists',no:'autopiloten flyr, du tar sjekklistene'}),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
-  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
+  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
 }
 
 /* ---------- quiz ---------- */

@@ -330,6 +330,7 @@ let otwOn=true, otwReady=false, otwSkip=0;
 const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
   const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; } },
   get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
+window.SIMGOV=GOV; // read by the ?perf=1 meter (otw.js)
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
 let otwTried=false;
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
@@ -951,7 +952,7 @@ function draw(o){
   B200P.vis(P,'alttest-alt',!!SYS.altT);
   [['','tcasM','tcasRng'],['2','tcasM2','tcasRng2']].forEach(([n,m,r])=>{ const on=radOn('xpdr')&&SYS.xpdrMd===3&&cbIn('TCAS'); B200P.vis(P,'tcasoff-vsi'+n,!on); B200P.text(P,'tcasm-vsi'+n,on?(['','ABV ','BLW '][SYS[m]]+SYS[r]+' NM'):''); });
   if(slowDo){ const d2=SYS.dmeD2, on=av&&cbIn('DME')&&SYS.dme2Pwr; B200P.text(P,'h2-dme',on&&d2!=null?d2.toFixed(1):'---'); B200P.text(P,'h2-crs',String(SYS.crs2).padStart(3,'0')); B200P.text(P,'h2-gsp',on&&d2!=null?String(Math.round(SYS.dmeGs[2])):'---'); B200P.text(P,'h2-src',radOn('nav2')?(NAVS[SYS.nav2.a]==='LOC'?'LOC2':'VOR2'):''); }
-  if(slowDo&&PST.closest('.ckp')){ const t=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`; if(t!==engTxt){ engTxt=t; el('engRead').innerHTML=t; } }
+  if(slowDo&&PST.closest('.ckp')&&el('drawer').classList.contains('open')){ const t=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`; if(t!==engTxt){ engTxt=t; el('engRead').innerHTML=t; } }
 }
 /* ---------- EFIS, multifunction display and GPS ---------- */
 const MKN={O:'OM',M:'MM',I:'IM'};
@@ -1051,7 +1052,7 @@ function loop(t){
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   annCompute(o); if(!UI.paused) gpwsTick(Math.max(0,Math.min(0.05,dt)),o);
   if(D3on){ if(cockpitVis) D3.frame(otwState3(),{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele}}); } else otwTick(dt);
-  if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
+  if(cockpitVis){ panelT+=dt; if(panelT>(D3on?D3.panelDt(GOV.panelDt):GOV.panelDt)){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest===-1), bb&&cbIn('GEAR WARN')&&((gearWarn()&&!(SYS.hornSilOn&&!flapHorn()))||SYS.stallTest===1)&&!UI.paused);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);
@@ -1060,13 +1061,13 @@ let wasCrash=null;
 function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
-  sEl.textContent=T(sKey); sEl.className='status'+(S.crash||UI.paused?'':' ok');
-  if(flashT>0) flashT-=0.12; else { el('stat2').classList.remove('chg'); el('stat2').textContent=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; }
+  { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; } // write only on change: each write is a layout
+  if(flashT>0) flashT-=0.12; else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
-  ['L','R'].forEach((s,i)=>{ el('fail'+s).disabled=E[i].fail; });
+  ['L','R'].forEach((s,i)=>{ const b=el('fail'+s), f=!!E[i].fail; if(b.disabled!==f) b.disabled=f; });
   if(AF.on&&AF.fix&&GPSW[AF.fix]&&SYS.gpsWpt!==AF.fix) SYS.gpsWpt=AF.fix;
   if(AIRUI){ AIRUI.banner(AF.on,L(tr2('AUTO-FLY','AUTOFLY'))+' · '+L(tr2('autopilot flies, you run the checklists','autopiloten flyr, du tar sjekklistene')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
-  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; dot.style.left=(50+x*42)+'%'; dot.style.top=(50+y*42)+'%';
+  const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
 }
 
 /* ---------- quiz (shared B200 question bank) ---------- */

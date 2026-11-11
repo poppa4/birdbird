@@ -384,6 +384,9 @@ D3.bench=function(S,n){ const R=G.OTW.renderer(), gl=R.getContext(); updCam(); c
 D3.cockpitInfo=()=>{ const cnt=sc=>{ let t=0,m=0; sc.traverse(x=>{ if(x.isMesh){ m++; t+=(x.geometry.index?x.geometry.index.count:x.geometry.attributes.position.count)/3; } }); return [t,m]; }; const a=cnt(scene), b=cnt(fgScene); return {tris:a[0]+b[0],meshes:a[1]+b[1],fgTris:b[0],planes:PLANES.length}; };
 D3.quality=()=>({level:qLevel,dpr:dprNow(),cap:LV[qLevel][1]?Math.round(1/LV[qLevel][1]):0,ft:D3.ft||0});
 D3.setQuality=l=>{ qLevel=Math.max(0,Math.min(LV.length-1,l)); needs=3; fgDirty=true; };
+/* panel update interval for the page: while the head is turning, Chrome lays out every SVG text again on any panel change
+   (the panel's on-screen scale changed since the last layout), so the instruments update at 2 Hz until the view is still */
+D3.panelDt=base=>(D3.on&&(D3.moving||D3.dragging))?Math.max(base,0.5):base;
 D3.view=view; D3.setView=function(y,p,z){ view.yaw=y; view.pitch=p; if(z) view.zoom=z; view.glide=null; view.vy=view.vp=0; clampV(); setSnap(null); needs=3; };
 D3.wake=()=>{ needs=3; };
 // test helper: screen position of a draggable control wheel / stick

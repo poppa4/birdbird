@@ -218,6 +218,7 @@ let otwOn=true, otwReady=false, otwSkip=0, otwTried=false;
 const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
   const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; } },
   get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
+window.SIMGOV=GOV; // read by the ?perf=1 meter (otw.js)
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
 if(!D3) (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); if(!otwReady&&Z.reg==='overview') zoomTo('overview',true,true); },{timeout:400});
@@ -680,7 +681,7 @@ function loop(t){
   const o=F.readouts(S);
   if(lastHdg!==null&&dt>0&&!UI.paused){ const dh=F.wrap180(o.hdg-lastHdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); } lastHdg=o.hdg;
   if(D3on){ if(cockpitVis) D3.frame(otwState3(),{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele}}); } else otwTick(dt);
-  if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; C172P.sync(P,{get:ioGet}); C172P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
+  if(cockpitVis){ panelT+=dt; if(panelT>(D3on?D3.panelDt(GOV.panelDt):GOV.panelDt)){ panelT=0; C172P.sync(P,{get:ioGet}); C172P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const stall=!S.ground&&S.alpha!=null&&S.aS!=null&&S.alpha>S.aS-0.075;
   soundTick(stall);
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
@@ -697,7 +698,7 @@ function slowUI(o){
   if(S.landed&&S.landed.field&&!PR.m.fieldMsg){ PR.m.fieldMsg=1; pill(L(tr2('Landed in a field — well done. Secure the aircraft.','Landet på et jorde — godt jobbet. Sikre flyet.')),'ok'); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
   const fe=(v,d)=>(+v).toFixed(d);
-  { const et=`RPM ${Math.round(ENG.rpm)} · ${Math.round(ENG.pwr*100)} % · ${fe(ENG.ff,1)} gal/h<br>EGT ${Math.round(ENG.egt)} °F · ${L(tr2('oil','olje'))} ${Math.round(ENG.oilT)} °F / ${Math.round(ENG.oilP)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${fe(FUEL.L,1)} · R ${fe(FUEL.R,1)} gal · ${CC.SEL[SYS.fuelSel]}<br>${fe(EL.volts,1)} V · ${EL.amps>=0?'+':''}${fe(EL.amps,1)} A · ${L(tr2('battery','batteri'))} ${Math.round(EL.soc*100)} %<br>${L(tr2('Suction','Sug'))} ${fe(VAC.suction,1)} in Hg · ${L(tr2('carb ice (hidden in the real aircraft)','forgasseris (skjult i virkeligheten)'))} ${Math.round(ENG.ice*100)} %`; if(et!==engTxt){ engTxt=et; el('engRead').innerHTML=et; } }
+  if(el('drawer').classList.contains('open')){ const et=`RPM ${Math.round(ENG.rpm)} · ${Math.round(ENG.pwr*100)} % · ${fe(ENG.ff,1)} gal/h<br>EGT ${Math.round(ENG.egt)} °F · ${L(tr2('oil','olje'))} ${Math.round(ENG.oilT)} °F / ${Math.round(ENG.oilP)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${fe(FUEL.L,1)} · R ${fe(FUEL.R,1)} gal · ${CC.SEL[SYS.fuelSel]}<br>${fe(EL.volts,1)} V · ${EL.amps>=0?'+':''}${fe(EL.amps,1)} A · ${L(tr2('battery','batteri'))} ${Math.round(EL.soc*100)} %<br>${L(tr2('Suction','Sug'))} ${fe(VAC.suction,1)} in Hg · ${L(tr2('carb ice (hidden in the real aircraft)','forgasseris (skjult i virkeligheten)'))} ${Math.round(ENG.ice*100)} %`; if(et!==engTxt){ engTxt=et; el('engRead').innerHTML=et; } }
   if(slow===0&&Math.random()<0.05) riskText();
 }
 

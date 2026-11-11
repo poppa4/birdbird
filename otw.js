@@ -3,7 +3,12 @@
 (function(G){
 'use strict';
 const D2R=Math.PI/180;
-let R=null, scene, cam, papi, papiCol, papiPos, ok=false, W=0, H=0, cv=null, rwyLights=null;
+let R=null, scene, cam, papi, papiCol, papiPos, ok=false, W=0, H=0, cv=null, rwyLights=null, clouds=[], trees=null, treeN=0;
+/* canvas size from a ResizeObserver: reading clientWidth every frame forced a synchronous layout whenever the page had
+   changed anything earlier in the frame (status text, panel), so layout ran twice per frame */
+let CW=-1, CH=-1, lastKey='';
+function watch(){ if(!G.ResizeObserver||CW>=0) return; CW=0; new ResizeObserver(es=>{ const r=es[es.length-1].contentRect; CW=Math.round(r.width); CH=Math.round(r.height); lastKey=''; }).observe(cv); }
+const cw=()=>CW>0?CW:cv.clientWidth, ch=()=>CH>0?CH:cv.clientHeight;
 
 function canvasTex(w,h,draw,rep){ const c=document.createElement('canvas'); c.width=w; c.height=h; draw(c.getContext('2d'),w,h); const t=new THREE.CanvasTexture(c); t.anisotropy=8; if(rep){ t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(rep[0],rep[1]); } return t; }
 
@@ -68,10 +73,10 @@ function init(canvas){
   const cab=new THREE.Mesh(new THREE.CylinderGeometry(6,5,5,10),new THREE.MeshLambertMaterial({color:0x40566b})); cab.position.set(300,28,-640); scene.add(cab);
   // trær
   const treeG=new THREE.ConeGeometry(4,14,6); treeG.translate(0,7,0); const treeM=new THREE.MeshLambertMaterial({color:0x2f5a2e});
-  const N_T=1600, trees=new THREE.InstancedMesh(treeG,treeM,N_T); const m4=new THREE.Matrix4(); let k=0;
+  const N_T=1600; trees=new THREE.InstancedMesh(treeG,treeM,N_T); const m4=new THREE.Matrix4(); let k=0;
   for(let i=0;i<N_T*3&&k<N_T;i++){ const x=(Math.random()-0.5)*9000, z=-750+(Math.random()-0.5)*9000; if(Math.abs(x)<220&&z<200&&z>-1700) continue; if(x>60&&x<420&&z<-500&&z>-1100) continue; if(Math.abs(x)<120&&z>0&&z<1200) continue;
     const s=0.7+Math.random()*0.8; m4.makeScale(s,s*(0.8+Math.random()*0.6),s); m4.setPosition(x,T.height(-z,x),z); trees.setMatrixAt(k++,m4); }
-  trees.count=k; scene.add(trees);
+  trees.count=k; treeN=k; scene.add(trees);
   // lys: kantlys, terskel, innflygingslys
   const lp=[], lc=[]; const addL=(x,y,z,c)=>{ lp.push(x,y,z); lc.push(c[0],c[1],c[2]); };
   for(let m=0;m<=1500;m+=60){ addL(-16,0.5,-m,[1,0.95,0.8]); addL(16,0.5,-m,[1,0.95,0.8]); }
@@ -93,8 +98,8 @@ function init(canvas){
     for(let i=0;i<w*h;i++){ const a=src[i*4]; d[i*4]=246; d[i*4+1]=248; d[i*4+2]=250; d[i*4+3]=a; }
     const t=new THREE.DataTexture(d,w,h,THREE.RGBAFormat); t.flipY=true; t.generateMipmaps=true; t.minFilter=THREE.LinearMipmapLinearFilter; t.magFilter=THREE.LinearFilter; t.needsUpdate=true; return t; })();
   const cm=new THREE.SpriteMaterial({map:cloudT,transparent:true,depthWrite:false,fog:true});
-  for(let i=0;i<70;i++){ const sp=new THREE.Sprite(cm); const s=1500+Math.random()*2500; sp.scale.set(s,s*0.45,1); sp.position.set((Math.random()-0.5)*90000,760+Math.random()*120,(Math.random()-0.5)*90000); scene.add(sp); }
-  ok=true; return true;
+  for(let i=0;i<70;i++){ const sp=new THREE.Sprite(cm); const s=1500+Math.random()*2500; sp.scale.set(s,s*0.45,1); sp.position.set((Math.random()-0.5)*90000,760+Math.random()*120,(Math.random()-0.5)*90000); scene.add(sp); clouds.push(sp); }
+  ok=true; watch(); return true;
 }
 /* 2D pages: horizontal field of view 76° across the stage width (about 45–52° vertical over a whole 16:9…3:2 desktop screen),
    and an optional frame from the page: lip = canvas row (CSS px) of the glareshield top on the centre line, nose = degrees the
@@ -102,7 +107,7 @@ function init(canvas){
    (the left seat is off the centre line). Without a frame: centred, with the old fixed 2.9° look-down. */
 const HF=38; let FR=null;
 function frame(f){ FR=f&&isFinite(f.lip)?f:null; }
-function size(){ if(!cv) return; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return; if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); cam.aspect=w/h; cam.fov=2*Math.atan(Math.tan(HF*D2R)/cam.aspect)/D2R; cam.updateProjectionMatrix(); } }
+function size(){ if(!cv) return; const w=cw(), h=ch(); if(!w||!h) return; if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); cam.aspect=w/h; cam.fov=2*Math.atan(Math.tan(HF*D2R)/cam.aspect)/D2R; cam.updateProjectionMatrix(); } }
 function lookDown(view){ if(view) return 0.08; if(!FR||!W) return 0.05; const f=(W/2)/Math.tan(HF*D2R), hy=FR.lip-f*Math.tan(FR.nose*D2R); return Math.atan((H/2-hy)/f); }
 function render(S,view){
   if(!ok) return; size(); if(!W) return;
@@ -112,6 +117,9 @@ function render(S,view){
   // straight ahead of the pilot (FR.cx: canvas column above the pilot's own attitude indicator), not the middle of the screen
   cam.projectionMatrix.elements[8]=(FR&&FR.cx!=null&&!view&&W)?1-2*FR.cx/W:0;
   cam.rotation.set((S.th||0)-lookDown(view),-(S.psi||0)+yawOff*D2R,-(S.phi||0)*(view?0.3:1),'YXZ');
+  // nothing moved (paused, crashed, parked): the canvas keeps the last frame
+  const key=S.N+','+S.E+','+S.h+','+S.th+','+S.phi+','+S.psi+','+view+','+W+','+H+','+cam.projectionMatrix.elements[8]+','+(FR?FR.lip+','+FR.nose:'')+','+G.OTW.lvl;
+  if(key===lastKey) return; lastKey=key;
   scene.userData.sky.position.copy(cam.position);
   // PAPI: farge etter vinkel fra PAPI-lysene
   const d=Math.hypot(S.N-300,S.E+30), ang=Math.atan2((S.h||0)+eye-1.2,Math.max(1,d))/D2R;
@@ -122,7 +130,7 @@ function render(S,view){
 /* 3D-cockpit (da42-3d.html): same world, camera = aircraft attitude × head rotation; `after` draws the cockpit on top */
 let _e3=null;
 function render3d(S,qHead,fov,dpr,after){
-  if(!ok||!cv) return false; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return false;
+  if(!ok||!cv) return false; lastKey=''; const w=cw(), h=ch(); if(!w||!h) return false;
   if(Math.abs(R.getPixelRatio()-dpr)>1e-3){ R.setPixelRatio(dpr); W=0; }
   if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); }
   if(cam.aspect!==w/h||cam.fov!==fov){ cam.aspect=w/h; cam.fov=fov; cam.updateProjectionMatrix(); } cam.projectionMatrix.elements[8]=0;
@@ -137,6 +145,24 @@ function render3d(S,qHead,fov,dpr,after){
   return true;
 }
 // quality(false|true|2): normal (device pixels, at most 1.5 per CSS pixel), low (1 per CSS pixel), very low (0.75 per CSS pixel)
-function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.lvl) return; G.OTW.lvl=lv; G.OTW.low=lv>0; R.setPixelRatio(lv===2?0.75:lv?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; }
+function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.lvl) return; G.OTW.lvl=lv; G.OTW.low=lv>0; R.setPixelRatio(lv===2?0.75:lv?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; lastKey='';
+  // lowest level: half the cloud sprites (one draw call each) and half the trees
+  clouds.forEach((c,i)=>{ c.visible=lv<2||i%2===0; }); if(trees) trees.count=lv===2?treeN>>1:treeN; }
+/* ?perf=1: a small on-screen meter (frame rate, frame time, worst frame, quality tier) for checking speed on a phone */
+function hud(){ const d=document.createElement('div'); d.setAttribute('aria-hidden','true');
+  d.style.cssText='position:fixed;left:6px;top:6px;z-index:2147483647;pointer-events:none;font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#d8ffe0;background:rgba(0,0,0,.72);padding:4px 7px;border-radius:6px;white-space:pre';
+  const add=()=>document.body.appendChild(d); if(document.body) add(); else addEventListener('DOMContentLoaded',add);
+  let n=0, sum=0, worst=0, last=0, t0=performance.now(), lt=0;
+  try{ new PerformanceObserver(l=>{ lt+=l.getEntries().length; }).observe({type:'longtask'}); }catch(e){ lt=-1; }
+  const tier=()=>{ const D=['C172_3D','DA42_3D','B200_3D'].map(k=>G[k]).find(x=>x&&x.on&&x.quality);
+    if(D){ const q=D.quality(); return '3D L'+q.level+' dpr '+(+q.dpr).toFixed(2)+(q.cap?' cap '+q.cap+' Hz':'')+(D.moving?' moving':''); }
+    const g=G.SIMGOV||G.GOV; return '2D gov '+(g?g.lvl:'-')+' otw '+(G.OTW.lvl||0)+' dpr '+(R?(+R.getPixelRatio()).toFixed(2):'-'); };
+  const f=t=>{ if(last){ const dt=t-last; n++; sum+=dt; if(dt>worst) worst=dt; } last=t;
+    if(t-t0>=500){ const m=performance.memory?' · '+Math.round(performance.memory.usedJSHeapSize/1048576)+' MB':'';
+      d.textContent=(n?Math.round(n*1000/(t-t0)):0)+' fps · '+(n?(sum/n).toFixed(1):'-')+' ms · max '+Math.round(worst)+' ms'+(lt>=0?' · long '+lt:'')+m+'\n'+tier();
+      n=0; sum=0; worst=0; t0=t; }
+    requestAnimationFrame(f); };
+  requestAnimationFrame(f); }
+if(/[?&]perf=1(&|$)/.test(location.search)) hud();
 G.OTW={init,render,render3d,quality,frame,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);
