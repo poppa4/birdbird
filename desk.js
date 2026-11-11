@@ -383,17 +383,47 @@
       const hello = h < 5 ? t('Good night', 'God natt') : h < 10 ? t('Good morning', 'God morgen') : h < 17 ? t('Good day', 'God dag') : h < 22 ? t('Good evening', 'God kveld') : t('Good night', 'God natt');
       const day = now.toLocaleDateString(no ? 'nb-NO' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
       const utc = String(now.getUTCHours()).padStart(2, '0') + String(now.getUTCMinutes()).padStart(2, '0') + 'Z';
-      const sketch = `<svg class="sk" viewBox="0 0 360 200" aria-hidden="true" focusable="false">
-        <rect x="1" y="1" width="358" height="198" rx="10" class="f"/>
-        <rect x="1" y="1" width="358" height="22" rx="10" class="bar"/><rect x="1" y="14" width="358" height="9" class="bar"/>
-        <circle cx="14" cy="12" r="2.6" class="d"/><circle cx="23" cy="12" r="2.6" class="d"/><circle cx="32" cy="12" r="2.6" class="d"/>
-        <rect x="12" y="34" width="168" height="154" rx="5" class="p"/><rect x="188" y="34" width="160" height="72" rx="5" class="p"/><rect x="188" y="114" width="160" height="74" rx="5" class="p"/>
-        <rect x="26" y="48" width="70" height="7" rx="2" class="h"/><g class="l"><path d="M26 66h136M26 76h128M26 86h136M26 96h96"/></g>
-        <rect x="26" y="110" width="140" height="62" rx="3" class="fig"/><path d="M34 160l26-22 18 12 24-26 30 36" class="ac"/>
-        <rect x="202" y="46" width="56" height="6" rx="2" class="h"/><g class="l"><path d="M202 62h7M214 62h112M202 74h7M214 74h96M202 86h7M214 86h104"/></g>
-        <g class="ck"><path d="M202.5 61.5l2 2 3.5-3.5M202.5 73.5l2 2 3.5-3.5"/></g>
-        <rect x="202" y="126" width="48" height="6" rx="2" class="h"/><g class="l"><path d="M202 142h128M202 152h110"/></g><rect x="202" y="162" width="58" height="12" rx="3" class="ref"/>
-      </svg>`;
+      const L3 = (en, no) => esc(t(en, no));
+      const sketch = `<figure class="sk" aria-hidden="true">
+        <svg viewBox="0 0 440 290" focusable="false">
+          <defs><clipPath id="skc"><rect x="1" y="1" width="438" height="288" rx="12"/></clipPath>
+            <pattern id="skg" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" class="gr"/></pattern></defs>
+          <g clip-path="url(#skc)">
+          <rect x="1" y="1" width="438" height="288" rx="12" class="win"/>
+          <rect x="0" y="0" width="440" height="30" class="bar"/>
+          <g class="tabs">
+            <rect x="12" y="7" width="94" height="23" rx="4" class="tab on"/><text x="24" y="22">AFM · 4-12</text>
+            <rect x="110" y="7" width="86" height="23" rx="4" class="tab"/><text x="122" y="22">${L3('Checklist', 'Sjekkliste')}</text>
+            <rect x="200" y="7" width="86" height="23" rx="4" class="tab"/><text x="212" y="22">${L3('Notebook', 'Notatbok')}</text>
+          </g>
+          <!-- manual page -->
+          <rect x="12" y="40" width="214" height="238" rx="6" class="pane"/>
+          <rect x="26" y="52" width="186" height="226" class="pg"/>
+          <text x="38" y="72" class="ph">4 · ${L3('NORMAL PROCEDURES', 'NORMALPROSEDYRER')}</text>
+          <path d="M38 90h150M38 100h162M38 110h138" class="tl"/>
+          <path d="M36 130h160" class="hl" pathLength="100"/>
+          <text x="38" y="133" class="pt">${L3('Approach speed', 'Innflygingsfart')} ……… V<tspan dy="2" font-size="6">REF</tspan><tspan dy="-2"> + 5</tspan></text>
+          <path d="M38 150h156M38 160h146M38 170h160M38 180h120" class="tl"/>
+          <path d="M38 200h150M38 210h132M38 220h158M38 230h104M38 250h146M38 260h90" class="tl"/>
+          <path d="M130 139c18 2 40 1 62-1" class="pen p0" pathLength="100"/>
+          <!-- checklist -->
+          <rect x="234" y="40" width="194" height="112" rx="6" class="pane"/>
+          <text x="248" y="62" class="ph">${L3('BEFORE LANDING', 'FØR LANDING')}</text>
+          <g class="ci"><rect x="248" y="74" width="10" height="10" rx="2" class="bx"/><text x="266" y="83">${L3('Landing gear', 'Understell')}</text><text x="414" y="83" class="r">DOWN · 3 GREEN</text><path d="M250 79l3 3 5-6" class="ck c1" pathLength="100"/></g>
+          <g class="ci"><rect x="248" y="94" width="10" height="10" rx="2" class="bx"/><text x="266" y="103">${L3('Flaps', 'Flaps')}</text><text x="414" y="103" class="r">${L3('AS REQ', 'ETTER BEHOV')}</text><path d="M250 99l3 3 5-6" class="ck c2" pathLength="100"/></g>
+          <g class="ci"><rect x="248" y="114" width="10" height="10" rx="2" class="bx"/><text x="266" y="123">${L3('Props', 'Propeller')}</text><text x="414" y="123" class="r">${L3('FULL FWD', 'HELT FREM')}</text><path d="M250 119l3 3 5-6" class="ck c3" pathLength="100"/></g>
+          <g class="ci"><rect x="248" y="134" width="10" height="10" rx="2" class="bx"/><text x="266" y="143">${L3('Landing lights', 'Landingslys')}</text><text x="414" y="143" class="r">ON</text><path d="M250 139l3 3 5-6" class="ck c4" pathLength="100"/></g>
+          <!-- notebook -->
+          <rect x="234" y="160" width="194" height="118" rx="6" class="pane"/>
+          <rect x="242" y="168" width="178" height="102" fill="url(#skg)" class="nbp"/>
+          <path d="M378 192L410 175L414 182L382 199Z" class="pen p1" pathLength="100"/><path d="M386 192l20-10" class="pen p1 cl" pathLength="100"/>
+          <path d="M262 252c26-12 56-28 82-41s22-10 32-14" class="pen p2" pathLength="100"/><circle cx="262" cy="252" r="3" class="dotp"/>
+          
+          <text x="300" y="236" class="hw">3°</text>
+          <g class="chip"><rect x="250" y="176" width="74" height="16" rx="8"/><text x="259" y="187">↗ AFM ${L3('p.', 's.')} 4-12</text></g>
+          </g>
+        </svg>
+      </figure>`;
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
@@ -405,7 +435,7 @@
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
           <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(t('Choose aircraft', 'Velg fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('Add the aircraft you fly', 'Legg til flyet du flyr'))}</small></button>
         </div>
-        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid, lined or a clearance template', 'Skriv med penn på rutenett, linjer eller en klareringsmal'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button></div>
+        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid or lined paper, or an approach briefing', 'Skriv med penn på rutenett, linjer eller en innflygingsbrief'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button></div>
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
         <ul class="vals">
           <li>${ic('keep')}<div><b>${esc(t('Nothing gets lost', 'Ingenting går tapt'))}</b><span>${esc(t('Saved as you work, with history and a 30-day trash.', 'Lagres mens du jobber, med historikk og 30 dagers papirkurv.'))}</span></div></li>
