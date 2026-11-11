@@ -366,3 +366,22 @@
 .ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
 @media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 .trud{right:calc(10px + env(safe-area-inset-right));bottom:10px;width:min(34vw,200px);height:46px}.trud i{top:50%}.trud small{position:absolute;left:0;right:0;bottom:2px;text-align:center;font:600 9.5px/1 var(--f-sans,system-ui);letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.55);pointer-events:none}
+/* EFIS focus view: control strip beside the zoomed EADI / EHSI (b200-app.js, efx*) */
+.efx{position:absolute;right:8px;top:8px;bottom:8px;z-index:6;width:clamp(220px,24vw,300px);overflow:auto;overscroll-behavior:contain;background:rgba(14,17,20,.95);border:1px solid #3c444c;border-radius:12px;padding:8px 10px 10px;color:#e6ebef;font:600 12px/1.3 system-ui;touch-action:manipulation;contain:layout paint}
+.efx[hidden]{display:none}
+.stage:has(#touch:not([hidden])) .efx{bottom:66px}
+.efxh{display:flex;align-items:center;gap:8px;margin-bottom:4px}.efxh b{flex:1;font-size:14px}
+.efxx{width:32px;height:32px;border-radius:50%;border:1px solid #3c444c;background:#1b2026;color:#fff;font:600 18px/1 system-ui;cursor:pointer}
+.efx section{border-top:1px solid #2b3137;padding:6px 0 4px}
+.efx h4{margin:0 0 5px;font:700 10.5px/1.2 system-ui;letter-spacing:.06em;text-transform:uppercase;color:#9fb0bd}
+.efg{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:4px}
+.efb{position:relative;min-height:36px;padding:4px 3px;border-radius:5px;border:1px solid #4a525a;background:linear-gradient(#2a2f35,#1d2125);color:#f2f4f6;font:700 11px/1.1 system-ui;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.efb small{font:600 9.5px/1 system-ui;color:#7fd8ff;min-height:9px}
+.efb.lit{border-color:#3cff6e;box-shadow:inset 0 0 0 1px #3cff6e;color:#c9ffd6}
+.efb:active,.efs:active{background:#3a424a}
+.efk{display:grid;grid-template-columns:42px 1fr repeat(4,auto);align-items:center;gap:4px;margin:3px 0}
+.efk .kn{font:700 11px system-ui}.efk output{font:600 12px/1 ui-monospace,monospace;color:#7fd8ff}
+.efs{min-width:34px;height:34px;border-radius:50%;border:1px solid #4a525a;background:#23282d;color:#fff;font:700 15px/1 system-ui;cursor:pointer}
+.efb:focus-visible,.efs:focus-visible,.efxx:focus-visible{outline:2px solid #7fd8ff;outline-offset:1px}
+.efxn{margin:6px 0 0;font:500 10.5px/1.35 system-ui;color:#8796a3}
+@media (max-height:520px){.efx{width:min(250px,30vw);padding:6px 8px;top:6px;bottom:6px}.efb{min-height:32px}.efs{min-width:32px;height:32px}.efxn{display:none}.efx h4{margin-bottom:3px}}

@@ -29,8 +29,12 @@ const REG={
   lower:PR(48,458,336,652), rsub:PR(318,462,560,652), center:PR(540,486,752,664), cosubL:PR(740,458,1002,652), cosubR:PR(990,452,1264,652),
   fuelT:sh([4,1106,524,160],DY), fuelB:sh([4,1262,500,218],DY),
   pedT:sh([688,1106,624,212],DY), pedB:sh([664,1290,660,160],DY), audio:sh([740,1440,520,200],DY),
-  rsideT:sh([1522,1106,476,190],DY), rsideB:[1522,1430,476,H-1430]
+  rsideT:sh([1522,1106,476,190],DY), rsideB:[1522,1430,476,H-1430],
+  /* EFIS focus views (EADI over EHSI of one side); not in REG_ORDER, so a click never picks them as a cluster */
+  efisL:PR(184,192,348,470), efisR:PR(954,177,1099,463)
 };
+/* display faces (EADI, EHSI) of each EFIS focus view: a click on one opens that view */
+const EFISF={efisL:[PR(190,198,330,329),PR(209,332,342,464)],efisR:[PR(969,183,1093,320),PR(960,322,1092,457)]};
 const REG_ORDER=['fuelT','fuelB','rsideT','rsideB','audio','pedT','pedB','lower','rsub','center','cosubL','cosubR','overheadL','overheadR','glare','engT','engB','apfd','centreM','radio1','mfd','flightT','flightB','copilotT','copilotB'];
 
 /* ---------- layout: every control ---------- */
@@ -1154,5 +1158,5 @@ function gps(P,d){ vis(P,'gp-off',!d.on); if(!d.on) return; const m=!!d.map; vis
   [0,1,2,3].forEach(i=>{ text(P,'gp-l'+i,d.l[i]||''); text(P,'gp-r'+i,d.r[i]||''); }); text(P,'gp-pl',d.pl||''); text(P,'gp-pr',d.pr||''); vis(P,'gp-cl',!!d.cl); vis(P,'gp-cr',!!d.cr); }
 /* paint layers (panellayers.js): every unit that moves gets its own small SVG, the static artwork is painted once */
 const LAYERS={dyn:'g.mod,g.gauge,g.dynu,.an,.cmp,.aitr,[class*="rd-"]',hot:c=>c.t==='lev'||c.t==='vwheel'||c.t==='hwheel'||c.t==='yoke'||['apDisc','trimUp','trimDn'].includes(c.id)};
-G.B200P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,W,H,WARN,CAUT,CBS};
+G.B200P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,EFISF,W,H,WARN,CAUT,CBS};
 })(window);

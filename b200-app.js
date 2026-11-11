@@ -12,7 +12,7 @@ LAB.add({},{
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
- 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Pick an area in the toolbar, double-click an empty part of the panel, or press 0–9. Esc or the back button zooms out. Lock view keeps the zoom while you work.':'Velg et område i verktøylinjen, dobbeltklikk på en tom del av panelet, eller trykk 0–9. Esc eller tilbakeknappen zoomer ut. «Lås visning» holder zoomen mens du jobber.',
+ 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click an instrument to zoom to it, or pick an area in the toolbar or press 0–9. Click an EADI or EHSI to bring up that side\'s EFIS with all its controls beside it. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.':'Klikk på et instrument for å zoome inn på det, eller velg et område i verktøylinjen eller trykk 0–9. Klikk på en EADI eller EHSI for å få opp den sidens EFIS med alle kontrollene ved siden av. Klikk utenfor det zoomede området, trykk Esc eller bruk tilbakeknappen for å zoome ut. «Lås visning» holder zoomen mens du jobber.',
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
  'Levers':'Hendler','Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.':'Dra effekt-, propell- og condition-hendlene opp og ned; de smetter inn i hakkene. Beta og revers (under IDLE) virker bare på bakken. Musehjulet og piltastene flytter en hendel i små steg.',
  'Knobs':'Knotter','Scroll on a knob or drag across it. HDG and CRS set the heading bug and the course on the HSI, ALT SEL the altitude alerter, CABIN ALT and RATE the pressurisation controller.':'Rull på en knott eller dra over den. HDG og CRS stiller kursmerket og kursen på HSI-en, ALT SEL høydevarsleren, CABIN ALT og RATE trykkontrolleren.',
@@ -251,11 +251,12 @@ function stepFreq(f,d,lo,hiI,st,dec,inner){ let m=Math.floor(+f+1e-6), k=+f-m; i
 
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
-const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')]];
+const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')],['efisL',tr2('Pilot EFIS with its controls','Pilot-EFIS med kontrollene')],['efisR',tr2('Copilot EFIS with its controls','Andrepilot-EFIS med kontrollene')]];
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
-  if(D3on){ if(force&&instant){ D3.resize(); return; } const ov=reg==='overview'||!P.REG[reg]; Z.reg=ov?'overview':reg; if(ov) D3.lookAhead(instant); else D3.lookAt(P.REG[reg],instant); PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); return; }
-  let r=P.REG[reg]||P.REG.overview; const w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
+  const sw=efxShow(reg); // EFIS focus: control strip on the right; the displays fit in the rest of the stage
+  if(D3on){ if(force&&instant){ D3.resize(); return; } const ov=reg==='overview'||!P.REG[reg]; Z.reg=ov?'overview':reg; let rr=P.REG[reg]; if(sw&&rr){ const w=PST.clientWidth; rr=[rr[0],rr[1],rr[2]*w/Math.max(80,w-sw),rr[3]]; } if(ov) D3.lookAhead(instant); else D3.lookAt(rr,instant); PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); return; }
+  let r=P.REG[reg]||P.REG.overview; const w=PST.clientWidth-sw, h=PST.clientHeight; if(!w||!h) return;
   const ov=reg==='overview'; if(ov&&skyOn()){ const k=B200P.SKY*(h<520?0.5:1); r=[r[0],-k,r[2],r[3]+k]; } /* phones: half, to keep the panel usable */ let s=Math.min(w/r[2],h/r[3])*(ov?1:0.95);
   const r0=P.REG.overview, s0=Math.min(w/r0[2],h/r0[3]); if(!ov) s=Math.max(s0,Math.min(s,4.5));
   let tx=w/2-(r[0]+r[2]/2)*s, ty=h/2-(r[1]+r[3]/2)*s;
@@ -275,18 +276,90 @@ const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
-const MAGP={lower:[360,826],rsub:[812,890],center:[1112,884],cosubL:[1536,892],cosubR:[1972,840],pedT:[1296,1118],fuelT:[512,1120],fuelB:[438,1274],rsideT:[1984,1120],overheadL:[1164,10],overheadR:[1168,150],audio:[1330,398],glare:[1160,218],mfd:[1228,566]};
+/* zoom glyphs: in the top-right corner of their area (taken from REG, so they follow the layout and never sit on an instrument face) */
+const MAGP={}; ['lower','rsub','center','cosubL','cosubR','pedT','fuelT','fuelB','rsideT','overheadL','overheadR','audio','glare','mfd'].forEach(k=>{ const r=P.REG[k]; if(r) MAGP[k]=[Math.round(r[0]+r[2]-16),Math.round(r[1]+16)]; });
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
 magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
 magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m) areaHL(m.dataset.z); });
-const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip');
+const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip,.efx');
 PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)) return; const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
+PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)||performance.now()-clickZoomT<600) return; const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
 let lastTap={t:0,x:0,y:0};
-PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
+PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ if(n-clickZoomT<600){ lastTap.t=0; return; } const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
 el('zBack').onclick=()=>zoomTo('overview');
+/* ---------- EFIS focus view: one side's EADI and EHSI, large, with every control that goes with them in a strip beside them ----------
+   The displays are the live panel itself (the zoom transform to REG.efisL / efisR), so they keep their normal update rate. The
+   strip is plain HTML built on first use; its buttons call the same IO.set handlers as the panel controls. While closed it costs
+   nothing; while open its read-outs refresh 4 times a second (text written only when it changes). */
+const EFX={open:null,prev:'overview',box:null,tm:0,rep:0,held:null};
+const EFXG=s=>{ const n=s?'2':'', ap=['HDG','NAV','APPR','BC','CLIMB','ALT','ALTSEL','VS','IAS','DSC'];
+  return [[tr2('Display controller (pedestal)','EFIS-kontrollpanel (pidestall)'),[['efisCrsSel','CRS 1/2'],['efisBrg1','BRG ○'],['efisBrg2','BRG ◇'],['efisFmt','FULL / ARC'],['efisEt','ET']],[['efisDim','DIM']]],
+    [tr2('Course and heading','Kurs og heading'),[],[[s?'crs2K':'crsK',s?'CRS 2':'CRS 1'],['hdgK','HDG']]],
+    [tr2('Decision height','Beslutningshøyde'),[['raT'+n,'TEST']],[['dhK'+n,'DH']]],
+    [tr2('Flight director modes','Flight director-moduser'),ap.map(k=>['ap'+n+k,P.byId['ap'+n+k].c.l])],
+    [tr2('Autopilot','Autopilot'),[['apAP','AP ENG'],['apYD','YD ENG']]]]; };
+const efxVal=id=>{ if(id==='efisDim') return Math.round(SYS.efisDim*100)+' %'; if(id==='dhK2') id='dhK'; if(id.startsWith('ap')) return '';
+  const t=txtOf(id); return t==null?'':String(t).replace(/^(HDG|CRS|DH) /,''); };
+function efxBuild(reg){ const b=EFX.box||(EFX.box=document.createElement('div')); const right=reg==='efisR';
+  b.className='efx'; b.setAttribute('role','dialog'); b.setAttribute('aria-modal','false');
+  const ttl=L(right?tr2('Copilot EFIS','Andrepilot-EFIS'):tr2('Pilot EFIS','Pilot-EFIS')); b.setAttribute('aria-label',ttl);
+  const btn=([id,t])=>`<button type="button" class="efb" data-id="${id}" aria-label="${(P.byId[id].c.lbl||P.byId[id].c.l).replace(/"/g,'')}"><span>${t}</span><small data-v="${id}"></small></button>`;
+  const knob=([id,t])=>{ const c=P.byId[id].c, enc=c.t==='enc', nm=(c.lbl||c.l).replace(/"/g,'');
+    const st=enc?[-10,-1,1,10]:[-1,1], lab=d=>enc?(d<0?'−':'+')+Math.abs(d)+(id==='hdgK'||/crs/i.test(id)?'°':''):(d<0?'−':'+');
+    return `<div class="efk"><span class="kn">${t}</span><output data-v="${id}"></output>${st.map(d=>`<button type="button" class="efs" data-k="${id}" data-d="${d}" aria-label="${nm} ${lab(d)}">${enc?(Math.abs(d)>1?(d<0?'«':'»'):(d<0?'‹':'›')):(d<0?'−':'+')}</button>`).join('')}</div>`; };
+  b.innerHTML=`<div class="efxh"><b>${ttl}</b><button type="button" class="efxx" aria-label="${L(tr2('Close','Lukk'))}">×</button></div>`+
+    EFXG(right).map(([h,bs,ks])=>`<section><h4>${L(h)}</h4>${bs.length?`<div class="efg">${bs.map(btn).join('')}</div>`:''}${(ks||[]).map(knob).join('')}</section>`).join('')+
+    `<p class="efxn">${L(tr2('Click a display to open this view, Esc or × to close. The buttons work exactly like the ones on the panel.','Klikk på en skjerm for å åpne denne visningen, Esc eller × for å lukke. Knappene virker akkurat som de på panelet.'))}</p>`;
+  if(!b.parentNode){ PST.appendChild(b); efxWire(b); } EFX.built=reg; }
+function efxSync(){ const b=EFX.box; if(!b||!EFX.open) return;
+  b.querySelectorAll('[data-v]').forEach(o=>{ const v=efxVal(o.dataset.v); if(o._v!==v){ o._v=v; o.textContent=v; } });
+  b.querySelectorAll('.efb').forEach(o=>{ const id=o.dataset.id; const on=id.startsWith('ap')?!!ledOf(id):!!SYS[id]; if(o._on!==on){ o._on=on; o.classList.toggle('lit',on); } }); }
+function efxPress(id,v){ if(EFX.held&&!v&&EFX.held!==id) return; EFX.held=v?id:null; IO.set(id,v); efxSync(); }
+function efxStep(id,d){ const c=P.byId[id].c; if(c.t==='enc') IO.set(id+':d',d); else IO.set(id,Math.max(0,Math.min(1,(SYS[id==='dhK2'?'dhK':id]||0)+d*(/^dhK/.test(id)?0.01:0.05)))); efxSync(); }
+function efxWire(b){
+  const stop=()=>{ clearTimeout(EFX.rep); EFX.rep=0; if(EFX.held) efxPress(EFX.held,0); };
+  b.addEventListener('pointerdown',e=>{ const x=e.target.closest('.efxx'); if(x) return; const p=e.target.closest('.efb'), k=e.target.closest('.efs'); if(!p&&!k) return; e.preventDefault(); ensureAudio();
+    try{ (p||k).setPointerCapture(e.pointerId); }catch(_){}
+    if(p){ efxPress(p.dataset.id,1); return; }
+    const id=k.dataset.k, d=+k.dataset.d; efxStep(id,d); let n=0; const again=()=>{ efxStep(id,d); n++; EFX.rep=setTimeout(again,n>8?45:90); }; EFX.rep=setTimeout(again,420); });
+  b.addEventListener('pointerup',stop); b.addEventListener('pointercancel',stop); b.addEventListener('lostpointercapture',stop);
+  b.addEventListener('click',e=>{ if(e.target.closest('.efxx')){ efxClose(); return; } if(e.detail!==0) return; /* keyboard / assistive activation without a pointer */
+    const p=e.target.closest('.efb'), k=e.target.closest('.efs'); if(p){ efxPress(p.dataset.id,1); setTimeout(()=>efxPress(p.dataset.id,0),140); } else if(k) efxStep(k.dataset.k,+k.dataset.d); });
+  // the cockpit's flight keys (Space = AP disconnect, arrows = controls) must not fire while a strip button has the focus
+  b.addEventListener('keydown',e=>{ if(e.key==='Escape') return; const p=e.target.closest('.efb'), k=e.target.closest('.efs');
+    if((e.key===' '||e.key==='Enter')&&(p||k)){ e.preventDefault(); e.stopPropagation(); if(!e.repeat){ if(p) efxPress(p.dataset.id,1); else efxStep(k.dataset.k,+k.dataset.d); } }
+    else if(k&&/^Arrow(Up|Right|Down|Left)$/.test(e.key)){ e.preventDefault(); e.stopPropagation(); efxStep(k.dataset.k,/Up|Right/.test(e.key)?Math.abs(+k.dataset.d):-Math.abs(+k.dataset.d)); } });
+  b.addEventListener('keyup',e=>{ const p=e.target.closest('.efb'); if(p&&(e.key===' '||e.key==='Enter')){ e.preventDefault(); e.stopPropagation(); efxPress(p.dataset.id,0); } });
+}
+/* called by zoomTo for every zoom: opens, switches or closes the strip; returns its width in px (0 when closed) */
+function efxShow(reg){ const want=reg==='efisL'||reg==='efisR'?reg:null;
+  if(!want){ if(EFX.open){ EFX.open=null; EFX.box.hidden=true; clearInterval(EFX.tm); EFX.tm=0; if(EFX.held) efxPress(EFX.held,0); PST.classList.remove('efxon'); if(EFX.box.contains(document.activeElement)) document.activeElement.blur(); } return 0; }
+  const opening=!EFX.open; if(opening&&Z.reg!=='efisL'&&Z.reg!=='efisR') EFX.prev=Z.reg||'overview';
+  if(EFX.built!==want||!EFX.box) efxBuild(want); EFX.box.hidden=false; EFX.open=want; PST.classList.add('efxon'); efxSync();
+  if(!EFX.tm) EFX.tm=setInterval(efxSync,250);
+  if(opening){ const x=EFX.box.querySelector('.efxx'); if(x) x.focus({preventScroll:true}); }
+  return EFX.box.offsetWidth+16; }
+function efxClose(){ const to=EFX.prev&&P.REG[EFX.prev]&&EFX.prev!=='efisL'&&EFX.prev!=='efisR'?EFX.prev:'overview'; zoomTo(to,false,true); }
+LAB.onLang(()=>{ if(EFX.box&&EFX.built){ const o=EFX.open; EFX.built=null; if(o){ efxBuild(o); efxSync(); } } });
+/* single click / tap on the panel (not on a control): an EADI or EHSI face opens its EFIS focus view; elsewhere in the whole-panel
+   view it zooms to the instrument cluster under the pointer; when zoomed, a click outside the zoomed area goes back out.
+   A drag (3D look-around, a lever let go over the panel) is not a click. Double-click / double-tap keep working (see dblclick). */
+let pdn=null, clickZoomT=-1e9;
+const OFFP='.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,button,select,a,input';
+const inR=(p,r)=>p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
+function efisAt(p){ for(const k in B200P.EFISF) if(B200P.EFISF[k].some(r=>inR(p,r))) return k; return null; }
+PST.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:performance.now(),ok:emptyAt(e)&&!e.target.closest(OFFP)}; },true);
+PST.addEventListener('click',e=>{ const d=pdn; pdn=null;
+  if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700) return;
+  if(!emptyAt(e)||e.target.closest(OFFP)||Z.lock||(D3on&&D3.dragging)) return;
+  const p=toWorld(e), f=efisAt(p), cur=Z.reg; let to=null;
+  if(f){ if(f!==cur) to=f; }
+  else if(cur==='overview') to=regionAt(p);
+  else if(!P.REG[cur]||!inR(p,P.REG[cur])) to=EFX.open?null:'overview';
+  if(!f&&EFX.open&&!inR(p,P.REG[EFX.open])){ clickZoomT=performance.now(); efxClose(); return; }
+  if(to){ clickZoomT=performance.now(); zoomTo(to); } });
 function drawZoomBar(){ el('zoomBar').innerHTML=ZN.map(([k,t],i)=>`<button class="cb${k===Z.reg?' on':''}" data-z="${k}" title="${i<10?i:''}">${L(t)}</button>`).join(''); el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
 function syncAreaUI(){ el('zoomBar').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.z===Z.reg)); el('zoomSel').value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); el('bLock').textContent=(Z.lock?'🔒 ':'🔓 ')+T(Z.lock?'Locked':'Lock view'); PST.classList.toggle('locked',Z.lock); }
 drawZoomBar(); LAB.onLang(()=>{ drawZoomBar(); syncAreaUI(); });
@@ -348,7 +421,7 @@ function d3Init(){ PST.classList.add('d3wait');
   setTimeout(()=>{
     if(D3.supported&&D3.supported()&&hasWebGL()){ try{ otwReady=!!(window.OTW&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } }
     otwTried=true;
-    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v'),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v'),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; efxShow('overview'); PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
     if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); otwOn=true; PST.classList.remove('nootw','nogl'); el('bOtw').hidden=true; el('bLock').hidden=true;
       if(el('bAhead')){ el('bAhead').hidden=false; el('bAhead').onclick=()=>zoomTo('overview'); } D3.lookAhead(true); syncAreaUI(); otwMsgSync(); LAB.onLang(()=>D3.relabel()); }
     else { PST.classList.toggle('nogl',!otwReady); el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; }
@@ -650,6 +723,7 @@ let cockpitVis=true; visible(el('cockpit'),v=>cockpitVis=v);
 window.addEventListener('keydown',e=>{
   if(typing()||e.metaKey||e.ctrlKey||e.altKey) return;
   if(D3on&&cockpitVis&&!e.repeat&&D3.key(e)) return; if(D3on&&e.repeat&&D3.isLookKey(e)){ e.preventDefault(); return; }
+  if(e.key==='Escape'&&EFX.open){ efxClose(); e.preventDefault(); return; }
   if(e.key==='Escape'&&Z.reg!=='overview'&&!Z.lock){ zoomTo('overview'); e.preventDefault(); return; }
   if(/^[0-9]$/.test(e.key)&&cockpitVis&&!e.repeat){ const z=ZN[+e.key]; if(z){ zoomTo(z[0]); e.preventDefault(); return; } }
   if(e.target.closest&&e.target.closest('g.ctl:not(.t-yoke)')&&/^Arrow| |Enter/.test(e.key)) return;
@@ -1090,7 +1164,7 @@ function slowUI(o){
 const QB=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&['power','press','fire','lim','emer','ice'].includes(q.ch)&&Array.isArray(q.a)&&Number.isInteger(q.c));
 if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).map(q=>({q:q.q,a:q.a,c:q.c,e:q.e})));
 
-LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart;
+LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,efx:()=>EFX.open,to:zoomTo,svg:P.svg};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
 AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
