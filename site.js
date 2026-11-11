@@ -107,7 +107,7 @@
       <button class="menu" aria-expanded="false"><i aria-hidden="true"></i>${t('Menu')}</button>
       <nav aria-label="Birdbird"><a href="index.html" class="${page==='index.html'?'on':''}">${t('Home')}</a><a href="lab.html" class="${lab?'on':''}">${t('Virtual Labs')}</a><a href="prep.html" class="${pln?'on':''}">${t('Briefing pack')}</a><a href="route.html" class="${page==='route.html'?'on':''}">${t('Route Explorer')}</a><a href="training.html" class="${trn?'on':''}">${t('Training')}</a><a href="fi.html" class="${(page==='fi.html'&&!checkMode)?'on':''}">${t('Flight Intelligence')}</a><a href="workspace.html" class="mob ${page==='workspace.html'?'on':''}">${t('My workspace')}</a><a href="profile.html" class="mob ${page==='profile.html'?'on':''}">${t('My progress')}</a></nav></div>`;
     head.firstElementChild.appendChild(keep);
-    if(page!=='index.html'&&page!=='') { keep.querySelectorAll('a.mytr').forEach(x=>x.remove());
+    { keep.querySelectorAll('a.mytr').forEach(x=>x.remove());
       if(!keep.querySelector('.acct')) keep.insertAdjacentHTML('afterbegin',`<div class="acct"><button type="button" class="mytr" aria-haspopup="menu" aria-expanded="false"></button><div class="acm" role="menu" hidden></div></div>`);
       if(!keep.querySelector('.myws')) keep.insertAdjacentHTML('afterbegin',`<a class="myws ${page==='workspace.html'?'on':''}" href="workspace.html">${t('My workspace')}</a>`); else { const w=keep.querySelector('.myws'); w.textContent=t('My workspace'); w.classList.toggle('on',page==='workspace.html'); }
       const ac=keep.querySelector('.acct'), ab=ac.querySelector('.mytr'), am=ac.querySelector('.acm');
