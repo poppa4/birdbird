@@ -4,93 +4,142 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Training · Birdbird</title>
-<meta name="description" content="Birdbird training systems: working cockpit trainers for the Cessna 172, DA42 and King Air B200, with an IFR trainer, briefings, radio drills, gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
+<meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, briefings, gate-to-gate flights, radio drills, type rating study, A320 simulator assessment and check preparation.">
 <meta name="theme-color" content="#EDF1EE">
-<link rel="preload" as="image" href="img/training/da42-panel-1440.webp" imagesrcset="img/training/da42-panel-720.webp 720w, img/training/da42-panel-1440.webp 1440w, img/training/da42-panel-2160.webp 2160w" imagesizes="(max-width:900px) calc(100vw - 48px), (max-width:1180px) calc((100vw - 132px) * .6), (max-width:1336px) calc((100vw - 148px) * .66), 784px" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=17">
 <style>
 /* ===== Training overview, page-scoped under .tv =====
-   A product sheet, not a launcher: the paper theme of the site, one grid, the simulators as the only pictures.
-   Order: header with the featured DA42 → King Air B200 and Cessna 172 → procedures and assessment → for institutions → the disclaimer. */
+   The overview of all Birdbird training, in the order of the Training menu:
+   header with an index → 01 simulators → 02 IFR trainer → 03 procedures → 04 type rating and checks → for institutions → the disclaimer.
+   One card system for everything; the pictures are the three panels and one IFR trainer capture. */
 .tv{
   --ink2:var(--ink-2,#4C5B66); --ink3:var(--ink-3,#7D8B95); --rule1:var(--rule,#C6D0D3); --rule2:var(--rule-2,#DCE3E4); --acc:var(--accent,#9A1E68);
   --disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif); --mono:var(--f-mono,"IBM Plex Mono",ui-monospace,monospace);
-  --frame:#10171D;
+  --frame:#10171D; --sheet0:var(--sheet,#fff);
   display:block;max-width:var(--container,1240px);margin:0 auto;color:var(--ink);font-size:16px;line-height:1.55;
 }
 .tv *{box-sizing:border-box}
-.tv p,.tv ul,.tv h1,.tv h2,.tv h3,.tv figure{margin:0}
-.tv ul{list-style:none;padding:0}
+.tv p,.tv ul,.tv ol,.tv h1,.tv h2,.tv h3,.tv figure,.tv dl,.tv dd{margin:0}
+.tv ul,.tv ol{list-style:none;padding:0}
 .tv a{color:inherit}
 .tv a:focus-visible{outline:2px solid var(--info);outline-offset:3px}
-
-/* small mono labels: the breadcrumb, the eyebrow, the row label, status tags */
+.tv .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .tv-mono{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1.4}
 
-/* ---------- header: words on the left, the DA42 on the right ---------- */
+/* ---------- header ---------- */
 .tv-crumb{padding:24px 0 0;color:var(--ink3)}
-.tv-crumb ol{display:flex;gap:8px;list-style:none;margin:0;padding:0}
+.tv-crumb ol{display:flex;gap:8px}
 .tv-crumb li+li::before{content:"/";margin-right:8px;color:var(--rule1)}
 .tv-crumb a{text-decoration:none}.tv-crumb a:hover{color:var(--ink)}
 .tv-crumb [aria-current]{color:var(--ink2)}
 
-.tv-hero{display:grid;grid-template-columns:minmax(0,34fr) minmax(0,66fr);gap:0 52px;align-items:start;padding-top:28px}
-.tv-intro{padding-top:36px}
+.tv-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:28px 72px;align-items:end;padding-top:36px}
 .tv-eb{display:block;color:var(--ink2);margin-bottom:16px}
-.tv h1{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:clamp(34px,3.6vw,52px);overflow-wrap:break-word;hyphens:manual;line-height:1.04;letter-spacing:-.02em;text-wrap:balance;color:var(--ink)}
-.tv-lede{margin-top:20px!important;font-size:17px;line-height:1.6;color:var(--ink2);max-width:31em}
-.tv-cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 24px;margin-top:32px}
-.tv-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;font-size:15.5px;font-weight:600;text-decoration:none;border-radius:var(--radius,3px);background:var(--acc);color:#fff!important;white-space:nowrap;transition:background-color .15s}
-.tv-btn:hover{background:var(--accent-hover,#82165A)}
-.tv-tl{font-size:15.5px;font-weight:600;color:var(--acc)!important;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:color-mix(in srgb,var(--acc) 40%,transparent);white-space:nowrap}
-.tv-tl:hover{text-decoration-color:currentColor}
-
-.tv-facts{margin:40px 0 0;border-top:1px solid var(--rule1);max-width:30em}
+.tv h1{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:clamp(34px,3.7vw,52px);line-height:1.04;letter-spacing:-.02em;text-wrap:balance;color:var(--ink);max-width:15em}
+.tv-lede{margin-top:20px!important;font-size:17px;line-height:1.6;color:var(--ink2);max-width:36em}
+.tv-facts{border-top:1px solid var(--rule1)}
 .tv-facts div{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:0 16px;padding:9px 0 10px;border-bottom:1px solid var(--rule2)}
 .tv-facts dt{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);line-height:2}
-.tv-facts dd{margin:0;font-size:14.5px;color:var(--ink)}
+.tv-facts dd{font-size:14.5px;color:var(--ink)}
 
-/* ---------- a system: the panel, then name, status, what it trains ---------- */
-.sy{min-width:0}
-.sy-ph{display:block;position:relative;border-radius:8px;overflow:hidden;background:var(--frame);
-  box-shadow:0 0 0 1px rgba(16,23,29,.9),0 1px 2px rgba(19,32,42,.10),0 22px 44px -30px rgba(19,32,42,.55)}
-.sy-ph img{display:block;width:100%;height:auto}
-.sy-ph:focus-visible{outline:2px solid var(--info);outline-offset:4px}
-.sy-cap{margin-top:16px}
-.sy-head{display:flex;align-items:center;gap:4px 14px;flex-wrap:wrap}
-.sy h2{font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.15;letter-spacing:-.012em}
-.sy h2 a{text-decoration:none}
-.sy h2 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px;text-decoration-color:var(--acc)}
-.sy-kind{order:3;flex:1 0 100%;font-size:14.5px;line-height:1.4;color:var(--ink2)}
-.st{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;line-height:1;color:var(--ok,#2E7D4F);border:1px solid color-mix(in srgb,var(--ok,#2E7D4F) 35%,transparent);background:var(--ok-wash,#EAF4EE);border-radius:2px;padding:5px 8px 4px;white-space:nowrap;align-self:center}
-.st::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+/* the index: four jump links, the same four parts as the Training menu */
+.tv-idx{margin-top:44px}
+.tv-idx ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--rule1)}
+.tv-idx li+li{border-left:1px solid var(--rule2)}
+.tv-idx a{display:grid;grid-template-columns:auto minmax(0,1fr);align-content:start;gap:2px 12px;height:100%;padding:16px 20px 17px;text-decoration:none;transition:background-color .15s}
+.tv-idx li:first-child a{padding-left:0}
+.tv-idx a:hover{background:color-mix(in srgb,var(--sheet0) 60%,transparent)}
+.tv-idx a:hover b{color:var(--acc)}
+.tv-idx .n{grid-row:1/3;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--acc);line-height:1.75}
+.tv-idx b{font-size:15.5px;font-weight:650;line-height:1.45;color:var(--ink)}
+.tv-idx small{font-size:13.5px;color:var(--ink3);line-height:1.45}
+
+/* ---------- a section: number, heading, one line of context ---------- */
+.tv-sec{margin-top:88px;scroll-margin-top:24px}
+.tv-sh{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:10px 48px;align-items:end;padding-bottom:28px}
+.tv-sh .n{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--acc);margin-bottom:8px}
+.tv h2{font-family:var(--disp);font-stretch:88%;font-weight:720;font-size:clamp(28px,2.6vw,36px);line-height:1.08;letter-spacing:-.016em;color:var(--ink)}
+.tv-sh p{font-size:16px;line-height:1.6;color:var(--ink2);max-width:40em}
+
+/* ---------- buttons ---------- */
+.tv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 22px;font-size:15px;font-weight:600;text-decoration:none;border-radius:var(--radius,3px);background:var(--acc);color:#fff!important;white-space:nowrap;transition:background-color .15s,border-color .15s}
+.tv-btn:hover{background:var(--accent-hover,#82165A)}
+.tv-btn.ghost{background:transparent;color:var(--ink)!important;border:1px solid var(--rule1)}
+.tv-btn.ghost:hover{background:var(--sheet0);border-color:var(--ink3)}
+.tv-btn.sm{min-height:40px;padding:0 16px;font-size:14.5px}
+.st{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;line-height:1;color:var(--ok,#2E7D4F);border:1px solid color-mix(in srgb,var(--ok,#2E7D4F) 35%,transparent);background:var(--ok-wash,#EAF4EE);border-radius:2px;padding:4px 6px 3px;white-space:nowrap}
 .st.beta{color:var(--caution,#B7791F);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
-.sy-trains{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 12px;margin-top:10px!important;font-size:15px;line-height:1.55;color:var(--ink);max-width:44em}
-.sy-trains dt{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);line-height:2.1}
-.sy-trains dd{margin:0;color:var(--ink2)}
-.sy-more{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:12px;font-size:14.5px}
-.sy-more a{color:var(--ink);font-weight:600;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px;text-decoration-color:var(--rule1)}
-.sy-more a:hover{text-decoration-color:var(--acc)}
-.sy-more .st{margin-left:0}
+.st.lang{color:var(--ink2);border-color:var(--rule1);background:transparent}
 
-.tv-hero .sy-cap{margin-top:18px}
-.tv-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 40px;margin-top:48px}
+/* ---------- 01 simulators: three cards, the panel on top ---------- */
+.sims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.sy{display:flex;flex-direction:column;min-width:0;background:var(--sheet0);border:1px solid var(--rule2);border-radius:8px;overflow:hidden}
+.sy-ph{display:block;background:var(--frame);border-bottom:1px solid var(--frame);overflow:hidden}
+.sy-ph img{display:block;width:100%;height:auto;aspect-ratio:1824/1094;object-fit:cover;transition:transform .4s ease}
+.sy-ph:hover img{transform:scale(1.015)}
+.sy-b{display:flex;flex-direction:column;flex:1;padding:20px 22px 22px}
+.sy h3{font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.15;letter-spacing:-.012em}
+.sy h3 a{text-decoration:none}
+.sy h3 a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px;text-decoration-color:var(--acc)}
+.sy-kind{margin-top:4px!important;font-size:14.5px;color:var(--ink2)}
+.tv-wh{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule2);font-size:14.5px;line-height:1.55}
+.tv-wh dt{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+.tv-wh dd{color:var(--ink2)}
+.sy-go{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:auto;padding-top:20px}
+.sy-go .tv-btn .st{margin-left:2px}
 
-/* ---------- procedures and assessment: one ruled row ---------- */
-.tv-proc{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px 0;margin-top:44px;border-top:1px solid var(--rule1);border-bottom:1px solid var(--rule1);padding:15px 0}
-.tv-proc h2{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);padding-right:24px;margin-right:24px;border-right:1px solid var(--rule1);line-height:1.6;white-space:nowrap}
-.tv-proc ul{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 0}
-.tv-proc li{display:flex;align-items:baseline}
-.tv-proc li+li::before{content:"";display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--ink3);margin:0 14px;transform:translateY(-4px)}
-.tv-proc a{font-size:15px;color:var(--ink);text-decoration:none;white-space:nowrap;padding:3px 0;border-bottom:1px solid transparent}
-.tv-proc a:hover{color:var(--acc);border-bottom-color:currentColor}
-.tv-proc .lead a{font-weight:650}
-.tv-proc .n{font-family:var(--mono);font-size:11.5px;color:var(--ink3);margin-left:7px;white-space:nowrap}
+/* ---------- 02 IFR trainer: a feature block on a sheet ---------- */
+.ifr{background:var(--sheet0);border:1px solid var(--rule2);border-radius:10px;padding:40px}
+.ifr-top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px 48px;align-items:start}
+.ifr-lede{font-size:17px;line-height:1.6;color:var(--ink)}
+.ifr-n{display:flex;align-items:baseline;gap:10px;margin-top:22px!important;padding:14px 0;border-top:1px solid var(--rule2);border-bottom:1px solid var(--rule2)}
+.ifr-n b{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:34px;line-height:1;color:var(--acc);letter-spacing:-.02em}
+.ifr-n span{font-size:14.5px;line-height:1.45;color:var(--ink2)}
+.ifr-f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px;margin-top:22px}
+.ifr-f dt{font-size:14.5px;font-weight:650;color:var(--ink);line-height:1.4}
+.ifr-f dd{margin-top:3px!important;font-size:14px;line-height:1.5;color:var(--ink2)}
+.ifr-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.ifr-fig{min-width:0}
+.ifr-ph{display:block;border-radius:8px;overflow:hidden;background:var(--frame);box-shadow:0 0 0 1px rgba(16,23,29,.9),0 1px 2px rgba(19,32,42,.10),0 22px 44px -30px rgba(19,32,42,.55)}
+.ifr-ph img{display:block;width:100%;height:auto}
+.ifr-fig figcaption{margin-top:12px;font-size:13.5px;line-height:1.5;color:var(--ink3)}
+.ifr-path{margin-top:40px;padding-top:24px;border-top:1px solid var(--rule2)}
+.ifr-path h3{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);line-height:1.5}
+.ifr-path h3 .sub{color:var(--ink3);font-weight:500;text-transform:none;letter-spacing:0;font-family:var(--f-body,system-ui);font-size:14px;margin-left:10px}
+.ifr-path ol{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:0;margin-top:18px;counter-reset:p;position:relative}
+.ifr-path ol::before{content:"";position:absolute;left:14px;right:calc(12.5% - 14px);top:14px;height:1px;background:var(--rule1)}
+.ifr-path li{position:relative;min-width:0;padding-right:10px}
+.ifr-path a{display:block;text-decoration:none}
+.ifr-path i{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--sheet0);border:1px solid var(--rule1);font-style:normal;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink2);position:relative;transition:border-color .15s,color .15s}
+.ifr-path li:first-child i{background:var(--acc);border-color:var(--acc);color:#fff}
+.ifr-path b{display:block;margin-top:10px;font-size:14.5px;font-weight:600;line-height:1.3;color:var(--ink)}
+.ifr-path a:hover i{border-color:var(--acc);color:var(--acc)}
+.ifr-path li:first-child a:hover i{color:#fff}
+.ifr-path a:hover b{color:var(--acc)}
+
+/* ---------- 03 and 04: the card system ---------- */
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.tc{position:relative;display:flex;flex-direction:column;min-width:0;background:var(--sheet0);border:1px solid var(--rule2);border-radius:8px;padding:24px 24px 22px;transition:border-color .15s,box-shadow .15s}
+.tc:hover{border-color:var(--rule1);box-shadow:0 14px 30px -24px rgba(19,32,42,.45)}
+.tc-ic{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:6px;background:var(--accent-wash,#F6EDF2);color:var(--acc)}
+.tc-ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tc-h{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-top:18px}
+.tc h3{font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:22px;line-height:1.15;letter-spacing:-.01em}
+.tc h3 a{text-decoration:none}
+.tc h3 a::after{content:"";position:absolute;inset:0;border-radius:8px}
+.tc p{margin-top:8px!important;font-size:15px;line-height:1.55;color:var(--ink)}
+.tc .tv-wh{margin-top:16px}
+.tc-go{margin-top:auto;padding-top:18px;font-size:14.5px;font-weight:600;color:var(--acc)}
+.tc-go span{display:inline-block;transition:transform .15s}
+.tc:hover .tc-go span{transform:translateX(3px)}
+.tc:hover h3 a{color:var(--acc)}
+.tc:has(a:focus-visible){outline:2px solid var(--info);outline-offset:3px}
+.tc h3 a:focus-visible{outline:0}
 
 /* ---------- for institutions ---------- */
-.tv-inst{display:flex;align-items:center;justify-content:space-between;gap:20px 40px;margin-top:32px;padding:24px 28px;background:var(--sheet,#fff);border:1px solid var(--rule2);border-radius:8px}
-.tv-inst h2{font-family:var(--disp);font-stretch:88%;font-weight:700;font-size:23px;line-height:1.2;letter-spacing:-.01em}
+.tv-inst{display:flex;align-items:center;justify-content:space-between;gap:20px 40px;margin-top:88px;padding:28px 32px;background:var(--sheet0);border:1px solid var(--rule2);border-left:3px solid var(--acc);border-radius:8px}
+.tv-inst h2{font-size:24px;line-height:1.2}
 .tv-inst p{margin-top:6px!important;font-size:15px;color:var(--ink2)}
 .tv-inst .tv-btn{flex:0 0 auto}
 .tv-note{margin-top:16px!important;font-size:13px;line-height:1.55;color:var(--ink3);font-style:italic}
@@ -98,38 +147,65 @@
 
 /* ---------- responsive ---------- */
 @media (max-width:1180px){
-  .tv-hero{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:0 36px}
-  .tv-proc{grid-template-columns:minmax(0,1fr)}
-  .tv-proc h2{border-right:0;padding-right:0;margin-right:0}
+  .tv-hero{gap:28px 48px}
+  .sims{gap:24px}
+  .sy-b{padding:18px 18px 20px}
+  .ifr{padding:32px}
+  .ifr-top{grid-template-columns:minmax(0,1fr)}
+  .ifr-fig{order:-1}
+  .ifr-path ol{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 0}
+  .ifr-path ol::before{display:none}
 }
-@media (max-width:900px){
-  .tv-hero{grid-template-columns:minmax(0,1fr);gap:0}
-  .tv-intro{display:contents}
-  .tv-intro>*{grid-column:1}
-  .tv-hero .sy{margin-top:36px}
-  .tv-facts{order:3;margin-top:32px;max-width:none}
-  .tv-lede{max-width:36em}
-  .tv-pair{gap:44px 28px;margin-top:48px}
+@media (max-width:980px){
+  .tv-hero{grid-template-columns:minmax(0,1fr)}
+  .tv-facts{max-width:34em}
+  .tv-idx ol{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tv-idx li:nth-child(3){border-left:0}
+  .tv-idx li:nth-child(n+3){border-top:1px solid var(--rule2)}
+  .tv-idx li:nth-child(3) a{padding-left:0}
+  .tv-sh{grid-template-columns:minmax(0,1fr)}
+  .sims{grid-template-columns:minmax(0,1fr)}
+  .sy{display:grid;grid-template-columns:minmax(0,44fr) minmax(0,56fr)}
+  .sy-ph{border-bottom:0;border-right:1px solid var(--frame);height:100%}
+  .sy-ph img{height:100%}
+  .cards{grid-template-columns:minmax(0,1fr)}
+  .tc{display:grid;grid-template-columns:44px minmax(0,1fr);gap:0 20px}
+  .tc>*{grid-column:2}
+  .tc-ic{grid-column:1;grid-row:1/span 4}
+  .tc-h{margin-top:0}
+  .tc-go{padding-top:14px}
 }
-@media (max-width:720px){
-  .tv-pair{grid-template-columns:minmax(0,1fr)}
-  .tv-inst{flex-direction:column;align-items:flex-start;padding:22px 20px}
-  .tv-proc ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 20px}
-  .tv-proc li+li::before{display:none}
-  .tv-proc li.lead{grid-column:1/-1}
-  .tv-proc a{white-space:normal;display:inline-block;padding:6px 0}
-}
-@media (max-width:520px){
+@media (max-width:640px){
   .tv-crumb{padding-top:18px}
-  .tv-hero{padding-top:20px}
+  .tv-hero{padding-top:22px}
   .tv h1{font-size:34px}
   .tv-lede{font-size:16px}
-  .tv-cta .tv-btn{flex:1 1 100%}
-  .sy-ph{border-radius:6px}
-  .sy h2{font-size:21px}
+  .tv-idx{margin-top:32px}
+  .tv-idx a{padding:13px 12px 14px;gap:2px 10px}
+  .tv-idx li:nth-child(odd) a{padding-left:0}
+  .tv-idx small{font-size:13px}
+  .tv-sec{margin-top:64px}
+  .tv-sh{padding-bottom:22px}
+  .sy{display:flex}
+  .sy-ph{border-right:0;border-bottom:1px solid var(--frame);height:auto}
+  .sy-ph img{height:auto}
+  .sy h3{font-size:21px}
+  .ifr{padding:20px;margin:0 -8px}
+  .ifr-ph{border-radius:6px}
+  .ifr-f{grid-template-columns:minmax(0,1fr);gap:14px}
+  .ifr-cta .tv-btn{flex:1 1 100%}
+  .ifr-path ol{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}
+  .ifr-path li{display:block;padding-right:0}
+  .ifr-path a{display:flex;align-items:center;gap:10px}
+  .ifr-path i{flex:none}
+  .ifr-path b{margin-top:0;font-size:14px}
+  .ifr-path h3 .sub{display:block;margin:4px 0 0}
+  .tc{display:flex;padding:20px}
+  .tc-h{margin-top:14px}
+  .tv-inst{flex-direction:column;align-items:flex-start;padding:22px 20px;margin-top:64px}
   .tv-inst .tv-btn{width:100%}
 }
-@media (prefers-reduced-motion:reduce){.tv-btn{transition:none}}
+@media (prefers-reduced-motion:reduce){.tv-btn,.tv-idx a,.tc,.tc-go span,.sy-ph img,.ifr-path i{transition:none}.sy-ph:hover img{transform:none}}
 </style>
 </head>
 <body data-title="Training">
@@ -140,69 +216,179 @@
     <ol><li><a href="training.html" data-tx="cr1">Training</a></li><li><span aria-current="page" data-tx="cr2">Overview</span></li></ol>
   </nav>
 
-  <section class="tv-hero" aria-labelledby="tv-h1">
-    <div class="tv-intro">
-      <span class="tv-eb tv-mono" data-tx="eb">Training systems</span>
-      <h1 id="tv-h1" data-tx="h1">Aircraft-specific cockpit trainers</h1>
-      <p class="tv-lede" data-tx="lede">Working cockpits of the Cessna 172, DA42 and King Air B200 for structured training in procedures, flows and normal and abnormal operations. IFR procedures, briefings and check preparation sit alongside.</p>
-      <div class="tv-cta"><a class="tv-btn" href="#systems" data-tx="cta1">Explore training systems</a><a class="tv-tl" href="schools.html" data-tx="cta2">For flight schools&nbsp;→</a></div>
-      <dl class="tv-facts">
-        <div><dt data-tx="fA">Aircraft</dt><dd>Cessna 172, DA42, King Air B200</dd></div>
-        <div><dt data-tx="fP">Platform</dt><dd data-tx="fPv">Browser-based, no installation</dd></div>
-        <div><dt data-tx="fL">Languages</dt><dd data-tx="fLv">English and Norwegian</dd></div>
-      </dl>
+  <header class="tv-hero">
+    <div>
+      <span class="tv-eb tv-mono" data-tx="eb">Birdbird training</span>
+      <h1 data-tx="h1">Cockpit trainers, IFR procedures and check preparation</h1>
+      <p class="tv-lede" data-tx="lede">Everything Birdbird offers for training, in one place: working cockpits for three aircraft, an IFR trainer that teaches one procedure at a time, briefing and radio practice, and preparation for type ratings, simulator assessments and checks.</p>
     </div>
+    <dl class="tv-facts">
+      <div><dt data-tx="fA">Aircraft</dt><dd>Cessna 172, DA42, King Air B200</dd></div>
+      <div><dt data-tx="fP">Platform</dt><dd data-tx="fPv">Browser-based, no installation</dd></div>
+      <div><dt data-tx="fL">Languages</dt><dd data-tx="fLv">English and Norwegian; type rating in English</dd></div>
+    </dl>
+  </header>
 
-    <article class="sy" id="systems" aria-labelledby="s-da42">
-      <a class="sy-ph" href="cockpit.html" tabindex="-1" aria-hidden="true">
-        <img src="img/training/da42-panel-1440.webp" srcset="img/training/da42-panel-720.webp 720w, img/training/da42-panel-1440.webp 1440w, img/training/da42-panel-2160.webp 2160w" sizes="(max-width:900px) calc(100vw - 48px), (max-width:1180px) calc((100vw - 132px) * .6), (max-width:1336px) calc((100vw - 148px) * .66), 784px" width="2160" height="1215" fetchpriority="high" decoding="async"
-          alt="The DA42 trainer's instrument panel on the ILS 36 with the autopilot coupled: the PFD showing LOC and GS captured, the MFD with the engine page and the moving map, the standby instruments, the switch row and the power levers." data-alt-no="Instrumentpanelet i DA42-treneren på ILS 36 med autopiloten koblet inn: PFD-en med LOC og GS fanget, MFD-en med motorsiden og kartet, reserveinstrumentene, bryterraden og effekthendlene.">
-      </a>
-      <div class="sy-cap">
-        <div class="sy-head"><h2 id="s-da42"><a href="cockpit.html">DA42</a></h2><span class="sy-kind" data-tx="dK">Multi-engine piston, glass cockpit</span><span class="st" data-tx="stA">Available</span></div>
-        <dl class="sy-trains"><dt data-tx="tr">Trains</dt><dd data-tx="dT">Normal and abnormal flows, autopilot management, ILS, RNAV and VOR approaches, engine failure and asymmetric flight.</dd></dl>
-        <p class="sy-more"><a href="da42-3d.html" data-tx="d3">Also in 3D</a><span class="st beta" data-tx="stB">Beta</span></p>
-      </div>
-    </article>
+  <nav class="tv-idx" aria-label="On this page">
+    <ol>
+      <li><a href="#simulators"><span class="n">01</span><b data-tx="x1">Simulators</b><small data-tx="x1s">3 aircraft, 2D and 3D</small></a></li>
+      <li><a href="#ifr"><span class="n">02</span><b data-tx="x2">IFR trainer</b><small data-tx="x2s">46 exercises</small></a></li>
+      <li><a href="#procedures"><span class="n">03</span><b data-tx="x3">Procedures</b><small data-tx="x3s">Briefings, gate to gate, radio</small></a></li>
+      <li><a href="#checks"><span class="n">04</span><b data-tx="x4">Type rating and checks</b><small data-tx="x4s">Type rating, A320, checks</small></a></li>
+    </ol>
+  </nav>
+
+  <!-- 01 simulators -->
+  <section class="tv-sec" id="simulators" aria-labelledby="h-sim">
+    <div class="tv-sh">
+      <div><span class="n" aria-hidden="true">01</span><h2 id="h-sim" data-tx="simH">Simulators</h2></div>
+      <p data-tx="simP">Working cockpits for three aircraft, from the six basic instruments to a two-pilot turboprop. Each runs as a 2D panel; the 3D cockpits are in beta.</p>
+    </div>
+    <div class="sims">
+      <article class="sy" aria-labelledby="s-c172">
+        <a class="sy-ph" href="c172.html" tabindex="-1" aria-hidden="true">
+          <img src="img/training/c172-panel-608.webp?v=2" srcset="img/training/c172-panel-608.webp?v=2 608w, img/training/c172-panel-1216.webp?v=2 1216w, img/training/c172-panel-1824.webp?v=2 1824w" sizes="(max-width:640px) calc(100vw - 48px), (max-width:899px) calc((100vw - 48px) * .44), (max-width:980px) calc((100vw - 96px) * .44), (max-width:1336px) calc((100vw - 160px) / 3), 392px" width="1824" height="1094" decoding="async"
+            alt="The Cessna 172 trainer's instrument panel in cruise: the six basic flight instruments, two VOR indicators and the ADF, the engine gauges, the audio panel, two NAV/COM radios, the ADF, DME and transponder, the flap lever and the switch row." data-alt-no="Instrumentpanelet i Cessna 172-treneren i marsjflyging: de seks grunnleggende flyinstrumentene, to VOR-indikatorer og ADF-en, motorinstrumentene, audiopanelet, to NAV/COM-radioer, ADF, DME og transponder, flapshendelen og bryterraden.">
+        </a>
+        <div class="sy-b">
+          <h3 id="s-c172"><a href="c172.html">Cessna 172</a></h3>
+          <p class="sy-kind" data-tx="cK">Single-engine piston, analogue panel</p>
+          <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="cT">The instrument scan, attitude flying, VOR, ADF and DME navigation, the circuit and basic instrument procedures.</dd></dl>
+          <div class="sy-go"><a class="tv-btn sm" href="c172.html"><span data-tx="o2">Open 2D</span><span class="sr"> – Cessna 172</span></a><a class="tv-btn sm ghost" href="c172-3d.html">3D<span class="sr"> – Cessna 172</span> <span class="st beta" data-tx="stB">Beta</span></a></div>
+        </div>
+      </article>
+
+      <article class="sy" aria-labelledby="s-da42">
+        <a class="sy-ph" href="cockpit.html" tabindex="-1" aria-hidden="true">
+          <img src="img/training/da42-panel-720.webp" srcset="img/training/da42-panel-720.webp 720w, img/training/da42-panel-1440.webp 1440w, img/training/da42-panel-2160.webp 2160w" sizes="(max-width:640px) calc(100vw - 48px), (max-width:899px) calc((100vw - 48px) * .44), (max-width:980px) calc((100vw - 96px) * .44), (max-width:1336px) calc((100vw - 160px) / 3), 392px" width="2160" height="1215" decoding="async"
+            alt="The DA42 trainer's instrument panel on the ILS 36 with the autopilot coupled: the PFD showing LOC and GS captured, the MFD with the engine page and the moving map, the standby instruments, the switch row and the power levers." data-alt-no="Instrumentpanelet i DA42-treneren på ILS 36 med autopiloten koblet inn: PFD-en med LOC og GS fanget, MFD-en med motorsiden og kartet, reserveinstrumentene, bryterraden og effekthendlene.">
+        </a>
+        <div class="sy-b">
+          <h3 id="s-da42"><a href="cockpit.html">DA42</a></h3>
+          <p class="sy-kind" data-tx="dK">Multi-engine piston, glass cockpit</p>
+          <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="dT">Normal and abnormal flows, autopilot management, ILS, RNAV and VOR approaches, engine failure and asymmetric flight.</dd></dl>
+          <div class="sy-go"><a class="tv-btn sm" href="cockpit.html"><span data-tx="o2">Open 2D</span><span class="sr"> – DA42</span></a><a class="tv-btn sm ghost" href="da42-3d.html">3D<span class="sr"> – DA42</span> <span class="st beta" data-tx="stB">Beta</span></a></div>
+        </div>
+      </article>
+
+      <article class="sy" aria-labelledby="s-b200">
+        <a class="sy-ph" href="b200.html" tabindex="-1" aria-hidden="true">
+          <img src="img/training/b200-panel-608.webp" srcset="img/training/b200-panel-608.webp 608w, img/training/b200-panel-1216.webp 1216w, img/training/b200-panel-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 48px), (max-width:899px) calc((100vw - 48px) * .44), (max-width:980px) calc((100vw - 96px) * .44), (max-width:1336px) calc((100vw - 160px) / 3), 392px" width="1824" height="1094" decoding="async"
+            alt="The King Air B200 trainer's flight deck at 5,000 ft with the autopilot in heading and altitude hold: electronic attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, the annunciator panel and the subpanels." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot med autopiloten i kurs- og høydehold: elektroniske attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, varselpanelet og underpanelene.">
+        </a>
+        <div class="sy-b">
+          <h3 id="s-b200"><a href="b200.html">King Air B200</a></h3>
+          <p class="sy-kind" data-tx="bK">Twin turboprop, two-pilot flight deck</p>
+          <dl class="tv-wh"><dt data-tx="tr">Trains</dt><dd data-tx="bT">Battery start to shutdown, systems such as pressurisation, autofeather and fire protection, and the single-engine approach.</dd></dl>
+          <div class="sy-go"><a class="tv-btn sm" href="b200.html"><span data-tx="o2">Open 2D</span><span class="sr"> – King Air B200</span></a><a class="tv-btn sm ghost" href="b200-3d.html">3D<span class="sr"> – King Air B200</span> <span class="st beta" data-tx="stB">Beta</span></a></div>
+        </div>
+      </article>
+    </div>
   </section>
 
-  <div class="tv-pair">
-    <article class="sy" aria-labelledby="s-b200">
-      <a class="sy-ph" href="b200.html" tabindex="-1" aria-hidden="true">
-        <img src="img/training/b200-panel-1216.webp" srcset="img/training/b200-panel-608.webp 608w, img/training/b200-panel-1216.webp 1216w, img/training/b200-panel-1824.webp 1824w" sizes="(max-width:720px) calc(100vw - 48px), (max-width:900px) calc((100vw - 76px) / 2), (max-width:1336px) calc((100vw - 136px) / 2), 600px" width="1824" height="1094" loading="lazy" decoding="async"
-          alt="The King Air B200 trainer's flight deck at 5,000 ft with the autopilot in heading and altitude hold: electronic attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, the annunciator panel and the subpanels." data-alt-no="Cockpiten i King Air B200-treneren i 5000 fot med autopiloten i kurs- og høydehold: elektroniske attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, varselpanelet og underpanelene.">
-      </a>
-      <div class="sy-cap">
-        <div class="sy-head"><h2 id="s-b200"><a href="b200.html">King Air B200</a></h2><span class="sy-kind" data-tx="bK">Twin turboprop, two-pilot flight deck</span><span class="st" data-tx="stA">Available</span></div>
-        <dl class="sy-trains"><dt data-tx="tr">Trains</dt><dd data-tx="bT">Battery start to shutdown, systems such as pressurisation, autofeather and fire protection, and the single-engine approach.</dd></dl>
-        <p class="sy-more"><a href="b200-3d.html" data-tx="d3">Also in 3D</a><span class="st beta" data-tx="stB">Beta</span></p>
+  <!-- 02 IFR trainer -->
+  <section class="tv-sec" id="ifr" aria-labelledby="h-ifr">
+    <div class="tv-sh">
+      <div><span class="n" aria-hidden="true">02</span><h2 id="h-ifr" data-tx="ifrH">IFR trainer</h2></div>
+      <p data-tx="ifrP">Instrument procedures, from tracking a radial to flying the ILS, taught the way an instructor would.</p>
+    </div>
+    <div class="ifr">
+      <div class="ifr-top">
+        <div>
+          <p class="ifr-lede" data-tx="ifrL">Learn instrument flying one procedure at a time. An instructor on screen tells you the next step and why, and the replay marks your first mistake.</p>
+          <p class="ifr-n"><b>46</b><span data-tx="ifrN">exercises in eleven groups: tracking, intercepts, NDB, DME arcs, holding, procedure turns, VOR, NDB, LOC, ILS and RNP approaches, SID and STAR, mental maths and partial panel.</span></p>
+          <dl class="ifr-f">
+            <div><dt data-tx="f1">Four steps per exercise</dt><dd data-tx="f1d">Understand, Think first, Fly, Debrief: a short walk-through, a question before you fly, the flight, then the replay.</dd></div>
+            <div><dt data-tx="f2">Three help levels</dt><dd data-tx="f2d">Guided, Hints or On my own. Step down as you get better.</dd></div>
+            <div><dt data-tx="f3">A glossary one tap away</dt><dd data-tx="f3d">Every abbreviation and term explained in plain words, in English and Norwegian.</dd></div>
+            <div><dt data-tx="f4">Scored to skill test limits</dt><dd data-tx="f4d">±100 ft, ±5° on track, half-scale on the ILS, holding to ICAO PANS-OPS.</dd></div>
+          </dl>
+          <div class="ifr-cta"><a class="tv-btn" href="ifr.html#trackIn" data-tx="ifrGo">Start with step 1</a><a class="tv-btn ghost" href="ifr.html" data-tx="ifrAll">All 46 exercises</a></div>
+        </div>
+        <figure class="ifr-fig">
+          <a class="ifr-ph" href="ifr.html#dme" tabindex="-1" aria-hidden="true">
+            <img src="img/training/ifr-dme-arc-1216.webp" srcset="img/training/ifr-dme-arc-608.webp 608w, img/training/ifr-dme-arc-1216.webp 1216w, img/training/ifr-dme-arc-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 72px), (max-width:1180px) calc(100vw - 160px), 640px" width="1824" height="1094" loading="lazy" decoding="async"
+              alt="The IFR trainer during a DME arc exercise: the clearance and the instructor's next instruction across the top, an HSI with the heading and course selectors on the left, and on the right the map with the arc flown so far round a practice-area VOR." data-alt-no="IFR-treneren under en øvelse med DME-bue: klareringen og instruktørens neste beskjed øverst, en HSI med kurs- og headingvelgere til venstre, og til høyre kartet med buen som er fløyet så langt rundt en VOR i øvingsområdet.">
+          </a>
+          <figcaption data-tx="ifrCap">Fly a DME arc, step 4 on the path. Here the instructor flies it; the dashed line is the instructor’s path.</figcaption>
+        </figure>
       </div>
-    </article>
-
-    <article class="sy" aria-labelledby="s-c172">
-      <a class="sy-ph" href="c172.html" tabindex="-1" aria-hidden="true">
-        <img src="img/training/c172-panel-1216.webp?v=2" srcset="img/training/c172-panel-608.webp?v=2 608w, img/training/c172-panel-1216.webp?v=2 1216w, img/training/c172-panel-1824.webp?v=2 1824w" sizes="(max-width:720px) calc(100vw - 48px), (max-width:900px) calc((100vw - 76px) / 2), (max-width:1336px) calc((100vw - 136px) / 2), 600px" width="1824" height="1094" loading="lazy" decoding="async"
-          alt="The Cessna 172 trainer's instrument panel in cruise: the six basic flight instruments, two VOR indicators and the ADF, the engine gauges, the audio panel, two NAV/COM radios, the ADF, DME and transponder, the flap lever and the switch row." data-alt-no="Instrumentpanelet i Cessna 172-treneren i marsjflyging: de seks grunnleggende flyinstrumentene, to VOR-indikatorer og ADF-en, motorinstrumentene, audiopanelet, to NAV/COM-radioer, ADF, DME og transponder, flapshendelen og bryterraden.">
-      </a>
-      <div class="sy-cap">
-        <div class="sy-head"><h2 id="s-c172"><a href="c172.html">Cessna 172</a></h2><span class="sy-kind" data-tx="cK">Single-engine piston, analogue panel</span><span class="st" data-tx="stA">Available</span></div>
-        <dl class="sy-trains"><dt data-tx="tr">Trains</dt><dd data-tx="cT">The instrument scan, attitude flying, VOR, ADF and DME navigation, the circuit and basic instrument procedures.</dd></dl>
-        <p class="sy-more"><a href="c172-3d.html" data-tx="d3">Also in 3D</a><span class="st beta" data-tx="stB">Beta</span></p>
+      <div class="ifr-path">
+        <h3 id="h-path"><span data-tx="pathH">The path</span><span class="sub" data-tx="pathS">Eight core exercises in teaching order, five to ten minutes each</span></h3>
+        <ol aria-labelledby="h-path">
+          <li><a href="ifr.html#trackIn"><i>1</i><b data-tx="p1">Track</b></a></li>
+          <li><a href="ifr.html#intIn"><i>2</i><b data-tx="p2">Intercept</b></a></li>
+          <li><a href="ifr.html#ndb"><i>3</i><b>NDB</b></a></li>
+          <li><a href="ifr.html#dme"><i>4</i><b data-tx="p4">DME arc</b></a></li>
+          <li><a href="ifr.html#holdEntry"><i>5</i><b data-tx="p5">Hold entry</b></a></li>
+          <li><a href="ifr.html#hold"><i>6</i><b data-tx="p6">Hold</b></a></li>
+          <li><a href="ifr.html#pt"><i>7</i><b data-tx="p7">Procedure turn</b></a></li>
+          <li><a href="ifr.html#ils"><i>8</i><b>ILS</b></a></li>
+        </ol>
       </div>
-    </article>
-  </div>
+    </div>
+  </section>
 
-  <section class="tv-proc" aria-labelledby="h-proc">
-    <h2 id="h-proc" data-tx="pH">Procedures &amp; assessment</h2>
-    <ul>
-      <li class="lead"><a href="ifr.html" data-tx="lIfr">IFR trainer</a><span class="n" data-tx="lIfrN">46 exercises</span></li>
-      <li><a href="briefing.html" data-tx="lBrief">Briefings</a></li>
-      <li><a href="radio-drills.html" data-tx="lRadio">Radio drills</a></li>
-      <li><a href="radio.html" data-tx="lG2g">Gate to gate</a></li>
-      <li><a href="typerating.html" data-tx="lType">Type rating</a></li>
-      <li><a href="simcheck.html" data-tx="lA320">A320 simulator assessment</a></li>
-      <li><a href="checkride.html" data-tx="lCheck">Check preparation</a></li>
-    </ul>
+  <!-- 03 procedures -->
+  <section class="tv-sec" id="procedures" aria-labelledby="h-pro">
+    <div class="tv-sh">
+      <div><span class="n" aria-hidden="true">03</span><h2 id="h-pro" data-tx="proH">Procedures</h2></div>
+      <p data-tx="proP">The parts of a flight that are spoken and done in order: the briefing, the flows and checklists, and the radio.</p>
+    </div>
+    <div class="cards">
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8.5 7.5h7M8.5 11h4.5"/><path d="M8.5 17.5l2.6-2.2 2 1.2 2.9-3"/></svg></span>
+        <div class="tc-h"><h3><a href="briefing.html" data-tx="brH">Briefings</a></h3></div>
+        <p data-tx="brD">Brief a departure or an approach out loud with today’s weather, a training chart and the aircraft numbers. The AI instructor scores it.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="brP">Reading an approach chart, the briefing order from the top of the plate down, the numbers and the threats.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="2"/><circle cx="18.5" cy="6.5" r="2"/><path d="M7.5 17.5h4a3 3 0 0 0 3-3v-5a3 3 0 0 1 2-2.8"/></svg></span>
+        <div class="tc-h"><h3><a href="radio.html" data-tx="g2H">Gate to gate</a></h3></div>
+        <p data-tx="g2D">Fly a whole DA42 training trip in the right order, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="g2P">Flows from memory, checklists, briefings and every radio call, phase by phase.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 14v-2a7.5 7.5 0 0 1 15 0v2"/><rect x="3.5" y="13.5" width="4" height="6" rx="1"/><rect x="16.5" y="13.5" width="4" height="6" rx="1"/><path d="M18.5 19.5c0 1.3-1.7 2-4.5 2"/></svg></span>
+        <div class="tc-h"><h3><a href="radio-drills.html" data-tx="rdH">Radio drills</a></h3></div>
+        <p data-tx="rdD">Two-way radio practice with EASA and ICAO phraseology. Every call is checked: what you read back, what you missed and what a good call sounds like.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="rdP">Guided scenarios, free practice with an AI controller, readbacks, the phonetic alphabet and a short test.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+    </div>
+  </section>
+
+  <!-- 04 type rating and checks -->
+  <section class="tv-sec" id="checks" aria-labelledby="h-chk">
+    <div class="tv-sh">
+      <div><span class="n" aria-hidden="true">04</span><h2 id="h-chk" data-tx="chkH">Type rating and checks</h2></div>
+      <p data-tx="chkP">Study a type in depth, then prepare for the assessment in front of you.</p>
+    </div>
+    <div class="cards">
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4.5 5.5A1.5 1.5 0 0 1 6 4h13.5v13.5H6a1.5 1.5 0 0 0-1.5 1.5z"/><path d="M4.5 19A1.5 1.5 0 0 0 6 20.5h13.5v-3"/><path d="M8.5 8h7M8.5 11h4.5"/></svg></span>
+        <div class="tc-h"><h3><a href="typerating.html" data-tx="trH">Type rating</a></h3><span class="st lang" data-tx="enOnly">English only</span></div>
+        <p data-tx="trD">A King Air B200 type rating trainer: fifteen modules in a sensible order, from the systems to the oral exam.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="trP">Systems with cockpit simulators, flashcards for the numbers, a question trainer with exam mode and an oral exam.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.7 13.2 20.3 10.8"/><path d="M7.5 15.2h3l1.5 1.3 1.5-1.3h3"/></svg></span>
+        <div class="tc-h"><h3><a href="simcheck.html" data-tx="saH">A320 sim assessment</a></h3></div>
+        <p data-tx="saD">Prepare for an airline A320 recruitment check in the simulator, hand-flown on raw data, as pilot flying and as pilot monitoring.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="saP">The manoeuvres, pitch and thrust targets, configuration and speed, PF and PM calls and the raw-data scan.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+      <article class="tc">
+        <span class="tc-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16.5" rx="1.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.7 12.7l2.2 2.2 4.4-4.6"/></svg></span>
+        <div class="tc-h"><h3><a href="checkride.html" data-tx="cpH">Check preparation</a></h3></div>
+        <p data-tx="cpD">Prepare for a proficiency check or a skill test: an oral with the instructor from your own documents, and a list of what to have ready on the day.</p>
+        <dl class="tv-wh"><dt data-tx="yp">You practise</dt><dd data-tx="cpP">Examiner-style oral questions, each answer graded with its source, and the checklist for the day.</dd></dl>
+        <span class="tc-go" aria-hidden="true"><span data-tx="go">Open</span> <span>→</span></span>
+      </article>
+    </div>
   </section>
 
   <section class="tv-inst" aria-labelledby="h-inst">
@@ -220,21 +406,55 @@
 'use strict';
 LAB.add({},{'Training':'Trening'});
 LAB.tx({
- cr1:'Trening', cr2:'Oversikt', eb:'Treningssystemer',
- h1:'Flytypespesifikke cockpittrenere',
- lede:'Fungerende cockpiter for Cessna 172, DA42 og King Air B200 for strukturert trening i prosedyrer, flows og normale og unormale operasjoner. IFR-prosedyrer, briefinger og kontrollforberedelse ligger ved siden av.',
- cta1:'Utforsk treningssystemene', cta2:'For flyskoler&nbsp;→',
- stA:'Tilgjengelig', stB:'Beta', tr:'Trener',
- dK:'Flermotors stempel, glass cockpit',
- dT:'Normale og unormale flows, bruk av autopilot, ILS-, RNAV- og VOR-innflyginger, motorstans og asymmetrisk flyging.',
- d3:'Også i 3D',
- bK:'Tomotors turboprop, tomannscockpit',
- bT:'Fra batteristart til avstengning, systemer som trykkabin, autofeather og brannvern, og innflyging på én motor.',
+ cr1:'Trening', cr2:'Oversikt', eb:'Trening i Birdbird',
+ h1:'Cockpittrenere, IFR-prosedyrer og kontrollforberedelse',
+ lede:'Alt Birdbird tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefing- og radiotrening, og forberedelse til typerating, simulatortester og kontroller.',
+ fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
+ x1:'Simulatorer', x1s:'3 flytyper, 2D og 3D', x2:'IFR-trener', x2s:'46 øvelser', x3:'Prosedyrer', x3s:'Briefinger, gate to gate, radio', x4:'Typerating og sjekk', x4s:'Typerating, A320, kontroller',
+ simH:'Simulatorer',
+ simP:'Fungerende cockpiter for tre flytyper, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Alle kjører som 2D-panel; 3D-cockpitene er i beta.',
+ stB:'Beta', tr:'Trener', o2:'Åpne 2D',
  cK:'Enmotors stempel, analogt panel',
  cT:'Instrumentscanen, attitydeflyging, VOR-, ADF- og DME-navigasjon, landingsrunden og grunnleggende instrumentprosedyrer.',
- fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk',
- pH:'Prosedyrer og vurdering',
- lIfr:'IFR-trener', lIfrN:'46 øvelser', lBrief:'Briefinger', lRadio:'Radiodriller', lG2g:'Gate to gate', lType:'Typerating', lA320:'A320 simulatortest', lCheck:'Kontrollforberedelse',
+ dK:'Flermotors stempel, glass cockpit',
+ dT:'Normale og unormale flows, bruk av autopilot, ILS-, RNAV- og VOR-innflyginger, motorstans og asymmetrisk flyging.',
+ bK:'Tomotors turboprop, tomannscockpit',
+ bT:'Fra batteristart til avstengning, systemer som trykkabin, autofeather og brannvern, og innflyging på én motor.',
+ ifrH:'IFR-trener',
+ ifrP:'Instrumentprosedyrer, fra å følge en radial til å fly ILS, lært bort slik en instruktør ville gjort det.',
+ ifrL:'Lær instrumentflyging én prosedyre om gangen. En instruktør på skjermen sier neste steg og hvorfor, og reprisen markerer den første feilen din.',
+ ifrN:'øvelser i elleve grupper: følge kurs, skjære inn, NDB, DME-buer, holding, prosedyresvinger, VOR-, NDB-, LOC-, ILS- og RNP-innflyginger, SID og STAR, hoderegning og delvis panel.',
+ f1:'Fire steg i hver øvelse', f1d:'Forstå, Tenk først, Fly, Debrief: en kort gjennomgang, et spørsmål før du flyr, selve flygingen og så reprisen.',
+ f2:'Tre hjelpenivåer', f2d:'Veiledet, Hint eller På egen hånd. Trapp ned etter hvert som du blir bedre.',
+ f3:'Ordliste ett trykk unna', f3d:'Hver forkortelse og hvert begrep forklart med vanlige ord, på engelsk og norsk.',
+ f4:'Vurdert etter grensene i ferdighetsprøven', f4d:'±100 fot, ±5° på kursen, halvt utslag på ILS, holding etter ICAO PANS-OPS.',
+ ifrGo:'Start med steg 1', ifrAll:'Alle 46 øvelsene',
+ ifrCap:'Fly en DME-bue, steg 4 på veien. Her flyr instruktøren; den stiplede linjen er instruktørens bane.',
+ pathH:'Veien', pathS:'Åtte kjerneøvelser i den rekkefølgen de læres bort, fem til ti minutter hver',
+ p1:'Følge kurs', p2:'Skjære inn', p4:'DME-bue', p5:'Inngang til holding', p6:'Holding', p7:'Prosedyresving',
+ proH:'Prosedyrer',
+ proP:'De delene av en flyging som skal sies og gjøres i riktig rekkefølge: briefingen, flows og sjekklister, og radioen.',
+ yp:'Du øver på', go:'Åpne',
+ brH:'Briefinger',
+ brD:'Brief en avgang eller en innflyging høyt med dagens vær, et treningskart og flyets tall. AI-instruktøren gir deg poeng.',
+ brP:'Å lese et innflygingskart, briefingrekkefølgen ovenfra og ned på kartet, tallene og truslene.',
+ g2H:'Gate to gate',
+ g2D:'Fly en hel treningstur med DA42 i riktig rekkefølge, fra planleggingsrommet til klossene. AI-en er både flygeleder og instruktør, med tale eller tastatur.',
+ g2P:'Flows fra hukommelsen, sjekklister, briefinger og hvert radiokall, fase for fase.',
+ rdH:'Radiodriller',
+ rdD:'Toveis radiotrening med EASA- og ICAO-fraseologi. Hvert kall sjekkes: hva du leste tilbake, hva du gikk glipp av og hvordan et godt kall høres ut.',
+ rdP:'Veiledede scenarioer, fri trening med en AI-flygeleder, tilbakelesninger, det fonetiske alfabetet og en kort test.',
+ chkH:'Typerating og sjekk',
+ chkP:'Studer en flytype i dybden, og forbered deg til vurderingen du har foran deg.',
+ trH:'Typerating', enOnly:'Bare engelsk',
+ trD:'En typeratingtrener for King Air B200: femten moduler i fornuftig rekkefølge, fra systemene til den muntlige eksamenen.',
+ trP:'Systemer med cockpitsimulatorer, flashcards for tallene, en spørsmålstrener med eksamensmodus og en muntlig eksamen.',
+ saH:'A320 simulatortest',
+ saD:'Forbered deg til en A320-simulatortest ved rekruttering til et flyselskap, håndfløyet på rådata, som pilot flying og som pilot monitoring.',
+ saP:'Manøvrene, pitch- og skyvekraftverdier, konfigurasjon og fart, PF- og PM-kall og rådata-scanen.',
+ cpH:'Kontrollforberedelse',
+ cpD:'Forbered deg til en ferdighetskontroll eller en ferdighetsprøve: en muntlig med instruktøren ut fra dine egne dokumenter, og en liste over hva du må ha klart på dagen.',
+ cpP:'Muntlige spørsmål slik en sensor stiller dem, hvert svar vurdert med kilden vist, og sjekklisten for dagen.',
  iH:'For flyskoler, operatører og luftfartsinstitusjoner',
  iP:'En uavhengig plattform, åpen for strukturert gjennomgang og samarbeid.',
  iGo:'Diskuter samarbeid',
@@ -243,7 +463,8 @@ LAB.tx({
 });
 function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
-  const n=document.querySelector('.tv-crumb'); if(n) n.setAttribute('aria-label',no?'Brødsmulesti':'Breadcrumb'); }
+  const n=document.querySelector('.tv-crumb'); if(n) n.setAttribute('aria-label',no?'Brødsmulesti':'Breadcrumb');
+  const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
 attrs(); LAB.onLang(attrs);
 })();
