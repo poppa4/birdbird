@@ -199,6 +199,7 @@
 .lybtn{padding:8px 12px!important;font-size:13.5px!important;box-shadow:0 2px 8px rgba(19,32,42,.08);background:#fff}
 .sh-pack{padding:5px 12px!important;font-size:13px!important}
 .packpop{position:absolute;right:80px;bottom:calc(100% + 6px);z-index:9;max-height:70vh;overflow:auto;width:320px;background:#fff;border:1px solid var(--rule);border-radius:8px;box-shadow:0 8px 24px rgba(19,32,42,.18);padding:12px 14px;font-size:13.5px}
+.flowbox{margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid var(--rule)}.flowbox .fl-k{margin:0 0 4px;font-family:var(--f-mono,monospace);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3,#5B6A72)}.flowbox .fl-t{margin:0 0 8px}.flowbox .fl-b{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}.flowbox .pinch{margin:4px 0 0}
 .packpop[hidden]{display:none}.packpop .sendbox{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 6px}.packpop select{max-width:100%;font:inherit;font-size:13.5px;padding:5px 7px}
 .pinch{margin:6px 0 0;font-size:12px;color:var(--ink-2)}
 .pinc{margin:4px 0 6px;padding-left:18px;font-size:13px;color:var(--ink-2)}.pinc li{margin:2px 0}
@@ -550,7 +551,7 @@
       <div class="rc-cr"><span class="shcr" id="shcr"><label for="s_cr">Cruise</label><span class="stp"><button type="button" id="crdn" aria-label="500 ft lower" title="500 ft lower">−</button><input id="s_cr" placeholder="6500" list="crlist" autocomplete="off" spellcheck="false" aria-label="Cruise altitude, feet or FL" title="Cruise altitude: feet (6500) or flight level (FL75)"><button type="button" id="crup" aria-label="500 ft higher" title="500 ft higher">+</button></span><label for="s_gs" class="gsl">GS</label><input id="s_gs" inputmode="decimal" placeholder="100" aria-label="Ground speed, knots" title="Ground speed (kt)"><span class="u">kt</span></span><datalist id="crlist"><option value="1500"><option value="2500"><option value="3500"><option value="4500"><option value="5500"><option value="6500"><option value="FL75"><option value="FL85"><option value="FL95"><option value="FL115"><option value="FL150"><option value="FL200"></datalist></div>
       <div class="rc-sum" id="rcsum" hidden></div>
       <div class="rc-btns"><button class="btn sh-nl" id="shNl" aria-pressed="false" title="Navigation log: headings, times and fuel with your wind">Navlog</button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button></div>
-      <div class="packpop" id="packpop" hidden><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
+      <div class="packpop" id="packpop" hidden><div class="flowbox" id="flowbox"></div><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
     </div>
   </div>
   <div class="rx-top noprint">
@@ -759,6 +760,7 @@
 <script src="lab.js?v=46"></script>
 <script src="ai.js?v=1"></script>
 <script src="store.js?v=2"></script>
+<script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
 <script src="rxmap.js?v=15"></script>
@@ -1672,7 +1674,7 @@ function showFound(list,head){ FOUND=list; el('f_found').innerHTML=`<span class=
 
 /* ---------- send til briefingpakken ---------- */
 let PACKS=[];
-async function loadPacks(){ PACKS=await NSTORE.list('prep'); el('packs').innerHTML=`<option value="">${L({en:'New briefing pack',no:'Ny briefingpakke'})}</option>`+PACKS.map(p=>`<option value="${p.id}">${esc(p.title||[p.f&&p.f.depapt,p.f&&p.f.destapt].filter(Boolean).join(' – ')||L({en:'Briefing pack',no:'Briefingpakke'}))}</option>`).join(''); if(PACKS[0]) el('packs').value=PACKS[0].id; }
+async function loadPacks(){ PACKS=await NSTORE.list('prep'); setTimeout(flowDraw,0); el('packs').innerHTML=`<option value="">${L({en:'New briefing pack',no:'Ny briefingpakke'})}</option>`+PACKS.map(p=>`<option value="${p.id}">${esc(p.title||[p.f&&p.f.depapt,p.f&&p.f.destapt].filter(Boolean).join(' – ')||L({en:'Briefing pack',no:'Briefingpakke'}))}</option>`).join(''); if(PACKS[0]) el('packs').value=PACKS[0].id; }
 async function sendRoute(silent){ if(MODE==='draw') return silent?null:sendDraw(); const M=compute(); if(M.C.length<2){ if(!silent) el('sendnote').textContent=L({en:'Build a route first.',no:'Bygg en rute først.'}); return; }
   let P=PACKS.find(p=>p.id===el('packs').value);
   if(!P){ P={hide:['check'],id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:'',created:Date.now(),f:{'rf.to':'1.25','rf.ld':'1.43','fu.unit':'US gal','mb.dens':'3.03','rules':'IFR','purpose':'Training flight'},sk:[]}; }
@@ -1696,9 +1698,22 @@ async function sendRoute(silent){ if(MODE==='draw') return silent?null:sendDraw(
       if(tasN) f['nl.'+r+'.tas']=String(tasN); { const w=nlWind(p.nw)||nlWind(NLs.w); if(w) f['nl.'+r+'.w']=nlW3(w); } r++; });
     if(tasN) f['nl.tas']=String(tasN); if(pnum(NLs.ff)){ f['fu.ff']=String(pnum(NLs.ff)); f['fu.unit']=NLs.fu||'L'; } if(Array.isArray(P.hide)) P.hide=P.hide.filter(h=>h!=='nav'); }
   P.xs.f={}; ['x.alt','x.msa','x.frz','x.cb','x.ct'].forEach(k=>P.xs.f[k]=f[k]||'');
-  P.title=[f.depapt,f.destapt].filter(Boolean).join(' – ')||P.title; await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
-  el('sendnote').innerHTML=`${silent?L({en:'Linked to',no:'Koblet til'}):L({en:'Sent to',no:'Sendt til'})} <b>${esc(P.title||'')}</b>.${silent?' '+L({en:'Changes here go to the pack automatically.',no:'Endringer her går automatisk til pakken.'}):''} <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; }
+  P.title=[f.depapt,f.destapt].filter(Boolean).join(' – ')||P.title; if(window.FLIGHT&&FLIGHT.link(P,R)){ R.title=title(); await NSTORE.put('route',R); } await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
+  el('sendnote').innerHTML=`${silent?L({en:'Linked to',no:'Koblet til'}):L({en:'Sent to',no:'Sendt til'})} <b>${esc(P.title||'')}</b>.${silent?' '+L({en:'Changes here go to the pack automatically.',no:'Endringer her går automatisk til pakken.'}):''} <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; flowDraw(); return P; }
 el('send').onclick=()=>sendRoute(false);
+/* ---------- én flytur: rute → briefingpakke → arbeidsflaten ---------- */
+function flowDraw(){ const box=el('flowbox'); if(!box||!R||!window.FLIGHT) return; const P=FLIGHT.packForRoute(PACKS,R), ok=MODE==='draw'||(R.pts||[]).filter(p=>p.la!=null).length>=2;
+  const desk=FLIGHT.deskHref(P?[['pack',P.id],['route',R.id]]:[['route',R.id]]);
+  box.innerHTML=`<p class="fl-k">${L({en:'This flight',no:'Denne flyturen'})}</p>`+(P
+    ? `<p class="fl-t">${L({en:'Briefing pack',no:'Briefingpakke'})}: <b>${esc(P.title||[P.f&&P.f.depapt,P.f&&P.f.destapt].filter(Boolean).join(' – ')||'')}</b></p><div class="fl-b"><a class="btn pri" id="flowOpen" href="prep.html?id=${encodeURIComponent(P.id)}">${L({en:'Open briefing pack',no:'Åpne briefingpakken'})}</a><a class="btn" id="flowDesk" href="${desk}">${L({en:'Open on my desk',no:'Åpne på arbeidsflaten'})}</a></div>`
+    : `<div class="fl-b"><button class="btn pri" id="flowNew" type="button" ${ok?'':'disabled'}>${L({en:'Create briefing pack',no:'Lag briefingpakke'})}</button>${ok?`<a class="btn" id="flowDesk" href="${desk}">${L({en:'Open on my desk',no:'Åpne på arbeidsflaten'})}</a>`:''}</div><p class="pinch">${ok?L({en:'Departure, destination, alternate, the route and today’s date are filled in, and the pack stays linked to this route.',no:'Avgang, destinasjon, alternativ, ruten og dagens dato fylles inn, og pakken holdes koblet til denne ruten.'}):L({en:'Build a route first.',no:'Bygg en rute først.'})}</p>`);
+  const nb=el('flowNew'); if(nb) nb.onclick=flowCreate; }
+async function flowCreate(){ const b=el('flowNew'); if(b){ b.disabled=true; b.textContent=L({en:'Creating…',no:'Lager …'}); }
+  try{ clearTimeout(dirty); R.title=title(); await NSTORE.put('route',R); el('packs').value='';
+    const P=MODE==='draw'?await sendDraw():await sendRoute(true); if(!P){ flowDraw(); return; }
+    FLIGHT.prefill(P,R); await NSTORE.put('prep',P); await NSTORE.put('route',R);
+    location.href='prep.html?id='+encodeURIComponent(P.id); }
+  catch(e){ flowDraw(); } }
 /* ---------- egen profil/rute fra ForeFlight o.l. inn i briefingpakken ---------- */
 const UP={blob:null,w:0,h:0,url:null};
 const upIn=document.createElement('input'); upIn.type='file'; upIn.accept='image/*,.pdf,application/pdf'; upIn.hidden=true; document.body.appendChild(upIn);
@@ -1815,8 +1830,8 @@ function drawExample(){ const keep=R, ks=selI; R=EX; selI=-1; try{ const M=compu
 async function sendDraw(){ let P=PACKS.find(p=>p.id===el('packs').value);
   if(!P){ P={hide:['check'],id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:'',created:Date.now(),f:{'rf.to':'1.25','rf.ld':'1.43','fu.unit':'US gal','mb.dens':'3.03','rules':'IFR','purpose':'Training flight'},sk:[]}; }
   const snap=dsv.cloneNode(true); P.xs={pts:[],svg:snap.innerHTML,route:R.id,drawn:1}; const sc=dd().sc; if(sc.from&&!P.f.depapt) P.f.depapt=sc.from.toUpperCase(); if(sc.to&&!P.f.destapt) P.f.destapt=sc.to.toUpperCase();
-  P.title=[P.f.depapt,P.f.destapt].filter(Boolean).join(' – ')||P.title; await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
-  el('sendnote').innerHTML=`${L({en:'Drawing sent to',no:'Tegningen er sendt til'})} <b>${esc(P.title||'')}</b>. <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; }
+  P.title=[P.f.depapt,P.f.destapt].filter(Boolean).join(' – ')||P.title; if(window.FLIGHT&&FLIGHT.link(P,R)){ R.title=title(); await NSTORE.put('route',R); } await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
+  el('sendnote').innerHTML=`${L({en:'Drawing sent to',no:'Tegningen er sendt til'})} <b>${esc(P.title||'')}</b>. <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; flowDraw(); return P; }
 
 /* ---------- lagrede ruter ---------- */
 function load(r){ R=r; if(R.da||(R.pts||[]).some(p=>p.auto)){ R.da={xd:(R.da&&R.da.xd)||'',xa:(R.da&&R.da.xa)||''}; R.pts=(R.pts||[]).filter(p=>!p.auto); } if(!hLoading){ HI=[]; hT=0; } R.s=Object.assign({cr:'',cl:'',ds:'',msa:'',frz:'',cb:'',ct:'',cw:'',mg:'1000',ta:'',tz:'10'},R.s||{}); vsUI(); R.app=R.app||{}; R.mk=R.mk||[]; R.wx=R.wx||''; selI=-1; terKey=''; TP=null; el('wxin').value=R.wx; el('ghost').checked=R.ghost!==false;
@@ -2372,7 +2387,7 @@ function daUI(){ const {d,a}=ends(); const DA=R.da||{}; const opt=(n,v)=>`<optio
 /* briefing pack som naturlig avslutning */
 function packInc(){ const M=compute(), DA=R.da||{}; const it=[L({en:'Terrain profile, as shown',no:'Terrengprofilen, slik den vises'})]; if(DA.xd||DA.xa) it.push(L({en:'Your notes for departure and arrival',no:'Notatene dine for avgang og ankomst'})); if((R.mk||[]).length) it.push(L({en:'Your markers',no:'Markørene dine'})+' ('+R.mk.length+')'); if(R.wx&&M.PM==='adv') it.push(L({en:'Weather on the profile',no:'Vær på profilen'})); if(el('sendnl').checked){ const NLs=R.nl||{}, ex=[pnum(R.gs)?'TAS':'',nlWind(NLs.w)||(R.pts||[]).some(p=>nlWind(p.nw))?L({en:'wind',no:'vind'}):'',pnum(NLs.ff)?L({en:'fuel flow',no:'forbruk'}):''].filter(Boolean); it.push(L({en:'Navigation log',no:'Navigasjonslogg'})+' ('+M.C.length+' '+L({en:'points',no:'punkter'})+(ex.length?', '+ex.join(', '):'')+')'); }
   el('pinc').innerHTML=it.map(t=>`<li>${esc(t)}</li>`).join(''); }
-function packOpen(on){ const pp=el('packpop'); pp.hidden=!on; el('packbtn').setAttribute('aria-expanded',String(on)); if(on){ packInc(); } }
+function packOpen(on){ const pp=el('packpop'); pp.hidden=!on; el('packbtn').setAttribute('aria-expanded',String(on)); if(on){ packInc(); flowDraw(); } }
 { const slot=el('packslot'), slot2=el('packslot2'); const sb=document.querySelector('.sendbox'); if(sb&&slot) slot.appendChild(sb); const sn=el('sendnote'); if(sn&&slot2) slot2.appendChild(sn); const sec=el('sendsec'); if(sec) sec.hidden=true; }
 el('packbtn').onclick=()=>packOpen(el('packpop').hidden); el('sendnl').addEventListener('change',packInc);
 document.addEventListener('pointerdown',e=>{ if(!e.target.closest('#packpop,#packbtn')&&!el('packpop').hidden) packOpen(false); });

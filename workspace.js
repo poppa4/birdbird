@@ -93,7 +93,7 @@
   const onDevice = id => !!S.docs[id];
   const packMark = id => { const m = S.items['pk:' + id]; return m && W.isLive(m) ? m : null; };
   const normReg = s => String(s || '').toUpperCase().replace(/[\s-]/g, '');
-  function packAc(p) { const m = packMark(p.id); if (m && m.acId && W.isLive(item(m.acId))) return item(m.acId); const r = normReg(p.f && p.f.reg); return r ? aircraft().find(a => normReg(a.reg) === r) || null : null; }
+  function packAc(p) { const m = packMark(p.id); if (m && m.acId && W.isLive(item(m.acId))) return item(m.acId); const r = normReg(p.f && p.f.reg); if (r) return aircraft().find(a => normReg(a.reg) === r) || null; return window.FLIGHT ? window.FLIGHT.matchAircraft(p, aircraft(), a => W.typeOf(a.typeKey).name) : null; }
   const packsAll = () => S.packs.slice().sort((a, b) => ((packMark(b.id) || {}).pinned ? 1 : 0) - ((packMark(a.id) || {}).pinned ? 1 : 0) || (b.updated || b.created || 0) - (a.updated || a.created || 0));
 
   async function loadStores() {
@@ -753,7 +753,9 @@
     const r = route(), p = r.path.split('/'), same = lastPath === r.path;
     const desk = window.WSDESK && deskMode();
     document.documentElement.classList.toggle('ws-deskmode', !!desk);
-    if (desk) { closeViewer(); window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path; return; }
+    if (desk) { closeViewer(); window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path;
+      const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
+      return; }
     if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
     if (!/^documents\/./.test(r.path)) closeViewer();

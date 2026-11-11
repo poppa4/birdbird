@@ -824,22 +824,28 @@
     function card(box, ctx, html) { const r = h('div', 'cv'); r.innerHTML = `<div class="cv-sc" data-keep-scroll><div class="cv-in">${html}</div></div>`; box.appendChild(r); if (phoneMode) swipeable(r, () => true, ctx); return r; }
     function mountPack(box, tab, ctx) {
       const p = findPack(tab.r); if (!p) return missing(box, 'pack', tab.r, ctx);
-      const f = p.f || {}, a = A.packAc(p);
-      const F = [[t('Date', 'Dato'), f.date], [t('Departure', 'Avgang'), f.depapt], [t('Destination', 'Destinasjon'), f.destapt], [t('Alternate', 'Alternativ'), f.altn], [t('Aircraft', 'Fly'), [f.type, f.reg].filter(Boolean).join(' ')], [t('Rules', 'Regler'), f.rules], ['ETD', f.etd], [t('Route', 'Rute'), f.route]].filter(x => x[1]);
-      const r = card(box, ctx, `<p class="eb">${esc(t('Briefing pack', 'Briefingpakke'))}</p><h2>${esc(A.packTitle(p))}</h2>
+      const f = p.f || {}, a = A.packAc(p), FL = window.FLIGHT;
+      const F = [[t('Alternate', 'Alternativ'), f.alt1apt || f.altn], [t('Rules', 'Regler'), f.rules], ['ETD', f.etd], [t('Route', 'Rute'), f.route]].filter(x => x[1]);
+      const rt = FL ? FL.routeForPack(S.routes, p) : null, sim = FL ? FL.simFor(f.type, a && a.typeKey) : null, H = FL ? FL.header(p) : {};
+      const fh = FL ? `<div class="cv-fl"><p class="cv-fl-r"><b class="mono">${esc(H.dep || '—')}</b><span aria-hidden="true">→</span><b class="mono">${esc(H.dest || '—')}</b></p>
+          <p class="cv-fl-m">${[H.date ? `<span class="mono">${esc(H.date)}</span>` : '', H.ac ? `<span>${esc(H.ac)}</span>` : ''].filter(Boolean).join('<i aria-hidden="true">·</i>') || esc(t('No date or aircraft yet', 'Ingen dato eller fly ennå'))}</p>
+          <div class="cv-fl-b">${rt ? `<button type="button" class="btn sm" data-open="route:${esc(rt.id)}">${esc(t('Route', 'Rute'))}</button>` : `<a class="btn sm" href="route.html?pack=${encodeURIComponent(p.id)}">${esc(t('Route', 'Rute'))}</a>`}<a class="btn sm" href="prep.html?id=${encodeURIComponent(p.id)}">${esc(t('Briefing', 'Briefing'))}</a><a class="btn sm" data-sim="${esc(sim.k)}" href="${esc(sim.href)}" title="${esc(t(sim.en, sim.no))}">${esc(t('Fly the approach', 'Fly innflygingen'))}</a></div>
+          <p class="cv-fl-n">${esc(t(sim.en, sim.no))}</p></div>` : '';
+      const r = card(box, ctx, `<p class="eb">${esc(t('Briefing pack', 'Briefingpakke'))}</p><h2>${esc(A.packTitle(p))}</h2>${fh}
         <dl class="cv-f">${F.map(x => `<div><dt>${esc(x[0])}</dt><dd class="${/Route|Rute|ETD/.test(x[0]) ? 'mono' : ''}">${esc(x[1])}</dd></div>`).join('') || `<div><dt>${esc(t('Saved', 'Lagret'))}</dt><dd>${esc(A.ago(p.updated || p.created))}</dd></div>`}</dl>
         <div class="row"><a class="btn pri" href="prep.html?id=${encodeURIComponent(p.id)}">${esc(t('Open the briefing pack', 'Åpne briefingpakken'))}</a>${a ? `<button type="button" class="btn" data-open="aircraft:${esc(a.id)}">${esc(a.reg || A.acName(a))}</button>` : ''}</div>
         <p class="note">${esc(t('The briefing pack opens in the planner, with weather, NOTAM, fuel and mass and balance.', 'Briefingpakken åpnes i planleggeren, med vær, NOTAM, drivstoff og masse og balanse.'))}</p>`);
-      r.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (o) ctx.open('aircraft', o.dataset.open.slice(9), { beside: true }); });
+      r.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (!o) return; const v = o.dataset.open, i = v.indexOf(':'); ctx.open(v.slice(0, i), v.slice(i + 1), { beside: true }); });
       return {};
     }
     function mountRoute(box, tab, ctx) {
       const x = findRoute(tab.r); if (!x) return missing(box, 'route', tab.r, ctx);
-      const pts = (x.pts || []).map(p => p.n).filter(Boolean);
-      card(box, ctx, `<p class="eb">${esc(t('Route', 'Rute'))}</p><h2>${esc(A.routeTitle(x))}</h2>
+      const pts = (x.pts || []).map(p => p.n).filter(Boolean), pk = window.FLIGHT ? window.FLIGHT.packForRoute(S.packs, x) : null;
+      const r = card(box, ctx, `<p class="eb">${esc(t('Route', 'Rute'))}</p><h2>${esc(A.routeTitle(x))}</h2>
         <dl class="cv-f"><div><dt>${esc(t('Points', 'Punkter'))}</dt><dd class="mono">${(x.pts || []).length}</dd></div>${x.s && x.s.cr ? `<div><dt>${esc(t('Cruise', 'Marsjhøyde'))}</dt><dd class="mono">${esc(x.s.cr)} ft</dd></div>` : ''}<div><dt>${esc(t('Saved', 'Lagret'))}</dt><dd>${esc(A.ago(x.updated))}</dd></div></dl>
         ${pts.length ? `<p class="cv-pts mono">${pts.map(esc).join(' <span>›</span> ')}</p>` : ''}
-        <div class="row"><a class="btn pri" href="route.html?id=${encodeURIComponent(x.id)}">${esc(t('Open in Route Explorer', 'Åpne i Route Explorer'))}</a></div>`);
+        <div class="row"><a class="btn pri" href="route.html?id=${encodeURIComponent(x.id)}">${esc(t('Open in Route Explorer', 'Åpne i Route Explorer'))}</a>${pk ? `<button type="button" class="btn" data-open="pack:${esc(pk.id)}">${esc(t('Briefing pack', 'Briefingpakke'))}: ${esc(A.packTitle(pk))}</button>` : ''}</div>`);
+      r.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (o) ctx.open('pack', o.dataset.open.slice(5), { beside: true }); });
       return {};
     }
     function mountNotebook(box, tab, ctx) { if (!window.WSNB) return missing(box, 'notebook', tab.r, ctx); return window.WSNB.mountNotebook(box, tab, ctx); }

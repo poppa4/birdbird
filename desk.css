@@ -308,6 +308,11 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .cv-pts span{color:var(--ink-3)}
 .cv .row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
 .cv .note{font-size:13.5px;color:var(--ink-3)}
+.cv-fl{margin:-4px 0 18px;padding:12px 14px;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--radius);background:var(--wash)}
+.cv-fl-r{display:flex;align-items:baseline;gap:10px;margin:0;font-size:20px;color:var(--ink)}.cv-fl-r span{color:var(--ink-3);font-size:16px}
+.cv-fl-m{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 10px;font-size:13.5px;color:var(--ink-2)}.cv-fl-m i{font-style:normal;color:var(--ink-3)}
+.cv-fl-b{display:flex;flex-wrap:wrap;gap:6px}.cv-fl-b .btn.sm{padding:5px 10px}
+.cv-fl-n{margin:8px 0 0;font-size:12.5px;color:var(--ink-3)}
 
 /* menus, palette, sheet */
 .dk-menu{position:fixed;z-index:115;min-width:200px;max-width:min(320px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;padding:4px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(19,32,42,.12)}
