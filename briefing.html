@@ -151,7 +151,7 @@
 </div>
 <script src="lab.js?v=47"></script>
 <script src="ops.js?v=3"></script>
-<script src="brief.js?v=7"></script>
+<script src="brief.js?v=8"></script>
 <script src="chart.js?v=4"></script>
 <script src="ai.js?v=1"></script>
 <script src="store.js?v=2"></script>
@@ -215,7 +215,7 @@ function facts320(kind,V){
 AERODROME: Birdbird (NAER, fictional), elevation ${A.elev} ft, runway 36/18, ${RWY_LEN} x ${RWY_W} m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${A.freq.atis}, Delivery ${A.freq.del}, Ground ${A.freq.gnd}, Tower ${A.freq.twr}, Approach ${A.freq.app}. Transition altitude ${A.ta} ft. MSA (ASN 25 NM) 3200 ft west of the 360/180 line, 2300 ft east.
 WEATHER: ${V.metar}. ATIS information ${V.info}. Wind ${V.wind}: headwind ${V.hw} kt, crosswind ${V.xw} kt on runway 36. QNH ${V.qnh}.`;
   if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared via ${OPS.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${OPS.SID.name}: ${OPS.SID.text} Minimum climb gradient 4.5 % to 1500 ft (terrain north-west); at 160 kt groundspeed about 730 ft/min. Check engine-out performance against it. Departure frequency: Birdbird Approach ${A.freq.app}.`
-     : `VFR: leave the control zone via ${A.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Polaris Information ${A.freq.fis}.`);
+     : `VFR: leave the control zone via ${A.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Vestfjell Information ${A.freq.fis}.`);
   if(kind==='app') return base+`\nAPPROACH CHART: ${P.kind==='RNP'?'RNP RWY 36':'ILS or LOC RWY 36'} (flying ${P.name}), chart ${P.chart} effective ${P.date}. ${P.kind==='RNP'?'SBAS channel 41736, LPV and LNAV minima':'LOC IASN 110.30'}, final course 360°. ${P.kind==='LOC'?'Glide slope OUT: fly as LOC only, constant-angle descent (CDFA) on the DME/altitude table.':'Glide path 3.0°, TCH 50 ft.'}
 IAF: ALPOR and BIKAN 3000 ft. IF: RONAX D10.0 IASN 3000 ft. FAP: FAPSO D5.0 IASN 1650 ft. Distance/altitude checks: ${P.checks.map(c=>c[0]+' '+c[1]+' ft').join(', ')}. Rate of descent on 3.0°: 120 kt GS 635, 130 kt 690, 140 kt 745, 150 kt 795 ft/min.
 MINIMA (row C, A320): ${P.kind==='LOC'?`LOC MDA ${P.minima.locMda} ft (MDH ${P.minima.locMdh}), RVR 1200 m`:`${P.kind==='RNP'?'LPV ':''}DA ${P.minima.da} ft (DH ${P.minima.dh}), RVR ${P.minima.rvr} m. ${P.kind==='RNP'?'LNAV MDA '+P.minima.locMda+' ft':'LOC only MDA '+P.minima.locMda+' ft'}`}. Circling CAT C: MDA 710 ft (700), VIS 2400 m.
@@ -257,7 +257,7 @@ Transition altitude 7000, standard set passing 7000.
 Safe altitude: MSA 3200 feet in this sector. Any questions?`
 :`Departure briefing. Threats: traffic in the zone and at the reporting point, birds near the lake, so we keep a good lookout. Take-off mass ${t} tonnes.
 Runway 36 from A1, full length ${RWY_LEN} metres, wind ${V.wind}, ${xwTxt(V)}.
-Initial: leave the zone via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below, squawk 7000, then Polaris Information ${OPS.APT.freq.fis}.
+Initial: leave the zone via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below, squawk 7000, then Vestfjell Information ${OPS.APT.freq.fis}.
 Bugs: ${thrTxt(s)}, CONF 1+F, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}.
 Emergencies: before V1 stop: thrust idle, reverse max, autobrake RTO. After V1 we continue, SRS, gear up, ECAM actions, green dot, and fly a visual circuit back to runway 36.
 Transition altitude 7000, we stay well below it.

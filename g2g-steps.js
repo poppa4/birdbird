@@ -152,7 +152,7 @@ function STEPS(V){
       task:{en:`You are over ${VRP} at 1500 ft. Report it as instructed.`,no:`Du er over ${VRP} i 1500 ft. Rapporter som instruert.`},
       items:[ST('Tower'),CS,I(VRP,VRP,new RegExp(VRP.toLowerCase())),N('Altitude','Høyde',1500)],
       model:`Birdbird Tower, LN-NAE, ${VRP}, 1500 feet.`,
-      atc:`LN-NAE, leaving the control zone, frequency change approved. Contact Polaris Information ${F.fis}.`});
+      atc:`LN-NAE, leaving the control zone, frequency change approved. Contact Vestfjell Information ${F.fis}.`});
   }
   add({ph:'climb',k:'check',pos:'climb',t:{en:'Climb checklist',no:'Climb-sjekkliste'},
     q:{en:'Above 1000 ft AAL. Read and do.',no:'Over 1000 ft AAL. Les og gjør.'},
@@ -223,12 +223,12 @@ function STEPS(V){
       why:{en:'With only the approach lights in sight you may continue below the minimum to 100 ft above the threshold. Below that you need the threshold, its lights or markings, or the touchdown zone. Check the exact wording in your operations manual.',no:'Med bare innflygingslysene i sikte kan du fortsette under minima til 100 ft over terskelen. Under det må du se terskelen, lysene eller merkingen der, eller touchdown-sonen. Sjekk nøyaktig ordlyd i operasjonsmanualen din.'}});
   } else {
     /* ================= VFR UNDERVEIS OG ANKOMST ================= */
-    add({ph:'enr',k:'radio',pos:'area',t:{en:'Flight information service',no:'Flyinformasjonstjeneste'},freq:[F.fis,'Polaris Information'],
-      task:{en:'Call Polaris Information for flight information service: who you call, who you are, type, where, altitude, intentions, request.',no:'Kall Polaris Information for flyinformasjonstjeneste: hvem du kaller, hvem du er, type, hvor, høyde, intensjon, forespørsel.'},
+    add({ph:'enr',k:'radio',pos:'area',t:{en:'Flight information service',no:'Flyinformasjonstjeneste'},freq:[F.fis,'Vestfjell Information'],
+      task:{en:'Call Vestfjell Information for flight information service: who you call, who you are, type, where, altitude, intentions, request.',no:'Kall Vestfjell Information for flyinformasjonstjeneste: hvem du kaller, hvem du er, type, hvor, høyde, intensjon, forespørsel.'},
       items:[ST('Information'),CS,I('Type DA42','Type DA42',/da ?42|diamond/),I('Position','Posisjon',/mile|nm|north|south|naeroson|birdbird|november|sierra/),I('Altitude','Høyde',/feet|ft|\b\d{4}\b/),I('Request flight information','Be om flyinformasjon',/information service|flight information|basic service|fis/)],
-      model:`Polaris Information, LN-NAE, DA42, 5 miles ${V.vrp==='S'?'south':'north'} of Birdbird, 2500 feet, VFR local training, request flight information service.`,
-      atc:`LN-NAE, Polaris Information, flight information service, traffic a Cessna 172 in the training area at 3000 feet. QNH ${V.qnh2}.`});
-    add({ph:'enr',k:'radio',pos:'area',t:{en:'Read back',no:'Les tilbake'},freq:[F.fis,'Polaris Information'],rb:true,
+      model:`Vestfjell Information, LN-NAE, DA42, 5 miles ${V.vrp==='S'?'south':'north'} of Birdbird, 2500 feet, VFR local training, request flight information service.`,
+      atc:`LN-NAE, Vestfjell Information, flight information service, traffic a Cessna 172 in the training area at 3000 feet. QNH ${V.qnh2}.`});
+    add({ph:'enr',k:'radio',pos:'area',t:{en:'Read back',no:'Les tilbake'},freq:[F.fis,'Vestfjell Information'],rb:true,
       task:{en:'Read back what must be read back and acknowledge the traffic.',no:'Les tilbake det som må leses tilbake og bekreft trafikken.'},
       items:[Q(V.qnh2),I('Traffic: looking out','Trafikk: ser etter',/looking|traffic|in sight|negative contact/),CS],model:`QNH ${V.qnh2}, looking out for the traffic, LN-NAE.`});
     add({ph:'enr',k:'mcq',pos:'area',t:{en:'Before air work',no:'Før luftarbeid'},

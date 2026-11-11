@@ -27,7 +27,7 @@ function vars(seed,o){
     dist:pick([8,10,12]),alt0:pick([1500,2000,2500])};
 }
 const UNIT=V=>({atis:{n:'Birdbird ATIS',f:'127.130'},del:{n:'Birdbird Delivery',f:'121.875'},gnd:{n:'Birdbird Ground',f:'121.700'},twr:{n:'Birdbird Tower',f:'118.300'},
-  app:{n:'Birdbird Approach',f:V.app},ctl:{n:'Polaris Control',f:'128.905'},fis:{n:'Polaris Information',f:V.fis},afis:{n:'Skarvik Information',f:'123.455'},trf:{n:'Tjernmo Traffic',f:'123.505'}});
+  app:{n:'Birdbird Approach',f:V.app},ctl:{n:'Vestfjell Control',f:'128.905'},fis:{n:'Vestfjell Information',f:V.fis},afis:{n:'Skarvik Information',f:'123.455'},trf:{n:'Tjernmo Traffic',f:'123.505'}});
 const W=l=>PHW[String(l).toLowerCase()];
 function atisText(V,arr){ const L=arr?V.info2:V.info, Q=arr?V.qnh2:V.qnh;
   return `Birdbird information ${W(L)}, time ${V.time}. Runway 36 in use. Transition level ${V.tl}. Wind ${V.wd} degrees ${V.ws} knots. Visibility 10 kilometres or more. ${V.cloud[0].toUpperCase()+V.cloud.slice(1)}. Temperature ${V.t}, dew point ${V.td}. QNH ${Q} hectopascals. Acknowledge information ${W(L)} on first contact.`; }
@@ -82,14 +82,14 @@ vdep:V=>{ const u=UNIT(V); return [
   {unit:u.twr,abbr:1,ph:'dep',cat:'call',sit:tr('Airborne. You climb out to the south towards reporting point Sierra, 1500 ft.','I luften. Du stiger ut sørover mot meldepunkt Sierra, 1500 ft.'),
    task:tr('Report leaving the control zone via Sierra at 1500 ft.','Meld at du forlater kontrollsonen via Sierra i 1500 ft.'),
    els:[cs(),P('Leaving the control zone','Forlater kontrollsonen',/\b(leaving|left|exiting|vacating)\b/,{ask:'say position'}),fix('Sierra'),alt(1500,{ask:'say altitude'})],model:`${V.a}, leaving the control zone via Sierra, 1500 feet.`},
-  fc(V,'Polaris Information',V.fis,{ph:'dep',atc:`${V.a}, contact Polaris Information ${V.fis}, goodbye.`,model:`Polaris Information ${V.fis}, ${V.a}, goodbye.`})]; },
+  fc(V,'Vestfjell Information',V.fis,{ph:'dep',atc:`${V.a}, contact Vestfjell Information ${V.fis}, goodbye.`,model:`Vestfjell Information ${V.fis}, ${V.a}, goodbye.`})]; },
 /* --- VFR: flight information service --- */
 vfis:V=>{ const u=UNIT(V); return [
   {unit:u.fis,ph:'enroute',cat:'call',sit:tr('South of Sierra at 2500 ft, heading for the training area. You want flight information service.','Sør for Sierra i 2500 ft, på vei mot øvingsområdet. Du vil ha flygeinformasjonstjeneste.'),
-   task:tr('First call to Polaris Information: station, full callsign, type, position, altitude, request.','Første oppkall til Polaris Information: stasjon, fullt kallesignal, type, posisjon, høyde, ønske.'),
-   els:[stn('Polaris Information'),cs(),TYPE,POS('south of Birdbird / Sierra','sør for Birdbird / Sierra'),alt(2500,{ask:'say altitude'}),INTENT('flight information / training area','flygeinformasjon / øvingsområdet',/\b(information|service|training|area|request)\b/)],
-   model:`Polaris Information, ${V.c}, DA42, 5 miles south of Sierra, 2500 feet, VFR to the training area, request flight information service.`},
-  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Polaris Information, squawk ${V.sqv}, QNH ${V.qnh2}, report entering the training area.`,task:tr('Read back.','Les tilbake.'),
+   task:tr('First call to Vestfjell Information: station, full callsign, type, position, altitude, request.','Første oppkall til Vestfjell Information: stasjon, fullt kallesignal, type, posisjon, høyde, ønske.'),
+   els:[stn('Vestfjell Information'),cs(),TYPE,POS('south of Birdbird / Sierra','sør for Birdbird / Sierra'),alt(2500,{ask:'say altitude'}),INTENT('flight information / training area','flygeinformasjon / øvingsområdet',/\b(information|service|training|area|request)\b/)],
+   model:`Vestfjell Information, ${V.c}, DA42, 5 miles south of Sierra, 2500 feet, VFR to the training area, request flight information service.`},
+  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Vestfjell Information, squawk ${V.sqv}, QNH ${V.qnh2}, report entering the training area.`,task:tr('Read back.','Les tilbake.'),
    els:[sq(V.sqv),qnh(V.qnh2),cs(),WILCO],model:`Squawk ${V.sqv}, QNH ${V.qnh2}, wilco, ${V.c}.`},
   {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, traffic 2 o'clock, 4 miles, crossing left to right, DA40, 2500 feet.`,task:tr('Acknowledge the traffic: you are looking out.','Bekreft trafikken: du ser etter den.'),
    els:[P('“Looking out” or “traffic in sight”','«Looking out» eller «traffic in sight»',/\b(looking( out)?|in sight|traffic (in )?sight|negative contact|visual)\b/,{say:'report traffic in sight'}),cs()],model:`Looking out, ${V.c}.`,
@@ -238,18 +238,18 @@ iclimb:V=>{ const u=UNIT(V); return [
    els:[P('Climb','Climb',/\bclimb(ing)?\b/,OPT),fl(V.fl),cs()],model:`Climb to flight level ${V.fl}, ${V.c}.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, turn left heading ${V.hdgL}, vectors for traffic.`,task:tr('Read back the heading.','Les tilbake kursen.'),els:[turn('left'),hdg(V.hdgL),cs()],model:`Left heading ${V.hdgL}, ${V.a}.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, resume own navigation direct TUSKA.`,task:tr('Read back.','Les tilbake.'),els:[P('Direct','Direkte',/\b(direct|resume|resuming)\b/,{say:'resume own navigation direct'}),fix('TUSKA'),cs()],model:`Resume own navigation direct TUSKA, ${V.a}.`},
-  fc(V,'Polaris Control','128.905',{ph:'dep',els:[freq('128.905','Polaris Control'),cs()],model:`Polaris Control 128.905, ${V.a}.`})]; },
+  fc(V,'Vestfjell Control','128.905',{ph:'dep',els:[freq('128.905','Vestfjell Control'),cs()],model:`Vestfjell Control 128.905, ${V.a}.`})]; },
 ienr:V=>{ const u=UNIT(V); return [
-  {unit:u.ctl,ph:'enroute',cat:'call',sit:tr(`Level at flight level ${V.fl}, direct TUSKA.`,`I flygenivå ${V.fl}, direkte TUSKA.`),task:tr('Check in with Polaris Control.','Sjekk inn med Polaris Control.'),
-   els:[stn('Polaris Control'),cs(),fl(V.fl,{ask:'say level'})],model:`Polaris Control, ${V.c}, flight level ${V.fl}.`},
-  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Polaris Control, identified, reduce speed to ${V.spd} knots.`,task:tr('Read back the speed.','Les tilbake farten.'),els:[spd(V.spd),cs()],model:`Speed ${V.spd} knots, ${V.c}.`},
+  {unit:u.ctl,ph:'enroute',cat:'call',sit:tr(`Level at flight level ${V.fl}, direct TUSKA.`,`I flygenivå ${V.fl}, direkte TUSKA.`),task:tr('Check in with Vestfjell Control.','Sjekk inn med Vestfjell Control.'),
+   els:[stn('Vestfjell Control'),cs(),fl(V.fl,{ask:'say level'})],model:`Vestfjell Control, ${V.c}, flight level ${V.fl}.`},
+  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Vestfjell Control, identified, reduce speed to ${V.spd} knots.`,task:tr('Read back the speed.','Les tilbake farten.'),els:[spd(V.spd),cs()],model:`Speed ${V.spd} knots, ${V.c}.`},
   {rb:1,cat:'rb',ph:'enroute',atc:`${V.a}, descend to altitude 5000 feet, QNH ${V.qnh2}, cleared TUSKA 1A arrival.`,
    task:tr('Read back. You are cleared below the transition level: altitude on QNH.','Les tilbake. Du er klarert under overgangsnivået: høyde på QNH.'),
    els:[P('Descend','Descend',/\bdescend(ing)?\b/,OPT),alt(5000),qnh(V.qnh2),fix('TUSKA 1A'),cs()],model:`Descend to altitude 5000 feet, QNH ${V.qnh2}, cleared TUSKA 1A arrival, ${V.a}.`,
    why:tr('When cleared to an altitude below the transition level, the QNH comes with it. Read back both, and say “altitude”.','Når du klareres til en høyde under overgangsnivået, følger QNH med. Les tilbake begge, og si «altitude».')},
   fc(V,'Birdbird Approach',V.app,{ph:'enroute',els:[freq(V.app,'Birdbird Approach'),cs()],model:`Birdbird Approach ${V.app}, ${V.a}.`})]; },
 ihold:V=>{ const u=UNIT(V); return [
-  {unit:u.app,ph:'arr',cat:'call',sit:tr(`Passing 6000 ft, descending to 5000 ft on the TUSKA 1A arrival. Polaris Control gave you speed ${V.spd} knots. You have the arrival ATIS, information ${W(V.info2)}.`,`Passerer 6000 ft, synker til 5000 ft på TUSKA 1A. Polaris Control ga deg fart ${V.spd} knop. Du har ankomst-ATIS, information ${W(V.info2)}.`),
+  {unit:u.app,ph:'arr',cat:'call',sit:tr(`Passing 6000 ft, descending to 5000 ft on the TUSKA 1A arrival. Vestfjell Control gave you speed ${V.spd} knots. You have the arrival ATIS, information ${W(V.info2)}.`,`Passerer 6000 ft, synker til 5000 ft på TUSKA 1A. Vestfjell Control ga deg fart ${V.spd} knop. Du har ankomst-ATIS, information ${W(V.info2)}.`),
    task:tr('Check in with Approach: station, callsign, passing and cleared level, assigned speed, arrival, ATIS.','Sjekk inn med Approach: stasjon, kallesignal, høyden du passerer og klarert høyde, tildelt fart, ankomstrute, ATIS.'),
    els:[stn('Birdbird Approach'),cs(),P('Passing level (6000 ft)','Høyden du passerer (6000 ft)',/\bpassing\b/,{ask:'say passing level'}),alt(5000,{ask:'say cleared altitude'}),spd(V.spd,{ask:'say speed'}),fix('TUSKA 1A',{opt:true}),info(V.info2,{ask:`confirm information ${W(V.info2)}`})],
    model:`Birdbird Approach, ${V.c}, passing 6000 feet, descending to 5000 feet, speed ${V.spd} knots, TUSKA 1A arrival, information ${W(V.info2)}.`,
@@ -308,8 +308,8 @@ epan:V=>{ const u=UNIT(V); return [
 emed:V=>{ const u=UNIT(V); return [
   {unit:u.fis,ph:'emerg',cat:'emerg',sit:tr(`A passenger has become seriously ill. You are 8 miles south of Skarvik at 3500 ft, heading 360, ${V.pob+1} on board. You want to divert to Skarvik.`,`En passasjer har blitt alvorlig syk. Du er 8 miles sør for Skarvik i 3500 ft, kurs 360, ${V.pob+1} om bord. Du vil gå til Skarvik.`),
    task:tr('Urgency call for a medical case, with your intention to divert to Skarvik.','Ilmelding for et medisinsk tilfelle, med hensikt om å gå til Skarvik.'),
-   els:[{k:'count',re:/\bpan\b/g,n:6,min:2,l:tr('PAN PAN (preferably three times)','PAN PAN (helst tre ganger)'),whyMin:tr('Allowed, but PAN PAN is preferably spoken three times (SERA.14095(c)(1)).','Tillatt, men PAN PAN sies helst tre ganger (SERA.14095(c)(1)).')},stn('Polaris Information',OPT),cs(),P('Nature: sick passenger (medical)','Art: syk passasjer (medisinsk)',/\b(medical|ill|sick|passenger)\b/,{ask:'say nature of the problem'}),INTENT('divert to Skarvik','gå til Skarvik',/\b(divert|diversion|skarvik|land)\b/),POS('8 miles south of Skarvik','8 miles sør for Skarvik'),alt(3500),hdg('360',OPT),P('Request ambulance','Be om ambulanse',/\b(ambulance|medical assistance|doctor)\b/,OPT)],
-   model:`PAN PAN, PAN PAN, PAN PAN, Polaris Information, ${V.c}, DA42, seriously ill passenger, diverting to Skarvik, 8 miles south of Skarvik, 3500 feet, heading 360, request ambulance on arrival.`},
+   els:[{k:'count',re:/\bpan\b/g,n:6,min:2,l:tr('PAN PAN (preferably three times)','PAN PAN (helst tre ganger)'),whyMin:tr('Allowed, but PAN PAN is preferably spoken three times (SERA.14095(c)(1)).','Tillatt, men PAN PAN sies helst tre ganger (SERA.14095(c)(1)).')},stn('Vestfjell Information',OPT),cs(),P('Nature: sick passenger (medical)','Art: syk passasjer (medisinsk)',/\b(medical|ill|sick|passenger)\b/,{ask:'say nature of the problem'}),INTENT('divert to Skarvik','gå til Skarvik',/\b(divert|diversion|skarvik|land)\b/),POS('8 miles south of Skarvik','8 miles sør for Skarvik'),alt(3500),hdg('360',OPT),P('Request ambulance','Be om ambulanse',/\b(ambulance|medical assistance|doctor)\b/,OPT)],
+   model:`PAN PAN, PAN PAN, PAN PAN, Vestfjell Information, ${V.c}, DA42, seriously ill passenger, diverting to Skarvik, 8 miles south of Skarvik, 3500 feet, heading 360, request ambulance on arrival.`},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, roger PAN, Skarvik is informed and an ambulance is requested. QNH ${V.qnh}, contact Skarvik Information 123.455.`,task:tr('Read back.','Les tilbake.'),
    els:[qnh(V.qnh),freq('123.455','Skarvik Information'),cs()],model:`QNH ${V.qnh}, Skarvik Information 123.455, ${V.c}.`}]; },
 efuel:V=>{ const u=UNIT(V); return [
@@ -338,17 +338,17 @@ ercf:V=>{ const u=UNIT(V); return [
    els:[P('Give way and continue circling','Vik for annen trafikk og fortsett å sirkle',/\b(give way|continue circling|circling|circle)\b/)],model:'Give way to other aircraft and continue circling.'}]; },
 elost:V=>{ const u=UNIT(V); return [
   {unit:u.fis,ph:'emerg',cat:'emerg',sit:tr('VFR in hilly terrain at 3000 ft. You are uncertain of your position. Your last fix was Skarvik 20 minutes ago. Heading 270, fuel endurance 1 hour 30.','VFR i kupert terreng i 3000 ft. Du er usikker på posisjonen. Siste sikre posisjon var Skarvik for 20 minutter siden. Kurs 270, utholdenhet 1 time 30.'),
-   task:tr('Ask Polaris Information for help: callsign, the problem, last known position, altitude, heading, request.','Be Polaris Information om hjelp: kallesignal, problemet, siste kjente posisjon, høyde, kurs, ønske.'),
-   els:[stn('Polaris Information'),cs(),P('Uncertain of position','Usikker på posisjon',/\b(uncertain|unsure|not sure|lost)\b/,{ask:'say your problem'}),fix('Skarvik',{opt:true,alt:['scarvik']}),alt(3000,{ask:'say altitude'}),P('Request assistance / position','Be om hjelp / posisjon',/\b(request|assistance|position|help)\b/)],
-   model:`Polaris Information, ${V.c}, DA42, uncertain of position, last known position Skarvik 20 minutes ago, 3000 feet, heading 270, endurance 1 hour 30, request assistance.`,
+   task:tr('Ask Vestfjell Information for help: callsign, the problem, last known position, altitude, heading, request.','Be Vestfjell Information om hjelp: kallesignal, problemet, siste kjente posisjon, høyde, kurs, ønske.'),
+   els:[stn('Vestfjell Information'),cs(),P('Uncertain of position','Usikker på posisjon',/\b(uncertain|unsure|not sure|lost)\b/,{ask:'say your problem'}),fix('Skarvik',{opt:true,alt:['scarvik']}),alt(3000,{ask:'say altitude'}),P('Request assistance / position','Be om hjelp / posisjon',/\b(request|assistance|position|help)\b/)],
+   model:`Vestfjell Information, ${V.c}, DA42, uncertain of position, last known position Skarvik 20 minutes ago, 3000 feet, heading 270, endurance 1 hour 30, request assistance.`,
    why:tr('Ask for help early, while you still have fuel and daylight. If you are worried, use PAN PAN. Climb if you can, for radar and radio coverage.','Be om hjelp tidlig, mens du fortsatt har drivstoff og dagslys. Er du bekymret, bruk PAN PAN. Stig om du kan, for radar- og radiodekning.')},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, squawk ${V.sq2} and ident.`,task:tr('Read back.','Les tilbake.'),els:[sq(V.sq2),P('Ident','Ident',/\bident\b/,OPT),cs()],model:`Squawk ${V.sq2}, ident, ${V.c}.`},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, identified, 9 miles west of Skarvik. Turn right heading ${V.hdgR} for Skarvik, QNH ${V.qnh}.`,task:tr('Read back.','Les tilbake.'),els:[turn('right'),hdg(V.hdgR),qnh(V.qnh),cs()],model:`Right heading ${V.hdgR}, QNH ${V.qnh}, ${V.c}.`}]; },
 ediv:V=>{ const u=UNIT(V); return [
   {unit:u.fis,ph:'emerg',cat:'emerg',sit:tr('VFR to Tjernmo. Ahead the cloud base comes down to the hilltops. You decide to divert to Skarvik, 15 miles east. You are at 2500 ft, 10 miles west of Tjernmo.','VFR til Tjernmo. Foran deg kommer skybasen ned på åstoppene. Du bestemmer deg for å gå til Skarvik, 15 miles øst. Du er i 2500 ft, 10 miles vest for Tjernmo.'),
-   task:tr('Tell Polaris Information you are diverting: reason, new destination, position, altitude.','Si til Polaris Information at du endrer mål: årsak, nytt mål, posisjon, høyde.'),
-   els:[stn('Polaris Information',OPT),cs(),P('Diverting','Endrer mål',/\b(divert|diverting|diversion)\b/,{ask:'say intentions'}),fix('Skarvik',{alt:['scarvik']}),P('Reason: weather','Årsak: vær',/\b(weather|cloud|visibility|wx)\b/,OPT),POS('10 miles west of Tjernmo','10 miles vest for Tjernmo'),alt(2500,{ask:'say altitude'})],
-   model:`Polaris Information, ${V.c}, diverting to Skarvik due to weather, 10 miles west of Tjernmo, 2500 feet.`},
+   task:tr('Tell Vestfjell Information you are diverting: reason, new destination, position, altitude.','Si til Vestfjell Information at du endrer mål: årsak, nytt mål, posisjon, høyde.'),
+   els:[stn('Vestfjell Information',OPT),cs(),P('Diverting','Endrer mål',/\b(divert|diverting|diversion)\b/,{ask:'say intentions'}),fix('Skarvik',{alt:['scarvik']}),P('Reason: weather','Årsak: vær',/\b(weather|cloud|visibility|wx)\b/,OPT),POS('10 miles west of Tjernmo','10 miles vest for Tjernmo'),alt(2500,{ask:'say altitude'})],
+   model:`Vestfjell Information, ${V.c}, diverting to Skarvik due to weather, 10 miles west of Tjernmo, 2500 feet.`},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, roger, Skarvik weather: visibility 8 kilometres, broken 2000 feet, runway 18, QNH ${V.qnh}. Report Skarvik in sight.`,task:tr('Read back runway and QNH.','Les tilbake bane og QNH.'),
    els:[rwy(18),qnh(V.qnh),cs(),WILCO],model:`Runway 18, QNH ${V.qnh}, wilco, ${V.c}.`}]; }
 };
@@ -437,7 +437,7 @@ const DRILL={
   listen:(V,r)=>{ const int=(a,b)=>a+Math.floor(r()*(b-a+1)), pick=a=>a[Math.floor(r()*a.length)]; const out=[];
     for(let i=0;i<5;i++){ const sqv=String(int(1,6))+int(0,7)+int(0,7)+int(1,7), q=int(988,1031), h=String(int(1,36)*10).padStart(3,'0'), f=pick(['119.250','124.200','128.905','126.150','132.035']), l=pick([70,80,90,100,110]);
       const T=[[`${V.a}, climb to flight level ${l}, squawk ${sqv}.`,[fl(l),sq(sqv)],`FL${l}, squawk ${sqv}`],[`${V.a}, turn left heading ${h}, descend to altitude 3000 feet, QNH ${q}.`,[turn('left'),hdg(h),alt(3000),qnh(q)],`left ${h}, 3000 ft, QNH ${q}`],
-        [`${V.a}, contact Polaris Control ${f}.`,[freq(f)],f],[`${V.a}, QNH ${q}, squawk ${sqv}.`,[qnh(q),sq(sqv)],`QNH ${q}, squawk ${sqv}`],[`${V.a}, turn right heading ${h}, reduce speed to 120 knots.`,[turn('right'),hdg(h),spd(120)],`right ${h}, 120 kt`]][i];
+        [`${V.a}, contact Vestfjell Control ${f}.`,[freq(f)],f],[`${V.a}, QNH ${q}, squawk ${sqv}.`,[qnh(q),sq(sqv)],`QNH ${q}, squawk ${sqv}`],[`${V.a}, turn right heading ${h}, reduce speed to 120 knots.`,[turn('right'),hdg(h),spd(120)],`right ${h}, 120 kt`]][i];
       out.push({id:'b-listen',cat:'copy',ph:'basic',listen:1,noAtc:1,atc:T[0],task:tr('Listen, then type the values (no need to read back properly).','Lytt, og skriv så verdiene (ingen ordentlig tilbakelesing nødvendig).'),els:T[1],model:T[2]}); }
     return out; },
   cs:(V,r)=>{ const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ', pick=a=>a[Math.floor(r()*a.length)]; const rl=()=>L[Math.floor(r()*26)]; const out=[];

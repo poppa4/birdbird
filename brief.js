@@ -67,7 +67,7 @@ function facts(kind,V){
 AERODROME: Birdbird (NAER, fictional), elevation ${O.APT.elev} ft, runway 36/18, 1500 x 30 m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${O.APT.freq.atis}, Delivery ${O.APT.freq.del}, Ground ${O.APT.freq.gnd}, Tower ${O.APT.freq.twr}, Approach ${O.APT.freq.app}. Transition altitude ${O.APT.ta} ft. MSA ${O.APT.msa} ft (${O.APT.msaRef}).
 WEATHER: ${V.metar}. ATIS information ${V.info}. Wind ${V.wind}: headwind ${V.hw} kt, crosswind ${V.xw} kt on runway 36. QNH ${V.qnh}.`;
   if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${O.SID.name}: ${O.SID.text} Minimum climb gradient ${O.SID.grad}. ${O.SID.gradNote} Departure frequency: Birdbird Approach ${O.APT.freq.app}.`
-     : `VFR: leave the control zone via ${O.APT.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Polaris Information ${O.APT.freq.fis}.`);
+     : `VFR: leave the control zone via ${O.APT.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Vestfjell Information ${O.APT.freq.fis}.`);
   if(kind==='app') return base+`\nAPPROACH CHART: ${P.name}, chart ${P.chart} dated ${P.date}. ${P.kind==='RNP'?'SBAS '+P.loc+', LPV and LNAV minima':'LOC '+P.loc}, final course ${P.crs}°. ${P.kind==='LOC'?'Glidepath OUT: fly as LOC only, step down / CDFA.':'Glidepath '+P.gp+'°, TCH '+P.tch+' ft.'}
 IAF: ${P.iaf.map(x=>x.join(' ')).join(', ')}. IF: ${P.if_.join(' ')}. ${P.kind==='LOC'?'FAF':'FAP'}: ${P.faf.join(' ')}. Distance/altitude checks: ${P.checks.map(c=>c[0]+' '+c[1]+' ft').join(', ')}. Rate of descent on ${P.gp}°: ${Object.entries(P.rod).map(([k,v])=>k+' kt GS '+v+' fpm').join(', ')}.
 MINIMA: ${P.kind==='LOC'?`LOC MDA ${P.minima.locMda} ft (MDH ${P.minima.locMdh}), VIS ${P.minima.locVis} m`:`${P.kind==='RNP'?'LPV ':''}DA ${P.minima.da} ft (DH ${P.minima.dh}), RVR ${P.minima.rvr} m. ${P.kind==='RNP'?'LNAV MDA '+P.minima.locMda+' ft':'LOC only MDA '+P.minima.locMda+' ft'}`}. Circling ${P.minima.circ}.
@@ -122,7 +122,7 @@ Transition altitude 7000, standard set passing 7000 in the climb.
 Safe altitude: MSA 3200 feet in this sector. Any questions?`
 :`Departure briefing. Threats: traffic in the zone and at the reporting point, birds near the lake, so we keep a good lookout and call early. Mass ${V.mass} kilos.
 Runway 36 from A1, full length 1500 metres, wind ${V.wind}, ${xwTxt(V)}.
-Initial: leave the zone via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below, squawk 7000, then Polaris Information ${O.APT.freq.fis}.
+Initial: leave the zone via ${V.vrp==='S'?'SIERRA':'NOVEMBER'} at 1500 feet or below, squawk 7000, then Vestfjell Information ${O.APT.freq.fis}.
 Bugs: normal take-off, flaps up, rotate ${s.vr}, climb ${s.vy}, blue line ${O.AC.vyse}.
 Emergencies: any problem before rotation, stopping, both power levers idle, keep it straight, brake. Engine failure after lift-off with runway remaining: land ahead. Otherwise power max, gear up, flaps up, 85 knots, identify, verify, secure, and fly a circuit back to runway 36.
 Transition altitude 7000, we stay well below it.
