@@ -110,8 +110,7 @@ test('drills: phonetic spelling and numbers the radio way', ()=>{
   assert.ok(!R.grade({els:[{k:'spell',v:'OSVIK'}]},'O S V I K',{V}).pass);
   const w=R.freqWords('118.300');
   assert.ok(R.grade({els:[{k:'say',v:'118.300',w}]},'one one eight decimal three',{V}).pass);
-  // SERA.14035(a)(6): fifth and sixth digits both zero -> only the first four digits
-  let g=R.grade({els:[{k:'say',v:'118.300',w}]},'one one eight decimal tree zero zero',{V}); assert.ok(!g.pass); assert.match(g.res[0].why.en,/SERA\.14035\(a\)\(6\)/);
+  assert.ok(R.grade({els:[{k:'say',v:'118.300',w}]},'one one eight decimal tree zero zero',{V}).pass);
   assert.ok(!R.grade({els:[{k:'say',v:'118.300',w}]},'one one eight point three',{V}).pass);
   assert.ok(!R.grade({els:[{k:'say',v:'118.300',w}]},'118.3',{V}).pass);
   assert.ok(R.grade({els:[{k:'abbr',v:'G-CD'}]},'G-CD',{V}).pass);
@@ -165,108 +164,4 @@ test('transition level and variables are deterministic per seed', ()=>{
   assert.deepEqual(JSON.stringify(S.vars(42)),JSON.stringify(S.vars(42)));
   const V=S.vars(42); assert.ok(V.fl*100>V.tl*100,'cleared flight level is above the transition level');
   assert.ok(/^[1-6][0-7]{2}[1-7]$/.test(V.sq),'squawk is octal and not a special code');
-});
-
-/* ---------- rules checked against SERA (EAR Aug 2025), ICAO Doc 4444 (Amdt 13) and AIP Norway (AMDT 05/2026) ---------- */
-const allSteps=(seed,cs)=>{ const out=[]; for(const sc of S.ALL){ const V=S.vars(seed,{callsign:cs}); sc.build(V).forEach(st=>out.push({sc:sc.k,st,V})); } return out; };
-const texts=seed=>allSteps(seed).flatMap(({st})=>[st.atc,st.reply].filter(Boolean));
-
-test('SERA.14035: numbers spoken by the controller voice', ()=>{
-  assert.match(R.spoken('LN-NAE, climb to flight level 100'),/flight level one hundred/);       // (a)(1)(i) whole hundreds
-  assert.match(R.spoken('climb to flight level 200'),/flight level two hundred/);
-  assert.match(R.spoken('climb to flight level 110'),/flight level one one zero/);
-  assert.match(R.spoken('squawk 7000'),/squawk seven thousand/);                               // (a)(1)(iii)
-  assert.match(R.spoken('squawk 7700'),/squawk seven seven zero zero/);
-  assert.match(R.spoken('QNH 1000'),/Q N H one thousand/);                                       // (a)(1)(ii)
-  assert.match(R.spoken('QNH 1009'),/Q N H one zero zero niner/);
-  assert.match(R.spoken("traffic 10 o'clock, 4 miles"),/ten o'clock/);                           // (a)(4)
-  assert.equal(R.freqWords('118.000'),'one one eight decimal zero');                               // GM1 SERA.14035(a)(6)
-  assert.equal(R.freqWords('118.050'),'one one eight decimal zero fife zero');
-  assert.equal(R.freqWords('119.250'),'one one niner decimal two fife zero');
-});
-test('SERA.14035: numbers drill wording and strict grading', ()=>{
-  const V=V0(), say=(v,w,t)=>R.grade({els:[{k:'say',v,w}]},t,{V});
-  assert.ok(say('FL100','flight level one hundred','flight level one hundred').pass);
-  assert.ok(!say('FL100','flight level one hundred','flight level one zero zero').pass);
-  assert.ok(say('1000','one thousand','QNH one thousand').pass);
-  assert.ok(!say('119.250',R.freqWords('119.250'),'one one niner decimal two five').pass,'all six digits unless the last two are zeros');
-  assert.ok(say('119.250',R.freqWords('119.250'),'one one niner decimal two five zero').pass);
-  // the generated drill uses the exceptions
-  const ws=[]; for(let seed=1;seed<=200;seed++){ S.byKey('b-num').build(S.vars(seed)).forEach(st=>ws.push([st.els[0].v,st.model])); }
-  ws.filter(([v])=>/^FL(100|200)$/.test(v)).forEach(([v,m])=>assert.match(m,/hundred$/,v));
-  assert.ok(ws.some(([v])=>v==='FL100'),'FL100 is drilled');
-  ws.filter(([v])=>v==='1000').forEach(([v,m])=>assert.equal(m,'one thousand'));
-});
-test('SERA.14050(b)/14055: abbreviated callsigns', ()=>{
-  const V=V0(), s=step([{k:'cs'}]);
-  assert.equal(st(R.grade(s,'L-NAE',{V,abbrOK:true}),'cs'),'ok','first character and at least the last two');
-  assert.equal(st(R.grade(s,'lima november alfa echo',{V,abbrOK:true}),'cs'),'ok');
-  assert.ok(R.grade({els:[{k:'abbr',v:'G-CD',reg:'G-ABCD'}]},'G-BCD',{V}).pass);
-  assert.ok(!R.grade({els:[{k:'abbr',v:'G-CD',reg:'G-ABCD'}]},'G-D',{V}).pass);
-  assert.ok(!R.grade({els:[{k:'abbr',v:'G-CD',reg:'G-ABCD'}]},'A-CD',{V}).pass);
-  // establishing contact with a new unit: full callsign, even after the previous unit abbreviated it
-  for(const id of ['iland:0','taxiin:0','vtaxi:0','iclimb:0','ihold:0','vfis:0','vafis:0']){
-    const x=S.stepById(id,V); assert.ok(x.els.find(e=>e.k==='cs').full,id);
-    assert.equal(st(R.grade(x,x.model.replace(V.c,V.a),{V,abbrOK:true}),'cs'),'wrong',id);
-    assert.ok(R.grade(x,x.model,{V,abbrOK:true}).pass,id);
-  }
-});
-test('SERA.14095: MAYDAY and PAN PAN are preferably spoken three times', ()=>{
-  const V=V0(), m=S.stepById('emay:0',V), p=S.stepById('epan:0',V);
-  const once=m.model.replace('MAYDAY MAYDAY MAYDAY','MAYDAY');
-  let g=R.grade(m,once,{V,level:'check'}); assert.ok(g.pass,'once is allowed, even at check level'); assert.equal(g.res[0].st,'warn');
-  assert.ok(!R.grade(m,m.model.replace('MAYDAY MAYDAY MAYDAY, ',''),{V}).pass,'no MAYDAY at all fails');
-  assert.ok(R.grade(p,p.model.replace('PAN PAN, PAN PAN, PAN PAN','PAN PAN'),{V,level:'check'}).pass);
-  assert.ok(!R.grade(p,p.model.replace('PAN PAN, PAN PAN, PAN PAN, ',''),{V}).pass);
-  assert.match(S.stepById('efuel:1',V).model,/^MAYDAY MAYDAY MAYDAY FUEL, Birdbird Approach/);   // SERA.11012(b)
-  assert.match(S.stepById('efuel:0',V).reply,/roger, expect \d+ minutes delay/);                 // AMC1 SERA.14001 1.1.3 b)
-});
-test('SERA.8015(ec) / AMC 1.4.10: conditional line-up', ()=>{
-  const V=V0(), c=S.stepById('vline:1',V);
-  assert.match(c.atc,/behind the landing DA40 on short final, line up runway 36, behind\.$/);
-  for(const t of ['Behind the landing DA40, lining up runway 36, behind, L-AE','Behind the landing DA40, line up and wait runway 36, behind, L-AE'])
-    assert.ok(R.grade(c,t,{V,abbrOK:true}).pass,t);
-  assert.ok(!R.grade(c,'Lining up runway 36, L-AE',{V,abbrOK:true}).pass,'condition missing');
-  assert.ok(!R.grade(c,'Behind the landing DA40, lining up runway 36, L-AE',{V,abbrOK:true}).pass,'condition not repeated');
-});
-test('AMC 1.4.8: hold short acknowledged with "holding short"; QNH not "altimeter"', ()=>{
-  const V=V0(), x=S.stepById('itaxi:1',V); const k=t=>R.grade(x,t,{V,abbrOK:true}).flags.map(f=>f.k);
-  assert.ok(R.grade(x,x.model,{V,abbrOK:true}).pass); assert.ok(!k(x.model).includes('holdshort'));
-  assert.ok(k('Holding point A1 runway 36 via Bravo and Alpha, hold short runway 07, L-AE').includes('holdshort'));
-  assert.equal(st(R.grade(x,'Holding point A1 runway 36, roger, L-AE',{V,abbrOK:true}),'hs'),'miss');
-  const q=R.grade(step([{k:'qnh',v:1013},{k:'cs'}]),'altimeter 1013, LN-NAE',{V}); assert.ok(q.pass); assert.ok(q.flags.some(f=>f.k==='altimeter'));
-});
-test('AIP Norway GEN 3.3 4.1.5: AFIS runway information is read back', ()=>{
-  const V=V0(), st5=S.stepById('vafis:5',V);
-  assert.match(st5.atc,/no reported traffic runway 18/);
-  assert.ok(R.grade(st5,`No reported traffic runway 18, ${V.c}`,{V}).pass);
-  assert.ok(!R.grade(st5,`Landing, ${V.c}`,{V}).pass,'runway information must be read back');
-  assert.ok(R.grade(st5,`Cleared to land runway 18 no reported traffic, ${V.c}`,{V}).flags.some(f=>f.k==='bad'));
-  assert.equal(S.UNIT(V).afis.n,'Skarvik Information');
-  for(const t of texts(3)) assert.ok(!/runway \d+ free/i.test(t),t);
-});
-test('AMC1 SERA.14001: controller templates use the standard forms', ()=>{
-  for(const seed of [1,2,3]) for(const t of texts(seed)){
-    assert.ok(!/\b(climb|descend) (altitude|flight level|\d)/i.test(t),'CLIMB/DESCEND TO (level): '+t);   // 1.1.2 a) 1)
-    assert.ok(!/reduce speed \d/i.test(t),'REDUCE SPEED TO: '+t);                                       // 2.1.6 f)
-    assert.ok(!/runway \d+, wind[^.]*cleared/i.test(t),'RUNWAY (number) CLEARED TO LAND, after the wind: '+t);    // 1.4.16 a)
-    assert.ok(!/vacate left|readback correct|right turns/i.test(t),t);
-    if(/cleared to land|cleared touch and go|cleared for take-off/.test(t)) assert.match(t,/runway \d+, cleared/);
-  }
-});
-test('SERA.14065(a): initial call after a frequency change gives passing level and assigned speed', ()=>{
-  const V=V0(), c=S.stepById('iclimb:0',V), h=S.stepById('ihold:0',V);
-  assert.ok(!R.grade(c,`Birdbird Approach, ${V.c}, climbing to 3000 feet`,{V}).pass,'passing level missing');
-  assert.ok(R.grade(c,`Birdbird Approach, ${V.c}, passing 1500 feet climbing 3000 feet`,{V}).pass);
-  assert.ok(!R.grade(h,`Birdbird Approach, ${V.c}, passing 6000 feet descending to 5000 feet, information ${R.PHW[V.info2.toLowerCase()]}`,{V}).pass,'assigned speed missing');
-});
-test('SERA.14070: radio check includes the frequency; SERA Appendix 1 light signals', ()=>{
-  const V=V0(), r=S.stepById('vcheck:0',V);
-  assert.ok(!R.grade(r,`Birdbird Ground, ${V.c}, radio check`,{V}).pass);
-  assert.ok(R.grade(r,`Birdbird Ground, ${V.c}, radio check one two one decimal seven`,{V}).pass);
-  assert.ok(R.grade(S.stepById('ercf:2',V),'return for landing',{V}).pass);
-  assert.ok(R.grade(S.stepById('ercf:3',V),'give way to other aircraft and continue circling',{V}).pass);
-});
-test('every scenario and drill names the rules it is based on', ()=>{
-  for(const sc of S.ALL){ assert.ok(Array.isArray(sc.basis)&&sc.basis.length>=1,sc.k); sc.basis.forEach(b=>assert.match(b,/SERA|ICAO|AIP|CAP 413|2017\/373/,sc.k)); }
 });

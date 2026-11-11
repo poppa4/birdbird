@@ -71,12 +71,12 @@ function STEPS(V){
       task:{en:'Ask Delivery for your IFR clearance. Have a pen ready.',no:'Be Delivery om IFR-klareringen. Ha pennen klar.'},
       items:[ST('Delivery'),CS,I('Where or what: stand, IFR to Birdbird','Hvor eller hva: stand, IFR til Birdbird',/stand|ifr|naeroson/),I('Information '+V.info,'Informasjon '+V.info,new RegExp('information '+V.info.toLowerCase()+'|\\b'+V.info.toLowerCase()+'\\b')),I('Request clearance','Be om klarering',/clearance/)],
       model:`Birdbird Delivery, LN-NAE, stand ${V.stand}, information ${V.info}, IFR to Birdbird, request clearance.`,
-      atc:`LN-NAE, cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb to ${V.clrAlt.replace(' ft',' feet')}, squawk ${V.sq}.`});
+      atc:`LN-NAE, cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb ${V.clrAlt.replace(' ft',' feet')}, squawk ${V.sq}.`});
     add({ph:'start',k:'radio',pos:'stand',t:{en:'Read back the clearance',no:'Les tilbake klareringen'},freq:[F.del,'Birdbird Delivery'],rb:true,
       task:{en:'Read back the whole clearance: limit, departure, altitude, squawk, callsign.',no:'Les tilbake hele klareringen: grense, avgang, høyde, squawk, kallesignal.'},
       items:[I('Clearance limit: Birdbird','Klareringsgrense: Birdbird',/naeroson|cleared/),I('Departure: '+O.SID.name,'Avgang: '+O.SID.name,/osvik/),N('Altitude','Høyde',3000),N('Squawk','Squawk',V.sq),CS],
-      model:`Cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb to 3000 feet, squawk ${V.sq}, LN-NAE.`,
-      atc:`LN-NAE, that is correct. Contact Ground ${F.gnd} when ready to taxi.`,knee:{clr:`NAER ${O.SID.name} A030`,sq:V.sq}});
+      model:`Cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb 3000 feet, squawk ${V.sq}, LN-NAE.`,
+      atc:`LN-NAE, readback correct. Contact Ground ${F.gnd} when ready to taxi.`,knee:{clr:`NAER ${O.SID.name} A030`,sq:V.sq}});
     add({ph:'start',k:'check',pos:'stand',t:{en:'G1000 setup',no:'G1000-oppsett'},
       q:{en:'Set up the avionics for the departure. Pick the right value for each item.',no:'Sett opp avionikken for avgangen. Velg riktig verdi for hvert punkt.'},
       items:[['Altitude preselect','3000 ft',['1500 ft','3200 ft']],['Heading bug','360°',['322°','180°']],['Transponder',V.sq,['7000','2000']],['Flight plan','OSVIK 1N loaded',['Direct HOLAN','ILS 36 only']],['NAV 1 (for a quick return)','IASN 110.30, identified',['ASN 113.30','Not needed']],['Approach in the FMS','ILS 36 loaded, not activated',['Activated now','Nothing loaded']]],
@@ -118,7 +118,7 @@ function STEPS(V){
     task:{en:'Change to Tower and report ready. Mind the words.',no:'Skift til Tower og meld klar. Pass på ordene.'},
     items:[ST('Tower'),CS,I('Holding point A1','Holdepunkt A1',/a ?1|holding/),I('“Ready for departure” (never “ready for take-off”)','«Ready for departure» (aldri «ready for take-off»)',/ready( for departure)?/,{not:/take ?off/})],
     model:`Birdbird Tower, LN-NAE, holding point A1, ready for departure.`,
-    atc:`LN-NAE, Birdbird Tower, line up and wait runway 36.`});
+    atc:`LN-NAE, Birdbird Tower, runway 36, line up and wait.`});
   add({ph:'dep',k:'radio',pos:'hp',t:{en:'Read back',no:'Les tilbake'},freq:[F.twr,'Birdbird Tower'],rb:true,
     task:{en:'Read back the line-up instruction.',no:'Les tilbake oppstillingen.'},
     items:[I('Line up and wait','Line up and wait',/line ?up/),I('Runway 36','Rullebane 36',/36/),CS],model:`Line up and wait runway 36, LN-NAE.`});
@@ -145,8 +145,8 @@ function STEPS(V){
     add({ph:'climb',k:'radio',pos:'climb',t:{en:'First call to Approach',no:'Første oppkall til Approach'},freq:[F.app,'Birdbird Approach'],
       task:{en:'Tower told you to contact Approach after departure. Make the initial call: station, callsign, passing level, cleared level, SID.',no:'Tower ba deg kontakte Approach etter avgang. Gjør første oppkall: stasjon, kallesignal, passerer høyde, klarert høyde, SID.'},
       items:[ST('Approach'),CS,I('Passing altitude','Høyden du passerer',/passing|\b1\d00\b|\b[1-2]\d{3}\b/),N('Climbing','Stiger til',3000),I('SID: OSVIK 1N','SID: OSVIK 1N',/osvik/)],
-      model:`Birdbird Approach, LN-NAE, passing 1400 feet, climbing to 3000 feet, OSVIK 1N.`,
-      atc:`LN-NAE, Birdbird Approach, identified. Continue OSVIK 1N, climb to 3000 feet.`});
+      model:`Birdbird Approach, LN-NAE, passing 1400 feet climbing 3000 feet, OSVIK 1N.`,
+      atc:`LN-NAE, Birdbird Approach, identified. Continue OSVIK 1N, climb 3000 feet.`});
   } else {
     add({ph:'climb',k:'radio',pos:'vrp',t:{en:`Report ${VRP}`,no:`Rapporter ${VRP}`},freq:[F.twr,'Birdbird Tower'],
       task:{en:`You are over ${VRP} at 1500 ft. Report it as instructed.`,no:`Du er over ${VRP} i 1500 ft. Rapporter som instruert.`},
@@ -210,9 +210,9 @@ function STEPS(V){
     add({ph:'app',k:'radio',pos:'faf',t:{en:'Change to Tower',no:'Skift til Tower'},freq:[F.twr,'Birdbird Tower'],
       task:{en:'Read back the frequency, change over, and make your first call to Tower.',no:'Les tilbake frekvensen, skift, og gjør første oppkall til Tower.'},
       items:[ST('Tower'),CS,I('Established '+APN+' 36','Etablert '+APN+' 36',appRe),I('Position: range or fix','Posisjon: avstand eller fix',/mile|nm|fapso|established|final/)],
-      model:`Birdbird Tower, LN-NAE, established ${APN} runway 36, 6 miles.`,atc:`L-AE, Birdbird Tower, ${wind}, runway 36, cleared to land.`});
+      model:`Birdbird Tower, LN-NAE, established ${APN} runway 36, 6 miles.`,atc:`L-AE, Birdbird Tower, runway 36, ${wind}, cleared to land.`});
     add({ph:'app',k:'radio',pos:'final',t:{en:'Read back the landing clearance',no:'Les tilbake landingsklareringen'},freq:[F.twr,'Birdbird Tower'],rb:true,
-      task:{en:'Read back.',no:'Les tilbake.'},items:[I('Cleared to land','Klarert for landing',/cleared (to )?land/),I('Runway 36','Rullebane 36',/36/),CS],model:`Runway 36, cleared to land, L-AE.`,knee:{ldg:'✓'}});
+      task:{en:'Read back.',no:'Les tilbake.'},items:[I('Cleared to land','Klarert for landing',/cleared (to )?land/),I('Runway 36','Rullebane 36',/36/),CS],model:`Cleared to land runway 36, L-AE.`,knee:{ldg:'✓'}});
     add({ph:'app',k:'mcq',pos:'final',t:{en:'Stable?',no:'Stabil?'},
       q:{en:'1000 ft AAL in IMC: one dot high on the glidepath, 104 KIAS against a target of 90, descending 900 ft/min, gear down, flaps APP. What do you call?',no:'1000 ft AAL i IMC: én prikk høy på glidebanen, 104 KIAS mot et mål på 90, synker 900 ft/min, hjul nede, klaff APP. Hva sier du?'},
       a:[{en:'“Unstable, going around”',no:'«Unstable, going around»'},{en:'“Stable, continuing”',no:'«Stable, continuing»'},{en:'Continue and fix the speed by 500 ft',no:'Fortsett og rett opp farten innen 500 ft'}],c:0,
@@ -256,9 +256,9 @@ function STEPS(V){
       items:['Backrests upright, seat belts fastened','Brakes checked','Fuel selectors BOTH ON','Parking brake released','Fuel pumps BOTH ON','Gear warning horn checked','Yaw damper OFF','Landing gear DOWN, 3 green','Flaps APP, then LDG on final','Lights as required']});
     add({ph:'app',k:'radio',pos:'base',t:{en:V.vrp==='S'?'Report final':'Report right base',no:V.vrp==='S'?'Rapporter final':'Rapporter right base'},freq:[F.twr,'Birdbird Tower'],
       task:{en:'Make the report.',no:'Gjør rapporten.'},items:[CS,I(V.vrp==='S'?'Final':'Right base',V.vrp==='S'?'Final':'Right base',V.vrp==='S'?/final/:/base/),I('Runway 36','Rullebane 36',/36/)],
-      model: V.vrp==='S'?`L-AE, final runway 36.`:`L-AE, right base runway 36.`,atc:`L-AE, ${wind}, runway 36, cleared to land.`});
+      model: V.vrp==='S'?`L-AE, final runway 36.`:`L-AE, right base runway 36.`,atc:`L-AE, runway 36, ${wind}, cleared to land.`});
     add({ph:'app',k:'radio',pos:'final',t:{en:'Read back the landing clearance',no:'Les tilbake landingsklareringen'},freq:[F.twr,'Birdbird Tower'],rb:true,
-      task:{en:'Read back.',no:'Les tilbake.'},items:[I('Cleared to land','Klarert for landing',/cleared (to )?land/),I('Runway 36','Rullebane 36',/36/),CS],model:`Runway 36, cleared to land, L-AE.`,knee:{ldg:'✓'}});
+      task:{en:'Read back.',no:'Les tilbake.'},items:[I('Cleared to land','Klarert for landing',/cleared (to )?land/),I('Runway 36','Rullebane 36',/36/),CS],model:`Cleared to land runway 36, L-AE.`,knee:{ldg:'✓'}});
     add({ph:'app',k:'mcq',pos:'final',t:{en:'Stable?',no:'Stabil?'},
       q:{en:`500 ft AGL in VMC: on the PAPI two white two red, ${s.vref+4} KIAS against Vref ${s.vref}, 600 ft/min, gear down, flaps LDG. What do you call?`,no:`500 ft AGL i VMC: PAPI to hvite og to røde, ${s.vref+4} KIAS mot Vref ${s.vref}, 600 ft/min, hjul nede, klaff LDG. Hva sier du?`},
       a:[{en:'“Stable, continuing”',no:'«Stable, continuing»'},{en:'“Unstable, going around”',no:'«Unstable, going around»'},{en:'Nothing, keep flying',no:'Ingenting, bare fortsett'}],c:0,
@@ -267,8 +267,8 @@ function STEPS(V){
 
   /* ================= ETTER LANDING OG PARKERING ================= */
   add({ph:'park',k:'radio',pos:'vacate',t:{en:'Vacate',no:'Forlat banen'},freq:[F.twr,'Birdbird Tower'],rb:true,
-    atcFirst:`L-AE, take first left, A3, and contact Ground ${F.gnd}.`,task:{en:'Read back.',no:'Les tilbake.'},
-    items:[I('First left, A3','Første til venstre, A3',/a ?3|alfa 3|alpha 3/),N('Ground','Ground',F.gnd),CS],model:`First left A3, Ground ${F.gnd}, L-AE.`});
+    atcFirst:`L-AE, vacate via A3, contact Ground ${F.gnd}.`,task:{en:'Read back.',no:'Les tilbake.'},
+    items:[I('Vacate via A3','Forlat via A3',/a ?3|alfa 3|alpha 3/),N('Ground','Ground',F.gnd),CS],model:`Vacate via A3, ${F.gnd}, L-AE.`});
   add({ph:'park',k:'check',pos:'vacate',t:{en:'After landing (runway vacated)',no:'After landing (banen forlatt)'},
     q:{en:'Behind the holding line on A3. Flow, then verify. Pick the responses.',no:'Bak holdelinjen på A3. Flow, så verifiser. Velg responsene.'},
     items:[['Flaps','UP',['APP','AS REQUIRED']],['Pitot heat / alternate air / de-ice','OFF',['ON','AS REQUIRED']],['Fuel pumps','BOTH OFF',['BOTH ON','CROSSFEED']],['Lights','AS REQUIRED: strobes and landing light off, taxi light on',['ALL OFF','ALL ON']]],
@@ -276,7 +276,7 @@ function STEPS(V){
   add({ph:'park',k:'radio',pos:'vacate',t:{en:'Taxi to the stand',no:'Taksing til stand'},freq:[F.gnd,'Birdbird Ground'],
     task:{en:'Call Ground for taxi to your stand.',no:'Kall Ground for taksing til standplassen.'},
     items:[ST('Ground'),CS,I('Runway vacated, A3','Banen forlatt, A3',/vacated|a ?3/),I(`Request taxi to stand ${V.stand}`,`Be om taksing til stand ${V.stand}`,/taxi|stand/)],
-    model:`Birdbird Ground, LN-NAE, runway vacated via A3, request taxi to stand ${V.stand}.`,atc:`L-AE, taxi to stand ${V.stand} via A.`});
+    model:`Birdbird Ground, L-AE, runway vacated via A3, request taxi to stand ${V.stand}.`,atc:`L-AE, taxi to stand ${V.stand} via A.`});
   add({ph:'park',k:'radio',pos:'taxiin',t:{en:'Read back',no:'Les tilbake'},freq:[F.gnd,'Birdbird Ground'],rb:true,task:{en:'Read back.',no:'Les tilbake.'},
     items:[I(`Stand ${V.stand}`,`Stand ${V.stand}`,new RegExp('stand ?'+V.stand)),I('Via A','Via A',/via a|alfa|alpha|\ba\b/),CS],model:`Taxi to stand ${V.stand} via A, L-AE.`});
   add({ph:'park',k:'order',pos:'stand',t:{en:'Shutdown',no:'Avslutning'},

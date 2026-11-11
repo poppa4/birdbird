@@ -124,14 +124,9 @@ function parseCallsign(s){
   s=String(s||'LN-NAE').trim().toUpperCase().replace(/\s+/g,' ');
   const reg=s.match(/^([A-Z0-9]{1,2})-?([A-Z0-9]{3,4})$/);
   if(reg&&/-/.test(s)){ const all=reg[1]+reg[2]; const abbr=all[0]+'-'+all.slice(-2);
-    // SERA.14050(b)(1): the first character of the registration and AT LEAST the last two (LN-NAE: L-AE or L-NAE)
-    const akeys=[]; for(let k=2;k<=all.length-2;k++) akeys.push((all[0]+all.slice(-k)).toLowerCase());
-    return {full:reg[1]+'-'+reg[2],abbr,key:all.toLowerCase(),akey:abbr.replace('-','').toLowerCase(),akeys,type:'reg'}; }
-  return {full:s,abbr:null,key:key(s),akey:null,akeys:[],type:'flt'};
+    return {full:reg[1]+'-'+reg[2],abbr,key:all.toLowerCase(),akey:abbr.replace('-','').toLowerCase(),type:'reg'}; }
+  return {full:s,abbr:null,key:key(s),akey:null,type:'flt'};
 }
-/* is t (letters/digits only) a valid abbreviation of the registration `full`? (SERA.14050(b)(1)) */
-function isAbbr(full,t){ const all=String(full).toUpperCase().replace(/[^A-Z0-9]/g,''); t=String(t).toUpperCase().replace(/[^A-Z0-9]/g,'');
-  return all.length>=4&&t.length>=3&&t.length<=all.length-1&&t[0]===all[0]&&all.endsWith(t.slice(1)); }
 const spellWords=s=>String(s).toLowerCase().replace(/[^a-z0-9]/g,'').split('').map(c=>PHW[c]||NUMW[c]||c).join(' ');
 
 /* ---------------- spoken form for speech synthesis ---------------- */
@@ -144,14 +139,7 @@ function freqWords(f){ let [i,d='']=String(f).split('.'); if(d.length===3&&d.end
 function spoken(text){
   let s=String(text);
   s=s.replace(/\b([A-Z]{1,2})-([A-Z]{2,4})\b/g,(m,a,b)=>spellWords(a+b));
-  // SERA.14035(a)(1)(i): flight levels digit by digit, except whole hundreds ("flight level one hundred")
-  s=s.replace(/\b(?:FL\s?|flight level )(\d{2,3})\b/gi,(m,n)=>'flight level '+(+n>=100&&+n%100===0? NUMW[String(+n/100)]+' hundred' : dig(n)));
-  // SERA.14035(a)(1)(ii): QNH digit by digit, except 1000 hPa = "one thousand"
-  s=s.replace(/\bQNH (\d{3,4})\b/g,(m,q)=>'QNH '+(q==='1000'?'one thousand':dig(q)));
-  // SERA.14035(a)(1)(iii): squawk codes digit by digit, except whole thousands ("squawk seven thousand")
-  s=s.replace(/\b(squawk|code) ([0-7]{4})\b/gi,(m,w,c)=>w+' '+(/^[1-7]000$/.test(c)? NUMW[c[0]]+' thousand' : dig(c)));
-  // SERA.14035(a)(4): clock bearings with the digits together ("ten o'clock")
-  s=s.replace(/\b(1[0-2]|[1-9]) o['’]clock\b/gi,(m,h)=>({'10':'ten','11':'eleven','12':'twelve'}[h]||NUMW[h])+" o'clock");
+  s=s.replace(/\b(?:FL\s?|flight level )(\d{2,3})\b/gi,(m,n)=>'flight level '+dig(n));
   s=s.replace(/\b(\d{3})\.(\d{1,3})\b/g,(m,a,b)=>freqWords(a+'.'+b));
   s=s.replace(/\b(\d{3,5}) (feet|ft)\b/g,(m,a)=>altWords(a)+' feet');
   s=s.replace(/\b(altitude|not above|not below) (\d{3,5})\b/gi,(m,w,a)=>w+' '+altWords(a));
@@ -164,28 +152,28 @@ function spoken(text){
 
 /* ---------------- element labels and rules (EN/NO) ---------------- */
 const RULE={
-  cs:tr('Always include your callsign in a readback; it normally goes at the end (SERA.14055(c)(2)). A first call starts with the station you call, then your full callsign (SERA.14055(b)(1)).','Ta alltid med kallesignalet i en tilbakelesing; det står normalt sist (SERA.14055(c)(2)). Et første oppkall starter med stasjonen du kaller, så fullt kallesignal (SERA.14055(b)(1)).'),
-  csabbr:tr('Use the abbreviated callsign only after the station has addressed you that way, and never when you establish contact with a new unit (SERA.14055(b)(1) and (c)(1)).','Bruk forkortet kallesignal først etter at stasjonen har kalt deg opp slik, og aldri når du etablerer kontakt med en ny enhet (SERA.14055(b)(1) og (c)(1)).'),
-  stn:tr('A first call starts with the station you are calling (SERA.14055(b)(1)).','Et første oppkall starter med stasjonen du kaller (SERA.14055(b)(1)).'),
-  rwy:tr('Runway designators are always read back: clearances to enter, land on, take off from, hold short of, cross or backtrack a runway, and the runway in use (SERA.8015(e)(1)).','Rullebanenummer leses alltid tilbake: klareringer for å kjøre inn på, lande på, ta av fra, holde kort av, krysse eller backtracke en bane, og bane i bruk (SERA.8015(e)(1)).'),
-  qnh:tr('Altimeter settings are always read back (SERA.8015(e)(1)(iii)). A wrong QNH puts you at the wrong altitude.','Høydemålerinnstilling leses alltid tilbake (SERA.8015(e)(1)(iii)). Feil QNH gir feil høyde.'),
-  alt:tr('Below the transition altitude a level is an altitude on QNH: “3000 feet” or, where it helps, “altitude 3000 feet”, never “flight level” (AMC1 SERA.14001, 1.1.1).','Under overgangshøyden er et nivå en høyde på QNH: «3000 feet» eller, der det hjelper, «altitude 3000 feet», aldri «flight level» (AMC1 SERA.14001, 1.1.1).'),
-  fl:tr('At and above the transition level, levels are flight levels on 1013 hPa: “flight level” and the digits; whole hundreds as “flight level one hundred” (SERA.14035(a)(1)(i)).','Ved og over overgangsnivået er nivåer flygenivåer på 1013 hPa: «flight level» og sifrene; hele hundrer som «flight level one hundred» (SERA.14035(a)(1)(i)).'),
-  hdg:tr('Headings are read back as three digits (SERA.8015(e)(1)(iii), SERA.14035(a)(1)). A wrong heading can put you into terrain or traffic.','Kurser leses tilbake med tre sifre (SERA.8015(e)(1)(iii), SERA.14035(a)(1)). Feil kurs kan sette deg i terreng eller trafikk.'),
-  turn:tr('The direction of turn is part of the heading instruction. Read it back.','Svingretningen er en del av kursinstruksen. Les den tilbake.'),
-  sq:tr('SSR codes (squawks) are always read back (SERA.8015(e)(1)(iii)).','SSR-koder (squawk) leses alltid tilbake (SERA.8015(e)(1)(iii)).'),
-  freq:tr('A newly assigned frequency is always read back: the frequency, then your callsign (SERA.8015(e)(1)(iii)).','En ny tildelt frekvens leses alltid tilbake: frekvensen, så kallesignalet (SERA.8015(e)(1)(iii)).'),
+  cs:tr('End a readback with your callsign so the controller knows who has the clearance. Start a first call with the station, then your callsign.','Avslutt tilbakelesing med kallesignalet, så flygelederen vet hvem som har klareringen. Et første oppkall starter med stasjonen, så kallesignalet ditt.'),
+  csabbr:tr('Use the abbreviated callsign only after the controller has used it.','Bruk forkortet kallesignal først etter at flygelederen har brukt det.'),
+  stn:tr('A first call starts with the station you are calling.','Et første oppkall starter med stasjonen du kaller.'),
+  rwy:tr('Runway designators are always read back: take-off, landing, line-up, crossing and hold short.','Rullebanenummer leses alltid tilbake: avgang, landing, oppstilling, kryssing og hold short.'),
+  qnh:tr('Altimeter settings are always read back. A wrong QNH puts you at the wrong altitude.','Høydemålerinnstilling leses alltid tilbake. Feil QNH gir feil høyde.'),
+  alt:tr('Below the transition altitude a level is an altitude on QNH: “altitude 3000 feet” or “3000 feet”, never “flight level”.','Under overgangshøyden er et nivå en høyde på QNH: «altitude 3000 feet» eller «3000 feet», aldri «flight level».'),
+  fl:tr('At and above the transition level, levels are flight levels on 1013 hPa: say “flight level” and the digits.','Ved og over overgangsnivået er nivåer flygenivåer på 1013 hPa: si «flight level» og sifrene.'),
+  hdg:tr('Headings are read back as three digits. A wrong heading can put you into terrain or traffic.','Kurser leses tilbake med tre sifre. Feil kurs kan sette deg i terreng eller trafikk.'),
+  turn:tr('The direction of turn is part of the instruction. Read it back.','Svingretningen er en del av instruksen. Les den tilbake.'),
+  sq:tr('Squawk codes are always read back.','Squawk-koder leses alltid tilbake.'),
+  freq:tr('Frequency changes are read back: the frequency, then your callsign.','Frekvensskifte leses tilbake: frekvensen, så kallesignalet.'),
   info:tr('Say the ATIS letter on first contact, so the controller knows you have the current information.','Si ATIS-bokstaven ved første kontakt, så flygelederen vet at du har gjeldende informasjon.'),
-  hp:tr('The holding point is the limit of your taxi clearance. Taxi instructions are read back or acknowledged so it is clear you understood them (SERA.8015(e)(2)); the holding point shows that.','Holdepunktet er grensen for taksiklareringen. Taksiinstrukser leses tilbake eller bekreftes slik at det er klart at du har forstått dem (SERA.8015(e)(2)); holdepunktet viser det.'),
-  hs:tr('Hold short is always read back with the runway (SERA.8015(e)(1)(ii)) and acknowledged with “holding short”; “roger” or “wilco” is not enough (AMC1 SERA.14001, 1.4.8).','Hold short leses alltid tilbake med banenummeret (SERA.8015(e)(1)(ii)) og bekreftes med «holding short»; «roger» eller «wilco» er ikke nok (AMC1 SERA.14001, 1.4.8).'),
-  fix:tr('Route clearances are read back: clearance limit, route, procedures and fixes (SERA.8015(e)(1)(i)).','Ruteklareringer leses tilbake: klareringsgrense, rute, prosedyrer og punkter (SERA.8015(e)(1)(i)).'),
-  spd:tr('Speed instructions are always read back (SERA.8015(e)(1)(iii)).','Fartsinstrukser leses alltid tilbake (SERA.8015(e)(1)(iii)).'),
+  hp:tr('The holding point is the limit of your taxi clearance. Read it back.','Holdepunktet er grensen for taksiklareringen. Les det tilbake.'),
+  hs:tr('Hold short instructions are always read back, with the runway.','Instruks om å holde kort for en bane leses alltid tilbake, med banenummeret.'),
+  fix:tr('Clearance limits, routes, procedures and fixes are read back.','Klareringsgrenser, ruter, prosedyrer og punkter leses tilbake.'),
+  spd:tr('Speed instructions are read back.','Fartsinstrukser leses tilbake.'),
   num:tr('This number is part of the message. Get it right.','Dette tallet er en del av meldingen. Få det riktig.'),
   phr:tr('This is part of the clearance or the call.','Dette er en del av klareringen eller oppkallet.'),
-  spell:tr('Use the ICAO phonetic alphabet: one word per letter (SERA.14020).','Bruk det fonetiske alfabetet (ICAO): ett ord per bokstav (SERA.14020).'),
-  say:tr('Each digit separately and “decimal” for the point. Exceptions (SERA.14035): whole hundreds and thousands of altitudes (“two thousand five hundred”), flight levels in whole hundreds (“flight level one hundred”), QNH 1000 (“one thousand”), squawks of whole thousands (“seven thousand”). A frequency whose last two digits are zeros is said with four digits only (“one one eight decimal three”).','Hvert siffer for seg og «decimal» for komma. Unntak (SERA.14035): hele hundrer og tusener i høyder («two thousand five hundred»), flygenivåer i hele hundrer («flight level one hundred»), QNH 1000 («one thousand»), squawk med hele tusener («seven thousand»). En frekvens der de to siste sifrene er null, sies med bare fire sifre («one one eight decimal three»).'),
-  cond:tr('A conditional clearance is acknowledged with the condition, the clearance and the condition again: “Behind the landing DA40, lining up runway 36, behind” (SERA.8015(ec), AMC1 SERA.14001 1.4.10). Identify the traffic before you move.','En betinget klarering bekreftes med betingelsen, klareringen og betingelsen igjen: «Behind the landing DA40, lining up runway 36, behind» (SERA.8015(ec), AMC1 SERA.14001 1.4.10). Identifiser trafikken før du ruller.'),
-  abbr:tr('Abbreviated form of a registration: the first character and at least the last two (LN-NAE: L-AE or L-NAE). Callsigns with a flight number are never abbreviated (SERA.14050(b)).','Forkortet form av en registrering: første tegn og minst de to siste (LN-NAE: L-AE eller L-NAE). Kallesignaler med flightnummer forkortes aldri (SERA.14050(b)).')
+  spell:tr('Use the ICAO phonetic alphabet: one word per letter.','Bruk det fonetiske alfabetet (ICAO): ett ord per bokstav.'),
+  say:tr('Say each digit separately, “decimal” for the point, “thousand” and “hundred” only for whole altitudes.','Si hvert siffer for seg, «decimal» for komma, «thousand» og «hundred» bare for hele høyder.'),
+  cond:tr('A conditional clearance is read back with the condition, the clearance and the condition again. Identify the traffic before you move.','En betinget klarering leses tilbake med betingelsen, klareringen og betingelsen igjen. Identifiser trafikken før du ruller.'),
+  abbr:tr('Abbreviated form: the first character and at least the last two of the registration. Callsigns with a flight number are not abbreviated.','Forkortet form: første tegn og minst de to siste i registreringen. Kallesignaler med flightnummer forkortes ikke.')
 };
 function label(e,V){
   const v=e.v;
@@ -225,7 +213,7 @@ function check(e,N,ctx){
   switch(e.k){
     case 'cs':{ const cs=ctx.V.cs; let r=seqFind(N,cs.key,U);
       if(r){ mark(U,r); ctx.csAt=r; return {st:'ok'}; }
-      if(cs.akey){ for(const k of (cs.akeys&&cs.akeys.length?cs.akeys.slice().reverse():[cs.akey])){ r=seqFind(N,k,U); if(r) break; } if(r){ mark(U,r); ctx.csAt=r; return e.full? {st:'wrong',why:RULE.csabbr,got:cs.abbr} : ctx.abbrOK? {st:'ok'} : {st:'warn',why:RULE.csabbr,got:cs.abbr}; } }
+      if(cs.akey){ r=seqFind(N,cs.akey,U); if(r){ mark(U,r); ctx.csAt=r; return e.full? {st:'wrong',why:RULE.csabbr,got:cs.abbr} : ctx.abbrOK? {st:'ok'} : {st:'warn',why:RULE.csabbr,got:cs.abbr}; } }
       return {st:'miss'}; }
     case 'stn':{ const ws=key(e.v).length? norm(e.v).toks:[]; const name=ws[0], unit=ws.slice(1).join('');
       const rn=seqFind(N,name,U,2); const UNITS=['tower','ground','delivery','approach','radar','control','information','traffic','director','apron','radio','centre','center'];
@@ -313,10 +301,7 @@ function check(e,N,ctx){
       if(numIdx(N,U,w=>w===String(e.v[0])+String(e.v[1])||w===String(e.v[0])+String(e.v[1]).padStart(2,'0')).length) return {st:'ok'};
       return {st:d.length||s.length?'wrong':'miss',got:d.length?'…/?':''}; }
     case 'phr':{ const ok=e.re.test(N.text); if(ok) return {st:'ok'}; if(e.wr&&e.wr.test(N.text)) return {st:'wrong',got:(N.text.match(e.wr)||[''])[0].trim()}; return {st:'miss'}; }
-    case 'count':{ const n=(N.text.match(e.re)||[]).length; if(n>=e.n) return {st:'ok'};
-      // "preferably spoken three times" (SERA.14095(b)(1), (c)(1)): fewer is allowed, so only a note
-      if(e.min&&n>=e.min) return {st:'warn',got:n+'×',why:e.whyMin};
-      return n? {st:'wrong',got:n+'×'} : {st:'miss'}; }
+    case 'count':{ const n=(N.text.match(e.re)||[]).length; return n>=e.n? {st:'ok'} : n? {st:'wrong',got:n+'×'} : {st:'miss'}; }
     case 'last':{ // call must end with this word (blind calls end with the place name)
       const t=T.filter(w=>w!=='over'); return seqFind({toks:t.slice(-3)},key(e.v),new Set(),1)? {st:'ok'} : {st:'miss'}; }
     case 'spell':{ const want=String(e.v).toLowerCase().replace(/[^a-z0-9]/g,'').split('');
@@ -328,17 +313,13 @@ function check(e,N,ctx){
       const got=N.words.map(w=>SYN[w]||w).filter(w=>!['feet','squawk','heading','qnh','hpa','and'].includes(w));
       const want=e.w.split(' ').map(w=>SYN[w]||w).filter(w=>!['feet','squawk','heading','qnh','hpa','and'].includes(w));
       const tz=a=>{ const k=a.indexOf('decimal'); if(k<0) return a.join(' '); const b=a.slice(); while(b.length>k+2&&b[b.length-1]==='zero') b.pop(); return b.join(' '); };
-      if(got.join(' ')===want.join(' ')) return {st:'ok'};
-      // SERA.14035(a)(6): all six digits, except when the fifth and sixth are both zero (then four digits only)
-      if(tz(got)===tz(want)) return {st:'wrong',got:N.raw,why:tr('Frequencies: all six digits, except when the last two are zeros; then only the first four (SERA.14035(a)(6)). Say: '+e.w,'Frekvenser: alle seks sifrene, unntatt når de to siste er null; da bare de fire første (SERA.14035(a)(6)). Si: '+e.w)};
-      const HT=a=>/\b(hundred|thousand)\b/.test(a.join(' '));
-      if(HT(want)!==HT(got)&&!N.words.some(w=>/\d/.test(w))) return {st:'wrong',got:N.raw,why:tr(RULE.say.en+' Say: '+e.w,RULE.say.no+' Si: '+e.w)};
+      if(got.join(' ')===want.join(' ')||tz(got)===tz(want)) return {st:'ok'};
       if(N.words.some(w=>/\d/.test(w))) return {st:'wrong',got:N.raw,why:tr('Write it the way you say it, in words: '+e.w,'Skriv det slik du sier det, med ord: '+e.w)};
       if(N.words.includes('point')) return {st:'wrong',got:N.raw,why:tr('Say “decimal”, not “point”.','Si «decimal», ikke «point».')};
       return {st:'wrong',got:N.raw}; }
     case 'abbr':{ const t=N.toks.join('');
       if(!e.v) return /\b(no|none|not|cannot|negative|nil)\b/.test(N.text)||t===key(e.full)? {st:'ok'} : {st:'wrong',got:N.raw};
-      return t===key(e.v)||(e.reg&&isAbbr(e.reg,t))? {st:'ok'} : {st:'wrong',got:N.raw}; }
+      return t===key(e.v)? {st:'ok'} : {st:'wrong',got:N.raw}; }
   }
   return {st:'miss'};
 }
@@ -349,15 +330,13 @@ function flags(N,step){
   const s=N.text, F=[];
   const add=(en,no,k)=>F.push({k,en,no});
   if(/\brepeat\b/.test(s)) add('Say “say again”, not “repeat”.','Si «say again», ikke «repeat».','repeat');
-  if(/\b(yes|yeah|yep|okay)\b/.test(s)) add('Use “affirm”, “wilco” or a readback, not “yes” or “OK” (SERA.14045(b)).','Bruk «affirm», «wilco» eller en tilbakelesing, ikke «yes» eller «OK» (SERA.14045(b)).','yes');
-  if(/\baffirmative\b/.test(s)) add('The standard word is “affirm”, not “affirmative” (SERA.14045(b)).','Standardordet er «affirm», ikke «affirmative» (SERA.14045(b)).','affirmative');
-  if(/over and out/.test(s)) add('There is no “over and out”: “over” expects a reply, “out” ends the exchange, and neither is normally used on VHF (GM4/GM5 SERA.14045).','Det finnes ingen «over and out»: «over» venter svar, «out» avslutter, og ingen av dem brukes normalt på VHF (GM4/GM5 SERA.14045).','overout');
-  if(/\b(ready (for )?takeoff|request takeoff)\b/.test(s)) add('Say “ready for departure”. “Take-off” is used only in the take-off clearance or when cancelling it (SERA.14045(c)).','Si «ready for departure». «Take-off» brukes bare i avgangsklareringen eller når den kanselleres (SERA.14045(c)).','takeoff');
+  if(/\b(yes|yeah|yep|okay)\b/.test(s)) add('Use “affirm”, “wilco” or a readback, not “yes” or “OK”.','Bruk «affirm», «wilco» eller en tilbakelesing, ikke «yes» eller «OK».','yes');
+  if(/\baffirmative\b/.test(s)) add('ICAO uses “affirm”, not “affirmative”.','ICAO bruker «affirm», ikke «affirmative».','affirmative');
+  if(/over and out/.test(s)) add('There is no “over and out”.','Det finnes ingen «over and out».','overout');
+  if(/\b(ready (for )?takeoff|request takeoff)\b/.test(s)) add('Say “ready for departure”. Only the controller uses “take-off”, in the clearance itself.','Si «ready for departure». Bare flygelederen bruker «take-off», i selve klareringen.','takeoff');
   if(/\bcop(y|ied)\b/.test(s)) add('“Copy” is not standard. Read back, or say “roger” when no readback is needed.','«Copy» er ikke standard. Les tilbake, eller si «roger» når det ikke kreves tilbakelesing.','copy');
-  if(step&&step.rb&&/\broger\b/.test(s)&&N.toks.length<=4&&!(step.els||[]).some(e=>/roger/.test(String(e.re||'')))) add('“Roger” is never a readback or an answer to a question (GM6 SERA.14045). Read back the items of the clearance.','«Roger» er aldri en tilbakelesing eller et svar på et spørsmål (GM6 SERA.14045). Les tilbake elementene i klareringen.','roger');
-  if(/\b(point)\b/.test(N.words.join(' '))&&/\b(1[1-3]\d)\b/.test(N.words.join(' '))) add('Frequencies use “decimal”, not “point” (SERA.14035(a)(5)).','Frekvenser bruker «decimal», ikke «point» (SERA.14035(a)(5)).','point');
-  if(/\baltimeter\b/.test(s)&&/\b\d{3,4}\b/.test(s)) add('Say “QNH” and the value (AMC1 SERA.14001, 1.1.8). “Altimeter” is US phraseology.','Si «QNH» og verdien (AMC1 SERA.14001, 1.1.8). «Altimeter» er amerikansk fraseologi.','altimeter');
-  if(step&&(step.els||[]).some(e=>e.k==='hs')&&/\bhold short\b/.test(s)&&!/\bholding short\b/.test(s)) add('Acknowledge a hold short with “holding short” (AMC1 SERA.14001, 1.4.8).','Bekreft hold short med «holding short» (AMC1 SERA.14001, 1.4.8).','holdshort');
+  if(step&&step.rb&&/\broger\b/.test(s)&&N.toks.length<=4&&!(step.els||[]).some(e=>/roger/.test(String(e.re||'')))) add('“Roger” is never a readback. Read back the items of the clearance.','«Roger» er aldri en tilbakelesing. Les tilbake elementene i klareringen.','roger');
+  if(/\b(point)\b/.test(N.words.join(' '))&&/\b(1[1-3]\d)\b/.test(N.words.join(' '))) add('Frequencies use “decimal”, not “point”.','Frekvenser bruker «decimal», ikke «point».','point');
   if(step&&step.bad) step.bad.forEach(b=>{ if(b.re.test(s)) add(b.en,b.no,'bad'); });
   return F;
 }
@@ -368,14 +347,14 @@ function grade(step,text,o){
   const ctx={used:new Set(),V,abbrOK:!!o.abbrOK,csAt:null};
   const els=step.els||[]; const idx=els.map((e,i)=>i).sort((a,b)=>ORDER.indexOf(els[a].k)-ORDER.indexOf(els[b].k));
   const res=new Array(els.length);
-  for(const i of idx){ const e=els[i]; const r=check(e,N,ctx); res[i]=Object.assign({k:e.k,opt:!!e.opt,soft:!!e.min,label:e.l||label(e,V),why:r.why||e.why||RULE[e.k]||RULE.phr},r); }
+  for(const i of idx){ const e=els[i]; const r=check(e,N,ctx); res[i]=Object.assign({k:e.k,opt:!!e.opt,label:e.l||label(e,V),why:r.why||e.why||RULE[e.k]||RULE.phr},r); }
   // carry: items correct in an earlier attempt of the same step stay correct (the pilot only repeats the corrected part)
   if(o.carry) res.forEach((r,i)=>{ if(o.carry[i]==='ok'&&r.st==='miss') r.st='ok'; });
   const fl=flags(N,step);
   // callsign position: last in a readback, after the station in a first call (advice, check-ready only)
   if(o.level==='check'&&ctx.csAt&&step.rb){ const after=N.toks.slice(ctx.csAt[1]+1).filter(w=>!['over','wilco','roger'].includes(w)); if(after.length>2) fl.push({k:'cspos',en:'Put your callsign at the end of the readback.',no:'Sett kallesignalet sist i tilbakelesingen.'}); }
   const req=res.filter(r=>!r.opt), strict=o.level==='check';
-  const good=r=>r.st==='ok'||(r.st==='warn'&&(!strict||r.soft));
+  const good=r=>r.st==='ok'||(r.st==='warn'&&!strict);
   const pass=req.every(good);
   const short=N.toks.length<=6;
   const sayAgain=/\bsay again\b/.test(N.text)&&short&&!els.some(e=>e.k==='phr'&&/say/.test(String(e.re)));
@@ -396,7 +375,7 @@ function corrPhrase(e,V){
 }
 function correction(step,g,S){
   const V=S.V, cs=S.abbrOK&&V.cs.abbr? V.cs.abbr : V.cs.full, unit=(step.unit&&step.unit.n)||'';
-  const bad=step.els.map((e,i)=>({e,r:g.res[i]})).filter(x=>!x.r.opt&&!(x.r.st==='ok'||(x.r.st==='warn'&&(S.level!=='check'||x.r.soft))));
+  const bad=step.els.map((e,i)=>({e,r:g.res[i]})).filter(x=>!x.r.opt&&!(x.r.st==='ok'||(x.r.st==='warn'&&S.level!=='check')));
   const csBad=bad.find(x=>x.e.k==='cs'); const rest=bad.filter(x=>x.e.k!=='cs');
   if(step.rb){
     if(!rest.length) return csBad&&csBad.r.st==='miss'? `Station reading back, say again your callsign.` : `${cs}, say again.`;
