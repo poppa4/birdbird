@@ -117,7 +117,7 @@
 .ff-cbar .tk i::before{content:'';position:absolute;left:50%;top:-4px;width:1px;height:3px;background:rgba(255,255,255,.55)}
 /* service index: four steps, in the order you prepare a flight */
 .fp-svc{background:var(--navy);border-top:1px solid var(--navy-rule);position:relative}
-.fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
 .fp-svc li{min-width:0}
 .fp-svc a{display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:4px 10px;padding:24px 24px 30px 0;height:100%;text-decoration:none;color:var(--on-navy-2);font-size:15px;line-height:1.5}
 .fp-svc li+li a{padding-left:24px;border-left:1px solid var(--navy-rule)}
@@ -369,7 +369,7 @@
         <div class="fp-copy">
           <h1 id="fp-h1" data-tx="h1">The aviation platform</h1>
           <p class="fp-lede" data-tx="lede">Built in Norway for pilots, students and flight schools: <b><span class="nLabs">25</span> interactive labs</b> on the EASA ATPL syllabus, cockpit trainers for the Cessna 172, DA42 and King Air B200, IFR and radio training, briefing, and your own workspace.</p>
-          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="prep.html">Make a briefing pack</a></div>
+          <div class="fp-act"><a class="fp-btn pri" href="lab.html">Open Virtual Labs</a><a class="fp-btn sec" href="training.html" data-tx="bTrn">Training</a><a class="fp-btn sec" href="prep.html" data-tx="bBp">Briefing pack</a></div>
         </div>
         <section class="fi" id="fpFi" aria-labelledby="fiName">
           <header class="fi-top">
@@ -391,12 +391,13 @@
     </div>
   </section>
   <nav class="fp-svc fp-band" aria-labelledby="h-svc">
-    <h2 class="vh" id="h-svc">Four services, in the order you prepare a flight</h2>
+    <h2 class="vh" id="h-svc">Five services, from theory to the flight</h2>
     <ol>
       <li><a href="lab.html"><i>1</i><b>Virtual Labs</b><span data-tx="s1"><span class="nLabs">25</span> interactive labs on the EASA ATPL theory subjects.</span></a></li>
-      <li><a href="route.html"><i>2</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
-      <li><a href="prep.html"><i>3</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
-      <li><a href="fi.html"><i>4</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
+      <li><a href="training.html"><i>2</i><b data-tx="trnB">Training</b><span data-tx="s5">Cockpit trainers for the C172, DA42 and B200, IFR, briefing and radio.</span></a></li>
+      <li><a href="route.html"><i>3</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
+      <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
+      <li><a href="fi.html"><i>5</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
     </ol>
   </nav>
 
@@ -570,7 +571,7 @@ const {L,el}=LAB;
 LAB.add({},{
  'Birdbird · Aviation theory and flight preparation, built in Norway':'Birdbird · Flyteori og flyforberedelse, laget i Norge',
  'Open Virtual Labs':'Åpne Virtual Labs','Make a briefing pack':'Lag en briefingpakke','Examples':'Eksempler',
- 'Four services, in the order you prepare a flight':'Fire tjenester, i den rekkefølgen du forbereder en flyging',
+ 'Five services, from theory to the flight':'Fire tjenester, i den rekkefølgen du forbereder en flyging',
  'Briefing pack':'Briefingpakke'
 });
 LAB.tx({
@@ -584,6 +585,7 @@ LAB.tx({
  s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
  s4:'Svar fra din AFM, QRH og SOP, med siden hvert svar kommer fra.',
+ s5:'Cockpittrenere for C172, DA42 og B200, IFR, briefing og radio.', trnB:'Trening', bTrn:'Trening', bBp:'Briefingpakke',
  h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
  p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
  capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
