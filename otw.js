@@ -148,9 +148,9 @@ function render3d(S,qHead,fov,dpr,after){
 function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.lvl) return; G.OTW.lvl=lv; G.OTW.low=lv>0; R.setPixelRatio(lv===2?0.75:lv?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; lastKey='';
   // lowest level: half the cloud sprites (one draw call each) and half the trees
   clouds.forEach((c,i)=>{ c.visible=lv<2||i%2===0; }); if(trees) trees.count=lv===2?treeN>>1:treeN; }
-/* ?perf=1: a small on-screen meter (frame rate, frame time, worst frame, quality tier) for checking speed on a phone */
+/* ?perf=1: a small on-screen meter (bottom left, clear of the toolbar and the view buttons; never takes the pointer) (frame rate, frame time, worst frame, quality tier) for checking speed on a phone */
 function hud(){ const d=document.createElement('div'); d.setAttribute('aria-hidden','true');
-  d.style.cssText='position:fixed;left:6px;top:6px;z-index:2147483647;pointer-events:none;font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#d8ffe0;background:rgba(0,0,0,.72);padding:4px 7px;border-radius:6px;white-space:pre';
+  d.style.cssText='position:fixed;left:6px;bottom:calc(46px + env(safe-area-inset-bottom,0px));z-index:2147483647;pointer-events:none;font:600 10px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#d8ffe0;background:rgba(0,0,0,.5);opacity:.8;padding:3px 6px;border-radius:5px;white-space:pre';
   const add=()=>document.body.appendChild(d); if(document.body) add(); else addEventListener('DOMContentLoaded',add);
   let n=0, sum=0, worst=0, last=0, t0=performance.now(), lt=0;
   try{ new PerformanceObserver(l=>{ lt+=l.getEntries().length; }).observe({type:'longtask'}); }catch(e){ lt=-1; }

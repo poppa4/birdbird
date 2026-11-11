@@ -166,7 +166,7 @@ function zoomTo(reg,instant,force){
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const magG=P.svg.querySelector('g.mags');
@@ -193,7 +193,7 @@ let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classLis
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
-PST.addEventListener('pointerover',e=>{ const g=C172P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
+PST.addEventListener('pointerover',e=>{ if(D3on&&D3.frozen) return; const g=C172P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; tip.textContent=tipText(tipG); const r=PST.getBoundingClientRect(); tip.style.left=Math.max(4,Math.min(r.width-260,e.clientX-r.left+14))+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
@@ -684,7 +684,7 @@ function loop(t){
   if(cockpitVis){ panelT+=dt; if(panelT>(D3on?D3.panelDt(GOV.panelDt):GOV.panelDt)){ panelT=0; C172P.sync(P,{get:ioGet}); C172P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const stall=!S.ground&&S.alpha!=null&&S.aS!=null&&S.alpha>S.aS-0.075;
   soundTick(stall);
-  slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
+  slow+=dt; if(slow>0.12&&!(D3on&&D3.frozen)){ slow=0; slowUI(o); } // status lines wait while the 3D view turns (any layout then re-lays out the whole panel)
   requestAnimationFrame(loop);
 }
 let wasCrash=null;

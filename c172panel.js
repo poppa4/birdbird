@@ -654,5 +654,7 @@ function gauges(P,d){
   vis(P,'cov-ai',!!d.covAI); vis(P,'cov-dg',!!d.covDG);
   ann(P,d.lamps);
 }
-G.C172P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncYokes,gauges,needle,text,rot,tr,vis,ann,REG,REG_ORDER,W,H,CBS,MAGS};
+/* paint layers (panellayers.js): every unit that moves gets its own small SVG, the static artwork is painted once */
+const LAYERS={dyn:'g.gauge,.an,.cmp,.dig,.hobbs,.flapp,[class*="cov-"]',hot:c=>c.t==='lev'||c.t==='vwheel'||c.t==='hwheel'||c.t==='yoke'};
+G.C172P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncYokes,gauges,needle,text,rot,tr,vis,ann,REG,REG_ORDER,W,H,CBS,MAGS};
 })(window);

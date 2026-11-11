@@ -32,7 +32,7 @@
 .psvg .sub2{fill:#2a2e33;stroke:#15181b;stroke-width:1}
 .psvg .plc{fill:#1b1e22;stroke:#3b4249;stroke-width:.8}
 .psvg .screw circle{fill:url(#gMetal);fill-opacity:.55}.psvg .screw path{stroke:#333;stroke-width:.8}
-.psvg .pl{fill:#eef2f4;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-weight:600;letter-spacing:.04em;fill-opacity:var(--bl,.92);stroke-opacity:var(--bl,.92);filter:url(#fGlow)}
+.psvg .pl{fill:#eef2f4;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;font-weight:600;letter-spacing:.04em;fill-opacity:var(--bl,.92);stroke-opacity:var(--bl,.92)}
 .psvg .pl.dim{fill-opacity:.6;stroke-opacity:.6}.psvg .pl.gp{letter-spacing:.12em}.psvg .pl.red{fill:#ff8b7d}
 .psvg .grpl{stroke:#eef2f4;stroke-opacity:.5;stroke-width:.8;fill:none}
 .psvg .nut{fill:url(#gMetal)}.psvg .nut2{fill:#8c939a;stroke:#3a3f45;stroke-width:.6}

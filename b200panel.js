@@ -681,12 +681,12 @@ function gpsSVG(){ const {x0,y0,w,h,cx,cy,R}=GP, f='font-family="IBM Plex Mono,m
   <rect class="gp-cl" x="${x0+1}" y="${y0+1.5}" width="${w-2}" height="10" fill="none" stroke="#2ce36a" stroke-width=".8" style="opacity:0"/><rect class="gp-cr" x="${x0+1}" y="${y0+54.5}" width="${w-2}" height="10" fill="none" stroke="#3fd8ff" stroke-width=".8" style="opacity:0"/></g>
   <g class="gp-off" style="opacity:0"><rect x="${x0-46}" y="${y0-2}" width="${w+48}" height="${h+4}" fill="#000"/></g>`; }
 function navSVG(){ const [x,y,w,h]=NV, [sx,sy,sw,sh]=NS0, fx=sx+2, fw=42;
-  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" class="nvu"/><rect x="${sx-3}" y="${sy-3}" width="${sw+6}" height="${sh+6}" rx="3" class="nvbz"/><rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" fill="#000"/>
+  return `<g class="dynu"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" class="nvu"/><rect x="${sx-3}" y="${sy-3}" width="${sw+6}" height="${sh+6}" rx="3" class="nvbz"/><rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" fill="#000"/>
   <rect x="${fx}" y="${sy+2}" width="${fw}" height="${sh-4}" fill="#cfd5d9"/><g class="nvf"><text x="${fx+2}" y="${sy+10}" font-size="5" class="nvl">COM</text><text class="dig rd-com1A" x="${fx+fw-2}" y="${sy+22}" font-size="9" text-anchor="end">---</text><text class="dig rd-com1S" x="${fx+fw-2}" y="${sy+33}" font-size="9" text-anchor="end"></text><text class="dig rda rd-com1N0" x="${fx+2}" y="${sy+41}" font-size="4.4"></text><text class="dig rd-com1N1" x="${fx+17}" y="${sy+41}" font-size="4.4">MEM</text><text class="dig rda rd-com1N2" x="${fx+30}" y="${sy+41}" font-size="4.4"></text>
   <path d="M${fx+2} ${sy+46}h${fw-4}" stroke="#7d868c" stroke-width=".6"/><text x="${fx+2}" y="${sy+55}" font-size="5" class="nvl">VLOC</text><text class="dig rd-nav1A" x="${fx+fw-2}" y="${sy+67}" font-size="9" text-anchor="end">---</text><text class="dig rd-nav1S" x="${fx+fw-2}" y="${sy+78}" font-size="9" text-anchor="end"></text><text class="dig rda rd-nav1N0" x="${fx+2}" y="${sy+86}" font-size="4.4"></text><text class="dig rd-nav1N1" x="${fx+17}" y="${sy+86}" font-size="4.4">MEM</text><text class="dig rda rd-nav1N2" x="${fx+30}" y="${sy+86}" font-size="4.4"></text></g>
   ${gpsSVG()}
   ${lab(PX(546),PY(361),'PWR',{s:2.8,a:'start'})}${lab(PX(546),PY(376),'VOL',{s:2.6,a:'start'})}${lab(PX(560),PY(398.5),'C⇆',{s:3,a:'start'})}${lab(PX(546),PY(404),'PWR',{s:2.8,a:'start'})}${lab(PX(546),PY(419),'VOL',{s:2.6,a:'start'})}${lab(PX(560),PY(441.5),'V⇆',{s:3,a:'start'})}
-  ${lab(PX(689),PY(359.5),'PWR',{s:2.8})}${lab(PX(554),PY(487),'COM / VLOC',{s:2.8})}${lab(PX(690),PY(487),'GPS',{s:2.8})}${lab(PX(674),PY(453),'PAGE',{s:2.6,a:'end'})}`; }
+  ${lab(PX(689),PY(359.5),'PWR',{s:2.8})}${lab(PX(554),PY(487),'COM / VLOC',{s:2.8})}${lab(PX(690),PY(487),'GPS',{s:2.8})}${lab(PX(674),PY(453),'PAGE',{s:2.6,a:'end'})}</g>`; }
 /* radio tuning strip head (COMM 2 / NAV 2 / ADF), 172 × 64 */
 function stripHead(k,tag,x0,y0){ return `<rect x="${x0}" y="${y0}" width="172" height="64" rx="3" class="rhead"/><rect x="${x0+4}" y="${y0+4}" width="80" height="40" rx="2" class="rglass"/>
   <text class="dig rd-${k}A" x="${x0+81}" y="${y0+21}" font-size="14" text-anchor="end">---</text><text class="dig rd-${k}S" x="${x0+81}" y="${y0+40}" font-size="14" text-anchor="end"></text>
@@ -699,10 +699,10 @@ function clock(id,x,y,r){ let t=''; for(let i=0;i<60;i++){ const [a,b]=pol(x,y,r
 function fcons(x,y){ return `<circle cx="${x}" cy="${y}" r="31" class="sbz"/><circle cx="${x}" cy="${y}" r="27" class="dial"/>${lab0(x,y-12,'FUEL CONSUMED',4.6)}<rect x="${x-19}" y="${y-6}" width="38" height="13" rx="1.5" class="digw"/><text class="dig rd-fcons" x="${x+16}" y="${y+4.5}" font-size="10.5" text-anchor="end">0000</text>${lab0(x,y+13,'LBS',3.6)}${lab0(x+11,y+22.5,'RESET',3)}`; }
 /* ---------- annunciator panels ---------- */
 const ANN={};
-function annGrid(x0,y0,cols,cw,ch,gap,rows,cls,fs){ let t=`<rect x="${x0-4}" y="${y0-4}" width="${cols*(cw+gap)-gap+8}" height="${rows.length*(ch+gap)-gap+8}" rx="2" class="annbox"/>`;
+function annGrid(x0,y0,cols,cw,ch,gap,rows,cls,fs){ let t=`<g class="dynu"><rect x="${x0-4}" y="${y0-4}" width="${cols*(cw+gap)-gap+8}" height="${rows.length*(ch+gap)-gap+8}" rx="2" class="annbox"/>`;
   rows.forEach((row,j)=>row.forEach((it,i)=>{ const x=x0+i*(cw+gap), y=y0+j*(ch+gap); if(!it){ t+=`<g class="an an-blank"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="1.5"/><path d="M${x+cw*0.15} ${y+ch/2}h${cw*0.7}" class="anbl"/></g>`; return; }
     const [k,txt,col]=Array.isArray(it)?it:[it,it,cls]; const f=Math.min(fs||ch*0.5,cw/(txt.length*0.66)); t+=`<g class="an an-${col}" data-a="${esc(k)}"><rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="1.5"/><text x="${x+cw/2}" y="${y+ch/2+f*0.36}" font-size="${f.toFixed(2)}" text-anchor="middle">${esc(txt)}</text></g>`; }));
-  return t; }
+  return t+'</g>'; }
 /* warning panel and caution/advisory panel (later B200 serials) */
 const WARN=[['L ENG FIRE','INVERTER','DOOR UNLOCKED','ALT WARN','R ENG FIRE'],['L FUEL PRESS',null,null,null,'R FUEL PRESS'],['L OIL PRESS','L GEN OVHT','A/P TRIM FAIL','R GEN OVHT','R OIL PRESS'],[null,'L BL AIR FAIL','A/P FAIL','R BL AIR FAIL',null]];
 const G_=k=>[k,k,'g'];
@@ -1152,5 +1152,7 @@ function gps(P,d){ vis(P,'gp-off',!d.on); if(!d.on) return; const m=!!d.map; vis
     const a=pts[d.act]; attr(P,'gp-leg','d',a?`M${cx} ${cy}L${a[0].toFixed(1)} ${a[1].toFixed(1)}`:'M0 0');
     pts.forEach((p,i)=>{ tr(P,'gp-w'+i,`translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px)`); text(P,'gp-wt'+i,d.wp[i].id); }); return; }
   [0,1,2,3].forEach(i=>{ text(P,'gp-l'+i,d.l[i]||''); text(P,'gp-r'+i,d.r[i]||''); }); text(P,'gp-pl',d.pl||''); text(P,'gp-pr',d.pr||''); vis(P,'gp-cl',!!d.cl); vis(P,'gp-cr',!!d.cr); }
-G.B200P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,W,H,WARN,CAUT,CBS};
+/* paint layers (panellayers.js): every unit that moves gets its own small SVG, the static artwork is painted once */
+const LAYERS={dyn:'g.mod,g.gauge,g.dynu,.an,.cmp,.aitr,[class*="rd-"]',hot:c=>c.t==='lev'||c.t==='vwheel'||c.t==='hwheel'||c.t==='yoke'||['apDisc','trimUp','trimDn'].includes(c.id)};
+G.B200P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,W,H,WARN,CAUT,CBS};
 })(window);

@@ -129,7 +129,8 @@ function standby(){
     return `<circle cx="${x}" cy="${y}" r="${r+6}" class="sbz"/><circle cx="${x}" cy="${y}" r="${r}" class="dial"/>${t}<rect x="${x+8}" y="${y+6}" width="22" height="9" rx="1" fill="#000" stroke="#555" stroke-width=".6"/><text class="sbKol dnum" x="${x+19}" y="${y+13}" font-size="6.5" text-anchor="middle">1013</text><g class="sbAlt1" style="transform-origin:${x}px ${y}px"><path d="M${x-3} ${y+6}L${x} ${y-20}L${x+3} ${y+6}z" class="needle"/></g><g class="sbAlt0" style="transform-origin:${x}px ${y}px"><path d="M${x-1.6} ${y+8}L${x} ${y-r+5}L${x+1.6} ${y+8}z" class="needle"/></g><circle cx="${x}" cy="${y}" r="3.5" class="hub"/>`; })();
   const cmp=(()=>{ const x=1100,y=150; let t=''; for(let d=0;d<720;d+=10){ const lx=d*1.6; const lb={0:'N',90:'E',180:'S',270:'W',360:'N',450:'E',540:'S',630:'W'}[d]; t+=`<path d="M${lx} ${12}v${d%30?4:7}" stroke="#ddd" stroke-width=".8"/>${d%30===0?`<text x="${lx}" y="30" fill="#eee" font-size="${lb?10:7}" text-anchor="middle" font-family="IBM Plex Sans,sans-serif">${lb||((d%360)/10)}</text>`:''}`; }
     return `<rect x="${x-46}" y="${y-30}" width="92" height="64" rx="14" class="sbz"/><svg x="${x-34}" y="${y-18}" width="68" height="40" overflow="hidden"><rect width="68" height="40" fill="#0e1012"/><g class="sbCmp">${t}</g></svg><path d="M${x} ${y-20}v42" stroke="#ff7a00" stroke-width="1.3"/><text x="${x}" y="${y+46}" class="pl" font-size="6.5" text-anchor="middle">STBY COMPASS</text>`; })();
-  return asi+att+alt+cmp+lab(760,220,'STBY AIRSPEED',{s:6})+lab(868,220,'STBY ATTITUDE',{s:6})+lab(976,220,'STBY ALTIMETER',{s:6});
+  const U=x=>'<g class="dynu">'+x+'</g>'; // moving units: own paint layer (panellayers.js)
+  return U(asi)+U(att)+U(alt)+U(cmp)+lab(760,220,'STBY AIRSPEED',{s:6})+lab(868,220,'STBY ATTITUDE',{s:6})+lab(976,220,'STBY ALTIMETER',{s:6});
 }
 function asiAng(v){ return v<40?0:20+(Math.min(v,200)-40)/160*310; }
 
@@ -353,5 +354,7 @@ function syncStby(P,o,baro){
   const t=q('.sbKol'); const b=String(Math.round(baro)); if(t.textContent!==b) t.textContent=b;
   const h=((o.hdg%360)+360)%360; setT(q('.sbCmp'),`translateX(${34-(h<180?h+360:h)*1.6+ (h<180?0:0)}px)`);
 }
-G.DA42P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
+/* paint layers (panellayers.js): the standby instruments and the continuously driven controls get their own small SVGs */
+const LAYERS={dyn:'g.dynu,g.gauge,.an',hot:c=>['power','vwheel','hwheel','stick','slide'].includes(c.t)||['apDisc','trimUp','trimDn'].includes(c.id)};
+G.DA42P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
 })(window);

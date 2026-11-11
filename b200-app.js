@@ -271,10 +271,10 @@ function zoomTo(reg,instant,force){
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.appendChild(hlR); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
+const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
 const MAGP={lower:[360,826],rsub:[812,890],center:[1112,884],cosubL:[1536,892],cosubR:[1972,840],pedT:[1296,1118],fuelT:[512,1120],fuelB:[438,1274],rsideT:[1984,1120],overheadL:[1164,10],overheadR:[1168,150],audio:[1330,398],glare:[1160,218],mfd:[1228,566]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
@@ -300,7 +300,7 @@ let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classLis
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
-PST.addEventListener('pointerover',e=>{ const g=B200P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
+PST.addEventListener('pointerover',e=>{ if(D3on&&D3.frozen) return; const g=B200P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; tip.textContent=tipText(tipG); const r=PST.getBoundingClientRect(); tip.style.left=Math.max(4,Math.min(r.width-240,e.clientX-r.left+14))+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
@@ -947,7 +947,7 @@ function draw(o){
   if(slowDo) B200P.text(P,'rd-fcons',b?String(Math.round(Math.max(0,fuelUsed()-(SYS.fcOff||0)))).padStart(4,'0'):'');
   { const d=new Date(), mn=d.getMinutes()+d.getSeconds()/60, hr=(d.getHours()%12)+mn/60; ['c1','c2'].forEach(c=>{ B200P.rot(P,'clkh-'+c,hr*30); B200P.rot(P,'clkm-'+c,mn*6); }); }
   B200P.rot(P,'pctlp',-150+F.clamp((SYS.cabSel+1000)/11000,0,1)*300); B200P.text(P,'rd-cab2',b?'ACFT '+Math.max(0,Math.round(hP(pA(SYS.cabSel)-6.5*68.95)/100)*100):'');
-  { const br=(0.45+0.55*SYS.annBrt).toFixed(2); if(P.svg._br!==br){ P.svg._br=br; P.svg.style.setProperty('--rbrt',br); } }
+  { const br=(0.45+0.55*SYS.annBrt).toFixed(2); if(P.svg._br!==br){ P.svg._br=br; P.world.style.setProperty('--rbrt',br); } }
   if(slowDo){ B200P.text(P,'rd-oat',b&&cbIn('OAT')?(SYS.oatF?Math.round(o.oat*9/5+32)+' °F':Math.round(o.oat)+' °C'):'');
   B200P.text(P,'rd-hobbs',String(SYS.hobbs.toFixed(1)).padStart(6,'0')); }
   // copilot subpanel gauges
@@ -1066,7 +1066,7 @@ function loop(t){
   if(D3on){ if(cockpitVis) D3.frame(otwState3(),{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele}}); } else otwTick(dt);
   if(cockpitVis){ panelT+=dt; if(panelT>(D3on?D3.panelDt(GOV.panelDt):GOV.panelDt)){ panelT=0; B200P.sync(P,{get:ioGet}); B200P.syncYokes(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); draw(o); } }
   const bb=bus(); hornLevel(bb&&cbIn('STALL WARN')&&!UI.paused&&!S.crash&&((S.buffet>0.05&&!S.ground)||SYS.stallTest===-1), bb&&cbIn('GEAR WARN')&&((gearWarn()&&!(SYS.hornSilOn&&!flapHorn()))||SYS.stallTest===1)&&!UI.paused);
-  slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
+  slow+=dt; if(slow>0.12&&!(D3on&&D3.frozen)){ slow=0; slowUI(o); } // status lines wait while the 3D view turns (any layout then re-lays out the whole panel)
   requestAnimationFrame(loop);
 }
 let wasCrash=null;

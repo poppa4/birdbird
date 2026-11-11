@@ -378,9 +378,10 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="airproc.js?v=2"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
-<script src="da42panel.js?v=5"></script>
-<script src="otw.js?v=10"></script>
-<script src="cockpit3d.js?v=3"></script>
+<script src="panellayers.js?v=1"></script>
+<script src="da42panel.js?v=6"></script>
+<script src="otw.js?v=11"></script>
+<script src="cockpit3d.js?v=4"></script>
 <script src="da42-3d.js?v=3"></script>
 <script src="lab.js?v=47"></script>
 <script>
@@ -660,10 +661,10 @@ const coarse=matchMedia('(pointer:coarse)');
 function overviewTap(){ return false; }
 /* area highlight, magnifiers, double-click on empty panel */
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
+const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
 const MAGP={top:[1290,116],switches:[804,664],flaps:[1364,664],console:[1010,790]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="13"/><circle cx="${x-2}" cy="${y-2}" r="5" class="mgl"/><path d="M${x+2} ${y+2}l5 5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
@@ -693,7 +694,7 @@ let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classLis
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
-PST.addEventListener('pointerover',e=>{ const g=DA42P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
+PST.addEventListener('pointerover',e=>{ if(D3on&&D3.frozen) return; const g=DA42P.ctlFrom(P,e.target); if(!g||e.pointerType==='touch'){ tip.hidden=true; tipG=null; return; } tipG=g; tip.textContent=tipText(g); tip.hidden=false; });
 PST.addEventListener('pointermove',e=>{ if(!tipG) return; const r=PST.getBoundingClientRect(); tip.style.left=Math.min(r.width-180,e.clientX-r.left+14)+'px'; tip.style.top=Math.max(4,e.clientY-r.top-34)+'px'; });
 PST.addEventListener('pointerout',e=>{ if(tipG&&!(e.relatedTarget&&tipG.contains(e.relatedTarget))){ tipG=null; tip.hidden=true; } });
 new ResizeObserver(()=>zoomTo(Z.reg,true,true)).observe(PST);
@@ -1115,7 +1116,7 @@ function loop(t){
   if(cockpitVis){ pfdT+=dt; if(pfdT>=GOV_PFD[GOV.lvl]){ pfdT=0; draw(o,n); } else if(!avOn()) AP.on=false; }
   if(D3on){ if(cockpitVis) D3.frame(S,{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele}}); }
   else if(otwReady&&otwOn&&cockpitVis&&(Z.reg==='overview'||Z.reg==='top')){ const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(S,otwView); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0); }
-  slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
+  slow+=dt; if(slow>0.12&&!(D3on&&D3.frozen)){ slow=0; slowUI(o); } // status lines wait while the 3D view turns (any layout then re-lays out the whole panel)
   requestAnimationFrame(loop);
 }
 let panelT=1, pfdT=1, wasCrash=null, mfdTick=0, mfdForce=true, otwSkip=0;

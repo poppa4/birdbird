@@ -369,8 +369,9 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="airproc.js?v=2"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
-<script src="da42panel.js?v=5"></script>
-<script src="otw.js?v=10"></script>
+<script src="panellayers.js?v=1"></script>
+<script src="da42panel.js?v=6"></script>
+<script src="otw.js?v=11"></script>
 <script src="lab.js?v=47"></script>
 <script>
 (function(){
@@ -642,10 +643,10 @@ const coarse=matchMedia('(pointer:coarse)');
 function overviewTap(){ return false; }
 /* area highlight, magnifiers, double-click on empty panel */
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); P.svg.appendChild(magG);
+const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
 const MAGP={top:[1290,116],switches:[804,664],flaps:[1364,664],console:[1010,790]};
 magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="13"/><circle cx="${x-2}" cy="${y-2}" r="5" class="mgl"/><path d="M${x+2} ${y+2}l5 5" class="mgl"/></g>`; }).join('');
 magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });

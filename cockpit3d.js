@@ -166,7 +166,7 @@ const LIM=Object.assign({yaw:[-150,150],pitch:[-40,60]},def.limits||{});
 const qHead=new THREE.Quaternion(), eH=new THREE.Euler(0,0,0,'YXZ');
 const A=new THREE.Matrix4().set(EX.x,EY.x,PN.x*PS,PO.x, EX.y,EY.y,PN.y*PS,PO.y, EX.z,EY.z,PN.z*PS,PO.z, 0,0,0,1);
 const M=new THREE.Matrix4(), SC=new THREE.Matrix4(), MS=new THREE.Matrix4(), AS=new THREE.Matrix4(), HM=new THREE.Matrix3(), HS=new THREE.Matrix3();
-const lastV=[0,0,0]; let lastT=0, idle=0, needs=3, qLevel=0, qWin=0, qSum=0, qN=0, toastShown=false, keysHeld=new Set(), scaleT=0, lastScale=0, lastR=0, t0=0, snapK='panel';
+const lastV=[0,0,0]; let frz=false, stillT=0, lastT=0, idle=0, needs=3, qLevel=0, qWin=0, qSum=0, qN=0, toastShown=false, keysHeld=new Set(), scaleT=0, lastScale=0, lastR=0, t0=0, snapK='panel';
 const mobile=matchMedia('(pointer:coarse)').matches;
 const portrait=matchMedia('(orientation:portrait) and (max-width:900px)');
 /* frame governor: level 0 full rate at up to 1.5 (phones) / 1.75 device pixels; 1: 1 pixel; 2: 30 Hz; 3: 20 Hz at 0.75 pixel;
@@ -203,37 +203,47 @@ D3.resize=resize;
 function splitWhenReady(){ const svg=o.svg; let n=0; const go=()=>{ n++; if(!svg.querySelector('g.hits')&&n<30){ requestAnimationFrame(go); return; } try{ split(svg); }catch(e){ console.warn('3D panel split',e); } ready=true; needs=3; }; requestAnimationFrame(go); }
 function inside(b,r,tol){ return b.x>=r[0]-tol&&b.y>=r[1]-tol&&b.x+b.width<=r[0]+r[2]+tol&&b.y+b.height<=r[1]+r[3]+tol; }
 function split(svg){
-  const NS='http://www.w3.org/2000/svg', host=svg.querySelector('g.ctls'), hits=svg.querySelector('g.hits');
+  const NS='http://www.w3.org/2000/svg', L=svg._pl, nq=Element.prototype.querySelector, host=nq.call(svg,'g.ctls'), hits=nq.call(svg,'g.hits');
   const subs=[];
   for(let i=1;i<PLANES.length;i++){ const pl=PLANES[i], r=pl.rect;
-    const d=document.createElement('div'); d.className='d3sub d3sub-'+pl.id; d.style.width=r[2]+'px'; d.style.height=r[3]+'px'; d.style.visibility='hidden';
+    const d=document.createElement('div'); d.className='d3sub d3sub-'+pl.id; d.style.width=r[2]+'px'; d.style.height=r[3]+'px'; d.style.transform=OFF;
     const s=document.createElementNS(NS,'svg'); s.setAttribute('class',svg.getAttribute('class')||'psvg'); s.setAttribute('viewBox',r.join(' ')); s.setAttribute('xmlns',NS);
     const gc=document.createElementNS(NS,'g'); gc.setAttribute('class','ctls'); const gh=document.createElementNS(NS,'g'); gh.setAttribute('class','hits'); gc.appendChild(gh);
-    d.appendChild(s); world.appendChild(d); pl.el=d; pl.svg=s; pl.gc=gc; pl.gh=gh; subs.push(pl); }
+    d.appendChild(s); world.appendChild(d); pl.el=d; pl.svg=s; pl.gc=gc; pl.gh=gh; pl.ck={}; subs.push(pl); }
   const pick=(n,b)=>{ for(const pl of subs){ if(pl.skip&&n.matches&&n.matches(pl.skip)) continue; if((pl.sel&&n.matches&&n.matches(pl.sel))||(b&&inside(b,pl.rect,2))) return pl; } return null; };
-  const bb=n=>{ try{ const b=n.getBBox(); if(!b.width&&!b.height) return null; const t=n.transform&&n.transform.baseVal&&n.transform.baseVal.consolidate(); if(!t) return b; const m=t.matrix;
-    const xs=[b.x,b.x+b.width], ys=[b.y,b.y+b.height]; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; xs.forEach(x=>ys.forEach(y=>{ const X=m.a*x+m.c*y+m.e, Y=m.b*x+m.d*y+m.f; x0=Math.min(x0,X); y0=Math.min(y0,Y); x1=Math.max(x1,X); y1=Math.max(y1,Y); })); return {x:x0,y:y0,width:x1-x0,height:y1-y0}; }catch(e){ return null; } };
+  const box=(b,m)=>{ const xs=[b.x,b.x+b.width], ys=[b.y,b.y+b.height]; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; xs.forEach(x=>ys.forEach(y=>{ const X=m.a*x+m.c*y+m.e, Y=m.b*x+m.d*y+m.f; x0=Math.min(x0,X); y0=Math.min(y0,Y); x1=Math.max(x1,X); y1=Math.max(y1,Y); })); return {x:x0,y:y0,width:x1-x0,height:y1-y0}; };
+  const bb=n=>{ try{ const b=n.getBBox(); if(!b.width&&!b.height) return null; const t=n.transform&&n.transform.baseVal&&n.transform.baseVal.consolidate(); return t?box(b,t.matrix):b; }catch(e){ return null; } };
   // static drawing: nodes fully inside a rectangle (or matching its selector); plain groups that straddle rectangles are
   // opened up, and what moves out of them keeps their transform in a wrapper group
   const mat=n=>{ const t=n.transform&&n.transform.baseVal&&n.transform.baseVal.consolidate(); return t?t.matrix:null; };
   const walk=(n,acc,depth)=>{ const tg=n.tagName.toLowerCase(); if(tg==='defs'||tg==='style'||tg==='clippath'||n===host||(n.classList&&n.classList.contains('mags'))) return;
-    let b=bb(n); if(b&&acc){ const xs=[b.x,b.x+b.width], ys=[b.y,b.y+b.height]; let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; xs.forEach(x=>ys.forEach(y=>{ const X=acc.a*x+acc.c*y+acc.e, Y=acc.b*x+acc.d*y+acc.f; x0=Math.min(x0,X); y0=Math.min(y0,Y); x1=Math.max(x1,X); y1=Math.max(y1,Y); })); b={x:x0,y:y0,width:x1-x0,height:y1-y0}; }
+    let b=bb(n); if(b&&acc) b=box(b,acc);
     const pl=pick(n,b); if(pl){ if(acc){ const w=document.createElementNS(NS,'g'); w.setAttribute('transform',`matrix(${acc.a} ${acc.b} ${acc.c} ${acc.d} ${acc.e} ${acc.f})`); w.appendChild(n); pl.svg.appendChild(w); } else pl.svg.appendChild(n); return; }
     if(tg==='g'&&depth<3&&!n.getAttribute('clip-path')&&!n.getAttribute('filter')&&!n.getAttribute('mask')&&!(n.classList&&(n.classList.contains('ctl')||n.classList.contains('an')))){
       const m=mat(n); let a2=acc; if(m){ const M2=svg.createSVGMatrix(); Object.assign(M2,{a:m.a,b:m.b,c:m.c,d:m.d,e:m.e,f:m.f}); a2=acc?acc.multiply(M2):M2; }
       [...n.children].forEach(c=>walk(c,a2,depth+1)); } };
   [...svg.children].forEach(n=>walk(n,null,0));
+  // layered panel (panellayers.js): a moving unit's own SVG layer goes whole onto the plane its unit belongs to
+  if(L) L.dyn.forEach(d=>{ const u=d._unit; if(!u) return; let acc=null; const anc=[]; for(let p=u.parentNode;p&&p!==d;p=p.parentNode) anc.unshift(p);
+    anc.forEach(a=>{ const m=mat(a); if(!m) return; const M2=svg.createSVGMatrix(); Object.assign(M2,{a:m.a,b:m.b,c:m.c,d:m.d,e:m.e,f:m.f}); acc=acc?acc.multiply(M2):M2; });
+    let b=bb(u); if(b&&acc) b=box(b,acc); let pl=null; for(const a of anc.concat([u])){ pl=subs.find(p=>p.sel&&a.matches(p.sel)&&!(p.skip&&a.matches(p.skip))); if(pl) break; } if(!pl) pl=pick(u,b);
+    if(pl){ d.setAttribute('viewBox',pl.rect.join(' ')); pl.el.appendChild(d); } });
   // controls by their centre, with their hit zones
   const moved={};
-  [...host.querySelectorAll(':scope > g.ctl')].forEach(g=>{ const b=bb(g); if(!b) return; let pl=null; for(const p of subs){ if(p.sel&&g.matches(p.sel)){ pl=p; break; } const r=p.rect, cx=b.x+b.width/2, cy=b.y+b.height/2; if(cx>=r[0]&&cx<=r[0]+r[2]&&cy>=r[1]&&cy<=r[1]+r[3]){ pl=p; break; } }
-    if(pl&&!(pl.skip&&g.matches(pl.skip))){ pl.gc.appendChild(g); moved[g.dataset.id]=pl; } });
+  const place=g=>{ const b=bb(g); if(!b) return null; let pl=null; for(const p of subs){ if(p.sel&&g.matches(p.sel)){ pl=p; break; } const r=p.rect, cx=b.x+b.width/2, cy=b.y+b.height/2; if(cx>=r[0]&&cx<=r[0]+r[2]&&cy>=r[1]&&cy<=r[1]+r[3]){ pl=p; break; } }
+    return pl&&!(pl.skip&&g.matches(pl.skip))?pl:null; };
+  if(L) L.chunks.forEach((ch,i)=>{ [...ch._g.children].forEach(g=>{ if(!g.matches('g.ctl')) return; const pl=place(g); if(!pl) return;
+    let t=pl.ck[i]; if(!t){ const s=document.createElementNS(NS,'svg'); s.setAttribute('class',ch.getAttribute('class')); s.setAttribute('viewBox',pl.rect.join(' ')); const w=document.createElementNS(NS,'g'); w.setAttribute('class',ch._g.getAttribute('class')); s.appendChild(w); pl.el.appendChild(s); t=pl.ck[i]=w; }
+    t.appendChild(g); moved[g.dataset.id]=pl; }); });
+  else [...host.querySelectorAll(':scope > g.ctl')].forEach(g=>{ const pl=place(g); if(pl){ pl.gc.appendChild(g); moved[g.dataset.id]=pl; } });
   if(hits) [...hits.children].forEach(h=>{ const pl=moved[h.dataset.for]; if(pl) pl.gh.appendChild(h); });
   subs.forEach(pl=>pl.svg.appendChild(pl.gc));
+  D3.subs=subs;
+  if(L) return; // the layered panel's lookups already search the whole .world, sub-planes included
   // lookups on the panel SVG still find what moved
   const qs=Element.prototype.querySelector, qsa=Element.prototype.querySelectorAll;
   svg.querySelector=function(s){ const r=qs.call(this,s); if(r) return r; for(const p of subs){ const x=qs.call(p.svg,s); if(x) return x; } return null; };
   svg.querySelectorAll=function(s){ const a=[...qsa.call(this,s)]; subs.forEach(p=>a.push(...qsa.call(p.svg,s))); return a; };
-  D3.subs=subs;
 }
 
 /* ---------- camera & panel transform ---------- */
@@ -242,7 +252,7 @@ function updCam(){ eH.set(view.pitch*D2R,-view.yaw*D2R,0,'YXZ'); qHead.setFromEu
 function onScreen(e,w,h){ let front=0, minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
   for(const [u,v] of [[0,0],[w,0],[0,h],[w,h]]){ const ww=e[3]*u+e[7]*v+e[15]; if(ww>0.02){ front++; const x=(e[0]*u+e[4]*v+e[12])/ww, y=(e[1]*u+e[5]*v+e[13])/ww; minx=Math.min(minx,x); maxx=Math.max(maxx,x); miny=Math.min(miny,y); maxy=Math.max(maxy,y); } }
   return !(front===0||(front===4&&(maxx<0||minx>W||maxy<0||miny>H))); }
-const fx=x=>+x.toPrecision(9);
+const fx=x=>+x.toPrecision(9), OFF='translate(-200000px,-200000px) scale(.001)';
 function placePanel(){
   SC.set(W/2,0,0,W/2, 0,-H/2,0,H/2, 0,0,0,0, 0,0,0,1);
   M.copy(SC).multiply(cam.projectionMatrix).multiply(cam.matrixWorldInverse).multiply(A);
@@ -253,7 +263,9 @@ function placePanel(){
     for(const pl of D3.subs){ const r=pl.rect;
       AS.set(pl.EX.x,pl.EY.x,pl.PN.x*pl.ps,pl.O.x+pl.EX.x*r[0]+pl.EY.x*r[1], pl.EX.y,pl.EY.y,pl.PN.y*pl.ps,pl.O.y+pl.EX.y*r[0]+pl.EY.y*r[1], pl.EX.z,pl.EY.z,pl.PN.z*pl.ps,pl.O.z+pl.EX.z*r[0]+pl.EY.z*r[1], 0,0,0,1);
       MS.copy(SC).multiply(cam.projectionMatrix).multiply(cam.matrixWorldInverse).multiply(AS); const f=MS.elements;
-      const vis=onScreen(f,r[2],r[3]); if(vis!==pl.hid){ pl.hid=vis; pl.el.style.visibility=vis?'visible':'hidden'; }
+      // a plane out of view is parked far off screen rather than hidden: with a hidden (visibility or display) plane inside the
+      // moving panel, Chrome lays out every SVG text in the panel again on every frame while the head turns
+      const vis=onScreen(f,r[2],r[3]); if(vis!==pl.hid){ pl.hid=vis; if(!vis){ pl.str=OFF; pl.el.style.transform=OFF; } }
       if(!vis) continue; anySub=true;
       HS.set(f[0],f[4],f[12], f[1],f[5],f[13], f[3],f[7],f[15]); const h=HMi.clone().multiply(HS).elements; // column-major 3×3
       const s='matrix3d('+[h[0],h[1],0,h[2], h[3],h[4],0,h[5], 0,0,1,0, h[6],h[7],0,h[8]].map(fx).join(',')+')';
@@ -359,7 +371,9 @@ D3.frame=function(S,st){
   if(!D3.on||document.hidden) return;
   const now=performance.now(), dt=lastT?Math.min(0.1,(now-lastT)/1000):0.016; lastT=now;
   if(!W||!H) resize();
-  const look=stepView(dt); D3.moving=look||view.yaw!==lastV[0]||view.pitch!==lastV[1]||view.zoom!==lastV[2]; lastV[0]=view.yaw; lastV[1]=view.pitch; lastV[2]=view.zoom; const moved=D3.moving||needs>0; if(needs>0) needs--;
+  const look=stepView(dt); D3.moving=look||view.yaw!==lastV[0]||view.pitch!==lastV[1]||view.zoom!==lastV[2]; lastV[0]=view.yaw; lastV[1]=view.pitch; lastV[2]=view.zoom;
+  // frozen panel (see freeze()): a look drag stays frozen until released
+  if(D3.moving||D3.dragging){ stillT=0; freeze(true); } else if(frz){ stillT+=dt; if(stillT>0.15) freeze(false); } const moved=D3.moving||needs>0; if(needs>0) needs--;
   const ch=built.anim?built.anim(st||{},dt):false;
   const active=st&&st.active;
   if(portrait.matches) return; // the page shows 'rotate your device' over the stage
@@ -384,9 +398,15 @@ D3.bench=function(S,n){ const R=G.OTW.renderer(), gl=R.getContext(); updCam(); c
 D3.cockpitInfo=()=>{ const cnt=sc=>{ let t=0,m=0; sc.traverse(x=>{ if(x.isMesh){ m++; t+=(x.geometry.index?x.geometry.index.count:x.geometry.attributes.position.count)/3; } }); return [t,m]; }; const a=cnt(scene), b=cnt(fgScene); return {tris:a[0]+b[0],meshes:a[1]+b[1],fgTris:b[0],planes:PLANES.length}; };
 D3.quality=()=>({level:qLevel,dpr:dprNow(),cap:LV[qLevel][1]?Math.round(1/LV[qLevel][1]):0,ft:D3.ft||0});
 D3.setQuality=l=>{ qLevel=Math.max(0,Math.min(LV.length-1,l)); needs=3; fgDirty=true; };
-/* panel update interval for the page: while the head is turning, Chrome lays out every SVG text again on any panel change
-   (the panel's on-screen scale changed since the last layout), so the instruments update at 2 Hz until the view is still */
-D3.panelDt=base=>(D3.on&&(D3.moving||D3.dragging))?Math.max(base,0.5):base;
+/* Frozen panel while the head turns. Once the panel's on-screen scale has changed, Chrome lays out every SVG text in the
+   panel again (~2,900 objects on the B200, ~110 ms at 4x CPU throttle) on the next layout anywhere in the document: a needle,
+   a transition step, a hover change or a status line. So while the view moves and until it has been still for 150 ms the panel
+   is frozen: no instrument updates (panelDt) and the pages hold their status lines and tooltips (D3.frozen); class d3mv on the
+   stage. The live panel stays on screen (nothing is swapped, so it is pixel-identical) and catches up as soon as the view stops.
+   (Restyling the panel to block hover would itself re-lay out every label, so pointer events are left alone.) */
+function freeze(on){ if(on===frz) return; frz=on; D3.frozen=on; if(stage) stage.classList.toggle('d3mv',on); if(!on) needs=2; }
+D3.frozen=false;
+D3.panelDt=base=>(D3.on&&frz)?1e9:base;
 D3.view=view; D3.setView=function(y,p,z){ view.yaw=y; view.pitch=p; if(z) view.zoom=z; view.glide=null; view.vy=view.vp=0; clampV(); setSnap(null); needs=3; };
 D3.wake=()=>{ needs=3; };
 // test helper: screen position of a draggable control wheel / stick
