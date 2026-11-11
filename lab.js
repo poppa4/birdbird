@@ -22,7 +22,7 @@
   const nodes=[];
   function scan(root){
     const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT); let n;
-    while((n=w.nextNode())){ const t=n.nodeValue.trim(); if(t && (D[t]!==undefined||NO[t]!==undefined) && !n.parentElement.closest('script,style,[data-tx]')) nodes.push({n,orig:t,raw:n.nodeValue}); }
+    while((n=w.nextNode())){ const t=n.nodeValue.trim(); if(t && (D[t]!==undefined||NO[t]!==undefined) && !n.parentElement.closest('script,style,[data-tx]')){ nodes.push({n,orig:t,raw:n.nodeValue}); n.parentElement.setAttribute('data-ltx',''); } }  /* data-ltx: translated node by node, so glossary.js leaves it alone */
     (root||document).querySelectorAll('[aria-label]').forEach(e=>{ const t=e.getAttribute('aria-label'); if(D[t]!==undefined) nodes.push({e,orig:t}); });
   }
   /* rich text: an element with data-tx="key" keeps its English HTML from the page; LAB.tx({key:'Norsk <b>HTML</b>'}) supplies the Norwegian */
@@ -127,6 +127,7 @@
     pageHeader(page,me);
     if(me) atlas(me); else inPageNav();
     pathbar(page);
+    if(me){ practise(me); glossary(me); }
     const hr=document.querySelector('.hright');
     if(hr && !hr.querySelector('.langseg')) hr.insertAdjacentHTML('afterbegin','<div class="seg langseg" aria-label="Språk"><button data-v="en">EN</button><button data-v="no">NO</button></div>');
     document.querySelectorAll('.langseg').forEach(s=>s.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setLang(b.dataset.v); }));
@@ -228,6 +229,59 @@
       links.forEach((a,i)=>a.classList.toggle('on',i===k)); if(k>=0&&sel.selectedIndex!==k) sel.selectedIndex=k; };
     let raf=0; addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; mark(); }); },{passive:true}); mark();
   }
+  /* "Practise it": fly what the lab explains. Lab key → [link, where, title, one line]. Only exercises that exist:
+     IFR trainer items open with ifr.html?ex=<id>; the simulators take s=<scenario> or s=air&p=<procedure> (airproc.js; af=1 engages auto-fly).
+     DA42 (cockpit.html): ils loc rnp_lpv rnp_lv rnp_ln sid star hold; C172: ils loc ndb sid star hold; B200: ils loc ndb rnp_ln sid star hold. */
+  const PW={ifr:t2('IFR trainer','IFR-trener'),da42:t2('DA42 simulator','DA42-simulator'),c172:t2('C172 simulator','C172-simulator'),b200:t2('B200 simulator','B200-simulator')};
+  const P_=(u,w,en,no,sen,sno)=>({u,w,n:t2(en,no),s:t2(sen,sno)});
+  const PRAC={
+   radionav:[P_('ifr.html?ex=ndb','ifr','Track to a beacon (NDB)','Følg en kurs inn til et fyr (NDB)','Heading + needle, then correct for the wind.','Heading + nål, og korriger så for vinden.'),
+     P_('ifr.html?ex=dme','ifr','Fly a DME arc','Fly en DME-bue','Hold a fixed distance round the station.','Hold fast avstand rundt stasjonen.'),
+     P_('c172.html?s=air&p=ndb','c172','NDB approach','NDB-innflyging','Fly the NDB 36 approach on the ADF.','Fly NDB 36-innflygingen på ADF-en.')],
+   hold:[P_('ifr.html?ex=holdEntry','ifr','Holding entry','Inngang til holding','Pick direct, parallel or teardrop and fly it.','Velg direkte, parallell eller teardrop og fly den.'),
+     P_('cockpit.html?s=air&p=hold','da42','Hold at RONAX','Holding ved RONAX','A full hold in the DA42, by hand or on autopilot.','En hel holding i DA42, for hånd eller på autopilot.'),
+     P_('ifr.html?ex=ils','ifr','ILS approach','ILS-innflyging','Localiser, glide slope, DA and the missed approach.','Localiser, glidebane, DA og avbrutt innflyging.')],
+   gnss:[P_('cockpit.html?s=air&p=rnp_lpv','da42','RNP approach (LPV)','RNP-innflyging (LPV)','Fly RNP 36 to the LPV minimum in the DA42.','Fly RNP 36 til LPV-minimum i DA42.'),
+     P_('ifr.html?ex=lpv','ifr','RNP approach (LPV)','RNP-innflyging (LPV)','Angular needles that tighten towards the runway.','Vinkelnåler som strammes inn mot rullebanen.'),
+     P_('ifr.html?ex=star','ifr','Arrival (STAR)','Innflygingsrute (STAR)','Waypoint to waypoint, each at its altitude.','Waypoint til waypoint, hver i riktig høyde.')],
+   af:[P_('b200.html?s=air&p=ils&af=1','b200','ILS 36 on auto-fly','ILS 36 med autofly','Watch the modes arm and capture, then take over.','Se modusene armeres og fange, og ta så over.'),
+     P_('cockpit.html?s=air&p=rnp_lv&af=1','da42','LNAV/VNAV on auto-fly','LNAV/VNAV med autofly','A baro-VNAV path flown by the automation.','En baro-VNAV-bane fløyet av automatikken.')],
+   gyro:[P_('c172.html?s=vac','c172','Vacuum failure','Vakuumsvikt','The attitude and heading gyros run down: partial panel.','Holdnings- og kursgyroen spinner ned: delvis panel.'),
+     P_('ifr.html?ex=ppTrack','ifr','Partial panel: track to the station','Delvis panel: følg en kurs inn','Compass and clock, no heading indicator.','Kompass og klokke, uten kursgyro.')],
+   gnav:[P_('ifr.html?ex=mathNav','ifr','Mental maths: navigation','Hoderegning: navigasjon','1 in 60, wind correction and lead.','1 av 60, vindkorreksjon og forsprang.'),
+     P_('ifr.html?ex=trackIn','ifr','Track to the station','Følg en kurs inn til stasjonen','The wind triangle, flown on a VOR needle.','Vindtrekanten, fløyet på en VOR-nål.')],
+   fpl:[P_('ifr.html?ex=mathApp','ifr','Mental maths: descents','Hoderegning: nedstigning','Top of descent and rate of descent.','Toppen av nedstigningen og sinkrate.')],
+   prop:[P_('cockpit.html?s=efato','da42','Engine failure after take-off','Motorstans etter avgang','Identify, verify, feather, and keep it straight.','Identifiser, verifiser, fjær, og hold retningen.'),
+     P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Autofeather, rudder and V2 in a turboprop twin.','Autofjæring, sideror og V2 i et turboprop-tomotors fly.')],
+   perf:[P_('cockpit.html?s=takeoff','da42','Take-off','Avgang','Rotate, climb and clean up at the right speeds.','Roter, stig og rydd opp ved riktige farter.'),
+     P_('b200.html?s=efato','b200','Engine failure at rotation','Motorstans ved rotasjon','Continue the take-off and hold V2.','Fortsett starten og hold V2.')],
+   engines:[P_('c172.html?s=carbice','c172','Carburettor icing in cruise','Forgasserising i marsj','Spot the RPM drop and use carb heat.','Se turtallsfallet og bruk forgasservarme.'),
+     P_('b200.html?s=start','b200','Engine start','Motorstart','A turboprop start: N1, ITT and fuel flow.','En turbopropstart: N1, ITT og drivstoffstrøm.')],
+   jets:[P_('c172.html?s=alt','c172','Alternator failure','Generatorsvikt','Read the ammeter and shed the electrical load.','Les amperemeteret og kutt strømforbruket.')],
+   press:[P_('b200.html?s=press','b200','Pressurisation loss','Tap av kabintrykk','Masks on, then the emergency descent.','Masker på, og så nøddnedstigning.')],
+   hazards:[P_('c172.html?s=carbice','c172','Carburettor icing in cruise','Forgasserising i marsj','Icing you cannot see from the window.','Ising du ikke ser fra vinduet.')],
+   tunnel:[P_('cockpit.html?s=stall','da42','Stall','Stall','Feel the buffet, then recover.','Kjenn buffeten, og ta deg ut.')],
+   stab:[P_('cockpit.html?s=steep','da42','Steep turns','Krappe svinger','45° of bank: load factor and back pressure.','45° krengning: lastfaktor og baktrykk.')],
+   forces:[P_('cockpit.html?s=steep','da42','Steep turns','Krappe svinger','More bank, more lift needed, higher stall speed.','Mer krengning, mer løft, høyere stallfart.')]};
+  function practise(me){
+    const list=PRAC[me.k]; if(!list||!list.length) return;
+    const main=document.querySelector('.atl-main')||document.querySelector('.page'); if(!main||main.querySelector('.vlprac')) return;
+    const box=document.createElement('aside'); box.className='vlprac'; box.id='practise';
+    const foot=main.querySelector(':scope > p.foot'), nx=main.querySelector(':scope > .vlpath');
+    if(foot) main.insertBefore(box,foot); else if(nx) main.insertBefore(box,nx); else main.appendChild(box);
+    const draw=()=>{ box.setAttribute('aria-label',Lx(t2('Practise it','Øv på det')));
+      box.innerHTML=`<div class="ph"><span>${esc(Lx(t2('Practise it','Øv på det')))}</span><span>${esc(Lx(t2('Fly what this lab explains.','Fly det denne labben forklarer.')))}</span></div>`+
+        `<ul class="pl">${list.map(x=>`<li><a href="${esc(x.u)}"><small>${esc(Lx(PW[x.w]))}</small><b>${esc(Lx(x.n))}</b><span>${esc(Lx(x.s))}</span></a></li>`).join('')}</ul>`; };
+    draw(); hooks.push(draw);
+  }
+  /* shared glossary in the lab text: the reading sections opt in (class "gloss"); glossary.js is loaded on demand */
+  function glossary(me){
+    (TOP[me.f]||[]).forEach(([id,,,ty])=>{ if(ty!=='read') return; const e=document.getElementById(id); if(e) e.classList.add('gloss'); });
+    if(!document.querySelector('.gloss')) return;
+    const go=()=>{ if(window.GLOSS) window.GLOSS.auto('.gloss'); };
+    if(window.GLOSS){ setTimeout(go,0); return; }
+    const sc=document.createElement('script'); sc.src='glossary.js?v=1'; sc.async=true; sc.onload=go; document.head.appendChild(sc);
+  }
   /* "Next" at the end of every lab (the step bar's last step): next topic in the area, then the next area */
   function pathbar(page){
     const i=FLAT.findIndex(x=>x.k===page); if(i<0) return;
@@ -309,6 +363,6 @@
     document.addEventListener('click',e=>{ if(e.target.closest('.tasks [data-go]')) ps().forEach(d=>{ d.open=true; }); });
   })();
 
-  window.LAB={ PATH, AREAS, MORE, FLAT, TOP, LV, LVX, LVTIP, done, get depth(){ return depth; }, setDepth:d=>setDepth(d,true), T, L, nf, el, add(dict,no){ Object.assign(D,dict); if(no) Object.assign(NO,no); }, start(page){ header(page); scan(); apply(); }, head(page){ header(page); const n=document.querySelector('.labnav'); if(n) scan(n); apply(); },
+  window.LAB={ PATH, AREAS, MORE, FLAT, TOP, PRAC, LV, LVX, LVTIP, done, get depth(){ return depth; }, setDepth:d=>setDepth(d,true), T, L, nf, el, add(dict,no){ Object.assign(D,dict); if(no) Object.assign(NO,no); }, start(page){ header(page); scan(); apply(); }, head(page){ header(page); const n=document.querySelector('.labnav'); if(n) scan(n); apply(); },
     onLang(f){ hooks.push(f); }, tx(dict){ Object.assign(TXD,dict); txApply(); }, get lang(){ return lang; }, slider, seg, fit, visible, quiz, shuffle };
 })();

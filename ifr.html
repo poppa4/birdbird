@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>IFR trainer · Birdbird</title>
 <meta name="description" content="Learn instrument flying one procedure at a time: tracking, intercepts, NDB, DME arcs, holding, procedure turns, VOR, NDB, LOC, ILS and RNP approaches, SID and STAR, mental maths and partial panel. An instructor on screen tells you the next step, every term is explained, and the replay shows your first mistake.">
-<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=17">
 <style>
 /* ===== IFR trainer =====
@@ -46,15 +46,7 @@ body:not(.v-trainer) #trainer{display:none}
 .gl:focus-visible{outline:2px solid var(--glc,var(--info));outline-offset:1px}
 .stage,.mini{--glc:#7FCBE8;--glb:rgba(127,203,232,.13);--glh:rgba(127,203,232,.3)}
 .stage .ccard,.stage .clr{--glc:#1F5F99;--glb:rgba(31,95,153,.1);--glh:rgba(31,95,153,.22)}
-.glpop{position:fixed;z-index:1000;box-sizing:border-box;background:#13202A;color:#E6EBEF;border:1px solid #2E404D;border-radius:8px;padding:12px 14px 13px;box-shadow:0 18px 40px rgba(0,0,0,.35);font-family:var(--f-body);font-size:14.5px;line-height:1.45;text-align:left;white-space:normal}
-.glpop[hidden]{display:none}
-.glpop .gh{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.glpop .gh b{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:19px;color:#fff;line-height:1.15}
-.glpop .gx{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:#9EADB7;font-size:20px;line-height:1}
-.glpop .gx:hover{color:#fff;background:#1C2934}
-.glpop .gx:focus-visible{outline:2px solid #7FCBE8}
-.glpop .gn{display:block;color:#7FCBE8;font-weight:600;font-size:13.5px;margin-top:1px}
-.glpop p{margin:7px 0 0;color:#DFE7EC}
+/* the pop-up itself (.glpop) is shared with the Virtual Labs: lab.css */
 
 /* ---- home: the head (what this is, beside the trainer in use) ---- */
 .home{margin:0}
@@ -385,6 +377,10 @@ body:not(.v-trainer) #trainer{display:none}
 .lesson .live:empty{display:none}
 .lesson .unav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .lesson .unav .sp{flex:1 1 auto}
+.lesson .uth{align-self:flex-start;font-size:13.5px;color:var(--ni);text-decoration:none;border-bottom:1px dotted currentColor;padding:2px 0}
+.lesson .uth span:first-child{color:var(--ni3)}
+.lesson .uth:hover{color:#fff}
+.lesson .uth:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
 .think h3,.deb h3,.quiz h3{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:clamp(22px,2vw,28px);line-height:1.15;margin:0;color:#fff;text-wrap:balance;max-width:30ch}
 .think .q{font-size:17px;line-height:1.5;color:var(--ni);margin:0;max-width:58ch}
 .think .q b{font-family:var(--f-mono);font-weight:500;color:#fff}
@@ -732,12 +728,13 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
   </section>
 </div>
 
-<script src="lab.js?v=46"></script>
+<script src="lab.js?v=47"></script>
 <script src="navcore.js?v=2"></script>
 <script src="holdcore.js?v=2"></script>
 <script src="navmap.js?v=1"></script>
 <script src="navgauges.js?v=4"></script>
 <script src="ifrcore.js?v=3"></script>
-<script src="ifr.js?v=3"></script>
+<script src="glossary.js?v=1"></script>
+<script src="ifr.js?v=4"></script>
 </body>
 </html>

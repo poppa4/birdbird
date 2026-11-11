@@ -257,3 +257,31 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 @media (prefers-reduced-motion:reduce){details.xsec>summary::before,.xpanel>.xsum>span:first-child::before{transition:none}}
 /* touch: 40px targets in the viewport bar, toggles, small buttons and the concept-card link */
 @media (pointer:coarse){.vtabs button,.vtabs.seg button,.vtools button,.xtog,.btn.sm,.xsec .pre .btn,.xsec .btns .btn,html .vbtn,html .cn-tog{min-height:40px}.kgo{min-height:40px;display:inline-flex;align-items:center}}
+/* ---- shared glossary (glossary.js): the pop-up, and the calm marks in lab body text ---- */
+.glpop{position:fixed;z-index:1000;box-sizing:border-box;background:#13202A;color:#E6EBEF;border:1px solid #2E404D;border-radius:8px;padding:12px 14px 13px;box-shadow:0 18px 40px rgba(0,0,0,.35);font-family:var(--f-body);font-size:14.5px;line-height:1.45;text-align:left;white-space:normal;letter-spacing:normal;text-transform:none}
+.glpop[hidden]{display:none}
+.glpop .gh{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.glpop .gh b{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:19px;color:#fff;line-height:1.15}
+.glpop .gx{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:#9EADB7;font-size:20px;line-height:1}
+.glpop .gx:hover{color:#fff;background:#1C2934}
+.glpop .gx:focus-visible{outline:2px solid #7FCBE8}
+.glpop .gn{display:block;color:#7FCBE8;font-weight:600;font-size:13.5px;margin-top:1px}
+.glpop p{margin:7px 0 0;color:#DFE7EC}
+.glpop .glab{display:inline-block;margin-top:9px;font-size:13.5px;color:#7FCBE8;text-decoration:none;border-bottom:1px solid rgba(127,203,232,.4)}
+.glpop .glab:hover{color:#fff;border-color:#fff}
+.glt{all:unset;cursor:help;color:inherit;font:inherit;line-height:inherit;text-decoration:underline dotted;text-decoration-color:color-mix(in srgb,currentColor 55%,transparent);text-underline-offset:.18em;text-decoration-thickness:1px}
+.glt:hover,.glt[aria-expanded="true"]{text-decoration-color:var(--info);text-decoration-style:solid}
+.glt:focus-visible{outline:2px solid var(--info);outline-offset:1px;border-radius:2px}
+/* ---- "Practise it" (lab.js): fly what the lab explains, in the IFR trainer or a simulator ---- */
+.vlprac{margin-top:40px;border-top:1px solid var(--rule);font-size:14px}
+.vlprac .ph{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 10px;padding:10px 0 12px;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.vlprac .ph span+span{text-transform:none;letter-spacing:0;font-family:var(--f-body);font-size:13px}
+.vlprac .pl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.vlprac .pl a{display:flex;flex-direction:column;gap:3px;height:100%;box-sizing:border-box;padding:13px 16px;text-decoration:none;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius)}
+.vlprac .pl a:hover{border-color:var(--ink)}
+.vlprac .pl a:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+.vlprac .pl small{font-family:var(--f-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
+.vlprac .pl b{font-family:var(--f-display);font-stretch:92%;font-size:17px;font-weight:650;line-height:1.2}
+.vlprac .pl span{font-size:13px;color:var(--ink-2);line-height:1.4}
+@media (max-width:600px){.vlprac .pl{grid-template-columns:1fr}}
+@media print{.vlprac,.glpop{display:none!important}}

@@ -51,97 +51,12 @@ const SCAN={cdi:t2('Look at the needle first, then the heading below','Se på n�
   rbi:t2('Heading + needle = bearing to the beacon','Heading + nål = peiling til fyret'),hsi:t2('The course bar shows where the course is, seen from the aircraft','Kursstreken viser hvor kursen ligger, sett fra flyet'),pfd:t2('Attitude in the centre, navigation below','Flystilling i midten, navigasjon under')};
 
 /* ---------- the glossary: every abbreviation and piece of jargon, one tap away ----------
-   GLO: id → the term, what it stands for in plain words, one line. GPAT: what to look for in a text (per language where the
-   word differs). gl(text) escapes the text and turns the first mention of each term into a small button (a "chip"). */
-const GLO={
- vor:['VOR',t2('radio station for navigation','radiostasjon for navigasjon'),t2('A station on the ground that sends out 360 lines (radials). The VOR needle shows whether the line you chose is to your left or right.','En stasjon på bakken som sender ut 360 linjer (radialer). VOR-nålen viser om linjen du har valgt, ligger til venstre eller høyre for deg.')],
- ndb:['NDB',t2('radio beacon','radiofyr'),t2('A simple beacon on the ground. The ADF needle in the aircraft points straight at it.','Et enkelt fyr på bakken. ADF-nålen i flyet peker rett mot det.')],
- adf:['ADF',t2('the receiver for NDB beacons','mottakeren for NDB-fyr'),t2('The instrument whose needle points at the beacon you have tuned.','Instrumentet med nålen som peker mot fyret du har stilt inn.')],
- dme:['DME',t2('distance to the station','avstand til stasjonen'),t2('Shows how far you are from the station, in nautical miles (NM).','Viser hvor langt du er fra stasjonen, i nautiske mil (NM).')],
- cdi:['CDI',t2('course deviation indicator','kursavviksindikator'),t2('The VOR needle. It moves left or right to show which side the course you set is on.','VOR-nålen. Den går til venstre eller høyre og viser hvilken side kursen du har stilt inn, ligger på.')],
- hsi:['HSI',t2('horizontal situation indicator','horisontal situasjonsindikator'),t2('A compass card and the course needle in one instrument. You see the course as a line, the way it lies seen from the aircraft.','En kompasskive og kursnålen i ett instrument. Du ser kursen som en strek, slik den ligger sett fra flyet.')],
- rmi:['RMI',t2('radio magnetic indicator','radiomagnetisk indikator'),t2('A compass card with needles that point to the stations. Head of the needle: direction to the station. Tail: direction from it.','En kompasskive med nåler som peker mot stasjonene. Hodet på nålen: retningen til stasjonen. Halen: retningen fra den.')],
- rbi:['RBI',t2('relative bearing indicator','relativ peileindikator'),t2('An ADF whose card does not turn. The needle shows the beacon counted from the nose, so you add your heading yourself.','En ADF der skiven ikke dreier. Nålen viser fyret målt fra nesen, så du må legge til headingen selv.')],
- pfd:['PFD',t2('primary flight display','hovedskjerm for flyging'),t2('The main screen in a glass cockpit: attitude, speed, altitude and navigation together.','Hovedskjermen i en glasscockpit: flystilling, fart, høyde og navigasjon samlet.')],
- obs:['OBS',t2('the course knob','kursknappen'),t2('The knob that sets the course on a VOR instrument. On some instruments it is labelled CRS.','Knappen som stiller inn kursen på et VOR-instrument. På noen instrumenter heter den CRS.')],
- crs:['CRS',t2('course','kurs'),t2('The course you have set with the course knob: the line you want to fly along.','Kursen du har stilt inn med kursknappen: linjen du vil fly langs.')],
- hdg:['HDG',t2('heading','heading (styrekurs)'),t2('The direction the nose points. It is not always the direction you move: wind pushes you sideways.','Retningen nesen peker. Det er ikke alltid retningen du beveger deg: vinden skyver deg sideveis.')],
- heading:['heading',t2('where the nose points','dit nesen peker (styrekurs)'),t2('The direction the nose points, in degrees. Course is the line you want to follow. In wind the two differ by a few degrees.','Retningen nesen peker, i grader. Kurs er linjen du vil følge. I vind skiller de to seg med noen grader.')],
- qdm:['QDM',t2('bearing to the station','peiling til stasjonen'),t2('The direction to fly to get to the station. For an NDB: heading + ADF needle = QDM.','Retningen du må fly for å komme til stasjonen. For en NDB: heading + ADF-nål = QDM.')],
- qdr:['QDR',t2('bearing from the station','peiling fra stasjonen'),t2('The direction from the station to you. For a VOR this is your radial. QDR = QDM ± 180.','Retningen fra stasjonen til deg. For en VOR er dette radialen din. QDR = QDM ± 180.')],
- radial:['radial',t2('a line out from a VOR','en linje ut fra en VOR'),t2('One of 360 lines that leave a VOR station. It is named after its direction from the station: radial 090 points east.','Én av 360 linjer som går ut fra en VOR-stasjon. Den har navn etter retningen fra stasjonen: radial 090 peker østover.')],
- flag:['TO / FROM',t2('the flag on the VOR instrument','flagget på VOR-instrumentet'),t2('TO: the course you set leads to the station. FROM: it leads away from the station.','TO: kursen du har stilt inn, fører til stasjonen. FROM: den fører bort fra stasjonen.')],
- faf:['FAF',t2('final approach fix','final approach fix'),t2('The point on an approach where the final descent towards the runway starts.','Punktet på en innflyging der den siste nedstigningen mot rullebanen starter.')],
- mda:['MDA',t2('minimum descent altitude','minste nedstigningshøyde'),t2('The lowest altitude on an approach without a glide path. Level off there. Never go below it unless you see the runway.','Laveste høyde på en innflyging uten glidebane. Flat ut der. Gå aldri under den uten at du ser rullebanen.')],
- da:['DA',t2('decision altitude','beslutningshøyde'),t2('On an approach with a glide path: the altitude where you decide. Runway in sight: land. If not: go around at once.','På en innflyging med glidebane: høyden der du bestemmer deg. Rullebanen i sikte: land. Hvis ikke: avbryt med en gang.')],
- ils:['ILS',t2('instrument landing system','instrumentlandingssystem'),t2('Two radio beams to the runway: the localiser (left and right) and the glide slope (up and down).','To radiostråler mot rullebanen: localiseren (venstre og høyre) og glidebanen (opp og ned).')],
- loc:['localiser',t2('the beam along the runway','strålen langs rullebanen'),t2('The part of an ILS that shows left and right of the runway centre line. Its needle is four times as sensitive as a VOR needle.','Den delen av en ILS som viser venstre og høyre for rullebanens senterlinje. Nålen er fire ganger så følsom som en VOR-nål.')],
- gs:['glide slope',t2('the beam down to the runway','strålen ned mot rullebanen'),t2('The part of an ILS that slopes down to the runway at about 3°. Its needle shows whether you are above or below that path.','Den delen av en ILS som skrår ned mot rullebanen med rundt 3°. Nålen viser om du er over eller under banen.')],
- gp:['glide path',t2('the path down to the runway','banen ned mot rullebanen'),t2('A sloping path to the runway, about 3°. On an ILS it is a radio beam (the glide slope). On a GPS approach it is calculated.','En skrå bane ned mot rullebanen, rundt 3°. På en ILS er den en radiostråle (glide slope). På en GPS-innflyging er den beregnet.')],
- lnav:['LNAV',t2('GPS guidance left and right','GPS-veiledning sideveis'),t2('A GPS approach with no glide path. You manage the descent yourself, down to an MDA.','En GPS-innflyging uten glidebane. Du styrer nedstigningen selv, ned til en MDA.')],
- vnav:['VNAV',t2('guidance up and down','veiledning opp og ned'),t2('A glide path worked out by the aircraft, here from the altimeter (baro-VNAV). Flown down to a DA.','En glidebane som flyet regner ut, her fra høydemåleren (baro-VNAV). Flys ned til en DA.')],
- lpv:['LPV',t2('satellite approach like an ILS','satellittinnflyging som en ILS'),t2('The most precise GPS approach. Needles for left/right and up/down that behave like an ILS.','Den mest presise GPS-innflygingen. Nåler for venstre/høyre og opp/ned som oppfører seg som en ILS.')],
- rnp:['RNP',t2('approach flown with GPS','innflyging fløyet med GPS'),t2('An approach that uses satellite navigation instead of a station on the ground. LNAV, LNAV/VNAV and LPV are three kinds.','En innflyging som bruker satellittnavigasjon i stedet for en stasjon på bakken. LNAV, LNAV/VNAV og LPV er tre typer.')],
- rnav:['RNAV',t2('navigation from waypoint to waypoint','navigasjon fra waypoint til waypoint'),t2('Flying straight lines between GPS waypoints instead of from station to station.','Å fly rette linjer mellom GPS-waypoints i stedet for fra stasjon til stasjon.')],
- sid:['SID',t2('standard instrument departure','standard utflygingsrute'),t2('A published route from the runway out to the en-route airway.','En publisert rute fra rullebanen og ut til luftleden.')],
- star:['STAR',t2('standard arrival route','standard innflygingsrute'),t2('A published route from the en-route airway in to the approach.','En publisert rute fra luftleden og inn til innflygingen.')],
- tas:['TAS',t2('true airspeed','sann flyhastighet'),t2('Your real speed through the air. A little higher than the speed on the airspeed indicator, more so the higher you fly.','Den virkelige farten din gjennom lufta. Litt høyere enn farten på fartsmåleren, mer jo høyere du flyr.')],
- gsp:['ground speed',t2('speed over the ground','fart over bakken'),t2('Your airspeed plus or minus the wind. It decides how fast you must descend on an approach.','Flyhastigheten pluss eller minus vinden. Den bestemmer hvor fort du må gå ned på en innflyging.')],
- vs:['VS',t2('vertical speed','vertikal hastighet'),t2('How fast you climb or descend, in feet per minute.','Hvor fort du stiger eller går ned, i fot per minutt.')],
- abeam:['abeam',t2('straight out to the side','rett ut til siden (tvers)'),t2('A point is abeam when it is level with your wingtip, 90° from the nose.','Et punkt er tvers når det ligger rett ut for vingetippen, 90° fra nesen.')],
- homing:['homing',t2('following the needle','å følge nålen'),t2('Keeping the nose pointed at the beacon. In a crosswind you fly a curve, not a line.','Å holde nesen pekende mot fyret. I sidevind flyr du en bue, ikke en linje.')],
- tracking:['tracking',t2('flying a straight line over the ground','å fly en rett linje over bakken'),t2('Holding a heading a little into the wind so that your path over the ground is straight.','Å holde en heading litt opp mot vinden, slik at banen din over bakken blir rett.')],
- bracketing:['bracketing',t2('finding the heading for the wind','å finne headingen for vinden'),t2('Try a correction, watch the needle, then halve the change. Repeat until the needle stays still.','Prøv en korreksjon, se på nålen, og halver endringen. Gjenta til nålen står i ro.')],
- lead:['lead radial',t2('the radial where you start the turn','radialen der du starter svingen'),t2('A radial a few degrees before the one you want. Start the turn there and you finish it on the course.','En radial noen grader før den du skal ha. Start svingen der, så ender den på kursen.')],
- rate1:[t2('standard turn','standardsving'),t2('3° every second','3° i sekundet'),t2('The normal turn in instrument flying (rate one). Half a circle, 180°, takes 1 minute.','Den vanlige svingen i instrumentflyging (rate one). En halv sirkel, 180°, tar 1 minutt.')],
- teardrop:['teardrop',t2('an entry shaped like a drop','en inngang formet som en dråpe'),t2('A holding entry. Fly out 30° off the outbound course for 1 minute, then turn back onto the inbound course.','En inngang til holding. Fly ut 30° fra kursen ut i 1 minutt, og sving så tilbake inn på kursen inn.')],
- dot:[t2('dot','prikk'),t2('a mark on the needle scale','et merke på nålens skala'),t2('On a VOR each dot is 2°, and five dots (the needle at the side) is 10°. On a localiser each dot is only about 0.5°.','På en VOR er hver prikk 2°, og fem prikker (nålen helt ute) er 10°. På en localiser er hver prikk bare rundt 0,5°.')],
- fix:[t2('fix','fiks'),t2('a named point in the air','et navngitt punkt i lufta'),t2('A position you can find with your instruments: over a station, or on a radial at a DME distance.','En posisjon du kan finne med instrumentene: over en stasjon, eller på en radial i en DME-avstand.')],
- waypoint:['waypoint',t2('a point in the GPS','et punkt i GPS-en'),t2('A named position stored in the GPS. Routes are flown from waypoint to waypoint.','En navngitt posisjon lagret i GPS-en. Ruter flys fra waypoint til waypoint.')],
- flyby:['fly-by',t2('turn before the waypoint','sving før waypointet'),t2('You start the turn just before the waypoint and cut the corner, so the turn ends on the next leg.','Du starter svingen like før waypointet og kutter hjørnet, så svingen ender på neste legg.')],
- inbound:[t2('inbound','inn'),t2('towards the station or fix','mot stasjonen eller fiksen'),t2('Flying towards the station or the fix. The inbound course is the line that leads to it.','Å fly mot stasjonen eller fiksen. Kursen inn er linjen som fører dit.')],
- outbound:[t2('outbound','ut'),t2('away from the station or fix','bort fra stasjonen eller fiksen'),t2('Flying away from the station or the fix.','Å fly bort fra stasjonen eller fiksen.')],
- missed:[t2('missed approach','avbrutt innflyging'),t2('the route you climb away on','ruten du stiger ut på'),t2('What you fly when you reach the minimum and cannot see the runway: climb straight ahead, then turn as published.','Det du flyr når du når minimum og ikke ser rullebanen: stig rett frem, og sving så som publisert.')],
- intercept:[t2('intercept','skjære inn'),t2('get onto a course from the side','komme inn på en kurs fra siden'),t2('Fly towards the course at an angle, usually 30° to 45°, and turn onto it when you get there.','Fly mot kursen på skrå, vanligvis 30° til 45°, og sving inn på den når du er fremme.')],
- locator:[t2('locator','lokator'),t2('a small NDB near the runway','en liten NDB nær rullebanen'),t2('A low-power beacon on the final course. Passing it tells you where you are on the approach.','Et svakt fyr på sluttkursen. Når du passerer det, vet du hvor du er på innflygingen.')],
- clearance:[t2('clearance','klarering'),t2('the instruction from air traffic control','instruksen fra flygelederen'),t2('What the controller tells you to fly. In this trainer it is the task for the exercise.','Det flygelederen ber deg fly. I denne treneren er det oppgaven for øvelsen.')]
-};
-const GPAT=[['VOR','vor'],['NDB','ndb'],['ADF','adf'],['DME','dme'],['CDI','cdi'],['HSI','hsi'],['RMI','rmi'],['RBI','rbi'],['PFD','pfd'],['OBS','obs'],['CRS','crs'],['HDG','hdg'],['QDM','qdm'],['QDR','qdr'],
-  ['FROM','flag'],['FAF','faf'],['MDA','mda'],['DA','da'],['ILS','ils'],['LNAV','lnav'],['VNAV','vnav'],['LPV','lpv'],['RNP','rnp'],['RNAV','rnav'],['SID','sid'],['STAR','star'],['TAS','tas'],['VS','vs'],
-  ['[Ll]ead radial|[Ll]ead-radial(?:en)?','lead'],['[Rr]adial(?:s|en|er|ene)?','radial'],['[Ll]ocali[sz]er(?:en)?','loc'],['[Gg]lide slope|[Gg]lidebanenål(?:en)?','gs'],['[Gg]lide path|[Gg]lidebane(?:n)?','gp'],
-  ['[Gg]round speed|[Ff]art over bakken','gsp'],['[Aa]beam|[Tt]vers','abeam'],['[Hh]oming','homing'],['[Tt]racking','tracking'],['[Bb]racketing','bracketing'],
-  ['[Ss]tandard turns?|[Ss]tandardsving(?:er|en)?','rate1'],['[Tt]eardrop(?:-inngang)?','teardrop'],['dots?|prikk(?:er|en)?','dot'],['[Ff]ly-by','flyby'],['[Ww]aypoints?|[Ww]aypoint(?:et|ene)','waypoint'],
-  ['[Mm]issed approach|[Aa]vbrutt innflyging','missed'],['[Ll]ocator(?:en)?|[Ll]okator(?:en)?','locator'],['[Hh]eading(?:en)?','heading'],['[Ii]ntercept(?:s|ed)?|[Ss]kjær(?:e|er)? inn','intercept'],
-  ['[Ii]nbound','inbound'],['[Oo]utbound','outbound'],['[Ff]ix|[Ff]iks(?:en)?','fix'],['[Cc]learance|[Kk]larering(?:en)?','clearance']];
-const GRE=new RegExp('(^|[^A-Za-zÆØÅæøå0-9])(?:'+GPAT.map(p=>'('+p[0]+')').join('|')+')(?![A-Za-zÆØÅæøå0-9])','g');
-/* text → HTML with glossary chips: the first mention of each term, at most `max` in one text. skip: ids not to mark. */
-function gl(s,max,skip){ s=String(s==null?'':s); const seen=Object.assign({},skip||{}); let out='', i=0, n=0, m; max=max===undefined?3:max; GRE.lastIndex=0;
-  while(n<max&&(m=GRE.exec(s))){ let k=-1; for(let j=0;j<GPAT.length;j++) if(m[j+2]!==undefined){ k=j; break; } if(k<0) continue; const id=GPAT[k][1], w=m[k+2], at=m.index+m[1].length;
-    GRE.lastIndex=at+w.length; if(seen[id]) continue; seen[id]=1; n++;
-    out+=esc(s.slice(i,at))+`<button type="button" class="gl" data-gl="${id}" aria-haspopup="dialog">${esc(w)}</button>`; i=at+w.length; }
-  return out+esc(s.slice(i)); }
-/* the same for text that already holds simple markup (<b>…</b>): only the text between the tags is searched */
-function glH(h,max){ const seen={}; let n=0; max=max===undefined?3:max; return String(h).split(/(<[^>]+>)/).map(part=>{ if(part.charAt(0)==='<'||n>=max) return part;
-    let out='', i=0, m; GRE.lastIndex=0;
-    while(n<max&&(m=GRE.exec(part))){ let k=-1; for(let j=0;j<GPAT.length;j++) if(m[j+2]!==undefined){ k=j; break; } if(k<0) continue; const id=GPAT[k][1], w=m[k+2], at=m.index+m[1].length;
-      GRE.lastIndex=at+w.length; if(seen[id]) continue; seen[id]=1; n++; out+=part.slice(i,at)+`<button type="button" class="gl" data-gl="${id}" aria-haspopup="dialog">${w}</button>`; i=at+w.length; }
-    return out+part.slice(i); }).join(''); }
-const gloTerm=id=>{ const g=GLO[id]; return g?(typeof g[0]==='string'?g[0]:L(g[0])):''; };
-/* one shared pop-up; it lives in <body>, or inside the open dialog so it is not hidden behind it */
-let glBtn=null;
-function glClose(){ const p=document.getElementById('glPop'); if(p) p.hidden=true; if(glBtn){ glBtn.setAttribute('aria-expanded','false'); glBtn=null; } }
-function glOpen(b){ const id=b.dataset.gl, g=GLO[id]; if(!g) return; let p=document.getElementById('glPop');
-  if(!p){ p=document.createElement('div'); p.id='glPop'; p.className='glpop'; p.setAttribute('role','dialog'); p.setAttribute('aria-live','polite'); }
-  const host=b.closest('dialog')||document.body; if(p.parentNode!==host) host.appendChild(p);
-  p.innerHTML=`<div class="gh"><b>${esc(gloTerm(id))}</b><button type="button" class="gx" aria-label="${esc(tx('Close','Lukk'))}">×</button></div><span class="gn">${esc(L(g[1]))}</span><p>${esc(L(g[2]))}</p>`;
-  p.hidden=false; glBtn=b; b.setAttribute('aria-expanded','true'); p.querySelector('.gx').onclick=e=>{ e.stopPropagation(); const f=glBtn; glClose(); if(f) f.focus({preventScroll:true}); };
-  const r=b.getBoundingClientRect(), pw0=Math.min(320,innerWidth-16); p.style.width=pw0+'px'; const ph=p.offsetHeight;
-  let x=Math.round(r.left+r.width/2-pw0/2); x=Math.max(8,Math.min(innerWidth-pw0-8,x)); let y=r.bottom+8; if(y+ph>innerHeight-8&&r.top-ph-8>8) y=r.top-ph-8;
-  p.style.left=x+'px'; p.style.top=Math.round(y)+'px'; }
-document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('.gl'); if(b){ e.preventDefault(); e.stopPropagation(); if(glBtn===b) glClose(); else { glClose(); glOpen(b); } return; }
-  if(glBtn&&!(e.target.closest&&e.target.closest('#glPop'))) glClose(); },true);
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&glBtn){ const f=glBtn; glClose(); f.focus({preventScroll:true}); e.stopPropagation(); } },true);
-addEventListener('scroll',()=>{ if(glBtn) glClose(); },{passive:true}); addEventListener('resize',()=>{ if(glBtn) glClose(); });
+   The data, the chips and the pop-up live in glossary.js (shared with the Virtual Labs). gl(text) escapes the text and
+   turns the first mention of each term into a small button (a "chip"); glH does the same for text with simple markup. */
+const GL=window.GLOSS, GLO=GL.G;
+const gl=(s,max,skip)=>GL.chips(s,max,skip);
+const glH=(h,max)=>GL.chipsH(h,max);
+const glClose=()=>GL.close();
 
 /* ---------- the catalogue: name and one plain sentence per item ---------- */
 const IT={
@@ -1403,6 +1318,13 @@ function renderQuiz(){ const box=el('quiz'), mc=el('mathcard'); if(S.ex!=='math'
   mc.innerHTML=`<h3>${tx('Rules of thumb','Tommelfingerregler')}</h3><ol>${mathRules(S.item).map(m=>`<li>${gl(L(m),2)}</li>`).join('')}</ol>`; }
 
 /* ---------- Understand: the walk-through ---------- */
+/* "Learn the theory": the Virtual Lab that explains each exercise (by group; a few items point elsewhere) */
+const THEORY={basics:'radionav.html',track:'radionav.html',intercept:'radionav.html',ndb:'radionav.html',arc:'radionav.html',hold:'holding.html',rev:'holding.html',
+  app:'holding.html',route:'gnss.html',math:'gennav.html',pp:'gyros.html'};
+const THEORY_IT={lnav:'gnss.html',lnavVnav:'gnss.html',lpv:'gnss.html',locInt:'holding.html',mathApp:'holding.html'};
+const theoryOf=id=>THEORY_IT[id]||THEORY[(I.ITEM[id]||{}).g]||'';
+function theoryHTML(id){ const f=theoryOf(id); if(!f) return ''; const n=GL.labName(f)||f;
+  return `<a class="uth" href="${f}"><span>${esc(tx('Learn the theory','Lær teorien'))}:</span> ${esc(n)} <span aria-hidden="true">→</span></a>`; }
 const uSteps=()=>S.ex==='math'?mathU(S.item).map(s=>({s,static:true})):uwFor(S.item).concat([{s:tryFor(S.item),try:true}]);
 function segIdx(st){ const P=S.ideal||[]; if(!P.length||!st.seg) return {i0:0,i1:Math.max(0,P.length-1)};
   if(typeof st.seg[0]==='number'){ const t1=P[P.length-1].t; const a=P.findIndex(p=>p.t>=st.seg[0]*t1), b=P.findIndex(p=>p.t>=st.seg[1]*t1); return {i0:Math.max(0,a),i1:b<0?P.length-1:Math.max(a+1,b)}; }
@@ -1414,7 +1336,7 @@ function uNext(){ const n=uSteps().length; if(S.uStep<n-1) setUStep(S.uStep+1); 
 function renderLesson(){ const st=uSteps(), cur=st[S.uStep], n=st.length, last=S.uStep===n-1;
   el('lesson').innerHTML=`<div class="uh"><div class="udots" role="group" aria-label="${esc(tx('Steps','Steg'))}">${st.map((s,i)=>`<button type="button" data-u="${i}" class="${i===S.uStep?'on':i<S.uStep?'done':''}" aria-label="${tx('Step','Steg')} ${i+1}" aria-current="${i===S.uStep?'step':'false'}"></button>`).join('')}</div><span class="uc">${S.uStep+1} ${tx('of','av')} ${n}</span></div>
     <p class="us" aria-live="polite">${gl(L(cur.s),4)}</p><div class="live" id="uLive"></div>
-    <div class="unav">${S.uStep>0?`<button type="button" class="dbtn q" id="uBack">${tx('Back','Tilbake')}</button>`:''}<span class="sp"></span><button type="button" class="dbtn pri" id="uNext">${last?(S.think?tx('Think first','Tenk først'):tx('Fly it','Fly den')):tx('Next','Neste')}</button></div>`;
+    <div class="unav">${S.uStep>0?`<button type="button" class="dbtn q" id="uBack">${tx('Back','Tilbake')}</button>`:''}<span class="sp"></span><button type="button" class="dbtn pri" id="uNext">${last?(S.think?tx('Think first','Tenk først'):tx('Fly it','Fly den')):tx('Next','Neste')}</button></div>${theoryHTML(S.item)}`;
   el('lesson').querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>setUStep(+b.dataset.u));
   if(el('uBack')) el('uBack').onclick=()=>setUStep(S.uStep-1); el('uNext').onclick=uNext; }
 function idealAt(t){ const P=S.ideal; if(!P||!P.length) return null; let lo=0,hi=P.length-1; if(t<=P[0].t) return P[0]; if(t>=P[hi].t) return P[hi];
@@ -1868,6 +1790,8 @@ LAB.tx({n1:'Standardsvinger (høyst 25° krengning), stigning og sink til valgt 
 LAB.onLang(()=>{ quizKey=''; guideKey=''; glClose(); HERO.cap=''; if(document.body.classList.contains('v-trainer')) renderAll(); else { renderHome(); if(el('bldDlg').open) renderBld(); } });
 S.seed=Math.floor(Math.random()*9000)+1; S.item='orient'; S.ex='orient'; S.p=Object.assign({},I.ITEM.orient.p); setup();
 renderHome(); heroInit();
+/* deep link: ifr.html?ex=<item id> opens that exercise directly (same as ifr.html#<id>); unknown ids fall back to the start screen */
+{ const qx=(location.search.match(/[?&]ex=([A-Za-z0-9_]+)/)||[])[1]; if(qx&&I.ITEM[qx]) history.replaceState(null,'',location.pathname+'#'+qx); }
 addEventListener('popstate',route); addEventListener('hashchange',route); route();
 new ResizeObserver(()=>{ layoutInst(); }).observe(el('inst'));
 new ResizeObserver(()=>{ sizeMap(); }).observe(mapC);
@@ -1877,7 +1801,7 @@ let rzT=0; addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(()=
 requestAnimationFrame(loop);
 /* test hooks (used by the browser tests) */
 window.__IFR={S,I,setup,go,start,finish,report,setCtl,act,AREAS,openItem,showHome,map,BLD,bldSet,startBuilder,bVals,hintMore,resumePause,action:()=>action(),
-  IT,UW,CO,EV,GLO,CORE,gl,uSteps:()=>uSteps(),setUStep,coachTxt:()=>coachTxt(),whyTxt:()=>whyTxt(),clearance:()=>clearance(S.X,A(),S.ex),plain:()=>plain(S.X,A(),S.ex),lessonLive:()=>lessonLive(S.u,readNow()),fmt,pw,
+  IT,UW,CO,EV,GLO,CORE,gl,theoryOf,uSteps:()=>uSteps(),setUStep,coachTxt:()=>coachTxt(),whyTxt:()=>whyTxt(),clearance:()=>clearance(S.X,A(),S.ex),plain:()=>plain(S.X,A(),S.ex),lessonLive:()=>lessonLive(S.u,readNow()),fmt,pw,
   /* a scripted student who does exactly what the guide says (the guide's command applied every tick) */
   followGuide(sec){ const end=S.sim.t+sec; let pauses=0; while(S.run&&S.step==='fly'&&S.sim.t<end){ if(S.pause){ pauses++; resumePause(); } const c=S.gc; if(c){ if(c.act) S.pendingAct=c.act; else if(S.ex==='orient'&&c.ans&&S.sim.t-(S._lr||-9)>4&&Math.abs(diff(S.X.obs,c.obs))<1){ S.pendingAct={type:'report',val:c.ans}; S._lr=S.sim.t; } I.apply(S.sim,S.X,c); } tick(0.1); } return pauses; },
   advance(sec){ const end=S.sim.t+sec; while(S.run&&S.step==='fly'&&S.sim.t<end){ if(S.pause) resumePause(); tick(0.1); } }};
