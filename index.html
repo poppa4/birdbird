@@ -156,6 +156,96 @@
 .fp-steps li::before{content:counter(st);font-family:var(--disp);font-stretch:86%;font-weight:600;color:var(--acc);font-size:17px}
 .fp-steps b{display:block;color:var(--ink);font-weight:600}
 .fp-depth{margin-top:14px!important;font-size:15px;line-height:1.55;color:var(--ink2)}
+/* the cockpit trainers: a navy plate between the aerofoil and the storm. Real captures from the trainers (img/front/sim-*),
+   framed and lightly graded; one aircraft at a time, 3D or 2D. index-sims script below: tabs, view toggle, reveal. */
+.sm{margin-top:104px;background:var(--navy);color:var(--on-navy);position:relative;isolation:isolate;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(19,32,42,.12),0 40px 80px -44px rgba(11,37,69,.75);padding:48px 48px 0}
+.sm::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(70% 60% at 22% 30%,rgba(64,112,170,.22),transparent 70%),radial-gradient(50% 50% at 100% 100%,rgba(154,30,104,.12),transparent 70%)}
+.sm-top{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:14px 64px;align-items:end;margin-bottom:36px}
+.sm-k{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#E07DB6;margin-bottom:14px!important}
+.fp .sm h3{color:#fff;font-size:clamp(30px,3.3vw,46px);line-height:1.04;letter-spacing:-.022em}
+.sm-top p.sm-lede{font-size:17px;line-height:1.6;color:var(--on-navy-2);max-width:34em}
+.sm-grid{display:grid;grid-template-columns:minmax(0,8fr) minmax(0,4fr);gap:28px 40px;align-items:start}
+/* the picture: one panel at a time, framed like a product shot, caption under it */
+.sm-view{min-width:0}
+.sm-fig{margin:0;display:none}
+.sm-fig.on{display:block}
+.sm-shot{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0D1A2B;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 2px 0 0 rgba(255,255,255,.04) inset,0 50px 90px -42px rgba(0,0,0,.9)}
+.sm-shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .8s ease}
+.sm-shot img.ld{opacity:1}
+.sm:not(.js) .sm-shot img{opacity:1}
+.sm-shot::after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 100% at 50% 45%,transparent 62%,rgba(4,12,26,.32) 100%)}
+.fp .sm-fig figcaption{margin-top:14px;font-size:14px;line-height:1.55;color:#AEBBC8;max-width:62ch}
+.sm-fig figcaption b{color:#fff;font-weight:600}
+/* the aircraft list */
+.sm-tabs{list-style:none;margin:0;padding:0;border-top:1px solid var(--navy-rule)}
+.sm-tabs button{display:grid;grid-template-columns:88px minmax(0,1fr);gap:2px 16px;align-items:center;width:100%;padding:14px 12px 14px 14px;border:0;border-bottom:1px solid var(--navy-rule);border-left:3px solid transparent;
+  background:none;color:var(--on-navy-2);font:inherit;font-size:14px;line-height:1.4;text-align:left;cursor:pointer;transition:background-color .25s,border-color .25s}
+.sm-tabs img{grid-row:1/3;width:88px;height:55px;object-fit:cover;display:block;opacity:.62;filter:saturate(.7);box-shadow:0 0 0 1px rgba(255,255,255,.16);transition:opacity .25s,filter .25s}
+.sm-tabs b{font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:20px;line-height:1.15;color:#fff;letter-spacing:-.008em}
+.sm-tabs button:hover{background:rgba(255,255,255,.04)}
+.sm-tabs button:hover img{opacity:.9}
+.sm-tabs button[aria-pressed="true"]{background:rgba(255,255,255,.07);border-left-color:#E07DB6}
+.sm-tabs button[aria-pressed="true"] img{opacity:1;filter:none}
+.sm-tabs button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.sm-info{padding:20px 0 0}
+.sm-ac{display:none}.sm-ac.on{display:block}
+.sm:not(.js) .sm-ac{display:block;padding-bottom:18px}
+.sm-ac dl{margin:0}
+.sm-ac dt{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#93A4B6;margin-bottom:6px}
+.sm-ac dd{margin:0;font-size:15.5px;line-height:1.55;color:#DCE4EC}
+.sm-go{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.sm-go .fp-btn{min-height:46px;padding:0 20px;font-size:15.5px}
+.sm-go .fp-btn.sec small{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#F0B9D8;border:1px solid rgba(240,185,216,.45);padding:2px 4px 1px;margin-left:8px}
+.sm .fp-btn:focus-visible,.sm .sm-all:focus-visible{outline:2px solid #fff;outline-offset:3px}
+/* facts and the way on */
+.sm-facts{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--navy-rule)}
+.sm-facts li{padding:18px 20px 22px 0;font-size:14.5px;line-height:1.45;color:var(--on-navy-2);min-width:0}
+.sm-facts li+li{padding-left:20px;border-left:1px solid var(--navy-rule)}
+.sm-facts b{display:block;font-family:var(--disp);font-stretch:86%;font-weight:650;font-size:18px;line-height:1.2;color:#fff;margin-bottom:3px}
+.fp .sm-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 24px;margin:0 -48px;padding:16px 48px;border-top:1px solid var(--navy-rule);background:rgba(0,0,0,.14);font-size:14px;color:#AEBBC8}
+.fp .sm-all{color:#fff;font-weight:600;font-size:15.5px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px;text-decoration-color:rgba(224,125,182,.7)}
+.fp .sm-all:hover{text-decoration-color:#E07DB6;text-decoration-thickness:2px}
+/* a soft reveal as the plate comes into view (only when the script runs, none under reduced motion) */
+.sm.js .sm-rv{opacity:0;transform:translateY(18px);transition:opacity .9s ease,transform 1.1s cubic-bezier(.2,.7,.2,1)}
+.sm.js .sm-rv.d1{transition-delay:.12s}.sm.js .sm-rv.d2{transition-delay:.24s}
+.sm.js.in .sm-rv{opacity:1;transform:none}
+@media (max-width:1180px){
+  .sm-tabs button{grid-template-columns:72px minmax(0,1fr);gap:2px 12px}
+  .sm-tabs img{width:72px;height:45px}
+}
+@media (max-width:980px){
+  .sm{margin-top:72px;padding:40px 32px 0}
+  .sm-top,.sm-grid{grid-template-columns:minmax(0,1fr)}
+  .sm-top{margin-bottom:28px}
+  .sm-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:0}
+  .sm-tabs button{grid-template-columns:minmax(0,1fr);gap:8px;padding:0 0 12px;border:0;border-bottom:2px solid var(--navy-rule);height:100%;align-content:start}
+  .sm-tabs li+li button{margin-left:0}
+  .sm-tabs li{padding:0 6px}.sm-tabs li:first-child{padding-left:0}.sm-tabs li:last-child{padding-right:0}
+  .sm-tabs img{grid-row:auto;width:100%;height:auto;aspect-ratio:16/10}
+  .sm-tabs span{display:none}
+  .sm-tabs b{font-size:17px;padding:0 2px}
+  .sm-tabs button[aria-pressed="true"]{background:none;border-bottom-color:#E07DB6}
+  .sm-info{padding-top:18px}
+  .sm-facts{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:32px}
+  .sm-facts li:nth-child(3){padding-left:0;border-left:0}
+  .sm-facts li:nth-child(n+3){border-top:1px solid var(--navy-rule)}
+  .fp .sm-foot{margin:0 -32px;padding:16px 32px}
+}
+@media (max-width:640px){
+  .sm{margin:64px calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:36px var(--gr,24px) 0 var(--gl,24px);box-shadow:none}
+  .sm-shot{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
+  .fp .sm-fig figcaption{font-size:13.5px}
+  .sm-tabs b{font-size:15px}
+  .sm-go .fp-btn{flex:1 1 100%;justify-content:center}
+  .sm-facts li{padding:14px 12px 16px 0;font-size:13.5px}.sm-facts li+li{padding-left:12px}.sm-facts li:nth-child(3){padding-left:0}
+  .sm-facts b{font-size:16px}
+  .fp .sm-foot{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));padding:14px var(--gr,24px) 16px var(--gl,24px)}
+}
+@media (prefers-reduced-motion:reduce){.sm-shot img,.sm.js .sm-rv,.sm-tabs button,.sm-tabs img{transition:none}}
+
 /* the storm film: the real storm lab scene (front-storm.js) with the lab's stage panel attached */
 .fp-storm{margin:0;display:grid;grid-template-columns:minmax(0,1fr) 312px;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6)}
 .fs-view{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(180deg,#2f5788 0%,#8fa9c4 62%,#56605f 100%)}
@@ -426,6 +516,65 @@
           <p class="foot"><a class="tl" href="lab.html" data-tx="allLabs">All <span class="nLabs">25</span> labs</a><a class="tl" href="lab.html#more" data-tx="hf">Human factors</a></p>
         </div>
       </div>
+
+      <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, each in 2D and 3D -->
+      <section class="sm" id="fpSims" data-ac="b200" aria-labelledby="h-sims">
+        <div class="sm-top sm-rv">
+          <div>
+            <p class="sm-k" data-tx="smK">Cockpit trainers</p>
+            <h3 id="h-sims" data-tx="smH">Take the left seat</h3>
+          </div>
+          <p class="sm-lede" data-tx="smP">Three working cockpits, from the six basic instruments to a two-pilot turboprop. Each one is a whole panel you can fly, from the ground or straight onto an ILS in one click, and each also has a 3D cockpit, in beta.</p>
+        </div>
+        <div class="sm-grid">
+          <div class="sm-view sm-rv d1" id="smView">
+            <figure class="sm-fig" data-ac="c172">
+              <div class="sm-shot"><img data-srcset="img/front/sim-c172-panel-760.webp 760w, img/front/sim-c172-panel-1400.webp 1400w, img/front/sim-c172-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
+                alt="The Cessna 172 trainer's instrument panel on the ILS 36 approach: the six basic flight instruments, the VOR indicators and the ADF, and the radio stack with the audio panel, two NAV/COM radios, the ADF, DME and transponder." data-alt-no="Instrumentpanelet i Cessna 172-treneren på ILS 36-innflygingen: de seks grunnleggende flyinstrumentene, VOR-indikatorene og ADF-en, og radiostakken med audiopanel, to NAV/COM-radioer, ADF, DME og transponder."></div>
+              <figcaption data-tx="smCapc172"><b>Cessna 172, on the ILS 36.</b> The six basic instruments, two VOR indicators and the ADF, and a full radio stack you tune yourself.</figcaption>
+            </figure>
+            <figure class="sm-fig" data-ac="da42">
+              <div class="sm-shot"><img data-srcset="img/front/sim-da42-panel-760.webp 760w, img/front/sim-da42-panel-1400.webp 1400w, img/front/sim-da42-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" decoding="async"
+                alt="The DA42 trainer's glass cockpit on the ILS 36 approach with the autopilot coupled: the PFD with the localizer and glideslope captured, the MFD with the engine page and the moving map, and the standby instruments above." data-alt-no="Glasscockpiten i DA42-treneren på ILS 36-innflygingen med autopiloten koblet inn: PFD-en med localizer og glidebane fanget, MFD-en med motorsiden og kartet, og reserveinstrumentene over."></div>
+              <figcaption data-tx="smCapda42"><b>DA42, on the ILS 36 with the autopilot coupled.</b> PFD and MFD with the engine page and moving map, the standby instruments and the switch row.</figcaption>
+            </figure>
+            <figure class="sm-fig on" data-ac="b200">
+              <div class="sm-shot"><img src="img/front/sim-b200-panel-1400.webp" srcset="img/front/sim-b200-panel-760.webp 760w, img/front/sim-b200-panel-1400.webp 1400w, img/front/sim-b200-panel-2100.webp 2100w" sizes="(max-width:980px) 100vw, (max-width:1336px) 62vw, 760px" width="1400" height="875" loading="lazy" decoding="async"
+                alt="The King Air B200 trainer's flight deck on the ILS 36 approach with the autopilot coupled: attitude and situation displays for both pilots, the round engine instruments in the centre, the navigator and the weather display, and the annunciator panel above." data-alt-no="Cockpiten i King Air B200-treneren på ILS 36-innflygingen med autopiloten koblet inn: attityde- og kursskjermer for begge piloter, de runde motorinstrumentene i midten, navigatoren og værskjermen, og varselpanelet over."></div>
+              <figcaption data-tx="smCapb200"><b>King Air B200, on the ILS 36 with the autopilot coupled.</b> Displays for both pilots, the engine instruments in the centre and the annunciator panel.</figcaption>
+            </figure>
+          </div>
+          <div class="sm-side sm-rv d2">
+            <ul class="sm-tabs" id="smTabs" aria-label="Aircraft" data-aria-no="Flytype">
+              <li><button type="button" data-ac="c172" aria-pressed="false" aria-controls="smView smAcC172"><img data-src="img/front/sim-c172-thumb.webp" width="176" height="110" alt=""><b>Cessna 172</b><span data-tx="smC1">Single-engine piston, analogue panel</span></button></li>
+              <li><button type="button" data-ac="da42" aria-pressed="false" aria-controls="smView smAcDA42"><img data-src="img/front/sim-da42-thumb.webp" width="176" height="110" alt=""><b>DA42</b><span data-tx="smD1">Twin piston, glass cockpit</span></button></li>
+              <li><button type="button" data-ac="b200" aria-pressed="true" aria-controls="smView smAcB200"><img data-src="img/front/sim-b200-thumb.webp" width="176" height="110" alt=""><b>King Air B200</b><span data-tx="smB1">Twin turboprop, two-pilot flight deck</span></button></li>
+            </ul>
+            <div class="sm-info">
+              <div class="sm-ac" id="smAcC172" data-ac="c172">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smC2">The instrument scan and attitude flying, VOR, ADF and DME navigation, and the circuit.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="c172.html" data-tx="smC3">Fly the Cessna 172</a><a class="fp-btn sec" href="c172-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – Cessna 172</span><small>beta</small></a></div>
+              </div>
+              <div class="sm-ac" id="smAcDA42" data-ac="da42">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smD2">Multi-engine flying with a glass cockpit: ILS and RNP approaches, the autopilot, and engine failures and asymmetric flight.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="cockpit.html" data-tx="smD3">Fly the DA42</a><a class="fp-btn sec" href="da42-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – DA42</span><small>beta</small></a></div>
+              </div>
+              <div class="sm-ac on" id="smAcB200" data-ac="b200">
+                <dl><dt data-tx="smTr">Trains</dt><dd data-tx="smB2">A two-crew turboprop from battery start to shutdown: systems such as pressurisation, autofeather and fire protection, and type-rating preparation with 320 questions.</dd></dl>
+                <div class="sm-go"><a class="fp-btn pri" href="b200.html" data-tx="smB3">Fly the King Air</a><a class="fp-btn sec" href="b200-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – King Air B200</span><small>beta</small></a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ul class="sm-facts">
+          <li data-tx="smF1"><b>In the browser</b>Nothing to install</li>
+          <li data-tx="smF2"><b>2D and 3D</b>A full-size panel, and a 3D cockpit in beta</li>
+          <li data-tx="smF3"><b>Start on the ILS</b>In the air on the approach, in one click</li>
+          <li data-tx="smF4"><b>Keyboard, mouse or touch</b>A gamepad works too</li>
+        </ul>
+        <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
+      </section>
+
       <div class="fp-labs">
         <div class="txt">
           <h3 data-tx="h3how">Every lab works the same way</h3>
@@ -597,6 +746,20 @@ LAB.tx({
  st3:'<b>Test deg selv</b>Korte spørsmål som krever at du resonnerer, ikke at du kjenner igjen et pugget svar.',
  depth:'Les hver lab på det nivået du trenger: Kort, Fordypning eller Instruktør. På engelsk og norsk.',
  capSt:'<b>Tordenvær og vindskjær.</b> Uværslabbens enkeltcelle, fra en godværscumulus til en moden cumulonimbus og oppløsningen, en time stormtid på et halvt minutt. Velg et stadium i panelet, eller åpne labben for å fly gjennom den.',
+ smK:'Cockpittrenere', smH:'Sett deg i venstresetet',
+ smP:'Tre fungerende cockpiter, fra de seks grunnleggende instrumentene til en turboprop med to piloter. Hver av dem er et helt panel du kan fly, fra bakken eller rett inn på en ILS med ett klikk, og alle tre har også en 3D-cockpit, i beta.',
+ smC1:'Enmotors stempelfly, analogt panel', smD1:'Tomotors stempelfly, glasscockpit', smB1:'Tomotors turboprop, cockpit for to piloter',
+ smTr:'Trener',
+ smCapc172:'<b>Cessna 172, på ILS 36.</b> De seks grunnleggende instrumentene, to VOR-indikatorer og ADF-en, og en full radiostakk du stiller inn selv.',
+ smCapda42:'<b>DA42, på ILS 36 med autopiloten koblet inn.</b> PFD og MFD med motorsiden og kartet, reserveinstrumentene og bryterraden.',
+ smCapb200:'<b>King Air B200, på ILS 36 med autopiloten koblet inn.</b> Skjermer for begge piloter, motorinstrumentene i midten og varselpanelet.',
+ smC2:'Instrumentskanning og attitydeflyging, navigasjon med VOR, ADF og DME, og landingsrunden.',
+ smD2:'Flermotorsflyging med glasscockpit: ILS- og RNP-innflyginger, autopiloten, motorbortfall og asymmetrisk flyging.',
+ smB2:'En turboprop med to piloter fra batteristart til avslåing: systemer som trykkabin, autofeather og brannvern, og forberedelse til typerating med 320 spørsmål.',
+ smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', sm3d:'Også i 3D',
+ smF1:'<b>I nettleseren</b>Ingenting å installere', smF2:'<b>2D og 3D</b>Et panel i full størrelse, og en 3D-cockpit i beta',
+ smF3:'<b>Start på ILS-en</b>I luften på innflygingen, med ett klikk', smF4:'<b>Tastatur, mus eller berøring</b>En spillkontroller virker også',
+ smFoot:'Også under Trening: IFR-treneren med 46 øvelser, briefinger og radiodriller.', smAll:'All trening →',
  goSt:'Åpne uværslabben', fsNote:'Høyder tegnet 1,5 ganger høyere', fsK:'Utvikling · enkeltcelle', fsLay:'Vis',
  h2b:'Fra teori til cockpit',
  p2b:'Én rute, Oslo lufthavn Gardermoen til Stockholm Arlanda, fulgt fra kartet til den utskrevne pakken. Flight Intelligence svarer på spørsmålene underveis.',
@@ -651,6 +814,28 @@ function attrs(){ const no=LAB.lang==='no';
 function all(){ areas(); counts(); attrs(); }
 LAB.start('home');
 all(); LAB.onLang(all);
+})();
+
+/* ---------- the cockpit trainers: aircraft tabs and a soft reveal ----------
+   The featured panel loads lazily; another aircraft's panel loads when it is chosen (or hovered), the tab thumbnails when the
+   plate comes near the screen. No other work. */
+(function(){
+const box=document.getElementById('fpSims'); if(!box) return;
+const $$=s=>[...box.querySelectorAll(s)];
+const img=a=>box.querySelector('.sm-fig[data-ac="'+a+'"] img');
+const load=i=>{ if(i&&!i.getAttribute('srcset')&&i.dataset.srcset){ i.srcset=i.dataset.srcset; } };
+const ready=i=>{ if(!i) return; if(i.complete&&i.naturalWidth) i.classList.add('ld'); else i.addEventListener('load',()=>i.classList.add('ld'),{once:true}); };
+function show(a){ box.dataset.ac=a;
+  $$('.sm-fig').forEach(f=>f.classList.toggle('on',f.dataset.ac===a)); const i=img(a); load(i); ready(i);
+  $$('.sm-ac').forEach(d=>d.classList.toggle('on',d.dataset.ac===a));
+  $$('.sm-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ac===a))); }
+box.classList.add('js');
+$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>show(b.dataset.ac)); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
+ready(img(box.dataset.ac));
+const thumbs=()=>$$('.sm-tabs img[data-src]').forEach(i=>{ i.src=i.dataset.src; i.removeAttribute('data-src'); });
+if(!('IntersectionObserver' in window)){ thumbs(); box.classList.add('in'); return; }
+const near=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ near.disconnect(); thumbs(); } },{rootMargin:'500px 0px'}); near.observe(box);
+const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(); box.classList.add('in'); } },{threshold:0.12}); io.observe(box);
 })();
 
 /* ---------- the live aerofoil in the subject areas ----------
