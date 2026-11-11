@@ -20,7 +20,7 @@
   /* ---------- which keys belong to which namespace ---------- */
   const NAMES = ['progress', 'packs', 'routes', 'settings'];
   const SETTINGS = ['vlab-lang', 'vlab-reg', 'bb-b200-deck', 'naeroson-prep-view', 'naeroson-route-mode', 'bb-rx-v3', 'bb-rx-simspd'];
-  const PROGRESS = ['naeroson-prog', 'bb-track', 'naeroson-store-fises', 'naeroson-brief-hist', 'naeroson-g2g'];
+  const PROGRESS = ['naeroson-prog', 'bb-track', 'naeroson-store-fises', 'naeroson-brief-hist', 'naeroson-g2g', 'bb-debrief'];
   const PACKS = ['naeroson-store-prep', 'naeroson-store-aircraft', 'naeroson-store-fiac', 'aeroson-fpl', 'aeroson-nav'];
   const ROUTES = ['naeroson-store-route', 'naeroson-store-fixes', 'naeroson-store-mapview', 'naeroson-store-mapnote'];
   function nsOf(k) {
@@ -210,6 +210,7 @@
     if (/^naeroson-store-/.test(k)) { const o = Object.assign({}, B1); for (const id in A1) { if (!o[id] || ((A1[id] && A1[id].updated) || 0) >= ((o[id] && o[id].updated) || 0)) o[id] = A1[id]; } return JSON.stringify(o); }
     if (k === 'bb-b200-stats') { const o = Object.assign({}, B1); for (const id in A1) { if (!o[id] || ((A1[id] && A1[id].t) || 0) >= ((o[id] && o[id].t) || 0)) o[id] = A1[id]; } return JSON.stringify(o); }
     if (k === 'bb-b200-leitner') return JSON.stringify(Object.assign({}, B1, A1));
+    if (k === 'bb-debrief' && Array.isArray(A1) && Array.isArray(B1)) { const seen = new Set(); return JSON.stringify(B1.concat(A1).filter(x => { const id = x && x.id; if (!id || seen.has(id)) return false; seen.add(id); return true; }).sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-30)); }
     if (k === 'naeroson-brief-hist' && Array.isArray(A1) && Array.isArray(B1)) { const seen = new Set(); return JSON.stringify(B1.concat(A1).filter(x => { const id = x && (x.k + ':' + x.t); if (seen.has(id)) return false; seen.add(id); return true; }).sort((x, y) => (x.t || 0) - (y.t || 0)).slice(-40)); }
     return a;
   }

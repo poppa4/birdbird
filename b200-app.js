@@ -901,13 +901,13 @@ function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
-let AIRUI=null;
+let AIRUI=null, DB=null;
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
   if(UI.paused) togglePause(); S.crash=null;
   AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:p.k==='free'?'free':'free',AIRCAPS); if(p.k==='air'){ p.steps=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'B200'); }
   Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,failT:0,m:{},bad:0}); p.steps.forEach(s=>{ delete s.b; s.okT=0; });
-  procSet(p.set); renderProc(); procFocus(); drawScenSel(); airUI();
+  procSet(p.set); renderProc(); procFocus(); drawScenSel(); airUI(); if(DB) DB.start();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -1133,6 +1133,7 @@ function simTick(dt){
     for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); AF.sub(o,h); const r0=S.ctl.rud; S.ctl.rud=F.clamp(r0+rt,-1,1); S.ctl.ail+=at; F.step(S,h); S.ctl.rud=r0; S.ctl.ail-=at; } // trim adds to the pedals, never past full rudder
     if(S.ground){ let rev=0; E.forEach((e,i)=>{ const pl=SYS['pwr'+SIDES[i]]; if(e.lit&&pl<0) rev+=pl<-0.12?2500+6500*(-pl-0.12)/0.28:1200*(-pl/0.12); }); if(rev&&S.Vg>0) S.Vg=Math.max(0,S.Vg-rev/F.AC.m*dt); }
     if(AP.msgT>0&&!AP.on&&AP.msg==='AP OFF'){ AP.msg=''; apDiscFx(); }
+    if(DB) DB.tick(dt); // debrief recorder (simdebrief.js): after the physics, so a crash is seen on the frame it happens
 }
 function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
@@ -1168,9 +1169,15 @@ LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; 
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
 AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+/* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
+if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'B200',page:document.body.dataset.d3?'b200-3d':'b200',S,F,AF,after:AIRUI.btn,tqMax:2230,ittMax:800,ap:()=>AP.on,
+  eng:()=>{ let d=0, s=0; for(let i=0;i<2;i++){ const e=E[i], sd=SIDES[i]; if(e.fail||(!e.lit&&!S.ground)) d|=1<<i; if(feathered(i)||SYS['cond'+sd]===0||SYS['fw'+sd]===0) s|=1<<i; } return [d,s,Math.max(E[0].tq,E[1].tq),Math.max(E[0].itt,E[1].itt)]; },
+  scen:()=>{ const p=PROCS.find(x=>x.k===PR.k); if(!p) return null; const air=p.k==='air'; return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,steps:p.steps,done:PR.done,bad:PR.bad||0}; },
+  again:()=>{ const a=DB.last&&DB.last.afUsed; procStart(PR.k||'air'); if(a&&PR.k==='air'&&!AF.on) toggleAuto(); },
+  next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('B200',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('B200',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
 if(/[?&]af=1/.test(location.search)) toggleAuto();
-window.__air={AF,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('B200',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null){ SYS.gearH=g; S.ctl.gear=g; } if(f!=null) S.ctl.flap=f; }};
+window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('B200',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null){ SYS.gearH=g; S.ctl.gear=g; } if(f!=null) S.ctl.flap=f; }};
 requestAnimationFrame(loop);
 })();

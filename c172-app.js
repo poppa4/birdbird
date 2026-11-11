@@ -544,13 +544,13 @@ function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
-let AIRUI=null;
+let AIRUI=null, DB=null;
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
   if(UI.paused) togglePause(); S.crash=null;
   AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:'free',AIRCAPS); if(p.k==='air'){ p.steps=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'C172'); }
   Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,m:{},bad:0}); p.steps.forEach(s=>{ s.okT=0; });
-  procSet(p); renderProc(); procFocus(); drawScenSel(); airUI();
+  procSet(p); renderProc(); procFocus(); drawScenSel(); airUI(); if(DB) DB.start();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -676,6 +676,7 @@ function simTick(dt,o0){ o0=o0||F.readouts(S);
     const N=Math.max(1,Math.round(dt*240)), h=dt/N;
     if(AF.on){ for(let i=0;i<N;i++){ AF.sub(F.readouts(S),h); F.step(S,h); } }
     else for(let i=0;i<N;i++) F.step(S,h);
+    if(DB) DB.tick(dt); // debrief recorder (simdebrief.js): after the physics, so a crash is seen on the frame it happens
 }
 function loop(t){
   const dt=Math.max(0,Math.min(0.05,(t-last)/1000)); GOV.tick(Math.max(0,Math.min(0.25,(t-last)/1000))); last=t;
@@ -724,10 +725,16 @@ LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window._
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
 AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+/* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
+if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'C172',page:document.body.dataset.d3?'c172-3d':'c172',S,F,AF,after:AIRUI.btn,
+  eng:()=>[(ENG.failed||(!ENG.run&&!S.ground))?1:0,0,NaN,NaN],
+  scen:()=>{ const p=PROCS.find(x=>x.k===PR.k); if(!p) return null; const air=p.k==='air'; return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,steps:p.steps,done:PR.done,bad:PR.bad||0}; },
+  again:()=>{ const a=DB.last&&DB.last.afUsed; procStart(PR.k||'air'); if(a&&PR.k==='air'&&!AF.on) toggleAuto(); },
+  next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('C172',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('C172',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
 if(/[?&]af=1/.test(location.search)) toggleAuto();
-window.__air={AF,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('C172',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(f!=null) S.ctl.flap=f; }};
+window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('C172',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(f!=null) S.ctl.flap=f; }};
 riskText();
 requestAnimationFrame(loop);
 })();
