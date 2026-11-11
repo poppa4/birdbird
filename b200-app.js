@@ -252,6 +252,8 @@ function stepFreq(f,d,lo,hiI,st,dec,inner){ let m=Math.floor(+f+1e-6), k=+f-m; i
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
 const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')],['efisL',tr2('Pilot EFIS with its controls','Pilot-EFIS med kontrollene')],['efisR',tr2('Copilot EFIS with its controls','Andrepilot-EFIS med kontrollene')]];
+const OV_NEED=1460; // whole-panel view: down to the power, propeller and condition levers on the pedestal (PANELZOOM.fit)
+let PZ=null;
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   const sw=efxShow(reg); // EFIS focus: control strip on the right; the displays fit in the rest of the stage
@@ -263,11 +265,12 @@ function zoomTo(reg,instant,force){
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
   tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,0);
   if(ov){ tx=w/2-(r[0]+r[2]/2)*s; ty=Math.max(h/2-(r[1]+r[3]/2)*s,h-P.H*s); }
+  if(ov&&window.PANELZOOM){ const f=PANELZOOM.fit({w,h,x0:0,width:P.W,H:P.H,lip:B200P.LIP,need:OV_NEED,sky:B200P.SKY,otw:skyOn()}); if(f.s>s){ s=f.s; tx=f.tx; ty=f.ty; } } // larger panel; the lowest rows may run off the bottom
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.06);
-  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit();
+  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(); if(PZ) PZ.sync();
 }
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
@@ -287,8 +290,11 @@ PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='
 PST.addEventListener('pointerleave',()=>areaHL(null));
 PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)||performance.now()-clickZoomT<600) return; const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
 let lastTap={t:0,x:0,y:0};
-PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ if(n-clickZoomT<600){ lastTap.t=0; return; } const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
+PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ if(n-clickZoomT<600){ lastTap.t=0; return; } const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; clickZoomT=n; /* the dblclick that follows a double-tap must not toggle back */ } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
 el('zBack').onclick=()=>zoomTo('overview');
+/* pinch, Ctrl/⌘ + wheel and trackpad pinch; bigger magnifiers on small panels (panelzoom.js). Single click and double-click stay here. */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,mags:magG,click:false,dbl:false,
+  off:'.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input'});
 /* ---------- EFIS focus view: one side's EADI and EHSI, large, with every control that goes with them in a strip beside them ----------
    The displays are the live panel itself (the zoom transform to REG.efisL / efisR), so they keep their normal update rate. The
    strip is plain HTML built on first use; its buttons call the same IO.set handlers as the panel controls. While closed it costs
@@ -347,12 +353,12 @@ LAB.onLang(()=>{ if(EFX.box&&EFX.built){ const o=EFX.open; EFX.built=null; if(o)
    view it zooms to the instrument cluster under the pointer; when zoomed, a click outside the zoomed area goes back out.
    A drag (3D look-around, a lever let go over the panel) is not a click. Double-click / double-tap keep working (see dblclick). */
 let pdn=null, clickZoomT=-1e9;
-const OFFP='.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,button,select,a,input';
+const OFFP='.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afnow,button,select,a,input';
 const inR=(p,r)=>p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
 function efisAt(p){ for(const k in B200P.EFISF) if(B200P.EFISF[k].some(r=>inR(p,r))) return k; return null; }
 PST.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:performance.now(),ok:emptyAt(e)&&!e.target.closest(OFFP)}; },true);
 PST.addEventListener('click',e=>{ const d=pdn; pdn=null;
-  if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700) return;
+  if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700||performance.now()-clickZoomT<400) return; // the 2nd click of a double-tap / double-click
   if(!emptyAt(e)||e.target.closest(OFFP)||Z.lock||(D3on&&D3.dragging)) return;
   const p=toWorld(e), f=efisAt(p), cur=Z.reg; let to=null;
   if(f){ if(f!==cur) to=f; }
@@ -768,7 +774,7 @@ function startSteps(s){ const i=s==='L'?0:1; return [
   chk(tr2(`Oil pressure ${s} — rising, ${s} OIL PRESS out; idle N1 about 61 %`,`Oljetrykk ${s} — stiger, ${s} OIL PRESS slukker; tomgang ca. 61 % N1`),'ign'+s,()=>E[i].oilP>=60&&E[i].ng>58),
   st(tr2(`GEN ${s} — RESET, then ON (${s} DC GEN out)`,`GEN ${s} — RESET, så ON (${s} DC GEN slukker)`),'gen'+s,()=>E[i].genOn)]; }
 const PROCS=[
- {k:'air',t:tr2('Airborne: procedure and auto-fly','I lufta: prosedyre og autofly'),set:'air',brief:tr2('',''),steps:[]},
+ {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air',brief:tr2('',''),steps:[]},
  {k:'free',t:tr2('Free flight','Fri flyging'),set:'free',brief:tr2('5,000 ft, 180 KIAS on the localizer side of the field. Explore the panel: autopilot HDG and ALT, the HSI, propeller rpm, or fail an engine from the Failures section.','5000 ft, 180 KIAS. Utforsk panelet: autopilot HDG og ALT, HSI-en, propellturtall, eller stopp en motor under Feil.'),steps:[]},
  {k:'start',t:tr2('Engine start (both)','Motorstart (begge)'),set:'cold',brief:tr2('Cold aircraft on the ramp, battery start. This flow starts the right engine first, then the left. Watch N1 and ITT through every start.','Kaldt fly på oppstillingsplassen, batteristart. Denne flyten starter høyre motor først, så venstre. Følg N1 og ITT gjennom hver start.'),
   steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
@@ -825,11 +831,11 @@ const PROCS=[
    st(tr2('Other engine: condition lever — FUEL CUTOFF','Andre motor: condition-hendel — FUEL CUTOFF'),()=>'cond'+Ls(),()=>SYS['cond'+Ls()]<0.05),
    st(tr2('Generators — OFF','Generatorer — AV'),'genL',()=>SYS.genL===1&&SYS.genR===1),
    st(tr2('Battery — OFF, then evacuate','Batteri — AV, evakuer så'),'bat',()=>!SYS.bat)]},
- {k:'press',t:tr2('Pressurisation loss and emergency descent','Tap av kabintrykk og nødnedstigning'),set:'fl250',fail:'decomp',brief:tr2('Cruise at FL250 on the autopilot. The cabin will lose pressure. Masks first, then an emergency descent: idle power, props forward, flaps APPROACH below 200 KIAS, gear down below 181 KIAS, about 20° nose down at first, then hold VLE. Level off at or below 12,500 ft.','Cruise i FL250 på autopilot. Kabinen vil miste trykket. Masker først, så nødnedstigning: tomgang, propeller frem, flaps APPROACH under 200 KIAS, understell ned under 181 KIAS, ca. 20° nese ned først, hold så VLE. Flat ut i eller under 12 500 ft.'),
+ {k:'press',t:tr2('Pressurisation loss and emergency descent','Tap av kabintrykk og nødnedstigning'),set:'fl250',fail:'decomp',brief:tr2('Cruise at FL250, hand-flying: autopilot off, flight director in HDG and ALT (engage AP if you want). The cabin will lose pressure. Masks first, then an emergency descent: idle power, props forward, flaps APPROACH below 200 KIAS, gear down below 181 KIAS, about 20° nose down at first, then hold VLE. Level off at or below 12,500 ft.','Cruise i FL250, du flyr for hånd: autopiloten er av, flight directoren i HDG og ALT (koble inn AP om du vil). Kabinen vil miste trykket. Masker først, så nødnedstigning: tomgang, propeller frem, flaps APPROACH under 200 KIAS, understell ned under 181 KIAS, ca. 20° nese ned først, hold så VLE. Flat ut i eller under 12 500 ft.'),
   steps:[st(tr2('Crew oxygen masks — ON, 100 %','Oksygenmasker — PÅ, 100 %'),'mask',()=>PR.failed&&SYS.mask),
    st(tr2('Pilot MIC switch — OXY MASK','Pilotens MIC-bryter — OXY MASK'),'micSel',()=>SYS.micSel===0),
    st(tr2('Passenger oxygen — check deployed, or pull the MANUAL OVERRIDE (PASS OXY ON light)','Passasjeroksygen — sjekk utløst, eller trekk MANUAL OVERRIDE (PASS OXY ON)'),'paxOvr',()=>SYS.paxOvr||SYS.paxDep),
-   st(tr2('Autopilot — DISCONNECT','Autopilot — KOBLE UT'),'apAP',()=>!AP.on),
+   st(tr2('Autopilot — OFF (disconnect it if you engaged it)','Autopilot — AV (koble den ut hvis du koblet den inn)'),'apAP',()=>!AP.on),
    st(tr2('Power levers — IDLE','Effekthendler — IDLE'),'pwrL',()=>SYS.pwrL<0.05&&SYS.pwrR<0.05),
    st(tr2('Prop levers — FULL FORWARD','Propellhendler — HELT FREM'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97),
    st(tr2('Flaps — APPROACH (below 200 KIAS)','Flaps — APPROACH (under 200 KIAS)'),'flaps',()=>S.ctl.flap===1,{bad:()=>S.ctl.flap>0&&S.o.ias>205}),
@@ -856,7 +862,7 @@ function procSet(kind){
   const ramp={ground:true,N:-260,E:-120,hdg:90,thr:0,flap:0,gear:1};
   if(kind==='cold'||kind==='running'){ F.place(S,ramp); S.Vg=0; F.readouts(S); sysDefault(kind==='cold'); if(kind==='running'){ SYS.park=1; SYS.beacon=1; } }
   else if(kind==='runway'){ F.place(S,{ground:true,N:20,E:0,hdg:360,thr:0,flap:1,gear:1}); sysDefault(false); S.ctl.flap=S.ctl.flapPos=1; SYS.afSw=-1; SYS.aignL=SYS.aignR=1; SYS.strobe=SYS.landL=SYS.landR=1; SYS.park=0; PR.dead=Math.random()<0.5?0:1; }
-  else if(kind==='fl250'){ F.place(S,{N:-60000,E:0,alt:25000,ias:165,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=SYS.cabSel=6000; SYS.strobe=1; SYS.aignL=SYS.aignR=1; const o=F.readouts(S); F.apSet(AP,S,o,'AP',curNav); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=25000; SYS.yd=1; }
+  else if(kind==='fl250'){ F.place(S,{N:-60000,E:0,alt:25000,ias:165,hdg:360,gear:0,flap:0}); sysDefault(false); SYS.propL=SYS.propR=0.78; trimEngines(); SYS.cab=SYS.cabSel=6000; SYS.strobe=1; SYS.aignL=SYS.aignR=1; const o=F.readouts(S); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=25000; SYS.yd=1; } // flight director only, AP off
   else if(kind==='seapp'){ PR.dead=Math.random()<0.5?0:1; F.place(S,{N:-14800,E:0,alt:2500,ias:140,hdg:360,gear:0,flap:0,fail:PR.dead?[0,1]:[1,0]}); sysDefault(false); const d=SIDES[PR.dead]; S.eng[PR.dead].fail=false;
     Object.assign(E[PR.dead],{lit:false,ng:2,itt:80,np:0,tq:0,ff:0,oilP:0,genOn:false,genRst:false}); SYS['cond'+d]=0; SYS['prop'+d]=0; SYS['fw'+d]=0; SYS['gen'+d]=1; SYS['pwr'+d]=0; trimEngines(); SYS.nav1={a:'113.30',s:'110.30'}; SYS.crs=330; SYS.cab=2500; SYS.strobe=SYS.landL=SYS.landR=1; SYS.gearH=0; }
   else if(kind==='air'){ const D=AF.D, st=D.start, to=D.cfg==='to'; F.WORLD.gsOut=!!D.gsOut;
@@ -870,8 +876,9 @@ function procSet(kind){
   if(kind!=='fl250'){ Object.assign(AP,F.mkAP()); AP.alt=kind==='seapp'?2500:5000; }
   AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; if(kind==='fl250'){ AP.hdg=360; }
   if(kind==='free'){ const o=F.readouts(S); F.apSet(AP,S,o,'HDG',curNav); F.apSet(AP,S,o,'ALT',curNav); AP.alt=7000; AP.vertArm='ALTS'; SYS.yd=1; }
-  if(kind==='air'){ const o=F.readouts(S), st=AF.D.start; AP.on=true; AP.fd=true; AP.lat='HDG'; AP.hdg=st.hdg||360; AP.phiCmd=0; AP.thCmd=o.pitch;
-    if(AF.D.cfg==='to'){ AP.vert='VS'; AP.vsRef=1500; AP.alt=3000; AP.vertArm='ALTS'; } else { AP.vert='ALT'; AP.altHold=Math.round(o.alt); AP.alt=Math.round(o.alt); } SYS.yd=1; }
+  /* autopilot OFF on every start: the pilot hand-flies from a trimmed start (place() trims for the start speed). Heading bug and
+     selected altitude are preset, so AP (then HDG and ALT) is one press away for anyone who wants it. Yaw damper on. */
+  if(kind==='air'){ const st=AF.D.start; AP.hdg=st.hdg||360; AP.alt=AF.D.cfg==='to'?3000:Math.round(st.alt/100)*100; SYS.yd=1; }
   if(!S.ground&&GPU.on){ GPU.on=false; gpuLbl(); }
   SYS.gearH=S.ctl.gear; S.autotrim=el('autoTrim').checked; holdPitch=null; holdRoll=null; inp.rudI=0; SYS.rudTrim=0; rud.set(0); inp.rudUser=0; S.trail.length=0;
 }
@@ -952,7 +959,7 @@ function renderProc(){
 }
 el('procSel').onchange=e=>procStart(e.target.value);
 LAB.onLang(()=>{ renderProc(); drawScenSel(); renderLim(); if(PR.k) procFocus(); });
-function drawScenSel(){ el('scenSel').innerHTML=PROCS.map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${T('Scenario')}: ${L(x.t)}</option>`).join(''); }
+function drawScenSel(){ el('scenSel').innerHTML=PROCS.map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
 el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
@@ -1168,7 +1175,7 @@ if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).m
 LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,efx:()=>EFX.open,to:zoomTo,svg:P.svg};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,type:'B200',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b) b.click(); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'B200',page:document.body.dataset.d3?'b200-3d':'b200',S,F,AF,after:AIRUI.btn,tqMax:2230,ittMax:800,ap:()=>AP.on,
   eng:()=>{ let d=0, s=0; for(let i=0;i<2;i++){ const e=E[i], sd=SIDES[i]; if(e.fail||(!e.lit&&!S.ground)) d|=1<<i; if(feathered(i)||SYS['cond'+sd]===0||SYS['fw'+sd]===0) s|=1<<i; } return [d,s,Math.max(E[0].tq,E[1].tq),Math.max(E[0].itt,E[1].itt)]; },
@@ -1177,7 +1184,7 @@ if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'B200',page:document.body.datas
   next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('B200',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('B200',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
-if(/[?&]af=1/.test(location.search)) toggleAuto();
+if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(PR.k==='air') AIRUI.showNow(AIRK); // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('B200',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null){ SYS.gearH=g; S.ctl.gear=g; } if(f!=null) S.ctl.flap=f; }};
 requestAnimationFrame(loop);
 })();

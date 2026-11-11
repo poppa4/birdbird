@@ -366,11 +366,12 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="fdm.js?v=9"></script>
 <script src="flightkeys.js?v=2"></script>
 <script src="fms.js?v=4"></script>
-<script src="airproc.js?v=2"></script>
+<script src="airproc.js?v=3"></script>
 <script src="simdebrief.js?v=1"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
 <script src="panellayers.js?v=1"></script>
+<script src="panelzoom.js?v=1"></script>
 <script src="da42panel.js?v=6"></script>
 <script src="otw.js?v=11"></script>
 <script src="lab.js?v=47"></script>
@@ -414,7 +415,7 @@ let lastO=null, iasTrend=0, turnRate=0, missionState=null, completeShown=false;
 
 /* ---------- oppdrag ---------- */
 const SCEN=[
- {k:'air', t:{en:'Airborne: procedure and auto-fly',no:'I lufta: prosedyre og autofly'}, brief:{en:'',no:''}, set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]}, checks:[]},
+ {k:'air', t:{en:'In the air: approach, hold, SID or STAR (pick ✈)',no:'I lufta: innflyging, venting, SID eller STAR (velg ✈)'}, brief:{en:'',no:''}, set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]}, checks:[]},
  {k:'free', t:{en:'Free flight',no:'Fri flyging'}, brief:{en:'3000 ft, 9 NM south of Birdbird Field. Try the autopilot: set the heading bug, press HDG, set an altitude, press VS or FLC and watch ALTS capture it.',no:'3000 ft, 9 NM sør for Birdbird Field. Prøv autopiloten: still kursmerket, trykk HDG, velg en høyde, trykk VS eller FLC og se ALTS fange den.'},
   set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:['NAER'],dto:'NAER'},
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
@@ -426,8 +427,8 @@ const SCEN=[
            {t:{en:'Rotate and lift off',no:'Roter og løft av'},f:c=>!c.s.ground},
            {t:{en:'Gear up with a positive climb',no:'Understell opp med positiv stigning'},f:c=>c.s.ctl.gear===0&&!c.s.ground, bad:c=>c.s.ctl.gear===0&&c.o.vs<0&&c.o.alt<200},
            {t:{en:'Climb through 1500 ft between 85 and 100 KIAS',no:'Stig gjennom 1500 ft mellom 85 og 100 KIAS'},f:c=>c.o.alt>1500&&c.o.ias>85&&c.o.ias<100} ]},
- {k:'ils', t:{en:'ILS 36',no:'ILS 36'}, brief:{en:'Heading 030 at 2000 ft, being vectored to the localizer for runway 36. Press PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. The localizer frequency is tuned for you. Press APR: LOC and GS arm. The CDI switches from GPS to LOC1 on final. Gear down at glideslope capture, flaps LDG on short final, disconnect and land.',no:'Kurs 030 i 2000 ft, vektorert mot localizeren til rullebane 36. Trykk PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. LOC-frekvensen stilles inn for deg. Trykk APR: LOC og GS armeres. CDI-en bytter fra GPS til LOC1 på finalen. Understell ned når glidebanen fanges, flaps LDG på kort finale, koble ut og land.'},
-  set:{N:-17500,E:-3600,alt:2000,ias:120,hdg:30,flap:1,gear:0}, ui:{hdg:30,alt:2000,fp:['NAER'],dto:'NAER'}, ap:true,
+ {k:'ils', t:{en:'G1000: load and fly the ILS 36',no:'G1000: last inn og fly ILS 36'}, brief:{en:'Heading 030 at 2000 ft, being vectored to the localizer for runway 36. Autopilot off — you are hand-flying; engage it (AP, HDG, ALT) if you want. Press PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. The localizer frequency is tuned for you. Press APR: LOC and GS arm (the flight director shows them; with AP on it flies them). The CDI switches from GPS to LOC1 on final. Gear down at glideslope capture, flaps LDG on short final, disconnect and land.',no:'Kurs 030 i 2000 ft, vektorert mot localizeren til rullebane 36. Autopiloten er av — du flyr for hånd; koble den inn (AP, HDG, ALT) om du vil. Trykk PROC → SELECT APPROACH → ILS 36 → VECTORS → ACTIVATE. LOC-frekvensen stilles inn for deg. Trykk APR: LOC og GS armeres (flight directoren viser dem; med AP på flyr den dem). CDI-en bytter fra GPS til LOC1 på finalen. Understell ned når glidebanen fanges, flaps LDG på kort finale, koble ut og land.'},
+  set:{N:-17500,E:-3600,alt:2000,ias:120,hdg:30,flap:1,gear:0}, ui:{hdg:30,alt:2000,fp:['NAER'],dto:'NAER'},
   checks:[ {t:{en:'Load and activate ILS 36 with PROC',no:'Last inn og aktiver ILS 36 med PROC'},f:c=>c.fp.appr&&c.fp.appr.kind==='ILS'&&c.fp.apprActive},
            {t:{en:'NAV1 active on 110.30 (IASN)',no:'NAV1 aktiv på 110.30 (IASN)'},f:c=>X.navAct(0)==='110.30'},
            {t:{en:'Arm APR (LOC and GS shown in white)',no:'Armer APR (LOC og GS vises i hvitt)'},f:c=>c.ap.latArm==='APR'||c.ap.lat==='LOC'},
@@ -435,8 +436,8 @@ const SCEN=[
            {t:{en:'Glideslope captured or flown',no:'Glidebane fanget eller fløyet'},f:c=>c.ap.vert==='GS'||(c.n.gs&&Math.abs(c.n.gs.dev)<0.3&&c.o.vs<-300)},
            {t:{en:'Gear down above 1000 ft',no:'Understell ute over 1000 ft'},f:c=>c.s.ctl.gear===1&&c.o.alt>1000, bad:c=>c.s.ctl.gear===0&&c.o.alt<1000},
            {t:{en:'Land on runway 36',no:'Land på rullebane 36'},f:c=>c.s.ground&&!c.s.crash} ]},
- {k:'rnav', t:{en:'RNAV 36 LPV',no:'RNAV 36 LPV'}, brief:{en:'3000 ft just past TUSKA, autopilot in GPS and ALT, flight plan TUSKA → NAER. Press PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Press APR: GP arms. Watch TERM change to LPV 2 NM before FAPSO, then the glidepath capture. Gear down at FAPSO, land.',no:'3000 ft like etter TUSKA, autopilot i GPS og ALT, flyplan TUSKA → NAER. Trykk PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Trykk APR: GP armeres. Se TERM bytte til LPV 2 NM før FAPSO, og så at glidebanen fanges. Understell ned ved FAPSO, land.'},
-  set:{N:-20.1*1852,E:-7.33*1852,alt:3000,ias:125,hdg:20,flap:0,gear:0}, ui:{hdg:20,alt:3000,fp:['TUSKA','NAER'],dto:'TUSKA'}, ap:'gps',
+ {k:'rnav', t:{en:'G1000: load and fly the RNAV 36 LPV',no:'G1000: last inn og fly RNAV 36 LPV'}, brief:{en:'3000 ft just past TUSKA, flight plan TUSKA → NAER. Autopilot off — you are hand-flying; engage it (AP, NAV, ALT) if you want. Press PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Press APR: GP arms. Watch TERM change to LPV 2 NM before FAPSO, then the glidepath capture. Gear down at FAPSO, land.',no:'3000 ft like etter TUSKA, flyplan TUSKA → NAER. Autopiloten er av — du flyr for hånd; koble den inn (AP, NAV, ALT) om du vil. Trykk PROC → SELECT APPROACH → RNAV 36 → ALPOR → ACTIVATE. Trykk APR: GP armeres. Se TERM bytte til LPV 2 NM før FAPSO, og så at glidebanen fanges. Understell ned ved FAPSO, land.'},
+  set:{N:-20.1*1852,E:-7.33*1852,alt:3000,ias:125,hdg:20,flap:0,gear:0}, ui:{hdg:20,alt:3000,fp:['TUSKA','NAER'],dto:'TUSKA'},
   checks:[ {t:{en:'Load and activate RNAV 36 via ALPOR',no:'Last inn og aktiver RNAV 36 via ALPOR'},f:c=>c.fp.appr&&c.fp.appr.kind==='RNAV'&&c.fp.apprActive},
            {t:{en:'Arm APR (GP shown in white)',no:'Armer APR (GP vises i hvitt)'},f:c=>/GP/.test(c.ap.vertArm)||c.ap.vert==='GP'},
            {t:{en:'LPV annunciated on the HSI',no:'LPV vises på HSI-en'},f:c=>c.gps.mode==='LPV'},
@@ -456,8 +457,8 @@ const SCEN=[
            {t:{en:'Intercept: needle within 1 dot, TO flag',no:'Innfanging: nålen innenfor 1 prikk, TO-flagg'},f:c=>c.n.src==='VOR'&&c.n.valid&&Math.abs(c.n.dev)<0.5&&c.n.toFrom==='TO'},
            {t:{en:'Track inbound within 1 dot for 60 s',no:'Følg kursen innenfor 1 prikk i 60 s'},f:c=>(c.m.trk||0)>60, pre:c=>{ if(c.n.src==='VOR'&&c.n.valid&&Math.abs(c.n.dev)<0.5&&XA.crs[0]%360===0) c.m.trk=(c.m.trk||0)+c.dt; else if(c.m.trk&&Math.abs(c.n.dev)>0.5) c.m.trk=0; }},
            {t:{en:'Station passage (flag flips to FROM)',no:'Stasjonspassering (flagget skifter til FROM)'},f:c=>(c.m.trk||0)>0&&c.n.toFrom==='FROM'} ]},
- {k:'efer', t:{en:'Engine failure en route',no:'Motorstans underveis'}, brief:{en:'Cruise at 5000 ft, 140 KIAS on the autopilot. An engine fails without warning. Keep control (the autopilot may disconnect), keep the heading, identify — verify — secure (engine master OFF, then alternator, fuel pump and fuel selector), and hold Vyse or above.',no:'Cruise i 5000 ft, 140 KIAS på autopilot. En motor stopper uten forvarsel. Behold kontrollen (autopiloten kan koble ut), hold kursen, identifiser — verifiser — sikre (engine master AV, så generator, drivstoffpumpe og drivstoffvelger), og hold Vyse eller mer.'},
-  set:{N:-30000,E:4000,alt:5000,ias:140,hdg:360,gear:0,flap:0}, ui:{hdg:360,alt:5000,fp:['NAER'],dto:'NAER'}, ap:true, failAt:8,
+ {k:'efer', t:{en:'Engine failure en route',no:'Motorstans underveis'}, brief:{en:'Cruise at 5000 ft, 140 KIAS. Autopilot off — you are hand-flying; engage it if you want (it may disconnect when the engine fails). An engine fails without warning. Keep control, keep the heading, identify — verify — secure (engine master OFF, then alternator, fuel pump and fuel selector), and hold Vyse or above.',no:'Cruise i 5000 ft, 140 KIAS. Autopiloten er av — du flyr for hånd; koble den inn om du vil (den kan koble ut når motoren stopper). En motor stopper uten forvarsel. Behold kontrollen, hold kursen, identifiser — verifiser — sikre (engine master AV, så generator, drivstoffpumpe og drivstoffvelger), og hold Vyse eller mer.'},
+  set:{N:-30000,E:4000,alt:5000,ias:140,hdg:360,gear:0,flap:0}, ui:{hdg:360,alt:5000,fp:['NAER'],dto:'NAER'}, failAt:8,
   checks:[ {t:{en:'Heading within 20° of 360',no:'Kurs innenfor 20° av 360'},f:c=>c.m.failed&&c.t>c.m.failT+30&&!c.m.hdgBad, bad:c=>c.m.hdgBad, pre:c=>{ if(c.m.failed&&Math.abs(F.wrap180(c.o.hdg-360))>20) c.m.hdgBad=true; }},
            {t:{en:'Never below Vyse (85 KIAS)',no:'Aldri under Vyse (85 KIAS)'},f:c=>c.m.failed&&c.t>c.m.failT+30&&!c.m.vB, bad:c=>c.m.vB, pre:c=>{ if(c.m.failed&&c.o.ias<85) c.m.vB=true; }},
            {t:{en:'Engine master of the failed engine OFF (not the good one)',no:'Engine master for motoren som stoppet AV (ikke den gode)'},f:c=>c.s.eng.some(e=>e.fail&&e.feather)&&!c.s.eng.some(e=>!e.fail&&e.feather), bad:c=>c.s.eng.some(e=>!e.fail&&e.feather)},
@@ -496,11 +497,12 @@ function airChecks(k){ const app=AIRPROC.isApp(k)||k==='star', mins=AIRPROC.MINS
     {t:{en:'Flaps LDG before minimums',no:'Flaps LDG før minima'},f:c=>c.s.ctl.flap===2},
     {t:{en:`At minimums (${mins} ft): land or go around`,no:`Ved minima (${mins} ft): land eller gå rundt`},f:c=>!!AF.rec.decision||(c.s.ground&&!c.s.crash)||(c.m.belowMin&&c.o.vs>300), pre:c=>{ if(c.o.alt<mins+20&&!c.s.ground) c.m.belowMin=1; }} ]; }
 function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
-  AP.on=true; AP.fd=true; AP.lat='HDG'; AP.hdg=UI.hdg=st.hdg; AP.phiCmd=0; const o=F.readouts(S); AP.thCmd=o.pitch;
-  if(to){ AP.vert='VS'; AP.vsRef=800; AP.alt=3000; AP.vertArm='ALTS'; } else { AP.vert='ALT'; AP.altHold=Math.round(o.alt); AP.alt=Math.round(o.alt); }
+  /* autopilot OFF: the pilot hand-flies from a trimmed start (place() trims for the start speed). Heading bug and selected
+     altitude are preset, so AP (then HDG and ALT, or NAV / APR) is one press away for anyone who wants it. */
+  Object.assign(AP,F.mkAP()); AP.hdg=UI.hdg=st.hdg; AP.alt=to?3000:Math.round(st.alt/100)*100;
   const n=XA.radio.nav; n[0]={act:'110.30',stby:'113.30'}; n[1]={act:'113.30',stby:'116.50'}; XA.crs=[360,k==='sid'?324:360]; XA.mins={on:true,ft:D.mins||200};
   const fp=XA.fp=FM.mkFP(), A=FM.APPR.NAER;
-  if(/^rnp/.test(k)){ FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[1],'ALPOR',true,S); fp.appr.vmode=D.vmode; fp.appr.lpv=D.vmode!=='LNAV'; XA.cdi='GPS'; const g=X.navNow(S,o.gs).gps; AP.lat='GPS'; AP.latArm=''; AP.aprMode=true; if(fp.appr.lpv) AP.vertArm='GP'; }
+  if(/^rnp/.test(k)){ FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[1],'ALPOR',true,S); fp.appr.vmode=D.vmode; fp.appr.lpv=D.vmode!=='LNAV'; XA.cdi='GPS'; }
   else if(k==='sid'){ FM.setRoute(fp,['OSVIK'],S); XA.cdi='GPS'; }
   else if(k==='star'){ FM.setRoute(fp,['TUSKA','ALPOR','RONAX'],S); fp.act=0; fp.dto={N:S.N,E:S.E}; XA.cdi='GPS'; }
   else if(k==='hold'){ FM.setRoute(fp,['RONAX'],S); FM.directTo(fp,'RONAX',S); XA.cdi='NAV1'; }
@@ -520,7 +522,7 @@ function resetMission(){
   Object.assign(AP,F.mkAP()); AP.hdg=UI.hdg=sc.ui.hdg; AP.alt=sc.ui.alt;
   XA.cdi=(sc.nav&&sc.nav.cdi)||'GPS'; XA.crs=[(sc.nav&&sc.nav.crs)||360,360]; XA.radio.nav[0]={act:'113.30',stby:'110.30'}; XA.radio.nav[1]={act:'116.50',stby:'108.00'}; XA.win.P=XA.win.M=null; XA.soft.P=XA.soft.M='top'; XA.mfdPage='MAP'; XA.msgs.length=0;
   XA.fp=FM.mkFP(); if(sc.ui.fp&&sc.ui.fp.length){ FM.setRoute(XA.fp,sc.ui.fp,S); if(sc.ui.dto) FM.directTo(XA.fp,sc.ui.dto,S); if(sc.k==='rnav'){ XA.fp.act=1; XA.fp.dto=null; } }
-  if(sc.ap){ const o=F.readouts(S), n=navCur(o).cdi; F.apSet(AP,S,o,'AP',n); F.apSet(AP,S,o,sc.ap==='gps'?'NAV':'HDG',n); F.apSet(AP,S,o,'ALT',n); }
+  /* every scenario starts with the autopilot off (hand-flying); the briefs say when engaging it is part of the exercise */
   missionState={m:{}, t:0, done:sc.checks.map(()=>0)}; completeShown=false;
   S.autotrim=el('autoTrim').checked; holdPitch=null;
   sysDefault(false); if(sc.k==='takeoff'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.park=0; } if(!S.ground) SYS.pitot=1;
@@ -534,7 +536,7 @@ const scenSeg=seg(el('segScen'),SCEN.map(s=>[s.k,s.t]),UI.scen,v=>{ UI.scen=v; r
 scenSeg.set=function(x){ this.v=x; drawScen(); };
 function drawScen(){ el('segScen').innerHTML=SCEN.map(s=>`<button data-v="${s.k}" class="${s.k===UI.scen?'on':''}">${L(s.t)}</button>`).join(''); }
 drawScen(); LAB.onLang(drawScen);
-function drawScenSel(){ el('scenSel').innerHTML=SCEN.map(x=>`<option value="${x.k}"${x.k===UI.scen?' selected':''}>${L({en:'Scenario',no:'Scenario'})}: ${L(x.t)}</option>`).join(''); }
+function drawScenSel(){ el('scenSel').innerHTML=SCEN.map(x=>`<option value="${x.k}"${x.k===UI.scen?' selected':''}>${L({en:'Exercise',no:'Øvelse'})}: ${L(x.t)}</option>`).join(''); }
 drawScenSel(); LAB.onLang(drawScenSel);
 el('scenSel').onchange=e=>{ UI.scen=e.target.value; resetMission(); drawScen(); setDrawer(true); el('drawer').querySelector('.tabs button[data-t=mis]').click(); };
 el('segScen').addEventListener('click',()=>setTimeout(()=>{ drawScen(); drawScenSel(); },0));
@@ -618,6 +620,8 @@ function ioSet(k,v){
 }
 /* ---------- zoom ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
+const OV_NEED=940; // whole-panel view: down to the power levers on the centre console (PANELZOOM.fit)
+let PZ=null;
 function stageSize(){ return {w:PST.clientWidth,h:PST.clientHeight}; }
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg) { flash(L({en:'View is locked — unlock to zoom',no:'Visningen er låst — lås opp for å zoome'})); return; }
@@ -629,13 +633,14 @@ function zoomTo(reg,instant,force){
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
   tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,0);
   if(ov){ tx=w/2-(r[0]+r[2]/2)*s; ty=Math.min(h-P.H*s+ (h>P.H*s?0:0), h/2-(r[1]+r[3]/2)*s); ty=Math.max(ty,h-P.H*s); }
+  if(ov&&window.PANELZOOM){ const r0=P.REG.overview; const f=PANELZOOM.fit({w,h,x0:r0[0],width:r0[2],H:P.H,lip:DA42P.LIP,need:OV_NEED,sky:DA42P.SKY,otw:skyOn()}); if(f.s>s){ s=f.s; tx=f.tx; ty=f.ty; } } // larger panel; the lowest rows may run off the bottom
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.12);
   PST.classList.toggle('zoomed',!ov);
   if(ov&&window.OTW&&OTW.frame) OTW.frame({lip:ty+DA42P.LIP*s,nose:OTW_NOSE,cx:tx+510*s}); // cx: straight ahead of the left-seat pilot (PFD attitude)
-  syncAreaUI(); areaHL(null);
+  syncAreaUI(); areaHL(null); if(PZ) PZ.sync();
   clearTimeout(zoomTo.t); zoomTo.t=setTimeout(sizeScreens,instant?0:480);
 }
 function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
@@ -656,9 +661,10 @@ magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m)
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.gdu button,.gdu .kn,.zback,.tz,.pill,.mag,.tip');
 PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch') return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)) return; const k=regionAt(toWorld(e)); if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
-let lastTap={t:0,x:0,y:0};
-PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ const k=regionAt(toWorld(e)); if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
+/* single click / tap on an instrument area zooms to it, a click outside the zoomed area or a double-click / double-tap goes
+   back, pinch and Ctrl/⌘ + wheel or trackpad pinch zoom in and out (panelzoom.js, shared with the C172 and the B200) */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,mags:magG,
+  off:'.zback,.more,.pill,.tip,.touch,.rot,.otwmsg,.afban,.afnow,.gdu .bcolw,button,select,a,input'});
 function inReg(p,k){ const r=P.REG[k]; return p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]; }
 el('zBack').onclick=()=>zoomTo('overview');
 /* toolbar: area selector, lock, menu */
@@ -1131,10 +1137,10 @@ const Q=[
 ];
 quiz(el('qbox'),'cockpit',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
 
-LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS;
+window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS;
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 { const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-  AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+  AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,type:'DA42',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=mis]'); if(b) b.click(); }}); LAB.onLang(airUI);
   /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
   if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'DA42',page:'cockpit',S,F,AF,after:AIRUI.btn,ap:()=>AP.on,
     eng:()=>{ let d=0, s=0; S.eng.forEach((e,i)=>{ if(e.fail||(!e.run&&!S.ground)) d|=1<<i; if(e.feather) s|=1<<i; }); return [d,s,NaN,NaN]; },
@@ -1148,7 +1154,7 @@ if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scr
   if(q0&&SCEN.some(x=>x.k===q0)) UI.scen=q0; else if(qp==='free') UI.scen='free';
   drawScen(); drawScenSel(); resetMission();
   if(q0&&PROCS.some(x=>x.k===q0)) procStart(q0);
-  if(/[?&]af=1/.test(location.search)) toggleAuto(); }
+  if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(UI.scen==='air'&&!PR.k) AIRUI.showNow(AIRK); } // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
 requestAnimationFrame(loop);
 })();

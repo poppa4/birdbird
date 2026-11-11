@@ -26,6 +26,20 @@ const NM=1852;
   ok('LOC procedure flags the glide slope out',A.def('loc','DA42',{}).gsOut===true&&!A.def('ils','DA42',{}).gsOut);
 }
 
+/* ---------- every start: autopilot off, hand-flown, trimmed (no input for 10 s stays within ±200 ft and ±10° of bank) ---------- */
+{ const {AIRPROC:A}=load();
+  for(const t of ['C172','DA42','B200']){ const b=A.brief('ils',t);
+    ok(t+': brief is text, not an object ('+String(b.en).slice(0,20)+')',typeof b.en==='string'&&!/object Object/.test(b.en)&&typeof b.no==='string');
+    ok(t+': brief says hand-flying, autopilot off (EN/NO)',t==='C172'?/hand-flying/.test(b.en)&&/for hånd/.test(b.no):/Autopilot off/.test(b.en)&&/Autopiloten er av/.test(b.no));
+    ok(t+': no brief promises an engaged autopilot',A.list(t,{gps:t==='DA42'?'fms':'nav',adf:true}).every(x=>{ const e=A.brief(x.k,t).en; return !/autopilot (in|GPS) /i.test(e); })); }
+  for(const t of ['C172','DA42','B200']) for(const x of A.list(t,{gps:t==='DA42'?'fms':t==='B200'?'nav':null,adf:t!=='DA42'})){
+    const ctx=load(), F=ctx.FDM; if(t==='C172') F.useType('C172'); const S=F.create(), D=ctx.AIRPROC.def(x.k,t,{}), st=D.start; F.WORLD.gsOut=!!D.gsOut;
+    const to=D.cfg==='to'; F.place(S,{N:st.N,E:st.E,alt:st.alt,ias:st.ias,hdg:st.hdg,gear:to?1:0,flap:D.cfg==='app'&&t!=='C172'?1:to&&t==='B200'?1:0,gam:st.gam||0,thr:to?(t==='C172'?1:t==='B200'?0.85:0.92):undefined});
+    const a0=F.readouts(S).alt; let dA=0, bk=0; for(let i=0;i<10*240;i++){ F.step(S,1/240); if(i%24===0){ const o=F.readouts(S); dA=Math.max(dA,Math.abs(o.alt-a0)); bk=Math.max(bk,Math.abs(o.roll)); } }
+    ok(`${t} ${x.k}: hands-off 10 s within ±200 ft / ±10° (${dA.toFixed(0)} ft, ${bk.toFixed(1)}°)`,(to||x.k==='sid'?true:dA<200)&&bk<10&&!S.crash);
+    if(to||x.k==='sid') ok(`${t} ${x.k}: hands-off after take-off keeps climbing without a stall`,F.readouts(S).alt>a0&&F.readouts(S).ias>40); }
+}
+
 /* ---------- closed loop: the instructor (hidden autopilot) flies the shared model ---------- */
 function run(type,key,opt){ opt=opt||{};
   const ctx=load(), F=ctx.FDM, A=ctx.AIRPROC; if(type==='C172') F.useType('C172');

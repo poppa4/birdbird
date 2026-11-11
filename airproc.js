@@ -75,20 +75,24 @@ function def(k,type,caps){
 function missedSegs(){ return [{t:'legs',legs:[{ca:360,until:2700,alt:3000},{fix:'HOLAN',alt:3000}],climb:true,missed:true},{t:'hold',fix:'HOLAN',inb:180,dir:1,alt:3000,legT:60}]; }
 
 /* ---------- briefings ---------- */
-function brief(k,type){ const b0=brief0(k,type); return b0?b0+' '+tr('Training data: procedures and minima are simplified for practice and are not for navigation.','Øvingsdata: prosedyrer og minima er forenklet for trening og er ikke for navigasjon.'):b0; }
+/* every start: autopilot off, the pilot hand-flies an aeroplane trimmed for the start speed; auto-fly only on request */
+function handNote(type){ return type==='C172'?tr('You are hand-flying, trimmed for this speed (the C172 has no autopilot). Auto-fly lets the instructor fly it while you watch.','Du flyr for hånd, trimmet for denne farten (C172 har ingen autopilot). Autofly lar instruktøren fly mens du ser på.')
+  :tr('Autopilot off — you are hand-flying, trimmed for this speed; engage it if you want (heading and altitude are preset). Auto-fly flies the whole procedure for you.','Autopiloten er av — du flyr for hånd, trimmet for denne farten; koble den inn om du vil (kurs og høyde er forhåndsvalgt). Autofly flyr hele prosedyren for deg.'); }
+function brief(k,type){ const b0=brief0(k,type); if(!b0) return b0; const h=handNote(type);
+  return tr(b0.en+' '+h.en+' Training data: procedures and minima are simplified for practice and are not for navigation.',b0.no+' '+h.no+' Øvingsdata: prosedyrer og minima er forenklet for trening og er ikke for navigasjon.'); }
 function brief0(k,type){
   const c172=type==='C172', b=type==='B200', T=TY[type]||TY.DA42;
   const sp=v=>v+' KIAS';
   switch(k){
-    case 'ils': return tr(`On vectors at ${T.alt0} ft, heading 030 to intercept the runway 36 localizer about ${c172?10:12} NM out, ${sp(T.vInit)}. NAV 1 is on IASN 110.30 with course 360${c172?'':', the autopilot in HDG and ALT'}. Glide slope from about 9 NM, DA 210 ft (DH 200). Missed approach: straight ahead 360 to 3000 ft, direct HOLAN and hold.`,
-      `Vektorert i ${T.alt0} ft, kurs 030 for å avskjære localizeren til bane 36 ca. ${c172?10:12} NM ute, ${sp(T.vInit)}. NAV 1 står på IASN 110.30 med kurs 360${c172?'':', autopiloten i HDG og ALT'}. Glidebane fra ca. 9 NM, DA 210 ft (DH 200). Avbrutt innflyging: rett frem 360 til 3000 ft, direkte HOLAN og vent.`);
+    case 'ils': return tr(`On vectors at ${T.alt0} ft, heading 030 to intercept the runway 36 localizer about ${c172?10:12} NM out, ${sp(T.vInit)}. NAV 1 is on IASN 110.30 with course 360. Glide slope from about 9 NM, DA 210 ft (DH 200). Missed approach: straight ahead 360 to 3000 ft, direct HOLAN and hold.`,
+      `Vektorert i ${T.alt0} ft, kurs 030 for å avskjære localizeren til bane 36 ca. ${c172?10:12} NM ute, ${sp(T.vInit)}. NAV 1 står på IASN 110.30 med kurs 360. Glidebane fra ca. 9 NM, DA 210 ft (DH 200). Avbrutt innflyging: rett frem 360 til 3000 ft, direkte HOLAN og vent.`);
     case 'loc': return tr(`Same vectors as the ILS, but the glide slope is out of service: fly the localizer and a continuous 3° descent from FAPSO (D5.0, 1,650 ft), using the DME/altitude checks (D4 1,330 · D3 1,020 · D2 700). MDA 460 ft. Decide at MDA: land or go around.`,
       `Samme vektorer som ILS, men glidebanen er ute av drift: fly localizeren og en jevn 3°-nedstigning fra FAPSO (D5,0, 1650 ft) med DME/høyde-kontrollene (D4 1330 · D3 1020 · D2 700). MDA 460 ft. Bestem ved MDA: land eller gå rundt.`);
     case 'ndb': return tr(`Non-precision approach on the AN NDB (375 kHz, on the centreline 4.1 NM from the threshold): track 360° inbound to AN and 360° outbound to the runway on the ADF, 3° continuous descent, MDA 600 ft. The localizer is tuned on NAV 1 as a cross-check.`,
       `Ikke-presisjonsinnflyging på AN NDB (375 kHz, på senterlinjen 4,1 NM fra terskelen): følg 360° inn til AN og 360° ut mot banen på ADF-en, jevn 3°-nedstigning, MDA 600 ft. Localizeren er stilt inn på NAV 1 som krysskontroll.`);
     case 'rnp_lpv': case 'rnp_lv': case 'rnp_ln': { const m=k==='rnp_lpv'?'LPV DA 250 ft':k==='rnp_lv'?'LNAV/VNAV DA 300 ft':'LNAV MDA 470 ft';
-      return tr(`3000 ft, 4 NM before the IAF ALPOR. RNP 36 via ALPOR is loaded and active${type==='DA42'?' (CDI on GPS, autopilot GPS and ALT)':' in the GPS navigator'}: ALPOR – RONAX (IF, 3000 ft) – FAPSO (FAF, 1650 ft) – RW36. Minimums: ${m}.${k==='rnp_ln'?' No vertical guidance: continuous 3° descent from FAPSO with the distance checks.':''}`,
-        `3000 ft, 4 NM før IAF ALPOR. RNP 36 via ALPOR er lastet og aktiv${type==='DA42'?' (CDI på GPS, autopilot GPS og ALT)':' i GPS-navigatoren'}: ALPOR – RONAX (IF, 3000 ft) – FAPSO (FAF, 1650 ft) – RW36. Minima: ${m}.${k==='rnp_ln'?' Ingen vertikal ledning: jevn 3°-nedstigning fra FAPSO med avstandskontrollene.':''}`); }
+      return tr(`3000 ft, 4 NM before the IAF ALPOR. RNP 36 via ALPOR is loaded and active${type==='DA42'?' (CDI on GPS)':' in the GPS navigator'}: ALPOR – RONAX (IF, 3000 ft) – FAPSO (FAF, 1650 ft) – RW36. Minimums: ${m}.${k==='rnp_ln'?' No vertical guidance: continuous 3° descent from FAPSO with the distance checks.':''}`,
+        `3000 ft, 4 NM før IAF ALPOR. RNP 36 via ALPOR er lastet og aktiv${type==='DA42'?' (CDI på GPS)':' i GPS-navigatoren'}: ALPOR – RONAX (IF, 3000 ft) – FAPSO (FAF, 1650 ft) – RW36. Minima: ${m}.${k==='rnp_ln'?' Ingen vertikal ledning: jevn 3°-nedstigning fra FAPSO med avstandskontrollene.':''}`); }
     case 'sid': return tr(`Just airborne from runway 36 at about ${T.sidAlt} ft, ${sp(T.vClimb)}${T.retract?', gear still down':''}. OSVIK 1N: track 360°, at 1,500 ft turn LEFT direct OSVIK (322°, 22 NM${c172?'; ASN R-324 D21.6':''}), climb 3,000 ft. Minimum gradient 4.5 % to 1,500 ft. Run the after-take-off checklist.`,
       `Akkurat lettet fra bane 36 i ca. ${T.sidAlt} ft, ${sp(T.vClimb)}${T.retract?', understellet fortsatt ute':''}. OSVIK 1N: følg 360°, ved 1500 ft sving VENSTRE direkte OSVIK (322°, 22 NM${c172?'; ASN R-324 D21,6':''}), stig til 3000 ft. Minste stigegradient 4,5 % til 1500 ft. Ta sjekklisten etter avgang.`);
     case 'star': return tr(`${T.starAlt} ft, 4 NM before TUSKA. TUSKA 1A arrival: TUSKA – ALPOR (cross at 3000 ft) – RONAX (3000 ft), then the ILS 36${c172?' (monitor on ASN VOR/DME: TUSKA R-196 D23, ALPOR R-199 D11)':''}. Run the descent and approach checklists on the way.`,
@@ -96,6 +100,34 @@ function brief0(k,type){
     case 'hold': return tr(`3000 ft, 5 NM south of RONAX on the localizer, inbound. Hold at RONAX (D10.0 IASN): inbound 360°, right-hand turns, 1-minute legs, 3000 ft (direct entry). Holding speed about ${sp(T.vHold)}.`,
       `3000 ft, 5 NM sør for RONAX på localizeren, inngående. Vent ved RONAX (D10,0 IASN): inngående 360°, høyresvinger, 1 minutts legger, 3000 ft (direkte innflyging). Ventefart ca. ${sp(T.vHold)}.`);
     default: return tr(`Cruise at ${T.cruiseAlt} ft, heading 360 south of the field. Explore the panel, or pick a procedure.`,`Marsj i ${T.cruiseAlt} ft, kurs 360 sør for flyplassen. Utforsk panelet, eller velg en prosedyre.`);
+  }
+}
+
+/* ---------- "what to do now": three short steps for the card shown when a procedure starts ---------- */
+function todo(k,type){
+  const T=TY[type]||TY.DA42, ret=T.retract, c172=type==='C172';
+  const cfg=ret?tr('gear down and landing flaps','understell ned og landingsflaps'):tr('landing flaps','landingsflaps');
+  const fin=m=>tr(`By FAPSO (D5): ${cfg.en}. At ${m}: runway in sight → land, otherwise go around.`,`Senest ved FAPSO (D5): ${cfg.no}. Ved ${m}: banen i sikte → land, ellers gå rundt.`);
+  switch(k){
+    case 'ils': return [tr(`Hold heading 030 and ${T.alt0} ft — the localizer needle (NAV 1) will start to move.`,`Hold kurs 030 og ${T.alt0} ft — localizernålen (NAV 1) begynner å bevege seg.`),
+      tr('As it centres, turn onto 360 and keep it centred.','Når den sentrerer, sving inn på 360 og hold den i midten.'),
+      tr('Glide slope centred (about 9 NM): start down and keep it centred (about 5 × ground speed in ft/min).','Glidebanen i midten (ca. 9 NM): start nedstigningen og hold den i midten (ca. 5 × fart over bakken i ft/min).'),fin('DA 210 ft')];
+    case 'loc': return [tr(`Hold heading 030 and ${T.alt0} ft until the localizer needle moves, then turn onto 360.`,`Hold kurs 030 og ${T.alt0} ft til localizernålen beveger seg, sving så inn på 360.`),
+      tr('No glide slope: at FAPSO (D5.0, 1,650 ft) start a 3° descent and check D4 1,330 · D3 1,020 · D2 700.','Ingen glidebane: ved FAPSO (D5,0, 1650 ft) start 3° nedstigning og sjekk D4 1330 · D3 1020 · D2 700.'),fin('MDA 460 ft')];
+    case 'ndb': return [tr(`Hold ${T.alt0} ft and turn to put the ADF needle on the nose: track 360° to AN.`,`Hold ${T.alt0} ft og sving så ADF-nålen står rett frem: følg 360° til AN.`),
+      tr('After AN the needle points behind you: keep tracking 360°, 3° descent.','Etter AN peker nålen bakover: fortsett å følge 360°, 3° nedstigning.'),fin('MDA 600 ft')];
+    case 'rnp_lpv': case 'rnp_lv': case 'rnp_ln': { const m=k==='rnp_lpv'?'DA 250 ft':k==='rnp_lv'?'DA 300 ft':'MDA 470 ft';
+      return [tr('Follow the GPS course: ALPOR, then turn onto 360 to RONAX, at 3000 ft.','Følg GPS-kursen: ALPOR, så sving inn på 360 mot RONAX, i 3000 ft.'),
+        k==='rnp_ln'?tr('At FAPSO (D5) start a 3° descent with the distance checks.','Ved FAPSO (D5) start 3° nedstigning med avstandskontrollene.'):tr('At FAPSO the glide path centres: follow it down.','Ved FAPSO sentrerer glidebanen: følg den ned.'),fin(m)]; }
+    case 'sid': return [tr(`Climb straight ahead on 360 at about ${T.vClimb} KIAS${ret?'; gear up with a positive rate':''}.`,`Stig rett frem på 360 i ca. ${T.vClimb} KIAS${ret?'; understell opp med positiv stigning':''}.`),
+      tr('At 1,500 ft turn LEFT direct OSVIK (about 320°).','Ved 1500 ft sving VENSTRE direkte OSVIK (ca. 320°).'),tr('Level off at 3,000 ft; after-take-off checklist.','Flat ut i 3000 ft; sjekkliste etter avgang.')];
+    case 'star': return [tr(`Fly to TUSKA at ${T.starAlt} ft, then on to ALPOR — descend to cross it at 3,000 ft.`,`Fly til TUSKA i ${T.starAlt} ft, så videre til ALPOR — synk så du krysser den i 3000 ft.`),
+      tr(c172?'Use the ASN VOR/DME to check your position (TUSKA R-196 D23, ALPOR R-199 D11).':'ALPOR to RONAX, then intercept the ILS 36 localizer.',c172?'Bruk ASN VOR/DME for å sjekke posisjonen (TUSKA R-196 D23, ALPOR R-199 D11).':'ALPOR til RONAX, så avskjær localizeren til ILS 36.'),
+      tr('Then fly the ILS 36 to land.','Fly så ILS 36 til landing.')];
+    case 'hold': return [tr('Keep flying 360 inbound on the localizer to RONAX (D10.0 IASN), 3000 ft.','Fortsett 360 inn på localizeren til RONAX (D10,0 IASN), 3000 ft.'),
+      tr('Over RONAX turn RIGHT to 180 and fly 1 minute outbound.','Over RONAX sving til HØYRE til 180 og fly 1 minutt ut.'),tr('Turn RIGHT back to 360 inbound to RONAX — that is one circuit.','Sving til HØYRE tilbake til 360 inn mot RONAX — det er én runde.')];
+    default: return [tr('Fly anywhere: try turns, climbs and descents, and trim off the control pressure.','Fly hvor du vil: prøv svinger, stigning og nedstigning, og trim bort rorkreftene.'),
+      tr('Pick a procedure in the ✈ menu to practise an approach, a hold or a departure.','Velg en prosedyre i ✈-menyen for å øve på en innflyging, en venting eller en avgang.')];
   }
 }
 
@@ -303,28 +335,51 @@ function autofly(env){
   return AF;
 }
 
-/* ---------- shared toolbar UI: procedure picker and the auto-fly toggle ---------- */
-const CSS=`.ctop .afsel{max-width:210px}
+/* ---------- shared toolbar UI: procedure picker, the auto-fly toggle and the "what to do now" card ---------- */
+const CSS=`.ctop .afsel{max-width:230px;border-color:#2fd17b;font-weight:700}
 .ctop .cb.afb{font-weight:700}.ctop .cb.afb[aria-pressed=true]{background:#2fd17b;border-color:#2fd17b;color:#05170c}
 .afban{position:absolute;left:8px;top:8px;z-index:6;max-width:min(560px,70%);background:rgba(8,12,16,.86);border:1px solid #2fd17b;color:#d9fbe8;border-radius:8px;padding:5px 9px;font:600 12px/1.35 var(--f-sans,system-ui);pointer-events:none}
 .afban b{color:#2fd17b;margin-right:6px}.afban small{display:block;color:#9fb0bd;font:500 11px/1.3 var(--f-mono,monospace)}
-.afban[hidden]{display:none}
-@media (max-width:900px){.afban{font-size:11px;padding:3px 7px;max-width:62%}.ctop .afsel{max-width:150px}}`;
-function ui(o){ // o:{after:Element, stage:Element, list:[{k,t}], L, onPick:k=>{}, onAuto:()=>{}}
+.afban[hidden],.afnow[hidden]{display:none}
+.afnow{position:absolute;right:8px;top:8px;z-index:7;width:min(380px,calc(100% - 16px));background:rgba(8,12,16,.92);border:1px solid #2fd17b;color:#e6eef3;border-radius:10px;padding:10px 12px 9px;font:500 12.5px/1.4 var(--f-sans,system-ui);box-shadow:0 6px 24px rgba(0,0,0,.45)}
+.afnow h4{margin:0 0 2px;font:700 14px/1.25 var(--f-sans,system-ui);color:#fff}.afnow h4 i{font-style:normal;color:#2fd17b;margin-right:5px}
+.afnow .st{color:#9fb0bd;font-size:11.5px;margin:0 0 6px}
+.afnow ol{margin:0 0 8px;padding-left:18px}.afnow li{margin:2px 0}
+.afnow .row{display:flex;gap:6px;flex-wrap:wrap}.afnow button{font:600 12px/1 var(--f-sans,system-ui);border-radius:6px;padding:7px 10px;cursor:pointer;border:1px solid #3c444c;background:#1d2227;color:#dfe5ea}
+.afnow button.go{background:#2fd17b;border-color:#2fd17b;color:#05170c}
+@media (max-width:932px),(max-height:520px){.afban{font-size:11px;padding:3px 7px;max-width:62%}.ctop .afsel{max-width:150px}
+ .afnow{width:min(330px,calc(100% - 16px));padding:7px 9px 7px;font-size:11.5px;line-height:1.3}.afnow h4{font-size:13px}.afnow ol{margin-bottom:6px}.afnow button{padding:6px 8px;font-size:11.5px}}`;
+const GROUPS=[[tr('Approaches','Innflyginger'),k=>isApp(k)],[tr('Departure and arrival','Avgang og ankomst'),k=>k==='sid'||k==='star'],[tr('Holding','Venting'),k=>k==='hold'],[tr('Other','Annet'),k=>k==='free']];
+function ui(o){ // o:{after:Element (the scenario select), stage:Element, list:[{k,t}], L, type, onPick:k=>{}, onAuto:()=>{}, onBrief:()=>{}}
   if(!document.getElementById('afcss')){ const s=document.createElement('style'); s.id='afcss'; s.textContent=CSS; document.head.appendChild(s); }
   const sel=document.createElement('select'); sel.className='cb afsel'; sel.id='apSel'; sel.setAttribute('aria-label','Procedure');
   const btn=document.createElement('button'); btn.className='cb afb'; btn.id='bAuto'; btn.setAttribute('aria-pressed','false'); btn.type='button';
-  o.after.insertAdjacentElement('afterend',sel); sel.insertAdjacentElement('afterend',btn);
+  // the procedure picker comes first in the toolbar (the main way in), then auto-fly, then the exercise (checklist) selector
+  o.after.insertAdjacentElement('beforebegin',sel); sel.insertAdjacentElement('afterend',btn);
   const ban=document.createElement('div'); ban.className='afban'; ban.id='afBan'; ban.hidden=true; ban.setAttribute('aria-live','polite'); o.stage.appendChild(ban);
-  const api={sel,btn,ban,cur:null,
-    draw(cur,on){ api.cur=cur; const L=o.L; sel.innerHTML=`<option value=""${cur?'':' selected'} disabled>${L(tr('Procedure…','Prosedyre…'))}</option>`+o.list.map(x=>`<option value="${x.k}"${x.k===cur?' selected':''}>✈ ${L(x.t)}</option>`).join('');
-      sel.title=L(tr('Procedure: start in the air on the chosen procedure','Prosedyre: start i lufta på valgt prosedyre')); api.set(on); },
-    set(on){ btn.setAttribute('aria-pressed',on?'true':'false'); btn.textContent=(on?'● ':'○ ')+o.L(tr('Auto-fly','Autofly')); },
-    banner(on,head,txt){ if(!on){ if(!ban.hidden) ban.hidden=true; return; } const h=`<b>${head}</b>${txt?`<small>${txt}</small>`:''}`; if(ban._h!==h){ ban._h=h; ban.innerHTML=h; } if(ban.hidden) ban.hidden=false; }};
-  sel.onchange=()=>{ if(sel.value) o.onPick(sel.value); };
+  const now=document.createElement('div'); now.className='afnow'; now.id='afNow'; now.hidden=true; now.setAttribute('role','dialog'); now.setAttribute('aria-label','What to do now'); o.stage.appendChild(now);
+  let nowT=0, nowK=null;
+  const api={sel,btn,ban,now,cur:null,
+    draw(cur,on){ api.cur=cur; const L=o.L;
+      sel.innerHTML=`<option value=""${cur?'':' selected'} disabled>✈ ${L(tr('Start in the air…','Start i lufta…'))}</option>`+GROUPS.map(([g,f])=>{ const xs=o.list.filter(x=>f(x.k)); return xs.length?`<optgroup label="${L(g)}">${xs.map(x=>`<option value="${x.k}"${x.k===cur?' selected':''}>✈ ${L(x.t)}</option>`).join('')}</optgroup>`:''; }).join('');
+      sel.title=L(tr('Start in the air on an approach, a hold, a departure or an arrival','Start i lufta på en innflyging, en venting, en avgang eller en ankomst')); api.set(on);
+      if(on) api.hideNow(); else if(!now.hidden&&nowK) api.showNow(nowK,true); },
+    set(on){ btn.setAttribute('aria-pressed',on?'true':'false'); btn.textContent=(on?'● ':'○ ')+o.L(tr('Auto-fly','Autofly')); btn.title=o.L(tr('Let the autopilot (C172: the instructor) fly the whole procedure while you run the checklists','La autopiloten (C172: instruktøren) fly hele prosedyren mens du tar sjekklistene')); },
+    banner(on,head,txt){ if(!on){ if(!ban.hidden) ban.hidden=true; return; } api.hideNow(); const h=`<b>${head}</b>${txt?`<small>${txt}</small>`:''}`; if(ban._h!==h){ ban._h=h; ban.innerHTML=h; } if(ban.hidden) ban.hidden=false; },
+    /* "what to do now": the start state and three steps; Fly it closes, Auto-fly hands over, Brief opens the full brief and checklist */
+    showNow(k,keep){ const L=o.L, D=def(k,o.type), st=D.start, T=TY[o.type]||TY.DA42; nowK=k;
+      const ap=o.type==='C172'?tr('hand-flying, trimmed','du flyr for hånd, trimmet'):tr('autopilot OFF — hand-flying, trimmed','autopilot AV — du flyr for hånd, trimmet');
+      const where=tr(`${st.alt} ft · heading ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.en}`,`${st.alt} ft · kurs ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.no}`);
+      now.innerHTML=`<h4><i>✈</i>${L(NAMES[k])} — ${L(tr('you have control','du har kontrollene'))}</h4><p class="st">${L(where)}</p><ol>${todo(k,o.type).map(x=>`<li>${L(x)}</li>`).join('')}</ol>
+        <div class="row"><button type="button" class="go" data-a="fly">${L(tr('Fly it','Fly'))}</button><button type="button" data-a="auto">${L(tr('Auto-fly it','Autofly'))}</button>${o.onBrief?`<button type="button" data-a="brief">${L(tr('Full brief and checklist','Hele briefen og sjekklisten'))}</button>`:''}</div>`;
+      now.hidden=false; if(!keep){ clearTimeout(nowT); nowT=setTimeout(()=>api.hideNow(),30000); } },
+    hideNow(){ clearTimeout(nowT); if(!now.hidden) now.hidden=true; }};
+  now.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); const a=b.dataset.a; api.hideNow(); if(a==='auto') o.onAuto(); else if(a==='brief'&&o.onBrief) o.onBrief(); });
+  ['pointerdown','dblclick','pointerup'].forEach(t=>now.addEventListener(t,e=>e.stopPropagation()));
+  sel.onchange=()=>{ if(sel.value){ o.onPick(sel.value); api.showNow(sel.value); sel.blur(); } };
   btn.onclick=()=>o.onAuto();
   return api;
 }
 
-G.AIRPROC={FIX,TY,NAMES,MINS,list,def,brief,autofly,ui,isApp,dThr,pathFt,legGeo,NM,FT};
+G.AIRPROC={FIX,TY,NAMES,MINS,list,def,brief,todo,autofly,ui,isApp,dThr,pathFt,legGeo,NM,FT};
 })(window);

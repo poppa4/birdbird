@@ -147,6 +147,8 @@ function enc2Turn(id,inner,d){ click(); SYS[id+(inner?'I':'O')]+=d; const n=id.s
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
 const ZN=[['overview',tr2('Panel','Panel')],['six',tr2('Six-pack · OAT','Six-pack · OAT')],['left',tr2('Engine and electrical gauges · tachometer','Motor- og elektriske instrumenter · turteller')],['low6',tr2('Tachometer · instrument covers','Turteller · instrumentdeksler')],['nav',tr2('NAV indicators · ADF','NAV-indikatorer · ADF')],['audio',tr2('Audio panel · NAV/COM 1 and 2','Lydpanel · NAV/COM 1 og 2')],['radios',tr2('ADF · DME · transponder','ADF · DME · transponder')],['flaps',tr2('Flap switch and position','Flapsbryter og -posisjon')],['switches',tr2('Master · ignition · lights · primer','Hovedbryter · tenning · lys · primer')],['cbs',tr2('Circuit breakers','Sikringer')],['quad',tr2('Carb heat · throttle · mixture','Forgasservarme · gass · blanding')],['rlower',tr2('Cabin heat and air · dimmers','Kabinvarme og -luft · dimmere')],['pedestal',tr2('Trim wheel · fuel selector','Trimhjul · drivstoffvelger')],['right',tr2('Right panel · EGT · ELT · hour meter','Høyre panel · EGT · ELT · timeteller')],['compass',tr2('Magnetic compass','Magnetkompass')]];
+const OV_NEED=1085; // whole-panel view: everything down to the throttle quadrant and the yoke grips stays on screen (PANELZOOM.fit)
+let PZ=null;
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   if(D3on){ if(force&&instant){ D3.resize(); return; } const ov=reg==='overview'||!P.REG[reg]; Z.reg=ov?'overview':reg; if(ov) D3.lookAhead(instant); else D3.lookAt(P.REG[reg],instant); PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); return; }
@@ -157,11 +159,12 @@ function zoomTo(reg,instant,force){
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
   tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,0);
   if(ov){ tx=w/2-(r[0]+r[2]/2)*s; ty=Math.max(h/2-(r[1]+r[3]/2)*s,h-P.H*s); }
+  if(ov&&window.PANELZOOM){ const f=PANELZOOM.fit({w,h,x0:0,width:P.W,H:P.H,lip:C172P.LIP,need:OV_NEED,sky:C172P.SKY,otw:skyOn()}); if(f.s>s){ s=f.s; tx=f.tx; ty=f.ty; } } // larger panel; the lowest rows may run off the bottom
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.06);
-  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit();
+  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(); if(PZ) PZ.sync();
 }
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
@@ -176,9 +179,10 @@ magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m)
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip');
 PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)) return; const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
-let lastTap={t:0,x:0,y:0};
-PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
+/* single click / tap on an instrument area zooms to it, a click outside the zoomed area or a double-click / double-tap goes
+   back, pinch and Ctrl/⌘ + wheel or trackpad pinch zoom in and out (panelzoom.js, shared with the DA42 and the B200) */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,mags:magG,
+  off:'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input'});
 el('zBack').onclick=()=>zoomTo('overview');
 function drawZoomBar(){ el('zoomBar').innerHTML=ZN.map(([k,t],i)=>`<button class="cb${k===Z.reg?' on':''}" data-z="${k}" title="${i<10?i:''}">${L(t)}</button>`).join(''); el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
 function syncAreaUI(){ el('zoomBar').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.z===Z.reg)); el('zoomSel').value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); el('bLock').textContent=(Z.lock?'🔒 ':'🔓 ')+T(Z.lock?'Locked':'Lock view'); PST.classList.toggle('locked',Z.lock); }
@@ -388,7 +392,7 @@ const near=(a,b,d)=>Math.abs(F.wrap180(a-b))<d;
 const hold=(s,key,cond,sec)=>{ if(cond){ PR.m[key]=(PR.m[key]||0)+(PR.dtc||1/60); return PR.m[key]>=sec; } PR.m[key]=0; return false; };
 const allCB=()=>P.CBS.every(c=>SYS.cb[c.k]);
 const PROCS=[
- {k:'air',t:tr2('Airborne: procedure and auto-fly','I lufta: prosedyre og autofly'),set:'air',brief:tr2('',''),steps:[]},
+ {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air',brief:tr2('',''),steps:[]},
  {k:'start',t:tr2('Engine start (cold engine)','Motorstart (kald motor)'),set:'cold',brief:tr2('Parked on the apron with a cold engine, master off. Prime, start and check the engine as on a typical C172 checklist. Watch the LOW VOLTAGE light, the ammeter and the oil pressure.','Parkert på oppstillingsplassen med kald motor, hovedbryter av. Prim, start og sjekk motoren som på en typisk C172-sjekkliste. Følg LOW VOLTAGE-lyset, amperemeteret og oljetrykket.'),
   steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
    chk(tr2('Circuit breakers — CHECK IN','Sikringer — SJEKK INNE'),'cb0',allCB),
@@ -600,7 +604,7 @@ function renderProc(){
 }
 el('procSel').onchange=e=>procStart(e.target.value);
 LAB.onLang(()=>{ renderProc(); drawScenSel(); renderLim(); if(PR.k) procFocus(); });
-function drawScenSel(){ el('scenSel').innerHTML=PROCS.map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${T('Scenario')}: ${L(x.t)}</option>`).join(''); }
+function drawScenSel(){ el('scenSel').innerHTML=PROCS.map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
 el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
@@ -721,10 +725,10 @@ const QZ=[
 ];
 quiz(el('qbox'),'c172cockpit',()=>shuffle(QZ.slice()).slice(0,8));
 
-LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart;
+window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart;
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,onPick:pickProc,onAuto:toggleAuto}); LAB.onLang(airUI);
+AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,type:'C172',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b) b.click(); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'C172',page:document.body.dataset.d3?'c172-3d':'c172',S,F,AF,after:AIRUI.btn,
   eng:()=>[(ENG.failed||(!ENG.run&&!S.ground))?1:0,0,NaN,NaN],
@@ -733,7 +737,7 @@ if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'C172',page:document.body.datas
   next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('C172',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('C172',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
-if(/[?&]af=1/.test(location.search)) toggleAuto();
+if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(PR.k==='air') AIRUI.showNow(AIRK); // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('C172',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(f!=null) S.ctl.flap=f; }};
 riskText();
 requestAnimationFrame(loop);
