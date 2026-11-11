@@ -255,8 +255,8 @@ const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI ·
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   if(D3on){ if(force&&instant){ D3.resize(); return; } const ov=reg==='overview'||!P.REG[reg]; Z.reg=ov?'overview':reg; if(ov) D3.lookAhead(instant); else D3.lookAt(P.REG[reg],instant); PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); return; }
-  const r=P.REG[reg]||P.REG.overview, w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
-  const ov=reg==='overview'; let s=Math.min(w/r[2],h/r[3])*(ov?1:0.95);
+  let r=P.REG[reg]||P.REG.overview; const w=PST.clientWidth, h=PST.clientHeight; if(!w||!h) return;
+  const ov=reg==='overview'; if(ov&&skyOn()){ const k=B200P.SKY*(h<520?0.5:1); r=[r[0],-k,r[2],r[3]+k]; } /* phones: half, to keep the panel usable */ let s=Math.min(w/r[2],h/r[3])*(ov?1:0.95);
   const r0=P.REG.overview, s0=Math.min(w/r0[2],h/r0[3]); if(!ov) s=Math.max(s0,Math.min(s,4.5));
   let tx=w/2-(r[0]+r[2]/2)*s, ty=h/2-(r[1]+r[3]/2)*s;
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
@@ -312,11 +312,16 @@ B200P.ctrlWheel(PST);
 // overhead console, above the glareshield and beside the panel. It reaches down to mid-panel (~46 % of the stage, as
 // in the DA42) so the camera has a useful vertical field of view and the level-flight horizon sits just above the glareshield.
 const OTW_BOTTOM_Y=850; // world units
-function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview'||D3) return; const h=PST.clientHeight; c.style.height=Math.max(0,Math.min(h,Math.round(Z.ty+OTW_BOTTOM_Y*Z.s)))+'px'; }
+// With the outside view on, the overview adds windshield above the overhead console (B200P.SKY), so the outside is a little under
+// a third of the screen, and OTW.frame puts the level-flight horizon 7° above the glareshield in front of the left seat.
+const OTW_EYEX=366; // panel x straight ahead of the left-seat pilot (the attitude indicator)
+const OTW_NOSE=7;
+function skyOn(){ return !D3&&!PST.classList.contains('nootw')&&!PST.classList.contains('nogl'); }
+function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview'||D3) return; const h=PST.clientHeight; c.style.height=Math.max(0,Math.min(h,Math.round(Z.ty+OTW_BOTTOM_Y*Z.s)))+'px'; if(window.OTW&&OTW.frame) OTW.frame({lip:Z.ty+B200P.LIP*Z.s,nose:OTW_NOSE,cx:Z.tx+OTW_EYEX*Z.s}); }
 // adapter: the shared FDM state already uses N/E metres, h metres MSL and th/phi/psi radians on the same runway 36,
 // so only the eye point changes — left seat (0.45 m left of the centre line), about 2.6 m above the ground — plus a
 // 2.5° lower line of sight, so the level-flight horizon shows above the King Air's taller glareshield
-const OTW_EYE={dh:1.05,left:0.45,look:0.045}, otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
+const OTW_EYE={dh:1.05,left:0.45,look:0}, otwS={N:0,E:0,h:0,th:0,phi:0,psi:0};
 function otwState(){ const c=Math.cos(S.psi), s=Math.sin(S.psi); otwS.N=S.N+OTW_EYE.left*s; otwS.E=S.E-OTW_EYE.left*c; otwS.h=S.h+OTW_EYE.dh; otwS.th=S.th-OTW_EYE.look; otwS.phi=S.phi; otwS.psi=S.psi; return otwS; }
 let otwOn=true, otwReady=false, otwSkip=0;
 /* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
@@ -328,8 +333,8 @@ const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
 let otwTried=false;
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
-if(!D3) (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); },{timeout:400});
-function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); otwMsgSync(); try{ localStorage.setItem('bb-b200-otw',on?'1':'0'); }catch(e){} }
+if(!D3) (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); if(!otwReady&&Z.reg==='overview') zoomTo('overview',true,true); },{timeout:400});
+function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); otwMsgSync(); try{ localStorage.setItem('bb-b200-otw',on?'1':'0'); }catch(e){}  if(Z.reg==='overview') zoomTo('overview',true,true); }
 /* 3D cockpit (beta): the outside world is the 3D scene's background; the panel is placed in it and looked around in */
 const otwS3={N:0,E:0,h:0,th:0,phi:0,psi:0};
 function otwState3(){ const w=otwState(); Object.assign(otwS3,w); otwS3.th=S.th; return otwS3; }
@@ -624,13 +629,13 @@ tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapt
 tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
 ['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
 const stick=el('stick'), dot=stick.querySelector('.dot');
-function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:F.clamp((e.clientX-r.left)/r.width*2-1,-1,1),y:F.clamp((e.clientY-r.top)/r.height*2-1,-1,1)}; }
+function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:FK.shapePad((e.clientX-r.left)/r.width*2-1),y:FK.shapePad((e.clientY-r.top)/r.height*2-1)}; } // expo: gentle near centre
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
 stick.addEventListener('pointermove',e=>{ if(inp.stick) stickAt(e); });
 ['pointerup','pointercancel'].forEach(ev=>stick.addEventListener(ev,()=>{ inp.stick=null; }));
 
 /* ---------- keyboard ---------- */
-const typing=()=>{ const a=document.activeElement; return a&&((a.tagName==='INPUT'&&a.type!=='range'&&a.type!=='checkbox')||a.tagName==='TEXTAREA'||a.tagName==='SELECT'); };
+const typing=FK.typing, KB=FK.create('B200');
 let cockpitVis=true; visible(el('cockpit'),v=>cockpitVis=v);
 window.addEventListener('keydown',e=>{
   if(typing()||e.metaKey||e.ctrlKey||e.altKey) return;
@@ -640,7 +645,7 @@ window.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('g.ctl:not(.t-yoke)')&&/^Arrow| |Enter/.test(e.key)) return;
   const k=e.key.length===1?e.key.toLowerCase():e.key;
   if(!cockpitVis&&k!=='p') return;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','+','-','=','[',']','f','v','g','p','x','q','e','b','w','a','s','d'].includes(k)) e.preventDefault();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End',' ','+','-','=','[',']','f','v','g','p','x','q','e','b','w','a','s','d'].includes(k)) e.preventDefault();
   ensureAudio();
   if(e.repeat&&['f','v','g','p',' ','x'].includes(k)) return;
   inp.keys.add(k);
@@ -651,6 +656,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
 window.addEventListener('blur',()=>inp.keys.clear());
+FK.hint(PST);
 
 /* ---------- sound ---------- */
 let AC=null, horn=null;
@@ -1009,25 +1015,22 @@ function drawGps(o){ const on=gpsOk(); if(!on){ B200P.gps(P,{on:false}); return;
 /* ---------- loop ---------- */
 let holdRoll=null, holdPitch=null, last=performance.now(), slow=0, panelT=1;
 function pilotInput(dt){
-  const K=inp.keys, sh=K.has('Shift')||K.has('shift'); let ax=0, ay=0;
-  if(K.has('ArrowLeft')||K.has('a')) ax-=1; if(K.has('ArrowRight')||K.has('d')) ax+=1;
-  if(K.has('ArrowUp')||K.has('w')) ay-=1; if(K.has('ArrowDown')||K.has('s')) ay+=1;
-  const mag=sh?0.7:0.25; inp.kx=(inp.kx||0)+F.clamp(ax*mag-(inp.kx||0),-dt*3,dt*3); inp.ky=(inp.ky||0)+F.clamp(ay*mag-(inp.ky||0),-dt*3,dt*3);
-  let x=inp.kx, y=inp.ky, r=null, gpThr=0;
-  if(inp.stick){ x=inp.stick.x; y=inp.stick.y; }
+  const K=inp.keys, kb=KB.tick(K,dt); // W/S/A/D + arrows, ramped (flightkeys.js)
+  let x=kb.x, y=kb.y, r=null, gpThr=0;
+  const sv=FK.spring(inp,dt); if(inp.stick){ x=sv.x; y=sv.y; } else if(sv){ x=F.clamp(x+sv.x,-1,1); y=F.clamp(y+sv.y,-1,1); }
   const pads=navigator.getGamepads?navigator.getGamepads():[]; const gp=pads&&[...pads].find(p=>p&&p.connected);
   if(gp){ const dzf=v=>Math.abs(v)<0.08?0:v; const gx=dzf(gp.axes[0]||0), gy=dzf(gp.axes[1]||0), gr=dzf(gp.axes[2]||0); if(gx||gy){ x=gx; y=gy; } if(gr) r=gr; gpThr=(gp.buttons[7]?gp.buttons[7].value:0)-(gp.buttons[6]?gp.buttons[6].value:0); }
   if(K.has('q')) inp.rudUser=F.clamp(inp.rudUser-dt*0.8,-1,1); if(K.has('e')) inp.rudUser=F.clamp(inp.rudUser+dt*0.8,-1,1); if(r!==null) inp.rudUser=r;
   let td=0; if(K.has('+')||K.has('=')) td+=1; if(K.has('-')) td-=1; td+=gpThr;
   if(td){ ['pwrL','pwrR'].forEach(k=>{ SYS[k]=F.clamp(Math.max(0,SYS[k])+td*dt*0.4,0,1); }); }
   S.ctl.brake=(K.has('b')||inp.brakeHeld||SYS.park)?1:0;
-  if(K.has('[')&&SYS.elTrim) S.ctl.trim=F.clamp(S.ctl.trim-dt*0.25,-1,1); if(K.has(']')&&SYS.elTrim) S.ctl.trim=F.clamp(S.ctl.trim+dt*0.25,-1,1);
+  if(kb.trim&&SYS.elTrim) S.ctl.trim=F.clamp(S.ctl.trim+kb.trim*dt*0.25,-1,1);
   // rudder: pilot + optional assist (integrating sideslip, like a firm foot)
   let rudA=0; if(S.autotrim&&!S.ground){ const bta=S.beta||0; inp.rudI=F.clamp((inp.rudI||0)+bta*dt*3,-0.9,0.9); rudA=F.clamp(3*bta+inp.rudI-0.5*S.r,-1,1); } else inp.rudI=0;
   if(SYS.yd&&!S.ground) rudA+=F.clamp(-0.6*S.r,-0.2,0.2);
   S.ctl.rud=F.clamp(inp.rudUser+rudA,-1,1);
-  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15){ AF.off('stick'); if(AP.on){ AP.on=false; apDiscFx(); } airUI(); } else if(AF.hands()) return; }
-  if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35){ AP.on=false; apDiscFx(); } else return; }
+  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15||kb.held){ AF.off('stick'); if(AP.on){ AP.on=false; apDiscFx(); } airUI(); } else if(AF.hands()) return; }
+  if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35||Math.max(Math.abs(kb.rx),Math.abs(kb.ry))>0.35){ AP.on=false; apDiscFx(); } else return; }
   if(S.autotrim&&!S.ground&&Math.abs(x)<0.03){ const o=S.o||{}; if(holdRoll===null) holdRoll=Math.abs(o.roll)<6?0:F.clamp(o.roll,-30,30); x=F.clamp((holdRoll-(o.roll||0))*0.03-(S.p||0)*0.8,-0.4,0.4); } else holdRoll=null;
   if(S.autotrim) x=F.clamp(x,-0.8,0.8);
   S.ctl.ail=x; S.ctl.ele=y;

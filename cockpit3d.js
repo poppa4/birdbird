@@ -300,7 +300,7 @@ D3.relabel=function(){ if(!bar) return; const T=o.T||(s=>s); bar.setAttribute('a
 /* ---------- input ---------- */
 const ptrs=new Map(); let drag=null, pinch=null, stickDrag=null;
 function hitGrab(list,e){ if(!list.length) return null; const rr=rayAt(e.clientX,e.clientY); ray.ray.copy(rr); return ray.intersectObjects(list,true)[0]||null; }
-function startStick(e){ stickDrag={x:e.clientX,y:e.clientY,id:e.pointerId}; try{ stage.setPointerCapture(e.pointerId); }catch(_){} o.onStick({x:0,y:0}); }
+function startStick(e){ stickDrag={x:e.clientX,y:e.clientY,id:e.pointerId,pt:e.pointerType}; try{ stage.setPointerCapture(e.pointerId); }catch(_){} o.onStick({x:0,y:0}); }
 function bindInput(){
   // capture phase: the foreground control wheels are drawn over the panel, so they take the pointer before any panel control
   stage.addEventListener('pointerdown',e=>{
@@ -319,7 +319,7 @@ function bindInput(){
     drag={x:e.clientX,y:e.clientY,t:performance.now(),moved:0}; view.glide=null; view.vy=view.vp=0; D3.dragging=true;
   });
   stage.addEventListener('pointermove',e=>{
-    if(stickDrag&&e.pointerId===stickDrag.id){ o.onStick({x:Math.max(-1,Math.min(1,(e.clientX-stickDrag.x)/90)),y:Math.max(-1,Math.min(1,(e.clientY-stickDrag.y)/80))}); return; }
+    if(stickDrag&&e.pointerId===stickDrag.id){ const dx=e.clientX-stickDrag.x, dy=e.clientY-stickDrag.y; o.onStick(G.FK?G.FK.shapeDrag(dx,dy,stickDrag.pt):{x:Math.max(-1,Math.min(1,dx/90)),y:Math.max(-1,Math.min(1,dy/80))}); return; } // shared mouse/touch curve (flightkeys.js)
     if(!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pinch&&ptrs.size>=2){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); view.zoom=pinch.z*pinch.d/Math.max(20,d); clampV(); needs=2; return; }
     if(!drag) return; const now=performance.now(), dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.moved+=Math.abs(dx)+Math.abs(dy);

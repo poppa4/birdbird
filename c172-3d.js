@@ -86,7 +86,7 @@ function buildShell(K){
 // outside: the wing (root over the cabin, out to the tips), struts, cowling top, fuselage sides below the windows
 function buildOutside(){
   const B=new Builder(); const up=V3(0,1,0);
-  const wing=(sd)=>{ const span=5.4, yr=YR+0.075, dih=1.7*D2R;
+  const wing=(sd)=>{ const span=5.0, yr=YR+0.075, dih=1.7*D2R; // root 0.5 m off the centre line: 11.0 m span
     B.grid(16,6,(u,v)=>{ const x=sd*(0.50+u*span), ch=1.62-0.45*Math.max(0,(u*span-2.6)/2.8), le=-0.80+0.06*Math.max(0,(u*span-2.6)/2.8); const y=yr+(u*span)*Math.tan(dih); const z=le+v*ch; const th=0.10*(1-v)*(1-0.4*u)*Math.sin(Math.PI*Math.min(1,v*1.4)); return V3(x,y-th*0.3,z); },COL.skin,{toward:V3(sd*2,-2,0)});
     B.grid(16,6,(u,v)=>{ const x=sd*(0.50+u*span), ch=1.62-0.45*Math.max(0,(u*span-2.6)/2.8), le=-0.80+0.06*Math.max(0,(u*span-2.6)/2.8); const y=yr+(u*span)*Math.tan(dih); const z=le+v*ch; const th=0.16*(1-0.4*u)*Math.sin(Math.PI*Math.min(1,v*1.25)); return V3(x,y+th,z); },COL.skin2,{toward:V3(sd*2,3,0)});
     // strut
@@ -118,9 +118,9 @@ function buildYoke(K,u){
 }
 
 G.C172_3D=CK.make({
-  eye:[-0.26,0,0],
+  eye:[-0.26,0.09,0],   // left seat; 9 cm above the cabin reference so the cowling sits ~7° below the horizon (over-the-nose view on final)
   panel:{ps:PS,tilt:6,at:[1000,PT,[0,-0.12,-0.80]],w:2000,h:1320},
-  views:{ahead:[9,-14,1],short:[8,-19,0.86]},
+  views:{ahead:[9,-16,1],short:[8,-21,0.86]},
   limits:{yaw:[-150,150],pitch:[-55,60]},
   snaps:[['panel','Panel'],['left','Left',-80,-6,1],['right','Right',72,-8,1],['ped','Pedestal',24,-52,0.8],['out','Outside',0,-3,1]],
   noKeys:['KeyM'], // M and N are the mixture keys in this aircraft: look down with K

@@ -2,6 +2,7 @@
    Generic training layout drawn by Birdbird; not a manufacturer drawing. Controls report through io.get/io.set. */
 (function(G){
 'use strict';
+const SKY=420, LIP=82; // 2D: canopy headroom above y=0 with the outside view on; glareshield top on the centre line
 const W=1600, H=980, NS='http://www.w3.org/2000/svg';
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 
@@ -153,6 +154,8 @@ function panelSVG(){
 <!-- canopy frame -->
 <path d="M0 0H${W}V300C1500 120 1250 60 800 56C350 60 100 120 0 300Z" class="frame" opacity=".0"/>
 <path d="M-10 420C40 200 120 110 230 70L250 0H-10Z" class="frame"/><path d="M${W+10} 420C${W-40} 200 ${W-120} 110 ${W-230} 70L${W-250} 0H${W+10}Z" class="frame"/>
+<!-- canopy bow over the windshield: seen when the 2D overview shows more canopy (SKY) -->
+<path d="M-10 4C60 -120 330 ${30-SKY} 800 ${30-SKY}S${W-60} -120 ${W+10} 4" class="frame" style="fill:none" stroke="#0c0e10" stroke-width="34"/>
 <!-- glareshield and panel face -->
 <path d="M18 770V250Q18 140 130 118Q800 46 1470 118Q1582 140 1582 250V770Z" fill="url(#gGlare)" filter="url(#fShadow)"/>
 <path d="M34 765V262Q34 170 136 152Q800 86 1464 152Q1566 170 1566 262V765Z" fill="url(#gPanel)"/>
@@ -265,7 +268,7 @@ function bind(world,byId,io){
       const v=io.get(c.id); if(Math.hypot(pt.x-c.x,pt.y-c.y)>34){ let best=0; c.ang.forEach((x,i)=>{ if(Math.abs(x-a)<Math.abs(c.ang[best]-a)) best=i; }); io.set(c.id,best); return; } io.set(c.id,Math.max(0,Math.min(c.vals.length-1,v+(pt.x<c.x?-1:1)))); return; }
     if(c.t==='flap'){ const idx=Math.max(0,Math.min(2,Math.round((pt.y-(c.y-30))/30))); io.set(c.id,idx); return; }
     if(c.t==='tog'||c.t==='rocker'||c.t==='vent'){ drag={o,tg:1,y:pt.y,done:0}; g.setPointerCapture(e.pointerId); return; }
-    if(c.t==='stick'){ drag={o,stk:1,x:pt.x,y:pt.y}; g.setPointerCapture(e.pointerId); g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
+    if(c.t==='stick'){ drag={o,stk:1,x:pt.x,y:pt.y,cx:e.clientX,cy:e.clientY,pt:e.pointerType}; g.setPointerCapture(e.pointerId); g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
     if(c.t==='sbtn'){ io.set(c.id,1); drag={o,mom:1}; g.setPointerCapture(e.pointerId); return; }
     if(c.t==='tog3'){ io.set(c.id,pt.y<c.y-8?-1:pt.y>c.y+8?1:0); return; }
     if(c.t==='guard'){ const onGuard=e.target.closest('.gd'); if(onGuard||!io.get('emerG')){ io.set('emerG',io.get('emerG')?0:1); return; } io.set(c.id,io.get(c.id)?0:1); return; }
@@ -273,7 +276,7 @@ function bind(world,byId,io){
   });
   world.addEventListener('pointermove',e=>{ if(!drag||drag.mom) return; const c=drag.o.c, pt=io.toWorld(e);
     if(drag.tg){ const dy=pt.y-drag.y; if(!drag.done&&Math.abs(dy)>7&&c.t!=='vent'){ drag.done=1; io.set(c.id,dy<0?1:0); } return; }
-    if(drag.stk){ io.set('stick',{x:Math.max(-1,Math.min(1,(pt.x-drag.x)/45)),y:Math.max(-1,Math.min(1,(pt.y-drag.y)/40))}); return; }
+    if(drag.stk){ io.set('stick',G.FK?G.FK.shapeDrag(e.clientX-drag.cx,e.clientY-drag.cy,drag.pt):{x:Math.max(-1,Math.min(1,(pt.x-drag.x)/45)),y:Math.max(-1,Math.min(1,(pt.y-drag.y)/40))}); return; } // screen px through the shared mouse/touch curve
     if(c.t==='power'){ const dv=-(pt.y-drag.y)/92; if(drag.lv==='both') io.set('pwr',[Math.max(0,Math.min(1,drag.v[0]+dv)),Math.max(0,Math.min(1,drag.v[1]+dv))]); else io.set(drag.lv,Math.max(0,Math.min(1,drag.v[drag.lv==='pwrL'?0:1]+dv))); return; }
     if(c.t==='vwheel') io.set(c.id,Math.max(-1,Math.min(1,drag.v+(pt.y-drag.y)/110)));
     if(c.t==='hwheel') io.set(c.id,Math.max(-1,Math.min(1,drag.v+(pt.x-drag.x)/90)));
@@ -350,5 +353,5 @@ function syncStby(P,o,baro){
   const t=q('.sbKol'); const b=String(Math.round(baro)); if(t.textContent!==b) t.textContent=b;
   const h=((o.hdg%360)+360)%360; setT(q('.sbCmp'),`translateX(${34-(h<180?h+360:h)*1.6+ (h<180?0:0)}px)`);
 }
-G.DA42P={fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
+G.DA42P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
 })(window);

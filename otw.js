@@ -96,13 +96,22 @@ function init(canvas){
   for(let i=0;i<70;i++){ const sp=new THREE.Sprite(cm); const s=1500+Math.random()*2500; sp.scale.set(s,s*0.45,1); sp.position.set((Math.random()-0.5)*90000,760+Math.random()*120,(Math.random()-0.5)*90000); scene.add(sp); }
   ok=true; return true;
 }
-function size(){ if(!cv) return; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return; if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); cam.aspect=w/h; cam.fov=2*Math.atan(Math.tan(36*D2R)/cam.aspect)/D2R; cam.updateProjectionMatrix(); } }
+/* 2D pages: horizontal field of view 76° across the stage width (about 45–52° vertical over a whole 16:9…3:2 desktop screen),
+   and an optional frame from the page: lip = canvas row (CSS px) of the glareshield top on the centre line, nose = degrees the
+   horizon sits above it with the fuselage level (the type's over-the-nose angle), cx = canvas column straight ahead of the pilot
+   (the left seat is off the centre line). Without a frame: centred, with the old fixed 2.9° look-down. */
+const HF=38; let FR=null;
+function frame(f){ FR=f&&isFinite(f.lip)?f:null; }
+function size(){ if(!cv) return; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return; if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); cam.aspect=w/h; cam.fov=2*Math.atan(Math.tan(HF*D2R)/cam.aspect)/D2R; cam.updateProjectionMatrix(); } }
+function lookDown(view){ if(view) return 0.08; if(!FR||!W) return 0.05; const f=(W/2)/Math.tan(HF*D2R), hy=FR.lip-f*Math.tan(FR.nose*D2R); return Math.atan((H/2-hy)/f); }
 function render(S,view){
   if(!ok) return; size(); if(!W) return;
   const eye=1.55;
   cam.position.set(S.E,(S.h||0)+eye,-S.N);
   const yawOff=view==='L'?60:view==='R'?-60:0;
-  cam.rotation.set((S.th||0)+(view?-0.08:-0.05),-(S.psi||0)+yawOff*D2R,-(S.phi||0)*(view?0.3:1),'YXZ');
+  // straight ahead of the pilot (FR.cx: canvas column above the pilot's own attitude indicator), not the middle of the screen
+  cam.projectionMatrix.elements[8]=(FR&&FR.cx!=null&&!view&&W)?1-2*FR.cx/W:0;
+  cam.rotation.set((S.th||0)-lookDown(view),-(S.psi||0)+yawOff*D2R,-(S.phi||0)*(view?0.3:1),'YXZ');
   scene.userData.sky.position.copy(cam.position);
   // PAPI: farge etter vinkel fra PAPI-lysene
   const d=Math.hypot(S.N-300,S.E+30), ang=Math.atan2((S.h||0)+eye-1.2,Math.max(1,d))/D2R;
@@ -116,7 +125,7 @@ function render3d(S,qHead,fov,dpr,after){
   if(!ok||!cv) return false; const w=cv.clientWidth, h=cv.clientHeight; if(!w||!h) return false;
   if(Math.abs(R.getPixelRatio()-dpr)>1e-3){ R.setPixelRatio(dpr); W=0; }
   if(w!==W||h!==H){ W=w; H=h; R.setSize(w,h,false); }
-  if(cam.aspect!==w/h||cam.fov!==fov){ cam.aspect=w/h; cam.fov=fov; cam.updateProjectionMatrix(); }
+  if(cam.aspect!==w/h||cam.fov!==fov){ cam.aspect=w/h; cam.fov=fov; cam.updateProjectionMatrix(); } cam.projectionMatrix.elements[8]=0;
   const eye=1.55; cam.position.set(S.E,(S.h||0)+eye,-S.N);
   _e3=_e3||new THREE.Euler(0,0,0,'YXZ'); _e3.set(S.th||0,-(S.psi||0),-(S.phi||0),'YXZ'); cam.quaternion.setFromEuler(_e3).multiply(qHead);
   scene.userData.sky.position.copy(cam.position);
@@ -129,5 +138,5 @@ function render3d(S,qHead,fov,dpr,after){
 }
 // quality(false|true|2): normal (device pixels, at most 1.5 per CSS pixel), low (1 per CSS pixel), very low (0.75 per CSS pixel)
 function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.lvl) return; G.OTW.lvl=lv; G.OTW.low=lv>0; R.setPixelRatio(lv===2?0.75:lv?1:Math.min(G.devicePixelRatio||1,1.5)); W=0; }
-G.OTW={init,render,render3d,quality,low:false,lvl:0,renderer:()=>R};
+G.OTW={init,render,render3d,quality,frame,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);

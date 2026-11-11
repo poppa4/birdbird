@@ -116,9 +116,10 @@ function buildStick(xc){
 
 /* ---------- definition ---------- */
 G.DA42_3D=CK.make({
-  eye:[-0.27,0,0],                                   // left seat, pilot eye
+  eye:[-0.27,0.09,0],                                // left seat, pilot eye: 9 cm up so the glareshield is ~9° below the horizon
   panel:{ps:PS,tilt:10,o:[PO.x,PO.y,PO.z],w:1600,h:980},
-  views:{ahead:[12,-16,1],short:[10,-21,0.84]},
+  views:{ahead:[12,-18,1],short:[10,-23,0.84]},
+  noKeys:['KeyK'], // K and L set the selected altitude in this aircraft: look down with M
   snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',14,-46,0.8],['out','Outside',0,-3,1]],
   build(){
     const shell=toMesh(buildShell()); const sticks=[buildStick(-0.27),buildStick(0.27)];

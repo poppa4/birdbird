@@ -15,7 +15,7 @@
 .stage.d3>canvas#otw{height:100%!important;display:block!important}
 .stage.d3>.wlay{will-change:auto!important}
 .stage.d3 .world{transition:none!important;will-change:transform}
-.stage.d3 .mags,.stage.d3 g.ctl.t-yoke,.stage.d3 .hit[data-for^="yoke"],.stage.d3 .zback{display:none}
+.stage.d3 .mags,.stage.d3 .roof2d,.stage.d3 g.ctl.t-yoke,.stage.d3 .hit[data-for^="yoke"],.stage.d3 .zback{display:none}
 .d3t{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;max-width:min(92%,520px);background:rgba(14,17,20,.94);border:1px solid #ffcf3a;color:#fff;border-radius:10px;padding:8px 12px;font:600 12.5px/1.4 system-ui;display:flex;gap:10px;align-items:center}
 .d3t a{color:#ffcf3a}.d3t button{background:none;border:0;color:#9fb0bd;font-size:16px;cursor:pointer;padding:0 2px}
 </style>
@@ -119,10 +119,11 @@
     </div>
     <h3 style="margin-top:6px">Keyboard</h3>
     <table class="keys">
-      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Pitch and roll. Up is nose down, like a control wheel. Hold <kbd>Shift</kbd> for more.</td></tr>
+      <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Nose down and nose up (W pushes, S pulls) · roll left and right. Hold to move the control further, tap for small corrections; let go and it eases back to centre (your trim).</td></tr>
+      <tr><td><kbd>Shift</kbd></td><td>Faster, and full travel, with the flight keys</td></tr>
       <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right · centre the rudder</td></tr>
       <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Both power levers forward and back (not below IDLE)</td></tr>
-      <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd> or <kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
       <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up · gear · brakes while held</td></tr>
       <tr><td><kbd>Space</kbd> · <kbd>P</kbd></td><td>Autopilot disconnect · pause</td></tr>
       <tr><td><kbd>0</kbd>–<kbd>9</kbd> · <kbd>Esc</kbd></td><td>Look at a part of the panel · look ahead</td></tr>
@@ -144,11 +145,12 @@
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=8"></script>
+<script src="flightkeys.js?v=1"></script>
 <script src="airproc.js?v=1"></script>
-<script src="otw.js?v=8"></script>
-<script src="cockpit3d.js?v=1"></script>
-<script src="b200-3d.js?v=1"></script>
-<script src="b200panel.js?v=8"></script>
+<script src="otw.js?v=9"></script>
+<script src="cockpit3d.js?v=2"></script>
+<script src="b200-3d.js?v=2"></script>
+<script src="b200panel.js?v=9"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=46"></script>
 <script>
@@ -160,6 +162,6 @@ LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','King A
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D King Air B200 trainer':'den klassiske 2D-treneren for King Air B200'});
 </script>
-<script src="b200-app.js?v=1"></script>
+<script src="b200-app.js?v=2"></script>
 </body>
 </html>

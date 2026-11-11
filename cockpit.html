@@ -331,10 +331,11 @@ table.keys td:first-child{white-space:nowrap;width:1%}
     </div>
     <h3 style="margin-top:6px">Keyboard</h3>
     <table class="keys">
-      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Pitch and roll. Up is nose down, like a yoke. Hold <kbd>Shift</kbd> for full deflection.</td></tr>
+      <tr><td><kbd>W</kbd> <kbd>S</kbd> · <kbd>A</kbd> <kbd>D</kbd> or the arrow keys</td><td>Nose down and nose up (W pushes, S pulls) · roll left and right. Hold to move the control further, tap for small corrections; let go and it eases back to centre (your trim).</td></tr>
+      <tr><td><kbd>Shift</kbd></td><td>Faster, and full travel, with the flight keys</td></tr>
       <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right (stays where you leave it) · centre the rudder</td></tr>
       <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Power up and down, both levers</td></tr>
-      <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd> or <kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
       <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>G</kbd> · <kbd>B</kbd></td><td>Flaps down and up · gear · brakes while held</td></tr>
       <tr><td><kbd>Space</kbd> · <kbd>Z</kbd></td><td>Autopilot disconnect · engage autopilot</td></tr>
       <tr><td><kbd>H</kbd> <kbd>J</kbd> · <kbd>K</kbd> <kbd>L</kbd></td><td>Heading bug left and right · selected altitude down and up</td></tr>
@@ -358,12 +359,13 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=8"></script>
+<script src="flightkeys.js?v=1"></script>
 <script src="fms.js?v=4"></script>
 <script src="airproc.js?v=1"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=5"></script>
-<script src="da42panel.js?v=4"></script>
-<script src="otw.js?v=8"></script>
+<script src="da42panel.js?v=5"></script>
+<script src="otw.js?v=9"></script>
 <script src="lab.js?v=46"></script>
 <script>
 (function(){
@@ -559,7 +561,7 @@ function sysDefault(cold){
   S.eng.forEach(e=>{ e.run=!cold; e.off=cold; e.crank=false; e.test=false; e.feather=cold&&S.ground?false:false; e.alt=true; });
   if(cold){ S.eng.forEach(e=>{ e.thr=0; e.load=0; e.rpm=0; e.oilP=0; }); }
 }
-const PST=el('stage');
+const PST=el('stage'); const OTW_NOSE=9;
 const P=DA42P.build(PST,{get:k=>ioGet(k),set:(k,v)=>ioSet(k,v),toWorld:e=>toWorld(e),scale:()=>Z.s,intercept:(e,g)=>overviewTap(e)});
 const cbName=n=>P.CBS.indexOf(n);
 const cbIn=n=>SYS.cb[cbName(n)]!==0;
@@ -612,8 +614,8 @@ const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
 function stageSize(){ return {w:PST.clientWidth,h:PST.clientHeight}; }
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg) { flash(L({en:'View is locked — unlock to zoom',no:'Visningen er låst — lås opp for å zoome'})); return; }
-  const r=P.REG[reg]||P.REG.overview, {w,h}=stageSize(); if(!w||!h) return;
-  const ov=reg==='overview'; let s=Math.min(w/r[2],h/r[3])*(ov?1:0.94);
+  let r=P.REG[reg]||P.REG.overview; const {w,h}=stageSize(); if(!w||!h) return;
+  const ov=reg==='overview'; if(ov&&skyOn()){ const k=DA42P.SKY*(h<520?0.5:1); r=[r[0],r[1]-k,r[2],r[3]+k]; } /* phones: half, to keep the panel usable */ let s=Math.min(w/r[2],h/r[3])*(ov?1:0.94);
   const s0=Math.min(w/P.W,h/P.H); if(!ov) s=Math.max(s0,Math.min(s,s0*4.2,4));
   // centre the area, then clamp so the panel never leaves the view
   let tx=w/2-(r[0]+r[2]/2)*s, ty=h/2-(r[1]+r[3]/2)*s;
@@ -625,6 +627,7 @@ function zoomTo(reg,instant,force){
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.12);
   PST.classList.toggle('zoomed',!ov);
+  if(ov&&window.OTW&&OTW.frame) OTW.frame({lip:ty+DA42P.LIP*s,nose:OTW_NOSE,cx:tx+510*s}); // cx: straight ahead of the left-seat pilot (PFD attitude)
   syncAreaUI(); areaHL(null);
   clearTimeout(zoomTo.t); zoomTo.t=setTimeout(sizeScreens,instant?0:480);
 }
@@ -752,8 +755,11 @@ el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElem
 /* ---------- 3D-utsikt ---------- */
 let otwOn=true, otwView=''; let otwReady=false;
 // bygg 3D-scenen etter første bilde, så siden blir klar raskere
-(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } if(!otwReady){ el('otwMsg').hidden=false; } },{timeout:400});
-function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); try{ localStorage.setItem('bb-da42-otw',on?'1':'0'); }catch(e){} }
+(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } if(!otwReady){ el('otwMsg').hidden=false; PST.classList.add('nogl'); if(Z.reg==='overview') zoomTo('overview',true,true); } },{timeout:400});
+function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); try{ localStorage.setItem('bb-da42-otw',on?'1':'0'); }catch(e){} if(Z.reg==='overview') zoomTo('overview',true,true); }
+// With the outside view on, the overview shows more of the canopy above the glareshield (DA42P.SKY): the outside is about the
+// upper third of the screen, and the level-flight horizon sits 9° above the glareshield (OTW.frame), as from the DA42's low seat.
+function skyOn(){ return !PST.classList.contains('nootw')&&!PST.classList.contains('nogl'); }
 el('bOtw').onclick=()=>setOtw(!otwOn);
 { let pr=null; try{ pr=localStorage.getItem('bb-da42-otw'); }catch(e){} setOtw(pr?pr==='1':!coarse.matches); }
 let otwVis=true;
@@ -791,14 +797,14 @@ tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
 
 /* ---------- styrestikke ---------- */
 const stick=el('stick'), dot=stick.querySelector('.dot');
-function stickAt(e){ const r=stick.getBoundingClientRect(); const x=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1), y=F.clamp((e.clientY-r.top)/r.height*2-1,-1,1); inp.stick={x,y}; }
+function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:FK.shapePad((e.clientX-r.left)/r.width*2-1),y:FK.shapePad((e.clientY-r.top)/r.height*2-1)}; } // expo: gentle near centre
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
 stick.addEventListener('pointermove',e=>{ if(inp.stick) stickAt(e); });
 ['pointerup','pointercancel'].forEach(ev=>stick.addEventListener(ev,()=>{ inp.stick=null; }));
 
 /* ---------- tastatur ---------- */
-const typing=()=>{ const a=document.activeElement; return a && (a.tagName==='INPUT'&&a.type!=='range'&&a.type!=='checkbox' || a.tagName==='TEXTAREA' || a.getAttribute('role')==='spinbutton'); };
-const flightKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','q','e','b',' ','+','-','=','[',']']);
+const typing=FK.typing, KB=FK.create('DA42');
+const flightKeys=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End','w','a','s','d','q','e','b',' ','+','-','=','[',']']);
 window.addEventListener('keydown',e=>{
   if(typing()||e.metaKey||e.ctrlKey||e.altKey) return;
   { const dsp=['P','M'].find(d=>XA.win[d]&&(XA.win[d].type==='DTO'||XA.win[d].type==='WPT'));
@@ -823,6 +829,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
 window.addEventListener('blur',()=>inp.keys.clear());
+FK.hint(PST);
 let cockpitVis=true; visible(el('cockpit'),v=>cockpitVis=v);
 const inCockpitView=()=>cockpitVis;
 
@@ -1023,14 +1030,9 @@ function draw(o,n){
 /* ---------- løkka ---------- */
 let holdRoll=null, holdPitch=null, last=performance.now(), slow=0, gpPrev={};
 function pilotInput(dt){
-  const K=inp.keys, sh=K.has('Shift')||K.has('shift');
-  let ax=0, ay=0;
-  if(K.has('ArrowLeft')||K.has('a')) ax-=1; if(K.has('ArrowRight')||K.has('d')) ax+=1;
-  if(K.has('ArrowUp')||K.has('w')) ay-=1; if(K.has('ArrowDown')||K.has('s')) ay+=1;
-  const mag=sh?0.7:0.2;
-  inp.kx=(inp.kx||0)+F.clamp(ax*mag-(inp.kx||0),-dt*3,dt*3); inp.ky=(inp.ky||0)+F.clamp(ay*mag-(inp.ky||0),-dt*3,dt*3);
-  let x=inp.kx, y=inp.ky, r=null, gpThr=0;
-  if(inp.stick){ x=inp.stick.x; y=-inp.stick.y*-1; y=inp.stick.y; }
+  const K=inp.keys, kb=KB.tick(K,dt); // W/S/A/D + arrows, ramped (flightkeys.js)
+  let x=kb.x, y=kb.y, r=null, gpThr=0;
+  const sv=FK.spring(inp,dt); if(inp.stick){ x=sv.x; y=sv.y; } else if(sv){ x=F.clamp(x+sv.x,-1,1); y=F.clamp(y+sv.y,-1,1); }
   const pads=navigator.getGamepads?navigator.getGamepads():[]; const gp=pads&&[...pads].find(p=>p&&p.connected);
   if(gp){ const dz=v=>Math.abs(v)<0.08?0:v; const gx=dz(gp.axes[0]||0), gy=dz(gp.axes[1]||0), gr=dz(gp.axes[2]||0);
     if(gx||gy){ x=gx; y=gy; } if(gr) r=gr;
@@ -1044,10 +1046,10 @@ function pilotInput(dt){
   // bremser
   S.ctl.brake=(K.has('b')||inp.brakeHeld||SYS.park)?1:0;
   // trim
-  if(K.has('[')) trimStep(-dt*0.25); if(K.has(']')) trimStep(dt*0.25);
+  if(kb.trim) trimStep(kb.trim*dt*0.25);
   const active=Math.abs(x)>0.02||Math.abs(y)>0.02;
-  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15){ AF.off('stick'); if(AP.on) apPress('AP'); airUI(); } else if(AF.hands()) return active; }
-  if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35){ apPress('AP'); } else return; }
+  if(AF.on){ if(Math.abs(x)>0.15||Math.abs(y)>0.15||kb.held){ AF.off('stick'); if(AP.on) apPress('AP'); airUI(); } else if(AF.hands()) return active; }
+  if(AP.on){ if(Math.abs(x)>0.35||Math.abs(y)>0.35||Math.max(Math.abs(kb.rx),Math.abs(kb.ry))>0.35){ apPress('AP'); } else return; }
   if(S.autotrim&&!S.ground&&Math.abs(x)<0.03){ const o=S.o||{}; if(holdRoll===null) holdRoll=Math.abs(o.roll)<6?0:F.clamp(o.roll,-30,30); x=F.clamp((holdRoll-(o.roll||0))*0.025-(S.p||0)*0.6,-0.35,0.35); } else holdRoll=null;
   if(S.autotrim){ x=F.clamp(x,-0.75,0.75); }
   S.ctl.ail=x; S.ctl.ele=y;

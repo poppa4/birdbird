@@ -17,7 +17,8 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const SX=[318,480,642], SY=[390,555], IR=66;                 // six-pack centres and dial radius
 const LX=135, NX=804, STK={x:894,w:340}, STK2={x:1256,w:340};  // left column, NAV column, centre stack, right radio column
 const RU={aud:[302,72],nc1:[382,104],nc2:[494,104],adf:[302,100],dme:[410,64],xp:[482,84]};
-const PT=296, PB=905, LB=1080;                                 // glareshield lip, panel / subpanel seam, subpanel bottom
+const PT=296, PB=905, LB=1080;
+const SKY=300, LIP=239;   // windshield headroom above y=0 shown in the 2D overview when the outside view is on; glareshield top at the centre line                                 // glareshield lip, panel / subpanel seam, subpanel bottom
 const YK={L:[480,1184],R:[1528,1184]}, COLY=812;                // control wheel hubs, column holes through the panel
 const SUBY=962;                                                // switch row on the subpanel
 
@@ -387,16 +388,16 @@ function panelSVG(){
  <filter id="fSoft" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-opacity=".55"/></filter>
 </defs>
 <!-- cabin: headliner, door posts, windshield centre strip with the magnetic compass, OAT probe -->
-<path d="M0 0H${W}V26Q${W/2} 46 0 26Z" class="headl"/>
-<path d="M0 0H70L34 ${PT-30}H0Z" class="pillar"/><path d="M${W} 0H${W-70}L${W-34} ${PT-30}H${W}Z" class="pillarR"/>
-<path d="M${W/2-9} 30V210h18V30z" class="cmpstrip"/>
+<path d="M0 ${-SKY}H${W}V${26-SKY}Q${W/2} ${46-SKY} 0 ${26-SKY}Z" class="headl"/>
+<path d="M0 ${-SKY}H${70+SKY*0.12}L34 ${PT-30}H0Z" class="pillar"/><path d="M${W} ${-SKY}H${W-70-SKY*0.12}L${W-34} ${PT-30}H${W}Z" class="pillarR"/>
+<path d="M${W/2-9} ${30-SKY}V210h18V${30-SKY}z" class="cmpstrip"/>
 ${compassSVG(1000,152)}
 ${oatSVG(372,190,24)}
 <!-- cabin side walls and door frames beyond the panel ends (seen on wide screens) -->
 <path d="M-900 ${PT-30}H34L44 ${PT+6}V${H}H-900Z" class="sidew"/><path d="M${W+900} ${PT-30}H${W-34}L${W-44} ${PT+6}V${H}H${W+900}Z" class="sidew"/>
 <path d="M-900 ${PT-30}H34" class="sidetrim"/><path d="M${W+900} ${PT-30}H${W-34}" class="sidetrim"/>
-<path d="M-900 0H0V${PT-30}H-900Z" class="sidewin" /><path d="M${W+900} 0H${W}V${PT-30}H${W+900}Z" class="sidewin"/>
-<path d="M-40 0H70L34 ${PT-30}H-40Z" class="pillar"/><path d="M${W+40} 0H${W-70}L${W-34} ${PT-30}H${W+40}Z" class="pillarR"/>
+<path d="M-900 ${-SKY}H0V${PT-30}H-900Z" class="sidewin" /><path d="M${W+900} ${-SKY}H${W}V${PT-30}H${W+900}Z" class="sidewin"/>
+<path d="M-40 ${-SKY}H${70+SKY*0.12}L34 ${PT-30}H-40Z" class="pillar"/><path d="M${W+40} ${-SKY}H${W-70-SKY*0.12}L${W-34} ${PT-30}H${W+40}Z" class="pillarR"/>
 <!-- glareshield: padded shroud with a rounded lip over the panel -->
 <path d="M${PT-262} ${PT+6}L44 262Q${W/2} 216 ${W-44} 262L${W-PT+262} ${PT+6}Z" class="glare"/>
 <path d="M30 ${PT-14}Q${W/2} ${PT-60} ${W-30} ${PT-14}L${W-34} ${PT+6}Q${W/2} ${PT-34} 34 ${PT+6}Z" class="glarelip"/>
@@ -539,14 +540,14 @@ function bind(world,byId,io){
       io.set(c.id,nv); if(c.spring!==undefined&&nv===c.spring){ io.set(c.id+':hold',1); drag={o,rspr:1}; try{ g.setPointerCapture(e.pointerId); }catch(_){} } return; }
     if(c.t==='flap'){ const n=c.vals.length, sp=c.sp||30, y0=c.y-(n-1)*sp/2; const idx=clamp(Math.round((pt.y-y0)/sp),0,n-1); const cur=io.get(c.id); io.set(c.id,idx===cur?(cur+1)%n:idx); return; }
     if(c.t==='tog'){ drag={o,tg:1,y:pt.y,done:0}; try{ g.setPointerCapture(e.pointerId); }catch(_){} return; }
-    if(c.t==='yoke'){ drag={o,stk:1,x:pt.x,y:pt.y}; try{ g.setPointerCapture(e.pointerId); }catch(_){} g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
+    if(c.t==='yoke'){ drag={o,stk:1,x:pt.x,y:pt.y,cx:e.clientX,cy:e.clientY,pt:e.pointerType}; try{ g.setPointerCapture(e.pointerId); }catch(_){} g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
     if(c.t==='tog3'){ const v=io.get(c.id); const q=(c.horiz?pt.x-c.x:pt.y-c.y)/(c.sc||1); const t=q<-7?-1:q>7?1:(v!==0?0:-1); io.set(c.id,t===v?0:t); if(c.spring){ drag={o,spr:1}; try{ g.setPointerCapture(e.pointerId); }catch(_){} } return; }
     if(c.t==='guard'){ const onGuard=e.target.closest('.gd'); const gk=c.id+'G'; if(onGuard||!io.get(gk)){ io.set(gk,io.get(gk)?0:1); return; } io.set(c.id,io.get(c.id)?0:1); return; }
     step(o,0);
   });
   world.addEventListener('pointermove',e=>{ if(!drag||drag.mom||drag.spr) return; const c=drag.o.c, pt=toW(e);
     if(drag.tg){ const dy=pt.y-drag.y; if(!drag.done&&Math.abs(dy)>6){ drag.done=1; io.set(c.id,dy<0?1:0); } return; }
-    if(drag.stk){ io.set('stick',{x:clamp((pt.x-drag.x)/60,-1,1),y:clamp((pt.y-drag.y)/40,-1,1)}); return; }
+    if(drag.stk){ io.set('stick',G.FK?G.FK.shapeDrag(e.clientX-drag.cx,e.clientY-drag.cy,drag.pt):{x:clamp((pt.x-drag.x)/60,-1,1),y:clamp((pt.y-drag.y)/40,-1,1)}); return; } // screen px through the shared mouse/touch curve
     if(drag.lev){ const v=clamp(drag.v-(pt.y-drag.y)/c.len*(c.max-c.min),c.min,c.max); drag.moved=1; io.set(c.id,v); return; }
     if(c.t==='vwheel') io.set(c.id,clamp(drag.v+(pt.y-drag.y)/110,-1,1));
     if(c.t==='hwheel') io.set(c.id,clamp(drag.v+(pt.x-drag.x)/90,-1,1));
@@ -653,5 +654,5 @@ function gauges(P,d){
   vis(P,'cov-ai',!!d.covAI); vis(P,'cov-dg',!!d.covDG);
   ann(P,d.lamps);
 }
-G.C172P={fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncYokes,gauges,needle,text,rot,tr,vis,ann,REG,REG_ORDER,W,H,CBS,MAGS};
+G.C172P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build,sync,syncYokes,gauges,needle,text,rot,tr,vis,ann,REG,REG_ORDER,W,H,CBS,MAGS};
 })(window);

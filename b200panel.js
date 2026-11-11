@@ -10,6 +10,7 @@ const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 /* reference-photo coordinates (1290 × 1007 px frame) → world units. The main panel is laid out by measuring
    every instrument and switch in that frame; DY moves the side consoles and pedestal (below the frame) down. */
+const SKY=250, LIP=285; // 2D: windshield headroom above y=0 with the outside view on; glareshield top in front of the left seat
 const PK=1.625, PX=x=>+(20+(x-50)*PK).toFixed(1), PY=y=>+(236+(y-30)*PK).toFixed(1), DY=140;
 const PR=(x0,y0,x1,y1)=>[PX(x0),PY(y0),+((x1-x0)*PK).toFixed(1),+((y1-y0)*PK).toFixed(1)];
 const pp=pts=>pts.map(([x,y])=>[PX(x),PY(y)]);
@@ -767,6 +768,9 @@ function panelSVG(){
  <clipPath id="cCmp"><rect x="983.7" y="211.1" width="24" height="11" rx="2"/></clipPath>
 </defs>
 <!-- overhead light control panel -->
+<!-- roof and centre windshield post above the overhead console: seen when the 2D overview shows more windshield (SKY) -->
+<g class="roof2d"><path d="M-900 ${-SKY}H${W+900}V${24-SKY}Q${W/2} ${40-SKY} -900 ${24-SKY}Z" fill="#8f8a82"/><path d="M-900 ${24-SKY}Q${W/2} ${40-SKY} ${W+900} ${24-SKY}" fill="none" stroke="#5d5953" stroke-width="3"/>
+<path d="M969 ${30-SKY}H1025L1019 0H975Z" fill="#2c2a28" stroke="#161514" stroke-width="1.5"/></g>
 <path d="M829.0 0V133.9Q829.0 140.4 836.2 140.4H1157.7Q1164.9 140.4 1164.9 133.9V0Z" class="ovh"/>
 <path d="M829.0 141.5H1164.9Q1170.3 141.5 1170.3 147.6L1171.7 201.6Q1171.7 208.1 1165.2 208.1H829.0Q822.5 208.1 822.5 201.6L824.0 147.6Q824.0 141.5 829.0 141.5Z" class="ovh"/>
 <path d="M841.6 202.3H1163.1" class="ovhl"/>
@@ -1010,14 +1014,14 @@ function bind(world,byId,io){
     if(c.t==='rotsel'){ const a=Math.atan2(pt.x-c.x,-(pt.y-c.y))*180/Math.PI; const v=io.get(c.id); const dA=(p,q)=>Math.abs(((p-q+540)%360)-180); if(Math.hypot(pt.x-c.x,pt.y-c.y)>(c.r||12)*(c.sc||1)+3){ let best=0; c.ang.forEach((x,i)=>{ if(dA(x,a)<dA(c.ang[best],a)) best=i; }); if(best!==v){ io.set(c.id,best); return; } } io.set(c.id,(v+1)%c.vals.length); return; }
     if(c.t==='flap'){ const idx=clamp(Math.round((pt.y-(c.y-30))/30),0,2); io.set(c.id,idx===io.get(c.id)?(idx+1)%3:idx); return; }
     if(c.t==='tog'){ drag={o,tg:1,y:pt.y,done:0}; try{ g.setPointerCapture(e.pointerId); }catch(_){} return; }
-    if(c.t==='yoke'){ drag={o,stk:1,x:pt.x,y:pt.y}; try{ g.setPointerCapture(e.pointerId); }catch(_){} g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
+    if(c.t==='yoke'){ drag={o,stk:1,x:pt.x,y:pt.y,cx:e.clientX,cy:e.clientY,pt:e.pointerType}; try{ g.setPointerCapture(e.pointerId); }catch(_){} g.classList.add('drag'); io.set('stick',{x:0,y:0}); return; }
     if(c.t==='tog3'){ const v=io.get(c.id); /* thirds of the switch's own touch zone: top / centre / bottom */ const q=c.horiz?pt.x-(c._hx??c.x):pt.y-(c._hy??c.y), th=Math.max(4,(c.horiz?(c._hw||13):(c._hh||13))*0.34); const t=q<-th?-1:q>th?1:(v!==0?0:-1); io.set(c.id,t===v?0:t); if(c.spring){ drag={o,spr:1}; try{ g.setPointerCapture(e.pointerId); }catch(_){} } return; }
     if(c.t==='guard'){ const onGuard=e.target.closest('.gd'); const gk=c.id+'G'; if(onGuard||!io.get(gk)){ io.set(gk,io.get(gk)?0:1); return; } io.set(c.id,io.get(c.id)?0:1); return; }
     step(o,0);
   });
   world.addEventListener('pointermove',e=>{ if(!drag||drag.mom||drag.spr) return; const c=drag.o.c, pt=toW(e);
     if(drag.tg){ const dy=pt.y-drag.y; if(!drag.done&&Math.abs(dy)>6){ drag.done=1; io.set(c.id,dy<0?1:0); } return; }
-    if(drag.stk){ io.set('stick',{x:clamp((pt.x-drag.x)/60,-1,1),y:clamp((pt.y-drag.y)/40,-1,1)}); return; }
+    if(drag.stk){ io.set('stick',G.FK?G.FK.shapeDrag(e.clientX-drag.cx,e.clientY-drag.cy,drag.pt):{x:clamp((pt.x-drag.x)/60,-1,1),y:clamp((pt.y-drag.y)/40,-1,1)}); return; } // screen px through the shared mouse/touch curve
     if(drag.lev){ const v=clamp(drag.v-(pt.y-drag.y)/c.len*(c.max-c.min),c.min,c.max); drag.moved=1; io.set(c.id,v); return; }
     if(c.t==='vwheel') io.set(c.id,clamp(drag.v+(pt.y-drag.y)/110,-1,1));
     if(c.t==='hwheel') io.set(c.id,clamp(drag.v+(pt.x-drag.x)/90,-1,1));
@@ -1148,5 +1152,5 @@ function gps(P,d){ vis(P,'gp-off',!d.on); if(!d.on) return; const m=!!d.map; vis
     const a=pts[d.act]; attr(P,'gp-leg','d',a?`M${cx} ${cy}L${a[0].toFixed(1)} ${a[1].toFixed(1)}`:'M0 0');
     pts.forEach((p,i)=>{ tr(P,'gp-w'+i,`translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px)`); text(P,'gp-wt'+i,d.wp[i].id); }); return; }
   [0,1,2,3].forEach(i=>{ text(P,'gp-l'+i,d.l[i]||''); text(P,'gp-r'+i,d.r[i]||''); }); text(P,'gp-pl',d.pl||''); text(P,'gp-pr',d.pr||''); vis(P,'gp-cl',!!d.cl); vis(P,'gp-cr',!!d.cr); }
-G.B200P={fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,W,H,WARN,CAUT,CBS};
+G.B200P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); P.q={}; return P; },sync,syncYokes,needle,text,rot,tr,vis,attr,op,ann,flight,efis,mfd,gps,REG,REG_ORDER,W,H,WARN,CAUT,CBS};
 })(window);
