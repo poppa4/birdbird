@@ -75,7 +75,8 @@ function def(k,type,caps){
 function missedSegs(){ return [{t:'legs',legs:[{ca:360,until:2700,alt:3000},{fix:'HOLAN',alt:3000}],climb:true,missed:true},{t:'hold',fix:'HOLAN',inb:180,dir:1,alt:3000,legT:60}]; }
 
 /* ---------- briefings ---------- */
-function brief(k,type){
+function brief(k,type){ const b0=brief0(k,type); return b0?b0+' '+tr('Training data: procedures and minima are simplified for practice and are not for navigation.','Øvingsdata: prosedyrer og minima er forenklet for trening og er ikke for navigasjon.'):b0; }
+function brief0(k,type){
   const c172=type==='C172', b=type==='B200', T=TY[type]||TY.DA42;
   const sp=v=>v+' KIAS';
   switch(k){
