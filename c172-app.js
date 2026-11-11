@@ -320,12 +320,12 @@ const turb=slider(el('windBox'),{label:'Turbulence',min:0,max:100,step:5,v:0,f:v
 function riskText(){ const o=S.o||{}; const oat=oatAt(o.altTrue||0); const r=CC.icingRisk(oat,ENV.rh,0.6), r2=CC.icingRisk(oat,ENV.rh,0.1);
   el('iceRisk').textContent=L(tr2('Carburettor icing risk here: ','Fare for forgasserising her: '))+(r2<0.08?L(tr2('low','lav')):r<0.35&&r2<0.5?L(tr2('moderate — mostly at descent power','moderat — mest på nedstigningseffekt')):L(tr2('serious at any power','alvorlig på all effekt')))+` (${oat.toFixed(0)} °C, ${Math.round(ENV.rh*100)} %)`; }
 LAB.onLang(riskText);
-el('fEng').onclick=()=>{ ENG.failed=true; msg(tr2('Engine failure.','Motorsvikt.')); };
+el('fEng').onclick=()=>{ ENG.failed=true; msg(tr2('Engine failure.','Motorsvikt.')); ownFail(S.ground?['efrun','eng']:['efflt','eng'],'ENGINE FAILURE'); };
 el('fMag').onclick=()=>{ ENG.magFault='L'; flash(L(tr2('Left magneto has failed — try the magneto check','Venstre magnet har sviktet — prøv magnetsjekken'))); };
 el('fPlug').onclick=()=>{ ENG.plug=1; flash(L(tr2('A plug on the right magneto is fouled — see the magneto check','En plugg på høyre magnet er sotet — se magnetsjekken'))); };
 el('fFuel').onclick=()=>{ FUEL.L=0; flash(L(tr2('Left tank empty','Venstre tank tom'))); };
-el('fVac').onclick=()=>{ VAC.pump=false; flash(L(tr2('Vacuum pump failed','Vakuumpumpa har sviktet'))); };
-el('fAlt').onclick=()=>{ EL.fail=true; flash(L(tr2('Alternator failed','Generatoren har sviktet'))); };
+el('fVac').onclick=()=>{ VAC.pump=false; ownFail('vac','VACUUM'); flash(L(tr2('Vacuum pump failed','Vakuumpumpa har sviktet'))); };
+el('fAlt').onclick=()=>{ EL.fail=true; ownFail('alt','LOW VOLTAGE'); flash(L(tr2('Alternator failed','Generatoren har sviktet'))); };
 el('fRestore').onclick=()=>{ ENG.failed=false; ENG.magFault=null; ENG.plug=0; VAC.pump=true; EL.fail=false; EL.trip=false; EL.retrip=0; if(FUEL.L<1) FUEL.L=20; flash(L(tr2('All failures cleared','Alle feil fjernet'))); };
 
 /* ---------- keyboard ---------- */
@@ -393,7 +393,7 @@ const hold=(s,key,cond,sec)=>{ if(cond){ PR.m[key]=(PR.m[key]||0)+(PR.dtc||1/60)
 const allCB=()=>P.CBS.every(c=>SYS.cb[c.k]);
 const PROCS=[
  {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air',brief:tr2('',''),steps:[]},
- {k:'start',t:tr2('Engine start (cold engine)','Motorstart (kald motor)'),set:'cold',brief:tr2('Parked on the apron with a cold engine, master off. Prime, start and check the engine as on a typical C172 checklist. Watch the LOW VOLTAGE light, the ammeter and the oil pressure.','Parkert på oppstillingsplassen med kald motor, hovedbryter av. Prim, start og sjekk motoren som på en typisk C172-sjekkliste. Følg LOW VOLTAGE-lyset, amperemeteret og oljetrykket.'),
+ {k:'start',gen:1,t:tr2('Engine start (cold engine)','Motorstart (kald motor)'),set:'cold',brief:tr2('Parked on the apron with a cold engine, master off. Prime, start and check the engine as on a typical C172 checklist. Watch the LOW VOLTAGE light, the ammeter and the oil pressure.','Parkert på oppstillingsplassen med kald motor, hovedbryter av. Prim, start og sjekk motoren som på en typisk C172-sjekkliste. Følg LOW VOLTAGE-lyset, amperemeteret og oljetrykket.'),
   steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
    chk(tr2('Circuit breakers — CHECK IN','Sikringer — SJEKK INNE'),'cb0',allCB),
    st(tr2('Avionics power — OFF','Avionikkbryter — AV'),'avio',()=>!SYS.avio),
@@ -415,7 +415,7 @@ const PROCS=[
    st(tr2('NAV/COM 1 — ON','NAV/COM 1 — PÅ'),'pwr1',()=>SYS.pwr1>0.1),
    st(tr2('Transponder — STANDBY','Transponder — STANDBY'),'xpMd',()=>SYS.xpMd===1),
    chk(tr2('Flaps — UP','Flaps — OPPE'),'flaps',()=>S.ctl.flap===0)]},
- {k:'runup',t:tr2('Run-up and before take-off','Run-up og før avgang'),set:'runup',brief:tr2('Engine running at the holding point. Run-up at 1,700 RPM: magnetos (max 125 RPM drop, max 50 RPM difference), carburettor heat, suction, engine instruments, idle; then set up for take-off.','Motoren går ved venteposisjonen. Run-up på 1700 o/min: magneter (maks 125 o/min fall, maks 50 o/min forskjell), forgasservarme, sug, motorinstrumenter, tomgang; gjør så klar for avgang.'),
+ {k:'runup',gen:1,t:tr2('Run-up and before take-off','Run-up og før avgang'),set:'runup',brief:tr2('Engine running at the holding point. Run-up at 1,700 RPM: magnetos (max 125 RPM drop, max 50 RPM difference), carburettor heat, suction, engine instruments, idle; then set up for take-off.','Motoren går ved venteposisjonen. Run-up på 1700 o/min: magneter (maks 125 o/min fall, maks 50 o/min forskjell), forgasservarme, sug, motorinstrumenter, tomgang; gjør så klar for avgang.'),
   steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
    st(tr2('Flight controls — FREE and CORRECT (full travel each way)','Flykontroller — FRIE og KORREKTE (fullt utslag hver vei)'),'yokeL',()=>PR.m.yx&&PR.m.yy),
    st(tr2('Elevator trim — TAKE-OFF','Høyderortrim — TAKE-OFF'),'trim',()=>Math.abs(S.ctl.trim)<0.07),
@@ -437,7 +437,7 @@ const PROCS=[
    st(tr2('Strobes — ON','Strobelys — PÅ'),'strobe',()=>SYS.strobe),
    st(tr2('Parking brake — RELEASE','Parkeringsbrems — LØS'),'park',()=>!SYS.park)]},
  {k:'circuit',t:tr2('Normal take-off and circuit','Normal avgang og landingsrunde'),set:'runway',brief:tr2('Lined up on runway 36 with the engine running. Full power, rotate at 55 KIAS, climb at 70–80 KIAS, left-hand circuit at 1,000 ft, carb heat on the downwind, flaps in stages and land.','Oppstilt på bane 36 med motoren i gang. Full gass, rotasjon ved 55 KIAS, stigning i 70–80 KIAS, venstre landingsrunde i 1000 ft, forgasservarme på medvind, flaps trinnvis og land.'),
-  steps:[chk(tr2('Lined up: heading 360, flaps UP, carb heat COLD, mixture RICH','Oppstilt: kurs 360, flaps OPPE, forgasservarme KALD, blanding RIK'),'flaps',()=>S.ctl.flap<=1&&!SYS.carb&&SYS.mix>0.95),
+  steps:[st(tr2('Lined up: heading 360, flaps UP, carb heat COLD, mixture RICH','Oppstilt: kurs 360, flaps OPPE, forgasservarme KALD, blanding RIK'),'flaps',()=>S.ctl.flap<=1&&!SYS.carb&&SYS.mix>0.95,{chk:1,sop:1}),
    st(tr2('Throttle — FULL (smoothly)','Gass — FULL (jevnt)'),'thr',()=>SYS.thr>0.95),
    chk(tr2('Engine instruments green, airspeed alive','Motorinstrumenter grønt, fartsmåler lever'),'thr',()=>S.o.ias>30),
    st(tr2('Rotate at 55 KIAS — lift off','Roter ved 55 KIAS — løft av'),'yokeL',()=>!S.ground),
@@ -450,26 +450,26 @@ const PROCS=[
    st(tr2('Base: heading 090, flaps 20°, 70 KIAS','Base: kurs 090, flaps 20°, 70 KIAS'),'flaps',()=>near(S.o.hdg,90,25)&&S.ctl.flap>=2),
    st(tr2('Final: heading 360, flaps FULL, 65 KIAS','Finale: kurs 360, flaps FULL, 65 KIAS'),'flaps',()=>near(S.o.hdg,360,15)&&S.ctl.flap===3),
    st(tr2('Land on the runway: flare, main wheels first','Land på banen: flare, hovedhjulene først'),'yokeL',()=>S.ground&&S.landed&&!S.landed.field),
-   st(tr2('After landing: flaps UP, carb heat COLD','Etter landing: flaps OPPE, forgasservarme KALD'),'flaps',()=>S.ctl.flap===0&&!SYS.carb)]},
- {k:'eftoa',t:tr2('Engine failure after take-off','Motorstopp etter avgang'),set:'eftoa',fail:'eng',brief:tr2('Climbing out through 350 ft above the runway end at 70 KIAS. The engine is about to stop. Lower the nose at once, land straight ahead in the fields, and secure the engine. Do not turn back.','Stiger ut gjennom 350 ft over baneenden i 70 KIAS. Motoren stopper snart. Senk nesa straks, land rett fram på jordene, og sikre motoren. Ikke snu tilbake.'),
+   st(tr2('After landing: flaps UP, carb heat COLD','Etter landing: flaps OPPE, forgasservarme KALD'),'flaps',()=>S.ctl.flap===0&&!SYS.carb,{sop:1})]},
+ {k:'eftoa',own:['efato','eng'],t:tr2('Engine failure after take-off','Motorstopp etter avgang'),set:'eftoa',fail:'eng',brief:tr2('Climbing out through 350 ft above the runway end at 70 KIAS. The engine is about to stop. Lower the nose at once, land straight ahead in the fields, and secure the engine. Do not turn back.','Stiger ut gjennom 350 ft over baneenden i 70 KIAS. Motoren stopper snart. Senk nesa straks, land rett fram på jordene, og sikre motoren. Ikke snu tilbake.'),
   steps:[st(tr2('Engine failure! Lower the nose — airspeed 65 KIAS','Motorstopp! Senk nesa — fart 65 KIAS'),'yokeL',()=>PR.failed&&hold(null,'g65',S.o.ias>58&&S.o.ias<74,1.5)),
    chk(tr2('Land straight ahead — pick a field within 30° of the nose; no turn back','Land rett fram — velg et jorde innen 30° av nesa; ikke snu'),'yokeL',()=>near(S.o.hdg,360,30)),
-   st(tr2('Mixture — IDLE CUT-OFF','Blanding — IDLE CUT-OFF'),'mix',()=>SYS.mix<0.04),
-   st(tr2('Fuel selector — OFF','Drivstoffvelger — OFF'),'fuelSel',()=>SYS.fuelSel===3),
-   st(tr2('Ignition — OFF','Tenning — OFF'),'mag',()=>SYS.mag===0),
-   st(tr2('Flaps — as required (FULL for the landing)','Flaps — etter behov (FULL for landingen)'),'flaps',()=>S.ctl.flap>=2),
-   st(tr2('Master switch — OFF (after the flaps)','Hovedbryter — AV (etter flapsene)'),'batSw',()=>!SYS.batSw),
+   st(tr2('Mixture — IDLE CUT-OFF','Blanding — IDLE CUT-OFF'),'mix',()=>SYS.mix<0.04,{emer:1}),
+   st(tr2('Fuel selector — OFF','Drivstoffvelger — OFF'),'fuelSel',()=>SYS.fuelSel===3,{emer:1}),
+   st(tr2('Ignition — OFF','Tenning — OFF'),'mag',()=>SYS.mag===0,{emer:1}),
+   st(tr2('Flaps — as required (FULL for the landing)','Flaps — etter behov (FULL for landingen)'),'flaps',()=>S.ctl.flap>=2,{emer:1}),
+   st(tr2('Master switch — OFF (after the flaps)','Hovedbryter — AV (etter flapsene)'),'batSw',()=>!SYS.batSw,{emer:1}),
    st(tr2('Touch down at minimum speed, brake to a stop','Sett ned med minste fart, brems til stans'),'yokeL',()=>S.ground&&Math.abs(S.Vg)<2)]},
- {k:'carbice',t:tr2('Carburettor icing in cruise','Forgasserising i marsj'),set:'cruise',ice:3,brief:tr2('4,500 ft in humid air just above freezing, cruise RPM. Ice is building in the carburettor. Watch the tachometer: the first sign is a slow RPM drop.','4500 ft i fuktig luft like over null grader, marsjturtall. Is bygger seg opp i forgasseren. Følg turtelleren: første tegn er et sakte turtallsfall.'),
+ {k:'carbice',own:'carb',t:tr2('Carburettor icing in cruise','Forgasserising i marsj'),set:'cruise',ice:3,brief:tr2('4,500 ft in humid air just above freezing, cruise RPM. Ice is building in the carburettor. Watch the tachometer: the first sign is a slow RPM drop.','4500 ft i fuktig luft like over null grader, marsjturtall. Is bygger seg opp i forgasseren. Følg turtelleren: første tegn er et sakte turtallsfall.'),
   steps:[chk(tr2('Cruise about 2,400 RPM — scan the tachometer and altimeter','Marsj ca. 2400 o/min — skann turteller og høydemåler'),'thr',()=>PR.t>5),
    chk(tr2('RPM dropping, then rough running — suspect carburettor ice','Turtallet faller, så ujevn gange — mistenk forgasseris'),'carb',()=>ENG.ice>0.35),
-   st(tr2('Carburettor heat — FULL HOT','Forgasservarme — HELT VARM'),'carb',()=>SYS.carb),
+   st(tr2('Carburettor heat — FULL HOT','Forgasservarme — HELT VARM'),'carb',()=>SYS.carb,{emer:1}),
    chk(tr2('Expect rougher running and a further drop while the ice melts — hold attitude','Forvent ujevnere gange og mer turtallsfall mens isen smelter — hold attityden'),'carb',()=>ENG.water>0.15||ENG.ice<0.05),
-   st(tr2('Throttle — FULL OPEN','Gass — HELT ÅPEN'),'thr',()=>SYS.thr>0.95),
+   st(tr2('Throttle — FULL OPEN','Gass — HELT ÅPEN'),'thr',()=>SYS.thr>0.95,{emer:1}),
    chk(tr2('RPM recovers as the ice clears','Turtallet tar seg opp når isen er borte'),'thr',()=>ENG.ice<0.03&&ENG.water<0.05),
-   st(tr2('Mixture — adjust for smooth running','Blanding — juster for jevn gange'),'mix',()=>PR.m.mixMoved),
-   st(tr2('Carburettor heat — COLD; set cruise power and keep watching','Forgasservarme — KALD; sett marsjeffekt og følg med videre'),'carb',()=>!SYS.carb&&ENG.rpm>2200&&ENG.rpm<2550)]},
- {k:'vac',t:tr2('Vacuum failure (partial panel)','Vakuumsvikt («partial panel»)'),set:'cruise',fail:'vac',brief:tr2('3,500 ft in cruise. The vacuum pump is about to fail; the attitude and heading indicators will slowly become unreliable while looking normal. Catch it on the suction gauge, cover the failed instruments and fly on the turn coordinator, altimeter, VSI, ASI and compass.','3500 ft i marsj. Vakuumpumpa svikter snart; horisonten og kursgyroen blir sakte upålitelige mens de ser normale ut. Oppdag det på suggauge, dekk til de svikta instrumentene og fly på svingkoordinator, høydemåler, variometer, fartsmåler og kompass.'),
+   st(tr2('Mixture — adjust for smooth running','Blanding — juster for jevn gange'),'mix',()=>PR.m.mixMoved,{emer:1}),
+   st(tr2('Carburettor heat — COLD; set cruise power and keep watching','Forgasservarme — KALD; sett marsjeffekt og følg med videre'),'carb',()=>!SYS.carb&&ENG.rpm>2200&&ENG.rpm<2550,{emer:1})]},
+ {k:'vac',own:'vac',t:tr2('Vacuum failure (partial panel)','Vakuumsvikt («partial panel»)'),set:'cruise',fail:'vac',brief:tr2('3,500 ft in cruise. The vacuum pump is about to fail; the attitude and heading indicators will slowly become unreliable while looking normal. Catch it on the suction gauge, cover the failed instruments and fly on the turn coordinator, altimeter, VSI, ASI and compass.','3500 ft i marsj. Vakuumpumpa svikter snart; horisonten og kursgyroen blir sakte upålitelige mens de ser normale ut. Oppdag det på suggauge, dekk til de svikta instrumentene og fly på svingkoordinator, høydemåler, variometer, fartsmåler og kompass.'),
   steps:[chk(tr2('Cruise — suction in the green','Marsj — sug i grønt'),'thr',()=>PR.t>4),
    chk(tr2('Suction gauge — LOW: vacuum pump failure','Suggauge — LAVT: vakuumpumpesvikt'),'thr',()=>VAC.suction<1),
    st(tr2('Cover the attitude indicator','Dekk til horisonten'),'covAI',()=>SYS.covAI),
@@ -477,16 +477,16 @@ const PROCS=[
    st(tr2('Partial panel: wings level on the turn coordinator, hold altitude ±100 ft for 20 s','Partial panel: vingene vannrett på svingkoordinatoren, hold høyden ±100 ft i 20 s'),'yokeL',()=>hold(null,'pp',Math.abs(S.o.roll)<6&&Math.abs(S.o.alt-3500)<100,20)),
    st(tr2('Standard-rate turn to 090 on the compass (allow for the turning error), wings level','Standardsving til 090 på kompasset (husk svingfeilen), vingene vannrett'),'yokeL',()=>hold(null,'c90',near(CMP.c,90,10)&&Math.abs(S.o.roll)<5,3)),
    chk(tr2('Tell ATC and land as soon as practical','Si fra til ATC og land så snart det er praktisk'),'micSel',()=>PR.t>2)]},
- {k:'alt',t:tr2('Alternator failure','Generatorsvikt'),set:'cruise',fail:'alt',brief:tr2('3,500 ft in cruise. The alternator control unit is about to trip. Follow the LOW VOLTAGE flow: reset once by cycling the master, and when the light comes back, take the alternator off line and shed load.','3500 ft i marsj. Generatorregulatoren er i ferd med å slå ut. Følg LOW VOLTAGE-flyten: nullstill én gang ved å slå hovedbryteren av og på, og når lyset kommer tilbake, koble ut generatoren og reduser forbruket.'),
+ {k:'alt',own:'alt',t:tr2('Alternator failure','Generatorsvikt'),set:'cruise',fail:'alt',brief:tr2('3,500 ft in cruise. The alternator control unit is about to trip. Follow the LOW VOLTAGE flow: reset once by cycling the master, and when the light comes back, take the alternator off line and shed load.','3500 ft i marsj. Generatorregulatoren er i ferd med å slå ut. Følg LOW VOLTAGE-flyten: nullstill én gang ved å slå hovedbryteren av og på, og når lyset kommer tilbake, koble ut generatoren og reduser forbruket.'),
   steps:[chk(tr2('LOW VOLTAGE light — ON, ammeter — discharge','LOW VOLTAGE-lys — PÅ, amperemeter — utlading'),'altSw',()=>EL.low&&EL.amps<0),
-   st(tr2('Avionics power — OFF','Avionikkbryter — AV'),'avio',()=>!SYS.avio),
-   st(tr2('Master switch — OFF (both halves)','Hovedbryter — AV (begge halvdeler)'),'batSw',()=>!SYS.batSw&&!SYS.altSw),
-   st(tr2('Master switch — ON (both halves)','Hovedbryter — PÅ (begge halvdeler)'),'batSw',()=>SYS.batSw&&SYS.altSw),
+   st(tr2('Avionics power — OFF','Avionikkbryter — AV'),'avio',()=>!SYS.avio,{emer:1}),
+   st(tr2('Master switch — OFF (both halves)','Hovedbryter — AV (begge halvdeler)'),'batSw',()=>!SYS.batSw&&!SYS.altSw,{emer:1}),
+   st(tr2('Master switch — ON (both halves)','Hovedbryter — PÅ (begge halvdeler)'),'batSw',()=>SYS.batSw&&SYS.altSw,{emer:1}),
    chk(tr2('LOW VOLTAGE light — OUT, ammeter charging','LOW VOLTAGE-lys — AV, amperemeter lader'),'altSw',()=>!EL.low&&EL.altOn),
-   st(tr2('Avionics power — ON','Avionikkbryter — PÅ'),'avio',()=>SYS.avio),
+   st(tr2('Avionics power — ON','Avionikkbryter — PÅ'),'avio',()=>SYS.avio,{emer:1}),
    chk(tr2('LOW VOLTAGE light comes on again — the alternator has failed','LOW VOLTAGE-lyset tennes igjen — generatoren har sviktet'),'altSw',()=>EL.trip&&EL.low),
-   st(tr2('Master switch ALT half — OFF','Hovedbryterens ALT-halvdel — AV'),'altSw',()=>!SYS.altSw&&SYS.batSw),
-   st(tr2('Non-essential load OFF: landing and taxi lights, pitot heat, NAV/COM 2, ADF, DME','Unødvendig forbruk AV: landings- og takselys, pitotvarme, NAV/COM 2, ADF, DME'),'land',()=>!SYS.land&&!SYS.taxi&&!SYS.pitot&&SYS.pwr2<0.05&&SYS.adfPwr<0.05&&!SYS.dmePwr),
+   st(tr2('Master switch ALT half — OFF','Hovedbryterens ALT-halvdel — AV'),'altSw',()=>!SYS.altSw&&SYS.batSw,{emer:1}),
+   st(tr2('Non-essential load OFF: landing and taxi lights, pitot heat, NAV/COM 2, ADF, DME','Unødvendig forbruk AV: landings- og takselys, pitotvarme, NAV/COM 2, ADF, DME'),'land',()=>!SYS.land&&!SYS.taxi&&!SYS.pitot&&SYS.pwr2<0.05&&SYS.adfPwr<0.05&&!SYS.dmePwr,{emer:1}),
    chk(tr2('Land as soon as practical — the battery lasts a limited time','Land så snart det er praktisk — batteriet varer en begrenset tid'),'batSw',()=>EL.amps>-12)]},
  {k:'ils',t:tr2('ILS approach (VOR, ADF and DME cross-check)','ILS-innflyging (krysskontroll med VOR, ADF og DME)'),set:'ils',brief:tr2('2,500 ft, 9 NM south of the field, heading 030 to intercept the runway 36 localizer. Tune and identify the ILS on NAV 1, set the course, intercept and fly the glideslope down to 200 ft, then land.','2500 ft, 9 NM sør for flyplassen, kurs 030 for å avskjære localizeren til bane 36. Still inn og identifiser ILS-en på NAV 1, sett kursen, avskjær og fly glidebanen ned til 200 ft, og land.'),
   steps:[st(tr2('NAV 1 — 110.30 ILS: transfer to in-use','NAV 1 — 110.30 ILS: overfør til aktiv'),'navX1',()=>SYS.nav1.a==='110.30'),
@@ -494,7 +494,7 @@ const PROCS=[
    st(tr2('OBS 1 — set the inbound course 360','OBS 1 — sett innkommende kurs 360'),'obs1',()=>near(SYS.crs1,360,3)),
    st(tr2('DME — N1 (distance to the ILS)','DME — N1 (avstand til ILS-en)'),'dmeMd',()=>SYS.dmeMd===0&&SYS.dmePwr),
    st(tr2('Intercept the localizer: turn to 360 as the needle centres','Avskjær localizeren: sving til 360 når nåla sentreres'),'yokeL',()=>curNav1&&curNav1.valid&&Math.abs(curNav1.dev)<0.3&&near(S.o.hdg,360,15)),
-   st(tr2('Before the glideslope: carb heat HOT, 90 KIAS, flaps 10°','Før glidebanen: forgasservarme VARM, 90 KIAS, flaps 10°'),'carb',()=>SYS.carb&&S.ctl.flap>=1),
+   st(tr2('Before the glideslope: carb heat HOT, 90 KIAS, flaps 10°','Før glidebanen: forgasservarme VARM, 90 KIAS, flaps 10°'),'carb',()=>SYS.carb&&S.ctl.flap>=1,{sop:1}),
    st(tr2('Glideslope centred: reduce to about 1,700 RPM, descend ~450 ft/min','Glidebanen sentrert: reduser til ca. 1700 o/min, synk ~450 ft/min'),'thr',()=>curNav1&&curNav1.gs&&Math.abs(curNav1.gs.dev)<0.4&&S.o.vs<-250),
    st(tr2('Track the localizer and glideslope to 200 ft (decision altitude)','Følg localizer og glidebane ned til 200 ft (beslutningshøyde)'),'yokeL',()=>S.o.agl<300&&curNav1&&Math.abs(curNav1.dev)<0.6),
    st(tr2('Runway in sight: flaps FULL, 65 KIAS','Banen i sikte: flaps FULL, 65 KIAS'),'flaps',()=>S.ctl.flap===3),
@@ -528,32 +528,60 @@ const AIRCAPS={gps:null,adf:true}; let AIRK='ils';
 const AF=AIRPROC.autofly({type:'C172',S,F,AP:null,power:{get:()=>SYS.thr,set:v=>{ SYS.thr=F.clamp(v,0,1); }},
   say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:1,flap:S.ctl.flap}),onOff:()=>{ holdRoll=null; holdPitch=null; airUI(); }});
 function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
-  if(k==='sid') return [chk(tr2('Mixture — RICH for the climb','Blanding — RIK i stigningen'),'mix',()=>SYS.mix>0.9),
-    st(tr2('Carburettor heat — OFF (cold) for the climb','Forgasservarme — AV (kald) i stigningen'),'carb',()=>!SYS.carb),
+  if(k==='sid') return [st(tr2('Mixture — RICH for the climb','Blanding — RIK i stigningen'),'mix',()=>SYS.mix>0.9,{chk:1,sop:1}),
+    st(tr2('Carburettor heat — OFF (cold) for the climb','Forgasservarme — AV (kald) i stigningen'),'carb',()=>!SYS.carb,{sop:1}),
     st(tr2('OBS 2 — 324 to cross-check OSVIK on ASN R-324 (FROM)','OBS 2 — 324 for å krysskontrollere OSVIK på ASN R-324 (FROM)'),'obs2',()=>near(SYS.crs2,324,3)),
-    st(tr2('Landing light — OFF after the climb is established','Landingslys — AV når stigningen er etablert'),'land',()=>!SYS.land)];
+    st(tr2('Landing light — OFF after the climb is established','Landingslys — AV når stigningen er etablert'),'land',()=>!SYS.land,{sop:1})];
   if(k==='hold') return [st(tr2('DME — N1: RONAX is D10.0 IASN','DME — N1: RONAX er D10,0 IASN'),'dmeMd',()=>SYS.dmeMd===0&&SYS.dmePwr),
-    st(tr2('Carburettor heat — check (ON if in doubt at reduced power)','Forgasservarme — sjekk (PÅ ved tvil på redusert effekt)'),'carb',()=>PR.m.carbChk||SYS.carb),
+    st(tr2('Carburettor heat — check (ON if in doubt at reduced power)','Forgasservarme — sjekk (PÅ ved tvil på redusert effekt)'),'carb',()=>PR.m.carbChk||SYS.carb,{sop:1}),
     chk(tr2('Holding speed — about 90 KIAS','Ventefart — ca. 90 KIAS'),'thr',()=>S.o.ias<100)];
   if(!app) return [];
   const L0=[chk(tr2('NAV 1 — 110.30 ILS in use, OBS 1 on 360','NAV 1 — 110.30 ILS aktiv, OBS 1 på 360'),'navX1',()=>SYS.nav1.a==='110.30'&&near(SYS.crs1,360,3)),
     st(tr2('NAV 1 ident — ON, identify I-ASN','NAV 1 ident — PÅ, identifiser I-ASN'),'navId1',()=>SYS.navId1&&SYS.auN1)];
   if(k==='ndb') L0.push(st(tr2('ADF — 375 (AN) in ADF mode, identify','ADF — 375 (AN) i ADF-modus, identifiser'),'adfMd',()=>SYS.adf.a==='375'&&SYS.adfMd&&SYS.auAdf));
-  return L0.concat([st(tr2('Fuel selector — BOTH','Drivstoffvelger — BOTH'),'fuelSel',()=>SYS.fuelSel===1),
-    chk(tr2('Mixture — RICH','Blanding — RIK'),'mix',()=>SYS.mix>0.9),
-    st(tr2('Carburettor heat — ON before reducing power','Forgasservarme — PÅ før du reduserer effekten'),'carb',()=>SYS.carb),
-    st(tr2('Landing light — ON','Landingslys — PÅ'),'land',()=>SYS.land),
-    st(tr2('Flaps 10° before the glideslope / final descent','Flaps 10° før glidebanen / sluttinnflygingen'),'flaps',()=>S.ctl.flap>=1),
+  return L0.concat([st(tr2('Fuel selector — BOTH','Drivstoffvelger — BOTH'),'fuelSel',()=>SYS.fuelSel===1,{sop:1}),
+    st(tr2('Mixture — RICH','Blanding — RIK'),'mix',()=>SYS.mix>0.9,{chk:1,sop:1}),
+    st(tr2('Carburettor heat — ON before reducing power','Forgasservarme — PÅ før du reduserer effekten'),'carb',()=>SYS.carb,{sop:1}),
+    st(tr2('Landing light — ON','Landingslys — PÅ'),'land',()=>SYS.land,{sop:1}),
+    st(tr2('Flaps 10° before the glideslope / final descent','Flaps 10° før glidebanen / sluttinnflygingen'),'flaps',()=>S.ctl.flap>=1,{sop:1}),
     st(tr2('Minimums: runway in sight — flaps 30° and land; otherwise go around','Minima: banen i sikte — flaps 30° og land; ellers gå rundt'),'flaps',()=>S.ctl.flap>=3||!!AF.rec.decision)]); }
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
+/* predicates for the student's own checklist (ownck.js dictionary keys) and the panel control each one highlights */
+const OWNP={masterOn:()=>SYS.batSw&&SYS.altSw,masterOff:()=>!SYS.batSw,altOn:()=>!!SYS.altSw,altOff:()=>!SYS.altSw,avioOn:()=>!!SYS.avio,avioOff:()=>!SYS.avio,
+  fuelBoth:()=>SYS.fuelSel===1,fuelOff:()=>SYS.fuelSel===3,mixRich:()=>SYS.mix>0.95,mixLean:()=>SYS.mix<0.9&&SYS.mix>0.05,mixCut:()=>SYS.mix<0.04,
+  carbOn:()=>!!SYS.carb,carbOff:()=>!SYS.carb,thrIdle:()=>SYS.thr<0.05,thrFull:()=>SYS.thr>0.95,thrCrack:()=>SYS.thr>=0.03&&SYS.thr<=0.2,primerIn:()=>!SYS.primer,
+  bcnOn:()=>!!SYS.bcn,bcnOff:()=>!SYS.bcn,strobeOn:()=>!!SYS.strobe,strobeOff:()=>!SYS.strobe,landOn:()=>!!SYS.land,landOff:()=>!SYS.land,taxiOn:()=>!!SYS.taxi,taxiOff:()=>!SYS.taxi,
+  navOn:()=>!!SYS.navL,navOff:()=>!SYS.navL,pitotOn:()=>!!SYS.pitot,pitotOff:()=>!SYS.pitot,flap0:()=>S.ctl.flap===0,flap1:()=>S.ctl.flap===1,flap2:()=>S.ctl.flap===2,flap3:()=>S.ctl.flap===3,flapTO:()=>S.ctl.flap<=1,
+  parkOn:()=>!!SYS.park,parkOff:()=>!SYS.park,magBoth:()=>SYS.mag===3,magOff:()=>SYS.mag===0,magStart:()=>ENG.run&&SYS.mag===3,xpSby:()=>SYS.xpMd===1,xpAlt:()=>SYS.xpMd===3,
+  baroSet:()=>Math.abs(S.baro-S.env.qnh)<0.6,dgSet:()=>near(VAC.hdg,CMP.c,4),cbIn:()=>allCB(),trimTO:()=>Math.abs(S.ctl.trim)<0.07};
+const OWNC={masterOn:'batSw',masterOff:'batSw',altOn:'altSw',altOff:'altSw',avioOn:'avio',avioOff:'avio',fuelBoth:'fuelSel',fuelOff:'fuelSel',mixRich:'mix',mixLean:'mix',mixCut:'mix',
+  carbOn:'carb',carbOff:'carb',thrIdle:'thr',thrFull:'thr',thrCrack:'thr',primerIn:'primer',bcnOn:'bcn',bcnOff:'bcn',strobeOn:'strobe',strobeOff:'strobe',landOn:'land',landOff:'land',
+  taxiOn:'taxi',taxiOff:'taxi',navOn:'navL',navOff:'navL',pitotOn:'pitot',pitotOff:'pitot',flap0:'flaps',flap1:'flaps',flap2:'flaps',flap3:'flaps',flapTO:'flaps',parkOn:'park',parkOff:'park',
+  magBoth:'mag',magOff:'mag',magStart:'mag',xpSby:'xpMd',xpAlt:'xpMd',baroSet:'baroK',dgSet:'dgK',cbIn:'cb0',trimTO:'trim'};
+/* safety-critical outcome after a failure (debrief "time to action"); latched: each part counts once it has held */
+const latch=fs=>{ const got=fs.map(()=>0); return ()=>{ fs.forEach((f,i)=>{ if(!got[i]&&f()) got[i]=1; }); return got.every(Boolean); }; };
+const OWNCRIT={eftoa:{f:[()=>PR.failed&&S.o.ias>55&&S.o.ias<75],t:tr2('nose lowered to the glide speed','nesa senket til glidefart'),lim:[6,12]},
+  alt:{f:[()=>PR.failed&&(!SYS.altSw||!EL.low)],t:tr2('alternator reset or off line','generatoren nullstilt eller koblet ut'),lim:[60,120]},
+  carbice:{f:[()=>PR.failed&&!!SYS.carb],t:tr2('carburettor heat on','forgasservarme på'),lim:[30,60]}};
+/* generic SOP steps (sop) only with the generic-flow toggle on; the AFM emergency steps (emer) give way to the student's own
+   emergency section when their checklist has one for this exercise. Simulator instructions always stay. */
+const ownSteps=p=>{ const g=OWNCK.gen('C172'), own=p.own&&OCK.has(p.own); return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
+const visProcs=()=>PROCS.filter(p=>!p.gen||OWNCK.gen('C172')||p.k===PR.k);
+const OCK=OWNCK.mount({type:'C172',box:el('ownck'),L,pred:k=>{ const f=OWNP[k]; return f?!!f():false; },ctl:k=>OWNC[k]||null,
+  hl:id=>{ if(!curStep()) hlCtl(id); },clock:()=>DB?DB.t:0,onChange:()=>{ if(PR.k&&PR.t<2) procStart(PR.k); }});
+LAB.onLang(()=>OCK.render());
+function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b&&!b.classList.contains('on')) b.click(); } }
+function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('C172',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('C172',e.target.checked); procStart(PR.k&&visProcs().some(x=>x.k===PR.k)&&(!PROCS.find(x=>x.k===PR.k).gen||e.target.checked)?PR.k:'free'); genToggle(); }; }
+LAB.onLang(genToggle);
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
   if(UI.paused) togglePause(); S.crash=null;
-  AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:'free',AIRCAPS); if(p.k==='air'){ p.steps=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'C172'); }
-  Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,m:{},bad:0}); p.steps.forEach(s=>{ s.okT=0; });
+  AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:'free',AIRCAPS); if(p.k==='air'){ p.all=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'C172'); } else if(!p.all) p.all=p.steps;
+  p.steps=ownSteps(p);
+  Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,m:{},bad:0,crit:null}); p.steps.forEach(s=>{ s.okT=0; }); OCK.reset();
   procSet(p); renderProc(); procFocus(); drawScenSel(); airUI(); if(DB) DB.start();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
@@ -576,26 +604,29 @@ function runupWatch(dt){ const m=PR.m;
   if(SYS.carb&&m.base!=null){ m.tH=(m.tH||0)+dt; if(m.tH>3&&m.heatDrop==null){ m.heatDrop=Math.round(m.base-ENG.rpm); pill(L(tr2('Carb heat: ','Forgasservarme: '))+'−'+m.heatDrop+' RPM'+(ENG.water>0.05?L(tr2(' — rough, then rising: there was ice',' — ujevn og så stigende: det var is')):''),'ok'); } } else m.tH=0;
   if(SYS.thr<0.02&&ENG.run&&ENG.rpm<760&&ENG.rpm>500) m.idle=1; }
 function procTick(dt){
+  OCK.tick(dt);
   const p=PROCS.find(x=>x.k===PR.k); if(!p) return; PR.t+=dt; PR.dtc=dt;
   if(inp.stick){ if(Math.abs(inp.stick.x)>0.6) PR.m.yx=1; if(Math.abs(inp.stick.y)>0.6) PR.m.yy=1; }
   if(p.k==='runup') runupWatch(dt);
   if(p.fail&&!PR.failed){
-    if(p.fail==='eng'&&PR.t>2.5){ ENG.failed=true; PR.failed=true; }
-    if(p.fail==='vac'&&PR.t>6){ VAC.pump=false; VAC.ai=Math.min(VAC.ai,0.75); VAC.dg=Math.min(VAC.dg,0.7); PR.failed=true; }
-    if(p.fail==='alt'&&PR.t>6){ EL.trip=true; PR.failed=true; }
+    if(p.fail==='eng'&&PR.t>2.5){ ENG.failed=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,'ENGINE FAILURE'); }
+    if(p.fail==='vac'&&PR.t>6){ VAC.pump=false; VAC.ai=Math.min(VAC.ai,0.75); VAC.dg=Math.min(VAC.dg,0.7); PR.failed=true; PR.failT=PR.t; }
+    if(p.fail==='alt'&&PR.t>6){ EL.trip=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,'LOW VOLTAGE'); }
+    if(p.fail==='vac'&&PR.failed) ownFail(p.own,'VACUUM');
   }
+  if(p.k==='carbice'&&!PR.failed&&ENG.ice>0.35){ PR.failed=true; PR.failT=PR.t; ownFail(p.own,'CARB ICE'); }
   if(p.fail==='alt'&&PR.m.reset&&!PR.m.retripSet){ PR.m.retripSet=1; EL.retrip=25; }
   if(pillT>0){ pillT-=dt; if(pillT<=0) procFocus(); }
   const s=p.steps[PR.i]; if(!s) return;
-  if(s.ok.call(s)){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.6){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length){ hlCtl(null); pill(L(tr2('Checklist complete','Sjekkliste fullført')),'ok'); if(window.NPROG) try{ NPROG.award('c172:'+p.k,Math.max(40,100-15*(PR.bad||0))); }catch(e){} } else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
+  if(s.ok.call(s)){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.6){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length){ hlCtl(null); pill(L(tr2('Checklist complete','Sjekkliste fullført')),'ok'); if(window.NPROG) try{ NPROG.award('c172:'+p.k,100); }catch(e){} } else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
   else s.okT=0;
 }
 function renderProc(){
-  const sel=el('procSel'); sel.innerHTML=PROCS.map(p=>`<option value="${p.k}"${p.k===PR.k?' selected':''}>${L(p.t)}</option>`).join('');
+  const sel=el('procSel'); sel.innerHTML=visProcs().map(p=>`<option value="${p.k}"${p.k===PR.k?' selected':''}>${L(p.t)}</option>`).join('');
   const p=PROCS.find(x=>x.k===PR.k); if(!p){ el('proc').innerHTML=''; return; }
   const cur=p.steps[PR.i];
   el('proc').innerHTML=`${cur?`<div class="next"><small>${L(tr2('Next step','Neste steg'))} ${PR.i+1}/${p.steps.length}</small><b>${L(cur.t)}</b>${cur.call?`<div class="row"><button id="pCall">📣 ${L(tr2('Call "Clear prop!"','Rop «Clear prop!»'))}</button></div>`:''}<div class="row"><button id="pBack"${PR.i?'':' disabled'}>← ${L(tr2('Back','Tilbake'))}</button><button id="pSkip">${L(tr2('Skip','Hopp over'))} →</button></div></div>`:''}<p class="brief">${L(p.brief)}</p>${p.steps.length?`<ul class="checks">${p.steps.map((s,i)=>`<li class="${PR.done[i]===1?'ok':PR.done[i]===2?'skip':i===PR.i?'now':''}"><i>${PR.done[i]===1?'✓':PR.done[i]===2?'–':i+1}</i><span>${L(s.t)}${s.chk?`<small>${L(tr2('check','sjekk'))}</small>`:''}</span></li>`).join('')}</ul>`:''}
-   ${p.steps.length&&PR.i>=p.steps.length?`<div class="callout blue"><b>${L(tr2('Checklist complete.','Sjekklisten er fullført.'))}</b> ${PR.bad?L(tr2('Remarks: ','Merknader: '))+PR.bad:L(tr2('Clean run.','Ren gjennomføring.'))}</div>`:''}
+   ${p.steps.length&&PR.i>=p.steps.length?`<div class="callout blue"><b>${L(tr2('Checklist complete.','Sjekklisten er fullført.'))}</b></div>`:''}
    <div class="row"><button id="procRe">${L(tr2('Restart scenario','Start scenarioet på nytt'))}</button></div>`;
   if(el('pSkip')){ el('pSkip').onclick=()=>{ PR.done[PR.i]=2; PR.i++; renderProc(); if(PR.i<p.steps.length) procFocus(); else { hlCtl(null); pill(null); } }; el('pBack').onclick=()=>{ if(!PR.i) return; PR.i--; PR.done[PR.i]=0; renderProc(); procFocus(); }; }
   if(el('pCall')) el('pCall').onclick=()=>{ PR.m[cur.call]=1; pill('“Clear prop!”','ok'); beep(700,0.12,0.04); };
@@ -604,7 +635,7 @@ function renderProc(){
 }
 el('procSel').onchange=e=>procStart(e.target.value);
 LAB.onLang(()=>{ renderProc(); drawScenSel(); renderLim(); if(PR.k) procFocus(); });
-function drawScenSel(){ el('scenSel').innerHTML=PROCS.map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
+function drawScenSel(){ el('scenSel').innerHTML=visProcs().map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
 el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
@@ -725,17 +756,20 @@ const QZ=[
 ];
 quiz(el('qbox'),'c172cockpit',()=>shuffle(QZ.slice()).slice(0,8));
 
-window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart;
+window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
 AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,type:'C172',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b) b.click(); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'C172',page:document.body.dataset.d3?'c172-3d':'c172',S,F,AF,after:AIRUI.btn,
   eng:()=>[(ENG.failed||(!ENG.run&&!S.ground))?1:0,0,NaN,NaN],
-  scen:()=>{ const p=PROCS.find(x=>x.k===PR.k); if(!p) return null; const air=p.k==='air'; return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,steps:p.steps,done:PR.done,bad:PR.bad||0}; },
+  scen:()=>{ const p=PROCS.find(x=>x.k===PR.k); if(!p) return null; const air=p.k==='air'; const c=OWNCRIT[p.k];
+    return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,steps:p.steps,done:PR.done,bad:PR.bad||0,chk:!!p.gen,failed:p.fail||p.k==='carbice'?PR.failed:null,own:()=>OCK.report(),
+      crit:c?(PR.crit||(PR.crit=latch(c.f))):null,critTxt:c&&c.t,critLim:c&&c.lim}; },
   again:()=>{ const a=DB.last&&DB.last.afUsed; procStart(PR.k||'air'); if(a&&PR.k==='air'&&!AF.on) toggleAuto(); },
   next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('C172',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('C172',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
+genToggle();
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
 if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(PR.k==='air') AIRUI.showNow(AIRK); // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('C172',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(f!=null) S.ctl.flap=f; }};

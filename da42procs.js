@@ -11,8 +11,10 @@
 (function(G){
 'use strict';
 const T=(en,no)=>({en,no:no==null?en:no});
-const DISC=T("Based on the manufacturer's AFM; training use only — always use your approved AFM and company checklists.",
-  'Basert på produsentens AFM; kun for trening — bruk alltid godkjent AFM og selskapets sjekklister.');
+const DISC=T("Manufacturer's AFM reference. Always follow your school's approved checklists.",
+  'Produsentens AFM-referanse. Følg alltid skolens godkjente sjekklister.');
+const GENL=T('Generic flow (from the AFM/POH) — not your school\u2019s SOP','Generell flyt (fra AFM/POH) — ikke skolens SOP');
+const GENOFF=T("Normal flows and callouts differ from school to school, so the trainer does not impose one. Use your own checklist above, or switch on the generic flow above.",'Normale flyter og callouts varierer fra skole til skole, så treneren tvinger ikke frem én. Bruk din egen sjekkliste over, eller slå på den generelle flyten over.');
 const VARIANT='DA42 NG / DA42-VI · Austro AE300 (E4-C) · G1000 NXi · GFC 700';
 
 /* ---------- auto-tick predicates ---------- */
@@ -514,23 +516,23 @@ const EMER=[
 
 /* ---------- failure scenarios: the sim triggers a failure, then opens the matching checklist ---------- */
 const SCENS=[
- {id:'s_rto',t:T('Engine failure on the take-off run','Motorstans i startrullet'),set:'rwyTO',proc:'efrun',fail:{kind:'eng',ias:45},
+ {id:'s_rto',crit:['idle','stopped'],critTxt:T('both power levers idle, aircraft stopped','begge effekthendler på tomgang, flyet stoppet'),critLim:[15,30],own:'efrun',t:T('Engine failure on the take-off run','Motorstans i startrullet'),set:'rwyTO',proc:'efrun',fail:{kind:'eng',ias:45},
   brief:T('Runway 36, ready for take-off. Apply full power. An engine fails before VR: stop.','Bane 36, klar for avgang. Gi full effekt. En motor stopper før VR: stopp.')},
- {id:'s_efato',t:T('Engine failure after take-off','Motorstans etter avgang'),set:'efato',proc:'efato',fail:{kind:'eng',at:3},
+ {id:'s_efato',crit:['pwrMaxLive','vyse','gearUp','engAffOff'],critTxt:T('live engine at full power, blue line, gear up, failed engine secured','full effekt på den levende motoren, blå linje, understell oppe, motoren som sviktet sikret'),critLim:[25,50],own:['efato','eng'],t:T('Engine failure after take-off','Motorstans etter avgang'),set:'efato',proc:'efato',fail:{kind:'eng',at:3},
   brief:T('Just airborne at 400 ft, gear down, flaps APP. An engine fails. Fly first: power, rudder, blue line, clean up, identify — verify — secure.','Akkurat i lufta i 400 ft, understell ute, flaps APP. En motor stopper. Fly først: effekt, sideror, blå linje, rydd opp, identifiser — verifiser — sikre.')},
- {id:'s_efflt',t:T('Engine failure in cruise','Motorstans i marsj'),set:'cruise',proc:'efflt',fail:{kind:'eng',at:6},
+ {id:'s_efflt',crit:['pwrLive92','engAffOff'],critTxt:T('power on the live engine, failed engine secured','effekt på den levende motoren, motoren som sviktet sikret'),critLim:[30,60],own:['efflt','eng'],t:T('Engine failure in cruise','Motorstans i marsj'),set:'cruise',proc:'efflt',fail:{kind:'eng',at:6},
   brief:T('Cruise at 5000 ft. An engine fails. Keep control, above VMCA, then secure the dead engine and balance the fuel.','Marsj i 5000 ft. En motor stopper. Behold kontrollen, over VMCA, sikre så den døde motoren og balanser drivstoffet.')},
- {id:'s_fireflt',t:T('Engine fire in flight','Motorbrann i lufta'),set:'cruise',proc:'fireflt',fail:{kind:'fire',at:6},
+ {id:'s_fireflt',crit:['heatOff','engAffOff','fselAffOff'],critTxt:T('heat off, that engine shut down and its fuel off','varme av, motoren stoppet og drivstoffet av'),critLim:[20,45],own:'fire_air',t:T('Engine fire in flight','Motorbrann i lufta'),set:'cruise',proc:'fireflt',fail:{kind:'fire',at:6},
   brief:T('Cruise at 5000 ft. An ENG FIRE warning will come. Heat off, then secure that engine.','Marsj i 5000 ft. Et ENG FIRE-varsel kommer. Varme av, sikre så den motoren.')},
- {id:'s_firegnd',t:T('Engine fire on the ground','Motorbrann på bakken'),set:'running',proc:'firegnd',fail:{kind:'fire',at:4},
+ {id:'s_firegnd',crit:['engsOff','fselsOff','elecOff'],critTxt:T('engines, fuel and master off','motorer, drivstoff og master av'),critLim:[15,30],own:'fire_gnd',t:T('Engine fire on the ground','Motorbrann på bakken'),set:'running',proc:'firegnd',fail:{kind:'fire',at:4},
   brief:T('Engines running on the apron. A fire warning comes: shut everything down and get out.','Motorene går på oppstillingsplassen. Et brannvarsel kommer: slå av alt og kom deg ut.')},
- {id:'s_altn',t:T('Alternator failure','Generatorsvikt'),set:'cruise',proc:'altn1',fail:{kind:'alt',at:5},
+ {id:'s_altn',crit:['altAffOff'],critTxt:T('failed alternator off','generatoren som sviktet av'),critLim:[30,90],own:'alt',t:T('Alternator failure','Generatorsvikt'),set:'cruise',proc:'altn1',fail:{kind:'alt',at:5},
   brief:T('Cruise at 5000 ft. Watch the annunciations.','Marsj i 5000 ft. Følg med på varslene.')},
- {id:'s_ecua',t:T('ECU A failure','ECU A-svikt'),set:'cruise',proc:'ecua',fail:{kind:'ecuA',at:5},
+ {id:'s_ecua',crit:['pumpsOn','altAirOpen'],critTxt:T('fuel pumps on, alternate air open','drivstoffpumper på, alternativ luft åpen'),critLim:[30,90],own:'ecu',t:T('ECU A failure','ECU A-svikt'),set:'cruise',proc:'ecua',fail:{kind:'ecuA',at:5},
   brief:T('Cruise at 5000 ft. An ECU caution will come. Work the checklist, including the clearing procedure.','Marsj i 5000 ft. Et ECU-varsel kommer. Gå gjennom sjekklisten, også nullstillingen.')},
- {id:'s_gear',t:T('Landing gear unsafe','Understell usikkert'),set:'appr',proc:'gearunsafe',fail:{kind:'gear',onGear:1},
+ {id:'s_gear',crit:['gear3'],critTxt:T('gear down and locked','understell nede og låst'),critLim:[60,120],own:'gear',t:T('Landing gear unsafe','Understell usikkert'),set:'appr',proc:'gearunsafe',fail:{kind:'gear',onGear:1},
   brief:T('On vectors at 2000 ft, gear up. Select the gear down: it will not lock. Extend it manually.','På vektorer i 2000 ft, understell oppe. Velg understell ned: det låser seg ikke. Fell det ut manuelt.')},
- {id:'s_pfd',t:T('PFD failure','PFD-svikt'),set:'cruise',proc:'pfdfail',fail:{kind:'pfd',at:5},
+ {id:'s_pfd',crit:['backup'],critTxt:T('display backup selected','display backup valgt'),critLim:[10,30],own:'pfd',t:T('PFD failure','PFD-svikt'),set:'cruise',proc:'pfdfail',fail:{kind:'pfd',at:5},
   brief:T('Cruise at 5000 ft. The PFD will go dark. Get the flight instruments back on the MFD.','Marsj i 5000 ft. PFD-en blir mørk. Få flyinstrumentene tilbake på MFD-en.')}
 ];
 
@@ -595,7 +597,7 @@ function toSteps(p,env){
 function build(env){
   const out=[];
   FLOWS.forEach(p=>out.push({k:p.id,kind:'flow',g:p.g,t:p.t,ref:p.ref,brief:p.brief,set:p.set,steps:toSteps(p,env)}));
-  SCENS.forEach(s=>{ const p=find(s.proc); out.push({k:s.id,kind:'scen',t:s.t,ref:p.ref,brief:s.brief,set:s.set,fail:s.fail,proc:p.id,side:!!p.side,get title(){ return subT(p.t,env.side()); },note:p.note,steps:toSteps(p,env)}); });
+  SCENS.forEach(s=>{ const p=find(s.proc); out.push({k:s.id,kind:'scen',t:s.t,ref:p.ref,brief:s.brief,set:s.set,fail:s.fail,proc:p.id,side:!!p.side,crit:s.crit,critTxt:s.critTxt,critLim:s.critLim,own:s.own,get title(){ return subT(p.t,env.side()); },note:p.note,steps:toSteps(p,env)}); });
   EMER.forEach(p=>out.push({k:p.id,kind:'emer',g:p.g,t:p.t,ref:p.ref,note:p.note,side:!!p.side,alert:p.alert,lib:true,get title(){ return subT(p.t,env.side()); },steps:toSteps(p,env)}));
   return out; }
 
@@ -644,16 +646,18 @@ const TXT={flows:W('Flows','Flyter'),emer:W('Emergency','Nød'),scen:W('Scenario
   pickScen:W('The trainer sets up the flight and triggers a failure. When it happens, the matching checklist opens. The debrief scores time to action, the correct engine, VMCA and VYSE.','Treneren setter opp flygingen og utløser en feil. Når den skjer, åpnes riktig sjekkliste. Debriefen vurderer tid til handling, riktig motor, VMCA og VYSE.'),
   pickEmer:W('Opens on the current flight — nothing is reset. Red items are memory items.','Åpnes på flygingen du har nå — ingenting nullstilles. Røde punkter er hukommelsespunkter.'),
   speedsH:W('AFM speeds (KIAS)','AFM-farter (KIAS)'),limH:W('Key limitations','Viktige begrensninger'),memH:W('memory items','hukommelsespunkter'),
+  ownEm:W('Your checklist','Din sjekkliste'),afmH:W("Manufacturer's AFM reference",'Produsentens AFM-referanse'),
   wait:W('Fly the aircraft. The failure will come — the checklist opens when it does.','Fly flyet. Feilen kommer — sjekklisten åpnes når den skjer.')};
 function navHTML(st,L){ const tab=st.tab||'flows', q=st.q||'';
   const tabs=['flows','emer','scen','spd'].map(k=>`<button data-pt="${k}" class="${k===tab?'on':''}" aria-pressed="${k===tab}">${esc(L(TXT[k]))}</button>`).join('')+`<button class="aa${st.big?' on':''}" data-pbig aria-pressed="${!!st.big}" title="${esc(L(TXT.big))}" aria-label="${esc(L(TXT.big))}">Aa</button>`;
   let body='';
   const item=(k,t,rf,tags)=>`<li><button data-pk="${k}">${tags||''}<span>${esc(L(t))}</span><span class="rf">${esc(rf||'')}</span></button></li>`;
-  if(tab==='flows'){ body=`<p class="brief">${esc(L(TXT.pickFlow))}</p>`+['gnd','flt'].map(g=>`<div class="pgrp">${esc(L(TXT[g]))}</div><ul class="plist">${FLOWS.filter(p=>p.g===g).map(p=>item(p.id,p.t,p.ref.replace(/^AFM /,''))).join('')}</ul>`).join(''); }
+  if(tab==='flows'){ body=`<label class="ock-gen"><input type="checkbox" data-ockgen${st.gen?' checked':''}> <span>${esc(L(GENL))}</span></label>`;
+    if(!st.gen) body+=`<p class="brief">${esc(L(GENOFF))}</p>`; else body+=`<p class="brief">${esc(L(TXT.pickFlow))}</p>`+['gnd','flt'].map(g=>`<div class="pgrp">${esc(L(TXT[g]))}</div><ul class="plist">${FLOWS.filter(p=>p.g===g).map(p=>item(p.id,p.t,p.ref.replace(/^AFM /,''))).join('')}</ul>`).join(''); }
   else if(tab==='scen'){ body=`<p class="brief">${esc(L(TXT.pickScen))}</p><ul class="plist">${SCENS.map(s=>item(s.id,s.t,find(s.proc).ref.replace(/^AFM /,''),`<span class="sk">${esc(L(TXT.sim))}</span>`)).join('')}</ul>`; }
   else if(tab==='spd'){ body=`<div class="pgrp">${esc(L(TXT.speedsH))}</div><table class="pspd"><colgroup><col class="a"><col><col class="c"></colgroup>${SPEEDS.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(L(r[1]))}</td><td>${esc(typeof r[2]==='string'?r[2]:L(r[2]))}</td></tr>`).join('')}</table><div class="pgrp">${esc(L(TXT.limH))}</div><ul class="plim">${LIMITS.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul>`; }
   else { const hits=search(q); const simK=new Set(SCENS.map(s=>s.proc));
-    body=`<input class="psrch" type="search" data-psearch value="${esc(q)}" placeholder="${esc(L(TXT.search))}" aria-label="${esc(L(TXT.search))}"><p class="brief">${esc(L(TXT.pickEmer))}</p>`+
+    body=(st.ownEm&&st.ownEm.length?`<div class="pgrp">${esc(L(TXT.ownEm))}</div><ul class="plist">${st.ownEm.map(x=>`<li><button data-poem="${x.i}"><span>${esc(x.t)}</span></button></li>`).join('')}</ul><div class="pgrp">${esc(L(TXT.afmH))}</div>`:'')+`<input class="psrch" type="search" data-psearch value="${esc(q)}" placeholder="${esc(L(TXT.search))}" aria-label="${esc(L(TXT.search))}"><p class="brief">${esc(L(TXT.pickEmer))}</p>`+
       (hits.length?GROUPS.map(([g,gt])=>{ const h=hits.filter(p=>p.g===g); return h.length?`<div class="pgrp">${esc(L(gt))}</div><ul class="plist">${h.map(p=>item(p.id,subT(p.t,st.side||0),p.ref.replace(/^AFM /,''),(p.items.some(i=>i.mem)?`<span class="mk" title="${esc(L(TXT.memH))}">M</span>`:'')+(simK.has(p.id)?`<span class="sk">${esc(L(TXT.sim))}</span>`:''))).join('')}</ul>`:''; }).join(''):`<p class="brief">${esc(L(TXT.none))}</p>`); }
   return `<div class="pnav" role="group">${tabs}</div><p class="pdisc">${esc(L(DISC))}</p>${body}`; }
 /* the running checklist. st: {p (built proc), i, done[], side, failed, alertText, big} */
@@ -674,5 +678,5 @@ function runHTML(st,L){ const p=st.p, steps=p.steps, cur=steps[st.i];
   h+=`<div class="row"><button data-prestart>${esc(L({en:'Restart',no:'Start på nytt'}))}</button>${p.kind!=='emer'?`<button data-pfree>${esc(L({en:'Free flight',no:'Fri flyging'}))}</button>`:''}</div><p class="pdisc" style="margin-top:10px">${esc(L(DISC))}</p>`;
   return h; }
 
-G.DA42PROCS={DISC,VARIANT,CK,FLOWS,EMER,SCENS,FAILS,GROUPS,SPEEDS,LIMITS,CALL,find,search,label,sub,subT,toSteps,build,css,navHTML,runHTML,all:ALL};
+G.DA42PROCS={DISC,GENL,VARIANT,CK,FLOWS,EMER,SCENS,FAILS,GROUPS,SPEEDS,LIMITS,CALL,find,search,label,sub,subT,toSteps,build,css,navHTML,runHTML,all:ALL};
 })(typeof window!=='undefined'?window:globalThis);

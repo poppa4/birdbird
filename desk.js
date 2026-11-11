@@ -671,6 +671,7 @@
           { l: t('Note beside', 'Notat ved siden av'), f: () => ctx.noteBeside(id, cur, label(cur)), hide: !(mode === 'file' ? fileKind === 'pdf' : hasText) },
           { l: t('Export with your ink (PDF)', 'Eksporter med blekket ditt (PDF)'), f: () => { if (ann && pdf) ann.exportPdf(pdf, d.name); }, hide: !(ann && pdf && ann.any()) },
           A.hasFile(id) ? { l: t('Download the file', 'Last ned filen'), f: async () => { const bl = await A.FI.getBlob(id); if (bl) A.download(bl, (sd.file && sd.file.name) || d.name + '.' + (d.ext || 'pdf')); } } : null,
+          ...(A.ockCan && A.ockCan(d) && hasText ? A.OCK_TR.map(([ty, pg]) => ({ l: t('Use in the ' + ty + ' trainer', 'Bruk i ' + ty + '-treneren'), f: () => { A.useInTrainer(ty, id); location.href = pg; } })).concat([{ sep: 1 }]) : []),
           { l: t('Name, category and links…', 'Navn, kategori og koblinger …'), f: () => A.go('documents/' + id) },
           { l: t('Replace the file…', 'Bytt ut filen …'), f: () => A.pickFiles({ replaceId: id }) },
           { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]);

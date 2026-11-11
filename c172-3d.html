@@ -23,7 +23,7 @@
 </style>
 </head>
 <body data-title="Cessna 172 3D (beta)" data-d3="c172.html">
-<script src="site.js?v=62"></script>
+<script src="site.js?v=63"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -59,7 +59,9 @@
       <aside class="drawer" id="drawer" aria-label="Procedures and limitations"><div class="din">
         <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="lim">Limits</button></div>
         <div id="tabProc">
+          <div id="ownck"></div>
           <select id="procSel" aria-label="Procedure"></select>
+          <div id="genT"></div>
           <p class="warnline">For training only — follow the POH/AFM and your school's checklist.</p>
           <div id="proc"></div>
           <label><input type="checkbox" id="follow"> Zoom to the next control</label>
@@ -169,7 +171,8 @@ LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','Cessna
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D Cessna 172 trainer':'den klassiske 2D-treneren for Cessna 172'});
 </script>
-<script src="simdebrief.js?v=2"></script>
-<script src="c172-app.js?v=7"></script>
+<script src="simdebrief.js?v=3"></script>
+<script src="ownck.js?v=1"></script>
+<script src="c172-app.js?v=8"></script>
 </body>
 </html>

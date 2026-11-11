@@ -67,13 +67,15 @@ const TT={
   holdSpd:tr('Holding speed','Ventefart'),
   sidTrk:tr('Runway track until 1,500 ft','Banekurs til 1500 ft'),
   sidLvl:tr('Level-off at 3,000 ft ±100 ft','Utflating i 3000 ft ±100 ft'),
-  order:tr('Actions in sequence','Handlinger i riktig rekkefølge'),
-  react:tr('Time to action after the failure','Tid til handling etter feilen'),
+  order:tr('Generic flow order (not scored)','Rekkefølge i generell flyt (ikke vurdert)'),
+  react:tr('Time to the safety-critical actions','Tid til de sikkerhetskritiske tiltakene'),
+  ticked:tr('Items you ticked','Punkter du krysset av'),
+  own:tr('Your own checklist','Din egen sjekkliste'),
   step:tr('Checklist step','Sjekklistepunkt')
 };
 const CRASH_NO={'Gear-up landing':'Landing uten understell','Hard landing (more than 700 ft/min)':'Hard landing (mer enn 700 ft/min)','Wingtip strike: bank too steep at touchdown':'Vingespissen traff bakken: for mye krengning ved touchdown','Nose-wheel first: pitch too low at touchdown':'Nesehjulet først: for lav nese ved touchdown','Landed off the runway':'Landet utenfor rullebanen','Ran off the runway':'Kjørte av rullebanen','Controlled flight into terrain':'Fløy inn i terrenget (CFIT)'};
 const CAT={crash:'crit',limits:'lim',vne:'lim',vfe:'lim',vle:'lim',bank:'lim',stall:'lim',tq:'lim',itt:'lim',vmc:'oei',yse:'oei',bankLive:'oei',secure:'oei',wrongEng:'oei',
-  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',order:'chk',step:'chk',react:'chk'};
+  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',order:'chk',step:'chk',ticked:'chk',own:'chk',react:'oei'};
 
 /* ---------- scoring (pure) ----------
    C: columns; M: {type,k,V,nEng,retract,ldgFlap,vApp,vHold,mins,minsKind,prec,app,hold,sid,tqMax,ittMax,
@@ -90,21 +92,31 @@ function evaluate(C,M){
   const afFrac=(a,b)=>{ let k=0, m=0; for(let i=a;i<b;i++){ m++; if(C.af[i]) k++; } return m?k/m:0; };
   const AUTO=tr('Flown by auto-fly — not scored.','Fløyet av autofly — ikke vurdert.');
 
-  /* checklist steps */
-  (M.steps||[]).forEach((s,i)=>{ const st=s.st|0;
+  /* checklist steps. Outcome-based by default: items of a checklist or a generic flow (s.chk) are shown as information
+     ("items you ticked"), never scored, and the order is never scored. Exercise goals (no s.chk) are scored as before.
+     M.own: {name, items:[{t,st,tm}], score} = the student's own checklist; scored only when they chose to (score:true). */
+  const goals=[], ticks=[];
+  (M.steps||[]).forEach((s,i)=>{ (s.chk?ticks:goals).push([s,i]); });
+  goals.forEach(([s,i])=>{ const st=s.st|0;
     const res=st===1?'pass':st===-1?'fail':st===2?'amber':'amber';
     const why=st===1?null:st===2?tr('Skipped.','Hoppet over.'):st===-1?tr('Not met: see the brief.','Ikke oppfylt: se briefen.'):tr('Not completed.','Ikke fullført.');
     add('step',res,s.tm!=null?s.tm:null,why,{title:s.t,step:i+1}); });
-  /* time to action after a triggered failure: memory items complete (pass ≤ 20 s, amber ≤ 45 s), else the first checklist action */
-  if(M.failT!=null){ const st=M.steps||[], ms=st.filter(s=>s.mem), after=st.filter(s=>s.st===1&&s.tm!=null&&s.tm>=M.failT-0.5), first=after.length?Math.min(...after.map(s=>s.tm)):null;
-    const fs=first==null?null:Math.max(0,first-M.failT);
-    if(ms.length&&ms.every(s=>s.st===1&&s.tm!=null)){ const tE=Math.max(...ms.map(s=>s.tm)), d=Math.max(0,tE-M.failT);
-      add('react',d<=20?'pass':d<=45?'amber':'fail',tE,W(g=>`Memory items done ${g(d,0)} s after the failure (first action after ${g(fs==null?d:fs,0)} s).`,g=>`Hukommelsespunktene utført ${g(d,0)} s etter feilen (første handling etter ${g(fs==null?d:fs,0)} s).`)); }
-    else if(ms.length) add('react','fail',null,tr('Memory items not completed.','Hukommelsespunktene ble ikke fullført.'));
-    else if(fs!=null) add('react',fs<=15?'pass':'amber',first,W(g=>`First checklist action ${g(fs,0)} s after the failure.`,g=>`Første sjekklistehandling ${g(fs,0)} s etter feilen.`));
-    else add('react','info',null,tr('No checklist action after the failure.','Ingen sjekklistehandling etter feilen.')); }
-  if((M.bad||[]).length) add('order','amber',M.bad[0],W(n=>`${M.bad.length} action${M.bad.length>1?'s':''} out of sequence or on the wrong control.`,n=>`${M.bad.length} handling${M.bad.length>1?'er':''} i feil rekkefølge eller på feil bryter.`));
-  else if((M.steps||[]).length) add('order','pass',null,null);
+  if(ticks.length){ const k=ticks.filter(([s])=>s.st===1).length;
+    add('ticked','info',null,W(()=>`${k} of ${ticks.length} generic checklist items ticked. Shown for information; not scored.`,()=>`${k} av ${ticks.length} punkter i den generelle sjekklisten krysset av. Til informasjon; ikke vurdert.`)); }
+  if(M.own&&(M.own.items||[]).length){ const it=M.own.items, k=it.filter(x=>x.st===1).length, miss=it.filter(x=>x.st!==1).slice(0,4).map(x=>x.t);
+    const nm=String(M.own.name||'');
+    if(M.own.score) add('own',k===it.length?'pass':'amber',null,k===it.length?W(()=>`All ${it.length} items of “${nm}” ticked (order not scored).`,()=>`Alle ${it.length} punkter i «${nm}» krysset av (rekkefølgen vurderes ikke).`)
+      :W(()=>`${k} of ${it.length} items ticked. Not ticked: ${miss.map(x=>x.en||x).join('; ')}${it.length-k>4?' …':''}`,()=>`${k} av ${it.length} punkter krysset av. Ikke krysset: ${miss.map(x=>x.no||x.en||x).join('; ')}${it.length-k>4?' …':''}`));
+    else add('own','info',null,W(()=>`${k} of ${it.length} items of “${nm}” ticked. Shown for information; choose “Score against my checklist” to have it scored.`,()=>`${k} av ${it.length} punkter i «${nm}» krysset av. Til informasjon; velg «Vurder etter min sjekkliste» for å få det vurdert.`)); }
+  /* time to the safety-critical actions after a triggered failure: M.actT = first time the page's outcome predicate held
+     (e.g. engine secured and power set, in any order); limits M.critLim [pass, amber] s, default 20 / 45 */
+  if(M.failT!=null&&M.crit){ const lim=M.critLim||[20,45], what=M.crit&&M.crit.en?M.crit:tr('the safety-critical actions','de sikkerhetskritiske tiltakene');
+    if(M.actT!=null){ const d=Math.max(0,M.actT-M.failT);
+      add('react',d<=lim[0]?'pass':d<=lim[1]?'amber':'fail',M.actT,W(g=>`Done ${g(d,0)} s after the failure (${what.en}; aim within ${lim[0]} s). Order not scored.`,g=>`Utført ${g(d,0)} s etter feilen (${what.no}; mål innen ${lim[0]} s). Rekkefølgen vurderes ikke.`)); }
+    else { const end=n?C.t[n-1]:M.failT;
+      if(end-M.failT>=lim[1]) add('react','fail',null,W(()=>`Not done after the failure: ${what.en}.`,()=>`Ikke utført etter feilen: ${what.no}.`));
+      else add('react','info',null,tr('The flight ended before the safety-critical actions were done.','Flygingen sluttet før de sikkerhetskritiske tiltakene var utført.')); } }
+  if((M.bad||[]).length) add('order','info',M.bad[0],W(n=>`${M.bad.length} action${M.bad.length>1?'s':''} away from the generic flow's order. Not scored — your school's SOP decides the order.`,n=>`${M.bad.length} handling${M.bad.length>1?'er':''} utenfor rekkefølgen i den generelle flyten. Ikke vurdert — skolens SOP bestemmer rekkefølgen.`));
 
   /* crash */
   if(M.crash) add('crash','fail',M.crashT!=null?M.crashT:(n?C.t[n-1]:0),tr(M.crash,M.crashNo||CRASH_NO[M.crash]||M.crash),{crit:true});
@@ -308,7 +320,7 @@ const CSS=`
 `;
 const LBL={pass:tr('✓ Pass','✓ Bestått'),amber:tr('! Check','! Merknad'),fail:tr('✕ Fail','✕ Ikke bestått'),auto:tr('○ Auto-fly','○ Autofly'),info:tr('i Note','i Notat')};
 const RESULT={pass:tr('Satisfactory','Tilfredsstillende'),amber:tr('Satisfactory with remarks','Tilfredsstillende med merknader'),fail:tr('Not yet satisfactory','Ikke tilfredsstillende ennå'),none:tr('Not scored','Ikke vurdert')};
-const CATN={crit:tr('Critical','Kritisk'),path:tr('Flight path','Flybane'),oei:tr('Engine failure','Motorsvikt'),lim:tr('Limits','Begrensninger'),chk:tr('Checklist','Sjekkliste')};
+const CATN={crit:tr('Critical','Kritisk'),path:tr('Flight path','Flybane'),oei:tr('Failure handling','Håndtering av feil'),lim:tr('Limits','Begrensninger'),chk:tr('Checklist','Sjekkliste')};
 const ENDW={landed:tr('Landed','Landet'),crash:tr('Crashed','Havarert'),missed:tr('Missed approach flown','Avbrutt innflyging fløyet'),hold:tr('Hold complete','Venting fullført'),sid:tr('SID complete','SID fullført'),complete:tr('Checklist complete','Sjekkliste fullført'),manual:tr('In progress','Pågår')};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -428,6 +440,10 @@ function render(D,ctl){
   const p=SHEET.querySelector('[data-act="again"]')||SHEET.querySelector('.sdb-x'); try{ p.focus({preventScroll:true}); }catch(e){}
 }
 
+const AUTOK='bb-debrief-auto';
+function autoOpen(){ try{ return localStorage.getItem(AUTOK)==='1'; }catch(e){ return false; } }
+let readyOn=false; function readyCss(){ if(readyOn||typeof document==='undefined') return; readyOn=true; const s=document.createElement('style');
+  s.textContent='#bDebrief.sdb-ready{position:relative;border-color:#7fcbe8}#bDebrief.sdb-ready::after{content:"";position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#7fcbe8}'; document.head.appendChild(s); }
 /* ---------- recorder bound to one page ----------
    o: {type, page, S, F, AF, cap,
        eng:()=>[deadMask, secMask, torqueMax|NaN, ittMax|NaN], ap:()=>bool, flap:()=>selected flap index,
@@ -436,14 +452,14 @@ function render(D,ctl){
 function attach(o){
   const S=o.S, F=o.F, A=G.AIRPROC, ring=new Ring(o.cap||12000), row=ring.row;
   const st={on:false,t:0,acc:0,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false};
-  let M=null, stepT=[], lastDone=[], badN=0, badT=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false, failT=null;
+  let M=null, stepT=[], lastDone=[], badN=0, badT=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false, failT=null, actT=null;
   function meta(){ const sc=o.scen()||{}; const k=sc.k||''; const ty=(A&&A.TY&&A.TY[o.type])||{};
     const kk=k==='rnav'?'rnp_lpv':k==='seapp'?'ils':k; const app=!!(A&&(A.isApp(kk)||kk==='star'))||kk in MINS0;
     const V=Object.assign({},F.AC.V||{});
     return {type:o.type,k,name:sc.name||tr(k,k),air:!!sc.air,V,nEng:F.AC.nEng||(o.type==='C172'?1:2),retract:o.type!=='C172',ldgFlap:ty.ldgFlap||1,vApp:ty.vFinal||0,vHold:ty.vHold||0,
       mins:(A&&A.MINS&&A.MINS[kk])||MINS0[kk]||null,minsKind:KIND0[kk]||'',prec:!!PREC[kk],app,hold:k==='hold',sid:k==='sid',tqMax:o.tqMax||0,ittMax:o.ittMax||0}; }
   function start(){ ring.clear(); Object.assign(st,{on:true,t:0,acc:DT,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false});
-    M=meta(); stepT=[]; lastDone=[]; badN=0; badT=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null; failT=null;
+    M=meta(); stepT=[]; lastDone=[]; badN=0; badT=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null; failT=null; actT=null; markReady(false);
     const sc=o.scen(); if(sc){ lastDone=(sc.done||[]).slice(); badN=sc.bad||0; } }
   function sample(){
     const s=S, R=F.readouts(s), AF=o.AF;
@@ -461,23 +477,26 @@ function attach(o){
     if(M.hold){ const inR=Math.hypot(s.N+10*NM,s.E)<0.7*NM; if(inR&&!st.inR&&st.t-st.ronT>90){ st.ronax++; st.ronT=st.t; } st.inR=inR; }
     const sc=o.scen(); let done=0, nS=0;
     if(sc){ const dn=sc.done||[]; nS=dn.length; if(lastDone.length!==nS) lastDone.length=nS; for(let i=0;i<nS;i++){ if(dn[i]!==lastDone[i]){ stepT[i]=dn[i]?st.t:null; lastDone[i]=dn[i]; } if(dn[i]) done++; }
-      const b=sc.bad||0; if(b>badN){ for(let j=badN;j<b;j++) badT.push(st.t); } badN=b; if(sc.failed&&failT==null) failT=st.t; }
+      const b=sc.bad||0; if(b>badN){ for(let j=badN;j<b;j++) badT.push(st.t); } badN=b; if(sc.failed&&failT==null) failT=st.t; if(failT!=null&&actT==null&&sc.crit&&sc.crit()) actT=st.t; }
     if(s.crash&&crashT==null) crashT=st.t;
     const why=endCheck(st,{crash:!!s.crash,gnd:s.ground,gs:R.gs,alt:R.alt,N:s.N,E:s.E,t:st.t,stepsDone:done,stepsN:nS,air:!!(M.app||M.hold||M.sid||M.k==='free'),
       kind:M.hold?'hold':M.sid?'sid':'',holdN:AF&&AF.rec&&AF.rec.hold?AF.rec.hold.n:0,sidDone:!!(AF&&AF.rec&&AF.rec.sidDone)});
     if(why&&M.k!=='free') finish(why);
   }
   function build(live){
-    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null,mem:!!x.mem}));
+    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null,mem:!!x.mem,chk:!!(sc.chk||x.sop||x.emer)}));
+    const own=typeof sc.own==='function'?sc.own():sc.own||null;
     const AF=o.AF; const C=ring.cols();
-    const M2=Object.assign({},M,{steps,bad:badT.slice(),crash:S.crash||null,crashT,td,tdAf,failT,decision:AF&&AF.rec&&AF.rec.decision||null});
+    const M2=Object.assign({},M,{steps,bad:badT.slice(),crash:S.crash||null,crashT,td,tdAf,failT,actT,crit:sc.crit?(sc.critTxt||true):null,critLim:sc.critLim||null,own,decision:AF&&AF.rec&&AF.rec.decision||null});
     const ev=evaluate(C,M2);
     return {id:o.type+'-'+Date.now().toString(36),at:Date.now(),type:o.type,page:o.page||'',k:M.k,name:M.name,dur:C.n?C.t[C.n-1]:0,afUsed,endWhy:live?'manual':endWhy,live,C,M:M2,ev}; }
   function finish(why){ if(!st.on) return; st.on=false; endWhy=why; const D=build(false); last=D; try{ save(D); }catch(e){}
     if(o.onEnd) try{ o.onEnd(D); }catch(e){}
-    if(!o.noAuto) setTimeout(()=>render(D,ctl),0); }
+    /* the debrief never opens by itself unless the student chose so (… menu); otherwise the Debrief button gets a calm dot */
+    if(!o.noAuto&&autoOpen()) setTimeout(()=>render(D,ctl),0); else markReady(true); }
+  function markReady(on){ if(ctl&&ctl.btn){ ctl.btn.classList.toggle('sdb-ready',!!on); } }
   const ctl={
-    start, finish,
+    start, finish, get t(){ return st.t; },
     tick(dt){ if(!st.on||!(dt>0)) return; st.t+=dt; st.acc+=dt; if(st.acc<DT&&!S.crash) return; st.acc-=DT; if(st.acc>DT) st.acc=0; sample(); },
     open(){ const D=st.on&&ring.n>2?build(true):(last||build(true)); render(D,ctl); return D; },
     get last(){ return last; }, get recording(){ return st.on; }, get n(){ return ring.n; },
@@ -487,7 +506,13 @@ function attach(o){
   if(typeof document!=='undefined'&&o.after){ const b=document.createElement('button'); b.className='cb'; b.id='bDebrief'; b.type='button';
     const lab=()=>{ const L=(G.LAB&&G.LAB.L)?G.LAB.L:(x=>x.en); b.textContent=L(tr('Debrief','Debrief')); b.title=L(tr('Debrief: score and replay of this flight','Debrief: vurdering og gjennomgang av denne flygingen')); };
     lab(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(()=>{ lab(); if(SHEET&&!SHEET.hidden&&CUR&&CUR.ctl===ctl) render(CUR.D,ctl); });
-    b.onclick=()=>ctl.open(); o.after.insertAdjacentElement('afterend',b); ctl.btn=b; }
+    b.onclick=()=>{ markReady(false); ctl.open(); }; o.after.insertAdjacentElement('afterend',b); ctl.btn=b;
+    /* setting in the page's … menu: open the debrief automatically after landing (default off) */
+    const mm=document.getElementById('moreMenu');
+    if(mm&&!document.getElementById('bDbAuto')){ const a=document.createElement('button'); a.className='cb'; a.id='bDbAuto'; a.type='button';
+      const al=()=>{ const L=(G.LAB&&G.LAB.L)?G.LAB.L:(x=>x.en); const on=autoOpen(); a.setAttribute('aria-pressed',on); a.textContent=L(on?tr('Open debrief after landing: on','Åpne debrief etter landing: på'):tr('Open debrief after landing: off','Åpne debrief etter landing: av')); };
+      a.onclick=()=>{ try{ localStorage.setItem(AUTOK,autoOpen()?'0':'1'); }catch(e){} al(); }; al(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(al); mm.appendChild(a); }
+    readyCss(); }
   return ctl;
 }
 

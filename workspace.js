@@ -38,6 +38,19 @@
   function guessTypeKey(s) { s = String(s || ''); return /172/.test(s) ? 'c172' : /da[\s-]?42/i.test(s) ? 'da42' : /b200|king\s?air/i.test(s) ? 'b200' : /pa[\s-]?28|warrior|archer|cherokee/i.test(s) ? 'pa28' : /da[\s-]?40/i.test(s) ? 'da40' : /p2006/i.test(s) ? 'p2006t' : /pa[\s-]?34|seneca/i.test(s) ? 'pa34' : /a3(19|20|21)/i.test(s) ? 'a320' : 'other'; }
   const TRAINER = { 'c172.html': ['Cessna 172 trainer', 'Cessna 172-trener'], 'cockpit.html': ['DA42 simulator', 'DA42-simulator'], 'b200.html': ['King Air B200 trainer', 'King Air B200-trener'], 'simcheck.html': ['A320 sim assessment', 'A320 simulatortest'] };
 
+  /* ---------- "Use in the trainer": a checklist or SOP document becomes the student's own checklist in a cockpit trainer.
+     Only the index (type -> document id and name) is written ('bb-ownck', synced as a setting); the trainer reads the text
+     from this device's document store, so the document itself never leaves the device. ---------- */
+  const OCK_TR = [['DA42', 'cockpit.html'], ['C172', 'c172.html'], ['B200', 'b200.html']];
+  function useInTrainer(type, id) {
+    const d = item(id); if (!d) return;
+    try { const o = JSON.parse(localStorage.getItem('bb-ownck') || '{}') || {}; o[type] = { src: 'doc', id, name: d.name || '', score: (o[type] && o[type].score) || 0 }; localStorage.setItem('bb-ownck', JSON.stringify(o));
+      const c = JSON.parse(localStorage.getItem('bb-ownck-text') || '{}') || {}; delete c[type]; localStorage.setItem('bb-ownck-text', JSON.stringify(c)); } catch (e) {}
+  }
+  const ockCan = d => !!d && (d.cat === 'chk' || d.cat === 'sop');
+  const ockLinks = id => OCK_TR.map(([ty, pg]) => `<a class="btn sm" href="${pg}" data-ock="${ty}" data-id="${esc(id)}">${esc(t('Use in the ' + ty + ' trainer', 'Bruk i ' + ty + '-treneren'))}</a>`).join('');
+  document.addEventListener('click', e => { const a = e.target.closest('[data-ock]'); if (a) useInTrainer(a.dataset.ock, a.dataset.id); });
+
   /* ---------- storage on this device ---------- */
   function openIdb(name, ver, up) { return new Promise(res => { try { const r = indexedDB.open(name, ver); r.onupgradeneeded = () => up(r.result); r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null); } catch (e) { res(null); } }); }
   const rq = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -564,6 +577,7 @@
         <span class="savedmark" id="dSaved" role="status"></span>
         <div class="keptbox ${here ? '' : 'miss'}">${here ? `<b>${t('Kept on this device', 'Lagret på denne enheten')}</b>${d.size ? ' · ' + W.fmtBytes(d.size) : ''}<br>${t('The file is private to this browser and is never uploaded. Your account keeps only this page’s details so the library looks the same on your other devices.', 'Filen er privat for denne nettleseren og lastes aldri opp. Kontoen din tar bare vare på opplysningene på denne siden, slik at biblioteket ser likt ut på de andre enhetene dine.')}` : `<b>${t('File not on this device', 'Filen er ikke på denne enheten')}</b><br>${t('Add it again here, or import a backup file.', 'Legg den til på nytt her, eller importer en sikkerhetskopi.')}`}</div>
         <div class="chips">${file ? `<button type="button" class="btn sm" data-act="doc-dl" data-id="${esc(id)}">${t('Download the file', 'Last ned filen')}</button>` : ''}<button type="button" class="btn sm" data-act="doc-file" data-id="${esc(id)}">${here ? t('Replace the file', 'Bytt ut filen') : t('Add the file', 'Legg til filen')}</button>${here ? `<a class="btn sm" href="fi.html#docs">${t('Ask about it in Flight Intelligence', 'Spør om det i Flight Intelligence')}</a>` : ''}</div>
+        ${here && ockCan(d) ? `<div class="fld"><span>${t('Your own checklist in the cockpit trainers', 'Din egen sjekkliste i cockpit-trenerne')}</span><div class="chips">${ockLinks(id)}</div><small style="color:var(--ink-3,#6b7680)">${t('The trainer shows it in its Procedures drawer and ticks items as you fly. It stays on this device.', 'Treneren viser den i prosedyreskuffen og krysser av punkter mens du flyr. Den blir på denne enheten.')}</small></div>` : ''}
         <button type="button" class="lk danger" data-act="trash" data-id="${esc(id)}" style="align-self:flex-start">${t('Move to trash', 'Flytt til papirkurv')}</button>
       </div><div class="viewer" id="docView"></div></div>`;
     const save = async f => { const e = W.patch(item(id), f); await commit(e); await pushDocToFi(e); el('dSaved').textContent = t('Saved', 'Lagret'); el('dHead').textContent = e.name; drawRail(); };
@@ -929,7 +943,7 @@
   window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; } };
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
-    notebooksAll, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
+    notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
     doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });

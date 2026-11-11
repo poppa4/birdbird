@@ -165,7 +165,7 @@
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
-  /* accounts and sync (account.js): header state, passkey sign-in, sync of progress and briefing packs */ if(!/[?&]embed=1/.test(location.search)&&!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=1'; document.head.appendChild(aj); }
+  /* accounts and sync (account.js): header state, passkey sign-in, sync of progress and briefing packs */ if(!/[?&]embed=1/.test(location.search)&&!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=2'; document.head.appendChild(aj); }
   const EMBED=/[?&]embed=1/.test(location.search);
   if(EMBED){ const st=document.createElement('style'); st.textContent='.labnav,.site,.sitefoot,.nsearch,.trnav,.fab{display:none!important} .page{padding-top:6px} .lhead{margin-top:6px}'; document.head.appendChild(st); document.documentElement.classList.add('embed'); }
   else if(document.body) mount(); else document.addEventListener('DOMContentLoaded',mount);

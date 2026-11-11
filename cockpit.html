@@ -229,7 +229,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 </style>
 </head>
 <body data-title="Glass Cockpit Trainer">
-<script src="site.js?v=62"></script>
+<script src="site.js?v=63"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -265,6 +265,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <aside class="drawer" id="drawer" aria-label="Procedures and missions"><div class="din">
         <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="mis">Missions</button></div>
         <div id="tabProc">
+          <div id="ownck"></div>
           <div id="proc"></div>
           <label><input type="checkbox" id="follow"> Zoom to the next control</label>
         </div>
@@ -370,13 +371,14 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="flightkeys.js?v=2"></script>
 <script src="fms.js?v=4"></script>
 <script src="airproc.js?v=3"></script>
-<script src="simdebrief.js?v=2"></script>
+<script src="simdebrief.js?v=3"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=6"></script>
 <script src="panellayers.js?v=1"></script>
 <script src="panelzoom.js?v=1"></script>
 <script src="da42panel.js?v=7"></script>
-<script src="da42procs.js?v=1"></script>
+<script src="da42procs.js?v=2"></script>
+<script src="ownck.js?v=1"></script>
 <script src="otw.js?v=12"></script>
 <script src="lab.js?v=47"></script>
 <script>
@@ -868,7 +870,7 @@ LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSo
 
 /* ---------- procedures: normal flows, emergency / abnormal checklists and failure scenarios (data in da42procs.js, from the AFM) ---------- */
 const eng=(i)=>S.eng[i];
-const PR={k:null,p:null,i:0,done:[],t:0,dead:0,failed:false,failT:null,fail:null,lib:false,alert:'',tab:'flows',q:'',big:false};
+const PR={k:null,p:null,i:0,done:[],t:0,dead:0,failed:false,failT:null,fail:null,lib:false,alert:'',tab:OWNCK.gen('DA42')?'flows':'scen',q:'',big:false,ownSec:false,showAfm:false};
 /* failures simulated here, on top of the engine failure in fdm.js: fire (engine index), alternator, ECU A, gear pump, PFD */
 const FX={fire:-1,fireOut:0,alt:-1,ecuA:-1,gear:0,gearT:0,pfd:0,on:false};
 function fxReset(){ Object.assign(FX,{fire:-1,fireOut:0,alt:-1,ecuA:-1,gear:0,gearT:0,pfd:0,on:false}); }
@@ -880,6 +882,18 @@ const fxAlert=(kind,i)=>{ const s=i?'R':'L'; return kind==='fire'?s+' ENG FIRE':
 const PC={S,SYS,o:S.o,AP,i:0,dt:0,cb:n=>cbIn(n),cbAll:()=>P.CBS.every((n,i)=>SYS.cb[i]!==0)};
 const pctx=()=>{ PC.o=S.o; PC.i=PR.dead; return PC; };
 const PROCS=DA42PROCS.build({ctx:pctx,side:()=>PR.dead}); DA42PROCS.css();
+/* the student's own checklist (ownck.js): auto-ticks against the same predicates as the AFM flows, in any order */
+const ownMemo={}, CKD=DA42PROCS.CK;
+const ownCtl=k=>{ const c=CKD[k]; if(!c) return null; return String(c.ctl).replace('*',PR.dead?'R':'L').replace('~',PR.dead?'L':'R'); };
+const ownDrives=()=>{ const p=curP(); return !p||(PR.ownSec&&!PR.showAfm); };
+/* outcome of a failure scenario: every key has held at least once since the failure (any order) */
+const critFn=keys=>{ const got={}, mm={}; return ()=>{ for(const k of keys){ if(!got[k]&&CKD[k]&&CKD[k].f(pctx(),mm[k]||(mm[k]={}))) got[k]=1; } return keys.every(k=>got[k]); }; };
+const OCK=OWNCK.mount({type:'DA42',box:el('ownck'),L,pred:k=>{ const c=CKD[k]; return c?!!c.f(pctx(),ownMemo[k]||(ownMemo[k]={})):false; },ctl:ownCtl,
+  hl:id=>{ if(ownDrives()) hlCtl(id); },clock:()=>DB?DB.t:0,onChange:()=>renderProc()});
+LAB.onLang(()=>OCK.render());
+/* own checklist: which section to open for a failure */
+const ownKinds=(kind,i,air)=>kind==='fire'?(air?'fire_air':'fire_gnd'):kind==='alt'?'alt':kind==='ecuA'?'ecu':kind==='gear'?'gear':kind==='pfd'?'pfd':['eng'];
+function ownFailure(kinds,alert){ if(OCK.failure(kinds,alert)){ PR.ownSec=true; PR.showAfm=false; return true; } return false; }
 try{ PR.big=localStorage.getItem('bb-da42-big')==='1'; }catch(e){}
 el('drawer').classList.toggle('big',PR.big);
 const deadI=()=>PR.dead;
@@ -918,11 +932,12 @@ function showProcTab(){ const b=el('drawer').querySelector('.tabs button[data-t=
 function procStart(k,o){
   const p=PROCS.find(x=>x.k===k); if(!p){ PR.k=null; PR.p=null; renderProc(); hlCtl(null); return; }
   if(UI.paused) togglePause();
-  PR.k=k; PR.p=p; PR.i=0; PR.done=p.steps.map(()=>0); PR.t=0; PR.bad=0; PR.failed=false; PR.failT=null; PR.fail=null; PR.alert=''; PR.lib=!!p.lib;
+  PR.k=k; PR.p=p; PR.i=0; PR.done=p.steps.map(()=>0); PR.t=0; PR.bad=0; PR.failed=false; PR.failT=null; PR.fail=null; PR.alert=''; PR.lib=!!p.lib; PR.ownSec=false; PR.showAfm=false; PR.crit=null;
+  for(const x in ownMemo) delete ownMemo[x]; if(!p.lib) OCK.reset();
   p.steps.forEach(s=>{ delete s.b; s.m={}; s.okT=0; });
   if(p.lib){ /* emergency library: runs on the flight as it is, nothing is reset */
     if(o&&o.side!=null) PR.dead=o.side; else { const d=S.eng.findIndex(e=>e.fail); PR.dead=d>=0?d:FX.fire>=0?FX.fire:FX.alt>=0?FX.alt:FX.ecuA>=0?FX.ecuA:PR.dead; }
-    PR.failed=true; PR.alert=(o&&o.alert)||''; renderProc(); procFocus(); return; }
+    PR.failed=true; PR.alert=(o&&o.alert)||''; if(o&&o.alert&&o.kind) ownFailure(ownKinds(o.kind,PR.dead,!S.ground),o.alert); renderProc(); procFocus(); return; }
   if(S.crash) S.crash=null;
   fxReset(); AF.off('reset',true); F.WORLD.gsOut=false; procSet(p.set);
   if(p.kind==='scen'){ PR.dead=Math.random()<0.5?0:1; PR.fail=p.fail; if(p.fail.kind==='gear') fxApply('gear',0); }
@@ -930,6 +945,7 @@ function procStart(k,o){
 }
 function failDue(f){ if(f.at!=null) return PR.t>f.at; if(f.ias!=null) return S.o.ias>f.ias; if(f.onGear) return FX.gearT>8; return false; }
 function failNow(p){ const f=p.fail, i=PR.dead; PR.failed=true; PR.failT=PR.t; fxApply(f.kind,i); PR.alert=fxAlert(f.kind,i);
+  ownFailure(p.own||ownKinds(f.kind,i,!S.ground),PR.alert);
   setDrawer(true); showProcTab(); beep(f.kind==='fire'?1000:700,0.5,0.06); renderProc(); procFocus(); }
 function procClose(){ const lib=PR.lib; PR.k=null; PR.p=null; PR.lib=false; hlCtl(null); pill(null);
   if(!lib){ const sc=SCEN.find(x=>x.k==='free'); if(sc){ UI.scen='free'; missionState={m:{},t:0,done:sc.checks.map(()=>0)}; drawScen(); drawScenSel(); renderMission(); } }
@@ -938,12 +954,12 @@ const curStep=()=>{ const p=curP(); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
 function hlCtl(id){ P.svg.querySelectorAll('g.ctl.hl').forEach(g=>g.classList.remove('hl')); document.querySelectorAll('.gdu.hl').forEach(g=>g.classList.remove('hl'));
   if(!id) return; const c=id==='pwr'?'pwr':id; const o=P.byId[c]; if(o) o.g.classList.add('hl'); else if(el(id)) el(id).classList.add('hl'); }
-function procFocus(){ const s=curStep(), p=curP(); if(!s||(p&&p.kind==='scen'&&!PR.failed)){ hlCtl(null); pill(p&&p.kind==='scen'&&!PR.failed?L({en:'Fly the aircraft — a failure will come',no:'Fly flyet — en feil kommer'}):null); return; }
+function procFocus(){ if(PR.ownSec&&!PR.showAfm){ pill(null); return; } const s=curStep(), p=curP(); if(!s||(p&&p.kind==='scen'&&!PR.failed)){ hlCtl(null); pill(p&&p.kind==='scen'&&!PR.failed?L({en:'Fly the aircraft — a failure will come',no:'Fly flyet — en feil kommer'}):null); return; }
   const id=ctlOf(s); hlCtl(id); pill((s.mem?'● ':'')+L(s.t));
   if(id&&el('follow').checked&&!Z.lock){ let k=null; if(id==='bzP') k='pfd'; else if(id==='bzM') k='mfd'; else { const o=P.byId[id]; if(o){ const b=o.g.getBBox(); k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); } } if(k&&k!==Z.reg) zoomTo(k); } }
 let pillT=0;
 function pill(t,cls){ const p=el('pill'); if(!t){ p.className='pill'; return; } p.textContent=t; p.className='pill show '+(cls||''); if(cls){ pillT=1.4; } }
-function procTouch(k){ const s=curStep(), p=curP(); if(!s||!p||(p.kind==='scen'&&!PR.failed)) return; const id=ctlOf(s)||''; const base=x=>String(x).replace(/[LR]$/,'');
+function procTouch(k){ const s=curStep(), p=curP(); if(!s||!p||(p.kind==='scen'&&!PR.failed)||(PR.ownSec&&!PR.showAfm)) return; const id=ctlOf(s)||''; const base=x=>String(x).replace(/[LR]$/,'');
   const sideIds=p.steps.slice(PR.i).filter(x=>typeof x.ctl==='function').map(ctlOf);
   if(sideIds.length&&!sideIds.includes(k)&&sideIds.some(c=>base(c)===base(k))){ pill(L({en:'Wrong engine! Identify — verify — then secure the affected one.',no:'Feil motor! Identifiser — verifiser — sikre så den det gjelder.'}),'bad'); beep(160,0.3,0.06); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),1200); } return; }
   if(id&&(k===id||base(k)===base(id))||k==='start'||k==='emerG'||k.endsWith('G')||k.endsWith('Done')) return;
@@ -954,21 +970,25 @@ function stepDone(v){ const p=curP(); if(!p||PR.i>=p.steps.length||(p.kind==='sc
   renderProc(); if(PR.i<p.steps.length){ procFocus(); if(v===1) pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } else procComplete(p); }
 function procComplete(p){ hlCtl(null); pill(L({en:'Checklist complete',no:'Sjekkliste fullført'}),'ok'); if(window.NPROG&&!p.lib) NPROG.award('flow:'+p.k,100); }
 function procTick(dt){
-  fxTick(dt);
+  fxTick(dt); OCK.tick(dt);
   const p=curP(); if(!p) return; PR.t+=dt; PC.dt=dt;
   if(PR.fail&&!PR.failed){ if(failDue(PR.fail)) failNow(p); else return; }
+  if(PR.ownSec&&!PR.showAfm) return;
   if(pillT>0){ pillT-=dt; if(pillT<=0) procFocus(); }
   const s=p.steps[PR.i]; if(!s||s.manual) return;
   if(s.ok()){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.7){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length) procComplete(p); else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
   else s.okT=0;
 }
 function renderProc(){ const box=el('proc'), p=curP();
-  if(!p){ box.innerHTML=DA42PROCS.navHTML({tab:PR.tab,q:PR.q,big:PR.big,side:PR.dead},L); return; }
+  if(!p){ box.innerHTML=DA42PROCS.navHTML({tab:PR.tab,q:PR.q,big:PR.big,side:PR.dead,gen:OWNCK.gen('DA42'),ownEm:OCK.emer()},L); return; }
+  if(PR.ownSec&&!PR.showAfm){ box.innerHTML=`<p class="pdisc">${(L(DA42PROCS.DISC))}</p><div class="row"><button data-pafm>${(L({en:'Show the AFM reference',no:'Vis AFM-referansen'}))}</button><button data-pclose>← ${(L({en:'All procedures',no:'Alle prosedyrer'}))}</button></div>`; return; }
   box.innerHTML=DA42PROCS.runHTML({p,i:PR.i,done:PR.done,side:PR.dead,failed:PR.failed||p.kind!=='scen',alertText:PR.alert,big:PR.big},L);
   const now=box.querySelector('li.now'); if(now&&el('drawer').classList.contains('open')) now.scrollIntoView({block:'nearest'});
 }
 el('proc').addEventListener('click',e=>{ const b=e.target.closest('button,li.now.man'); if(!b) return; const d=b.dataset;
   if(d.pt){ PR.tab=d.pt; renderProc(); return; }
+  if(b.hasAttribute('data-pafm')){ PR.showAfm=true; renderProc(); procFocus(); return; }
+  if(d.poem!=null){ OCK.open(+d.poem); return; }
   if(b.hasAttribute('data-pbig')){ PR.big=!PR.big; el('drawer').classList.toggle('big',PR.big); try{ localStorage.setItem('bb-da42-big',PR.big?'1':'0'); }catch(x){} renderProc(); setTimeout(()=>zoomTo(Z.reg,true,true),320); return; }
   if(d.pk){ procStart(d.pk); return; }
   if(d.pside!=null){ PR.dead=+d.pside; renderProc(); procFocus(); return; }
@@ -978,12 +998,13 @@ el('proc').addEventListener('click',e=>{ const b=e.target.closest('button,li.now
   if(b.hasAttribute('data-pback')){ const p=curP(); if(!p||!PR.i) return; PR.i--; PR.done[PR.i]=0; const s=p.steps[PR.i]; delete s.b; s.m={}; renderProc(); procFocus(); return; }
   if(b.hasAttribute('data-prestart')){ procStart(PR.k,PR.lib?{side:PR.dead,alert:PR.alert}:null); return; }
   if(b.hasAttribute('data-pfree')){ PR.k=null; PR.p=null; hlCtl(null); pill(null); resetMission(); renderProc(); return; } });
+el('proc').addEventListener('change',e=>{ if(!e.target.matches('[data-ockgen]')) return; OWNCK.setGen('DA42',e.target.checked); renderProc(); });
 el('proc').addEventListener('input',e=>{ if(!e.target.matches('[data-psearch]')) return; PR.q=e.target.value; const pos=e.target.selectionStart; renderProc(); const s=el('proc').querySelector('[data-psearch]'); if(s){ s.focus(); try{ s.setSelectionRange(pos,pos); }catch(x){} } });
 /* failure menu (Failures and weather): trigger a failure and open its checklist */
 function failMenu(){ const box=el('sysFails'); if(!box) return; const air=()=>!S.ground;
   box.innerHTML=DA42PROCS.FAILS.map(f=>f.side?[0,1].map(i=>`<button class="btn warn" data-fk="${f.kind}" data-fi="${i}">${L(f.t)} ${i?'R':'L'}</button>`).join(''):`<button class="btn warn" data-fk="${f.kind}" data-fi="0" style="grid-column:1/-1">${L(f.t)}</button>`).join('');
   box.onclick=e=>{ const b=e.target.closest('button[data-fk]'); if(!b) return; const f=DA42PROCS.FAILS.find(x=>x.kind===b.dataset.fk), i=+b.dataset.fi;
-    fxApply(f.kind,i); const pk=typeof f.proc==='string'?f.proc:f.proc[air()?'air':'gnd']; procStart(pk,{side:i,alert:fxAlert(f.kind,i)}); setDrawer(true); showProcTab(); }; }
+    fxApply(f.kind,i); const pk=typeof f.proc==='string'?f.proc:f.proc[air()?'air':'gnd']; procStart(pk,{side:i,alert:fxAlert(f.kind,i),kind:f.kind}); setDrawer(true); showProcTab(); }; }
 failMenu(); LAB.onLang(failMenu);
 LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 /* drawer */
@@ -1137,15 +1158,17 @@ const Q=[
 ];
 quiz(el('qbox'),'cockpit',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.map((_,i)=>i)); return {...q,a:idx.map(i=>q.a[i]),c:idx.indexOf(q.c)}; }));
 
-window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS;
+window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 { const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
   AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,type:'DA42',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=mis]'); if(b) b.click(); }}); LAB.onLang(airUI);
   /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
   if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'DA42',page:'cockpit',S,F,AF,after:AIRUI.btn,ap:()=>AP.on,
     eng:()=>{ let d=0, s=0; S.eng.forEach((e,i)=>{ if(e.fail||FX.fire===i||(!e.run&&!S.ground)) d|=1<<i; if(e.feather) s|=1<<i; }); return [d,s,NaN,NaN]; },
-    scen:()=>{ if(PR.k&&!PR.lib){ const p=curP(); return p&&{k:p.k,name:p.title||p.t,air:false,steps:p.steps,done:PR.done,bad:PR.bad||0,failed:p.kind==='scen'?PR.failed:null}; }
-      const sc=SCEN.find(x=>x.k===UI.scen); if(!sc) return null; const air=sc.k==='air'; return {k:air?AIRK:sc.k,name:air?AIRPROC.NAMES[AIRK]:sc.t,air,steps:sc.checks,done:missionState?missionState.done:[],bad:0}; },
+    scen:()=>{ if(PR.k&&!PR.lib){ const p=curP(); if(!p) return null; const hide=PR.ownSec&&!PR.showAfm;
+        return {k:p.k,name:p.title||p.t,air:false,steps:hide?[]:p.steps,done:hide?[]:PR.done,bad:PR.bad||0,failed:p.kind==='scen'?PR.failed:null,chk:true,own:()=>OCK.report(),
+          crit:p.crit?(PR.crit||(PR.crit=critFn(p.crit))):null,critTxt:p.critTxt,critLim:p.critLim}; }
+      const sc=SCEN.find(x=>x.k===UI.scen); if(!sc) return null; const air=sc.k==='air'; return {k:air?AIRK:sc.k,name:air?AIRPROC.NAMES[AIRK]:sc.t,air,steps:sc.checks,done:missionState?missionState.done:[],bad:0,own:()=>OCK.report()}; },
     again:()=>{ const a=DB.last&&DB.last.afUsed; if(PR.k&&!PR.lib) procStart(PR.k); else { resetMission(); if(a&&UI.scen==='air'&&!AF.on) toggleAuto(); } },
     next:()=>{ if(PR.k&&!PR.lib){ const p=curP(), L2=PROCS.filter(x=>x.kind===p.kind), i=L2.findIndex(x=>x.k===PR.k); procStart(L2[(i+1)%L2.length].k); }
       else if(UI.scen==='air'){ const L=AIRPROC.list('DA42',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); }

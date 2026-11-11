@@ -19,7 +19,7 @@
 
   /* ---------- which keys belong to which namespace ---------- */
   const NAMES = ['progress', 'packs', 'routes', 'settings'];
-  const SETTINGS = ['vlab-lang', 'vlab-reg', 'bb-b200-deck', 'naeroson-prep-view', 'naeroson-route-mode', 'bb-rx-v3', 'bb-rx-simspd'];
+  const SETTINGS = ['bb-debrief-auto', 'bb-ownck', 'vlab-lang', 'vlab-reg', 'bb-b200-deck', 'naeroson-prep-view', 'naeroson-route-mode', 'bb-rx-v3', 'bb-rx-simspd'];
   const PROGRESS = ['naeroson-prog', 'bb-track', 'naeroson-store-fises', 'naeroson-brief-hist', 'naeroson-g2g', 'bb-debrief'];
   const PACKS = ['naeroson-store-prep', 'naeroson-store-aircraft', 'naeroson-store-fiac', 'aeroson-fpl', 'aeroson-nav'];
   const ROUTES = ['naeroson-store-route', 'naeroson-store-fixes', 'naeroson-store-mapview', 'naeroson-store-mapnote'];

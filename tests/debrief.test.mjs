@@ -97,13 +97,24 @@ function efRows(o){ const rows=[]; let t=0; for(let k=0;k<400;k++){ const fail=t
   ok('SID: runway track until 1500 ft',get(E,'sidTrk').res==='pass',get(E,'sidTrk'));
   ok('SID: level-off within 100 ft',get(E,'sidLvl').res==='pass',get(E,'sidLvl')); }
 
-/* 10. checklist steps and out-of-sequence actions */
+/* 10. exercise goals are scored; checklist items and the generic flow order are information only (outcome-based scoring) */
 { const E=ev(efRows({sec:1}),M42({k:'efato',app:false,steps:[{t:{en:'A',no:'A'},st:1,tm:3},{t:{en:'B',no:'B'},st:2,tm:5},{t:{en:'C',no:'C'},st:-1,tm:8},{t:{en:'D',no:'D'},st:0,tm:null}],bad:[4,9]}));
   const S=E.items.filter(x=>x.id==='step');
-  ok('steps: done/skipped/bad/not reached',S.map(x=>x.res).join()==='pass,amber,fail,amber',S.map(x=>x.res));
-  ok('steps: timing kept',S[0].t===3&&S[0].step===1);
-  ok('out-of-sequence actions: amber at the first time',get(E,'order').res==='amber'&&get(E,'order').t===4&&/2 actions/.test(get(E,'order').why.en));
+  ok('goals: done/skipped/bad/not reached',S.map(x=>x.res).join()==='pass,amber,fail,amber',S.map(x=>x.res));
+  ok('goals: timing kept',S[0].t===3&&S[0].step===1);
+  ok('out-of-sequence actions: information only, never scored',get(E,'order').res==='info'&&get(E,'order').t===4&&/2 actions/.test(get(E,'order').why.en));
   ok('score counts amber as half',E.score===Math.round(100*(E.counts.pass+0.5*E.counts.amber)/(E.counts.pass+E.counts.amber+E.counts.fail))); }
+{ const st=[{t:{en:'Fuel pump',no:'x'},st:1,tm:3,chk:true},{t:{en:'Strobe',no:'x'},st:0,tm:null,chk:true}];
+  const E=ev(efRows({sec:1}),M42({k:'efato',app:false,steps:st,bad:[4,5,6]})), E0=ev(efRows({sec:1}),M42({k:'efato',app:false}));
+  ok('checklist items: one info item, no step scores',E.items.filter(x=>x.id==='step').length===0&&get(E,'ticked').res==='info'&&/1 of 2/.test(get(E,'ticked').why.en));
+  ok('checklist items and order do not change the score',E.score===E0.score&&E.result===E0.result,[E.score,E0.score]);
+  const own={name:'My SOP',items:[{t:{en:'Beacon',no:'Beacon'},st:1},{t:{en:'Pumps',no:'Pumper'},st:0}]};
+  ok('own checklist: info by default',get(ev(efRows({sec:1}),M42({k:'efato',app:false,own})),'own').res==='info');
+  const Es=ev(efRows({sec:1}),M42({k:'efato',app:false,own:Object.assign({},own,{score:true})}));
+  ok('own checklist: scored when chosen (amber, lists the missed item)',get(Es,'own').res==='amber'&&/Pumps/.test(get(Es,'own').why.en));
+  ok('react: outcome time, pass within the limit',get(ev(efRows({sec:1}),M42({k:'efato',app:false,failT:10,actT:22,crit:{en:'x',no:'x'}})),'react').res==='pass');
+  ok('react: amber when slow',get(ev(efRows({sec:1}),M42({k:'efato',app:false,failT:10,actT:40,crit:{en:'x',no:'x'}})),'react').res==='amber');
+  ok('react: no item without an outcome predicate',!get(ev(efRows({sec:1}),M42({k:'efato',app:false,failT:10})),'react')); }
 
 /* 11. crash is critical; end-of-scenario checks */
 { const E=ev(efRows({sec:1}),M42({k:'free',app:false,crash:'Gear-up landing',crashT:70}));
