@@ -68,15 +68,16 @@ const TT={
   sidTrk:tr('Runway track until 1,500 ft','Banekurs til 1500 ft'),
   sidLvl:tr('Level-off at 3,000 ft ±100 ft','Utflating i 3000 ft ±100 ft'),
   order:tr('Actions in sequence','Handlinger i riktig rekkefølge'),
+  react:tr('Time to action after the failure','Tid til handling etter feilen'),
   step:tr('Checklist step','Sjekklistepunkt')
 };
 const CRASH_NO={'Gear-up landing':'Landing uten understell','Hard landing (more than 700 ft/min)':'Hard landing (mer enn 700 ft/min)','Wingtip strike: bank too steep at touchdown':'Vingespissen traff bakken: for mye krengning ved touchdown','Nose-wheel first: pitch too low at touchdown':'Nesehjulet først: for lav nese ved touchdown','Landed off the runway':'Landet utenfor rullebanen','Ran off the runway':'Kjørte av rullebanen','Controlled flight into terrain':'Fløy inn i terrenget (CFIT)'};
 const CAT={crash:'crit',limits:'lim',vne:'lim',vfe:'lim',vle:'lim',bank:'lim',stall:'lim',tq:'lim',itt:'lim',vmc:'oei',yse:'oei',bankLive:'oei',secure:'oei',wrongEng:'oei',
-  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',order:'chk',step:'chk'};
+  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',order:'chk',step:'chk',react:'chk'};
 
 /* ---------- scoring (pure) ----------
    C: columns; M: {type,k,V,nEng,retract,ldgFlap,vApp,vHold,mins,minsKind,prec,app,hold,sid,tqMax,ittMax,
-                   steps:[{t,st,tm}], bad:[t...], crash, td:{t,N,E,vs}, decision, endWhy}
+                   steps:[{t,st,tm,mem}], bad:[t...], crash, td:{t,N,E,vs}, decision, endWhy, failT}
    returns {items:[{id,cat,res,t,title,why,crit}], result, score, crit:[items], counts} */
 function evaluate(C,M){
   M=M||{}; const V=M.V||{}; const n=C.n|0; const items=[];
@@ -94,6 +95,14 @@ function evaluate(C,M){
     const res=st===1?'pass':st===-1?'fail':st===2?'amber':'amber';
     const why=st===1?null:st===2?tr('Skipped.','Hoppet over.'):st===-1?tr('Not met: see the brief.','Ikke oppfylt: se briefen.'):tr('Not completed.','Ikke fullført.');
     add('step',res,s.tm!=null?s.tm:null,why,{title:s.t,step:i+1}); });
+  /* time to action after a triggered failure: memory items complete (pass ≤ 20 s, amber ≤ 45 s), else the first checklist action */
+  if(M.failT!=null){ const st=M.steps||[], ms=st.filter(s=>s.mem), after=st.filter(s=>s.st===1&&s.tm!=null&&s.tm>=M.failT-0.5), first=after.length?Math.min(...after.map(s=>s.tm)):null;
+    const fs=first==null?null:Math.max(0,first-M.failT);
+    if(ms.length&&ms.every(s=>s.st===1&&s.tm!=null)){ const tE=Math.max(...ms.map(s=>s.tm)), d=Math.max(0,tE-M.failT);
+      add('react',d<=20?'pass':d<=45?'amber':'fail',tE,W(g=>`Memory items done ${g(d,0)} s after the failure (first action after ${g(fs==null?d:fs,0)} s).`,g=>`Hukommelsespunktene utført ${g(d,0)} s etter feilen (første handling etter ${g(fs==null?d:fs,0)} s).`)); }
+    else if(ms.length) add('react','fail',null,tr('Memory items not completed.','Hukommelsespunktene ble ikke fullført.'));
+    else if(fs!=null) add('react',fs<=15?'pass':'amber',first,W(g=>`First checklist action ${g(fs,0)} s after the failure.`,g=>`Første sjekklistehandling ${g(fs,0)} s etter feilen.`));
+    else add('react','info',null,tr('No checklist action after the failure.','Ingen sjekklistehandling etter feilen.')); }
   if((M.bad||[]).length) add('order','amber',M.bad[0],W(n=>`${M.bad.length} action${M.bad.length>1?'s':''} out of sequence or on the wrong control.`,n=>`${M.bad.length} handling${M.bad.length>1?'er':''} i feil rekkefølge eller på feil bryter.`));
   else if((M.steps||[]).length) add('order','pass',null,null);
 
@@ -106,8 +115,8 @@ function evaluate(C,M){
     limBad.push(add('vne',r.afT>=r.tot?'auto':'fail',r.first,r.afT>=r.tot?AUTO:W(f=>`Exceeded ${V.ne} KIAS (max ${f(mx)}).`,f=>`Over ${V.ne} KIAS (maks ${f(mx)}).`),{crit:r.afT<r.tot})); } }
   if(V.fe1){ const lim=i=>{ const fl=C.flap[i]; if(fl<0.5) return 1e9; if(M.type==='C172') return fl<1.5?V.fe1:V.fe2; return fl<1.5?V.fe1:V.fe2; };
     const r=runs(i=>air(i)&&C.ias[i]>lim(i)+2); if(r.tot>=0.4){ const i=r.worst; limBad.push(add('vfe',r.tot>3?'fail':'amber',r.first,W(f=>`${f(C.ias[i])} KIAS with flaps selected (limit ${lim(i)}) for ${f(r.tot,1)} s.`,f=>`${f(C.ias[i])} KIAS med flaps valgt (grense ${lim(i)}) i ${f(r.tot,1)} s.`))); } }
-  if(M.retract&&V.le){ const lo=V.lo||V.le;
-    const r=runs(i=>air(i)&&((C.gear[i]>0.98&&C.ias[i]>V.le+2)||(C.gear[i]>0.02&&C.gear[i]<0.98&&C.ias[i]>lo+2))); if(r.tot>=0.4){ const i=r.worst; limBad.push(add('vle','fail',r.first,W(f=>`${f(C.ias[i])} KIAS with the gear ${C.gear[i]>0.98?'down (VLE '+V.le:'moving (VLO '+lo})).`,f=>`${f(C.ias[i])} KIAS med understellet ${C.gear[i]>0.98?'ute (VLE '+V.le:'i bevegelse (VLO '+lo}).`))); } }
+  if(M.retract&&V.le){ const lo0=V.lo||V.le, lo=i=>i>0&&C.gear[i]>C.gear[i-1]?(V.loe||lo0):lo0; /* VLO: extension (loe) may be higher than retraction (lo) */
+    const r=runs(i=>air(i)&&((C.gear[i]>0.98&&C.ias[i]>V.le+2)||(C.gear[i]>0.02&&C.gear[i]<0.98&&C.ias[i]>lo(i)+2))); if(r.tot>=0.4){ const i=r.worst; limBad.push(add('vle','fail',r.first,W(f=>`${f(C.ias[i])} KIAS with the gear ${C.gear[i]>0.98?'down (VLE '+V.le:'moving (VLO '+lo(i)})).`,f=>`${f(C.ias[i])} KIAS med understellet ${C.gear[i]>0.98?'ute (VLE '+V.le:'i bevegelse (VLO '+lo(i)}).`))); } }
   { const steep=M.k==='steep', a1=steep?55:45, a2=steep?65:60; const r=runs(i=>air(i)&&Math.abs(C.roll[i])>a1);
     if(r.maxRun>=2){ let mx=0; for(let i=0;i<n;i++) if(air(i)) mx=Math.max(mx,Math.abs(C.roll[i])); const bad=mx>a2;
       limBad.push(add('bank',r.afT>=r.tot?'auto':bad?'fail':'amber',r.first,r.afT>=r.tot?AUTO:W(f=>`Bank beyond ${a1}° for ${f(r.tot,0)} s (max ${f(mx)}°).`,f=>`Krengning over ${a1}° i ${f(r.tot,0)} s (maks ${f(mx)}°).`))); } }
@@ -422,19 +431,19 @@ function render(D,ctl){
 /* ---------- recorder bound to one page ----------
    o: {type, page, S, F, AF, cap,
        eng:()=>[deadMask, secMask, torqueMax|NaN, ittMax|NaN], ap:()=>bool, flap:()=>selected flap index,
-       scen:()=>({k, name:{en,no}, air:bool, steps:[{t}], done:[0|1|2|-1], bad:number}),
+       scen:()=>({k, name:{en,no}, air:bool, steps:[{t,mem}], done:[0|1|2|-1], bad:number, failed:bool (a scenario failure has been triggered)}),
        again:()=>void, next:()=>void, after:Element (toolbar node to put the Debrief button after), tqMax, ittMax} */
 function attach(o){
   const S=o.S, F=o.F, A=G.AIRPROC, ring=new Ring(o.cap||12000), row=ring.row;
   const st={on:false,t:0,acc:0,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false};
-  let M=null, stepT=[], lastDone=[], badN=0, badT=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false;
+  let M=null, stepT=[], lastDone=[], badN=0, badT=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false, failT=null;
   function meta(){ const sc=o.scen()||{}; const k=sc.k||''; const ty=(A&&A.TY&&A.TY[o.type])||{};
     const kk=k==='rnav'?'rnp_lpv':k==='seapp'?'ils':k; const app=!!(A&&(A.isApp(kk)||kk==='star'))||kk in MINS0;
     const V=Object.assign({},F.AC.V||{});
     return {type:o.type,k,name:sc.name||tr(k,k),air:!!sc.air,V,nEng:F.AC.nEng||(o.type==='C172'?1:2),retract:o.type!=='C172',ldgFlap:ty.ldgFlap||1,vApp:ty.vFinal||0,vHold:ty.vHold||0,
       mins:(A&&A.MINS&&A.MINS[kk])||MINS0[kk]||null,minsKind:KIND0[kk]||'',prec:!!PREC[kk],app,hold:k==='hold',sid:k==='sid',tqMax:o.tqMax||0,ittMax:o.ittMax||0}; }
   function start(){ ring.clear(); Object.assign(st,{on:true,t:0,acc:DT,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false});
-    M=meta(); stepT=[]; lastDone=[]; badN=0; badT=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null;
+    M=meta(); stepT=[]; lastDone=[]; badN=0; badT=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null; failT=null;
     const sc=o.scen(); if(sc){ lastDone=(sc.done||[]).slice(); badN=sc.bad||0; } }
   function sample(){
     const s=S, R=F.readouts(s), AF=o.AF;
@@ -452,16 +461,16 @@ function attach(o){
     if(M.hold){ const inR=Math.hypot(s.N+10*NM,s.E)<0.7*NM; if(inR&&!st.inR&&st.t-st.ronT>90){ st.ronax++; st.ronT=st.t; } st.inR=inR; }
     const sc=o.scen(); let done=0, nS=0;
     if(sc){ const dn=sc.done||[]; nS=dn.length; if(lastDone.length!==nS) lastDone.length=nS; for(let i=0;i<nS;i++){ if(dn[i]!==lastDone[i]){ stepT[i]=dn[i]?st.t:null; lastDone[i]=dn[i]; } if(dn[i]) done++; }
-      const b=sc.bad||0; if(b>badN){ for(let j=badN;j<b;j++) badT.push(st.t); } badN=b; }
+      const b=sc.bad||0; if(b>badN){ for(let j=badN;j<b;j++) badT.push(st.t); } badN=b; if(sc.failed&&failT==null) failT=st.t; }
     if(s.crash&&crashT==null) crashT=st.t;
     const why=endCheck(st,{crash:!!s.crash,gnd:s.ground,gs:R.gs,alt:R.alt,N:s.N,E:s.E,t:st.t,stepsDone:done,stepsN:nS,air:!!(M.app||M.hold||M.sid||M.k==='free'),
       kind:M.hold?'hold':M.sid?'sid':'',holdN:AF&&AF.rec&&AF.rec.hold?AF.rec.hold.n:0,sidDone:!!(AF&&AF.rec&&AF.rec.sidDone)});
     if(why&&M.k!=='free') finish(why);
   }
   function build(live){
-    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null}));
+    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null,mem:!!x.mem}));
     const AF=o.AF; const C=ring.cols();
-    const M2=Object.assign({},M,{steps,bad:badT.slice(),crash:S.crash||null,crashT,td,tdAf,decision:AF&&AF.rec&&AF.rec.decision||null});
+    const M2=Object.assign({},M,{steps,bad:badT.slice(),crash:S.crash||null,crashT,td,tdAf,failT,decision:AF&&AF.rec&&AF.rec.decision||null});
     const ev=evaluate(C,M2);
     return {id:o.type+'-'+Date.now().toString(36),at:Date.now(),type:o.type,page:o.page||'',k:M.k,name:M.name,dur:C.n?C.t[C.n-1]:0,afUsed,endWhy:live?'manual':endWhy,live,C,M:M2,ev}; }
   function finish(why){ if(!st.on) return; st.on=false; endWhy=why; const D=build(false); last=D; try{ save(D); }catch(e){}

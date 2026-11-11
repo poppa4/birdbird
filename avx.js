@@ -183,7 +183,7 @@ function view(d,S){
   if(W.type==='MENU') return {type:'LIST',title:'PAGE MENU',items:W.items.length?W.items.map(x=>({t:x.t})):[{t:'No options',dis:true}],idx:W.idx,foot:'ENT to accept · CLR to close'};
   if(W.type==='CONF') return {type:'LIST',title:'CONFIRM',items:[{t:W.text},{t:'ENT = YES   CLR = NO',dis:true}],idx:0};
   if(W.type==='NRST'){ const L=W.list.map(x=>({t:`${x.d.id.padEnd(6)} ${String(Math.round(x.brg)).padStart(3,'0')}°  ${x.dist.toFixed(1)}NM  ${x.d.rwy||''}`})); return {type:'LIST',title:'NEAREST AIRPORTS',items:L,idx:W.idx,foot:'ENT = direct to'}; }
-  if(W.type==='TMR'){ const t=A.timer.t; return {type:'LIST',title:'TIMER / REFERENCES',items:[{t:`TIMER  ${String(Math.floor(t/3600)).padStart(2,'0')}:${String(Math.floor(t/60)%60).padStart(2,'0')}:${String(Math.floor(t)%60).padStart(2,'0')}   ${A.timer.run?'STOP?':'START?'}`},{t:`MINIMUMS  BARO  ${A.mins.ft}FT   ${A.mins.on?'ON':'OFF'}`},{t:'RESET TIMER?'},{t:'Vr 80  Vy 90  Vyse 85  Vmca 76  Vref 84',dis:true}],idx:W.idx||0,foot:'Outer: row · inner: set MINS · ENT: toggle'}; }
+  if(W.type==='TMR'){ const t=A.timer.t; return {type:'LIST',title:'TIMER / REFERENCES',items:[{t:`TIMER  ${String(Math.floor(t/3600)).padStart(2,'0')}:${String(Math.floor(t/60)%60).padStart(2,'0')}:${String(Math.floor(t)%60).padStart(2,'0')}   ${A.timer.run?'STOP?':'START?'}`},{t:`MINIMUMS  BARO  ${A.mins.ft}FT   ${A.mins.on?'ON':'OFF'}`},{t:'RESET TIMER?'},{t:'Vr 76  Vy 90  Vyse 85  Vmca 71  Vref 84',dis:true}],idx:W.idx||0,foot:'Outer: row · inner: set MINS · ENT: toggle'}; }
   if(W.type==='ALERTS') return {type:'LIST',title:'ALERTS',items:(A.msgs.length?A.msgs:[{t:'No messages'}]).map(m=>({t:m.t})),idx:-1};
   return null;
 }

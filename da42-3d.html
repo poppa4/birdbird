@@ -273,8 +273,6 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <aside class="drawer" id="drawer" aria-label="Procedures and missions"><div class="din">
         <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="mis">Missions</button></div>
         <div id="tabProc">
-          <select id="procSel" aria-label="Procedure"></select>
-          <p class="warnline">For training only — follow the AFM and your operator's SOP.</p>
           <div id="proc"></div>
           <label><input type="checkbox" id="follow"> Zoom to the next control</label>
         </div>
@@ -324,6 +322,11 @@ table.keys td:first-child{white-space:nowrap;width:1%}
           <button class="btn" id="restore" style="grid-column:1/-1">Restore both engines</button>
         </div>
       </div>
+      <div class="box">
+        <b class="t">Systems</b>
+        <p>Trigger a system failure. The matching checklist opens in the Procedures drawer; Restore both engines clears these too.</p>
+        <div class="engbtns" id="sysFails" style="margin-top:8px"></div>
+      </div>
       <div class="box"><b class="t">Wind</b><div id="windBox"></div></div>
       <div class="box"><b class="t">Atmosphere</b><div id="atmBox"></div></div>
     </div>
@@ -372,15 +375,16 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=9"></script>
+<script src="fdm.js?v=10"></script>
 <script src="flightkeys.js?v=2"></script>
 <script src="fms.js?v=4"></script>
 <script src="airproc.js?v=3"></script>
-<script src="simdebrief.js?v=1"></script>
+<script src="simdebrief.js?v=2"></script>
 <script src="glass.js?v=5"></script>
-<script src="avx.js?v=5"></script>
+<script src="avx.js?v=6"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="da42panel.js?v=6"></script>
+<script src="da42panel.js?v=7"></script>
+<script src="da42procs.js?v=1"></script>
 <script src="otw.js?v=12"></script>
 <script src="cockpit3d.js?v=4"></script>
 <script src="da42-3d.js?v=3"></script>
@@ -431,7 +435,7 @@ const SCEN=[
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
            {t:{en:'Fly a heading with HDG mode',no:'Fly en kurs med HDG-moden'},f:c=>c.ap.on&&c.ap.lat==='HDG'},
            {t:{en:'Climb or descend with VS or FLC and let ALTS capture',no:'Stig eller synk med VS eller FLC og la ALTS fange høyden'},f:c=>c.m.altsSeen&&c.ap.vert==='ALT'&&Math.abs(c.o.alt-c.ap.alt)<60, pre:c=>{ if(/ALTS/.test(c.ap.vertArm)) c.m.altsSeen=true; }} ]},
- {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Flaps UP, fuel pumps on. Full power on both engines, rotate at 80 KIAS (VR), climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway.',no:'Rullebane 36, vindstille. Flaps UP, drivstoffpumper på. Full effekt på begge motorene, roter ved 80 KIAS (VR), stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen.'},
+ {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Flaps UP, fuel pumps on. Full power on both engines, rotate at 76 KIAS (VR, AFM minimum), climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway.',no:'Rullebane 36, vindstille. Flaps UP, drivstoffpumper på. Full effekt på begge motorene, roter ved 76 KIAS (VR, AFM-minimum), stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen.'},
   set:{ground:true,N:20,E:0,hdg:360,thr:0,flap:0,gear:1}, ui:{hdg:360,alt:3000,fp:['NAER','KORPA','VSTB']},
   checks:[ {t:{en:'Full power (both levers above 95 %)',no:'Full effekt (begge hendler over 95 %)'},f:c=>c.s.eng.every(e=>e.thr>0.95)},
            {t:{en:'Rotate and lift off',no:'Roter og løft av'},f:c=>!c.s.ground},
@@ -457,7 +461,7 @@ const SCEN=[
  {k:'efato', t:{en:'Engine failure',no:'Motorstans'}, brief:{en:'Climbing out at 500 ft, gear and flaps up. In a few seconds one engine fails. Pitch for blue line (85 KIAS), keep the heading with rudder (dead foot, dead engine), bank about 5° towards the live engine, identify, verify, feather (engine master OFF), climb to 1000 ft.',no:'Stiger ut i 500 ft med understell og flaps oppe. Om noen sekunder stopper en motor. Hold blå linje (85 KIAS), hold kursen med sideroret («dead foot, dead engine»), krengning rundt 5° mot den levende motoren, identifiser, verifiser, fløy propellen (engine master OFF), stig til 1000 ft.'},
   set:{N:1800,E:0,alt:500,ias:95,hdg:360,gear:0,flap:0,thr:1,gam:5}, ui:{hdg:360,alt:1000,fp:[]}, failAt:4,
   checks:[ {t:{en:'Keep heading within 20° of 360',no:'Hold kursen innenfor 20° av 360'},f:c=>c.m.failed&&c.t>c.m.failT+20&&!c.m.hdgBad, bad:c=>c.m.hdgBad, pre:c=>{ if(c.m.failed&&Math.abs(F.wrap180(c.o.hdg-360))>20) c.m.hdgBad=true; }},
-           {t:{en:'Stay above Vmca (76 KIAS)',no:'Hold farten over Vmca (76 KIAS)'},f:c=>c.m.failed&&c.t>c.m.failT+20&&!c.m.vmcBad, bad:c=>c.m.vmcBad, pre:c=>{ if(c.m.failed&&c.o.ias<76) c.m.vmcBad=true; }},
+           {t:{en:'Stay above Vmca (71 KIAS)',no:'Hold farten over Vmca (71 KIAS)'},f:c=>c.m.failed&&c.t>c.m.failT+20&&!c.m.vmcBad, bad:c=>c.m.vmcBad, pre:c=>{ if(c.m.failed&&c.o.ias<71) c.m.vmcBad=true; }},
            {t:{en:'Feather the failed engine (not the good one)',no:'Fløy motoren som stoppet (ikke den gode)'},f:c=>c.s.eng.some(e=>e.fail&&e.feather)&&!c.s.eng.some(e=>!e.fail&&e.feather), bad:c=>c.s.eng.some(e=>!e.fail&&e.feather)},
            {t:{en:'Climb to 1000 ft at blue line or a little above (85–95 KIAS)',no:'Stig til 1000 ft på blå linje eller litt over (85–95 KIAS)'},f:c=>c.o.alt>1000&&c.o.ias>=84&&c.o.ias<95} ]},
  {k:'vor', t:{en:'VOR tracking',no:'VOR-følging'}, brief:{en:'2500 ft, 12 NM south of the ASN VOR (113.30), heading 030. Select NAV1 on the CDI, set course 360 with the CRS knob, intercept and track the 360° course inbound to the station, then fly through station passage.',no:'2500 ft, 12 NM sør for ASN VOR (113.30), kurs 030. Velg NAV1 på CDI-en, still kurs 360 med CRS-knotten, fang inn og følg 360°-kursen inn mot stasjonen, og fly gjennom stasjonspassering.'},
@@ -518,7 +522,7 @@ function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
   else if(k==='hold'){ FM.setRoute(fp,['RONAX'],S); FM.directTo(fp,'RONAX',S); XA.cdi='NAV1'; }
   else { FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[0],'VECTORS',true,S); XA.cdi='NAV1'; }
   if(to){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; } }
-function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on); }
+function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k&&!PR.lib?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on); }
 function pickProc(k){ if(k!=='free') AIRK=k; if(PR.k){ PR.k=null; hlCtl(null); pill(null); renderProc(); } UI.scen=k==='free'?'free':'air'; resetMission(); drawScen(); drawScenSel(); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k||(UI.scen!=='air'&&UI.scen!=='free')) pickProc(AIRK); AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
@@ -537,7 +541,7 @@ function resetMission(){
   S.autotrim=el('autoTrim').checked; holdPitch=null;
   sysDefault(false); if(sc.k==='takeoff'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.park=0; } if(!S.ground) SYS.pitot=1;
   if(sc.k==='air') airSetup();
-  PR.k=null; hlCtl(null); pill(null); renderProc(); renderMission(); lastO=null; airUI(); if(DB) DB.start();
+  PR.k=null; PR.p=null; PR.lib=false; fxReset(); hlCtl(null); pill(null); renderProc(); renderMission(); lastO=null; airUI(); if(DB) DB.start();
 }
 
 /* ---------- glidere og segmenter ---------- */
@@ -568,7 +572,7 @@ LAB.add({},{'Procedures':'Prosedyrer','Missions':'Oppdrag','Outside view':'Utsik
  'Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, the touch stick or this yoke pad.':'Alt du stiller i cockpiten finner du på panelet over. Fly med tastaturet, en spillkontroll, berøringsstikka eller denne rattflaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click or tap a part of the panel to zoom in. Esc or the back button zooms out. Keys 0–9 jump between areas.':'Klikk eller trykk på en del av panelet for å zoome inn. Esc eller tilbakeknappen zoomer ut. Tastene 0–9 hopper mellom områdene.',
  'Switches and levers':'Brytere og hendler','Click a switch to flip it. Drag the power levers (drag between them to move both), turn knobs and wheels with the mouse wheel or by dragging. Tab to any control and use the arrow keys, Space or Enter.':'Klikk på en bryter for å slå den om. Dra effekthendlene (dra mellom dem for å flytte begge), drei knotter og hjul med musehjulet eller ved å dra. Tab til en kontroll og bruk piltastene, mellomrom eller Enter.',
- 'Rudder and brakes':'Sideror og bremser','Look ahead':'Se fremover','Classic 2D panel':'Klassisk 2D-panel','Look around':'Se deg rundt','DA42 3D cockpit (beta)':'DA42 3D-cockpit (beta)','DA42 3D (beta)':'DA42 3D (beta)','Beta':'Beta',
+ 'Rudder and brakes':'Sideror og bremser','Systems':'Systemer','Trigger a system failure. The matching checklist opens in the Procedures drawer; Restore both engines clears these too.':'Utløs en systemfeil. Riktig sjekkliste åpnes i Prosedyrer-skuffen; Gjenopprett begge motorene fjerner også disse.','Look ahead':'Se fremover','Classic 2D panel':'Klassisk 2D-panel','Look around':'Se deg rundt','DA42 3D cockpit (beta)':'DA42 3D-cockpit (beta)','DA42 3D (beta)':'DA42 3D (beta)','Beta':'Beta',
  'Sit in the left seat and look around: the canopy, the seats and the world outside, with the same live panel, glass displays, switches and levers as the classic trainer.':'Sett deg i venstre sete og se deg rundt: kanopien, setene og verden utenfor, med det samme levende panelet, glasskjermene, bryterne og hendlene som i den klassiske treneren.',
  'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, M (or the numpad) look left, right, up and down.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Dobbeltklikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, M (eller talltastaturet) ser til venstre, høyre, opp og ned.',
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
@@ -723,7 +727,7 @@ function sysTick(dt){
     if(SYS['fsel'+side]===2&&e.run){ SYS.starve[i]+=dt; if(SYS.starve[i]>4) e.run=false; } else SYS.starve[i]=0;
     if(!master) e.run=false;
     e.off=!e.run; e.feather=!master&&!S.ground; if(!master&&S.ground) e.feather=true;
-    e.alt=!!SYS['alt'+side]&&pw;
+    e.alt=!!SYS['alt'+side]&&pw&&FX.alt!==i;
     // ECU test
     const btn=SYS['ecu'+side];
     if(btn&&e.run&&!e.fail){ const ok=e.thr<0.05&&SYS['voter'+side]===1&&SYS.park&&S.ground; if(ok){ SYS.ecuT[i]+=dt; e.test=SYS.ecuT[i]<6; if(SYS.ecuT[i]>=6&&!SYS.ecuDone[i]){ SYS.ecuDone[i]=1; msg({en:side+' ECU test complete — all ECU FAIL lights out',no:side+' ECU-test fullført — alle ECU FAIL-lys slukket'}); procTouch('ecu'+side+'Done'); } } else if(SYS.ecuT[i]===0&&!ecuWarned[i]){ ecuWarned[i]=1; msg({en:'ECU test needs: power lever IDLE, VOTER AUTO, parking brake SET, on the ground',no:'ECU-test krever: effekthendel IDLE, VOTER AUTO, parkeringsbrems PÅ, på bakken'}); } }
@@ -743,12 +747,15 @@ function sysAlerts(o,L){
     if(e.crank) L.push({t:s+' STARTER',lvl:'c'});
     if(SYS.ecuT[i]>0&&SYS.ecuT[i]<6){ const t=SYS.ecuT[i]; if((t>1&&t<2.6)||(t>3.4&&t<5)) L.push({t:s+' ECU '+(t<3?'A':'B')+' FAIL',lvl:'c'}); }
     if(!e.run&&SYS['eng'+s]&&!e.fail&&S.ground) L.push({t:s+' OIL PRES',lvl:'w'});
-    if(e.run&&!SYS['alt'+s]) L.push({t:s+' ALTN FAIL',lvl:'c'});
+    if(e.run&&(!SYS['alt'+s]||FX.alt===i)) L.push({t:s+' ALTN FAIL',lvl:'c'});
+    if(FX.fire===i) L.push({t:s+' ENG FIRE',lvl:'w'});
+    if(FX.ecuA===i&&e.run) L.push({t:s+' ECU A FAIL',lvl:'c'});
     if(SYS['fsel'+s]===2&&e.run) L.push({t:s+' FUEL OFF',lvl:'c'});
   });
   if(!SYS.pitot) L.push({t:'PITOT HT OFF',lvl:'c'});
   if(SYS.fireTest){ L.push({t:'L ENG FIRE',lvl:'w'}); L.push({t:'R ENG FIRE',lvl:'w'}); }
   if(SYS.park&&!S.ground) L.push({t:'PARK BRAKE',lvl:'c'});
+  if(FX.gear&&!S.ground&&S.ctl.gearPos<0.99&&(S.ctl.flap===2||S.eng.some(e=>e.thr<0.2))) L.push({t:'CHECK GEAR',lvl:'c'});
   if(SYS.elec&&S.eng.every(e=>!e.run)) L.push({t:'LOW VOLTS',lvl:'c'});
   if(SYS.pumpL||SYS.pumpR) L.push({t:'FUEL PUMP '+(SYS.pumpL&&SYS.pumpR?'L/R':SYS.pumpL?'L':'R'),lvl:'a'});
   if(SYS.fselL===1||SYS.fselR===1) L.push({t:'XFEED',lvl:'a'});
@@ -816,7 +823,7 @@ el('failL').onclick=()=>{ S.eng[0].fail=true; };
 el('failR').onclick=()=>{ S.eng[1].fail=true; };
 el('featL').onclick=()=>{ ioSet('engL',SYS.engL?0:1); };
 el('featR').onclick=()=>{ ioSet('engR',SYS.engR?0:1); };
-el('restore').onclick=()=>{ SYS.engL=SYS.engR=1; S.eng.forEach(e=>{ e.fail=false; e.run=true; e.off=false; e.feather=false; }); };
+el('restore').onclick=()=>{ fxReset(); SYS.engL=SYS.engR=1; S.eng.forEach(e=>{ e.fail=false; e.run=true; e.off=false; e.feather=false; }); };
 
 /* ---------- berøringskontroller på PFD ---------- */
 const tStk=el('tStk');
@@ -877,135 +884,128 @@ document.addEventListener('pointerdown',ensureAudio,{once:true});
 
 /* ---------- pause og reset ---------- */
 function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paused?'Resume':'Pause'); }
-el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ resetMission(); if(UI.paused) togglePause(); };
+el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ if(PR.k&&!PR.lib) procStart(PR.k); else resetMission(); if(UI.paused) togglePause(); };
 LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); renderMission(); });
 
-/* ---------- procedures (generic training flows; follow the AFM and the operator's SOP) ---------- */
+/* ---------- procedures: normal flows, emergency / abnormal checklists and failure scenarios (data in da42procs.js, from the AFM) ---------- */
 const eng=(i)=>S.eng[i];
-const idle=()=>S.eng.every(e=>e.thr<0.05);
-const st=(t,ctl,ok,o)=>Object.assign({t,ctl,ok},o||{});
-const chk=(t,ctl,ok)=>st(t,ctl,ok,{chk:1});
-const PROCS=[
- {k:'bse',t:{en:'Before starting engines',no:'Før motorstart'},set:'cold',brief:{en:'Cold and dark on the apron. Set up the cockpit, then power up the electrics.',no:'Kald og mørk på oppstillingsplassen. Klargjør cockpiten, slå så på strømmen.'},
-  steps:[chk({en:'Parking brake — SET',no:'Parkeringsbrems — PÅ'},'park',()=>SYS.park),
-   st({en:'Power levers — IDLE',no:'Effekthendler — IDLE'},'pwr',idle),
-   chk({en:'Avionic master — check OFF',no:'Avionic master — sjekk AV'},'avio',()=>!SYS.avio),
-   chk({en:'Gear selector — check DOWN',no:'Understellsvelger — sjekk NEDE'},'gear',()=>S.ctl.gear===1),
-   chk({en:'VOTER switches — check AUTO',no:'VOTER-brytere — sjekk AUTO'},'voterL',()=>SYS.voterL===1&&SYS.voterR===1),
-   st({en:'Alternators — ON',no:'Generatorer — PÅ'},'altL',()=>SYS.altL&&SYS.altR),
-   chk({en:'Fuel pumps — check OFF',no:'Drivstoffpumper — sjekk AV'},'pumpL',()=>!SYS.pumpL&&!SYS.pumpR),
-   chk({en:'Fuel selectors — check ON',no:'Drivstoffvelgere — sjekk ON'},'fselL',()=>SYS.fselL===0&&SYS.fselR===0),
-   st({en:'ELECT. MASTER — ON',no:'ELECT. MASTER — PÅ'},'elec',()=>SYS.elec),
-   st({en:'Displays — wait for power-up, press ENT on the MFD',no:'Skjermer — vent på oppstart, trykk ENT på MFD'},'bzM',()=>SYS.ack),
-   chk({en:'Fuel quantity and temperature — check on the engine strip',no:'Drivstoffmengde og -temperatur — sjekk på motorstripen'},'bzM',()=>SYS.ack)]},
- {k:'start',t:{en:'Engine start',no:'Motorstart'},set:'powered',brief:{en:'Electrics on, displays acknowledged. Start the left engine, then the right.',no:'Strøm på og skjermer kvittert. Start venstre motor, deretter høyre.'},
-  steps:[st({en:'Strobe lights — ON',no:'Antikollisjonslys — PÅ'},'strobe',()=>SYS.strobe),
-   st({en:'ENGINE MASTER L — ON',no:'ENGINE MASTER L — PÅ'},'engL',()=>SYS.engL),
-   st({en:'Wait for L ENGINE GLOW to go out',no:'Vent til L ENGINE GLOW slukker'},'bzP',()=>SYS.engL&&SYS.glow[0]<=0),
-   st({en:'START key — L, release when the engine runs',no:'START-nøkkel — L, slipp når motoren går'},'start',()=>eng(0).run&&SYS.start===0),
-   chk({en:'Oil pressure up, STARTER out, idle about 710 RPM',no:'Oljetrykk opp, STARTER slukket, tomgang rundt 710 RPM'},'bzM',()=>eng(0).oilP>1.5&&eng(0).rpm>650),
-   st({en:'ENGINE MASTER R — ON',no:'ENGINE MASTER R — PÅ'},'engR',()=>SYS.engR),
-   st({en:'Wait for R ENGINE GLOW to go out',no:'Vent til R ENGINE GLOW slukker'},'bzP',()=>SYS.engR&&SYS.glow[1]<=0),
-   st({en:'START key — R, release when the engine runs',no:'START-nøkkel — R, slipp når motoren går'},'start',()=>eng(1).run&&SYS.start===0),
-   chk({en:'Annunciations and engine instruments — check',no:'Varsler og motorinstrumenter — sjekk'},'bzM',()=>eng(1).oilP>1.5&&eng(1).rpm>650)]},
- {k:'taxi',t:{en:'Before taxi and run-up',no:'Før taksing og motorprøve'},set:'running',brief:{en:'Both engines running on the apron. Avionics, pitot heat test, ECU test and the voter checks.',no:'Begge motorer går. Avionikk, test av pitotvarme, ECU-test og voter-sjekk.'},
-  steps:[st({en:'AVIONIC MASTER — ON',no:'AVIONIC MASTER — PÅ'},'avio',()=>SYS.avio),
-   st({en:'Pitot heat — ON (check annunciation)',no:'Pitotvarme — PÅ (sjekk varsel)'},'pitot',()=>SYS.pitot),
-   st({en:'Pitot heat — OFF',no:'Pitotvarme — AV'},'pitot',()=>!SYS.pitot),
-   st({en:'Position lights — ON',no:'Posisjonslys — PÅ'},'nav',()=>SYS.nav),
-   chk({en:'Parking brake — SET',no:'Parkeringsbrems — PÅ'},'park',()=>SYS.park),
-   st({en:'Power levers — IDLE',no:'Effekthendler — IDLE'},'pwr',idle),
-   chk({en:'Fuel pumps — check OFF, VOTER — AUTO',no:'Drivstoffpumper — sjekk AV, VOTER — AUTO'},'pumpL',()=>!SYS.pumpL&&!SYS.pumpR&&SYS.voterL===1&&SYS.voterR===1),
-   st({en:'ECU TEST L — press and hold until the sequence completes',no:'ECU TEST L — trykk og hold til sekvensen er ferdig'},'ecuL',()=>SYS.ecuDone[0]),
-   st({en:'ECU TEST R — press and hold until the sequence completes',no:'ECU TEST R — trykk og hold til sekvensen er ferdig'},'ecuR',()=>SYS.ecuDone[1]),
-   st({en:'VOTER L — ECU A, engine runs normally',no:'VOTER L — ECU A, motoren går normalt'},'voterL',()=>SYS.voterL===0),
-   st({en:'VOTER L — AUTO',no:'VOTER L — AUTO'},'voterL',()=>SYS.voterL===1),
-   st({en:'VOTER L — ECU B, engine runs normally',no:'VOTER L — ECU B, motoren går normalt'},'voterL',()=>SYS.voterL===2),
-   st({en:'VOTER L — AUTO',no:'VOTER L — AUTO'},'voterL',()=>SYS.voterL===1),
-   st({en:'VOTER R — ECU A, then AUTO, ECU B, AUTO (shown: back to AUTO)',no:'VOTER R — ECU A, så AUTO, ECU B, AUTO (vises: tilbake til AUTO)'},'voterR',function(){ if(SYS.voterR===2) this.b=1; return this.b&&SYS.voterR===1; }),
-   st({en:'Elevator trim — T/O',no:'Høyderortrim — T/O'},'trim',()=>Math.abs(S.ctl.trim-0.05)<0.08),
-   chk({en:'Fuel selectors — ON (no take-off on crossfeed)',no:'Drivstoffvelgere — ON (ikke avgang på crossfeed)'},'fselL',()=>SYS.fselL===0&&SYS.fselR===0),
-   st({en:'Flaps — check function, set UP',no:'Flaps — sjekk funksjon, sett UP'},'flaps',function(){ if(S.ctl.flap>0) this.b=1; return this.b&&S.ctl.flap===0&&S.ctl.flapPos<0.05; }),
-   st({en:'Line-up: fuel pumps — both ON',no:'Oppstilling: drivstoffpumper — begge PÅ'},'pumpL',()=>SYS.pumpL&&SYS.pumpR),
-   st({en:'Landing light — ON',no:'Landingslys — PÅ'},'land',()=>SYS.land)]},
- {k:'efato',t:{en:'Engine failure after take-off',no:'Motorstans etter avgang'},set:'efato',brief:{en:'Climbing out with gear down and flaps APP. One engine will fail. Fly first: blue line, rudder, then identify, verify and secure.',no:'Stiger ut med understell nede og flaps APP. En motor vil stoppe. Fly først: blå linje, sideror, så identifiser, verifiser og sikre.'},
-  steps:[st({en:'Power levers — MAX',no:'Effekthendler — MAX'},'pwr',()=>S.eng.every(e=>e.thr>0.95)),
-   st({en:'Rudder — maintain direction · airspeed Vyse 85 KIAS',no:'Sideror — hold retningen · fart Vyse 85 KIAS'},'bzP',()=>S.o.ias>80),
-   st({en:'Landing gear — UP for positive climb',no:'Understell — OPP for positiv stigning'},'gear',()=>S.ctl.gear===0),
-   st({en:'Flaps — UP',no:'Flaps — UP'},'flaps',()=>S.ctl.flap===0),
-   st({en:'Identify and verify, then ENGINE MASTER (dead engine) — OFF',no:'Identifiser og verifiser, så ENGINE MASTER (død motor) — AV'},()=>deadI()?'engR':'engL',()=>!SYS[deadI()?'engR':'engL']),
-   st({en:'Alternator (dead engine) — OFF',no:'Generator (død motor) — AV'},()=>deadI()?'altR':'altL',()=>!SYS[deadI()?'altR':'altL']),
-   chk({en:'Fuel pump (dead engine) — check OFF',no:'Drivstoffpumpe (død motor) — sjekk AV'},()=>deadI()?'pumpR':'pumpL',()=>!SYS[deadI()?'pumpR':'pumpL']),
-   st({en:'Fuel selector (dead engine) — OFF',no:'Drivstoffvelger (død motor) — OFF'},()=>deadI()?'fselR':'fselL',()=>SYS[deadI()?'fselR':'fselL']===2)]},
- {k:'shut',t:{en:'After landing and shut-down',no:'Etter landing og avslutning'},set:'landed',brief:{en:'Clear of the runway. Clean up, park and shut down.',no:'Klar av rullebanen. Rydd opp, parker og slå av.'},
-  steps:[st({en:'Power levers — IDLE',no:'Effekthendler — IDLE'},'pwr',idle),
-   chk({en:'Alternate air — CLOSED',no:'Alternativ luft — LUKKET'},'altAir',()=>!SYS.altAir),
-   st({en:'Pitot heat — OFF',no:'Pitotvarme — AV'},'pitot',()=>!SYS.pitot),
-   st({en:'Flaps — UP',no:'Flaps — UP'},'flaps',()=>S.ctl.flap===0),
-   st({en:'Fuel pumps — OFF',no:'Drivstoffpumper — AV'},'pumpL',()=>!SYS.pumpL&&!SYS.pumpR),
-   st({en:'Landing and taxi lights — OFF',no:'Landings- og takselys — AV'},'land',()=>!SYS.land&&!SYS.taxi),
-   st({en:'Parking brake — SET',no:'Parkeringsbrems — PÅ'},'park',()=>SYS.park),
-   st({en:'AVIONIC MASTER — OFF',no:'AVIONIC MASTER — AV'},'avio',()=>!SYS.avio),
-   st({en:'ENGINE MASTERS — both OFF',no:'ENGINE MASTER — begge AV'},'engL',()=>!SYS.engL&&!SYS.engR),
-   st({en:'Strobe lights — OFF',no:'Antikollisjonslys — AV'},'strobe',()=>!SYS.strobe),
-   st({en:'Wait for the engine indications to drop, then ELECT. MASTER — OFF',no:'Vent til motorvisningene faller, så ELECT. MASTER — AV'},'elec',()=>!SYS.elec&&S.eng.every(e=>e.rpm<300))]}
-];
-const PR={k:null,i:0,done:[],t:0,dead:0};
+const PR={k:null,p:null,i:0,done:[],t:0,dead:0,failed:false,failT:null,fail:null,lib:false,alert:'',tab:'flows',q:'',big:false};
+/* failures simulated here, on top of the engine failure in fdm.js: fire (engine index), alternator, ECU A, gear pump, PFD */
+const FX={fire:-1,fireOut:0,alt:-1,ecuA:-1,gear:0,gearT:0,pfd:0,on:false};
+function fxReset(){ Object.assign(FX,{fire:-1,fireOut:0,alt:-1,ecuA:-1,gear:0,gearT:0,pfd:0,on:false}); }
+function fxApply(kind,i){ if(kind==='fire') FX.fire=i; else if(kind==='alt') FX.alt=i; else if(kind==='ecuA') FX.ecuA=i; else if(kind==='gear') FX.gear=1; else if(kind==='pfd') FX.pfd=1; else if(kind==='eng') S.eng[i].fail=true; FX.on=true; }
+function fxTick(dt){ if(!FX.on) return;
+  if(FX.fire>=0){ const s=FX.fire?'R':'L'; if(!SYS['eng'+s]&&SYS['fsel'+s]===2){ FX.fireOut+=dt; if(FX.fireOut>2){ FX.fire=-1; FX.fireOut=0; msg({en:'Fire warning out',no:'Brannvarselet har slukket'}); } } else FX.fireOut=0; }
+  if(FX.gear&&S.ctl.gear===1&&!SYS.gearEmer&&S.ctl.gearPos<0.99){ if(S.ctl.gearPos>0.45) S.ctl.gearPos=0.45; if(!S.ground) FX.gearT+=dt; } }
+const fxAlert=(kind,i)=>{ const s=i?'R':'L'; return kind==='fire'?s+' ENG FIRE':kind==='alt'?s+' ALTN FAIL':kind==='ecuA'?s+' ECU A FAIL':kind==='gear'?'GEAR UNSAFE':kind==='pfd'?'PFD FAILURE':'ENGINE FAILURE'; };
+const PC={S,SYS,o:S.o,AP,i:0,dt:0,cb:n=>cbIn(n),cbAll:()=>P.CBS.every((n,i)=>SYS.cb[i]!==0)};
+const pctx=()=>{ PC.o=S.o; PC.i=PR.dead; return PC; };
+const PROCS=DA42PROCS.build({ctx:pctx,side:()=>PR.dead}); DA42PROCS.css();
+try{ PR.big=localStorage.getItem('bb-da42-big')==='1'; }catch(e){}
+el('drawer').classList.toggle('big',PR.big);
 const deadI=()=>PR.dead;
+const curP=()=>PR.k?(PR.p&&PR.p.k===PR.k?PR.p:(PR.p=PROCS.find(x=>x.k===PR.k)||null)):null;
 function procSet(kind){
+  const run=()=>{ SYS.engL=SYS.engR=1; SYS.strobe=1; S.eng.forEach(e=>{ e.run=true; e.off=false; e.feather=false; e.rpm=710; e.oilP=2.5; }); };
   if(kind==='cold'||kind==='powered'||kind==='running'){
     F.place(S,{ground:true,N:-260,E:-120,hdg:90,thr:0,flap:0,gear:1}); S.Vg=0; S.u=0; F.readouts(S);
     sysDefault(true); S.eng.forEach(e=>{ e.coolT=e.oilT=kind==='running'?75:15; e.gbT=kind==='running'?60:15; });
     if(kind!=='cold'){ SYS.elec=1; SYS.boot=99; SYS.ack=1; }
-    if(kind==='running'){ SYS.engL=SYS.engR=1; SYS.strobe=1; S.eng.forEach(e=>{ e.run=true; e.off=false; e.feather=false; e.rpm=710; e.oilP=2.5; }); SYS.pitot=0; }
+    if(kind==='running'){ run(); SYS.pitot=0; }
+  } else if(kind==='runway'||kind==='rwyTO'){
+    F.place(S,{ground:true,N:20,E:0,hdg:360,thr:0,flap:0,gear:1}); S.Vg=0; S.u=0; F.readouts(S); sysDefault(false); SYS.park=0;
+    if(kind==='rwyTO'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; }
   } else if(kind==='efato'){
-    F.place(S,{N:900,E:0,alt:400,ias:88,hdg:360,gear:1,flap:1,thr:1,gam:4}); sysDefault(false); SYS.pumpL=SYS.pumpR=1; SYS.land=1; PR.dead=Math.random()<0.5?0:1; PR.failAt=3;
+    F.place(S,{N:900,E:0,alt:400,ias:88,hdg:360,gear:1,flap:1,thr:1,gam:4}); sysDefault(false); SYS.pumpL=SYS.pumpR=1; SYS.land=1;
+  } else if(kind==='airTO'){
+    F.place(S,{N:1900,E:0,alt:500,ias:92,hdg:360,gear:1,flap:0,thr:1,gam:5}); sysDefault(false); SYS.pumpL=SYS.pumpR=1; SYS.land=1;
+  } else if(kind==='climb'){
+    F.place(S,{N:6000,E:0,alt:2000,ias:95,hdg:360,gear:0,flap:0,thr:0.92,gam:4}); sysDefault(false);
+  } else if(kind==='cruise'){
+    F.place(S,{N:-30000,E:4000,alt:5000,ias:135,hdg:360,gear:0,flap:0}); sysDefault(false);
+  } else if(kind==='appr'){
+    F.place(S,{N:-17500,E:-3600,alt:2000,ias:120,hdg:30,gear:0,flap:0}); sysDefault(false);
+  } else if(kind==='final'){
+    F.place(S,{N:-8400,E:0,alt:1500,ias:105,hdg:360,gear:0,flap:1}); sysDefault(false); SYS.land=1;
+  } else if(kind==='short'){
+    F.place(S,{N:-1400,E:0,alt:300,ias:86,hdg:360,gear:1,flap:2}); sysDefault(false); SYS.pumpL=SYS.pumpR=1; SYS.land=1;
   } else if(kind==='landed'){
     F.place(S,{ground:true,N:1300,E:40,hdg:90,thr:0.05,flap:2,gear:1}); sysDefault(false); SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.taxi=1; SYS.pitot=1; SYS.park=0;
   }
-  Object.assign(AP,F.mkAP()); AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; AP.alt=3000; S.trail.length=0; lastO=null;
+  Object.assign(AP,F.mkAP()); AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; AP.alt=S.ground?3000:Math.max(3000,Math.round(F.readouts(S).alt/100)*100); S.trail.length=0; lastO=null;
 }
-function procStart(k){
-  const p=PROCS.find(x=>x.k===k); if(!p){ PR.k=null; renderProc(); hlCtl(null); return; }
-  if(UI.paused) togglePause(); if(S.crash) S.crash=null;
-  PR.k=k; PR.i=0; PR.done=p.steps.map(()=>0); PR.t=0; PR.bad=0; PR.failAt=0; p.steps.forEach(s=>delete s.b);
-  AF.off('reset',true); F.WORLD.gsOut=false; procSet(p.set); renderProc(); procFocus(); airUI(); if(DB) DB.start();
+function showProcTab(){ const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b&&!b.classList.contains('on')) b.click(); }
+/* o: {side, alert} for a checklist opened on the current flight (library or failure menu) */
+function procStart(k,o){
+  const p=PROCS.find(x=>x.k===k); if(!p){ PR.k=null; PR.p=null; renderProc(); hlCtl(null); return; }
+  if(UI.paused) togglePause();
+  PR.k=k; PR.p=p; PR.i=0; PR.done=p.steps.map(()=>0); PR.t=0; PR.bad=0; PR.failed=false; PR.failT=null; PR.fail=null; PR.alert=''; PR.lib=!!p.lib;
+  p.steps.forEach(s=>{ delete s.b; s.m={}; s.okT=0; });
+  if(p.lib){ /* emergency library: runs on the flight as it is, nothing is reset */
+    if(o&&o.side!=null) PR.dead=o.side; else { const d=S.eng.findIndex(e=>e.fail); PR.dead=d>=0?d:FX.fire>=0?FX.fire:FX.alt>=0?FX.alt:FX.ecuA>=0?FX.ecuA:PR.dead; }
+    PR.failed=true; PR.alert=(o&&o.alert)||''; renderProc(); procFocus(); return; }
+  if(S.crash) S.crash=null;
+  fxReset(); AF.off('reset',true); F.WORLD.gsOut=false; procSet(p.set);
+  if(p.kind==='scen'){ PR.dead=Math.random()<0.5?0:1; PR.fail=p.fail; if(p.fail.kind==='gear') fxApply('gear',0); }
+  renderProc(); procFocus(); airUI(); if(DB) DB.start();
 }
-const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
+function failDue(f){ if(f.at!=null) return PR.t>f.at; if(f.ias!=null) return S.o.ias>f.ias; if(f.onGear) return FX.gearT>8; return false; }
+function failNow(p){ const f=p.fail, i=PR.dead; PR.failed=true; PR.failT=PR.t; fxApply(f.kind,i); PR.alert=fxAlert(f.kind,i);
+  setDrawer(true); showProcTab(); beep(f.kind==='fire'?1000:700,0.5,0.06); renderProc(); procFocus(); }
+function procClose(){ const lib=PR.lib; PR.k=null; PR.p=null; PR.lib=false; hlCtl(null); pill(null);
+  if(!lib){ const sc=SCEN.find(x=>x.k==='free'); if(sc){ UI.scen='free'; missionState={m:{},t:0,done:sc.checks.map(()=>0)}; drawScen(); drawScenSel(); renderMission(); } }
+  renderProc(); airUI(); }
+const curStep=()=>{ const p=curP(); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
 function hlCtl(id){ P.svg.querySelectorAll('g.ctl.hl').forEach(g=>g.classList.remove('hl')); document.querySelectorAll('.gdu.hl').forEach(g=>g.classList.remove('hl'));
   if(!id) return; const c=id==='pwr'?'pwr':id; const o=P.byId[c]; if(o) o.g.classList.add('hl'); else if(el(id)) el(id).classList.add('hl'); }
-function procFocus(){ const s=curStep(); if(!s){ hlCtl(null); pill(null); return; } const id=ctlOf(s); hlCtl(id); pill(L(s.t));
-  if(el('follow').checked&&!Z.lock){ let k=null; if(id==='bzP') k='pfd'; else if(id==='bzM') k='mfd'; else { const o=P.byId[id]; if(o){ const b=o.g.getBBox(); k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); } } if(k&&k!==Z.reg) zoomTo(k); } }
+function procFocus(){ const s=curStep(), p=curP(); if(!s||(p&&p.kind==='scen'&&!PR.failed)){ hlCtl(null); pill(p&&p.kind==='scen'&&!PR.failed?L({en:'Fly the aircraft — a failure will come',no:'Fly flyet — en feil kommer'}):null); return; }
+  const id=ctlOf(s); hlCtl(id); pill((s.mem?'● ':'')+L(s.t));
+  if(id&&el('follow').checked&&!Z.lock){ let k=null; if(id==='bzP') k='pfd'; else if(id==='bzM') k='mfd'; else { const o=P.byId[id]; if(o){ const b=o.g.getBBox(); k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); } } if(k&&k!==Z.reg) zoomTo(k); } }
 let pillT=0;
 function pill(t,cls){ const p=el('pill'); if(!t){ p.className='pill'; return; } p.textContent=t; p.className='pill show '+(cls||''); if(cls){ pillT=1.4; } }
-function procTouch(k){ const s=curStep(); if(!s) return; const id=ctlOf(s); const base=x=>x.replace(/[LR]$/,'');
-  if(typeof s.ctl==='function'&&k!==id&&base(k)===base(id)){ pill(L({en:'Wrong engine! Identify — verify — then secure the dead one.',no:'Feil motor! Identifiser — verifiser — sikre så den døde.'}),'bad'); beep(160,0.3,0.06); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),1200); } return; }
-  if(k===id||base(k)===base(id)||k==='start'||k==='emerG'||k.endsWith('G')||k.endsWith('Done')) return;
-  const p=PROCS.find(x=>x.k===PR.k); const later=p.steps.slice(PR.i+1).some(x=>{ const c=ctlOf(x); return c===k||base(c)===base(k); });
-  if(later||CTL_NAME[k]){ pill(L({en:'Not yet — next: ',no:'Ikke ennå — neste: '})+L(s.t),'bad'); beep(220,0.12,0.05); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),900); } }
+function procTouch(k){ const s=curStep(), p=curP(); if(!s||!p||(p.kind==='scen'&&!PR.failed)) return; const id=ctlOf(s)||''; const base=x=>String(x).replace(/[LR]$/,'');
+  const sideIds=p.steps.slice(PR.i).filter(x=>typeof x.ctl==='function').map(ctlOf);
+  if(sideIds.length&&!sideIds.includes(k)&&sideIds.some(c=>base(c)===base(k))){ pill(L({en:'Wrong engine! Identify — verify — then secure the affected one.',no:'Feil motor! Identifiser — verifiser — sikre så den det gjelder.'}),'bad'); beep(160,0.3,0.06); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),1200); } return; }
+  if(id&&(k===id||base(k)===base(id))||k==='start'||k==='emerG'||k.endsWith('G')||k.endsWith('Done')) return;
+  const later=p.steps.slice(PR.i+1).some(x=>{ const c=ctlOf(x); return c&&(c===k||base(c)===base(k)); });
+  if(later||(p.kind==='flow'&&CTL_NAME[k])){ pill(L({en:'Not yet — next: ',no:'Ikke ennå — neste: '})+L(s.t),'bad'); beep(220,0.12,0.05); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),900); } }
 }
+function stepDone(v){ const p=curP(); if(!p||PR.i>=p.steps.length||(p.kind==='scen'&&!PR.failed)) return; PR.done[PR.i]=v; PR.i++; if(v===1) beep(880,0.07,0.05);
+  renderProc(); if(PR.i<p.steps.length){ procFocus(); if(v===1) pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } else procComplete(p); }
+function procComplete(p){ hlCtl(null); pill(L({en:'Checklist complete',no:'Sjekkliste fullført'}),'ok'); if(window.NPROG&&!p.lib) NPROG.award('flow:'+p.k,100); }
 function procTick(dt){
-  const p=PROCS.find(x=>x.k===PR.k); if(!p) return;
-  if(PR.failAt&&!S.eng.some(e=>e.fail)){ PR.t+=dt; if(PR.t>PR.failAt){ S.eng[PR.dead].fail=true; PR.failAt=0; } }
+  fxTick(dt);
+  const p=curP(); if(!p) return; PR.t+=dt; PC.dt=dt;
+  if(PR.fail&&!PR.failed){ if(failDue(PR.fail)) failNow(p); else return; }
   if(pillT>0){ pillT-=dt; if(pillT<=0) procFocus(); }
-  const s=p.steps[PR.i]; if(!s) return;
-  if(s.ok.call(s)){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.7){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length){ hlCtl(null); pill(L({en:'Checklist complete',no:'Sjekkliste fullført'}),'ok'); if(window.NPROG) NPROG.award('flow:'+p.k,100); } else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
+  const s=p.steps[PR.i]; if(!s||s.manual) return;
+  if(s.ok()){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.7){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length) procComplete(p); else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
   else s.okT=0;
 }
-function renderProc(){
-  const sel=el('procSel'); sel.innerHTML=`<option value="">${L({en:'Choose a procedure…',no:'Velg en prosedyre…'})}</option>`+PROCS.map(p=>`<option value="${p.k}"${p.k===PR.k?' selected':''}>${L(p.t)}</option>`).join('');
-  const p=PROCS.find(x=>x.k===PR.k);
-  if(!p){ el('proc').innerHTML=`<p class="brief">${L({en:'Pick a flow. The trainer sets the aircraft up, highlights the next control on the panel and ticks each item when you do it.',no:'Velg en flyt. Treneren klargjør flyet, markerer neste bryter på panelet og krysser av hvert punkt når du gjør det.'})}</p>`; return; }
-  const cur=p.steps[PR.i];
-  el('proc').innerHTML=`${cur?`<div class="next"><small>${L({en:'Next step',no:'Neste steg'})} ${PR.i+1}/${p.steps.length}</small><b>${L(cur.t)}</b><div class="row"><button id="pBack"${PR.i?'':' disabled'}>← ${L({en:'Back',no:'Tilbake'})}</button><button id="pSkip">${L({en:'Skip',no:'Hopp over'})} →</button></div></div>`:''}<p class="brief">${L(p.brief)}</p><ul class="checks">${p.steps.map((s,i)=>`<li class="${PR.done[i]===1?'ok':PR.done[i]===2?'skip':i===PR.i?'now':''}"><i>${PR.done[i]===1?'✓':PR.done[i]===2?'–':i+1}</i><span>${L(s.t)}${s.chk?`<small>${L({en:'check',no:'sjekk'})}</small>`:''}</span></li>`).join('')}</ul>
-   ${PR.i>=p.steps.length?`<div class="callout blue"><b>${L({en:'Checklist complete.',no:'Sjekklisten er fullført.'})}</b> ${L({en:'Try the next flow.',no:'Prøv neste flyt.'})}</div>`:''}
-   <div class="row"><button id="procRe">${L({en:'Restart flow',no:'Start flyten på nytt'})}</button><button id="procEnd">${L({en:'Free flight',no:'Fri flyging'})}</button></div>`;
-  if(el('pSkip')){ el('pSkip').onclick=()=>{ PR.done[PR.i]=2; PR.i++; renderProc(); if(PR.i<p.steps.length) procFocus(); else { hlCtl(null); pill(null); } }; el('pBack').onclick=()=>{ if(!PR.i) return; PR.i--; PR.done[PR.i]=0; delete p.steps[PR.i].b; renderProc(); procFocus(); }; }
-  el('procRe').onclick=()=>procStart(PR.k); el('procEnd').onclick=()=>{ PR.k=null; hlCtl(null); pill(null); resetMission(); renderProc(); };
-  const now=el('proc').querySelector('li.now'); if(now) now.scrollIntoView({block:'nearest'});
+function renderProc(){ const box=el('proc'), p=curP();
+  if(!p){ box.innerHTML=DA42PROCS.navHTML({tab:PR.tab,q:PR.q,big:PR.big,side:PR.dead},L); return; }
+  box.innerHTML=DA42PROCS.runHTML({p,i:PR.i,done:PR.done,side:PR.dead,failed:PR.failed||p.kind!=='scen',alertText:PR.alert,big:PR.big},L);
+  const now=box.querySelector('li.now'); if(now&&el('drawer').classList.contains('open')) now.scrollIntoView({block:'nearest'});
 }
-el('procSel').onchange=e=>procStart(e.target.value);
+el('proc').addEventListener('click',e=>{ const b=e.target.closest('button,li.now.man'); if(!b) return; const d=b.dataset;
+  if(d.pt){ PR.tab=d.pt; renderProc(); return; }
+  if(b.hasAttribute('data-pbig')){ PR.big=!PR.big; el('drawer').classList.toggle('big',PR.big); try{ localStorage.setItem('bb-da42-big',PR.big?'1':'0'); }catch(x){} renderProc(); setTimeout(()=>zoomTo(Z.reg,true,true),320); return; }
+  if(d.pk){ procStart(d.pk); return; }
+  if(d.pside!=null){ PR.dead=+d.pside; renderProc(); procFocus(); return; }
+  if(b.hasAttribute('data-pclose')){ procClose(); return; }
+  if(b.hasAttribute('data-pdone')||b.matches('li.now.man')){ stepDone(1); return; }
+  if(b.hasAttribute('data-pskip')){ stepDone(2); return; }
+  if(b.hasAttribute('data-pback')){ const p=curP(); if(!p||!PR.i) return; PR.i--; PR.done[PR.i]=0; const s=p.steps[PR.i]; delete s.b; s.m={}; renderProc(); procFocus(); return; }
+  if(b.hasAttribute('data-prestart')){ procStart(PR.k,PR.lib?{side:PR.dead,alert:PR.alert}:null); return; }
+  if(b.hasAttribute('data-pfree')){ PR.k=null; PR.p=null; hlCtl(null); pill(null); resetMission(); renderProc(); return; } });
+el('proc').addEventListener('input',e=>{ if(!e.target.matches('[data-psearch]')) return; PR.q=e.target.value; const pos=e.target.selectionStart; renderProc(); const s=el('proc').querySelector('[data-psearch]'); if(s){ s.focus(); try{ s.setSelectionRange(pos,pos); }catch(x){} } });
+/* failure menu (Failures and weather): trigger a failure and open its checklist */
+function failMenu(){ const box=el('sysFails'); if(!box) return; const air=()=>!S.ground;
+  box.innerHTML=DA42PROCS.FAILS.map(f=>f.side?[0,1].map(i=>`<button class="btn warn" data-fk="${f.kind}" data-fi="${i}">${L(f.t)} ${i?'R':'L'}</button>`).join(''):`<button class="btn warn" data-fk="${f.kind}" data-fi="0" style="grid-column:1/-1">${L(f.t)}</button>`).join('');
+  box.onclick=e=>{ const b=e.target.closest('button[data-fk]'); if(!b) return; const f=DA42PROCS.FAILS.find(x=>x.kind===b.dataset.fk), i=+b.dataset.fi;
+    fxApply(f.kind,i); const pk=typeof f.proc==='string'?f.proc:f.proc[air()?'air':'gnd']; procStart(pk,{side:i,alert:fxAlert(f.kind,i)}); setDrawer(true); showProcTab(); }; }
+failMenu(); LAB.onLang(failMenu);
 LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 /* drawer */
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
@@ -1057,7 +1057,7 @@ function draw(o,n){
     mapRange:XA.mapRange,mapMode:XA.mapMode,world:F.WORLD,crash:S.crash?L(crashText(S.crash)).toUpperCase():null,crashHint:L({en:'Press Restart to try again',no:'Trykk Start på nytt for å prøve igjen'})};
   d.avOff=!avOn(); if(d.avOff){ AP.on=false; }
   const bootP=SYS.boot<4, ackM=!SYS.ack;
-  if(!power()) { GLASS.blank(pfdS); } else if(bootP) GLASS.splash(pfdS,SYS.boot,null); else if(!SYS.elec&&SYS.emer) GLASS.pfd(pfdS,d); else GLASS.pfd(pfdS,d);
+  if(!power()||FX.pfd) { GLASS.blank(pfdS); } else if(bootP) GLASS.splash(pfdS,SYS.boot,null); else if(!SYS.elec&&SYS.emer) GLASS.pfd(pfdS,d); else GLASS.pfd(pfdS,d);
   if(++mfdTick%3===0||mfdForce){ mfdForce=false; if(!SYS.elec||!cbIn('MFD')) GLASS.blank(mfdS); else if(SYS.boot<4) GLASS.splash(mfdS,SYS.boot,null); else if(ackM) GLASS.splash(mfdS,9,L({en:'Databases loaded · press ENT to continue',no:'Databaser lastet · trykk ENT for å fortsette'})); else if(SYS.backup){ GLASS.pfd(mfdS,d); } else GLASS.mfd(mfdS,d); }
 }
 
@@ -1112,7 +1112,7 @@ function loop(t){
   const o=F.readouts(S); curNav=navCur(o); const n=curNav.cdi;
   if(lastO&&dt>0&&!UI.paused){ iasTrend+=(((o.ias-lastO.ias)/dt)-iasTrend)*Math.min(1,dt*1.5); const dh=F.wrap180(o.hdg-lastO.hdg)/dt; turnRate+=(dh-turnRate)*Math.min(1,dt*3); }
   lastO={ias:o.ias,hdg:o.hdg};
-  if(!UI.paused&&!S.crash&&!PR.k) updMission(dt,o,n);
+  if(!UI.paused&&!S.crash&&(!PR.k||PR.lib)) updMission(dt,o,n);
   if(cockpitVis){ panelT+=dt; if(panelT>(D3on?D3.panelDt(GOV.panelDt):GOV.panelDt)){ panelT=0; DA42P.sync(P,{get:ioGet}); DA42P.syncSticks(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); if(power()) DA42P.syncStby(P,o,XA.baroStd?1013:XA.baro); } }
   if(noteT>0){ noteT-=dt; if(noteT<=0) renderMission(); }
   hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, alerts(o).some(a=>a.t==='GEAR UP')&&!UI.paused);
@@ -1150,7 +1150,7 @@ function slowUI(o){
 const Q=[
  {q:{en:'The magenta line growing up from the speed readout means…',no:'Den magenta streken som vokser opp fra fartsavlesningen betyr…'},a:[{en:'the speed you will have in about 6 seconds',no:'farten du vil ha om rundt 6 sekunder'},{en:'the selected speed',no:'valgt fart'},{en:'the maximum flap speed',no:'maksimal flapsfart'}],c:0,e:{en:'Trend vectors show where the value will be in 6 seconds if nothing changes.',no:'Trendvektorer viser hvor verdien er om 6 sekunder hvis ingenting endres.'}},
  {q:{en:'An autopilot mode shown in white (for example GS) is…',no:'En autopilotmode vist i hvitt (for eksempel GS) er…'},a:[{en:'armed: it will engage when its condition is met',no:'armert: den kobles inn når betingelsen er oppfylt'},{en:'active and flying the aircraft',no:'aktiv og flyr flyet'},{en:'failed',no:'feilet'}],c:0,e:{en:'Green is active, white is armed and waiting.',no:'Grønn er aktiv, hvit er armert og venter.'}},
- {q:{en:'The red line on the DA42 speed tape at 76 KIAS is…',no:'Den røde streken på fartstapen til DA42 ved 76 KIAS er…'},a:[{en:'Vmca, minimum control speed in the air with one engine inoperative',no:'Vmc, minste kontrollerbare fart med én motor ute'},{en:'the stall speed',no:'stallfarten'},{en:'Vne',no:'Vne'}],c:0,e:{en:'Below Vmca, full rudder can no longer hold the heading against the live engine.',no:'Under Vmca kan ikke fullt sideror lenger holde kursen mot den levende motoren.'}},
+ {q:{en:'The red line on the DA42 speed tape at 71 KIAS is…',no:'Den røde streken på fartstapen til DA42 ved 71 KIAS er…'},a:[{en:'Vmca, minimum control speed in the air with one engine inoperative',no:'Vmc, minste kontrollerbare fart med én motor ute'},{en:'the stall speed',no:'stallfarten'},{en:'Vne',no:'Vne'}],c:0,e:{en:'Below Vmca, full rudder can no longer hold the heading against the live engine.',no:'Under Vmca kan ikke fullt sideror lenger holde kursen mot den levende motoren.'}},
  {q:{en:'After an engine failure you need right rudder to fly straight. Which engine failed?',no:'Etter en motorstans trenger du høyre sideror for å fly rett. Hvilken motor stoppet?'},a:[{en:'Left',no:'Venstre'},{en:'Right',no:'Høyre'},{en:'You cannot tell from the rudder',no:'Det kan du ikke se på sideroret'}],c:0,e:{en:'Dead foot, dead engine: the left foot is idle, so the left engine failed.',no:'«Dead foot, dead engine»: venstre fot gjør ingenting, så venstre motor har stoppet.'}},
  {q:{en:'Why feather the propeller of a failed engine?',no:'Hvorfor fløyer man propellen på en motor som har stoppet?'},a:[{en:'A windmilling propeller causes a lot of drag and yaw',no:'En propell som vindmøller gir mye motstand og giring'},{en:'To restart the engine',no:'For å starte motoren igjen'},{en:'To charge the battery',no:'For å lade batteriet'}],c:0,e:{en:'Feathering turns the blades edge-on to the airflow. Drag falls, Vmc falls and the one-engine climb improves.',no:'Fløying vrir bladene på kant mot luften. Motstanden faller, Vmc faller og stigningen på én motor blir bedre.'}},
  {q:{en:'The CDI needle on the HSI is green. The navigation source is…',no:'CDI-nålen på HSI-en er grønn. Navigasjonskilden er…'},a:[{en:'VOR or localizer',no:'VOR eller localizer'},{en:'GPS',no:'GPS'},{en:'The heading bug',no:'Kursmerket'}],c:0,e:{en:'Green for VOR or LOC, magenta for GPS.',no:'Grønn for VOR eller LOC, magenta for GPS.'}},
@@ -1165,17 +1165,17 @@ if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scr
   AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,type:'DA42',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=mis]'); if(b) b.click(); }}); LAB.onLang(airUI);
   /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
   if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'DA42',page:'da42-3d',S,F,AF,after:AIRUI.btn,ap:()=>AP.on,
-    eng:()=>{ let d=0, s=0; S.eng.forEach((e,i)=>{ if(e.fail||(!e.run&&!S.ground)) d|=1<<i; if(e.feather) s|=1<<i; }); return [d,s,NaN,NaN]; },
-    scen:()=>{ if(PR.k){ const p=PROCS.find(x=>x.k===PR.k); return p&&{k:p.k,name:p.t,air:false,steps:p.steps,done:PR.done,bad:PR.bad||0}; }
+    eng:()=>{ let d=0, s=0; S.eng.forEach((e,i)=>{ if(e.fail||FX.fire===i||(!e.run&&!S.ground)) d|=1<<i; if(e.feather) s|=1<<i; }); return [d,s,NaN,NaN]; },
+    scen:()=>{ if(PR.k&&!PR.lib){ const p=curP(); return p&&{k:p.k,name:p.title||p.t,air:false,steps:p.steps,done:PR.done,bad:PR.bad||0,failed:p.kind==='scen'?PR.failed:null}; }
       const sc=SCEN.find(x=>x.k===UI.scen); if(!sc) return null; const air=sc.k==='air'; return {k:air?AIRK:sc.k,name:air?AIRPROC.NAMES[AIRK]:sc.t,air,steps:sc.checks,done:missionState?missionState.done:[],bad:0}; },
-    again:()=>{ const a=DB.last&&DB.last.afUsed; if(PR.k) procStart(PR.k); else { resetMission(); if(a&&UI.scen==='air'&&!AF.on) toggleAuto(); } },
-    next:()=>{ if(PR.k){ const i=PROCS.findIndex(x=>x.k===PR.k); procStart(PROCS[(i+1)%PROCS.length].k); }
+    again:()=>{ const a=DB.last&&DB.last.afUsed; if(PR.k&&!PR.lib) procStart(PR.k); else { resetMission(); if(a&&UI.scen==='air'&&!AF.on) toggleAuto(); } },
+    next:()=>{ if(PR.k&&!PR.lib){ const p=curP(), L2=PROCS.filter(x=>x.kind===p.kind), i=L2.findIndex(x=>x.k===PR.k); procStart(L2[(i+1)%L2.length].k); }
       else if(UI.scen==='air'){ const L=AIRPROC.list('DA42',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); }
       else { const L=SCEN.filter(x=>x.k!=='air'&&x.k!=='free'); const i=L.findIndex(x=>x.k===UI.scen); UI.scen=L[(i+1)%L.length].k; resetMission(); drawScen(); drawScenSel(); } }});
   if(qp&&AIRPROC.list('DA42',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
   if(q0&&SCEN.some(x=>x.k===q0)) UI.scen=q0; else if(qp==='free') UI.scen='free';
   drawScen(); drawScenSel(); resetMission();
-  if(q0&&PROCS.some(x=>x.k===q0)) procStart(q0);
+  { const qk=q0==='efato'&&!SCEN.some(x=>x.k==='efato')?'s_efato':q0; if(qk&&!SCEN.some(x=>x.k===qk)&&PROCS.some(x=>x.k===qk)) procStart(qk); }
   if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(UI.scen==='air'&&!PR.k) AIRUI.showNow(AIRK); } // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
 requestAnimationFrame(loop);

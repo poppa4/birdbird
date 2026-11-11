@@ -19,11 +19,11 @@ const AC={
   CD0:0.026, k:0.038, gearCD:0.016,
   Cm0:0.046, Cma:-1.0, Cmq:-14, CmE:0.36, CmT:0.17,
   Clb:-0.07, Clp:-0.50, Clr:0.10, ClA:0.052, ClR:0.006,
-  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.030, CYb:-0.62, CYR:0.075, // CnR: Vmca 76 KIAS (5° bank, windmilling), tests/calib.test.mjs
+  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.034, CYb:-0.62, CYR:0.075, // CnR: Vmca 71 KIAS flaps UP (AFM DA42 NG with MÄM 42-678; 5° bank, windmilling), tests/calib.test.mjs
   Pmax:125000, Tstatic:2450, Aprop:Math.PI*0.95*0.95, yEng:2.55,
   xMain:0.16, wheelbase:1.9,
   fuelCap:25, // US gal per side (brukbart, omtrent)
-  V:{ s0:62, s1:66, fe1:133, fe2:113, no:151, ne:188, mc:76, yse:85, r:80, y:90, le:188, lo:152 } // DA42 NG, KIAS
+  V:{ s0:64, s1:72, fe1:133, fe2:113, no:151, ne:188, mc:71, yse:85, r:76, y:90, le:188, lo:152, loe:188 } // DA42 NG / DA42-VI (MÄM 42-678 airspeed markings), AFM 2.2 / 2.3 / 4A.2, KIAS
 };
 
 /* andre flytyper på samme modell. Siden kopierer typen inn i AC (FDM.useType) før create(); DA42 er standard. */

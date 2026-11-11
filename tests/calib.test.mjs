@@ -3,7 +3,7 @@
 // read from b200-app.js so the test follows the page. Reference figures are public POH/AFM values; tolerances are
 // teaching-grade, not certification-grade:
 //   C172 (172P-like):   stall 51 / 46 KCAS (flaps 0 / 30) and climb about 700 ft/min at 2,400 lb, sea level ISA, Vy 76 KIAS
-//   DA42 NG:            Vmca 76 KIAS (5° bank into the live engine, take-off power, critical engine windmilling)
+//   DA42 NG (MÄM 42-678 / DA42-VI): Vmca 71 KIAS flaps UP (5° bank into the live engine, take-off power, critical engine windmilling)
 //   King Air B200:      Vmca 86 KIAS (same conditions)
 // plus turbulence: the 0–100 % slider gives light to moderate turbulence, independent of the step size.
 import fs from 'node:fs'; import vm from 'node:vm'; import path from 'node:path'; import {fileURLToPath} from 'node:url';
@@ -92,11 +92,11 @@ within('B200 stall, flaps DOWN (model 72; published about 75 KIAS)',stallSpeed('
 
 /* ---------- Vmca ---------- */
 within('B200 Vmca, 5° bank, windmilling (published 86 KIAS)',vmca('B200'),86,3);
-within('DA42 Vmca, 5° bank, windmilling (AFM 76 KIAS)',vmca('DA42'),76,3);
+within('DA42 Vmca, 5° bank, windmilling (AFM 71 KIAS flaps UP)',vmca('DA42'),71,3);
 ok('B200: bank into the live engine lowers Vmca (wings level is higher)',vmca('B200',{bank:0})>vmca('B200')+5);
 ok('B200: a feathered propeller lowers Vmca a little',vmca('B200',{feather:true})<vmca('B200'));
 { const r=vmcaFlown('B200',{v0:115,flap:1}); ok(`B200 flown Vmca (flaps APPROACH, 1 kt/s): rudder runs out or the wing stalls at ${r.v.toFixed(1)} KIAS${r.stall?' (stall first)':''}, at or below 89`,r.v<=89&&r.v>=70); }
-{ const r=vmcaFlown('DA42',{v0:100}); ok(`DA42 flown Vmca: ${r.v.toFixed(1)} KIAS${r.stall?' (stall first)':''}, 70–79`,r.v>=70&&r.v<=79); }
+{ const r=vmcaFlown('DA42',{v0:100}); ok(`DA42 flown Vmca: ${r.v.toFixed(1)} KIAS${r.stall?' (stall first)':''}, 65–74`,r.v>=65&&r.v<=74); }
 /* the sign of the rudder side force: with 3° of bank towards the live engine the sideslip is close to zero (real twins: 2–5°) */
 { const r=fly('B200',{ias:121,T:40,thr:1,fail:[1,0],feather:true,bank:3,hdg:true}); between('B200 OEI at blue line, 3° bank: sideslip near zero (°)',r.beta,-2.5,2.5); }
 

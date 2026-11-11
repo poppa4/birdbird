@@ -182,7 +182,7 @@ ${plate(784,226,72,400,8,'sub2')}
 <!-- switch row -->
 ${plate(240,650,580,104,8)}${lab(440,664,'ENGINE MASTER',{s:6.5,c:'gp'})}<path d="M372 667h30M478 667h30" class="grpl"/>
 ${plate(838,650,540,104,8)}
-<g class="placard">${plate(950,664,250,74,4,'plc')}${lab(1075,678,'OPERATING LIMITS (KIAS)',{s:6.3})}${lab(960,694,'VMCA 76 · VYSE 85 · VNE 188',{s:6.3,a:'start'})}${lab(960,708,'VFE APP 133 · VFE LDG 113',{s:6.3,a:'start'})}${lab(960,722,'VLO 152 · VLE 188',{s:6.3,a:'start'})}${lab(1290,700,'TRAINING USE ONLY',{s:6.5})}${lab(1290,714,'Follow the AFM and your SOP',{s:5.6})}</g>
+<g class="placard">${plate(950,664,250,74,4,'plc')}${lab(1075,678,'OPERATING LIMITS (KIAS)',{s:6.3})}${lab(960,694,'VMCA 71 · VYSE 85 · VNE 188',{s:6.3,a:'start'})}${lab(960,708,'VFE APP 133 · VFE LDG 113',{s:6.3,a:'start'})}${lab(960,722,'VLO EXT 188 / RET 152 · VLE 188',{s:6.3,a:'start'})}${lab(1290,700,'TRAINING USE ONLY',{s:6.5})}${lab(1290,714,'Follow the AFM and your SOP',{s:5.6})}</g>
 <!-- centre console -->
 <path d="M590 765H1010L1040 980H560Z" fill="url(#gCons)" stroke="#000" stroke-opacity=".6"/>
 <path d="M600 772H1000" stroke="#fff" stroke-opacity=".06"/>
@@ -356,5 +356,5 @@ function syncStby(P,o,baro){
 }
 /* paint layers (panellayers.js): the standby instruments and the continuously driven controls get their own small SVGs */
 const LAYERS={dyn:'g.dynu,g.gauge,.an',hot:c=>['power','vwheel','hwheel','stick','slide'].includes(c.t)||['apDisc','trimUp','trimDn'].includes(c.id)};
-G.DA42P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncStby,syncSticks,REG,REG_ORDER,W,H};
+G.DA42P={SKY,LIP,fineWheel,ctrlWheel,ctlFrom:(P,t)=>ctlFromBy(P.byId,t),build:(s,io)=>{ const P=build(s,io); if(G.PANEL_LAYERS) G.PANEL_LAYERS.lift(P,LAYERS); return P; },sync,syncStby,syncSticks,REG,REG_ORDER,W,H,CTLS:C};
 })(window);
