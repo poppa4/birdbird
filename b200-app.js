@@ -327,8 +327,11 @@ let otwOn=true, otwReady=false, otwSkip=0;
 /* Frame-budget governor shared by the panel and the outside view. Level 0: panel at 30 Hz, outside view every frame at up to 1.5
    device pixels per CSS pixel. Level 1 (frames over 24 ms, as before): panel 20 Hz, outside view every 2nd frame at 1 pixel.
    Level 2 (frames over 45 ms): panel 15 Hz, outside view every 3rd frame at 0.75 pixel. Hysteresis and a 2 s dwell avoid hunting. */
-const GOV={lvl:0,ft:16,t:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; if(this.t<2) return;
-  const up=this.lvl<2&&this.ft>(this.lvl?45:24), dn=this.lvl>0&&this.ft<(this.lvl>1?32:19); if(up||dn){ this.lvl+=up?1:-1; this.t=0; } },
+const GOV={lvl:(()=>{ try{ const v=+localStorage.getItem('bb-simgov'); return v>=0&&v<=2?v:0; }catch(e){ return 0; } })(),ft:16,t:0,fails:[0,0,0],lastDn:-99,clock:0,tick(dt){ this.ft+=((dt*1000||16)-this.ft)*0.05; this.t+=dt; this.clock+=dt; if(this.t<2) return;
+  /* step down in quality quickly; step back up only with clear headroom and after a dwell that doubles every time a level failed (no hunting) */
+  const up=this.lvl<2&&this.ft>(this.lvl?45:24), target=this.lvl-1, wait=Math.min(120,8*2**(target>=0?this.fails[target]:0)), dn=this.lvl>0&&this.t>wait&&this.ft<(this.lvl>1?28:14);
+  if(up){ if(this.clock-this.lastDn<12) this.fails[this.lvl]++; this.lvl++; this.t=0; try{ localStorage.setItem('bb-simgov',String(this.lvl)); }catch(e){} }
+  else if(dn){ this.lvl--; this.t=0; this.lastDn=this.clock; try{ localStorage.setItem('bb-simgov',String(this.lvl)); }catch(e){} } },
   get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
 window.SIMGOV=GOV; // read by the ?perf=1 meter (otw.js)
 function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
