@@ -4,6 +4,8 @@
                          Flight Intelligence uses, so a document added in either place shows in both.
    Synced to the account aircraft, the document index (name, category, links, tags), pack marks -> namespace 'workspace';
                          notes with their version history -> namespace 'notes'. Document files are never uploaded.
+   The desk             desk.js draws the default view (#/): panes with tabs, saved as 'desk' items (positions only) in the
+                         'workspace' namespace. The list views below are the Library (#/library, #/documents …).
    Phase 2 hook          WS.noteFormats: a note has fmt ('text' today). A pen notebook registers fmt 'ink' with
                          { label, open(note, host, save) } and gets the same autosave, versions, links, sync and trash. */
 (function () {
@@ -19,11 +21,13 @@
   function ago(ts) { if (!ts) return '–'; const s = (Date.now() - ts) / 1000; if (s < 50) return t('just now', 'nå nettopp'); if (s < 3300) { const m = Math.max(1, Math.round(s / 60)); return t(m + ' min ago', m + ' min siden'); } if (s < 86400) { const h = Math.round(s / 3600); return t(h + ' h ago', h + ' t siden'); } if (s < 7 * 86400) { const d = Math.round(s / 86400); return t(d + (d === 1 ? ' day ago' : ' days ago'), d + (d === 1 ? ' dag siden' : ' dager siden')); } return day(ts); }
   const plural = (n, en1, enN, no1, noN) => n + ' ' + t(n === 1 ? en1 : enN, n === 1 ? no1 : noN);
   const main = el('wsMain');
+  /* the desk is the default view: decide before the first paint so the Library header does not flash */
+  document.documentElement.classList.toggle('ws-deskmode', /^#?\/?(desk)?(\?|$)/.test(location.hash));
 
   /* ---------- names ---------- */
   const CAT = { afm: ['AFM / POH', 'AFM / POH'], sop: ['SOP', 'SOP'], chk: ['Checklists', 'Sjekklister'], company: ['Company manuals', 'Selskapsmanualer'], charts: ['Charts', 'Kart'], other: ['Other', 'Annet'] };
   const catName = c => t.apply(null, CAT[c] || CAT.other);
-  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'] };
+  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'] };
   const kindName = k => t.apply(null, KIND[k] || ['', '']);
   const acName = a => a ? ([a.type || W.typeOf(a.typeKey).name, a.reg].filter(Boolean).join(' · ') || t('Aircraft', 'Fly')) : '';
   const noteTitle = n => (n.title || '').trim() || t('Untitled note', 'Notat uten tittel');
@@ -75,7 +79,7 @@
     list.forEach(it => { S.items[it.id] = it; });
     S.index = null;
     const p = persist(ST.putItems(list));
-    if (!opts || !opts.local) scheduleSync();
+    if (!opts || !opts.local) scheduleSync(opts && opts.wait);
     return p;
   }
   const item = id => S.items[id];
@@ -178,8 +182,10 @@
     }
     adding = false; if (prog) prog.hidden = true;
     await storageInfo(); render();
+    const onDesk = deskMode() && window.WSDESK;
+    if (onDesk && lastId && !opts.replaceId) window.WSDESK.openItem('doc', lastId);
     if (failed.length) toast(failed.join(' · '));
-    else if (done.length) toast(t('Saved on this device: ', 'Lagret på denne enheten: ') + done.join(', '), done.length === 1 && lastId && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
+    else if (done.length) toast(t('Saved on this device: ', 'Lagret på denne enheten: ') + done.join(', '), done.length === 1 && lastId && !onDesk && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
   }
   function pickFiles(opts) { const inp = el('wsFile'); inp.multiple = !(opts && opts.replaceId); inp.onchange = () => { const fs = [...inp.files]; inp.value = ''; addFiles(fs, opts); }; inp.click(); }
 
@@ -279,9 +285,9 @@
   function route() { const h = location.hash.replace(/^#\/?/, ''); const i = h.indexOf('?'); const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)); return { path, q: new URLSearchParams(i < 0 ? '' : h.slice(i + 1)) }; }
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
-  const RAIL = () => [['', t('Overview', 'Oversikt'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  const RAIL = () => [['', t('Desk', 'Arbeidsflate'), null], ['library', t('Overview', 'Oversikt'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   function drawRail() {
-    const cur = route().path.split('/')[0];
+    const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
     const rl = el('wsRail'), on = rl.querySelector('.on'); if (on && rl.scrollWidth > rl.clientWidth) { const l = on.offsetLeft - rl.offsetLeft, r = l + on.offsetWidth; if (l < rl.scrollLeft || r > rl.scrollLeft + rl.clientWidth) rl.scrollLeft = Math.max(0, l - 24); }
   }
@@ -298,6 +304,18 @@
     else if (M.sync.full) acc = `<span class="st"><i class="kept warn"></i>${t('Synced, but your account space for notes is full.', 'Synkronisert, men kontoplassen for notater er full.')}</span><a href="#/storage">${t('See what stays on this device', 'Se hva som blir på denne enheten')}</a>`;
     else acc = `<span class="st"><i class="kept acc"></i>${M.sync.last ? t('Synced to your account ', 'Synkronisert med kontoen din ') + ago(M.sync.last) : t('Signed in. Sync starts in a moment.', 'Logget inn. Synkroniseringen starter straks.')}</span>`;
     b.innerHTML = dev + acc + `<span class="sp"></span><a href="#/storage">${t('Where things are kept', 'Hvor ting er lagret')}</a>`;
+    if (window.WSDESK) window.WSDESK.status();
+  }
+  /* one short line for the desk bar: { c: dot class, s: text, title } */
+  function statusShort() {
+    const u = user();
+    if (saveErr) return { c: 'warn', s: t('Not saved', 'Ikke lagret'), title: t('Could not save on this device. Export a backup now.', 'Kunne ikke lagre på denne enheten. Eksporter en sikkerhetskopi nå.') };
+    if (pending) return { c: 'dev', s: t('Saving…', 'Lagrer …'), title: '' };
+    if (!u) return { c: 'dev', s: t('Saved on this device', 'Lagret på denne enheten'), title: t('Not signed in. Kept on this device only.', 'Ikke logget inn. Lagres bare på denne enheten.') };
+    if (SY.state === 'syncing') return { c: 'wait', s: t('Syncing…', 'Synkroniserer …'), title: '' };
+    if (SY.state === 'offline') return { c: 'warn', s: t('Offline, saved here', 'Frakoblet, lagret her'), title: t('Changes sync when you are back online.', 'Endringer synkroniseres når du er på nett igjen.') };
+    if (SY.state === 'error' || SY.state === 'paused') return { c: 'warn', s: t('Saved here, not synced', 'Lagret her, ikke synkronisert'), title: '' };
+    return { c: 'acc', s: M.sync.last ? t('Synced', 'Synkronisert') : t('Saved', 'Lagret'), title: M.sync.last ? t('Synced to your account ', 'Synkronisert med kontoen din ') + ago(M.sync.last) : '' };
   }
   el('wsStatus').addEventListener('click', e => { if (e.target.closest('[data-act="sync"]')) syncNow(true); });
 
@@ -671,10 +689,10 @@
     main.innerHTML = `<div class="ws-h"><h2>${t('Routes', 'Ruter')}</h2><div class="acts"><a class="btn pri" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a></div><p>${t('Routes you have drawn and saved in Route Explorer.', 'Ruter du har tegnet og lagret i Route Explorer.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(routeRow).join('')}</ul>` : empty(t('<b>No saved routes yet.</b> Draw a route in Route Explorer and it is saved here automatically.', '<b>Ingen lagrede ruter ennå.</b> Tegn en rute i Route Explorer, så lagres den her automatisk.'))}`;
   }
-  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.id;
+  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.id;
   function viewTrash() {
     const l = W.trashed(S.items).filter(x => x.kind !== 'pack');
-    main.innerHTML = `<div class="ws-h"><h2>${t('Trash', 'Papirkurv')}</h2>${l.length ? `<div class="acts"><button type="button" class="btn danger" data-act="trash-empty">${t('Empty the trash', 'Tøm papirkurven')}</button></div>` : ''}<p>${t('Deleted aircraft, documents and notes stay here for 30 days and can be restored with everything they had. After that they are removed for good.', 'Slettede fly, dokumenter og notater blir liggende her i 30 dager og kan gjenopprettes med alt de hadde. Etter det fjernes de for godt.')}</p></div>
+    main.innerHTML = `<div class="ws-h"><h2>${t('Trash', 'Papirkurv')}</h2>${l.length ? `<div class="acts"><button type="button" class="btn danger" data-act="trash-empty">${t('Empty the trash', 'Tøm papirkurven')}</button></div>` : ''}<p>${t('Deleted aircraft, documents, notes and desks stay here for 30 days and can be restored with everything they had. After that they are removed for good.', 'Slettede fly, dokumenter, notater og arbeidsflater blir liggende her i 30 dager og kan gjenopprettes med alt de hadde. Etter det fjernes de for godt.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(it => { const d = W.trashDaysLeft(it); return `<li><div class="t"><span class="n">${esc(itemName(it))}</span><small>${esc(kindName(it.kind))} · ${t('deleted ', 'slettet ')}${esc(ago(it.deletedAt))} · ${d <= 1 ? t('removed for good tomorrow', 'fjernes for godt i morgen') : t(`removed for good in ${d} days`, `fjernes for godt om ${d} dager`)}</small></div><div class="r"><button type="button" class="btn sm" data-act="restore" data-id="${esc(it.id)}">${t('Restore', 'Gjenopprett')}</button><button type="button" class="lk danger" data-act="purge" data-id="${esc(it.id)}">${t('Delete for good', 'Slett for godt')}</button></div></li>`; }).join('')}</ul>` : empty(t('The trash is empty.', 'Papirkurven er tom.'))}`;
   }
   function viewStorage() {
@@ -723,9 +741,14 @@
   function viewMissing(back) { main.innerHTML = `<div class="ws-h"><h2>${t('This item is not here any more', 'Dette elementet finnes ikke her lenger')}</h2><p>${t('It may have been moved to the trash, on this device or another one.', 'Det kan ha blitt flyttet til papirkurven, på denne enheten eller en annen.')}</p></div><div class="chips"><a class="btn" href="#/${back}">${t('Back', 'Tilbake')}</a><a class="btn" href="#/trash">${t('Open the trash', 'Åpne papirkurven')}</a></div>`; }
 
   let lastPath = null;
+  const deskMode = () => { const p = route().path.split('/')[0]; return p === '' || p === 'desk'; };
   function render() {
     if (!S.ready) return;
     const r = route(), p = r.path.split('/'), same = lastPath === r.path;
+    const desk = window.WSDESK && deskMode();
+    document.documentElement.classList.toggle('ws-deskmode', !!desk);
+    if (desk) { closeViewer(); window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path; return; }
+    if (window.WSDESK) window.WSDESK.hide();
     if (!/^documents\/./.test(r.path)) closeViewer();
     const y = same ? window.scrollY : null;
     if (p[0] === 'search') viewSearch(r.q.get('q') || '');
@@ -737,6 +760,7 @@
     else if (p[0] === 'trash') viewTrash();
     else if (p[0] === 'storage') viewStorage();
     else viewHome();
+    deskLinks();
     drawRail(); drawStatus();
     if (p[0] !== 'search' && el('wsQ').value && document.activeElement !== el('wsQ')) el('wsQ').value = '';
     if (!same) { if (lastPath !== null && p[0] !== 'search') { const top = el('wsRail').getBoundingClientRect().top + window.scrollY - 8; if (window.scrollY > top) window.scrollTo(0, top); } }
@@ -749,7 +773,7 @@
     const it = item(id); if (!W.isLive(it)) return;
     await commit(W.trash(it)); if (it.kind === 'doc') await trashFile(id);
     const back = it.kind === 'aircraft' ? 'aircraft' : it.kind === 'doc' ? 'documents' : 'notes';
-    if (route().path.includes('/')) go(back); else render();
+    if (route().path.includes('/') && !deskMode()) go(back); else render();
     toast(t('Moved to the trash: ', 'Flyttet til papirkurven: ') + itemName(it), [t('Undo', 'Angre'), () => doRestore(id)]);
   }
   async function doRestore(id) { const it = item(id); if (!W.inTrash(it)) return; await commit(W.restore(it)); if (it.kind === 'doc') await untrashFile(id); render(); toast(t('Restored: ', 'Gjenopprettet: ') + itemName(it)); }
@@ -837,7 +861,8 @@
     else if (act === 'persist') { await askPersist(); await storageInfo(); render(); if (S.est.persisted !== true) toast(t('The browser did not agree this time. It decides this itself, often after you have used the site for a while or added it to the Home Screen.', 'Nettleseren sa ikke ja denne gangen. Den avgjør dette selv, ofte etter at du har brukt nettstedet en stund eller lagt det til på Hjem-skjermen.')); }
     else if (act === 'sync') syncNow(true);
     else if (act === 'wipe') wipeAll();
-    else if (act === 'search-clear') { el('wsQ').value = ''; go(beforeSearch || ''); }
+    else if (act === 'search-clear') { el('wsQ').value = ''; go(beforeSearch || 'library'); }
+    else if (act === 'desk-open' && window.WSDESK) { e.preventDefault(); window.WSDESK.openItem(b.dataset.k, id); go(''); }
   });
 
   /* search box */
@@ -849,7 +874,7 @@
     else if (r.path === 'search') { history.replaceState(null, '', '#/' + beforeSearch); render(); }
   }, 140); });
   el('wsSearchForm').addEventListener('submit', e => { e.preventDefault(); const f = main.querySelector('.ws-res a.n'); if (f) f.focus(); });
-  document.addEventListener('keydown', e => { if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) { const a = document.activeElement; if (a && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName))) { if (a.isContentEditable) e.stopPropagation(); return; } e.preventDefault(); e.stopPropagation(); qIn.focus(); qIn.select(); } }, true);
+  document.addEventListener('keydown', e => { if (deskMode()) return; if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) { const a = document.activeElement; if (a && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName))) { if (a.isContentEditable) e.stopPropagation(); return; } e.preventDefault(); e.stopPropagation(); qIn.focus(); qIn.select(); } }, true);
 
   /* ---------- language ---------- */
   function drawChrome() {
@@ -883,6 +908,19 @@
   window.addEventListener('storage', e => { if (e.key && /^naeroson-store-/.test(e.key)) loadStores().then(() => { drawRail(); }); });
   setInterval(() => { if (S.ready && document.visibilityState === 'visible') drawStatus(); }, 30000);
 
+  /* item pages in the Library get an "Open on the desk" button */
+  function deskLinks() {
+    const r = route().path.split('/'); if (!r[1] || !window.WSDESK) return;
+    const k = { aircraft: 'aircraft', documents: 'doc', notes: 'note' }[r[0]], it = item(r[1]); if (!k || !W.isLive(it)) return;
+    const back = main.querySelector('.ws-back'); if (!back || main.querySelector('.ws-deskopen')) return;
+    back.insertAdjacentHTML('afterend', `<a class="btn sm ws-deskopen" href="#/" data-act="desk-open" data-k="${k}" data-id="${esc(it.id)}">${t('Open on the desk', 'Åpne på arbeidsflaten')}</a>`);
+  }
+
   window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; } };
+  /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
+  window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
+    commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
+    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, get M() { return M; } };
+  if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

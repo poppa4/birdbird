@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My workspace · Birdbird</title>
-<meta name="description" content="Your own flight bag on Birdbird: aircraft, AFM and SOP documents, briefing packs, notes and saved routes in one place. Files stay on your device; the index, aircraft and notes sync to your account.">
+<meta name="description" content="Your own flight desk on Birdbird: open the AFM, a checklist and a note side by side, with your aircraft, briefing packs and saved routes one click away. Files stay on your device; the index, aircraft and notes sync to your account.">
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=13">
-<link rel="stylesheet" href="workspace.css?v=1">
+<link rel="stylesheet" href="workspace.css?v=2">
+<link rel="stylesheet" href="desk.css?v=2">
 </head>
 <body data-title="My workspace">
 <script src="site.js?v=55"></script>
@@ -34,6 +35,7 @@
       <p class="ws-loading" id="wsLoading">Opening your workspace…</p>
     </main>
   </div>
+  <div class="desk" id="wsDesk" hidden></div>
   <noscript><p class="ws-loading">My workspace needs JavaScript: everything in it is stored in this browser.</p></noscript>
 </div>
 
@@ -44,7 +46,9 @@
 
 <script src="lab.js?v=46"></script>
 <script src="store.js?v=2"></script>
-<script src="workspacecore.js?v=1"></script>
-<script src="workspace.js?v=1"></script>
+<script src="workspacecore.js?v=2"></script>
+<script src="deskcore.js?v=1"></script>
+<script src="desk.js?v=3"></script>
+<script src="workspace.js?v=2"></script>
 </body>
 </html>

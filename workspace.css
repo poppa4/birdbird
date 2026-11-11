@@ -330,3 +330,4 @@ html body .nsearch{display:none!important}
 .dochead{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:clamp(24px,2.4vw,30px);letter-spacing:-.01em;line-height:1.15;margin:0 0 18px;color:var(--ink);overflow-wrap:anywhere}
 .vers .sn{display:block;color:var(--ink);font-size:12.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ws-main:focus,.ws-main:focus-visible{outline:none}
+.ws-deskopen{margin:0 0 14px 12px}

@@ -1,5 +1,6 @@
 """My Workspace in a real browser (signed out, plain static server: /api is absent and must be handled quietly).
     python3 tests/workspace_e2e.py [base-url] [shots-dir]
+The Library views (the desk is #/, covered by tests/desk_e2e.py).
 Flows: add aircraft, edit speeds, new note + edits (versions), import a PDF and a text document, link them,
 search (names and inside documents), trash + restore, export -> wipe -> import backup -> everything back,
 Norwegian, and every size from 1920 to 390 with no console errors and no horizontal overflow."""
@@ -26,7 +27,7 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errors.append('pageerror: ' + str(e)))
         pg.on('console', lambda m: errors.append('console: ' + m.text) if m.type == 'error' and '/api/' not in m.text and '404' not in m.text else None)
     pg = ctx.new_page(); watch(pg)
-    pg.goto(URL); pg.wait_for_selector('.ovs')
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs')
     check('home renders signed out', 'Not signed in' in pg.inner_text('#wsStatus'))
     pg.screenshot(path=SHOTS + '/00-empty-1470.png', full_page=True)
 
@@ -122,7 +123,7 @@ with sync_playwright() as p:
     pg.click('#dList a.n:has-text("Company SOP")'); pg.wait_for_selector('#docView .txt'); check('restored document keeps its text and links', 'Stabilised' in pg.inner_text('#docView') and pg.is_checked('#dAcs input >> nth=0'))
 
     # home + storage screenshots at the main size
-    pg.goto(URL + '#/'); pg.wait_for_selector('.ovs'); pg.wait_for_timeout(200)
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); pg.wait_for_timeout(200)
     check('backup reminder shown for device-only files', pg.locator('.ws-remind').count() == 1)
     pg.screenshot(path=SHOTS + '/01-home-1470.png', full_page=True)
     pg.screenshot(path=SHOTS + '/01-home-1470-fold.png')
@@ -136,15 +137,15 @@ with sync_playwright() as p:
     with pg.expect_download() as dl: pass
     path = SHOTS + '/backup.zip'; dl.value.save_as(path)
     check('backup file downloaded', os.path.getsize(path) > 3000, os.path.getsize(path))
-    pg.wait_for_timeout(300); pg.goto(URL + '#/'); pg.wait_for_selector('.ovs'); check('reminder gone after backup', pg.locator('.ws-remind').count() == 0)
+    pg.wait_for_timeout(300); pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); check('reminder gone after backup', pg.locator('.ws-remind').count() == 0)
     pg.goto(URL + '#/storage'); pg.wait_for_selector('[data-act="wipe"]'); pg.click('[data-act="wipe"]'); pg.check('#wipeCk'); pg.click('#wsDlgOk'); pg.wait_for_timeout(600)
     pg.evaluate("() => { localStorage.removeItem('naeroson-store-prep'); localStorage.removeItem('naeroson-store-route'); }")
-    pg.reload(); pg.wait_for_selector('.ovs')
+    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.ovs')
     wiped = snap(); check('wipe removed everything', wiped['ac'] == [] and wiped['notes'] == [] and wiped['docs'] == [] and wiped['files'] == 0 and wiped['packs'] == 0, wiped)
     pg.goto(URL + '#/storage'); pg.wait_for_selector('[data-act="import"]')
     with pg.expect_file_chooser() as fc: pg.click('[data-act="import"]')
     fc.value.set_files(path); pg.wait_for_function("document.getElementById('bkNote') && /imported|importert/.test(document.getElementById('bkNote').textContent)", timeout=20000)
-    pg.goto(URL + '#/'); pg.reload(); pg.wait_for_selector('.ovs'); after = snap()
+    pg.goto(URL + '#/library'); pg.reload(); pg.wait_for_selector('.ovs'); after = snap()
     check('import brings everything back', after == before, {'before': before, 'after': after})
     pg.goto(URL + '#/documents'); pg.click('#dList a.n:has-text("DA42 NG AFM")'); pg.wait_for_selector('#docView .pg canvas', timeout=20000); check('PDF opens after import', True)
     # a not-a-backup file is refused without changes
@@ -160,7 +161,7 @@ with sync_playwright() as p:
     t = pg.inner_text('#wsMain'); check('missing file labelled and re-add offered', 'File not on this device' in t and 'listed but the file is not on this device' in t, t[:500])
 
     # keyboard: "/" focuses search, rail reachable
-    pg.goto(URL + '#/'); pg.wait_for_selector('.ovs'); pg.keyboard.press('/'); check('slash focuses search', pg.evaluate("document.activeElement.id") == 'wsQ')
+    pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); pg.keyboard.press('/'); check('slash focuses search', pg.evaluate("document.activeElement.id") == 'wsQ')
 
     # Norwegian
     pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(200)
@@ -169,7 +170,7 @@ with sync_playwright() as p:
     pg.click('.langseg button[data-v="en"]'); pg.wait_for_timeout(200)
 
     # every size, every view: no overflow
-    views = ['', 'aircraft', 'documents', 'packs', 'notes', 'routes', 'trash', 'storage', 'search?q=da42']
+    views = ['', 'library', 'aircraft', 'documents', 'packs', 'notes', 'routes', 'trash', 'storage', 'search?q=da42']
     ac_id = pg.evaluate("Object.values(WS.state.items).find(x=>x.kind==='aircraft'&&x.reg==='LN-ABC').id")
     note_id = pg.evaluate("Object.values(WS.state.items).find(x=>x.kind==='note').id")
     doc_id = pg.evaluate("Object.values(WS.state.items).find(x=>x.kind==='doc'&&/AFM/.test(x.name)).id")
@@ -183,7 +184,7 @@ with sync_playwright() as p:
             wide = pg.evaluate("""() => [...document.querySelectorAll('.ws *')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.right > document.documentElement.clientWidth + 1 && !e.closest('.ws-rail,.recent,.pages'); }).slice(0,3).map(e => e.className || e.tagName)""")
             if ov > 0 or wide: bad.append((v, ov, wide))
         check(f'no overflow at {w}x{h}', not bad, bad)
-        pg.goto(URL + '#/'); pg.wait_for_timeout(250); pg.screenshot(path=f'{SHOTS}/10-home-{w}.png', full_page=True)
+        pg.goto(URL + '#/library'); pg.wait_for_timeout(250); pg.screenshot(path=f'{SHOTS}/10-home-{w}.png', full_page=True)
         if w in (820, 390):
             for v, nm in [('aircraft/' + ac_id, 'aircraft'), ('documents/' + doc_id, 'document'), ('notes/' + note_id, 'note'), ('documents', 'library'), ('notes', 'notes'), ('storage', 'storage')]:
                 pg.goto(URL + '#/' + v); pg.wait_for_timeout(900 if 'documents/' in v else 300); pg.screenshot(path=f'{SHOTS}/11-{nm}-{w}.png', full_page=(nm not in ('document',)))

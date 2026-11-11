@@ -58,7 +58,9 @@
   const cleanTags = s => uniq((Array.isArray(s) ? s : String(s || '').split(/[,;\n]/)).map(x => String(x).trim().replace(/^#/, '').replace(/\s+/g, ' ').slice(0, 30)).filter(Boolean)).slice(0, 12);
 
   /* ---------- note text: a small HTML whitelist (notes travel between devices and through backup files) ---------- */
-  const TAGS = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'mark', 'h3', 'p', 'div', 'br', 'ul', 'ol', 'li', 'blockquote']);
+  const TAGS = new Set(['b', 'strong', 'i', 'em', 'u', 's', 'mark', 'h3', 'p', 'div', 'br', 'ul', 'ol', 'li', 'blockquote', 'cite']);
+  /* <cite data-doc data-p>: a page reference to a document ("AFM p. 4-12"); only these two attributes, strictly shaped, survive */
+  function citeOpen(tag) { const d = /\sdata-doc="([A-Za-z0-9_:.\-]{1,100})"/.exec(tag), p = /\sdata-p="(\d{1,5})"/.exec(tag); return d && p ? '<cite data-doc="' + d[1] + '" data-p="' + p[1] + '">' : '<cite>'; }
   const escText = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   function sanitizeHtml(html) {
     html = String(html == null ? '' : html).replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style|iframe|object|svg|math|template|noscript)\b[\s\S]*?(<\/\1\s*>|$)/gi, '');
@@ -67,7 +69,7 @@
       out += escLoose(html.slice(i, m.index)); i = m.index + m[0].length;
       let t = m[1].toLowerCase(); const close = m[0][1] === '/';
       if (t === 'h1' || t === 'h2' || t === 'h4') t = 'h3';
-      if (TAGS.has(t)) out += t === 'br' ? (close ? '' : '<br>') : '<' + (close ? '/' : '') + t + '>';
+      if (TAGS.has(t)) out += t === 'br' ? (close ? '' : '<br>') : t === 'cite' && !close ? citeOpen(m[0]) : '<' + (close ? '/' : '') + t + '>';
     }
     out += escLoose(html.slice(i));
     return out.slice(0, 400000);

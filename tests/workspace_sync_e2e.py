@@ -29,7 +29,7 @@ with sync_playwright() as p:
     errs = []
     def device():
         c = br.new_context(viewport={'width': 1280, 'height': 900}); c.route('**/api/**', api); c.add_init_script(META)
-        pg = c.new_page(); pg.on('pageerror', lambda e: errs.append(str(e))); pg.goto(URL); pg.wait_for_selector('.ovs'); return pg
+        pg = c.new_page(); pg.on('pageerror', lambda e: errs.append(str(e))); pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); return pg
     A = device()
     A.wait_for_function("WS.meta.sync.last > 0", timeout=10000)
     check('signed in: status says synced', 'Synced to your account' in A.inner_text('#wsStatus'), A.inner_text('#wsStatus'))
