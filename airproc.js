@@ -335,48 +335,52 @@ function autofly(env){
   return AF;
 }
 
-/* ---------- shared toolbar UI: procedure picker, the auto-fly toggle and the "what to do now" card ---------- */
-const CSS=`.ctop .afsel{max-width:230px;border-color:#2fd17b;font-weight:700}
-.ctop .cb.afb{font-weight:700}.ctop .cb.afb[aria-pressed=true]{background:#2fd17b;border-color:#2fd17b;color:#05170c}
-.afban{position:absolute;left:8px;top:8px;z-index:6;max-width:min(560px,70%);background:rgba(8,12,16,.86);border:1px solid #2fd17b;color:#d9fbe8;border-radius:8px;padding:5px 9px;font:600 12px/1.35 var(--f-sans,system-ui);pointer-events:none}
+/* ---------- shared toolbar UI: the ✈ Start picker (airborne procedures and the page's own exercises in one list), the auto-fly
+   toggle, the auto-fly status line and the small "what to do now" card (shown once per start in the shell's notification area) ---------- */
+const CSS=`.afban{position:absolute;left:8px;top:8px;z-index:6;max-width:min(560px,70%);background:rgba(8,12,16,.86);border:1px solid #2fd17b;color:#d9fbe8;border-radius:8px;padding:5px 9px;font:600 12px/1.35 var(--f-sans,system-ui);pointer-events:none}
 .afban b{color:#2fd17b;margin-right:6px}.afban small{display:block;color:#9fb0bd;font:500 11px/1.3 var(--f-mono,monospace)}
-.afban[hidden],.afnow[hidden]{display:none}
-.afnow{position:absolute;right:8px;top:8px;z-index:7;width:min(380px,calc(100% - 16px));background:rgba(8,12,16,.92);border:1px solid #2fd17b;color:#e6eef3;border-radius:10px;padding:10px 12px 9px;font:500 12.5px/1.4 var(--f-sans,system-ui);box-shadow:0 6px 24px rgba(0,0,0,.45)}
-.afnow h4{margin:0 0 2px;font:700 14px/1.25 var(--f-sans,system-ui);color:#fff}.afnow h4 i{font-style:normal;color:#2fd17b;margin-right:5px}
-.afnow .st{color:#9fb0bd;font-size:11.5px;margin:0 0 6px}
-.afnow ol{margin:0 0 8px;padding-left:18px}.afnow li{margin:2px 0}
-.afnow .row{display:flex;gap:6px;flex-wrap:wrap}.afnow button{font:600 12px/1 var(--f-sans,system-ui);border-radius:6px;padding:7px 10px;cursor:pointer;border:1px solid #3c444c;background:#1d2227;color:#dfe5ea}
-.afnow button.go{background:#2fd17b;border-color:#2fd17b;color:#05170c}
-@media (max-width:932px),(max-height:520px){.afban{font-size:11px;padding:3px 7px;max-width:62%}.ctop .afsel{max-width:150px}
- .afnow{width:min(330px,calc(100% - 16px));padding:7px 9px 7px;font-size:11.5px;line-height:1.3}.afnow h4{font-size:13px}.afnow ol{margin-bottom:6px}.afnow button{padding:6px 8px;font-size:11.5px}}`;
-const GROUPS=[[tr('Approaches','Innflyginger'),k=>isApp(k)],[tr('Departure and arrival','Avgang og ankomst'),k=>k==='sid'||k==='star'],[tr('Holding','Venting'),k=>k==='hold'],[tr('Other','Annet'),k=>k==='free']];
-function ui(o){ // o:{after:Element (the scenario select), stage:Element, list:[{k,t}], L, type, onPick:k=>{}, onAuto:()=>{}, onBrief:()=>{}}
+.afban[hidden]{display:none}
+@media (max-width:932px),(max-height:520px){.afban{font-size:11px;padding:3px 7px;max-width:62%}}`;
+const GROUPS=[[tr('Approaches','Innflyginger'),k=>isApp(k)],[tr('Departure and arrival','Avgang og ankomst'),k=>k==='sid'||k==='star'],[tr('Holding','Venting'),k=>k==='hold']];
+const XG={gnd:tr('On the ground','På bakken'),ex:tr('Exercises','Øvelser')};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* o:{stage, list:[{k,t}], L, type, onPick:k=>{}, onAuto:()=>{}, ex:()=>[{k,t,g:'gnd'|'ex'}], onEx:k=>{}, onFailures:()=>{}} */
+function ui(o){
   if(!document.getElementById('afcss')){ const s=document.createElement('style'); s.id='afcss'; s.textContent=CSS; document.head.appendChild(s); }
-  const sel=document.createElement('select'); sel.className='cb afsel'; sel.id='apSel'; sel.setAttribute('aria-label','Procedure');
-  const btn=document.createElement('button'); btn.className='cb afb'; btn.id='bAuto'; btn.setAttribute('aria-pressed','false'); btn.type='button';
-  // the procedure picker comes first in the toolbar (the main way in), then auto-fly, then the exercise (checklist) selector
-  o.after.insertAdjacentElement('beforebegin',sel); sel.insertAdjacentElement('afterend',btn);
+  let sel=document.getElementById('apSel'), btn=document.getElementById('bAuto');
+  if(!sel){ sel=document.createElement('select'); sel.className='cb afsel'; sel.id='apSel'; if(o.after) o.after.insertAdjacentElement('beforebegin',sel); }
+  if(!btn){ btn=document.createElement('button'); btn.className='cb afb'; btn.id='bAuto'; btn.type='button'; btn.setAttribute('aria-pressed','false'); sel.insertAdjacentElement('afterend',btn); }
+  sel.setAttribute('aria-label','Start');
   const ban=document.createElement('div'); ban.className='afban'; ban.id='afBan'; ban.hidden=true; ban.setAttribute('aria-live','polite'); o.stage.appendChild(ban);
-  const now=document.createElement('div'); now.className='afnow'; now.id='afNow'; now.hidden=true; now.setAttribute('role','dialog'); now.setAttribute('aria-label','What to do now'); o.stage.appendChild(now);
-  let nowT=0, nowK=null;
-  const api={sel,btn,ban,now,cur:null,
-    draw(cur,on){ api.cur=cur; const L=o.L;
-      sel.innerHTML=`<option value=""${cur?'':' selected'} disabled>✈ ${L(tr('Start in the air…','Start i lufta…'))}</option>`+GROUPS.map(([g,f])=>{ const xs=o.list.filter(x=>f(x.k)); return xs.length?`<optgroup label="${L(g)}">${xs.map(x=>`<option value="${x.k}"${x.k===cur?' selected':''}>✈ ${L(x.t)}</option>`).join('')}</optgroup>`:''; }).join('');
-      sel.title=L(tr('Start in the air on an approach, a hold, a departure or an arrival','Start i lufta på en innflyging, en venting, en avgang eller en ankomst')); api.set(on);
-      if(on) api.hideNow(); else if(!now.hidden&&nowK) api.showNow(nowK,true); },
-    set(on){ btn.setAttribute('aria-pressed',on?'true':'false'); btn.textContent=(on?'● ':'○ ')+o.L(tr('Auto-fly','Autofly')); btn.title=o.L(tr('Let the autopilot (C172: the instructor) fly the whole procedure while you run the checklists','La autopiloten (C172: instruktøren) fly hele prosedyren mens du tar sjekklistene')); },
-    banner(on,head,txt){ if(!on){ if(!ban.hidden) ban.hidden=true; return; } api.hideNow(); const h=`<b>${head}</b>${txt?`<small>${txt}</small>`:''}`; if(ban._h!==h){ ban._h=h; ban.innerHTML=h; } if(ban.hidden) ban.hidden=false; },
-    /* "what to do now": the start state and three steps; Fly it closes, Auto-fly hands over, Brief opens the full brief and checklist */
-    showNow(k,keep){ const L=o.L, D=def(k,o.type), st=D.start, T=TY[o.type]||TY.DA42; nowK=k;
-      const ap=o.type==='C172'?tr('hand-flying, trimmed','du flyr for hånd, trimmet'):tr('autopilot OFF — hand-flying, trimmed','autopilot AV — du flyr for hånd, trimmet');
-      const where=tr(`${st.alt} ft · heading ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.en}`,`${st.alt} ft · kurs ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.no}`);
-      now.innerHTML=`<h4><i>✈</i>${L(NAMES[k])} — ${L(tr('you have control','du har kontrollene'))}</h4><p class="st">${L(where)}</p><ol>${todo(k,o.type).map(x=>`<li>${L(x)}</li>`).join('')}</ol>
-        <div class="row"><button type="button" class="go" data-a="fly">${L(tr('Fly it','Fly'))}</button><button type="button" data-a="auto">${L(tr('Auto-fly it','Autofly'))}</button>${o.onBrief?`<button type="button" data-a="brief">${L(tr('Full brief and checklist','Hele briefen og sjekklisten'))}</button>`:''}</div>`;
-      now.hidden=false; if(!keep){ clearTimeout(nowT); nowT=setTimeout(()=>api.hideNow(),30000); } },
-    hideNow(){ clearTimeout(nowT); if(!now.hidden) now.hidden=true; }};
-  now.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.stopPropagation(); const a=b.dataset.a; api.hideNow(); if(a==='auto') o.onAuto(); else if(a==='brief'&&o.onBrief) o.onBrief(); });
-  ['pointerdown','dblclick','pointerup'].forEach(t=>now.addEventListener(t,e=>e.stopPropagation()));
-  sel.onchange=()=>{ if(sel.value){ o.onPick(sel.value); api.showNow(sel.value); sel.blur(); } };
+  const SH=()=>G.SIMSHELL;
+  let nowK=null;
+  const api={sel,btn,ban,cur:null,ex:null,
+    /* cur: airborne procedure key ('' = none), on: auto-fly on, ex: the page's current exercise key (null = none) */
+    draw(cur,on,ex){ api.cur=cur; api.ex=ex==null?null:ex; const L=o.L, X=o.ex?o.ex():[];
+      const opt=(v,t,on)=>`<option value="${esc(v)}"${on?' selected':''}>${esc(t)}</option>`;
+      const none=!cur&&api.ex==null;
+      let h=`<option value=""${none?' selected':''} disabled>${esc(L(tr('✈ Start…','✈ Start…')))}</option>`;
+      h+=GROUPS.map(([g,f])=>{ const xs=o.list.filter(x=>f(x.k)); return xs.length?`<optgroup label="${esc(L(g))}">${xs.map(x=>opt(x.k,'✈ '+L(x.t),x.k===cur)).join('')}</optgroup>`:''; }).join('');
+      ['gnd','ex'].forEach(g=>{ const xs=X.filter(x=>x.g===g); if(xs.length) h+=`<optgroup label="${esc(L(XG[g]))}">${xs.map(x=>opt('x:'+x.k,L(x.t),api.ex===x.k&&!cur)).join('')}</optgroup>`; });
+      const other=[]; if(o.list.some(x=>x.k==='free')) other.push(opt('free',L(NAMES.free),cur==='free'));
+      if(o.onFailures) other.push(opt('fail:',L(tr('Failure scenarios… (Procedures → Failures)','Feilscenarier… (Prosedyrer → Feil)')),false));
+      if(other.length) h+=`<optgroup label="${esc(L(tr('Other','Annet')))}">${other.join('')}</optgroup>`;
+      if(sel._h!==h){ sel._h=h; sel.innerHTML=h; }
+      sel.title=L(tr('Start: an approach, a hold, a departure or an arrival in the air, or an exercise','Start: en innflyging, en venting, en avgang eller en ankomst i lufta, eller en øvelse')); api.set(on);
+      if(on&&SH()&&SH().cardOn()) SH().hideCard(); },
+    set(on){ btn.setAttribute('aria-pressed',on?'true':'false'); btn.textContent=o.L(tr('Auto-fly','Autofly')); btn.title=o.L(tr('Let the autopilot (C172: the instructor) fly the whole procedure while you run the checklists','La autopiloten (C172: instruktøren) fly hele prosedyren mens du tar sjekklistene')); },
+    banner(on,head,txt){ if(!on){ if(!ban.hidden) ban.hidden=true; return; } const h=`<b>${head}</b>${txt?`<small>${txt}</small>`:''}`; if(ban._h!==h){ ban._h=h; ban.innerHTML=h; } if(ban.hidden) ban.hidden=false; },
+    /* "what to do now": the start state and the steps, small, once per start; Fly it closes, Auto-fly hands over */
+    showNow(k){ const L=o.L, D=def(k,o.type), st=D.start; nowK=k; const sh=SH(); if(!sh) return;
+      const ap=o.type==='C172'?tr('hand-flying, trimmed','du flyr for hånd, trimmet'):tr('autopilot off, trimmed','autopilot av, trimmet');
+      const where=tr(`${st.alt} ft · hdg ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.en}`,`${st.alt} ft · kurs ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.no}`);
+      sh.card(`<h4><i>✈</i>${esc(L(NAMES[k]))} — ${esc(L(tr('you have control','du har kontrollene')))}</h4><p class="st">${esc(L(where))}</p><ol>${todo(k,o.type).map(x=>`<li>${esc(L(x))}</li>`).join('')}</ol>
+        <div class="row"><button type="button" class="go" data-a="fly">${esc(L(tr('Fly it','Fly')))}</button><button type="button" data-a="auto">${esc(L(tr('Auto-fly it','Autofly')))}</button></div>`,a=>{ if(a==='auto') o.onAuto(); }); },
+    hideNow(){ const sh=SH(); if(sh) sh.hideCard(); }};
+  sel.onchange=()=>{ const v=sel.value; if(!v) return; sel.blur();
+    if(v==='fail:'){ api.draw(api.cur,btn.getAttribute('aria-pressed')==='true',api.ex); if(o.onFailures) o.onFailures(); return; }
+    if(v.startsWith('x:')){ if(o.onEx) o.onEx(v.slice(2)); return; }
+    o.onPick(v); if(v!=='free') api.showNow(v); };
   btn.onclick=()=>o.onAuto();
   return api;
 }

@@ -2,87 +2,109 @@
    The panels zoom between named areas (REG); this file adds the gestures on top of each page's own zoomTo():
    - single click / tap on the panel (not on a control): whole-panel view → zoom to the area under the pointer;
      zoomed → a click outside the zoomed area goes back to the whole panel (pages with their own click logic pass click:false)
-   - double-click / double-tap: toggle between the area and the whole panel (ignored right after a single-click zoom)
-   - two-finger pinch on a touch screen: spread → zoom to the area between the fingers, pinch → whole panel
-   - trackpad pinch: Ctrl+wheel (Chrome, Edge, Firefox; also Ctrl/⌘ + mouse wheel) and gesture events (Safari)
-   - the magnifier glyphs keep a usable size on screen whatever the panel scale
-   Performance: no blocking wheel listener sits on the stage in normal use (Chrome rebuilds a wheel region for every painted part
-   below one on each repaint). A passive listener spots the first Ctrl+wheel / pinch, then the blocking one is attached until the
-   pointer leaves the stage; it is also attached while Ctrl or ⌘ is held. Pointer and gesture listeners are cheap. */
+   - two-finger pinch (touch, and Safari's gesture events on iPad / Mac trackpad): the panel follows the fingers (scale and pan)
+     and stays where it is left; pinching out all the way lands on the whole panel. Any two fingers count.
+   - mouse wheel / trackpad: zooms about the pointer; drag on bare panel pans a zoomed panel (as in the 3D cockpits)
+   That is all: no double-click / double-tap toggle and no magnifier glyphs (kept basic on purpose).
+   Performance: the blocking wheel listener is attached only while a mouse is over the stage (Chrome rebuilds a wheel region for
+   every painted part below one on each repaint), never on touch devices. Pointer and gesture listeners are cheap; nothing runs
+   per frame except the short glide after a pan. */
 (function(G){
 'use strict';
-const CSS=`.psvg .mags .mag{transform-box:fill-box;transform-origin:center;transform:scale(var(--mk,1))}`;
-function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, inR?, regs:()=>REG, emptyAt, off:selector, d3:()=>D3|null, click:bool, mags:Element|null}
-  if(!document.getElementById('pzcss')){ const s=document.createElement('style'); s.id='pzcss'; s.textContent=CSS; document.head.appendChild(s); }
+function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emptyAt, off:selector, d3:()=>D3|null, click:bool,
+  //    world:Element, size:()=>[W,H] (panel units), onFree:()=>void (after a free zoom settles)}
   const st=o.stage, Z=o.Z, now=()=>performance.now();
   const OFF=o.off||'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input';
   const inR=(p,r)=>!!r&&p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
   const d3=()=>o.d3?o.d3():null;
-  const api={clickT:-1e9,gestT:-1e9,togT:-1e9};
+  const api={clickT:-1e9,gestT:-1e9};
   const blocked=()=>Z.lock||now()-api.gestT<450;
   /* zoom in at a screen point: whole panel → the area there; zoomed → nothing (already close) */
-  function zin(x,y){ if(Z.lock) return; const D=d3(); const p=o.toWorld({clientX:x,clientY:y}); const k=o.regionAt(p);
-    if(D&&D.on){ if(k&&k!==Z.reg) o.zoomTo(k); return; }
-    if(Z.reg==='overview'&&k) o.zoomTo(k); }
-  function zout(){ if(Z.lock) return; if(Z.reg!=='overview') o.zoomTo('overview'); }
+  function zin(x,y){ if(Z.lock) return false; const D=d3(); const p=o.toWorld({clientX:x,clientY:y}); const k=o.regionAt(p);
+    if(D&&D.on){ if(k&&k!==Z.reg){ o.zoomTo(k); return true; } return false; }
+    if(Z.reg==='overview'&&k){ o.zoomTo(k); return true; } return false; }
+  function zout(){ if(Z.lock) return false; if(Z.reg!=='overview'){ o.zoomTo('overview'); return true; } return false; }
   /* ---- single click / tap ---- */
   let pdn=null;
   if(o.click!==false){
     st.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:now(),ok:o.emptyAt(e)&&!e.target.closest(OFF)}; },true);
     st.addEventListener('click',e=>{ const d=pdn; pdn=null;
-      if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||now()-d.t>700||blocked()||now()-api.togT<400) return; // (the click of a double-tap's 2nd tap)
+      if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||now()-d.t>700||blocked()) return;
       if(!o.emptyAt(e)||e.target.closest(OFF)) return; const D=d3(); if(D&&D.on&&D.dragging) return;
       const p=o.toWorld(e), cur=Z.reg, R=o.regs(); let to=null;
       if(cur==='overview') to=o.regionAt(p);
       else if(!R[cur]||!inR(p,R[cur])) to=D&&D.on?(o.regionAt(p)||'overview'):'overview';
       if(to&&to!==cur){ api.clickT=now(); o.zoomTo(to); } });
   }
-  /* ---- double-click / double-tap: toggle ---- */
-  if(o.dbl!==false){
-    // a double-tap also fires click and dblclick: toggle once (api.togT also stops the single-click zoom)
-    const tog=(e)=>{ if(blocked()||now()-api.clickT<600||now()-api.togT<500) return; api.togT=now(); const k=o.regionAt(o.toWorld(e)); const D=d3();
-      if(D&&D.on){ o.zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') o.zoomTo('overview'); else if(k) o.zoomTo(k); };
-    st.addEventListener('dblclick',e=>{ if(!o.emptyAt(e)||e.target.closest(OFF)) return; tog(e); });
-    let lt={t:0,x:0,y:0};
-    st.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!o.emptyAt(e)||e.target.closest(OFF)) return; const n=now();
-      if(n-lt.t<320&&Math.hypot(e.clientX-lt.x,e.clientY-lt.y)<24){ lt.t=0; tog(e); } else lt={t:n,x:e.clientX,y:e.clientY}; });
-  }
-  /* ---- two-finger pinch (touch, pen) ---- */
+  /* ---- free zoom and pan, the same feel as the 3D cockpits (cockpit3d.js): pinch, wheel and drag move the panel continuously and
+     it stays where you leave it; pinching / scrolling all the way out lands on the whole-panel view. Limits: whole panel … about
+     4× (the area zoom's limit). One transform write per input event, no transition while a finger or the wheel drives it. ---- */
+  const W=o.world||null, SZ=o.size||null; let ov=null;
+  api.sync=function(){ if(Z.reg==='overview') ov={s:Z.s,tx:Z.tx,ty:Z.ty}; };
+  const canFree=()=>!!(W&&SZ&&ov&&!Z.lock&&!(d3()&&d3().on));
+  const smax=()=>Math.max(ov.s*1.5,Math.min(ov.s*4.2,4.5));
+  const clp=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
+  let freeOn=false, commitT=0;
+  function put(sc,tx,ty){ const [pw,ph]=SZ(), w=st.clientWidth, h=st.clientHeight; sc=Math.max(ov.s,Math.min(smax(),sc));
+    tx=clp(tx,Math.min(w-pw*sc,ov.tx),Math.max(0,ov.tx)); ty=clp(ty,Math.min(h-ph*sc,ov.ty),Math.max(0,ov.ty));
+    Z.s=sc; Z.tx=tx; Z.ty=ty; if(!freeOn){ freeOn=true; W.classList.add('nt'); }
+    W.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`; }
+  /* scale by k about a stage point (client coords) */
+  function zoomAt(k,x,y){ const b=st.getBoundingClientRect(), mx=x-b.left, my=y-b.top; const sc=Math.max(ov.s,Math.min(smax(),Z.s*k)), f=sc/Z.s;
+    put(sc,mx-(mx-Z.tx)*f,my-(my-Z.ty)*f); }
+  /* settle after a gesture: close to the whole panel → the whole-panel view; otherwise this is a zoomed view of the area at the centre */
+  function commit(){ clearTimeout(commitT); if(!freeOn) return; freeOn=false; W.classList.remove('nt');
+    if(Z.s<=ov.s*1.04){ o.zoomTo('overview',false,true); return; }
+    const b=st.getBoundingClientRect(); const k=o.regionAt(o.toWorld({clientX:b.left+b.width/2,clientY:b.top+b.height/2}));
+    if(Z.reg==='overview'||!Z.reg) Z.reg=k||Object.keys(o.regs()).find(x=>x!=='overview')||'overview';
+    st.classList.add('zoomed'); if(o.onFree) o.onFree(); }
+  /* ---- two-finger pinch (touch, pen): any two fingers, also on controls ---- */
   const pts=new Map(); let pin=null;
   const dist=()=>{ const a=[...pts.values()]; return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); };
+  const mid=()=>{ const a=[...pts.values()]; return [(a[0].x+a[1].x)/2,(a[0].y+a[1].y)/2]; };
   st.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const D=d3(); if(D&&D.on) return; // the 3D view has its own pinch
-    if(e.target.closest('.tz,.touch,.afnow,.efx')) return; // touch stick / rudder zones: flying, not zooming
-    pts.set(e.pointerId,{x:e.clientX,y:e.clientY,ok:o.emptyAt(e)&&!e.target.closest(OFF)});
-    // a pinch needs at least one finger on bare panel (two fingers both on controls: the user is working them)
-    if(pts.size===2&&[...pts.values()].some(q=>q.ok)){ pin={d0:Math.max(20,dist()),done:false}; api.gestT=now(); } },true);
+    if(e.target.closest('.more,.efx,.pill,.drawer')) return;
+    pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size===2){ pan=null; const m=mid(); pin={d:Math.max(20,dist()),m,r0:1,done:false}; api.gestT=now(); } },true);
   st.addEventListener('pointermove',e=>{ const p=pts.get(e.pointerId); if(!p) return; p.x=e.clientX; p.y=e.clientY;
-    if(!pin||pin.done||pts.size<2) return; const r=dist()/pin.d0; api.gestT=now();
-    if(r>1.25||r<0.8){ pin.done=true; const a=[...pts.values()]; if(r>1) zin((a[0].x+a[1].x)/2,(a[0].y+a[1].y)/2); else zout(); } },{passive:true});
-  const up=e=>{ if(!pts.delete(e.pointerId)) return; if(pin) api.gestT=now(); if(pts.size<2) pin=null; };
+    if(!pin||pts.size<2) return; api.gestT=now(); const d=Math.max(20,dist()), m=mid();
+    if(canFree()){ zoomAt(d/pin.d,m[0],m[1]); if(freeOn){ Z.tx+=m[0]-pin.m[0]; Z.ty+=m[1]-pin.m[1]; put(Z.s,Z.tx,Z.ty); } pin.d=d; pin.m=m; }
+    else if(!pin.done){ const r=d/pin.d; if(r>1.25||r<0.8){ pin.done=true; if(r>1) zin(m[0],m[1]); else zout(); } } },{passive:true});
+  const up=e=>{ if(!pts.delete(e.pointerId)) return; if(pin) api.gestT=now(); if(pts.size<2&&pin){ pin=null; commit(); } };
   st.addEventListener('pointerup',up,{passive:true}); st.addEventListener('pointercancel',up,{passive:true});
-  /* ---- trackpad pinch and Ctrl/⌘ + wheel ---- */
-  let acc=0, accT=0, coolT=0, armed=false;
-  const wact=e=>{ const n=now(); if(n-accT>260) acc=0; accT=n; acc+=(e.deltaMode?e.deltaY*33:e.deltaY); api.gestT=n;
-    if(n<coolT) { acc=0; return; }
-    if(acc<-24){ acc=0; coolT=n+420; zin(e.clientX,e.clientY); } else if(acc>24){ acc=0; coolT=n+420; zout(); } };
-  const blk=e=>{ if(!(e.ctrlKey||e.metaKey)) return; e.preventDefault(); wact(e); };
-  const arm=v=>{ if(v===armed) return; armed=v; if(v) st.addEventListener('wheel',blk,{passive:false}); else st.removeEventListener('wheel',blk,{passive:false}); };
-  st.addEventListener('wheel',e=>{ if(armed||!(e.ctrlKey||e.metaKey)) return; const D=d3(); if(D&&D.on) return; arm(true); wact(e); },{passive:true});
-  st.addEventListener('pointerleave',()=>{ if(!keyHeld) arm(false); },{passive:true});
-  let keyHeld=false;
-  G.addEventListener('keydown',e=>{ if(e.key==='Control'||e.key==='Meta'){ keyHeld=true; const D=d3(); if(!(D&&D.on)) arm(true); } },true);
-  G.addEventListener('keyup',e=>{ if(e.key==='Control'||e.key==='Meta'){ keyHeld=false; arm(false); } },true);
-  G.addEventListener('blur',()=>{ keyHeld=false; arm(false); });
-  // Safari: trackpad pinch arrives as gesture events (and would zoom the whole page)
-  let gs=1, gdone=false;
-  st.addEventListener('gesturestart',e=>{ e.preventDefault(); gs=1; gdone=false; api.gestT=now(); },{passive:false});
-  st.addEventListener('gesturechange',e=>{ e.preventDefault(); api.gestT=now(); if(gdone) return; gs=e.scale||1;
-    if(gs>1.2){ gdone=true; zin(e.clientX||lastX,e.clientY||lastY); } else if(gs<0.83){ gdone=true; zout(); } },{passive:false});
-  st.addEventListener('gestureend',e=>{ e.preventDefault(); api.gestT=now(); },{passive:false});
-  let lastX=0, lastY=0; st.addEventListener('pointermove',e=>{ if(e.pointerType==='mouse'){ lastX=e.clientX; lastY=e.clientY; } },{passive:true});
-  /* ---- magnifier glyphs: at least ~18 px across on screen (24 px on touch screens) ---- */
-  const coarse=G.matchMedia?G.matchMedia('(pointer:coarse)'):{matches:false};
-  api.sync=function(){ if(!o.mags) return; const k=Math.max(1,Math.min(4.5,(coarse.matches?12:9)/(11*(Z.s||1)))); const v=k.toFixed(2); if(api._mk!==v){ api._mk=v; o.mags.style.setProperty('--mk',v); } };
+  /* ---- one-finger / mouse drag on bare panel pans a zoomed panel (the 3D look-around), with a little glide after release ---- */
+  let pan=null, glide=0;
+  st.addEventListener('pointerdown',e=>{ if(e.button>0||pts.size>1||!canFree()||Z.reg==='overview') return;
+    if(!o.emptyAt(e)||e.target.closest(OFF)) return; if(G.SIMSHELL&&G.SIMSHELL.touchOwns&&G.SIMSHELL.touchOwns(e)) return;
+    cancelAnimationFrame(glide); pan={id:e.pointerId,x:e.clientX,y:e.clientY,t:now(),vx:0,vy:0,moved:0}; },true);
+  st.addEventListener('pointermove',e=>{ if(!pan||e.pointerId!==pan.id||pin) return; const dx=e.clientX-pan.x, dy=e.clientY-pan.y; pan.moved+=Math.abs(dx)+Math.abs(dy);
+    if(pan.moved<8) return; const n=now(), dt=Math.max(8,n-pan.t); pan.vx=pan.vx*0.6+dx/dt*0.4; pan.vy=pan.vy*0.6+dy/dt*0.4; pan.x=e.clientX; pan.y=e.clientY; pan.t=n;
+    put(Z.s,Z.tx+dx,Z.ty+dy); api.gestT=n; },{passive:true});
+  const panUp=e=>{ if(!pan||e.pointerId!==pan.id) return; const P=pan; pan=null; if(P.moved<8||!freeOn) return;
+    let vx=now()-P.t>120?0:P.vx*16, vy=now()-P.t>120?0:P.vy*16;
+    const step=()=>{ if(Math.abs(vx)+Math.abs(vy)<0.4){ commit(); return; } put(Z.s,Z.tx+vx,Z.ty+vy); vx*=0.88; vy*=0.88; glide=requestAnimationFrame(step); };
+    glide=requestAnimationFrame(step); };
+  st.addEventListener('pointerup',panUp,{passive:true}); st.addEventListener('pointercancel',panUp,{passive:true});
+  /* ---- wheel: zooms about the pointer like the 3D cockpit (Ctrl / trackpad pinch faster). The blocking listener is attached
+     only while a mouse is over the stage (Chrome keeps a wheel region for every repaint below a blocking listener). ---- */
+  let armed=false;
+  const wheel=e=>{ const D=d3(); if(D&&D.on) return; if(Z.lock||e.defaultPrevented) return; // a knob or display under the pointer took it
+    if(!o.emptyAt(e)||e.target.closest('.more,.drawer,.pill,.efx')) return; e.preventDefault(); api.gestT=now();
+    const d=(e.deltaMode?e.deltaY*40:e.deltaY)*(e.ctrlKey?3:1);
+    if(canFree()){ zoomAt(Math.exp(-d*0.0012),e.clientX,e.clientY); clearTimeout(commitT); commitT=setTimeout(commit,180); }
+    else if(Math.abs(d)>20){ if(d<0) zin(e.clientX,e.clientY); else zout(); } };
+  const arm=v=>{ if(v===armed) return; armed=v; if(v) st.addEventListener('wheel',wheel,{passive:false}); else st.removeEventListener('wheel',wheel,{passive:false}); };
+  st.addEventListener('pointerenter',e=>{ if(e.pointerType==='mouse') arm(true); },{passive:true});
+  st.addEventListener('pointerleave',e=>{ if(e.pointerType==='mouse') arm(false); },{passive:true});
+  // Safari: a pinch also arrives as gesture events (iPad touch and Mac trackpad); never let it zoom the whole page. On iPad the
+  // pointer pinch above already drives the panel; a Mac trackpad has only these, so they drive the same free zoom.
+  let gs=1, gown=false, lastX=0, lastY=0;
+  st.addEventListener('pointermove',e=>{ if(e.pointerType==='mouse'){ lastX=e.clientX; lastY=e.clientY; } },{passive:true});
+  const gx=e=>e.clientX||lastX, gy=e=>e.clientY||lastY;
+  st.addEventListener('gesturestart',e=>{ e.preventDefault(); gs=1; api.gestT=now(); const D=d3(); gown=!pin&&pts.size<2&&!(D&&D.on); },{passive:false});
+  st.addEventListener('gesturechange',e=>{ e.preventDefault(); api.gestT=now(); if(!gown) return; const sc=e.scale||1;
+    if(canFree()){ zoomAt(sc/gs,gx(e),gy(e)); gs=sc; } else if(Math.abs(Math.log(sc))>0.2){ gown=false; if(sc>1) zin(gx(e),gy(e)); else zout(); } },{passive:false});
+  st.addEventListener('gestureend',e=>{ e.preventDefault(); api.gestT=now(); if(gown) commit(); gown=false; },{passive:false});
   return api;
 }
 /* whole-panel view, the same rule for every type: the glareshield lip sits at a fixed share of the

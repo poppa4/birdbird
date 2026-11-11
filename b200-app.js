@@ -12,7 +12,7 @@ LAB.add({},{
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
- 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click an instrument to zoom to it, or pick an area in the toolbar or press 0–9. Click an EADI or EHSI to bring up that side\'s EFIS with all its controls beside it. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.':'Klikk på et instrument for å zoome inn på det, eller velg et område i verktøylinjen eller trykk 0–9. Klikk på en EADI eller EHSI for å få opp den sidens EFIS med alle kontrollene ved siden av. Klikk utenfor det zoomede området, trykk Esc eller bruk tilbakeknappen for å zoome ut. «Lås visning» holder zoomen mens du jobber.',
+ 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click or tap an instrument to zoom to it (pinch on a touch screen), or press 0–9. Click an EADI or EHSI to bring up that side\'s displays with its own controls (CRS, HDG, NAV source, bearing pointers, DH) beside them. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.':'Klikk eller trykk på et instrument for å zoome inn på det (knip på berøringsskjerm), eller trykk 0–9. Klikk på en EADI eller EHSI for å få opp den sidens skjermer med egne kontroller (CRS, HDG, NAV-kilde, peilepekere, DH) ved siden av. Klikk utenfor det zoomede området, trykk Esc eller bruk tilbakeknappen for å zoome ut. «Lås visning» holder zoomen mens du jobber.',
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
  'Levers':'Hendler','Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.':'Dra effekt-, propell- og condition-hendlene opp og ned; de smetter inn i hakkene. Beta og revers (under IDLE) virker bare på bakken. Musehjulet og piltastene flytter en hendel i små steg.',
  'Knobs':'Knotter','Scroll on a knob or drag across it. HDG and CRS set the heading bug and the course on the HSI, ALT SEL the altitude alerter, CABIN ALT and RATE the pressurisation controller.':'Rull på en knott eller dra over den. HDG og CRS stiller kursmerket og kursen på HSI-en, ALT SEL høydevarsleren, CABIN ALT og RATE trykkontrolleren.',
@@ -217,7 +217,7 @@ function ioSet(k,v){
   const old=SYS[k]; SYS[k]=v;
   if(o&&!['push','lev','vwheel','hwheel','rot','enc','enc2','sbtn','mbtn','abtn','yoke','bar'].includes(o.c.t)){ if(old!==v) beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
   if(o&&o.c.t==='abtn'){ click(); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
-  if(o&&o.c.t==='lev'&&old!==undefined&&Math.abs(old-v)>0.001){ flashT=1.2; el('stat2').textContent=descr(k); el('stat2').classList.add('chg'); }
+  if(o&&o.c.t==='lev'&&old!==undefined&&Math.abs(old-v)>0.001){ SH.say(descr(k),'',1200); }
   if(k==='annTest'&&v) PR.m.annT=1;
   if((k==='fireTestL'||k==='fireTestR')&&v!==0) PR.m.fireT=1;
   if((k==='elecHeat'||k==='aftHeat')&&v&&!S.ground) msg(tr2('Electric heat is for ground use only: in flight the squat switch releases the solenoid-held switch to OFF.','Elektrisk varme er bare for bakken: i luften slipper squat-bryteren den solenoidholdte bryteren til OFF.'));
@@ -278,34 +278,19 @@ const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.appendChild(hlR); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
-/* zoom glyphs: in the top-right corner of their area (taken from REG, so they follow the layout and never sit on an instrument face) */
-const MAGP={}; ['lower','rsub','center','cosubL','cosubR','pedT','fuelT','fuelB','rsideT','overheadL','overheadR','audio','glare','mfd'].forEach(k=>{ const r=P.REG[k]; if(r) MAGP[k]=[Math.round(r[0]+r[2]-16),Math.round(r[1]+16)]; });
-magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('');
-magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
-magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
-magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m) areaHL(m.dataset.z); });
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip,.efx');
-PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
+PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-PST.addEventListener('dblclick',e=>{ if(!emptyAt(e)||performance.now()-clickZoomT<600) return; const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); });
-let lastTap={t:0,x:0,y:0};
-PST.addEventListener('pointerup',e=>{ if(e.pointerType!=='touch'||!emptyAt(e)) return; const n=performance.now(); if(n-lastTap.t<320&&Math.hypot(e.clientX-lastTap.x,e.clientY-lastTap.y)<24){ if(n-clickZoomT<600){ lastTap.t=0; return; } const k=regionAt(toWorld(e)); if(D3on){ zoomTo(k&&k!==Z.reg?k:'overview'); } else if(Z.reg!=='overview') zoomTo('overview'); else if(k) zoomTo(k); lastTap.t=0; clickZoomT=n; /* the dblclick that follows a double-tap must not toggle back */ } else lastTap={t:n,x:e.clientX,y:e.clientY}; });
 el('zBack').onclick=()=>zoomTo('overview');
-/* pinch, Ctrl/⌘ + wheel and trackpad pinch; bigger magnifiers on small panels (panelzoom.js). Single click and double-click stay here. */
-if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,mags:magG,click:false,dbl:false,
+/* pinch, and Ctrl/⌘ + wheel (the trackpad pinch) (panelzoom.js). The single click stays here (it also opens the EFIS focus). */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,click:false,
   off:'.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input'});
 /* ---------- EFIS focus view: one side's EADI and EHSI, large, with every control that goes with them in a strip beside them ----------
    The displays are the live panel itself (the zoom transform to REG.efisL / efisR), so they keep their normal update rate. The
    strip is plain HTML built on first use; its buttons call the same IO.set handlers as the panel controls. While closed it costs
    nothing; while open its read-outs refresh 4 times a second (text written only when it changes). */
 const EFX={open:null,prev:'overview',box:null,tm:0,rep:0,held:null};
-const EFXG=s=>{ const n=s?'2':'', ap=['HDG','NAV','APPR','BC','CLIMB','ALT','ALTSEL','VS','IAS','DSC'];
-  return [[tr2('Display controller (pedestal)','EFIS-kontrollpanel (pidestall)'),[['efisCrsSel','CRS 1/2'],['efisBrg1','BRG ○'],['efisBrg2','BRG ◇'],['efisFmt','FULL / ARC'],['efisEt','ET']],[['efisDim','DIM']]],
-    [tr2('Course and heading','Kurs og heading'),[],[[s?'crs2K':'crsK',s?'CRS 2':'CRS 1'],['hdgK','HDG']]],
-    [tr2('Decision height','Beslutningshøyde'),[['raT'+n,'TEST']],[['dhK'+n,'DH']]],
-    [tr2('Flight director modes','Flight director-moduser'),ap.map(k=>['ap'+n+k,P.byId['ap'+n+k].c.l])],
-    [tr2('Autopilot','Autopilot'),[['apAP','AP ENG'],['apYD','YD ENG']]]]; };
+const EFXG=s=>[[null,[['efisCrsSel','NAV 1/2'],['efisBrg1','BRG ○'],['efisBrg2','BRG ◇']],[[s?'crs2K':'crsK','CRS'],['hdgK','HDG'],['dhK'+(s?'2':''),'DH']]]];
 const efxVal=id=>{ if(id==='efisDim') return Math.round(SYS.efisDim*100)+' %'; if(id==='dhK2') id='dhK'; if(id.startsWith('ap')) return '';
   const t=txtOf(id); return t==null?'':String(t).replace(/^(HDG|CRS|DH) /,''); };
 function efxBuild(reg){ const b=EFX.box||(EFX.box=document.createElement('div')); const right=reg==='efisR';
@@ -316,8 +301,7 @@ function efxBuild(reg){ const b=EFX.box||(EFX.box=document.createElement('div'))
     const st=enc?[-10,-1,1,10]:[-1,1], lab=d=>enc?(d<0?'−':'+')+Math.abs(d)+(id==='hdgK'||/crs/i.test(id)?'°':''):(d<0?'−':'+');
     return `<div class="efk"><span class="kn">${t}</span><output data-v="${id}"></output>${st.map(d=>`<button type="button" class="efs" data-k="${id}" data-d="${d}" aria-label="${nm} ${lab(d)}">${enc?(Math.abs(d)>1?(d<0?'«':'»'):(d<0?'‹':'›')):(d<0?'−':'+')}</button>`).join('')}</div>`; };
   b.innerHTML=`<div class="efxh"><b>${ttl}</b><button type="button" class="efxx" aria-label="${L(tr2('Close','Lukk'))}">×</button></div>`+
-    EFXG(right).map(([h,bs,ks])=>`<section><h4>${L(h)}</h4>${bs.length?`<div class="efg">${bs.map(btn).join('')}</div>`:''}${(ks||[]).map(knob).join('')}</section>`).join('')+
-    `<p class="efxn">${L(tr2('Click a display to open this view, Esc or × to close. The buttons work exactly like the ones on the panel.','Klikk på en skjerm for å åpne denne visningen, Esc eller × for å lukke. Knappene virker akkurat som de på panelet.'))}</p>`;
+    EFXG(right).map(([h,bs,ks])=>`<section>${ks.map(knob).join('')}${bs.length?`<div class="efg">${bs.map(btn).join('')}</div>`:''}</section>`).join('');
   if(!b.parentNode){ PST.appendChild(b); efxWire(b); } EFX.built=reg; }
 function efxSync(){ const b=EFX.box; if(!b||!EFX.open) return;
   b.querySelectorAll('[data-v]').forEach(o=>{ const v=efxVal(o.dataset.v); if(o._v!==v){ o._v=v; o.textContent=v; } });
@@ -351,14 +335,14 @@ function efxClose(){ const to=EFX.prev&&P.REG[EFX.prev]&&EFX.prev!=='efisL'&&EFX
 LAB.onLang(()=>{ if(EFX.box&&EFX.built){ const o=EFX.open; EFX.built=null; if(o){ efxBuild(o); efxSync(); } } });
 /* single click / tap on the panel (not on a control): an EADI or EHSI face opens its EFIS focus view; elsewhere in the whole-panel
    view it zooms to the instrument cluster under the pointer; when zoomed, a click outside the zoomed area goes back out.
-   A drag (3D look-around, a lever let go over the panel) is not a click. Double-click / double-tap keep working (see dblclick). */
+   A drag (3D look-around, a lever let go over the panel) is not a click. */
 let pdn=null, clickZoomT=-1e9;
 const OFFP='.efx,.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afnow,button,select,a,input';
 const inR=(p,r)=>p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
 function efisAt(p){ for(const k in B200P.EFISF) if(B200P.EFISF[k].some(r=>inR(p,r))) return k; return null; }
 PST.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:performance.now(),ok:emptyAt(e)&&!e.target.closest(OFFP)}; },true);
 PST.addEventListener('click',e=>{ const d=pdn; pdn=null;
-  if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700||performance.now()-clickZoomT<400) return; // the 2nd click of a double-tap / double-click
+  if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700||performance.now()-clickZoomT<400) return; // a quick second click: no flip-flop
   if(!emptyAt(e)||e.target.closest(OFFP)||Z.lock||(D3on&&D3.dragging)) return;
   const p=toWorld(e), f=efisAt(p), cur=Z.reg; let to=null;
   if(f){ if(f!==cur) to=f; }
@@ -366,16 +350,15 @@ PST.addEventListener('click',e=>{ const d=pdn; pdn=null;
   else if(!P.REG[cur]||!inR(p,P.REG[cur])) to=EFX.open?null:'overview';
   if(!f&&EFX.open&&!inR(p,P.REG[EFX.open])){ clickZoomT=performance.now(); efxClose(); return; }
   if(to){ clickZoomT=performance.now(); zoomTo(to); } });
-function drawZoomBar(){ el('zoomBar').innerHTML=ZN.map(([k,t],i)=>`<button class="cb${k===Z.reg?' on':''}" data-z="${k}" title="${i<10?i:''}">${L(t)}</button>`).join(''); el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
-function syncAreaUI(){ el('zoomBar').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.z===Z.reg)); el('zoomSel').value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); el('bLock').textContent=(Z.lock?'🔒 ':'🔓 ')+T(Z.lock?'Locked':'Lock view'); PST.classList.toggle('locked',Z.lock); }
+function drawZoomBar(){ el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
+function syncAreaUI(){ const zs=el('zoomSel'); if(zs.value!==Z.reg) zs.value=Z.reg; const b=el('bLock'); if(b) b.setAttribute('aria-pressed',Z.lock); PST.classList.toggle('locked',Z.lock); }
 drawZoomBar(); LAB.onLang(()=>{ drawZoomBar(); syncAreaUI(); });
-el('zoomBar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) zoomTo(b.dataset.z); });
-el('zoomSel').onchange=e=>zoomTo(e.target.value);
+el('zoomSel').onchange=e=>{ zoomTo(e.target.value); el('moreMenu').hidden=true; el('bMore').setAttribute('aria-expanded',false); };
 el('bLock').onclick=()=>{ Z.lock=!Z.lock; try{ localStorage.setItem('bb-b200-lock',Z.lock?'1':'0'); localStorage.setItem('bb-b200-zone',Z.reg); }catch(e){} syncAreaUI(); };
 try{ Z.lock=localStorage.getItem('bb-b200-lock')==='1'; const z=localStorage.getItem('bb-b200-zone'); if(Z.lock&&z&&P.REG[z]) Z.reg=z; }catch(e){}
-el('bMore').onclick=e=>{ const m=el('moreMenu'); m.hidden=!m.hidden; el('bMore').setAttribute('aria-expanded',!m.hidden); e.stopPropagation(); };
-document.addEventListener('click',e=>{ if(!e.target.closest('#moreMenu,#bMore')) el('moreMenu').hidden=true; });
-let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classList.add('chg'); flashT=3; }
+/* the … menu, drawer tabs and the one notification area: simshell.js */
+const SH=SIMSHELL;
+function flash(t){ SH.say(t,'',1800); }
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
@@ -427,7 +410,7 @@ function d3Init(){ PST.classList.add('d3wait');
   setTimeout(()=>{
     if(D3.supported&&D3.supported()&&hasWebGL()){ try{ otwReady=!!(window.OTW&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } }
     otwTried=true;
-    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v'),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; efxShow('overview'); PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; efxShow('overview'); PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
     if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); otwOn=true; PST.classList.remove('nootw','nogl'); el('bOtw').hidden=true; el('bLock').hidden=true;
       if(el('bAhead')){ el('bAhead').hidden=false; el('bAhead').onclick=()=>zoomTo('overview'); } D3.lookAhead(true); syncAreaUI(); otwMsgSync(); LAB.onLang(()=>D3.relabel()); }
     else { PST.classList.toggle('nogl',!otwReady); el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; }
@@ -703,20 +686,9 @@ const turb=slider(el('windBox'),{label:'Turbulence',min:0,max:100,step:5,v:0,f:v
 inp.rudUser=0;
 
 /* ---------- touch stick and yoke pad ---------- */
-const tStk=el('tStk');
-function setTouch(on){ el('touch').hidden=!on; el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
-el('bTouch').onclick=()=>setTouch(el('touch').hidden);
-{ let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':false); }
-let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width*0.42; let dx=(e.clientX-tO.x)/R, dy=(e.clientY-tO.y)/R; const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } const sh=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; }; inp.stick={x:sh(dx),y:sh(dy)}; const k=tStk.querySelector('i'); k.style.left=((tO.x-r.left)+dx*R)/r.width*100+'%'; k.style.top=((tO.y-r.top)+dy*R)/r.height*100+'%'; }
-tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
-tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
-['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+/* touch controls (… menu): the stick appears under a finger dragged on bare panel; nothing covers the panel (simshell.js) */
+SH.touch({stage:PST,emptyAt,d3:()=>typeof D3on!=='undefined'&&D3on,stick:v=>{ inp.stick=v; if(v) ensureAudio(); },rud:v=>{ inp.rudUser=v; }});
 /* touch rudder strip (twins: engine-out practice on a phone): drag sideways, it stays where you leave it; double-tap centres */
-const tRud=el('tRud');
-if(tRud){ const rAt=e=>{ const r=tRud.getBoundingClientRect(), v=F.clamp((e.clientX-r.left)/r.width*2-1,-1,1); inp.rudUser=Math.abs(v)<0.06?0:v; };
-  tRud.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); tRud.setPointerCapture(e.pointerId); rAt(e); ensureAudio(); });
-  tRud.addEventListener('pointermove',e=>{ if(tRud.hasPointerCapture(e.pointerId)) rAt(e); });
-  tRud.addEventListener('dblclick',()=>{ inp.rudUser=0; }); }
 const stick=el('stick'), dot=stick.querySelector('.dot');
 function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:FK.shapePad((e.clientX-r.left)/r.width*2-1),y:FK.shapePad((e.clientY-r.top)/r.height*2-1)}; } // expo: gentle near centre
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
@@ -746,7 +718,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
 window.addEventListener('blur',()=>inp.keys.clear());
-FK.hint(PST);
+FK.hint(PST); // (queued in the shell's notification area)
 
 /* ---------- sound ---------- */
 let AC=null, horn=null;
@@ -905,7 +877,7 @@ function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
     st(tr2('Landing gear — DOWN at the glide path or FAF (three green)','Understell — NED ved glidebanen eller FAF (tre grønne)'),'gear',()=>S.ctl.gear===1&&S.ctl.gearPos>0.99,{bad:()=>S.ctl.gear===1&&S.o.ias>186,sop:1}),
     st(tr2('Flaps — DOWN for landing (below 157 KIAS)','Flaps — DOWN for landing (under 157 KIAS)'),'flaps',()=>S.ctl.flap===2,{sop:1}),
     st(tr2('Minimums: land (autopilot off) or go around','Minima: land (autopilot av) eller gå rundt'),'apAP',()=>!AP.on&&(S.ground||!!AF.rec.decision))]; }
-function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
+function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on,PR.k&&PR.k!=='air'&&PR.k!=='free'?PR.k:null); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
@@ -930,13 +902,12 @@ const latch=fs=>{ const got=fs.map(()=>0); return ()=>{ fs.forEach((f,i)=>{ if(!
 const OWNCRIT={efato:{f:[()=>PR.failed&&feathered(D()),()=>S.ctl.gear===0,()=>SYS['cond'+Ds()]<0.05],t:tr2('failed engine feathered and its fuel cut off, gear up','motoren som sviktet fløyet og drivstoffet kuttet, understell oppe'),lim:[30,60]},
   fire:{f:[()=>SYS['cond'+Ds()]<0.05,()=>!SYS['fw'+Ds()],()=>!!E[D()].ext],t:tr2('fuel cut off, firewall valve closed, extinguisher fired on that engine','drivstoff kuttet, brannskottventil lukket, slukker utløst på den motoren'),lim:[15,30]},
   press:{f:[()=>!!SYS.mask,()=>idle(),()=>S.o.vs<-2000],t:tr2('masks on, power idle, descending','masker på, effekt på tomgang, i nedstigning'),lim:[15,30]}};
-const ownSteps=p=>{ const g=OWNCK.gen('B200'), own=p.own&&OCK.has(p.own); return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
-const visProcs=()=>PROCS.filter(p=>!p.gen||OWNCK.gen('B200')||p.k===PR.k);
+const ownSteps=p=>{ const g=OWNCK.gen('B200'), own=p.own&&OCK.has(p.own); if(p.gen&&!g) return []; return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
 const OCK=OWNCK.mount({type:'B200',box:el('ownck'),L,pred:k=>{ const f=OWNP[k]; return f?!!f():false; },ctl:k=>{ const c=OWNC[k]; return typeof c==='function'?c():c||null; },
   hl:id=>{ if(!curStep()) hlCtl(id); },clock:()=>DB?DB.t:0,onChange:()=>{ if(PR.k&&PR.t<2) procStart(PR.k); }});
 LAB.onLang(()=>OCK.render());
-function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b&&!b.classList.contains('on')) b.click(); } }
-function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('B200',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('B200',e.target.checked); const c=PROCS.find(x=>x.k===PR.k); procStart(c&&(!c.gen||e.target.checked)?PR.k:'free'); genToggle(); }; }
+function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); SH.tab('ck'); } }
+function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('B200',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('B200',e.target.checked); procStart(PR.k||'free'); genToggle(); }; }
 LAB.onLang(genToggle);
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
@@ -944,7 +915,7 @@ function procStart(k){
   AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:p.k==='free'?'free':'free',AIRCAPS); if(p.k==='air'){ p.all=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'B200'); } else if(!p.all) p.all=p.steps;
   p.steps=ownSteps(p);
   Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,failT:0,m:{},bad:0,crit:null}); p.steps.forEach(s=>{ delete s.b; s.okT=0; }); OCK.reset();
-  procSet(p.set); renderProc(); procFocus(); drawScenSel(); airUI(); if(DB) DB.start();
+  procSet(p.set); renderProc(); procFocus(); airUI(); if(DB) DB.start();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -952,7 +923,7 @@ function hlCtl(id){ P.svg.querySelectorAll('g.ctl.hl').forEach(g=>g.classList.re
 function procFocus(){ const s=curStep(); if(!s){ hlCtl(null); pill(null); return; } const id=ctlOf(s); hlCtl(id); pill(L(s.t));
   if(el('follow').checked&&!Z.lock){ const o=P.byId[id]; if(o){ const b=o.g.getBBox(); const k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); if(k&&k!==Z.reg) zoomTo(k); } } }
 let pillT=0;
-function pill(t,cls){ const p=el('pill'); if(!t){ p.className='pill'; return; } p.textContent=t; p.className='pill show '+(cls||''); if(cls) pillT=1.6; }
+function pill(t,cls){ if(!t){ SH.step(null); return; } if(cls){ SH.say(t,cls); pillT=1.6; } else SH.step(t); }
 function procBad(){ PR.bad=(PR.bad||0)+1; }
 function procTouch(k){ const s=curStep(); if(!s) return; const id=ctlOf(s); const base=x=>x.replace(/[LR](On)?$/,'');
   if(k==='crsK'||k==='navK'||k==='navSw') return;
@@ -978,7 +949,6 @@ function procTick(dt){
   else s.okT=0;
 }
 function renderProc(){
-  const sel=el('procSel'); sel.innerHTML=visProcs().map(p=>`<option value="${p.k}"${p.k===PR.k?' selected':''}>${L(p.t)}</option>`).join('');
   const p=PROCS.find(x=>x.k===PR.k); if(!p){ el('proc').innerHTML=''; return; }
   const cur=p.steps[PR.i];
   el('proc').innerHTML=`${cur?`<div class="next"><small>${L(tr2('Next step','Neste steg'))} ${PR.i+1}/${p.steps.length}</small><b>${L(cur.t)}</b><div class="row"><button id="pBack"${PR.i?'':' disabled'}>← ${L(tr2('Back','Tilbake'))}</button><button id="pSkip">${L(tr2('Skip','Hopp over'))} →</button></div></div>`:''}<p class="brief">${L(p.brief)}</p>${p.steps.length?`<ul class="checks">${p.steps.map((s,i)=>`<li class="${PR.done[i]===1?'ok':PR.done[i]===2?'skip':i===PR.i?'now':''}"><i>${PR.done[i]===1?'✓':PR.done[i]===2?'–':i+1}</i><span>${L(s.t)}${s.chk?`<small>${L(tr2('check','sjekk'))}</small>`:''}</span></li>`).join('')}</ul>`:''}
@@ -988,20 +958,20 @@ function renderProc(){
   el('procRe').onclick=()=>procStart(PR.k);
   const now=el('proc').querySelector('li.now'); if(now) now.scrollIntoView({block:'nearest'});
 }
-el('procSel').onchange=e=>procStart(e.target.value);
-LAB.onLang(()=>{ renderProc(); drawScenSel(); renderLim(); if(PR.k) procFocus(); });
-function drawScenSel(){ el('scenSel').innerHTML=visProcs().map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
-el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
+LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
-el('drawer').querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; el('drawer').querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b)); el('tabProc').hidden=b.dataset.t!=='proc'; el('tabLim').hidden=b.dataset.t!=='lim'; });
-const LIM=[[tr2('Torque, maximum','Moment, maks'),'2,230 ft-lb'],[tr2('ITT, take-off and maximum continuous','ITT, avgang og maks kontinuerlig'),'800 °C'],[tr2('ITT, starting (5 s)','ITT, start (5 s)'),'1,000 °C'],[tr2('N1, maximum','N1, maks'),'101.5 %'],[tr2('N1, low idle (minimum, varies by serial)','N1, low idle (minimum, varierer)'),'≈ 56–61 %'],[tr2('N1, high idle','N1, high idle'),'≈ 70 %'],[tr2('Propeller rpm, maximum','Propellturtall, maks'),'2,000'],[tr2('N1, maximum reverse','N1, maks revers'),'88 %'],[tr2('Oil pressure, normal (minimum at idle 60)','Oljetrykk, normalt (minst 60 på tomgang)'),'100–135 psi'],[tr2('Oil temperature, normal range (above 99 °C: up to 104 °C for 10 min)','Oljetemperatur, normalområde (over 99 °C: opptil 104 °C i 10 min)'),'0–99 °C'],[tr2('Autofeather: other side disarms / feather (varies by serial)','Autofeather: andre side desarmeres / fløying (varierer med serienummer)'),'≈ 400 / 200 ft-lb'],[tr2('Auto-ignition active below','Auto-tenning aktiv under'),'400 ft-lb'],
- ['VMCA','86 KIAS'],[tr2('VYSE (blue line)','VYSE (blå linje)'),'121 KIAS'],['VMO','259 KIAS'],[tr2('VFE approach / full flaps','VFE approach / fulle flaps'),'200 / 157 KIAS'],[tr2('VLO extend and VLE','VLO ut og VLE'),'181 KIAS'],[tr2('VLO retract','VLO inn'),'163 KIAS'],[tr2('Cabin differential, normal maximum (red line 6.6)','Kabintrykkforskjell, normal maks (rød strek 6,6)'),'6.5 psi'],[tr2('Cabin altitude warning (ALT WARN)','Kabinhøydevarsel (ALT WARN)'),'12,500 ft']];
-function renderLim(){ el('tabLim').innerHTML=`<p class="warnline">${L(tr2('Typical King Air B200 values for learning — verify in your AFM/POH; they vary with serial number.','Typiske King Air B200-verdier for læring — kontroller i AFM/POH; de varierer med serienummer.'))}</p><table class="lim">${LIM.map(([a,b])=>`<tr><td>${L(a)}</td><td>${b}</td></tr>`).join('')}</table>`; }
-renderLim();
+/* ---------- Procedures drawer: Speeds, Emergency and Failures tabs (the same component on every trainer, simshell.js) ---------- */
+const PD=B200PROCS;
+SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });
+const scenProcs=()=>PD.SCENS.map(k=>PROCS.find(p=>p.k===k)).filter(Boolean);
+SH.pane('em',box=>{ box.innerHTML=SH.emerHTML({own:OCK.emer(),disc:PD.DISC,refs:scenProcs().map(p=>({t:p.t,steps:(p.all||p.steps).map(x=>x.t)}))}); });
+SH.pane('fl',box=>{ box.innerHTML=SH.failHTML({now:PD.FAILS,scen:scenProcs().map(p=>({k:p.k,t:p.t}))}); });
+el('tabEm').addEventListener('click',e=>{ const b=e.target.closest('button[data-poem]'); if(b){ OCK.open(+b.dataset.poem); SH.tab('ck'); } });
+el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const t=el(b.dataset.fx); if(t) t.click(); } else if(b.dataset.sk){ procStart(b.dataset.sk); SH.tab('ck'); } });
 
 /* ---------- messages ---------- */
-function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
+function msg(m){ SH.say(L(m),'bad',5000); }
 
 /* ---------- instruments ---------- */
 let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now(), lastSlow=-1e9, engTxt='';
@@ -1188,14 +1158,12 @@ function loop(t){
 let wasCrash=null;
 function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
-  if(tRud&&!el('touch').hidden){ const k=tRud.firstChild, l=(50+inp.rudUser*44)+'%'; if(k._l!==l){ k._l=l; k.style.left=l; tRud.setAttribute('aria-valuenow',Math.round(inp.rudUser*100)); } }
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
   { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; } // write only on change: each write is a layout
-  if(flashT>0) flashT-=0.12; else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
   ['L','R'].forEach((s,i)=>{ const b=el('fail'+s), f=!!E[i].fail; if(b.disabled!==f) b.disabled=f; });
   if(AF.on&&AF.fix&&GPSW[AF.fix]&&SYS.gpsWpt!==AF.fix) SYS.gpsWpt=AF.fix;
-  if(AIRUI){ AIRUI.banner(AF.on,L(tr2('AUTO-FLY','AUTOFLY'))+' · '+L(tr2('autopilot flies, you run the checklists','autopiloten flyr, du tar sjekklistene')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
+  if(AIRUI){ AIRUI.banner(AF.on,L(tr2('AUTO-FLY','AUTOFLY')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
 }
 
@@ -1203,10 +1171,13 @@ function slowUI(o){
 const QB=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&['power','press','fire','lim','emer','ice'].includes(q.ch)&&Array.isArray(q.a)&&Number.isInteger(q.c));
 if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).map(q=>({q:q.q,a:q.a,c:q.c,e:q.e})));
 
-LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,efx:()=>EFX.open,to:zoomTo,svg:P.svg}; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
+LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,s:()=>Z.s,efx:()=>EFX.open,to:zoomTo,svg:P.svg}; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,type:'B200',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b) b.click(); }}); LAB.onLang(airUI);
+/* ✈ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
+AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,type:'B200',onPick:pickProc,onAuto:toggleAuto,
+  ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>{ procStart(k); setDrawer(true); SH.tab('ck'); },
+  onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'B200',page:document.body.dataset.d3?'b200-3d':'b200',S,F,AF,after:AIRUI.btn,tqMax:2230,ittMax:800,ap:()=>AP.on,
   eng:()=>{ let d=0, s=0; for(let i=0;i<2;i++){ const e=E[i], sd=SIDES[i]; if(e.fail||(!e.lit&&!S.ground)) d|=1<<i; if(feathered(i)||SYS['cond'+sd]===0||SYS['fw'+sd]===0) s|=1<<i; } return [d,s,Math.max(E[0].tq,E[1].tq),Math.max(E[0].itt,E[1].itt)]; },

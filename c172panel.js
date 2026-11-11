@@ -462,7 +462,7 @@ ${lab(970,1098,'NOSE\nDOWN',{s:4.2,a:'end'})}${lab(970,1192,'NOSE\nUP',{s:4.2,a:
 <path d="M1040 1104h22v10h-22z" class="micbr"/>
 ${colTube(YK.L[0],YK.L[1])}${colTube(YK.R[0],YK.R[1])}
 <g class="ctls">${C.map(ctlSVG).join('')}</g>
-<g class="mags">${Object.keys(MAGS).map(k=>{ const [x,y]=MAGS[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="11"/><circle cx="${x-2}" cy="${y-2}" r="4.5" class="mgl"/><path d="M${x+2} ${y+2}l4.5 4.5" class="mgl"/></g>`; }).join('')}</g>
+<g class="mags"></g>
 </svg>`;
 }
 

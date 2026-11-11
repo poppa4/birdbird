@@ -89,6 +89,8 @@ function hint(host){
   if(G.LAB&&G.LAB.add) G.LAB.add({},NO);
   try{ if(localStorage.getItem(KEY)) return null; }catch(e){ return null; }
   if(G.matchMedia&&!G.matchMedia('(pointer:fine)').matches) return null;
+  // the cockpit trainers' shell has one notification area: the hint waits there until it is free (shown once)
+  if(G.SIMSHELL&&G.SIMSHELL.tip){ G.SIMSHELL.tip(TXT.hint[lang()],KEY,9000); return null; }
   host=host||document.body; const d=document.createElement('div'); d.className='fkhint'; d.setAttribute('role','note');
   if(!document.getElementById('fkhintcss')){ const st=document.createElement('style'); st.id='fkhintcss';
     st.textContent='.fkhint{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);z-index:30;max-width:min(560px,calc(100% - 24px));display:flex;gap:10px;align-items:center;padding:8px 10px 8px 14px;border-radius:10px;background:rgba(14,20,27,.88);border:1px solid rgba(255,255,255,.14);color:#dfe7ee;font:12.5px/1.45 system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35);pointer-events:auto}.fkhint kbd{color:inherit;font:11px/1 ui-monospace,monospace;padding:2px 5px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}.fkhint button{flex:none;font:inherit;font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:inherit;cursor:pointer}.fkhint button:hover{background:rgba(255,255,255,.16)}';

@@ -21,6 +21,7 @@
 .d3t{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;max-width:min(92%,520px);background:rgba(14,17,20,.94);border:1px solid #ffcf3a;color:#fff;border-radius:10px;padding:8px 12px;font:600 12.5px/1.4 system-ui;display:flex;gap:10px;align-items:center}
 .d3t a{color:#ffcf3a}.d3t button{background:none;border:0;color:#9fb0bd;font-size:16px;cursor:pointer;padding:0 2px}
 </style>
+<link rel="stylesheet" href="simshell.css?v=1">
 </head>
 <body data-title="Cessna 172 3D (beta)" data-d3="c172.html">
 <script src="site.js?v=63"></script>
@@ -37,37 +38,28 @@
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="da42-3d.html">DA42</option><option value="b200-3d.html">King Air B200</option><option value="c172-3d.html" selected>Cessna 172</option></select><span class="dseg" role="group" aria-label="View"><a href="c172.html">2D</a><a href="c172-3d.html" class=on aria-current=page>3D<small>beta</small></a></span>
-      <select class="cb" id="scenSel" aria-label="Scenario"></select>
-      <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
-      <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
-      <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
-      <span class="stat" id="stat2"></span>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="da42-3d.html">DA42</option><option value="b200-3d.html">King Air B200</option><option value="c172-3d.html" selected>Cessna 172</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="c172.html">2D</a><a href="c172-3d.html" class=on aria-current=page>3D<small>beta</small></a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"></select>
+      <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
-      <button class="cb" id="bAhead" hidden>Look ahead</button><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
-      <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+      <button class="cb" id="bMore" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
         <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack">← Whole panel</button>
-        <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
+        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><button class="cb" id="bLock" type="button" aria-pressed="false">Lock view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
-        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
-      <aside class="drawer" id="drawer" aria-label="Procedures and limitations"><div class="din">
-        <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="lim">Limits</button></div>
-        <div id="tabProc">
-          <div id="ownck"></div>
-          <select id="procSel" aria-label="Procedure"></select>
-          <div id="genT"></div>
-          <p class="warnline">For training only — follow the POH/AFM and your school's checklist.</p>
-          <div id="proc"></div>
-          <label><input type="checkbox" id="follow"> Zoom to the next control</label>
-          <div class="eng" id="engRead"></div>
-        </div>
-        <div id="tabLim" hidden></div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="em" role="tab" aria-selected="false">Emergency</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"><div id="ownck"></div><div id="proc"></div><div id="genT"></div><label class="fol"><input type="checkbox" id="follow"> Zoom to the next control</label><div class="eng" id="engRead"></div></div>
+        <div id="tabEm" hidden></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -77,7 +69,7 @@
     <h2>Flight controls</h2>
     <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.</p>
     <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
-      <div class="box"><b class="t">Look around</b><p>Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.</p></div>
+      <div class="box"><b class="t">Look around</b><p>Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.</p></div>
       <div class="box"><b class="t">Switches and knobs</b><p>Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.</p></div>
       <div class="box"><b class="t">Ignition key</b><p>Click the key to step OFF → R → L → BOTH. Press and hold on START (or hold an arrow key at BOTH) to crank; it springs back to BOTH when you let go.</p></div>
       <div class="box"><b class="t">Radios and instrument knobs</b><p>Scroll on a knob or drag across it. On the double frequency knobs the outer ring changes MHz and the centre (or Shift) the decimals; ⇆ swaps standby and in-use. OBS knobs set the course, the altimeter knob the pressure setting.</p></div>
@@ -152,27 +144,29 @@
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=10"></script>
-<script src="flightkeys.js?v=2"></script>
-<script src="airproc.js?v=3"></script>
-<script src="otw.js?v=12"></script>
+<script src="flightkeys.js?v=3"></script>
+<script src="airproc.js?v=4"></script>
+<script src="otw.js?v=13"></script>
 <script src="cockpit3d.js?v=4"></script>
 <script src="c172-3d.js?v=2"></script>
 <script src="c172core.js?v=1"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=1"></script>
-<script src="c172panel.js?v=6"></script>
+<script src="panelzoom.js?v=2"></script>
+<script src="c172panel.js?v=7"></script>
 <script src="lab.js?v=47"></script>
+<script src="simshell.js?v=1"></script>
 <script>
 LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','Cessna 172 3D (beta)':'Cessna 172 3D (beta)','Beta':'Beta','2D':'2D','Classic 2D panel':'Klassisk 2D-panel','Look ahead':'Se fremover','Look around':'Se deg rundt',
  'Sit in the left seat of the high-wing cabin and look around: the windshield and door posts, the wing above the door window, the control wheels, the trim wheel and the fuel selector on the floor, with the same live panel, checklists, failures and air starts as the classic trainer.':'Sett deg i venstre sete i høyvingekabinen og se deg rundt: frontruta og dørstolpene, vingen over dørvinduet, rattene, trimhjulet og drivstoffvelgeren på gulvet, med det samme levende panelet, sjekklistene, feilene og luftstartene som i den klassiske treneren.',
- 'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Visningsknappene i hjørnet hopper til panelet, sidevinduene, pedestallen og rett frem. Dobbeltklikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, K (eller talltastaturet) ser til venstre, høyre, opp og ned. Dra i et ratt for å fly.',
+ 'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Visningsknappene i hjørnet hopper til panelet, sidevinduene, pedestallen og rett frem. Klikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, K (eller talltastaturet) ser til venstre, høyre, opp og ned. Dra i et ratt for å fly.',
  'Views':'Visninger','Panel':'Panel','Left':'Venstre','Right':'Høyre','Pedestal':'Pedestall','Outside':'Ute','Upper panel':'Øvre panel','Fuel panel':'Drivstoffpanel','Breakers':'Sikringer',
  '3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.',
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D Cessna 172 trainer':'den klassiske 2D-treneren for Cessna 172'});
 </script>
-<script src="simdebrief.js?v=3"></script>
+<script src="simdebrief.js?v=4"></script>
 <script src="ownck.js?v=1"></script>
-<script src="c172-app.js?v=8"></script>
+<script src="c172procs.js?v=1"></script>
+<script src="c172-app.js?v=9"></script>
 </body>
 </html>

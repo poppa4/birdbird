@@ -370,7 +370,10 @@ function quality(low){ if(!R) return; const lv=low===2?2:low?1:0; if(lv===G.OTW.
   // lowest level: half the clouds (sortClouds) and half the trees
   if(trees) trees.forEach(t=>{ t.count=lv===2?t.userData.n>>1:t.userData.n; }); }
 /* ?perf=1: a small on-screen meter (bottom left, clear of the toolbar and the view buttons; never takes the pointer) (frame rate, frame time, worst frame, quality tier) for checking speed on a phone */
-function hud(){ const d=document.createElement('div'); d.setAttribute('aria-hidden','true');
+let hudEl=null;
+function hud(on){ if(on===false){ if(hudEl){ hudEl.remove(); hudEl=null; } try{ localStorage.removeItem('bb-perfhud'); }catch(e){} return; }
+  if(hudEl) return; try{ if(on===true) localStorage.setItem('bb-perfhud','1'); }catch(e){}
+  const d=hudEl=document.createElement('div'); d.setAttribute('aria-hidden','true');
   d.style.cssText='position:fixed;left:6px;bottom:calc(46px + env(safe-area-inset-bottom,0px));z-index:2147483647;pointer-events:none;font:600 10px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#d8ffe0;background:rgba(0,0,0,.5);opacity:.8;padding:3px 6px;border-radius:5px;white-space:pre';
   const add=()=>document.body.appendChild(d); if(document.body) add(); else addEventListener('DOMContentLoaded',add);
   let n=0, sum=0, worst=0, last=0, t0=performance.now(), lt=0;
@@ -382,8 +385,9 @@ function hud(){ const d=document.createElement('div'); d.setAttribute('aria-hidd
     if(t-t0>=500){ const m=performance.memory?' · '+Math.round(performance.memory.usedJSHeapSize/1048576)+' MB':'';
       d.textContent=(n?Math.round(n*1000/(t-t0)):0)+' fps · '+(n?(sum/n).toFixed(1):'-')+' ms · max '+Math.round(worst)+' ms'+(lt>=0?' · long '+lt:'')+m+'\n'+tier();
       n=0; sum=0; worst=0; t0=t; }
-    requestAnimationFrame(f); };
+    if(hudEl===d) requestAnimationFrame(f); };
   requestAnimationFrame(f); }
-if(/[?&]perf=1(&|$)/.test(location.search)) hud();
-G.OTW={init,render,render3d,quality,frame,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
+/* ?perf=1 (or the … menu's Performance meter, remembered in this browser) */
+if(/[?&]perf=1(&|$)/.test(location.search)) hud(); else { try{ if(localStorage.getItem('bb-perfhud')==='1') hud(); }catch(e){} }
+G.OTW={init,render,render3d,quality,frame,hud,hudOn:()=>!!hudEl,get fov(){ return cam?{h:2*HF,v:cam.fov,w:W,h_:H}:null; },low:false,lvl:0,renderer:()=>R};
 })(window);

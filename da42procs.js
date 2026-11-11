@@ -602,40 +602,9 @@ function build(env){
   return out; }
 
 /* ---------- drawer renderer ---------- */
-const CSS=`
-.pnav{display:flex;gap:4px;margin:2px 0 8px;align-items:stretch}.pnav button{flex:1;font:600 12px system-ui;padding:6px 4px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.pnav button.on{background:#e8edf1;color:#0d1319}.pnav .aa{flex:0 0 34px;font-weight:800}
-.pdisc{font-size:11px;color:#c9a94a;line-height:1.35;margin:0 0 8px}
-.psrch{width:100%;box-sizing:border-box;font:500 13px system-ui;padding:8px 10px;border-radius:7px;border:1px solid #333a42;background:#0d1115;color:#fff;margin-bottom:8px}
-.pgrp{font:700 10.5px system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8e9aa5;margin:10px 0 4px}
-.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
-.plist button{width:100%;text-align:left;display:flex;gap:8px;align-items:center;font:600 12.5px system-ui;padding:8px 9px;border-radius:7px;border:1px solid #262c33;background:#161b20;color:#e6ebef;cursor:pointer}
-.plist button:hover,.plist button:focus-visible{border-color:#7fcbe8;outline:none}.plist .rf{margin-left:auto;font:500 10.5px system-ui;color:#7d8a95;white-space:nowrap}
-.plist .mk{flex:0 0 auto;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#5a1a14;color:#ffb4a8;letter-spacing:.04em}
-.plist .sk{flex:0 0 auto;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#13324a;color:#9ed8f5}
-.pspd{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.pspd col.a{width:46px}.pspd col.c{width:34%}.pspd td{padding:5px 4px;border-bottom:1px solid #232930;color:#dfe5ea;vertical-align:top}.pspd td:first-child{font-weight:800;color:#fff;white-space:nowrap}.pspd td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:#fff;font-weight:700}
-.plim{margin:10px 0 0;padding-left:16px;color:#a9b5bf;font-size:11.5px}.plim li{margin:3px 0}
-.phd{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}.phd>div{flex:1;min-width:0}.phd h3{margin:0!important;font-size:15px!important;line-height:1.25}.phd small{display:block;color:#8e9aa5;font:500 11px system-ui;margin-top:2px}
-.phd .x{flex:0 0 auto;font:600 12px system-ui;padding:5px 8px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.pside{display:flex;gap:4px;align-items:center;margin:4px 0 8px;font-size:12px;color:#a9b5bf}.pside button{font:700 12px system-ui;padding:5px 12px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}.pside button.on{background:#ffcf3a;color:#111;border-color:#ffcf3a}
-.palert{border:2px solid #ff5a47;background:#2a0f0c;color:#fff;border-radius:8px;padding:8px 10px;margin:0 0 8px;font:800 13px system-ui;letter-spacing:.03em;animation:pblink 1s steps(2) 3}.palert small{display:block;font:500 11.5px system-ui;color:#ffc9c1;letter-spacing:0;margin-top:2px}
-.pwait{border:1px dashed #4a5560;border-radius:8px;padding:8px 10px;color:#c6d0d8;font-size:12.5px;margin:0 0 8px}
-@keyframes pblink{50%{opacity:.55}}
-.pnote{font-size:11.5px;color:#c6d0d8;background:#182029;border-left:3px solid #7fcbe8;padding:6px 8px;border-radius:4px;margin:0 0 8px}
-.checks li.sec{background:none;border:0;padding:8px 2px 0;font:700 10.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#8e9aa5}
-.checks li.mem{border-left:3px solid #ff5a47}.checks li .tg{display:inline-block;font:800 9px system-ui;letter-spacing:.05em;padding:1px 4px;border-radius:3px;background:#5a1a14;color:#ffb4a8;margin-left:6px;vertical-align:1px}
-.checks li .tg.man{background:#26313c;color:#b8c4ce}.checks li .call{display:block;color:#9ed8f5;font-size:11px;font-style:italic;margin-top:2px}
-.checks li.now.man{cursor:pointer}
-.drawer .next .mtag{display:inline-block;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#ff5a47;color:#fff;margin-left:6px;letter-spacing:.05em;vertical-align:2px}
-.drawer .next .call{display:block;color:#9ed8f5;font-size:12px;font-style:italic;margin-top:3px}
-.drawer .next button.done{background:#3cdc6e;color:#0d1319;border-color:#3cdc6e;font-weight:800}
-.drawer.big.open,.drawer.big .din{width:min(440px,46vw)}
-.drawer.big .din{font-size:15px}.drawer.big .checks li{font-size:15px;padding:9px 10px}.drawer.big .checks li i{flex-basis:21px;height:21px;font-size:12px}
-.drawer.big .next b{font-size:19px}.drawer.big .plist button{font-size:15px;padding:10px}.drawer.big .pspd{font-size:14.5px}.drawer.big .brief,.drawer.big .pnote{font-size:14px}
-.drawer.big .row button{font-size:14.5px;padding:10px}.drawer.big .checks li .call{font-size:13px}
-@media (max-height:500px){.drawer.big.open,.drawer.big .din{width:min(360px,46vw)}.drawer.big .din{font-size:13.5px}.drawer.big .checks li{font-size:13.5px;padding:7px 8px}.drawer.big .next b{font-size:16px}}
-`;
-let cssOn=false; function css(){ if(cssOn||typeof document==='undefined') return; cssOn=true; const s=document.createElement('style'); s.textContent=CSS; document.head.appendChild(s); }
+/* the drawer styles are shared by all three trainers: simshell.css */
+const CSS='';
+function css(){}
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const W=(en,no)=>({en,no});
 const TXT={flows:W('Flows','Flyter'),emer:W('Emergency','Nød'),scen:W('Scenarios','Scenarier'),spd:W('Speeds','Farter'),
@@ -660,6 +629,15 @@ function navHTML(st,L){ const tab=st.tab||'flows', q=st.q||'';
     body=(st.ownEm&&st.ownEm.length?`<div class="pgrp">${esc(L(TXT.ownEm))}</div><ul class="plist">${st.ownEm.map(x=>`<li><button data-poem="${x.i}"><span>${esc(x.t)}</span></button></li>`).join('')}</ul><div class="pgrp">${esc(L(TXT.afmH))}</div>`:'')+`<input class="psrch" type="search" data-psearch value="${esc(q)}" placeholder="${esc(L(TXT.search))}" aria-label="${esc(L(TXT.search))}"><p class="brief">${esc(L(TXT.pickEmer))}</p>`+
       (hits.length?GROUPS.map(([g,gt])=>{ const h=hits.filter(p=>p.g===g); return h.length?`<div class="pgrp">${esc(L(gt))}</div><ul class="plist">${h.map(p=>item(p.id,subT(p.t,st.side||0),p.ref.replace(/^AFM /,''),(p.items.some(i=>i.mem)?`<span class="mk" title="${esc(L(TXT.memH))}">M</span>`:'')+(simK.has(p.id)?`<span class="sk">${esc(L(TXT.sim))}</span>`:''))).join('')}</ul>`:''; }).join(''):`<p class="brief">${esc(L(TXT.none))}</p>`); }
   return `<div class="pnav" role="group">${tabs}</div><p class="pdisc">${esc(L(DISC))}</p>${body}`; }
+/* the shell's drawer tabs (simshell.js): Checklist (generic flows), Emergency (the AFM list with search) */
+function flowsHTML(st,L){ const item=(k,t,rf)=>`<li><button data-pk="${k}"><span>${esc(L(t))}</span><span class="rf">${esc(rf||'')}</span></button></li>`;
+  let h=`<label class="ock-gen"><input type="checkbox" data-ockgen${st.gen?' checked':''}> <span>${esc(L(GENL))}</span></label>`;
+  if(st.gen) h+=`<p class="brief">${esc(L(TXT.pickFlow))}</p>`+['gnd','flt'].map(g=>`<div class="pgrp">${esc(L(TXT[g]))}</div><ul class="plist">${FLOWS.filter(p=>p.g===g).map(p=>item(p.id,p.t,p.ref.replace(/^AFM /,''))).join('')}</ul>`).join('');
+  return h; }
+function emerListHTML(st,L){ const q=st.q||'', hits=search(q), simK=new Set(SCENS.map(s=>s.proc));
+  const item=(k,t,rf,tags)=>`<li><button data-pk="${k}">${tags||''}<span>${esc(L(t))}</span><span class="rf">${esc(rf||'')}</span></button></li>`;
+  return `<input class="psrch" type="search" data-psearch value="${esc(q)}" placeholder="${esc(L(TXT.search))}" aria-label="${esc(L(TXT.search))}"><p class="brief">${esc(L(TXT.pickEmer))}</p>`+
+    (hits.length?GROUPS.map(([g,gt])=>{ const h=hits.filter(p=>p.g===g); return h.length?`<div class="pgrp">${esc(L(gt))}</div><ul class="plist">${h.map(p=>item(p.id,subT(p.t,st.side||0),p.ref.replace(/^AFM /,''),(p.items.some(i=>i.mem)?`<span class="mk" title="${esc(L(TXT.memH))}">M</span>`:'')+(simK.has(p.id)?`<span class="sk">${esc(L(TXT.sim))}</span>`:''))).join('')}</ul>`:''; }).join(''):`<p class="brief">${esc(L(TXT.none))}</p>`); }
 /* the running checklist. st: {p (built proc), i, done[], side, failed, alertText, big} */
 function runHTML(st,L){ const p=st.p, steps=p.steps, cur=steps[st.i];
   const title=p.title||p.t;
@@ -678,5 +656,5 @@ function runHTML(st,L){ const p=st.p, steps=p.steps, cur=steps[st.i];
   h+=`<div class="row"><button data-prestart>${esc(L({en:'Restart',no:'Start på nytt'}))}</button>${p.kind!=='emer'?`<button data-pfree>${esc(L({en:'Free flight',no:'Fri flyging'}))}</button>`:''}</div><p class="pdisc" style="margin-top:10px">${esc(L(DISC))}</p>`;
   return h; }
 
-G.DA42PROCS={DISC,GENL,VARIANT,CK,FLOWS,EMER,SCENS,FAILS,GROUPS,SPEEDS,LIMITS,CALL,find,search,label,sub,subT,toSteps,build,css,navHTML,runHTML,all:ALL};
+G.DA42PROCS={DISC,GENL,VARIANT,CK,FLOWS,EMER,SCENS,FAILS,GROUPS,SPEEDS,LIMITS,CALL,find,search,label,sub,subT,toSteps,build,css,navHTML,runHTML,flowsHTML,emerListHTML,TXT,all:ALL};
 })(typeof window!=='undefined'?window:globalThis);

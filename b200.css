@@ -385,3 +385,6 @@
 .efb:focus-visible,.efs:focus-visible,.efxx:focus-visible{outline:2px solid #7fd8ff;outline-offset:1px}
 .efxn{margin:6px 0 0;font:500 10.5px/1.35 system-ui;color:#8796a3}
 @media (max-height:520px){.efx{width:min(250px,30vw);padding:6px 8px;top:6px;bottom:6px}.efb{min-height:32px}.efs{min-width:32px;height:32px}.efxn{display:none}.efx h4{margin-bottom:3px}}
+/* EFIS focus: a compact strip with only that side's own controls (CRS, HDG, NAV source, bearing pointers, DH) */
+.efx{bottom:auto;max-height:calc(100% - 16px);width:clamp(200px,19vw,236px)}
+.efx section{border-top:0;padding:2px 0 0}

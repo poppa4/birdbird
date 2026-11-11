@@ -7,7 +7,8 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=17">
-<link rel="stylesheet" href="b200.css?v=14">
+<link rel="stylesheet" href="b200.css?v=15">
+<link rel="stylesheet" href="simshell.css?v=1">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=63"></script>
@@ -24,37 +25,28 @@
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html" selected>King Air B200</option><option value="c172.html">Cessna 172</option></select><span class="dseg" role="group" aria-label="View"><a href="b200.html" class=on aria-current=page>2D</a><a href="b200-3d.html">3D<small>beta</small></a></span>
-      <select class="cb" id="scenSel" aria-label="Scenario"></select>
-      <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
-      <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
-      <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
-      <span class="stat" id="stat2"></span>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="b200.html" selected>King Air B200</option><option value="c172.html">Cessna 172</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="b200.html" class=on aria-current=page>2D</a><a href="b200-3d.html">3D</a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"></select>
+      <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
-      <button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
-      <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+      <button class="cb" id="bMore" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
         <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack">← Whole panel</button>
-        <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
+        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><button class="cb" id="bLock" type="button" aria-pressed="false">Lock view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
-        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div><div class="tz trud" id="tRud" role="slider" aria-label="Rudder" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0"><i></i><small>Rudder</small></div></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
-      <aside class="drawer" id="drawer" aria-label="Procedures and limitations"><div class="din">
-        <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="lim">Limits</button></div>
-        <div id="tabProc">
-          <div id="ownck"></div>
-          <select id="procSel" aria-label="Procedure"></select>
-          <div id="genT"></div>
-          <p class="warnline">For training only — follow the AFM/POH and your operator's SOP.</p>
-          <div id="proc"></div>
-          <label><input type="checkbox" id="follow"> Zoom to the next control</label>
-          <div class="eng" id="engRead"></div>
-        </div>
-        <div id="tabLim" hidden></div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="em" role="tab" aria-selected="false">Emergency</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"><div id="ownck"></div><div id="proc"></div><div id="genT"></div><label class="fol"><input type="checkbox" id="follow"> Zoom to the next control</label><div class="eng" id="engRead"></div></div>
+        <div id="tabEm" hidden></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -64,7 +56,7 @@
     <h2>Flight controls</h2>
     <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.</p>
     <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
-      <div class="box"><b class="t">Zoom</b><p>Click an instrument to zoom to it, or pick an area in the toolbar or press 0–9. Click an EADI or EHSI to bring up that side's EFIS with all its controls beside it. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.</p></div>
+      <div class="box"><b class="t">Zoom</b><p>Click or tap an instrument to zoom to it (pinch on a touch screen), or press 0–9. Click an EADI or EHSI to bring up that side's displays with its own controls (CRS, HDG, NAV source, bearing pointers, DH) beside them. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.</p></div>
       <div class="box"><b class="t">Switches</b><p>Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.</p></div>
       <div class="box"><b class="t">Levers</b><p>Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.</p></div>
       <div class="box"><b class="t">Knobs</b><p>Scroll on a knob or drag across it. HDG and CRS set the heading bug and the course on the HSI, ALT SEL the altitude alerter, CABIN ALT and RATE the pressurisation controller.</p></div>
@@ -136,16 +128,18 @@
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=10"></script>
-<script src="flightkeys.js?v=2"></script>
-<script src="airproc.js?v=3"></script>
-<script src="otw.js?v=12"></script>
+<script src="flightkeys.js?v=3"></script>
+<script src="airproc.js?v=4"></script>
+<script src="otw.js?v=13"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=1"></script>
+<script src="panelzoom.js?v=2"></script>
 <script src="b200panel.js?v=11"></script>
 <script src="b200-qbank.js"></script>
 <script src="lab.js?v=47"></script>
-<script src="simdebrief.js?v=3"></script>
+<script src="simshell.js?v=1"></script>
+<script src="simdebrief.js?v=4"></script>
 <script src="ownck.js?v=1"></script>
-<script src="b200-app.js?v=10"></script>
+<script src="b200procs.js?v=1"></script>
+<script src="b200-app.js?v=11"></script>
 </body>
 </html>

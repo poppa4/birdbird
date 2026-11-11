@@ -493,8 +493,8 @@ function attach(o){
   function finish(why){ if(!st.on) return; st.on=false; endWhy=why; const D=build(false); last=D; try{ save(D); }catch(e){}
     if(o.onEnd) try{ o.onEnd(D); }catch(e){}
     /* the debrief never opens by itself unless the student chose so (… menu); otherwise the Debrief button gets a calm dot */
-    if(!o.noAuto&&autoOpen()) setTimeout(()=>render(D,ctl),0); else markReady(true); }
-  function markReady(on){ if(ctl&&ctl.btn){ ctl.btn.classList.toggle('sdb-ready',!!on); } }
+    if(!o.noAuto&&autoOpen()){ setTimeout(()=>render(D,ctl),0); if(ctl.btn) ctl.btn.hidden=false; } else markReady(true); }
+  function markReady(on){ if(ctl&&ctl.btn){ ctl.btn.classList.toggle('sdb-ready',!!on); if(on) ctl.btn.hidden=false; else if(!st.on||st.t<1) ctl.btn.hidden=true; } }
   const ctl={
     start, finish, get t(){ return st.t; },
     tick(dt){ if(!st.on||!(dt>0)) return; st.t+=dt; st.acc+=dt; if(st.acc<DT&&!S.crash) return; st.acc-=DT; if(st.acc>DT) st.acc=0; sample(); },
@@ -502,16 +502,18 @@ function attach(o){
     get last(){ return last; }, get recording(){ return st.on; }, get n(){ return ring.n; },
     again:o.again, next:o.next, onClose:o.onClose
   };
-  /* Debrief button in the toolbar */
-  if(typeof document!=='undefined'&&o.after){ const b=document.createElement('button'); b.className='cb'; b.id='bDebrief'; b.type='button';
-    const lab=()=>{ const L=(G.LAB&&G.LAB.L)?G.LAB.L:(x=>x.en); b.textContent=L(tr('Debrief','Debrief')); b.title=L(tr('Debrief: score and replay of this flight','Debrief: vurdering og gjennomgang av denne flygingen')); };
-    lab(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(()=>{ lab(); if(SHEET&&!SHEET.hidden&&CUR&&CUR.ctl===ctl) render(CUR.D,ctl); });
-    b.onclick=()=>{ markReady(false); ctl.open(); }; o.after.insertAdjacentElement('afterend',b); ctl.btn=b;
-    /* setting in the page's … menu: open the debrief automatically after landing (default off) */
-    const mm=document.getElementById('moreMenu');
-    if(mm&&!document.getElementById('bDbAuto')){ const a=document.createElement('button'); a.className='cb'; a.id='bDbAuto'; a.type='button';
-      const al=()=>{ const L=(G.LAB&&G.LAB.L)?G.LAB.L:(x=>x.en); const on=autoOpen(); a.setAttribute('aria-pressed',on); a.textContent=L(on?tr('Open debrief after landing: on','Åpne debrief etter landing: på'):tr('Open debrief after landing: off','Åpne debrief etter landing: av')); };
-      a.onclick=()=>{ try{ localStorage.setItem(AUTOK,autoOpen()?'0':'1'); }catch(e){} al(); }; al(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(al); mm.appendChild(a); }
+  /* Debrief: the toolbar button shows only after a flight (with a calm dot) and stays until the next start; "Debrief now" in the
+     page's … menu opens it at any time; the menu also holds the setting "open debrief after landing" (default off) */
+  if(typeof document!=='undefined'){ const L=()=>(G.LAB&&G.LAB.L)?G.LAB.L:(x=>x.en);
+    let b=document.getElementById('bDebrief');
+    if(!b&&o.after){ b=document.createElement('button'); b.className='cb'; b.id='bDebrief'; b.type='button'; b.hidden=true; o.after.insertAdjacentElement('afterend',b); }
+    if(b){ const lab=()=>{ b.textContent=L()(tr('Debrief','Debrief')); b.title=L()(tr('Debrief: score and replay of this flight','Debrief: vurdering og gjennomgang av denne flygingen')); };
+      lab(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(()=>{ lab(); if(SHEET&&!SHEET.hidden&&CUR&&CUR.ctl===ctl) render(CUR.D,ctl); });
+      b.onclick=()=>{ b.classList.remove('sdb-ready'); ctl.open(); }; ctl.btn=b; }
+    const now=document.getElementById('bDbNow'); if(now) now.onclick=()=>ctl.open();
+    const a=document.getElementById('bDbAuto');
+    if(a){ const al=()=>{ const on=autoOpen(); a.setAttribute('aria-pressed',on); a.textContent=L()(tr('Open debrief after landing','Åpne debrief etter landing')); };
+      a.onclick=()=>{ try{ localStorage.setItem(AUTOK,autoOpen()?'0':'1'); }catch(e){} al(); }; al(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(al); }
     readyCss(); }
   return ctl;
 }

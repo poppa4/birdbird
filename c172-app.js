@@ -12,7 +12,7 @@ LAB.add({},{
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the POH/AFM and your school's checklist.":'Kun for trening — følg POH/AFM og skolens sjekkliste.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
- 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Pick an area in the toolbar, click a magnifier, double-click an empty part of the panel, or press 0–9. Esc or the back button zooms out. Lock view keeps the zoom while you work.':'Velg et område i verktøylinjen, klikk på et forstørrelsesglass, dobbeltklikk på en tom del av panelet, eller trykk 0–9. Esc eller tilbakeknappen zoomer ut. «Lås visning» holder zoomen mens du jobber.',
+ 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click or tap an instrument to zoom to it; click outside it, press Esc or use ← Whole panel to go back. Pinch to zoom on a touch screen. Keys 0–9 jump between areas; Lock view and Panel area are in the … menu.':'Klikk eller trykk på et instrument for å zoome inn på det; klikk utenfor, trykk Esc eller bruk ← Hele panelet for å gå tilbake. Knip for å zoome på berøringsskjerm. Tastene 0–9 hopper mellom områdene; «Lås visning» og «Panelområde» finner du i …-menyen.',
  'Switches and knobs':'Brytere og knotter','Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.':'Klikk på en vippe- eller vippebryter for å slå den om. Trekk-skyv-knotter (forgasservarme, primer, kabinvarme og -luft, parkeringsbrems) går inn og ut med et klikk. Dra gass og blanding ned for å trekke dem ut, opp for å skyve dem inn.',
  'Ignition key':'Tenningsnøkkel','Click the key to step OFF → R → L → BOTH. Press and hold on START (or hold an arrow key at BOTH) to crank; it springs back to BOTH when you let go.':'Klikk på nøkkelen for å gå OFF → R → L → BOTH. Trykk og hold på START (eller hold en piltast på BOTH) for å starte; den fjærer tilbake til BOTH når du slipper.',
  'Radios and instrument knobs':'Radioer og instrumentknotter','Scroll on a knob or drag across it. On the double frequency knobs the outer ring changes MHz and the centre (or Shift) the decimals; ⇆ swaps standby and in-use. OBS knobs set the course, the altimeter knob the pressure setting.':'Rull på en knott eller dra over den. På de doble frekvensknottene endrer ytre ring MHz og midten (eller Shift) desimalene; ⇆ bytter standby og aktiv. OBS-knottene stiller kursen, høydemålerknotten trykkinnstillingen.',
@@ -172,28 +172,23 @@ const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=P.svg.querySelector('g.mags');
-magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
-magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
-magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m) areaHL(m.dataset.z); });
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip');
-PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
+PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch'||(D3on&&D3.dragging)) return; if(!emptyAt(e)){ areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-/* single click / tap on an instrument area zooms to it, a click outside the zoomed area or a double-click / double-tap goes
-   back, pinch and Ctrl/⌘ + wheel or trackpad pinch zoom in and out (panelzoom.js, shared with the DA42 and the B200) */
-if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,mags:magG,
+/* single click / tap on an instrument area zooms to it, a click outside the zoomed area goes back; pinch (and Ctrl/⌘ + wheel,
+   the trackpad pinch) zooms in and out (panelzoom.js, shared with the DA42 and the B200) */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,
   off:'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input'});
 el('zBack').onclick=()=>zoomTo('overview');
-function drawZoomBar(){ el('zoomBar').innerHTML=ZN.map(([k,t],i)=>`<button class="cb${k===Z.reg?' on':''}" data-z="${k}" title="${i<10?i:''}">${L(t)}</button>`).join(''); el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
-function syncAreaUI(){ el('zoomBar').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.z===Z.reg)); el('zoomSel').value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); el('bLock').textContent=(Z.lock?'🔒 ':'🔓 ')+T(Z.lock?'Locked':'Lock view'); PST.classList.toggle('locked',Z.lock); }
+function drawZoomBar(){ el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
+function syncAreaUI(){ const zs=el('zoomSel'); if(zs.value!==Z.reg) zs.value=Z.reg; const b=el('bLock'); if(b) b.setAttribute('aria-pressed',Z.lock); PST.classList.toggle('locked',Z.lock); }
 drawZoomBar(); LAB.onLang(()=>{ drawZoomBar(); syncAreaUI(); });
-el('zoomBar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) zoomTo(b.dataset.z); });
-el('zoomSel').onchange=e=>zoomTo(e.target.value);
+el('zoomSel').onchange=e=>{ zoomTo(e.target.value); el('moreMenu').hidden=true; el('bMore').setAttribute('aria-expanded',false); };
 el('bLock').onclick=()=>{ Z.lock=!Z.lock; try{ localStorage.setItem('bb-c172-lock',Z.lock?'1':'0'); localStorage.setItem('bb-c172-zone',Z.reg); }catch(e){} syncAreaUI(); };
 try{ Z.lock=localStorage.getItem('bb-c172-lock')==='1'; const z=localStorage.getItem('bb-c172-zone'); if(Z.lock&&z&&P.REG[z]) Z.reg=z; }catch(e){}
-el('bMore').onclick=e=>{ const m=el('moreMenu'); m.hidden=!m.hidden; el('bMore').setAttribute('aria-expanded',!m.hidden); e.stopPropagation(); };
-document.addEventListener('click',e=>{ if(!e.target.closest('#moreMenu,#bMore')) el('moreMenu').hidden=true; });
-let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classList.add('chg'); flashT=3; }
+/* the … menu, drawer tabs and the one notification area: simshell.js */
+const SH=SIMSHELL;
+function flash(t){ SH.say(t,'',1800); }
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
 let tipG=null;
@@ -239,7 +234,7 @@ function d3Init(){ PST.classList.add('d3wait');
   setTimeout(()=>{
     if(D3.supported&&D3.supported()&&hasWebGL()){ try{ otwReady=!!(window.OTW&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } }
     otwTried=true;
-    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v'),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+    if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
     if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); otwOn=true; PST.classList.remove('nootw','nogl'); el('bOtw').hidden=true; el('bLock').hidden=true;
       if(el('bAhead')){ el('bAhead').hidden=false; el('bAhead').onclick=()=>zoomTo('overview'); } D3.lookAhead(true); syncAreaUI(); otwMsgSync(); LAB.onLang(()=>D3.relabel()); }
     else { PST.classList.toggle('nogl',!otwReady); el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; }
@@ -297,14 +292,8 @@ function dmeNow(dt){ if(!radOn('dme')) return null; const f=SYS.dmeMd===2?SYS.na
 function mkrNow(){ if(!avOn()||!cbIn('AUDIO')) return null; const r=(SYS.mkrSw===-1?1.6:1)*Math.max(250,S.h*0.45); for(const m of MKR){ if(Math.hypot(m.N-S.N,m.E-S.E)<r&&!S.ground) return m.k; } return null; }
 
 /* ---------- touch stick and yoke pad ---------- */
-const tStk=el('tStk');
-function setTouch(on){ el('touch').hidden=!on; el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
-el('bTouch').onclick=()=>setTouch(el('touch').hidden);
-{ let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':false); }
-let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width*0.42; let dx=(e.clientX-tO.x)/R, dy=(e.clientY-tO.y)/R; const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } const sh=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; }; inp.stick={x:sh(dx),y:sh(dy)}; const k=tStk.querySelector('i'); k.style.left=((tO.x-r.left)+dx*R)/r.width*100+'%'; k.style.top=((tO.y-r.top)+dy*R)/r.height*100+'%'; }
-tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
-tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
-['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+/* touch controls (… menu): the stick appears under a finger dragged on bare panel; nothing covers the panel (simshell.js) */
+SH.touch({stage:PST,emptyAt,d3:()=>typeof D3on!=='undefined'&&D3on,stick:v=>{ inp.stick=v; if(v) ensureAudio(); }});
 const stick=el('stick'), dot=stick.querySelector('.dot');
 function stickAt(e){ const r=stick.getBoundingClientRect(); inp.stick={x:FK.shapePad((e.clientX-r.left)/r.width*2-1),y:FK.shapePad((e.clientY-r.top)/r.height*2-1)}; } // expo: gentle near centre
 stick.addEventListener('pointerdown',e=>{ stick.setPointerCapture(e.pointerId); stickAt(e); ensureAudio(); });
@@ -350,7 +339,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
 window.addEventListener('blur',()=>inp.keys.clear());
-FK.hint(PST);
+FK.hint(PST); // (queued in the shell's notification area)
 
 /* ---------- sound: engine, stall horn, Morse idents, markers, ELT ---------- */
 let AC=null, horn=null, eng=null;
@@ -545,7 +534,7 @@ function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
     st(tr2('Landing light — ON','Landingslys — PÅ'),'land',()=>SYS.land,{sop:1}),
     st(tr2('Flaps 10° before the glideslope / final descent','Flaps 10° før glidebanen / sluttinnflygingen'),'flaps',()=>S.ctl.flap>=1,{sop:1}),
     st(tr2('Minimums: runway in sight — flaps 30° and land; otherwise go around','Minima: banen i sikte — flaps 30° og land; ellers gå rundt'),'flaps',()=>S.ctl.flap>=3||!!AF.rec.decision)]); }
-function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on); }
+function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on,PR.k&&PR.k!=='air'&&PR.k!=='free'?PR.k:null); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
@@ -568,13 +557,12 @@ const OWNCRIT={eftoa:{f:[()=>PR.failed&&S.o.ias>55&&S.o.ias<75],t:tr2('nose lowe
   carbice:{f:[()=>PR.failed&&!!SYS.carb],t:tr2('carburettor heat on','forgasservarme på'),lim:[30,60]}};
 /* generic SOP steps (sop) only with the generic-flow toggle on; the AFM emergency steps (emer) give way to the student's own
    emergency section when their checklist has one for this exercise. Simulator instructions always stay. */
-const ownSteps=p=>{ const g=OWNCK.gen('C172'), own=p.own&&OCK.has(p.own); return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
-const visProcs=()=>PROCS.filter(p=>!p.gen||OWNCK.gen('C172')||p.k===PR.k);
+const ownSteps=p=>{ const g=OWNCK.gen('C172'), own=p.own&&OCK.has(p.own); if(p.gen&&!g) return []; return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
 const OCK=OWNCK.mount({type:'C172',box:el('ownck'),L,pred:k=>{ const f=OWNP[k]; return f?!!f():false; },ctl:k=>OWNC[k]||null,
   hl:id=>{ if(!curStep()) hlCtl(id); },clock:()=>DB?DB.t:0,onChange:()=>{ if(PR.k&&PR.t<2) procStart(PR.k); }});
 LAB.onLang(()=>OCK.render());
-function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b&&!b.classList.contains('on')) b.click(); } }
-function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('C172',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('C172',e.target.checked); procStart(PR.k&&visProcs().some(x=>x.k===PR.k)&&(!PROCS.find(x=>x.k===PR.k).gen||e.target.checked)?PR.k:'free'); genToggle(); }; }
+function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); SH.tab('ck'); } }
+function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('C172',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('C172',e.target.checked); procStart(PR.k||'free'); genToggle(); }; }
 LAB.onLang(genToggle);
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
@@ -582,7 +570,7 @@ function procStart(k){
   AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:'free',AIRCAPS); if(p.k==='air'){ p.all=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'C172'); } else if(!p.all) p.all=p.steps;
   p.steps=ownSteps(p);
   Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,m:{},bad:0,crit:null}); p.steps.forEach(s=>{ s.okT=0; }); OCK.reset();
-  procSet(p); renderProc(); procFocus(); drawScenSel(); airUI(); if(DB) DB.start();
+  procSet(p); renderProc(); procFocus(); airUI(); if(DB) DB.start();
 }
 const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -590,7 +578,7 @@ function hlCtl(id){ P.svg.querySelectorAll('g.ctl.hl').forEach(g=>g.classList.re
 function procFocus(){ const s=curStep(); if(!s){ hlCtl(null); pill(null); return; } const id=ctlOf(s); hlCtl(id); pill(L(s.t));
   if(el('follow').checked&&!Z.lock){ const o=P.byId[id]; if(o){ const b=o.g.getBBox(); const k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); if(k&&k!==Z.reg) zoomTo(k); } } }
 let pillT=0;
-function pill(t,cls){ const p=el('pill'); if(!t){ p.className='pill'; return; } p.textContent=t; p.className='pill show '+(cls||''); if(cls) pillT=1.8; }
+function pill(t,cls){ if(!t){ SH.step(null); return; } if(cls){ SH.say(t,cls); pillT=1.8; } else SH.step(t); }
 function procTouch(k){ const s=curStep(); if(!s) return; const id=ctlOf(s);
   if(k===id||/^(stick|trim|yoke|dim|r_|cb|com|nav|pwr|adf|xp|au|baro|obs|dg|ai|egt|mkr|cov)/.test(k)) return;
   const p=PROCS.find(x=>x.k===PR.k); const later=p.steps.slice(PR.i+1).some(x=>ctlOf(x)===k);
@@ -622,7 +610,6 @@ function procTick(dt){
   else s.okT=0;
 }
 function renderProc(){
-  const sel=el('procSel'); sel.innerHTML=visProcs().map(p=>`<option value="${p.k}"${p.k===PR.k?' selected':''}>${L(p.t)}</option>`).join('');
   const p=PROCS.find(x=>x.k===PR.k); if(!p){ el('proc').innerHTML=''; return; }
   const cur=p.steps[PR.i];
   el('proc').innerHTML=`${cur?`<div class="next"><small>${L(tr2('Next step','Neste steg'))} ${PR.i+1}/${p.steps.length}</small><b>${L(cur.t)}</b>${cur.call?`<div class="row"><button id="pCall">📣 ${L(tr2('Call "Clear prop!"','Rop «Clear prop!»'))}</button></div>`:''}<div class="row"><button id="pBack"${PR.i?'':' disabled'}>← ${L(tr2('Back','Tilbake'))}</button><button id="pSkip">${L(tr2('Skip','Hopp over'))} →</button></div></div>`:''}<p class="brief">${L(p.brief)}</p>${p.steps.length?`<ul class="checks">${p.steps.map((s,i)=>`<li class="${PR.done[i]===1?'ok':PR.done[i]===2?'skip':i===PR.i?'now':''}"><i>${PR.done[i]===1?'✓':PR.done[i]===2?'–':i+1}</i><span>${L(s.t)}${s.chk?`<small>${L(tr2('check','sjekk'))}</small>`:''}</span></li>`).join('')}</ul>`:''}
@@ -633,23 +620,20 @@ function renderProc(){
   el('procRe').onclick=()=>procStart(PR.k);
   const now=el('proc').querySelector('li.now'); if(now) now.scrollIntoView({block:'nearest'});
 }
-el('procSel').onchange=e=>procStart(e.target.value);
-LAB.onLang(()=>{ renderProc(); drawScenSel(); renderLim(); if(PR.k) procFocus(); });
-function drawScenSel(){ el('scenSel').innerHTML=visProcs().map(x=>`<option value="${x.k}"${x.k===PR.k?' selected':''}>${L(tr2('Exercise','Øvelse'))}: ${L(x.t)}</option>`).join(''); }
-el('scenSel').onchange=e=>{ procStart(e.target.value); setDrawer(true); };
+LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
-el('drawer').querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; el('drawer').querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b)); el('tabProc').hidden=b.dataset.t!=='proc'; el('tabLim').hidden=b.dataset.t!=='lim'; });
-const LIM=[[tr2('Never exceed, VNE (red line)','Aldri overskrid, VNE (rød strek)'),'158 KIAS'],[tr2('Max structural cruising, VNO (yellow arc from)','Maks strukturell marsjfart, VNO (gul bue fra)'),'127 KIAS'],[tr2('Manoeuvring speed, VA (2,400 lb / 2,000 lb)','Manøvreringsfart, VA (2400 lb / 2000 lb)'),'99 / 92 KIAS'],[tr2('Max flap extended, VFE: 10° / 10°–30°','Maks fart med flaps, VFE: 10° / 10°–30°'),'110 / 85 KIAS'],[tr2('Stall, flaps up VS1 / landing VS0 (ASI arcs)','Steiling, flaps oppe VS1 / landing VS0 (buer)'),'44 / 33 KIAS'],
- [tr2('Rotation, VR','Rotasjon, VR'),'55 KIAS'],[tr2('Best angle VX / best rate VY (sea level)','Beste vinkel VX / beste rate VY (havnivå)'),'60 / 76 KIAS'],[tr2('Best glide (max weight)','Beste glidefart (maks vekt)'),'65 KIAS'],[tr2('Normal approach, flaps up / flaps 30°','Normal innflyging, flaps oppe / 30°'),'65–75 / 60–70 KIAS'],
- [tr2('Engine speed, maximum (red line)','Turtall, maks (rød strek)'),'2,700 RPM'],[tr2('Tachometer green arc','Turteller grønn bue'),'2,100–2,700 RPM'],[tr2('Oil temperature (green / max)','Oljetemperatur (grønt / maks)'),'100–245 °F / 245 °F'],[tr2('Oil pressure (min / green / max)','Oljetrykk (min / grønt / maks)'),'25 / 60–90 / 115 psi'],[tr2('Suction (green)','Sug (grønt)'),'4.5–5.4 in Hg'],
- [tr2('Run-up: magneto drop max / difference max','Run-up: magnetfall maks / forskjell maks'),'125 / 50 RPM @ 1,700'],[tr2('Fuel: total / usable (standard tanks)','Drivstoff: totalt / brukbart (standardtanker)'),'43 / 40 US gal'],[tr2('Typical cruise: 2,400 RPM at 4,000–6,000 ft','Typisk marsj: 2400 o/min i 4000–6000 ft'),'≈ 105–110 KTAS, 7–8 gal/h'],[tr2('Climb at sea level (max weight)','Stigning ved havnivå (maks vekt)'),'≈ 700 ft/min'],
- [tr2('Maximum weight (normal category)','Maks vekt (normalkategori)'),'2,400 lb'],[tr2('Engine','Motor'),'160 hp, 4-cyl, carburetted'],[tr2('Electrical system','Elektrisk system'),'28 V alternator, 24 V battery']];
-function renderLim(){ el('tabLim').innerHTML=`<p class="warnline">${L(tr2('Typical classic Cessna 172 (172P-style, 160 hp) values for learning — verify in your POH/AFM; they vary with model year and equipment.','Typiske verdier for en klassisk Cessna 172 (172P-type, 160 hk) for læring — kontroller i POH/AFM; de varierer med årsmodell og utstyr.'))}</p><table class="lim">${LIM.map(([a,b])=>`<tr><td>${L(a)}</td><td>${b}</td></tr>`).join('')}</table>`; }
-renderLim();
+/* ---------- Procedures drawer: Speeds, Emergency and Failures tabs (the same component on every trainer, simshell.js) ---------- */
+const PD=C172PROCS;
+SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });
+const scenProcs=()=>PD.SCENS.map(k=>PROCS.find(p=>p.k===k)).filter(Boolean);
+SH.pane('em',box=>{ box.innerHTML=SH.emerHTML({own:OCK.emer(),disc:PD.DISC,refs:scenProcs().map(p=>({t:p.t,steps:(p.all||p.steps).map(x=>x.t)}))}); });
+SH.pane('fl',box=>{ box.innerHTML=SH.failHTML({now:PD.FAILS,scen:scenProcs().map(p=>({k:p.k,t:p.t}))}); });
+el('tabEm').addEventListener('click',e=>{ const b=e.target.closest('button[data-poem]'); if(b){ OCK.open(+b.dataset.poem); SH.tab('ck'); } });
+el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const t=el(b.dataset.fx); if(t) t.click(); } else if(b.dataset.sk){ procStart(b.dataset.sk); SH.tab('ck'); } });
 
 /* ---------- messages ---------- */
-function msg(m){ pill(L(m),'bad'); flash(L(m)); flashT=5; }
+function msg(m){ SH.say(L(m),'bad',5000); }
 
 /* ---------- instruments ---------- */
 let vsF=0, lastDraw=performance.now(), rbLast=null, engTxt='', st2Txt='';
@@ -731,9 +715,8 @@ function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
   { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; }
-  if(flashT>0) flashT-=0.12; else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(D.ias||0)+' KIAS · '+Math.round(o.alt)+' FT · '+Math.round(ENG.rpm)+' RPM'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
-  if(AIRUI){ AIRUI.banner(AF.on,L(tr2('INSTRUCTOR HAS CONTROL','INSTRUKTØREN HAR KONTROLLENE'))+' · '+L(tr2('you run the checklists','du tar sjekklistene')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
+  if(AIRUI){ AIRUI.banner(AF.on,L(tr2('INSTRUCTOR FLYING','INSTRUKTØREN FLYR')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
   if(S.landed&&S.landed.field&&!PR.m.fieldMsg){ PR.m.fieldMsg=1; pill(L(tr2('Landed in a field — well done. Secure the aircraft.','Landet på et jorde — godt jobbet. Sikre flyet.')),'ok'); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
   const fe=(v,d)=>(+v).toFixed(d);
@@ -759,7 +742,10 @@ quiz(el('qbox'),'c172cockpit',()=>shuffle(QZ.slice()).slice(0,8));
 window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,type:'C172',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b) b.click(); }}); LAB.onLang(airUI);
+/* ✈ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
+AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,type:'C172',onPick:pickProc,onAuto:toggleAuto,
+  ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>{ procStart(k); setDrawer(true); SH.tab('ck'); },
+  onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'C172',page:document.body.dataset.d3?'c172-3d':'c172',S,F,AF,after:AIRUI.btn,
   eng:()=>[(ENG.failed||(!ENG.run&&!S.ground))?1:0,0,NaN,NaN],

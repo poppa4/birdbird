@@ -227,6 +227,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
 @media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 </style>
+<link rel="stylesheet" href="simshell.css?v=1">
 </head>
 <body data-title="Glass Cockpit Trainer">
 <script src="site.js?v=63"></script>
@@ -243,36 +244,28 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html" selected>DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option></select><span class="dseg" role="group" aria-label="View"><a href="cockpit.html" class=on aria-current=page>2D</a><a href="da42-3d.html">3D<small>beta</small></a></span>
-      <select class="cb" id="scenSel" aria-label="Scenario"></select>
-      <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
-      <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
-      <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
-      <span class="stat" id="stat2"></span>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html" selected>DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option></select>
+      <span class="dseg" role="group" aria-label="View"><a href="cockpit.html" class=on aria-current=page>2D</a><a href="da42-3d.html">3D</a></span>
+      <select class="cb afsel" id="apSel" aria-label="Start"></select>
+      <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
+      <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
+      <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
-      <button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
-      <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+      <button class="cb" id="bMore" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
         <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack">← Whole panel</button>
-        <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
+        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><button class="cb" id="bLock" type="button" aria-pressed="false">Lock view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
-        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
-      <aside class="drawer" id="drawer" aria-label="Procedures and missions"><div class="din">
-        <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="mis">Missions</button></div>
-        <div id="tabProc">
-          <div id="ownck"></div>
-          <div id="proc"></div>
-          <label><input type="checkbox" id="follow"> Zoom to the next control</label>
-        </div>
-        <div id="tabMis" hidden>
-          <div id="segScen" aria-label="Mission"></div>
-          <div id="mission"></div>
-        </div>
+      <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
+        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="em" role="tab" aria-selected="false">Emergency</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"><div id="ownck"></div><div id="mission"></div><div id="proc"></div><label class="fol"><input type="checkbox" id="follow"> Zoom to the next control</label></div>
+        <div id="tabEm" hidden></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -368,19 +361,20 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
 <script src="fdm.js?v=10"></script>
-<script src="flightkeys.js?v=2"></script>
+<script src="flightkeys.js?v=3"></script>
 <script src="fms.js?v=4"></script>
-<script src="airproc.js?v=3"></script>
-<script src="simdebrief.js?v=3"></script>
+<script src="airproc.js?v=4"></script>
+<script src="simdebrief.js?v=4"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=6"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=1"></script>
+<script src="panelzoom.js?v=2"></script>
 <script src="da42panel.js?v=7"></script>
-<script src="da42procs.js?v=2"></script>
+<script src="da42procs.js?v=3"></script>
 <script src="ownck.js?v=1"></script>
-<script src="otw.js?v=12"></script>
+<script src="otw.js?v=13"></script>
 <script src="lab.js?v=47"></script>
+<script src="simshell.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -427,6 +421,8 @@ const SCEN=[
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
            {t:{en:'Fly a heading with HDG mode',no:'Fly en kurs med HDG-moden'},f:c=>c.ap.on&&c.ap.lat==='HDG'},
            {t:{en:'Climb or descend with VS or FLC and let ALTS capture',no:'Stig eller synk med VS eller FLC og la ALTS fange høyden'},f:c=>c.m.altsSeen&&c.ap.vert==='ALT'&&Math.abs(c.o.alt-c.ap.alt)<60, pre:c=>{ if(/ALTS/.test(c.ap.vertArm)) c.m.altsSeen=true; }} ]},
+ {k:'apron', t:{en:'On the apron, cold and dark',no:'På oppstillingsplassen, kald og mørk'}, brief:{en:'Parked with everything off. Start up with your own checklist, or switch on the generic flows below.',no:'Parkert med alt av. Start opp med din egen sjekkliste, eller slå på de generelle flytene nedenfor.'},
+  set:{ground:true,N:-260,E:-120,hdg:90,thr:0,flap:0,gear:1}, ui:{hdg:90,alt:3000,fp:[]}, post:'cold', checks:[]},
  {k:'takeoff', t:{en:'Take-off',no:'Avgang'}, brief:{en:'Runway 36, calm wind. Flaps UP, fuel pumps on. Full power on both engines, rotate at 76 KIAS (VR, AFM minimum), climb at Vy, 90 KIAS. Gear up when you have a positive rate of climb and can no longer land on the remaining runway.',no:'Rullebane 36, vindstille. Flaps UP, drivstoffpumper på. Full effekt på begge motorene, roter ved 76 KIAS (VR, AFM-minimum), stig med Vy, 90 KIAS. Understell opp når du har positiv stigning og ikke lenger kan lande på resten av banen.'},
   set:{ground:true,N:20,E:0,hdg:360,thr:0,flap:0,gear:1}, ui:{hdg:360,alt:3000,fp:['NAER','KORPA','VSTB']},
   checks:[ {t:{en:'Full power (both levers above 95 %)',no:'Full effekt (begge hendler over 95 %)'},f:c=>c.s.eng.every(e=>e.thr>0.95)},
@@ -514,8 +510,11 @@ function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
   else if(k==='hold'){ FM.setRoute(fp,['RONAX'],S); FM.directTo(fp,'RONAX',S); XA.cdi='NAV1'; }
   else { FM.setRoute(fp,['NAER'],S); FM.loadAppr(fp,'NAER',A[0],'VECTORS',true,S); XA.cdi='NAV1'; }
   if(to){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; } }
-function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k&&!PR.lib?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on); }
-function pickProc(k){ if(k!=='free') AIRK=k; if(PR.k){ PR.k=null; hlCtl(null); pill(null); renderProc(); } UI.scen=k==='free'?'free':'air'; resetMission(); drawScen(); drawScenSel(); }
+function airUI(){ if(!AIRUI) return; const pr=PR.k&&!PR.lib; AIRUI.draw(pr?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on,!pr&&UI.scen!=='air'&&UI.scen!=='free'?UI.scen:null); }
+function pickProc(k){ if(k!=='free') AIRK=k; if(PR.k){ PR.k=null; hlCtl(null); pill(null); renderProc(); } UI.scen=k==='free'?'free':'air'; resetMission(); }
+/* ✈ Start → an exercise (SCEN): ground starts and the practice missions */
+function pickEx(k){ if(PR.k){ PR.k=null; PR.p=null; hlCtl(null); pill(null); } UI.scen=k; resetMission(); setDrawer(true); SH.tab('ck'); }
+const EXG={apron:'gnd',takeoff:'gnd'};
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k||(UI.scen!=='air'&&UI.scen!=='free')) pickProc(AIRK); AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
 function resetMission(){
@@ -531,21 +530,13 @@ function resetMission(){
   /* every scenario starts with the autopilot off (hand-flying); the briefs say when engaging it is part of the exercise */
   missionState={m:{}, t:0, done:sc.checks.map(()=>0)}; completeShown=false;
   S.autotrim=el('autoTrim').checked; holdPitch=null;
-  sysDefault(false); if(sc.k==='takeoff'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.park=0; } if(!S.ground) SYS.pitot=1;
+  sysDefault(false); if(sc.post) procSet(sc.post); if(sc.k==='takeoff'){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; SYS.park=0; } if(!S.ground) SYS.pitot=1;
   if(sc.k==='air') airSetup();
   PR.k=null; PR.p=null; PR.lib=false; fxReset(); hlCtl(null); pill(null); renderProc(); renderMission(); lastO=null; airUI(); if(DB) DB.start();
+  if(sc.k!=='air') SH.hideCard();
 }
 
 /* ---------- glidere og segmenter ---------- */
-const scenSeg=seg(el('segScen'),SCEN.map(s=>[s.k,s.t]),UI.scen,v=>{ UI.scen=v; resetMission(); });
-// seg bruker T(); vi trenger L() for objekter
-scenSeg.set=function(x){ this.v=x; drawScen(); };
-function drawScen(){ el('segScen').innerHTML=SCEN.map(s=>`<button data-v="${s.k}" class="${s.k===UI.scen?'on':''}">${L(s.t)}</button>`).join(''); }
-drawScen(); LAB.onLang(drawScen);
-function drawScenSel(){ el('scenSel').innerHTML=SCEN.map(x=>`<option value="${x.k}"${x.k===UI.scen?' selected':''}>${L({en:'Exercise',no:'Øvelse'})}: ${L(x.t)}</option>`).join(''); }
-drawScenSel(); LAB.onLang(drawScenSel);
-el('scenSel').onchange=e=>{ UI.scen=e.target.value; resetMission(); drawScen(); setDrawer(true); el('drawer').querySelector('.tabs button[data-t=mis]').click(); };
-el('segScen').addEventListener('click',()=>setTimeout(()=>{ drawScen(); drawScenSel(); },0));
 const rud=slider(el('rudBox'),{label:'Rudder',min:-100,max:100,step:1,v:0,f:v=>(v>0?'R ':v<0?'L ':'')+Math.abs(v)+' %',on:v=>{ S.ctl.rud=v/100; }});
 rud.inp.addEventListener('dblclick',()=>{ rud.set(0); S.ctl.rud=0; });
 const windDir=slider(el('windBox'),{label:'From',min:0,max:360,step:10,v:0,f:v=>String(v||360).padStart(3,'0')+'°',on:v=>S.env.wdir=v});
@@ -658,33 +649,26 @@ const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
-const magG=document.createElementNS(NS,'g'); magG.setAttribute('class','mags'); (P.top||P.svg).appendChild(magG);
-const MAGP={top:[1290,116],switches:[804,664],flaps:[1364,664],console:[1010,790]};
-magG.innerHTML=Object.keys(MAGP).map(k=>{ const [x,y]=MAGP[k]; return `<g class="mag" data-z="${k}" tabindex="0" role="button" aria-label="Zoom ${k}"><circle cx="${x}" cy="${y}" r="13"/><circle cx="${x-2}" cy="${y-2}" r="5" class="mgl"/><path d="M${x+2} ${y+2}l5 5" class="mgl"/></g>`; }).join('');
-magG.addEventListener('click',e=>{ const m=e.target.closest('.mag'); if(m) zoomTo(m.dataset.z); });
-magG.addEventListener('keydown',e=>{ const m=e.target.closest('.mag'); if(m&&(e.key==='Enter'||e.key===' ')){ zoomTo(m.dataset.z); e.preventDefault(); } });
-magG.addEventListener('pointerover',e=>{ const m=e.target.closest('.mag'); if(m) areaHL(m.dataset.z); });
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.gdu button,.gdu .kn,.zback,.tz,.pill,.mag,.tip');
-PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch') return; if(!emptyAt(e)){ if(!e.target.closest('.mag')) areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
+PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='touch') return; if(!emptyAt(e)){ areaHL(null); return; } areaHL(regionAt(toWorld(e))); });
 PST.addEventListener('pointerleave',()=>areaHL(null));
-/* single click / tap on an instrument area zooms to it, a click outside the zoomed area or a double-click / double-tap goes
-   back, pinch and Ctrl/⌘ + wheel or trackpad pinch zoom in and out (panelzoom.js, shared with the C172 and the B200) */
-if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,mags:magG,
+/* single click / tap on an instrument area zooms to it, a click outside the zoomed area goes back; pinch (and Ctrl/⌘ + wheel,
+   the trackpad pinch) zooms in and out (panelzoom.js, shared with the C172 and the B200) */
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],onFree:()=>{ if(typeof sizeScreens==='function') sizeScreens(); },Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,
   off:'.zback,.more,.pill,.tip,.touch,.rot,.otwmsg,.afban,.afnow,.gdu .bcolw,button,select,a,input'});
 function inReg(p,k){ const r=P.REG[k]; return p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]; }
 el('zBack').onclick=()=>zoomTo('overview');
 /* toolbar: area selector, lock, menu */
-function drawZoomBar(){ el('zoomBar').innerHTML=ZN.map(([k,t],i)=>`<button class="cb${k===Z.reg?' on':''}" data-z="${k}" title="${i}">${L(t)}</button>`).join(''); el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
-function syncAreaUI(){ el('zoomBar').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.z===Z.reg)); el('zoomSel').value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); el('bLock').textContent=(Z.lock?'🔒 ':'🔓 ')+T(Z.lock?'Locked':'Lock view'); PST.classList.toggle('locked',Z.lock); }
+function drawZoomBar(){ el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
+function syncAreaUI(){ const zs=el('zoomSel'); if(zs.value!==Z.reg) zs.value=Z.reg; el('bLock').setAttribute('aria-pressed',Z.lock); PST.classList.toggle('locked',Z.lock); }
 drawZoomBar(); LAB.onLang(()=>{ drawZoomBar(); syncAreaUI(); });
-el('zoomBar').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) zoomTo(b.dataset.z); });
-el('zoomSel').onchange=e=>zoomTo(e.target.value);
+el('zoomSel').onchange=e=>{ zoomTo(e.target.value); el('moreMenu').hidden=true; el('bMore').setAttribute('aria-expanded',false); };
 el('bLock').onclick=()=>{ Z.lock=!Z.lock; try{ localStorage.setItem('bb-da42-lock',Z.lock?'1':'0'); localStorage.setItem('bb-da42-zone',Z.reg); }catch(e){} syncAreaUI(); };
 try{ Z.lock=localStorage.getItem('bb-da42-lock')==='1'; const z=localStorage.getItem('bb-da42-zone'); if(Z.lock&&z&&P.REG[z]) Z.reg=z; }catch(e){}
-el('bMore').onclick=e=>{ const m=el('moreMenu'); m.hidden=!m.hidden; el('bMore').setAttribute('aria-expanded',!m.hidden); e.stopPropagation(); };
-document.addEventListener('click',e=>{ if(!e.target.closest('#moreMenu,#bMore')) el('moreMenu').hidden=true; });
+/* the … menu, drawer tabs and the one notification area: simshell.js */
+const SH=SIMSHELL;
 /* status line: what just changed */
-let flashT=0; function flash(t){ el('stat2').textContent=t; el('stat2').classList.add('chg'); flashT=3; }
+function flash(t){ SH.say(t,'',1800); }
 /* hover tooltip */
 const tip=document.createElement('div'); tip.className='tip'; tip.hidden=true; PST.appendChild(tip);
 function tipText(g){ const n=g.getAttribute('aria-label'); const v=g.getAttribute('aria-valuetext')||(g.getAttribute('aria-checked')==null?'':g.getAttribute('aria-checked')==='true'?'ON':'OFF'); return n+(v?' · '+v:''); }
@@ -808,14 +792,8 @@ el('featR').onclick=()=>{ ioSet('engR',SYS.engR?0:1); };
 el('restore').onclick=()=>{ fxReset(); SYS.engL=SYS.engR=1; S.eng.forEach(e=>{ e.fail=false; e.run=true; e.off=false; e.feather=false; }); };
 
 /* ---------- berøringskontroller på PFD ---------- */
-const tStk=el('tStk');
-function setTouch(on){ el('touch').hidden=!on; el('bTouch').setAttribute('aria-pressed',on); try{ localStorage.setItem('naeroson-touch',on?'1':'0'); }catch(e){} }
-el('bTouch').onclick=()=>setTouch(el('touch').hidden);
-{ let pref=null; try{ pref=localStorage.getItem('naeroson-touch'); }catch(e){} setTouch(pref?pref==='1':matchMedia('(pointer:coarse)').matches); }
-let tO=null; function tStkAt(e){ const r=tStk.getBoundingClientRect(), R=r.width*0.42; let dx=(e.clientX-tO.x)/R, dy=(e.clientY-tO.y)/R; const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } const sh=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; }; inp.stick={x:sh(dx),y:sh(dy)}; const k=tStk.querySelector('i'); k.style.left=((tO.x-r.left)+dx*R)/r.width*100+'%'; k.style.top=((tO.y-r.top)+dy*R)/r.height*100+'%'; }
-tStk.addEventListener('pointerdown',e=>{ e.preventDefault(); tStk.setPointerCapture(e.pointerId); tO={x:e.clientX,y:e.clientY}; tStkAt(e); ensureAudio(); });
-tStk.addEventListener('pointermove',e=>{ if(inp.stick&&tO) tStkAt(e); });
-['pointerup','pointercancel'].forEach(ev=>tStk.addEventListener(ev,()=>{ inp.stick=null; tO=null; const k=tStk.querySelector('i'); k.style.left='50%'; k.style.top='50%'; }));
+/* touch controls (… menu): the stick appears under a finger dragged on bare panel; nothing covers the panel (simshell.js) */
+SH.touch({stage:PST,emptyAt,d3:()=>typeof D3on!=='undefined'&&D3on,stick:v=>{ inp.stick=v; if(v) ensureAudio(); }});
 
 /* ---------- styrestikke ---------- */
 const stick=el('stick'), dot=stick.querySelector('.dot');
@@ -851,7 +829,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; inp.keys.delete(k); if(k==='shift') inp.keys.delete('Shift'); });
 window.addEventListener('blur',()=>inp.keys.clear());
-FK.hint(PST);
+FK.hint(PST); // (queued in the shell's notification area)
 let cockpitVis=true; visible(el('cockpit'),v=>cockpitVis=v);
 const inCockpitView=()=>cockpitVis;
 
@@ -927,7 +905,7 @@ function procSet(kind){
   }
   Object.assign(AP,F.mkAP()); AP.hdg=Math.round(F.wrap360(S.psi*180/Math.PI))||360; AP.alt=S.ground?3000:Math.max(3000,Math.round(F.readouts(S).alt/100)*100); S.trail.length=0; lastO=null;
 }
-function showProcTab(){ const b=el('drawer').querySelector('.tabs button[data-t=proc]'); if(b&&!b.classList.contains('on')) b.click(); }
+function showProcTab(){ SH.tab('ck'); }
 /* o: {side, alert} for a checklist opened on the current flight (library or failure menu) */
 function procStart(k,o){
   const p=PROCS.find(x=>x.k===k); if(!p){ PR.k=null; PR.p=null; renderProc(); hlCtl(null); return; }
@@ -948,7 +926,7 @@ function failNow(p){ const f=p.fail, i=PR.dead; PR.failed=true; PR.failT=PR.t; f
   ownFailure(p.own||ownKinds(f.kind,i,!S.ground),PR.alert);
   setDrawer(true); showProcTab(); beep(f.kind==='fire'?1000:700,0.5,0.06); renderProc(); procFocus(); }
 function procClose(){ const lib=PR.lib; PR.k=null; PR.p=null; PR.lib=false; hlCtl(null); pill(null);
-  if(!lib){ const sc=SCEN.find(x=>x.k==='free'); if(sc){ UI.scen='free'; missionState={m:{},t:0,done:sc.checks.map(()=>0)}; drawScen(); drawScenSel(); renderMission(); } }
+  if(!lib){ const sc=SCEN.find(x=>x.k==='free'); if(sc){ UI.scen='free'; missionState={m:{},t:0,done:sc.checks.map(()=>0)}; renderMission(); } }
   renderProc(); airUI(); }
 const curStep=()=>{ const p=curP(); return p&&p.steps[PR.i]; };
 const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
@@ -958,7 +936,7 @@ function procFocus(){ if(PR.ownSec&&!PR.showAfm){ pill(null); return; } const s=
   const id=ctlOf(s); hlCtl(id); pill((s.mem?'● ':'')+L(s.t));
   if(id&&el('follow').checked&&!Z.lock){ let k=null; if(id==='bzP') k='pfd'; else if(id==='bzM') k='mfd'; else { const o=P.byId[id]; if(o){ const b=o.g.getBBox(); k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); } } if(k&&k!==Z.reg) zoomTo(k); } }
 let pillT=0;
-function pill(t,cls){ const p=el('pill'); if(!t){ p.className='pill'; return; } p.textContent=t; p.className='pill show '+(cls||''); if(cls){ pillT=1.4; } }
+function pill(t,cls){ if(!t){ SH.step(null); return; } if(cls){ SH.say(t,cls); pillT=1.4; } else SH.step(t); }
 function procTouch(k){ const s=curStep(), p=curP(); if(!s||!p||(p.kind==='scen'&&!PR.failed)||(PR.ownSec&&!PR.showAfm)) return; const id=ctlOf(s)||''; const base=x=>String(x).replace(/[LR]$/,'');
   const sideIds=p.steps.slice(PR.i).filter(x=>typeof x.ctl==='function').map(ctlOf);
   if(sideIds.length&&!sideIds.includes(k)&&sideIds.some(c=>base(c)===base(k))){ pill(L({en:'Wrong engine! Identify — verify — then secure the affected one.',no:'Feil motor! Identifiser — verifiser — sikre så den det gjelder.'}),'bad'); beep(160,0.3,0.06); PR.bad=(PR.bad||0)+1; const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),1200); } return; }
@@ -980,13 +958,13 @@ function procTick(dt){
   else s.okT=0;
 }
 function renderProc(){ const box=el('proc'), p=curP();
-  if(!p){ box.innerHTML=DA42PROCS.navHTML({tab:PR.tab,q:PR.q,big:PR.big,side:PR.dead,gen:OWNCK.gen('DA42'),ownEm:OCK.emer()},L); return; }
+  const mi=el('mission'); if(mi) mi.hidden=!!(p&&!p.lib);
+  if(!p){ box.innerHTML=DA42PROCS.flowsHTML({gen:OWNCK.gen('DA42')},L); return; }
   if(PR.ownSec&&!PR.showAfm){ box.innerHTML=`<p class="pdisc">${(L(DA42PROCS.DISC))}</p><div class="row"><button data-pafm>${(L({en:'Show the AFM reference',no:'Vis AFM-referansen'}))}</button><button data-pclose>← ${(L({en:'All procedures',no:'Alle prosedyrer'}))}</button></div>`; return; }
   box.innerHTML=DA42PROCS.runHTML({p,i:PR.i,done:PR.done,side:PR.dead,failed:PR.failed||p.kind!=='scen',alertText:PR.alert,big:PR.big},L);
   const now=box.querySelector('li.now'); if(now&&el('drawer').classList.contains('open')) now.scrollIntoView({block:'nearest'});
 }
 el('proc').addEventListener('click',e=>{ const b=e.target.closest('button,li.now.man'); if(!b) return; const d=b.dataset;
-  if(d.pt){ PR.tab=d.pt; renderProc(); return; }
   if(b.hasAttribute('data-pafm')){ PR.showAfm=true; renderProc(); procFocus(); return; }
   if(d.poem!=null){ OCK.open(+d.poem); return; }
   if(b.hasAttribute('data-pbig')){ PR.big=!PR.big; el('drawer').classList.toggle('big',PR.big); try{ localStorage.setItem('bb-da42-big',PR.big?'1':'0'); }catch(x){} renderProc(); setTimeout(()=>zoomTo(Z.reg,true,true),320); return; }
@@ -999,27 +977,35 @@ el('proc').addEventListener('click',e=>{ const b=e.target.closest('button,li.now
   if(b.hasAttribute('data-prestart')){ procStart(PR.k,PR.lib?{side:PR.dead,alert:PR.alert}:null); return; }
   if(b.hasAttribute('data-pfree')){ PR.k=null; PR.p=null; hlCtl(null); pill(null); resetMission(); renderProc(); return; } });
 el('proc').addEventListener('change',e=>{ if(!e.target.matches('[data-ockgen]')) return; OWNCK.setGen('DA42',e.target.checked); renderProc(); });
+SH.pane('em',box=>{ box.innerHTML=SH.emerHTML({own:OCK.emer(),body:DA42PROCS.emerListHTML({q:PR.q,side:PR.dead},L),disc:DA42PROCS.DISC}); });
+el('tabEm').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.poem!=null){ OCK.open(+b.dataset.poem); PR.ownSec=true; PR.showAfm=false; SH.tab('ck'); renderProc(); } else if(b.dataset.pk){ procStart(b.dataset.pk); SH.tab('ck'); } });
+el('tabEm').addEventListener('input',e=>{ if(!e.target.matches('[data-psearch]')) return; PR.q=e.target.value; const pos=e.target.selectionStart; SH.draw('em'); const q=el('tabEm').querySelector('[data-psearch]'); if(q){ q.focus(); try{ q.setSelectionRange(pos,pos); }catch(x){} } });
+SH.pane('fl',box=>{ const F2=DA42PROCS.FAILS; box.innerHTML=SH.failHTML({now:[].concat(...F2.map(f=>f.side?[0,1].map(i=>({id:f.kind+':'+i,t:{en:f.t.en+' '+(i?'R':'L'),no:f.t.no+' '+(i?'R':'L')}})):[{id:f.kind+':0',t:f.t}])),
+  scen:PROCS.filter(p=>p.kind==='scen').map(p=>({k:p.k,t:p.t,ref:(p.ref||'').replace(/^AFM /,'')}))}); });
+el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const [k,i]=b.dataset.fx.split(':'); failTrigger(k,+i); } else if(b.dataset.sk){ procStart(b.dataset.sk); SH.tab('ck'); } });
+SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:DA42PROCS.SPEEDS,limits:DA42PROCS.LIMITS,note:DA42PROCS.DISC,title:{en:'AFM speeds (KIAS)',no:'AFM-farter (KIAS)'}}); });
 el('proc').addEventListener('input',e=>{ if(!e.target.matches('[data-psearch]')) return; PR.q=e.target.value; const pos=e.target.selectionStart; renderProc(); const s=el('proc').querySelector('[data-psearch]'); if(s){ s.focus(); try{ s.setSelectionRange(pos,pos); }catch(x){} } });
 /* failure menu (Failures and weather): trigger a failure and open its checklist */
 function failMenu(){ const box=el('sysFails'); if(!box) return; const air=()=>!S.ground;
   box.innerHTML=DA42PROCS.FAILS.map(f=>f.side?[0,1].map(i=>`<button class="btn warn" data-fk="${f.kind}" data-fi="${i}">${L(f.t)} ${i?'R':'L'}</button>`).join(''):`<button class="btn warn" data-fk="${f.kind}" data-fi="0" style="grid-column:1/-1">${L(f.t)}</button>`).join('');
-  box.onclick=e=>{ const b=e.target.closest('button[data-fk]'); if(!b) return; const f=DA42PROCS.FAILS.find(x=>x.kind===b.dataset.fk), i=+b.dataset.fi;
-    fxApply(f.kind,i); const pk=typeof f.proc==='string'?f.proc:f.proc[air()?'air':'gnd']; procStart(pk,{side:i,alert:fxAlert(f.kind,i),kind:f.kind}); setDrawer(true); showProcTab(); }; }
+  box.onclick=e=>{ const b=e.target.closest('button[data-fk]'); if(b) failTrigger(b.dataset.fk,+b.dataset.fi); }; }
+/* trigger a failure on the current flight and open its checklist (page section and Procedures → Failures) */
+function failTrigger(kind,i){ const f=DA42PROCS.FAILS.find(x=>x.kind===kind); if(!f) return;
+  fxApply(f.kind,i); const pk=typeof f.proc==='string'?f.proc:f.proc[!S.ground?'air':'gnd']; procStart(pk,{side:i,alert:fxAlert(f.kind,i),kind:f.kind}); setDrawer(true); showProcTab(); }
 failMenu(); LAB.onLang(failMenu);
 LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 /* drawer */
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
-el('drawer').querySelector('.tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; el('drawer').querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b)); el('tabProc').hidden=b.dataset.t!=='proc'; el('tabMis').hidden=b.dataset.t!=='mis'; });
 
 /* ---------- oppdragspanel ---------- */
 let note=null, noteT=0;
-function msg(m){ note=m; noteT=4; renderMission(); }
+function msg(m){ SH.say(L(m),'bad',5000); }
 function renderMission(){
   const sc=SCEN.find(x=>x.k===UI.scen); if(!missionState) return;
   const st=missionState.done;
   const allOk=st.every(x=>x===1);
-  el('mission').innerHTML=`<b class="t">${L(sc.t)}</b><p class="brief">${L(sc.brief)}</p>
+  el('mission').innerHTML=`<b class="t">${L(sc.k==='air'?AIRPROC.NAMES[AIRK]:sc.t)}</b><p class="brief">${L(sc.brief)}</p>
     <ul class="checks">${sc.checks.map((c,i)=>`<li class="${st[i]===1?'ok':st[i]===-1?'bad':''}"><i>${st[i]===1?'✓':st[i]===-1?'✕':''}</i><span>${L(c.t)}</span></li>`).join('')}</ul>
     ${allOk?`<div class="callout blue" style="margin-top:10px"><b>${T('Mission complete')}.</b> ${L({en:'Try it again with wind, or pick the next mission.',no:'Prøv igjen med vind, eller velg neste oppdrag.'})}</div>`:''}
     ${S.crash?`<div class="callout red" style="margin-top:10px"><b>${L({en:'Crashed',no:'Havarert'})}:</b> ${L(crashText(S.crash))} ${L({en:'Press Restart.',no:'Trykk Start på nytt.'})}</div>`:''}
@@ -1138,10 +1124,9 @@ function slowUI(o){
   if(Math.abs(rud.v/100-S.ctl.rud)>0.005) rud.set(Math.round(S.ctl.rud*100));
   const st=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
   { const tx=T(sKey), cn='status'+(S.crash?'':(UI.paused?'':' ok')); if(st.textContent!==tx) st.textContent=tx; if(st.className!==cn) st.className=cn; } // write only on change: each write is a layout
-  if(flashT>0){ flashT-=0.12; } else { const s2=el('stat2'); if(s2.classList.contains('chg')) s2.classList.remove('chg'); const tx2=T(sKey)+' · '+Math.round(o.ias)+' KIAS · '+Math.round(o.alt)+' FT'; if(s2.textContent!==tx2) s2.textContent=tx2; }
   if(S.crash!==wasCrash){ wasCrash=S.crash; renderMission(); }
   ['L','R'].forEach((s,i)=>{ el('feat'+s).classList.toggle('on',S.eng[i].feather); { const b=el('fail'+s), f=!!S.eng[i].fail; if(b.disabled!==f) b.disabled=f; } });
-  if(AIRUI){ AIRUI.banner(AF.on,L({en:'AUTO-FLY',no:'AUTOFLY'})+' · '+L({en:'autopilot flies, you run the checklists',no:'autopiloten flyr, du tar sjekklistene'}),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
+  if(AIRUI){ AIRUI.banner(AF.on,L({en:'AUTO-FLY',no:'AUTOFLY'}),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
   const x=inp.stick?inp.stick.x:S.ctl.ail, y=inp.stick?inp.stick.y:S.ctl.ele; { const dl=(50+x*42)+'%', dtp=(50+y*42)+'%'; if(dot._l!==dl){ dot._l=dl; dot.style.left=dl; } if(dot._t!==dtp){ dot._t=dtp; dot.style.top=dtp; } }
 }
 
@@ -1161,7 +1146,8 @@ quiz(el('qbox'),'cockpit',()=>shuffle(Q.slice()).map(q=>{ const idx=shuffle(q.a.
 window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__AP=AP; window.__SYS=SYS; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 { const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-  AIRUI=AIRPROC.ui({after:el('scenSel'),stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,type:'DA42',onPick:pickProc,onAuto:toggleAuto,onBrief:()=>{ setDrawer(true); const b=el('drawer').querySelector('.tabs button[data-t=mis]'); if(b) b.click(); }}); LAB.onLang(airUI);
+  AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('DA42',AIRCAPS),L,type:'DA42',onPick:pickProc,onAuto:toggleAuto,
+    ex:()=>SCEN.filter(x=>x.k!=='air'&&x.k!=='free').map(x=>({k:x.k,t:x.t,g:EXG[x.k]||'ex'})),onEx:pickEx,onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);
   /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
   if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'DA42',page:'cockpit',S,F,AF,after:AIRUI.btn,ap:()=>AP.on,
     eng:()=>{ let d=0, s=0; S.eng.forEach((e,i)=>{ if(e.fail||FX.fire===i||(!e.run&&!S.ground)) d|=1<<i; if(e.feather) s|=1<<i; }); return [d,s,NaN,NaN]; },
@@ -1172,10 +1158,10 @@ if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scr
     again:()=>{ const a=DB.last&&DB.last.afUsed; if(PR.k&&!PR.lib) procStart(PR.k); else { resetMission(); if(a&&UI.scen==='air'&&!AF.on) toggleAuto(); } },
     next:()=>{ if(PR.k&&!PR.lib){ const p=curP(), L2=PROCS.filter(x=>x.kind===p.kind), i=L2.findIndex(x=>x.k===PR.k); procStart(L2[(i+1)%L2.length].k); }
       else if(UI.scen==='air'){ const L=AIRPROC.list('DA42',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); }
-      else { const L=SCEN.filter(x=>x.k!=='air'&&x.k!=='free'); const i=L.findIndex(x=>x.k===UI.scen); UI.scen=L[(i+1)%L.length].k; resetMission(); drawScen(); drawScenSel(); } }});
+      else { const L=SCEN.filter(x=>x.k!=='air'&&x.k!=='free'); const i=L.findIndex(x=>x.k===UI.scen); UI.scen=L[(i+1)%L.length].k; resetMission(); } }});
   if(qp&&AIRPROC.list('DA42',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
   if(q0&&SCEN.some(x=>x.k===q0)) UI.scen=q0; else if(qp==='free') UI.scen='free';
-  drawScen(); drawScenSel(); resetMission();
+  resetMission();
   { const qk=q0==='efato'&&!SCEN.some(x=>x.k==='efato')?'s_efato':q0; if(qk&&!SCEN.some(x=>x.k===qk)&&PROCS.some(x=>x.k===qk)) procStart(qk); }
   if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(UI.scen==='air'&&!PR.k) AIRUI.showNow(AIRK); } // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('DA42',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null) S.ctl.gear=g; if(f!=null) S.ctl.flap=f; },scen:k=>{ UI.scen=k; resetMission(); drawScen(); drawScenSel(); }};
