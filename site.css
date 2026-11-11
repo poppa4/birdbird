@@ -365,7 +365,16 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 .site .mytr:hover{border-color:var(--ink)}
 .site .mytr.on{border-color:var(--accent);color:var(--accent)}
 .site nav a.mob{display:none}
-@media (max-width:900px){.site .mytr{display:none}.site nav a.mob{display:block}}
+@media (max-width:900px){.site .acct{display:none}.site nav a.mob{display:block}}
+.site .acct{position:relative}
+.site .acct .mytr{font:inherit;font-size:14px;cursor:pointer;line-height:1.2}
+.site .acct .mytr.ini{width:34px;height:34px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;letter-spacing:.03em;position:relative}
+.site .acct .mytr.ini[data-acct]::before{position:absolute;right:-1px;bottom:-1px;margin:0;width:9px;height:9px;border:2px solid var(--sheet)}
+.site .acm{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg,6px);box-shadow:0 12px 32px rgba(19,32,42,.12);padding:6px;z-index:60}
+.site .acm .who{margin:4px 10px 8px;font-size:13px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site .acm a,.site .acm button{display:block;width:100%;text-align:left;padding:9px 10px;border:0;background:none;font:inherit;font-size:14px;color:var(--ink);text-decoration:none;border-radius:var(--radius,3px);cursor:pointer}
+.site .acm a:hover,.site .acm button:hover,.site .acm a:focus-visible,.site .acm button:focus-visible{background:var(--wash);outline:none}
+.site .acm hr{border:0;border-top:1px solid var(--rule-2,var(--rule));margin:6px 4px}
 /* My workspace button next to My page (separate class: account.js decorates .mytr with the sync dot) */
 .site .myws{font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;padding:6px 12px;border:1px solid var(--rule);border-radius:var(--radius,3px);background:var(--sheet);white-space:nowrap}
 .site .myws:hover{border-color:var(--ink)}
