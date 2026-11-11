@@ -981,7 +981,7 @@ const MOM=c=>c.mom||c.t==='push'||c.t==='mbtn'||c.t==='sbtn'||c.t==='bar'||(c.t=
 function bind(world,byId,io){
   const ctlFrom=t=>ctlFromBy(byId,t);
   const svg=world.querySelector('svg'); const pt0=svg.createSVGPoint();
-  const toW=e=>{ pt0.x=e.clientX; pt0.y=e.clientY; const p=pt0.matrixTransform(svg.getScreenCTM().inverse()); return {x:p.x,y:p.y}; };
+  const toW=e=>{ if(io.toWorld) return io.toWorld(e); pt0.x=e.clientX; pt0.y=e.clientY; const p=pt0.matrixTransform(svg.getScreenCTM().inverse()); return {x:p.x,y:p.y}; };
   const inner=(c,pt)=>Math.hypot(pt.x-c.x,pt.y-c.y)<(c.r||14)*0.58*(c.sc||1);
   const step=(o,d,inn)=>{ const c=o.c, v=io.get(c.id);
     switch(c.t){

@@ -10,6 +10,7 @@ import { SoftAuthenticator } from './lib/softauthn.mjs';
 import { endpoint, handlers as H, _test } from '../functions/_lib/api.js';
 
 const W = createRequire(import.meta.url)('../workspacecore.js');
+const INK = createRequire(import.meta.url)('../inkcore.js');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ORIGIN = 'https://birdbird.eu';
 const T0 = Date.UTC(2026, 10, 10, 9, 0, 0), MIN = 60e3, DAY = 864e5;
@@ -312,10 +313,11 @@ test('sync: two devices on one account converge through the real API; a concurre
   const w = world(), br = w.browser(); await w.signup(br);
   /* device A */
   const ac = W.newAircraft({ typeKey: 'da42', reg: 'LN-ABC' }, T0), note = W.newNote({ title: 'Brief', body: 'first' }, T0);
-  let A = { workspace: map(ac), notes: map(note) }, vA = {};
+  const book = INK.newNotebook({ title: 'Kneeboard', paper: 'kneeboard' }, T0);
+  let A = { workspace: map(ac), notes: map(note), ink: map(book) }, vA = {};
   for (const ns of W.NAMESPACES) { const r = await W.syncNs(ns, A[ns], await br.get(ns), br.put, { now: () => w.clock.t }); assert.ok(r.pushed && !r.error && !r.pulled); vA[ns] = r.version; }
   /* device B starts empty and pulls */
-  let B = { workspace: {}, notes: {} };
+  let B = { workspace: {}, notes: {}, ink: {} };
   for (const ns of W.NAMESPACES) { const r = await W.syncNs(ns, B[ns], await br.get(ns), br.put, { now: () => w.clock.t }); assert.ok(!r.pushed && r.pulled); B[ns] = r.items; }
   assert.equal(W.stable(B), W.stable(A));
   const baseA = w.clock.t, baseB = w.clock.t;
@@ -324,7 +326,7 @@ test('sync: two devices on one account converge through the real API; a concurre
   w.clock.t += MIN; B.notes[note.id] = W.editNote(B.notes[note.id], { body: 'from B' }, w.clock.t);
   const nb = W.newNote({ title: 'only on B', body: 'x' }, w.clock.t); B.notes[nb.id] = nb; B.workspace[ac.id] = W.trash(B.workspace[ac.id], w.clock.t);
   /* B syncs first; A pushes with a stale version through the 409 path */
-  for (const ns of W.NAMESPACES) { const r = await W.syncNs(ns, B[ns], await br.get(ns), br.put, { base: baseB, now: () => w.clock.t }); assert.ok(r.pushed && !r.error); B[ns] = r.items; }
+  for (const ns of W.NAMESPACES) { const r = await W.syncNs(ns, B[ns], await br.get(ns), br.put, { base: baseB, now: () => w.clock.t }); assert.ok((r.pushed || ns === 'ink') && !r.error); B[ns] = r.items; }
   const stale = { data: await W.packNs(map(note)).then(p => p.data), version: vA.notes };
   const rA = await W.syncNs('notes', A.notes, stale, br.put, { base: baseA, now: () => w.clock.t });
   assert.ok(rA.pushed && !rA.error && rA.pulled); assert.deepEqual(rA.conflicts, [note.id]);

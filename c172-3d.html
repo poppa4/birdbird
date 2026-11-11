@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Beta: a 3D Cessna 172 cockpit you can look around in: the high-wing cabin, windshield and door posts, control wheels, pedestal and fuel selector, with the same live panel, checklists and failures as the classic trainer.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cessna 172 3D (beta) · cockpit procedure trainer</title>
+<link rel="stylesheet" href="lab.css?v=8">
+<link rel="stylesheet" href="site.css?v=13">
+<link rel="stylesheet" href="c172.css?v=4">
+<style>
+/* ---------- 3D cockpit (beta) ---------- */
+.stage.d3wait .world{visibility:hidden}
+.stage.d3{background:#0b0d10;cursor:grab}
+.stage.d3>canvas#otw{height:100%!important;display:block!important}
+.stage.d3>.wlay{will-change:auto!important}
+.stage.d3 .world{transition:none!important;will-change:transform}
+.stage.d3 .mags,.stage.d3 g.ctl.t-yoke,.stage.d3 .hit[data-for^="yoke"],.stage.d3 .zback{display:none}
+/* the 2D cabin drawing around the panel is replaced by the 3D cabin */
+.stage.d3c172 .psvg .headl,.stage.d3c172 .psvg .pillar,.stage.d3c172 .psvg .pillarR,.stage.d3c172 .psvg .cmpstrip,.stage.d3c172 .psvg .sidew,.stage.d3c172 .psvg .sidetrim,.stage.d3c172 .psvg .sidewin,.stage.d3c172 .psvg .glare,.stage.d3c172 .psvg .floor,.stage.d3c172 .psvg .knee,.stage.d3c172 .psvg .ped,.stage.d3c172 .psvg .pedp,.stage.d3c172 .psvg .pedal,.stage.d3c172 .psvg .pedalr,.stage.d3c172 .psvg .pedalb,.stage.d3c172 .psvg .coltube,.stage.d3c172 .psvg .coltubeh,.stage.d3c172 .psvg .colcoll{display:none}
+.d3t{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;max-width:min(92%,520px);background:rgba(14,17,20,.94);border:1px solid #ffcf3a;color:#fff;border-radius:10px;padding:8px 12px;font:600 12.5px/1.4 system-ui;display:flex;gap:10px;align-items:center}
+.d3t a{color:#ffcf3a}.d3t button{background:none;border:0;color:#9fb0bd;font-size:16px;cursor:pointer;padding:0 2px}
+</style>
+</head>
+<body data-title="Cessna 172 3D (beta)" data-d3="c172.html">
+<script src="site.js?v=56"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">Birdbird Simulators · Beta</div>
+      <h1>Cessna 172 3D (beta)</h1>
+      <p>Sit in the left seat of the high-wing cabin and look around: the windshield and door posts, the wing above the door window, the control wheels, the trim wheel and the fuel selector on the floor, with the same live panel, checklists, failures and air starts as the classic trainer.</p>
+    </div>
+    <div class="hright"><div class="status ok" id="stat">On ground</div></div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#cockpit">Cockpit</a><a href="#controls">Flight controls</a><a href="#systems">Failures</a><a href="#read">How it works</a><a href="#quiz">Test yourself</a></nav>
+
+  <section id="cockpit" class="ckp" aria-label="Cockpit">
+    <div class="ctop" role="toolbar" aria-label="Cockpit tools">
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="da42-3d.html">DA42 3D (beta)</option><option value="b200.html">King Air B200</option><option value="b200-3d.html">King Air B200 3D (beta)</option><option value="c172.html">Cessna 172</option><option value="c172-3d.html" selected>Cessna 172 3D (beta)</option></select><span class="beta" title="Beta">Beta</span><a class="cb" id="b2d" href="c172.html" title="Classic 2D panel">2D</a>
+      <select class="cb" id="scenSel" aria-label="Scenario"></select>
+      <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
+      <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
+      <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
+      <span class="stat" id="stat2" aria-live="polite"></span>
+      <span class="sp"></span>
+      <button class="cb" id="bAhead" hidden>Look ahead</button><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
+      <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+    </div>
+    <div class="cbody">
+      <div class="stage" id="stage">
+        <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
+        <button class="zback" id="zBack">← Whole panel</button>
+        <div class="more" id="moreMenu" hidden><button class="cb" id="bSound" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" aria-pressed="false">Touch stick</button><button class="cb" id="bFull">Full screen</button></div>
+        <div class="pill" id="pill" aria-live="polite"></div>
+        <div class="touch" id="touch" hidden><div class="tz tstk" id="tStk"><i></i></div></div>
+        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
+      </div>
+      <aside class="drawer" id="drawer" aria-label="Procedures and limitations"><div class="din">
+        <div class="tabs"><button data-t="proc" class="on">Procedures</button><button data-t="lim">Limits</button></div>
+        <div id="tabProc">
+          <select id="procSel" aria-label="Procedure"></select>
+          <p class="warnline">For training only — follow the POH/AFM and your school's checklist.</p>
+          <div id="proc"></div>
+          <label><input type="checkbox" id="follow"> Zoom to the next control</label>
+          <div class="eng" id="engRead"></div>
+        </div>
+        <div id="tabLim" hidden></div>
+      </div></aside>
+    </div>
+  </section>
+
+  <section class="card" id="controls">
+    <div class="eyebrow">Fly it</div>
+    <h2>Flight controls</h2>
+    <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.</p>
+    <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
+      <div class="box"><b class="t">Look around</b><p>Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.</p></div>
+      <div class="box"><b class="t">Switches and knobs</b><p>Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.</p></div>
+      <div class="box"><b class="t">Ignition key</b><p>Click the key to step OFF → R → L → BOTH. Press and hold on START (or hold an arrow key at BOTH) to crank; it springs back to BOTH when you let go.</p></div>
+      <div class="box"><b class="t">Radios and instrument knobs</b><p>Scroll on a knob or drag across it. On the double frequency knobs the outer ring changes MHz and the centre (or Shift) the decimals; ⇆ swaps standby and in-use. OBS knobs set the course, the altimeter knob the pressure setting.</p></div>
+    </div></details>
+    <div class="ctlgrid" style="margin-top:12px">
+      <div class="box">
+        <b class="t">Control wheel</b>
+        <div class="stick" id="stick"><span class="dot"></span><small>Drag · releases to centre</small></div>
+        <label class="mini" style="display:flex;gap:6px;align-items:center;margin-top:8px"><input type="checkbox" id="autoTrim" checked> Assisted handling (attitude hold, auto-trim, rudder assist in the air)</label>
+      </div>
+      <div class="box">
+        <b class="t">Rudder and brakes</b>
+        <div id="rudBox"></div>
+        <div class="btns" style="margin-top:12px"><button class="btn" id="brk">Hold for brakes</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="systems">
+    <div class="eyebrow">Make it harder</div>
+    <h2>Failures and weather</h2>
+    <div class="cols">
+      <div class="box"><b class="t">Engine</b><p>Stop the engine, fail a magneto or foul a spark plug (watch the magneto check), or empty a tank.</p>
+        <div class="engbtns" style="margin-top:8px"><button class="btn warn" id="fEng">Engine failure</button><button class="btn warn" id="fMag">Left magneto fails</button><button class="btn warn" id="fPlug">Fouled plug (right mag)</button><button class="btn warn" id="fFuel">Left tank empty</button><button class="btn" id="fRestore" style="grid-column:1/-1">Restore all</button></div></div>
+      <div class="box"><b class="t">Systems</b><p>The vacuum pump drives the attitude and heading indicators; the alternator charges the battery.</p>
+        <div class="engbtns" style="margin-top:8px"><button class="btn warn" id="fVac">Vacuum pump fails</button><button class="btn warn" id="fAlt">Alternator fails</button></div></div>
+      <div class="box"><b class="t">Weather</b><div id="wxBox"></div><div id="windBox"></div><p class="mini" id="iceRisk"></p></div>
+    </div>
+  </section>
+
+  <section class="card" id="read">
+    <div class="eyebrow">Understand</div>
+    <h2>How the model works</h2>
+    <div class="legend">
+      <div class="box"><b class="t">Which Cessna 172?</b><p>A typical classic C172: the carburetted 160 hp 172P-style aeroplane found at many clubs and schools, with a fixed-pitch propeller, flaps 0–30°, a split ALT/BAT master and a LOW VOLTAGE light. No autopilot (most trainers have none) and no rudder trim. On this model the fuel shutoff is the OFF position of the fuel selector; the separate red shutoff knob belongs to later fuel-injected 172s.</p></div>
+      <div class="box"><b class="t">Engine start</b><p>A cold engine needs 2–3 primer strokes; a warm one little or none — over-priming floods it. Mixture rich, throttle open about ¼ inch, master on, clear the propeller, key to START. Release the key as soon as it fires and look for oil pressure within 30 seconds.</p></div>
+      <div class="box"><b class="t">Carburettor ice</b><p>Fuel evaporating in the venturi cools the air by up to about 20 °C, so ice can form in humid air even on a warm day — worst at reduced power. First sign: a slow RPM drop with a fixed-pitch propeller, then rough running. Carb heat: full hot. The engine runs rougher and loses more RPM while the ice melts, then recovers.</p></div>
+      <div class="box"><b class="t">Mixture and EGT</b><p>The carburettor runs richer as the air thins. Lean in cruise: pull the mixture slowly until the EGT peaks, then enrichen to about 50 °F rich of peak. Too lean: rough running and power loss. Full rich for take-off and landing at low-level aerodromes.</p></div>
+      <div class="box"><b class="t">Magnetos</b><p>Two independent magnetos, each firing one plug per cylinder. At 1,700 RPM each magneto alone gives a small drop: max 125 RPM, max 50 RPM difference. No drop means a magneto that may not be grounding (a hot propeller); a big drop with rough running is a fouled plug or a faulty magneto.</p></div>
+      <div class="box"><b class="t">Electrical</b><p>28 V alternator, 24 V battery. The ammeter shows battery current: charge after start, near zero in cruise, discharge if the alternator is off. LOW VOLTAGE comes on below about 24.5 V. Cycle the master (both halves) to reset the alternator control unit; if it comes on again, ALT off, shed load and land.</p></div>
+      <div class="box"><b class="t">Vacuum and gyros</b><p>The engine-driven vacuum pump spins the attitude and heading gyros (suction 4.5–5.4 in Hg). After a pump failure they slow down over minutes: the attitude indicator slowly tilts and the heading indicator wanders while looking believable. The turn coordinator is electric. Cover the failed instruments and fly partial panel.</p></div>
+      <div class="box"><b class="t">Magnetic compass</b><p>Dip makes the compass lag when turning off north and lead when turning off south (northern hemisphere), and show a turn towards north when you accelerate on an east or west heading. Read it in steady, wings-level flight.</p></div>
+      <div class="box"><b class="t">What is simplified</b><p>The flight model is a generic light single tuned to typical C172 numbers. No P-factor or torque on the ground, no weight and balance, one fixed weight (about 2,200 lb). Gauges and limits are typical values for learning, not certified data.</p></div>
+    </div>
+    <h3 style="margin-top:6px">Keyboard</h3>
+    <table class="keys">
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td><td>Pitch and roll. Up is nose down, like a control wheel. Hold <kbd>Shift</kbd> for more.</td></tr>
+      <tr><td><kbd>Q</kbd> <kbd>E</kbd> · <kbd>X</kbd></td><td>Rudder left and right · centre the rudder</td></tr>
+      <tr><td><kbd>+</kbd> <kbd>−</kbd> · <kbd>M</kbd> <kbd>N</kbd></td><td>Throttle in and out · mixture richer and leaner</td></tr>
+      <tr><td><kbd>H</kbd></td><td>Carburettor heat on / off</td></tr>
+      <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Elevator trim nose down and up</td></tr>
+      <tr><td><kbd>F</kbd> <kbd>V</kbd> · <kbd>B</kbd></td><td>Flaps down and up · brakes while held</td></tr>
+      <tr><td><kbd>P</kbd></td><td>Pause</td></tr>
+      <tr><td><kbd>0</kbd>–<kbd>9</kbd> · <kbd>Esc</kbd></td><td>Look at a part of the panel · look ahead</td></tr>
+      <tr><td><kbd>U</kbd> <kbd>O</kbd> <kbd>I</kbd> <kbd>K</kbd> · <kbd>C</kbd></td><td>Look left, right, up and down (also the numpad) · look ahead</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>Move between panel controls; arrows, Space and Enter operate them</td></tr>
+    </table>
+  </section>
+
+  <section class="card" id="quiz">
+    <div class="eyebrow">Check</div>
+    <h2>Test yourself</h2>
+    <div id="qbox"></div>
+  </section>
+
+  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. Procedures here are generic and for training only — follow the POH/AFM of your aeroplane and your school's checklist. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.</p>
+  <p class="note">Prefer the flat panel? Use the <a href="c172.html">classic 2D Cessna 172 trainer</a>.</p>
+  <p class="note">More cockpits: the <a href="cockpit.html">DA42 glass cockpit</a> and the <a href="b200.html">King Air B200 procedure trainer</a>.</p>
+</div>
+
+<script src="three.min.js"></script>
+<script src="simterrain.js?v=3"></script>
+<script src="fdm.js?v=8"></script>
+<script src="airproc.js?v=1"></script>
+<script src="otw.js?v=8"></script>
+<script src="cockpit3d.js?v=1"></script>
+<script src="c172-3d.js?v=1"></script>
+<script src="c172core.js?v=1"></script>
+<script src="c172panel.js?v=4"></script>
+<script src="lab.js?v=46"></script>
+<script>
+LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','Cessna 172 3D (beta)':'Cessna 172 3D (beta)','Beta':'Beta','2D':'2D','Classic 2D panel':'Klassisk 2D-panel','Look ahead':'Se fremover','Look around':'Se deg rundt',
+ 'Sit in the left seat of the high-wing cabin and look around: the windshield and door posts, the wing above the door window, the control wheels, the trim wheel and the fuel selector on the floor, with the same live panel, checklists, failures and air starts as the classic trainer.':'Sett deg i venstre sete i høyvingekabinen og se deg rundt: frontruta og dørstolpene, vingen over dørvinduet, rattene, trimhjulet og drivstoffvelgeren på gulvet, med det samme levende panelet, sjekklistene, feilene og luftstartene som i den klassiske treneren.',
+ 'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. The view buttons in the corner jump to the panel, the side windows, the pedestal and straight ahead. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, K (or the numpad) look left, right, up and down. Drag a control wheel to fly.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Visningsknappene i hjørnet hopper til panelet, sidevinduene, pedestallen og rett frem. Dobbeltklikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, K (eller talltastaturet) ser til venstre, høyre, opp og ned. Dra i et ratt for å fly.',
+ 'Views':'Visninger','Panel':'Panel','Left':'Venstre','Right':'Høyre','Pedestal':'Pedestall','Outside':'Ute','Upper panel':'Øvre panel','Fuel panel':'Drivstoffpanel','Breakers':'Sikringer',
+ '3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.',
+ 'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
+ 'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D Cessna 172 trainer':'den klassiske 2D-treneren for Cessna 172'});
+</script>
+<script src="c172-app.js?v=1"></script>
+</body>
+</html>

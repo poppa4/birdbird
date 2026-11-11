@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="description" content="Beta: a 3D DA42-style cockpit you can look around in, with the live interactive panel, working glass displays and the outside world through the canopy.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DA42 3D cockpit (beta)</title>
+<title>DA42 3D (beta) · glass cockpit trainer</title>
 <link rel="stylesheet" href="lab.css?v=8">
 <link rel="stylesheet" href="site.css?v=13">
 <style>
@@ -233,13 +233,13 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .psvg.cpt .fguard{transform:rotate(var(--bbr));transition:--bbr .2s}.psvg.cpt .fguard.open{--bbr:-40deg}
 </style>
 </head>
-<body data-title="DA42 3D cockpit (beta)">
-<script src="site.js?v=55"></script>
+<body data-title="DA42 3D (beta)">
+<script src="site.js?v=56"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird Simulators · Beta</div>
-      <h1>DA42 3D cockpit (beta)</h1>
+      <h1>DA42 3D (beta)</h1>
       <p>Sit in the left seat and look around: the canopy, the seats and the world outside, with the same live panel, glass displays, switches and levers as the classic trainer.</p>
     </div>
     <div class="hright"><div class="status ok" id="stat">Flying</div></div>
@@ -248,14 +248,14 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="da42-3d.html" selected>DA42 3D (beta)</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option></select>
-      <span class="beta" title="Beta">Beta</span><select class="cb" id="scenSel" aria-label="Scenario"></select>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html">DA42</option><option value="da42-3d.html" selected>DA42 3D (beta)</option><option value="b200.html">King Air B200</option><option value="b200-3d.html">King Air B200 3D (beta)</option><option value="c172.html">Cessna 172</option><option value="c172-3d.html">Cessna 172 3D (beta)</option></select>
+      <span class="beta" title="Beta">Beta</span><a class="cb" id="b2d" href="cockpit.html" title="Classic 2D panel">2D</a><select class="cb" id="scenSel" aria-label="Scenario"></select>
       <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
       <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
       <button class="cb" id="bLock" aria-pressed="false">🔓 Lock view</button>
       <span class="stat" id="stat2" aria-live="polite"></span>
       <span class="sp"></span>
-      <button class="cb" id="bAhead" hidden>Look ahead</button><a class="cb" id="b2d" href="cockpit.html">Classic 2D panel</a><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
+      <button class="cb" id="bAhead" hidden>Look ahead</button><button class="cb" id="bOtw" aria-pressed="true">Outside view</button><button class="cb" id="bPause">Pause</button><button class="cb" id="bReset">Restart</button>
       <button class="cb" id="bMore" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
@@ -374,7 +374,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="avx.js?v=5"></script>
 <script src="da42panel.js?v=4"></script>
 <script src="otw.js?v=8"></script>
-<script src="da42-3d.js?v=1"></script>
+<script src="cockpit3d.js?v=1"></script>
+<script src="da42-3d.js?v=2"></script>
 <script src="lab.js?v=46"></script>
 <script>
 (function(){
@@ -558,12 +559,12 @@ LAB.add({},{'Procedures':'Prosedyrer','Missions':'Oppdrag','Outside view':'Utsik
  'Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, the touch stick or this yoke pad.':'Alt du stiller i cockpiten finner du på panelet over. Fly med tastaturet, en spillkontroll, berøringsstikka eller denne rattflaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click or tap a part of the panel to zoom in. Esc or the back button zooms out. Keys 0–9 jump between areas.':'Klikk eller trykk på en del av panelet for å zoome inn. Esc eller tilbakeknappen zoomer ut. Tastene 0–9 hopper mellom områdene.',
  'Switches and levers':'Brytere og hendler','Click a switch to flip it. Drag the power levers (drag between them to move both), turn knobs and wheels with the mouse wheel or by dragging. Tab to any control and use the arrow keys, Space or Enter.':'Klikk på en bryter for å slå den om. Dra effekthendlene (dra mellom dem for å flytte begge), drei knotter og hjul med musehjulet eller ved å dra. Tab til en kontroll og bruk piltastene, mellomrom eller Enter.',
- 'Rudder and brakes':'Sideror og bremser','Look ahead':'Se fremover','Classic 2D panel':'Klassisk 2D-panel','Look around':'Se deg rundt','DA42 3D cockpit (beta)':'DA42 3D-cockpit (beta)','Beta':'Beta',
+ 'Rudder and brakes':'Sideror og bremser','Look ahead':'Se fremover','Classic 2D panel':'Klassisk 2D-panel','Look around':'Se deg rundt','DA42 3D cockpit (beta)':'DA42 3D-cockpit (beta)','DA42 3D (beta)':'DA42 3D (beta)','Beta':'Beta',
  'Sit in the left seat and look around: the canopy, the seats and the world outside, with the same live panel, glass displays, switches and levers as the classic trainer.':'Sett deg i venstre sete og se deg rundt: kanopien, setene og verden utenfor, med det samme levende panelet, glasskjermene, bryterne og hendlene som i den klassiske treneren.',
  'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. Double-click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, M (or the numpad) look left, right, up and down.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Dobbeltklikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, M (eller talltastaturet) ser til venstre, høyre, opp og ned.',
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D DA42 trainer':'den klassiske 2D-treneren for DA42',
- '3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.','Lock view':'Lås visning','Locked':'Låst','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
+ 'Views':'Visninger','2D':'2D','Console':'Konsoll','Outside':'Ute','3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.','Lock view':'Lås visning','Locked':'Låst','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
 const SYS={};
 const ZN=[['overview',{en:'Panel',no:'Panel'}],['pfd',{en:'PFD',no:'PFD'}],['mfd',{en:'MFD',no:'MFD'}],['top',{en:'Glareshield',no:'Glareskjerm'}],['left',{en:'Engine/ECU',no:'Motor/ECU'}],['switches',{en:'Switches',no:'Brytere'}],['console',{en:'Console',no:'Konsoll'}],['flaps',{en:'Flaps',no:'Flaps'}],['audio',{en:'Audio',no:'Audio'}],['right',{en:'Breakers',no:'Sikringer'}]];
 function sysDefault(cold){
@@ -776,8 +777,8 @@ function d3Toast(){ if(PST.querySelector('.d3t')) return; const t=document.creat
   t.innerHTML=`<span>${T('3D is running slowly on this device.')} <a href="cockpit.html">${T('Try the classic 2D panel')}</a></span><button aria-label="Close">×</button>`; t.querySelector('button').onclick=()=>t.remove(); PST.appendChild(t); setTimeout(()=>t.remove(),12000); }
 setTimeout(()=>{
   if(D3&&D3.supported()){ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } }
-  if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t'),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
-  if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bLock').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); }
+  if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v'),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+  if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bLock').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); LAB.onLang(()=>D3.relabel()); }
   else { el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; if(!otwReady) setOtw(false); }
   PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);
 },0);

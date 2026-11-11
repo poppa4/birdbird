@@ -13,8 +13,9 @@
   const TRASH_DAYS = 30, TOMBSTONE_DAYS = 180;
   const MAX_VERSIONS = 20, VERSION_GAP = 2 * 60e3;
   const NS_BUDGET = 1400000;            // the server allows 1.5 MB per namespace; keep a margin
-  const NAMESPACES = ['workspace', 'notes'];
-  const nsOfKind = k => k === 'note' ? 'notes' : 'workspace';
+  const NAMESPACES = ['workspace', 'notes', 'ink'];
+  /* 'ink': pen notebooks and the ink on PDF pages, kept apart so a big notebook never pushes typed notes off the account */
+  const nsOfKind = k => k === 'note' ? 'notes' : (k === 'notebook' || k === 'ink') ? 'ink' : 'workspace';
 
   /* ---------- reference lists ---------- */
   const SPEEDS_SE = ['VR', 'VX', 'VY', 'VA', 'VFE', 'VNO', 'VNE', 'VS0', 'VS1', 'Best glide'];
@@ -175,6 +176,16 @@
       if (concurrent && (l.body !== w.body || l.title !== w.title) && (l.body || l.title)) { versions = pushVersion(versions, { at: l.updatedAt, title: l.title, body: l.body, conflict: 1 }); conflict = true; }
       if (stable(versions) !== stable(w.versions || [])) item = Object.assign({}, w, { versions });
       if (concurrent) { const tags = uniq((w.tags || []).concat(l.tags || [])).sort().slice(0, 12), links = cleanLinks((w.links || []).concat(l.links || [])).sort((x, y) => (x.t + x.id < y.t + y.id ? -1 : 1)); if (stable(tags) !== stable(w.tags || []) || stable(links) !== stable(w.links || [])) item = Object.assign({}, item, { tags, links }); if (l.pinned && !item.pinned) item = Object.assign({}, item, { pinned: true }); }
+    } else if (concurrent && w.kind === 'notebook') {
+      /* two devices wrote in the same notebook: the newest pages win, the other pages are kept as a version */
+      if (stable(l.pages) !== stable(w.pages) && !(w.versions || []).some(v => v.at === l.updatedAt && v.conflict)) {
+        item = Object.assign({}, w, { versions: (w.versions || []).concat([{ at: l.updatedAt, pages: l.pages, conflict: 1 }]).sort((a, b) => a.at - b.at).slice(-8), imgs: Object.assign({}, l.imgs || {}, w.imgs || {}) }); conflict = true;
+      }
+    } else if (concurrent && w.kind === 'ink') {
+      /* ink on a PDF: pages written on only one device are kept from both */
+      const pages = Object.assign({}, w.pages || {}); let add = false;
+      for (const k in (l.pages || {})) if (!pages[k] && l.pages[k] && l.pages[k].length) { pages[k] = l.pages[k]; add = true; }
+      if (add) item = Object.assign({}, w, { pages });
     } else if (concurrent && w.kind === 'doc') {
       const tags = uniq((w.tags || []).concat(l.tags || [])).sort().slice(0, 12), acIds = uniq((w.acIds || []).concat(l.acIds || [])).sort();
       if (stable(tags) !== stable(w.tags || []) || stable(acIds) !== stable(w.acIds || [])) item = Object.assign({}, w, { tags, acIds });

@@ -2,7 +2,8 @@
    dialogs come from workspace.js (WS.api). One screen like a desk: the library on the left, panes with tabs on the right.
    A desk is a 'desk' item in the 'workspace' namespace and holds positions only (which tabs, where, which page).
    Tab types live in TYPES below: { icon, title(r), mount(box, tab, ctx) -> view { destroy, refresh?, save?, goPage? } }.
-   Phase 2 adds the pen notebook by replacing TYPES.notebook (WSDESK.types). */
+   The pen notebook and the ink on PDF pages live in notebook.js (WSNB), "Ask your documents" in ask.js (WSASK);
+   both get their helpers from here (initExt below). */
 (function () {
   'use strict';
   window.WSDESK_INIT = function (A) {
@@ -45,7 +46,9 @@
       tabs: '<rect x="3" y="6" width="14" height="10.5" rx="1"/><path d="M5 3.5h10"/>',
       keep: '<path d="M10 2.8l6 2.4v4.3c0 3.7-2.6 6.4-6 7.7-3.4-1.3-6-4-6-7.7V5.2z"/><path d="M7.3 10l2 2 3.6-3.8"/>',
       resume: '<circle cx="10" cy="10" r="7"/><path d="M10 6v4.2l2.8 1.8"/>',
-      device: '<rect x="5" y="2.5" width="10" height="15" rx="1.6"/><path d="M8.5 15h3"/>'
+      device: '<rect x="5" y="2.5" width="10" height="15" rx="1.6"/><path d="M8.5 15h3"/>',
+      ask: '<path d="M3.5 4.5h13v9h-7l-3.5 3v-3h-2.5z"/><path d="M8.2 7.6a1.9 1.9 0 113 1.5c-.7.4-1.2.8-1.2 1.5"/><path d="M10 12.2v.1"/>',
+      pen: '<path d="M4 16l1-4 8.5-8.5 3 3L8 15z"/><path d="M12 5l3 3"/>'
     };
     const ic = (k, cls) => `<svg class="i ${cls || ''}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">${P[k] || P.doc}</svg>`;
 
@@ -59,7 +62,8 @@
       aircraft: { icon: () => 'aircraft', title: r => { const a = A.item(r); return a && !a.gone ? (a.reg || A.acName(a)) : t('Aircraft', 'Fly'); }, mount: mountAircraft },
       pack: { icon: () => 'pack', title: r => { const p = findPack(r); return p ? A.packTitle(p) : t('Briefing pack', 'Briefingpakke'); }, mount: mountPack },
       route: { icon: () => 'route', title: r => { const x = findRoute(r); return x ? A.routeTitle(x) : t('Route', 'Rute'); }, mount: mountRoute },
-      notebook: { icon: () => 'notebook', title: () => t('Notebook', 'Notatbok'), mount: mountNotebook }
+      notebook: { icon: () => 'notebook', title: r => { const n = A.item(r); return n && !n.gone && n.title ? n.title : t('Notebook', 'Notatbok'); }, mount: mountNotebook },
+      ask: { icon: () => 'ask', title: () => t('Ask your documents', 'Spør dokumentene'), mount: mountAsk }
     };
     const typeOf = k => TYPES[k] || { icon: () => 'doc', title: () => k, mount: mountUnknown };
 
@@ -81,7 +85,7 @@
       desk = { id: d.id, name: d.name, unsaved: !!d.unsaved, updatedAt: d.updatedAt || 0 };
       L = D.sanitize(d.L);
       const snap = readSnap(); if (snap && snap.id === d.id && (snap.at || 0) > (d.updatedAt || 0) && snap.L) L = D.sanitize(snap.L);
-      L = D.prune(L, (k, r) => !((k === 'doc' || k === 'note' || k === 'aircraft') && isGone(r)));
+      L = D.prune(L, (k, r) => !((k === 'doc' || k === 'note' || k === 'aircraft' || k === 'notebook') && isGone(r)));
       if (A.M.desk !== d.id) { A.M.desk = d.id; A.saveMeta(); }
       treeKey = '';
     }
@@ -89,7 +93,7 @@
     function changed(nl, kind) {
       L = nl; localEditAt = Date.now();
       clearTimeout(saveT); saveT = setTimeout(saveNow, kind === 'pos' ? 1500 : 250);
-      if (kind !== 'pos') render();
+      if (kind !== 'pos') { render(); drawRail(); }
     }
     function saveNow() {
       clearTimeout(saveT); saveT = 0; if (!desk) return;
@@ -114,7 +118,7 @@
       if (k === 'doc' && !opts.st) { const pos = (A.M.docPos || {})[r]; if (pos) opts = Object.assign({}, opts, { st: pos }); }
       const res = D.open(L, k, String(r), { pane: opts.pane, beside: opts.beside && !isPhone(), dir: opts.dir, max: maxPanes(), st: opts.st });
       if (!res.tabId) { A.toast(t('This pane is full. Close a few tabs first.', 'Dette panelet er fullt. Lukk noen faner først.')); return null; }
-      if (['doc', 'note', 'aircraft', 'pack', 'route'].includes(k)) A.visit(k, r);
+      if (['doc', 'note', 'aircraft', 'pack', 'route', 'notebook'].includes(k)) A.visit(k, r);
       changed(res.L, 'shape');
       closeSheet();
       if (opts.st && opts.st.p && (res.existed || opts.flash)) { const v = views.get(res.tabId); if (v && v.goPage) v.goPage(opts.st.p, opts.st.o || 0, !!opts.flash); }
@@ -148,6 +152,21 @@
       return true;
     }
     const paneOfDoc = docId => { const f = D.findItem(L, 'doc', docId); return f ? f.pane.id : null; };
+    /* an answer from "Ask" into the note beside (or a new note beside, linked to the document) */
+    async function quoteInto(html, docId, fromPane) {
+      const tn = targetNote(fromPane);
+      if (tn && tn.v && tn.v.insertCite) { tn.v.insertCite(html); A.toast(t('Copied into “', 'Kopiert inn i «') + A.noteTitle(A.item(D.tabById(L, tn.tabId).r)) + t('”.', '».')); return; }
+      if (tn) { const n = A.item(D.tabById(L, tn.tabId).r); if (W.isLive(n)) { await A.commit(W.editNote(n, { body: n.body + html })); A.toast(t('Copied into the note.', 'Kopiert inn i notatet.')); return; } }
+      const d = docId && A.item(docId);
+      await newNote({ title: d ? t('Notes: ', 'Notater: ') + d.name : t('Notes', 'Notater'), body: html + '<div><br></div>', links: d ? [{ t: 'doc', id: docId }] : [] }, { pane: fromPane, beside: true });
+    }
+    /* the document showing in another pane than this one (for "the open document") */
+    function docBeside(paneId) {
+      for (const p of (phoneMode ? [] : D.panes(L))) { if (p.id === paneId) continue; const tb = p.tabs.find(x => x.id === p.a); if (tb && tb.k === 'doc' && W.isLive(A.item(tb.r))) return tb.r; }
+      const at = D.allTabs(L).find(x => x.k === 'doc' && W.isLive(A.item(x.r))); return at ? at.r : null;
+    }
+    async function newNotebook(opts) { if (!window.WSNB) return; await window.WSNB.create({}, opts || {}); }
+    function askBeside(docId, fromPane) { if (window.WSASK) window.WSASK.setDoc(docId || null); openItem('ask', 'ask', { pane: fromPane, beside: !!docId }); }
     /* a page reference in a note was clicked: show that page, beside the note */
     function jumpTo(docId, page, fromPane) {
       const d = A.item(docId);
@@ -212,8 +231,8 @@
     let railQ = '';
     const SECS = () => [
       ['aircraft', t('Aircraft', 'Fly'), 'aircraft', A.aircraft().map(a => ({ k: 'aircraft', r: a.id, n: a.reg || A.acName(a), s: a.reg ? a.type : '' }))],
-      ['doc', t('Documents', 'Dokumenter'), 'doc', A.docsAll().map(d => ({ k: 'doc', r: d.id, n: d.name, s: A.catName(d.cat), i: docKind(d), off: !A.onDevice(d.id) }))],
-      ['note', t('Notes', 'Notater'), 'note', A.notesAll().map(n => ({ k: 'note', r: n.id, n: A.noteTitle(n), pin: n.pinned })).concat([{ k: 'notebook', r: 'soon', n: t('Notebook (coming)', 'Notatbok (kommer)'), soon: 1 }])],
+      ['doc', t('Documents', 'Dokumenter'), 'doc', [{ k: 'ask', r: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask', soon: 1, cmd: 1 }].concat(A.docsAll().map(d => ({ k: 'doc', r: d.id, n: d.name, s: A.catName(d.cat), i: docKind(d), off: !A.onDevice(d.id) })))],
+      ['note', t('Notes', 'Notater'), 'note', A.notebooksAll().map(n => ({ k: 'notebook', r: n.id, n: n.title || t('Notebook', 'Notatbok'), s: t('Notebook', 'Notatbok') })).concat(A.notesAll().map(n => ({ k: 'note', r: n.id, n: A.noteTitle(n), pin: n.pinned })))],
       ['pack', t('Briefing packs', 'Briefingpakker'), 'pack', A.packsAll().map(p => ({ k: 'pack', r: p.id, n: A.packTitle(p), s: (p.f || {}).date || '' }))],
       ['route', t('Routes', 'Ruter'), 'route', S.routes.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0)).map(x => ({ k: 'route', r: x.id, n: A.routeTitle(x) }))]
     ];
@@ -225,11 +244,11 @@
         const l = list.filter(match); if (q && !l.length) return '';
         const open = q ? true : secOpen(k);
         return `<section class="dk-sec"><button type="button" class="dk-sh" data-sec="${k}" aria-expanded="${open}">${ic('chev', 'cv')}<span>${esc(name)}</span><span class="c">${list.filter(x => !x.soon).length}</span></button>
-          ${open ? `<ul>${l.length ? l.map(it => `<li><button type="button" class="dk-it${openNow.has(it.k + ':' + it.r) ? ' open' : ''}${it.soon ? ' soon' : ''}" data-k="${it.k}" data-r="${esc(it.r)}" title="${esc(it.n)}">${ic(it.i || TYPES[it.k].icon(it.r))}<span class="n">${it.pin ? '<i class="pin"></i>' : ''}${esc(it.n)}</span>${it.off ? `<span class="off" title="${esc(t('File not on this device', 'Filen er ikke på denne enheten'))}">○</span>` : ''}</button></li>`).join('') : `<li class="none">${esc(k === 'doc' ? t('No documents yet', 'Ingen dokumenter ennå') : k === 'aircraft' ? t('No aircraft yet', 'Ingen fly ennå') : t('Nothing here yet', 'Ingenting her ennå'))}</li>`}</ul>` : ''}</section>`;
+          ${open ? `<ul>${l.length ? l.map(it => `<li><button type="button" class="dk-it${openNow.has(it.k + ':' + it.r) ? ' open' : ''}${it.cmd ? ' cmd' : ''}" data-k="${it.k}" data-r="${esc(it.r)}" title="${esc(it.n)}">${ic(it.i || TYPES[it.k].icon(it.r))}<span class="n">${it.pin ? '<i class="pin"></i>' : ''}${esc(it.n)}</span>${it.off ? `<span class="off" title="${esc(t('File not on this device', 'Filen er ikke på denne enheten'))}">○</span>` : ''}</button></li>`).join('') : `<li class="none">${esc(k === 'doc' ? t('No documents yet', 'Ingen dokumenter ennå') : k === 'aircraft' ? t('No aircraft yet', 'Ingen fly ennå') : t('Nothing here yet', 'Ingenting her ennå'))}</li>`}</ul>` : ''}</section>`;
       }).join('');
       return `<div class="dk-rs"><label class="sr" for="dkQ${sheet ? 's' : ''}">${esc(t('Filter the library', 'Filtrer biblioteket'))}</label>${ic('search')}<input id="dkQ${sheet ? 's' : ''}" type="search" value="${esc(railQ)}" placeholder="${esc(t('Filter the library', 'Filtrer biblioteket'))}" autocomplete="off" spellcheck="false"></div>
         <div class="dk-tree">${secs || `<p class="dk-none">${esc(t('Nothing matches.', 'Ingen treff.'))}</p>`}</div>
-        <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button></div>`;
+        <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>`;
     }
     function drawRail() {
       if (!railEl) return;
@@ -330,6 +349,7 @@
         jumpTo: (docId, p) => jumpTo(docId, p, paneId),
         noteBeside: (docId, p, label) => noteBeside(docId, p, label, paneId),
         citeTarget: () => targetNote(paneId), cite: (docId, p, label) => citeInto(docId, p, label),
+        quote: (html, docId) => quoteInto(html, docId, paneId), ask: docId => askBeside(docId, paneId),
         close: () => changed(D.close(L, tab.id, true), 'shape'),
         swipe: dir => switchTab(dir) };
     }
@@ -385,6 +405,7 @@
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
           <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(t('Choose aircraft', 'Velg fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('Add the aircraft you fly', 'Legg til flyet du flyr'))}</small></button>
         </div>
+        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid, lined or a clearance template', 'Skriv med penn på rutenett, linjer eller en klareringsmal'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button></div>
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
         <ul class="vals">
           <li>${ic('keep')}<div><b>${esc(t('Nothing gets lost', 'Ingenting går tapt'))}</b><span>${esc(t('Saved as you work, with history and a 30-day trash.', 'Lagres mens du jobber, med historikk og 30 dagers papirkurv.'))}</span></div></li>
@@ -394,21 +415,24 @@
         <p class="tip">${isPhone() ? esc(t('Tip: the library button at the top opens everything you have.', 'Tips: bibliotekknappen øverst åpner alt du har.')) : `<kbd>${KEY}</kbd> ${esc(t('opens anything. Drag an item from the library to place it beside another.', 'åpner hva som helst. Dra et element fra biblioteket for å legge det ved siden av et annet.'))}`}</p>
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
+      box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       return {};
     }
     function emptyAction(k, paneId) {
       if (k === 'doc') { if (A.docsAll().length) palette({ only: 'doc', pane: paneId }); else A.pickFiles({}); }
       else if (k === 'note') newNote({}, { pane: paneId });
+      else if (k === 'nb') newNotebook({ pane: paneId });
+      else if (k === 'ask') askBeside(null, paneId);
       else if (k === 'ac') { if (A.aircraft().length) palette({ only: 'aircraft', pane: paneId }); else A.aircraftDlg(null).then(id => { if (id) openItem('aircraft', id, { pane: paneId }); }); }
     }
     function mountEmptyPane(box, paneId) {
       box.innerHTML = `<div class="dk-epane"><p>${esc(t('An empty pane. Drag a tab or a library item here, or:', 'Et tomt panel. Dra en fane eller et element fra biblioteket hit, eller:'))}</p>
-        <div class="row"><button type="button" class="btn sm" data-e="open">${ic('search')}${esc(t('Open…', 'Åpne …'))}</button><button type="button" class="btn sm" data-e="note">${ic('note')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="btn sm quiet" data-e="close">${esc(t('Close pane', 'Lukk panelet'))}</button></div></div>`;
+        <div class="row"><button type="button" class="btn sm" data-e="open">${ic('search')}${esc(t('Open…', 'Åpne …'))}</button><button type="button" class="btn sm" data-e="note">${ic('note')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="btn sm" data-e="nb">${ic('pen')}${esc(t('New notebook', 'Ny notatbok'))}</button><button type="button" class="btn sm quiet" data-e="close">${esc(t('Close pane', 'Lukk panelet'))}</button></div></div>`;
       box.querySelector('.row').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (!b) return;
-        if (b.dataset.e === 'open') palette({ pane: paneId }); else if (b.dataset.e === 'note') newNote({}, { pane: paneId }); else changed(D.removePane(L, paneId), 'shape'); });
+        if (b.dataset.e === 'open') palette({ pane: paneId }); else if (b.dataset.e === 'note') newNote({}, { pane: paneId }); else if (b.dataset.e === 'nb') newNotebook({ pane: paneId }); else changed(D.removePane(L, paneId), 'shape'); });
       return {};
     }
-    function live(k, r) { if (k === 'pack') return !!findPack(r); if (k === 'route') return !!findRoute(r); if (k === 'notebook') return true; return W.isLive(A.item(r)); }
+    function live(k, r) { if (k === 'pack') return !!findPack(r); if (k === 'route') return !!findRoute(r); if (k === 'ask') return true; return W.isLive(A.item(r)); }
     function missing(box, k, r, ctx) {
       const it = A.item(r), trashed = it && W.inTrash(it);
       box.innerHTML = `<div class="dk-msg"><p><b>${esc(trashed ? t('This item is in the trash.', 'Dette elementet ligger i papirkurven.') : t('This item is not here.', 'Dette elementet finnes ikke her.'))}</b></p><p>${esc(trashed ? t('Restore it to keep working on it here.', 'Gjenopprett det for å fortsette å jobbe med det her.') : t('It may have been deleted, or it has not reached this device yet.', 'Det kan være slettet, eller det har ikke kommet til denne enheten ennå.'))}</p>
@@ -435,7 +459,7 @@
       if (!W.isLive(d)) return missing(box, 'doc', id, ctx);
       const sd = S.docs[id], pages = sd ? W.pagesFromChunks(sd.chunks) : [], hasText = pages.length > 0;
       let st = Object.assign({}, (A.M.docPos || {})[id] || {}, ctx.st), alive = true, mode = null, z = st.z || 1, cur = st.p || 1, total = 0, labels = null, ratio = 1.414, usesPdf = false;
-      let wantFlash = false, pdf = null, obs = null, ro = null, url = null, lastW = 0, rT = 0, sT = 0, raf = 0, pgEls = [], liveC = [], find = { hits: [], q: '' };
+      let wantFlash = false, pdf = null, obs = null, ro = null, url = null, lastW = 0, rT = 0, sT = 0, raf = 0, pgEls = [], liveC = [], find = { hits: [], q: '' }, ann = null;
       const root = h('div', 'dv' + (z > 1 ? ' zoomed' : '')); box.appendChild(root);
       const label = p => (labels && labels[p - 1]) || String(p);
       const paneW = () => sc ? sc.clientWidth : 600;
@@ -453,6 +477,8 @@
           <span class="sp"></span>
           ${(fileKind && hasText) ? `<div class="seg dv-seg" role="group" aria-label="${esc(t('View', 'Visning'))}"><button type="button" data-vm="file" class="${mode === 'file' ? 'on' : ''}" aria-pressed="${mode === 'file'}">${fileKind === 'img' ? esc(t('Image', 'Bilde')) : 'PDF'}</button><button type="button" data-vm="text" class="${mode === 'text' ? 'on' : ''}" aria-pressed="${mode === 'text'}">${esc(t('Text', 'Tekst'))}</button></div>` : ''}
           ${paged && tn ? `<button type="button" class="btn sm dv-cite" data-a="cite" title="${esc(t('Add a reference to this page to the note beside', 'Legg en henvisning til denne siden inn i notatet ved siden av'))}">${ic('cite')}<span class="lb"></span></button>` : ''}
+          ${mode === 'file' && fileKind === 'pdf' && window.WSNB ? `<button type="button" class="btn sm dv-ann${ann && ann.on ? ' on' : ''}" data-a="ann" aria-pressed="${!!(ann && ann.on)}" title="${esc(t('Write on the pages with a pen. The PDF itself is never changed.', 'Skriv på sidene med penn. Selve PDF-en endres aldri.'))}">${ic('pen')}<span>${esc(t('Annotate', 'Skriv på'))}</span></button>` : ''}
+          ${hasText && window.WSASK ? `<button type="button" class="btn sm dv-ask" data-a="ask" title="${esc(t('Ask this document a question, with the page in the answer', 'Still dokumentet et spørsmål, med siden i svaret'))}">${ic('ask')}<span>${esc(t('Ask', 'Spør'))}</span></button>` : ''}
           ${paged ? `<button type="button" class="btn sm dv-nb" data-a="nb" title="${esc(t('Start a note beside this document, linked to this page', 'Start et notat ved siden av dokumentet, koblet til denne siden'))}">${ic('beside')}<span>${esc(t('Note beside', 'Notat ved siden av'))}</span></button>` : ''}
           <button type="button" class="dk-ib" data-a="more" aria-haspopup="menu" aria-label="${esc(t('More', 'Mer'))}">${ic('more')}</button>`;
         drawPageNo();
@@ -467,6 +493,7 @@
         const inp = bar.querySelector('.dv-pg input'); if (inp && document.activeElement !== inp) inp.value = cur;
         const lb = bar.querySelector('.dv-lbl'); if (lb) lb.textContent = labels && label(cur) !== String(cur) ? '(' + label(cur) + ')' : '';
         const cb = bar.querySelector('.dv-cite .lb'); if (cb) cb.textContent = t('Cite p. ', 'Henvis s. ') + label(cur);
+        if (ann) ann.page(cur);
       }
       function drawFind() {
         const fc = fbar.querySelector('.dv-fc'); if (!fc) return;
@@ -501,12 +528,13 @@
           if (!alive) return;
           const v0 = p.getViewport({ scale: 1 }); pg._r = v0.height / v0.width;
           const ww = pageW(), dpr = Math.min(2, window.devicePixelRatio || 1), vp = p.getViewport({ scale: Math.min(4, ww * dpr / v0.width) });
-          const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+          const c = document.createElement('canvas'); c.className = 'pdfc'; c.width = Math.round(vp.width); c.height = Math.round(vp.height);
           return p.render({ canvasContext: c.getContext('2d', { alpha: false }), viewport: vp }).promise.then(() => {
-            if (!alive) return; const old = pg.querySelector('canvas'); if (old) { old.width = old.height = 0; old.remove(); }
+            if (!alive) return; const old = pg.querySelector('canvas.pdfc'); if (old) { old.width = old.height = 0; old.remove(); }
             pg.insertBefore(c, pg.firstChild); pg.dataset.w = ww; pg.style.height = Math.round(ww * pg._r) + 'px';
+            if (ann) ann.paint(pg);
             const i = liveC.indexOf(pg); if (i >= 0) liveC.splice(i, 1); liveC.push(pg);
-            while (liveC.length > 10) { const o = liveC.shift(), oc = o.querySelector('canvas'); if (oc) { oc.width = oc.height = 0; oc.remove(); } delete o.dataset.w; }
+            while (liveC.length > 10) { const o = liveC.shift(); o.querySelectorAll('canvas').forEach(oc => { oc.width = oc.height = 0; oc.remove(); }); delete o.dataset.w; }
             p.cleanup();
           });
         }).catch(() => {}).then(() => { pg._busy = false; if (alive && +pg.dataset.w !== pageW() && pg._vis) paint(pg); });
@@ -520,6 +548,7 @@
         if (!alive) return;
         sc.innerHTML = `<div class="dv-pages">${Array.from({ length: total }, (_, i) => `<div class="pg" data-p="${i + 1}"><span class="no">${esc(label(i + 1))}</span></div>`).join('')}</div>`;
         pgEls = [...sc.querySelectorAll('.pg')];
+        if (window.WSNB && !ann) ann = window.WSNB.annotator({ docId: id, sc, root, bar, pages: () => pgEls, ratio: () => ratio, cur: () => cur, zoom: s => rezoom(z * s), onToggle: () => drawBar() });
         sizePages(); drawBar();
         obs = new IntersectionObserver(es => es.forEach(e => { e.target._vis = e.isIntersecting; if (e.isIntersecting) paint(e.target); }), { root: sc, rootMargin: '800px 0px' });
         pgEls.forEach(pg => obs.observe(pg));
@@ -566,6 +595,7 @@
       async function setMode(m) {
         if (mode === m) return; const keep = mode ? where() : { p: cur, o: st.o || 0 }; mode = m; cur = keep.p; st.o = keep.o;
         if (obs) { obs.disconnect(); obs = null; } pgEls = []; liveC = [];
+        if (ann) { if (ann.on) ann.toggle(false); ann.destroy(); ann = null; }
         if (m === 'text') { drawBar(); drawText(); if (wantFlash) { goPage(cur, st.o || 0, true); wantFlash = false; } save(); return; }
         const blob = await A.FI.getBlob(id); if (!alive) return;
         if (fileKind === 'img') { url = url || URL.createObjectURL(blob); sc.innerHTML = `<div class="dv-img"><img src="${url}" alt="${esc(d.name)}" style="width:${Math.round((paneW() - 32) * z)}px"></div>`; drawBar(); }
@@ -605,20 +635,23 @@
         else if (a === 'find') toggleFind(!findOpen);
         else if (a === 'nb') ctx.noteBeside(id, cur, label(cur));
         else if (a === 'cite') ctx.cite(id, cur, label(cur));
+        else if (a === 'ann') { if (ann) ann.toggle(); }
+        else if (a === 'ask') ctx.ask(id);
         else if (a === 'more') menu(b, [
           { l: t('Note beside', 'Notat ved siden av'), f: () => ctx.noteBeside(id, cur, label(cur)), hide: !(mode === 'file' ? fileKind === 'pdf' : hasText) },
+          { l: t('Export with your ink (PDF)', 'Eksporter med blekket ditt (PDF)'), f: () => { if (ann && pdf) ann.exportPdf(pdf, d.name); }, hide: !(ann && pdf && ann.any()) },
           A.hasFile(id) ? { l: t('Download the file', 'Last ned filen'), f: async () => { const bl = await A.FI.getBlob(id); if (bl) A.download(bl, (sd.file && sd.file.name) || d.name + '.' + (d.ext || 'pdf')); } } : null,
           { l: t('Name, category and links…', 'Navn, kategori og koblinger …'), f: () => A.go('documents/' + id) },
           { l: t('Replace the file…', 'Bytt ut filen …'), f: () => A.pickFiles({ replaceId: id }) },
           { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]);
       });
-      if (phoneMode) swipeable(sc, () => z <= 1 || fileKind !== 'pdf', ctx);
+      if (phoneMode) swipeable(sc, () => (z <= 1 || fileKind !== 'pdf') && !(ann && ann.on), ctx);
       return {
         save, goPage: (p, o, fl) => { if (mode && (mode === 'text' || pgEls.length)) goPage(p, o, fl); else { cur = Math.round(+p) || 1; st.o = o || 0; wantFlash = !!fl; } },
         ctxChanged() { if (!mode) return; const has = !!bar.querySelector('.dv-cite'), want = !!ctx.citeTarget() && (mode === 'file' ? fileKind === 'pdf' : hasText); if (has !== want) drawBar(); },
-        refresh() { const dd = A.item(id); if (!W.isLive(dd) || (!sd && S.docs[id])) return 'remount'; if (dd.name !== d.name) { d.name = dd.name; } },
+        refresh() { const dd = A.item(id); if (!W.isLive(dd) || (!sd && S.docs[id])) return 'remount'; if (dd.name !== d.name) { d.name = dd.name; } if (ann) ann.refresh(); },
         pos() { return mode ? { p: cur, paged: mode === 'file' ? fileKind === 'pdf' : hasText } : null; },
-        destroy() { if (mode) save(); alive = false; if (obs) obs.disconnect(); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); if (url) URL.revokeObjectURL(url); liveC.forEach(pg => { const c = pg.querySelector('canvas'); if (c) { c.width = c.height = 0; } }); if (usesPdf) releasePdf(id); }
+        destroy() { if (mode) save(); alive = false; if (ann) ann.destroy(); if (obs) obs.disconnect(); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); if (url) URL.revokeObjectURL(url); liveC.forEach(pg => { const c = pg.querySelector('canvas'); if (c) { c.width = c.height = 0; } }); if (usesPdf) releasePdf(id); }
       };
     }
     function trimPos() { const o = A.M.docPos; const k = Object.keys(o); if (k.length > 120) k.slice(0, k.length - 120).forEach(x => delete o[x]); clearTimeout(trimPos.t); trimPos.t = setTimeout(A.saveMeta, 1500); }
@@ -779,23 +812,19 @@
         <div class="row"><a class="btn pri" href="route.html?id=${encodeURIComponent(x.id)}">${esc(t('Open in Route Explorer', 'Åpne i Route Explorer'))}</a></div>`);
       return {};
     }
-    function mountNotebook(box, tab, ctx) {
-      card(box, ctx, `<p class="eb">${esc(t('Coming', 'Kommer'))}</p><h2>${esc(t('Handwritten notebook', 'Håndskrevet notatbok'))}</h2>
-        <p class="lead">${esc(t('Pen notebooks for Apple Pencil arrive in a later version. They will open here as a tab, beside your documents, and sync like your typed notes.', 'Notatbøker for Apple Pencil kommer i en senere versjon. De åpnes her som en fane, ved siden av dokumentene dine, og synkroniseres som de skrevne notatene.'))}</p>
-        <div class="row"><button type="button" class="btn" data-nb="note">${esc(t('Write a typed note instead', 'Skriv et vanlig notat i stedet'))}</button></div>`).addEventListener('click', e => { if (e.target.closest('[data-nb]')) newNote({}, { pane: ctx.paneId }); });
-      return {};
-    }
+    function mountNotebook(box, tab, ctx) { if (!window.WSNB) return missing(box, 'notebook', tab.r, ctx); return window.WSNB.mountNotebook(box, tab, ctx); }
+    function mountAsk(box, tab, ctx) { if (!window.WSASK) return mountUnknown(box, tab, ctx); return window.WSASK.mountAsk(box, tab, ctx); }
     function mountUnknown(box, tab, ctx) { return missing(box, tab.k, tab.r, ctx); }
 
     /* ---------- quick open (Ctrl/Cmd K) ---------- */
     function palette(o) {
       o = o || {}; const target = o.pane || L.act;
       const cmds = () => [
-        { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
+        { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
         !isPhone() && D.panes(L).length < maxPanes() ? { c: 'split-h', n: t('Split right', 'Del til høyre'), i: 'splith' } : null,
         canDown() && D.panes(L).length < maxPanes() ? { c: 'split-v', n: t('Split down', 'Del nedover'), i: 'splitv' } : null,
         { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'lib', n: t('Library and backup', 'Bibliotek og sikkerhetskopi'), i: 'lib' }].filter(Boolean);
-      const name = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), note: t('Note', 'Notat'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute') };
+      const name = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), note: t('Note', 'Notat'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), notebook: t('Notebook', 'Notatbok') };
       let rows = [], sel = 0;
       function compute(q) {
         q = q.trim(); const out = [];
@@ -837,7 +866,7 @@
       });
     }
     function runCmd(c, paneId) {
-      if (c === 'note') newNote({}, { pane: paneId }); else if (c === 'add') A.pickFiles({}); else if (c === 'split-h') splitPane(paneId, 'h'); else if (c === 'split-v') splitPane(paneId, 'v');
+      if (c === 'note') newNote({}, { pane: paneId }); else if (c === 'nb') newNotebook({ pane: paneId }); else if (c === 'ask') askBeside(null, paneId); else if (c === 'add') A.pickFiles({}); else if (c === 'split-h') splitPane(paneId, 'h'); else if (c === 'split-v') splitPane(paneId, 'v');
       else if (c === 'desk') deskNew(); else if (c === 'lib') A.go('library');
     }
 
@@ -1032,17 +1061,17 @@
         const it = e.target.closest('.dk-it'); if (it) { openItem(it.dataset.k, it.dataset.r, { beside: e.shiftKey || e.altKey }); return; }
         const ri = e.target.closest('[data-ri]'); if (ri) { const o = Object.assign({}, (A.M.deskRail || {}).open || {}); o[ri.dataset.ri] = true; A.M.deskRail = Object.assign({}, A.M.deskRail || {}, { open: o, c: false }); A.saveMeta(); drawRail(); drawBar(); return; }
         const b = e.target.closest('[data-b]'); if (!b) return;
-        if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({});
+        if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({});
       };
       railEl.addEventListener('click', railClick);
       sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; } railClick(e); });
       const railInput = e => { if (e.target.type === 'search') { railQ = e.target.value; e.target.closest('.dk-sheet') ? drawSheet() : drawRail(); } };
       railEl.addEventListener('input', railInput); sheetEl.addEventListener('input', railInput);
       railEl.addEventListener('keydown', e => { if (e.key === '/') e.stopPropagation(); });
-      railEl.addEventListener('pointerdown', e => { const it = e.target.closest('.dk-it'); if (it && !it.classList.contains('soon')) dragStart(e, { k: it.dataset.k, r: it.dataset.r }, it.querySelector('.n').textContent); });
+      railEl.addEventListener('pointerdown', e => { const it = e.target.closest('.dk-it'); if (it) dragStart(e, { k: it.dataset.k, r: it.dataset.r }, it.querySelector('.n').textContent); });
       railEl.addEventListener('contextmenu', e => { const it = e.target.closest('.dk-it'); if (!it) return; e.preventDefault(); const k = it.dataset.k, r = it.dataset.r;
         menu({ x: e.clientX, y: e.clientY }, [{ l: t('Open', 'Åpne'), f: () => openItem(k, r) }, { l: t('Open beside', 'Åpne ved siden av'), f: () => openItem(k, r, { beside: true }), hide: isPhone() },
-          { l: t('Show in the Library', 'Vis i biblioteket'), f: () => A.go(k === 'doc' ? 'documents/' + r : k === 'note' ? 'notes/' + r : k === 'aircraft' ? 'aircraft/' + r : k === 'pack' ? 'packs' : 'routes'), hide: k === 'notebook' }]); });
+          { l: t('Show in the Library', 'Vis i biblioteket'), f: () => A.go(k === 'doc' ? 'documents/' + r : k === 'note' ? 'notes/' + r : k === 'aircraft' ? 'aircraft/' + r : k === 'pack' ? 'packs' : 'routes'), hide: k === 'notebook' || k === 'ask' }]); });
 
       mainEl.addEventListener('pointerdown', e => {
         const paneE = e.target.closest('.dk-pane');
@@ -1096,6 +1125,10 @@
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') snapshot(); });
     window.LAB.onLang(() => { if (!mounted) return; collectStates(); unmountViews(); drawBar(); drawRail(); render(true); });
 
+    /* helpers for notebook.js and ask.js */
+    const EXT = { A, D, W, t, esc, h, ic, menu, missing, toast: A.toast, isPhone, openItem: (k, r, o) => openItem(k, r, o), drawTabTitles, pdfLabel, docBeside, lang: () => t('en', 'no') };
+    if (window.WSNB) window.WSNB.init(EXT);
+    if (window.WSASK) window.WSASK.init(EXT);
     window.WSDESK = { show, hide, status, refresh,
       openItem: (k, r, o) => openItem(k, r, o), types: TYPES,
       get layout() { return L; }, get desk() { return desk; }, views, save: snapshot };

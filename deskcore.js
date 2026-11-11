@@ -4,13 +4,13 @@
      L      { root: node, act: id of the active pane }
      node   pane  { t:'p', id, tabs:[tab], a: id of the active tab or null }
             split { t:'s', id, d:'h' (side by side) | 'v' (stacked), w:[fractions, sum 1], c:[node, node, …] }
-     tab    { id, k: item type ('doc' 'note' 'aircraft' 'pack' 'route' 'notebook' …), r: item id, pin?:1, st?:{ p, z, y } }
+     tab    { id, k: item type ('doc' 'note' 'aircraft' 'pack' 'route' 'notebook' 'ask' …), r: item id, pin?:1, st?:{ p, z, y } }
    An item is open at most once per desk; opening it again shows the tab that already has it.
    Every function returns a new layout and leaves its input untouched. */
 (function (G) {
   'use strict';
   const MAX_PANES = 4, MAX_TABS = 40, MAX_DESKS = 24, MIN_W = 0.14;
-  const TYPES = ['doc', 'note', 'aircraft', 'pack', 'route', 'notebook'];
+  const TYPES = ['doc', 'note', 'aircraft', 'pack', 'route', 'notebook', 'ask'];
   let seq = 0;
   const rid = p => p + Date.now().toString(36).slice(-5) + (seq++ % 1296).toString(36).padStart(2, '0') + Math.random().toString(36).slice(2, 5);
   const clone = o => JSON.parse(JSON.stringify(o));

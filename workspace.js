@@ -6,8 +6,9 @@
                          notes with their version history -> namespace 'notes'. Document files are never uploaded.
    The desk             desk.js draws the default view (#/): panes with tabs, saved as 'desk' items (positions only) in the
                          'workspace' namespace. The list views below are the Library (#/library, #/documents …).
-   Phase 2 hook          WS.noteFormats: a note has fmt ('text' today). A pen notebook registers fmt 'ink' with
-                         { label, open(note, host, save) } and gets the same autosave, versions, links, sync and trash. */
+   Pen notebooks         items of kind 'notebook' (and 'ink' for the ink on a PDF page) in the 'ink' namespace; drawn by
+                         notebook.js, model in inkcore.js. Same autosave, versions, trash and backup as notes. When the
+                         namespace is too big for the account, the largest notebooks stay on this device (and say so). */
 (function () {
   'use strict';
   const W = window.WSCORE, LAB = window.LAB, NSTORE = window.NSTORE;
@@ -27,7 +28,7 @@
   /* ---------- names ---------- */
   const CAT = { afm: ['AFM / POH', 'AFM / POH'], sop: ['SOP', 'SOP'], chk: ['Checklists', 'Sjekklister'], company: ['Company manuals', 'Selskapsmanualer'], charts: ['Charts', 'Kart'], other: ['Other', 'Annet'] };
   const catName = c => t.apply(null, CAT[c] || CAT.other);
-  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'] };
+  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'] };
   const kindName = k => t.apply(null, KIND[k] || ['', '']);
   const acName = a => a ? ([a.type || W.typeOf(a.typeKey).name, a.reg].filter(Boolean).join(' · ') || t('Aircraft', 'Fly')) : '';
   const noteTitle = n => (n.title || '').trim() || t('Untitled note', 'Notat uten tittel');
@@ -87,6 +88,7 @@
   const aircraft = () => liveOf('aircraft').sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0) || acName(a).localeCompare(acName(b)));
   const docsAll = () => liveOf('doc').sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
   const notesAll = () => liveOf('note').sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.updatedAt - a.updatedAt);
+  const notebooksAll = () => liveOf('notebook').sort((a, b) => b.updatedAt - a.updatedAt);
   const hasFile = id => S.blobs.has(id);
   const onDevice = id => !!S.docs[id];
   const packMark = id => { const m = S.items['pk:' + id]; return m && W.isLive(m) ? m : null; };
@@ -324,6 +326,7 @@
     const e = [];
     aircraft().forEach(a => e.push({ t: 'aircraft', id: a.id, title: acName(a), sub: [a.callsign].join(' '), text: [a.notes, (a.speeds || []).filter(r => r.v).map(r => r.k + ' ' + r.v + ' ' + r.u).join(', ')].filter(Boolean).join(' · '), tags: [], at: a.updatedAt, href: '#/aircraft/' + a.id }));
     docsAll().forEach(d => e.push({ t: 'doc', id: d.id, title: d.name, sub: catName(d.cat) + ' ' + (d.rev || '') + ' ' + (d.acIds || []).map(x => acName(item(x))).join(' '), text: '', tags: d.tags, at: d.updatedAt, href: '#/documents/' + d.id }));
+    liveOf('notebook').forEach(n => e.push({ t: 'notebook', id: n.id, title: n.title || t('Notebook', 'Notatbok'), sub: t('Notebook', 'Notatbok'), text: window.INKCORE ? window.INKCORE.notebookText(n) : '', tags: [], at: n.updatedAt, href: '#/notebook/' + n.id }));
     liveOf('note').forEach(n => e.push({ t: 'note', id: n.id, title: noteTitle(n), sub: '', text: W.noteText(n), tags: n.tags, at: n.updatedAt, href: '#/notes/' + n.id }));
     S.packs.forEach(p => { const f = p.f || {}; e.push({ t: 'pack', id: p.id, title: packTitle(p), sub: [f.date, f.type, f.reg, f.rules, f.depapt, f.destapt, f.altn].filter(Boolean).join(' '), text: '', tags: [], at: p.updated || p.created, href: 'prep.html?id=' + encodeURIComponent(p.id) }); });
     S.routes.forEach(r => e.push({ t: 'route', id: r.id, title: routeTitle(r), sub: (r.pts || []).map(x => x.n).filter(Boolean).join(' '), text: '', tags: [], at: r.updated, href: 'route.html?id=' + encodeURIComponent(r.id) }));
@@ -609,7 +612,9 @@
 
   /* notes */
   function notesFiltered() { const f = F.notes; let l = notesAll(); if (f.tag) l = l.filter(n => (n.tags || []).includes(f.tag)); if (f.q.trim()) { const tk = W.tokens(f.q); l = l.filter(n => { const h = W.fold(noteTitle(n) + ' ' + W.noteText(n) + ' ' + (n.tags || []).join(' ')); return tk.every(x => h.includes(x)); }); } return l; }
-  const SOON = () => `<div class="nt soon"><svg viewBox="0 0 44 22" aria-hidden="true"><path d="M2 16c5-9 8-12 10-9s-3 10 1 10 6-12 10-11-2 11 2 11 5-7 8-8 5 3 9 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>${t('Handwriting is coming', 'Håndskrift kommer')}</b><p>${t('Pen notebooks for Apple Pencil arrive in a later version. They will sit here beside your typed notes.', 'Notatbøker for Apple Pencil kommer i en senere versjon. De vil ligge her sammen med de skrevne notatene dine.')}</p></div>`;
+  /* pen notebooks open on the desk */
+  const SOON = () => notebooksAll().map(n => { const pg = (n.pages || []).length; return `<a class="nt nbk" href="#/notebook/${esc(n.id)}"><svg viewBox="0 0 44 22" aria-hidden="true"><path d="M2 16c5-9 8-12 10-9s-3 10 1 10 6-12 10-11-2 11 2 11 5-7 8-8 5 3 9 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>${esc(n.title || t('Notebook', 'Notatbok'))}</b><p>${t('Notebook', 'Notatbok')} · ${plural(pg, 'page', 'pages', 'side', 'sider')}</p><span class="ft"><span></span><span>${esc(ago(n.updatedAt))}</span></span></a>`; }).join('')
+    + `<div class="nt soon"><svg viewBox="0 0 44 22" aria-hidden="true"><path d="M2 16c5-9 8-12 10-9s-3 10 1 10 6-12 10-11-2 11 2 11 5-7 8-8 5 3 9 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>${t('Write with a pen', 'Skriv med penn')}</b><p>${t('A notebook on the desk: grid, lined, dots or a clearance, approach briefing or kneeboard page. Works with Apple Pencil, a finger or a mouse.', 'En notatbok på arbeidsflaten: rutenett, linjer, prikker eller en klarerings-, innflygingsbrief- eller kneebrettside. Fungerer med Apple Pencil, finger eller mus.')}</p><button type="button" class="btn sm" data-act="nb-new" style="align-self:flex-start">${t('New notebook', 'Ny notatbok')}</button></div>`;
   function viewNotes() {
     const all = liveOf('note'), tags = W.uniq(all.flatMap(n => n.tags || [])).sort();
     if (F.notes.tag && !tags.includes(F.notes.tag)) F.notes.tag = '';
@@ -689,7 +694,7 @@
     main.innerHTML = `<div class="ws-h"><h2>${t('Routes', 'Ruter')}</h2><div class="acts"><a class="btn pri" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a></div><p>${t('Routes you have drawn and saved in Route Explorer.', 'Ruter du har tegnet og lagret i Route Explorer.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(routeRow).join('')}</ul>` : empty(t('<b>No saved routes yet.</b> Draw a route in Route Explorer and it is saved here automatically.', '<b>Ingen lagrede ruter ennå.</b> Tegn en rute i Route Explorer, så lagres den her automatisk.'))}`;
   }
-  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.id;
+  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.kind === 'notebook' ? (it.title || t('Notebook', 'Notatbok')) : it.id;
   function viewTrash() {
     const l = W.trashed(S.items).filter(x => x.kind !== 'pack');
     main.innerHTML = `<div class="ws-h"><h2>${t('Trash', 'Papirkurv')}</h2>${l.length ? `<div class="acts"><button type="button" class="btn danger" data-act="trash-empty">${t('Empty the trash', 'Tøm papirkurven')}</button></div>` : ''}<p>${t('Deleted aircraft, documents, notes and desks stay here for 30 days and can be restored with everything they had. After that they are removed for good.', 'Slettede fly, dokumenter, notater og arbeidsflater blir liggende her i 30 dager og kan gjenopprettes med alt de hadde. Etter det fjernes de for godt.')}</p></div>
@@ -708,6 +713,7 @@
         ${row(t('Document list: name, category, links, tags', 'Dokumentlisten: navn, kategori, koblinger, emneknagger'), Y(yes), acc, Y(yes))}
         ${row(t('Document files (PDF, Word, text, images)', 'Dokumentfiler (PDF, Word, tekst, bilder)'), Y(yes), never + '. ' + t('They may be copyrighted company manuals, so they stay private to you.', 'De kan være opphavsrettsbeskyttede selskapsmanualer, så de forblir private for deg.'), Y(yes))}
         ${row(t('Briefing packs and routes', 'Briefingpakker og ruter'), Y(yes), acc, Y(yes))}
+        ${row(t('Pen notebooks and ink on PDFs', 'Notatbøker og blekk på PDF-er'), Y(yes), u ? Y(t('When they fit the free account space', 'Når de får plass i den gratis kontoplassen')) : acc, Y(yes))}
         ${row(t('Trash', 'Papirkurv'), Y(t('30 days', '30 dager')), acc, t('Listed, without files', 'Oppført, uten filer'))}
       </tbody></table>
       ${full ? `<div class="ws-remind" style="margin:20px 0 0"><span><b>${t('Your account space for notes is full.', 'Kontoplassen for notater er full.')}</b> ${trimmed ? t(`The account copy holds fewer old versions (${trimmed} left out); this device keeps them all. `, `Kontokopien har færre gamle versjoner (${trimmed} utelatt); denne enheten har alle. `) : ''}${fl.length ? t('These stay on this device only until you shorten or delete notes: ', 'Disse blir bare på denne enheten til du forkorter eller sletter notater: ') + fl.map(x => `<a href="#/notes/${esc(x.id)}">${esc(itemName(x))}</a>`).join(', ') + '.' : ''} ${t('A backup file always holds everything.', 'En sikkerhetskopi inneholder alltid alt.')}</span></div>` : ''}
@@ -730,7 +736,7 @@
       </div>`;
   }
   function viewSearch(q) {
-    const res = findAll(q), groups = [['aircraft', t('Aircraft', 'Fly')], ['doc', t('Documents', 'Dokumenter')], ['note', t('Notes', 'Notater')], ['pack', t('Briefing packs', 'Briefingpakker')], ['route', t('Routes', 'Ruter')]];
+    const res = findAll(q), groups = [['aircraft', t('Aircraft', 'Fly')], ['doc', t('Documents', 'Dokumenter')], ['note', t('Notes', 'Notater')], ['notebook', t('Notebooks', 'Notatbøker')], ['pack', t('Briefing packs', 'Briefingpakker')], ['route', t('Routes', 'Ruter')]];
     const inside = docsAll().map(d => { const doc = S.docs[d.id]; const h = doc ? W.searchChunks(doc.chunks, q) : null; return h ? { d, h } : null; }).filter(Boolean).sort((a, b) => b.h.hits - a.h.hits).slice(0, 12);
     const n = res.length + inside.length;
     const row = r => { const e = r.entry, ext = /\.html/.test(e.href); return `<li><div class="t"><a class="n" href="${e.href}"${ext ? ` data-visit="${e.t}:${esc(e.id)}"` : ''}>${mark(e.title, q)}</a><small class="wrap">${r.snippet ? mark(r.snippet, q) : mark((e.sub || '').trim(), q)}</small></div><div class="r">${tagChips(e.tags)}<span class="w">${esc(ago(e.at))}</span></div></li>`; };
@@ -748,6 +754,7 @@
     const desk = window.WSDESK && deskMode();
     document.documentElement.classList.toggle('ws-deskmode', !!desk);
     if (desk) { closeViewer(); window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path; return; }
+    if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
     if (!/^documents\/./.test(r.path)) closeViewer();
     const y = same ? window.scrollY : null;
@@ -863,6 +870,7 @@
     else if (act === 'wipe') wipeAll();
     else if (act === 'search-clear') { el('wsQ').value = ''; go(beforeSearch || 'library'); }
     else if (act === 'desk-open' && window.WSDESK) { e.preventDefault(); window.WSDESK.openItem(b.dataset.k, id); go(''); }
+    else if (act === 'nb-new' && window.WSNB) { go(''); setTimeout(() => window.WSNB.create({}, {}), 30); }
   });
 
   /* search box */
@@ -919,7 +927,7 @@
   window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; } };
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
-    commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
+    notebooksAll, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
     doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });

@@ -18,6 +18,7 @@
 .ctop .zs{display:flex;gap:2px;background:#0d1013;border:1px solid #2b3137;border-radius:7px;padding:2px}
 .ctop .zs .cb{border:0;background:transparent;padding:6px 8px}.ctop .zs .cb.on{background:#e8edf1;color:#0d1319}
 .ctop .sp{flex:1 1 auto}
+.ctop a.cb{text-decoration:none;display:inline-block}
 .ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
 .cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
@@ -224,7 +225,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 </style>
 </head>
 <body data-title="Glass Cockpit Trainer">
-<script src="site.js?v=55"></script>
+<script src="site.js?v=56"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -238,7 +239,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
-      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html" selected>DA42</option><option value="b200.html">King Air B200</option><option value="c172.html">Cessna 172</option></select>
+      <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="cockpit.html" selected>DA42</option><option value="da42-3d.html">DA42 3D (beta)</option><option value="b200.html">King Air B200</option><option value="b200-3d.html">King Air B200 3D (beta)</option><option value="c172.html">Cessna 172</option><option value="c172-3d.html">Cessna 172 3D (beta)</option></select><a class="cb" id="b3d" href="da42-3d.html" title="Look around in a 3D cockpit (beta)">3D (beta)</a>
       <select class="cb" id="scenSel" aria-label="Scenario"></select>
       <button class="cb" id="bDrawer" aria-pressed="false">Procedures</button>
       <div class="zs" id="zoomBar" aria-label="Zoom to"></div><select class="cb zsel" id="zoomSel" aria-label="Zoom to"></select>
@@ -535,7 +536,7 @@ const windSpd=slider(el('windBox'),{label:'Speed',min:0,max:40,step:1,v:0,f:v=>v
 const turb=slider(el('windBox'),{label:'Turbulence',min:0,max:100,step:5,v:0,f:v=>v+' %',on:v=>S.env.turb=v/100});
 const isaDev=slider(el('atmBox'),{label:'Temperature vs ISA',min:-30,max:30,step:1,v:0,f:v=>(v>0?'+':'')+v+' °C',on:v=>S.env.isa=v,hint:'Hot air: less lift and thrust for the same speed over the ground.'});
 const qnhAct=slider(el('atmBox'),{label:'Actual QNH',min:960,max:1050,step:1,v:1013,f:v=>v+' hPa',on:v=>S.env.qnh=v,hint:'If the actual QNH differs from the setting on the PFD, the altimeter is wrong. Set it with the BARO knob.'});
-LAB.add({},{'Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Temperature vs ISA':'Temperatur mot ISA','Actual QNH':'Faktisk QNH',
+LAB.add({},{'3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg rundt i en 3D-cockpit (beta)','Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Temperature vs ISA':'Temperatur mot ISA','Actual QNH':'Faktisk QNH',
  'Hot air: less lift and thrust for the same speed over the ground.':'Varm luft: mindre løft og skyv for samme fart over bakken.',
  'If the actual QNH differs from the setting on the PFD, the altimeter is wrong. Set it with the BARO knob.':'Hvis faktisk QNH er en annen enn innstillingen på PFD-en, viser høydemåleren feil. Still den med BARO-bryteren.'});
 
