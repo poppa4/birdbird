@@ -275,6 +275,11 @@
 /* MapLibre-kartet */
 .mapw .mlmap{position:absolute;inset:0;z-index:1}
 .mlmap.wait{visibility:hidden;pointer-events:none}
+.mapw[data-map="loading"] #mcv{visibility:hidden}
+.mapw .mlload{display:none}
+.mapw[data-map="loading"] .mlload{display:flex;position:absolute;inset:0;z-index:1;align-items:center;justify-content:center;background:#E8EEE4;color:var(--ink-2);font:500 13px/1 var(--f-mono,monospace);letter-spacing:.04em;pointer-events:none}
+.mapw .mlload i{width:14px;height:14px;margin-right:10px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:mlspin .8s linear infinite}
+@keyframes mlspin{to{transform:rotate(360deg)}}
 .mapw.ml #mcv{display:none}
 .rx:has(#x3w:not([hidden])) .edbar{display:none}
 .rx .mapw.ml .maplg{bottom:calc(var(--shh,0px) + 52px)}
@@ -509,13 +514,15 @@
 /* phone: the 3D/simulation panel sits above the route sheet and the profile button, never behind them */
 @media (max-width:900px){.rx .x3w{top:auto!important;transform:none!important;bottom:104px!important;max-height:55svh;overflow:auto;z-index:8}}
 </style>
+<link rel="preload" as="script" href="vendor/maplibre/maplibre-gl.js?v=5.24.0">
+<link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
 <script src="site.js?v=61"></script>
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
-  <div class="mapw" id="map"><canvas id="mcv"></canvas>
+  <div class="mapw" id="map"><canvas id="mcv"></canvas><div class="mlload" aria-hidden="true"><i></i><span id="mlloadT">Loading VFR chart…</span></div>
     <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><button id="lghelp" type="button" aria-label="Show map help" title="Show map help" aria-pressed="false">?</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
     <div class="edbar noprint" id="edbar" hidden><button id="undo" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button id="redo" type="button" disabled title="Redo (Ctrl+Shift+Z)">↷ Redo</button><button id="clr" type="button" title="Remove all points from the route">✕ Clear route</button></div>
     <div class="ptpop noprint" id="ptpop" hidden><b id="ptpopn"></b><button id="ptdel" type="button">✕ Remove point</button><button id="ptx" type="button" aria-label="Close">×</button></div>
@@ -1486,7 +1493,7 @@ el('appClr').onclick=()=>{ R.pts=R.pts.filter(p=>!p.app); R.pts.forEach(p=>{ if(
 document.querySelector('#tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('[data-p]').forEach(p=>p.hidden=p.dataset.p!==b.dataset.t); });
 
 /* ---------- kart ---------- */
-const mapEl=el('map'); let V={lo:10,la:60,z:22}; // z = px per breddegrad
+const mapEl=el('map'); try{ if(mlWanted()){ mapEl.dataset.map='loading'; const lt=document.getElementById('mlloadT'); if(lt&&/^nb|^no/.test(document.documentElement.lang)) lt.textContent='Laster VFR-kart …'; } }catch(e){} let V={lo:10,la:60,z:22}; // z = px per breddegrad
 const BND={la0:25,la1:72,lo0:-32,lo1:45};
 function minZ(){ const w=mapEl.clientWidth||600, h=mapEl.clientHeight||400, k=Math.cos(V.la*D2R); return Math.max(h/(BND.la1-BND.la0), w/((BND.lo1-BND.lo0)*k)); }
 function clampV(){ V.z=Math.max(minZ(),Math.min(600,V.z)); const w=mapEl.clientWidth, h=mapEl.clientHeight, k=Math.cos(V.la*D2R); const hl=h/2/V.z, hw=w/2/(V.z*k);
