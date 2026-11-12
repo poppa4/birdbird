@@ -3,7 +3,7 @@
    - Toolbar order: aircraft · 2D/3D · ✈ Start · Auto-fly · Procedures · Pause · [Debrief, only after a flight] · …
    - "…" menu: restart, outside view, look ahead (3D), lock view, panel area, sound, touch stick, full screen, debrief now,
      open debrief after landing, keyboard help, performance meter.
-   - Drawer tabs: Checklist · Emergency · Failures · Speeds. A page registers a render function per pane (drawn when shown).
+   - Drawer tabs: Checklist (only the student's own) · Failures · Speeds. A page registers a render function per pane (drawn when shown).
    - Notifications (bottom centre, the page's #pill): one at a time. say() = a short message that fades; step() = the standing
      hint (next checklist item) shown when nothing else is; card() = the small "what to do now" card. A message that comes in
      while the card is up waits (only the newest) until the card goes.
@@ -14,10 +14,10 @@ const tr=(en,no)=>({en,no});
 const L=x=>(G.LAB&&G.LAB.L)?G.LAB.L(x):(x&&x.en)||x;
 if(G.LAB&&G.LAB.add) G.LAB.add({},{
   '✈ Start':'✈ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
-  'Checklist':'Sjekkliste','Emergency':'Nød','Failures':'Feil','Speeds':'Farter',
+  'Checklist':'Sjekkliste','Failures':'Feil','Speeds':'Farter',
   'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Lock view':'Lås visning','Panel area':'Panelområde',
   'Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Debrief now':'Debrief nå',
-  'Keyboard help':'Tastaturhjelp','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','Zoom to the next control':'Zoom til neste kontroll','← Whole panel':'← Hele panelet',
+  'Keyboard help':'Tastaturhjelp','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
   'View':'Visning','Settings':'Innstillinger','Aircraft':'Fly'
 });
 
@@ -56,7 +56,7 @@ function menu(){ const b=document.getElementById('bMore'), m=document.getElement
   return {set}; }
 
 /* ---------- drawer tabs ---------- */
-const PANES={ck:'tabCk',em:'tabEm',fl:'tabFl',sp:'tabSp'};
+const PANES={ck:'tabCk',fl:'tabFl',sp:'tabSp'};
 const R={}; let curTab='ck';
 function pane(k,render){ R[k]=render; if(k===curTab) draw(k); }
 function draw(k){ const box=document.getElementById(PANES[k]); if(box&&R[k]) R[k](box); }
@@ -80,25 +80,15 @@ function settings(){
 /* ---------- the drawer panes, the same component for every aircraft ---------- */
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const LS=x=>typeof x==='string'?((G.LAB&&G.LAB.T)?G.LAB.T(x):x):L(x);
-const TX={own:tr('Your checklist','Din sjekkliste'),ref:tr('Manufacturer reference','Produsentens referanse'),now:tr('Fail now','Feil nå'),
-  nowH:tr('Happens at once on the flight you have; the matching checklist opens.','Skjer med en gang på flygingen du har; riktig sjekkliste åpnes.'),
-  scen:tr('Failure scenarios','Feilscenarier'),scenH:tr('Sets up a flight; the failure comes by itself and the checklist opens when it does.','Setter opp en flyging; feilen kommer av seg selv, og sjekklisten åpnes når den skjer.'),
-  lim:tr('Key limitations','Viktige begrensninger'),spd:tr('Speeds and limits','Farter og grenser'),sim:tr('SIM','SIM')};
+const TX={now:tr('Fail now','Feil nå'),scen:tr('Scenarios','Scenarier'),spd:tr('Speeds (KIAS)','Farter (KIAS)')};
 /* rows: [abbr, label, value] or [label, value] */
 function speedsHTML(o){ const rows=o.rows||[];
-  return `${o.note?`<p class="warnline">${esc(L(o.note))}</p>`:''}<div class="sgrp">${esc(L(o.title||TX.spd))}</div>${rows.some(r=>r.length===3)?'<table class="pspd"><colgroup><col class="a"><col><col class="c"></colgroup>':'<table class="lim">'}${rows.map(r=>`<tr>${r.length===3?`<td>${esc(r[0])}</td>`:''}<td>${esc(LS(r[r.length-2]))}</td><td>${esc(LS(r[r.length-1]))}</td></tr>`).join('')}</table>`+
-    (o.limits&&o.limits.length?`<div class="sgrp">${esc(L(TX.lim))}</div><ul class="plim">${o.limits.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul>`:''); }
-/* own: the student's emergency sections [{i,t}]; body: the manufacturer list (html, the page's own) or refs: read-only [{t, steps:[T]}] */
-function emerHTML(o){ let h='';
-  if(o.own&&o.own.length) h+=`<div class="sgrp">${esc(L(TX.own))}</div><ul class="plist">${o.own.map(x=>`<li><button type="button" data-poem="${x.i}"><span>${esc(x.t)}</span></button></li>`).join('')}</ul>`;
-  h+=`<div class="sgrp">${esc(L(TX.ref))}</div>${o.disc?`<p class="pdisc">${esc(L(o.disc))}</p>`:''}`;
-  if(o.body) h+=o.body;
-  if(o.refs) h+=o.refs.map(r=>`<details class="ref"><summary>${esc(L(r.t))}</summary><ol>${r.steps.map(s=>`<li>${esc(L(s))}</li>`).join('')}</ol></details>`).join('');
-  return h; }
-/* now: [{id,t,rs}] (data-fx), scen: [{k,t,ref}] (data-sk) */
+  return `<div class="sgrp">${esc(L(o.title||TX.spd))}</div>${rows.some(r=>r.length===3)?'<table class="pspd"><colgroup><col class="a"><col><col class="c"></colgroup>':'<table class="lim">'}${rows.map(r=>`<tr>${r.length===3?`<td>${esc(r[0])}</td>`:''}<td>${esc(LS(r[r.length-2]))}</td><td>${esc(LS(r[r.length-1]))}</td></tr>`).join('')}</table>`+
+    (o.note?`<p class="pdisc">${esc(L(o.note))}</p>`:''); }
+/* now: [{id,t,rs}] (data-fx) = fail on the flight you have; scen: [{k,t,d}] (data-sk) = a set-up flight where the failure comes */
 function failHTML(o){ let h='';
-  if(o.now&&o.now.length) h+=`<div class="sgrp">${esc(L(TX.now))}</div><p class="brief">${esc(L(TX.nowH))}</p><div class="fbtns">${o.now.map(x=>`<button type="button" data-fx="${esc(x.id)}"${x.rs?' class="rs"':''}>${esc(L(x.t))}</button>`).join('')}</div>`;
-  if(o.scen&&o.scen.length) h+=`<div class="sgrp">${esc(L(TX.scen))}</div><p class="brief">${esc(L(TX.scenH))}</p><ul class="plist">${o.scen.map(x=>`<li><button type="button" data-sk="${esc(x.k)}"><span class="sk">${esc(L(TX.sim))}</span><span>${esc(L(x.t))}</span>${x.ref?`<span class="rf">${esc(x.ref)}</span>`:''}</button></li>`).join('')}</ul>`;
+  if(o.now&&o.now.length) h+=`<div class="sgrp">${esc(L(TX.now))}</div><div class="fbtns">${o.now.map(x=>`<button type="button" data-fx="${esc(x.id)}"${x.rs?' class="rs"':''}>${esc(L(x.t))}</button>`).join('')}</div>`;
+  if(o.scen&&o.scen.length) h+=`<div class="sgrp">${esc(L(TX.scen))}</div><ul class="plist">${o.scen.map(x=>`<li><button type="button" data-sk="${esc(x.k)}"><span><b>${esc(L(x.t))}</b>${x.d?`<small>${esc(L(x.d))}</small>`:''}</span></button></li>`).join('')}</ul>`;
   return h; }
 
 /* ---------- touch controls: invisible until used ----------
@@ -152,5 +142,5 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 /* the card's buttons */
 document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('#pill.card button[data-a]'); if(!b) return; e.stopPropagation(); const f=cardAct; hideCard(); if(f) f(b.dataset.a); },true);
 
-G.SIMSHELL={say,step,card,hideCard,cardOn,tip,tab,pane,draw:k=>draw(k||curTab),get curTab(){ return curTab; },init,KEYH,touch,touchOwns,speedsHTML,emerHTML,failHTML,esc};
+G.SIMSHELL={say,step,card,hideCard,cardOn,tip,tab,pane,draw:k=>draw(k||curTab),get curTab(){ return curTab; },init,KEYH,touch,touchOwns,speedsHTML,failHTML,esc};
 })(window);

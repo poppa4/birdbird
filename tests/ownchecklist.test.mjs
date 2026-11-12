@@ -120,6 +120,8 @@ test('DA42 scenarios name outcome keys and an own-checklist section kind; nothin
   const big=O.parse(Array.from({length:3000},(_,i)=>'Item '+i+' ..... ON').join('\n')); assert.ok(big.n<=2000,'item cap');
 });
 
-test('generic flows are off by default and the label says they are not the school SOP',()=>{
-  assert.equal(O.gen('DA42'),false); assert.match(O.GEN.en,/not your school/); assert.match(ctx.DA42PROCS.DISC.en,/Always follow your school's approved checklists/);
+test('no generic flows: the trainers carry no aircraft procedure text, only the own checklist',()=>{
+  for(const k of ['gen','setGen','genHTML','GEN','REF']) assert.equal(O[k],undefined,k);
+  for(const k of ['FLOWS','EMER','GROUPS','build','runHTML','flowsHTML','emerListHTML','DISC']) assert.equal(ctx.DA42PROCS[k],undefined,'DA42PROCS.'+k);
+  assert.match(src('ownck.js'),/Add your school's checklist in My Workspace/);
 });

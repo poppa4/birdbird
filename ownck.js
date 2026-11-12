@@ -211,8 +211,6 @@ const lsSet=(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); return true
 const idx=()=>lsGet(KEY,{})||{};
 function getRec(type){ const r=idx()[type]; return r&&r.src?r:null; }
 function setRec(type,rec){ const o=idx(); if(rec) o[type]=rec; else delete o[type]; lsSet(KEY,o); }
-function gen(type){ const g=(idx().gen||{}); return !!g[type]; }
-function setGen(type,on){ const o=idx(); o.gen=Object.assign({},o.gen||{}); o.gen[type]=on?1:0; lsSet(KEY,o); }
 function cacheGet(type){ const c=(lsGet(TKEY,{})||{})[type]; return c&&typeof c.text==='string'?c:null; }
 function cacheSet(type,v){ const o=lsGet(TKEY,{})||{}; if(v) o[type]=v; else delete o[type]; if(!lsSet(TKEY,o)&&v){ delete o[type]; lsSet(TKEY,o); } }
 
@@ -240,8 +238,8 @@ async function wsText(src,id){
 
 /* ---------- drawer panel ---------- */
 const TX={
-  title:T('My checklist','Min sjekkliste'),use:T('Use my own checklist','Bruk min egen sjekkliste'),
-  useSub:T("Your school's checklist or SOP, ticked as you fly. Stays on this device.",'Skolens sjekkliste eller SOP, krysset av mens du flyr. Blir på denne enheten.'),
+  title:T('My checklist','Min sjekkliste'),use:T('Add checklist','Legg til sjekkliste'),
+  useSub:T("Add your school's checklist in My Workspace.",'Legg inn skolens sjekkliste i Mitt arbeidsområde.'),
   fromWs:T('From My Workspace','Fra Mitt arbeidsområde'),paste:T('Paste text','Lim inn tekst'),pasteH:T('Paste the checklist here — one item per line, e.g. “Fuel pump ..... ON”. Headings in capitals start a new section.','Lim inn sjekklisten her — ett punkt per linje, f.eks. «Fuel pump ..... ON». Overskrifter med store bokstaver starter en ny seksjon.'),
   name:T('Name','Navn'),ok:T('Use this checklist','Bruk denne sjekklisten'),cancel:T('Cancel','Avbryt'),change:T('Change','Bytt'),remove:T('Stop using','Slutt å bruke'),
   none:T('No checklists or SOPs in My Workspace yet. Add one there (category Checklists or SOP), or paste the text.','Ingen sjekklister eller SOP-er i Mitt arbeidsområde ennå. Legg til en der (kategori Sjekklister eller SOP), eller lim inn teksten.'),
@@ -257,7 +255,7 @@ const CSS=`
 .ock{margin:0 0 10px;border:1px solid #2a3139;border-radius:10px;background:#12171c;color:#e6ebef;font:500 12.5px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
 .ock>.hd{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;user-select:none}.ock>.hd b{font:700 10.5px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#8e9aa5}
 .ock>.hd span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe5ea}.ock>.hd i{font-style:normal;color:#7d8a95}
-.ock .bd{padding:0 10px 10px}.ock .sub{color:#9aa7b2;font-size:11.5px;margin:0 0 8px}
+.ock .bd{padding:0 10px 10px}.ock .bd.one{display:flex;gap:8px;align-items:center;padding:8px 10px}.ock .bd.one .sub{flex:1;margin:0;font-size:12px}.ock .sub{color:#9aa7b2;font-size:11.5px;margin:0 0 8px}
 .ock button.b{font:600 12px system-ui;padding:6px 10px;border-radius:7px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}.ock button.b:hover{border-color:#7fcbe8}
 .ock button.pri{background:#e8edf1;color:#0d1319;border-color:#e8edf1}.ock .row2{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:6px 0}
 .ock .wl{list-style:none;margin:4px 0 8px;padding:0;max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}
@@ -275,13 +273,8 @@ const CSS=`
 .ock ul.it li.mem{border-left:3px solid #ff5a47}
 .ock .ft{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:8px;font-size:11.5px;color:#9aa7b2}.ock .ft label{display:flex;gap:5px;align-items:center}
 .ock.big{font-size:15px}.ock.big ul.it li{padding:9px 9px;font-size:15px}.ock.big ul.it li>i{flex-basis:22px;height:22px;font-size:12px;line-height:19px}
-.ock-gen{display:flex;gap:6px;align-items:flex-start;font:500 11.5px/1.35 system-ui;color:#a9b5bf;margin:2px 0 8px}
-.ock-ref{font-size:11px;color:#c9a94a;line-height:1.35;margin:0 0 8px}
 `;
 let cssOn=false; function css(){ if(cssOn||typeof document==='undefined') return; cssOn=true; const s=document.createElement('style'); s.textContent=CSS; document.head.appendChild(s); }
-const GEN=T('Generic flow (from the AFM/POH) — not your school’s SOP','Generell flyt (fra AFM/POH) — ikke skolens SOP');
-const REF=T("Manufacturer's AFM reference. Always follow your school's approved checklists.",'Produsentens AFM-referanse. Følg alltid skolens godkjente sjekklister.');
-function genHTML(type,L){ return `<label class="ock-gen"><input type="checkbox" data-ockgen${gen(type)?' checked':''}> <span>${esc(L(GEN))}</span></label>`; }
 
 /* o: {type, box, L, pred(key)->bool, ctl(key)->id, hl(id|null), clock()->sim s, onChange()} */
 function mount(o){
@@ -306,8 +299,12 @@ function mount(o){
   function itemsHTML(){ const s=sections()[st.sec]; if(!s) return ''; const ci=curIdx();
     return `<ul class="it">${s.items.map((it,i)=>{ const d=st.ticks[k(st.sec,i)]; return `<li data-oi="${i}" class="${d?'ok':''}${i===ci?' now':''}${it.mem?' mem':''}"><i>${d?'✓':i+1}</i><span>${esc(it.c)}${it.r?` — <span class="r">${esc(it.r)}</span>`:''}${it.m?`<span class="a" title="${esc(L(TX.hint))}">${esc(L(TX.auto))}</span>`:''}</span></li>`; }).join('')}</ul>`; }
   function render(){
+    const ta=root.querySelector('[data-opaste]'), nm=root.querySelector('[data-oname]'), keep=ta?[ta.value,nm?nm.value:'']:null;
+    draw(); if(keep&&st.ui==='pick'){ const t=root.querySelector('[data-opaste]'), n=root.querySelector('[data-oname]'); if(t) t.value=keep[0]; if(n) n.value=keep[1]; } } // text being pasted survives a redraw (list loaded, language)
+  function draw(){
     const r=st.rec; let h='';
     const name=r?(r.name||L(TX.title)):'';
+    if(!r&&st.ui!=='pick'){ root.innerHTML=`<div class="bd one"><p class="sub">${esc(L(TX.useSub))}</p><button type="button" class="b" data-opick>${esc(L(TX.use))}</button></div>`; root.className='ock'; hl(); return; }
     h+=`<div class="hd" data-ohd><b>${esc(L(TX.title))}</b><span>${esc(name)}</span><i>${st.open?'▾':'▸'}</i></div>`;
     if(!st.open){ root.innerHTML=h; root.className='ock'+(st.big?' big':''); hl(); return; }
     h+='<div class="bd">';
@@ -318,8 +315,6 @@ function mount(o){
       else h+=`<ul class="wl">${st.list.map((d,i)=>`<li><button type="button" data-ows="${i}"${d.here?'':' disabled'}><span>${esc(d.name||'—')}</span><small>${esc(d.here?L(d.src==='note'?TX.note:TX.doc):L(TX.notHere))}</small></button></li>`).join('')}</ul>`;
       h+=`<p class="sub">${esc(L(TX.paste))}</p><textarea data-opaste placeholder="${esc(L(TX.pasteH))}" aria-label="${esc(L(TX.paste))}"></textarea>
         <div class="row2"><input type="text" data-oname placeholder="${esc(L(TX.name))}" aria-label="${esc(L(TX.name))}" style="flex:1"><button type="button" class="b pri" data-ouse>${esc(L(TX.ok))}</button><button type="button" class="b" data-ocancel>${esc(L(TX.cancel))}</button></div>`;
-    } else if(!r){
-      h+=`<p class="sub">${esc(L(TX.useSub))}</p><div class="row2"><button type="button" class="b" data-opick>${esc(L(TX.use))}</button></div>`;
     } else if(st.ui==='loading'){ h+=`<p class="sub">${esc(L(TX.loading))}</p>`; }
     else if(st.err){ h+=`<p class="sub">${esc(L(st.err==='empty'?TX.empty:TX.missing))}</p><div class="row2"><button type="button" class="b" data-opick>${esc(L(TX.change))}</button><button type="button" class="b" data-ooff>${esc(L(TX.remove))}</button></div>`; }
     else {
@@ -338,7 +333,8 @@ function mount(o){
     if(t.closest('[data-ohd]')){ st.open=!st.open; render(); return; }
     const li=t.closest('li[data-oi]'); if(li){ const i=+li.dataset.oi; tick1(st.sec,i,!st.ticks[k(st.sec,i)],false); redrawItems(); return; }
     const b=t.closest('button'); if(!b) return; const d=b.dataset;
-    if('opick' in d){ st.ui='pick'; st.list=null; render(); try{ st.list=await wsList(); }catch(x){ st.list=[]; } if(st.ui==='pick') render(); return; }
+    if('opick' in d){ st.ui='pick'; st.list=null; render(); try{ st.list=await wsList(); }catch(x){ st.list=[]; }
+      if(st.ui==='pick') render(); return; }
     if('ocancel' in d){ st.ui=''; render(); return; }
     if('ooff' in d){ st.rec=null; setRec(type,null); cacheSet(type,null); st.P=null; st.err=''; render(); if(o.onChange) o.onChange(); return; }
     if(d.ows!=null){ const w=st.list&&st.list[+d.ows]; if(!w) return; choose({src:w.src,id:w.id,name:w.name||L(TX.title),score:st.rec&&st.rec.score?1:0}); return; }
@@ -375,7 +371,7 @@ function mount(o){
   return api;
 }
 
-const API={parse,mapItem,matchSection,sideOf,fold,DICT,FK,mount,getRec,setRec,gen,setGen,genHTML,GEN,REF,css,KEY,TKEY,wsList,wsText};
+const API={parse,mapItem,matchSection,sideOf,fold,DICT,FK,mount,getRec,setRec,css,KEY,TKEY,wsList,wsText};
 if(typeof module!=='undefined'&&module.exports) module.exports=API;
 G.OWNCK=API;
 })(typeof window!=='undefined'?window:globalThis);

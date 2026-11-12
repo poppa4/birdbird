@@ -5,7 +5,8 @@
    - two-finger pinch (touch, and Safari's gesture events on iPad / Mac trackpad): the panel follows the fingers (scale and pan)
      and stays where it is left; pinching out all the way lands on the whole panel. Any two fingers count.
    - mouse wheel / trackpad: zooms about the pointer; drag on bare panel pans a zoomed panel (as in the 3D cockpits)
-   That is all: no double-click / double-tap toggle and no magnifier glyphs (kept basic on purpose).
+   - zoomed: two quick taps on bare panel go back to the whole panel (as do the page's ← Back button and Esc)
+   Limits: whole panel (1×) … about 4×. No magnifiers, no zoom slider, no other zoom mode.
    Performance: the blocking wheel listener is attached only while a mouse is over the stage (Chrome rebuilds a wheel region for
    every painted part below one on each repaint), never on touch devices. Pointer and gesture listeners are cheap; nothing runs
    per frame except the short glide after a pan. */
@@ -18,6 +19,12 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
   const inR=(p,r)=>!!r&&p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
   const d3=()=>o.d3?o.d3():null;
   const api={clickT:-1e9,gestT:-1e9};
+  /* two quick taps on a zoomed panel: back to the whole panel. Returns true when it handled the tap (pages with their own click
+     logic call api.tap(e) first). */
+  let lastTap=null;
+  api.tap=e=>{ const t=now(), l=lastTap; lastTap={t,x:e.clientX,y:e.clientY};
+    if(Z.reg==='overview'||!l||t-l.t>380||t-api.clickT<450||Math.hypot(e.clientX-l.x,e.clientY-l.y)>40) return false;
+    lastTap=null; api.clickT=t; o.zoomTo('overview'); return true; };
   const blocked=()=>Z.lock||now()-api.gestT<450;
   /* zoom in at a screen point: whole panel → the area there; zoomed → nothing (already close) */
   function zin(x,y){ if(Z.lock) return false; const D=d3(); const p=o.toWorld({clientX:x,clientY:y}); const k=o.regionAt(p);
@@ -31,6 +38,7 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
     st.addEventListener('click',e=>{ const d=pdn; pdn=null;
       if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||now()-d.t>700||blocked()) return;
       if(!o.emptyAt(e)||e.target.closest(OFF)) return; const D=d3(); if(D&&D.on&&D.dragging) return;
+      if(api.tap(e)) return;
       const p=o.toWorld(e), cur=Z.reg, R=o.regs(); let to=null;
       if(cur==='overview') to=o.regionAt(p);
       else if(!R[cur]||!inR(p,R[cur])) to=D&&D.on?(o.regionAt(p)||'overview'):'overview';
@@ -47,7 +55,7 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
   let freeOn=false, commitT=0;
   function put(sc,tx,ty){ const [pw,ph]=SZ(), w=st.clientWidth, h=st.clientHeight; sc=Math.max(ov.s,Math.min(smax(),sc));
     tx=clp(tx,Math.min(w-pw*sc,ov.tx),Math.max(0,ov.tx)); ty=clp(ty,Math.min(h-ph*sc,ov.ty),Math.max(0,ov.ty));
-    Z.s=sc; Z.tx=tx; Z.ty=ty; if(!freeOn){ freeOn=true; W.classList.add('nt'); }
+    Z.s=sc; Z.tx=tx; Z.ty=ty; if(!freeOn){ freeOn=true; W.classList.add('nt'); dim(st,Z,null); }
     W.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`; }
   /* scale by k about a stage point (client coords) */
   function zoomAt(k,x,y){ const b=st.getBoundingClientRect(), mx=x-b.left, my=y-b.top; const sc=Math.max(ov.s,Math.min(smax(),Z.s*k)), f=sc/Z.s;
@@ -107,13 +115,10 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
   st.addEventListener('gestureend',e=>{ e.preventDefault(); api.gestT=now(); if(gown) commit(); gown=false; },{passive:false});
   return api;
 }
-/* whole-panel view, the same rule for every type: the glareshield lip sits at a fixed share of the
-   stage height (34 %, phones 28 %), and the panel is as large as fits from the lip down to the last essential control row
-   (power levers / throttle quadrant); below that (yoke columns, floor, lower pedestal) may run off the bottom and is reached
-   by zooming. Never wider than the stage, never a gap under the panel. */
-function fit(o){ // o:{w,h,x0,width,H,lip,need,sky,otw}; outside view off: only a strip of windshield (the compass) above the lip
-  const L=o.otw===false?0.2:o.h<520?0.28:0.34; let s=Math.min(o.w/o.width,o.h*(1-L)/(o.need-o.lip));
-  const tx=o.w/2-(o.x0+o.width/2)*s; let ty=Math.min(L*o.h-o.lip*s,o.sky*s); ty=Math.max(ty,o.h-o.H*s);
-  return {s,tx,ty}; }
-G.PANELZOOM={attach,fit};
+/* the dimmed surround of a zoomed area: one element whose wide shadow darkens everything outside the area (set once per zoom) */
+function dim(stage,Z,r){ let d=stage.querySelector(':scope>.zdim'); if(!d){ d=document.createElement('div'); d.className='zdim'; d.setAttribute('aria-hidden','true'); stage.appendChild(d); }
+  if(!r){ d.classList.remove('on'); return; }
+  d.style.left=(Z.tx+r[0]*Z.s).toFixed(1)+'px'; d.style.top=(Z.ty+r[1]*Z.s).toFixed(1)+'px'; d.style.width=(r[2]*Z.s).toFixed(1)+'px'; d.style.height=(r[3]*Z.s).toFixed(1)+'px';
+  d.classList.add('on'); }
+G.PANELZOOM={attach,dim};
 })(window);

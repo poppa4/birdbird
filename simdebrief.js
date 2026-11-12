@@ -1,7 +1,7 @@
 /* Birdbird – shared debrief and scoring for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    Recorder: samples the flight at 5 Hz of simulated time into a fixed ring buffer (no allocation per frame, no DOM work while flying).
    Scoring: pure functions (evaluate) over the recorded columns and the scenario's checklist state: tolerance bands after
-   EASA/ICAO-style stabilised-approach criteria, limit exceedances, engine-failure handling and the checklist steps.
+   EASA/ICAO-style stabilised-approach criteria, limit exceedances, engine-failure handling (time to the outcome), the exercise goals and, when chosen, the student's own checklist.
    Debrief sheet: drawn once when a scenario ends (or on the Debrief button): result, assessment, timeline, vertical profile,
    plan view and LOC/GS trace; Fly again / Next scenario / Print. Summaries are stored in localStorage ('bb-debrief', synced by
    account.js as progress) and the last full debrief in 'bb-debrief-last' (this browser only).
@@ -67,19 +67,17 @@ const TT={
   holdSpd:tr('Holding speed','Ventefart'),
   sidTrk:tr('Runway track until 1,500 ft','Banekurs til 1500 ft'),
   sidLvl:tr('Level-off at 3,000 ft ±100 ft','Utflating i 3000 ft ±100 ft'),
-  order:tr('Generic flow order (not scored)','Rekkefølge i generell flyt (ikke vurdert)'),
   react:tr('Time to the safety-critical actions','Tid til de sikkerhetskritiske tiltakene'),
-  ticked:tr('Items you ticked','Punkter du krysset av'),
   own:tr('Your own checklist','Din egen sjekkliste'),
-  step:tr('Checklist step','Sjekklistepunkt')
+  step:tr('Exercise goal','Øvingsmål')
 };
 const CRASH_NO={'Gear-up landing':'Landing uten understell','Hard landing (more than 700 ft/min)':'Hard landing (mer enn 700 ft/min)','Wingtip strike: bank too steep at touchdown':'Vingespissen traff bakken: for mye krengning ved touchdown','Nose-wheel first: pitch too low at touchdown':'Nesehjulet først: for lav nese ved touchdown','Landed off the runway':'Landet utenfor rullebanen','Ran off the runway':'Kjørte av rullebanen','Controlled flight into terrain':'Fløy inn i terrenget (CFIT)'};
 const CAT={crash:'crit',limits:'lim',vne:'lim',vfe:'lim',vle:'lim',bank:'lim',stall:'lim',tq:'lim',itt:'lim',vmc:'oei',yse:'oei',bankLive:'oei',secure:'oei',wrongEng:'oei',
-  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',order:'chk',step:'chk',ticked:'chk',own:'chk',react:'oei'};
+  fap:'path',loc:'path',gs:'path',stable:'path',speed:'path',sink:'path',mda:'path',decide:'path',td:'path',holdAlt:'path',holdSpd:'path',sidTrk:'path',sidLvl:'path',step:'chk',own:'chk',react:'oei'};
 
 /* ---------- scoring (pure) ----------
    C: columns; M: {type,k,V,nEng,retract,ldgFlap,vApp,vHold,mins,minsKind,prec,app,hold,sid,tqMax,ittMax,
-                   steps:[{t,st,tm,mem}], bad:[t...], crash, td:{t,N,E,vs}, decision, endWhy, failT}
+                   steps:[{t,st,tm,mem}], crash, td:{t,N,E,vs}, decision, endWhy, failT}
    returns {items:[{id,cat,res,t,title,why,crit}], result, score, crit:[items], counts} */
 function evaluate(C,M){
   M=M||{}; const V=M.V||{}; const n=C.n|0; const items=[];
@@ -92,17 +90,12 @@ function evaluate(C,M){
   const afFrac=(a,b)=>{ let k=0, m=0; for(let i=a;i<b;i++){ m++; if(C.af[i]) k++; } return m?k/m:0; };
   const AUTO=tr('Flown by auto-fly — not scored.','Fløyet av autofly — ikke vurdert.');
 
-  /* checklist steps. Outcome-based by default: items of a checklist or a generic flow (s.chk) are shown as information
-     ("items you ticked"), never scored, and the order is never scored. Exercise goals (no s.chk) are scored as before.
+  /* exercise goals (the page's mission checks); outcome-based: no aircraft checklist is scored, and order never is.
      M.own: {name, items:[{t,st,tm}], score} = the student's own checklist; scored only when they chose to (score:true). */
-  const goals=[], ticks=[];
-  (M.steps||[]).forEach((s,i)=>{ (s.chk?ticks:goals).push([s,i]); });
-  goals.forEach(([s,i])=>{ const st=s.st|0;
-    const res=st===1?'pass':st===-1?'fail':st===2?'amber':'amber';
+  (M.steps||[]).forEach((s,i)=>{ const st=s.st|0;
+    const res=st===1?'pass':st===-1?'fail':'amber';
     const why=st===1?null:st===2?tr('Skipped.','Hoppet over.'):st===-1?tr('Not met: see the brief.','Ikke oppfylt: se briefen.'):tr('Not completed.','Ikke fullført.');
     add('step',res,s.tm!=null?s.tm:null,why,{title:s.t,step:i+1}); });
-  if(ticks.length){ const k=ticks.filter(([s])=>s.st===1).length;
-    add('ticked','info',null,W(()=>`${k} of ${ticks.length} generic checklist items ticked. Shown for information; not scored.`,()=>`${k} av ${ticks.length} punkter i den generelle sjekklisten krysset av. Til informasjon; ikke vurdert.`)); }
   if(M.own&&(M.own.items||[]).length){ const it=M.own.items, k=it.filter(x=>x.st===1).length, miss=it.filter(x=>x.st!==1).slice(0,4).map(x=>x.t);
     const nm=String(M.own.name||'');
     if(M.own.score) add('own',k===it.length?'pass':'amber',null,k===it.length?W(()=>`All ${it.length} items of “${nm}” ticked (order not scored).`,()=>`Alle ${it.length} punkter i «${nm}» krysset av (rekkefølgen vurderes ikke).`)
@@ -116,7 +109,6 @@ function evaluate(C,M){
     else { const end=n?C.t[n-1]:M.failT;
       if(end-M.failT>=lim[1]) add('react','fail',null,W(()=>`Not done after the failure: ${what.en}.`,()=>`Ikke utført etter feilen: ${what.no}.`));
       else add('react','info',null,tr('The flight ended before the safety-critical actions were done.','Flygingen sluttet før de sikkerhetskritiske tiltakene var utført.')); } }
-  if((M.bad||[]).length) add('order','info',M.bad[0],W(n=>`${M.bad.length} action${M.bad.length>1?'s':''} away from the generic flow's order. Not scored — your school's SOP decides the order.`,n=>`${M.bad.length} handling${M.bad.length>1?'er':''} utenfor rekkefølgen i den generelle flyten. Ikke vurdert — skolens SOP bestemmer rekkefølgen.`));
 
   /* crash */
   if(M.crash) add('crash','fail',M.crashT!=null?M.crashT:(n?C.t[n-1]:0),tr(M.crash,M.crashNo||CRASH_NO[M.crash]||M.crash),{crit:true});
@@ -447,20 +439,21 @@ let readyOn=false; function readyCss(){ if(readyOn||typeof document==='undefined
 /* ---------- recorder bound to one page ----------
    o: {type, page, S, F, AF, cap,
        eng:()=>[deadMask, secMask, torqueMax|NaN, ittMax|NaN], ap:()=>bool, flap:()=>selected flap index,
-       scen:()=>({k, name:{en,no}, air:bool, steps:[{t,mem}], done:[0|1|2|-1], bad:number, failed:bool (a scenario failure has been triggered)}),
+       scen:()=>({k, name:{en,no}, air:bool, steps:[{t}] (exercise goals), done:[0|1|2|-1], failed:bool (a scenario failure has been triggered),
+                  crit:()=>bool (outcome reached), critTxt, critLim, own:()=>own checklist report}),
        again:()=>void, next:()=>void, after:Element (toolbar node to put the Debrief button after), tqMax, ittMax} */
 function attach(o){
   const S=o.S, F=o.F, A=G.AIRPROC, ring=new Ring(o.cap||12000), row=ring.row;
   const st={on:false,t:0,acc:0,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false};
-  let M=null, stepT=[], lastDone=[], badN=0, badT=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false, failT=null, actT=null;
+  let M=null, stepT=[], lastDone=[], last=null, endWhy=null, crashT=null, td=null, tdAf=false, afUsed=false, failT=null, actT=null;
   function meta(){ const sc=o.scen()||{}; const k=sc.k||''; const ty=(A&&A.TY&&A.TY[o.type])||{};
     const kk=k==='rnav'?'rnp_lpv':k==='seapp'?'ils':k; const app=!!(A&&(A.isApp(kk)||kk==='star'))||kk in MINS0;
     const V=Object.assign({},F.AC.V||{});
     return {type:o.type,k,name:sc.name||tr(k,k),air:!!sc.air,V,nEng:F.AC.nEng||(o.type==='C172'?1:2),retract:o.type!=='C172',ldgFlap:ty.ldgFlap||1,vApp:ty.vFinal||0,vHold:ty.vHold||0,
       mins:(A&&A.MINS&&A.MINS[kk])||MINS0[kk]||null,minsKind:KIND0[kk]||'',prec:!!PREC[kk],app,hold:k==='hold',sid:k==='sid',tqMax:o.tqMax||0,ittMax:o.ittMax||0}; }
   function start(){ ring.clear(); Object.assign(st,{on:true,t:0,acc:DT,wasAir:false,stopT:0,doneT:0,gaT:null,lo:1e9,ronax:0,ronT:-1e9,inR:false});
-    M=meta(); stepT=[]; lastDone=[]; badN=0; badT=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null; failT=null; actT=null; markReady(false);
-    const sc=o.scen(); if(sc){ lastDone=(sc.done||[]).slice(); badN=sc.bad||0; } }
+    M=meta(); stepT=[]; lastDone=[]; endWhy=null; crashT=null; td=null; tdAf=false; afUsed=false; last=null; failT=null; actT=null; markReady(false);
+    const sc=o.scen(); if(sc) lastDone=(sc.done||[]).slice(); }
   function sample(){
     const s=S, R=F.readouts(s), AF=o.AF;
     row[0]=st.t; row[1]=s.N; row[2]=s.E; row[3]=R.alt; row[4]=R.agl; row[5]=R.ias; row[6]=R.vs; row[7]=R.pitch; row[8]=R.roll; row[9]=R.hdg; row[10]=R.trk;
@@ -477,17 +470,17 @@ function attach(o){
     if(M.hold){ const inR=Math.hypot(s.N+10*NM,s.E)<0.7*NM; if(inR&&!st.inR&&st.t-st.ronT>90){ st.ronax++; st.ronT=st.t; } st.inR=inR; }
     const sc=o.scen(); let done=0, nS=0;
     if(sc){ const dn=sc.done||[]; nS=dn.length; if(lastDone.length!==nS) lastDone.length=nS; for(let i=0;i<nS;i++){ if(dn[i]!==lastDone[i]){ stepT[i]=dn[i]?st.t:null; lastDone[i]=dn[i]; } if(dn[i]) done++; }
-      const b=sc.bad||0; if(b>badN){ for(let j=badN;j<b;j++) badT.push(st.t); } badN=b; if(sc.failed&&failT==null) failT=st.t; if(failT!=null&&actT==null&&sc.crit&&sc.crit()) actT=st.t; }
+      if(sc.failed&&failT==null) failT=st.t; if(failT!=null&&actT==null&&sc.crit&&sc.crit()) actT=st.t; }
     if(s.crash&&crashT==null) crashT=st.t;
     const why=endCheck(st,{crash:!!s.crash,gnd:s.ground,gs:R.gs,alt:R.alt,N:s.N,E:s.E,t:st.t,stepsDone:done,stepsN:nS,air:!!(M.app||M.hold||M.sid||M.k==='free'),
       kind:M.hold?'hold':M.sid?'sid':'',holdN:AF&&AF.rec&&AF.rec.hold?AF.rec.hold.n:0,sidDone:!!(AF&&AF.rec&&AF.rec.sidDone)});
     if(why&&M.k!=='free') finish(why);
   }
   function build(live){
-    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null,mem:!!x.mem,chk:!!(sc.chk||x.sop||x.emer)}));
+    const sc=o.scen()||{}; const steps=(sc.steps||[]).map((x,i)=>({t:x.t,st:(sc.done||[])[i]|0,tm:stepT[i]!=null?stepT[i]:null}));
     const own=typeof sc.own==='function'?sc.own():sc.own||null;
     const AF=o.AF; const C=ring.cols();
-    const M2=Object.assign({},M,{steps,bad:badT.slice(),crash:S.crash||null,crashT,td,tdAf,failT,actT,crit:sc.crit?(sc.critTxt||true):null,critLim:sc.critLim||null,own,decision:AF&&AF.rec&&AF.rec.decision||null});
+    const M2=Object.assign({},M,{steps,crash:S.crash||null,crashT,td,tdAf,failT,actT,crit:sc.crit?(sc.critTxt||true):null,critLim:sc.critLim||null,own,decision:AF&&AF.rec&&AF.rec.decision||null});
     const ev=evaluate(C,M2);
     return {id:o.type+'-'+Date.now().toString(36),at:Date.now(),type:o.type,page:o.page||'',k:M.k,name:M.name,dur:C.n?C.t[C.n-1]:0,afUsed,endWhy:live?'manual':endWhy,live,C,M:M2,ev}; }
   function finish(why){ if(!st.on) return; st.on=false; endWhy=why; const D=build(false); last=D; try{ save(D); }catch(e){}

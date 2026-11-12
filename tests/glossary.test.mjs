@@ -54,6 +54,9 @@ test('"Practise it" links in lab.js point at pages and exercises that exist', ()
   for(const u of links){ const [file,q]=u.split('?'), p=new URLSearchParams(q||''); assert.ok(fs.existsSync(path.join(root,file)),u);
     if(file==='ifr.html') assert.ok(ctx.IFRCORE.ITEM[p.get('ex')],'IFR item '+p.get('ex'));
     else if(p.get('s')==='air'){ const [ty,c]=caps[file]; assert.ok(AP.list(ty,c).some(x=>x.k===p.get('p')),u); }
-    else { const s=fs.readFileSync(path.join(root,file==='cockpit.html'?'cockpit.html':file.replace('.html','-app.js')),'utf8'); assert.ok(new RegExp(`\\{k:'${p.get('s')}',`).test(s),u); }
+    else { const s=fs.readFileSync(path.join(root,file==='cockpit.html'?'cockpit.html':file.replace('.html','-app.js')),'utf8'), k=p.get('s');
+      // DA42 failure scenarios live in da42procs.js; the page maps ?s=efato to s_efato
+      const d42=file==='cockpit.html'&&new RegExp(`\\{id:'(s_)?${k}',`).test(fs.readFileSync(path.join(root,'da42procs.js'),'utf8'));
+      assert.ok(new RegExp(`\\{k:'${k}',`).test(s)||d42,u); }
   }
 });

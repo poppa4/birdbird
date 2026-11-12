@@ -12,7 +12,7 @@ LAB.add({},{
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
- 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Click or tap an instrument to zoom to it (pinch on a touch screen), or press 0–9. Click an EADI or EHSI to bring up that side\'s displays with its own controls (CRS, HDG, NAV source, bearing pointers, DH) beside them. Click outside the zoomed area, press Esc or use the back button to zoom out. Lock view keeps the zoom while you work.':'Klikk eller trykk på et instrument for å zoome inn på det (knip på berøringsskjerm), eller trykk 0–9. Klikk på en EADI eller EHSI for å få opp den sidens skjermer med egne kontroller (CRS, HDG, NAV-kilde, peilepekere, DH) ved siden av. Klikk utenfor det zoomede området, trykk Esc eller bruk tilbakeknappen for å zoome ut. «Lås visning» holder zoomen mens du jobber.',
+ 'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
  'Levers':'Hendler','Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.':'Dra effekt-, propell- og condition-hendlene opp og ned; de smetter inn i hakkene. Beta og revers (under IDLE) virker bare på bakken. Musehjulet og piltastene flytter en hendel i små steg.',
  'Knobs':'Knotter','Scroll on a knob or drag across it. HDG and CRS set the heading bug and the course on the HSI, ALT SEL the altitude alerter, CABIN ALT and RATE the pressurisation controller.':'Rull på en knott eller dra over den. HDG og CRS stiller kursmerket og kursen på HSI-en, ALT SEL høydevarsleren, CABIN ALT og RATE trykkontrolleren.',
@@ -31,7 +31,7 @@ LAB.add({},{
  'Rudder left and right · centre the rudder':'Sideror venstre og høyre · sentrer sideroret','Both power levers forward and back (not below IDLE)':'Begge effekthendlene frem og tilbake (ikke under IDLE)','Elevator trim nose down and up':'Trim nese ned og opp',
  'Flaps down and up · gear · brakes while held':'Flaps ned og opp · understell · bremser mens du holder','Autopilot disconnect · pause':'Koble ut autopilot · pause','Zoom to a part of the panel · back to the whole panel':'Zoom til en del av panelet · tilbake til hele panelet','Move between panel controls; arrows, Space and Enter operate them':'Flytt mellom kontrollene på panelet; piltaster, mellomrom og Enter betjener dem',
  'Check':'Sjekk','Questions from the B200 type rating question bank, in English (the type rating language).':'Spørsmål fra spørsmålsbanken for B200-typerating, på engelsk (språket på typeratingen).',
- "Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. Procedures here are generic and for training only — follow the AFM/POH and your operator's SOP. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.":'Pedagogisk modell, ikke en sertifisert simulator eller godkjent sjekkliste, og ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Prosedyrene er generelle og kun for trening — følg AFM/POH og operatørens SOP. Tallene er typiske King Air B200-verdier som varierer med serienummer og modifikasjoner; kontroller alle tall i godkjente dokumenter.',
+ "Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the AFM/POH. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.":'Pedagogisk modell, ikke en sertifisert simulator eller godkjent sjekkliste, og ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Ingen prosedyrer er med: bruk skolens sjekkliste og AFM/POH. Tallene er typiske King Air B200-verdier som varierer med serienummer og modifikasjoner; kontroller alle tall i godkjente dokumenter.',
  'Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','On ground':'På bakken','Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre','Scenario':'Scenario'
 });
 
@@ -161,19 +161,19 @@ function ioSet(k,v){
   if(k.endsWith(':d')){ encTurn(k.slice(0,-2),v); return; }
   if(k.endsWith(':o')||k.endsWith(':i')){ enc2Turn(k.slice(0,-2),k.endsWith(':i'),v); return; }
   const o=P.byId[k];
-  if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); procTouch(k); } SYS[k]=v; return; }
-  if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); procTouch(k); } SYS[k]=v; return; }
-  if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; E[i].fwShut=true; /* hot battery bus: works with the master switch off */ if(!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' firewall fuel valve closed and extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannskott-drivstoffventil lukket og brannslukker utløst — D-lyset tennes')); } procTouch(k); } return; }
-  if(k==='extPwr'){ const o0=SYS.extPwr; SYS.extPwr=v; if(v!==o0) beep(260,0.025,0.06); if(v===1){ flash(L(tr2('EXT PWR RESET: resets the external power relay','EXT PWR RESET: tilbakestiller reléet for ekstern strøm'))); } else if(v===-1){ flash(GPU.on?(SYS.bat===1?L(tr2('External power ON line','Ekstern strøm tilkoblet')):L(tr2('EXT PWR: the relay closes only with the battery switch ON','EXT PWR: reléet lukker bare med batteribryteren PÅ'))):L(tr2('EXT PWR ON — no ground power unit plugged in','EXT PWR ON — ingen bakkestrømenhet tilkoblet'))); } else flash('EXT PWR OFF'); procTouch(k); return; }
-  if(k==='busSense'){ SYS.busSense=v; if(v){ beep(260,0.025,0.06); if(bus()){ if(v===1){ SYS.tieOpen=1; flash(L(tr2('BUS SENSE TEST: bus ties open — L/R GEN TIE OPEN and BATT TIE OPEN','BUS SENSE TEST: busskoblingene åpner — L/R GEN TIE OPEN og BATT TIE OPEN'))); } else { SYS.tieOpen=0; flash(L(tr2('BUS SENSE RESET: bus ties closed','BUS SENSE RESET: busskoblingene lukket'))); } } } procTouch(k); return; }
-  if(k==='genTies'){ const o0=SYS.genTies; SYS.genTies=v; if(v!==o0) beep(260,0.025,0.06); if(v===-1){ SYS.tieOpen=0; flash(L(tr2('GEN TIES MAN CLOSE: generator ties closed','GEN TIES MAN CLOSE: generatorkoblingene lukket'))); } else flash('GEN TIES '+(v===1?'OPEN':'NORM')); procTouch(k); return; }
+  if(k==='mwL'||k==='mwR'){ if(v){ MW.w=false; MW.ackR=new Set(curR); click(); } SYS[k]=v; return; }
+  if(k==='mcL'||k==='mcR'){ if(v){ MW.c=false; MW.ackA=new Set(curA); click(); } SYS[k]=v; return; }
+  if(k==='fireL'||k==='fireR'){ SYS[k]=v; if(v){ const i=k==='fireL'?0:1; E[i].fwShut=true; /* hot battery bus: works with the master switch off */ if(!E[i].ext){ E[i].ext=true; beep(300,0.25,0.06); msg(tr2((i?'Right':'Left')+' firewall fuel valve closed and extinguisher discharged — D light on',(i?'Høyre':'Venstre')+' brannskott-drivstoffventil lukket og brannslukker utløst — D-lyset tennes')); } } return; }
+  if(k==='extPwr'){ const o0=SYS.extPwr; SYS.extPwr=v; if(v!==o0) beep(260,0.025,0.06); if(v===1){ flash(L(tr2('EXT PWR RESET: resets the external power relay','EXT PWR RESET: tilbakestiller reléet for ekstern strøm'))); } else if(v===-1){ flash(GPU.on?(SYS.bat===1?L(tr2('External power ON line','Ekstern strøm tilkoblet')):L(tr2('EXT PWR: the relay closes only with the battery switch ON','EXT PWR: reléet lukker bare med batteribryteren PÅ'))):L(tr2('EXT PWR ON — no ground power unit plugged in','EXT PWR ON — ingen bakkestrømenhet tilkoblet'))); } else flash('EXT PWR OFF'); return; }
+  if(k==='busSense'){ SYS.busSense=v; if(v){ beep(260,0.025,0.06); if(bus()){ if(v===1){ SYS.tieOpen=1; flash(L(tr2('BUS SENSE TEST: bus ties open — L/R GEN TIE OPEN and BATT TIE OPEN','BUS SENSE TEST: busskoblingene åpner — L/R GEN TIE OPEN og BATT TIE OPEN'))); } else { SYS.tieOpen=0; flash(L(tr2('BUS SENSE RESET: bus ties closed','BUS SENSE RESET: busskoblingene lukket'))); } } } return; }
+  if(k==='genTies'){ const o0=SYS.genTies; SYS.genTies=v; if(v!==o0) beep(260,0.025,0.06); if(v===-1){ SYS.tieOpen=0; flash(L(tr2('GEN TIES MAN CLOSE: generator ties closed','GEN TIES MAN CLOSE: generatorkoblingene lukket'))); } else flash('GEN TIES '+(v===1?'OPEN':'NORM')); return; }
   if(k==='dhK2'){ SYS.dhK2=SYS.dhK=v; return; }
   if(k==='raT2'){ SYS.raT2=v; SYS.raT=v; if(v) click(); return; }
   if(k==='gndIdle'){ SYS[k]=v; if(v){ click(); flash(L(tr2('PROP TEST GND IDLE STOP: ground idle stop solenoids released (props to the flight idle stop)','PROP TEST GND IDLE STOP: bakketomgang-stoppet utløst (propellene til flight idle-stoppet)'))); } return; }
   if(/^ap2?(AP|YD|HDG|NAV|APPR|BC|CLIMB|ALT|ALTSEL|VS|IAS|DSC)$/.test(k)){ SYS[k]=v; if(v) apPress(k.replace(/^ap2?/,'')); return; }
-  if(k==='gang'){ SYS.gang=v; if(v){ SYS.bat=0; SYS.genL=1; SYS.genR=1; beep(260,0.04,0.06); flash(L(tr2('MASTER SWITCH gang bar: battery and both generators OFF','MASTER SWITCH-stangen: batteri og begge generatorer AV'))); procTouch('bat'); } return; }
+  if(k==='gang'){ SYS.gang=v; if(v){ SYS.bat=0; SYS.genL=1; SYS.genR=1; beep(260,0.04,0.06); flash(L(tr2('MASTER SWITCH gang bar: battery and both generators OFF','MASTER SWITCH-stangen: batteri og begge generatorer AV'))); } return; }
   if(/^(com1|com2|nav1|nav2|adf)X$/.test(k)){ SYS[k]=v; const r=k.slice(0,-1); if(v&&radOn(r)){ const f=SYS[r];
-      if(v<0){ [f.a,f.s]=[f.s,f.a]; SYS.chgT[r]=performance.now(); click(); procTouch('navSw'); }
+      if(v<0){ [f.a,f.s]=[f.s,f.a]; SYS.chgT[r]=performance.now(); click(); }
       else { const m=SYS.mem[r]; SYS.memI[r]=(SYS.memI[r]+1)%m.length; f.s=m[SYS.memI[r]]; click(); flash(r.toUpperCase().replace(/(\d)/,' $1')+' — MEM CH '+(SYS.memI[r]+1)+': '+f.s); } } return; }
   if(/^(com1|com2|nav1|nav2|adf)Sto$/.test(k)){ SYS[k]=v; const r=k.slice(0,-3); if(v&&radOn(r)){ click(); const t=performance.now();
       if(t-(SYS.stoT[r]||-1e9)<5000){ SYS.mem[r][SYS.memI[r]]=SYS[r].s; SYS.stoT[r]=-1e9; flash(L(tr2('Stored in memory channel ','Lagret i minnekanal '))+(SYS.memI[r]+1)+': '+SYS[r].s); }
@@ -194,21 +194,21 @@ function ioSet(k,v){
       if(m==='Brg2'){ SYS.brgSel2=(SYS.brgSel2+1)%3; flash('BRG ◇ — '+['OFF','NAV 2','ADF'][SYS.brgSel2]); }
       if(m==='Fmt'){ SYS.efisArc=1-SYS.efisArc; flash('EHSI — '+(SYS.efisArc?'ARC':'FULL')); }
       if(m==='Et'){ SYS.etState=(SYS.etState+1)%3; if(SYS.etState===0) SYS.etT=0; flash('ET — '+['RESET','RUN','STOP'][SYS.etState]); } } return; }
-  if(k==='propDeA'||k==='propDeM'){ SYS[k]=v; SYS.propDe=SYS.propDeA?-1:SYS.propDeM?1:0; beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); procTouch('propDe'); return; }
+  if(k==='propDeA'||k==='propDeM'){ SYS[k]=v; SYS.propDe=SYS.propDeA?-1:SYS.propDeM?1:0; beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); return; }
   if(k==='micC'&&SYS.autoCommC&&v<2){ SYS.auC0=v===0?1:0; SYS.auC1=v===1?1:0; }
   if(k==='encAlt'||k==='xpdr12'||k==='audEmer'){ setTimeout(()=>{ if(k==='audEmer'&&SYS.audEmer) msg(tr2('AUDIO EMER: amplifiers bypassed — COMM 1, COMM 2, sidetone and warning tones go to the headsets only; no NAV/ADF/DME/marker audio.','AUDIO EMER: forsterkerne forbikoblet — COMM 1, COMM 2, sidetone og varseltoner bare til hodetelefonene; ingen NAV/ADF/DME/markør-lyd.')); },0); }
   if(k==='xpdrId'){ SYS[k]=v; if(v&&radOn('xpdr')&&SYS.xpdrMd>1){ SYS.identT=18; click(); } return; }
   if(k==='xpdrPre'){ SYS[k]=v; if(v&&radOn('xpdr')){ [SYS.xpdr,SYS.xpre]=[SYS.xpre,SYS.xpdr]; click(); } return; }
   if(k==='dmeCh'||k==='dme2Ch'){ SYS[k]=v; if(v){ const n=k==='dmeCh'?'d1ch':'d2ch'; SYS[n]=SYS[n]%3+1; click(); flash('DME '+(n==='d1ch'?'1':'2')+' — CH '+SYS[n]); } return; }
   if(k==='dmeSel'||k==='dme2Sel'){ SYS[k]=v; if(v){ const n=k==='dmeSel'?'d1sel':'d2sel'; SYS[n]=(SYS[n]+1)%3; click(); } return; }
-  if(k==='slewL'||k==='slewR'||k==='slew2L'||k==='slew2R'||k==='fastErect'||k==='fastErect2'||k==='raT'||k==='hydT'||k==='hdLt'||k==='stallTest'||/^(com1|com2|nav1|nav2|xpdr|adf)T$/.test(k)||/^v(LoadL|LoadR|Batt|AC)$/.test(k)){ SYS[k]=v; if(v){ click(); if(k==='fastErect'||k==='fastErect2') flash(L(tr2('Attitude gyro fast erect','Attitydegyro hurtigoppretting'))); if(k==='stallTest'&&bus()) procTouch('stallTest'); } return; }
+  if(k==='slewL'||k==='slewR'||k==='slew2L'||k==='slew2R'||k==='fastErect'||k==='fastErect2'||k==='raT'||k==='hydT'||k==='hdLt'||k==='stallTest'||/^(com1|com2|nav1|nav2|xpdr|adf)T$/.test(k)||/^v(LoadL|LoadR|Batt|AC)$/.test(k)){ SYS[k]=v; if(v){ click(); if(k==='fastErect'||k==='fastErect2') flash(L(tr2('Attitude gyro fast erect','Attitydegyro hurtigoppretting'))); } return; }
   if(k==='hornSil'){ SYS[k]=v; if(v&&gearWarn()&&!flapHorn()){ SYS.hornSilOn=1; click(); flash(L(tr2('Gear warning horn silenced (power-lever warning only)','Understellsvarsel dempet (bare effekthendel-varselet)'))); } return; }
   if(k==='dlRel'){ SYS[k]=v; if(v&&S.ground) flash(L(tr2('Down-lock release: overrides the ground lock — never on the ground with the handle up','Down-lock release: overstyrer bakkelåsen — aldri på bakken med hendelen oppe'))); return; }
   if(k==='gearPump'){ SYS[k]=v; if(v){ click(); if(SYS.gearH===1&&S.ctl.gear===0){ SYS.pumpN++; if(SYS.pumpN>=30){ S.ctl.gear=1; msg(tr2('Alternate extension: gear pumped down — check three green','Alternativ utfelling: understellet pumpet ned — sjekk tre grønne')); } else if(SYS.pumpN%5===0) flash(L(tr2('Pumping: ','Pumper: '))+SYS.pumpN+'/30'); } else flash(L(tr2('Alternate extension: handle DOWN first, then pump (only needed when the normal system fails)','Alternativ utfelling: hendelen NED først, pump så (bare når normalsystemet svikter)'))); } return; }
   if(CBK[k]){ SYS.cb[CBK[k]]=v; click(); flash(P.byId[k].c.l+' CB '+(v?'IN':'PULLED')); return; }
-  if(k==='gear'){ if(v!==SYS.gearH) toggleGear(); procTouch('gear'); return; }
-  if(k==='flaps'){ setFlap(v); procTouch('flaps'); return; }
-  if(k==='trim'){ S.ctl.trim=v; holdPitch=null; procTouch('trim'); return; }
+  if(k==='gear'){ if(v!==SYS.gearH) toggleGear(); return; }
+  if(k==='flaps'){ setFlap(v); return; }
+  if(k==='trim'){ S.ctl.trim=v; holdPitch=null; return; }
   if(k==='apTurn'){ if(Math.abs(v-0.5)<0.05) v=0.5; SYS.apTurn=v; if(v!==0.5&&(AP.on||AP.fd)){ AP.lat='ROL'; AP.latArm=''; SYS.bcMode=0; } return; }
   if(/^pwr[LR]$/.test(k)&&v<0&&!S.ground){ v=0; if(!ioSet.gw||performance.now()-ioSet.gw>3000){ ioSet.gw=performance.now(); msg(tr2('Beta and reverse are for ground use only.','Beta og revers er bare for bruk på bakken.')); } }
   if(/^cond[LR]$/.test(k)){ if(v<0.25) v=v<0.12?0:v; }
@@ -219,26 +219,24 @@ function ioSet(k,v){
   if(o&&!['push','lev','vwheel','hwheel','rot','enc','enc2','sbtn','mbtn','abtn','yoke','bar'].includes(o.c.t)){ if(old!==v) beep(260,0.025,0.06); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
   if(o&&o.c.t==='abtn'){ click(); setTimeout(()=>{ const d=descr(k); if(d) flash(d); },0); }
   if(o&&o.c.t==='lev'&&old!==undefined&&Math.abs(old-v)>0.001){ SH.say(descr(k),'',1200); }
-  if(k==='annTest'&&v) PR.m.annT=1;
-  if((k==='fireTestL'||k==='fireTestR')&&v!==0) PR.m.fireT=1;
   if((k==='elecHeat'||k==='aftHeat')&&v&&!S.ground) msg(tr2('Electric heat is for ground use only: in flight the squat switch releases the solenoid-held switch to OFF.','Elektrisk varme er bare for bakken: i luften slipper squat-bryteren den solenoidholdte bryteren til OFF.'));
   if(k==='avio'&&!v){ AP.on=false; AP.fd=false; }
   if(k==='afSw'&&v===0) E.forEach(e=>{ e.autoF=false; });
   if(k==='pressSw'&&v===-1) msg(tr2('Cabin pressure DUMP: the outflow valve opens and the cabin climbs to the aircraft altitude.','Kabintrykk DUMP: utstrømningsventilen åpner og kabinen stiger til flyets høyde.'));
   if(k==='altStatic') msg(v?tr2("Pilot's static source ALTERNATE: pilot's airspeed, altimeter and VSI now read from cabin static — expect small errors.",'Pilotens statiske kilde ALTERNATE: pilotens fartsmåler, høydemåler og VSI leser nå kabinstatisk — forvent små feil.'):tr2("Pilot's static source NORMAL.",'Pilotens statiske kilde NORMAL.'));
   if(k==='wsP'||k==='wsC'||k==='cabMode') { if((SYS.wsP||SYS.wsC||SYS.cabMode===1||SYS.cabMode===3)&&!ioSet.cmpT){ ioSet.cmpT=1; flash(L(tr2('Standby compass is unreliable with windshield heat or air conditioning on','Standbykompasset er upålitelig med vindusvarme eller klimaanlegg på'))); } }
-  procTouch(k);
+ 
 }
 function encTurn(id,d){ click();
   if(id==='hdgK'){ AP.hdg=F.wrap360(Math.round(AP.hdg)+d)||360; SYS.hdgK+=d; }
-  else if(id==='crsK'){ SYS.crs=F.wrap360(SYS.crs+d)||360; SYS.crsK+=d; procTouch('crsK'); }
+  else if(id==='crsK'){ SYS.crs=F.wrap360(SYS.crs+d)||360; SYS.crsK+=d; }
   else if(id==='crs2K'){ SYS.crs2=F.wrap360(SYS.crs2+d)||360; SYS.crs2K+=d; }
   else if(id==='baroK'||id==='baro2K'){ S.baro=F.clamp(Math.round(S.baro)+d,940,1060); SYS[id]+=d; }
   else if(id==='altSel'){ AP.alt=F.clamp(AP.alt+d*100,0,35000); SYS.altSel+=d; SYS.altCx=0; }
   else if(id==='mfdTilt'){ SYS.mfdTilt=F.clamp(SYS.mfdTilt+d,-15,15); }
   else if(id==='gpsKL'){ SYS.gpsPgL=(SYS.gpsPgL+d+400)%4; SYS.gpsKL=(SYS.gpsKL||0)+d; }
   else if(id==='gpsKR'){ SYS.gpsPgR=(SYS.gpsPgR+d+500)%5; SYS.gpsKR=(SYS.gpsKR||0)+d; }
-  else if(id==='cabAlt'){ SYS.cabSel=F.clamp(SYS.cabSel+d*100,-1000,14000); SYS.cabAlt+=d; procTouch('cabAlt'); }
+  else if(id==='cabAlt'){ SYS.cabSel=F.clamp(SYS.cabSel+d*100,-1000,14000); SYS.cabAlt+=d; }
   else if(id==='apPitch'){ SYS.apPitch+=d; if(avOn()&&(AP.on||AP.fd)){ const o=F.readouts(S); for(let n=0;n<Math.min(5,Math.abs(d));n++) F.apSet(AP,S,o,d>0?'DN':'UP',curNav); } }
 }
 function enc2Turn(id,inner,d){ click(); const r=id.slice(0,-1); SYS[id+(inner?'I':'O')]+=d; SYS.chgT[r]=performance.now();
@@ -246,15 +244,18 @@ function enc2Turn(id,inner,d){ click(); const r=id.slice(0,-1); SYS[id+(inner?'I
   const f=SYS[r], key=SYS[r+'Act']?'a':'s';
   if(r==='adf'){ let v=+f[key]+(inner?d:d*10); if(v>1799) v=190; if(v<190) v=1799; f[key]=String(v); return; }
   const isCom=r.startsWith('com');
-  f[key]=stepFreq(f[key],d,isCom?118:108,isCom?136:117,isCom?0.025:0.05,isCom?3:2,inner); if(r==='nav1') procTouch('navK');
+  f[key]=stepFreq(f[key],d,isCom?118:108,isCom?136:117,isCom?0.025:0.05,isCom?3:2,inner);
 }
 function stepFreq(f,d,lo,hiI,st,dec,inner){ let m=Math.floor(+f+1e-6), k=+f-m; if(inner){ const n=Math.round(1/st); let q=Math.round(k/st)+d; q=((q%n)+n)%n; k=q*st; } else { const n=hiI-lo+1; m=lo+(((m-lo+d)%n)+n)%n; } return (m+k).toFixed(dec).replace(/(\.\d\d)0$/,'$1'); }
 
 /* ---------- zoom, area selector, lock (shared framework) ---------- */
 const Z={s:1,tx:0,ty:0,reg:'overview',lock:false};
-const ZN=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')],['efisL',tr2('Pilot EFIS with its controls','Pilot-EFIS med kontrollene')],['efisR',tr2('Copilot EFIS with its controls','Andrepilot-EFIS med kontrollene')]];
-const OV_NEED=1460; // whole-panel view: down to the power, propeller and condition levers on the pedestal (PANELZOOM.fit)
+const ZN3=[['overview',tr2('Panel','Panel')],['flightT',tr2('Pilot EADI · ASI · altimeter · master warning','Pilot EADI · fart · høyde · master warning')],['flightB',tr2('Pilot EHSI · RMI · VSI','Pilot EHSI · RMI · VSI')],['engT',tr2('Engine gauges (upper)','Motorinstrumenter (øvre)')],['engB',tr2('Engine gauges (lower)','Motorinstrumenter (nedre)')],['lower',tr2('Left subpanel','Venstre underpanel')],['rsub',tr2('Lights · ice · gear','Lys · is · understell')],['center',tr2('Annunciators · flaps · cabin','Varsellys · flaps · kabin')],['pedT',tr2('Pedestal levers','Pidestall – hendler')],['pedB',tr2('EFIS controls · pressurisation','EFIS-kontroller · trykk')],['audio',tr2('Audio control panel','Lydpanel')],['fuelT',tr2('Fuel panel · OAT','Drivstoffpanel · OAT')],['fuelB',tr2('Fuel system breakers','Drivstoff-sikringer')],['apfd',tr2('Autopilot · flight director modes','Autopilot · flight director-moduser')],['centreM',tr2('Standby attitude · course · heading · altitude set','Reservehorisont · kurs · heading · høydevelger')],['radio1',tr2('Navigator: GPS · COMM 1 · NAV 1','Navigator: GPS · COMM 1 · NAV 1')],['mfd',tr2('Radar / multifunction display','Radar / flerfunksjonsskjerm')],['glare',tr2('Glareshield','Glareskjerm')],['overheadL',tr2('Overhead light control panel','Takpanel – lyskontroll')],['overheadR',tr2('Overhead meters · airspeeds','Takpanel – målere · fartsgrenser')],['copilotT',tr2('Copilot instruments (upper)','Andrepilot (øvre)')],['copilotB',tr2('Copilot instruments (lower) · transponder','Andrepilot (nedre) · transponder')],['cosubL',tr2('Environmental subpanel','Miljøpanel')],['cosubR',tr2('Copilot right subpanel · cabin · gauges','Andrepilot høyre underpanel · kabin · målere')],['rsideT',tr2('Right side breakers (upper)','Høyre sidepanel – sikringer (øvre)')],['rsideB',tr2('Right side · static source · COMM 2 · NAV 2 · ADF · prop amps','Høyre side · statisk kilde · COMM 2 · NAV 2 · ADF · propellampere')],['efisL',tr2('Pilot EFIS with its controls','Pilot-EFIS med kontrollene')],['efisR',tr2('Copilot EFIS with its controls','Andrepilot-EFIS med kontrollene')]];
+const ZN=document.body.dataset.d3?ZN3:[['overview',tr2('Panel','Panel')],['aPilot',tr2('Pilot EFIS','Pilot-EFIS')],['aEng',tr2('Engine gauges','Motorinstrumenter')],['aCentre',tr2('Autopilot · radios · MFD','Autopilot · radioer · MFD')],['aCopilot',tr2('Copilot instruments','Andrepilotens instrumenter')],['aLower',tr2('Lower panel','Nedre panel')],['aPed',tr2('Pedestal · consoles','Pedestall · konsoller')]];
 let PZ=null;
+/* 2D: a few large areas to tap (the 3D page keeps the finer REG_ORDER for its camera) */
+const AREA={aEng:[556,415,273,585],aPilot:[12,330,618,621],aCentre:[797,412,564,579],aCopilot:[1340,317,650,631],aLower:[17,922,1976,345],aPed:[4,1246,1994,534]}, AREAS=Object.keys(AREA);
+Object.assign(P.REG,AREA);
 function zoomTo(reg,instant,force){
   if(Z.lock&&!force&&reg!==Z.reg){ flash(L(tr2('View is locked — unlock to zoom','Visningen er låst — lås opp for å zoome'))); return; }
   const sw=efxShow(reg); // EFIS focus: control strip on the right; the displays fit in the rest of the stage
@@ -266,15 +267,14 @@ function zoomTo(reg,instant,force){
   const cl=(v,lo,hi)=>lo>hi?(lo+hi)/2:Math.max(lo,Math.min(hi,v));
   tx=cl(tx,w-P.W*s,0); ty=cl(ty,h-P.H*s,0);
   if(ov){ tx=w/2-(r[0]+r[2]/2)*s; ty=Math.max(h/2-(r[1]+r[3]/2)*s,h-P.H*s); }
-  if(ov&&window.PANELZOOM){ const f=PANELZOOM.fit({w,h,x0:0,width:P.W,H:P.H,lip:B200P.LIP,need:OV_NEED,sky:B200P.SKY,otw:skyOn()}); if(f.s>s){ s=f.s; tx=f.tx; ty=f.ty; } } // larger panel; the lowest rows may run off the bottom
   Object.assign(Z,{s,tx,ty,reg});
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.06);
-  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(); if(PZ) PZ.sync();
+  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(); if(PZ) PZ.sync(); if(window.PANELZOOM&&PANELZOOM.dim) PANELZOOM.dim(PST,Z,ov?null:P.REG[reg]);
 }
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
-function regionAt(p){ for(const k of P.REG_ORDER){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
+function regionAt(p){ for(const k of (document.body.dataset.d3?P.REG_ORDER:AREAS)){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
 const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.appendChild(hlR); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
@@ -345,18 +345,17 @@ PST.addEventListener('pointerdown',e=>{ pdn={x:e.clientX,y:e.clientY,t:performan
 PST.addEventListener('click',e=>{ const d=pdn; pdn=null;
   if(!d||!d.ok||e.button>0||Math.hypot(e.clientX-d.x,e.clientY-d.y)>8||performance.now()-d.t>700||performance.now()-clickZoomT<400) return; // a quick second click: no flip-flop
   if(!emptyAt(e)||e.target.closest(OFFP)||Z.lock||(D3on&&D3.dragging)) return;
-  const p=toWorld(e), f=efisAt(p), cur=Z.reg; let to=null;
+  if(PZ&&PZ.tap(e)) return; // two quick taps on a zoomed panel: back to the whole panel
+  const p=toWorld(e), f=null, cur=Z.reg; let to=null; // one zoom model: the EFIS focus view is not opened by a tap any more
   if(f){ if(f!==cur) to=f; }
   else if(cur==='overview') to=regionAt(p);
   else if(!P.REG[cur]||!inR(p,P.REG[cur])) to=EFX.open?null:'overview';
   if(!f&&EFX.open&&!inR(p,P.REG[EFX.open])){ clickZoomT=performance.now(); efxClose(); return; }
   if(to){ clickZoomT=performance.now(); zoomTo(to); } });
 function drawZoomBar(){ el('zoomSel').innerHTML=ZN.map(([k,t])=>`<option value="${k}"${k===Z.reg?' selected':''}>${L(t)}</option>`).join(''); }
-function syncAreaUI(){ const zs=el('zoomSel'); if(zs.value!==Z.reg) zs.value=Z.reg; const b=el('bLock'); if(b) b.setAttribute('aria-pressed',Z.lock); PST.classList.toggle('locked',Z.lock); }
+function syncAreaUI(){ const zs=el('zoomSel'); if(zs.value!==Z.reg) zs.value=Z.reg; }
 drawZoomBar(); LAB.onLang(()=>{ drawZoomBar(); syncAreaUI(); });
 el('zoomSel').onchange=e=>{ zoomTo(e.target.value); el('moreMenu').hidden=true; el('bMore').setAttribute('aria-expanded',false); };
-el('bLock').onclick=()=>{ Z.lock=!Z.lock; try{ localStorage.setItem('bb-b200-lock',Z.lock?'1':'0'); localStorage.setItem('bb-b200-zone',Z.reg); }catch(e){} syncAreaUI(); };
-try{ Z.lock=localStorage.getItem('bb-b200-lock')==='1'; const z=localStorage.getItem('bb-b200-zone'); if(Z.lock&&z&&P.REG[z]) Z.reg=z; }catch(e){}
 /* the … menu, drawer tabs and the one notification area: simshell.js */
 const SH=SIMSHELL;
 function flash(t){ SH.say(t,'',1800); }
@@ -412,7 +411,7 @@ function d3Init(){ PST.classList.add('d3wait');
     if(D3.supported&&D3.supported()&&hasWebGL()){ try{ otwReady=!!(window.OTW&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } }
     otwTried=true;
     if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,svg:P.svg,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; efxShow('overview'); PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
-    if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); otwOn=true; PST.classList.remove('nootw','nogl'); el('bOtw').hidden=true; el('bLock').hidden=true;
+    if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); otwOn=true; PST.classList.remove('nootw','nogl'); el('bOtw').hidden=true;
       if(el('bAhead')){ el('bAhead').hidden=false; el('bAhead').onclick=()=>zoomTo('overview'); } D3.lookAhead(true); syncAreaUI(); otwMsgSync(); LAB.onLang(()=>D3.relabel()); }
     else { PST.classList.toggle('nogl',!otwReady); el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; }
     PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);
@@ -483,7 +482,7 @@ function sysTick(dt,o){
     if(e.aux>0&&e.lit&&!e.xfr) e.nxT+=dt; else e.nxT=0;
     // generator
     const gs=SYS['gen'+s]; if(gs===-1){ if(e.ng>=50&&e.lit) e.genRst=true; e.rstT=(e.rstT||0)+dt; if(e.rstT>0.7){ SYS['gen'+s]=0; e.rstT=0; } } else e.rstT=0; if(gs===1){ e.genRst=false; }
-    const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ if(!tiesOpen()) SYS.battT=Math.max(SYS.battT,20); procTouch('gen'+s+'On'); }
+    const was=e.genOn; e.genOn=e.genRst&&gs===0&&e.ng>=50&&e.lit; if(e.genOn&&!was){ if(!tiesOpen()) SYS.battT=Math.max(SYS.battT,20); }
     // engine anti-ice (inertial vane): main actuator needs ENG ANTI-ICE power, standby its own
     const tgt=SYS['engAI'+s]?1:0, act=SYS['act'+s]?(b&&cbIn('STBY ANTI-ICE '+s)):(b&&cbIn('ENG ANTI-ICE '+s));
     if(act) e.vane=F.clamp(e.vane+(tgt?1:-1)*dt/(SYS['act'+s]?18:12),0,1);
@@ -733,100 +732,20 @@ function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paus
 el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ procStart(PR.k||'free'); if(UI.paused) togglePause(); };
 LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); });
 
-/* ---------- procedures and scenarios (generic training flows; follow the AFM/POH and the operator's SOP) ---------- */
-const st=(t,ctl,ok,o)=>Object.assign({t,ctl,ok},o||{});
-const chk=(t,ctl,ok)=>st(t,ctl,ok,{chk:1});
-const both=f=>f('L')&&f('R');
+/* ---------- exercises and failure scenarios: set-ups only, no procedure text (schools have their own checklists) ---------- */
 const idle=()=>SYS.pwrL<0.05&&SYS.pwrR<0.05&&SYS.pwrL>-0.05&&SYS.pwrR>-0.05;
 const D=()=>PR.dead, Ls=()=>SIDES[1-PR.dead], Ds=()=>SIDES[PR.dead];
-const dz=(base)=>()=>base+Ds();
-function startSteps(s){ const i=s==='L'?0:1; return [
-  st(tr2(`IGN & START ${s} — ON (starter and igniters, IGNITION ON light)`,`IGN & START ${s} — ON (starter og tenning, IGNITION ON-lys)`),'ign'+s,()=>SYS['ign'+s]===-1&&E[i].ng>3),
-  st(tr2(`At a stabilised 12 % N1 or more: condition lever ${s} — LOW IDLE`,`Ved stabile 12 % N1 eller mer: condition-hendel ${s} — LOW IDLE`),'cond'+s,()=>E[i].lit&&SYS['cond'+s]>=0.45),
-  st(tr2(`Watch ITT (start limit 1000 °C) and N1 rising — at about 50 % N1: IGN & START ${s} — OFF`,`Følg ITT (startgrense 1000 °C) og N1 — ved ca. 50 % N1: IGN & START ${s} — OFF`),'ign'+s,()=>SYS['ign'+s]===0&&E[i].lit&&E[i].ng>=48),
-  chk(tr2(`Oil pressure ${s} — rising, ${s} OIL PRESS out; idle N1 about 61 %`,`Oljetrykk ${s} — stiger, ${s} OIL PRESS slukker; tomgang ca. 61 % N1`),'ign'+s,()=>E[i].oilP>=60&&E[i].ng>58),
-  st(tr2(`GEN ${s} — RESET, then ON (${s} DC GEN out)`,`GEN ${s} — RESET, så ON (${s} DC GEN slukker)`),'gen'+s,()=>E[i].genOn)]; }
 const PROCS=[
- {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air',brief:tr2('',''),steps:[]},
- {k:'free',t:tr2('Free flight','Fri flyging'),set:'free',brief:tr2('5,000 ft, 180 KIAS on the localizer side of the field. Explore the panel: autopilot HDG and ALT, the HSI, propeller rpm, or fail an engine from the Failures section.','5000 ft, 180 KIAS. Utforsk panelet: autopilot HDG og ALT, HSI-en, propellturtall, eller stopp en motor under Feil.'),steps:[]},
- {k:'start',gen:1,t:tr2('Engine start (both)','Motorstart (begge)'),set:'cold',brief:tr2('Cold aircraft on the ramp, battery start. This flow starts the right engine first, then the left. Watch N1 and ITT through every start.','Kaldt fly på oppstillingsplassen, batteristart. Denne flyten starter høyre motor først, så venstre. Følg N1 og ITT gjennom hver start.'),
-  steps:[chk(tr2('Parking brake — SET','Parkeringsbrems — SATT'),'park',()=>SYS.park),
-   chk(tr2('Power levers — IDLE · prop levers — FULL FORWARD','Effekthendler — IDLE · propellhendler — HELT FREM'),'pwrL',()=>idle()&&SYS.propL>0.97&&SYS.propR>0.97),
-   chk(tr2('Condition levers — FUEL CUTOFF','Condition-hendler — FUEL CUTOFF'),'condL',()=>SYS.condL<0.05&&SYS.condR<0.05),
-   chk(tr2('Firewall valves — OPEN','Brannskottventiler — ÅPNE'),'fwL',()=>SYS.fwL&&SYS.fwR),
-   st(tr2('Battery — ON','Batteri — PÅ'),'bat',()=>SYS.bat),
-   st(tr2('Annunciators — TEST (every light on)','Varsellys — TEST (alle lys på)'),'annTest',()=>PR.m.annT),
-   st(tr2('MASTER WARNING and MASTER CAUTION — press to acknowledge','MASTER WARNING og MASTER CAUTION — trykk for å kvittere'),'mwL',()=>!MW.w&&!MW.c),
-   st(tr2('Beacon — ON','Antikollisjonslys — PÅ'),'beacon',()=>SYS.beacon),
-   ...startSteps('R'),...startSteps('L'),
-   st(tr2('Inverter — ON (INVERTER light out)','Inverter — PÅ (INVERTER-lyset slukker)'),'inv',()=>SYS.inv!==0),
-   st(tr2('Avionics master — ON','Avionikk — PÅ'),'avio',()=>SYS.avio)]},
- {k:'runup',gen:1,t:tr2('Before take-off and autofeather test','Før avgang og autofeather-test'),set:'running',brief:tr2('Both engines running at low idle on the ramp. Set up for take-off and test the autofeather: with both engines at about 500 ft-lb and the switch held at TEST, pull one power lever back slowly. The other side\'s light goes out near 400 ft-lb, this side\'s near 200 ft-lb, then it flashes as the propeller cycles.','Begge motorer går på low idle. Klargjør for avgang og test autofeather: med begge motorene på ca. 500 ft-lb og bryteren på TEST, trekk én effekthendel sakte tilbake. Lyset på den andre siden slukker nær 400 ft-lb, denne sidens nær 200 ft-lb, og så blinker det mens propellen sykler.'),
-  steps:[st(tr2('Avionics — ON, inverter ON','Avionikk — PÅ, inverter PÅ'),'avio',()=>SYS.avio&&SYS.inv!==0),
-   st(tr2('Flight controls — free and correct (move the control wheel fully)','Ror — frie og riktige (beveg rattet fullt ut)'),'yokeL',()=>PR.m.yx&&PR.m.yy),
-   st(tr2('Elevator trim — T/O mark','Høyderortrim — T/O-merket'),'trim',()=>Math.abs(S.ctl.trim-0.05)<0.1&&PR.m.trimMoved),
-   st(tr2('Flaps — APPROACH','Flaps — APPROACH'),'flaps',()=>S.ctl.flap===1),
-   st(tr2('Autofeather test: both power levers — about 500 ft-lb torque','Autofeather-test: begge effekthendler — ca. 500 ft-lb moment'),'pwrL',()=>E.every(e=>e.tq>440&&e.tq<700)),
-   st(tr2('AUTOFEATHER — TEST: both AUTOFEATHER lights on','AUTOFEATHER — TEST: begge AUTOFEATHER-lysene på'),'afSw',()=>SYS.afSw===1&&E.every(e=>e.afArm)),
-   st(tr2('Left power lever — slowly back: R light out (~400), L light out (~200), then L flashes','Venstre effekthendel — sakte tilbake: R-lys slukker (~400), L-lys slukker (~200), så blinker L'),'pwrL',()=>E[0].afCyc>0.6),
-   st(tr2('Left power lever — back to about 500 ft-lb','Venstre effekthendel — tilbake til ca. 500 ft-lb'),'pwrL',()=>E[0].tq>440),
-   st(tr2('Right power lever — the same test (L out ~400, R out ~200, R flashes)','Høyre effekthendel — samme test (L slukker ~400, R ~200, R blinker)'),'pwrR',()=>E[1].afCyc>0.6),
-   st(tr2('Right power lever — back to about 500 ft-lb','Høyre effekthendel — tilbake til ca. 500 ft-lb'),'pwrR',()=>E[1].tq>440),
-   st(tr2('Power levers — IDLE, AUTOFEATHER — ARM (lights out until take-off power)','Effekthendler — IDLE, AUTOFEATHER — ARM (lysene av til startkraft)'),'afSw',()=>SYS.afSw===-1&&idle()),
-   st(tr2('Auto-ignition — ARM both','Auto-tenning — ARM begge'),'aignL',()=>SYS.aignL&&SYS.aignR),
-   st(tr2('Pitot heat — ON both','Pitotvarme — PÅ begge'),'pitL',()=>SYS.pitL&&SYS.pitR),
-   st(tr2('Bleed air — OPEN both · cabin pressure — PRESS · set the cabin altitude','Tappeluft — OPEN begge · kabintrykk — PRESS · still kabinhøyden'),'cabAlt',()=>SYS.bleedL===-1&&SYS.bleedR===-1&&SYS.pressSw===0&&PR.m.cabSet),
-   chk(tr2('Prop levers — FULL FORWARD · condition levers — LOW IDLE','Propellhendler — HELT FREM · condition — LOW IDLE'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97&&SYS.condL>=0.45),
-   chk(tr2('Crossfeed — OFF · firewall valves — OPEN','Crossfeed — AV · brannskottventiler — ÅPNE'),'xfeed',()=>SYS.xfeed===0&&SYS.fwL&&SYS.fwR),
-   st(tr2('Strobe and landing lights — ON','Strobe- og landingslys — PÅ'),'strobe',()=>SYS.strobe&&SYS.landL&&SYS.landR),
-   st(tr2('Parking brake — RELEASE','Parkeringsbrems — LØS'),'park',()=>!SYS.park)]},
- {k:'efato',own:['efato','eng'],t:tr2('Engine failure at rotation (autofeather)','Motorstans ved rotasjon (autofeather)'),set:'runway',brief:tr2('Lined up on runway 36, flaps APPROACH, autofeather ARM. Set take-off power and rotate at about 100 KIAS. One engine fails at lift-off. Fly first: rudder, wings level, pitch for V2 then blue line (121 KIAS). Verify the autofeather, then clean up.','Oppstilt på bane 36, flaps APPROACH, autofeather ARM. Sett startkraft og roter ved ca. 100 KIAS. En motor stopper ved løft. Fly først: sideror, vingene vannrett, nese for V2 og så blå linje (121 KIAS). Bekreft autofeather, rydd så opp.'),fail:'liftoff',
-  steps:[st(tr2('Power levers — TAKE-OFF power (about 2,230 ft-lb, ITT and N1 in limits)','Effekthendler — STARTKRAFT (ca. 2230 ft-lb, ITT og N1 innenfor grenser)'),'pwrL',()=>SYS.pwrL>0.9&&SYS.pwrR>0.9),
-   st(tr2('Autofeather — both lights ON','Autofeather — begge lysene PÅ'),'afSw',()=>E[0].afArm&&E[1].afArm,{chk:1,sop:1}),
-   st(tr2('Rotate at VR (about 100 KIAS) — lift off','Roter ved VR (ca. 100 KIAS) — løft av'),'yokeL',()=>!S.ground&&S.o.alt>20),
-   st(tr2('ENGINE FAILURE — maintain control: rudder against the yaw, wings level, pitch for V2','MOTORSTANS — behold kontrollen: sideror mot giringen, vingene vannrett, nese for V2'),'yokeL',()=>PR.failed&&PR.t>PR.failT+3&&S.o.ias>100),
-   st(tr2('Landing gear — UP (positive rate)','Understell — OPP (positiv stigning)'),'gear',()=>S.ctl.gear===0,{emer:1}),
-   st(tr2('Prop lever (failed engine) — FEATHER (verify autofeathered)','Propellhendel (død motor) — FEATHER (bekreft autofløyd)'),dz('prop'),()=>SYS['prop'+Ds()]<0.03,{emer:1}),
-   st(tr2('Airspeed — blue line 121 KIAS, climb to 1,000 ft','Fart — blå linje 121 KIAS, stig til 1000 ft'),'yokeL',()=>S.o.alt>950&&S.o.ias>112&&S.o.ias<140),
-   st(tr2('Flaps — UP','Flaps — UP'),'flaps',()=>S.ctl.flap===0&&S.ctl.flapPos<0.05,{emer:1}),
-   st(tr2('Power lever (failed) — IDLE','Effekthendel (død motor) — IDLE'),dz('pwr'),()=>SYS['pwr'+Ds()]<0.05,{emer:1}),
-   st(tr2('Condition lever (failed) — FUEL CUTOFF','Condition-hendel (død motor) — FUEL CUTOFF'),dz('cond'),()=>SYS['cond'+Ds()]<0.05,{emer:1}),
-   st(tr2('Firewall valve (failed) — CLOSED','Brannskottventil (død motor) — LUKKET'),dz('fw'),()=>!SYS['fw'+Ds()],{emer:1}),
-   st(tr2('Generator (failed) — OFF','Generator (død motor) — AV'),dz('gen'),()=>SYS['gen'+Ds()]===1,{emer:1}),
-   st(tr2('Autofeather — OFF · electrical load — check','Autofeather — AV · elektrisk last — sjekk'),'afSw',()=>SYS.afSw===0,{emer:1}),
-   st(tr2('Prop sync — OFF','Propellsynkronisering — AV'),'sync',()=>!SYS.sync,{emer:1})]},
- {k:'fire',own:'fire_gnd',t:tr2('Engine fire on the ground','Motorbrann på bakken'),set:'running',fail:'fire',brief:tr2('Both engines at idle on the ramp. A fire warning will come on. Identify the engine from the red fire light, then shut off its fuel and extinguish. Evacuate when the aircraft is shut down.','Begge motorer på tomgang. En brannvarsling vil tennes. Identifiser motoren på det røde brannlyset, steng drivstoffet og slukk. Evakuer når flyet er slått av.'),
-  steps:[st(tr2('Fire warning — identify the engine (red ENG FIRE light)','Brannvarsling — identifiser motoren (rødt ENG FIRE-lys)'),dz('fire'),()=>PR.failed&&PR.t>PR.failT+1.5),
-   st(tr2('Condition lever (fire) — FUEL CUTOFF','Condition-hendel (brann) — FUEL CUTOFF'),dz('cond'),()=>SYS['cond'+Ds()]<0.05,{emer:1}),
-   st(tr2('Firewall valve (fire) — CLOSED','Brannskottventil (brann) — LUKKET'),dz('fw'),()=>!SYS['fw'+Ds()],{emer:1}),
-   st(tr2('Fire extinguisher (fire) — PUSH (D light)','Brannslukker (brann) — TRYKK (D-lys)'),dz('fire'),()=>E[D()].ext,{emer:1}),
-   st(tr2('If the fire persists: ignition and engine start (fire) — STARTER ONLY, motor the engine to clear it','Hvis brannen fortsetter: tenning og motorstart (brann) — STARTER ONLY, drei motoren for å blåse den ut'),dz('ign'),()=>true,{chk:1,emer:1}),
-   st(tr2('Other engine: condition lever — FUEL CUTOFF','Andre motor: condition-hendel — FUEL CUTOFF'),()=>'cond'+Ls(),()=>SYS['cond'+Ls()]<0.05,{emer:1}),
-   st(tr2('Generators — OFF','Generatorer — AV'),'genL',()=>SYS.genL===1&&SYS.genR===1,{emer:1}),
-   st(tr2('Battery — OFF, then evacuate','Batteri — AV, evakuer så'),'bat',()=>!SYS.bat,{emer:1})]},
- {k:'press',own:'press',t:tr2('Pressurisation loss and emergency descent','Tap av kabintrykk og nødnedstigning'),set:'fl250',fail:'decomp',brief:tr2('Cruise at FL250, hand-flying: autopilot off, flight director in HDG and ALT (engage AP if you want). The cabin will lose pressure. Masks first, then an emergency descent: idle power, props forward, flaps APPROACH below 200 KIAS, gear down below 181 KIAS, about 20° nose down at first, then hold VLE. Level off at or below 12,500 ft.','Cruise i FL250, du flyr for hånd: autopiloten er av, flight directoren i HDG og ALT (koble inn AP om du vil). Kabinen vil miste trykket. Masker først, så nødnedstigning: tomgang, propeller frem, flaps APPROACH under 200 KIAS, understell ned under 181 KIAS, ca. 20° nese ned først, hold så VLE. Flat ut i eller under 12 500 ft.'),
-  steps:[st(tr2('Crew oxygen masks — ON, 100 %','Oksygenmasker — PÅ, 100 %'),'mask',()=>PR.failed&&SYS.mask,{emer:1}),
-   st(tr2('Pilot MIC switch — OXY MASK','Pilotens MIC-bryter — OXY MASK'),'micSel',()=>SYS.micSel===0,{emer:1}),
-   st(tr2('Passenger oxygen — check deployed, or pull the MANUAL OVERRIDE (PASS OXY ON light)','Passasjeroksygen — sjekk utløst, eller trekk MANUAL OVERRIDE (PASS OXY ON)'),'paxOvr',()=>SYS.paxOvr||SYS.paxDep,{emer:1}),
-   st(tr2('Autopilot — OFF (disconnect it if you engaged it)','Autopilot — AV (koble den ut hvis du koblet den inn)'),'apAP',()=>!AP.on,{emer:1}),
-   st(tr2('Power levers — IDLE','Effekthendler — IDLE'),'pwrL',()=>SYS.pwrL<0.05&&SYS.pwrR<0.05,{emer:1}),
-   st(tr2('Prop levers — FULL FORWARD','Propellhendler — HELT FREM'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97,{emer:1}),
-   st(tr2('Flaps — APPROACH (below 200 KIAS)','Flaps — APPROACH (under 200 KIAS)'),'flaps',()=>S.ctl.flap===1,{bad:()=>S.ctl.flap>0&&S.o.ias>205,emer:1}),
-   st(tr2('Landing gear — DOWN (below 181 KIAS)','Understell — NED (under 181 KIAS)'),'gear',()=>S.ctl.gear===1,{bad:()=>S.ctl.gear===1&&S.o.ias>186,emer:1}),
-   st(tr2('Pitch about 20° nose down, then about 14° near VLE — descend through FL180','Nese ca. 20° ned, så ca. 14° nær VLE — sink gjennom FL180'),'yokeL',()=>S.o.alt<18000),
-   st(tr2('Level off at or below 12,500 ft (start the level-off 500 ft early)','Flat ut i eller under 12 500 ft (start utflatingen 500 ft før)'),'yokeL',()=>S.o.alt<=12600&&Math.abs(S.o.vs)<700)]},
- {k:'seapp',t:tr2('Single-engine approach','Enmotors innflyging'),set:'seapp',brief:tr2('8 NM final for runway 36 at 2,500 ft, one engine feathered and secured. Trim the rudder, tune the ILS (110.30) with course 360, keep blue line or more until landing is assured, gear down at the glideslope, then land.','8 NM finale til bane 36 i 2500 ft, én motor fløyd og sikret. Trim sideroret, still inn ILS (110.30) med kurs 360, hold blå linje eller mer til landing er sikret, understell ned ved glidebanen, og land.'),
-  steps:[st(tr2('Rudder trim — towards the live engine (ball centred)','Sideror-trim — mot motoren som går (kula i midten)'),'rudTrim',()=>Math.sign(SYS.rudTrim)===(D()===1?-1:1)&&Math.abs(SYS.rudTrim)>0.12),
-   st(tr2('NAV 1 — 110.30 active (XFR), course 360 on the HSI','NAV 1 — 110.30 aktiv (XFR), kurs 360 på HSI-en'),'nav1X',()=>SYS.nav1.a==='110.30'&&SYS.crs===360),
-   chk(tr2('Speed — blue line 121 KIAS or more until landing is assured','Fart — blå linje 121 KIAS eller mer til landing er sikret'),'yokeL',()=>S.o.ias>=115),
-   st(tr2('Flaps — APPROACH','Flaps — APPROACH'),'flaps',()=>S.ctl.flap===1,{sop:1}),
-   st(tr2('Prop lever (live engine) — FULL FORWARD','Propellhendel (levende motor) — HELT FREM'),()=>'prop'+Ls(),()=>SYS['prop'+Ls()]>0.97,{sop:1}),
-   st(tr2('Landing gear — DOWN at the glideslope (three green)','Understell — NED ved glidebanen (tre grønne)'),'gear',()=>S.ctl.gear===1&&S.ctl.gearPos>0.99,{sop:1}),
-   st(tr2('Landing assured: reduce towards about 110 KIAS, flaps as required','Landing sikret: reduser mot ca. 110 KIAS, flaps etter behov'),'yokeL',()=>S.o.alt<500&&S.o.ias<125),
-   st(tr2('Land on runway 36','Land på bane 36'),'yokeL',()=>S.ground&&!S.crash),
-   st(tr2('Power (live) — IDLE then BETA, brakes, stop','Effekt (levende) — IDLE og så BETA, bremser, stopp'),()=>'pwr'+Ls(),()=>S.ground&&Math.abs(S.Vg)<3)]}
+ {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air'},
+ {k:'free',t:tr2('Free flight','Fri flyging'),set:'free',brief:tr2('5,000 ft, 180 KIAS, south of the field.','5000 ft, 180 KIAS, sør for flyplassen.')},
+ {k:'start',t:tr2('Engine start (both)','Motorstart (begge)'),set:'cold',brief:tr2('Cold aircraft on the ramp, battery start.','Kaldt fly på oppstillingsplassen, batteristart.')},
+ {k:'runup',t:tr2('Before take-off and autofeather test','Før avgang og autofeather-test'),set:'running',brief:tr2('Both engines at low idle on the ramp.','Begge motorene på low idle på oppstillingsplassen.')},
+ {k:'efato',own:['efato','eng'],t:tr2('Engine failure at rotation (autofeather)','Motorstans ved rotasjon (autofeather)'),set:'runway',fail:'liftoff',d:tr2('Lined up on runway 36. One engine fails at lift-off.','Oppstilt på bane 36. En motor stopper ved løft.')},
+ {k:'fire',own:'fire_gnd',t:tr2('Engine fire on the ground','Motorbrann på bakken'),set:'running',fail:'fire',d:tr2('Both engines at idle on the ramp. A fire warning comes.','Begge motorene på tomgang. En brannvarsling kommer.')},
+ {k:'press',own:'press',t:tr2('Pressurisation loss and emergency descent','Tap av kabintrykk og nødnedstigning'),set:'fl250',fail:'decomp',d:tr2('FL250, hand-flying. The cabin loses pressure.','FL250, du flyr for hånd. Kabinen mister trykket.')},
+ {k:'seapp',t:tr2('Single-engine approach','Enmotors innflyging'),set:'seapp',brief:tr2('8 NM final for runway 36 at 2,500 ft, one engine feathered.','8 NM finale til bane 36 i 2500 ft, én motor fløyd.')}
 ];
-const PR={k:null,i:0,done:[],t:0,dead:1,failed:false,failT:0,m:{}};
+const PR={k:null,t:0,dead:1,failed:false,failT:0,m:{},crit:null};
 function trimEngines(){ const o=F.readouts(S); E.forEach((e,i)=>{ const s=SIDES[i]; if(!e.lit) return; const thr=S.eng[i].thr, pp=SYS['prop'+s], np=1600+400*F.clamp((pp-0.12)/0.88,0,1); const sig=F.isa(S.h,S.env.isa).sig, dens=Math.min(1,sig/0.62);
   const tq=F.clamp(thr*2230*2000/np,150,2230); const base=Math.pow(Math.max(0,(tq-120)/(2110*dens)),1/1.25); const idle=idleNg(i);
   SYS['pwr'+s]=F.clamp(base,0,1); e.ng=idle+base*(101.5-idle); e.tq=tq; e.np=np; e.itt=520+(e.ng-61)*6.1+Math.max(0,o.oat-15)*1.2; e.ff=95+7.2*(e.ng-56)*Math.max(0.55,dens); e.oilP=60+60*F.clamp((e.ng-56)/40,0,1); e.oilT=70; }); }
@@ -860,24 +779,6 @@ const AIRCAPS={gps:'nav',adf:true}; let AIRK='ils';
 const AF=AIRPROC.autofly({type:'B200',S,F,AP,nav:()=>curNav,power:{get:()=>Math.max(0,(SYS.pwrL+SYS.pwrR)/2),set:v=>{ SYS.pwrL=SYS.pwrR=F.clamp(v,0,1); }},
   say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:S.ctl.gear,flap:S.ctl.flap}),
   useLoc:()=>{ SYS.efisSrc=0; if(SYS.nav1.a!=='110.30') SYS.nav1={a:'110.30',s:SYS.nav1.a}; SYS.crs=360; },apOn:()=>{ SYS.yd=1; },apOff:()=>apDiscFx(),onOff:()=>airUI()});
-function airSteps(k){ const app=AIRPROC.isApp(k)||k==='star';
-  if(k==='sid') return [st(tr2('Landing gear — UP (positive rate)','Understell — OPP (positiv stigning)'),'gear',()=>S.ctl.gear===0,{sop:1}),
-    st(tr2('Yaw damper — ON','Yaw damper — PÅ'),'apYD',()=>!!SYS.yd,{sop:1}),
-    st(tr2('Flaps — UP (above about 130 KIAS)','Flaps — UP (over ca. 130 KIAS)'),'flaps',()=>S.ctl.flap===0&&S.ctl.flapPos<0.05,{sop:1}),
-    st(tr2('Climb power — props 1900 RPM (prop levers back a little)','Stigeeffekt — propeller 1900 o/min (propellhendlene litt tilbake)'),'propL',()=>SYS.propL<0.95&&SYS.propR<0.95,{sop:1}),
-    st(tr2('Landing lights — OFF','Landingslys — AV'),'landL',()=>!SYS.landL&&!SYS.landR,{sop:1}),
-    st(tr2('Autofeather — OFF after the climb is established','Autofeather — AV når stigningen er etablert'),'afSw',()=>SYS.afSw===0,{sop:1})];
-  if(k==='hold') return [chk(tr2('Holding speed — about 160 KIAS (auto-fly sets the power)','Ventefart — ca. 160 KIAS (autofly setter effekten)'),'pwrL',()=>S.o.ias<175),
-    st(tr2('Pitot heat — ON both','Pitotvarme — PÅ begge'),'pitL',()=>SYS.pitL&&SYS.pitR,{sop:1}),
-    st(tr2('Prop levers — 1900 RPM or less for the hold','Propellhendler — 1900 o/min eller mindre i ventingen'),'propL',()=>SYS.propL<0.95&&SYS.propR<0.95,{sop:1})];
-  if(!app) return [];
-  return [chk(tr2('NAV 1 — IASN 110.30 active, course 360','NAV 1 — IASN 110.30 aktiv, kurs 360'),'crsK',()=>SYS.nav1.a==='110.30'&&SYS.crs===360),
-    st(tr2('Recognition and landing lights — ON','Gjenkjennings- og landingslys — PÅ'),'landL',()=>SYS.landL&&SYS.landR,{sop:1}),
-    st(tr2('Prop levers — FULL FORWARD','Propellhendler — HELT FREM'),'propL',()=>SYS.propL>0.97&&SYS.propR>0.97,{sop:1}),
-    st(tr2('Flaps — APPROACH (below 200 KIAS)','Flaps — APPROACH (under 200 KIAS)'),'flaps',()=>S.ctl.flap>=1,{bad:()=>S.ctl.flap>0&&S.o.ias>205,sop:1}),
-    st(tr2('Landing gear — DOWN at the glide path or FAF (three green)','Understell — NED ved glidebanen eller FAF (tre grønne)'),'gear',()=>S.ctl.gear===1&&S.ctl.gearPos>0.99,{bad:()=>S.ctl.gear===1&&S.o.ias>186,sop:1}),
-    st(tr2('Flaps — DOWN for landing (below 157 KIAS)','Flaps — DOWN for landing (under 157 KIAS)'),'flaps',()=>S.ctl.flap===2,{sop:1}),
-    st(tr2('Minimums: land (autopilot off) or go around','Minima: land (autopilot av) eller gå rundt'),'apAP',()=>!AP.on&&(S.ground||!!AF.rec.decision))]; }
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on,PR.k&&PR.k!=='air'&&PR.k!=='free'?PR.k:null); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
@@ -903,82 +804,41 @@ const latch=fs=>{ const got=fs.map(()=>0); return ()=>{ fs.forEach((f,i)=>{ if(!
 const OWNCRIT={efato:{f:[()=>PR.failed&&feathered(D()),()=>S.ctl.gear===0,()=>SYS['cond'+Ds()]<0.05],t:tr2('failed engine feathered and its fuel cut off, gear up','motoren som sviktet fløyet og drivstoffet kuttet, understell oppe'),lim:[30,60]},
   fire:{f:[()=>SYS['cond'+Ds()]<0.05,()=>!SYS['fw'+Ds()],()=>!!E[D()].ext],t:tr2('fuel cut off, firewall valve closed, extinguisher fired on that engine','drivstoff kuttet, brannskottventil lukket, slukker utløst på den motoren'),lim:[15,30]},
   press:{f:[()=>!!SYS.mask,()=>idle(),()=>S.o.vs<-2000],t:tr2('masks on, power idle, descending','masker på, effekt på tomgang, i nedstigning'),lim:[15,30]}};
-const ownSteps=p=>{ const g=OWNCK.gen('B200'), own=p.own&&OCK.has(p.own); if(p.gen&&!g) return []; return p.all.filter(s=>(!s.sop||g)&&(!s.emer||!own)); };
 const OCK=OWNCK.mount({type:'B200',box:el('ownck'),L,pred:k=>{ const f=OWNP[k]; return f?!!f():false; },ctl:k=>{ const c=OWNC[k]; return typeof c==='function'?c():c||null; },
-  hl:id=>{ if(!curStep()) hlCtl(id); },clock:()=>DB?DB.t:0,onChange:()=>{ if(PR.k&&PR.t<2) procStart(PR.k); }});
+  hl:id=>hlCtl(id),clock:()=>DB?DB.t:0});
 LAB.onLang(()=>OCK.render());
 function ownFail(kinds,alert){ if(OCK.failure(kinds,alert)){ setDrawer(true); SH.tab('ck'); } }
-function genToggle(){ const g=el('genT'); if(!g) return; g.innerHTML=OWNCK.genHTML('B200',L); g.querySelector('input').onchange=e=>{ OWNCK.setGen('B200',e.target.checked); procStart(PR.k||'free'); genToggle(); }; }
-LAB.onLang(genToggle);
 function procStart(k){
   const p=PROCS.find(x=>x.k===k)||PROCS[0];
   if(UI.paused) togglePause(); S.crash=null;
-  AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:p.k==='free'?'free':'free',AIRCAPS); if(p.k==='air'){ p.all=airSteps(AIRK); p.brief=AIRPROC.brief(AIRK,'B200'); } else if(!p.all) p.all=p.steps;
-  p.steps=ownSteps(p);
-  Object.assign(PR,{k:p.k,i:0,done:p.steps.map(()=>0),t:0,failed:false,failT:0,m:{},bad:0,crit:null}); p.steps.forEach(s=>{ delete s.b; s.okT=0; }); OCK.reset();
-  procSet(p.set); renderProc(); procFocus(); airUI(); if(DB) DB.start();
+  AF.off('reset',true); AF.setProc(p.k==='air'?AIRK:'free',AIRCAPS);
+  Object.assign(PR,{k:p.k,t:0,failed:false,failT:0,m:{},crit:null,ltT:0}); OCK.reset();
+  procSet(p.set); hlCtl(null); const b=p.brief||p.d; if(b) SH.say(L(b),'',6000); airUI(); if(DB) DB.start();
 }
-const curStep=()=>{ const p=PROCS.find(x=>x.k===PR.k); return p&&p.steps[PR.i]; };
-const ctlOf=s=>typeof s.ctl==='function'?s.ctl():s.ctl;
 function hlCtl(id){ P.svg.querySelectorAll('g.ctl.hl').forEach(g=>g.classList.remove('hl')); if(!id) return; const o=P.byId[id]; if(o) o.g.classList.add('hl'); }
-function procFocus(){ const s=curStep(); if(!s){ hlCtl(null); pill(null); return; } const id=ctlOf(s); hlCtl(id); pill(L(s.t));
-  if(el('follow').checked&&!Z.lock){ const o=P.byId[id]; if(o){ const b=o.g.getBBox(); const k=regionAt({x:b.x+b.width/2,y:b.y+b.height/2}); if(k&&k!==Z.reg) zoomTo(k); } } }
-let pillT=0;
-function pill(t,cls){ if(!t){ SH.step(null); return; } if(cls){ SH.say(t,cls); pillT=1.6; } else SH.step(t); }
-function procBad(){ PR.bad=(PR.bad||0)+1; }
-function procTouch(k){ const s=curStep(); if(!s) return; const id=ctlOf(s); const base=x=>x.replace(/[LR](On)?$/,'');
-  if(k==='crsK'||k==='navK'||k==='navSw') return;
-  if(k==='cabAlt') PR.m.cabSet=1; if(k==='trim') PR.m.trimMoved=1;
-  if(typeof s.ctl==='function'&&k!==id&&base(k)===base(id)&&/^(prop|cond|fw|gen|pwr|fire)[LR]$/.test(k)){ pill(L(tr2('Wrong engine! Identify — verify — then act on the failed one.','Feil motor! Identifiser — verifiser — gjør så tiltaket på motoren som har sviktet.')),'bad'); beep(160,0.3,0.06); procBad(); const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),1200); } return; }
-  if(k===id||base(k)===base(id)||/^(mw|mc|ap|ann|stick|trim|yoke|fireTest|hdg|alt|baro|com|dim|cab)/.test(k)||k.endsWith('G')||k.endsWith('On')) return;
-  const p=PROCS.find(x=>x.k===PR.k); const later=p.steps.slice(PR.i+1).some(x=>{ const c=ctlOf(x); return c===k||base(c)===base(k); });
-  if(later){ pill(L(tr2('Not yet — next: ','Ikke ennå — neste: '))+L(s.t),'bad'); beep(220,0.12,0.05); const o=P.byId[k]; if(o){ o.g.classList.add('bad'); setTimeout(()=>o.g.classList.remove('bad'),900); } }
-}
+function pill(t,cls){ if(!t){ SH.step(null); return; } if(cls) SH.say(t,cls); else SH.step(t); }
 function procTick(dt){
   OCK.tick(dt);
   const p=PROCS.find(x=>x.k===PR.k); if(!p) return; PR.t+=dt;
-  if(inp.stick){ if(Math.abs(inp.stick.x)>0.6) PR.m.yx=1; if(Math.abs(inp.stick.y)>0.6) PR.m.yy=1; }
   if(p.fail&&!PR.failed){
     if(p.fail==='liftoff'&&!S.ground&&S.o.alt>15){ PR.ltT=(PR.ltT||0)+dt; if(PR.ltT>1.2){ E[PR.dead].fail=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,'ENGINE FAILURE'); } }
     if(p.fail==='fire'&&PR.t>3){ PR.dead=Math.random()<0.5?0:1; E[PR.dead].fire=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,(PR.dead?'R':'L')+' ENG FIRE'); }
     if(p.fail==='decomp'&&PR.t>4){ SYS.decomp=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,'CABIN ALTITUDE'); msg(tr2('Rapid decompression: the cabin is climbing.','Hurtig trykkfall: kabinen stiger.')); }
   }
-  if(pillT>0){ pillT-=dt; if(pillT<=0) procFocus(); }
-  const s=p.steps[PR.i]; if(!s) return;
-  if(s.bad&&s.bad()&&!s.badShown){ s.badShown=1; pill(L(tr2('Limit exceeded — slow down first.','Grense overskredet — sakk farten først.')),'bad'); procBad(); }
-  if(s.ok.call(s)){ s.okT=(s.okT||0)+dt; if(!s.chk||s.okT>0.6){ s.okT=0; PR.done[PR.i]=1; PR.i++; beep(880,0.07,0.05); renderProc(); if(PR.i>=p.steps.length){ hlCtl(null); pill(L(tr2('Checklist complete','Sjekkliste fullført')),'ok'); if(window.NPROG) try{ NPROG.award('b200:'+p.k,100); }catch(e){} } else { procFocus(); pill('✓ '+L(p.steps[PR.i-1].t),'ok'); } } }
-  else s.okT=0;
 }
-function renderProc(){
-  const p=PROCS.find(x=>x.k===PR.k); if(!p){ el('proc').innerHTML=''; return; }
-  const cur=p.steps[PR.i];
-  el('proc').innerHTML=`${cur?`<div class="next"><small>${L(tr2('Next step','Neste steg'))} ${PR.i+1}/${p.steps.length}</small><b>${L(cur.t)}</b><div class="row"><button id="pBack"${PR.i?'':' disabled'}>← ${L(tr2('Back','Tilbake'))}</button><button id="pSkip">${L(tr2('Skip','Hopp over'))} →</button></div></div>`:''}<p class="brief">${L(p.brief)}</p>${p.steps.length?`<ul class="checks">${p.steps.map((s,i)=>`<li class="${PR.done[i]===1?'ok':PR.done[i]===2?'skip':i===PR.i?'now':''}"><i>${PR.done[i]===1?'✓':PR.done[i]===2?'–':i+1}</i><span>${L(s.t)}${s.chk?`<small>${L(tr2('check','sjekk'))}</small>`:''}</span></li>`).join('')}</ul>`:''}
-   ${p.steps.length&&PR.i>=p.steps.length?`<div class="callout blue"><b>${L(tr2('Checklist complete.','Sjekklisten er fullført.'))}</b></div>`:''}
-   <div class="row"><button id="procRe">${L(tr2('Restart scenario','Start scenarioet på nytt'))}</button></div>`;
-  if(el('pSkip')){ el('pSkip').onclick=()=>{ PR.done[PR.i]=2; PR.i++; renderProc(); if(PR.i<p.steps.length) procFocus(); else { hlCtl(null); pill(null); } }; el('pBack').onclick=()=>{ if(!PR.i) return; PR.i--; PR.done[PR.i]=0; delete p.steps[PR.i].b; renderProc(); procFocus(); }; }
-  el('procRe').onclick=()=>procStart(PR.k);
-  const now=el('proc').querySelector('li.now'); if(now) now.scrollIntoView({block:'nearest'});
-}
-LAB.onLang(()=>{ renderProc(); if(PR.k) procFocus(); });
 function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
 el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
-/* ---------- Procedures drawer: Speeds, Emergency and Failures tabs (the same component on every trainer, simshell.js) ---------- */
+/* ---------- Procedures drawer: Failures and Speeds (simshell.js); the Checklist tab is the student's own (ownck.js) ---------- */
 const PD=B200PROCS;
 SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });
-const scenProcs=()=>PD.SCENS.map(k=>PROCS.find(p=>p.k===k)).filter(Boolean);
-/* Emergency tab: only the student's own checklist sections (ownck.js); no aircraft procedure text */
-const EMNONE=tr2("Add your school's checklist in My Workspace to see it here.",'Legg inn skolens sjekkliste i My Workspace for å se den her.');
-SH.pane('em',box=>{ const own=OCK.emer()||[];
-  box.innerHTML=own.length?`<ul class="plist">${own.map(x=>`<li><button type="button" data-poem="${x.i}"><span>${SH.esc(x.t)}</span></button></li>`).join('')}</ul>`:`<p class="brief">${SH.esc(L(EMNONE))}</p>`; });
-SH.pane('fl',box=>{ box.innerHTML=SH.failHTML({now:PD.FAILS,scen:scenProcs().map(p=>({k:p.k,t:p.t}))}); });
-el('tabEm').addEventListener('click',e=>{ const b=e.target.closest('button[data-poem]'); if(b){ OCK.open(+b.dataset.poem); SH.tab('ck'); } });
-el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const t=el(b.dataset.fx); if(t) t.click(); } else if(b.dataset.sk){ procStart(b.dataset.sk); SH.tab('ck'); } });
+SH.pane('fl',box=>{ box.innerHTML=SH.failHTML({now:PD.FAILS,scen:PD.SCENS.map(k=>PROCS.find(p=>p.k===k)).filter(Boolean)}); });
+el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const t=el(b.dataset.fx); if(t) t.click(); } else if(b.dataset.sk){ procStart(b.dataset.sk); setDrawer(false); } });
 
 /* ---------- messages ---------- */
 function msg(m){ SH.say(L(m),'bad',5000); }
 
 /* ---------- instruments ---------- */
-let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now(), lastSlow=-1e9, engTxt='';
+let turnRate=0, lastHdg=null, synA=0, lastDraw=performance.now(), lastSlow=-1e9;
 const raF2=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.62:0.62+Math.log10(v/500)/Math.log10(5)*0.38; };
 const raF=v=>{ v=F.clamp(v,0,2500); return v<=500?v/500*0.55:0.55+Math.log10(v/500)/Math.log10(5)*0.45; };
 function radTxt(k,a){ if(!radOn(k)) return ''; if(SYS[k+'T']) return k.startsWith('com')?'888.888':k==='adf'?'8888':'888.88'; return a; }
@@ -1049,7 +909,6 @@ function draw(o){
   B200P.vis(P,'alttest-alt',!!SYS.altT);
   [['','tcasM','tcasRng'],['2','tcasM2','tcasRng2']].forEach(([n,m,r])=>{ const on=radOn('xpdr')&&SYS.xpdrMd===3&&cbIn('TCAS'); B200P.vis(P,'tcasoff-vsi'+n,!on); B200P.text(P,'tcasm-vsi'+n,on?(['','ABV ','BLW '][SYS[m]]+SYS[r]+' NM'):''); });
   if(slowDo){ const d2=SYS.dmeD2, on=av&&cbIn('DME')&&SYS.dme2Pwr; B200P.text(P,'h2-dme',on&&d2!=null?d2.toFixed(1):'---'); B200P.text(P,'h2-crs',String(SYS.crs2).padStart(3,'0')); B200P.text(P,'h2-gsp',on&&d2!=null?String(Math.round(SYS.dmeGs[2])):'---'); B200P.text(P,'h2-src',radOn('nav2')?(NAVS[SYS.nav2.a]==='LOC'?'LOC2':'VOR2'):''); }
-  if(slowDo&&PST.closest('.ckp')&&el('drawer').classList.contains('open')){ const t=E.map((e,i)=>`${SIDES[i]}: TQ ${Math.round(e.tq)} · ITT ${Math.round(e.itt)} · N1 ${e.ng.toFixed(1)} · NP ${Math.round(e.np)}`).join('<br>')+`<br>${L(tr2('Cabin','Kabin'))} ${Math.round(SYS.cab)} ft · ΔP ${(SYS.diff||0).toFixed(1)} psi<br>${L(tr2('Fuel','Drivstoff'))} L ${Math.round(E[0].main+E[0].aux)} · R ${Math.round(E[1].main+E[1].aux)} lb`; if(t!==engTxt){ engTxt=t; el('engRead').innerHTML=t; } }
 }
 /* ---------- EFIS, multifunction display and GPS ---------- */
 const MKN={O:'OM',M:'MM',I:'IM'};
@@ -1164,7 +1023,7 @@ function slowUI(o){
   if(Math.abs(rud.v/100-inp.rudUser)>0.005) rud.set(Math.round(inp.rudUser*100));
   const sEl=el('stat'); const sKey=S.crash?'Crashed':UI.paused?'Paused':S.ground?'On ground':'Flying';
   { const tx=T(sKey), cn='status'+(S.crash||UI.paused?'':' ok'); if(sEl.textContent!==tx) sEl.textContent=tx; if(sEl.className!==cn) sEl.className=cn; } // write only on change: each write is a layout
-  if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); pillT=8; } }
+  if(S.crash!==wasCrash){ wasCrash=S.crash; if(S.crash){ pill(L(tr2('Crashed: ','Havarert: '))+S.crash+' — '+L(tr2('press Restart','trykk Start på nytt')),'bad'); } }
   ['L','R'].forEach((s,i)=>{ const b=el('fail'+s), f=!!E[i].fail; if(b.disabled!==f) b.disabled=f; });
   if(AF.on&&AF.fix&&GPSW[AF.fix]&&SYS.gpsWpt!==AF.fix) SYS.gpsWpt=AF.fix;
   if(AIRUI){ AIRUI.banner(AF.on,L(tr2('AUTO-FLY','AUTOFLY')),AF.status); if((AIRUI.btn.getAttribute('aria-pressed')==='true')!==AF.on) airUI(); }
@@ -1175,23 +1034,22 @@ function slowUI(o){
 const QB=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&['power','press','fire','lim','emer','ice'].includes(q.ch)&&Array.isArray(q.a)&&Number.isInteger(q.c));
 if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).map(q=>({q:q.q,a:q.a,c:q.c,e:q.e})));
 
-LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,s:()=>Z.s,efx:()=>EFX.open,to:zoomTo,svg:P.svg}; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,procClose:typeof procClose!=='undefined'?procClose:null,DB:()=>DB};
+LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,s:()=>Z.s,efx:()=>EFX.open,to:zoomTo,svg:P.svg}; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
 /* ✈ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
 AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,type:'B200',onPick:pickProc,onAuto:toggleAuto,
-  ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>{ procStart(k); setDrawer(true); SH.tab('ck'); },
+  ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>procStart(k),
   onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);
 /* shared debrief and scoring (simdebrief.js): records at 5 Hz of sim time, opens the debrief when the scenario ends */
 if(window.SIMDEBRIEF) DB=SIMDEBRIEF.attach({type:'B200',page:document.body.dataset.d3?'b200-3d':'b200',S,F,AF,after:AIRUI.btn,tqMax:2230,ittMax:800,ap:()=>AP.on,
   eng:()=>{ let d=0, s=0; for(let i=0;i<2;i++){ const e=E[i], sd=SIDES[i]; if(e.fail||(!e.lit&&!S.ground)) d|=1<<i; if(feathered(i)||SYS['cond'+sd]===0||SYS['fw'+sd]===0) s|=1<<i; } return [d,s,Math.max(E[0].tq,E[1].tq),Math.max(E[0].itt,E[1].itt)]; },
   scen:()=>{ const p=PROCS.find(x=>x.k===PR.k); if(!p) return null; const air=p.k==='air'; const c=OWNCRIT[p.k];
-    return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,steps:p.steps,done:PR.done,bad:PR.bad||0,chk:!!p.gen,failed:p.fail?PR.failed:null,own:()=>OCK.report(),
+    return {k:air?AIRK:p.k,name:air?AIRPROC.NAMES[AIRK]:p.t,air,failed:p.fail?PR.failed:null,own:()=>OCK.report(),
       crit:c?(PR.crit||(PR.crit=latch(c.f))):null,critTxt:c&&c.t,critLim:c&&c.lim}; },
   again:()=>{ const a=DB.last&&DB.last.afUsed; procStart(PR.k||'air'); if(a&&PR.k==='air'&&!AF.on) toggleAuto(); },
   next:()=>{ if(PR.k==='air'){ const L=AIRPROC.list('B200',AIRCAPS).filter(x=>x.k!=='free'); const i=L.findIndex(x=>x.k===AIRK); pickProc(L[(i+1)%L.length].k); } else { const L=PROCS.filter(x=>x.k!=='free'&&x.k!=='air'); const i=L.findIndex(x=>x.k===PR.k); procStart(L[(i+1)%L.length].k); } }});
 if(qp&&AIRPROC.list('B200',AIRCAPS).some(x=>x.k===qp)) AIRK=qp;
-genToggle();
 procStart(PROCS.some(p=>p.k===q0)?q0:qp==='free'?'free':'air');
 if(/[?&]af=1/.test(location.search)) toggleAuto(); else if(PR.k==='air') AIRUI.showNow(AIRK); // first visit: what to do now
 window.__air={AF,DB,sim:simTick,fast(sec){ for(let i=0;i<sec/0.05&&!S.crash;i++) simTick(0.05); return AF.rec; },pick:pickProc,auto:toggleAuto,list:()=>AIRPROC.list('B200',AIRCAPS),o:()=>F.readouts(S),cfg(g,f){ if(g!=null){ SYS.gearH=g; S.ctl.gear=g; } if(f!=null) S.ctl.flap=f; }};

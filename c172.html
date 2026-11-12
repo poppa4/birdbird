@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="description" content="A classic Cessna 172 cockpit procedure trainer: analog six-pack, carburettor heat and carburettor ice, mixture and EGT, magneto check, engine start with primer, split master and LOW VOLTAGE light, vacuum failure and partial panel, ILS with VOR and ADF, generic normal and emergency checklists in the browser.">
+<meta name="description" content="A classic Cessna 172 cockpit procedure trainer: analog six-pack, carburettor heat and carburettor ice, mixture and EGT, magneto check, engine start with primer, split master and LOW VOLTAGE light, vacuum failure and partial panel, ILS with VOR and ADF, your school's own checklist in the browser.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cessna 172 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="c172.css?v=6">
-<link rel="stylesheet" href="simshell.css?v=1">
+<link rel="stylesheet" href="c172.css?v=7">
+<link rel="stylesheet" href="simshell.css?v=3">
 </head>
 <body data-title="Cessna 172 cockpit procedure trainer">
 <script src="site.js?v=63"></script>
@@ -38,15 +38,15 @@
     <div class="cbody">
       <div class="stage" id="stage">
         <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
-        <button class="zback" id="zBack">← Whole panel</button>
-        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><button class="cb" id="bLock" type="button" aria-pressed="false">Lock view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <button class="zback" id="zBack">← Back</button>
+        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
-        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="em" role="tab" aria-selected="false">Emergency</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
-        <div id="tabCk"><div id="ownck"></div><div id="proc"></div><div id="genT"></div><label class="fol"><input type="checkbox" id="follow"> Zoom to the next control</label><div class="eng" id="engRead"></div></div>
-        <div id="tabEm" hidden></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
+        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"><div id="ownck"></div></div>
+        <div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -56,7 +56,7 @@
     <h2>Flight controls</h2>
     <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.</p>
     <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
-      <div class="box"><b class="t">Zoom</b><p>Click or tap an instrument to zoom to it; click outside it, press Esc or use ← Whole panel to go back. Pinch to zoom on a touch screen. Keys 0–9 jump between areas; Lock view and Panel area are in the … menu.</p></div>
+      <div class="box"><b class="t">Zoom</b><p>Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.</p></div>
       <div class="box"><b class="t">Switches and knobs</b><p>Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.</p></div>
       <div class="box"><b class="t">Ignition key</b><p>Click the key to step OFF → R → L → BOTH. Press and hold on START (or hold an arrow key at BOTH) to crank; it springs back to BOTH when you let go.</p></div>
       <div class="box"><b class="t">Radios and instrument knobs</b><p>Scroll on a knob or drag across it. On the double frequency knobs the outer ring changes MHz and the centre (or Shift) the decimals; ⇆ swaps standby and in-use. OBS knobs set the course, the altimeter knob the pressure setting.</p></div>
@@ -122,7 +122,7 @@
     <div id="qbox"></div>
   </section>
 
-  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. Procedures here are generic and for training only — follow the POH/AFM of your aeroplane and your school's checklist. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.</p>
+  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the POH/AFM. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.</p>
   <p class="note">More cockpits: the <a href="cockpit.html">DA42 glass cockpit</a> and the <a href="b200.html">King Air B200 procedure trainer</a>.</p>
 </div>
 
@@ -134,13 +134,13 @@
 <script src="otw.js?v=13"></script>
 <script src="c172core.js?v=1"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=2"></script>
+<script src="panelzoom.js?v=3"></script>
 <script src="c172panel.js?v=8"></script>
 <script src="lab.js?v=47"></script>
-<script src="simshell.js?v=1"></script>
-<script src="simdebrief.js?v=4"></script>
-<script src="ownck.js?v=1"></script>
-<script src="c172procs.js?v=1"></script>
-<script src="c172-app.js?v=10"></script>
+<script src="simshell.js?v=3"></script>
+<script src="simdebrief.js?v=5"></script>
+<script src="ownck.js?v=2"></script>
+<script src="c172procs.js?v=2"></script>
+<script src="c172-app.js?v=12"></script>
 </body>
 </html>

@@ -7,7 +7,7 @@
 <title>Cessna 172 3D (beta) · cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="c172.css?v=6">
+<link rel="stylesheet" href="c172.css?v=7">
 <style>
 /* ---------- 3D cockpit (beta) ---------- */
 .stage.d3wait .world{visibility:hidden}
@@ -21,7 +21,7 @@
 .d3t{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:9;max-width:min(92%,520px);background:rgba(14,17,20,.94);border:1px solid #ffcf3a;color:#fff;border-radius:10px;padding:8px 12px;font:600 12.5px/1.4 system-ui;display:flex;gap:10px;align-items:center}
 .d3t a{color:#ffcf3a}.d3t button{background:none;border:0;color:#9fb0bd;font-size:16px;cursor:pointer;padding:0 2px}
 </style>
-<link rel="stylesheet" href="simshell.css?v=1">
+<link rel="stylesheet" href="simshell.css?v=3">
 </head>
 <body data-title="Cessna 172 3D (beta)" data-d3="c172.html">
 <script src="site.js?v=63"></script>
@@ -51,15 +51,15 @@
     <div class="cbody">
       <div class="stage" id="stage">
         <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
-        <button class="zback" id="zBack">← Whole panel</button>
-        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><button class="cb" id="bLock" type="button" aria-pressed="false">Lock view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <button class="zback" id="zBack">← Back</button>
+        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
-        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="em" role="tab" aria-selected="false">Emergency</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
-        <div id="tabCk"><div id="ownck"></div><div id="proc"></div><div id="genT"></div><label class="fol"><input type="checkbox" id="follow"> Zoom to the next control</label><div class="eng" id="engRead"></div></div>
-        <div id="tabEm" hidden></div><div id="tabFl" hidden></div><div id="tabSp" hidden></div>
+        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div id="tabCk"><div id="ownck"></div></div>
+        <div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
     </div>
   </section>
@@ -136,7 +136,7 @@
     <div id="qbox"></div>
   </section>
 
-  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. Procedures here are generic and for training only — follow the POH/AFM of your aeroplane and your school's checklist. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.</p>
+  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the POH/AFM. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.</p>
   <p class="note">Prefer the flat panel? Use the <a href="c172.html">classic 2D Cessna 172 trainer</a>.</p>
   <p class="note">More cockpits: the <a href="cockpit.html">DA42 glass cockpit</a> and the <a href="b200.html">King Air B200 procedure trainer</a>.</p>
 </div>
@@ -151,10 +151,10 @@
 <script src="c172-3d.js?v=4"></script>
 <script src="c172core.js?v=1"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=2"></script>
+<script src="panelzoom.js?v=3"></script>
 <script src="c172panel.js?v=8"></script>
 <script src="lab.js?v=47"></script>
-<script src="simshell.js?v=1"></script>
+<script src="simshell.js?v=3"></script>
 <script>
 LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','Cessna 172 3D (beta)':'Cessna 172 3D (beta)','Beta':'Beta','2D':'2D','Classic 2D panel':'Klassisk 2D-panel','Look ahead':'Se fremover','Look around':'Se deg rundt',
  'Sit in the left seat of the high-wing cabin and look around: the windshield and door posts, the wing above the door window, the control wheels, the trim wheel and the fuel selector on the floor, with the same live panel, checklists, failures and air starts as the classic trainer.':'Sett deg i venstre sete i høyvingekabinen og se deg rundt: frontruta og dørstolpene, vingen over dørvinduet, rattene, trimhjulet og drivstoffvelgeren på gulvet, med det samme levende panelet, sjekklistene, feilene og luftstartene som i den klassiske treneren.',
@@ -164,9 +164,9 @@ LAB.add({},{'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','Cessna
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D Cessna 172 trainer':'den klassiske 2D-treneren for Cessna 172'});
 </script>
-<script src="simdebrief.js?v=4"></script>
-<script src="ownck.js?v=1"></script>
-<script src="c172procs.js?v=1"></script>
-<script src="c172-app.js?v=10"></script>
+<script src="simdebrief.js?v=5"></script>
+<script src="ownck.js?v=2"></script>
+<script src="c172procs.js?v=2"></script>
+<script src="c172-app.js?v=12"></script>
 </body>
 </html>

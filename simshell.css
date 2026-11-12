@@ -35,15 +35,10 @@
 .ckp .drawer .tabs button.on{background:#e8edf1;color:#0d1319;border-color:#e8edf1}
 .ckp .drawer .sgrp{font:700 10.5px system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8e9aa5;margin:12px 0 5px}
 .ckp .drawer .sgrp:first-child{margin-top:2px}
+.ckp .drawer .pdisc{font-size:11px;color:#8e9aa5;line-height:1.35;margin:8px 0 0}
 .ckp .drawer .fbtns{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .ckp .drawer .fbtns button{font:600 12px/1.25 system-ui;padding:8px 6px;border-radius:7px;border:1px solid #5a2a24;background:#2a1512;color:#ffd6cf;cursor:pointer;text-align:center}
 .ckp .drawer .fbtns button.rs{grid-column:1/-1;border-color:#333a42;background:#1b2026;color:#dfe5ea}
-.ckp .drawer details.ref{border:1px solid #262c33;border-radius:7px;background:#161b20;margin:0 0 4px}
-.ckp .drawer details.ref summary{cursor:pointer;padding:8px 9px;font:600 12.5px system-ui;color:#e6ebef;list-style:none;display:flex;gap:8px}
-.ckp .drawer details.ref summary::-webkit-details-marker{display:none}
-.ckp .drawer details.ref summary::after{content:'›';margin-left:auto;color:#7d8a95}.ckp .drawer details.ref[open] summary::after{content:'⌄'}
-.ckp .drawer details.ref ol{margin:0;padding:0 10px 8px 28px;color:#c6d0d8;font-size:12px}.ckp .drawer details.ref li{margin:3px 0}
-.ckp .drawer .warnline,.ckp .drawer .pdisc{font-size:11px;color:#c9a94a;line-height:1.35;margin:0 0 8px}
 /* one notification area: bottom centre, one message at a time, fades */
 .ckp .pill{display:block;position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:8;max-width:min(90%,540px);box-sizing:border-box;background:rgba(14,17,20,.92);border:1px solid #ffcf3a;color:#fff;border-radius:16px;padding:7px 14px;font:600 13px/1.35 system-ui;text-align:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
 .ckp .pill.show{opacity:1;visibility:visible;transition:opacity .18s}
@@ -61,7 +56,11 @@
 /* auto-fly status: one quiet line, top left */
 .ckp .afban{left:8px;top:8px;max-width:min(520px,60%);padding:4px 8px;font-size:11.5px;border-color:rgba(47,209,123,.6)}
 .ckp .afban small{display:inline;margin-left:6px}
-.ckp .zback{font:600 12.5px system-ui;padding:7px 12px}
+/* zoom: ← Back top left (44 px target); the surround of a zoomed area dimmed (tap it to go back) */
+.ckp .zback{left:10px;top:10px;z-index:9;min-height:44px;min-width:92px;padding:0 16px;font:700 14px/44px system-ui;border-radius:22px}
+.ckp .zdim{position:absolute;left:0;top:0;z-index:4;pointer-events:none;border-radius:10px;box-shadow:0 0 0 200vmax rgba(5,8,11,.5);opacity:0;visibility:hidden;transition:opacity .2s,visibility 0s .2s}
+.ckp .zdim.on{opacity:1;visibility:visible;transition:opacity .2s .1s}
+.ckp .stage.d3 .zdim{display:none}
 /* phones and short windows: one compact row, same order */
 @media (max-width:1100px),(max-height:520px){
  .ckp .ctop{height:36px;gap:4px;padding:0 6px}
@@ -78,38 +77,12 @@
 }
 @media (max-width:700px){ .ckp .ctop .dseg small{display:none} .ckp .ctop #acSel{max-width:78px} .ckp .ctop .afsel{max-width:104px} }
 
-/* drawer component (lists, tables, running checklist) — moved from da42procs.js, now shared by all three */
-.pnav{display:flex;gap:4px;margin:2px 0 8px;align-items:stretch}.pnav button{flex:1;font:600 12px system-ui;padding:6px 4px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.pnav button.on{background:#e8edf1;color:#0d1319}.pnav .aa{flex:0 0 34px;font-weight:800}
-.pdisc{font-size:11px;color:#c9a94a;line-height:1.35;margin:0 0 8px}
-.psrch{width:100%;box-sizing:border-box;font:500 13px system-ui;padding:8px 10px;border-radius:7px;border:1px solid #333a42;background:#0d1115;color:#fff;margin-bottom:8px}
-.pgrp{font:700 10.5px system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8e9aa5;margin:10px 0 4px}
+/* drawer component (scenario list, speeds table), shared by all three */
 .plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
 .plist button{width:100%;text-align:left;display:flex;gap:8px;align-items:center;font:600 12.5px system-ui;padding:8px 9px;border-radius:7px;border:1px solid #262c33;background:#161b20;color:#e6ebef;cursor:pointer}
-.plist button:hover,.plist button:focus-visible{border-color:#7fcbe8;outline:none}.plist .rf{margin-left:auto;font:500 10.5px system-ui;color:#7d8a95;white-space:nowrap}
-.plist .mk{flex:0 0 auto;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#5a1a14;color:#ffb4a8;letter-spacing:.04em}
-.plist .sk{flex:0 0 auto;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#13324a;color:#9ed8f5}
+.plist button:hover,.plist button:focus-visible{border-color:#7fcbe8;outline:none}
+.plist button>span{display:flex;flex-direction:column;gap:2px;min-width:0}.plist button small{font:500 11px/1.3 system-ui;color:#9aa7b2}
 .pspd{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.pspd col.a{width:46px}.pspd col.c{width:34%}.pspd td{padding:5px 4px;border-bottom:1px solid #232930;color:#dfe5ea;vertical-align:top}.pspd td:first-child{font-weight:800;color:#fff;white-space:nowrap}.pspd td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:#fff;font-weight:700}
-.plim{margin:10px 0 0;padding-left:16px;color:#a9b5bf;font-size:11.5px}.plim li{margin:3px 0}
-.phd{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}.phd>div{flex:1;min-width:0}.phd h3{margin:0!important;font-size:15px!important;line-height:1.25}.phd small{display:block;color:#8e9aa5;font:500 11px system-ui;margin-top:2px}
-.phd .x{flex:0 0 auto;font:600 12px system-ui;padding:5px 8px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.pside{display:flex;gap:4px;align-items:center;margin:4px 0 8px;font-size:12px;color:#a9b5bf}.pside button{font:700 12px system-ui;padding:5px 12px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}.pside button.on{background:#ffcf3a;color:#111;border-color:#ffcf3a}
-.palert{border:2px solid #ff5a47;background:#2a0f0c;color:#fff;border-radius:8px;padding:8px 10px;margin:0 0 8px;font:800 13px system-ui;letter-spacing:.03em;animation:pblink 1s steps(2) 3}.palert small{display:block;font:500 11.5px system-ui;color:#ffc9c1;letter-spacing:0;margin-top:2px}
-.pwait{border:1px dashed #4a5560;border-radius:8px;padding:8px 10px;color:#c6d0d8;font-size:12.5px;margin:0 0 8px}
-@keyframes pblink{50%{opacity:.55}}
-.pnote{font-size:11.5px;color:#c6d0d8;background:#182029;border-left:3px solid #7fcbe8;padding:6px 8px;border-radius:4px;margin:0 0 8px}
-.checks li.sec{background:none;border:0;padding:8px 2px 0;font:700 10.5px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#8e9aa5}
-.checks li.mem{border-left:3px solid #ff5a47}.checks li .tg{display:inline-block;font:800 9px system-ui;letter-spacing:.05em;padding:1px 4px;border-radius:3px;background:#5a1a14;color:#ffb4a8;margin-left:6px;vertical-align:1px}
-.checks li .tg.man{background:#26313c;color:#b8c4ce}.checks li .call{display:block;color:#9ed8f5;font-size:11px;font-style:italic;margin-top:2px}
-.checks li.now.man{cursor:pointer}
-.drawer .next .mtag{display:inline-block;font:800 9.5px system-ui;padding:2px 5px;border-radius:4px;background:#ff5a47;color:#fff;margin-left:6px;letter-spacing:.05em;vertical-align:2px}
-.drawer .next .call{display:block;color:#9ed8f5;font-size:12px;font-style:italic;margin-top:3px}
-.drawer .next button.done{background:#3cdc6e;color:#0d1319;border-color:#3cdc6e;font-weight:800}
-.drawer.big.open,.drawer.big .din{width:min(440px,46vw)}
-.drawer.big .din{font-size:15px}.drawer.big .checks li{font-size:15px;padding:9px 10px}.drawer.big .checks li i{flex-basis:21px;height:21px;font-size:12px}
-.drawer.big .next b{font-size:19px}.drawer.big .plist button{font-size:15px;padding:10px}.drawer.big .pspd{font-size:14.5px}.drawer.big .brief,.drawer.big .pnote{font-size:14px}
-.drawer.big .row button{font-size:14.5px;padding:10px}.drawer.big .checks li .call{font-size:13px}
-@media (max-height:500px){.drawer.big.open,.drawer.big .din{width:min(360px,46vw)}.drawer.big .din{font-size:13.5px}.drawer.big .checks li{font-size:13.5px;padding:7px 8px}.drawer.big .next b{font-size:16px}}
 /* the drawer tabs stay in view while the checklist scrolls */
 .ckp .drawer .din{padding-top:0}
 .ckp .drawer .tabs{position:sticky;top:0;z-index:3;background:#11151a;padding:8px 0 6px;margin-bottom:4px}
@@ -122,3 +95,4 @@
 /* beside the panel, below the outside view: cabin side wall, not a black band; the outside view fades into it (CSS only, no cost per frame) */
 .ckp .stage:not(.d3){background:linear-gradient(180deg,#3a3f45 0,#2a2e33 45%,#1b1e22 75%,#121417 100%)}
 .ckp .stage:not(.d3):not(.zoomed)>canvas#otw{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent)}
+.ckp .stage.zoomed .afban{left:112px}
