@@ -238,8 +238,8 @@
       ctx.textBaseline = 'middle'; const taken = [];
       const free = (x0, y0, x1, y1) => { for (const r of taken) if (x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]) return false; taken.push([x0, y0, x1, y1]); return true; };
       const label = (i, strong) => {
-        const n = g.nodes[i], s = n.label.length > 42 ? n.label.slice(0, 40) + '…' : n.label;
-        ctx.font = (n.k === 'aircraft' && !strong ? '500 11px ' : strong ? '600 12px ' : '500 11px ') + (n.k === 'aircraft' && !strong ? 'IBM Plex Mono, ui-monospace, monospace' : 'Public Sans, system-ui, sans-serif');
+        const n = g.nodes[i], narrow = W < 600, raw = narrow && n.k === 'aircraft' && !strong ? n.label.split(' — ')[0] : n.label, cap = narrow ? 26 : 42, s = raw.length > cap ? raw.slice(0, cap - 2) + '…' : raw;
+        ctx.font = (n.k === 'aircraft' && !strong ? (narrow ? '500 10px ' : '500 11px ') : strong ? '600 12px ' : '500 11px ') + (n.k === 'aircraft' && !strong ? 'IBM Plex Mono, ui-monospace, monospace' : 'Public Sans, system-ui, sans-serif');
         const w = ctx.measureText(s).width, x = px[i] + pr[i] + 6, y = py[i];
         if (!strong && !free(x - 2, y - 8, x + w + 2, y + 8)) return;
         if (strong) taken.push([x - 2, y - 8, x + w + 2, y + 8]);

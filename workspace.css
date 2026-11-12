@@ -413,3 +413,4 @@ html body .nsearch{display:none!important}
 .ws-railmap:hover .go,.ws-railmap:focus-visible .go{opacity:1}
 .ws-railmap:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .ws-railmap.sample .t{color:#E6D9BD}
+@media (max-width:600px){.dk-empty .sk.mm .mmc{font-size:12px;padding:18px 11px 9px}.wsm-qi{font-size:13px}}

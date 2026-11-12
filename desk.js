@@ -427,14 +427,14 @@
         </svg>
       </figure>`;
       /* with five or more items of their own, a small live map of them takes the place of the drawing */
-      const ma = !isPhone() && window.WSMAP && A.mapAny ? A.mapAny() : null, mg = ma ? ma.g : null, useMap = !!mg;
+      const ma = window.WSMAP && A.mapAny ? A.mapAny() : null, mg = ma ? ma.g : null, useMap = !!mg;
       const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${ma && ma.sample ? esc(t('Example: how your map will look', 'Eksempel: slik blir kartet ditt')) : `${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}`}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
         <h2>${esc(hello)}.<br><span>${esc(t('Your desk is ready.', 'Skrivebordet ditt er klart.'))}</span></h2>
         <p class="lead">${esc(t('Manual, checklist and notes side by side, exactly where you left them. Everything you need to prepare, nothing you don’t.', 'Manual, sjekkliste og notater side om side, akkurat der du slapp. Alt du trenger for å forberede deg, ingenting du ikke trenger.'))}</p>
-        </div>${isPhone() ? '' : useMap ? mini : sketch}</div>
+        </div>${useMap ? mini : isPhone() ? '' : sketch}</div>
         <div class="big3">
           <button type="button" data-e="doc">${ic('pdf')}<b>${esc(t('Open document', 'Åpne dokument'))}</b><small>${esc(A.docsAll().length ? t('AFM, checklist, SOP or chart', 'AFM, sjekkliste, SOP eller kart') : t('Add a PDF, Word or text file', 'Legg til en PDF-, Word- eller tekstfil'))}</small></button>
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
@@ -455,7 +455,7 @@
       if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }
       const sig = g => g ? g.nodes.length + ':' + g.links.length : '';
       return { destroy: () => { if (mm) mm.destroy(); mm = null; },
-        refresh: () => { if (!A.mapGraph) return ''; const na = !isPhone() && window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
+        refresh: () => { if (!A.mapGraph) return ''; const na = window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
     }
     function emptyAction(k, paneId) {
       if (k === 'doc') { if (A.docsAll().length) palette({ only: 'doc', pane: paneId }); else A.pickFiles({}); }
