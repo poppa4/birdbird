@@ -334,7 +334,7 @@ html body .nsearch{display:none!important}
 
 /* ---------- Map: the workspace as a constellation (wsmap.js) ---------- */
 .ws-maph p{max-width:72ch}
-.wsm-plate{position:relative;height:min(76vh,820px);min-height:440px;border-radius:var(--radius-lg);overflow:hidden;background:#0B2545;box-shadow:0 1px 0 var(--rule),0 24px 48px -24px rgba(11,37,69,.45);isolation:isolate}
+.wsm-plate{position:relative;height:min(76vh,820px);min-height:440px;border-radius:var(--radius-lg);overflow:hidden;background:#030A16;box-shadow:0 1px 0 var(--rule),0 24px 48px -24px rgba(11,37,69,.45);isolation:isolate}
 .wsm-host{position:absolute;inset:0}
 .wsm{position:relative;width:100%;height:100%;color:#D5DEE7;font-family:var(--f-body)}
 .wsm-c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}

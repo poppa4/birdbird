@@ -7,7 +7,7 @@
 (function () {
   'use strict';
   const GW = window.WSGRAPH;
-  const COL = { aircraft: '#FFFFFF', doc: '#7EA8EC', page: '#5F86C9', note: '#E06AAE', notebook: '#EBA2CB', pack: '#E8B25C', route: '#6CC492', desk: '#B9C3CF' };
+  const COL = { aircraft: '#FFFFFF', doc: '#A9C7E6', page: '#6F8DB0', note: '#DCE8F4', notebook: '#C3D5E8', pack: '#E6D9BD', route: '#9CCFC7', desk: '#7E8C9C' };
   const LEG = { aircraft: 'aircraft', doc: 'doc', note: 'note', pack: 'pack', route: 'route', desk: 'desk' };
   const BASE = { aircraft: 5, doc: 3.1, page: 1.6, note: 2.4, notebook: 2.6, pack: 3.2, route: 2.9, desk: 3.2 };
   const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -106,8 +106,16 @@
     function draw() {
       if (!W || !g) return; dbg.draws++;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (!bg) { bg = ctx.createRadialGradient(W * 0.5, H * 0.42, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.75); bg.addColorStop(0, '#13305A'); bg.addColorStop(0.55, '#0B2545'); bg.addColorStop(1, '#081B35'); }
-      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      if (!bg || bg.w !== W || bg.h !== H) { /* deep night sky with faint star dust, drawn once into a cached canvas */
+        const c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr); const b = c.getContext('2d'); b.scale(dpr, dpr);
+        const gr = b.createRadialGradient(W * 0.55, H * 0.42, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.8); gr.addColorStop(0, '#0C1F3A'); gr.addColorStop(0.5, '#071629'); gr.addColorStop(1, '#030A16');
+        b.fillStyle = gr; b.fillRect(0, 0, W, H);
+        let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        const nDust = Math.round(W * H / (mini ? 900 : 650));
+        for (let i = 0; i < nDust; i++) { const a = rnd() * 0.22 + 0.03, r = rnd() < 0.92 ? 0.45 : 0.85; b.fillStyle = 'rgba(190,214,240,' + a.toFixed(3) + ')'; b.beginPath(); b.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); b.fill(); }
+        bg = { c, w: W, h: H };
+      }
+      ctx.drawImage(bg.c, 0, 0, W, H);
       const N = g.nodes.length, zk = cam.k / (fitK || 1), focus = hover >= 0 ? hover : sel, near = focus >= 0 ? (nb && nb.i === focus ? nb.s : (nb = { i: focus, s: neigh(focus) }).s) : null;
       const sizeK = Math.min(2.4, Math.max(0.75, Math.sqrt(zk))) * (mini ? 0.82 : 1);
       const px = new Float32Array(N), py = new Float32Array(N), pr = new Float32Array(N), vis = new Uint8Array(N);
@@ -117,15 +125,15 @@
         vis[i] = px[i] > -40 && px[i] < W + 40 && py[i] > -40 && py[i] < H + 40 ? 1 : 0;
       }
       /* links: hairlines */
-      ctx.lineWidth = mini ? 0.5 : 0.6; ctx.strokeStyle = near ? 'rgba(191,202,214,.06)' : 'rgba(191,202,214,.14)'; ctx.beginPath();
+      ctx.lineWidth = mini ? 0.5 : 0.6; ctx.strokeStyle = near ? 'rgba(150,182,218,.05)' : 'rgba(150,182,218,.11)'; ctx.beginPath();
       const hl = [];
       for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
       ctx.stroke();
-      if (hl.length) { ctx.strokeStyle = 'rgba(232,238,243,.55)'; ctx.lineWidth = 0.9; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
+      if (hl.length) { ctx.strokeStyle = 'rgba(214,232,250,.6)'; ctx.lineWidth = 0.9; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
       /* glow, then the dots, one path per colour */
-      const ga = mini ? 0.42 : 0.5;
+      const ga = mini ? 0.5 : 0.62; ctx.globalCompositeOperation = 'lighter';
       for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i], r = pr[i] * (n.k === 'aircraft' ? 5.5 : 4.2); ctx.globalAlpha = (near && !near.has(i) ? 0.12 : 1) * ga; ctx.drawImage(sprite(COL[n.k]), px[i] - r, py[i] - r, r * 2, r * 2); }
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       for (const k in COL) {
         for (const dim of [false, true]) {
           ctx.beginPath(); let any = false;
@@ -136,7 +144,7 @@
       ctx.globalAlpha = 1;
       /* rings: aircraft, annotated documents, the focused node */
       ctx.lineWidth = 0.8;
-      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(126,168,236,.5)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
+      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(169,199,230,.45)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
       if (focus >= 0 && vis[focus]) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px[focus], py[focus], pr[focus] + 3.5, 0, Math.PI * 2); ctx.stroke(); }
       if (mini) return;
       /* labels: on hover, near the focus, and when zoomed in (aircraft first, then documents, then everything) */
@@ -144,19 +152,19 @@
       const free = (x0, y0, x1, y1) => { for (const r of taken) if (x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]) return false; taken.push([x0, y0, x1, y1]); return true; };
       const label = (i, strong) => {
         const n = g.nodes[i], s = n.label.length > 42 ? n.label.slice(0, 40) + '…' : n.label;
-        ctx.font = (n.k === 'aircraft' ? '600 12px ' : strong ? '600 12px ' : '500 11px ') + 'Public Sans, system-ui, sans-serif';
+        ctx.font = (n.k === 'aircraft' && !strong ? '500 11px ' : strong ? '600 12px ' : '500 11px ') + (n.k === 'aircraft' && !strong ? 'IBM Plex Mono, ui-monospace, monospace' : 'Public Sans, system-ui, sans-serif');
         const w = ctx.measureText(s).width, x = px[i] + pr[i] + 6, y = py[i];
         if (!strong && !free(x - 2, y - 8, x + w + 2, y + 8)) return;
         if (strong) taken.push([x - 2, y - 8, x + w + 2, y + 8]);
-        ctx.fillStyle = strong ? '#FFFFFF' : n.k === 'aircraft' ? 'rgba(255,255,255,.82)' : 'rgba(213,222,231,.72)';
-        if (strong) { ctx.save(); ctx.fillStyle = 'rgba(8,27,53,.78)'; ctx.fillRect(x - 4, y - 10, w + 8, 20); ctx.restore(); ctx.fillStyle = '#fff'; }
+        ctx.fillStyle = strong ? '#FFFFFF' : n.k === 'aircraft' ? 'rgba(220,234,248,.62)' : 'rgba(200,216,232,.62)';
+        if (strong) { ctx.save(); ctx.fillStyle = 'rgba(3,10,22,.82)'; ctx.fillRect(x - 4, y - 10, w + 8, 20); ctx.restore(); ctx.fillStyle = '#fff'; }
         ctx.fillText(s, x, y);
       };
       if (focus >= 0 && vis[focus]) label(focus, true);
       const order = [];
       for (let i = 0; i < N; i++) {
         if (!vis[i] || i === focus) continue; const k = g.nodes[i].k;
-        const show = near ? near.has(i) : (k === 'aircraft' ? zk >= 1.25 : k === 'doc' || k === 'pack' || k === 'route' || k === 'desk' ? zk >= 1.9 : zk >= 2.7);
+        const show = near ? near.has(i) : (k === 'aircraft' ? true : k === 'doc' || k === 'pack' || k === 'route' || k === 'desk' ? zk >= 1.9 : zk >= 2.7);
         if (show) order.push(i);
       }
       order.sort((a, b) => (g.nodes[a].k === 'aircraft' ? 0 : 1) - (g.nodes[b].k === 'aircraft' ? 0 : 1) || g.nodes[b].deg - g.nodes[a].deg);
