@@ -78,7 +78,7 @@
   /* text between tags: keep existing entities, escape stray < and > */
   const escLoose = s => s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
   function htmlToText(html) {
-    return String(html == null ? '' : html).replace(/<(br|\/p|\/div|\/li|\/h3|\/blockquote)\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '')
+    return String(html == null ? '' : html).replace(/<(br|\/p|\/div|\/li|\/h3|\/blockquote)\s*\/?>/gi, '\n').replace(/<(div|p|li|h3|blockquote)\b[^>]*>/gi, '\x01').replace(/<[^>]*>/g, '').replace(/(^|\n)\x01+/g, '$1').replace(/\x01+/g, '\n')
       .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   }
   const textToHtml = t => String(t || '').split(/\n/).map(l => '<div>' + (escText(l) || '<br>') + '</div>').join('');
@@ -127,6 +127,8 @@
 
   /* ---------- notes: autosave with version history ---------- */
   const noteText = n => htmlToText(n.body);
+  /* a note without a title is called by its first line */
+  const noteAutoTitle = n => { const tt = String(n && n.title || '').trim(); if (tt) return tt; const l = htmlToText(n && n.body).split('\n').map(x => x.replace(/\s+/g, ' ').trim()).find(Boolean) || ''; return l.length > 60 ? l.slice(0, 57).replace(/\s+\S*$/, '') + '…' : l; };
   const wordCount = n => { const t = noteText(n).trim(); return t ? t.split(/\s+/).length : 0; };
   function pushVersion(versions, v) {
     const list = (versions || []).filter(x => !(x.at === v.at && x.body === v.body && x.title === v.title));
@@ -436,7 +438,7 @@
   const API = { DAY, TRASH_DAYS, TOMBSTONE_DAYS, MAX_VERSIONS, VERSION_GAP, NS_BUDGET, NAMESPACES, nsOfKind, AIRCRAFT_TYPES, typeOf, DOC_CATS, kindToCat, catToKind, guessKind, guessCat,
     uid, clone, stable, byteLen, fmtBytes, uniq, cleanTags, sanitizeHtml, htmlToText, textToHtml,
     newAircraft, aircraftName, newNote, newDocEntry, newPackMark, cleanLinks, isLive, inTrash, live, trashed, trashDaysLeft, patch, trash, restore, tombstone, purgeExpired,
-    noteText, wordCount, editNote, restoreVersion, mergeItem, mergeItems, splitNs, packNs, unpackNs, syncNs,
+    noteText, noteAutoTitle, wordCount, editNote, restoreVersion, mergeItem, mergeItems, splitNs, packNs, unpackNs, syncNs,
     fold, tokens, buildIndex, search, searchChunks, snippet, guessSec, chunkPage, byParts, pagesFromChunks, pushRecent,
     crc32, safeName, ZipWriter, zipRead, buildBackup, readBackup, mergeLocalKey, BACKUP_FORMAT };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

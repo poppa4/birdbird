@@ -27,6 +27,10 @@ html.ws-deskmode .page.ws{max-width:none}
 .dk-st:hover{color:var(--ink)}
 .dk-lib{font-size:13.5px;font-weight:600;color:var(--accent);text-decoration:none;white-space:nowrap;padding:0 4px 0 8px;border-left:1px solid var(--rule);margin-left:4px}
 .dk-lib:hover{text-decoration:underline}
+.dk-mapb span{font-size:13.5px;font-weight:550}
+.dk-mapb{padding:0 9px 0 8px;text-decoration:none;gap:6px}
+.dk-libb{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px 0 10px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink);cursor:pointer;font:inherit;font-size:14.5px;font-weight:600}
+.dk-libb .i{color:var(--accent)}
 .dk-prog{padding:6px 16px;margin:0;border-bottom:1px solid var(--rule-2);background:var(--sheet)}
 
 /* body: rail + panes */
@@ -104,11 +108,6 @@ html.dk-resizing .dk-pb{pointer-events:none}
 .dk-pacts .dk-ib{height:30px;min-width:30px}
 .dk-pb{flex:1 1 auto;min-height:0;position:relative;display:flex;flex-direction:column}
 .dk-pb>*{flex:1 1 auto;min-height:0}
-/* touch: every control at least 40 px (the bar, tabs, the library rail, the document bar) */
-@media (pointer:coarse){.dk-strip{height:44px}.dk-tab .x{opacity:1;width:40px;height:40px;margin-right:-8px}.dk-ib{min-width:40px;height:40px}.dk-it{min-height:40px}.dk-pacts .dk-ib{height:40px;min-width:40px}
-  .dk-deskbtn,.dk-qo{height:40px;min-width:40px;justify-content:center}.dk-st{min-height:40px;min-width:40px;justify-content:center}.dk-lib{display:inline-flex;align-items:center;min-height:40px}
-  .dk-sh{min-height:40px}.dk-rs input{min-height:40px}.dv-pg input{height:40px}.dv-z{min-height:40px}.dk-empty .rec button{min-height:44px}.dk-add{min-height:40px}.dv-bar .btn.sm{min-width:40px;min-height:40px;justify-content:center}}
-
 /* drag */
 .dk-ghost{position:fixed;left:0;top:0;z-index:120;pointer-events:none;max-width:240px;padding:6px 10px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;will-change:transform}
 .dk-drop{position:fixed;z-index:110;pointer-events:none;display:none}
@@ -249,6 +248,11 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .nv-bd cite[data-doc]:hover{border-color:var(--info)}
 .nv-bd cite[data-doc]::before{content:"↗ ";opacity:.7}
 .nv-bd cite.new{animation:dkflash 1.4s ease-out}
+.av-add{margin:8px 0 0}
+.av-add .lk{display:inline-flex;align-items:center;gap:6px}
+.av-add .i{width:15px;height:15px}
+/* a narrow note keeps its tools on one row that scrolls sideways; "More" stays put at the end */
+@container (max-width:520px){.nv-bar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;padding-right:0}.nv-bar::-webkit-scrollbar{display:none}.nv-bar>*{flex:0 0 auto}.nv-bar .sp{flex:1 0 4px}.nv-bar .dk-ib{position:sticky;right:0;background:var(--sheet);box-shadow:-8px 0 8px -4px var(--sheet)}.nv{position:relative}.nv-saved{position:absolute;right:14px;top:64px;z-index:1;padding:0;pointer-events:none}.nv input.nv-ttl{padding-right:74px}.nv-bar .sep:last-of-type{display:none}}
 @container (max-width:520px){.nv-bar .nv-cite span,.nv-bar .nv-h{display:none}.nv-pg{padding:14px 16px 60px}.nv-ttl{font-size:22px}}
 
 /* aircraft card, pack and route cards */
@@ -304,6 +308,7 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 .pal{display:flex;flex-direction:column;max-height:min(70vh,560px)}
 .pal-in{display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--rule)}
 .pal-in .i{width:18px;height:18px;color:var(--ink-3);fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.pal-x{display:none;align-items:center;flex:0 0 auto;min-height:44px;padding:0 4px 0 10px;border:0;background:none;color:var(--accent);font:inherit;font-size:15px;font-weight:600;cursor:pointer}
 .pal-q{flex:1;min-width:0;border:0;outline:none;font-size:17px;padding:15px 0;background:transparent;color:var(--ink);-webkit-appearance:none;appearance:none}
 .pal-l{list-style:none;margin:0;padding:6px;overflow:auto;flex:1 1 auto}
 .pal-l li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:2px 10px;padding:8px 10px;border-radius:var(--radius);cursor:pointer}
@@ -321,8 +326,15 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 .dk-sheet-in{position:absolute;left:0;right:0;bottom:0;max-height:78vh;max-height:78dvh;display:flex;flex-direction:column;background:var(--paper);border-radius:12px 12px 0 0;border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom);transform:translateY(100%)}
 .dk-sheet.in .dk-sheet-in{transform:none}
 @media (prefers-reduced-motion:no-preference){.dk-sheet-in{transition:transform .2s ease-out}}
-.dk-grip{flex:0 0 auto;height:22px;position:relative;cursor:pointer}
-.dk-grip::after{content:"";position:absolute;left:50%;top:8px;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:var(--rule)}
+.dk-sheet-h{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 6px 0 16px}
+.dk-sheet-h b{font-family:var(--f-display);font-stretch:92%;font-weight:700;font-size:19px}
+.dk-sheet-x{min-height:44px;padding:0 12px;border:0;background:none;color:var(--accent);font:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:var(--radius)}
+.dk-sheet-c .dk-rs{margin-top:4px}
+.dk-sheet-c .dk-rf{flex-direction:row;flex-wrap:wrap;gap:0 6px;padding:6px 8px}
+.dk-sf{flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:0 4px;padding:4px 8px 8px;border-top:1px solid var(--rule-2)}
+.dk-sf a{display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 8px;color:var(--ink);font-size:14px;font-weight:550;text-decoration:none;border-radius:var(--radius)}
+.dk-sf a .i{width:17px;height:17px;color:var(--ink-3)}
+.dk-sf a.dk-st{color:var(--ink-2);font-weight:400;font-size:13px;margin-left:auto}
 .dk-sheet-c{display:flex;flex-direction:column;min-height:0;flex:1 1 auto}
 .dk-sheet-c .dk-rs input{font-size:16px}
 
@@ -334,11 +346,9 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
   .dk-rail{display:none}
   .dk-deskbtn{max-width:44vw;padding:0 8px 0 10px}
   .dk-deskbtn .eb{display:none}
-  .dk-qo{width:auto;flex:0 0 auto;padding:0 10px}
-  .dk-qo span{display:none}
-  .dk-st span{display:none}
-  .dk-st{padding:0 4px}
-  .dk-lib{font-size:13px;border-left:0;margin-left:0}
+  .dk-qo{width:auto;flex:0 1 auto;padding:0 12px 0 10px;color:var(--ink);font-weight:600;font-size:14.5px;min-width:0}
+  .dk-qo .i{color:var(--ink-2)}
+  .dk-deskbtn{flex:0 1 auto}
   .dk-main{padding:0}
   .dk-pane{border-radius:0;border-left:0;border-right:0;border-bottom:0}
   .big3{grid-template-columns:minmax(0,1fr)}
@@ -357,3 +367,11 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 /* tablets: the desk button shows just the name, and touch screens have no Ctrl K hint */
 @media (max-width:1180px){.dk-deskbtn .eb{display:none}}
 @media (pointer:coarse){.dk-qo kbd{display:none}}
+@media (max-width:759px){.pal-x{display:inline-flex}.pal-f{display:none}dialog.ws-dlg.pal-dlg{margin-top:max(10px,env(safe-area-inset-top))}.pal{max-height:min(70dvh,560px)}}
+/* touch: every control at least 44 px (the bar, tabs, the library rail, the document bar) */
+@media (pointer:coarse){.dk-strip{height:46px}.dk-tab .x{opacity:1;width:44px;height:44px;margin-right:-8px}.dk-ib{min-width:44px;height:44px}.dk-it{min-height:44px}.dk-pacts .dk-ib{height:44px;min-width:44px}
+  .dk-deskbtn,.dk-qo,.dk-libb{height:44px;min-width:44px;justify-content:center}.dk-st{min-height:44px;min-width:44px;justify-content:center}.dk-lib{display:inline-flex;align-items:center;min-height:44px}
+  .dk-sh{min-height:44px}.dk-rs input{min-height:44px}.dv-pg input{height:44px;width:48px}.dv-z{min-height:44px}.dk-empty .rec button{min-height:48px}.dk-add{min-height:44px}.dv-bar .btn.sm{min-width:44px;min-height:44px;justify-content:center}
+  .nv-bar button{min-width:44px;height:44px}.nv input.nv-ttl{min-height:44px}.av .acts .btn.sm,.cv .btn{min-height:44px}.av .speeds td input{min-height:44px}.av .speeds .x button{min-width:44px;min-height:44px}.av-l button{min-height:48px}.av-add .lk{min-height:44px}
+  .dk-epane .btn.sm,.dk-msg .btn.sm{min-height:44px}.nv-links .chip{min-height:44px}
+  .dk-menu button{min-height:44px}.pal-l li{min-height:48px}.pal-f{display:none}.pal-x{display:inline-flex}}

@@ -360,3 +360,15 @@ test('sync: an unreadable account copy is not overwritten and local data is kept
   const r = await W.syncNs('notes', local, { data: { v: 1, z: 'gzip', d: '!!!!' }, version: 3 }, async () => { puts++; return { ok: true, version: 4 }; });
   assert.equal(r.error, 'unreadable'); assert.equal(puts, 0); assert.equal(W.stable(r.items), W.stable(local));
 });
+
+test('a note without a title is named by its first line; line breaks survive as text', () => {
+  assert.equal(W.noteAutoTitle({ title: ' My title ', body: '<div>x</div>' }), 'My title');
+  assert.equal(W.noteAutoTitle({ title: '', body: 'Stall speed clean 52 KIAS<div>Remember carb heat.</div>' }), 'Stall speed clean 52 KIAS');
+  assert.equal(W.noteAutoTitle({ title: '', body: '<div><br></div><div>  Second   line </div>' }), 'Second line');
+  assert.equal(W.noteAutoTitle({ title: '', body: '' }), '');
+  const long = W.noteAutoTitle({ title: '', body: '<div>' + 'word '.repeat(40) + '</div>' });
+  assert.ok(long.length <= 60 && long.endsWith('…'));
+  assert.equal(W.htmlToText('one<div>two</div><div>three</div>'), 'one\ntwo\nthree');
+  assert.equal(W.htmlToText('<div>a</div><div>b</div>'), 'a\nb');
+  assert.equal(W.htmlToText('x<ul><li>a</li><li>b</li></ul>'), 'x\na\nb');
+});

@@ -173,10 +173,10 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=3'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=2'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=4'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=2'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=3'), window.WSASK ? 0 : A.loadScript('ask.js?v=2')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=4'), window.WSASK ? 0 : A.loadScript('ask.js?v=2')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -200,7 +200,7 @@
       loadDesk(pickDesk());
       host.innerHTML = `<div class="dk-bar" id="dkBar"></div><div class="prog dk-prog" id="wsProg" hidden><span></span><div class="bar"><i></i></div></div>
         <div class="dk-body"><nav class="dk-rail" id="dkRail" aria-label="${esc(t('Library', 'Bibliotek'))}"></nav><div class="dk-main" id="dkMain"></div></div>
-        <div class="dk-sheet" id="dkSheet" hidden><div class="dk-sheet-bg" data-sheet-close></div><div class="dk-sheet-in" role="dialog" aria-modal="true" aria-label="${esc(t('Library', 'Bibliotek'))}"><div class="dk-grip" data-sheet-close></div><div class="dk-sheet-c"></div></div></div>`;
+        <div class="dk-sheet" id="dkSheet" hidden><div class="dk-sheet-bg" data-sheet-close></div><div class="dk-sheet-in" role="dialog" aria-modal="true" aria-label="${esc(t('Library', 'Bibliotek'))}"><div class="dk-sheet-h"><b>${esc(t('Library', 'Bibliotek'))}</b><button type="button" class="dk-sheet-x" data-sheet-close>${esc(t('Close', 'Lukk'))}</button></div><div class="dk-sheet-c"></div></div></div>`;
       barEl = host.querySelector('#dkBar'); railEl = host.querySelector('#dkRail'); mainEl = host.querySelector('#dkMain'); sheetEl = host.querySelector('#dkSheet');
       wire();
       sizeHost(); drawBar(); drawRail(); render(true);
@@ -213,7 +213,7 @@
     }
     function hide() {
       if (!mounted) return;
-      snapshot(); unmountViews(); host.innerHTML = ''; host.hidden = true; mounted = false; closeMenu();
+      sheetHist = false; snapshot(); unmountViews(); host.innerHTML = ''; host.hidden = true; mounted = false; closeMenu();
     }
     /* the store changed (sync, another tab, a dialog): redraw names, keep everything that is open */
     function refresh() {
@@ -224,24 +224,42 @@
       else if (cur) desk.name = cur.name;
       drawBar(); drawRail(); render();
     }
+    /* the desk ends where the visible screen ends: on a phone that is the top of the on-screen keyboard, so the line being written stays in view */
     function sizeHost() {
       if (!mounted) return;
-      const top = host.getBoundingClientRect().top + window.scrollY;
-      host.style.height = Math.max(320, window.innerHeight - top) + 'px';
+      const top = host.getBoundingClientRect().top + window.scrollY, vv = window.visualViewport;
+      host.style.height = Math.max(vv ? 220 : 320, Math.round(vv ? vv.height : window.innerHeight) - top) + 'px';
     }
+    function keepCaret() {
+      const a = document.activeElement; if (!mounted || !a || !host.contains(a)) return;
+      const sc = a.closest('.nv-sc,.av-sc,.cv-sc'); if (!sc) return;
+      let r = null; const s = window.getSelection();
+      if (a.isContentEditable && s.rangeCount) { const rr = s.getRangeAt(0).getClientRects(); r = rr.length ? rr[rr.length - 1] : null; if (!r) { const n = s.anchorNode, e = n && (n.nodeType === 1 ? n : n.parentElement); r = e && e !== a ? e.getBoundingClientRect() : null; } }
+      else r = a.getBoundingClientRect();
+      if (!r) return; const b = sc.getBoundingClientRect();
+      if (r.bottom > b.bottom - 12) sc.scrollTop += r.bottom - b.bottom + 28; else if (r.top < b.top) sc.scrollTop -= b.top - r.top + 12;
+    }
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (!mounted) return; sizeHost(); requestAnimationFrame(keepCaret); });
     function drawBar() {
       if (!barEl) return;
       const ph = isPhone(), st = A.statusShort();
-      barEl.innerHTML = `${ph ? '' : `<button type="button" class="dk-ib" data-b="rail" aria-label="${esc(t('Show or hide the library', 'Vis eller skjul biblioteket'))}" aria-expanded="${!railCollapsed()}" title="${esc(t('Library', 'Bibliotek'))}">${ic('rail')}</button>`}
-        <button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" title="${esc(t('Switch desk', 'Bytt arbeidsflate'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span><span class="nm">${esc(desk.name)}</span>${ic('chev')}</button>
-        <button type="button" class="dk-qo" data-b="open" aria-keyshortcuts="${isMac ? 'Meta+K' : 'Control+K'}">${ic('search')}<span>${esc(t('Open anything', 'Åpne hva som helst'))}</span>${ph ? '' : `<kbd>${KEY}</kbd>`}</button>
+      const stA = `<a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>`;
+      const deskB = `<button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" aria-label="${esc(t('Desk: ', 'Arbeidsflate: ') + desk.name + t('. Switch, rename or add a desk', '. Bytt, gi nytt navn eller lag en ny'))}" title="${esc(t('Switch desk', 'Bytt arbeidsflate'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span><span class="nm">${esc(desk.name)}</span>${ic('chev')}</button>`;
+      /* phone: three plain things, each with its name. Desk, Search, Library (the sheet holds the rest) */
+      barEl.innerHTML = ph ? `${deskB}
+        <button type="button" class="dk-qo" data-b="open">${ic('search')}<span>${esc(t('Search', 'Søk'))}</span></button>
         <span class="sp"></span>
-        <a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>
-        ${ph ? `<button type="button" class="dk-ib" data-b="sheet" aria-label="${esc(t('Library', 'Bibliotek'))}">${ic('lib')}</button>` : `<button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>`}
-        ${ph ? '' : `<a class="dk-ib dk-mapb" href="#/map" title="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}" aria-label="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}">${ic('map')}</a>`}
-        <a class="dk-lib" href="#/library">${ph ? esc(t('Manage', 'Administrer')) : esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</a>`;
+        <button type="button" class="dk-libb" data-b="sheet" aria-haspopup="dialog">${ic('lib')}<span>${esc(t('Library', 'Bibliotek'))}</span></button>`
+        : `<button type="button" class="dk-ib" data-b="rail" aria-label="${esc(t('Show or hide the library', 'Vis eller skjul biblioteket'))}" aria-expanded="${!railCollapsed()}" title="${esc(t('Library', 'Bibliotek'))}">${ic('rail')}</button>
+        ${deskB}
+        <button type="button" class="dk-qo" data-b="open" aria-keyshortcuts="${isMac ? 'Meta+K' : 'Control+K'}">${ic('search')}<span>${esc(t('Open anything', 'Åpne hva som helst'))}</span><kbd>${KEY}</kbd></button>
+        <span class="sp"></span>
+        ${stA}
+        <button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>
+        <a class="dk-ib dk-mapb" href="#/map" title="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}" aria-label="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span></a>
+        <a class="dk-lib" href="#/library">${esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</a>`;
     }
-    function status() { const s = barEl && barEl.querySelector('.dk-st'); if (!s) return; const st = A.statusShort(); s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }
+    function status() { if (!mounted) return; const st = A.statusShort(); host.querySelectorAll('.dk-st').forEach(s => { s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }); }
     const railCollapsed = () => !!(A.M.deskRail && A.M.deskRail.c);
     function setRail(c) { A.M.deskRail = Object.assign({}, A.M.deskRail || {}, { c: !!c }); A.saveMeta(); drawRail(); drawBar(); }
 
@@ -266,8 +284,11 @@
       }).join('');
       return `<div class="dk-rs"><label class="sr" for="dkQ${sheet ? 's' : ''}">${esc(t('Filter the library', 'Filtrer biblioteket'))}</label>${ic('search')}<input id="dkQ${sheet ? 's' : ''}" type="search" value="${esc(railQ)}" placeholder="${esc(t('Filter the library', 'Filtrer biblioteket'))}" autocomplete="off" spellcheck="false"></div>
         <div class="dk-tree">${secs || `<p class="dk-none">${esc(t('Nothing matches.', 'Ingen treff.'))}</p>`}</div>
-        <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>`;
+        <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>${sheet ? sheetFoot() : ''}`;
     }
+    /* phone: the way to the map, the library pages and "where things are kept" lives at the foot of the sheet */
+    function sheetFoot() { const st = A.statusShort();
+      return `<nav class="dk-sf" aria-label="${esc(t('More', 'Mer'))}"><a href="#/map">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span></a><a href="#/library">${ic('keep')}<span>${esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</span></a><a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a></nav>`; }
     function drawRail() {
       if (!railEl) return;
       const col = railCollapsed() && !isPhone();
@@ -285,10 +306,26 @@
     function drawSheet() {
       const c = sheetEl.querySelector('.dk-sheet-c'), a = document.activeElement, had = a && a.id === 'dkQs', pos = had ? a.selectionStart : 0;
       c.innerHTML = railHtml(true);
+      const hd = sheetEl.querySelector('.dk-sheet-h'); if (hd) { hd.firstElementChild.textContent = t('Library', 'Bibliotek'); hd.lastElementChild.textContent = t('Close', 'Lukk'); sheetEl.querySelector('.dk-sheet-in').setAttribute('aria-label', t('Library', 'Bibliotek')); }
       if (had) { const q = c.querySelector('#dkQs'); q.focus(); try { q.setSelectionRange(pos, pos); } catch (e) {} }
     }
-    function openSheet() { if (!sheetEl) return; sheetEl.hidden = false; drawSheet(); requestAnimationFrame(() => sheetEl.classList.add('in')); }
-    function closeSheet() { if (!sheetEl || sheetEl.hidden) return; sheetEl.classList.remove('in'); sheetEl.hidden = true; }
+    /* the sheet takes one step of browser history, so Back (and the iOS edge swipe) closes it */
+    let sheetHist = false, sheetBack = null;
+    function openSheet(from) {
+      if (!sheetEl || !sheetEl.hidden) return; sheetBack = from || null; sheetEl.hidden = false; drawSheet(); requestAnimationFrame(() => sheetEl.classList.add('in'));
+      if (!sheetHist) { try { history.pushState({ dkSheet: 1 }, ''); sheetHist = true; } catch (e) {} }
+      const g = sheetEl.querySelector('.dk-sheet-x'); if (g) g.focus({ preventScroll: true });
+    }
+    function closeSheet(fromPop, then) {
+      if (!sheetEl || sheetEl.hidden) { if (then) then(); return; }
+      sheetEl.classList.remove('in'); sheetEl.hidden = true;
+      if (sheetBack && sheetBack.isConnected && !then) sheetBack.focus({ preventScroll: true }); sheetBack = null;
+      const had = sheetHist && fromPop !== true; sheetHist = false;
+      if (!had) { if (then) then(); return; }
+      if (then) { let done = false; const run = () => { if (done) return; done = true; window.removeEventListener('popstate', run); then(); }; window.addEventListener('popstate', run); setTimeout(run, 500); }
+      history.back();
+    }
+    window.addEventListener('popstate', () => { if (sheetHist && sheetEl && !sheetEl.hidden) closeSheet(true); });
 
     /* ---------- panes ---------- */
     function keyOf(n) { return n.t === 'p' ? n.id : n.id + n.d + '(' + n.c.map(keyOf).join(',') + ')' + n.w.map(x => x.toFixed(3)).join(','); }
@@ -666,7 +703,7 @@
           ...(A.ockCan && A.ockCan(d) && hasText ? A.OCK_TR.map(([ty, pg]) => ({ l: t('Use in the ' + ty + ' trainer', 'Bruk i ' + ty + '-treneren'), f: () => { A.useInTrainer(ty, id); location.href = pg; } })).concat([{ sep: 1 }]) : []),
           { l: t('Name, category and links…', 'Navn, kategori og koblinger …'), f: () => A.go('documents/' + id) },
           { l: t('Replace the file…', 'Bytt ut filen …'), f: () => A.pickFiles({ replaceId: id }) },
-          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]); }
+          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { A.doTrash(id); ctx.close(); }, danger: 1 }]); }
       });
       if (phoneMode) swipeable(sc, () => (z <= 1 || fileKind !== 'pdf') && !(ann && ann.on), ctx);
       return {
@@ -703,7 +740,7 @@
       const lock = () => bd.querySelectorAll('cite').forEach(c => { c.contentEditable = 'false'; if (c.dataset.doc) { c.tabIndex = 0; c.setAttribute('role', 'link'); c.title = t('Open this page', 'Åpne denne siden'); } });
       bd.innerHTML = n.body; lock();
       const stat = s => { saved.innerHTML = s ? `<span class="ok">${esc(t('Saved', 'Lagret'))}</span>` : esc(t('Edited ', 'Endret ') + A.ago(n.updatedAt)); };
-      const save = f => { n = W.editNote(A.item(id) || n, f); A.commit(n); stat(true); if (f.title !== undefined) drawTabTitles(); if (f.links) drawLinks(); };
+      const save = f => { n = W.editNote(A.item(id) || n, f); A.commit(n); stat(true); if (f.title !== undefined || !n.title) drawTabTitles(); if (f.links) drawLinks(); };
       function drawLinks() {
         const l = (n.links || []).map(x => ({ x, v: A.linkLabel(x) })).filter(o => o.v);
         links.innerHTML = l.map(o => o.x.t === 'lab' ? `<a class="chip" href="${esc(o.v.h)}">${esc(o.v.n)}</a>` : `<button type="button" class="chip" data-open="${o.x.t}:${esc(o.x.id)}">${ic(o.x.t === 'doc' ? 'pdf' : o.x.t)}<span>${esc(o.v.n)}</span></button>`).join('');
@@ -726,7 +763,7 @@
         if (b.dataset.a === 'more') { menu(b, [
           { l: t('Tags, links and pinning…', 'Emneknagger, koblinger og festing …'), f: () => A.go('notes/' + id) },
           { l: t('Copy as text', 'Kopier som tekst'), f: () => { try { navigator.clipboard.writeText((n.title ? n.title + '\n\n' : '') + W.noteText(n)); A.toast(t('Copied.', 'Kopiert.')); } catch (er) {} } },
-          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]); return; }
+          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { A.doTrash(id); ctx.close(); }, danger: 1 }]); return; }
         const cmd = b.dataset.cmd; if (!cmd) return;
         if (cmd === 'cite') { const f = citeSource(ctx.paneId); if (f) { insertCite(D.citeHtml(f.docId, f.p, f.label, A.item(f.docId).name)); } return; }
         bd.focus(); if (lastRange) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(lastRange); }
@@ -789,7 +826,8 @@
             <table class="speeds"><colgroup><col class="ck"><col class="cv"><col class="cu"><col class="cx"></colgroup><thead><tr><th>${esc(t('Item', 'Punkt'))}</th><th style="text-align:right">${esc(t('Value', 'Verdi'))}</th><th>${esc(t('Unit', 'Enhet'))}</th><th><span hidden>x</span></th></tr></thead><tbody>${(a.speeds || []).map(A.speedRow).join('')}</tbody></table>
             <p class="speeds-note"><button type="button" class="lk" data-av="sp-add">${esc(t('Add a row', 'Legg til en rad'))}</button> · ${esc(t('From this aircraft’s own AFM or POH. Birdbird does not fill them in.', 'Fra flyets egen AFM eller POH. Birdbird fyller dem ikke ut.'))}</p>
             <h3><label for="avN${esc(tab.id)}">${esc(t('About this aircraft', 'Om dette flyet'))}</label></h3><textarea class="acnotes" id="avN${esc(tab.id)}" maxlength="4000" placeholder="${esc(t('Equipment, quirks, where the tow bar is kept…', 'Utstyr, særheter, hvor slepestangen ligger …'))}">${esc(a.notes)}</textarea></section>
-          <section><h3>${esc(t('Documents', 'Dokumenter'))} <span class="c">${docs.length}</span></h3>${docs.length ? `<ul class="av-l">${docs.map(d => row('doc', d.id, d.name, A.catName(d.cat), docKind(d))).join('')}</ul>` : `<p class="none">${esc(t('Link documents to this aircraft in the Library.', 'Koble dokumenter til dette flyet i biblioteket.'))}</p>`}
+          <section><h3>${esc(t('Documents', 'Dokumenter'))} <span class="c">${docs.length}</span></h3>${docs.length ? `<ul class="av-l">${docs.map(d => row('doc', d.id, d.name, A.catName(d.cat), docKind(d))).join('')}</ul>` : `<p class="none">${esc(t('The AFM, checklists and SOP for this aircraft.', 'AFM, sjekklister og SOP for dette flyet.'))}</p>`}
+            <p class="av-add"><button type="button" class="lk" data-av="doc-add" aria-haspopup="menu">${ic('plus')}${esc(t('Add a document', 'Legg til et dokument'))}</button></p>
             <h3>${esc(t('Notes', 'Notater'))} <span class="c">${notes.length}</span></h3>${notes.length ? `<ul class="av-l">${notes.map(n => row('note', n.id, A.noteTitle(n), A.ago(n.updatedAt))).join('')}</ul>` : `<p class="none">${esc(t('Notes linked to this aircraft show here.', 'Notater koblet til dette flyet vises her.'))}</p>`}
             <h3>${esc(t('Briefing packs', 'Briefingpakker'))} <span class="c">${packs.length}</span></h3>${packs.length ? `<ul class="av-l">${packs.map(p => row('pack', p.id, A.packTitle(p), (p.f || {}).date || '')).join('')}</ul>` : `<p class="none">${esc(t('Briefing packs with this registration show here.', 'Briefingpakker med denne registreringen vises her.'))}</p>`}</section></div></div></div>`;
         const tbody = root.querySelector('tbody');
@@ -804,8 +842,10 @@
         const b = e.target.closest('[data-av]'); if (!b) return; const k = b.dataset.av;
         if (k === 'note') newNote({ title: (a.reg || a.type || '') + ' – ', links: [{ t: 'aircraft', id }] }, { pane: ctx.paneId, beside: true });
         else if (k === 'pack') A.newPack(id);
+        else if (k === 'doc-add') { const rest = A.docsAll().filter(d => !(d.acIds || []).includes(id)), up = () => A.pickFiles({ acId: id });
+          if (!rest.length) up(); else menu(b, rest.slice(0, 30).map(d => ({ l: d.name, f: () => A.linkDoc(d.id, id).then(() => { const sc = root.firstElementChild, y = sc.scrollTop; draw(); root.firstElementChild.scrollTop = y; }) })).concat([{ sep: 1 }, { l: t('Add a file from this device…', 'Legg til en fil fra denne enheten …'), f: up }])); }
         else if (k === 'sp-add') { const tbody = root.querySelector('tbody'); tbody.insertAdjacentHTML('beforeend', A.speedRow({ k: '', v: '', u: 'KIAS' })); tbody.lastElementChild.querySelector('.k').focus(); }
-        else if (k === 'more') menu(b, [{ l: t('Edit type and registration…', 'Endre type og registrering …'), f: () => A.aircraftDlg(A.item(id)).then(r => { if (r) draw(); drawTabTitles(); }) }, { l: t('Open the full aircraft page', 'Åpne hele flysiden'), f: () => A.go('aircraft/' + id) }, { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]);
+        else if (k === 'more') menu(b, [{ l: t('Edit type and registration…', 'Endre type og registrering …'), f: () => A.aircraftDlg(A.item(id)).then(r => { if (r) draw(); drawTabTitles(); }) }, { l: t('Open the full aircraft page', 'Åpne hele flysiden'), f: () => A.go('aircraft/' + id) }, { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { A.doTrash(id); ctx.close(); }, danger: 1 }]);
       });
       let seen = a.updatedAt;
       const v = { refresh() { const cur = A.item(id); if (!W.isLive(cur)) return 'remount'; const ae = document.activeElement; if (cur.updatedAt !== seen && !(ae && root.contains(ae) && /INPUT|TEXTAREA/.test(ae.tagName))) { seen = cur.updatedAt; const y = root.firstElementChild.scrollTop; draw(); root.firstElementChild.scrollTop = y; } }, destroy() {} };
@@ -874,8 +914,8 @@
         const inp = document.querySelector('#wsDlg .pal-q'); if (inp) inp.setAttribute('aria-activedescendant', rows.length ? 'palo' + sel : '');
         const on = ul.querySelector('.on'); if (on) on.scrollIntoView({ block: 'nearest' });
       }
-      const ttl = o.only === 'doc' ? t('Open a document', 'Åpne et dokument') : o.only === 'aircraft' ? t('Choose an aircraft', 'Velg et fly') : t('Open anything', 'Åpne hva som helst');
-      A.openDlg(`<div class="pal"><h3 id="wsDlgH" class="sr">${esc(ttl)}</h3><div class="pal-in">${ic('search')}<input class="pal-q" type="search" role="combobox" aria-expanded="true" aria-controls="palL" aria-label="${esc(ttl)}" placeholder="${esc(ttl + ' …')}" autocomplete="off" spellcheck="false" autofocus></div>
+      const ttl = o.only === 'doc' ? t('Open a document', 'Åpne et dokument') : o.only === 'aircraft' ? t('Choose an aircraft', 'Velg et fly') : isPhone() ? t('Search your workspace', 'Søk i arbeidsområdet') : t('Open anything', 'Åpne hva som helst');
+      A.openDlg(`<div class="pal"><h3 id="wsDlgH" class="sr">${esc(ttl)}</h3><div class="pal-in">${ic('search')}<input class="pal-q" type="search" role="combobox" aria-expanded="true" aria-controls="palL" aria-label="${esc(ttl)}" placeholder="${esc(ttl + ' …')}" autocomplete="off" spellcheck="false" autofocus><button type="button" class="pal-x" data-close>${esc(t('Cancel', 'Avbryt'))}</button></div>
         <ul class="pal-l" id="palL" role="listbox"></ul><p class="pal-f"><span><kbd>↵</kbd> ${esc(t('open here', 'åpne her'))}</span>${isPhone() ? '' : `<span><kbd>⇧↵</kbd> ${esc(t('open beside', 'åpne ved siden av'))}</span>`}<span><kbd>esc</kbd> ${esc(t('close', 'lukk'))}</span></p></div>`, close => {
         const dlg = document.getElementById('wsDlg'); dlg.classList.add('pal-dlg');
         const inp = dlg.querySelector('.pal-q'), ul = dlg.querySelector('.pal-l');
@@ -885,10 +925,12 @@
           if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(rows.length - 1, sel + 1); draw(); }
           else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); draw(); }
           else if (e.key === 'Enter') { e.preventDefault(); if (rows[sel]) close({ r: rows[sel], beside: e.shiftKey || e.altKey }); }
+          else if (e.key === 'Escape') { e.preventDefault(); close(null); }
         });
+        dlg.onclick = e => { if (e.target === dlg) close(null); };
         ul.addEventListener('click', e => { const li = e.target.closest('[data-i]'); if (li) close({ r: rows[+li.dataset.i], beside: e.shiftKey || e.altKey }); });
       }).then(res => {
-        const dlg = document.getElementById('wsDlg'); dlg.classList.remove('pal-dlg');
+        const dlg = document.getElementById('wsDlg'); dlg.classList.remove('pal-dlg'); dlg.onclick = null;
         if (!res || !res.r) return; const r = res.r;
         if (r.c) { runCmd(r.c, target); return; }
         openItem(r.k, r.r, { pane: target, beside: res.beside, st: r.p ? { p: r.p, o: 0 } : undefined, flash: !!r.p });
@@ -955,6 +997,7 @@
       menuBack = at.focus ? at : null;
       menuEl.addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; const it = items[+b.dataset.i]; closeMenu(); if (it && it.f) it.f(); });
       menuEl.addEventListener('keydown', e => {
+        if (!menuEl) return;
         const bs = [...menuEl.querySelectorAll('button:not([disabled])')], i = bs.indexOf(document.activeElement);
         if (e.key === 'ArrowDown') { e.preventDefault(); bs[(i + 1) % bs.length].focus(); } else if (e.key === 'ArrowUp') { e.preventDefault(); bs[(i - 1 + bs.length) % bs.length].focus(); }
         else if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); closeMenu(); }
@@ -1082,7 +1125,7 @@
       barEl.addEventListener('click', e => {
         const b = e.target.closest('[data-b]'); if (!b) return; const k = b.dataset.b;
         if (k === 'rail') setRail(!railCollapsed()); else if (k === 'desks') deskMenu(b); else if (k === 'open') palette();
-        else if (k === 'split-h') splitPane(L.act, 'h'); else if (k === 'split-v') splitPane(L.act, 'v'); else if (k === 'sheet') openSheet();
+        else if (k === 'split-h') splitPane(L.act, 'h'); else if (k === 'split-v') splitPane(L.act, 'v'); else if (k === 'sheet') openSheet(b);
       });
       const railClick = e => {
         if (Date.now() - suppressClick < 400) return;
@@ -1093,7 +1136,9 @@
         if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({});
       };
       railEl.addEventListener('click', railClick);
-      sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; } railClick(e); });
+      sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; }
+        const a = e.target.closest('a[href^="#/"]'); if (a) { e.preventDefault(); const to = a.getAttribute('href'); closeSheet(false, () => { location.hash = to; }); return; }
+        railClick(e); });
       const railInput = e => { if (e.target.type === 'search') { railQ = e.target.value; e.target.closest('.dk-sheet') ? drawSheet() : drawRail(); } };
       railEl.addEventListener('input', railInput); sheetEl.addEventListener('input', railInput);
       railEl.addEventListener('keydown', e => { if (e.key === '/') e.stopPropagation(); });

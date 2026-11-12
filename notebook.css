@@ -115,4 +115,5 @@
 .ask-f textarea{flex:1;min-width:0;resize:none;font:inherit;font-size:15px;line-height:1.4;padding:8px 10px;border:1px solid var(--rule);border-radius:var(--radius);color:var(--ink);background:var(--sheet);max-height:30vh}
 .ask-f textarea:focus{outline:2px solid var(--info);outline-offset:0;border-color:transparent}
 .ask blockquote{margin:0}
-
+/* touch: tools you can hit */
+@media (pointer:coarse){.nb-t{width:42px;height:44px}.nb-c,.nb-w{width:36px;height:44px}.nb-tools{gap:2px 6px}}

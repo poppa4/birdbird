@@ -119,7 +119,7 @@ with sync_playwright() as p:
     check('two desks stored as workspace items', sorted(n_desks) == ['B200 type rating', 'Next flight'], n_desks)
     # Library is still reachable
     pg.click('.dk-lib'); pg.wait_for_selector('.ovs'); check('library overview reachable', pg.is_visible('.ws-head') and not pg.is_visible('#wsDesk'))
-    pg.click('.ws-rail a[href="#/"]'); pg.wait_for_selector('.dv-pages .pg canvas', timeout=20000)
+    pg.click('#wsHome'); pg.wait_for_selector('.dv-pages .pg canvas', timeout=20000)
     check('back to the desk, layout intact', pg.locator('.dk-pane').count() == 3)
     # Norwegian
     pg.click('.site .hright .seg button:has-text("NO")'); pg.wait_for_timeout(500)

@@ -31,7 +31,7 @@
   const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'] };
   const kindName = k => t.apply(null, KIND[k] || ['', '']);
   const acName = a => a ? ([a.type || W.typeOf(a.typeKey).name, a.reg].filter(Boolean).join(' · ') || t('Aircraft', 'Fly')) : '';
-  const noteTitle = n => (n.title || '').trim() || t('Untitled note', 'Notat uten tittel');
+  const noteTitle = n => W.noteAutoTitle(n) || t('Untitled note', 'Notat uten tittel');
   const packTitle = p => { const f = p.f || {}; return (p.title || '').trim() || (f.heading || '').trim() || [f.depapt, f.destapt].filter(Boolean).join(' – ') || t('Untitled briefing pack', 'Briefingpakke uten navn'); };
   const routeTitle = r => { const rw = (r.pts || []).filter(x => x.t === 'rwy').map(x => x.n); return (r.title || '').trim() || (rw.length ? [rw[0], rw[rw.length - 1]].filter((v, i, a) => i === 0 || v !== a[0]).join(' – ') : t('Untitled route', 'Rute uten navn')); };
   const realPack = p => { const f = p && p.f || {}; return !!(f.depapt || f.destapt || f.reg || f.type || (p.title || '').trim() || (f.heading || '').trim()); };
@@ -205,6 +205,8 @@
     if (failed.length) toast(failed.join(' · '));
     else if (done.length) toast(t('Saved on this device: ', 'Lagret på denne enheten: ') + done.join(', '), done.length === 1 && lastId && !onDesk && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
   }
+  /* attach a document to an aircraft (from the aircraft card on the desk) */
+  async function linkDoc(docId, acId) { const d = item(docId); if (!W.isLive(d) || (d.acIds || []).includes(acId)) return; const e = W.patch(d, { acIds: (d.acIds || []).concat([acId]) }); await commit(e); await pushDocToFi(e); render(); }
   function pickFiles(opts) { const inp = el('wsFile'); inp.multiple = !(opts && opts.replaceId); inp.onchange = () => { const fs = [...inp.files]; inp.value = ''; addFiles(fs, opts); }; inp.click(); }
 
   /* ---------- sync with the account ---------- */
@@ -303,7 +305,7 @@
   function route() { const h = location.hash.replace(/^#\/?/, ''); const i = h.indexOf('?'); const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)); return { path, q: new URLSearchParams(i < 0 ? '' : h.slice(i + 1)) }; }
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
-  const RAIL = () => [['', t('Desk', 'Arbeidsflate'), null], ['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  const RAIL = () => [['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   let railMap = null;
   function drawRailMap(cur) {
     const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW) return;
@@ -1012,6 +1014,7 @@
   /* ---------- language ---------- */
   function drawChrome() {
     el('wsH1').textContent = t('My workspace', 'Mitt arbeidsområde');
+    el('wsHomeT').textContent = t('Back to the desk', 'Tilbake til arbeidsflaten');
     el('wsQLabel').textContent = t('Search your workspace', 'Søk i arbeidsområdet ditt');
     qIn.placeholder = t('Aircraft, documents, notes, packs, routes', 'Fly, dokumenter, notater, pakker, ruter');
     document.title = t('My workspace · Birdbird', 'Mitt arbeidsområde · Birdbird');
@@ -1057,7 +1060,7 @@
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
-    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, get M() { return M; } };
+    doTrash, doRestore, pickFiles, addFiles, linkDoc, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

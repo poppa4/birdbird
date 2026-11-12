@@ -3,6 +3,8 @@
    small "kept" marks on rows use the same three states: this device, your account, a backup file. */
 .ws{--rail:208px}
 .ws-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:10px 48px;align-items:end;margin:36px 0 0}
+.ws-home{display:inline-flex;align-items:center;gap:7px;min-height:44px;margin:-8px 0 2px;font-size:14.5px;font-weight:600;color:var(--accent);text-decoration:none}
+.ws-home:hover span+span{text-decoration:underline;text-underline-offset:3px}
 .ws-eb{display:block;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px}
 .ws-head h1{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:clamp(32px,4vw,44px);letter-spacing:-.015em;line-height:1.04;margin:0;color:var(--ink)}
 .ws-search label{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin:0 0 6px}
@@ -471,3 +473,25 @@ html body .nsearch{display:none!important}
 @media (pointer:coarse){.wsm-zm button{min-width:40px;height:40px}.wsm-qi{height:40px}.wsm-leg button{min-height:40px}
   .ovs h2 a{display:inline-flex;align-items:center;min-height:40px}.chip>a{align-self:stretch;align-items:center}.sp-tbl input,table input{min-height:40px}table button{min-width:40px;min-height:40px}}
 @media (pointer:coarse) and (max-width:1180px){.ws-rail a{margin-right:0;padding-left:11px;padding-right:11px}.ws-rail a:first-child{margin-left:-11px}}
+/* phone: the library pages start with the way back, a smaller title and one calm status line */
+@media (max-width:640px){
+  .ws-head{margin-top:10px;gap:8px 0}
+  .ws-head h1{font-size:28px}
+  .ws-status{margin-top:8px;padding:8px 0;font-size:13.5px;gap:2px 14px;min-height:0}
+  .ws-status .sp,.ws-status a[href="#/storage"]{display:none}
+}
+/* this page on touch screens: 44 px for the header buttons and the library controls */
+@media (pointer:coarse){
+  .site .hright .seg button,.site .hright .langseg button{min-height:44px;min-width:44px}
+  .site .menu{min-height:44px}
+  .ws-q input{min-height:44px}
+  .ws-rail a{padding-top:16px;padding-bottom:14px}
+  .ws .btn{min-height:44px}
+  .ws-filter input[type=search],.ws-filter select,.fld input:not([type=checkbox]),.fld select{min-height:44px}
+  .ws-back,.ws-status a,.chip{min-height:44px}
+  .ws .seg button{min-height:44px}
+  .ws-dlg .btn{min-height:44px}
+  .ws-dlg .fld .ck{min-height:44px;display:flex;align-items:center;gap:10px}
+  .ws-toast button{min-height:40px}
+}
+.ws-toast{bottom:max(20px,calc(env(safe-area-inset-bottom) + 12px))}
