@@ -427,8 +427,8 @@
         </svg>
       </figure>`;
       /* with five or more items of their own, a small live map of them takes the place of the drawing */
-      const mg = !isPhone() && window.WSMAP && A.mapGraph ? A.mapGraph() : null, useMap = !!(mg && mg.own >= 5);
-      const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
+      const ma = !isPhone() && window.WSMAP && A.mapAny ? A.mapAny() : null, mg = ma ? ma.g : null, useMap = !!mg;
+      const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${ma && ma.sample ? esc(t('Example: how your map will look', 'Eksempel: slik blir kartet ditt')) : `${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}`}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
@@ -452,10 +452,10 @@
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null; const mh = box.querySelector('.mmh');
-      if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true }); } catch (e) { console.error('mini map', e); } }
+      if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }
       const sig = g => g ? g.nodes.length + ':' + g.links.length : '';
       return { destroy: () => { if (mm) mm.destroy(); mm = null; },
-        refresh: () => { if (!A.mapGraph) return ''; const ng = !isPhone() && window.WSMAP ? A.mapGraph() : null; if (!!(ng && ng.own >= 5) !== useMap) return 'remount'; if (mm && ng && sig(ng) !== sig(mm.graph)) mm.setGraph(ng); return ''; } };
+        refresh: () => { if (!A.mapGraph) return ''; const na = !isPhone() && window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
     }
     function emptyAction(k, paneId) {
       if (k === 'doc') { if (A.docsAll().length) palette({ only: 'doc', pane: paneId }); else A.pickFiles({}); }

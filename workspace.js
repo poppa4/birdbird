@@ -301,8 +301,26 @@
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
   const RAIL = () => [['', t('Desk', 'Arbeidsflate'), null], ['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  let railMap = null;
+  function drawRailMap(cur) {
+    const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW) return;
+    let box = el('wsRailMap');
+    const want = cur !== 'map' && window.innerWidth >= 1000;
+    if (!want) { if (railMap) { railMap.m.destroy(); railMap = null; } if (box) box.remove(); return; }
+    const a = mapAny(); if (!a) return;
+    if (!box) { rl.insertAdjacentHTML('afterend', `<a id="wsRailMap" class="ws-railmap" href="#/map"><span class="h"></span><span class="l"><span class="t"></span><span class="go">${t('Open map', 'Åpne kart')} →</span></span></a>`); box = el('wsRailMap'); }
+    box.classList.toggle('sample', a.sample);
+    box.querySelector('.t').textContent = a.sample ? t('Example map', 'Eksempelkart') : t('Your map', 'Ditt kart') + ' · ' + a.g.own;
+    const sig = a.sample + ':' + a.g.nodes.length + ':' + a.g.links.length;
+    if (railMap && railMap.sig === sig && box.contains(railMap.host)) return;
+    if (railMap) railMap.m.destroy();
+    const host = box.querySelector('.h'); host.innerHTML = '';
+    try { railMap = { sig, host, m: window.WSMAP.mount(host, { graph: a.g, t, mini: true, sample: a.sample }) }; } catch (e) { railMap = null; console.error('rail map', e); }
+  }
+  window.addEventListener('resize', () => { const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library'); drawRailMap(cur); });
   function drawRail() {
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
+    setTimeout(() => drawRailMap(cur), 0);
     el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
     const rl = el('wsRail'), on = rl.querySelector('.on'); if (on && rl.scrollWidth > rl.clientWidth) { const l = on.offsetLeft - rl.offsetLeft, r = l + on.offsetWidth; if (l < rl.scrollLeft || r > rl.scrollLeft + rl.clientWidth) rl.scrollLeft = Math.max(0, l - 24); }
   }
@@ -766,6 +784,7 @@
     if (!GW) return null;
     return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; } }, mapNames));
   }
+  function mapAny() { const own = mapGraph(); if (!own) return null; return own.own ? { g: own, sample: false } : { g: GW.buildGraph(GW.sampleInput(t), mapNames), sample: true }; }
   function mapOpen(n, beside) {
     const D = window.WSDESK; if (!D) return;
     if (n.k === 'desk') D.switchDesk(n.r);
@@ -988,7 +1007,7 @@
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
-    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, get M() { return M; } };
+    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

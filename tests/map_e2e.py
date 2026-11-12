@@ -57,7 +57,7 @@ with sync_playwright() as p:
         pg.screenshot(path=f'{SHOTS}/{tag}-map-example.png')
         if tag == 'desktop':
             pg.goto(URL + '#/'); pg.wait_for_selector('.dk-empty .big3'); pg.wait_for_timeout(300)
-            check('new user: desk home keeps the drawing', pg.locator('.dk-empty .sk svg').count() == 1 and pg.locator('.dk-empty .mm').count() == 0)
+            check('new user: desk home shows the example map', pg.locator('.dk-empty .mm').count() == 1)
             pg.evaluate(SEED); pg.reload(); pg.wait_for_selector('.dk-empty .big3')
             pg.wait_for_selector('.dk-empty .mm canvas')
             pg.wait_for_function("() => { const c = document.querySelector('.dk-empty .mm canvas'); return c && c.width > 0; }")

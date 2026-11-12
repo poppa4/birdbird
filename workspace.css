@@ -394,7 +394,7 @@ html body .nsearch{display:none!important}
   .wsm-cta{bottom:96px}
 }
 /* the small map on the desk home */
-.dk-empty .sk.mm{position:relative;display:block;aspect-ratio:440/290;border-radius:12px;overflow:hidden;background:#0B2545;box-shadow:0 1px 0 var(--rule),0 24px 48px -18px rgba(11,37,69,.45);text-decoration:none;color:#D5DEE7;cursor:pointer}
+.dk-empty .sk.mm{position:relative;display:block;aspect-ratio:440/290;border-radius:12px;overflow:hidden;background:#030A16;box-shadow:0 1px 0 var(--rule),0 24px 48px -18px rgba(11,37,69,.45);text-decoration:none;color:#D5DEE7;cursor:pointer}
 .dk-empty .sk.mm .mmh{position:absolute;inset:0}
 .dk-empty .sk.mm .mmc{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:22px 14px 11px;background:linear-gradient(to top,rgba(8,27,53,.85),rgba(8,27,53,0));font-size:12.5px;pointer-events:none}
 .dk-empty .sk.mm .mmc b{font-family:var(--f-mono);font-weight:500;color:#fff}
@@ -402,3 +402,12 @@ html body .nsearch{display:none!important}
 .dk-empty .sk.mm:hover .go,.dk-empty .sk.mm:focus-visible .go{opacity:1}
 .dk-empty .sk.mm:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .dk-mapb{text-decoration:none}
+/* the map, small, under the side navigation (example until you have items of your own) */
+.ws-railmap{display:block;position:relative;margin:18px 0 0;border-radius:10px;overflow:hidden;background:#030A16;aspect-ratio:1/1;max-width:230px;text-decoration:none;box-shadow:0 1px 0 var(--rule),0 14px 30px -18px rgba(3,10,22,.6)}
+.ws-railmap .h{position:absolute;inset:0}
+.ws-railmap .l{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:18px 11px 9px;background:linear-gradient(to top,rgba(3,10,22,.92),rgba(3,10,22,0));font-size:12px;color:rgba(220,234,248,.78);pointer-events:none}
+.ws-railmap .t{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.ws-railmap .go{color:#fff;font-weight:600;opacity:.7;transition:opacity .15s}
+.ws-railmap:hover .go,.ws-railmap:focus-visible .go{opacity:1}
+.ws-railmap:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ws-railmap.sample .t{color:#E6D9BD}
