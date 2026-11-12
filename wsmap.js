@@ -4,9 +4,11 @@
    end at once and drawn once.
    WSMAP.mount(host, { graph, t, mini, sample, onOpen(node, beside), onClick() }) -> { setGraph(g), fit(), focus(i), destroy(), debug }
    mini: a small, quiet map without controls (the desk home); a click calls onClick.
-   sample: the example map, laid out as a brain (WSGRAPH.brainLayout) with its texture, a faint head profile and a few rays;
-   hovering or tapping a dot explains what it would be in your workspace and offers the real action. Your own map gets a
-   soft brain-shaped glow behind it (8 dots or more).
+   A merged graph (WSGRAPH.mergeGraph: g.merged) is laid out as a brain (WSGRAPH.brainLayout) with its texture, a faint
+   head profile and a few rays: your own dots bright, the example's dots (n.ghost) as faint ghosts without labels; with
+   no items of your own the example is drawn in full. Hovering or tapping an example dot explains what it would be in
+   your workspace and offers the real action; your own dots open on the desk. A plain graph (yours, FULL items or more)
+   gets its force layout with a soft brain-shaped glow behind it.
    Life: now and then a faint pulse travels along a link, only while the map is on screen and the page visible, never with
    reduced motion. Pulse frames copy the cached picture and draw the pulse on top (about 30 a second, for about a second). */
 (function () {
@@ -47,13 +49,17 @@
     const cam = { x: 0, y: 0, k: 1 };
     let hover = -1, sel = -1, tween = null, hidden = new Set(), nb = null, drag = null;
     const dbg = { frames: 0, draws: 0, pulseFrames: 0, glow: false, get pulses() { return pulses.length; }, get running() { return !!raf; }, get settled() { return !L || L.settled; } };
-    const brainMode = !!o.sample && !!GW.brainLayout, B = GW.BRAIN, coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    let brainMode = false; const B = GW.BRAIN, coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     let dirty = true, pulses = [], shown = null, scene = null, sceneOK = false, ambT = 0, pulseT = 0, onScreen = true;
+    /* an example dot: drawn faint (as a ghost) once you have items of your own; always explained, never opened */
+    const isEx = i => i >= 0 && !!g.nodes[i] && (!!g.nodes[i].ghost || (!!o.sample && !g.merged));
+    const faint = i => !!g.nodes[i].ghost && g.own > 0;
 
     /* ---------- data ---------- */
     function setGraph(ng, keep) {
       const prev = keep && L && g ? L.positions() : null;
-      g = ng; L = brainMode ? GW.brainLayout(g, { instant: !!prev || reduced() }) : GW.layout(g, { prev }); pulses = [];
+      g = ng; brainMode = !!(g.merged || o.sample) && !!GW.brainLayout; dbg.ghosts = g.own > 0 ? (g.ghosts || 0) : 0; dbg.merged = !!g.merged;
+      L = brainMode ? GW.brainLayout(g, { instant: !!prev || reduced() }) : GW.layout(g, { prev }); pulses = [];
       hover = -1; sel = -1; nb = null; if (card) card.hidden = true;
       if (reduced()) { L.run(900); fitNow(); request(); }
       else { if (!prev) { L.step(10); auto = true; } request(); }
@@ -64,7 +70,8 @@
     const legendText = () => GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
     function drawLegend() {
       if (!legEl) return;
-      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
+      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('') +
+        (dbg.ghosts ? `<span class="wsm-fade"><i aria-hidden="true"></i>${esc(t('Example dots fade as you add your own', 'Eksempelprikkene blekner når du legger til dine egne'))}</span>` : '');
     }
 
     /* ---------- camera ---------- */
@@ -208,30 +215,33 @@
       const px = new Float32Array(N), py = new Float32Array(N), pr = new Float32Array(N), vis = new Uint8Array(N);
       for (let i = 0; i < N; i++) {
         if (!visible(i)) continue; const n = g.nodes[i];
-        px[i] = sx(i); py[i] = sy(i); pr[i] = (BASE[n.k] || 2) * sizeK * (n.k === 'doc' || n.k === 'aircraft' ? 1 + Math.min(0.5, n.deg * 0.025) : 1);
+        px[i] = sx(i); py[i] = sy(i); pr[i] = (BASE[n.k] || 2) * sizeK * (n.k === 'doc' || n.k === 'aircraft' ? 1 + Math.min(0.5, n.deg * 0.025) : 1) * (faint(i) ? 0.8 : 1);
         vis[i] = px[i] > -40 && px[i] < W + 40 && py[i] > -40 && py[i] < H + 40 ? 1 : 0;
       }
       /* links: hairlines */
       ctx.lineWidth = mini ? 0.5 : 0.6; ctx.strokeStyle = near ? 'rgba(150,182,218,.05)' : 'rgba(150,182,218,.11)'; ctx.beginPath();
       const hl = [];
-      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
+      const gl = [];
+      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } if (faint(l.s)) { gl.push(l); continue; } ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
       ctx.stroke();
+      if (gl.length) { ctx.strokeStyle = 'rgba(150,182,218,' + (near ? 0.035 : 0.075) + ')'; ctx.lineWidth = mini ? 0.4 : 0.5; ctx.beginPath(); gl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); ctx.lineWidth = mini ? 0.5 : 0.6; }
       if (hl.length) { ctx.strokeStyle = 'rgba(214,232,250,.6)'; ctx.lineWidth = 0.9; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
       /* glow, then the dots, one path per colour */
       const ga = mini ? 0.5 : 0.62; ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i], r = pr[i] * (n.k === 'aircraft' ? 5.5 : 4.2); ctx.globalAlpha = (near && !near.has(i) ? 0.12 : 1) * ga; ctx.drawImage(sprite(COL[n.k]), px[i] - r, py[i] - r, r * 2, r * 2); }
+      const gA = 0.62 - 0.2 * (g.fade || 0); /* ghosts: fainter as your own map fills */
+      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i], r = pr[i] * (n.k === 'aircraft' ? 5.5 : 4.2); ctx.globalAlpha = (near && !near.has(i) ? 0.12 : 1) * ga * (faint(i) ? gA * 0.75 : 1); ctx.drawImage(sprite(COL[n.k]), px[i] - r, py[i] - r, r * 2, r * 2); }
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       for (const k in COL) {
-        for (const dim of [false, true]) {
+        for (const dim of [false, true]) for (const gh of [false, true]) {
           ctx.beginPath(); let any = false;
-          for (let i = 0; i < N; i++) { if (!vis[i] || g.nodes[i].k !== k || (!!(near && !near.has(i)) !== dim)) continue; ctx.moveTo(px[i] + pr[i], py[i]); ctx.arc(px[i], py[i], pr[i], 0, Math.PI * 2); any = true; }
-          if (any) { ctx.globalAlpha = dim ? 0.28 : 0.95; ctx.fillStyle = COL[k]; ctx.fill(); }
+          for (let i = 0; i < N; i++) { if (!vis[i] || g.nodes[i].k !== k || (!!(near && !near.has(i)) !== dim) || faint(i) !== gh) continue; ctx.moveTo(px[i] + pr[i], py[i]); ctx.arc(px[i], py[i], pr[i], 0, Math.PI * 2); any = true; }
+          if (any) { ctx.globalAlpha = (dim ? 0.28 : 0.95) * (gh ? gA : 1); ctx.fillStyle = COL[k]; ctx.fill(); }
         }
       }
       ctx.globalAlpha = 1;
       /* rings: aircraft, annotated documents, the focused node */
       ctx.lineWidth = 0.8;
-      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(169,199,230,.45)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
+      for (let i = 0; i < N; i++) { if (!vis[i] || faint(i)) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(169,199,230,.45)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
       if (focus >= 0 && vis[focus]) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px[focus], py[focus], pr[focus] + 3.5, 0, Math.PI * 2); ctx.stroke(); }
       if (mini) { centre = null; return; }
       /* labels: on hover, near the focus, and when zoomed in (aircraft first, then documents, then everything) */
@@ -247,10 +257,10 @@
         if (strong) { ctx.save(); ctx.fillStyle = 'rgba(3,10,22,.82)'; ctx.fillRect(x - 4, y - 10, w + 8, 20); ctx.restore(); ctx.fillStyle = '#fff'; }
         ctx.fillText(s, x, y);
       };
-      if (focus >= 0 && vis[focus]) label(focus, true);
+      if (focus >= 0 && vis[focus] && !faint(focus)) label(focus, true);
       const order = [];
       for (let i = 0; i < N; i++) {
-        if (!vis[i] || i === focus) continue; const k = g.nodes[i].k;
+        if (!vis[i] || i === focus || faint(i)) continue; const k = g.nodes[i].k;
         const show = near ? near.has(i) : (k === 'aircraft' ? true : k === 'doc' || k === 'pack' || k === 'route' || k === 'desk' ? zk >= 1.9 : zk >= 2.7);
         if (show) order.push(i);
       }
@@ -295,7 +305,7 @@
       const ray = (x2, y2, a0, a1, end) => { const lg = ctx.createLinearGradient(cx, cy, x2, y2); lg.addColorStop(0, 'rgba(226,240,255,' + a0 + ')'); lg.addColorStop(1, 'rgba(226,240,255,' + a1 + ')'); ctx.strokeStyle = lg; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x2, y2); ctx.stroke(); if (end) { ctx.globalAlpha = end; const r = mini ? 5 : 11; ctx.drawImage(sprite('#DCEBFA'), x2 - r, y2 - r, r * 2, r * 2); ctx.globalAlpha = 1; } };
       ctx.lineWidth = mini ? 0.5 : 0.8;
       if (!mini) [[-1.06, -0.52], [-0.66, -0.97], [0.08, -1.02], [0.78, -0.80], [1.08, -0.26]].forEach(([u, v]) => { const [a, b] = f(u, v); ray(a, b, 0.2, 0.03, 0.42); });
-      g.nodes.forEach((n, i) => { if (n.k === 'aircraft' && visible(i)) ray(sx(i), sy(i), 0.26, 0.1, 0); });
+      g.nodes.forEach((n, i) => { if (n.k === 'aircraft' && visible(i)) ray(sx(i), sy(i), faint(i) ? 0.09 : 0.26, faint(i) ? 0.03 : 0.1, 0); });
       const cr = mini ? ppu * 0.1 : ppu * 0.13; ctx.globalAlpha = mini ? 0.35 : 0.42; ctx.drawImage(sprite('#CFE3FA'), cx - cr, cy - cr, cr * 2, cr * 2); ctx.globalAlpha = 1;
       ctx.restore();
       centreLabel(cx, cy + 16, 0.34);
@@ -343,7 +353,7 @@
         drag.x = x; drag.y = y; request(); return;
       }
       if (e.pointerType === 'touch') return;
-      const i = hit(x, y); if (i !== hover) { hover = i; cv.style.cursor = i >= 0 ? 'pointer' : ''; if (o.sample) { showCard(i >= 0 ? i : sel); if (i >= 0) burst(i); } request(); }
+      const i = hit(x, y); if (i !== hover) { const was = hover; hover = i; cv.style.cursor = i >= 0 ? 'pointer' : ''; if (isEx(i)) { showCard(i); burst(i); } else if (isEx(was)) showCard(sel); request(); }
     }
     function up(e) {
       pts.delete(e.pointerId); if (pinch) { if (pts.size < 2) pinch = null; drag = null; return; }
@@ -360,14 +370,16 @@
       if (e.ctrlKey || mouse) zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018) * (e.deltaMode === 1 ? 30 : 1)), x, y);
       else { auto = false; tween = null; cam.x += e.deltaX / cam.k; cam.y += e.deltaY / cam.k; request(); }
     }
-    function leave() { if (hover >= 0 && !drag) { hover = -1; if (o.sample) showCard(sel); request(); } }
+    function leave() { if (hover >= 0 && !drag) { const was = hover; hover = -1; if (isEx(was)) showCard(sel); request(); } }
     function open(i, beside) {
       const n = g.nodes[i]; if (!n) return;
-      if (o.sample) { select(i); return; }
+      if (isEx(i)) { select(i); return; }
       if (o.onOpen) o.onOpen(n, !!beside);
     }
     /* the example explains each dot: what it would be in your workspace, and the real action */
     const ACT = { aircraft: ['ac-new', t('Add aircraft', 'Legg til fly')], doc: ['doc-add', t('Add a document', 'Legg til et dokument')], page: ['doc-add', t('Add a document', 'Legg til et dokument')], note: ['map-note', t('New note', 'Nytt notat')], notebook: ['map-note', t('New note', 'Nytt notat')], pack: ['pack-new', t('Make a briefing pack', 'Lag en briefingpakke')], route: ['', t('Plan a route', 'Planlegg en rute')] };
+    const ART = { aircraft: ['an aircraft', 'et fly'], doc: ['a document', 'et dokument'], page: ['a page reference', 'en sidehenvisning'], note: ['a note', 'et notat'], notebook: ['a notebook', 'en notatbok'], pack: ['a briefing pack', 'en briefingpakke'], route: ['a route', 'en rute'], desk: ['a desk', 'en arbeidsflate'] };
+    const WOULD = k => { const a = ART[k] || ART.note; return t(`Example — this is where ${a[0]} would go`, `Eksempel — her hører ${a[1]} hjemme`); };
     function explain(i) {
       const n = g.nodes[i], nb2 = [...neigh(i)].filter(j => j !== i).map(j => g.nodes[j]), of = k => nb2.filter(m => m.k === k).map(m => m.label);
       const q = s => t('“', '«') + s + t('”', '»'), list = a => a.slice(0, 2).join(t(' and ', ' og ')) + (a.length > 2 ? t(` and ${a.length - 2} more`, ` og ${a.length - 2} til`) : '');
@@ -384,9 +396,9 @@
       if (!card) return;
       if (i < 0) { card.hidden = true; return; }
       const n = g.nodes[i]; card.hidden = false;
-      if (o.sample) {
+      if (isEx(i)) {
         const a = ACT[n.k], pinned = i === sel;
-        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b><span class="x">${esc(explain(i))}</span>` +
+        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b><span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(i))}</span>` +
           (pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
         return;
       }
@@ -396,7 +408,7 @@
     function select(i, zoom) {
       const was = sel; sel = i; nb = null;
       showCard(i);
-      if (o.sample && i >= 0 && i !== was && i !== hover) burst(i);
+      if (isEx(i) && i !== was && i !== hover) burst(i);
       if (i >= 0 && zoom) moveTo({ x: L.x[i], y: L.y[i], k: Math.max(cam.k, fitK * 2.4) }, 520);
       request();
     }
@@ -424,7 +436,7 @@
       let rows = [], cur = 0;
       const drawSug = () => {
         const q = fold(qi.value.trim()); rows = [];
-        if (q) { const tk = q.split(/\s+/); g.nodes.forEach((n, i) => { if (!visible(i)) return; const f = fold(n.label); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); }); rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); rows = rows.slice(0, 7).map(r => r[0]); }
+        if (q) { const tk = q.split(/\s+/); g.nodes.forEach((n, i) => { if (!visible(i) || faint(i)) return; const f = fold(n.label); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); }); rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); rows = rows.slice(0, 7).map(r => r[0]); }
         cur = 0; sug.hidden = !rows.length && !q; qi.setAttribute('aria-expanded', String(!sug.hidden));
         sug.innerHTML = rows.length ? rows.map((i, k) => `<li role="option" id="wsmo${k}" data-i="${i}" aria-selected="${k === cur}"><i style="background:${COL[g.nodes[i].k]}"></i><span>${esc(g.nodes[i].label)}</span><small>${esc(KN[g.nodes[i].k])}</small></li>`).join('') : `<li class="none">${esc(t('Nothing on the map matches.', 'Ingenting på kartet passer.'))}</li>`;
         if (rows.length) qi.setAttribute('aria-activedescendant', 'wsmo0'); else qi.removeAttribute('aria-activedescendant');

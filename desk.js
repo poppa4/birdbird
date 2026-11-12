@@ -453,7 +453,7 @@
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null; const mh = box.querySelector('.mmh');
       if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }
-      const sig = g => g ? g.nodes.length + ':' + g.links.length : '';
+      const sig = g => g ? g.nodes.length + ':' + g.links.length + ':' + (g.ghosts || 0) + ':' + g.own : '';
       return { destroy: () => { if (mm) mm.destroy(); mm = null; },
         refresh: () => { if (!A.mapGraph) return ''; const na = window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
     }

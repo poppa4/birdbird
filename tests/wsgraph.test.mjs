@@ -132,3 +132,61 @@ test('brain: outline and texture', () => {
   assert.ok(T.links.length > 150 && T.links.every(([i, j]) => i !== j && T.pts[i] && T.pts[j]));
   const e = M.brainLayout(M.buildGraph({})); assert.ok(e.settled && e.n === 0);
 });
+
+/* own workspace of n items: an aircraft or two, documents filed under them, notes citing pages, a loose note */
+function ownOf(n) {
+  const items = {}, put = x => { items[x.id] = x; };
+  const L = [];
+  if (n >= 1) L.push(W.newAircraft({ id: 'a1', typeKey: 'da42', reg: 'LN-ABC' }, 1));
+  if (n >= 6) L.push(W.newAircraft({ id: 'a2', typeKey: 'c172', reg: 'LN-XYZ' }, 2));
+  for (let i = 0; L.length < n; i++) {
+    if (i % 3 === 0) L.push(W.newDocEntry({ id: 'd' + i, name: 'Doc ' + i, acIds: i % 2 ? [] : [i % 4 && n >= 6 ? 'a2' : 'a1'] }, 10 + i));
+    else { const d = 'd' + (i - i % 3); L.push(W.newNote({ id: 'n' + i, title: 'Note ' + i, body: i % 2 ? `<cite data-doc="${d}" data-p="${i}">x</cite>` : 'loose' }, 10 + i)); }
+  }
+  L.forEach(put); return { items };
+}
+const SAMPLE = () => M.buildGraph(M.sampleInput());
+
+test('merged: own items light up the complete brain, inside the silhouette, ghosts fill the rest', () => {
+  const s = SAMPLE();
+  for (const n of [1, 3, 12, 25, 39]) {
+    const own = M.buildGraph(ownOf(n)), g = M.mergeGraph(own, s);
+    assert.ok(g.merged && g.own === n, n + ' own');
+    assert.equal(g.nodes.filter(x => !x.ghost).length, own.nodes.length, 'every own node is there');
+    assert.equal(g.ghosts, g.nodes.filter(x => x.ghost).length);
+    assert.equal(g.ghosts, Math.round(s.nodes.length * (1 - n / M.FULL)), 'ghosts fade with own items (' + n + ')');
+    assert.deepEqual({ ...g.counts }, { ...own.counts }, 'legend counts are yours');
+    const L = M.brainLayout(g, { instant: true });
+    assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.01)), 'all inside the brain (' + n + ')');
+    let close = 0; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) if (Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) < 4) close++;
+    assert.equal(close, 0, 'no dots on top of each other (' + n + ')');
+    assert.ok(g.links.every(l => g.nodes[l.s] && g.nodes[l.t] && g.nodes[l.s].ghost === g.nodes[l.t].ghost), 'links never join own and ghost');
+    assert.ok(g.nodes.every(nd => !nd.ghost || nd.id.startsWith('ex:')));
+  }
+});
+
+test('merged: ghosts decrease as own grows; nearest ghosts go first; free items in the cerebellum', () => {
+  const s = SAMPLE(); let last = Infinity;
+  for (const n of [0, 1, 3, 8, 12, 20, 30, 39]) { const g = M.mergeGraph(M.buildGraph(ownOf(n)), s); assert.ok(g.ghosts < last || n === 0, n + ': ' + g.ghosts); last = g.ghosts; }
+  assert.equal(M.mergeGraph(M.buildGraph(ownOf(0)), s).ghosts, s.nodes.length, 'empty: the whole example');
+  const big = M.buildGraph(ownOf(45)); assert.equal(M.mergeGraph(big, s), big, 'full enough: your own map');
+  /* the ghosts kept are farther from your nodes than the ones taken away */
+  const g = M.mergeGraph(M.buildGraph(ownOf(12)), s), own = g.nodes.map((n, i) => i).filter(i => !g.nodes[i].ghost);
+  const near = i => Math.min(...own.map(j => Math.hypot(g.slots[i][0] - g.slots[j][0], g.slots[i][1] - g.slots[j][1])));
+  const ghostD = g.nodes.map((n, i) => i).filter(i => g.nodes[i].ghost).map(near);
+  assert.ok(Math.min(...ghostD) > 0.02, 'no ghost sits on an own dot');
+  /* own aircraft at the heart of its lobe; an item without an aircraft sits in the cerebellum */
+  const free = M.buildGraph({ items: { n1: W.newNote({ id: 'n1', title: 'Loose' }, 1) } }), gf = M.mergeGraph(free, s), fi = gf.index['note:n1'];
+  const c = M.BRAIN.cb, [ux, uy] = gf.slots[fi]; assert.ok(Math.hypot(ux - c.cx, uy - c.cy) < 0.32, 'loose note in the cerebellum ' + ux + ',' + uy);
+});
+
+test('merged: deterministic and cached; own clusters keep their lobe', () => {
+  const s = SAMPLE(), a = M.mergeGraph(M.buildGraph(ownOf(12)), s), b = M.mergeGraph(M.buildGraph(ownOf(12)), SAMPLE());
+  assert.equal(a, b, 'cached by content');
+  const la = M.brainLayout(a, { instant: true }), lb = M.brainLayout(a, { instant: true }); assert.deepEqual([...la.x], [...lb.x]);
+  const g = M.mergeGraph(M.buildGraph(ownOf(30)), s), L = M.brainLayout(g, { instant: true });
+  const acs = g.nodes.map((n, i) => [n, i]).filter(([n]) => n.k === 'aircraft' && !n.ghost);
+  let ok = 0, all = 0;
+  g.nodes.forEach((nd, i) => { if (nd.ghost || nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]); const own = acs.find(([x]) => x.id === nd.ac); if (acs.every(c => c === own || d(own) <= d(c))) ok++; });
+  assert.ok(ok / all > 0.8, ok + ' of ' + all);
+});
