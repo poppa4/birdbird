@@ -383,8 +383,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="ownck.js?v=1"></script>
 <script src="otw.js?v=13"></script>
 <script src="panelzoom.js?v=2"></script>
-<script src="cockpit3d.js?v=4"></script>
-<script src="da42-3d.js?v=3"></script>
+<script src="cockpit3d.js?v=5"></script>
+<script src="da42-3d.js?v=4"></script>
 <script src="lab.js?v=47"></script>
 <script src="simshell.js?v=1"></script>
 <script>
@@ -572,7 +572,7 @@ LAB.add({},{'Procedures':'Prosedyrer','Missions':'Oppdrag','Outside view':'Utsik
  'Drag anywhere that is not a control to turn your head; scroll or pinch to zoom. Click a part of the panel to look at it, Look ahead (or C, Esc) to face forward. Keys 0–9 look at panel areas; U, O, I, M (or the numpad) look left, right, up and down.':'Dra hvor som helst utenom en bryter for å snu hodet; rull eller knip for å zoome. Klikk på en del av panelet for å se på den, Se fremover (eller C, Esc) for å se rett frem. Tastene 0–9 ser på panelområder; U, O, I, M (eller talltastaturet) ser til venstre, høyre, opp og ned.',
  'Look at a part of the panel · look ahead':'Se på en del av panelet · se fremover','Look left, right, up and down (also the numpad) · look ahead':'Se til venstre, høyre, opp og ned (også talltastaturet) · se fremover',
  'Prefer the flat panel? Use the':'Foretrekker du det flate panelet? Bruk','classic 2D DA42 trainer':'den klassiske 2D-treneren for DA42',
- 'Views':'Visninger','2D':'2D','Console':'Konsoll','Outside':'Ute','3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.','Lock view':'Lås visning','Locked':'Låst','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
+ 'Views':'Visninger','Loading 3D cockpit':'Laster 3D-cockpit','2D':'2D','Console':'Konsoll','Outside':'Ute','3D is running slowly on this device.':'3D går tregt på denne enheten.','Try the classic 2D panel':'Prøv det klassiske 2D-panelet','3D needs WebGL, which this browser does not offer. Showing the classic panel.':'3D krever WebGL, som denne nettleseren ikke har. Viser det klassiske panelet.','Lock view':'Lås visning','Locked':'Låst','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
 const SYS={};
 const ZN=[['overview',{en:'Panel',no:'Panel'}],['pfd',{en:'PFD',no:'PFD'}],['mfd',{en:'MFD',no:'MFD'}],['top',{en:'Glareshield',no:'Glareskjerm'}],['left',{en:'Engine/ECU',no:'Motor/ECU'}],['switches',{en:'Switches',no:'Brytere'}],['console',{en:'Console',no:'Konsoll'}],['flaps',{en:'Flaps',no:'Flaps'}],['audio',{en:'Audio',no:'Audio'}],['right',{en:'Breakers',no:'Sikringer'}]];
 function sysDefault(cold){
@@ -781,7 +781,7 @@ function d3Toast(){ if(PST.querySelector('.d3t')) return; const t=document.creat
   t.innerHTML=`<span>${T('3D is running slowly on this device.')} <a href="cockpit.html">${T('Try the classic 2D panel')}</a></span><button aria-label="Close">×</button>`; t.querySelector('button').onclick=()=>t.remove(); PST.appendChild(t); setTimeout(()=>t.remove(),12000); }
 setTimeout(()=>{
   if(D3&&D3.supported()){ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } }
-  if(otwReady){ try{ D3on=D3.init({stage:PST,world:P.world,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
+  if(otwReady){ try{ D3on=D3.init({io:IO,stage:PST,world:P.world,T,canLook:e=>emptyAt(e)&&!e.target.closest('.more,.d3t,.d3v')&&!SH.touchOwns(e),onStick:v=>{ inp.stick=v; },onScale:s=>{ Z.s=s; sizeScreens(); },onSlow:d3Toast,onAhead:()=>{ Z.reg='overview'; PST.classList.remove('zoomed'); syncAreaUI(); }}); }catch(e){ console.warn('3D cockpit',e); D3on=false; } }
   if(D3on){ Z.lock=false; Z.reg='overview'; IO.toWorld=e=>D3.toWorld(e); setOtw(true); el('bOtw').hidden=true; el('bLock').hidden=true; el('bAhead').hidden=false; D3.lookAhead(true); Z.s=D3.scale(); sizeScreens(); syncAreaUI(); LAB.onLang(()=>D3.relabel()); }
   else { el('otwMsg').textContent=T('3D needs WebGL, which this browser does not offer. Showing the classic panel.'); el('otwMsg').hidden=false; if(!otwReady) setOtw(false); }
   PST.classList.remove('d3wait'); zoomTo(Z.reg,true,true);
@@ -1126,7 +1126,7 @@ function loop(t){
   if(noteT>0){ noteT-=dt; if(noteT<=0) renderMission(); }
   hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, alerts(o).some(a=>a.t==='GEAR UP')&&!UI.paused);
   if(cockpitVis){ pfdT+=dt; if(pfdT>=GOV_PFD[GOV.lvl]){ pfdT=0; draw(o,n); } else if(!avOn()) AP.on=false; }
-  if(D3on){ if(cockpitVis) D3.frame(S,{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele}}); }
+  if(D3on){ if(cockpitVis) D3.frame(S,{active:!UI.paused&&!S.crash,stick:inp.stick||{x:S.ctl.ail,y:S.ctl.ele},ctl:S.ctl,eng:S.eng}); }
   else if(otwReady&&otwOn&&cockpitVis&&(Z.reg==='overview'||Z.reg==='top')){ const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(S,otwView); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0); }
   slow+=dt; if(slow>0.12&&!(D3on&&D3.frozen)){ slow=0; slowUI(o); } // status lines wait while the 3D view turns (any layout then re-lays out the whole panel)
   requestAnimationFrame(loop);

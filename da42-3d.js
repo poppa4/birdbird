@@ -121,6 +121,17 @@ G.DA42_3D=CK.make({
   views:{ahead:[12,-18,1],short:[10,-23,0.84]},
   noKeys:['KeyK'], // K and L set the selected altitude in this aircraft: look down with M
   snaps:[['panel','Panel'],['left','Left',-78,-14,1],['right','Right',78,-14,1],['ped','Console',14,-46,0.8],['out','Outside',0,-3,1]],
+  /* glTF cockpit (models/da42-cockpit.glb): power levers, flap switch, gear handle and trim wheel sit on the panel, so on the
+     foreground pass; the sticks and pedals are below it. The flat drawn levers they replace are hidden (touch zones stay) */
+  glb:{id:'da42',v:1,
+    fg:['power_L','power_R','flap_switch','gear_handle','trim_wheel'],
+    grab:['stick_L','stick_R'], blades:['prop'], direct:['stick_L','stick_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
+    hide:['g.ctl[data-id="pwr"] .lv0','g.ctl[data-id="pwr"] .lv1','g.ctl[data-id="gear"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="trim"] .mv.wr'],
+    drive(get,st,C){ const sx=st.stick?st.stick.x:0, sy=st.stick?st.stick.y:0, r=st.ctl?st.ctl.rud||0:0, n=v=>+v||0;
+      const bl=i=>{ const e=st.eng&&st.eng[i], r=e?+e.rpm||0:0; return [r>250?1:0,r]; }, pw=p=>-Math.atan((854-(906-104*Math.max(0,Math.min(1,n(p)))))*0.00074/0.09)/D2R, fl=C.flap_switch.translate.positions, gr=C.gear_handle.translate.positions;
+      return {stick_L:[0,sy*18,sx*17], stick_R:[0,sy*18,sx*17], power_L:[0,pw(get('pwrL'))], power_R:[0,pw(get('pwrR'))],
+        flap_switch:[fl[['UP','APP','LDG'][n(get('flaps'))]]], gear_handle:[gr[n(get('gear'))?'DOWN':'UP']], trim_wheel:[0,n(get('trim'))*540],
+        pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16], blade_L:bl(0), blade_R:bl(1)}; }},
   build(){
     const shell=toMesh(buildShell()); const sticks=[buildStick(-0.27),buildStick(0.27)];
     return {meshes:[shell,buildGlass(),...sticks],grab:sticks,

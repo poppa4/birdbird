@@ -125,6 +125,20 @@ G.C172_3D=CK.make({
   snaps:[['panel','Panel'],['left','Left',-80,-6,1],['right','Right',72,-8,1],['ped','Pedestal',24,-52,0.8],['out','Outside',0,-3,1]],
   noKeys:['KeyM'], // M and N are the mixture keys in this aircraft: look down with K
   cls:'d3c172',
+  /* glTF cockpit (models/c172-cockpit.glb): wheels, levers, key, trim wheel and fuel selector in front of the live panel, so on
+     the foreground pass; the flat drawn knobs and levers they replace are hidden (their touch zones stay) */
+  glb:{id:'c172',v:1,
+    fg:['yoke_L','yoke_R','throttle','mixture','carb_heat','flap_lever','magneto_key','trim_wheel','fuel_selector'],
+    grab:['yoke_L','yoke_R'], direct:['yoke_L','yoke_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
+    occ:['trim','fuel'], tint:{y0:0.2,y1:0.3,z0:-0.8,z1:-0.62,z2:1,z3:1.2},
+    hide:['g.ctl[data-id="thr"] .mv','g.ctl[data-id="mix"] .mv','g.ctl[data-id="carb"] .mv','g.ctl[data-id="flaps"] .mv','g.ctl[data-id="mag"] .mv','g.ctl[data-id="trim"] .mv.wr','g.ctl[data-id="fuelSel"] .mv'],
+    drive(get,st,C){ const sx=st.stick?st.stick.x:0, sy=st.stick?st.stick.y:0, r=st.ctl?st.ctl.rud||0:0, n=v=>+v||0;
+      const fl=C.flap_lever.translate.positions, mg=C.magneto_key.rotate.positions;
+      return {yoke_L:[sy*0.075,-sx*45], yoke_R:[sy*0.075,-sx*45],
+        throttle:[(1-n(get('thr')))*0.065], mixture:[(1-n(get('mix')))*0.065], carb_heat:[get('carb')?0.06:0],
+        flap_lever:[fl[['UP','10','20','FULL'][n(get('flaps'))]]], magneto_key:[0,mg[['OFF','R','L','BOTH','START'][n(get('mag'))]]],
+        trim_wheel:[0,n(get('trim'))*540], fuel_selector:[0,[90,0,-90,180][n(get('fuelSel'))]],
+        pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16]}; }},
   subs:[
     {id:'compass',rect:[900,100,200,104],pos:[0,YR-0.115,-0.675],pitch:6,sel:'g[clip-path="url(#cCmp)"]'},
     {id:'oat',rect:[336,134,72,90],pos:OATP,yaw:-14,pitch:-12},

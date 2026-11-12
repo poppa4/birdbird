@@ -128,6 +128,18 @@ G.B200_3D=CK.make({
   limits:{yaw:[-150,150],pitch:[-60,60]},
   snaps:[['panel','Panel'],['left','Left',-78,-10,1],['right','Right',74,-10,1],['up','Upper panel',22,28,0.75],['ped','Pedestal',26,-44,0.85],['fuel','Fuel panel',-24,-36,0.75],['cb','Breakers',56,-24,0.8],['out','Outside',0,-4,1]],
   cls:'d3b200',
+  /* glTF flight deck (models/b200-cockpit.glb): wheels, the power quadrant, flap and gear handles and the trim wheel are in front
+     of the live panel planes, so on the foreground pass; the flat drawn levers they replace are hidden (touch zones stay) */
+  glb:{id:'b200',v:1,
+    fg:['yoke_L','yoke_R','power_L','power_R','prop_L','prop_R','condition_L','condition_R','flap_lever','gear_handle','trim_wheel'],
+    grab:['yoke_L','yoke_R'], blades:['prop'], direct:['yoke_L','yoke_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'], tint:{y0:0.22,y1:0.32,z0:-1.0,z1:-0.8,z2:1,z3:1.2},
+    hide:['pwrL','pwrR','propL','propR','condL','condR','flaps','gear'].map(k=>`g.ctl[data-id="${k}"] .mv`).concat(['g.ctl[data-id="trim"] .mv.wr']),
+    drive(get,st,C){ const sx=st.stick?st.stick.x:0, sy=st.stick?st.stick.y:0, r=st.ctl?st.ctl.rud||0:0, n=v=>+v||0;
+      const bl=i=>{ const e=st.eng&&st.eng[i], r=e?+e.np||0:0; return [r>250?1:0,r]; }, ang=v=>-Math.atan((1330-v)*0.0005/0.10)/D2R, pw=k=>ang(1280+(1-n(get(k)))/1.4*100), pc=k=>ang(1280+(1-n(get(k)))*100);
+      const fl=C.flap_lever.rotate.positions, gr=C.gear_handle.rotate.positions;
+      return {yoke_L:[sy*0.08,-sx*45], yoke_R:[sy*0.08,-sx*45], power_L:[0,pw('pwrL')], power_R:[0,pw('pwrR')], prop_L:[0,pc('propL')], prop_R:[0,pc('propR')],
+        condition_L:[0,pc('condL')], condition_R:[0,pc('condR')], flap_lever:[0,fl[['UP','APPROACH','DOWN'][n(get('flaps'))]]], gear_handle:[0,gr[n(get('gear'))?'DOWN':'UP']],
+        trim_wheel:[0,n(get('trim'))*540], pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16], blade_L:bl(0), blade_R:bl(1)}; }},
   subs:[
     {id:'upper',rect:[814,0,366,242],ps:0.0008,pos:[0,0.27,-0.74],pitch:35},
     {id:'ped',rect:[664,1246,660,534],ps:0.0005,pos:[0,-0.7125,-0.7435],pitch:-60},
