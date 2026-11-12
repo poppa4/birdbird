@@ -171,9 +171,13 @@ def shell():
     cp = v3(0, YR - 0.115, -0.675)
     rbox(g, (0.085, 0.062, 0.06), 0.016, 'black', m=T(*(cp + v3(0, 0, -0.03))), seg=3, flat=1)
     rbox(g, (0.03, 0.08, 0.02), 0.006, 'black', m=T(*(cp + v3(0, 0.055, -0.045))), seg=2, flat=1)
-    # OAT probe through the windshield (left of centre)
+    # OAT gauge on the windshield (left of centre): the probe goes out through the glass, a nut clamps it on the inside and
+    # the gauge body sits right against it (local +Y points into the cabin; the glass is at about h = −0.0075). The live dial
+    # (c172-3d.js, sub-plane 'oat') lies on the body's face at h = 0.024
     op = ws(-0.62, 0.66) + v3(0, 0, 0.012)
-    lathe(g, [(0, 0), (0.006, 0), (0.006, 0.05), (0.012, 0.05), (0.012, 0.058), (0, 0.058)], 'chrome', seg=12, m=M(T(*op), RX(math.pi / 2 + 0.6)))
+    om = M(T(*op), RX(math.pi / 2 + 0.6))
+    lathe(g, [(0, -0.075), (0.0028, -0.075), (0.0028, -0.009), (0.010, -0.009), (0.010, -0.003), (0.0065, -0.003), (0.0065, 0.004), (0, 0.004)], 'chrome', seg=12, m=om)
+    lathe(g, [(0, 0.003), (0.0155, 0.003), (0.0162, 0.006), (0.0162, 0.024), (0, 0.024)], 'black', seg=20, m=om)
     # rear baggage bulkhead
     grid(g, 8, 8, lambda u, v: (-XW + u * 2 * XW, YF + v * (YR + 0.02 - YF), ZR), 'trim_dark', toward=cab)
     panel_body(g)

@@ -12,15 +12,17 @@ const smooth=(a,b,x)=>{ const t=clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
 /* ---------- fly ---------- */
 const AC={
   name:'DA42 NG', m:1700, S:16.29, b:13.42, c:1.27, Ixx:4300, Iyy:3900, Izz:7400,
-  CL0:0.30, CLa:5.0, CLmax:1.54,
+  CL0:0.30, CLa:5.0, CLmax:1.46, // stall 64 / 62 / 59 KIAS (UP / APP / LDG) at 1,700 kg, AFM 5.3.4
   flaps:[ {n:'UP', dCL:0, dCLmax:0, dCD:0, dCm:0},
-          {n:'APP',dCL:0.20,dCLmax:0.17,dCD:0.012,dCm:-0.025},
-          {n:'LDG',dCL:0.42,dCLmax:0.40,dCD:0.042,dCm:-0.05} ],
+          {n:'APP',dCL:0.20,dCLmax:0.10,dCD:0.012,dCm:-0.025},
+          {n:'LDG',dCL:0.42,dCLmax:0.27,dCD:0.042,dCm:-0.05} ],
   CD0:0.026, k:0.038, gearCD:0.016,
   Cm0:0.046, Cma:-1.0, Cmq:-14, CmE:0.36, CmT:0.17,
   Clb:-0.07, Clp:-0.50, Clr:0.10, ClA:0.052, ClR:0.006,
-  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.034, CYb:-0.62, CYR:0.075, // CnR: Vmca 71 KIAS flaps UP (AFM DA42 NG with MÄM 42-678; 5° bank, windmilling), tests/calib.test.mjs
+  Cnb:0.075, Cnr:-0.12, Cnp:-0.035, CnA:-0.005, CnR:0.033, CYb:-0.62, CYR:0.075, // CnR: Vmca 71 KIAS flaps UP (AFM DA42 NG with MÄM 42-678; 5° bank, windmilling), tests/calib.test.mjs
   Pmax:125000, Tstatic:2450, Aprop:Math.PI*0.95*0.95, yEng:2.55,
+  etaP:0.782, fthCD:0.036, // propulsive efficiency and feathered-propeller drag (incl. the sideslip and rudder drag of one-engine flight); per type,
+  // tuned to the AFM climb at 92 %, SL ISA, 1,700 kg: 1,378 ft/min both engines at VY 90, 350 ft/min one engine at VYSE 85 (tests/calib.test.mjs)
   xMain:0.16, wheelbase:1.9,
   fuelCap:25, // US gal per side (brukbart, omtrent)
   V:{ s0:64, s1:72, fe1:133, fe2:113, no:151, ne:188, mc:71, yse:85, r:76, y:90, le:188, lo:152, loe:188 } // DA42 NG / DA42-VI (MÄM 42-678 airspeed markings), AFM 2.2 / 2.3 / 4A.2, KIAS
@@ -40,7 +42,7 @@ const TYPES={
     Cm0:0.046, Cma:-1.0, Cmq:-14, CmE:0.36, CmT:0.17,
     Clb:-0.09, Clp:-0.47, Clr:0.10, ClA:0.058, ClR:0.008,
     Cnb:0.065, Cnr:-0.10, Cnp:-0.03, CnA:-0.006, CnR:0.040, CYb:-0.45, CYR:0.08,
-    Pmax:119300, Tstatic:2000, Aprop:1.2, yEng:0, xMain:0.35, wheelbase:1.65, fuelCap:1e6,
+    Pmax:119300, Tstatic:2000, Aprop:1.2, etaP:0.82, fthCD:0.012, yEng:0, xMain:0.35, wheelbase:1.65, fuelCap:1e6,
     V:{ s0:33, s1:44, fe1:110, fe2:85, no:127, ne:158, a:99, x:60, y:76, r:55, g:65 } } // KIAS, typiske verdier
 };
 function useType(n){ const t=TYPES[n]; if(!t) return AC; Object.assign(AC,JSON.parse(JSON.stringify(t))); return AC; }
@@ -82,7 +84,7 @@ function place(s,o){
   s.ctl.trim=clamp(-(AC.Cm0+AC.Cma*a+fl.dCm)/AC.CmT,-1,1);
   // effekt for planflukt
   const CD=AC.CD0+fl.dCD+(s.ctl.gear?AC.gearCD:0)+AC.k*CL*CL, D=q*AC.S*CD;
-  if(o.thr===undefined){ const live=s.eng.filter(e=>!e.fail).length||1; const eta=0.82*(1-Math.exp(-V/18)); const P=D*V/eta/live; s.eng.forEach(e=>{ e.thr=e.fail?e.thr:clamp(P/(AC.Pmax*Math.min(1,at.sig/0.74)),0.05,1); e.load=e.fail?0:e.thr; }); }
+  if(o.thr===undefined){ const live=s.eng.filter(e=>!e.fail).length||1; const eta=AC.etaP*(1-Math.exp(-V/18)); const P=D*V/eta/live; s.eng.forEach(e=>{ e.thr=e.fail?e.thr:clamp(P/(AC.Pmax*Math.min(1,at.sig/0.74)),0.05,1); e.load=e.fail?0:e.thr; }); }
 }
 
 /* aerodynamiske koeffisienter */
@@ -116,8 +118,8 @@ function engines(s,dt,V,at){
     const tgt=alive? e.thr : 0;
     e.load+=(tgt-e.load)*Math.min(1,dt/1.1);
     let T;
-    if(alive){ const P=e.load*AC.Pmax*pa, eta=0.82*(1-Math.exp(-Math.max(V,1)/18)); T=Math.min(AC.Tstatic*Math.max(e.load,0.03), eta*P/Math.max(V,1)); }
-    else T= -(e.feather?0.012:0.13)*q*AC.Aprop;
+    if(alive){ const P=e.load*AC.Pmax*pa, eta=AC.etaP*(1-Math.exp(-Math.max(V,1)/18)); T=Math.min(AC.Tstatic*Math.max(e.load,0.03), eta*P/Math.max(V,1)); }
+    else T= -(e.feather?AC.fthCD:0.13)*q*AC.Aprop;
     e.T=T;
     const rpmT= alive ? (e.test? 1850 : 710+1590*smooth(0,0.55,e.load)) : (e.crank? 280 : (e.feather?0:Math.min(1900,V*30)));
     e.rpm+=(rpmT-e.rpm)*Math.min(1,dt/(alive?0.8:(e.feather?3:1.5)));

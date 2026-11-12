@@ -602,6 +602,7 @@ function updCam(){ eH.set(view.pitch*D2R,-view.yaw*D2R,0,'YXZ'); qHead.setFromEu
 function onScreen(e,w,h){ let front=0, minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
   for(const [u,v] of [[0,0],[w,0],[0,h],[w,h]]){ const ww=e[3]*u+e[7]*v+e[15]; if(ww>0.02){ front++; const x=(e[0]*u+e[4]*v+e[12])/ww, y=(e[1]*u+e[5]*v+e[13])/ww; minx=Math.min(minx,x); maxx=Math.max(maxx,x); miny=Math.min(miny,y); maxy=Math.max(maxy,y); } }
   return !(front===0||(front===4&&(maxx<0||minx>W||maxy<0||miny>H))); }
+function inFront(e,w,h){ for(const [u,v] of [[0,0],[w,0],[0,h],[w,h]]) if(e[3]*u+e[7]*v+e[15]<=0.02) return false; return true; }
 const fx=x=>+x.toPrecision(9), OFF='translate(-200000px,-200000px) scale(.001)';
 function placePanel(){
   SC.set(W/2,0,0,W/2, 0,-H/2,0,H/2, 0,0,0,0, 0,0,0,1);
@@ -620,7 +621,9 @@ function placePanel(){
       HS.set(f[0],f[4],f[12], f[1],f[5],f[13], f[3],f[7],f[15]); const h=HMi.clone().multiply(HS).elements; // column-major 3×3
       const s='matrix3d('+[h[0],h[1],0,h[2], h[3],h[4],0,h[5], 0,0,1,0, h[6],h[7],0,h[8]].map(fx).join(',')+')';
       if(s!==pl.str){ pl.str=s; pl.el.style.transform=s; } } }
-  const hide=!show;
+  // a sub-plane in view keeps the panel layer visible even when the main panel is out of view (looking up at the upper panel):
+  // the main panel's own drawing is then off screen, still in front of the eye, so nothing of it shows
+  const hide=!show&&!(anySub&&inFront(e,PW,PH));
   if(hide!==world._hid){ world._hid=hide; world.style.visibility=hide?'hidden':''; }
   if(show||anySub){ const s='matrix3d('+Array.from(e,x=>+x.toFixed(6)).join(',')+')'; if(s!==matStr){ matStr=s; world.style.transform=s; } }
 }

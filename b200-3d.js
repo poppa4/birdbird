@@ -126,7 +126,7 @@ G.B200_3D=CK.make({
   panel:{ps:PS,tilt:10,at:[1000,600,[0,-0.27,-0.93]],w:2000,h:1780},
   views:{ahead:[13,-19,0.92],short:[12,-24,0.82]},
   limits:{yaw:[-150,150],pitch:[-60,60]},
-  snaps:[['panel','Panel'],['left','Left',-78,-10,1],['right','Right',74,-10,1],['up','Upper panel',22,28,0.75],['ped','Pedestal',26,-44,0.85],['fuel','Fuel panel',-24,-36,0.75],['cb','Breakers',56,-24,0.8],['out','Outside',0,-4,1]],
+  snaps:[['panel','Panel'],['left','Left',-78,-10,1],['right','Right',74,-10,1],['up','Upper panel',26,12,0.6],['ped','Pedestal',26,-44,0.85],['fuel','Fuel panel',-24,-36,0.75],['cb','Breakers',56,-24,0.8],['out','Outside',0,-4,1]],
   cls:'d3b200',
   /* glTF flight deck (models/b200-cockpit.glb): wheels, the power quadrant, flap and gear handles and the trim wheel are in front
      of the live panel planes, so on the foreground pass; the flat drawn levers they replace are hidden (touch zones stay) */

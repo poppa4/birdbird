@@ -16,7 +16,11 @@ const COL={trim:0xbcb5a7,trim2:0xa8a193,head:0xd9d4c8,frame:0xcbc5b8,hood:0x1c1c
 // windshield: a across (−1 left … 1 right), t from base (0) to the roof (1)
 function ws(a,t){ const b=V3(a*0.50,-0.098+0.02*a*a,ZWB+0.10*a*a), p=V3(a*0.535,YR-0.004,ZWT+0.04*a*a); const q=b.lerp(p,t); q.z-=0.035*Math.sin(Math.PI*t)*(1-0.5*a*a); return q; }
 const zFront=y=>y<-0.078?-0.96:-0.96+0.395*Math.min(1,(y+0.078)/0.385); // door window front edge (along the A-post)
-const OATP=(()=>{ const p=ws(-0.62,0.66); return [p.x,p.y,p.z+0.025]; })();
+/* OAT gauge: mounted on the windshield, left of centre — the probe goes out through the glass, a nut clamps it inside and the
+   gauge body sits against the nut; the live dial lies on the body's face. Face centre and normal as in the glTF model
+   (tools/blender/c172.py: mount point ws(−0.62, 0.66) + 12 mm aft, face 24 mm into the cabin). OATN = face normal into the gauge */
+const OATM=[-0.3243,0.1713,-0.7460], OATN=[0,0.5646,-0.8253], OATC=[OATM[0],OATM[1]-OATN[1]*0.024,OATM[2]-OATN[2]*0.024];
+const OATP=[OATC[0]-OATN[0]*0.0012,OATC[1]-OATN[1]*0.0012,OATC[2]-OATN[2]*0.0012], OATPITCH=Math.asin(OATN[1])/D2R;
 const lipV=u=>{ const t=Math.max(0,Math.min(1,(u-30)/1940)); return PT-14-92*t*(1-t); };
 
 function buildShell(K){
@@ -78,6 +82,11 @@ function buildShell(K){
   for(const xc of [-0.27,0.27]) for(const dx of [-0.15,0.15]) B.box(xc+dx,YF+0.008,0.05,0.025,0.016,0.9,0x6f7377);
   // control-column boots on the panel
   for(const u of YKX){ const p=K.pp(u,COLY,-0.002); B.geo(new THREE.CylinderGeometry(0.03,0.034,0.012,16),new THREE.Matrix4().makeRotationX(Math.PI/2).premultiply(new THREE.Matrix4().makeTranslation(p.x,p.y,p.z)),COL.black,false); }
+  // OAT gauge body against the windshield, the clamping nut and the probe outside (the built-in cockpit; the glTF model has its own)
+  { const n=V3(...OATN).normalize(), q=new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),n), c=V3(...OATC), m=V3(...OATM), cyl=(r,l,at,col,s)=>B.geo(new THREE.CylinderGeometry(r,r,l,s),new THREE.Matrix4().compose(at,q,V3(1,1,1)),col,false);
+    cyl(0.0162,0.021,c.clone().addScaledVector(n,0.0105),COL.black,20);
+    cyl(0.010,0.006,m.clone().addScaledVector(n,0.006),0x9a9ea3,12);
+    cyl(0.0028,0.066,m.clone().addScaledVector(n,0.042),0x9a9ea3,8); }
   // compass bracket from the windshield header
   B.box(0,YR-0.03,-0.66,0.03,0.07,0.03,COL.black);
   bake(B,[-0.62,-1.05,-1.2,0.62,0.4,1.3]);
@@ -127,7 +136,7 @@ G.C172_3D=CK.make({
   cls:'d3c172',
   /* glTF cockpit (models/c172-cockpit.glb): wheels, levers, key, trim wheel and fuel selector in front of the live panel, so on
      the foreground pass; the flat drawn knobs and levers they replace are hidden (their touch zones stay) */
-  glb:{id:'c172',v:1,
+  glb:{id:'c172',v:2,
     fg:['yoke_L','yoke_R','throttle','mixture','carb_heat','flap_lever','magneto_key','trim_wheel','fuel_selector'],
     grab:['yoke_L','yoke_R'], direct:['yoke_L','yoke_R','pedal_L_l','pedal_L_r','pedal_R_l','pedal_R_r'],
     occ:['trim','fuel'], tint:{y0:0.2,y1:0.3,z0:-0.8,z1:-0.62,z2:1,z3:1.2},
@@ -141,7 +150,7 @@ G.C172_3D=CK.make({
         pedal_L_l:[0,r*16], pedal_L_r:[0,-r*16], pedal_R_l:[0,r*16], pedal_R_r:[0,-r*16]}; }},
   subs:[
     {id:'compass',rect:[900,100,200,104],pos:[0,YR-0.115,-0.675],pitch:6,sel:'g[clip-path="url(#cCmp)"]'},
-    {id:'oat',rect:[336,134,72,90],pos:OATP,yaw:-14,pitch:-12},
+    {id:'oat',rect:[342,160,60,60],pos:OATP,pitch:OATPITCH},
     {id:'trim',rect:[900,1084,200,114],ps:0.0009,pos:[0,-0.635,-0.666],pitch:-39},
     {id:'fuel',rect:[900,1200,200,120],ps:0.0008,pos:[0,-0.884,-0.487],pitch:-75}
   ],

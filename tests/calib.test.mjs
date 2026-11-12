@@ -3,8 +3,12 @@
 // read from b200-app.js so the test follows the page. Reference figures are public POH/AFM values; tolerances are
 // teaching-grade, not certification-grade:
 //   C172 (172P-like):   stall 51 / 46 KCAS (flaps 0 / 30) and climb about 700 ft/min at 2,400 lb, sea level ISA, Vy 76 KIAS
-//   DA42 NG (MÄM 42-678 / DA42-VI): Vmca 71 KIAS flaps UP (5° bank into the live engine, take-off power, critical engine windmilling)
-//   King Air B200:      Vmca 86 KIAS (same conditions)
+//   DA42 NG (MÄM 42-678 / DA42-VI): Vmca 71 KIAS flaps UP (5° bank into the live engine, take-off power, critical engine windmilling);
+//                       AFM 5.3.4 stall (power off, KIAS) 64 / 62 / 59 at 1,700 kg and 68 / 65 / 62 at 1,900 kg (UP / APP / LDG);
+//                       AFM 5.3.7 / 5.3.8 climb at 92 %, SL ISA: 1,378 / 1,203 ft/min both engines at VY 90 (1,700 / 1,900 kg),
+//                       350 / 269 ft/min one engine feathered at VYSE 85
+//   King Air B200:      Vmca 86 KIAS (same conditions); stall 99 KIAS flaps up, 75 KIAS full flaps at 12,500 lb (ASI arcs);
+//                       climb at 12,500 lb, SL ISA: about 2,450 ft/min both engines, about 740 ft/min one engine (feathered, VYSE 121)
 // plus turbulence: the 0–100 % slider gives light to moderate turbulence, independent of the step size.
 import fs from 'node:fs'; import vm from 'node:vm'; import path from 'node:path'; import {fileURLToPath} from 'node:url';
 const here=path.dirname(fileURLToPath(import.meta.url)), src=f=>fs.readFileSync(path.join(here,'..',f),'utf8');
@@ -84,11 +88,14 @@ function vmcaFlown(type,{v0,flap=0}){
 /* ---------- stall speeds (CAS; the C172 page adds its ASI position error on top) ---------- */
 within('C172 stall, flaps 0, 2,400 lb (POH about 51 KCAS)',stallSpeed('C172',{mass:1089,v0:80}),51,3);
 within('C172 stall, flaps 30, 2,400 lb (POH about 46 KCAS)',stallSpeed('C172',{mass:1089,flap:3,v0:70}),46,3);
-within('DA42 stall, flaps UP (model 62; AFM 66 KIAS at 1,785 kg)',stallSpeed('DA42',{v0:100}),63,4);
-within('DA42 stall, flaps LDG (model 56; AFM 62 KIAS at 1,785 kg)',stallSpeed('DA42',{flap:2,v0:90}),57,4);
-// B200: the model sits below the published clean figure (about 99 KIAS at MTOW); kept as a regression band until weight is selectable
-within('B200 stall, flaps UP (model regression band)',stallSpeed('B200',{v0:130}),91,3);
-within('B200 stall, flaps DOWN (model 72; published about 75 KIAS)',stallSpeed('B200',{flap:2,v0:110}),73,3);
+within('DA42 stall, flaps UP, 1,700 kg (AFM 64 KIAS)',stallSpeed('DA42',{v0:100,mass:1700}),64,2);
+within('DA42 stall, flaps APP, 1,700 kg (AFM 62 KIAS)',stallSpeed('DA42',{flap:1,v0:95,mass:1700}),62,2);
+within('DA42 stall, flaps LDG, 1,700 kg (AFM 59 KIAS)',stallSpeed('DA42',{flap:2,v0:90,mass:1700}),59,2);
+within('DA42 stall, flaps UP, 1,900 kg (AFM 68 KIAS)',stallSpeed('DA42',{v0:100,mass:1900}),68,2);
+within('DA42 stall, flaps LDG, 1,900 kg (AFM 62 KIAS)',stallSpeed('DA42',{flap:2,v0:90,mass:1900}),62,2);
+within('B200 stall, flaps UP, 12,500 lb (published 99 KIAS)',stallSpeed('B200',{v0:130,mass:5670}),99,3);
+within('B200 stall, flaps DOWN, 12,500 lb (published 75 KIAS)',stallSpeed('B200',{flap:2,v0:110,mass:5670}),75,3);
+ok('B200 stall, flaps APPROACH lies between clean and full flaps',(v=>v>78&&v<96)(stallSpeed('B200',{flap:1,v0:120,mass:5670})));
 
 /* ---------- Vmca ---------- */
 within('B200 Vmca, 5° bank, windmilling (published 86 KIAS)',vmca('B200'),86,3);
@@ -103,11 +110,15 @@ ok('B200: a feathered propeller lowers Vmca a little',vmca('B200',{feather:true}
 /* ---------- climb (sea level ISA, take-off / full power) ---------- */
 { const r=fly('C172',{ias:76,T:90,mass:1089,gam:4}); within('C172 climb at Vy, 2,400 lb (POH about 700 ft/min)',r.vs,700,70); }
 { const r=fly('C172',{ias:76,T:90,gam:4}); between('C172 climb at Vy, 2,205 lb (model weight; more than at 2,400 lb)',r.vs,700,880,0); }
-// DA42 and B200 climb: the model is above the published figures (no sideslip/rudder drag, light fixed weights); regression bands
-{ const r=fly('DA42',{ias:90,T:60,thr:1,gam:4}); between('DA42 AEO climb at Vy 90 (model band)',r.vs,1450,1850,0); }
-{ const r=fly('DA42',{ias:85,T:60,thr:1,fail:[1,0],feather:true,bank:3,hdg:true}); between('DA42 OEI climb at Vyse 85, feathered (model band)',r.vs,400,700,0); }
-{ const r=fly('B200',{ias:125,T:60,thr:1,gam:5}); between('B200 AEO climb at 125 KIAS (model band; published about 2,450)',r.vs,2600,3300,0); }
-{ const r=fly('B200',{ias:121,T:60,thr:1,fail:[1,0],feather:true,bank:3,hdg:true}); between('B200 OEI climb at 121 KIAS, feathered (model band; published about 740)',r.vs,850,1200,0); }
+// twins at the published conditions: power 92 % (DA42) / take-off power (B200), gear and flaps up, dead engine feathered with 3° bank
+{ const r=fly('DA42',{ias:90,T:60,thr:0.92,gam:4,mass:1700}); within('DA42 AEO climb at VY 90, 92 %, 1,700 kg (AFM 1,378 ft/min)',r.vs,1378,80); }
+{ const r=fly('DA42',{ias:90,T:60,thr:0.92,gam:4,mass:1900}); within('DA42 AEO climb at VY 90, 92 %, 1,900 kg (AFM 1,203 ft/min)',r.vs,1203,80); }
+{ const r=fly('DA42',{ias:85,T:60,thr:0.92,fail:[1,0],feather:true,bank:3,hdg:true,mass:1700}); within('DA42 OEI climb at VYSE 85, 92 %, feathered, 1,700 kg (AFM 350 ft/min)',r.vs,350,50); }
+{ const r=fly('DA42',{ias:85,T:60,thr:0.92,fail:[1,0],feather:true,bank:3,hdg:true,mass:1900}); within('DA42 OEI climb at VYSE 85, 92 %, feathered, 1,900 kg (AFM 269 ft/min)',r.vs,269,50); }
+{ const r=fly('B200',{ias:125,T:60,thr:1,gam:5,mass:5670}); within('B200 AEO climb at 125 KIAS, 12,500 lb (published about 2,450 ft/min)',r.vs,2450,150); }
+{ const r=fly('B200',{ias:121,T:60,thr:1,fail:[1,0],feather:true,bank:3,hdg:true,mass:5670}); within('B200 OEI climb at VYSE 121, feathered, 12,500 lb (published about 740 ft/min)',r.vs,740,80); }
+{ const a=fly('B200',{ias:121,T:60,thr:1,fail:[1,0],feather:true,bank:3,hdg:true,mass:5670}), b=fly('B200',{ias:121,T:60,thr:1,fail:[1,0],feather:false,bank:3,hdg:true,mass:5670});
+  ok(`B200 OEI: a windmilling propeller costs climb (${b.vs.toFixed(0)} vs ${a.vs.toFixed(0)} ft/min feathered)`,b.vs<a.vs-200); }
 
 /* ---------- turbulence ---------- */
 function turb(type,k,hz,seeds=16){ let R=0,N=0;

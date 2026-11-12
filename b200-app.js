@@ -37,9 +37,10 @@ LAB.add({},{
 
 /* ---------- aircraft: B200-like numbers on the shared flight model ---------- */
 const F=FDM, KT=F.KT;
-Object.assign(F.AC,{name:'B200',m:5300,S:28.15,b:16.61,c:1.98,Ixx:26000,Iyy:30000,Izz:50000,CL0:0.25,CLa:5.2,CLmax:1.30,
-  flaps:[{n:'UP',dCL:0,dCLmax:0,dCD:0,dCm:0},{n:'APPR',dCL:0.22,dCLmax:0.30,dCD:0.012,dCm:-0.03},{n:'DN',dCL:0.50,dCLmax:0.80,dCD:0.055,dCm:-0.06}],
-  CD0:0.024,k:0.045,gearCD:0.018,CnR:0.046 /* rudder power: Vmca ≈ 86 KIAS (5° bank, take-off power, windmilling), tests/calib.test.mjs */,Pmax:634000,Tstatic:11000,Aprop:Math.PI*1.25*1.25,yEng:2.6,xMain:0.2,wheelbase:4.5,fuelCap:1e6,
+Object.assign(F.AC,{name:'B200',m:5300,S:28.15,b:16.61,c:1.98,Ixx:26000,Iyy:30000,Izz:50000,CL0:0.25,CLa:5.2,CLmax:1.182 /* stall 99 / 88 / 75 KIAS (UP / APPR / DN) at 12,500 lb */,
+  flaps:[{n:'UP',dCL:0,dCLmax:0,dCD:0,dCm:0},{n:'APPR',dCL:0.22,dCLmax:0.31,dCD:0.012,dCm:-0.03},{n:'DN',dCL:0.50,dCLmax:0.88,dCD:0.055,dCm:-0.06}],
+  CD0:0.024,k:0.045,gearCD:0.018,CnR:0.0428 /* rudder power: Vmca ≈ 86 KIAS (5° bank, take-off power, windmilling), tests/calib.test.mjs */,
+  etaP:0.76,fthCD:0.028 /* climb at 12,500 lb, SL ISA: about 2,450 ft/min both engines, 740 one engine feathered */,Pmax:634000,Tstatic:11000,Aprop:Math.PI*1.25*1.25,yEng:2.6,xMain:0.2,wheelbase:4.5,fuelCap:1e6,
   V:{s0:75,s1:99,fe1:200,fe2:157,no:259,ne:259,mc:86,yse:121,r:100,y:125,le:181,lo:163}});
 const S=F.create(), AP=F.mkAP();
 const UI={paused:false,sound:true};
@@ -965,7 +966,10 @@ el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
 const PD=B200PROCS;
 SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });
 const scenProcs=()=>PD.SCENS.map(k=>PROCS.find(p=>p.k===k)).filter(Boolean);
-SH.pane('em',box=>{ box.innerHTML=SH.emerHTML({own:OCK.emer(),disc:PD.DISC,refs:scenProcs().map(p=>({t:p.t,steps:(p.all||p.steps).map(x=>x.t)}))}); });
+/* Emergency tab: only the student's own checklist sections (ownck.js); no aircraft procedure text */
+const EMNONE=tr2("Add your school's checklist in My Workspace to see it here.",'Legg inn skolens sjekkliste i My Workspace for å se den her.');
+SH.pane('em',box=>{ const own=OCK.emer()||[];
+  box.innerHTML=own.length?`<ul class="plist">${own.map(x=>`<li><button type="button" data-poem="${x.i}"><span>${SH.esc(x.t)}</span></button></li>`).join('')}</ul>`:`<p class="brief">${SH.esc(L(EMNONE))}</p>`; });
 SH.pane('fl',box=>{ box.innerHTML=SH.failHTML({now:PD.FAILS,scen:scenProcs().map(p=>({k:p.k,t:p.t}))}); });
 el('tabEm').addEventListener('click',e=>{ const b=e.target.closest('button[data-poem]'); if(b){ OCK.open(+b.dataset.poem); SH.tab('ck'); } });
 el('tabFl').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.fx){ const t=el(b.dataset.fx); if(t) t.click(); } else if(b.dataset.sk){ procStart(b.dataset.sk); SH.tab('ck'); } });
