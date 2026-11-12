@@ -15,6 +15,7 @@
   'use strict';
   const GW = window.WSGRAPH;
   const COL = { aircraft: '#FFFFFF', doc: '#A9C7E6', page: '#6F8DB0', note: '#DCE8F4', notebook: '#C3D5E8', pack: '#E6D9BD', route: '#9CCFC7', desk: '#7E8C9C' };
+  const COLS = COL;
   const LEG = { aircraft: 'aircraft', doc: 'doc', note: 'note', pack: 'pack', route: 'route', desk: 'desk' };
   const BASE = { aircraft: 6, doc: 4.2, page: 1.8, note: 2.7, notebook: 2.9, pack: 3.1, route: 3, desk: 3.2 };
   const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -30,6 +31,53 @@
   function polyPath(ctx, P, f, closed) { P.forEach((p, k) => { const [a, b] = f(p[0], p[1]); if (k) ctx.lineTo(a, b); else ctx.moveTo(a, b); }); if (closed) ctx.closePath(); }
   const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  function neighOf(g, i) { const s = new Set([i]); for (const l of g.links) { if (l.s === i) s.add(l.t); else if (l.t === i) s.add(l.s); } return s; }
+  function names(t) {
+    return { KN: { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), page: t('Page', 'Side'), note: t('Note', 'Notat'), notebook: t('Notebook', 'Notatbok'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), desk: t('Desk', 'Arbeidsflate') },
+      GN: { aircraft: t('Aircraft', 'Fly'), doc: t('Documents', 'Dokumenter'), note: t('Notes', 'Notater'), pack: t('Packs', 'Pakker'), route: t('Routes', 'Ruter'), desk: t('Desks', 'Arbeidsflater') } };
+  }
+  /* the card for node i (2D and 3D maps): an example dot explains what it would be in your workspace and offers the real
+     action (when pinned); your own dot offers to open it on the desk. o: { t, sample, pinned, coarse } */
+  function cardHTML(g, i, o) {
+    const t = o.t, KN = names(t).KN, COL = o.col || COLS;
+    const ACT = { aircraft: ['ac-new', t('Add aircraft', 'Legg til fly')], doc: ['doc-add', t('Add a document', 'Legg til et dokument')], page: ['doc-add', t('Add a document', 'Legg til et dokument')], note: ['map-note', t('New note', 'Nytt notat')], notebook: ['map-note', t('New note', 'Nytt notat')], pack: ['pack-new', t('Make a briefing pack', 'Lag en briefingpakke')], route: ['', t('Plan a route', 'Planlegg en rute')] };
+    const ART = { aircraft: ['an aircraft', 'et fly'], doc: ['a document', 'et dokument'], page: ['a page reference', 'en sidehenvisning'], note: ['a note', 'et notat'], notebook: ['a notebook', 'en notatbok'], pack: ['a briefing pack', 'en briefingpakke'], route: ['a route', 'en rute'], desk: ['a desk', 'en arbeidsflate'] };
+    const WOULD = k => { const a = ART[k] || ART.note; return t(`Example — this is where ${a[0]} would go`, `Eksempel — her hører ${a[1]} hjemme`); };
+    function explain(g, i, t) {
+      const n = g.nodes[i], nb2 = [...neighOf(g, i)].filter(j => j !== i).map(j => g.nodes[j]), of = k => nb2.filter(m => m.k === k).map(m => m.label);
+      const q = s => t('“', '«') + s + t('”', '»'), list = a => a.slice(0, 2).join(t(' and ', ' og ')) + (a.length > 2 ? t(` and ${a.length - 2} more`, ` og ${a.length - 2} til`) : '');
+      const ac = n.ac && g.index[n.ac] != null && n.k !== 'aircraft' ? g.nodes[g.index[n.ac]].label : '';
+      if (n.k === 'aircraft') return t(`An aircraft you fly${n.type ? ', a ' + n.type : ''}. It gets its own region of the map, where its documents, notes and briefing packs gather.`, `Et fly du flyr${n.type ? ', en ' + n.type : ''}. Det får sitt eget område på kartet, der dokumentene, notatene og briefingpakkene samles.`);
+      if (n.k === 'doc') { const ns = of('note'); return (ac ? t(`Your ${n.label}, filed under ${ac}.`, `Din ${n.label}, lagt under ${ac}.`) : t(`A document like ${n.label}.`, `Et dokument som ${n.label}.`)) + (ns.length ? t(` Notes that cite its pages link here, like ${q(ns[0])}.`, ` Notater som viser til sidene, kobles hit, som ${q(ns[0])}.`) : t(' Notes that cite its pages link here.', ' Notater som viser til sidene, kobles hit.')); }
+      if (n.k === 'page') { const ns = of('note'); return ns.length ? t(`A page in your manual that a note refers to: ${q(ns[0])} cites it.`, `En side i manualen din som et notat viser til: ${q(ns[0])} viser til den.`) : t('A page in your manual that a note refers to.', 'En side i manualen din som et notat viser til.'); }
+      if (n.k === 'note' || n.k === 'notebook') { const ps = of('page').concat(of('doc')); return ps.length ? t(`A note of your own. This one cites a page in ${list(ps)}.`, `Et notat du skriver selv. Dette viser til en side i ${list(ps)}.`) : t(`A note of your own${ac ? ', linked to ' + ac : ''}.`, `Et notat du skriver selv${ac ? ', koblet til ' + ac : ''}.`); }
+      if (n.k === 'pack') { const r = of('route'); return t(`Briefing pack ${n.label.replace(' – ', '→')}${r.length ? ', linked to its route' : ''}${ac ? ' and to ' + ac : ''}.`, `Briefingpakke ${n.label.replace(' – ', '→')}${r.length ? ', koblet til ruten sin' : ''}${ac ? ' og til ' + ac : ''}.`); }
+      if (n.k === 'route') { const pk = of('pack'); return t(`A route from Route Explorer${pk.length ? ', linked to the briefing pack ' + pk[0].replace(' – ', '→') : ''}.`, `En rute fra Route Explorer${pk.length ? ', koblet til briefingpakken ' + pk[0].replace(' – ', '→') : ''}.`); }
+      return '';
+    }
+    const n = g.nodes[i], sub = n.k === 'aircraft' && n.type ? `<span class="m">${esc(n.type)}</span>` : '';
+    if (o.sample) {
+      const a = ACT[n.k];
+      return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b>${sub}<span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(g, i, t))}</span>` +
+        (o.pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(o.coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
+    }
+    return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
+      `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`;
+  }
+  /* search on the map: node indices best first (at most 7) */
+  function searchRows(g, q, visible) {
+    q = fold(q.trim()); if (!q) return [];
+    const tk = q.split(/\s+/), rows = [];
+    g.nodes.forEach((n, i) => { if (!visible(i)) return; const f = fold(n.label + (n.type ? ' ' + n.type : '')); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); });
+    rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); return rows.slice(0, 7).map(r => r[0]);
+  }
+  /* the 2D / 3D switch on the map toolbar: view { cur: '2d' | '3d', onSwitch(mode) } */
+  function viewSwitch(view, t) {
+    if (!view) return '';
+    return `<div class="wsm-zm wsm-vw" role="group" aria-label="${esc(t('Map view', 'Kartvisning'))}">${['2d', '3d'].map(m => `<button type="button" data-view="${m}" aria-pressed="${view.cur === m}">${m.toUpperCase()}</button>`).join('')}</div>`;
+  }
+
   function mount(host, o) {
     const t = o.t || ((en) => en), mini = !!o.mini, acLabels = !!o.acLabels, esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const KN = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), page: t('Page', 'Side'), note: t('Note', 'Notat'), notebook: t('Notebook', 'Notatbok'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), desk: t('Desk', 'Arbeidsflate') };
@@ -39,7 +87,7 @@
       <div class="wsm-top">
         <div class="wsm-q"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2"/><path d="M12.6 12.6 17 17"/></svg><input type="search" class="wsm-qi" placeholder="${esc(t('Find on the map', 'Finn på kartet'))}" aria-label="${esc(t('Find on the map', 'Finn på kartet'))}" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-autocomplete="list"><ul class="wsm-sug" role="listbox" hidden></ul></div>
         <span class="sp"></span>
-        <div class="wsm-zm"><button type="button" data-z="in" aria-label="${esc(t('Zoom in', 'Zoom inn'))}">+</button><button type="button" data-z="out" aria-label="${esc(t('Zoom out', 'Zoom ut'))}">−</button><button type="button" data-z="fit">${esc(t('Fit', 'Tilpass'))}</button></div>
+        <div class="wsm-zm"><button type="button" data-z="in" aria-label="${esc(t('Zoom in', 'Zoom inn'))}">+</button><button type="button" data-z="out" aria-label="${esc(t('Zoom out', 'Zoom ut'))}">−</button><button type="button" data-z="fit">${esc(t('Fit', 'Tilpass'))}</button></div>${viewSwitch(o.view, t)}
       </div>
       <div class="wsm-card" hidden></div>
       <div class="wsm-leg" role="group" aria-label="${esc(t('Show on the map', 'Vis på kartet'))}"></div>`);
@@ -369,34 +417,11 @@
       if (isEx(i)) { select(i); return; }
       if (o.onOpen) o.onOpen(n, !!beside);
     }
-    /* the example explains each dot: what it would be in your workspace, and the real action */
-    const ACT = { aircraft: ['ac-new', t('Add aircraft', 'Legg til fly')], doc: ['doc-add', t('Add a document', 'Legg til et dokument')], page: ['doc-add', t('Add a document', 'Legg til et dokument')], note: ['map-note', t('New note', 'Nytt notat')], notebook: ['map-note', t('New note', 'Nytt notat')], pack: ['pack-new', t('Make a briefing pack', 'Lag en briefingpakke')], route: ['', t('Plan a route', 'Planlegg en rute')] };
-    const ART = { aircraft: ['an aircraft', 'et fly'], doc: ['a document', 'et dokument'], page: ['a page reference', 'en sidehenvisning'], note: ['a note', 'et notat'], notebook: ['a notebook', 'en notatbok'], pack: ['a briefing pack', 'en briefingpakke'], route: ['a route', 'en rute'], desk: ['a desk', 'en arbeidsflate'] };
-    const WOULD = k => { const a = ART[k] || ART.note; return t(`Example — this is where ${a[0]} would go`, `Eksempel — her hører ${a[1]} hjemme`); };
-    function explain(i) {
-      const n = g.nodes[i], nb2 = [...neigh(i)].filter(j => j !== i).map(j => g.nodes[j]), of = k => nb2.filter(m => m.k === k).map(m => m.label);
-      const q = s => t('“', '«') + s + t('”', '»'), list = a => a.slice(0, 2).join(t(' and ', ' og ')) + (a.length > 2 ? t(` and ${a.length - 2} more`, ` og ${a.length - 2} til`) : '');
-      const ac = n.ac && g.index[n.ac] != null && n.k !== 'aircraft' ? g.nodes[g.index[n.ac]].label : '';
-      if (n.k === 'aircraft') return t(`An aircraft you fly${n.type ? ', a ' + n.type : ''}. It gets its own region of the map, where its documents, notes and briefing packs gather.`, `Et fly du flyr${n.type ? ', en ' + n.type : ''}. Det får sitt eget område på kartet, der dokumentene, notatene og briefingpakkene samles.`);
-      if (n.k === 'doc') { const ns = of('note'); return (ac ? t(`Your ${n.label}, filed under ${ac}.`, `Din ${n.label}, lagt under ${ac}.`) : t(`A document like ${n.label}.`, `Et dokument som ${n.label}.`)) + (ns.length ? t(` Notes that cite its pages link here, like ${q(ns[0])}.`, ` Notater som viser til sidene, kobles hit, som ${q(ns[0])}.`) : t(' Notes that cite its pages link here.', ' Notater som viser til sidene, kobles hit.')); }
-      if (n.k === 'page') { const ns = of('note'); return ns.length ? t(`A page in your manual that a note refers to: ${q(ns[0])} cites it.`, `En side i manualen din som et notat viser til: ${q(ns[0])} viser til den.`) : t('A page in your manual that a note refers to.', 'En side i manualen din som et notat viser til.'); }
-      if (n.k === 'note' || n.k === 'notebook') { const ps = of('page').concat(of('doc')); return ps.length ? t(`A note of your own. This one cites a page in ${list(ps)}.`, `Et notat du skriver selv. Dette viser til en side i ${list(ps)}.`) : t(`A note of your own${ac ? ', linked to ' + ac : ''}.`, `Et notat du skriver selv${ac ? ', koblet til ' + ac : ''}.`); }
-      if (n.k === 'pack') { const r = of('route'); return t(`Briefing pack ${n.label.replace(' – ', '→')}${r.length ? ', linked to its route' : ''}${ac ? ' and to ' + ac : ''}.`, `Briefingpakke ${n.label.replace(' – ', '→')}${r.length ? ', koblet til ruten sin' : ''}${ac ? ' og til ' + ac : ''}.`); }
-      if (n.k === 'route') { const pk = of('pack'); return t(`A route from Route Explorer${pk.length ? ', linked to the briefing pack ' + pk[0].replace(' – ', '→') : ''}.`, `En rute fra Route Explorer${pk.length ? ', koblet til briefingpakken ' + pk[0].replace(' – ', '→') : ''}.`); }
-      return '';
-    }
+    /* the card: shared with the 3D map (WSMAP.ui.cardHTML) */
     function showCard(i) {
       if (!card) return;
       if (i < 0) { card.hidden = true; return; }
-      const n = g.nodes[i], sub = n.k === 'aircraft' && n.type ? `<span class="m">${esc(n.type)}</span>` : ''; card.hidden = false;
-      if (isEx(i)) {
-        const a = ACT[n.k], pinned = i === sel;
-        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b>${sub}<span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(i))}</span>` +
-          (pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
-        return;
-      }
-      card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
-        `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`;
+      card.hidden = false; card.innerHTML = cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse });
     }
     function select(i, zoom) {
       const was = sel; sel = i; nb = null;
@@ -424,12 +449,12 @@
 
     /* ---------- toolbar, legend, search ---------- */
     if (!mini) {
+      const vw = host.querySelector('.wsm-vw'); if (vw) vw.addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b && b.dataset.view !== o.view.cur) o.view.onSwitch(b.dataset.view); });
       host.querySelector('.wsm-zm').addEventListener('click', e => { const b = e.target.closest('[data-z]'); if (!b) return; if (b.dataset.z === 'fit') moveTo(fitTarget(), 420); else zoomAt(b.dataset.z === 'in' ? 1.4 : 1 / 1.4, W / 2, H / 2); });
       legEl.addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (!b) return; const k = b.dataset.g; if (hidden.has(k)) hidden.delete(k); else hidden.add(k); if (sel >= 0 && !visible(sel)) select(-1); hover = -1; nb = null; drawLegend(); const nb2 = legEl.querySelector(`[data-g="${k}"]`); if (nb2) nb2.focus(); request(); });
       let rows = [], cur = 0;
       const drawSug = () => {
-        const q = fold(qi.value.trim()); rows = [];
-        if (q) { const tk = q.split(/\s+/); g.nodes.forEach((n, i) => { if (!visible(i)) return; const f = fold(n.label + (n.type ? ' ' + n.type : '')); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); }); rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); rows = rows.slice(0, 7).map(r => r[0]); }
+        const q = fold(qi.value.trim()); rows = searchRows(g, q, visible);
         cur = 0; sug.hidden = !rows.length && !q; qi.setAttribute('aria-expanded', String(!sug.hidden));
         sug.innerHTML = rows.length ? rows.map((i, k) => `<li role="option" id="wsmo${k}" data-i="${i}" aria-selected="${k === cur}"><i style="background:${COL[g.nodes[i].k]}"></i><span>${esc(g.nodes[i].label)}</span><small>${esc(KN[g.nodes[i].k])}</small></li>`).join('') : `<li class="none">${esc(t('Nothing on the map matches.', 'Ingenting på kartet passer.'))}</li>`;
         if (rows.length) qi.setAttribute('aria-activedescendant', 'wsmo0'); else qi.removeAttribute('aria-activedescendant');
@@ -457,5 +482,5 @@
       destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; host.wsmap = null; }
     });
   }
-  window.WSMAP = { mount, COL, stats };
+  window.WSMAP = { mount, COL, stats, ui: { cardHTML, searchRows, viewSwitch, names, neighOf, esc, fold } };
 })();

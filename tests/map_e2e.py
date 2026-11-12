@@ -5,20 +5,27 @@ always labelled, documents when there is room; own dots open on the desk; desk h
 without labels (aircraft regions named on the desk home) and without pulses. No aircraft: one Unsorted region with a hint.
 A seeded workspace (3 aircraft, 15 documents, 40 notes, 5 packs, 6 routes): legend filter, search, open on the desk, no
 animation frames once still apart from rare pulses along real links, none with reduced motion, phone size, Norwegian.
-    python3 tests/map_e2e.py [base-url] [shots-dir] [brain-shots-dir]"""
+These 2D checks run with the map set to 2D. The 3D map (wsmap3d.js, SwiftShader): lazy-loaded, the example and your own
+items as a brain of points (inside the shape, by lobe), hover/tap card, fly-to, search lights up, region labels, open on
+the desk, palettes, 2D/3D switch remembered, keyboard, no frames once grown and the auto-rotation is over, reduced
+motion, the weak-device fallback to 2D, frame times.
+    python3 tests/map_e2e.py [base-url] [shots-dir] [brain-shots-dir] [3d-shots-dir] [--only3d]"""
 import os, sys
 from playwright.sync_api import sync_playwright
 BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:9005'
 SHOTS = sys.argv[2] if len(sys.argv) > 2 else '/tmp/mapshots'
 BRAIN = sys.argv[3] if len(sys.argv) > 3 else '/tmp/brain3shots'
-os.makedirs(BRAIN, exist_ok=True)
+SHOTS3 = sys.argv[4] if len(sys.argv) > 4 and not sys.argv[4].startswith('--') else '/tmp/brain3dshots'
+ONLY3 = '--only3d' in sys.argv
+os.makedirs(BRAIN, exist_ok=True); os.makedirs(SHOTS3, exist_ok=True)
 os.makedirs(SHOTS, exist_ok=True)
 URL = BASE + '/workspace.html'
 res = []
 def check(n, c, info=''):
     res.append((n, bool(c))); print(('ok   ' if c else 'FAIL ') + n + (('  ' + str(info)[:300]) if info and not c else ''))
 
-RAF = """(() => { const r = window.requestAnimationFrame.bind(window); window.__raf = 0; window.__rafRun = 0; window.requestAnimationFrame = f => { window.__raf++; return r(ts => { window.__rafRun++; f(ts); }); }; })();"""
+RAF0 = """(() => { const r = window.requestAnimationFrame.bind(window); window.__raf = 0; window.__rafRun = 0; window.requestAnimationFrame = f => { window.__raf++; return r(ts => { window.__rafRun++; f(ts); }); }; })();"""
+RAF = RAF0 + "localStorage.setItem('bb-map-view', '2d');"
 SEED = """async () => {
   const W = window.WSCORE, A = window.WS.api, D = window.DESKCORE, now = Date.now(), list = [];
   const ac = [W.newAircraft({ typeKey: 'da42', reg: 'LN-ABC' }), W.newAircraft({ typeKey: 'c172', reg: 'LN-XYZ' }), W.newAircraft({ typeKey: 'b200', reg: 'LN-KAB' })];
@@ -155,8 +162,158 @@ def no_aircraft(br):
     pg.click('.langseg button[data-v="en"]'); pg.wait_for_timeout(300)
     ctx.close()
 
+
+# ---------------- the 3D map ----------------
+IDLE3 = "() => [window.__rafRun, window.WSMAP3D ? window.WSMAP3D.stats.pulseFrames : 0]"
+def idle3(pg, ms):
+    a = pg.evaluate(IDLE3); pg.wait_for_timeout(ms); b = pg.evaluate(IDLE3)
+    return (b[0] - a[0]) - (b[1] - a[1]), b[1] - a[1]
+def ready3(pg, ms=30000):
+    pg.wait_for_function("() => window.WS && window.WS.map && window.WS.map.is3d && window.WS.map.debug.settled", timeout=ms)
+def still3(pg, ms=15000):
+    pg.wait_for_function("() => { const d = window.WS.map.debug; return d.settled && !d.rotating && !d.running; }", timeout=ms)
+ST3 = """(() => { const m = window.WS.map, g = m.graph, L = m.layout, B = window.WSGRAPH3D, S = B.S;
+  return { n: g.nodes.length, own: g.own, regions: m.debug.regions, labels: m.debug.labels,
+    inside: g.nodes.every((x, i) => B.sdf(L.P[i * 3] / S, L.P[i * 3 + 1] / S, L.P[i * 3 + 2] / S) < -0.02),
+    acs: g.nodes.filter(x => x.k === 'aircraft').map(x => x.id), cpu: m.debug.cpu, dpr: m.debug.dpr, frames: m.debug.frames }; })()"""
+CPU = []
+def ctx3(br, vw=1470, vh=956, phone=False, pref='3d', extra=''):
+    ctx = br.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=3 if phone else 1, has_touch=phone, is_mobile=phone)
+    ctx.add_init_script(RAF0 + (f"localStorage.setItem('bb-map-view', '{pref}');" if pref else '') + "window.__wsm3dRotate = 3;" + extra)
+    errs = []; pg = ctx.new_page()
+    pg.on('pageerror', lambda e: errs.append('pageerror: ' + str(e)))
+    pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' and '/api/' not in m.text and '404' not in m.text else None)
+    return ctx, pg, errs
+def at3(pg, i):
+    x, y = pg.evaluate(f'window.WS.map.screenOf({i})'); box = pg.locator('#wsMapHost canvas').bounding_box(); return box['x'] + x, box['y'] + y
+
+def map3d(br):
+    # the example, desktop
+    ctx, pg, errs = ctx3(br)
+    pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api')
+    check('3d: three.js is not loaded until the map opens', pg.evaluate('!window.THREE && !window.WSMAP3D'))
+    pg.goto(URL + '#/map'); ready3(pg)
+    check('3d: the 3D map loads (lazy three.js, WebGL)', pg.evaluate('!!window.THREE && window.WS.mapView') == '3d' and pg.locator('#wsMapHost canvas').count() == 1)
+    st = pg.evaluate(ST3)
+    check('3d example: about 22 points inside the brain, three named regions', 20 <= st['n'] <= 25 and st['inside'] and st['regions'] == ['DA42', 'B200', 'C172'], st)
+    check('3d example: background neurons, never interactive', pg.evaluate("window.WS.map.graph.nodes.length") == st['n'])
+    check('3d example: aircraft labelled', all(a in st['labels'] for a in st['acs']) and pg.locator('.wsm3-reg').count() == 3)
+    check('3d: rotates for a while after the grow-in', pg.evaluate('window.WS.map.debug.rotating') or pg.evaluate('window.WS.map.debug.running'))
+    pg.mouse.move(2, 2); still3(pg)
+    n_idle, n_pulse = idle3(pg, 1500)
+    check('3d: no frames once grown and the auto-rotation is over', n_idle == 0, (n_idle, n_pulse))
+    pg.screenshot(path=f'{SHOTS3}/desktop-example.png')
+    # hover a note: card explains it
+    i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note' && n.deg >= 1)")
+    x, y = at3(pg, i); pg.mouse.move(x, y); pg.wait_for_timeout(250)
+    card = pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else ''
+    check('3d example: hover explains a point', 'EXAMPLE' in card.upper() and 'this is where a note would go' in card, card)
+    check('3d example: hover lights its links and labels the point', pg.evaluate('window.WS.map.debug.labels').count(pg.evaluate(f'window.WS.map.graph.nodes[{i}].id')) == 1)
+    pg.screenshot(path=f'{SHOTS3}/desktop-example-hover.png')
+    pg.mouse.click(x, y); pg.wait_for_timeout(150)
+    check('3d example: click pins the card with the real action', pg.locator('.wsm-card [data-act="map-note"]').count() == 1, pg.inner_text('.wsm-card'))
+    # double-click an aircraft: fly to it
+    a = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'aircraft')"); c0 = pg.evaluate('window.WS.map.camera')
+    x, y = at3(pg, a); pg.mouse.dblclick(x, y); pg.wait_for_timeout(1300)
+    c1 = pg.evaluate('window.WS.map.camera'); p = pg.evaluate(f'Array.from(window.WS.map.layout.P.slice({a} * 3, {a} * 3 + 3))')
+    check('3d: double-click flies to the point', abs(c1['tx'] - p[0]) < 0.5 and abs(c1['tz'] - p[2]) < 0.5 and c1['d'] < c0['d'] * 0.8, (c0, c1, p))
+    # reset view, region label flies to the region
+    pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(1000)
+    h = pg.evaluate('window.WS.map.home'); c2 = pg.evaluate('window.WS.map.camera')
+    check('3d: Reset view returns home', abs(c2['d'] - h['d']) < 0.5 and abs(c2['tx'] - h['tx']) < 0.1, (c2, h))
+    pg.click('.wsm3-reg >> nth=1'); pg.wait_for_timeout(1200)
+    c3 = pg.evaluate('window.WS.map.camera'); cl = pg.evaluate('window.WS.map.layout.clusters[1].c')
+    check('3d: a region label flies to its region', abs(c3['tx'] - cl[0]) < 0.5 and abs(c3['ty'] - cl[1]) < 0.5 and c3['d'] < h['d'], (c3, cl))
+    pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(900)
+    # search lights up the matches, Enter flies to the best one
+    pg.fill('.wsm-qi', 'LN-EX'); pg.wait_for_timeout(150)
+    check('3d: search lights up every match', pg.evaluate('window.WS.map.debug.lit') == 3, pg.evaluate('window.WS.map.debug.lit'))
+    pg.screenshot(path=f'{SHOTS3}/desktop-example-search.png')
+    pg.fill('.wsm-qi', 'LN-EXB'); pg.wait_for_selector('.wsm-sug li[data-i]'); pg.press('.wsm-qi', 'Enter'); pg.wait_for_timeout(1100)
+    b = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.label === 'LN-EXB')"); p = pg.evaluate(f'Array.from(window.WS.map.layout.P.slice({b} * 3, {b} * 3 + 3))'); c4 = pg.evaluate('window.WS.map.camera')
+    check('3d: search flies to the result and shows its card', 'B200' in pg.inner_text('.wsm-card') and abs(c4['tx'] - p[0]) < 0.5, pg.inner_text('.wsm-card'))
+    pg.fill('.wsm-qi', ''); pg.press('.wsm-qi', 'Escape'); pg.press('.wsm-qi', 'Escape')
+    # legend dims a type
+    pg.click('.wsm-leg [data-g="note"]'); pg.wait_for_timeout(100)
+    check('3d: colour key switches notes off', pg.get_attribute('.wsm-leg [data-g="note"]', 'aria-pressed') == 'false')
+    pg.click('.wsm-leg [data-g="note"]')
+    # palettes
+    pg.click('.wsm-pal [data-pal="ember"]'); pg.wait_for_timeout(200)
+    check('3d: palette Ember, remembered', pg.get_attribute('#wsMapHost', 'data-pal') == 'ember' and pg.evaluate("localStorage.getItem('bb-map-palette')") == 'ember')
+    pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(900); pg.mouse.move(2, 2); pg.screenshot(path=f'{SHOTS3}/desktop-example-ember.png')
+    pg.click('.wsm-pal [data-pal="mono"]'); pg.wait_for_timeout(200); pg.screenshot(path=f'{SHOTS3}/desktop-example-mono.png')
+    pg.click('.wsm-pal [data-pal="ice"]')
+    # keyboard
+    pg.focus('#wsMapHost canvas'); c5 = pg.evaluate('window.WS.map.camera'); pg.keyboard.press('ArrowLeft'); pg.keyboard.press('+'); pg.wait_for_timeout(400); c6 = pg.evaluate('window.WS.map.camera')
+    check('3d: keyboard turns and zooms', c6['th'] != c5['th'] and c6['d'] < c5['d'], (c5, c6))
+    # pulses run along a real link and stop
+    still3(pg, 20000); pg.evaluate('window.WS.map.pulseNow()')
+    n_idle, n_pulse = idle3(pg, 2500)
+    check('3d: a pulse runs, then frames stop', n_idle == 0 and 0 < n_pulse <= 120 and pg.evaluate('window.WS.map.debug.pulses') == 0, (n_idle, n_pulse))
+    # 2D / 3D switch
+    pg.click('.wsm-vw [data-view="2d"]'); pg.wait_for_selector('#wsMapHost .wsm-c'); pg.wait_for_timeout(300)
+    check('3d: switch to 2D, remembered', pg.evaluate("!window.WS.map.is3d && window.WS.mapView === '2d' && localStorage.getItem('bb-map-view') === '2d'"))
+    pg.click('.wsm-vw [data-view="3d"]'); ready3(pg)
+    check('3d: switch back to 3D', pg.evaluate("window.WS.map.is3d && localStorage.getItem('bb-map-view') === '3d'"))
+    st = pg.evaluate(ST3); CPU.append(('desktop example', st['cpu'], st['frames']))
+    # your own 12 items: open on the desk
+    pg.goto(URL + '#/library'); pg.evaluate(SEEDN, 12); pg.goto(URL + '#/map'); pg.reload(); ready3(pg)
+    st = pg.evaluate(ST3)
+    check('3d own=12: only your items, inside the brain', st['n'] == 12 and st['own'] == 12 and st['inside'], st)
+    check('3d own=12: regions per aircraft and Unsorted', st['regions'] == ['DA42', 'C172', 'Unsorted'], st['regions'])
+    check('3d own=12: no example tag', pg.locator('.wsm-tag').count() == 0)
+    pg.mouse.move(2, 2); still3(pg); pg.wait_for_timeout(150)
+    n_idle, n_pulse = idle3(pg, 1500)
+    check('3d own=12: idle, no frames', n_idle == 0, (n_idle, n_pulse))
+    pg.screenshot(path=f'{SHOTS3}/desktop-own12.png')
+    st = pg.evaluate(ST3); CPU.append(('desktop own 12', st['cpu'], st['frames']))
+    oi = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.id === 'doc:od0')")
+    x, y = at3(pg, oi); pg.mouse.move(x, y); pg.wait_for_timeout(200)
+    pg.screenshot(path=f'{SHOTS3}/desktop-own12-hover.png')
+    pg.mouse.click(x, y); pg.wait_for_timeout(150)
+    check('3d own=12: click shows the card with Open on the desk', 'Own doc 0' in pg.inner_text('.wsm-card') and pg.locator('.wsm-card [data-o="here"]').count() == 1, pg.inner_text('.wsm-card'))
+    pg.click('.wsm-card [data-o="here"]'); pg.wait_for_selector('.dk-tab.on', timeout=5000)
+    check('3d own=12: opens on the desk', 'Own doc 0' in pg.inner_text('.dk-tab.on'))
+    check('3d: leaving the map stops it', pg.evaluate('!window.WS.map'))
+    # reduced motion: no grow-in, no rotation, no frames, no pulses
+    pg.emulate_media(reduced_motion='reduce'); pg.goto(URL + '#/map'); ready3(pg); pg.wait_for_timeout(300)
+    r0 = pg.evaluate('window.__raf'); pg.wait_for_timeout(1000); r1 = pg.evaluate('window.__raf')
+    check('3d reduced motion: drawn at once, no rotation, no frames', pg.evaluate('!window.WS.map.debug.rotating') and r1 == r0, (r0, r1))
+    pg.evaluate('window.WS.map.pulseNow()'); pg.wait_for_timeout(300)
+    check('3d reduced motion: no pulses', pg.evaluate('window.WS.map.debug.pulses') == 0)
+    pg.emulate_media(reduced_motion='no-preference')
+    # Norwegian
+    pg.click('.langseg button[data-v="no"]'); ready3(pg)
+    check('3d: Norwegian', pg.evaluate('window.WS.map.debug.regions')[-1] == 'Uten fly' and pg.get_attribute('.wsm-qi', 'placeholder') == 'Finn på kartet' and 'Tilbakestill' in pg.inner_text('.wsm-zm'), pg.evaluate('window.WS.map.debug.regions'))
+    pg.click('.langseg button[data-v="en"]')
+    check('3d desktop: no console errors', not errs, errs); ctx.close()
+
+    # a weak device (the frame probe fails): the 2D map, no error
+    ctx, pg, errs = ctx3(br, pref='', extra='window.__wsm3dProbeMs = 0.001;')
+    pg.goto(URL + '#/map'); pg.wait_for_function("() => window.WS && window.WS.mapView === '2d' && window.WS.map && !window.WS.map.is3d", timeout=30000)
+    check('3d: a weak device falls back to the 2D map', pg.evaluate("sessionStorage.getItem('bb-map-weak') === 'slow'") and pg.locator('.wsm-vw [data-view="3d"]').count() == 1)
+    check('3d fallback: no console errors', not errs, errs); ctx.close()
+
+    # phone
+    ctx, pg, errs = ctx3(br, 390, 844, phone=True)
+    pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api'); pg.evaluate(SEEDN, 12)
+    pg.goto(URL + '#/map'); pg.reload(); ready3(pg); still3(pg)
+    st = pg.evaluate(ST3)
+    check('3d phone: pixel ratio capped at 1.25', abs(st['dpr'] - 1.25) < 0.01, st['dpr'])
+    pg.evaluate("document.getElementById('wsMapPlate').scrollIntoView({ block: 'end' })"); pg.wait_for_timeout(300)
+    pg.screenshot(path=f'{SHOTS3}/phone-own12.png')
+    oi = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.id === 'doc:od0')"); x, y = at3(pg, oi)
+    pg.touchscreen.tap(x, y); pg.wait_for_timeout(250)
+    check('3d phone: tap shows the card', pg.is_visible('.wsm-card') and 'Own doc 0' in pg.inner_text('.wsm-card'))
+    pg.screenshot(path=f'{SHOTS3}/phone-own12-card.png')
+    st = pg.evaluate(ST3); CPU.append(('phone own 12', st['cpu'], st['frames']))
+    check('3d phone: no console errors', not errs, errs); ctx.close()
+    for name, c, f in CPU: print(f'  frame CPU {name}: avg {c["avg"]:.2f} ms, p95 {c["p95"]:.2f} ms, max {c["max"]:.1f} ms over {c["n"]} frames ({f} frames in all)')
+
 with sync_playwright() as p:
-    br = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
+    br = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
+    map3d(br)
+    if ONLY3: br.close(); bad = [n for n, c in res if not c]; print(f'{len(res) - len(bad)}/{len(res)} passed'); sys.exit(1 if bad else 0)
     for (vw, vh, tag) in [(1470, 956, 'desktop'), (390, 844, 'phone')]:
         partial(br, vw, vh, tag)
     no_aircraft(br)
