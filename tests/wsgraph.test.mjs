@@ -66,11 +66,28 @@ test('clusters: each node gathers around an aircraft through its links; desks le
   assert.equal(ac('note:n3'), '', 'only on a desk: free'); assert.equal(ac('doc:d3'), ''); assert.equal(ac('route:r3'), '');
 });
 
-test('empty workspace: an empty graph that is settled at once; the example has a little of everything', () => {
+test('empty workspace: an empty graph that is settled at once; the example is small and meaningful', () => {
   const g = M.buildGraph({}); assert.equal(g.nodes.length, 0); assert.ok(M.layout(g).settled);
-  const s = M.buildGraph(M.sampleInput());
-  assert.ok(s.counts.aircraft === 3 && s.counts.doc >= 6 && s.counts.note >= 12 && s.counts.pack >= 3 && s.counts.route >= 3);
-  assert.ok(s.nodes.every(n => n.k === 'aircraft' || n.ac || n.g === 'doc' || n.k === 'note'));
+  const s = M.buildGraph(M.sampleInput(), { pages: false, desks: false });
+  assert.ok(s.nodes.length >= 20 && s.nodes.length <= 25, s.nodes.length + ' nodes');
+  assert.deepEqual({ ...s.counts }, { aircraft: 3, doc: 6, note: 7, pack: 3, route: 3, desk: 0, page: 0 });
+  /* every aircraft: an AFM (or POH), a checklist, 2-3 notes, a pack and a route, all in its own cluster */
+  for (const a of s.nodes.filter(n => n.k === 'aircraft')) {
+    const m = s.nodes.filter(n => n.ac === a.id), of = k => m.filter(n => n.k === k).length;
+    assert.ok(of('doc') === 2 && of('note') >= 2 && of('note') <= 3 && of('pack') === 1 && of('route') === 1, a.id);
+    assert.ok(m.some(n => /^(AFM|POH) /.test(n.label)) && m.some(n => /^Checklist /.test(n.label)), a.id);
+  }
+  assert.ok(s.nodes.every(n => n.ac), 'nothing floats free');
+  assert.ok(s.nodes.every(n => n.deg >= 1), 'every dot has a real link');
+  assert.equal(M.buildGraph(M.sampleInput((en, no) => no)).nodes.find(n => n.k === 'doc' && n.label.startsWith('Sjekkliste')) != null, true, 'Norwegian');
+});
+
+test('buildGraph: desks and pages can be left out; aircraft carry their type', () => {
+  const g = M.buildGraph(workspace(), { pages: false, desks: false });
+  assert.ok(!g.nodes.some(n => n.k === 'desk' || n.k === 'page'));
+  assert.equal(g.own, 13); assert.equal(g.counts.desk, 0);
+  assert.equal(g.nodes[g.index['aircraft:a1']].type, 'Diamond DA42');
+  assert.equal(M.shortType('Diamond DA42'), 'DA42'); assert.equal(M.shortType('Cessna 172'), 'C172'); assert.equal(M.shortType('King Air B200'), 'B200'); assert.equal(M.shortType(''), '');
 });
 
 test('layout: deterministic, settles, keeps nodes apart, clusters stay apart', () => {
@@ -106,87 +123,86 @@ test('layout: 2000 nodes run with the spatial hash in reasonable time', () => {
   assert.ok(Date.now() - t0 < 3000, 'thirty steps took ' + (Date.now() - t0) + ' ms');
 });
 
-test('brain: the example sits inside the silhouette, the same every time, each aircraft in its own region', () => {
-  const g = M.buildGraph(M.sampleInput()), a = M.brainLayout(g), b = M.brainLayout(M.buildGraph(M.sampleInput()));
-  assert.ok(!a.settled, 'a short intro first'); let n = 0; while (a.step(2)) n++; assert.ok(a.settled && n < 60, 'intro ends after ' + n + ' frames');
+const SAMPLE = () => M.buildGraph(M.sampleInput(), { pages: false, desks: false });
+const pairsCloser = (L, n, d) => { let c = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) < d) c++; return c; };
+
+test('brain: the example sits inside the silhouette, the same every time, each aircraft in its own named region', () => {
+  const g = SAMPLE(), a = M.brainLayout(g), b = M.brainLayout(SAMPLE());
+  assert.ok(!a.settled, 'a short intro first'); let n = 0; while (a.step(2)) n++; assert.ok(a.settled && n < 40, 'intro ends after ' + n + ' frames');
   b.run(); assert.deepEqual([...a.x], [...b.x]); assert.deepEqual([...a.y], [...b.y]);
-  assert.ok(g.nodes.every((nd, i) => M.inBrain(a.x[i] / a.S, a.y[i] / a.S, 0.01)), 'every node inside the brain');
+  assert.ok(g.nodes.every((nd, i) => M.inBrain(a.x[i] / a.S, a.y[i] / a.S, 0.02)), 'every node inside the brain');
   assert.ok(g.nodes.every((nd, i) => a.x[i] === a.tx[i] && a.y[i] === a.ty[i]), 'ends exactly on its place');
-  let close = 0; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) if (Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]) < 6) close++;
-  assert.equal(close, 0, 'no dots on top of each other');
-  const acs = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
-  assert.equal(acs.length, 3); assert.ok(acs.map(([nd]) => nd.label).join(' | ').includes('DA42 — ME/IR'));
+  assert.equal(pairsCloser(a, g.nodes.length, 8), 0, 'no dots on top of each other');
+  assert.equal(a.regions.length, 3, 'three regions');
+  assert.deepEqual(a.regions.map(r => M.shortType(g.nodes[r.ac].type)), ['DA42', 'B200', 'C172']);
+  assert.ok(a.regions.every(r => M.inBrain(r.lx / a.S, r.ly / a.S, 0.0)), 'region names inside the brain');
   /* members are nearer their own aircraft than any other */
-  let ok = 0, all = 0;
-  g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]); const own = acs.find(([x]) => x.id === nd.ac); if (acs.every(c => c === own || d(own) <= d(c))) ok++; });
-  assert.ok(ok / all > 0.8, ok + ' of ' + all);
+  const acs = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
+  g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft') return; const d = ([, j]) => Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]); const own = acs.find(([x]) => x.id === nd.ac); assert.ok(acs.every(c => c === own || d(own) < d(c)), nd.id); });
   const f = a.frame; assert.ok(f.x1 - f.x0 > f.y1 - f.y0, 'wider than tall');
   const c = M.brainLayout(g, { instant: true }); assert.ok(c.settled); assert.deepEqual([...c.x], [...a.x]);
   assert.equal(a.step(1), false);
-});
-
-test('brain: outline and texture', () => {
-  assert.ok(M.inBrain(-0.3, -0.3) && M.inBrain(0.58, 0.4), 'cerebrum and cerebellum'); assert.ok(!M.inBrain(0, 0.9) && !M.inBrain(-1.2, 0) && !M.inBrain(0, -0.95));
-  const T = M.brainTexture(200), T2 = M.brainTexture(200);
-  assert.equal(T, T2, 'cached'); assert.equal(T.pts.length, 200); assert.ok(T.pts.every(([x, y]) => M.inBrain(x, y)));
-  assert.ok(T.links.length > 150 && T.links.every(([i, j]) => i !== j && T.pts[i] && T.pts[j]));
   const e = M.brainLayout(M.buildGraph({})); assert.ok(e.settled && e.n === 0);
 });
 
+test('brain: outline', () => {
+  assert.ok(M.inBrain(-0.3, -0.3) && M.inBrain(0.58, 0.4), 'cerebrum and cerebellum'); assert.ok(!M.inBrain(0, 0.9) && !M.inBrain(-1.2, 0) && !M.inBrain(0, -0.95));
+  assert.equal(M.BRAIN.fissures.length, 2, 'two fissures, nothing more');
+  assert.ok(!('brainTexture' in M) && !('mergeGraph' in M), 'no dust, no ghost merge');
+});
+
 /* own workspace of n items: an aircraft or two, documents filed under them, notes citing pages, a loose note */
-function ownOf(n) {
+function ownOf(n, noAc) {
   const items = {}, put = x => { items[x.id] = x; };
   const L = [];
-  if (n >= 1) L.push(W.newAircraft({ id: 'a1', typeKey: 'da42', reg: 'LN-ABC' }, 1));
-  if (n >= 6) L.push(W.newAircraft({ id: 'a2', typeKey: 'c172', reg: 'LN-XYZ' }, 2));
+  if (n >= 1 && !noAc) L.push(W.newAircraft({ id: 'a1', typeKey: 'da42', reg: 'LN-ABC' }, 1));
+  if (n >= 6 && !noAc) L.push(W.newAircraft({ id: 'a2', typeKey: 'c172', reg: 'LN-XYZ' }, 2));
   for (let i = 0; L.length < n; i++) {
-    if (i % 3 === 0) L.push(W.newDocEntry({ id: 'd' + i, name: 'Doc ' + i, acIds: i % 2 ? [] : [i % 4 && n >= 6 ? 'a2' : 'a1'] }, 10 + i));
+    if (i % 3 === 0) L.push(W.newDocEntry({ id: 'd' + i, name: 'Doc ' + i, acIds: noAc || i % 2 ? [] : [i % 4 && n >= 6 ? 'a2' : 'a1'] }, 10 + i));
     else { const d = 'd' + (i - i % 3); L.push(W.newNote({ id: 'n' + i, title: 'Note ' + i, body: i % 2 ? `<cite data-doc="${d}" data-p="${i}">x</cite>` : 'loose' }, 10 + i)); }
   }
   L.forEach(put); return { items };
 }
-const SAMPLE = () => M.buildGraph(M.sampleInput());
+const OWN = (n, noAc) => M.buildGraph(ownOf(n, noAc), { pages: false, desks: false });
 
-test('merged: own items light up the complete brain, inside the silhouette, ghosts fill the rest', () => {
-  const s = SAMPLE();
-  for (const n of [1, 3, 12, 25, 39]) {
-    const own = M.buildGraph(ownOf(n)), g = M.mergeGraph(own, s);
-    assert.ok(g.merged && g.own === n, n + ' own');
-    assert.equal(g.nodes.filter(x => !x.ghost).length, own.nodes.length, 'every own node is there');
-    assert.equal(g.ghosts, g.nodes.filter(x => x.ghost).length);
-    assert.equal(g.ghosts, Math.round(s.nodes.length * (1 - n / M.FULL)), 'ghosts fade with own items (' + n + ')');
-    assert.deepEqual({ ...g.counts }, { ...own.counts }, 'legend counts are yours');
-    const L = M.brainLayout(g, { instant: true });
-    assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.01)), 'all inside the brain (' + n + ')');
-    let close = 0; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) if (Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) < 4) close++;
-    assert.equal(close, 0, 'no dots on top of each other (' + n + ')');
-    assert.ok(g.links.every(l => g.nodes[l.s] && g.nodes[l.t] && g.nodes[l.s].ghost === g.nodes[l.t].ghost), 'links never join own and ghost');
-    assert.ok(g.nodes.every(nd => !nd.ghost || nd.id.startsWith('ex:')));
+test('own map: only your own items in the brain, by aircraft region; no ghost or dust nodes', () => {
+  for (const n of [1, 3, 12, 25, 45, 120]) {
+    const g = OWN(n), L = M.brainLayout(g, { instant: true });
+    assert.equal(g.nodes.length, n, 'only your own nodes (' + n + ')');
+    assert.ok(g.nodes.every(nd => !nd.ghost && !nd.id.startsWith('ex:')), 'no example nodes');
+    assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.02)), 'all inside the silhouette (' + n + ')');
+    assert.equal(pairsCloser(L, n, 4), 0, 'no dots on top of each other (' + n + ')');
+    const acs = g.counts.aircraft, free = g.nodes.some(nd => !nd.ac);
+    assert.equal(L.regions.length, acs + (free ? 1 : 0), 'a region per aircraft, plus Unsorted (' + n + ')');
+    assert.ok(L.regions.every(r => M.inBrain(r.lx / L.S, r.ly / L.S, 0)), 'region names inside (' + n + ')');
+    /* each aircraft sits in the middle of its region: its members nearer it than any other aircraft */
+    const ai = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
+    let ok = 0, all = 0;
+    g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]); const own = ai.find(([x]) => x.id === nd.ac); if (ai.every(c => c === own || d(own) <= d(c))) ok++; });
+    assert.ok(!all || ok / all > 0.9, ok + ' of ' + all);
   }
 });
 
-test('merged: ghosts decrease as own grows; nearest ghosts go first; free items in the cerebellum', () => {
-  const s = SAMPLE(); let last = Infinity;
-  for (const n of [0, 1, 3, 8, 12, 20, 30, 39]) { const g = M.mergeGraph(M.buildGraph(ownOf(n)), s); assert.ok(g.ghosts < last || n === 0, n + ': ' + g.ghosts); last = g.ghosts; }
-  assert.equal(M.mergeGraph(M.buildGraph(ownOf(0)), s).ghosts, s.nodes.length, 'empty: the whole example');
-  const big = M.buildGraph(ownOf(45)); assert.equal(M.mergeGraph(big, s), big, 'full enough: your own map');
-  /* the ghosts kept are farther from your nodes than the ones taken away */
-  const g = M.mergeGraph(M.buildGraph(ownOf(12)), s), own = g.nodes.map((n, i) => i).filter(i => !g.nodes[i].ghost);
-  const near = i => Math.min(...own.map(j => Math.hypot(g.slots[i][0] - g.slots[j][0], g.slots[i][1] - g.slots[j][1])));
-  const ghostD = g.nodes.map((n, i) => i).filter(i => g.nodes[i].ghost).map(near);
-  assert.ok(Math.min(...ghostD) > 0.02, 'no ghost sits on an own dot');
-  /* own aircraft at the heart of its lobe; an item without an aircraft sits in the cerebellum */
-  const free = M.buildGraph({ items: { n1: W.newNote({ id: 'n1', title: 'Loose' }, 1) } }), gf = M.mergeGraph(free, s), fi = gf.index['note:n1'];
-  const c = M.BRAIN.cb, [ux, uy] = gf.slots[fi]; assert.ok(Math.hypot(ux - c.cx, uy - c.cy) < 0.32, 'loose note in the cerebellum ' + ux + ',' + uy);
+test('own map: few items stay together; loose items sit in the cerebellum; no aircraft is one Unsorted region', () => {
+  const g = OWN(3), L = M.brainLayout(g, { instant: true });
+  let spread = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) spread = Math.max(spread, Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) / L.S);
+  assert.ok(spread < 0.5, 'three items close together, not scattered: ' + spread.toFixed(2));
+  const g12 = OWN(12), L12 = M.brainLayout(g12, { instant: true }), c = M.BRAIN.cb;
+  const loose = g12.nodes.map((n, i) => i).filter(i => !g12.nodes[i].ac); assert.ok(loose.length > 0);
+  assert.ok(loose.every(i => Math.hypot(L12.x[i] / L12.S - c.cx, L12.y[i] / L12.S - c.cy) < 0.3), 'loose items in the cerebellum');
+  assert.ok(L12.regions.some(r => r.ac < 0 && r.cb), 'an Unsorted region there');
+  const gn = OWN(8, true), Ln = M.brainLayout(gn, { instant: true });
+  assert.equal(gn.counts.aircraft, 0); assert.equal(Ln.regions.length, 1); assert.equal(Ln.regions[0].ac, -1);
+  assert.ok(gn.nodes.every((nd, i) => M.inBrain(Ln.x[i] / Ln.S, Ln.y[i] / Ln.S, 0.02)));
 });
 
-test('merged: deterministic and cached; own clusters keep their lobe', () => {
-  const s = SAMPLE(), a = M.mergeGraph(M.buildGraph(ownOf(12)), s), b = M.mergeGraph(M.buildGraph(ownOf(12)), SAMPLE());
-  assert.equal(a, b, 'cached by content');
-  const la = M.brainLayout(a, { instant: true }), lb = M.brainLayout(a, { instant: true }); assert.deepEqual([...la.x], [...lb.x]);
-  const g = M.mergeGraph(M.buildGraph(ownOf(30)), s), L = M.brainLayout(g, { instant: true });
-  const acs = g.nodes.map((n, i) => [n, i]).filter(([n]) => n.k === 'aircraft' && !n.ghost);
-  let ok = 0, all = 0;
-  g.nodes.forEach((nd, i) => { if (nd.ghost || nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]); const own = acs.find(([x]) => x.id === nd.ac); if (acs.every(c => c === own || d(own) <= d(c))) ok++; });
-  assert.ok(ok / all > 0.8, ok + ' of ' + all);
+test('own map: deterministic; large workspaces still fit (up to BRAIN_MAX)', () => {
+  const a = M.brainLayout(OWN(30), { instant: true }), b = M.brainLayout(OWN(30), { instant: true }); assert.deepEqual([...a.x], [...b.x]);
+  const items = {}; for (let i = 0; i < 4; i++) items['a' + i] = W.newAircraft({ id: 'a' + i, typeKey: 'da42', reg: 'LN-' + i }, i + 1);
+  for (let i = 0; i < M.BRAIN_MAX - 4; i++) { const n = W.newNote({ id: 'n' + i, title: 'n' + i, links: i % 5 ? [{ t: 'aircraft', id: 'a' + (i % 4) }] : [] }, 100 + i); items[n.id] = n; }
+  const g = M.buildGraph({ items }), t0 = Date.now(), L = M.brainLayout(g, { instant: true });
+  assert.ok(Date.now() - t0 < 4000, 'took ' + (Date.now() - t0) + ' ms');
+  assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.01)));
+  assert.equal(pairsCloser(L, g.nodes.length, 1), 0);
+  assert.ok(L.regions.every(r => r.ac < 0 || M.shortType(g.nodes[r.ac].type) === 'DA42'));
 });

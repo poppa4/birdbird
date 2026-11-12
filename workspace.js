@@ -311,7 +311,7 @@
     if (!box) { rl.insertAdjacentHTML('afterend', `<a id="wsRailMap" class="ws-railmap" href="#/map"><span class="h"></span><span class="l"><span class="t"></span><span class="go">${t('Open map', 'Åpne kart')} →</span></span></a>`); box = el('wsRailMap'); }
     box.classList.toggle('sample', a.sample);
     box.querySelector('.t').textContent = a.sample ? t('Example map', 'Eksempelkart') : t('Your map', 'Ditt kart') + ' · ' + a.g.own;
-    const sig = a.mode + ':' + LAB.lang + ':' + a.g.nodes.length + ':' + a.g.links.length + ':' + (a.g.ghosts || 0);
+    const sig = a.mode + ':' + LAB.lang + ':' + mapSig(a.g);
     if (railMap && railMap.sig === sig && box.contains(railMap.host)) return;
     if (railMap) railMap.m.destroy();
     const host = box.querySelector('.h'); host.innerHTML = '';
@@ -782,16 +782,16 @@
     pageName: (dl, p) => dl + ' · ' + t('p. ', 's. ') + p };
   function mapGraph() {
     if (!GW) return null;
-    return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; } }, mapNames));
+    return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; }, pages: false, desks: false }, mapNames));
   }
-  /* the map shown everywhere: the complete brain with your items inside it and the example as fading ghosts around them,
-     until you have GW.FULL items of your own (then your own map). sample: nothing of your own yet; mode: sample | merged | own */
+  /* the map shown everywhere: only your own items, each aircraft a region of the brain; with nothing of your own yet the
+     small example (sample). mode: sample | own */
   let sampleG = null;
   function mapAny() {
     const own = mapGraph(); if (!own) return null;
-    if (!sampleG || sampleG.lang !== LAB.lang) sampleG = { lang: LAB.lang, g: GW.buildGraph(GW.sampleInput(t), mapNames) };
-    const g = GW.mergeGraph ? GW.mergeGraph(own, sampleG.g) : own, sample = !own.own;
-    return { g, sample, merged: !!g.merged, mode: sample ? 'sample' : g.merged ? 'merged' : 'own' };
+    if (own.own) return { g: own, sample: false, mode: 'own' };
+    if (!sampleG || sampleG.lang !== LAB.lang) sampleG = { lang: LAB.lang, g: GW.buildGraph(GW.sampleInput(t), Object.assign({ pages: false, desks: false }, mapNames)) };
+    return { g: sampleG.g, sample: true, mode: 'sample' };
   }
   function mapOpen(n, beside) {
     const D = window.WSDESK; if (!D) return;
@@ -812,7 +812,7 @@
         <p>${t('Your workspace and how it connects. Each aircraft gathers its documents, notes and briefing packs; every line is a link you made, such as a page reference or a route and its pack.', 'Arbeidsområdet ditt og hvordan det henger sammen. Hvert fly samler dokumentene, notatene og briefingpakkene sine; hver linje er en kobling du har laget, som en sidehenvisning eller en rute og pakken dens.')}</p></div>
       <div class="wsm-plate${sample ? ' sample' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost"></div>
         ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
-      <p class="wsm-hint">${mode === 'merged' ? (coarse ? t('Your own dots are bright; tap one to open it on the desk. The faint dots are an example of what fits where: tap one to see what it would be. They fade as you add your own.', 'Dine egne prikker lyser; trykk på en for å åpne den på arbeidsflaten. De svake prikkene er et eksempel på hva som hører hjemme hvor: trykk på en for å se hva den ville vært. De blekner etter hvert som du legger til dine egne.') : t('Your own dots are bright: click one to open it on the desk, Shift-click to open it beside. The faint dots are an example of what fits where: point at one to see what it would be. They fade as you add your own.', 'Dine egne prikker lyser: klikk på en for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av. De svake prikkene er et eksempel på hva som hører hjemme hvor: pek på en for å se hva den ville vært. De blekner etter hvert som du legger til dine egne.')) : sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace. Your own map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.')) : coarse ? t('Tap a dot to open it on the desk. Drag to move around, pinch to zoom.', 'Trykk på en prikk for å åpne den på arbeidsflaten. Dra for å flytte, knip for å zoome.') : t('Click a dot to open it on the desk, Shift-click to open it beside. Drag to move around or move a dot; scroll or pinch to zoom.', 'Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av. Dra for å flytte rundt eller flytte en prikk; rull eller knip for å zoome.')}</p>`;
+      <p class="wsm-hint">${sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace. Your own map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.')) : coarse ? t('Each aircraft has its own region; lines are links you made. Tap a dot to open it on the desk, pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Trykk på en prikk for å åpne den på arbeidsflaten, knip for å zoome.') : t('Each aircraft has its own region; lines are links you made. Click a dot to open it on the desk, Shift-click to open it beside; scroll or pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av; rull eller knip for å zoome.')}</p>`;
     const host = el('wsMapHost');
     sizeMap();
     mapV = { sample, mode, lang: LAB.lang, host, sig: mapSig(g), m: window.WSMAP.mount(host, { graph: g, t, sample, onOpen: mapOpen, padBottom: sample ? 130 : 64 }) };

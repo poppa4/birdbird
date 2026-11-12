@@ -1,15 +1,16 @@
-"""My Workspace map in a real browser: example map when empty (laid out as a brain; hover explains a dot, click offers the
-real action); a few items of your own (3 and 12): the complete brain with your dots inside it and the example as faint
-ghosts that thin out as you add more (legend counts only yours, ghosts explained, own dots open on the desk, desk home and
-sidebar mini maps show the brain too); 45 items: your own force layout with the brain glow; a seeded workspace (3 aircraft, 15 documents, 40 notes with
-page references, 5 packs, 6 routes), legend filter, search, open on the desk, the mini map on the desk home, no animation
-frames once the layout has settled apart from the rare faint pulses, none with reduced motion, phone size.
-    python3 tests/map_e2e.py [base-url] [shots-dir]"""
+"""My Workspace map in a real browser. Empty workspace: a small example (at most 25 dots, three aircraft regions) inside a
+calm brain silhouette; hover explains a dot, click offers the real action. A few items of your own (3 and 12): only your
+items inside the brain, by aircraft region (named regions, Unsorted for loose items), no example or dust nodes, aircraft
+always labelled, documents when there is room; own dots open on the desk; desk home and sidebar mini maps show your dots
+without labels (aircraft regions named on the desk home) and without pulses. No aircraft: one Unsorted region with a hint.
+A seeded workspace (3 aircraft, 15 documents, 40 notes, 5 packs, 6 routes): legend filter, search, open on the desk, no
+animation frames once still apart from rare pulses along real links, none with reduced motion, phone size, Norwegian.
+    python3 tests/map_e2e.py [base-url] [shots-dir] [brain-shots-dir]"""
 import os, sys
 from playwright.sync_api import sync_playwright
-BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:9002'
+BASE = sys.argv[1] if len(sys.argv) > 1 else 'http://127.0.0.1:9005'
 SHOTS = sys.argv[2] if len(sys.argv) > 2 else '/tmp/mapshots'
-BRAIN = sys.argv[3] if len(sys.argv) > 3 else '/tmp/brain2shots'
+BRAIN = sys.argv[3] if len(sys.argv) > 3 else '/tmp/brain3shots'
 os.makedirs(BRAIN, exist_ok=True)
 os.makedirs(SHOTS, exist_ok=True)
 URL = BASE + '/workspace.html'
@@ -67,10 +68,15 @@ def idle_frames(pg, ms):
 def settle(pg, ms=9000):
     pg.wait_for_function("() => window.WS && window.WS.map && window.WS.map.debug.settled && !window.WS.map.debug.running", timeout=ms)
 
+STATE = """(() => { const m = window.WS.map, g = m.graph, L = m.layout, G = window.WSGRAPH;
+  return { own: g.own, n: g.nodes.length, brain: !!L.brain, ex: g.nodes.filter(x => x.ghost || x.id.startsWith('ex:')).length,
+    inside: !!L.brain && g.nodes.every((x, i) => G.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.005)),
+    regions: m.debug.regions, labels: m.debug.labels, acs: g.nodes.filter(x => x.k === 'aircraft').map(x => x.id), docs: g.nodes.filter(x => x.k === 'doc').map(x => x.id) }; })()"""
+MINI = """(sel) => { const h = document.querySelector(sel); const m = h && h.wsmap; return m ? { n: m.graph.nodes.length, labels: m.debug.labels, pulses: m.debug.pulses, regions: m.debug.regions } : null; }"""
+
 def partial(br, vw, vh, tag):
-    """own = 3, 12 (merged brain) and 45 (own layout), each in a fresh context"""
-    ghosts = {}
-    for n in (3, 12, 45):
+    """own = 3 and 12: only your items in the brain, each in a fresh context"""
+    for n in (3, 12):
         ctx = br.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=2 if tag == 'phone' else 1, has_touch=tag == 'phone', is_mobile=tag == 'phone')
         ctx.add_init_script(RAF)
         errs = []; pg = ctx.new_page()
@@ -78,44 +84,39 @@ def partial(br, vw, vh, tag):
         pg.on('console', lambda m: errs.append('console: ' + m.text) if m.type == 'error' and '/api/' not in m.text and '404' not in m.text else None)
         pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api')
         pg.evaluate(SEEDN, n); pg.goto(URL + '#/map'); pg.reload(); pg.wait_for_selector('#wsMapHost .wsm-c'); settle(pg, 15000)
-        st = pg.evaluate("""(() => { const m = window.WS.map, g = m.graph, L = m.layout, G = window.WSGRAPH;
-          return { own: g.own, merged: !!g.merged, brain: !!L.brain, ghosts: m.debug.ghosts, glow: m.debug.glow,
-            ownN: g.nodes.filter(x => !x.ghost).length, inside: !L.brain || g.nodes.every((x, i) => G.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.005)) }; })()""")
+        if tag == 'desktop': pg.mouse.move(2, 2); pg.wait_for_timeout(100)
+        st = pg.evaluate(STATE)
         leg = pg.inner_text('.wsm-leg').replace('\n', ' ')
         check(f'{tag} own={n}: own item count', st['own'] == n, st)
-        if n < 40:
-            ghosts[n] = st['ghosts']
-            check(f'{tag} own={n}: complete brain with your dots inside it', st['merged'] and st['brain'] and st['inside'] and st['ghosts'] > 0, st)
-            check(f'{tag} own={n}: legend counts only yours, with the fade hint', ('Aircraft ' + str(1 if n < 6 else 2)) in leg and 'Example dots fade' in leg, leg)
-            check(f'{tag} own={n}: no example tag or call to action', pg.locator('.wsm-tag').count() == 0 and pg.locator('.wsm-cta').count() == 0)
-            n_idle, n_pulse = idle_frames(pg, 1500)
-            check(f'{tag} own={n}: idle merged map requests no frames but pulse frames', n_idle == 0, (n_idle, n_pulse))
-        else:
-            check(f'{tag} own={n}: full enough: your own layout with the brain glow, no ghosts', not st['merged'] and not st['brain'] and st['ghosts'] == 0 and st['glow'] is True, st)
-            check(f'{tag} own={n}: no fade hint', 'Example dots fade' not in leg, leg)
-        if tag == 'desktop': pg.mouse.move(2, 2)
-        else: pg.evaluate("document.getElementById('wsMapPlate').scrollIntoView({ block: 'end' })")
-        pg.wait_for_timeout(300)
+        check(f'{tag} own={n}: only your own nodes, no example or dust nodes', st['n'] == n and st['ex'] == 0, st)
+        check(f'{tag} own={n}: laid out inside the brain silhouette', st['brain'] and st['inside'], st)
+        want = ['DA42'] if n < 6 else ['DA42', 'C172', 'UNSORTED']
+        check(f'{tag} own={n}: aircraft regions named', all(w in st['regions'] or w.title() in st['regions'] or w == 'UNSORTED' and 'Unsorted' in st['regions'] for w in want), st['regions'])
+        check(f'{tag} own={n}: aircraft always labelled', all(a in st['labels'] for a in st['acs']), st['labels'])
+        if tag == 'desktop': check(f'{tag} own={n}: documents labelled when there is room', any(d in st['labels'] for d in st['docs']), st['labels'])
+        check(f'{tag} own={n}: notes are not labelled until hover', not any(l.startswith('note:') for l in st['labels']), st['labels'])
+        check(f'{tag} own={n}: legend counts only yours, no fade hint', ('Aircraft ' + str(1 if n < 6 else 2)) in leg and 'fade' not in leg, leg)
+        check(f'{tag} own={n}: no example tag or call to action', pg.locator('.wsm-tag').count() == 0 and pg.locator('.wsm-cta').count() == 0)
+        n_idle, n_pulse = idle_frames(pg, 1500)
+        check(f'{tag} own={n}: idle map requests no frames', n_idle == 0, (n_idle, n_pulse))
+        if tag == 'phone': pg.evaluate("document.getElementById('wsMapPlate').scrollIntoView({ block: 'end' })")
+        pg.wait_for_timeout(200)
         pg.screenshot(path=f'{BRAIN}/{tag}-own{n}.png')
         if tag == 'phone': pg.evaluate('window.scrollTo(0, 0)'); pg.wait_for_timeout(100)
         if n == 12:
             box = pg.locator('#wsMapHost canvas').bounding_box()
-            gi = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.ghost && n.k === 'note')")
-            x, y = pg.evaluate(f'window.WS.map.screenOf({gi})')
+            ni = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note')")
+            x, y = pg.evaluate(f'window.WS.map.screenOf({ni})')
             if tag == 'desktop':
                 pg.mouse.move(box['x'] + x, box['y'] + y); pg.wait_for_timeout(150)
-                card = pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else ''
-                check('desktop own=12: hover a ghost explains it', 'this is where a note would go' in card, card)
-                pg.screenshot(path=f'{BRAIN}/desktop-own12-ghost-hover.png')
-                pg.mouse.click(box['x'] + x, box['y'] + y); pg.wait_for_timeout(120)
-            else:
-                pg.touchscreen.tap(box['x'] + x, box['y'] + y); pg.wait_for_timeout(150)
-            check(f'{tag} own=12: a ghost offers the real action', pg.locator('.wsm-card [data-act="map-note"]').count() == 1, pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else '')
-            pg.screenshot(path=f'{BRAIN}/{tag}-own12-ghost-selected.png')
+                lb = pg.evaluate('window.WS.map.debug.labels')
+                check('desktop own=12: hover shows the note label', pg.evaluate(f'window.WS.map.graph.nodes[{ni}].id') in lb, lb)
+                pg.screenshot(path=f'{BRAIN}/desktop-own12-hover.png')
+                pg.mouse.move(2, 2); pg.wait_for_timeout(100)
             pg.fill('.wsm-qi', 'Own doc 0'); pg.wait_for_selector('.wsm-sug li[data-i]')
-            check(f'{tag} own=12: search finds only your own items', all('Own' in t for t in pg.locator('.wsm-sug li[data-i] span').all_inner_texts()))
+            check(f'{tag} own=12: search finds your items', all('Own' in t for t in pg.locator('.wsm-sug li[data-i] span').all_inner_texts()))
             pg.fill('.wsm-qi', 'B200'); pg.wait_for_timeout(100)
-            check(f'{tag} own=12: ghosts are not searchable', pg.locator('.wsm-sug li[data-i]').count() == 0)
+            check(f'{tag} own=12: nothing from the example is on the map', pg.locator('.wsm-sug li[data-i]').count() == 0)
             pg.fill('.wsm-qi', ''); pg.keyboard.press('Escape')
             pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(700)
             oi = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.id === 'doc:od0')")
@@ -124,30 +125,41 @@ def partial(br, vw, vh, tag):
             else: pg.touchscreen.tap(box['x'] + x, box['y'] + y)
             pg.wait_for_selector('.dk-tab.on', timeout=5000)
             check(f'{tag} own=12: an own dot opens on the desk', 'Own doc 0' in pg.inner_text('.dk-tab.on'), pg.inner_text('.dk-tab.on'))
-        if tag == 'desktop' and n in (3, 12):
-            pg.goto(URL + '#/library'); pg.wait_for_selector('#wsRailMap canvas'); pg.wait_for_timeout(1500)
-            check(f'desktop own={n}: sidebar mini map is yours (not the example)', pg.locator('#wsRailMap.sample').count() == 0 and ('YOUR MAP · ' + str(n)) in pg.inner_text('#wsRailMap').upper(), pg.inner_text('#wsRailMap'))
+        if tag == 'desktop':
+            pg.goto(URL + '#/library'); pg.wait_for_selector('#wsRailMap canvas'); pg.wait_for_timeout(1200)
+            mi = pg.evaluate(MINI, '#wsRailMap .h')
+            check(f'desktop own={n}: sidebar mini map: your dots, no labels', pg.locator('#wsRailMap.sample').count() == 0 and ('YOUR MAP · ' + str(n)) in pg.inner_text('#wsRailMap').upper() and mi and mi['n'] == n and not mi['labels'], (pg.inner_text('#wsRailMap'), mi))
             pg.locator('#wsRailMap').screenshot(path=f'{BRAIN}/desktop-own{n}-sidebar.png')
+        if tag == 'desktop' and n == 3:  # (at 12 a document is open on the desk, so the desk home is not shown)
+            pg.goto(URL + '#/'); pg.wait_for_selector('.dk-empty .mm canvas'); pg.wait_for_timeout(1500)
+            mi = pg.evaluate(MINI, '.dk-empty .mmh')
+            check(f'desktop own={n}: desk home mini map: your dots, only aircraft regions named', mi and mi['n'] == n and mi['labels'] and all(l.startswith('region:') for l in mi['labels']) and 'region:UNSORTED' not in mi['labels'], mi)
+            n_idle, n_pulse = idle_frames(pg, 1500)
+            check(f'desktop own={n}: idle mini maps: no frames, no pulses', n_idle == 0 and n_pulse == 0, (n_idle, n_pulse))
+            pg.screenshot(path=f'{BRAIN}/desktop-own{n}-home.png')
         check(f'{tag} own={n}: no console errors', not errs, errs)
         ctx.close()
-    check(f'{tag}: ghosts thin out as you add items', ghosts.get(3, 0) > ghosts.get(12, 0) > 0, ghosts)
 
-def home_merged(br):
-    """the desk home with 3 items: the mini map is the complete brain with your dots in it"""
+def no_aircraft(br):
+    """documents and notes but no aircraft: one region, Unsorted, with a hint"""
     ctx = br.new_context(viewport={'width': 1470, 'height': 956}); ctx.add_init_script(RAF); pg = ctx.new_page()
     pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api')
-    pg.evaluate(SEEDN, 3); pg.goto(URL + '#/'); pg.reload(); pg.wait_for_selector('.dk-empty .mm canvas'); pg.wait_for_timeout(2500)
-    check('desk home own=3: mini map shows your items in the brain', pg.locator('.dk-empty .mm').count() == 1 and 'Your workspace' in pg.inner_text('.dk-empty .mm') and '3' in pg.inner_text('.dk-empty .mm'), pg.inner_text('.dk-empty .mm'))
-    n_idle, n_pulse = idle_frames(pg, 1500)
-    check('desk home own=3: idle mini map requests no frames but pulse frames', n_idle == 0, (n_idle, n_pulse))
-    pg.screenshot(path=f'{BRAIN}/desktop-own3-home.png')
+    pg.evaluate("""async () => { const W = window.WSCORE, A = window.WS.api, l = [W.newDocEntry({ id: 'u1', name: 'Loose AFM', pages: 10 })];
+      for (let i = 0; i < 4; i++) l.push(W.newNote({ title: 'Loose ' + i, body: i % 2 ? '<cite data-doc="u1" data-p="2">p</cite>' : '<div>x</div>' })); await A.commit(l); }""")
+    pg.goto(URL + '#/map'); pg.reload(); pg.wait_for_selector('#wsMapHost .wsm-c'); settle(pg); pg.mouse.move(2, 2); pg.wait_for_timeout(100)
+    st = pg.evaluate(STATE)
+    check('no aircraft: one Unsorted region with your items inside', st['regions'] == ['Unsorted'] and st['n'] == 5 and st['inside'], st)
+    pg.screenshot(path=f'{BRAIN}/desktop-own5-noaircraft.png')
+    pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(500); settle(pg)
+    check('no aircraft: Norwegian region name', pg.evaluate('window.WS.map.debug.regions') == ['Uten fly'], pg.evaluate('window.WS.map.debug.regions'))
+    pg.click('.langseg button[data-v="en"]'); pg.wait_for_timeout(300)
     ctx.close()
 
 with sync_playwright() as p:
     br = p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])
     for (vw, vh, tag) in [(1470, 956, 'desktop'), (390, 844, 'phone')]:
         partial(br, vw, vh, tag)
-    home_merged(br)
+    no_aircraft(br)
     for (vw, vh, tag) in [(1470, 956, 'desktop'), (390, 844, 'phone')]:
         ctx = br.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=2 if tag == 'phone' else 1, has_touch=tag == 'phone', is_mobile=tag == 'phone')
         ctx.add_init_script(RAF)
@@ -158,7 +170,8 @@ with sync_playwright() as p:
         pg.goto(URL + '#/map'); pg.wait_for_selector('.wsm-c')
         settle(pg)
         check(tag + ': empty workspace shows the example map', pg.is_visible('.wsm-tag') and 'Add a document or note' in pg.inner_text('.wsm-cta'))
-        check(tag + ': the example comes through the merged path, drawn in full', pg.evaluate('window.WS.map.graph.merged === true && window.WS.map.graph.own === 0 && window.WS.map.debug.ghosts === 0'))
+        st = pg.evaluate(STATE)
+        check(tag + ': the example is small: at most 25 dots, three named aircraft regions', 20 <= st['n'] <= 25 and st['regions'] == ['DA42', 'B200', 'C172'], st)
         if tag == 'desktop': pg.mouse.move(2, 2)
         else: pg.evaluate("document.getElementById('wsMapPlate').scrollIntoView({ block: 'end' })")
         pg.wait_for_timeout(300)
@@ -169,12 +182,12 @@ with sync_playwright() as p:
         inside = pg.evaluate("(() => { const m = window.WS.map, L = m.layout, G = window.WSGRAPH; return L.brain && m.graph.nodes.every((n, i) => G.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.005)); })()")
         check(tag + ': example laid out inside the brain', inside)
         # hover (or tap) a note: card explains it, neighbours light up, a pulse runs and then stops
-        i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note' && n.deg >= 2)")
+        i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note' && n.deg >= 1)")
         x, y = pg.evaluate(f'window.WS.map.screenOf({i})'); box = pg.locator('#wsMapHost canvas').bounding_box()
         if tag == 'desktop':
             pg.mouse.move(box['x'] + x, box['y'] + y); pg.wait_for_timeout(120)
             card = pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else ''
-            check('desktop: hover an example dot explains it', 'EXAMPLE' in card.upper() and 'cites' in card and 'this is where a note would go' in card, card)
+            check('desktop: hover an example dot explains it', 'EXAMPLE' in card.upper() and 'cites a page in' in card and 'this is where a note would go' in card, card)
             check('desktop: hover starts a pulse along its links', pg.evaluate('window.WS.map.debug.pulses') > 0)
             pg.screenshot(path=f'{SHOTS}/desktop-example-hover.png')
             pg.mouse.click(box['x'] + x, box['y'] + y); pg.wait_for_timeout(100)
@@ -184,7 +197,7 @@ with sync_playwright() as p:
         pg.wait_for_function("() => window.WS.map.debug.pulses === 0", timeout=4000)
         pg.screenshot(path=f'{SHOTS}/{tag}-example-selected.png')
         # search and legend work on the example
-        pg.fill('.wsm-qi', 'B200'); pg.wait_for_selector('.wsm-sug li[data-i]'); pg.press('.wsm-qi', 'Enter'); pg.wait_for_timeout(700)
+        pg.fill('.wsm-qi', 'LN-EXB'); pg.wait_for_selector('.wsm-sug li[data-i]'); pg.press('.wsm-qi', 'Enter'); pg.wait_for_timeout(700)
         check(tag + ': search finds an example aircraft', 'B200' in pg.inner_text('.wsm-card') and pg.locator('.wsm-card [data-act="ac-new"]').count() == 1, pg.inner_text('.wsm-card'))
         pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(600)
         pg.click('.wsm-leg [data-g="note"]'); pg.wait_for_timeout(150)
@@ -195,11 +208,13 @@ with sync_playwright() as p:
             check('desktop: the action is the real one (add aircraft dialog)', pg.is_visible('#wsDlg'))
             pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
             pg.goto(URL + '#/library'); pg.wait_for_timeout(300)
-            check('desktop: sidebar shows the example brain', pg.locator('#wsRailMap.sample canvas').count() == 1)
+            mi = pg.evaluate(MINI, '#wsRailMap .h')
+            check('desktop: sidebar shows the simple example, no labels', pg.locator('#wsRailMap.sample canvas').count() == 1 and mi and mi['n'] <= 25 and not mi['labels'], mi)
             pg.locator('#wsRailMap').screenshot(path=f'{SHOTS}/desktop-sidebar-example.png')
         if tag == 'desktop':
             pg.goto(URL + '#/'); pg.wait_for_selector('.dk-empty .big3'); pg.wait_for_timeout(300)
             check('new user: desk home shows the example map', pg.locator('.dk-empty .mm').count() == 1)
+            pg.wait_for_timeout(1200); pg.screenshot(path=f'{BRAIN}/desktop-own0-home.png')
             pg.evaluate(SEED); pg.reload(); pg.wait_for_selector('.dk-empty .big3')
             pg.wait_for_selector('.dk-empty .mm canvas')
             pg.wait_for_function("() => { const c = document.querySelector('.dk-empty .mm canvas'); return c && c.width > 0; }")
@@ -216,15 +231,19 @@ with sync_playwright() as p:
         check(tag + ': legend counts', all(x in leg.replace('\n', ' ') for x in ['Aircraft 3', 'Documents 15', 'Notes 40', 'Packs 5', 'Routes 6']), leg)
         check(tag + ': no example on a real workspace', pg.locator('.wsm-tag').count() == 0)
         n = pg.evaluate('window.WS.map.graph.nodes.length'); l = pg.evaluate('window.WS.map.graph.links.length')
-        check(tag + ': nodes and links', n > 69 and l > 60, (n, l))
+        check(tag + ': nodes and links (only yours: no pages, desks or example dots)', n == 69 and l > 60, (n, l))
         n_idle, n_pulse = idle_frames(pg, 1500)
         check(tag + ': settled map requests no animation frames but pulse frames', n_idle == 0, (n_idle, n_pulse))
-        check(tag + ': own map has the brain glow behind it', pg.evaluate('window.WS.map.debug.glow') is True)
+        st = pg.evaluate(STATE)
+        check(tag + ': own map: your items in the brain by region', st['brain'] and st['inside'] and st['ex'] == 0 and all(r in st['regions'] for r in ['DA42', 'C172', 'B200', 'Unsorted']), st['regions'])
         if tag == 'desktop':
             # life: now and then a faint pulse, at a small frame budget (pointer off the map, so no hover)
             pg.mouse.move(2, 2); pg.wait_for_timeout(200)
-            n_idle, n_pulse = idle_frames(pg, 9000)
-            check('desktop: an occasional pulse, few frames', n_idle == 0 and 0 < n_pulse <= 9 * 16, (n_idle, n_pulse))
+            n_idle, n_pulse = idle_frames(pg, 6000)
+            check('desktop: pulses are rare (none in 6 s of idle)', n_idle == 0 and n_pulse <= 80, (n_idle, n_pulse))
+            pg.evaluate('window.WS.map.pulseNow()')
+            n_idle, n_pulse = idle_frames(pg, 3000)
+            check('desktop: a pulse runs along a real link, at a small frame budget, then stops', n_idle == 0 and 0 < n_pulse <= 90 and pg.evaluate('window.WS.map.debug.pulses') == 0, (n_idle, n_pulse))
         pg.screenshot(path=f'{SHOTS}/{tag}-map.png')
         dpr = pg.evaluate("(() => { const c = document.querySelector('#wsMapHost canvas'); return c.width / c.getBoundingClientRect().width; })()")
         check(tag + ': canvas uses the device pixel ratio', abs(dpr - (2 if tag == 'phone' else 1)) < 0.02, dpr)

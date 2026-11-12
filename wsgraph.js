@@ -8,14 +8,12 @@
    layout       a small force layout: springs on links, short-range repulsion through a spatial hash (no O(n²)),
                 each node pulled towards its aircraft, aircraft pushed apart. It cools down and stops (settled),
                 so a page can stop drawing. Start positions come from the ids, so the same workspace looks the same.
-   brain        a stylised brain seen from the side (facing left): cerebrum outline, cerebellum, brain stem, two fissures,
-                a faint head profile. inBrain(x, y, margin) tests a point; brainTexture(n) gives fine dust and hairlines.
-   brainLayout  the example map laid out inside the brain: every node on a seeded blue-noise point in the silhouette,
-                each aircraft (and the free items, in the cerebellum) owns a lobe-like wedge, its documents nearest the
-                hub, then link lengths shortened by swapping places. Computed once; a short intro then it is still.
-   mergeGraph   the brain is always complete: your items inside it by aircraft, the example as fading ghosts around them,
-                until you have FULL items of your own (then your own force layout).
-   sampleInput  a small example workspace for the empty map.
+   brain        a stylised brain seen from the side (facing left): cerebrum outline, cerebellum, brain stem, two fissures.
+                inBrain(x, y, margin) tests a point.
+   brainLayout  the map laid out inside the brain (up to BRAIN_MAX nodes): each aircraft owns a region of the cerebrum,
+                items without an aircraft sit in the cerebellum ('Unsorted'), or fill the brain when there is no aircraft.
+                Only your own items (or, when you have none, the small example). A short intro, then it is still.
+   sampleInput  a small example workspace for the empty map (about twenty dots).
    node --test tests/wsgraph.test.mjs */
 (function (G) {
   'use strict';
@@ -45,7 +43,7 @@
      -> { nodes:[{ id, k, g, r, label, ac, deg, p?, doc?, ink? }], links:[{ s, t, k }], counts:{ group: n }, own, index:{ id: i } } */
   function buildGraph(input, opts) {
     input = input || {}; opts = opts || {};
-    const items = input.items || {}, name = opts.name || DEF_NAME, pages = opts.pages !== false;
+    const items = input.items || {}, name = opts.name || DEF_NAME, pages = opts.pages !== false, desks = opts.desks !== false;
     const pageName = opts.pageName || ((dl, p) => dl + ' · p. ' + p);
     const nodes = [], index = {}, links = [], lk = new Set();
     const add = (k, r, label, extra) => { const id = k + ':' + r; if (index[id] != null) return index[id]; index[id] = nodes.length; nodes.push(Object.assign({ id, k, g: GROUP_OF[k], r: String(r), label: str(label) || k, ac: '', deg: 0 }, extra || {})); return index[id]; };
@@ -54,7 +52,7 @@
     const all = Object.values(items).filter(isLive);
     const of = k => all.filter(it => it.kind === k).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || (a.id < b.id ? -1 : 1));
     const aircraft = of('aircraft');
-    aircraft.forEach(a => add('aircraft', a.id, a.mapLabel || name('aircraft', a)));
+    aircraft.forEach(a => add('aircraft', a.id, a.mapLabel || name('aircraft', a), { type: str(a.type) }));
     of('doc').forEach(d => add('doc', d.id, name('doc', d)));
     of('note').forEach(n => add('note', n.id, name('note', n)));
     of('notebook').forEach(n => add('notebook', n.id, name('notebook', n)));
@@ -88,7 +86,7 @@
     });
     routes.forEach(r => { if (r.packId) link(at('route', r.id), at('pack', r.packId), 'flight'); });
     /* desk -> what is open in it (a desk with nothing open that is on the map gets no node) */
-    of('desk').forEach(d => {
+    if (desks) of('desk').forEach(d => {
       const ids = tabsOf(d.L).map(x => at(x.k, x.r)).filter(i => i != null); if (!ids.length) return;
       const di = add('desk', d.id, name('desk', d)); ids.forEach(i => link(di, i, 'desk'));
     });
@@ -213,99 +211,108 @@
     const cerebellum = []; for (let k = 0; k < 72; k++) { const a = k / 72 * Math.PI * 2, ex = Math.cos(a) * cb.rx, ey = Math.sin(a) * cb.ry; cerebellum.push([cb.cx + ex * Math.cos(cb.rot) - ey * Math.sin(cb.rot), cb.cy + ex * Math.sin(cb.rot) + ey * Math.cos(cb.rot)]); }
     const stem = smooth([[0.14, 0.38], [0.22, 0.52], [0.25, 0.70], [0.23, 0.86]], false, 8), stem2 = smooth([[0.32, 0.36], [0.37, 0.50], [0.36, 0.70], [0.34, 0.86]], false, 8);
     const fissures = [smooth([[0.06, -0.80], [0.02, -0.58], [-0.08, -0.40], [-0.10, -0.22], [-0.18, -0.04]], false, 8), /* central */
-      smooth([[-0.56, 0.24], [-0.36, 0.13], [-0.12, 0.08], [0.12, 0.02], [0.34, -0.08]], false, 8), /* lateral */
-      smooth([[0.62, -0.60], [0.56, -0.40], [0.66, -0.20]], false, 8)];
-    const folia = [-0.06, 0, 0.06].map(d => smooth([[0.36, 0.34 + d], [0.53, 0.30 + d * 1.2], [0.73, 0.29 + d], [0.83, 0.32 + d * 0.6]], false, 6));
-    const head = smooth([[0.62, 1.55], [0.74, 1.02], [1.06, 0.62], [1.20, 0.10], [1.10, -0.55], [0.66, -0.98], [0.02, -1.10], [-0.62, -1.00], [-1.03, -0.66], [-1.20, -0.22], [-1.22, 0.06], [-1.18, 0.17], [-1.25, 0.32], [-1.43, 0.63], [-1.31, 0.72], [-1.28, 0.79], [-1.33, 0.89], [-1.27, 0.96], [-1.31, 1.03], [-1.22, 1.10], [-1.25, 1.22], [-1.10, 1.33], [-0.78, 1.36], [-0.62, 1.44], [-0.58, 1.75]], false, 8);
+      smooth([[-0.56, 0.24], [-0.36, 0.13], [-0.12, 0.08], [0.12, 0.02], [0.34, -0.08]], false, 8)]; /* lateral */
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; cerebrum.concat(cerebellum).forEach(([x, y]) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); });
-    return { cerebrum, cerebellum, cb, stem: [stem, stem2], fissures, folia, head, bounds: { x0, y0, x1, y1 }, core: [-0.04, -0.16] };
+    return { cerebrum, cerebellum, cb, stem: [stem, stem2], fissures, bounds: { x0, y0, x1, y1 }, core: [-0.04, -0.16] };
   })();
   function inPoly(P, x, y) { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
   function edgeDist(P, x, y) { let m = Infinity; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[j], b = P[i], dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy || 1e-9; const u = Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / l2)), ex = a[0] + dx * u - x, ey = a[1] + dy * u - y; m = Math.min(m, ex * ex + ey * ey); } return Math.sqrt(m); }
   const inCerebellum = (x, y, m) => { const c = BRAIN.cb, dx = x - c.cx, dy = y - c.cy, ex = dx * Math.cos(-c.rot) - dy * Math.sin(-c.rot), ey = dx * Math.sin(-c.rot) + dy * Math.cos(-c.rot), rx = c.rx - (m || 0), ry = c.ry - (m || 0); return rx > 0 && ry > 0 && (ex * ex) / (rx * rx) + (ey * ey) / (ry * ry) <= 1; };
   const inCerebrum = (x, y, m) => inPoly(BRAIN.cerebrum, x, y) && (!m || edgeDist(BRAIN.cerebrum, x, y) >= m);
   const inBrain = (x, y, m) => inCerebrum(x, y, m) || inCerebellum(x, y, m);
-  /* best-candidate blue noise inside a region */
-  function scatter(n, inside, R, have, tries, box) {
-    const out = [], b = box || BRAIN.bounds;
-    for (let k = 0; k < n; k++) {
-      let best = null, bd = -1;
-      for (let c = 0; c < tries; c++) {
-        let x, y, g = 0; do { x = b.x0 + R() * (b.x1 - b.x0); y = b.y0 + R() * (b.y1 - b.y0); } while (!inside(x, y) && ++g < 400);
-        let d = Infinity; for (const p of have) { const e = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (e < d) d = e; } for (const p of out) { const e = (p[0] - x) ** 2 + (p[1] - y) ** 2; if (e < d) d = e; }
-        if (d > bd) { bd = d; best = [x, y]; }
-      }
-      out.push(best);
+
+  /* the places a dot may take: a jittered grid inside the silhouette, kept clear of the outline. cb: in the cerebellum */
+  const STEP = 0.024; let pool = null;
+  function places() {
+    if (pool) return pool;
+    const R = prng(hash('brain-places')), b = BRAIN.bounds, cr = [], cb = [];
+    for (let y = b.y0; y <= b.y1; y += STEP) for (let x = b.x0; x <= b.x1; x += STEP) {
+      const px = x + (R() - 0.5) * STEP * 0.7, py = y + (R() - 0.5) * STEP * 0.7;
+      if (inCerebellum(px, py, 0.04)) cb.push([px, py]); else if (!inCerebellum(px, py, -0.02) && inCerebrum(px, py, 0.05)) cr.push([px, py]);
     }
-    return out;
+    return (pool = { cr, cb });
   }
-  /* fine dust and hairlines that give the silhouette its texture: { pts:[[x,y]], links:[[i,j]] } (cached per n) */
-  const texCache = {};
-  function brainTexture(n) {
-    n = n || 520; if (texCache[n]) return texCache[n];
-    const R = prng(hash('brain-texture|' + n)), pts = scatter(n, (x, y) => inBrain(x, y), R, [], 3), links = [], seen = new Set();
-    pts.forEach((p, i) => {
-      const near = []; /* the 2 or 3 nearest */
-      for (let j = 0; j < pts.length; j++) { if (j === i) continue; const e = (pts[j][0] - p[0]) ** 2 + (pts[j][1] - p[1]) ** 2; if (near.length < 3 || e < near[near.length - 1][1]) { near.push([j, e]); near.sort((a, b) => a[1] - b[1]); if (near.length > 3) near.pop(); } }
-      near.slice(0, 2 + (i % 2)).forEach(([j, e]) => { if (e > 0.012) return; const k = i < j ? i + '-' + j : j + '-' + i; if (!seen.has(k)) { seen.add(k); links.push([i, j]); } });
-    });
-    return (texCache[n] = { pts, links });
+  const BRAIN_MAX = 600; /* more nodes than this: the force layout instead */
+  /* short name of an aircraft type for its region: 'Diamond DA42' -> 'DA42', 'Cessna 172' -> 'C172', 'King Air B200' -> 'B200' */
+  function shortType(type) {
+    const w = str(type).split(/\s+/).filter(Boolean), k = w.findIndex(x => /\d/.test(x));
+    if (k < 0) return w.join(' ').slice(0, 14);
+    return /^\d/.test(w[k]) && k > 0 ? w[k - 1][0].toUpperCase() + w[k] : w[k];
   }
-  /* the example map inside the brain. -> the same interface as layout(), with tx/ty (targets), unit S, frame */
-  /* opt (the merged map): key(i) -> the lobe a node belongs to ('' = free), pri(i) -> 0 your own, 1 an example ghost.
-     Within a lobe your own items take the places nearest its middle, ghosts the rest; swaps never mix the two. */
-  function brainSlots(g, R, opt) {
-    opt = opt || {};
-    const N = g.nodes.length, U = new Array(N), pri = opt.pri || (() => 0);
-    const keyOf = opt.key || (i => { const n = g.nodes[i]; return n.ac && g.index[n.ac] != null ? n.ac : ''; });
+  /* each aircraft owns a region of the cerebrum (a wedge around its middle, sized by what it holds); items without an
+     aircraft sit in the cerebellum ('Unsorted'), or, with no aircraft at all, the whole cerebrum is one region.
+     Inside a region: the aircraft in the middle, its documents nearest, then packs, routes, notes, spaced evenly and
+     no wider than they need; then link lengths are shortened by swapping places.
+     -> { U: unit place per node, regions: [{ key, ac (node index or -1), n, cx, cy, lx, ly (label, unit), cb }] } */
+  function brainSlots(g) {
+    const N = g.nodes.length, U = new Array(N), P = places();
     const adj = g.nodes.map(() => []); g.links.forEach(l => { adj[l.s].push(l.t); adj[l.t].push(l.s); });
-    /* clusters: aircraft in their order, then the free items */
-    const keys = [], groups = {};
-    g.nodes.forEach((n, i) => { const k = keyOf(i); if (!groups[k]) { groups[k] = []; if (k) keys.push(k); } groups[k].push(i); });
-    if (opt.key) keys.sort();
-    const free = groups[''] || [], q = Math.min(free.length, Math.round(N * 0.12));
-    const cbPts = scatter(q, (a, b) => inCerebellum(a, b, 0.03), R, [], 14);
-    const crPts = scatter(N - q, (a, b) => inCerebrum(a, b, 0.035), R, cbPts, 14);
-    const place = (members, slots) => {
-      if (!members.length) return;
-      const cx = slots.reduce((s, p) => s + p[0], 0) / slots.length, cy = slots.reduce((s, p) => s + p[1], 0) / slots.length;
-      const hub = members.slice().sort((a, b) => pri(a) - pri(b) || a - b).find(i => g.nodes[i].k === 'aircraft');
-      const order = slots.slice().sort((a, b) => ((a[0] - cx) ** 2 + (a[1] - cy) ** 2) - ((b[0] - cx) ** 2 + (b[1] - cy) ** 2));
-      const rank = { aircraft: 0, doc: 1, pack: 2, route: 3, note: 4, notebook: 4, desk: 5, page: 6 };
-      const ms = members.slice().sort((a, b) => (pri(a) - pri(b)) || (rank[g.nodes[a].k] - rank[g.nodes[b].k]) || (g.nodes[b].deg - g.nodes[a].deg) || a - b);
-      ms.forEach((i, k) => { U[i] = order[k]; });
-      /* shorten links: swap places inside the cluster while it helps (the hub stays) */
-      const mov = ms.filter(i => i !== hub), cost = (i, p, j, pj) => { let c = 0; for (const k of adj[i]) { const o = k === j ? pj : U[k]; if (o) c += (o[0] - p[0]) ** 2 + (o[1] - p[1]) ** 2; } return c; };
-      for (let pass = 0; pass < 14; pass++) {
+    const keys = [], groups = {}, free = [];
+    g.nodes.forEach((n, i) => { if (n.k === 'aircraft') { keys.push(n.id); groups[n.id] = groups[n.id] || []; } });
+    g.nodes.forEach((n, i) => { if (n.ac && groups[n.ac]) groups[n.ac].push(i); else free.push(i); });
+    const regs = keys.map(k => ({ key: k, ac: g.index[k], m: groups[k] }));
+    const cbFree = free.length > 0 && keys.length > 0 && free.length <= 30;
+    if (free.length && !cbFree) regs.push({ key: '', ac: -1, m: free });
+    const C0 = P.cr.reduce((s, p) => [s[0] + p[0], s[1] + p[1]], [0, 0]).map(v => v / P.cr.length);
+    const ang = p => { let a = Math.atan2(p[1] - C0[1], p[0] - C0[0]) - Math.PI * 0.62; while (a < 0) a += Math.PI * 2; return a; };
+    const sorted = P.cr.slice().sort((a, b) => ang(a) - ang(b));
+    const W = regs.map(r => Math.max(4, r.m.length)), WS = W.reduce((a, b) => a + b, 0) || 1; let at = 0;
+    const rank = { aircraft: 0, doc: 1, pack: 2, route: 3, note: 4, notebook: 4, desk: 5, page: 6 };
+    const out = [];
+    const fill = (r, C) => {
+      const m = r.m, n = m.length, cx = C.reduce((s, p) => s + p[0], 0) / C.length, cy = C.reduce((s, p) => s + p[1], 0) / C.length;
+      const byD = C.slice().sort((a, b) => ((a[0] - cx) ** 2 + (a[1] - cy) ** 2) - ((b[0] - cx) ** 2 + (b[1] - cy) ** 2));
+      let d = Math.max(0.03, Math.min(0.13, 0.85 * Math.sqrt(C.length * STEP * STEP / Math.max(1, n)))), pick = [];
+      for (let tries = 0; tries < 30; tries++) {
+        pick = [];
+        for (const p of byD) { if (pick.length >= n) break; if (pick.every(q => (q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2 >= d * d)) pick.push(p); }
+        if (pick.length >= n) break; d *= 0.86;
+      }
+      for (const p of byD) { if (pick.length >= n) break; if (!pick.includes(p)) pick.push(p); }
+      /* members: aircraft first, then documents (most linked first), packs, routes, notes; nearest the middle first */
+      const ms = m.slice().sort((a, b) => (rank[g.nodes[a].k] - rank[g.nodes[b].k]) || (g.nodes[b].deg - g.nodes[a].deg) || a - b);
+      ms.forEach((i, k) => { U[i] = pick[k]; });
+      const hub = r.ac, mov = ms.filter(i => i !== hub);
+      const cost = (i, p, j, pj) => { let c = 0; for (const k of adj[i]) { const o = k === j ? pj : U[k]; if (o) c += (o[0] - p[0]) ** 2 + (o[1] - p[1]) ** 2; } return c; };
+      if (mov.length <= 220) for (let pass = 0; pass < 12; pass++) {
         let changed = 0;
         for (let a = 0; a < mov.length; a++) for (let b = a + 1; b < mov.length; b++) {
-          const i = mov[a], j = mov[b], pi = U[i], pj = U[j]; if (pri(i) !== pri(j)) continue;
-          const now = cost(i, pi, j, pj) + cost(j, pj, i, pi), then = cost(i, pj, j, pi) + cost(j, pi, i, pj);
-          if (then < now - 1e-9) { U[i] = pj; U[j] = pi; changed++; }
+          const i = mov[a], j = mov[b], pi = U[i], pj = U[j];
+          if (cost(i, pj, j, pi) + cost(j, pi, i, pj) < cost(i, pi, j, pj) + cost(j, pj, i, pi) - 1e-9) { U[i] = pj; U[j] = pi; changed++; }
         }
         if (!changed) break;
       }
+      /* the region's name sits just above its dots (below them if there is no room; in the cerebellum, in the strip kept
+         free under them), inside the outline */
+      const hx = hub >= 0 ? U[hub][0] : cx, hy = hub >= 0 ? U[hub][1] : cy;
+      let top = Infinity, bot = -Infinity; ms.forEach(i => { top = Math.min(top, U[i][1]); bot = Math.max(bot, U[i][1]); });
+      let lx = hx, ly;
+      const off = r.ac < 0 ? 0.13 : 0.075; /* room for the hint under 'Unsorted' */
+      if (r.cb) { lx = BRAIN.cb.cx - 0.02; ly = BRAIN.cb.cy + 0.082; }
+      else if (inBrain(hx, top - off, 0.04)) ly = top - off;
+      else if (inBrain(hx, bot + 0.075, 0.04)) ly = bot + 0.075;
+      else { ly = top - 0.075; for (let k = 0; k < 30 && !inBrain(lx, ly, 0.03); k++) { lx += (cx - lx) * 0.15; ly += (cy - ly) * 0.15; } }
+      out.push({ key: r.key, ac: r.ac, n, cx: hx, cy: hy, lx, ly, cb: !!r.cb });
     };
-    /* the cerebellum for the free items (as many as fit), the cerebrum in wedges around its middle */
-    const fb = free.slice().sort((a, b) => pri(a) - pri(b) || g.nodes[b].deg - g.nodes[a].deg || a - b), inCb = fb.slice(0, q), rest = fb.slice(q);
-    place(inCb, cbPts);
-    const lists = keys.map(k => groups[k]); if (rest.length) lists.push(rest);
-    const mx = crPts.reduce((s, p) => s + p[0], 0) / (crPts.length || 1), my = crPts.reduce((s, p) => s + p[1], 0) / (crPts.length || 1);
-    const ang = p => { let a = Math.atan2(p[1] - my, p[0] - mx) - Math.PI * 0.62; while (a < 0) a += Math.PI * 2; return a; };
-    const sorted = crPts.slice().sort((a, b) => ang(a) - ang(b)); let at = 0;
-    lists.forEach(m => { place(m, sorted.slice(at, at + m.length)); at += m.length; });
-    return U;
+    regs.forEach((r, k) => {
+      const take = k === regs.length - 1 ? sorted.length - at : Math.round(sorted.length * W[k] / WS), C = sorted.slice(at, at + take); at += take;
+      fill(r, C);
+    });
+    if (cbFree) fill({ key: '', ac: -1, m: free, cb: true }, P.cb.filter(p => p[1] < BRAIN.cb.cy + 0.035));
+    return { U, regions: out };
   }
   const brainCache = new Map();
+  /* the map laid out inside the brain -> the same interface as layout(), with tx/ty (targets), unit S, frame, regions */
   function brainLayout(g, opts) {
     opts = opts || {};
     const N = g.nodes.length, S = opts.scale || 240, x = new Float64Array(N), y = new Float64Array(N), tx = new Float64Array(N), ty = new Float64Array(N), x0 = new Float64Array(N), y0 = new Float64Array(N);
-    const R = prng(hash('brain|' + N + '|' + g.links.length)), sig = g.nodes.map(n => n.id).join(',') + '#' + g.links.map(l => l.s + '-' + l.t).join(',');
-    let U = g.slots || brainCache.get(sig); if (!U) { U = brainSlots(g, R); if (brainCache.size > 8) brainCache.clear(); brainCache.set(sig, U); }
-    const c = BRAIN.core;
+    const R = prng(hash('brain|' + N + '|' + g.links.length)), sig = g.nodes.map(n => n.id + '@' + n.ac).join(',') + '#' + g.links.map(l => l.s + '-' + l.t).join(',');
+    let B = brainCache.get(sig); if (!B) { B = brainSlots(g); if (brainCache.size > 8) brainCache.clear(); brainCache.set(sig, B); }
+    const c = BRAIN.core, U = B.U;
     for (let i = 0; i < N; i++) { const p = U[i] || c; tx[i] = p[0] * S; ty[i] = p[1] * S; const j = 0.32 + R() * 0.2; x0[i] = x[i] = (c[0] + (p[0] - c[0]) * j) * S; y0[i] = y[i] = (c[1] + (p[1] - c[1]) * j) * S; }
-    const INTRO = 64, b = BRAIN.bounds;
-    const st = { n: N, x, y, tx, ty, S, alpha: 0, settled: false, steps: 0, brain: true, frame: { x0: b.x0 * S, y0: b.y0 * S, x1: b.x1 * S, y1: b.y1 * S } };
+    const INTRO = 48, b = BRAIN.bounds;
+    const regions = B.regions.map(r => Object.assign({}, r, { cx: r.cx * S, cy: r.cy * S, lx: r.lx * S, ly: r.ly * S }));
+    const st = { n: N, x, y, tx, ty, S, alpha: 0, settled: false, steps: 0, brain: true, regions, frame: { x0: b.x0 * S, y0: b.y0 * S, x1: b.x1 * S, y1: b.y1 * S } };
     const at2 = p => { const e = 1 - Math.pow(1 - p, 3); if (p >= 1) { x.set(tx); y.set(ty); return; } for (let i = 0; i < N; i++) { x[i] = x0[i] + (tx[i] - x0[i]) * e; y[i] = y0[i] + (ty[i] - y0[i]) * e; } };
     st.step = k => { if (st.settled) return false; st.steps += k || 1; const p = Math.min(1, st.steps / INTRO); at2(p); if (p >= 1) st.settled = true; return !st.settled; };
     st.run = () => { at2(1); st.settled = true; return 0; };
@@ -316,72 +323,29 @@
     return st;
   }
 
-  /* ---------- the merged map: the brain is always complete, your own items light it up ----------
-     own (buildGraph of the workspace) + sample (buildGraph of sampleInput) -> one graph laid out in the brain:
-     your nodes (ghost: false) in the lobes of their aircraft (aircraft k -> lobe k of the example; items without an
-     aircraft in the cerebellum), the example nodes as ghosts (ghost: true) filling the rest. Ghosts shown:
-     round(example size × (1 − own / full)); the ones nearest your nodes go first. counts are yours (the example's when
-     you have none). slots: each node's place in unit brain coordinates (brainLayout uses them).
-     With own items >= full the own graph is returned as it is (its force layout). Cached per input. */
-  const FULL = 40, mergeCache = new Map();
-  const sigOf = g => g.nodes.map(n => n.id + '=' + n.label + '@' + n.ac + (n.ink ? '*' : '')).join('|') + '#' + g.links.map(l => l.s + '-' + l.t).join(',');
-  function mergeGraph(own, sample, opts) {
-    opts = opts || {}; const full = opts.full || FULL;
-    if (!sample || !own || own.own >= full) return own;
-    const ck = sigOf(own) + '§' + sigOf(sample) + '§' + full, hit = mergeCache.get(ck); if (hit) return hit;
-    const No = own.nodes.length, Ns = sample.nodes.length;
-    const nodes = own.nodes.map(n => Object.assign({}, n, { ghost: false }))
-      .concat(sample.nodes.map(n => Object.assign({}, n, { id: 'ex:' + n.id, ac: n.ac ? 'ex:' + n.ac : '', ghost: true })));
-    const index = {}; nodes.forEach((n, i) => { index[n.id] = i; });
-    const links = own.links.map(l => ({ s: l.s, t: l.t, k: l.k })).concat(sample.links.map(l => ({ s: l.s + No, t: l.t + No, k: l.k })));
-    /* lobes: the example's aircraft in order; your aircraft k shares lobe k (wrapping) */
-    const lobe = {}, sAc = nodes.filter(n => n.ghost && n.k === 'aircraft'), oAc = nodes.filter(n => !n.ghost && n.k === 'aircraft'), nL = Math.max(1, sAc.length);
-    sAc.forEach((n, k) => { lobe[n.id] = k; }); oAc.forEach((n, k) => { lobe[n.id] = k % nL; });
-    const key = i => { const a = nodes[i].ac; return a && lobe[a] != null ? 'L' + String(lobe[a]).padStart(3, '0') : ''; };
-    const R = prng(hash('brain|' + nodes.length + '|' + links.length));
-    const U = brainSlots({ nodes, links, index }, R, { key, pri: i => nodes[i].ghost ? 1 : 0 });
-    /* which ghosts stay: the farthest from your nodes */
-    const keepN = own.own === 0 ? Ns : Math.max(0, Math.min(Ns, Math.round(Ns * (1 - own.own / full))));
-    const gd = []; for (let i = No; i < nodes.length; i++) { let d = Infinity; const p = U[i]; for (let j = 0; j < No; j++) { const q = U[j], e = (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2; if (e < d) d = e; } gd.push([i, d]); }
-    gd.sort((a, b) => b[1] - a[1] || a[0] - b[0]);
-    const keep = new Set(gd.slice(0, keepN).map(x => x[0])), map = new Int32Array(nodes.length).fill(-1), out = [], slots = [];
-    nodes.forEach((n, i) => { if (i < No || keep.has(i)) { map[i] = out.length; out.push(n); slots.push(U[i]); } });
-    const outLinks = links.filter(l => map[l.s] >= 0 && map[l.t] >= 0).map(l => ({ s: map[l.s], t: map[l.t], k: l.k }));
-    out.forEach(n => { if (n.ghost) n.deg = 0; }); outLinks.forEach(l => { if (out[l.s].ghost) out[l.s].deg++; if (out[l.t].ghost) out[l.t].deg++; });
-    const oi = {}; out.forEach((n, i) => { oi[n.id] = i; });
-    const res = { nodes: out, links: outLinks, counts: Object.assign({}, own.own ? own.counts : sample.counts), own: own.own, index: oi,
-      merged: true, ghosts: out.length - No, full, fade: Math.min(1, own.own / full), slots };
-    if (mergeCache.size > 6) mergeCache.clear(); mergeCache.set(ck, res);
-    return res;
-  }
-
-  /* ---------- an example workspace for the empty map ---------- */
+  /* ---------- an example workspace for the empty map: three aircraft, each with an AFM, a checklist, a few notes that
+     refer to them, a briefing pack and its route (about twenty dots, every one meaningful) ---------- */
   function sampleInput(t) {
     t = t || ((en) => en);
     const items = {}, now = 1700000000000; let seq = 0;
     const put = o => { o.createdAt = now + seq++; o.updatedAt = o.createdAt; items[o.id] = o; return o; };
-    const ac = [put({ id: 'xa1', kind: 'aircraft', type: 'Diamond DA42', reg: 'LN-EXA', mapLabel: 'DA42 — ME/IR' }),
-      put({ id: 'xa2', kind: 'aircraft', type: 'Beechcraft B200', reg: 'LN-EXB', mapLabel: t('B200 — type rating', 'B200 — typeberettigelse') }),
-      put({ id: 'xa3', kind: 'aircraft', type: 'Cessna 172', reg: 'LN-EXC', mapLabel: 'C172 — PPL' })];
-    const dn = [['AFM', 0, 'afm'], [t('Checklist', 'Sjekkliste'), 0, 'chk'], ['SOP', 0, 'sop'], [t('Limitations', 'Begrensninger'), 0, 'afm'],
-      ['AFM', 1, 'afm'], ['QRH', 1, 'chk'], ['SOP', 1, 'sop'], ['POH', 2, 'afm'], [t('Checklist', 'Sjekkliste'), 2, 'chk'],
-      [t('Training manual', 'Treningsmanual'), -1, 'company'], ['Part-FCL', -1, 'company']];
-    const docs = dn.map(([n, a, cat], i) => put({ id: 'xd' + i, kind: 'doc', name: n + (a >= 0 ? ' ' + ac[a].type.split(' ')[1] : ''), cat, acIds: a >= 0 ? [ac[a].id] : [] }));
-    const topics = [[t('Engine failure after take-off', 'Motorsvikt etter avgang'), 0], [t('Single-engine approach', 'Enmotors innflyging'), 2], ['VMCA', 3], [t('Fuel planning', 'Drivstoffplanlegging'), 0], [t('Icing', 'Ising'), 3], [t('Approach briefing', 'Innflygingsbrief'), 1], [t('Go-around', 'Avbrutt landing'), 2], ['ILS', 1],
-      [t('Pressurisation', 'Trykkabin'), 4], [t('Engine fire', 'Motorbrann'), 5], [t('Autopilot', 'Autopilot'), 4], [t('Crew briefing', 'Besetningsbrief'), 6], [t('Electrical failure', 'Elektrisk svikt'), 5], [t('Performance', 'Ytelse'), 4],
-      [t('Stall recovery', 'Steile'), 7], [t('Crosswind landing', 'Sidevindslanding'), 8], [t('Circuit', 'Landingsrunde'), 8], [t('Short field', 'Kortbane'), 7], [t('Weight and balance', 'Masse og balanse'), 7],
-      [t('Holding entries', 'Ventemønster'), 9], [t('Night VFR', 'Natt-VFR'), 9], [t('Licence privileges', 'Sertifikatrettigheter'), 10], [t('Weather minima', 'Værminima'), 9]];
-    topics.forEach(([n, di], i) => {
-      const d = docs[di], a = (d.acIds || [])[0];
-      const cites = [1 + (i * 7) % 40, 2 + (i * 5) % 14].map(p => `<cite data-doc="${d.id}" data-p="${p}">${d.name} p. ${p}</cite>`).join(' ');
-      put({ id: 'xn' + i, kind: 'note', title: n, body: '<div>' + cites + '</div>', links: a ? [{ t: 'aircraft', id: a }] : [] });
-    });
-    const packs = [['ENTO', 'ENBR', 'LN-EXA'], ['ENTO', 'ENGM', 'LN-EXA'], ['ENGM', 'ENVA', 'LN-EXB'], ['ENGM', 'ENZV', 'LN-EXB'], ['ENRY', 'ENCN', 'LN-EXC']].map((x, i) => ({ id: 'xp' + i, title: x[0] + ' – ' + x[1], f: { depapt: x[0], destapt: x[1], reg: x[2] }, routeId: 'xr' + i }));
+    const ac = [put({ id: 'xa1', kind: 'aircraft', type: 'Diamond DA42', reg: 'LN-EXA' }),
+      put({ id: 'xa2', kind: 'aircraft', type: 'King Air B200', reg: 'LN-EXB' }),
+      put({ id: 'xa3', kind: 'aircraft', type: 'Cessna 172', reg: 'LN-EXC' })];
+    const short = a => shortType(a.type);
+    const docs = ac.map((a, k) => [put({ id: 'xd' + k + 'a', kind: 'doc', name: (k === 2 ? 'POH ' : 'AFM ') + short(a), cat: 'afm', acIds: [a.id] }),
+      put({ id: 'xd' + k + 'c', kind: 'doc', name: t('Checklist ', 'Sjekkliste ') + short(a), cat: 'chk', acIds: [a.id] })]);
+    const cite = (d, p) => `<div><cite data-doc="${d.id}" data-p="${p}">${d.name} p. ${p}</cite></div>`;
+    [[0, t('Engine failure after take-off', 'Motorsvikt etter avgang'), 0, 12], [0, 'VMCA', 0, 27], [0, t('Fuel planning', 'Drivstoffplanlegging'), -1, 0],
+      [1, t('Pressurisation', 'Trykkabin'), 0, 44], [1, t('Engine fire', 'Motorbrann'), 1, 3],
+      [2, t('Stall recovery', 'Steiling'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2]].forEach(([a, title, d, p], i) =>
+      put({ id: 'xn' + i, kind: 'note', title, body: d >= 0 ? cite(docs[a][d], p) : '<div></div>', links: d < 0 ? [{ t: 'aircraft', id: ac[a].id }] : [] }));
+    const packs = [['ENTO', 'ENBR'], ['ENGM', 'ENVA'], ['ENRY', 'ENCN']].map((x, i) => ({ id: 'xp' + i, title: x[0] + ' – ' + x[1], f: { depapt: x[0], destapt: x[1], reg: ac[i].reg }, routeId: 'xr' + i }));
     const routes = packs.map((p, i) => ({ id: 'xr' + i, title: p.title, packId: p.id, pts: [{ n: p.f.depapt, t: 'rwy' }, { n: p.f.destapt, t: 'rwy' }] }));
     return { items, packs, routes };
   }
 
-  const API = { GROUPS, GROUP_OF, citesOf, tabsOf, buildGraph, layout, brainLayout, brainTexture, inBrain, BRAIN, sampleInput, mergeGraph, FULL, hash };
+  const API = { GROUPS, GROUP_OF, citesOf, tabsOf, buildGraph, layout, brainLayout, inBrain, BRAIN, BRAIN_MAX, shortType, sampleInput, hash };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   G.WSGRAPH = API;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,22 +1,22 @@
 /* Birdbird – My Workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
-   Frames are drawn only while something moves: the layout cooling down, a camera move, a drag. Once the layout has
-   settled no animation frame is requested, so an idle map costs nothing. With reduced motion the layout is run to the
-   end at once and drawn once.
-   WSMAP.mount(host, { graph, t, mini, sample, onOpen(node, beside), onClick() }) -> { setGraph(g), fit(), focus(i), destroy(), debug }
-   mini: a small, quiet map without controls (the desk home); a click calls onClick.
-   A merged graph (WSGRAPH.mergeGraph: g.merged) is laid out as a brain (WSGRAPH.brainLayout) with its texture, a faint
-   head profile and a few rays: your own dots bright, the example's dots (n.ghost) as faint ghosts without labels; with
-   no items of your own the example is drawn in full. Hovering or tapping an example dot explains what it would be in
-   your workspace and offers the real action; your own dots open on the desk. A plain graph (yours, FULL items or more)
-   gets its force layout with a soft brain-shaped glow behind it.
-   Life: now and then a faint pulse travels along a link, only while the map is on screen and the page visible, never with
-   reduced motion. Pulse frames copy the cached picture and draw the pulse on top (about 30 a second, for about a second). */
+   Frames are drawn only while something moves: the short intro, a camera move, a drag. Once still, no animation frame
+   is requested, so an idle map costs nothing. With reduced motion it is drawn once.
+   WSMAP.mount(host, { graph, t, mini, acLabels, sample, onOpen(node, beside), onClick() }) -> { setGraph(g), fit(), focus(i), destroy(), debug }
+   mini: a small, quiet map without controls, labels or pulses (the desk home and the sidebar); acLabels: the aircraft
+   regions are named on it (the desk home); a click calls onClick.
+   Up to WSGRAPH.BRAIN_MAX nodes the map is a calm brain silhouette (outline, a faint inner light, two fissures) with
+   only your own items inside it: each aircraft a named region, items without one under 'Unsorted'. Aircraft are always
+   labelled, documents when there is room, the rest on hover. Lines are the links in your data, nothing else.
+   sample: nothing of your own yet; the small example is shown, and hovering or tapping a dot explains what it would be
+   in your workspace and offers the real action. Larger maps get the force layout with a soft brain-shaped glow.
+   Life: rarely, a faint pulse travels along a real link, only on the full map (never the mini maps) while it is on screen and the page is visible,
+   never with reduced motion. Pulse frames copy the cached picture and draw the pulse on top. */
 (function () {
   'use strict';
   const GW = window.WSGRAPH;
   const COL = { aircraft: '#FFFFFF', doc: '#A9C7E6', page: '#6F8DB0', note: '#DCE8F4', notebook: '#C3D5E8', pack: '#E6D9BD', route: '#9CCFC7', desk: '#7E8C9C' };
   const LEG = { aircraft: 'aircraft', doc: 'doc', note: 'note', pack: 'pack', route: 'route', desk: 'desk' };
-  const BASE = { aircraft: 5, doc: 3.1, page: 1.6, note: 2.4, notebook: 2.6, pack: 3.2, route: 2.9, desk: 3.2 };
+  const BASE = { aircraft: 6, doc: 4.2, page: 1.8, note: 2.7, notebook: 2.9, pack: 3.1, route: 3, desk: 3.2 };
   const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const sprites = {};
   function sprite(c) {
@@ -31,7 +31,7 @@
   const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   function mount(host, o) {
-    const t = o.t || ((en) => en), mini = !!o.mini, esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const t = o.t || ((en) => en), mini = !!o.mini, acLabels = !!o.acLabels, esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const KN = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), page: t('Page', 'Side'), note: t('Note', 'Notat'), notebook: t('Notebook', 'Notatbok'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), desk: t('Desk', 'Arbeidsflate') };
     const GN = { aircraft: t('Aircraft', 'Fly'), doc: t('Documents', 'Dokumenter'), note: t('Notes', 'Notater'), pack: t('Packs', 'Pakker'), route: t('Routes', 'Ruter'), desk: t('Desks', 'Arbeidsflater') };
     host.classList.add('wsm'); if (mini) host.classList.add('mini');
@@ -48,17 +48,16 @@
     let g = null, L = null, W = 0, H = 0, dpr = 1, alive = true, raf = 0, auto = true, fitK = 1;
     const cam = { x: 0, y: 0, k: 1 };
     let hover = -1, sel = -1, tween = null, hidden = new Set(), nb = null, drag = null;
-    const dbg = { frames: 0, draws: 0, pulseFrames: 0, glow: false, get pulses() { return pulses.length; }, get running() { return !!raf; }, get settled() { return !L || L.settled; } };
+    const dbg = { frames: 0, draws: 0, pulseFrames: 0, glow: false, regions: [], labels: [], get pulses() { return pulses.length; }, get running() { return !!raf; }, get settled() { return !L || L.settled; } };
     let brainMode = false; const B = GW.BRAIN, coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
     let dirty = true, pulses = [], shown = null, scene = null, sceneOK = false, ambT = 0, pulseT = 0, onScreen = true;
-    /* an example dot: drawn faint (as a ghost) once you have items of your own; always explained, never opened */
-    const isEx = i => i >= 0 && !!g.nodes[i] && (!!g.nodes[i].ghost || (!!o.sample && !g.merged));
-    const faint = i => !!g.nodes[i].ghost && g.own > 0;
+    /* an example dot (nothing of your own yet): explained, never opened */
+    const isEx = i => i >= 0 && !!g.nodes[i] && !!o.sample;
 
     /* ---------- data ---------- */
     function setGraph(ng, keep) {
       const prev = keep && L && g ? L.positions() : null;
-      g = ng; brainMode = !!(g.merged || o.sample) && !!GW.brainLayout; dbg.ghosts = g.own > 0 ? (g.ghosts || 0) : 0; dbg.merged = !!g.merged;
+      g = ng; brainMode = !!GW.brainLayout && g.nodes.length > 0 && g.nodes.length <= (GW.BRAIN_MAX || 600);
       L = brainMode ? GW.brainLayout(g, { instant: !!prev || reduced() }) : GW.layout(g, { prev }); pulses = [];
       hover = -1; sel = -1; nb = null; if (card) card.hidden = true;
       if (reduced()) { L.run(900); fitNow(); request(); }
@@ -70,8 +69,7 @@
     const legendText = () => GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
     function drawLegend() {
       if (!legEl) return;
-      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('') +
-        (dbg.ghosts ? `<span class="wsm-fade"><i aria-hidden="true"></i>${esc(t('Example dots fade as you add your own', 'Eksempelprikkene blekner når du legger til dine egne'))}</span>` : '');
+      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
     }
 
     /* ---------- camera ---------- */
@@ -155,12 +153,12 @@
       }
       ctx.globalCompositeOperation = 'source-over';
     }
-    const canPulse = () => alive && onScreen && L && L.settled && !drag && !reduced() && g.links.length && (typeof document === 'undefined' || document.visibilityState === 'visible');
+    const canPulse = () => alive && !mini && onScreen && L && L.settled && !drag && !reduced() && g.links.length && (typeof document === 'undefined' || document.visibilityState === 'visible');
     function kick() { if (!raf && !pulseT && alive) raf = requestAnimationFrame(frame); }
     /* from a touched node: its links light up one after the other, then the next ring, faintly; then it stops */
     function burst(i) {
-      if (reduced() || i < 0) return; const now = performance.now(), seen = new Set([i]); let ring = [i], n = 0;
-      for (let h = 0; h < 2 && ring.length; h++) {
+      if (mini || reduced() || i < 0) return; const now = performance.now(), seen = new Set([i]); let ring = [i], n = 0;
+      for (let h = 0; h < 1 && ring.length; h++) {
         const next = [];
         for (const a of ring) for (const l of g.links) { const b = l.s === a ? l.t : l.t === a ? l.s : -1; if (b < 0 || seen.has(b) || !visible(b) || n >= 18) continue; seen.add(b); next.push(b); pulses.push({ a, b, t0: now + h * 300, dur: 520, s: h ? 0.45 : 0.9 }); n++; }
         ring = next;
@@ -172,15 +170,15 @@
       ambT = 0; if (!canPulse()) return;
       const ls = g.links.filter(l => visible(l.s) && visible(l.t)); if (!ls.length) return;
       let l = ls[Math.floor(Math.random() * ls.length)], a = Math.random() < 0.5 ? l.s : l.t, b = a === l.s ? l.t : l.s, t0 = performance.now();
-      for (let h = 0; h < 3; h++) {
-        const dur = 850 + Math.random() * 300; pulses.push({ a, b, t0, dur, s: mini ? 0.45 : 0.6 }); t0 += dur * 0.8;
-        if (Math.random() < 0.45) break;
+      for (let h = 0; h < 2; h++) {
+        const dur = 1000 + Math.random() * 300; pulses.push({ a, b, t0, dur, s: 0.55 }); t0 += dur * 0.8;
+        if (Math.random() < 0.6) break;
         const nx = ls.filter(m => (m.s === b || m.t === b) && !(m.s === a || m.t === a)); if (!nx.length) break;
         const m = nx[Math.floor(Math.random() * nx.length)]; a = b; b = m.s === a ? m.t : m.s;
       }
       kick(); schedule();
     }
-    function schedule() { if (ambT || !canPulse()) return; ambT = setTimeout(ambient, (mini ? 6500 : 3800) + Math.random() * (mini ? 6000 : 4200)); }
+    function schedule() { if (ambT || !canPulse()) return; ambT = setTimeout(ambient, 14000 + Math.random() * 12000); }
     function unschedule() { if (ambT) clearTimeout(ambT); ambT = 0; }
     const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; if (onScreen) schedule(); else unschedule(); }) : null;
     if (io) io.observe(host);
@@ -199,116 +197,113 @@
       if (!W || !g) return; dbg.draws++; sceneOK = false;
       if (L.settled && !ambT) schedule();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (!bg || bg.w !== W || bg.h !== H) { /* deep night sky with faint star dust, drawn once into a cached canvas */
+      if (!bg || bg.w !== W || bg.h !== H) { /* a deep night blue, drawn once into a cached canvas */
         const c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr); const b = c.getContext('2d'); b.scale(dpr, dpr);
-        const gr = b.createRadialGradient(W * 0.55, H * 0.42, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.8); gr.addColorStop(0, '#0C1F3A'); gr.addColorStop(0.5, '#071629'); gr.addColorStop(1, '#030A16');
-        b.fillStyle = gr; b.fillRect(0, 0, W, H);
-        let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-        const nDust = Math.round(W * H / (mini ? 900 : 650));
-        for (let i = 0; i < nDust; i++) { const a = rnd() * 0.22 + 0.03, r = rnd() < 0.92 ? 0.45 : 0.85; b.fillStyle = 'rgba(190,214,240,' + a.toFixed(3) + ')'; b.beginPath(); b.arc(rnd() * W, rnd() * H, r, 0, Math.PI * 2); b.fill(); }
-        bg = { c, w: W, h: H };
+        const gr = b.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.75); gr.addColorStop(0, '#0B1D37'); gr.addColorStop(0.55, '#071629'); gr.addColorStop(1, '#040C19');
+        b.fillStyle = gr; b.fillRect(0, 0, W, H); bg = { c, w: W, h: H };
       }
       ctx.drawImage(bg.c, 0, 0, W, H);
       if (brainMode) drawBrain(); else if (g.nodes.length >= 8) drawGlow();
       const N = g.nodes.length, zk = cam.k / (fitK || 1), focus = hover >= 0 ? hover : sel, near = focus >= 0 ? (nb && nb.i === focus ? nb.s : (nb = { i: focus, s: neigh(focus) }).s) : null;
-      const sizeK = Math.min(2.4, Math.max(0.75, Math.sqrt(zk))) * (mini ? 0.82 : 1) * (brainMode ? 0.86 : 1);
+      const sizeK = Math.min(2, Math.max(0.8, Math.sqrt(zk))) * (mini ? 0.78 : W < 600 ? 0.85 : 1);
       const px = new Float32Array(N), py = new Float32Array(N), pr = new Float32Array(N), vis = new Uint8Array(N);
       for (let i = 0; i < N; i++) {
         if (!visible(i)) continue; const n = g.nodes[i];
-        px[i] = sx(i); py[i] = sy(i); pr[i] = (BASE[n.k] || 2) * sizeK * (n.k === 'doc' || n.k === 'aircraft' ? 1 + Math.min(0.5, n.deg * 0.025) : 1) * (faint(i) ? 0.8 : 1);
+        px[i] = sx(i); py[i] = sy(i); pr[i] = (BASE[n.k] || 2) * sizeK * (n.k === 'doc' ? 1 + Math.min(0.35, n.deg * 0.04) : 1);
         vis[i] = px[i] > -40 && px[i] < W + 40 && py[i] > -40 && py[i] < H + 40 ? 1 : 0;
       }
-      /* links: hairlines */
-      ctx.lineWidth = mini ? 0.5 : 0.6; ctx.strokeStyle = near ? 'rgba(150,182,218,.05)' : 'rgba(150,182,218,.11)'; ctx.beginPath();
+      /* the region names, behind everything (they also keep dot labels off them) */
+      ctx.textBaseline = 'middle'; const taken = [];
+      const free = (x0, y0, x1, y1) => { for (const r of taken) if (x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]) return false; taken.push([x0, y0, x1, y1]); return true; };
+      dbg.labels = [];
+      if (brainMode && L.regions && (!mini || acLabels)) drawRegions(taken);
+      /* links: the real ones, as hairlines */
+      ctx.lineWidth = mini ? 0.6 : 0.9; ctx.lineCap = 'round'; ctx.strokeStyle = near ? 'rgba(150,182,218,.08)' : mini ? 'rgba(160,192,228,.22)' : 'rgba(160,192,228,.26)'; ctx.beginPath();
       const hl = [];
-      const gl = [];
-      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } if (faint(l.s)) { gl.push(l); continue; } ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
+      for (const l of g.links) { if (!visible(l.s) || !visible(l.t) || !(vis[l.s] || vis[l.t])) continue; if (near && (l.s === focus || l.t === focus)) { hl.push(l); continue; } ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }
       ctx.stroke();
-      if (gl.length) { ctx.strokeStyle = 'rgba(150,182,218,' + (near ? 0.035 : 0.075) + ')'; ctx.lineWidth = mini ? 0.4 : 0.5; ctx.beginPath(); gl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); ctx.lineWidth = mini ? 0.5 : 0.6; }
-      if (hl.length) { ctx.strokeStyle = 'rgba(214,232,250,.6)'; ctx.lineWidth = 0.9; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
-      /* glow, then the dots, one path per colour */
-      const ga = mini ? 0.5 : 0.62; ctx.globalCompositeOperation = 'lighter';
-      const gA = 0.62 - 0.2 * (g.fade || 0); /* ghosts: fainter as your own map fills */
-      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i], r = pr[i] * (n.k === 'aircraft' ? 5.5 : 4.2); ctx.globalAlpha = (near && !near.has(i) ? 0.12 : 1) * ga * (faint(i) ? gA * 0.75 : 1); ctx.drawImage(sprite(COL[n.k]), px[i] - r, py[i] - r, r * 2, r * 2); }
+      if (hl.length) { ctx.strokeStyle = 'rgba(214,232,250,.7)'; ctx.lineWidth = 1.2; ctx.beginPath(); hl.forEach(l => { ctx.moveTo(px[l.s], py[l.s]); ctx.lineTo(px[l.t], py[l.t]); }); ctx.stroke(); }
+      /* a soft halo, then the dots, one path per colour */
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i], r = pr[i] * (n.k === 'aircraft' ? 4 : 3.2); ctx.globalAlpha = (near && !near.has(i) ? 0.1 : 1) * (mini ? 0.45 : 0.5); ctx.drawImage(sprite(COL[n.k]), px[i] - r, py[i] - r, r * 2, r * 2); }
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       for (const k in COL) {
-        for (const dim of [false, true]) for (const gh of [false, true]) {
+        for (const dim of [false, true]) {
           ctx.beginPath(); let any = false;
-          for (let i = 0; i < N; i++) { if (!vis[i] || g.nodes[i].k !== k || (!!(near && !near.has(i)) !== dim) || faint(i) !== gh) continue; ctx.moveTo(px[i] + pr[i], py[i]); ctx.arc(px[i], py[i], pr[i], 0, Math.PI * 2); any = true; }
-          if (any) { ctx.globalAlpha = (dim ? 0.28 : 0.95) * (gh ? gA : 1); ctx.fillStyle = COL[k]; ctx.fill(); }
+          for (let i = 0; i < N; i++) { if (!vis[i] || g.nodes[i].k !== k || (!!(near && !near.has(i)) !== dim)) continue; ctx.moveTo(px[i] + pr[i], py[i]); ctx.arc(px[i], py[i], pr[i], 0, Math.PI * 2); any = true; }
+          if (any) { ctx.globalAlpha = dim ? 0.3 : 1; ctx.fillStyle = COL[k]; ctx.fill(); }
         }
       }
       ctx.globalAlpha = 1;
       /* rings: aircraft, annotated documents, the focused node */
-      ctx.lineWidth = 0.8;
-      for (let i = 0; i < N; i++) { if (!vis[i] || faint(i)) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(169,199,230,.45)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
+      ctx.lineWidth = mini ? 0.6 : 0.9;
+      for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.36)' : 'rgba(169,199,230,.5)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? (mini ? 2.5 : 4.5) : 2.4), 0, Math.PI * 2); ctx.stroke(); } }
       if (focus >= 0 && vis[focus]) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px[focus], py[focus], pr[focus] + 3.5, 0, Math.PI * 2); ctx.stroke(); }
-      if (mini) { centre = null; return; }
-      /* labels: on hover, near the focus, and when zoomed in (aircraft first, then documents, then everything) */
-      ctx.textBaseline = 'middle'; const taken = [];
-      const free = (x0, y0, x1, y1) => { for (const r of taken) if (x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]) return false; taken.push([x0, y0, x1, y1]); return true; };
-      const label = (i, strong) => {
-        const n = g.nodes[i], narrow = W < 600, raw = narrow && n.k === 'aircraft' && !strong ? n.label.split(' — ')[0] : n.label, cap = narrow ? 26 : 42, s = raw.length > cap ? raw.slice(0, cap - 2) + '…' : raw;
-        ctx.font = (n.k === 'aircraft' && !strong ? (narrow ? '500 10px ' : '500 11px ') : strong ? '600 12px ' : '500 11px ') + (n.k === 'aircraft' && !strong ? 'IBM Plex Mono, ui-monospace, monospace' : 'Public Sans, system-ui, sans-serif');
+      if (mini) return;
+      /* labels: aircraft always, documents when there is room, the rest on hover (or near the focus, or zoomed in) */
+      const narrow = W < 600;
+      const label = (i, mode) => { /* mode: 'focus' | 'force' | '' */
+        const n = g.nodes[i], strong = mode === 'focus', cap = strong ? (narrow ? 30 : 44) : n.k === 'aircraft' ? 16 : narrow ? 15 : 20, raw = n.label, s = raw.length > cap ? raw.slice(0, cap - 1).trimEnd() + '…' : raw;
+        ctx.font = strong ? '600 12.5px Public Sans, system-ui, sans-serif' : n.k === 'aircraft' ? '500 11px IBM Plex Mono, ui-monospace, monospace' : (narrow ? '500 10.5px ' : '500 11.5px ') + 'Public Sans, system-ui, sans-serif';
         const w = ctx.measureText(s).width, x = px[i] + pr[i] + 6, y = py[i];
-        if (!strong && !free(x - 2, y - 8, x + w + 2, y + 8)) return;
-        if (strong) taken.push([x - 2, y - 8, x + w + 2, y + 8]);
-        ctx.fillStyle = strong ? '#FFFFFF' : n.k === 'aircraft' ? 'rgba(220,234,248,.62)' : 'rgba(200,216,232,.62)';
-        if (strong) { ctx.save(); ctx.fillStyle = 'rgba(3,10,22,.82)'; ctx.fillRect(x - 4, y - 10, w + 8, 20); ctx.restore(); ctx.fillStyle = '#fff'; }
-        ctx.fillText(s, x, y);
+        if (!mode && !free(x - 2, y - 8, x + w + 2, y + 8)) return;
+        if (mode) taken.push([x - 2, y - 8, x + w + 2, y + 8]);
+        if (strong) { ctx.fillStyle = 'rgba(3,10,22,.85)'; ctx.fillRect(x - 4, y - 10, w + 8, 20); }
+        ctx.fillStyle = strong ? '#FFFFFF' : n.k === 'aircraft' ? 'rgba(236,244,252,.88)' : 'rgba(206,222,238,.74)';
+        ctx.fillText(s, x, y); dbg.labels.push(n.id);
       };
-      if (focus >= 0 && vis[focus] && !faint(focus)) label(focus, true);
+      for (let i = 0; i < N; i++) if (vis[i]) taken.push([px[i] - pr[i] - 1, py[i] - pr[i] - 1, px[i] + pr[i] + 1, py[i] + pr[i] + 1]); /* labels keep off the dots */
+      if (focus >= 0 && vis[focus]) label(focus, 'focus');
+      for (let i = 0; i < N; i++) if (vis[i] && i !== focus && g.nodes[i].k === 'aircraft') label(i, 'force');
       const order = [];
       for (let i = 0; i < N; i++) {
-        if (!vis[i] || i === focus || faint(i)) continue; const k = g.nodes[i].k;
-        const show = near ? near.has(i) : (k === 'aircraft' ? true : k === 'doc' || k === 'pack' || k === 'route' || k === 'desk' ? zk >= 1.9 : zk >= 2.7);
+        if (!vis[i] || i === focus) continue; const k = g.nodes[i].k; if (k === 'aircraft') continue;
+        const show = near ? near.has(i) : k === 'doc' ? true : zk >= 2.2;
         if (show) order.push(i);
       }
-      order.sort((a, b) => (g.nodes[a].k === 'aircraft' ? 0 : 1) - (g.nodes[b].k === 'aircraft' ? 0 : 1) || g.nodes[b].deg - g.nodes[a].deg);
-      order.slice(0, 260).forEach(i => label(i, false));
-      if (centre) { centre.free = free; centreText(); }
+      order.sort((a, b) => (g.nodes[a].k === 'doc' ? 0 : 1) - (g.nodes[b].k === 'doc' ? 0 : 1) || g.nodes[b].deg - g.nodes[a].deg || a - b);
+      order.slice(0, 200).forEach(i => label(i, ''));
     }
-    /* ---------- the brain: the example drawn inside it, or a soft glow behind your own map ---------- */
+    /* ---------- the brain: a calm silhouette, or a soft glow behind a large map ---------- */
     function brainPath(f) { ctx.beginPath(); polyPath(ctx, B.cerebrum, f, true); polyPath(ctx, B.cerebellum, f, true); }
-    let centre = null;
-    function centreLabel(x, y, a) { centre = mini ? null : { x, y, a }; }
-    function centreText() {
-      const c = centre; if (!c) return; centre = null;
-      ctx.save(); ctx.font = '500 10.5px IBM Plex Mono, ui-monospace, monospace'; if ('letterSpacing' in ctx) ctx.letterSpacing = '2.4px';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = 'rgba(214,230,248,' + c.a + ')'; const s2 = t('Your workspace', 'Arbeidsområdet ditt').toUpperCase(), w = ctx.measureText(s2).width;
-      if (c.free(c.x - w / 2 - 4, c.y - 8, c.x + w / 2 + 4, c.y + 8)) ctx.fillText(s2, c.x, c.y); ctx.restore();
-    }
     function drawBrain() {
       const S = L.S, k = cam.k, f = (u, v) => [(u * S - cam.x) * k + W / 2, (v * S - cam.y) * k + H / 2], ppu = S * k, [cx, cy] = f(B.core[0], B.core[1]);
-      ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.globalCompositeOperation = 'lighter';
-      /* a soft inner light */
-      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, ppu * 1.05); gr.addColorStop(0, 'rgba(64,124,206,.17)'); gr.addColorStop(0.55, 'rgba(44,96,176,.07)'); gr.addColorStop(1, 'rgba(36,78,150,.02)');
+      ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      /* a very subtle inner light */
+      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, ppu * 1.1); gr.addColorStop(0, 'rgba(70,128,206,.13)'); gr.addColorStop(0.6, 'rgba(48,100,178,.05)'); gr.addColorStop(1, 'rgba(36,78,150,.015)');
       ctx.fillStyle = gr; brainPath(f); ctx.fill();
-      /* the head, barely there */
-      if (!mini) { ctx.strokeStyle = 'rgba(150,190,236,.085)'; ctx.lineWidth = 1; ctx.beginPath(); polyPath(ctx, B.head, f, false); ctx.stroke(); }
-      /* texture: fine dust and hairlines */
-      const T = GW.brainTexture(mini ? 300 : 520);
-      ctx.lineWidth = mini ? 0.4 : 0.5; ctx.strokeStyle = 'rgba(150,186,226,.085)'; ctx.beginPath();
-      for (const [i, j] of T.links) { const a = f(T.pts[i][0], T.pts[i][1]), b = f(T.pts[j][0], T.pts[j][1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
-      ctx.stroke();
-      const dr = mini ? 0.55 : Math.min(1.3, Math.max(0.6, ppu / 320));
-      for (const [mod, al] of [[0, 'rgba(206,226,248,.42)'], [1, 'rgba(170,200,236,.2)']]) {
-        ctx.fillStyle = al; ctx.beginPath();
-        T.pts.forEach((p, i) => { if ((i % 5 === 0 ? 0 : 1) !== mod) return; const [a, b] = f(p[0], p[1]); ctx.moveTo(a + dr, b); ctx.arc(a, b, dr, 0, Math.PI * 2); });
-        ctx.fill();
-      }
-      /* outline: a wide soft line and a hairline; brain stem, fissures and folia fainter */
-      brainPath(f); ctx.strokeStyle = 'rgba(110,162,228,.075)'; ctx.lineWidth = mini ? 3 : 7; ctx.stroke(); ctx.strokeStyle = 'rgba(196,222,250,.32)'; ctx.lineWidth = mini ? 0.6 : 0.9; ctx.stroke();
-      ctx.strokeStyle = 'rgba(170,205,242,.15)'; ctx.lineWidth = mini ? 0.5 : 0.8; ctx.beginPath(); B.stem.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
-      ctx.strokeStyle = 'rgba(170,205,242,.12)'; ctx.beginPath(); B.fissures.forEach(P => polyPath(ctx, P, f, false)); B.folia.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
-      /* rays: from the core to each aircraft, and out to a few points beyond the outline */
-      const ray = (x2, y2, a0, a1, end) => { const lg = ctx.createLinearGradient(cx, cy, x2, y2); lg.addColorStop(0, 'rgba(226,240,255,' + a0 + ')'); lg.addColorStop(1, 'rgba(226,240,255,' + a1 + ')'); ctx.strokeStyle = lg; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x2, y2); ctx.stroke(); if (end) { ctx.globalAlpha = end; const r = mini ? 5 : 11; ctx.drawImage(sprite('#DCEBFA'), x2 - r, y2 - r, r * 2, r * 2); ctx.globalAlpha = 1; } };
-      ctx.lineWidth = mini ? 0.5 : 0.8;
-      if (!mini) [[-1.06, -0.52], [-0.66, -0.97], [0.08, -1.02], [0.78, -0.80], [1.08, -0.26]].forEach(([u, v]) => { const [a, b] = f(u, v); ray(a, b, 0.2, 0.03, 0.42); });
-      g.nodes.forEach((n, i) => { if (n.k === 'aircraft' && visible(i)) ray(sx(i), sy(i), faint(i) ? 0.09 : 0.26, faint(i) ? 0.03 : 0.1, 0); });
-      const cr = mini ? ppu * 0.1 : ppu * 0.13; ctx.globalAlpha = mini ? 0.35 : 0.42; ctx.drawImage(sprite('#CFE3FA'), cx - cr, cy - cr, cr * 2, cr * 2); ctx.globalAlpha = 1;
+      /* outline: a wide soft line and a hairline; brain stem and two fissures fainter */
+      ctx.strokeStyle = 'rgba(110,162,228,.07)'; ctx.lineWidth = mini ? 3 : 6; ctx.stroke(); ctx.strokeStyle = 'rgba(196,222,250,.34)'; ctx.lineWidth = mini ? 0.7 : 1; ctx.stroke();
+      ctx.strokeStyle = 'rgba(170,205,242,.13)'; ctx.lineWidth = mini ? 0.6 : 0.9; ctx.beginPath(); B.stem.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
+      ctx.strokeStyle = 'rgba(170,205,242,' + (mini ? 0.07 : 0.09) + ')'; ctx.beginPath(); B.fissures.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
       ctx.restore();
-      centreLabel(cx, cy + 16, 0.34);
+    }
+    /* each region named softly inside the brain: the aircraft type (DA42), or 'Unsorted' with a hint when there is no aircraft */
+    function regionName(r) {
+      if (r.ac < 0) return t('Unsorted', 'Uten fly');
+      const n = g.nodes[r.ac], s = GW.shortType ? GW.shortType(n.type) : '';
+      if (!s) return n.label;
+      const dup = L.regions.some(q => q !== r && q.ac >= 0 && GW.shortType(g.nodes[q.ac].type) === s);
+      return dup ? s + ' · ' + n.label : s;
+    }
+    function drawRegions(taken) {
+      const noAc = !g.counts.aircraft;
+      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (const r of L.regions) {
+        if (mini && r.ac < 0) continue;
+        const s = regionName(r).toUpperCase(), x = (r.lx - cam.x) * cam.k + W / 2, y = (r.ly - cam.y) * cam.k + H / 2;
+        const sm = mini || W < 600; ctx.font = mini ? '600 9.5px IBM Plex Mono, ui-monospace, monospace' : sm ? '600 10.5px IBM Plex Mono, ui-monospace, monospace' : '600 12px IBM Plex Mono, ui-monospace, monospace';
+        if ('letterSpacing' in ctx) ctx.letterSpacing = sm ? '2px' : '3px';
+        const w = ctx.measureText(s).width; ctx.fillStyle = mini ? 'rgba(214,232,250,.6)' : 'rgba(200,222,248,.42)'; ctx.fillText(s, x, y);
+        taken.push([x - w / 2 - 4, y - 9, x + w / 2 + 4, y + 9]); dbg.labels.push('region:' + s);
+        if (!mini && r.ac < 0 && noAc) {
+          if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+          ctx.font = (sm ? '400 11px' : '400 12px') + ' Public Sans, system-ui, sans-serif'; ctx.fillStyle = 'rgba(200,218,238,.5)';
+          const h = t('Add an aircraft to group your documents', 'Legg til et fly for å gruppere dokumentene dine'), hw = ctx.measureText(h).width;
+          ctx.fillText(h, x, y + 18); taken.push([x - hw / 2 - 4, y + 10, x + hw / 2 + 4, y + 26]);
+        }
+      }
+      ctx.restore(); dbg.regions = L.regions.map(r => regionName(r));
     }
     function drawGlow() {
       const idx = g.nodes.map((n, i) => i).filter(visible); dbg.glow = idx.length >= 8; if (!dbg.glow) return;
@@ -320,9 +315,7 @@
       const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(kx, ky) * cam.k * 1.05); gr.addColorStop(0, 'rgba(60,118,200,.11)'); gr.addColorStop(0.6, 'rgba(44,96,176,.045)'); gr.addColorStop(1, 'rgba(36,78,150,.01)');
       ctx.fillStyle = gr; brainPath(f); ctx.fill();
       ctx.strokeStyle = 'rgba(110,162,228,.05)'; ctx.lineWidth = mini ? 3 : 8; ctx.stroke(); ctx.strokeStyle = 'rgba(190,218,248,.13)'; ctx.lineWidth = mini ? 0.5 : 0.8; ctx.stroke();
-      ctx.strokeStyle = 'rgba(170,205,242,.06)'; ctx.beginPath(); B.fissures.forEach(P => polyPath(ctx, P, f, false)); B.folia.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
       ctx.restore();
-      centreLabel((wx - cam.x) * cam.k + W / 2, (wy - cam.y) * cam.k + H / 2, 0.22);
     }
     function neigh(i) { const s = new Set([i]); for (const l of g.links) { if (l.s === i) s.add(l.t); else if (l.t === i) s.add(l.s); } return s; }
 
@@ -384,10 +377,10 @@
       const n = g.nodes[i], nb2 = [...neigh(i)].filter(j => j !== i).map(j => g.nodes[j]), of = k => nb2.filter(m => m.k === k).map(m => m.label);
       const q = s => t('“', '«') + s + t('”', '»'), list = a => a.slice(0, 2).join(t(' and ', ' og ')) + (a.length > 2 ? t(` and ${a.length - 2} more`, ` og ${a.length - 2} til`) : '');
       const ac = n.ac && g.index[n.ac] != null && n.k !== 'aircraft' ? g.nodes[g.index[n.ac]].label : '';
-      if (n.k === 'aircraft') return t(`An aircraft you fly. Its documents, notes and briefing packs gather around it: ${n.deg} links here.`, `Et fly du flyr. Dokumentene, notatene og briefingpakkene samles rundt det: ${n.deg} koblinger her.`);
-      if (n.k === 'doc') return ac ? t(`Your ${n.label}, filed under ${ac}. Every page a note cites links back here.`, `Din ${n.label}, lagt under ${ac}. Hver side et notat viser til, kobles hit.`) : t(`A document for every aircraft, like ${n.label}. Notes that cite its pages link here.`, `Et dokument for alle fly, som ${n.label}. Notater som viser til sidene, kobles hit.`);
+      if (n.k === 'aircraft') return t(`An aircraft you fly${n.type ? ', a ' + n.type : ''}. It gets its own region of the map, where its documents, notes and briefing packs gather.`, `Et fly du flyr${n.type ? ', en ' + n.type : ''}. Det får sitt eget område på kartet, der dokumentene, notatene og briefingpakkene samles.`);
+      if (n.k === 'doc') { const ns = of('note'); return (ac ? t(`Your ${n.label}, filed under ${ac}.`, `Din ${n.label}, lagt under ${ac}.`) : t(`A document like ${n.label}.`, `Et dokument som ${n.label}.`)) + (ns.length ? t(` Notes that cite its pages link here, like ${q(ns[0])}.`, ` Notater som viser til sidene, kobles hit, som ${q(ns[0])}.`) : t(' Notes that cite its pages link here.', ' Notater som viser til sidene, kobles hit.')); }
       if (n.k === 'page') { const ns = of('note'); return ns.length ? t(`A page in your manual that a note refers to: ${q(ns[0])} cites it.`, `En side i manualen din som et notat viser til: ${q(ns[0])} viser til den.`) : t('A page in your manual that a note refers to.', 'En side i manualen din som et notat viser til.'); }
-      if (n.k === 'note' || n.k === 'notebook') { const ps = of('page'); return ps.length ? t(`A note of your own. This one cites ${list(ps)}.`, `Et notat du skriver selv. Dette viser til ${list(ps)}.`) : t(`A note of your own${ac ? ', linked to ' + ac : ''}.`, `Et notat du skriver selv${ac ? ', koblet til ' + ac : ''}.`); }
+      if (n.k === 'note' || n.k === 'notebook') { const ps = of('page').concat(of('doc')); return ps.length ? t(`A note of your own. This one cites a page in ${list(ps)}.`, `Et notat du skriver selv. Dette viser til en side i ${list(ps)}.`) : t(`A note of your own${ac ? ', linked to ' + ac : ''}.`, `Et notat du skriver selv${ac ? ', koblet til ' + ac : ''}.`); }
       if (n.k === 'pack') { const r = of('route'); return t(`Briefing pack ${n.label.replace(' – ', '→')}${r.length ? ', linked to its route' : ''}${ac ? ' and to ' + ac : ''}.`, `Briefingpakke ${n.label.replace(' – ', '→')}${r.length ? ', koblet til ruten sin' : ''}${ac ? ' og til ' + ac : ''}.`); }
       if (n.k === 'route') { const pk = of('pack'); return t(`A route from Route Explorer${pk.length ? ', linked to the briefing pack ' + pk[0].replace(' – ', '→') : ''}.`, `En rute fra Route Explorer${pk.length ? ', koblet til briefingpakken ' + pk[0].replace(' – ', '→') : ''}.`); }
       return '';
@@ -395,14 +388,14 @@
     function showCard(i) {
       if (!card) return;
       if (i < 0) { card.hidden = true; return; }
-      const n = g.nodes[i]; card.hidden = false;
+      const n = g.nodes[i], sub = n.k === 'aircraft' && n.type ? `<span class="m">${esc(n.type)}</span>` : ''; card.hidden = false;
       if (isEx(i)) {
         const a = ACT[n.k], pinned = i === sel;
-        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b><span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(i))}</span>` +
+        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b>${sub}<span class="w">${esc(WOULD(n.k))}</span><span class="x">${esc(explain(i))}</span>` +
           (pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
         return;
       }
-      card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b><span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
+      card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
         `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`;
     }
     function select(i, zoom) {
@@ -436,7 +429,7 @@
       let rows = [], cur = 0;
       const drawSug = () => {
         const q = fold(qi.value.trim()); rows = [];
-        if (q) { const tk = q.split(/\s+/); g.nodes.forEach((n, i) => { if (!visible(i) || faint(i)) return; const f = fold(n.label); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); }); rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); rows = rows.slice(0, 7).map(r => r[0]); }
+        if (q) { const tk = q.split(/\s+/); g.nodes.forEach((n, i) => { if (!visible(i)) return; const f = fold(n.label + (n.type ? ' ' + n.type : '')); if (tk.every(x => f.includes(x))) rows.push([i, (f.startsWith(q) ? 0 : 1) + (n.k === 'page' ? 1 : 0)]); }); rows.sort((a, b) => a[1] - b[1] || g.nodes[b[0]].deg - g.nodes[a[0]].deg); rows = rows.slice(0, 7).map(r => r[0]); }
         cur = 0; sug.hidden = !rows.length && !q; qi.setAttribute('aria-expanded', String(!sug.hidden));
         sug.innerHTML = rows.length ? rows.map((i, k) => `<li role="option" id="wsmo${k}" data-i="${i}" aria-selected="${k === cur}"><i style="background:${COL[g.nodes[i].k]}"></i><span>${esc(g.nodes[i].label)}</span><small>${esc(KN[g.nodes[i].k])}</small></li>`).join('') : `<li class="none">${esc(t('Nothing on the map matches.', 'Ingenting på kartet passer.'))}</li>`;
         if (rows.length) qi.setAttribute('aria-activedescendant', 'wsmo0'); else qi.removeAttribute('aria-activedescendant');
@@ -457,12 +450,12 @@
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => { if (alive) resize(); }) : null;
     if (ro) ro.observe(cv); else window.addEventListener('resize', resize);
     setGraph(o.graph); resize();
-    return {
-      setGraph: ng => setGraph(ng, true), fit: () => moveTo(fitTarget(), 380), focus: i => select(i, true), debug: dbg,
+    return (host.wsmap = {
+      setGraph: ng => setGraph(ng, true), pulseNow: () => { unschedule(); ambient(); }, fit: () => moveTo(fitTarget(), 380), focus: i => select(i, true), debug: dbg,
       get graph() { return g; }, get camera() { return Object.assign({}, cam); }, get layout() { return L; },
       screenOf: i => [sx(i), sy(i)],
-      destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; }
-    };
+      destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; host.wsmap = null; }
+    });
   }
   window.WSMAP = { mount, COL, stats };
 })();
