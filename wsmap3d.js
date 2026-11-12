@@ -1,20 +1,22 @@
 /* Birdbird – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
-   A neural constellation drawn by three.js (r128, lazy-loaded with this file): each aircraft a cluster with its items
-   round it, Unsorted a small cluster of its own, links as fine luminous arcs, nodes as soft glowing points (one draw
-   call), depth by fog and size. The example map (and only a large map of your own)
-   gets a faint field of background neurons that is never interactive.
+   A calm cloud drawn by three.js (r128, lazy-loaded with this file): each group (an aircraft, then 'Unsorted') a soft
+   ball of glowing points inside a few large puffs of light (one draw call for all puffs, one for all points), the groups
+   side by side at slightly different depths so the cloud has parallax when it turns. Links are faint hairlines inside a
+   group; a point's links light up when you point at it. Every group has a clear name and count ('DA42 · 6') as an
+   HTML button above it, placed where it collides with no other name and stays on the plate; click it to fly to the
+   group and list its items in the card; click outside to come back.
    WSMAP3D.mount(host, { graph, t, sample, onOpen(node, beside), padBottom, view, onWeak(why), probe, rotateSecs })
      -> { setGraph(g), fit(), focus(i), flyToCluster(k), destroy(), debug, graph, camera, layout, screenOf(i), is3d }
-   Frames only while something moves: the intro, a turn with its inertia, a fly-to, the slow auto-rotation (about 20 s
-   after opening and after you stop interacting, then it stops), a pulse. Idle, no frame is requested at all.
-   Reduced motion: no intro, no auto-rotation, no pulses, camera moves are instant.
+   Frames only while something moves: the intro, a turn with its inertia, a fly-to, a slow sway (about 20 s after
+   opening and after you stop interacting, then it stops), a pulse. Idle, no frame is requested at all.
+   Reduced motion: no intro, no sway, no pulses, camera moves are instant.
    probe: the first frames are timed; a device that cannot keep up calls onWeak and the page shows the 2D map. */
 (function () {
   'use strict';
   const GW = window.WSGRAPH, G3 = window.WSGRAPH3D, UI = window.WSMAP.ui, COL = window.WSMAP.COL;
   /* node size (world units, glow included) and brightness by type */
   const SZ = { aircraft: 5.6, doc: 3.1, page: 1.7, note: 2.3, notebook: 2.4, pack: 2.7, route: 2.6, desk: 2.6 };
-  const BR = { aircraft: 1.25, doc: 0.95, page: 0.6, note: 0.8, notebook: 0.82, pack: 0.9, route: 0.88, desk: 0.7 };
+  const BR = { aircraft: 1.1, doc: 0.88, page: 0.6, note: 0.76, notebook: 0.78, pack: 0.84, route: 0.82, desk: 0.66 };
   const reduced = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const stats = { pulseFrames: 0 };
   const hex = c => { const v = parseInt(c.slice(1), 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; };
@@ -42,12 +44,25 @@
     void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
       vA = alpha * smoothstep(grow * 0.86 + 0.04, grow * 0.86 + 0.16, uGrow) * (1.0 - 0.75 * smoothstep(uNear, uFar, -mv.z)); }`;
   const LINE_FS = `precision mediump float; uniform vec3 uColor; varying float vA; void main() { if (vA < 0.003) discard; vec3 c = uColor * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
+  /* the puffs: camera-facing quads with a soft gaussian falloff (volumetric-looking light, no edge) */
+  const PUFF_VS = `
+    attribute vec2 corner; attribute float rad; attribute float alpha; attribute float grow;
+    uniform float uGrow, uNear, uFar; varying vec2 vC; varying float vA;
+    void main() {
+      vec4 mv = modelViewMatrix * vec4(position, 1.0); float k = smoothstep(grow * 0.8, grow * 0.8 + 0.35, uGrow);
+      mv.xy += corner * rad * (0.55 + 0.45 * k); gl_Position = projectionMatrix * mv;
+      vC = corner; vA = alpha * k * (1.0 - 0.45 * smoothstep(uNear, uFar, -mv.z));
+    }`;
+  const PUFF_FS = `
+    precision mediump float; uniform vec3 uColor; varying vec2 vC; varying float vA;
+    void main() { float r2 = dot(vC, vC); if (r2 > 1.0 || vA < 0.002) discard; float f = max(0.0, exp(-r2 * 3.0) - 0.05);
+      vec3 c = uColor * f * vA; gl_FragColor = vec4(c, max(c.r, max(c.g, c.b))); }`;
   const SEG = 10; /* segments per link arc */
   /* palettes: Ice (calm ice-blue and white, the default), Ember (warm), Mono (greys); subtle tints per type */
   const PAL = {
-    ice: { name: ['Ice', 'Is'], col: COL, line: [0.62, 0.76, 0.93], dust: [0.58, 0.72, 0.93], pulse: [0.86, 0.93, 1] },
-    ember: { name: ['Ember', 'Glød'], col: { aircraft: '#FFF6EA', doc: '#F0BE8A', page: '#B98A63', note: '#F6DDC0', notebook: '#EACBA8', pack: '#E8A98E', route: '#D9C48C', desk: '#9C8672' }, line: [0.93, 0.68, 0.46], dust: [0.9, 0.6, 0.42], pulse: [1, 0.88, 0.72] },
-    mono: { name: ['Mono', 'Mono'], col: { aircraft: '#FFFFFF', doc: '#CFD5DC', page: '#8C949D', note: '#B4BBC4', notebook: '#A9B0B8', pack: '#E3E3E3', route: '#9EA6AF', desk: '#7D848C' }, line: [0.7, 0.72, 0.75], dust: [0.62, 0.64, 0.68], pulse: [1, 1, 1] }
+    ice: { name: ['Ice', 'Is'], col: COL, line: [0.62, 0.76, 0.93], cloud: [0.36, 0.56, 0.88], pulse: [0.86, 0.93, 1] },
+    ember: { name: ['Ember', 'Glød'], col: { aircraft: '#FFF6EA', doc: '#F0BE8A', page: '#B98A63', note: '#F6DDC0', notebook: '#EACBA8', pack: '#E8A98E', route: '#D9C48C', desk: '#9C8672' }, line: [0.93, 0.68, 0.46], cloud: [0.86, 0.48, 0.3], pulse: [1, 0.88, 0.72] },
+    mono: { name: ['Mono', 'Mono'], col: { aircraft: '#FFFFFF', doc: '#CFD5DC', page: '#8C949D', note: '#B4BBC4', notebook: '#A9B0B8', pack: '#E3E3E3', route: '#9EA6AF', desk: '#7D848C' }, line: [0.7, 0.72, 0.75], cloud: [0.5, 0.53, 0.58], pulse: [1, 1, 1] }
   };
   const palPref = () => { try { const v = localStorage.getItem('bb-map-palette'); return PAL[v] ? v : 'ice'; } catch (e) { return 'ice'; } };
 
@@ -79,16 +94,15 @@
     /* additive light on a transparent canvas: colour and alpha both add (premultiplied), so the CSS background shows through */
     const blend = { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.OneFactor, blendDstAlpha: THREE.OneFactor };
     const nodeMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
-    const dustMat = new THREE.ShaderMaterial({ uniforms: U, vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const lineU = Object.assign({ uColor: { value: new THREE.Color(0.66, 0.79, 0.94) } }, U);
     const lineMat = new THREE.ShaderMaterial({ uniforms: lineU, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
-    const dustLineU = Object.assign({ uColor: { value: new THREE.Color(0.55, 0.7, 0.9) } }, U);
-    const dustLineMat = new THREE.ShaderMaterial({ uniforms: dustLineU, vertexShader: LINE_VS, fragmentShader: LINE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
+    const puffU = Object.assign({ uColor: { value: new THREE.Color(0.36, 0.56, 0.88) } }, U);
+    const puffMat = new THREE.ShaderMaterial({ uniforms: puffU, vertexShader: PUFF_VS, fragmentShader: PUFF_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
     const pulseMat = new THREE.ShaderMaterial({ uniforms: Object.assign({}, U, { uGrow: { value: 2 } }), vertexShader: NODE_VS, fragmentShader: NODE_FS, transparent: true, depthTest: false, depthWrite: false, ...blend });
 
     let g = null, L = null, N = 0, alive = true, raf = 0, W = 0, H = 0;
-    let nodes = null, links = null, dustPts = null, dustLines = null, pulsePts = null, curves = null;
-    let hover = -1, sel = -1, hidden = new Set(), near = null;
+    let nodes = null, links = null, cloud = null, pulsePts = null, curves = null, puffOf = null;
+    let hover = -1, sel = -1, gsel = -1, hidden = new Set(), near = null, names2 = [];
     const scr = { x: new Float32Array(0), y: new Float32Array(0), d: new Float32Array(0), ok: false };
     /* camera: orbit round a target */
     const cam = { tx: 0, ty: 0, tz: 0, th: 0.55, ph: 1.2, d: 100, dT: 100 }, home = { tx: 0, ty: 0, tz: 0, th: 0.55, ph: 1.2, d: 100 };
@@ -96,7 +110,7 @@
     const rot = { on: false, t: 0, secs: o.rotateSecs || 20, timer: 0 };
     let pulses = [], ambT = 0, onScreen = true, interacting = false;
     const cpu = []; let probeD = [], probing = !!o.probe && !reduced();
-    const dbg = { frames: 0, renders: 0, is3d: true, regions: [], labels: [],
+    const dbg = { frames: 0, renders: 0, is3d: true, regions: [], labels: [], groupLabels: [], get gsel() { return gsel; },
       get running() { return !!raf; }, get settled() { return introP >= 1; }, get rotating() { return rot.on || !!rot.timer; }, get pulses() { return pulses.length; },
       get hover() { return hover; }, get sel() { return sel; }, get dpr() { return dpr; },
       get cpu() { const a = cpu.slice().sort((x, y) => x - y); return { n: a.length, avg: a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0, p95: a.length ? a[Math.floor((a.length - 1) * 0.95)] : 0, max: a.length ? a[a.length - 1] : 0 }; } };
@@ -104,16 +118,12 @@
     const visible = i => !hidden.has(g.nodes[i].g);
 
     /* ---------- data -> buffers ---------- */
-    function regionName(c) {
-      if (c.ac < 0) return t('Unsorted', 'Uten fly');
-      const n = g.nodes[c.ac], s = GW.shortType ? GW.shortType(n.type) : '';
-      if (!s) return n.label;
-      return L.clusters.some(q => q !== c && q.ac >= 0 && GW.shortType(g.nodes[q.ac].type) === s) ? s + ' · ' + n.label : s;
-    }
-    function disposeObjs() { [nodes, links, dustPts, dustLines, pulsePts].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = dustPts = dustLines = pulsePts = null; }
+    function disposeObjs() { [nodes, links, cloud, pulsePts].forEach(m => { if (m) { scene.remove(m); m.geometry.dispose(); } }); nodes = links = cloud = pulsePts = null; }
+    const aspect = () => { const r = host.getBoundingClientRect(); return r.width && r.height ? Math.max(0.45, Math.min(3, (r.width - 32) / Math.max(120, r.height - padT() - padB()))) : 1.7; };
     function setGraph(ng, keep) {
       const before = g && keep ? new Set(g.nodes.map(n => n.id)) : null;
-      g = ng; N = g.nodes.length; L = G3.layout3d(g); hover = -1; sel = -1; near = null; pulses = []; if (card) card.hidden = true;
+      g = ng; N = g.nodes.length; L = G3.layout3d(g, { aspect: aspect() }); hover = -1; sel = -1; gsel = -1; near = null; pulses = []; if (card) card.hidden = true;
+      names2 = L.clusters.map(c => GW.groupName(g, L.clusters, c, t));
       disposeObjs();
       /* grow-in: everything on open; only the new points when items are added */
       const fresh = before ? g.nodes.map(n => !before.has(n.id)) : null, regrow = !reduced() && (!before || fresh.some(Boolean));
@@ -121,12 +131,12 @@
       g.nodes.forEach((n, i) => { size[i] = (SZ[n.k] || 1.8) * (n.k === 'doc' ? 1 + Math.min(0.3, n.deg * 0.035) : 1); al[i] = 1; gr[i] = fresh && !fresh[i] ? 0 : L.grow[i]; });
       let geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(size, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(al, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(gr, 1));
       nodes = new THREE.Points(geo, nodeMat); nodes.frustumCulled = false; nodes.renderOrder = 3;
-      /* links: gentle arcs bowed away from the middle of the brain; they grow from one end to the other */
+      /* links: gentle arcs bowed away from the middle of the cloud; they grow from one end to the other */
       const nl = g.links.length, lp = new Float32Array(nl * SEG * 6), la = new Float32Array(nl * SEG * 2), lg = new Float32Array(nl * SEG * 2), C = L.center; curves = new Float32Array(nl * (SEG + 1) * 3);
       g.links.forEach((l, k) => {
         const a = [P[l.s * 3], P[l.s * 3 + 1], P[l.s * 3 + 2]], b = [P[l.t * 3], P[l.t * 3 + 1], P[l.t * 3 + 2]], m = [(a[0] + b[0]) / 2 - C[0], (a[1] + b[1]) / 2 - C[1], (a[2] + b[2]) / 2 - C[2]];
         const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]), ml = Math.hypot(m[0], m[1], m[2]), u = ml > 0.5 ? [m[0] / ml, m[1] / ml, m[2] / ml] : [0, 1, 0];
-        const bow = len * 0.12, c = [m[0] + C[0] + u[0] * bow, m[1] + C[1] + u[1] * bow, m[2] + C[2] + u[2] * bow];
+        const bow = len * 0.08, c = [m[0] + C[0] + u[0] * bow, m[1] + C[1] + u[1] * bow, m[2] + C[2] + u[2] * bow];
         for (let s2 = 0; s2 <= SEG; s2++) { const q = s2 / SEG, w0 = (1 - q) * (1 - q), w1 = 2 * q * (1 - q), w2 = q * q; curves.set([a[0] * w0 + c[0] * w1 + b[0] * w2, a[1] * w0 + c[1] * w1 + b[1] * w2, a[2] * w0 + c[2] * w1 + b[2] * w2], (k * (SEG + 1) + s2) * 3); }
         const ga = gr[l.s], gb = gr[l.t], g0 = Math.min(ga, gb), g1 = Math.max(ga, gb), from = ga <= gb;
         for (let s2 = 0; s2 < SEG; s2++) { const o0 = (k * (SEG + 1) + s2) * 3; lp.set(curves.subarray(o0, o0 + 6), (k * SEG + s2) * 6);
@@ -135,19 +145,15 @@
       geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(lp, 3)); geo.setAttribute('alpha', new THREE.BufferAttribute(la, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(lg, 1));
       links = new THREE.LineSegments(geo, lineMat); links.frustumCulled = false; links.renderOrder = 2;
       scene.add(links); scene.add(nodes);
-      /* background neurons: a rich field for the example, a faint shell under the surface for your own map */
-      const dc = G3.dustCount(N, sample), D = G3.dust(dc.n, { shell: dc.shell, seed: sample ? 'example' : 'own' }), nd = D.P.length / 3;
-      if (nd) {
-        const ds = new Float32Array(nd), da = new Float32Array(nd), R = mulberry(7), dg = before ? new Float32Array(nd) : D.grow;
-        for (let i = 0; i < nd; i++) { ds[i] = (dc.shell ? 0.5 : 0.6) + R() * (dc.shell ? 0.6 : 0.9); da[i] = (sample ? 0.5 : dc.n > 600 ? 0.24 : 0.19) * (0.35 + R() * 0.65); }
-        geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(D.P, 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(nd * 3), 3)); geo.setAttribute('size', new THREE.BufferAttribute(ds, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(da, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(dg, 1));
-        dustPts = new THREE.Points(geo, dustMat); dustPts.frustumCulled = false; dustPts.renderOrder = 0; scene.add(dustPts);
-        dustPts.userData.shade = Float32Array.from({ length: nd }, () => 0.55 + R() * 0.45);
-        const dl = D.links.length, dp = new Float32Array(dl * 3), dla = new Float32Array(dl), dlg = new Float32Array(dl);
-        for (let k = 0; k < dl; k++) { const i = D.links[k]; dp.set(D.P.subarray(i * 3, i * 3 + 3), k * 3); dla[k] = sample ? 0.09 : 0.05; dlg[k] = dg[i] + 0.03; }
-        geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(dp, 3)); geo.setAttribute('alpha', new THREE.BufferAttribute(dla, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(dlg, 1));
-        dustLines = new THREE.LineSegments(geo, dustLineMat); dustLines.frustumCulled = false; dustLines.renderOrder = 1; scene.add(dustLines);
+      /* the soft light: a few big puffs per group, behind everything */
+      const PF = G3.puffs(L.clusters), np = PF.length / 5, pp = new Float32Array(np * 18), pc = new Float32Array(np * 12), pr2 = new Float32Array(np * 6), pa = new Float32Array(np * 6), pg = new Float32Array(np * 6);
+      const CO = [[-1, -1], [1, -1], [1, 1], [-1, -1], [1, 1], [-1, 1]]; puffOf = new Int32Array(np);
+      for (let k = 0; k < np; k++) {
+        const ck = PF[k * 5 + 4], core = !k || PF[k * 5 - 1] !== ck, gk = Math.min(1, Math.hypot(PF[k * 5], PF[k * 5 + 1], PF[k * 5 + 2]) / L.R) * 0.7; puffOf[k] = ck;
+        for (let v = 0; v < 6; v++) { pp.set([PF[k * 5], PF[k * 5 + 1], PF[k * 5 + 2]], (k * 6 + v) * 3); pc.set(CO[v], (k * 6 + v) * 2); pr2[k * 6 + v] = PF[k * 5 + 3]; pa[k * 6 + v] = core ? 0.2 : 0.13; pg[k * 6 + v] = before ? 0 : gk; }
       }
+      geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pp, 3)); geo.setAttribute('corner', new THREE.BufferAttribute(pc, 2)); geo.setAttribute('rad', new THREE.BufferAttribute(pr2, 1)); geo.setAttribute('alpha', new THREE.BufferAttribute(pa, 1)); geo.setAttribute('grow', new THREE.BufferAttribute(pg, 1));
+      cloud = new THREE.Mesh(geo, puffMat); cloud.frustumCulled = false; cloud.renderOrder = 0; cloud.userData.base = pa.slice(); scene.add(cloud);
       /* pulses: up to 6 at once, a head and a short trail each */
       geo = new THREE.BufferGeometry(); const PM = 36;
       geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PM * 3), 3)); geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(PM * 3).fill(0.9), 3));
@@ -157,7 +163,7 @@
       paint(); buildLabels(); states(); drawLegend();
       host.setAttribute('data-nodes', N);
       cv.setAttribute('aria-label', t('3D map of your workspace: ', '3D-kart over arbeidsområdet ditt: ') + legendText());
-      if (!keep) { homeView(); Object.assign(cam, home); cam.dT = cam.d; }
+      if (!keep || W) { homeView(); if (!keep) { Object.assign(cam, home); cam.dT = cam.d; } }
       if (regrow) { introP = 0; U.uGrow.value = 0; growMs = before ? 1500 : 2600; stopRot(); } else { introP = 1; U.uGrow.value = 2; }
       request();
     }
@@ -165,31 +171,35 @@
     function paint() {
       const p = PAL[pal] || PAL.ice, c = nodes.geometry.attributes.color;
       g.nodes.forEach((n, i) => { const h = hex(p.col[n.k] || p.col.note), b = BR[n.k] || 0.8; c.array.set([h[0] * b, h[1] * b, h[2] * b], i * 3); }); c.needsUpdate = true;
-      lineU.uColor.value.setRGB(...p.line); dustLineU.uColor.value.setRGB(...p.dust.map(v => v * 0.9));
-      if (dustPts) { const dc = dustPts.geometry.attributes.color, sh = dustPts.userData.shade; for (let i = 0; i < sh.length; i++) dc.array.set([p.dust[0] * sh[i], p.dust[1] * sh[i], p.dust[2] * sh[i]], i * 3); dc.needsUpdate = true; }
+      lineU.uColor.value.setRGB(...p.line); puffU.uColor.value.setRGB(...p.cloud);
       const pc = pulsePts && pulsePts.geometry.attributes.color; if (pc) { for (let i = 0; i < pc.count; i++) pc.array.set(p.pulse, i * 3); pc.needsUpdate = true; }
       host.dataset.pal = pal;
       const pb = host.querySelector('.wsm-pal'); if (pb) pb.querySelectorAll('[data-pal]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pal === pal)));
     }
     function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t2 = Math.imul(a ^ a >>> 15, 1 | a); t2 = t2 + Math.imul(t2 ^ t2 >>> 7, 61 | t2) ^ t2; return ((t2 ^ t2 >>> 14) >>> 0) / 4294967296; }; }
 
-    /* highlight: the focused node, its neighbours and links bright, the rest dim; hidden types gone */
-    /* highlight: the focused node with its neighbours and links bright, or the points the search matches; the rest dim.
-       Types switched off in the colour key stay as faint points you cannot pick. */
+    /* highlight: the focused node with its neighbours and links bright, or the points the search matches, or the focused
+       group; the rest dim. Types switched off in the colour key stay as faint points you cannot pick. */
     let lit = null;
+    const inner = l => L.gi[l.s] === L.gi[l.t];
     function states() {
       if (!nodes) return;
       const focus = hover >= 0 ? hover : sel; near = focus >= 0 ? UI.neighOf(g, focus) : null;
       const on = near || lit, al = nodes.geometry.attributes.alpha;
-      for (let i = 0; i < N; i++) al.array[i] = !visible(i) ? 0.07 : on ? (on.has(i) ? 1 : 0.13) : 1;
+      for (let i = 0; i < N; i++) al.array[i] = !visible(i) ? 0.07 : on ? (on.has(i) ? 1 : 0.13) : gsel >= 0 && L.gi[i] !== gsel ? 0.2 : 1;
       al.needsUpdate = true;
       const la = links.geometry.attributes.alpha;
       g.links.forEach((l, k) => {
         const v = visible(l.s) && visible(l.t), hl = near ? (l.s === focus || l.t === focus) : lit ? (lit.has(l.s) && lit.has(l.t)) : false;
-        const a = !v ? 0.015 : hl ? 0.85 : on ? 0.04 : 0.2;
+        const a = !v ? 0 : hl ? 0.85 : !inner(l) ? 0 : on ? 0.03 : gsel >= 0 && L.gi[l.s] !== gsel ? 0.03 : 0.13;
         for (let s2 = 0; s2 < SEG; s2++) { const mid = x => a * (0.75 + 0.25 * Math.sin(Math.PI * x)); la.array[(k * SEG + s2) * 2] = mid(s2 / SEG); la.array[(k * SEG + s2) * 2 + 1] = mid((s2 + 1) / SEG); }
       });
       la.needsUpdate = true;
+      /* the puffs: the focused group's light up, the others fade back */
+      const pa = cloud.geometry.attributes.alpha, base = cloud.userData.base;
+      for (let k = 0; k < puffOf.length; k++) { const f = gsel < 0 ? 1 : puffOf[k] === gsel ? 1.25 : 0.4; for (let v = 0; v < 6; v++) pa.array[k * 6 + v] = base[k * 6 + v] * f; }
+      pa.needsUpdate = true;
+      regEls.forEach((el, k) => { el.classList.toggle('on', k === gsel); el.classList.toggle('dim', gsel >= 0 && k !== gsel); });
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
     }
@@ -198,58 +208,51 @@
       legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || hidden.has(k)).map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${pcol()[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
     }
 
-    /* ---------- labels (HTML, crisp): cluster names (clickable), the focused node and its neighbours ---------- */
+    /* ---------- labels (HTML, crisp): group names with counts (buttons), the focused node and its neighbours ---------- */
     let regEls = [], nodeEls = [], shownLbl = [];
     function buildLabels() {
       lblEl.innerHTML = '';
       regEls = L.clusters.map((c, k) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'wsm3-reg' + (c.ac < 0 ? ' uns' : '');
-        const name = regionName(c), sub = c.ac >= 0 && !/·/.test(name) ? g.nodes[c.ac].label : '';
-        b.innerHTML = `<b>${esc(name)}</b>${sub ? `<span>${esc(sub)}</span>` : ''}`;
-        b.setAttribute('aria-label', t('Fly to ', 'Fly til ') + name + (sub ? ' ' + sub : ''));
-        b.addEventListener('click', () => flyToCluster(k)); lblEl.appendChild(b); return b;
+        b.innerHTML = `<b>${esc(names2[k].toUpperCase())}</b><span>&nbsp;·&nbsp;${c.n}</span>`;
+        b.setAttribute('aria-label', t('Show the group ', 'Vis gruppen ') + names2[k] + ', ' + c.n);
+        b.addEventListener('click', () => { if (gsel === k && sel < 0) back(); else flyToCluster(k); }); lblEl.appendChild(b); return b;
       });
-      dbg.regions = L.clusters.map(regionName);
+      dbg.regions = names2.slice();
       nodeEls = [];
     }
     function labelSet() {
       const focus = hover >= 0 ? hover : sel, want = [];
       if (focus >= 0) { want.push(focus); if (near) [...near].filter(j => j !== focus && visible(j) && g.nodes[j].k !== 'aircraft').sort((a, b) => g.nodes[b].deg - g.nodes[a].deg).slice(0, 10).forEach(j => want.push(j)); }
+      if (gsel >= 0 && introP >= 1) L.clusters[gsel].m.forEach(j => { if (visible(j) && !want.includes(j) && want.length < 40) want.push(j); });
       shownLbl = want;
       while (nodeEls.length < want.length) { const s = document.createElement('span'); s.className = 'wsm3-nl'; lblEl.appendChild(s); nodeEls.push(s); }
       nodeEls.forEach((s, k) => { const i = want[k]; if (i == null) { s.hidden = true; return; } s.hidden = false; s.classList.toggle('on', i === focus); const lb = g.nodes[i].label, tx = lb.length > 44 ? lb.slice(0, 43) + '…' : lb; if (s.textContent !== tx) { s.textContent = tx; s._w = 0; } });
-      dbg.labels = g.nodes.map((n, i) => n.k === 'aircraft' && visible(i) ? n.id : null).filter(Boolean).concat(want.map(i => g.nodes[i].id)).concat(dbg.regions.map(r => 'region:' + r.toUpperCase()));
+      dbg.labels = want.map(i => g.nodes[i].id);
     }
 
     /* ---------- camera ---------- */
     const v3 = new THREE.Vector3();
-    function padT() { return W < 600 ? 56 : 60; }
+    function padT() { return W < 600 ? 96 : 60; }
     function padB() { return o.padBottom || 64; }
     /* the distance at which a box of half-width hw and half-height hh (world units, round the target) fills the free
        part of the plate (between the toolbar and the colour key); depth adds a little for the near side */
-    function fitDist(hw, hh, depth) {
-      const vf = THREE.MathUtils.degToRad(camera.fov), hAvail = Math.max(120, H - padT() - padB() - 16), tv = Math.tan(vf / 2) * hAvail / H, th = Math.tan(vf / 2) * (W - 32) / H;
-      return Math.max(hh / tv, hw / th) + (depth == null ? hw * 0.55 : depth);
+    function fitDist(hw, hh, depth, avail) {
+      const vf = THREE.MathUtils.degToRad(camera.fov), hAvail = Math.max(120, avail || H - padT() - padB() - 16), tv = Math.tan(vf / 2) * hAvail / H, th = Math.tan(vf / 2) * (W - 32) / H;
+      return Math.max(hh / tv, hw / th) + (depth == null ? hw * 0.3 : depth);
     }
-    /* home: the example shows the whole brain; your own map is framed on your points (never closer than half the brain),
-       so a few aircraft regions fill the plate instead of floating small in the middle */
+    /* home: the whole cloud, seen almost from the front and a little from above, names included */
     function homeView() {
-      const th = 0.95, ph = 1.32; let c = L.center, r = L.R * 0.86, rh = L.R * 0.74, dep = L.R * 0.3;
-      if (!sample && N) {
-        /* the extent of your points as the camera sees them from the home angle (labels sit right of aircraft) */
-        const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)];
-        const rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
-        const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
-        const dot = (a, i) => a[0] * (L.P[i * 3] - c[0]) + a[1] * (L.P[i * 3 + 1] - c[1]) + a[2] * (L.P[i * 3 + 2] - c[2]);
-        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
-        for (let i = 0; i < N; i++) { const x = dot(rt, i), y = dot(up, i), z = dot(dir, i); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); z1 = Math.max(z1, z); }
-        const hw = Math.max((x1 - x0) / 2 * 1.16 + 4, L.R * 0.42), hh = Math.max((y1 - y0) / 2 * 1.1 + 3, L.R * 0.32);
-        if (hw < r || hh < rh) {
-          const mx = (x0 + x1) / 2 + hw * 0.04, my = (y0 + y1) / 2;
-          c = [0, 1, 2].map(a => c[a] + rt[a] * mx + up[a] * my); r = hw; rh = hh; dep = z1 * 0.45;
-        }
-      }
-      Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist(r, rh, dep) });
+      const th = 0.16, ph = 1.4;
+      const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)];
+      const rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
+      const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
+      const dot = (a, p) => a[0] * p[0] + a[1] * p[1] + a[2] * p[2];
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
+      L.clusters.forEach(c => { const x = dot(rt, c.c), y = dot(up, c.c), z = dot(dir, c.c), r = c.r + L.D * 0.8; x0 = Math.min(x0, x - r); x1 = Math.max(x1, x + r); y0 = Math.min(y0, y - r); y1 = Math.max(y1, y + r + L.D * 2.2); z1 = Math.max(z1, z + c.r); });
+      if (!L.clusters.length) { x0 = y0 = -10; x1 = y1 = 10; }
+      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, c = [0, 1, 2].map(a => rt[a] * mx + up[a] * my);
+      Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist((x1 - x0) / 2, (y1 - y0) / 2, z1 * 0.6) });
     }
     function place() {
       const sp = Math.sin(cam.ph);
@@ -259,21 +262,34 @@
       U.uNear.value = Math.max(1, dc - L.R * 0.6); U.uFar.value = dc + L.R * 1.25;
       U.uScale.value = H * dpr / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
     }
-    const lim = () => ({ min: Math.max(6, L.R * 0.18), max: home.d * 2.6 });
+    const lim = () => ({ min: Math.max(6, L.D * 3), max: home.d * 2.6 });
     function flyTo(tg, ms) {
       stopRot();
-      if (reduced() || !ms) { Object.assign(cam, tg); cam.dT = cam.d; vth = vph = 0; request(); return; }
+      if (reduced() || !ms) { tween = null; Object.assign(cam, tg); cam.dT = cam.d; vth = vph = 0; request(); return; }
       let dth = tg.th - cam.th; while (dth > Math.PI) dth -= Math.PI * 2; while (dth < -Math.PI) dth += Math.PI * 2;
       tween = { a: Object.assign({}, cam), b: Object.assign({}, tg, { th: cam.th + dth }), t0: performance.now(), ms }; vth = vph = 0; request();
     }
     const nodePos = i => [L.P[i * 3], L.P[i * 3 + 1], L.P[i * 3 + 2]];
     function focusNode(i) { const p = nodePos(i), d = Math.max(lim().min * 1.6, Math.min(cam.d, home.d * 0.42)); flyTo({ tx: p[0], ty: p[1], tz: p[2], th: cam.th, ph: cam.ph, d }, 900); afterInteract(); }
+    /* a group: the camera moves to it (from the home angle), its card lists every item; beside the card on a wide plate,
+       under it on a narrow one */
     function flyToCluster(k) {
-      const c = L.clusters[k]; if (!c) return; const C0 = L.center, vx = c.c[0] - C0[0], vy = c.c[1] - C0[1], vz = c.c[2] - C0[2], l = Math.hypot(vx, vy, vz);
-      let th = cam.th, ph = cam.ph; if (l > 2) { th = Math.atan2(vx, vz); ph = Math.min(2.2, Math.max(0.7, Math.acos(vy / l))); }
-      flyTo({ tx: c.c[0], ty: c.c[1], tz: c.c[2], th, ph, d: Math.max(lim().min * 1.4, fitDist(c.r * 1.4 + 4, c.r * 1.4 + 4)) }, 1000);
-      if (c.ac >= 0) select(c.ac); afterInteract();
+      const c = L.clusters[k]; if (!c) return;
+      gsel = k; sel = -1; hover = -1; showCard(-1); states();
+      /* the card on a phone sits at the foot of the plate: the group goes in the room above it */
+      const low = !card.hidden && W < 600 && card.offsetTop + card.offsetHeight > H * 0.75, avail = low ? card.offsetTop - padT() - 16 : 0;
+      const th = home.th, ph = home.ph, d = Math.max(lim().min * 1.4, fitDist(c.r + L.D * 1.2, c.r + L.D * 1.3, c.r * 0.5, avail));
+      const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)], rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
+      const wpp = 2 * d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) / H; let dx = 0, dy = L.D * 0.8 / wpp; /* where the group should appear (px from the middle of the free part); a little low leaves room for its name */
+      if (!card.hidden && W >= 600) dx = (card.offsetLeft + card.offsetWidth) / 2;
+      if (low) dy += (card.offsetTop - (H - padB())) / 2;
+      const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
+      const tgt = [0, 1, 2].map(a => c.c[a] - rt[a] * dx * wpp + up[a] * dy * wpp);
+      flyTo({ tx: tgt[0], ty: tgt[1], tz: tgt[2], th, ph, d }, 900);
+      afterInteract();
     }
+    /* back to the whole cloud */
+    function back() { gsel = -1; sel = -1; hover = -1; showCard(-1); states(); flyTo(Object.assign({}, home), 800); afterInteract(); }
 
     /* ---------- frames: only while something moves ---------- */
     function request() { if (!raf && alive) raf = requestAnimationFrame(frame); }
@@ -287,7 +303,7 @@
       if (Math.abs(cam.dT - cam.d) > cam.d * 0.001) { only = false; cam.d += (cam.dT - cam.d) * 0.22; more = true; } else cam.d = cam.dT;
       if (rot.on) {
         if (hover >= 0 || sel >= 0 || interacting) { /* paused while you look at something */ }
-        else { only = false; rot.t += dt / 1000; const s = rot.secs, k = Math.min(1, rot.t / 1.5, Math.max(0, (s - rot.t) / 3)); cam.th += 0.065 * dt / 1000 * k; if (rot.t >= s) stopRot(); else more = true; }
+        else { only = false; rot.t += dt / 1000; const s = rot.secs; cam.th = rot.th0 + 0.2 * Math.sin(Math.PI * 2 * Math.min(1, rot.t / s)); if (rot.t >= s) { cam.th = rot.th0; stopRot(); } else more = true; }
       }
       if (pulses.length) { if (only) { stats.pulseFrames++; } more = stepPulses(ts) || more; }
       render();
@@ -307,31 +323,50 @@
       const pr = (p, o2) => { v3.set(p[0] * iu, p[1] * iu, p[2] * iu).project(camera); return v3.z < 1 ? [(v3.x + 1) * hw + (o2 || 0), (1 - v3.y) * hh] : null; };
       const op = introP >= 1 ? 1 : Math.max(0, Math.min(1, (introP - 0.55) / 0.45));
       const boxes = [], hits = (x, y, w, h) => boxes.some(b => x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y);
-      L.clusters.forEach((c, k) => {
-        const el = regEls[k]; if (!el) return;
-        let p;
-        if (c.ac >= 0) { const i = c.ac; p = scr.d[i] > 0 ? [scr.x[i], scr.y[i]] : null; el.hidden = !p || !visible(i); if (p) { const rpx = pxSize(i) * 0.5; el.style.transform = `translate(${(p[0] + rpx * 0.45 + 6).toFixed(1)}px,${(p[1] - 10).toFixed(1)}px)`; if (!el.hidden) boxes.push({ x: p[0] + rpx * 0.45 + 6, y: p[1] - 10, w: el._w || (el._w = el.offsetWidth), h: 22 }); } }
-        else { p = pr([c.c[0], c.c[1] + c.r * 1.05, c.c[2]]); el.hidden = !p; if (p) { el.style.transform = `translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) translateX(-50%)`; const w = el._w || (el._w = el.offsetWidth); boxes.push({ x: p[0] - w / 2, y: p[1], w, h: 22 }); } }
-        if (p) { const d = c.ac >= 0 ? scr.d[c.ac] : (camera.position.distanceTo(v3.set(c.c[0], c.c[1], c.c[2]))); el.style.opacity = (op * (1 - 0.55 * smooth(U.uNear.value, U.uFar.value, d))).toFixed(2); }
+      /* group names: above the group, else below, else nudged sideways; never over a point or another name, never off
+         the plate (hidden until there is room, as when the cloud is turned edge-on) */
+      const dots = []; for (let i = 0; i < N; i++) if (visible(i) && scr.d[i] > 0) { const r = pxSize(i) * 0.22 + 2; dots.push(scr.x[i] - r, scr.y[i] - r, scr.x[i] + r, scr.y[i] + r); }
+      const onDot = (x0, y0, x1, y1) => { for (let k = 0; k < dots.length; k += 4) if (x0 < dots[k + 2] && x1 > dots[k] && y0 < dots[k + 3] && y1 > dots[k + 1]) return true; return false; };
+      const yTop = W < 600 ? 92 : 54, yBot = H - padB() + 6;
+      { const pl = host.closest('.wsm-plate') || host, cr = cv.getBoundingClientRect(); pl.querySelectorAll('.wsm-tag, .wsm-cta, .wsm-card').forEach(e => { if (e.hidden) return; const r = e.getBoundingClientRect(); if (r.width) boxes.push({ x: r.left - cr.left - 4, y: r.top - cr.top - 4, w: r.width + 8, h: r.height + 8 }); }); }
+      dbg.groupLabels = [];
+      L.clusters.map((c, k) => k).sort((a, b) => (a === gsel ? -1 : b === gsel ? 1 : 0) || L.clusters[b].m.length - L.clusters[a].m.length).forEach(k => {
+        const c = L.clusters[k], el = regEls[k]; if (!el) return;
+        if (!c.m.some(i => visible(i))) { el.hidden = true; return; }
+        el.hidden = false; const w = el._w || (el._w = el.offsetWidth), h = el._h || (el._h = el.offsetHeight);
+        const pa = pr([c.c[0], c.c[1] + c.r + L.D * 0.4, c.c[2]]), pb = pr([c.c[0], c.c[1] - c.r - L.D * 0.4, c.c[2]]), cand = [];
+        for (const [p, above] of [[pa, true], [pb, false]]) if (p) for (const dx of [0, -0.6, 0.6, -1.1, 1.1]) cand.push([p[0] + dx * w, above ? p[1] - 4 - h : p[1] + 4]);
+        let at = null;
+        for (const [x, y] of cand) { const x0 = Math.max(6, Math.min(W - 6 - w, x - w / 2)); if (y < yTop || y + h > yBot || hits(x0 - 3, y - 3, w + 6, h + 6) || onDot(x0, y, x0 + w, y + h)) continue; at = [x0, y]; break; }
+        if (!at) { el.hidden = true; return; }
+        boxes.push({ x: at[0], y: at[1], w, h });
+        el.style.transform = `translate(${at[0].toFixed(1)}px,${at[1].toFixed(1)}px)`;
+        el.style.opacity = op.toFixed(2);
+        dbg.groupLabels.push({ name: names2[k], text: el.textContent.replace(/ /g, ' '), x0: at[0], y0: at[1], x1: at[0] + w, y1: at[1] + h });
       });
       const focus = hover >= 0 ? hover : sel;
       /* the focused node's label always shows; a neighbour's goes right of its dot, else left, else waits (no overlaps) */
       shownLbl.forEach((i, k) => {
         const s = nodeEls[k]; if (!s || scr.d[i] <= 0) { if (s) s.hidden = true; return; }
         s.hidden = false; const w = s._w || (s._w = s.offsetWidth), r = pxSize(i) * 0.22 + 5, y = scr.y[i] - 9;
-        let x = scr.x[i] + r;
-        if (i !== focus && hits(x, y, w, 18)) { x = scr.x[i] - r - w; if (hits(x, y, w, 18)) { s.hidden = true; return; } }
-        boxes.push({ x: x - 2, y: y - 1, w: w + 4, h: 20 });
-        s.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`; s.style.opacity = i === focus ? '1' : (0.85 * (1 - 0.5 * smooth(U.uNear.value, U.uFar.value, scr.d[i]))).toFixed(2);
+        /* right of the point, else left, else above or below it */
+        let x = scr.x[i] + r, yy = y;
+        const busy = (cx, cy) => hits(cx, cy, w, 18) || onDot(cx, cy + 2, cx + w, cy + 16);
+        if (i !== focus && busy(x, y)) {
+          const c = [[scr.x[i] - r - w, y], [scr.x[i] - w / 2, y - r - 12], [scr.x[i] - w / 2, y + r + 12]].find(([cx, cy]) => !busy(cx, cy));
+          if (!c) { s.hidden = true; return; } x = c[0]; yy = c[1];
+        }
+        boxes.push({ x: x - 2, y: yy - 1, w: w + 4, h: 20 });
+        s.style.transform = `translate(${x.toFixed(1)}px,${yy.toFixed(1)}px)`; s.style.opacity = i === focus || (gsel >= 0 && L.gi[i] === gsel) ? '1' : (0.85 * (1 - 0.5 * smooth(U.uNear.value, U.uFar.value, scr.d[i]))).toFixed(2);
       });
     }
     const smooth = (a, b, x) => { const u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
     const pxSize = i => Math.min(110, Math.max(2, (nodes.geometry.attributes.size.array[i] * U.uScale.value / Math.max(0.1, scr.d[i])) / dpr));
 
-    /* ---------- auto-rotation: about 20 s after opening and after you stop, then still ---------- */
+    /* ---------- a slow sway (a little to one side, then the other, back where it began): about 20 s after opening and after you stop, then still ---------- */
     function startRot(delay) {
       if (reduced() || !alive) return; clearTimeout(rot.timer);
-      rot.timer = setTimeout(() => { rot.timer = 0; if (!alive || interacting || tween) return; rot.on = true; rot.t = 0; request(); }, delay || 0);
+      rot.timer = setTimeout(() => { rot.timer = 0; if (!alive || interacting || tween) return; rot.on = true; rot.t = 0; rot.th0 = cam.th; request(); }, delay || 0);
     }
     function stopRot() { clearTimeout(rot.timer); rot.timer = 0; rot.on = false; }
     function afterInteract() { if (introP >= 1) startRot(5000); }
@@ -420,7 +455,7 @@
       if (i < 0 && lastTap.i === -1 && now - lastTap.t < 380) { lastTap = { i: -2, t: 0 }; zoomBy(0.6); return; }
       lastTap = { i, t: now };
       if (i >= 0 && !isEx(i) && (e.shiftKey || e.altKey)) { open(i, true); return; }
-      if (i >= 0) select(i); else if (sel >= 0) select(-1);
+      if (i >= 0) select(i); else if (gsel >= 0) { back(); return; } else if (sel >= 0) select(-1);
       afterInteract();
     }
     function zoomBy(f) { const l = lim(); cam.dT = Math.max(l.min, Math.min(l.max, (cam.dT || cam.d) * f)); stopRot(); request(); }
@@ -428,14 +463,26 @@
     function wheel(e) { e.preventDefault(); const k = e.deltaMode === 1 ? 30 : 1; zoomBy(Math.exp(e.deltaY * k * (e.ctrlKey ? 0.01 : 0.0012))); clearTimeout(wheelT); wheelT = setTimeout(afterInteract, 200); }
     function leave() { if (hover >= 0 && !downAt) { const was = hover; hover = -1; if (was >= 0) showCard(sel); states(); } }
     function open(i, beside) { const n = g.nodes[i]; if (!n) return; if (isEx(i)) { select(i); return; } if (o.onOpen) o.onOpen(n, !!beside); }
-    function showCard(i) { if (i < 0) { card.hidden = true; return; } card.hidden = false; card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol() }); }
+    /* the card: a point (shared with the 2D map), or the focused group's list */
+    function showCard(i) {
+      if (i >= 0) { card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol() }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
+      if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
+      card.hidden = true;
+    }
     function select(i, fly) {
       const was = sel; sel = i; showCard(i >= 0 ? i : hover);
       if (isEx(i) && i !== was && i !== hover) burst(i);
       if (i >= 0) stopRot();
       states(); if (i >= 0 && fly) focusNode(i);
     }
-    card.addEventListener('click', e => { const b = e.target.closest('[data-o]'); if (b && sel >= 0) open(sel, b.dataset.o === 'beside'); });
+    card.addEventListener('click', e => {
+      const b = e.target.closest('[data-o]'); if (b && sel >= 0) { open(sel, b.dataset.o === 'beside'); return; }
+      const li = e.target.closest('[data-i]'); if (li) { hover = -1; select(+li.dataset.i); return; }
+      if (e.target.closest('[data-back]')) { back(); return; }
+      if (e.target.closest('[data-gl]')) { sel = -1; showCard(-1); states(); }
+    });
+    card.addEventListener('mouseover', e => { if (gsel < 0) return; const li = e.target.closest('[data-i]'), i = li ? +li.dataset.i : -1; if (i !== hover) { hover = i; states(); } });
+    card.addEventListener('mouseleave', () => { if (gsel >= 0 && hover >= 0) { hover = -1; states(); } });
     function key(e) {
       if (e.target !== cv) return; const a = 0.14;
       if (e.key === '+' || e.key === '=') zoomBy(0.8); else if (e.key === '-' || e.key === '_') zoomBy(1.25);
@@ -443,7 +490,7 @@
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { stopRot(); cam.th += e.key === 'ArrowLeft' ? -a : a; request(); afterInteract(); }
       else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { stopRot(); cam.ph = clampPh(cam.ph + (e.key === 'ArrowUp' ? -a : a)); request(); afterInteract(); }
       else if (e.key === 'Enter' && sel >= 0) open(sel, e.shiftKey || e.altKey);
-      else if (e.key === 'Escape' && sel >= 0) select(-1);
+      else if (e.key === 'Escape' && (sel >= 0 || gsel >= 0)) { if (sel >= 0) select(-1); else back(); }
       else return;
       e.preventDefault();
     }
@@ -452,7 +499,7 @@
     cv.addEventListener('webglcontextlost', e => { e.preventDefault(); if (alive && o.onWeak) o.onWeak('lost'); });
 
     /* ---------- toolbar, legend, search ---------- */
-    host.querySelector('.wsm-zm').addEventListener('click', e => { const b = e.target.closest('[data-z]'); if (!b) return; if (b.dataset.z === 'fit') { select(-1); flyTo(Object.assign({}, home), 800); afterInteract(); } else { zoomBy(b.dataset.z === 'in' ? 0.72 : 1.39); afterInteract(); } });
+    host.querySelector('.wsm-zm').addEventListener('click', e => { const b = e.target.closest('[data-z]'); if (!b) return; if (b.dataset.z === 'fit') back(); else { zoomBy(b.dataset.z === 'in' ? 0.72 : 1.39); afterInteract(); } });
     const vw = host.querySelector('.wsm-vw'); if (vw) vw.addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b && b.dataset.view !== o.view.cur) o.view.onSwitch(b.dataset.view); });
     const pb = host.querySelector('.wsm-pal'); pb.addEventListener('click', e => { const b = e.target.closest('[data-pal]'); if (!b) return; pal = b.dataset.pal; try { localStorage.setItem('bb-map-palette', pal); } catch (er) {} paint(); drawLegend(); if (!card.hidden) showCard(sel >= 0 ? sel : hover); request(); });
     legEl.addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (!b) return; const k = b.dataset.g; if (hidden.has(k)) hidden.delete(k); else hidden.add(k); if (sel >= 0 && !visible(sel)) select(-1); hover = -1; drawLegend(); const nb2 = legEl.querySelector(`[data-g="${k}"]`); if (nb2) nb2.focus(); states(); });
@@ -467,7 +514,7 @@
       if (rows.length) qi.setAttribute('aria-activedescendant', 'wsm3o0'); else qi.removeAttribute('aria-activedescendant');
     };
     const mark = () => sug.querySelectorAll('[role="option"]').forEach((li, k) => { li.setAttribute('aria-selected', String(k === cur)); if (k === cur) qi.setAttribute('aria-activedescendant', li.id); });
-    const pickRow = k => { const i = rows[k]; if (i == null) return; sug.hidden = true; qi.setAttribute('aria-expanded', 'false'); hover = -1; select(i, true); };
+    const pickRow = k => { const i = rows[k]; if (i == null) return; sug.hidden = true; qi.setAttribute('aria-expanded', 'false'); hover = -1; gsel = -1; select(i, true); };
     qi.addEventListener('input', drawSug);
     qi.addEventListener('keydown', e => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (!rows.length) return; e.preventDefault(); cur = (cur + (e.key === 'ArrowDown' ? 1 : -1) + rows.length) % rows.length; mark(); }
@@ -490,7 +537,7 @@
       destroy() {
         alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; stopRot(); unschedule(); clearTimeout(wheelT); if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis);
         if (ro) ro.disconnect(); else window.removeEventListener('resize', resize);
-        disposeObjs(); [nodeMat, dustMat, lineMat, dustLineMat, pulseMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
+        disposeObjs(); [nodeMat, puffMat, lineMat, pulseMat].forEach(m => m.dispose()); renderer.dispose(); try { renderer.forceContextLoss(); } catch (e) {}
         host.innerHTML = ''; host.classList.remove('wsm3'); host.wsmap = null;
       }
     });

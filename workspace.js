@@ -790,7 +790,7 @@
     if (!GW) return null;
     return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; }, pages: false, desks: false }, mapNames));
   }
-  /* the map shown everywhere: only your own items, each aircraft a region of the brain; with nothing of your own yet the
+  /* the map shown everywhere: only your own items, each aircraft a soft cloud of its own; with nothing of your own yet the
      small example (sample). mode: sample | own */
   let sampleG = null;
   function mapAny() {
@@ -814,7 +814,7 @@
   const mapPref = () => { try { const v = LS && LS.getItem(MAPV); return v === '2d' || v === '3d' ? v : ''; } catch (e) { return ''; } };
   let webgl = null;
   function can3d(g) {
-    if (g.nodes.length > (GW.BRAIN_MAX || 600)) return false;
+    if (g.nodes.length > (GW.CLOUD_MAX || 600)) return false;
     try { if (sessionStorage.getItem('bb-map-weak')) return false; } catch (e) {}
     const nv = navigator, c = nv.connection;
     if ((nv.deviceMemory && nv.deviceMemory < 2) || (c && c.saveData)) return false;
@@ -822,19 +822,21 @@
     return webgl;
   }
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=1')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=2')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=2')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=3')).catch(e => { map3dP = null; throw e; }));
+  /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
+  const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {
     if (!GW || !window.WSMAP) { main.innerHTML = empty(t('The map could not load. Reload the page.', 'Kartet kunne ikke lastes. Last inn siden på nytt.')); return; }
     const a = mapAny(), g = a.g, sample = a.sample, mode = a.mode, pref = mapPref();
-    const want = pref === '2d' ? '2d' : pref === '3d' ? (webgl !== false && g.nodes.length <= (GW.BRAIN_MAX || 600) ? '3d' : '2d') : can3d(g) ? '3d' : '2d';
+    const want = pref === '2d' ? '2d' : pref === '3d' ? (webgl !== false && g.nodes.length <= (GW.CLOUD_MAX || 600) ? '3d' : '2d') : can3d(g) ? '3d' : '2d';
     if (mapV && mapV.mode === mode && mapV.lang === LAB.lang && mapV.view === want && main.contains(mapV.host)) { const sg = mapSig(g); if (sg !== mapV.sig) { mapV.sig = sg; if (mapV.m) mapV.m.setGraph(g); } return; }
     if (mapV && mapV.m) mapV.m.destroy(); mapV = null;
     const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches, d3 = want === '3d';
-    const hint = sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace. Your own map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.'))
-      : d3 ? (coarse ? t('Drag to turn, pinch to zoom, tap a dot for its card, double-tap to fly to it.', 'Dra for å snu, knip for å zoome, trykk på en prikk for kortet, dobbelttrykk for å fly dit.') : t('Drag to turn, scroll to zoom, click a dot for its card, double-click to fly to it. Arrow keys, + and − work too.', 'Dra for å snu, rull for å zoome, klikk på en prikk for kortet, dobbeltklikk for å fly dit. Piltastene, + og − virker også.'))
-      : coarse ? t('Each aircraft has its own region; lines are links you made. Tap a dot to open it on the desk, pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Trykk på en prikk for å åpne den på arbeidsflaten, knip for å zoome.') : t('Each aircraft has its own region; lines are links you made. Click a dot to open it on the desk, Shift-click to open it beside; scroll or pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av; rull eller knip for å zoome.');
+    const hint = sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace, or a group name to see what is in it. Your own map grows as you add aircraft, documents and notes.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt, eller på et gruppenavn for å se hva som er i den. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.'))
+      : d3 ? (coarse ? t('Drag to turn, pinch to zoom, tap a dot for its card, tap a group name to see what is in it.', 'Dra for å snu, knip for å zoome, trykk på en prikk for kortet, trykk på et gruppenavn for å se hva som er i den.') : t('Drag to turn, scroll to zoom, click a dot for its card, a group name to see what is in it, double-click a dot to fly to it. Arrow keys, + and − work too.', 'Dra for å snu, rull for å zoome, klikk på en prikk for kortet, på et gruppenavn for å se hva som er i den, dobbeltklikk på en prikk for å fly dit. Piltastene, + og − virker også.'))
+      : coarse ? t('Each aircraft is a cloud of its own. Tap a dot for its card, a group name to see what is in it; pinch to zoom.', 'Hvert fly er en egen sky. Trykk på en prikk for kortet, på et gruppenavn for å se hva som er i den; knip for å zoome.') : t('Each aircraft is a cloud of its own. Click a dot to open it on the desk, Shift-click to open it beside, click a group name to see what is in it; scroll or pinch to zoom.', 'Hvert fly er en egen sky. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av, klikk på et gruppenavn for å se hva som er i den; rull eller knip for å zoome.');
     main.innerHTML = `<div class="ws-h ws-maph"><h2>${t('Map', 'Kart')}</h2>
-        <p>${t('Each aircraft gathers its own documents, notes and briefing packs. Every line is a link you made, such as a page reference.', 'Hvert fly samler sine egne dokumenter, notater og briefingpakker. Hver linje er en kobling du har laget, som en sidehenvisning.')}</p></div>
+        <p>${t('Each aircraft gathers its own documents, notes and briefing packs in a cloud of its own; items without an aircraft are under Unsorted.', 'Hvert fly samler sine egne dokumenter, notater og briefingpakker i en egen sky; det som ikke hører til et fly, ligger under Uten fly.')}</p></div>
       <div class="wsm-plate${sample ? ' sample' : ''}${d3 ? ' d3' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost">${d3 ? `<p class="wsm-load" role="status">${t('Opening the 3D map…', 'Åpner 3D-kartet …')}</p>` : ''}</div>
         ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
       <p class="wsm-hint">${hint}</p>`;
@@ -843,13 +845,13 @@
     const v = { sample, mode, lang: LAB.lang, host, view: want, sig: mapSig(g), m: null };
     mapV = v;
     const view = { cur: want, onSwitch: m => { try { LS && LS.setItem(MAPV, m); if (m === '3d') sessionStorage.removeItem('bb-map-weak'); } catch (e) {} if (mapV && mapV.m) mapV.m.destroy(); mapV = null; viewMap(); } };
-    const mount2d = () => { host.innerHTML = ''; host.closest('.wsm-plate').classList.remove('d3'); v.view = '2d'; v.m = window.WSMAP.mount(host, { graph: g, t, sample, onOpen: mapOpen, padBottom: sample ? 130 : 64, view: Object.assign({}, view, { cur: '2d' }) }); };
+    const mount2d = () => { host.innerHTML = ''; host.closest('.wsm-plate').classList.remove('d3'); v.view = '2d'; v.m = window.WSMAP.mount(host, { graph: g, t, sample, onOpen: mapOpen, padBottom: mapPadB(sample), view: Object.assign({}, view, { cur: '2d' }) }); };
     if (!d3) { mount2d(); return; }
     load3d().then(() => {
       if (mapV !== v || !main.contains(host)) return;
       host.innerHTML = '';
       const ga = mapAny().g; v.sig = mapSig(ga);
-      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, padBottom: sample ? 130 : 64, view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
+      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, padBottom: mapPadB(sample), view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
         onWeak: why => { if (mapV !== v) return; try { sessionStorage.setItem('bb-map-weak', why || '1'); } catch (e) {} if (v.m) v.m.destroy(); v.m = null; mount2d(); toast(why === 'lost' ? t('The 3D map stopped, so the map is shown in 2D.', '3D-kartet stoppet, så kartet vises i 2D.') : t('This device is showing the map in 2D for speed. Switch to 3D on the map toolbar.', 'Denne enheten viser kartet i 2D for å gå raskere. Bytt til 3D på kartverktøylinjen.')); } });
     }).catch(e => { console.warn('3D map', e); if (mapV === v && main.contains(host)) mount2d(); });
   }

@@ -401,7 +401,7 @@
       const hello = h < 5 ? t('Good night', 'God natt') : h < 10 ? t('Good morning', 'God morgen') : h < 17 ? t('Good day', 'God dag') : h < 22 ? t('Good evening', 'God kveld') : t('Good night', 'God natt');
       const day = now.toLocaleDateString(no ? 'nb-NO' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
       const utc = String(now.getUTCHours()).padStart(2, '0') + String(now.getUTCMinutes()).padStart(2, '0') + 'Z';
-      /* the brain of your workspace (or the small example): mounted just after the first paint so the desk shows at once */
+      /* the cloud map of your workspace (or the small example): mounted just after the first paint so the desk shows at once */
       const ma = window.WSMAP && A.mapAny ? A.mapAny() : null, mg = ma ? ma.g : null, useMap = !!mg;
       const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${ma && ma.sample ? esc(t('Example: how your map will look', 'Eksempel: slik blir kartet ditt')) : `${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}`}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
       const askable = A.docsAll().some(d => S.docs[d.id] && (S.docs[d.id].chunks || []).length);
@@ -424,7 +424,7 @@
       box.querySelector('.fi-card').addEventListener('click', () => { if (askable) emptyAction('ask'); else location.href = 'fi.html'; });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null, dead = false; const mh = box.querySelector('.mmh');
-      if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, acLabels: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
+      if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
       const sig = g => g ? g.nodes.map(n => n.id + '@' + n.ac).join(',') + '#' + g.links.length : '';
       return { destroy: () => { dead = true; if (mm) mm.destroy(); mm = null; },
         refresh: () => { if (!A.mapGraph) return ''; const na = window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };

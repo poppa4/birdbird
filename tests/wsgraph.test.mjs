@@ -1,4 +1,4 @@
-/* My Workspace map: graph from the workspace, clusters, force layout.  node --test tests/wsgraph.test.mjs */
+/* My Workspace map: graph from the workspace, groups by aircraft, the cloud layout.  node --test tests/wsgraph.test.mjs */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
@@ -67,7 +67,7 @@ test('clusters: each node gathers around an aircraft through its links; desks le
 });
 
 test('empty workspace: an empty graph that is settled at once; the example is small and meaningful', () => {
-  const g = M.buildGraph({}); assert.equal(g.nodes.length, 0); assert.ok(M.layout(g).settled);
+  const g = M.buildGraph({}); assert.equal(g.nodes.length, 0); const L0 = M.cloudLayout(g); assert.ok(L0.settled && L0.groups.length === 0);
   const s = M.buildGraph(M.sampleInput(), { pages: false, desks: false });
   assert.ok(s.nodes.length >= 20 && s.nodes.length <= 25, s.nodes.length + ' nodes');
   assert.deepEqual({ ...s.counts }, { aircraft: 3, doc: 6, note: 7, pack: 3, route: 3, desk: 0, page: 0 });
@@ -90,65 +90,51 @@ test('buildGraph: desks and pages can be left out; aircraft carry their type', (
   assert.equal(M.shortType('Diamond DA42'), 'DA42'); assert.equal(M.shortType('Cessna 172'), 'C172'); assert.equal(M.shortType('King Air B200'), 'B200'); assert.equal(M.shortType(''), '');
 });
 
-test('layout: deterministic, settles, keeps nodes apart, clusters stay apart', () => {
-  const g = M.buildGraph(M.sampleInput());
-  const a = M.layout(g), b = M.layout(g);
-  const n = a.run(2000); b.run(2000);
-  assert.ok(a.settled && n < 1000, 'settles in ' + n + ' steps');
-  assert.deepEqual([...a.x], [...b.x], 'same graph, same picture');
-  assert.ok([...a.x, ...a.y].every(Number.isFinite));
-  let close = 0; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) if (Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]) < 1.5) close++;
-  assert.ok(close <= 2, close + ' pairs on top of each other');
-  const i1 = g.index['aircraft:xa1'], i2 = g.index['aircraft:xa2'];
-  assert.ok(Math.hypot(a.x[i1] - a.x[i2], a.y[i1] - a.y[i2]) > 120, 'aircraft apart');
-  /* members are nearer their own aircraft than the other one */
-  const mem = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.ac === 'aircraft:xa1' && nd.k !== 'aircraft');
-  const nearer = mem.filter(([, i]) => Math.hypot(a.x[i] - a.x[i1], a.y[i] - a.y[i1]) < Math.hypot(a.x[i] - a.x[i2], a.y[i] - a.y[i2])).length;
-  assert.ok(nearer / mem.length > 0.85, nearer + ' of ' + mem.length);
-  assert.equal(a.step(1), false, 'a settled layout does no more work');
-  a.reheat(0.2); assert.ok(!a.settled); a.run(); assert.ok(a.settled);
-});
-
-test('layout: previous positions are kept when the graph changes', () => {
-  const g = M.buildGraph(M.sampleInput()), a = M.layout(g); a.run();
-  const pos = a.positions(), b = M.layout(g, { prev: pos }), i = 5;
-  assert.equal(b.x[i], a.x[i]); assert.ok(b.alpha < 1);
-});
-
-test('layout: 2000 nodes run with the spatial hash in reasonable time', () => {
-  const items = {}; for (let i = 0; i < 20; i++) items['a' + i] = W.newAircraft({ id: 'a' + i, reg: 'LN-' + i }, i + 1);
-  for (let i = 0; i < 1980; i++) { const n = W.newNote({ id: 'n' + i, title: 'n' + i, links: [{ t: 'aircraft', id: 'a' + (i % 20) }] }, 100 + i); items[n.id] = n; }
-  const g = M.buildGraph({ items }); assert.equal(g.nodes.length, 2000);
-  const L = M.layout(g), t0 = Date.now(); for (let k = 0; k < 30; k++) L.step(1);
-  assert.ok(Date.now() - t0 < 3000, 'thirty steps took ' + (Date.now() - t0) + ' ms');
-});
-
 const SAMPLE = () => M.buildGraph(M.sampleInput(), { pages: false, desks: false });
-const pairsCloser = (L, n, d) => { let c = 0; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) < d) c++; return c; };
+const minDist = L => { let m = Infinity; for (let i = 0; i < L.n; i++) for (let j = i + 1; j < L.n; j++) m = Math.min(m, Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j])); return m; };
+/* every dot inside its own group's disc, nearer its own group's middle than any other; discs of different groups apart */
+function checkGroups(g, L, tag) {
+  g.nodes.forEach((n, i) => {
+    const k = L.gi[i], q = L.groups[k]; assert.ok(k >= 0, tag + ' ' + n.id + ' in a group');
+    assert.ok(Math.hypot(L.x[i] - q.cx, L.y[i] - q.cy) <= q.r + 1e-6, tag + ' inside its blob: ' + n.id);
+    assert.equal(q.ac >= 0 ? g.nodes[q.ac].id : '', n.ac && g.index[n.ac] != null ? n.ac : '', tag + ' grouped by its aircraft: ' + n.id);
+  });
+  for (let a = 0; a < L.groups.length; a++) for (let b = a + 1; b < L.groups.length; b++) {
+    const p = L.groups[a], q = L.groups[b]; assert.ok(Math.hypot(p.cx - q.cx, p.cy - q.cy) >= p.r + q.r + L.D, tag + ' groups apart');
+  }
+}
 
-test('brain: the example sits inside the silhouette, the same every time, each aircraft in its own named region', () => {
-  const g = SAMPLE(), a = M.brainLayout(g), b = M.brainLayout(SAMPLE());
+test('cloud: the example is three blobs, the same every time, each aircraft its own named group', () => {
+  const g = SAMPLE(), a = M.cloudLayout(g), b = M.cloudLayout(SAMPLE());
   assert.ok(!a.settled, 'a short intro first'); let n = 0; while (a.step(2)) n++; assert.ok(a.settled && n < 40, 'intro ends after ' + n + ' frames');
   b.run(); assert.deepEqual([...a.x], [...b.x]); assert.deepEqual([...a.y], [...b.y]);
-  assert.ok(g.nodes.every((nd, i) => M.inBrain(a.x[i] / a.S, a.y[i] / a.S, 0.02)), 'every node inside the brain');
   assert.ok(g.nodes.every((nd, i) => a.x[i] === a.tx[i] && a.y[i] === a.ty[i]), 'ends exactly on its place');
-  assert.equal(pairsCloser(a, g.nodes.length, 8), 0, 'no dots on top of each other');
-  assert.equal(a.regions.length, 3, 'three regions');
-  assert.deepEqual(a.regions.map(r => M.shortType(g.nodes[r.ac].type)), ['DA42', 'B200', 'C172']);
-  assert.ok(a.regions.every(r => M.inBrain(r.lx / a.S, r.ly / a.S, 0.0)), 'region names inside the brain');
-  /* members are nearer their own aircraft than any other */
-  const acs = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
-  g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft') return; const d = ([, j]) => Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]); const own = acs.find(([x]) => x.id === nd.ac); assert.ok(acs.every(c => c === own || d(own) < d(c)), nd.id); });
-  const f = a.frame; assert.ok(f.x1 - f.x0 > f.y1 - f.y0, 'wider than tall');
-  const c = M.brainLayout(g, { instant: true }); assert.ok(c.settled); assert.deepEqual([...c.x], [...a.x]);
+  assert.equal(a.groups.length, 3);
+  assert.deepEqual(a.groups.map(q => M.groupName(g, a.groups, q)), ['DA42', 'B200', 'C172']);
+  assert.deepEqual(a.groups.map(q => q.n), [7, 6, 6], 'counts: the items besides the aircraft');
+  assert.ok(a.groups.every(q => g.nodes[q.m[0]].k === 'aircraft' && Math.hypot(a.x[q.m[0]] - q.cx, a.y[q.m[0]] - q.cy) < 1e-9), 'the aircraft in the middle');
+  checkGroups(g, a, 'example');
+  assert.ok(minDist(a) >= 0.75 * a.D, 'evenly spread, no clumps: ' + minDist(a).toFixed(1));
+  assert.ok(a.groups.every(q => q.puffs.length >= 6 && q.puffs.every(p => p.r > q.r * 0.5)), 'soft blobs');
+  const f = a.frame; assert.ok(f.x1 - f.x0 > f.y1 - f.y0, 'on a wide plate: wider than tall');
+  const c = M.cloudLayout(g, { instant: true }); assert.ok(c.settled); assert.deepEqual([...c.x], [...a.x]);
   assert.equal(a.step(1), false);
-  const e = M.brainLayout(M.buildGraph({})); assert.ok(e.settled && e.n === 0);
 });
 
-test('brain: outline', () => {
-  assert.ok(M.inBrain(-0.3, -0.3) && M.inBrain(0.58, 0.4), 'cerebrum and cerebellum'); assert.ok(!M.inBrain(0, 0.9) && !M.inBrain(-1.2, 0) && !M.inBrain(0, -0.95));
-  assert.equal(M.BRAIN.fissures.length, 2, 'two fissures, nothing more');
-  assert.ok(!('brainTexture' in M) && !('mergeGraph' in M), 'no dust, no ghost merge');
+test('cloud: the shape follows the plate (a row on a wide one, rows on a tall one)', () => {
+  const g = SAMPLE(), wide = M.cloudLayout(g, { aspect: 1.6, instant: true }), tall = M.cloudLayout(g, { aspect: 0.6, instant: true });
+  assert.equal(wide.cols, 3); assert.ok(tall.cols < 3);
+  const ar = L => (L.frame.x1 - L.frame.x0) / (L.frame.y1 - L.frame.y0); assert.ok(ar(tall) < ar(wide));
+  checkGroups(g, tall, 'tall');
+  const A = M.arrange([10, 10, 10, 10, 10, 10], 1, 4, 4); assert.ok(A.cols > 1 && A.cols < 6);
+  assert.deepEqual(M.arrange([], 1, 1, 1).c, []);
+});
+
+test('groupName: the type, the registration when two share it; Unsorted', () => {
+  const items = {}; [W.newAircraft({ id: 'a1', typeKey: 'da42', reg: 'LN-ABC' }, 1), W.newAircraft({ id: 'a2', typeKey: 'da42', reg: 'LN-DEF' }, 2), W.newNote({ id: 'n1', title: 'x' }, 3)].forEach(x => { items[x.id] = x; });
+  const g = M.buildGraph({ items }), G = M.groupsOf(g);
+  assert.deepEqual(G.map(q => M.groupName(g, G, q)), ['DA42 LN-ABC', 'DA42 LN-DEF', 'Unsorted']);
+  assert.equal(M.groupName(g, G, G[2], (en, no) => no), 'Uten fly');
 });
 
 /* own workspace of n items: an aircraft or two, documents filed under them, notes citing pages, a loose note */
@@ -165,44 +151,32 @@ function ownOf(n, noAc) {
 }
 const OWN = (n, noAc) => M.buildGraph(ownOf(n, noAc), { pages: false, desks: false });
 
-test('own map: only your own items in the brain, by aircraft region; no ghost or dust nodes', () => {
+test('own map: only your own items, a group per aircraft plus Unsorted; deterministic; evenly spread', () => {
   for (const n of [1, 3, 12, 25, 45, 120]) {
-    const g = OWN(n), L = M.brainLayout(g, { instant: true });
+    const g = OWN(n), L = M.cloudLayout(g, { instant: true });
     assert.equal(g.nodes.length, n, 'only your own nodes (' + n + ')');
     assert.ok(g.nodes.every(nd => !nd.ghost && !nd.id.startsWith('ex:')), 'no example nodes');
-    assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.02)), 'all inside the silhouette (' + n + ')');
-    assert.equal(pairsCloser(L, n, 4), 0, 'no dots on top of each other (' + n + ')');
     const acs = g.counts.aircraft, free = g.nodes.some(nd => !nd.ac);
-    assert.equal(L.regions.length, acs + (free ? 1 : 0), 'a region per aircraft, plus Unsorted (' + n + ')');
-    assert.ok(L.regions.every(r => M.inBrain(r.lx / L.S, r.ly / L.S, 0)), 'region names inside (' + n + ')');
-    /* each aircraft sits in the middle of its region: its members nearer it than any other aircraft */
-    const ai = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
-    let ok = 0, all = 0;
-    g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]); const own = ai.find(([x]) => x.id === nd.ac); if (ai.every(c => c === own || d(own) <= d(c))) ok++; });
-    assert.ok(!all || ok / all > 0.9, ok + ' of ' + all);
+    assert.equal(L.groups.length, acs + (free ? 1 : 0), 'a group per aircraft, plus Unsorted (' + n + ')');
+    assert.equal(L.groups.reduce((s, q) => s + q.m.length, 0), n, 'every item in one group');
+    checkGroups(g, L, 'own ' + n);
+    if (n > 1) assert.ok(minDist(L) >= 0.75 * L.D, 'no dots on top of each other (' + n + ')');
   }
+  const a = M.cloudLayout(OWN(30), { instant: true }), b = M.cloudLayout(OWN(30), { instant: true }); assert.deepEqual([...a.x], [...b.x]);
 });
 
-test('own map: few items stay together; loose items sit in the cerebellum; no aircraft is one Unsorted region', () => {
-  const g = OWN(3), L = M.brainLayout(g, { instant: true });
-  let spread = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) spread = Math.max(spread, Math.hypot(L.x[i] - L.x[j], L.y[i] - L.y[j]) / L.S);
-  assert.ok(spread < 0.5, 'three items close together, not scattered: ' + spread.toFixed(2));
-  const g12 = OWN(12), L12 = M.brainLayout(g12, { instant: true }), c = M.BRAIN.cb;
-  const loose = g12.nodes.map((n, i) => i).filter(i => !g12.nodes[i].ac); assert.ok(loose.length > 0);
-  assert.ok(loose.every(i => Math.hypot(L12.x[i] / L12.S - c.cx, L12.y[i] / L12.S - c.cy) < 0.3), 'loose items in the cerebellum');
-  assert.ok(L12.regions.some(r => r.ac < 0 && r.cb), 'an Unsorted region there');
-  const gn = OWN(8, true), Ln = M.brainLayout(gn, { instant: true });
-  assert.equal(gn.counts.aircraft, 0); assert.equal(Ln.regions.length, 1); assert.equal(Ln.regions[0].ac, -1);
-  assert.ok(gn.nodes.every((nd, i) => M.inBrain(Ln.x[i] / Ln.S, Ln.y[i] / Ln.S, 0.02)));
+test('own map: no aircraft is one Unsorted group; loose items go to Unsorted', () => {
+  const gn = OWN(8, true), Ln = M.cloudLayout(gn, { instant: true });
+  assert.equal(gn.counts.aircraft, 0); assert.equal(Ln.groups.length, 1); assert.equal(Ln.groups[0].ac, -1); assert.equal(Ln.groups[0].n, 8);
+  const g12 = OWN(12), L12 = M.cloudLayout(g12, { instant: true }), u = L12.groups[L12.groups.length - 1];
+  assert.equal(u.ac, -1); assert.ok(u.m.every(i => !g12.nodes[i].ac));
 });
 
-test('own map: deterministic; large workspaces still fit (up to BRAIN_MAX)', () => {
-  const a = M.brainLayout(OWN(30), { instant: true }), b = M.brainLayout(OWN(30), { instant: true }); assert.deepEqual([...a.x], [...b.x]);
+test('large workspaces: 2000 items laid out quickly, still apart', () => {
   const items = {}; for (let i = 0; i < 4; i++) items['a' + i] = W.newAircraft({ id: 'a' + i, typeKey: 'da42', reg: 'LN-' + i }, i + 1);
-  for (let i = 0; i < M.BRAIN_MAX - 4; i++) { const n = W.newNote({ id: 'n' + i, title: 'n' + i, links: i % 5 ? [{ t: 'aircraft', id: 'a' + (i % 4) }] : [] }, 100 + i); items[n.id] = n; }
-  const g = M.buildGraph({ items }), t0 = Date.now(), L = M.brainLayout(g, { instant: true });
-  assert.ok(Date.now() - t0 < 4000, 'took ' + (Date.now() - t0) + ' ms');
-  assert.ok(g.nodes.every((nd, i) => M.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.01)));
-  assert.equal(pairsCloser(L, g.nodes.length, 1), 0);
-  assert.ok(L.regions.every(r => r.ac < 0 || M.shortType(g.nodes[r.ac].type) === 'DA42'));
+  for (let i = 0; i < 1996; i++) { const n = W.newNote({ id: 'n' + i, title: 'n' + i, links: i % 5 ? [{ t: 'aircraft', id: 'a' + (i % 4) }] : [] }, 100 + i); items[n.id] = n; }
+  const g = M.buildGraph({ items }), t0 = Date.now(), L = M.cloudLayout(g, { instant: true });
+  assert.ok(Date.now() - t0 < 1500, 'took ' + (Date.now() - t0) + ' ms');
+  assert.equal(L.groups.length, 5); checkGroups(g, L, 'large');
+  assert.ok(minDist(L) >= 0.7 * L.D);
 });
