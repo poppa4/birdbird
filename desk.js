@@ -416,10 +416,12 @@
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
           <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(A.aircraft().length ? t('Choose aircraft', 'Velg fly') : t('Add aircraft', 'Legg til fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('The aircraft you fly', 'Flyet du flyr'))}</small></button>
         </div>
-        <p class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span></button>${askable ? `<button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span></button>` : ''}</p>
+        <button type="button" class="fi-card" data-e="fi">${ic('ask')}<span class="tx"><b>Flight Intelligence</b><small>${esc(askable ? t('Ask your manuals and checklists. Answers point to the page.', 'Spør manualene og sjekklistene dine. Svarene viser til siden.') : t('Add your manuals, then ask them anything. Answers point to the page.', 'Legg til manualene dine, og spør dem om hva som helst. Svarene viser til siden.'))}</small></span><span class="go">→</span></button>
+        <p class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span></button></p>
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
+      box.querySelector('.fi-card').addEventListener('click', () => { if (askable) emptyAction('ask'); else location.href = 'fi.html'; });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null, dead = false; const mh = box.querySelector('.mmh');
       if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, acLabels: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
