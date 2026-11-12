@@ -7,9 +7,8 @@
 <meta name="description" content="Your own flight desk on Birdbird: open the AFM, a checklist and a note side by side, with your aircraft, briefing packs and saved routes one click away. Files stay on your device; the index, aircraft and notes sync to your account.">
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="workspace.css?v=11">
-<link rel="stylesheet" href="desk.css?v=5">
-<link rel="stylesheet" href="notebook.css?v=2">
+<link rel="stylesheet" href="workspace.css?v=12">
+<link rel="stylesheet" href="desk.css?v=6">
 </head>
 <body data-title="My workspace">
 <script src="site.js?v=63"></script>
@@ -31,7 +30,7 @@
   </header>
 
   <div class="ws-body">
-    <nav class="ws-rail" id="wsRail" aria-label="My workspace"></nav>
+    <div class="ws-side" id="wsSide"><nav class="ws-rail" id="wsRail" aria-label="My workspace"></nav></div>
     <main class="ws-main" id="wsMain" tabindex="-1">
       <p class="ws-loading" id="wsLoading">Opening your workspace…</p>
     </main>
@@ -50,12 +49,10 @@
 <script src="workspacecore.js?v=3"></script>
 <script src="deskcore.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
-<script src="inkcore.js?v=1"></script>
 <script src="wsgraph.js?v=4"></script>
-<script src="wsmap.js?v=7"></script>
-<script src="desk.js?v=12"></script>
-<script src="notebook.js?v=1"></script>
-<script src="ask.js?v=1"></script>
-<script src="workspace.js?v=11"></script>
+<script src="wsmap.js?v=8"></script>
+<script src="desk.js?v=13"></script>
+<script src="workspace.js?v=12"></script>
+<!-- notebook.js + inkcore.js + notebook.css, ask.js, pdf.js and the 3D map (three.js) load only when they are needed -->
 </body>
 </html>

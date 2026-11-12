@@ -1,7 +1,7 @@
 /* Birdbird – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
    A neural constellation drawn by three.js (r128, lazy-loaded with this file): each aircraft a cluster with its items
    round it, Unsorted a small cluster of its own, links as fine luminous arcs, nodes as soft glowing points (one draw
-   call), depth by fog and size, a very faint word in the middle. The example map (and only a large map of your own)
+   call), depth by fog and size. The example map (and only a large map of your own)
    gets a faint field of background neurons that is never interactive.
    WSMAP3D.mount(host, { graph, t, sample, onOpen(node, beside), padBottom, view, onWeak(why), probe, rotateSecs })
      -> { setGraph(g), fit(), focus(i), flyToCluster(k), destroy(), debug, graph, camera, layout, screenOf(i), is3d }
@@ -60,7 +60,6 @@
     const phone = coarse && Math.min(screen.width, screen.height) < 820;
     host.classList.add('wsm', 'wsm3');
     host.innerHTML = `<canvas class="wsm-c" tabindex="0" role="img" aria-roledescription="${esc(t('3D map', '3D-kart'))}"></canvas>
-      <div class="wsm3-word" aria-hidden="true">${esc(t('your workspace', 'arbeidsområdet ditt'))}</div>
       <div class="wsm3-lbl"></div>
       <div class="wsm-top">
         <div class="wsm-q"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2"/><path d="M12.6 12.6 17 17"/></svg><input type="search" class="wsm-qi" placeholder="${esc(t('Find on the map', 'Finn på kartet'))}" aria-label="${esc(t('Find on the map', 'Finn på kartet'))}" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-autocomplete="list"><ul class="wsm-sug" role="listbox" hidden></ul></div>
@@ -70,7 +69,7 @@
       <div class="wsm-card" hidden></div>
       <div class="wsm-leg" role="group" aria-label="${esc(t('Show on the map', 'Vis på kartet'))}"></div>`;
     const cv = host.querySelector('canvas'), card = host.querySelector('.wsm-card'), legEl = host.querySelector('.wsm-leg'), qi = host.querySelector('.wsm-qi'), sug = host.querySelector('.wsm-sug');
-    const lblEl = host.querySelector('.wsm3-lbl'), word = host.querySelector('.wsm3-word');
+    const lblEl = host.querySelector('.wsm3-lbl');
     const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setClearColor(0x000000, 0);
     const dprCap = phone ? 1.25 : 1.5;
@@ -194,9 +193,9 @@
       dbg.lit = lit ? lit.size : 0;
       labelSet(); request();
     }
-    const legendText = () => GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
+    const legendText = () => GW.GROUPS.filter(k => g.counts[k] || hidden.has(k)).map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
     function drawLegend() {
-      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${pcol()[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
+      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || hidden.has(k)).map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${pcol()[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
     }
 
     /* ---------- labels (HTML, crisp): cluster names (clickable), the focused node and its neighbours ---------- */
@@ -218,7 +217,7 @@
       if (focus >= 0) { want.push(focus); if (near) [...near].filter(j => j !== focus && visible(j) && g.nodes[j].k !== 'aircraft').sort((a, b) => g.nodes[b].deg - g.nodes[a].deg).slice(0, 10).forEach(j => want.push(j)); }
       shownLbl = want;
       while (nodeEls.length < want.length) { const s = document.createElement('span'); s.className = 'wsm3-nl'; lblEl.appendChild(s); nodeEls.push(s); }
-      nodeEls.forEach((s, k) => { const i = want[k]; if (i == null) { s.hidden = true; return; } s.hidden = false; s.classList.toggle('on', i === focus); const lb = g.nodes[i].label; s.textContent = lb.length > 44 ? lb.slice(0, 43) + '…' : lb; });
+      nodeEls.forEach((s, k) => { const i = want[k]; if (i == null) { s.hidden = true; return; } s.hidden = false; s.classList.toggle('on', i === focus); const lb = g.nodes[i].label, tx = lb.length > 44 ? lb.slice(0, 43) + '…' : lb; if (s.textContent !== tx) { s.textContent = tx; s._w = 0; } });
       dbg.labels = g.nodes.map((n, i) => n.k === 'aircraft' && visible(i) ? n.id : null).filter(Boolean).concat(want.map(i => g.nodes[i].id)).concat(dbg.regions.map(r => 'region:' + r.toUpperCase()));
     }
 
@@ -232,7 +231,26 @@
       const vf = THREE.MathUtils.degToRad(camera.fov), hAvail = Math.max(120, H - padT() - padB() - 16), tv = Math.tan(vf / 2) * hAvail / H, th = Math.tan(vf / 2) * (W - 32) / H;
       return Math.max(hh / tv, hw / th) + (depth == null ? hw * 0.55 : depth);
     }
-    function homeView() { const c = L.center; Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th: 0.95, ph: 1.32, d: fitDist(L.R * 0.86, L.R * 0.74, L.R * 0.3) }); }
+    /* home: the example shows the whole brain; your own map is framed on your points (never closer than half the brain),
+       so a few aircraft regions fill the plate instead of floating small in the middle */
+    function homeView() {
+      const th = 0.95, ph = 1.32; let c = L.center, r = L.R * 0.86, rh = L.R * 0.74, dep = L.R * 0.3;
+      if (!sample && N) {
+        /* the extent of your points as the camera sees them from the home angle (labels sit right of aircraft) */
+        const dir = [Math.sin(ph) * Math.sin(th), Math.cos(ph), Math.sin(ph) * Math.cos(th)];
+        const rt = [dir[2], 0, -dir[0]], rl = Math.hypot(rt[0], rt[2]); rt[0] /= rl; rt[2] /= rl;
+        const up = [dir[1] * rt[2] - dir[2] * rt[1], dir[2] * rt[0] - dir[0] * rt[2], dir[0] * rt[1] - dir[1] * rt[0]];
+        const dot = (a, i) => a[0] * (L.P[i * 3] - c[0]) + a[1] * (L.P[i * 3 + 1] - c[1]) + a[2] * (L.P[i * 3 + 2] - c[2]);
+        let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, z1 = 0;
+        for (let i = 0; i < N; i++) { const x = dot(rt, i), y = dot(up, i), z = dot(dir, i); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); z1 = Math.max(z1, z); }
+        const hw = Math.max((x1 - x0) / 2 * 1.16 + 4, L.R * 0.42), hh = Math.max((y1 - y0) / 2 * 1.1 + 3, L.R * 0.32);
+        if (hw < r || hh < rh) {
+          const mx = (x0 + x1) / 2 + hw * 0.04, my = (y0 + y1) / 2;
+          c = [0, 1, 2].map(a => c[a] + rt[a] * mx + up[a] * my); r = hw; rh = hh; dep = z1 * 0.45;
+        }
+      }
+      Object.assign(home, { tx: c[0], ty: c[1], tz: c[2], th, ph, d: fitDist(r, rh, dep) });
+    }
     function place() {
       const sp = Math.sin(cam.ph);
       camera.position.set(cam.tx + cam.d * sp * Math.sin(cam.th), cam.ty + cam.d * Math.cos(cam.ph), cam.tz + cam.d * sp * Math.cos(cam.th));
@@ -261,7 +279,7 @@
     function request() { if (!raf && alive) raf = requestAnimationFrame(frame); }
     function frame(ts) {
       raf = 0; if (!alive || !W) return; const c0 = performance.now(); dbg.frames++;
-      const dt = lastTs ? Math.min(64, ts - lastTs) : 16; lastTs = ts; let more = false, only = true;
+      const raw = lastTs ? ts - lastTs : 16, dt = Math.min(64, raw); lastTs = ts; let more = false, only = true;
       if (introP < 1) { introP = Math.min(1, introP + dt / growMs); const e = introP < 0.5 ? 2 * introP * introP : 1 - Math.pow(-2 * introP + 2, 2) / 2; U.uGrow.value = introP >= 1 ? 2 : e * 1.12; more = true; only = false; if (introP >= 1) { labelSet(); startRot(1200); } }
       if (tween) { only = false; const p = Math.min(1, (ts - tween.t0) / tween.ms), e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2, a = tween.a, b = tween.b;
         ['tx', 'ty', 'tz', 'th', 'ph'].forEach(k => { cam[k] = a[k] + (b[k] - a[k]) * e; }); cam.d = a.d * Math.pow(b.d / a.d, e); cam.dT = cam.d; if (p >= 1) tween = null; else more = true; }
@@ -274,7 +292,9 @@
       if (pulses.length) { if (only) { stats.pulseFrames++; } more = stepPulses(ts) || more; }
       render();
       const c1 = performance.now(); cpu.push(c1 - c0); if (cpu.length > 400) cpu.shift();
-      if (probing) { probeD.push(dt); if (probeD.length >= 24) { probing = false; const a = probeD.slice(4).sort((x, y) => x - y), med = a[a.length >> 1], lim2 = window.__wsm3dProbeMs || 55; const cm = cpu.slice(-20).sort((x, y) => x - y)[10]; if ((med > lim2 || cm > 24) && o.onWeak) { setTimeout(() => o.onWeak('slow'), 0); } } }
+      /* the probe counts only frames drawn back to back while the page is in view (a hidden tab or a pause is not slowness) */
+      if (probing && (raw > 400 || document.visibilityState !== 'visible')) { probeD = []; }
+      else if (probing) { probeD.push(raw); if (probeD.length >= 24) { probing = false; const a = probeD.slice(4).sort((x, y) => x - y), med = a[a.length >> 1], lim2 = window.__wsm3dProbeMs || 55; const cm = cpu.slice(-20).sort((x, y) => x - y)[10]; if ((med > lim2 || cm > 24) && o.onWeak) { setTimeout(() => o.onWeak('slow'), 0); } } }
       if (more) request(); else lastTs = 0;
     }
     const clampPh = p => Math.max(0.12, Math.min(Math.PI - 0.12, p));
@@ -286,16 +306,24 @@
       scr.ok = true;
       const pr = (p, o2) => { v3.set(p[0] * iu, p[1] * iu, p[2] * iu).project(camera); return v3.z < 1 ? [(v3.x + 1) * hw + (o2 || 0), (1 - v3.y) * hh] : null; };
       const op = introP >= 1 ? 1 : Math.max(0, Math.min(1, (introP - 0.55) / 0.45));
+      const boxes = [], hits = (x, y, w, h) => boxes.some(b => x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y);
       L.clusters.forEach((c, k) => {
         const el = regEls[k]; if (!el) return;
         let p;
-        if (c.ac >= 0) { const i = c.ac; p = scr.d[i] > 0 ? [scr.x[i], scr.y[i]] : null; el.hidden = !p || !visible(i); if (p) { const rpx = pxSize(i) * 0.5; el.style.transform = `translate(${(p[0] + rpx * 0.45 + 6).toFixed(1)}px,${(p[1] - 10).toFixed(1)}px)`; } }
-        else { p = pr([c.c[0], c.c[1] + c.r * 1.05, c.c[2]]); el.hidden = !p; if (p) el.style.transform = `translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) translateX(-50%)`; }
+        if (c.ac >= 0) { const i = c.ac; p = scr.d[i] > 0 ? [scr.x[i], scr.y[i]] : null; el.hidden = !p || !visible(i); if (p) { const rpx = pxSize(i) * 0.5; el.style.transform = `translate(${(p[0] + rpx * 0.45 + 6).toFixed(1)}px,${(p[1] - 10).toFixed(1)}px)`; if (!el.hidden) boxes.push({ x: p[0] + rpx * 0.45 + 6, y: p[1] - 10, w: el._w || (el._w = el.offsetWidth), h: 22 }); } }
+        else { p = pr([c.c[0], c.c[1] + c.r * 1.05, c.c[2]]); el.hidden = !p; if (p) { el.style.transform = `translate(${p[0].toFixed(1)}px,${p[1].toFixed(1)}px) translateX(-50%)`; const w = el._w || (el._w = el.offsetWidth); boxes.push({ x: p[0] - w / 2, y: p[1], w, h: 22 }); } }
         if (p) { const d = c.ac >= 0 ? scr.d[c.ac] : (camera.position.distanceTo(v3.set(c.c[0], c.c[1], c.c[2]))); el.style.opacity = (op * (1 - 0.55 * smooth(U.uNear.value, U.uFar.value, d))).toFixed(2); }
       });
       const focus = hover >= 0 ? hover : sel;
-      shownLbl.forEach((i, k) => { const s = nodeEls[k]; if (!s || scr.d[i] <= 0) { if (s) s.hidden = true; return; } s.hidden = false; const r = pxSize(i) * 0.22 + 5; s.style.transform = `translate(${(scr.x[i] + r).toFixed(1)}px,${(scr.y[i] - 9).toFixed(1)}px)`; s.style.opacity = i === focus ? '1' : (0.85 * (1 - 0.5 * smooth(U.uNear.value, U.uFar.value, scr.d[i]))).toFixed(2); });
-      const w = pr(L.center); if (w) { word.style.transform = `translate(${w[0].toFixed(1)}px,${w[1].toFixed(1)}px) translate(-50%,-50%)`; word.style.opacity = (op * (focus >= 0 || lit ? 0.25 : 1) * Math.max(0, Math.min(1, home.d / cam.d * 1.1 - 0.35))).toFixed(2); }
+      /* the focused node's label always shows; a neighbour's goes right of its dot, else left, else waits (no overlaps) */
+      shownLbl.forEach((i, k) => {
+        const s = nodeEls[k]; if (!s || scr.d[i] <= 0) { if (s) s.hidden = true; return; }
+        s.hidden = false; const w = s._w || (s._w = s.offsetWidth), r = pxSize(i) * 0.22 + 5, y = scr.y[i] - 9;
+        let x = scr.x[i] + r;
+        if (i !== focus && hits(x, y, w, 18)) { x = scr.x[i] - r - w; if (hits(x, y, w, 18)) { s.hidden = true; return; } }
+        boxes.push({ x: x - 2, y: y - 1, w: w + 4, h: 20 });
+        s.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`; s.style.opacity = i === focus ? '1' : (0.85 * (1 - 0.5 * smooth(U.uNear.value, U.uFar.value, scr.d[i]))).toFixed(2);
+      });
     }
     const smooth = (a, b, x) => { const u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
     const pxSize = i => Math.min(110, Math.max(2, (nodes.geometry.attributes.size.array[i] * U.uScale.value / Math.max(0.1, scr.d[i])) / dpr));

@@ -88,7 +88,10 @@
   let pending = 0, saveErr = null, lastSaved = 0;
   function persist(p) { pending++; drawStatus(); return p.then(() => { lastSaved = Date.now(); saveErr = null; }, e => { saveErr = e || new Error('save'); }).then(() => { pending--; drawStatus(); }); }
   /* every change goes through here: memory, this device at once, then the account */
+  let readyRes, itemsIn = false; const readyP = new Promise(r => { readyRes = r; });
   function commit(list, opts) {
+    /* a change made before the stores have been read waits for them, so it is neither lost nor written to the wrong place */
+    if (!itemsIn) return readyP.then(() => commit(list, opts));
     list = Array.isArray(list) ? list : [list];
     list.forEach(it => { S.items[it.id] = it; });
     S.index = null;
@@ -305,7 +308,7 @@
   function drawRailMap(cur) {
     const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW) return;
     let box = el('wsRailMap');
-    const want = cur !== 'map' && window.innerWidth >= 1000;
+    const want = cur !== 'map' && window.innerWidth > 1180;     /* only where the rail is a column (see workspace.css) */
     if (!want) { if (railMap) { railMap.m.destroy(); railMap = null; } if (box) box.remove(); return; }
     const a = mapAny(); if (!a) return;
     if (!box) { rl.insertAdjacentHTML('afterend', `<a id="wsRailMap" class="ws-railmap" href="#/map"><span class="h"></span><span class="l"><span class="t"></span><span class="go">${t('Open map', 'Åpne kart')} →</span></span></a>`); box = el('wsRailMap'); }
@@ -363,7 +366,10 @@
     S.routes.forEach(r => e.push({ t: 'route', id: r.id, title: routeTitle(r), sub: (r.pts || []).map(x => x.n).filter(Boolean).join(' '), text: '', tags: [], at: r.updated, href: 'route.html?id=' + encodeURIComponent(r.id) }));
     return W.buildIndex(e);
   }
-  const findAll = q => W.search(S.index || (S.index = buildIndex()), q, 60);
+  /* the handwriting in notebooks is searched as text by inkcore.js, loaded the first time a search needs it */
+  let inkP = null;
+  function needInkText() { if (window.INKCORE || inkP || !liveOf('notebook').length) return; inkP = loadScript('inkcore.js?v=1').then(() => { S.index = null; if (route().path === 'search') render(); }, () => { inkP = null; }); }
+  const findAll = q => { needInkText(); return W.search(S.index || (S.index = buildIndex()), q, 60); };
 
   /* ---------- views ---------- */
   const acChip = a => a ? `<a class="chip" href="#/aircraft/${esc(a.id)}"><span>${esc(a.reg || a.type || acName(a))}</span></a>` : '';
@@ -816,7 +822,7 @@
     return webgl;
   }
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=1')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=1')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=1')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=2')).catch(e => { map3dP = null; throw e; }));
   function viewMap() {
     if (!GW || !window.WSMAP) { main.innerHTML = empty(t('The map could not load. Reload the page.', 'Kartet kunne ikke lastes. Last inn siden på nytt.')); return; }
     const a = mapAny(), g = a.g, sample = a.sample, mode = a.mode, pref = mapPref();
@@ -825,10 +831,10 @@
     if (mapV && mapV.m) mapV.m.destroy(); mapV = null;
     const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches, d3 = want === '3d';
     const hint = sample ? (coarse ? t('This is an example. Tap a dot to see what it would be in your workspace. Your own map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Trykk på en prikk for å se hva den ville vært i arbeidsområdet ditt. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.') : t('This is an example. Point at a dot to see what it would be in your workspace, click it to add your own. Your map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Pek på en prikk for å se hva den ville vært i arbeidsområdet ditt, og klikk for å legge til ditt eget. Kartet ditt vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.'))
-      : d3 ? (coarse ? t('Each aircraft has its own region of the brain; lines are links you made. Drag to turn it, pinch to zoom, tap a dot for its card, double-tap to fly to it.', 'Hvert fly har sitt eget område i hjernen; linjene er koblinger du har laget. Dra for å snu den, knip for å zoome, trykk på en prikk for kortet, dobbelttrykk for å fly dit.') : t('Each aircraft has its own region of the brain; lines are links you made. Drag to turn it, scroll to zoom, click a dot for its card, double-click to fly to it. Keys: arrows turn, + and − zoom, Enter opens.', 'Hvert fly har sitt eget område i hjernen; linjene er koblinger du har laget. Dra for å snu den, rull for å zoome, klikk på en prikk for kortet, dobbeltklikk for å fly dit. Taster: piler snur, + og − zoomer, Enter åpner.'))
+      : d3 ? (coarse ? t('Drag to turn, pinch to zoom, tap a dot for its card, double-tap to fly to it.', 'Dra for å snu, knip for å zoome, trykk på en prikk for kortet, dobbelttrykk for å fly dit.') : t('Drag to turn, scroll to zoom, click a dot for its card, double-click to fly to it. Arrow keys, + and − work too.', 'Dra for å snu, rull for å zoome, klikk på en prikk for kortet, dobbeltklikk for å fly dit. Piltastene, + og − virker også.'))
       : coarse ? t('Each aircraft has its own region; lines are links you made. Tap a dot to open it on the desk, pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Trykk på en prikk for å åpne den på arbeidsflaten, knip for å zoome.') : t('Each aircraft has its own region; lines are links you made. Click a dot to open it on the desk, Shift-click to open it beside; scroll or pinch to zoom.', 'Hvert fly har sitt eget område; linjene er koblinger du har laget. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av; rull eller knip for å zoome.');
     main.innerHTML = `<div class="ws-h ws-maph"><h2>${t('Map', 'Kart')}</h2>
-        <p>${t('Your workspace and how it connects. Each aircraft gathers its documents, notes and briefing packs; every line is a link you made, such as a page reference or a route and its pack.', 'Arbeidsområdet ditt og hvordan det henger sammen. Hvert fly samler dokumentene, notatene og briefingpakkene sine; hver linje er en kobling du har laget, som en sidehenvisning eller en rute og pakken dens.')}</p></div>
+        <p>${t('Each aircraft gathers its own documents, notes and briefing packs. Every line is a link you made, such as a page reference.', 'Hvert fly samler sine egne dokumenter, notater og briefingpakker. Hver linje er en kobling du har laget, som en sidehenvisning.')}</p></div>
       <div class="wsm-plate${sample ? ' sample' : ''}${d3 ? ' d3' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost">${d3 ? `<p class="wsm-load" role="status">${t('Opening the 3D map…', 'Åpner 3D-kartet …')}</p>` : ''}</div>
         ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
       <p class="wsm-hint">${hint}</p>`;
@@ -987,7 +993,7 @@
     else if (act === 'search-clear') { el('wsQ').value = ''; go(beforeSearch || 'library'); }
     else if (act === 'desk-open' && window.WSDESK) { e.preventDefault(); window.WSDESK.openItem(b.dataset.k, id); go(''); }
     else if (act === 'map-note') { const n = W.newNote({}); await commit(n); if (window.WSDESK) { window.WSDESK.openItem('note', n.id); go(''); } else go('notes/' + n.id); }
-    else if (act === 'nb-new' && window.WSNB) { go(''); setTimeout(() => window.WSNB.create({}, {}), 30); }
+    else if (act === 'nb-new' && window.WSDESK) { go(''); setTimeout(() => window.WSDESK.newNotebook({}), 30); }
   });
 
   /* search box */
@@ -1010,19 +1016,23 @@
   }
 
   /* ---------- start ---------- */
+  const pmark = n => { try { performance.mark('ws:' + n); } catch (e) {} };
   async function start() {
-    LAB.start('workspace'); drawChrome();
-    await Promise.all([ST.open(), FI.open()]);
+    LAB.start('workspace'); drawChrome(); pmark('start');
+    /* the two databases and the packs/routes store are read side by side */
+    const fiP = FI.open().then(() => FI.load()), lsP = loadStores();
+    await ST.open(); pmark('idb');
     const [items, meta] = await Promise.all([ST.loadItems().catch(() => ({})), ST.kvGet('meta')]);
     if (meta && typeof meta === 'object') M = Object.assign(M, meta, { sync: Object.assign(M.sync, meta.sync || {}) });
     M.hideAdopt = M.hideAdopt || {}; M.recent = M.recent || [];
-    const pg = W.purgeExpired(items); S.items = pg.items;
+    const pg = W.purgeExpired(items); S.items = pg.items; itemsIn = true; readyRes();
     if (pg.purged.length) { ST.putItems(pg.purged.map(it => S.items[it.id])).catch(() => {}); pg.purged.forEach(it => { if (it.kind === 'doc') ST.tdDel(it.id); }); }
-    await Promise.all([FI.load(), loadStores(), storageInfo()]);
+    await Promise.all([fiP, lsP]); pmark('data');
     await reconcile();
     S.ready = true;
-    if (W.live(S.items).length && S.est.persisted === false) askPersist();
-    render();
+    render(); pmark('render');
+    /* the storage estimate is only shown on the Overview and Storage pages: it is read after the first paint */
+    storageInfo().then(() => { if (W.live(S.items).length && S.est.persisted === false) askPersist(); if (/^(storage|library)$/.test(route().path)) render(); });
     if (user()) syncNow();
   }
   window.addEventListener('hashchange', () => { if (route().path !== 'search') { clearTimeout(qT); } render(); const r = route(); if (r.path !== 'search' && lastPath !== null && document.activeElement === document.body) main.focus({ preventScroll: true }); });

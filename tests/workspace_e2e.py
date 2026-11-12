@@ -133,8 +133,7 @@ with sync_playwright() as p:
     def snap():
         return pg.evaluate("""() => { const S = window.WS.state, W = window.WSCORE; return { ac: W.live(S.items,'aircraft').map(a=>a.reg+'|'+a.notes+'|'+a.speeds.filter(r=>r.v).length).sort(), notes: W.live(S.items,'note').map(n=>n.title+'|'+n.versions.length+'|'+n.links.length+'|'+n.pinned).sort(), docs: W.live(S.items,'doc').map(d=>d.name+'|'+d.cat+'|'+d.acIds.length+'|'+d.tags.join(',')).sort(), files: Object.keys(S.docs).length, blobs: S.blobs.size, packs: S.packs.length, routes: S.routes.length }; }""")
     before = snap()
-    pg.click('[data-act="export"]')
-    with pg.expect_download() as dl: pass
+    with pg.expect_download() as dl: pg.click('[data-act="export"]')
     path = SHOTS + '/backup.zip'; dl.value.save_as(path)
     check('backup file downloaded', os.path.getsize(path) > 3000, os.path.getsize(path))
     pg.wait_for_timeout(300); pg.goto(URL + '#/library'); pg.wait_for_selector('.ovs'); check('reminder gone after backup', pg.locator('.ws-remind').count() == 0)

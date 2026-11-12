@@ -104,7 +104,10 @@ html.dk-resizing .dk-pb{pointer-events:none}
 .dk-pacts .dk-ib{height:30px;min-width:30px}
 .dk-pb{flex:1 1 auto;min-height:0;position:relative;display:flex;flex-direction:column}
 .dk-pb>*{flex:1 1 auto;min-height:0}
-@media (pointer:coarse){.dk-strip{height:44px}.dk-tab .x{opacity:1;width:30px;height:30px}.dk-ib{min-width:40px;height:40px}.dk-it{min-height:40px}.dk-pacts .dk-ib{height:36px;min-width:36px}}
+/* touch: every control at least 40 px (the bar, tabs, the library rail, the document bar) */
+@media (pointer:coarse){.dk-strip{height:44px}.dk-tab .x{opacity:1;width:40px;height:40px;margin-right:-8px}.dk-ib{min-width:40px;height:40px}.dk-it{min-height:40px}.dk-pacts .dk-ib{height:40px;min-width:40px}
+  .dk-deskbtn,.dk-qo{height:40px;min-width:40px;justify-content:center}.dk-st{min-height:40px;min-width:40px;justify-content:center}.dk-lib{display:inline-flex;align-items:center;min-height:40px}
+  .dk-sh{min-height:40px}.dk-rs input{min-height:40px}.dv-pg input{height:40px}.dv-z{min-height:40px}.dk-empty .rec button{min-height:44px}.dk-add{min-height:40px}.dv-bar .btn.sm{min-width:40px;min-height:40px;justify-content:center}}
 
 /* drag */
 .dk-ghost{position:fixed;left:0;top:0;z-index:120;pointer-events:none;max-width:240px;padding:6px 10px;background:var(--ink);color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;will-change:transform}
@@ -123,54 +126,21 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .dk-empty h2{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:clamp(32px,3.6vw,46px);letter-spacing:-.02em;line-height:1.04;margin:0;color:var(--ink)}
 .dk-empty h2 span{color:var(--ink-3);font-weight:650}
 .dk-empty .lead{font-size:16.5px;color:var(--ink-2);margin:16px 0 0;max-width:46ch;line-height:1.55}
-.dk-empty .sk{margin:0;width:100%}
-.dk-empty .sk svg{width:100%;height:auto;display:block;border-radius:12px;box-shadow:0 1px 0 var(--rule),0 24px 48px -18px rgba(19,32,42,.28)}
-.dk-empty .sk .win{fill:var(--paper)}
-.dk-empty .sk .bar{fill:var(--wash)}
-.dk-empty .sk .tab{fill:transparent}
-.dk-empty .sk .tab.on{fill:var(--sheet);stroke:var(--rule)}
-.dk-empty .sk text{font-family:var(--f-mono);font-size:8.5px;fill:var(--ink-2)}
-.dk-empty .sk .tabs text{font-size:9px}
-.dk-empty .sk .pane{fill:var(--sheet);stroke:var(--rule)}
-.dk-empty .sk .pg{fill:#fff;filter:drop-shadow(0 1px 1px rgba(19,32,42,.08))}
-.dk-empty .sk .ph{font-size:8px;letter-spacing:.08em;fill:var(--ink);font-weight:700}
-.dk-empty .sk .pt{fill:var(--ink);font-size:8.5px}
-.dk-empty .sk .r{text-anchor:end;fill:var(--ink-3);font-size:7.5px}
-.dk-empty .sk .tl{stroke:var(--ink-3);stroke-width:2;stroke-linecap:round;opacity:.28;fill:none}
-.dk-empty .sk .hl{stroke:#F6D84A;stroke-width:12;stroke-linecap:round;opacity:.55;fill:none;stroke-dasharray:100;stroke-dashoffset:100;animation:skHl 10s ease-in-out infinite}
-.dk-empty .sk .bx{fill:none;stroke:var(--ink-3)}
-.dk-empty .sk .ck{fill:none;stroke:var(--ok,#2E7D4F);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
-.dk-empty .sk .c1{animation:skC1 10s infinite}.dk-empty .sk .c2{animation:skC2 10s infinite}.dk-empty .sk .c3{animation:skC3 10s infinite}.dk-empty .sk .c4{animation:skC4 10s infinite}
-.dk-empty .sk .gr{fill:none;stroke:var(--ink-3);stroke-width:.4;opacity:.35}
-.dk-empty .sk .nbp{stroke:var(--rule-2,var(--rule))}
-.dk-empty .sk .pen{fill:none;stroke:var(--info,#1D4E9E);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100}
-.dk-empty .sk .p0{stroke:var(--accent);animation:skP0 10s infinite}
-.dk-empty .sk .p1{animation:skP1 10s infinite}.dk-empty .sk .p2{animation:skP2 10s infinite}.dk-empty .sk .p3{animation:skP3 10s infinite}
-.dk-empty .sk .cl{stroke-dasharray:3 3;stroke-width:1}
-.dk-empty .sk .dotp{fill:var(--info,#1D4E9E);opacity:0;animation:skHw 10s infinite}
-.dk-empty .sk .hw{font-family:var(--f-display);font-style:italic;font-size:12px;fill:var(--info,#1D4E9E);opacity:0;animation:skHw 10s infinite}
-.dk-empty .sk .chip{opacity:0;animation:skChip 10s infinite}
-.dk-empty .sk .chip rect{fill:var(--accent-wash);stroke:var(--accent);stroke-opacity:.4}
-.dk-empty .sk .chip text{fill:var(--accent);font-size:8px}
-@keyframes skHl{0%,6%{stroke-dashoffset:100;opacity:.55}16%,90%{stroke-dashoffset:0;opacity:.55}97%,100%{stroke-dashoffset:0;opacity:0}}
-@keyframes skP0{0%,16%{stroke-dashoffset:100;opacity:1}20%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skC1{0%,24%{stroke-dashoffset:100;opacity:1}27%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skC2{0%,30%{stroke-dashoffset:100;opacity:1}33%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skC3{0%,36%{stroke-dashoffset:100;opacity:1}39%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skC4{0%,42%{stroke-dashoffset:100;opacity:1}45%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skP1{0%,50%{stroke-dashoffset:100;opacity:1}58%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skP2{0%,58%{stroke-dashoffset:100;opacity:1}68%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skP3{0%,68%{stroke-dashoffset:100;opacity:1}71%,90%{stroke-dashoffset:0;opacity:1}97%,100%{opacity:0}}
-@keyframes skHw{0%,71%{opacity:0}74%,90%{opacity:1}97%,100%{opacity:0}}
-@keyframes skChip{0%,76%{opacity:0;transform:translateY(4px)}80%,90%{opacity:1;transform:none}97%,100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.dk-empty .sk *{animation:none!important;stroke-dashoffset:0!important}.dk-empty .sk .hw,.dk-empty .sk .chip{opacity:1!important}}
-.dk-empty .vals{list-style:none;margin:34px 0 0;padding:22px 0 0;border-top:1px solid var(--rule-2);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-.dk-empty .vals li{display:flex;gap:12px;align-items:flex-start}
-.dk-empty .vals .i{flex:none;width:20px;height:20px;color:var(--ink-2);stroke-width:1.4;margin-top:1px}
-.dk-empty .vals b{display:block;font-size:14.5px;font-weight:620;color:var(--ink);margin-bottom:3px}
-.dk-empty .vals span{display:block;font-size:13.5px;line-height:1.45;color:var(--ink-3)}
-@media (max-width:1100px){.dk-empty .hero{grid-template-columns:1fr}.dk-empty .sk:not(.mm){display:none}.dk-empty .sk.mm{max-width:560px}}
-@media (max-width:760px){.dk-empty .vals{grid-template-columns:1fr;gap:16px}.dk-empty .hero{margin-bottom:24px}}
+@media (max-width:1100px){.dk-empty .hero{grid-template-columns:1fr}.dk-empty .sk.mm{max-width:560px}}
+@media (max-width:760px){.dk-empty .hero{margin-bottom:24px}}
+/* the quieter second line: plain text actions under the three cards */
+.dk-empty .more2{display:flex;flex-wrap:wrap;gap:4px 22px;margin:14px 0 0}
+.dk-empty .more2 button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 2px;border:0;background:none;color:var(--ink-2);font:inherit;font-size:14.5px;font-weight:550;cursor:pointer}
+.dk-empty .more2 button:hover{color:var(--accent)}
+.dk-empty .more2 .i{width:18px;height:18px;color:var(--ink-3)}
+.dk-empty .more2 button:hover .i{color:var(--accent)}
+.dk-it.cmd .i{color:var(--accent)}
+.dk-it.cmd .n{color:var(--ink-2)}
+.dv-ann.on{background:var(--accent-wash);border-color:var(--accent);color:var(--accent)}
+.dv-ann .i,.dv-ask .i{width:15px;height:15px}
+@container (max-width:600px){.dv-ann span,.dv-ask span{display:none}}
+/* a narrow pane keeps one calm row: Annotate, Ask and Note beside move into More */
+@container (max-width:520px){.dv-bar .dv-ann,.dv-bar .dv-ask,.dv-bar .dv-nb{display:none}}
 .big3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .big3 button{transition:border-color .15s,transform .15s;display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:18px 18px 16px;border:1px solid var(--rule);border-radius:var(--radius-lg);background:var(--sheet);color:var(--ink);font:inherit;text-align:left;cursor:pointer;min-width:0}
 .big3 button:hover{border-color:var(--ink);transform:translateY(-1px)}
@@ -185,7 +155,6 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .dk-empty .rec .i{width:16px;height:16px;color:var(--ink-3)}
 .dk-empty .rec .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
 .dk-empty .rec .w{font-family:var(--f-mono);font-size:12px;color:var(--ink-3)}
-.dk-empty .tip{margin:26px 0 0;font-size:13.5px;color:var(--ink-3)}
 .dk-epane{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;color:var(--ink-2);font-size:14px;background:var(--wash)}
 .dk-epane p{margin:0;max-width:34ch}
 .dk-epane .row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
@@ -378,3 +347,6 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
   .dv-pages{padding:8px 0 40px;gap:8px}
 }
 @media print{.dk-bar,.dk-rail,.dk-strip,.dv-bar,.nv-bar{display:none!important}.desk{height:auto;overflow:visible}}
+/* tablets: the desk button shows just the name, and touch screens have no Ctrl K hint */
+@media (max-width:1180px){.dk-deskbtn .eb{display:none}}
+@media (pointer:coarse){.dk-qo kbd{display:none}}

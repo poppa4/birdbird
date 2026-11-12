@@ -77,8 +77,8 @@ with sync_playwright() as p:
     # aircraft: add from the empty pane? use the library dialog via the palette command list -> open via Library is heavier; make one through the API
     pg.evaluate("""async () => { const W = window.WSCORE; const a = W.newAircraft({ typeKey: 'b200', reg: 'LN-TST' }); await window.WS.api.commit(a); window.WSDESK.openItem('aircraft', a.id, { beside: true }); }""")
     pg.wait_for_selector('.av-h .reg'); check('aircraft card opens with speeds table and sim button', 'LN-TST' in pg.inner_text('.av-h') and pg.locator('.av .speeds tbody tr').count() > 5 and pg.locator('.av-h a[href="b200.html"]').count() == 1)
-    # split down via the bar (large screen) then drag the aircraft tab into the new pane
-    pg.click('[data-b="split-v"]'); pg.wait_for_timeout(200)
+    # split down via the pane menu (large screen; the bar keeps one split button) then drag the aircraft tab into the new pane
+    pg.click('.dk-pane.act [data-pa="menu"]'); pg.click('.dk-menu button:has-text("Split down")'); pg.wait_for_timeout(200)
     check('three panes after split down', pg.locator('.dk-pane').count() == 3, pg.locator('.dk-pane').count())
     tab = pg.locator('.dk-tab:has-text("LN-TST")'); tb = tab.bounding_box()
     empty = pg.locator('.dk-pane.empty .dk-pb'); eb = empty.bounding_box()

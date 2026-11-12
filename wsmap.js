@@ -114,10 +114,10 @@
       if (!mini) cv.setAttribute('aria-label', t('Map of your workspace: ', 'Kart over arbeidsområdet ditt: ') + legendText());
     }
     const visible = i => !hidden.has(g.nodes[i].g);
-    const legendText = () => GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
+    const legendText = () => GW.GROUPS.filter(k => g.counts[k] || hidden.has(k)).map(k => GN[k] + ' ' + g.counts[k]).join(' · ');
     function drawLegend() {
       if (!legEl) return;
-      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || k !== 'desk').map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
+      legEl.innerHTML = GW.GROUPS.filter(k => g.counts[k] || hidden.has(k)).map((k, i) => `${i ? '<span class="dot" aria-hidden="true">·</span>' : ''}<button type="button" data-g="${k}" aria-pressed="${!hidden.has(k)}"><i style="background:${COL[k]}"></i>${esc(GN[k])} <b>${g.counts[k]}</b></button>`).join('');
     }
 
     /* ---------- camera ---------- */

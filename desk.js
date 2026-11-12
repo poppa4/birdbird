@@ -166,8 +166,24 @@
       for (const p of (phoneMode ? [] : D.panes(L))) { if (p.id === paneId) continue; const tb = p.tabs.find(x => x.id === p.a); if (tb && tb.k === 'doc' && W.isLive(A.item(tb.r))) return tb.r; }
       const at = D.allTabs(L).find(x => x.k === 'doc' && W.isLive(A.item(x.r))); return at ? at.r : null;
     }
-    async function newNotebook(opts) { if (!window.WSNB) return; await window.WSNB.create({}, opts || {}); }
-    function askBeside(docId, fromPane) { if (window.WSASK) window.WSASK.setDoc(docId || null); openItem('ask', 'ask', { pane: fromPane, beside: !!docId }); }
+    async function newNotebook(opts) { try { await needNB(); } catch (e) { A.toast(t('The notebook could not load. Check the connection and try again.', 'Notatboken kunne ikke lastes. Sjekk tilkoblingen og prøv igjen.')); return; } await window.WSNB.create({}, opts || {}); }
+    function askBeside(docId, fromPane) { if (window.WSASK) window.WSASK.setDoc(docId || null); else needAsk().then(() => window.WSASK.setDoc(docId || null), () => {}); openItem('ask', 'ask', { pane: fromPane, beside: !!docId }); }
+
+    /* ---------- loaded when first needed: the pen notebook and PDF ink (notebook.js, inkcore.js, notebook.css), Ask (ask.js) ---------- */
+    const lazy = {};
+    const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
+    function needNB() {
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=3'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=2'))])
+        .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
+    }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=3'), window.WSASK ? 0 : A.loadScript('ask.js?v=2')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
+    function mountLazy(box, need) {
+      let ok = false, dead = false;
+      box.innerHTML = `<p class="dk-wait">${esc(t('Opening…', 'Åpner …'))}</p>`;
+      need().then(() => { ok = true; if (!dead) render(); }, () => { if (!dead) box.innerHTML = `<div class="dk-msg"><p>${esc(t('This could not load. Check the connection and reload the page.', 'Dette kunne ikke lastes. Sjekk tilkoblingen og last inn siden på nytt.'))}</p></div>`; });
+      return { refresh: () => ok ? 'remount' : '', destroy() { dead = true; } };
+    }
     /* a page reference in a note was clicked: show that page, beside the note */
     function jumpTo(docId, page, fromPane) {
       const d = A.item(docId);
@@ -221,7 +237,7 @@
         <button type="button" class="dk-qo" data-b="open" aria-keyshortcuts="${isMac ? 'Meta+K' : 'Control+K'}">${ic('search')}<span>${esc(t('Open anything', 'Åpne hva som helst'))}</span>${ph ? '' : `<kbd>${KEY}</kbd>`}</button>
         <span class="sp"></span>
         <a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>
-        ${ph ? `<button type="button" class="dk-ib" data-b="sheet" aria-label="${esc(t('Library', 'Bibliotek'))}">${ic('lib')}</button>` : `<button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>${canDown() ? `<button type="button" class="dk-ib" data-b="split-v" title="${esc(t('Split down', 'Del nedover'))}" aria-label="${esc(t('Split down', 'Del nedover'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splitv')}</button>` : ''}`}
+        ${ph ? `<button type="button" class="dk-ib" data-b="sheet" aria-label="${esc(t('Library', 'Bibliotek'))}">${ic('lib')}</button>` : `<button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>`}
         ${ph ? '' : `<a class="dk-ib dk-mapb" href="#/map" title="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}" aria-label="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}">${ic('map')}</a>`}
         <a class="dk-lib" href="#/library">${ph ? esc(t('Manage', 'Administrer')) : esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</a>`;
     }
@@ -233,7 +249,7 @@
     let railQ = '';
     const SECS = () => [
       ['aircraft', t('Aircraft', 'Fly'), 'aircraft', A.aircraft().map(a => ({ k: 'aircraft', r: a.id, n: a.reg || A.acName(a), s: a.reg ? a.type : '' }))],
-      ['doc', t('Documents', 'Dokumenter'), 'doc', [{ k: 'ask', r: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask', soon: 1, cmd: 1 }].concat(A.docsAll().map(d => ({ k: 'doc', r: d.id, n: d.name, s: A.catName(d.cat), i: docKind(d), off: !A.onDevice(d.id) })))],
+      ['doc', t('Documents', 'Dokumenter'), 'doc', (A.docsAll().some(d => S.docs[d.id] && (S.docs[d.id].chunks || []).length) ? [{ k: 'ask', r: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask', soon: 1, cmd: 1 }] : []).concat(A.docsAll().map(d => ({ k: 'doc', r: d.id, n: d.name, s: A.catName(d.cat), i: docKind(d), off: !A.onDevice(d.id) })))],
       ['note', t('Notes', 'Notater'), 'note', A.notebooksAll().map(n => ({ k: 'notebook', r: n.id, n: n.title || t('Notebook', 'Notatbok'), s: t('Notebook', 'Notatbok') })).concat(A.notesAll().map(n => ({ k: 'note', r: n.id, n: A.noteTitle(n), pin: n.pinned })))],
       ['pack', t('Briefing packs', 'Briefingpakker'), 'pack', A.packsAll().map(p => ({ k: 'pack', r: p.id, n: A.packTitle(p), s: (p.f || {}).date || '' }))],
       ['route', t('Routes', 'Ruter'), 'route', S.routes.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0)).map(x => ({ k: 'route', r: x.id, n: A.routeTitle(x) }))]
@@ -385,76 +401,30 @@
       const hello = h < 5 ? t('Good night', 'God natt') : h < 10 ? t('Good morning', 'God morgen') : h < 17 ? t('Good day', 'God dag') : h < 22 ? t('Good evening', 'God kveld') : t('Good night', 'God natt');
       const day = now.toLocaleDateString(no ? 'nb-NO' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
       const utc = String(now.getUTCHours()).padStart(2, '0') + String(now.getUTCMinutes()).padStart(2, '0') + 'Z';
-      const L3 = (en, no) => esc(t(en, no));
-      const sketch = `<figure class="sk" aria-hidden="true">
-        <svg viewBox="0 0 440 290" focusable="false">
-          <defs><clipPath id="skc"><rect x="1" y="1" width="438" height="288" rx="12"/></clipPath>
-            <pattern id="skg" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" class="gr"/></pattern></defs>
-          <g clip-path="url(#skc)">
-          <rect x="1" y="1" width="438" height="288" rx="12" class="win"/>
-          <rect x="0" y="0" width="440" height="30" class="bar"/>
-          <g class="tabs">
-            <rect x="12" y="7" width="94" height="23" rx="4" class="tab on"/><text x="24" y="22">AFM · 4-12</text>
-            <rect x="110" y="7" width="86" height="23" rx="4" class="tab"/><text x="122" y="22">${L3('Checklist', 'Sjekkliste')}</text>
-            <rect x="200" y="7" width="86" height="23" rx="4" class="tab"/><text x="212" y="22">${L3('Notebook', 'Notatbok')}</text>
-          </g>
-          <!-- manual page -->
-          <rect x="12" y="40" width="214" height="238" rx="6" class="pane"/>
-          <rect x="26" y="52" width="186" height="226" class="pg"/>
-          <text x="38" y="72" class="ph">4 · ${L3('NORMAL PROCEDURES', 'NORMALPROSEDYRER')}</text>
-          <path d="M38 90h150M38 100h162M38 110h138" class="tl"/>
-          <path d="M36 130h160" class="hl" pathLength="100"/>
-          <text x="38" y="133" class="pt">${L3('Approach speed', 'Innflygingsfart')} ……… V<tspan dy="2" font-size="6">REF</tspan><tspan dy="-2"> + 5</tspan></text>
-          <path d="M38 150h156M38 160h146M38 170h160M38 180h120" class="tl"/>
-          <path d="M38 200h150M38 210h132M38 220h158M38 230h104M38 250h146M38 260h90" class="tl"/>
-          <path d="M130 139c18 2 40 1 62-1" class="pen p0" pathLength="100"/>
-          <!-- checklist -->
-          <rect x="234" y="40" width="194" height="112" rx="6" class="pane"/>
-          <text x="248" y="62" class="ph">${L3('BEFORE LANDING', 'FØR LANDING')}</text>
-          <g class="ci"><rect x="248" y="74" width="10" height="10" rx="2" class="bx"/><text x="266" y="83">${L3('Landing gear', 'Understell')}</text><text x="414" y="83" class="r">DOWN · 3 GREEN</text><path d="M250 79l3 3 5-6" class="ck c1" pathLength="100"/></g>
-          <g class="ci"><rect x="248" y="94" width="10" height="10" rx="2" class="bx"/><text x="266" y="103">${L3('Flaps', 'Flaps')}</text><text x="414" y="103" class="r">${L3('AS REQ', 'ETTER BEHOV')}</text><path d="M250 99l3 3 5-6" class="ck c2" pathLength="100"/></g>
-          <g class="ci"><rect x="248" y="114" width="10" height="10" rx="2" class="bx"/><text x="266" y="123">${L3('Props', 'Propeller')}</text><text x="414" y="123" class="r">${L3('FULL FWD', 'HELT FREM')}</text><path d="M250 119l3 3 5-6" class="ck c3" pathLength="100"/></g>
-          <g class="ci"><rect x="248" y="134" width="10" height="10" rx="2" class="bx"/><text x="266" y="143">${L3('Landing lights', 'Landingslys')}</text><text x="414" y="143" class="r">ON</text><path d="M250 139l3 3 5-6" class="ck c4" pathLength="100"/></g>
-          <!-- notebook -->
-          <rect x="234" y="160" width="194" height="118" rx="6" class="pane"/>
-          <rect x="242" y="168" width="178" height="102" fill="url(#skg)" class="nbp"/>
-          <path d="M378 192L410 175L414 182L382 199Z" class="pen p1" pathLength="100"/><path d="M386 192l20-10" class="pen p1 cl" pathLength="100"/>
-          <path d="M262 252c26-12 56-28 82-41s22-10 32-14" class="pen p2" pathLength="100"/><circle cx="262" cy="252" r="3" class="dotp"/>
-          
-          <text x="300" y="236" class="hw">3°</text>
-          <g class="chip"><rect x="250" y="176" width="74" height="16" rx="8"/><text x="259" y="187">↗ AFM ${L3('p.', 's.')} 4-12</text></g>
-          </g>
-        </svg>
-      </figure>`;
-      /* with five or more items of their own, a small live map of them takes the place of the drawing */
+      /* the brain of your workspace (or the small example): mounted just after the first paint so the desk shows at once */
       const ma = window.WSMAP && A.mapAny ? A.mapAny() : null, mg = ma ? ma.g : null, useMap = !!mg;
       const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${ma && ma.sample ? esc(t('Example: how your map will look', 'Eksempel: slik blir kartet ditt')) : `${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}`}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
+      const askable = A.docsAll().some(d => S.docs[d.id] && (S.docs[d.id].chunks || []).length);
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
         <h2>${esc(hello)}.<br><span>${esc(t('Your desk is ready.', 'Skrivebordet ditt er klart.'))}</span></h2>
-        <p class="lead">${esc(t('Manual, checklist and notes side by side, exactly where you left them. Everything you need to prepare, nothing you don’t.', 'Manual, sjekkliste og notater side om side, akkurat der du slapp. Alt du trenger for å forberede deg, ingenting du ikke trenger.'))}</p>
-        </div>${useMap ? mini : isPhone() ? '' : sketch}</div>
+        <p class="lead">${esc(t('Manual, checklist and notes side by side, exactly where you left them.', 'Manual, sjekkliste og notater side om side, akkurat der du slapp.'))}</p>
+        </div>${mini}</div>
         <div class="big3">
           <button type="button" data-e="doc">${ic('pdf')}<b>${esc(t('Open document', 'Åpne dokument'))}</b><small>${esc(A.docsAll().length ? t('AFM, checklist, SOP or chart', 'AFM, sjekkliste, SOP eller kart') : t('Add a PDF, Word or text file', 'Legg til en PDF-, Word- eller tekstfil'))}</small></button>
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
-          <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(t('Choose aircraft', 'Velg fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('Add the aircraft you fly', 'Legg til flyet du flyr'))}</small></button>
+          <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(A.aircraft().length ? t('Choose aircraft', 'Velg fly') : t('Add aircraft', 'Legg til fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('The aircraft you fly', 'Flyet du flyr'))}</small></button>
         </div>
-        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid or lined paper, or an approach briefing', 'Skriv med penn på rutenett, linjer eller en innflygingsbrief'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button><button type="button" data-e="map">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span><small>${esc(t('See how your documents, notes and flights connect', 'Se hvordan dokumenter, notater og turer henger sammen'))}</small></button></div>
+        <p class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span></button>${askable ? `<button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span></button>` : ''}</p>
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
-        <ul class="vals">
-          <li>${ic('keep')}<div><b>${esc(t('Nothing gets lost', 'Ingenting går tapt'))}</b><span>${esc(t('Saved as you work, with history and a 30-day trash.', 'Lagres mens du jobber, med historikk og 30 dagers papirkurv.'))}</span></div></li>
-          <li>${ic('resume')}<div><b>${esc(t('Pick up where you left off', 'Fortsett der du slapp'))}</b><span>${esc(t('Every tab, page and split comes back as it was.', 'Hver fane, side og deling kommer tilbake som den var.'))}</span></div></li>
-          <li>${ic('device')}<div><b>${esc(t('Your material stays yours', 'Materialet ditt er ditt'))}</b><span>${esc(t('Manuals and PDFs stay on your device and are never uploaded.', 'Manualer og PDF-er blir på enheten din og lastes aldri opp.'))}</span></div></li>
-        </ul>
-        <p class="tip">${isPhone() ? esc(t('Tip: the library button at the top opens everything you have.', 'Tips: bibliotekknappen øverst åpner alt du har.')) : `<kbd>${KEY}</kbd> ${esc(t('opens anything. Drag an item from the library to place it beside another.', 'åpner hva som helst. Dra et element fra biblioteket for å legge det ved siden av et annet.'))}`}</p>
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
-      let mm = null; const mh = box.querySelector('.mmh');
-      if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, acLabels: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }
+      let mm = null, dead = false; const mh = box.querySelector('.mmh');
+      if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, acLabels: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
       const sig = g => g ? g.nodes.map(n => n.id + '@' + n.ac).join(',') + '#' + g.links.length : '';
-      return { destroy: () => { if (mm) mm.destroy(); mm = null; },
+      return { destroy: () => { dead = true; if (mm) mm.destroy(); mm = null; },
         refresh: () => { if (!A.mapGraph) return ''; const na = window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
     }
     function emptyAction(k, paneId) {
@@ -517,8 +487,8 @@
           <span class="sp"></span>
           ${(fileKind && hasText) ? `<div class="seg dv-seg" role="group" aria-label="${esc(t('View', 'Visning'))}"><button type="button" data-vm="file" class="${mode === 'file' ? 'on' : ''}" aria-pressed="${mode === 'file'}">${fileKind === 'img' ? esc(t('Image', 'Bilde')) : 'PDF'}</button><button type="button" data-vm="text" class="${mode === 'text' ? 'on' : ''}" aria-pressed="${mode === 'text'}">${esc(t('Text', 'Tekst'))}</button></div>` : ''}
           ${paged && tn ? `<button type="button" class="btn sm dv-cite" data-a="cite" title="${esc(t('Add a reference to this page to the note beside', 'Legg en henvisning til denne siden inn i notatet ved siden av'))}">${ic('cite')}<span class="lb"></span></button>` : ''}
-          ${mode === 'file' && fileKind === 'pdf' && window.WSNB ? `<button type="button" class="btn sm dv-ann${ann && ann.on ? ' on' : ''}" data-a="ann" aria-pressed="${!!(ann && ann.on)}" title="${esc(t('Write on the pages with a pen. The PDF itself is never changed.', 'Skriv på sidene med penn. Selve PDF-en endres aldri.'))}">${ic('pen')}<span>${esc(t('Annotate', 'Skriv på'))}</span></button>` : ''}
-          ${hasText && window.WSASK ? `<button type="button" class="btn sm dv-ask" data-a="ask" title="${esc(t('Ask this document a question, with the page in the answer', 'Still dokumentet et spørsmål, med siden i svaret'))}">${ic('ask')}<span>${esc(t('Ask', 'Spør'))}</span></button>` : ''}
+          ${mode === 'file' && fileKind === 'pdf' ? `<button type="button" class="btn sm dv-ann${ann && ann.on ? ' on' : ''}" data-a="ann" aria-pressed="${!!(ann && ann.on)}" title="${esc(t('Write on the pages with a pen. The PDF itself is never changed.', 'Skriv på sidene med penn. Selve PDF-en endres aldri.'))}">${ic('pen')}<span>${esc(t('Annotate', 'Skriv på'))}</span></button>` : ''}
+          ${hasText ? `<button type="button" class="btn sm dv-ask" data-a="ask" title="${esc(t('Ask this document a question, with the page in the answer', 'Still dokumentet et spørsmål, med siden i svaret'))}">${ic('ask')}<span>${esc(t('Ask', 'Spør'))}</span></button>` : ''}
           ${paged ? `<button type="button" class="btn sm dv-nb" data-a="nb" title="${esc(t('Start a note beside this document, linked to this page', 'Start et notat ved siden av dokumentet, koblet til denne siden'))}">${ic('beside')}<span>${esc(t('Note beside', 'Notat ved siden av'))}</span></button>` : ''}
           <button type="button" class="dk-ib" data-a="more" aria-haspopup="menu" aria-label="${esc(t('More', 'Mer'))}">${ic('more')}</button>`;
         drawPageNo();
@@ -588,12 +558,20 @@
         if (!alive) return;
         sc.innerHTML = `<div class="dv-pages">${Array.from({ length: total }, (_, i) => `<div class="pg" data-p="${i + 1}"><span class="no">${esc(label(i + 1))}</span></div>`).join('')}</div>`;
         pgEls = [...sc.querySelectorAll('.pg')];
-        if (window.WSNB && !ann) ann = window.WSNB.annotator({ docId: id, sc, root, bar, pages: () => pgEls, ratio: () => ratio, cur: () => cur, zoom: s => rezoom(z * s), onToggle: () => drawBar() });
+        if (lazy.nbOk) ensureAnn(); else if (hasInk()) loadAnn();
         sizePages(); drawBar();
         obs = new IntersectionObserver(es => es.forEach(e => { e.target._vis = e.isIntersecting; if (e.isIntersecting) paint(e.target); }), { root: sc, rootMargin: '800px 0px' });
         pgEls.forEach(pg => obs.observe(pg));
         goPage(cur, st.o || 0, wantFlash); wantFlash = false;
       }
+      /* the pen layer (notebook.js) is loaded when you annotate, or at once when this document already has ink */
+      function hasInk() { const k = A.item('ink:' + id); return !!(k && !k.gone && !k.deletedAt && Object.keys(k.pages || {}).length); }
+      function ensureAnn() {
+        if (ann || !lazy.nbOk || !pdf || !alive) return ann;
+        ann = window.WSNB.annotator({ docId: id, sc, root, bar, pages: () => pgEls, ratio: () => ratio, cur: () => cur, zoom: s => rezoom(z * s), onToggle: () => drawBar() });
+        pgEls.forEach(pg => { if (pg.querySelector('canvas.pdfc')) ann.paint(pg); }); return ann;
+      }
+      const loadAnn = () => needNB().then(() => { if (alive && mode === 'file') ensureAnn(); return ann; }, () => { A.toast(t('The pen could not load. Check the connection and try again.', 'Pennen kunne ikke lastes. Sjekk tilkoblingen og prøv igjen.')); return null; });
       function rezoom(nz) {
         const keep = where(); z = Math.max(ZOOMS[0], Math.min(ZOOMS[ZOOMS.length - 1], nz));
         if (fileKind === 'pdf') { sizePages(); goPage(keep.p, keep.o); pgEls.forEach(pg => { if (pg._vis) paint(pg); }); }
@@ -675,22 +653,24 @@
         else if (a === 'find') toggleFind(!findOpen);
         else if (a === 'nb') ctx.noteBeside(id, cur, label(cur));
         else if (a === 'cite') ctx.cite(id, cur, label(cur));
-        else if (a === 'ann') { if (ann) ann.toggle(); }
+        else if (a === 'ann') { if (ann) ann.toggle(); else loadAnn().then(an => { if (an && !an.on) an.toggle(true); }); }
         else if (a === 'ask') ctx.ask(id);
-        else if (a === 'more') menu(b, [
-          { l: t('Note beside', 'Notat ved siden av'), f: () => ctx.noteBeside(id, cur, label(cur)), hide: !(mode === 'file' ? fileKind === 'pdf' : hasText) },
+        else if (a === 'more') { const narrow = root.clientWidth <= 520; menu(b, [
+          { l: t('Note beside', 'Notat ved siden av'), f: () => ctx.noteBeside(id, cur, label(cur)), hide: !narrow || !(mode === 'file' ? fileKind === 'pdf' : hasText) },
+          { l: t('Annotate with the pen', 'Skriv på med penn'), f: () => bar.querySelector('.dv-ann').click(), hide: !narrow || !bar.querySelector('.dv-ann') },
+          { l: t('Ask this document', 'Spør dokumentet'), f: () => ctx.ask(id), hide: !narrow || !hasText },
           { l: t('Export with your ink (PDF)', 'Eksporter med blekket ditt (PDF)'), f: () => { if (ann && pdf) ann.exportPdf(pdf, d.name); }, hide: !(ann && pdf && ann.any()) },
           A.hasFile(id) ? { l: t('Download the file', 'Last ned filen'), f: async () => { const bl = await A.FI.getBlob(id); if (bl) A.download(bl, (sd.file && sd.file.name) || d.name + '.' + (d.ext || 'pdf')); } } : null,
           ...(A.ockCan && A.ockCan(d) && hasText ? A.OCK_TR.map(([ty, pg]) => ({ l: t('Use in the ' + ty + ' trainer', 'Bruk i ' + ty + '-treneren'), f: () => { A.useInTrainer(ty, id); location.href = pg; } })).concat([{ sep: 1 }]) : []),
           { l: t('Name, category and links…', 'Navn, kategori og koblinger …'), f: () => A.go('documents/' + id) },
           { l: t('Replace the file…', 'Bytt ut filen …'), f: () => A.pickFiles({ replaceId: id }) },
-          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]);
+          { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => A.doTrash(id), danger: 1 }]); }
       });
       if (phoneMode) swipeable(sc, () => (z <= 1 || fileKind !== 'pdf') && !(ann && ann.on), ctx);
       return {
         save, goPage: (p, o, fl) => { if (mode && (mode === 'text' || pgEls.length)) goPage(p, o, fl); else { cur = Math.round(+p) || 1; st.o = o || 0; wantFlash = !!fl; } },
         ctxChanged() { if (!mode) return; const has = !!bar.querySelector('.dv-cite'), want = !!ctx.citeTarget() && (mode === 'file' ? fileKind === 'pdf' : hasText); if (has !== want) drawBar(); },
-        refresh() { const dd = A.item(id); if (!W.isLive(dd) || (!sd && S.docs[id])) return 'remount'; if (dd.name !== d.name) { d.name = dd.name; } if (ann) ann.refresh(); },
+        refresh() { const dd = A.item(id); if (!W.isLive(dd) || (!sd && S.docs[id])) return 'remount'; if (dd.name !== d.name) { d.name = dd.name; } if (ann) ann.refresh(); else if (pdf && mode === 'file' && hasInk()) loadAnn(); },
         pos() { return mode ? { p: cur, paged: mode === 'file' ? fileKind === 'pdf' : hasText } : null; },
         destroy() { if (mode) save(); alive = false; if (ann) ann.destroy(); if (obs) obs.disconnect(); if (ro) ro.disconnect(); if (raf) cancelAnimationFrame(raf); if (url) URL.revokeObjectURL(url); liveC.forEach(pg => { const c = pg.querySelector('canvas'); if (c) { c.width = c.height = 0; } }); if (usesPdf) releasePdf(id); }
       };
@@ -859,8 +839,8 @@
       r.addEventListener('click', e => { const o = e.target.closest('[data-open]'); if (o) ctx.open('pack', o.dataset.open.slice(5), { beside: true }); });
       return {};
     }
-    function mountNotebook(box, tab, ctx) { if (!window.WSNB) return missing(box, 'notebook', tab.r, ctx); return window.WSNB.mountNotebook(box, tab, ctx); }
-    function mountAsk(box, tab, ctx) { if (!window.WSASK) return mountUnknown(box, tab, ctx); return window.WSASK.mountAsk(box, tab, ctx); }
+    function mountNotebook(box, tab, ctx) { if (!live('notebook', tab.r)) return missing(box, 'notebook', tab.r, ctx); if (!lazy.nbOk) return mountLazy(box, needNB); return window.WSNB.mountNotebook(box, tab, ctx); }
+    function mountAsk(box, tab, ctx) { if (!lazy.askOk) return mountLazy(box, needAsk); return window.WSASK.mountAsk(box, tab, ctx); }
     function mountUnknown(box, tab, ctx) { return missing(box, tab.k, tab.r, ctx); }
 
     /* ---------- quick open (Ctrl/Cmd K) ---------- */
@@ -1170,13 +1150,13 @@
     window.addEventListener('resize', () => { if (!mounted) return; clearTimeout(rzT); rzT = setTimeout(() => { sizeHost(); const ph = isPhone(); if (ph !== phoneMode) { drawBar(); drawRail(); render(true); } else { drawBar(); } }, 120); }, { passive: true });
     window.addEventListener('pagehide', snapshot);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') snapshot(); });
-    window.LAB.onLang(() => { if (!mounted) return; collectStates(); unmountViews(); drawBar(); drawRail(); render(true); });
+    window.LAB.onLang(() => { if (desk && /^(My desk|Min arbeidsflate)$/.test(desk.name || '')) desk.name = t('My desk', 'Min arbeidsflate'); if (!mounted) return; collectStates(); unmountViews(); drawBar(); drawRail(); render(true); });
 
     /* helpers for notebook.js and ask.js */
     const EXT = { A, D, W, t, esc, h, ic, menu, missing, toast: A.toast, isPhone, openItem: (k, r, o) => openItem(k, r, o), drawTabTitles, pdfLabel, docBeside, lang: () => t('en', 'no') };
-    if (window.WSNB) window.WSNB.init(EXT);
-    if (window.WSASK) window.WSASK.init(EXT);
-    window.WSDESK = { show, hide, status, refresh,
+    if (window.WSNB) needNB();
+    if (window.WSASK) needAsk();
+    window.WSDESK = { show, hide, status, refresh, needNB, needAsk, newNotebook: o => newNotebook(o),
       openItem: (k, r, o) => openItem(k, r, o), types: TYPES,
       switchDesk: id => { if (mounted) switchDesk(id); else { A.M.desk = id; A.saveMeta(); } },
       get layout() { return L; }, get desk() { return desk; }, views, save: snapshot };
