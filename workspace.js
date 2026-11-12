@@ -300,7 +300,7 @@
   function route() { const h = location.hash.replace(/^#\/?/, ''); const i = h.indexOf('?'); const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)); return { path, q: new URLSearchParams(i < 0 ? '' : h.slice(i + 1)) }; }
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
-  const RAIL = () => [['', t('Desk', 'Arbeidsflate'), null], ['library', t('Overview', 'Oversikt'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  const RAIL = () => [['', t('Desk', 'Arbeidsflate'), null], ['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   function drawRail() {
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
@@ -758,6 +758,47 @@
       <div class="ws-res">${n ? groups.map(([k, name]) => { const l = res.filter(r => r.entry.t === k); return l.length ? `<h3>${esc(name)}</h3><ul class="rows">${l.map(row).join('')}</ul>` : ''; }).join('') + (inside.length ? `<h3>${t('Inside your documents', 'Inne i dokumentene dine')}</h3><ul class="rows">${inside.map(x => `<li><div class="t"><a class="n" href="#/documents/${esc(x.d.id)}?p=${x.h.p}">${esc(x.d.name)} <span class="mono" style="font-weight:400;color:var(--ink-2)">· ${t('page', 'side')} ${x.h.p}</span></a><small class="wrap">${mark(x.h.snippet, q)}</small></div><div class="r"><span class="where">${esc(catName(x.d.cat))}</span></div></li>`).join('')}</ul>` : '')
         : empty(t('The search looks in your aircraft, document names and text, notes, briefing packs and routes. Try fewer or shorter words.', 'Søket ser i flyene dine, dokumentnavn og -tekst, notater, briefingpakker og ruter. Prøv færre eller kortere ord.'))}</div>`;
   }
+  /* ---------- the map: the workspace as a constellation (graph in wsgraph.js, drawing in wsmap.js) ---------- */
+  const GW = window.WSGRAPH;
+  const mapNames = { name: (k, o) => k === 'aircraft' ? (o.reg || acName(o)) : k === 'doc' ? o.name : k === 'note' ? noteTitle(o) : k === 'notebook' ? (o.title || t('Notebook', 'Notatbok')) : k === 'pack' ? packTitle(o) : k === 'route' ? routeTitle(o) : k === 'desk' ? (o.name || t('Desk', 'Arbeidsflate')) : '',
+    pageName: (dl, p) => dl + ' · ' + t('p. ', 's. ') + p };
+  function mapGraph() {
+    if (!GW) return null;
+    return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; } }, mapNames));
+  }
+  function mapOpen(n, beside) {
+    const D = window.WSDESK; if (!D) return;
+    if (n.k === 'desk') D.switchDesk(n.r);
+    else if (n.k === 'page') D.openItem('doc', n.doc, { beside, st: Object.assign({}, (M.docPos || {})[n.doc] || {}, { p: n.p, o: 0, v: 'file' }), flash: true });
+    else D.openItem(n.k, n.r, { beside });
+    go('');
+  }
+  let mapV = null;
+  const mapSig = g => g.nodes.map(n => n.id + '=' + n.label).join('|') + '#' + g.links.map(l => l.s + '-' + l.t).join(',');
+  function viewMap() {
+    if (!GW || !window.WSMAP) { main.innerHTML = empty(t('The map could not load. Reload the page.', 'Kartet kunne ikke lastes. Last inn siden på nytt.')); return; }
+    const own = mapGraph(), sample = !own.own, g = sample ? GW.buildGraph(GW.sampleInput(t), mapNames) : own;
+    if (mapV && mapV.sample === sample && mapV.lang === LAB.lang && main.contains(mapV.host)) { const sg = mapSig(g); if (sg !== mapV.sig) { mapV.sig = sg; mapV.m.setGraph(g); } return; }
+    if (mapV) { mapV.m.destroy(); mapV = null; }
+    const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    main.innerHTML = `<div class="ws-h ws-maph"><h2>${t('Map', 'Kart')}</h2>
+        <p>${t('Your workspace and how it connects. Each aircraft gathers its documents, notes and briefing packs; every line is a link you made, such as a page reference or a route and its pack.', 'Arbeidsområdet ditt og hvordan det henger sammen. Hvert fly samler dokumentene, notatene og briefingpakkene sine; hver linje er en kobling du har laget, som en sidehenvisning eller en rute og pakken dens.')}</p></div>
+      <div class="wsm-plate${sample ? ' sample' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost"></div>
+        ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
+      <p class="wsm-hint">${sample ? t('This is an example. Your own map grows as you add aircraft, documents and notes and link them.', 'Dette er et eksempel. Ditt eget kart vokser etter hvert som du legger til fly, dokumenter og notater og kobler dem.') : coarse ? t('Tap a dot to open it on the desk. Drag to move around, pinch to zoom.', 'Trykk på en prikk for å åpne den på arbeidsflaten. Dra for å flytte, knip for å zoome.') : t('Click a dot to open it on the desk, Shift-click to open it beside. Drag to move around or move a dot; scroll or pinch to zoom.', 'Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av. Dra for å flytte rundt eller flytte en prikk; rull eller knip for å zoome.')}</p>`;
+    const host = el('wsMapHost');
+    sizeMap();
+    mapV = { sample, lang: LAB.lang, host, sig: mapSig(g), m: window.WSMAP.mount(host, { graph: g, t, sample, onOpen: mapOpen, padBottom: sample ? 170 : 64 }) };
+  }
+  /* on a large screen the map fills the window below the header, legend included (never smaller than 480 px) */
+  function sizeMap() {
+    const pl = el('wsMapPlate'); if (!pl) return;
+    if (window.innerWidth < 761) { pl.style.height = ''; return; }
+    const avail = window.innerHeight - (pl.getBoundingClientRect().top + window.scrollY) - 44;
+    pl.style.height = avail >= 480 ? Math.min(900, avail) + 'px' : '';
+  }
+  window.addEventListener('resize', () => { if (mapV) sizeMap(); });
+
   function viewMissing(back) { main.innerHTML = `<div class="ws-h"><h2>${t('This item is not here any more', 'Dette elementet finnes ikke her lenger')}</h2><p>${t('It may have been moved to the trash, on this device or another one.', 'Det kan ha blitt flyttet til papirkurven, på denne enheten eller en annen.')}</p></div><div class="chips"><a class="btn" href="#/${back}">${t('Back', 'Tilbake')}</a><a class="btn" href="#/trash">${t('Open the trash', 'Åpne papirkurven')}</a></div>`; }
 
   let lastPath = null;
@@ -767,11 +808,12 @@
     const r = route(), p = r.path.split('/'), same = lastPath === r.path;
     const desk = window.WSDESK && deskMode();
     document.documentElement.classList.toggle('ws-deskmode', !!desk);
-    if (desk) { closeViewer(); window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path;
+    if (desk) { closeViewer(); if (mapV) { mapV.m.destroy(); mapV = null; } window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path;
       const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
       return; }
     if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
+    if (mapV && p[0] !== 'map') { mapV.m.destroy(); mapV = null; }
     if (!/^documents\/./.test(r.path)) closeViewer();
     const y = same ? window.scrollY : null;
     if (p[0] === 'search') viewSearch(r.q.get('q') || '');
@@ -780,6 +822,7 @@
     else if (p[0] === 'packs') viewPacks();
     else if (p[0] === 'notes') p[1] ? viewNote(p[1]) : viewNotes();
     else if (p[0] === 'routes') viewRoutes();
+    else if (p[0] === 'map') viewMap();
     else if (p[0] === 'trash') viewTrash();
     else if (p[0] === 'storage') viewStorage();
     else viewHome();
@@ -886,6 +929,7 @@
     else if (act === 'wipe') wipeAll();
     else if (act === 'search-clear') { el('wsQ').value = ''; go(beforeSearch || 'library'); }
     else if (act === 'desk-open' && window.WSDESK) { e.preventDefault(); window.WSDESK.openItem(b.dataset.k, id); go(''); }
+    else if (act === 'map-note') { const n = W.newNote({}); await commit(n); if (window.WSDESK) { window.WSDESK.openItem('note', n.id); go(''); } else go('notes/' + n.id); }
     else if (act === 'nb-new' && window.WSNB) { go(''); setTimeout(() => window.WSNB.create({}, {}), 30); }
   });
 
@@ -940,11 +984,11 @@
     back.insertAdjacentHTML('afterend', `<a class="btn sm ws-deskopen" href="#/" data-act="desk-open" data-k="${k}" data-id="${esc(it.id)}">${t('Open on the desk', 'Åpne på arbeidsflaten')}</a>`);
   }
 
-  window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; } };
+  window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; }, get map() { return mapV && mapV.m; } };
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
-    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, get M() { return M; } };
+    doTrash, doRestore, pickFiles, addFiles, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

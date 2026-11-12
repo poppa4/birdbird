@@ -82,7 +82,7 @@
 @container (max-width:600px){.dv-ann span,.dv-ask span{display:none}}
 
 /* empty desk: the quieter second row */
-.dk-empty .more2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.dk-empty .more2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
 .dk-empty .more2 button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;align-items:center;padding:11px 14px;border:1px solid var(--rule-2);border-radius:var(--radius-lg);background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .15s,background .15s}
 .dk-empty .more2 button:hover{border-color:var(--rule);background:var(--sheet)}
 .dk-empty .more2 .i{grid-row:1/3;width:20px;height:20px;color:var(--ink-2)}

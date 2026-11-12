@@ -48,7 +48,8 @@
       resume: '<circle cx="10" cy="10" r="7"/><path d="M10 6v4.2l2.8 1.8"/>',
       device: '<rect x="5" y="2.5" width="10" height="15" rx="1.6"/><path d="M8.5 15h3"/>',
       ask: '<path d="M3.5 4.5h13v9h-7l-3.5 3v-3h-2.5z"/><path d="M8.2 7.6a1.9 1.9 0 113 1.5c-.7.4-1.2.8-1.2 1.5"/><path d="M10 12.2v.1"/>',
-      pen: '<path d="M4 16l1-4 8.5-8.5 3 3L8 15z"/><path d="M12 5l3 3"/>'
+      pen: '<path d="M4 16l1-4 8.5-8.5 3 3L8 15z"/><path d="M12 5l3 3"/>',
+      map: '<circle cx="5" cy="6" r="1.6"/><circle cx="14.5" cy="4.5" r="1.3"/><circle cx="11" cy="11" r="2"/><circle cx="4.5" cy="15" r="1.3"/><circle cx="15.5" cy="15.5" r="1.6"/><path d="M6.4 6.8l3.2 2.9M13.8 5.7l-1.9 3.5M9.4 12.3l-3.6 1.9M12.6 12.4l1.8 1.8"/>'
     };
     const ic = (k, cls) => `<svg class="i ${cls || ''}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">${P[k] || P.doc}</svg>`;
 
@@ -221,6 +222,7 @@
         <span class="sp"></span>
         <a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>
         ${ph ? `<button type="button" class="dk-ib" data-b="sheet" aria-label="${esc(t('Library', 'Bibliotek'))}">${ic('lib')}</button>` : `<button type="button" class="dk-ib" data-b="split-h" title="${esc(t('Split right', 'Del til høyre'))}" aria-label="${esc(t('Split right', 'Del til høyre'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splith')}</button>${canDown() ? `<button type="button" class="dk-ib" data-b="split-v" title="${esc(t('Split down', 'Del nedover'))}" aria-label="${esc(t('Split down', 'Del nedover'))}"${D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('splitv')}</button>` : ''}`}
+        ${ph ? '' : `<a class="dk-ib dk-mapb" href="#/map" title="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}" aria-label="${esc(t('Map of your workspace', 'Kart over arbeidsområdet'))}">${ic('map')}</a>`}
         <a class="dk-lib" href="#/library">${ph ? esc(t('Manage', 'Administrer')) : esc(t('Library and backup', 'Bibliotek og sikkerhetskopi'))}</a>`;
     }
     function status() { const s = barEl && barEl.querySelector('.dk-st'); if (!s) return; const st = A.statusShort(); s.title = st.title || ''; s.innerHTML = `<i class="kept ${st.c}"></i><span>${esc(st.s)}</span>`; }
@@ -424,18 +426,21 @@
           </g>
         </svg>
       </figure>`;
+      /* with five or more items of their own, a small live map of them takes the place of the drawing */
+      const mg = !isPhone() && window.WSMAP && A.mapGraph ? A.mapGraph() : null, useMap = !!(mg && mg.own >= 5);
+      const mini = useMap ? `<a class="sk mm" href="#/map" aria-label="${esc(t('Open the map of your workspace', 'Åpne kartet over arbeidsområdet'))}"><span class="mmh"></span><span class="mmc"><span>${esc(t('Your workspace', 'Arbeidsområdet ditt'))} · <b>${mg.own}</b> ${esc(t('items', 'elementer'))}</span><span class="go">${esc(t('Open the map', 'Åpne kartet'))} →</span></span></a>` : '';
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
         <h2>${esc(hello)}.<br><span>${esc(t('Your desk is ready.', 'Skrivebordet ditt er klart.'))}</span></h2>
         <p class="lead">${esc(t('Manual, checklist and notes side by side, exactly where you left them. Everything you need to prepare, nothing you don’t.', 'Manual, sjekkliste og notater side om side, akkurat der du slapp. Alt du trenger for å forberede deg, ingenting du ikke trenger.'))}</p>
-        </div>${isPhone() ? '' : sketch}</div>
+        </div>${isPhone() ? '' : useMap ? mini : sketch}</div>
         <div class="big3">
           <button type="button" data-e="doc">${ic('pdf')}<b>${esc(t('Open document', 'Åpne dokument'))}</b><small>${esc(A.docsAll().length ? t('AFM, checklist, SOP or chart', 'AFM, sjekkliste, SOP eller kart') : t('Add a PDF, Word or text file', 'Legg til en PDF-, Word- eller tekstfil'))}</small></button>
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
           <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(t('Choose aircraft', 'Velg fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('Add the aircraft you fly', 'Legg til flyet du flyr'))}</small></button>
         </div>
-        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid or lined paper, or an approach briefing', 'Skriv med penn på rutenett, linjer eller en innflygingsbrief'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button></div>
+        <div class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span><small>${esc(t('Write with a pen on grid or lined paper, or an approach briefing', 'Skriv med penn på rutenett, linjer eller en innflygingsbrief'))}</small></button><button type="button" data-e="ask">${ic('ask')}<span>${esc(t('Ask your documents', 'Spør dokumentene'))}</span><small>${esc(t('Answers with the page they came from', 'Svar med siden de kom fra'))}</small></button><button type="button" data-e="map">${ic('map')}<span>${esc(t('Map', 'Kart'))}</span><small>${esc(t('See how your documents, notes and flights connect', 'Se hvordan dokumenter, notater og turer henger sammen'))}</small></button></div>
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
         <ul class="vals">
           <li>${ic('keep')}<div><b>${esc(t('Nothing gets lost', 'Ingenting går tapt'))}</b><span>${esc(t('Saved as you work, with history and a 30-day trash.', 'Lagres mens du jobber, med historikk og 30 dagers papirkurv.'))}</span></div></li>
@@ -446,13 +451,18 @@
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
-      return {};
+      let mm = null; const mh = box.querySelector('.mmh');
+      if (mh) { try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true }); } catch (e) { console.error('mini map', e); } }
+      const sig = g => g ? g.nodes.length + ':' + g.links.length : '';
+      return { destroy: () => { if (mm) mm.destroy(); mm = null; },
+        refresh: () => { if (!A.mapGraph) return ''; const ng = !isPhone() && window.WSMAP ? A.mapGraph() : null; if (!!(ng && ng.own >= 5) !== useMap) return 'remount'; if (mm && ng && sig(ng) !== sig(mm.graph)) mm.setGraph(ng); return ''; } };
     }
     function emptyAction(k, paneId) {
       if (k === 'doc') { if (A.docsAll().length) palette({ only: 'doc', pane: paneId }); else A.pickFiles({}); }
       else if (k === 'note') newNote({}, { pane: paneId });
       else if (k === 'nb') newNotebook({ pane: paneId });
       else if (k === 'ask') askBeside(null, paneId);
+      else if (k === 'map') A.go('map');
       else if (k === 'ac') { if (A.aircraft().length) palette({ only: 'aircraft', pane: paneId }); else A.aircraftDlg(null).then(id => { if (id) openItem('aircraft', id, { pane: paneId }); }); }
     }
     function mountEmptyPane(box, paneId) {
@@ -860,7 +870,7 @@
         { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
         !isPhone() && D.panes(L).length < maxPanes() ? { c: 'split-h', n: t('Split right', 'Del til høyre'), i: 'splith' } : null,
         canDown() && D.panes(L).length < maxPanes() ? { c: 'split-v', n: t('Split down', 'Del nedover'), i: 'splitv' } : null,
-        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'lib', n: t('Library and backup', 'Bibliotek og sikkerhetskopi'), i: 'lib' }].filter(Boolean);
+        { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'map', n: t('Map of your workspace', 'Kart over arbeidsområdet'), i: 'map' }, { c: 'lib', n: t('Library and backup', 'Bibliotek og sikkerhetskopi'), i: 'lib' }].filter(Boolean);
       const name = { aircraft: t('Aircraft', 'Fly'), doc: t('Document', 'Dokument'), note: t('Note', 'Notat'), pack: t('Briefing pack', 'Briefingpakke'), route: t('Route', 'Rute'), notebook: t('Notebook', 'Notatbok') };
       let rows = [], sel = 0;
       function compute(q) {
@@ -904,7 +914,7 @@
     }
     function runCmd(c, paneId) {
       if (c === 'note') newNote({}, { pane: paneId }); else if (c === 'nb') newNotebook({ pane: paneId }); else if (c === 'ask') askBeside(null, paneId); else if (c === 'add') A.pickFiles({}); else if (c === 'split-h') splitPane(paneId, 'h'); else if (c === 'split-v') splitPane(paneId, 'v');
-      else if (c === 'desk') deskNew(); else if (c === 'lib') A.go('library');
+      else if (c === 'desk') deskNew(); else if (c === 'lib') A.go('library'); else if (c === 'map') A.go('map');
     }
 
     /* ---------- desks ---------- */
@@ -1168,6 +1178,7 @@
     if (window.WSASK) window.WSASK.init(EXT);
     window.WSDESK = { show, hide, status, refresh,
       openItem: (k, r, o) => openItem(k, r, o), types: TYPES,
+      switchDesk: id => { if (mounted) switchDesk(id); else { A.M.desk = id; A.saveMeta(); } },
       get layout() { return L; }, get desk() { return desk; }, views, save: snapshot };
   };
 })();
