@@ -69,7 +69,7 @@ test('clusters: each node gathers around an aircraft through its links; desks le
 test('empty workspace: an empty graph that is settled at once; the example has a little of everything', () => {
   const g = M.buildGraph({}); assert.equal(g.nodes.length, 0); assert.ok(M.layout(g).settled);
   const s = M.buildGraph(M.sampleInput());
-  assert.ok(s.counts.aircraft === 2 && s.counts.doc >= 6 && s.counts.note >= 12 && s.counts.pack >= 3 && s.counts.route >= 3);
+  assert.ok(s.counts.aircraft === 3 && s.counts.doc >= 6 && s.counts.note >= 12 && s.counts.pack >= 3 && s.counts.route >= 3);
   assert.ok(s.nodes.every(n => n.k === 'aircraft' || n.ac || n.g === 'doc' || n.k === 'note'));
 });
 
@@ -104,4 +104,31 @@ test('layout: 2000 nodes run with the spatial hash in reasonable time', () => {
   const g = M.buildGraph({ items }); assert.equal(g.nodes.length, 2000);
   const L = M.layout(g), t0 = Date.now(); for (let k = 0; k < 30; k++) L.step(1);
   assert.ok(Date.now() - t0 < 3000, 'thirty steps took ' + (Date.now() - t0) + ' ms');
+});
+
+test('brain: the example sits inside the silhouette, the same every time, each aircraft in its own region', () => {
+  const g = M.buildGraph(M.sampleInput()), a = M.brainLayout(g), b = M.brainLayout(M.buildGraph(M.sampleInput()));
+  assert.ok(!a.settled, 'a short intro first'); let n = 0; while (a.step(2)) n++; assert.ok(a.settled && n < 60, 'intro ends after ' + n + ' frames');
+  b.run(); assert.deepEqual([...a.x], [...b.x]); assert.deepEqual([...a.y], [...b.y]);
+  assert.ok(g.nodes.every((nd, i) => M.inBrain(a.x[i] / a.S, a.y[i] / a.S, 0.01)), 'every node inside the brain');
+  assert.ok(g.nodes.every((nd, i) => a.x[i] === a.tx[i] && a.y[i] === a.ty[i]), 'ends exactly on its place');
+  let close = 0; for (let i = 0; i < g.nodes.length; i++) for (let j = i + 1; j < g.nodes.length; j++) if (Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]) < 6) close++;
+  assert.equal(close, 0, 'no dots on top of each other');
+  const acs = g.nodes.map((nd, i) => [nd, i]).filter(([nd]) => nd.k === 'aircraft');
+  assert.equal(acs.length, 3); assert.ok(acs.map(([nd]) => nd.label).join(' | ').includes('DA42 — ME/IR'));
+  /* members are nearer their own aircraft than any other */
+  let ok = 0, all = 0;
+  g.nodes.forEach((nd, i) => { if (nd.k === 'aircraft' || !nd.ac) return; all++; const d = ([, j]) => Math.hypot(a.x[i] - a.x[j], a.y[i] - a.y[j]); const own = acs.find(([x]) => x.id === nd.ac); if (acs.every(c => c === own || d(own) <= d(c))) ok++; });
+  assert.ok(ok / all > 0.8, ok + ' of ' + all);
+  const f = a.frame; assert.ok(f.x1 - f.x0 > f.y1 - f.y0, 'wider than tall');
+  const c = M.brainLayout(g, { instant: true }); assert.ok(c.settled); assert.deepEqual([...c.x], [...a.x]);
+  assert.equal(a.step(1), false);
+});
+
+test('brain: outline and texture', () => {
+  assert.ok(M.inBrain(-0.3, -0.3) && M.inBrain(0.58, 0.4), 'cerebrum and cerebellum'); assert.ok(!M.inBrain(0, 0.9) && !M.inBrain(-1.2, 0) && !M.inBrain(0, -0.95));
+  const T = M.brainTexture(200), T2 = M.brainTexture(200);
+  assert.equal(T, T2, 'cached'); assert.equal(T.pts.length, 200); assert.ok(T.pts.every(([x, y]) => M.inBrain(x, y)));
+  assert.ok(T.links.length > 150 && T.links.every(([i, j]) => i !== j && T.pts[i] && T.pts[j]));
+  const e = M.brainLayout(M.buildGraph({})); assert.ok(e.settled && e.n === 0);
 });

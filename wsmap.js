@@ -3,7 +3,12 @@
    settled no animation frame is requested, so an idle map costs nothing. With reduced motion the layout is run to the
    end at once and drawn once.
    WSMAP.mount(host, { graph, t, mini, sample, onOpen(node, beside), onClick() }) -> { setGraph(g), fit(), focus(i), destroy(), debug }
-   mini: a small, quiet map without controls (the desk home); a click calls onClick. */
+   mini: a small, quiet map without controls (the desk home); a click calls onClick.
+   sample: the example map, laid out as a brain (WSGRAPH.brainLayout) with its texture, a faint head profile and a few rays;
+   hovering or tapping a dot explains what it would be in your workspace and offers the real action. Your own map gets a
+   soft brain-shaped glow behind it (8 dots or more).
+   Life: now and then a faint pulse travels along a link, only while the map is on screen and the page visible, never with
+   reduced motion. Pulse frames copy the cached picture and draw the pulse on top (about 30 a second, for about a second). */
 (function () {
   'use strict';
   const GW = window.WSGRAPH;
@@ -18,6 +23,9 @@
     g.addColorStop(0, c); g.addColorStop(0.18, c + 'AA'); g.addColorStop(0.45, c + '30'); g.addColorStop(1, c + '00');
     x.fillStyle = g; x.fillRect(0, 0, 64, 64); return (sprites[c] = s);
   }
+  const stats = { pulseFrames: 0 };
+  /* unit brain -> screen paths (each call builds one path) */
+  function polyPath(ctx, P, f, closed) { P.forEach((p, k) => { const [a, b] = f(p[0], p[1]); if (k) ctx.lineTo(a, b); else ctx.moveTo(a, b); }); if (closed) ctx.closePath(); }
   const fold = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
   function mount(host, o) {
@@ -38,14 +46,16 @@
     let g = null, L = null, W = 0, H = 0, dpr = 1, alive = true, raf = 0, auto = true, fitK = 1;
     const cam = { x: 0, y: 0, k: 1 };
     let hover = -1, sel = -1, tween = null, hidden = new Set(), nb = null, drag = null;
-    const dbg = { frames: 0, draws: 0, get running() { return !!raf; }, get settled() { return !L || L.settled; } };
+    const dbg = { frames: 0, draws: 0, pulseFrames: 0, glow: false, get pulses() { return pulses.length; }, get running() { return !!raf; }, get settled() { return !L || L.settled; } };
+    const brainMode = !!o.sample && !!GW.brainLayout, B = GW.BRAIN, coarse = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    let dirty = true, pulses = [], shown = null, scene = null, sceneOK = false, ambT = 0, pulseT = 0, onScreen = true;
 
     /* ---------- data ---------- */
     function setGraph(ng, keep) {
       const prev = keep && L && g ? L.positions() : null;
-      g = ng; L = GW.layout(g, { prev });
+      g = ng; L = brainMode ? GW.brainLayout(g, { instant: !!prev || reduced() }) : GW.layout(g, { prev }); pulses = [];
       hover = -1; sel = -1; nb = null; if (card) card.hidden = true;
-      if (reduced() || mini && reduced()) { L.run(900); fitNow(); request(); }
+      if (reduced()) { L.run(900); fitNow(); request(); }
       else { if (!prev) { L.step(10); auto = true; } request(); }
       drawLegend(); host.setAttribute('data-nodes', g.nodes.length);
       if (!mini) cv.setAttribute('aria-label', t('Map of your workspace: ', 'Kart over arbeidsområdet ditt: ') + legendText());
@@ -61,9 +71,9 @@
     const sx = i => (L.x[i] - cam.x) * cam.k + W / 2, sy = i => (L.y[i] - cam.y) * cam.k + H / 2;
     const toWorld = (px, py) => [(px - W / 2) / cam.k + cam.x, (py - H / 2) / cam.k + cam.y];
     function fitTarget() {
-      const idx = g.nodes.map((n, i) => i).filter(visible); const b = L.bounds(idx.length ? idx : null);
-      const pad = mini ? 18 : 56, bw = Math.max(80, b.x1 - b.x0), bh = Math.max(80, b.y1 - b.y0);
-      const padB = mini ? 18 : (o.padBottom || 64);
+      const idx = g.nodes.map((n, i) => i).filter(visible); const b = L.frame || L.bounds(idx.length ? idx : null);
+      const pad = mini ? (L.frame ? 14 : 18) : L.frame ? 30 : 56, bw = Math.max(80, b.x1 - b.x0), bh = Math.max(80, b.y1 - b.y0);
+      const padB = mini ? (L.frame ? 24 : 18) : (o.padBottom || 64);
       const k = Math.min((W - pad * 2) / bw, (H - pad - padB) / bh, mini ? 2.2 : 2.6);
       return { x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 + (padB - pad) / 2 / k, k: Math.max(0.05, k) };
     }
@@ -80,20 +90,95 @@
     }
 
     /* ---------- frames: only while something moves ---------- */
-    function request() { if (!raf && alive) raf = requestAnimationFrame(frame); }
+    function request() { dirty = true; if (!raf && alive) raf = requestAnimationFrame(frame); }
     function frame(ts) {
       raf = 0; if (!alive) return; dbg.frames++;
-      let more = false;
-      if (!L.settled) { L.step(mini ? 3 : 2); more = !L.settled; if (auto) { const f = fitTarget(); cam.x += (f.x - cam.x) * 0.12; cam.y += (f.y - cam.y) * 0.12; cam.k += (f.k - cam.k) * 0.12; fitK = f.k; } }
-      else if (auto) { const f = fitTarget(); fitK = f.k; if (Math.abs(f.k - cam.k) / f.k > 0.002 || Math.hypot(f.x - cam.x, f.y - cam.y) * cam.k > 0.3) { cam.x += (f.x - cam.x) * 0.2; cam.y += (f.y - cam.y) * 0.2; cam.k += (f.k - cam.k) * 0.2; more = true; } else { auto = false; Object.assign(cam, f); } }
+      let more = false, full = dirty; dirty = false;
+      if (!L.settled) { full = true; L.step(mini ? 3 : 2); more = !L.settled || auto; /* the camera finishes its fit too */ if (auto) { const f = fitTarget(); cam.x += (f.x - cam.x) * 0.12; cam.y += (f.y - cam.y) * 0.12; cam.k += (f.k - cam.k) * 0.12; fitK = f.k; } }
+      else if (auto) { full = true; const f = fitTarget(); fitK = f.k; if (Math.abs(f.k - cam.k) / f.k > 0.002 || Math.hypot(f.x - cam.x, f.y - cam.y) * cam.k > 0.3) { cam.x += (f.x - cam.x) * 0.2; cam.y += (f.y - cam.y) * 0.2; cam.k += (f.k - cam.k) * 0.2; more = true; } else { auto = false; Object.assign(cam, f); } }
       if (tween) {
+        full = true;
         const p = Math.min(1, (ts - tween.t0) / tween.ms), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
         cam.x = tween.a.x + (tween.b.x - tween.a.x) * e; cam.y = tween.a.y + (tween.b.y - tween.a.y) * e; cam.k = tween.a.k * Math.pow(tween.b.k / tween.a.k, e);
         if (p >= 1) tween = null; else more = true;
       }
-      draw();
+      if (full) draw();
+      /* pulses: on top of the cached picture */
+      const now = performance.now(); pulses = pulses.filter(p => now < p.t0 + p.dur);
+      if (!full) { dbg.pulseFrames++; stats.pulseFrames++; } /* nothing else moved: this frame is only for a pulse */
+      if (pulses.length) {
+        const ops = pulseOps(now);
+        if (!sceneOK) { if (!full) draw(); snapshot(); } else if (!full) { const r = union(shown, ops.box); if (r) blit(r); }
+        drawPulses(ops); shown = ops.box;
+      } else if (shown) { if (!full) { if (sceneOK) blit(shown); else draw(); } shown = null; }
       if (more) request();
+      else if (pulses.length && !pulseT) pulseT = setTimeout(() => { pulseT = 0; if (alive && !raf) raf = requestAnimationFrame(frame); }, 30);
     }
+    function snapshot() {
+      if (!scene) scene = document.createElement('canvas');
+      if (scene.width !== cv.width || scene.height !== cv.height) { scene.width = cv.width; scene.height = cv.height; }
+      const c = scene.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, scene.width, scene.height); c.drawImage(cv, 0, 0); sceneOK = true;
+    }
+    /* copy back only the part of the picture the pulses touched (device pixels) */
+    const union = (a, b) => !a ? b : !b ? a : [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])];
+    function blit(r) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      if (!r) { ctx.drawImage(scene, 0, 0); return; }
+      const x0 = Math.max(0, Math.floor(r[0] * dpr) - 2), y0 = Math.max(0, Math.floor(r[1] * dpr) - 2), x1 = Math.min(cv.width, Math.ceil(r[2] * dpr) + 2), y1 = Math.min(cv.height, Math.ceil(r[3] * dpr) + 2);
+      if (x1 > x0 && y1 > y0) ctx.drawImage(scene, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0);
+    }
+    /* a pulse: { a, b, t0, dur, s } travels from node a to node b */
+    function pulseOps(now) {
+      const list = []; let box = null;
+      for (const p of pulses) {
+        const e = (now - p.t0) / p.dur; if (e < 0 || !visible(p.a) || !visible(p.b)) continue;
+        const u = e < 0.5 ? 2 * e * e : 1 - Math.pow(-2 * e + 2, 2) / 2, ax = sx(p.a), ay = sy(p.a), bx = sx(p.b), by = sy(p.b), qx = ax + (bx - ax) * u, qy = ay + (by - ay) * u;
+        const a = Math.sin(Math.PI * Math.min(1, e)) * p.s, tl = Math.max(0, u - 0.28), tx = ax + (bx - ax) * tl, ty = ay + (by - ay) * tl, r = (mini ? 5 : 8) * (0.7 + 0.3 * p.s);
+        list.push({ tx, ty, qx, qy, a, r }); box = union(box, [Math.min(tx, qx) - r, Math.min(ty, qy) - r, Math.max(tx, qx) + r, Math.max(ty, qy) + r]);
+      }
+      return { list, box };
+    }
+    function drawPulses(ops) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+      const spr = sprite('#DCEBFA');
+      for (const { tx, ty, qx, qy, a, r } of ops.list) {
+        const gr = ctx.createLinearGradient(tx, ty, qx, qy); gr.addColorStop(0, 'rgba(214,232,250,0)'); gr.addColorStop(1, 'rgba(214,232,250,' + (0.55 * a).toFixed(3) + ')');
+        ctx.strokeStyle = gr; ctx.lineWidth = mini ? 0.8 : 1.1; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(qx, qy); ctx.stroke();
+        ctx.globalAlpha = Math.min(1, a * 1.1); ctx.drawImage(spr, qx - r, qy - r, r * 2, r * 2); ctx.globalAlpha = 1;
+      }
+      ctx.globalCompositeOperation = 'source-over';
+    }
+    const canPulse = () => alive && onScreen && L && L.settled && !drag && !reduced() && g.links.length && (typeof document === 'undefined' || document.visibilityState === 'visible');
+    function kick() { if (!raf && !pulseT && alive) raf = requestAnimationFrame(frame); }
+    /* from a touched node: its links light up one after the other, then the next ring, faintly; then it stops */
+    function burst(i) {
+      if (reduced() || i < 0) return; const now = performance.now(), seen = new Set([i]); let ring = [i], n = 0;
+      for (let h = 0; h < 2 && ring.length; h++) {
+        const next = [];
+        for (const a of ring) for (const l of g.links) { const b = l.s === a ? l.t : l.t === a ? l.s : -1; if (b < 0 || seen.has(b) || !visible(b) || n >= 18) continue; seen.add(b); next.push(b); pulses.push({ a, b, t0: now + h * 300, dur: 520, s: h ? 0.45 : 0.9 }); n++; }
+        ring = next;
+      }
+      kick();
+    }
+    /* now and then: a faint pulse along a random link, sometimes on to the next one */
+    function ambient() {
+      ambT = 0; if (!canPulse()) return;
+      const ls = g.links.filter(l => visible(l.s) && visible(l.t)); if (!ls.length) return;
+      let l = ls[Math.floor(Math.random() * ls.length)], a = Math.random() < 0.5 ? l.s : l.t, b = a === l.s ? l.t : l.s, t0 = performance.now();
+      for (let h = 0; h < 3; h++) {
+        const dur = 850 + Math.random() * 300; pulses.push({ a, b, t0, dur, s: mini ? 0.45 : 0.6 }); t0 += dur * 0.8;
+        if (Math.random() < 0.45) break;
+        const nx = ls.filter(m => (m.s === b || m.t === b) && !(m.s === a || m.t === a)); if (!nx.length) break;
+        const m = nx[Math.floor(Math.random() * nx.length)]; a = b; b = m.s === a ? m.t : m.s;
+      }
+      kick(); schedule();
+    }
+    function schedule() { if (ambT || !canPulse()) return; ambT = setTimeout(ambient, (mini ? 6500 : 3800) + Math.random() * (mini ? 6000 : 4200)); }
+    function unschedule() { if (ambT) clearTimeout(ambT); ambT = 0; }
+    const io = typeof IntersectionObserver !== 'undefined' ? new IntersectionObserver(es => { onScreen = es[es.length - 1].isIntersecting; if (onScreen) schedule(); else unschedule(); }) : null;
+    if (io) io.observe(host);
+    const onVis = () => { if (document.visibilityState === 'visible') schedule(); else unschedule(); };
+    document.addEventListener('visibilitychange', onVis);
     function resize() {
       const r = cv.getBoundingClientRect(), w = Math.round(r.width), h = Math.round(r.height); if (!w || !h) return;
       dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -104,7 +189,8 @@
     }
     let bg = null;
     function draw() {
-      if (!W || !g) return; dbg.draws++;
+      if (!W || !g) return; dbg.draws++; sceneOK = false;
+      if (L.settled && !ambT) schedule();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       if (!bg || bg.w !== W || bg.h !== H) { /* deep night sky with faint star dust, drawn once into a cached canvas */
         const c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr); const b = c.getContext('2d'); b.scale(dpr, dpr);
@@ -116,8 +202,9 @@
         bg = { c, w: W, h: H };
       }
       ctx.drawImage(bg.c, 0, 0, W, H);
+      if (brainMode) drawBrain(); else if (g.nodes.length >= 8) drawGlow();
       const N = g.nodes.length, zk = cam.k / (fitK || 1), focus = hover >= 0 ? hover : sel, near = focus >= 0 ? (nb && nb.i === focus ? nb.s : (nb = { i: focus, s: neigh(focus) }).s) : null;
-      const sizeK = Math.min(2.4, Math.max(0.75, Math.sqrt(zk))) * (mini ? 0.82 : 1);
+      const sizeK = Math.min(2.4, Math.max(0.75, Math.sqrt(zk))) * (mini ? 0.82 : 1) * (brainMode ? 0.86 : 1);
       const px = new Float32Array(N), py = new Float32Array(N), pr = new Float32Array(N), vis = new Uint8Array(N);
       for (let i = 0; i < N; i++) {
         if (!visible(i)) continue; const n = g.nodes[i];
@@ -146,7 +233,7 @@
       ctx.lineWidth = 0.8;
       for (let i = 0; i < N; i++) { if (!vis[i]) continue; const n = g.nodes[i]; if (n.k === 'aircraft' || n.ink) { ctx.strokeStyle = n.k === 'aircraft' ? 'rgba(255,255,255,.32)' : 'rgba(169,199,230,.45)'; ctx.beginPath(); ctx.arc(px[i], py[i], pr[i] + (n.k === 'aircraft' ? 4 : 2.2), 0, Math.PI * 2); ctx.stroke(); } }
       if (focus >= 0 && vis[focus]) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(px[focus], py[focus], pr[focus] + 3.5, 0, Math.PI * 2); ctx.stroke(); }
-      if (mini) return;
+      if (mini) { centre = null; return; }
       /* labels: on hover, near the focus, and when zoomed in (aircraft first, then documents, then everything) */
       ctx.textBaseline = 'middle'; const taken = [];
       const free = (x0, y0, x1, y1) => { for (const r of taken) if (x0 < r[2] && x1 > r[0] && y0 < r[3] && y1 > r[1]) return false; taken.push([x0, y0, x1, y1]); return true; };
@@ -169,6 +256,63 @@
       }
       order.sort((a, b) => (g.nodes[a].k === 'aircraft' ? 0 : 1) - (g.nodes[b].k === 'aircraft' ? 0 : 1) || g.nodes[b].deg - g.nodes[a].deg);
       order.slice(0, 260).forEach(i => label(i, false));
+      if (centre) { centre.free = free; centreText(); }
+    }
+    /* ---------- the brain: the example drawn inside it, or a soft glow behind your own map ---------- */
+    function brainPath(f) { ctx.beginPath(); polyPath(ctx, B.cerebrum, f, true); polyPath(ctx, B.cerebellum, f, true); }
+    let centre = null;
+    function centreLabel(x, y, a) { centre = mini ? null : { x, y, a }; }
+    function centreText() {
+      const c = centre; if (!c) return; centre = null;
+      ctx.save(); ctx.font = '500 10.5px IBM Plex Mono, ui-monospace, monospace'; if ('letterSpacing' in ctx) ctx.letterSpacing = '2.4px';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = 'rgba(214,230,248,' + c.a + ')'; const s2 = t('Your workspace', 'Arbeidsområdet ditt').toUpperCase(), w = ctx.measureText(s2).width;
+      if (c.free(c.x - w / 2 - 4, c.y - 8, c.x + w / 2 + 4, c.y + 8)) ctx.fillText(s2, c.x, c.y); ctx.restore();
+    }
+    function drawBrain() {
+      const S = L.S, k = cam.k, f = (u, v) => [(u * S - cam.x) * k + W / 2, (v * S - cam.y) * k + H / 2], ppu = S * k, [cx, cy] = f(B.core[0], B.core[1]);
+      ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.globalCompositeOperation = 'lighter';
+      /* a soft inner light */
+      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, ppu * 1.05); gr.addColorStop(0, 'rgba(64,124,206,.17)'); gr.addColorStop(0.55, 'rgba(44,96,176,.07)'); gr.addColorStop(1, 'rgba(36,78,150,.02)');
+      ctx.fillStyle = gr; brainPath(f); ctx.fill();
+      /* the head, barely there */
+      if (!mini) { ctx.strokeStyle = 'rgba(150,190,236,.085)'; ctx.lineWidth = 1; ctx.beginPath(); polyPath(ctx, B.head, f, false); ctx.stroke(); }
+      /* texture: fine dust and hairlines */
+      const T = GW.brainTexture(mini ? 300 : 520);
+      ctx.lineWidth = mini ? 0.4 : 0.5; ctx.strokeStyle = 'rgba(150,186,226,.085)'; ctx.beginPath();
+      for (const [i, j] of T.links) { const a = f(T.pts[i][0], T.pts[i][1]), b = f(T.pts[j][0], T.pts[j][1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }
+      ctx.stroke();
+      const dr = mini ? 0.55 : Math.min(1.3, Math.max(0.6, ppu / 320));
+      for (const [mod, al] of [[0, 'rgba(206,226,248,.42)'], [1, 'rgba(170,200,236,.2)']]) {
+        ctx.fillStyle = al; ctx.beginPath();
+        T.pts.forEach((p, i) => { if ((i % 5 === 0 ? 0 : 1) !== mod) return; const [a, b] = f(p[0], p[1]); ctx.moveTo(a + dr, b); ctx.arc(a, b, dr, 0, Math.PI * 2); });
+        ctx.fill();
+      }
+      /* outline: a wide soft line and a hairline; brain stem, fissures and folia fainter */
+      brainPath(f); ctx.strokeStyle = 'rgba(110,162,228,.075)'; ctx.lineWidth = mini ? 3 : 7; ctx.stroke(); ctx.strokeStyle = 'rgba(196,222,250,.32)'; ctx.lineWidth = mini ? 0.6 : 0.9; ctx.stroke();
+      ctx.strokeStyle = 'rgba(170,205,242,.15)'; ctx.lineWidth = mini ? 0.5 : 0.8; ctx.beginPath(); B.stem.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
+      ctx.strokeStyle = 'rgba(170,205,242,.12)'; ctx.beginPath(); B.fissures.forEach(P => polyPath(ctx, P, f, false)); B.folia.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
+      /* rays: from the core to each aircraft, and out to a few points beyond the outline */
+      const ray = (x2, y2, a0, a1, end) => { const lg = ctx.createLinearGradient(cx, cy, x2, y2); lg.addColorStop(0, 'rgba(226,240,255,' + a0 + ')'); lg.addColorStop(1, 'rgba(226,240,255,' + a1 + ')'); ctx.strokeStyle = lg; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x2, y2); ctx.stroke(); if (end) { ctx.globalAlpha = end; const r = mini ? 5 : 11; ctx.drawImage(sprite('#DCEBFA'), x2 - r, y2 - r, r * 2, r * 2); ctx.globalAlpha = 1; } };
+      ctx.lineWidth = mini ? 0.5 : 0.8;
+      if (!mini) [[-1.06, -0.52], [-0.66, -0.97], [0.08, -1.02], [0.78, -0.80], [1.08, -0.26]].forEach(([u, v]) => { const [a, b] = f(u, v); ray(a, b, 0.2, 0.03, 0.42); });
+      g.nodes.forEach((n, i) => { if (n.k === 'aircraft' && visible(i)) ray(sx(i), sy(i), 0.26, 0.1, 0); });
+      const cr = mini ? ppu * 0.1 : ppu * 0.13; ctx.globalAlpha = mini ? 0.35 : 0.42; ctx.drawImage(sprite('#CFE3FA'), cx - cr, cy - cr, cr * 2, cr * 2); ctx.globalAlpha = 1;
+      ctx.restore();
+      centreLabel(cx, cy + 16, 0.34);
+    }
+    function drawGlow() {
+      const idx = g.nodes.map((n, i) => i).filter(visible); dbg.glow = idx.length >= 8; if (!dbg.glow) return;
+      const b = L.bounds(idx), bb = B.bounds, bw = Math.max(60, b.x1 - b.x0), bh = Math.max(60, b.y1 - b.y0);
+      let kx = bw * 1.04 / (bb.x1 - bb.x0), ky = bh * 1.06 / (bb.y1 - bb.y0); if (ky < kx * 0.72) ky = kx * 0.72; if (kx < ky * 0.85) kx = ky * 0.85;
+      const wx = (b.x0 + b.x1) / 2, wy = (b.y0 + b.y1) / 2, ux = (bb.x0 + bb.x1) / 2, uy = (bb.y0 + bb.y1) / 2;
+      const f = (u, v) => [(wx + (u - ux) * kx - cam.x) * cam.k + W / 2, (wy + (v - uy) * ky - cam.y) * cam.k + H / 2], [cx, cy] = f(B.core[0], B.core[1]);
+      ctx.save(); ctx.lineJoin = 'round'; ctx.globalCompositeOperation = 'lighter';
+      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(kx, ky) * cam.k * 1.05); gr.addColorStop(0, 'rgba(60,118,200,.11)'); gr.addColorStop(0.6, 'rgba(44,96,176,.045)'); gr.addColorStop(1, 'rgba(36,78,150,.01)');
+      ctx.fillStyle = gr; brainPath(f); ctx.fill();
+      ctx.strokeStyle = 'rgba(110,162,228,.05)'; ctx.lineWidth = mini ? 3 : 8; ctx.stroke(); ctx.strokeStyle = 'rgba(190,218,248,.13)'; ctx.lineWidth = mini ? 0.5 : 0.8; ctx.stroke();
+      ctx.strokeStyle = 'rgba(170,205,242,.06)'; ctx.beginPath(); B.fissures.forEach(P => polyPath(ctx, P, f, false)); B.folia.forEach(P => polyPath(ctx, P, f, false)); ctx.stroke();
+      ctx.restore();
+      centreLabel((wx - cam.x) * cam.k + W / 2, (wy - cam.y) * cam.k + H / 2, 0.22);
     }
     function neigh(i) { const s = new Set([i]); for (const l of g.links) { if (l.s === i) s.add(l.t); else if (l.t === i) s.add(l.s); } return s; }
 
@@ -184,7 +328,7 @@
       if (mini) return;
       cv.setPointerCapture(e.pointerId); const [x, y] = local(e); pts.set(e.pointerId, [x, y]); moved = 0; tween = null;
       if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2] }; if (drag && drag.node >= 0) L.free(drag.node); drag = null; return; }
-      const i = hit(x, y); drag = { node: i, x, y, sx: x, sy: y, shift: e.shiftKey || e.altKey };
+      const i = hit(x, y); drag = { node: brainMode ? -1 : i, hit: i, x, y, sx: x, sy: y, shift: e.shiftKey || e.altKey };
     }
     function move(e) {
       const [x, y] = local(e);
@@ -199,14 +343,14 @@
         drag.x = x; drag.y = y; request(); return;
       }
       if (e.pointerType === 'touch') return;
-      const i = hit(x, y); if (i !== hover) { hover = i; cv.style.cursor = i >= 0 ? 'pointer' : ''; request(); }
+      const i = hit(x, y); if (i !== hover) { hover = i; cv.style.cursor = i >= 0 ? 'pointer' : ''; if (o.sample) { showCard(i >= 0 ? i : sel); if (i >= 0) burst(i); } request(); }
     }
     function up(e) {
       pts.delete(e.pointerId); if (pinch) { if (pts.size < 2) pinch = null; drag = null; return; }
       const d = drag; drag = null; cv.style.cursor = hover >= 0 ? 'pointer' : '';
       if (!d) return;
       if (d.node >= 0 && moved >= 4) { L.free(d.node); L.reheat(0.08); request(); return; }
-      if (moved < 4 && d.node >= 0) open(d.node, d.shift || e.shiftKey || e.altKey);
+      if (moved < 4 && d.hit >= 0) open(d.hit, d.shift || e.shiftKey || e.altKey);
       else if (moved < 4 && sel >= 0) select(-1);
     }
     function wheel(e) {
@@ -216,20 +360,43 @@
       if (e.ctrlKey || mouse) zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.012 : 0.0018) * (e.deltaMode === 1 ? 30 : 1)), x, y);
       else { auto = false; tween = null; cam.x += e.deltaX / cam.k; cam.y += e.deltaY / cam.k; request(); }
     }
-    function leave() { if (hover >= 0 && !drag) { hover = -1; request(); } }
+    function leave() { if (hover >= 0 && !drag) { hover = -1; if (o.sample) showCard(sel); request(); } }
     function open(i, beside) {
       const n = g.nodes[i]; if (!n) return;
       if (o.sample) { select(i); return; }
       if (o.onOpen) o.onOpen(n, !!beside);
     }
-    function select(i, zoom) {
-      sel = i; nb = null;
-      if (card) {
-        if (i < 0) card.hidden = true;
-        else { const n = g.nodes[i]; card.hidden = false;
-          card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}${o.sample ? ' · ' + esc(t('Example', 'Eksempel')) : ''}</span><b>${esc(n.label)}</b><span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
-            (o.sample ? '' : `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`); }
+    /* the example explains each dot: what it would be in your workspace, and the real action */
+    const ACT = { aircraft: ['ac-new', t('Add aircraft', 'Legg til fly')], doc: ['doc-add', t('Add a document', 'Legg til et dokument')], page: ['doc-add', t('Add a document', 'Legg til et dokument')], note: ['map-note', t('New note', 'Nytt notat')], notebook: ['map-note', t('New note', 'Nytt notat')], pack: ['pack-new', t('Make a briefing pack', 'Lag en briefingpakke')], route: ['', t('Plan a route', 'Planlegg en rute')] };
+    function explain(i) {
+      const n = g.nodes[i], nb2 = [...neigh(i)].filter(j => j !== i).map(j => g.nodes[j]), of = k => nb2.filter(m => m.k === k).map(m => m.label);
+      const q = s => t('“', '«') + s + t('”', '»'), list = a => a.slice(0, 2).join(t(' and ', ' og ')) + (a.length > 2 ? t(` and ${a.length - 2} more`, ` og ${a.length - 2} til`) : '');
+      const ac = n.ac && g.index[n.ac] != null && n.k !== 'aircraft' ? g.nodes[g.index[n.ac]].label : '';
+      if (n.k === 'aircraft') return t(`An aircraft you fly. Its documents, notes and briefing packs gather around it: ${n.deg} links here.`, `Et fly du flyr. Dokumentene, notatene og briefingpakkene samles rundt det: ${n.deg} koblinger her.`);
+      if (n.k === 'doc') return ac ? t(`Your ${n.label}, filed under ${ac}. Every page a note cites links back here.`, `Din ${n.label}, lagt under ${ac}. Hver side et notat viser til, kobles hit.`) : t(`A document for every aircraft, like ${n.label}. Notes that cite its pages link here.`, `Et dokument for alle fly, som ${n.label}. Notater som viser til sidene, kobles hit.`);
+      if (n.k === 'page') { const ns = of('note'); return ns.length ? t(`A page in your manual that a note refers to: ${q(ns[0])} cites it.`, `En side i manualen din som et notat viser til: ${q(ns[0])} viser til den.`) : t('A page in your manual that a note refers to.', 'En side i manualen din som et notat viser til.'); }
+      if (n.k === 'note' || n.k === 'notebook') { const ps = of('page'); return ps.length ? t(`A note of your own. This one cites ${list(ps)}.`, `Et notat du skriver selv. Dette viser til ${list(ps)}.`) : t(`A note of your own${ac ? ', linked to ' + ac : ''}.`, `Et notat du skriver selv${ac ? ', koblet til ' + ac : ''}.`); }
+      if (n.k === 'pack') { const r = of('route'); return t(`Briefing pack ${n.label.replace(' – ', '→')}${r.length ? ', linked to its route' : ''}${ac ? ' and to ' + ac : ''}.`, `Briefingpakke ${n.label.replace(' – ', '→')}${r.length ? ', koblet til ruten sin' : ''}${ac ? ' og til ' + ac : ''}.`); }
+      if (n.k === 'route') { const pk = of('pack'); return t(`A route from Route Explorer${pk.length ? ', linked to the briefing pack ' + pk[0].replace(' – ', '→') : ''}.`, `En rute fra Route Explorer${pk.length ? ', koblet til briefingpakken ' + pk[0].replace(' – ', '→') : ''}.`); }
+      return '';
+    }
+    function showCard(i) {
+      if (!card) return;
+      if (i < 0) { card.hidden = true; return; }
+      const n = g.nodes[i]; card.hidden = false;
+      if (o.sample) {
+        const a = ACT[n.k], pinned = i === sel;
+        card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])} · ${esc(t('Example', 'Eksempel'))}</span><b>${esc(n.label)}</b><span class="x">${esc(explain(i))}</span>` +
+          (pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
+        return;
       }
+      card.innerHTML = `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b><span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
+        `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`;
+    }
+    function select(i, zoom) {
+      const was = sel; sel = i; nb = null;
+      showCard(i);
+      if (o.sample && i >= 0 && i !== was && i !== hover) burst(i);
       if (i >= 0 && zoom) moveTo({ x: L.x[i], y: L.y[i], k: Math.max(cam.k, fitK * 2.4) }, 520);
       request();
     }
@@ -282,8 +449,8 @@
       setGraph: ng => setGraph(ng, true), fit: () => moveTo(fitTarget(), 380), focus: i => select(i, true), debug: dbg,
       get graph() { return g; }, get camera() { return Object.assign({}, cam); }, get layout() { return L; },
       screenOf: i => [sx(i), sy(i)],
-      destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; }
+      destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; }
     };
   }
-  window.WSMAP = { mount, COL };
+  window.WSMAP = { mount, COL, stats };
 })();

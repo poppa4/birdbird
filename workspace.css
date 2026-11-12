@@ -373,6 +373,7 @@ html body .nsearch{display:none!important}
 .wsm-card .k{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8FA2B6}
 .wsm-card b{font-size:15px;color:#fff;font-weight:620;line-height:1.3}
 .wsm-card .m{font-size:12.5px;color:#8FA2B6}
+.wsm-card .x{font-size:13px;color:#C9D6E3;line-height:1.45;margin-top:2px}
 .wsm-card .b{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .wsm-card .btn:not(.pri){background:transparent;color:#E3EAF0;border-color:rgba(255,255,255,.35)}
 .wsm-card .btn:not(.pri):hover{background:rgba(255,255,255,.08)}
@@ -392,6 +393,7 @@ html body .nsearch{display:none!important}
   .wsm-leg .dot{display:none}
   .wsm-card{top:auto;bottom:96px}
   .wsm-cta{bottom:96px}
+  .wsm-plate.sample:has(.wsm-card:not([hidden])) .wsm-cta{display:none}
 }
 /* the small map on the desk home */
 .dk-empty .sk.mm{position:relative;display:block;aspect-ratio:440/290;border-radius:12px;overflow:hidden;background:#030A16;box-shadow:0 1px 0 var(--rule),0 24px 48px -18px rgba(11,37,69,.45);text-decoration:none;color:#D5DEE7;cursor:pointer}

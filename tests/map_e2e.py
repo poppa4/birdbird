@@ -1,6 +1,7 @@
-"""My Workspace map in a real browser: example map when empty, a seeded workspace (3 aircraft, 15 documents, 40 notes with
+"""My Workspace map in a real browser: example map when empty (laid out as a brain; hover explains a dot, click offers the
+real action), a seeded workspace (3 aircraft, 15 documents, 40 notes with
 page references, 5 packs, 6 routes), legend filter, search, open on the desk, the mini map on the desk home, no animation
-frames once the layout has settled, phone size.
+frames once the layout has settled apart from the rare faint pulses, none with reduced motion, phone size.
     python3 tests/map_e2e.py [base-url] [shots-dir]"""
 import os, sys
 from playwright.sync_api import sync_playwright
@@ -12,7 +13,7 @@ res = []
 def check(n, c, info=''):
     res.append((n, bool(c))); print(('ok   ' if c else 'FAIL ') + n + (('  ' + str(info)[:300]) if info and not c else ''))
 
-RAF = """(() => { const r = window.requestAnimationFrame.bind(window); window.__raf = 0; window.requestAnimationFrame = f => { window.__raf++; return r(f); }; })();"""
+RAF = """(() => { const r = window.requestAnimationFrame.bind(window); window.__raf = 0; window.__rafRun = 0; window.requestAnimationFrame = f => { window.__raf++; return r(ts => { window.__rafRun++; f(ts); }); }; })();"""
 SEED = """async () => {
   const W = window.WSCORE, A = window.WS.api, D = window.DESKCORE, now = Date.now(), list = [];
   const ac = [W.newAircraft({ typeKey: 'da42', reg: 'LN-ABC' }), W.newAircraft({ typeKey: 'c172', reg: 'LN-XYZ' }), W.newAircraft({ typeKey: 'b200', reg: 'LN-KAB' })];
@@ -38,6 +39,12 @@ SEED = """async () => {
   localStorage.setItem('naeroson-store-route', JSON.stringify(routes));
 }"""
 
+IDLE = "() => [window.__rafRun, window.WSMAP.stats.pulseFrames]"
+def idle_frames(pg, ms):
+    """animation frames that ran during ms and were not pulse frames"""
+    a = pg.evaluate(IDLE); pg.wait_for_timeout(ms); b = pg.evaluate(IDLE)
+    return (b[0] - a[0]) - (b[1] - a[1]), b[1] - a[1]
+
 def settle(pg, ms=9000):
     pg.wait_for_function("() => window.WS && window.WS.map && window.WS.map.debug.settled && !window.WS.map.debug.running", timeout=ms)
 
@@ -55,6 +62,37 @@ with sync_playwright() as p:
         check(tag + ': empty workspace shows the example map', pg.is_visible('.wsm-tag') and 'Add a document or note' in pg.inner_text('.wsm-cta'))
         check(tag + ': Map is in the workspace navigation', pg.locator('#wsRail a[href="#/map"].on').count() == 1)
         pg.screenshot(path=f'{SHOTS}/{tag}-map-example.png')
+        inside = pg.evaluate("(() => { const m = window.WS.map, L = m.layout, G = window.WSGRAPH; return L.brain && m.graph.nodes.every((n, i) => G.inBrain(L.x[i] / L.S, L.y[i] / L.S, 0.005)); })()")
+        check(tag + ': example laid out inside the brain', inside)
+        # hover (or tap) a note: card explains it, neighbours light up, a pulse runs and then stops
+        i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note' && n.deg >= 2)")
+        x, y = pg.evaluate(f'window.WS.map.screenOf({i})'); box = pg.locator('#wsMapHost canvas').bounding_box()
+        if tag == 'desktop':
+            pg.mouse.move(box['x'] + x, box['y'] + y); pg.wait_for_timeout(120)
+            card = pg.inner_text('.wsm-card') if pg.is_visible('.wsm-card') else ''
+            check('desktop: hover an example dot explains it', 'EXAMPLE' in card.upper() and 'cites' in card, card)
+            check('desktop: hover starts a pulse along its links', pg.evaluate('window.WS.map.debug.pulses') > 0)
+            pg.screenshot(path=f'{SHOTS}/desktop-example-hover.png')
+            pg.mouse.click(box['x'] + x, box['y'] + y); pg.wait_for_timeout(100)
+        else:
+            pg.touchscreen.tap(box['x'] + x, box['y'] + y); pg.wait_for_timeout(150)
+        check(tag + ': click offers the real action', pg.locator('.wsm-card [data-act="map-note"]').count() == 1, pg.inner_text('.wsm-card'))
+        pg.wait_for_function("() => window.WS.map.debug.pulses === 0", timeout=4000)
+        pg.screenshot(path=f'{SHOTS}/{tag}-example-selected.png')
+        # search and legend work on the example
+        pg.fill('.wsm-qi', 'B200'); pg.wait_for_selector('.wsm-sug li[data-i]'); pg.press('.wsm-qi', 'Enter'); pg.wait_for_timeout(700)
+        check(tag + ': search finds an example aircraft', 'B200' in pg.inner_text('.wsm-card') and pg.locator('.wsm-card [data-act="ac-new"]').count() == 1, pg.inner_text('.wsm-card'))
+        pg.click('.wsm-zm [data-z="fit"]'); pg.wait_for_timeout(600)
+        pg.click('.wsm-leg [data-g="note"]'); pg.wait_for_timeout(150)
+        check(tag + ': legend filters the example', pg.get_attribute('.wsm-leg [data-g="note"]', 'aria-pressed') == 'false')
+        pg.click('.wsm-leg [data-g="note"]'); pg.wait_for_timeout(100)
+        if tag == 'desktop':
+            pg.click('.wsm-card [data-act="ac-new"]'); pg.wait_for_selector('#wsDlg[open]', timeout=4000)
+            check('desktop: the action is the real one (add aircraft dialog)', pg.is_visible('#wsDlg'))
+            pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
+            pg.goto(URL + '#/library'); pg.wait_for_timeout(300)
+            check('desktop: sidebar shows the example brain', pg.locator('#wsRailMap.sample canvas').count() == 1)
+            pg.locator('#wsRailMap').screenshot(path=f'{SHOTS}/desktop-sidebar-example.png')
         if tag == 'desktop':
             pg.goto(URL + '#/'); pg.wait_for_selector('.dk-empty .big3'); pg.wait_for_timeout(300)
             check('new user: desk home shows the example map', pg.locator('.dk-empty .mm').count() == 1)
@@ -63,8 +101,8 @@ with sync_playwright() as p:
             pg.wait_for_function("() => { const c = document.querySelector('.dk-empty .mm canvas'); return c && c.width > 0; }")
             pg.wait_for_timeout(4500)
             check('desk home: mini map replaces the drawing', pg.locator('.dk-empty .mm').count() == 1 and pg.locator('.dk-empty .sk svg').count() == 0)
-            r0 = pg.evaluate('window.__raf'); pg.wait_for_timeout(1500); r1 = pg.evaluate('window.__raf')
-            check('desk home: idle mini map requests no frames', r1 == r0, (r0, r1))
+            n_idle, n_pulse = idle_frames(pg, 1500)
+            check('desk home: idle mini map requests no frames but pulse frames', n_idle == 0, (n_idle, n_pulse))
             pg.screenshot(path=f'{SHOTS}/desktop-home-minimap.png')
             pg.click('.dk-empty .mm'); pg.wait_for_selector('#wsMapHost .wsm-c')
         else:
@@ -75,8 +113,14 @@ with sync_playwright() as p:
         check(tag + ': no example on a real workspace', pg.locator('.wsm-tag').count() == 0)
         n = pg.evaluate('window.WS.map.graph.nodes.length'); l = pg.evaluate('window.WS.map.graph.links.length')
         check(tag + ': nodes and links', n > 69 and l > 60, (n, l))
-        r0 = pg.evaluate('window.__raf'); pg.wait_for_timeout(1500); r1 = pg.evaluate('window.__raf')
-        check(tag + ': settled map requests no animation frames', r1 == r0, (r0, r1))
+        n_idle, n_pulse = idle_frames(pg, 1500)
+        check(tag + ': settled map requests no animation frames but pulse frames', n_idle == 0, (n_idle, n_pulse))
+        check(tag + ': own map has the brain glow behind it', pg.evaluate('window.WS.map.debug.glow') is True)
+        if tag == 'desktop':
+            # life: now and then a faint pulse, at a small frame budget (pointer off the map, so no hover)
+            pg.mouse.move(2, 2); pg.wait_for_timeout(200)
+            n_idle, n_pulse = idle_frames(pg, 9000)
+            check('desktop: an occasional pulse, few frames', n_idle == 0 and 0 < n_pulse <= 9 * 16, (n_idle, n_pulse))
         pg.screenshot(path=f'{SHOTS}/{tag}-map.png')
         dpr = pg.evaluate("(() => { const c = document.querySelector('#wsMapHost canvas'); return c.width / c.getBoundingClientRect().width; })()")
         check(tag + ': canvas uses the device pixel ratio', abs(dpr - (2 if tag == 'phone' else 1)) < 0.02, dpr)
@@ -123,6 +167,11 @@ with sync_playwright() as p:
         pg.emulate_media(reduced_motion='reduce'); pg.goto(URL + '#/map'); pg.wait_for_selector('#wsMapHost canvas'); pg.wait_for_timeout(300)
         r0 = pg.evaluate('window.__raf'); pg.wait_for_timeout(800); r1 = pg.evaluate('window.__raf')
         check(tag + ': reduced motion: settled at once, no frames', pg.evaluate('window.WS.map.debug.settled') and r1 == r0, (r0, r1))
+        if tag == 'desktop':
+            i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.deg >= 2)"); x, y = pg.evaluate(f'window.WS.map.screenOf({i})'); box = pg.locator('#wsMapHost canvas').bounding_box()
+            pg.mouse.move(box['x'] + x, box['y'] + y); pg.wait_for_timeout(100)
+            n_idle, n_pulse = idle_frames(pg, 6000)
+            check('desktop: reduced motion: no pulses', n_pulse == 0 and pg.evaluate('window.WS.map.debug.pulses') == 0, (n_idle, n_pulse))
         pg.emulate_media(reduced_motion='no-preference')
         if tag == 'desktop':
             pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(500)
