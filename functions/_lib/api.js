@@ -14,6 +14,7 @@
      DELETE /api/me/credentials?id=…     remove a passkey (not the last one)
      GET    /api/sync                    all namespaces
      PUT    /api/sync                    { ns, data, baseVersion, updatedAt, force? } last writer wins, with a version check
+     GET | POST /api/atc                 Flight Intelligence (functions/api/atc.js; uses the session, limits and JSON helpers here)
 
    Security:
    - Session: random 32-byte id in an HttpOnly, Secure, SameSite=Lax __Host- cookie; only its SHA-256 is stored.
@@ -37,7 +38,8 @@ const LIMITS = {
   login: [30, 600],                    // sign-in ceremonies per IP per 10 minutes
   recovery: [6, 900],                  // recovery code attempts per IP per 15 minutes
   write: [60, 60],                     // account changes per user per minute
-  sync: [120, 60]                      // sync requests per user per minute
+  sync: [120, 60],                     // sync requests per user per minute
+  ai: [12, 60]                         // Flight Intelligence questions per user per minute (daily caps: functions/api/atc.js)
 };
 
 /* ---------- http ---------- */
@@ -67,11 +69,12 @@ export function checkOrigin(request) {
   if (!o || o !== url.origin) fail(403, 'bad_origin', 'This request did not come from Birdbird itself. Reload the page and try again.');
 }
 
-async function readJson(request, required) {
+async function readJson(request, required, maxBytes) {
   const ct = (request.headers.get('content-type') || '').toLowerCase();
   const text = await request.text();
   if (!text) { if (required) fail(400, 'bad_request', 'The request was empty. Reload the page and try again.'); return {}; }
   if (!ct.includes('application/json')) fail(415, 'bad_request', 'Send JSON (content-type: application/json).');
+  if (maxBytes && text.length > maxBytes) fail(413, 'too_large', 'That is too much text in one go. Send less and try again.');
   if (text.length > MAX_BODY) fail(413, 'too_large', 'That is too much data to save in one go (over 1.5 MB).');
   try { const o = JSON.parse(text); if (!o || typeof o !== 'object' || Array.isArray(o)) throw 0; return o; }
   catch (e) { fail(400, 'bad_request', 'The request was not valid JSON. Reload the page and try again.'); }
@@ -339,6 +342,7 @@ async function meDelete(c) {
     c.db.prepare('DELETE FROM challenges WHERE user_id = ?1').bind(id),
     c.db.prepare('DELETE FROM users WHERE id = ?1').bind(id)
   ]);
+  await c.db.prepare('DELETE FROM ai_usage WHERE user_id = ?1').bind(id).run().catch(() => {}); // Flight Intelligence counters (table from migration 0002; absent is fine)
   return json({ ok: true, deleted: true }, 200, { 'set-cookie': cookieHeader('', 0) });
 }
 async function newRecovery(c) {
@@ -437,4 +441,5 @@ export const onMe = endpoint({ GET: meGet, PATCH: mePatch, DELETE: meDelete });
 export const onMeRecovery = endpoint({ POST: newRecovery });
 export const onMeCredentials = endpoint({ DELETE: credDelete });
 export const onSync = endpoint({ GET: syncGet, PUT: syncPut });
+export { getSession, requireSession, readJson, limit, fail }; // used by functions/api/atc.js
 export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u };

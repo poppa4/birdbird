@@ -781,6 +781,12 @@ const AF=AIRPROC.autofly({type:'B200',S,F,AP,nav:()=>curNav,power:{get:()=>Math.
   useLoc:()=>{ SYS.efisSrc=0; if(SYS.nav1.a!=='110.30') SYS.nav1={a:'110.30',s:SYS.nav1.a}; SYS.crs=360; },apOn:()=>{ SYS.yd=1; },apOff:()=>apDiscFx(),onOff:()=>airUI()});
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on,PR.k&&PR.k!=='air'&&PR.k!=='free'?PR.k:null); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
+/* auto-fly lands: the student is asked for gear and flaps at glide path capture; if they are still not set 6.5 NM from the
+   threshold, auto-fly sets them itself (gear down, flaps approach) so the approach is stabilised and ends in a landing, not a go-around */
+function afConfig(){ if(!AF.on||AF.ph||AF.said.cfg||S.ground) return; const seg=AF.segs[AF.si]; if(!seg||seg.t!=='final'||AF.wantLand===false||-S.N>6.5*F.NM) return;
+  AF.said.cfg=1; const g=SYS.gearH!==1, f=S.ctl.flap<1; if(!g&&!f) return;
+  if(g) toggleGear(); if(f) setFlap(1);
+  const m=L(g&&f?tr2('Auto-fly: gear down, flaps approach.','Autofly: understell ned, flaps approach.'):g?tr2('Auto-fly: gear down.','Autofly: understell ned.'):tr2('Auto-fly: flaps approach.','Autofly: flaps approach.')); pill(m,'ok'); flash(m); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }
 let AIRUI=null, DB=null;
 /* the student's own checklist (ownck.js): predicates by dictionary key and the control each one highlights */
@@ -999,7 +1005,7 @@ function pilotInput(dt){
 }
 function simTick(dt){
     pilotInput(dt);
-    const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); AF.tick(dt);
+    const o0=F.readouts(S); curNav=navNow(1); curNav2=navNow(2); sysTick(dt,o0); procTick(dt); AF.tick(dt); afConfig();
     const N=Math.max(1,Math.round(dt*240)), h=dt/N, rt=SYS.rudTrim*0.3, at=(SYS.ailTrim-0.5)*0.12;
     for(let i=0;i<N;i++){ const o=F.readouts(S); F.apRun(AP,S,o,curNav,h); AF.sub(o,h); const r0=S.ctl.rud; S.ctl.rud=F.clamp(r0+rt,-1,1); S.ctl.ail+=at; F.step(S,h); S.ctl.rud=r0; S.ctl.ail-=at; } // trim adds to the pedals, never past full rudder
     if(S.ground){ let rev=0; E.forEach((e,i)=>{ const pl=SYS['pwr'+SIDES[i]]; if(e.lit&&pl<0) rev+=pl<-0.12?2500+6500*(-pl-0.12)/0.28:1200*(-pl/0.12); }); if(rev&&S.Vg>0) S.Vg=Math.max(0,S.Vg-rev/F.AC.m*dt); }
