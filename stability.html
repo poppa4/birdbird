@@ -5,7 +5,7 @@
 <meta name="description" content="A320 stability, controls and load factor for EASA ATPL 081 Principles of Flight: CG and balance, static and dynamic stability, V-n and gust loads, buffet, flight controls and what normal law changes.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stability, Controls and Load Factor</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -78,8 +78,6 @@
 .bsl{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2);margin-top:-4px}
 .anc{display:block;height:0;scroll-margin-top:72px}
 /* template parts (as pressure.html) */
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
@@ -216,7 +214,7 @@ body.depth-instructor .maid b{font-size:24px}
   <!-- 4 · DEBRIEF -->
   <section class="card" id="debrief" data-step="debrief">
     <div class="eyebrow">3 · Key points</div>
-    <h2>What happened, and why it matters</h2>
+    <h2>Key points</h2>
     <div class="cols why" id="dbCards"></div>
     <div class="maid" id="maid"></div>
     <h3 id="takeH">Pilot takeaways</h3>
@@ -357,11 +355,11 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="chartnote.js?v=2"></script>
 <script src="concepts.js?v=2"></script>
 <script src="stab.js?v=1"></script>
-<script src="cgmodel.js?v=4"></script>
+<script src="cgmodel.js?v=5"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;

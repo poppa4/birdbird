@@ -628,7 +628,10 @@ LAB.quiz(el('qbox'),'clouds',()=>LAB.shuffle([
    Start
    ===================================================================== */
 LAB.start('clouds');
-compute(); syncL(); syncF(); night(); drawPreL(); drawPreF(); drawTabs(); legend(); drawTasks(); drawTable(); drawMaid(); drawGlist(); liftOut(); fOut(); fromHash();
+compute(); syncL(); syncF(); night(); drawPreL(); drawPreF(); drawTabs(); legend(); drawTasks(); drawTable(); drawMaid(); drawGlist(); 
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+{ const keepS=LAB.keep(S), keepF=LAB.keep(F);
+  LAB.reset(()=>{ keepS(); keepF(); fPlay=false; compute(); syncL(); syncF(); night(); drawPreL(); drawPreF(); legend(); drawTabs(); liftUpd(); fUpd(); }); }liftOut(); fOut(); fromHash();
 document.addEventListener('labdepth',()=>{ lBuild(); fBuild(); fDraw(); kick(); });
 LAB.onLang(()=>{ drawPreL(); drawPreF(); drawTabs(); legend(); drawTasks(); drawTable(); drawMaid(); drawGlist(); seeLast=''; liftOut(); fOut(); if(view==='types') tSel(tSelK); lBuild(); fBuild(); fDraw(); kick(); });
 })();

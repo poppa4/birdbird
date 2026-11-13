@@ -6,8 +6,9 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 
 ## Information architecture (lab.js `PATH`)
 
-- `PATH` holds seven areas in this order: `pof` Aerodynamics, `met` Meteorology and the atmosphere, `inst` Instruments, `nav` Navigation and instrument procedures, `sys` Aircraft and engine systems, `perf` Performance, `mb` Mass and balance. After them comes one entry with `more:true` (`hf` Human factors). That entry is not an area. It shows up only in the quiet "More" list on `lab.html`.
-- `LAB.AREAS` lists the seven areas. `LAB.MORE` lists the More entries. `LAB.FLAT` lists all 26 labs.
+- `PATH` holds six areas in this order: `pof` Aerodynamics, `met` Meteorology and the atmosphere, `nav` Navigation and instrument procedures, `inst` Instruments, `sys` Aircraft and engine systems, `perf` Performance. After them comes one entry with `more:true` (`hf` Human factors). That entry is not an area. It shows up only in the quiet "More" list on `lab.html`.
+- `UNLISTED` holds labs that are kept but not shown on `lab.html` (today: `massbalance.html`). They get the same shell (header, sidebar, step bar, goal, way back to Virtual Labs) but no area card and no count.
+- `LAB.AREAS` lists the six areas. `LAB.MORE` lists the More entries. `LAB.FLAT` lists all 25 listed labs.
 - Each area has `en`/`no`, a one-line description `d`, and 3–4 concepts `c` (all EN/NO). The area's labs are tuples `[file, key, EN, NO, level]`.
 - `level` sets the "Applies to" tag: `''` all aircraft, `jet` A320 model, `mix` A320 + light twin, `la` light twin.
 - The first lab in an area is its recommended start. On `lab.html` the "Open area" button links to that lab.
@@ -80,3 +81,22 @@ The site is static: plain HTML and vanilla JS with no build step. Every lab page
 - Charts: plain-language "How to read this", key points labelled in words on the chart, a simple default view with "Show full chart" for the rest, and one take-away sentence.
 - Aircraft drawings: refined and professional (the stability.html jet is the reference), sensibly sized, never filling the view.
 - Tidy and clear overview first; depth is fine when it is organised and explained.
+
+## The shared template, as built (Nov 2026)
+
+Every lab gets these from the shell. A page only supplies its own subject content and model.
+
+| Part | Where it comes from | Rule |
+|---|---|---|
+| Header | `pageHeader()` | Eyebrow "Virtual Labs · Area N · area", H1, one purpose paragraph, **Learning goal** (`p.goal`: the page's own, else `GOAL[key]` in `lab.js`), meta row. The goal styles live in `lab.css`; do not restyle them in a page. |
+| Orientation | `atlas()` | Sidebar, sticky step bar, depth switch, "Next". Section eyebrows are rewritten from `data-step` to "1 · Understand", "2 · Explore", "3 · Test yourself"; text after a second "·" in the page's eyebrow is kept (for example "· A320 model"). |
+| Order | page | Understand (Key concepts) → Explore (`.xapp`: viewport, `.xsee`, Controls panel, result cards, Try it) → Test yourself (H2 "Key points", then the quiz) → Practise it → Model and limitations → Next. |
+| Hint | page | The `p.lead` under the Explore H2 says what you can move. `.xsee` under the viewport says what you are seeing and what changed. |
+| Controls | `LAB.slider`, `LAB.seg` | Label left, value and unit right. Native range keys. Segments carry `aria-pressed`; sliders carry `aria-valuetext`. |
+| View tabs | `a11y()` | `.vtabs[role=tablist]` buttons become tabs (`aria-selected`, roving tabindex, Left/Right/Home/End). |
+| Reset | `LAB.reset(fn[, viewport])` | One "Reset" button, last in the viewport bar. `fn` returns the model to its starting values and keeps the current view, depth and language. `LAB.keep(S)` returns a function that restores a snapshot of a plain state object. Do not add a second Reset inside the panel. A "Restart" for a timed run is a transport control, not a Reset. |
+| Canvas | `a11y()` | A canvas with `aria-label` gets `role="img"` (`application` if it is focusable). A chart canvas without a label is named by its card heading. Colour bars are `aria-hidden`. |
+| Phones (≤900 px) | `lab.css` | Viewport first, then the Controls tray (`details.xpanel`): collapsed under the model, sticky at the bottom edge while the model is on screen, at most 58 % of the height when open. Touch targets are 44 px. |
+| Live values | page | The read-out chip in the viewport is `aria-live="polite"`. The shell announces a Reset in `#labLive`. |
+
+Known exceptions: `tunnel.html` keeps its own stylesheet and viewport bar (the Reset sits last in its tool row; its overlay buttons are 36 px on touch so they do not cover the scene). Secondary models further down `stability.html`, `propeller.html` and `radionav.html` (radar) still use the older `.split` layout without a viewport bar, so they have no Reset. `massbalance.html` keeps its light `.split` drawings; each of its two models has a light viewport bar (`.paper>.vbar`, styled in the page) carrying the shared Reset.

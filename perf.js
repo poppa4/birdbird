@@ -480,6 +480,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('perf');
 buildCtl(); setMode('to'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS(); el('revChk').checked=S.rev; setType(S.type); setMode(m); all(); });
 /* old anchors */
 const HM={'#takeoff':'to','#landing':'land','#climbout':'climb'}, HD={'#limits':'dd-limits','#ops':'dd-ops','#dd-speeds':'dd-speeds','#dd-segments':'dd-segments','#dd-flex':'dd-flex','#dd-classes':'dd-classes','#dd-landing':'dd-landing','#dd-v1':'dd-v1','#dd-factors':'dd-factors','#dd-limits':'dd-limits','#dd-ops':'dd-ops'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('pfVp').scrollIntoView({block:'start'})); }

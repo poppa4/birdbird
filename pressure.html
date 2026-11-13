@@ -5,11 +5,9 @@
 <meta name="description" content="Why air flows from high to low pressure, why it ends up blowing along the isobars, and what friction does near the ground. Build the wind one force at a time on a weather chart: pressure gradient, Coriolis, friction, Buys Ballot, the altimeter from high to low, and local winds.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressure and Wind</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .prose{max-width:72ch;font-size:15px;line-height:1.6;color:var(--ink);margin:16px 0 0}
 .prose b{font-weight:600}
@@ -174,7 +172,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   <!-- 3 · KEY POINTS -->
   <section class="card" id="debrief" data-step="debrief">
     <div class="eyebrow">3 · Key points</div>
-    <h2>What happened, and why it matters</h2>
+    <h2>Key points</h2>
     <div class="cols why" data-tx="d1">
       <div class="box"><b class="t"><i>1</i>Pressure gradient</b><p>Pressure differences push air from high towards low pressure, straight across the isobars. The closer the isobars, the stronger the push. On its own it would accelerate the air into the low.</p></div>
       <div class="box"><b class="t"><i>2</i>Coriolis</b><p>The Earth turns under the moving air, which turns it right in the northern hemisphere (left in the southern). It grows with wind speed and latitude, and is zero at the equator. When it balances the pressure gradient, the wind blows along the isobars: the geostrophic wind.</p></div>
@@ -204,7 +202,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="concepts.js?v=2"></script>
 <script>
 (function(){
@@ -512,9 +510,8 @@ const segS=LAB.seg(el('surf'),[['land','Land'],['sea','Sea']],S.surf,v=>{ S.surf
 const PRE=[
  ['strong',t2('Strong gradient','Sterk gradient'),()=>{ Object.assign(S,{dp:52,L:{x:.38,y:.36},H:{x:.66,y:.66},P:{x:.47,y:.53},stage:1,both:false}); }],
  ['sealand',t2('Sea vs land','Sjø mot land'),()=>{ Object.assign(S,{stage:2,both:true}); }],
- ['south',t2('Southern hemisphere','Sørlig halvkule'),()=>{ Object.assign(S,{hemi:'S',lat:45,stage:1,both:false}); }],
- ['reset',t2('Reset','Tilbakestill'),()=>{ Object.assign(S,{stage:0,dp:36,lat:60,hemi:'N',rho:1.225,surf:'land',both:false,L:{x:.31,y:.40},H:{x:.76,y:.62},P:{x:.55,y:.20}}); }]];
-function drawPre(){ el('pre').innerHTML=PRE.map(([k,n])=>`<button type="button" class="btn sm${k==='reset'?' quiet':''}" data-p="${k}">${L(n)}</button>`).join(''); }
+ ['south',t2('Southern hemisphere','Sørlig halvkule'),()=>{ Object.assign(S,{hemi:'S',lat:45,stage:1,both:false}); }]];
+function drawPre(){ el('pre').innerHTML=PRE.map(([k,n])=>`<button type="button" class="btn sm" data-p="${k}">${L(n)}</button>`).join(''); }
 el('pre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; PRE.find(p=>p[0]===b.dataset.p)[2](); syncCtl(); bgDirty=true; parcel=null; changed(); });
 function syncCtl(){ sDp.set(S.dp); sLat.set(S.lat); segH.set(S.hemi); segR.set(String(S.rho)); segS.set(S.surf); drawStage(); }
 el('rel').addEventListener('click',release);
@@ -732,10 +729,10 @@ function ld(){ const g=CL.ctx,W=CL.w,H=CL.h; if(!W||view!=='local'||!LS.st) retu
   g.setLineDash(NODASH); }
 const LP1=new Float32Array(8), LP2=new Float32Array(8);
 function head(g,x,y,an){ g.fillStyle='#E46BAE'; g.beginPath(); g.moveTo(x+9*Math.cos(an),y+9*Math.sin(an)); g.lineTo(x-7*Math.cos(an-0.6),y-7*Math.sin(an-0.6)); g.lineTo(x-7*Math.cos(an+0.6),y-7*Math.sin(an+0.6)); g.closePath(); g.fill(); }
-LAB.seg(el('where'),[['coast','Sea breeze'],['valley','Valley'],['foehn','Föhn']],LW.w,v=>{ LW.w=v; lwPlay=false; syncLw(); lu(); });
+const segW=LAB.seg(el('where'),[['coast','Sea breeze'],['valley','Valley'],['foehn','Föhn']],LW.w,v=>{ LW.w=v; lwPlay=false; syncLw(); lu(); });
 const cT=document.createElement('div'), cF=document.createElement('div'); el('c2').append(cT,cF);
 const sHr=LAB.slider(cT,{label:'Time of day',min:0,max:23,step:1,v:LW.h,f:v=>String(v).padStart(2,'0')+':00',on:v=>{ LW.h=v; lwPlay=false; drawTabs(); lu(); }});
-LAB.slider(cF,{label:'Height of the ridge (ft)',min:4000,max:12000,step:500,v:LW.ridge,f:v=>v+' ft',on:v=>{ LW.ridge=v; lu(); }});
+const sRg=LAB.slider(cF,{label:'Height of the ridge (ft)',min:4000,max:12000,step:500,v:LW.ridge,f:v=>v+' ft',on:v=>{ LW.ridge=v; lu(); }});
 const sFT=LAB.slider(cF,{label:'Temperature at the windward foot (°C)',min:0,max:25,step:1,v:LW.t,f:v=>v+' °C',on:v=>{ LW.t=v; if(LW.td>v){ LW.td=v; sFD.set(v); } lu(); }});
 const sFD=LAB.slider(cF,{label:'Dew point at the windward foot (°C)',min:-10,max:25,step:1,v:LW.td,f:v=>v+' °C',on:v=>{ LW.td=Math.min(v,LW.t); if(v>LW.t) sFD.set(LW.t); lu(); }});
 function syncLw(){ cT.hidden=LW.w==='foehn'; cF.hidden=LW.w!=='foehn'; }
@@ -794,6 +791,11 @@ function drawMaid(){ el('maid').innerHTML=`<span class="k">${L(t2('Memory aid','
 /* ---------- start ---------- */
 LAB.start('pressure');
 syncLw(); drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); ufig(); drawTabs(); legend(); readouts(); altRO(); lu(); fromHash();
+/* Reset (the shell's button in the viewport bar): starting values of the view you are in */
+LAB.reset(()=>{
+  if(view==='chart'){ Object.assign(S,{stage:0,dp:36,lat:60,hemi:'N',rho:1.225,surf:'land',both:false,L:{x:.31,y:.40},H:{x:.76,y:.62},P:{x:.55,y:.20}}); syncCtl(); bgDirty=true; parcel=null; changed(); }
+  else if(view==='alt'){ Object.assign(AL,{dep:1030,dst:1000,ind:3000}); aDep.set(AL.dep); aDst.set(AL.dst); aInd.set(AL.ind); altU(); }
+  else { Object.assign(LW,{w:'coast',h:14,ridge:8000,t:10,td:6}); lwPlay=false; segW.set(LW.w); sHr.set(LW.h); sRg.set(LW.ridge); sFT.set(LW.t); sFD.set(LW.td); syncLw(); drawTabs(); lu(); } });
 document.addEventListener('labdepth',()=>{ bgDirty=true; changed(); ufig(); });
 LAB.onLang(()=>{ drawStage(); drawPre(); drawPreA(); drawTasks(); drawMaid(); drawTabs(); legend(); ufig(); bgDirty=true; changed(); altU(); lu(); });
 })();

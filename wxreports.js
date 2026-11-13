@@ -438,5 +438,7 @@ LAB.start('wxreports');
 KCS.render(el('wKc'),KCI);
 hooks.forEach(f=>f());
 load('tBR'); setTab('dec');
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+LAB.reset(()=>{ const t=S.tab; S.col=true; S.cat=true; S.lay={sig:true,wt:true}; S.sym=null; load('tBR'); setTab(t); drawSmp(); drawRaw(); drawTable(); drawMain(); info(); drawLay(); legend(); see(); chip(); if(S.tab==='chart') drawChart(); live(); });
 LAB.onLang(()=>{ hooks.forEach(f=>f()); drawSmp(); drawRaw(); drawTable(); drawMain(); info(); drawTabs(); drawLay(); legend(); see(); chip(); if(S.tab==='chart') drawChart(); live(); });
 })();

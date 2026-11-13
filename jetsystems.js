@@ -254,8 +254,8 @@ function side(){ const c=S.cls, m=S.mode, Rm=R[m], A=st.A; let kv=[], h='';
   /* what still works: every node with a full name */
   const ws=Rm.nodes.filter(n=>n.w&&visN(n)), ok=ws.filter(n=>(n.live||(n.off&&n.k==='ctl'))&&!n.warn&&!n.fail), dg=ws.filter(n=>n.live&&n.warn&&!n.fail), no=ws.filter(n=>(!n.live&&!(n.off&&n.k==='ctl'))||n.fail);
   const li=(arr,cl)=>arr.map(n=>`<li class="${cl}">${L(P(n.w))}</li>`).join('');
-  h=`<div class="c1"><h4>${L(CN[c])} · ${L(MODES.find(x=>x[0]===m)[1])}</h4><p class="sum">${L(SUM[c][m])}</p></div><div class="c1">${kv.join('')}</div>`;
-  h+=`<div class="c2"><h5>${L(t2('Still works','Virker fortsatt'))}</h5><ul>${li(ok,'ok')}${li(dg,'dg')}</ul>${no.length?`<h5>${L(t2('Lost','Tapt'))}</h5><ul>${li(no,'no')}</ul>`:''}</div>`;
+  h=`<div class="c1"><h3>${L(CN[c])} · ${L(MODES.find(x=>x[0]===m)[1])}</h3><p class="sum">${L(SUM[c][m])}</p></div><div class="c1">${kv.join('')}</div>`;
+  h+=`<div class="c2"><h4>${L(t2('Still works','Virker fortsatt'))}</h4><ul>${li(ok,'ok')}${li(dg,'dg')}</ul>${no.length?`<h4>${L(t2('Lost','Tapt'))}</h4><ul>${li(no,'no')}</ul>`:''}</div>`;
   el('side').innerHTML=h; }
 function chip(){ el('chip').innerHTML=''; el('xsv').textContent=L(CS[S.cls])+' · '+L(MODES.find(x=>x[0]===S.mode)[1]); }
 function legend(){ const lg=(c,t,k)=>`<span><i class="${k||''}" style="--c:${c}"></i>${L(t)}</span>`, m=S.mode; let s='';
@@ -486,7 +486,7 @@ LAB.quiz(el('qbox'),'jets',()=>LAB.shuffle([
 /* ---------------- static strings, text, start ---------------- */
 LAB.add({},{'Aircraft Systems':'Flysystemer','Aircraft systems: hydraulics, electrics, fuel, flight controls and landing gear':'Flysystemer: hydraulikk, elektrisk, drivstoff, flykontroller og understell','Birdbird Virtual Labs · Aircraft and engine systems':'Birdbird Virtual Labs · Fly- og motorsystemer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The systems lab':'Systemlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
- 'Controls':'Kontroller','Aircraft':'Fly','Failures':'Feil','Pilot actions':'Pilothandlinger','Reset all':'Nullstill alt','Three classes at a glance':'Tre klasser i ett blikk','Sections':'Seksjoner','System':'System','Aircraft class':'Flyklasse',
+ 'Controls':'Kontroller','Aircraft':'Fly','Failures':'Feil','Pilot actions':'Pilothandlinger','Clear failures':'Fjern alle feil','Three classes at a glance':'Tre klasser i ett blikk','Sections':'Seksjoner','System':'System','Aircraft class':'Flyklasse',
  'System schematic of the selected aircraft class: sources, buses or systems, valves and users, with live power, pressure or fuel flow.':'Systemskjema for valgt flyklasse: kilder, skinner eller systemer, ventiler og brukere, med strøm, trykk eller drivstoff som flyter.'});
 LAB.tx({lead:'Hvert fly har de samme jobbene: lage strøm, bevege tunge ting, få drivstoff til motorene, koble piloten til rorflatene og felle ut understellet. Hvordan det gjøres, endrer seg med størrelsen. Et lett stempeltomotors gjør det med alternatorer, kabler og en elektrisk understellsmotor; en turboprop legger til et hydraulikksystem og invertere; et jettrafikkfly har tre hydraulikksystemer, AC-strøm og fly-by-wire. Se hvert system i drift, gi feil, og se hva som fortsatt virker.'});
 function texts(){
@@ -501,6 +501,8 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('jets');
 all();
+/* Reset (the shell's button in the viewport bar): starting values, same system */
+LAB.reset(()=>{ setCls('jet'); });
 /* old anchors from the A320 systems page */
 const HM={'#hyd':'hyd','#fbw':'fc','#elec':'elec','#gear':'gear','#fuelbleed':'fuel','#fuel':'fuel'};
 if(HM[location.hash]){ S.mode=HM[location.hash]; fresh(); st._gearSet=0; prepMode(); upd(); requestAnimationFrame(()=>el('syVp').scrollIntoView({block:'start'})); }

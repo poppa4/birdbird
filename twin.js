@@ -257,6 +257,8 @@ let curPre='crit';
 function drawPre(){ el('ltPre').innerHTML=PRE.map(([k,t])=>`<button class="btn sm${k===curPre?' on':''}" type="button" data-k="${k}">${L(t)}</button>`).join(''); }
 function setLT(o,k){ Object.assign(T,o); curPre=k||null; S_v.set(T.v); S_p.set(T.phi); S_w.set(T.pw*100); S_c.set(T.cg*100); ftSeg.set(T.feather?'f':'w');
   feS.set(T.fail); all(); }
+/* Reset (the shell's button in the viewport bar): starting values, same failed engine */
+LAB.reset(()=>{ T.lay={pf:true,as:false,ss:false,tq:false,rec:true}; drawLay(); setLT({fail:T.fail,v:80,phi:5,feather:false,cg:1,pw:1},T.fail==='L'?'crit':'right'); },'ltVp');
 el('ltPre').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const p=PRE.find(x=>x[0]===b.dataset.k); if(p) setLT(Object.assign({},p[2]),p[0]); });
 
 function read(){ const P=C.P, lv=P.live==='R';

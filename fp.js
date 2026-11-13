@@ -364,6 +364,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('fpl');
 setType('jet'); setMode('climb'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS(); setType(S.type); setMode(m); all(); });
 /* the PNR fold follows the plan */
 const _upd=upd; upd=function(){ _upd(); if(S.mode==='fuel') ddLater(); };
 /* old anchors (flight planning page and the old performance page) */

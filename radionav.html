@@ -5,12 +5,10 @@
 <meta name="description" content="A radio navigation simulator with real round instruments: VOR and CDI, HSI, RMI, ADF and DME, the ILS and a six-pack, over a plan view of Bergen and Oslo. Learn step by step with a guide that tells you the next step and why, practise with instant feedback, or fly freely.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Radio Navigation Simulator</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <link rel="stylesheet" href="navsim.css?v=5">
 <style>
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink);margin-top:16px}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
@@ -146,7 +144,7 @@ body.depth-instructor .maid b{font-size:24px}
   <!-- 3 · KEY POINTS -->
   <section class="card" id="debrief" data-step="debrief">
     <div class="eyebrow">3 · Key points</div>
-    <h2>What each instrument tells you</h2>
+    <h2>Key points</h2>
     <div class="cols why" data-tx="d1">
       <div class="box"><b class="t"><i>1</i>Position, not heading</b><p>A VOR needle and its TO/FROM flag depend only on where you are and the course you set. Turn the aircraft and they do not move. Only the RMI and ADF needles, and the HSI picture, involve heading.</p></div>
       <div class="box"><b class="t"><i>2</i>Fly towards the needle</b><p>When the course you set roughly matches the direction you fly, the CDI needle points to the course. Fly the reciprocal and it reverse-senses. An HSI always shows the course on the correct side.</p></div>
@@ -173,7 +171,7 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Simplified training simulation, not for navigation. Navaid positions, idents and frequencies come from OurAirports (public domain, as used by Route Explorer); the ILS RWY 17 geometry at Bergen is approximate and its frequency is not shown; coastline and relief come from the Mapzen/AWS Terrain Tiles elevation data the site already uses for Route Explorer (about 0.25′ resolution; see Sources). Geometry uses a flat local projection around the area’s VOR (under 0.2° and 0.1 NM error within 40 NM) and one magnetic variation for the whole area (WMM 2025, optional). VOR: ±10° full scale (2° per dot on the CDI, 5° per dot on the HSI), flag OFF within 2° of abeam, in a 45° cone over the station and beyond line of sight. Localiser ±2.5° full scale, glide slope 3° with ±0.7° full scale; coverage simplified. DME: slant range from altitude and station elevation, ground speed from the rate of change. The aircraft flies at constant TAS with rate-one turns (max 25° bank); no instrument errors, no NDB night effect or coastal refraction, no turbulence.</p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="concepts.js?v=2"></script>
 <script src="navcore.js?v=2"></script>
 <script src="navgauges.js?v=4"></script>
@@ -211,7 +209,7 @@ LAB.start('radionav');
 })();
 </script>
 <script src="navmap.js?v=1"></script>
-<script src="navsim.js?v=3"></script>
+<script src="navsim.js?v=4"></script>
 <script src="navlessons.js?v=3"></script>
 <script src="navpage.js?v=2"></script>
 </body>

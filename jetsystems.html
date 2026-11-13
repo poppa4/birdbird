@@ -5,7 +5,7 @@
 <meta name="description" content="Aircraft systems (EASA 021): electrics, hydraulics, fuel, flight controls and landing gear and brakes, compared across a light piston twin, a turboprop twin and a jet transport. One live system schematic with failures: generator, pump, leak, bus fault, fuel imbalance and crossfeed, gear extension failure, and what still works.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aircraft Systems</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
 /* the systems figure: one dark synoptic canvas with a status column beside it (under it on phones) */
@@ -14,9 +14,9 @@
 #syv{display:block;width:100%;aspect-ratio:16/11;max-height:640px;touch-action:manipulation}
 .sy-vp .vtools button{font-family:var(--f-body);font-size:12px}
 .sside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:12.5px;line-height:1.45;background:rgba(6,9,12,.25);min-width:0}
-.sside h4{margin:0 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:#EEF2F5;line-height:1.25}
+.sside h3{margin:0 0 4px;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15px;color:#EEF2F5;line-height:1.25}
 .sside .sum{margin:0 0 10px;color:#AEB9C2;font-size:12.5px}
-.sside h5{margin:10px 0 4px;font-family:var(--f-mono);font-weight:500;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99}
+.sside h4{margin:10px 0 4px;font-family:var(--f-mono);font-weight:500;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#7F8D99}
 .sside ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
 .sside li{position:relative;padding-left:18px}
 .sside li::before{position:absolute;left:0;top:0;font-family:var(--f-mono);font-weight:700}
@@ -155,7 +155,7 @@ body.depth-instructor .tstep .q{font-size:20px}
       <details class="xpanel" id="xpanel" open aria-label="Controls">
         <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <details class="xsec" open><summary>Aircraft</summary><div id="clsSeg" class="typeseg"></div></details>
-        <details class="xsec" open><summary>Failures</summary><div class="fails" id="fails"></div><div class="btns" style="margin-top:8px"><button type="button" class="btn sm" id="reset">Reset all</button></div><p class="hint" id="failH"></p></details>
+        <details class="xsec" open><summary>Failures</summary><div class="fails" id="fails"></div><div class="btns" style="margin-top:8px"><button type="button" class="btn sm" id="reset">Clear failures</button></div><p class="hint" id="failH"></p></details>
         <details class="xsec" open><summary>Pilot actions</summary><div class="act" id="acts"></div></details>
       </details>
       <div class="tryblk" id="try" data-step="try">
@@ -180,9 +180,9 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="concepts.js?v=2"></script>
 <script src="jetsyscore.js?v=1"></script>
-<script src="jetsystems.js?v=2"></script>
+<script src="jetsystems.js?v=3"></script>
 </body>
 </html>

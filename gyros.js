@@ -640,6 +640,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',()=>{ if(S.mode==='irs'&&!deepOn()) setMode('cmp'); all(); });
 LAB.start('gyro');
 setMode('cmp'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS();  setMode(m); all(); });
 /* old anchors */
 const HM={'#compass':'cmp','#gyro':'gyr','#ops':'ins','#irs':'irs'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('gyVp').scrollIntoView({block:'start'})); }

@@ -363,6 +363,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('hp');
 setMode('wl'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS();  setMode(m); all(); });
 /* old anchors */
 const HM={'#info':'wl','#workload':'wl','#fatigue':'fat','#tem':'tem','#drill':'tem'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('hpVp').scrollIntoView({block:'start'})); }

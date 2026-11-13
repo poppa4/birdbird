@@ -287,4 +287,6 @@ const HL={S,APP,ILS,FLS,
 window.HLAB=HL;
 LAB.onLang(()=>{ tabs(); panel(); see(); legend(); playUI(); sync(); });
 HL.set('entry');
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+LAB.reset(()=>HL.set(S.sc),'hlVp');
 })();

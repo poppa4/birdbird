@@ -5,11 +5,9 @@
 <meta name="description" content="Almost all weather starts the same way: air is cooled to its dew point. Lift a parcel of air and watch the cloud form at its base and grow into a flat layer, a cumulus or a thunderstorm, with the temperature profile alongside. See the ten cloud types at their heights, then cool a clear night and watch radiation fog form and clear, or send moist air over a cold sea.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Clouds, Stability and Fog</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .kintro{margin:0 0 4px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .kfull>summary{width:auto!important;max-width:100%}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
@@ -161,7 +159,7 @@ body.depth-instructor .tcard{font-size:14px;width:min(380px,calc(100% - 20px))}
   <!-- 3 · KEY POINTS -->
   <section class="card" id="debrief" data-step="debrief">
     <div class="eyebrow">3 · Key points</div>
-    <h2>What happened, and why it matters</h2>
+    <h2>Key points</h2>
     <div class="cols why" data-tx="d1">
       <div class="box"><b class="t"><i>1</i>Stability decides the cloud</b><p>A lifted parcel keeps rising only while it is warmer than the air around it. Stable air gives flat layers (ST, SC, NS), haze and smooth air; unstable air gives heaped cloud (CU, TCU, CB), showers and turbulence, and with enough depth and moisture, thunderstorms.</p></div>
       <div class="box"><b class="t"><i>2</i>The base comes from the spread</b><p>Rising air closes the temperature–dew point spread by about 2.5 °C per 1000 ft, so the base of convective cloud is about 400 ft per °C of spread. It works for cumulus, not for layer cloud brought in by a front.</p></div>
@@ -190,8 +188,8 @@ body.depth-instructor .tcard{font-size:14px;width:min(380px,calc(100% - 20px))}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of one rising parcel. The dry adiabatic lapse rate is 3 °C per 1000 ft and the parcel’s dew point falls 0.5 °C per 1000 ft, so the cloud base is (T − Td) × 400 ft. The saturated lapse rate is computed from the temperature and the ISA pressure at each height (about 1.2–2.8 °C per 1000 ft). The air around has one straight lapse rate up to a tropopause at 36 000 ft (with heating, the layer below the cloud base is well mixed), with an optional inversion. There is no mixing with the air around, no ice phase and no moisture aloft, so real clouds are often smaller and real soundings are never straight lines. The cloud-type heights are typical mid-latitude values. The fog model uses typical cooling rates and wind and cloud effects and is illustrative only. Use the TAF, the METAR trend and the forecast charts for decisions.</p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="concepts.js?v=2"></script>
-<script src="clouds-lab.js?v=3"></script>
+<script src="clouds-lab.js?v=4"></script>
 </body>
 </html>

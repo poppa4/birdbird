@@ -145,7 +145,7 @@ details.xsec>summary::-webkit-details-marker{display:none}
 details.xsec>summary::before{content:"▸";display:inline-block;width:12px;color:var(--accent);font-size:12px;transition:transform .15s}
 details.xsec[open]>summary::before{transform:rotate(90deg)}
 details.xsec[open]>summary{margin-bottom:8px}
-details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:12px;font-weight:400;color:var(--ink-3)}
+details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:12px;font-weight:400;color:var(--ink-2)}
 .xsec .grp{margin:8px 0 4px}
 .xsec .grp:first-of-type{margin-top:0}
 .xsec .ctl{margin:6px 0 8px}
@@ -216,7 +216,7 @@ details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:
 .tryblk>.note,.tryblk>.lead{margin:0 0 10px;font-size:13.5px;color:var(--ink-2);max-width:80ch}
 .tasks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
 .task{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.task .n{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
 .task .q,.task h3{font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:15.5px;line-height:1.3;color:var(--ink);margin:0}
 .task p:not(.q){margin:0;color:var(--ink-2);font-size:14px;line-height:1.5}
 .task .opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -265,6 +265,35 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 @media (prefers-reduced-motion:reduce){details.xsec>summary::before,.xpanel>.xsum>span:first-child::before{transition:none}}
 /* touch: 40px targets in the viewport bar, toggles, small buttons and the concept-card link */
 @media (pointer:coarse){.vtabs button,.vtabs.seg button,.vtools button,.xtog,.btn.sm,.xsec .pre .btn,.xsec .btns .btn,html .vbtn,html .cn-tog{min-height:44px}.kgo{min-height:44px;display:inline-flex;align-items:center}}
+/* ---------------- The lab template (built by lab.js; see the note at the top of lab.js) ----------------
+   Header: eyebrow · H1 · purpose · p.goal (learning goal) · meta row. Viewport bar: view tabs left, tools right, Reset always last.
+   Phones (≤900 px): viewport, then the Controls tray. The tray is collapsed under the model and stays at the bottom edge of the
+   screen while the model is in view, so the controls are one tap away and the model stays visible above the open tray.
+   Everything here is scoped to the lab shell (.lhead, .atl-main, .xapp), because other pages load this file too. */
+.lhead .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
+.lhead .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+.vtools .xreset{font-family:var(--f-body);font-size:12.5px}
+.vtools>*+.xreset{margin-left:6px}
+/* small mono labels in the lab body: ink-2, so they pass 4.5:1 on paper and on white (ink-3 is 3.1–3.5:1) */
+.tryblk .tstep .n,.atl-main .dfold>summary small{color:var(--ink-2)}
+@media (max-width:900px){
+  .xapp>.xpanel{position:sticky;bottom:0;z-index:6;max-height:min(58vh,520px);overflow:auto;overscroll-behavior:contain;box-shadow:0 -8px 20px rgba(19,32,42,.12);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .xapp>.xpanel>.xsum{position:sticky;top:0;z-index:2;background:var(--sheet);min-height:48px;box-sizing:border-box;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+}
+@media (pointer:coarse){
+  .atl-main details.xsec>summary,.atl-main .dfold>summary{min-height:44px;box-sizing:border-box;align-items:center}
+  .atl-main .kfull>summary{min-height:44px;box-sizing:border-box;padding:12px 0}
+  html .lmeta .atl-depth button,html .atl-bar .atl-depth button{min-height:44px}
+  html .lmeta .atl-lim{display:inline-flex;align-items:center;min-height:44px}
+  .atl-main input[type=range]{min-height:44px}
+  .atl-main .btn,.atl-main .tbtn,.atl-main .xsec .lnk,.atl-main .glance .gb,.atl-main label.chk{min-height:44px}
+  .atl-main label.chk{display:flex;align-items:center}
+  .atl-main .xpanel .seg button{min-height:44px}
+  .atl-main .xchk,.atl-main .xsec .chk{min-height:44px}
+  .atl-main .opts button{min-height:44px}
+  .tstep .dots button{position:relative}
+  .tstep .dots button::before{content:"";position:absolute;inset:-17px -3px}
+}
 /* ---- shared glossary (glossary.js): the pop-up, and the calm marks in lab body text ---- */
 .glpop{position:fixed;z-index:1000;box-sizing:border-box;background:var(--ink);color:#E6EBEF;border:1px solid #2E404D;border-radius:8px;padding:12px 14px 13px;box-shadow:0 18px 40px rgba(0,0,0,.35);font-family:var(--f-body);font-size:14.5px;line-height:1.45;text-align:left;white-space:normal;letter-spacing:normal;text-transform:none}
 .glpop[hidden]{display:none}

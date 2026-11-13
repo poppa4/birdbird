@@ -424,7 +424,7 @@ body.depth-instructor .memo h3{font-size:20px}
 @keyframes kflash{0%{box-shadow:0 0 0 0 rgba(154,30,104,.55)}100%{box-shadow:0 0 0 14px rgba(154,30,104,0)}}
 @media (prefers-reduced-motion:reduce){.kflash{animation:none}}
 /* touch: larger targets for the panel buttons and chart toggles; the overlay buttons on the 3D view stay compact (36px) so they cover less of the model */
-@media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:44px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
+@media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:44px}.atl-main input[type=range]{min-height:44px}.atl-main label.tog{min-height:44px}html .lmeta .atl-depth button,html .atl-bar .atl-depth button{min-height:44px}html .lmeta .atl-lim{display:inline-flex;align-items:center;min-height:44px}.atl-main .opts button,.atl-main .btns button,.atl-main .lessons button,.atl-main .stbtn{min-height:44px}.atl-main .sec.adv>summary{padding-top:9px;padding-bottom:9px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
 </style>
 
 </head>
@@ -436,6 +436,7 @@ body.depth-instructor .memo h3{font-size:20px}
   <div class="brand">
     <div class="eyebrow">Birdbird Virtual Labs · Aerodynamikk</div>
     <h1>Vindtunnelen</h1>
+    <p class="purp" data-tx="tPurp">Put an aerofoil and a whole aircraft in a wind tunnel. Change the angle of attack, speed, flaps and bank, and see where the airflow separates, how lift and drag change, and why the wing stalls.</p>
     <p id="acFull">Airbus A320</p>
     <p class="goal" id="goal"><span class="k" id="goalK">Learning goal</span><span id="goalT">Explain how a wing makes lift and why it stalls at the critical angle of attack, and use flaps, slats, spoilers and the stall speed (VS = VS1g·√n) on the flight deck.</span></p>
   </div>
@@ -760,7 +761,7 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="three.min.js"></script>
 <script src="tunnel3d.js?v=3"></script>
 <script src="cfd3d.js?v=7"></script>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="chartnote.js?v=2"></script>
 <script src="physics.js?v=14"></script>
 <script src="section.js?v=12"></script>
@@ -1095,7 +1096,7 @@ function applyStatic(){
 
 // språk og lab-meny tidlig, så siden er på riktig språk selv om 3D-delen feiler
 applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird';
-if(window.LAB){ LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird'; } } }); }
+if(window.LAB){ LAB.tx({tPurp:'Sett et vingeprofil og et helt fly i en vindtunnel. Endre anstigningsvinkel, fart, klaffer og krengning, og se hvor luftstrømmen løsner, hvordan løft og motstand endrer seg, og hvorfor vingen staller.'}); LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird'; } } }); }
 
 /* ---------------- Tilstand ---------------- */
 const AC0=P.AIRCRAFT.a320;
@@ -3836,8 +3837,9 @@ const PRE=[
  ['Fly inn i stall',()=>{ document.getElementById('t3').scrollIntoView({behavior:'smooth',block:'start'}); if(demoState==='idle') setTimeout(()=>demoBtn.click(),400); }],
  ['60° krengning',()=>{ if(window.STALLP) STALLP.set({bank:60},true); }],
  ['Bakkespoilere',()=>{ resetAtm(); lessons.find(l=>l.t==='Bakkespoilere: løftdumping').run(); }],
- ['Is på forkanten',()=>{ resetAtm(); lessons.find(l=>l.t==='Profil: is på forkanten').run(); }],
- ['Tilbakestill',()=>{ resetAtm(); AB=null; loadAircraft('a320'); st.mode='speed'; rebuild(); SEC.ps.alpha=6; SEC.update(false); if(window.STALLP) STALLP.set({bank:0,conf:0,mass:64000}); clearLesson(); }]];
+ ['Is på forkanten',()=>{ resetAtm(); lessons.find(l=>l.t==='Profil: is på forkanten').run(); }]];
+/* Reset (the shell's button, last in the viewport tool row): the whole tunnel back to its starting values */
+LAB.reset(()=>{ resetAtm(); AB=null; loadAircraft('a320'); st.mode='speed'; rebuild(); SEC.ps.alpha=6; SEC.update(false); if(window.STALLP) STALLP.set({bank:0,conf:0,mass:64000}); clearLesson(); },document.querySelector('#vp .ov-tr'));
 const preEl=document.getElementById('pre');
 function drawPre(){ preEl.innerHTML=PRE.map((p,i)=>`<button type="button" data-i="${i}">${T(p[0])}</button>`).join(''); }
 preEl.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; PRE[+b.dataset.i][1](); });
@@ -4098,6 +4100,9 @@ LAB.quiz(el('qbox'),'tunnel',()=>LAB.shuffle([
 if(!window.LAB||!window.VLab) return;
 const {L,el,nf}=LAB, P=window.VLab, DEG=Math.PI/180, KT=0.514444, G0=9.80665;
 const concepts=window.__tunConcepts;
+/* arrow and label helpers for the small SVG drawings in the stall cards (they were only defined in the key-concepts script above, so the deep-stall drawing threw and the cards stayed empty) */
+const ar=(x1,y1,x2,y2,c,w)=>{ const a=Math.atan2(y2-y1,x2-x1), h=6; return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w||1.6}"/><path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.45)).toFixed(1)},${(y2-h*Math.sin(a-0.45)).toFixed(1)} L${(x2-h*Math.cos(a+0.45)).toFixed(1)},${(y2-h*Math.sin(a+0.45)).toFixed(1)} Z" fill="${c}"/>`; };
+const tx=(x,y,t,c,a)=>`<text x="${x}" y="${y}" fill="${c||'#c9d2da'}" font-size="9" font-family="Public Sans,system-ui,sans-serif"${a?` text-anchor="${a}"`:''}>${t}</text>`;
 el('kcGrid').addEventListener('click',e=>{ const b=e.target.closest('.kgo'); if(!b) return; if(window.__tunGo) window.__tunGo(b.dataset.k); else { const t=el(b.dataset.k==='vs'?'stall':'profil'); if(t) t.scrollIntoView({behavior:'smooth'}); } });
 
 /* ---- stall: kritisk α, stallfart med masse, lastfaktor og konfigurasjon ---- */

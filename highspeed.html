@@ -5,12 +5,14 @@
 <meta name="description" content="A jet transport lives between two limits: drag and stall at the slow end, compressibility and buffet at the fast end. Fly an A320-sized wing through the drag curve, push the Mach number until shock waves form, find the coffin corner at altitude, and see what the swept wing buys and what it costs.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>High-speed flight and drag</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
 .stack{display:flex;flex-direction:column;gap:10px;min-width:0}
 /* explore: one dark viewport with view tabs and a sticky control panel (tunnel.html layout) */
 .xmain{display:flex;flex-direction:column;gap:12px;min-width:0}
+/* phones: the same order as every lab (viewport, Controls tray, then the rest) */
+@media (max-width:900px){.xapp>.xmain{display:contents}.xapp{row-gap:12px}.xapp>.xmain>*{order:2;min-width:0}.xapp>.xmain>.viewport{order:0}.xapp>.xpanel{order:1;margin-bottom:0}}
 .viewport{position:relative;border:1px solid #0a1015;border-radius:var(--radius-lg);overflow:hidden;background:radial-gradient(120% 90% at 50% 35%,#2a3542 0%,#18212b 55%,#0f151b 100%);color:#E2E8EE}
 .viewport canvas{display:block;width:100%}
 .vchip{font-family:var(--f-mono);font-size:11px;color:#8B99A7;background:rgba(15,23,29,.55);border:1px solid #263340;border-radius:4px;padding:3px 8px;line-height:1.5}
@@ -31,8 +33,6 @@ body.depth-short .presec{display:none}
 .rail .ro{margin-top:6px}
 .rc{min-width:0}
 /* template patterns (pressure.html, forces.html, propeller.html) */
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
@@ -167,7 +167,8 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
         </div>
       </div>
 
-      <aside class="xpanel" id="xpanel" aria-label="Controls">
+      <details class="xpanel" id="xpanel" open aria-label="Controls">
+        <summary class="xsum"><span>Controls</span><span class="xsv" id="xsv"></span></summary>
         <div class="tbox" id="tbox" hidden></div>
         <!-- drag -->
         <div class="vp" data-v="drag">
@@ -245,7 +246,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
           <div class="xsec presec"><h3>Scenarios</h3><div class="pre" id="preU"></div></div>
           <details class="xsec xadv"><summary>Advanced</summary><div class="grp" style="margin-top:4px">Thrust</div><div id="uThr"></div></details>
         </div>
-      </aside>
+      </details>
     </div>
   </section>
 
@@ -253,7 +254,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   <section class="card" id="debrief" data-step="debrief">
     <span id="ops" aria-hidden="true"></span>
     <div class="eyebrow">3 · Key points</div>
-    <h2>What happened, and why it matters</h2>
+    <h2>Key points</h2>
     <div class="cols why" id="dbC"></div>
     <h3 id="takeH" style="margin-top:22px">Pilot takeaways</h3>
     <ul class="take" id="take"></ul>
@@ -268,7 +269,7 @@ body.depth-instructor .howto,body.depth-instructor .ptake{font-size:16px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of an A320-sized aircraft in the ISA (wing area 122.6 m², drag polar CD = 0.020 + 0.040 CL² clean, wave drag from a simple Lock-type law, a simplified buffet boundary). All numbers are illustrative typical values, not FCOM or AFM data. Real limits come from the FCOM, the AFM and the FMS (MAX and REC MAX altitudes, VLS, green dot).</p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="cfd3d.js?v=7"></script>
 <script>
 (function(){
@@ -965,6 +966,10 @@ LAB.quiz(el('qbox'),'highspeed',()=>LAB.shuffle(Q.slice()),10);
 /* ---------- start ---------- */
 TREADY=true;
 LAB.start('hs'); mkD(); uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); uU(); uTab(); concepts(); drawPre(); drawTasks(); debrief(); initView();
+/* Reset (the shell's button in the viewport bar): starting values of the view you are in */
+LAB.reset(()=>{ ({drag:()=>setD({m:64,h:0,v:250,cfg:'clean'}),climb:()=>setS({ias:300,mach:0.78,dev:0,hm:20000}),shock:()=>setF({M:0.78,CL:0.5}),buffet:()=>setC({m:64,fl:350,M:0.78,n:1.3}),
+    sweep:()=>setW({sw:25,dev:'none',yd:'off',t0:-1}),upset:()=>setU({fl:350,bank:30,push:'firm',ord:'jet',thr:'need'})})[VIEW]();
+  const fk={drag:'D',climb:'S',shock:'F',buffet:'C',upset:'U'}[VIEW]; if(fk&&FULL[fk]){ FULL[fk]=false; drawTabs(); drawHow(); REDRAW[fk](); } },'vport');
 LAB.onLang(()=>{ uD(); uS(); uF(); uC(); uW(); conf(); cards(); machm(); dU(); rU(); uTab(); concepts(); drawPre(); drawTasks(); debrief(); drawTabs(); drawHow(); chip(); });
 
 })();

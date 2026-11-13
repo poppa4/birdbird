@@ -515,6 +515,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('air');
 snapVsi(); setMode('set'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS(); lag=null; setMode(m); all(); });
 /* old anchors from altimetry.html and pitot.html */
 const HM={'#settings':'set','#errors':'err','#speeds':'spd','#blockages':'blk'}, HD={'#dd-da':'dd-da','#dd-cold':'dd-cold','#dd-blk':'dd-blk','#dd-uas':'dd-uas'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('adVp').scrollIntoView({block:'start'})); }

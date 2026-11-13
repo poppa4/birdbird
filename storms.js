@@ -83,7 +83,7 @@ function labels(lbl,api,narrow){ const v=api.view, vx=api.VEX[v]||1, Y=ft=>ft*FT
     if(RO.b<20&&RO.attB>8&&RD.rng>=68) lbl(L(t2('Attenuation shadow: B is hidden','Dempingsskygge: B er skjult')),68*1.852,Y(Math.max(0,RD.beamC(68))),0,'hz',0,36,2); } }
 const V=window.CB3D?CB3D.init({host:el('c3'),canvas:el('cb3'),labels:el('labels'),chip:el('chip'),legend:el('cbar'),T:()=>L(NOGL),labelSet:labels})
   :{ok:false,setView(){},setStorm(){},setShow(){},setLook(){},cam(){},setMB(){},mbK(){},setRadar(){},tick(){},relabel(){},resize(){},presets:()=>['q','side'],VEX:{}};
-if(!window.CB3D){ const n=document.createElement('div'); n.className='nogl'; n.textContent=L(NOGL); el('c3').appendChild(n); }
+if(!window.CB3D){ const n=document.createElement('div'); n.className='nogl'; n.setAttribute('role','status'); n.textContent=L(NOGL); el('c3').appendChild(n); }
 
 /* ---------------- 2D: navigation display ---------------- */
 function txt(g,s,x,y,col,al,sz,wt){ g.font=`${wt||500} ${sz||11}px ${MONO}`; g.textAlign=al||'left'; g.lineWidth=3; g.strokeStyle='rgba(6,9,12,.85)'; g.strokeText(s,x,y); g.fillStyle=col||'#D7E1E6'; g.fillText(s,x,y); g.textAlign='left'; }
@@ -455,5 +455,9 @@ function runHooks(){ hooks.forEach(f=>f()); }
 runHooks(); LAB.onLang(()=>{ runHooks(); V.relabel(); });
 /* old anchors: #life → the storm, #shear → microburst, #wxr and #radar → radar, #types → the deep dive */
 const HV={'#life':'storm','#shear':'mb','#wxr':'wx','#radar':'wx'}; setView(HV[location.hash]||'storm'); if(location.hash==='#types'){ const d=el('dd0'); if(d) d.open=true; }
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+{ const keepS=LAB.keep(S), keepC=LAB.keep(COND);
+  LAB.reset(()=>{ const v=S.view; keepS(); keepC(); MB.dv=50; MB.xc=2.6; MB.R=0.8; MB.vapp=140; MB.pil='none'; RD.fl=33000; RD.tilt=0; RD.gain='cal'; RD.rng=80; slXC.set(MB.xc); slR.set(MB.R); slVa.set(MB.vapp); setS({view:v}); }); }
+
 LAB.start('storms');
 })();

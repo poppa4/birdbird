@@ -23,6 +23,7 @@ const S={area:'bergen',ac:{x:0,y:0,th:90,alt:4000,tas:120,vs:0},sel:{hdg:90,trk:
   wind:{dir:270,spd:0},varE:0,run:false,speed:1,t:0,
   view:{north:true,range:20,profile:false,trace:true,course:true,tofrom:false,rings:true,labels:true,sectors:false,tri:false,brg:true,hideMap:false,hideAns:false,centre:'st'},
   hold:{fix:'st',rad:180,dme:10,inb:360,dir:1,leg:1},mode:'learn',guide:true};
+const HOLD0=Object.assign({},S.hold);
 let ST={}, NAV=[], ILS=[], APT=[];
 function buildArea(){ const B=NM_.build(S.area,S.varE); ST=B.ST; NAV=B.NAV; ILS=B.ILS; APT=B.APT; map.setRegion(S.area);
   if(!ST[S.nav1]||ST[S.nav1].type==='NDB') S.nav1=NAV.find(n=>n.type==='VOR').id;
@@ -449,10 +450,12 @@ function buildPanel(){
   /* simulation */
   const sm2=sec('nsSimSec',t2('Simulation','Simulering'),true);
   grp(sm2,t2('Speed','Hastighet')); segment(div(sm2),()=>[['1','×1'],['2','×2'],['4','×4'],['8','×8'],['16','×16']],()=>String(S.speed),v=>{ S.speed=+v; },'speed');
-  const bt=div(sm2,'btns ns-mt'); bt.innerHTML=`<button type="button" class="btn sm" id="nsClr"></button><button type="button" class="btn sm" id="nsSave"></button><button type="button" class="btn sm" id="nsLoad"></button><button type="button" class="btn sm quiet" id="nsReset"></button>`;
+  const bt=div(sm2,'btns ns-mt'); bt.innerHTML=`<button type="button" class="btn sm" id="nsClr"></button><button type="button" class="btn sm" id="nsSave"></button><button type="button" class="btn sm" id="nsLoad"></button>`;
   const sn=div(sm2,'note ns-snap'); sn.id='nsSnapN';
-  const bd=()=>{ el('nsClr').textContent=L(t2('Clear trace','Fjern spor')); el('nsSave').textContent=L(t2('Save snapshot','Lagre øyeblikksbilde')); el('nsLoad').textContent=L(t2('Load snapshot','Hent øyeblikksbilde')); el('nsReset').textContent=L(t2('Reset','Tilbakestill')); }; bd(); LAB.onLang(bd);
-  el('nsClr').onclick=()=>{ trClear(); redraw(); }; el('nsSave').onclick=snapSave; el('nsLoad').onclick=snapLoad; el('nsReset').onclick=()=>{ if(API.reset) API.reset(); };
+  const bd=()=>{ el('nsClr').textContent=L(t2('Clear trace','Fjern spor')); el('nsSave').textContent=L(t2('Save snapshot','Lagre øyeblikksbilde')); el('nsLoad').textContent=L(t2('Load snapshot','Hent øyeblikksbilde')); }; bd(); LAB.onLang(bd);
+  el('nsClr').onclick=()=>{ trClear(); redraw(); }; el('nsSave').onclick=snapSave; el('nsLoad').onclick=snapLoad;
+  /* Reset: the shell's button in the viewport bar (lesson, task or free flight starts again) */
+  LAB.reset(()=>{ if(API.reset) API.reset(); },'nsvp');
   /* advanced */
   const adv=sec('nsAdvSec',t2('Advanced','Avansert'),false);
   grp(adv,t2('Area','Område')); segment(div(adv),()=>Object.keys(AREAS).map(k=>[k,AREAS[k].n]),()=>S.area,v=>{ S.area=v; buildArea(); placeRel(refVor(),S.obs,15); trClear(); },'area');
@@ -582,12 +585,12 @@ const API={S,D,N,ST,HS,t2,L,d3,nf,AREAS,get NAV(){ return NAV; },nav1,adfSt,refV
   /* fast-forward the simulation (tests and "Show me"): sec of sim time in 0.1 s steps, with the lesson ticks */
   ff(sec){ const n=Math.round(sec/0.1); for(let i=0;i<n;i++){ if(!S.run) break; simStep(0.1); derive(); if(API.onTick) API.onTick(0.1/S.speed); } redraw(); },
   /* a clean state for a lesson or task */
-  base(o){ o=o||{}; S.run=false; S.speed=o.speed||1; if(o.area&&o.area!==S.area){ S.area=o.area; buildArea(); } setVar(o.varE||0); S.wind.dir=o.wdir??270; S.wind.spd=o.wspd||0;
+  base(o){ o=o||{}; S.run=false; S.speed=o.speed||1; { const ar=o.area||'bergen'; if(ar!==S.area){ S.area=ar; buildArea(); } }   /* lessons, tasks and Reset are written for Bergen unless they name an area: without this a Reset after changing the area tuned a station that is not there */ setVar(o.varE||0); S.wind.dir=o.wdir??270; S.wind.spd=o.wspd||0;
     S.nav1=o.nav1||refVor().id; S.adf=o.adf||NAV.find(n=>n.type==='NDB').id; S.obs=o.obs??0; S.adfMov=!!o.adfMov; S.adfCard=0; S.ac.tas=o.tas||120; S.ac.alt=o.alt??4000; S.ac.vs=0; S.sel.alt=S.ac.alt; S.sel.vs=1000; S.ap=o.ap||'HDG';
     const v=refVor(); placeRel(o.at||v,o.rad??90,o.dme??15); S.ac.th=N.toTrue(o.hdg??90,S.varE); S.sel.hdg=o.hdg??90; S.sel.trk=o.trk??(o.hdg??90);
     Object.assign(S.view,{north:true,range:o.range||20,profile:!!o.profile,trace:true,course:o.course!==false,tofrom:!!o.tofrom,rings:true,tri:!!o.tri,brg:o.brg!==false,sectors:!!o.sectors,hideMap:!!o.hideMap,centre:'st'});
     if(S.mode!=='instructor') S.view.hideAns=!!(o.hideMap||o.hideAns);
-    if(o.hold) Object.assign(S.hold,o.hold); holdReset(); trClear(); bgDirty=true; CAM.t=1; profSync(); derive(); apSync(); toolsSync(); segsSync(); fieldsSync(true); redraw(); }};
+    Object.assign(S.hold,HOLD0,o.hold||{}); holdReset(); trClear();   /* the hold is part of the starting values too (a Reset used to keep a changed hold) */ bgDirty=true; CAM.t=1; profSync(); derive(); apSync(); toolsSync(); segsSync(); fieldsSync(true); redraw(); }};
 API.GA=GA; window.NSIM=API;
 
 /* ---------- start ---------- */

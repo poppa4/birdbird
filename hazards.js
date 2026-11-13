@@ -537,5 +537,7 @@ LAB.quiz(el('qbox'),'hazards',()=>LAB.shuffle([
 function concepts(){ KCS.render(el('hKc'),KCI); }
 LAB.start('hazards');
 concepts(); solve(); hooks.forEach(f=>f()); all();
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+{ const keepS=LAB.keep(S); LAB.reset(()=>{ const t=S.tab; keepS(); cur=null; drawLay(); setTab(t); all(); }); }
 LAB.onLang(()=>{ hooks.forEach(f=>f()); all(); });
 })();

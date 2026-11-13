@@ -5,7 +5,7 @@
 <meta name="description" content="Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move…">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mass and balance</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
@@ -27,6 +27,11 @@
 .ls select{font-size:14px;padding:6px;border:1px solid var(--rule);border-radius:3px;background:#fff;max-width:100%}
 .ls .fb{font-family:var(--f-mono);font-size:12.5px;white-space:nowrap}
 .wrapx{overflow-x:auto}
+/* the Reset bar on the light drawing paper (lab.css styles it for the dark viewport) */
+.paper>.vbar{padding:8px 8px 0;background:#FBFBF8}
+.paper .vtools button{background:#fff;color:var(--ink);border-color:var(--rule);-webkit-backdrop-filter:none;backdrop-filter:none}
+.paper .vtools button:hover{background:#F1F4F1;color:var(--ink);border-color:var(--ink-3)}
+.paper .vtools button:focus-visible{outline:2px solid var(--focus,#1D4E9E);outline-offset:2px}
 .lmc{border-left:3px solid var(--magenta);background:var(--sheet);padding:8px 12px;font-size:14px}
 </style>
 </head>
@@ -44,12 +49,12 @@
   </header>
   <nav class="snav" aria-label="Sections"><a href="#masses">Masses and limits</a><a href="#cg">Centre of gravity</a><a href="#loadsheet">Load sheet</a><a href="#ops">In the aircraft</a><a href="#quiz">Test yourself</a></nav>
 
-  <section class="card" id="masses">
+  <section class="card" id="masses" data-step="explore">
     <div class="eyebrow">1 · Interactive</div>
     <h2>Masses and limits</h2>
     <p class="lead">Every flight is checked against three structural limits: maximum zero fuel mass, maximum take-off mass and maximum landing mass. Each one allows a different traffic load, and the lowest of the three is the one you can actually carry.</p>
     <div class="split">
-      <div class="paper"><canvas id="cvA" aria-label="Mass build-up from dry operating mass to landing mass, with the three structural limits"></canvas></div>
+      <div class="paper" id="mbA"><div class="vbar"><div class="vtools"></div></div><canvas id="cvA" aria-label="Mass build-up from dry operating mass to landing mass, with the three structural limits"></canvas></div>
       <div class="panel">
         <div id="actl"></div>
         <div class="ro" style="margin-top:8px">
@@ -65,13 +70,13 @@
     </div>
   </section>
 
-  <section class="card" id="cg">
+  <section class="card" id="cg" data-step="explore">
     <div class="eyebrow">2 · Interactive</div>
     <h2>Centre of gravity</h2>
     <p class="lead">The CG is the total moment divided by the total mass. On a transport aircraft it is given in percent of the mean aerodynamic chord (% MAC), and load sheets add moments as an index to keep the numbers small. Why the CG limits exist aerodynamically is covered in the <a href="stability.html#long">stability lab</a>.</p>
     <div class="split">
-      <div class="stack">
-        <div class="paper"><canvas id="cvB" aria-label="Side view of the cabin zones and cargo holds with their loads"></canvas></div>
+      <div class="stack" id="mbG">
+        <div class="paper"><div class="vbar"><div class="vtools"></div></div><canvas id="cvB" aria-label="Side view of the cabin zones and cargo holds with their loads"></canvas></div>
         <div class="paper"><canvas id="cvE" aria-label="CG envelope with zero fuel, take-off and landing points"></canvas></div>
       </div>
       <div class="panel">
@@ -90,7 +95,7 @@
     </div>
   </section>
 
-  <section class="card" id="loadsheet">
+  <section class="card" id="loadsheet" data-step="try">
     <div class="eyebrow">3 · Drill</div>
     <h2>Load sheet</h2>
     <p class="lead">A simplified load sheet. Fill in the blanks from the given figures, then check. After that, apply a last-minute change and correct the sheet the way you would before departure.</p>
@@ -104,20 +109,20 @@
     </div>
   </section>
 
-  <section class="card" id="ops">
+  <section class="card" id="ops" data-step="debrief">
     <div class="eyebrow">4 · Operations</div>
     <h2>In the aircraft</h2>
     <div class="cols" id="cards"></div>
   </section>
 
-  <section class="card" id="quiz">
+  <section class="card" id="quiz" data-step="check">
     <div class="eyebrow">Check</div>
     <h2>Test yourself</h2>
     <div id="qbox"></div>
   </section>
   <p class="foot">Teaching model of an A320-sized aircraft. Masses, limits, arms, the CG envelope and the trim setting are illustrative typical values, not data for any registration or variant: real limits come from the AFM, the weight and balance manual and the operator’s load control system. Passenger masses use the EASA standard mass of 84 kg per adult including hand baggage.</p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script>
 (function(){
 'use strict';
@@ -186,10 +191,11 @@ function rA(){ const M=mass(); el('a1').textContent=kg(M.tl)+' ('+A.pax+' × 84 
    lm:{en:`<b>MLM governs.</b> On a short sector little fuel is burnt, so the aircraft arrives heavy. Carrying extra fuel (tankering) quickly hits the landing limit. The allowed traffic load for MLM is MLM − DOM − take-off fuel + trip fuel.`,no:`<b>MLM bestemmer.</b> På en kort etappe brennes lite drivstoff, så flyet kommer tungt frem. Ekstra drivstoff (tankering) treffer fort landingsgrensen. Tillatt trafikklast for MLM er MLM − DOM − avgangsdrivstoff + turdrivstoff.`}}[M.gov.k];
   el('ax').innerHTML=L(why)+' '+L({en:`DOM here is ${kg(DOM)} (aircraft, crew, catering, water: everything except traffic load and usable fuel).`,no:`DOM her er ${kg(DOM)} (fly, besetning, catering, vann: alt unntatt trafikklast og brukbart drivstoff).`})+(fuelOk?'':' <span class="ko">'+L({en:'The take-off fuel must also cover reserves: trip fuel this close to the take-off fuel is not a legal plan.',no:'Avgangsdrivstoffet må også dekke reserver: turdrivstoff så nær avgangsdrivstoffet er ikke en lovlig plan.'})+'</span>'); }
 function uA(){ dA(); rA(); }
-LAB.slider(el('actl'),{label:'Passengers',min:0,max:180,step:1,v:A.pax,f:v=>v+' × 84 kg',on:v=>{ A.pax=v; uA(); }});
-LAB.slider(el('actl'),{label:'Baggage and cargo (kg)',min:0,max:7000,step:50,v:A.cargo,f:v=>kg(v),on:v=>{ A.cargo=v; uA(); }});
-LAB.slider(el('actl'),{label:'Take-off fuel (kg)',min:3000,max:MAXF,step:100,v:A.tof,f:v=>kg(v),on:v=>{ A.tof=v; uA(); }});
-LAB.slider(el('actl'),{label:'Trip fuel (kg)',min:1000,max:15000,step:100,v:A.trip,f:v=>kg(v),on:v=>{ A.trip=v; uA(); }});
+const AS=[];
+AS[0]=LAB.slider(el('actl'),{label:'Passengers',min:0,max:180,step:1,v:A.pax,f:v=>v+' × 84 kg',on:v=>{ A.pax=v; uA(); }});
+AS[1]=LAB.slider(el('actl'),{label:'Baggage and cargo (kg)',min:0,max:7000,step:50,v:A.cargo,f:v=>kg(v),on:v=>{ A.cargo=v; uA(); }});
+AS[2]=LAB.slider(el('actl'),{label:'Take-off fuel (kg)',min:3000,max:MAXF,step:100,v:A.tof,f:v=>kg(v),on:v=>{ A.tof=v; uA(); }});
+AS[3]=LAB.slider(el('actl'),{label:'Trip fuel (kg)',min:1000,max:15000,step:100,v:A.trip,f:v=>kg(v),on:v=>{ A.trip=v; uA(); }});
 
 /* ---------- 2 tyngdepunkt ---------- */
 const Cg={A:50,B:60,C:55,fwd:1200,aft:1800,bulk:400,tof:11000,trip:7500};
@@ -247,7 +253,7 @@ const GS={};
 GS.tof=LAB.slider(el('gctl'),{label:'Take-off fuel (kg)',min:3000,max:MAXF,step:100,v:Cg.tof,f:v=>kg(v)+(v>12400?' ('+L({en:'centre tank',no:'senter-tank'})+' '+nf(v-12400,0)+')':''),on:v=>{ Cg.tof=v; uG(); }});
 GS.trip=LAB.slider(el('gctl'),{label:'Trip fuel (kg)',min:1000,max:15000,step:100,v:Cg.trip,f:v=>kg(v),on:v=>{ Cg.trip=Math.min(v,Cg.tof-1500); uG(); }});
 const PRE={bal:{A:50,B:60,C:55,fwd:1200,aft:1800,bulk:400},fwd:{A:60,B:45,C:5,fwd:3200,aft:300,bulk:0},aft:{A:5,B:45,C:60,fwd:0,aft:3800,bulk:1200}};
-LAB.seg(el('gpre'),[['bal','Balanced'],['fwd','Forward'],['aft','Aft']],'bal',v=>{ Object.entries(PRE[v]).forEach(([k,x])=>{ Cg[k]=x; GS[k].set(x); }); uG(); });
+const GPRE=LAB.seg(el('gpre'),[['bal','Balanced'],['fwd','Forward'],['aft','Aft']],'bal',v=>{ Object.entries(PRE[v]).forEach(([k,x])=>{ Cg[k]=x; GS[k].set(x); }); uG(); });
 
 /* ---------- 3 lasteark ---------- */
 let LS=null, lmcN=0;
@@ -259,7 +265,7 @@ function lsCalc(){ const tl=LS.pax*PAX+LS.bag+LS.cargo, zfm=LS.dom+tl, tom=zfm+L
 const FIELDS=['tl','zfm','tom','lm','allowed','under','gov'];
 function drawLS(){ const C=lsCalc(); const giv=(lab,v)=>`<tr><td>${lab}</td><td class="n">${nf(v,0)}</td><td></td></tr>`;
   const inp=(k,lab,cls)=>{ const v=LS.in[k]; const ok= LS.checked&&v!==undefined&&v!==''? (k==='gov'? v===C.gov : Math.abs(parseFloat(v)-C[k])<=1) : null; const fb= LS.shown? (k==='gov'?C.gov:nf(C[k],0)) : ok===true? '✓' : ok===false? '✗' : '';
-    const field= k==='gov'? `<select data-k="gov"><option value="">–</option>${['MZFM','MTOM','MLM'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>` : `<input data-k="${k}" inputmode="numeric" class="${ok===true?'right':ok===false?'wrong':''}" value="${v!==undefined?v:''}" aria-label="${lab}">`;
+    const field= k==='gov'? `<select data-k="gov" aria-label="${lab}"><option value="">–</option>${['MZFM','MTOM','MLM'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>` : `<input data-k="${k}" inputmode="numeric" class="${ok===true?'right':ok===false?'wrong':''}" value="${v!==undefined?v:''}" aria-label="${lab}">`;
     return `<tr class="${cls||''}"><td>${lab}</td><td class="n">${field}</td><td class="fb" style="color:${ok===false?'var(--red)':ok?'var(--green)':'var(--ink-2)'}">${fb}</td></tr>`; };
   el('lsheet').innerHTML=`<tr><th>${L({en:'Item',no:'Post'})}</th><th style="text-align:right">kg</th><th></th></tr>`+
    giv(L({en:'Dry operating mass (DOM)',no:'Tørr operativ masse (DOM)'}),LS.dom)+giv(L({en:'Passengers',no:'Passasjerer'})+` (${LS.pax} × 84)`,LS.pax*PAX)+giv(L({en:'Baggage',no:'Bagasje'}),LS.bag)+giv(L({en:'Cargo and mail',no:'Last og post'}),LS.cargo)+
@@ -310,6 +316,10 @@ const Q=[
 LAB.quiz(el('qbox'),'massbalance',()=>LAB.shuffle(Q.slice()).map(q=>{ const ix=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:ix.map(i=>q.a[i]),c:ix.indexOf(q.c)}; }),12);
 
 LAB.start('mb'); uA(); uG(); newLS(); cards();
+/* Reset (shared shell button, one per model): back to the starting load */
+{ const A0=Object.assign({},A), G0=Object.assign({},Cg), PRE0=GPRE.v;
+  LAB.reset(()=>{ Object.assign(A,A0); ['pax','cargo','tof','trip'].forEach((k,i)=>AS[i].set(A[k])); uA(); },el('mbA'));
+  LAB.reset(()=>{ Object.assign(Cg,G0); Object.keys(GS).forEach(k=>GS[k].set(Cg[k])); GPRE.set(PRE0); uG(); },el('mbG')); }
 LAB.onLang(()=>{ uA(); uG(); drawLS(); if(LS&&LS.lmcText&&!el('lsMsg').hidden){ el('lsMsg').innerHTML=`<b>LMC ${lmcN}.</b> ${L(LS.lmcText)} `+L({en:'Update the sheet and check again.',no:'Oppdater arket og sjekk igjen.'}); } cards(); });
 })();
 </script>

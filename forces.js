@@ -507,5 +507,7 @@ if(window.KCS){ const {sv,tx,ar}=KCS;
 /* start */
 LAB.start('forces');
 all(); hooks.forEach(f=>f());
+/* Reset (the shell's button in the viewport bar): starting values, level flight */
+{ const keepF=LAB.keep(F); LAB.reset(()=>{ keepF(); el('mag').classList.toggle('on',F.mag); el('mag').setAttribute('aria-pressed',String(F.mag)); setF({},'level'); }); }
 LAB.onLang(()=>{ hooks.forEach(f=>f()); all(); });
 })();

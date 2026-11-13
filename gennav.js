@@ -330,9 +330,9 @@ el('casePre').addEventListener('click',e=>{ const b=e.target.closest('button'); 
 sl.ctas=LAB.slider(el('petCtl'),{label:'TAS after the failure',min:40,max:520,step:5,v:S.ctas,f:v=>v+' kt',on:v=>{ S.ctas=Math.min(v,S.tas); if(v>S.tas) sl.ctas.set(S.tas); S.cs=''; drawCases(); upd(); }});
 sl.fuel=LAB.slider(el('petCtl'),{label:'Fuel above reserves',min:0,max:LFUEL.length-1,step:1,v:idx(LFUEL,S.fuel),f:i=>LFUEL[i]+' kg',on:i=>{ S.fuel=LFUEL[i]; upd(); }});
 sl.dev=LAB.slider(el('adv'),{label:'Compass deviation (this heading)',min:-10,max:10,step:1,v:S.dev,f:v=>v===0?'0°':Math.abs(v)+'° '+(v>0?L(t2('E','Ø')):L(t2('W','V'))),on:v=>{ S.dev=v; upd(); }});
-LAB.slider(el('machCtl'),{label:'Flight level',min:100,max:410,step:10,v:S.fl,f:v=>'FL'+v,on:v=>{ S.fl=v; machRo(); }});
-LAB.slider(el('machCtl'),{label:'Mach number',min:0.4,max:0.86,step:0.01,v:S.mach,f:v=>'M '+v.toFixed(2),on:v=>{ S.mach=v; machRo(); }});
-LAB.slider(el('machCtl'),{label:'Temperature vs ISA',min:-30,max:30,step:1,v:S.isa,f:v=>fV(v)+' °C',on:v=>{ S.isa=v; machRo(); }});
+sl.fl=LAB.slider(el('machCtl'),{label:'Flight level',min:100,max:410,step:10,v:S.fl,f:v=>'FL'+v,on:v=>{ S.fl=v; machRo(); }});
+sl.mach=LAB.slider(el('machCtl'),{label:'Mach number',min:0.4,max:0.86,step:0.01,v:S.mach,f:v=>'M '+v.toFixed(2),on:v=>{ S.mach=v; machRo(); }});
+sl.isa=LAB.slider(el('machCtl'),{label:'Temperature vs ISA',min:-30,max:30,step:1,v:S.isa,f:v=>fV(v)+' °C',on:v=>{ S.isa=v; machRo(); }});
 function mach(){ const isa=G.isaTemp(S.fl*100), sat=isa+S.isa, a=G.speedOfSound(sat); return {isa,sat,a,tas:S.mach*a}; }
 function machRo(){ const m=mach(); el('machRo').innerHTML=[[t2('Outside air temperature','Utetemperatur'),nf(m.sat,1)+' °C'],[t2('Speed of sound','Lydhastighet'),Math.round(m.a)+' kt'],[t2('TAS','TAS'),Math.round(m.tas)+' kt']].map(([k,v])=>`<div class="rrow"><span>${L(k)}</span><b>${v}</b></div>`).join(''); }
 el('machUse').onclick=()=>{ S.tas=clamp(Math.round(mach().tas/5)*5,60,520); sl.tas.set(S.tas); capCtas(); upd(); };
@@ -534,6 +534,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('gnav');
 showKnow(); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS(); sl.fl.set(S.fl); sl.mach.set(S.mach); sl.isa.set(S.isa); sl.flown.set(S.flown); sl.ctas.set(S.ctas); machRo(); setS(Object.assign({},S,{mode:m,proj:S.proj})); });
 /* old anchors keep working: #triangle, #sixty, #earth, #charts, #pet, #time */
 const HM={'#triangle':'solve','#sixty':'off','#earth':'earth','#charts':'earth','#pet':'pet'};
 if(HM[location.hash]){ if(location.hash==='#charts') S.proj='lcc'; setMode(HM[location.hash]); }

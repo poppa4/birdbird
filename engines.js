@@ -831,10 +831,13 @@ function texts(){
   el('ratH').textContent=L(t2('For the jets. Must be above the OAT and the corner (ISA + 15).','For jetmotorene. Må være over OAT og hjørnet (ISA + 15).'));
   el('foot').innerHTML=L(t2('<b>Model and limitations.</b> Teaching model, not for flight. Scaled, representative models of generic engine types (piston about 180 hp, free-turbine turboprop about 850 shp, turbojet about 15 kN, high-bypass turbofan about 120 kN), not data for any real engine; numbers are typical. ICAO standard atmosphere; propulsive efficiency and thrust lapse from simple textbook relations; start sequences are simplified time models. The aircraft flight manual and the engine manufacturer’s data decide. More in Deep dive → Model and data.','<b>Modell og begrensninger.</b> Opplæringsmodell, ikke for flyging. Skalerte, representative modeller av generiske motortyper (stempel rundt 180 hk, turboprop med fri turbin rundt 850 shp, turbojet rundt 15 kN, turbofan med høyt omløpsforhold rundt 120 kN), ikke data for noen virkelig motor; tallene er typiske. ICAOs standardatmosfære; propulsiv virkningsgrad og skyvfall fra enkle lærebokrelasjoner; startsekvensene er forenklede tidsmodeller. Flyhåndboken og motorprodusentens data avgjør. Mer i Dypdykk → Modell og data.'));
   el('ddH').textContent=L(t2('Deep dive','Dypdykk')); }
-function all(){ if(S.mode==='rat'&&!deepOn()) S.mode='how'; texts(); setMode(S.mode); drawPre(); drawTask(); drawDD(); drawTake(); syncCtl(); upd(); }
+function all(){ if(S.mode==='rat'&&!deepOn()) S.mode='how'; texts(); setMode(S.mode); drawPre(); drawTask(); drawDD(); drawTake(); syncCtl(); syncWx(); upd(); }
 LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('engines');
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS(); setType(S.type); setMode(m); all(); });
 buildLevers(); drawFaults(); resetStart(); setType(S.type); all();
 /* old anchors */
 const HM={'#eng':['how','fan'],'#start':['start','fan'],'#rating':['rat','fan']}, HD={'#cmp':'dd-fan','#ops':'dd-fan'};

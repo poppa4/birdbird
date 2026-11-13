@@ -687,6 +687,11 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('af');
 loadG('sink'); tcRun(); setMode('ap'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+LAB.reset(()=>{ const m=V.mode; V.tx=5; V.txw=4;
+  if(m==='ap'){ V.pre.ap='appr'; loadAP('appr','jet'); drawAc(); } else if(m==='at'){ V.pre.at='cruise'; loadAP('cruise'); }
+  else if(m==='tcas') loadTC('climb'); else { GW.la=true; loadG('sink'); }
+  V.run=true; drawSpd(); drawPre(); runBtn(); upd(); });
 /* old anchors */
 const HM={'#fma':'ap','#traps':'ap','#autothrust':'at','#tcas':'tcas','#gpws':'gpws'}, HD={'#radalt':'dd-ra','#ops':'dd-tcas'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('afVp').scrollIntoView({block:'start'})); }

@@ -5,7 +5,7 @@
 <meta name="description" content="Engine failure on the A320 for ATPL 081 and the type rating: slow down until the rudder runs out and find VMCA, see why bank, thrust, altitude, CG and weight move it, and how CS-25 turns it into VMCG, VMCL, V1, VR and V2.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Engine Failure and Minimum Control Speeds</title>
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=21">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
@@ -57,8 +57,6 @@
 .ct4 .x{color:var(--accent);font-weight:600}
 @media (max-width:640px){.ct4{grid-template-columns:minmax(0,1fr)}.ct4>div.h{display:none}.ct4>div.k{background:var(--paper);padding-bottom:6px}.ct4>div:not(.k):not(.h)::before{content:attr(data-c);display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}}
 /* template patterns from pressure.html: learning goal, deep boxes, tasks, task box, debrief */
-.goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
-.goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
 .deepbox{border:1px solid var(--rule-2);background:var(--sheet);border-radius:var(--radius);padding:14px 18px;max-width:80ch;font-size:15px;line-height:1.55;color:var(--ink)}
 .deepbox>.k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--info);margin-bottom:6px}
 .deepbox p{margin:0 0 8px}.deepbox p:last-child{margin-bottom:0}
@@ -340,7 +338,7 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=49"></script>
+<script src="lab.js?v=50"></script>
 <script src="chartnote.js?v=2"></script>
 <script src="concepts.js?v=2"></script>
 <script src="stab.js?v=1"></script>
@@ -594,19 +592,21 @@ function vmRead(){ const P=CUR.P, vm=CUR.vm, below=CUR.below, mg=vm==null?null:A
   el('vmX').textContent=x;
 }
 function vmAll(){ compute(); vmRead(); mvC.draw(); vbC.draw(); spAll&&spAll(); if(CUR.below&&!reduce){ if(RP.t0<0) replay(); } else if(RP.t0>=0&&!acA.live){ RP.t0=-1; } acC.draw(); trC.draw(); }
-LAB.seg(el('fe'),[['1','ENG 1 (left)'],['2','ENG 2 (right)']],A.eng,v=>{ A.eng=v; vmAll(); });
-LAB.seg(el('thr'),[['toga','TOGA'],['flx','FLX (≈ 85 %)']],A.thr,v=>{ A.thr=v; vmAll(); });
+const feSeg=LAB.seg(el('fe'),[['1','ENG 1 (left)'],['2','ENG 2 (right)']],A.eng,v=>{ A.eng=v; vmAll(); });
+const thrSeg=LAB.seg(el('thr'),[['toga','TOGA'],['flx','FLX (≈ 85 %)']],A.thr,v=>{ A.thr=v; vmAll(); });
 const sl=(o)=>LAB.slider(el('vmCtl'),o), sl2=(o)=>LAB.slider(el('vmCtl2'),o);
 const vS=sl({label:'Airspeed (KCAS)',min:85,max:200,step:1,v:A.v,f:v=>v+' kt',on:v=>{ A.v=v; vmAll(); }});
 const phS=sl({label:'Bank (° toward the live engine)',min:-5,max:5,step:0.5,v:A.phi,f:v=>nf(v,1)+'°',on:v=>{ A.phi=v; vmAll(); },hint:'Negative = toward the dead engine'});
-sl2({label:'Mass (t)',min:42,max:78,step:1,v:A.m,f:v=>v+' t',on:v=>{ A.m=v; vmAll(); }});
-sl2({label:'CG (% MAC)',min:18,max:40,step:1,v:A.cg,f:v=>v+' %',on:v=>{ A.cg=v; vmAll(); },hint:'Aft CG = shorter arm to the fin'});
-sl2({label:'Airfield pressure altitude (ft)',min:0,max:14000,step:500,v:A.hft,f:v=>nf(v,0)+' ft',on:v=>{ A.hft=v; oatS.set(A.oat); vmAll(); }});
+const mS=sl2({label:'Mass (t)',min:42,max:78,step:1,v:A.m,f:v=>v+' t',on:v=>{ A.m=v; vmAll(); }});
+const cgS=sl2({label:'CG (% MAC)',min:18,max:40,step:1,v:A.cg,f:v=>v+' %',on:v=>{ A.cg=v; vmAll(); },hint:'Aft CG = shorter arm to the fin'});
+const hS=sl2({label:'Airfield pressure altitude (ft)',min:0,max:14000,step:500,v:A.hft,f:v=>nf(v,0)+' ft',on:v=>{ A.hft=v; oatS.set(A.oat); vmAll(); }});
 const oatS=sl2({label:'Outside air temperature (°C)',min:-20,max:50,step:1,v:A.oat,f:v=>{ const d=v-M.atm(A.hft,null).oat; return v+' °C · ISA '+(d>=0?'+':'−')+nf(Math.abs(d),0); },on:v=>{ A.oat=v; vmAll(); },hint:'Flat rated to about ISA + 15'});
 el('wm').onchange=e=>{ A.wm=e.target.checked; vmAll(); };
 /* hook for the Try tasks (twin.js): set the A320 lab and read its VMCA */
 window.PROPA320={ set(o){ if(o.v!=null){ A.v=o.v; vS.set(o.v); } if(o.phi!=null){ A.phi=o.phi; phS.set(o.phi); } vmAll(); }, vmc(o){ return M.vmc(cond(o)); } };
 const setView=v=>{ A.view=v; el('vTop').classList.toggle('on',v==='top'); el('vBack').classList.toggle('on',v==='back'); acC.draw(); };
+/* Reset (the shell's button in the viewport bar): starting values, same camera view */
+LAB.reset(()=>{ Object.assign(A,{eng:'1',thr:'toga',v:140,phi:5,m:64,cg:38,hft:0,oat:15,wm:true}); feSeg.set(A.eng); thrSeg.set(A.thr); vS.set(A.v); phS.set(A.phi); mS.set(A.m); cgS.set(A.cg); hS.set(A.hft); oatS.set(A.oat); el('wm').checked=true; vmAll(); },'acVp');
 el('vTop').onclick=()=>setView('top'); el('vBack').onclick=()=>setView('back'); el('vGo').onclick=replay;
 on(()=>{ el('vmLead').innerHTML=L({en:'After the failure the live engine’s thrust, plus the windmilling drag of the dead one, yaws the nose toward the dead engine: <b>N = (T + D)·ye</b>. The rudder answers with a side force on the fin, <b>Yr = q·Sv·aδ·η·δr</b>, acting at the fin arm lv. That side force grows with dynamic pressure, so with V², while the engine moment hardly changes. Slow down and the rudder eventually runs out of travel. The lowest speed where it can still hold the heading is <b>VMCA</b>.',no:'Etter motorstansen girer skyvet fra den gode motoren, pluss vindmøllemotstanden fra den døde, nesen mot den døde motoren: <b>N = (T + D)·ye</b>. Sideroret svarer med en sidekraft på halefinnen, <b>Yr = q·Sv·aδ·η·δr</b>, som virker på finnearmen lv. Sidekraften vokser med det dynamiske trykket, altså med V², mens motormomentet knapt endrer seg. Senk farten, og til slutt har roret ikke mer utslag. Den laveste farten der det fortsatt holder kursen er <b>VMCA</b>.'});
  EXT('vmE',[
@@ -861,7 +861,7 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
 })();
 </script>
 <script src="cfd3d.js?v=7"></script>
-<script src="twin.js?v=6"></script>
+<script src="twin.js?v=7"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;

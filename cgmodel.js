@@ -514,6 +514,8 @@ function legend(){ const b=el('cmLeg'); if(!b) return;
 function init(){
   st=LAB.fit(el('cmCv'),()=>paint(),2);
   LAB.visible(el('cmCv'),v=>{ vis=v; kick(); });
+  /* Reset (the shell's button in the viewport bar): starting mass and CG, same phase */
+  { const keepST=LAB.keep(ST); LAB.reset(()=>{ keepST(['ph']); preOn=null; update(); },'cmVp'); }
   phSeg=LAB.seg(el('cmPh'),[['cr','Cruise'],['to','Take-off rotation'],['fl','Landing flare']],ST.ph,v=>setState({ph:v}));
   slCG=LAB.slider(el('cmSl'),{label:'CG position (% MAC)',hint:'Or drag the CG on the wing chord',min:5,max:60,step:0.5,v:ST.h,f:v=>nf(v,1)+' %',on:v=>{ ST.h=v; preOn=null; update(); }});
   slM=LAB.slider(el('cmSl'),{label:'Mass (t)',hint:'From empty (OEW 42 t) to MTOW 78 t',min:OEW,max:MTOW,step:0.5,v:ST.m,f:v=>nf(v,1)+' t',on:v=>{ ST.m=v; preOn=null; update(); }});

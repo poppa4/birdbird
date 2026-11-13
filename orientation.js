@@ -426,6 +426,9 @@ LAB.onLang(all);
 document.addEventListener('labdepth',all);
 LAB.start('ori');
 setMode('leans'); all();
+/* Reset (the shell's button in the viewport bar): starting values, same mode */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const m=S.mode; keepS();  setMode(m); all(); });
 /* old anchors */
 const HM={'#ear':'leans','#trainer':'spiral','#approach':'app'};
 if(HM[location.hash]){ setMode(HM[location.hash]); requestAnimationFrame(()=>el('orVp').scrollIntoView({block:'start'})); }

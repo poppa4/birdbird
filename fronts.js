@@ -611,5 +611,8 @@ runHooks(); LAB.onLang(()=>{ runHooks(); rebuild(); planDraw(); });
 /* old anchors: #lab → the model, #table / #press / #global → the full reference under Key concepts */
 if(/^#(table|press|global)$/.test(location.hash)){ el('full').open=true; }
 
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+{ const keepS=LAB.keep(S); LAB.reset(()=>{ const v=S.view; keepS(); slNw.set(S.Nw); slNc.set(S.Nc); slV.set(S.spd); setS({view:v}); }); }
+
 LAB.start('fronts');
 })();

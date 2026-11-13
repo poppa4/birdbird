@@ -438,6 +438,9 @@ LAB.add({},{'GNSS and RNAV':'GNSS og RNAV','Birdbird Virtual Labs · Navigation 
   'Key concepts':'Nøkkelbegreper','The GNSS and RNP lab':'GNSS- og RNP-labben','Key points':'Det viktigste','Test yourself':'Test deg selv','GNSS and RNP lab':'GNSS- og RNP-labben','Try it':'Prøv selv'});
 heads(); togs(); tables(); drawTake(); drawTask(); update(); camSnap=true;
 LAB.start('gnss');
+/* Reset (the shell's button in the viewport bar): starting values, same view */
+const keepS=LAB.keep(S);
+LAB.reset(()=>{ const ph=tabOn(); keepS(); setS({}); goPhase(ph); camSnap=true; });
 LAB.onLang(()=>{ heads(); togs(); tables(); drawTake(); drawTask(); update(); });
 document.addEventListener('labdepth',()=>{ togs(); update(); });
 })();
