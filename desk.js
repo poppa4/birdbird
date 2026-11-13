@@ -173,7 +173,7 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=4'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=2'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=4'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=3'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
     function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=4'), window.WSASK ? 0 : A.loadScript('ask.js?v=2')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }

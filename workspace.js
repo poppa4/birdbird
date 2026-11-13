@@ -315,6 +315,7 @@
     const a = mapAny(); if (!a) return;
     if (!box) { rl.insertAdjacentHTML('afterend', `<a id="wsRailMap" class="ws-railmap" href="#/map"><span class="h"></span><span class="l"><span class="t"></span><span class="go">${t('Open map', 'Åpne kart')} →</span></span></a>`); box = el('wsRailMap'); }
     box.classList.toggle('sample', a.sample);
+    box.querySelector('.go').textContent = t('Open map', 'Åpne kart') + ' →';
     box.querySelector('.t').textContent = a.sample ? t('Example map', 'Eksempelkart') : t('Your map', 'Ditt kart') + ' · ' + a.g.own;
     const sig = a.mode + ':' + LAB.lang + ':' + mapSig(a.g);
     if (railMap && railMap.sig === sig && box.contains(railMap.host)) return;

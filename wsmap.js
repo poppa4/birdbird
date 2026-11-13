@@ -381,13 +381,13 @@
       for (const gi of order) {
         const q = L.groups[gi], name = names2[gi].toUpperCase(), cnt = ' · ' + q.n;
         if (!q.m.some(i => visible(i))) continue;
-        const wn = meas(name, fN), wc = meas(cnt, fC), w = wn + wc + padX * 2;
+        const wn = meas(name, fN), wc = meas(cnt, fC), w = Math.ceil(wn + wc + padX * 2 + (mini ? 6 : 0));
         const cx = wsx(q.cx), cy = wsy(q.cy), rs = q.r * k + 4.6 * sizeK + 5;
         const cand = [];
         for (const y of [cy - rs - h / 2 - 2, cy + rs + h / 2 + 2]) for (const dx of [0, -0.6, 0.6, -1.2, 1.2]) cand.push([cx + dx * w, y]);
         let at = null;
         for (const [x, y] of cand) {
-          const x0 = Math.max(6, Math.min(W - 6 - w, x - w / 2)), y0 = y - h / 2;
+          const x0 = Math.max(12, Math.min(W - 12 - w, x - w / 2)), y0 = y - h / 2;
           if (y0 < top || y0 + h > bot) continue;
           if (hitAny(x0 - 2, y0 - 2, x0 + w + 2, y0 + h + 2)) continue;
           at = [x0, y0]; break;

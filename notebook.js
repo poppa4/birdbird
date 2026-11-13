@@ -520,7 +520,7 @@
         { l: t('Export as PDF', 'Eksporter som PDF'), f: () => exportPdf() },
         { l: t('Export this page as PNG', 'Eksporter siden som PNG'), f: () => exportPng(curP) },
         { l: t('History…', 'Historikk …'), f: history },
-        { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { flush(true); A.doTrash(id); }, danger: 1 }]);
+        { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { flush(true); A.doTrash(id); if (ctx && ctx.close) ctx.close(); }, danger: 1 }]);
     }
     async function rename() {
       const v = await A.openDlg(`<h3 id="wsDlgH">${esc(t('Rename notebook', 'Gi notatboken nytt navn'))}</h3><form id="nbNameF" novalidate><div class="fld"><label for="nbName">${esc(t('Name', 'Navn'))}</label><input id="nbName" maxlength="120" value="${esc(nb.title)}" autofocus></div><div class="foot"><button type="button" class="btn" data-close>${esc(t('Cancel', 'Avbryt'))}</button><button type="submit" class="btn pri">${esc(t('Save', 'Lagre'))}</button></div></form>`,
