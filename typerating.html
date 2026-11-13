@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Type rating trainer: King Air B200 · Birdbird</title>
 <meta name="description" content="King Air B200 type rating trainer: a study plan for every system, cockpit system simulators, flashcards, a question trainer with exam mode and an oral exam.">
-<link rel="stylesheet" href="lab.css?v=12">
+<link rel="stylesheet" href="lab.css?v=13">
 <link rel="stylesheet" href="site.css?v=22">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
@@ -509,7 +509,7 @@ drawMods(); drawStats(); fcNext(true); drawKpi(); loadDocs();
 const h=(location.hash||'').slice(1); const sk=h.startsWith('cockpit-')?h.slice(8):'';
 showSim(SIMS.some(s=>s[0]===sk)?sk:'elec',false,true);
 if(sk) setTimeout(()=>el('cockpit').scrollIntoView(),50);
-LAB.add({},{'English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200'});
+LAB.add({},{'Type ratings are conducted in English, so this trainer is in English only.':'Typerating gjennomføres på engelsk, så denne treneren er bare på engelsk.','English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200'});
 LAB.start('b200');
 })();
 </script>

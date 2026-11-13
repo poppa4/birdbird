@@ -118,13 +118,15 @@
 @media (max-width:760px){ .ckp .ctop #bReset span{display:none} .ckp .ctop #bReset{padding:0 9px} }
 /* touch screens: every toolbar control is a 44 px target (the button looks 36 px high, its hit area fills the bar) */
 @media (pointer:coarse){
- .ckp .ctop{height:44px}
- .ckp .ctop .cb,.ckp .ctop .dseg a{height:36px;max-height:36px;position:relative}
+ .ckp .ctop{height:54px;padding-top:5px;padding-bottom:5px}
+ .ckp .ctop .cb,.ckp .ctop .dseg a{height:44px;max-height:44px;position:relative}
  .ckp .ctop .dseg a{min-width:40px;justify-content:center}
  .ckp .ctop .cb:not(.sdb-ready)::after,.ckp .ctop .dseg a::after{content:'';position:absolute;left:-2px;right:-2px;top:-4px;bottom:-4px}
  .ckp .ctop #bMore{min-width:44px;justify-content:center}
  .ckp .more .cb{min-height:40px}.ckp .more select{min-height:36px}
- .ckp .drawer .tabs button{min-height:40px}
+ .ckp .drawer .tabs button{min-height:44px}
+ .ckp .pill.card .row button{min-height:44px;padding-left:16px;padding-right:16px}
+ html .d3v button{min-height:44px}
 }
 /* short screens (a phone on its side): the … menu in two columns, so all of it is in view without scrolling */
 @media (max-height:520px){

@@ -291,6 +291,8 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
   .atl-main .xpanel .seg button{min-height:44px}
   .atl-main .xchk,.atl-main .xsec .chk{min-height:44px}
   .atl-main .opts button{min-height:44px}
+  html .atl-all,html .atl-area>b>a{display:inline-flex;align-items:center;min-height:44px}
+  html .lhead .eyebrow.vl-eb a{display:inline-block;padding:14px 0;margin:-14px 0}
   .tstep .dots button{position:relative}
   .tstep .dots button::before{content:"";position:absolute;inset:-17px -3px}
 }

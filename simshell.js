@@ -109,7 +109,8 @@ function chrome(o){ const $=id=>document.getElementById(id), bP=$('bPause'), bR=
   if(bF) bF.onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else if(root&&root.requestFullscreen) root.requestFullscreen().catch(()=>say(L(tr('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.')),'bad',5000)); }catch(e){} };
   if(bD&&dr){ bD.setAttribute('aria-controls','drawer'); bD.onclick=()=>setDrawer(!dr.classList.contains('open')); dr.inert=!dr.classList.contains('open');
     // Esc inside the drawer closes it and gives the focus back to its button
-    dr.addEventListener('keydown',e=>{ if(e.key==='Escape'){ setDrawer(false); bD.focus(); e.stopPropagation(); e.preventDefault(); } }); }
+    dr.addEventListener('keydown',e=>{ if(e.key==='Escape'){ setDrawer(false); bD.focus(); e.stopPropagation(); e.preventDefault(); } });
+    bD.addEventListener('keydown',e=>{ if(e.key==='Escape'&&dr.classList.contains('open')){ setDrawer(false); e.stopPropagation(); e.preventDefault(); } }); }
   if(G.LAB&&G.LAB.onLang) G.LAB.onLang(sync);
   sync(); CH={o,sync,setDrawer}; return CH; }
 
