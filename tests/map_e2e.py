@@ -124,7 +124,7 @@ def partial(br, vw, vh, tag):
         pg.screenshot(path=f'{BRAIN}/{tag}-own{n}.png')
         if tag == 'phone': pg.evaluate('window.scrollTo(0, 0)'); pg.wait_for_timeout(100)
         if n == 12:
-            box = pg.locator('#wsMapHost canvas').bounding_box()
+            pg.locator('#wsMapHost canvas').scroll_into_view_if_needed(); box = pg.locator('#wsMapHost canvas').bounding_box()   # the page head is the shared one now: the plate can start below the fold
             ni = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note')")
             x, y = pg.evaluate(f'window.WS.map.screenOf({ni})')
             if tag == 'desktop':
@@ -154,6 +154,7 @@ def partial(br, vw, vh, tag):
             check(f'{tag} own=12: every item of the focused group is named', all(i in gm['labels'] for i in gm['m']), gm)
             pg.screenshot(path=f'{BRAIN}/{tag}-own12-group.png')
             names_ok(pg, f'{tag} own=12 focused', '#wsMapHost', 'DA42 · ')
+            pg.evaluate("document.querySelector('#wsMapHost canvas').scrollIntoView({ block: 'center' })"); box = pg.locator('#wsMapHost canvas').bounding_box()
             if tag == 'desktop': pg.mouse.click(box['x'] + box['width'] - 30, box['y'] + box['height'] / 2)
             else: pg.touchscreen.tap(box['x'] + box['width'] - 12, box['y'] + box['height'] / 2)
             pg.wait_for_timeout(800)
@@ -319,7 +320,7 @@ def map3d(br):
     gm = pg.evaluate("(() => { const m = window.WS.map; return { gsel: m.debug.gsel, labels: m.debug.labels, m: m.layout.clusters[1].m.map(i => m.graph.nodes[i].id) }; })()")
     check('3d: the focused group is listed in the card and every item named', gm['gsel'] == 1 and pg.locator('.wsm-card.grp .gl [data-i]').count() == len(gm['m']) and set(gm['m']) <= set(gm['labels']), gm)
     pg.wait_for_timeout(300); pg.screenshot(path=f'{SHOTS3}/desktop-example-group.png')
-    box = pg.locator('#wsMapHost canvas').bounding_box(); pg.mouse.click(box['x'] + box['width'] - 20, box['y'] + box['height'] - 90); pg.wait_for_timeout(1100)
+    pg.evaluate("document.querySelector('#wsMapHost canvas').scrollIntoView({ block: 'end' })"); box = pg.locator('#wsMapHost canvas').bounding_box(); pg.mouse.click(box['x'] + box['width'] - 20, box['y'] + box['height'] - 90); pg.wait_for_timeout(1100)
     c4 = pg.evaluate('window.WS.map.camera')
     check('3d: a click outside goes back to the whole cloud', pg.evaluate('window.WS.map.debug.gsel') == -1 and not pg.is_visible('.wsm-card') and abs(c4['d'] - h['d']) < 0.5, (c4, h))
     # search lights up the matches, Enter flies to the best one

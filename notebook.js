@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace: the pen notebook and ink on PDF pages (desk tabs). Pure logic in inkcore.js.
+/* Birdbird – My workspace: the pen notebook and ink on PDF pages (desk tabs). Pure logic in inkcore.js.
    One ink engine (Ink below) serves both: pages are canvases drawn from vector strokes, input comes from Pointer Events.
      pen         pressure from the pen, coalesced events for smooth lines, palm rejection: once a pen is seen,
                  fingers never draw, they scroll and pinch. Mouse draws on a desktop. A finger draws only when the
@@ -18,7 +18,9 @@
   const ls = (k, v) => { try { if (v === undefined) return window.localStorage.getItem(k); window.localStorage.setItem(k, v); } catch (e) { return null; } };
 
   /* ---------- the pen: one set of tools for every notebook and PDF, like a real pencil case ---------- */
-  const TOOLS = Object.assign({ tool: 'pen', pc: 0, pw: 1, hc: 0, hw: 1, em: 'stroke', ew: 1, finger: false }, (() => { try { return JSON.parse(ls(LSK)) || {}; } catch (e) { return {}; } })());
+  /* on a phone there is no pen, so the finger draws from the start (two fingers scroll); a tablet waits for the switch */
+  const PHONE = (() => { try { return matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600; } catch (e) { return false; } })();
+  const TOOLS = Object.assign({ tool: 'pen', pc: 0, pw: 1, hc: 0, hw: 1, em: 'stroke', ew: 1, finger: PHONE }, (() => { try { return JSON.parse(ls(LSK)) || {}; } catch (e) { return {}; } })());
   let penSeen = ls(PENK) === '1';
   const saveTools = () => ls(LSK, JSON.stringify(TOOLS));
   const fingerDraws = () => TOOLS.finger && !penSeen;
@@ -295,23 +297,31 @@
       const tl = TOOLS.tool, hl = tl === 'hl', col = hl ? I.MARKERS : I.PENS, ci = hl ? TOOLS.hc : TOOLS.pc, wi = tl === 'erase' ? TOOLS.ew : hl ? TOOLS.hw : TOOLS.pw;
       const tb = (k, l) => `<button type="button" class="nb-t${tl === k ? ' on' : ''}" data-tool="${k}" aria-pressed="${tl === k}" title="${esc(l)}" aria-label="${esc(l)}">${ico(k)}</button>`;
       const showCol = tl === 'pen' || tl === 'hl' || (tl === 'lasso' && o.sel && o.sel());
-      bar.innerHTML = `<div class="nb-g">${tb('pen', t('Pen', 'Penn'))}${tb('hl', t('Highlighter', 'Merkepenn'))}${tb('erase', t('Eraser', 'Viskelær'))}${tb('lasso', t('Lasso: select, move, delete', 'Lasso: velg, flytt, slett'))}${o.notebook ? tb('text', t('Text box', 'Tekstboks')) + `<button type="button" class="nb-t" data-a="image" title="${esc(t('Insert an image', 'Sett inn et bilde'))}" aria-label="${esc(t('Insert an image', 'Sett inn et bilde'))}">${ico('image')}</button>` : ''}</div>
-        ${showCol ? `<div class="nb-g nb-cols" role="group" aria-label="${esc(t('Colour', 'Farge'))}">${col.map((c, i) => `<button type="button" class="nb-c${i === ci && tl !== 'lasso' ? ' on' : ''}" data-col="${i}" style="--c:${c}" aria-label="${esc(t('Colour', 'Farge'))} ${i + 1}" aria-pressed="${i === ci}"><i></i></button>`).join('')}</div>` : ''}
-        ${tl === 'pen' || tl === 'hl' || tl === 'erase' ? `<div class="nb-g nb-ws" role="group" aria-label="${esc(t('Size', 'Størrelse'))}">${[0, 1, 2].map(i => `<button type="button" class="nb-w${i === wi ? ' on' : ''}" data-w="${i}" aria-label="${esc([t('Fine', 'Fin'), t('Medium', 'Middels'), t('Bold', 'Tykk')][i])}" aria-pressed="${i === wi}"><i style="--s:${[3, 6, 10][i]}px"></i></button>`).join('')}</div>` : ''}
-        ${tl === 'erase' ? `<div class="seg nb-em" role="group" aria-label="${esc(t('Eraser', 'Viskelær'))}"><button type="button" data-em="stroke" class="${TOOLS.em === 'stroke' ? 'on' : ''}" aria-pressed="${TOOLS.em === 'stroke'}">${esc(t('Whole line', 'Hel strek'))}</button><button type="button" data-em="part" class="${TOOLS.em === 'part' ? 'on' : ''}" aria-pressed="${TOOLS.em === 'part'}">${esc(t('Partial', 'Delvis'))}</button></div>` : ''}
-        ${tl === 'lasso' && o.sel && o.sel() ? `<button type="button" class="btn sm nb-del" data-a="del">${ico('trash')}<span>${esc(t('Delete', 'Slett'))}</span></button>` : ''}
-        <div class="nb-g"><button type="button" class="nb-t" data-a="undo" title="${esc(t('Undo', 'Angre'))}" aria-label="${esc(t('Undo', 'Angre'))}"${o.canUndo && !o.canUndo() ? ' disabled' : ''}>${ico('undo')}</button><button type="button" class="nb-t" data-a="redo" title="${esc(t('Redo', 'Gjør om'))}" aria-label="${esc(t('Redo', 'Gjør om'))}"${o.canRedo && !o.canRedo() ? ' disabled' : ''}>${ico('redo')}</button></div>
-        <button type="button" class="nb-t nb-finger${TOOLS.finger ? ' on' : ''}" data-a="finger" aria-pressed="${!!TOOLS.finger}" title="${esc(penSeen ? t('A pen is in use: fingers scroll and zoom', 'En penn er i bruk: fingre blar og zoomer') : t('Draw with a finger', 'Tegn med fingeren'))}" aria-label="${esc(t('Draw with a finger', 'Tegn med fingeren'))}"${penSeen ? ' disabled' : ''}>${ico('hand')}</button>
-        <span class="sp"></span>${o.extra ? o.extra() : ''}`;
+      const opts = (showCol ? `<div class="nb-g nb-cols" role="group" aria-label="${esc(t('Colour', 'Farge'))}">${col.map((c, i) => `<button type="button" class="nb-c${i === ci && tl !== 'lasso' ? ' on' : ''}" data-col="${i}" style="--c:${c}" aria-label="${esc(t('Colour', 'Farge'))} ${i + 1}" aria-pressed="${i === ci}"><i></i></button>`).join('')}</div>` : '')
+        + (tl === 'pen' || tl === 'hl' || tl === 'erase' ? `<div class="nb-g nb-ws" role="group" aria-label="${esc(t('Size', 'Størrelse'))}">${[0, 1, 2].map(i => `<button type="button" class="nb-w${i === wi ? ' on' : ''}" data-w="${i}" aria-label="${esc([t('Fine', 'Fin'), t('Medium', 'Middels'), t('Bold', 'Tykk')][i])}" aria-pressed="${i === wi}"><i style="--s:${[3, 6, 10][i]}px"></i></button>`).join('')}</div>` : '')
+        + (tl === 'erase' ? `<div class="seg nb-em" role="group" aria-label="${esc(t('Eraser', 'Viskelær'))}"><button type="button" data-em="stroke" class="${TOOLS.em === 'stroke' ? 'on' : ''}" aria-pressed="${TOOLS.em === 'stroke'}">${esc(t('Whole line', 'Hel strek'))}</button><button type="button" data-em="part" class="${TOOLS.em === 'part' ? 'on' : ''}" aria-pressed="${TOOLS.em === 'part'}">${esc(t('Partial', 'Delvis'))}</button></div>` : '')
+        + (tl === 'lasso' && o.sel && o.sel() ? `<button type="button" class="btn sm danger nb-del" data-a="del">${ico('trash')}<span>${esc(t('Delete', 'Slett'))}</span></button>` : '');
+      /* two rows. The first never changes place: pen, highlighter, eraser, lasso, undo, redo (then the rest, and More
+         on a narrow pane, which holds what is hidden there). The second is the tool in your hand: its colours and sizes.
+         On a wide pane the two flow as one line (notebook.css). */
+      bar.innerHTML = `<div class="nb-r1"><div class="nb-g">${tb('pen', t('Pen', 'Penn'))}${tb('hl', t('Highlighter', 'Merkepenn'))}${tb('erase', t('Eraser', 'Viskelær'))}${tb('lasso', t('Lasso: select, move, delete', 'Lasso: velg, flytt, slett'))}</div>${o.notebook ? `<div class="nb-g nb-x">${tb('text', t('Text box', 'Tekstboks'))}<button type="button" class="nb-t" data-a="image" title="${esc(t('Insert an image', 'Sett inn et bilde'))}" aria-label="${esc(t('Insert an image', 'Sett inn et bilde'))}">${ico('image')}</button></div>` : ''}<div class="nb-g nb-ur"><button type="button" class="nb-t" data-a="undo" title="${esc(t('Undo', 'Angre'))}" aria-label="${esc(t('Undo', 'Angre'))}"${o.canUndo && !o.canUndo() ? ' disabled' : ''}>${ico('undo')}</button><button type="button" class="nb-t" data-a="redo" title="${esc(t('Redo', 'Gjør om'))}" aria-label="${esc(t('Redo', 'Gjør om'))}"${o.canRedo && !o.canRedo() ? ' disabled' : ''}>${ico('redo')}</button></div><button type="button" class="nb-t nb-finger nb-x${TOOLS.finger ? ' on' : ''}" data-a="finger" aria-pressed="${!!TOOLS.finger}" title="${esc(penSeen ? t('A pen is in use: fingers scroll and zoom', 'En penn er i bruk: fingre blar og zoomer') : t('Draw with a finger', 'Tegn med fingeren'))}" aria-label="${esc(t('Draw with a finger', 'Tegn med fingeren'))}"${penSeen ? ' disabled' : ''}>${ico('hand')}</button><span class="sp"></span><div class="nb-ex">${o.extra ? o.extra() : ''}</div><button type="button" class="nb-t nb-more${tl === 'text' || TOOLS.finger ? ' on' : ''}" data-a="tmore" aria-haspopup="menu" title="${esc(t('More', 'Mer'))}" aria-label="${esc(t('More', 'Mer'))}">${ico('more')}</button></div>${opts ? `<div class="nb-r2">${opts}</div>` : ''}`;
+    }
+    const setTool = k => { TOOLS.tool = k; saveTools(); if (o.onTool) o.onTool(); draw(); };
+    const setFinger = () => { TOOLS.finger = !TOOLS.finger; saveTools(); draw(); X.toast(TOOLS.finger ? t('Your finger draws now. Use two fingers to scroll.', 'Fingeren tegner nå. Bruk to fingre for å bla.') : t('Your finger scrolls now.', 'Fingeren blar nå.')); };
+    /* More (narrow panes only): the tools that are not in the row, then what the owner of the bar adds (o.more) */
+    function moreMenu(at) {
+      const own = o.more ? o.more(at) : [];
+      X.menu(at, (o.notebook ? [{ l: t('Text box', 'Tekstboks'), on: TOOLS.tool === 'text', f: () => setTool('text') }, { l: t('Insert an image', 'Sett inn et bilde'), f: () => o.onAction && o.onAction('image', at) }] : [])
+        .concat([{ l: t('Draw with a finger', 'Tegn med fingeren'), on: !!TOOLS.finger, dis: penSeen, f: setFinger }], own.length ? [{ sep: 1 }] : [], own));
     }
     bar.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b || b.disabled) return;
-      if (b.dataset.tool) { TOOLS.tool = b.dataset.tool; saveTools(); if (o.onTool) o.onTool(); draw(); return; }
+      if (b.dataset.tool) { setTool(b.dataset.tool); return; }
       if (b.dataset.col != null) { const i = +b.dataset.col; if (TOOLS.tool === 'lasso' && o.recolor) { o.recolor(I.PENS[i]); return; } if (TOOLS.tool === 'hl') TOOLS.hc = i; else TOOLS.pc = i; saveTools(); draw(); return; }
       if (b.dataset.w != null) { const i = +b.dataset.w; if (TOOLS.tool === 'erase') TOOLS.ew = i; else if (TOOLS.tool === 'hl') TOOLS.hw = i; else TOOLS.pw = i; saveTools(); draw(); return; }
       if (b.dataset.em) { TOOLS.em = b.dataset.em; saveTools(); draw(); return; }
       const a = b.dataset.a; if (!a) return;
-      if (a === 'undo') o.onUndo(); else if (a === 'redo') o.onRedo(); else if (a === 'finger') { TOOLS.finger = !TOOLS.finger; saveTools(); draw(); X.toast(TOOLS.finger ? t('Your finger draws now. Use two fingers to scroll.', 'Fingeren tegner nå. Bruk to fingre for å bla.') : t('Your finger scrolls now.', 'Fingeren blar nå.')); }
+      if (a === 'undo') o.onUndo(); else if (a === 'redo') o.onRedo(); else if (a === 'finger') setFinger(); else if (a === 'tmore') moreMenu(b);
       else if (o.onAction) o.onAction(a, b);
     });
     draw(); bar.redraw = draw; return bar;
@@ -363,8 +373,9 @@
     const tools = toolbar({ notebook: true, sel: () => ink.sel, canUndo: ink.canUndo, canRedo: ink.canRedo, onUndo: () => ink.undo(), onRedo: () => ink.redo(), recolor: c => ink.recolorSel(c),
       onTool: () => { ink.clearSel(); root.classList.toggle('texting', TOOLS.tool === 'text'); },
       onAction: (a) => { if (a === 'del') ink.delSel(); else if (a === 'image') fileIn.click(); },
+      more: at => [{ l: t('Paper…', 'Papir …'), f: () => paperMenu(at, curP) }].concat(moreItems(at)),
       extra: () => `<span class="nb-st" title=""></span><div class="dv-zoom nb-zoom"><button type="button" class="dk-ib" data-a="zout" aria-label="${esc(t('Zoom out', 'Zoom ut'))}">${ico('minus')}</button><button type="button" class="dv-z" data-a="zfit" title="${esc(t('Fit to width', 'Tilpass bredden'))}">${Math.round(z * 100)}%</button><button type="button" class="dk-ib" data-a="zin" aria-label="${esc(t('Zoom in', 'Zoom inn'))}">${ico('plus')}</button></div>
-        <button type="button" class="dk-ib" data-a="paper" aria-haspopup="menu" title="${esc(t('Paper', 'Papir'))}" aria-label="${esc(t('Paper', 'Papir'))}">${ico('paper')}</button><button type="button" class="dk-ib${showThumbs() ? ' on' : ''}" data-a="thumbs" aria-pressed="${showThumbs()}" title="${esc(t('Pages', 'Sider'))}" aria-label="${esc(t('Show page thumbnails', 'Vis sideminiatyrer'))}">${ico('pages')}</button><button type="button" class="dk-ib" data-a="more" aria-haspopup="menu" aria-label="${esc(t('More', 'Mer'))}">${ico('more')}</button>` });
+        <button type="button" class="dk-ib nb-wide" data-a="paper" aria-haspopup="menu" title="${esc(t('Paper', 'Papir'))}" aria-label="${esc(t('Paper', 'Papir'))}">${ico('paper')}</button><button type="button" class="dk-ib nb-wide${showThumbs() ? ' on' : ''}" data-a="thumbs" aria-pressed="${showThumbs()}" title="${esc(t('Pages', 'Sider'))}" aria-label="${esc(t('Show page thumbnails', 'Vis sideminiatyrer'))}">${ico('pages')}</button><button type="button" class="dk-ib nb-wide" data-a="more" aria-haspopup="menu" title="${esc(t('More', 'Mer'))}" aria-label="${esc(t('More', 'Mer'))}">${ico('more')}</button>` });
     top.appendChild(tools);
     root.classList.toggle('texting', TOOLS.tool === 'text');
     tools.addEventListener('click', e => {
@@ -511,8 +522,9 @@
         { l: t('Export this page as PNG', 'Eksporter siden som PNG'), f: () => exportPng(i) },
         { sep: 1 }, { l: t('Delete page', 'Slett siden'), f: () => delPage(i), danger: 1 }]);
     }
-    function moreMenu(at) {
-      X.menu(at, [
+    const moreMenu = at => X.menu(at, moreItems(at));
+    function moreItems(at) {
+      return [
         { l: t('Rename…', 'Gi nytt navn …'), f: rename },
         { l: t('Add page', 'Legg til side'), f: () => addPage(curP + 1) },
         { l: t('Page options…', 'Valg for siden …'), f: () => pageMenu(at, curP) },
@@ -520,7 +532,7 @@
         { l: t('Export as PDF', 'Eksporter som PDF'), f: () => exportPdf() },
         { l: t('Export this page as PNG', 'Eksporter siden som PNG'), f: () => exportPng(curP) },
         { l: t('History…', 'Historikk …'), f: history },
-        { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { flush(true); A.doTrash(id); if (ctx && ctx.close) ctx.close(); }, danger: 1 }]);
+        { sep: 1 }, { l: t('Move to trash', 'Flytt til papirkurv'), f: () => { flush(true); A.doTrash(id); if (ctx && ctx.close) ctx.close(); }, danger: 1 }];
     }
     async function rename() {
       const v = await A.openDlg(`<h3 id="wsDlgH">${esc(t('Rename notebook', 'Gi notatboken nytt navn'))}</h3><form id="nbNameF" novalidate><div class="fld"><label for="nbName">${esc(t('Name', 'Navn'))}</label><input id="nbName" maxlength="120" value="${esc(nb.title)}" autofocus></div><div class="foot"><button type="button" class="btn" data-close>${esc(t('Cancel', 'Avbryt'))}</button><button type="submit" class="btn pri">${esc(t('Save', 'Lagre'))}</button></div></form>`,

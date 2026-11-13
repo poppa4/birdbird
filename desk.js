@@ -1,7 +1,7 @@
-/* Birdbird – My Workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
+/* Birdbird – My workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
    dialogs come from workspace.js (WS.api). One screen like a desk: the library on the left, panes with tabs on the right.
    A desk is a 'desk' item in the 'workspace' namespace and holds positions only (which tabs, where, which page).
-   Home (first in the bar) lays the desk home over the panes without closing a tab; each pane's strip shows the group
+   Overview (first in the bar) lays the desk home over the panes without closing a tab; each pane's strip shows the group
    chip of its open item (WS.api.placeChip: the aircraft or topic it lives in, tap to move it).
    Tab types live in TYPES below: { icon, title(r), mount(box, tab, ctx) -> view { destroy, refresh?, save?, goPage? } }.
    The pen notebook and the ink on PDF pages live in notebook.js (WSNB), "Ask your documents" in ask.js (WSASK);
@@ -12,9 +12,9 @@
     const D = window.DESKCORE, W = A.W, S = A.S, t = A.t, esc = A.esc;
     const host = document.getElementById('wsDesk');
     const SNAP = 'bb-ws-desk', DEFAULT_ID = 'dk-main';
-    const isPhone = () => window.innerWidth < 760;
-    const maxPanes = () => isPhone() ? 1 : window.innerWidth < 1100 ? 3 : 4;
-    const canDown = () => !isPhone() && window.innerWidth >= 1000 && window.innerHeight >= 700;
+    const isPhone = () => window.innerWidth <= 760;            // the same width as the phone rules in desk.css
+    const maxPanes = () => isPhone() ? 1 : window.innerWidth <= 1180 ? 3 : 4;
+    const canDown = () => !isPhone() && window.innerWidth >= 980 && window.innerHeight >= 700;
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '');
     const KEY = isMac ? '⌘K' : 'Ctrl K';
     const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -76,8 +76,8 @@
     const panesEl = new Map();          // pane id -> { el, strip, body, view: { tabId, k, v } }
     const views = new Map();            // tab id -> view
     let barEl, railEl, mainEl, sheetEl;
-    /* Home: the desk home (greeting, map, cards, what is open, recent) laid over the panes. Nothing is closed: the tabs
-       stay in the strip, and a tap on one, Home again or the browser's Back brings the item back. It is a view state of
+    /* Overview: the desk home (greeting, map, cards, what is open, recent) laid over the panes. Nothing is closed: the tabs
+       stay in the strip, and a tap on one, Overview again or the browser's Back brings the item back. It is a view state of
        the desk, kept as one step of browser history ({ dkHome: 1 }), so a reload stays where you were. */
     let home = false, homePushed = false, dropHome = false, homeV = null;
     const histHome = () => { try { return !!(history.state && history.state.dkHome); } catch (e) { return false; } };
@@ -207,10 +207,10 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=4'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=3'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=5'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=5'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=4'), window.WSASK ? 0 : A.loadScript('ask.js?v=2')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=5'), window.WSASK ? 0 : A.loadScript('ask.js?v=3')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -294,10 +294,10 @@
     function drawBar() {
       if (!barEl) return;
       const ph = isPhone(), st = A.statusShort(), hOn = homeOn() || !D.allTabs(L).length;
-      const homeB = `<button type="button" class="dk-homeb${hOn ? ' on' : ''}" data-b="home" aria-pressed="${hOn}" title="${esc(t('Home: the overview of your desk', 'Hjem: oversikten over arbeidsflaten'))}">${ic('home')}<span>${esc(t('Home', 'Hjem'))}</span></button>`;
+      const homeB = `<button type="button" class="dk-homeb${hOn ? ' on' : ''}" data-b="home" aria-pressed="${hOn}" title="${esc(t('Overview of your desk', 'Oversikt over arbeidsflaten'))}">${ic('home')}<span>${esc(t('Overview', 'Oversikt'))}</span></button>`;
       const stA = `<a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>`;
       const deskB = `<button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" aria-label="${esc(t('Desk: ', 'Arbeidsflate: ') + desk.name + t('. Switch, rename or add a desk', '. Bytt, gi nytt navn eller lag en ny'))}" title="${esc(t('Switch desk', 'Bytt arbeidsflate'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span><span class="nm">${esc(desk.name)}</span>${ic('chev')}</button>`;
-      /* phone: three plain things, each with its name. Home, Search, Library (the sheet holds the rest, the desk switcher too) */
+      /* phone: three plain things, each with its name. Overview, Search, Library (the sheet holds the rest, the desk switcher too) */
       barEl.innerHTML = ph ? `${homeB}
         <button type="button" class="dk-qo" data-b="open">${ic('search')}<span>${esc(t('Search', 'Søk'))}</span></button>
         <span class="sp"></span>
@@ -502,7 +502,7 @@
       box.innerHTML = `<div class="dk-empty" data-keep-scroll><div class="in">
         <div class="hero"><div class="tx">
         <p class="eb"><span>${esc(desk.name)}</span><span class="dot">·</span><span>${esc(day)}</span><span class="dot">·</span><span>${utc}</span></p>
-        <h2>${esc(hello)}.<br><span>${esc(t('Your desk is ready.', 'Skrivebordet ditt er klart.'))}</span></h2>
+        <h2>${esc(hello)}.<br><span>${esc(t('Your desk is ready.', 'Arbeidsflaten din er klar.'))}</span></h2>
         <p class="lead">${esc(t('Manual, checklist and notes side by side, exactly where you left them.', 'Manual, sjekkliste og notater side om side, akkurat der du slapp.'))}</p>
         </div>${mini}</div>
         <div class="big3">

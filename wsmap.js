@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
+/* Birdbird – My workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
    Frames are drawn only while something moves: the short intro, a camera move, a pan. Once still, no animation frame
    is requested, so an idle map costs nothing. With reduced motion it is drawn once.
    WSMAP.mount(host, { graph, t, mini, labels, sample, onOpen(node, beside), onEdit(what, node or group, button), onClick(), padBottom, view })
@@ -19,6 +19,8 @@
   const GW = window.WSGRAPH;
   const COL = { aircraft: '#FFFFFF', doc: '#A9C7E6', page: '#6F8DB0', note: '#DCE8F4', notebook: '#C3D5E8', pack: '#E6D9BD', route: '#9CCFC7', desk: '#7E8C9C' };
   const COLS = COL;
+  /* the plate behind the dots, the names on it and the pulse along a link: every colour the 2D map draws is in COL, PLATE or ICE */
+  const PLATE = { bg: ['#0B1D37', '#071629', '#040C19'], name: '#F3F8FE', nameDim: 'rgba(226,236,248,.86)', label: '#FFFFFF', labelDim: 'rgba(226,236,248,.92)', pulse: '#DCEBFA' };
   /* the cloud (Ice): blob light, group names */
   const ICE = { core: '104,156,228', puff: '86,136,214', wash: '60,104,176' };
   const LEG = { aircraft: 'aircraft', doc: 'doc', note: 'note', pack: 'pack', route: 'route', desk: 'desk' };
@@ -234,7 +236,7 @@
     }
     function drawPulses(ops) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-      const spr = sprite('#DCEBFA');
+      const spr = sprite(PLATE.pulse);
       for (const { tx, ty, qx, qy, a, r } of ops.list) {
         const gr = ctx.createLinearGradient(tx, ty, qx, qy); gr.addColorStop(0, 'rgba(214,232,250,0)'); gr.addColorStop(1, 'rgba(214,232,250,' + (0.5 * a).toFixed(3) + ')');
         ctx.strokeStyle = gr; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(qx, qy); ctx.stroke();
@@ -281,7 +283,7 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
       if (!bg || bg.w !== W || bg.h !== H) { /* a deep night blue, drawn once into a cached canvas */
         const c = document.createElement('canvas'); c.width = Math.ceil(W * dpr); c.height = Math.ceil(H * dpr); const b = c.getContext('2d'); b.scale(dpr, dpr);
-        const gr = b.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.75); gr.addColorStop(0, '#0B1D37'); gr.addColorStop(0.55, '#071629'); gr.addColorStop(1, '#040C19');
+        const gr = b.createRadialGradient(W * 0.5, H * 0.45, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.75); gr.addColorStop(0, PLATE.bg[0]); gr.addColorStop(0.55, PLATE.bg[1]); gr.addColorStop(1, PLATE.bg[2]);
         b.fillStyle = gr; b.fillRect(0, 0, W, H); bg = { c, w: W, h: H };
       }
       ctx.drawImage(bg.c, 0, 0, W, H);
@@ -339,7 +341,7 @@
         ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
         if (strong) { ctx.fillStyle = 'rgba(3,10,22,.86)'; roundRect(x - 5, y - 11, w + 10, 22, 4); ctx.fill(); }
         else { ctx.fillStyle = 'rgba(3,10,22,.55)'; roundRect(x - 4, y - 9, w + 8, 18, 4); ctx.fill(); }
-        ctx.fillStyle = strong ? '#FFFFFF' : 'rgba(226,236,248,.92)';
+        ctx.fillStyle = strong ? PLATE.label : PLATE.labelDim;
         ctx.fillText(s, x, y); dbg.labels.push(n.id);
       };
       if (focus >= 0 && vis[focus]) label(focus, 'focus');
@@ -410,7 +412,7 @@
         ctx.globalAlpha = gsel >= 0 && !on ? 0.55 : 1;
         ctx.fillStyle = on ? 'rgba(14,38,70,.92)' : 'rgba(4,13,28,.66)'; roundRect(x0, y0, w, h, h / 2); ctx.fill();
         ctx.strokeStyle = on ? 'rgba(200,224,250,.5)' : 'rgba(190,215,245,.16)'; ctx.lineWidth = 1; ctx.stroke();
-        ctx.font = fN; if ('letterSpacing' in ctx) ctx.letterSpacing = ls + 'px'; ctx.fillStyle = q.ac < 0 ? 'rgba(226,236,248,.86)' : '#F3F8FE'; ctx.fillText(name, x0 + padX, y0 + h / 2 + 0.5);
+        ctx.font = fN; if ('letterSpacing' in ctx) ctx.letterSpacing = ls + 'px'; ctx.fillStyle = q.ac < 0 ? PLATE.nameDim : PLATE.name; ctx.fillText(name, x0 + padX, y0 + h / 2 + 0.5);
         ctx.font = fC; ctx.fillStyle = 'rgba(190,212,238,.78)'; ctx.fillText(cnt, x0 + padX + wn, y0 + h / 2 + 0.5);
         taken.push([x0, y0, x0 + w, y0 + h]);
         glab.push({ k: gi, x0, y0, x1: x0 + w, y1: y0 + h });

@@ -117,11 +117,11 @@ with sync_playwright() as p:
     check('desk renamed', 'B200 type rating' in pg.inner_text('.dk-deskbtn'))
     n_desks = pg.evaluate("() => window.DESKCORE.desksOf(window.WS.state.items).map(d => d.name)")
     check('two desks stored as workspace items', sorted(n_desks) == ['B200 type rating', 'Next flight'], n_desks)
-    # Home: the overview without closing anything; a tab, Home again or the browser's Back brings the item back
+    # Overview: the desk home without closing anything; a tab, Overview again or the browser's Back brings the item back
     hb = pg.locator('.dk-bar .dk-homeb')
     tabs_of = lambda: pg.evaluate("() => window.DESKCORE.panes(window.WSDESK.layout).map(p => p.tabs.map(t => t.k + ':' + t.r + (t.pin ? '*' : '')))")
     tabs0 = tabs_of()
-    check('Home is the first thing in the bar, with its name', pg.evaluate("() => document.querySelector('.dk-bar').firstElementChild.classList.contains('dk-homeb')") and hb.inner_text().strip() == 'Home' and hb.get_attribute('aria-pressed') == 'false', hb.inner_text())
+    check('Overview is the first thing in the bar, with its name (not a second "Home")', pg.evaluate("() => document.querySelector('.dk-bar').firstElementChild.classList.contains('dk-homeb')") and hb.inner_text().strip() == 'Overview' and hb.get_attribute('aria-pressed') == 'false', hb.inner_text())
     hb.click(); pg.wait_for_selector('.dk-home .big3'); pg.wait_for_timeout(300)
     check('Home: the desk home, every tab kept in the strip and listed under Open now', pg.locator('.dk-home .dk-tab').count() == 3 and pg.locator('.dk-home .rec.now li').count() == 3 and pg.locator('.dk-home .dk-tab.on').count() == 0 and hb.get_attribute('aria-pressed') == 'true' and pg.evaluate("() => window.DESKCORE.allTabs(window.WSDESK.layout).length") == 3)
     check('Home: the panes are kept underneath, out of sight', pg.locator('.dk-pane:not(.dk-home)').count() == 3 and pg.evaluate("() => getComputedStyle(document.querySelector('.dv')).visibility") == 'hidden')
@@ -179,7 +179,7 @@ with sync_playwright() as p:
     ovf = pp.evaluate("() => document.documentElement.scrollWidth - window.innerWidth"); check('phone: no horizontal overflow', ovf <= 1, ovf)
     pp.screenshot(path=SHOTS + '/phone.png')
     bar = pp.evaluate("() => [...document.querySelector('.dk-bar').children].filter(e => e.offsetWidth).map(e => [e.className.split(' ')[0], e.textContent.trim(), Math.round(e.getBoundingClientRect().height)])")
-    check('phone: the bar is Home, Search, Library, each named and 44 px tall', [b[1] for b in bar if b[1]] == ['Home', 'Search', 'Library'] and bar[0][0] == 'dk-homeb' and all(b[2] >= 44 for b in bar if b[1]), bar)
+    check('phone: the bar is Overview, Search, Library, each named and 44 px tall', [b[1] for b in bar if b[1]] == ['Overview', 'Search', 'Library'] and bar[0][0] == 'dk-homeb' and all(b[2] >= 44 for b in bar if b[1]), bar)
     pp.tap('.dk-bar .dk-homeb'); pp.wait_for_selector('.dk-home .big3'); pp.wait_for_timeout(300)
     check('phone: Home shows the overview, tabs kept', pp.locator('.dk-home .dk-tab').count() == 3 and pp.locator('.dk-home .rec.now li').count() == 3)
     ovf = pp.evaluate("() => document.documentElement.scrollWidth - window.innerWidth"); check('phone: Home has no horizontal overflow', ovf <= 1, ovf)

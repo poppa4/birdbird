@@ -165,11 +165,28 @@ with sync_playwright() as p:
     ctx = br.new_context(viewport={'width': 430, 'height': 932}, has_touch=True, is_mobile=True, device_scale_factor=3)
     pg = ctx.new_page(); watch(pg)
     pg.goto(URL); pg.wait_for_selector('.dk-empty .big3'); pg.click('.more2 [data-e="nb"]'); pg.wait_for_selector('.nb-pg canvas.base'); pg.wait_for_timeout(300)
-    pg.click('.nb-tools [data-a="finger"]'); pg.wait_for_timeout(100)
+    # phone toolbar: one row with pen, highlighter, eraser, lasso, undo, redo and More; the tool's options in a second row
+    row = pg.evaluate("""() => { const r1 = document.querySelector('.nb-r1'), vis = e => e.offsetParent !== null, bs = [...r1.querySelectorAll('button')].filter(vis);
+      return { names: bs.map(b => b.dataset.tool || b.dataset.a), small: bs.filter(b => b.getBoundingClientRect().height < 44 || b.getBoundingClientRect().width < 40).length,
+        tops: [...new Set(bs.map(b => Math.round(b.getBoundingClientRect().top)))].length, rows: document.querySelector('.nb-tools').children.length, h: Math.round(document.querySelector('.nb-tools').getBoundingClientRect().height),
+        opts: [...document.querySelectorAll('.nb-r2 button')].filter(vis).filter(b => b.getBoundingClientRect().height < 44).length } }""")
+    check('phone: toolbar row is pen, highlighter, eraser, lasso, undo, redo, More on one line, 44 px', row['names'] == ['pen', 'hl', 'erase', 'lasso', 'undo', 'redo', 'tmore'] and row['small'] == 0 and row['tops'] == 1, row)
+    check('phone: two rows at most (tools, then the pen\'s colours and sizes)', row['rows'] == 2 and row['h'] <= 100 and row['opts'] == 0, row)
+    pg.click('.nb-tools [data-tool="lasso"]'); pg.wait_for_timeout(100)
+    check('phone: a tool without options leaves one row, undo still there', pg.locator('.nb-r2').count() == 0 and pg.is_visible('.nb-tools [data-a="undo"]'))
+    pg.click('.nb-tools [data-tool="pen"]')
+    pg.click('.nb-tools [data-a="tmore"]'); pg.wait_for_selector('.dk-menu')
+    items = pg.evaluate("[...document.querySelectorAll('.dk-menu button')].map(b => b.textContent)")
+    check('phone: More holds text box, image, finger drawing, paper and the notebook menu', all(any(w in x for x in items) for w in ['Text box', 'Insert an image', 'Draw with a finger', 'Paper', 'Export as PDF', 'Move to trash']), items)
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(100)   # on a phone the finger draws from the start
     stroke(pg, S1, line(0.1, 0.1, 0.8, 0.12), 'touch', 0.5, 21); pg.wait_for_timeout(900)
-    check('phone: with the finger switch on, a finger draws', nb(pg)['pages'][0]['ink'] == 1, nb(pg))
+    check('phone: a finger draws from the start (no pen on a phone)', nb(pg)['pages'][0]['ink'] == 1, nb(pg))
     check('phone: no thumbnails strip, toolbar fits', not pg.is_visible('.nb-th') and pg.evaluate("document.querySelector('.nb-tools').scrollWidth <= document.querySelector('.nb-tools').clientWidth + 1"))
     pg.screenshot(path=SHOTS + '/phone.png')
+    # Move to trash closes the notebook's tab
+    nid = pg.evaluate("Object.values(WS.state.items).find(x => x.kind === 'notebook' && !x.deletedAt).id")
+    pg.click('.nb-tools [data-a="tmore"]'); pg.click('.dk-menu button:has-text("Move to trash")'); pg.wait_for_timeout(600)
+    check('Move to trash closes the notebook tab', pg.locator('.nb-pg').count() == 0 and pg.locator('.dk-tab').count() == 0 and pg.evaluate("!!WS.state.items['%s'].deletedAt" % nid), pg.locator('.dk-tab').count())
     ctx.close()
     br.close()
 check('no console errors', not errs, errs[:5])

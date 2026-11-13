@@ -7,27 +7,28 @@
 <meta name="description" content="Your own flight desk on Birdbird: open the AFM, a checklist and a note side by side, with your aircraft, briefing packs and saved routes one click away. Files stay on your device; the index, aircraft and notes sync to your account.">
 <link rel="stylesheet" href="lab.css?v=10">
 <link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="workspace.css?v=16">
-<link rel="stylesheet" href="desk.css?v=9">
+<link rel="stylesheet" href="workspace.css?v=17">
+<link rel="stylesheet" href="desk.css?v=10">
 </head>
 <body data-title="My workspace">
 <script src="site.js?v=64"></script>
+<!-- one search bar, in the same place and box as on every other page; here it searches your workspace (search.js leaves a wired box alone) -->
+<div class="nsearch noprint" role="search" data-w="ws">
+  <form class="in" id="wsSearchForm" autocomplete="off">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="wsQ" type="search" enterkeyhint="search" autocomplete="off" spellcheck="false" aria-label="Search your workspace" placeholder="Search your workspace: aircraft, documents, notes, packs, routes">
+  </form>
+</div>
 <div class="page ws">
-  <header class="ws-head" id="top">
-    <div class="ws-title">
+  <header class="lhead ws-head" id="top">
+    <div class="brand">
       <a class="ws-home" id="wsHome" href="#/"><span aria-hidden="true">←</span> <span id="wsHomeT">Back to the desk</span></a>
+      <div class="eyebrow">Birdbird</div>
       <h1 id="wsH1">My workspace</h1>
+      <p id="wsLede">Your aircraft, documents, notes, briefing packs and routes in one place.</p>
     </div>
-    <form class="ws-search" id="wsSearchForm" role="search" autocomplete="off">
-      <label for="wsQ" id="wsQLabel">Search your workspace</label>
-      <div class="ws-q">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12.8 12.8 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input id="wsQ" type="search" enterkeyhint="search" spellcheck="false">
-        <kbd aria-hidden="true">/</kbd>
-      </div>
-    </form>
-    <div class="ws-status" id="wsStatus" role="status" aria-live="polite"></div>
   </header>
+  <div class="ws-status" id="wsStatus" role="status" aria-live="polite"></div>
 
   <div class="ws-body">
     <div class="ws-side" id="wsSide"><nav class="ws-rail" id="wsRail" aria-label="My workspace"></nav></div>
@@ -50,9 +51,9 @@
 <script src="deskcore.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
 <script src="wsgraph.js?v=7"></script>
-<script src="wsmap.js?v=13"></script>
-<script src="desk.js?v=18"></script>
-<script src="workspace.js?v=18"></script>
+<script src="wsmap.js?v=14"></script>
+<script src="desk.js?v=20"></script>
+<script src="workspace.js?v=19"></script>
 <!-- notebook.js + inkcore.js + notebook.css, ask.js, pdf.js and the 3D map (three.js) load only when they are needed -->
 </body>
 </html>

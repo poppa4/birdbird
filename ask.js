@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
+/* Birdbird – My workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
    The same contract as fi.html: the passages are found here in the browser (in the document text already stored
    for Flight Intelligence), only the question and those passages go to the AI through ai.js (window.NAI: the
    /api/atc service, or Claude when the page runs inside Claude). Nothing is stored on the server by this tab.
@@ -45,6 +45,10 @@
     return h;
   }
   const plain = (s, src) => String(s || '').replace(/\[S(\d{1,2})\]/g, (m, n) => { const x = src[+n - 1]; return x ? '(' + shortName(x.d.name) + ' ' + t('p. ', 's. ') + x.label + ')' : ''; }).replace(/\[GK\]/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/[ \t]+\n/g, '\n').trim();
+
+  /* remembered for this browser session: the answer service was looked for and is not here */
+  const AI_OFF = 'bb-ai-off';
+  function aiOff(set) { try { if (set) sessionStorage.setItem(AI_OFF, '1'); return sessionStorage.getItem(AI_OFF) === '1'; } catch (e) { return false; } }
 
   /* ---------- the tab ---------- */
   function mountAsk(box, tab, ctx) {
@@ -102,8 +106,14 @@
     function localHtml(x) { return x.src.length ? `<p>${esc(t('These pages match your question:', 'Disse sidene passer med spørsmålet ditt:'))}</p><ul class="ask-hits">${x.src.map((s, i) => `<li>${chip(x.src, i + 1)}<span>${esc(A.W.snippet(s.c.t, A.W.tokens(x.q), 150))}</span></li>`).join('')}</ul>` : `<p>${esc(t('No page matches those words. Try other or fewer words.', 'Ingen side passer med de ordene. Prøv andre eller færre ord.'))}</p>`; }
     async function check() {
       if (avail !== null) return avail;
-      try { if (!window.NAI) await A.loadScript('ai.js?v=1'); const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r(null), 6000))]); avail = !!m; }
-      catch (e) { avail = false; }
+      /* the answer service is looked for only when this pane is open, and once per browser session: a "not here" is
+         remembered (sessionStorage), so opening the pane again does not ask again and the browser logs no second 404 */
+      if (!window.NAI && aiOff()) avail = false;
+      else try {
+        if (!window.NAI) await A.loadScript('ai.js?v=1');
+        const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
+        avail = !!m && m !== 'timeout'; if (!m) aiOff(true);
+      } catch (e) { avail = false; }
       if (alive) { drawLog(); }
       return avail;
     }

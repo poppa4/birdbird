@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace: the desk (desk.js). Light, flat, few layers: hairlines instead of shadows, no blur.
+/* Birdbird – My workspace: the desk (desk.js). Light, flat, few layers: hairlines instead of shadows, no blur.
    Paper around the panes, white sheets inside them, the magenta accent only for "where you are". */
 html.ws-deskmode body{padding-bottom:0}
 html.ws-deskmode .sitefoot,html.ws-deskmode .ws-head,html.ws-deskmode .ws-body{display:none!important}
@@ -44,7 +44,7 @@ html.ws-deskmode .page.ws{max-width:none}
 .dk-rs{position:relative;display:flex;align-items:center;margin:10px 10px 6px;flex:0 0 auto}
 .dk-rs .i{position:absolute;left:9px;width:15px;height:15px;color:var(--ink-3);pointer-events:none}
 .dk-rs input{width:100%;min-width:0;font-size:14px;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 8px 7px 30px;-webkit-appearance:none;appearance:none}
-.dk-rs input:focus{outline:2px solid var(--info);outline-offset:0;border-color:transparent}
+.dk-rs input:focus{outline:2px solid var(--focus);outline-offset:0;border-color:transparent}
 .dk-tree{flex:1 1 auto;overflow:auto;overscroll-behavior:contain;padding:2px 6px 10px;-webkit-overflow-scrolling:touch}
 .dk-sec{margin-top:6px}
 .dk-sh{display:flex;align-items:center;gap:6px;width:100%;padding:5px 6px;border:0;background:none;color:var(--ink-2);font:inherit;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;border-radius:var(--radius)}
@@ -79,7 +79,7 @@ html.ws-deskmode .page.ws{max-width:none}
 .dk-v>.dk-sp{cursor:row-resize}
 .dk-sp::after{content:"";position:absolute;left:3px;right:3px;top:0;bottom:0;border-radius:2px}
 .dk-v>.dk-sp::after{left:0;right:0;top:3px;bottom:3px}
-.dk-sp:hover::after,.dk-sp.on::after,.dk-sp:focus-visible::after{background:var(--info)}
+.dk-sp:hover::after,.dk-sp.on::after,.dk-sp:focus-visible::after{background:var(--focus)}
 @media (pointer:coarse){.dk-sp{flex-basis:14px}.dk-sp::after{left:6px;right:6px}.dk-v>.dk-sp::after{left:0;right:0;top:6px;bottom:6px}.dk-sp::before{content:"";position:absolute;left:50%;top:50%;width:4px;height:28px;margin:-14px 0 0 -2px;border-radius:2px;background:var(--rule)}.dk-v>.dk-sp::before{width:28px;height:4px;margin:-2px 0 0 -14px}}
 html.dk-resizing,html.dk-resizing *{cursor:col-resize!important;-webkit-user-select:none!important;user-select:none!important}
 html.dk-resizing .dk-pb{pointer-events:none}
@@ -125,11 +125,11 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .dk-empty h2{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:clamp(32px,3.6vw,46px);letter-spacing:-.02em;line-height:1.04;margin:0;color:var(--ink)}
 .dk-empty h2 span{color:var(--ink-3);font-weight:650}
 .dk-empty .lead{font-size:16.5px;color:var(--ink-2);margin:16px 0 0;max-width:46ch;line-height:1.55}
-@media (max-width:1100px){.dk-empty .hero{grid-template-columns:1fr}.dk-empty .sk.mm{max-width:560px}}
+@media (max-width:1180px){.dk-empty .hero{grid-template-columns:1fr}.dk-empty .sk.mm{max-width:560px}}
 @media (max-width:760px){.dk-empty .hero{margin-bottom:24px}}
 /* the quieter second line: plain text actions under the three cards */
 .dk-empty .more2{display:flex;flex-wrap:wrap;gap:4px 22px;margin:14px 0 0}
-.dk-empty .more2 button{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 2px;border:0;background:none;color:var(--ink-2);font:inherit;font-size:14.5px;font-weight:550;cursor:pointer}
+.dk-empty .more2 button{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 2px;border:0;background:none;color:var(--ink-2);font:inherit;font-size:14.5px;font-weight:550;cursor:pointer}
 .dk-empty .more2 button:hover{color:var(--accent)}
 .dk-empty .more2 .i{width:18px;height:18px;color:var(--ink-3)}
 .dk-empty .more2 button:hover .i{color:var(--accent)}
@@ -146,13 +146,13 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .big3 button:first-child{border-color:var(--ink)}
 .big3 .i{width:26px;height:26px;color:var(--accent);margin-bottom:10px;stroke-width:1.3}
 .big3 b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:18px;line-height:1.2}
-.fi-card{display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:16px 18px;border:1px solid var(--rule);border-radius:var(--radius-lg);background:linear-gradient(120deg,#0f1a2e,#16233d);color:#e8eef8;font:inherit;text-align:left;cursor:pointer;min-height:44px;transition:transform .15s,box-shadow .15s}
-.fi-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(15,26,46,.25)}
-.fi-card .i{width:24px;height:24px;color:#9cc4ff;flex:none;stroke-width:1.3}
+.fi-card{display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:16px 18px;border:1px solid var(--rule);border-radius:var(--radius-lg);background:linear-gradient(120deg,var(--navy),var(--navy-2));color:#fff;font:inherit;text-align:left;cursor:pointer;min-height:44px;transition:transform .15s,box-shadow .15s}
+.fi-card:hover{transform:translateY(-1px);box-shadow:var(--shadow-pop)}
+.fi-card .i{width:24px;height:24px;color:var(--focus-dark);flex:none;stroke-width:1.3}
 .fi-card .tx{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .fi-card b{font-family:var(--f-display);font-stretch:92%;font-weight:680;font-size:18px;line-height:1.2}
-.fi-card small{font-size:13.5px;color:#b9c6da;line-height:1.4}
-.fi-card .go{font-size:18px;color:#9cc4ff;flex:none}
+.fi-card small{font-size:13.5px;color:var(--instrument-ink);line-height:1.4}
+.fi-card .go{font-size:18px;color:var(--focus-dark);flex:none}
 .big3 small{font-size:13.5px;color:var(--ink-2);line-height:1.4}
 .dk-empty h3{font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin:30px 0 8px}
 .dk-empty .rec{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule-2)}
@@ -295,7 +295,7 @@ html.dk-dragging,html.dk-dragging *{cursor:grabbing!important;-webkit-user-selec
 .cv-fl-n{margin:8px 0 0;font-size:12.5px;color:var(--ink-3)}
 
 /* menus, palette, sheet */
-.dk-menu{position:fixed;z-index:115;min-width:200px;max-width:min(320px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;padding:4px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(19,32,42,.12)}
+.dk-menu{position:fixed;z-index:115;min-width:200px;max-width:min(320px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;padding:4px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop)}
 .dk-menu button{display:block;width:100%;text-align:left;padding:8px 12px 8px 28px;border:0;background:none;color:var(--ink);font:inherit;font-size:14px;cursor:pointer;border-radius:var(--radius);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dk-menu button:hover,.dk-menu button:focus-visible{background:var(--wash);outline:none}
 .dk-menu button.on::before{content:"";position:absolute;left:11px;top:50%;width:7px;height:7px;margin-top:-4px;background:var(--accent);transform:rotate(45deg)}
@@ -323,7 +323,7 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 .pal-f{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;padding:8px 14px;border-top:1px solid var(--rule-2);font-size:12px;color:var(--ink-3);background:var(--wash)}
 .dk-sheet{position:fixed;inset:0;z-index:100}
 .dk-sheet-bg{position:absolute;inset:0;background:rgba(19,32,42,.32)}
-.dk-sheet-in{position:absolute;left:0;right:0;bottom:0;max-height:78vh;max-height:78dvh;display:flex;flex-direction:column;background:var(--paper);border-radius:12px 12px 0 0;border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom);transform:translateY(100%)}
+.dk-sheet-in{position:absolute;left:0;right:0;bottom:0;max-height:78vh;max-height:78dvh;display:flex;flex-direction:column;background:var(--paper);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom);transform:translateY(100%)}
 .dk-sheet.in .dk-sheet-in{transform:none}
 @media (prefers-reduced-motion:no-preference){.dk-sheet-in{transition:transform .2s ease-out}}
 .dk-sheet-h{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 6px 0 16px}
@@ -339,8 +339,8 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 .dk-sheet-c .dk-rs input{font-size:16px}
 
 /* phone and small tablets */
-@media (max-width:1100px){.dk-rail{flex-basis:224px}.dk-qo{width:min(280px,26vw)}}
-@media (max-width:759px){
+@media (max-width:1180px){.dk-rail{flex-basis:224px}.dk-qo{width:min(280px,26vw)}}
+@media (max-width:760px){
   .desk{margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl))}
   .dk-bar{gap:6px;min-height:52px;padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
   .dk-rail{display:none}
@@ -367,16 +367,16 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 /* tablets: the desk button shows just the name, and touch screens have no Ctrl K hint */
 @media (max-width:1180px){.dk-deskbtn .eb{display:none}}
 @media (pointer:coarse){.dk-qo kbd{display:none}}
-@media (max-width:759px){.pal-x{display:inline-flex}.pal-f{display:none}dialog.ws-dlg.pal-dlg{margin-top:max(10px,env(safe-area-inset-top))}.pal{max-height:min(70dvh,560px)}}
+@media (max-width:760px){.pal-x{display:inline-flex}.pal-f{display:none}dialog.ws-dlg.pal-dlg{margin-top:max(10px,env(safe-area-inset-top))}.pal{max-height:min(70dvh,560px)}}
 /* touch: every control at least 44 px (the bar, tabs, the library rail, the document bar) */
 @media (pointer:coarse){.dk-strip{height:46px}.dk-tab .x{opacity:1;width:44px;height:44px;margin-right:-8px}.dk-ib{min-width:44px;height:44px}.dk-it{min-height:44px}.dk-pacts .dk-ib{height:44px;min-width:44px}
   .dk-deskbtn,.dk-qo,.dk-libb{height:44px;min-width:44px;justify-content:center}.dk-st{min-height:44px;min-width:44px;justify-content:center}.dk-lib{display:inline-flex;align-items:center;min-height:44px}
-  .dk-sh{min-height:44px}.dk-rs input{min-height:44px}.dv-pg input{height:44px;width:48px}.dv-z{min-height:44px}.dk-empty .rec button{min-height:48px}.dk-add{min-height:44px}.dv-bar .btn.sm{min-width:44px;min-height:44px;justify-content:center}
-  .nv-bar button{min-width:44px;height:44px}.nv input.nv-ttl{min-height:44px}.av .acts .btn.sm,.cv .btn{min-height:44px}.av .speeds td input{min-height:44px}.av .speeds .x button{min-width:44px;min-height:44px}.av-l button{min-height:48px}.av-add .lk{min-height:44px}
+  .dk-sh{min-height:44px}.dk-rs input{min-height:44px}.dv-pg input{height:44px;width:48px}.dv-z{min-height:44px}.dk-empty .rec button{min-height:44px}.dk-add{min-height:44px}.dv-bar .btn.sm{min-width:44px;min-height:44px;justify-content:center}
+  .nv-bar button{min-width:44px;height:44px}.nv input.nv-ttl{min-height:44px}.av .acts .btn.sm,.cv .btn{min-height:44px}.av .speeds td input{min-height:44px}.av .speeds .x button{min-width:44px;min-height:44px}.av-l button{min-height:44px}.av-add .lk{min-height:44px}
   .dk-epane .btn.sm,.dk-msg .btn.sm{min-height:44px}.nv-links .chip{min-height:44px}
-  .dk-menu button{min-height:44px}.pal-l li{min-height:48px}.pal-f{display:none}.pal-x{display:inline-flex}}
+  .dk-menu button{min-height:44px}.pal-l li{min-height:44px}.pal-f{display:none}.pal-x{display:inline-flex}}
 
-/* Home: one named button, first in the bar at every width; the desk home lies over the panes, the open tabs stay in its strip */
+/* Overview: one named button, first in the bar at every width; the desk home lies over the panes, the open tabs stay in its strip */
 .dk-homeb{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink);cursor:pointer;font:inherit;font-size:14.5px;font-weight:600;flex:0 0 auto}
 .dk-homeb .i{color:var(--accent)}
 .dk-homeb:hover{border-color:var(--ink-2)}
@@ -390,7 +390,7 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
 .dk-strip .ws-place{align-self:stretch;height:auto;max-width:170px;margin:0;padding:0 8px 0 12px;border:0;border-left:1px solid var(--rule-2);border-radius:0;background:none}
 .dk-strip .ws-place:hover{background:var(--sheet)}
 @media (pointer:coarse){.dk-homeb{height:44px}.dk-strip .ws-place{min-width:44px}}
-@media (max-width:759px){.dk-strip .ws-place{max-width:118px;padding:0 6px 0 10px}.dk-homeb{padding:0 10px 0 8px}}
+@media (max-width:760px){.dk-strip .ws-place{max-width:118px;padding:0 6px 0 10px}.dk-homeb{padding:0 10px 0 8px}}
 /* phone: the desk switcher sits at the top of the Library sheet */
 .dk-sdesk{padding:10px 12px 0}
 .dk-sdesk .dk-deskbtn{width:100%;max-width:none;justify-content:flex-start}

@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace (page). Logic lives in workspacecore.js; this file is storage, sync and the views.
+/* Birdbird – My workspace (page). Logic lives in workspacecore.js; this file is storage, sync and the views.
    Kept on this device   IndexedDB 'birdbird-workspace' (items, device settings, trashed document files), with a
                          localStorage fallback; document files and their text in 'naeroson-fi' – the same store
                          Flight Intelligence uses, so a document added in either place shows in both.
@@ -773,7 +773,7 @@
           <div class="row"><button type="button" class="btn sm pri" data-act="export">${t('Export everything', 'Eksporter alt')}</button><button type="button" class="btn sm" data-act="import">${t('Import backup', 'Importer sikkerhetskopi')}</button></div>
           <p class="note" id="bkNote" role="status">${t('Importing adds what is missing and keeps the newest copy of each item. Nothing on this device is removed.', 'Import legger til det som mangler og beholder den nyeste kopien av hvert element. Ingenting på denne enheten fjernes.')}</p></div>
         <div class="box danger"><h3>${t('Delete everything', 'Slett alt')}</h3>
-          <p>${t('Removes every aircraft, note and document in My Workspace from this device', 'Fjerner alle fly, notater og dokumenter i Mitt arbeidsområde fra denne enheten')}${u ? t(' and from your account', ' og fra kontoen din') : ''}. ${t('Briefing packs, routes and training progress are not touched; you manage those on My page.', 'Briefingpakker, ruter og treningsprogresjon røres ikke; dem styrer du på Min side.')}</p>
+          <p>${t('Removes every aircraft, note and document in My workspace from this device', 'Fjerner alle fly, notater og dokumenter i Mitt arbeidsområde fra denne enheten')}${u ? t(' and from your account', ' og fra kontoen din') : ''}. ${t('Briefing packs, routes and training progress are not touched; you manage those on My page.', 'Briefingpakker, ruter og treningsprogresjon røres ikke; dem styrer du på Min side.')}</p>
           <button type="button" class="btn sm danger" data-act="wipe">${t('Delete everything…', 'Slett alt …')}</button></div>
       </div>`;
   }
@@ -1018,7 +1018,7 @@
   }
   async function wipeAll() {
     const u = user(), n = W.live(S.items).length + W.trashed(S.items).length;
-    const ok = await openDlg(`<h3 id="wsDlgH">${t('Delete everything in My Workspace?', 'Slette alt i Mitt arbeidsområde?')}</h3>
+    const ok = await openDlg(`<h3 id="wsDlgH">${t('Delete everything in My workspace?', 'Slette alt i Mitt arbeidsområde?')}</h3>
       <p>${t(`This removes ${n} items – every aircraft, note and document, the document files, and the trash – from this device`, `Dette fjerner ${n} elementer – alle fly, notater og dokumenter, dokumentfilene og papirkurven – fra denne enheten`)}${u ? t(' and from your account, so they also disappear from your other devices', ' og fra kontoen din, slik at de også forsvinner fra de andre enhetene dine') : ''}. ${t('The documents also disappear from Flight Intelligence. It cannot be undone.', 'Dokumentene forsvinner også fra Flight Intelligence. Det kan ikke angres.')}</p>
       <p>${t('Export a backup file first if you might want any of it back.', 'Eksporter en sikkerhetskopi først hvis du kanskje vil ha noe av det tilbake.')}</p>
       <div class="fld"><label class="ck"><input type="checkbox" id="wipeCk"> ${t('I understand that this cannot be undone', 'Jeg forstår at dette ikke kan angres')}</label></div>
@@ -1028,7 +1028,7 @@
     if (u) { const tomb = Object.values(S.items).filter(it => !it.gone).map(it => W.tombstone(it)); await ST.clearItems(); S.items = {}; await commit(tomb); await syncNow(true); }
     else { await ST.clearItems(); S.items = {}; S.index = null; GC = null; }
     M.recent = []; M.backupAt = 0; M.hideAdopt = {}; M.sync.full = null; await saveMeta(); await storageInfo();
-    go(''); render(); toast(t('Everything in My Workspace was deleted.', 'Alt i Mitt arbeidsområde er slettet.'));
+    go(''); render(); toast(t('Everything in My workspace was deleted.', 'Alt i Mitt arbeidsområde er slettet.'));
   }
   async function adopt(k) {
     const s = adoptable().find(x => x.k === k); if (!s) return;
@@ -1067,9 +1067,11 @@
     else if (act === 'nb-new' && window.WSDESK) { go(''); setTimeout(() => window.WSDESK.newNotebook({}), 30); }
   });
 
-  /* search box */
+  /* search box: the site's bar (same box, same place), wired to the workspace. Short placeholder on a phone, like the site's */
   let beforeSearch = '', qT = 0;
   const qIn = el('wsQ');
+  const qPh = () => { qIn.placeholder = window.innerWidth < 640 ? t('Search your workspace…', 'Søk i arbeidsområdet ditt …') : t('Search your workspace: aircraft, documents, notes, packs, routes', 'Søk i arbeidsområdet ditt: fly, dokumenter, notater, pakker, ruter'); };
+  window.addEventListener('resize', qPh, { passive: true });
   qIn.addEventListener('input', () => { clearTimeout(qT); qT = setTimeout(() => {
     const q = qIn.value.trim(), r = route();
     if (q) { if (r.path !== 'search') beforeSearch = r.path; history.replaceState(null, '', '#/search?q=' + encodeURIComponent(q)); render(); }
@@ -1082,8 +1084,9 @@
   function drawChrome() {
     el('wsH1').textContent = t('My workspace', 'Mitt arbeidsområde');
     el('wsHomeT').textContent = t('Back to the desk', 'Tilbake til arbeidsflaten');
-    el('wsQLabel').textContent = t('Search your workspace', 'Søk i arbeidsområdet ditt');
-    qIn.placeholder = t('Aircraft, documents, notes, packs, routes', 'Fly, dokumenter, notater, pakker, ruter');
+    el('wsLede').textContent = t('Your aircraft, documents, notes, briefing packs and routes in one place.', 'Flyene, dokumentene, notatene, briefingpakkene og rutene dine på ett sted.');
+    qIn.setAttribute('aria-label', t('Search your workspace', 'Søk i arbeidsområdet ditt'));
+    qPh();
     document.title = t('My workspace · Birdbird', 'Mitt arbeidsområde · Birdbird');
   }
 
