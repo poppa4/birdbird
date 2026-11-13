@@ -6,7 +6,7 @@
 <title>Privacy · Birdbird</title>
 <meta name="description" content="Birdbird privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 /* privacy.html – page-local layout */
 .pv-short{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;border-top:1px solid var(--ink)}
@@ -42,7 +42,7 @@
 </style>
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -104,7 +104,7 @@
         <p><b>Not synced.</b> Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.</p>
       </div>
       <div class="pv-text">
-        <p><b>Delete your account.</b> Go to My training, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
+        <p><b>Delete your account.</b> Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.</p>
         <p><b>Sign out.</b> Signing out ends the session on the server. Your data stays in that browser until you clear it.</p>
         <p class="btns"><a class="btn" href="profile.html#account">Manage your account</a></p>
       </div>
@@ -149,7 +149,7 @@
           <li>Look up the Birdbird site and choose to delete its data (sometimes called cookies and site data).</li>
           <li>To remove everything at once, clear browsing data for all time, including cookies and site data.</li>
         </ol>
-        <p class="note">Data saved to your Birdbird account is removed by deleting the account on My training. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.</p>
+        <p class="note">Data saved to your Birdbird account is removed by deleting the account on My page. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.</p>
       </div>
     </div>
   </section>
@@ -259,13 +259,13 @@ LAB.add({'Sections':'Sections'},{
  "Not synced.":"Synkroniseres ikke.",
  "Documents you upload to Flight Intelligence (AFM, QRH, SOP) and attachments in briefing packs stay in your browser on that device. Keys you enter for map layers are not synced either.":"Dokumenter du laster opp til Flight Intelligence (AFM, QRH, SOP) og vedlegg i briefingpakker blir i nettleseren på den enheten. Nøkler du legger inn for kartlag synkroniseres heller ikke.",
  "Delete your account.":"Slett kontoen.",
- "Go to My training, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min trening, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene og alle synkroniserte data slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
+ "Go to My page, then Account, and choose Delete account. The account, its passkeys, sessions and all synced data are deleted from the server straight away. You can also tick a box to clear this browser at the same time.":"Gå til Min side, så Konto, og velg Slett kontoen. Kontoen, passnøklene, øktene og alle synkroniserte data slettes fra serveren med en gang. Du kan også krysse av for å tømme denne nettleseren samtidig.",
  "Sign out.":"Logg ut.",
  "Signing out ends the session on the server. Your data stays in that browser until you clear it.":"Når du logger ut, avsluttes økten på serveren. Dataene blir liggende i den nettleseren til du sletter dem.",
  "Manage your account":"Administrer kontoen",
  "Birdbird does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"Birdbird bruker ingen analyse- eller sporingsverktøy og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
  "Removes progress, settings, saved plans, setups and documents that Birdbird has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.":"Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som Birdbird har lagret i denne nettleseren. Det kan ikke angres. Er du logget inn, logges du ut først, og kopien på kontoen beholdes.",
- "Data saved to your Birdbird account is removed by deleting the account on My training. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.":"Data som er lagret på Birdbird-kontoen, fjerner du ved å slette kontoen på Min trening. Data som ligger hos Claude-kontoen din når Birdbird kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i Birdbird.",
+ "Data saved to your Birdbird account is removed by deleting the account on My page. Data kept with your Claude account, when Birdbird runs inside Claude, is removed by deleting the saved items inside Birdbird.":"Data som er lagret på Birdbird-kontoen, fjerner du ved å slette kontoen på Min side. Data som ligger hos Claude-kontoen din når Birdbird kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i Birdbird.",
  "School features, e-mail sign-in or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.":"Skolefunksjoner, innlogging med e-post eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på."
 });
 LAB.start('privacy');

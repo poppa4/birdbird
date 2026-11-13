@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#0B2545">
 <link rel="preload" as="image" href="img/front/sunset2-1400.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <!-- The previous front page is kept as index-classic.html (noindex). To go back: cp index-classic.html index.html -->
 <style>
 /* ===== Birdbird front page. Page-scoped: everything lives under .fp =====
@@ -443,10 +443,16 @@
   .fi-ask{margin:12px 22px 18px;min-height:44px}
 }
 @media (min-width:901px) and (max-height:820px){ .fi-src{display:none} .fp-hero h1{font-size:clamp(38px,min(4.2vw,7vh),62px)} }
+/* touch: 44 px targets for the example pager, the storm stages and the stand-alone text links */
+@media (pointer:coarse){
+  .fi-pg button{width:44px;height:44px}
+  .fs-stages button{min-height:44px}
+  .fp .txt>.tl,.fp .foot>.tl,.fp-model>.tl,.fp-maker>.tl,.fp .sm-all{display:inline-flex;align-items:center;min-height:44px}
+}
 </style>
 </head>
 <body data-home="1" data-title="Birdbird · Aviation theory and flight preparation, built in Norway">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
@@ -677,7 +683,7 @@
         <div><h3>EASA</h3><p data-tx="src1">Easy Access Rules for Air Operations (Revision 24, March 2026) for minima and fuel, Aircrew for the ATPL subjects, and SERA for the rules of the air.</p></div>
         <div><h3>ICAO</h3><p data-tx="src2">Standard terminology, phraseology and procedure design concepts, such as holding entries and approach segments, in Birdbird’s own words.</p></div>
         <div><h3>AIP</h3><p data-tx="src3">Not an official chart. Birdbird does not use AIP data without the publisher’s permission, so check positions, airspace and frequencies against the current AIP.</p></div>
-        <div><h3 data-tx="src4h">Your documents</h3><p data-tx="src4">Flight Intelligence answers from your AFM, QRH and SOP first. They stay in your browser: no accounts, no analytics, no tracking cookies.</p></div>
+        <div><h3 data-tx="src4h">Your documents</h3><p data-tx="src4">Flight Intelligence answers from your AFM, QRH and SOP first. They stay in your browser. No analytics and no tracking cookies; an account is optional.</p></div>
       </div>
       <p class="fp-model"><span data-tx="model"><b>Teaching models, not operational data.</b> The labs use simplified physics and typical values; A320 and B200 figures are illustrative, not manufacturer data.</span><a class="tl" href="sources.html" data-tx="goSrc">Data sources and licences</a></p>
     </div>
@@ -782,7 +788,7 @@ LAB.tx({
  src2:'Standard terminologi, fraseologi og prinsipper for prosedyredesign, som inngang til holding og innflygingssegmenter, med Birdbirds egne ord.',
  src3:'Ikke et offisielt kart. Birdbird bruker ikke AIP-data uten tillatelse fra utgiveren, så kontroller posisjoner, luftrom og frekvenser mot gjeldende AIP.',
  src4h:'Dine dokumenter',
- src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din: ingen kontoer, ingen analyseverktøy, ingen sporingskapsler.',
+ src4:'Flight Intelligence svarer først ut fra din AFM, QRH og SOP. De blir i nettleseren din. Ingen analyseverktøy og ingen sporingskapsler; konto er valgfritt.',
  model:'<b>Pedagogiske modeller, ikke operative data.</b> Labbene bruker forenklet fysikk og typiske verdier; tall for A320 og B200 er illustrasjoner, ikke produsentdata.',
  goSrc:'Datakilder og lisenser',
  h2d:'For flyskoler',

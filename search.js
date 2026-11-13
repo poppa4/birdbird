@@ -183,7 +183,7 @@ P('clouds.html#lift','Clouds and stability lab','Sky- og stabilitetslabben','lif
  P('workspace.html#/notes','My notes','Mine notater','notes notater notebook','My workspace','Mitt arbeidsområde'),
  P('workspace.html#/storage','Storage and backup','Lagring og sikkerhetskopi','backup export import sikkerhetskopi eksport','My workspace','Mitt arbeidsområde'),
  P('training.html','Training: overview','Trening: oversikt','training trening overview oversikt simulators simulatorer simulator cessna 172 c172 da42 king air b200 ifr trainer ifr-trener briefing radio type rating typerating checkride sim check','Simulators, briefings, radio and check preparation','Simulatorer, briefinger, radio og kontrollforberedelse'),
- P('radio.html','Gate to gate','Gate to gate','gate to gate radio atc phraseology fraseologi checklist sjekkliste flow startup taxi clearance klarering da42','A whole trip in order with an AI controller','En hel tur i rekkefølge med AI-flygeleder'),
+ P('radio.html','Gate to gate','Gate to gate','gate to gate radio atc phraseology fraseologi checklist sjekkliste flow startup taxi clearance klarering da42','A whole trip in order, with ATC answering each call','En hel tur i rekkefølge, der flygelederen svarer på hvert oppkall'),
  P('briefing.html','Briefings (TSADMM)','Briefinger (TSADMM)','briefing departure brief approach brief tsadmm avgangsbrief innflygingsbrief plate','Brief a departure or approach and get a score','Brief en avgang eller innflyging og få poeng'),
  P('radio-drills.html','Radio drills','Radiodriller','radio drill readback tilbakelesing atc calls','Short radio exercises','Korte radioøvelser'),
  P('ifr.html','IFR trainer','IFR-trener','ifr instrument trainer instrumenttrener radio navigation radionavigasjon vor ndb adf rmi rbi cdi hsi pfd dme radial intercept tracking holding procedure turn base turn approach innflyging','Learn each procedure: understand, think, fly, debrief','Lær hver prosedyre: forstå, tenk, fly, debrief'),
@@ -221,7 +221,7 @@ function calc(q){ const t=' '+q.toLowerCase().replace(/,/g,'.')+' '; let m;
   // gradient: 3.3 % 120 kt
   if((m=t.match(/(\d{1,2}(?:\.\d+)?)\s*%\D{0,10}(\d{2,3})\s*kt/))){ const g=num(m[1]), gs=+m[2]; return {h:L({en:`Climb gradient ${g} %`,no:`Stigegradient ${g} %`}),v:`${r0(g*60.76)} ft/NM · ${r0(g*gs*1.013/10)*10} ft/min ${L({en:'at',no:'ved'})} ${gs} kt`,u:'prep.html#s-grad'}; }
   // trykkhøyde / tetthetshøyde: elev 1500 qnh 1003 (t 25)
-  if((m=t.match(/(?:elev|elevation|høyde|pa|alt)\D{0,4}(-?\d{1,5})\D{0,12}qnh\D{0,3}(\d{3,4})(?:\D{1,10}(?:t|temp|oat)\D{0,3}(-?\d{1,2}))?/))||(m=t.match(/qnh\D{0,3}(\d{3,4})\D{0,12}(?:elev|elevation|høyde|alt)\D{0,4}(-?\d{1,5})(?:\D{1,10}(?:t|temp|oat)\D{0,3}(-?\d{1,2}))?/))){ let el=+m[1], q=+m[2]; if(q<900){ [el,q]=[q,el]; } if(q>900&&q<1100){ const pa=el+(1013-q)*30; let v=`${L({en:'Pressure altitude',no:'Trykkhøyde'})} ${r0(pa)} ft`; if(m[3]!=null){ const isa=15-2*pa/1000, da=pa+120*(+m[3]-isa); v+=` · ${L({en:'density altitude',no:'tetthetshøyde'})} ≈ ${r0(da/10)*10} ft (ISA ${r1(isa)} °C)`; } return {h:L({en:'Pressure altitude',no:'Trykkhøyde'}),v,u:'altimetry.html'}; } }
+  if((m=t.match(/(?:elev|elevation|høyde|pa|alt)\D{0,4}(-?\d{1,5})\D{0,12}qnh\D{0,3}(\d{3,4})(?:\D{1,10}(?:t|temp|oat)\D{0,3}(-?\d{1,2}))?/))||(m=t.match(/qnh\D{0,3}(\d{3,4})\D{0,12}(?:elev|elevation|høyde|alt)\D{0,4}(-?\d{1,5})(?:\D{1,10}(?:t|temp|oat)\D{0,3}(-?\d{1,2}))?/))){ let el=+m[1], q=+m[2]; if(q<900){ [el,q]=[q,el]; } if(q>900&&q<1100){ const pa=el+(1013-q)*30; let v=`${L({en:'Pressure altitude',no:'Trykkhøyde'})} ${r0(pa)} ft`; if(m[3]!=null){ const isa=15-2*pa/1000, da=pa+120*(+m[3]-isa); v+=` · ${L({en:'density altitude',no:'tetthetshøyde'})} ≈ ${r0(da/10)*10} ft (ISA ${r1(isa)} °C)`; } return {h:L({en:'Pressure altitude',no:'Trykkhøyde'}),v,u:'airdata.html#settings'}; } }
   // skybase: temp 16 dew 11 / 16/11
   if((m=t.match(/(?:cloud base|skybase|spread|spredning)\D{0,6}(-?\d{1,2})\D{1,8}(-?\d{1,2})/))){ const a=+m[1], b=+m[2]; return {h:L({en:'Cumulus cloud base',no:'Cumulus-skybase'}),v:`(${a} − ${b}) × 400 ≈ ${r0(Math.max(0,a-b)*400/100)*100} ft AGL`,u:'clouds.html#lift'}; }
   // tid: 60 nm 120 kt
@@ -259,7 +259,10 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     const sub=document.querySelector('nav.trnav'); (sub&&sub.previousElementSibling===head?sub:head).insertAdjacentElement('afterend',box); }
   box.dataset.w='1';
   const inp=box.querySelector('input'), res=box.querySelector('.res'), hint=box.querySelector('.hint');
-  let exi=0; const ph=()=>{ const ex=EX[no()?'no':'en']; inp.placeholder= innerWidth<=640? L({en:'Ask or search…',no:'Spør eller søk …'}) : L({en:'Ask or search anything, e.g. ',no:'Spør eller søk etter hva som helst, f.eks. '})+ex[exi%ex.length]; hint.textContent=L({en:'answers right here',no:'svar rett her'}); };
+  /* combobox semantics: the input owns the list of results, the marked row is announced */
+  res.id='nsres'; res.setAttribute('role','listbox'); inp.setAttribute('role','combobox'); inp.setAttribute('aria-autocomplete','list'); inp.setAttribute('aria-controls','nsres'); inp.setAttribute('aria-expanded','false');
+  new MutationObserver(()=>{ inp.setAttribute('aria-expanded',String(!res.hidden)); if(res.hidden) inp.removeAttribute('aria-activedescendant'); }).observe(res,{attributes:true,attributeFilter:['hidden']});
+  let exi=0; const ph=()=>{ const ex=EX[no()?'no':'en']; inp.setAttribute('aria-label',L({en:'Search or ask',no:'Søk eller spør'})); res.setAttribute('aria-label',L({en:'Search results',no:'Søkeresultater'})); inp.placeholder= innerWidth<=640? L({en:'Ask or search…',no:'Spør eller søk …'}) : L({en:'Ask or search anything, e.g. ',no:'Spør eller søk etter hva som helst, f.eks. '})+ex[exi%ex.length]; hint.textContent=L({en:'answers right here',no:'svar rett her'}); };
   ph(); setInterval(()=>{ if(!inp.value&&document.activeElement!==inp){ exi++; ph(); } },4000);
   new MutationObserver(ph).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   let sel=0, items=[], aiCtl=null;
@@ -269,7 +272,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
     res.innerHTML=h+`<div class="aiw"></div>`; res.hidden=false; sel=0; mark(); }
-  function mark(){ res.querySelectorAll('.it').forEach(e=>e.classList.toggle('on',+e.dataset.i===sel)); }
+  function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on) inp.setAttribute('aria-activedescendant',e.id); }); }
   function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.u) location.href=it.u; }
   inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }

@@ -38,7 +38,7 @@ function canvasFit(cv,draw){ const st={w:0,h:0,ctx:cv.getContext('2d')}; const r
    ===================================================================== */
 function elec(root){
   root.innerHTML=`<p class="lead">A 28-volt DC aircraft. One battery and two starter-generators feed a group of buses that are tied together through current limiters, so that one fault cannot take everything with it. Fail things and watch which buses stay powered, what the loadmeters do and which lights come on.</p>
-  <div class="simgrid"><div class="simview"><div class="view svgwrap"><svg viewBox="0 0 640 350" class="schem" role="img" aria-label="Simplified DC electrical system: battery, two generators, generator buses, centre bus, dual-fed buses and inverters"></svg></div>
+  <div class="simgrid"><div class="simview"><div class="view svgwrap" tabindex="0"><svg viewBox="0 0 640 350" class="schem" role="img" aria-label="Simplified DC electrical system: battery, two generators, generator buses, centre bus, dual-fed buses and inverters"></svg></div>
     <div class="annp" data-ann></div>
     <div class="ro meters" data-ro></div></div>
     <div class="panel" data-ctl></div></div>
@@ -176,7 +176,7 @@ function elec(root){
    ===================================================================== */
 function fuel(root){
   root.innerHTML=`<p class="lead">Each wing is its own fuel system feeding its own engine. The engine always draws from the nacelle tank; the wing tanks top it up by gravity, and the auxiliary tank, used first, is pumped into it by a jet pump driven by fuel pressure. Run the clock and watch the order in which the tanks empty.</p>
-  <div class="simgrid"><div class="simview"><div class="view svgwrap"><svg viewBox="0 0 640 300" class="schem" role="img" aria-label="Fuel system for both wings: auxiliary, wing and nacelle tanks, pumps, crossfeed and firewall valves"></svg></div>
+  <div class="simgrid"><div class="simview"><div class="view svgwrap" tabindex="0"><svg viewBox="0 0 640 300" class="schem" role="img" aria-label="Fuel system for both wings: auxiliary, wing and nacelle tanks, pumps, crossfeed and firewall valves"></svg></div>
     <div class="annp" data-ann></div><div class="ro meters" data-ro></div></div>
     <div class="panel" data-ctl></div></div>
   <div class="box"><b class="t">What is happening</b><div data-expl class="expl"></div></div>
@@ -649,7 +649,7 @@ const mods=[
  sees:['BL AIR FAIL (red): that bleed valve to INSTR & ENVIR OFF. The other side keeps pressurisation; rudder boost needs bleed on both sides.','ENG ICE FAIL (amber): vanes not in the selected position. Use the standby actuator; a torque drop and ITT rise confirm the vanes moved.','Propeller deice ammeter out of range or uneven heating: vibration from asymmetric ice shedding.','Ice on unprotected surfaces: maintain at least the minimum speed in icing and leave the conditions.'],
  know:['Which services use bleed air and which use regulated pneumatic pressure.','How the bleed-air failure warning works.','When the ice vanes must be down, what they cost and why they must come up in warm conditions.','Why there is a minimum speed in sustained icing.'],
  nums:[['Regulated pneumatic pressure','about 18 psi'],['Minimum speed in sustained icing','140 KIAS'],['Windshield heat effective to','226 KIAS'],['Ice vanes','down in visible moisture near or below +5 °C; up above about +15 °C'],['Rudder boost activates at','bleed pressure difference of about 60 psi'],['Brake deice','needs both bleed sources; times out after gear up']],
- labs:[['hazards.html#icing','Icing lab']]},
+ labs:[['hazards.html#explore','Icing lab']]},
 {id:'env',t:'Environmental and pressurisation',sub:'Heating, air conditioning, pressurisation controller, outflow and safety valves, oxygen',ch:['air','press'],sim:'press',oral:'environmental system and pressurisation: bleed air heating, flow control units, ambient air, vapour-cycle air conditioning, AIR COND N1 LOW, pressurisation controller and settings, outflow valve, safety valve, dump and test, maximum differential, ALT WARN, oxygen system, depressurisation',
  body:`<p>Cabin air comes from engine bleed air through the <b>flow control units</b>, mixed with ambient air in flight for volume and cooled or heated as needed. On the ground, with the gear safety switch compressed, ambient air is shut off. Cooling comes from a <b>vapour-cycle</b> air conditioner (a refrigerant compressor on the right engine), which is switched off when N1 is too low (green AIR COND N1 LOW).</p>
 <p><b>Pressurisation</b> works by restriction: air is pumped in continuously and the <b>outflow valve</b> on the rear pressure bulkhead, modulated by the controller, decides how fast it leaves. You select a cabin altitude and a rate of change. The <b>safety valve</b> next to it limits the maximum differential, relieves negative pressure, keeps the cabin unpressurised on the ground through the left gear safety switch, and opens fully when you select DUMP.</p>
@@ -690,7 +690,7 @@ const mods=[
  sees:['An exceedance is recorded with its value and duration for maintenance, even if it was brief.'],
  know:['Each speed limit and its reason.','The engine operating limits table for take-off, climb and cruise.','Every time-limited value and its time.'],
  nums:[['VMO / MMO','259 KIAS / 0.52 M'],['VA','181 KIAS'],['VFE approach / full','200 / 157 KIAS'],['VLO extend / retract, VLE','181 / 163, 181 KIAS'],['VMCA','86 KIAS'],['VYSE (blue line)','121 KIAS'],['Maximum altitude','35,000 ft (yaw damper above 17,000 ft)'],['Torque / ITT / N1','2,230 ft-lb / 800 °C / 101.5 %'],['Prop rpm','2,000 rpm (reverse 1,900)'],['Maximum differential','6.5 psi']],
- labs:[['performance.html#limits','Performance limits lab']]},
+ labs:[['performance.html#dd-limits','Performance limits lab']]},
 {id:'wbp',t:'Weight and balance, performance',sub:'Weights, loading, CG, take-off and landing data, single-engine performance',ch:['wb','perf'],oral:'weight and balance: definitions, maximum weights, zero fuel weight, CG limits, loading and fuel moments; performance: take-off distance, accelerate-stop and accelerate-go, single-engine climb, effects of altitude, temperature, wind, slope and contamination, landing distance, use of the charts',
  body:`<p>Weight and balance works with the usual definitions: basic empty weight, zero-fuel weight, ramp, take-off and landing weights, and a CG envelope in inches from the datum. The <b>maximum zero-fuel weight</b> exists because fuel in the wings relieves wing bending: everything above it must be fuel. Fuel moves the CG as it burns, so check the CG at take-off and at landing.</p>
 <p>Performance comes from the AFM charts. Which rules apply depends on the operation and on the data in your AFM, but the planning tools are the same: take-off distance, <b>accelerate-stop</b> and <b>accelerate-go</b> distances, and the one-engine-inoperative climb gradient against obstacles. Hot, high and heavy each cut single-engine performance, and together they can take it to nothing: know the weight-altitude-temperature limit for your departure before you start.</p>

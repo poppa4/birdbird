@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>METAR and TAF · Birdbird</title>
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 .inbox{display:flex;flex-direction:column;gap:10px}
 .inbox textarea{width:100%;min-height:92px;font-family:var(--f-mono);font-size:16px;line-height:1.5;padding:12px 14px;border:1px solid var(--ink);border-radius:3px;background:#fff;color:var(--ink);resize:vertical;text-transform:uppercase}
@@ -39,10 +39,11 @@
 .live{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:14px}
 .live input{font-family:var(--f-mono);font-size:15px;width:76px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;text-transform:uppercase;background:#fff}
 .livest{font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}.livest.err{color:var(--warning)}
+@media (pointer:coarse){.ex button{min-height:44px;padding-inline:12px}.ctl input[type=range]{min-height:44px}}
 </style>
 </head>
 <body data-title="METAR and TAF">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -61,6 +62,7 @@
       <div class="live"><label for="liveId">Latest report for</label><input id="liveId" maxlength="4" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">METAR</button><button class="btn sm" type="button" id="liveT">TAF</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
       <textarea id="raw" spellcheck="false" aria-label="METAR or TAF"></textarea>
       <div class="ex" id="ex"></div>
+      <p class="note">The report shown first and the buttons above are made-up practice reports. “Latest report for” fetches the real one.</p>
     </div>
     <div class="sum" id="sum"></div>
     <div class="split">
@@ -105,6 +107,7 @@ const NOd={
  'VFR at the aerodrome':'VFR på flyplassen','Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.':'Basert på SERA.5005 og SERA.5010 for fly. Flyplassen, luftrommet og operatøren din kan ha strengere regler.',
  'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',
  'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
+ 'The report shown first and the buttons above are made-up practice reports. “Latest report for” fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. «Siste melding for» henter den ekte.',
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
  'Decoded':'Dekodet','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };

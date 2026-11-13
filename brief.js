@@ -145,7 +145,7 @@ function briefOut(kind,V,r){
   const rub=BRIEF.RUB[kind]; const lbl={ok:{en:'Covered',no:'Dekket'},partial:{en:'Partly',no:'Delvis'},missing:{en:'Missing',no:'Mangler'},wrong:{en:'Wrong',no:'Feil'}};
   const items=rub.items.map((it,j)=>{ const x=(r.items&&r.items[j])||{}; const stt=['ok','partial','missing','wrong'].includes(x.status)?x.status:'missing';
     return `<div class="ri"><span class="k">${esc(it.k)}</span><div><b>${esc(L(it.t))}</b><p>${esc(x.comment||L(it.d))}</p></div><span class="st ${stt}">${L(lbl[stt])}</span></div>`; }).join('');
-  return `<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-top:8px"><span class="bigscore">${Math.round(r.score)} %</span><span class="note">${r.local?L({en:'Built-in check: looks for the elements and today’s numbers. The AI instructor also judges whether they are right and safe.',no:'Innebygd sjekk: ser etter elementene og dagens tall. AI-instruktøren vurderer også om de er riktige og trygge.'}):L({en:'Scored by the AI instructor.',no:'Vurdert av AI-instruktøren.'})}</span></div>
+  return `<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-top:8px"><span class="bigscore">${Math.round(r.score)} %</span><span class="note">${r.local?L({en:'Built-in check: looks for the elements and today’s numbers.',no:'Innebygd sjekk: ser etter elementene og dagens tall.'}):L({en:'Scored by the AI instructor.',no:'Vurdert av AI-instruktøren.'})}</span></div>
     <div class="rubric">${items}</div>
     ${(r.fix&&r.fix.length)?`<div class="why"><b>${L({en:'Next time',no:'Neste gang'})}:</b><ul style="margin:6px 0 0;padding-left:20px">${r.fix.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`:''}
     <details><summary>${L({en:'Model briefing',no:'Modellbriefing'})}</summary><div class="why">${esc(r.model||BRIEF.model(kind,V)).replace(/\n/g,'<br>')}</div></details>`;
@@ -156,7 +156,7 @@ async function score(kind,V,text,o){ const {out,note,btn,done}=o;
   note.textContent=''; let r=null;
   if(G.NAI&&NAI.probe) await NAI.probe();
   const aiOn=!!(G.NAI&&NAI.mode);
-  if(V.packFacts&&!aiOn){ note.textContent=L({en:'Scoring a briefing for your own flight needs the AI. Open the page in Claude, or switch to the practice airport.',no:'Vurdering av briefing for din egen tur krever AI. Åpne siden i Claude, eller bytt til øvingsflyplassen.'}); return; }
+  if(V.packFacts&&!aiOn){ note.textContent=L({en:'Flight Intelligence is not switched on here. A briefing for your own flight cannot be scored without it: switch to the practice airport for the built-in check.',no:'Flight Intelligence er ikke slått på her. En briefing for din egen tur kan ikke vurderes uten: bytt til øvingsflyplassen for den innebygde sjekken.'}); return; }
   if(aiOn){ btn.disabled=true; out.innerHTML=`<div class="thinking">${L({en:'The instructor is listening to your briefing…',no:'Instruktøren hører på briefingen din…'})}</div>`; bCtl=new AbortController();
     try{ r=await NAI.json(BRIEF.prompt(kind,V,text,NAI.langName()),{signal:bCtl.signal,tier:'default'}); if(!r||typeof r.score!=='number') throw {code:'invalid_json'}; }
     catch(e){ NAI.fatal(e); note.textContent=NAI.errText(e)+' '+L({en:'Showing the built-in check.',no:'Viser den innebygde sjekken.'}); r=null; }

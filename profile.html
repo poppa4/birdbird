@@ -6,7 +6,7 @@
 <title>My training · Birdbird</title>
 <meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -215,14 +215,15 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 }
 @media print{.dgrid,#data{display:none}}
 #next,#path,#type,#achievements,#rank,#track{display:none!important}
+@media (pointer:coarse){.plist h3{align-items:center}.plist h3 a{display:inline-flex;align-items:center;min-height:44px}}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
-      <div class="eyebrow on">Birdbird</div>
+      <div class="eyebrow on">Birdbird · My page</div>
       <h1>My page</h1>
       <p>Your briefing packs, saved routes and account.</p>
     </div>
@@ -322,7 +323,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 const {T,L,el}=LAB;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 LAB.add({},{
- 'My page':'Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','Birdbird · My training':'Birdbird · Min trening','My training':'Min trening','My training · Birdbird':'Min trening · Birdbird',
+ 'My page':'Min side','Birdbird · My page':'Birdbird · Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','Birdbird · My training':'Birdbird · Min trening','My training':'Min trening','My training · Birdbird':'Min trening · Birdbird',
  'Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.':'Rangen din, hva du bør gjøre nå, og alt du har gjort i labbene, typeratingtreneren og flyplanleggingen, samlet på ett sted.',
  'Next up':'Neste','Learning path':'Læringsløp','Type rating':'Typerating','Planning':'Planlegging','Achievements':'Prestasjoner','Your data':'Dine data',
  'Open Virtual Labs':'Åpne Virtual Labs','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
@@ -395,7 +396,7 @@ function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitne
 function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
 let bLoading=null;
 function loadBank(){ if(bLoading) return bLoading;
-  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=3')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=4')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
     const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
     B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
   return bLoading; }

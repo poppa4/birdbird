@@ -37,7 +37,7 @@ function app(P,opt){
   const zed=/\bZ\b/.test(P.name);
   const title= rnp? 'RNP RWY 36' : zed? 'ILS Z or LOC Z RWY 36' : 'ILS or LOC RWY 36';
   const idx=(P.chart||'NAER 11-1').split(' ').pop();
-  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${title}, fictional training approach chart, not for navigation" class="plate" style="background:#fff;max-width:100%;height:auto;display:block">`;
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="${opt.hot?'group':'img'}" aria-label="${title}, fictional training approach chart, not for navigation" class="plate" style="background:#fff;max-width:100%;height:auto;display:block">`;
   s+=`<defs><marker id="${id}a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="${ink}"/></marker>
    <clipPath id="${id}c"><rect x="4" y="168" width="592" height="352"/></clipPath>
    <pattern id="${id}h" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="4" stroke="${ink}" stroke-width="1.3"/></pattern></defs>`;

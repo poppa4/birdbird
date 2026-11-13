@@ -6,7 +6,7 @@
 <title>Gate to gate · Birdbird</title>
 <meta name="description" content="Fly a whole DA42 training trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
@@ -88,13 +88,13 @@
 </style>
 </head>
 <body data-title="Gate to gate">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird · Training</div>
       <h1>Gate to gate</h1>
-      <p>Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.</p>
+      <p>Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. ATC answers each call and every step is checked, by voice or keyboard.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -104,7 +104,7 @@
       <div class="f">Flight<div id="scen"></div></div>
       <div class="f">Mode<div id="mode"></div></div>
       <label class="chk"><input type="checkbox" id="voice" checked> ATC voice</label>
-      <span class="ai-state" id="aist">AI: checking…</span>
+      <span class="ai-state" id="aist">Built-in checks</span>
       <button class="btn" id="newf">New flight</button>
     </div>
     <div class="g2g" data-ai>
@@ -133,8 +133,8 @@
 </div>
 <script src="lab.js?v=49"></script>
 <script src="ops.js?v=3"></script>
-<script src="brief.js?v=9"></script>
-<script src="chart.js?v=4"></script>
+<script src="brief.js?v=10"></script>
+<script src="chart.js?v=5"></script>
 <script src="g2g-steps.js?v=4"></script>
 <script src="ai.js?v=3"></script>
 <script src="radiocore.js?v=2"></script>
@@ -144,7 +144,7 @@
 const {T,L,el,shuffle}=LAB, esc=NAI.esc;
 LAB.add({},{
  'Birdbird · Training':'Birdbird · Trening','Gate to gate':'Gate to gate','Gate to Gate':'Gate to gate',
- 'Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. The AI plays ATC and your instructor, by voice or keyboard.':'Fly en hel tur i DA42 i riktig rekkefølge: flows, sjekklister, briefinger og hvert radiooppkall, fra planleggingsrommet til klossene. AI-en spiller flygeleder og instruktør, med tale eller tastatur.',
+ 'Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. ATC answers each call and every step is checked, by voice or keyboard.':'Fly en hel tur i DA42 i riktig rekkefølge: flows, sjekklister, briefinger og hvert radiooppkall, fra planleggingsrommet til klossene. Flygelederen svarer på hvert oppkall, og hvert steg sjekkes, med tale eller tastatur.',
  'Flight':'Tur','Mode':'Modus','ATC voice':'ATC-stemme','New flight':'Ny tur','Reference':'Oppslag','The order of a flight':'Rekkefølgen på en flytur',
  'The rhythm is the same in every phase: do the flow from memory, verify with the checklist, brief what is coming, then talk. The checklist is read in full on the ground, and kept short below 1000 ft.':'Rytmen er den samme i hver fase: gjør flowen fra hukommelsen, verifiser med sjekklisten, brief det som kommer, og snakk så. Sjekklisten leses fullt ut på bakken, og holdes kort under 1000 ft.',
  'When':'Når','What you do':'Hva du gjør','Radio':'Radio',
@@ -231,12 +231,12 @@ function side(){
 
 /* ---------- AI ---------- */
 let aiOn=false;
-const drawAist=m=>{ aiOn=!!m; const a=el('aist'); a.classList.toggle('on',aiOn); a.textContent= aiOn? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Built-in checks',no:'Innebygde sjekker'}); a.title= aiOn&&NAI.mode==='sample'? L({en:'Uses your Claude account. The first call asks for permission.',no:'Bruker Claude-kontoen din. Første kall ber om tillatelse.'}) : L({en:'Radio calls and briefings are checked by the built-in rules. Open the page in Claude for the AI controller and instructor.',no:'Oppkall og briefinger sjekkes av innebygde regler. Åpne siden i Claude for AI-flygeleder og instruktør.'}); };
+const drawAist=m=>{ aiOn=!!m; const a=el('aist'); a.classList.toggle('on',aiOn); a.textContent= aiOn? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Built-in checks',no:'Innebygde sjekker'}); a.title= aiOn&&NAI.mode==='sample'? L({en:'Uses your Claude account. The first call asks for permission.',no:'Bruker Claude-kontoen din. Første kall ber om tillatelse.'}) : L({en:'Flight Intelligence is not switched on here. Radio calls and briefings are checked by the built-in rules.',no:'Flight Intelligence er ikke slått på her. Oppkall og briefinger sjekkes av innebygde regler.'}); };
 NAI.onMode(drawAist); LAB.onLang(()=>drawAist(NAI.mode));
 
 /* ---------- steg ---------- */
 const KIND={mcq:{en:'Decide',no:'Bestem'},order:{en:'Flow',no:'Flow'},check:{en:'Checklist',no:'Sjekkliste'},atis:{en:'Listen',no:'Lytt'},brief:{en:'Brief',no:'Brief'},radio:{en:'Radio',no:'Radio'}};
-function head(st){ const n=S.steps.length; return `<div class="top"><span class="kind">${esc(L(KIND[st.k]))}</span><span class="cnt">${L({en:'Step',no:'Steg'})} ${S.i+1} ${T('av')} ${n}</span></div><h3>${esc(L(st.t))}</h3>`; }
+function head(st){ const n=S.steps.length; return `<div class="top"><span class="kind">${esc(L(KIND[st.k]))}</span><span class="cnt">${L({en:'Step',no:'Steg'})} ${S.i+1} ${T('av')} ${n}</span></div><h3 aria-level="2">${esc(L(st.t))}</h3>`; }
 function navBtns(canNext){ return `<div class="nav"><button class="btn pri" id="nx" ${canNext?'':'hidden'}>${L({en:'Continue',no:'Fortsett'})} →</button>${S.i>0?`<button class="btn" id="bk">← ${L({en:'Back',no:'Tilbake'})}</button>`:''}</div>`; }
 function wireNav(){ const n=el('nx'); if(n) n.onclick=next; const b=el('bk'); if(b) b.onclick=()=>{ NAI.hush(); S.i=Math.max(0,S.i-1); save(); render(true); }; }
 function finishStep(score){ S.res[S.i]=score==null?null:Math.max(0,Math.min(1,score)); const st=S.steps[S.i]; if(st.knee) Object.assign(S.K,st.knee); save(); side(); const n=el('nx'); if(n){ n.hidden=false; n.focus({preventScroll:true}); } }
@@ -400,7 +400,7 @@ function debrief(){
   const rows=G2G.PHASES.filter(p=>S.steps.some(x=>x.ph===p[0])).map(([k,t])=>{ const v=S.steps.map((x,j)=>x.ph===k?S.res[j]:null).filter(x=>x!=null); return [L(t),v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*100):null]; });
   const weak=S.steps.map((x,j)=>({x,j,v:S.res[j]})).filter(o=>o.v!=null&&o.v<0.8).sort((a,b)=>a.v-b.v).slice(0,4);
   const byKind=['order','check','radio','brief','mcq'].map(k=>{ const v=S.steps.map((x,j)=>x.k===k?S.res[j]:null).filter(x=>x!=null); return [L(KIND[k==='mcq'?'mcq':k]),v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*100):null]; }).filter(r=>r[1]!=null);
-  el('step').innerHTML=`<div class="deb"><div class="top"><span class="kind">${L({en:'Debrief',no:'Debrief'})}</span></div><h3>${L({en:'Blocks on. How did it go?',no:'Blocks on. Hvordan gikk det?'})}</h3>
+  el('step').innerHTML=`<div class="deb"><div class="top"><span class="kind">${L({en:'Debrief',no:'Debrief'})}</span></div><h3 aria-level="2">${L({en:'Blocks on. How did it go?',no:'Blocks on. Hvordan gikk det?'})}</h3>
     <div class="kpis"><div class="kpi"><span>${L({en:'Overall',no:'Totalt'})}</span><b>${pct} %</b><small>${S.scen==='ifr'?T('IFR training flight'):T('VFR local flight')} · ${S.mode==='learn'?T('Learn'):T('Check')}</small></div>${byKind.map(r=>`<div class="kpi"><span>${esc(r[0])}</span><b>${r[1]} %</b></div>`).join('')}</div>
     <table><thead><tr><th>${L({en:'Phase',no:'Fase'})}</th><th>${L({en:'Score',no:'Score'})}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]==null?'–':r[1]+' %'}</td></tr>`).join('')}</tbody></table>
     ${weak.length?`<h3 style="font-size:17px!important;margin-top:8px">${L({en:'Work on these',no:'Jobb med disse'})}</h3>${weak.map(o=>`<div class="why"><b>${esc(L(o.x.t))} · ${Math.round(o.v*100)} %.</b> ${o.x.why?esc(L(o.x.why)):o.x.model?esc(o.x.model):''}</div>`).join('')}`:`<div class="why"><b>${L({en:'Clean trip.',no:'Ren tur.'})}</b> ${L({en:'Try it in Check mode, or fly the other trip.',no:'Prøv den i Sjekk-modus, eller fly den andre turen.'})}</div>`}

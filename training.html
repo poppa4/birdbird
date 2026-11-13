@@ -7,7 +7,7 @@
 <meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
 <meta name="theme-color" content="#EDF1EE">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 /* ===== Training overview, page-scoped under .tv =====
    The overview of all Birdbird training, in the order of the Training menu:
@@ -64,7 +64,7 @@
 .tv-btn.ghost:hover{background:var(--sheet0);border-color:var(--ink3)}
 .tv-btn.sm{min-height:44px;padding:0 16px;font-size:14.5px}
 .st{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;line-height:1;color:var(--ok,#2E7D4F);border:1px solid color-mix(in srgb,var(--ok,#2E7D4F) 35%,transparent);background:var(--ok-wash,#EAF4EE);border-radius:2px;padding:4px 6px 3px;white-space:nowrap}
-.st.beta{color:var(--caution,#B7791F);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
+.st.beta{color:var(--caution-ink,#8A5A0B);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
 .st.lang{color:var(--ink2);border-color:var(--rule1);background:transparent}
 
 /* ---------- 01 simulators: three cards, the panel on top ---------- */
@@ -225,10 +225,11 @@
   .tv-inst .tv-btn{width:100%}
 }
 @media (prefers-reduced-motion:reduce){.tv-btn,.tv-idx a,.dr-c,.dr-go span,.tv-more-l .ar,.sy-ph img,.ifr-path i{transition:none}.sy-ph:hover img{transform:none}}
+@media (pointer:coarse){.ifr-path a{min-height:44px}}
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <main class="tv" id="main">
 
   <header class="tv-hero">
@@ -358,7 +359,7 @@
           <dl class="ifr-f">
             <div><dt data-tx="bf1">A new scenario every time</dt><dd data-tx="bf1d">Fresh weather, ATIS, mass and speeds, and now and then a glide path out of service, so you never brief from memory.</dd></div>
             <div><dt data-tx="bf2">Learn to read the plate</dt><dd data-tx="bf2d">Tap any number on the training chart to see what it means and where it goes in the briefing.</dd></div>
-            <div><dt data-tx="bf3">Scored as you finish</dt><dd data-tx="bf3d">A built-in check marks each element at once; the AI instructor judges whether your plan is right and safe.</dd></div>
+            <div><dt data-tx="bf3">Scored as you finish</dt><dd data-tx="bf3d">A built-in check marks each element at once, and a model briefing shows how it can be said.</dd></div>
             <div><dt data-tx="bf4">One minute, not five</dt><dd data-tx="bf4d">A short method for working through a plate from the top down, ending with the missed approach.</dd></div>
           </dl>
           <div class="ifr-cta"><a class="tv-btn" href="briefing.html#app" data-tx="brfGo">Brief an approach</a><a class="tv-btn ghost" href="briefing.html#dep" data-tx="brfDep">Brief a departure</a></div>
@@ -395,13 +396,13 @@
           <p class="ifr-lede" data-tx="radL">Make the call, the controller answers, and every transmission is checked: what you read back, what you missed and what a good call sounds like. Hold the push-to-talk button and speak, or type.</p>
           <dl class="ifr-f">
             <div><dt data-tx="rf1">Guided scenarios</dt><dd data-tx="rf1d">VFR departure and arrival, an IFR clearance, an IFR arrival with the ILS, and a MAYDAY. QNH and squawk change every time.</dd></div>
-            <div><dt data-tx="rf2">An AI controller</dt><dd data-tx="rf2d">Free practice with tower, ground, approach, flight information or an emergency, at three levels of difficulty.</dd></div>
+            <div><dt data-tx="rf2">A controller that answers</dt><dd data-tx="rf2d">Free practice with tower, ground, approach, flight information or an emergency, at three levels of difficulty.</dd></div>
             <div><dt data-tx="rf3">Phraseology at hand</dt><dd data-tx="rf3d">What to always read back, the first call, words to avoid, standard words and the phonetic alphabet.</dd></div>
             <div><dt data-tx="rf4">A whole flight, in order</dt><dd data-tx="rf4d">Gate to gate puts the radio where it belongs: between the flows, the checklists and the briefings.</dd></div>
           </dl>
         </div>
         <figure class="ifr-fig">
-          <a class="ifr-ph" href="radio-drills.html#train" tabindex="-1" aria-hidden="true">
+          <a class="ifr-ph" href="radio-drills.html#trainer" tabindex="-1" aria-hidden="true">
             <img src="img/training/radio-drills-1216.webp" srcset="img/training/radio-drills-608.webp 608w, img/training/radio-drills-1216.webp 1216w, img/training/radio-drills-1824.webp 1824w" sizes="(max-width:640px) calc(100vw - 72px), (max-width:1180px) calc(100vw - 160px), 640px" width="1824" height="1032" loading="lazy" decoding="async"
               alt="A guided VFR departure in the radio drills: the scenario list, the situation and the ATIS on the left, and on the right the radio with the tower frequency, the pilot’s readbacks each ticked off item by item, the controller’s replies and the next task." data-alt-no="En veiledet VFR-avgang i radiodrillene: scenariolisten, situasjonen og ATIS til venstre, og til høyre radioen med tårnfrekvensen, pilotens tilbakelesninger krysset av punkt for punkt, flygelederens svar og neste oppgave.">
           </a>
@@ -412,13 +413,13 @@
         <a class="dr-c" href="radio-drills.html">
           <span class="tv-mono dr-k" data-tx="drK1">Single calls</span>
           <b data-tx="rdH">Radio drills</b>
-          <span class="dr-d" data-tx="rdD">Guided scenarios, the AI controller, phraseology and a short test.</span>
+          <span class="dr-d" data-tx="rdD">Guided scenarios, phraseology and a short test.</span>
           <span class="dr-go"><span data-tx="rdGo">Open radio drills</span> <span aria-hidden="true">→</span></span>
         </a>
         <a class="dr-c" href="radio.html">
           <span class="tv-mono dr-k" data-tx="drK2">A whole flight</span>
           <b data-tx="g2H">Gate to gate</b>
-          <span class="dr-d" data-tx="g2D">A DA42 training trip from the planning room to the chocks, IFR or VFR, in Learn or Check mode. The AI plays ATC and your instructor.</span>
+          <span class="dr-d" data-tx="g2D">A DA42 training trip from the planning room to the chocks, IFR or VFR, in Learn or Check mode. ATC answers each call and every step is checked.</span>
           <span class="dr-go"><span data-tx="g2Go">Fly gate to gate</span> <span aria-hidden="true">→</span></span>
         </a>
       </div>
@@ -485,7 +486,7 @@ LAB.tx({
  brfN:'briefinger: avgangen (T-RIBETS), instrumentinnflygingen (TSADMM) og VFR-ankomsten, hver med en modellbriefing å sammenligne med.',
  bf1:'Nytt scenario hver gang', bf1d:'Nytt vær, ny ATIS, ny masse og nye farter, og innimellom en glidebane som er ute av drift, så du aldri brifer på rutine.',
  bf2:'Lær å lese kartet', bf2d:'Trykk på et tall på treningskartet for å se hva det betyr og hvor det hører hjemme i briefingen.',
- bf3:'Vurdert når du er ferdig', bf3d:'En innebygd sjekk krysser av hvert element med en gang; AI-instruktøren vurderer om planen er riktig og trygg.',
+ bf3:'Vurdert når du er ferdig', bf3d:'En innebygd sjekk krysser av hvert element med en gang, og en modellbriefing viser hvordan det kan sies.',
  bf4:'Ett minutt, ikke fem', bf4d:'En kort metode for å gå gjennom kartet ovenfra og ned, med avbrutt innflyging til slutt.',
  brfGo:'Brief en innflyging', brfDep:'Brief en avgang',
  brfCap:'En innflygingsbriefing for ILS på øvingsflyplassen. Flyplassen, kartet og tallene er fiktive.',
@@ -494,13 +495,13 @@ LAB.tx({
  radP:'Toveis radiotrening med EASA- og ICAO-fraseologi, fra enkeltkall til en hel flyging.',
  radL:'Du gjør kallet, flygelederen svarer, og hver sending sjekkes: hva du leste tilbake, hva du gikk glipp av og hvordan et godt kall høres ut. Hold inne sendeknappen og snakk, eller skriv.',
  rf1:'Veiledede scenarioer', rf1d:'VFR-avgang og -ankomst, en IFR-klarering, en IFR-ankomst med ILS og en MAYDAY. QNH og squawk endres hver gang.',
- rf2:'En AI-flygeleder', rf2d:'Fri trening med tårn, bakkekontroll, innflygingskontroll, flygeinformasjon eller en nødsituasjon, på tre vanskelighetsgrader.',
+ rf2:'En flygeleder som svarer', rf2d:'Fri trening med tårn, bakkekontroll, innflygingskontroll, flygeinformasjon eller en nødsituasjon, på tre vanskelighetsgrader.',
  rf3:'Fraseologien for hånden', rf3d:'Hva som alltid skal leses tilbake, førstekallet, ord du bør unngå, standardord og det fonetiske alfabetet.',
  rf4:'En hel flyging, i riktig rekkefølge', rf4d:'Gate to gate setter radioen der den hører hjemme: mellom flows, sjekklister og briefinger.',
  radCap:'En veiledet VFR-avgang: tilbakelesningen av taksiklareringen er sjekket, frekvensskifte til tårnet, og nå kallet ved venteposisjonen.',
  drK1:'Enkeltkall', drK2:'En hel flyging',
- rdH:'Radiodriller', rdD:'Veiledede scenarioer, AI-flygelederen, fraseologi og en kort test.', rdGo:'Åpne radiodrillene',
- g2H:'Gate to gate', g2D:'En treningstur med DA42 fra planleggingsrommet til klossene, IFR eller VFR, i Lær- eller Sjekk-modus. AI-en er både flygeleder og instruktør.', g2Go:'Fly gate to gate',
+ rdH:'Radiodriller', rdD:'Veiledede scenarioer, fraseologi og en kort test.', rdGo:'Åpne radiodrillene',
+ g2H:'Gate to gate', g2D:'En treningstur med DA42 fra planleggingsrommet til klossene, IFR eller VFR, i Lær- eller Sjekk-modus. Flygelederen svarer på hvert oppkall, og hvert steg sjekkes.', g2Go:'Fly gate to gate',
  chkH:'Typerating og sjekk',
  chkP:'Studer en flytype i dybden, og forbered deg til vurderingen du har foran deg.',
  trH:'Typerating', enOnly:'Bare engelsk',

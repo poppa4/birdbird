@@ -6,7 +6,7 @@
 <title>For flight schools and operators · Birdbird</title>
 <meta name="description" content="How a flight school or operator can use Birdbird: interactive theory mapped to the EASA ATPL subjects, a standard briefing pack, type-rating preparation and a document-grounded instructor.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 /* schools.html – page-local layout on top of the shared design system */
 .ip-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
@@ -56,7 +56,7 @@
 .stages li{margin:0 0 6px}
 @media (max-width:900px){.stages{grid-template-columns:minmax(0,1fr)}.stages>div,.stages>div+div{padding:18px 0}}
 /* roadmap */
-.tag.plan{color:var(--caution)}
+.tag.plan{color:var(--caution-ink)}
 .tag.now{color:var(--ok)}
 .road .box{background:var(--wash);border-style:dashed}
 /* contact */
@@ -64,10 +64,11 @@
 .cta h2{font-size:clamp(24px,2.2vw,30px)}
 .cta p{margin:10px 0 0;color:var(--ink-2);max-width:62ch;font-size:var(--t-md)}
 @media (max-width:640px){.cta{padding:22px 20px}.cta .btns{width:100%}.cta .btns .btn{flex:1 1 auto}}
+@media (pointer:coarse){.ip-cols .box .go{display:inline-flex;align-items:center;min-height:44px;margin-top:4px}}
 </style>
 </head>
 <body data-title="For flight schools and operators">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">

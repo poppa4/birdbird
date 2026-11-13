@@ -269,7 +269,7 @@ function create(container,o){
       map.addControl(new maplibregl.AttributionControl({compact:true,customAttribution:ATT.nav}),'bottom-right');
       const sc=new maplibregl.ScaleControl({unit:'nautical',maxWidth:110}); map.addControl(sc,'bottom-right');
       // narrow screens: attribution starts folded behind its (i) button; it opens on tap
-      if(container.clientWidth<640) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
+      if(container.clientWidth<=900) setTimeout(()=>{ const a=container.querySelector('.maplibregl-ctrl-attrib'); if(a){ a.classList.remove('maplibregl-compact-show'); a.removeAttribute('open'); } },0);
       map.__bb={bm:'vfr',relief:'on',ly:{},vid:style.metadata['bb:vid'],ex:1.2,t3:false,oaip:'none',lt:315,sc,satBad:{}};
       if(style.metadata['bb:bg']) map.__bb.ch={[style.metadata['bb:bg']]:{'background-color':P.land}};
       satWatch(map,lg);

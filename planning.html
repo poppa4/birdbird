@@ -6,7 +6,7 @@
 <title>Navigation log · Birdbird</title>
 <meta name="description" content="Plan each leg with the wind triangle, work out fuel to Part-NCO rules and check the ICAO flight plan format before you file it.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 .fgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
 .it{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -31,9 +31,9 @@
 .issues{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
 .issues li{font-size:13px;padding:7px 9px;border-radius:5px;border:1px solid var(--line);background:var(--bg);display:flex;gap:8px}
 .issues li i{font-style:normal;font-family:var(--f-mono);font-size:11px;flex:0 0 auto;padding:1px 5px;border-radius:3px;height:fit-content;margin-top:1px}
-.issues li.e i{background:var(--red);color:#fff}.issues li.w i{background:var(--amber);color:#0d1319}.issues li.o i{background:var(--green);color:#0d1319}
+.issues li.e i{background:var(--red);color:#fff}.issues li.w i{background:var(--amber);color:#0d1319}.issues li.o i{background:var(--green);color:#fff}
 pre.msg{font-family:var(--f-mono);font-size:13px;background:#070a0d;border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:0;white-space:pre-wrap;word-break:break-word;color:#d7f5e1;line-height:1.55}
-.navwrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+.navwrap{position:relative;overflow-x:auto;border:1px solid var(--line);border-radius:6px}
 table.nav{border-collapse:collapse;width:100%;min-width:980px;font-size:13px}
 table.nav th{font-size:11px;font-weight:500;color:var(--muted);text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);background:var(--panel-2);white-space:nowrap}
 table.nav th:nth-child(-n+2){text-align:left}
@@ -41,7 +41,7 @@ table.nav td{padding:4px 4px;border-bottom:1px solid var(--line);text-align:righ
 table.nav td input{width:64px;font-family:var(--f-mono);font-size:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:5px 5px;text-align:right}
 table.nav td input.w{width:86px;text-align:left;text-transform:uppercase}
 table.nav td.out{color:var(--smoke)}
-table.nav td.mh{color:var(--amber);font-weight:500}
+table.nav td.mh{color:var(--caution-ink);font-weight:500}
 table.nav tr.sel td{background:rgba(127,203,232,.06)}
 table.nav tfoot td{font-weight:600;color:var(--fg);background:var(--panel-2)}
 table.nav td button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 6px}
@@ -58,10 +58,11 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
 .fplstat{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-decoration:none;color:inherit;border:1px solid var(--rule);background:var(--sheet);padding:8px 12px;border-radius:3px}
 .fplstat:hover{border-color:var(--ink)}
 .fplstat small{font-size:12px;color:var(--ink-2);letter-spacing:.02em}
+@media (pointer:coarse){.chips{gap:6px}.chips button{min-width:44px;min-height:44px}table.nav td button{min-width:44px;min-height:44px}}
 </style>
 </head>
 <body data-title="Navigation log">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -78,7 +79,8 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
     <h2>Navigation log</h2>
     <p class="lead">Enter true course, distance and the forecast wind for each leg. The log works out wind correction, heading, ground speed, time and fuel. East is least, west is best: magnetic = true minus easterly variation.</p>
     <div class="navtop" id="navtop"></div>
-    <div class="navwrap"><table class="nav" id="nav"><thead><tr><th>From</th><th>To</th><th>Alt ft</th><th>TC °T</th><th>Dist NM</th><th>Wind °T</th><th>Wind kt</th><th>TAS kt</th><th>WCA</th><th>TH °T</th><th>MH °M</th><th>GS kt</th><th>Time</th><th>Fuel</th><th></th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+    <p class="note">The log starts with an example trip, ENTO to ENBR, with made-up winds. Change the legs to your own flight.</p>
+    <div class="navwrap"><table class="nav" id="nav"><thead><tr><th>From</th><th>To</th><th>Alt ft</th><th>TC °T</th><th>Dist NM</th><th>Wind °T</th><th>Wind kt</th><th>TAS kt</th><th>WCA</th><th>TH °T</th><th>MH °M</th><th>GS kt</th><th>Time</th><th>Fuel</th><th><span class="vh">Remove leg</span></th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
     <div class="btns"><button class="btn" id="addLeg">Add leg</button><button class="btn" id="toFpl">Use totals in the flight plan</button><span class="note" id="toFplN"></span></div>
     <div class="split">
       <div class="view"><canvas id="wtri" aria-label="Wind triangle for the selected leg"></canvas></div>
@@ -304,7 +306,7 @@ navtop.innerHTML='';
 mk(T('TAS (kt) for new legs'),'tas',1); mk(T('Fuel flow per hour'),'ff',0.1); mk(T('Variation (+E / −W)'),'var',0.5);
 const u=document.createElement('label'); u.className='f'; u.innerHTML=`<span>${T('Fuel unit')}</span><select id="unit"><option>USG</option><option>L</option><option>KG</option></select>`; navtop.appendChild(u);
 el('unit').onchange=e=>{ NT.unit=e.target.value; calc(); };
-LAB.add({},{'TAS (kt) for new legs':'TAS (kt) for nye legg','Fuel flow per hour':'Forbruk per time','Variation (+E / −W)':'Variasjon (+Ø / −V)','Fuel unit':'Drivstoffenhet'});
+LAB.add({},{'The log starts with an example trip, ENTO to ENBR, with made-up winds. Change the legs to your own flight.':'Loggen starter med en eksempeltur, ENTO til ENBR, med oppdiktet vind. Endre leggene til din egen tur.','TAS (kt) for new legs':'TAS (kt) for nye legg','Fuel flow per hour':'Forbruk per time','Variation (+E / −W)':'Variasjon (+Ø / −V)','Fuel unit':'Drivstoffenhet'});
 const DEF=[['ENTO','TOR',1500,265,4,240,15],['TOR','LARV',3500,250,18,240,15],['LARV','KRAG',3500,236,42,250,18],['KRAG','ENBR',5500,300,98,260,20]];
 function legsEx(){ NT.legs=DEF.map(d=>({from:d[0],to:d[1],alt:d[2],tc:d[3],dist:d[4],wd:d[5],ws:d[6],tas:NT.tas})); }
 let sel=0;

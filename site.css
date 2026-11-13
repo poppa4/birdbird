@@ -44,11 +44,12 @@
    ===================================================================== */
 :root{
   /* colour */
-  --paper:#EDF1EE; --sheet:#FFFFFF; --wash:#F5F7F5; --ink:#13202A; --ink-2:#4C5B66; --ink-3:#7D8B95;
+  --paper:#EDF1EE; --sheet:#FFFFFF; --wash:#F5F7F5; --ink:#13202A; --ink-2:#4C5B66; --ink-3:#5F6D77;   /* ink-3: 4.7:1 on paper, 5.3:1 on sheet (WCAG AA) */
   --rule:#C6D0D3; --rule-2:#DCE3E4;
   --accent:#9A1E68; --accent-hover:#82165A; --accent-wash:#F6EDF2;      /* actions and current state only */
   --info:#1D4E9E; --info-wash:#EEF3FA;                                  /* links to theory, notes */
-  --ok:#2E7D4F; --caution:#B7791F; --warning:#B42318;                   /* status, inside instruments */
+  --ok:#2B774B; --caution:#B7791F; --warning:#B42318;                   /* status, inside instruments */
+  --caution-ink:#8A5A0B;                                                /* caution as text on paper or sheet (AA); --caution is for fills, rules and dark panels */
   --ok-wash:#EAF4EE; --caution-wash:#FBF3E4; --warning-wash:#FBECEA;
   --instrument:#10171D; --instrument-2:#18232C; --instrument-ink:#D7E1E6; --instrument-rule:#2A3742;
   --navy:#0B2545; --navy-2:#132F55;                                      /* brand navy: front-page bands, map chrome */
@@ -82,6 +83,20 @@ a{color:var(--accent);text-underline-offset:2px}
 button,input,select,textarea{font-family:inherit}
 ::selection{background:#E9CFDF}
 button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+/* visually hidden, still read by screen readers */
+.vh{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+/* skip link: first stop for the keyboard, shown only when focused */
+.skip{position:absolute;left:var(--gl);top:8px;z-index:200;transform:translateY(-300%);background:var(--ink);color:#fff;padding:10px 14px;border-radius:var(--radius);font-size:14px;font-weight:600;text-decoration:none}
+.skip:focus{transform:none;outline:2px solid var(--focus-dark);outline-offset:2px}
+main:focus,[role=main]:focus{outline:none}
+/* reduced motion: no eased transitions or smooth scrolling anywhere (scene animations are handled by each page) */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}}
+
+/* Flight Intelligence controls: one rule for the whole site. A control that only works with the AI carries data-ai-only and
+   stays out of the page until the page's script has seen the service answer (body.ai-on, set from NAI.onMode in ai.js).
+   Features with a built-in fallback keep working and show the .ai-state pill (train.css) instead. */
+body:not(.ai-on) [data-ai-only]{display:none!important}
 
 /* Hold (site.js): the page below the header stays unpainted until the page's scripts have run, so nothing jumps on load */
 html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
@@ -217,7 +232,9 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .tag.core{color:var(--ink-2)}
 .tag.solid{color:#fff;background:var(--ink);border-color:var(--ink)}
 .tag.accent{color:var(--accent)}
-.tag.ok{color:var(--ok)}.tag.caution{color:var(--caution)}.tag.warning{color:var(--warning)}
+.tag.ok{color:var(--ok)}.tag.caution{color:var(--caution-ink)}.tag.warning{color:var(--warning)}
+/* caution label of a callout (lab.css) as text: the AA tone */
+.callout.caution .ct,.callout.amber .ct{color:var(--caution-ink)}
 
 /* ---------------- Lab template ---------------- */
 /* module bar (lab.js renders into nav.labnav) */
@@ -398,15 +415,19 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
   input[type=range]{height:32px}
   .btn,.seg button,.tg button,.tabs button,.modetabs button{min-height:44px}
   .site .hright .seg button,.site .hright .langseg button{min-height:44px;min-width:44px}
-  .site .menu,.site .myws,.site .acct .mytr{min-height:44px}
+  .site .menu,.site .myws,.site .acct .mytr,.site .logo{min-height:44px}
   .site .acct .mytr.ini{width:44px;height:44px}
   .site .acm a,.site .acm button,.tgm a{min-height:44px;display:flex;align-items:center}
   .tgm .md a{min-width:44px;justify-content:center}
   .nsearch input{padding:11px 0}
   select,input[type=text],input[type=search],input[type=number],input[type=email],input:not([type]),input[inputmode]{min-height:44px}
   .sitefoot a{min-height:44px;display:flex;align-items:center;padding:0}
+  .skip{min-height:44px;display:inline-flex;align-items:center}
+  .snav a{min-width:44px;text-align:center}
+  html.site-page label.chk{min-height:44px}
+  html.site-page .card details>summary,html.site-page .page>details>summary{min-height:44px;align-content:center}
 }
-@media print{.site,.sitefoot,.nsearch,.labnav,.snav,.vlpath,.trnav{display:none!important}body{background:#fff}}
+@media print{.site,.sitefoot,.nsearch,.labnav,.snav,.vlpath,.trnav,.skip{display:none!important}body{background:#fff}}
 /* language switch in the site header: identical on every page */
 .site .hright .langseg{display:flex;gap:0;margin:0}
 .site .hright .langseg button{flex:0 0 auto;font-family:var(--f-body);font-size:13px;font-weight:600;line-height:1.2;background:var(--sheet);color:var(--ink-2);border:1px solid var(--rule);margin:0 0 0 -1px;border-radius:0;padding:5px 10px;cursor:pointer}

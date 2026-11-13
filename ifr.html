@@ -6,7 +6,7 @@
 <title>IFR trainer · Birdbird</title>
 <meta name="description" content="Learn instrument flying one procedure at a time: tracking, intercepts, NDB, DME arcs, holding, procedure turns, VOR, NDB, LOC, ILS and RNP approaches, SID and STAR, mental maths and partial panel. An instructor on screen tells you the next step, every term is explained, and the replay shows your first mistake.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 /* ===== IFR trainer =====
    Two views. Home (paper): what the trainer is beside a live miniature of the guided screen, the path of eight core
@@ -65,7 +65,7 @@ body:not(.v-trainer) #trainer{display:none}
 .btn2.q.lg{flex-direction:row;align-items:center;align-self:center;font-size:15px;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px}
 .hero-fig{margin:0;min-width:0}
 .mini{background:#0B1217;border:1px solid #0a1015;border-radius:var(--radius-lg);padding:12px;display:flex;flex-direction:column;gap:8px;color:#DFE7EC;box-shadow:0 22px 44px -28px rgba(11,18,23,.6);user-select:none}
-.mini-bar{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#6B7C86;padding:0 2px;min-height:22px}
+.mini-bar{display:flex;align-items:center;gap:12px;font-size:12.5px;color:#7B8C96;padding:0 2px;min-height:22px}
 .mini-bar b{font-family:var(--f-display);font-stretch:88%;font-weight:700;font-size:16px;color:#fff}
 .mini-bar .sp{flex:1 1 auto}
 .mini-bar .on{color:#0B1217;background:#DFE7EC;font-weight:650;border-radius:4px;padding:2px 8px;font-size:12px}
@@ -208,7 +208,7 @@ body:not(.v-trainer) #trainer{display:none}
 .btn3 svg{width:14px;height:14px}
 
 /* ---- the trainer (dark deck) ---- */
-.stage{--n0:#0B1217;--n1:#10191F;--n2:#152029;--n3:#1C2934;--nl:#24333F;--nl2:#2E404D;--ni:#DFE7EC;--ni2:#9EADB7;--ni3:#6B7C86;
+.stage{--n0:#0B1217;--n1:#10191F;--n2:#152029;--n3:#1C2934;--nl:#24333F;--nl2:#2E404D;--ni:#DFE7EC;--ni2:#9EADB7;--ni3:#7B8C96;
   --crs:#F06BB4;--vor:#63D9A0;--adf:#F5BC4C;--cy:#7FCBE8;--tgt:#7FE0FF;--amb:#F0B440;--bad:#EF6450;--good:#63D9A0;
   position:relative;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:10px max(14px,var(--gr)) 10px max(14px,var(--gl));
   background:var(--n0);color:var(--ni);display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto;gap:10px;scroll-margin-top:0}
@@ -620,10 +620,12 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 .notes p{margin:0;font-size:14.5px;line-height:1.55;color:var(--ink-2)}
 @media (max-width:900px){.notes{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){.stage *,.done-toast{transition:none!important}}
+@media (pointer:coarse){.btn2{min-height:44px}.lk{display:inline-flex;align-items:center;min-height:44px}}
 </style>
 </head>
 <body data-title="IFR trainer">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
+<main id="main">
 <div class="page">
   <header class="lhead ifr-head">
     <div class="brand">
@@ -654,7 +656,7 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
     </section>
     <section class="sec" id="all" aria-labelledby="allH">
       <div class="sech"><h2 id="allH">All exercises</h2><p id="allSub"></p>
-        <div class="side"><div class="catq"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input id="catQ" type="search" autocomplete="off" spellcheck="false"><button type="button" id="catQx" hidden>×</button></div></div></div>
+        <div class="side"><div class="catq"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><input id="catQ" type="search" autocomplete="off" spellcheck="false"><button type="button" id="catQx" aria-label="Clear" hidden>×</button></div></div></div>
       <div class="groups" id="groups"></div>
       <div id="catList" hidden></div>
     </section>
@@ -727,6 +729,7 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
     <div><h3>Real and practice data</h3><p data-tx="n3">Bergen and Oslo use real navaid positions and frequencies (OurAirports) for training only. The procedures flown there are illustrative, not the published charts. The practice area is fictional: Holmvik, Kvist, Fjell, Ravn, Holm and the HV waypoints do not exist. Never use this trainer for navigation.</p></div>
   </section>
 </div>
+</main>
 
 <script src="lab.js?v=49"></script>
 <script src="navcore.js?v=2"></script>

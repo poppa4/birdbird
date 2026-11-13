@@ -6,7 +6,7 @@
 <title>Briefings · Birdbird</title>
 <meta name="description" content="Practise departure and approach briefings out loud with today’s weather, a training chart and the aircraft numbers, and get them scored.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
 .bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
@@ -75,13 +75,13 @@
 </style>
 </head>
 <body data-title="Briefings">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird · Training</div>
       <h1>Briefings</h1>
-      <p>Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. The AI instructor scores the structure, the numbers and how you deal with the threats.</p>
+      <p>Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. Your briefing is scored on its structure, the numbers and how you deal with the threats.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -90,7 +90,7 @@
   <section class="card" id="trainer" data-ai>
     <div class="btns" style="justify-content:space-between">
       <div id="kind"></div>
-      <div class="btns"><select id="scen" aria-label="Scenario" style="font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px"><option value="">Practice airport (fictional)</option></select><div id="rules"></div><button class="btn" id="newsc">New scenario</button><span class="ai-state" id="aist">AI: checking…</span></div>
+      <div class="btns"><select id="scen" aria-label="Scenario" style="font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px"><option value="">Practice airport (fictional)</option></select><div id="rules"></div><button class="btn" id="newsc">New scenario</button><span class="ai-state" id="aist">Built-in checks</span></div>
     </div>
     <div class="bgrid">
       <div class="chartcol">
@@ -151,8 +151,8 @@
 </div>
 <script src="lab.js?v=49"></script>
 <script src="ops.js?v=3"></script>
-<script src="brief.js?v=9"></script>
-<script src="chart.js?v=4"></script>
+<script src="brief.js?v=10"></script>
+<script src="chart.js?v=5"></script>
 <script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script>
@@ -161,7 +161,7 @@
 const {T,L,el}=LAB, esc=NAI.esc;
 LAB.add({},{
  'Birdbird · Training':'Birdbird · Trening','Briefings':'Briefinger','Briefing Trainer':'Briefingtrener',
- 'Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. The AI instructor scores the structure, the numbers and how you deal with the threats.':'Brief en avgang eller en innflyging høyt, slik du gjør i flyet. Du får dagens vær, kartet og tallene for flyet. AI-instruktøren vurderer strukturen, tallene og hvordan du håndterer truslene.',
+ 'Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. Your briefing is scored on its structure, the numbers and how you deal with the threats.':'Brief en avgang eller en innflyging høyt, slik du gjør i flyet. Du får dagens vær, kartet og tallene for flyet. Briefingen vurderes på struktur, tall og hvordan du håndterer truslene.',
  'Practice airport (fictional)':'Øvingsflyplass (oppdiktet)','Trainer':'Trener','How to brief a plate':'Slik briefer du et kart','A320 speed card':'A320-fartskort','New scenario':'Nytt scenario',
  'Reading an approach chart':'Slik leser du et innflygingskart','Chart reading':'Kartlesing',
  'Commercial approach charts share one layout: heading, briefing strip, plan view, profile view and minimums, always in the same places. This training chart follows that layout so you learn where to look on a real plate. The airport, procedure and numbers are fictional. Tap a number on the chart.':'Kommersielle innflygingskart har samme oppbygging: topptekst, briefingstripe, planvisning, profilvisning og minima, alltid på samme sted. Dette treningskartet følger den oppbyggingen, så du lærer hvor du skal se på et ekte kart. Flyplassen, prosedyren og tallene er oppdiktet. Trykk på et nummer på kartet.',
@@ -325,7 +325,7 @@ el('sc').onclick=()=>BRIEF.score(kind,V,el('bt').value,{out:el('out'),note:el('b
 el('model').onclick=()=>{ el('out').innerHTML=`<div class="why" style="font-size:15px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:12px 14px"><b>${L({en:'Model briefing',no:'Modellbriefing'})}</b><br>${esc(BRIEF.model(kind,V)).replace(/\n/g,'<br>')}</div>`; };
 el('clear').onclick=()=>{ el('bt').value=''; el('out').innerHTML=''; };
 NAI.ptt(el('mic'),el('bt'),null,{toggle:true,append:true,lang:'en-GB',space:false}); if(!NAI.sr) el('mic').hidden=true;
-const drawAist=m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Scored by the built-in check',no:'Vurderes med innebygd sjekk'}); if(!m) a.title=L({en:'The AI instructor is not connected on this copy of Birdbird. The built-in check looks for every element and today’s numbers.',no:'AI-instruktøren er ikke koblet til på denne kopien av Birdbird. Den innebygde sjekken ser etter alle elementene og dagens tall.'}); };
+const drawAist=m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Built-in checks',no:'Innebygde sjekker'}); a.title= m? '' : L({en:'Flight Intelligence is not switched on here. The built-in check looks for every element and today’s numbers.',no:'Flight Intelligence er ikke slått på her. Den innebygde sjekken ser etter alle elementene og dagens tall.'}); };
 NAI.onMode(drawAist); LAB.onLang(()=>drawAist(NAI.mode));
 
 /* ---------- Reading an approach chart: interaktiv gjennomgang ---------- */
@@ -389,7 +389,7 @@ const PG=[
  ['M',{en:'Minimums',no:'Minima'},{en:'Minimums box at the bottom.',no:'Minimaboksen nederst.'},[{en:'DA/DH or MDA for the approach you fly, in your category row (A320: C)',no:'DA/DH eller MDA for innflygingen du flyr, i raden for din kategori (A320: C)'},{en:'RVR or visibility required, compared with today’s weather',no:'RVR eller sikt som kreves, sammenlignet med dagens vær'},{en:'Set the minimums; what you must see to continue',no:'Sett minima; hva du må se for å fortsette'}]],
  ['M',{en:'Missed approach',no:'Avbrutt innflyging'},{en:'Missed-approach text and the dashed line.',no:'Teksten for avbrutt innflyging og den stiplede linjen.'},[{en:'Route and altitude in your own words; set the altitude',no:'Rute og høyde med egne ord; sett høyden'},{en:'First actions, and an engine failure in the go-around',no:'Første handlinger, og motorstans i go-around'},{en:'The plan after: hold, a second approach, or the alternate',no:'Planen etterpå: holding, ny innflyging eller alternativ'}]]
 ];
-function pg(){ el('pg').innerHTML=PG.map(([k,t,d,li])=>`<div class="pg"><h4 data-k="${k}">${esc(L(t))}</h4><p>${esc(L(d))}</p><ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul></div>`).join(''); }
+function pg(){ el('pg').innerHTML=PG.map(([k,t,d,li])=>`<div class="pg"><h4 aria-level="3" data-k="${k}">${esc(L(t))}</h4><p>${esc(L(d))}</p><ul>${li.map(x=>`<li>${esc(L(x))}</li>`).join('')}</ul></div>`).join(''); }
 
 /* A320-fartskort */
 let spM='64.5';
@@ -398,8 +398,8 @@ function speeds(){ const t=parseFloat(spM), s=spd(t,0), over=t>64.5;
   const row=r=>`<tr><td>${esc(typeof r[0]==='string'?r[0]:L(r[0]))}</td><td>${esc(r[1])}</td></tr>`;
   const a=[[{en:'Take-off CONF 1+F: V1 / VR / V2',no:'Avgang CONF 1+F: V1 / VR / V2'},`${s.v1} / ${s.vr} / ${s.v2}`],[{en:'Green dot (O), below FL200',no:'Green dot (O), under FL200'},s.gd],[{en:'S speed (CONF 1)',no:'S-fart (CONF 1)'},s.S],[{en:'F speed (CONF 2 and 3)',no:'F-fart (CONF 2 og 3)'},s.F],[{en:'VLS CONF FULL',no:'VLS CONF FULL'},s.vls],[{en:'VAPP CONF FULL, calm wind',no:'VAPP CONF FULL, vindstille'},s.vapp],[{en:'VAPP, 20 kt headwind',no:'VAPP, 20 kt motvind'},spd(t,20).vapp]];
   const b=[['VMO / MMO','350 kt / M0.82'],['VLE','280 kt / M0.67'],[{en:'VLO extend / retract',no:'VLO ut / inn'},'250 / 220 kt'],['VFE CONF 1','230 kt'],['VFE CONF 1+F','215 kt'],['VFE CONF 2','200 kt'],['VFE CONF 3','185 kt'],['VFE CONF FULL','177 kt'],[{en:'Demonstrated crosswind',no:'Demonstrert sidevind'},'38 kt']];
-  el('sp1').innerHTML=`<tr><th>${L({en:'KIAS at',no:'KIAS ved'})} ${t} t (${L({en:'typical',no:'typisk'})})</th><th></th></tr>`+a.map(row).join('')+(over?`<caption>${L({en:'Above the 64.5 t maximum landing mass: the landing speeds would apply to an overweight landing.',no:'Over maks landingsmasse 64,5 t: landingsfartene gjelder da en overvektslanding.'})}</caption>`:'');
-  el('sp2').innerHTML=`<tr><th>${L({en:'Limits (typical A320ceo)',no:'Grenser (typisk A320ceo)'})}</th><th></th></tr>`+b.map(row).join('');
+  el('sp1').innerHTML=`<tr><th colspan="2">${L({en:'KIAS at',no:'KIAS ved'})} ${t} t (${L({en:'typical',no:'typisk'})})</th></tr>`+a.map(row).join('')+(over?`<caption>${L({en:'Above the 64.5 t maximum landing mass: the landing speeds would apply to an overweight landing.',no:'Over maks landingsmasse 64,5 t: landingsfartene gjelder da en overvektslanding.'})}</caption>`:'');
+  el('sp2').innerHTML=`<tr><th colspan="2">${L({en:'Limits (typical A320ceo)',no:'Grenser (typisk A320ceo)'})}</th></tr>`+b.map(row).join('');
   const C=[[{en:'VLS',no:'VLS'},{en:'Lowest selectable speed, about 1.23 × the 1 g stall speed for the configuration. The top of the amber strip on the speed tape. Never fly below it in normal operation.',no:'Laveste valgbare fart, ca. 1,23 × stallfarten ved 1 g for konfigurasjonen. Toppen av den gule stripen på fartsskalaen. Fly aldri under den i normal drift.'}],
    [{en:'VAPP',no:'VAPP'},{en:'Final approach speed: VLS + 1/3 of the headwind component, at least 5 kt and at most 15 kt above VLS. The FMS computes it from the wind you enter on the PERF APPR page.',no:'Sluttinnflygingsfart: VLS + 1/3 av motvindskomponenten, minst 5 kt og høyst 15 kt over VLS. FMS-en regner den ut fra vinden du legger inn på PERF APPR-siden.'}],
    [{en:'Green dot',no:'Green dot'},{en:'Best lift-to-drag speed in clean configuration: the engine-out climb speed and the default holding speed. Rule of thumb below FL200: 2 × mass in tonnes + 85.',no:'Fart for best løft/motstand i ren konfigurasjon: stigefart med én motor ute og standard holdingfart. Tommelfingerregel under FL200: 2 × masse i tonn + 85.'}],

@@ -6,7 +6,7 @@
 <title>Type rating trainer: King Air B200 · Birdbird</title>
 <meta name="description" content="King Air B200 type rating trainer: a study plan for every system, cockpit system simulators, flashcards, a question trainer with exam mode and an oral exam.">
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
 .intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
@@ -154,24 +154,25 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 .scen .opts button.right{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}
 .scen .opts button.wrong{border-color:var(--red);box-shadow:inset 3px 0 0 var(--red)}
 .scen .fb{font-size:14px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:8px 12px;margin-top:6px}
-.trmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:2px 0 12px;font-size:13px;color:var(--ink-2)}
+.trmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:20px 0 0;font-size:13px;color:var(--ink-2)}
 .langbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--sheet);border:1px solid var(--ink);border-radius:2px;padding:3px 8px}
 /* readouts: tidy 2 × 2 grid, no orphan wrap */
 #kp{grid-template-columns:repeat(2,minmax(0,1fr))}
 #kp .kpi{padding:12px 16px;border-left:1px solid var(--rule-2)}
 #kp .kpi:nth-child(odd){border-left:0;padding-left:0}
 #kp .kpi:nth-child(n+3){border-top:1px solid var(--rule-2)}
+@media (pointer:coarse){.labs a{display:inline-flex;align-items:center;min-height:44px;border-radius:22px;padding-inline:14px}.scen .opts button{min-height:44px}.ctl input[type=range]{min-height:44px}}
 </style>
 </head>
 <body data-title="Type rating trainer: King Air B200">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
       <div class="eyebrow">Birdbird · Training</div>
       <h1>Type rating trainer: King Air B200</h1>
+      <p>An example of how your Birdbird instructor can be set up for a type rating. A study plan through every system, cockpit simulators for the logic you must master, flashcards for the numbers, a question trainer with an exam mode, an oral exam and the reasoning behind the normal procedures.</p>
       <div class="trmeta"><span class="langbadge" title="Type ratings are conducted in English, so this trainer is in English only.">English only</span><span>Beechcraft King Air B200 · 15 modules · example setup</span></div>
-      <p>An example of how your Birdbird instructor can be set up for a type rating. A study plan through every system, cockpit simulators for the logic you must master, flashcards for the numbers, a question trainer with an exam mode, an oral exam with the AI instructor and the reasoning behind the normal procedures.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -249,7 +250,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 
   <section class="card" id="oral" data-ai>
     <div class="eyebrow">5 · Oral exam</div>
-    <h2>Oral exam with the AI instructor</h2>
+    <h2>Oral exam</h2>
     <p class="lead">The instructor plays the examiner: one question at a time about the system you choose, a grade from 0 to 10 for each answer with what was missing, then the next question. It uses passages from your own documents in Flight Intelligence and cites them; without documents it says the answers are general and must be verified.</p>
     <div class="ogrid">
       <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
@@ -258,7 +259,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
           <label>Documents from<select id="oAc"></select></label>
           <button class="btn pri" id="oStart">Start the oral</button>
           <button class="btn" id="oEnd" hidden>End</button>
-          <span class="ai-state" id="aist">AI: checking…</span>
+          <span class="ai-state" id="aist">Self-assessed practice</span>
         </div>
         <p class="note" id="oDocs"></p>
         <div class="olog" id="oLog"></div>
@@ -286,7 +287,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 <script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script src="b200-qbank.js"></script>
-<script src="b200-sim.js?v=3"></script>
+<script src="b200-sim.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -321,7 +322,7 @@ function barCls(p){ return p==null?'':p>=80?'':p>=50?'mid':'low'; }
 function drawMods(){ const open=[...document.querySelectorAll('.mod[open]')].map(d=>d.dataset.m);
   el('mods').innerHTML=MODS.map((m,i)=>{ const qs=modQs(m), p=mastery(qs);
     return `<details class="mod" data-m="${m.id}" id="mod-${m.id}" ${open.includes(m.id)?'open':''}><summary><span class="no">${i+1}</span><span class="mt"><b>${esc(m.t)}</b><span>${esc(m.sub)}</span></span><span class="mbar">${!qs.length?'no questions yet':!seen(qs)?'not started':p+' % mastery'}<span class="tr"><i class="${barCls(p)}" style="width:${seen(qs)?p:0}%"></i></span><span>${seen(qs)} / ${qs.length} seen</span></span></summary>
-    <div class="mbody"><div class="txt">${m.body}${m.sees?`<h4>Failures and what you see</h4><ul>${m.sees.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${m.know?`<h4>Be able to explain</h4><ul>${m.know.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>
+    <div class="mbody"><div class="txt">${m.body}${m.sees?`<h4 aria-level="3">Failures and what you see</h4><ul>${m.sees.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}${m.know?`<h4 aria-level="3">Be able to explain</h4><ul>${m.know.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>
     <div><table class="nums"><tr><th colspan="2">Key numbers <span class="verify">typical B200 — verify in your AFM/POH</span></th></tr>${m.nums.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>
     ${m.labs&&m.labs.length?`<div class="labs">${m.labs.map(([h,t])=>`<a href="${h}">${esc(t)} →</a>`).join('')}</div>`:''}
     <div class="btns" style="margin-top:10px"><button class="btn pri" data-drill="${m.id}" ${qs.length?'':'disabled'}>Drill this module${qs.length?` (${qs.length})`:''}</button>${m.sim?`<button class="btn" data-sim="${m.sim}">Open the simulator</button>`:''}<button class="btn" data-oral="${m.id}">Oral on this</button></div></div></div></details>`; }).join(''); }
@@ -474,7 +475,7 @@ const clampI=v=>Math.max(0,Math.min(10,Math.round(v)));
 /* offline practice when the AI is not available */
 function offline(){ const m=MODS.find(x=>x.id===OS.mod); const pr=C.oral[m.id]||[]; const i=OS.k%Math.max(1,pr.length); const p=pr[i];
   if(!p){ addLog('a','<span class="who">Practice</span><p>No practice questions for this system.</p>'); return; }
-  OS.cur=p; addLog('a',`<span class="who">Practice question ${OS.k+1}</span><p>${esc(p[0])}</p><p class="note">The AI instructor is not available here, so this is self-assessed: answer out loud or in the box, then compare with the key points.</p>`); }
+  OS.cur=p; addLog('a',`<span class="who">Practice question ${OS.k+1}</span><p>${esc(p[0])}</p><p class="note">Self-assessed practice: answer out loud or in the box, then compare with the key points.</p>`); }
 function offlineAnswer(text){ const p=OS.cur; if(!p) return; if(text) addLog('q',esc(text));
   const d=addLog('a',`<span class="who">Key points</span><div class="keyp"><ul>${p[1].map(x=>`<li>${x}</li>`).join('')}</ul></div><p class="note">General B200 knowledge: verify in your AFM/POH.</p><div class="btns" style="margin-top:6px"><button class="btn" data-self="9">I had it</button><button class="btn" data-self="6">Partly</button><button class="btn" data-self="3">Missed it</button></div>`);
   d.addEventListener('click',e=>{ const b=e.target.closest('[data-self]'); if(!b||!OS) return; OS.grades.push(+b.dataset.self); d.querySelectorAll('[data-self]').forEach(x=>x.disabled=true); OS.k++; offline(); }); }
@@ -488,7 +489,7 @@ function oSend(){ const v=el('oA').value.trim(); if(!OS) return; if(!OS.ai){ el(
 el('oSend').onclick=oSend; el('oSkip').onclick=()=>{ if(!OS) return; if(OS.ai) oTurn(null,true); else offlineAnswer(''); };
 el('oA').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); oSend(); } });
 if(NAI.ptt&&NAI.sr) NAI.ptt(el('oTalk'),el('oA'),t=>{ if(OS&&t) oSend(); },{lang:'en-GB',space:false}); else el('oTalk').hidden=true;
-NAI.onMode(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? 'AI instructor on' : 'Self-assessed practice'; a.title=m?'':'The AI examiner is not connected on this copy of Birdbird. The oral runs as self-assessed practice: answer, then compare with the model answer.'; });
+NAI.onMode(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? 'AI instructor on' : 'Self-assessed practice'; a.title=m?'':'Flight Intelligence is not switched on here. The oral runs as self-assessed practice: answer, then compare with the key points.'; });
 
 /* ---------- 6. flows + scenario ---------- */
 el('phases').innerHTML=C.phases.map((p,i)=>`<div class="ph"><h3><i>${i+1}</i>${esc(p[0])}</h3><p>${p[1]}</p><ul>${p[2].map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('');

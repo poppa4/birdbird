@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=11">
-<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="site.css?v=21">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -452,6 +452,11 @@
 .rcard .rx-rl{padding:6px}
 .rcard .libbtn{border-radius:var(--radius);box-shadow:none;height:auto;flex-basis:34px}
 @media (pointer:coarse){.rx .mapctl button,.rx .mapctl a{width:44px;height:44px}.rcard .libbtn{flex-basis:44px;min-height:44px}}
+/* touch: the route card, 2D/3D switch, profile-sheet bar and source notes reach 44 px too */
+@media (pointer:coarse){.rcard .rc-hd{min-height:44px}.rx-more{min-width:44px}.shcr .stp button{min-width:44px;min-height:44px}.shcr input{min-width:52px}
+  .seg3 button{min-width:44px;min-height:44px}.sh-b button{width:44px;height:44px}.sh-t{min-height:44px;align-items:center}.srcd summary{min-height:44px;align-content:center}
+  .rx .rx-ly label.chk{min-height:44px;padding:0}.rx .rx-ly input[type=checkbox]{width:20px;height:20px}
+  .rx .maplibregl-ctrl-attrib.maplibregl-compact{min-height:44px;padding-right:44px;display:flex;align-items:center}.rx .maplibregl-ctrl-attrib-button{width:44px;height:44px;background-position:center;background-repeat:no-repeat}}
 .rcard .qres{border-radius:0}
 .rc-ft{padding:7px 10px 6px;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 8px;align-items:baseline;border-bottom:1px solid rgba(11,37,69,.12)}
 .rc-ft[hidden]{display:none}
@@ -517,7 +522,8 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=66"></script>
+<script src="site.js?v=67"></script>
+<main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
@@ -652,8 +658,8 @@
         <h3>Paste from the AIP or a list</h3>
         <textarea id="f_paste" rows="3" style="width:100%;font-family:var(--f-mono);font-size:13px" placeholder="GILKO 593412N 0104523E&#10;RIPEL 59 41 03.2N 010 22 50.0E"></textarea>
         <div class="row"><button class="btn" id="f_parse">Read the list</button></div>
-        <h3>Read fixes from a chart (AI)</h3>
-        <div class="row"><input type="file" id="f_img" accept="image/*" multiple><button class="btn" id="f_ai">Read the chart</button></div>
+        <h3 data-ai-only>Read fixes from a chart</h3>
+        <div class="row" data-ai-only><input type="file" id="f_img" accept="image/*" multiple aria-label="Photo or screenshot of the chart"><button class="btn" id="f_ai">Read the chart</button></div>
         <div class="aiok" id="f_found"></div>
         <h3>Your fixes</h3>
         <div class="fixl" id="f_list"></div>
@@ -763,13 +769,14 @@
     </div>
   </div>
 </div>
+</main>
 <script src="lab.js?v=49"></script>
 <script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=15"></script>
+<script src="rxmap.js?v=16"></script>
 <script>
 (function(){
 'use strict';
@@ -1346,7 +1353,7 @@ function mkEdit(m,x,y){ if(npBox) npBox.remove(); const host=el('profw'); const 
    ${isCr?`<label class="f" data-w="a2" ${m.k==='between'?'':'hidden'}>${L({en:'Second altitude',no:'Andre høyde'})}<input type="text" data-f="a2" value="${m.a2!=null?Math.round(m.a2):''}"></label>`:''}
    <label class="f">${m.t==='note'?L({en:'Text',no:'Tekst'}):L({en:'Label (optional)',no:'Navn (valgfritt)'})}<input type="text" data-f="s" value="${esc(m.s||'')}" style="text-transform:none"></label>
    <label class="f">${L({en:'Distance from start (NM)',no:'Distanse fra start (NM)'})}<input type="text" data-f="x" value="${fx(m.x,1)}"></label>
-   <div class="row"><button class="btn pri" data-a="ok">OK</button><button class="btn" data-a="rm">${L({en:'Delete',no:'Slett'})}</button><button class="btn" data-a="x">×</button></div>`;
+   <div class="row"><button class="btn pri" data-a="ok">OK</button><button class="btn" data-a="rm">${L({en:'Delete',no:'Slett'})}</button><button class="btn" data-a="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></div>`;
   b.addEventListener('pointerdown',e=>e.stopPropagation()); b.addEventListener('click',e=>e.stopPropagation());
   const q=k=>b.querySelector(`[data-f="${k}"]`); if(q('k')) q('k').onchange=()=>{ b.querySelector('[data-w=a2]').hidden=q('k').value!=='between'; };
   const close=()=>{ b.remove(); npBox=null; };
@@ -1616,7 +1623,7 @@ function mapClick(e){ closePop(); const r=mapEl.getBoundingClientRect(); const m
   else if(best.k==='aip'){ n=o[0]; info=`${L({en:'IFR point',no:'IFR-punkt'})} · AIP ${o[3]}`; pt={n,t:'wpt',la:o[1],lo:o[2],note:'AIP '+o[3]}; }
   else { n=o.n; info=esc(o.note||L({en:'My fix',no:'Min fix'})); pt={n,t:'wpt',la:o.la,lo:o.lo}; }
   pop=document.createElement('div'); pop.className='mappop'; pop.style.left=Math.min(mx+10,mapEl.clientWidth-250)+'px'; pop.style.top=Math.min(my+10,mapEl.clientHeight-120)+'px';
-  pop.innerHTML=`<b>${esc(n)}</b><span>${info}</span><br><span class="note">${llTxt(pt.la,pt.lo)}</span><div><button class="btn pri" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button> <button class="btn" data-a="x">×</button></div>`;
+  pop.innerHTML=`<b>${esc(n)}</b><span>${info}</span><br><span class="note">${llTxt(pt.la,pt.lo)}</span><div><button class="btn pri" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button> <button class="btn" data-a="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></div>`;
   pop.addEventListener('pointerdown',ev=>ev.stopPropagation());
   pop.onclick=ev=>{ const a=ev.target.dataset.a; if(a==='add'){ addPoint(pt); } closePop(); }; mapEl.appendChild(pop); }
 function addPoint(pt){ // før siste innflygingspunkt / destinasjon
@@ -1634,7 +1641,7 @@ let npBox=null;
 function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
   const n=R.pts.filter(p=>/^WPT\d+$/.test(p.n||'')).length+1;
   const b=document.createElement('div'); b.className='newpt'; b.style.left=Math.max(4,Math.min(x+8,host.clientWidth-240))+'px'; b.style.top=Math.max(4,Math.min(y+8,host.clientHeight-170))+'px';
-  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">${L({en:'Note',no:'Notat'})}</button>`:''}<button class="btn" data-a="x">×</button></div>`;
+  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">${L({en:'Note',no:'Notat'})}</button>`:''}<button class="btn" data-a="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></div>`;
   b.addEventListener('pointerdown',e=>e.stopPropagation()); b.addEventListener('pointerup',e=>e.stopPropagation());
   const inp=b.querySelector('input[type=text]'); const go=async()=>{ const name=inp.value.trim().toUpperCase()||('WPT'+n); const save=b.querySelector('input[type=checkbox]').checked;
     const pt={n:name,t:'wpt'}; if(pos&&pos.la!=null){ pt.la=+pos.la.toFixed(5); pt.lo=+pos.lo.toFixed(5); }
@@ -1667,8 +1674,9 @@ el('f_add').onclick=async()=>{ const n=el('f_n').value.trim(), ll=parseLL(el('f_
   upsertFix(n,ll[0],ll[1],el('f_note').value.trim()); await saveFix(); el('f_msg').textContent=L({en:'Saved ',no:'Lagret '})+n.toUpperCase(); el('f_n').value=el('f_c').value=el('f_note').value=''; };
 el('f_pick').onclick=()=>{ pickMode=true; mapEl.classList.add('pick'); el('f_msg').textContent=L({en:'Click the position on the map.',no:'Klikk posisjonen på kartet.'}); };
 el('f_parse').onclick=async()=>{ const list=parseList(el('f_paste').value); if(!list.length){ el('f_found').innerHTML=`<span class="note">${L({en:'No name + coordinate pairs found. One fix per line: NAME 593412N 0104523E',no:'Fant ingen navn + koordinat. Én fix per linje: NAVN 593412N 0104523E'})}</span>`; return; } showFound(list,L({en:'Read from your list',no:'Lest fra listen din'})); };
+NAI.onMode(m=>document.body.classList.toggle('ai-on',!!m));
 el('f_ai').onclick=async()=>{ const fs=[...el('f_img').files]; if(!fs.length){ el('f_found').innerHTML=`<span class="note">${L({en:'Choose a photo or screenshot of the chart first.',no:'Velg et bilde eller skjermbilde av kartet først.'})}</span>`; return; }
-  await NAI.probe(); if(!NAI.mode){ el('f_found').innerHTML=`<span class="note">${esc(NAI.errText({code:'not_available'}))}</span>`; return; }
+  await NAI.probe(); if(!NAI.mode){ el('f_found').innerHTML=`<span class="note">${L({en:'Flight Intelligence is not switched on here.',no:'Flight Intelligence er ikke slått på her.'})}</span>`; return; }
   el('f_ai').disabled=true; el('f_found').innerHTML=`<span class="note">${L({en:'Reading the chart…',no:'Leser kartet…'})}</span>`;
   try{ const imgs=[]; for(const f of fs.slice(0,3)) imgs.push(await shrink(f));
     const r=await NAI.json(`List every named fix, waypoint, navaid or reporting point on this aeronautical chart that has its coordinates printed. Copy the coordinates exactly as printed and convert them to decimal degrees (WGS84, south and west negative). Do not guess coordinates that are not printed. Reply with only JSON: {"fixes":[{"n":"NAME","lat":number,"lon":number,"printed":"coordinates as printed"}]}`,{tier:'default',images:imgs});
@@ -1901,7 +1909,7 @@ LAB.add({},{
  'MSA / MEA line (ft)':'MSA / MEA-linje (ft)','Freezing level (ft or FL)':'Frysenivå (ft eller FL)','Cloud base (ft)':'Skybase (ft)','Cloud tops (ft)':'Skytopper (ft)','Terrain corridor each side (NM)':'Terrengkorridor på hver side (NM)','Clearance above terrain':'Klaring over terreng','2000 ft (mountainous)':'2000 ft (fjellterreng)',
  'IFR minimum level (SERA.5015): at least 1000 ft above the highest obstacle within 8 km (4.3 NM) of the estimated position, or 2000 ft over high terrain or mountainous areas where the authority says so. The terrain here is a coarse elevation model without obstacles, so use it to see the shape of the route, not to set your minimum altitude. Your charts and the AIP decide.':'Laveste IFR-høyde (SERA.5015): minst 1000 ft over høyeste hinder innen 8 km (4,3 NM) fra beregnet posisjon, eller 2000 ft over høyt terreng eller fjellområder der myndigheten bestemmer det. Terrenget her er en grov høydemodell uten hindre, så bruk den til å se formen på ruten, ikke til å sette laveste høyde. Kartene og AIP avgjør.',
  'Save the fixes you need (IFR waypoints, VRPs, your own points). They are stored on your profile and can be used in the route by name.':'Lagre fixene du trenger (IFR-veipunkter, VRP-er, egne punkter). De lagres på profilen din og kan brukes i ruten med navn.',
- 'Name':'Navn','Coordinates':'Koordinater','Note':'Notat','Save fix':'Lagre fix','Pick on the map':'Velg på kartet','Paste from the AIP or a list':'Lim inn fra AIP eller en liste','Read the list':'Les listen','Read fixes from a chart (AI)':'Les fixes fra et kart (AI)','Read the chart':'Les kartet','Your fixes':'Dine fixes',
+ 'Name':'Navn','Coordinates':'Koordinater','Note':'Notat','Save fix':'Lagre fix','Pick on the map':'Velg på kartet','Paste from the AIP or a list':'Lim inn fra AIP eller en liste','Read the list':'Les listen','Read fixes from a chart':'Les fixes fra et kart','Read the chart':'Les kartet','Your fixes':'Dine fixes',
  'Points':'Punkter','Add point':'Legg til punkt','Clear route':'Tøm ruten',
  'Map':'Kart','Cross-section':'Tverrsnitt','Cross-section and map':'Tverrsnitt og kart','Vertical scale:':'Vertikal skala:','Manual':'Manuell','Reset':'Tilbakestill','Terrain':'Terreng','Max':'Maks','Transition altitude (ft)':'Overgangshøyde (ft)','Draw':'Tegn','Birdbird · Route Explorer':'Birdbird · Route Explorer',
  'See the route before you fly it. Paste the route from ForeFlight or build it on the map, then look at it from the side with the terrain under it, mark your own altitudes, and send it to the briefing pack. A visual preparation tool, not a flight planner.':'Se ruten før du flyr den. Lim inn ruten fra ForeFlight eller bygg den på kartet, se den fra siden med terrenget under, merk dine egne høyder og send den til briefingpakken. Et visuelt forberedelsesverktøy, ikke en flyplanlegger.',
@@ -2671,6 +2679,6 @@ LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=N
 Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; { const rid=new URLSearchParams(location.search).get('id'); load((rid&&ALL.find(x=>x.id===rid))||ALL[0]); } mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>
-<script>try{ if(matchMedia("(max-width:520px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass, punkt eller rute":"Airport, fix or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
+<script>try{ if(matchMedia("(max-width:520px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass / rute":"Airport or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
 </body>
 </html>
