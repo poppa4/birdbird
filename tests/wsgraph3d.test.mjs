@@ -31,11 +31,11 @@ function check(g, L, tag) {
 
 test('example: three soft balls, one per aircraft, deterministic, the aircraft in the middle', () => {
   const g = SAMPLE(), a = B.layout3d(g), b = B.layout3d(SAMPLE());
-  assert.ok(g.nodes.length >= 20 && g.nodes.length <= 25);
+  assert.ok(g.nodes.length >= 40 && g.nodes.length <= 55);
   assert.deepEqual([...a.P], [...b.P], 'the same workspace, the same cloud');
-  assert.deepEqual(a.clusters.map(c => g.nodes[c.ac].label), ['LN-EXA', 'LN-EXB', 'LN-EXC']);
-  assert.deepEqual(a.clusters.map(c => c.n), [7, 6, 6]);
-  a.clusters.forEach(c => assert.ok(dist(at(a, c.ac), c.c) < 1e-6, 'aircraft in the middle'));
+  assert.deepEqual(a.clusters.slice(0, 3).map(c => g.nodes[c.ac].label), ['LN-EXA', 'LN-EXB', 'LN-EXC']);
+  assert.deepEqual(a.clusters.map(c => c.n), [14, 14, 13, 5]);
+  a.clusters.slice(0, 3).forEach(c => assert.ok(dist(at(a, c.ac), c.c) < 1e-6, 'aircraft in the middle'));
   check(g, a, 'example');
   assert.ok(a.grow.every(v => v >= 0 && v <= 1), 'growth 0..1');
   assert.ok(new Set(a.clusters.map(c => c.c[2].toFixed(2))).size > 1, 'groups at different depths (parallax)');

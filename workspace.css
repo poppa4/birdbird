@@ -380,6 +380,7 @@ html body .nsearch{display:none!important}
 .wsm-leg button:focus-visible,.wsm-zm button:focus-visible,.wsm-card .btn:focus-visible{outline:2px solid #fff;outline-offset:-2px}
 .wsm-card{position:absolute;left:14px;top:62px;width:min(300px,calc(100% - 28px));display:flex;flex-direction:column;gap:3px;padding:12px 14px;background:rgba(8,27,53,.88);border:1px solid rgba(255,255,255,.14);border-radius:var(--radius-lg);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .wsm-card[hidden]{display:none}
+.wsm-card.r{left:auto;right:14px;top:96px}
 .wsm-card .k{display:flex;align-items:center;gap:7px;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#8FA2B6}
 .wsm-card b{font-size:15px;color:#fff;font-weight:620;line-height:1.3}
 .wsm-card .m{font-size:12.5px;color:#8FA2B6}

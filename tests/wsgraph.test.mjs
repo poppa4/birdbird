@@ -69,15 +69,15 @@ test('clusters: each node gathers around an aircraft through its links; desks le
 test('empty workspace: an empty graph that is settled at once; the example is small and meaningful', () => {
   const g = M.buildGraph({}); assert.equal(g.nodes.length, 0); const L0 = M.cloudLayout(g); assert.ok(L0.settled && L0.groups.length === 0);
   const s = M.buildGraph(M.sampleInput(), { pages: false, desks: false });
-  assert.ok(s.nodes.length >= 20 && s.nodes.length <= 25, s.nodes.length + ' nodes');
-  assert.deepEqual({ ...s.counts }, { aircraft: 3, doc: 6, note: 7, pack: 3, route: 3, desk: 0, page: 0 });
+  assert.ok(s.nodes.length >= 40 && s.nodes.length <= 55, s.nodes.length + ' nodes');
+  assert.deepEqual({ ...s.counts }, { aircraft: 3, doc: 13, note: 21, pack: 6, route: 6, desk: 0, page: 0 });
   /* every aircraft: an AFM (or POH), a checklist, 2-3 notes, a pack and a route, all in its own cluster */
   for (const a of s.nodes.filter(n => n.k === 'aircraft')) {
     const m = s.nodes.filter(n => n.ac === a.id), of = k => m.filter(n => n.k === k).length;
-    assert.ok(of('doc') === 2 && of('note') >= 2 && of('note') <= 3 && of('pack') === 1 && of('route') === 1, a.id);
+    assert.ok(of('doc') === 4 && of('note') >= 5 && of('note') <= 6 && of('pack') === 2 && of('route') === 2, a.id);
     assert.ok(m.some(n => /^(AFM|POH) /.test(n.label)) && m.some(n => /^Checklist /.test(n.label)), a.id);
   }
-  assert.ok(s.nodes.every(n => n.ac), 'nothing floats free');
+  assert.equal(s.nodes.filter(n => !n.ac).length, 5, 'one small general group');
   assert.ok(s.nodes.every(n => n.deg >= 1), 'every dot has a real link');
   assert.equal(M.buildGraph(M.sampleInput((en, no) => no)).nodes.find(n => n.k === 'doc' && n.label.startsWith('Sjekkliste')) != null, true, 'Norwegian');
 });
@@ -109,10 +109,10 @@ test('cloud: the example is three blobs, the same every time, each aircraft its 
   assert.ok(!a.settled, 'a short intro first'); let n = 0; while (a.step(2)) n++; assert.ok(a.settled && n < 40, 'intro ends after ' + n + ' frames');
   b.run(); assert.deepEqual([...a.x], [...b.x]); assert.deepEqual([...a.y], [...b.y]);
   assert.ok(g.nodes.every((nd, i) => a.x[i] === a.tx[i] && a.y[i] === a.ty[i]), 'ends exactly on its place');
-  assert.equal(a.groups.length, 3);
-  assert.deepEqual(a.groups.map(q => M.groupName(g, a.groups, q)), ['DA42', 'B200', 'C172']);
-  assert.deepEqual(a.groups.map(q => q.n), [7, 6, 6], 'counts: the items besides the aircraft');
-  assert.ok(a.groups.every(q => g.nodes[q.m[0]].k === 'aircraft' && Math.hypot(a.x[q.m[0]] - q.cx, a.y[q.m[0]] - q.cy) < 1e-9), 'the aircraft in the middle');
+  assert.equal(a.groups.length, 4);
+  assert.deepEqual(a.groups.slice(0, 3).map(q => M.groupName(g, a.groups, q)), ['DA42', 'B200', 'C172']);
+  assert.deepEqual(a.groups.map(q => q.n), [14, 14, 13, 5], 'counts: the items besides the aircraft');
+  assert.ok(a.groups.slice(0, 3).every(q => g.nodes[q.m[0]].k === 'aircraft' && Math.hypot(a.x[q.m[0]] - q.cx, a.y[q.m[0]] - q.cy) < 1e-9), 'the aircraft in the middle');
   checkGroups(g, a, 'example');
   assert.ok(minDist(a) >= 0.75 * a.D, 'evenly spread, no clumps: ' + minDist(a).toFixed(1));
   assert.ok(a.groups.every(q => q.puffs.length >= 6 && q.puffs.every(p => p.r > q.r * 0.5)), 'soft blobs');

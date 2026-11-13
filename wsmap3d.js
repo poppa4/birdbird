@@ -465,7 +465,8 @@
     function open(i, beside) { const n = g.nodes[i]; if (!n) return; if (isEx(i)) { select(i); return; } if (o.onOpen) o.onOpen(n, !!beside); }
     /* the card: a point (shared with the 2D map), or the focused group's list */
     function showCard(i) {
-      if (i >= 0) { card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol() }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
+      if (i >= 0) { card.classList.toggle('r', host.clientWidth >= 700 && gsel < 0 && scr.ok && scr.x[i] < 340 && scr.y[i] < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol() }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
+      card.classList.remove('r');
       if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
       card.hidden = true;
     }

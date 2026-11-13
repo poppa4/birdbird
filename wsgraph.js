@@ -8,7 +8,7 @@
    groupsOf     the groups of the map: one per aircraft, then 'Unsorted' (items with no aircraft); groupName names them.
    cloudLayout  the map as a soft cloud: each group a blob of evenly spread dots, the blobs side by side (arrange) so
                 together they read as one cloud. Only your own items (or, when you have none, the small example).
-   sampleInput  a small example workspace for the empty map (about twenty dots).
+   sampleInput  a small example workspace for the empty map (about fifty dots).
    node --test tests/wsgraph.test.mjs */
 (function (G) {
   'use strict';
@@ -191,8 +191,9 @@
     return st;
   }
 
-  /* ---------- an example workspace for the empty map: three aircraft, each with an AFM, a checklist, a few notes that
-     refer to them, a briefing pack and its route (about twenty dots, every one meaningful) ---------- */
+  /* ---------- an example workspace for the empty map: three aircraft, each with its manuals (AFM, checklist, SOP,
+     performance), notes that refer to pages in them, two briefing packs with their routes, and a small group of
+     general study notes around a theory document (about fifty dots, every one meaningful and linked) ---------- */
   function sampleInput(t) {
     t = t || ((en) => en);
     const items = {}, now = 1700000000000; let seq = 0;
@@ -202,13 +203,24 @@
       put({ id: 'xa3', kind: 'aircraft', type: 'Cessna 172', reg: 'LN-EXC' })];
     const short = a => shortType(a.type);
     const docs = ac.map((a, k) => [put({ id: 'xd' + k + 'a', kind: 'doc', name: (k === 2 ? 'POH ' : 'AFM ') + short(a), cat: 'afm', acIds: [a.id] }),
-      put({ id: 'xd' + k + 'c', kind: 'doc', name: t('Checklist ', 'Sjekkliste ') + short(a), cat: 'chk', acIds: [a.id] })]);
+      put({ id: 'xd' + k + 'c', kind: 'doc', name: t('Checklist ', 'Sjekkliste ') + short(a), cat: 'chk', acIds: [a.id] }),
+      put({ id: 'xd' + k + 's', kind: 'doc', name: 'SOP ' + short(a), cat: 'sop', acIds: [a.id] }),
+      put({ id: 'xd' + k + 'p', kind: 'doc', name: t('Performance ', 'Ytelse ') + short(a), cat: 'afm', acIds: [a.id] })]);
     const cite = (d, p) => `<div><cite data-doc="${d.id}" data-p="${p}">${d.name} p. ${p}</cite></div>`;
-    [[0, t('Engine failure after take-off', 'Motorsvikt etter avgang'), 0, 12], [0, 'VMCA', 0, 27], [0, t('Fuel planning', 'Drivstoffplanlegging'), -1, 0],
-      [1, t('Pressurisation', 'Trykkabin'), 0, 44], [1, t('Engine fire', 'Motorbrann'), 1, 3],
-      [2, t('Stall recovery', 'Steiling'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2]].forEach(([a, title, d, p], i) =>
-      put({ id: 'xn' + i, kind: 'note', title, body: d >= 0 ? cite(docs[a][d], p) : '<div></div>', links: d < 0 ? [{ t: 'aircraft', id: ac[a].id }] : [] }));
-    const packs = [['ENTO', 'ENBR'], ['ENGM', 'ENVA'], ['ENRY', 'ENCN']].map((x, i) => ({ id: 'xp' + i, title: x[0] + ' – ' + x[1], f: { depapt: x[0], destapt: x[1], reg: ac[i].reg }, routeId: 'xr' + i }));
+    /* [aircraft, title, document (0 AFM, 1 checklist, 2 SOP, 3 performance), page] */
+    [[0, t('Engine failure after take-off', 'Motorsvikt etter avgang'), 0, 12], [0, 'VMCA', 0, 27], [0, t('Fuel planning', 'Drivstoffplanlegging'), 3, 8],
+      [0, t('Single-engine go-around', 'Avbrutt landing på én motor'), 2, 14], [0, t('De-icing limits', 'Avisingsgrenser'), 0, 61], [0, t('Take-off briefing', 'Avgangsbrief'), 1, 2],
+      [1, t('Pressurisation', 'Trykkabin'), 0, 44], [1, t('Engine fire', 'Motorbrann'), 1, 3], [1, t('Autofeather', 'Autofeather'), 0, 52],
+      [1, t('Torque and ITT limits', 'Grenser for moment og ITT'), 3, 5], [1, t('Descent planning', 'Nedstigningsplanlegging'), 2, 21], [1, t('Icing', 'Ising'), 0, 70],
+      [2, t('Stall recovery', 'Steiling'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2], [2, t('Carburettor ice', 'Forgasseris'), 0, 33],
+      [2, t('Short-field take-off', 'Kortbaneavgang'), 3, 4], [2, t('Circuit calls', 'Radio i landingsrunden'), 2, 6]].forEach(([a, title, d, p], i) =>
+      put({ id: 'xn' + i, kind: 'note', title, body: cite(docs[a][d], p), links: [] }));
+    /* general study: one theory document with the notes that refer to it (no aircraft) */
+    const th = put({ id: 'xdg', kind: 'doc', name: t('Theory notes', 'Teorinotater'), cat: 'oth', acIds: [] });
+    [t('Air law', 'Luftfartsrett'), t('Meteorology', 'Meteorologi'), t('Radio phraseology', 'Radiofraseologi'), t('Human performance', 'Menneskelige faktorer')].forEach((title, i) =>
+      put({ id: 'xg' + i, kind: 'note', title, body: cite(th, 3 + i * 9), links: [] }));
+    const packs = [['ENTO', 'ENBR', 0], ['ENTO', 'ENCN', 0], ['ENGM', 'ENVA', 1], ['ENGM', 'ENTC', 1], ['ENRY', 'ENCN', 2], ['ENRY', 'ENTO', 2]]
+      .map((x, i) => ({ id: 'xp' + i, title: x[0] + ' – ' + x[1], f: { depapt: x[0], destapt: x[1], reg: ac[x[2]].reg }, routeId: 'xr' + i }));
     const routes = packs.map((p, i) => ({ id: 'xr' + i, title: p.title, packId: p.id, pts: [{ n: p.f.depapt, t: 'rwy' }, { n: p.f.destapt, t: 'rwy' }] }));
     return { items, packs, routes };
   }
