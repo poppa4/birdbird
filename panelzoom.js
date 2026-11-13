@@ -71,7 +71,7 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
   const dist=()=>{ const a=[...pts.values()]; return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); };
   const mid=()=>{ const a=[...pts.values()]; return [(a[0].x+a[1].x)/2,(a[0].y+a[1].y)/2]; };
   st.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') return; const D=d3(); if(D&&D.on) return; // the 3D view has its own pinch
-    if(e.target.closest('.more,.efx,.pill,.drawer')) return;
+    if(e.target.closest('.more,.efx,.pill,.drawer,.tpad')) return;
     pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
     if(pts.size===2){ pan=null; const m=mid(); pin={d:Math.max(20,dist()),m,r0:1,done:false}; api.gestT=now(); } },true);
   st.addEventListener('pointermove',e=>{ const p=pts.get(e.pointerId); if(!p) return; p.x=e.clientX; p.y=e.clientY;

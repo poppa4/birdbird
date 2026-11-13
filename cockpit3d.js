@@ -670,7 +670,7 @@ function bindInput(){
   // capture phase: the foreground control wheels are drawn over the panel, so they take the pointer before any panel control
   stage.addEventListener('pointerdown',e=>{
     activePl=null; if(!D3.on||e.button>0) return;
-    if(fgGrabs.length&&o.onStick&&!e.target.closest('.ctop,.more,.d3v,.d3t,.pill,.tz,.zback,button,a,select')){ const h=hitGrab(fgGrabs,e); if(h){ e.stopPropagation(); e.preventDefault(); startStick(e); return; } }
+    if(fgGrabs.length&&o.onStick&&!e.target.closest('.ctop,.more,.d3v,.d3t,.pill,.tz,.zback,.tpad,button,a,select')){ const h=hitGrab(fgGrabs,e); if(h){ e.stopPropagation(); e.preventDefault(); startStick(e); return; } }
     const t=e.target.closest&&e.target.closest('.d3sub'); if(t&&D3.subs){ for(const p of D3.subs) if(p.el===t) activePl=p; }
   },true);
   stage.addEventListener('pointerdown',e=>{

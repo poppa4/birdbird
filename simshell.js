@@ -118,7 +118,7 @@ function chrome(o){ const $=id=>document.getElementById(id), bP=$('bPause'), bR=
 const HT={title:tr('Controls','Kontroller'),close:tr('Close','Lukk'),kb:tr('Keyboard','Tastatur'),touch:tr('Touch','Berøring'),mouse:tr('Mouse','Mus'),
   z2:tr('Tap an area of the panel to zoom to it. Pinch to zoom in and out, drag to move when zoomed. ← Back or a double tap returns to the whole panel.','Trykk på et område av panelet for å zoome inn på det. Knip for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake eller et dobbelttrykk tar deg tilbake til hele panelet.'),
   z3:tr('Drag to look around and pinch to zoom. Tap a part of the panel to look at it; Look ahead in the … menu faces forward again.','Dra for å se deg rundt og knip for å zoome. Trykk på en del av panelet for å se på den; Se fremover i …-menyen ser rett frem igjen.'),
-  tf:tr('With Touch controls on (… menu), a drag that starts on bare panel in the left third of the screen flies the aircraft.','Med Berøringskontroller på (…-menyen) flyr du med et drag som starter på bart panel i venstre tredjedel av skjermen.'),
+  tf:tr('Fly with the round stick in the bottom-left corner: put your left thumb on it and drag. It springs back when you let go. Touch controls in the … menu turns it off.','Fly med den runde spaken nede til venstre: legg venstre tommel på den og dra. Den fjærer tilbake når du slipper. Berøringskontroller i …-menyen slår den av.'),
   tr_:tr('A sideways drag in the right third moves the rudder.','Et drag sidelengs i høyre tredjedel beveger sideroret.'),
   t2f:tr('A second finger always zooms; it never moves a control.','En finger nummer to zoomer alltid; den flytter aldri en kontroll.'),
   mc:tr('Click a switch or a button. Scroll on a knob, or drag across it.','Klikk på en bryter eller en knapp. Rull på en knott, eller dra over den.'),
@@ -155,50 +155,66 @@ function failHTML(o){ let h='';
   if(o.scen&&o.scen.length) h+=`<div class="sgrp">${esc(L(TX.scen))}</div><ul class="plist">${o.scen.map(x=>`<li><button type="button" data-sk="${esc(x.k)}"><span><b>${esc(L(x.t))}</b>${x.d?`<small>${esc(L(x.d))}</small>`:''}</span></button></li>`).join('')}</ul>`;
   return h; }
 
-/* ---------- touch controls: invisible until used ----------
-   With "Touch controls" on (… menu; default on phones only), a one-finger DRAG that starts on bare panel (not on a control)
-   becomes the control wheel / stick under that finger: a ring appears where the finger went down and the stick deflects with it.
-   The left third flies the stick; on the B200 the right third is the rudder (sideways only). The middle third stays pan / zoom
-   (2D) or look-around (3D), the same on every page.
-   A tap still zooms, a second finger cancels it (so a pinch always works), and nothing ever sits over the panel controls.
+/* ---------- touch controls: a stick for the left thumb, as in games ----------
+   With "Touch controls" on (… menu; on by default on phones and tablets) a round stick sits in the bottom-left corner.
+   Put the left thumb on it and drag: the aircraft follows, and the stick springs back to centre when you let go.
+   On the B200 a sideways drag that starts on bare panel in the right third moves the rudder (a ring shows under the finger).
+   A second finger cancels both (so a pinch always zooms). Nothing runs while the stick is untouched.
    o: {stage, emptyAt(e), stick(v|null), rud(v)|null, d3:()=>bool} */
-const TKEY='bb-touchctl';
+const TKEY='bb-touchctl2';
 let TC=null;
 function touchOn(){ try{ const v=localStorage.getItem(TKEY); if(v) return v==='1'; }catch(e){}
-  const mm=q=>!!(G.matchMedia&&G.matchMedia(q).matches); return mm('(pointer:coarse)')&&Math.min(screen.width,screen.height)<=500; }
-function zoneOf(o,e){ const r=o.stage.getBoundingClientRect(), f=(e.clientX-r.left)/Math.max(1,r.width);
-  return f<0.35?'stick':f>0.65&&o.rud?'rud':null; } // the middle third stays pan / look-around, as in 3D
+  return !!(G.matchMedia&&G.matchMedia('(pointer:coarse)').matches); }
+function rudZone(o,e){ if(!o.rud) return false; const r=o.stage.getBoundingClientRect(); return (e.clientX-r.left)/Math.max(1,r.width)>0.65; }
 function touch(o){
-  const st=o.stage, OFF='.zback,.more,.pill,.tip,.rot,.d3t,.d3v,.otwmsg,.afban,.efx,button,select,a,input';
-  const ring=document.createElement('div'); ring.className='tring'; ring.hidden=true; ring.innerHTML='<i></i>'; st.appendChild(ring); const knob=ring.firstChild;
-  const T={on:touchOn(),cand:null,act:null,ids:new Set()};
+  const st=o.stage, OFF='.zback,.more,.pill,.tip,.rot,.d3t,.d3v,.otwmsg,.afban,.efx,.tpad,button,select,a,input';
+  const pad=document.createElement('div'); pad.className='tpad'; pad.setAttribute('role','img'); pad.innerHTML='<i></i>'; st.appendChild(pad); const pk=pad.firstChild;
+  const ring=document.createElement('div'); ring.className='tring rud'; ring.hidden=true; ring.innerHTML='<i></i>'; st.appendChild(ring); const rk=ring.firstChild;
+  const T={on:touchOn(),pad:null,rud:null,cand:null,ids:new Set()};
   const btn=document.getElementById('bTouch');
-  const lab=()=>{ if(btn){ btn.setAttribute('aria-pressed',T.on); btn.textContent=L(tr('Touch controls','Berøringskontroller')); } };
-  const R=()=>Math.max(50,Math.min(90,st.clientHeight*0.16));
-  const shape=v=>{ const a=Math.abs(v), d=0.1, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.8; };
-  function apply(e){ const a=T.act, rr=R(); let dx=(e.clientX-a.x)/rr, dy=(e.clientY-a.y)/rr;
-    if(a.zone==='rud'){ dx=Math.max(-1,Math.min(1,dx)); dy=0; o.rud(Math.abs(dx)<0.06?0:dx); }
-    else { const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; } o.stick({x:shape(dx),y:shape(dy)}); }
-    knob.style.transform=`translate(${(dx*rr).toFixed(1)}px,${(dy*rr).toFixed(1)}px)`; }
-  function stop(){ if(T.act){ if(T.act.zone==='rud'){ if(o.rud) o.rud(0); } else o.stick(null); } T.act=null; T.cand=null; if(!ring.hidden) ring.hidden=true; }
-  if(btn){ btn.onclick=()=>{ T.on=!T.on; try{ localStorage.setItem(TKEY,T.on?'1':'0'); }catch(e){} stop(); lab(); }; lab(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(lab); }
+  const lab=()=>{ pad.setAttribute('aria-label',L(tr('Flight stick for the left thumb','Styrespak for venstre tommel')));
+    if(btn){ btn.setAttribute('aria-pressed',T.on); btn.textContent=L(tr('Touch controls','Berøringskontroller')); } };
+  const show=()=>{ pad.hidden=!T.on; };
+  const shape=v=>{ const a=Math.abs(v), d=0.08, u=a<d?0:(a-d)/(1-d); return Math.sign(v)*(0.3*u+0.7*u*u*u)*0.85; };
+  function padMove(e){ const b=pad.getBoundingClientRect(), R=b.width/2; let dx=(e.clientX-b.left-R)/R, dy=(e.clientY-b.top-R)/R;
+    const m=Math.hypot(dx,dy); if(m>1){ dx/=m; dy/=m; }
+    o.stick({x:shape(dx),y:shape(dy)}); pk.style.transform=`translate(${(dx*R*0.62).toFixed(1)}px,${(dy*R*0.62).toFixed(1)}px)`; }
+  function padStop(){ if(T.pad==null) return; T.pad=null; o.stick(null); pk.style.transform=''; pad.classList.remove('on'); }
+  function rudMove(e){ const a=T.rud, rr=Math.max(50,Math.min(90,st.clientHeight*0.16)); let dx=Math.max(-1,Math.min(1,(e.clientX-a.x)/rr));
+    o.rud(Math.abs(dx)<0.06?0:dx); rk.style.transform=`translate(${(dx*rr).toFixed(1)}px,0)`; }
+  function rudStop(){ if(!T.rud) return; T.rud=null; if(o.rud) o.rud(0); ring.hidden=true; }
+  function stopAll(){ padStop(); rudStop(); T.cand=null; }
+  if(btn){ btn.onclick=()=>{ T.on=!T.on; try{ localStorage.setItem(TKEY,T.on?'1':'0'); }catch(e){} stopAll(); show(); lab(); }; }
+  lab(); show(); if(G.LAB&&G.LAB.onLang) G.LAB.onLang(lab);
+  /* in 3D the view buttons sit in the bottom-left corner: the stick goes just above them (measured, as their rows vary) */
+  const place=()=>{ const v=st.querySelector('.d3v'); if(!v||!v.offsetParent){ if(pad.style.bottom) pad.style.bottom=''; return; }
+    const sr=st.getBoundingClientRect(), vr=v.getBoundingClientRect(); pad.style.bottom=Math.round(sr.bottom-vr.top+10)+'px'; };
+  if(G.ResizeObserver){ const ro=new ResizeObserver(place); ro.observe(st); const w=()=>{ const v=st.querySelector('.d3v'); if(v) ro.observe(v); else setTimeout(w,800); }; w(); } place();
   const isT=e=>e.pointerType==='touch'||e.pointerType==='pen';
-  st.addEventListener('pointerdown',e=>{ if(!isT(e)) return; T.ids.add(e.pointerId);
-    if(T.ids.size>1){ stop(); return; } // a second finger: a pinch, never the stick
-    if(!T.on||!o.emptyAt(e)||e.target.closest(OFF)) return; const z=zoneOf(o,e); if(!z) return;
-    T.cand={id:e.pointerId,x:e.clientX,y:e.clientY,zone:z}; },true);
-  st.addEventListener('pointermove',e=>{ if(T.act&&e.pointerId===T.act.id){ apply(e); return; }
+  /* the stick: its own element, so it never competes with the panel */
+  pad.addEventListener('pointerdown',e=>{ if(!T.on) return; e.preventDefault(); e.stopPropagation();
+    T.pad=e.pointerId; try{ pad.setPointerCapture(e.pointerId); }catch(_){} pad.classList.add('on'); padMove(e); });
+  pad.addEventListener('pointermove',e=>{ if(e.pointerId===T.pad){ e.stopPropagation(); padMove(e); } });
+  const pup=e=>{ if(e.pointerId===T.pad) padStop(); };
+  pad.addEventListener('pointerup',pup); pad.addEventListener('pointercancel',pup); pad.addEventListener('lostpointercapture',pup);
+  /* the rudder (B200): a sideways drag on bare panel in the right third */
+  st.addEventListener('pointerdown',e=>{ if(!isT(e)||e.target.closest('.tpad')) return; T.ids.add(e.pointerId);
+    if(T.ids.size>1||T.pad!=null){ rudStop(); T.cand=null; if(T.ids.size>1) padStop(); return; }
+    if(!T.on||!o.rud||!o.emptyAt(e)||e.target.closest(OFF)||!rudZone(o,e)) return;
+    T.cand={id:e.pointerId,x:e.clientX,y:e.clientY}; },true);
+  st.addEventListener('pointermove',e=>{ if(T.rud&&e.pointerId===T.rud.id){ rudMove(e); return; }
     const c=T.cand; if(!c||e.pointerId!==c.id||T.ids.size>1) return;
     if(Math.hypot(e.clientX-c.x,e.clientY-c.y)<10) return; // a tap stays a tap (zoom)
-    T.act=c; T.cand=null; const b=st.getBoundingClientRect();
-    ring.className='tring'+(c.zone==='rud'?' rud':''); ring.style.left=(c.x-b.left)+'px'; ring.style.top=(c.y-b.top)+'px'; ring.style.setProperty('--r',R()+'px'); ring.hidden=false; apply(e); },{passive:true});
-  const up=e=>{ T.ids.delete(e.pointerId); if((T.act&&T.act.id===e.pointerId)||(T.cand&&T.cand.id===e.pointerId)) stop(); };
+    T.rud=c; T.cand=null; const b=st.getBoundingClientRect(); ring.style.left=(c.x-b.left)+'px'; ring.style.top=(c.y-b.top)+'px';
+    ring.style.setProperty('--r',Math.max(50,Math.min(90,st.clientHeight*0.16))+'px'); ring.hidden=false; rudMove(e); },{passive:true});
+  const up=e=>{ T.ids.delete(e.pointerId); if((T.rud&&T.rud.id===e.pointerId)||(T.cand&&T.cand.id===e.pointerId)){ rudStop(); T.cand=null; } };
   st.addEventListener('pointerup',up,true); st.addEventListener('pointercancel',up,true);
-  TC={o,T};
-  return {get on(){ return T.on; },get active(){ return !!T.act; }};
+  TC={o,T,pad};
+  return {get on(){ return T.on; },get active(){ return T.pad!=null||!!T.rud; }};
 }
-/* the 3D look-around asks this: a touch in a stick / rudder zone belongs to the touch controls */
-function touchOwns(e){ if(!TC||!TC.T.on||!(e.pointerType==='touch'||e.pointerType==='pen')) return false; return !!zoneOf(TC.o,e); }
+/* the 3D look-around and the panel zoom ask this: a touch on the stick, or in the rudder zone, belongs to the touch controls */
+function touchOwns(e){ if(!TC||!TC.T.on||!(e.pointerType==='touch'||e.pointerType==='pen')) return false;
+  return !!(e.target&&e.target.closest&&e.target.closest('.tpad'))||rudZone(TC.o,e); }
 
 /* names of the shell's own controls for screen readers, in the page language (lab.js translates text, not labels) */
 const AL=[['.ctop','Cockpit tools','Cockpitverktøy'],['#acSel','Aircraft','Fly'],['.ctop .dseg','View','Visning'],['#bMore','More','Mer'],['#moreMenu','Settings','Innstillinger'],
