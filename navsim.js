@@ -491,11 +491,11 @@ function toolsDraw(){ const T=el('nsTools'); T.innerHTML=
   `<button type="button" class="go" id="nsRun" aria-keyshortcuts="Space"></button>`+
   `<button type="button" id="nsNorth" aria-keyshortcuts="N"></button><button type="button" id="nsProfB" aria-keyshortcuts="P"></button>`+
   `<button type="button" id="nsZo" aria-label="Zoom out" aria-keyshortcuts="-">−</button><span class="ns-rng" id="nsRng"></span><button type="button" id="nsZi" aria-label="Zoom in" aria-keyshortcuts="+">+</button>`+
-  `<button type="button" id="nsKeys" aria-label="Keyboard shortcuts" aria-keyshortcuts="?">?</button>`;
+  `<button type="button" id="nsKeys" aria-label="Controls" aria-keyshortcuts="?">?</button>`;
   toolsSync(); }
 function toolsSync(){ const r=el('nsRun'); if(!r) return; r.textContent=S.run?L(t2('❚❚ Pause','❚❚ Pause')):L(t2('▶ Fly','▶ Fly')); r.setAttribute('aria-pressed',String(S.run));
   el('nsNorth').textContent=S.view.north?L(t2('North up','Nord opp')):L(t2('Heading up','Kurs opp')); el('nsProfB').textContent=L(t2('Profile','Profil')); el('nsProfB').setAttribute('aria-pressed',String(S.view.profile));
-  el('nsRng').textContent=S.view.range+' NM'; TOGS.forEach(f=>f()); }
+  el('nsRng').textContent=S.view.range+' NM'; el('nsKeys').setAttribute('aria-label',L(t2('Controls','Kontroller'))); TOGS.forEach(f=>f()); }
 const RANGES=[5,10,20,40,80];
 function zoom(d){ camStart(); const i=RANGES.indexOf(S.view.range); S.view.range=RANGES[clamp((i<0?2:i)+d,0,RANGES.length-1)]; bgDirty=true; toolsSync(); redraw(); }
 function run(on){ S.run=on===undefined?!S.run:on; if(S.run){ S.sel.hdg=Math.round(D.mh); if(S.ap==='TRK'&&!S.sel.trk) S.sel.trk=Math.round(D.trk); S.sel.alt=Math.round(S.ac.alt); if(S.ap==='HOLD'&&HS.mode==='tofix') holdReset(); } toolsSync(); redraw(); if(API.onRun) API.onRun(S.run); }
@@ -562,7 +562,7 @@ VP.addEventListener('keydown',e=>{ const tg=e.target; if(tg.closest('input,selec
   if(done) e.preventDefault(); });
 const KEYS=[['Space',t2('Fly / pause','Fly / pause')],['← →',t2('Heading −5 / +5 (Shift: 1°)','Kurs −5 / +5 (Shift: 1°)')],['↑ ↓',t2('Altitude ±500 ft (Shift: 100)','Høyde ±500 ft (Shift: 100)')],['[ ]',t2('OBS −5 / +5 (Shift: 1°)','OBS −5 / +5 (Shift: 1°)')],['1 – 5',t2('Speed ×1 … ×16','Hastighet ×1 … ×16')],['N',t2('North up / heading up','Nord opp / kurs opp')],['P',t2('Profile view','Profilvisning')],['T',t2('Trace on/off','Spor av/på')],['W',t2('Wind triangle','Vindtrekant')],['+ −',t2('Zoom','Zoom')],['G',t2('Guide on/off','Veileder av/på')],['?',t2('This list','Denne listen')],[L(t2('Map','Kart')),t2('Drag the aircraft · drag the blue dot to turn · tap to place','Dra flyet · dra den blå prikken for å svinge · trykk for å plassere')],[L(t2('Knobs','Knapper')),t2('Drag, scroll or use the ◂ ▸ buttons; arrow keys when focused','Dra, rull eller bruk ◂ ▸; piltaster når den har fokus')],[L(t2('Fields','Felt')),t2('Type and Enter, ↑ ↓, scroll, or drag the label','Skriv og Enter, ↑ ↓, rull, eller dra etiketten')]];
 function keysSheet(){ const s=el('nsSheet'); if(!s.hidden){ s.hidden=true; return; }
-  s.innerHTML=`<div class="ns-sh-h"><b>${L(t2('Keyboard and touch','Tastatur og berøring'))}</b><button type="button" class="ns-x" aria-label="${L(t2('Close','Lukk'))}">×</button></div><dl>${KEYS.map(([k,d])=>`<div><dt><kbd>${k}</kbd></dt><dd>${L(d)}</dd></div>`).join('')}</dl>`;
+  s.innerHTML=`<div class="ns-sh-h"><b>${L(t2('Controls','Kontroller'))}</b><button type="button" class="ns-x" aria-label="${L(t2('Close','Lukk'))}">×</button></div><dl>${KEYS.map(([k,d])=>`<div><dt><kbd>${k}</kbd></dt><dd>${L(d)}</dd></div>`).join('')}</dl>`;
   s.hidden=false; s.querySelector('.ns-x').onclick=()=>{ s.hidden=true; VP.focus({preventScroll:true}); }; s.querySelector('.ns-x').focus(); }
 
 /* ---------- snapshots ---------- */

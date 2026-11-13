@@ -9,18 +9,6 @@
 <link rel="stylesheet" href="site.css?v=22">
 <style>
 /* ---------- cockpit stage: one view that always fits ---------- */
-.ckp{position:relative;z-index:25;width:100vw;margin-left:calc(50% - 50vw);height:100vh;height:100dvh;display:flex;flex-direction:column;background:#0b0d10;color:#e6ebef;scroll-margin-top:0;overflow:hidden}
-.ctop{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#121519;border-bottom:1px solid #262b31;overflow-x:auto;scrollbar-width:none}
-.ctop::-webkit-scrollbar{display:none}
-.ctop .cb{flex:0 0 auto;font:600 12.5px/1 var(--f-body);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
-.ctop .cb:hover{background:#262c33}.ctop .cb.on,.ctop .cb[aria-pressed=true]{background:#e8edf1;color:#0d1319;border-color:#e8edf1}
-.ctop .cb:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
-.ctop .zs{display:flex;gap:2px;background:#0d1013;border:1px solid #2b3137;border-radius:7px;padding:2px}
-.ctop .zs .cb{border:0;background:transparent;padding:6px 8px}.ctop .zs .cb.on{background:#e8edf1;color:#0d1319}
-.ctop .sp{flex:1 1 auto}
-.ctop a.cb{text-decoration:none;display:inline-block}
-.ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
-.cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
 .stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
 /* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
@@ -96,11 +84,8 @@
 .psvg .mag{cursor:zoom-in;opacity:.7;transition:opacity .15s}.psvg .mag:hover,.psvg .mag:focus-visible{opacity:1;outline:none}
 .stage.zoomed .mags,.stage.locked .mags{display:none}
 .tip{position:absolute;z-index:8;pointer-events:none;background:rgba(10,12,15,.94);color:#fff;border:1px solid #3d4650;border-radius:6px;padding:4px 8px;font:600 12.5px system-ui;white-space:nowrap}
-.more{position:absolute;right:8px;top:6px;z-index:9;display:flex;flex-direction:column;gap:4px;background:#14181c;border:1px solid #333a42;border-radius:8px;padding:6px}
-.ctop .stat.chg{color:#ffcf3a}
 .ctop .zsel{display:none}
 @media (max-width:1720px){.ctop .zs{display:none}.ctop .zsel{display:block}}
-.ctop #scenSel{max-width:240px}
 .psvg .boot{fill:#111316;stroke:#000}.psvg .boot0{fill:#000;opacity:.5}.psvg .shaft{stroke:#2a2e33;stroke-width:9;stroke-linecap:round}
 .psvg .grip{fill:url(#gLever);stroke:#000;stroke-width:1.2}.psvg .gripl{stroke:#000;stroke-opacity:.5;stroke-width:1.4}
 .psvg .t-stick{cursor:grab}.psvg .t-stick.drag{cursor:grabbing}
@@ -134,30 +119,6 @@
 .gdu .sk:active{background:#22262b}
 .gdu button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:0}
 .gdu.hl{box-shadow:0 0 0 3px #ffcf3a,0 6px 16px rgba(0,0,0,.55)}
-/* zoom back, pill, drawer */
-.zback{position:absolute;left:10px;top:10px;z-index:5;font:600 13px system-ui;background:rgba(14,17,20,.86);color:#fff;border:1px solid #3c444c;border-radius:20px;padding:8px 14px;cursor:pointer;display:none}
-.stage.zoomed .zback{display:block}
-.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:5;max-width:min(90%,560px);background:rgba(14,17,20,.9);border:1px solid #ffcf3a;color:#fff;border-radius:18px;padding:7px 14px;font:600 13px system-ui;display:none;text-align:center;pointer-events:none}
-.pill.show{display:block}.pill.ok{border-color:#3cff6e}.pill.bad{border-color:#ff5a47}
-.drawer{flex:0 0 auto;width:0;overflow:hidden;background:#11151a;border-left:1px solid #262b31;transition:width .3s ease;display:flex;flex-direction:column}
-.drawer.open{width:min(330px,34vw)}
-.drawer .din{width:min(330px,34vw);height:100%;overflow-y:auto;padding:10px 12px 16px;box-sizing:border-box;font-size:13px}
-.drawer h3{font-size:14px;margin:8px 0 6px;color:#fff}
-.drawer .tabs{display:flex;gap:4px;margin-bottom:8px}
-.drawer .tabs button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.drawer .tabs button.on{background:#e8edf1;color:#0d1319}
-.drawer select{width:100%;font:600 13px system-ui;padding:7px;border-radius:6px;background:#1b2026;color:#fff;border:1px solid #333a42}
-.drawer .row{display:flex;gap:6px;margin-top:8px}.drawer .row button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.drawer label{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#a9b5bf;margin-top:8px}
-.touch{position:absolute;inset:0;pointer-events:none;z-index:4}
-.tz{position:absolute;pointer-events:auto;touch-action:none;border:1px dashed rgba(255,255,255,.35);border-radius:14px;background:rgba(0,0,0,.25)}
-.tz i{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:rgba(127,203,232,.85);box-shadow:0 0 0 5px rgba(127,203,232,.25);left:50%;top:50%}
-.tstk{left:calc(10px + env(safe-area-inset-left));bottom:10px;width:min(44vh,220px);aspect-ratio:1}
-.rot{position:absolute;inset:0;z-index:30;display:none;place-items:center;text-align:center;background:#0b0d10;color:#fff;font:600 16px system-ui;padding:24px}
-.rot b{display:block;font-size:44px;margin-bottom:8px}
-@media (orientation:portrait) and (max-width:900px){.rot{display:grid}}
-@media (max-height:500px){.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.drawer.open,.drawer .din{width:min(270px,36vw)}.drawer .din{font-size:12px;padding:6px 8px}}
-#cockpit:fullscreen{width:100vw;margin:0}
 /* rest of page */
 .howto summary{cursor:pointer;color:var(--smoke);font-size:13px}
 .ctlgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
@@ -207,12 +168,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .psvg.cpt .lv0,.psvg.cpt .lv1{transform:translate(var(--bbx),var(--bby)) rotate(var(--bbr)) scale(var(--bbsx),var(--bbsy));transition:none;transition-property:--bbx,--bby,--bbr,--bbsx,--bbsy;transition-duration:.06s;transition-timing-function:linear}
 .psvg.cpt .rkTop,.psvg.cpt .rkBot{opacity:1;fill-opacity:0;transition:fill-opacity .12s}.psvg.cpt .t-rocker:not(.on) .rkTop,.psvg.cpt .t-rocker.on .rkBot{opacity:1;fill-opacity:.16}
 .psvg.cpt .fguard{transform:rotate(var(--bbr));transition:--bbr .2s}.psvg.cpt .fguard.open{--bbr:-40deg}
-/* the toolbar wraps onto a second row instead of clipping Pause / Restart off the edge (it has outgrown one line below about 1,700 px);
-   phone landscape (≤932 px): compact rows, and the live readout moves out of the way */
-.ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
-@media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 </style>
-<link rel="stylesheet" href="simshell.css?v=4">
+<link rel="stylesheet" href="simshell.css?v=5">
 </head>
 <body data-title="DA42 glass cockpit trainer">
 <script src="site.js?v=68"></script>
@@ -235,20 +192,21 @@ table.keys td:first-child{white-space:nowrap;width:1%}
       <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
       <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
       <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
       <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
-      <button class="cb" id="bMore" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+      <button class="cb" id="bMore" type="button" aria-controls="moreMenu" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
-        <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
-        <button class="zback" id="zBack">← Back</button>
-        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
+        <button class="zback" id="zBack" type="button">← Back</button>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
-        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
         <div id="tabCk"><div id="ownck"></div></div>
         <div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
@@ -258,7 +216,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
   <section class="card" id="controls">
     <div class="eyebrow">Fly it</div>
     <h2>Flight controls</h2>
-    <p class="lead">Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, the touch stick or this yoke pad.</p>
+    <p class="lead">Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, touch controls or this yoke pad.</p>
     <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
       <div class="box"><b class="t">Zoom</b><p>Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.</p></div>
       <div class="box"><b class="t">Switches and levers</b><p>Click a switch to flip it. Drag the power levers (drag between them to move both), turn knobs and wheels with the mouse wheel or by dragging. Tab to any control and use the arrow keys, Space or Enter.</p></div>
@@ -339,7 +297,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
     <div id="qbox"></div>
   </section>
 
-  <p class="note">Teaching model, not a certified simulator, and not affiliated with any aircraft or avionics manufacturer. No procedures are included: use your school's checklist and the AFM. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.</p>
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your school's checklist.</p>
+  <p class="note">Not affiliated with any aircraft, engine or avionics manufacturer or any operator. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.</p>
   <p class="note">Training for a turboprop type? Try the <a href="b200.html">King Air B200 cockpit procedure trainer</a>.</p>
 </div>
 
@@ -359,7 +318,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="ownck.js?v=3"></script>
 <script src="otw.js?v=13"></script>
 <script src="lab.js?v=51"></script>
-<script src="simshell.js?v=4"></script>
+<script src="simshell.js?v=5"></script>
 <script>
 (function(){
 'use strict';
@@ -368,7 +327,7 @@ LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knott
  'Birdbird · Simulators':'Birdbird · Simulatorer','DA42 glass cockpit trainer':'DA42 glass cockpit-trener',
  'A front-on twin-engine panel with working glass displays, switches, power levers and autopilot. Practise scans, ILS approaches and engine failures in the browser.':'Et tomotors instrumentpanel sett forfra, med fungerende glasskjermer, brytere, effekthendler og autopilot. Øv på instrumentskanning, ILS-innflyginger og motorstans rett i nettleseren.',
  'Cockpit':'Cockpit','Controls and mission':'Kontroller og oppdrag','Failures and weather':'Feil og vær','How to read it':'Slik leser du den','Test yourself':'Test deg selv',
- 'Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Sound on':'Lyd på','Sound off':'Lyd av','Resume':'Fortsett',
+ 'Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Resume':'Fortsett',
  'Click a softkey on the screen':'Klikk på en softkey nederst på skjermen','Engine and map':'Motor og kart',
  'Fly it':'Fly','Yoke':'Ratt','Drag · releases to centre':'Dra · slipp for å sentrere','Elevator trim':'Høyderortrim','Nose down':'Nese ned','Nose up':'Nese opp','Assisted handling (attitude hold, auto-trim, gentle limits)':'Assistert styring (attitydehold, auto-trim, myke grenser)',
  'Power':'Effekt','Move both levers together':'Flytt begge hendlene sammen','Configuration':'Konfigurasjon','Flaps':'Flaps','Landing gear':'Understell','Hold for brakes':'Hold for bremser',
@@ -386,7 +345,7 @@ LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knott
  'Flaps down and up · gear · brakes while held':'Flaps ned og opp · understell · bremser mens du holder','Autopilot disconnect · engage autopilot':'Koble ut autopilot · koble inn autopilot','Heading bug left and right · selected altitude down and up':'Kursmerke venstre og høyre · valgt høyde ned og opp',
  'A gamepad also works: left stick for pitch and roll, right stick sideways for rudder, triggers for power.':'Spillkontroll fungerer også: venstre stikke for stigning og krengning, høyre stikke sideveis for sideror, avtrekkerne for effekt.',
  'Check':'Sjekk','or':'eller','Zoom to a part of the panel · back to the whole panel':'Zoom til en del av panelet · tilbake til hele panelet','Move between panel controls; arrows, Space and Enter operate them':'Flytt mellom kontrollene på panelet; piltaster, mellomrom og Enter betjener dem',
- 'Teaching model, not a certified simulator, and not affiliated with any aircraft or avionics manufacturer. No procedures are included: use your school\'s checklist and the AFM. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.':'Pedagogisk modell, ikke en sertifisert simulator, og ikke tilknyttet noen fly- eller avionikkprodusent. Ingen prosedyrer er med: bruk skolens sjekkliste og AFM. Fartene er DA42 NG-verdier fra publiserte begrensninger (KIAS); motorinstrumentenes områder er omtrentlige. Bruk alltid flygehåndboken, AIP og instruktøren din.',
+ 'Not affiliated with any aircraft, engine or avionics manufacturer or any operator. Speeds are DA42 NG values from published limitations (KIAS); engine gauge ranges are approximate. Always use the aircraft flight manual, the AIP and your instructor.':'Ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Fartene er DA42 NG-verdier fra publiserte begrensninger (KIAS); motorinstrumentenes områder er omtrentlige. Bruk alltid flygehåndboken, AIP og instruktøren din.',
  'Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','On ground':'På bakken','Mission complete':'Oppdrag fullført','Training for a turboprop type? Try the':'Trener du til en turboprop-type? Prøv','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit'
 });
 
@@ -507,13 +466,13 @@ LAB.add({},{'3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg
  'If the actual QNH differs from the setting on the PFD, the altimeter is wrong. Set it with the BARO knob.':'Hvis faktisk QNH er en annen enn innstillingen på PFD-en, viser høydemåleren feil. Still den med BARO-bryteren.'});
 
 /* ---------- panel, systems and zoom ---------- */
-LAB.add({},{'Procedures':'Prosedyrer','Missions':'Oppdrag','Outside view':'Utsikt','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','← Whole panel':'← Hele panelet',
+LAB.add({},{'Procedures':'Prosedyrer','Missions':'Oppdrag','Outside view':'Utsikt','Full screen':'Fullskjerm','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','Zoom to the next control':'Zoom til neste bryter',
  "For training only — follow the AFM and your operator's SOP.":'Kun for trening — følg AFM og operatørens SOP.','Flight controls':'Flykontroller',
- 'Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, the touch stick or this yoke pad.':'Alt du stiller i cockpiten finner du på panelet over. Fly med tastaturet, en spillkontroll, berøringsstikka eller denne rattflaten.',
+ 'Everything you set in the cockpit lives on the panel above. Fly with the keyboard, a gamepad, touch controls or this yoke pad.':'Alt du stiller i cockpiten finner du på panelet over. Fly med tastaturet, en spillkontroll, berøringskontrollene eller denne rattflaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches and levers':'Brytere og hendler','Click a switch to flip it. Drag the power levers (drag between them to move both), turn knobs and wheels with the mouse wheel or by dragging. Tab to any control and use the arrow keys, Space or Enter.':'Klikk på en bryter for å slå den om. Dra effekthendlene (dra mellom dem for å flytte begge), drei knotter og hjul med musehjulet eller ved å dra. Tab til en kontroll og bruk piltastene, mellomrom eller Enter.',
- 'Rudder and brakes':'Sideror og bremser','Systems':'Systemer','Trigger a system failure. Restore both engines clears these too.':'Utløs en systemfeil. Gjenopprett begge motorene fjerner også disse.','Lock view':'Lås visning','Locked':'Låst','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
+ 'Rudder and brakes':'Sideror og bremser','Systems':'Systemer','Trigger a system failure. Restore both engines clears these too.':'Utløs en systemfeil. Gjenopprett begge motorene fjerner også disse.','More':'Mer','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre'});
 const SYS={};
 const ZN=[['overview',{en:'Panel',no:'Panel'}],['aPfd',{en:'PFD',no:'PFD'}],['aMfd',{en:'MFD',no:'MFD'}],['aTop',{en:'Glareshield',no:'Glareskjerm'}],['aLower',{en:'Switches · power levers',no:'Brytere · effekthendler'}]];
 function sysDefault(cold){
@@ -605,7 +564,7 @@ const coarse=matchMedia('(pointer:coarse)');
 function overviewTap(){ return false; }
 /* area highlight, magnifiers, double-click on empty panel */
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); hlR.style.pointerEvents='none'; /* the top layer makes its children clickable (panellayers.js): the highlight must never take a click */ if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.gdu button,.gdu .kn,.zback,.tz,.pill,.mag,.tip');
@@ -713,7 +672,6 @@ function ctx(){ return {s:S,o:S.o||F.readouts(S),ap:AP,onCdi:()=>{ if(/LOC|VOR|V
 function click(){ mfdForce=true; beep(1700,0.015,0.03); }
 { let wa=0; el('mfd').addEventListener('wheel',e=>{ e.preventDefault(); if(e.ctrlKey) return; wa+=e.deltaY*(e.deltaMode?40:1); if(Math.abs(wa)<40) return; X.range(wa>0?1:-1); wa=0; mfdForce=true; },{passive:false}); }
 /* fullskjerm */
-el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg({en:'Full screen is blocked here. Open the page in its own tab.',no:'Fullskjerm er blokkert her. Åpne siden i en egen fane.'})); }catch(e){} };
 
 /* ---------- 3D-utsikt ---------- */
 let otwOn=true, otwView=''; let otwReady=false;
@@ -795,13 +753,14 @@ let AC=null, horn=null;
 function ensureAudio(){ if(AC||!UI.sound) return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); const o=AC.createOscillator(), g=AC.createGain(); o.type='square'; o.frequency.value=420; g.gain.value=0; o.connect(g).connect(AC.destination); o.start(); horn={o,g}; }catch(e){ AC=null; } }
 function beep(f,d,v){ if(!AC||!UI.sound) return; try{ const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=f; g.gain.value=v||0.05; o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime+d); }catch(e){} }
 function hornLevel(on,warn){ if(!horn) return; const t=AC.currentTime; let v=0; if(UI.sound&&on) v=0.035; if(UI.sound&&!on&&warn) v=(t*2.5%1<0.5)?0.03:0; horn.g.gain.setTargetAtTime(v,t,0.02); horn.o.frequency.setTargetAtTime(on?420:900,t,0.01); }
-el('bSound').onclick=()=>{ UI.sound=!UI.sound; if(!UI.sound&&horn) horn.g.gain.value=0; el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); el('bSound').setAttribute('aria-pressed',UI.sound); if(UI.sound) ensureAudio(); };
 document.addEventListener('pointerdown',ensureAudio,{once:true});
 
 /* ---------- pause og reset ---------- */
-function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paused?'Resume':'Pause'); }
-el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ if(PR.k) procStart(PR.k); else resetMission(); if(UI.paused) togglePause(); };
-LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); });
+function togglePause(){ UI.paused=!UI.paused; CH.sync(); }
+/* Pause / Resume, Restart, Procedures, sound and full screen: the shared shell (simshell.js) */
+const CH=SH.chrome({paused:()=>UI.paused,pause:togglePause,sound:()=>UI.sound,refit:()=>zoomTo(Z.reg,true,true),wheel:false,
+  restart:()=>{ if(PR.k) procStart(PR.k); else resetMission(); if(UI.paused) togglePause(); },
+  setSound:on=>{ UI.sound=on; if(!on&&horn) horn.g.gain.value=0; if(on) ensureAudio(); }});
 
 /* ---------- failure scenarios and failures (data in da42procs.js); no procedure text: the student's own checklist (ownck.js) ---------- */
 const PR={k:null,t:0,dead:0,failed:false,failT:null,crit:null};
@@ -887,8 +846,7 @@ function failMenu(){ const box=el('sysFails'); if(!box) return;
 function failTrigger(kind,i){ const f=DA42PROCS.FAILS.find(x=>x.kind===kind); if(!f) return; fxApply(f.kind,i); ownFailure(ownKinds(f.kind,i,!S.ground),fxAlert(f.kind,i)); }
 failMenu(); LAB.onLang(failMenu);
 /* drawer */
-function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
-el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
+function setDrawer(on){ CH.setDrawer(on); }
 
 /* ---------- oppdragspanel ---------- */
 function msg(m){ SH.say(L(m),'bad',5000); }

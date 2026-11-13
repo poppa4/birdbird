@@ -1011,7 +1011,7 @@ function renderBar(){ const it=ITo();
   el('exSub').textContent=`${tx('Level','Nivå')} ${S.lv}: ${L(W.level[S.lv])} · ${L(W.area[S.area])}${S.custom?' · '+tx('your setup','ditt oppsett'):''}`;
   el('steps').innerHTML=STEPS.filter(([k])=>k!=='think'||S.think).map(([k,n],j)=>`<button type="button" data-s="${k}" class="${k===S.step?'on':''}" ${k==='debrief'&&!S.res?'disabled':''} aria-current="${k===S.step?'step':'false'}"><i>${j+1}</i>${esc(L(n))}</button>`).join('');
   el('steps').querySelectorAll('button').forEach(b=>b.onclick=()=>{ if(b.disabled) return; if(b.dataset.s==='fly'&&(S.step==='debrief'||S.started)){ setup(S.seed); } go(b.dataset.s); });
-  el('helpK').textContent=tx('Help','Hjelp');
+  el('helpK').textContent=tx('Help','Hjelp'); el('keysBtn').setAttribute('aria-label',tx('Controls','Kontroller'));
   el('helpSeg').innerHTML=['guided','hints','off'].map(k=>`<button type="button" data-h="${k}" class="${k===S.help?'on':''}" aria-pressed="${k===S.help}" title="${esc(L(W.helpSub[k]))}">${esc(L(W.help[k]))}</button>`).join('');
   el('helpSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>setHelp(b.dataset.h));
   el('setT').textContent=tx('Setup','Oppsett');
@@ -1033,7 +1033,7 @@ function renderSetPop(){ const p=el('setPop'), ex=S.ex;
   p.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{ if(b.disabled) return; S.area=b.dataset.a; map.region=null; if(A().real) map.setRegion(S.area); setup(); go(S.step==='debrief'?'fly':S.step); renderSetPop(); });
   el('toBld').onclick=()=>{ bldSet(S.item); BLD.area=S.area; BLD.lv=S.lv; BLD.help=S.help; save(BK,BLD); showHome(true); openBld(); }; }
 el('keysBtn').onclick=()=>{ const o=el('keysov'); if(!o.hidden){ o.hidden=true; return; } closePops();
-  o.innerHTML=`<div class="kc" role="dialog" aria-labelledby="kh"><h3 id="kh">${tx('Keyboard','Tastatur')}</h3><dl>
+  o.innerHTML=`<div class="kc" role="dialog" aria-labelledby="kh"><h3 id="kh">${tx('Controls','Kontroller')}</h3><dl>
    <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>${tx('Heading 1° (with Shift 10°)','Heading 1° (med Shift 10°)')}</dd>
    <dt><kbd>,</kbd> <kbd>.</kbd></dt><dd>${tx('Course (CRS / OBS) 1° (with Shift 10°)','Kurs (CRS / OBS) 1° (med Shift 10°)')}</dd>
    <dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>${tx('Selected altitude 100 ft (with Shift 1000 ft)','Valgt høyde 100 ft (med Shift 1000 ft)')}</dd>
@@ -1169,7 +1169,7 @@ function renderTbar(){ const tb=el('tbar'); let h='';
   if(S.step==='understand') h=`<span class="hint">${S.uStep>=uSteps().length-1?esc(tx('Drag the aircraft on the map. Turn it with the handle in front of the nose.','Dra flyet på kartet. Snu det med håndtaket foran nesen.')):esc(tx('The aircraft flies the instructor’s path. Watch the instrument.','Flyet flyr instruktørens bane. Se på instrumentet.'))}</span><button class="dbtn" data-a="${S.think?'think':'fly'}" type="button">${S.think?tx('Skip to the question','Hopp til spørsmålet'):tx('Skip to flying','Hopp til flygingen')}</button>`;
   else if(S.step==='think') h=`<span class="sp"></span><button class="dbtn q" data-a="understand" type="button">${tx('Back','Tilbake')}</button><button class="dbtn ${S.thinkAns!=null?'pri':''}" data-a="fly" type="button">${S.thinkAns!=null?tx('Fly it','Fly den'):tx('Skip and fly','Hopp over og fly')}</button>`;
   else if(S.step==='fly'){
-    if(!S.started) h=`<span class="hint">${esc(tx('Read the clearance, then press Start (or Space).','Les klareringen, og trykk Start (eller mellomrom).'))}</span><span class="sp"></span><button class="ib" data-a="keys" type="button">${tx('Keys','Taster')}</button>`;
+    if(!S.started) h=`<span class="hint">${esc(tx('Read the clearance, then press Start (or Space).','Les klareringen, og trykk Start (eller mellomrom).'))}</span><span class="sp"></span><button class="ib" data-a="keys" type="button">${tx('Controls','Kontroller')}</button>`;
     else h=`<button class="ib" data-a="pause" aria-pressed="${S.paused}" type="button">${S.paused?ICON.play:ICON.pause}<span class="tx">${S.paused?tx('Resume','Fortsett'):tx('Pause','Pause')}</span></button>
       <span class="clock">${tx('Time','Tid')} <b id="clk">${mmss(S.sim.t)}</b>${S.speed>1?` ×${S.speed}`:''}${S.demo?` <span class="tx">· ${tx('the instructor is flying','instruktøren flyr')}</span>`:''}</span><span class="sp"></span>
       <button class="ib" data-a="more" aria-expanded="${!el('drawer').hidden}" type="button">${ICON.more}<span class="tx">${tx('More','Mer')}</span></button>
@@ -1780,7 +1780,7 @@ function loop(ts){ const dt=Math.min(0.1,Math.max(0,(ts-lastT)/1000)); lastT=ts;
   requestAnimationFrame(loop); }
 
 /* ---------- start ---------- */
-LAB.add({},{'Birdbird · Training':'Birdbird · Trening','IFR trainer':'IFR-trener','Training only · not for navigation':'Kun trening · ikke for navigasjon',
+LAB.add({},{'Birdbird · Training':'Birdbird · Trening','IFR trainer':'IFR-trener','Training aid · not for navigation':'Treningshjelpemiddel · ikke for navigasjon',
   'What the trainer models':'Hva treneren modellerer','Limits and tolerances':'Grenser og toleranser','Real and practice data':'Ekte data og øvingsdata',
   'All exercises':'Alle øvelser','Start here':'Start her'});
 LAB.start('ifr');

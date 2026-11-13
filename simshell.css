@@ -1,4 +1,40 @@
 /* Birdbird – shared chrome of the cockpit trainers (C172, DA42, King Air B200; 2D and 3D). Loaded after each page's own CSS. */
+/* ---------- the base of the shell: stage frame, toolbar, ← Back, notification pill, … menu, drawer, rotate notice (was copied into every cockpit stylesheet) ---------- */
+.ckp{position:relative;z-index:25;width:100vw;margin-left:calc(50% - 50vw);height:100vh;height:100dvh;display:flex;flex-direction:column;background:#0b0d10;color:#e6ebef;scroll-margin-top:0;overflow:hidden}
+.ctop{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#121519;border-bottom:1px solid #262b31;overflow-x:auto;scrollbar-width:none}
+.ctop::-webkit-scrollbar{display:none}
+.ctop .cb{flex:0 0 auto;font:600 12.5px/1 var(--f-body);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+.ctop .cb:hover{background:#262c33}.ctop .cb.on,.ctop .cb[aria-pressed=true]{background:#e8edf1;color:#0d1319;border-color:#e8edf1}
+.ctop .cb:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
+.ctop .zs{display:flex;gap:2px;background:#0d1013;border:1px solid #2b3137;border-radius:7px;padding:2px}
+.ctop .zs .cb{border:0;background:transparent;padding:6px 8px}.ctop .zs .cb.on{background:#e8edf1;color:#0d1319}
+.ctop .sp{flex:1 1 auto}
+.ctop a.cb{text-decoration:none;display:inline-block}
+.ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
+.cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
+.more{position:absolute;right:8px;top:6px;z-index:9;display:flex;flex-direction:column;gap:4px;background:#14181c;border:1px solid #333a42;border-radius:8px;padding:6px}
+.ctop .stat.chg{color:#ffcf3a}
+.ctop #scenSel{max-width:240px}
+.zback{position:absolute;left:10px;top:10px;z-index:5;font:600 13px system-ui;background:rgba(14,17,20,.86);color:#fff;border:1px solid #3c444c;border-radius:20px;padding:8px 14px;cursor:pointer;display:none}
+.stage.zoomed:not(.d3) .zback{display:block}
+.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:5;max-width:min(90%,560px);background:rgba(14,17,20,.9);border:1px solid #ffcf3a;color:#fff;border-radius:18px;padding:7px 14px;font:600 13px system-ui;display:none;text-align:center;pointer-events:none}
+.pill.show{display:block}.pill.ok{border-color:#3cff6e}.pill.bad{border-color:#ff5a47}
+.drawer{flex:0 0 auto;width:0;overflow:hidden;background:#11151a;border-left:1px solid #262b31;transition:width .3s ease;display:flex;flex-direction:column}
+.drawer.open{width:min(330px,34vw)}
+.drawer .din{width:min(330px,34vw);height:100%;overflow-y:auto;padding:10px 12px 16px;box-sizing:border-box;font-size:13px}
+.drawer h3{font-size:14px;margin:8px 0 6px;color:#fff}
+.drawer .tabs{display:flex;gap:4px;margin-bottom:8px}
+.drawer .tabs button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
+.drawer .tabs button.on{background:#e8edf1;color:#0d1319}
+.drawer select{width:100%;font:600 13px system-ui;padding:7px;border-radius:6px;background:#1b2026;color:#fff;border:1px solid #333a42}
+.drawer .row{display:flex;gap:6px;margin-top:8px}.drawer .row button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
+.drawer label{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#a9b5bf;margin-top:8px}
+.rot{position:absolute;inset:0;z-index:30;display:none;place-items:center;text-align:center;background:#0b0d10;color:#fff;font:600 16px system-ui;padding:24px}
+.rot b{display:block;font-size:44px;margin-bottom:8px}
+@media (max-height:500px){.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.drawer.open,.drawer .din{width:min(270px,36vw)}.drawer .din{font-size:12px;padding:6px 8px}}
+#cockpit:fullscreen{width:100vw;margin:0}
+.ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
+@media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 .ckp .ctop{flex:0 0 auto;display:flex;flex-wrap:nowrap;gap:6px;align-items:center;height:44px;box-sizing:border-box;padding:0 10px;background:#121519;border-bottom:1px solid #262b31;overflow:hidden;row-gap:0}
 .ckp .ctop .cb,.ckp .ctop .dseg a{box-sizing:border-box;height:30px;min-height:0;max-height:30px;flex:0 0 auto;font:600 12.5px/1 var(--f-body);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:7px;padding:0 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;margin:0}
 .ckp .ctop select.cb{padding:0 26px 0 10px;min-width:0;text-overflow:ellipsis;-webkit-appearance:none;appearance:none;background:#1d2227 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239fb0bd' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 9px center}
@@ -15,6 +51,9 @@
 .ckp .ctop .cb.afb[aria-pressed=true]{background-color:#2fd17b;border-color:#2fd17b;color:#05170c}
 .ckp .ctop .sp{display:block;flex:1 1 auto;min-width:0}
 .ckp .ctop #bMore{font-size:16px;padding:0 10px;letter-spacing:1px}
+/* never clipped: the two selects give way first; Restart keeps its icon and drops its word on narrow screens */
+.ckp .ctop #acSel,.ckp .ctop .afsel{flex:0 1 auto;min-width:52px}
+.ckp .ctop #bReset i{font-style:normal;font-size:14px;line-height:1}
 .ckp .ctop #bDebrief[hidden]{display:none}
 .ckp .ctop .zs,.ckp .ctop .stat,.ckp .ctop .beta{display:none}
 /* the … menu */
@@ -76,6 +115,51 @@
  .ckp .drawer .tabs{gap:2px}.ckp .drawer .tabs button{flex:1 1 auto;font-size:11px;padding:7px 3px;text-overflow:clip}
 }
 @media (max-width:700px){ .ckp .ctop .dseg small{display:none} .ckp .ctop #acSel{max-width:78px} .ckp .ctop .afsel{max-width:104px} }
+@media (max-width:760px){ .ckp .ctop #bReset span{display:none} .ckp .ctop #bReset{padding:0 9px} }
+/* touch screens: every toolbar control is a 44 px target (the button looks 36 px high, its hit area fills the bar) */
+@media (pointer:coarse){
+ .ckp .ctop{height:44px}
+ .ckp .ctop .cb,.ckp .ctop .dseg a{height:36px;max-height:36px;position:relative}
+ .ckp .ctop .dseg a{min-width:40px;justify-content:center}
+ .ckp .ctop .cb:not(.sdb-ready)::after,.ckp .ctop .dseg a::after{content:'';position:absolute;left:-2px;right:-2px;top:-4px;bottom:-4px}
+ .ckp .ctop #bMore{min-width:44px;justify-content:center}
+ .ckp .more .cb{min-height:40px}.ckp .more select{min-height:36px}
+ .ckp .drawer .tabs button{min-height:40px}
+}
+/* short screens (a phone on its side): the … menu in two columns, so all of it is in view without scrolling */
+@media (max-height:520px){
+ .ckp .more{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;min-width:min(430px,calc(100% - 16px))}
+ .ckp .more hr{display:none}.ckp .more label{grid-column:1/-1;order:-1;flex-direction:row;align-items:center;gap:10px;padding-top:2px;padding-bottom:4px}.ckp .more label select{flex:1 1 auto;max-width:none}
+ .ckp .more .cb{white-space:normal}
+}
+/* a phone held upright: the cockpit asks for landscape (the same rule on all six pages); the toolbar keeps what still works */
+.ckp .rot{display:none}
+@media (orientation:portrait) and (max-width:600px){
+ .ckp .rot{display:grid}
+ .ckp .ctop .afsel,.ckp .ctop #bAuto,.ckp .ctop #bDrawer,.ckp .ctop #bPause,.ckp .ctop #bReset,.ckp .ctop #bDebrief,.ckp .ctop #bMore{display:none}
+ .ckp .ctop #acSel{max-width:none}
+}
+/* Controls: the one help sheet */
+.ckp .shelp{box-sizing:border-box;width:min(820px,calc(100vw - 24px));max-width:none;max-height:min(620px,calc(100vh - 24px));max-height:min(620px,calc(100dvh - 24px));padding:0;border:1px solid #333a42;border-radius:12px;background:#14181c;color:#dfe5ea;box-shadow:0 18px 50px rgba(0,0,0,.6);overflow:hidden}
+.ckp .shelp[open]{display:flex;flex-direction:column}
+.ckp .shelp::backdrop{background:rgba(5,8,11,.55)}
+.ckp .shelp .hd{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 8px 16px;border-bottom:1px solid #262b31}
+.ckp .shelp h2{margin:0;font:700 16px/1.2 var(--f-body);color:#fff}
+.ckp .shelp .x{width:44px;height:44px;margin:-6px -6px -6px 0;border:0;border-radius:8px;background:transparent;color:#dfe5ea;font:400 24px/1 var(--f-body);cursor:pointer}
+.ckp .shelp .x:hover{background:#232930}
+.ckp .shelp .x:focus-visible{outline:2px solid var(--focus-dark);outline-offset:-2px}
+.ckp .shelp .bd{flex:1 1 auto;min-height:0;overflow-y:auto;padding:4px 16px 14px;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:0 26px;align-items:start}
+.ckp .shelp h3{margin:12px 0 6px;font:700 10.5px var(--f-body);letter-spacing:.07em;text-transform:uppercase;color:#8e9aa5}
+.ckp .shelp table.keys{width:100%;border-collapse:collapse;margin:0;font:500 12.5px/1.4 var(--f-body);color:#dfe5ea;background:none}
+.ckp .shelp table.keys td{padding:5px 8px 5px 0;border:0;border-bottom:1px solid #232930;vertical-align:top;color:#dfe5ea;background:none}
+.ckp .shelp table.keys td:first-child{width:36%;color:#fff}
+.ckp .shelp kbd{font:11px/1 ui-monospace,monospace;padding:2px 5px;border-radius:4px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff}
+.ckp .shelp ul{margin:0;padding-left:17px;font:500 12.5px/1.45 var(--f-body)}.ckp .shelp li{margin:0 0 6px}
+@media (max-width:700px){ .ckp .shelp .bd{grid-template-columns:1fr} }
+@media (max-width:640px){ .ckp .shelp{padding:0} }
+.ckp .zback:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
+/* reduced motion: the chrome appears and goes without fades or slides */
+@media (prefers-reduced-motion:reduce){ .ckp .pill,.ckp .pill.show,.ckp .zdim,.ckp .zdim.on,.ckp .drawer,.ckp .areahl{transition:none} }
 
 /* drawer component (scenario list, speeds table), shared by all three */
 .plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
@@ -87,7 +171,6 @@
 .ckp .drawer .din{padding-top:0}
 .ckp .drawer .tabs{position:sticky;top:0;z-index:3;background:#11151a;padding:8px 0 6px;margin-bottom:4px}
 /* touch controls: no box on the panel; a ring appears under the finger only while it flies */
-.ckp .touch{display:none!important}
 .ckp .tring{position:absolute;z-index:7;width:calc(var(--r,70px)*2);height:calc(var(--r,70px)*2);margin:calc(var(--r,70px)*-1) 0 0 calc(var(--r,70px)*-1);border-radius:50%;border:1.5px solid rgba(127,203,232,.55);background:rgba(10,14,18,.18);pointer-events:none}
 .ckp .tring.rud{height:46px;margin-top:-23px;border-radius:23px}
 .ckp .tring[hidden]{display:none}

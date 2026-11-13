@@ -7,8 +7,8 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="site.css?v=22">
-<link rel="stylesheet" href="b200.css?v=17">
-<link rel="stylesheet" href="simshell.css?v=4">
+<link rel="stylesheet" href="b200.css?v=18">
+<link rel="stylesheet" href="simshell.css?v=5">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
 <script src="site.js?v=68"></script>
@@ -31,20 +31,21 @@
       <button class="cb afb" id="bAuto" type="button" aria-pressed="false">Auto-fly</button>
       <button class="cb" id="bDrawer" type="button" aria-pressed="false">Procedures</button>
       <button class="cb" id="bPause" type="button">Pause</button>
+      <button class="cb" id="bReset" type="button" aria-label="Restart"><i aria-hidden="true">↺</i><span>Restart</span></button>
       <button class="cb" id="bDebrief" type="button" hidden>Debrief</button>
       <span class="sp"></span>
-      <button class="cb" id="bMore" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More">⋯</button>
+      <button class="cb" id="bMore" type="button" aria-controls="moreMenu" aria-expanded="false" aria-label="More">⋯</button>
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
-        <canvas id="otw" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
-        <button class="zback" id="zBack">← Back</button>
-        <div class="more" id="moreMenu" hidden role="menu"><button class="cb" id="bReset" type="button">Restart</button><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound on</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Keyboard help</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
+        <canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
+        <button class="zback" id="zBack" type="button">← Back</button>
+        <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
         <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
-        <div class="tabs" role="tablist"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
+        <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
         <div id="tabCk"><div id="ownck"></div></div>
         <div id="tabFl" hidden></div><div id="tabSp" hidden></div>
       </div></aside>
@@ -54,7 +55,7 @@
   <section class="card" id="controls">
     <div class="eyebrow">Fly it</div>
     <h2>Flight controls</h2>
-    <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.</p>
+    <p class="lead">Drag either control wheel on the panel, use the keyboard, a gamepad, touch controls or this pad.</p>
     <details class="howto"><summary>How to use the panel</summary><div class="cols" style="margin-top:8px">
       <div class="box"><b class="t">Zoom</b><p>Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.</p></div>
       <div class="box"><b class="t">Switches</b><p>Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.</p></div>
@@ -122,7 +123,8 @@
     <div id="qbox"></div>
   </section>
 
-  <p class="note">Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the AFM/POH. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.</p>
+  <p class="note simnote">Training aid, not a certified simulator or a substitute for the aircraft's approved documents. No procedures are included: use your school's checklist.</p>
+  <p class="note">Not affiliated with any aircraft, engine or avionics manufacturer or any operator. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.</p>
 </div>
 
 <script src="three.min.js?v=128"></script>
@@ -136,10 +138,10 @@
 <script src="b200panel.js?v=12"></script>
 <script src="b200-qbank.js?v=1"></script>
 <script src="lab.js?v=51"></script>
-<script src="simshell.js?v=4"></script>
+<script src="simshell.js?v=5"></script>
 <script src="simdebrief.js?v=6"></script>
 <script src="ownck.js?v=3"></script>
 <script src="b200procs.js?v=2"></script>
-<script src="b200-app.js?v=18"></script>
+<script src="b200-app.js?v=19"></script>
 </body>
 </html>

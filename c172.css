@@ -1,18 +1,7 @@
-/* Birdbird – Cessna 172 cockpit trainer. Base rules shared with the DA42 and King Air B200 cockpits (cockpit.html, b200.html). */
+/* Birdbird – Cessna 172 cockpit trainer. Base rules shared with the DA42 and King Air B200 cockpits (cockpit.html, b200.html);
+   the shell itself (toolbar, … menu, drawer, notification pill) is in simshell.css. */
 /* ---------- cockpit stage: one view that always fits ---------- */
-.ckp{position:relative;z-index:25;width:100vw;margin-left:calc(50% - 50vw);height:100vh;height:100dvh;display:flex;flex-direction:column;background:#0b0d10;color:#e6ebef;scroll-margin-top:0;overflow:hidden}
-.ctop{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#121519;border-bottom:1px solid #262b31;overflow-x:auto;scrollbar-width:none}
-.ctop::-webkit-scrollbar{display:none}
-.ctop .cb{flex:0 0 auto;font:600 12.5px/1 var(--f-body);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
-.ctop .cb:hover{background:#262c33}.ctop .cb.on,.ctop .cb[aria-pressed=true]{background:#e8edf1;color:#0d1319;border-color:#e8edf1}
-.ctop .cb:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
-.ctop .zs{display:flex;gap:2px;background:#0d1013;border:1px solid #2b3137;border-radius:7px;padding:2px}
-.ctop .zs .cb{border:0;background:transparent;padding:6px 8px}.ctop .zs .cb.on{background:#e8edf1;color:#0d1319}
-.ctop .sp{flex:1 1 auto}
-.ctop a.cb{text-decoration:none;display:inline-block}
 .ctop .beta{flex:0 0 auto;font:700 10.5px/1 var(--f-mono,monospace);letter-spacing:.14em;text-transform:uppercase;color:#0d1319;background:#ffcf3a;border-radius:4px;padding:6px 7px}
-.ctop .stat{font:600 12px var(--f-mono,monospace);color:#9fb0bd;white-space:nowrap;padding:0 4px}
-.cbody{flex:1 1 auto;display:flex;min-height:0;position:relative}
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
 .stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
 /* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
@@ -88,10 +77,7 @@
 .psvg .mag{cursor:zoom-in;opacity:.7;transition:opacity .15s}.psvg .mag:hover,.psvg .mag:focus-visible{opacity:1;outline:none}
 .stage.zoomed .mags,.stage.locked .mags{display:none}
 .tip{position:absolute;z-index:8;pointer-events:none;background:rgba(10,12,15,.94);color:#fff;border:1px solid #3d4650;border-radius:6px;padding:4px 8px;font:600 12.5px system-ui;white-space:nowrap}
-.more{position:absolute;right:8px;top:6px;z-index:9;display:flex;flex-direction:column;gap:4px;background:#14181c;border:1px solid #333a42;border-radius:8px;padding:6px}
-.ctop .stat.chg{color:#ffcf3a}
 .ctop .zs{display:none}.ctop .zsel{display:block;max-width:290px;text-overflow:ellipsis}
-.ctop #scenSel{max-width:240px}
 .psvg .boot{fill:#111316;stroke:#000}.psvg .boot0{fill:#000;opacity:.5}.psvg .shaft{stroke:#2a2e33;stroke-width:9;stroke-linecap:round}
 .psvg .grip{fill:url(#gLever);stroke:#000;stroke-width:1.2}.psvg .gripl{stroke:#000;stroke-opacity:.5;stroke-width:1.4}
 .psvg .t-stick{cursor:grab}.psvg .t-stick.drag{cursor:grabbing}
@@ -125,30 +111,6 @@
 .gdu .sk:active{background:#22262b}
 .gdu button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:0}
 .gdu.hl{box-shadow:0 0 0 3px #ffcf3a,0 6px 16px rgba(0,0,0,.55)}
-/* zoom back, pill, drawer */
-.zback{position:absolute;left:10px;top:10px;z-index:5;font:600 13px system-ui;background:rgba(14,17,20,.86);color:#fff;border:1px solid #3c444c;border-radius:20px;padding:8px 14px;cursor:pointer;display:none}
-.stage.zoomed .zback{display:block}
-.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:5;max-width:min(90%,560px);background:rgba(14,17,20,.9);border:1px solid #ffcf3a;color:#fff;border-radius:18px;padding:7px 14px;font:600 13px system-ui;display:none;text-align:center;pointer-events:none}
-.pill.show{display:block}.pill.ok{border-color:#3cff6e}.pill.bad{border-color:#ff5a47}
-.drawer{flex:0 0 auto;width:0;overflow:hidden;background:#11151a;border-left:1px solid #262b31;transition:width .3s ease;display:flex;flex-direction:column}
-.drawer.open{width:min(330px,34vw)}
-.drawer .din{width:min(330px,34vw);height:100%;overflow-y:auto;padding:10px 12px 16px;box-sizing:border-box;font-size:13px}
-.drawer h3{font-size:14px;margin:8px 0 6px;color:#fff}
-.drawer .tabs{display:flex;gap:4px;margin-bottom:8px}
-.drawer .tabs button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.drawer .tabs button.on{background:#e8edf1;color:#0d1319}
-.drawer select{width:100%;font:600 13px system-ui;padding:7px;border-radius:6px;background:#1b2026;color:#fff;border:1px solid #333a42}
-.drawer .row{display:flex;gap:6px;margin-top:8px}.drawer .row button{flex:1;font:600 12.5px system-ui;padding:7px;border-radius:6px;border:1px solid #333a42;background:#1b2026;color:#dfe5ea;cursor:pointer}
-.drawer label{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#a9b5bf;margin-top:8px}
-.touch{position:absolute;inset:0;pointer-events:none;z-index:4}
-.tz{position:absolute;pointer-events:auto;touch-action:none;border:1px dashed rgba(255,255,255,.35);border-radius:14px;background:rgba(0,0,0,.25)}
-.tz i{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:rgba(127,203,232,.85);box-shadow:0 0 0 5px rgba(127,203,232,.25);left:50%;top:50%}
-.tstk{left:calc(10px + env(safe-area-inset-left));bottom:10px;width:min(44vh,220px);aspect-ratio:1}
-.rot{position:absolute;inset:0;z-index:30;display:none;place-items:center;text-align:center;background:#0b0d10;color:#fff;font:600 16px system-ui;padding:24px}
-.rot b{display:block;font-size:44px;margin-bottom:8px}
-@media (orientation:portrait) and (max-width:900px){.rot{display:grid}}
-@media (max-height:500px){.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.drawer.open,.drawer .din{width:min(270px,36vw)}.drawer .din{font-size:12px;padding:6px 8px}}
-#cockpit:fullscreen{width:100vw;margin:0}
 /* ---------- B200 additions ---------- */
 .psvg .knurl{stroke:#0b0c0e;stroke-width:1}
 .psvg .dial{fill:#0d0e10}.psvg .dt{fill:#cfd6dc;letter-spacing:.06em}
@@ -425,7 +387,3 @@
 .psvg.cpt .areahl{opacity:var(--bbo);--bbo:0;transition:--bbo .15s}
 .psvg.cpt .mag{opacity:var(--bbo);--bbo:.7;transition:--bbo .15s}.psvg.cpt .mag:hover,.psvg.cpt .mag:focus-visible{--bbo:1}
 .psvg.cpt .cov{opacity:var(--bbo);--bbo:0;transition:--bbo .2s}
-/* the toolbar wraps onto a second row instead of clipping Pause / Restart off the edge (it has outgrown one line below about 1,700 px);
-   phone landscape (≤932 px): compact rows, and the live readout moves out of the way */
-.ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
-@media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}

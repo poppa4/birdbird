@@ -9,9 +9,9 @@ LAB.add({},{
  'Birdbird · Simulators':'Birdbird · Simulatorer','Cessna 172 cockpit procedure trainer':'Cessna 172 prosedyretrener for cockpit',
  'A typical classic C172 with a carburetted 160 hp engine and an analog six-pack. Prime and start the engine, do the run-up and magneto check, fly a circuit, and practise carburettor ice, engine failure after take-off, vacuum and alternator failures and an ILS.':'En typisk klassisk C172 med 160 hk forgassermotor og analoge «six-pack»-instrumenter. Prim og start motoren, gjør run-up og magnetsjekk, fly en landingsrunde, og øv på forgasserising, motorstopp etter avgang, vakuum- og generatorsvikt og en ILS.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv',
- 'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
+ 'Procedures':'Prosedyrer','Limits':'Begrensninger','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the POH/AFM and your school's checklist.":'Kun for trening — følg POH/AFM og skolens sjekkliste.','Zoom to the next control':'Zoom til neste kontroll',
- 'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
+ 'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, touch controls or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringskontrollene eller denne flaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches and knobs':'Brytere og knotter','Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.':'Klikk på en vippe- eller vippebryter for å slå den om. Trekk-skyv-knotter (forgasservarme, primer, kabinvarme og -luft, parkeringsbrems) går inn og ut med et klikk. Dra gass og blanding ned for å trekke dem ut, opp for å skyve dem inn.',
  'Ignition key':'Tenningsnøkkel','Click the key to step OFF → R → L → BOTH. Press and hold on START (or hold an arrow key at BOTH) to crank; it springs back to BOTH when you let go.':'Klikk på nøkkelen for å gå OFF → R → L → BOTH. Trykk og hold på START (eller hold en piltast på BOTH) for å starte; den fjærer tilbake til BOTH når du slipper.',
@@ -34,7 +34,7 @@ LAB.add({},{
  'Rudder left and right · centre the rudder':'Sideror venstre og høyre · sentrer sideroret','Throttle in and out · mixture richer and leaner':'Gass inn og ut · blanding rikere og magrere','Carburettor heat on / off':'Forgasservarme på / av','Elevator trim nose down and up':'Trim nese ned og opp',
  'Flaps down and up · brakes while held':'Flaps ned og opp · bremser mens du holder','Zoom to a part of the panel · back to the whole panel':'Zoom til en del av panelet · tilbake til hele panelet','Move between panel controls; arrows, Space and Enter operate them':'Flytt mellom kontrollene på panelet; piltaster, mellomrom og Enter betjener dem',
  'Check':'Sjekk',
- "Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the POH/AFM. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.":'Pedagogisk modell, ikke en sertifisert simulator eller godkjent sjekkliste, og ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Ingen prosedyrer er med: bruk skolens sjekkliste og POH/AFM. Tallene er typiske verdier for en klassisk Cessna 172 (172P-type, 160 hk, forgasser) som varierer med årsmodell og utstyr; kontroller alle tall i godkjente dokumenter.',
+ "Not affiliated with any aircraft, engine or avionics manufacturer or any operator. Numbers are typical classic Cessna 172 (172P-style, 160 hp, carburetted) values that vary with model year and equipment; verify every figure in your approved documents.":'Ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Tallene er typiske verdier for en klassisk Cessna 172 (172P-type, 160 hk, forgasser) som varierer med årsmodell og utstyr; kontroller alle tall i godkjente dokumenter.',
  'More cockpits: the':'Flere cockpiter:','DA42 glass cockpit':'DA42 glasscockpit','and the':'og','King Air B200 procedure trainer':'King Air B200 prosedyretrener',
  'Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','On ground':'På bakken','Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre','Scenario':'Scenario',
  'Outside air temperature (sea level)':'Utetemperatur (havnivå)','Relative humidity':'Relativ fuktighet'
@@ -171,7 +171,7 @@ function zoomTo(reg,instant,force){
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of (document.body.dataset.d3?P.REG_ORDER:AREAS)){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const NS='http://www.w3.org/2000/svg';
-const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
+const hlR=document.createElementNS(NS,'rect'); hlR.setAttribute('class','areahl'); hlR.setAttribute('rx',14); hlR.style.pointerEvents='none'; /* the top layer makes its children clickable (panellayers.js): the highlight must never take a click */ if(P.top) P.top.insertBefore(hlR,P.top.firstChild); else P.svg.insertBefore(hlR,P.svg.querySelector('g.ctls'));
 const hlO=v=>{ if(hlR._o===v) return; hlR._o=v; if(P.svg.classList.contains('cpt')) hlR.style.setProperty('--bbo',v); else hlR.style.opacity=v; };
 function areaHL(k){ if(!k||Z.reg!=='overview'){ hlO(0); return; } if(hlR._k!==k){ hlR._k=k; const r=P.REG[k]; hlR.setAttribute('x',r[0]); hlR.setAttribute('y',r[1]); hlR.setAttribute('width',r[2]); hlR.setAttribute('height',r[3]); } hlO(1); }
 const emptyAt=e=>!e.target.closest('g.ctl,.hit,.zback,.tz,.pill,.mag,.tip');
@@ -247,7 +247,6 @@ function otwTick(dt){
   if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
   const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
 }
-el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg(tr2('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.'))); }catch(e){} };
 
 /* ---------- engine, electrics, vacuum, fuel ---------- */
 const oatAt=altFt=>ENV.oat-1.98*altFt/1000;
@@ -363,11 +362,12 @@ function audioTick(dt){ if(!AC||!UI.sound||UI.paused) return; identT-=dt; mkrT-=
   const m=mkrNow(); if(m&&SYS.auMkr&&mkrT<=0){ if(m==='O'){ beep(400,0.35,0.03); mkrT=0.5; } else { beep(1300,0.12,0.025); mkrT=0.3; } }
   if((SYS.elt===-1||SYS.eltAuto)&&eltT<=0&&((comRad('1')&&SYS.com1.a==='121.500'&&SYS.auC1)||(comRad('2')&&SYS.com2.a==='121.500'&&SYS.auC2))){ eltT=0.5; try{ const o=AC.createOscillator(), g=AC.createGain(); o.frequency.setValueAtTime(1400,AC.currentTime); o.frequency.linearRampToValueAtTime(500,AC.currentTime+0.45); g.gain.value=0.02; o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime+0.45); }catch(e){} }
 }
-el('bSound').onclick=()=>{ UI.sound=!UI.sound; if(!UI.sound&&horn){ horn.g.gain.value=0; eng.g.gain.value=0; } el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); el('bSound').setAttribute('aria-pressed',UI.sound); if(UI.sound) ensureAudio(); };
 document.addEventListener('pointerdown',ensureAudio,{once:true});
-function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paused?'Resume':'Pause'); }
-el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ procStart(PR.k||'free'); if(UI.paused) togglePause(); };
-LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); });
+function togglePause(){ UI.paused=!UI.paused; CH.sync(); }
+/* Pause / Resume, Restart, Procedures, sound and full screen: the shared shell (simshell.js) */
+const CH=SH.chrome({paused:()=>UI.paused,pause:togglePause,sound:()=>UI.sound,refit:()=>zoomTo(Z.reg,true,true),wheel:true,
+  restart:()=>{ procStart(PR.k||'free'); if(UI.paused) togglePause(); },
+  setSound:on=>{ UI.sound=on; if(!on&&horn){ horn.g.gain.value=0; eng.g.gain.value=0; } if(on) ensureAudio(); }});
 
 /* ---------- flaps ---------- */
 function setFlap(n){ n=F.clamp(n,0,3); if(n===S.ctl.flap) return; if(!bus()||!cbIn('FLAP')){ msg(tr2('The flaps are electric: master switch on and FLAP breaker in.','Flapsene er elektriske: hovedbryter på og FLAP-sikringen inne.')); return; }
@@ -466,8 +466,7 @@ function procTick(dt){
   if(p.k==='carbice'&&!PR.failed&&ENG.ice>0.35){ PR.failed=true; PR.failT=PR.t; ownFail(p.own,'CARB ICE'); }
   if(p.fail==='alt'&&PR.m.reset&&!PR.m.retripSet){ PR.m.retripSet=1; EL.retrip=25; }
 }
-function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
-el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
+function setDrawer(on){ CH.setDrawer(on); }
 /* ---------- Procedures drawer: Failures and Speeds (simshell.js); the Checklist tab is the student's own (ownck.js) ---------- */
 const PD=C172PROCS;
 SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });

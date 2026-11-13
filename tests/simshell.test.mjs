@@ -9,7 +9,7 @@ const ids=(html,from,to)=>{ const a=html.indexOf(from), b=html.indexOf(to,a); re
 const txt=t=>typeof t==='string'||(t&&typeof t.en==='string'&&t.en.length>0&&typeof t.no==='string'&&t.no.length>0);
 
 test('one toolbar: same controls in the same order on all six pages',()=>{
-  const want=['acSel','apSel','bAuto','bDrawer','bPause','bDebrief','bMore'];
+  const want=['acSel','apSel','bAuto','bDrawer','bPause','bReset','bDebrief','bMore'];
   for(const f of PAGES){ const h=src(f); assert.deepEqual(ids(h,'<div class="ctop"','<div class="cbody">'),want,f);
     assert.match(h,/id="bDebrief" type="button" hidden/,f+': Debrief only after a flight');
     for(const gone of ['id="scenSel"','id="zoomBar"','id="procSel"','id="stat2"','id="tabLim"','id="tabMis"','id="touch"','id="tStk"']) assert.ok(!h.includes(gone),f+' still has '+gone);
@@ -17,7 +17,7 @@ test('one toolbar: same controls in the same order on all six pages',()=>{
 });
 
 test('the … menu and the drawer tabs are identical on all six pages',()=>{
-  const menu=['moreMenu','bReset','bAhead','bOtw','zoomSel','bSound','bTouch','bFull','bDbNow','bDbAuto','bKeys','bPerf'];
+  const menu=['moreMenu','bAhead','bOtw','zoomSel','bSound','bTouch','bFull','bDbNow','bDbAuto','bKeys','bPerf'];
   for(const f of PAGES){ const h=src(f); assert.deepEqual(ids(h,'<div class="more"','</div>'),menu,f);
     const tabs=[...h.matchAll(/<button data-t="(\w+)"/g)].map(m=>m[1]); assert.deepEqual(tabs,['ck','fl','sp'],f);
     for(const p of ['tabCk','tabFl','tabSp','ownck']) assert.ok(h.includes(`id="${p}"`),f+' '+p);
@@ -26,10 +26,26 @@ test('the … menu and the drawer tabs are identical on all six pages',()=>{
     assert.match(h,/simshell\.css\?v=\d+/,f); assert.match(h,/simshell\.js\?v=\d+/,f); }
 });
 
+test('one shell: Pause, Restart, Procedures, sound and full screen are wired in simshell.js; one Controls sheet; one footnote',()=>{
+  const sh=src('simshell.js'); for(const f of ['function chrome(','function help(','function labels(']) assert.ok(sh.includes(f),'simshell '+f);
+  const note=sh.match(/const NOTE_EN="([^"]+)"/)[1]; assert.match(note,/not a certified simulator/);
+  for(const f of ['c172-app.js','b200-app.js','cockpit.html','da42-3d.html']){ const s=src(f); assert.match(s,/const CH=SH\.chrome\(\{/,f);
+    for(const gone of [/el\('bPause'\)\.onclick/,/el\('bReset'\)\.onclick/,/el\('bFull'\)\.onclick/,/el\('bSound'\)\.onclick/,/el\('bDrawer'\)\.onclick/]) assert.ok(!gone.test(s),f+' '+gone);
+    assert.match(s,/hlR\.style\.pointerEvents='none'/,f+': the hover highlight never takes a click'); }
+  for(const f of PAGES){ const h=src(f); assert.ok(h.includes('<p class="note simnote">'+note+'</p>'),f+' footnote');
+    assert.match(h,/id="moreMenu" hidden role="group"/,f); assert.match(h,/id="bKeys" type="button">Controls</,f); assert.match(h,/<canvas id="otw" role="img" aria-label=/,f);
+    assert.ok(!/Keyboard help|Sound on|touch stick/.test(h),f+' old wording'); }
+  assert.ok(!/\.efx/.test(src('b200.css')),'b200.css: the EFIS strip rules are gone');
+  // the base rules of the shell (toolbar, pill, … menu, drawer, rotate notice) live once, in simshell.css
+  const ss=src('simshell.css'); for(const r of ['.pill{position:absolute','.more{position:absolute','.drawer{flex:0 0 auto','.rot{position:absolute','.ctop .cb{flex:0 0 auto']) {
+    assert.ok(ss.includes('\n'+r),'simshell.css '+r);
+    for(const f of ['c172.css','b200.css','cockpit.html','da42-3d.html','c172-3d.html','b200-3d.html']) assert.ok(!src(f).includes('\n'+r),f+' still has '+r); }
+});
+
 test('one zoom model on 2D: 3–6 large areas to tap, ← Back, no lock, no fit that crops the panel',()=>{
   for(const f of ['c172-app.js','b200-app.js','cockpit.html']){ const s=src(f), m=s.match(/const AREA=\{([^}]*)\}/); assert.ok(m,f+' AREA');
     const n=(m[1].match(/\w+:\[/g)||[]).length; assert.ok(n>=3&&n<=6,f+' areas '+n); assert.ok(!/PANELZOOM\.fit|el\('bLock'\)/.test(s),f); }
-  for(const f of PAGES){ const h=src(f); assert.match(h,/id="zBack">← Back</,f); assert.ok(!h.includes('id="bLock"'),f); }
+  for(const f of PAGES){ const h=src(f); assert.match(h,/id="zBack" type="button">← Back</,f); assert.ok(!h.includes('id="bLock"'),f); }
   const pz=src('panelzoom.js'); assert.ok(/api\.tap=/.test(pz)&&/function dim\(/.test(pz)&&!/function fit\(/.test(pz),'panelzoom');
 });
 

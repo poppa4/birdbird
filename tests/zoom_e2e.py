@@ -44,7 +44,7 @@ with sync_playwright() as p:
             pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
             pg.goto(BASE + '/' + page); pg.wait_for_load_state('load'); time.sleep(2.0)
             pg.evaluate("()=>{ const s=document.getElementById('stage'); s.scrollIntoView({block:'end',behavior:'instant'}); window.SIMSHELL&&SIMSHELL.hideCard(); }"); time.sleep(0.4)
-            pg.click('#bPause')  # a still panel: state changes come from the pointer only
+            pg.evaluate("document.getElementById('bPause').click()")  # a still panel: state changes come from the pointer only (Pause is not in the portrait toolbar)
             if SHOTS: pg.screenshot(path=f'{SHOTS}/zoom_{page[:-5]}_{w}x{h}_rest.png')
             if h > w:  # portrait: the page asks to turn the device; only the fit is checked
                 fit = pg.evaluate(OVR, OV[page]); fit = [fit['l'], fit['r']]

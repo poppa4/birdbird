@@ -9,9 +9,9 @@ LAB.add({},{
  'Birdbird · Simulators':'Birdbird · Simulatorer','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
  'A typical twin-turboprop panel: EFIS attitude and HSI displays for both pilots, a centre navigator and radar/multifunction display, round engine gauges, annunciators, subpanels and pedestal. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.':'Tomotors turbopropp-panelet slik det er lagt opp i typeratingmaterialet: EFIS-attityde og -HSI for piloten, analoge instrumenter for andrepiloten, radar/flerfunksjonsskjerm i midten, runde motorinstrumenter, varsellys, underpaneler og pidestall. Start motorene, test autofeather og fly øvelsene for motorsvikt, brann og trykkfall.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv','B200 type rating':'B200-typerating',
- 'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
+ 'Procedures':'Prosedyrer','Limits':'Begrensninger','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
- 'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, the touch stick or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringsstikka eller denne flaten.',
+ 'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, touch controls or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringskontrollene eller denne flaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
  'Levers':'Hendler','Drag the power, propeller and condition levers up and down; they snap to their detents. Beta and reverse (below IDLE) work on the ground only. The scroll wheel and the arrow keys move a lever in small steps.':'Dra effekt-, propell- og condition-hendlene opp og ned; de smetter inn i hakkene. Beta og revers (under IDLE) virker bare på bakken. Musehjulet og piltastene flytter en hendel i små steg.',
@@ -31,7 +31,7 @@ LAB.add({},{
  'Rudder left and right · centre the rudder':'Sideror venstre og høyre · sentrer sideroret','Both power levers forward and back (not below IDLE)':'Begge effekthendlene frem og tilbake (ikke under IDLE)','Elevator trim nose down and up':'Trim nese ned og opp',
  'Flaps down and up · gear · brakes while held':'Flaps ned og opp · understell · bremser mens du holder','Autopilot disconnect · pause':'Koble ut autopilot · pause','Zoom to a part of the panel · back to the whole panel':'Zoom til en del av panelet · tilbake til hele panelet','Move between panel controls; arrows, Space and Enter operate them':'Flytt mellom kontrollene på panelet; piltaster, mellomrom og Enter betjener dem',
  'Check':'Sjekk','Questions from the B200 type rating question bank, in English (the type rating language).':'Spørsmål fra spørsmålsbanken for B200-typerating, på engelsk (språket på typeratingen).',
- "Teaching model, not a certified simulator or an approved checklist, and not affiliated with any aircraft, engine or avionics manufacturer or any operator. No procedures are included: use your school's checklist and the AFM/POH. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.":'Pedagogisk modell, ikke en sertifisert simulator eller godkjent sjekkliste, og ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Ingen prosedyrer er med: bruk skolens sjekkliste og AFM/POH. Tallene er typiske King Air B200-verdier som varierer med serienummer og modifikasjoner; kontroller alle tall i godkjente dokumenter.',
+ "Not affiliated with any aircraft, engine or avionics manufacturer or any operator. Numbers are typical King Air B200 values that vary with serial number and modifications; verify every figure in your approved documents.":'Ikke tilknyttet noen fly-, motor- eller avionikkprodusent eller operatør. Tallene er typiske King Air B200-verdier som varierer med serienummer og modifikasjoner; kontroller alle tall i godkjente dokumenter.',
  'Flying':'Flyr','Paused':'Pause','Crashed':'Havarert','On ground':'På bakken','Rudder':'Sideror','From':'Fra','Speed':'Fart','Turbulence':'Turbulens','Cockpit tools':'Cockpitverktøy','Procedure':'Prosedyre','Scenario':'Scenario'
 });
 
@@ -373,7 +373,6 @@ function otwTick(dt){
   if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
   const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
 }
-el('bFull').onclick=()=>{ const c=el('cockpit'); try{ if(document.fullscreenElement) document.exitFullscreen(); else c.requestFullscreen&&c.requestFullscreen().catch(()=>msg(tr2('Full screen is blocked here. Open the page in its own tab.','Fullskjerm er blokkert her. Åpne siden i en egen fane.'))); }catch(e){} };
 
 /* ---------- engines and systems ---------- */
 const pA=h=>1013.25*Math.pow(Math.max(0.01,1-6.8756e-6*h),5.2559);
@@ -674,11 +673,12 @@ function ensureAudio(){ if(AC||!UI.sound) return; try{ AC=new (window.AudioConte
 function beep(f,d,v){ if(!AC||!UI.sound) return; try{ const o=AC.createOscillator(), g=AC.createGain(); o.frequency.value=f; g.gain.value=v||0.05; o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime+d); }catch(e){} }
 function click(){ beep(1700,0.015,0.03); }
 function hornLevel(stall,gear){ if(!horn) return; const t=AC.currentTime; let v=0; if(UI.sound&&stall) v=0.035; else if(UI.sound&&gear) v=(t*2.5%1<0.5)?0.03:0; horn.g.gain.setTargetAtTime(v,t,0.02); horn.o.frequency.setTargetAtTime(stall?420:900,t,0.01); }
-el('bSound').onclick=()=>{ UI.sound=!UI.sound; if(!UI.sound&&horn) horn.g.gain.value=0; el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); el('bSound').setAttribute('aria-pressed',UI.sound); if(UI.sound) ensureAudio(); };
 document.addEventListener('pointerdown',ensureAudio,{once:true});
-function togglePause(){ UI.paused=!UI.paused; el('bPause').textContent=T(UI.paused?'Resume':'Pause'); }
-el('bPause').onclick=togglePause; el('bReset').onclick=()=>{ procStart(PR.k||'free'); if(UI.paused) togglePause(); };
-LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSound').textContent=T(UI.sound?'Sound on':'Sound off'); });
+function togglePause(){ UI.paused=!UI.paused; CH.sync(); }
+/* Pause / Resume, Restart, Procedures, sound and full screen: the shared shell (simshell.js) */
+const CH=SH.chrome({paused:()=>UI.paused,pause:togglePause,sound:()=>UI.sound,refit:()=>zoomTo(Z.reg,true,true),wheel:true,
+  restart:()=>{ procStart(PR.k||'free'); if(UI.paused) togglePause(); },
+  setSound:on=>{ UI.sound=on; if(!on&&horn) horn.g.gain.value=0; if(on) ensureAudio(); }});
 
 /* ---------- exercises and failure scenarios: set-ups only, no procedure text (schools have their own checklists) ---------- */
 const idle=()=>SYS.pwrL<0.05&&SYS.pwrR<0.05&&SYS.pwrL>-0.05&&SYS.pwrR>-0.05;
@@ -774,8 +774,7 @@ function procTick(dt){
     if(p.fail==='decomp'&&PR.t>4){ SYS.decomp=true; PR.failed=true; PR.failT=PR.t; ownFail(p.own,'CABIN ALTITUDE'); msg(tr2('Rapid decompression: the cabin is climbing.','Hurtig trykkfall: kabinen stiger.')); }
   }
 }
-function setDrawer(on){ el('drawer').classList.toggle('open',on); el('bDrawer').setAttribute('aria-pressed',on); setTimeout(()=>zoomTo(Z.reg,true,true),320); }
-el('bDrawer').onclick=()=>setDrawer(!el('drawer').classList.contains('open'));
+function setDrawer(on){ CH.setDrawer(on); }
 /* ---------- Procedures drawer: Failures and Speeds (simshell.js); the Checklist tab is the student's own (ownck.js) ---------- */
 const PD=B200PROCS;
 SH.pane('sp',box=>{ box.innerHTML=SH.speedsHTML({rows:PD.SPEEDS,note:PD.NOTE}); });
