@@ -6,7 +6,7 @@
 <title>Birdbird · The aviation platform, built in Norway</title>
 <meta name="description" content="Birdbird is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
-<link rel="preload" as="image" href="img/front/vestland3d-1400.webp" imagesrcset="img/front/vestland3d-760.webp 760w, img/front/vestland3d-1400.webp 1400w, img/front/vestland3d-2200.webp 2200w" imagesizes="(max-width:980px) 100vw, max(60vw, 760px)" type="image/webp">
+<link rel="preload" as="image" href="img/front/sunset-wing-1400.webp" imagesrcset="img/front/sunset-wing-760.webp 760w, img/front/sunset-wing-1400.webp 1400w, img/front/sunset-wing-1672.webp 1672w" imagesizes="(max-width:980px) 100vw, max(60vw, 760px)" type="image/webp">
 <link rel="stylesheet" href="lab.css?v=9">
 <link rel="stylesheet" href="site.css?v=18">
 <!-- The previous front page is kept as index-classic.html (noindex). To go back: cp index-classic.html index.html -->
@@ -38,9 +38,9 @@
 
 /* ---------- 1. Hero: the Vestland relief, the headline on the sea, a live lab on the land ---------- */
 .fp-hero{background:var(--navy);color:var(--on-navy);position:relative;overflow:hidden;isolation:isolate}
-.fp-relief{position:absolute;top:0;right:0;width:max(60vw,760px);aspect-ratio:1/1;z-index:-1;pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 26%);mask-image:linear-gradient(90deg,transparent 0,#000 26%)}
-.fp-relief img{display:block;width:100%;height:100%;object-fit:cover}
+.fp-relief{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%);mask-image:linear-gradient(90deg,rgba(0,0,0,.16) 0,rgba(0,0,0,.34) 34%,#000 68%)}
+.fp-relief img{display:block;width:100%;height:100%;object-fit:cover;object-position:72% 58%}
 .fp-stage{display:grid;grid-template-columns:minmax(0,11fr) minmax(0,10fr);gap:40px 72px;align-items:center;min-height:clamp(580px,calc(100svh - 236px),800px);padding:88px 0 56px}
 .fp-copy{max-width:600px}
 .fp-hero h1{color:var(--on-navy);font-size:clamp(42px,5.1vw,78px);line-height:.98;letter-spacing:-.03em;font-weight:640}
@@ -55,7 +55,7 @@
 .fp-hero .fp-btn:focus-visible{outline-color:#fff}
 /* Flight Intelligence: a typeset answer panel on the land side of the hero (front-fi.js types the answers in).
    Illustrative documents only; every chip is a citation, every source has its revision. */
-.fi{position:relative;min-width:0;width:100%;max-width:580px;justify-self:end;margin:0;background:#081D38;color:#D5DEE7;
+.fi{position:relative;min-width:0;width:100%;max-width:580px;justify-self:end;margin:0;background:rgba(8,29,56,.78);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#D5DEE7;
   border:1px solid rgba(255,255,255,.2);box-shadow:0 44px 90px -42px rgba(0,0,0,.8);font-size:15.5px;line-height:1.6}
 .fi::before{content:'';position:absolute;left:-1px;right:-1px;top:-1px;height:3px;background:var(--acc)}
 .fi-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 24px 14px;border-bottom:1px solid rgba(255,255,255,.14)}
@@ -349,8 +349,8 @@
 }
 @media (max-width:980px){
   .fp-stage{grid-template-columns:minmax(0,1fr);min-height:0;padding:56px 0 48px;gap:48px}
-  .fp-relief{width:100%;aspect-ratio:auto;top:38%;bottom:0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 22%);mask-image:linear-gradient(180deg,transparent 0,#000 22%)}
-  .fp-relief img{object-position:30% 50%}
+  .fp-relief{inset:auto 0 0 0;width:100%;top:38%;bottom:0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 22%);mask-image:linear-gradient(180deg,transparent 0,#000 22%)}
+  .fp-relief img{object-position:78% 50%}
   .fp-copy{max-width:640px}
   .fi{max-width:640px;justify-self:start}
   .fp-credit{position:static;max-width:none;padding:0 0 18px;background:none}
@@ -377,7 +377,7 @@
   .fp-act{margin-top:26px}
   .fp-act .fp-btn{flex:1 1 100%;justify-content:center}
   .fp-relief{top:30%}
-  .fp-relief img{object-position:22% 40%}
+  .fp-relief img{object-position:78% 50%}
   .fi{margin-top:104px;font-size:15px}
   .fi-top{padding:13px 18px 12px}
   .fi-stack{padding:18px 18px 0}
@@ -452,7 +452,7 @@
   <!-- 1. Hero -->
   <section class="fp-hero fp-band" id="fpHero" aria-labelledby="fp-h1">
     <div class="fp-relief" aria-hidden="true">
-      <img src="img/front/vestland3d-1400.webp" srcset="img/front/vestland3d-760.webp 760w, img/front/vestland3d-1400.webp 1400w, img/front/vestland3d-2200.webp 2200w" sizes="(max-width:980px) 100vw, max(60vw, 760px)" width="1400" height="1400" alt="" fetchpriority="high" decoding="async">
+      <img src="img/front/sunset-wing-1400.webp" srcset="img/front/sunset-wing-760.webp 760w, img/front/sunset-wing-1400.webp 1400w, img/front/sunset-wing-1672.webp 1672w" sizes="(max-width:980px) 100vw, max(60vw, 760px)" width="1400" height="788" alt="" fetchpriority="high" decoding="async">
     </div>
     <div class="fp-wrap">
       <div class="fp-stage">
@@ -477,7 +477,6 @@
           <a class="fi-ask" href="fi.html"><span data-tx="fiAsk">Ask Flight Intelligence</span><b data-tx="fiGo">Ask</b></a>
         </section>
       </div>
-      <p class="fp-credit" data-tx="credit">Western Norway, 3D render from elevation data (Mapzen/AWS Terrain Tiles: SRTM, GMTED, EU-DEM © Copernicus). Rendered by Birdbird.</p>
     </div>
   </section>
   <nav class="fp-svc fp-band" aria-labelledby="h-svc">
@@ -729,7 +728,6 @@ LAB.tx({
  fiK:'Eksempel · illustrerende dokumenter',
  fiKeep:'Svarene kommer fra din egen AFM, QRH og SOP og fra EASA Easy Access Rules, hver med siden de bygger på. Dokumentene dine leses og lagres i denne nettleseren.',
  fiAsk:'Spør Flight Intelligence', fiGo:'Spør',
- credit:'Vestlandet, 3D-gjengivelse fra høydedata (Mapzen/AWS Terrain Tiles: SRTM, GMTED, EU-DEM © Copernicus). Gjengitt av Birdbird.',
  s1:'<span class="nLabs">25</span> interaktive labber på EASA ATPL-teorifagene.',
  s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
