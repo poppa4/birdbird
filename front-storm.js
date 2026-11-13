@@ -77,7 +77,7 @@
   function gl() { try { const c = document.createElement('canvas'); return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'))); } catch (e) { return false; } }
   async function start() {
     try {
-      if (!window.THREE) await load('three.min.js');
+      if (!window.THREE) await load('three.min.js?v=128');
       if (!window.CBM) await load('cbmodel.js?v=1');
       if (!window.CB3D) await load('cb3d.js?v=4');
     } catch (e) { return; }

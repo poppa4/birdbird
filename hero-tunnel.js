@@ -28,7 +28,7 @@
   const dequant = (h, a) => { const q = undelta(a, 3), o = new Float32Array(q.length), lo = h.q[0], sc = h.q[1]; for (let i = 0; i < q.length; i++) o[i] = lo[i % 3] + q[i] * sc[i % 3]; return o; };
 
   async function start() {
-    if (!window.THREE) await load('three.min.js');
+    if (!window.THREE) await load('three.min.js?v=128');
     if (!window.CFD) await load('cfd3d.js?v=7');
     const h = await data('data/hero-tunnel.bin.gz?v=3');
     const THREE = window.THREE, CFD = window.CFD;

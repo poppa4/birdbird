@@ -160,13 +160,13 @@
 
   /* ---------- reading files ---------- */
   function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); }); }
-  async function pdfjs() { if (!window.pdfjsLib) { await loadScript('vendor/pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js'; } return window.pdfjsLib; }
+  async function pdfjs() { if (!window.pdfjsLib) { await loadScript('vendor/pdf.min.js?v=1'); window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js?v=1'; } return window.pdfjsLib; }
   async function readText(f, onProg) {
     const ext = extOf(f.name), chunks = []; let pages = 1, sec = '';
     if (ext === 'pdf') { const lib = await pdfjs(); const doc = await lib.getDocument({ data: await f.arrayBuffer() }).promise; pages = doc.numPages;
       for (let i = 1; i <= pages; i++) { const pg = await doc.getPage(i); const tc = await pg.getTextContent(); const tx = tc.items.map(x => x.str + (x.hasEOL ? '\n' : ' ')).join(''); const g = W.guessSec(tx.slice(0, 400)); if (g) sec = g; W.chunkPage(tx, i, chunks, sec); onProg(i / pages); pg.cleanup(); }
       try { doc.destroy(); } catch (e) {} }
-    else if (ext === 'docx') { if (!window.mammoth) await loadScript('vendor/mammoth.browser.min.js'); const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() }); pages = W.byParts(r.value, chunks); }
+    else if (ext === 'docx') { if (!window.mammoth) await loadScript('vendor/mammoth.browser.min.js?v=1'); const r = await window.mammoth.extractRawText({ arrayBuffer: await f.arrayBuffer() }); pages = W.byParts(r.value, chunks); }
     else if (ext === 'txt' || ext === 'md' || /^text\//.test(f.type)) pages = W.byParts(await f.text(), chunks);
     onProg(1);
     return { pages, chunks };
@@ -891,7 +891,7 @@
     return webgl;
   }
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=3')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=6')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js?v=128')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=3')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=6')).catch(e => { map3dP = null; throw e; }));
   /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
   const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {

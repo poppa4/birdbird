@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=12">
-<link rel="stylesheet" href="site.css?v=21">
+<link rel="stylesheet" href="site.css?v=22">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -518,11 +518,14 @@
 /* phone: the 3D/simulation panel sits above the route sheet and the profile button, never behind them */
 @media (max-width:900px){.rx .x3w{top:auto!important;transform:none!important;bottom:104px!important;max-height:55svh;overflow:auto;z-index:8}}
 </style>
+<!-- the base map (style, tiles) and the elevation tiles come from these two hosts as soon as the map starts -->
+<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
+<link rel="dns-prefetch" href="https://s3.amazonaws.com">
 <link rel="preload" as="script" href="vendor/maplibre/maplibre-gl.js?v=5.24.0">
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=67"></script>
+<script src="site.js?v=68"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -770,7 +773,7 @@
   </div>
 </div>
 </main>
-<script src="lab.js?v=50"></script>
+<script src="lab.js?v=51"></script>
 <script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
@@ -1737,7 +1740,7 @@ function upDb(){ return new Promise(res=>{ try{ const r=indexedDB.open('naeroson
 async function upPut(k,b){ const db=await upDb(); if(!db) return false; return new Promise(res=>{ try{ const t=db.transaction('img','readwrite'); t.objectStore('img').put(b,k); t.oncomplete=()=>res(true); t.onerror=()=>res(false); }catch(e){ res(false); } }); }
 async function upJpeg(src,w,h){ const k=Math.min(1,1800/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(src,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)); return {b,w:c.width,h:c.height}; }
 function upScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
-async function upPdf(f){ const base='vendor/'; if(!window.pdfjsLib){ await upScript(base+'pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; } const doc=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; const pg=await doc.getPage(1); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await upJpeg(c,c.width,c.height); j.pages=doc.numPages; return j; }
+async function upPdf(f){ const base='vendor/'; if(!window.pdfjsLib){ await upScript(base+'pdf.min.js?v=1'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js?v=1'; } const doc=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; const pg=await doc.getPage(1); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await upJpeg(c,c.width,c.height); j.pages=doc.numPages; return j; }
 // upload buttons: the library menu and the compact line under the profile (class upgo)
 let UPB=null; document.addEventListener('click',e=>{ const b=e.target.closest('.upgo'); if(!b||b.disabled) return; UPB=b; upIn.click(); });
 upIn.onchange=async()=>{ const f=upIn.files[0]; upIn.value=''; if(!f) return; const btn=UPB&&document.body.contains(UPB)?UPB:document.createElement('button'), t0=btn.innerHTML; btn.disabled=true; btn.textContent=L({en:'Reading…',no:'Leser…'});
@@ -2135,7 +2138,7 @@ el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){
 const T3={on:false,ready:null,ex:1.2,act:'off',ct:0,follow:true,cm:'ov',spd:5,drive:false,play:false,x:0,tok:0,G:null,S:null,raf:0,cam:null,newArea:true};
 const FT3=0.0003048; // fot → km
 const PHONE3=()=>window.innerWidth<=900||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
-function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
+function load3(){ if(window.THREE) return Promise.resolve(); if(T3.ready) return T3.ready; T3.ready=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='three.min.js?v=128'; sc.onload=ok; sc.onerror=()=>{ T3.ready=null; ko(new Error('three.min.js')); }; document.head.appendChild(sc); }); return T3.ready; }
 function area3(){ const P=R.pts.filter(p=>p.la!=null); let a0,a1,o0,o1;
   if(P.length>=2){ a0=Math.min(...P.map(p=>p.la)); a1=Math.max(...P.map(p=>p.la)); o0=Math.min(...P.map(p=>p.lo)); o1=Math.max(...P.map(p=>p.lo)); const m=Math.max(0.35,(a1-a0)*0.35), mo=Math.max(0.7,(o1-o0)*0.35); a0-=m; a1+=m; o0-=mo; o1+=mo; }
   else { const w=mapEl.clientWidth, h=mapEl.clientHeight; [a1,o0]=inv(0,0); [a0,o1]=inv(w,h); }

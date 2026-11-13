@@ -13,6 +13,8 @@ const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 /* ISA (troposphere and lower stratosphere) */
 function isa(h){ const m=h*FT; let T,p; if(m<=11000){ T=288.15-0.0065*m; p=101325*Math.pow(T/288.15,5.25588); } else { T=216.65; p=22632.06*Math.exp(-(m-11000)/6341.62); }
   const rho=p/(287.053*T); return {T,p,rho,sig:rho/RHO0,delta:p/101325,a:A0*Math.sqrt(T/288.15)}; }
+/* the last altitude's atmosphere is kept: the sweeps ask for the same altitude hundreds of times in a row (same numbers, no recomputation) */
+let isaH=NaN, isaV=null; const isaM=h=>h===isaH?isaV:(isaV=isa(isaH=h));
 
 const AC={
  sep:{k:'sep',prop:true,n:1,m:1100,mMin:800,mMax:1110,S:16.2,cd0:0.032,K:0.058,P0:134e3,eta:0.80,Ts:2.6e3,bsfc:0.30,vmin:50,vmax:150,ceil:14000,
@@ -23,25 +25,25 @@ const AC={
    tas:450,ff:2400,hold:2300,climb:700,taxi:200,tank:18700}};
 
 /* thrust available at TAS (kt), climb rating; props: power (Gagg–Ferrar for the piston, flat-ish turboprop) × η / V */
-function tAvail(ac,h,tas){ const a=isa(h), v=Math.max(tas,1)*KT;
+function tAvail(ac,h,tas){ const a=isaM(h), v=Math.max(tas,1)*KT;
   if(ac.prop){ const f=ac.k==='sep'?Math.max(0,1.132*a.sig-0.132)*0.85:Math.min(1,Math.pow(a.delta,0.7)*1.12)*0.9, P=ac.P0*f, Ts=ac.Ts*f*ac.n, Tp=ac.n*ac.eta*P/v;
     return Math.pow(Math.pow(Ts,-4)+Math.pow(Tp,-4),-0.25); }
   const M=tas/a.a; return ac.n*ac.T0*0.92*Math.pow(a.delta,0.9)*(1-0.25*M); }
 /* drag (N) at TAS (kt), mass m (kg), pressure altitude h (ft) */
-function drag(ac,m,h,tas){ const a=isa(h), v=tas*KT, q=0.5*a.rho*v*v, cl=m*G/(q*ac.S); let cd=ac.cd0+ac.K*cl*cl;
+function drag(ac,m,h,tas){ const a=isaM(h), v=tas*KT, q=0.5*a.rho*v*v, cl=m*G/(q*ac.S); let cd=ac.cd0+ac.K*cl*cl;
   if(!ac.prop){ const M=tas/a.a, mc=ac.mcr-0.1*Math.max(0,cl-0.5); if(M>mc) cd+=20*Math.pow(M-mc,4); }
   return q*ac.S*cd; }
-const tasOf=(eas,h)=>eas/Math.sqrt(isa(h).sig), easOf=(tas,h)=>tas*Math.sqrt(isa(h).sig);
+const tasOf=(eas,h)=>eas/Math.sqrt(isaM(h).sig), easOf=(tas,h)=>tas*Math.sqrt(isaM(h).sig);
 /* minimum drag speed (EAS, incompressible): CL = √(CD0/k) */
 function vmd(ac,m){ const cl=Math.sqrt(ac.cd0/ac.K); return Math.sqrt(2*m*G/(RHO0*ac.S*cl))/KT; }
 const ldMax=ac=>1/(2*Math.sqrt(ac.cd0*ac.K));
 /* fuel flow (kg/h) to fly level at TAS */
-function ff(ac,m,h,tas){ const D=drag(ac,m,h,tas); if(ac.prop) return ac.bsfc*D*tas*KT/ac.eta/1000; const M=tas/isa(h).a; return ac.tsfc*(1+0.3*(M-0.5))*D; }
+function ff(ac,m,h,tas){ const D=drag(ac,m,h,tas); if(ac.prop) return ac.bsfc*D*tas*KT/ac.eta/1000; const M=tas/isaM(h).a; return ac.tsfc*(1+0.3*(M-0.5))*D; }
 
 /* sweep against EAS (the pilot's speed). Returns points with TAS, drag, thrust, gradient, rate of climb, fuel flow */
 function sweep(ac,m,h,n){ const out=[], lo=ac.vmin*0.85, hi=ac.vmax; n=n||160;
   for(let i=0;i<=n;i++){ const eas=lo+(hi-lo)*i/n, tas=tasOf(eas,h), D=drag(ac,m,h,tas), T=tAvail(ac,h,tas), W=m*G;
-    if(!ac.prop&&tas/isa(h).a>ac.mmo+0.02) break;
+    if(!ac.prop&&tas/isaM(h).a>ac.mmo+0.02) break;
     out.push({eas,tas,D,T,Preq:D*tas*KT,Pav:T*tas*KT,grad:(T-D)/W,roc:(T-D)/W*tas*KT/FT*60,ff:ff(ac,m,h,tas)}); }
   return out; }
 /* best climb speeds: Vx = max gradient (excess thrust), Vy = max rate (excess power) */

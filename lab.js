@@ -30,7 +30,9 @@
   const hooks=[];
   const T=s=> lang==='en' ? (D[s]!==undefined? D[s] : s) : (NO[s]!==undefined? NO[s] : s);
   const L=o=> (o && typeof o==='object' && 'en' in o) ? (lang==='en'? o.en : o.no) : T(o);
-  const nf=(v,d)=> Number.isFinite(v)? v.toLocaleString(lang==='en'?'en-GB':'nb-NO',{minimumFractionDigits:d,maximumFractionDigits:d}) : '–';
+  /* number formatters are kept per language and precision (the same output as toLocaleString, which builds a new one on every call) */
+  const NFC={};
+  const nf=(v,d)=>{ if(!Number.isFinite(v)) return '–'; const k=lang+'|'+d; return (NFC[k]||(NFC[k]=new Intl.NumberFormat(lang==='en'?'en-GB':'nb-NO',{minimumFractionDigits:d,maximumFractionDigits:d}))).format(v); };
   const el=id=>document.getElementById(id);
 
   // statisk tekst
@@ -205,12 +207,12 @@
         `<b><a href="lab.html${me.unlisted?'':'#'+area.k}">${esc(Lx(area))}</a></b></div>`+
         `<ol class="atl-topics">${area.labs.map((l,i)=>{ const on=l[1]===me.k; return `<li class="${on?'on':''}"><a href="${l[0]}"${on?' aria-current="page"':''}><i>${i+1}</i><span>${esc(lang==='en'?l[2]:l[3])}</span></a>${on?secs:''}</li>`; }).join('')}</ol>`+
         `<div class="atl-other"><span class="h">${esc(Lx(t2('Other areas','Andre områder')))}</span>${AREAS.filter(a=>a!==area).map(a=>`<a href="${a.labs[0][0]}"><i>${String(areaNo(a)).padStart(2,'0')}</i>${esc(Lx(a))}</a>`).join('')}</div></div>`;
-      side.classList.toggle('open',open); spy(); };
+      side.classList.toggle('open',open); spySoon(); };
     const drawBar=()=>{
       bar.setAttribute('aria-label',Lx(t2('Steps in this lab','Steg i denne labben')));
       bar.innerHTML=`<div class="atl-steps">${STEPS.map(([k,n],i)=>{ const tg=k==='check'?(steps.find(s=>s.id==='quiz')||steps.find(s=>s.step===k)):steps.find(s=>s.step===k); /* Test yourself goes to the quiz, like the sidebar */
         return tg?`<a href="#${esc(tg.id)}" data-step-link="${k}"><i>${i+1}</i>${esc(Lx(n))}</a>`:`<span class="off" data-step-link="${k}" aria-disabled="true" title="${esc(Lx(t2('Not yet in this lab','Ikke i denne labben ennå')))}"><i>${i+1}</i>${esc(Lx(n))}</span>`; }).join('')}</div>${depthHTML('d-bar')}`;
-      spy(); };
+      spySoon(); };
     side.addEventListener('click',e=>{ if(e.target.closest('.atl-tog')){ open=!open; side.classList.toggle('open',open); side.querySelector('.atl-tog').setAttribute('aria-expanded',String(open)); return; }
       const a=e.target.closest('a[data-sec]'); if(a){ open=false; side.classList.remove('open'); const b=side.querySelector('.atl-tog'); if(b) b.setAttribute('aria-expanded','false'); } });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open){ open=false; side.classList.remove('open'); } });
@@ -228,7 +230,8 @@
       const on=bar.querySelector('.atl-steps .on'), sc=bar.querySelector('.atl-steps');
       if(on&&sc&&sc.scrollWidth>sc.clientWidth){ const l=on.offsetLeft-sc.offsetLeft, r=l+on.offsetWidth; if(l<sc.scrollLeft||r>sc.scrollLeft+sc.clientWidth) sc.scrollLeft=Math.max(0,l-24); }
     }
-    let raf=0; addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; spy(); }); },{passive:true});
+    /* the spy reads positions, which lays the whole page out: once per frame, never in the middle of a script that is still building the page */
+    let raf=0; const spySoon=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; spy(); }); }; addEventListener('scroll',spySoon,{passive:true});
     drawSide(); drawBar(); hooks.push(drawSide,drawBar);
     /* smooth anchor jumps inside the shell */
     pg.addEventListener('click',e=>{ const a=e.target.closest('.atl-bar a[href^="#"],.atl-side a[href^="#"],.lmeta a[href^="#"]'); if(!a) return; const t=document.getElementById(a.getAttribute('href').slice(1)); if(!t) return; e.preventDefault(); t.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); history.replaceState(null,'','#'+t.id); });
@@ -269,7 +272,7 @@
     const secs=links.map(a=>{ try{ return document.querySelector(a.getAttribute('href')); }catch(e){ return null; } });
     const mark=()=>{ const y=sn.getBoundingClientRect().bottom+80; let k=-1; secs.forEach((s,i)=>{ if(s&&s.getBoundingClientRect().top<y) k=i; });
       links.forEach((a,i)=>a.classList.toggle('on',i===k)); if(k>=0&&sel.selectedIndex!==k) sel.selectedIndex=k; };
-    let raf=0; addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; mark(); }); },{passive:true}); mark();
+    let raf=0; const markSoon=()=>{ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; mark(); }); }; addEventListener('scroll',markSoon,{passive:true}); markSoon();
   }
   /* "Practise it": fly what the lab explains. Lab key → [link, where, title, one line]. Only exercises that exist:
      IFR trainer items open with ifr.html?ex=<id>; the simulators take s=<scenario> or s=air&p=<procedure> (airproc.js; af=1 engages auto-fly).

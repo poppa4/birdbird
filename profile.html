@@ -6,7 +6,7 @@
 <title>My training · Birdbird</title>
 <meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
 <link rel="stylesheet" href="lab.css?v=12">
-<link rel="stylesheet" href="site.css?v=21">
+<link rel="stylesheet" href="site.css?v=22">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -219,7 +219,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=67"></script>
+<script src="site.js?v=68"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -315,7 +315,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     </form>
   </dialog>
 </div>
-<script src="lab.js?v=50"></script>
+<script src="lab.js?v=51"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
@@ -396,7 +396,7 @@ function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitne
 function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
 let bLoading=null;
 function loadBank(){ if(bLoading) return bLoading;
-  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=4')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js?v=1'), window.B200C?true:loadScript('b200-sim.js?v=4')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
     const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
     B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
   return bLoading; }
