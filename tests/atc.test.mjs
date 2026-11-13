@@ -246,3 +246,37 @@ test('deleting the account removes its counters; the site-wide row stays', async
   assert.equal(res.status, 200);
   assert.equal(w.usage('u1'), undefined); assert.equal(w.usage('*').requests, 1);
 });
+
+/* ---------- free engine: Cloudflare Workers AI (binding AI), used when no Anthropic key is set ---------- */
+test('workers ai: answers when only the AI binding is set, counts input + 2 x output', async () => {
+  const calls = [];
+  const AI = { run: async (model, inp) => { calls.push({ model, inp }); return { choices: [{ message: { content: 'Lift is the aerodynamic force [GK].' }, finish_reason: 'stop' }], usage: { prompt_tokens: 1000, completion_tokens: 200 } }; } };
+  const w = world({ noKey: true, env: { AI } });
+  const cookie = await w.user('u1', 1);
+  const g = await w.call('GET', undefined, { cookie });
+  assert.equal(g.body.ok, true);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: 'What is lift?' }] }, { cookie });
+  assert.equal(r.status, 200); assert.equal(r.body.text, 'Lift is the aerodynamic force [GK].');
+  assert.equal(calls[0].model, '@cf/openai/gpt-oss-120b'); assert.equal(calls[0].inp.messages[0].role, 'system');
+  const row = w.env.DB.raw.prepare("SELECT tokens FROM ai_usage WHERE user_id='u1'").get();
+  assert.equal(row.tokens, 1400);
+  assert.equal(w.up.calls.length, 0); // Anthropic never called
+});
+test('workers ai: used-up free Neurons gives service_limit and does not try the second model', async () => {
+  let n = 0;
+  const AI = { run: async () => { n++; throw new Error('AiError: 4006: you have used up your daily free allocation of 10,000 neurons'); } };
+  const w = world({ noKey: true, env: { AI } });
+  const cookie = await w.user('u1', 1);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: 'hi' }] }, { cookie });
+  assert.equal(r.status, 429); assert.equal(r.body.error, 'service_limit'); assert.equal(n, 1);
+});
+test('workers ai: falls back to the second model, and Anthropic wins when both are set', async () => {
+  const seen = [];
+  const AI = { run: async m => { seen.push(m); if (seen.length === 1) throw new Error('boom'); return { response: 'ok' }; } };
+  const w = world({ noKey: true, env: { AI } });
+  const cookie = await w.user('u1', 1);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: 'hi' }] }, { cookie });
+  assert.equal(r.body.text, 'ok'); assert.deepEqual(seen, T.WORKERS_MODELS);
+  assert.equal(T.engineOf({ ANTHROPIC_API_KEY: 'k', AI }), 'anthropic');
+  assert.equal(T.engineOf({ AI }), 'workers'); assert.equal(T.engineOf({}), '');
+});

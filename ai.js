@@ -4,12 +4,13 @@
 (function(G){
 'use strict';
 let mode=null; // null | 'sample' | 'api'
+let why=''; // hvorfor /api/atc ikke er tilgjengelig: 'signed_out' | 'not_configured' | ''
 let fn=null;
 const waiters=[];
 const ready=(async()=>{
   try{ if(G.claude&&G.claude.use){ fn=await G.claude.use('sample'); if(fn) mode='sample'; } }catch(e){ fn=null; }
   if(!mode && location.protocol.startsWith('http')){
-    try{ const r=await fetch('/api/atc',{method:'GET'}); if(r.ok){ const j=await r.json(); if(j&&j.ok) mode='api'; } }catch(e){}
+    try{ const r=await fetch('/api/atc',{method:'GET'}); if(r.ok){ const j=await r.json(); if(j&&j.ok) mode='api'; else why=String(j&&j.reason||''); } }catch(e){}
   }
   return mode;
 })();
@@ -20,7 +21,9 @@ function langName(){ return lang()==='no'?'Norwegian (bokmål)':'English'; }
 async function apiCall(messages,signal){
   const res=await fetch('/api/atc',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messages}),signal})
     .catch(()=>{ throw {code:signal&&signal.aborted?'cancelled':'upstream_error'}; });
-  if(res.status===429) throw {code:'rate_limited'}; if(!res.ok) throw {code:'upstream_error'};
+  if(!res.ok){ let c=''; try{ c=String((await res.json()).error||''); }catch(e){}
+    if(c==='signed_out'){ why='signed_out'; throw {code:'signed_out'}; }
+    if(MSG[c]) throw {code:c}; if(res.status===429) throw {code:'rate_limited'}; if(res.status===413) throw {code:'prompt_too_large'}; throw {code:'upstream_error'}; }
   const j=await res.json(); return String(j.text||'');
 }
 function parseJson(t){
@@ -50,9 +53,14 @@ const MSG={
   prompt_too_large:{en:'Too much text at once. Pick fewer documents or a shorter answer.',no:'For mye tekst på en gang. Velg færre dokumenter eller et kortere svar.'},
   refused:{en:'The AI declined that request. Rephrase it.',no:'AI-en avslo den forespørselen. Formuler den annerledes.'},
   session_expired:{en:'Sign in to Claude again.',no:'Logg inn i Claude på nytt.'},
+  signed_out:{en:'Sign in to use Flight Intelligence. It is free: create an account under Profile.',no:'Logg inn for å bruke Flight Intelligence. Det er gratis: opprett en konto under Profil.'},
+  daily_limit:{en:'You have used today’s Flight Intelligence questions. They are back tomorrow.',no:'Du har brukt dagens spørsmål i Flight Intelligence. De er tilbake i morgen.'},
+  service_limit:{en:'Flight Intelligence has reached its free limit for today. It is back tomorrow.',no:'Flight Intelligence har nådd dagens gratisgrense. Den er tilbake i morgen.'},
+  busy:{en:'The AI service is busy right now. Wait a moment and try again.',no:'AI-tjenesten er opptatt akkurat nå. Vent litt og prøv igjen.'},
+  timeout:{en:'The answer took too long. Try again, or ask a shorter question.',no:'Svaret tok for lang tid. Prøv igjen, eller still et kortere spørsmål.'},
   other:{en:'No answer. Try again.',no:'Ikke noe svar. Prøv igjen.'}
 };
-function errText(e){ const m=MSG[e&&e.code]||MSG.other; return m[lang()]; }
+function errText(e){ let c=e&&e.code; if(c==='not_available'&&why==='signed_out') c='signed_out'; const m=MSG[c]||MSG.other; return m[lang()]; }
 function fatal(e){ if(e&&(e.code==='not_granted'||e.code==='sampling_disabled'||e.code==='not_declared'||e.code==='capability_disabled')){ mode=null; return true; } return false; }
 
 /* ---------- tale ut ---------- */

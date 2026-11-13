@@ -90,3 +90,19 @@ Bindings only take effect on a new deployment.
   With `wrangler pages dev . --d1 DB=<id>` and the migration applied locally,
   `node tests/e2e-http.mjs http://localhost:8788` and `python3 tests/browser_e2e.py http://localhost:8788`
   test the real Functions; `python3 tests/frontend_mock.py` tests the pages with a mocked API.
+
+## Flight Intelligence (free AI, Cloudflare Workers AI)
+
+Flight Intelligence (`/api/atc`) runs on Cloudflare Workers AI's free daily allocation when no Anthropic key is set.
+It needs the accounts database above, plus two things:
+
+1. **Usage table.** Open the D1 console for **birdbird** and run the contents of `migrations/0002_ai_usage.sql`
+   (safe to run more than once).
+2. **AI binding.** In **Workers & Pages → birdbird → Settings → Bindings**, with **Production** selected, click **Add**,
+   choose **Workers AI**, variable name `AI` (exactly that). Save.
+3. **Redeploy** (Deployments → latest Production → ⋯ → Retry deployment).
+
+Then open https://birdbird.eu/fi.html signed in and ask a question. Signed-out visitors are asked to sign in.
+Daily caps for the free engine are in `WORKERS_LIMITS` in `functions/api/atc.js` (about 300 questions a day for the
+whole site, 25 per user), set so the account stays inside the free 10,000 Neurons. On the Workers Free plan Cloudflare
+never bills: when the allocation is used up the AI simply answers "back tomorrow".
