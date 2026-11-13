@@ -6,8 +6,8 @@
 <title>Training · Birdbird</title>
 <meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
 <meta name="theme-color" content="#EDF1EE">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* ===== Training overview, page-scoped under .tv =====
    The overview of all Birdbird training, in the order of the Training menu:
@@ -62,7 +62,7 @@
 .tv-btn:hover{background:var(--accent-hover,#82165A)}
 .tv-btn.ghost{background:transparent;color:var(--ink)!important;border:1px solid var(--rule1)}
 .tv-btn.ghost:hover{background:var(--sheet0);border-color:var(--ink3)}
-.tv-btn.sm{min-height:40px;padding:0 16px;font-size:14.5px}
+.tv-btn.sm{min-height:44px;padding:0 16px;font-size:14.5px}
 .st{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;line-height:1;color:var(--ok,#2E7D4F);border:1px solid color-mix(in srgb,var(--ok,#2E7D4F) 35%,transparent);background:var(--ok-wash,#EAF4EE);border-radius:2px;padding:4px 6px 3px;white-space:nowrap}
 .st.beta{color:var(--caution,#B7791F);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
 .st.lang{color:var(--ink2);border-color:var(--rule1);background:transparent}
@@ -170,7 +170,7 @@
   .ifr-path ol::before{display:none}
   .ifr.flip .ifr-top{grid-template-columns:minmax(0,1fr)}
 }
-@media (max-width:980px){
+@media (max-width:900px){
   .tv-hero{grid-template-columns:minmax(0,1fr)}
   .tv-facts{max-width:34em}
   .tv-idx ol{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -228,7 +228,7 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <main class="tv" id="main">
 
   <header class="tv-hero">
@@ -447,7 +447,7 @@
   </section>
   <p class="tv-note"><span data-tx="note">Teaching models, not certified simulators. No EASA, Luftfartstilsynet or ATO endorsement is implied.</span><a href="sources.html" data-tx="noteGo">Data sources and licences</a></p>
 </main>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script>
 (function(){
 'use strict';

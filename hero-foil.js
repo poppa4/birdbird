@@ -20,7 +20,7 @@
   window.__heroFoil = {};
   const DEG = Math.PI / 180;
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const LOW = innerWidth < 700 || (navigator.hardwareConcurrency || 4) <= 4;
+  const LOW = innerWidth <= 640 || (navigator.hardwareConcurrency || 4) <= 4;
   const load = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
   const idle = f => (window.requestIdleCallback || (g => setTimeout(g, 16)))(f, { timeout: 120 });
 

@@ -5,8 +5,8 @@
 <meta name="description" content="A320 stability, controls and load factor for EASA ATPL 081 Principles of Flight: CG and balance, static and dynamic stability, V-n and gust loads, buffet, flight controls and what normal law changes.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stability, Controls and Load Factor</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
@@ -17,14 +17,14 @@
 #ctCv{aspect-ratio:16/9.5}
 .mcard canvas{aspect-ratio:16/9}
 #rotCv{aspect-ratio:16/7}
-@media (max-width:600px){#stCv{aspect-ratio:4/3.6}#stAn{aspect-ratio:4/2.2}#pCv{aspect-ratio:4/2.8}#pTr{aspect-ratio:4/4.4}#lCv{aspect-ratio:4/3.2}#lTr{aspect-ratio:4/4.4}#vnCv{aspect-ratio:4/4.2}#ctCv{aspect-ratio:4/3.6}#rotCv{aspect-ratio:4/2.4}}
+@media (max-width:640px){#stCv{aspect-ratio:4/3.6}#stAn{aspect-ratio:4/2.2}#pCv{aspect-ratio:4/2.8}#pTr{aspect-ratio:4/4.4}#lCv{aspect-ratio:4/3.2}#lTr{aspect-ratio:4/4.4}#vnCv{aspect-ratio:4/4.2}#ctCv{aspect-ratio:4/3.6}#rotCv{aspect-ratio:4/2.4}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-@media (max-width:600px){.two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
 .ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 96px)}
-.ovl b{color:#D7E1E6;font-weight:500}
+.ovl b{color:var(--instrument-ink);font-weight:500}
 .ovr{position:absolute;right:8px;top:8px;display:flex;gap:4px}
-.vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:#D7E1E6;border:1px solid #2A3742;border-radius:3px;padding:4px 9px;cursor:pointer;line-height:1.3}
-.vbtn:hover{border-color:#7FCBE8}.vbtn.on{background:#E46BAE;color:#10171D;border-color:#E46BAE;font-weight:600}
+.vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:var(--instrument-ink);border:1px solid var(--instrument-rule);border-radius:3px;padding:4px 9px;cursor:pointer;line-height:1.3}
+.vbtn:hover{border-color:var(--focus-dark)}.vbtn.on{background:#E46BAE;color:var(--instrument);border-color:#E46BAE;font-weight:600}
 .vbtn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .exam{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--sheet);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px 14px;max-width:none}
 .exam .ct{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
@@ -45,17 +45,17 @@
 .kpi b small{display:inline;font-size:14px;color:var(--ink-2);margin-left:4px;letter-spacing:0}
 /* sidestick */
 .stick{display:grid;grid-template-columns:132px minmax(0,1fr);gap:12px;align-items:start;margin:4px 0 6px}
-.pad{position:relative;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1B2731 0,#10171D 70%);border:1px solid #2A3742;touch-action:none;cursor:grab;outline:none}
+.pad{position:relative;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1B2731 0,var(--instrument) 70%);border:1px solid var(--instrument-rule);touch-action:none;cursor:grab;outline:none}
 .pad:focus-visible{box-shadow:0 0 0 2px var(--accent)}
-.pad::before,.pad::after{content:"";position:absolute;background:#2A3742}
+.pad::before,.pad::after{content:"";position:absolute;background:var(--instrument-rule)}
 .pad::before{left:50%;top:10px;bottom:10px;width:1px}.pad::after{top:50%;left:10px;right:10px;height:1px}
 .pad i{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;background:#E46BAE;box-shadow:0 0 0 4px rgba(228,107,174,.22);pointer-events:none}
 .pad span{position:absolute;font-family:var(--f-mono);font-size:9.5px;color:#8B99A7;letter-spacing:.04em}
 .stick .side{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--ink-2);line-height:1.4}
-@media (max-width:380px){.stick{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.stick{grid-template-columns:minmax(0,1fr)}}
 /* mini labs */
 .mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:8px}
-@media (max-width:400px){.mgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.mgrid{grid-template-columns:minmax(0,1fr)}}
 .mcard{display:flex;flex-direction:column;gap:8px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:14px;min-width:0}
 .mcard h3{margin:0}
 .mcard .view{border-radius:var(--radius)}
@@ -73,8 +73,8 @@
 .fa>div.h{border-top:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3,#6B7884);background:var(--paper)}
 .fa>div.k{color:var(--ink);font-weight:600}
 .fa>div.on{background:rgba(154,30,104,.06);color:var(--ink)}
-.fa .pl{color:#2E7D4F;font-weight:600}.fa .mi{color:#B03A2E;font-weight:600}
-@media (max-width:600px){.fa{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fa>div.k{grid-column:1/-1;background:var(--paper);padding-bottom:4px}.fa>div.h.k0{display:none}}
+.fa .pl{color:var(--ok);font-weight:600}.fa .mi{color:#B03A2E;font-weight:600}
+@media (max-width:640px){.fa{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fa>div.k{grid-column:1/-1;background:var(--paper);padding-bottom:4px}.fa>div.h.k0{display:none}}
 .bsl{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2);margin-top:-4px}
 .anc{display:block;height:0;scroll-margin-top:72px}
 /* template parts (as pressure.html) */
@@ -106,7 +106,7 @@ body.depth-instructor .mhint{display:none}
 body.depth-instructor #cmCv{aspect-ratio:16/8.8}
 .cgm-out{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .oc{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--rule);border-radius:var(--radius-lg);padding:12px 14px;min-width:0;display:flex;flex-direction:column;gap:4px}
-.oc.st-ok{border-left-color:#2E7D4F}.oc.st-cau{border-left-color:#B7791F}.oc.st-bad{border-left-color:#B03A2E}
+.oc.st-ok{border-left-color:var(--ok)}.oc.st-cau{border-left-color:var(--caution)}.oc.st-bad{border-left-color:#B03A2E}
 .oc.hot .oc-t{color:var(--accent)}
 .oc-h{display:flex;align-items:baseline;gap:8px}
 .oc-t{flex:1 1 auto;min-width:0;font-weight:600;font-size:15px;color:var(--ink);line-height:1.25}
@@ -114,7 +114,7 @@ body.depth-instructor #cmCv{aspect-ratio:16/8.8}
 .oc-v{white-space:nowrap}.oc-v b{font-family:var(--f-mono);font-weight:500;font-size:20px;color:var(--ink)}.oc-v small{font-size:12px;color:var(--ink-2)}
 .st-bad .oc-v b{color:#B03A2E}.st-cau .oc-v b{color:#8A5A12}
 .oc-st{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:999px;white-space:nowrap;align-self:center}
-.st-ok .oc-st{background:var(--ok-wash);color:#2E7D4F}.st-cau .oc-st{background:var(--caution-wash);color:#8A5A12}.st-bad .oc-st{background:#FBEAE7;color:#B03A2E}
+.st-ok .oc-st{background:var(--ok-wash);color:var(--ok)}.st-cau .oc-st{background:var(--caution-wash);color:#8A5A12}.st-bad .oc-st{background:#FBEAE7;color:#B03A2E}
 .oc-bar{position:relative;height:6px;border-radius:3px;background:#E8EDEE;margin:4px 0 2px}
 .oc-bar .z{position:absolute;top:0;bottom:0}
 .oc-bar .z.g{background:rgba(46,125,79,.22)}.oc-bar .z.c{background:rgba(183,121,31,.28)}.oc-bar .z.r{background:rgba(176,58,46,.28)}.oc-bar .z.n{background:linear-gradient(90deg,rgba(46,125,79,.18),rgba(183,121,31,.28))}
@@ -128,9 +128,9 @@ body.depth-instructor #cmCv{aspect-ratio:16/8.8}
 .cgm-more{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}.cgm-note{grid-column:1/-1}
 #cmEnv{aspect-ratio:16/11;touch-action:none;cursor:crosshair}#cmLim{aspect-ratio:16/11}
 .cgm-note p{font-size:14px}
-@media (max-width:1100px){.cgm-more{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cgm-note{grid-column:1/-1}}
+@media (max-width:1180px){.cgm-more{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cgm-note{grid-column:1/-1}}
 @media (max-width:1180px){.cgm-out{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:600px){#cmCv{aspect-ratio:4/4.05}.cgm-out{grid-template-columns:minmax(0,1fr)}.cgm-more{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){#cmCv{aspect-ratio:4/4.05}.cgm-out{grid-template-columns:minmax(0,1fr)}.cgm-more{grid-template-columns:minmax(0,1fr)}}
 /* Instructor: presenter-sized controls and readouts */
 body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
 body.depth-instructor .oc-t{font-size:17px}body.depth-instructor .oc-v b{font-size:24px}body.depth-instructor .oc-w{font-size:15px}
@@ -151,7 +151,7 @@ body.depth-instructor .maid b{font-size:24px}
 </style>
 </head>
 <body data-title="Stability, Controls and Load Factor">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -357,8 +357,8 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="chartnote.js?v=1"></script>
+<script src="lab.js?v=49"></script>
+<script src="chartnote.js?v=2"></script>
 <script src="concepts.js?v=2"></script>
 <script src="stab.js?v=1"></script>
 <script src="cgmodel.js?v=4"></script>

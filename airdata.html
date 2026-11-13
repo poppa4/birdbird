@@ -5,8 +5,8 @@
 <meta name="description" content="Air data (EASA 022): static and total pressure, the altimeter as a barometer, QNH, QFE and flight levels, pressure and temperature errors, IAS, CAS, EAS, TAS and Mach, the VSI and its lag, and what pitot and static blockages do to the instruments.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Air Data</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* the air data figure: one dark canvas with the pitot-static schematic, the instruments and a side profile */
 .ad-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -16,7 +16,7 @@ body.depth-deep .ad-vp .vtabs button.dp,body.depth-instructor .ad-vp .vtabs butt
 .ad-vp .vchip{max-width:min(560px,calc(100% - 20px))}
 @media (min-width:641px){.ad-vp .vchip{flex-direction:column;flex-wrap:nowrap;gap:5px;max-width:178px;padding:8px 10px}.ad-vp .vchip b{font-size:12.5px}body.depth-instructor .ad-vp .vchip{max-width:220px}}
 .ad-vp .vchip b.r{color:#FF8A78}.ad-vp .vchip b.a{color:#F0C470}.ad-vp .vchip b.g{color:#8EDDB0}
-.ad-vp .vchip small{color:#7FCBE8;font-size:9.5px}
+.ad-vp .vchip small{color:var(--focus-dark);font-size:9.5px}
 .vleg i.ln{height:3px;border-radius:2px}
 .xsec .ro2{margin-top:6px}
 .xsec .ro2 .rrow{font-size:12.5px;padding:4px 0}
@@ -83,7 +83,7 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Air Data">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -155,7 +155,7 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script src="airdatacore.js?v=1"></script>
 <script src="airdata.js?v=2"></script>

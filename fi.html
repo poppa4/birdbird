@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Flight Intelligence · Birdbird</title>
 <meta name="description" content="An instructor that answers from your own AFM, QRH and SOP: learn, practise orals and work through scenarios, with every answer showing its source.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="train.css?v=2">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="train.css?v=3">
 <style>
-.welcome{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #1D4E9E;padding:12px 16px;font-size:15px}
+.welcome{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--info);padding:12px 16px;font-size:15px}
 .welcome[hidden]{display:none}
 .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .hc{display:flex;flex-direction:column;gap:6px;text-align:left;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:14px 16px;font:inherit;color:var(--ink);cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .hc:hover{border-color:var(--magenta);box-shadow:0 6px 18px rgba(19,32,42,.08)}
 .hc.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
 .hc b{font-size:16px}.hc span{font-size:14px;color:var(--ink-2)}
-.hc em{font-style:normal;font-size:13px;font-weight:600;letter-spacing:.01em;color:#1D4E9E;margin-top:auto;padding-top:6px}
+.hc em{font-style:normal;font-size:13px;font-weight:600;letter-spacing:.01em;color:var(--info);margin-top:auto;padding-top:6px}
 .hc em::after{content:" →"}
 .tgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
-@media (max-width:1000px){.tgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.tgrid{grid-template-columns:minmax(0,1fr)}}
 .setrow{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
 .setrow label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
 .setrow select,.setrow input,.f2 input,.f2 select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);min-width:180px}
@@ -27,9 +27,9 @@
 .bar2 b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
 .log{display:flex;flex-direction:column;gap:14px;max-height:640px;overflow-y:auto;padding:4px 4px 4px 0}
 .log .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px;white-space:pre-wrap}
-.log .a{border-left:3px solid #1D4E9E;padding:2px 0 2px 14px}
-.log .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#1D4E9E;display:block;margin-bottom:4px}
-.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#1D4E9E;background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;cursor:pointer;vertical-align:1px}
+.log .a{border-left:3px solid var(--info);padding:2px 0 2px 14px}
+.log .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--info);display:block;margin-bottom:4px}
+.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;cursor:pointer;vertical-align:1px}
 .cite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8;cursor:default}
 .grade{display:flex;gap:12px;align-items:flex-start;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--amber);padding:10px 14px;margin-top:8px}
 .grade.ok{border-left-color:var(--green)}.grade.bad{border-left-color:var(--red)}
@@ -40,13 +40,13 @@
 .ansrow textarea{min-height:84px}
 .btn.talk{min-width:150px}.btn.talk.on{background:var(--red);border-color:var(--red);color:#fff}
 .srcp{position:sticky;top:62px;display:flex;flex-direction:column;gap:10px;background:var(--sheet);border:1px solid var(--rule);padding:12px 14px;max-height:calc(100vh - 80px);overflow:auto}
-@media (max-width:1000px){.srcp{position:static;max-height:none}}
+@media (max-width:900px){.srcp{position:static;max-height:none}}
 .srcp h3{margin:0;font-size:15px}
 .sitem{border-top:1px solid var(--rule-2);padding-top:8px;font-size:13px}
 .sitem b{display:block;font-size:13px}
 .sitem .meta{color:var(--ink-2);font-size:12px}
 .sitem blockquote{margin:6px 0;padding:6px 8px;background:#fff;border-left:3px solid #C8D5E6;font-size:12.5px;line-height:1.5;max-height:160px;overflow:auto}
-.sitem.hl blockquote{border-left-color:#1D4E9E;background:#F4F8FD}
+.sitem.hl blockquote{border-left-color:var(--info);background:#F4F8FD}
 .reg a{font-weight:600}
 .acs{display:flex;flex-direction:column;gap:14px}
 .acbox{border:1px solid var(--rule);background:#fff;border-radius:6px;padding:12px 14px}
@@ -75,7 +75,7 @@
 .modal canvas{max-width:100%;height:auto;display:block;border:1px solid var(--rule)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{font:inherit;font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:14px;padding:4px 11px;cursor:pointer;color:var(--ink)}
-.chips button:hover{border-color:#1D4E9E;color:#1D4E9E}
+.chips button:hover{border-color:var(--info);color:var(--info)}
 .vd{margin:10px 0 4px;border:1px solid var(--rule-2);border-radius:4px;background:#FBFBF8}
 .vd summary{cursor:pointer;padding:8px 10px;font-size:14px;font-weight:600}
 .vd summary span{font-weight:400;color:var(--ink-2);font-size:13px}
@@ -86,11 +86,11 @@
 .vd input{width:84px;font:inherit;font-family:var(--f-mono);font-size:13px;padding:4px 6px;border:1px solid var(--rule);border-radius:3px}
 .vd .q{font-size:12px;color:var(--ink-2);max-width:340px}
 .vd .st{font-size:12px;font-weight:700;white-space:nowrap}.vd .st.ok{color:var(--green)}.vd .st.wa{color:#8A5A00}.vd .st.no{color:var(--ink-2);font-weight:500}
-.vd .warn{font-size:12.5px;color:var(--ink-2);border-left:3px solid #9A1E68;padding:6px 10px;background:#fff;margin:8px 0}
+.vd .warn{font-size:12.5px;color:var(--ink-2);border-left:3px solid var(--accent);padding:6px 10px;background:#fff;margin:8px 0}
 .honest{font-size:13px;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:10px}
 .report .kpis{margin:6px 0}
 /* AI not connected: calm explanation instead of dead controls */
-.offline{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid #1D4E9E;padding:16px 18px;display:flex;flex-direction:column;gap:10px;max-width:880px}
+.offline{background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--info);padding:16px 18px;display:flex;flex-direction:column;gap:10px;max-width:880px}
 .offline[hidden]{display:none}
 .offline h3{margin:0;font-size:17px}
 .offline p{margin:0;font-size:15px;color:var(--ink-2);max-width:70ch}
@@ -102,7 +102,7 @@
 #vTrain.noai .setrow,#vTrain.noai #modeNote,#vTrain.noai #chips,#vTrain.noai .bar2,#vTrain.noai #tRow,#vTrain.noai #log,#vTrain.noai #ans,#vTrain.noai #srcp,#vTrain.noai #aist{display:none!important}
 #vTrain.noai .tgrid{grid-template-columns:minmax(0,1fr)}
 /* EASA rules library and citations */
-.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:#EAF4EE;border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:var(--ok-wash);border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 .ecite span{font-weight:400;color:#3F6B50}
 .ecite:hover{border-color:#14532D;background:#DDEFE4}
 .ecite::after{content:" \2197";font-weight:400}
@@ -136,7 +136,7 @@
 </style>
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -161,7 +161,7 @@
   </section>
 
   <!-- ===== trening ===== -->
-  <section class="card" id="vTrain" hidden>
+  <section class="card" id="vTrain" data-ai hidden>
     <div class="tgrid">
       <div style="min-width:0;display:flex;flex-direction:column;gap:12px">
         <div class="btns" style="justify-content:space-between"><h2 id="instName" style="margin:0">Aircraft Instructor</h2><span class="ai-state" id="aist">AI: checking…</span></div>
@@ -236,14 +236,15 @@
 
   <div class="modal" id="modal" hidden><div class="mbox"><div class="btns" style="justify-content:space-between"><b id="mTitle"></b><button class="btn" id="mClose">Close</button></div><div id="mBody"></div></div></div>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="ai.js?v=2"></script>
+<script src="lab.js?v=49"></script>
+<script src="ai.js?v=3"></script>
 <script src="easa.js?v=1"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el}=LAB, esc=NAI.esc;
+const fiHold=window.BBHOLD?BBHOLD.wait():()=>{};   /* the first view appears after the stored documents are read */
 
 /* ---------- konstanter ---------- */
 const INST1={name:'Instructor',kinds:['afm','fcom','fctm','qrh','lim','tech','sop','chk','prof','ref','other'],
@@ -350,7 +351,7 @@ function vdBlock(a){ const afm=DOCS.filter(d=>d.ac===a.id&&['afm','lim','fcom','
    <p class="note" style="margin:6px 0 0">${L({en:'Each check is saved with the document, revision, page, your value and the time. A new AFM revision means checking again.',no:'Hver kontroll lagres med dokument, revisjon, side, din verdi og tidspunkt. En ny AFM-revisjon betyr ny kontroll.'})}</p></div></details>`; }
 async function vdSync(){ ACS.forEach(a=>{ if(!a.vd) return; const ok={}; VDF.forEach(([k,l,u])=>{ const st=vdState(a,k); if(['confirmed','corrected','entered'].includes(st.s)) ok[k]={v:st.r.v,u,src:st.r.src.name+(st.r.src.rev?' rev '+st.r.src.rev:'')+', p. '+(st.r.src.page||'?'),at:st.r.at}; }); const j=JSON.stringify(ok); if(j!==JSON.stringify(a.vdOk||{})){ a.vdOk=ok; NSTORE.put('fiac',a); } }); }
 async function vdFind(acId){ const a=ACS.find(x=>x.id===acId); const docs=DOCS.filter(d=>d.ac===acId&&['afm','lim','fcom','qrh'].includes(d.kind)&&!d.old); const msg=vD.querySelector(`[data-vdmsg="${acId}"]`);
-  if(!NAI.mode){ msg.textContent=NAI.errText({code:'not_available'}); return; } msg.textContent=L({en:'Reading the AFM…',no:'Leser AFM …'});
+  await NAI.probe(); if(!NAI.mode){ msg.textContent=NAI.errText({code:'not_available'}); return; } msg.textContent=L({en:'Reading the AFM…',no:'Leser AFM …'});
   const ex=search('airspeed limitations VNE VNO VFE VLE VLO Vr rotation Vy Vyse Vmca minimum control speed blue line approach speed Vref landing maximum take-off mass maximum landing mass demonstrated crosswind',14,docs);
   const src=ex.map((x,i)=>`[S${i+1}] ${x.d.name}${x.d.rev?' rev '+x.d.rev:''}, page ${x.c.p}:\n${x.c.t}`).join('\n\n');
   try{ const r=await NAI.json(`From the excerpts of an aircraft flight manual below, extract these values ONLY if they are stated explicitly: ${VDF.map(([k,l,u])=>k+' = '+l+' ('+u+')').join('; ')}.
@@ -667,12 +668,12 @@ function drawOffline(){ const o=el('offline'); if(o.hidden) return; const q=el('
   </ul>`; }
 el('offline').addEventListener('click',e=>{ const b=e.target.closest('[data-go]'); if(b){ show(b.dataset.go); el(b.dataset.go==='easa'?'vEasa':'vDocs').scrollIntoView({behavior:'smooth',block:'start'}); } });
 el('tA').addEventListener('input',()=>{ if(!NAI.mode&&!el('offline').hidden){ clearTimeout(window.__offT); window.__offT=setTimeout(drawOffline,300); } });
-NAI.ready.then(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'Instructor on',no:'Instruktør på'}) : ''; if(!m){ el('vTrain').classList.add('noai'); el('offline').hidden=false; drawOffline(); } });
+NAI.onMode(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'Instructor on',no:'Instruktør på'}) : ''; el('vTrain').classList.toggle('noai',!m); el('offline').hidden=!!m; if(!m) drawOffline(); });
 el('ans').hidden=false; LAB.start('fi'); LAB.onLang(()=>{ drawTrain(); drawDocs(); drawProg(); drawWelcome(); drawOffline(); if(!el('vEasa').hidden) drawEasa(); });
 Promise.all([loadDocs(),NSTORE.ready.then(loadProfile)]).then(async()=>{ await loadPacks(); try{ if(!localStorage.getItem('fi-imp-ck')){ localStorage.setItem('fi-imp-ck','1'); await autoImport(); } }catch(e){}
-  const qs=new URLSearchParams(location.search); if(qs.get('mode')&&MODES[qs.get('mode')]){ MODE=qs.get('mode'); modeSeg.set(MODE); } if(qs.get('topic')&&MODES.rev){ MODE='rev'; modeSeg.set('rev'); setTimeout(()=>{ el('tTopic').value=qs.get('topic').slice(0,200); try{ drawUsed(); }catch(e){} },0); } if(qs.get('pack')&&PACKS.some(p=>p.id===qs.get('pack'))){ el('flSel').value=qs.get('pack'); } drawTrain(); drawWelcome(); let v=null; try{ v=sessionStorage.getItem('fi-view'); }catch(e){} const h=(location.hash||'').slice(1); show(['aircraft','sop','aviation','docs','progress','easa'].includes(h)?h:(v||'aircraft'));
-  window.FI_ASK=q=>{ show('aircraft'); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.ready.then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); };
-  const q=new URLSearchParams(location.search).get('q'); if(q&&INST[INSTK]){ history.replaceState(null,'',location.pathname+location.hash); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.ready.then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); } });
+  const qs=new URLSearchParams(location.search); if(qs.get('mode')&&MODES[qs.get('mode')]){ MODE=qs.get('mode'); modeSeg.set(MODE); } if(qs.get('topic')&&MODES.rev){ MODE='rev'; modeSeg.set('rev'); setTimeout(()=>{ el('tTopic').value=qs.get('topic').slice(0,200); try{ drawUsed(); }catch(e){} },0); } if(qs.get('pack')&&PACKS.some(p=>p.id===qs.get('pack'))){ el('flSel').value=qs.get('pack'); } drawTrain(); drawWelcome(); let v=null; try{ v=sessionStorage.getItem('fi-view'); }catch(e){} const h=(location.hash||'').slice(1); show(['aircraft','sop','aviation','docs','progress','easa'].includes(h)?h:(v||'aircraft')); fiHold();
+  window.FI_ASK=q=>{ show('aircraft'); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.probe().then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); };
+  const q=new URLSearchParams(location.search).get('q'); if(q&&INST[INSTK]){ history.replaceState(null,'',location.pathname+location.hash); MODE='learn'; modeSeg.set('learn'); drawTrain(); el('tA').value=q; NAI.probe().then(()=>{ if(NAI.mode) send(); else drawOffline(); el('vTrain').scrollIntoView({block:'start'}); }); } });
 })();
 </script>
 </body>

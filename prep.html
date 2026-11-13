@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Briefing pack · Birdbird</title>
 <meta name="description" content="Build a printable briefing pack for each flight: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the ATC flight plan.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="train.css?v=2">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="train.css?v=3">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -21,15 +21,15 @@
 .flowbar .fw-t{font-family:var(--f-mono);font-size:14px;color:var(--ink)}.flowbar .fw-n{color:var(--ink-2);font-size:12.5px}
 .flowbar .fw-b{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.flowbar select{font:inherit;font-size:13.5px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px}
 .flowbar a.lk,.flowbar button.lk{background:none;border:0;padding:0;font:inherit;color:var(--ink-2);text-decoration:underline;cursor:pointer}
-@media (max-width:600px){.flowbar .fw-b{width:100%}.flowbar .fw-b .btn{flex:1 1 auto;text-align:center}}
+@media (max-width:640px){.flowbar .fw-b{width:100%}.flowbar .fw-b .btn{flex:1 1 auto;text-align:center}}
 .pgrid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;margin-top:18px}
-@media (max-width:980px){.pgrid{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+@media (max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
 .toc{position:sticky;top:70px;display:flex;flex-direction:column;gap:2px;font-size:14px}
 .toc a{color:var(--ink-2);text-decoration:none;padding:4px 0;border-left:2px solid transparent;padding-left:10px}
 .toc a:hover{color:var(--ink);border-left-color:var(--magenta)}
 .book{display:flex;flex-direction:column;gap:22px;min-width:0}
 .sheet{background:#fff;border:1px solid var(--rule);box-shadow:0 1px 0 rgba(0,0,0,.03);padding:26px 30px 30px;scroll-margin-top:70px}
-@media (max-width:600px){.sheet{padding:18px 14px}}
+@media (max-width:640px){.sheet{padding:18px 14px}}
 .sheet .sh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:16px}
 .sheet .sh h2{font-family:var(--f-display);font-stretch:88%;font-size:24px;margin:0}
 .sheet .sh h2 span{color:var(--magenta);margin-right:8px}
@@ -38,7 +38,7 @@
 .fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 18px}
 .fl{display:flex;flex-direction:column;gap:1px;font-size:12px;color:var(--ink-2);padding:4px 0}
 .fl.w2{grid-column:span 2}.fl.wall{grid-column:1/-1}
-@media (max-width:600px){.fl.w2{grid-column:auto}}
+@media (max-width:640px){.fl.w2{grid-column:auto}}
 .fl input,.fl textarea,.fl select,.tb input,.tb select{font-family:"Caveat",var(--f-body);font-size:20px;color:var(--chart-blue);border:0;border-bottom:1px dotted #9AA6AC;background:transparent;padding:2px 2px;width:100%;min-width:0;border-radius:0}
 .fl textarea{resize:vertical;min-height:58px;line-height:1.35;background-image:repeating-linear-gradient(transparent 0 26px,#DDE3E5 26px 27px);border-bottom:0}
 .fl select,.tb select{font-family:var(--f-body);font-size:15px}
@@ -51,12 +51,12 @@
 .wrapx{overflow-x:auto}
 .navlog input{font-size:16px!important}.navlog td{padding:3px 4px}.navlog td:nth-child(1),.navlog td:nth-child(2){min-width:70px}.navlog td:nth-child(8){min-width:74px}
 .why{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:-6px 0 12px;font-size:13px;color:var(--ink-2)}
-.why span{font-family:Caveat,cursive;font-size:19px;color:#1D4E9E}
-.whyb{border:1px solid #C9D2D5;background:#fff;border-radius:14px;padding:3px 11px;font:inherit;font-size:13px;color:#9A1E68;cursor:pointer}
-.whyb:hover{border-color:#9A1E68;background:#F6EDF2}
+.why span{font-family:Caveat,cursive;font-size:19px;color:var(--info)}
+.whyb{border:1px solid #C9D2D5;background:#fff;border-radius:14px;padding:3px 11px;font:inherit;font-size:13px;color:var(--accent);cursor:pointer}
+.whyb:hover{border-color:var(--accent);background:var(--accent-wash)}
 .whyp{position:fixed;top:0;right:0;bottom:0;width:min(560px,100vw);z-index:60;background:var(--paper,#EEF1EE);border-left:1px solid var(--rule);box-shadow:-10px 0 30px rgba(19,32,42,.18);display:flex;flex-direction:column}
 .whyp[hidden]{display:none}.whyp header{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--rule);background:#fff}
-.whyp header b{flex:1;font-size:15px}.whyp header a{font-size:13px;color:#9A1E68}.whyp header button{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--ink-2)}
+.whyp header b{flex:1;font-size:15px}.whyp header a{font-size:13px;color:var(--accent)}.whyp header button{border:0;background:none;font-size:24px;line-height:1;cursor:pointer;color:var(--ink-2)}
 .whyp iframe{flex:1;border:0;width:100%;background:var(--paper,#EEF1EE)}
 body.briefing .why{display:none}
 .altres{margin:10px 0;padding:10px 14px;border:1px solid var(--line,#D5DCD8);border-radius:8px;background:#fff}.altres ul{margin:4px 0 0 18px;padding:0;font-size:13.5px}.altres li{margin:2px 0}.altres i{color:var(--ink-2);font-style:normal;font-size:12px}.altn{font-size:17px}.altn b{font-size:28px;color:var(--chart-blue);margin-right:4px}.altbox .ckl{margin:6px 0}.altbox [hidden]{display:none!important}
@@ -67,7 +67,7 @@ body.briefing .why{display:none}
 .cover .fg{text-align:left}.cover .hdrf{grid-column:1/-1}
 .cover .kicker.custom{font-family:var(--f-display);font-stretch:88%;font-size:26px;font-weight:700;letter-spacing:0;color:var(--ink);text-transform:none}
 .contents{columns:2;column-gap:30px;text-align:left;font-size:14px;margin-top:14px}
-@media (max-width:600px){.contents{columns:1}}
+@media (max-width:640px){.contents{columns:1}}
 .contents div{display:flex;gap:8px;border-bottom:1px dotted var(--rule);padding:3px 0;break-inside:avoid}
 .sk{position:relative;border:1px solid #9AA6AC;touch-action:none}
 .sk canvas{display:block;width:100%;height:auto;cursor:crosshair}
@@ -102,16 +102,16 @@ body.briefing .why{display:none}
 @media (max-width:640px){.mseg{flex:1 1 100%}.mseg button{flex:1 1 0}}
 .book.paged>.sheet:not(.cur){display:none}
 .book.paged .sheet{max-width:880px;width:100%;margin:0 auto;min-height:1150px;border-color:#D5DCDE;box-shadow:0 1px 2px rgba(19,32,42,.06),0 14px 36px rgba(19,32,42,.10);padding:40px 48px 70px;position:relative}
-@media (max-width:700px){.book.paged .sheet{min-height:0;padding:22px 16px 56px}}
+@media (max-width:640px){.book.paged .sheet{min-height:0;padding:22px 16px 56px}}
 .sheet .pf{display:flex;justify-content:space-between;gap:10px;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:6px;margin-top:26px}
 .book.paged .sheet .pf{position:absolute;left:48px;right:48px;bottom:22px;margin:0}
-@media (max-width:700px){.book.paged .sheet .pf{left:16px;right:16px}}
+@media (max-width:640px){.book.paged .sheet .pf{left:16px;right:16px}}
 .pager{position:fixed;left:24px;bottom:16px;z-index:38;display:flex;align-items:center;gap:2px;background:var(--ink);color:#fff;border-radius:999px;padding:5px;box-shadow:0 8px 24px rgba(19,32,42,.25)}
 .pager{transition:opacity .2s,transform .2s}.pager.away{opacity:0;pointer-events:none;transform:translateY(16px)}
 .pager button{background:none;border:0;color:#fff;font-size:18px;width:42px;height:36px;border-radius:999px;cursor:pointer}
 .pager button:hover{background:#2A3843}
 .pager select{background:transparent;color:#fff;border:0;font:inherit;font-size:14px;max-width:150px;padding:4px;text-overflow:ellipsis}
-.pager select option{color:#13202A}
+.pager select option{color:var(--ink)}
 .clbox{margin-top:18px;border-top:1px solid var(--rule);padding-top:12px}
 .clbox h3{font-size:14px;margin:0 0 2px;display:flex;justify-content:space-between;align-items:baseline}.clbox h3 small{font-weight:600;color:var(--ink-2)}
 .clbox .clbar{height:4px;background:var(--rule-2);margin:6px 0 8px}.clbox .clbar i{display:block;height:100%;background:var(--green)}
@@ -123,14 +123,14 @@ body.briefing .why{display:none}
 .cl li em{font-style:normal;font-size:11px;color:var(--green);margin-left:4px}
 .clmob{display:none;margin:12px 0 0;border:1px solid var(--rule);border-radius:4px;background:#fff;padding:8px 12px}
 .clmob summary{cursor:pointer;font-weight:600;font-size:14px}
-@media (max-width:980px){.clmob{display:block}.tocwrap{display:none}}
+@media (max-width:900px){.clmob{display:block}.tocwrap{display:none}}
 .clprint{display:none}
 .instrrow[hidden]{display:none!important}
 @media (pointer:coarse){.cl li{padding:6px 0}.cl input{width:20px;height:20px}}
 .toc a.on{color:var(--ink);border-left-color:var(--magenta);font-weight:600}
-@media (max-width:700px){.why{margin-top:0}}
+@media (max-width:640px){.why{margin-top:0}}
 /* pager: docked bottom-left beside the page list on desktop (never over the sheet), a sticky bar above the book on smaller screens */
-@media (max-width:980px){
+@media (max-width:900px){
   .pager{position:sticky;top:8px;left:auto;bottom:auto;margin:12px 0 10px;justify-content:space-between;border-radius:6px}
   .pager.away{opacity:1;pointer-events:auto;transform:none}
   .pager select{max-width:none;flex:1;font-size:15px}
@@ -153,11 +153,11 @@ body.briefing .pgfoot{display:none!important}
 .more .menu button:hover,.more .menu a:hover{background:#F3F6F4}
 .more .menu hr{border:0;border-top:1px solid var(--rule-2);margin:4px 0}
 .more .menu small{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:6px 16px 2px}
-@media (max-width:760px){
+@media (max-width:640px){
   .bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;z-index:41}
   .bar .btns{display:contents}
   .bar .sec,.kbl{display:none!important}
-  .bar select#sel{grid-column:1;grid-row:1;max-width:none;width:100%;min-height:42px}
+  .bar select#sel{grid-column:1;grid-row:1;max-width:none;width:100%;min-height:44px}
   .more{display:block;grid-column:2;grid-row:1}
   #vseg{grid-column:1;grid-row:2;min-width:0}
   #pfill{grid-column:2;grid-row:2}
@@ -166,8 +166,8 @@ body.briefing .pgfoot{display:none!important}
 }
 .cover .band{height:12px;background:var(--magenta);margin:-40px -48px 34px}
 .book:not(.paged) .cover .band{margin:-26px -30px 26px}
-@media (max-width:600px){.book:not(.paged) .cover .band{margin:-18px -14px 20px}}
-@media (max-width:700px){.cover .band{margin:-22px -16px 22px}}
+@media (max-width:640px){.book:not(.paged) .cover .band{margin:-18px -14px 20px}}
+@media (max-width:640px){.cover .band{margin:-22px -16px 22px}}
 .cover .kicker{font-family:var(--f-mono);font-size:13px;letter-spacing:.24em;color:var(--magenta);font-weight:600}
 .cover .route{font-family:var(--f-display);font-stretch:82%;font-weight:780;font-size:clamp(34px,6vw,60px);line-height:1;margin:10px 0 6px;letter-spacing:-.01em}
 .cover .sub{font-size:16px;color:var(--ink-2)}
@@ -220,7 +220,7 @@ body.briefing .bexit{display:inline-flex;align-items:center;margin-left:4px;back
 .asst .alog .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:7px 10px;max-width:90%}
 .asst .ain{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--rule)}
 .asst .ain textarea{flex:1;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:3px;padding:6px 8px;resize:none;height:54px}
-.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:#EAF4EE;border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
+.ecite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#14532D;background:var(--ok-wash);border:1px solid #B9D6C4;border-radius:3px;padding:0 5px;margin:0 1px;text-decoration:none;vertical-align:1px;white-space:nowrap}
 .ecite span{font-weight:400;color:#3F6B50}.ecite:hover{border-color:#14532D;background:#DDEFE4}.ecite::after{content:" \2197";font-weight:400}
 .ecite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}.ecite.x::after{content:""}
 .asst .eused{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:6px;margin-top:6px}
@@ -252,11 +252,11 @@ body:not(.nofab) #askbar{display:none}
   a{color:inherit;text-decoration:none}
 }
 .mbload{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px 22px;align-items:start;margin:10px 0 14px;background:#fff;border:1px solid var(--rule);padding:12px 14px}
-@media (max-width:820px){.mbload{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.mbload{grid-template-columns:minmax(0,1fr)}}
 .mbload svg{width:100%;height:auto;display:block}
 .mbsl{display:flex;flex-direction:column;gap:7px}
 .mbsl label{display:grid;grid-template-columns:118px minmax(0,1fr) 62px;gap:8px;align-items:center;font-size:13px;color:var(--ink-2)}
-.mbsl input[type=range]{width:100%;accent-color:#9A1E68}
+.mbsl input[type=range]{width:100%;accent-color:var(--accent)}
 .mbsl output{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);text-align:right}
 .mbspd{font-size:13px;color:var(--ink-2);border-top:1px solid var(--rule-2);padding-top:6px}
 .mbspd b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
@@ -314,7 +314,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -353,8 +353,8 @@ body:not(.nofab) #askbar{display:none}
   <div class="alog" id="alog"><p class="note">Ask about anything in your preparation: “What is the pressure altitude?”, “Is 1.25 × TODR inside TORA?”, “What fuel do I need for 1 h 40 min with a 30 min alternate?”. The instructor sees what you have filled in and reads your documents from Flight Intelligence.</p></div>
   <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="ai.js?v=2"></script>
+<script src="lab.js?v=49"></script>
+<script src="ai.js?v=3"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=1"></script>
 <script src="store.js?v=2"></script>
@@ -807,7 +807,7 @@ document.querySelectorAll('[data-q]').forEach(i=>i.addEventListener('input',e=>e
 el('xsGen').onclick=()=>{ const q={}; document.querySelectorAll('[data-q]').forEach(i=>{ const k=i.dataset.q; q[k]=i.value.trim()||(['cl','ds','app','hold'].includes(k)?i.placeholder:''); }); const X=xsData(); X.q=q; X.pts=genQuick(q); X.svg=null; xsRender(); el('xsQ').hidden=true; el('xsT').hidden=false; xsTable(); queueSave(); el('xsNote').textContent=L({en:'Check the points and adjust them in the table.',no:'Sjekk punktene og juster dem i tabellen.'}); };
 el('xsAdd').onclick=()=>{ const A=xsData().pts; const last=A[A.length-1]; A.push({n:'',t:'wpt',d:5,a:last?last.a:3000}); xsData().svg=null; xsTable(); xsRender(); queueSave(); };
 el('xsClr').onclick=()=>{ xsData().pts=[]; xsData().svg=null; xsTable(); xsRender(); queueSave(); };
-el('xsAiGo').onclick=async()=>{ const t=el('xsTxt').value.trim(); if(!t) return; if(!NAI.mode){ el('xsNote').textContent=NAI.errText({code:'not_available'})+' '+L({en:'Use Quick profile instead.',no:'Bruk hurtigprofil i stedet.'}); return; }
+el('xsAiGo').onclick=async()=>{ const t=el('xsTxt').value.trim(); if(!t) return; await NAI.probe(); if(!NAI.mode){ el('xsNote').textContent=NAI.errText({code:'not_available'})+' '+L({en:'Use Quick profile instead.',no:'Bruk hurtigprofil i stedet.'}); return; }
   el('xsAiGo').disabled=true; el('xsNote').textContent=L({en:'Drawing the profile…',no:'Tegner profilen…'});
   try{ const r=await NAI.json(`Turn this pilot's description of a flight into a vertical profile (cross-section) for a briefing pack. Use real published procedure values only if you are confident; otherwise use what the pilot wrote, and mark any value you estimated with "check" in "note". Distances are along the route in NM from the previous point. Altitudes in feet (FL70 = 7000). Include: departure runway (type rwy, at its elevation), SID or exit fix, top of climb and top of descent (estimate with about 400 ft/NM climb and 300 ft/NM descent if not given), en-route waypoints the pilot names, IAF, a hold if mentioned (type hold, distance 0, same altitude as the holding fix), IF, FAF/FAP, the DA or MDA point (type da, where a 3 degree path reaches the minimum, named like "DA 270"), the threshold (type rwy) and the end of the missed approach (type missed, distance from the DA point). Alternate if mentioned (type alt). Allowed types: rwy, sid, wpt, toc, tod, iaf, if, hold, faf, da, missed, alt.
 DESCRIPTION: <<${t.slice(0,2000)}>>
@@ -845,7 +845,7 @@ el('mbSave').onclick=async()=>{ const keys=Object.keys(P.f).filter(k=>/^mb\.(emp
   const reg=P.f['mb.reg']||P.f.reg||''; if(!reg){ el('mbNote').textContent=L({en:'Fill in the registration first.',no:'Fyll inn registreringen først.'}); return; }
   const ex=MYAC.find(a=>a.reg===reg); const a={id:ex?ex.id:'ac'+Date.now().toString(36),reg,type:P.f.type||'',f}; await NSTORE.put('aircraft',a); await mbList(); el('mbNote').textContent=L({en:`Saved ${reg} to your aircraft.`,no:`Lagret ${reg} under dine fly.`}); };
 el('mbAi').onclick=async()=>{ const att=(P.att||[]).filter(a=>a.sec==='mb'); if(!att.length){ el('mbNote').textContent=L({en:'Attach a photo or PDF page of the W&B report below first.',no:'Legg ved et bilde eller en PDF-side av veieskjemaet nedenfor først.'}); return; }
-  if(!NAI.mode){ el('mbNote').textContent=NAI.errText({code:'not_available'}); return; }
+  await NAI.probe(); if(!NAI.mode){ el('mbNote').textContent=NAI.errText({code:'not_available'}); return; }
   el('mbAi').disabled=true; el('mbNote').textContent=L({en:'Reading the report…',no:'Leser skjemaet …'});
   try{ const imgs=[]; for(const a of att.slice(0,3)){ const b=await attBlob(a); if(b) imgs.push(b); }
     const r=await NAI.json(`These images are an aircraft mass and balance (weighing) report and possibly a load sheet. Read the values exactly as printed. Do not guess: use null for anything you cannot read clearly. Convert to kg and metres if the report is in lb and inches (1 lb = 0.4536 kg, 1 in = 0.0254 m) and say so in "note".
@@ -925,7 +925,7 @@ function go(i,scroll){ page=i; paging(); if(scroll!==false){ const pg=el('pager'
 { const pgr=el('pager'), bk=el('book'); const pgAway=()=>{ if(!pgr||!bk) return; const r=bk.getBoundingClientRect(); pgr.classList.toggle('away', r.top>innerHeight*0.55 && !document.body.classList.contains('briefing')); }; addEventListener('scroll',pgAway,{passive:true}); addEventListener('resize',pgAway); setTimeout(pgAway,0); setTimeout(pgAway,800); }
 el('pgfprev').onclick=()=>go(page-1); el('pgfnext').onclick=()=>go(page+1);
 /* phones and tablets: the docked pager tucks away while you scroll down or type, and comes back when you scroll up */
-{ const pgr=el('pager'); let lastY=scrollY; const small=()=>innerWidth<=980;
+{ const pgr=el('pager'); let lastY=scrollY; const small=()=>innerWidth<=900;
   addEventListener('scroll',()=>{ const y=scrollY, dy=y-lastY; lastY=y; if(!small()||document.body.classList.contains('briefing')){ pgr.classList.remove('tuck'); return; } if(Math.abs(dy)<4) return; const ae=document.activeElement; const typing=ae&&el('book').contains(ae)&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName); pgr.classList.toggle('tuck', typing || (dy>0 && pgr.getBoundingClientRect().top<=12)); },{passive:true});
   el('book').addEventListener('focusin',e=>{ if(small()&&/INPUT|TEXTAREA/.test(e.target.tagName)) pgr.classList.add('tuck'); }); }
 el('pgprev').onclick=()=>go(page-1); el('pgnext').onclick=()=>go(page+1); el('pgsel').onchange=()=>go(+el('pgsel').value);
@@ -934,12 +934,12 @@ document.addEventListener('keydown',e=>{ if(view!=='book'||/INPUT|TEXTAREA|SELEC
 function briefing(on){ document.body.classList.toggle('briefing',on); if(on){ view='book'; vseg.set('book'); paging(); try{ document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} window.scrollTo({top:0}); } else { try{ document.fullscreenElement&&document.exitFullscreen(); }catch(e){} } }
 /* the floating "Ask the instructor" button only shows where the right margin is wide enough to keep it clear of the fields; otherwise it lives in the toolbar */
 function placeFab(){ const f=el('fab'); const cur=document.querySelector('#book.paged>.sheet.cur')||document.querySelector('#book>.sheet'); let ok=false;
-  if(cur&&innerWidth>760){ const r=cur.getBoundingClientRect(), pad=parseFloat(getComputedStyle(cur).paddingRight)||0; const w=f.offsetWidth||170; ok=innerWidth-(r.right-pad)>=w+40; }
+  if(cur&&innerWidth>640){ const r=cur.getBoundingClientRect(), pad=parseFloat(getComputedStyle(cur).paddingRight)||0; const w=f.offsetWidth||170; ok=innerWidth-(r.right-pad)>=w+40; }
   document.body.classList.toggle('nofab',!ok); }
 addEventListener('resize',placeFab); new MutationObserver(placeFab).observe(el('book'),{attributes:true,attributeFilter:['class']}); setTimeout(placeFab,0); setTimeout(placeFab,600);
 el('askbar').onclick=()=>el('fab').click();
 /* pager sits in the left gutter under the page list on desktop */
-{ const pgr=el('pager'); const place=()=>{ if(innerWidth>980){ const tw=document.querySelector('.tocwrap'); const r=tw&&tw.getBoundingClientRect(); pgr.style.left=Math.max(16,Math.round(r&&r.width?r.left:24))+'px'; } else pgr.style.left=''; }; addEventListener('resize',place); place(); setTimeout(place,300); }
+{ const pgr=el('pager'); const place=()=>{ if(innerWidth>900){ const tw=document.querySelector('.tocwrap'); const r=tw&&tw.getBoundingClientRect(); pgr.style.left=Math.max(16,Math.round(r&&r.width?r.left:24))+'px'; } else pgr.style.left=''; }; addEventListener('resize',place); place(); setTimeout(place,300); }
 /* "More" menu (phones): proxies to the toolbar buttons so every action keeps one implementation */
 { const more=el('more'), menu=el('moremenu');
   const syncDel=()=>{ el('mdel').textContent=el('del').textContent; };
@@ -1038,7 +1038,7 @@ function easaFor(q){ const reg=P.f['al.reg']||''; const t=q+' '+(reg?reg.toUpper
 function easaUsed(list){ return list.length? `<div class="eused"><span>${L({en:'EASA rules used:',no:'EASA-regler brukt:'})}</span>${list.map((x,i)=>EASA.chip(x,i+1)).join('')}<small>${L({en:'Birdbird EASA rules library, linked to the official text. Not a live feed: check the current revision through the link.',no:'Birdbirds EASA-regelbibliotek, lenket til den offisielle teksten. Ikke en direkte strøm: sjekk gjeldende revisjon via lenken.'})}</small></div>` : ''; }
 async function ask(){
   const q=el('aq').value.trim(); if(!q) return; const log=el('alog');
-  if(!NAI.mode){ const m=easaFor(q); log.insertAdjacentHTML('beforeend',`<p class="note">${esc(NAI.errText({code:'not_available'}))}</p>`+(m.length?`<div class="md">${easaUsed(m).replace(L({en:'EASA rules used:',no:'EASA-regler brukt:'}),L({en:'Matching rules in the EASA rules library:',no:'Regler som passer i EASA-regelbiblioteket:'}))}</div>`:'')); return; }
+  await NAI.probe(); if(!NAI.mode){ const m=easaFor(q); log.insertAdjacentHTML('beforeend',`<p class="note">${esc(NAI.errText({code:'not_available'}))}</p>`+(m.length?`<div class="md">${easaUsed(m).replace(L({en:'EASA rules used:',no:'EASA-regler brukt:'}),L({en:'Matching rules in the EASA rules library:',no:'Regler som passer i EASA-regelbiblioteket:'}))}</div>`:'')); return; }
   el('aq').value=''; log.insertAdjacentHTML('beforeend',`<div class="q">${esc(q)}</div>`); const a=document.createElement('div'); a.className='md'; a.innerHTML=`<div class="thinking">${L({en:'Thinking…',no:'Tenker…'})}</div>`; log.appendChild(a); a.scrollIntoView({block:'nearest'});
   const filled=Object.fromEntries(Object.entries(P.f).filter(([k,v])=>v!==''&&v!=null));
   const fdocs=await fiDocs(); const ex=fiSearch(q,fdocs,5); const chk=(window.__fiac||[]).filter(a=>a.vdOk&&Object.keys(a.vdOk).length).map(a=>`${a.name}: `+Object.entries(a.vdOk).map(([k,o])=>`${k} ${o.v} (${o.src})`).join(', ')).join('\n');

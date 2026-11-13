@@ -154,6 +154,7 @@ let bCtl=null;
 async function score(kind,V,text,o){ const {out,note,btn,done}=o;
   text=String(text||'').trim(); if(text.length<25){ note.textContent=L({en:'Give the briefing first: a few sentences at least.',no:'Gi briefingen først: minst noen setninger.'}); return; }
   note.textContent=''; let r=null;
+  if(G.NAI&&NAI.probe) await NAI.probe();
   const aiOn=!!(G.NAI&&NAI.mode);
   if(V.packFacts&&!aiOn){ note.textContent=L({en:'Scoring a briefing for your own flight needs the AI. Open the page in Claude, or switch to the practice airport.',no:'Vurdering av briefing for din egen tur krever AI. Åpne siden i Claude, eller bytt til øvingsflyplassen.'}); return; }
   if(aiOn){ btn.disabled=true; out.innerHTML=`<div class="thinking">${L({en:'The instructor is listening to your briefing…',no:'Instruktøren hører på briefingen din…'})}</div>`; bCtl=new AbortController();

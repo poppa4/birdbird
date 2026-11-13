@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Privacy · Birdbird</title>
 <meta name="description" content="Birdbird privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* privacy.html – page-local layout */
 .pv-short{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;border-top:1px solid var(--ink)}
 .pv-short li{display:flex;gap:14px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--rule-2);font-size:var(--t-md);line-height:1.5}
 .pv-short li::before{content:"";flex:0 0 8px;height:8px;border-radius:50%;background:var(--accent);transform:translateY(-2px)}
-@media (max-width:760px){.pv-short{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.pv-short{grid-template-columns:minmax(0,1fr)}}
 .reg{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius)}
 .reg th{text-align:left;font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--wash)}
 .reg td{padding:11px 14px;border-bottom:1px solid var(--rule-2);vertical-align:top;line-height:1.5}
 .reg tr:last-child td{border-bottom:0}
 .reg td:first-child{font-weight:600;width:28%}
 .reg td.w{font-family:var(--f-mono);font-size:12.5px;color:var(--ink);white-space:nowrap}
-@media (max-width:700px){
+@media (max-width:640px){
   .reg thead{display:none}
   .reg,.reg tbody,.reg tr,.reg td{display:block;width:100%!important}
   .reg tr{padding:12px 14px;border-bottom:1px solid var(--rule-2)}
@@ -30,7 +30,7 @@
 .pv-text p{margin:0 0 14px;max-width:72ch;font-size:var(--t-sm);line-height:1.6}
 .pv-text p:last-child{margin-bottom:0}
 .pv-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 40px;align-items:start}
-@media (max-width:860px){.pv-two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.pv-two{grid-template-columns:minmax(0,1fr)}}
 .pv-steps{margin:0;padding:0 0 0 20px;font-size:15px;line-height:1.6}
 .pv-steps li{margin:0 0 8px}
 .pv-clear{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
@@ -42,7 +42,7 @@
 </style>
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -162,7 +162,7 @@
     <p class="btns"><a class="btn" href="about.html#contact">Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
   </section>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script>
 (function(){
 'use strict';

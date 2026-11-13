@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="description" content="Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control…">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Weather for Pilots</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<title>METAR and TAF · Birdbird</title>
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .inbox{display:flex;flex-direction:column;gap:10px}
 .inbox textarea{width:100%;min-height:92px;font-family:var(--f-mono);font-size:16px;line-height:1.5;padding:12px 14px;border:1px solid var(--ink);border-radius:3px;background:#fff;color:var(--ink);resize:vertical;text-transform:uppercase}
@@ -31,7 +31,7 @@
 .rules li.ok i{color:var(--green)} .rules li.no i{color:var(--red)}
 .rules li span small{display:block;color:var(--ink-2);font-size:13px}
 .xw{display:grid;grid-template-columns:300px minmax(0,1fr);gap:24px;align-items:start}
-@media (max-width:860px){.xw{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.xw{grid-template-columns:minmax(0,1fr)}}
 #xwCv{height:300px}
 .glossary{columns:3 230px;column-gap:28px;font-size:14px}
 .glossary div{break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--rule-2)}
@@ -41,8 +41,8 @@
 .livest{font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}.livest.err{color:var(--warning)}
 </style>
 </head>
-<body data-title="Weather for Pilots">
-<script src="site.js?v=64"></script>
+<body data-title="METAR and TAF">
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -94,7 +94,7 @@
 
   <p class="note">Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.</p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script>
 (function(){
 'use strict';

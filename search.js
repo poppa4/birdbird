@@ -240,7 +240,7 @@ function score(q){ const w=q.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x=>x.
   if(!w.length) return []; return IDX.map((e,i)=>{ let s=0; w.forEach(x=>{ if(WORDS[i].has(x)) s+=3; else if([...WORDS[i]].some(v=>v.startsWith(x))) s+=x.length>=4?2:1; else if(x.length>=4&&e.k.includes(x)) s+=1; }); return {e,s}; }).filter(x=>x.s>=2).sort((a,b)=>b.s-a.s).slice(0,5); }
 /* ---------- UI ---------- */
 /* the bar itself (.nsearch, .in, input) is styled in site.css, so it is in place before this file loads */
-const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-width:var(--container);margin:6px auto 0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);overflow:hidden}
+const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-width:var(--shell);margin:6px auto 0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);overflow:hidden}
 .nsearch .res[hidden]{display:none}
 .nsearch .it{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;text-decoration:none;color:var(--ink);border-top:1px solid var(--rule-2);cursor:pointer}
 .nsearch .it:first-child{border-top:0}.nsearch .it.on,.nsearch .it:hover{background:var(--accent-wash)}
@@ -259,7 +259,7 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     const sub=document.querySelector('nav.trnav'); (sub&&sub.previousElementSibling===head?sub:head).insertAdjacentElement('afterend',box); }
   box.dataset.w='1';
   const inp=box.querySelector('input'), res=box.querySelector('.res'), hint=box.querySelector('.hint');
-  let exi=0; const ph=()=>{ const ex=EX[no()?'no':'en']; inp.placeholder= innerWidth<640? L({en:'Ask or search…',no:'Spør eller søk …'}) : L({en:'Ask or search anything, e.g. ',no:'Spør eller søk etter hva som helst, f.eks. '})+ex[exi%ex.length]; hint.textContent=L({en:'answers right here',no:'svar rett her'}); };
+  let exi=0; const ph=()=>{ const ex=EX[no()?'no':'en']; inp.placeholder= innerWidth<=640? L({en:'Ask or search…',no:'Spør eller søk …'}) : L({en:'Ask or search anything, e.g. ',no:'Spør eller søk etter hva som helst, f.eks. '})+ex[exi%ex.length]; hint.textContent=L({en:'answers right here',no:'svar rett her'}); };
   ph(); setInterval(()=>{ if(!inp.value&&document.activeElement!==inp){ exi++; ph(); } },4000);
   new MutationObserver(ph).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   let sel=0, items=[], aiCtl=null;

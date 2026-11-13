@@ -15,6 +15,16 @@
   const PLN=[['prep.html','Briefing pack'],['essentials.html','VFR and IFR essentials'],['weather.html','METAR and TAF'],['sheets.html','Kneeboard sheets'],['planning.html','Navigation log']];
   const trn=TRN.some(x=>x[0]===page)||['c172-3d.html','da42-3d.html','b200-3d.html'].includes(page)||checkMode, pln=PLN.some(x=>x[0]===page);
   const D3={'c172.html':'c172-3d.html','cockpit.html':'da42-3d.html','b200.html':'b200-3d.html'}; const trnOn=h=> h===page || D3[h]===page || (checkMode&&h==='checkride.html');
+  /* language before first paint: the header, sub-nav and footer are written in the right language at once (lab.js keeps it in sync) */
+  const HTML=document.documentElement; let NOW_NO=false; try{ NOW_NO=localStorage.getItem('vlab-lang')==='no'; }catch(e){} if(NOW_NO) HTML.lang='nb';
+  /* Hold: every page is finished by its scripts (language, lab shell, lists, canvases). The header, search bar and section nav
+     paint at once; the page below them stays unpainted (html.bb-hold, see site.css) until those scripts have run, so nothing
+     jumps and the English source text never flashes in Norwegian. Released at DOMContentLoaded, or when a page that renders
+     later calls the function BBHOLD.wait() gave it, and after 2.5 s at the latest. */
+  { let n=1, t=0; const rel=()=>{ if(--n>0) return; n=0; clearTimeout(t); HTML.classList.remove('bb-hold'); };
+    window.BBHOLD={ wait(){ if(!HTML.classList.contains('bb-hold')) return ()=>{}; n++; let d=false; return ()=>{ if(!d){ d=true; rel(); } }; } };
+    if(document.readyState==='loading'&&!/[?&]embed=1/.test(location.search)){ HTML.classList.add('bb-hold');
+      document.addEventListener('DOMContentLoaded',rel); t=setTimeout(()=>{ n=1; rel(); },1500); } }
   /* page-family classes for the design system (set early, before first paint) */
   document.documentElement.classList.add(page==='lab.html'?'vlab-home':(lab?'vlab':'site-page'));
   /* Virtual Labs depth (Short / Deep dive / Instructor) as a body class before first paint; lab.js keeps it in sync */
@@ -107,10 +117,13 @@
     head.innerHTML=`<div class="in"><a class="logo" href="index.html" aria-label="Birdbird">${logo}<span>Birdbird</span></a>
       <button class="menu" aria-expanded="false"><i aria-hidden="true"></i>${t('Menu')}</button>
       <nav aria-label="Birdbird"><a href="index.html" class="${page==='index.html'?'on':''}">${t('Home')}</a><a href="lab.html" class="${lab?'on':''}">${t('Virtual Labs')}</a><a href="prep.html" class="${pln?'on':''}">${t('Briefing pack')}</a><a href="route.html" class="${page==='route.html'?'on':''}">${t('Route Explorer')}</a><a href="training.html" class="${trn?'on':''}">${t('Training')}</a><a href="fi.html" class="${(page==='fi.html'&&!checkMode)?'on':''}">${t('Flight Intelligence')}</a><a href="workspace.html" class="mob ${page==='workspace.html'?'on':''}">${t('My workspace')}</a><a href="profile.html" class="mob ${page==='profile.html'?'on':''}">${t('My page')}</a></nav></div>`;
+    head.querySelectorAll('nav a').forEach(a=>{ a.dataset.l=a.textContent; });
     head.firstElementChild.appendChild(keep);
     { keep.querySelectorAll('a.mytr').forEach(x=>x.remove());
       if(!keep.querySelector('.acct')) keep.insertAdjacentHTML('afterbegin',`<div class="acct"><button type="button" class="mytr" aria-haspopup="menu" aria-expanded="false"></button><div class="acm" role="menu" hidden></div></div>`);
       if(!keep.querySelector('.myws')) keep.insertAdjacentHTML('afterbegin',`<a class="myws ${page==='workspace.html'?'on':''}" href="workspace.html">${t('My workspace')}</a>`); else { const w=keep.querySelector('.myws'); w.textContent=t('My workspace'); w.classList.toggle('on',page==='workspace.html'); }
+      /* language switch: in the header from the first paint (lab.js wires it and keeps the current one marked) */
+      if(!keep.querySelector('.langseg')) keep.insertAdjacentHTML('afterbegin',`<div class="seg langseg" aria-label="Språk"><button data-v="en"${HTML.lang==='nb'?'':' class="on"'}>EN</button><button data-v="no"${HTML.lang==='nb'?' class="on"':''}>NO</button></div>`);
       const ac=keep.querySelector('.acct'), ab=ac.querySelector('.mytr'), am=ac.querySelector('.acm');
       const user=()=>{ const A=window.BBACCOUNT; if(A&&A.user) return A.user; try{ const m=JSON.parse(localStorage.getItem('birdbird-account')||'null'); return m&&m.signedIn?(m.user||{}):null; }catch(e){ return null; } };
       const paint=()=>{ const u=user(), nm=u&&u.name?String(u.name).trim():'';
@@ -137,6 +150,7 @@
             const r=b.getBoundingClientRect(); m.hidden=false; const w=m.offsetWidth; m.style.left=Math.max(8,Math.min(r.left,innerWidth-w-8))+'px'; m.style.top=(r.bottom+4)+'px'; b.setAttribute('aria-expanded','true'); open={b,m}; const f=m.querySelector('a'); if(f&&e.detail===0) f.focus(); });
           document.addEventListener('click',e=>{ if(open&&!open.m.contains(e.target)) shut(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&open){ const b=open.b; shut(); b.focus(); } });
           addEventListener('resize',shut); addEventListener('scroll',shut,{passive:true}); sn.querySelector('.in').addEventListener('scroll',shut,{passive:true}); } } }
+    { const sn=document.querySelector('nav.trnav'); if(sn) sn.querySelectorAll('.in>a').forEach(a=>{ a.dataset.l=a.textContent; }); }
     head.querySelector('.menu').onclick=()=>{ const o=head.classList.toggle('open'); head.querySelector('.menu').setAttribute('aria-expanded',o); };
     foot.innerHTML=`<div class="fb"><a class="logo" href="index.html">${logo}<span>Birdbird</span></a><p>${t('Interactive theory for pilots: from the first IR lesson to the A320 sim check.')}</p><p>${t('Made by Daniel Nilsson, pilot, for everyone learning to fly.')}</p><a href="workspace.html">${t('My workspace')}</a><a href="profile.html">${t('My page')}</a><a href="about.html">${t('About')}</a><a href="schools.html">${t('For flight schools')}</a><a href="privacy.html">${t('Privacy')}</a><a href="sources.html">${t('Data sources')}</a></div>
       <div><b>${t('Virtual Labs')}</b><a href="lab.html">${t('Subject areas')}</a><a href="lab.html#all">${t('All topics')}</a><a href="tunnel.html">${t('Wind tunnel')}</a><a href="performance.html">${t('Performance')}</a><a href="jetsystems.html">${t('Aircraft systems')}</a><a href="holding.html">${t('Holding and approach')}</a></div>
@@ -166,7 +180,7 @@
     if(page!=='workspace.html'&&!document.querySelector('.nsearch')){ const sb=document.createElement('div'); sb.className='nsearch noprint'; sb.setAttribute('role','search');
       sb.innerHTML='<div class="in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" autocomplete="off" spellcheck="false" aria-label="Search or ask"><span class="hint"></span></div><div class="res" hidden></div>';
       const sub=document.querySelector('nav.trnav'); (sub&&sub.previousElementSibling===head?sub:head).insertAdjacentElement('afterend',sb); }
-    if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=40'; document.head.appendChild(sj); }
+    if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=41'; document.head.appendChild(sj); }
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }

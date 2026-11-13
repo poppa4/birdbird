@@ -227,7 +227,7 @@ function drawDeb(sm){
 /* ---------------- AI free talk (optional) ---------------- */
 function aiSetup(){
   if(!window.NAI) return;
-  NAI.ready.then(mode=>{ const box=el('ai'); if(!mode){ box.hidden=true; return; } box.hidden=false;
+  let wired=false; NAI.onMode(mode=>{ const box=el('ai'); if(!mode){ box.hidden=true; return; } box.hidden=false; if(wired) return; wired=true;
     let turns=[]; const log=el('aiLog');
     const add=(cls,who,h)=>{ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${esc(who)}</span>`:'')+h; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; };
     const rules=()=>`You are an air traffic controller in a radiotelephony training simulator for pilots training under EASA in Norway. Fictional aerodrome Birdbird, runway 36/18, Tower 118.300, Ground 121.700, Approach 119.250, transition altitude 7000 ft. The pilot is ${P.callsign}, a DA42. Situation: ${el('aiSit').value||'infer it from the first call'}. Reply as ATC with ICAO Doc 4444/9432 and SERA phraseology, then judge only the pilot's last transmission. Reply with JSON only: {"atc":"…","ok":true|false,"notes":["max 3, in ${NAI.langName()}"],"better":"ideal pilot transmission"}`;

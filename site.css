@@ -1,4 +1,20 @@
-/* Birdbird – site.css: design tokens, self-hosted fonts, base, site shell and the lab page template. */
+/* Birdbird – site.css: design tokens, self-hosted fonts, base, site shell and the lab page template.
+
+   BREAKPOINTS (the whole site uses this one set; write max-width, or the matching min-width one pixel up)
+     520   small phones: last multi-column grids go to one column
+     640   phones: forms, tables, cards and canvases switch to their phone layout, in-page nav becomes a select   (min-width:641)
+     900   compact layout: tablet portrait and down; side columns stack, 24 px gutter   (min-width:901)
+     1180  header nav collapses into Menu; Virtual Labs sidebar folds into a picker   (min-width:1181)
+     height: max-height 520 (phone landscape), max-height 820 (short laptop screens)
+   Kept on purpose (content needs them):
+     simulator cockpit toolbar (c172.css, cockpit.html, da42-3d.html, simshell.css; same values as the B200 files):
+       500 and 520 high, 600 portrait, 700, 932 (largest phone landscape), 1100, 1720 (zoom buttons fit)
+     1240  navsim.css, holding.html: map and instruments side by side need this much next to the labs sidebar
+     1280  route.html: flight HUD in four columns
+     index.html max-height 1000, ifr.html min-height 620: hero and full-screen stage fit the window height
+     tunnel.html: @container queries (739/740/1000) follow the 3D panel's own width, not the window
+   The header (.site), search bar and section nav always use --shell, never the page's --container, so the logo,
+   nav and controls sit in the same place on every page. */
 @font-face{font-family:"Archivo";font-style:normal;font-display:swap;font-weight:100 900;font-stretch:62% 125%;src:url(fonts/archivo-latin-wdth-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"Archivo";font-style:normal;font-display:swap;font-weight:100 900;font-stretch:62% 125%;src:url(fonts/archivo-latin-ext-wdth-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"Public Sans";font-style:normal;font-display:swap;font-weight:400;src:url(fonts/public-sans-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
@@ -13,6 +29,12 @@
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-display:swap;font-weight:500;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-display:swap;font-weight:400;src:url(fonts/ibm-plex-mono-latin-ext-400-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-display:swap;font-weight:500;src:url(fonts/ibm-plex-mono-latin-ext-500-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/* Fallback faces with the web fonts' widths and line metrics (Arial is on Windows, macOS and iOS; Liberation Sans on Linux),
+   so lines break in the same places and nothing moves when Public Sans and Archivo arrive. Same character range as the
+   web fonts: symbols outside it (arrows, Greek) keep coming from the system font. */
+@font-face{font-family:"Public Sans fb";font-weight:100 500;src:local("Arial"),local("ArialMT"),local("Liberation Sans");size-adjust:106%;ascent-override:89.6%;descent-override:21.2%;line-gap-override:0%;unicode-range:U+0000-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2000-206F,U+20A0-20C0,U+2113,U+2122,U+2191,U+2193,U+2212,U+2215,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Public Sans fb";font-weight:600 900;src:local("Arial Bold"),local("Arial-BoldMT"),local("Liberation Sans Bold");size-adjust:99.5%;ascent-override:95.5%;descent-override:22.6%;line-gap-override:0%;unicode-range:U+0000-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2000-206F,U+20A0-20C0,U+2113,U+2122,U+2191,U+2193,U+2212,U+2215,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Archivo fb";font-weight:100 900;src:local("Arial Bold"),local("Arial-BoldMT"),local("Liberation Sans Bold");size-adjust:90%;ascent-override:97.6%;descent-override:23.3%;line-gap-override:0%;unicode-range:U+0000-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2000-206F,U+20A0-20C0,U+2113,U+2122,U+2191,U+2193,U+2212,U+2215,U+2C60-2C7F,U+A720-A7FF}
 
 /* =====================================================================
    Birdbird design system: "Chart-room"
@@ -36,19 +58,19 @@
   --bg:var(--paper); --panel:var(--sheet); --panel-2:#F6F8F6; --line:var(--rule); --fg:var(--ink); --muted:var(--ink-2);
   --smoke:var(--accent); --amber:var(--caution); --red:var(--warning); --green:var(--ok); --violet:#5B4BB0;
   /* type */
-  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
-  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-display:"Archivo","Archivo fb","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Public Sans","Public Sans fb",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   --t-xs:13px; --t-sm:15px; --t-md:17px; --t-lg:20px; --t-xl:26px; --t-2xl:34px; --t-3xl:48px; --t-4xl:64px;
   /* space (4px base) */
   --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:24px; --s-6:32px; --s-7:48px; --s-8:72px;
   /* layout */
-  --container:1240px; --gutter:24px;
+  --container:1240px; --shell:1240px; --gutter:24px;
   --gl:max(var(--gutter),env(safe-area-inset-left,0px)); --gr:max(var(--gutter),env(safe-area-inset-right,0px));
   --radius:3px; --radius-lg:6px; --shadow-pop:0 14px 34px rgba(19,32,42,.16);
   color-scheme:light;
 }
-@media (min-width:900px){:root{--gutter:48px}}
+@media (min-width:901px){:root{--gutter:48px}}
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -61,18 +83,23 @@ button,input,select,textarea{font-family:inherit}
 ::selection{background:#E9CFDF}
 button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
+/* Hold (site.js): the page below the header stays unpainted until the page's scripts have run, so nothing jumps on load */
+html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
+
 /* one container */
 .container,.page{max-width:var(--container);margin-inline:auto;width:100%}
 
 /* ---------------- SiteHeader ---------------- */
 .site{position:relative;z-index:30;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);
   padding-top:env(safe-area-inset-top,0px);background:var(--paper);border-bottom:1px solid var(--rule);font-family:var(--f-body)}
-.site>.in{max-width:var(--container);margin:0 auto;display:flex;align-items:center;gap:32px;min-height:60px}
+.site>.in{max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:32px;min-height:60px}
 .site .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:0 0 auto}
 .site .logo svg{width:28px;height:28px;display:block}
-.site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:23px;letter-spacing:-.01em;line-height:1}
+.site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:23px;letter-spacing:-.01em;line-height:1;width:79.1px;white-space:nowrap}
 .site nav{display:flex;gap:4px 26px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
-.site nav a{display:flex;align-items:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
+.site nav a{display:flex;flex-direction:column;justify-content:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
+/* every link keeps the width of its bold (current) form, so the items never move from page to page */
+.site nav a::before,.trnav>.in>a::before{content:attr(data-l);display:block;font-weight:600;height:0;visibility:hidden;overflow:hidden;pointer-events:none;user-select:none}
 .site nav a:hover{color:var(--ink)}
 .site nav a.on{color:var(--ink);font-weight:600}
 .site nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
@@ -87,8 +114,6 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .site .rank .rb{width:56px;height:4px;background:var(--rule-2);overflow:hidden;flex:0 0 56px}
 .site .rank .rb i{display:block;height:100%;background:var(--accent)}
 .site .rank .rx{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
-@media (max-width:1320px){.site .rank{display:none}}
-@media (max-width:1060px){.site>.in{gap:22px}.site nav{gap:4px 18px}.site nav a{font-size:14px}}
 @media (max-width:1180px){
   .site>.in{flex-wrap:wrap;gap:0 14px;min-height:56px}
   .site .logo{order:1}
@@ -105,7 +130,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 
 /* search bar: the box is placed by site.js before first paint and wired by search.js (results list styled there) */
 .nsearch{position:relative;z-index:25;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:10px var(--gr) 10px var(--gl);background:var(--wash);border-bottom:1px solid var(--rule-2)}
-.nsearch .in{display:flex;align-items:center;gap:10px;max-width:var(--container);margin:0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0 12px;transition:border-color .15s,box-shadow .15s}
+.nsearch .in{display:flex;align-items:center;gap:10px;max-width:var(--shell);margin:0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0 12px;transition:border-color .15s,box-shadow .15s}
 .nsearch .in:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(154,30,104,.12)}
 .nsearch svg{flex:0 0 18px;width:18px;height:18px;color:var(--ink-3)}
 .nsearch input{flex:1;border:0;outline:0;font:inherit;font-size:15px;line-height:24px;padding:9px 0;background:transparent;color:var(--ink);min-width:0;min-height:0}
@@ -113,8 +138,9 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 
 /* ---------------- SectionNav (one tab bar per hub) ---------------- */
 .trnav{position:relative;z-index:29;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);background:var(--paper);border-bottom:1px solid var(--rule)}
-.trnav>.in{max-width:var(--container);margin:0 auto;display:flex;flex-wrap:nowrap;gap:0 26px;overflow-x:auto;scrollbar-width:none}
+.trnav>.in{max-width:var(--shell);margin:0 auto;display:flex;flex-wrap:nowrap;gap:0 26px;overflow-x:auto;scrollbar-width:none}
 .trnav>.in::-webkit-scrollbar{display:none}
+.trnav>.in>a{display:flex;flex-direction:column}
 .trnav a{flex:0 0 auto;font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;padding:12px 0 11px;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .trnav a:hover{color:var(--ink)}
 .trnav a.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
@@ -138,7 +164,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .tgm .md a.on{background:var(--ink);color:#fff}
 .tgm .md small{font:700 8px/1 var(--f-mono,monospace);letter-spacing:.08em;text-transform:uppercase;background:#ffcf3a;color:#0d1319;border-radius:3px;padding:2px 3px}
 .site:has(+.trnav){border-bottom-color:var(--rule-2)}
-@media (max-width:760px){.trnav>.in{gap:0 20px;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}}
+@media (max-width:640px){.trnav>.in{gap:0 20px;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}}
 
 /* ---------------- Footer (groups match the top nav) ---------------- */
 .sitefoot{margin:72px auto 0;max-width:var(--container);border-top:1px solid var(--rule);padding-top:32px;display:grid;grid-template-columns:minmax(0,1.5fr) repeat(4,minmax(0,1fr));gap:32px 24px;font-family:var(--f-body);font-size:14px;color:var(--ink-2)}
@@ -150,8 +176,8 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .sitefoot a{display:block;color:var(--ink-2);text-decoration:none;padding:3px 0}
 .sitefoot a:hover{color:var(--accent);text-decoration:underline}
 .sitefoot .copy{grid-column:1/-1;border-top:1px solid var(--rule-2);padding-top:16px;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-@media (max-width:960px){.sitefoot{grid-template-columns:repeat(2,minmax(0,1fr))}.sitefoot .fb{grid-column:1/-1}}
-@media (max-width:420px){.sitefoot{gap:24px 16px}}
+@media (max-width:900px){.sitefoot{grid-template-columns:repeat(2,minmax(0,1fr))}.sitefoot .fb{grid-column:1/-1}}
+@media (max-width:520px){.sitefoot{gap:24px 16px}}
 
 .ntoast{position:fixed;right:20px;bottom:20px;z-index:100;background:var(--ink);border-radius:var(--radius);padding:12px 16px;display:flex;flex-direction:column;gap:2px;font-family:var(--f-body);color:#fff;box-shadow:0 10px 30px rgba(19,32,42,.25);transform:translateY(12px);opacity:0;pointer-events:none;transition:.2s}
 .ntoast.on{transform:none;opacity:1}
@@ -179,7 +205,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .lmeta .pbar{width:64px;height:4px;background:var(--rule-2);display:inline-block;overflow:hidden}
 .lmeta .pbar i{display:block;height:100%;background:var(--ok)}
 .lmeta .status{font-size:13px}
-@media (max-width:600px){.lmeta{gap:10px 16px}.lmeta .mi+.mi{padding-left:0;border-left:0}.lhead{margin-top:24px}}
+@media (max-width:640px){.lmeta{gap:10px 16px}.lmeta .mi+.mi{padding-left:0;border-left:0}.lhead{margin-top:24px}}
 
 /* ---------------- Tags (one component) ---------------- */
 .tag,.lvt{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.04em;line-height:1;text-transform:uppercase;
@@ -223,8 +249,8 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .labnav .lb-g>a.on{background:var(--accent-wash);color:var(--ink);font-weight:600;box-shadow:inset 2px 0 0 var(--accent)}
 .labnav .lb-g>a .d{flex:0 0 auto;width:7px;height:7px;border-radius:50%;background:var(--ok)}
 .labnav .lb-g .tag{font-size:10px;padding:3px 4px 2px}
-@media (max-width:960px){.labnav .lb-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){
+@media (max-width:900px){.labnav .lb-menu{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){
   .labnav{margin-top:14px;padding-bottom:10px;gap:8px}
   .labnav .lb-sep,.labnav .lb-cur{display:none}
   .labnav .lb-btn .nm{display:none}
@@ -239,12 +265,12 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .snav a:hover{color:var(--ink)}
 .snav a.on{color:var(--ink);border-bottom-color:var(--accent)}
 .snav .snsel{display:none}
-@media (max-width:760px){
+@media (max-width:640px){
   .snav{flex-wrap:nowrap;gap:0;padding:8px 0;margin-top:20px}
   .snav.hassel>a{display:none}
   .snav .snsel{display:flex;align-items:center;gap:10px;width:100%;font-size:13px;color:var(--ink-2)}
   .snav .snsel span{white-space:nowrap;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
-  .snav .snsel select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:8px 10px;min-height:40px}
+  .snav .snsel select{flex:1;min-width:0;font:inherit;font-size:15px;font-weight:600;color:var(--ink);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:8px 10px;min-height:44px}
 }
 
 /* sections in lab pages show their number eyebrow */
@@ -266,7 +292,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
 .vlpath .steps i{flex:1;height:4px;background:var(--rule-2)}
 .vlpath .steps i.d{background:var(--ok)}
 .vlpath .steps i.c{background:var(--accent)}
-@media (max-width:600px){.vlpath .pr{grid-template-columns:1fr}.vlpath .pr a+a{text-align:left}.vlpath .pr a.x{display:none}}
+@media (max-width:640px){.vlpath .pr{grid-template-columns:1fr}.vlpath .pr a+a{text-align:left}.vlpath .pr a.x{display:none}}
 
 /* ---------------- Atlas shell (Virtual Labs; lab.js builds it, see LAB-TEMPLATE.md) ---------------- */
 /* .page > aside.atl-side (area topics) + div.atl-main (everything the page had). Before lab.js runs the
@@ -296,14 +322,14 @@ html.vlab .labnav,html.vlab .page .snav{display:none}
 .atl-other a{display:flex;gap:8px;align-items:baseline;padding:3px 0;font-size:13px;color:var(--ink-2);text-decoration:none;line-height:1.35}
 .atl-other a i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
 .atl-other a:hover{color:var(--accent)}
-@media (min-width:1200px){
+@media (min-width:1181px){
   html.vlab{--container:1520px}
   html.vlab .page{display:grid;grid-template-columns:228px minmax(0,1fr);column-gap:48px;align-items:start}
   html.vlab .page>*{grid-column:2;min-width:0}
   html.vlab .page>.atl-side{grid-column:1;grid-row:1;position:sticky;top:0;max-height:100vh;overflow-y:auto;overscroll-behavior:contain;padding:44px 6px 32px 0;scrollbar-width:thin}
   .atl-panel{display:block!important}
 }
-@media (max-width:1199px){
+@media (max-width:1180px){
   .atl-side{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:18px 0 0;padding:0 0 14px;border-bottom:1px solid var(--rule)}
   .atl-side .atl-all{font-size:13px}
   .atl-tog{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 10px;flex:1 1 220px;min-width:0;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 12px;font:inherit;text-align:left;cursor:pointer;color:var(--ink);min-height:44px}
@@ -344,12 +370,12 @@ html.vlab .labnav,html.vlab .page .snav{display:none}
 .lmeta .atl-lim:hover{color:var(--accent);border-bottom-color:currentColor}
 .foot.atl-limits{scroll-margin-top:72px}
 .foot.atl-limits:target{background:var(--sheet);box-shadow:inset 3px 0 0 var(--info);padding:10px 14px}
-@media (max-width:999px){
+@media (max-width:900px){
   .atl-bar .atl-depth{display:none}
   .lmeta .atl-depth{display:flex}
   .lmeta .mi:has(+.atl-depth){padding-right:0}
 }
-@media (max-width:760px){
+@media (max-width:640px){
   .atl-bar{margin-top:16px}
   .atl-steps{gap:0 18px;mask-image:linear-gradient(90deg,#000 86%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 86%,transparent)}
   .atl-steps>*{padding:11px 0 9px}

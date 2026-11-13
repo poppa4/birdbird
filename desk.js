@@ -210,7 +210,7 @@
       return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=5'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=5'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=5'), window.WSASK ? 0 : A.loadScript('ask.js?v=3')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=5'), window.WSASK ? 0 : A.loadScript('ask.js?v=5')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;

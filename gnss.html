@@ -5,8 +5,8 @@
 <meta name="description" content="How GNSS finds your position and how far you can trust it, and what RNAV and RNP ask of it. Move satellites and see DOP, RAIM and SBAS change, then fly an RNAV route and an RNP approach into Bergen with fly-by and fly-over turns, RNP containment, a GPS HSI with the right scaling, LNAV, LNAV/VNAV and LPV minima, and GNSS jamming.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GNSS and RNAV</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* the combined figure: sky plot + readout (left), map with the HSI inset and the approach profile (right) */
 .gn-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -15,7 +15,7 @@
 .gn-h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8E99A4;margin:2px 2px 0}
 #gnSky{display:block;width:100%;aspect-ratio:1/1;touch-action:none;cursor:grab;border-radius:8px;background:rgba(6,10,13,.45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);outline:none}
 #gnSky.drag{cursor:grabbing}
-#gnSky:focus-visible,#gnMap:focus-visible{box-shadow:inset 0 0 0 2px #7FCBE8}
+#gnSky:focus-visible,#gnMap:focus-visible{box-shadow:inset 0 0 0 2px var(--focus-dark)}
 .gn-ro{background:rgba(8,12,15,.55);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:6px 10px;font-size:12.5px;color:#C9D2D8}
 .gn-ro .r{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .gn-ro .r:last-child{border-bottom:0}
@@ -29,7 +29,7 @@
 .gn-mapw{position:relative;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 8px 24px -12px rgba(0,0,0,.6)}
 #gnMap{display:block;width:100%;aspect-ratio:1/0.86;max-height:640px;touch-action:none;cursor:ew-resize;outline:none}
 .gn-low{display:grid;grid-template-columns:minmax(0,1fr) clamp(150px,30%,196px);gap:10px;align-items:stretch}
-.gn-ph{display:flex;justify-content:space-between;gap:8px}.gn-ph #profM{text-transform:none;letter-spacing:0;color:#7FCBE8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gn-ph #profM.n{color:#AEB8C1}
+.gn-ph{display:flex;justify-content:space-between;gap:8px}.gn-ph #profM{text-transform:none;letter-spacing:0;color:var(--focus-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gn-ph #profM.n{color:#AEB8C1}
 .gn-profw{display:flex;flex-direction:column;gap:4px;min-width:0}
 .gn-hsi{min-width:0}
 .gn-hsi canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:10%}
@@ -108,7 +108,7 @@ body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32
 </style>
 </head>
 <body data-title="GNSS and RNAV">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -205,7 +205,7 @@ body.depth-instructor .gn-low{grid-template-columns:minmax(0,1fr) clamp(180px,32
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Training simulation, not for navigation; the route, waypoints and minima are illustrative, not a published procedure. DOP from least squares on the satellites you place (equal weights). Accuracy: 95 % horizontal = 2 × HDOP × σ, vertical = 1.96 × VDOP × σ, with σ = 4 m for GPS alone and 1 m with SBAS corrections. RAIM: snapshot least-squares slopes with σ = 33.3 m, false alarm 1/15 000 and missed detection 0.001 (the conservative values of the original RTCA availability standard); FDE when every subset without one satellite still meets the alert limit; no baro-aiding. SBAS: HPL = 6.0 × σ × d<sub>major</sub>, VPL = 5.33 × σ × VDOP with σ = 2.5 m; LPV needs HPL ≤ 40 m and VPL ≤ 50 m. Turns in still air: r = GS² / (g · tan bank); fly-by starts r · tan(ΔTrack / 2) early; fly-over turns overhead and rejoins with an intercept of up to 30°. CDI full scale 2 NM en route (beyond 30 NM), 1 NM terminal, ramping to 0.3 NM over the 2 NM before the FAF; LPV angular, 105 m at the threshold and at most 0.3 NM. Vertical deviation ±0.7° full scale for both baro-VNAV and LPV (real baro-VNAV displays are often linear). DME/DME reversion uses Flesland, Vollo and Stord with σ = 0.1 NM. No wind, no magnetic variation; coastline and relief as in the radio navigation simulator (Mapzen/AWS Terrain Tiles).</p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script src="navcore.js?v=2"></script>
 <script src="navgauges.js?v=4"></script>

@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Briefings · Birdbird</title>
 <meta name="description" content="Practise departure and approach briefings out loud with today’s weather, a training chart and the aircraft numbers, and get them scored.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="train.css?v=2">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="train.css?v=3">
 <style>
 .bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
-@media (max-width:1050px){.bgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){.bgrid{grid-template-columns:minmax(0,1fr)}}
 .chartcol{display:flex;flex-direction:column;gap:12px;position:sticky;top:62px}
-@media (max-width:1050px){.chartcol{position:static}}
+@media (max-width:1180px){.chartcol{position:static}}
 .chartbox{border:1px solid var(--rule);background:#fff}
 .wx{font-family:var(--f-mono);font-size:12.5px;background:var(--sheet);border:1px solid var(--rule);padding:10px 12px;line-height:1.55;color:var(--ink)}
 .wx b{font-family:var(--f-body);font-size:12px;color:var(--ink-2);display:block;margin-bottom:2px}
@@ -28,7 +28,7 @@
 .speeds td:last-child{font-family:var(--f-mono);text-align:right;white-space:nowrap}
 .plateguide{counter-reset:s;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 @media (max-width:900px){.plateguide{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:560px){.plateguide{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.plateguide{grid-template-columns:minmax(0,1fr)}}
 .plateguide .pg{counter-increment:s;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:14px 16px}
 .plateguide .pg h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:88%;font-size:18px;display:flex;gap:10px;align-items:baseline}
 .plateguide .pg h4::before{content:attr(data-k);color:var(--magenta);font-size:26px;font-weight:780}
@@ -36,7 +36,7 @@
 .plateguide .pg ul{margin:6px 0 0;padding-left:18px;font-size:14px}
 .hist{font-size:13px;color:var(--ink-2)}
 .rgrid{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:28px;align-items:start}
-@media (max-width:1050px){.rgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:1180px){.rgrid{grid-template-columns:minmax(0,1fr)}}
 .rchart{border:1px solid var(--rule);background:#fff;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .rhint{display:none;margin:6px 0 0}
 @media (max-width:640px){.rchart svg{min-width:600px}.rhint{display:block}}
@@ -48,9 +48,9 @@
 .rchart .hn{fill:#fff;pointer-events:none}
 .rchart .hs:focus{outline:none}.rchart .hs:focus-visible .hz{stroke:var(--accent);stroke-width:2.5}
 .rside{display:flex;flex-direction:column;gap:14px;position:sticky;top:62px;min-width:0}
-@media (max-width:1050px){.rside{position:static}}
+@media (max-width:1180px){.rside{position:static}}
 .hsb{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.hsb button{display:flex;gap:8px;align-items:center;text-align:left;font-size:13.5px;font-weight:500;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 10px;cursor:pointer;min-height:40px}
+.hsb button{display:flex;gap:8px;align-items:center;text-align:left;font-size:13.5px;font-weight:500;background:var(--sheet);color:var(--ink);border:1px solid var(--rule);border-radius:var(--radius);padding:7px 10px;cursor:pointer;min-height:44px}
 .hsb button .n{flex:none;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--info);color:#fff;font-size:11.5px;font-weight:700}
 .hsb button.on{border-color:var(--accent);background:var(--accent-wash)}.hsb button.on .n{background:var(--accent)}
 .hsd{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;scroll-margin-top:80px}
@@ -75,7 +75,7 @@
 </style>
 </head>
 <body data-title="Briefings">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -87,7 +87,7 @@
   </header>
   <nav class="snav"><a href="#trainer">Trainer</a><a href="#reading">Reading an approach chart</a><a href="#plate">How to brief a plate</a><a href="#speeds">A320 speed card</a></nav>
 
-  <section class="card" id="trainer">
+  <section class="card" id="trainer" data-ai>
     <div class="btns" style="justify-content:space-between">
       <div id="kind"></div>
       <div class="btns"><select id="scen" aria-label="Scenario" style="font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px"><option value="">Practice airport (fictional)</option></select><div id="rules"></div><button class="btn" id="newsc">New scenario</button><span class="ai-state" id="aist">AI: checking…</span></div>
@@ -149,11 +149,11 @@
   </section>
   <p class="note">The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.</p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="ops.js?v=3"></script>
-<script src="brief.js?v=8"></script>
+<script src="brief.js?v=9"></script>
 <script src="chart.js?v=4"></script>
-<script src="ai.js?v=2"></script>
+<script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
@@ -326,7 +326,7 @@ el('model').onclick=()=>{ el('out').innerHTML=`<div class="why" style="font-size
 el('clear').onclick=()=>{ el('bt').value=''; el('out').innerHTML=''; };
 NAI.ptt(el('mic'),el('bt'),null,{toggle:true,append:true,lang:'en-GB',space:false}); if(!NAI.sr) el('mic').hidden=true;
 const drawAist=m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Scored by the built-in check',no:'Vurderes med innebygd sjekk'}); if(!m) a.title=L({en:'The AI instructor is not connected on this copy of Birdbird. The built-in check looks for every element and today’s numbers.',no:'AI-instruktøren er ikke koblet til på denne kopien av Birdbird. Den innebygde sjekken ser etter alle elementene og dagens tall.'}); };
-NAI.ready.then(m=>{ drawAist(m); LAB.onLang(()=>drawAist(NAI.mode)); });
+NAI.onMode(drawAist); LAB.onLang(()=>drawAist(NAI.mode));
 
 /* ---------- Reading an approach chart: interaktiv gjennomgang ---------- */
 const HS={
@@ -372,7 +372,7 @@ function hsDraw(){ const R=CHART.REG;
   const h=HS[hsK], n=R.find(r=>r.k===hsK).n;
   el('hsd').innerHTML=`<h3>${n} · ${esc(L(h.t))}</h3><p>${esc(L(h.d))}</p><p><b>${L({en:'Read it like this',no:'Les det slik'})}:</b> ${esc(L(h.r))}</p><div class="tl"><span class="k">${esc(h.k)}</span><div><b>${L({en:'In the TSADMM brief',no:'I TSADMM-briefingen'})}</b><div class="say">${esc(h.say)}</div></div></div>`;
   hsMark(); }
-function hsPick(k,scroll){ if(!HS[k]) return; hsK=k; hsDraw(); if(scroll&&window.matchMedia('(max-width:1050px)').matches) el('hsd').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function hsPick(k,scroll){ if(!HS[k]) return; hsK=k; hsDraw(); if(scroll&&window.matchMedia('(max-width:1180px)').matches) el('hsd').scrollIntoView({behavior:'smooth',block:'nearest'}); }
 el('rchart').addEventListener('click',e=>{ const g=e.target.closest('.hs'); if(g) hsPick(g.dataset.k,true); });
 el('rchart').addEventListener('keydown',e=>{ const g=e.target.closest('.hs'); if(g&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); hsPick(g.dataset.k,true); } });
 el('hsb').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) hsPick(b.dataset.k,false); });

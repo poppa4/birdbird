@@ -51,6 +51,7 @@
               'SOP-en din runder det opp til faste 1 200 kg på driftsfærdplanen.'), D('sop', 'SOP 3.5 · p. 3-14', 'SOP 3.5 · s. 3-14')]],
       src: ['easa', 'afm', 'sop'] }
   ];
+  const CUR = '\u2060<i class="fi-cur"></i>\u2060';
   const CHIP = 10;   // a chip costs as much time as ten characters: a short beat before it lands
 
   const len = it => it.d ? CHIP : L(it).length;
@@ -67,9 +68,9 @@
         if (ghost) { out += it.d ? chip(it) : esc(L(it)); continue; }
         const c = len(it);
         if (left >= c) { out += it.d ? chip(it) : esc(L(it)); left -= c; if (it.d) cited.add(it.d); continue; }
-        // the caret goes here, and everything after it is hidden
-        if (!it.d && left > 0) { const s = L(it); out += esc(s.slice(0, left)) + '<i class="fi-cur"></i><span class="gh">' + esc(s.slice(left)); }
-        else out += '<i class="fi-cur"></i><span class="gh">' + (it.d ? chip(it) : esc(L(it)));
+        // the caret goes here, and everything after it is hidden (CUR: word joiners keep the caret from opening a line break inside a word, so the lines never re-wrap while typing)
+        if (!it.d && left > 0) { const s = L(it); out += esc(s.slice(0, left)) + CUR + '<span class="gh">' + esc(s.slice(left)); }
+        else out += CUR + '<span class="gh">' + (it.d ? chip(it) : esc(L(it)));
         left = 0; ghost = true; open = true;
       }
       if (open) out += '</span>';
@@ -93,12 +94,21 @@
     </div>`).join('');
     pg.innerHTML = QA.map((qa, i) => `<li><button type="button" data-i="${i}" aria-pressed="${i === cur}" aria-label="${esc(L(T.ex))} ${i + 1} ${esc(L(T.of))} ${QA.length}">${i + 1}<i></i></button></li>`).join('');
     pg.hidden = false;
-    QA.forEach((qa, i) => paint(i, i === cur ? n : total(qa)));
+    measure();
+  }
+  /* Each paragraph keeps the height of its complete text. Splitting a word at the caret changes its width by a fraction of a
+     pixel (no kerning across the split), which can re-wrap a line that only just fits; with the height fixed, nothing below moves. */
+  let PH = [], PW = 0;
+  function measure() {
+    PH = []; PW = stack.clientWidth;
+    QA.forEach((qa, i) => { paint(i, total(qa)); const el = stack.children[i]; PH[i] = el ? [...el.querySelectorAll('.fi-a>p')].map(p => p.offsetHeight) : []; });
+    QA.forEach((qa, i) => paint(i, i === cur ? Math.floor(n) : total(qa)));
   }
   function paint(i, k) {
     const el = stack.children[i]; if (!el) return;
     const r = answer(QA[i], k);
     el.querySelector('.fi-a').innerHTML = r.html;
+    if (PH[i]) el.querySelectorAll('.fi-a>p').forEach((p, j) => { if (PH[i][j]) p.style.height = PH[i][j] + 'px'; });
     for (const li of el.querySelectorAll('.fi-src li')) li.classList.toggle('on', r.cited.has(li.dataset.d));
   }
   function show(i, typed) {
@@ -138,6 +148,8 @@
 
   if (RM) n = total(QA[0]);
   build();
+  if ('ResizeObserver' in window) new ResizeObserver(() => { if (stack.clientWidth !== PW) measure(); }).observe(stack);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   if ('IntersectionObserver' in window) new IntersectionObserver(es => { vis = es[0].isIntersecting; go(); }, { threshold: 0.2 }).observe(box);
   else { vis = true; go(); }
   window.__fpFi = { show, get state() { return { cur, n, phase }; } };

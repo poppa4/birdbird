@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gate to gate · Birdbird</title>
 <meta name="description" content="Fly a whole DA42 training trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="train.css?v=2">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="train.css?v=3">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -16,9 +16,9 @@
 .setup .seg{min-width:220px}
 .chk{display:inline-flex;gap:6px;align-items:center;font-size:14px;color:var(--ink)}
 .g2g{display:grid;grid-template-columns:280px minmax(0,1fr);gap:22px;align-items:start;margin-top:4px}
-@media (max-width:980px){.g2g{grid-template-columns:minmax(0,1fr)}.side{order:2}}
+@media (max-width:900px){.g2g{grid-template-columns:minmax(0,1fr)}.side{order:2}}
 .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:62px}
-@media (max-width:980px){.side{position:static}}
+@media (max-width:900px){.side{position:static}}
 .phases{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
 .phases li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule-2);font-size:14px;color:var(--ink-2)}
 .phases li .d{width:12px;height:12px;border-radius:50%;border:2px solid var(--rule);justify-self:center}
@@ -43,7 +43,7 @@
 .why{font-size:14.5px;background:var(--sheet);border-left:3px solid var(--chart-blue);padding:10px 14px;max-width:80ch}
 .why b{color:var(--ink)}
 .flow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
-@media (max-width:700px){.flow{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.flow{grid-template-columns:minmax(0,1fr)}}
 .flow h4{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .pool{display:flex;flex-direction:column;gap:6px}
 .pool button{text-align:left;font-size:14px;background:var(--sheet);border:1px solid var(--rule);border-radius:3px;padding:9px 12px;cursor:pointer;color:var(--ink)}
@@ -84,10 +84,11 @@
 .order-table td,.order-table th{padding:8px 10px;border-bottom:1px solid var(--rule-2);text-align:left;vertical-align:top}
 .order-table th{font-size:12px;color:var(--ink-2);font-weight:500}
 .order-table td:first-child{font-weight:600;white-space:nowrap}
+@media (max-width:640px){.order-table{font-size:13px}.order-table td,.order-table th{padding:8px 6px;overflow-wrap:anywhere}.order-table td:first-child{white-space:normal}}
 </style>
 </head>
 <body data-title="Gate to gate">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -106,7 +107,7 @@
       <span class="ai-state" id="aist">AI: checking…</span>
       <button class="btn" id="newf">New flight</button>
     </div>
-    <div class="g2g">
+    <div class="g2g" data-ai>
       <aside class="side">
         <ol class="phases" id="phases"></ol>
         <div class="knee" id="knee"></div>
@@ -130,12 +131,12 @@
     <p class="note"><a href="radio-drills.html">Radio drills</a>: practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.</p>
   </section>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="ops.js?v=3"></script>
-<script src="brief.js?v=8"></script>
+<script src="brief.js?v=9"></script>
 <script src="chart.js?v=4"></script>
 <script src="g2g-steps.js?v=4"></script>
-<script src="ai.js?v=2"></script>
+<script src="ai.js?v=3"></script>
 <script src="radiocore.js?v=2"></script>
 <script>
 (function(){
@@ -231,7 +232,7 @@ function side(){
 /* ---------- AI ---------- */
 let aiOn=false;
 const drawAist=m=>{ aiOn=!!m; const a=el('aist'); a.classList.toggle('on',aiOn); a.textContent= aiOn? L({en:'AI instructor on',no:'AI-instruktør på'}) : L({en:'Built-in checks',no:'Innebygde sjekker'}); a.title= aiOn&&NAI.mode==='sample'? L({en:'Uses your Claude account. The first call asks for permission.',no:'Bruker Claude-kontoen din. Første kall ber om tillatelse.'}) : L({en:'Radio calls and briefings are checked by the built-in rules. Open the page in Claude for the AI controller and instructor.',no:'Oppkall og briefinger sjekkes av innebygde regler. Åpne siden i Claude for AI-flygeleder og instruktør.'}); };
-NAI.ready.then(m=>{ drawAist(m); LAB.onLang(()=>drawAist(NAI.mode)); });
+NAI.onMode(drawAist); LAB.onLang(()=>drawAist(NAI.mode));
 
 /* ---------- steg ---------- */
 const KIND={mcq:{en:'Decide',no:'Bestem'},order:{en:'Flow',no:'Flow'},check:{en:'Checklist',no:'Sjekkliste'},atis:{en:'Listen',no:'Lytt'},brief:{en:'Brief',no:'Brief'},radio:{en:'Radio',no:'Radio'}};

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My training · Birdbird</title>
 <meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -190,16 +190,16 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 .acc-code .btns{display:flex;flex-wrap:wrap;gap:8px}
 .acc-msg{margin:12px 0 0}
 #acBody>.callout{margin:0 0 14px}
-@media (max-width:760px){.acc-two,.acc-grid{grid-template-columns:minmax(0,1fr)}.acc-two .box,.acc-grid .box{padding:16px}.acc-top .btns{width:100%}}
-@media (max-width:1080px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:980px){
+@media (max-width:640px){.acc-two,.acc-grid{grid-template-columns:minmax(0,1fr)}.acc-two .box,.acc-grid .box{padding:16px}.acc-top .btns{width:100%}}
+@media (max-width:1180px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
   .mt-head{grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
   .nextup{grid-template-columns:minmax(0,1fr);gap:12px}
   .tr-grid,.plan2,.ach,.dgrid{grid-template-columns:minmax(0,1fr)}
   .tr-grid{gap:0}
   .tr-grid>div+div .tmr:first-child{border-top:1px solid var(--rule-2)}
 }
-@media (max-width:700px){
+@media (max-width:640px){
   .mt-head{margin-top:24px}
   .mods{grid-template-columns:minmax(0,1fr)}
   .trackrow{gap:10px}
@@ -218,7 +218,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -314,7 +314,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     </form>
   </dialog>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
@@ -643,8 +643,9 @@ el('acDelDlg').addEventListener('close',()=>{ if(el('acDelDlg').returnValue!=='y
 function acctReady(){ const A=AC(); if(!A) return;
   document.addEventListener('bb-account',()=>{ if(!UI.busy) drawAcct(); });
   document.addEventListener('bb-account-sync',e=>{ e.preventDefault(); B.loaded=false; bLoading=null; reloadStore().then(drawAll); });
-  A.detect().then(()=>drawAcct());
+  A.detect().then(()=>drawAcct()).then(acHold,acHold);
   drawAcct(); }
+const acHold=window.BBHOLD?BBHOLD.wait():()=>{};   /* the account box is drawn once the account state is known */
 if(window.BBACCOUNT) acctReady(); else document.addEventListener('bb-account-ready',acctReady,{once:true});
 setTimeout(()=>{ if(!window.BBACCOUNT){ const b=el('acBody'); if(b&&/Checking|Sjekker/.test(b.textContent)) b.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren.'})}</div>`; } },6000);
 

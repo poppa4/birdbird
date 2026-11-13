@@ -5,8 +5,8 @@
 <meta name="description" content="Read METAR, SPECI and TAF group by group, see a TAF as a timeline with VFR, SVFR and IFR periods, and learn the symbols on significant weather charts. Norwegian training examples.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Reading the Weather</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -55,11 +55,11 @@
 .tinfo{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:baseline;background:rgba(12,15,18,.45);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:10px 12px;min-height:58px}
 .tinfo .tt{font-family:var(--f-mono);font-size:18px;color:#EEF2F5;font-weight:500;grid-row:span 2}
 .tinfo .ty{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--c,#8B99A7)}
-.tinfo .tx{font-size:14px;line-height:1.5;color:#D7E1E6}
+.tinfo .tx{font-size:14px;line-height:1.5;color:var(--instrument-ink)}
 .tinfo .tx b{color:#fff;font-weight:600}
 .tinfo.empty{display:block;color:#8B99A7;font-size:13.5px}
 .cat{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:12px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:3px;color:#13181D;background:var(--c,#71CC93)}
-.sumrow{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:#D7E1E6}
+.sumrow{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--instrument-ink)}
 .sumrow b{color:#fff;font-weight:600}
 .sumrow .lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B99A7}
 /* TAF timeline */
@@ -84,7 +84,7 @@
 .tll .sh{display:none}
 .atT{display:flex;flex-direction:column;gap:6px;background:rgba(12,15,18,.45);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:10px 12px}
 .atT .h{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#8B99A7}
-.atT .r{display:grid;grid-template-columns:minmax(90px,auto) auto minmax(0,1fr);gap:4px 10px;align-items:baseline;font-size:13.5px;color:#D7E1E6}
+.atT .r{display:grid;grid-template-columns:minmax(90px,auto) auto minmax(0,1fr);gap:4px 10px;align-items:baseline;font-size:13.5px;color:var(--instrument-ink)}
 .atT .r .g{font-family:var(--f-mono);font-size:12px;color:#EEF2F5}
 .atT .r .n{color:#AEB8C1;font-size:12.5px}
 @media (max-width:640px){.raw{font-size:14.5px;line-height:2}.wxp{padding:2px 10px 12px;min-height:0}.tl{--lw:58px}.tll{font-size:9.5px}.atT .r{grid-template-columns:minmax(0,1fr) auto}.atT .r>span:last-child{grid-column:1/-1}.tll .lg{display:none}.tll .sh{display:inline}.tinfo .tt{font-size:15px}}
@@ -117,7 +117,7 @@
 </style>
 </head>
 <body data-title="Reading the Weather">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -204,7 +204,7 @@
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script src="wxkit.js?v=1"></script>
 <script src="wxreports.js?v=3"></script>

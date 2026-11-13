@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Data sources and licences · Birdbird</title>
 <meta name="description" content="Where Birdbird's data comes from: airspace and navaids, terrain elevation, the World Magnetic Model, EASA regulations and ICAO concepts, with licences, attribution and the limits of teaching models.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* sources.html – page-local layout: one register per group of sources */
 .src{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
@@ -23,13 +23,13 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
 .src .lic small{font-size:12.5px;color:var(--ink-2);line-height:1.4}
 .src .hd{display:grid;padding:8px 0;border-bottom:1px solid var(--rule)}
 .src .hd span{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
-@media (max-width:860px){
+@media (max-width:900px){
   .src>div{grid-template-columns:minmax(0,1fr);gap:8px}
   .src .hd{display:none}
   .src .lic{flex-direction:row;flex-wrap:wrap;align-items:center}
 }
 .sc-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 40px;align-items:start}
-@media (max-width:860px){.sc-two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.sc-two{grid-template-columns:minmax(0,1fr)}}
 .sc-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
 .sc-list li{padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
 .sc-list li b{font-weight:600}
@@ -41,7 +41,7 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
 </style>
 </head>
 <body data-title="Data sources and licences">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -175,7 +175,7 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
     <p class="note">Spotted a missing attribution or a source used outside its terms? <a href="about.html#contact">Contact</a></p>
   </section>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script>
 (function(){
 'use strict';

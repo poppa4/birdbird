@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Type rating trainer: King Air B200 · Birdbird</title>
 <meta name="description" content="King Air B200 type rating trainer: a study plan for every system, cockpit system simulators, flashcards, a question trainer with exam mode and an oral exam.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
-<link rel="stylesheet" href="train.css?v=2">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
+<link rel="stylesheet" href="train.css?v=3">
 <style>
 .intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:900px){.intro{grid-template-columns:minmax(0,1fr)}}
@@ -44,7 +44,7 @@ svg.schem{max-height:430px}
 .labs a:hover{border-color:var(--magenta);color:var(--magenta)}
 /* cockpit sims */
 .simgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
-@media (max-width:1000px){.simgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.simgrid{grid-template-columns:minmax(0,1fr)}}
 .simview{display:flex;flex-direction:column;gap:8px;min-width:0}
 .svgwrap{overflow-x:auto;padding:6px}
 svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM Plex Mono",monospace}
@@ -75,11 +75,11 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 .notice{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--chart-blue);padding:10px 14px;font-size:14px}
 .notice ul{margin:6px 0 0;padding-left:20px}.notice li{margin:4px 0}
 .gauges{display:block;width:100%;aspect-ratio:2.5/1}
-@media (max-width:600px){.gauges{aspect-ratio:1/1}}
+@media (max-width:640px){.gauges{aspect-ratio:1/1}}
 .topv{display:block;width:100%;aspect-ratio:1/0.9;max-height:460px}
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
 .pplot{display:block;width:100%;aspect-ratio:16/10;max-height:420px}
-@media (max-width:600px){.pplot{aspect-ratio:auto;height:300px}}
+@media (max-width:640px){.pplot{aspect-ratio:auto;height:300px}}
 .duty{background:var(--sheet);border:1px solid var(--rule);padding:4px 12px 8px}
 .duty .bar{height:6px;background:var(--rule-2);border-radius:3px;overflow:hidden;margin:2px 0 4px}.duty .bar i{display:block;height:100%;background:var(--green)}.duty .bar i.w{background:var(--red)}
 .slog{margin:6px 0 0;padding-left:20px;font-size:13px;max-height:260px;overflow:auto}.slog li{margin:2px 0}
@@ -100,9 +100,9 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 .qset label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--ink-2)}
 .qset select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);max-width:100%}
 .qset label{max-width:100%;min-width:0}
-@media (max-width:600px){.qset label{flex:1 1 100%}.qset select{width:100%}}
+@media (max-width:640px){.qset label{flex:1 1 100%}.qset select{width:100%}}
 .qgrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;align-items:start}
-@media (max-width:1000px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.qgrid{grid-template-columns:minmax(0,1fr)}}
 .qopts button .k{display:inline-block;width:22px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
 .qopts button.pick{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--ink)}
 .stab{width:100%;border-collapse:collapse;font-size:13px}
@@ -117,12 +117,12 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 .empty{background:var(--sheet);border:1px dashed var(--rule);padding:16px;font-size:14px;color:var(--ink-2);border-radius:4px}
 /* oral */
 .ogrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
-@media (max-width:1000px){.ogrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.ogrid{grid-template-columns:minmax(0,1fr)}}
 .olog{display:flex;flex-direction:column;gap:12px;max-height:620px;overflow-y:auto;padding-right:4px}
 .olog .q{align-self:flex-end;background:#E8EEF3;border-radius:6px;padding:9px 12px;max-width:85%;font-size:15px;white-space:pre-wrap}
-.olog .a{border-left:3px solid #1D4E9E;padding:2px 0 2px 14px}
-.olog .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#1D4E9E;display:block;margin-bottom:4px}
-.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:#1D4E9E;background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;vertical-align:1px}
+.olog .a{border-left:3px solid var(--info);padding:2px 0 2px 14px}
+.olog .who{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--info);display:block;margin-bottom:4px}
+.cite{display:inline-block;font-family:var(--f-mono);font-size:11.5px;font-weight:600;color:var(--info);background:#E9EFF7;border:1px solid #C8D5E6;border-radius:3px;padding:0 4px;margin:0 1px;vertical-align:1px}
 .cite.x{color:#8A5A00;background:#FBF1DE;border-color:#E9D3A8}
 .grade{display:flex;gap:12px;align-items:flex-start;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--amber);padding:10px 14px;margin-top:8px}
 .grade.ok{border-left-color:var(--green)}.grade.bad{border-left-color:var(--red)}
@@ -135,7 +135,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 .sitem{border-top:1px solid var(--rule-2);padding-top:8px}
 .sitem b{display:block;font-size:13px}
 .sitem blockquote{margin:6px 0;padding:6px 8px;background:#fff;border-left:3px solid #C8D5E6;font-size:12.5px;line-height:1.5;max-height:150px;overflow:auto}
-.keyp{background:#F4F8FD;border-left:3px solid #1D4E9E;padding:10px 14px;font-size:14px}
+.keyp{background:#F4F8FD;border-left:3px solid var(--info);padding:10px 14px;font-size:14px}
 .keyp ul{margin:4px 0 0;padding-left:20px}
 /* flows */
 .phases{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
@@ -164,7 +164,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 </style>
 </head>
 <body data-title="Type rating trainer: King Air B200">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -247,7 +247,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
     </div>
   </section>
 
-  <section class="card" id="oral">
+  <section class="card" id="oral" data-ai>
     <div class="eyebrow">5 · Oral exam</div>
     <h2>Oral exam with the AI instructor</h2>
     <p class="lead">The instructor plays the examiner: one question at a time about the system you choose, a grade from 0 to 10 for each answer with what was missing, then the next question. It uses passages from your own documents in Flight Intelligence and cites them; without documents it says the answers are general and must be verified.</p>
@@ -282,8 +282,8 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 
   <p class="foot">Teaching material. The simulators are simplified models of system logic, with own drawings; they are not the aircraft panel, a checklist or approved data. Numbers are typical King Air B200 values that vary with serial number, modifications and the operator: verify every figure in your AFM/POH and follow your approved checklists and SOP. Progress, statistics and flashcard boxes are stored in this browser only.</p>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="ai.js?v=2"></script>
+<script src="lab.js?v=49"></script>
+<script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script src="b200-qbank.js"></script>
 <script src="b200-sim.js?v=3"></script>
@@ -479,7 +479,7 @@ function offlineAnswer(text){ const p=OS.cur; if(!p) return; if(text) addLog('q'
   const d=addLog('a',`<span class="who">Key points</span><div class="keyp"><ul>${p[1].map(x=>`<li>${x}</li>`).join('')}</ul></div><p class="note">General B200 knowledge: verify in your AFM/POH.</p><div class="btns" style="margin-top:6px"><button class="btn" data-self="9">I had it</button><button class="btn" data-self="6">Partly</button><button class="btn" data-self="3">Missed it</button></div>`);
   d.addEventListener('click',e=>{ const b=e.target.closest('[data-self]'); if(!b||!OS) return; OS.grades.push(+b.dataset.self); d.querySelectorAll('[data-self]').forEach(x=>x.disabled=true); OS.k++; offline(); }); }
 function oralAI(){ const on=!!(window.NAI&&NAI.mode); const t=el('oTalk'), sp=el('oSrc'); if(t) t.hidden=!on||!(NAI.ptt||window.SpeechRecognition||window.webkitSpeechRecognition); if(sp) sp.hidden=!on; }
-try{ oralAI(); if(window.NAI&&NAI.ready&&NAI.ready.then) NAI.ready.then(oralAI,oralAI); setTimeout(oralAI,2500); }catch(e){}
+try{ oralAI(); if(window.NAI&&NAI.onMode) NAI.onMode(oralAI); }catch(e){}
 el('oStart').onclick=()=>{ OS={mod:el('oSys').value,turns:[],grades:[],k:0,ai:!!NAI.mode}; el('oLog').innerHTML=''; el('oAns').hidden=false; el('oStart').hidden=true; el('oEnd').hidden=false; drawSrc([]);
   if(OS.ai) oTurn(null,false); else offline(); };
 el('oEnd').onclick=()=>{ if(octl) octl.abort(); NAI.hush(); if(OS&&OS.grades.length){ const a=OS.grades.reduce((x,y)=>x+y,0)/OS.grades.length; addLog('a',`<span class="who">Summary</span><p>${OS.grades.length} answers graded, average ${a.toFixed(1)}/10 (${a>=7?'at':'below'} the pass standard of 7).</p>`); const om=ld('oral',{}); om[OS.mod]={avg:+a.toFixed(1),n:OS.grades.length,t:Date.now()}; sv('oral',om); }
@@ -488,7 +488,7 @@ function oSend(){ const v=el('oA').value.trim(); if(!OS) return; if(!OS.ai){ el(
 el('oSend').onclick=oSend; el('oSkip').onclick=()=>{ if(!OS) return; if(OS.ai) oTurn(null,true); else offlineAnswer(''); };
 el('oA').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); oSend(); } });
 if(NAI.ptt&&NAI.sr) NAI.ptt(el('oTalk'),el('oA'),t=>{ if(OS&&t) oSend(); },{lang:'en-GB',space:false}); else el('oTalk').hidden=true;
-NAI.ready.then(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? 'AI instructor on' : 'Self-assessed practice'; if(!m) a.title='The AI examiner is not connected on this copy of Birdbird. The oral runs as self-assessed practice: answer, then compare with the model answer.'; });
+NAI.onMode(m=>{ const a=el('aist'); a.classList.toggle('on',!!m); a.textContent= m? 'AI instructor on' : 'Self-assessed practice'; a.title=m?'':'The AI examiner is not connected on this copy of Birdbird. The oral runs as self-assessed practice: answer, then compare with the model answer.'; });
 
 /* ---------- 6. flows + scenario ---------- */
 el('phases').innerHTML=C.phases.map((p,i)=>`<div class="ph"><h3><i>${i+1}</i>${esc(p[0])}</h3><p>${p[1]}</p><ul>${p[2].map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('');
@@ -508,7 +508,7 @@ drawMods(); drawStats(); fcNext(true); drawKpi(); loadDocs();
 const h=(location.hash||'').slice(1); const sk=h.startsWith('cockpit-')?h.slice(8):'';
 showSim(SIMS.some(s=>s[0]===sk)?sk:'elec',false,true);
 if(sk) setTimeout(()=>el('cockpit').scrollIntoView(),50);
-LAB.add({},{'English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening'});
+LAB.add({},{'English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200'});
 LAB.start('b200');
 })();
 </script>

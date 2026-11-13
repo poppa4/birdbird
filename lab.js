@@ -357,7 +357,7 @@
   /* Explore app (lab.css .xapp): the control panel is always open on desktop; on phones it is a "Controls" sheet
      under the viewport that starts closed and opens when a Try-it task sends you to the model. */
   (function xpanels(){
-    const mq=matchMedia('(max-width:980px)'), ps=()=>document.querySelectorAll('details.xpanel');
+    const mq=matchMedia('(max-width:900px)'), ps=()=>document.querySelectorAll('details.xpanel');
     const sync=first=>ps().forEach(d=>{ if(!mq.matches) d.open=true; else if(first) d.open=false; });
     sync(true); if(mq.addEventListener) mq.addEventListener('change',()=>sync(false));
     document.addEventListener('click',e=>{ if(e.target.closest('.tasks [data-go]')) ps().forEach(d=>{ d.open=true; }); });

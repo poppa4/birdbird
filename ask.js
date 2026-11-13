@@ -106,13 +106,11 @@
     function localHtml(x) { return x.src.length ? `<p>${esc(t('These pages match your question:', 'Disse sidene passer med spørsmålet ditt:'))}</p><ul class="ask-hits">${x.src.map((s, i) => `<li>${chip(x.src, i + 1)}<span>${esc(A.W.snippet(s.c.t, A.W.tokens(x.q), 150))}</span></li>`).join('')}</ul>` : `<p>${esc(t('No page matches those words. Try other or fewer words.', 'Ingen side passer med de ordene. Prøv andre eller færre ord.'))}</p>`; }
     async function check() {
       if (avail !== null) return avail;
-      /* the answer service is looked for only when this pane is open, and once per browser session: a "not here" is
-         remembered (sessionStorage), so opening the pane again does not ask again and the browser logs no second 404 */
-      if (!window.NAI && aiOff()) avail = false;
-      else try {
-        if (!window.NAI) await A.loadScript('ai.js?v=1');
+      /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
+      try {
+        if (!window.NAI) await A.loadScript('ai.js?v=3');
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
-        avail = !!m && m !== 'timeout'; if (!m) aiOff(true);
+        avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }
       if (alive) { drawLog(); }
       return avail;

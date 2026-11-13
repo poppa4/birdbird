@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="description" content="A front-on DA42-style instrument panel with working glass displays, switches, power levers and autopilot. Practise scans, approaches and engine failures in the browser.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Glass Cockpit Trainer</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<title>DA42 glass cockpit trainer · Birdbird</title>
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* ---------- cockpit stage: one view that always fits ---------- */
 .ckp{position:relative;z-index:25;width:100vw;margin-left:calc(50% - 50vw);height:100vh;height:100dvh;display:flex;flex-direction:column;background:#0b0d10;color:#e6ebef;scroll-margin-top:0;overflow:hidden}
@@ -167,7 +167,7 @@
 .stick .dot{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;left:50%;top:50%;border-radius:50%;background:var(--smoke);box-shadow:0 0 0 6px rgba(127,203,232,.18);pointer-events:none}
 .stick small{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--muted);pointer-events:none}
 .mini{font-size:12px;color:var(--muted)}
-.engbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.engbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.engbtns .btn{white-space:normal;min-width:0}
 .btn.warn{border-color:var(--red);color:#ffb3a8}
 .btn.on{background:var(--amber);border-color:var(--amber);color:#0d1319}
 kbd{font-family:var(--f-mono);font-size:11.5px;background:var(--panel-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:1px 5px;color:var(--fg)}
@@ -214,8 +214,8 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 </style>
 <link rel="stylesheet" href="simshell.css?v=4">
 </head>
-<body data-title="Glass Cockpit Trainer">
-<script src="site.js?v=64"></script>
+<body data-title="DA42 glass cockpit trainer">
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -358,7 +358,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="da42procs.js?v=4"></script>
 <script src="ownck.js?v=3"></script>
 <script src="otw.js?v=13"></script>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="simshell.js?v=4"></script>
 <script>
 (function(){

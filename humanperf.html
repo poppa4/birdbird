@@ -5,8 +5,8 @@
 <meta name="description" content="Human performance (EASA 040) that changes how you fly: limited attention, workload against capacity, startle and surprise, automation and mode confusion, threat and error management, CRM and decision making (FOR-DEC, DODAR), fatigue and the body clock, alcohol, medication and hypoxia.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Human Performance</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* the human performance figure: workload against capacity, the alertness day, or the threat-and-error chain */
 .hp-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -37,8 +37,8 @@
 .tem .cms li::before{content:"";position:absolute;left:0;top:6px;width:8px;height:8px;border-radius:50%;border:1.5px solid #5E6D7C}
 .tem .cms li.on{color:#E2E8EE}.tem .cms li.on::before{background:#71CC93;border-color:#71CC93}
 .tem .cms li b{color:inherit}
-@media (max-width:760px){.tem .chain{grid-template-columns:minmax(0,1fr);gap:20px}.tem .st{min-height:0}.tem .st:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-19px}}
-.xsec .chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:4px 0;cursor:pointer;min-height:40px}
+@media (max-width:640px){.tem .chain{grid-template-columns:minmax(0,1fr);gap:20px}.tem .st{min-height:0}.tem .st:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-19px}}
+.xsec .chk{display:flex;align-items:center;gap:8px;font-size:13.5px;margin:4px 0;cursor:pointer;min-height:44px}
 .xsec .chk input{width:18px;height:18px;accent-color:var(--accent);flex:none}
 .xsec .seg.wrap{flex-wrap:wrap}.xsec .seg.wrap button{flex:1 1 46%}
 /* Try it: one task at a time */
@@ -98,7 +98,7 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Human Performance">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -172,7 +172,7 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script src="hfcore.js?v=1"></script>
 <script src="humanperf.js?v=2"></script>

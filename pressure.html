@@ -5,8 +5,8 @@
 <meta name="description" content="Why air flows from high to low pressure, why it ends up blowing along the isobars, and what friction does near the ground. Build the wind one force at a time on a weather chart: pressure gradient, Coriolis, friction, Buys Ballot, the altimeter from high to low, and local winds.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressure and Wind</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -20,7 +20,7 @@
 .kfull>summary{width:auto!important;max-width:100%}
 /* Understand, in full: diagram + terms */
 .ugrid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px 36px;align-items:start}
-@media (max-width:980px){.ugrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.ugrid{grid-template-columns:minmax(0,1fr)}}
 .ufig{margin:0;background:#FBFBF8;border:1px solid var(--rule);border-radius:var(--radius-lg);padding:8px}
 .ufig svg{display:block;width:100%;height:auto}
 .terms{margin:0;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
@@ -31,7 +31,7 @@
 /* Explore: one viewport, three views */
 .vv[hidden],.vp[hidden]{display:none!important}
 #cv{aspect-ratio:16/10.2;max-height:640px;touch-action:pan-y pinch-zoom;outline:none;cursor:crosshair}
-#cv:focus-visible{box-shadow:inset 0 0 0 2px #7FCBE8}
+#cv:focus-visible{box-shadow:inset 0 0 0 2px var(--focus-dark)}
 #alt,#lw{aspect-ratio:16/9.4;max-height:600px}
 @media (max-width:640px){#cv{aspect-ratio:1/1.12}#alt,#lw{aspect-ratio:4/3.9}}
 .xsee b{color:var(--ink)}
@@ -67,7 +67,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
 </style>
 </head>
 <body data-title="Pressure and Wind">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -204,7 +204,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script>
 (function(){

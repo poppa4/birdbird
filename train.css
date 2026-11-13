@@ -13,7 +13,7 @@
 .msg.atc{align-self:flex-start;background:#0c1d14;border:1px solid #1d4a2e}
 .msg.atc .who{color:#29e05a}
 .msg.me{align-self:flex-end;background:#132331;border:1px solid #24435a}
-.msg.me .who{color:#7fcbe8}
+.msg.me .who{color:var(--focus-dark)}
 .msg.sys{align-self:center;max-width:100%;background:transparent;border:1px dashed #3a4048;color:#a9b4bf;font-size:13px}
 .fb{margin-top:6px;display:flex;flex-direction:column;gap:3px;font-size:12.5px}
 .fb span{display:flex;gap:6px}

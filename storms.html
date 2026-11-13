@@ -5,8 +5,8 @@
 <meta name="description" content="A cumulonimbus holds almost every hazard in aviation at once. Grow a 3D thunderstorm from a cumulus to a mature cell and watch it die, see its updrafts, hail, gust front and microburst, fly an approach through the microburst, and aim the weather radar beam at the storm.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Thunderstorms and Wind Shear</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 /* the 3D viewport */
 .vcv{position:relative}
@@ -37,7 +37,7 @@
 .vhint{position:absolute;left:12px;bottom:8px;z-index:2;font-family:var(--f-mono);font-size:10.5px;color:rgba(220,228,235,.6);pointer-events:none}
 .vtools .sep{width:1px;height:20px;background:rgba(255,255,255,.14);margin:0 4px}
 .vtools button.cam.on{background:rgba(230,235,239,.18);color:#fff;border-color:rgba(255,255,255,.35)}
-.nogl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;background:#fff;color:#13202A;border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.5;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:5;text-align:center}
+.nogl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;background:#fff;color:var(--ink);border-radius:8px;padding:14px 16px;font-size:14px;line-height:1.5;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:5;text-align:center}
 .stg{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:10px 0 4px}
 .devc{border:1px solid var(--rule-2);border-left:3px solid var(--accent);border-radius:0 var(--radius) var(--radius) 0;background:var(--paper,#F6F8F6);padding:9px 11px;margin-top:4px;font-size:12.5px;line-height:1.45;color:var(--ink-2)}
 .devc .dn{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:3px}
@@ -113,7 +113,7 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Thunderstorms and Wind Shear">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -210,8 +210,8 @@ body.depth-instructor .tstep .q{font-size:20px}
 </div>
 <script src="three.min.js"></script>
 <script src="cbmodel.js?v=1"></script>
-<script src="cb3d.js?v=3"></script>
-<script src="lab.js?v=48"></script>
+<script src="cb3d.js?v=4"></script>
+<script src="lab.js?v=49"></script>
 <script src="concepts.js?v=2"></script>
 <script src="storms.js?v=3"></script>
 </body>

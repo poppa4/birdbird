@@ -5,8 +5,8 @@
 <meta name="description" content="Route Explorer: build a route on the map, see the terrain under it in profile and 3D, and send it to your briefing pack.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -16,7 +16,7 @@
 .bar select{max-width:300px}
 .saved{font-size:13px;color:var(--ink-2)}
 .rgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;margin-top:16px;align-items:start}
-@media (max-width:1000px){.rgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.rgrid{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--sheet);border:1px solid var(--rule);padding:14px 16px}
 .panel h2{font-family:var(--f-display);font-stretch:88%;font-size:20px;margin:0 0 10px}
 .panel h3{font-size:14px;margin:14px 0 6px}
@@ -25,7 +25,7 @@
 .mapw canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .mapctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:4px;z-index:2}
 .mapctl button{width:32px;height:32px;border:1px solid var(--rule);background:#fff;font-size:18px;cursor:pointer;border-radius:3px}
-.maplg{position:absolute;left:8px;bottom:6px;font-size:11px;color:#4C5B66;background:rgba(255,255,255,.85);padding:3px 6px;border-radius:3px;z-index:2}
+.maplg{position:absolute;left:8px;bottom:6px;font-size:11px;color:var(--ink-2);background:rgba(255,255,255,.85);padding:3px 6px;border-radius:3px;z-index:2}
 .mappop{position:absolute;z-index:3;background:#fff;border:1px solid var(--ink);padding:8px 10px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.12);max-width:240px}
 .mappop b{display:block}.mappop .btn{margin-top:6px;font-size:13px;padding:5px 9px}
 .rp .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
@@ -40,7 +40,7 @@
 .tb input,.tb select{font:inherit;font-size:13px;border:0;border-bottom:1px dotted #9AA6AC;background:transparent;width:100%;min-width:44px;padding:2px 0;color:var(--ink)}
 .tb td.c{font-family:var(--f-mono);font-size:12.5px;background:#F6F8F6;white-space:nowrap}
 .tb td.act{white-space:nowrap}.tb td.act button{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--ink-2)}
-.tb tr.sel td{background:#F6EDF2}
+.tb tr.sel td{background:var(--accent-wash)}
 .wrapx{overflow-x:auto}
 .ok{color:var(--green);font-weight:700}.ko{color:var(--red);font-weight:700}
 .ref{font-size:12.5px;color:var(--ink-2);background:#F6F8F6;border-left:3px solid var(--chart-blue);padding:8px 12px;margin:10px 0}
@@ -62,7 +62,7 @@
 .modetabs button{border:0;background:var(--sheet);padding:8px 16px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink-2)}
 .modetabs button.on{background:var(--ink);color:#fff;font-weight:600}
 .dgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px;align-items:start}
-@media (max-width:1000px){.dgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.dgrid{grid-template-columns:minmax(0,1fr)}}
 .dtools{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:8px}
 .dtools .tg{display:inline-flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
 .dtools .tg button{border:0;border-right:1px solid var(--rule);background:var(--sheet);padding:6px 11px;font:inherit;font-size:13.5px;cursor:pointer}
@@ -70,8 +70,8 @@
 .dtools .dot{width:26px;padding:0!important;height:30px}.dtools .dot.on{outline:2px solid var(--ink);outline-offset:-4px}
 .dsheet{margin-top:0}.dsheet svg{touch-action:none;cursor:crosshair}.dsheet svg *{pointer-events:none}
 .howto{font-size:14px;color:var(--ink-2);padding-left:20px;margin:10px 0}.howto li{margin:4px 0}
-.dtxt{position:absolute;z-index:5;font-family:Caveat,cursive;font-size:22px;color:#1D4E9E;border:1px dashed #9AA6AC;background:#fff;padding:2px 6px;min-width:120px}
-.selbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:#fff;border:1px solid var(--rule);border-left:4px solid #9A1E68;padding:8px 12px;margin:10px 0 0;font-size:13.5px}
+.dtxt{position:absolute;z-index:5;font-family:Caveat,cursive;font-size:22px;color:var(--info);border:1px dashed #9AA6AC;background:#fff;padding:2px 6px;min-width:120px}
+.selbar{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:#fff;border:1px solid var(--rule);border-left:4px solid var(--accent);padding:8px 12px;margin:10px 0 0;font-size:13.5px}
 .selbar[hidden]{display:none}
 .selbar input,.selbar select{font:inherit;font-size:14px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet)}
 .selbar input.n{width:110px;text-transform:uppercase;font-family:var(--f-mono)}.selbar input.a{width:84px;font-family:var(--f-mono)}
@@ -84,16 +84,16 @@
 .sh b{display:block;font-family:var(--f-display);font-stretch:88%;font-size:20px;line-height:1.2}
 .sh small{display:block;color:var(--ink-2);font-size:13.5px;max-width:80ch}
 .plan{display:grid;grid-template-columns:minmax(300px,0.8fr) minmax(0,1.2fr);gap:18px;align-items:start}
-@media (max-width:1000px){.plan{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.plan{grid-template-columns:minmax(0,1fr)}}
 .plan .r1{grid-template-columns:repeat(3,minmax(0,1fr))!important}.plan .r1 .rtx,.plan .r1 .wxf,.plan .r1 #build{grid-column:1/-1}
 .wxf textarea{width:100%;font-family:var(--f-mono);font-size:12.5px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;resize:vertical;box-sizing:border-box}
 .wxf .opt{font-weight:400;color:var(--ink-2)}.exd{margin-top:8px}.exd summary{cursor:pointer}
 .plan .sum{margin-top:10px}
 .undo{display:flex;gap:8px;margin-bottom:10px}.undo .btn{flex:1}.undo .btn:disabled{opacity:.45;cursor:default}
 .r1{display:grid;grid-template-columns:minmax(0,3fr) repeat(3,minmax(90px,1fr)) auto;gap:8px 10px;align-items:end;background:var(--sheet);border:1px solid var(--rule);padding:12px 14px}
-@media (max-width:820px){.r1{grid-template-columns:repeat(3,minmax(0,1fr))}.r1 .rtx{grid-column:1/-1}.r1 #build{grid-column:1/-1}}
+@media (max-width:900px){.r1{grid-template-columns:repeat(3,minmax(0,1fr))}.r1 .rtx{grid-column:1/-1}.r1 #build{grid-column:1/-1}}
 .pgrid{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(260px,1fr);gap:16px;align-items:start}
-@media (max-width:1000px){.pgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}}
 .ptools .mktools{margin:4px 0 10px}#mkx{margin-top:4px}#mkx[hidden]{display:none}.mkm{color:var(--ink-2)!important}.vsd{margin:6px 0 4px;font-size:13px}.vsd summary{cursor:pointer;color:var(--ink-2)}.vsd[open] summary{margin-bottom:6px}.ptools .mktools .tg button{padding:5px 8px}
 .srcd{margin-top:6px}.srcd summary{cursor:pointer}
 .pts summary{cursor:pointer;font-weight:600;padding:6px 0}
@@ -111,7 +111,7 @@
 .srcl{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--ink-2);padding:6px 2px}
 .srcl i{display:inline-block;width:14px;height:8px;margin-right:5px;vertical-align:middle;border-radius:1px}
 .xgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:12px;align-items:start}
-@media (max-width:800px){.xgrid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.xgrid{grid-template-columns:minmax(0,1fr)}}
 #wxin{width:100%;font-family:var(--f-mono);font-size:12.5px;text-transform:uppercase}
 .mkrow{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--rule);padding:4px 0;font-size:13px}
 .mkrow button{border:0;background:none;cursor:pointer;color:var(--ink-2)}
@@ -127,7 +127,7 @@
 .rx-s input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--rule);border-radius:6px;background:#fff;box-shadow:0 2px 8px rgba(19,32,42,.08)}
 .qres{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--rule);border-radius:6px;box-shadow:0 8px 24px rgba(19,32,42,.14);max-height:320px;overflow:auto}
 .qres button{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;background:none;padding:8px 12px;font:inherit;font-size:13.5px;cursor:pointer;border-bottom:1px solid #F0F2F2}
-.qres button:hover,.qres button.on{background:#F6EDF2}
+.qres button:hover,.qres button.on{background:var(--accent-wash)}
 .qres b{font-family:var(--f-mono);font-weight:600;min-width:52px}.qres span{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.qres i{margin-left:auto;font-style:normal;font-size:11px;color:var(--ink-2)}
 .rx-r{flex:1 1 auto;min-width:0;max-width:620px;margin:0 auto;background:#fff;border:1px solid var(--rule);border-radius:6px;box-shadow:0 2px 8px rgba(19,32,42,.08)}
 .rx-rl{display:flex;gap:6px;padding:5px}
@@ -141,7 +141,7 @@
 .seg3 button{border:0;background:none;padding:8px 12px;font:inherit;font-size:13.5px;cursor:pointer;color:var(--ink-2);border-right:1px solid var(--rule)}
 .seg3 button:last-child{border-right:0}.seg3 button.on{background:var(--ink);color:#fff;font-weight:600}
 .rx .mapctl{top:var(--tch,64px);bottom:auto;right:12px}
-.edbar{position:absolute;left:12px;top:var(--tch,64px);z-index:3;display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(19,32,42,.12)}.edbar[hidden]{display:none}.edbar button{border:0;border-right:1px solid var(--rule);background:#fff;font:inherit;font-size:13px;padding:6px 11px;cursor:pointer;color:var(--ink)}.edbar button:last-child{border-right:0}.edbar button:hover:not(:disabled){background:#F6EDF2}.edbar button:disabled{color:#B5BEC3;cursor:default}
+.edbar{position:absolute;left:12px;top:var(--tch,64px);z-index:3;display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(19,32,42,.12)}.edbar[hidden]{display:none}.edbar button{border:0;border-right:1px solid var(--rule);background:#fff;font:inherit;font-size:13px;padding:6px 11px;cursor:pointer;color:var(--ink)}.edbar button:last-child{border-right:0}.edbar button:hover:not(:disabled){background:var(--accent-wash)}.edbar button:disabled{color:#B5BEC3;cursor:default}
 .ptpop{position:absolute;z-index:4;transform:translate(-50%,calc(-100% - 14px));display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:4px 4px 4px 10px;box-shadow:0 4px 14px rgba(19,32,42,.18);white-space:nowrap;font-size:13px}.ptpop[hidden]{display:none}.ptpop b{font-family:var(--f-mono)}.ptpop button{font:inherit;font-size:13px;border:1px solid var(--rule);background:#fff;border-radius:4px;padding:4px 8px;cursor:pointer}#ptdel{color:#B3261E;border-color:#E5B8B5}#ptdel:hover{background:#FBEDEC}#ptx{border:0;color:var(--ink-2)}
 .rx:has(.m3d:not([hidden])) .edbar{display:none}
 .rx .mapctl button{width:36px;height:36px;border-radius:6px;box-shadow:0 2px 6px rgba(19,32,42,.08)}
@@ -185,16 +185,16 @@
 .xprow textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--rule);border-radius:4px;background:#fff;resize:vertical;min-height:38px;box-sizing:border-box;width:100%}
 .xpmsg{margin:0 0 6px;font-size:12px;min-height:0}.xpmsg:empty{display:none}
 .rx-sheet.empty .xnrow{display:none}
-.xnrow{display:flex;justify-content:space-between;gap:14px;margin:2px 0 4px}.xn{display:flex;flex-direction:column;gap:4px;flex:0 1 46%;min-width:0}.xn.r{align-items:flex-end}.xn textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid #9A1E68;border-radius:4px;background:#fff;resize:vertical;min-height:52px;box-sizing:border-box;width:100%}.xnb{border:1px dashed #C9A3B8;background:#fff;color:#9A1E68;border-radius:14px;padding:3px 11px;font:inherit;font-size:12.5px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xnb:hover{background:#F6EDF2}.xnb.has{border-style:solid}
-@media (max-width:600px){.xnrow{gap:8px}.xn{flex-basis:49%}}
+.xnrow{display:flex;justify-content:space-between;gap:14px;margin:2px 0 4px}.xn{display:flex;flex-direction:column;gap:4px;flex:0 1 46%;min-width:0}.xn.r{align-items:flex-end}.xn textarea{font:inherit;font-size:14px;padding:6px 9px;border:1px solid var(--accent);border-radius:4px;background:#fff;resize:vertical;min-height:52px;box-sizing:border-box;width:100%}.xnb{border:1px dashed #C9A3B8;background:#fff;color:var(--accent);border-radius:14px;padding:3px 11px;font:inherit;font-size:12.5px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xnb:hover{background:var(--accent-wash)}.xnb.has{border-style:solid}
+@media (max-width:640px){.xnrow{gap:8px}.xn{flex-basis:49%}}
 .xnbox{cursor:pointer}
-@media (max-width:600px){.xprow{grid-template-columns:1fr}}
+@media (max-width:640px){.xprow{grid-template-columns:1fr}}
 .resn{flex-basis:100%;color:var(--ink-2);font-size:12px}
 .rdo{display:flex;flex-wrap:wrap;gap:2px 16px;align-items:baseline;min-height:22px;font-size:13px;color:var(--ink-2);padding:2px 2px 6px;font-variant-numeric:tabular-nums}.rdo b{color:var(--ink);font-weight:600}.rdo .hint{font-size:12.5px}.rdo .crit{color:var(--ink)}.rdo .crit.warn b{color:#B86E00}.rdo .crit.bad,.rdo .crit.bad b{color:#B3261E}
-.sw{display:inline-block;width:12px;height:8px;margin-right:5px;border-radius:1px;vertical-align:middle}.sw-c{background:#E2D8C3;border:1px solid #9C7646}.sw-e{background:#F3EFE6;border:1px dashed #CDB898}.sw-a{background:#9A1E68;height:3px}
+.sw{display:inline-block;width:12px;height:8px;margin-right:5px;border-radius:1px;vertical-align:middle}.sw-c{background:#E2D8C3;border:1px solid #9C7646}.sw-e{background:#F3EFE6;border:1px dashed #CDB898}.sw-a{background:var(--accent);height:3px}
 .rx-sheet.empty .rdo{display:none}
 .prof{position:relative}.pzoom{position:absolute;right:6px;top:6px;z-index:2;display:inline-flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;background:rgba(255,255,255,.92)}
-.pzoom button{border:0;border-right:1px solid var(--rule);background:none;padding:3px 9px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink-2)}.pzoom button:last-child{border-right:0}.pzoom button:hover{background:#F6EDF2}.pzoom .pter{border-left:1px solid var(--rule)}.pzoom .pter.on{color:#7A5A2E;background:#F1EBDD}.pzoom .pter:not(.on){text-decoration:line-through;color:#9AA6AC}.pzoom .pter[hidden]{display:none}
+.pzoom button{border:0;border-right:1px solid var(--rule);background:none;padding:3px 9px;font:inherit;font-size:12.5px;cursor:pointer;color:var(--ink-2)}.pzoom button:last-child{border-right:0}.pzoom button:hover{background:var(--accent-wash)}.pzoom .pter{border-left:1px solid var(--rule)}.pzoom .pter.on{color:#7A5A2E;background:#F1EBDD}.pzoom .pter:not(.on){text-decoration:line-through;color:#9AA6AC}.pzoom .pter[hidden]{display:none}
 .rx-sheet.empty .pzoom{display:none}
 .lybtn{padding:8px 12px!important;font-size:13.5px!important;box-shadow:0 2px 8px rgba(19,32,42,.08);background:#fff}
 .sh-pack{padding:5px 12px!important;font-size:13px!important}
@@ -204,13 +204,13 @@
 .pinch{margin:6px 0 0;font-size:12px;color:var(--ink-2)}
 .pinc{margin:4px 0 6px;padding-left:18px;font-size:13px;color:var(--ink-2)}.pinc li{margin:2px 0}
 .rx-r{position:relative}
-.qrow{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid #F0F2F2;cursor:pointer;font-size:13.5px}.qrow:hover,.qrow.on{background:#F6EDF2}
+.qrow{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid #F0F2F2;cursor:pointer;font-size:13.5px}.qrow:hover,.qrow.on{background:var(--accent-wash)}
 .qrow b{font-family:var(--f-mono);font-weight:600;min-width:46px}.qrow span{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
-.qty{font-style:normal;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}.qty-ap{color:#2C5F8D}.qty-nv{color:#3C7A6B}.qty-aip{color:#7D93A3}.qty-fix{color:#9A1E68}.qty-r,.qty-route{color:#9A1E68}
+.qty{font-style:normal;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}.qty-ap{color:#2C5F8D}.qty-nv{color:#3C7A6B}.qty-aip{color:#7D93A3}.qty-fix{color:var(--accent)}.qty-r,.qty-route{color:var(--accent)}
 .qrow .qa{flex:0 0 auto;display:flex;gap:4px}.qrow .qa button{border:1px solid var(--rule);background:#fff;border-radius:4px;padding:3px 8px;font:inherit;font-size:12px;cursor:pointer}.qrow .qa button:hover{background:var(--ink);color:#fff}
 .qhelp{margin:0;padding:6px 10px;font-size:12px;color:var(--ink-2)}
 @media (max-width:900px){.packpop{position:fixed;left:8px;right:8px;bottom:8px;width:auto;max-height:70vh}}
-@media (max-width:600px){.qrow span{display:none}}
+@media (max-width:640px){.qrow span{display:none}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .rx-open{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;z-index:5;box-shadow:0 4px 14px rgba(19,32,42,.14)}
 .rx-open[hidden]{display:none}
@@ -241,17 +241,16 @@
 .x3o{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}.x3s{justify-content:space-between}.x3s select{font:inherit;font-size:13px;padding:2px 4px}.x3h{font-size:11.5px;margin:0}.x3s label{display:flex;gap:4px;align-items:center;white-space:nowrap}.x3leg{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--ink-2)}.x3leg[hidden]{display:none}.x3more{display:none}.x3leg i{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px}
 .rx-m{display:flex;gap:8px}#v23[hidden]{display:none}
 @media (max-width:900px){.x3more{display:inline-block}.x3s{flex-wrap:wrap;row-gap:4px}.x3w:not(.open):has(#x3:not([hidden])) :is(.x3s,.x3leg,.x3fl,#x3pm,#x3d,.x3o,.x3look){display:none}.x3w{left:8px;right:8px;width:auto;padding:6px 10px;gap:4px;font-size:12.5px}.x3w b{display:none}.x3h{display:none}.rx-m{gap:4px}.x3s .btn{padding:3px 8px;font-size:12px}#x3 .chk{font-size:12.5px}}
-.rx-s{display:flex;gap:6px}.libbtn{flex:0 0 40px;height:40px;border:1px solid var(--rule);border-radius:6px;background:#fff;font-size:17px;color:var(--magenta);cursor:pointer;box-shadow:0 2px 8px rgba(19,32,42,.08)}
+.rx-s{display:flex;gap:6px}.libbtn{flex:0 0 44px;height:44px;border:1px solid var(--rule);border-radius:var(--radius);background:#fff;font-size:17px;color:var(--magenta);cursor:pointer;box-shadow:0 2px 8px rgba(19,32,42,.08);display:inline-flex;align-items:center;justify-content:center;padding:0}.libbtn .ic{width:18px;height:18px}
 .rx-s .qres{left:46px}
 .rx-lib h4{font-size:13px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
 .rx-lib .lil{display:flex;flex-direction:column;max-height:180px;overflow:auto;border:1px solid #EEF0F0;border-radius:4px}
 .rx-lib .li{display:flex;justify-content:space-between;gap:8px;align-items:baseline;width:100%;text-align:left;border:0;border-bottom:1px solid #F0F2F2;background:none;padding:7px 9px;font:inherit;font-size:13.5px;cursor:pointer}
-.rx-lib .li:hover,.rx-lib .li.on{background:#F6EDF2}.rx-lib .li b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rx-lib .li i{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.rx-lib .li:hover,.rx-lib .li.on{background:var(--accent-wash)}.rx-lib .li b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rx-lib .li i{font-style:normal;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
 .rx-lib .lirow{display:flex}.rx-lib .lx{border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 8px;border-bottom:1px solid #F0F2F2}
 .rx-lib .lisave{display:flex;gap:6px;margin-bottom:6px}.rx-lib .lisave input{flex:1;min-width:0;font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--rule);border-radius:4px}
 .rx-lib .liio{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.rx-lib .liio .upgo{text-align:left;white-space:normal;font-size:13px;line-height:1.35}
 .rx-lib .lil .note{margin:6px 9px;font-size:12.5px}
-.btn.sm{padding:3px 9px;font-size:12px;text-transform:none;letter-spacing:0}
 .rx-side .nt{width:100%;box-sizing:border-box;font:inherit;font-size:14px;margin-top:8px;padding:8px;border:1px solid var(--rule);border-radius:4px;resize:vertical}
 @media (max-width:900px){
   /* mobil: kartet øverst, profilen under i vanlig flyt (ikke over kartet) */
@@ -297,7 +296,7 @@
 .shcr .stp{display:inline-flex;align-items:stretch;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#fff}
 .shcr .stp input{border:0;border-radius:0;width:72px;text-align:center;text-transform:uppercase}
 .shcr .stp button{border:0;background:#F3F5F5;width:26px;font:inherit;font-size:15px;cursor:pointer;color:var(--ink);padding:0}
-.shcr .stp button:hover{background:#F6EDF2}
+.shcr .stp button:hover{background:var(--accent-wash)}
 .shcr #s_gs{width:46px;text-align:center}.shcr .u{margin-left:-2px}.shcr label{cursor:default}.shcr .gsl{margin-left:6px}
 .sh-sim{padding:5px 12px!important;font-size:13px!important;white-space:nowrap}
 .fpm{display:block;font-size:11.5px;margin-top:2px}
@@ -349,7 +348,7 @@
 .chk.sub{padding-left:22px;font-size:.94em}.chk.sub.dis{opacity:.45}
 .bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
 .mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
-/* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy #0B2545 with magenta accents ---- */
+/* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy var(--navy) with magenta accents ---- */
 .rx{--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
 .rx .seg3{border:0;border-radius:10px;background:var(--glass);box-shadow:var(--lift)}
 .rx .seg3 button{border-right:1px solid var(--hair);color:#3A4D60;transition:background .15s,color .15s}
@@ -359,15 +358,15 @@
 .rx .mapctl{gap:0;border-radius:12px;background:var(--glass);box-shadow:var(--lift);overflow:hidden}
 .rx .mapctl button,.rx .mapctl a{width:40px;height:40px;border:0;border-bottom:1px solid var(--hair);border-radius:0;box-shadow:none;background:transparent;color:var(--navy);font-size:17px;display:flex;align-items:center;justify-content:center}
 .rx .mapctl a{font-size:11px}.rx .mapctl>:last-child{border-bottom:0}
-.rx .mapctl button:hover:not(:disabled),.rx .mapctl a:hover{background:rgba(154,30,104,.07);color:#9A1E68}
+.rx .mapctl button:hover:not(:disabled),.rx .mapctl a:hover{background:rgba(154,30,104,.07);color:var(--accent)}
 .rx .edbar{border:0;border-radius:10px;box-shadow:var(--lift)}.rx .edbar button{border-right-color:var(--hair)}
 .rx .rx-ly{border:0;border-radius:16px;box-shadow:0 18px 48px rgba(11,37,69,.2),0 2px 6px rgba(11,37,69,.08);padding:14px 16px 16px;width:286px;gap:4px}
 .rx .rx-ly h4{color:#5B6C7C;letter-spacing:.08em;font-size:11px;margin-top:12px;padding-top:10px;border-top:1px solid var(--hair)}
 .rx .rx-ly h4:first-of-type{border-top:0;padding-top:0}
-.rx .rx-ly label.chk{padding:3px 0}.rx .rx-ly input[type=checkbox]{accent-color:#9A1E68;width:16px;height:16px}
+.rx .rx-ly label.chk{padding:3px 0}.rx .rx-ly input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
 .rx .bmsel>b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C}
 .rx .bmg{gap:6px}.rx .bmg button{border-radius:10px;padding:8px 10px;border-color:var(--hair);background:#F6F8FA;color:var(--navy)}
-.rx .bmg button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
+.rx .bmg button.on{background:#fff;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .rx .x3w{border:0;border-radius:16px;box-shadow:var(--lift)}
 .rx .simhud{border-radius:14px;background:rgba(11,37,69,.86);box-shadow:0 8px 24px rgba(11,37,69,.25)}
 /* simulation readout: docked at the bottom above the profile (desktop), so the view ahead stays clear */
@@ -379,17 +378,17 @@
   .rx .rx-ly{left:8px;right:8px;width:auto;max-height:calc(var(--mh,70vh) - 130px);border-radius:18px;padding:12px 16px 16px}
   .rx .rx-ly::before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:rgba(11,37,69,.18);margin:0 auto 6px}
   .rx .rx-ly label.chk{padding:6px 0}.rx .bmg button{padding:10px}
-  .rx .mapctl button,.rx .mapctl a{width:42px;height:42px}
+  .rx .mapctl button,.rx .mapctl a{width:44px;height:44px}
 }
 /* ---- 2026-11: tidy Layers panel (presets + collapsible groups), airspace on the profile, navlog, export ---- */
 .rx .rx-ly{gap:2px}
 .lypre{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 6px}
 .lypre button{font:inherit;font-size:13px;font-weight:600;padding:8px 6px;border:1px solid var(--hair,#E3E8EA);border-radius:10px;background:#F6F8FA;color:var(--navy);cursor:pointer}
-.lypre button:hover{border-color:#9A1E68}.lypre button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
+.lypre button:hover{border-color:var(--accent)}.lypre button.on{background:#fff;border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .lyg{border-top:1px solid var(--hair,#E3E8EA)}.lyg[hidden]{display:none}
 .lyg>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:9px 0 7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C;user-select:none}
 .lyg>summary::-webkit-details-marker{display:none}
-.lyg>summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.6px solid #7D8B95;border-bottom:1.6px solid #7D8B95;transform:rotate(-45deg);transition:transform .15s}
+.lyg>summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.6px solid var(--ink-3);border-bottom:1.6px solid var(--ink-3);transform:rotate(-45deg);transition:transform .15s}
 .lyg[open]>summary::after{transform:rotate(45deg)}
 .lyg>summary:hover{color:var(--navy)}
 .lyc{font-weight:500;letter-spacing:0;text-transform:none;font-size:11.5px;color:#8A97A2;font-family:var(--f-mono)}
@@ -404,12 +403,12 @@
 .asl li{display:inline-flex;align-items:center;gap:6px;border:1px solid #E3E8EA;border-radius:7px;padding:3px 8px 3px 7px;background:#fff;font-variant-numeric:tabular-nums;color:var(--ink)}
 .asl li i{width:9px;height:9px;border-radius:2px;flex:0 0 auto}.asl li small{color:var(--ink-2);font-size:11.5px}
 .asl li.in{border-color:currentColor}.asl li em{font-style:normal;font-weight:700;font-size:11px;padding:0 5px;border-radius:3px;color:#fff}
-.asl .asn{display:block;margin-top:3px;font-size:11.5px}.asl .asw{color:#8A5A00}.asl .asw button{font:inherit;border:0;background:none;color:#9A1E68;text-decoration:underline;cursor:pointer;padding:0}
+.asl .asn{display:block;margin-top:3px;font-size:11.5px}.asl .asw{color:#8A5A00}.asl .asw button{font:inherit;border:0;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0}
 .xio{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;margin:2px 0 6px;font-size:12.5px;color:var(--ink-2)}
 .rx-sheet.empty .xio,.rx-sheet.empty .asl{display:none!important}
 .xio .lnk{border:0;background:none;padding:2px 0;font:inherit;color:#7A1652;cursor:pointer;text-align:left}.xio .lnk:hover{text-decoration:underline}
 .xexp{display:inline-flex;align-items:center;gap:4px}.xexp>span{margin-right:2px}
-.xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--navy)}.xexp button:hover{border-color:#9A1E68;color:#9A1E68}
+.xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--navy)}.xexp button:hover{border-color:var(--accent);color:var(--accent)}
 .sh-nl[aria-pressed="true"]{background:var(--ink);color:#fff}
 .nlp{max-width:1100px}.nlp[hidden]{display:none}
 .nlin{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;margin:0 0 8px}
@@ -417,10 +416,10 @@
 .nlin input,.nlin select{font:inherit;font-family:var(--f-mono);font-size:13px;padding:5px 7px;border:1px solid var(--rule);border-radius:4px;width:84px;background:#fff}
 .nlin select{width:auto;font-family:inherit}.nlbtn{margin-left:auto}
 .nlt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
-.nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid #13202A;white-space:nowrap}
+.nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
 .nlt td{padding:4px 6px;border-bottom:1px solid #EEF1F2;text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .nlt th:first-child,.nlt td:first-child{text-align:left}.nlt td:first-child{font-family:inherit;font-weight:600}
-.nlt td.hd{font-weight:700;color:#7A1652}.nlt tfoot td{border-top:1.5px solid #13202A;border-bottom:0;font-weight:700}
+.nlt td.hd{font-weight:700;color:#7A1652}.nlt tfoot td{border-top:1.5px solid var(--ink);border-bottom:0;font-weight:700}
 .nlnote .nxn{display:none}.nlt input{width:64px;font:inherit;font-size:12px;padding:2px 4px;border:1px solid var(--rule);border-radius:3px;text-align:right}.nlt input::placeholder{color:#B4BEC5}
 .nlnote{font-size:11.5px;margin:6px 0 0}
 #nlprint-out{display:none}
@@ -428,7 +427,7 @@
 @media print{ body.printnl>*:not(#nlprint-out){display:none!important} body.printnl #nlprint-out{display:block!important;font:12px/1.4 sans-serif} #nlprint-out table{width:100%;border-collapse:collapse} #nlprint-out th,#nlprint-out td{border:1px solid #888;padding:4px 6px;text-align:right} #nlprint-out th:first-child,#nlprint-out td:first-child{text-align:left} #nlprint-out h2{font-size:16px;margin:0 0 6px} }
 .mwx{font-size:13px}.mwx .fc{display:inline-block;font:700 11px/1 var(--f-mono);color:#fff;border-radius:4px;padding:3px 6px;margin-left:6px;vertical-align:2px}.mwx pre{white-space:pre-wrap;font:12px/1.45 var(--f-mono);background:#F4F6F7;border-radius:6px;padding:6px 8px;margin:8px 0}
 .rx .mlwarn{top:auto;bottom:calc(var(--shh,0px) + 14px);transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100% - 24px));box-sizing:border-box;padding:6px 8px 6px 10px;font-size:12.5px;gap:4px 8px;line-height:1.4;box-shadow:0 4px 14px rgba(11,37,69,.14);border-radius:8px}
-.rx .mlwarn button{font:inherit;font-size:12px;border:0;background:none;color:#9A1E68;text-decoration:underline;cursor:pointer;padding:0 2px}.rx .mlwarn .x{text-decoration:none;font-size:16px;line-height:1;color:var(--ink-2)}
+.rx .mlwarn button{font:inherit;font-size:12px;border:0;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0 2px}.rx .mlwarn .x{text-decoration:none;font-size:16px;line-height:1;color:var(--ink-2)}
 .rx .mlwarn code{flex-basis:100%;font-size:11px;color:var(--ink-2);word-break:break-word}.rx .mlwarn code[hidden]{display:none}
 @media (max-width:900px){.rx .mlwarn{bottom:10px}}
 .mapw:has(.mlwarn) .maplg{display:none}
@@ -451,13 +450,13 @@
 .rx.d3 .rcard:not(.x3o) .rc-body{display:none}.rx.d3 .rcard.x3o .rc-body{display:block}.rx.d3 .rcard.x3o .rc-chev::before{content:"▴"}.rx.d3 .rcard:not(.x3o) .rc-chev::before{content:"▾"}
 .rcard .rx-r{max-width:none;margin:0;border:0;border-bottom:1px solid rgba(11,37,69,.12);border-radius:0;box-shadow:none}
 .rcard .rx-rl{padding:6px}
-.rcard .libbtn{border-radius:0;box-shadow:none;height:auto;flex-basis:34px}
-.rcard .btn{border-radius:0}
+.rcard .libbtn{border-radius:var(--radius);box-shadow:none;height:auto;flex-basis:34px}
+@media (pointer:coarse){.rx .mapctl button,.rx .mapctl a{width:44px;height:44px}.rcard .libbtn{flex-basis:44px;min-height:44px}}
 .rcard .qres{border-radius:0}
 .rc-ft{padding:7px 10px 6px;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:3px 8px;align-items:baseline;border-bottom:1px solid rgba(11,37,69,.12)}
 .rc-ft[hidden]{display:none}
 .rc-ft .l{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C}
-.rc-ft b{font-family:var(--f-mono);font-size:13px;color:#9A1E68}
+.rc-ft b{font-family:var(--f-mono);font-size:13px;color:var(--accent)}
 .rc-ft span.n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;color:#3A4D60}
 .rc-cr{padding:7px 10px;border-bottom:1px solid rgba(11,37,69,.12)}
 .rc-cr .shcr{flex-wrap:wrap;color:#3A4D60}.rc-cr .shcr .stp{border-radius:0}.rc-cr .shcr input{border-radius:0}
@@ -506,7 +505,7 @@
   .rx-side{top:auto;bottom:calc(var(--rch,52px) + 8px);transform:none;max-height:55%}
   .rx .maplibregl-ctrl-bottom-right{bottom:var(--rch,52px)}
   .x3w{bottom:calc(var(--rch,52px) + 8px)}
-  .rx .edbar{left:8px;top:8px;transform:none}.rx .edbar button{font-size:0;min-width:44px;height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center}.rx .edbar button::before{font-size:19px;line-height:1}#undo::before{content:'↶'}#redo::before{content:'↷'}#clr::before{content:'✕';font-size:16px}
+  .rx .edbar{left:8px;top:8px;transform:none}.rx .edbar button{font-size:0;min-width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}.rx .edbar button::before{font-size:19px;line-height:1}#undo::before{content:'↶'}#redo::before{content:'↷'}#clr::before{content:'✕';font-size:16px}
   .rc-sum small{overflow:hidden;text-overflow:ellipsis}
   .rx .mlwarn,.bb-satnote{bottom:calc(var(--rch,52px) + 10px)}
 }
@@ -518,7 +517,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
@@ -531,7 +530,7 @@
   <canvas id="m3d" class="m3d" hidden aria-label="3D terrain view"></canvas>
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
-    <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙︎</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
+    <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/></svg></button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
       <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" class="on" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
@@ -544,7 +543,7 @@
   <div class="rcard noprint" id="rcard">
     <button class="rc-hd" id="rcTog" type="button" aria-expanded="true" aria-controls="rcbody" title="Show or hide the route card"><span class="rc-k">Route</span><span class="rc-line" id="rcline"></span><span class="rc-chev" aria-hidden="true"></span></button>
     <div class="rc-body" id="rcbody">
-      <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★︎</button><input id="rtxt" type="search" placeholder="Airport, fix or route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
+      <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg></button><input id="rtxt" type="search" placeholder="Airport, fix or route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
         <div class="qres" id="qres" hidden></div>
         <div class="rx-rx" id="routex" hidden>
           <div class="btns"><select id="sel" aria-label="Your routes"></select><button class="btn" id="new">New</button><button class="btn" id="dup">Duplicate</button><button class="btn" id="del">Delete</button><span class="saved" id="saved"></span></div>
@@ -594,12 +593,12 @@
   </div>
   <aside class="rx-side noprint" id="side" hidden></aside>
   <aside class="rx-side rx-lib noprint" id="lib" hidden></aside>
-  <div class="rx-sheet" id="sheet" data-s="min">
+  <div class="rx-sheet empty" id="sheet" data-s="min">
     <div class="sh-grip noprint" id="shGrip" title="Drag to resize the profile, or click to open or close it" aria-hidden="true"></div>
     <div class="sh-bar"><button class="sh-t" id="shTog" aria-expanded="false"><b>Terrain profile</b> <span id="shsum"></span></button>
       <div class="seg3" id="pmode" role="group" aria-label="What the profile shows"><button data-p="ter">Terrain</button><button data-p="alt">Altitude line</button><button data-p="adv">Climb and descent</button></div>
       <button class="btn pri sh-sim" id="simbtn" type="button" title="Fly the route in 3D at your planned altitude">▶ Simulate flight</button>
-      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙︎<span> Advanced</span></button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
+      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/></svg><span> Advanced</span></button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
     </div>
     <svg id="pmini" class="pmini" role="img" aria-label="Terrain under the route" preserveAspectRatio="none"></svg>
     
@@ -676,7 +675,7 @@
     <div class="asl" id="asl" hidden></div>
     <div class="srcl" id="srcl"></div>
     <div class="xio noprint" id="xio"><button type="button" class="lnk upgo" title="Add a screenshot or PDF of your ForeFlight or Garmin Pilot route or profile to the briefing pack">⇪ ForeFlight or Garmin Pilot screenshot / PDF</button><span class="xexp"><span>Export</span><button type="button" data-ex="gpx" title="GPX route for ForeFlight, Garmin Pilot, SkyDemon and others">GPX</button><button type="button" data-ex="fpl" title="Garmin flight plan (.fpl), also opens in ForeFlight">Garmin FPL</button><button type="button" data-ex="txt" title="Copy the route as text, e.g. ENTO DCT SKI DCT ENGM">Copy route</button></span></div>
-    <details class="note howd"><summary>How to read the profile</summary><p id="srcdata" class="resn"></p><ul><li>Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.</li><li>With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙︎ Advanced); if you add an approach, the approach area starts at the IAF.</li><li>Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙︎ Advanced).</li><li>The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.</li><li>The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.</li></ul></details>
+    <details class="note howd"><summary>How to read the profile</summary><p id="srcdata" class="resn"></p><ul><li>Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.</li><li>With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under Advanced); if you add an approach, the approach area starts at the IAF.</li><li>Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under Advanced).</li><li>The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.</li><li>The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.</li></ul></details>
     <div class="selbar noprint" id="selbar" hidden></div>
       </div>
       <div class="panel rp ptools noprint">
@@ -764,8 +763,8 @@
     </div>
   </div>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="ai.js?v=2"></script>
+<script src="lab.js?v=49"></script>
+<script src="ai.js?v=3"></script>
 <script src="store.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
@@ -775,6 +774,8 @@
 (function(){
 'use strict';
 const {L,el}=LAB, esc=NAI.esc;
+/* icons (class ic, lab.css) */
+const SET_IC='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.5"/><circle cx="8" cy="17" r="2.5"/></svg>', EDIT_IC='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4.2L16.3 4.5a2.2 2.2 0 013.2 3.2L8.2 19z"/><path d="M14.3 6.5l3.2 3.2"/></svg>';
 const NSV='http://www.w3.org/2000/svg';
 const XT=[['rwy','Runway / aerodrome'],['sid','SID / exit fix'],['wpt','Waypoint'],['iaf','IAF'],['if','IF'],['hold','Hold'],['faf','FAF / FAP'],['da','DA / MDA'],['missed','Missed approach'],['alt','Alternate']];
 const APPT=['if','faf','da','missed'];
@@ -1322,7 +1323,7 @@ function drawMarkers(M,MK,o){ const {add,tx,hand,XS,YS,T0,H}=o; const INK='#1D4E
     if(bad!=null){ const e3=hand(L({en:'path ',no:'banen '})+fx(bad),x,y+(m.k==='between'?36:24),{'font-size':15,fill:'#B3261E','text-anchor':'middle'}); g.appendChild(e3); }
     add('circle',{cx:x,cy:y,r:14,fill:'transparent'},g); }); }
 function drawMkList(M){ const box=el('mklist'); if(!box) return; const A=(R.mk||[]).map((m,i)=>[m,i]).sort((a,b)=>a[0].x-b[0].x);
-  box.innerHTML= A.length? A.map(([m,i])=>{ const bad=mkCheck(M,m); return `<div class="mkrow"><span><b>${esc(mkName(m))}</b> · ${fx(m.x,1)} NM${mkText(m)?' · '+esc(mkText(m)):''}${bad!=null?` <span class="ko">${L({en:'path is',no:'banen er'})} ${fx(bad)}</span>`:''}</span><span><button data-ed="${i}" aria-label="Edit">✎︎</button><button data-rm="${i}" aria-label="Delete">✕</button></span></div>`; }).join('')
+  box.innerHTML= A.length? A.map(([m,i])=>{ const bad=mkCheck(M,m); return `<div class="mkrow"><span><b>${esc(mkName(m))}</b> · ${fx(m.x,1)} NM${mkText(m)?' · '+esc(mkText(m)):''}${bad!=null?` <span class="ko">${L({en:'path is',no:'banen er'})} ${fx(bad)}</span>`:''}</span><span><button data-ed="${i}" aria-label="Edit">${EDIT_IC}</button><button data-rm="${i}" aria-label="Delete">✕</button></span></div>`; }).join('')
    : `<p class="note" style="margin:0">${L({en:'None yet. Drag a marker to move it.',no:'Ingen ennå. Dra en markør for å flytte den.'})}</p>`; }
 el('mklist').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.rm!=null){ R.mk.splice(+b.dataset.rm,1); render(); queueSave(); } else { const m=R.mk[+b.dataset.ed]; const r=psv.getBoundingClientRect(), h=el('profw').getBoundingClientRect(); mkEdit(m, psv._XS(m.x)/1000*r.width+r.left-h.left, 40); } });
 let MKT='fix';
@@ -1667,7 +1668,7 @@ el('f_add').onclick=async()=>{ const n=el('f_n').value.trim(), ll=parseLL(el('f_
 el('f_pick').onclick=()=>{ pickMode=true; mapEl.classList.add('pick'); el('f_msg').textContent=L({en:'Click the position on the map.',no:'Klikk posisjonen på kartet.'}); };
 el('f_parse').onclick=async()=>{ const list=parseList(el('f_paste').value); if(!list.length){ el('f_found').innerHTML=`<span class="note">${L({en:'No name + coordinate pairs found. One fix per line: NAME 593412N 0104523E',no:'Fant ingen navn + koordinat. Én fix per linje: NAVN 593412N 0104523E'})}</span>`; return; } showFound(list,L({en:'Read from your list',no:'Lest fra listen din'})); };
 el('f_ai').onclick=async()=>{ const fs=[...el('f_img').files]; if(!fs.length){ el('f_found').innerHTML=`<span class="note">${L({en:'Choose a photo or screenshot of the chart first.',no:'Velg et bilde eller skjermbilde av kartet først.'})}</span>`; return; }
-  if(!NAI.mode){ el('f_found').innerHTML=`<span class="note">${esc(NAI.errText({code:'not_available'}))}</span>`; return; }
+  await NAI.probe(); if(!NAI.mode){ el('f_found').innerHTML=`<span class="note">${esc(NAI.errText({code:'not_available'}))}</span>`; return; }
   el('f_ai').disabled=true; el('f_found').innerHTML=`<span class="note">${L({en:'Reading the chart…',no:'Leser kartet…'})}</span>`;
   try{ const imgs=[]; for(const f of fs.slice(0,3)) imgs.push(await shrink(f));
     const r=await NAI.json(`List every named fix, waypoint, navaid or reporting point on this aeronautical chart that has its coordinates printed. Copy the coordinates exactly as printed and convert them to decimal degrees (WGS84, south and west negative). Do not guess coordinates that are not printed. Reply with only JSON: {"fixes":[{"n":"NAME","lat":number,"lon":number,"printed":"coordinates as printed"}]}`,{tier:'default',images:imgs});
@@ -1729,7 +1730,7 @@ async function upPut(k,b){ const db=await upDb(); if(!db) return false; return n
 async function upJpeg(src,w,h){ const k=Math.min(1,1800/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(src,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)); return {b,w:c.width,h:c.height}; }
 function upScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
 async function upPdf(f){ const base='vendor/'; if(!window.pdfjsLib){ await upScript(base+'pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; } const doc=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; const pg=await doc.getPage(1); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await upJpeg(c,c.width,c.height); j.pages=doc.numPages; return j; }
-// upload buttons: the ★︎ library menu and the compact line under the profile (class upgo)
+// upload buttons: the library menu and the compact line under the profile (class upgo)
 let UPB=null; document.addEventListener('click',e=>{ const b=e.target.closest('.upgo'); if(!b||b.disabled) return; UPB=b; upIn.click(); });
 upIn.onchange=async()=>{ const f=upIn.files[0]; upIn.value=''; if(!f) return; const btn=UPB&&document.body.contains(UPB)?UPB:document.createElement('button'), t0=btn.innerHTML; btn.disabled=true; btn.textContent=L({en:'Reading…',no:'Leser…'});
   try{ let j; if(/\.pdf$/i.test(f.name)||f.type==='application/pdf') j=await upPdf(f); else { const u=URL.createObjectURL(f); const img=new Image(); const ok=await new Promise(r=>{ img.onload=()=>r(true); img.onerror=()=>r(false); img.src=u; }); if(!ok) throw new Error('img'); j=await upJpeg(img,img.naturalWidth,img.naturalHeight); URL.revokeObjectURL(u); }
@@ -1877,8 +1878,8 @@ LAB.add({},{
  'Send to the briefing pack ↓':'Send til briefingpakken ↓','Choose the pack and send. The profile, the weather and the navigation log go with it.':'Velg pakken og send. Profilen, været og navigasjonsloggen følger med.','Climb and descent ':'Stigning og sink ',
  'How to read the profile':'Slik leser du profilen','Departure and approach area':'Avgangs- og innflygingsområde',
  'Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.':'Terreng viser bare bakken under ruten. Høydelinje legger til én høyde du velger. Stigning og sink legger til en illustrativ bane fra stige- og sinkgradientene dine. Ingen av dem er en prosedyre.',
- 'With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙︎ Advanced); if you add an approach, the approach area starts at the IAF.':'Med Stigning og sink flys den første og siste delen av flygingen (skravert) på en SID, en innflyging eller visuelt. Verktøyet har ikke de prosedyrene, så det sjekker ikke terrenget der, og linjen er stiplet. Bruk kartet. Områdene er 10 NM som standard (endre det under ⚙︎ Avansert); legger du inn en innflyging, starter innflygingsområdet ved IAF.',
- 'Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙︎ Advanced).':'Mellom dem, på strekningen, sjekkes linjen mot terrenget: røde prikker betyr under det høyeste terrenget i korridoren, oransje prikker betyr mindre enn klaringen din (1000 eller 2000 ft, satt under ⚙︎ Avansert).',
+ 'With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under Advanced); if you add an approach, the approach area starts at the IAF.':'Med Stigning og sink flys den første og siste delen av flygingen (skravert) på en SID, en innflyging eller visuelt. Verktøyet har ikke de prosedyrene, så det sjekker ikke terrenget der, og linjen er stiplet. Bruk kartet. Områdene er 10 NM som standard (endre det under Avansert); legger du inn en innflyging, starter innflygingsområdet ved IAF.',
+ 'Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under Advanced).':'Mellom dem, på strekningen, sjekkes linjen mot terrenget: røde prikker betyr under det høyeste terrenget i korridoren, oransje prikker betyr mindre enn klaringen din (1000 eller 2000 ft, satt under Avansert).',
  'The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.':'Det brune feltet er terrenget rett under ruten. De røde og oransje prikkene ser også på det høyeste terrenget i korridoren på hver side, som er det IFR-minimumshøyden bygger på.',
  'The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.':'Høydemodellen er grov og har ingen hindre som master eller bygninger. Publiserte høyder kommer alltid fra AIP og kartene.',
  '↶ Undo':'↶ Angre','Reset profile':'Nullstill profilen',
@@ -2119,7 +2120,7 @@ el('shFull').onclick=()=>{ setSheet(el('sheet').dataset.s==='full'?'mid':'full')
 el('shX').onclick=()=>{ el('shOpen').dataset.user='1'; setSheet('off'); };
 el('shOpen').onclick=()=>{ delete el('shOpen').dataset.user; setSheet(SHS==='off'||SHS==='min'?'mid':SHS); };
 el('shTog').onclick=()=>{ setSheet(el('sheet').dataset.s==='min'?'mid':'min'); };
-el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){ el('nlp').hidden=true; el('shNl').setAttribute('aria-pressed','false'); } el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙︎<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
+el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){ el('nlp').hidden=true; el('shNl').setAttribute('aria-pressed','false'); } el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':SET_IC+'<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
@@ -2366,7 +2367,7 @@ function depParse(t){ const T=' '+String(t||'').toUpperCase().replace(/[,;·]/g,
   const m=T.match(/\b(?:RWY|RW|DEP(?:ARTURE)?|T\/?O)\s*(\d{1,2}[LRC]?)\b/)||T.match(/\s(\d{1,2}[LRC]?)\s/);
   if(m){ if(d&&rwyList(d.n).includes(m[1])) out.dep=m[1]; else msg.push(L({en:'no runway',no:'ingen bane'})+' '+m[1]+' '+L({en:'at',no:'på'})+' '+(d?d.n:'?')); }
   return {out,msg}; }
-function xpc(){ [['xdep',{en:'Departure note',no:'Avgangsnotat'}],['xarr',{en:'Arrival note',no:'Ankomstnotat'}]].forEach(([id,lab])=>{ const t=el(id), b=document.querySelector(`.xnb[data-x="${id}"]`); if(!b) return; const has=!!t.value.trim(); b.classList.toggle('has',has); b.textContent=t.hidden? (has?'✎︎ ':'＋ ')+L(lab) : '✓ '+L({en:'Done',no:'Ferdig'}); }); }
+function xpc(){ [['xdep',{en:'Departure note',no:'Avgangsnotat'}],['xarr',{en:'Arrival note',no:'Ankomstnotat'}]].forEach(([id,lab])=>{ const t=el(id), b=document.querySelector(`.xnb[data-x="${id}"]`); if(!b) return; const has=!!t.value.trim(); b.classList.toggle('has',has); b.innerHTML=t.hidden? (has?EDIT_IC+' ':'＋ ')+esc(L(lab)) : '✓ '+esc(L({en:'Done',no:'Ferdig'})); }); }
 function xOpen(id,on){ const t=el(id); t.hidden=on===undefined?!t.hidden:!on; xpc(); if(!t.hidden){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } }
 el('xnrow').addEventListener('click',e=>{ const b=e.target.closest('.xnb'); if(b) xOpen(b.dataset.x); });
 ['xdep','xarr'].forEach(id=>el(id).addEventListener('keydown',e=>{ if(e.key==='Escape'){ xOpen(id,false); } }));
@@ -2666,10 +2667,10 @@ lyUI();
   if(n>=2) set(false); else { set(true); const off=()=>{ set(false); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.removeEventListener(t,off)); clearTimeout(tm); };
     const tm=setTimeout(off,6000); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.addEventListener(t,off,{passive:true})); }
   hb.addEventListener('pointerdown',e=>e.stopPropagation()); hb.addEventListener('click',e=>{ e.stopPropagation(); set(lg.classList.contains('lgoff')); }); }
-LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙︎<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
+LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':SET_IC+'<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
 Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; { const rid=new URLSearchParams(location.search).get('id'); load((rid&&ALL.find(x=>x.id===rid))||ALL[0]); } mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>
-<script>try{ if(matchMedia("(max-width:480px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass, punkt eller rute":"Airport, fix or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
+<script>try{ if(matchMedia("(max-width:520px)").matches){ const r=document.getElementById("rtxt"); const f=()=>{ r.placeholder=LAB.lang==="no"?"Flyplass, punkt eller rute":"Airport, fix or route"; }; f(); LAB.onLang(f); } }catch(e){}</script>
 </body>
 </html>

@@ -6,14 +6,24 @@
 let mode=null; // null | 'sample' | 'api'
 let why=''; // hvorfor /api/atc ikke er tilgjengelig: 'signed_out' | 'not_configured' | ''
 let fn=null;
-const waiters=[];
-const ready=(async()=>{
+const PK='bb-ai-api', HTTP=location.protocol.startsWith('http');
+const seen=()=>{ try{ return sessionStorage.getItem(PK); }catch(e){ return null; } };
+const modeFns=[];
+const boot=(async()=>{
   try{ if(G.claude&&G.claude.use){ fn=await G.claude.use('sample'); if(fn) mode='sample'; } }catch(e){ fn=null; }
   if(!mode && location.protocol.startsWith('http')){
     try{ const r=await fetch('/api/atc',{method:'GET'}); if(r.ok){ const j=await r.json(); if(j&&j.ok) mode='api'; else why=String(j&&j.reason||''); } }catch(e){}
   }
   return mode;
 })();
+/* the service answers 200 whether or not it is switched on, so asking once when the page loads is quiet */
+function probe(){ return boot; }
+function onMode(f){ modeFns.push(f); boot.then(f,()=>f(null)); }
+/* NAI.ready: waiting for it counts as using the AI, so it settles after the look-up (pages that only label their
+   controls on load use onMode instead) */
+const ready={ then:(a,b)=>probe().then(a,b), catch:b=>probe().catch(b) };
+{ const first=e=>{ const t=e.target; if(!(t&&t.closest&&t.closest('[data-ai]'))) return; document.removeEventListener('pointerdown',first,true); document.removeEventListener('focusin',first,true); probe(); };
+  document.addEventListener('pointerdown',first,true); document.addEventListener('focusin',first,true); }
 
 function lang(){ return document.documentElement.lang==='nb'?'no':'en'; }
 function langName(){ return lang()==='no'?'Norwegian (bokmål)':'English'; }
@@ -34,12 +44,12 @@ function parseJson(t){
   throw {code:'invalid_json',text:t};
 }
 /* input: string eller [{role,content}] som starter og slutter på user */
-async function text(input,o){ o=o||{}; await ready;
+async function text(input,o){ o=o||{}; await probe();
   if(mode==='sample'){ const op={signal:o.signal,cache:false,modelTier:o.tier||'default',onText:o.onText}; if(o.images) op.images=o.images; return (await fn(input,op)).text; }
   if(mode==='api'){ const t=await apiCall(typeof input==='string'?[{role:'user',content:input}]:input,o.signal); o.onText&&o.onText({text:t,delta:t}); return t; }
   throw {code:'not_available'};
 }
-async function json(input,o){ o=o||{}; await ready;
+async function json(input,o){ o=o||{}; await probe();
   if(mode==='sample'){ const op={signal:o.signal,cache:false,modelTier:o.tier||'default'}; if(o.images) op.images=o.images; return await fn.json(input,op); }
   if(mode==='api') return parseJson(await apiCall(typeof input==='string'?[{role:'user',content:input}]:input,o.signal));
   throw {code:'not_available'};
@@ -106,5 +116,5 @@ function ptt(btn,ta,onFinal,o){ o=o||{};
 
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-G.NAI={ ready, get mode(){ return mode; }, text, json, errText, fatal, speak, hush, ptt, sr:!!SR, lang, langName, esc, radioSpeak };
+G.NAI={ ready, probe, onMode, get mode(){ return mode; }, text, json, errText, fatal, speak, hush, ptt, sr:!!SR, lang, langName, esc, radioSpeak };
 })(window);

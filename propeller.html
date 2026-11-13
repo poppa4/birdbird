@@ -5,8 +5,8 @@
 <meta name="description" content="Engine failure on the A320 for ATPL 081 and the type rating: slow down until the rudder runs out and find VMCA, see why bank, thrust, altitude, CG and weight move it, and how CS-25 turns it into VMCG, VMCL, V1, VR and V2.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Engine Failure and Minimum Control Speeds</title>
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
@@ -15,17 +15,17 @@
 #spCv{aspect-ratio:16/6.2}
 #gCv{aspect-ratio:16/8.4}#gTr{aspect-ratio:16/4.4}
 #laCv{aspect-ratio:16/7.4}#lsCv{aspect-ratio:16/4.2}
-@media (max-width:600px){#acCv{aspect-ratio:4/4.1}#trCv{aspect-ratio:4/4.2}#mvCv,#vbCv{aspect-ratio:4/3.5}#spCv{aspect-ratio:4/3.3}#gCv{aspect-ratio:4/3.9}#gTr{aspect-ratio:4/2.4}#laCv{aspect-ratio:4/3.4}#lsCv{aspect-ratio:4/2.6}}
+@media (max-width:640px){#acCv{aspect-ratio:4/4.1}#trCv{aspect-ratio:4/4.2}#mvCv,#vbCv{aspect-ratio:4/3.5}#spCv{aspect-ratio:4/3.3}#gCv{aspect-ratio:4/3.9}#gTr{aspect-ratio:4/2.4}#laCv{aspect-ratio:4/3.4}#lsCv{aspect-ratio:4/2.6}}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.two{grid-template-columns:minmax(0,1fr)}}
 .ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
 .ovl{position:absolute;left:10px;top:8px;font-family:var(--f-mono);font-size:11px;line-height:1.5;color:#8B99A7;pointer-events:none;max-width:calc(100% - 150px)}
-.ovl b{color:#D7E1E6;font-weight:500}.ovl .r{color:#EC5A47}.ovl .g{color:#71CC93}
+.ovl b{color:var(--instrument-ink);font-weight:500}.ovl .r{color:#EC5A47}.ovl .g{color:#71CC93}
 .vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(18,22,26,.62);color:#D5DCE2;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:4px 9px;cursor:pointer;line-height:1.3}
 .vbtn:hover{border-color:rgba(255,255,255,.28)}.vbtn.on{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
 .vbtn.go{border-color:rgba(236,90,71,.6);color:#FFB4A8}
 .vbtn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
-@media (max-width:600px){.ovl{font-size:10px;max-width:calc(100% - 16px);top:auto;bottom:6px}.ovr{max-width:100%}}
+@media (max-width:640px){.ovl{font-size:10px;max-width:calc(100% - 16px);top:auto;bottom:6px}.ovr{max-width:100%}}
 .pbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
 @media (max-width:1180px){.pbench{grid-template-columns:minmax(0,1fr)}}
 .xcard .kpi{padding:8px 14px 10px}.xcard .kpi b{font-size:22px}
@@ -55,7 +55,7 @@
 .ct4>div.h{border-top:0;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:var(--paper)}
 .ct4>div.k{color:var(--ink);font-weight:600}
 .ct4 .x{color:var(--accent);font-weight:600}
-@media (max-width:760px){.ct4{grid-template-columns:minmax(0,1fr)}.ct4>div.h{display:none}.ct4>div.k{background:var(--paper);padding-bottom:6px}.ct4>div:not(.k):not(.h)::before{content:attr(data-c);display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}}
+@media (max-width:640px){.ct4{grid-template-columns:minmax(0,1fr)}.ct4>div.h{display:none}.ct4>div.k{background:var(--paper);padding-bottom:6px}.ct4>div:not(.k):not(.h)::before{content:attr(data-c);display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}}
 /* template patterns from pressure.html: learning goal, deep boxes, tasks, task box, debrief */
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -96,10 +96,10 @@ body.depth-instructor .ltpre .btn,body.depth-instructor .presec .btn{font-size:1
 ol.steps{margin:6px 0 0;padding-left:20px;color:var(--ink-2);font-size:14.5px;line-height:1.5}
 ol.steps li{margin:4px 0}
 .vid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:center;margin:6px 0 4px;border:1px solid var(--rule);border-radius:var(--radius-lg,6px);background:var(--sheet);padding:14px}
-@media (max-width:760px){.vid{grid-template-columns:minmax(0,1fr)}}
-.vframe{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:#10171D}
+@media (max-width:640px){.vid{grid-template-columns:minmax(0,1fr)}}
+.vframe{position:relative;aspect-ratio:16/9;border-radius:4px;overflow:hidden;background:var(--instrument)}
 .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.vplay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at 50% 45%,#22313C 0,#10171D 75%);color:#D7E1E6;border:0;cursor:pointer;font:inherit;width:100%}
+.vplay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at 50% 45%,#22313C 0,var(--instrument) 75%);color:var(--instrument-ink);border:0;cursor:pointer;font:inherit;width:100%}
 .vplay i{width:64px;height:64px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
 .vplay i::after{content:"";border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent #fff;margin-left:5px}
 .vplay span{font-size:13px;color:#8B99A7}
@@ -110,15 +110,15 @@ ol.steps li{margin:4px 0}
 .h3row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin-top:8px}
 .h3row p{margin:0;color:var(--ink-2);font-size:14.5px;max-width:72ch}
 .past{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-@media (max-width:980px){.past{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){.past{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:520px){.past{grid-template-columns:minmax(0,1fr)}}
 .past .box{position:relative;padding-top:14px}
 .past .box .lt{font-family:var(--f-mono);font-size:30px;font-weight:500;line-height:1;color:var(--accent);float:right;margin:-2px 0 0 8px;opacity:.85}
-.past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:#10171D}
+.past .box svg{display:block;width:100%;height:auto;max-height:96px;margin:2px 0 8px;border-radius:4px;background:var(--instrument)}
 #ltCv{aspect-ratio:16/9.2}#ltCh{aspect-ratio:16/5.4}#pwCv{aspect-ratio:16/9}
 /* «slik leser du» for fargeskinnet på bladet: bare i Kort */
 .cphow{display:none;margin:8px 2px 0;font-size:13px;line-height:1.45;color:var(--muted,#5E6B74)}body.depth-short .cphow{display:block}
-@media (max-width:600px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
+@media (max-width:640px){#ltCv{aspect-ratio:4/6}#ltCh{aspect-ratio:4/3}#pwCv{aspect-ratio:4/4.4}}
 .lays{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:-4px}
 .lays .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-right:4px}
 .lays .vbtn{font-size:12px;padding:6px 11px;min-height:32px}
@@ -130,7 +130,7 @@ ol.steps li{margin:4px 0}
 </style>
 </head>
 <body data-title="Engine Failure and Minimum Control Speeds">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
@@ -340,8 +340,8 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=48"></script>
-<script src="chartnote.js?v=1"></script>
+<script src="lab.js?v=49"></script>
+<script src="chartnote.js?v=2"></script>
 <script src="concepts.js?v=2"></script>
 <script src="stab.js?v=1"></script>
 <script src="vmc.js?v=2"></script>

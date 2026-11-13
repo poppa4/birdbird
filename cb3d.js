@@ -25,7 +25,7 @@ CB3D.init=function(o){
   if(!window.THREE) return stub(o,T('nogl'));
   const host=o.host, canvas=o.canvas, labelsEl=o.labels;
   const COARSE=matchMedia('(pointer:coarse)').matches, HQ=/[?&]hq\b/.test(location.search);
-  const LOW=!HQ&&(innerWidth<760||COARSE||(navigator.hardwareConcurrency||4)<=4);
+  const LOW=!HQ&&(innerWidth<=640||COARSE||(navigator.hardwareConcurrency||4)<=4);
   const Q=LOW?0.45:1;
   let renderer;
   try{ renderer=new THREE.WebGLRenderer({canvas,antialias:!LOW,alpha:true,powerPreference:'high-performance'}); if(!renderer.getContext()) throw new Error('no context'); }

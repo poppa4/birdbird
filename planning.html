@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Navigation log · Birdbird</title>
 <meta name="description" content="Plan each leg with the wind triangle, work out fuel to Part-NCO rules and check the ICAO flight plan format before you file it.">
-<link rel="stylesheet" href="lab.css?v=10">
-<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="site.css?v=20">
 <style>
 .fgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
 .it{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -22,8 +22,8 @@
 .f input.ok,.f textarea.ok{border-color:rgba(113,204,147,.55)}
 .f input:focus,.f textarea:focus,.f select:focus{outline:2px solid var(--smoke);outline-offset:0;border-color:var(--smoke)}
 .c4{grid-column:span 4}.c3{grid-column:span 3}.c6{grid-column:span 6}.c12{grid-column:1/-1}.c8{grid-column:span 8}
-@media (max-width:1000px){.c4,.c3{grid-column:span 6}.c8{grid-column:1/-1}}
-@media (max-width:620px){.c4,.c3,.c6,.c8{grid-column:1/-1}}
+@media (max-width:900px){.c4,.c3{grid-column:span 6}.c8{grid-column:1/-1}}
+@media (max-width:640px){.c4,.c3,.c6,.c8{grid-column:1/-1}}
 .chips{display:flex;flex-wrap:wrap;gap:4px}
 .chips button{font-family:var(--f-mono);font-size:12px;background:var(--bg);border:1px solid var(--line);color:var(--muted);border-radius:3px;padding:4px 7px;cursor:pointer}
 .chips button.on{background:var(--smoke);border-color:var(--smoke);color:var(--bg);font-weight:600}
@@ -61,7 +61,7 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
 </style>
 </head>
 <body data-title="Navigation log">
-<script src="site.js?v=64"></script>
+<script src="site.js?v=66"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -148,7 +148,7 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
 
   <p class="note">Teaching tool. Formats follow ICAO Doc 4444 (FPL 2012) and EASA Part-NCO in simplified form. Always check the current AIP, your state's ATS office requirements and the aircraft flight manual. Example values are not for navigation.</p>
 </div>
-<script src="lab.js?v=48"></script>
+<script src="lab.js?v=49"></script>
 <script>
 (function(){
 'use strict';

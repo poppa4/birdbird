@@ -640,7 +640,7 @@ function pickInst(){ const X=S.X, ex=EXo(), it=ITo(); const want=[S.instWant,it.
 let pfdW=0,pfdH=0,pfdDpr=1, cmpW=0,cmpH=0;
 function sizePFD(w,h){ pfdDpr=Math.min(devicePixelRatio||1,2.5); pfdW=w; pfdH=h; pfdC.width=Math.round(w*pfdDpr); pfdC.height=Math.round(h*pfdDpr); }
 function sizeCmp(w,h){ const d=Math.min(devicePixelRatio||1,2.5); cmpW=w; cmpH=h; cmpC.width=Math.round(w*d); cmpC.height=Math.round(h*d); cmpC.style.width=w+'px'; cmpC.style.height=h+'px'; cmpG.setTransform(d,0,0,d,0,0); }
-function layoutInst(){ const box=el('inst'), narrow=innerWidth<980, kinds=kindsNow();
+function layoutInst(){ const box=el('inst'), narrow=innerWidth<=900, kinds=kindsNow();
   qa('#inst .g').forEach(g=>g.hidden=kinds.indexOf(g.dataset.g)<0);
   const W=box.clientWidth; let Hh=box.clientHeight; const phone=narrow&&W<520;
   box.classList.toggle('stack',phone&&kinds.length>1);
@@ -1093,7 +1093,7 @@ function renderCtl(){ const box=el('ctl'), l=ctlList(), X=S.X; let h='';
   if(S.ex==='orient') h+=`<div class="c rep"><div class="top"><label for="in-rep">${X.task.kind==='rbi'?tx('Bearing to the beacon','Peiling til fyret'):tx('Your radial','Radialen din')}<small id="tg-rep"></small></label><input id="in-rep" inputmode="numeric" autocomplete="off" placeholder="—"></div><div class="st">${X.task.kind==='rbi'?'<span></span>':`<button type="button" id="repObs">${tx('Use the course','Bruk kursen')}</button>`}<button type="button" id="repGo" class="go">${tx('Report','Rapporter')}</button></div></div>`;
   if(S.ex==='tts') h+=`<div class="c rep"><div class="top"><label for="in-rep">${tx('Minutes to the station','Minutter til stasjonen')}</label><input id="in-rep" inputmode="decimal" autocomplete="off" placeholder="—"></div><div class="st"><button type="button" id="repSw">${tx('Stopwatch','Stoppeklokke')} <span id="swv">0:00</span></button><button type="button" id="repGo" class="go">${tx('Report','Rapporter')}</button></div></div>`;
   if(S.ex==='pass') h+=`<div class="c rep"><div class="top"><label>${tx('When the flag flips','Når flagget skifter')}</label></div><div class="st" style="grid-template-columns:1fr"><button type="button" id="passGo" class="go">${tx('Station passage','Stasjonspassering')}</button></div></div>`;
-  const n=l.length+((S.ex==='orient'||S.ex==='tts'||S.ex==='pass')?1:0); box.style.setProperty('--nc',innerWidth<560?Math.min(2,n):Math.min(n,4)); box.innerHTML=h;
+  const n=l.length+((S.ex==='orient'||S.ex==='tts'||S.ex==='pass')?1:0); box.style.setProperty('--nc',innerWidth<=640?Math.min(2,n):Math.min(n,4)); box.innerHTML=h;
   box.querySelectorAll('.c[data-k]').forEach(c0=>{ const k=c0.dataset.k, inp=c0.querySelector('input');
     c0.querySelectorAll('button[data-d]').forEach(b=>{ let tm=null, iv=null; const fire=()=>setCtl(k,null,+b.dataset.d);
       b.addEventListener('pointerdown',e=>{ e.preventDefault(); fire(); if(c0.dataset.pp) return; tm=setTimeout(()=>{ iv=setInterval(fire,90); },420); });
@@ -1780,10 +1780,10 @@ function loop(ts){ const dt=Math.min(0.1,Math.max(0,(ts-lastT)/1000)); lastT=ts;
   requestAnimationFrame(loop); }
 
 /* ---------- start ---------- */
-LAB.start('ifr');
 LAB.add({},{'Birdbird · Training':'Birdbird · Trening','IFR trainer':'IFR-trener','Training only · not for navigation':'Kun trening · ikke for navigasjon',
   'What the trainer models':'Hva treneren modellerer','Limits and tolerances':'Grenser og toleranser','Real and practice data':'Ekte data og øvingsdata',
   'All exercises':'Alle øvelser','Start here':'Start her'});
+LAB.start('ifr');
 LAB.tx({n1:'Standardsvinger (høyst 25° krengning), stigning og sink til valgt høyde med valgt rate, sann fart som øker rundt 2 % per 1000 ft, og vind som er jevn eller byget og skiftende. Kursmarkøren virker som en enkel autopilot: flyet svinger mot den, samme vei som du vred den. Misvisningen er satt til null, så kart og instrumenter stemmer.',
   n2:'Poengene bruker grensene fra EASA IR-ferdighetsprøven: ±100 ft, kurs innenfor ±5°, halvt utslag på ILS, LOC og RNP, aldri under MDA. Holding følger ICAO PANS-OPS: høyresvinger om ikke annet er sagt, legg på 1 minutt til og med 14 000 ft, innganger bestemt av kurs med 5° slingringsmonn på hver side av en sektorlinje. Prosedyresvinger bruker Cat A/B-tiden på 1 minutt.',
   n3:'Bergen og Oslo bruker ekte posisjoner og frekvenser for navigasjonshjelpemidler (OurAirports), kun for trening. Prosedyrene som flys der er illustrasjoner, ikke publiserte kart. Øvingsområdet er fiktivt: Holmvik, Kvist, Fjell, Ravn, Holm og HV-waypointene finnes ikke. Bruk aldri treneren til navigasjon.'});

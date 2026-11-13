@@ -27,7 +27,7 @@ abbr.cn-t.open::after{content:" (" attr(data-tip) ")";color:var(--ink-2);font-we
 .cn-in .cn-read b,.cn-in.cn-read b,.cn-in .cn-take,.cn-in.cn-take{color:inherit}
 .cn-in .cn-tog,.cn-in.cn-tog{color:inherit;opacity:.8;border-color:rgba(127,140,150,.45)}
 .cn-in .cn-tog:hover,.cn-in.cn-tog:hover{background:rgba(127,140,150,.15);opacity:1}
-@media (max-width:600px){.cn-take{flex-basis:100%}.cn-tog{margin-left:0}}
+@media (max-width:640px){.cn-take{flex-basis:100%}.cn-tog{margin-left:0}}
 `;
 const sty=document.createElement('style'); sty.textContent=css; document.head.appendChild(sty);
 const L=o=>o?(typeof o==='function'?o():typeof o==='string'?o:window.LAB?LAB.L(o):o.en):'';
