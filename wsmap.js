@@ -1,10 +1,10 @@
 /* Birdbird – My Workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
    Frames are drawn only while something moves: the short intro, a camera move, a pan. Once still, no animation frame
    is requested, so an idle map costs nothing. With reduced motion it is drawn once.
-   WSMAP.mount(host, { graph, t, mini, labels, sample, onOpen(node, beside), onClick(), padBottom, view })
+   WSMAP.mount(host, { graph, t, mini, labels, sample, onOpen(node, beside), onEdit(what, node or group, button), onClick(), padBottom, view })
      -> { setGraph(g), fit(), focus(i), focusGroup(k), destroy(), debug }
-   The map is a calm cloud (WSGRAPH.cloudLayout): each aircraft a soft glowing blob of evenly spread dots, 'Unsorted'
-   one more, the blobs together one cloud with no lines round it. Every group has a clear name and count ('DA42 · 6'),
+   The map is a calm cloud (WSGRAPH.cloudLayout): each aircraft and each topic a soft glowing blob of evenly spread dots,
+   'Unsorted' one more, the blobs together one cloud with no lines round it. Every group has a clear name and count ('DA42 · 6'),
    placed where it collides with nothing and stays on the plate (or left out on a mini map if there is no room).
    Links are hairlines inside a group, faint; a dot's links light up on hover. Hover or tap a dot: its card. Tap a
    group name: the camera moves to the group, every item is named and listed in the card; tap outside: back.
@@ -66,15 +66,27 @@
         (o.pinned ? `<span class="b">${a ? (a[0] ? `<button type="button" class="btn sm pri" data-act="${a[0]}">${esc(a[1])}</button>` : `<a class="btn sm pri" href="route.html">${esc(a[1])}</a>`) : ''}</span>` : `<span class="m">${esc(o.coarse ? t('Tap to add your own', 'Trykk for å legge til ditt eget') : t('Click to add your own', 'Klikk for å legge til ditt eget'))}</span>`);
     }
     return `<span class="k"><i style="background:${COL[n.k]}"></i>${esc(KN[n.k])}</span><b>${esc(n.label)}</b>${sub}<span class="m">${esc(n.deg === 1 ? t('1 link', '1 kobling') : t(n.deg + ' links', n.deg + ' koblinger'))}</span>` +
-      `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button></span>`;
+      `<span class="b"><button type="button" class="btn sm pri" data-o="here">${esc(t('Open on the desk', 'Åpne på arbeidsflaten'))}</button><button type="button" class="btn sm" data-o="beside">${esc(t('Open beside', 'Åpne ved siden av'))}</button>` +
+      (o.edit && o.pinned && MOVABLE[n.k] ? `<button type="button" class="btn sm" data-mv aria-haspopup="menu">${esc(t('Move to', 'Flytt til'))} ▾</button>` : '') + `</span>`;
   }
-  /* the card of a focused group (2D and 3D): its name and count, every item in it (a button each), back to all.
-     items: node indices; o: { t, sample, col, name, sub } */
+  /* what can be placed in a group by hand (the same menu as the chip on the desk) */
+  const MOVABLE = { doc: 1, note: 1, notebook: 1, pack: 1, route: 1 };
+  /* a click on the card's own-map actions: "Move to" on a dot, "New note here" (and Rename, Delete for a topic) on a
+     group. o.onEdit(what: 'move' | 'new' | 'rename' | 'delete', node or group, the button). -> true when it was one */
+  function cardAct(e, o, node, grp) {
+    const b = e.target.closest('[data-mv],[data-ga]'); if (!b) return false;
+    if (!o.onEdit) return true;
+    if (b.hasAttribute('data-mv')) { if (node) o.onEdit('move', node, b); } else if (grp) o.onEdit(b.dataset.ga, grp, b);
+    return true;
+  }
+  /* the card of a focused group (2D and 3D): its name and count, "New note here" and back to all, every item in it (a
+     button each); a topic of your own can be renamed and deleted. items: node indices; o: { t, sample, col, name, sub, edit, topic } */
   function groupCardHTML(g, items, o) {
     const t = o.t, KN = names(t).KN, COL = o.col || COLS;
     return `<span class="k">${esc(o.sample ? t('Example group', 'Eksempelgruppe') : t('Group', 'Gruppe'))}</span><b class="gh">${esc(o.name)} <span class="gc">· ${items.filter(i => g.nodes[i].k !== 'aircraft').length}</span></b>${o.sub ? `<span class="m">${esc(o.sub)}</span>` : ''}` +
+      `<span class="b">${o.edit ? `<button type="button" class="btn sm pri" data-ga="new">${esc(t('+ New note here', '+ Nytt notat her'))}</button>` : ''}<button type="button" class="btn sm" data-back>${esc(t('← All groups', '← Alle grupper'))}</button></span>` +
       `<ul class="gl">${items.map(i => `<li><button type="button" data-i="${i}"><i style="background:${COL[g.nodes[i].k]}"></i><span>${esc(g.nodes[i].label)}</span><small>${esc(KN[g.nodes[i].k])}</small></button></li>`).join('')}</ul>` +
-      `<span class="b"><button type="button" class="btn sm" data-back>${esc(t('← All groups', '← Alle grupper'))}</button></span>`;
+      (o.edit && o.topic ? `<span class="ge"><button type="button" class="lnk" data-ga="rename">${esc(t('Rename', 'Gi nytt navn'))}</button><button type="button" class="lnk" data-ga="delete">${esc(t('Delete', 'Slett'))}</button></span>` : '');
   }
   /* search on the map: node indices best first (at most 7) */
   function searchRows(g, q, visible) {
@@ -112,6 +124,7 @@
     let dirty = true, pulses = [], shown = null, scene = null, sceneOK = false, ambT = 0, pulseT = 0, onScreen = true;
     /* an example dot (nothing of your own yet): explained, never opened */
     const isEx = i => i >= 0 && !!g.nodes[i] && !!o.sample;
+    const canEdit = !o.sample && !!o.onEdit;
     const aspect = () => W && H ? Math.max(0.4, Math.min(3, (W - (mini ? 20 : 48)) / Math.max(60, H - (mini ? 38 : 58 + (o.padBottom || 64))))) : 1.6;
 
     /* ---------- data ---------- */
@@ -380,7 +393,7 @@
       const order = L.groups.map((q, gi) => gi).sort((a, b) => (a === gsel ? -1 : b === gsel ? 1 : 0) || L.groups[b].m.length - L.groups[a].m.length);
       for (const gi of order) {
         const q = L.groups[gi], name = names2[gi].toUpperCase(), cnt = ' · ' + q.n;
-        if (!q.m.some(i => visible(i))) continue;
+        if (q.m.length && !q.m.some(i => visible(i))) continue;
         const wn = meas(name, fN), wc = meas(cnt, fC), w = Math.ceil(wn + wc + padX * 2 + (mini ? 6 : 0));
         const cx = wsx(q.cx), cy = wsy(q.cy), rs = q.r * k + 4.6 * sizeK + 5;
         const cand = [];
@@ -466,9 +479,9 @@
     function showCard(i) {
       if (!card) return;
       /* a dot's card moves to the right side when the dot itself is under the card's usual place, so the card never covers the dot you point at */
-      if (i >= 0) { card.classList.toggle('r', W >= 700 && gsel < 0 && sx(i) < 340 && sy(i) < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc(t('← ', '← ') + names2[gsel])}</button></span>` : ''); return; }
+      if (i >= 0) { card.classList.toggle('r', W >= 700 && gsel < 0 && sx(i) < 340 && sy(i) < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, edit: canEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc(t('← ', '← ') + names2[gsel])}</button></span>` : ''); return; }
       card.classList.remove('r');
-      if (gsel >= 0) { const q = L.groups[gsel]; card.hidden = false; card.classList.add('grp'); card.innerHTML = groupCardHTML(g, q.m.filter(visible), { t, sample: !!o.sample, name: names2[gsel], sub: q.ac >= 0 && names2[gsel].indexOf(g.nodes[q.ac].label) < 0 ? g.nodes[q.ac].label + (g.nodes[q.ac].type ? ' · ' + g.nodes[q.ac].type : '') : '' }); return; }
+      if (gsel >= 0) { const q = L.groups[gsel]; card.hidden = false; card.classList.add('grp'); card.innerHTML = groupCardHTML(g, q.m.filter(visible), { t, sample: !!o.sample, edit: canEdit, topic: q.topic, name: names2[gsel], sub: q.ac >= 0 && names2[gsel].indexOf(g.nodes[q.ac].label) < 0 ? g.nodes[q.ac].label + (g.nodes[q.ac].type ? ' · ' + g.nodes[q.ac].type : '') : '' }); return; }
       card.hidden = true;
     }
     function select(i, zoom) {
@@ -485,6 +498,7 @@
       if (k < 0) auto = false;
     }
     if (card) card.addEventListener('click', e => {
+      if (cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.groups[gsel] : null)) return;
       const b = e.target.closest('[data-o]'); if (b && sel >= 0) { open(sel, b.dataset.o === 'beside'); return; }
       const li = e.target.closest('[data-i]'); if (li) { const i = +li.dataset.i; if (isEx(i) || coarse) select(i); else { hover = -1; select(i); } return; }
       if (e.target.closest('[data-back]')) { focusGroup(-1); return; }
@@ -546,5 +560,5 @@
       destroy() { alive = false; if (raf) cancelAnimationFrame(raf); raf = 0; unschedule(); if (pulseT) clearTimeout(pulseT); pulseT = 0; if (io) io.disconnect(); document.removeEventListener('visibilitychange', onVis); scene = null; if (ro) ro.disconnect(); else window.removeEventListener('resize', resize); host.innerHTML = ''; cv.width = cv.height = 0; host.wsmap = null; }
     });
   }
-  window.WSMAP = { mount, COL, stats, ui: { cardHTML, groupCardHTML, searchRows, viewSwitch, names, neighOf, esc, fold } };
+  window.WSMAP = { mount, COL, stats, ui: { cardHTML, groupCardHTML, cardAct, searchRows, viewSwitch, names, neighOf, esc, fold } };
 })();

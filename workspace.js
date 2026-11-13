@@ -2,7 +2,8 @@
    Kept on this device   IndexedDB 'birdbird-workspace' (items, device settings, trashed document files), with a
                          localStorage fallback; document files and their text in 'naeroson-fi' – the same store
                          Flight Intelligence uses, so a document added in either place shows in both.
-   Synced to the account aircraft, the document index (name, category, links, tags), pack marks -> namespace 'workspace';
+   Synced to the account aircraft, the document index (name, category, links, tags), pack and route marks, topics
+                         (groups you name yourself; where an item lives is its 'grp', see workspacecore.js) -> namespace 'workspace';
                          notes with their version history -> namespace 'notes'. Document files are never uploaded.
    The desk             desk.js draws the default view (#/): panes with tabs, saved as 'desk' items (positions only) in the
                          'workspace' namespace. The list views below are the Library (#/library, #/documents …).
@@ -28,7 +29,7 @@
   /* ---------- names ---------- */
   const CAT = { afm: ['AFM / POH', 'AFM / POH'], sop: ['SOP', 'SOP'], chk: ['Checklists', 'Sjekklister'], company: ['Company manuals', 'Selskapsmanualer'], charts: ['Charts', 'Kart'], other: ['Other', 'Annet'] };
   const catName = c => t.apply(null, CAT[c] || CAT.other);
-  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'] };
+  const KIND = { aircraft: ['Aircraft', 'Fly'], doc: ['Document', 'Dokument'], note: ['Note', 'Notat'], pack: ['Briefing pack', 'Briefingpakke'], route: ['Route', 'Rute'], desk: ['Desk', 'Arbeidsflate'], notebook: ['Notebook', 'Notatbok'], topic: ['Topic', 'Tema'] };
   const kindName = k => t.apply(null, KIND[k] || ['', '']);
   const acName = a => a ? ([a.type || W.typeOf(a.typeKey).name, a.reg].filter(Boolean).join(' · ') || t('Aircraft', 'Fly')) : '';
   const noteTitle = n => W.noteAutoTitle(n) || t('Untitled note', 'Notat uten tittel');
@@ -94,7 +95,7 @@
     if (!itemsIn) return readyP.then(() => commit(list, opts));
     list = Array.isArray(list) ? list : [list];
     list.forEach(it => { S.items[it.id] = it; });
-    S.index = null;
+    S.index = null; GC = null;
     const p = persist(ST.putItems(list));
     if (!opts || !opts.local) scheduleSync(opts && opts.wait);
     return p;
@@ -115,7 +116,7 @@
   async function loadStores() {
     try { await NSTORE.ready; const [p, r, fa, pa] = await Promise.all(['prep', 'route', 'fiac', 'aircraft'].map(k => NSTORE.list(k).catch(() => [])));
       S.packs = (p || []).filter(realPack); S.routes = (r || []).filter(x => x && (x.pts || []).length > 0); S.fiac = fa || []; S.prepAc = pa || []; } catch (e) {}
-    S.index = null;
+    S.index = null; GC = null;
   }
   async function storageInfo() { try { if (navigator.storage && navigator.storage.estimate) { const e = await navigator.storage.estimate(); S.est.usage = e.usage || 0; S.est.quota = e.quota || 0; } if (navigator.storage && navigator.storage.persisted) S.est.persisted = await navigator.storage.persisted(); } catch (e) {} }
   async function askPersist() { try { if (navigator.storage && navigator.storage.persist && S.est.persisted !== true) S.est.persisted = await navigator.storage.persist(); } catch (e) {} }
@@ -206,7 +207,7 @@
     else if (done.length) toast(t('Saved on this device: ', 'Lagret på denne enheten: ') + done.join(', '), done.length === 1 && lastId && !onDesk && !/^documents\//.test(route().path) ? [t('Open', 'Åpne'), () => go('documents/' + lastId)] : null);
   }
   /* attach a document to an aircraft (from the aircraft card on the desk) */
-  async function linkDoc(docId, acId) { const d = item(docId); if (!W.isLive(d) || (d.acIds || []).includes(acId)) return; const e = W.patch(d, { acIds: (d.acIds || []).concat([acId]) }); await commit(e); await pushDocToFi(e); render(); }
+  async function linkDoc(docId, acId) { const d = item(docId); if (!W.isLive(d) || (d.acIds || []).includes(acId)) return; const e = W.patch(d, { acIds: (d.acIds || []).concat([acId]), grp: '' }); await commit(e); await pushDocToFi(e); render(); }
   function pickFiles(opts) { const inp = el('wsFile'); inp.multiple = !(opts && opts.replaceId); inp.onchange = () => { const fs = [...inp.files]; inp.value = ''; addFiles(fs, opts); }; inp.click(); }
 
   /* ---------- sync with the account ---------- */
@@ -246,7 +247,7 @@
         if (r.leftOut.length || r.trimmedVersions) { full = full || {}; full[ns] = { leftOut: r.leftOut, trimmed: r.trimmedVersions }; }
         if (r.error) err = r.error;
       }
-      if (changed.length) { S.index = null; await persist(ST.putItems(changed)); await reconcile(); remoteChanged(changed); }
+      if (changed.length) { S.index = null; GC = null; await persist(ST.putItems(changed)); await reconcile(); remoteChanged(changed); }
       M.sync.uid = u.id || M.sync.uid; M.sync.full = full;
       if (!err) { M.sync.last = Date.now(); M.sync.base = started; }
       saveMeta();
@@ -487,7 +488,7 @@
   function viewAircraft(id) {
     const a = item(id); if (!W.isLive(a)) return viewMissing('aircraft');
     visit('aircraft', id);
-    const ty = W.typeOf(a.typeKey), docs = docsAll().filter(d => (d.acIds || []).includes(id)), notes = notesAll().filter(n => (n.links || []).some(l => l.t === 'aircraft' && l.id === id)), packs = packsAll().filter(p => packAc(p) === a);
+    const ty = W.typeOf(a.typeKey), docs = docsAll().filter(d => (d.acIds || []).includes(id)), notes = notesAll().filter(n => groupOf('note', n.id) === id || (n.links || []).some(l => l.t === 'aircraft' && l.id === id)), packs = packsAll().filter(p => packAc(p) === a);
     const free = docsAll().filter(d => !(d.acIds || []).includes(id));
     const byCat = W.DOC_CATS.map(c => [c, docs.filter(d => d.cat === c)]).filter(x => x[1].length);
     main.innerHTML = `<a class="ws-back" href="#/aircraft"><span aria-hidden="true">←</span> ${t('My aircraft', 'Mine fly')}</a>
@@ -514,7 +515,7 @@
     el('spBody').addEventListener('click', e => { const b = e.target.closest('[data-act="sp-del"]'); if (b) { b.closest('tr').remove(); saveSp(); } });
     main.querySelector('[data-act="sp-add"]').onclick = () => { el('spBody').insertAdjacentHTML('beforeend', speedRow({ k: '', v: '', u: 'KIAS' })); const r = el('spBody').lastElementChild; r.querySelector('.k').focus(); };
     el('acNotes').addEventListener('input', e => { commit(W.patch(item(id), { notes: e.target.value })); el('anSaved').textContent = t('Saved', 'Lagret'); });
-    const lk = el('acLink'); if (lk) lk.onchange = async () => { const d = item(lk.value); if (!d) return; const e = W.patch(d, { acIds: W.uniq((d.acIds || []).concat(id)) }); await commit(e); await pushDocToFi(e); render(); };
+    const lk = el('acLink'); if (lk) lk.onchange = async () => { const d = item(lk.value); if (!d) return; const e = W.patch(d, { acIds: W.uniq((d.acIds || []).concat(id)), grp: '' }); await commit(e); await pushDocToFi(e); render(); };
   }
   const speedRow = r => `<tr><td><input class="k" value="${esc(r.k)}" maxlength="24" aria-label="${t('Item', 'Punkt')}"></td><td><input class="v" value="${esc(r.v)}" maxlength="16" inputmode="decimal" aria-label="${t('Value', 'Verdi')}"></td><td><input class="u" value="${esc(r.u)}" maxlength="10" aria-label="${t('Unit', 'Enhet')}"></td><td class="x"><button type="button" data-act="sp-del" aria-label="${t('Remove row', 'Fjern rad')}">✕</button></td></tr>`;
 
@@ -612,7 +613,7 @@
     el('dCat2').onchange = e => save({ cat: e.target.value });
     el('dTags').onchange = e => { const tg = W.cleanTags(e.target.value); e.target.value = tg.join(', '); save({ tags: tg }); };
     el('dRev').onchange = e => save({ rev: e.target.value.trim().slice(0, 40) });
-    const acs = el('dAcs'); if (acs) acs.onchange = () => save({ acIds: [...acs.querySelectorAll('input:checked')].map(x => x.value) });
+    const acs = el('dAcs'); if (acs) acs.onchange = async () => { const ids = [...acs.querySelectorAll('input:checked')].map(x => x.value); await save(ids.length ? { acIds: ids, grp: '' } : { acIds: ids }); drawPlaceChips(); };
     drawViewer(d, null, +q.get('p') || 0);
   }
 
@@ -668,7 +669,7 @@
     const q = el('nQ'); if (q) q.oninput = () => { F.notes.q = q.value; draw(); };
     const s = el('nTag'); if (s) s.onchange = () => { F.notes.tag = s.value; draw(); };
   }
-  async function newNote(acId) { const n = W.newNote({ links: acId ? [{ t: 'aircraft', id: acId }] : [] }); await commit(n); askPersist(); go('notes/' + n.id); }
+  async function newNote(acId) { const n = W.newNote({ links: acId ? [{ t: 'aircraft', id: acId }] : [], grp: acId || '' }); await commit(n); askPersist(); go('notes/' + n.id); }
   function linkLabel(l) {
     if (l.t === 'aircraft') { const a = item(l.id); return W.isLive(a) ? { n: acName(a), h: '#/aircraft/' + a.id } : null; }
     if (l.t === 'doc') { const d = item(l.id); return W.isLive(d) ? { n: d.name, h: '#/documents/' + d.id } : null; }
@@ -735,9 +736,9 @@
     main.innerHTML = `<div class="ws-h"><h2>${t('Routes', 'Ruter')}</h2><div class="acts"><a class="btn pri" href="route.html">${t('Open Route Explorer', 'Åpne Route Explorer')}</a></div><p>${t('Routes you have drawn and saved in Route Explorer.', 'Ruter du har tegnet og lagret i Route Explorer.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(routeRow).join('')}</ul>` : empty(t('<b>No saved routes yet.</b> Draw a route in Route Explorer and it is saved here automatically.', '<b>Ingen lagrede ruter ennå.</b> Tegn en rute i Route Explorer, så lagres den her automatisk.'))}`;
   }
-  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.kind === 'notebook' ? (it.title || t('Notebook', 'Notatbok')) : it.id;
+  const itemName = it => it.kind === 'aircraft' ? acName(it) : it.kind === 'doc' ? it.name : it.kind === 'note' ? noteTitle(it) : it.kind === 'desk' ? (it.name || t('Desk', 'Arbeidsflate')) : it.kind === 'notebook' ? (it.title || t('Notebook', 'Notatbok')) : it.kind === 'topic' ? (it.name || t('Topic', 'Tema')) : it.id;
   function viewTrash() {
-    const l = W.trashed(S.items).filter(x => x.kind !== 'pack');
+    const l = W.trashed(S.items).filter(x => x.kind !== 'pack' && x.kind !== 'route');
     main.innerHTML = `<div class="ws-h"><h2>${t('Trash', 'Papirkurv')}</h2>${l.length ? `<div class="acts"><button type="button" class="btn danger" data-act="trash-empty">${t('Empty the trash', 'Tøm papirkurven')}</button></div>` : ''}<p>${t('Deleted aircraft, documents, notes and desks stay here for 30 days and can be restored with everything they had. After that they are removed for good.', 'Slettede fly, dokumenter, notater og arbeidsflater blir liggende her i 30 dager og kan gjenopprettes med alt de hadde. Etter det fjernes de for godt.')}</p></div>
       ${l.length ? `<ul class="rows">${l.map(it => { const d = W.trashDaysLeft(it); return `<li><div class="t"><span class="n">${esc(itemName(it))}</span><small>${esc(kindName(it.kind))} · ${t('deleted ', 'slettet ')}${esc(ago(it.deletedAt))} · ${d <= 1 ? t('removed for good tomorrow', 'fjernes for godt i morgen') : t(`removed for good in ${d} days`, `fjernes for godt om ${d} dager`)}</small></div><div class="r"><button type="button" class="btn sm" data-act="restore" data-id="${esc(it.id)}">${t('Restore', 'Gjenopprett')}</button><button type="button" class="lk danger" data-act="purge" data-id="${esc(it.id)}">${t('Delete for good', 'Slett for godt')}</button></div></li>`; }).join('')}</ul>` : empty(t('The trash is empty.', 'Papirkurven er tom.'))}`;
   }
@@ -789,16 +790,81 @@
   const GW = window.WSGRAPH;
   const mapNames = { name: (k, o) => k === 'aircraft' ? (o.reg || acName(o)) : k === 'doc' ? o.name : k === 'note' ? noteTitle(o) : k === 'notebook' ? (o.title || t('Notebook', 'Notatbok')) : k === 'pack' ? packTitle(o) : k === 'route' ? routeTitle(o) : k === 'desk' ? (o.name || t('Desk', 'Arbeidsflate')) : '',
     pageName: (dl, p) => dl + ' · ' + t('p. ', 's. ') + p };
+  /* built once per change (commit, sync, packs and routes read again, language): the desk asks for it on every redraw */
+  let GC = null;
   function mapGraph() {
     if (!GW) return null;
-    return GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; }, pages: false, desks: false }, mapNames));
+    if (GC && GC.lang === LAB.lang) return GC.g;
+    const g = GW.buildGraph({ items: S.items, packs: S.packs, routes: S.routes }, Object.assign({ packAc: p => { const a = packAc(p); return a ? a.id : ''; }, pages: false, desks: false }, mapNames));
+    GC = { lang: LAB.lang, g, groups: null };
+    return g;
+  }
+
+  /* ---------- groups: where an item lives (an aircraft, a topic of your own, or Unsorted). One chip, one menu, used on
+     the desk, on the Library item pages and for "Move to" on the map. The data rules are in workspacecore.js (place). ---------- */
+  const UNS = W.UNSORTED, PLACE = { note: 1, notebook: 1, doc: 1, pack: 1, route: 1 };
+  /* the groups you can choose, named as on the map: [{ id, name, topic }] */
+  function groupList() {
+    const g = mapGraph(); if (!g) return [];
+    if (!GC.groups) { const G = GW.groupsOf(g); GC.groups = G.filter(q => q.ac >= 0 || q.topic).map(q => ({ id: q.topic ? q.topic.id : g.nodes[q.ac].r, name: GW.groupName(g, G, q, t), topic: !!q.topic })); }
+    return GC.groups;
+  }
+  /* the group an item is in on the map (chosen by hand, else worked out from its links): an id, or '' for Unsorted */
+  function groupOf(k, r) { const g = mapGraph(), n = g && g.nodes[g.index[k + ':' + r]]; return n && n.ac ? n.ac.slice(n.ac.indexOf(':') + 1) : ''; }
+  const groupsOfItem = (k, r) => { const ids = W.placed(S.items, k, r).filter(x => x !== UNS); if (ids.length) return ids; const d = W.placed(S.items, k, r).length ? '' : groupOf(k, r); return d ? [d] : []; };
+  function placeLabel(k, r) {
+    const ids = groupsOfItem(k, r), gl = groupList(), first = gl.find(x => x.id === ids[0]);
+    return first ? first.name + (ids.length > 1 ? ' +' + (ids.length - 1) : '') : t('Unsorted', 'Usortert');
+  }
+  const CHEV = '<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M6 8l4 4 4-4"/></svg>';
+  function placeChip(k, r) {
+    if (!PLACE[k]) return ''; const l = placeLabel(k, r);
+    return `<button type="button" class="ws-place" data-place="${k}:${esc(r)}" aria-haspopup="menu" aria-label="${esc(t('Group: ', 'Gruppe: ') + l)}" title="${esc(t('Group', 'Gruppe'))}"><span>${esc(l)}</span>${CHEV}</button>`;
+  }
+  function drawPlaceChips() { document.querySelectorAll('[data-place]').forEach(b => { const v = b.dataset.place, i = v.indexOf(':'), l = placeLabel(v.slice(0, i), v.slice(i + 1)); b.firstElementChild.textContent = l; b.setAttribute('aria-label', t('Group: ', 'Gruppe: ') + l); }); }
+  async function setPlace(k, r, to) {
+    const it = W.place(S.items, k, r, to); if (!it) return false;
+    await commit(it); if (k === 'doc') await pushDocToFi(it);
+    render(); drawPlaceChips();
+    return true;
+  }
+  function topicDlg(title, val, ok) {
+    return openDlg(`<h3 id="wsDlgH">${esc(title)}</h3><form id="wsTopicF" novalidate><div class="fld"><label for="wsTopicN">${t('Name', 'Navn')}</label><input id="wsTopicN" maxlength="40" value="${esc(val || '')}" placeholder="${esc(t('e.g. Theory', 'f.eks. Teori'))}" autocomplete="off" autofocus></div><div class="foot"><button type="button" class="btn" data-close>${t('Cancel', 'Avbryt')}</button><button type="submit" class="btn pri">${esc(ok)}</button></div></form>`,
+      close => { el('wsTopicF').onsubmit = e => { e.preventDefault(); const v = W.cleanTopicName(el('wsTopicN').value); if (v) close(v); }; });
+  }
+  /* "New topic…": name it, and the item (if any) is placed there at once. A name you already have is that topic. */
+  async function newTopic(k, r) {
+    const name = await topicDlg(t('New topic', 'Nytt tema'), '', t('Create', 'Lag')); if (!name) return null;
+    let tp = W.topicsOf(S.items).find(x => W.fold(x.name) === W.fold(name));
+    if (!tp) { if (W.topicsOf(S.items).length >= W.MAX_TOPICS) { toast(t('You have the most topics there is room for.', 'Du har så mange temaer det er plass til.')); return null; } tp = W.newTopic({ name }); await commit(tp); }
+    if (k) await setPlace(k, r, tp.id); else render();
+    return tp;
+  }
+  async function renameTopic(id) { const tp = item(id); if (!W.isLive(tp)) return; const name = await topicDlg(t('Rename topic', 'Gi temaet nytt navn'), tp.name, t('Save', 'Lagre')); if (!name || name === tp.name) return; await commit(W.patch(item(id), { name })); render(); drawPlaceChips(); }
+  /* the one menu: your aircraft, your topics, New topic…, Unsorted. at: the button (or { x, y }) */
+  function placeMenu(at, k, r, done) {
+    const D = window.WSDESK; if (!D || !D.menu || !PLACE[k]) return;
+    const cur = new Set(groupsOfItem(k, r)), go = async to => { if (await setPlace(k, r, to) && done) done(to); };
+    D.menu(at, groupList().map(x => ({ l: x.name, on: cur.has(x.id), f: () => go(x.id) })).concat([{ sep: 1, hide: !groupList().length },
+      { l: t('New topic…', 'Nytt tema …'), f: async () => { const tp = await newTopic(k, r); if (tp && done) done(tp.id); } },
+      { l: t('Unsorted', 'Usortert'), on: !cur.size, f: () => go(UNS) }]), true);
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-place]'); if (!b) return; e.preventDefault(); const v = b.dataset.place, i = v.indexOf(':'); placeMenu(b, v.slice(0, i), v.slice(i + 1)); });
+  const groupName = id => { const x = groupList().find(q => q.id === id); return x ? x.name : t('Unsorted', 'Usortert'); };
+  /* the map's own actions: "Move to" on a dot's card; "New note here", and Rename and Delete for a topic, on a group's card */
+  async function mapEdit(what, x, btn) {
+    if (what === 'move') { placeMenu(btn, x.k, x.r, to => toast(t('Moved to ', 'Flyttet til ') + groupName(to))); return; }
+    const gid = x.topic ? x.topic.id : x.ac >= 0 ? mapGraph().nodes[x.ac].r : '';
+    if (what === 'new') { const n = W.newNote({ grp: gid, links: gid && !x.topic ? [{ t: 'aircraft', id: gid }] : [] }); await commit(n); if (window.WSDESK) { window.WSDESK.openItem('note', n.id); go(''); } else go('notes/' + n.id); }
+    else if (what === 'rename' && x.topic) renameTopic(gid);
+    else if (what === 'delete' && x.topic) doTrash(gid);
   }
   /* the map shown everywhere: only your own items, each aircraft a soft cloud of its own; with nothing of your own yet the
      small example (sample). mode: sample | own */
   let sampleG = null;
   function mapAny() {
     const own = mapGraph(); if (!own) return null;
-    if (own.own) return { g: own, sample: false, mode: 'own' };
+    if (own.own || own.topics.length) return { g: own, sample: false, mode: 'own' };
     if (!sampleG || sampleG.lang !== LAB.lang) sampleG = { lang: LAB.lang, g: GW.buildGraph(GW.sampleInput(t), Object.assign({ pages: false, desks: false }, mapNames)) };
     return { g: sampleG.g, sample: true, mode: 'sample' };
   }
@@ -810,7 +876,7 @@
     go('');
   }
   let mapV = null;
-  const mapSig = g => g.nodes.map(n => n.id + '=' + n.label).join('|') + '#' + g.links.map(l => l.s + '-' + l.t).join(',');
+  const mapSig = g => g.nodes.map(n => n.id + '=' + n.label + '@' + n.ac).join('|') + '#' + g.links.map(l => l.s + '-' + l.t).join(',') + '#' + (g.topics || []).map(x => x.id + '=' + x.name).join('|');
   /* 2D or 3D: your choice when you made one (the toolbar switch, remembered), else 3D where WebGL is there and the
      device is not weak (a quick check here, then the 3D map times its first frames and hands over to 2D if it lags) */
   const MAPV = 'bb-map-view';
@@ -825,7 +891,7 @@
     return webgl;
   }
   let map3dP = null;
-  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=2')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=4')).catch(e => { map3dP = null; throw e; }));
+  const load3d = () => map3dP || (map3dP = (window.THREE ? Promise.resolve() : loadScript('three.min.js')).then(() => window.WSGRAPH3D ? 0 : loadScript('wsgraph3d.js?v=3')).then(() => window.WSMAP3D ? 0 : loadScript('wsmap3d.js?v=5')).catch(e => { map3dP = null; throw e; }));
   /* room kept free at the foot of the map: the colour key (two rows on a phone), and the call to action on the example */
   const mapPadB = sample => window.innerWidth < 600 ? (sample ? 250 : 100) : sample ? 130 : 64;
   function viewMap() {
@@ -839,7 +905,7 @@
       : d3 ? (coarse ? t('Drag to turn, pinch to zoom, tap a dot for its card, tap a group name to see what is in it.', 'Dra for å snu, knip for å zoome, trykk på en prikk for kortet, trykk på et gruppenavn for å se hva som er i den.') : t('Drag to turn, scroll to zoom, click a dot for its card, a group name to see what is in it, double-click a dot to fly to it. Arrow keys, + and − work too.', 'Dra for å snu, rull for å zoome, klikk på en prikk for kortet, på et gruppenavn for å se hva som er i den, dobbeltklikk på en prikk for å fly dit. Piltastene, + og − virker også.'))
       : coarse ? t('Each aircraft is a cloud of its own. Tap a dot for its card, a group name to see what is in it; pinch to zoom.', 'Hvert fly er en egen sky. Trykk på en prikk for kortet, på et gruppenavn for å se hva som er i den; knip for å zoome.') : t('Each aircraft is a cloud of its own. Click a dot to open it on the desk, Shift-click to open it beside, click a group name to see what is in it; scroll or pinch to zoom.', 'Hvert fly er en egen sky. Klikk på en prikk for å åpne den på arbeidsflaten, Shift-klikk for å åpne den ved siden av, klikk på et gruppenavn for å se hva som er i den; rull eller knip for å zoome.');
     main.innerHTML = `<div class="ws-h ws-maph"><h2>${t('Map', 'Kart')}</h2>
-        <p>${t('Each aircraft gathers its own documents, notes and briefing packs in a cloud of its own; items without an aircraft are under Unsorted.', 'Hvert fly samler sine egne dokumenter, notater og briefingpakker i en egen sky; det som ikke hører til et fly, ligger under Uten fly.')}</p></div>
+        <p>${t('Each aircraft and each topic is a cloud of its own. Everything else is under Unsorted.', 'Hvert fly og hvert tema er en egen sky. Alt annet ligger under Usortert.')}</p></div>
       <div class="wsm-plate${sample ? ' sample' : ''}${d3 ? ' d3' : ''}" id="wsMapPlate"><div class="wsm-host" id="wsMapHost">${d3 ? `<p class="wsm-load" role="status">${t('Opening the 3D map…', 'Åpner 3D-kartet …')}</p>` : ''}</div>
         ${sample ? `<span class="wsm-tag">${t('Example', 'Eksempel')}</span><div class="wsm-cta"><p>${t('Add a document or note to start your map', 'Legg til et dokument eller notat for å starte kartet ditt')}</p><div class="row"><button type="button" class="btn sm pri" data-act="doc-add">${t('Add documents', 'Legg til dokumenter')}</button><button type="button" class="btn sm" data-act="map-note">${t('New note', 'Nytt notat')}</button></div></div>` : ''}</div>
       <p class="wsm-hint">${hint}</p>`;
@@ -848,13 +914,13 @@
     const v = { sample, mode, lang: LAB.lang, host, view: want, sig: mapSig(g), m: null };
     mapV = v;
     const view = { cur: want, onSwitch: m => { try { LS && LS.setItem(MAPV, m); if (m === '3d') sessionStorage.removeItem('bb-map-weak'); } catch (e) {} if (mapV && mapV.m) mapV.m.destroy(); mapV = null; viewMap(); } };
-    const mount2d = () => { host.innerHTML = ''; host.closest('.wsm-plate').classList.remove('d3'); v.view = '2d'; v.m = window.WSMAP.mount(host, { graph: g, t, sample, onOpen: mapOpen, padBottom: mapPadB(sample), view: Object.assign({}, view, { cur: '2d' }) }); };
+    const mount2d = () => { host.innerHTML = ''; host.closest('.wsm-plate').classList.remove('d3'); v.view = '2d'; v.m = window.WSMAP.mount(host, { graph: mapAny().g, t, sample, onOpen: mapOpen, onEdit: mapEdit, padBottom: mapPadB(sample), view: Object.assign({}, view, { cur: '2d' }) }); };
     if (!d3) { mount2d(); return; }
     load3d().then(() => {
       if (mapV !== v || !main.contains(host)) return;
       host.innerHTML = '';
       const ga = mapAny().g; v.sig = mapSig(ga);
-      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, padBottom: mapPadB(sample), view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
+      v.m = window.WSMAP3D.mount(host, { graph: ga, t, sample, onOpen: mapOpen, onEdit: mapEdit, padBottom: mapPadB(sample), view, probe: pref !== '3d', rotateSecs: window.__wsm3dRotate || 20,
         onWeak: why => { if (mapV !== v) return; try { sessionStorage.setItem('bb-map-weak', why || '1'); } catch (e) {} if (v.m) v.m.destroy(); v.m = null; mount2d(); toast(why === 'lost' ? t('The 3D map stopped, so the map is shown in 2D.', '3D-kartet stoppet, så kartet vises i 2D.') : t('This device is showing the map in 2D for speed. Switch to 3D on the map toolbar.', 'Denne enheten viser kartet i 2D for å gå raskere. Bytt til 3D på kartverktøylinjen.')); } });
     }).catch(e => { console.warn('3D map', e); if (mapV === v && main.contains(host)) mount2d(); });
   }
@@ -960,7 +1026,7 @@
     if (!ok) return;
     for (const id of Object.keys(S.docs)) await FI.del(id);
     if (u) { const tomb = Object.values(S.items).filter(it => !it.gone).map(it => W.tombstone(it)); await ST.clearItems(); S.items = {}; await commit(tomb); await syncNow(true); }
-    else { await ST.clearItems(); S.items = {}; S.index = null; }
+    else { await ST.clearItems(); S.items = {}; S.index = null; GC = null; }
     M.recent = []; M.backupAt = 0; M.hideAdopt = {}; M.sync.full = null; await saveMeta(); await storageInfo();
     go(''); render(); toast(t('Everything in My Workspace was deleted.', 'Alt i Mitt arbeidsområde er slettet.'));
   }
@@ -1049,19 +1115,19 @@
   window.addEventListener('storage', e => { if (e.key && /^naeroson-store-/.test(e.key)) loadStores().then(() => { drawRail(); }); });
   setInterval(() => { if (S.ready && document.visibilityState === 'visible') drawStatus(); }, 30000);
 
-  /* item pages in the Library get an "Open on the desk" button */
+  /* item pages in the Library get an "Open on the desk" button, and the chip that says which group the item is in */
   function deskLinks() {
     const r = route().path.split('/'); if (!r[1] || !window.WSDESK) return;
     const k = { aircraft: 'aircraft', documents: 'doc', notes: 'note' }[r[0]], it = item(r[1]); if (!k || !W.isLive(it)) return;
     const back = main.querySelector('.ws-back'); if (!back || main.querySelector('.ws-deskopen')) return;
-    back.insertAdjacentHTML('afterend', `<a class="btn sm ws-deskopen" href="#/" data-act="desk-open" data-k="${k}" data-id="${esc(it.id)}">${t('Open on the desk', 'Åpne på arbeidsflaten')}</a>`);
+    back.insertAdjacentHTML('afterend', `<a class="btn sm ws-deskopen" href="#/" data-act="desk-open" data-k="${k}" data-id="${esc(it.id)}">${t('Open on the desk', 'Åpne på arbeidsflaten')}</a>${placeChip(k, it.id)}`);
   }
 
   window.WS = { state: S, noteFormats, syncNow, exportAll, importBackup, render, get meta() { return M; }, get sync() { return SY; }, get map() { return mapV && mapV.m; }, get mapView() { return mapV && mapV.view; } };
   /* what the desk (desk.js) uses: the same storage, names and dialogs as the Library */
   window.WS.api = { W, S, t, esc, el, ago, day, clock, dayClock, plural, item, liveOf, aircraft, docsAll, notesAll, packsAll, hasFile, onDevice, packMark, packAc, FI, ST, LS, pdfjs, loadScript, extOf,
     notebooksAll, useInTrainer, ockCan, OCK_TR, commit, visit, toast, openDlg, confirmDlg, download, go, route, findAll, recentList, catName, kindName, acName, noteTitle, packTitle, routeTitle, itemName, TRAINER, speedRow, linkLabel,
-    doTrash, doRestore, pickFiles, addFiles, linkDoc, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, get M() { return M; } };
+    doTrash, doRestore, pickFiles, addFiles, linkDoc, aircraftDlg, newPack, statusShort, saveMeta, render, deskMode, noteFormats, mapGraph, mapAny, mapSig, placeChip, placeMenu, groupOf, groupList, get M() { return M; } };
   if (window.WSDESK_INIT) window.WSDESK_INIT(window.WS.api);
   start().catch(e => { console.error('workspace start', e); main.innerHTML = `<div class="ws-empty"><p><b>${t('My workspace could not open.', 'Mitt arbeidsområde kunne ikke åpnes.')}</b> ${t('Reload the page. If it keeps happening, the browser may be blocking storage for this site.', 'Last inn siden på nytt. Hvis det fortsetter, kan nettleseren blokkere lagring for dette nettstedet.')}</p></div>`; });
 })();

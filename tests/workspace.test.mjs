@@ -372,3 +372,61 @@ test('a note without a title is named by its first line; line breaks survive as 
   assert.equal(W.htmlToText('<div>a</div><div>b</div>'), 'a\nb');
   assert.equal(W.htmlToText('x<ul><li>a</li><li>b</li></ul>'), 'x\na\nb');
 });
+
+/* ---------- topics and placement ---------- */
+test('topics: a small item of its own (name only) that goes through trash, merge, sync and backup like the others', async () => {
+  const tp = W.newTopic({ name: '  Air   law ' }, T0);
+  assert.deepEqual([tp.kind, tp.name, W.nsOfKind(tp.kind)], ['topic', 'Air law', 'workspace']);
+  assert.equal(W.newTopic({ name: 'x'.repeat(90) }, T0).name.length, 40); assert.equal(W.newTopic({}, T0).name, 'Topic');
+  const t2 = W.newTopic({ name: 'Theory' }, T0 + 1); let items = map(tp, t2);
+  assert.deepEqual(W.topicsOf(items).map(x => x.name), ['Air law', 'Theory']);
+  items[tp.id] = W.trash(tp, T0 + MIN); assert.deepEqual(W.topicsOf(items).map(x => x.name), ['Theory']); assert.equal(W.trashed(items)[0].id, tp.id);
+  assert.deepEqual(W.topicsOf(map(W.restore(items[tp.id], T0 + 2 * MIN), t2)).map(x => x.name), ['Air law', 'Theory']);
+  /* rename on one device, newest wins on the other */
+  const ren = W.patch(t2, { name: 'Teori' }, T0 + 5 * MIN); assert.equal(W.mergeItem(t2, ren, T0).item.name, 'Teori');
+  /* through the account, and through a backup file */
+  const w = world(), br = w.browser(); await w.signup(br);
+  const note = W.place(map(t2, W.newNote({ id: 'n1', title: 'SERA' }, T0)), 'note', 'n1', t2.id, T0 + MIN);
+  const A = { workspace: map(t2, W.place(map(t2), 'route', 'r1', t2.id, T0)), notes: map(note) };
+  for (const ns of ['workspace', 'notes']) { const r = await W.syncNs(ns, A[ns], await br.get(ns), br.put, { now: () => w.clock.t }); assert.ok(r.pushed && !r.error); }
+  const B = {}; for (const ns of ['workspace', 'notes']) B[ns] = (await W.syncNs(ns, {}, await br.get(ns), br.put, { now: () => w.clock.t })).items;
+  assert.equal(W.stable(B), W.stable(A)); assert.equal(B.notes.n1.grp, t2.id); assert.equal(B.workspace['rt:r1'].grp, t2.id);
+  const back = await W.readBackup((await W.buildBackup({ items: Object.assign({}, A.workspace, A.notes), local: {}, docs: [] }, T0)).bytes());
+  assert.equal(W.stable(back.items), W.stable(Object.assign({}, A.workspace, A.notes)));
+});
+
+test('placement: one group per item, chosen by hand; documents keep several aircraft until moved; old data stays valid', () => {
+  const a1 = W.newAircraft({ id: 'a1', typeKey: 'da42' }, T0), a2 = W.newAircraft({ id: 'a2', typeKey: 'c172' }, T0), tp = W.newTopic({ id: 't1', name: 'Theory' }, T0);
+  const note = W.newNote({ id: 'n1', title: 'x', links: [{ t: 'aircraft', id: 'a1' }] }, T0), book = INK.newNotebook({ id: 'b1', title: 'Kneeboard' }, T0);
+  const doc = W.newDocEntry({ id: 'd1', name: 'AFM', acIds: ['a1', 'a2'] }, T0);
+  let items = map(a1, a2, tp, note, book, doc, W.newPackMark('p1', { pinned: true, acId: 'a1' }, T0));
+  const put = x => { assert.ok(x, 'placed'); items = Object.assign({}, items, { [x.id]: x }); return x; };
+  /* as it was before groups existed: nothing placed by hand, except what aircraft links already said */
+  assert.deepEqual(W.placed(items, 'note', 'n1'), []); assert.deepEqual(W.placed(items, 'notebook', 'b1'), []); assert.deepEqual(W.placed(items, 'route', 'r1'), []);
+  assert.deepEqual(W.placed(items, 'doc', 'd1'), ['a1', 'a2']); assert.deepEqual(W.placed(items, 'pack', 'p1'), ['a1']); assert.deepEqual(W.placed(items, 'pack', 'p9'), []);
+  /* notes and notebooks: grp on the item, everything else untouched */
+  const n2 = put(W.place(items, 'note', 'n1', 't1', T0 + MIN));
+  assert.equal(n2.grp, 't1'); assert.deepEqual(n2.links, note.links); assert.ok(n2.updatedAt > note.updatedAt); assert.deepEqual(W.placed(items, 'note', 'n1'), ['t1']);
+  assert.equal(W.editNote(n2, { body: 'more' }, T0 + 2 * MIN).grp, 't1', 'typing keeps the group');
+  const b2 = put(W.place(items, 'notebook', 'b1', 'a2', T0 + MIN)); assert.equal(b2.grp, 'a2'); assert.deepEqual(b2.pages, book.pages);
+  assert.equal(INK.saveNotebook(b2, Object.assign({}, b2, { title: 'K2' }), T0 + 3 * MIN).grp, 'a2', 'writing keeps the group');
+  assert.equal(W.newNote({ grp: 'a1' }, T0).grp, 'a1'); assert.equal('grp' in W.newNote({}, T0), false);
+  /* a document: one aircraft, a topic, or Unsorted */
+  let d = put(W.place(items, 'doc', 'd1', 'a2', T0 + MIN)); assert.deepEqual([d.acIds, d.grp], [['a2'], '']);
+  d = put(W.place(items, 'doc', 'd1', 't1', T0 + 2 * MIN)); assert.deepEqual([d.acIds, d.grp], [[], 't1']); assert.deepEqual(W.placed(items, 'doc', 'd1'), ['t1']);
+  d = put(W.place(items, 'doc', 'd1', W.UNSORTED, T0 + 3 * MIN)); assert.deepEqual(W.placed(items, 'doc', 'd1'), [W.UNSORTED]);
+  assert.deepEqual(W.placed(Object.assign({}, items, { d1: W.patch(d, { acIds: ['a1'] }, T0 + 4 * MIN) }), 'doc', 'd1'), ['a1'], 'an aircraft link on a document counts first');
+  /* a briefing pack keeps its pin; a route gets a mark of its own */
+  let m = put(W.place(items, 'pack', 'p1', 't1', T0 + MIN)); assert.deepEqual([m.id, m.kind, m.pinned, m.acId, m.grp], ['pk:p1', 'pack', true, '', 't1']);
+  m = put(W.place(items, 'pack', 'p1', 'a2', T0 + 2 * MIN)); assert.deepEqual([m.acId, m.grp, m.pinned], ['a2', '', true]); assert.deepEqual(W.placed(items, 'pack', 'p1'), ['a2']);
+  m = put(W.place(items, 'pack', 'p2', 't1', T0)); assert.deepEqual([m.id, m.pinned, m.grp], ['pk:p2', false, 't1']);
+  const r = put(W.place(items, 'route', 'r1', 'a1', T0)); assert.deepEqual([r.id, r.kind, r.grp, W.nsOfKind(r.kind)], ['rt:r1', 'route', 'a1', 'workspace']);
+  assert.deepEqual(W.placed(items, 'route', 'r1'), ['a1']); assert.equal(put(W.place(items, 'route', 'r1', W.UNSORTED, T0 + MIN)).grp, W.UNSORTED);
+  /* only real groups; the items of a deleted group are Unsorted, and are back in it when it is restored */
+  assert.equal(W.place(items, 'note', 'n1', 'nope', T0), null); assert.equal(W.place(items, 'note', 'n1', 'd1', T0), null); assert.equal(W.place(items, 'aircraft', 'a1', 't1', T0), null); assert.equal(W.place(items, 'note', 'gone', 't1', T0), null);
+  const del = Object.assign({}, items, { t1: W.trash(tp, T0 + DAY) });
+  assert.deepEqual(W.placed(del, 'note', 'n1'), [W.UNSORTED]); assert.deepEqual(W.placed(del, 'pack', 'p2'), [W.UNSORTED]); assert.equal(del.n1.grp, 't1');
+  assert.deepEqual(W.placed(Object.assign({}, del, { t1: W.restore(del.t1, T0 + 2 * DAY) }), 'note', 'n1'), ['t1']);
+  /* trash and tombstones of marks and topics behave like every other item */
+  const pg = W.purgeExpired(del, T0 + 40 * DAY); assert.ok(pg.items.t1.gone && pg.purged.some(x => x.id === 't1'));
+});

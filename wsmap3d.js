@@ -332,7 +332,7 @@
       dbg.groupLabels = [];
       L.clusters.map((c, k) => k).sort((a, b) => (a === gsel ? -1 : b === gsel ? 1 : 0) || L.clusters[b].m.length - L.clusters[a].m.length).forEach(k => {
         const c = L.clusters[k], el = regEls[k]; if (!el) return;
-        if (!c.m.some(i => visible(i))) { el.hidden = true; return; }
+        if (c.m.length && !c.m.some(i => visible(i))) { el.hidden = true; return; }
         el.hidden = false; const w = el._w || (el._w = el.offsetWidth), h = el._h || (el._h = el.offsetHeight);
         const pa = pr([c.c[0], c.c[1] + c.r + L.D * 0.4, c.c[2]]), pb = pr([c.c[0], c.c[1] - c.r - L.D * 0.4, c.c[2]]), cand = [];
         for (const [p, above] of [[pa, true], [pb, false]]) if (p) for (const dx of [0, -0.6, 0.6, -1.1, 1.1]) cand.push([p[0] + dx * w, above ? p[1] - 4 - h : p[1] + 4]);
@@ -465,9 +465,9 @@
     function open(i, beside) { const n = g.nodes[i]; if (!n) return; if (isEx(i)) { select(i); return; } if (o.onOpen) o.onOpen(n, !!beside); }
     /* the card: a point (shared with the 2D map), or the focused group's list */
     function showCard(i) {
-      if (i >= 0) { card.classList.toggle('r', host.clientWidth >= 700 && gsel < 0 && scr.ok && scr.x[i] < 340 && scr.y[i] < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol() }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
+      if (i >= 0) { card.classList.toggle('r', host.clientWidth >= 700 && gsel < 0 && scr.ok && scr.x[i] < 340 && scr.y[i] < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol(), edit: !sample && !!o.onEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
       card.classList.remove('r');
-      if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
+      if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, edit: !sample && !!o.onEdit, topic: c.topic, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
       card.hidden = true;
     }
     function select(i, fly) {
@@ -477,6 +477,7 @@
       states(); if (i >= 0 && fly) focusNode(i);
     }
     card.addEventListener('click', e => {
+      if (UI.cardAct(e, o, sel >= 0 ? g.nodes[sel] : null, gsel >= 0 ? L.clusters[gsel] : null)) return;
       const b = e.target.closest('[data-o]'); if (b && sel >= 0) { open(sel, b.dataset.o === 'beside'); return; }
       const li = e.target.closest('[data-i]'); if (li) { hover = -1; select(+li.dataset.i); return; }
       if (e.target.closest('[data-back]')) { back(); return; }

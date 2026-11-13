@@ -77,7 +77,9 @@ test('empty workspace: an empty graph that is settled at once; the example is sm
     assert.ok(of('doc') === 4 && of('note') >= 5 && of('note') <= 6 && of('pack') === 2 && of('route') === 2, a.id);
     assert.ok(m.some(n => /^(AFM|POH) /.test(n.label)) && m.some(n => /^Checklist /.test(n.label)), a.id);
   }
-  assert.equal(s.nodes.filter(n => !n.ac).length, 5, 'one small general group');
+  assert.deepEqual(s.topics.map(x => x.name), ['Theory']); assert.equal(M.buildGraph(M.sampleInput((en, no) => no)).topics[0].name, 'Teori');
+  assert.equal(s.nodes.filter(n => n.ac === 'topic:xt0').length, 5, 'one small topic: its document and the notes that cite it');
+  assert.equal(s.nodes.filter(n => !n.ac).length, 0, 'nothing unsorted in the example');
   assert.ok(s.nodes.every(n => n.deg >= 1), 'every dot has a real link');
   assert.equal(M.buildGraph(M.sampleInput((en, no) => no)).nodes.find(n => n.k === 'doc' && n.label.startsWith('Sjekkliste')) != null, true, 'Norwegian');
 });
@@ -110,7 +112,8 @@ test('cloud: the example is three blobs, the same every time, each aircraft its 
   b.run(); assert.deepEqual([...a.x], [...b.x]); assert.deepEqual([...a.y], [...b.y]);
   assert.ok(g.nodes.every((nd, i) => a.x[i] === a.tx[i] && a.y[i] === a.ty[i]), 'ends exactly on its place');
   assert.equal(a.groups.length, 4);
-  assert.deepEqual(a.groups.slice(0, 3).map(q => M.groupName(g, a.groups, q)), ['DA42', 'B200', 'C172']);
+  assert.deepEqual(a.groups.map(q => M.groupName(g, a.groups, q)), ['DA42', 'B200', 'C172', 'Theory']);
+  assert.equal(M.groupName(M.buildGraph(M.sampleInput((en, no) => no)), a.groups, { ac: -1, topic: { id: 'xt0', name: 'Teori' } }), 'Teori');
   assert.deepEqual(a.groups.map(q => q.n), [14, 14, 13, 5], 'counts: the items besides the aircraft');
   assert.ok(a.groups.slice(0, 3).every(q => g.nodes[q.m[0]].k === 'aircraft' && Math.hypot(a.x[q.m[0]] - q.cx, a.y[q.m[0]] - q.cy) < 1e-9), 'the aircraft in the middle');
   checkGroups(g, a, 'example');
@@ -134,7 +137,7 @@ test('groupName: the type, the registration when two share it; Unsorted', () => 
   const items = {}; [W.newAircraft({ id: 'a1', typeKey: 'da42', reg: 'LN-ABC' }, 1), W.newAircraft({ id: 'a2', typeKey: 'da42', reg: 'LN-DEF' }, 2), W.newNote({ id: 'n1', title: 'x' }, 3)].forEach(x => { items[x.id] = x; });
   const g = M.buildGraph({ items }), G = M.groupsOf(g);
   assert.deepEqual(G.map(q => M.groupName(g, G, q)), ['DA42 LN-ABC', 'DA42 LN-DEF', 'Unsorted']);
-  assert.equal(M.groupName(g, G, G[2], (en, no) => no), 'Uten fly');
+  assert.equal(M.groupName(g, G, G[2], (en, no) => no), 'Usortert');
 });
 
 /* own workspace of n items: an aircraft or two, documents filed under them, notes citing pages, a loose note */
@@ -179,4 +182,55 @@ test('large workspaces: 2000 items laid out quickly, still apart', () => {
   assert.ok(Date.now() - t0 < 1500, 'took ' + (Date.now() - t0) + ' ms');
   assert.equal(L.groups.length, 5); checkGroups(g, L, 'large');
   assert.ok(minDist(L) >= 0.7 * L.D);
+});
+
+/* ---------- topics and groups chosen by hand ---------- */
+function placedWs() {
+  const ws = workspace(), it = ws.items, put = x => { it[x.id] = x; return x; };
+  put(W.newTopic({ id: 't1', name: 'Theory' }, 20)); put(W.newTopic({ id: 't2', name: 'Air law' }, 21));
+  return ws;
+}
+test('topics: a group each (also when empty), named, after the aircraft and before Unsorted; never a dot', () => {
+  const ws = placedWs(), g = M.buildGraph(ws, { pages: false, desks: false }), G = M.groupsOf(g);
+  assert.deepEqual(g.topics, [{ id: 't1', name: 'Theory' }, { id: 't2', name: 'Air law' }]);
+  assert.ok(!g.nodes.some(n => n.k === 'topic'), 'a topic is a name, not a dot'); assert.equal(g.own, 13);
+  assert.deepEqual(G.map(q => M.groupName(g, G, q)), ['DA42', 'C172', 'Theory', 'Air law', 'Unsorted']);
+  assert.deepEqual(G.slice(2, 4).map(q => [q.key, q.ac, q.n, q.m.length]), [['topic:t1', -1, 0, 0], ['topic:t2', -1, 0, 0]]);
+  const L = M.cloudLayout(g, { instant: true });
+  assert.equal(L.groups.length, 5); assert.ok(L.groups[2].topic && L.groups[2].r > 0 && L.groups[2].puffs.length >= 6, 'an empty topic is still a small cloud');
+  checkGroups(g, L, 'topics');
+  /* only topics, nothing else: the map still has a frame round them */
+  const only = M.buildGraph({ items: { t1: W.newTopic({ id: 't1', name: 'Theory' }, 1) } }), Lo = M.cloudLayout(only);
+  assert.equal(only.nodes.length, 0); assert.equal(Lo.groups.length, 1); assert.ok(Lo.settled && Lo.frame.x1 - Lo.frame.x0 > 80);
+  /* a deleted topic is no group */
+  ws.items.t2 = W.trash(ws.items.t2, 30);
+  assert.deepEqual(M.buildGraph(ws).topics.map(x => x.id), ['t1']);
+});
+test('a group chosen by hand wins over the one worked out from links and page references', () => {
+  const ws = placedWs(), it = ws.items, ac = (g, id) => g.nodes[g.index[id]].ac;
+  let g = M.buildGraph(ws, { pages: false, desks: false });
+  assert.equal(ac(g, 'note:n1'), 'aircraft:a1', 'cites the AFM of a1'); assert.equal(ac(g, 'note:n3'), ''); assert.equal(ac(g, 'doc:d3'), '');
+  for (const [k, r, to] of [['note', 'n1', 't1'], ['note', 'n3', 'a2'], ['doc', 'd3', 't1'], ['doc', 'd1', 't2'], ['pack', 'p1', 't2'], ['route', 'r1', 'a2']]) { const x = W.place(it, k, r, to, 50); it[x.id] = x; }
+  g = M.buildGraph(ws, { pages: false, desks: false });
+  assert.equal(ac(g, 'note:n1'), 'topic:t1', 'a note placed in a topic stays there although it cites a document of a1');
+  assert.equal(ac(g, 'note:n3'), 'aircraft:a2'); assert.equal(ac(g, 'doc:d3'), 'topic:t1');
+  assert.equal(ac(g, 'doc:d1'), 'topic:t2', 'a document moved to a topic leaves its aircraft'); assert.deepEqual(it.d1.acIds, []);
+  assert.equal(ac(g, 'note:n2'), 'aircraft:a1', 'its own aircraft link still counts for a note that was not placed');
+  assert.equal(ac(g, 'pack:p1'), 'topic:t2', 'a pack placed in a topic, whatever its registration says');
+  assert.equal(ac(g, 'route:r1'), 'aircraft:a2');
+  const G = M.groupsOf(g), by = k => G.find(q => q.key === k);
+  assert.deepEqual(by('topic:t1').m.map(i => g.nodes[i].id).sort(), ['doc:d3', 'note:n1']); assert.equal(by('topic:t1').n, 2);
+  checkGroups(g, M.cloudLayout(g, { instant: true }), 'placed');
+  /* Unsorted on purpose: not pulled back by the page reference; and a deleted topic lets go of its items */
+  it.n1 = W.place(it, 'note', 'n1', W.UNSORTED, 60); g = M.buildGraph(ws, { pages: false, desks: false });
+  assert.equal(ac(g, 'note:n1'), ''); assert.equal(g.nodes[g.index['note:n1']].fix, 1);
+  it.t1 = W.trash(it.t1, 70); g = M.buildGraph(ws, { pages: false, desks: false });
+  assert.equal(ac(g, 'doc:d3'), '', 'the items of a deleted topic are unsorted');
+  it.n9 = W.newNote({ id: 'n9', title: 'cites d3', body: '<cite data-doc="d3" data-p="1">x</cite>', grp: 't2' }, 71); g = M.buildGraph(ws, { pages: false, desks: false });
+  assert.equal(ac(g, 'note:n9'), 'topic:t2'); assert.equal(ac(g, 'doc:d3'), '', 'and stay unsorted: not pulled into another group by a note that cites them'); delete it.n9;
+  it.t1 = W.restore(it.t1, 80); g = M.buildGraph(ws, { pages: false, desks: false }); assert.equal(ac(g, 'doc:d3'), 'topic:t1', 'and come back with it');
+  /* the 3D layout sees a new or renamed topic */
+  const B = req('../wsgraph3d.js'), a = B.layout3d(g); it.t2 = W.patch(it.t2, { name: 'Law' }, 90);
+  const g2 = M.buildGraph(ws, { pages: false, desks: false }), b = B.layout3d(g2);
+  assert.equal(a.clusters.length, b.clusters.length); assert.equal(b.clusters.find(c => c.topic && c.topic.id === 't2').topic.name, 'Law');
 });

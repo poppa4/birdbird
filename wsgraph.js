@@ -3,9 +3,12 @@
                   document -> aircraft (acIds) · note -> aircraft / document / pack (links) · note -> cited page
                   (<cite data-doc data-p>) -> document · pack <-> route (routeId, xs.route, packId) · pack -> aircraft
                   (pack mark, else registration) · desk -> the items open in its tabs. Ink on a PDF marks its document.
-                Every node is given the aircraft it gathers around (its cluster): direct links first, then the
-                majority of its neighbours. Nodes with no aircraft float free.
-   groupsOf     the groups of the map: one per aircraft, then 'Unsorted' (items with no aircraft); groupName names them.
+                Every node is given the group it gathers around (n.ac: 'aircraft:<id>' or 'topic:<id>'). A group
+                chosen by hand always wins (n.fix: the item's grp, see workspacecore.js); otherwise direct aircraft
+                links first, then the majority of its neighbours. Nodes with no group float free. Topics are groups
+                with a name only (g.topics), never dots.
+   groupsOf     the groups of the map: one per aircraft, one per topic (also an empty one), then 'Unsorted';
+                groupName names them.
    cloudLayout  the map as a soft cloud: each group a blob of evenly spread dots, the blobs side by side (arrange) so
                 together they read as one cloud. Only your own items (or, when you have none, the small example).
    sampleInput  a small example workspace for the empty map (about fifty dots).
@@ -55,6 +58,14 @@
     packs.forEach(p => add('pack', p.id, name('pack', p)));
     routes.forEach(r => add('route', r.id, name('route', r)));
     const own = nodes.length;
+    /* groups chosen by hand: a live aircraft or topic, or '-' (Unsorted on purpose, and what is left of a deleted group) */
+    const topics = of('topic').map(x => ({ id: x.id, name: str(x.name) || 'Topic' }));
+    const grpOf = it => { if (!isLive(it) || !it.grp) return ''; const o = items[it.grp]; return isLive(o) && (o.kind === 'aircraft' || o.kind === 'topic') ? it.grp : '-'; };
+    const fix = (i, q) => { if (i == null || !q) return false; const n = nodes[i]; n.fix = 1; n.ac = q === '-' ? '' : items[q].kind + ':' + q; return true; };
+    of('note').forEach(n => fix(at('note', n.id), grpOf(n)));
+    of('notebook').forEach(n => fix(at('notebook', n.id), grpOf(n)));
+    of('doc').forEach(d => { if (!(d.acIds || []).some(a => at('aircraft', a) != null)) fix(at('doc', d.id), grpOf(d)); });
+    routes.forEach(r => fix(at('route', r.id), grpOf(items['rt:' + r.id])));
     /* ink on a PDF: the document is marked, it gets no node of its own */
     of('ink').forEach(x => { const i = at('doc', x.doc); if (i != null) { const n = Object.values(x.pages || {}).filter(s => s && s.length).length; if (n) nodes[i].ink = n; } });
 
@@ -75,6 +86,7 @@
     packs.forEach(p => {
       const pi = at('pack', p.id), rid = packRouteId(p);
       if (rid) link(pi, at('route', rid), 'flight');
+      if (fix(pi, grpOf(items['pk:' + p.id]))) return;
       let ac = opts.packAc ? opts.packAc(p) : '';
       if (!ac && !opts.packAc) { const m = items['pk:' + p.id]; if (isLive(m) && m.acId && isLive(items[m.acId])) ac = m.acId; else { const r = normReg(p.f && p.f.reg); const a = r && aircraft.find(x => normReg(x.reg) === r); if (a) ac = a.id; } }
       if (ac) link(pi, at('aircraft', ac), 'ac');
@@ -90,16 +102,16 @@
     const adj = nodes.map(() => []); links.forEach(l => { adj[l.s].push(l.t); adj[l.t].push(l.s); });
     const pick = (i, from) => { const c = {}; let best = '', bn = 0; adj[i].forEach(j => { const a = from(j); if (!a) return; c[a] = (c[a] || 0) + 1; if (c[a] > bn) { bn = c[a]; best = a; } }); return best; };
     nodes.forEach((n, i) => { if (n.k === 'aircraft') n.ac = n.id; });
-    nodes.forEach((n, i) => { if (!n.ac) n.ac = pick(i, j => nodes[j].k === 'aircraft' ? nodes[j].id : ''); });
+    nodes.forEach((n, i) => { if (!n.ac && !n.fix) n.ac = pick(i, j => nodes[j].k === 'aircraft' ? nodes[j].id : ''); });
     for (let round = 0; round < 4; round++) {
-      let changed = false; const next = nodes.map((n, i) => n.ac || pick(i, j => nodes[j].k === 'desk' ? '' : nodes[j].ac));
+      let changed = false; const next = nodes.map((n, i) => n.ac || (n.fix ? '' : pick(i, j => nodes[j].k === 'desk' ? '' : nodes[j].ac)));
       next.forEach((a, i) => { if (a && !nodes[i].ac) { nodes[i].ac = a; changed = true; } });
       if (!changed) break;
     }
     const counts = {}; GROUPS.forEach(g => { counts[g] = 0; });
     nodes.forEach(n => { if (n.k !== 'page') counts[n.g]++; });
     counts.page = nodes.filter(n => n.k === 'page').length;
-    return { nodes, links, counts, own, index };
+    return { nodes, links, counts, own, index, topics };
   }
 
   /* ---------- the cloud ---------- */
@@ -114,20 +126,23 @@
     if (k < 0) return w.join(' ').slice(0, 14);
     return /^\d/.test(w[k]) && k > 0 ? w[k - 1][0].toUpperCase() + w[k] : w[k];
   }
-  /* the groups: one per aircraft (in the order they were added), then 'Unsorted' for the items with no aircraft.
-     -> [{ key, ac (node index or -1), m: [node indices: the aircraft, documents, packs, routes, notes], n: items besides the aircraft }] */
+  /* the groups: one per aircraft (in the order they were added), one per topic (also when it is empty), then 'Unsorted'
+     for the items with no group.
+     -> [{ key, ac (node index or -1), topic?: { id, name }, m: [node indices: the aircraft, documents, packs, routes, notes], n: items besides the aircraft }] */
   function groupsOf(g) {
     const by = {}, out = [], free = { key: '', ac: -1, m: [] };
     g.nodes.forEach((n, i) => { if (n.k === 'aircraft') { by[n.id] = { key: n.id, ac: i, m: [] }; out.push(by[n.id]); } });
+    (g.topics || []).forEach(x => { const k = 'topic:' + x.id; by[k] = { key: k, ac: -1, topic: x, m: [] }; out.push(by[k]); });
     g.nodes.forEach((n, i) => { (n.ac && by[n.ac] ? by[n.ac] : free).m.push(i); });
     if (free.m.length) out.push(free);
     out.forEach(G => { G.m.sort((a, b) => (RANK[g.nodes[a].k] - RANK[g.nodes[b].k]) || (g.nodes[b].deg - g.nodes[a].deg) || a - b); G.n = G.m.length - (G.ac >= 0 ? 1 : 0); });
     return out;
   }
-  /* a group's name: the aircraft type (DA42), with the registration when two share a type; 'Unsorted' */
+  /* a group's name: the aircraft type (DA42), with the registration when two share a type; the topic's own name; 'Unsorted' */
   function groupName(g, groups, G, t) {
     t = t || (en => en);
-    if (G.ac < 0) return t('Unsorted', 'Uten fly');
+    if (G.topic) return G.topic.name;
+    if (G.ac < 0) return t('Unsorted', 'Usortert');
     const n = g.nodes[G.ac], s = shortType(n.type); if (!s) return n.label;
     return groups.some(o => o !== G && o.ac >= 0 && shortType(g.nodes[o.ac].type) === s) ? s + ' ' + n.label : s;
   }
@@ -177,9 +192,9 @@
       for (let p = 0; p < np; p++) { const a = (p / np + P() * 0.1) * Math.PI * 2 + rot, d = R * (0.55 + P() * 0.3) + D * 0.6; puffs.push({ x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d * 0.78, r: R * (0.5 + P() * 0.25) + D * 1.25 }); }
       puffs.forEach(p => { fx0 = Math.min(fx0, p.x - p.r * 0.7); fx1 = Math.max(fx1, p.x + p.r * 0.7); fy1 = Math.max(fy1, p.y + p.r * 0.7); fy0 = Math.min(fy0, p.y - p.r * 0.7); });
       fy0 = Math.min(fy0, cy - R - D * 1.5);
-      return { key: q.key, ac: q.ac, n: q.n, m: q.m, cx, cy, r: R, puffs };
+      return { key: q.key, ac: q.ac, topic: q.topic, n: q.n, m: q.m, cx, cy, r: R, puffs };
     });
-    const frame = N ? { x0: fx0, y0: fy0, x1: fx1, y1: fy1 } : { x0: -40, y0: -40, x1: 40, y1: 40 };
+    const frame = groups.length ? { x0: fx0, y0: fy0, x1: fx1, y1: fy1 } : { x0: -40, y0: -40, x1: 40, y1: 40 };
     const INTRO = 40;
     const st = { n: N, x, y, tx, ty, gi, groups, frame, cols: A.cols, aspect: opts.aspect || 1.6, D, cloud: true, settled: false, steps: 0 };
     const at = p => { if (p >= 1) { x.set(tx); y.set(ty); return; } const e = 1 - Math.pow(1 - p, 3); for (let i = 0; i < N; i++) { x[i] = x0[i] + (tx[i] - x0[i]) * e; y[i] = y0[i] + (ty[i] - y0[i]) * e; } };
@@ -192,7 +207,7 @@
   }
 
   /* ---------- an example workspace for the empty map: three aircraft, each with its manuals (AFM, checklist, SOP,
-     performance), notes that refer to pages in them, two briefing packs with their routes, and a small group of
+     performance), notes that refer to pages in them, two briefing packs with their routes, and a topic ('Theory') with
      general study notes around a theory document (about fifty dots, every one meaningful and linked) ---------- */
   function sampleInput(t) {
     t = t || ((en) => en);
@@ -215,8 +230,9 @@
       [2, t('Stall recovery', 'Steiling'), 0, 18], [2, t('Crosswind landing', 'Sidevindslanding'), 1, 2], [2, t('Carburettor ice', 'Forgasseris'), 0, 33],
       [2, t('Short-field take-off', 'Kortbaneavgang'), 3, 4], [2, t('Circuit calls', 'Radio i landingsrunden'), 2, 6]].forEach(([a, title, d, p], i) =>
       put({ id: 'xn' + i, kind: 'note', title, body: cite(docs[a][d], p), links: [] }));
-    /* general study: one theory document with the notes that refer to it (no aircraft) */
-    const th = put({ id: 'xdg', kind: 'doc', name: t('Theory notes', 'Teorinotater'), cat: 'oth', acIds: [] });
+    /* general study: a topic of your own ('Theory') holding one document, with the notes that refer to it */
+    const tp = put({ id: 'xt0', kind: 'topic', name: t('Theory', 'Teori') });
+    const th = put({ id: 'xdg', kind: 'doc', name: t('Theory notes', 'Teorinotater'), cat: 'oth', acIds: [], grp: tp.id });
     [t('Air law', 'Luftfartsrett'), t('Meteorology', 'Meteorologi'), t('Radio phraseology', 'Radiofraseologi'), t('Human performance', 'Menneskelige faktorer')].forEach((title, i) =>
       put({ id: 'xg' + i, kind: 'note', title, body: cite(th, 3 + i * 9), links: [] }));
     const packs = [['ENTO', 'ENBR', 0], ['ENTO', 'ENCN', 0], ['ENGM', 'ENVA', 1], ['ENGM', 'ENTC', 1], ['ENRY', 'ENCN', 2], ['ENRY', 'ENTO', 2]]

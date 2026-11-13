@@ -1,6 +1,8 @@
 /* Birdbird – My Workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
    dialogs come from workspace.js (WS.api). One screen like a desk: the library on the left, panes with tabs on the right.
    A desk is a 'desk' item in the 'workspace' namespace and holds positions only (which tabs, where, which page).
+   Home (first in the bar) lays the desk home over the panes without closing a tab; each pane's strip shows the group
+   chip of its open item (WS.api.placeChip: the aircraft or topic it lives in, tap to move it).
    Tab types live in TYPES below: { icon, title(r), mount(box, tab, ctx) -> view { destroy, refresh?, save?, goPage? } }.
    The pen notebook and the ink on PDF pages live in notebook.js (WSNB), "Ask your documents" in ask.js (WSASK);
    both get their helpers from here (initExt below). */
@@ -49,6 +51,7 @@
       device: '<rect x="5" y="2.5" width="10" height="15" rx="1.6"/><path d="M8.5 15h3"/>',
       ask: '<path d="M3.5 4.5h13v9h-7l-3.5 3v-3h-2.5z"/><path d="M8.2 7.6a1.9 1.9 0 113 1.5c-.7.4-1.2.8-1.2 1.5"/><path d="M10 12.2v.1"/>',
       pen: '<path d="M4 16l1-4 8.5-8.5 3 3L8 15z"/><path d="M12 5l3 3"/>',
+      home: '<path d="M3.5 9.5 10 3.5l6.5 6"/><path d="M5.5 8.5v8h9v-8"/><path d="M8.5 16.5v-4.5h3v4.5"/>',
       map: '<circle cx="5" cy="6" r="1.6"/><circle cx="14.5" cy="4.5" r="1.3"/><circle cx="11" cy="11" r="2"/><circle cx="4.5" cy="15" r="1.3"/><circle cx="15.5" cy="15.5" r="1.6"/><path d="M6.4 6.8l3.2 2.9M13.8 5.7l-1.9 3.5M9.4 12.3l-3.6 1.9M12.6 12.4l1.8 1.8"/>'
     };
     const ic = (k, cls) => `<svg class="i ${cls || ''}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">${P[k] || P.doc}</svg>`;
@@ -73,6 +76,31 @@
     const panesEl = new Map();          // pane id -> { el, strip, body, view: { tabId, k, v } }
     const views = new Map();            // tab id -> view
     let barEl, railEl, mainEl, sheetEl;
+    /* Home: the desk home (greeting, map, cards, what is open, recent) laid over the panes. Nothing is closed: the tabs
+       stay in the strip, and a tap on one, Home again or the browser's Back brings the item back. It is a view state of
+       the desk, kept as one step of browser history ({ dkHome: 1 }), so a reload stays where you were. */
+    let home = false, homePushed = false, dropHome = false, homeV = null;
+    const histHome = () => { try { return !!(history.state && history.state.dkHome); } catch (e) { return false; } };
+    const homeOn = () => home && D.allTabs(L).length > 0;
+    function goHome() {
+      if (!mounted) return; closeMenu();
+      if (homeOn()) { leaveHome(); render(); drawBar(); return; }
+      if (!D.allTabs(L).length) return;                                  // nothing is open: the desk home is already showing
+      const ae = document.activeElement; if (ae && mainEl.contains(ae) && ae.blur) ae.blur();
+      home = true; try { history.pushState({ dkHome: 1 }, ''); homePushed = true; } catch (e) {}
+      render(); drawBar();
+      const sc = homeV && homeV.body.querySelector('.dk-empty'); if (sc) sc.scrollTop = 0;
+    }
+    function leaveHome() {
+      if (!home) return; home = false;
+      if (histHome()) { if (homePushed) { homePushed = false; history.back(); } else { try { history.replaceState(null, ''); } catch (e) {} } }
+      else if (homePushed) dropHome = true;                              // the library sheet is on top: Home's step goes when the sheet's has gone
+    }
+    window.addEventListener('popstate', () => {
+      if (!histHome()) { homePushed = false; dropHome = false; if (home) { home = false; if (mounted) { render(); drawBar(); } } return; }
+      if (dropHome) { dropHome = false; homePushed = false; home = false; history.back(); return; }
+      if (!home) { home = true; if (mounted) { render(); drawBar(); } }
+    });
 
     function desks() { return D.desksOf(S.items); }
     function pickDesk() {
@@ -82,7 +110,7 @@
     }
     function readSnap() { try { return JSON.parse(A.LS && A.LS.getItem(SNAP)); } catch (e) { return null; } }
     function loadDesk(d) {
-      unmountViews();
+      unmountViews(); closeSheet();
       desk = { id: d.id, name: d.name, unsaved: !!d.unsaved, updatedAt: d.updatedAt || 0 };
       L = D.sanitize(d.L);
       const snap = readSnap(); if (snap && snap.id === d.id && (snap.at || 0) > (d.updatedAt || 0) && snap.L) L = D.sanitize(snap.L);
@@ -120,6 +148,7 @@
       const res = D.open(L, k, String(r), { pane: opts.pane, beside: opts.beside && !isPhone(), dir: opts.dir, max: maxPanes(), st: opts.st });
       if (!res.tabId) { A.toast(t('This pane is full. Close a few tabs first.', 'Dette panelet er fullt. Lukk noen faner først.')); return null; }
       if (['doc', 'note', 'aircraft', 'pack', 'route', 'notebook'].includes(k)) A.visit(k, r);
+      leaveHome();
       changed(res.L, 'shape');
       closeSheet();
       if (opts.st && opts.st.p && (res.existed || opts.flash)) { const v = views.get(res.tabId); if (v && v.goPage) v.goPage(opts.st.p, opts.st.o || 0, !!opts.flash); }
@@ -166,7 +195,12 @@
       for (const p of (phoneMode ? [] : D.panes(L))) { if (p.id === paneId) continue; const tb = p.tabs.find(x => x.id === p.a); if (tb && tb.k === 'doc' && W.isLive(A.item(tb.r))) return tb.r; }
       const at = D.allTabs(L).find(x => x.k === 'doc' && W.isLive(A.item(x.r))); return at ? at.r : null;
     }
-    async function newNotebook(opts) { try { await needNB(); } catch (e) { A.toast(t('The notebook could not load. Check the connection and try again.', 'Notatboken kunne ikke lastes. Sjekk tilkoblingen og prøv igjen.')); return; } await window.WSNB.create({}, opts || {}); }
+    /* opts.grp: the group (aircraft or topic) the new notebook is placed in */
+    async function newNotebook(opts) {
+      try { await needNB(); } catch (e) { A.toast(t('The notebook could not load. Check the connection and try again.', 'Notatboken kunne ikke lastes. Sjekk tilkoblingen og prøv igjen.')); return; }
+      const tabId = await window.WSNB.create({}, opts || {}), tb = tabId && D.tabById(L, tabId), nb = tb && A.item(tb.r);
+      if (opts && opts.grp && W.isLive(nb)) { await A.commit(W.patch(nb, { grp: opts.grp })); render(); }
+    }
     function askBeside(docId, fromPane) { if (window.WSASK) window.WSASK.setDoc(docId || null); else needAsk().then(() => window.WSASK.setDoc(docId || null), () => {}); openItem('ask', 'ask', { pane: fromPane, beside: !!docId }); }
 
     /* ---------- loaded when first needed: the pen notebook and PDF ink (notebook.js, inkcore.js, notebook.css), Ask (ask.js) ---------- */
@@ -195,7 +229,7 @@
 
     /* ---------- drawing ---------- */
     function mount() {
-      mounted = true; host.hidden = false;
+      mounted = true; host.hidden = false; home = histHome();
       const main = document.getElementById('wsMain'); if (main) main.innerHTML = '';      // the Library view is not shown on the desk
       loadDesk(pickDesk());
       host.innerHTML = `<div class="dk-bar" id="dkBar"></div><div class="prog dk-prog" id="wsProg" hidden><span></span><div class="bar"><i></i></div></div>
@@ -206,7 +240,24 @@
       sizeHost(); drawBar(); drawRail(); render(true);
       pendingOpen.splice(0).forEach(x => openItem(x[0], x[1], x[2]));
     }
-    function unmountViews() { panesEl.forEach(pe => { if (pe.view) destroyView(pe); }); panesEl.clear(); views.clear(); treeKey = ''; }
+    function unmountViews() { panesEl.forEach(pe => { if (pe.view) destroyView(pe); }); panesEl.clear(); views.clear(); treeKey = ''; dropHomeView(); }
+    function dropHomeView() { if (!homeV) return; try { if (homeV.v && homeV.v.destroy) homeV.v.destroy(); } catch (e) {} homeV.el.remove(); homeV = null; }
+    /* the Home layer: one pane over the others with every open tab in its strip (none of them active) and the desk home below */
+    function drawHome() {
+      const on = homeOn();
+      mainEl.classList.toggle('home', on);
+      if (!on) { dropHomeView(); return; }
+      const tabs = D.allTabs(L), sig = tabs.map(x => x.id + '=' + typeOf(x.k).title(x.r)).join('|');
+      if (!homeV) { const el = h('section', 'dk-pane dk-home'); el.dataset.pane = 'home'; const strip = h('div', 'dk-strip'), body = h('div', 'dk-pb'); el.append(strip, body); homeV = { el, strip, body, v: null, sig: null }; }
+      if (homeV.el.parentNode !== mainEl) mainEl.appendChild(homeV.el);
+      drawStrip(homeV, { id: 'home', tabs, a: null, home: true }, false);
+      if (!homeV.v || homeV.sig !== sig || (homeV.v.refresh && homeV.v.refresh() === 'remount')) {
+        const sc = homeV.body.querySelector('.dk-empty'), y = sc ? sc.scrollTop : 0;
+        if (homeV.v && homeV.v.destroy) homeV.v.destroy(); homeV.body.innerHTML = '';
+        homeV.v = mountEmptyDesk(homeV.body, tabs); homeV.sig = sig;
+        const n = homeV.body.querySelector('.dk-empty'); if (n && y) n.scrollTop = y;
+      }
+    }
     function show() {
       if (!mounted) { mount(); return; }
       host.hidden = false; refresh();
@@ -242,15 +293,16 @@
     if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (!mounted) return; sizeHost(); requestAnimationFrame(keepCaret); });
     function drawBar() {
       if (!barEl) return;
-      const ph = isPhone(), st = A.statusShort();
+      const ph = isPhone(), st = A.statusShort(), hOn = homeOn() || !D.allTabs(L).length;
+      const homeB = `<button type="button" class="dk-homeb${hOn ? ' on' : ''}" data-b="home" aria-pressed="${hOn}" title="${esc(t('Home: the overview of your desk', 'Hjem: oversikten over arbeidsflaten'))}">${ic('home')}<span>${esc(t('Home', 'Hjem'))}</span></button>`;
       const stA = `<a class="dk-st" href="#/storage" title="${esc(st.title || '')}"><i class="kept ${st.c}"></i><span>${esc(st.s)}</span></a>`;
       const deskB = `<button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" aria-label="${esc(t('Desk: ', 'Arbeidsflate: ') + desk.name + t('. Switch, rename or add a desk', '. Bytt, gi nytt navn eller lag en ny'))}" title="${esc(t('Switch desk', 'Bytt arbeidsflate'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span><span class="nm">${esc(desk.name)}</span>${ic('chev')}</button>`;
-      /* phone: three plain things, each with its name. Desk, Search, Library (the sheet holds the rest) */
-      barEl.innerHTML = ph ? `${deskB}
+      /* phone: three plain things, each with its name. Home, Search, Library (the sheet holds the rest, the desk switcher too) */
+      barEl.innerHTML = ph ? `${homeB}
         <button type="button" class="dk-qo" data-b="open">${ic('search')}<span>${esc(t('Search', 'Søk'))}</span></button>
         <span class="sp"></span>
         <button type="button" class="dk-libb" data-b="sheet" aria-haspopup="dialog">${ic('lib')}<span>${esc(t('Library', 'Bibliotek'))}</span></button>`
-        : `<button type="button" class="dk-ib" data-b="rail" aria-label="${esc(t('Show or hide the library', 'Vis eller skjul biblioteket'))}" aria-expanded="${!railCollapsed()}" title="${esc(t('Library', 'Bibliotek'))}">${ic('rail')}</button>
+        : `${homeB}<button type="button" class="dk-ib" data-b="rail" aria-label="${esc(t('Show or hide the library', 'Vis eller skjul biblioteket'))}" aria-expanded="${!railCollapsed()}" title="${esc(t('Library', 'Bibliotek'))}">${ic('rail')}</button>
         ${deskB}
         <button type="button" class="dk-qo" data-b="open" aria-keyshortcuts="${isMac ? 'Meta+K' : 'Control+K'}">${ic('search')}<span>${esc(t('Open anything', 'Åpne hva som helst'))}</span><kbd>${KEY}</kbd></button>
         <span class="sp"></span>
@@ -282,7 +334,8 @@
         return `<section class="dk-sec"><button type="button" class="dk-sh" data-sec="${k}" aria-expanded="${open}">${ic('chev', 'cv')}<span>${esc(name)}</span><span class="c">${list.filter(x => !x.soon).length}</span></button>
           ${open ? `<ul>${l.length ? l.map(it => `<li><button type="button" class="dk-it${openNow.has(it.k + ':' + it.r) ? ' open' : ''}${it.cmd ? ' cmd' : ''}" data-k="${it.k}" data-r="${esc(it.r)}" title="${esc(it.n)}">${ic(it.i || TYPES[it.k].icon(it.r))}<span class="n">${it.pin ? '<i class="pin"></i>' : ''}${esc(it.n)}</span>${it.off ? `<span class="off" title="${esc(t('File not on this device', 'Filen er ikke på denne enheten'))}">○</span>` : ''}</button></li>`).join('') : `<li class="none">${esc(k === 'doc' ? t('No documents yet', 'Ingen dokumenter ennå') : k === 'aircraft' ? t('No aircraft yet', 'Ingen fly ennå') : t('Nothing here yet', 'Ingenting her ennå'))}</li>`}</ul>` : ''}</section>`;
       }).join('');
-      return `<div class="dk-rs"><label class="sr" for="dkQ${sheet ? 's' : ''}">${esc(t('Filter the library', 'Filtrer biblioteket'))}</label>${ic('search')}<input id="dkQ${sheet ? 's' : ''}" type="search" value="${esc(railQ)}" placeholder="${esc(t('Filter the library', 'Filtrer biblioteket'))}" autocomplete="off" spellcheck="false"></div>
+      const deskRow = sheet && desk ? `<div class="dk-sdesk"><button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" aria-label="${esc(t('Desk: ', 'Arbeidsflate: ') + desk.name + t('. Switch, rename or add a desk', '. Bytt, gi nytt navn eller lag en ny'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span><span class="nm">${esc(desk.name)}</span>${ic('chev')}</button></div>` : '';
+      return `${deskRow}<div class="dk-rs"><label class="sr" for="dkQ${sheet ? 's' : ''}">${esc(t('Filter the library', 'Filtrer biblioteket'))}</label>${ic('search')}<input id="dkQ${sheet ? 's' : ''}" type="search" value="${esc(railQ)}" placeholder="${esc(t('Filter the library', 'Filtrer biblioteket'))}" autocomplete="off" spellcheck="false"></div>
         <div class="dk-tree">${secs || `<p class="dk-none">${esc(t('Nothing matches.', 'Ingen treff.'))}</p>`}</div>
         <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>${sheet ? sheetFoot() : ''}`;
     }
@@ -345,7 +398,8 @@
       updatePanes();
       drawBarState();
     }
-    function drawBarState() { if (!barEl) return; barEl.querySelectorAll('[data-b^="split"]').forEach(b => { b.disabled = D.panes(L).length >= maxPanes(); }); }
+    function drawBarStateHome() { const b = barEl && barEl.querySelector('.dk-homeb'); if (!b) return; const on = homeOn() || !D.allTabs(L).length; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); }
+    function drawBarState() { if (!barEl) return; drawBarStateHome(); barEl.querySelectorAll('[data-b^="split"]').forEach(b => { b.disabled = D.panes(L).length >= maxPanes(); }); }
     function build(n) {
       if (n.t === 'p') return paneEl(n.id).el;
       const s = h('div', 'dk-s ' + (n.d === 'v' ? 'dk-v' : 'dk-h')); s.dataset.s = n.id;
@@ -388,6 +442,7 @@
         pe.view = { tabId: want, k: tab ? tab.k : want, v };
       });
       views.forEach(v => { if (v.ctxChanged) v.ctxChanged(); });
+      drawHome();
     }
     function destroyView(pe) {
       const cur = pe.view; pe.view = null; if (!cur) return;
@@ -414,8 +469,9 @@
       pe.strip.hidden = false;
       const tabs = p.tabs.map((x, i) => { const T = typeOf(x.k), name = T.title(x.r), on = x.id === p.a;
         return `<div class="dk-tab${on ? ' on' : ''}${x.pin ? ' pinned' : ''}" role="tab" aria-selected="${on}" tabindex="${on ? 0 : -1}" data-tab="${esc(x.id)}" title="${esc(name)}">${ic(T.icon(x.r))}<span class="tl">${esc(name)}</span>${x.pin ? `<span class="pn" title="${esc(t('Pinned', 'Festet'))}">${ic('pin')}</span>` : `<button type="button" class="x" data-x="${esc(x.id)}" tabindex="-1" aria-label="${esc(t('Close', 'Lukk') + ' ' + name)}">${ic('x')}</button>`}</div>`; }).join('');
-      pe.strip.innerHTML = `<div class="dk-tabs" role="tablist" aria-label="${esc(t('Open items', 'Åpne elementer'))}">${tabs}</div>
-        <div class="dk-pacts">${ph ? `<button type="button" class="dk-ib" data-b="switch" aria-label="${esc(t('Open tabs', 'Åpne faner'))}">${ic('tabs')}<span class="n">${p.tabs.length}</span></button>` : (p.tabs.length ? `<button type="button" class="dk-ib" data-pa="beside" title="${esc(t('Move this tab beside', 'Flytt fanen ved siden av'))}" aria-label="${esc(t('Move this tab beside', 'Flytt fanen ved siden av'))}"${p.tabs.length < 2 && D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('beside')}</button>` : '')}<button type="button" class="dk-ib" data-pa="menu" aria-haspopup="menu" aria-label="${esc(t('Pane options', 'Valg for panelet'))}">${ic('more')}</button></div>`;
+      const at = p.tabs.find(x => x.id === p.a), chip = at && A.placeChip ? A.placeChip(at.k, at.r) : '';
+      pe.strip.innerHTML = `<div class="dk-tabs" role="tablist" aria-label="${esc(t('Open items', 'Åpne elementer'))}">${tabs}</div>${chip}` + (p.home ? '' : `
+        <div class="dk-pacts">${ph ? `<button type="button" class="dk-ib" data-b="switch" aria-label="${esc(t('Open tabs', 'Åpne faner'))}">${ic('tabs')}<span class="n">${p.tabs.length}</span></button>` : (p.tabs.length ? `<button type="button" class="dk-ib" data-pa="beside" title="${esc(t('Move this tab beside', 'Flytt fanen ved siden av'))}" aria-label="${esc(t('Move this tab beside', 'Flytt fanen ved siden av'))}"${p.tabs.length < 2 && D.panes(L).length >= maxPanes() ? ' disabled' : ''}>${ic('beside')}</button>` : '')}<button type="button" class="dk-ib" data-pa="menu" aria-haspopup="menu" aria-label="${esc(t('Pane options', 'Valg for panelet'))}">${ic('more')}</button></div>`);
       const on = pe.strip.querySelector('.dk-tab.on'), tl = pe.strip.querySelector('.dk-tabs');
       if (on && tl.scrollWidth > tl.clientWidth) { const l = on.offsetLeft, r = l + on.offsetWidth; if (l < tl.scrollLeft || r > tl.scrollLeft + tl.clientWidth) tl.scrollLeft = Math.max(0, l - 40); }
     }
@@ -424,7 +480,7 @@
       const i = p.tabs.findIndex(x => x.id === p.a), nx = p.tabs[(i + dir + p.tabs.length) % p.tabs.length];
       activateTab(nx.id);
     }
-    function activateTab(tabId) { const pp = D.paneOfTab(L, tabId); if (pp) changed(D.activate(L, pp.id, tabId), 'shape'); }
+    function activateTab(tabId) { const pp = D.paneOfTab(L, tabId); if (pp) { leaveHome(); changed(D.activate(L, pp.id, tabId), 'shape'); } }
     function splitPane(paneId, dir) {
       const s = D.split(L, paneId || L.act, dir, maxPanes());
       if (!s) { A.toast(t('The desk has room for ' + maxPanes() + ' panes on this screen.', 'Arbeidsflaten har plass til ' + maxPanes() + ' paneler på denne skjermen.')); return; }
@@ -432,7 +488,8 @@
     }
 
     /* ---------- empty states ---------- */
-    function mountEmptyDesk(box) {
+    function mountEmptyDesk(box, openTabs) {
+      const now2 = (openTabs || []).filter(x => TYPES[x.k]);
       const rec = (A.M.recent || []).map(r => ({ k: r.t, r: r.id, at: r.at })).filter(x => TYPES[x.k] && live(x.k, x.r)).slice(0, 6);
       const now = new Date(), no = t('en', 'no') === 'no', h = now.getHours();
       const hello = h < 5 ? t('Good night', 'God natt') : h < 10 ? t('Good morning', 'God morgen') : h < 17 ? t('Good day', 'God dag') : h < 22 ? t('Good evening', 'God kveld') : t('Good night', 'God natt');
@@ -455,6 +512,7 @@
         </div>
         <button type="button" class="fi-card" data-e="fi">${ic('ask')}<span class="tx"><b>Flight Intelligence</b><small>${esc(askable ? t('Ask your manuals and checklists. Answers point to the page.', 'Spør manualene og sjekklistene dine. Svarene viser til siden.') : t('Add your manuals, then ask them anything. Answers point to the page.', 'Legg til manualene dine, og spør dem om hva som helst. Svarene viser til siden.'))}</small></span><span class="go">→</span></button>
         <p class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span></button></p>
+        ${now2.length ? `<h3>${esc(t('Open now', 'Åpent nå'))}</h3><ul class="rec now">${now2.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="go" aria-hidden="true">→</span></button></li>`).join('')}</ul>` : ''}
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
@@ -462,7 +520,7 @@
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null, dead = false; const mh = box.querySelector('.mmh');
       if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
-      const sig = g => g ? g.nodes.map(n => n.id + '@' + n.ac).join(',') + '#' + g.links.length : '';
+      const sig = g => g ? g.nodes.map(n => n.id + '@' + n.ac).join(',') + '#' + g.links.length + '#' + (g.topics || []).map(x => x.id + '=' + x.name).join(',') : '';
       return { destroy: () => { dead = true; if (mm) mm.destroy(); mm = null; },
         refresh: () => { if (!A.mapGraph) return ''; const na = window.WSMAP && A.mapAny ? A.mapAny() : null; if (!!na !== useMap || (na && ma && na.sample !== ma.sample)) return 'remount'; if (mm && na && sig(na.g) !== sig(mm.graph)) mm.setGraph(na.g); return ''; } };
     }
@@ -817,7 +875,7 @@
       if (!W.isLive(a)) return missing(box, 'aircraft', id, ctx);
       const root = h('div', 'av'); box.appendChild(root);
       function draw() {
-        a = A.item(id); const ty = W.typeOf(a.typeKey), docs = A.docsAll().filter(d => (d.acIds || []).includes(id)), notes = A.notesAll().filter(n => (n.links || []).some(l => l.t === 'aircraft' && l.id === id)), packs = A.packsAll().filter(p => A.packAc(p) === a);
+        a = A.item(id); const ty = W.typeOf(a.typeKey), docs = A.docsAll().filter(d => (d.acIds || []).includes(id)), notes = A.notesAll().filter(n => A.groupOf('note', n.id) === id || (n.links || []).some(l => l.t === 'aircraft' && l.id === id)), nbs = A.notebooksAll().filter(n => A.groupOf('notebook', n.id) === id), packs = A.packsAll().filter(p => A.packAc(p) === a);
         const row = (k, r, n, s, i) => `<li><button type="button" data-open="${k}:${esc(r)}">${ic(i || k)}<span class="n">${esc(n)}</span>${s ? `<small>${esc(s)}</small>` : ''}</button></li>`;
         root.innerHTML = `<div class="av-sc" data-keep-scroll><div class="av-in">
           <header class="av-h"><div><div class="reg">${esc(a.reg || a.type || A.acName(a))}</div><div class="ty">${esc([a.reg ? a.type : '', a.callsign ? t('Callsign ', 'Kallesignal ') + a.callsign : ''].filter(Boolean).join(' · '))}</div></div>
@@ -828,7 +886,7 @@
             <h3><label for="avN${esc(tab.id)}">${esc(t('About this aircraft', 'Om dette flyet'))}</label></h3><textarea class="acnotes" id="avN${esc(tab.id)}" maxlength="4000" placeholder="${esc(t('Equipment, quirks, where the tow bar is kept…', 'Utstyr, særheter, hvor slepestangen ligger …'))}">${esc(a.notes)}</textarea></section>
           <section><h3>${esc(t('Documents', 'Dokumenter'))} <span class="c">${docs.length}</span></h3>${docs.length ? `<ul class="av-l">${docs.map(d => row('doc', d.id, d.name, A.catName(d.cat), docKind(d))).join('')}</ul>` : `<p class="none">${esc(t('The AFM, checklists and SOP for this aircraft.', 'AFM, sjekklister og SOP for dette flyet.'))}</p>`}
             <p class="av-add"><button type="button" class="lk" data-av="doc-add" aria-haspopup="menu">${ic('plus')}${esc(t('Add a document', 'Legg til et dokument'))}</button></p>
-            <h3>${esc(t('Notes', 'Notater'))} <span class="c">${notes.length}</span></h3>${notes.length ? `<ul class="av-l">${notes.map(n => row('note', n.id, A.noteTitle(n), A.ago(n.updatedAt))).join('')}</ul>` : `<p class="none">${esc(t('Notes linked to this aircraft show here.', 'Notater koblet til dette flyet vises her.'))}</p>`}
+            <h3>${esc(t('Notes', 'Notater'))} <span class="c">${notes.length + nbs.length}</span></h3>${notes.length + nbs.length ? `<ul class="av-l">${nbs.map(n => row('notebook', n.id, n.title || t('Notebook', 'Notatbok'), t('Notebook', 'Notatbok'))).join('')}${notes.map(n => row('note', n.id, A.noteTitle(n), A.ago(n.updatedAt))).join('')}</ul>` : `<p class="none">${esc(t('Notes linked to this aircraft show here.', 'Notater koblet til dette flyet vises her.'))}</p>`}
             <h3>${esc(t('Briefing packs', 'Briefingpakker'))} <span class="c">${packs.length}</span></h3>${packs.length ? `<ul class="av-l">${packs.map(p => row('pack', p.id, A.packTitle(p), (p.f || {}).date || '')).join('')}</ul>` : `<p class="none">${esc(t('Briefing packs with this registration show here.', 'Briefingpakker med denne registreringen vises her.'))}</p>`}</section></div></div></div>`;
         const tbody = root.querySelector('tbody');
         const saveSp = () => { const rows = [...tbody.querySelectorAll('tr')].map(tr => ({ k: tr.querySelector('.k').value.slice(0, 24), v: tr.querySelector('.v').value.slice(0, 16), u: tr.querySelector('.u').value.slice(0, 10) })); A.commit(W.patch(A.item(id), { speeds: rows })); root.querySelector('[data-sv]').textContent = t('Saved', 'Lagret'); };
@@ -840,7 +898,7 @@
       root.addEventListener('click', e => {
         const o = e.target.closest('[data-open]'); if (o) { const i = o.dataset.open.indexOf(':'); ctx.open(o.dataset.open.slice(0, i), o.dataset.open.slice(i + 1), { beside: true }); return; }
         const b = e.target.closest('[data-av]'); if (!b) return; const k = b.dataset.av;
-        if (k === 'note') newNote({ title: (a.reg || a.type || '') + ' – ', links: [{ t: 'aircraft', id }] }, { pane: ctx.paneId, beside: true });
+        if (k === 'note') newNote({ title: (a.reg || a.type || '') + ' – ', links: [{ t: 'aircraft', id }], grp: id }, { pane: ctx.paneId, beside: true });
         else if (k === 'pack') A.newPack(id);
         else if (k === 'doc-add') { const rest = A.docsAll().filter(d => !(d.acIds || []).includes(id)), up = () => A.pickFiles({ acId: id });
           if (!rest.length) up(); else menu(b, rest.slice(0, 30).map(d => ({ l: d.name, f: () => A.linkDoc(d.id, id).then(() => { const sc = root.firstElementChild, y = sc.scrollTop; draw(); root.firstElementChild.scrollTop = y; }) })).concat([{ sep: 1 }, { l: t('Add a file from this device…', 'Legg til en fil fra denne enheten …'), f: up }])); }
@@ -949,7 +1007,7 @@
     function switchDesk(id) {
       if (desk && id === desk.id) return; snapshot();
       const d = desks().find(x => x.id === id); if (!d) return;
-      loadDesk(d); render(true); drawBar(); drawRail();
+      leaveHome(); loadDesk(d); render(true); drawBar(); drawRail();
     }
     async function deskNew() {
       if (desks().length >= D.MAX_DESKS) { A.toast(t('You have the most desks there is room for. Delete one first.', 'Du har så mange arbeidsflater det er plass til. Slett en først.')); return; }
@@ -957,7 +1015,7 @@
       snapshot(); if (desk.unsaved && D.allTabs(L).length) { desk.unsaved = false; const it = D.newDesk({ id: desk.id, name: desk.name, L }); A.commit(it); }
       const d = D.newDesk({ name: nm }); await A.commit(d); loadDesk(d); render(true); drawBar(); drawRail();
     }
-    async function deskRename() { const nm = await nameDlg(t('Rename desk', 'Gi arbeidsflaten nytt navn'), desk.name, t('Save', 'Lagre')); if (!nm) return; desk.name = nm; desk.unsaved = false; const cur = A.item(desk.id); await A.commit(cur && !cur.gone ? W.patch(cur, { name: nm, L: D.sanitize(L) }) : D.newDesk({ id: desk.id, name: nm, L })); drawBar(); updatePanes(); }
+    async function deskRename() { const nm = await nameDlg(t('Rename desk', 'Gi arbeidsflaten nytt navn'), desk.name, t('Save', 'Lagre')); if (!nm) return; desk.name = nm; desk.unsaved = false; const cur = A.item(desk.id); await A.commit(cur && !cur.gone ? W.patch(cur, { name: nm, L: D.sanitize(L) }) : D.newDesk({ id: desk.id, name: nm, L })); drawBar(); drawRail(); updatePanes(); }
     async function deskDup() {
       if (desks().length >= D.MAX_DESKS) return; collectStates();
       const d = D.dupDesk({ name: desk.name, L }, desk.name + ' ' + t('(copy)', '(kopi)')); snapshot(); await A.commit(d); loadDesk(d); render(true); drawBar(); drawRail();
@@ -1124,7 +1182,7 @@
     function wire() {
       barEl.addEventListener('click', e => {
         const b = e.target.closest('[data-b]'); if (!b) return; const k = b.dataset.b;
-        if (k === 'rail') setRail(!railCollapsed()); else if (k === 'desks') deskMenu(b); else if (k === 'open') palette();
+        if (k === 'home') goHome(); else if (k === 'rail') setRail(!railCollapsed()); else if (k === 'desks') deskMenu(b); else if (k === 'open') palette();
         else if (k === 'split-h') splitPane(L.act, 'h'); else if (k === 'split-v') splitPane(L.act, 'v'); else if (k === 'sheet') openSheet(b);
       });
       const railClick = e => {
@@ -1133,7 +1191,7 @@
         const it = e.target.closest('.dk-it'); if (it) { openItem(it.dataset.k, it.dataset.r, { beside: e.shiftKey || e.altKey }); return; }
         const ri = e.target.closest('[data-ri]'); if (ri) { const o = Object.assign({}, (A.M.deskRail || {}).open || {}); o[ri.dataset.ri] = true; A.M.deskRail = Object.assign({}, A.M.deskRail || {}, { open: o, c: false }); A.saveMeta(); drawRail(); drawBar(); return; }
         const b = e.target.closest('[data-b]'); if (!b) return;
-        if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({});
+        if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({}); else if (b.dataset.b === 'desks') deskMenu(b);
       };
       railEl.addEventListener('click', railClick);
       sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; }
@@ -1151,7 +1209,7 @@
         const paneE = e.target.closest('.dk-pane');
         if (paneE && paneE.dataset.pane !== 'phone' && paneE.dataset.pane !== L.act && D.paneById(L, paneE.dataset.pane)) { L = D.activate(L, paneE.dataset.pane); panesEl.forEach((pe, id) => pe.el.classList.toggle('act', D.panes(L).length > 1 && id === L.act)); views.forEach(v => { if (v.ctxChanged) v.ctxChanged(); }); changed(L, 'pos'); }
         const sp = e.target.closest('.dk-sp'); if (sp) { e.preventDefault(); splitDrag(e, sp); return; }
-        const tb = e.target.closest('.dk-tab'); if (tb && !e.target.closest('.x')) { const x = D.tabById(L, tb.dataset.tab); if (x) dragStart(e, { tab: x.id }, typeOf(x.k).title(x.r)); }
+        const tb = e.target.closest('.dk-tab'); if (tb && !e.target.closest('.x') && !homeOn()) { const x = D.tabById(L, tb.dataset.tab); if (x) dragStart(e, { tab: x.id }, typeOf(x.k).title(x.r)); }
       }, { passive: false });
       mainEl.addEventListener('click', e => {
         if (Date.now() - suppressClick < 400) return;
@@ -1203,7 +1261,7 @@
     const EXT = { A, D, W, t, esc, h, ic, menu, missing, toast: A.toast, isPhone, openItem: (k, r, o) => openItem(k, r, o), drawTabTitles, pdfLabel, docBeside, lang: () => t('en', 'no') };
     if (window.WSNB) needNB();
     if (window.WSASK) needAsk();
-    window.WSDESK = { show, hide, status, refresh, needNB, needAsk, newNotebook: o => newNotebook(o),
+    window.WSDESK = { show, hide, status, refresh, needNB, needAsk, newNotebook: o => newNotebook(o), menu, goHome, get home() { return homeOn(); },
       openItem: (k, r, o) => openItem(k, r, o), types: TYPES,
       switchDesk: id => { if (mounted) switchDesk(id); else { A.M.desk = id; A.saveMeta(); } },
       get layout() { return L; }, get desk() { return desk; }, views, save: snapshot };

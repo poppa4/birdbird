@@ -375,3 +375,24 @@ dialog.ws-dlg.pal-dlg{padding:0;max-width:min(640px,calc(100vw - 24px));align-se
   .nv-bar button{min-width:44px;height:44px}.nv input.nv-ttl{min-height:44px}.av .acts .btn.sm,.cv .btn{min-height:44px}.av .speeds td input{min-height:44px}.av .speeds .x button{min-width:44px;min-height:44px}.av-l button{min-height:48px}.av-add .lk{min-height:44px}
   .dk-epane .btn.sm,.dk-msg .btn.sm{min-height:44px}.nv-links .chip{min-height:44px}
   .dk-menu button{min-height:44px}.pal-l li{min-height:48px}.pal-f{display:none}.pal-x{display:inline-flex}}
+
+/* Home: one named button, first in the bar at every width; the desk home lies over the panes, the open tabs stay in its strip */
+.dk-homeb{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 9px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--sheet);color:var(--ink);cursor:pointer;font:inherit;font-size:14.5px;font-weight:600;flex:0 0 auto}
+.dk-homeb .i{color:var(--accent)}
+.dk-homeb:hover{border-color:var(--ink-2)}
+.dk-homeb.on{background:var(--wash);border-color:var(--ink-2)}
+.dk-main{position:relative}
+.dk-main.home>:not(.dk-home){visibility:hidden}
+.dk-home{position:absolute;left:8px;top:8px;right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom));z-index:2}
+.dk-main.phone .dk-home{left:0;top:0;right:0;bottom:0}
+.dk-empty .rec .go{color:var(--ink-3)}
+/* the group chip in a pane's strip: where the open item lives */
+.dk-strip .ws-place{align-self:stretch;height:auto;max-width:170px;margin:0;padding:0 8px 0 12px;border:0;border-left:1px solid var(--rule-2);border-radius:0;background:none}
+.dk-strip .ws-place:hover{background:var(--sheet)}
+@media (pointer:coarse){.dk-homeb{height:44px}.dk-strip .ws-place{min-width:44px}}
+@media (max-width:759px){.dk-strip .ws-place{max-width:118px;padding:0 6px 0 10px}.dk-homeb{padding:0 10px 0 8px}}
+/* phone: the desk switcher sits at the top of the Library sheet */
+.dk-sdesk{padding:10px 12px 0}
+.dk-sdesk .dk-deskbtn{width:100%;max-width:none;justify-content:flex-start}
+.dk-sdesk .dk-deskbtn .eb{display:inline}
+.dk-sdesk .dk-deskbtn .nm{flex:1;text-align:left}

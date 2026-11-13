@@ -93,7 +93,9 @@
   const aircraftName = a => a ? [a.type || (typeOf(a.typeKey).name), a.reg].filter(Boolean).join(' · ') || 'Aircraft' : '';
   function newNote(f, now) {
     f = f || {}; now = now || Date.now();
-    return { id: f.id || uid('n'), kind: 'note', fmt: 'text', title: String(f.title || '').slice(0, 140), body: sanitizeHtml(f.body || ''), tags: cleanTags(f.tags), links: cleanLinks(f.links), pinned: !!f.pinned, versions: [], createdAt: now, updatedAt: now };
+    const o = { id: f.id || uid('n'), kind: 'note', fmt: 'text', title: String(f.title || '').slice(0, 140), body: sanitizeHtml(f.body || ''), tags: cleanTags(f.tags), links: cleanLinks(f.links), pinned: !!f.pinned, versions: [], createdAt: now, updatedAt: now };
+    if (f.grp) o.grp = String(f.grp).slice(0, 80);
+    return o;
   }
   const LINK_TYPES = ['aircraft', 'doc', 'pack', 'lab'];
   function cleanLinks(l) { const seen = new Set(); return (Array.isArray(l) ? l : []).filter(x => x && LINK_TYPES.includes(x.t) && x.id && !seen.has(x.t + ':' + x.id) && seen.add(x.t + ':' + x.id)).map(x => ({ t: x.t, id: String(x.id).slice(0, 80) })).slice(0, 24); }
@@ -123,6 +125,43 @@
       out[id] = it;
     }
     return { items: out, purged };
+  }
+
+  /* ---------- topics and placement ----------
+     A topic is a group you name yourself ('Theory'): { id, kind: 'topic', name }, an item like any other (sync, trash, backup).
+     Where an item lives is its 'grp': the id of an aircraft or a topic, UNSORTED ('-': no group, chosen on purpose), or
+     nothing (not placed by hand: the map works it out from links and page references, as before).
+       note, notebook   grp on the item
+       document         acIds for aircraft (it can have several), else grp for a topic or UNSORTED
+       briefing pack    its mark 'pk:' + id: acId for an aircraft, else grp
+       route            a mark of its own, 'rt:' + id: grp
+     A grp that points at something deleted counts as UNSORTED, so the items of a deleted topic go to Unsorted
+     (and come back if the topic is restored from the trash). */
+  const UNSORTED = '-', MAX_TOPICS = 40;
+  const cleanTopicName = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, 40);
+  function newTopic(f, now) { f = f || {}; now = now || Date.now(); return { id: f.id || uid('tp'), kind: 'topic', name: cleanTopicName(f.name) || 'Topic', createdAt: now, updatedAt: now }; }
+  const topicsOf = items => live(items, 'topic').sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || (a.id < b.id ? -1 : 1));
+  const newRouteMark = (routeId, f, now) => Object.assign({ id: 'rt:' + routeId, kind: 'route', grp: '', createdAt: now || Date.now(), updatedAt: now || Date.now() }, f || {});
+  const isGroup = it => isLive(it) && (it.kind === 'aircraft' || it.kind === 'topic');
+  const grpOf = (items, it) => { if (!isLive(it) || !it.grp) return ''; return isGroup(items[it.grp]) ? it.grp : UNSORTED; };
+  /* where the item was placed by hand: [] (not placed), [UNSORTED], or group ids (several only for a document's aircraft). k: note | notebook | doc | pack | route */
+  function placed(items, k, r) {
+    items = items || {};
+    if (k === 'doc') { const d = items[r]; if (!isLive(d)) return []; const ac = uniq(d.acIds).filter(a => isLive(items[a]) && items[a].kind === 'aircraft'); if (ac.length) return ac; const g = grpOf(items, d); return g ? [g] : []; }
+    if (k === 'pack') { const m = items['pk:' + r]; if (!isLive(m)) return []; const g = grpOf(items, m); if (g) return [g]; return m.acId && isLive(items[m.acId]) && items[m.acId].kind === 'aircraft' ? [m.acId] : []; }
+    const it = k === 'route' ? items['rt:' + r] : items[r], g = grpOf(items, it);
+    return g ? [g] : [];
+  }
+  /* put the item in one group (to: an aircraft or topic id, or UNSORTED). -> the changed item to save, or null */
+  function place(items, k, r, to, now) {
+    items = items || {};
+    const g = to === UNSORTED ? null : items[to]; if (to !== UNSORTED && !isGroup(g)) return null;
+    const ac = !!g && g.kind === 'aircraft';
+    if (k === 'note' || k === 'notebook') { const it = items[r]; return isLive(it) && it.kind === k ? patch(it, { grp: to }, now) : null; }
+    if (k === 'doc') { const d = items[r]; return isLive(d) && d.kind === 'doc' ? patch(d, { acIds: ac ? [to] : [], grp: ac ? '' : to }, now) : null; }
+    if (k === 'pack') { const m = items['pk:' + r], f = { acId: ac ? to : '', grp: ac ? '' : to }; return isLive(m) ? patch(m, f, now) : Object.assign(newPackMark(r, f, now), m ? { updatedAt: stamp(m, now) } : {}); }
+    if (k === 'route') { const m = items['rt:' + r]; return isLive(m) ? patch(m, { grp: to }, now) : Object.assign(newRouteMark(r, { grp: to }, now), m ? { updatedAt: stamp(m, now) } : {}); }
+    return null;
   }
 
   /* ---------- notes: autosave with version history ---------- */
@@ -212,7 +251,7 @@
     });
     return { items, conflicts, changedLocal, changedRemote };
   }
-  function splitNs(items) { const o = { workspace: {}, notes: {} }; for (const id in items) o[nsOfKind(items[id].kind)][id] = items[id]; return o; }
+  function splitNs(items) { const o = { workspace: {}, notes: {}, ink: {} }; for (const id in items) o[nsOfKind(items[id].kind)][id] = items[id]; return o; }
 
   /* ---------- namespace size: gzip, then trim the synced copy ---------- */
   const b64 = u => { let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
@@ -437,7 +476,7 @@
 
   const API = { DAY, TRASH_DAYS, TOMBSTONE_DAYS, MAX_VERSIONS, VERSION_GAP, NS_BUDGET, NAMESPACES, nsOfKind, AIRCRAFT_TYPES, typeOf, DOC_CATS, kindToCat, catToKind, guessKind, guessCat,
     uid, clone, stable, byteLen, fmtBytes, uniq, cleanTags, sanitizeHtml, htmlToText, textToHtml,
-    newAircraft, aircraftName, newNote, newDocEntry, newPackMark, cleanLinks, isLive, inTrash, live, trashed, trashDaysLeft, patch, trash, restore, tombstone, purgeExpired,
+    newAircraft, aircraftName, newNote, newDocEntry, newPackMark, cleanLinks, UNSORTED, MAX_TOPICS, cleanTopicName, newTopic, topicsOf, newRouteMark, isGroup, placed, place, isLive, inTrash, live, trashed, trashDaysLeft, patch, trash, restore, tombstone, purgeExpired,
     noteText, noteAutoTitle, wordCount, editNote, restoreVersion, mergeItem, mergeItems, splitNs, packNs, unpackNs, syncNs,
     fold, tokens, buildIndex, search, searchChunks, snippet, guessSec, chunkPage, byParts, pagesFromChunks, pushRecent,
     crc32, safeName, ZipWriter, zipRead, buildBackup, readBackup, mergeLocalKey, BACKUP_FORMAT };

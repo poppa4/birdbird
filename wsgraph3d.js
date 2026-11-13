@@ -1,5 +1,5 @@
 /* Birdbird – My Workspace map in 3D, core (no DOM): runs in the browser (window.WSGRAPH3D) and in node tests.
-   The map is a cloud: every group (an aircraft, then 'Unsorted') a soft ball of evenly spaced points, slightly flattened
+   The map is a cloud: every group (an aircraft, a topic, then 'Unsorted') a soft ball of evenly spaced points, slightly flattened
    front to back, the balls side by side as in the 2D map (WSGRAPH.arrange) and set at a little different depths, so the
    cloud has parallax when it turns. No surface, no outline: the soft look comes from a few large puffs of light per group.
    layout3d(g, opts) -> { P: Float32Array(3N) world (x right, y up, z front), grow: Float32Array(N) (0 in the middle of
@@ -30,7 +30,7 @@
   const cache = new Map();
   function layout3d(g, opts) {
     opts = opts || {}; const aspect = opts.aspect || 1.7;
-    const sig = aspect.toFixed(2) + '|' + g.nodes.map(n => n.id + '@' + n.ac).join(',');
+    const sig = aspect.toFixed(2) + '|' + g.nodes.map(n => n.id + '@' + n.ac).join(',') + '|' + (g.topics || []).map(x => x.id + '=' + x.name).join(',');
     const hit = cache.get(sig); if (hit) return clone(hit);
     const N = g.nodes.length, groups = GW.groupsOf(g), P = new Float32Array(N * 3), gi = new Int32Array(N).fill(-1);
     const balls = groups.map(q => {
@@ -42,7 +42,7 @@
     const clusters = groups.map((q, k) => {
       const [ax, ay] = A.c[k], cz = (((hash('z|' + (q.key || '~')) % 1000) / 1000) - 0.5) * balls[k].r * 0.7, cc = [ax, -ay, cz];
       q.m.forEach((i, j) => { const p = balls[k].at[j]; P[i * 3] = cc[0] + p[0]; P[i * 3 + 1] = cc[1] + p[1]; P[i * 3 + 2] = cc[2] + p[2]; gi[i] = k; });
-      return { key: q.key, ac: q.ac, n: q.n, m: q.m, c: cc, r: balls[k].r };
+      return { key: q.key, ac: q.ac, topic: q.topic, n: q.n, m: q.m, c: cc, r: balls[k].r };
     });
     let R = 0; clusters.forEach(c => { R = Math.max(R, Math.hypot(c.c[0], c.c[1], c.c[2]) + c.r + D * 1.5); });
     const grow = new Float32Array(N); for (let i = 0; i < N; i++) grow[i] = Math.min(1, Math.hypot(P[i * 3], P[i * 3 + 1], P[i * 3 + 2]) / Math.max(1, R));

@@ -80,7 +80,7 @@ def settle(pg, ms=9000):
 
 STATE = """(() => { const m = window.WS.map, g = m.graph, L = m.layout;
   return { own: g.own, n: g.nodes.length, cloud: !!L.cloud, ex: g.nodes.filter(x => x.ghost || x.id.startsWith('ex:')).length,
-    inside: !!L.cloud && g.nodes.every((x, i) => { const q = L.groups[L.gi[i]]; return q && Math.hypot(L.x[i] - q.cx, L.y[i] - q.cy) <= q.r + 0.01 && (q.ac >= 0 ? g.nodes[q.ac].id === x.ac : !x.ac); }),
+    inside: !!L.cloud && g.nodes.every((x, i) => { const q = L.groups[L.gi[i]]; return q && Math.hypot(L.x[i] - q.cx, L.y[i] - q.cy) <= q.r + 0.01 && (q.ac >= 0 ? g.nodes[q.ac].id === x.ac : q.topic ? x.ac === q.key : !x.ac); }),
     regions: m.debug.regions, labels: m.debug.labels, acs: g.nodes.filter(x => x.k === 'aircraft').map(x => x.id), docs: g.nodes.filter(x => x.k === 'doc').map(x => x.id) }; })()"""
 MINI = """(sel) => { const h = document.querySelector(sel); const m = h && h.wsmap; return m ? { n: m.graph.nodes.length, labels: m.debug.labels, pulses: m.debug.pulses, regions: m.debug.regions, names: m.debug.groupLabels.map(a => a.text) } : null; }"""
 # the group names on a map: each with a count; none clipped, none over another name, a dot or an overlay on the plate
@@ -196,7 +196,7 @@ def no_aircraft(br):
     names_ok(pg, 'no aircraft', '#wsMapHost', 1)
     pg.screenshot(path=f'{BRAIN}/desktop-own5-noaircraft.png')
     pg.click('.langseg button[data-v="no"]'); pg.wait_for_timeout(500); settle(pg)
-    check('no aircraft: Norwegian region name', pg.evaluate('window.WS.map.debug.regions') == ['Uten fly'], pg.evaluate('window.WS.map.debug.regions'))
+    check('no aircraft: Norwegian region name', pg.evaluate('window.WS.map.debug.regions') == ['Usortert'], pg.evaluate('window.WS.map.debug.regions'))
     pg.click('.langseg button[data-v="en"]'); pg.wait_for_timeout(300)
     ctx.close()
 
@@ -215,6 +215,60 @@ ST3 = """(() => { const m = window.WS.map, g = m.graph, L = m.layout;
     inside: g.nodes.every((x, i) => { const c = L.clusters[L.gi[i]]; return Math.hypot(L.P[i * 3] - c.c[0], L.P[i * 3 + 1] - c.c[1], L.P[i * 3 + 2] - c.c[2]) <= c.r + 0.01; }),
     acs: g.nodes.filter(x => x.k === 'aircraft').map(x => x.id), cpu: m.debug.cpu, dpr: m.debug.dpr, frames: m.debug.frames }; })()"""
 CPU = []
+def groups(br):
+    """groups you choose: a topic is a cloud of its own (also when empty); "Move to" on a dot's card is the chip's menu; the
+    focused group's card has "New note here" and, for a topic, Rename and Delete. 2D on a phone, 3D on a desktop."""
+    SEEDG = """async () => { const W = window.WSCORE, A = window.WS.api;
+      await A.commit([W.newAircraft({ id: 'ga', typeKey: 'da42', reg: 'LN-GRP' }), W.newTopic({ id: 'gt', name: 'Theory' }), W.newDocEntry({ id: 'gd', name: 'Group AFM', acIds: ['ga'], pages: 9 }),
+        W.newNote({ id: 'gn1', title: 'Cites the AFM', body: '<cite data-doc="gd" data-p="2">p</cite>' }), W.newNote({ id: 'gn2', title: 'Loose one', body: 'x' })]); }"""
+    regs = lambda pg: pg.evaluate("window.WS.map.layout.groups ? window.WS.map.layout.groups.map((q, k) => window.WS.map.debug.regions[k] + ' ' + q.n) : window.WS.map.layout.clusters.map((q, k) => window.WS.map.debug.regions[k] + ' ' + q.n)")
+    for tag, phone, pref in [('phone 2d', True, '2d'), ('desktop 3d', False, '3d')]:
+        ctx, pg, errs = ctx3(br, 390 if phone else 1470, 844 if phone else 956, phone, pref)
+        act = (lambda sel: pg.tap(sel)) if phone else (lambda sel: pg.click(sel))
+        pg.goto(URL + '#/library'); pg.wait_for_function('() => window.WS && window.WS.api'); pg.evaluate(SEEDG)
+        pg.goto(URL + '#/map'); pg.reload(); pg.wait_for_function(f"() => window.WS && window.WS.map && window.WS.mapView === '{pref}'", timeout=30000); pg.wait_for_timeout(2500 if pref == '3d' else 900)
+        check(tag + ': an empty topic is a group of its own, between the aircraft and Unsorted', regs(pg) == ['DA42 2', 'Theory 0', 'Unsorted 1'], regs(pg))
+        check(tag + ': no topic button on the toolbar (topics are made where you place things)', pg.locator('.wsm-top button:has-text("topic")').count() == 0)
+        pg.screenshot(path=f"{SHOTS}/groups-{tag.replace(' ', '-')}.png")
+        # a dot's card: Move to, the same menu as the chip
+        pg.evaluate("window.WS.map.focus(window.WS.map.graph.index['note:gn1'])"); pg.wait_for_selector('.wsm-card [data-mv]'); pg.wait_for_timeout(900)
+        act('.wsm-card [data-mv]'); pg.wait_for_selector('.dk-menu')
+        items = [x.strip() for x in pg.locator('.dk-menu button').all_inner_texts()]
+        check(tag + ': Move to lists the aircraft, the topics, New topic… and Unsorted, with where it is now marked', items == ['DA42', 'Theory', 'New topic…', 'Unsorted'] and pg.locator('.dk-menu button.on').inner_text().strip() == 'DA42', items)
+        if phone: check(tag + ': menu rows are 44 px', all(pg.locator('.dk-menu button').nth(k).bounding_box()['height'] >= 44 for k in range(4)))
+        act('.dk-menu button:has-text("Theory")'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
+        check(tag + ': one tap moves the dot to the other cloud (by hand wins over its page reference)', regs(pg) == ['DA42 1', 'Theory 1', 'Unsorted 1'] and pg.evaluate("window.WS.api.item('gn1').grp") == 'gt', regs(pg))
+        check(tag + ': a short confirmation', 'Moved to Theory' in pg.inner_text('#wsToast'), pg.inner_text('#wsToast'))
+        # a document moves the same way; a new topic is made from the same menu
+        pg.evaluate("window.WS.map.focus(window.WS.map.graph.index['doc:gd'])"); pg.wait_for_selector('.wsm-card [data-mv]'); pg.wait_for_timeout(900)
+        act('.wsm-card [data-mv]'); act('.dk-menu button:has-text("New topic")'); pg.wait_for_selector('#wsTopicN')
+        check(tag + ': New topic asks for a name only, with an example', pg.get_attribute('#wsTopicN', 'placeholder') == 'e.g. Theory' and pg.locator('#wsDlg input').count() == 1)
+        pg.fill('#wsTopicN', 'Air law'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
+        check(tag + ': the document is in the new topic at once', regs(pg) == ['DA42 0', 'Theory 1', 'Air law 1', 'Unsorted 1'] and pg.evaluate("window.WS.api.item('gd').acIds.length") == 0, regs(pg))
+        # the focused group's card
+        k = 2
+        pg.evaluate(f"window.WS.map.is3d ? window.WS.map.flyToCluster({k}) : window.WS.map.focusGroup({k})"); pg.wait_for_selector('.wsm-card.grp [data-ga="new"]'); pg.wait_for_timeout(900)
+        btns = [x.strip() for x in pg.locator('.wsm-card.grp button:not([data-i])').all_inner_texts()]
+        check(tag + ': a topic card: New note here, All groups, Rename, Delete', btns == ['+ New note here', '← All groups', 'Rename', 'Delete'], btns)
+        if phone: check(tag + ': card buttons are 44 px', all(pg.locator('.wsm-card.grp button:not([data-i])').nth(j).bounding_box()['height'] >= 44 for j in range(4)))
+        pg.screenshot(path=f"{SHOTS}/groups-{tag.replace(' ', '-')}-card.png")
+        act('.wsm-card.grp [data-ga="rename"]'); pg.wait_for_selector('#wsTopicN'); pg.fill('#wsTopicN', 'Law'); pg.press('#wsTopicN', 'Enter'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
+        check(tag + ': renamed', regs(pg) == ['DA42 0', 'Theory 1', 'Law 1', 'Unsorted 1'], regs(pg))
+        pg.evaluate("window.WS.map.is3d ? window.WS.map.flyToCluster(0) : window.WS.map.focusGroup(0)"); pg.wait_for_selector('.wsm-card.grp [data-ga="new"]'); pg.wait_for_timeout(900)
+        check(tag + ': an aircraft card has New note here but no Rename or Delete', pg.locator('.wsm-card.grp [data-ga="rename"], .wsm-card.grp [data-ga="delete"]').count() == 0)
+        pg.evaluate("window.WS.map.is3d ? window.WS.map.flyToCluster(2) : window.WS.map.focusGroup(2)"); pg.wait_for_selector('.wsm-card.grp [data-ga="delete"]'); pg.wait_for_timeout(900)
+        act('.wsm-card.grp [data-ga="delete"]'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
+        check(tag + ': a deleted topic leaves its items under Unsorted, in the trash for 30 days', regs(pg) == ['DA42 0', 'Theory 1', 'Unsorted 2'] and pg.evaluate("window.WSCORE.inTrash(window.WS.api.item(window.WSCORE.trashed(window.WS.state.items)[0].id))"), regs(pg))
+        act('#wsToast button'); pg.wait_for_timeout(1500 if pref == '3d' else 500)
+        check(tag + ': Undo brings the topic and its items back', regs(pg) == ['DA42 0', 'Theory 1', 'Law 1', 'Unsorted 1'], regs(pg))
+        pg.evaluate("window.WS.map.is3d ? window.WS.map.flyToCluster(1) : window.WS.map.focusGroup(1)"); pg.wait_for_selector('.wsm-card.grp [data-ga="new"]'); pg.wait_for_timeout(900)
+        act('.wsm-card.grp [data-ga="new"]'); pg.wait_for_selector('.nv-bd'); pg.wait_for_timeout(400)
+        check(tag + ': New note here opens a note on the desk that is already in the group', pg.locator('.dk-strip .ws-place').inner_text().strip() == 'Theory' and pg.evaluate("window.WS.api.liveOf('note').filter(n => n.grp === 'gt').length") == 2, pg.locator('.dk-strip .ws-place').inner_text())
+        pg.wait_for_timeout(1600); pg.reload(); pg.wait_for_selector('.dk-strip .ws-place'); pg.wait_for_timeout(500)
+        check(tag + ': everything is still there after a reload', pg.locator('.dk-strip .ws-place').inner_text().strip() == 'Theory' and pg.evaluate("[window.WS.api.groupOf('note', 'gn1'), window.WS.api.groupOf('doc', 'gd'), window.WS.api.groupOf('note', 'gn2')].join()") == 'gt,' + pg.evaluate("window.WSCORE.topicsOf(window.WS.state.items)[1].id") + ',')
+        check(tag + ': no console errors', not errs, errs)
+        ctx.close()
+
 def ctx3(br, vw=1470, vh=956, phone=False, pref='3d', extra=''):
     ctx = br.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=3 if phone else 1, has_touch=phone, is_mobile=phone)
     ctx.add_init_script(RAF0 + (f"localStorage.setItem('bb-map-view', '{pref}');" if pref else '') + "window.__wsm3dRotate = 3;" + extra)
@@ -328,7 +382,7 @@ def map3d(br):
     pg.emulate_media(reduced_motion='no-preference')
     # Norwegian
     pg.click('.langseg button[data-v="no"]'); ready3(pg)
-    check('3d: Norwegian', pg.evaluate('window.WS.map.debug.regions')[-1] == 'Uten fly' and pg.get_attribute('.wsm-qi', 'placeholder') == 'Finn på kartet' and 'Tilbakestill' in pg.inner_text('.wsm-zm'), pg.evaluate('window.WS.map.debug.regions'))
+    check('3d: Norwegian', pg.evaluate('window.WS.map.debug.regions')[-1] == 'Usortert' and pg.get_attribute('.wsm-qi', 'placeholder') == 'Finn på kartet' and 'Tilbakestill' in pg.inner_text('.wsm-zm'), pg.evaluate('window.WS.map.debug.regions'))
     pg.click('.langseg button[data-v="en"]')
     check('3d desktop: no console errors', not errs, errs); ctx.close()
 
@@ -362,6 +416,7 @@ with sync_playwright() as p:
     for (vw, vh, tag) in [(1470, 956, 'desktop'), (390, 844, 'phone')]:
         partial(br, vw, vh, tag)
     no_aircraft(br)
+    groups(br)
     for (vw, vh, tag) in [(1470, 956, 'desktop'), (390, 844, 'phone')]:
         ctx = br.new_context(viewport={'width': vw, 'height': vh}, device_scale_factor=2 if tag == 'phone' else 1, has_touch=tag == 'phone', is_mobile=tag == 'phone')
         ctx.add_init_script(RAF)
@@ -381,7 +436,7 @@ with sync_playwright() as p:
         if tag == 'phone': pg.evaluate('window.scrollTo(0, 0)'); pg.wait_for_timeout(100)
         check(tag + ': Map is in the workspace navigation', pg.locator('#wsRail a[href="#/map"].on').count() == 1)
         pg.screenshot(path=f'{SHOTS}/{tag}-map-example.png')
-        check(tag + ': example laid out as a cloud, every dot in its group', st['cloud'] and st['inside'], st)
+        check(tag + ': example laid out as a cloud, every dot in its group; the fourth cloud is the topic Theory', st['cloud'] and st['inside'] and st['regions'] == ['DA42', 'B200', 'C172', 'Theory'], st)
         names_ok(pg, tag + ' example', '#wsMapHost', 4)
         # hover (or tap) a note: card explains it, neighbours light up, a pulse runs and then stops
         i = pg.evaluate("window.WS.map.graph.nodes.findIndex(n => n.k === 'note' && n.deg >= 1)")
