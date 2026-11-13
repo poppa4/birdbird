@@ -253,7 +253,7 @@ function stepGround(s,dt,at,wN,wE){
   if(Math.abs(s.Vg)>3 && !onRunway(s) && !AC.field) return crash(s,'Ran off the runway');
   // løft av
   if(L+(Tl+Tr)*Math.sin(a)>W*1.01 && Va>25){
-    s.ground=false; s.h=WORLD.elev+0.05; s.u=Va*Math.cos(a); s.w=Va*Math.sin(a); s.v=0; s.p=0; s.r=0; s.landed=null;
+    s.ground=false; s.h=WORLD.elev+0.05; s.u=Va*Math.cos(a); s.w=Va*Math.sin(a); s.v=wN*hy-wE*hx; s.p=0; s.r=0; s.landed=null; // v: the crosswind stays with the air, the wheels leave the ground going straight (v=0 made the aeroplane jump sideways at the full crosswind speed)
   }
 }
 

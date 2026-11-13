@@ -19,12 +19,27 @@ const GP=3.0, TCH=50, THR=FIX.RW36;
 
 /* ---------- aircraft numbers used by auto-fly ---------- */
 const TY={
-  C172:{alt0:2500,vInit:90,vApp:80,vFinal:70,vClimb:75,vCruise:100,vHold:90,vsClimb:600,vsDesc:600,vsMax:900,flare:22,retract:false,ldgFlap:1,
+  C172:{alt0:2500,vInit:90,vApp:80,vFinal:70,vClimb:75,vCruise:100,vHold:90,vsClimb:600,vsDesc:600,vsMax:900,retract:false,ldgFlap:1,
         climbThr:1,idle:0,max:1,kp:0.004,kd:0.02,cruiseAlt:3000,sidAlt:400,starAlt:4000},
-  DA42:{alt0:3000,vInit:120,vApp:110,vFinal:95,vClimb:92,vCruise:135,vHold:120,vsClimb:800,vsDesc:800,vsMax:1200,flare:24,retract:true,ldgFlap:1,
+  DA42:{alt0:3000,vInit:120,vApp:110,vFinal:95,vClimb:92,vCruise:135,vHold:120,vsClimb:800,vsDesc:800,vsMax:1200,retract:true,ldgFlap:1,
         climbThr:0.92,idle:0,max:1,kp:0.004,kd:0.02,cruiseAlt:3000,sidAlt:450,starAlt:5000},
-  B200:{alt0:3000,vInit:160,vApp:140,vFinal:108,vClimb:150,vCruise:180,vHold:160,vsClimb:1500,vsDesc:1000,vsMax:1800,flare:28,retract:true,ldgFlap:1,
+  B200:{alt0:3000,vInit:160,vApp:140,vFinal:108,vClimb:150,vCruise:180,vHold:160,vsClimb:1500,vsDesc:1000,vsMax:1800,retract:true,ldgFlap:1,
         climbThr:0.85,idle:0,max:1,kp:0.003,kd:0.015,cruiseAlt:5000,sidAlt:500,starAlt:5000}
+};
+/* ---------- the landing, one table for the three types ----------
+   cfgNm    auto-fly sets the gear and the approach flap (ldgFlap) itself this far out when the student has not
+   xw       demonstrated crosswind (kt): above it auto-fly says so and goes around at minimums
+   vAdd     most speed added to vFinal for wind (half the steady headwind plus the gust increment), kt
+   bank     bank held against the crosswind in the last 20 ft (wing-low; wingtip / propeller clearance), deg. What that bank cannot
+            hold stays as crab. Corrections may use 2° more; 15° above 100 ft
+   decrab   height (ft) below which the rudder lines the nose up with the runway
+   flare    height (ft) below which the power comes off; tau (s) and tdVs (ft/min) shape the flare: the sink rate asked for is
+            tdVs + (height − 3 ft) / tau, so the flare starts where that line meets the approach sink rate (no step)
+   commit   height (ft) below which an unstable approach is no longer turned into a go-around */
+const LDG={
+  C172:{cfgNm:6.5,xw:15,vAdd:10,bank:4,decrab:30,flare:18,tau:2.5,tdVs:140,idleRate:0.5,commit:12},
+  DA42:{cfgNm:6.5,xw:25,vAdd:10,bank:4,decrab:35,flare:22,tau:2.5,tdVs:150,idleRate:0.5,commit:15},
+  B200:{cfgNm:6.5,xw:25,vAdd:12,bank:4,decrab:40,flare:28,tau:3,tdVs:150,idleRate:0.5,commit:18}
 };
 
 /* ---------- procedures ---------- */
@@ -140,9 +155,10 @@ const pathFt=d=>TCH+d*Math.tan(GP*D2R)/FT;
 
 /* ---------- auto-fly controller ----------
    env: {type, S, F, AP (real autopilot or null), nav:()=>page nav source for the real AP, power:{get,set}, say:(msg,cls)=>void,
-         gps:()=>DA42 GPS nav or null, useLoc:()=>void (CDI to the localizer), cfg:()=>({gear,flap}), onOff:()=>void } */
+         gps:()=>DA42 GPS nav or null, useLoc:()=>void (CDI to the localizer), cfg:()=>({gear,flap}),
+         config:{gear:()=>void (gear handle down), flap:n=>void} (the page's own gear and flap controls), onOff:()=>void } */
 function autofly(env){
-  const F=env.F, S=env.S, T=TY[env.type]||TY.DA42, real=!!env.AP;
+  const F=env.F, S=env.S, T=TY[env.type]||TY.DA42, LT=LDG[env.type]||LDG.DA42, real=!!env.AP;
   const iap=F.mkAP();
   const AF={on:false,hand:false,key:null,D:null,segs:[],si:0,li:0,legA:null,ph:'',hs:null,rec:{},msgT:0,u:0,acc:0,lastIas:null,pathOn:false,said:{},status:'',fix:null,mode:''};
   const L=x=>(G.LAB&&LAB.L)?LAB.L(x):(x&&x.en)||x;
@@ -150,7 +166,7 @@ function autofly(env){
   const drv=()=>AF.hand||!real?iap:env.AP;
   const geoNav=()=>F.nav(S,'LOC',360);
   AF.setProc=function(k,caps){ AF.key=k; AF.D=def(k,env.type,caps); AF.reset(); };
-  AF.reset=function(){ AF.segs=AF.D?AF.D.segs.slice():[]; AF.si=0; AF.li=0; AF.legA=null; AF.ph=''; AF.hs=null; AF.rec={}; AF.pathOn=false; AF.said={}; AF.fix=null; AF.hand=false; AF.landT=0; AF.gsOutWarned=0; };
+  AF.reset=function(){ AF.segs=AF.D?AF.D.segs.slice():[]; AF.si=0; AF.li=0; AF.legA=null; AF.ph=''; AF.hs=null; AF.rec={}; AF.pathOn=false; AF.said={}; AF.fix=null; AF.hand=false; AF.landT=0; AF.gsOutWarned=0; AF.LD=null; AF.balk=false; };
   AF.hands=()=>AF.on&&(AF.hand||!real);
   AF.engage=function(){
     if(!AF.D){ return false; }
@@ -161,11 +177,11 @@ function autofly(env){
     if(real){ const A=env.AP; if(!A.on){ A.on=true; A.fd=true; A.phiCmd=o.roll; A.thCmd=o.pitch; if(!A.lat){ A.lat='HDG'; A.hdg=Math.round(o.hdg); } if(!A.vert){ A.vert='ALT'; A.altHold=Math.round(o.alt); } env.apOn&&env.apOn(); } }
     AF.si=Math.min(AF.si,AF.segs.length-1); AF.legA=null;
     say(env.type==='C172'?tr('Instructor has control — you run the checklists. Move the controls to take over.','Instruktøren har kontrollene — du tar sjekklistene. Beveg rattet for å ta over.')
-      :tr('Auto-fly on: the autopilot flies the procedure and the speed — you run the checklists, gear and flaps.','Autofly på: autopiloten flyr prosedyren og farten — du tar sjekklister, understell og flaps.'),'ok');
+      :tr('Auto-fly on: the autopilot flies the procedure and the speed. You run the checklists, gear and flaps; auto-fly sets them on final if you have not.','Autofly på: autopiloten flyr prosedyren og farten. Du tar sjekklister, understell og flaps; autofly setter dem på finalen hvis du ikke har gjort det.'),'ok');
     return true; };
   AF.off=function(why,quiet){
     if(!AF.on) return; const wasHand=AF.hand||!real; AF.on=false; AF.hand=false; iap.on=false;
-    if(S.ctl){ if(wasHand&&S.ground){ S.ctl.ail=0; S.ctl.ele=0; } }
+    if(S.ctl){ if(wasHand&&S.ground){ S.ctl.ail=0; S.ctl.ele=0; S.ctl.rud=0; } }
     env.onOff&&env.onOff(why);
     if(quiet) return;
     if(why==='stick') say(env.type==='C172'?tr('You have control — instructor hands off.','Du har kontrollene — instruktøren slipper.'):tr('Auto-fly off: you moved the controls — you have control.','Autofly av: du beveget rattet — du har kontrollene.'),'bad');
@@ -187,10 +203,21 @@ function autofly(env){
     const icpt=clamp(-g.xtk*k,-(maxI||45),(maxI||45)); const drift=w180(o.hdg-o.trk); hdg(g.dtk+icpt+(o.gs>20?drift:0)); return g; }
   function antic(o,d1,d2){ const V=Math.max(30,o.gs)*KT, r=V*V/(9.81*Math.tan(22*D2R)), dl=Math.abs(w180(d2-d1)); return Math.min(2.5*NM,r*Math.tan(Math.min(150,dl)/2*D2R)); }
   function arm(key,navS){ const A=drv(); if(A.lat==='LOC'||A.lat==='GPS'||A.latArm===key) return; const o=F.readouts(S); F.apSet(A,S,o,key,navS); }
+  /* ---- wind as reported (kt): crosswind (+ from the right of runway 36), headwind, and the gust increment taken from the turbulence
+     setting (twice the RMS gust). Final approach speed: vFinal + half the steady headwind + the whole gust increment, capped. ---- */
+  function wind(){ const e=S.env||{}, a=(e.wdir||0)*D2R, w=e.wspd||0, tb=F.TURB?F.TURB.sw*F.TURB.uv:3.1;
+    return {xw:w*Math.sin(a),hw:w*Math.cos(a),gust:2*tb*clamp(e.turb||0,0,1)/KT}; }
+  function vFin(){ const w=wind(); return T.vFinal+clamp(0.5*Math.max(0,w.hw)+w.gust,0,LT.vAdd); }
+  /* ---- on final, cfgNm from the threshold: gear down and approach flap if the student has not set them (what is set is left alone) ---- */
+  function configure(seg){
+    if(AF.said.cfg||AF.ph||S.ground||!seg||seg.t!=='final'||AF.wantLand===false||!env.config||dThr(S)>LT.cfgNm*NM) return;
+    AF.said.cfg=1; const c=env.cfg(), g=T.retract&&c.gear<1&&!!env.config.gear, f=c.flap<T.ldgFlap&&!!env.config.flap; if(!g&&!f) return;
+    if(g) env.config.gear(); if(f) env.config.flap(T.ldgFlap);
+    say(g&&f?tr('Auto-fly: gear down, flaps approach.','Autofly: understell ned, flaps approach.'):g?tr('Auto-fly: gear down.','Autofly: understell ned.'):tr('Auto-fly: flaps approach.','Autofly: flaps approach.'),'ok'); }
   /* ---- speed: power for the target speed ---- */
   function speedTarget(o,seg){ const c=env.cfg(); const ldg=(!T.retract||c.gear>=1)&&c.flap>=T.ldgFlap;
     if(AF.ph==='ga'||(seg&&seg.climb)) return T.vClimb;
-    if(seg&&seg.t==='final'){ const d=dThr(S)/NM; if(d<6.5&&ldg) return T.vFinal; if(d<9) return T.vApp; return T.vInit; }
+    if(seg&&seg.t==='final'){ const d=dThr(S)/NM; if(d<6.5&&ldg) return vFin(); if(d<9) return T.vApp; return T.vInit; }
     if(seg&&seg.t==='hold') return T.vHold; if(seg&&seg.t==='cruise') return AF.key==='free'?T.vCruise:T.vInit; return T.vInit; }
   function power(o,dt,vt,climb){
     if(AF.lastIas!=null&&dt>0) AF.acc+=(((o.ias-AF.lastIas)/dt)-AF.acc)*Math.min(1,dt*2); AF.lastIas=o.ias;
@@ -202,13 +229,14 @@ function autofly(env){
     if(!AF.on||dt<=0) return;
     const o=F.readouts(S);
     if(S.crash){ AF.off('ground',true); return; }
-    if(S.ground&&AF.ph!=='land'){ AF.off('ground'); return; }
+    if(AF.balk&&!S.ground&&o.agl>100) AF.balk=false;
+    if(S.ground&&AF.ph!=='land'&&!AF.balk){ AF.off('ground'); return; }
     if(real&&!AF.hand&&!env.AP.on){ AF.off('ap'); return; }
     if(AF.ph==='land'){ landTick(o,dt); return; }
     const seg=AF.segs[AF.si]; if(!seg){ AF.off('done'); return; }
     let climb=false;
     if(seg.t==='legs') climb=legsTick(o,dt,seg);
-    else if(seg.t==='final') finalTick(o,dt,seg);
+    else if(seg.t==='final'){ finalTick(o,dt,seg); configure(seg); }
     else if(seg.t==='hold') holdTick(o,dt,seg);
     else if(seg.t==='cruise'){ if(AF.cruiseHdg==null) AF.cruiseHdg=seg.hdg!=null&&AF.key==='free'?seg.hdg:Math.round(o.hdg); hdg(AF.cruiseHdg); toAlt(o,seg.alt); AF.mode='HDG · ALT'; }
     const vt=speedTarget(o,seg); AF.vt=vt;
@@ -219,7 +247,9 @@ function autofly(env){
   };
   AF.sub=function(o,h){ // per physics substep, only while auto-fly flies by hand (C172, or landing)
     if(!AF.hands()) return;
-    if(S.ground){ const C=S.ctl; const n=geoNav(); const xt=(S.E-THR.E); C.ail=0; C.ele=-0.25; C.rud=clamp(-0.006*xt-0.06*w180(o.hdg-360),-0.6,0.6); if(AF.landT>0.6) C.brake=1; return; }
+    if(AF.ph==='land'){ landSub(o,h); return; }
+    if(S.ground){ if(AF.balk) rollSub(o,h,false); return; } // wheels touched in a go-around from the flare: keep straight, keep going
+    if(AF.LD){ AF.LD=null; S.ctl.rud=0; }
     if(!iap.on){ iap.on=true; iap.phiCmd=o.roll; iap.thCmd=o.pitch; }
     F.apRun(iap,S,o,AF.navS||geoNav(),h);
   };
@@ -290,31 +320,96 @@ function autofly(env){
   function decide(o){
     const g=geoNav(); const d=dThr(S);
     AF.rec.mins={alt:o.alt,locDots:g.valid?g.dev:null,gsDots:g.gs?g.gs.dev:null,xtk:S.E-THR.E,vdev:o.alt-pathFt(d),ias:o.ias,d:d/NM};
-    const c=env.cfg(); const cfgOk=(!T.retract||c.gear>=1)&&c.flap>=T.ldgFlap; const lined=Math.abs(S.E)<150&&Math.abs(w180(o.trk-360))<12;
-    if(AF.wantLand!==false&&cfgOk&&lined){ startLand(o); }
-    else { startGA(o,!cfgOk); }
+    const c=env.cfg(); const cfgOk=(!T.retract||c.gear>=1)&&c.flap>=T.ldgFlap; const lined=Math.abs(S.E-THR.E)<Math.min(150,30+0.03*d)&&Math.abs(w180(o.trk-360))<12;
+    const xw=Math.abs(wind().xw);
+    if(AF.wantLand===false||!lined) startGA(o);
+    else if(!cfgOk) startGA(o,'cfg');
+    else if(xw>LT.xw+0.5) startGA(o,'xw',Math.round(xw));
+    else startLand(o);
   }
+  /* ---- the landing: auto-fly flies it by hand from minimums (landSub, every physics step); the real autopilot is off ---- */
   function startLand(o){
+    const A0=drv();
     AF.rec.decision='land'; AF.ph='land'; AF.landT=0;
     if(real&&env.AP.on){ env.AP.on=false; env.AP.msg=''; env.apOff&&env.apOff(); }
-    AF.hand=true; Object.assign(iap,F.mkAP()); iap.on=true; iap.fd=true; iap.phiCmd=o.roll; iap.thCmd=o.pitch; iap.lat='LOC'; iap.vert='VS'; iap.vsRef=Math.round(o.vs); iap.alt=0; AF.navS=null;
+    AF.hand=true; Object.assign(iap,F.mkAP()); iap.fd=true; iap.lat='LOC'; iap.vert='VS'; iap.vsRef=Math.round(o.vs); iap.alt=0; AF.navS=null;
+    // the commands start where the autopilot's were: no step in bank, pitch or rudder
+    AF.LD={phi:A0.phiCmd||o.roll,th:A0.thCmd||o.pitch,ny:0,nz:1,rudI:clamp((S.ctl.rud||0)-3*(S.beta||0),-0.9,0.9),w:0,gT:0,ele0:0,brk:0,vsC:o.vs};
     say(real?tr('Minimums — landing. Autopilot off: auto-fly flies the landing.','Minima — landing. Autopilot av: autofly lander.'):tr('Minimums — landing.','Minima — landing.'),'ok');
   }
-  function startGA(o,cfg){
-    AF.rec.decision='ga'; AF.ph='ga'; AF.u=1; env.power.set(1);
-    say(cfg?tr('Minimums — not in landing configuration: GO AROUND. Power, flaps, positive rate, gear up.','Minima — ikke i landingskonfigurasjon: GÅ RUNDT. Effekt, flaps, positiv stigning, understell opp.')
-       :tr('Minimums — GO AROUND. Power, flaps, positive rate, gear up.','Minima — GÅ RUNDT. Effekt, flaps, positiv stigning, understell opp.'),'bad');
+  function startGA(o,why,n){
+    const land=AF.ph==='land';
+    AF.rec.decision='ga'; AF.rec.gaWhy=why||'mins'; AF.ph='ga'; AF.u=1; env.power.set(1);
+    const X=tr(' Power, flaps, positive rate, gear up.',' Effekt, flaps, positiv stigning, understell opp.'), M=(en,no)=>tr(en+X.en,no+X.no);
+    say(why==='cfg'?M('Minimums — not in landing configuration: GO AROUND.','Minima — ikke i landingskonfigurasjon: GÅ RUNDT.')
+       :why==='xw'?M(`Minimums — crosswind ${n} kt is above the demonstrated ${LT.xw} kt: GO AROUND.`,`Minima — sidevind ${n} kt er over demonstrert ${LT.xw} kt: GÅ RUNDT.`)
+       :why==='unstable'?M('Not stable — GO AROUND.','Ikke stabil — GÅ RUNDT.')
+       :M('Minimums — GO AROUND.','Minima — GÅ RUNDT.'),'bad');
+    if(land){ const D=AF.LD; Object.assign(iap,F.mkAP()); iap.on=true; iap.fd=true; iap.phiCmd=D.phi; iap.thCmd=D.th; S.ctl.rud=0; S.ctl.brake=0; AF.balk=true; AF.LD=null; }
     const A=drv(); A.vertArm=''; A.latArm=''; if(A.lat!=='HDG'){ A.lat='HDG'; A.hdg=360; } vVS(T.vsClimb,3000);
     AF.segs=AF.segs.slice(0,AF.si).concat(missedSegs()); AF.si=AF.segs.length-2; AF.li=0; AF.legA=null; AF.ph='';
   }
+  /* per frame: glide path, speed, the go-around gate; after touchdown the power is off and auto-fly hands back when stopped */
   function landTick(o,dt){
-    const A=iap; const d=dThr(S);
-    if(S.ground){ AF.landT+=dt; env.power.set(T.idle); if(!AF.rec.landed){ AF.rec.landed={vs:S.landed?S.landed.vs:null,d:S.N}; } if(Math.abs(S.Vg)<2.5&&AF.landT>2){ AF.off('landed'); } AF.status=statusText(o); return; }
-    A.lat='LOC'; const agl=o.agl;
-    if(agl>T.flare){ const hT=pathFt(Math.max(0,d)); const vsNom=-o.gs*KT*Math.tan(GP*D2R)/FPM; A.vert='VS'; A.vsRef=clamp(vsNom+clamp((hT-o.alt)*2,-300,300),-900,0);
-      power(o,dt,T.vFinal,false); }
-    else { A.vert='VS'; A.vsRef=-clamp(120+agl*6,120,400); AF.u=Math.max(T.idle,AF.u-dt*0.8); env.power.set(AF.u); }
-    AF.mode=L(tr('LAND','LAND')); AF.status=statusText(o);
+    const D=AF.LD, d=dThr(S), agl=o.agl; AF.mode=L(tr('LAND','LAND'));
+    if(S.ground){ AF.landT+=dt; AF.u=T.idle; env.power.set(T.idle); if(!AF.rec.landed){ AF.rec.landed={vs:S.landed?S.landed.vs:null,d:S.N}; } if(Math.abs(S.Vg)<2.5&&AF.landT>2){ AF.off('landed'); } AF.status=statusText(o); return; }
+    const vt=vFin(); AF.vt=vt;
+    // not stable above the commit height, or still floating half-way down the runway: go around. The centreline limit tightens
+    // towards the runway (5 m + 0.2 m per ft).
+    if(!D.td){ const y=Math.abs(S.E-THR.E), half=(F.WORLD&&F.WORLD.rwy?F.WORLD.rwy.len:1500)/2;
+      if(-d>half||(agl>LT.commit&&(y>5+0.2*agl||Math.abs(o.roll)>25||o.ias<T.vFinal-10||(agl<100&&o.vs<-1100)||-d>half-150))){ startGA(o,'unstable'); return; } }
+    if(agl>LT.flare&&!D.td) power(o,dt,vt,false);
+    else { AF.u=Math.max(T.idle,AF.u-dt*LT.idleRate); env.power.set(AF.u); }
+    iap.vsRef=D.vsC; AF.status=statusText(o);
+  }
+  /* per physics step, in the air: bank for the centreline, pitch for the path and the flare, rudder for balance and then for the runway heading */
+  function landSub(o,h){
+    const C=S.ctl, D=AF.LD, AC=F.AC; if(S.ground){ rollSub(o,h,true); return; }
+    if(D.gT>0){ D.gT=0; D.th=o.pitch; } // a skip: fly the flare again
+    const agl=o.agl, V=Math.max(20,o.tas*KT), y=S.E-THR.E, yd=S.vE||0, d=dThr(S), b=S.beta||0, q=0.5*1.225*Math.pow(Math.max(20,o.ias)*KT,2);
+    // centreline: lateral acceleration from position and drift (0.35 rad/s, well damped) → bank; the side force of a slip is balanced by bank
+    D.ny+=((S.ny||0)-D.ny)*Math.min(1,h/0.4);
+    const lim=LT.bank+2+(13-LT.bank)*clamp((agl-20)/80,0,1);
+    const phiC=clamp((-(0.1225*y+0.63*yd)/9.81-D.ny)*R2D,-lim,lim);
+    D.phi+=clamp(phiC-D.phi,-10*h,10*h);
+    C.ail=clamp(0.09*(D.phi-o.roll)-1.2*S.p-(AC.Clb*b+AC.ClR*C.rud)/AC.ClA,-0.8,0.8); // the last term holds the wing against the slip
+    // rudder: balanced flight on the way down (crab into the wind). Below the de-crab height the nose comes round to the runway
+    // heading (wing-low), as far as the bank allowed near the ground can hold the slip; the rest stays as crab for the roll-out.
+    D.rudI=clamp(D.rudI+b*h*3,-0.9,0.9);
+    const co=clamp(3*b+D.rudI-0.5*S.r,-1,1);
+    D.w+=clamp((agl<LT.decrab?1:0)-D.w,-h/1.5,h/1.5);
+    let rud=co;
+    if(D.w>0){ const crab=Math.asin(clamp(wind().xw*KT/V,-0.5,0.5)), need=q*AC.S*Math.abs((AC.CYb+AC.CYR*AC.Cnb/AC.CnR)*crab)/(AC.m*9.81)*R2D;
+      const e=(D.td?0:crab*(1-clamp(LT.bank/Math.max(0.1,need),0,1)))-w180(o.hdg-360)*D2R, bv=AC.b/(2*V);
+      const dc=clamp((AC.Izz*(6.25*e-4.5*S.r)/(q*AC.S*AC.b)-AC.Cnb*b-AC.Cnr*S.r*bv-AC.Cnp*S.p*bv-AC.CnA*C.ail)/AC.CnR,-1,1);
+      rud=co+(dc-co)*D.w; }
+    C.rud=rud;
+    // path, then the flare: the less steep of the glide path and the flare line; in the last 60 ft a high path is no longer chased
+    const hT=pathFt(Math.max(0,d)), vsNom=-o.gs*KT*Math.tan(GP*D2R)/FPM;
+    const vsGP=clamp(vsNom+clamp((hT-o.alt)*2,agl<60?0:-300,300),-T.vsMax,0), vsFl=-(LT.tdVs+Math.max(0,agl-3)*60/LT.tau); // steady sink for the last 3 ft: the wheels go on and stay on
+    const vsC=D.vsC=Math.max(vsGP,vsFl);
+    // pitch for that sink rate, less the rate at which the flight path is already bending (0.6 of the aeroplane's own heave time
+    // constant ahead: no overshoot, no ballooning). A sink rate well beyond the one asked for near the ground is stopped faster, and
+    // the main wheels go on first (1° nose-up or more below 6 ft).
+    D.nz+=((S.nz||1)-D.nz)*Math.min(1,h/0.15);
+    const gam=Math.asin(clamp(o.vs*FPM/V,-1,1))*R2D, dg=Math.asin(clamp(vsC*FPM/V,-0.5,0.5))*R2D-gam-0.6*AC.m/(0.5*1.225*V*AC.S*AC.CLa)*9.81*(D.nz-1)/V*R2D, low=agl<30;
+    const thC=clamp(o.pitch+dg,agl<6?1:-10,15), up=low&&o.vs<vsC-150?10:6;
+    if(D.td&&agl<2) D.th+=clamp(0.5-D.th,-8*h,6*h); // the wheels have touched and skipped: put it back on, nose low, so it stays on
+    else D.th+=clamp(thC-D.th,-3*h,up*h);
+    const e=clamp(0.2*(D.th-o.pitch)-2.0*S.q,-0.8,0.8); C.ele=e; C.trim=clamp(C.trim+e*0.9*h,-1,1);
+    D.ele0=e;
+  }
+  /* on the runway: lower the nose, steer for the centreline, aileron into the wind, brakes. While the nose is well up the rudder
+     steers; from just above 1° down the pedals are all but centred, because the nose wheel steers with them the moment it touches. */
+  function rollSub(o,h,stop){
+    const C=S.ctl, D=AF.LD||(AF.LD={gT:0,ele0:C.ele,brk:0}), AC=F.AC, V=Math.max(1,S.Vg), w=wind();
+    D.gT+=h; if(stop) D.td=true;
+    C.ele=stop?D.ele0+(-0.25-D.ele0)*clamp(D.gT/1.2,0,1):0.1;
+    C.ail=stop?clamp(1.5*w.xw/Math.max(30,o.ias),-0.8,0.8):0;
+    const psi=w180(o.hdg-360)*D2R, chi=clamp(-(S.E-THR.E)/Math.max(60,3*V),-0.2,0.2), rc=clamp(3*(chi-psi),-0.4,0.4);
+    if(S.th<1.3*D2R) C.rud=clamp(Math.atan(rc*AC.wheelbase/V)/(14*D2R),-1,1);
+    else { const q=0.5*1.225*Math.pow(Math.max(15,o.ias)*KT,2); C.rud+=(clamp(AC.Izz*(1.5*rc+3*(rc-S.r))/(q*AC.S*AC.b*AC.CnR),-0.6,0.6)-C.rud)*Math.min(1,h/0.12); }
+    if(stop&&D.gT>0.6){ D.brk=Math.min(1,D.brk+h/1.0); C.brake=D.brk; }
   }
   function holdTick(o,dt,seg){
     const F0=FIX[seg.fix], inb=seg.inb, out=w360(inb+180), dir=seg.dir||1;

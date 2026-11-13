@@ -355,10 +355,10 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
 <script src="three.min.js"></script>
 <script src="simterrain.js?v=3"></script>
-<script src="fdm.js?v=11"></script>
+<script src="fdm.js?v=12"></script>
 <script src="flightkeys.js?v=3"></script>
 <script src="fms.js?v=4"></script>
-<script src="airproc.js?v=5"></script>
+<script src="airproc.js?v=7"></script>
 <script src="simdebrief.js?v=6"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=6"></script>
@@ -466,7 +466,7 @@ const SCEN=[
 /* ---------- airborne procedures and auto-fly (airproc.js) ---------- */
 const AIRCAPS={gps:'fms',adf:false}; let AIRK='ils';
 const AF=AIRPROC.autofly({type:'DA42',S,F,AP,nav:()=>curNav.cdi,gps:()=>curNav.gps,power:{get:()=>{ const l=S.eng.filter(e=>!e.fail); return l.length?l.reduce((a,e)=>a+e.thr,0)/l.length:0; },set:v=>{ S.eng.forEach(e=>{ if(!e.fail) e.thr=F.clamp(v,0,1); }); }},
-  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:S.ctl.gear,flap:S.ctl.flap}),
+  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:S.ctl.gear,flap:S.ctl.flap}),config:{gear:()=>{ if(S.ctl.gear<1) toggleGear(); },flap:n=>setFlap(n)},
   useLoc:()=>{ const n=XA.radio.nav[0]; if(n.act!=='110.30'){ n.stby=n.act; n.act='110.30'; } XA.cdi='NAV1'; XA.crs[0]=360; },apOff:()=>{ beep(500,0.35,0.05); },onOff:why=>{ if(why==='landed'||S.ground){ S.ctl.rud=0; rud.set(0); } holdRoll=null; holdPitch=null; airUI(); }});
 function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
   /* autopilot OFF: the pilot hand-flies from a trimmed start (place() trims for the start speed). Heading bug and selected

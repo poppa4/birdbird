@@ -413,7 +413,7 @@ function procSet(p){ const kind=p.set;
 /* ---------- airborne procedures and the "instructor" auto-fly (airproc.js); the C172 has no autopilot ---------- */
 const AIRCAPS={gps:null,adf:true}; let AIRK='ils';
 const AF=AIRPROC.autofly({type:'C172',S,F,AP:null,power:{get:()=>SYS.thr,set:v=>{ SYS.thr=F.clamp(v,0,1); }},
-  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:1,flap:S.ctl.flap}),onOff:()=>{ holdRoll=null; holdPitch=null; airUI(); }});
+  say:(m,c)=>{ pill(m,c==='bad'?'bad':'ok'); flash(m); },cfg:()=>({gear:1,flap:S.ctl.flap}),config:{flap:n=>setFlap(n)},onOff:()=>{ holdRoll=null; holdPitch=null; airUI(); }});
 function airUI(){ if(!AIRUI) return; AIRUI.draw(PR.k==='air'?AIRK:PR.k==='free'?'free':'',AF.on,PR.k&&PR.k!=='air'&&PR.k!=='free'?PR.k:null); }
 function pickProc(k){ AIRK=k==='free'?AIRK:k; procStart(k==='free'?'free':'air'); }
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k!=='air'&&PR.k!=='free'){ pickProc(AIRK); } AF.engage(); } airUI(); }

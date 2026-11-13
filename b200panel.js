@@ -30,10 +30,11 @@ const REG={
   fuelT:sh([4,1106,524,160],DY), fuelB:sh([4,1262,500,218],DY),
   pedT:sh([688,1106,624,212],DY), pedB:sh([664,1290,660,160],DY), audio:sh([740,1440,520,200],DY),
   rsideT:sh([1522,1106,476,190],DY), rsideB:[1522,1430,476,H-1430],
-  /* EFIS focus views (EADI over EHSI of one side); not in REG_ORDER, so a click never picks them as a cluster */
-  efisL:PR(184,192,348,470), efisR:PR(954,177,1099,463)
+  /* EFIS areas: the EADI and EHSI of one side together with what works them — the EFIS control strip on the pedestal (course source,
+     bearing pointers, ARC, ET, DIM) and the course / heading knobs. A tap on a display face (EFISF) zooms here. */
+  efisL:[235,495,860,1040], efisR:[695,473,1032,1062]
 };
-/* display faces (EADI, EHSI) of each EFIS focus view: a click on one opens that view */
+/* display faces (EADI, EHSI) of each side: a tap on one zooms to that side's EFIS area */
 const EFISF={efisL:[PR(190,198,330,329),PR(209,332,342,464)],efisR:[PR(969,183,1093,320),PR(960,322,1092,457)]};
 const REG_ORDER=['fuelT','fuelB','rsideT','rsideB','audio','pedT','pedB','lower','rsub','center','cosubL','cosubR','overheadL','overheadR','glare','engT','engB','apfd','centreM','radio1','mfd','flightT','flightB','copilotT','copilotB'];
 

@@ -59,8 +59,8 @@ function run(type,key,opt){ opt=opt||{};
   ok('C172 ILS: lands without a crash ('+r.S.crash+')',!r.S.crash&&!!r.AF.rec.landed); }
 { const r=run('DA42','loc'); const m=r.AF.rec.mins;
   ok('DA42 LOC: reaches MDA on the 3° path (±80 ft)',m&&Math.abs(m.vdev)<80&&Math.abs(m.locDots)<0.3); }
-{ const r=run('B200','ils',{noCfg:true,stop:(AF)=>AF.rec.hold&&AF.rec.hold.n>=1,T:2500});
-  ok('B200 ILS without landing configuration: goes around',r.AF.rec.decision==='ga');
+{ const r=run('B200','ils',{noCfg:true,stop:(AF)=>AF.rec.hold&&AF.rec.hold.n>=1,T:2500}); // no gear / flap controls given to auto-fly (env.config), none set by the student
+  ok('B200 ILS without landing configuration: goes around',r.AF.rec.decision==='ga'&&r.AF.rec.gaWhy==='cfg');
   ok('B200 missed approach: one circuit of the HOLAN hold at 3000 ft (±200)',r.AF.rec.hold&&r.AF.rec.hold.maxDev<200); }
 { const r=run('C172','hold',{stop:(AF)=>AF.rec.hold&&AF.rec.hold.n>=1});
   ok('C172 RONAX hold: one circuit within 200 ft',r.AF.rec.hold&&r.AF.rec.hold.n>=1&&r.AF.rec.hold.maxDev<200); }
