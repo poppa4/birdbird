@@ -10,7 +10,12 @@
 <style>
 /* ---------- cockpit stage: one view that always fits ---------- */
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
-.stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
+.stage>canvas#otw,.stage>.otwsky{position:absolute;left:0;top:0;width:100%;height:46%;display:block;transform-origin:0 0;transition:transform .25s cubic-bezier(.3,.7,.2,1)}
+/* without the live outside view (off, no WebGL, not ready yet): a static sky and horizon in the same place (no per-frame work);
+   --hz: the level-flight horizon row, set with the fit. Colours from otw.js's sky and far terrain. */
+.stage>.otwsky{background:linear-gradient(#4f86d3 0,#a9c6e6 calc(var(--hz,30%) - 40px),#d6e3ee var(--hz,30%),#b4c6a4 var(--hz,30%),#86a865 calc(var(--hz,30%) + 40px),#5f8a40 100%)}
+.stage.otwlive>.otwsky{display:none}
+.stage>canvas#otw.nt,.stage>.otwsky.nt{transition:none}
 /* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
    pointer): Chrome keeps a touch-action region for every painted panel part and rebuilds it on each repaint */
 @media (any-pointer:coarse){.stage{touch-action:none}}.stage.tact{touch-action:none}
@@ -199,7 +204,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
-        <canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack" type="button">← Back</button>
         <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
@@ -312,7 +317,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=6"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=4"></script>
+<script src="panelzoom.js?v=5"></script>
 <script src="da42panel.js?v=7"></script>
 <script src="da42procs.js?v=4"></script>
 <script src="ownck.js?v=3"></script>
@@ -554,10 +559,25 @@ function zoomTo(reg,instant,force){
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.12);
   PST.classList.toggle('zoomed',!ov); if(window.PANELZOOM&&PANELZOOM.dim) PANELZOOM.dim(PST,Z,ov?null:P.REG[reg]);
-  if(ov&&window.OTW&&OTW.frame) OTW.frame({lip:ty+DA42P.LIP*s,nose:OTW_NOSE,cx:tx+510*s}); // cx: straight ahead of the left-seat pilot (PFD attitude)
+  OV=ov?{s,tx,ty}:ovFit(w,h); otwFit(w,h,instant);
   syncAreaUI(); areaHL(null); if(PZ) PZ.sync();
   clearTimeout(zoomTo.t); zoomTo.t=setTimeout(sizeScreens,instant?0:480);
 }
+/* the whole-panel fit (as zoomTo('overview') places it), whatever the current zoom. The outside view is drawn for it and moved /
+   scaled with the panel by one CSS transform, so it stays behind the canopy at any zoom (area zoom, pinch, pan, the glide back)
+   with no change in what is drawn per frame. otwVis: any of it on screen (rendering stops only when the whole canopy is out of
+   view). Without the live view (off, no WebGL, not ready yet) a static sky (.otwsky, a CSS gradient in the same place) shows. */
+let OV=null, otwVis=true, otwKey='', otwH=0;
+function ovFit(w,h){ let r=P.REG.overview; if(skyOn()){ const k=DA42P.SKY*(h<520?0.5:1); r=[r[0],r[1]-k,r[2],r[3]+k]; } const s=Math.min(w/r[2],h/r[3]);
+  return {s,tx:w/2-(r[0]+r[2]/2)*s,ty:h-P.H*s}; }
+function otwFit(w,h,instant){ const o=OV; if(!o) return; const hh=Math.round(h*0.46), lip=o.ty+DA42P.LIP*o.s, cx=o.tx+510*o.s; // cx: straight ahead of the left-seat pilot (PFD attitude)
+  const k=hh+','+lip+','+cx+','+w; if(k!==otwKey){ otwKey=k; otwH=hh; const sk=el('otwSky');
+    if(sk) sk.style.setProperty('--hz',Math.round(lip-(w/2)/Math.tan(38*Math.PI/180)*Math.tan(OTW_NOSE*Math.PI/180))+'px');
+    if(window.OTW&&OTW.frame) OTW.frame({lip,nose:OTW_NOSE,cx}); }
+  otwPlace(instant); }
+function otwPlace(instant){ const o=OV; if(!o) return; const m=Z.s/o.s, x=Z.tx-o.tx*m, y=Z.ty-o.ty*m, t=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${m.toFixed(4)})`;
+  for(const e of [el('otw'),el('otwSky')]) if(e){ e.classList.toggle('nt',!!instant); e.style.transform=t; }
+  otwVis=y+otwH*m>0.5; }
 function toWorld(e){ const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k of (document.body.dataset.d3?P.REG_ORDER:AREAS)){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
 const coarse=matchMedia('(pointer:coarse)');
@@ -572,7 +592,7 @@ PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='
 PST.addEventListener('pointerleave',()=>areaHL(null));
 /* single click / tap on an instrument area zooms to it, a click outside the zoomed area goes back; pinch (and Ctrl/⌘ + wheel,
    the trackpad pinch) zooms in and out (panelzoom.js, shared with the C172 and the B200) */
-if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],onFree:()=>{ if(typeof sizeScreens==='function') sizeScreens(); },Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],onFree:()=>{ if(typeof sizeScreens==='function') sizeScreens(); },Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,onTransform:()=>otwPlace(true),
   off:'.zback,.more,.pill,.tip,.touch,.rot,.otwmsg,.afban,.afnow,.gdu .bcolw,button,select,a,input'});
 function inReg(p,k){ const r=P.REG[k]; return p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]; }
 el('zBack').onclick=()=>zoomTo('overview');
@@ -676,14 +696,13 @@ function click(){ mfdForce=true; beep(1700,0.015,0.03); }
 /* ---------- 3D-utsikt ---------- */
 let otwOn=true, otwView=''; let otwReady=false;
 // bygg 3D-scenen etter første bilde, så siden blir klar raskere
-(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } if(!otwReady){ el('otwMsg').hidden=false; PST.classList.add('nogl'); if(Z.reg==='overview') zoomTo('overview',true,true); } },{timeout:400});
-function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); el('bOtw').setAttribute('aria-pressed',on); try{ localStorage.setItem('bb-da42-otw',on?'1':'0'); }catch(e){} if(Z.reg==='overview') zoomTo('overview',true,true); }
+(window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=OTW.init(el('otw')); }catch(e){ otwReady=false; } PST.classList.toggle('otwlive',otwReady&&otwOn); if(!otwReady){ el('otwMsg').hidden=false; PST.classList.add('nogl'); if(Z.reg==='overview') zoomTo('overview',true,true); } },{timeout:400});
+function setOtw(on){ otwOn=on; PST.classList.toggle('nootw',!on); PST.classList.toggle('otwlive',otwReady&&on); el('bOtw').setAttribute('aria-pressed',on); try{ localStorage.setItem('bb-da42-otw',on?'1':'0'); }catch(e){} if(Z.reg==='overview') zoomTo('overview',true,true); }
 // With the outside view on, the overview shows more of the canopy above the glareshield (DA42P.SKY): the outside is about the
 // upper third of the screen, and the level-flight horizon sits 9° above the glareshield (OTW.frame), as from the DA42's low seat.
 function skyOn(){ return !PST.classList.contains('nootw')&&!PST.classList.contains('nogl'); }
 el('bOtw').onclick=()=>setOtw(!otwOn);
 { let pr=null; try{ pr=localStorage.getItem('bb-da42-otw'); }catch(e){} setOtw(pr?pr==='1':!coarse.matches); }
-let otwVis=true;
 
 /* ---------- autopilot ---------- */
 function apPress(k){ if(!avOn()||!cbIn('AUTOPILOT')){ X.msg('AP unavailable'); return; } if(k==='VNV'||k==='BC'){ X.msg(k+' is not simulated'); return; } const o=F.readouts(S), n=navCur(o).cdi; F.apSet(AP,S,o,k,n); beep(1200,0.04,0.05); }
@@ -940,7 +959,7 @@ function loop(t){
   if(cockpitVis){ panelT+=dt; if(panelT>GOV.panelDt){ panelT=0; DA42P.sync(P,{get:ioGet}); DA42P.syncSticks(P,inp.stick?inp.stick.x:S.ctl.ail,inp.stick?inp.stick.y:S.ctl.ele); if(power()) DA42P.syncStby(P,o,XA.baroStd?1013:XA.baro); } }
   hornLevel(S.buffet>0.05&&!S.ground&&!UI.paused&&!S.crash, alerts(o).some(a=>a.t==='GEAR UP')&&!UI.paused);
   if(cockpitVis){ pfdT+=dt; if(pfdT>=GOV_PFD[GOV.lvl]){ pfdT=0; draw(o,n); } else if(!avOn()) AP.on=false; }
-  if(otwReady&&otwOn&&cockpitVis&&(Z.reg==='overview'||Z.reg==='top')){ const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(S,otwView); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0); }
+  if(otwReady&&otwOn&&cockpitVis&&otwVis){ const lv=GOV.lvl, n=lv+(Z.reg==='overview'?1:2); /* zoomed in, the magnified outside view is drawn every (lv+2)th frame instead of every (lv+1)th (level 0: 30 Hz) */ if(n===1||(++otwSkip%n===0)) OTW.render(S,otwView); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0); }
   slow+=dt; if(slow>0.12){ slow=0; slowUI(o); }
   requestAnimationFrame(loop);
 }

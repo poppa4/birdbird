@@ -7,7 +7,7 @@
 <title>King Air B200 cockpit procedure trainer</title>
 <link rel="stylesheet" href="lab.css?v=13">
 <link rel="stylesheet" href="site.css?v=22">
-<link rel="stylesheet" href="b200.css?v=18">
+<link rel="stylesheet" href="b200.css?v=19">
 <link rel="stylesheet" href="simshell.css?v=9">
 </head>
 <body data-title="King Air B200 cockpit procedure trainer">
@@ -38,7 +38,7 @@
     </div>
     <div class="cbody">
       <div class="stage" id="stage">
-        <canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
+        <div class="otwsky" id="otwSky" aria-hidden="true"></div><canvas id="otw" role="img" aria-label="View out of the window"></canvas><div class="otwmsg" id="otwMsg" hidden>3D view is not available in this browser.</div>
         <button class="zback" id="zBack" type="button">← Back</button>
         <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
@@ -134,7 +134,7 @@
 <script src="airproc.js?v=7"></script>
 <script src="otw.js?v=13"></script>
 <script src="panellayers.js?v=1"></script>
-<script src="panelzoom.js?v=4"></script>
+<script src="panelzoom.js?v=5"></script>
 <script src="b200panel.js?v=12"></script>
 <script src="b200-qbank.js?v=1"></script>
 <script src="lab.js?v=51"></script>
@@ -142,6 +142,6 @@
 <script src="simdebrief.js?v=6"></script>
 <script src="ownck.js?v=3"></script>
 <script src="b200procs.js?v=2"></script>
-<script src="b200-app.js?v=19"></script>
+<script src="b200-app.js?v=20"></script>
 </body>
 </html>

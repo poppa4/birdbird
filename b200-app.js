@@ -270,8 +270,13 @@ function zoomTo(reg,instant,force){
   P.world.classList.toggle('nt',!!instant);
   P.world.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;
   P.world.style.setProperty('--ls',ov?1:1.06);
-  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(); if(PZ) PZ.sync(); if(window.PANELZOOM&&PANELZOOM.dim) PANELZOOM.dim(PST,Z,ov?null:P.REG[reg]);
+  OV=ov?{s,tx,ty}:ovFit(w,h);
+  PST.classList.toggle('zoomed',!ov); syncAreaUI(); areaHL(null); otwFit(w,h,instant); if(PZ) PZ.sync(); if(window.PANELZOOM&&PANELZOOM.dim) PANELZOOM.dim(PST,Z,ov?null:P.REG[reg]);
 }
+/* the whole-panel fit (as zoomTo('overview') places it), whatever the current zoom: the outside view is sized and framed for it */
+let OV=null;
+function ovFit(w,h){ let r=P.REG.overview; if(skyOn()){ const k=B200P.SKY*(h<520?0.5:1); r=[r[0],-k,r[2],r[3]+k]; } const s=Math.min(w/r[2],h/r[3]);
+  return {s,tx:w/2-(r[0]+r[2]/2)*s,ty:Math.max(h/2-(r[1]+r[3]/2)*s,h-P.H*s)}; }
 function toWorld(e){ if(D3on) return D3.toWorld(e); const sv=P.svg, q=sv.createSVGPoint(); q.x=e.clientX; q.y=e.clientY; const p=q.matrixTransform(sv.getScreenCTM().inverse()); return {x:p.x,y:p.y}; }
 function regionAt(p){ for(const k in B200P.EFISF) if(B200P.EFISF[k].some(r=>p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3])) return k; // an EADI / EHSI face: that side's EFIS area
   for(const k of (document.body.dataset.d3?P.REG_ORDER:AREAS)){ const r=P.REG[k]; if(p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3]) return k; } return null; }
@@ -284,7 +289,7 @@ PST.addEventListener('pointermove',e=>{ if(Z.reg!=='overview'||e.pointerType==='
 PST.addEventListener('pointerleave',()=>areaHL(null));
 el('zBack').onclick=()=>zoomTo('overview');
 /* pinch, and Ctrl/⌘ + wheel (the trackpad pinch) (panelzoom.js). The single click stays here (a tap on an EFIS display picks the EFIS area). */
-if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,click:false,
+if(window.PANELZOOM) PZ=PANELZOOM.attach({stage:PST,world:P.world,size:()=>[P.W,P.H],Z,zoomTo,regionAt,toWorld,emptyAt,regs:()=>P.REG,d3:()=>D3on?D3:null,click:false,onTransform:()=>otwPlace(true),
   off:'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input'});
 /* single click / tap on the panel (not on a control): in the whole-panel view it zooms to the area under the pointer — an EADI or
    EHSI face zooms to that side's EFIS area (both displays with their control strip and the course / heading knobs, B200P.REG.efisL /
@@ -328,7 +333,19 @@ const OTW_BOTTOM_Y=850; // world units
 const OTW_EYEX=366; // panel x straight ahead of the left-seat pilot (the attitude indicator)
 const OTW_NOSE=7;
 function skyOn(){ return !D3&&!PST.classList.contains('nootw')&&!PST.classList.contains('nogl'); }
-function otwFit(){ const c=el('otw'); if(!c||Z.reg!=='overview'||D3) return; const h=PST.clientHeight; c.style.height=Math.max(0,Math.min(h,Math.round(Z.ty+OTW_BOTTOM_Y*Z.s)))+'px'; if(window.OTW&&OTW.frame) OTW.frame({lip:Z.ty+B200P.LIP*Z.s,nose:OTW_NOSE,cx:Z.tx+OTW_EYEX*Z.s}); }
+/* The outside view is drawn for the whole-panel fit (OV) and moved / scaled with the panel by one CSS transform, so it stays behind
+   the windshield at any zoom (area zoom, pinch, pan, the glide back) with no change in what is drawn per frame. otwVis: any of it
+   on screen (rendering stops only when the whole windshield is out of view). Without the live view (off, no WebGL, not ready yet)
+   a static sky (.otwsky, a CSS gradient in the same place) fills the windshield, never the bare stage. */
+let otwVis=true, otwKey='', otwH=0;
+function otwFit(w,h,instant){ const c=el('otw'); if(!c||D3||!OV) return; const o=OV, hh=Math.max(0,Math.min(h,Math.round(o.ty+OTW_BOTTOM_Y*o.s))), lip=o.ty+B200P.LIP*o.s, cx=o.tx+OTW_EYEX*o.s;
+  const k=hh+','+lip+','+cx+','+w; if(k!==otwKey){ otwKey=k; otwH=hh; c.style.height=hh+'px'; const sk=el('otwSky');
+    if(sk){ sk.style.height=hh+'px'; sk.style.setProperty('--hz',Math.round(lip-(w/2)/Math.tan(38*Math.PI/180)*Math.tan(OTW_NOSE*Math.PI/180))+'px'); }
+    if(window.OTW&&OTW.frame) OTW.frame({lip,nose:OTW_NOSE,cx}); }
+  otwPlace(instant); }
+function otwPlace(instant){ const o=OV; if(!o||D3) return; const m=Z.s/o.s, x=Z.tx-o.tx*m, y=Z.ty-o.ty*m, t=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${m.toFixed(4)})`;
+  for(const e of [el('otw'),el('otwSky')]) if(e){ e.classList.toggle('nt',!!instant); e.style.transform=t; }
+  otwVis=y+otwH*m>0.5; }
 // adapter: the shared FDM state already uses N/E metres, h metres MSL and th/phi/psi radians on the same runway 36,
 // so only the eye point changes — left seat (0.45 m left of the centre line), about 2.6 m above the ground — plus a
 // 2.5° lower line of sight, so the level-flight horizon shows above the King Air's taller glareshield
@@ -345,7 +362,7 @@ const GOV={lvl:(()=>{ try{ const v=+localStorage.getItem('bb-simgov'); return v>
   else if(dn){ this.lvl--; this.t=0; this.lastDn=this.clock; try{ localStorage.setItem('bb-simgov',String(this.lvl)); }catch(e){} } },
   get panelDt(){ return [0.033,0.05,0.066][this.lvl]; }};
 window.SIMGOV=GOV; // read by the ?perf=1 meter (otw.js)
-function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; }
+function otwMsgSync(){ el('otwMsg').hidden=otwReady||!otwOn||!otwTried; PST.classList.toggle('otwlive',otwReady&&otwOn); }
 let otwTried=false;
 function hasWebGL(){ try{ const c=document.createElement('canvas'), g=c.getContext('webgl2')||c.getContext('webgl'); if(!g) return false; const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); return true; }catch(e){ return false; } }
 if(!D3) (window.requestIdleCallback||setTimeout)(()=>{ try{ otwReady=!!(window.OTW&&window.THREE&&hasWebGL()&&OTW.init(el('otw'))); }catch(e){ otwReady=false; } otwTried=true; PST.classList.toggle('nogl',!otwReady); otwMsgSync(); if(!otwReady&&Z.reg==='overview') zoomTo('overview',true,true); },{timeout:400});
@@ -367,11 +384,12 @@ function d3Init(){ PST.classList.add('d3wait');
   },0); }
 if(D3) d3Init();
 el('bOtw').onclick=()=>setOtw(!otwOn);
-// default on; off on phones (small touch screens), where the strip of sky is tiny and the GPU is better spent on the panel
+// default on; off on phones (small touch screens), where the strip of sky is tiny and the GPU is better spent on the panel (measured: live
+// view about 45-55 ms a frame vs 17 ms without it at 844x390, 4x CPU); they get the static sky (.otwsky) instead, the … menu turns it on
 { let pr=null; try{ pr=localStorage.getItem('bb-b200-otw'); }catch(e){} const phone=matchMedia('(pointer:coarse)').matches&&Math.min(screen.width,screen.height)<=500; setOtw(pr?pr==='1':!phone); }
 function otwTick(dt){
-  if(!otwReady||!otwOn||!cockpitVis||document.hidden||Z.reg!=='overview') return;
-  const lv=GOV.lvl; if(!lv||(++otwSkip%(lv+1)===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
+  if(!otwReady||!otwOn||!cockpitVis||document.hidden||!otwVis) return;
+  const lv=GOV.lvl, n=lv+(Z.reg==='overview'?1:2); /* zoomed in, the magnified outside view is drawn every (lv+2)th frame instead of every (lv+1)th (level 0: 30 Hz) */ if(n===1||(++otwSkip%n===0)) OTW.render(otwState(),''); if(lv!==(OTW.lvl||0)) OTW.quality(lv===2?2:lv>0);
 }
 
 /* ---------- engines and systems ---------- */

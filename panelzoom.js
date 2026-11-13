@@ -13,7 +13,9 @@
 (function(G){
 'use strict';
 function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emptyAt, off:selector, d3:()=>D3|null, click:bool,
-  //    world:Element, size:()=>[W,H] (panel units), onFree:()=>void (after a free zoom settles)}
+  //    world:Element, size:()=>[W,H] (panel units), onFree:()=>void (after a free zoom settles),
+  //    onTransform:()=>void (after each free-zoom / pan write of Z and the panel transform: the page moves its outside view with it;
+  //    one cheap style write, no layout read)}
   const st=o.stage, Z=o.Z, now=()=>performance.now();
   const OFF=o.off||'.zback,.more,.pill,.tip,.touch,.rot,.d3t,.d3v,.otwmsg,.afban,.afnow,button,select,a,input';
   const inR=(p,r)=>!!r&&p.x>=r[0]&&p.x<=r[0]+r[2]&&p.y>=r[1]&&p.y<=r[1]+r[3];
@@ -56,7 +58,7 @@ function attach(o){ // o:{stage, Z, zoomTo, regionAt, toWorld, regs:()=>REG, emp
   function put(sc,tx,ty){ const [pw,ph]=SZ(), w=st.clientWidth, h=st.clientHeight; sc=Math.max(ov.s,Math.min(smax(),sc));
     tx=clp(tx,Math.min(w-pw*sc,ov.tx),Math.max(0,ov.tx)); ty=clp(ty,Math.min(h-ph*sc,ov.ty),Math.max(0,ov.ty));
     Z.s=sc; Z.tx=tx; Z.ty=ty; if(!freeOn){ freeOn=true; W.classList.add('nt'); dim(st,Z,null); }
-    W.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`; }
+    W.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sc.toFixed(4)})`; if(o.onTransform) o.onTransform(); }
   /* scale by k about a stage point (client coords) */
   function zoomAt(k,x,y){ const b=st.getBoundingClientRect(), mx=x-b.left, my=y-b.top; const sc=Math.max(ov.s,Math.min(smax(),Z.s*k)), f=sc/Z.s;
     put(sc,mx-(mx-Z.tx)*f,my-(my-Z.ty)*f); }

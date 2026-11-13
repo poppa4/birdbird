@@ -3,11 +3,16 @@
 /* ---------- cockpit stage: one view that always fits ---------- */
 .ctop .beta{flex:0 0 auto;font:700 10.5px/1 var(--f-mono,monospace);letter-spacing:.14em;text-transform:uppercase;color:#0d1319;background:#ffcf3a;border-radius:4px;padding:6px 7px}
 .stage{position:relative;flex:1 1 auto;min-width:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 0%,#20262d 0,#0b0d10 70%);user-select:none;-webkit-user-select:none}
-.stage>canvas#otw{position:absolute;left:0;top:0;width:100%;height:46%;display:block}
+.stage>canvas#otw,.stage>.otwsky{position:absolute;left:0;top:0;width:100%;height:46%;display:block;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
+/* without the live outside view (off, no WebGL, not ready yet): a static sky and horizon in the same place (no per-frame work);
+   --hz: the level-flight horizon row, set with the fit. Colours from otw.js's sky and far terrain. */
+.stage>.otwsky{background:linear-gradient(#4f86d3 0,#a9c6e6 calc(var(--hz,30%) - 40px),#d6e3ee var(--hz,30%),#b4c6a4 var(--hz,30%),#86a865 calc(var(--hz,30%) + 40px),#5f8a40 100%)}
+.stage.otwlive>.otwsky{display:none}
+.stage>canvas#otw.nt,.stage>.otwsky.nt{transition:none}
 /* touch-action only where touch or pen input exists (any coarse pointer, or the "tact" class the page adds on the first touch/pen
    pointer): Chrome keeps a touch-action region for every painted panel part and rebuilds it on each repaint */
 @media (any-pointer:coarse){.stage{touch-action:none}}.stage.tact{touch-action:none}
-.stage.nootw>canvas#otw,.stage.nogl>canvas#otw,.stage.zoomed>canvas#otw{display:none}
+.stage.nootw>canvas#otw,.stage.nogl>canvas#otw{display:none}
 .world{position:absolute;left:0;top:0;transform-origin:0 0;transition:transform .45s cubic-bezier(.3,.7,.2,1)}
 .world.nt{transition:none}
 .wlay{position:absolute;inset:0;pointer-events:none}.wlay>.world{pointer-events:auto}
