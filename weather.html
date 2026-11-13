@@ -5,8 +5,8 @@
 <meta name="description" content="Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control…">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Weather for Pilots</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .inbox{display:flex;flex-direction:column;gap:10px}
 .inbox textarea{width:100%;min-height:92px;font-family:var(--f-mono);font-size:16px;line-height:1.5;padding:12px 14px;border:1px solid var(--ink);border-radius:3px;background:#fff;color:var(--ink);resize:vertical;text-transform:uppercase}
@@ -42,10 +42,11 @@
 </style>
 </head>
 <body data-title="Weather for Pilots">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
+      <div class="eyebrow">Birdbird · Flight planning</div>
       <h1>METAR and TAF</h1>
       <p>Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.</p>
     </div>
@@ -93,13 +94,13 @@
 
   <p class="note">Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.</p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,nf,el,slider,seg,fit,quiz,shuffle}=LAB;
 const NOd={
- 'METAR and TAF':'METAR og TAF','Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.':'Lim inn en værmelding og les den linje for linje på vanlig språk. Se skydekket, sidevinden på rullebanen din og om VFR er tillatt i kontrollsonen. Øv deretter på meldinger som lages for deg.',
+ 'Birdbird · Flight planning':'Birdbird · Flyplanlegging','METAR and TAF':'METAR og TAF','Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.':'Lim inn en værmelding og les den linje for linje på vanlig språk. Se skydekket, sidevinden på rullebanen din og om VFR er tillatt i kontrollsonen. Øv deretter på meldinger som lages for deg.',
  'Decode':'Dekod','Crosswind':'Sidevind','Codes':'Koder','Practise':'Øv','Decode a report':'Dekod en melding','Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.':'Lim inn en METAR, SPECI eller TAF. Formatet følger ICAO Annex 3, som brukes i hele Europa.',
  'VFR at the aerodrome':'VFR på flyplassen','Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.':'Basert på SERA.5005 og SERA.5010 for fly. Flyplassen, luftrommet og operatøren din kan ha strengere regler.',
  'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',

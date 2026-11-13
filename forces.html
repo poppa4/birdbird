@@ -5,8 +5,8 @@
 <meta name="description" content="Lift, weight, thrust and drag drawn to scale and live: straight and level, climb (Vx, Vy, gradient and rate), descent and glide (L/D, best glide, wind) and the turn (load factor, radius, rate, stall speed).">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Forces in Flight</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
@@ -14,7 +14,7 @@
 @media (max-width:600px){#fmCv{aspect-ratio:4/4.3}#fpCv{aspect-ratio:4/2.2}#fdCv{aspect-ratio:4/3.4}}
 .vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(18,22,26,.62);color:#D5DCE2;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:5px 9px;cursor:pointer;line-height:1.3;min-height:28px}
 .vbtn:hover{border-color:rgba(255,255,255,.28)}.vbtn.on{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
-.vbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.vbtn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .ovr{position:absolute;right:8px;top:8px;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:60%}
 @media (max-width:640px){#fmOv .ph{display:none}}
 .fbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px;align-items:start}
@@ -72,12 +72,12 @@ body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
 </style>
 </head>
 <body data-title="Forces in Flight">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Aerodynamics</div>
       <h1>Forces in flight</h1>
       <p data-tx="lead">Lift, weight, thrust and drag, drawn to scale and live. Fly level, climb, glide and turn, and see why lift is less than weight in a climb, why the glide ratio is L/D, and why the stall speed rises in a turn.</p>
       <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain how the four forces balance in level flight, climb, glide and turn, and use L/D, Vx, Vy, load factor and turn rate in the cockpit.</p>
@@ -156,9 +156,9 @@ body.depth-instructor .pre .btn{font-size:15px;padding:11px 16px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="concepts.js?v=2"></script>
-<script src="forces.js?v=3"></script>
+<script src="forces.js?v=4"></script>
 </body>
 </html>

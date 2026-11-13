@@ -6,8 +6,8 @@
 <title>Training · Birdbird</title>
 <meta name="description" content="Birdbird training in one place: working cockpit trainers for the Cessna 172, DA42 and King Air B200, an IFR trainer with 46 exercises, scored briefings, radio drills and gate-to-gate flights, type rating study, A320 simulator assessment and check preparation.">
 <meta name="theme-color" content="#EDF1EE">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* ===== Training overview, page-scoped under .tv =====
    The overview of all Birdbird training, in the order of the Training menu:
@@ -28,15 +28,10 @@
 .tv-mono{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1.4}
 
 /* ---------- header ---------- */
-.tv-crumb{padding:24px 0 0;color:var(--ink3)}
-.tv-crumb ol{display:flex;gap:8px}
-.tv-crumb li+li::before{content:"/";margin-right:8px;color:var(--rule1)}
-.tv-crumb a{text-decoration:none}.tv-crumb a:hover{color:var(--ink)}
-.tv-crumb [aria-current]{color:var(--ink2)}
 
-.tv-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:28px 72px;align-items:end;padding-top:36px}
+.tv-hero{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:28px 72px;align-items:end;padding-top:40px}
 .tv-eb{display:block;color:var(--ink2);margin-bottom:16px}
-.tv h1{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:clamp(34px,3.7vw,52px);line-height:1.04;letter-spacing:-.02em;text-wrap:balance;color:var(--ink);max-width:15em}
+.tv h1{font-family:var(--disp);font-stretch:88%;font-weight:750;font-size:clamp(34px,4.2vw,var(--t-3xl));line-height:1.04;letter-spacing:-.015em;text-wrap:balance;color:var(--ink);max-width:15em}
 .tv-lede{margin-top:20px!important;font-size:17px;line-height:1.6;color:var(--ink2);max-width:36em}
 .tv-facts{border-top:1px solid var(--rule1)}
 .tv-facts div{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:0 16px;padding:9px 0 10px;border-bottom:1px solid var(--rule2)}
@@ -195,7 +190,6 @@
   .tv-more{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:640px){
-  .tv-crumb{padding-top:18px}
   .tv-hero{padding-top:22px}
   .tv h1{font-size:34px}
   .tv-lede{font-size:16px}
@@ -234,16 +228,12 @@
 </style>
 </head>
 <body data-title="Training">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <main class="tv" id="main">
-
-  <nav class="tv-crumb tv-mono" aria-label="Breadcrumb">
-    <ol><li><a href="training.html" data-tx="cr1">Training</a></li><li><span aria-current="page" data-tx="cr2">Overview</span></li></ol>
-  </nav>
 
   <header class="tv-hero">
     <div>
-      <span class="tv-eb tv-mono" data-tx="eb">Birdbird training</span>
+      <span class="tv-eb tv-mono" data-tx="eb">Birdbird · Training</span>
       <h1 data-tx="h1">Cockpit trainers, IFR procedures, briefing and radio</h1>
       <p class="tv-lede" data-tx="lede">Everything Birdbird offers for training, in one place: working cockpits for three aircraft, an IFR trainer that teaches one procedure at a time, briefings scored by the instructor, and radio practice from single calls to a whole flight. Type rating study and check preparation are here too.</p>
     </div>
@@ -457,13 +447,13 @@
   </section>
   <p class="tv-note"><span data-tx="note">Teaching models, not certified simulators. No EASA, Luftfartstilsynet or ATO endorsement is implied.</span><a href="sources.html" data-tx="noteGo">Data sources and licences</a></p>
 </main>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script>
 (function(){
 'use strict';
 LAB.add({},{'Training':'Trening'});
 LAB.tx({
- cr1:'Trening', cr2:'Oversikt', eb:'Trening i Birdbird',
+ eb:'Birdbird · Trening',
  h1:'Cockpittrenere, IFR-prosedyrer, briefing og radio',
  lede:'Alt Birdbird tilbyr for trening, samlet på ett sted: fungerende cockpiter for tre flytyper, en IFR-trener som lærer deg én prosedyre om gangen, briefinger som instruktøren vurderer, og radiotrening fra enkeltkall til en hel flyging. Typeratingstudier og kontrollforberedelse finner du også her.',
  fA:'Flytyper', fP:'Plattform', fPv:'I nettleseren, uten installasjon', fL:'Språk', fLv:'Engelsk og norsk; typerating på engelsk',
@@ -527,7 +517,6 @@ LAB.tx({
 });
 function attrs(){ const no=LAB.lang==='no';
   document.querySelectorAll('[data-alt-no]').forEach(e=>{ if(e._en===undefined) e._en=e.alt; e.alt=no?e.dataset.altNo:e._en; });
-  const n=document.querySelector('.tv-crumb'); if(n) n.setAttribute('aria-label',no?'Brødsmulesti':'Breadcrumb');
   const x=document.querySelector('.tv-idx'); if(x) x.setAttribute('aria-label',no?'På denne siden':'On this page'); }
 LAB.start('training');
 attrs(); LAB.onLang(attrs);

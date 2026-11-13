@@ -5,8 +5,8 @@
 <meta name="description" content="Take-off and landing performance (EASA 032): TORA, TODA and ASDA, clearway and stopway, V1 and the go/stop decision, the balanced field, what mass, heat, height, wind, slope and a wet runway do, the climb after take-off with gross and net paths, and the landing distance with its margins. Light single (Class B), turboprop and jet (Class A).">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Take-off and landing performance</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 
 /* the air data figure: one dark canvas with the pitot-static schematic, the instruments and a side profile */
@@ -86,18 +86,18 @@ body.cls-A .xsec [data-cls~=A],body.cls-B .xsec [data-cls~=B]{display:block}
 .typeseg{display:grid!important;grid-template-columns:1fr;gap:4px}
 .typeseg button{border-radius:var(--radius)!important;text-align:left}
 
-@media (pointer:coarse){.xsec input[type=range]{min-height:40px}.tstep .opts button{min-height:42px}}
+@media (pointer:coarse){.xsec input[type=range]{min-height:44px}.tstep .opts button{min-height:44px}}
 </style>
 <script>/* old anchors that moved to the climb, cruise and fuel lab */
 (function(){ var m={'#climb':'flightplanning.html#climb','#enroute':'flightplanning.html#dd-enroute'}; if(m[location.hash]) location.replace(m[location.hash]); })();</script>
 </head>
 <body data-title="Take-off and landing performance" class="cls-A">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Performance</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Performance</div>
       <h1>Take-off and landing performance</h1>
       <p data-tx="lead">How much runway does today's take-off need, and what happens if an engine fails half-way down it? See the runway as the rules see it, find the V1 that lets you either stop or go, clear the obstacles after lift-off, and land with the margins the law asks for. For a light single, a turboprop and a jet.</p>
     </div>
@@ -165,9 +165,9 @@ body.cls-A .xsec [data-cls~=A],body.cls-B .xsec [data-cls~=B]{display:block}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="perfcore.js?v=1"></script>
-<script src="perf.js?v=1"></script>
+<script src="perf.js?v=2"></script>
 </body>
 </html>

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Briefing pack · Birdbird</title>
 <meta name="description" content="Build a printable briefing pack for each flight: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the ATC flight plan.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="train.css?v=1">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="train.css?v=2">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -193,8 +193,7 @@ body.briefing .pgfoot{display:none!important}
 .atttools .dot.on{box-shadow:0 0 0 2px var(--ink)}
 .atttools input{font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:3px;padding:4px 8px;width:150px}
 .attbtn{margin-top:12px}
-dialog.pp{border:1px solid var(--rule);padding:18px 20px;max-width:420px}
-dialog.pp::backdrop{background:rgba(19,32,42,.35)}
+dialog.pp{max-width:min(420px,calc(100vw - 32px))}
 /* briefingmodus */
 body.briefing .sitefoot,body.briefing header.site,body.briefing .trnav,body.briefing .ntip,body.briefing .lhead,body.briefing .bar,body.briefing .toc,body.briefing .fab,body.briefing .asst,body.briefing .attbtn,body.briefing .noprint:not(.pager){display:none!important}
 body.briefing .pgrid{display:block;margin:0}
@@ -315,7 +314,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -354,7 +353,7 @@ body:not(.nofab) #askbar{display:none}
   <div class="alog" id="alog"><p class="note">Ask about anything in your preparation: “What is the pressure altitude?”, “Is 1.25 × TODR inside TORA?”, “What fuel do I need for 1 h 40 min with a 30 min alternate?”. The instructor sees what you have filled in and reads your documents from Flight Intelligence.</p></div>
   <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="ai.js?v=1"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=1"></script>
@@ -440,7 +439,7 @@ const SECTIONS=[
    <div class="fg">${F('ar.out','Exit / entry points (VRP) at departure and destination',{w:'w2'})}${F('ar.div','Diversion aerodromes along the route',{w:'w2'})}${F('ar.sr','Sunrise (UTC)')}${F('ar.ss','Sunset (UTC)')}${F('ar.last','Latest landing time (UTC)')}${F('ar.dz','Danger, restricted and military areas active',{w:'w2'})}</div>
    <div class="ref">VFR by day ends at the end of evening civil twilight in most of Europe; check your national AIP (ENR 1.2) and plan to land with margin. Note who you talk to on each segment and where you need a clearance.</div>`],
  ['xsec','Flight cross-section',()=>`<div class="fg">${F('x.msa','Minimum safe altitude / MEA (ft)',{num:1})}${F('x.frz','Freezing level (ft or FL)')}${F('x.cb','Cloud base (ft)',{num:1})}${F('x.ct','Cloud tops (ft)',{num:1})}${F('x.alt','Cruising altitude / level')}${F('x.tl','Transition altitude / level')}</div>
-   <div class="xsbar noprint"><div class="btns"><button class="btn pri" id="xsQuick">Quick profile</button><button class="btn" id="xsAi">Describe the route to the AI</button><button class="btn" id="xsTable">Edit points</button><button class="btn" id="xsZoom">Expand approach</button><button class="btn" id="xsDraw">✎ Draw on it</button><a class="btn" href="route.html" id="xsRoute">Build it on the map ↗</a></div><span class="note" id="xsNote"></span></div>
+   <div class="xsbar noprint"><div class="btns"><button class="btn pri" id="xsQuick">Quick profile</button><button class="btn" id="xsAi">Describe the route to the AI</button><button class="btn" id="xsTable">Edit points</button><button class="btn" id="xsZoom">Expand approach</button><button class="btn" id="xsDraw">✎︎ Draw on it</button><a class="btn" href="route.html" id="xsRoute">Build it on the map ↗</a></div><span class="note" id="xsNote"></span></div>
    <div class="xsform noprint" id="xsQ" hidden>
      <div class="xq">
        <div><b>Departure</b>${XQ('dep','Aerodrome','ENTO')}${XQ('rwy','RWY','18')}${XQ('elev','Elevation','286')}</div>
@@ -603,7 +602,7 @@ function altCalc(f,g){
     warn.push(L({en:'Make sure you can still navigate to and land at the destination or an alternate if the planned approach capability is lost (e.g. GNSS).',no:'Sørg for at du fortsatt kan navigere til og lande på destinasjonen eller et alternativ hvis den planlagte innflygingskapabiliteten forsvinner (f.eks. GNSS).'})+' <i>CAT.OP.MPA.182(f)</i>');
   }
   const head = n==null? '' : n===0? `<div class="altn"><b>0</b> ${L({en:'No destination alternate required',no:'Ingen destinasjonsalternativ kreves'})}</div>` : `<div class="altn"><b>${n}</b> ${n===1?L({en:'destination alternate required',no:'destinasjonsalternativ kreves'}):L({en:'destination alternates required',no:'destinasjonsalternativer kreves'})}</div>`;
-  setC('al.res', head+`<ul>${why.map(w=>'<li>'+w+'</li>').join('')}</ul>`+(warn.length?`<p class="note">⚠ ${warn.join('<br>⚠ ')}</p>`:''));
+  setC('al.res', head+`<ul>${why.map(w=>'<li>'+w+'</li>').join('')}</ul>`+(warn.length?`<p class="note">⚠︎ ${warn.join('<br>⚠︎ ')}</p>`:''));
   // planleggingsminima for alternativene
   const out={};
   ['alt1','alt2'].forEach((k,i)=>{ const q=altReq(reg,f['aa.'+k+'.at']||'iap',g('aa.'+k+'.dh'),g('aa.'+k+'.dv'),g('aa.'+k+'.msh'));
@@ -881,7 +880,7 @@ function drawLoad(E,TM,cg,mt,LM,lcg){ const box=el('mbLoad'); if(!box) return; c
   // CG-grenser og CG
   if(E&&TM){ const fw=envAt(E.fwd,TM), af=envAt(E.aft,TM); h+=`<rect x="${X(fw)}" y="${cy-24}" width="${X(af)-X(fw)}" height="48" fill="rgba(46,125,50,.12)" stroke="#2E7D32" stroke-dasharray="4 3"/><text x="${X(fw)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="end">${fw.toFixed(3)} </text><text x="${X(af)}" y="${cy+36}" font-family="IBM Plex Mono, monospace" font-size="10" fill="#2E7D32" text-anchor="start"> ${af.toFixed(3)}</text>`; }
   if(cg!=null){ const ok=!E||(cg>=envAt(E.fwd,TM)-1e-4&&cg<=envAt(E.aft,TM)+1e-4); const c=ok?'#13202A':'#B3261E';
-    h+=`<g><circle cx="${X(cg)}" cy="${cy}" r="11" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M${X(cg)} ${cy-11} A11 11 0 0 1 ${X(cg)+11} ${cy} L${X(cg)} ${cy} Z M${X(cg)} ${cy+11} A11 11 0 0 1 ${X(cg)-11} ${cy} L${X(cg)} ${cy} Z" fill="${c}"/></g><text x="${X(cg)}" y="${cy-30}" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="${c}">CG ${cg.toFixed(3)} m${ok?'':' ⚠'}</text>`; }
+    h+=`<g><circle cx="${X(cg)}" cy="${cy}" r="11" fill="#fff" stroke="${c}" stroke-width="2"/><path d="M${X(cg)} ${cy-11} A11 11 0 0 1 ${X(cg)+11} ${cy} L${X(cg)} ${cy} Z M${X(cg)} ${cy+11} A11 11 0 0 1 ${X(cg)-11} ${cy} L${X(cg)} ${cy} Z" fill="${c}"/></g><text x="${X(cg)}" y="${cy-30}" text-anchor="middle" font-family="Archivo, sans-serif" font-weight="700" font-size="12" fill="${c}">CG ${cg.toFixed(3)} m${ok?'':' ⚠︎'}</text>`; }
   if(lcg!=null&&Math.abs(lcg-(cg||0))>0.002){ h+=`<circle cx="${X(lcg)}" cy="${cy}" r="5" fill="none" stroke="#9A1E68" stroke-width="1.6"/><text x="${X(lcg)}" y="${cy+22}" text-anchor="middle" font-family="Caveat, cursive" font-size="14" fill="#9A1E68">${L({en:'landing',no:'landing'})}</text>`; }
   h+=`<text x="12" y="232" font-family="IBM Plex Mono, monospace" font-size="10" fill="#9AA6AC">${L({en:'nose ← arm (m) → tail · not to scale',no:'nese ← arm (m) → hale · ikke i skala'})}</text>`;
   sv.innerHTML=h;
@@ -985,7 +984,7 @@ fin.onchange=async()=>{ const files=[...fin.files]; fin.value=''; const btn=docu
 function alertNote(t){ el('saved').textContent=t; }
 const COLS=['#B3261E','#1E5E9E','#9A1E68','#13202A'];
 function renderAtts(sec){ const box=document.querySelector(`.atts[data-sec="${sec}"]`); if(!box) return; const list=(P.att||[]).filter(a=>a.sec===sec);
-  box.innerHTML=list.map(a=>`<figure class="att" data-id="${a.id}"><figcaption><b>${esc(a.name)}</b><span class="noprint"><button data-act="edit">✎ ${L({en:'Draw lines',no:'Tegn linjer'})}</button><button data-act="ai">${L({en:'Ask the AI',no:'Spør AI-en'})}</button><button data-act="del">${L({en:'Remove',no:'Fjern'})}</button></span></figcaption>
+  box.innerHTML=list.map(a=>`<figure class="att" data-id="${a.id}"><figcaption><b>${esc(a.name)}</b><span class="noprint"><button data-act="edit">✎︎ ${L({en:'Draw lines',no:'Tegn linjer'})}</button><button data-act="ai">${L({en:'Ask the AI',no:'Spør AI-en'})}</button><button data-act="del">${L({en:'Remove',no:'Fjern'})}</button></span></figcaption>
     <div class="atttools noprint" hidden><button data-t="line" class="on">${L({en:'Line',no:'Linje'})}</button><button data-t="pen">${L({en:'Pen',no:'Penn'})}</button><button data-t="text">${L({en:'Text',no:'Tekst'})}</button><input data-lab placeholder="${L({en:'Text to place, e.g. 640 m',no:'Tekst å plassere, f.eks. 640 m'})}">${COLS.map((c,i)=>`<button class="dot ${i?'':'on'}" data-c="${c}" style="background:${c}" aria-label="${c}"></button>`).join('')}<label class="chk"><input type="checkbox" data-snap checked> ${L({en:'Straight (snap ⟂)',no:'Rett (lås ⟂)'})}</label><button data-u>${L({en:'Undo',no:'Angre'})}</button><button data-x>${L({en:'Clear',no:'Tøm'})}</button><button data-done>${L({en:'Done',no:'Ferdig'})}</button></div>
     <div class="attimg"><img alt="${esc(a.name)}"><svg viewBox="0 0 ${a.w} ${a.h}" class="ink"></svg></div>
     <label class="fl"><span>${L({en:'Reading and result',no:'Avlesning og resultat'})}</span><input data-att-note value="${esc(a.note||'')}" autocomplete="off"></label></figure>`).join('');
@@ -1025,7 +1024,7 @@ el('book').addEventListener('pointerup',endDrag); el('book').addEventListener('p
 /* ---------- assistent ---------- */
 let AT=[], actl=null;
 let aiAtt=null;
-function openAsst(a){ el('asst').hidden=false; el('fab').hidden=true; if(a){ aiAtt=a; el('alog').insertAdjacentHTML('beforeend',`<p class="note">📎 ${esc(a.name)}${a.note?' · '+esc(a.note):''}</p>`); if(!el('aq').value) el('aq').value=L({en:'Help me read this chart for my flight. What do I get, and how do I read it step by step?',no:'Hjelp meg å lese dette diagrammet for turen min. Hva får jeg, og hvordan leser jeg det steg for steg?'}); } el('aq').focus(); }
+function openAsst(a){ el('asst').hidden=false; el('fab').hidden=true; if(a){ aiAtt=a; el('alog').insertAdjacentHTML('beforeend',`<p class="note">${esc(a.name)}${a.note?' · '+esc(a.note):''}</p>`); if(!el('aq').value) el('aq').value=L({en:'Help me read this chart for my flight. What do I get, and how do I read it step by step?',no:'Hjelp meg å lese dette diagrammet for turen min. Hva får jeg, og hvordan leser jeg det steg for steg?'}); } el('aq').focus(); }
 el('fab').onclick=()=>{ openAsst(null); el('afi').href='fi.html?pack='+encodeURIComponent(P.id)+'#aircraft'; };
 el('aclose').onclick=()=>{ el('asst').hidden=true; el('fab').hidden=false; if(actl) actl.abort(); };
 
@@ -1301,7 +1300,7 @@ LAB.add({},{
  'Aerodrome reports':'Flyplassrapporter','Draw terrain, cloud layers, freezing level, MSA and your planned profile with a finger, pen or mouse.':'Tegn terreng, skylag, frysenivå, MSA og den planlagte profilen med finger, penn eller mus.',
  'Pen':'Penn','▶ Briefing mode':'▶ Briefingmodus','Exit':'Avslutt','The check':'Kontrollen','Items to show':'Punkter som skal vises','Route, airspace and daylight':'Rute, luftrom og dagslys','Save as my aircraft':'Lagre som mitt fly','Read the attached W&B report (AI)':'Les vedlagt veieskjema (AI)','Max demonstrated crosswind (kt)':'Maks demonstrert sidevind (kt)','Navigation log':'Navigasjonslogg','Choose the pages in this pack':'Velg sidene i pakken','Head / cross':'Mot- / sidevind','Variation (+E / −W)':'Variasjon (+Ø / −V)','Variation for legs without their own (+E / −W)':'Misvisning for etapper uten egen (+Ø / −V)','Wind as 270/15. WCA, heading and groundspeed come from the wind triangle; MH = TH − variation (east positive). Route Explorer fills the variation for each leg from the World Magnetic Model (WMM 2025); a leg without its own uses the field above. Fuel uses the planning fuel flow on the fuel page. Times in minutes.':'Vind som 270/15. WCA, kurs og groundspeed kommer fra vindtrekanten; MH = TH − misvisning (østlig positiv). Route Explorer fyller inn misvisningen for hver etappe fra World Magnetic Model (WMM 2025); en etappe uten egen bruker feltet over. Drivstoff bruker planlagt forbruk fra drivstoffsiden. Tider i minutter.','TAS for new legs (kt)':'TAS for nye etapper (kt)','Total':'Totalt','From':'Fra','To':'Til','Briefing pack':'Briefingpakke','Briefing Pack':'Briefingpakke','Book':'Bok','All pages':'Alle sider','Contents':'Innhold','Charts and workings':'Diagrammer og utregninger','＋ Add your own route or profile (screenshot or PDF)':'＋ Legg til egen rute eller profil (skjermbilde eller PDF)','＋ Attach a chart or document page':'＋ Legg ved et diagram eller en dokumentside','Instructor / examiner':'Instruktør / eksaminator',
  'Add the charts you work from: take-off and landing distance graphs, one-engine-inoperative climb, approach plates, the load sheet. Draw your lines on them and write the result, so the method is in the pack when you brief it.':'Legg ved diagrammene du jobber fra: avgangs- og landingsdistanse, stigning på én motor, innflygingskart, lastelisten. Tegn linjene dine på dem og skriv resultatet, så framgangsmåten ligger i pakken når du briefer den.',
- 'One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and flight plan. Add or remove pages as you need. Prints as a booklet.':'Én pakke per flyging, i fast rekkefølge: fly, NOTAM, vær, minima, profil, ytelse, drivstoff, masse og balanse, radiosvikt og flyplan. Legg til eller fjern sider etter behov. Skrives ut som et hefte.','Quick profile':'Hurtigprofil','Expand approach':'Forstørr innflygingen','Describe the route to the AI':'Beskriv ruten til AI-en','Edit points':'Rediger punkter','✎ Draw on it':'✎ Tegn på den','Generate profile':'Lag profil','Draw it':'Tegn den','Add point':'Legg til punkt','Clear profile':'Tøm profilen','Clear drawing':'Tøm tegningen','Departure route':'Avgangsrute','Cruise':'Cruise','Approach':'Innflyging','Missed approach':'Avbrutt innflyging','Altitudes in feet. Leave out what you don’t need.':'Høyder i fot. Hopp over det du ikke trenger.','The AI turns your description into points you can check and edit.':'AI-en gjør beskrivelsen om til punkter du kan sjekke og endre.','Build the profile from a few numbers or a sentence, then draw your own notes on top. Distances are along the route, not to scale with terrain.':'Lag profilen fra noen tall eller en setning, og tegn dine egne notater oppå. Distansene er langs ruten, ikke i målestokk med terrenget.','Blue':'Blå','Red':'Rød','Undo':'Angre','Clear':'Tøm','Factor':'Faktor','Low':'Lav','Medium':'Middels','High':'Høy','Item':'Punkt','Take-off':'Avgang','Landing':'Landing','Zero fuel':'Null drivstoff'
+ 'One pack per flight, in a fixed order: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and flight plan. Add or remove pages as you need. Prints as a booklet.':'Én pakke per flyging, i fast rekkefølge: fly, NOTAM, vær, minima, profil, ytelse, drivstoff, masse og balanse, radiosvikt og flyplan. Legg til eller fjern sider etter behov. Skrives ut som et hefte.','Quick profile':'Hurtigprofil','Expand approach':'Forstørr innflygingen','Describe the route to the AI':'Beskriv ruten til AI-en','Edit points':'Rediger punkter','✎︎ Draw on it':'✎︎ Tegn på den','Generate profile':'Lag profil','Draw it':'Tegn den','Add point':'Legg til punkt','Clear profile':'Tøm profilen','Clear drawing':'Tøm tegningen','Departure route':'Avgangsrute','Cruise':'Cruise','Approach':'Innflyging','Missed approach':'Avbrutt innflyging','Altitudes in feet. Leave out what you don’t need.':'Høyder i fot. Hopp over det du ikke trenger.','The AI turns your description into points you can check and edit.':'AI-en gjør beskrivelsen om til punkter du kan sjekke og endre.','Build the profile from a few numbers or a sentence, then draw your own notes on top. Distances are along the route, not to scale with terrain.':'Lag profilen fra noen tall eller en setning, og tegn dine egne notater oppå. Distansene er langs ruten, ikke i målestokk med terrenget.','Blue':'Blå','Red':'Rød','Undo':'Angre','Clear':'Tøm','Factor':'Faktor','Low':'Lav','Medium':'Middels','High':'Høy','Item':'Punkt','Take-off':'Avgang','Landing':'Landing','Zero fuel':'Null drivstoff'
 });
 /* ---------- oppstart ---------- */
 LAB.start('prep');

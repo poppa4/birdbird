@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Birdbird · Aviation theory, flight planning and training</title>
 <meta name="description" content="Briefing pack, theory and instructor in one place. Birdbird is where you prepare a flight and understand every number in it: the briefing pack, the theory behind each page, and an instructor that answers from your own documents.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* ---------- Birdbird home. Chart-room tokens with fallbacks ---------- */
 .home{
@@ -362,7 +362,7 @@
 </style>
 </head>
 <body data-home="1" data-title="Birdbird · Aviation theory, flight planning and training">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page"><main class="home">
 
   <!-- 1. Hero -->
@@ -561,7 +561,7 @@
   </section>
 
 </main></div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script>
 (function(){
 'use strict';
@@ -940,7 +940,7 @@ function gl(){ try{ const c=document.createElement('canvas'); return !!(window.W
 if(RM||SD||!('IntersectionObserver' in window)||!window.DecompressionStream||!gl()) return;
 let want=false, loaded=document.readyState==='complete', go=false;
 const kick=()=>{ if(go||!want||!loaded) return; go=true; const ric=window.requestIdleCallback||(f=>setTimeout(f,200));
-  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=2'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
+  ric(()=>{ const s=document.createElement('script'); s.src='hero-tunnel.js?v=4'; s.async=true; document.head.appendChild(s); },{timeout:2500}); };
 if(!loaded) window.addEventListener('load',()=>{ loaded=true; kick(); },{once:true});
 const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ want=true; io.disconnect(); kick(); } },{rootMargin:'200px 0px'}); io.observe(hx);
 })();

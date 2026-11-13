@@ -517,7 +517,7 @@ LAB.quiz(el('qbox'),'gennav',()=>LAB.shuffle([
  {q:t2('Same Mach number, but the air at cruise level is 20 °C colder. The TAS is…','Samme machtall, men luften i marsjhøyden er 20 °C kaldere. TAS-en blir …'),a:[t2('lower','lavere'),t2('higher','høyere'),t2('unchanged','uendret')],c:0,e:t2('The speed of sound falls with temperature, and TAS = M × a.','Lydhastigheten synker med temperaturen, og TAS = M × a.')}]).map(q=>{ const o=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:o.map(i=>q.a[i]),c:o.indexOf(q.c)}; }),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'General Navigation':'Generell navigasjon','General navigation':'Generell navigasjon','Birdbird Virtual Lab · Navigation and instrument procedures':'Birdbird Virtual Lab · Navigasjon og instrumentprosedyrer',
+LAB.add({},{'General Navigation':'Generell navigasjon','General navigation':'Generell navigasjon','Birdbird Virtual Labs · Navigation and instrument procedures':'Birdbird Virtual Labs · Navigasjon og instrumentprosedyrer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The navigation lab':'Navigasjonslabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Conditions':'Forhold','The leg':'Etappen','Off track':'Ut av track','Route':'Rute','After a failure':'Etter en feil','Scenarios':'Scenarier','Advanced':'Avansert','TAS from Mach':'TAS fra mach','Mode':'Modus','Sections':'Seksjoner',
  'Navigation figure. Drag around the compass rose to set the track.':'Navigasjonsfigur. Dra rundt kompassrosen for å sette tracken.'});

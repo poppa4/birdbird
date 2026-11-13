@@ -445,10 +445,10 @@ LAB.quiz(el('qbox'),'storms',()=>LAB.shuffle([
 ]),10);
 
 /* ---------------- static strings, start ---------------- */
-LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
+LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','The storm lab':'Stormlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv','Deep dive':'Dypdykk',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Instability':'Ustabilitet','Wind shear with height':'Vindskjær med høyden','Development':'Utvikling','Fly':'Fly','Stage':'Stadium','Pilot':'Pilot','Radar':'Radar','Range':'Rekkevidde','Gain':'Gain','Show':'Vis','Cloud':'Sky','Scenarios':'Scenarioer','Advanced':'Avansert',
- 'Navigation display':'Navigasjonsskjerm','Virtual Lab':'Virtual Lab','Sections':'Seksjoner','View':'Visning',
+ 'Navigation display':'Navigasjonsskjerm','Virtual Labs':'Virtual Labs','Sections':'Seksjoner','View':'Visning',
  '3D thunderstorm model. Drag to rotate, scroll to zoom.':'3D-modell av et tordenvær. Dra for å rotere, scroll for å zoome.','Airspeed change and headwind along the approach':'Fartsendring og motvind langs innflygingen','Weather radar picture on the navigation display':'Værradarbildet på navigasjonsskjermen'});
 LAB.tx({lead:'En cumulonimbus rommer nesten alle farer i luftfarten på en gang: kraftig turbulens, ising, hagl, lyn, vindkastfronter og mikroburster. La en storm vokse i 3D fra en cumulus til en moden storm og se den dø, se inn i luften som driver den, fly en innflyging gjennom mikrobursten, og sikt værradaren mot den.'});
 function runHooks(){ hooks.forEach(f=>f()); }

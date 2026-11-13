@@ -5,8 +5,8 @@
 <meta name="description" content="Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move…">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mass and balance</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .paper{position:relative;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:#FBFBF8}
 .paper canvas{display:block;width:100%}
@@ -31,12 +31,12 @@
 </style>
 </head>
 <body data-title="Mass and balance">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Mass and balance</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Mass and balance</div>
       <h1>Mass and balance</h1>
       <p>Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move passengers, cargo and fuel and watch the centre of gravity travel through the envelope, then work a simplified load sheet with last-minute changes.</p>
     </div>
@@ -117,13 +117,13 @@
   </section>
   <p class="foot">Teaching model of an A320-sized aircraft. Masses, limits, arms, the CG envelope and the trim setting are illustrative typical values, not data for any registration or variant: real limits come from the AFM, the weight and balance manual and the operator’s load control system. Passenger masses use the EASA standard mass of 84 kg per adult including hand baggage.</p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script>
 (function(){
 'use strict';
 const {L,el,nf}=LAB;
 LAB.add({},{
- 'Mass and balance':'Masse og balanse','Birdbird Virtual Lab · Mass and balance':'Birdbird Virtual Lab · Masse og balanse',
+ 'Mass and balance':'Masse og balanse','Birdbird Virtual Labs · Mass and balance':'Birdbird Virtual Labs · Masse og balanse',
  'Build up an A320-sized aircraft from the dry operating mass to the landing mass, find which structural limit decides how much you can carry, move passengers, cargo and fuel and watch the centre of gravity travel through the envelope, then work a simplified load sheet with last-minute changes.':'Bygg opp et fly på størrelse med A320 fra tørr operativ masse til landingsmasse, finn hvilken strukturgrense som bestemmer hvor mye du kan ta med, flytt passasjerer, last og drivstoff og se tyngdepunktet vandre gjennom konvolutten, og regn deretter gjennom et forenklet lasteark med siste-liten-endringer.',
  'Masses and limits':'Masser og grenser','Centre of gravity':'Tyngdepunkt','Load sheet':'Lasteark','In the aircraft':'I flyet','Test yourself':'Test deg selv','Interactive':'Interaktiv','Drill':'Øvelse','Operations':'Operativt','Check':'Sjekk',
  'Every flight is checked against three structural limits: maximum zero fuel mass, maximum take-off mass and maximum landing mass. Each one allows a different traffic load, and the lowest of the three is the one you can actually carry.':'Hver flyging sjekkes mot tre strukturgrenser: maksimal masse uten drivstoff, maksimal avgangsmasse og maksimal landingsmasse. Hver av dem tillater en ulik trafikklast, og den laveste av de tre er den du faktisk kan ta med.',

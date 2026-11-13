@@ -127,7 +127,7 @@ function todo(k,type){
     case 'hold': return [tr('Keep flying 360 inbound on the localizer to RONAX (D10.0 IASN), 3000 ft.','Fortsett 360 inn på localizeren til RONAX (D10,0 IASN), 3000 ft.'),
       tr('Over RONAX turn RIGHT to 180 and fly 1 minute outbound.','Over RONAX sving til HØYRE til 180 og fly 1 minutt ut.'),tr('Turn RIGHT back to 360 inbound to RONAX — that is one circuit.','Sving til HØYRE tilbake til 360 inn mot RONAX — det er én runde.')];
     default: return [tr('Fly anywhere: try turns, climbs and descents, and trim off the control pressure.','Fly hvor du vil: prøv svinger, stigning og nedstigning, og trim bort rorkreftene.'),
-      tr('Pick a procedure in the ✈ menu to practise an approach, a hold or a departure.','Velg en prosedyre i ✈-menyen for å øve på en innflyging, en venting eller en avgang.')];
+      tr('Pick a procedure in the ✈︎ menu to practise an approach, a hold or a departure.','Velg en prosedyre i ✈︎-menyen for å øve på en innflyging, en venting eller en avgang.')];
   }
 }
 
@@ -335,9 +335,9 @@ function autofly(env){
   return AF;
 }
 
-/* ---------- shared toolbar UI: the ✈ Start picker (airborne procedures and the page's own exercises in one list), the auto-fly
+/* ---------- shared toolbar UI: the ✈︎ Start picker (airborne procedures and the page's own exercises in one list), the auto-fly
    toggle, the auto-fly status line and the small "what to do now" card (shown once per start in the shell's notification area) ---------- */
-const CSS=`.afban{position:absolute;left:8px;top:8px;z-index:6;max-width:min(560px,70%);background:rgba(8,12,16,.86);border:1px solid #2fd17b;color:#d9fbe8;border-radius:8px;padding:5px 9px;font:600 12px/1.35 var(--f-sans,system-ui);pointer-events:none}
+const CSS=`.afban{position:absolute;left:8px;top:8px;z-index:6;max-width:min(560px,70%);background:rgba(8,12,16,.86);border:1px solid #2fd17b;color:#d9fbe8;border-radius:8px;padding:5px 9px;font:600 12px/1.35 var(--f-body);pointer-events:none}
 .afban b{color:#2fd17b;margin-right:6px}.afban small{display:block;color:#9fb0bd;font:500 11px/1.3 var(--f-mono,monospace)}
 .afban[hidden]{display:none}
 @media (max-width:932px),(max-height:520px){.afban{font-size:11px;padding:3px 7px;max-width:62%}}`;
@@ -359,8 +359,8 @@ function ui(o){
     draw(cur,on,ex){ api.cur=cur; api.ex=ex==null?null:ex; const L=o.L, X=o.ex?o.ex():[];
       const opt=(v,t,on)=>`<option value="${esc(v)}"${on?' selected':''}>${esc(t)}</option>`;
       const none=!cur&&api.ex==null;
-      let h=`<option value=""${none?' selected':''} disabled>${esc(L(tr('✈ Start…','✈ Start…')))}</option>`;
-      h+=GROUPS.map(([g,f])=>{ const xs=o.list.filter(x=>f(x.k)); return xs.length?`<optgroup label="${esc(L(g))}">${xs.map(x=>opt(x.k,'✈ '+L(x.t),x.k===cur)).join('')}</optgroup>`:''; }).join('');
+      let h=`<option value=""${none?' selected':''} disabled>${esc(L(tr('✈︎ Start…','✈︎ Start…')))}</option>`;
+      h+=GROUPS.map(([g,f])=>{ const xs=o.list.filter(x=>f(x.k)); return xs.length?`<optgroup label="${esc(L(g))}">${xs.map(x=>opt(x.k,'✈︎ '+L(x.t),x.k===cur)).join('')}</optgroup>`:''; }).join('');
       ['gnd','ex'].forEach(g=>{ const xs=X.filter(x=>x.g===g); if(xs.length) h+=`<optgroup label="${esc(L(XG[g]))}">${xs.map(x=>opt('x:'+x.k,L(x.t),api.ex===x.k&&!cur)).join('')}</optgroup>`; });
       const other=[]; if(o.list.some(x=>x.k==='free')) other.push(opt('free',L(NAMES.free),cur==='free'));
       if(o.onFailures) other.push(opt('fail:',L(tr('Failure scenarios… (Procedures → Failures)','Feilscenarier… (Prosedyrer → Feil)')),false));
@@ -374,7 +374,7 @@ function ui(o){
     showNow(k){ const L=o.L, D=def(k,o.type), st=D.start; nowK=k; const sh=SH(); if(!sh) return;
       const ap=o.type==='C172'?tr('hand-flying, trimmed','du flyr for hånd, trimmet'):tr('autopilot off, trimmed','autopilot av, trimmet');
       const where=tr(`${st.alt} ft · hdg ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.en}`,`${st.alt} ft · kurs ${String(Math.round(st.hdg)).padStart(3,'0')} · ${Math.round(st.ias)} KIAS · ${ap.no}`);
-      sh.card(`<h4><i>✈</i>${esc(L(NAMES[k]))} — ${esc(L(tr('you have control','du har kontrollene')))}</h4><p class="st">${esc(L(where))}</p><ol>${todo(k,o.type).map(x=>`<li>${esc(L(x))}</li>`).join('')}</ol>
+      sh.card(`<h4><i>✈︎</i>${esc(L(NAMES[k]))} — ${esc(L(tr('you have control','du har kontrollene')))}</h4><p class="st">${esc(L(where))}</p><ol>${todo(k,o.type).map(x=>`<li>${esc(L(x))}</li>`).join('')}</ol>
         <div class="row"><button type="button" class="go" data-a="fly">${esc(L(tr('Fly it','Fly')))}</button><button type="button" data-a="auto">${esc(L(tr('Auto-fly it','Autofly')))}</button></div>`,a=>{ if(a==='auto') o.onAuto(); }); },
     hideNow(){ const sh=SH(); if(sh) sh.hideCard(); }};
   sel.onchange=()=>{ const v=sel.value; if(!v) return; sel.blur();

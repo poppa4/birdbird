@@ -464,8 +464,10 @@
     function leave() { if (hover >= 0 && !downAt) { const was = hover; hover = -1; if (was >= 0) showCard(sel); states(); } }
     function open(i, beside) { const n = g.nodes[i]; if (!n) return; if (isEx(i)) { select(i); return; } if (o.onOpen) o.onOpen(n, !!beside); }
     /* the card: a point (shared with the 2D map), or the focused group's list */
+    /* the card moves to the right side when it would cover the dot it describes (so the pointer never lands on the card) */
+    function aside(i) { if (host.clientWidth < 700) return; const [px, py] = [scr.ok ? scr.x[i] : -1, scr.ok ? scr.y[i] : -1]; if (px < 0) return; const m = 16; if (px < card.offsetLeft + card.offsetWidth + m && py < card.offsetTop + card.offsetHeight + m && px > card.offsetLeft - m && py > card.offsetTop - m) card.classList.add('r'); }
     function showCard(i) {
-      if (i >= 0) { card.classList.toggle('r', host.clientWidth >= 700 && gsel < 0 && scr.ok && scr.x[i] < 340 && scr.y[i] < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol(), edit: !sample && !!o.onEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); return; }
+      if (i >= 0) { card.classList.remove('r', 'grp'); card.hidden = false; card.innerHTML = UI.cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, col: pcol(), edit: !sample && !!o.onEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc('← ' + names2[gsel])}</button></span>` : ''); aside(i); return; }
       card.classList.remove('r');
       if (gsel >= 0) { const c = L.clusters[gsel], a = c.ac >= 0 ? g.nodes[c.ac] : null; card.hidden = false; card.classList.add('grp'); card.innerHTML = UI.groupCardHTML(g, c.m.filter(visible), { t, sample, edit: !sample && !!o.onEdit, topic: c.topic, col: pcol(), name: names2[gsel], sub: a && names2[gsel].indexOf(a.label) < 0 ? a.label + (a.type ? ' · ' + a.type : '') : '' }); return; }
       card.hidden = true;

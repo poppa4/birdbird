@@ -6,7 +6,7 @@ const {T,L,el,slider,visible,quiz,shuffle}=LAB;
 const tr2=(en,no)=>({en,no});
 LAB.add({},{
  '3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg rundt i en 3D-cockpit (beta)',
- 'Birdbird Simulators':'Birdbird Simulatorer','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
+ 'Birdbird · Simulators':'Birdbird · Simulatorer','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
  'A typical twin-turboprop panel: EFIS attitude and HSI displays for both pilots, a centre navigator and radar/multifunction display, round engine gauges, annunciators, subpanels and pedestal. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.':'Tomotors turbopropp-panelet slik det er lagt opp i typeratingmaterialet: EFIS-attityde og -HSI for piloten, analoge instrumenter for andrepiloten, radar/flerfunksjonsskjerm i midten, runde motorinstrumenter, varsellys, underpaneler og pidestall. Start motorene, test autofeather og fly øvelsene for motorsvikt, brann og trykkfall.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv','B200 type rating':'B200-typerating',
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
@@ -736,7 +736,7 @@ LAB.onLang(()=>{ el('bPause').textContent=T(UI.paused?'Resume':'Pause'); el('bSo
 const idle=()=>SYS.pwrL<0.05&&SYS.pwrR<0.05&&SYS.pwrL>-0.05&&SYS.pwrR>-0.05;
 const D=()=>PR.dead, Ls=()=>SIDES[1-PR.dead], Ds=()=>SIDES[PR.dead];
 const PROCS=[
- {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air'},
+ {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈︎)','I lufta: innflyging, venting, SID eller STAR (velg ✈︎)'),set:'air'},
  {k:'free',t:tr2('Free flight','Fri flyging'),set:'free',brief:tr2('5,000 ft, 180 KIAS, south of the field.','5000 ft, 180 KIAS, sør for flyplassen.')},
  {k:'start',t:tr2('Engine start (both)','Motorstart (begge)'),set:'cold',brief:tr2('Cold aircraft on the ramp, battery start.','Kaldt fly på oppstillingsplassen, batteristart.')},
  {k:'runup',t:tr2('Before take-off and autofeather test','Før avgang og autofeather-test'),set:'running',brief:tr2('Both engines at low idle on the ramp.','Begge motorene på low idle på oppstillingsplassen.')},
@@ -1037,7 +1037,7 @@ if(QB.length) quiz(el('qbox'),'b200cockpit',()=>shuffle(QB.slice()).slice(0,8).m
 LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__E=E; window.__AP=AP; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__zoom={reg:()=>Z.reg,s:()=>Z.s,efx:()=>EFX.open,to:zoomTo,svg:P.svg}; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-/* ✈ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
+/* ✈︎ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
 AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('B200',AIRCAPS),L,type:'B200',onPick:pickProc,onAuto:toggleAuto,
   ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>procStart(k),
   onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);

@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>IFR trainer · Birdbird</title>
 <meta name="description" content="Learn instrument flying one procedure at a time: tracking, intercepts, NDB, DME arcs, holding, procedure turns, VOR, NDB, LOC, ILS and RNP approaches, SID and STAR, mental maths and partial panel. An instructor on screen tells you the next step, every term is explained, and the replay shows your first mistake.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* ===== IFR trainer =====
    Two views. Home (paper): what the trainer is beside a live miniature of the guided screen, the path of eight core
@@ -162,7 +162,7 @@ body:not(.v-trainer) #trainer{display:none}
 #catList[hidden]{display:none}
 
 /* ---- the builder: a dialog, form on the left, the picture on the right ---- */
-.blddlg{border:0;padding:0;background:transparent;color:inherit;max-width:none;max-height:none;width:min(1020px,calc(100vw - 32px));overflow:visible}
+.blddlg{border:0;border-radius:0;box-shadow:none;padding:0;background:transparent;color:inherit;max-width:none;max-height:none;width:min(1020px,calc(100vw - 32px));overflow:visible}
 .blddlg::backdrop{background:rgba(11,18,23,.55)}
 .bld{background:var(--sheet);color:var(--ink);border:1px solid var(--ink);border-radius:10px;display:flex;flex-direction:column;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:hidden;box-shadow:0 30px 70px -20px rgba(11,18,23,.5)}
 .bh{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:20px 22px 14px;border-bottom:1px solid var(--rule)}
@@ -623,7 +623,7 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
 </style>
 </head>
 <body data-title="IFR trainer">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead ifr-head">
     <div class="brand">
@@ -728,13 +728,13 @@ html[lang="nb"] .mist p.do::before{content:"I stedet: "}
   </section>
 </div>
 
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="navcore.js?v=2"></script>
 <script src="holdcore.js?v=2"></script>
 <script src="navmap.js?v=1"></script>
 <script src="navgauges.js?v=4"></script>
 <script src="ifrcore.js?v=3"></script>
-<script src="glossary.js?v=1"></script>
+<script src="glossary.js?v=2"></script>
 <script src="ifr.js?v=4"></script>
 </body>
 </html>

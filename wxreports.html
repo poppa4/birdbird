@@ -5,8 +5,8 @@
 <meta name="description" content="Read METAR, SPECI and TAF group by group, see a TAF as a timeline with VFR, SVFR and IFR periods, and learn the symbols on significant weather charts. Norwegian training examples.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Reading the Weather</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -35,7 +35,7 @@
 .smp button{font-family:var(--f-mono);font-size:12px;padding:5px 8px;min-height:30px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:var(--radius);cursor:pointer}
 .smp button:hover{border-color:var(--ink-3)}
 .smp button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-@media (pointer:coarse){.smp button{min-height:40px;min-width:52px}}
+@media (pointer:coarse){.smp button{min-height:44px;min-width:52px}}
 .xsec textarea{width:100%;box-sizing:border-box;min-height:92px;font-family:var(--f-mono);font-size:12.5px;line-height:1.45;border:1px solid var(--rule);border-radius:var(--radius);padding:8px;resize:vertical;background:var(--sheet);color:var(--ink)}
 .xsec .btns{margin-top:6px}
 .tab-dec [data-tab="chart"],.tab-chart [data-tab="dec"]{display:none!important}
@@ -117,12 +117,12 @@
 </style>
 </head>
 <body data-title="Reading the Weather">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Meteorology</div>
       <h1>Reading the weather</h1>
       <p data-tx="lead">METAR, SPECI and TAF, group by group. Pick a Norwegian example or paste a report, tap any group to see what it means, and read a TAF as a timeline: which conditions apply at the time you arrive, and is it VFR? Then learn the symbols on significant weather charts.</p>
       <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Decode a METAR and a TAF without a key, find the ceiling and visibility that apply at a given time, and read the hazards on a significant weather chart.</p>
@@ -204,9 +204,9 @@
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="wxkit.js?v=1"></script>
-<script src="wxreports.js?v=2"></script>
+<script src="wxreports.js?v=3"></script>
 </body>
 </html>

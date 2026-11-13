@@ -1,5 +1,5 @@
 /* Birdbird front page: live 3D wind tunnel in the hero (three.js r128)
-   Shows the real Virtual Lab scene from tunnel.html: the A320 with Cp on the surface, the dense streamlines
+   Shows the real Virtual Labs scene from tunnel.html: the A320 with Cp on the surface, the dense streamlines
    (coloured by local speed V/V∞) and the tip-vortex cores. Nothing is computed here: the geometry and the
    traced streamlines are baked from the lab itself into data/hero-tunnel.bin.gz (tools/bake-hero-tunnel.py),
    and drawn with the lab's own materials from cfd3d.js. The poster image under the canvas is a ?shot render
@@ -29,7 +29,7 @@
 
   async function start() {
     if (!window.THREE) await load('three.min.js');
-    if (!window.CFD) await load('cfd3d.js?v=6');
+    if (!window.CFD) await load('cfd3d.js?v=7');
     const h = await data('data/hero-tunnel.bin.gz?v=3');
     const THREE = window.THREE, CFD = window.CFD;
 

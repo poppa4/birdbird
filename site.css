@@ -29,6 +29,8 @@
   --ok:#2E7D4F; --caution:#B7791F; --warning:#B42318;                   /* status, inside instruments */
   --ok-wash:#EAF4EE; --caution-wash:#FBF3E4; --warning-wash:#FBECEA;
   --instrument:#10171D; --instrument-2:#18232C; --instrument-ink:#D7E1E6; --instrument-rule:#2A3742;
+  --navy:#0B2545; --navy-2:#132F55;                                      /* brand navy: front-page bands, map chrome */
+  --focus:var(--info); --focus-dark:#7FCBE8;                            /* focus ring on paper / on dark panels */
   /* legacy names still used by pages (keep) */
   --magenta:var(--accent); --chart-blue:var(--info); --inst:var(--instrument); --inst-2:var(--instrument-2);
   --bg:var(--paper); --panel:var(--sheet); --panel-2:#F6F8F6; --line:var(--rule); --fg:var(--ink); --muted:var(--ink-2);
@@ -57,7 +59,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-siz
 a{color:var(--accent);text-underline-offset:2px}
 button,input,select,textarea{font-family:inherit}
 ::selection{background:#E9CFDF}
-button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--info);outline-offset:2px}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* one container */
 .container,.page{max-width:var(--container);margin-inline:auto;width:100%}
@@ -101,12 +103,13 @@ button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,te
   .site .rank .rb,.site .rank .rx{display:none}
 }
 
-/* search bar injected by search.js: align to the container */
-html body .nsearch{margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:10px var(--gr) 10px var(--gl);background:var(--wash);border-bottom:1px solid var(--rule-2)}
-html body .nsearch .in{max-width:var(--container);border-color:var(--rule);border-radius:var(--radius-lg)}
-html body .nsearch input{font-size:15px;padding:9px 0}
-html body .nsearch .hint{display:none!important}
-html body .nsearch .res{max-width:var(--container);left:var(--gl);right:var(--gr)}
+/* search bar: the box is placed by site.js before first paint and wired by search.js (results list styled there) */
+.nsearch{position:relative;z-index:25;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:10px var(--gr) 10px var(--gl);background:var(--wash);border-bottom:1px solid var(--rule-2)}
+.nsearch .in{display:flex;align-items:center;gap:10px;max-width:var(--container);margin:0 auto;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:0 12px;transition:border-color .15s,box-shadow .15s}
+.nsearch .in:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(154,30,104,.12)}
+.nsearch svg{flex:0 0 18px;width:18px;height:18px;color:var(--ink-3)}
+.nsearch input{flex:1;border:0;outline:0;font:inherit;font-size:15px;line-height:24px;padding:9px 0;background:transparent;color:var(--ink);min-width:0;min-height:0}
+.nsearch .hint{display:none}
 
 /* ---------------- SectionNav (one tab bar per hub) ---------------- */
 .trnav{position:relative;z-index:29;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);background:var(--paper);border-bottom:1px solid var(--rule)}
@@ -361,15 +364,21 @@ body.depth-instructor .atl-split{grid-template-columns:minmax(0,1fr)}
 body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 @media print{.atl-side,.atl-bar{display:none!important}html.vlab .page{display:block}}
 
-/* touch: larger targets (iPad, phone) */
+/* header controls (language, My workspace, Sign in): one height */
+.site .hright .langseg button,.site .myws,.site .acct .mytr{min-height:32px;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
+/* touch: 44 px targets everywhere (iPad, phone): header, buttons, segmented controls, fields, footer links */
 @media (pointer:coarse){
-  .site .lang button,.site .lang a{min-height:36px;min-width:44px}
   input[type=checkbox],input[type=radio]{width:20px;height:20px}
   input[type=range]{height:32px}
-  .seg button,.tg button,.mktools .tg button,.dtools .tg button,.tabs button,.modetabs button{min-height:40px}
-  .site .hright .seg button{min-height:34px;min-width:40px}
-  .btn{min-height:40px}
-  select,input[type=text],input:not([type]),input[inputmode]{min-height:38px}
+  .btn,.seg button,.tg button,.tabs button,.modetabs button{min-height:44px}
+  .site .hright .seg button,.site .hright .langseg button{min-height:44px;min-width:44px}
+  .site .menu,.site .myws,.site .acct .mytr{min-height:44px}
+  .site .acct .mytr.ini{width:44px;height:44px}
+  .site .acm a,.site .acm button,.tgm a{min-height:44px;display:flex;align-items:center}
+  .tgm .md a{min-width:44px;justify-content:center}
+  .nsearch input{padding:11px 0}
+  select,input[type=text],input[type=search],input[type=number],input[type=email],input:not([type]),input[inputmode]{min-height:44px}
+  .sitefoot a{min-height:44px;display:flex;align-items:center;padding:0}
 }
 @media print{.site,.sitefoot,.nsearch,.labnav,.snav,.vlpath,.trnav{display:none!important}body{background:#fff}}
 /* language switch in the site header: identical on every page */
@@ -402,7 +411,7 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 
 /* simulators: 2D / 3D switch next to the aircraft picker */
 .dseg{display:inline-flex;flex:0 0 auto;border:1px solid rgba(255,255,255,.18);border-radius:6px;overflow:hidden;background:rgba(255,255,255,.04)}
-.dseg a{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font:600 12.5px/1 var(--f-sans,system-ui);color:#c9d2da;text-decoration:none;white-space:nowrap}
+.dseg a{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;font:600 12.5px/1 var(--f-body);color:#c9d2da;text-decoration:none;white-space:nowrap}
 .dseg a+a{border-left:1px solid rgba(255,255,255,.14)}
 .dseg a:hover{color:#fff;background:rgba(255,255,255,.08)}
 .dseg a.on{background:#e9eef2;color:#0d1319}

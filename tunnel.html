@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Virtual Wind Tunnel</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* Layout: tunnelen er scenen, kontrollpanel til høyre som instrumentpanel; avlesninger og diagrammer under. Bevisst ett mørkt tema (vindtunnel med røyk). */
 :root{
@@ -424,20 +424,20 @@ body.depth-instructor .memo h3{font-size:20px}
 @keyframes kflash{0%{box-shadow:0 0 0 0 rgba(154,30,104,.55)}100%{box-shadow:0 0 0 14px rgba(154,30,104,0)}}
 @media (prefers-reduced-motion:reduce){.kflash{animation:none}}
 /* touch: larger targets for the panel buttons and chart toggles; the overlay buttons on the 3D view stay compact (36px) so they cover less of the model */
-@media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:40px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
+@media (pointer:coarse){.t3b,html .cn-tog,.kc .kgo{min-height:44px}.viewport .ovbar .ov-tabs button,.ov-tr .envseg button,.camb{min-height:36px}}
 </style>
 
 </head>
 <body data-title="Wind tunnel">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-<nav class="labnav" aria-label="Virtual Lab"></nav>
+<nav class="labnav" aria-label="Virtual Labs"></nav>
 <header class="lhead">
   <div class="brand">
-    <div class="eyebrow">Birdbird Virtual Lab · Aerodynamikk</div>
+    <div class="eyebrow">Birdbird Virtual Labs · Aerodynamikk</div>
     <h1>Vindtunnelen</h1>
     <p id="acFull">Airbus A320</p>
-    <p class="goal" id="goal"><span class="k" id="goalK">Learning goal</span><span id="goalT"></span></p>
+    <p class="goal" id="goal"><span class="k" id="goalK">Learning goal</span><span id="goalT">Explain how a wing makes lift and why it stalls at the critical angle of attack, and use flaps, slats, spoilers and the stall speed (VS = VS1g·√n) on the flight deck.</span></p>
   </div>
   <div class="hright"><div class="status ok" id="status" role="status">Normal</div></div>
 </header>
@@ -760,7 +760,7 @@ window.addEventListener('error',function(e){ var b=document.getElementById('errb
 <script src="three.min.js"></script>
 <script src="tunnel3d.js?v=3"></script>
 <script src="cfd3d.js?v=7"></script>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="physics.js?v=14"></script>
 <script src="section.js?v=12"></script>
@@ -773,7 +773,7 @@ const P = window.VLab, DEG = Math.PI/180, KT = 0.514444, G0 = 9.80665;
 /* ---------------- Språk / language ---------------- */
 // Kildeteksten i koden er norsk; engelsk er standard i grensesnittet.
 const NO2EN={
-'Birdbird Virtual Lab · Aerodynamikk':'Birdbird Virtual Lab · Aerodynamics','Vindtunnelen':'Wind tunnel',
+'Birdbird Virtual Labs · Aerodynamikk':'Birdbird Virtual Labs · Aerodynamics','Vindtunnelen':'Wind tunnel',
 'Normal':'Normal','Stall':'Stall','Nær stall':'Near stall',
 'Trykk':'Pressure','Strømlinjer':'Streamlines','Røyk':'Smoke','Snitt':'Slice','Virvler':'Vortices','Ulltråder':'Tufts',
 'Side':'Side','Front':'Front','Topp':'Top',

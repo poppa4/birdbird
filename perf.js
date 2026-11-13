@@ -463,7 +463,7 @@ LAB.quiz(el('qbox'),'perf',()=>LAB.shuffle([
 ]),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Take-off and landing performance':'Start- og landingsytelse','Birdbird Virtual Lab · Performance':'Birdbird Virtual Lab · Ytelse',
+LAB.add({},{'Take-off and landing performance':'Start- og landingsytelse','Birdbird Virtual Labs · Performance':'Birdbird Virtual Labs · Ytelse',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The runway lab':'Rullebanelabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Aircraft':'Fly','Take-off':'Start','Obstacle':'Hinder','Landing':'Landing','Conditions':'Forhold','Runway':'Rullebane','Scenarios':'Scenarier','Advanced':'Avansert','Use the balanced V1':'Bruk balansert V1','Flaps':'Klaff','Runway surface':'Banedekke','Mode':'Modus','Sections':'Seksjoner',
  'The runway seen from above with the declared distances, the take-off and stopping distances and the V1 window; in the other modes the climb after take-off from the side and the landing distance.':'Rullebanen sett ovenfra med de oppgitte distansene, start- og stoppdistansene og V1-vinduet; i de andre modusene stigningen etter avløft fra siden og landingsdistansen.'});

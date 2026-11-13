@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Radio drills · Birdbird</title>
 <meta name="description" content="Radio trainer with EASA and ICAO phraseology: talk to the controller by voice or keyboard, VFR and IFR from gate to gate, emergencies and basics. Every readback is checked element by element, with the rule behind it.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="train.css?v=1">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="train.css?v=2">
 <style>
 /* ---- radio trainer ---- */
 .rt-wrap{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -86,7 +86,7 @@
 .bigptt svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:1.8}
 .bigptt.on{background:radial-gradient(circle at 40% 35%,#ff7a68,#c73a29);border-color:#ff7a68;box-shadow:0 0 0 6px rgba(236,90,71,.25)}
 .bigptt:disabled{opacity:.35;cursor:not-allowed}
-.bigptt:focus-visible{outline:3px solid #7fcbe8;outline-offset:3px}
+.bigptt:focus-visible{outline:2px solid var(--focus-dark);outline-offset:3px}
 .pttrow .inrow{flex:1 1 auto}
 .pttrow textarea{height:92px!important}
 .pttrow .txcol{display:flex;flex-direction:column;gap:6px}
@@ -144,7 +144,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </style>
 </head>
 <body data-title="Radio drills">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -290,7 +290,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 
   <p class="note">Teaching tool based on EASA SERA, ICAO Doc 4444 and Doc 9432 and AIP Norway, with UK CAP 413 only as a cross-check (see Sources). Local phraseology varies: always follow the AIP and your instructor. Birdbird, Skarvik, Tjernmo, their frequencies, procedures and the scenarios are fictional training data, not for navigation.</p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="ai.js?v=1"></script>
 <script src="radiocore.js?v=2"></script>
 <script src="radioscen.js?v=3"></script>

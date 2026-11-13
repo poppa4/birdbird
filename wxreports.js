@@ -407,7 +407,7 @@ LAB.quiz(el('qbox'),'wxreports',()=>LAB.shuffle([
 ]),8);
 
 /* ---------------- text ---------------- */
-LAB.add({},{'Reading the Weather':'Les værmeldingen','Reading the weather':'Les værmeldingen','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
+LAB.add({},{'Reading the Weather':'Les værmeldingen','Reading the weather':'Les værmeldingen','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','Weather report decoder':'Værrapport-dekoder','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv','1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv',
  'Controls':'Kontroller','Conditions':'Forhold','Show':'Vis','Advanced':'Avansert','Example reports':'Eksempelrapporter','Symbols':'Symboler','Paste your own':'Lim inn din egen','Decode':'Avkod','Decoded, group by group':'Avkodet, gruppe for gruppe','Time to check (UTC)':'Tidspunkt å sjekke (UTC)'});
 LAB.tx({lead:'METAR, SPECI og TAF, gruppe for gruppe. Velg et norsk eksempel eller lim inn en rapport, trykk på en gruppe for å se hva den betyr, og les en TAF som en tidslinje: hvilke forhold gjelder når du ankommer, og er det VFR? Lær så symbolene på significant weather-kart.',

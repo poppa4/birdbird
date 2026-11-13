@@ -5,8 +5,8 @@
 <meta name="description" content="A320 stability, controls and load factor for EASA ATPL 081 Principles of Flight: CG and balance, static and dynamic stability, V-n and gust loads, buffet, flight controls and what normal law changes.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Stability, Controls and Load Factor</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
@@ -25,7 +25,7 @@
 .ovr{position:absolute;right:8px;top:8px;display:flex;gap:4px}
 .vbtn{font-family:var(--f-mono);font-size:11px;background:rgba(24,35,44,.92);color:#D7E1E6;border:1px solid #2A3742;border-radius:3px;padding:4px 9px;cursor:pointer;line-height:1.3}
 .vbtn:hover{border-color:#7FCBE8}.vbtn.on{background:#E46BAE;color:#10171D;border-color:#E46BAE;font-weight:600}
-.vbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.vbtn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .exam{border:1px solid var(--rule);border-left:3px solid var(--accent);background:var(--sheet);border-radius:0 var(--radius) var(--radius) 0;padding:14px 18px 14px;max-width:none}
 .exam .ct{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .exam ul{margin:0;padding-left:18px;display:grid;gap:5px;font-size:14.5px;line-height:1.5;color:var(--ink)}
@@ -151,12 +151,12 @@ body.depth-instructor .maid b{font-size:24px}
 </style>
 </head>
 <body data-title="Stability, Controls and Load Factor">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aerodynamics</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Aerodynamics</div>
       <h1>Stability, controls and load factor</h1>
       <p>Start with where the CG and the mass sit, and watch stall speed, range, stability and control change together on one aircraft. Then disturb it, pull g in turbulence and at altitude, and move every control surface: the classic aerodynamics the ATPL exam tests, and what fly-by-wire normal law does on top.</p>
       <p class="goal" id="goal"></p>
@@ -357,7 +357,7 @@ body.depth-instructor .maid b{font-size:24px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="chartnote.js?v=1"></script>
 <script src="concepts.js?v=2"></script>
 <script src="stab.js?v=1"></script>
@@ -406,7 +406,7 @@ LAB.add({},{
  '1 · Understand':'1 · Forstå','The balance in one diagram, and every term in full':'Balansen i ett diagram, og alle begrepene i sin helhet','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points':'3 · Det viktigste','3 · Key points · in the aircraft':'3 · Det viktigste · i flyet','3 · Test yourself':'3 · Test deg selv','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Interactive':'5 · Interaktiv','7 · Interactive':'7 · Interaktiv','8 · Interactive':'8 · Interaktiv','9 · Operations':'9 · Operativt',
  'Side view of a twin-jet airliner with the weight at the CG, wing lift at the centre of pressure and the tail force, over an enlarged mean aerodynamic chord with the CG limits, the neutral point and the static margin. Drag the CG along the chord.':'Sidebilde av et tomotors jetfly med vekten i CG, vingeløftet i trykksenteret og halekraften, over en forstørret midlere aerodynamisk korde med CG-grensene, nøytralpunktet og den statiske marginen. Dra CG langs korden.',
  'Mass and CG envelope. Drag the dot to set mass and CG together.':'Masse- og CG-konvolutt. Dra punktet for å sette masse og CG samtidig.','Flare elevator needed and stick force per g against CG, with the CG limits at this mass':'Høyderor nødvendig i utflatingen og stikkekraft per g mot CG, med CG-grensene ved denne massen',
- 'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
+ 'Stability, Controls and Load Factor':'Stabilitet, ror og lastfaktor','Stability, controls and load factor':'Stabilitet, ror og lastfaktor','Birdbird Virtual Labs · Aerodynamics':'Birdbird Virtual Labs · Aerodynamikk',
  'Start with where the CG and the mass sit, and watch stall speed, range, stability and control change together on one aircraft. Then disturb it, pull g in turbulence and at altitude, and move every control surface: the classic aerodynamics the ATPL exam tests, and what fly-by-wire normal law does on top.':'Start med hvor CG og massen ligger, og se steilefart, rekkevidde, stabilitet og styring endre seg samtidig på ett fly. Forstyrr det så, trekk g i turbulens og i høyden, og beveg hver rorflate: den klassiske aerodynamikken ATPL-eksamen tester, og hva fly-by-wire normal law gjør på toppen.',
  'CG and balance':'CG og balanse','Static stability':'Statisk stabilitet','Dynamic stability':'Dynamisk stabilitet','Load factor and V-n':'Lastfaktor og V-n','Flight controls':'Flykontroller','In the aircraft':'I flyet','Test yourself':'Test deg selv',
  '1 · Interactive':'1 · Interaktiv','2 · Interactive':'2 · Interaktiv','3 · Interactive':'3 · Interaktiv','4 · Interactive':'4 · Interaktiv','5 · Interactive':'5 · Interaktiv','6 · Operations':'6 · Operativt','6 · Interactive':'6 · Interaktiv','7 · Operations':'7 · Operativt','1 · Start here':'1 · Start her','Forward or aft CG':'Fremre eller bakre CG','Check':'Sjekk',

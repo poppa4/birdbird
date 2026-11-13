@@ -5,8 +5,8 @@
 <meta name="description" content="Pressurisation and oxygen (EASA 021/040): cabin altitude, differential pressure, the outflow valve and the cabin controller, rapid and slow decompression, hypoxia and time of useful consciousness, crew and passenger oxygen and the EASA oxygen rules, for unpressurised pistons, pressurised turboprops and jet transports.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressurisation and Oxygen</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* the pressurisation figure: one dark canvas with the cut-away fuselage, the altitude–time chart and the hypoxia panel */
 .pr-vp{background:radial-gradient(130% 100% at 30% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -16,7 +16,7 @@
 .pr-vp .vtabs button[aria-disabled=true]{opacity:.38;cursor:not-allowed}
 .pr-vp .vtools button{min-width:40px}
 @media (max-width:640px){#prv{aspect-ratio:1/1.62;max-height:none}.pr-vp .vchip{position:static;margin:0;border-radius:0;max-width:none;border-left:0;border-right:0}}
-@media (pointer:coarse){.pr-vp .vtabs button,.pr-vp .vtools button{min-height:40px}.xsec .seg button{min-height:40px}}
+@media (pointer:coarse){.pr-vp .vtabs button,.pr-vp .vtools button{min-height:44px}.xsec .seg button{min-height:44px}}
 .xsec .seg.wrap{flex-wrap:wrap}
 .xsec .seg.wrap button{flex:1 1 30%}
 .xsec .hint{font-size:12.5px;color:var(--ink-3);margin:6px 0 0;line-height:1.45}
@@ -83,12 +83,12 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Pressurisation and Oxygen">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aircraft and engine systems</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Aircraft and engine systems</div>
       <h1>Pressurisation and oxygen</h1>
       <p data-tx="lead">Why a jet at FL370 carries a cabin at about 7000 ft, what the outflow valve and the cabin controller do, what happens when a window or a door seal lets go, how fast the lack of oxygen takes away your ability to act, and who must have oxygen when. Compared across an unpressurised piston, a pressurised turboprop and a jet transport.</p>
     </div>
@@ -156,9 +156,9 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="presscore.js?v=1"></script>
-<script src="press.js?v=1"></script>
+<script src="press.js?v=2"></script>
 </body>
 </html>

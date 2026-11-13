@@ -51,7 +51,7 @@ const F={mode:'path',v:100,m:1050,pw:0.6,gam:0,phi:0,wind:0,h:3000,mag:true};
 let R=null;
 
 /* ---------------- strings ---------------- */
-LAB.add({},{'Forces in Flight':'Krefter i flyging','Forces in flight':'Krefter i flyging','Birdbird Virtual Lab · Aerodynamics':'Birdbird Virtual Lab · Aerodynamikk',
+LAB.add({},{'Forces in Flight':'Krefter i flyging','Forces in flight':'Krefter i flyging','Birdbird Virtual Labs · Aerodynamics':'Birdbird Virtual Labs · Aerodynamikk',
  'Lift, weight, thrust and drag, drawn to scale and live. Fly level, climb, glide and turn, and see why lift is less than weight in a climb, why the glide ratio is L/D, and why the stall speed rises in a turn.':'Løft, vekt, skyv og motstand, tegnet i skala og live. Fly rett fram, stig, gli og sving, og se hvorfor løftet er mindre enn vekten i stigning, hvorfor glidetallet er L/D, og hvorfor steilefarten øker i sving.',
  'The four forces':'De fire kreftene','Forces in flight lab':'Kraftlab','Try it':'Prøv selv','Debrief':'Debrief','What to take away':'Det du skal ta med deg','Test yourself':'Test deg selv',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Try':'3 · Prøv','4 · Debrief':'4 · Debrief','5 · Check':'5 · Sjekk','2 · Explore · Try it':'2 · Utforsk · Prøv selv','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv','What happened, and why it matters':'Hva skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg','You set':'Du styrer','Forces':'Krefter',

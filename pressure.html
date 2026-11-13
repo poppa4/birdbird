@@ -5,8 +5,8 @@
 <meta name="description" content="Why air flows from high to low pressure, why it ends up blowing along the isobars, and what friction does near the ground. Build the wind one force at a time on a weather chart: pressure gradient, Coriolis, friction, Buys Ballot, the altimeter from high to low, and local winds.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pressure and Wind</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 .goal{margin:16px 0 0;max-width:66ch;font-size:15.5px;line-height:1.5;color:var(--ink);padding:2px 0 2px 14px;border-left:3px solid var(--accent)}
 .goal .k{display:block;font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
@@ -67,12 +67,12 @@ body.depth-instructor .ro .rrow b{font-size:15px}
 </style>
 </head>
 <body data-title="Pressure and Wind">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Meteorology</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Meteorology</div>
       <h1>Pressure and wind</h1>
       <p data-tx="lead">Why air flows from high towards low pressure, why it ends up blowing along the isobars instead, and what friction does near the ground. Build the wind one force at a time on a weather chart, then use it: find the low, estimate the surface wind, know when your altimeter reads too high, and read the local winds.</p>
       <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain how the pressure gradient, the Coriolis effect and friction set the wind, and use it in the cockpit.</p>
@@ -204,7 +204,7 @@ body.depth-instructor .ro .rrow b{font-size:15px}
   </section>
   <p class="foot" id="foot" data-tx="foot"><b>Model and limitations.</b> Teaching model of two idealised pressure systems on a flat chart, north up, 2000–2600 km across. The geostrophic wind uses V<sub>g</sub> = Δp / (ρ f Δn) with f = 2Ω sin φ and ignores isobar curvature, so it overestimates the wind close to a tight low. The surface wind uses typical, illustrative values: backed about 30° and about half the speed over land, about 10° and 70 % over the sea; real values depend on terrain, stability and the time of day. The force arrows show directions, not exact sizes, and the parcel’s turn is damped so it settles quickly (real air oscillates as it adjusts). The altimeter error uses about 27 ft per hPa and ISA temperatures. The local winds are schematic, with typical strengths; the föhn uses 3 °C per 1000 ft dry and about 1.8 °C per 1000 ft saturated. For real flights use the METAR, TAF, wind charts and AIP.</p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script>
 (function(){
@@ -220,7 +220,7 @@ const UC={ink:'#13202A',ink2:'#4C5B66',wind:'#9A1E68'};
 
 /* ---------- strings ---------- */
 LAB.add({},{
- 'Pressure and Wind':'Trykk og vind','Pressure and wind':'Trykk og vind','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
+ 'Pressure and Wind':'Trykk og vind','Pressure and wind':'Trykk og vind','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Key points':'3 · Det viktigste','3 · Test yourself':'3 · Test deg selv',
  'Key concepts':'Nøkkelbegreper','Build the wind':'Bygg vinden','Try it':'Prøv selv','What happened, and why it matters':'Hva som skjedde, og hvorfor det betyr noe','Pilot takeaways':'Dette tar piloten med seg',
  'Key points':'Det viktigste','Test yourself':'Test deg selv','Controls':'Kontroller','Forces':'Krefter','Conditions':'Forhold','Values at the probe':'Verdier ved sonden','Values':'Verdier','Advanced':'Avansert',

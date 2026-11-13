@@ -66,8 +66,14 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:0}
 .btn.sm{font-size:13px;padding:6px 11px}
 .btn.lg{font-size:15px;padding:12px 20px}
 .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn.danger{color:var(--warning);border-color:var(--warning)}
+.btn.danger:hover{background:var(--warning-wash)}
 .btn[disabled],.btn:disabled{opacity:.45;cursor:default}
 .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* Dialog: one sheet, one backdrop (pages only set their own width) */
+dialog{border:1px solid var(--rule);border-radius:var(--radius-lg);padding:24px;max-width:min(460px,calc(100vw - 32px));box-shadow:var(--shadow-pop);color:var(--ink);background:var(--sheet)}
+dialog::backdrop{background:rgba(19,32,42,.38)}
+@media (max-width:600px){dialog{padding:18px}}
 
 /* ---------------- Readouts ---------------- */
 .ro{display:flex;flex-direction:column}
@@ -172,7 +178,7 @@ details.xsec>summary small{margin-left:auto;font-family:var(--f-body);font-size:
 .vtools button.on,.vtools button[aria-pressed=true]{background:#E6EBEF;color:#13181D;border-color:#E6EBEF;font-weight:600}
 .vtools button.go{border-color:rgba(236,90,71,.6);color:#FFB4A8}
 .vtools button.go:hover{background:rgba(236,90,71,.18)}
-.vtabs button:focus-visible,.vtools button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.vtabs button:focus-visible,.vtools button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 /* readout chip, top-left over the model (tunnel HUD): <span><i>label</i><b>value</b></span> … */
 .vcv{position:relative}
 .vchip{position:absolute;left:10px;top:8px;z-index:2;display:flex;flex-wrap:wrap;gap:2px 16px;max-width:calc(100% - 20px);background:rgba(12,15,18,.55);border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:6px 10px;font-family:var(--f-mono);font-size:10.5px;line-height:1.35;color:#8E99A4;pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -256,7 +262,7 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 @media (max-width:980px){body.depth-instructor .xapp{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:reduce){details.xsec>summary::before,.xpanel>.xsum>span:first-child::before{transition:none}}
 /* touch: 40px targets in the viewport bar, toggles, small buttons and the concept-card link */
-@media (pointer:coarse){.vtabs button,.vtabs.seg button,.vtools button,.xtog,.btn.sm,.xsec .pre .btn,.xsec .btns .btn,html .vbtn,html .cn-tog{min-height:40px}.kgo{min-height:40px;display:inline-flex;align-items:center}}
+@media (pointer:coarse){.vtabs button,.vtabs.seg button,.vtools button,.xtog,.btn.sm,.xsec .pre .btn,.xsec .btns .btn,html .vbtn,html .cn-tog{min-height:44px}.kgo{min-height:44px;display:inline-flex;align-items:center}}
 /* ---- shared glossary (glossary.js): the pop-up, and the calm marks in lab body text ---- */
 .glpop{position:fixed;z-index:1000;box-sizing:border-box;background:#13202A;color:#E6EBEF;border:1px solid #2E404D;border-radius:8px;padding:12px 14px 13px;box-shadow:0 18px 40px rgba(0,0,0,.35);font-family:var(--f-body);font-size:14.5px;line-height:1.45;text-align:left;white-space:normal;letter-spacing:normal;text-transform:none}
 .glpop[hidden]{display:none}
@@ -264,7 +270,7 @@ body.depth-instructor .xcard .rrow{font-size:16px;padding:7px 0}
 .glpop .gh b{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:19px;color:#fff;line-height:1.15}
 .glpop .gx{all:unset;cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border-radius:4px;color:#9EADB7;font-size:20px;line-height:1}
 .glpop .gx:hover{color:#fff;background:#1C2934}
-.glpop .gx:focus-visible{outline:2px solid #7FCBE8}
+.glpop .gx:focus-visible{outline:2px solid var(--focus-dark)}
 .glpop .gn{display:block;color:#7FCBE8;font-weight:600;font-size:13.5px;margin-top:1px}
 .glpop p{margin:7px 0 0;color:#DFE7EC}
 .glpop .glab{display:inline-block;margin-top:9px;font-size:13.5px;color:#7FCBE8;text-decoration:none;border-bottom:1px solid rgba(127,203,232,.4)}

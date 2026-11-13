@@ -496,7 +496,7 @@ LAB.quiz(el('qbox'),'airdata',()=>LAB.shuffle([
  {q:t2('Near sea level, 1 hPa of altimeter setting is worth about…','Nær havet er 1 hPa på høydemåleren verdt omtrent …'),a:[t2('27 ft','27 ft'),t2('10 ft','10 ft'),t2('100 ft','100 ft')],c:0,e:t2('About 27–30 ft per hPa near sea level, more higher up.','Omtrent 27–30 ft per hPa nær havet, mer høyere opp.')}]).map(q=>{ const o=LAB.shuffle(q.a.map((_,i)=>i)); return {...q,a:o.map(i=>q.a[i]),c:o.indexOf(q.c)}; }),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Air Data':'Luftdata','Air data: pressure, altitude and airspeed':'Luftdata: trykk, høyde og fart','Birdbird Virtual Lab · Instruments':'Birdbird Virtual Lab · Instrumenter',
+LAB.add({},{'Air Data':'Luftdata','Air data: pressure, altitude and airspeed':'Luftdata: trykk, høyde og fart','Birdbird Virtual Labs · Instruments':'Birdbird Virtual Labs · Instrumenter',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The air data lab':'Luftdatalabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Faults':'Feil','Altimeter':'Høydemåler','Conditions':'Forhold','The flight':'Flygingen','Scenarios':'Scenarier','Advanced':'Avansert','Set the actual QNH':'Sett faktisk QNH','Alternate static open':'Alternativ statisk åpen','Mode':'Modus','Sections':'Seksjoner',
  'Pitot-static system wired to the airspeed indicator, altimeter and VSI, with a side view of the aircraft over the terrain.':'Pitot-statisk system koblet til fartsmåler, høydemåler og VSI, med et sidebilde av flyet over terrenget.'});

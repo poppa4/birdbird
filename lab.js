@@ -280,7 +280,7 @@
     if(!document.querySelector('.gloss')) return;
     const go=()=>{ if(window.GLOSS) window.GLOSS.auto('.gloss'); };
     if(window.GLOSS){ setTimeout(go,0); return; }
-    const sc=document.createElement('script'); sc.src='glossary.js?v=1'; sc.async=true; sc.onload=go; document.head.appendChild(sc);
+    const sc=document.createElement('script'); sc.src='glossary.js?v=2'; sc.async=true; sc.onload=go; document.head.appendChild(sc);
   }
   /* "Next" at the end of every lab (the step bar's last step): next topic in the area, then the next area */
   function pathbar(page){

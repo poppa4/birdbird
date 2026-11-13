@@ -5,8 +5,8 @@
 <meta name="description" content="Route Explorer: build a route on the map, see the terrain under it in profile and 3D, and send it to your briefing pack.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -118,7 +118,7 @@
 .mappop .warn,.sugg .warn{color:#8A5A00}
 
 /* ---------- Route Explorer 2.0: kartet først ---------- */
-.updlg{border:1px solid var(--rule);border-radius:8px;padding:18px;width:min(520px,calc(100vw - 24px));box-shadow:0 18px 50px rgba(19,32,42,.25)}.updlg h3{margin:0 0 10px}.updlg::backdrop{background:rgba(19,32,42,.35)}.upprev{background:#F3F5F5;border:1px solid var(--rule);border-radius:4px;max-height:260px;overflow:auto;margin-bottom:10px;text-align:center}.upprev img{max-width:100%;display:block;margin:0 auto}.updlg .f{display:flex;flex-direction:column;gap:3px;font-size:13px;margin:0 0 8px}.updlg input,.updlg select{font:inherit;font-size:15px;padding:6px 8px;border:1px solid var(--rule);border-radius:4px}.updlg .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}#upnote:empty{display:none}
+.updlg{width:min(520px,calc(100vw - 24px));max-width:none}.updlg h3{margin:0 0 10px}.upprev{background:#F3F5F5;border:1px solid var(--rule);border-radius:4px;max-height:260px;overflow:auto;margin-bottom:10px;text-align:center}.upprev img{max-width:100%;display:block;margin:0 auto}.updlg .f{display:flex;flex-direction:column;gap:3px;font-size:13px;margin:0 0 8px}.updlg input,.updlg select{font:inherit;font-size:15px;padding:6px 8px;border:1px solid var(--rule);border-radius:4px}.updlg .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}#upnote:empty{display:none}
 .rx{position:relative;height:calc(100dvh - var(--rxtop,112px));min-height:520px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);overflow:hidden;background:#D9E6EE}
 .rx .mapw{position:absolute;inset:0;height:auto;border:0}
 .rx-top{position:absolute;left:12px;right:12px;top:12px;display:flex;gap:10px;align-items:flex-start;z-index:5;pointer-events:none}
@@ -350,7 +350,7 @@
 .bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
 .mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
 /* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy #0B2545 with magenta accents ---- */
-.rx{--navy:#0B2545;--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
+.rx{--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
 .rx .seg3{border:0;border-radius:10px;background:var(--glass);box-shadow:var(--lift)}
 .rx .seg3 button{border-right:1px solid var(--hair);color:#3A4D60;transition:background .15s,color .15s}
 .rx .seg3 button.on{background:var(--navy);color:#fff}
@@ -384,14 +384,14 @@
 /* ---- 2026-11: tidy Layers panel (presets + collapsible groups), airspace on the profile, navlog, export ---- */
 .rx .rx-ly{gap:2px}
 .lypre{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 6px}
-.lypre button{font:inherit;font-size:13px;font-weight:600;padding:8px 6px;border:1px solid var(--hair,#E3E8EA);border-radius:10px;background:#F6F8FA;color:#0B2545;cursor:pointer}
+.lypre button{font:inherit;font-size:13px;font-weight:600;padding:8px 6px;border:1px solid var(--hair,#E3E8EA);border-radius:10px;background:#F6F8FA;color:var(--navy);cursor:pointer}
 .lypre button:hover{border-color:#9A1E68}.lypre button.on{background:#fff;border-color:#9A1E68;color:#9A1E68;box-shadow:0 0 0 1px #9A1E68 inset}
 .lyg{border-top:1px solid var(--hair,#E3E8EA)}.lyg[hidden]{display:none}
 .lyg>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:9px 0 7px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5B6C7C;user-select:none}
 .lyg>summary::-webkit-details-marker{display:none}
 .lyg>summary::after{content:"";margin-left:auto;width:7px;height:7px;border-right:1.6px solid #7D8B95;border-bottom:1.6px solid #7D8B95;transform:rotate(-45deg);transition:transform .15s}
 .lyg[open]>summary::after{transform:rotate(45deg)}
-.lyg>summary:hover{color:#0B2545}
+.lyg>summary:hover{color:var(--navy)}
 .lyc{font-weight:500;letter-spacing:0;text-transform:none;font-size:11.5px;color:#8A97A2;font-family:var(--f-mono)}
 .lyg[open]{padding-bottom:6px}.lyg .bmg{margin-top:0}
 .lyg label.chk{display:flex;align-items:center;gap:6px}.lyg label.chk.sub{padding-left:22px}
@@ -409,7 +409,7 @@
 .rx-sheet.empty .xio,.rx-sheet.empty .asl{display:none!important}
 .xio .lnk{border:0;background:none;padding:2px 0;font:inherit;color:#7A1652;cursor:pointer;text-align:left}.xio .lnk:hover{text-decoration:underline}
 .xexp{display:inline-flex;align-items:center;gap:4px}.xexp>span{margin-right:2px}
-.xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:#0B2545}.xexp button:hover{border-color:#9A1E68;color:#9A1E68}
+.xexp button{font:inherit;font-size:12px;border:1px solid var(--rule);background:#fff;border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--navy)}.xexp button:hover{border-color:#9A1E68;color:#9A1E68}
 .sh-nl[aria-pressed="true"]{background:var(--ink);color:#fff}
 .nlp{max-width:1100px}.nlp[hidden]{display:none}
 .nlin{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;margin:0 0 8px}
@@ -434,15 +434,15 @@
 .mapw:has(.mlwarn) .maplg{display:none}
 /* map hint: shown on the first two visits, fades after ~6 s or the first touch of the map; the ? button brings it back */
 .rx .maplg{transition:opacity .5s,visibility .5s,bottom .2s}.rx .maplg.lgoff{opacity:0;visibility:hidden}
-#lghelp{font-size:15px;font-weight:700}#lghelp[aria-pressed="true"]{background:#0B2545;color:#fff}
+#lghelp{font-size:15px;font-weight:700}#lghelp[aria-pressed="true"]{background:var(--navy);color:#fff}
 
 /* ===== map-first layout (SkyVector-style): floating route card, profile strip, layers behind one button ===== */
 .rx{--rcw:356px}
 .rx .seg3,.rx .lybtn,.rx .rx-ly,.rx .mapctl,.rx .edbar,.rx .x3w{border-radius:0!important}
 .rx .seg3 button,.rx .bmg button{border-radius:0}
 .rx-top{left:auto;justify-content:flex-end}
-.rcard{position:absolute;left:12px;top:12px;width:var(--rcw);z-index:6;background:#fff;border:1px solid rgba(11,37,69,.2);box-shadow:0 6px 20px rgba(11,37,69,.13);font-size:13.5px;color:#0B2545}
-.rc-hd{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;border:0;background:#0B2545;color:#fff;font:inherit;padding:7px 10px;cursor:pointer;text-align:left}
+.rcard{position:absolute;left:12px;top:12px;width:var(--rcw);z-index:6;background:#fff;border:1px solid rgba(11,37,69,.2);box-shadow:0 6px 20px rgba(11,37,69,.13);font-size:13.5px;color:var(--navy)}
+.rc-hd{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;border:0;background:var(--navy);color:#fff;font:inherit;padding:7px 10px;cursor:pointer;text-align:left}
 .rc-k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;flex:0 0 auto}
 .rc-line{flex:1;min-width:0;font-family:var(--f-mono);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.92}
 .rc-chev{flex:0 0 auto;font-size:12px}.rc-chev::before{content:"▴"}.rcard.col .rc-chev::before{content:"▾"}
@@ -468,7 +468,7 @@
 .rc-sum b{font-family:var(--f-mono);font-size:14px;font-weight:600;white-space:nowrap}
 .rc-btns{display:flex;gap:6px;padding:8px 10px}.rc-btns .btn{flex:1;padding:6px 10px;font-size:13px}
 .rx:not(.has) .rc-btns{display:none}
-.rc-btns .sh-nl[aria-pressed="true"]{background:#0B2545;color:#fff}
+.rc-btns .sh-nl[aria-pressed="true"]{background:var(--navy);color:#fff}
 @media (min-width:901px){
   .rcard{max-height:calc(100% - var(--shh,0px) - 24px);overflow:visible}
   .rcard .packpop{left:calc(100% + 8px);right:auto;top:0;bottom:auto;border-radius:0}
@@ -518,7 +518,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
@@ -531,7 +531,7 @@
   <canvas id="m3d" class="m3d" hidden aria-label="3D terrain view"></canvas>
   <div class="m3msg" id="m3msg" hidden></div>
   <div class="x3w noprint" id="x3w" hidden>
-    <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
+    <div id="x3" hidden><b>Simulate the flight</b><div class="x3row"><button class="btn pri" id="x3play" aria-label="Fly the route">▶ Fly the route</button><input type="range" id="x3r" min="0" max="100" step="0.01" value="0" aria-label="Position along the route"><button class="btn x3more" id="x3more" type="button" aria-expanded="false" aria-label="3D settings" title="3D settings">⚙︎</button></div><div class="x3o" id="x3o">Move the slider to fly along the route.</div>
       <div class="x3row x3c"><span class="seg3" id="x3cam" role="group" aria-label="Camera"><button type="button" data-c="chase" title="Behind and above the aircraft">Chase</button><button type="button" data-c="cockpit" title="From the aircraft, looking ahead along the track">Cockpit</button><button type="button" data-c="ov" class="on" title="The whole route">Overview</button></span><label>Speed <select id="x3spd" aria-label="Simulation speed"><option value="1">×1</option><option value="5" selected>×5</option><option value="10">×10</option><option value="20">×20</option><option value="30">×30</option><option value="60">×60</option></select></label><label id="x3acl" hidden>Aircraft <select id="x3ac" aria-label="Aircraft model"><option value="off" selected>Symbol</option><option value="auto">3D: auto</option><option value="da42">DA42</option><option value="b200">King Air</option><option value="a320">A320</option></select></label></div>
       <div class="x3row x3look" id="x3look" role="group" aria-label="Look around"><span>Look</span><button type="button" data-l="l" aria-label="Look left" title="Look left (←)">◀</button><button type="button" data-l="u" aria-label="Look up" title="Look up (↑)">▲</button><button type="button" data-l="d" aria-label="Look down" title="Look down (↓)">▼</button><button type="button" data-l="r" aria-label="Look right" title="Look right (→)">▶</button><button type="button" data-l="0" title="Look ahead again (C, or double-click the map)">Centre</button></div>
       <div class="x3leg" id="x3leg" hidden><span><i style="background:#2E7D4F"></i>Margin OK</span><span><i style="background:#C77700"></i>Inside the clearance</span><span><i style="background:#B3261E"></i>Below terrain</span><span><i style="background:#9A1E68"></i>Not checked</span></div>
@@ -544,7 +544,7 @@
   <div class="rcard noprint" id="rcard">
     <button class="rc-hd" id="rcTog" type="button" aria-expanded="true" aria-controls="rcbody" title="Show or hide the route card"><span class="rc-k">Route</span><span class="rc-line" id="rcline"></span><span class="rc-chev" aria-hidden="true"></span></button>
     <div class="rc-body" id="rcbody">
-      <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★</button><input id="rtxt" type="search" placeholder="Airport, fix or route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
+      <div class="rx-r"><div class="rx-rl"><button class="libbtn" id="libbtn" aria-label="My library" title="My routes, saved views and notes" aria-expanded="false">★︎</button><input id="rtxt" type="search" placeholder="Airport, fix or route" aria-label="Search an airport or fix, or paste a route" autocomplete="off" spellcheck="false"><button class="btn pri" id="build">Show</button><button class="btn rx-more" id="rmore" aria-expanded="false" aria-label="Route options" title="Route options">▾</button></div>
         <div class="qres" id="qres" hidden></div>
         <div class="rx-rx" id="routex" hidden>
           <div class="btns"><select id="sel" aria-label="Your routes"></select><button class="btn" id="new">New</button><button class="btn" id="dup">Duplicate</button><button class="btn" id="del">Delete</button><span class="saved" id="saved"></span></div>
@@ -599,7 +599,7 @@
     <div class="sh-bar"><button class="sh-t" id="shTog" aria-expanded="false"><b>Terrain profile</b> <span id="shsum"></span></button>
       <div class="seg3" id="pmode" role="group" aria-label="What the profile shows"><button data-p="ter">Terrain</button><button data-p="alt">Altitude line</button><button data-p="adv">Climb and descent</button></div>
       <button class="btn pri sh-sim" id="simbtn" type="button" title="Fly the route in 3D at your planned altitude">▶ Simulate flight</button>
-      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙<span> Advanced</span></button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
+      <button class="btn sh-adv" id="shAdv" aria-pressed="false" title="Advanced">⚙︎<span> Advanced</span></button><span class="sh-b"><button id="shUp" aria-label="Larger" title="Larger">▴</button><button id="shDn" aria-label="Smaller" title="Smaller">▾</button><button id="shFull" aria-label="Full screen" title="Full screen">⤢</button><button id="shX" aria-label="Hide" title="Hide">×</button></span>
     </div>
     <svg id="pmini" class="pmini" role="img" aria-label="Terrain under the route" preserveAspectRatio="none"></svg>
     
@@ -676,7 +676,7 @@
     <div class="asl" id="asl" hidden></div>
     <div class="srcl" id="srcl"></div>
     <div class="xio noprint" id="xio"><button type="button" class="lnk upgo" title="Add a screenshot or PDF of your ForeFlight or Garmin Pilot route or profile to the briefing pack">⇪ ForeFlight or Garmin Pilot screenshot / PDF</button><span class="xexp"><span>Export</span><button type="button" data-ex="gpx" title="GPX route for ForeFlight, Garmin Pilot, SkyDemon and others">GPX</button><button type="button" data-ex="fpl" title="Garmin flight plan (.fpl), also opens in ForeFlight">Garmin FPL</button><button type="button" data-ex="txt" title="Copy the route as text, e.g. ENTO DCT SKI DCT ENGM">Copy route</button></span></div>
-    <details class="note howd"><summary>How to read the profile</summary><p id="srcdata" class="resn"></p><ul><li>Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.</li><li>With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙ Advanced); if you add an approach, the approach area starts at the IAF.</li><li>Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙ Advanced).</li><li>The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.</li><li>The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.</li></ul></details>
+    <details class="note howd"><summary>How to read the profile</summary><p id="srcdata" class="resn"></p><ul><li>Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.</li><li>With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙︎ Advanced); if you add an approach, the approach area starts at the IAF.</li><li>Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙︎ Advanced).</li><li>The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.</li><li>The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.</li></ul></details>
     <div class="selbar noprint" id="selbar" hidden></div>
       </div>
       <div class="panel rp ptools noprint">
@@ -764,7 +764,7 @@
     </div>
   </div>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="ai.js?v=1"></script>
 <script src="store.js?v=2"></script>
 <script src="flightlink.js?v=1"></script>
@@ -1322,7 +1322,7 @@ function drawMarkers(M,MK,o){ const {add,tx,hand,XS,YS,T0,H}=o; const INK='#1D4E
     if(bad!=null){ const e3=hand(L({en:'path ',no:'banen '})+fx(bad),x,y+(m.k==='between'?36:24),{'font-size':15,fill:'#B3261E','text-anchor':'middle'}); g.appendChild(e3); }
     add('circle',{cx:x,cy:y,r:14,fill:'transparent'},g); }); }
 function drawMkList(M){ const box=el('mklist'); if(!box) return; const A=(R.mk||[]).map((m,i)=>[m,i]).sort((a,b)=>a[0].x-b[0].x);
-  box.innerHTML= A.length? A.map(([m,i])=>{ const bad=mkCheck(M,m); return `<div class="mkrow"><span><b>${esc(mkName(m))}</b> · ${fx(m.x,1)} NM${mkText(m)?' · '+esc(mkText(m)):''}${bad!=null?` <span class="ko">${L({en:'path is',no:'banen er'})} ${fx(bad)}</span>`:''}</span><span><button data-ed="${i}" aria-label="Edit">✎</button><button data-rm="${i}" aria-label="Delete">✕</button></span></div>`; }).join('')
+  box.innerHTML= A.length? A.map(([m,i])=>{ const bad=mkCheck(M,m); return `<div class="mkrow"><span><b>${esc(mkName(m))}</b> · ${fx(m.x,1)} NM${mkText(m)?' · '+esc(mkText(m)):''}${bad!=null?` <span class="ko">${L({en:'path is',no:'banen er'})} ${fx(bad)}</span>`:''}</span><span><button data-ed="${i}" aria-label="Edit">✎︎</button><button data-rm="${i}" aria-label="Delete">✕</button></span></div>`; }).join('')
    : `<p class="note" style="margin:0">${L({en:'None yet. Drag a marker to move it.',no:'Ingen ennå. Dra en markør for å flytte den.'})}</p>`; }
 el('mklist').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.rm!=null){ R.mk.splice(+b.dataset.rm,1); render(); queueSave(); } else { const m=R.mk[+b.dataset.ed]; const r=psv.getBoundingClientRect(), h=el('profw').getBoundingClientRect(); mkEdit(m, psv._XS(m.x)/1000*r.width+r.left-h.left, 40); } });
 let MKT='fix';
@@ -1384,7 +1384,7 @@ function drawTable(M){
      <td class="c">${p.la!=null?llTxt(p.la,p.lo):(p.miss?`<span class="ko">${L({en:'not found',no:'ikke funnet'})}</span>`:'—')}</td>
      <td>${i?`<input data-x="d" inputmode="decimal" value="${pnum(p.d)!=null?p.d:''}" placeholder="${auto?fx(c.d,1):''}">`:''}</td><td class="c">${tt}</td><td class="c">${vtx}</td><td class="c">${mct}</td>
      <td><input data-x="a" value="${esc(p.a||'')}" placeholder="${p.t==='rwy'?fx(pnum(p.elev)??0):(APPT.includes(p.t)?'':'cruise')}"></td><td class="c">${altTxt(c.tgt)}${c.short?` <span class="ko" title="climb">↗${c.short}</span>`:''}</td>
-     <td>${te!=null?`<span class="c">${fx(te)}</span>`:(i?`<input data-x="ter" inputmode="decimal" value="${esc(p.ter||'')}">`:'')}</td><td class="c">${guide!=null?`<span class="${low?'ko':''}">${fx(guide)}${low?' ⚠':''}</span>`:''}</td>
+     <td>${te!=null?`<span class="c">${fx(te)}</span>`:(i?`<input data-x="ter" inputmode="decimal" value="${esc(p.ter||'')}">`:'')}</td><td class="c">${guide!=null?`<span class="${low?'ko':''}">${fx(guide)}${low?' ⚠︎':''}</span>`:''}</td>
      <td><input data-x="note" value="${esc(p.note||'')}"></td><td class="act"><button data-m="-1" aria-label="Up">↑</button><button data-m="1" aria-label="Down">↓</button><button data-del="1" aria-label="Delete">✕</button></td></tr>`; }).join('');
   const lows=M.C.filter((c,i)=>{ if(!i||c.app||c.p.t==='rwy'||M.C[i-1].p.t==='rwy') return false; const te=legTer(M,i)??pnum(c.p.ter); if(te==null) return false; return Math.min(M.C[i-1].tgt,c.tgt)<Math.ceil((te+mg)/100)*100; }).length;
   const steep=M.C.filter(c=>c.steep).length;
@@ -1633,7 +1633,7 @@ let npBox=null;
 function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
   const n=R.pts.filter(p=>/^WPT\d+$/.test(p.n||'')).length+1;
   const b=document.createElement('div'); b.className='newpt'; b.style.left=Math.max(4,Math.min(x+8,host.clientWidth-240))+'px'; b.style.top=Math.max(4,Math.min(y+8,host.clientHeight-170))+'px';
-  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">📝 ${L({en:'Note',no:'Notat'})}</button>`:''}<button class="btn" data-a="x">×</button></div>`;
+  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">${L({en:'Note',no:'Notat'})}</button>`:''}<button class="btn" data-a="x">×</button></div>`;
   b.addEventListener('pointerdown',e=>e.stopPropagation()); b.addEventListener('pointerup',e=>e.stopPropagation());
   const inp=b.querySelector('input[type=text]'); const go=async()=>{ const name=inp.value.trim().toUpperCase()||('WPT'+n); const save=b.querySelector('input[type=checkbox]').checked;
     const pt={n:name,t:'wpt'}; if(pos&&pos.la!=null){ pt.la=+pos.la.toFixed(5); pt.lo=+pos.lo.toFixed(5); }
@@ -1729,7 +1729,7 @@ async function upPut(k,b){ const db=await upDb(); if(!db) return false; return n
 async function upJpeg(src,w,h){ const k=Math.min(1,1800/Math.max(w,h)); const c=document.createElement('canvas'); c.width=Math.round(w*k); c.height=Math.round(h*k); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); g.drawImage(src,0,0,c.width,c.height); const b=await new Promise(r=>c.toBlob(r,'image/jpeg',0.85)); return {b,w:c.width,h:c.height}; }
 function upScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('load')); document.head.appendChild(s); }); }
 async function upPdf(f){ const base='vendor/'; if(!window.pdfjsLib){ await upScript(base+'pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc=base+'pdf.worker.min.js'; } const doc=await window.pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise; const pg=await doc.getPage(1); const v0=pg.getViewport({scale:1}); const vp=pg.getViewport({scale:Math.min(3,1800/Math.max(v0.width,v0.height))}); const c=document.createElement('canvas'); c.width=Math.round(vp.width); c.height=Math.round(vp.height); const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,c.width,c.height); await pg.render({canvasContext:g,viewport:vp}).promise; const j=await upJpeg(c,c.width,c.height); j.pages=doc.numPages; return j; }
-// upload buttons: the ★ library menu and the compact line under the profile (class upgo)
+// upload buttons: the ★︎ library menu and the compact line under the profile (class upgo)
 let UPB=null; document.addEventListener('click',e=>{ const b=e.target.closest('.upgo'); if(!b||b.disabled) return; UPB=b; upIn.click(); });
 upIn.onchange=async()=>{ const f=upIn.files[0]; upIn.value=''; if(!f) return; const btn=UPB&&document.body.contains(UPB)?UPB:document.createElement('button'), t0=btn.innerHTML; btn.disabled=true; btn.textContent=L({en:'Reading…',no:'Leser…'});
   try{ let j; if(/\.pdf$/i.test(f.name)||f.type==='application/pdf') j=await upPdf(f); else { const u=URL.createObjectURL(f); const img=new Image(); const ok=await new Promise(r=>{ img.onload=()=>r(true); img.onerror=()=>r(false); img.src=u; }); if(!ok) throw new Error('img'); j=await upJpeg(img,img.naturalWidth,img.naturalHeight); URL.revokeObjectURL(u); }
@@ -1877,8 +1877,8 @@ LAB.add({},{
  'Send to the briefing pack ↓':'Send til briefingpakken ↓','Choose the pack and send. The profile, the weather and the navigation log go with it.':'Velg pakken og send. Profilen, været og navigasjonsloggen følger med.','Climb and descent ':'Stigning og sink ',
  'How to read the profile':'Slik leser du profilen','Departure and approach area':'Avgangs- og innflygingsområde',
  'Terrain shows only the ground under the route. Altitude line adds one level you choose. Climb and descent adds an illustrative path from your climb and descent gradients. None of them is a procedure.':'Terreng viser bare bakken under ruten. Høydelinje legger til én høyde du velger. Stigning og sink legger til en illustrativ bane fra stige- og sinkgradientene dine. Ingen av dem er en prosedyre.',
- 'With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙ Advanced); if you add an approach, the approach area starts at the IAF.':'Med Stigning og sink flys den første og siste delen av flygingen (skravert) på en SID, en innflyging eller visuelt. Verktøyet har ikke de prosedyrene, så det sjekker ikke terrenget der, og linjen er stiplet. Bruk kartet. Områdene er 10 NM som standard (endre det under ⚙ Avansert); legger du inn en innflyging, starter innflygingsområdet ved IAF.',
- 'Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙ Advanced).':'Mellom dem, på strekningen, sjekkes linjen mot terrenget: røde prikker betyr under det høyeste terrenget i korridoren, oransje prikker betyr mindre enn klaringen din (1000 eller 2000 ft, satt under ⚙ Avansert).',
+ 'With Climb and descent, the first and last part of the flight (shaded) is flown on a SID, an approach or visually. The tool does not have those procedures, so it does not check terrain there, and the line is dashed. Use the chart. The areas are 10 NM by default (change it under ⚙︎ Advanced); if you add an approach, the approach area starts at the IAF.':'Med Stigning og sink flys den første og siste delen av flygingen (skravert) på en SID, en innflyging eller visuelt. Verktøyet har ikke de prosedyrene, så det sjekker ikke terrenget der, og linjen er stiplet. Bruk kartet. Områdene er 10 NM som standard (endre det under ⚙︎ Avansert); legger du inn en innflyging, starter innflygingsområdet ved IAF.',
+ 'Between them, en route, the line is checked against the terrain: red dots mean below the highest terrain in the corridor, orange dots mean less than your clearance (1000 or 2000 ft, set under ⚙︎ Advanced).':'Mellom dem, på strekningen, sjekkes linjen mot terrenget: røde prikker betyr under det høyeste terrenget i korridoren, oransje prikker betyr mindre enn klaringen din (1000 eller 2000 ft, satt under ⚙︎ Avansert).',
  'The brown area is the terrain directly under the route. The red and orange dots also look at the highest terrain within the corridor on each side, which is what the IFR minimum level is based on.':'Det brune feltet er terrenget rett under ruten. De røde og oransje prikkene ser også på det høyeste terrenget i korridoren på hver side, som er det IFR-minimumshøyden bygger på.',
  'The elevation model is coarse and has no obstacles such as masts or buildings. Published altitudes always come from the AIP and the charts.':'Høydemodellen er grov og har ingen hindre som master eller bygninger. Publiserte høyder kommer alltid fra AIP og kartene.',
  '↶ Undo':'↶ Angre','Reset profile':'Nullstill profilen',
@@ -2119,7 +2119,7 @@ el('shFull').onclick=()=>{ setSheet(el('sheet').dataset.s==='full'?'mid':'full')
 el('shX').onclick=()=>{ el('shOpen').dataset.user='1'; setSheet('off'); };
 el('shOpen').onclick=()=>{ delete el('shOpen').dataset.user; setSheet(SHS==='off'||SHS==='min'?'mid':SHS); };
 el('shTog').onclick=()=>{ setSheet(el('sheet').dataset.s==='min'?'mid':'min'); };
-el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){ el('nlp').hidden=true; el('shNl').setAttribute('aria-pressed','false'); } el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
+el('shAdv').onclick=()=>{ const on=el('advp').hidden; if(on&&!el('nlp').hidden){ el('nlp').hidden=true; el('shNl').setAttribute('aria-pressed','false'); } el('advp').hidden=!on; el('xsMode').hidden=on; el('shAdv').setAttribute('aria-pressed',String(on)); el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙︎<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; if(on){ el('shAdv').dataset.prev=el('sheet').dataset.s; if(el('sheet').dataset.s!=='full') setSheet('full'); } else { const pv=el('shAdv').dataset.prev; if(pv&&pv!=='full') setSheet(pv); drawProfile(compute(),TP); } };
 /* ================= 3D-terreng og «Utforsk ruten» =================
    Alt lokalt: three.min.js fra nettstedet, terreng fra terrain/ (grovt) og terrain/hr/ (Norden, detaljert).
    Farger: hypsometrisk tint + relieffskygge (sol fra NV) + sjø i blått, valgfrie koter. Ingen satellittbilder. */
@@ -2315,7 +2315,7 @@ const dfmt=t=>{ try{ return new Date(t).toLocaleDateString(LAB.lang==='no'?'nb-N
 function libDraw(){ const b=el('lib');
   const rs=ALL.map(r=>`<button class="li ${r===R?'on':''}" data-r="${esc(r.id)}"><b>${esc(r.title||L({en:'Untitled route',no:'Rute uten navn'}))}</b><i>${dfmt(r.updated)}</i></button>`).join('');
   const vs=VIEWS.map(v=>`<div class="lirow"><button class="li" data-v="${esc(v.id)}"><b>${esc(v.name)}</b><i>${v.d3?'3D · ':''}${esc((v.mm||'vfr').toUpperCase())}</i></button><button class="lx" data-dv="${esc(v.id)}" aria-label="Delete">×</button></div>`).join('')||`<p class="note">${L({en:'None yet. Save the current map view, 2D or 3D, to come back to it.',no:'Ingen ennå. Lagre kartvisningen du ser på, 2D eller 3D, for å komme tilbake til den.'})}</p>`;
-  const ns=NOTES.map(n=>`<button class="li" data-n="${esc(n.id)}"><b>📝 ${esc((n.t||'').slice(0,40)||'…')}</b><i>${dfmt(n.updated)}</i></button>`).join('')||`<p class="note">${L({en:'Click an empty spot on the map and choose Note to pin a note there.',no:'Klikk på et tomt sted på kartet og velg Notat for å feste et notat der.'})}</p>`;
+  const ns=NOTES.map(n=>`<button class="li" data-n="${esc(n.id)}"><b>${esc((n.t||'').slice(0,40)||'…')}</b><i>${dfmt(n.updated)}</i></button>`).join('')||`<p class="note">${L({en:'Click an empty spot on the map and choose Note to pin a note there.',no:'Klikk på et tomt sted på kartet og velg Notat for å feste et notat der.'})}</p>`;
   b.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><h3>${L({en:'My library',no:'Mitt bibliotek'})}</h3>
    <h4>${L({en:'Routes',no:'Ruter'})} <button class="btn sm" data-a="new">+ ${L({en:'New',no:'Ny'})}</button></h4><div class="lil">${rs}</div>
    <h4>${L({en:'Saved views',no:'Lagrede visninger'})}</h4><div class="lisave"><input id="vname" placeholder="${L({en:'Name this view',no:'Gi visningen et navn'})}" maxlength="60"><button class="btn pri sm" data-a="save">${L({en:'Save',no:'Lagre'})}</button></div><div class="lil">${vs}</div>
@@ -2342,7 +2342,7 @@ async function openView(v){ if(v.rid){ const r=ALL.find(x=>x.id===v.rid); if(r&&
   if(v.d3&&v.d3.cam){ T3.ex=v.d3.ex||1.2; el('x3exs').value=String(T3.ex); await set3(true); T3.cam=Object.assign({},v.d3.cam); if(v.d3.x&&T3.S){ el('x3r').value=v.d3.x; x3ro(v.d3.x); setHov(v.d3.x); } T3.dirty=true; }
   else { if(T3.on) await set3(false); V.la=v.la; V.lo=v.lo; V.z=v.z; drawMap(); } }
 // notater på kartet
-function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">📝 ${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
+function noteInfo(n){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">${L({en:'Note',no:'Notat'})}</span><textarea class="nt" rows="5" maxlength="2000">${esc(n.t||'')}</textarea><p class="src">${llTxt(n.la,n.lo)}</p><div class="acts"><button class="btn pri" data-a="ns">${L({en:'Save',no:'Lagre'})}</button><button class="btn" data-a="nd">${L({en:'Delete',no:'Slett'})}</button></div>`; sd.hidden=false; el('lib').hidden=true;
   sd.onclick=async e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; }
     if(b.dataset.a==='ns'){ n.t=sd.querySelector('.nt').value; await NSTORE.put('mapnote',n); if(!NOTES.includes(n)) NOTES.unshift(n); sd.hidden=true; drawMap(); }
     if(b.dataset.a==='nd'){ await NSTORE.del('mapnote',n.id); NOTES=NOTES.filter(x=>x!==n); sd.hidden=true; drawMap(); } };
@@ -2366,7 +2366,7 @@ function depParse(t){ const T=' '+String(t||'').toUpperCase().replace(/[,;·]/g,
   const m=T.match(/\b(?:RWY|RW|DEP(?:ARTURE)?|T\/?O)\s*(\d{1,2}[LRC]?)\b/)||T.match(/\s(\d{1,2}[LRC]?)\s/);
   if(m){ if(d&&rwyList(d.n).includes(m[1])) out.dep=m[1]; else msg.push(L({en:'no runway',no:'ingen bane'})+' '+m[1]+' '+L({en:'at',no:'på'})+' '+(d?d.n:'?')); }
   return {out,msg}; }
-function xpc(){ [['xdep',{en:'Departure note',no:'Avgangsnotat'}],['xarr',{en:'Arrival note',no:'Ankomstnotat'}]].forEach(([id,lab])=>{ const t=el(id), b=document.querySelector(`.xnb[data-x="${id}"]`); if(!b) return; const has=!!t.value.trim(); b.classList.toggle('has',has); b.textContent=t.hidden? (has?'✎ ':'＋ ')+L(lab) : '✓ '+L({en:'Done',no:'Ferdig'}); }); }
+function xpc(){ [['xdep',{en:'Departure note',no:'Avgangsnotat'}],['xarr',{en:'Arrival note',no:'Ankomstnotat'}]].forEach(([id,lab])=>{ const t=el(id), b=document.querySelector(`.xnb[data-x="${id}"]`); if(!b) return; const has=!!t.value.trim(); b.classList.toggle('has',has); b.textContent=t.hidden? (has?'✎︎ ':'＋ ')+L(lab) : '✓ '+L({en:'Done',no:'Ferdig'}); }); }
 function xOpen(id,on){ const t=el(id); t.hidden=on===undefined?!t.hidden:!on; xpc(); if(!t.hidden){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } }
 el('xnrow').addEventListener('click',e=>{ const b=e.target.closest('.xnb'); if(b) xOpen(b.dataset.x); });
 ['xdep','xarr'].forEach(id=>el(id).addEventListener('keydown',e=>{ if(e.key==='Escape'){ xOpen(id,false); } }));
@@ -2618,9 +2618,9 @@ function simHud(x){ const h=el('simhud'); if(!h) return; const M=ML?simM():(T3.S
   const cls=hi!=null&&inE? (alt<hi?'rd':alt<hi+mg?'am':'ok') : (clr!=null&&clr<0&&x>1&&x<M.total-1?'rd':'');
   const c=(k,v,u,cl)=>`<div class="${cl||''}"><i>${k}</i><b>${v}${u?`<small>${u}</small>`:''}</b></div>`;
   let warn='';
-  if(hi!=null&&inE&&alt<hi) warn=`<div class="hw rd">⚠ ${L({en:'Below the highest terrain within',no:'Under høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM (${fx(Math.round(hi))} ft)</div>`;
-  else if(hi!=null&&inE&&alt<hi+mg) warn=`<div class="hw am">⚠ ${L({en:'Terrain clearance',no:'Terrengklaring'})} ${fx(Math.round((alt-hi)/10)*10)} ft ${L({en:'is less than your',no:'er mindre enn'})} ${fx(mg)} ft ${L({en:'margin',no:'marginen din'})}</div>`;
-  else if(clr!=null&&clr<0&&x>1&&x<M.total-1) warn=`<div class="hw rd">⚠ ${L({en:'Below the terrain',no:'Under terrenget'})}</div>`;
+  if(hi!=null&&inE&&alt<hi) warn=`<div class="hw rd">⚠︎ ${L({en:'Below the highest terrain within',no:'Under høyeste terreng innen'})} ±${fx(sNum('cw',4.3),1)} NM (${fx(Math.round(hi))} ft)</div>`;
+  else if(hi!=null&&inE&&alt<hi+mg) warn=`<div class="hw am">⚠︎ ${L({en:'Terrain clearance',no:'Terrengklaring'})} ${fx(Math.round((alt-hi)/10)*10)} ft ${L({en:'is less than your',no:'er mindre enn'})} ${fx(mg)} ft ${L({en:'margin',no:'marginen din'})}</div>`;
+  else if(clr!=null&&clr<0&&x>1&&x<M.total-1) warn=`<div class="hw rd">⚠︎ ${L({en:'Below the terrain',no:'Under terrenget'})}</div>`;
   else if(!inE) warn=`<div class="hw nt">${x<=z.d? L({en:'Departure area: terrain not checked, fly the SID or visual departure',no:'Avgangsområde: terrenget sjekkes ikke, fly SID eller visuell avgang'}) : L({en:'Approach area: terrain not checked, fly the approach chart',no:'Innflygingsområde: terrenget sjekkes ikke, fly etter innflygingskartet'})}</div>`;
   h.innerHTML=c('GS',fx(gs),'kt'+(R.gs?'':' ?'))+c(L({en:'Alt',no:'Høyde'}),altTxt(Math.round(alt/10)*10),alt>taOf()?'':'ft')+c('VS',(vs>0?'+':vs<0?'−':'')+fx(Math.abs(vs)),'fpm')+c(L({en:'Track',no:'Kurs'}),tr!=null?String(Math.round(tr)%360||360).padStart(3,'0')+'°':'–','T')
     +c(L({en:'Terrain',no:'Terreng'}),ter!=null?fx(Math.round(ter/10)*10):'–','ft')+c(L({en:'Clearance',no:'Klaring'}),clr!=null?(clr<0?'−':'')+fx(Math.abs(Math.round(clr/10)*10)):'–','ft',cls)
@@ -2666,7 +2666,7 @@ lyUI();
   if(n>=2) set(false); else { set(true); const off=()=>{ set(false); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.removeEventListener(t,off)); clearTimeout(tm); };
     const tm=setTimeout(off,6000); ['pointerdown','wheel','keydown'].forEach(t=>mapEl.addEventListener(t,off,{passive:true})); }
   hb.addEventListener('pointerdown',e=>e.stopPropagation()); hb.addEventListener('click',e=>{ e.stopPropagation(); set(lg.classList.contains('lgoff')); }); }
-LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
+LAB.onLang(()=>{ { const sv=el('saved'); if(sv&&sv.textContent) sv.textContent=NSTORE.mode==='account'?L({en:'Saved to your profile',no:'Lagret på profilen din'}):L({en:'Saved in this browser',no:'Lagret i denne nettleseren'}); } { const on=!el('advp').hidden; el('shAdv').innerHTML=on?'←<span> '+L({en:'Profile',no:'Profil'})+'</span>':'⚙︎<span> '+L({en:'Advanced',no:'Avansert'})+'</span>'; } render(); drawFix(); lyUI(); if(!el('lib').hidden) libDraw(); pmUI(); ui3p(); asUI(ML&&ML.__bb?ML.__bb.oaip:'none'); loadPacks(); if(MODE==='draw'){ drawSheet(); drawExample(); } });
 Promise.all([navReady,mapReady,NSTORE.ready]).then(async()=>{ await loadFix(); libLoad(); ALL=await NSTORE.list('route'); if(!ALL.length) ALL=[blank()]; { const rid=new URLSearchParams(location.search).get('id'); load((rid&&ALL.find(x=>x.id===rid))||ALL[0]); } mlStart(); await loadPacks(); setMode(MODE); const pk=new URLSearchParams(location.search).get('pack'); if(pk) fromPack(pk); });
 })();
 </script>

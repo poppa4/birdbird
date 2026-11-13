@@ -5,8 +5,8 @@
 <meta name="description" content="Aircraft systems (EASA 021): electrics, hydraulics, fuel, flight controls and landing gear and brakes, compared across a light piston twin, a turboprop twin and a jet transport. One live system schematic with failures: generator, pump, leak, bus fault, fuel imbalance and crossfeed, gear extension failure, and what still works.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aircraft Systems</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* the systems figure: one dark synoptic canvas with a status column beside it (under it on phones) */
 .sy-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -38,7 +38,7 @@
 .xsec .hint{margin:6px 0 0}
 .typeseg{display:grid!important;grid-template-columns:1fr;gap:4px}
 .typeseg button{border-radius:var(--radius)!important;text-align:left}
-@media (pointer:coarse){.xsec .fails .btn,.xsec .act .btn,.xsec .act .seg button,.typeseg button{min-height:40px}.xsec .act .xchk{min-height:40px}.sy-vp .vtabs button,.sy-vp .vtools button{min-height:40px}}
+@media (pointer:coarse){.xsec .fails .btn,.xsec .act .btn,.xsec .act .seg button,.typeseg button{min-height:44px}.xsec .act .xchk{min-height:44px}.sy-vp .vtabs button,.sy-vp .vtools button{min-height:44px}}
 /* at a glance: the three classes side by side */
 .glance{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:16px}
 .glance th,.glance td{border-bottom:1px solid var(--rule-2);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.45}
@@ -108,12 +108,12 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Aircraft Systems">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aircraft and engine systems</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Aircraft and engine systems</div>
       <h1>Aircraft systems: hydraulics, electrics, fuel, flight controls and landing gear</h1>
       <p data-tx="lead">Every aircraft has the same jobs to do: make electricity, move heavy things, get fuel to the engines, connect the pilot to the control surfaces, and lower the gear. How it does them changes with size. A light piston twin does them with alternators, cables and an electric gear motor; a turboprop adds a hydraulic system and inverters; a jet transport has three hydraulic systems, AC power and fly-by-wire. See each one live, fail parts of it, and see what still works.</p>
     </div>
@@ -180,9 +180,9 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="jetsyscore.js?v=1"></script>
-<script src="jetsystems.js?v=1"></script>
+<script src="jetsystems.js?v=2"></script>
 </body>
 </html>

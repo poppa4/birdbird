@@ -6,7 +6,7 @@ const {T,L,el,slider,visible,quiz,shuffle}=LAB;
 const tr2=(en,no)=>({en,no});
 LAB.add({},{
  '3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg rundt i en 3D-cockpit (beta)',
- 'Birdbird Simulators':'Birdbird Simulatorer','Cessna 172 cockpit procedure trainer':'Cessna 172 prosedyretrener for cockpit',
+ 'Birdbird · Simulators':'Birdbird · Simulatorer','Cessna 172 cockpit procedure trainer':'Cessna 172 prosedyretrener for cockpit',
  'A typical classic C172 with a carburetted 160 hp engine and an analog six-pack. Prime and start the engine, do the run-up and magneto check, fly a circuit, and practise carburettor ice, engine failure after take-off, vacuum and alternator failures and an ILS.':'En typisk klassisk C172 med 160 hk forgassermotor og analoge «six-pack»-instrumenter. Prim og start motoren, gjør run-up og magnetsjekk, fly en landingsrunde, og øv på forgasserising, motorstopp etter avgang, vakuum- og generatorsvikt og en ILS.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv',
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Lock view':'Lås visning','Locked':'Låst','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
@@ -378,7 +378,7 @@ function setFlap(n){ n=F.clamp(n,0,3); if(n===S.ctl.flap) return; if(!bus()||!cb
 const near=(a,b,d)=>Math.abs(F.wrap180(a-b))<d;
 const allCB=()=>P.CBS.every(c=>SYS.cb[c.k]);
 const PROCS=[
- {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈)','I lufta: innflyging, venting, SID eller STAR (velg ✈)'),set:'air'},
+ {k:'air',t:tr2('In the air: approach, hold, SID or STAR (pick ✈︎)','I lufta: innflyging, venting, SID eller STAR (velg ✈︎)'),set:'air'},
  {k:'start',t:tr2('Engine start (cold engine)','Motorstart (kald motor)'),set:'cold',brief:tr2('On the apron, engine cold, master off.','På oppstillingsplassen, kald motor, hovedbryter av.')},
  {k:'runup',t:tr2('Run-up and before take-off','Run-up og før avgang'),set:'runup',brief:tr2('Engine running at the holding point.','Motoren går ved venteposisjonen.')},
  {k:'circuit',t:tr2('Take-off and circuit','Avgang og landingsrunde'),set:'runway',brief:tr2('Lined up on runway 36. Fly a left-hand circuit at 1,000 ft and land.','Oppstilt på bane 36. Fly en venstre landingsrunde i 1000 ft og land.')},
@@ -582,7 +582,7 @@ quiz(el('qbox'),'c172cockpit',()=>shuffle(QZ.slice()).slice(0,8));
 window.__zoom={reg:()=>Z.reg,to:zoomTo,svg:P.svg,s:()=>Z.s}; LAB.start('sim'); window.__S=S; window.__SYS=SYS; window.__ENG=()=>ENG; window.__EL=()=>EL; window.__VAC=()=>VAC; window.__FUEL=FUEL; window.__PR=PR; window.__io={set:ioSet,get:ioGet}; window.__step=procStart; window.__own={OCK,procStart,procSet:typeof procSet!=='undefined'?procSet:null,setDrawer,PR,PROCS,DB:()=>DB};
 if(!location.hash) requestAnimationFrame(()=>{ const c=el('cockpit'); window.scrollTo(0,c.getBoundingClientRect().top+scrollY); });
 const q0=(location.search.match(/[?&]s=(\w+)/)||[])[1], qp=(location.search.match(/[?&]p=(\w+)/)||[])[1];
-/* ✈ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
+/* ✈︎ Start: airborne procedures, then the exercises (on the ground / exercises); failure scenarios are in Procedures → Failures */
 AIRUI=AIRPROC.ui({stage:PST,list:AIRPROC.list('C172',AIRCAPS),L,type:'C172',onPick:pickProc,onAuto:toggleAuto,
   ex:()=>PROCS.filter(p=>PD.START[p.k]).map(p=>({k:p.k,t:p.t,g:PD.START[p.k]})),onEx:k=>procStart(k),
   onFailures:()=>{ setDrawer(true); SH.tab('fl'); }}); LAB.onLang(airUI);

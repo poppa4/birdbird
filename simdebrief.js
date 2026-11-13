@@ -269,30 +269,30 @@ function list(){ return lsGet(KEY)||[]; }
 
 /* ---------- debrief sheet ---------- */
 const CSS=`
-.sdb{position:fixed;inset:0;z-index:1000;background:rgba(10,14,18,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 16px;font:400 14px/1.5 var(--f-sans,system-ui,-apple-system,Segoe UI,sans-serif);color:#17202a}
+.sdb{position:fixed;inset:0;z-index:1000;background:rgba(10,14,18,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 16px;font:400 14px/1.5 var(--f-body);color:var(--ink,#13202A)}
 .sdb[hidden]{display:none}
-.sdb-card{background:#fbfaf7;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.35);width:min(1180px,100%);padding:28px 32px 24px;position:relative}
+.sdb-card{background:var(--sheet,#fff);border-radius:var(--radius-lg,6px);box-shadow:0 30px 80px rgba(0,0,0,.35);width:min(1180px,100%);padding:28px 32px 24px;position:relative}
 .sdb-x{position:absolute;right:16px;top:14px;border:0;background:none;font-size:26px;line-height:1;color:#5b6670;cursor:pointer;padding:6px 10px;border-radius:8px}.sdb-x:hover{background:#eceae4}
 .sdb-eb{font:600 11px/1.2 var(--f-mono,ui-monospace,monospace);letter-spacing:.14em;text-transform:uppercase;color:#6b7680}
 .sdb-hd{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap;margin:6px 0 18px;padding-bottom:18px;border-bottom:1px solid #e4e1d8}
-.sdb-hd h2{margin:0;font:600 30px/1.15 var(--f-serif,Georgia,serif);letter-spacing:-.01em}
-.sdb-res{display:flex;align-items:baseline;gap:12px}.sdb-res b{font:700 15px/1 var(--f-sans,system-ui);padding:7px 12px;border-radius:999px}
+.sdb-hd h2{margin:0;font:700 30px/1.1 var(--f-display);font-stretch:88%;letter-spacing:-.01em}
+.sdb-res{display:flex;align-items:baseline;gap:12px}.sdb-res b{font:700 15px/1 var(--f-body);padding:7px 12px;border-radius:999px}
 .sdb-res .pass{background:#e3f1e8;color:#145c37}.sdb-res .amber{background:#fbf0d9;color:#7a4d06}.sdb-res .fail{background:#fbe4e1;color:#8c1d13}.sdb-res .none{background:#eceae4;color:#4b5560}
-.sdb-res .sc{font:600 34px/1 var(--f-serif,Georgia,serif)}.sdb-res .sc small{font-size:14px;color:#6b7680;font-family:var(--f-sans,system-ui)}
-.sdb-meta{display:flex;gap:18px;flex-wrap:wrap;color:#56616b;font-size:13px}.sdb-meta span b{color:#17202a;font-weight:600}
-.sdb-crit{background:#fff3f1;border:1px solid #f0c2bb;border-left:4px solid #b42318;border-radius:10px;padding:10px 14px;margin:0 0 18px}
-.sdb-crit h3{margin:0 0 4px;font:700 12px/1.3 var(--f-sans,system-ui);letter-spacing:.08em;text-transform:uppercase;color:#8c1d13}
+.sdb-res .sc{font:500 34px/1 var(--f-mono);letter-spacing:-.02em}.sdb-res .sc small{font-size:14px;color:#6b7680;font-family:var(--f-body)}
+.sdb-meta{display:flex;gap:18px;flex-wrap:wrap;color:#56616b;font-size:13px}.sdb-meta span b{color:var(--ink,#13202A);font-weight:600}
+.sdb-crit{background:#fff3f1;border:1px solid #f0c2bb;border-left:3px solid var(--warning,#B42318);border-radius:0 var(--radius,3px) var(--radius,3px) 0;padding:10px 14px;margin:0 0 18px}
+.sdb-crit h3{margin:0 0 4px;font:700 12px/1.3 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:#8c1d13}
 .sdb-crit li{margin:2px 0}.sdb-crit .tm{font:500 12px var(--f-mono,monospace);color:#8a949c;margin-left:6px}
 .sdb-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px}
 @media (max-width:900px){.sdb-grid{grid-template-columns:1fr}.sdb-card{padding:22px 16px}}
-.sdb h3.s{font:700 11px/1.3 var(--f-sans,system-ui);letter-spacing:.12em;text-transform:uppercase;color:#6b7680;margin:0 0 8px}
+.sdb h3.s{font:700 11px/1.3 var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:#6b7680;margin:0 0 8px}
 .sdb-items{list-style:none;margin:0 0 20px;padding:0}
 .sdb-items li{display:grid;grid-template-columns:86px 1fr 46px;gap:10px;padding:8px 0;border-top:1px solid #ece9e1;align-items:start}
 .sdb-items li:first-child{border-top:0}
 .sdb-items .ti{font-weight:600}.sdb-items .wh{color:#56616b;font-size:13px}.sdb-items .tm{font:500 12px/1.6 var(--f-mono,monospace);color:#6b7680;text-align:right}
-.sdb-chip{display:inline-flex;align-items:center;gap:5px;font:700 11px/1 var(--f-sans,system-ui);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.sdb-chip{display:inline-flex;align-items:center;gap:5px;font:700 11px/1 var(--f-body);padding:5px 8px;border-radius:999px;white-space:nowrap}
 .sdb-chip.pass{background:#e3f1e8;color:#145c37}.sdb-chip.amber{background:#fbf0d9;color:#7a4d06}.sdb-chip.fail{background:#fbe4e1;color:#8c1d13}.sdb-chip.auto{background:#eceae4;color:#4b5560}.sdb-chip.info{background:#e6eef9;color:#1d4a85}
-.sdb-cat{font:700 10.5px/1 var(--f-sans,system-ui);letter-spacing:.1em;text-transform:uppercase;color:#8a949c;margin:14px 0 2px}
+.sdb-cat{font:700 10.5px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:#8a949c;margin:14px 0 2px}
 .sdb-fig{margin:0 0 18px}.sdb-fig figcaption{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#6b7680;margin-top:2px}
 .sdb-fig svg{width:100%;height:auto;display:block;background:#fff;border:1px solid #ece9e1;border-radius:10px;touch-action:none}
 .sdb-fig svg text{font:500 10px var(--f-mono,ui-monospace,monospace);fill:#6b7680}
@@ -302,7 +302,7 @@ const CSS=`
 .sdb-tip[hidden]{display:none}
 .sdb-tl{margin:0 0 20px}
 .sdb-acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid #e4e1d8;padding-top:16px;margin-top:6px}
-.sdb-acts button{font:600 14px/1 var(--f-sans,system-ui);padding:11px 18px;border-radius:10px;border:1px solid #cfcabd;background:#fff;color:#17202a;cursor:pointer}
+.sdb-acts button{font:600 14px/1 var(--f-body);padding:11px 18px;border-radius:10px;border:1px solid #cfcabd;background:#fff;color:#17202a;cursor:pointer}
 .sdb-acts button.pri{background:#17202a;color:#fff;border-color:#17202a}.sdb-acts button:hover{filter:brightness(.96)}
 .sdb-note{color:#6b7680;font-size:12px;margin:8px 0 0}
 @media print{ body>*:not(#sdb){display:none!important} html,body{background:#fff!important}

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gate to gate · Birdbird</title>
 <meta name="description" content="Fly a whole DA42 training trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="train.css?v=1">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="train.css?v=2">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -87,7 +87,7 @@
 </style>
 </head>
 <body data-title="Gate to gate">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -130,7 +130,7 @@
     <p class="note"><a href="radio-drills.html">Radio drills</a>: practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.</p>
   </section>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="ops.js?v=3"></script>
 <script src="brief.js?v=8"></script>
 <script src="chart.js?v=4"></script>
@@ -317,7 +317,7 @@ function rBrief(st,box){
     ${kind!=='land'?`<details><summary>${L({en:'Open the chart',no:'Åpne kartet'})}</summary><div class="chartwrap">${kind==='app'?CHART.app(P):(V.ifr?CHART.sid():'')}</div></details>`:''}
     <p class="note"><b>${esc(rub.letters)}</b> · ${rub.items.map(i=>`<b>${i.k}</b> ${esc(L(i.t))}`).join(' · ')} · <a href="briefing.html#${kind==='app'?'app':'dep'}">${L({en:'Full briefing trainer',no:'Full briefingtrener'})}</a></p>
     <textarea class="write" id="bt" placeholder="${L({en:'Say it or type it…',no:'Si det eller skriv det…'})}"></textarea>
-    <div class="btns"><button class="btn mic" id="mic">🎙 ${L({en:'Dictate',no:'Dikter'})}</button><button class="btn pri" id="sc">${L({en:'Score my briefing',no:'Vurder briefingen'})}</button><button class="btn" id="skip">${L({en:'Show a model briefing',no:'Vis en modellbriefing'})}</button><span class="note" id="bn"></span></div>
+    <div class="btns"><button class="btn mic" id="mic">${L({en:'Dictate',no:'Dikter'})}</button><button class="btn pri" id="sc">${L({en:'Score my briefing',no:'Vurder briefingen'})}</button><button class="btn" id="skip">${L({en:'Show a model briefing',no:'Vis en modellbriefing'})}</button><span class="note" id="bn"></span></div>
     <div id="out"></div>`+navBtns(S.res[S.i]!=null);
   wireNav();
   NAI.ptt(el('mic'),el('bt'),null,{toggle:true,append:true,lang:'en-GB',space:false});

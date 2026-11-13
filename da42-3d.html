@@ -5,16 +5,16 @@
 <meta name="description" content="Beta: a 3D DA42-style cockpit you can look around in, with the live interactive panel, working glass displays and the outside world through the canopy.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DA42 3D (beta) · glass cockpit trainer</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* ---------- cockpit stage: one view that always fits ---------- */
 .ckp{position:relative;z-index:25;width:100vw;margin-left:calc(50% - 50vw);height:100vh;height:100dvh;display:flex;flex-direction:column;background:#0b0d10;color:#e6ebef;scroll-margin-top:0;overflow:hidden}
 .ctop{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:6px 10px;background:#121519;border-bottom:1px solid #262b31;overflow-x:auto;scrollbar-width:none}
 .ctop::-webkit-scrollbar{display:none}
-.ctop .cb{flex:0 0 auto;font:600 12.5px/1 var(--f-sans,system-ui);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
+.ctop .cb{flex:0 0 auto;font:600 12.5px/1 var(--f-body);color:#dfe5ea;background:#1d2227;border:1px solid #333a42;border-radius:6px;padding:7px 10px;cursor:pointer;white-space:nowrap}
 .ctop .cb:hover{background:#262c33}.ctop .cb.on,.ctop .cb[aria-pressed=true]{background:#e8edf1;color:#0d1319;border-color:#e8edf1}
-.ctop .cb:focus-visible{outline:2px solid #7fcbe8;outline-offset:1px}
+.ctop .cb:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
 .ctop .zs{display:flex;gap:2px;background:#0d1013;border:1px solid #2b3137;border-radius:7px;padding:2px}
 .ctop .zs .cb{border:0;background:transparent;padding:6px 8px}.ctop .zs .cb.on{background:#e8edf1;color:#0d1319}
 .ctop .sp{flex:1 1 auto}
@@ -131,7 +131,7 @@
 .gdu .skw .skrow{display:grid;grid-template-columns:repeat(12,1fr);gap:2px}
 .gdu .sk{height:13px;background:linear-gradient(#454c55,#2a2f35);border:1px solid #0e1012;border-radius:2px;cursor:pointer;padding:0;min-height:0}
 .gdu .sk:active{background:#22262b}
-.gdu button:focus-visible{outline:2px solid #7fcbe8;outline-offset:0}
+.gdu button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:0}
 .gdu.hl{box-shadow:0 0 0 3px #ffcf3a,0 6px 16px rgba(0,0,0,.55)}
 /* zoom back, pill, drawer */
 .zback{position:absolute;left:10px;top:10px;z-index:5;font:600 13px system-ui;background:rgba(14,17,20,.86);color:#fff;border:1px solid #3c444c;border-radius:20px;padding:8px 14px;cursor:pointer;display:none}
@@ -221,14 +221,14 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
 @media (max-width:932px){.ctop .stat,.ctop .sp{display:none}.ctop #scenSel,.ctop .zsel{max-width:170px}.ctop #apSel{max-width:130px}.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.ctop select.cb{min-height:0;height:28px;padding-top:0;padding-bottom:0}}
 </style>
-<link rel="stylesheet" href="simshell.css?v=3">
+<link rel="stylesheet" href="simshell.css?v=4">
 </head>
 <body data-title="DA42 3D (beta)">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Simulators · Beta</div>
+      <div class="eyebrow">Birdbird · Simulators · Beta</div>
       <h1>DA42 3D (beta)</h1>
       <p>Sit in the left seat and look around: the canopy, the seats and the world outside, with the same live panel, glass displays, switches and levers as the classic trainer.</p>
     </div>
@@ -358,26 +358,26 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="fdm.js?v=11"></script>
 <script src="flightkeys.js?v=3"></script>
 <script src="fms.js?v=4"></script>
-<script src="airproc.js?v=4"></script>
-<script src="simdebrief.js?v=5"></script>
+<script src="airproc.js?v=5"></script>
+<script src="simdebrief.js?v=6"></script>
 <script src="glass.js?v=5"></script>
 <script src="avx.js?v=6"></script>
 <script src="panellayers.js?v=1"></script>
 <script src="da42panel.js?v=7"></script>
 <script src="da42procs.js?v=4"></script>
-<script src="ownck.js?v=2"></script>
+<script src="ownck.js?v=3"></script>
 <script src="otw.js?v=13"></script>
 <script src="panelzoom.js?v=3"></script>
 <script src="cockpit3d.js?v=6"></script>
 <script src="da42-3d.js?v=4"></script>
-<script src="lab.js?v=47"></script>
-<script src="simshell.js?v=3"></script>
+<script src="lab.js?v=48"></script>
+<script src="simshell.js?v=4"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,nf,el,slider,seg,fit,visible,quiz,shuffle}=LAB;
 LAB.add({},{"How to use the avionics":"Slik bruker du avionikken","Knobs":"Knotter","Scroll on a knob, or drag up and down. Dual knobs: the outer ring and the inner knob are separate. Click the inner knob to push it. Keyboard: focus a knob, arrows turn the inner knob, Shift + arrows the outer, Enter pushes.":"Rull på en knott, eller dra opp og ned. Doble knotter: ytre ring og indre knott er separate. Klikk på den indre knotten for å trykke den inn. Tastatur: velg en knott, piltastene dreier den indre, Shift + piltaster den ytre, Enter trykker.","Flight plan":"Flyplan","FPL opens the flight plan. Push FMS for the cursor, turn the outer FMS knob to move it, turn the inner knob to insert a waypoint, CLR removes one. MENU gives Activate Leg and Delete Flight Plan.":"FPL åpner flyplanen. Trykk FMS for markøren, drei den ytre FMS-knotten for å flytte den, drei den indre for å sette inn et veipunkt, CLR fjerner ett. MENU gir Activate Leg og Delete Flight Plan.","Direct-to and approaches":"Direct-to og innflyginger","D→, type the ident with the FMS knob (or the keyboard), ENT, ENT. PROC → SELECT APPROACH → approach → transition → LOAD or ACTIVATE. For an ILS the localizer frequency is tuned for you, and the CDI switches from GPS to LOC1 on final.":"D→, skriv identen med FMS-knotten (eller tastaturet), ENT, ENT. PROC → SELECT APPROACH → innflyging → transition → LOAD eller ACTIVATE. For en ILS stilles localizer-frekvensen inn automatisk, og CDI-en går fra GPS til LOC1 på finalen.","Radios and CDI":"Radioer og CDI","NAV and COM: the outer ring tunes MHz, the inner knob kHz, push the inner knob to pick NAV1/NAV2, ⇄ swaps standby and active. The CDI softkey cycles GPS → NAV1 → NAV2.":"NAV og COM: ytre ring stiller MHz, indre knott kHz, trykk den indre knotten for å velge NAV1/NAV2, ⇄ bytter standby og aktiv. CDI-softkey går GPS → NAV1 → NAV2.",
- 'Birdbird Simulators · Beta':'Birdbird Simulatorer · Beta','DA42 glass cockpit trainer':'DA42 glass cockpit-trener',
+ 'Birdbird · Simulators · Beta':'Birdbird · Simulatorer · Beta','DA42 glass cockpit trainer':'DA42 glass cockpit-trener',
  'A front-on twin-engine panel with working glass displays, switches, power levers and autopilot. Practise scans, ILS approaches and engine failures in the browser.':'Et tomotors instrumentpanel sett forfra, med fungerende glasskjermer, brytere, effekthendler og autopilot. Øv på instrumentskanning, ILS-innflyginger og motorstans rett i nettleseren.',
  'Cockpit':'Cockpit','Controls and mission':'Kontroller og oppdrag','Failures and weather':'Feil og vær','How to read it':'Slik leser du den','Test yourself':'Test deg selv',
  'Touch controls':'Berøringskontroller','Hide outside view':'Skjul utsikten','Show outside view':'Vis utsikten','Front':'Forover','Left':'Venstre','Right':'Høyre','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','Pause':'Pause','Restart':'Start på nytt','Sound on':'Lyd på','Sound off':'Lyd av','Resume':'Fortsett',
@@ -412,7 +412,7 @@ let lastO=null, iasTrend=0, turnRate=0, missionState=null;
 
 /* ---------- oppdrag ---------- */
 const SCEN=[
- {k:'air', t:{en:'In the air: approach, hold, SID or STAR (pick ✈)',no:'I lufta: innflyging, venting, SID eller STAR (velg ✈)'}, brief:{en:'',no:''}, set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]}, checks:[]},
+ {k:'air', t:{en:'In the air: approach, hold, SID or STAR (pick ✈︎)',no:'I lufta: innflyging, venting, SID eller STAR (velg ✈︎)'}, brief:{en:'',no:''}, set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:[]}, checks:[]},
  {k:'free', t:{en:'Free flight',no:'Fri flyging'}, brief:{en:'3000 ft, 9 NM south of Birdbird Field. Try the autopilot.',no:'3000 ft, 9 NM sør for Birdbird Field. Prøv autopiloten.'},
   set:{N:-16700,E:0,alt:3000,ias:125,hdg:360,gear:0}, ui:{hdg:360,alt:3000,fp:['NAER'],dto:'NAER'},
   checks:[ {t:{en:'Engage the autopilot',no:'Koble inn autopiloten'},f:c=>c.ap.on},
@@ -482,7 +482,7 @@ function airSetup(){ const D=AF.D, st=D.start, to=D.cfg==='to', k=D.k;
   if(to){ SYS.pumpL=SYS.pumpR=1; SYS.land=1; } }
 function airUI(){ if(!AIRUI) return; const pr=!!PR.k; AIRUI.draw(pr?'':UI.scen==='air'?AIRK:UI.scen==='free'?'free':'',AF.on,!pr&&UI.scen!=='air'&&UI.scen!=='free'?UI.scen:null); }
 function pickProc(k){ if(k!=='free') AIRK=k; if(PR.k){ PR.k=null; hlCtl(null); } UI.scen=k==='free'?'free':'air'; resetMission(); }
-/* ✈ Start → an exercise (SCEN): ground starts and the practice missions */
+/* ✈︎ Start → an exercise (SCEN): ground starts and the practice missions */
 function pickEx(k){ PR.k=null; UI.scen=k; resetMission(); }
 const EXG={apron:'gnd',takeoff:'gnd'};
 function toggleAuto(){ if(AF.on) AF.off('toggle'); else { if(PR.k||(UI.scen!=='air'&&UI.scen!=='free')) pickProc(AIRK); AF.engage(); } airUI(); }

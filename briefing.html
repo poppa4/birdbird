@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Briefings · Birdbird</title>
 <meta name="description" content="Practise departure and approach briefings out loud with today’s weather, a training chart and the aircraft numbers, and get them scored.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
-<link rel="stylesheet" href="train.css?v=1">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
+<link rel="stylesheet" href="train.css?v=2">
 <style>
 .bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
 @media (max-width:1050px){.bgrid{grid-template-columns:minmax(0,1fr)}}
@@ -75,7 +75,7 @@
 </style>
 </head>
 <body data-title="Briefings">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -101,7 +101,7 @@
         <h2 id="bh"></h2>
         <div class="letters" id="letters"></div>
         <textarea class="write" id="bt" placeholder="Say it or type it…" aria-label="Your briefing"></textarea>
-        <div class="btns"><button class="btn mic" id="mic">🎙 Dictate</button><button class="btn pri" id="sc">Score my briefing</button><button class="btn" id="model">Show a model briefing</button><button class="btn" id="clear">Clear</button><span class="note" id="bn"></span></div>
+        <div class="btns"><button class="btn mic" id="mic">Dictate</button><button class="btn pri" id="sc">Score my briefing</button><button class="btn" id="model">Show a model briefing</button><button class="btn" id="clear">Clear</button><span class="note" id="bn"></span></div>
         <div id="out"></div>
         <p class="hist" id="hist"></p>
       </div>
@@ -149,7 +149,7 @@
   </section>
   <p class="note">The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.</p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="ops.js?v=3"></script>
 <script src="brief.js?v=8"></script>
 <script src="chart.js?v=4"></script>

@@ -5,8 +5,8 @@
 <meta name="description" content="Automation and warnings (EASA 022): a two-axis light-aircraft autopilot against a jet flight director, autopilot and autothrust, reading the FMA, captures and mode traps, autothrust and the thrust levers, TCAS traffic and resolution advisories with tau, and EGPWS modes 1 to 6 with the terrain look-ahead.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Automation and Warnings</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* the automation figure: one dark canvas with the PFD and FMA on the left, a plan view and a side view on the right */
 .af-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -26,7 +26,7 @@
 .xsec .run{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0}
 .xsec .run .seg{flex:1}
 @media (max-width:640px){#afv{aspect-ratio:1/1.62;max-height:none}}
-@media (pointer:coarse){.mcp button{min-height:42px}.xsec .pre .btn,.xsec .btns .btn{min-height:40px}.tstep .dots button{width:16px;height:16px}}
+@media (pointer:coarse){.mcp button{min-height:44px}.xsec .pre .btn,.xsec .btns .btn{min-height:44px}.tstep .dots button{width:16px;height:16px}}
 
 .vleg i.ln{height:3px;border-radius:2px}
 .xsec .ro2{margin-top:6px}
@@ -94,12 +94,12 @@ body.depth-instructor .tstep .q{font-size:20px}
 </style>
 </head>
 <body data-title="Automation and Warnings">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Instruments</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Instruments</div>
       <h1>Automation and warnings: autopilot, TCAS and EGPWS</h1>
       <p data-tx="lead">The autopilot flies what the mode annunciator says, not what you meant. Compare a simple two-axis autopilot in a light aircraft with the flight director, autopilot and autothrust of a jet, see how modes arm, capture and revert, and then how TCAS and EGPWS decide when to warn you, and what you do when they do.</p>
     </div>
@@ -165,9 +165,9 @@ body.depth-instructor .tstep .q{font-size:20px}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="afcore.js?v=1"></script>
-<script src="autoflight.js?v=1"></script>
+<script src="autoflight.js?v=2"></script>
 </body>
 </html>

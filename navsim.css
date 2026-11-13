@@ -25,7 +25,7 @@
 .ns-kn{display:inline-flex;align-items:center;gap:2px;border:1px solid rgba(255,255,255,.1);border-radius:13px;padding:1px 2px;background:rgba(10,14,18,.5)}
 .ns-kn button{font:600 12px/1 var(--f-mono);color:#C9D2D8;background:transparent;border:0;border-radius:10px;min-width:28px;min-height:26px;cursor:pointer;padding:0 4px}
 .ns-kn button:hover{background:rgba(255,255,255,.08);color:#fff}
-.ns-kn button:focus-visible{outline:2px solid #7FCBE8;outline-offset:1px}
+.ns-kn button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
 .ns-kn span{padding:0 3px;font-size:10px;color:#8E99A4}
 /* focus: dim what the activity does not use; mask what a task hides on purpose */
 .is-dim{opacity:.34;filter:saturate(.4)}
@@ -80,9 +80,9 @@
 .ns-guide .btn[aria-pressed=true]{background:#E6EBEF;color:#13181D;border-color:#E6EBEF}
 .ns-guide .btn.right{border-color:#63D9A0;box-shadow:inset 3px 0 0 #63D9A0;color:#B9F0D2}
 .ns-guide .btn.wrong{border-color:#EC5A47;box-shadow:inset 3px 0 0 #EC5A47;color:#FFC7BE}
-.ns-guide .btn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.ns-guide .btn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .nsg-in input{width:92px;font:500 16px var(--f-mono);padding:6px 8px;border:1px solid rgba(255,255,255,.25);border-radius:6px;background:#06090b;color:#FFB547}
-.nsg-in input:focus{outline:2px solid #7FCBE8;outline-offset:1px}
+.nsg-in input:focus{outline:2px solid var(--focus-dark);outline-offset:1px}
 .nsg-in span{font-family:var(--f-mono);color:#8E99A4}
 /* keyboard sheet */
 .ns-sheet{position:absolute;right:12px;top:48px;z-index:6;width:min(420px,calc(100% - 24px));background:rgba(12,16,20,.97);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 14px;box-shadow:0 18px 40px -12px rgba(0,0,0,.8);color:#D7E1E6;font-size:13px}
@@ -172,4 +172,4 @@ body.depth-instructor .ns.ns-collapsed{grid-template-columns:46px minmax(0,1fr)}
 .ns-strw .ns-g .ns-kn{display:none}
 @media (max-width:640px){ .ns-inst.one{grid-template-columns:minmax(0,1fr)} .ns-inst.one .ns-g{max-width:330px;width:100%;justify-self:center} }
 /* touch: 40px targets for the lesson list, the zoom buttons and the guide switch */
-@media (pointer:coarse){ .ns-list button{padding:10px 6px} .ns-vp .vtools button{min-width:40px} .nsg-gt{min-height:36px} .ns-sec .nseg button,.nfb{min-height:40px} }
+@media (pointer:coarse){ .ns-list button{padding:10px 6px} .ns-vp .vtools button{min-width:44px} .nsg-gt{min-height:36px} .ns-sec .nseg button,.nfb{min-height:44px} }

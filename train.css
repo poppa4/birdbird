@@ -21,7 +21,7 @@
 .fb .model{color:#a9b4bf;font-family:var(--f-mono);font-size:12px;margin-top:2px}
 .inrow{display:flex;gap:8px;align-items:stretch}
 .inrow textarea{flex:1 1 auto;min-width:0;font-family:var(--f-body);font-size:14.5px;background:#0b0e11;color:#e2e8ee;border:1px solid #3a4048;border-radius:6px;padding:9px 10px;resize:none;height:64px}
-.inrow textarea:focus{outline:2px solid #7fcbe8;outline-offset:0}
+.inrow textarea:focus{outline:2px solid var(--focus-dark);outline-offset:0}
 .ptt{flex:0 0 74px;border-radius:8px;border:1px solid #4a515a;background:radial-gradient(circle at 40% 35%,#4a525c,#252a30);color:#fff;font-weight:700;font-size:12px;cursor:pointer;touch-action:none;user-select:none;font-family:var(--f-mono)}
 .ptt.on{background:#ec5a47;border-color:#ec5a47}
 .ptt:disabled{opacity:.4;cursor:not-allowed}

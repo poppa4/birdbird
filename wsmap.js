@@ -476,10 +476,12 @@
       if (o.onOpen) o.onOpen(n, !!beside);
     }
     /* the card: a dot (shared with the 3D map, WSMAP.ui.cardHTML), or the focused group's list */
+    /* the card moves to the right side when it would cover the dot it describes (so the pointer never lands on the card) */
+    function aside(i) { if (W < 700) return; const [px, py] = [sx(i), sy(i)]; if (px < 0) return; const m = 16; if (px < card.offsetLeft + card.offsetWidth + m && py < card.offsetTop + card.offsetHeight + m && px > card.offsetLeft - m && py > card.offsetTop - m) card.classList.add('r'); }
     function showCard(i) {
       if (!card) return;
       /* a dot's card moves to the right side when the dot itself is under the card's usual place, so the card never covers the dot you point at */
-      if (i >= 0) { card.classList.toggle('r', W >= 700 && gsel < 0 && sx(i) < 340 && sy(i) < 300); card.hidden = false; card.classList.remove('grp'); card.innerHTML = cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, edit: canEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc(t('← ', '← ') + names2[gsel])}</button></span>` : ''); return; }
+      if (i >= 0) { card.classList.remove('r', 'grp'); card.hidden = false; card.innerHTML = cardHTML(g, i, { t, sample: isEx(i), pinned: i === sel, coarse, edit: canEdit }) + (gsel >= 0 ? `<span class="bk"><button type="button" class="lnk" data-gl>${esc(t('← ', '← ') + names2[gsel])}</button></span>` : ''); aside(i); return; }
       card.classList.remove('r');
       if (gsel >= 0) { const q = L.groups[gsel]; card.hidden = false; card.classList.add('grp'); card.innerHTML = groupCardHTML(g, q.m.filter(visible), { t, sample: !!o.sample, edit: canEdit, topic: q.topic, name: names2[gsel], sub: q.ac >= 0 && names2[gsel].indexOf(g.nodes[q.ac].label) < 0 ? g.nodes[q.ac].label + (g.nodes[q.ac].type ? ' · ' + g.nodes[q.ac].type : '') : '' }); return; }
       card.hidden = true;

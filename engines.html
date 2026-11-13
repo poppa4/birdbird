@@ -5,8 +5,8 @@
 <meta name="description" content="Aircraft engines (EASA 021): the four-stroke piston engine, the gas turbine and its Brayton cycle, the free-turbine turboprop, the turbojet and the high-bypass turbofan. Cutaways with the gas path coloured by temperature, the right cockpit gauges for each type, power and thrust lapse with speed and altitude, flat rating and FLEX, and engine starts with hot, hung and wet starts.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Aircraft Engines</title>
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* the engine figure: one dark canvas with the cutaway, the gauges, the comparison and rating charts */
 .en-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
@@ -96,13 +96,13 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .en-vp.apart .vcvw{display:grid;grid-template-columns:minmax(0,1fr) 264px;align-items:start}
 .en-vp.apart #env{aspect-ratio:16/11.2;max-height:none}
 .en-vp.apart .vchip{display:none}
-#env:focus-visible{outline:2px solid #7FCBE8;outline-offset:-2px}
+#env:focus-visible{outline:2px solid var(--focus-dark);outline-offset:-2px}
 .apbar{display:flex;align-items:center;gap:10px;padding:7px 12px;font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#8B99A7;border-bottom:1px solid rgba(255,255,255,.06)}
 .apbar[hidden],.apside[hidden]{display:none}
 .apbar input{flex:1 1 auto;max-width:420px;accent-color:#7EC8F2;min-height:0}
 .apbtn{margin-left:auto;font-family:var(--f-body);font-size:12px;text-transform:none;letter-spacing:0;background:rgba(18,22,26,.62);color:#E2E8EE;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:5px 12px;cursor:pointer;min-height:30px}
 .apbtn:hover{border-color:rgba(255,255,255,.4)}
-.apbtn:focus-visible,.apbar input:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.apbtn:focus-visible,.apbar input:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .apside{border-left:1px solid rgba(255,255,255,.07);padding:12px 12px 10px;color:#C9D3DB;font-size:13px;line-height:1.5;overflow:auto;background:rgba(6,9,12,.25)}
 .tour{padding:9px 12px 10px;border-top:1px solid rgba(255,255,255,.07);color:#C9D3DB;font-size:13.5px;line-height:1.5}
 .tour[hidden]{display:none}
@@ -116,12 +116,12 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .tbtn{font-family:var(--f-body);font-size:12.5px;background:rgba(18,22,26,.62);color:#E2E8EE;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:5px 11px;cursor:pointer;min-height:32px}
 .tbtn:hover:not(:disabled){border-color:rgba(255,255,255,.4)}.tbtn:disabled{opacity:.4;cursor:default}
 .tbtn.pri{border-color:#7EC8F2;background:rgba(126,200,242,.16)}
-.tbtn:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}
+.tbtn:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}
 .tbtn.x{margin-left:auto;padding:5px 10px}
 .tour .tdots{display:inline-flex;gap:5px;margin:0 4px}.tour .tdots i{width:8px;height:8px;border-radius:50%;border:1px solid var(--c);opacity:.6}.tour .tdots i.done{background:var(--c);opacity:.45}.tour .tdots i.on{background:var(--c);opacity:1}
 @media (max-width:640px){.tour .tlead{display:block;margin:6px 0 0}.tour .tdots{display:none}}
 .aplay:empty{display:none}.aplay{padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07)}.aplay h5{margin:0 0 5px}.aplay .b{display:flex;flex-direction:column;gap:4px}
-.aplay button{text-align:left;font-family:var(--f-body);font-size:12px;line-height:1.3;background:rgba(18,22,26,.62);color:#C6D0D8;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:5px 8px;cursor:pointer}.aplay button.on{border-color:#7EC8F2;color:#EEF2F5;background:rgba(126,200,242,.14)}.aplay button:focus-visible{outline:2px solid #7FCBE8;outline-offset:2px}.aplay p{margin:6px 0 0;font-size:12px;line-height:1.45;color:#AEB9C2}
+.aplay button{text-align:left;font-family:var(--f-body);font-size:12px;line-height:1.3;background:rgba(18,22,26,.62);color:#C6D0D8;border:1px solid rgba(255,255,255,.16);border-radius:4px;padding:5px 8px;cursor:pointer}.aplay button.on{border-color:#7EC8F2;color:#EEF2F5;background:rgba(126,200,242,.14)}.aplay button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:2px}.aplay p{margin:6px 0 0;font-size:12px;line-height:1.45;color:#AEB9C2}
 .apcard{min-height:150px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:8px}
 .apcard h4{margin:0;font-family:var(--f-display);font-stretch:92%;font-weight:650;font-size:16px;line-height:1.25;color:#EEF2F5}
 .apcard .aph{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
@@ -138,7 +138,7 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 .aplist button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:4px;padding:3px 6px;color:#C6D0D8;font-family:var(--f-body);font-size:12.5px;line-height:1.3;cursor:pointer;min-height:28px}
 .aplist button:hover{background:rgba(255,255,255,.05);color:#EEF2F5}
 .aplist button.on{background:rgba(255,255,255,.08);border-color:var(--c);color:#fff}
-.aplist button:focus-visible{outline:2px solid #7FCBE8;outline-offset:1px}
+.aplist button:focus-visible{outline:2px solid var(--focus-dark);outline-offset:1px}
 .aplist .k{font-family:var(--f-mono);font-size:10.5px;color:#7F8D99;width:11px;flex:0 0 auto}
 .aplist .nm{flex:1 1 auto}
 .aplist .sn{flex:0 0 auto;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:var(--c);color:#0f151b;font-family:var(--f-mono);font-weight:700;font-size:10px}
@@ -146,12 +146,12 @@ body.ap-wide .xapp>*{grid-column:1/-1}
 </style>
 </head>
 <body data-title="Aircraft Engines" class="et-tp">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
-  <nav class="labnav" aria-label="Virtual Lab"></nav>
+  <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Lab · Aircraft and engine systems</div>
+      <div class="eyebrow">Birdbird Virtual Labs · Aircraft and engine systems</div>
       <h1>Powerplant: piston, turboprop and jet</h1>
       <p data-tx="lead">Every aircraft engine does the same four things to air: suck it in, squeeze it, burn fuel in it and blow it out. A piston engine does them one after another in the same cylinder; a gas turbine does them all at once, each in its own part of the engine. What the hot gas then drives makes the difference: a propeller through a shaft (piston and turboprop) or a jet of air straight out of the back (turbojet and turbofan). See each one work, read its gauges, compare them at the same height and speed, and start them.</p>
     </div>
@@ -230,10 +230,10 @@ body.ap-wide .xapp>*{grid-column:1/-1}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="concepts.js?v=2"></script>
 <script src="enginecore.js?v=1"></script>
 <script src="engparts.js?v=3"></script>
-<script src="engines.js?v=5"></script>
+<script src="engines.js?v=6"></script>
 </body>
 </html>

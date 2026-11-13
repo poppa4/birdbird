@@ -340,9 +340,9 @@
 
   async function start() {
     try {
-      if (!window.VSection) await load('section.js?v=11');
-      if (!window.VLab) await load('physics.js?v=12');
-      if (!window.CFD) await load('cfd3d.js?v=6');
+      if (!window.VSection) await load('section.js?v=12');
+      if (!window.VLab) await load('physics.js?v=14');
+      if (!window.CFD) await load('cfd3d.js?v=7');
     } catch (e) { return; }
     V = window.VSection; CFD = window.CFD;
     g = V.build(window.VLab.AIRFOILS.sc, 0);

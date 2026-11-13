@@ -172,7 +172,7 @@ function open(b){ const id=b.dataset.gl, g=G[id]; if(!g) return; let p=document.
   const host=b.closest('dialog')||document.body; if(p.parentNode!==host) host.appendChild(p);
   const here=(location.pathname.split('/').pop()||'index.html'), lab=g[3]&&g[3]!==here?g[3]:null;
   p.innerHTML=`<div class="gh"><b>${esc(term(id))}</b><button type="button" class="gx" aria-label="${esc(lang()==='no'?'Lukk':'Close')}">×</button></div><span class="gn">${esc(L(g[1]))}</span><p>${esc(L(g[2]))}</p>`+
-    (lab?`<a class="glab" href="${esc(lab)}">${esc(lang()==='no'?'Lær mer':'Learn more')}: ${esc(L(LABN[lab]||t2('Virtual Lab','Virtual Lab')))} <span aria-hidden="true">→</span></a>`:'');
+    (lab?`<a class="glab" href="${esc(lab)}">${esc(lang()==='no'?'Lær mer':'Learn more')}: ${esc(L(LABN[lab]||t2('Virtual Labs','Virtual Labs')))} <span aria-hidden="true">→</span></a>`:'');
   p.hidden=false; cur=b; b.setAttribute('aria-expanded','true'); p.querySelector('.gx').onclick=e=>{ e.stopPropagation(); const f=cur; close(); if(f) f.focus({preventScroll:true}); };
   const r=b.getBoundingClientRect(), pw0=Math.min(320,innerWidth-16); p.style.width=pw0+'px'; const ph=p.offsetHeight;
   let x=Math.round(r.left+r.width/2-pw0/2); x=Math.max(8,Math.min(innerWidth-pw0-8,x)); let y=r.bottom+8; if(y+ph>innerHeight-8&&r.top-ph-8>8) y=r.top-ph-8;

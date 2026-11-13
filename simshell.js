@@ -1,6 +1,6 @@
 /* Birdbird – the shared shell of the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    One toolbar (the markup is the same on all six pages), the "…" menu, the Procedures drawer tabs and ONE notification area.
-   - Toolbar order: aircraft · 2D/3D · ✈ Start · Auto-fly · Procedures · Pause · [Debrief, only after a flight] · …
+   - Toolbar order: aircraft · 2D/3D · ✈︎ Start · Auto-fly · Procedures · Pause · [Debrief, only after a flight] · …
    - "…" menu: restart, outside view, look ahead (3D), lock view, panel area, sound, touch stick, full screen, debrief now,
      open debrief after landing, keyboard help, performance meter.
    - Drawer tabs: Checklist (only the student's own) · Failures · Speeds. A page registers a render function per pane (drawn when shown).
@@ -13,7 +13,7 @@
 const tr=(en,no)=>({en,no});
 const L=x=>(G.LAB&&G.LAB.L)?G.LAB.L(x):(x&&x.en)||x;
 if(G.LAB&&G.LAB.add) G.LAB.add({},{
-  '✈ Start':'✈ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
+  '✈︎ Start':'✈︎ Start','Auto-fly':'Autofly','Procedures':'Prosedyrer','Pause':'Pause','Resume':'Fortsett','Debrief':'Debrief','More':'Mer',
   'Checklist':'Sjekkliste','Failures':'Feil','Speeds':'Farter',
   'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Lock view':'Lås visning','Panel area':'Panelområde',
   'Sound on':'Lyd på','Sound off':'Lyd av','Touch stick':'Berøringsstikke','Full screen':'Fullskjerm','Debrief now':'Debrief nå',

@@ -7,14 +7,14 @@
 <meta name="description" content="Birdbird is an aviation platform built in Norway for pilots, students and flight schools: 25 interactive labs on the EASA ATPL syllabus, Route Explorer, a printable briefing pack, and an instructor that answers from your own AFM, QRH and SOP.">
 <meta name="theme-color" content="#0B2545">
 <link rel="preload" as="image" href="img/front/sunset2-1400.webp" imagesrcset="img/front/sunset2-760.webp 760w, img/front/sunset2-1400.webp 1400w, img/front/sunset2-1672.webp 1672w, img/front/sunset2-2560.webp 2560w, img/front/sunset2-3344.webp 3344w, img/front/sunset2-3840.webp 3840w" imagesizes="100vw" type="image/webp">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <!-- The previous front page is kept as index-classic.html (noindex). To go back: cp index-classic.html index.html -->
 <style>
 /* ===== Birdbird front page. Page-scoped: everything lives under .fp =====
    Tokens: navy field, paper, white sheet, ink, hairline rules, one accent (magenta) for actions. */
 .fp{
-  --navy:#0B2545; --navy-2:#132F55; --on-navy:#FFFFFF; --on-navy-2:#BFCAD6; --navy-rule:rgba(255,255,255,.16);
+  --on-navy:#FFFFFF; --on-navy-2:#BFCAD6; --navy-rule:rgba(255,255,255,.16);
   /* --ink, --rule, --sheet and --info come from site.css */
   --ink2:var(--ink-2,#4C5B66); --rule2:var(--rule-2,#DCE3E4); --acc:var(--accent,#9A1E68);
   --disp:var(--f-display,"Archivo","Arial Narrow",system-ui,sans-serif); --mono:var(--f-mono,"IBM Plex Mono",ui-monospace,monospace);
@@ -96,7 +96,7 @@
 .fp-ro div{display:flex;gap:7px;align-items:baseline}
 .fp-ro dt{font-size:11px;color:#9AA7B3}
 .fp-ro dd{margin:0;font-variant-numeric:tabular-nums}
-.fp-credit{position:absolute;right:0;bottom:14px;text-align:right;font-size:11.5px;line-height:1.45;color:#C3CEDA;text-shadow:0 0 4px #0B2545,0 0 10px #0B2545}
+.fp-credit{position:absolute;right:0;bottom:14px;text-align:right;font-size:11.5px;line-height:1.45;color:#C3CEDA;text-shadow:0 0 4px var(--navy),0 0 10px var(--navy)}
 /* the live aerofoil (hero-foil.js) on a navy plate in the subject areas: the Aerodynamics lab's 2D section at 13°.
    The canvas fills the plate; .ff-frame is the box the section is laid out in (clear of the readout and the colour bar). */
 .ff{position:relative;aspect-ratio:10/7;overflow:hidden;background:var(--navy);box-shadow:0 0 0 1px rgba(19,32,42,.12),0 30px 60px -36px rgba(11,37,69,.55)}
@@ -446,7 +446,7 @@
 </style>
 </head>
 <body data-home="1" data-title="Birdbird · Aviation theory and flight preparation, built in Norway">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <main class="fp" id="main">
 
   <!-- 1. Hero -->
@@ -707,7 +707,7 @@
   </div>
 
 </main>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="front-storm.js?v=3" defer></script>
 <script src="front-fi.js?v=1" defer></script>
 <script>
@@ -841,7 +841,7 @@ const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(
    screen; it pauses off screen and draws a single still frame under reduced motion. */
 (function(){
 const box=document.getElementById('ffBox'); if(!box) return;
-const add=()=>{ const s=document.createElement('script'); s.src='hero-foil.js?v=2'; s.async=true; document.head.appendChild(s); };
+const add=()=>{ const s=document.createElement('script'); s.src='hero-foil.js?v=4'; s.async=true; document.head.appendChild(s); };
 if(!('IntersectionObserver' in window)){ add(); return; }
 const io=new IntersectionObserver(es=>{ if(es[0].isIntersecting){ io.disconnect(); add(); } },{rootMargin:'600px 0px'}); io.observe(box);
 })();

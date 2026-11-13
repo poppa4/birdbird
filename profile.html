@@ -5,15 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My training · Birdbird</title>
 <meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
-<link rel="stylesheet" href="lab.css?v=9">
-<link rel="stylesheet" href="site.css?v=18">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="site.css?v=19">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
 .mt-head .brand{min-width:0}
-.mt-head h1{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:clamp(36px,4.4vw,var(--t-3xl));letter-spacing:-.015em;line-height:1.04;margin:0;color:var(--ink)}
 .mt-head .brand>p{margin:14px 0 0;color:var(--ink-2);font-size:var(--t-md);line-height:1.5;max-width:56ch}
-.mt-eb{display:block;font-family:var(--f-mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 12px}
 
 /* rank plate */
 .rankp{background:var(--sheet);border:1px solid var(--rule);border-radius:var(--radius-lg);padding:18px 20px 16px;min-width:0}
@@ -145,12 +143,8 @@
 .dgrid .box .btns{margin-top:auto;padding-top:10px}
 .dmsg{font-size:13px;color:var(--ink-2);margin:4px 0 0}.dmsg:empty{display:none}
 .dmsg.ok{color:var(--ok)} .dmsg.bad{color:var(--warning)}
-.btn.danger{color:var(--warning);border-color:var(--warning)}
-.btn.danger:hover{background:var(--warning-wash)}
 .btn.dangerfill{background:var(--warning);border-color:var(--warning);color:#fff}
 .btn.dangerfill:hover{background:#9A1D14}
-dialog.rs{border:1px solid var(--rule);border-radius:var(--radius-lg);padding:24px;max-width:min(460px,calc(100vw - 32px));box-shadow:var(--shadow-pop);color:var(--ink);background:var(--sheet)}
-dialog.rs::backdrop{background:rgba(19,32,42,.38)}
 dialog.rs h3{font-family:var(--f-display);font-stretch:90%;font-size:22px;font-weight:700;margin:0 0 8px}
 dialog.rs p{margin:0 0 12px;color:var(--ink-2);font-size:14.5px}
 dialog.rs label{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:0 0 18px;line-height:1.4}
@@ -224,11 +218,11 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=63"></script>
+<script src="site.js?v=64"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
-      <span class="mt-eb">Birdbird</span>
+      <div class="eyebrow on">Birdbird</div>
       <h1>My page</h1>
       <p>Your briefing packs, saved routes and account.</p>
     </div>
@@ -254,7 +248,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
   <section class="card" id="path">
     <div class="shead">
       <h2>Learning path</h2>
-      <a class="btn sm" href="lab.html">Open the Virtual Lab</a>
+      <a class="btn sm" href="lab.html">Open Virtual Labs</a>
     </div>
     <p class="lead">Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.</p>
     <div class="lpsum" id="lpsum"></div>
@@ -320,7 +314,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     </form>
   </dialog>
 </div>
-<script src="lab.js?v=47"></script>
+<script src="lab.js?v=48"></script>
 <script src="store.js?v=2"></script>
 <script>
 (function(){
@@ -331,7 +325,7 @@ LAB.add({},{
  'My page':'Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','Birdbird · My training':'Birdbird · Min trening','My training':'Min trening','My training · Birdbird':'Min trening · Birdbird',
  'Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.':'Rangen din, hva du bør gjøre nå, og alt du har gjort i labbene, typeratingtreneren og flyplanleggingen, samlet på ett sted.',
  'Next up':'Neste','Learning path':'Læringsløp','Type rating':'Typerating','Planning':'Planlegging','Achievements':'Prestasjoner','Your data':'Dine data',
- 'Open the Virtual Lab':'Åpne Virtual Lab','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
+ 'Open Virtual Labs':'Åpne Virtual Labs','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
  'Type rating: King Air B200':'Typerating: King Air B200','Open the trainer':'Åpne treneren',
  'Your briefing packs and the routes you have drawn in Route Explorer.':'Briefingpakkene dine og rutene du har tegnet i Route Explorer.','Briefing packs':'Briefingpakker','Saved routes':'Lagrede ruter','Open →':'Åpne →',
  'Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.':'Hver test, drill, simulatoroppdrag og radioscenario gir erfaringspoeng mot rangen din. Det beste resultatet teller, så du kan alltid prøve igjen. En prestasjon er oppnådd ved 80 %.',
@@ -401,7 +395,7 @@ function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitne
 function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
 let bLoading=null;
 function loadBank(){ if(bLoading) return bLoading;
-  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=2')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js'), window.B200C?true:loadScript('b200-sim.js?v=3')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
     const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
     B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
   return bLoading; }
@@ -468,13 +462,13 @@ function gaps(){ const m={}; SES.forEach(s=>(s.gaps||[]).forEach(g=>{ const k=St
   return Object.values(m).sort((a,b)=>b.n-a.n||b.last-a.last); }
 function drawNext(){ const t=getTrack(), b=b200(), nx=nextLab(t), pk=PACKS.filter(realPack), C={};
   const anyLab=LAB.FLAT.some(x=>labScore(x)>0);
-  if(nx){ const s=labScore(nx); C.lab={k:L({en:`Virtual Lab · Module ${nx.mi+1}`,no:`Virtual Lab · Modul ${nx.mi+1}`}),
+  if(nx){ const s=labScore(nx); C.lab={k:L({en:`Virtual Labs · Module ${nx.mi+1}`,no:`Virtual Labs · Modul ${nx.mi+1}`}),
     h:s?L({en:'Retake: ',no:'Ta på nytt: '})+lx(nx):lx(nx),
     p:s?L({en:`Your best quiz score is ${s} %. Reach 60 % to mark the lab done.`,no:`Beste quizresultat er ${s} %. Nå 60 % for å markere labben som ferdig.`})
        :anyLab?L({en:`The next lab in ${t?'your track':'the learning path'}: ${lx(nx.m)}.`,no:`Neste lab i ${t?'løpet ditt':'læringsløpet'}: ${lx(nx.m)}.`})
        :L({en:'Where the learning path begins. An interactive lab, then a short quiz to check your understanding.',no:'Her starter læringsløpet. En interaktiv lab, og så en kort quiz som sjekker forståelsen.'}),
     b:s?L({en:'Retake the quiz',no:'Ta quizen igjen'}):anyLab?L({en:'Continue',no:'Fortsett'}):L({en:'Start the first lab',no:'Start første lab'}), href:nx.f+(s?'#quiz':'')}; }
-  else C.lab={k:'Virtual Lab',h:L({en:'Every lab in your track is done',no:'Alle labbene i løpet ditt er ferdige'}),p:L({en:'Raise your scores or try a lab outside your track.',no:'Forbedre resultatene eller prøv en lab utenfor løpet ditt.'}),b:L({en:'See all labs',no:'Se alle labber'}),href:'lab.html'};
+  else C.lab={k:'Virtual Labs',h:L({en:'Every lab in your track is done',no:'Alle labbene i løpet ditt er ferdige'}),p:L({en:'Raise your scores or try a lab outside your track.',no:'Forbedre resultatene eller prøv en lab utenfor løpet ditt.'}),b:L({en:'See all labs',no:'Se alle labber'}),href:'lab.html'};
   if(b.fcStarted&&b.due) C.cards={k:L({en:'Type rating · Flashcards',no:'Typerating · Flashkort'}),h:L({en:`${b.due} flashcards due`,no:`${b.due} flashkort å repetere`}),p:L({en:'Cards come back just before you forget them. A round takes a few minutes.',no:'Kortene kommer tilbake rett før du glemmer dem. En runde tar noen minutter.'}),b:L({en:'Review the cards',no:'Repeter kortene'}),href:'typerating.html#cards'};
   if(b.missed) C.missed={k:L({en:'Type rating · Questions',no:'Typerating · Spørsmål'}),h:L({en:`Review ${b.missed} missed question${b.missed===1?'':'s'}`,no:`Repeter ${b.missed} spørsmål du bommet på`}),p:L({en:'Choose “Missed” in the question trainer. They stay there until you answer them correctly.',no:'Velg «Missed» i spørsmålstreneren. De blir der til du svarer riktig.'}),b:L({en:'Open the question trainer',no:'Åpne spørsmålstreneren'}),href:'typerating.html#quiz'};
   if(!b.has) C.b200={k:L({en:'Type rating',no:'Typerating'}),h:L({en:'Start the King Air B200 trainer',no:'Start King Air B200-treneren'}),p:L({en:'System by system, with cockpit simulators, flashcards and a timed exam.',no:'System for system, med cockpitsimulatorer, flashkort og eksamen på tid.'}),b:L({en:'Open the trainer',no:'Åpne treneren'}),href:'typerating.html#plan'};
@@ -492,7 +486,7 @@ function drawNext(){ const t=getTrack(), b=b200(), nx=nextLab(t), pk=PACKS.filte
 el('nextup').addEventListener('click',e=>{ const a=e.target.closest('[data-track]'); if(!a) return; e.preventDefault(); const r=el('track'); r.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'center'}); r.classList.add('pulse'); setTimeout(()=>r.classList.remove('pulse'),1800); const f=r.querySelector('button'); if(f) f.focus({preventScroll:true}); });
 
 /* ---------- achievements ---------- */
-const AG=[['lab',{en:'Virtual Lab',no:'Virtual Lab'}],['sim',{en:'Simulator',no:'Simulator'}],['plan',{en:'Flight planning',no:'Flyplanlegging'}],['radio',{en:'Practise and check',no:'Øv og sjekk'}]];
+const AG=[['lab',{en:'Virtual Labs',no:'Virtual Labs'}],['sim',{en:'Simulator',no:'Simulator'}],['plan',{en:'Flight planning',no:'Flyplanlegging'}],['radio',{en:'Practise and check',no:'Øv og sjekk'}]];
 function drawAch(){ const N=P(); if(!N){ el('ach').innerHTML=''; return; } const d=N.load(); const open=[...document.querySelectorAll('#ach details[open]')].map(x=>x.dataset.g);
   let got=0, all=0;
   el('ach').innerHTML=AG.map(([g,name])=>{ const its=N.items.filter(i=>i.g===g); if(!its.length) return ''; const v=i=>Math.min(100,d[i.k]||0);

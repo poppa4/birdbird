@@ -597,10 +597,10 @@ LAB.quiz(el('qbox'),'fronts',()=>LAB.shuffle([
 ]),8);
 
 /* ---------------- static strings, rich text, start ---------------- */
-LAB.add({},{'Fronts and Air Masses':'Fronter og luftmasser','Fronts and air masses':'Fronter og luftmasser','Birdbird Virtual Lab · Meteorology':'Birdbird Virtual Lab · Meteorologi',
+LAB.add({},{'Fronts and Air Masses':'Fronter og luftmasser','Fronts and air masses':'Fronter og luftmasser','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','Fly through a front':'Fly gjennom en front','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Front':'Front','Occlusion type':'Okklusjonstype','Warm air':'Varm luft','Season':'Årstid','Show':'Vis','Scenarios':'Scenarioer','Advanced':'Avansert',
- 'Virtual Lab':'Virtual Lab','Sections':'Seksjoner','View':'Visning',
+ 'Virtual Labs':'Virtual Labs','Sections':'Seksjoner','View':'Visning',
  'Vertical cross-section through a front with cloud, precipitation, freezing level, icing and turbulence, the aircraft, and a strip with surface temperature, dew point, wind and QNH along the route':'Vertikalsnitt gjennom en front med skyer, nedbør, frysenivå, ising og turbulens, flyet, og en stripe med temperatur, duggpunkt, vind og QNH ved bakken langs ruten',
  'Plan view of a frontal depression with isobars and front symbols, developing from a wave to an occlusion':'Kart over et frontlavtrykk med isobarer og frontsymboler, som utvikler seg fra en bølge til en okklusjon'});
 LAB.tx({lead:'Der to luftmasser møtes, løftes den varmeste luften, og det er der været skjer. Fly gjennom en varmfront, en kaldfront eller en okklusjon og se skyer, nedbør, frysenivå, ising og turbulens der du er, mens vind, temperatur og QNH endrer seg når du passerer. Se så et frontlavtrykk vokse fra en bølge til en okklusjon.',
