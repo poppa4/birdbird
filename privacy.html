@@ -6,7 +6,7 @@
 <title>Privacy · Birdbird</title>
 <meta name="description" content="Birdbird privacy in plain language: accounts are optional, what an account stores and where, documents stay in your browser, no analytics or tracking, and how to delete your data.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <style>
 /* privacy.html – page-local layout */
 .pv-short{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 40px;border-top:1px solid var(--ink)}
@@ -42,7 +42,7 @@
 </style>
 </head>
 <body data-title="Privacy">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -163,16 +163,13 @@
   </section>
 </div>
 <script src="lab.js?v=51"></script>
+<script src="localdata.js?v=1"></script>
 <script>
 (function(){
 'use strict';
 const {L,el}=LAB;
-/* Birdbird's own storage: local storage key prefixes and IndexedDB databases used across the site */
-const PFX=['naeroson','aeroson','vlab-','fi-'];
-const DBS=['naeroson-fi','naeroson-docs','naeroson-att'];
-const mine=k=>PFX.some(p=>k.indexOf(p)===0)||k==='birdbird-account';
-function keys(){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&mine(k)&&k!=='vlab-lang') out.push(k); } }catch(e){} return out; }
-function count(){ const n=keys().length; el('cnt').textContent=L({en:`${n} saved item${n===1?'':'s'} in local storage, plus any documents.`,no:`${n} lagrede element${n===1?'':'er'} i lokal lagring, pluss eventuelle dokumenter.`}); }
+/* Birdbird's own storage on this device: localdata.js (BBLOCAL) knows every key and database */
+async function count(){ if(!window.BBLOCAL) return; const inv=await BBLOCAL.inventory(); const n=inv.local.filter(k=>k!=='vlab-lang').length+inv.session.length; el('cnt').textContent=L({en:`${n} saved item${n===1?'':'s'} in local storage, plus any documents.`,no:`${n} lagrede element${n===1?'':'er'} i lokal lagring, pluss eventuelle dokumenter.`}); }
 let armed=false, tmr=0;
 const btn=el('clr'), res=el('res');
 function label(){ btn.textContent=armed? L({en:'Click again to delete everything',no:'Klikk igjen for å slette alt'}) : L({en:'Clear Birdbird data',no:'Slett Birdbird-data'}); btn.classList.toggle('arm',armed); }
@@ -180,11 +177,9 @@ btn.addEventListener('click',async()=>{
   if(!armed){ armed=true; label(); res.className='res'; res.textContent=''; clearTimeout(tmr); tmr=setTimeout(()=>{ armed=false; label(); },6000); return; }
   clearTimeout(tmr); armed=false;
   const wasIn=!!(window.BBACCOUNT&&BBACCOUNT.user); if(window.BBACCOUNT) try{ await BBACCOUNT.forgetDevice(); }catch(e){}
-  const lang=LAB.lang; const ks=keys();
-  try{ ks.forEach(k=>localStorage.removeItem(k)); localStorage.setItem('vlab-lang',lang); }catch(e){}
-  await Promise.all(DBS.map(n=>new Promise(r=>{ try{ const q=indexedDB.deleteDatabase(n); q.onsuccess=q.onerror=q.onblocked=()=>r(); }catch(e){ r(); } })));
-  label(); res.className='res ok'; res.textContent=L({en:`Done. ${ks.length} items and the document stores were removed from this browser. Your language choice was kept.`,no:`Ferdig. ${ks.length} elementer og dokumentlagrene ble fjernet fra denne nettleseren. Språkvalget ble beholdt.`})+(wasIn?' '+L({en:'You were signed out; your account still has its copy.',no:'Du ble logget ut; kontoen har fortsatt sin kopi.'}):'');
-  count(); document.dispatchEvent(new Event('nprog'));
+  const r=await BBLOCAL.clearAll({keepLang:true}); const n=r.local+r.session;
+  label(); res.className='res ok'; res.textContent=L({en:`Done. ${n} items and the document stores were removed from this browser. Your language choice was kept.`,no:`Ferdig. ${n} elementer og dokumentlagrene ble fjernet fra denne nettleseren. Språkvalget ble beholdt.`})+(wasIn?' '+L({en:'You were signed out; your account still has its copy.',no:'Du ble logget ut; kontoen har fortsatt sin kopi.'}):'');
+  count();
 });
 LAB.add({'Sections':'Sections'},{
  'Privacy':'Personvern','Birdbird · Privacy':'Birdbird · Personvern',

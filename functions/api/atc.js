@@ -55,7 +55,6 @@ const WORKERS_SYSTEM = 'You are Flight Intelligence in Birdbird, a European (EAS
   + 'Never invent regulation references, figures or limitations; if something is not in the material given and you are not sure, say so.';
 const MAX_BODY_BYTES = 200000;    // the JSON body of one POST
 const MAX_MESSAGES = 40;
-const KEEP_DAYS = 35;             // counters older than this are deleted
 
 /* Model allow-list (IDs and prices: https://platform.claude.com/docs/en/models/overview, checked 2026-11-13).
    Thinking is switched off so that max_tokens bounds the whole billed output (thinking tokens are billed as output):
@@ -130,7 +129,6 @@ async function addTokens(c, userId, day, n) {
   if (!(n > 0)) return;
   const st = who => c.db.prepare('UPDATE ai_usage SET tokens = tokens + ?1 WHERE user_id = ?2 AND day = ?3').bind(n, who, day);
   const stmts = [st(userId), st(GLOBAL)];
-  if (c.deps.random() < 0.02) stmts.push(c.db.prepare('DELETE FROM ai_usage WHERE day < ?1').bind(dayOf(c.now - KEEP_DAYS * 864e5)));
   await c.db.batch(stmts);
 }
 

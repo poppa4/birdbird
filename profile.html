@@ -6,7 +6,7 @@
 <title>My training · Birdbird</title>
 <meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -219,7 +219,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -299,7 +299,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <h2>Your data</h2>
     <div class="callout info" id="dataNote"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
     <div class="dgrid">
-      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: scores, rank, type rating statistics, flashcards, briefing packs and routes.</p><div class="btns"><button class="btn pri" id="exp">Download progress file</button></div><p class="dmsg" id="expMsg"></p></div>
+      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: your account (when you are signed in) and everything Birdbird keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.</p><div class="btns"><button class="btn pri" id="exp">Download all my data</button></div><p class="dmsg" id="expMsg"></p></div>
       <div class="box"><b class="t">Import</b><p>Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.</p><div class="btns"><button class="btn" id="impBtn">Choose a file…</button><input type="file" id="impFile" accept=".json,application/json,text/plain" hidden></div><p class="dmsg" id="impMsg"></p></div>
       <div class="box"><b class="t">Start over</b><p>Delete your training progress in this browser. You choose whether briefing packs and routes go too.</p><div class="btns"><button class="btn danger" id="rsBtn">Reset progress…</button></div><p class="dmsg" id="rsMsg"></p></div>
     </div>
@@ -316,7 +316,8 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
   </dialog>
 </div>
 <script src="lab.js?v=51"></script>
-<script src="store.js?v=2"></script>
+<script src="store.js?v=3"></script>
+<script src="localdata.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -332,7 +333,7 @@ LAB.add({},{
  'Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.':'Hver test, drill, simulatoroppdrag og radioscenario gir erfaringspoeng mot rangen din. Det beste resultatet teller, så du kan alltid prøve igjen. En prestasjon er oppnådd ved 80 %.',
  'Stored in this browser only':'Lagret bare i denne nettleseren',
  'Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.':'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Ingenting sendes til en server, og ingenting synkroniseres mellom enheter ennå. Sletter du nettleserdataene, forsvinner de, så eksporter en kopi innimellom.',
- 'Export':'Eksporter','Download everything as one JSON file: scores, rank, type rating statistics, flashcards, briefing packs and routes.':'Last ned alt som én JSON-fil: resultater, rang, typeratingstatistikk, flashkort, briefingpakker og ruter.','Download progress file':'Last ned progresjonsfil',
+ 'Export':'Eksporter','Download everything as one JSON file: your account (when you are signed in) and everything Birdbird keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.':'Last ned alt som én JSON-fil: kontoen din (når du er logget inn) og alt Birdbird har i denne nettleseren, fra progresjon og flashkort til briefingpakker, ruter og Mitt arbeidsområde.','Download all my data':'Last ned alle dataene mine',
  'Import':'Importer','Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.':'Last inn en progresjonsfil fra en annen enhet eller nettleser. De beste resultatene beholdes, og nyeste pakker og ruter vinner.','Choose a file…':'Velg en fil …',
  'Start over':'Start på nytt','Delete your training progress in this browser. You choose whether briefing packs and routes go too.':'Slett treningsprogresjonen i denne nettleseren. Du velger selv om briefingpakker og ruter også skal slettes.','Reset progress…':'Nullstill progresjonen …',
  'Reset your progress?':'Nullstille progresjonen?',
@@ -501,10 +502,24 @@ function drawAch(){ const N=P(); if(!N){ el('ach').innerHTML=''; return; } const
 const OURS=/^(naeroson-|aeroson-quiz-|vlab-|bb-)/;
 const PROGRESS=k=> k==='naeroson-prog'||/^(aeroson-quiz-|naeroson-radio-|vlab-done-|bb-b200-)/.test(k)||k==='vlab-reg'||k==='bb-track'||k==='naeroson-store-fises';
 const PLANNING=k=> /^naeroson-store-(prep|route|mapview|mapnote|fixes|aircraft|fiac)$/.test(k);
-el('exp').onclick=()=>{ const keys={}; ls.keys().filter(k=>OURS.test(k)).sort().forEach(k=>{ keys[k]=ls.get(k); });
-  const o={app:'birdbird',kind:'progress',v:2,exported:new Date().toISOString(),keys};
-  const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='birdbird-progress-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
-  const m=el('expMsg'); m.className='dmsg ok'; m.textContent=L({en:`Downloaded ${Object.keys(keys).length} stored items.`,no:`Lastet ned ${Object.keys(keys).length} lagrede elementer.`}); };
+/* one download: the account's server copy (when signed in) and everything Birdbird keeps on this device (localdata.js).
+   `keys` has the same shape as the older progress file, so Import reads both. */
+el('exp').onclick=async()=>{ const m=el('expMsg'), b=el('exp'); b.disabled=true; m.className='dmsg'; m.textContent=L({en:'Collecting your data…',no:'Samler inn dataene dine …'});
+  try{
+    let loc={keys:{},sessionStorage:{},indexedDB:{}};
+    if(window.BBLOCAL) loc=await BBLOCAL.exportLocal(); else ls.keys().filter(k=>OURS.test(k)).sort().forEach(k=>{ loc.keys[k]=ls.get(k); });
+    let account=null, accNote=null; const A=AC();
+    if(A&&A.user){ try{ const r=await fetch('/api/me/export',{credentials:'same-origin',headers:{accept:'application/json'}}); const j=await r.json(); if(r.ok&&j&&j.ok){ delete j.ok; account=j; } else accNote=(j&&j.message)||('HTTP '+r.status); }catch(e){ accNote='The account could not be reached.'; } }
+    const o={app:'birdbird',kind:'all-data',v:3,exported:new Date().toISOString(),
+      notes:{en:'Everything Birdbird stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on My page reads the "keys" part.',
+             no:'Alt Birdbird lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Min side leser «keys»-delen.'},
+      account, accountError:accNote, keys:loc.keys, sessionStorage:loc.sessionStorage, indexedDB:loc.indexedDB};
+    const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='birdbird-data-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+    const n=Object.keys(loc.keys).length, d=Object.keys(loc.indexedDB).length;
+    m.className=accNote?'dmsg bad':'dmsg ok';
+    m.textContent=L({en:`Downloaded ${n} stored items and ${d} database${d===1?'':'s'} from this browser`,no:`Lastet ned ${n} lagrede elementer og ${d} database${d===1?'':'r'} fra denne nettleseren`})+(account?L({en:', plus your account.',no:', pluss kontoen din.'}):'.')+(accNote?' '+L({en:'The account part is missing: ',no:'Kontodelen mangler: '})+accNote:'');
+  }catch(e){ m.className='dmsg bad'; m.textContent=L({en:'The download could not be made. Try again.',no:'Nedlastingen kunne ikke lages. Prøv igjen.'}); }
+  finally{ b.disabled=false; } };
 function mergeKey(k,inc){ const cur=ls.get(k); if(inc==null) return 0; if(typeof inc!=='string') inc=JSON.stringify(inc);
   if(cur==null){ ls.set(k,inc); return 1; }
   if(cur===inc) return 0;
@@ -634,13 +649,13 @@ el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); i
   else if(id==='acDl'){ const txt=`Birdbird recovery code\n\n${UI.code}\n\nUse it at https://birdbird.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='birdbird-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
   else if(id==='acDone'){ UI.code=null; acMsg('',''); drawAcct(); const f=el('acSync')||el('acNew'); if(f) f.focus(); }
   else if(id==='acDel'){ const d=el('acDelDlg'); el('acDelP').textContent=L({en:'This permanently deletes your Birdbird account, its passkeys and all progress, briefing packs, routes and settings saved to it, on every device. It cannot be undone. The passkey itself stays in your device’s password settings, where you can delete it.',no:'Dette sletter Birdbird-kontoen din for godt, med passnøklene og all progresjon, alle briefingpakker, ruter og innstillinger som er lagret på den, på alle enheter. Det kan ikke angres. Selve passnøkkelen blir liggende i passordinnstillingene på enheten, der du kan slette den.'});
-    el('acDelLocalT').textContent=L({en:'Also delete the Birdbird data in this browser',no:'Slett også Birdbird-dataene i denne nettleseren'}); el('acDelYes').textContent=L({en:'Delete account',no:'Slett kontoen'}); el('acDelNo').textContent=L({en:'Cancel',no:'Avbryt'}); el('acDelH').textContent=L({en:'Delete your account?',no:'Slette kontoen?'});
-    el('acDelLocal').checked=false; if(d.showModal) d.showModal(); }
+    el('acDelLocalT').textContent=L({en:'Also delete everything stored on this device',no:'Slett også alt som er lagret på denne enheten'}); el('acDelYes').textContent=L({en:'Delete account',no:'Slett kontoen'}); el('acDelNo').textContent=L({en:'Cancel',no:'Avbryt'}); el('acDelH').textContent=L({en:'Delete your account?',no:'Slette kontoen?'});
+    el('acDelLocal').checked=true; if(d.showModal) d.showModal(); }
   else if(b.dataset.rm){ const cid=b.dataset.rm; if(UI.arm!==cid){ UI.arm=cid; clearTimeout(UI.armT); UI.armT=setTimeout(()=>{ UI.arm=null; drawAcct(); },6000); drawAcct(); const nb=[...el('acBody').querySelectorAll('[data-rm]')].find(x=>x.dataset.rm===cid); if(nb) nb.focus(); return; }
     UI.arm=null; acRun(A=>A.removePasskey(cid),L({en:'Passkey removed from your account. You can also delete it in that device’s password settings.',no:'Passnøkkelen er fjernet fra kontoen. Du kan også slette den i passordinnstillingene på den enheten.'})); }
 });
 el('acDelDlg').addEventListener('close',()=>{ if(el('acDelDlg').returnValue!=='yes') return; const local=el('acDelLocal').checked;
-  acRun(async A=>{ await A.deleteAccount(); if(local) A.wipeLocal(); UI.code=null; UI.needKey=false; if(local){ B.loaded=false; bLoading=null; await reloadStore(); drawAll(); } },local?L({en:'Your account and the data in this browser are deleted.',no:'Kontoen og dataene i denne nettleseren er slettet.'}):L({en:'Your account is deleted. The data in this browser is kept.',no:'Kontoen er slettet. Dataene i denne nettleseren er beholdt.'})); });
+  acRun(async A=>{ await A.deleteAccount(); if(local){ if(window.BBLOCAL) await BBLOCAL.clearAll({keepLang:true}); else A.wipeLocal(); } UI.code=null; UI.needKey=false; if(local){ B.loaded=false; bLoading=null; await reloadStore(); drawAll(); } },local?L({en:'Your account and the data in this browser are deleted.',no:'Kontoen og dataene i denne nettleseren er slettet.'}):L({en:'Your account is deleted. The data in this browser is kept.',no:'Kontoen er slettet. Dataene i denne nettleseren er beholdt.'})); });
 function acctReady(){ const A=AC(); if(!A) return;
   document.addEventListener('bb-account',()=>{ if(!UI.busy) drawAcct(); });
   document.addEventListener('bb-account-sync',e=>{ e.preventDefault(); B.loaded=false; bLoading=null; reloadStore().then(drawAll); });

@@ -212,6 +212,8 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .brand p,.lhead .brand>p{margin:14px 0 0;color:var(--ink-2);font-size:var(--t-md);line-height:1.5;max-width:64ch}
 .lhead .hright{display:flex;align-items:center;gap:10px}
 .lhead .hright:empty{display:none}
+/* learning-only note under the title (site.js trainNote), in the quiet .note style */
+.lhead .brand>p.bbtrain,p.note.bbtrain{margin:12px 0 0;font-size:13px;line-height:1.45;color:var(--ink-2);max-width:80ch}
 .lmeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;margin:20px 0 0;font-size:13px;color:var(--ink-2)}
 .lmeta .mi{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
 .lmeta .mi+.mi{padding-left:20px;border-left:1px solid var(--rule)}

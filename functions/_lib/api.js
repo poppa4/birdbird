@@ -10,6 +10,7 @@
      GET    /api/me                      account, passkeys, synced namespaces ({ ok:true, user:null } when signed out)
      PATCH  /api/me                      { name }
      DELETE /api/me                      { confirm:'delete' } deletes the account and all its data
+     GET    /api/me/export               everything the server holds about the account, as one JSON (no hashes, no keys)
      POST   /api/me/recovery             new recovery code (old one stops working)
      DELETE /api/me/credentials?id=…     remove a passkey (not the last one)
      GET    /api/sync                    all namespaces
@@ -20,7 +21,8 @@
    - Session: random 32-byte id in an HttpOnly, Secure, SameSite=Lax __Host- cookie; only its SHA-256 is stored.
      60 days, renewed when used (at most once a day); a new id on every sign-in; logout deletes it server-side.
    - CSRF: every state-changing request must carry an Origin header equal to this site's origin and a JSON body.
-   - Rate limits per hashed IP (auth) and per user (sync), counted in D1.
+   - Rate limits per IP (auth) and per user (sync), counted in D1 under an HMAC of the IP / user id (see rlKey).
+   - Cleanup of expired rows: at most once an hour, on any request (see maybeCleanup).
    - WebAuthn challenges are single use (deleted when read) and expire after 5 minutes.
    - Responses: application/json, no-store, nosniff. Error bodies: { ok:false, error, message } where message says what to do. */
 
@@ -101,10 +103,60 @@ function deviceLabel(ua) {
 const hex = u => [...u].map(b => b.toString(16).padStart(2, '0')).join('');
 const hashToken = async t => hex(await sha256('bb-session:' + t));
 
+/* ---------- keyed hash for rate-limit keys ----------
+   IP addresses are hashed with HMAC-SHA-256 under a server key, so a stored key cannot be turned back into an IP by trying
+   all 2^32 IPv4 addresses. Key: the RL_SECRET environment variable if it is set; otherwise a random 32-byte key made once and
+   kept in meta.rl_key (migration 0003), from which a fresh key is derived every UTC day. Without RL_SECRET and without the
+   meta table (migration not applied yet), a random key per Worker instance is used (still not reversible, but counts are
+   then per instance). */
+const enc = s => new TextEncoder().encode(s);
+const hmacKey = raw => crypto.subtle.importKey('raw', raw, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+async function hmac(key, msg) { return new Uint8Array(await crypto.subtle.sign('HMAC', key, enc(msg))); }
+const RLK = { secret: null, secretKey: null, base: new WeakMap(), day: new Map(), instance: null };
+async function baseKey(c) {        // raw bytes of the stored key, cached per D1 binding
+  if (RLK.base.has(c.db)) return RLK.base.get(c.db);
+  let raw = null;
+  try {
+    let row = await c.db.prepare("SELECT value FROM meta WHERE key = 'rl_key'").first();
+    if (!row) {
+      const fresh = new Uint8Array(32); crypto.getRandomValues(fresh);
+      await c.db.prepare("INSERT INTO meta (key, value) VALUES ('rl_key', ?1) ON CONFLICT(key) DO NOTHING").bind(b64u(fresh)).run();
+      row = await c.db.prepare("SELECT value FROM meta WHERE key = 'rl_key'").first();   // the first writer wins if two race
+    }
+    if (row && row.value) raw = unb64u(row.value);
+  } catch (e) { raw = null; }
+  if (!raw || raw.length < 16) {
+    if (!RLK.instance) { RLK.instance = new Uint8Array(32); crypto.getRandomValues(RLK.instance); }
+    return RLK.instance;                                    // not cached per binding: tried again once the migration is applied
+  }
+  RLK.base.set(c.db, raw);
+  return raw;
+}
+async function rlKey(c) {
+  const secret = c.env && typeof c.env.RL_SECRET === 'string' ? c.env.RL_SECRET.trim() : '';
+  if (secret) {
+    if (RLK.secret !== secret) { RLK.secretKey = await hmacKey(enc('bb-rl:' + secret)); RLK.secret = secret; }
+    return RLK.secretKey;
+  }
+  const raw = await baseKey(c);
+  const day = new Date(c.now).toISOString().slice(0, 10);
+  const id = b64u(raw.slice(0, 8)) + day;
+  let k = RLK.day.get(id);
+  if (!k) {
+    k = await hmacKey(await hmac(await hmacKey(raw), 'bb-rl-day:' + day));
+    if (RLK.day.size > 8) RLK.day.clear();
+    RLK.day.set(id, k);
+  }
+  return k;
+}
+async function rateKey(c, bucket, who) {
+  return bucket + ':' + hex(await hmac(await rlKey(c), bucket + '|' + who)).slice(0, 32);
+}
+
 /* ---------- rate limits ---------- */
 async function limit(c, bucket, who) {
   const [max, win] = LIMITS[bucket];
-  const key = bucket + ':' + hex(await sha256(bucket + '|' + who)).slice(0, 32);
+  const key = await rateKey(c, bucket, who);
   const now = c.now;
   const row = await c.db.prepare(
     `INSERT INTO rate_limits (key, window_start, count) VALUES (?1, ?2, 1)
@@ -119,14 +171,46 @@ async function limit(c, bucket, who) {
 }
 const ipOf = req => req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'local';
 
-function housekeeping(c) {
-  if (c.deps.random() > 0.05) return;
-  const now = c.now;
-  const p = c.db.batch([
-    c.db.prepare('DELETE FROM challenges WHERE expires_at < ?1').bind(now),
-    c.db.prepare('DELETE FROM sessions WHERE expires_at < ?1').bind(now),
-    c.db.prepare('DELETE FROM rate_limits WHERE window_start < ?1').bind(now - DAY)
-  ]).catch(() => {});
+/* ---------- cleanup ----------
+   Deletes expired challenges and sessions, rate-limit rows older than a day and AI counters older than AI_KEEP_DAYS.
+   Runs on any API request when the last run (meta.last_cleanup) is more than CLEANUP_EVERY ago. One conditional upsert
+   claims the run, so of several requests arriving together only one does the work; it runs in waitUntil when available,
+   so the response is not held up. Each instance also skips the meta lookup for a few minutes after it has looked.
+   Without the meta table (migration 0003 not applied) it falls back to the old 5 % chance per request. */
+const CLEANUP_EVERY = 3600e3;
+const CLEANUP_LOOK = 5 * 60e3;
+const AI_KEEP_DAYS = 35;
+const looked = new WeakMap();      // D1 binding -> when this instance last checked
+async function cleanupNow(db, now) {
+  await db.batch([
+    db.prepare('DELETE FROM challenges WHERE expires_at < ?1').bind(now),
+    db.prepare('DELETE FROM sessions WHERE expires_at < ?1').bind(now),
+    db.prepare('DELETE FROM rate_limits WHERE window_start < ?1').bind(now - DAY)
+  ]);
+  await db.prepare('DELETE FROM ai_usage WHERE day < ?1').bind(new Date(now - AI_KEEP_DAYS * DAY).toISOString().slice(0, 10)).run().catch(() => {}); // table from migration 0002
+}
+/* -> 'ran' | 'skip' | 'no_meta' */
+async function maybeCleanup(db, now) {
+  const seen = looked.get(db);
+  if (seen && now >= seen.at && now - seen.at < CLEANUP_LOOK) return seen.noMeta ? 'no_meta' : 'skip';
+  const mark = { at: now, noMeta: false };
+  looked.set(db, mark);
+  let claimed;
+  try {
+    claimed = await db.prepare(
+      `INSERT INTO meta (key, value) VALUES ('last_cleanup', ?1)
+       ON CONFLICT(key) DO UPDATE SET value = excluded.value WHERE CAST(meta.value AS INTEGER) <= ?2
+       RETURNING value`).bind(String(now), now - CLEANUP_EVERY).first();
+  } catch (e) { mark.noMeta = true; return 'no_meta'; }
+  if (!claimed) return 'skip';
+  await cleanupNow(db, now);
+  return 'ran';
+}
+function scheduleCleanup(c) {
+  const p = maybeCleanup(c.db, c.now)
+    .then(r => { c.cleanup = r; if (r === 'no_meta' && c.deps.random() < 0.05) return cleanupNow(c.db, c.now); })
+    .catch(() => {});
+  c.cleanupDone = p;
   if (c.waitUntil) c.waitUntil(p);
 }
 
@@ -212,7 +296,6 @@ async function registerOptions(c) {
   }
   userName = display + ' · Birdbird';
   const challenge = await newChallenge(c, 'reg', userId, s ? { addTo: userId } : { newUser: true, name: cleanName(body.name) });
-  housekeeping(c);
   return json({
     ok: true, mode: s ? 'add' : 'new',
     options: {
@@ -247,9 +330,10 @@ async function registerVerify(c) {
     stmts.push(c.db.prepare('INSERT INTO users (id, name, recovery_hash, recovery_created_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?4, ?4)')
       .bind(userId, ch.data.name || null, await hashRecovery(recoveryCode), c.now));
   }
+  /* aaguid (the authenticator model id) is not stored: always NULL; the column stays for compatibility */
   stmts.push(c.db.prepare(`INSERT INTO credentials (id, user_id, public_key, alg, sign_count, transports, name, aaguid, backup_eligible, backed_up, created_at, last_used_at)
       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?11)`)
-    .bind(v.credentialId, userId, JSON.stringify(v.jwk), v.alg, v.signCount, JSON.stringify(v.transports), label, v.aaguid, v.backupEligible ? 1 : 0, v.backedUp ? 1 : 0, c.now));
+    .bind(v.credentialId, userId, JSON.stringify(v.jwk), v.alg, v.signCount, JSON.stringify(v.transports), label, null, v.backupEligible ? 1 : 0, v.backedUp ? 1 : 0, c.now));
   if (ch.data.newUser) stmts.push(...await newSessionStmts(c, userId, 'signup'));
   await c.db.batch(stmts);
   return json({ ok: true, created: !!ch.data.newUser, user: { id: userId, name: ch.data.name || (s && s.name) || null }, credential: { id: v.credentialId, name: label, synced: v.backupEligible }, recoveryCode },
@@ -261,7 +345,6 @@ async function loginOptions(c) {
   const rp = rpFor(c.url, c.env);
   await limit(c, 'login', ipOf(c.request));
   const challenge = await newChallenge(c, 'auth', null, null);
-  housekeeping(c);
   return json({ ok: true, options: { challenge, rpId: rp.rpId, timeout: CHALLENGE_MS, userVerification: 'required', allowCredentials: [], hints: ['client-device', 'hybrid'] } });
 }
 
@@ -345,6 +428,35 @@ async function meDelete(c) {
   await c.db.prepare('DELETE FROM ai_usage WHERE user_id = ?1').bind(id).run().catch(() => {}); // Flight Intelligence counters (table from migration 0002; absent is fine)
   return json({ ok: true, deleted: true }, 200, { 'set-cookie': cookieHeader('', 0) });
 }
+/* GET /api/me/export – everything the server holds about the signed-in user, as one JSON (no hashes, no keys) */
+async function meExport(c) {
+  const s = await requireSession(c);
+  await limit(c, 'sync', s.user_id);
+  const db = c.db, id = s.user_id;
+  const [u, creds, sess, data] = await Promise.all([
+    db.prepare('SELECT id, name, email, email_verified_at, recovery_created_at, created_at, updated_at FROM users WHERE id = ?1').bind(id).first(),
+    db.prepare('SELECT name, created_at, last_used_at, transports, backup_eligible, backed_up FROM credentials WHERE user_id = ?1 ORDER BY created_at').bind(id).all(),
+    db.prepare('SELECT id_hash, created_at, expires_at, last_seen_at, via, device FROM sessions WHERE user_id = ?1 ORDER BY created_at').bind(id).all(),
+    db.prepare('SELECT ns, data, version, updated_at, stored_at FROM user_data WHERE user_id = ?1 ORDER BY ns').bind(id).all()
+  ]);
+  let ai = [];
+  try { ai = ((await db.prepare('SELECT day, requests, tokens FROM ai_usage WHERE user_id = ?1 ORDER BY day').bind(id).all()).results || []); } catch (e) { ai = []; } // migration 0002
+  const iso = t => t == null ? null : new Date(t).toISOString();
+  const tok = readCookie(c.request, COOKIE);
+  const cur = tok && /^[A-Za-z0-9_-]{43}$/.test(tok) ? await hashToken(tok) : null;
+  const namespaces = {};
+  for (const x of data.results || []) { let d = null; try { d = JSON.parse(x.data); } catch (e) { d = x.data; } namespaces[x.ns] = { version: x.version, updatedAt: iso(x.updated_at), storedAt: iso(x.stored_at), data: d }; }
+  return json({
+    ok: true,
+    exported: iso(c.now),
+    user: u ? { id: u.id, name: u.name || null, email: u.email || null, emailVerified: iso(u.email_verified_at), recoveryCodeCreated: iso(u.recovery_created_at), created: iso(u.created_at), updated: iso(u.updated_at) } : null,
+    passkeys: (creds.results || []).map(x => { let tr = null; try { tr = x.transports ? JSON.parse(x.transports) : null; } catch (e) {} return { device: x.name || null, created: iso(x.created_at), lastUsed: iso(x.last_used_at), transports: tr, synced: !!x.backup_eligible, backedUp: !!x.backed_up }; }),
+    sessions: (sess.results || []).map(x => ({ device: x.device || null, signedInWith: x.via || null, created: iso(x.created_at), lastSeen: iso(x.last_seen_at), expires: iso(x.expires_at), thisDevice: x.id_hash === cur })),
+    syncedData: namespaces,
+    aiUsage: ai.map(x => ({ day: x.day, requests: x.requests, tokens: x.tokens })),
+    notes: 'Not included: the passkeys\' public keys, the stored hashes of the session id and recovery code, and rate-limit counters (keyed hashes that cannot be linked back to you).'
+  }, 200, { 'set-cookie': c.setCookie });
+}
 async function newRecovery(c) {
   const s = await requireSession(c);
   await limit(c, 'write', s.user_id);
@@ -417,6 +529,7 @@ export function endpoint(methods, deps) {
       if (!env.DB) return json({ ok: false, error: 'no_db', message: 'Accounts are not switched on for this site yet. Everything still works and is saved in this browser.' }, 503);
       checkOrigin(request);
       const c = { request, env, db: env.DB, url: new URL(request.url), now: d.now(), deps: d, waitUntil: ctx.waitUntil ? p => ctx.waitUntil(p) : null, setCookie: null };
+      scheduleCleanup(c);
       return await h(c);
     } catch (e) {
       if (e instanceof HttpError) {
@@ -430,7 +543,7 @@ export function endpoint(methods, deps) {
   };
 }
 
-export const handlers = { registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, newRecovery, credDelete, syncGet, syncPut };
+export const handlers = { registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, meExport, newRecovery, credDelete, syncGet, syncPut };
 export const onRegisterOptions = endpoint({ POST: registerOptions });
 export const onRegisterVerify = endpoint({ POST: registerVerify });
 export const onLoginOptions = endpoint({ POST: loginOptions });
@@ -439,7 +552,8 @@ export const onRecovery = endpoint({ POST: recovery });
 export const onLogout = endpoint({ POST: logout });
 export const onMe = endpoint({ GET: meGet, PATCH: mePatch, DELETE: meDelete });
 export const onMeRecovery = endpoint({ POST: newRecovery });
+export const onMeExport = endpoint({ GET: meExport });
 export const onMeCredentials = endpoint({ DELETE: credDelete });
 export const onSync = endpoint({ GET: syncGet, PUT: syncPut });
 export { getSession, requireSession, readJson, limit, fail }; // used by functions/api/atc.js
-export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u };
+export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u, rateKey, maybeCleanup, cleanupNow, CLEANUP_EVERY, AI_KEEP_DAYS };

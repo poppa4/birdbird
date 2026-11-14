@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { makeD1 } from './lib/d1mock.mjs';
 import { SoftAuthenticator, b64u } from './lib/softauthn.mjs';
-import { endpoint, handlers as H, rpFor, COOKIE, normaliseRecovery } from '../functions/_lib/api.js';
+import { endpoint, handlers as H, rpFor, COOKIE, normaliseRecovery, _test as T } from '../functions/_lib/api.js';
+import { createHash, createHmac } from 'node:crypto';
 import { cborDecode, derToRaw, parseAuthData } from '../functions/_lib/webauthn.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -15,14 +16,14 @@ const ROUTES = {
   '/api/auth/register/options': { POST: H.registerOptions }, '/api/auth/register/verify': { POST: H.registerVerify },
   '/api/auth/login/options': { POST: H.loginOptions }, '/api/auth/login/verify': { POST: H.loginVerify },
   '/api/auth/recovery': { POST: H.recovery }, '/api/auth/logout': { POST: H.logout },
-  '/api/me': { GET: H.meGet, PATCH: H.mePatch, DELETE: H.meDelete }, '/api/me/recovery': { POST: H.newRecovery },
+  '/api/me': { GET: H.meGet, PATCH: H.mePatch, DELETE: H.meDelete }, '/api/me/export': { GET: H.meExport }, '/api/me/recovery': { POST: H.newRecovery },
   '/api/me/credentials': { DELETE: H.credDelete }, '/api/sync': { GET: H.syncGet, PUT: H.syncPut }
 };
 
 function world(opts) {
   opts = opts || {};
   const clock = { t: Date.UTC(2026, 10, 8, 12, 0, 0) };
-  const env = opts.noDb ? {} : { DB: makeD1(join(ROOT, 'migrations')) };
+  const env = Object.assign(opts.noDb ? {} : { DB: makeD1(join(ROOT, 'migrations')) }, opts.env || {});
   const deps = { now: () => clock.t, random: () => 0.99 };
   /* a browser: cookie jar + fetch-like call into the Functions */
   function browser(origin, ip) {
@@ -356,4 +357,151 @@ test('webauthn helpers: CBOR, DER and authenticator data edge cases', async () =
   const der = new Uint8Array([0x30, 8, 2, 2, 0, 0x80, 2, 2, 0x01, 0x02]);
   const raw = derToRaw(der);
   assert.equal(raw.length, 64); assert.equal(raw[31], 0x80); assert.equal(raw[63], 0x02);
+});
+
+/* ---------- privacy hardening: keyed IP hash, scheduled cleanup, no AAGUID, export ---------- */
+const rlRows = w => w.db.raw.prepare('SELECT key FROM rate_limits ORDER BY key').all().map(r => r.key);
+const fakeC = (w, env, t) => ({ db: w.db, env: env || {}, now: t || w.clock.t });
+
+test('rate-limit keys: HMAC with RL_SECRET, not a plain SHA-256 of the IP', async () => {
+  const w = world({ env: { RL_SECRET: 'test-secret-1' } }), ip = '192.0.2.77';
+  await w.browser(ORIGIN, ip).call('POST', '/api/auth/recovery', { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  const plain = 'recovery:' + createHash('sha256').update('recovery|' + ip).digest('hex').slice(0, 32);
+  const want = 'recovery:' + createHmac('sha256', Buffer.from('bb-rl:test-secret-1')).update('recovery|' + ip).digest('hex').slice(0, 32);
+  assert.deepEqual(rlRows(w), [want]);
+  assert.ok(!rlRows(w).includes(plain), 'old unsalted form is gone');
+  assert.equal(want.length, 'recovery:'.length + 32, 'keys stay short');
+  // another secret gives another key; the same secret the same key on another day (no daily rotation with a secret)
+  assert.notEqual(await T.rateKey(fakeC(w, { RL_SECRET: 'other' }), 'recovery', ip), want);
+  assert.equal(await T.rateKey(fakeC(w, { RL_SECRET: 'test-secret-1' }, w.clock.t + 3 * 864e5), 'recovery', ip), want);
+});
+
+test('rate-limit keys without RL_SECRET: random key kept once in meta, a new derived key every UTC day', async () => {
+  const w = world(), ip = '192.0.2.78';
+  assert.equal(w.db.raw.prepare("SELECT COUNT(*) n FROM meta WHERE key = 'rl_key'").get().n, 0);
+  const k1 = await T.rateKey(fakeC(w), 'login', ip);
+  const row = w.db.raw.prepare("SELECT value FROM meta WHERE key = 'rl_key'").get();
+  assert.ok(row && Buffer.from(row.value, 'base64url').length === 32, 'a 32-byte random key is stored');
+  assert.equal(await T.rateKey(fakeC(w), 'login', ip), k1, 'stable within the day');
+  assert.notEqual(await T.rateKey(fakeC(w), 'login', '192.0.2.79'), k1);
+  assert.notEqual(k1, 'login:' + createHash('sha256').update('login|' + ip).digest('hex').slice(0, 32));
+  // the derivation is HMAC(HMAC(stored key, 'bb-rl-day:' + day), bucket|ip)
+  const day = new Date(w.clock.t).toISOString().slice(0, 10);
+  const dk = createHmac('sha256', Buffer.from(row.value, 'base64url')).update('bb-rl-day:' + day).digest();
+  assert.equal(k1, 'login:' + createHmac('sha256', dk).update('login|' + ip).digest('hex').slice(0, 32));
+  const next = await T.rateKey(fakeC(w, {}, w.clock.t + 864e5), 'login', ip);
+  assert.notEqual(next, k1, 'next day, other key');
+  assert.equal(w.db.raw.prepare("SELECT value FROM meta WHERE key = 'rl_key'").get().value, row.value, 'the stored key is made only once');
+  // a second database gets its own key
+  const w2 = world();
+  assert.notEqual(await T.rateKey(fakeC(w2), 'login', ip), k1);
+  // limits still count across requests
+  const br = w.browser(ORIGIN, '192.0.2.80');
+  let last; for (let i = 0; i < 7; i++) last = await br.call('POST', '/api/auth/recovery', { code: 'AAAAA-BBBBB-CCCCC-DDDDD' });
+  assert.equal(last.status, 429);
+});
+
+test('rate-limit keys without RL_SECRET and without the meta table still hash with a random key', async () => {
+  const w = world(); w.db.raw.exec('DROP TABLE meta');
+  const k = await T.rateKey(fakeC(w), 'login', '192.0.2.81');
+  assert.match(k, /^login:[0-9a-f]{32}$/);
+  assert.notEqual(k, 'login:' + createHash('sha256').update('login|192.0.2.81').digest('hex').slice(0, 32));
+  const br = w.browser(ORIGIN, '192.0.2.81');
+  assert.equal((await br.call('POST', '/api/auth/login/options', {})).status, 200, 'requests still work');
+});
+
+function seedOld(w, t) {
+  const r = w.db.raw;
+  r.prepare('INSERT OR IGNORE INTO users (id, created_at, updated_at) VALUES (?, ?, ?)').run('u-old', t, t);
+  r.prepare('INSERT OR REPLACE INTO challenges (challenge, kind, expires_at) VALUES (?, ?, ?), (?, ?, ?)').run('c-old', 'auth', t - 1, 'c-new', 'auth', t + 60e3);
+  r.prepare('INSERT OR REPLACE INTO sessions (id_hash, user_id, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)').run('s-old', 'u-old', t - 1e10, t - 1, t - 1e10, 's-new', 'u-old', t, t + 1e9, t);
+  r.prepare('INSERT OR REPLACE INTO rate_limits (key, window_start, count) VALUES (?, ?, 1), (?, ?, 1)').run('r-old', t - 864e5 - 1, 'r-new', t - 3600e3);
+  const day = d => new Date(t - d * 864e5).toISOString().slice(0, 10);
+  r.prepare('INSERT OR REPLACE INTO ai_usage (user_id, day, requests, tokens) VALUES (?, ?, 1, 1), (?, ?, 1, 1)').run('u-old', day(36), 'u-old', day(34));
+}
+const ids = (w, t, col) => w.db.raw.prepare(`SELECT ${col} AS v FROM ${t} ORDER BY 1`).all().map(x => x.v);
+
+test('cleanup is deterministic: first request after an hour deletes old rows, once, in waitUntil', async () => {
+  const w = world(), t = w.clock.t;
+  seedOld(w, t);
+  const waits = [];
+  const fn = endpoint({ GET: H.meGet }, { now: () => w.clock.t, random: () => 0.99 });   // random() never triggers it
+  const res = await fn({ request: new Request(ORIGIN + '/api/me'), env: w.env, waitUntil: p => waits.push(p) });
+  assert.equal(res.status, 200);
+  assert.equal(waits.length, 1, 'cleanup handed to waitUntil');
+  await Promise.all(waits);
+  assert.deepEqual(ids(w, 'challenges', 'challenge'), ['c-new']);
+  assert.deepEqual(ids(w, 'sessions', 'id_hash'), ['s-new']);
+  assert.deepEqual(ids(w, 'rate_limits', 'key'), ['r-new']);
+  assert.equal(ids(w, 'ai_usage', 'day').length, 1, 'AI counters older than 35 days deleted');
+  assert.equal(+w.db.raw.prepare("SELECT value FROM meta WHERE key = 'last_cleanup'").get().value, t);
+  // within the hour: no second run, whichever instance asks
+  seedOld(w, t + 10 * 60e3);   // fresh "old" rows would be deleted if it ran
+  assert.equal(await T.maybeCleanup(w.db, t + 10 * 60e3), 'skip');
+  assert.ok(ids(w, 'challenges', 'challenge').includes('c-old'));
+  // after an hour it runs again
+  assert.equal(await T.maybeCleanup(w.db, t + T.CLEANUP_EVERY + 1), 'ran');
+  assert.ok(!ids(w, 'challenges', 'challenge').includes('c-old'));
+});
+
+test('cleanup: concurrent requests on several instances run it only once', async () => {
+  const w = world(), t = w.clock.t;
+  const inst = () => Object.assign(Object.create(w.db), {});   // a separate binding object per Worker instance, same database
+  const runs = await Promise.all([1, 2, 3, 4].map(() => T.maybeCleanup(inst(), t)));
+  assert.equal(runs.filter(r => r === 'ran').length, 1, runs.join());
+  const later = await Promise.all([1, 2, 3].map(() => T.maybeCleanup(inst(), t + T.CLEANUP_EVERY + 5)));
+  assert.equal(later.filter(r => r === 'ran').length, 1, later.join());
+});
+
+test('cleanup without the meta table falls back to the old occasional run, and never breaks a request', async () => {
+  const w = world(); w.db.raw.exec('DROP TABLE meta');
+  assert.equal(await T.maybeCleanup(w.db, w.clock.t), 'no_meta');
+  const t = w.clock.t; seedOld(w, t);
+  const waits = [];
+  const fn = endpoint({ GET: H.meGet }, { now: () => t, random: () => 0.01 });
+  assert.equal((await fn({ request: new Request(ORIGIN + '/api/me'), env: w.env, waitUntil: p => waits.push(p) })).status, 200);
+  await Promise.all(waits);
+  assert.deepEqual(ids(w, 'challenges', 'challenge'), ['c-new']);
+});
+
+test('the authenticator AAGUID is not stored, and migration 0003 clears old values', async () => {
+  const w = world(), br = w.browser(), a = new SoftAuthenticator();
+  await signup(w, br, a, 'A');
+  assert.equal(w.db.raw.prepare('SELECT aaguid FROM credentials').get().aaguid, null);
+  assert.equal((await br.call('GET', '/api/me')).body.credentials[0].name, 'iPhone · Safari', 'device label unaffected');
+  w.db.raw.exec("UPDATE credentials SET aaguid = 'AAAAAAAAAAAAAAAAAAAAAA'");
+  const { readFileSync } = await import('node:fs');
+  w.db.raw.exec(readFileSync(join(ROOT, 'migrations', '0003_meta.sql'), 'utf8'));   // safe to run again
+  assert.equal(w.db.raw.prepare('SELECT COUNT(*) n FROM credentials WHERE aaguid IS NOT NULL').get().n, 0);
+});
+
+test('GET /api/me/export: the account, passkeys, sessions, synced data and AI counters, without hashes or keys', async () => {
+  const w = world(), br = w.browser(), a = new SoftAuthenticator();
+  await signup(w, br, a, 'Exporter');
+  assert.equal((await w.browser().call('GET', '/api/me/export')).status, 401, 'signed in only');
+  await br.call('PUT', '/api/sync', { ns: 'progress', data: { 'naeroson-prog': '{"x":1}' }, baseVersion: 0, updatedAt: w.clock.t });
+  const uid = w.db.raw.prepare('SELECT id FROM users').get().id;
+  w.db.raw.prepare('INSERT INTO ai_usage (user_id, day, requests, tokens) VALUES (?, ?, 3, 1200)').run(uid, '2026-11-08');
+  w.db.raw.prepare('INSERT INTO ai_usage (user_id, day, requests, tokens) VALUES (?, ?, 9, 9)').run('someone-else', '2026-11-08');
+  const other = w.browser(ORIGIN, '198.51.100.44'); await signup(w, other, new SoftAuthenticator(), 'Other');
+  const r = await br.call('GET', '/api/me/export');
+  assert.equal(r.status, 200);
+  const e = r.body;
+  assert.deepEqual(Object.keys(e).sort(), ['aiUsage', 'exported', 'notes', 'ok', 'passkeys', 'sessions', 'syncedData', 'user']);
+  assert.equal(e.user.id, uid); assert.equal(e.user.name, 'Exporter');
+  assert.ok(e.user.created && e.user.recoveryCodeCreated);
+  assert.equal(e.passkeys.length, 1);
+  assert.deepEqual(Object.keys(e.passkeys[0]).sort(), ['backedUp', 'created', 'device', 'lastUsed', 'synced', 'transports']);
+  assert.equal(e.passkeys[0].device, 'iPhone · Safari');
+  assert.equal(e.sessions.length, 1); assert.equal(e.sessions[0].thisDevice, true); assert.equal(e.sessions[0].signedInWith, 'signup');
+  assert.deepEqual(e.syncedData.progress.data, { 'naeroson-prog': '{"x":1}' });
+  assert.equal(e.syncedData.progress.version, 1);
+  assert.deepEqual(e.aiUsage, [{ day: '2026-11-08', requests: 3, tokens: 1200 }]);
+  const dump = JSON.stringify(e);
+  const row = w.db.raw.prepare('SELECT recovery_hash FROM users WHERE id = ?').get(uid);
+  const cr = w.db.raw.prepare('SELECT public_key FROM credentials WHERE user_id = ?').get(uid);
+  const sh = w.db.raw.prepare('SELECT id_hash FROM sessions WHERE user_id = ?').get(uid);
+  for (const secret of [row.recovery_hash, sh.id_hash, JSON.parse(cr.public_key).x, br.jar[COOKIE]]) assert.ok(!dump.includes(secret), 'no hashes or keys in the export');
+  assert.ok(!dump.includes('Other') && !dump.includes('someone-else'), 'nothing of other users');
+  assert.equal(r.headers.get('cache-control'), 'no-store');
 });

@@ -175,8 +175,15 @@
     meta = { uid: null, signedIn: false, user: null, ns: {}, last: 0 }; saveMeta();
     A.user = null; A.me = null; A.sync = { state: 'idle', last: 0, error: null }; changed();
   }
-  /* remove the synced Birdbird data from this browser without syncing the removal (used after deleting the account) */
-  function wipeLocal() { applying++; try { lsKeys().filter(k => nsOf(k)).forEach(k => rawRem.call(LS, k)); } finally { applying--; } try { document.dispatchEvent(new CustomEvent('nprog')); } catch (e) {} }
+  /* remove Birdbird data from this browser without syncing the removal (used after deleting the account, and by localdata.js).
+     match(key) picks the keys; default: the synced keys. Removing the account link (META) also forgets it in memory. */
+  function wipeLocal(match) {
+    if (!LS) return;
+    const pick = typeof match === 'function' ? match : nsOf;
+    applying++; try { lsKeys().filter(k => pick(k)).forEach(k => rawRem.call(LS, k)); } finally { applying--; }
+    if (pick(META)) { clearTimeout(pushT); pushT = 0; pendingNs.clear(); meta = { uid: null, signedIn: false, user: null, ns: {}, last: 0 }; }
+    try { document.dispatchEvent(new CustomEvent('nprog')); } catch (e) {}
+  }
   async function signedIn(user) { A.backend = 'ok'; A.user = user || { id: null }; meta.signedIn = true; meta.user = A.user; saveMeta(); changed(); await refreshMe(); }
   function signedOut() { A.user = null; A.me = null; meta.signedIn = false; meta.user = null; saveMeta(); clearTimeout(pushT); A.sync = { state: 'idle', last: meta.last || 0, error: null }; changed(); }
   async function refreshMe() {

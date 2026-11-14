@@ -6,7 +6,7 @@
 <title>Briefing pack · Birdbird</title>
 <meta name="description" content="Build a printable briefing pack for each flight: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the ATC flight plan.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
@@ -233,6 +233,7 @@ body:not(.nofab) #askbar{display:none}
   @page{size:A4;margin:12mm}
   body{background:#fff!important;padding:0!important;font-size:11pt}
   header.site,.sitefoot,.trnav,.ntip,.bar,.toc,.lhead,.fab,.asst,.noprint,.sktools{display:none!important}
+  .sheet::after,.clprint::after{content:var(--bb-train,"");display:block;margin-top:6mm;padding-top:1.5mm;border-top:.5pt solid #999;font-size:8pt;color:#444;break-inside:avoid}
   .pgrid{display:block;margin:0}
   .page{max-width:none}
   .sheet{border:0!important;box-shadow:none!important;padding:0!important;min-height:0!important;break-before:page;page-break-before:always}
@@ -314,7 +315,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -354,10 +355,10 @@ body:not(.nofab) #askbar{display:none}
   <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
 </div>
 <script src="lab.js?v=51"></script>
-<script src="ai.js?v=3"></script>
+<script src="ai.js?v=5"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=1"></script>
-<script src="store.js?v=2"></script>
+<script src="store.js?v=3"></script>
 <script src="flightlink.js?v=1"></script>
 <script>
 (function(){
@@ -954,9 +955,9 @@ document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElemen
 const vseg=LAB.seg(el('vseg'),[['book','Book'],['all','All pages']],view,v=>{ view=v; try{ localStorage.setItem('naeroson-prep-view',v); }catch(e){} paging(); });
 
 /* ---------- vedlegg: kart og utregninger ---------- */
-let adb=null, assets=null;
+let adb=null; const assets=null; // attachments are kept in this browser; a.url / a.asset on older packs are still read
 const aReady=(async()=>{ adb=await new Promise(res=>{ try{ const r=indexedDB.open('naeroson-att',1); r.onupgradeneeded=()=>r.result.createObjectStore('img'); r.onsuccess=()=>res(r.result); r.onerror=()=>res(null); }catch(e){ res(null); } });
-  try{ if(window.claude&&claude.use) assets=await claude.use('assets'); }catch(e){ assets=null; } })();
+})();
 async function aPut(k,b){ await aReady; if(!adb) return false; return new Promise(res=>{ try{ const t=adb.transaction('img','readwrite'); t.objectStore('img').put(b,k); t.oncomplete=()=>res(true); t.onerror=()=>res(false); }catch(e){ res(false); } }); }
 async function aGet(k){ await aReady; if(!adb) return null; return new Promise(res=>{ try{ const r=adb.transaction('img').objectStore('img').get(k); r.onsuccess=()=>res(r.result||null); r.onerror=()=>res(null); }catch(e){ res(null); } }); }
 const uc={};

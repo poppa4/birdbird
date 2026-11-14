@@ -108,7 +108,7 @@
       if (avail !== null) return avail;
       /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
       try {
-        if (!window.NAI) await A.loadScript('ai.js?v=3');
+        if (!window.NAI) await A.loadScript('ai.js?v=5');
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
         avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }

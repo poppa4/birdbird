@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -525,13 +525,13 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
 <div class="rx" id="rx">
   <div class="mapw" id="map"><canvas id="mcv"></canvas><div class="mlload" aria-hidden="true"><i></i><span id="mlloadT">Loading VFR chart…</span></div>
-    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><button id="lghelp" type="button" aria-label="Show map help" title="Show map help" aria-pressed="false">?</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Weather in Windy">Wx</a></div>
+    <div class="mapctl noprint"><button id="zin" aria-label="Zoom in" title="Zoom in">+</button><button id="zout" aria-label="Zoom out" title="Zoom out">−</button><button id="zfit" aria-label="Fit route" title="Fit the route">⤢</button><button id="zreset" aria-label="Reset map" title="Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.">↺</button><button id="lghelp" type="button" aria-label="Show map help" title="Show map help" aria-pressed="false">?</button><a id="windy" href="https://www.windy.com/" target="_blank" rel="noopener" title="Weather in Windy (opens a new tab)" aria-label="Wx – Weather in Windy">Wx</a></div>
     <div class="edbar noprint" id="edbar" hidden><button id="undo" type="button" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button id="redo" type="button" disabled title="Redo (Ctrl+Shift+Z)">↷ Redo</button><button id="clr" type="button" title="Remove all points from the route">✕ Clear route</button></div>
     <div class="ptpop noprint" id="ptpop" hidden><b id="ptpopn"></b><button id="ptdel" type="button">✕ Remove point</button><button id="ptx" type="button" aria-label="Close">×</button></div>
     <div class="maplg" id="maplg">Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it</div>
@@ -774,8 +774,8 @@
 </div>
 </main>
 <script src="lab.js?v=51"></script>
-<script src="ai.js?v=3"></script>
-<script src="store.js?v=2"></script>
+<script src="ai.js?v=5"></script>
+<script src="store.js?v=3"></script>
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
@@ -1757,7 +1757,6 @@ el('upok').onclick=async e=>{ e.preventDefault(); if(!UP.blob) return; const b=e
     if(!P){ P={hide:['check'],id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:'',created:Date.now(),f:{'rf.to':'1.25','rf.ld':'1.43','fu.unit':'US gal','mb.dens':'3.03','rules':'IFR','purpose':'Training flight'},sk:[]}; }
     const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await upPut(id,UP.blob);
     const a={id,sec:'xsec',name:el('upname').value.trim()||L({en:'My route and profile',no:'Min rute og profil'}),w:UP.w,h:UP.h,marks:[],note:''};
-    try{ if(window.claude&&claude.use){ const as=await claude.use('assets'); const r=as&&await as.upload(UP.blob); if(r&&r.id){ a.asset=r.id; a.url=r.url; } } }catch(_){}
     P.att=P.att||[]; P.att.push(a); if(!P.title) P.title=L({en:'Briefing pack',no:'Briefingpakke'})+' '+new Date().toLocaleDateString(); await NSTORE.put('prep',P); await loadPacks(); el('packs').value=P.id;
     el('upnote').innerHTML=`${L({en:'Added to',no:'Lagt til i'})} <b>${esc(P.title||'')}</b>. <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`;
     b.hidden=true; el('upcancel').textContent=L({en:'Close',no:'Lukk'}); }
@@ -1938,7 +1937,7 @@ LAB.add({},{
  'My library':'Mitt bibliotek','My routes, saved views and notes':'Mine ruter, lagrede visninger og notater','Navigation log: headings, times and fuel with your wind':'Navigasjonslogg: kurser, tider og drivstoff med vinden din',
  'Redo (Ctrl+Shift+Z)':'Gjør om (Ctrl+Shift+Z)','Undo (Ctrl+Z)':'Angre (Ctrl+Z)','Remove all points from the route':'Fjern alle punktene fra ruten','Reset map: VFR chart, default layers, 2D, whole route. Your route is kept.':'Tilbakestill kartet: VFR-kart, standard kartlag, 2D, hele ruten. Ruten din beholdes.',
  'Route options':'Rutevalg','Margin OK':'Margin OK','VFR chart with CTR, TMA and R/D/P airspace, airports and reporting points. Obstacles, navaids and contours off.':'VFR-kart med CTR-, TMA- og R/D/P-luftrom, flyplasser og meldepunkter. Hindre, radiofyr og koter av.',
- 'Weather in Windy':'Vær i Windy','Weather in Windy (opens a new tab)':'Vær i Windy (åpnes i ny fane)','What the profile shows':'Hva profilen viser','Your routes':'Rutene dine','Zoom in':'Zoom inn','Zoom out':'Zoom ut',
+ 'Weather in Windy':'Vær i Windy','Wx – Weather in Windy':'Wx – Vær i Windy','Weather in Windy (opens a new tab)':'Vær i Windy (åpnes i ny fane)','What the profile shows':'Hva profilen viser','Your routes':'Rutene dine','Zoom in':'Zoom inn','Zoom out':'Zoom ut',
  'Zoom in on the height scale':'Zoom inn på høydeskalaen','Zoom out on the height scale':'Zoom ut på høydeskalaen','name':'navn','Route Explorer':'Route Explorer',
  'e.g. ILS 30 via HE. Hold at HE if busy. Watch the hills north of the field.':'f.eks. ILS 30 via HE. Holding ved HE hvis travelt. Se opp for åsene nord for plassen.',
  'e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn.':'f.eks. OBOLA 2A, RWY 17. Stig rett frem til 1500, så høyresving.',

@@ -7,7 +7,7 @@
 <meta name="description" content="25 interactive labs in six subject areas, from aerodynamics and meteorology to engines and performance. Principles for every aircraft; numbers from an illustrative A320 model.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <style>
 /* Virtual Labs start page: six subject areas (Atlas), full topic list behind an expander, quiet "More". */
 .lhead .stats{display:flex;flex-wrap:wrap;gap:0;margin:28px 0 0;border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
@@ -73,7 +73,7 @@ mark{background:#F3DCE9;color:inherit;padding:0 1px}
 </style>
 </head>
 <body data-title="Virtual Labs">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -112,7 +112,7 @@ function draw(){
   el('areas').innerHTML=AREAS.map((m,i)=>{ const f=m.labs[0];
     return `<li class="area" id="${m.k}"><span class="no">${pad(i+1)}</span>`+
       `<div><h2><a href="${f[0]}">${esc(L(m))}</a></h2><p class="d">${esc(L(m.d))}</p><p class="n">${m.labs.length} ${esc(L(m.labs.length===1?t('lab','lab'):t('labs','labber')))}</p></div>`+
-      `<div class="go"><small>${esc(L(t('Start with','Start med')))}</small><b>${esc(nm(f))}</b>${tag(f)}<a class="btn pri" href="${f[0]}" aria-label="${esc(L(t('Open','Åpne'))+': '+L(m))}">${esc(L(t('Open area','Åpne området')))} →</a></div></li>`; }).join('');
+      `<div class="go"><small>${esc(L(t('Start with','Start med')))}</small><b>${esc(nm(f))}</b>${tag(f)}<a class="btn pri" href="${f[0]}" aria-label="${esc(L(t('Open area','Åpne området'))+': '+L(m))}">${esc(L(t('Open area','Åpne området')))} <span aria-hidden="true">→</span></a></div></li>`; }).join('');
   el('allSum').innerHTML=`${esc(L(t('All topics','Alle emner')))}<span>${ALL.length+NMORE} ${no?'labber':'labs'} · ${NTOP} ${no?'emner':'topics'}</span>`;
   const qi=el('q'); qi.placeholder=L(t('Search labs and topics …','Søk i labber og emner …')); qi.setAttribute('aria-label',L(t('Search labs and topics','Søk i labber og emner')));
   el('more').innerHTML=`<span class="h" id="moreH">${esc(L(t('More','Mer')))}</span><ul>${MORE.map(m=>m.labs.map(l=>`<li><a href="${l[0]}">${esc(nm(l))}</a> <em>· ${esc(L(m))}</em></li>`).join('')).join('')}<li><a href="simcheck.html">${esc(L(t('A320 sim assessment','A320 simulatortest')))}</a> <em>· ${esc(L(t('puts the labs together before a sim check','setter labbene sammen før en simulatorsjekk')))}</em></li></ul>`;

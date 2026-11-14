@@ -6,7 +6,7 @@
 <title>Data sources and licences · Birdbird</title>
 <meta name="description" content="Where Birdbird's data comes from: airspace and navaids, terrain elevation, the World Magnetic Model, EASA regulations and ICAO concepts, with licences, attribution and the limits of teaching models.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=22">
+<link rel="stylesheet" href="site.css?v=23">
 <style>
 /* sources.html – page-local layout: one register per group of sources */
 .src{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
@@ -41,7 +41,7 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
 </style>
 </head>
 <body data-title="Data sources and licences">
-<script src="site.js?v=68"></script>
+<script src="site.js?v=69"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -156,6 +156,9 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
       <div><div class="nm"><b>Archivo, Public Sans, IBM Plex Mono</b><span>Typefaces</span></div>
         <div class="use"><p>Headings, body text, and numbers and units.</p></div>
         <div class="lic"><span class="tag at">SIL Open Font License 1.1</span></div></div>
+      <div><div class="nm"><b>Caveat</b><span>Handwriting typeface</span></div>
+        <div class="use"><p>The handwritten-style entries in the briefing pack.</p></div>
+        <div class="lic"><span class="tag at">SIL Open Font License 1.1</span></div></div>
       <div><div class="nm"><b>MapLibre GL JS</b><span>Map library</span></div>
         <div class="use"><p>Drawing the Route Explorer map, the relief and the 3D terrain.</p></div>
         <div class="lic"><span class="tag at">BSD 3-Clause</span></div></div>
@@ -164,6 +167,9 @@ html[lang=nb] .src .att::before{content:"Kreditering: "}
         <div class="lic"><span class="tag at">BSD 3-Clause</span></div></div>
       <div><div class="nm"><b>three.js</b><span>3D graphics library</span></div>
         <div class="use"><p>3D terrain, the wind tunnel and the cockpit view.</p></div>
+        <div class="lic"><span class="tag at">MIT</span></div></div>
+      <div><div class="nm"><b>meshoptimizer decoder</b><span>Arseny Kapoulkine</span></div>
+        <div class="use"><p>Unpacking the compressed 3D aircraft models in the 3D cockpits.</p></div>
         <div class="lic"><span class="tag at">MIT</span></div></div>
       <div><div class="nm"><b>PDF.js</b><span>Mozilla</span></div>
         <div class="use"><p>Reading PDF documents in your browser for Flight Intelligence.</p></div>
@@ -253,7 +259,9 @@ LAB.add({'Sections':'Sections'},{
  'Typefaces':'Skrifttyper','Michael Barry and contributors':'Michael Barry og bidragsytere','Headings, body text, and numbers and units.':'Overskrifter, brødtekst, og tall og enheter.',
  '3D graphics library':'Bibliotek for 3D-grafikk','3D terrain, the wind tunnel and the cockpit view.':'3D-terreng, vindtunnelen og cockpitvisningen.',
  'Reading PDF documents in your browser for Flight Intelligence.':'Leser PDF-dokumenter i nettleseren din for Flight Intelligence.',
- 'Word document reader':'Leser for Word-dokumenter','Reading Word documents in your browser for Flight Intelligence.':'Leser Word-dokumenter i nettleseren din for Flight Intelligence.',
+ 'Word document reader':'Leser for Word-dokumenter',
+ 'Handwriting typeface':'Håndskriftfont','The handwritten-style entries in the briefing pack.':'Den håndskrevne skriften i feltene i briefingpakken.',
+ 'meshoptimizer decoder':'meshoptimizer-dekoder','Unpacking the compressed 3D aircraft models in the 3D cockpits.':'Pakker ut de komprimerte 3D-flymodellene i 3D-cockpitene.','Reading Word documents in your browser for Flight Intelligence.':'Leser Word-dokumenter i nettleseren din for Flight Intelligence.',
  'Spotted a missing attribution or a source used outside its terms?':'Ser du en manglende kreditering eller en kilde som brukes utenfor vilkårene?',
  'SRTM, GMTED2010 and ETOPO1':'SRTM, GMTED2010 og ETOPO1',
  'Contact':'Kontakt'

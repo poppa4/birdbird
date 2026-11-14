@@ -75,6 +75,13 @@ Bindings only take effect on a new deployment.
 
 - **Nothing to configure.** No secrets or environment variables are needed. The passkey site id is
   `birdbird.eu` (also valid on www.birdbird.eu). Optional variable `RP_ID` overrides it if the domain changes.
+- **Settings table (migration 0003).** Run `migrations/0003_meta.sql` once as well (D1 console, or
+  `npx wrangler d1 execute birdbird --remote --file=migrations/0003_meta.sql`; safe to run more than once). It adds the small
+  `meta` table (the key for hashing IP addresses in rate limits, and when old rows were last cleaned up) and clears the
+  stored authenticator model ids. Until it is applied everything still works, with an occasional cleanup instead of an hourly one.
+- **Optional `RL_SECRET`.** IP addresses in `rate_limits` are stored only as an HMAC. Without `RL_SECRET` the key is a random
+  value kept in `meta` and rotated daily. To use your own instead: Workers & Pages → birdbird → Settings → Variables and
+  Secrets → Add, type **Secret**, name `RL_SECRET`, a long random value (e.g. `openssl rand -base64 32`), then redeploy.
 - **Not served to visitors:** `/functions` is never published by Cloudflare Pages, and small Functions
   answer 404 for `/migrations/*`, `/tests/*`, `/SETUP-ACCOUNTS.md` and `/LAB-TEMPLATE.md` (Pages' `_redirects` cannot return a 404).
 - **Free plan limits:** D1 free plan (5 GB, 5 million row reads a day) and Pages Functions (100,000 requests

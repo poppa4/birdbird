@@ -23,13 +23,17 @@ export function makeD1(migrationsDir) {
       const r = this._p().run(...this.args); return { success: true, results: [], meta: { changes: Number(r.changes), last_row_id: Number(r.lastInsertRowid) } };
     }
   }
+  let queue = Promise.resolve();   // D1 runs each batch atomically on the server; here batches wait for each other
   return {
     raw: db, log,
     prepare: sql => new Stmt(sql),
-    async batch(stmts) {
-      db.exec('BEGIN');
-      try { const out = []; for (const s of stmts) out.push(await s.run()); db.exec('COMMIT'); return out; }
-      catch (e) { db.exec('ROLLBACK'); throw e; }
+    batch(stmts) {
+      const run = async () => {
+        db.exec('BEGIN');
+        try { const out = []; for (const s of stmts) out.push(await s.run()); db.exec('COMMIT'); return out; }
+        catch (e) { db.exec('ROLLBACK'); throw e; }
+      };
+      const p = queue.then(run, run); queue = p.catch(() => {}); return p;
     },
     async exec(sql) { db.exec(sql); return { count: 1 }; }
   };

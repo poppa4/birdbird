@@ -1,16 +1,14 @@
 /* Birdbird – felles AI og tale.
-   AI: Claude via artifact-kapabiliteten «sample» (brukerens egen konto), eller /api/atc når siden ligger på eget domene.
+   AI: /api/atc (Flight Intelligence) når siden ligger på eget domene.
    Tale: talesyntese for ATC og eksaminator, push-to-talk / diktering med nettleserens talegjenkjenning. */
 (function(G){
 'use strict';
-let mode=null; // null | 'sample' | 'api'
+let mode=null; // null | 'api'
 let why=''; // hvorfor /api/atc ikke er tilgjengelig: 'signed_out' | 'not_configured' | ''
-let fn=null;
 const PK='bb-ai-api', HTTP=location.protocol.startsWith('http');
 const seen=()=>{ try{ return sessionStorage.getItem(PK); }catch(e){ return null; } };
 const modeFns=[];
 const boot=(async()=>{
-  try{ if(G.claude&&G.claude.use){ fn=await G.claude.use('sample'); if(fn) mode='sample'; } }catch(e){ fn=null; }
   if(!mode && location.protocol.startsWith('http')){
     try{ const r=await fetch('/api/atc',{method:'GET'}); if(r.ok){ const j=await r.json(); if(j&&j.ok) mode='api'; else why=String(j&&j.reason||''); } }catch(e){}
   }
@@ -45,17 +43,15 @@ function parseJson(t){
 }
 /* input: string eller [{role,content}] som starter og slutter på user */
 async function text(input,o){ o=o||{}; await probe();
-  if(mode==='sample'){ const op={signal:o.signal,cache:false,modelTier:o.tier||'default',onText:o.onText}; if(o.images) op.images=o.images; return (await fn(input,op)).text; }
   if(mode==='api'){ const t=await apiCall(typeof input==='string'?[{role:'user',content:input}]:input,o.signal); o.onText&&o.onText({text:t,delta:t}); return t; }
   throw {code:'not_available'};
 }
 async function json(input,o){ o=o||{}; await probe();
-  if(mode==='sample'){ const op={signal:o.signal,cache:false,modelTier:o.tier||'default'}; if(o.images) op.images=o.images; return await fn.json(input,op); }
   if(mode==='api') return parseJson(await apiCall(typeof input==='string'?[{role:'user',content:input}]:input,o.signal));
   throw {code:'not_available'};
 }
 const MSG={
-  not_available:{en:'The AI is not available here. Open the page in Claude, or on a site with the AI service set up.',no:'AI-en er ikke tilgjengelig her. Åpne siden i Claude, eller på et nettsted der AI-tjenesten er satt opp.'},
+  not_available:{en:'The AI is not available right now. Everything else on the page still works.',no:'AI-en er ikke tilgjengelig akkurat nå. Resten av siden virker som vanlig.'},
   not_granted:{en:'Claude was not allowed for this page.',no:'Claude ble ikke tillatt for denne siden.'},
   sampling_disabled:{en:'Claude is not available for this account.',no:'Claude er ikke tilgjengelig for denne kontoen.'},
   rate_limited:{en:'Too many requests right now. Wait a moment and try again.',no:'For mange forespørsler akkurat nå. Vent litt og prøv igjen.'},

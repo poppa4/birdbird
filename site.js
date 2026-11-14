@@ -7,6 +7,8 @@
     'Ask or search…':'Spør eller søk …','Ask or search anything, e.g. ':'Spør eller søk etter hva som helst, f.eks. ','crosswind 270/15 rwy 24':'sidevind 270/15 bane 24','answers right here':'svar rett her',
     'Skip to content':'Hopp til innholdet','Footer':'Bunntekst','Language':'Språk','Main':'Hovedmeny','Search or ask':'Søk eller spør','Page not found':'Fant ikke siden','Birdbird':'Birdbird','About me':'Om meg','Made by Daniel Nilsson, pilot, for everyone learning to fly.':'Laget av Daniel Nilsson, pilot, for alle som lærer å fly.',"Daniel's tip":'Daniels tips','Your rank and progress':'Din rang og progresjon','Progress':'Progresjon','Training material only. Always follow the AIP, the flight manual and your operator’s procedures.':'Kun opplæringsmateriell. Følg alltid AIP, flyhåndboken og operatørens prosedyrer.'};
   const t=s=> document.documentElement.lang==='nb'? (NO[s]||s) : s;
+  const TRAIN='Training material only. Always follow the AIP, the flight manual and your operator’s procedures.';
+  const TRAIN_PAGES=['prep.html','sheets.html','essentials.html','radio.html','checkride.html','wxreports.html'];
   let page=(location.pathname.split('/').pop()||'index.html').replace(/\?.*/,''); if(!/\.html$/.test(page)) page=page+'.html';
   const lab=['lab.html','forces.html','engines.html','tunnel.html','propeller.html','stability.html','airdata.html','orientation.html','holding.html','pressure.html','fronts.html','clouds.html','storms.html','hazards.html','wxreports.html','approach.html','radionav.html','gnss.html','performance.html','highspeed.html','massbalance.html','autoflight.html','gyros.html','jetsystems.html','pressurisation.html','gennav.html','flightplanning.html','humanperf.html'].includes(page);
   /* Training hub: one sub-nav, same order everywhere */
@@ -131,7 +133,7 @@
       if(!keep.querySelector('.acct')) keep.insertAdjacentHTML('afterbegin',`<div class="acct"><button type="button" class="mytr" aria-haspopup="menu" aria-expanded="false"></button><div class="acm" role="menu" hidden></div></div>`);
       if(!keep.querySelector('.myws')) keep.insertAdjacentHTML('afterbegin',`<a class="myws ${page==='workspace.html'?'on':''}" href="workspace.html">${t('My workspace')}</a>`); else { const w=keep.querySelector('.myws'); w.textContent=t('My workspace'); w.classList.toggle('on',page==='workspace.html'); }
       /* language switch: in the header from the first paint (lab.js wires it and keeps the current one marked) */
-      if(!keep.querySelector('.langseg')) keep.insertAdjacentHTML('afterbegin',`<div class="seg langseg" role="group"><button type="button" data-v="en" lang="en" aria-label="English"${HTML.lang==='nb'?'':' class="on"'}>EN</button><button type="button" data-v="no" lang="nb" aria-label="Norsk"${HTML.lang==='nb'?' class="on"':''}>NO</button></div>`);
+      if(!keep.querySelector('.langseg')) keep.insertAdjacentHTML('afterbegin',`<div class="seg langseg" role="group"><button type="button" data-v="en" lang="en" aria-label="EN – English"${HTML.lang==='nb'?'':' class="on"'}>EN</button><button type="button" data-v="no" lang="nb" aria-label="NO – Norsk"${HTML.lang==='nb'?' class="on"':''}>NO</button></div>`);
       { const ls=keep.querySelector('.langseg'); ls.setAttribute('aria-label',t('Language')); ls.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='no')===(HTML.lang==='nb')))); }
       const ac=keep.querySelector('.acct'), ab=ac.querySelector('.mytr'), am=ac.querySelector('.acm');
       const user=()=>{ const A=window.BBACCOUNT; if(A&&A.user) return A.user; try{ const m=JSON.parse(localStorage.getItem('birdbird-account')||'null'); return m&&m.signedIn?(m.user||{}):null; }catch(e){ return null; } };
@@ -171,8 +173,15 @@
       <nav aria-label="${t('Footer')} · ${t('Briefing pack')}"><b>${t('Briefing pack')}</b><a href="prep.html">${t('Briefing pack')}</a><a href="route.html">${t('Route Explorer')}</a><a href="planning.html">${t('Navigation log')}</a><a href="weather.html">${t('METAR and TAF')}</a><a href="essentials.html">${t('VFR and IFR essentials')}</a><a href="sheets.html">${t('Kneeboard sheets')}</a></nav>
       <nav aria-label="${t('Footer')} · ${t('Training')}"><b>${t('Training')}</b>${TRN.map(([h,l])=>`<a href="${h}">${t(l)}</a>`).join('')}</nav>
       <nav aria-label="${t('Footer')} · ${t('Flight Intelligence')}"><b>${t('Flight Intelligence')}</b><a href="fi.html">${t('Ask the instructor')}</a><a href="fi.html#docs">${t('Your documents')}</a><a href="fi.html#progress">${t('Topics to revise')}</a></nav>
-      <div class="copy"><span>© 2026 Daniel Nilsson</span><span>${t('Training material only. Always follow the AIP, the flight manual and your operator’s procedures.')}</span></div>`;
+      <div class="copy"><span>© 2026 Daniel Nilsson</span><span>${t(TRAIN)}</span></div>`;
+    trainNote();
   }
+  /* the footer's learning-only line, also where the footer is not seen: a quiet note under the title on the planning and check
+     pages below, and (via the CSS variable --bb-train) at the bottom of each printed briefing-pack and kneeboard sheet */
+  function trainNote(){ const txt=t(TRAIN); HTML.style.setProperty('--bb-train',JSON.stringify(txt));
+    if(!TRAIN_PAGES.includes(page)) return; let n=document.querySelector('p.bbtrain');
+    if(!n){ const h=document.querySelector('header.lhead'); if(!h) return; n=document.createElement('p'); n.className='note bbtrain noprint'; const b=h.querySelector('.brand'); if(b) b.appendChild(n); else h.insertAdjacentElement('afterend',n); }
+    if(n.textContent!==txt) n.textContent=txt; }
   const TIPS={
     'tunnel.html':{en:'Most training aircraft are built to stall at the wing root first, so the ailerons keep working. Pull the speed back and watch where the red starts on each aircraft.',no:'De fleste skolefly er bygget for å stalle ved vingeroten først, så balanserorene fortsatt virker. Ta farten av og se hvor det røde starter på hvert fly.'},
     'airdata.html':{en:'High to low, look out below. Set a cold day with low pressure and see how much lower you really are over the hill.',no:'Fra høyt til lavt, se deg for. Still inn en kald dag med lavt trykk, og se hvor mye lavere du egentlig er over åsen.'},
@@ -207,12 +216,13 @@
     later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=42'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
+    later(trainNote);
     new MutationObserver(()=>{ render(); tip(); }).observe(document.documentElement,{attributes:true,attributeFilter:['lang']}); }
   /* after the page's own scripts (DOMContentLoaded): the page is drawn first, then the helpers that are not needed to draw it are fetched */
   const later=f=>{ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',f); else f(); };
   /* accounts and sync (account.js): header state, passkey sign-in, sync of progress and briefing packs. My page and My workspace
      draw from the account state, so they fetch it at once; every other page fetches it after its own scripts. */
-  if(!/[?&]embed=1/.test(location.search)){ const acc=()=>{ if(!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=2'; document.head.appendChild(aj); } };
+  if(!/[?&]embed=1/.test(location.search)){ const acc=()=>{ if(!document.querySelector('script[src^="account.js"]')){ const aj=document.createElement('script'); aj.src='account.js?v=3'; document.head.appendChild(aj); } };
     if(page==='profile.html'||page==='workspace.html') acc(); else later(acc); }
   const EMBED=/[?&]embed=1/.test(location.search);
   if(EMBED){ const st=document.createElement('style'); st.textContent='.labnav,.site,.sitefoot,.nsearch,.trnav,.fab{display:none!important} .page{padding-top:6px} .lhead{margin-top:6px}'; document.head.appendChild(st); document.documentElement.classList.add('embed'); }
