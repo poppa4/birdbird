@@ -589,7 +589,7 @@
     <label class="chk"><input type="checkbox" data-ly="ap"> Airports</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="wx"> Weather (METAR) <span class="wxkey" aria-hidden="true"><i style="background:#2E7D32"></i><i style="background:#1D4E9E"></i><i style="background:#C62828"></i><i style="background:#C2189B"></i></span></label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="sig"> SIGMET and AIRMET <span class="wxkey" aria-hidden="true"><i style="background:#C62828"></i><i style="background:#C77700"></i><i style="background:#1D63B8"></i><i style="background:#7B3FA0"></i><i style="background:#4E6B2E"></i></span></label>
-    <label class="chk mlonly" hidden><input type="checkbox" data-ly="wa"> Winds aloft (forecast) <select id="waLev" aria-label="Level for the wind barbs" style="font-size:12px;margin-left:4px"><option value="850">FL050 · 850 hPa</option><option value="700">FL100 · 700 hPa</option><option value="600">FL140 · 600 hPa</option><option value="500">FL180 · 500 hPa</option><option value="400">FL240 · 400 hPa</option><option value="300">FL300 · 300 hPa</option><option value="250">FL340 · 250 hPa</option><option value="200">FL390 · 200 hPa</option></select></label>
+    <label class="chk mlonly" hidden><input type="checkbox" data-ly="wa"> Winds aloft (forecast) <select id="waLev" aria-label="Level for the wind barbs" style="font-size:12px;margin-left:4px"><option value="frz">Freezing level (0 °C, 100 ft)</option><option value="850">FL050 · 850 hPa</option><option value="700">FL100 · 700 hPa</option><option value="600">FL140 · 600 hPa</option><option value="500">FL180 · 500 hPa</option><option value="400">FL240 · 400 hPa</option><option value="300">FL300 · 300 hPa</option><option value="250">FL340 · 250 hPa</option><option value="200">FL390 · 200 hPa</option></select></label>
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
     <label class="chk"><input type="checkbox" data-ly="fx"> IFR points (Finland, Iceland)</label>
     <div class="mlonly lyoa" id="lyoa" hidden><span class="lysub">openAIP <span class="lyn" id="oanote"></span></span>
@@ -786,7 +786,7 @@
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=19"></script>
+<script src="rxmap.js?v=20"></script>
 <script src="aip.js?v=2"></script>
 <script src="windsaloft.js?v=1"></script>
 <script>
@@ -1005,11 +1005,17 @@ function waDraw(M){ const tb=el('wat'), nt=el('wanote'); if(!tb) return; const R
   nt.innerHTML=L({en:`Valid ${z(R0.valid)}, GFS run ${z(R0.run)} (NOAA, 0.25°). Wind: direction it blows from (° true) / kt; temperature °C. Levels are named by their standard flight level; heights are the model’s, so the real level varies with the pressure. Grey: below the ground. Planning practice: check the official winds and temperatures forecast before flight.`,no:`Gyldig ${z(R0.valid)}, GFS-kjøring ${z(R0.run)} (NOAA, 0,25°). Vind: retningen den blåser fra (° rettvisende) / kt; temperatur °C. Nivåene har navn etter standard flygenivå; høydene er modellens, så det virkelige nivået varierer med trykket. Grått: under bakken. Planleggingsøving: sjekk den offisielle prognosen for vind og temperatur før flyging.`}); }
 /* map barbs at the chosen level for the tiles in view (zoom ≥ 4, at most 9 tiles), at the ETD hour */
 function waMapSoon(){ clearTimeout(WA.mt); WA.mt=setTimeout(waMapSync,600); }
-async function waMapSync(){ if(!ML) return; if(!LY.wa){ mlPut('bb-wa',mlC([])); return; } const z=ML.getZoom(); if(z<4){ mlPut('bb-wa',mlC([])); return; }
+async function waMapSync(){ if(!ML) return; if(!LY.wa){ mlPut('bb-wa',mlC([])); mlPut('bb-frz',mlC([])); return; } const z=ML.getZoom(); if(z<4){ mlPut('bb-wa',mlC([])); mlPut('bb-frz',mlC([])); return; }
   const b=ML.getBounds(), time=(WA.res&&WA.res.time)||BBWIND.hourIso(waEtd()); const tiles=[];
   for(let la=Math.floor(b.getSouth()/5)*5;la<b.getNorth()&&la<85;la+=5) for(let lo=Math.floor(b.getWest()/5)*5;lo<b.getEast();lo+=5) tiles.push(Math.max(-90,la)+','+(((lo+180)%360+360)%360-180));
   const T=tiles.slice(0,9); const key=T.join(';')+'|'+time+'|'+WA.lev+'|'+(z>=6?1:0); if(key===WA.mkey) return;
   await BBWIND.load(T,time); WA.mkey=key; const h=+WA.lev, stride=z>=7?1:z>=5.5?2:4, f=[];
+  if(WA.lev==='frz'){ const g=[], st2=z>=7?2:z>=5.5?4:8; mlPut('bb-wa',mlC([]));
+    T.forEach(t=>{ const [la0,lo0]=t.split(',').map(Number); const d=BBWIND.tileAt(la0+2.5,lo0+2.5,time); if(!d) return;
+      for(let j=0;j<d.ny-1;j+=st2) for(let i=0;i<d.nx-1;i+=st2){ const la=d.la0-j*d.d, lo=d.lo0+i*d.d; const fz=BBWIND.freezing(la,lo,time,0); if(!fz) continue; const v=Math.round(fz.ft/100);
+        g.push(mlF(mlP(la,lo),{f:fz.below?'0':String(v),v})); } });
+    mlPut('bb-frz',mlC(g)); return; }
+  mlPut('bb-frz',mlC([]));
   T.forEach(t=>{ const [la0,lo0]=t.split(',').map(Number); const d=BBWIND.tileAt(la0+2.5,lo0+2.5,time); if(!d) return; const k=d.lev.indexOf(h); if(k<0||!d.u[k]) return;
     for(let j=0;j<d.ny-1;j+=stride) for(let i=0;i<d.nx-1;i+=stride){ const n=j*d.nx+i, u=d.u[k][n], v=d.v[k][n]; const sp=Math.hypot(u,v);
       f.push(mlF(mlP(d.la0-j*d.d,d.lo0+i*d.d),{s:Math.min(150,Math.round(sp/5)*5),d:BBWIND.dirOf(u,v),t:Math.round(d.t[k][n])})); } });
@@ -2002,7 +2008,7 @@ LAB.add({},{
  'Draw on my route: real terrain and the route points, scale set automatically':'Tegn på ruten min: ekte terreng og rutepunktene, skalaen settes automatisk'
 });
 LAB.add({},{
- 'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','SIGMET and AIRMET':'SIGMET og AIRMET','Winds aloft (forecast)':'Vind i høyden (prognose)','Forecast winds aloft':'Prognose for vind i høyden','ETD (UTC)':'ETD (UTC)','Fill winds from the forecast':'Fyll inn vind fra prognosen','Weather (METAR)':'Vær (METAR)',
+ 'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','SIGMET and AIRMET':'SIGMET og AIRMET','Winds aloft (forecast)':'Vind i høyden (prognose)','Freezing level (0 °C, 100 ft)':'Frysenivå (0 °C, 100 ft)','Forecast winds aloft':'Prognose for vind i høyden','ETD (UTC)':'ETD (UTC)','Fill winds from the forecast':'Fyll inn vind fra prognosen','Weather (METAR)':'Vær (METAR)',
  'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from MET Norway (Norwegian aerodromes) and aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. METAR fra MET Norway (norske flyplasser) og aviationweather.gov, til trening: sjekk den offisielle briefingen. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
  'Navlog':'Navlogg','TAS':'TAS','Wind':'Vind','° / kt':'° / kt','Fuel flow':'Forbruk','per hour':'per time','Unit':'Enhet','Print navlog':'Skriv ut navloggen','True airspeed, knots':'Sann flyfart, knop','Wind for the whole route, direction and speed':'Vind for hele ruten, retning og styrke','Fuel flow per hour':'Forbruk per time','Fuel unit':'Drivstoffenhet',
  '⇪ ForeFlight or Garmin Pilot screenshot / PDF':'⇪ Skjermbilde / PDF fra ForeFlight eller Garmin Pilot','Export':'Eksporter','GPX':'GPX','Garmin FPL':'Garmin FPL','Copy route':'Kopier ruten'});

@@ -62,3 +62,14 @@ test('handler: newest run not on NOMADS yet → previous run', async () => {
   const down = await handleWinds(new Request('https://birdbird.eu/api/winds?tile=60,5'), {}, { fetch: async () => new Response('', { status: 503 }), cache: null });
   assert.equal(down.status, 502);
 });
+
+import { handleSigchart } from '../functions/api/sigchart.js';
+test('sigchart proxy: image through, errors as JSON', async () => {
+  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+  let seen = '';
+  const ok = await handleSigchart(new Request('https://birdbird.eu/api/sigchart?area=norway&offset=1'), {}, { cache: null, fetch: async u => { seen = u; return new Response(png, { headers: { 'content-type': 'image/png' } }); } });
+  assert.equal(ok.status, 200); assert.equal(ok.headers.get('content-type'), 'image/png'); assert.match(seen, /area=norway&offset=1/);
+  const html = await handleSigchart(new Request('https://birdbird.eu/api/sigchart'), {}, { cache: null, fetch: async () => new Response('<html>', { headers: { 'content-type': 'text/html' } }) });
+  assert.equal(html.status, 502);
+  assert.equal((await handleSigchart(new Request('https://birdbird.eu/api/sigchart?area=sweden'), {}, { cache: null })).status, 400);
+});

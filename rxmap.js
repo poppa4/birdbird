@@ -456,7 +456,7 @@ const FC={type:'FeatureCollection',features:[]};
 const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
 /* SIGMET/AIRMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown, cloud/visibility green; AIRMETs lighter */
 const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
-const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-wa','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-wa','bb-frz','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
   const halo={'text-halo-color':'rgba(255,255,255,.92)','text-halo-width':1.6,'text-halo-blur':0.2};
@@ -473,6 +473,8 @@ function addOverlays(map){
   // forecast winds aloft (GFS): barbs rotated to the direction the wind blows from; temperature at closer zoom
   add({id:'bb-wa',type:'symbol',source:'bb-wa',layout:{visibility:'none','icon-image':['concat','bb-barb-',['to-string',['get','s']]],'icon-rotate':['get','d'],'icon-rotation-alignment':'map','icon-allow-overlap':true,'icon-ignore-placement':true,'icon-size':lin(3,0.7,9,1),
     'text-field':['step',['zoom'],'',6.5,['concat',['to-string',['get','t']],'°']],'text-font':FONT_R,'text-size':10,'text-offset':[0,1.3],'text-anchor':'top','text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':'#14324F','icon-opacity':0.85},halo)});
+  // forecast freezing level (GFS): hundreds of feet AMSL at each grid point, '0' where it is freezing at the ground
+  add({id:'bb-frz',type:'symbol',source:'bb-frz',layout:{visibility:'none','text-field':['get','f'],'text-font':FONT_B,'text-size':lin(4,10,9,13),'text-allow-overlap':false,'text-padding':2},paint:Object.assign({'text-color':['case',['<',['get','v'],20],'#1D63B8',['<',['get','v'],60],'#2E6FB0','#5A7C99']},halo)});
   // the route, under the aviation symbols (dashed for missed approach / alternate legs)
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});
   add({id:'bb-leg',type:'line',source:'bb-leg',filter:['!=',['get','d'],1],layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':P.accent,'line-width':lin(3,3.2,12,4.6)}});
@@ -499,7 +501,7 @@ function addOverlays(map){
   add({id:'bb-hovl',type:'symbol',source:'bb-hov',layout:{'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'top-left','text-offset':[0.9,0.7],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
-const LYG={wx:['bb-wx'],wa:['bb-wa'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+const LYG={wx:['bb-wx'],wa:['bb-wa','bb-frz'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
 /* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
 const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
 function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;
