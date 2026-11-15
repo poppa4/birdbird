@@ -1,0 +1,25 @@
+# Live check of the weather sources and the deployed site (see tools/live-check.mjs). Results go to the live-results branch.
+name: Live check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/live-check.mjs', '.github/workflows/live-check.yml', '.github/live-check-trigger']
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm i --no-save --no-package-lock @mapbox/vector-tile@2 pbf@4
+      - run: node tools/live-check.mjs
+        continue-on-error: true
+      - name: Publish results
+        run: |
+          git config user.name "live-check"; git config user.email "actions@github.com"
+          mkdir -p /tmp/res && cp -r out/* /tmp/res/ 2>/dev/null || true
+          git checkout --orphan live-results && git rm -rqf . && cp -r /tmp/res/* . && git add -A && git commit -qm "live check ${GITHUB_SHA::7}" && git push -f origin live-results
