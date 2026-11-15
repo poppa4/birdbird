@@ -22,6 +22,14 @@
 .flowbar .fw-b{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.flowbar select{font:inherit;font-size:13.5px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:240px}
 .flowbar a.lk,.flowbar button.lk{background:none;border:0;padding:0;font:inherit;color:var(--ink-2);text-decoration:underline;cursor:pointer}
 @media (max-width:640px){.flowbar .fw-b{width:100%}.flowbar .fw-b .btn{flex:1 1 auto;text-align:center}}
+.xsb{margin:14px 0 4px;font-size:12.5px;line-height:1.5}.xsb[hidden]{display:none}.xsbs{margin:0 0 12px;break-inside:avoid}.xsbs h3{font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:0 0 4px}
+.xsb .ash>b{display:none}.xsb ul{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
+.xsb li{display:inline-flex;align-items:center;gap:6px;border:1px solid #E3E8EA;border-radius:7px;padding:3px 8px 3px 7px;background:#fff;font-variant-numeric:tabular-nums}.xsb li.in{border-color:currentColor}
+.xsb li i{width:9px;height:9px;border-radius:2px;flex:0 0 auto}.xsb li small{color:var(--ink-2);font-size:11.5px}.xsb li em{font-style:normal;font-weight:700;font-size:11px;padding:0 5px;border-radius:3px;color:#fff}
+.xsb .asn{display:block;color:var(--ink-2);font-size:11.5px;margin-top:3px}
+.xsb table{border-collapse:collapse;width:100%;overflow-x:auto;display:block}.xsb td,.xsb th{font-family:IBM Plex Mono,monospace;font-size:11.5px;white-space:nowrap;padding:3px 6px;border-bottom:1px solid var(--rule);text-align:center}.xsb th:first-child,.xsb td:first-child{text-align:left}
+.xsb .cr{background:rgba(29,78,158,.07)}.xsb .cl1{background:rgba(120,130,140,.12)}.xsb .cl2{background:rgba(120,130,140,.25)}.xsb .ice{box-shadow:inset 3px 0 0 #1D63B8}.xsb .turb{box-shadow:inset -3px 0 0 #C77700}.xsb .icem{color:#1D63B8}.xsb .tbm{color:#B86E00}.xsb .ugnd{color:#aaa}
+@media print{.xsb table{display:table;font-size:10px}.xsb td,.xsb th{font-size:9.5px;padding:2px 3px}}
 .pgrid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;align-items:start;margin-top:18px}
 @media (max-width:900px){.pgrid{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
 .toc{position:sticky;top:70px;display:flex;flex-direction:column;gap:2px;font-size:14px}
@@ -357,7 +365,7 @@ body:not(.nofab) #askbar{display:none}
   <div class="ain"><textarea id="aq" placeholder="Ask…" aria-label="Question"></textarea><button class="btn pri" id="asend">Ask</button></div>
 </div>
 <script src="lab.js?v=51"></script>
-<script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=2').catch(()=>{}));</script>
+<script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{}));</script>
 <script src="ai.js?v=5"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=2"></script>
@@ -467,6 +475,7 @@ const SECTIONS=[
    </div>
    <div class="xsform noprint" id="xsT" hidden><div class="wrapx"><table class="tb" id="xsTb"></table></div><div class="btns"><button class="btn" id="xsAdd">Add point</button><button class="btn" id="xsClr">Clear profile</button></div></div>
    <div class="sk" id="skwrap"><svg id="xsv" class="ink" viewBox="0 0 1000 360" style="position:absolute;inset:0;width:100%;height:100%"></svg><canvas id="sk" class="ink" width="1000" height="360" style="position:relative;pointer-events:none"></canvas></div>
+   <div class="xsb" id="xsBrief" hidden></div>
    <div class="sktools noprint" id="skt" hidden><button data-c="#13202A" class="on">Pen</button><button data-c="#1E5E9E">Blue</button><button data-c="#B3261E">Red</button><button data-u="1">Undo</button><button data-x="1">Clear drawing</button></div>
    <p class="note">Build the profile from a few numbers or a sentence, then draw your own notes on top. Distances are along the route, not to scale with terrain.</p>`],
  ['rwy','Runway performance',()=>{ const factors=`<div class="fg noprint" style="margin-bottom:6px">${F('rf.to','Take-off factor (× TODR ≤ TORA)',{num:1})}${F('rf.ld','Landing factor (× LDR ≤ LDA)',{num:1})}</div>`;
@@ -749,12 +758,20 @@ function genQuick(q){
   if(q.ma||n('maa')) out.push({n:q.ma||'MAP',t:'missed',d:n('mad')||6,a:n('maa')||3000});
   return out;
 }
+/* route briefing sent from Route Explorer with the profile; cleaned before it is shown (own data, but never trust markup) */
+function xsClean(h){ const t=document.createElement('template'); t.innerHTML=String(h||''); t.content.querySelectorAll('script,style,iframe,object,embed,link,meta,button,input,select,textarea,form,a').forEach(e=>e.replaceWith(...(e.tagName==='A'?e.childNodes:[])));
+  t.content.querySelectorAll('*').forEach(e=>[...e.attributes].forEach(a=>{ const n=a.name.toLowerCase(); if(n.startsWith('on')||!['class','style','title','colspan','rowspan'].includes(n)||(n==='style'&&/url\(|expression|javascript/i.test(a.value))) e.removeAttribute(a.name); })); return t.innerHTML; }
+function xsBrief(X){ const b=document.getElementById('xsBrief'); if(!b) return; const B=X&&X.brief; if(!B||!X.route){ b.hidden=true; b.innerHTML=''; return; }
+  const sec=(t,h)=>h?`<div class="xsbs"><h3>${t}</h3>${xsClean(h)}</div>`:'';
+  const html=sec(L({en:'SIGMET and AIRMET on the route',no:'SIGMET og AIRMET på ruten'}),B.sw)+sec(L({en:'Airspace on the route',no:'Luftrom på ruten'}),B.as)+sec(L({en:'Winds, cloud, icing and turbulence aloft (GFS)',no:'Vind, skyer, ising og turbulens i høyden (GFS)'}),B.wa)+sec('NOTAM',B.ntm)+sec(L({en:'Aerodromes along the route',no:'Flyplasser langs ruten'}),B.nr);
+  b.hidden=!html; b.innerHTML=html?html+`<p class="note">${L({en:'From Route Explorer when the route was sent',no:'Fra Route Explorer da ruten ble sendt'})} ${X.at?new Date(X.at).toISOString().slice(0,16).replace('T',' ')+'Z':''}. ${L({en:'Send it again for fresh data.',no:'Send på nytt for ferske data.'})}</p>`:''; }
 function xsRender(){
   const X=xsData(), pts=X.pts||[]; const f=P.f; xsv.innerHTML='';
   const ra=document.getElementById('xsRoute'); if(ra){ ra.href='route.html?pack='+encodeURIComponent(P.id); ra.textContent=X.route?L({en:'Edit on the map ↗',no:'Rediger på kartet ↗'}):L({en:'Build it on the map ↗',no:'Bygg den på kartet ↗'}); }
   const xn=document.getElementById('xsNote'); if(xn&&X.route){ const stale=X.f&&['x.alt','x.msa','x.frz','x.cb','x.ct'].some(k=>(f[k]||'')!==(X.f[k]||''));
     xn.innerHTML= stale? L({en:'You changed cruise, MSA or weather here after the profile was made. <a href="route.html?pack='+encodeURIComponent(P.id)+'">Open it on the map</a> to update it.',no:'Du har endret cruise, MSA eller vær her etter at profilen ble laget. <a href="route.html?pack='+encodeURIComponent(P.id)+'">Åpne den på kartet</a> for å oppdatere.'}) : (X.svg?L({en:'Linked to Route Explorer. Changes on the map update this profile.',no:'Koblet til Route Explorer. Endringer på kartet oppdaterer denne profilen.'}):''); }
   const H_=X.svg?420:360; if(sk.height!==H_){ sk.height=H_; } xsv.setAttribute('viewBox','0 0 1000 '+H_);
+  xsBrief(X);
   if(X.svg){ xsv.innerHTML=X.svg; return; }
   const add=(tag,a)=>{ const e=document.createElementNS(NSV,tag); for(const k in a) e.setAttribute(k,a[k]); xsv.appendChild(e); return e; };
   const tx=(t,x,y,o)=>{ const e=add('text',Object.assign({x,y,'font-family':'IBM Plex Mono, monospace','font-size':11,fill:'#13202A'},o||{})); e.textContent=t; return e; };

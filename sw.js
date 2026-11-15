@@ -6,7 +6,7 @@
      Cloudflare serves /route for /route.html, so a page is looked up under both names.
    - Versioned files (?v=N, never change): cache first. Other same-site files (data/*.json, images): network first.
    - Not touched: other sites (map tiles), sign-in and sync APIs, radar files and satellite tiles (large, live only), non-GET. */
-const C = 'bb-off-2';
+const C = 'bb-off-3';
 const SKIP = /^\/api\/(auth|me|sync|atc|radar|sat)\b/;
 const API = /^\/api\/(wx|sigmet|winds|sigchart)\b/;
 const PAGES = ['/prep', '/route'], DATA = ['/data/nav-eu.json', '/data/fixes-nordic.json'];

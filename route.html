@@ -420,7 +420,7 @@
 .mfq .rw b{font-family:var(--f-mono)}.nlbtn{margin-left:auto}
 .nrbox{margin-top:14px;border-top:1px solid var(--rule);padding-top:10px}.nrt td,.nrt th{font-size:12.5px;white-space:nowrap}.nrt td.n{font-family:var(--f-mono)}.nrt tr.short td{color:#8A97A2}
 .wabox{margin-top:14px;border-top:1px solid var(--rule);padding-top:10px}.wah{font-size:14px;align-self:center;margin-right:4px}.wast{font-size:12.5px;color:var(--ink-2);align-self:center;max-width:46ch}.wast.err{color:#B3261E}
-.wat td,.wat th{font-family:var(--f-mono);font-size:12px;white-space:nowrap;text-align:center}.wat th:first-child,.wat td:first-child{text-align:left}.wat .cr{background:rgba(29,78,158,.07);font-weight:600}.wat .frz td{color:#1D63B8}.wat small{color:var(--ink-2);font-size:10.5px}.wat .ugnd{color:#A9B3BB}.wat .cl1{background:rgba(110,125,138,.10)}.wat .cl2{background:rgba(110,125,138,.24)}.wat .ice{box-shadow:inset 3px 0 0 #1D63B8}.wat .icem{color:#1D63B8;font-weight:700}.wat .tb{box-shadow:inset -3px 0 0 #C77700}.wat .tbm{color:#B86E00;font-weight:700}
+.wat td,.wat th{font-family:var(--f-mono);font-size:12px;white-space:nowrap;text-align:center}.wat th:first-child,.wat td:first-child{text-align:left}.wat .cr{background:rgba(29,78,158,.07);font-weight:600}.wat .frz td{color:#1D63B8}.wat small{color:var(--ink-2);font-size:10.5px}.wat .ugnd{color:#A9B3BB}.wat .cl1{background:rgba(110,125,138,.10)}.wat .cl2{background:rgba(110,125,138,.24)}.wat .ice{box-shadow:inset 3px 0 0 #1D63B8}.wat .icem{color:#1D63B8;font-weight:700}.wat .turb{box-shadow:inset -3px 0 0 #C77700}.wat .tbm{color:#B86E00;font-weight:700}
 .nlt input.fc{border-color:#1D63B8;background:rgba(29,78,158,.05)}
 .nlt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
 .nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
@@ -793,7 +793,7 @@
 </div>
 </main>
 <script src="lab.js?v=51"></script>
-<script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=2').catch(()=>{}));</script>
+<script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{}));</script>
 <script src="ai.js?v=5"></script>
 <script src="store.js?v=3"></script>
 <script src="flightlink.js?v=1"></script>
@@ -1105,7 +1105,7 @@ function waDraw(M){ const tb=el('wat'), nt=el('wanote'); if(!tb) return; const R
   const tbAt=(c,z)=>Math.max(0,...c.tb.filter(l=>z>=l.zlo-1&&z<=l.zhi+1).map(l=>l.cat)); const TBN=[ '', L({en:'light–moderate turbulence',no:'lett–moderat turbulens'}), L({en:'moderate turbulence',no:'moderat turbulens'}), L({en:'severe turbulence possible',no:'mulig kraftig turbulens'}) ];
   const levs=[925,850,800,700,600,500,400,300,250,200];
   const cell=(c,h)=>{ if(!c.col) return '<td>–</td>'; const x=c.col.find(y=>y.hpa===h); if(!x) return '<td>–</td>'; const ug=x.z<c.g; const w=BBWIND.w3(BBWIND.dirOf(x.u,x.v),Math.round(Math.hypot(x.u,x.v)));
-    const q=BBWIND.wxOf(x), tb=ug?0:tbAt(c,x.z), cls=[ug?'ugnd':'',!ug&&q.cloud?'cl'+q.cloud:'',!ug&&q.ice?'ice':'',tb>=2?'tb':''].filter(Boolean).join(' ');
+    const q=BBWIND.wxOf(x), tb=ug?0:tbAt(c,x.z), cls=[ug?'ugnd':'',!ug&&q.cloud?'cl'+q.cloud:'',!ug&&q.ice?'ice':'',tb>=2?'turb':''].filter(Boolean).join(' ');
     const tip=ug?L({en:'Below the ground here',no:'Under bakken her'}):[q.cloud?(q.cloud===2?L({en:'Cloud likely',no:'Skyer sannsynlig'}):L({en:'Cloud possible',no:'Skyer mulig'}))+' (RH '+Math.round(x.r)+' %)':'',q.ice?(q.ice===2?L({en:'Icing risk: high',no:'Isingsfare: høy'}):L({en:'Icing risk',no:'Isingsfare'})):'',tb?TBN[tb]:''].filter(Boolean).join(' · ');
     return `<td${cls?' class="'+cls+'"':''}${tip?' title="'+tip+'"':''}>${w}<br><small>${Math.round(x.t)}°${!ug&&q.ice?' <b class="icem">ICE</b>':''}${tb>=2?' <b class="tbm">TURB</b>':''}</small></td>`; };
   const rows=levs.slice().reverse().map(h=>`<tr><th>${BBWIND.FL[h]} <small>${h} hPa</small></th>${cols.map(c=>cell(c,h)).join('')}</tr>`);
@@ -1936,7 +1936,10 @@ async function sendRoute(silent){ if(MODE==='draw') return silent?null:sendDraw(
     let ter=''; if(e.i!=null&&e.i>0){ const te=legTer(M,e.i)??pnum(M.C[e.i].p.ter); if(te!=null) ter=String(Math.round(te)); }
     pts.push({n:e.n||'',t:e.t,d:Math.round(d*10)/10,a:Math.round(e.a),note:e.note,ter}); });
   PACKDIM=true; drawProfile(M,TP); PACKDIM=false; const snap=psv.cloneNode(true); setTimeout(()=>drawProfile(compute(),TP),0); snap.querySelectorAll('.fhit,.noprint').forEach(e=>e.remove());
-  P.xs={pts,zoom:R.zoom!==false,svg:snap.innerHTML,route:R.id,wx:R.wx||'',gs:R.gs||'',at:Date.now()};
+  // route briefing that goes with the profile: SIGMET/AIRMET on the route, airspace crossed, winds/cloud/icing/turbulence, NOTAM, aerodromes along the route
+  const bh=(id,n)=>{ const b=el(id); if(!b||b.hidden||!b.innerHTML.trim()) return ''; const c=b.cloneNode(true); c.querySelectorAll('button,input,select,script,.noprint').forEach(e=>e.remove()); return c.innerHTML; };
+  const brief={sw:bh('swl'),as:bh('asl'),wa:bh('wat')?'<table class="tb wat">'+bh('wat')+'</table>'+(el('wanote')&&el('wanote').textContent?'<p class="note">'+esc(el('wanote').textContent)+'</p>':''):'',ntm:bh('ntmmsg'),nr:bh('nrt')?'<table class="tb nrt">'+bh('nrt')+'</table>':''};
+  P.xs={pts,zoom:R.zoom!==false,svg:snap.innerHTML,route:R.id,wx:R.wx||'',gs:R.gs||'',at:Date.now(),brief};
   const f=P.f; const firstR=M.C[0].p, lastR=[...M.C].reverse().find(c=>c.p.t==='rwy'&&c.i>0);
   if(firstR.t==='rwy'&&!f.depapt) f.depapt=firstR.n; if(lastR&&!f.destapt) f.destapt=lastR.p.n;
   [['x.msa','msa'],['x.frz','frz'],['x.cb','cb'],['x.ct','ct']].forEach(([a,b])=>{ if(S(b)) f[a]=S(b); }); if(S('cr')) f['x.alt']=S('cr');
