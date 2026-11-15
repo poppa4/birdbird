@@ -1,11 +1,11 @@
 /* Birdbird – Cloudflare Pages Function: GET /api/winds?tile=55,5[&t=2026-11-15T12:00Z]
-   Upper winds, temperature and height on 10 pressure levels (925–200 hPa) for one 5° × 5° tile, from NOAA's GFS model
+   Upper winds, temperature, relative humidity and height on 10 pressure levels (925–200 hPa) for one 5° × 5° tile, from NOAA's GFS model
    (0.25°, hourly to 120 h; public domain), subset by the NOMADS grib filter and decoded here (functions/_lib/grib2.js).
    Global coverage. The newest finished model run is used; if it is not on NOMADS yet, the one before.
    One upstream call per tile and hour for everyone: answers are cached at the edge for 2 h.
 
    Response 200: { ok:true, model:'GFS 0.25°', run, fh, valid, la0 (north edge), lo0 (west edge), d:0.25, nx, ny,
-                   lev:[hPa…], u:[[kt…]…], v:[[…]…], t:[[°C…]…], z:[[ft…]…] }   (rows north → south, columns west → east)
+                   lev:[hPa…], u:[[kt…]…], v:[[…]…], t:[[°C…]…], z:[[ft…]…], r:[[%…]…] }   (rows north → south, columns west → east)
    For training and planning practice: the page tells the user to check the official forecast. */
 
 import { readGrib2 } from '../_lib/grib2.js';
@@ -47,15 +47,15 @@ export function nomadsUrl(run, fh, tile) {
   const ymd = run.getUTCFullYear() + p2(run.getUTCMonth() + 1) + p2(run.getUTCDate()), hh = p2(run.getUTCHours());
   const w = tile.lo < 0 ? tile.lo + 360 : tile.lo, e = w + TILE;
   const q = ['dir=' + encodeURIComponent('/gfs.' + ymd + '/' + hh + '/atmos'), 'file=gfs.t' + hh + 'z.pgrb2.0p25.f' + String(fh).padStart(3, '0'),
-    'var_HGT=on', 'var_TMP=on', 'var_UGRD=on', 'var_VGRD=on'].concat(LEVELS.map(l => 'lev_' + l + '_mb=on'))
+    'var_HGT=on', 'var_RH=on', 'var_TMP=on', 'var_UGRD=on', 'var_VGRD=on'].concat(LEVELS.map(l => 'lev_' + l + '_mb=on'))
     .concat(['subregion=', 'toplat=' + (tile.la + TILE), 'bottomlat=' + tile.la, 'leftlon=' + w, 'rightlon=' + e]);
   return NOMADS + '?' + q.join('&');
 }
 
 /* decoded messages → compact tile (north → south rows) */
 export function toTile(msgs, tile) {
-  const F = { '0/0': 't', '2/2': 'u', '2/3': 'v', '3/5': 'z' };
-  const out = { lev: LEVELS.slice(), u: [], v: [], t: [], z: [] };
+  const F = { '0/0': 't', '2/2': 'u', '2/3': 'v', '3/5': 'z', '1/1': 'r' };
+  const out = { lev: LEVELS.slice(), u: [], v: [], t: [], z: [], r: [] };
   let g = null, ref = null, fh = null;
   const by = {};
   msgs.forEach(m => {
@@ -68,8 +68,8 @@ export function toTile(msgs, tile) {
   const nx = g.ni, ny = g.nj, south = (g.scan & 0x40) !== 0;
   const la0 = south ? g.la1 + (ny - 1) * g.dj : g.la1;
   let lo0 = g.lo1; if (lo0 > 180) lo0 -= 360;
-  const conv = { u: v => Math.round(v * KT * 10) / 10, v: v => Math.round(v * KT * 10) / 10, t: v => Math.round((v - 273.15) * 10) / 10, z: v => Math.round(v * FT / 10) * 10 };
-  ['u', 'v', 't', 'z'].forEach(k => LEVELS.forEach(l => {
+  const conv = { u: v => Math.round(v * KT * 10) / 10, v: v => Math.round(v * KT * 10) / 10, t: v => Math.round((v - 273.15) * 10) / 10, z: v => Math.round(v * FT / 10) * 10, r: v => Math.round(v) };
+  ['u', 'v', 't', 'z', 'r'].forEach(k => LEVELS.forEach(l => {
     const m = by[k + l];
     if (!m || m.ni !== nx || m.nj !== ny) { out[k].push(null); return; }
     const a = new Array(nx * ny);

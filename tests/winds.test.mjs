@@ -35,7 +35,7 @@ test('tile and time handling', () => {
   assert.equal(forecastHour(C[0], new Date('2026-11-21T07:00:00Z')), 145 - 1); // 145 h → 3-hourly beyond 120: 144
   const u = nomadsUrl(C[0], 8, { la: 55, lo: -5 });
   assert.match(u, /dir=%2Fgfs\.20261115%2F06%2Fatmos/); assert.match(u, /file=gfs\.t06z\.pgrb2\.0p25\.f008/);
-  assert.match(u, /leftlon=355&rightlon=360/); assert.match(u, /toplat=60&bottomlat=55/); assert.match(u, /lev_850_mb=on/); assert.match(u, /var_UGRD=on/);
+  assert.match(u, /leftlon=355&rightlon=360/); assert.match(u, /toplat=60&bottomlat=55/); assert.match(u, /lev_850_mb=on/); assert.match(u, /var_UGRD=on/); assert.match(u, /var_RH=on/);
 });
 
 test('toTile: north-to-south rows, units kt / °C / ft', () => {
@@ -46,6 +46,7 @@ test('toTile: north-to-south rows, units kt / °C / ft', () => {
   assert.equal(t.u[i850][0], Math.round(REF['u_850_grid_complex_spatial_differencing'][0] * 1.9438445 * 10) / 10);
   assert.equal(t.z[i850][0], Math.round(REF['gh_850_grid_complex_spatial_differencing'][0] * 3.28084 / 10) * 10);
   assert.equal(t.t[t.lev.indexOf(925)], null); // not in the fixture
+  assert.equal(t.r[i850][0], Math.round(REF['r_850_grid_complex_spatial_differencing'][0]));
   assert.equal(t.valid, '2026-11-15T13:00:00.000Z');
 });
 

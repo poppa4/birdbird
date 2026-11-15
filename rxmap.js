@@ -447,7 +447,7 @@ const FC={type:'FeatureCollection',features:[]};
 const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
 /* SIGMET/AIRMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown, cloud/visibility green; AIRMETs lighter */
 const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
-const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-wa','bb-frz','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-ntm','bb-wa','bb-frz','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 /* wind barbs, 0–150 kt in 5 kt steps, made the first time the winds layer is shown (not at every map load):
    staff points up (north) from the station in the middle, feathers on the clockwise side; the layer rotates each barb
    to the direction the wind blows from. 50 kt = pennant, 10 kt = long barb, 5 kt = short barb. */
@@ -473,6 +473,11 @@ function addOverlays(map){
   add({id:'bb-sig-f',type:'fill',source:'bb-sig',layout:{visibility:'none'},paint:{'fill-color':SGC,'fill-opacity':['case',AM,0.05,0.1]}});
   add({id:'bb-sig-l',type:'line',source:'bb-sig',layout:{visibility:'none','line-join':'round'},paint:{'line-color':SGC,'line-width':['interpolate',['linear'],['zoom'],3,['case',AM,1,1.4],10,['case',AM,1.6,2.4]],'line-dasharray':[3,2],'line-opacity':['case',AM,0.6,0.9]}});
   add({id:'bb-sig-t',type:'symbol',source:'bb-sig',minzoom:4,layout:{visibility:'none','symbol-placement':'point','text-field':['get','t'],'text-font':FONT_B,'text-size':11,'text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':SGC},halo)});
+  // NOTAMs the user pasted: circle from the Q) line (centre + radius), coloured by impact (high red, medium amber, airspace purple)
+  const NTC=['match',['get','lvl'],'hi','#B3261E','md','#C77700','lo','#7B3FA0','#5A6B78'];
+  add({id:'bb-ntm-f',type:'fill',source:'bb-ntm',layout:{visibility:'none'},paint:{'fill-color':NTC,'fill-opacity':['case',['==',['get','act'],1],0.12,0.04]}});
+  add({id:'bb-ntm-l',type:'line',source:'bb-ntm',layout:{visibility:'none'},paint:{'line-color':NTC,'line-width':['case',['==',['get','act'],1],1.8,1],'line-opacity':['case',['==',['get','act'],1],0.95,0.5]}});
+  add({id:'bb-ntm-t',type:'symbol',source:'bb-ntm',minzoom:6,layout:{visibility:'none','text-field':['get','id'],'text-font':FONT_R,'text-size':10.5,'text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':NTC},halo)});
   // forecast winds aloft (GFS): barbs rotated to the direction the wind blows from; temperature at closer zoom
   add({id:'bb-wa',type:'symbol',source:'bb-wa',layout:{visibility:'none','icon-image':['concat','bb-barb-',['to-string',['get','s']]],'icon-rotate':['get','d'],'icon-rotation-alignment':'map','icon-allow-overlap':true,'icon-ignore-placement':true,'icon-size':lin(3,0.7,9,1),
     'text-field':['step',['zoom'],'',6.5,['concat',['to-string',['get','t']],'°']],'text-font':FONT_R,'text-size':10,'text-offset':[0,1.3],'text-anchor':'top','text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':'#14324F','icon-opacity':0.85},halo)});
@@ -504,7 +509,7 @@ function addOverlays(map){
   add({id:'bb-hovl',type:'symbol',source:'bb-hov',layout:{'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'top-left','text-offset':[0.9,0.7],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
-const LYG={wx:['bb-wx'],wa:['bb-wa','bb-frz'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+const LYG={wx:['bb-wx'],wa:['bb-wa','bb-frz'],ntm:['bb-ntm-f','bb-ntm-l','bb-ntm-t'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
 /* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
 const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
 function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;
@@ -524,6 +529,9 @@ function hit(map,x,y,r){ const L=HITL.filter(id=>map.getLayer(id)&&map.getLayout
   const fs=map.queryRenderedFeatures([[x-r,y-r],[x+r,y+r]],{layers:L}); let best=null, bd=r;
   fs.forEach(f=>{ const c=f.geometry&&f.geometry.coordinates; if(!c) return; const p=map.project(c); const dy=f.layer.id==='bb-note'?14:0; const d=Math.hypot(p.x-x,p.y-dy-y); if(d<bd){ bd=d;
     const oa=/^bb-oa-/.test(f.layer.id), q=f.properties; best=oa?{x:p.x,y:p.y,k:'oa',o:{kind:f.layer.id.slice(6),type:q.type||'',n:q.name||q.identifier||q.icao_code||q.name_label||'',full:q.name_label_full||q.name||'',la:c[1],lo:c[0]}}:{x:p.x,y:p.y-dy,k:q.k,i:q.i}; } }); return best; }
+// NOTAM circles under a screen point: their indexes
+function notamAt(map,x,y){ if(!map.getLayer('bb-ntm-f')||map.getLayoutProperty('bb-ntm-f','visibility')==='none') return []; let fs=[]; try{ fs=map.queryRenderedFeatures([[x-2,y-2],[x+2,y+2]],{layers:['bb-ntm-f']}); }catch(e){}
+  return [...new Set(fs.map(f=>f.properties&&f.properties.i).filter(v=>v!=null))]; }
 // SIGMET areas under a screen point: their ids (the page keeps the details)
 function sigmetAt(map,x,y){ if(!map.getLayer('bb-sig-f')||map.getLayoutProperty('bb-sig-f','visibility')==='none') return []; let fs=[]; try{ fs=map.queryRenderedFeatures([[x-2,y-2],[x+2,y+2]],{layers:['bb-sig-f']}); }catch(e){}
   return [...new Set(fs.map(f=>f.properties&&f.properties.id).filter(Boolean))]; }
@@ -653,6 +661,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,addBarbs,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,notamAt,addBarbs,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();

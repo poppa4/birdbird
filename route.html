@@ -112,6 +112,7 @@
 .srcl i{display:inline-block;width:14px;height:8px;margin-right:5px;vertical-align:middle;border-radius:1px}
 .xgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:12px;align-items:start}
 @media (max-width:900px){.xgrid{grid-template-columns:minmax(0,1fr)}}
+#ntmin{width:100%;font-family:var(--f-mono);font-size:12px}.ntml ul{margin:4px 0 0;padding-left:18px}.ntml li{margin:2px 0}.ntml .hi{color:#B3261E}.ntml .md{color:#B86E00}
 #wxin{width:100%;font-family:var(--f-mono);font-size:12.5px;text-transform:uppercase}
 .mkrow{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dotted var(--rule);padding:4px 0;font-size:13px}
 .mkrow button{border:0;background:none;cursor:pointer;color:var(--ink-2)}
@@ -414,9 +415,11 @@
 .nlin{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-end;margin:0 0 8px}
 .nlin .f{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--ink-2)}.nlin .u{font-size:11px;color:#8A97A2}
 .nlin input,.nlin select{font:inherit;font-family:var(--f-mono);font-size:13px;padding:5px 7px;border:1px solid var(--rule);border-radius:4px;width:84px;background:#fff}
-.nlin select{width:auto;font-family:inherit}.nlbtn{margin-left:auto}
+.nlin select{width:auto;font-family:inherit}
+.mfq .rw b{font-family:var(--f-mono)}.nlbtn{margin-left:auto}
+.nrbox{margin-top:14px;border-top:1px solid var(--rule);padding-top:10px}.nrt td,.nrt th{font-size:12.5px;white-space:nowrap}.nrt td.n{font-family:var(--f-mono)}.nrt tr.short td{color:#8A97A2}
 .wabox{margin-top:14px;border-top:1px solid var(--rule);padding-top:10px}.wah{font-size:14px;align-self:center;margin-right:4px}.wast{font-size:12.5px;color:var(--ink-2);align-self:center;max-width:46ch}.wast.err{color:#B3261E}
-.wat td,.wat th{font-family:var(--f-mono);font-size:12px;white-space:nowrap;text-align:center}.wat th:first-child,.wat td:first-child{text-align:left}.wat .cr{background:rgba(29,78,158,.07);font-weight:600}.wat .frz td{color:#1D63B8}.wat small{color:var(--ink-2);font-size:10.5px}.wat .ugnd{color:#A9B3BB}
+.wat td,.wat th{font-family:var(--f-mono);font-size:12px;white-space:nowrap;text-align:center}.wat th:first-child,.wat td:first-child{text-align:left}.wat .cr{background:rgba(29,78,158,.07);font-weight:600}.wat .frz td{color:#1D63B8}.wat small{color:var(--ink-2);font-size:10.5px}.wat .ugnd{color:#A9B3BB}.wat .cl1{background:rgba(110,125,138,.10)}.wat .cl2{background:rgba(110,125,138,.24)}.wat .ice{box-shadow:inset 3px 0 0 #1D63B8}.wat .icem{color:#1D63B8;font-weight:700}
 .nlt input.fc{border-color:#1D63B8;background:rgba(29,78,158,.05)}
 .nlt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
 .nlt th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5B6C7C;font-weight:600;text-align:right;padding:4px 6px;border-bottom:1.5px solid var(--ink);white-space:nowrap}
@@ -589,6 +592,7 @@
     <label class="chk"><input type="checkbox" data-ly="ap"> Airports</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="wx"> Weather (METAR) <span class="wxkey" aria-hidden="true"><i style="background:#2E7D32"></i><i style="background:#1D4E9E"></i><i style="background:#C62828"></i><i style="background:#C2189B"></i></span></label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="sig"> SIGMET and AIRMET <span class="wxkey" aria-hidden="true"><i style="background:#C62828"></i><i style="background:#C77700"></i><i style="background:#1D63B8"></i><i style="background:#7B3FA0"></i><i style="background:#4E6B2E"></i></span></label>
+    <label class="chk mlonly" hidden><input type="checkbox" data-ly="ntm"> NOTAM (pasted in the route)</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="wa"> Winds aloft (forecast) <select id="waLev" aria-label="Level for the wind barbs" style="font-size:12px;margin-left:4px"><option value="frz">Freezing level (0 °C, 100 ft)</option><option value="850">FL050 · 850 hPa</option><option value="700">FL100 · 700 hPa</option><option value="600">FL140 · 600 hPa</option><option value="500">FL180 · 500 hPa</option><option value="400">FL240 · 400 hPa</option><option value="300">FL300 · 300 hPa</option><option value="250">FL340 · 250 hPa</option><option value="200">FL390 · 200 hPa</option></select></label>
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
     <label class="chk"><input type="checkbox" data-ly="fx"> IFR points (Finland, Iceland)</label>
@@ -618,7 +622,8 @@
     
     <div class="sh-body">
     <div id="advp" class="advp" hidden><p class="note" style="margin:0 0 10px">Optional settings. They change the profile when it shows Climb and descent, and some of them (MSA, corridor, clearance) in every view.</p>
-      <div class="panel rp" style="margin-bottom:14px"><label class="f wxf">METAR / TAF <span class="opt">(optional, drawn on the profile)</span><textarea id="wxin" rows="3" spellcheck="false" placeholder="METAR ENGM 031150Z 01008KT 9999 FEW012 BKN035 05/02 Q1012&#10;TAF ENTO 031100Z 0312/0412 22010KT 9999 SCT020 BKN040"></textarea></label><p class="note" id="wxmsg" style="margin:4px 0 0"></p><p class="note" style="margin:6px 0 0">Weather is drawn when the profile shows Climb and descent. For forecasts, use the Windy button on the map.</p></div>
+      <div class="panel rp" style="margin-bottom:14px"><label class="f wxf">METAR / TAF <span class="opt">(optional, drawn on the profile)</span><textarea id="wxin" rows="3" spellcheck="false" placeholder="METAR ENGM 031150Z 01008KT 9999 FEW012 BKN035 05/02 Q1012&#10;TAF ENTO 031100Z 0312/0412 22010KT 9999 SCT020 BKN040"></textarea></label><p class="note" id="wxmsg" style="margin:4px 0 0"></p><p class="note" style="margin:6px 0 0">Weather is drawn when the profile shows Climb and descent. For forecasts, use the Windy button on the map.</p>
+        <label class="f wxf" style="margin-top:10px">NOTAM <span class="opt">(optional, drawn on the map)</span><textarea id="ntmin" rows="3" spellcheck="false" placeholder="Paste NOTAMs in ICAO format, with the Q) line, from the official briefing"></textarea></label><div class="note ntml" id="ntmmsg" style="margin:4px 0 0"></div></div>
       <div class="panel rp">
         <div class="tabs" id="tabs"><button data-t="app" class="on">Approach</button><button data-t="wx">Levels and terrain</button><button data-t="fix">My fixes</button></div>
       <div data-p="app">
@@ -680,6 +685,8 @@
       <p class="note nlnote" id="nlnote"></p>
       <div class="wabox"><div class="nlin noprint"><b class="wah">Forecast winds aloft</b><label class="f">ETD (UTC) <span class="u">hhmm, empty = now</span><input id="wa_etd" placeholder="0930" inputmode="numeric" autocomplete="off" aria-label="Departure time UTC, hhmm"></label><button class="btn pri" id="wa_go" type="button">Fill winds from the forecast</button><span class="wast" id="wa_st" role="status" aria-live="polite"></span></div>
       <div class="wrapx"><table class="tb wat" id="wat"></table></div><p class="note" id="wanote"></p></div>
+      <div class="nrbox"><div class="nlin noprint"><b class="wah">Aerodromes along the route</b><label class="f">Within <span class="u">NM</span><select id="nr_d"><option>10</option><option selected>25</option><option>50</option></select></label><label class="f">Runway at least <span class="u">m</span><input id="nr_m" inputmode="numeric" placeholder="800" autocomplete="off"></label></div>
+      <div class="wrapx"><table class="tb nrt" id="nrt"></table></div><p class="note" id="nrnote"></p></div>
     </div>
     <div id="xsMode">
     <div class="pgrid">
@@ -786,9 +793,9 @@
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=21"></script>
+<script src="rxmap.js?v=22"></script>
 <script src="aip.js?v=2"></script>
-<script src="windsaloft.js?v=1"></script>
+<script src="windsaloft.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -909,7 +916,7 @@ async function terrainProfile(M){
    request (the function's limit), 3 requests per update and 6 per minute; each answer (also "no METAR") is kept 5 min. */
 const WXS={c:{},t:0,hist:[],busy:false,lib:null,idx:null};
 const WX_TTL=5*60e3;
-function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=1'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
+function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=2'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
 function wxCat(m){ if(!m||m.nil) return null; const vis=m.vis==null?null:m.vis/1609.34, cig=m.cavok?null:m.ceil; if(vis==null&&cig==null&&!m.cavok&&!m.hasCloud) return null;
   /* European categories from SERA (EU 923/2012): VFR in a control zone needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft (SERA.5005(b)); special VFR needs ≥ 1500 m and ceiling ≥ 600 ft (SERA.5010); below that only IFR */
   const c=v=>v!=null, vm=m.vis==null?null:m.vis; if(m.cavok) return 'VFR'; if((c(cig)&&cig<600)||(c(vm)&&vm<1500)) return 'IFR'; if((c(cig)&&cig<1500)||(c(vm)&&vm<5000)) return 'SVFR'; return 'VFR'; }
@@ -967,6 +974,49 @@ function sigInfo(ids,mx,my,pos){ const sd=el('side'); const list=SIG.items.filte
   sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">${list.length>1?'SIGMET / AIRMET':esc(list[0]?list[0].type||'SIGMET':'SIGMET')}</span><h3>${list.length>1?list.length+' '+L({en:'warnings here',no:'varsler her'}):esc(list[0]?sigLabel(list[0]):'SIGMET')}</h3>`+html+
     `<div class="acts"><button class="btn" data-a="pt">${L({en:'New fix here',no:'Ny fix her'})}</button></div><p class="src">${L({en:'Norway: MET Norway, which issues them (SIGMET and AIRMET). Elsewhere: aviationweather.gov (NOAA), relaying the SIGMETs of each country\'s meteorological watch office; AIRMETs outside Norway are not openly published. Can be late or incomplete: check the official briefing before flight.',no:'Norge: MET Norway, som utsteder dem (SIGMET og AIRMET). Ellers: aviationweather.gov (NOAA), som videreformidler SIGMET-ene fra hvert lands meteorologiske varslingskontor; AIRMET utenfor Norge publiseres ikke åpent. Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging.'})}</p>`;
   sd.hidden=false; sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } if(b.dataset.a==='pt'){ sd.hidden=true; newPointBox(mapEl,mx,my,pos,null); } }; }
+/* ---------- aerodromes along the route: planning list for alternates and diversions (NAV = OurAirports) ---------- */
+let NRS={d:25,m:''}; try{ const j=JSON.parse(localStorage.getItem('bb-rx-nr')||'null'); if(j) NRS=Object.assign(NRS,j); }catch(e){}
+function nrDraw(M){ const tb=el('nrt'), nt=el('nrnote'); if(!tb||!NAV) return; const P=waPts(M); el('nr_d').value=String(NRS.d); if(document.activeElement!==el('nr_m')) el('nr_m').value=NRS.m;
+  if(P.length<2){ tb.innerHTML=''; nt.textContent=''; return; }
+  const S=[]; let acc=0; for(let i=1;i<P.length;i++){ const a=P[i-1].p, b=P[i].p, dd=gc(a,b), n=Math.max(1,Math.ceil(dd/3)); for(let k=0;k<=n;k++) S.push({la:a.la+(b.la-a.la)*k/n,lo:a.lo+(b.lo-a.lo)*k/n,x:acc+dd*k/n}); acc+=dd; }
+  let a0=90,a1=-90,o0=180,o1=-180; S.forEach(q=>{ a0=Math.min(a0,q.la); a1=Math.max(a1,q.la); o0=Math.min(o0,q.lo); o1=Math.max(o1,q.lo); }); const dl=NRS.d/60, dlo=dl/Math.max(0.2,Math.cos(((a0+a1)/2)*Math.PI/180));
+  const minM=+NRS.m||0, ends=new Set([P[0].p.n,P[P.length-1].p.n]);
+  const rows=NAV.ap.filter(a=>a[2]>a0-dl&&a[2]<a1+dl&&a[3]>o0-dlo&&a[3]<o1+dlo&&!ends.has(a[0])).map(a=>{ let best=1e9, x=0; S.forEach(q=>{ const d=gc(q,{la:a[2],lo:a[3]}); if(d<best){ best=d; x=q.x; } }); const rl=Math.max(0,...(a[6]||[]).map(r=>r[2]||0)); return {a,d:best,x,rl}; })
+    .filter(r=>r.d<=NRS.d).sort((p,q)=>p.x-q.x);
+  const shown=rows.filter(r=>!minM||r.rl*0.3048>=minM);
+  tb.innerHTML=shown.length?`<thead><tr><th>ICAO</th><th>${L({en:'Name',no:'Navn'})}</th><th>${L({en:'Along',no:'Langs'})}</th><th>${L({en:'Off route',no:'Fra ruten'})}</th><th>${L({en:'Longest runway',no:'Lengste bane'})}</th><th>${L({en:'Elevation',no:'Høyde'})}</th><th></th></tr></thead><tbody>`+shown.slice(0,60).map(r=>`<tr><td class="n"><b>${esc(r.a[0])}</b></td><td>${esc(r.a[1])}</td><td class="n">${fx(r.x)} NM</td><td class="n">${fx(r.d,1)} NM</td><td class="n">${r.rl?fx(Math.round(r.rl*0.3048/10)*10)+' m':'–'}</td><td class="n">${fx(r.a[4])} ft</td><td><button type="button" class="btn sm noprint" data-nrgo="${esc(r.a[0])}">${L({en:'Show',no:'Vis'})}</button></td></tr>`).join('')+'</tbody>':'';
+  nt.innerHTML=L({en:`${shown.length} aerodrome${shown.length===1?'':'s'} within ${NRS.d} NM of the route${minM?' with a runway of at least '+fx(minM)+' m':''}${rows.length>shown.length?' ('+(rows.length-shown.length)+' with shorter runways left out)':''}. Along = distance from the departure. A planning list for alternates and diversions: check opening hours, fuel, PPR and the runway surface in the AIP. Source: OurAirports (public domain).`,no:`${shown.length} flyplass${shown.length===1?'':'er'} innen ${NRS.d} NM fra ruten${minM?' med bane på minst '+fx(minM)+' m':''}${rows.length>shown.length?' ('+(rows.length-shown.length)+' med kortere bane utelatt)':''}. Langs = avstand fra avgang. En planleggingsliste for alternativer og avbrudd: sjekk åpningstid, drivstoff, PPR og baneflate i AIP. Kilde: OurAirports (allmenn eiendom).`}); }
+el('nlp').addEventListener('change',e=>{ if(e.target.id==='nr_d'){ NRS.d=+e.target.value; try{ localStorage.setItem('bb-rx-nr',JSON.stringify(NRS)); }catch(x){} nrDraw(compute()); } });
+el('nlp').addEventListener('input',e=>{ if(e.target.id==='nr_m'){ NRS.m=e.target.value.replace(/[^0-9]/g,''); try{ localStorage.setItem('bb-rx-nr',JSON.stringify(NRS)); }catch(x){} nrDraw(compute()); } });
+el('nlp').addEventListener('click',e=>{ const b=e.target.closest('[data-nrgo]'); if(!b) return; const i=NAV.ap.findIndex(a=>a[0]===b.dataset.nrgo); if(i<0) return; const a=NAV.ap[i];
+  if(ML) ML.flyTo({center:[a[3],a[2]],zoom:Math.max(ML.getZoom(),9)}); showInfo({k:'ap',i,o:a,x:0,y:0}); window.scrollTo({top:0,behavior:'smooth'}); });
+/* ---------- aerodrome frequencies (data/freq/<prefix>.json from OurAirports, public domain; loaded on first click per prefix) ---------- */
+const FQ={};
+const FQN={TWR:'Tower',APP:'Approach',GND:'Ground',ATIS:'ATIS',AFIS:'AFIS',CTAF:'CTAF',UNIC:'UNICOM',CLD:'Clearance',DEP:'Departure',ARR:'Arrival',INFO:'Information',RDO:'Radio',FIS:'FIS',DIR:'Director',RMP:'Apron',APRON:'Apron',PMSV:'PMSV',MISC:'Other',A_G:'Air/ground'};
+function freqFill(id){ const p=String(id||'').slice(0,2); if(!/^[A-Z]{2}$/.test(p)) return; const go=d=>{ const box=document.querySelector(`#side .mfq[data-id="${id}"]`); if(!box) return; const L0=d&&d[id];
+    box.innerHTML=L0&&L0.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Frequencies',no:'Frekvenser'})}</b>`+L0.map(f=>`<div class="rw"><b>${esc(f[2])}</b><span>${esc(FQN[f[0]]||f[0])}${f[1]&&f[1].toUpperCase()!==f[0]?' · '+esc(f[1]):''}</span></div>`).join('')+`<p class="src">${L({en:'Frequencies: OurAirports (public domain), community data. Check the AIP.',no:'Frekvenser: OurAirports (allmenn eiendom), dugnadsdata. Sjekk AIP.'})}</p>`:''; };
+  if(FQ[p]&&FQ[p].d) return go(FQ[p].d); if(!FQ[p]) FQ[p]={p:fetch('data/freq/'+p+'.json').then(r=>r.ok?r.json():{}).catch(()=>({}))}; FQ[p].p.then(d=>{ FQ[p].d=d; go(d); }); }
+/* ---------- NOTAMs on the map: pasted text (ICAO format), centre and radius from the Q) line ----------
+   Active in the flight window (ETD → ETD + flight time, ±1 h) = strong; outside it = faint. Radius 999 NM (whole FIR) is listed, not drawn. */
+const NTM={list:[],t:0};
+const NTL={ils:['ILS/LOC out','ILS/LOC ute'],adclsd:['aerodrome closed','flyplass stengt'],rwyclsd:['runway closed','bane stengt'],rwylim:['runway limited','bane begrenset'],decl:['declared distances','deklarerte distanser'],navaid:['navaid out','radiofyr ute'],gnss:['GNSS','GNSS'],proc:['procedure','prosedyre'],lights:['lights','lys'],obst:['obstacle','hinder'],airspace:['airspace','luftrom'],hours:['hours','åpningstid']};
+function ntmWin(){ const M=compute(), N=nlRows(M), t0=waEtd(), t1=new Date(+t0+((N.cum||60)*60e3)); return [new Date(+t0-3600e3),new Date(+t1+3600e3)]; }
+function ntmLvl(n){ const L=(n.impacts||[]).map(x=>x.lvl); return L.includes('hi')?'hi':L.includes('md')?'md':L.includes('lo')?'lo':''; }
+async function ntmSync(){ const txt=String((R&&R.ntm)||'').trim(), msg=el('ntmmsg'); if(!txt){ NTM.list=[]; if(ML) mlPut('bb-ntm',mlC([])); if(msg) msg.innerHTML=''; return; }
+  try{ await wxLib(); }catch(e){ return; }
+  const all=WXK.parseNotams(txt), [w0,w1]=ntmWin(), M=compute(), P=waPts(M);
+  const dRoute=(p)=>{ if(P.length<2) return null; let d=1e9; for(let i=1;i<P.length;i++){ const a=P[i-1].p, b=P[i].p, n=Math.max(1,Math.ceil(gc(a,b)/5)); for(let k=0;k<=n;k++) d=Math.min(d,gc({la:a.la+(b.la-a.la)*k/n,lo:a.lo+(b.lo-a.lo)*k/n},p)); } return d; };
+  NTM.list=all.map((n,i)=>{ const o=Object.assign({},n,{i,lvl:ntmLvl(n),ov:WXK.overlap(n,w0,w1)}); o.act=o.ov==='active'||o.ov==='sched'||o.ov==null; if(n.pos){ const d=dRoute(n.pos); o.near=d==null?null:Math.max(0,d-n.pos.r); } return o; });
+  if(ML){ const f=LY.ntm?NTM.list.filter(n=>n.pos&&n.pos.r>0&&n.pos.r<999).map(n=>{ const c=[], R0=n.pos.r/60; for(let k=0;k<=48;k++){ const a=k/48*2*Math.PI; c.push([n.pos.lo+R0*Math.sin(a)/Math.cos(n.pos.la*Math.PI/180),n.pos.la+R0*Math.cos(a)]); }
+      return mlF({type:'Polygon',coordinates:[c]},{i:n.i,id:n.id||'NOTAM',lvl:n.lvl,act:n.act?1:0}); }):[]; mlPut('bb-ntm',mlC(f)); }
+  if(!msg) return; const nr=NTM.list.filter(n=>n.near!=null&&n.near<=5), nopos=NTM.list.filter(n=>!n.pos).length, big=NTM.list.filter(n=>n.pos&&n.pos.r>=999).length;
+  const it=n=>`<li class="${n.lvl}"><b>${esc(n.id||'NOTAM')}</b> ${esc((n.loc||[]).join(' '))} · ${(n.impacts||[]).map(x=>esc(L({en:(NTL[x.k]||[x.k])[0],no:(NTL[x.k]||[x.k,x.k])[1]})+(x.h?' '+x.h:''))).join(', ')||esc(String(n.E||'').slice(0,60))}${n.act?'':' · '+L({en:'not in your flight window',no:'ikke i flytidsvinduet ditt'})}</li>`;
+  msg.innerHTML=L({en:`${all.length} NOTAM read; ${nr.length} within 5 NM of the route.`,no:`${all.length} NOTAM lest; ${nr.length} innen 5 NM fra ruten.`})+(nopos?' '+L({en:`${nopos} without a position (no Q) line) are not drawn.`,no:`${nopos} uten posisjon (ingen Q)-linje) tegnes ikke.`}):'')+(big?' '+L({en:`${big} cover the whole FIR and are not drawn.`,no:`${big} gjelder hele FIR-en og tegnes ikke.`}):'')
+    +(nr.length?`<ul>${nr.sort((a,b)=>(b.act-a.act)||(a.near-b.near)).map(it).join('')}</ul>`:'')+`<span>${L({en:'Flight window from the ETD in the navlog (empty = now) and the flight time, ±1 h. Click a circle on the map for the text.',no:'Flytidsvindu fra ETD i navloggen (tom = nå) og flytiden, ±1 t. Klikk en sirkel på kartet for teksten.'})}</span>`; }
+function ntmInfo(ix,mx,my,pos){ const sd=el('side'); const list=NTM.list.filter(n=>ix.includes(n.i)); const z=d=>d?new Date(d).toISOString().slice(0,16).replace('T',' ')+'Z':'–';
+  const html=list.map(n=>`<div class="mwx"><b style="font-size:13px;display:block;margin-top:10px;color:${n.lvl==='hi'?'#B3261E':n.lvl==='md'?'#B86E00':n.lvl==='lo'?'#7B3FA0':'#4C5B66'}">${esc(n.id||'NOTAM')} ${esc((n.loc||[]).join(' '))}</b><dl><dt>${L({en:'Valid',no:'Gyldig'})}</dt><dd>${z(n.from)} – ${n.perm?'PERM':z(n.to)}${n.est?' EST':''}</dd>${n.sched?`<dt>${L({en:'Schedule',no:'Tidsplan'})}</dt><dd>${esc(n.sched)}</dd>`:''}${n.lower||n.upper?`<dt>${L({en:'Levels',no:'Nivåer'})}</dt><dd>FL${esc(n.lower||'000')} – FL${esc(n.upper||'999')}</dd>`:''}<dt>${L({en:'Flight window',no:'Flytidsvindu'})}</dt><dd>${n.act?L({en:'affects it',no:'berører det'}):L({en:'outside it',no:'utenfor'})}</dd></dl><p style="margin:6px 0">${esc(WXK.plain(n.E||'',LAB.lang))}</p><pre>${esc(n.raw)}</pre></div>`).join('');
+  sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">NOTAM</span><h3>${list.length>1?list.length+' NOTAM':esc(list[0]?(list[0].id||'NOTAM'):'NOTAM')}</h3>`+html+`<div class="acts"><button class="btn" data-a="pt">${L({en:'New fix here',no:'Ny fix her'})}</button></div><p class="src">${L({en:'From the NOTAMs you pasted. The circle is the Q) line’s centre and radius; the text decides. Check the official briefing.',no:'Fra NOTAM-ene du limte inn. Sirkelen er senter og radius fra Q)-linjen; teksten gjelder. Sjekk den offisielle briefingen.'})}</p>`;
+  sd.hidden=false; sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } if(b.dataset.a==='pt'){ sd.hidden=true; newPointBox(mapEl,mx,my,pos,null); } }; }
 /* ---------- forecast winds aloft (/api/winds: NOAA GFS 0.25°, worldwide; windsaloft.js interpolates) ----------
    "Fill winds from the forecast": wind at the cruise altitude in the middle of each leg, at the time the aircraft is there
    (ETD + navlog times; without a TAS, the ETD), written into the navlog's per-leg wind (marked as forecast, your own
@@ -996,13 +1046,15 @@ function waDraw(M){ const tb=el('wat'), nt=el('wanote'); if(!tb) return; const R
   const cols=P.map(c=>({n:c.p.n||'',la:c.p.la,lo:c.p.lo,g:c.p.elev!=null?+c.p.elev:0,col:BBWIND.column(c.p.la,c.p.lo,time)}));
   const levs=[925,850,800,700,600,500,400,300,250,200];
   const cell=(c,h)=>{ if(!c.col) return '<td>–</td>'; const x=c.col.find(y=>y.hpa===h); if(!x) return '<td>–</td>'; const ug=x.z<c.g; const w=BBWIND.w3(BBWIND.dirOf(x.u,x.v),Math.round(Math.hypot(x.u,x.v)));
-    return `<td${ug?' class="ugnd" title="'+L({en:'Below the ground here',no:'Under bakken her'})+'"':''}>${w}<br><small>${Math.round(x.t)}°</small></td>`; };
+    const q=BBWIND.wxOf(x), cls=[ug?'ugnd':'',!ug&&q.cloud?'cl'+q.cloud:'',!ug&&q.ice?'ice':''].filter(Boolean).join(' ');
+    const tip=ug?L({en:'Below the ground here',no:'Under bakken her'}):[q.cloud?(q.cloud===2?L({en:'Cloud likely',no:'Skyer sannsynlig'}):L({en:'Cloud possible',no:'Skyer mulig'}))+' (RH '+Math.round(x.r)+' %)':'',q.ice?(q.ice===2?L({en:'Icing risk: high',no:'Isingsfare: høy'}):L({en:'Icing risk',no:'Isingsfare'})):''].filter(Boolean).join(' · ');
+    return `<td${cls?' class="'+cls+'"':''}${tip?' title="'+tip+'"':''}>${w}<br><small>${Math.round(x.t)}°${!ug&&q.ice?' <b class="icem">ICE</b>':''}</small></td>`; };
   const rows=levs.slice().reverse().map(h=>`<tr><th>${BBWIND.FL[h]} <small>${h} hPa</small></th>${cols.map(c=>cell(c,h)).join('')}</tr>`);
-  const crRow=`<tr class="cr"><th>${fx(cr)} ft <small>${L({en:'cruise',no:'marsj'})}</small></th>${cols.map(c=>{ const w=BBWIND.at(c.la,c.lo,cr,time); return w?`<td>${BBWIND.w3(w.dir,w.spd)}<br><small>${w.t}° · ISA ${w.isa>=0?'+':''}${w.isa}</small></td>`:'<td>–</td>'; }).join('')}</tr>`;
+  const crRow=`<tr class="cr"><th>${fx(cr)} ft <small>${L({en:'cruise',no:'marsj'})}</small></th>${cols.map(c=>{ const w=BBWIND.at(c.la,c.lo,cr,time); return w?`<td${w.cloud?' class="cl'+w.cloud+(w.ice?' ice':'')+'"':''}>${BBWIND.w3(w.dir,w.spd)}<br><small>${w.t}° · ISA ${w.isa>=0?'+':''}${w.isa}${w.ice?' · <b class="icem">'+L({en:'icing risk',no:'isingsfare'})+'</b>':w.cloud===2?' · '+L({en:'in cloud',no:'i sky'}):''}</small></td>`:'<td>–</td>'; }).join('')}</tr>`;
   const frz=`<tr class="frz"><th>0 °C <small>${L({en:'freezing level',no:'frysenivå'})}</small></th>${cols.map(c=>{ const f=BBWIND.freezing(c.la,c.lo,time,c.g); return `<td>${!f?'–':f.below?L({en:'at ground',no:'ved bakken'}):fx(f.ft)+' ft'}</td>`; }).join('')}</tr>`;
   tb.innerHTML=`<thead><tr><th>${L({en:'Level',no:'Nivå'})}</th>${cols.map(c=>`<th>${esc(c.n)}</th>`).join('')}</tr></thead><tbody>${crRow}${frz}${rows.join('')}</tbody>`;
   const z=d=>d?new Date(d).toISOString().slice(8,10)+' '+new Date(d).toISOString().slice(11,16)+'Z':'?';
-  nt.innerHTML=L({en:`Valid ${z(R0.valid)}, GFS run ${z(R0.run)} (NOAA, 0.25°). Wind: direction it blows from (° true) / kt; temperature °C. Levels are named by their standard flight level; heights are the model’s, so the real level varies with the pressure. Grey: below the ground. Planning practice: check the official winds and temperatures forecast before flight.`,no:`Gyldig ${z(R0.valid)}, GFS-kjøring ${z(R0.run)} (NOAA, 0,25°). Vind: retningen den blåser fra (° rettvisende) / kt; temperatur °C. Nivåene har navn etter standard flygenivå; høydene er modellens, så det virkelige nivået varierer med trykket. Grått: under bakken. Planleggingsøving: sjekk den offisielle prognosen for vind og temperatur før flyging.`}); }
+  nt.innerHTML=L({en:`Valid ${z(R0.valid)}, GFS run ${z(R0.run)} (NOAA, 0.25°). Wind: direction it blows from (° true) / kt; temperature °C. Levels are named by their standard flight level; heights are the model’s, so the real level varies with the pressure. Grey text: below the ground. Shaded: cloud likely (dark, RH ≥ 95 %) or possible (light, 85–95 %); ICE: cloud between 0 and −20 °C. Cloud and icing are a rough guide from the model’s humidity, not an icing or cloud forecast. Planning practice: check the official winds and temperatures forecast before flight.`,no:`Gyldig ${z(R0.valid)}, GFS-kjøring ${z(R0.run)} (NOAA, 0,25°). Vind: retningen den blåser fra (° rettvisende) / kt; temperatur °C. Nivåene har navn etter standard flygenivå; høydene er modellens, så det virkelige nivået varierer med trykket. Grå tekst: under bakken. Skravert: skyer sannsynlig (mørk, RF ≥ 95 %) eller mulig (lys, 85–95 %); ICE: skyer mellom 0 og −20 °C. Skyer og ising er en grov pekepinn fra modellens fuktighet, ikke en ising- eller skyprognose. Planleggingsøving: sjekk den offisielle prognosen for vind og temperatur før flyging.`}); }
 /* map barbs at the chosen level for the tiles in view (zoom ≥ 4, at most 9 tiles), at the ETD hour */
 function waMapSoon(){ clearTimeout(WA.mt); WA.mt=setTimeout(waMapSync,600); }
 async function waMapSync(){ if(!ML) return; if(!LY.wa){ mlPut('bb-wa',mlC([])); mlPut('bb-frz',mlC([])); return; } const z=ML.getZoom(); if(z<4){ mlPut('bb-wa',mlC([])); mlPut('bb-frz',mlC([])); return; }
@@ -1041,7 +1093,7 @@ function nlTable(N,print){ const H=[L({en:'Leg',no:'Etappe'}),'TC','NM','VAR',L(
   const body=N.rows.map(r=>`<tr><td>${esc(r.from)} → ${esc(r.to)}</td><td class="nx">${d3(r.tc)}°</td><td>${fx(r.d,1)}</td><td class="nx">${r.va!=null?WMM.fmt(r.va,LAB.lang==='no'):'–'}</td><td>${print?esc(nlW3(r.w)||'–'):`<input data-nw="${r.i}"${r.fc?' class="fc" title="'+L({en:'From the forecast (GFS)',no:'Fra prognosen (GFS)'})+'"':''} value="${esc(r.lw)}" placeholder="${esc(rw||'000/0')}" aria-label="${L({en:'Wind for this leg',no:'Vind for etappen'})}" autocomplete="off" spellcheck="false">`}</td><td class="nx">${r.wca!=null?(r.wca>=0?'+':'−')+Math.abs(Math.round(r.wca))+'°':'–'}</td><td class="nx">${d3(r.th)}°</td><td class="hd">${d3(r.mh)}°</td><td>${r.gs!=null?fx(r.gs):'–'}</td><td>${r.t!=null?Math.round(r.t):'–'}</td><td>${mmss(r.cum)}</td><td>${r.fu!=null?fx(r.fu,1):'–'}</td></tr>`).join('');
   const NX=[1,3,5,6], cx=k=>NX.includes(k)?' class="nx"':'';
   return `<thead><tr>${H.map((h,k)=>`<th${cx(k)}>${h}</th>`).join('')}</tr></thead><tbody>${body}</tbody><tfoot><tr><td>${L({en:'Total',no:'Totalt'})}</td><td class="nx"></td><td>${fx(N.dist,1)}</td><td class="nx"></td><td></td><td class="nx"></td><td class="nx"></td><td></td><td></td><td></td><td>${mmss(N.cum||null)}</td><td>${N.cf?fx(N.cf,1)+' '+esc(N.fu):'–'}</td></tr></tfoot>`; }
-function drawNavlog(M){ const p=el('nlp'); if(!p||p.hidden||!R) return; M=M||compute(); const N=nlRows(M), NLs=R.nl||{}; try{ waDraw(M,N); }catch(e){}
+function drawNavlog(M){ const p=el('nlp'); if(!p||p.hidden||!R) return; M=M||compute(); const N=nlRows(M), NLs=R.nl||{}; try{ waDraw(M,N); }catch(e){} try{ nrDraw(M); }catch(e){}
   const ae=document.activeElement; if(ae!==el('nl_tas')) el('nl_tas').value=R.gs||''; if(ae!==el('nl_w')) el('nl_w').value=NLs.w||''; if(ae!==el('nl_ff')) el('nl_ff').value=NLs.ff||''; if(ae!==el('wa_etd')) el('wa_etd').value=NLs.etd||''; el('nl_fu').value=NLs.fu||'L';
   const keep=ae&&ae.dataset&&ae.dataset.nw, pos=keep&&ae.selectionStart; el('nlt').innerHTML=N.rows.length?nlTable(N):'';
   if(keep){ const i=el('nlt').querySelector(`[data-nw="${keep}"]`); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(e){} } }
@@ -1162,7 +1214,7 @@ const psv=el('psv');
 function render(){
   SIMC.k=null; const M=compute(); drawTable(M); drawMap(M); simUI(M); drawProfile(M,TP); drawSum(M); drawMkList(M); drawSelbar(); wxMsg(M);
   if(T3.on&&!ML){ clearTimeout(T3.rb); T3.rb=setTimeout(()=>{ if(T3.on&&window.THREE) build3(); },350); }
-  asSoon(); if(ML&&LY.wx) wxSoon(); if(ML&&LY.sig) sigSync(); if(ML&&LY.wa) waMapSoon(); nlLabel(); drawNavlog(M); pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
+  asSoon(); if(ML&&LY.wx) wxSoon(); if(ML&&LY.sig) sigSync(); if(ML&&LY.wa) waMapSoon(); if(R&&R.ntm) ntmSync(); nlLabel(); drawNavlog(M); pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
   terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
 }
 function hm(h){ if(!Number.isFinite(h)) return ''; const m=Math.round(h*60); return Math.floor(m/60)+':'+String(m%60).padStart(2,'0'); }
@@ -1244,6 +1296,14 @@ function drawProfile(M,tp,target){
   if(cb!=null&&ct!=null&&ct>cb){ const y0=YS(cb), y1=YS(ct); let d=`M${L0} ${y0} L${L0} ${y1+6}`; const n=Math.max(6,Math.round(W/70)), w=W/n; for(let i=0;i<n;i++){ const x=L0+i*w; d+=` q${w*0.25} ${-14-(i%3)*4} ${w*0.5} ${-2} q${w*0.25} ${-10-(i%2)*5} ${w*0.5} ${2}`; } d+=` L${L0+W} ${y0} Z`; add('path',{d,fill:'#E3EAEE',stroke:'#C6D0D3',opacity:.9}); hand(L({en:'cloud',no:'skyer'})+` ${cb}–${ct}`,L0+W-6,y0-6,{'text-anchor':'end','font-size':16,fill:'#4C5B66'}); }
   // frysenivå
   if(PM==='adv'&&frz!=null&&frz<ymax&&frzShow){ add('line',{x1:0,y1:YS(frz),x2:W0,y2:YS(frz),stroke:'#1E5E9E','stroke-dasharray':'3 5'}); tx('0 °C',L0+130,YS(frz)-6,{'font-size':10.5,fill:'#1E5E9E'}); }
+  // modellskyer og isingsfare (GFS) langs ruten, når prognosen er hentet
+  if(PM!=='ter'&&WA.res&&!target){ const t=WA.res.time, tot=total; const n=Math.max(8,Math.min(60,Math.round(W/22))), dx=tot/n; let any=0, anyI=0;
+    for(let i=0;i<n;i++){ const x=(i+0.5)*dx, q=M.posAt(x); if(!q||q.la==null) continue; const col=BBWIND.column(q.la,q.lo,t); if(!col) continue;
+      for(let k=0;k<col.length;k++){ const c=col[k], wx=BBWIND.wxOf(c); if(!wx.cloud) continue; const lo=k?(col[k-1].z+c.z)/2:c.z-1500, hi=k<col.length-1?(c.z+col[k+1].z)/2:c.z+1500; if(lo>ymax) continue;
+        const xa=XS(i*dx), xb=XS((i+1)*dx), ya=YS(Math.min(hi,ymax*1.06)), yb=YS(Math.max(0,lo)); any=1;
+        add('rect',{x:xa,y:ya,width:Math.max(1,xb-xa),height:Math.max(1,yb-ya),fill:wx.cloud===2?'rgba(110,125,138,.30)':'rgba(110,125,138,.14)'});
+        if(wx.ice){ anyI=1; add('rect',{x:xa,y:ya,width:Math.max(1,xb-xa),height:Math.max(1,yb-ya),fill:wx.ice===2?'rgba(29,99,184,.30)':'rgba(29,99,184,.14)'}); } } }
+    if(any) tx(L({en:'grey: model cloud',no:'grått: modellskyer'})+(anyI?' · '+L({en:'blue: icing risk',no:'blått: isingsfare'}):'')+' (GFS)',L0+6,T0+H-6,{'text-anchor':'start','font-size':10.5,fill:'#4C5B66',stroke:'#fff','stroke-width':3,'paint-order':'stroke'}); }
   // vær fra METAR/TAF
   WX.forEach(w=>{ const xa=XS(Math.max(0,w.x-w.r)), xb=XS(Math.min(total,w.x+w.r)); if(xb-xa<8) return; const y0=YS(w.base), y1=YS(w.top);
     if(w.cb){ const cx=(xa+xb)/2, yt=YS(Math.min(w.top,ymax*0.97)); if(w.top>ymax) tx('▲ '+L({en:'tops above',no:'topper over'})+' '+altTxt(w.top),cx,T0+12,{'text-anchor':'middle','font-size':10,fill:'#B3261E','font-family':'IBM Plex Mono, monospace'}); add('path',{d:`M${xa} ${y0} Q${xa} ${yt+40} ${cx-30} ${yt+18} Q${cx-60} ${yt} ${cx} ${yt} Q${cx+60} ${yt} ${cx+30} ${yt+18} Q${xb} ${yt+40} ${xb} ${y0} Z`,fill:'#D5DDE3',stroke:'#7D8E99',opacity:.95}); hand(w.ty,cx,yt+34,{'text-anchor':'middle','font-size':16,fill:'#B3261E'}); }
@@ -1465,6 +1525,7 @@ function wxLayers(M){ const txt=String(R.wx||'').toUpperCase(); if(!txt.trim()||
     const L_=[]; main.forEach(x=>{ const m=x.match(/^(FEW|SCT|BKN|OVC|VV)(\d{3})(CB|TCU)?$/); if(m) L_.push({cov:{FEW:1,SCT:2,BKN:3,OVC:4,VV:4}[m[1]],base:+m[2]*100+elev,ty:m[3]||'',txt:x}); });
     L_.sort((a,b)=>a.base-b.base).forEach((l,k)=>{ const nx=L_[k+1]; const top= l.ty==='CB'? 30000 : l.ty==='TCU'? l.base+6000 : Math.min(nx?nx.base:1e9, l.base+(l.cov>=3?2000:1000)); out.push({st,x:c.x,r,base:l.base,top:Math.max(top,l.base+400),cov:l.cov,cb:!!l.ty,ty:l.ty,txt:l.txt}); }); });
   return out; }
+el('ntmin').addEventListener('input',()=>{ R.ntm=el('ntmin').value; ntmSync(); queueSave(); });
 el('wxin').addEventListener('input',()=>{ R.wx=el('wxin').value; const M=compute(); drawProfile(M,TP); wxMsg(M); queueSave(); });
 function wxMsg(M){ const txt=String(R.wx||'').toUpperCase(); if(!txt.trim()){ el('wxmsg').textContent=''; return; } const names=new Set(M.C.map(c=>c.p.n)); const st=[...new Set((txt.match(/\b(?:METAR|SPECI|TAF)(?:\s+(?:AMD|COR|AUTO))*\s+([A-Z]{4})\b/g)||[]).map(x=>x.split(/\s+/).pop()))]; const L_=wxLayers(M);
   const off=st.filter(x=>!names.has(x)); el('wxmsg').innerHTML=[L_.length?`${L({en:'Drawn:',no:'Tegnet:'})} ${esc([...new Set(L_.map(l=>l.st+' '+l.txt))].join(', '))}. ${L({en:'Heights in the report are above the aerodrome, so its elevation is added.',no:'Høydene i rapporten er over flyplassen, så flyplasshøyden er lagt til.'})}`:'', off.length?`<span class="ko">${L({en:'Not on the route:',no:'Ikke på ruten:'})} ${esc(off.join(', '))}</span>`:'', /TAF/.test(txt)?L({en:'For TAF only the main forecast is drawn, not BECMG, TEMPO or PROB.',no:'For TAF tegnes bare hovedprognosen, ikke BECMG, TEMPO eller PROB.'}):''].filter(Boolean).join(' '); }
@@ -1701,7 +1762,7 @@ el('zin').onclick=()=>{ if(ML) return ML.zoomIn(); V.z=Math.min(600,V.z*1.4); dr
 let pop=null; function closePop(){ if(pop){ pop.remove(); pop=null; } }
 function mapClick(e){ closePop(); const r=mapEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
   if(pickMode){ const [la,lo]=inv(mx,my); el('f_c').value=llTxt(la,lo); pickMode=false; mapEl.classList.remove('pick'); el('f_msg').textContent=L({en:'Position picked. Add a name and save.',no:'Posisjon valgt. Gi den et navn og lagre.'}); return; }
-  let best=null, bd=12; if(ML) best=mlHit(mx,my,12); else hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); if(!best){ const [la,lo]=inv(mx,my); if(ML&&LY.sig){ const sg=RXMAP.sigmetAt(ML,mx,my); if(sg.length){ sigInfo(sg,mx,my,{la,lo}); return; } } newPointBox(mapEl,mx,my,{la,lo},null); return; }
+  let best=null, bd=12; if(ML) best=mlHit(mx,my,12); else hits.forEach(h=>{ const d=Math.hypot(h.x-mx,h.y-my); if(d<bd){ bd=d; best=h; } }); if(!best){ const [la,lo]=inv(mx,my); if(ML&&LY.ntm){ const nt=RXMAP.notamAt(ML,mx,my); if(nt.length){ ntmInfo(nt,mx,my,{la,lo}); return; } } if(ML&&LY.sig){ const sg=RXMAP.sigmetAt(ML,mx,my); if(sg.length){ sigInfo(sg,mx,my,{la,lo}); return; } } newPointBox(mapEl,mx,my,{la,lo},null); return; }
   if(best.k==='note'){ noteInfo(best.o); return; }
   showInfo(best); return;
   const o=best.o; let n,t,info,pt;
@@ -1936,7 +1997,7 @@ async function sendDraw(){ let P=PACKS.find(p=>p.id===el('packs').value);
   el('sendnote').innerHTML=`${L({en:'Drawing sent to',no:'Tegningen er sendt til'})} <b>${esc(P.title||'')}</b>. <a href="prep.html?id=${encodeURIComponent(P.id)}#s-xsec">${L({en:'Open the briefing pack',no:'Åpne briefingpakken'})} →</a>`; flowDraw(); return P; }
 
 /* ---------- lagrede ruter ---------- */
-function load(r){ R=r; if(R.da||(R.pts||[]).some(p=>p.auto)){ R.da={xd:(R.da&&R.da.xd)||'',xa:(R.da&&R.da.xa)||''}; R.pts=(R.pts||[]).filter(p=>!p.auto); } if(!hLoading){ HI=[]; hT=0; } R.s=Object.assign({cr:'',cl:'',ds:'',msa:'',frz:'',cb:'',ct:'',cw:'',mg:'1000',ta:'',tz:'10'},R.s||{}); vsUI(); R.app=R.app||{}; R.mk=R.mk||[]; R.wx=R.wx||''; selI=-1; terKey=''; TP=null; el('wxin').value=R.wx; el('ghost').checked=R.ghost!==false;
+function load(r){ R=r; if(R.da||(R.pts||[]).some(p=>p.auto)){ R.da={xd:(R.da&&R.da.xd)||'',xa:(R.da&&R.da.xa)||''}; R.pts=(R.pts||[]).filter(p=>!p.auto); } if(!hLoading){ HI=[]; hT=0; } R.s=Object.assign({cr:'',cl:'',ds:'',msa:'',frz:'',cb:'',ct:'',cw:'',mg:'1000',ta:'',tz:'10'},R.s||{}); vsUI(); R.app=R.app||{}; R.mk=R.mk||[]; R.wx=R.wx||''; R.ntm=R.ntm||''; selI=-1; terKey=''; TP=null; el('ntmin').value=R.ntm||''; el('wxin').value=R.wx; el('ghost').checked=R.ghost!==false;
   ['cr','cl','ds','msa','frz','cb','ct','cw','mg','ta','tz'].forEach(k=>el('s_'+k).value=R.s[k]||(k==='mg'?'1000':k==='tz'?'10':'')); AK.forEach(k=>el('a_'+k).value=R.app[k]||''); el('rtxt').value=R.rt||''; render(); wxMsg(compute()); if(!hLoading) HI=[JSON.stringify(R)]; hBtns(); setTimeout(fit,0); drawSel(); if(MODE==='draw'){ el('d_rt').checked=!!dd().rt; drawSheet(); } }
 el('sel').onchange=()=>{ const r=ALL.find(x=>x.id===el('sel').value); if(r) load(r); };
 el('new').onclick=()=>{ const r=blank(); ALL.unshift(r); load(r); queueSave(); };
@@ -2008,7 +2069,7 @@ LAB.add({},{
  'Draw on my route: real terrain and the route points, scale set automatically':'Tegn på ruten min: ekte terreng og rutepunktene, skalaen settes automatisk'
 });
 LAB.add({},{
- 'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','SIGMET and AIRMET':'SIGMET og AIRMET','Winds aloft (forecast)':'Vind i høyden (prognose)','Freezing level (0 °C, 100 ft)':'Frysenivå (0 °C, 100 ft)','Forecast winds aloft':'Prognose for vind i høyden','ETD (UTC)':'ETD (UTC)','Fill winds from the forecast':'Fyll inn vind fra prognosen','Weather (METAR)':'Vær (METAR)',
+ 'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','SIGMET and AIRMET':'SIGMET og AIRMET','NOTAM (pasted in the route)':'NOTAM (limt inn i ruten)','Paste NOTAMs in ICAO format, with the Q) line, from the official briefing':'Lim inn NOTAM i ICAO-format, med Q)-linjen, fra den offisielle briefingen','Winds aloft (forecast)':'Vind i høyden (prognose)','Freezing level (0 °C, 100 ft)':'Frysenivå (0 °C, 100 ft)','Aerodromes along the route':'Flyplasser langs ruten','Within':'Innen','Runway at least':'Bane minst','Forecast winds aloft':'Prognose for vind i høyden','ETD (UTC)':'ETD (UTC)','Fill winds from the forecast':'Fyll inn vind fra prognosen','Weather (METAR)':'Vær (METAR)',
  'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from MET Norway (Norwegian aerodromes) and aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. METAR fra MET Norway (norske flyplasser) og aviationweather.gov, til trening: sjekk den offisielle briefingen. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
  'Navlog':'Navlogg','TAS':'TAS','Wind':'Vind','° / kt':'° / kt','Fuel flow':'Forbruk','per hour':'per time','Unit':'Enhet','Print navlog':'Skriv ut navloggen','True airspeed, knots':'Sann flyfart, knop','Wind for the whole route, direction and speed':'Vind for hele ruten, retning og styrke','Fuel flow per hour':'Forbruk per time','Fuel unit':'Drivstoffenhet',
  '⇪ ForeFlight or Garmin Pilot screenshot / PDF':'⇪ Skjermbilde / PDF fra ForeFlight eller Garmin Pilot','Export':'Eksporter','GPX':'GPX','Garmin FPL':'Garmin FPL','Copy route':'Kopier ruten'});
@@ -2036,7 +2097,7 @@ LAB.start('route');
 // kartstil og lag
 // layer defaults. VFR: everything aviation on, as on openaip.net (airspace, reporting points, airfields, navaids, obstacles);
 // IFR: low ink (airspace, navaids, IFR points; VFR-only openAIP items off). rp…rc are openAIP points; hs/hg/rc are optional, off.
-const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0,wx:1,sig:1,wa:0};
+const LY0={ap:1,nv:1,fx:1,my:1,ter:1,nt:1,mef:1,ct:1,as:1,asCtr:1,asTma:1,asRes:1,asTiz:1,asAtz:1,asTra:1,rp:1,ob:1,oa:1,on:1,hs:0,hg:0,rc:0,wx:1,sig:1,wa:0,ntm:1};
 const LYD={vfr:LY0,ifr:Object.assign({},LY0,{rp:0,ob:0,oa:0,on:0,hs:0,hg:0,rc:0,wx:0})};
 // switching VFR/IFR applies that chart's aviation defaults; personal layers (my fixes, notes, relief, contours, terrain numbers) stay as chosen
 const AVK=['ap','nv','fx','as','asCtr','asTma','asRes','asTiz','asAtz','asTra','rp','ob','oa','on','hs','hg','rc','wx','sig'];
@@ -2049,7 +2110,7 @@ function saveLY(){ try{ localStorage.setItem('bb-rx-v3',JSON.stringify({m:MM,ly:
 function asSub(){ const m=el('lyas'), on=!!LY.as&&m&&!m.hidden&&!m.classList.contains('off'); document.querySelectorAll('.asub').forEach(l=>{ l.hidden=!m||m.hidden; l.classList.toggle('dis',!on); l.querySelector('input').disabled=!on; }); }
 function lyUI(){ asSub(); lyMeta(); el('mmode').querySelectorAll('button').forEach(b=>b.classList.toggle('on',ML?b.dataset.m===BM:b.dataset.m===MM)); el('layers').querySelectorAll('[data-ly]').forEach(i=>i.checked=!!LY[i.dataset.ly]); }
 el('mmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; if(b.dataset.m!==MM) avDefaults(b.dataset.m); MM=b.dataset.m; if(ML) setBM(MM); saveLY(); lyUI(); drawMap(); });
-el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); asSub(); lyMeta(); if(i.dataset.ly==='wx') wxSync(); if(i.dataset.ly==='sig') sigSync(); if(i.dataset.ly==='wa') waMapSync(); if(/^as/.test(i.dataset.ly)) asSoon(0); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
+el('layers').addEventListener('change',e=>{ const i=e.target.closest('[data-ly]'); if(!i) return; LY[i.dataset.ly]=i.checked?1:0; saveLY(); asSub(); lyMeta(); if(i.dataset.ly==='wx') wxSync(); if(i.dataset.ly==='sig') sigSync(); if(i.dataset.ly==='wa') waMapSync(); if(i.dataset.ly==='ntm') ntmSync(); if(/^as/.test(i.dataset.ly)) asSoon(0); if(ML&&i.dataset.ly==='ct'&&LY.ct) RXMAP.addContours(ML).then(()=>{ MLK.ly=''; drawMap(); }); drawMap(); });
 
 /* presets and collapsible groups (open/closed remembered in bb-rx-lyg; layer choices stay in bb-rx-v3) */
 const PRE={clean:{ter:1,ct:0,mef:0,as:1,asCtr:1,asTma:1,asRes:1,asTiz:0,asAtz:0,asTra:0,ap:1,wx:1,sig:1,nv:0,fx:0,rp:1,ob:0,oa:1,on:0,hs:0,hg:0,rc:0},
@@ -2150,6 +2211,7 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
     const aip=window.BBAIP?BBAIP.of(o[0]):null;
     html=`<span class="id">${esc(o[0])}</span><h3>${esc(o[1])}</h3><dl><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o[2],o[3])}</dd><dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[4])} ft · ${fx(o[4]*0.3048)} m</dd></dl>`+
      (ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])?wxHtml(o[0]):'')+
+     `<div class="mfq" data-id="${esc(o[0])}"></div>`+
      (rw?`<b style="font-size:13px">${L({en:'Runways',no:'Rullebaner'})}</b>${rw}<p class="src">${L({en:'Headings are from the runway numbers (magnetic, rounded).',no:'Kursene er fra banenumrene (magnetisk, avrundet).'})}</p>`:'')+
      (near.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Navaids within 25 NM',no:'Radiofyr innen 25 NM'})}</b>`+near.map(x=>`<div class="rw"><b>${esc(x.n[0])}</b><span>${esc(x.n[2])} ${esc(x.n[3]||'')} · ${fx(x.d,0)} NM</span></div>`).join(''):'')+
      `<div class="acts"><button class="btn pri" data-a="dep">${L({en:'From here',no:'Herfra'})}</button><button class="btn pri" data-a="dst">${L({en:'To here',no:'Hit'})}</button><button class="btn" data-a="add">${L({en:'Via',no:'Via'})}</button></div>`+
@@ -2159,6 +2221,7 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
     html=`<span class="id">${esc(pt.n)}</span><h3>${h.k==='nv'?esc(o[1]):esc(pt.n)}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${ty}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(pt.la,pt.lo)}</dd>${h.k==='nv'&&o[6]!=null?`<dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[6])} ft</dd>`:''}</dl>`+
      `<div class="acts"><button class="btn pri" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button></div><p class="src">${h.k==='nv'?L({en:'Source: OurAirports (public domain).',no:'Kilde: OurAirports (allmenn eiendom).'}):h.k==='aip'?L({en:'Source: the national eAIP, ENR 4.4.',no:'Kilde: nasjonal eAIP, ENR 4.4.'}):''}</p>`; }
   sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button>`+html; sd.hidden=false;
+  if(h.k==='ap') freqFill(o[0]);
   if(h.k==='ap'&&ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])){ const c=WXS.c[o[0]]; if(!c||(!c.busy&&Date.now()-c.t>WX_TTL)) wxSync([o[0]]); }
   sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } const a=b.dataset.a; if(a==='dep'||a==='dst') setEnd(pt,a==='dep'?'dep':'dst'); else if(a==='add'){ addPoint(Object.assign({},pt,pt.t==='rwy'&&R.pts.length?{t:'wpt'}:{})); el('rtxt').value=routeStr(); if(R.pts.length>=2) sheetAuto(); } sd.hidden=true; }; }
 // profilmodus

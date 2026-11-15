@@ -170,7 +170,8 @@ function parseNotam(s){ const N={raw:s};
   const pos=[]; const fr=/(?:^|[\s(])([QABCDEFG])\)\s?/g; let x; while((x=fr.exec(s))) pos.push({k:x[1],i:x.index+x[0].length,s:x.index});
   const f={}; pos.forEach((p,k)=>{ if(f[p.k]!=null) return; const end=pos.slice(k+1).find(q=>'QABCDEFG'.indexOf(q.k)>'QABCDEFG'.indexOf(p.k)); f[p.k]=s.slice(p.i,end?end.s:s.length).trim(); });
   N.f=f; if(f.E) N.E=f.E.replace(/\)\s*$/,'').replace(/\s*(CREATED|SOURCE):.*$/s,'').trim();
-  if(f.Q){ const q=f.Q.split('/').map(z=>z.trim()); N.fir=q[0]; const qc=(q[1]||'').replace(/^Q/,''); if(qc.length>=4){ N.subj=qc.slice(0,2); N.cond=qc.slice(2,4); } N.lower=q[5]; N.upper=q[6]; }
+  if(f.Q){ const q=f.Q.split('/').map(z=>z.trim()); N.fir=q[0]; const qc=(q[1]||'').replace(/^Q/,''); if(qc.length>=4){ N.subj=qc.slice(0,2); N.cond=qc.slice(2,4); } N.lower=q[5]; N.upper=q[6];
+    const g=String(q[7]||'').match(/^(\d{2})(\d{2})([NS])(\d{3})(\d{2})([EW])(\d{3})$/); if(g){ const la=(+g[1]+g[2]/60)*(g[3]==='S'?-1:1), lo=(+g[4]+g[5]/60)*(g[6]==='W'?-1:1); N.pos={la:Math.round(la*1e4)/1e4,lo:Math.round(lo*1e4)/1e4,r:+g[7]}; } }
   if(f.A) N.loc=f.A.split(/\s+/).filter(z=>/^[A-Z]{4}$/.test(z));
   if(f.B) N.from=nTime(f.B); if(f.C){ N.perm=/PERM/.test(f.C); N.est=/EST/.test(f.C); N.to=N.perm?null:nTime(f.C); } if(f.D) N.sched=f.D;
   if(!N.E&&!f.Q){ N.E=s.replace(/^\(?[A-Z]\d{4}\/\d{2}\s*NOTAM[NRC]?\s*/,'').trim(); const a=s.match(/\b(E[A-Z]{3}|[A-Z]{4})\b/); if(a&&!N.loc) N.loc=[a[1]]; }

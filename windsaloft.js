@@ -25,14 +25,19 @@
   function column(la,lo,time){ const d=tileAt(la,lo,time); if(!d) return null;
     const fx=(lo-d.lo0)/d.d, fy=(d.la0-la)/d.d; const i0=Math.max(0,Math.min(d.nx-2,Math.floor(fx))), j0=Math.max(0,Math.min(d.ny-2,Math.floor(fy))); const ax=Math.min(1,Math.max(0,fx-i0)), ay=Math.min(1,Math.max(0,fy-j0));
     const bi=a=>{ if(!a) return null; const g=(i,j)=>a[j*d.nx+i]; return (g(i0,j0)*(1-ax)+g(i0+1,j0)*ax)*(1-ay)+(g(i0,j0+1)*(1-ax)+g(i0+1,j0+1)*ax)*ay; };
-    return d.lev.map((h,k)=>({hpa:h,u:bi(d.u[k]),v:bi(d.v[k]),t:bi(d.t[k]),z:bi(d.z[k])})).filter(x=>x.u!=null&&x.v!=null&&x.t!=null&&x.z!=null).sort((a,b)=>a.z-b.z); }
+    return d.lev.map((h,k)=>({hpa:h,u:bi(d.u[k]),v:bi(d.v[k]),t:bi(d.t[k]),z:bi(d.z[k]),r:d.r&&d.r[k]?bi(d.r[k]):null})).filter(x=>x.u!=null&&x.v!=null&&x.t!=null&&x.z!=null).sort((a,b)=>a.z-b.z); }
+  /* model cloud and icing indication for one level: cloud 2 = likely (RH ≥ 95 %), 1 = possible (85–95 %);
+     ice 2 = likely cloud between −2 and −12 °C, 1 = cloud between 0 and −20 °C. A crude guide from GFS humidity, not a forecast product. */
+  function wxOf(x){ if(!x||x.r==null) return {cloud:0,ice:0}; const cloud=x.r>=95?2:x.r>=85?1:0; let ice=0;
+    if(cloud&&x.t<=0&&x.t>=-20) ice=(cloud===2&&x.t<=-2&&x.t>=-12)?2:1; return {cloud,ice}; }
   const dirOf=(u,v)=>{ const d=(Math.atan2(-u,-v)*180/Math.PI+360)%360; return Math.round(d)||360; };
   const isaT=ft=>15-1.98*ft/1000;
   /* wind/temperature at altitude (ft AMSL) */
   function at(la,lo,ft,time){ const c=column(la,lo,time); if(!c||!c.length) return null; let a=c[0], b=c[c.length-1];
     if(ft<=a.z) b=a; else if(ft>=b.z) a=b; else for(let k=0;k<c.length-1;k++) if(c[k].z<=ft&&c[k+1].z>=ft){ a=c[k]; b=c[k+1]; break; }
     const w=b.z===a.z?0:(ft-a.z)/(b.z-a.z), L=(x,y)=>x+(y-x)*w; const u=L(a.u,b.u), v=L(a.v,b.v), t=L(a.t,b.t);
-    return {dir:dirOf(u,v),spd:Math.round(Math.hypot(u,v)),u,v,t:Math.round(t),isa:Math.round(t-isaT(ft)),clamped:ft<c[0].z||ft>c[c.length-1].z}; }
+    const r=a.r!=null&&b.r!=null?L(a.r,b.r):null, wx=wxOf({r,t});
+    return {dir:dirOf(u,v),spd:Math.round(Math.hypot(u,v)),u,v,t:Math.round(t),isa:Math.round(t-isaT(ft)),r:r==null?null:Math.round(r),cloud:wx.cloud,ice:wx.ice,clamped:ft<c[0].z||ft>c[c.length-1].z}; }
   /* lowest 0 °C level (ft AMSL) above the ground (gnd ft): {ft} or {below:true} when it is freezing at the ground level */
   function freezing(la,lo,time,gnd){ const c=column(la,lo,time); if(!c) return null; const L=c.filter(x=>x.z>=(gnd||0)-500); if(!L.length) return null;
     if(L[0].t<=0) return {ft:Math.max(0,gnd||0),below:true};
@@ -41,5 +46,5 @@
   /* standard pressure-level labels: ISA pressure altitude, rounded to the nearest flight level */
   const FL={1000:'FL001',925:'FL025',850:'FL050',800:'FL065',700:'FL100',600:'FL140',500:'FL180',400:'FL240',300:'FL300',250:'FL340',200:'FL390',150:'FL450'};
   const w3=(d,s)=>String(d).padStart(3,'0')+'/'+String(s).padStart(2,'0');
-  window.BBWIND={tilesFor,load,column,at,freezing,FL,w3,dirOf,hourIso,tileAt};
+  window.BBWIND={tilesFor,load,column,at,freezing,wxOf,FL,w3,dirOf,hourIso,tileAt};
 })();
