@@ -18,7 +18,7 @@ const UA = 'Birdbird/1.0 (+https://birdbird.eu)'; // MET Norway requires an iden
 const MAX_IDS = 8;
 const TTL = 300; // seconds: METARs are issued every 30 or 60 minutes, TAFs every 3 to 6 hours
 const TIMEOUT = 8000;
-const MET_TIMEOUT = 3500; // then the EN** stations go to aviationweather.gov instead
+const MET_TIMEOUT = 2500; // then the EN** stations that have not answered go to aviationweather.gov instead
 
 const json = (body, status, cache) => new Response(JSON.stringify(body), {
   status: status || 200,
@@ -151,20 +151,18 @@ export async function handleWx(request, env, deps) {
   const timer = setTimeout(() => ctl.abort(), TIMEOUT);
   let met = {}, metars = [], tafs = [];
   try {
-    // MET Norway first for EN**; one slow or broken answer only sends that station to aviationweather.gov
-    const mctl = new AbortController(), mt = setTimeout(() => mctl.abort(), MET_TIMEOUT);
-    // stations that answered before the deadline are kept; only the slow ones go to aviationweather.gov
-    const got = {}; let dt; const dl = new Promise(r => { dt = setTimeout(r, MET_TIMEOUT); });
-    try { await Promise.race([fromMet(fetchFn, ids, mctl.signal, deps.now ? new Date(deps.now()) : null, got), dl]); } catch (e) {}
-    clearTimeout(dt); mctl.abort(); clearTimeout(mt); met = Object.assign({}, got);
-    const rest = ids.filter(id => !met[id]);
-    if (rest.length) {
-      const q = 'ids=' + encodeURIComponent(rest.join(',')) + '&format=json';
-      [metars, tafs] = await Promise.all([
-        getJson(fetchFn, UPSTREAM + '/metar?' + q, ctl.signal),
-        getJson(fetchFn, UPSTREAM + '/taf?' + q, ctl.signal)
-      ]);
-    }
+    // aviationweather.gov for the non-Norwegian ids starts at once, in parallel with MET Norway for EN**.
+    // MET stations that answered before the deadline are kept; only the slow or empty ones go to aviationweather.gov after.
+    const awc = list => { const q = 'ids=' + encodeURIComponent(list.join(',')) + '&format=json';
+      return Promise.all([getJson(fetchFn, UPSTREAM + '/metar?' + q, ctl.signal), getJson(fetchFn, UPSTREAM + '/taf?' + q, ctl.signal)]); };
+    const other = ids.filter(id => !/^EN/.test(id)), pOther = other.length ? awc(other) : null;
+    if (pOther) pOther.catch(() => {});
+    const mctl = new AbortController(), got = {}; let dt; const dl = new Promise(r => { dt = setTimeout(r, MET_TIMEOUT); });
+    if (ids.length > other.length) { try { await Promise.race([fromMet(fetchFn, ids, mctl.signal, deps.now ? new Date(deps.now()) : null, got), dl]); } catch (e) {} }
+    clearTimeout(dt); mctl.abort(); met = Object.assign({}, got);
+    const restEN = ids.filter(id => /^EN/.test(id) && !met[id]);
+    const parts = await Promise.all([pOther, restEN.length ? awc(restEN) : null]);
+    parts.forEach(p => { if (p) { metars = metars.concat(p[0] || []); tafs = tafs.concat(p[1] || []); } });
   } catch (e) {
     clearTimeout(timer);
     if (e && e.name === 'AbortError') return json({ ok: false, error: 'timeout', message: 'The weather service did not answer in time.' }, 504, 'no-store');
