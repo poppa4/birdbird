@@ -80,7 +80,7 @@ test('clearAll removes every Birdbird key, session key and database, and nothing
   assert.deepEqual(ls.keys(), ['other-site', 'theme', 'vlab-lang'], 'language choice kept by default');
   assert.equal(ls.getItem('vlab-lang'), 'no');
   assert.deepEqual(ss.keys(), ['unrelated']);
-  assert.deepEqual([...idb.deleted].sort(), ['birdbird-workspace', 'naeroson-att', 'naeroson-docs', 'naeroson-fi']);
+  assert.deepEqual([...idb.deleted].sort(), ['bb-flows', 'birdbird-workspace', 'naeroson-att', 'naeroson-docs', 'naeroson-fi']);
   assert.equal(r.local, Object.keys(SEED).length - 3); assert.equal(r.session, 4);
   await G.BBLOCAL.clearAll({ keepLang: false });
   assert.deepEqual(ls.keys(), ['other-site', 'theme']);
