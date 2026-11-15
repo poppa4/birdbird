@@ -94,3 +94,12 @@ test('handler with MET Norway', async () => {
   const j2 = await (await handleSigmet(new Request('https://birdbird.eu/api/sigmet?fir=EN'), {}, deps2)).json();
   assert.equal(j2.metOk, false); assert.equal(j2.items[0].source, 'aviationweather.gov');
 });
+
+test('NOAA SIGMET without coordinates: polygon from the text, or a 20 NM circle for a single position', async () => {
+  const { fromIsigmet } = await import('../functions/api/sigmet.js');
+  const o = fromIsigmet([
+    { firId: 'LFMM', icaoId: 'LFPW', geom: 'AREA', coords: [], hazard: 'ICE', qualifier: 'SEV', rawSigmet: 'LFMM SIGMET I01 VALID 151700/151900 LFPW- LFMM MARSEILLE FIR/UIR SEV ICE OBS WI N4515 E00600 - N4530 E00430 - N4630 E00415 - N4630 E00615 - N4515 E00600 FL150/200 MOV ESE 20KT NC=' },
+    { firId: 'RJJJ', icaoId: 'RJTD', geom: 'POINT', hazard: 'TURB', qualifier: 'SEV', rawSigmet: 'RJJJ SIGMET C01 VALID 151539/151739 RJTD- RJJJ FUKUOKA FIR SEV TURB OBS AT 1525Z N3442E14103 FL350 MOV ENE 20KT NC=' }]);
+  assert.equal(o[0].poly.length, 5); assert.deepEqual(o[0].poly[0], [6, 45.25]);
+  assert.equal(o[1].poly.length, 17); assert.ok(Math.abs(o[1].poly[0][1] - (34.7 + 1 / 3)) < 0.01);
+});

@@ -136,6 +136,10 @@ function finish(list, now, firs) {
 }
 
 /* NOAA international SIGMETs → items (no time or FIR filter yet) */
+/* a SIGMET given as one position (e.g. "OBS AT 1525Z N3442E14103"): a 20 NM circle around it, so it can be drawn and hit-tested */
+export function ptCircle(T) { const m = String(T).match(/\b([NS])(\d{2,4}) ?([EW])(\d{3,5})\b/); if (!m) return null;
+  const la = deg(m[1], m[2], 2), lo = deg(m[3], m[4], 3), r = 20 / 60, out = [];
+  for (let i = 0; i <= 16; i++) { const a = i / 16 * 2 * Math.PI; out.push([+(lo + r * Math.sin(a) / Math.cos(la * Math.PI / 180)).toFixed(4), +(la + r * Math.cos(a)).toFixed(4)]); } return out; }
 export function fromIsigmet(list) {
   return (Array.isArray(list) ? list : []).map(s => {
     const fir = String(s.firId || s.icaoId || '').toUpperCase(); if (!/^[A-Z]{4}$/.test(fir)) return null;
@@ -143,7 +147,7 @@ export function fromIsigmet(list) {
     const G = String(s.geom || '').toUpperCase(); const hz = hazardOf(s.hazard, s.qualifier, raw);
     return { type: 'SIGMET', source: SRC_AWC, fir, firName: s.firName || null, mwo: s.icaoId || null, series: s.seriesId != null ? String(s.seriesId) : null,
       hazard: s.hazard || null, qual: s.qualifier || null, label: hz.label, cat: hz.cat, from: iso(s.validTimeFrom), to: iso(s.validTimeTo),
-      base: num(s.base), top: num(s.top), dir: s.dir != null ? String(s.dir) : null, spd: num(s.spd), raw, poly: (G === 'LINE' || G === 'POINT') ? null : poly(s) };
+      base: num(s.base), top: num(s.top), dir: s.dir != null ? String(s.dir) : null, spd: num(s.spd), raw, poly: G === 'LINE' ? null : (G !== 'POINT' && poly(s)) || tacPoly(raw) || ptCircle(raw) };
   }).filter(Boolean);
 }
 /* NOAA US domestic SIGMETs (convective and non-convective); AIRMETs there are G-AIRMETs and not included */

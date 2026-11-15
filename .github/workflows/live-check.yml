@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['tools/live-check.mjs', '.github/workflows/live-check.yml', '.github/live-check-trigger']
+    paths: ['tools/live-check.mjs', '.github/workflows/live-check.yml', 'functions/**']
 permissions:
   contents: write
 jobs:
@@ -22,4 +22,4 @@ jobs:
         run: |
           git config user.name "live-check"; git config user.email "actions@github.com"
           mkdir -p /tmp/res && cp -r out/* /tmp/res/ 2>/dev/null || true
-          git checkout --orphan live-results && git rm -rqf . && cp -r /tmp/res/* . && git add -A && git commit -qm "live check ${GITHUB_SHA::7}" && git push -f origin live-results
+          git checkout --orphan live-results && git rm -rqf . && git clean -fdxq && cp -r /tmp/res/* . && git add -A && git commit -qm "live check ${GITHUB_SHA::7}" && git push -f origin live-results

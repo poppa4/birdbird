@@ -119,8 +119,8 @@ async function metGet(fetchFn, kind, id, signal, now) {
   return metLatest(await r.text(), kind, now);
 }
 /* { ENGM:{metar,taf} } for the Norwegian ids MET Norway answered; errors and empty answers are left out. */
-export async function fromMet(fetchFn, ids, signal, now) {
-  const out = {};
+export async function fromMet(fetchFn, ids, signal, now, out) {
+  out = out || {};
   await Promise.all(ids.filter(id => /^EN/.test(id)).map(async id => {
     try {
       const [metar, taf] = await Promise.all([metGet(fetchFn, 'metar', id, signal, now), metGet(fetchFn, 'taf', id, signal, now)]);
@@ -153,8 +153,10 @@ export async function handleWx(request, env, deps) {
   try {
     // MET Norway first for EN**; one slow or broken answer only sends that station to aviationweather.gov
     const mctl = new AbortController(), mt = setTimeout(() => mctl.abort(), MET_TIMEOUT);
-    try { met = await fromMet(fetchFn, ids, mctl.signal, deps.now ? new Date(deps.now()) : null); } catch (e) { met = {}; }
-    clearTimeout(mt);
+    // stations that answered before the deadline are kept; only the slow ones go to aviationweather.gov
+    const got = {}; let dt; const dl = new Promise(r => { dt = setTimeout(r, MET_TIMEOUT); });
+    try { await Promise.race([fromMet(fetchFn, ids, mctl.signal, deps.now ? new Date(deps.now()) : null, got), dl]); } catch (e) {}
+    clearTimeout(dt); mctl.abort(); clearTimeout(mt); met = Object.assign({}, got);
     const rest = ids.filter(id => !met[id]);
     if (rest.length) {
       const q = 'ids=' + encodeURIComponent(rest.join(',')) + '&format=json';

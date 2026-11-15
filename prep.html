@@ -1281,10 +1281,12 @@ async function wxFetch(){ const ids=[...new Set(APT.map(([k])=>wxIcao(k)).filter
     if(s.metar){ setF('mt.'+k+'.metar',s.metar.raw); } if(s.taf){ setF('mt.'+k+'.taf',s.taf.raw); } if(s.metar||s.taf) got.push(id); });
   await sigFetch(ids);
   const miss=(j.missing||[]).filter(x=>ids.includes(x)), notaf=ids.filter(x=>j.stations[x]&&j.stations[x].metar&&!j.stations[x].taf);
+  const old=ids.map(x=>{ const m=j.stations[x]&&j.stations[x].metar; const h=m&&m.obsTime?(Date.now()-new Date(m.obsTime))/36e5:null; return h!=null&&h>3?x+' ('+(h<48?Math.round(h)+' h':Math.round(h/24)+' d')+')':null; }).filter(Boolean);
   b.disabled=false; await navLoad().catch(()=>{}); wxSig='';
-  wxStatus(miss.length?'warn':'ok',L({en:`Fetched ${WXK.zt(new Date(P.wx.at))} from ${esc(j.source||'aviationweather.gov')}: ${[...new Set(got)].length} of ${ids.length} aerodromes.`,no:`Hentet ${WXK.zt(new Date(P.wx.at))} fra ${esc(String(j.source||'aviationweather.gov').replace(' and ',' og '))}: ${[...new Set(got)].length} av ${ids.length} flyplasser.`})
+  wxStatus(miss.length||old.length?'warn':'ok',L({en:`Fetched ${WXK.zt(new Date(P.wx.at))} from ${esc(j.source||'aviationweather.gov')}: ${[...new Set(got)].length} of ${ids.length} aerodromes.`,no:`Hentet ${WXK.zt(new Date(P.wx.at))} fra ${esc(String(j.source||'aviationweather.gov').replace(' and ',' og '))}: ${[...new Set(got)].length} av ${ids.length} flyplasser.`})
     +(miss.length?' '+L({en:`No report for ${miss.join(', ')}: the station may not publish one, or the service has none. Enter it manually below if you have it.`,no:`Ingen melding for ${miss.join(', ')}: stasjonen publiserer kanskje ikke, eller tjenesten har ingen. Skriv den inn under hvis du har den.`}):'')
-    +(notaf.length?' '+L({en:`No TAF for ${notaf.join(', ')}.`,no:`Ingen TAF for ${notaf.join(', ')}.`}):''));
+    +(notaf.length?' '+L({en:`No TAF for ${notaf.join(', ')}.`,no:`Ingen TAF for ${notaf.join(', ')}.`}):'')
+    +(old.length?' '+L({en:`Old METAR, not current: ${old.join(', ')}. The station may report only part of the day.`,no:`Gammel METAR, ikke gjeldende: ${old.join(', ')}. Stasjonen melder kanskje bare deler av døgnet.`}):''));
   calc(); wxApply(true); queueSave(); }
 /* feed the planning minima, runway performance; values stay editable */
 function wxApply(auto){ calc(); const TW=wxTimes(); P.wx=P.wx||{}; const A=P.wx.auto=P.wx.auto||{}; let n=0; const kept=[];

@@ -88,3 +88,12 @@ test('missing station is reported', async () => {
   const j = await get('XXXX', upstream());
   assert.deepEqual(j.missing, ['XXXX']);
 });
+
+test('one slow MET Norway station does not throw away the others', async () => {
+  const up = upstream(); const base = up.fetch;
+  const fetch = (url, o) => { const u = new URL(url); if (u.host === 'api.met.no' && u.searchParams.get('icao') === 'ENKJ') return new Promise((_, rej) => o.signal.addEventListener('abort', () => rej(Object.assign(new Error('aborted'), { name: 'AbortError' })))); return base(url, o); };
+  const t0 = Date.now(); const j = await get('ENGM,ENKJ', { fetch });
+  assert.equal(j.stations.ENGM.source, 'MET Norway');
+  assert.equal(j.stations.ENKJ.source, 'aviationweather.gov');
+  assert.ok(Date.now() - t0 < 5000);
+});

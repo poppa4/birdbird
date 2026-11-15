@@ -4,7 +4,7 @@
    sends no CORS headers (the map needs them for WebGL), and cached for everyone. The first layer that answers is used:
    MTG (Meteosat Third Generation) if available, else MSG. */
 const WMS = 'https://view.eumetsat.int/geoserver/wms';
-export const LAYERS = ['mtg_fd:ir105_hrfi', 'mtg_fd:ir105', 'msg_fes:ir108'];
+export const LAYERS = ['mtg_fd:ir105_hrfi', 'msg_fes:ir108']; // names checked against EUMETView GetCapabilities (Nov 2026)
 const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
 const err = (s, m) => new Response(JSON.stringify({ ok: false, message: m }), { status: s, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 export function getMapUrl(layer, bbox, t, size) {
