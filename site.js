@@ -213,7 +213,7 @@
       i.placeholder= innerWidth<=640? t('Ask or search…') : t('Ask or search anything, e.g. ')+t('crosswind 270/15 rwy 24'); if(h) h.textContent=t('answers right here'); };
     sph(); new MutationObserver(sph).observe(HTML,{attributes:true,attributeFilter:['lang']});
     /* search.js wires the bar. It is not needed to draw the page, so it is fetched after the page's own scripts (it used to share the line with them) */
-    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=42'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
+    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=43'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     later(trainNote);

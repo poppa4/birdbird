@@ -432,7 +432,7 @@
 #nlprint-out{display:none}
 @media (max-width:640px){.nlt .nx{display:none}.nlt th,.nlt td{padding:4px 2px}.nlt th:first-child,.nlt td:first-child{padding-left:0}.nlt{font-size:11.5px}.nlt td{font-size:11px}.nlt td:first-child{white-space:normal;min-width:54px}.nlt input{width:40px;font-size:10.5px;padding:2px}.nlt th{font-size:9px;letter-spacing:0}.nlnote .nxn{display:inline}.asl ul{flex-direction:column}.asl li{display:flex;flex-wrap:wrap}.asl li em{margin-left:auto}.rx .sh-bar .sh-sim,.rx .sh-bar .sh-pack,.rx .sh-bar .sh-nl{padding:5px 8px!important;font-size:12.5px!important}.rx .sh-bar{column-gap:6px}.nlin input{width:70px}.nlbtn{margin-left:0}.nlt{font-size:12px}.nlt th,.nlt td{padding:4px 4px}.xio{justify-content:flex-start}}
 @media print{ body.printnl>*:not(#nlprint-out){display:none!important} body.printnl #nlprint-out{display:block!important;font:12px/1.4 sans-serif} #nlprint-out table{width:100%;border-collapse:collapse} #nlprint-out th,#nlprint-out td{border:1px solid #888;padding:4px 6px;text-align:right} #nlprint-out th:first-child,#nlprint-out td:first-child{text-align:left} #nlprint-out h2{font-size:16px;margin:0 0 6px} }
-.mwx{font-size:13px}.mwx .fc{display:inline-block;font:700 11px/1 var(--f-mono);color:#fff;border-radius:4px;padding:3px 6px;margin-left:6px;vertical-align:2px}.mwx pre{white-space:pre-wrap;font:12px/1.45 var(--f-mono);background:#F4F6F7;border-radius:6px;padding:6px 8px;margin:8px 0}
+.mwx{font-size:13px}.mwxraw{margin:6px 0 0;font-size:12px}.mwxraw summary{cursor:pointer;color:var(--ink-2)}.mwxraw code{display:block;font-family:var(--f-mono);font-size:12px;line-height:1.4;white-space:pre-wrap;word-break:break-word;margin:4px 0;padding:5px 7px;background:#F4F6F7;border-radius:5px}.mwx .fc{display:inline-block;font:700 11px/1 var(--f-mono);color:#fff;border-radius:4px;padding:3px 6px;margin-left:6px;vertical-align:2px}.mwx pre{white-space:pre-wrap;font:12px/1.45 var(--f-mono);background:#F4F6F7;border-radius:6px;padding:6px 8px;margin:8px 0}
 .rx .mlwarn{top:auto;bottom:calc(var(--shh,0px) + 14px);transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100% - 24px));box-sizing:border-box;padding:6px 8px 6px 10px;font-size:12.5px;gap:4px 8px;line-height:1.4;box-shadow:0 4px 14px rgba(11,37,69,.14);border-radius:8px}
 .rx .mlwarn button{font:inherit;font-size:12px;border:0;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0 2px}.rx .mlwarn .x{text-decoration:none;font-size:16px;line-height:1;color:var(--ink-2)}
 .rx .mlwarn code{flex-basis:100%;font-size:11px;color:var(--ink-2);word-break:break-word}.rx .mlwarn code[hidden]{display:none}
@@ -532,7 +532,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=69"></script>
+<script src="site.js?v=70"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -938,7 +938,7 @@ async function wxFetch(ids){ const now=Date.now(); WXS.hist=WXS.hist.filter(t=>n
   ids.forEach(id=>{ WXS.c[id]=Object.assign(WXS.c[id]||{},{busy:1}); });
   try{ const r=await fetch('/api/wx?ids='+ids.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw new Error((j&&j.error)||'wx');
     ids.forEach(id=>{ const st=j.stations&&j.stations[id], mt=st&&st.metar; let m=null; try{ m=mt&&mt.raw?WXK.parseMetar(mt.raw,new Date()):null; }catch(e){}
-      WXS.c[id]={t:Date.now(),raw:mt?mt.raw:'',obs:mt?mt.obsTime:null,m,fc:wxCat(m),name:st&&st.name,src:st&&st.source}; }); return true; }
+      WXS.c[id]={t:Date.now(),raw:mt?mt.raw:'',obs:mt?mt.obsTime:null,m,fc:wxCat(m),name:st&&st.name,src:st&&st.source,taf:st&&st.taf&&st.taf.raw||''}; }); return true; }
   catch(e){ ids.forEach(id=>{ WXS.c[id]={t:Date.now(),err:1}; }); return false; } }
 async function wxSync(only){ if(!ML) return; if(!LY.wx){ mlPut('bb-wx',mlC([])); return; } if(WXS.busy){ if(only) WXS.pend=(WXS.pend||[]).concat(only); return; } if(T3.play) return;
   try{ await wxLib(); }catch(e){ return; }
@@ -947,7 +947,7 @@ async function wxSync(only){ if(!ML) return; if(!LY.wx){ mlPut('bb-wx',mlC([]));
 function wxDraw(){ if(!ML||!NAV) return; if(!WXS.idx){ WXS.idx={}; NAV.ap.forEach((a,i)=>WXS.idx[a[0]]=i); }
   const f=LY.wx?Object.keys(WXS.c).filter(id=>WXS.c[id].fc&&WXS.idx[id]!=null).map(id=>{ const a=NAV.ap[WXS.idx[id]]; return mlF(mlP(a[2],a[3]),{k:'ap',i:WXS.idx[id],fc:WXS.c[id].fc,id}); }):[];
   mlPut('bb-wx',mlC(f)); const sd=el('side'), b=sd&&!sd.hidden&&sd.querySelector('.mwx[data-id]'); if(b) b.outerHTML=wxHtml(b.dataset.id); }
-function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="${esc(id)}">${x}</div>`;
+function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="${esc(id)}">${x}${c&&!c.busy&&(c.raw||c.taf)?`<details class="mwxraw"${c.raw?'':' open'}><summary>${L({en:'METAR and TAF as written',no:'METAR og TAF slik de er skrevet'})}</summary>${c.raw?`<code>${esc(c.raw)}</code>`:''}${c.taf?`<code>${esc(c.taf)}</code>`:`<p class="src">${L({en:'No TAF from this airport.',no:'Ingen TAF fra denne flyplassen.'})}</p>`}<a class="src" href="weather.html?ids=${esc(id)}" target="_blank" rel="noopener">${L({en:'Decode on the Weather page',no:'Dekod på vær-siden'})} ↗</a></details>`:''}</div>`;
   if(!c||c.busy) return box(`<p class="src">${L({en:'Loading the METAR…',no:'Henter METAR…'})}</p>`);
   if(c.err) return box(`<p class="src">${L({en:'The weather service did not answer. Try again in a minute.',no:'Værtjenesten svarte ikke. Prøv igjen om et minutt.'})}</p>`);
   if(!c.raw) return box(`<p class="src">${L({en:'No METAR from this airport.',no:'Ingen METAR fra denne flyplassen.'})}</p>`);
@@ -2318,8 +2318,10 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
   if(h.k==='ap'){ const rw=(o[6]||[]).map(r=>{ const h1=/^\d+/.test(r[0])?String(parseInt(r[0],10)*10).padStart(3,'0'):''; const h2=/^\d+/.test(r[1])?String(parseInt(r[1],10)*10).padStart(3,'0'):''; return `<div class="rw"><b>${esc(r[0])}/${esc(r[1])}</b><span>${r[2]?fx(r[2]*0.3048)+' m · '+fx(r[2])+' ft':''}${h1?' · ≈'+h1+'°/'+h2+'°':''}</span></div>`; }).join('');
     const near=NAV.nv.map(n=>({n,d:nm(pt,{la:n[4],lo:n[5]})})).filter(x=>x.d<25).sort((a,b)=>a.d-b.d).slice(0,5);
     const aip=window.BBAIP?BBAIP.of(o[0]):null;
+    // METAR and TAF in the panel always, whether the weather layer is on or not
+    if(/^[A-Z]{4}$/.test(o[0])){ const id=o[0], c=WXS.c[id]; if(!c||(!c.busy&&(c.err||Date.now()-c.t>WX_TTL))) setTimeout(()=>wxLib().catch(()=>{}).then(()=>wxFetch([id])).then(ok=>{ if(!ok&&(!WXS.c[id]||WXS.c[id].busy)) WXS.c[id]={t:Date.now(),err:1}; const b=el('side').querySelector('.mwx[data-id]'); if(b&&b.dataset.id===id) b.outerHTML=wxHtml(id); if(LY.wx) wxDraw(); }),0); }
     html=`<span class="id">${esc(o[0])}</span><h3>${esc(o[1])}</h3><dl><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o[2],o[3])}</dd><dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[4])} ft · ${fx(o[4]*0.3048)} m</dd></dl>`+
-     (ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])?wxHtml(o[0]):'')+
+     (/^[A-Z]{4}$/.test(o[0])?wxHtml(o[0]):'')+
      `<div class="mfq" data-id="${esc(o[0])}"></div>`+
      (rw?`<b style="font-size:13px">${L({en:'Runways',no:'Rullebaner'})}</b>${rw}<p class="src">${L({en:'Headings are from the runway numbers (magnetic, rounded).',no:'Kursene er fra banenumrene (magnetisk, avrundet).'})}</p>`:'')+
      (near.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Navaids within 25 NM',no:'Radiofyr innen 25 NM'})}</b>`+near.map(x=>`<div class="rw"><b>${esc(x.n[0])}</b><span>${esc(x.n[2])} ${esc(x.n[3]||'')} · ${fx(x.d,0)} NM</span></div>`).join(''):'')+

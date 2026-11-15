@@ -245,7 +245,7 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .it{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;text-decoration:none;color:var(--ink);border-top:1px solid var(--rule-2);cursor:pointer}
 .nsearch .it:first-child{border-top:0}.nsearch .it.on,.nsearch .it:hover{background:var(--accent-wash)}
 .nsearch .it b{font-weight:600}.nsearch .it small{color:var(--ink-2);font-size:13px}
-.nsearch .calc{background:var(--wash)}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
+.nsearch .calc{background:var(--wash)}.nsearch .wx code{display:block;font-family:var(--f-mono);font-size:12.5px;line-height:1.4;white-space:pre-wrap;margin:3px 0 0;color:var(--ink)}.nsearch .wx .ag{color:var(--ink-2);font-weight:400}.nsearch .calc .v{font-family:var(--f-mono);font-size:14.5px}
 .nsearch .ai{padding:12px 14px;font-size:14.5px;line-height:1.5;color:var(--ink);border-top:1px solid var(--rule-2)}
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
 .nsearch .sm{font-size:12px;color:var(--ink-3)}`;
@@ -266,8 +266,24 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
   ph(); setInterval(()=>{ if(!inp.value&&document.activeElement!==inp){ exi++; ph(); } },4000);
   new MutationObserver(ph).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
   let sel=0, items=[], aiCtl=null;
+  /* live METAR and TAF: an ICAO code (or 'metar engm', 'taf engm enbr') answers right here, from /api/wx */
+  const WXQ=q=>{ const m=q.trim().toUpperCase().match(/^(?:(METAR|TAF)\s+)?([A-Z]{4}(?:[\s,]+[A-Z]{4}){0,3})$/); if(!m) return null; const ids=m[2].split(/[\s,]+/); return {ids,kind:m[1]||'',forced:!!m[1]}; };
+  const WXC={}; let wxT=null;
+  function wxRow(w){ const quiet=!w.forced&&w.ids.length===1; const parts=w.ids.map(id=>{ const c=WXC[id]; if(quiet&&(!c||c.busy||c.err)) return ''; if(!c||c.busy) return `<b>${id}</b> <span class="ag">${L({en:'fetching…',no:'henter …'})}</span>`; if(c.err) return `<b>${id}</b> <span class="ag">${L({en:'the weather service did not answer',no:'værtjenesten svarte ikke'})}</span>`;
+      if(!c.m&&!c.t) return w.forced||w.ids.length>1?`<b>${id}</b> <span class="ag">${L({en:'no METAR or TAF',no:'ingen METAR eller TAF'})}</span>`:'';
+      const age=c.mt?Math.round((Date.now()-new Date(c.mt))/60e3):null, ag=age==null?'':age<120?age+' min':Math.round(age/60)+' h';
+      return `<b>${id}</b>${c.n?' <span class="ag">'+esc(c.n)+'</span>':''}${w.kind!=='TAF'&&c.m?`<code>${esc(c.m)}${ag?` <span class="ag">(${ag} ${L({en:'ago',no:'siden'})})</span>`:''}</code>`:''}${w.kind!=='METAR'&&c.t?`<code>${esc(c.t)}</code>`:''}`; }).filter(Boolean);
+    return parts.length?`<div class="it calc wx" data-i="0"><span>${parts.join('<br>')}</span><small>${L({en:'Decode',no:'Dekod'})} →</small></div>`:''; }
+  async function wxGet(ids){ const need=ids.filter(id=>!WXC[id]||(!WXC[id].busy&&Date.now()-WXC[id].at>120e3)); if(!need.length) return; need.forEach(id=>WXC[id]={busy:1,at:Date.now()});
+    try{ const r=await fetch('/api/wx?ids='+need.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw 0;
+      need.forEach(id=>{ const st=j.stations&&j.stations[id]||{}; WXC[id]={at:Date.now(),m:st.metar&&st.metar.raw||'',mt:st.metar&&st.metar.obsTime,t:st.taf&&st.taf.raw||'',n:st.name||''}; }); }
+    catch(e){ need.forEach(id=>WXC[id]={at:Date.now(),err:1}); }
+    if(!res.hidden) draw(); }
   function draw(){ const q=inp.value.trim(); if(!q){ res.hidden=true; return; }
-    const c=calc(q), hits=score(q).filter(x=>!c||x.s>=3); items=[]; let h='';
+    const w=/^https?:/.test(location.protocol)?WXQ(q):null, wr=w?wxRow(w):'';
+    if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); }
+    const c=wr?null:calc(q), hits=score(q).filter(x=>!c&&!wr||x.s>=3); items=[]; let h='';
+    if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;

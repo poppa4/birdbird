@@ -36,14 +36,15 @@
 .glossary{columns:3 230px;column-gap:28px;font-size:14px}
 .glossary div{break-inside:avoid;padding:4px 0;border-bottom:1px solid var(--rule-2)}
 .glossary b{font-family:var(--f-mono);font-weight:500;color:var(--magenta);display:inline-block;min-width:52px}
-.live{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:14px}
+.liveout{display:grid;gap:6px;margin:10px 0 0}.liveout .lo{display:block;text-align:left;width:100%;border:1px solid var(--rule);border-radius:6px;background:#fff;padding:7px 10px;cursor:pointer;font:inherit}.liveout .lo.on{border-color:var(--ink)}.liveout .lo span{display:block;font-size:12px;color:var(--ink-2);font-weight:600}.liveout .lo code{font-family:var(--f-mono);font-size:13.5px;white-space:pre-wrap;word-break:break-word}
+.livecard .live input{font-size:18px;width:96px;padding:8px 10px}.live{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:14px}
 .live input{font-family:var(--f-mono);font-size:15px;width:76px;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;text-transform:uppercase;background:#fff}
 .livest{font-size:13px;color:var(--ink-2);flex:1 1 220px;min-width:0}.livest.err{color:var(--warning)}
 @media (pointer:coarse){.ex button{min-height:44px;padding-inline:12px}.ctl input[type=range]{min-height:44px}}
 </style>
 </head>
 <body data-title="METAR and TAF">
-<script src="site.js?v=69"></script>
+<script src="site.js?v=70"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -53,16 +54,23 @@
     </div>
     <div class="hright"><div class="status ok" id="stat">Decoded</div></div>
   </header>
-  <nav class="snav" aria-label="Sections"><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
+  <nav class="snav" aria-label="Sections"><a href="#live">METAR/TAF now</a><a href="#decode">Decode</a><a href="#xwind">Crosswind</a><a href="#codes">Codes</a><a href="#quiz">Practise</a></nav>
+
+  <section class="card livecard" id="live">
+    <h2>METAR and TAF now</h2>
+      <div class="live"><label for="liveId">ICAO code</label><input id="liveId" maxlength="4" inputmode="text" autocapitalize="characters" enterkeyhint="go" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">METAR</button><button class="btn sm" type="button" id="liveT">TAF</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
+    <div class="liveout" id="liveOut"></div>
+    <p class="note">You can also type the code in the search bar at the top of every page. The report is decoded below.</p>
+  </section>
 
   <section class="card" id="decode">
     <h2>Decode a report</h2>
     <p class="lead">Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.</p>
     <div class="inbox">
-      <div class="live"><label for="liveId">Latest report for</label><input id="liveId" maxlength="4" placeholder="ENGM" autocomplete="off" spellcheck="false" aria-label="ICAO code"><button class="btn sm" type="button" id="liveM">METAR</button><button class="btn sm" type="button" id="liveT">TAF</button><span id="liveSt" class="livest" role="status" aria-live="polite"></span></div>
+
       <textarea id="raw" spellcheck="false" aria-label="METAR or TAF"></textarea>
       <div class="ex" id="ex"></div>
-      <p class="note">The report shown first and the buttons above are made-up practice reports. “Latest report for” fetches the real one.</p>
+      <p class="note">The report shown first and the buttons above are made-up practice reports. “METAR and TAF now” at the top fetches the real one.</p>
     </div>
     <div class="sum" id="sum"></div>
     <div class="split">
@@ -103,11 +111,11 @@
 const {T,L,nf,el,slider,seg,fit,quiz,shuffle}=LAB;
 const NOd={
  'Birdbird · Flight planning':'Birdbird · Flyplanlegging','METAR and TAF':'METAR og TAF','Paste a weather report and read it line by line in plain language. See the ceiling, the crosswind on your runway and whether VFR is allowed in the control zone. Then practise on reports made for you.':'Lim inn en værmelding og les den linje for linje på vanlig språk. Se skydekket, sidevinden på rullebanen din og om VFR er tillatt i kontrollsonen. Øv deretter på meldinger som lages for deg.',
- 'Decode':'Dekod','Crosswind':'Sidevind','Codes':'Koder','Practise':'Øv','Decode a report':'Dekod en melding','Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.':'Lim inn en METAR, SPECI eller TAF. Formatet følger ICAO Annex 3, som brukes i hele Europa.',
+ 'Decode':'Dekod','METAR/TAF now':'METAR/TAF nå','METAR and TAF now':'METAR og TAF nå','ICAO code':'ICAO-kode','You can also type the code in the search bar at the top of every page. The report is decoded below.':'Du kan også skrive koden i søkefeltet øverst på alle sider. Meldingen dekodes under.','Crosswind':'Sidevind','Codes':'Koder','Practise':'Øv','Decode a report':'Dekod en melding','Paste a METAR, SPECI or TAF. The format follows ICAO Annex 3, used across Europe.':'Lim inn en METAR, SPECI eller TAF. Formatet følger ICAO Annex 3, som brukes i hele Europa.',
  'VFR at the aerodrome':'VFR på flyplassen','Based on SERA.5005 and SERA.5010 for aeroplanes. Your aerodrome, airspace and operator may have stricter rules.':'Basert på SERA.5005 og SERA.5010 for fly. Flyplassen, luftrommet og operatøren din kan ha strengere regler.',
  'Runway':'Rullebane','Crosswind and headwind':'Sidevind og motvind','Wind in a METAR is true, runway numbers are magnetic. In southern Norway the difference is only a few degrees, so most pilots use the numbers directly.':'Vinden i en METAR er rettvisende, rullebanenumrene er magnetiske. På Sørlandet og Østlandet er forskjellen bare noen få grader, så de fleste piloter bruker tallene direkte.',
  'The codes you meet most':'Kodene du møter oftest','Ten questions on reports generated for you. New reports every round.':'Ti spørsmål på meldinger som lages for deg. Nye meldinger hver runde.',
- 'The report shown first and the buttons above are made-up practice reports. “Latest report for” fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. «Siste melding for» henter den ekte.',
+ 'The report shown first and the buttons above are made-up practice reports. “METAR and TAF now” at the top fetches the real one.':'Meldingen som vises først, og knappene over, er oppdiktede øvingsmeldinger. «METAR og TAF nå» øverst henter den ekte.',
  'Training tool. The reports used as examples and in the practice are made up. For flight planning, use the official briefing service.':'Opplæringsverktøy. Meldingene i eksemplene og øvingen er oppdiktet. Bruk den offisielle briefingtjenesten til flyplanlegging.',
  'Decoded':'Dekodet','Check the report':'Sjekk meldingen','Latest report for':'Siste melding for'
 };
@@ -239,6 +247,7 @@ function run(){
 }
 el('raw').addEventListener('input',run);
 /* live: latest METAR or TAF through /api/wx (only on birdbird.eu) */
+const wesc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=el('liveSt'); const say=(t,e)=>{ st.textContent=t; st.className='livest'+(e?' err':''); };
   if(!/^[A-Z]{4}$/.test(id)){ say(LL('Type a four-letter ICAO code, e.g. ENGM.','Skriv en ICAO-kode med fire bokstaver, f.eks. ENGM.'),1); el('liveId').focus(); return; }
   say(LL('Fetching…','Henter …')); let r,j;
@@ -246,10 +255,17 @@ async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=
   catch(e){ say(LL('Live reports aren’t available on this copy of the page (they need birdbird.eu). Paste a report below instead.','Levende meldinger er ikke tilgjengelig i denne kopien av siden (de krever birdbird.eu). Lim inn en melding under i stedet.'),1); return; }
   if(!r.ok||!j.ok){ say((j&&j.message)||LL('Couldn’t reach the weather service. Try again in a minute.','Fikk ikke kontakt med værtjenesten. Prøv igjen om et minutt.'),1); return; }
   const s=j.stations[id], x=s&&(kind==='T'?s.taf:s.metar);
+  { const ago=t=>{ if(!t) return ''; const a=Math.round((Date.now()-new Date(t))/60e3); return ' · '+(a<120?a+' min':Math.round(a/60)+' h')+' '+LL('old','gammel'); };
+    el('liveOut').innerHTML=s&&(s.metar||s.taf)?[['M','METAR',s.metar],['T','TAF',s.taf]].filter(r=>r[2]).map(r=>`<button type="button" class="lo${(kind==='T')===(r[0]==='T')?' on':''}" data-k="${r[0]}"><span>${r[1]}${r[0]==='M'?ago(r[2].obsTime):''}</span><code>${wesc(r[2].raw)}</code></button>`).join(''):''; }
   if(!x){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
-  el('raw').value=x.raw; run(); const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
+  el('raw').value=x.raw; run(); try{ localStorage.setItem('bb.wxid',id); }catch(e){} const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
   const src=s.source||'aviationweather.gov';
   say(LL(`From ${src}${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra ${src}${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
+// ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
+{ const q=new URLSearchParams(location.search), id=(q.get('ids')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb.wxid')||''; }catch(e){}
+  if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)) el('liveId').value=last; }
+el('liveId').addEventListener('input',e=>{ const v=e.target.value.toUpperCase().replace(/[^A-Z]/g,''); if(v!==e.target.value) e.target.value=v; });
+el('liveOut').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b) live(b.dataset.k); });
 el('liveM').onclick=()=>live('M'); el('liveT').onclick=()=>live('T'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
 
 /* ---------- sidevind ---------- */
