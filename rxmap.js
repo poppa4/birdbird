@@ -227,6 +227,11 @@ function buildStyle(base,o){
   // coastline: thin outline of the water polygons, under the labels
   const ci=out.findIndex(l=>l.metadata['bb:g']==='water')+1;
   if(vid) out.splice(ci>0?ci:out.length,0,{id:'bb-coast',type:'line',source:vid,'source-layer':'water',metadata:{'bb:g':'coast'},paint:{'line-color':P.coast,'line-width':lin(3,0.5,12,1.1)}});
+  // airport diagram: taxiway, runway, gate and apron names (OSM ref) from the base map's aeroway layer when zoomed in
+  if(vid){ const ai=out.reduce((k,l,i)=>l.metadata&&l.metadata['bb:g']==='aero'?i:k,-1)+1;
+    out.splice(ai>0?ai:out.length,0,
+      {id:'bb-aerol',type:'symbol',source:vid,'source-layer':'aeroway',minzoom:13.3,metadata:{'bb:g':'aero'},filter:['all',['==',['geometry-type'],'LineString'],['has','ref']],layout:{'symbol-placement':'line','text-field':['get','ref'],'text-font':FONT_B,'text-size':lin(13,10,17,14),'symbol-spacing':160,'text-keep-upright':true},paint:{'text-color':'#3E3300','text-halo-color':'#FFE58A','text-halo-width':2.2}},
+      {id:'bb-aerop',type:'symbol',source:vid,'source-layer':'aeroway',minzoom:14,metadata:{'bb:g':'aero'},filter:['all',['==',['geometry-type'],'Polygon'],['has','ref']],layout:{'text-field':['get','ref'],'text-font':FONT_R,'text-size':lin(14,10,17,13)},paint:{'text-color':'#4C5B66','text-halo-color':'#fff','text-halo-width':1.6}}); }
   // first paint: the VFR chart starts on its lowland green (not grey) before 'load' applies the basemap; setBasemap
   // gets the plain-chart colour back as the original (map.__bb.ch, see create)
   const bgL=out.find(l=>l.metadata['bb:g']==='bg'); if(bgL&&(!o||!o.bm||o.bm==='vfr')) bgL.paint=Object.assign({},bgL.paint,{'background-color':VFR.land});
@@ -447,7 +452,7 @@ const FC={type:'FeatureCollection',features:[]};
 const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
 /* SIGMET/AIRMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown, cloud/visibility green; AIRMETs lighter */
 const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
-const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-ntm','bb-wa','bb-frz','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-ntm','bb-wa','bb-frz','bb-trk','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 /* wind barbs, 0–150 kt in 5 kt steps, made the first time the winds layer is shown (not at every map load):
    staff points up (north) from the station in the middle, feathers on the clockwise side; the layer rotates each barb
    to the direction the wind blows from. 50 kt = pennant, 10 kt = long barb, 5 kt = short barb. */
@@ -483,6 +488,9 @@ function addOverlays(map){
     'text-field':['step',['zoom'],'',6.5,['concat',['to-string',['get','t']],'°']],'text-font':FONT_R,'text-size':10,'text-offset':[0,1.3],'text-anchor':'top','text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':'#14324F','icon-opacity':0.85},halo)});
   // forecast freezing level (GFS): hundreds of feet AMSL at each grid point, '0' where it is freezing at the ground
   add({id:'bb-frz',type:'symbol',source:'bb-frz',layout:{visibility:'none','text-field':['get','f'],'text-font':FONT_B,'text-size':lin(4,10,9,13),'text-allow-overlap':false,'text-padding':2},paint:Object.assign({'text-color':['case',['<',['get','v'],20],'#1D63B8',['<',['get','v'],60],'#2E6FB0','#5A7C99']},halo)});
+  // flown track imported from a GPX file (debrief), under the planned route
+  add({id:'bb-trk-case',type:'line',source:'bb-trk',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.85)','line-width':lin(3,4.5,12,6.5)}});
+  add({id:'bb-trk',type:'line',source:'bb-trk',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#D35400','line-width':lin(3,2.2,12,3.4)}});
   // the route, under the aviation symbols (dashed for missed approach / alternate legs)
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});
   add({id:'bb-leg',type:'line',source:'bb-leg',filter:['!=',['get','d'],1],layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':P.accent,'line-width':lin(3,3.2,12,4.6)}});
@@ -558,6 +566,8 @@ const AS_TYPE={}; Object.keys(ASG).forEach(k=>ASG[k].forEach(t=>AS_TYPE[t]=k));
 const AS_CLS=['A','B','C','D','E','F','G'];
 function asCat(t,c){ return ['restricted','danger','prohibited'].includes(t)?'r':['tiz','tia','rmz','tmz','atz','matz','htz'].includes(t)?'m':ASG.asTra.includes(t)?'a':'b'; }
 function ringsIn(rings,lo,la){ let ins=false; for(const r of rings){ for(let i=0,j=r.length-1;i<r.length;j=i++){ const xi=r[i][0], yi=r[i][1], xj=r[j][0], yj=r[j][1]; if(((yi>la)!==(yj>la))&&(lo<(xj-xi)*(la-yi)/(yj-yi)+xi)) ins=!ins; } } return ins; }
+// a VHF frequency in any openAIP property whose name mentions 'freq' (the vector tiles do not always carry one)
+function asFreqProp(q){ for(const k in q){ if(!/freq/i.test(k)) continue; const m=String(q[k]).match(/\b(1[1-3]\d\.\d{1,3})\b/); if(m) return (+m[1]).toFixed(3); } return null; }
 function asRoute(map,o){ const out={list:[],ok:false}; if(!map||map.__bb.oaip!=='ok'||!map.getSource('bb-oaip')) return out;
   const LY=map.__bb.ly||{}; if(!LY.as) { out.ok=true; return out; }
   let fs=[]; try{ fs=map.querySourceFeatures('bb-oaip',{sourceLayer:'airspaces'}); }catch(e){ return out; }
@@ -568,7 +578,7 @@ function asRoute(map,o){ const out={list:[],ok:false}; if(!map||map.__bb.oaip!==
     if(t==='other'&&!/^[abcd]$/i.test(String(q.icao_class||''))&&!(q.icao_class>=0&&q.icao_class<=3)) return;
     const g=f.geometry; if(!g) return; const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[]; if(!polys.length) return;
     const lo=limOf(q,'lower_limit'), up=limOf(q,'upper_limit'); const key=[q.name||'',t,lo&&lo.txt,up&&up.txt].join('|');
-    let e=G.get(key); if(!e){ const c=q.icao_class; e={key,name:String(q.name||t.toUpperCase()),type:t,k,cat:asCat(t),cls:typeof c==='number'?(AS_CLS[c]||''):(/^[a-g]$/i.test(String(c||''))?String(c).toUpperCase():''),lo,up,polys:[]}; G.set(key,e); }
+    let e=G.get(key); if(!e){ const c=q.icao_class; e={key,name:String(q.name||t.toUpperCase()),type:t,k,cat:asCat(t),cls:typeof c==='number'?(AS_CLS[c]||''):(/^[a-g]$/i.test(String(c||''))?String(c).toUpperCase():''),lo,up,freq:asFreqProp(q),polys:[]}; G.set(key,e); }
     polys.forEach(pl=>{ let x0=180,x1=-180,y0=90,y1=-90; pl[0].forEach(c=>{ if(c[0]<x0) x0=c[0]; if(c[0]>x1) x1=c[0]; if(c[1]<y0) y0=c[1]; if(c[1]>y1) y1=c[1]; }); if(x1<b0||x0>b1||y1<a0||y0>a1) return; e.polys.push({r:pl,x0,x1,y0,y1}); }); });
   G.forEach(e=>{ if(!e.polys.length) return; const inside=(lo,la)=>e.polys.some(p=>lo>=p.x0&&lo<=p.x1&&la>=p.y0&&la<=p.y1&&ringsIn(p.r,lo,la));
     const edge=(xa,xb,wasIn)=>{ for(let k=0;k<7;k++){ const xm=(xa+xb)/2, q=o.posAt(xm); if(inside(q.lo,q.la)===wasIn) xa=xm; else xb=xm; } return (xa+xb)/2; };
@@ -576,7 +586,7 @@ function asRoute(map,o){ const out={list:[],ok:false}; if(!map||map.__bb.oaip!==
     for(let i=0;i<=n;i++){ const x=Math.min(tot,i*step), v=inside(P[i*2],P[i*2+1]);
       if(v&&!prev) st=i?edge((i-1)*step,x,false):0; if(!v&&prev) iv.push([st,edge((i-1)*step,x,true)]); prev=v; }
     if(prev) iv.push([st,tot]);
-    if(iv.length) out.list.push({key:e.key,name:e.name,type:e.type,k:e.k,cat:e.cat,cls:e.cls,lo:e.lo,up:e.up,iv}); });
+    if(iv.length) out.list.push({key:e.key,name:e.name,type:e.type,k:e.k,cat:e.cat,cls:e.cls,lo:e.lo,up:e.up,freq:e.freq,iv}); });
   out.list.sort((a,b)=>a.iv[0][0]-b.iv[0][0]); out.ok=true; return out; }
 /* ---------- 3D: the planned path at altitude (curtain to the ground + ribbon at the level) and the aircraft ---------- */
 const AC_SVG='<svg viewBox="-16 -16 32 32" width="34" height="34" aria-hidden="true"><path d="M0-14c1.3 0 2 1.4 2 3.2V-4l11 6.2v2.6L2 1.6V8.4l3.6 2.8v2.2L0 12l-5.6 1.4v-2.2L-2 8.4V1.6l-11 3.2V2.2L-2-4v-6.8C-2-12.6-1.3-14 0-14z" fill="#9A1E68" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -661,6 +671,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,notamAt,addBarbs,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={ringsIn,create,asRoute,limOf,WXC,SIGC,sigmetAt,notamAt,addBarbs,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();

@@ -30,6 +30,19 @@
      ice 2 = likely cloud between −2 and −12 °C, 1 = cloud between 0 and −20 °C. A crude guide from GFS humidity, not a forecast product. */
   function wxOf(x){ if(!x||x.r==null) return {cloud:0,ice:0}; const cloud=x.r>=95?2:x.r>=85?1:0; let ice=0;
     if(cloud&&x.t<=0&&x.t>=-20) ice=(cloud===2&&x.t<=-2&&x.t>=-12)?2:1; return {cloud,ice}; }
+  /* Clear-air turbulence guide: Ellrod TI1 = vertical wind shear × horizontal deformation (×10⁻⁷ s⁻²), per layer between
+     two model levels, at the nearest grid point (centred differences). TI1 ≥ 4 light–moderate, ≥ 8 moderate, ≥ 12 severe.
+     Ellrod & Knapp (1992). A model index, not a turbulence forecast. → [{zlo,zhi,ti,cat}] sorted by height */
+  function turb(la,lo,time){ const d=tileAt(la,lo,time); if(!d||!d.u||!d.z) return null;
+    const i=Math.max(1,Math.min(d.nx-2,Math.round((lo-d.lo0)/d.d))), j=Math.max(1,Math.min(d.ny-2,Math.round((d.la0-la)/d.d)));
+    const latp=d.la0-j*d.d, dx=d.d*111320*Math.cos(latp*Math.PI/180), dy=d.d*110540, K=1/1.9438445, n=k=>j*d.nx+i;
+    const at=(a,ii,jj)=>a[jj*d.nx+ii]*K;
+    const L=d.lev.map((h,k)=>{ const U=d.u[k], V=d.v[k], Z=d.z[k]; if(!U||!V||!Z) return null;
+      const dudx=(at(U,i+1,j)-at(U,i-1,j))/(2*dx), dvdx=(at(V,i+1,j)-at(V,i-1,j))/(2*dx), dudy=(at(U,i,j-1)-at(U,i,j+1))/(2*dy), dvdy=(at(V,i,j-1)-at(V,i,j+1))/(2*dy); // j−1 is north
+      return {z:Z[n()],u:U[n()]*K,v:V[n()]*K,def:Math.hypot(dudx-dvdy,dvdx+dudy)}; }).filter(Boolean).sort((a,b)=>a.z-b.z);
+    const out=[]; for(let k=0;k<L.length-1;k++){ const a=L[k], b=L[k+1], dz=(b.z-a.z)*0.3048; if(dz<=0) continue;
+      const vws=Math.hypot(b.u-a.u,b.v-a.v)/dz, ti=vws*(a.def+b.def)/2*1e7; out.push({zlo:a.z,zhi:b.z,ti:Math.round(ti*10)/10,cat:ti>=12?3:ti>=8?2:ti>=4?1:0}); }
+    return out; }
   const dirOf=(u,v)=>{ const d=(Math.atan2(-u,-v)*180/Math.PI+360)%360; return Math.round(d)||360; };
   const isaT=ft=>15-1.98*ft/1000;
   /* wind/temperature at altitude (ft AMSL) */
@@ -46,5 +59,5 @@
   /* standard pressure-level labels: ISA pressure altitude, rounded to the nearest flight level */
   const FL={1000:'FL001',925:'FL025',850:'FL050',800:'FL065',700:'FL100',600:'FL140',500:'FL180',400:'FL240',300:'FL300',250:'FL340',200:'FL390',150:'FL450'};
   const w3=(d,s)=>String(d).padStart(3,'0')+'/'+String(s).padStart(2,'0');
-  window.BBWIND={tilesFor,load,column,at,freezing,wxOf,FL,w3,dirOf,hourIso,tileAt};
+  window.BBWIND={tilesFor,load,column,at,freezing,wxOf,turb,FL,w3,dirOf,hourIso,tileAt};
 })();
