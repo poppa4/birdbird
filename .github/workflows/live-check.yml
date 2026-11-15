@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm i --no-save --no-package-lock @mapbox/vector-tile@2 pbf@4
+      - name: Wait for the Cloudflare Pages deployment of this commit
+        run: sleep 150
       - run: node tools/live-check.mjs
         continue-on-error: true
       - name: Publish results

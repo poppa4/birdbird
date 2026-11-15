@@ -13,7 +13,7 @@ let FL = [], cur = null, ac = null, mode = 'build', role = null, sel = null, zoo
 /* ---------- storage ---------- */
 function load() { try { FL = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).map(F.clean).filter(Boolean); } catch (e) { FL = []; } }
 let saveT = null;
-function save() { if (!cur || cur.ex) { return; } cur.upd = Date.now(); clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (e) { msg(L({ en: 'Could not save on this device (storage full?).', no: 'Kunne ikke lagre på denne enheten (lagringen full?).' }), 'err'); } }, 250); }
+function save() { if (!cur || cur.ex || cur.tmp) { return; } cur.upd = Date.now(); clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (e) { msg(L({ en: 'Could not save on this device (storage full?).', no: 'Kunne ikke lagre på denne enheten (lagringen full?).' }), 'err'); } }, 250); }
 let DB = null;
 function db() { return DB || (DB = new Promise((ok, ko) => { const r = indexedDB.open('bb-flows', 1); r.onupgradeneeded = () => r.result.createObjectStore('img', { keyPath: 'id' }); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); })); }
 const tx = (m, f) => db().then(d => new Promise((ok, ko) => { const t = d.transaction('img', m), s = t.objectStore('img'), r = f(s); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }));
@@ -86,7 +86,7 @@ function onUp(e) { if (!drag) return; const d = drag; drag = null;
   if (d.moved) { if (d.s && ac) { const t = A.hit(ac, d.s.x, d.s.y, 4); if (t) { const auto = !d.s.t || d.s.t === (A.byId(ac, d.s.tg) || {}).name; d.s.tg = t.id; d.s.x = Math.round(t.x + t.w / 2); d.s.y = Math.round(t.y + t.h / 2); if (auto) d.s.t = t.name; } else delete d.s.tg; } save(); draw(); panel(); return; }
   if (d.s) { sel = sel === d.s.id ? null : d.s.id; role = d.s.r; draw(); panel(true); } else if (d.n) editNote(d.n); }
 function onClick(e) { if (!cur || drag) return; if (e.target.closest('.bdg,.note')) return; const p = pt(e);
-  if (mode === 'practise') return pTap(p); if (mode !== 'build') return;
+  if (mode === 'practise' || (mode === 'together' && P.on)) return pTap(p); if (mode !== 'build') return;
   if (noteMode) { noteMode = false; const n = { id: F.uid(), x: p.x, y: p.y, t: '' }; cur.notes.push(n); save(); draw(); editNote(n); panel(); return; }
   const t = ac ? A.hit(ac, p.x, p.y, Math.min(10, tol() / 3)) : null, at = t ? { tg: t.id, x: Math.round(t.x + t.w / 2), y: Math.round(t.y + t.h / 2) } : { tg: undefined, x: p.x, y: p.y };
   if (cur.ex) adoptExample();
@@ -138,6 +138,8 @@ function panel(scroll) { const p = $('fpanel'); if (!cur) { p.innerHTML = ''; re
       `<label>${L({ en: 'Speed', no: 'Fart' })} <select id="wsp">${[[2.6, L({ en: 'Slow', no: 'Sakte' })], [1.6, L({ en: 'Normal', no: 'Normal' })], [0.9, L({ en: 'Fast', no: 'Rask' })]].map(([v, n]) => `<option value="${v}"${W.dt == v ? ' selected' : ''}>${n}</option>`).join('')}</select></label>` +
       `<label><input type="checkbox" id="wspk"${W.speak ? ' checked' : ''}> ${L({ en: 'Read aloud', no: 'Les høyt' })}</label></div>` +
       `<ol class="fsteps ro">${cur.steps.filter(s => !W.role || s.r === W.role).map((s, i) => `<li class="fs${W.cur === s.id ? ' on' : ''}" data-s="${s.id}" style="--c:${col(s.r)}"><span class="fb${s.k === 'call' ? ' call' : s.k === 'event' ? ' ev' : ''}">${s.k === 'event' ? '⚑' : esc(F.badge(cur, s))}</span><span class="fx"><b>${s.r}</b> ${esc(s.t || '…')}${s.after ? ` <small>⏸ ${L({ en: 'waits for', no: 'venter på' })} ${esc(stepName(s.after))}</small>` : ''}</span></li>`).join('')}</ol>`;
+  } else if (mode === 'together') {
+    pq(); p.innerHTML = RM.code ? roomCard() + (P.live && P.i >= P.q.length ? pResult() : '') : roomForm();
   } else if (mode === 'practise') {
     pq(); p.innerHTML = P.on ? (P.i >= P.q.length ? pResult() : `<p class="fhint">${L({ en: 'Practising: the question is at the top of the cockpit. Tap where the step belongs.', no: 'Øver: spørsmålet står øverst på cockpiten. Trykk der steget hører hjemme.' })}</p><div class="frow"><button class="btn sm" id="pstop">${L({ en: 'Stop', no: 'Stopp' })}</button></div>`) : `<p>${L({ en: 'The lines and badges are hidden. Tap where each step belongs, in order. A miss does not stop you; two hints are there when you need them.', no: 'Linjene og merkene er skjult. Trykk der hvert steg hører hjemme, i rekkefølge. En bom stopper deg ikke; to hint finnes når du trenger dem.' })}</p>` +
       `<div class="frow"><label>${L({ en: 'Practise', no: 'Øv' })} <select id="prole">${cur.roles.map(r => `<option value="${r}"${P.role === r ? ' selected' : ''}>${r}</option>`).join('')}${cur.roles.length > 1 ? `<option value="*"${P.role === '*' ? ' selected' : ''}>${L({ en: 'Both, in flow order', no: 'Begge, i flow-rekkefølge' })}</option>` : ''}</select></label>` +
@@ -160,6 +162,7 @@ function wirePanel() { const p = $('fpanel');
     if (t.dataset.col) { cur.style.col[t.dataset.col] = t.value; save(); draw(); return; }
     if (t.id === 'flw') { cur.style.lw = +t.value; save(); draw(); return; } if (t.id === 'fls') { cur.style.ls = +t.value; save(); draw(); return; } });
   p.addEventListener('change', async e => { const t = e.target; if (!cur) return;
+    if (t.id === 'rname') { rName(t.value); return; }
     if (t.id === 'fimg') { await addPicture(t.files && t.files[0]); t.value = ''; return; }
     if (t.id === 'fac') { if (cur.ex) adoptExample(); if (t.value === 'img') { cur.ac = 'img'; if (!cur.img) { $('fpanel').querySelector('#fimg').click(); } } else { cur.ac = t.value; } snapAll(); save(); imgFor = null; await bg(); fit(); draw(); panel(); flowSel(); return; }
     if (t.id === 'frs') { if (cur.ex) adoptExample(); const nr = F.ROLESETS[t.value]; const map = {}; cur.roles.forEach((r, i) => map[r] = nr[Math.min(i, nr.length - 1)]); cur.steps.forEach(s => s.r = map[s.r] || nr[0]); const c = {}; nr.forEach((r, i) => c[r] = cur.style.col[cur.roles[i]] || F.COLORS[i]); cur.style.col = c; cur.roles = nr.slice(); cur.rs = t.value; role = nr[0]; save(); draw(); panel(); return; }
@@ -180,6 +183,11 @@ function wirePanel() { const p = $('fpanel');
     if (b.id === 'fsop') return sopDialog();
     if (b.id === 'fnote') { noteMode = true; msg(L({ en: 'Tap the panel where the note goes.', no: 'Trykk på panelet der notatet skal stå.' })); return; }
     if (b.id === 'wplay') { W.on ? wPause() : wPlay(); return; } if (b.id === 'wrst') { wReset(); wPlay(); return; }
+    if (b.id === 'ropen') return rOpen(); if (b.id === 'rjoin') { const c = ($('rjc').value || '').toLowerCase().replace(/^.*[#?&](room|c)=/, '').replace(/[^a-z0-9-]/g, ''); if (c) rJoin(c); return; }
+    if (b.id === 'ragain') return rStart(true); if (b.id === 'rleave') return rLeave(); if (b.id === 'rstart') return rStart(true); if (b.id === 'rreset') { rSend({ t: 'reset' }); P.on = false; P.live = false; RM.live = false; pq(); draw(); panel(); return; }
+    if (b.id === 'rcopy') { const l = location.origin + location.pathname + '#room=' + RM.code; navigator.clipboard.writeText(l).then(() => msg(L({ en: 'Link copied.', no: 'Lenken er kopiert.' }), 'ok'), () => prompt('', l)); return; }
+    if (b.id === 'rshare') { navigator.share({ title: 'Birdbird flow room', text: cur.name, url: location.origin + location.pathname + '#room=' + RM.code }).catch(() => {}); return; }
+    if (b.id === 'rsave') { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); FL.unshift(c); try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (x) {} flowSel(); msg(L({ en: 'Saved in My flows.', no: 'Lagret i Mine flows.' }), 'ok'); return; }
     if (b.id === 'pgo') return pStart('flow'); if (b.id === 'pex') return pStart('exam'); if (b.id === 'pwk') return pStart('weak'); if (b.id === 'pfc') return pStart('cards'); if (b.id === 'pfa') return pStart('all');
     if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') { pEnd(); return; } if (b.id === 'pcheck') { draw({ notes: true }); $('ov').classList.add('chk'); return; } if (b.id === 'pagain') return pStart(P.exam ? 'exam' : P.kind); });
   $('fpq').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') return pEnd(); });
@@ -221,8 +229,9 @@ function pStart(kind) { if (!cur) return; stopAll(); P.exam = kind === 'exam'; i
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function pq() { const b = $('fpq'); if (!P.on || P.i >= P.q.length) { b.hidden = true; b.innerHTML = ''; return; } b.hidden = false; b.innerHTML = pBox(); }
 function pBox() { if (!P.on) return ''; const s = P.q[P.i]; if (!s) return ''; const n = P.kind === 'flow', role = s.r ? `<b style="color:${col(s.r)}">${s.r}</b> · ` : '';
+  if (s.remote) return `<div class="pq"><div class="pc">${role}${L({ en: 'your partner', no: 'partneren din' })}</div><div class="pt"><span class="hid">${L({ en: `Waiting for ${s.r}…`, no: `Venter på ${s.r} …` })}</span></div></div>`;
   if (s.auto) return `<div class="pq"><div class="pc">${role}${L({ en: 'the other pilot', no: 'den andre piloten' })}</div><div class="pt"><b>${esc(s.t || '…')}</b></div><div class="frow"><button class="btn sm" id="pstop">${L({ en: 'Stop', no: 'Stopp' })}</button></div></div>`;
-  const own = q => !q.auto;
+  const own = q => !q.auto && !q.remote;
   const cnt = n ? (P.role === '*' ? `${P.i + 1} / ${P.q.length}` : `${L({ en: 'step', no: 'steg' })} ${P.q.slice(0, P.i + 1).filter(x => x.r === s.r && own(x)).length} / ${P.q.filter(x => x.r === s.r && own(x)).length}`) : `${P.i + 1} / ${P.q.length}`;
   const showT = !n || (P.txt && !P.exam) || P.hint >= 1 || s.k !== 'act';
   return `<div class="pq"><div class="pc">${role}${cnt}</div>` +
@@ -234,34 +243,101 @@ function pBox() { if (!P.on) return ''; const s = P.q[P.i]; if (!s) return ''; c
 function toStage() { const w = document.querySelector('.fwrap'), r = w.getBoundingClientRect(); let top = 8;
   document.querySelectorAll('header,nav,.snav,[class*="sticky"]').forEach(e => { const cs = getComputedStyle(e); if ((cs.position === 'sticky' || cs.position === 'fixed') && e.getBoundingClientRect().top <= 1) top = Math.max(top, e.getBoundingClientRect().bottom + 6); });
   if (r.top < top - 2 || r.top > innerHeight * 0.35) window.scrollTo({ top: scrollY + r.top - top, behavior: 'smooth' }); }
-function pAuto() { const s = P.q[P.i]; if (!P.on || !s || !s.auto) return; const at = P.i;
+function pAuto() { const s = P.q[P.i]; if (!P.on || !s || !s.auto || P.live) return; const at = P.i;
   if (s.k === 'call') banner(L({ en: 'Checklist commanded', no: 'Sjekkliste kommandert' }), `${s.r}: ${s.t}`, col(s.r)); else if (s.k === 'event') banner(L({ en: 'Event', no: 'Hendelse' }), s.t, '#9AA5B1');
   if (F.placed(s)) ripple(s.x, s.y, null, 900); say(s.t);
   setTimeout(() => { if (!P.on || P.i !== at) return; banner(); P.done.add(s.id); P.i++; P.tries = 0; P.hint = 0; draw({ only: P.done, anim: s.id }); if (P.i >= P.q.length) pFinish(); panel(); pAuto(); }, s.k === 'act' ? 1300 : 2200); }
 function say(t) { if (!P.speak || !t || !window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(t).replace(/–/g, ',')); u.lang = 'en-GB'; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {} }
 function pHint() { const s = P.q[P.i]; if (!s) return; P.hint++; if (P.hint >= 2 && F.placed(s)) { ripple(s.x, s.y, null, 1600); setTimeout(() => ripple(s.x, s.y, null, 1600), 350); } panel(); }
-function pTap(p) { if (!P.on) return; const s = P.q[P.i]; if (!s) return; if (s.auto) return; if (s.k !== 'act') { msg(L({ en: 'This one is a call: tap Done when you have said it.', no: 'Dette er et kall: trykk Ferdig når du har sagt det.' })); return; }
-  const r = F.check(s, p.x, p.y, ac, A, tol()); ripple(p.x, p.y, r.ok);
+function pTap(p) { if (!P.on) return; const s = P.q[P.i]; if (!s) return; if (s.auto) return; if (s.remote) { msg(L({ en: `Wait for ${s.r}.`, no: `Vent på ${s.r}.` })); return; } if (s.k !== 'act') { msg(L({ en: 'This one is a call: tap Done when you have said it.', no: 'Dette er et kall: trykk Ferdig når du har sagt det.' })); return; }
+  const r = F.check(s, p.x, p.y, ac, A, tol()); ripple(p.x, p.y, r.ok); if (P.live) rSend({ t: 'tap', x: Math.round(p.x), y: Math.round(p.y), ok: r.ok });
   if (r.ok) { if (navigator.vibrate) try { navigator.vibrate(15); } catch (x) {} pNext(false); } else { P.tries++; if (navigator.vibrate) try { navigator.vibrate([30, 40, 30]); } catch (x) {} if (P.tries >= 3 && P.hint < 2 && !P.exam) { P.hint = 2; ripple(s.x, s.y, null, 1800); } panel(); } }
-function pNext(manual, reveal) { const s = P.q[P.i]; if (!s || s.auto) return; if (reveal && F.placed(s)) ripple(s.x, s.y, null, 1400); if (s.k === 'act') statAdd(s, P.tries > 0 || reveal, P.hint > 0);
+function pNext(manual, reveal) { const s = P.q[P.i]; if (!s || s.auto || s.remote) return; if (P.live) rSend({ t: 'step', id: s.id, tries: P.tries, hint: P.hint }); if (reveal && F.placed(s)) ripple(s.x, s.y, null, 1400); if (s.k === 'act') statAdd(s, P.tries > 0 || reveal, P.hint > 0);
   P.log.push({ r: s.r || '·', ok: !reveal, tries: P.tries, hint: P.hint > 0 }); if (reveal) P.log[P.log.length - 1].ok = false;
   if (P.kind === 'flow') P.done.add(s.id); P.i++; P.tries = 0; P.hint = 0; draw(P.kind === 'flow' ? { only: P.done, anim: s.id } : { hideAll: true }); if (s.k === 'call' && P.kind === 'flow') say(s.t); if (P.i >= P.q.length) pFinish(); panel(); pAuto(); }
 function pFinish() { const sc = F.score(P.log), tot = P.log.length, first = P.log.filter(x => x.ok && !x.tries && !x.hint).length, pct = Math.round(first / Math.max(1, tot) * 100), sec = Math.round((Date.now() - P.t0) / 1000);
-  P.res = { sc, pct, sec, tot, first }; if (P.kind === 'flow' && !cur.ex && (P.role === '*' || cur.steps.some(x => x.r === P.role))) { try { const B = JSON.parse(localStorage.getItem(BEST) || '{}'), k = cur.id + ':' + P.role + (P.exam ? ':exam' : ''), o = B[k]; if (!o || pct > o.pct || (pct === o.pct && sec < o.sec)) { B[k] = { pct, sec, at: Date.now() }; localStorage.setItem(BEST, JSON.stringify(B)); P.res.best = true; } } catch (e) {} }
+  P.res = { sc, pct, sec, tot, first }; if (P.kind === 'flow' && !cur.ex && !cur.tmp && (P.role === '*' || cur.steps.some(x => x.r === P.role))) { try { const B = JSON.parse(localStorage.getItem(BEST) || '{}'), k = cur.id + ':' + P.role + (P.exam ? ':exam' : ''), o = B[k]; if (!o || pct > o.pct || (pct === o.pct && sec < o.sec)) { B[k] = { pct, sec, at: Date.now() }; localStorage.setItem(BEST, JSON.stringify(B)); P.res.best = true; } } catch (e) {} }
+  if (P.live) { RM.res[RM.role] = { pct, sec, tot, first }; rSend({ t: 'end', res: { pct, sec, tot, first } }); }
   draw({ notes: true }); }
 function pResult() { const r = P.res || {}; return `<div class="pq res"><div class="pt"><b>${r.pct}%</b> ${L({ en: 'right first time', no: 'riktig på første forsøk' })}${r.best ? ` · <span class="okc">${L({ en: 'new best', no: 'ny rekord' })}</span>` : ''}</div>` +
   `<p>${r.first} / ${r.tot} ${L({ en: 'steps without a miss or hint', no: 'steg uten bom eller hint' })} · ${Math.floor(r.sec / 60)}:${String(r.sec % 60).padStart(2, '0')}</p>` +
   `<ul class="pr">${Object.entries(r.sc || {}).filter(([k]) => k !== '·').map(([k, v]) => `<li style="--c:${col(k)}"><b>${k}</b> ${v.first}/${v.n} ${L({ en: 'first try', no: 'første forsøk' })} · ${v.miss} ${L({ en: 'misses', no: 'bom' })} · ${v.hints} ${L({ en: 'hints', no: 'hint' })}</li>`).join('')}</ul>` +
-  `<div class="frow"><button class="btn pri" id="pagain">↺ ${L({ en: 'Again', no: 'Igjen' })}</button><button class="btn" id="pcheck">${L({ en: 'Check against the flow', no: 'Sammenlign med flowen' })}</button><button class="btn" id="pstop">${L({ en: 'Close', no: 'Lukk' })}</button></div></div>`; }
+  `<div class="frow">${P.live ? `<button class="btn pri" id="ragain">↺ ${L({ en: 'Again together', no: 'Igjen sammen' })}</button>` : `<button class="btn pri" id="pagain">↺ ${L({ en: 'Again', no: 'Igjen' })}</button>`}<button class="btn" id="pcheck">${L({ en: 'Check against the flow', no: 'Sammenlign med flowen' })}</button><button class="btn" id="pstop">${L({ en: 'Close', no: 'Lukk' })}</button></div></div>`; }
 function pEnd() { P.on = false; P.res = null; pq(); $('ov').classList.remove('chk'); draw(mode === 'practise' ? { hideAll: true } : {}); panel(); }
 function bestTxt() { if (!cur || cur.ex) return ''; let B = {}; try { B = JSON.parse(localStorage.getItem(BEST) || '{}'); } catch (e) {} const rows = cur.roles.concat(cur.roles.length > 1 ? ['*'] : []).map(r => [r, B[cur.id + ':' + r]]).filter(x => x[1]);
   const ex = cur.roles.map(r => [r, B[cur.id + ':' + r + ':exam']]).filter(x => x[1]); rows.push(...ex.map(([r, o]) => [r + ' ' + L({ en: 'check ride', no: 'sjekkflyging' }), o]));
   return rows.length ? `<p class="fbest">${L({ en: 'Best', no: 'Beste' })}: ${rows.map(([r, o]) => `${r === '*' ? L({ en: 'both', no: 'begge' }) : r} ${o.pct}% (${Math.floor(o.sec / 60)}:${String(o.sec % 60).padStart(2, '0')})`).join(' · ')}</p>` : ''; }
 
+/* ---------- together: a live room for two pilots (functions/api/room.js) ----------
+   The host shares the flow (never a photo); the partner gets it as a temporary flow. Practice runs in flow order across both
+   roles: your steps you find, your partner's steps you watch happen (their taps show as rings in their colour). */
+const RM = { code: null, me: null, host: false, name: '', role: null, members: [], seq: 0, t: null, busy: false, live: false, res: {}, err: '', mine: null, lastSeen: 0 };
+try { RM.name = localStorage.getItem('bb-flows-name') || ''; } catch (e) {}
+async function api(o) { const r = await fetch('/api/room', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(o) }); const j = await r.json().catch(() => ({ ok: false, message: 'No answer from the server.' })); if (!j.ok) throw new Error(j.message || j.error || 'Error'); return j; }
+async function rOpen() { const name = ($('rname') || {}).value || RM.name || 'Pilot', role = ($('rrole') || {}).value || cur.roles[0]; rName(name);
+  const o = JSON.parse(JSON.stringify(cur)); delete o.ex; if (o.img) o.img = { w: o.img.w, h: o.img.h, name: o.img.name, id: '' };
+  try { RM.busy = true; panel(); const j = await api({ op: 'create', flow: o, name, role }); Object.assign(RM, { code: j.code, me: j.me, host: true, role, seq: 0, members: [{ id: j.me.slice(0, 8), name, role, on: true }], live: false, res: {}, err: '' }); RM.mine = cur; rStore(); rPoll(); }
+  catch (e) { RM.err = e.message; } RM.busy = false; panel(); }
+async function rJoin(code, me) { const name = ($('rname') || {}).value || RM.name || 'Pilot'; let role = ($('rrole') || {}).value || null; rName(name);
+  try { RM.busy = true; RM.err = ''; panel(); const j = await api({ op: 'join', code, name, role: role || 'PM', me }); const f = F.clean(j.flow); f.tmp = true; f.id = 'room-' + j.code;
+    Object.assign(RM, { code: j.code, me: j.me, host: false, seq: j.seq, members: j.members, live: false, res: {}, err: '' });
+    // take the role you picked if it is free, otherwise the free one (two pilots, two roles)
+    const taken = j.members.filter(m => m.id !== j.me.slice(0, 8) && m.on).map(m => m.role), want = role;
+    if (!role || !f.roles.includes(role) || taken.includes(role)) role = f.roles.find(r => !taken.includes(r)) || f.roles[0];
+    if (role !== want || !want) { await api({ op: 'send', code: j.code, me: j.me, ev: { t: 'role', role } }); j.members.forEach(m => { if (m.id === j.me.slice(0, 8)) m.role = role; }); RM.members = j.members; }
+    RM.role = role; rStore(); RM.mine = null; await open(f); setMode('together'); rPoll(); await rSend({ t: 'hello', name, role }); }
+  catch (e) { RM.err = e.message; } RM.busy = false; panel(); }
+function rName(n) { RM.name = String(n || '').trim().slice(0, 24); try { localStorage.setItem('bb-flows-name', RM.name); } catch (e) {} }
+function rStore() { try { sessionStorage.setItem('bb-flows-room', JSON.stringify({ code: RM.code, me: RM.me, host: RM.host, role: RM.role })); } catch (e) {} }
+async function rLeave() { const c = RM.code, me = RM.me; clearTimeout(RM.t); Object.assign(RM, { code: null, me: null, live: false, members: [], res: {} }); try { sessionStorage.removeItem('bb-flows-room'); } catch (e) {} P.on = false; P.live = false; pq();
+  if (c) api({ op: 'leave', code: c, me }).catch(() => {}); if (cur && cur.tmp) await open(FL[0] || F.example('a320', A)); panel(); }
+async function rSend(ev) { if (!RM.code) return; try { await api({ op: 'send', code: RM.code, me: RM.me, ev }); } catch (e) { if (/not in this room|no room/i.test(e.message)) { RM.err = e.message; rLeave(); } } }
+async function rPoll() { clearTimeout(RM.t); if (!RM.code) return;
+  if (document.hidden) { RM.t = setTimeout(rPoll, 3000); return; }
+  try { const r = await fetch(`/api/room?c=${encodeURIComponent(RM.code)}&me=${encodeURIComponent(RM.me)}&since=${RM.seq}`); const j = await r.json();
+    if (!j.ok) { if (r.status === 403 || r.status === 404) { RM.err = j.message; rLeave(); return; } throw new Error(j.message); }
+    const before = JSON.stringify(RM.members); RM.members = j.members; RM.seq = Math.max(RM.seq, j.seq); j.ev.forEach(rOn);
+    if (JSON.stringify(RM.members) !== before && mode === 'together') panel(); }
+  catch (e) {}
+  const partner = RM.members.some(m => m.id !== RM.me.slice(0, 8) && m.on);
+  RM.t = setTimeout(rPoll, RM.live ? 900 : partner ? 2500 : 2000); }
+function rOn(e) { const who = RM.members.find(m => m.id === e.from), rl = (who && who.role) || e.role;
+  if (e.t === 'hello' || e.t === 'role') { if (mode === 'together') panel(); return; }
+  if (e.t === 'start') { rStart(false); return; }
+  if (e.t === 'reset') { P.on = false; P.live = false; RM.live = false; pq(); draw(); panel(); return; }
+  if (e.t === 'tap' && P.live) { ringFor(e.x, e.y, rl, e.ok); return; }
+  if (e.t === 'step' && P.live) { const i = P.q.findIndex((x, k) => k >= P.i && x.id === e.id); if (i < 0) return;
+    for (let k = P.i; k <= i; k++) P.done.add(P.q[k].id); const s = P.q[i]; P.i = i + 1; P.tries = 0; P.hint = 0;
+    if (s.k === 'call') { banner(L({ en: 'Checklist commanded', no: 'Sjekkliste kommandert' }), `${s.r}: ${s.t}`, col(s.r)); say(s.t); setTimeout(() => banner(), 2600); }
+    draw({ only: P.done, anim: s.id }); if (P.i >= P.q.length) pFinish(); panel(); return; }
+  if (e.t === 'end') { RM.res[rl || '?'] = e.res; if (mode === 'together') panel(); } }
+function ringFor(x, y, r, ok) { const g = $('fx'), c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 10); c.setAttribute('class', 'rip'); c.style.stroke = ok === false ? '#FF5A5A' : col(r); c.style.strokeDasharray = '6 4'; g.appendChild(c); setTimeout(() => c.remove(), 1100); }
+function rStart(mine) { if (mode !== 'together') setMode('together'); if (mine) rSend({ t: 'start', at: Date.now() }); RM.live = true; RM.res = {}; stopAll(); P.exam = false; P.kind = 'flow'; P.role = RM.role; P.log = []; P.i = 0; P.tries = 0; P.hint = 0; P.done = new Set(); P.t0 = Date.now(); P.live = true;
+  P.q = cur.steps.filter(s => F.placed(s) || s.k !== 'act').map(s => s.r !== RM.role ? Object.assign({}, s, { remote: true }) : s);
+  P.on = true; mode = 'together'; draw({ only: P.done }); panel(); toStage(); clearTimeout(RM.t); rPoll(); }
+function roomCard() { const meId = RM.me.slice(0, 8), mine = RM.members.find(m => m.id === meId) || { name: RM.name, role: RM.role, on: true }, other = RM.members.filter(m => m.id !== meId);
+  const av = (m, you) => `<div class="rav${m.on ? ' on' : ''}" style="--c:${col(m.role)}"><i>${esc((m.name || '?').slice(0, 1).toUpperCase())}</i><b>${esc(m.name)}${you ? ` <small>(${L({ en: 'you', no: 'deg' })})</small>` : ''}</b><span>${esc(m.role)}</span></div>`;
+  const ready = other.some(m => m.on), link = location.origin + location.pathname + '#room=' + RM.code;
+  const res = Object.keys(RM.res).length ? `<ul class="pr">${Object.entries(RM.res).map(([r, v]) => `<li style="--c:${col(r)}"><b>${esc(r)}</b> ${v.pct}% ${L({ en: 'first try', no: 'første forsøk' })} · ${v.first}/${v.tot} · ${Math.floor(v.sec / 60)}:${String(v.sec % 60).padStart(2, '0')}</li>`).join('')}</ul>` : '';
+  return `<div class="room"><h3>${L({ en: RM.host ? 'Your room' : 'Room', no: RM.host ? 'Rommet ditt' : 'Rom' })}</h3><div class="ravs">${av(mine, true)}<span class="rline${ready ? ' on' : ''}"></span>${other.length ? other.map(m => av(m)).join('') : `<div class="rav wait"><i>?</i><b>${L({ en: 'Waiting…', no: 'Venter …' })}</b><span>${esc(cur.roles.find(r => r !== RM.role) || '')}</span></div>`}</div>` +
+    `<p class="rst${ready ? ' ok' : ''}">${ready ? (RM.live ? L({ en: 'Live: both pilots connected', no: 'Direkte: begge pilotene er koblet til' }) : L({ en: 'Both pilots connected: ready', no: 'Begge pilotene er koblet til: klare' })) : L({ en: 'Waiting for your partner…', no: 'Venter på partneren din …' })}</p>` +
+    `<label class="rcode">${L({ en: 'Room code', no: 'Romkode' })}<span><code>${esc(RM.code)}</code><button class="btn sm" id="rcopy">${L({ en: 'Copy link', no: 'Kopier lenke' })}</button>${navigator.share ? `<button class="btn sm" id="rshare">${L({ en: 'Share', no: 'Del' })}</button>` : ''}</span></label>` +
+    `<p class="note">${L({ en: 'Your partner opens the link, or Birdbird → Flow trainer → Together and types the code. No account needed.', no: 'Partneren åpner lenken, eller Birdbird → Flow-trener → Sammen og skriver koden. Ingen konto trengs.' })}</p>` +
+    (cur.ac === 'img' ? `<p class="fex">${L({ en: 'This flow is drawn on a photo, and photos are never shared: your partner adds their own picture of the same cockpit, or you both use a Birdbird cockpit.', no: 'Flowen er tegnet på et bilde, og bilder deles aldri: partneren legger til sitt eget bilde av samme cockpit, eller dere bruker begge en Birdbird-cockpit.' })}</p>` : '') + res +
+    `<div class="frow">${RM.live ? `<button class="btn" id="rreset">↺ ${L({ en: 'Restart', no: 'Start på nytt' })}</button>` : `<button class="btn pri" id="rstart"${ready ? '' : ' disabled'}>▶ ${L({ en: 'Start the flow together', no: 'Start flowen sammen' })}</button>`}<button class="btn warn" id="rleave">${L({ en: 'Leave', no: 'Forlat' })}</button>${cur.tmp ? `<button class="btn" id="rsave">${L({ en: 'Save a copy', no: 'Lagre en kopi' })}</button>` : ''}</div>` +
+    `<p class="note">${L({ en: 'In flow order: you find your own steps; your partner’s taps show as dashed rings in their colour, and their checklist calls appear on your screen.', no: 'I flow-rekkefølge: du finner dine egne steg; partnerens trykk vises som stiplede ringer i deres farge, og sjekklistekallene deres kommer opp på skjermen din.' })}</p></div>`; }
+function roomForm() { const h = (location.hash.match(/room=([\w-]+)/) || [])[1] || '';
+  return `<p>${L({ en: 'Practise with a partner on another phone, tablet or computer: one PF and one PM, in real time. No account needed.', no: 'Øv sammen med en partner på en annen telefon, nettbrett eller PC: én PF og én PM, i sanntid. Ingen konto trengs.' })}</p>` +
+    `<div class="frow"><label class="grow">${L({ en: 'Your name', no: 'Navnet ditt' })}<input id="rname" maxlength="24" value="${esc(RM.name)}" placeholder="${esc(L({ en: 'e.g. Goose', no: 'f.eks. Goose' }))}"></label><label>${L({ en: 'Your role', no: 'Rollen din' })}<select id="rrole">${cur.roles.map(r => `<option>${r}</option>`).join('')}</select></label></div>` +
+    (cur.roles.length < 2 ? `<p class="fex">${L({ en: 'This flow has one pilot. A room is for flows with two roles: change Roles to PF / PM under Build.', no: 'Denne flowen har én pilot. Et rom er for flows med to roller: endre Roller til PF / PM under Bygg.' })}</p>` : `<div class="frow"><button class="btn pri" id="ropen"${RM.busy || cur.tmp ? ' disabled' : ''}>${L({ en: 'Open a room with this flow', no: 'Åpne et rom med denne flowen' })}</button></div>`) +
+    `<h3 style="margin:16px 0 6px">${L({ en: 'Join a room', no: 'Bli med i et rom' })}</h3><div class="frow"><label class="grow">${L({ en: 'Room code or link', no: 'Romkode eller lenke' })}<input id="rjc" value="${esc(h)}" placeholder="oscar-beacon-6209" autocapitalize="none" autocomplete="off"></label><button class="btn pri" id="rjoin"${RM.busy ? ' disabled' : ''}>${L({ en: 'Join', no: 'Bli med' })}</button></div>` +
+    (RM.err ? `<p class="fmsg err">${esc(RM.err)}</p>` : ''); }
+
 /* ---------- modes ---------- */
 function stopAll() { wPause(); P.on = false; P.res = null; pq(); banner(); now(); $('ov').classList.remove('chk'); }
-function setMode(m) { stopAll(); mode = m; document.querySelectorAll('.fmode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m))); $('app').dataset.mode = m;
+function setMode(m) { if (P.live && m !== 'together') { P.live = false; RM.live = false; } stopAll(); mode = m; document.querySelectorAll('.fmode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m))); $('app').dataset.mode = m;
   if (m === 'watch') { W.i = 0; draw({ upto: 0 }); } else if (m === 'practise') draw({ hideAll: true }); else draw(); panel(); }
+const RMX = { RM, rJoin };
 
 /* ---------- files, links, picture export ---------- */
 function download(name, blob) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
@@ -314,8 +390,10 @@ function init() { load(); wirePanel();
   const h = location.hash.match(/#f=([\w-]+)/); let first = null;
   if (h) { const f = F.decode(h[1]); if (f) { if (!FL.some(x => x.id === f.id)) { FL.unshift(f); save(); } first = FL.find(x => x.id === f.id); history.replaceState(null, '', location.pathname); setTimeout(() => msg(f.ac === 'img' ? L({ en: 'Flow opened from a link. It was drawn on a photo: add your own cockpit picture under Cockpit.', no: 'Flowen er åpnet fra en lenke. Den er tegnet på et bilde: legg til ditt eget cockpitbilde under Cockpit.' }) : L({ en: 'Flow opened from a link and saved in My flows.', no: 'Flowen er åpnet fra en lenke og lagret i Mine flows.' }), 'ok'), 300); } }
   if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || F.example('a320', A); }
-  open(first);
-  window.BBFLOWS = { get cur() { return cur; }, get role() { return role; }, draw, ripple, banner, now, col, open, save, panel, H, get ac() { return ac; }, setMode, get mode() { return mode; } };
+  open(first).then(() => { const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
+    if (rm) { setMode('together'); if (back && back.code === rm[1]) rJoin(back.code, back.me); }
+    else if (back && back.code) { if (back.host) { RM.code = back.code; RM.me = back.me; RM.host = true; RM.role = back.role; rPoll(); } else rJoin(back.code, back.me); } });
+  window.BBFLOWS = { RM, get P() { return P; }, get cur() { return cur; }, get role() { return role; }, draw, ripple, banner, now, col, open, save, panel, H, get ac() { return ac; }, setMode, get mode() { return mode; } };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
