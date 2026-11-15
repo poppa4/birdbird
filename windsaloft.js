@@ -1,0 +1,45 @@
+/* Birdbird – forecast winds aloft in the browser (window.BBWIND). Loads 5° tiles from /api/winds (NOAA GFS 0.25°,
+   12 pressure levels) and interpolates: bilinear between grid points, linear in height between levels.
+   Heights are the model's geopotential heights (≈ altitude AMSL). Planning practice only: check the official forecast. */
+(function(){
+  'use strict';
+  const TILE=5, H=3600e3;
+  const T={}; // key 'la,lo|time' → {d:tile}|{err}|{p:Promise}
+  const tileOf=(la,lo)=>[Math.floor(la/TILE)*TILE,Math.floor(lo/TILE)*TILE];
+  const hourIso=t=>new Date(Math.round(new Date(t).getTime()/H)*H).toISOString();
+  /* 5° tiles touched by a set of points (and the segments between them, sampled every ~0.2°) */
+  function tilesFor(pts){ const S=new Set(); const add=(la,lo)=>{ if(la<-90||la>=85) return; let [a,b]=tileOf(la,((lo+180)%360+360)%360-180); S.add(a+','+b); };
+    for(let i=0;i<pts.length;i++){ const p=pts[i]; add(p.la,p.lo); const q=pts[i+1]; if(!q) continue; const n=Math.ceil(Math.max(Math.abs(q.la-p.la),Math.abs(q.lo-p.lo))/0.2);
+      for(let k=1;k<n;k++) add(p.la+(q.la-p.la)*k/n,p.lo+(q.lo-p.lo)*k/n); }
+    return [...S]; }
+  async function get(tile,time){ const k=tile+'|'+time; const c=T[k]; if(c&&(c.d||c.p)) return c.p||c;
+    const p=(async()=>{ try{ const r=await fetch('/api/winds?tile='+tile+'&t='+encodeURIComponent(time),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw new Error((j&&j.message)||'winds'); T[k]={d:j}; return T[k]; }
+      catch(e){ T[k]={err:String(e.message||e)}; return T[k]; } })();
+    T[k]={p}; return p; }
+  /* load tiles (4 at a time); resolves to {ok, fail, run, valid} */
+  async function load(tiles,time){ time=hourIso(time); const q=tiles.slice(); let ok=0, fail=0, meta=null, msg='';
+    async function worker(){ while(q.length){ const t=q.shift(); const r=await get(t,time); if(r.d){ ok++; meta=meta||r.d; } else { fail++; msg=r.err||msg; } } }
+    await Promise.all([worker(),worker(),worker(),worker()]); return {ok,fail,msg,time,run:meta&&meta.run,valid:meta&&meta.valid,model:meta&&meta.model}; }
+  function tileAt(la,lo,time){ const [a,b]=tileOf(la,lo); const c=T[a+','+b+'|'+hourIso(time)]; return c&&c.d; }
+  /* all levels at a point: [{hpa,u,v,t,z}] (null where missing) */
+  function column(la,lo,time){ const d=tileAt(la,lo,time); if(!d) return null;
+    const fx=(lo-d.lo0)/d.d, fy=(d.la0-la)/d.d; const i0=Math.max(0,Math.min(d.nx-2,Math.floor(fx))), j0=Math.max(0,Math.min(d.ny-2,Math.floor(fy))); const ax=Math.min(1,Math.max(0,fx-i0)), ay=Math.min(1,Math.max(0,fy-j0));
+    const bi=a=>{ if(!a) return null; const g=(i,j)=>a[j*d.nx+i]; return (g(i0,j0)*(1-ax)+g(i0+1,j0)*ax)*(1-ay)+(g(i0,j0+1)*(1-ax)+g(i0+1,j0+1)*ax)*ay; };
+    return d.lev.map((h,k)=>({hpa:h,u:bi(d.u[k]),v:bi(d.v[k]),t:bi(d.t[k]),z:bi(d.z[k])})).filter(x=>x.u!=null&&x.v!=null&&x.t!=null&&x.z!=null).sort((a,b)=>a.z-b.z); }
+  const dirOf=(u,v)=>{ const d=(Math.atan2(-u,-v)*180/Math.PI+360)%360; return Math.round(d)||360; };
+  const isaT=ft=>15-1.98*ft/1000;
+  /* wind/temperature at altitude (ft AMSL) */
+  function at(la,lo,ft,time){ const c=column(la,lo,time); if(!c||!c.length) return null; let a=c[0], b=c[c.length-1];
+    if(ft<=a.z) b=a; else if(ft>=b.z) a=b; else for(let k=0;k<c.length-1;k++) if(c[k].z<=ft&&c[k+1].z>=ft){ a=c[k]; b=c[k+1]; break; }
+    const w=b.z===a.z?0:(ft-a.z)/(b.z-a.z), L=(x,y)=>x+(y-x)*w; const u=L(a.u,b.u), v=L(a.v,b.v), t=L(a.t,b.t);
+    return {dir:dirOf(u,v),spd:Math.round(Math.hypot(u,v)),u,v,t:Math.round(t),isa:Math.round(t-isaT(ft)),clamped:ft<c[0].z||ft>c[c.length-1].z}; }
+  /* lowest 0 °C level (ft AMSL) above the ground (gnd ft): {ft} or {below:true} when it is freezing at the ground level */
+  function freezing(la,lo,time,gnd){ const c=column(la,lo,time); if(!c) return null; const L=c.filter(x=>x.z>=(gnd||0)-500); if(!L.length) return null;
+    if(L[0].t<=0) return {ft:Math.max(0,gnd||0),below:true};
+    for(let k=0;k<L.length-1;k++) if(L[k].t>0&&L[k+1].t<=0){ const w=L[k].t/(L[k].t-L[k+1].t); return {ft:Math.round((L[k].z+(L[k+1].z-L[k].z)*w)/100)*100}; }
+    return null; }
+  /* standard pressure-level labels: ISA pressure altitude, rounded to the nearest flight level */
+  const FL={1000:'FL001',925:'FL025',850:'FL050',800:'FL065',700:'FL100',600:'FL140',500:'FL180',400:'FL240',300:'FL300',250:'FL340',200:'FL390',150:'FL450'};
+  const w3=(d,s)=>String(d).padStart(3,'0')+'/'+String(s).padStart(2,'0');
+  window.BBWIND={tilesFor,load,column,at,freezing,FL,w3,dirOf,hourIso,tileAt};
+})();
