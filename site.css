@@ -465,3 +465,6 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 .dseg a:hover{color:#fff;background:rgba(255,255,255,.08)}
 .dseg a.on{background:#e9eef2;color:#0d1319}
 .dseg small{font:700 8.5px/1 var(--f-mono,monospace);letter-spacing:.1em;text-transform:uppercase;background:#ffcf3a;color:#0d1319;border-radius:3px;padding:2px 4px}
+
+/* link from a cockpit page to the flow trainer (site.js fills the words) */
+.note.flowlink a{display:block;padding:11px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet,#fff);text-decoration:none;color:var(--ink);line-height:1.4}.note.flowlink a:hover,.note.flowlink a:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}

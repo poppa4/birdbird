@@ -12,8 +12,11 @@ let FL = [], cur = null, ac = null, mode = 'build', role = null, sel = null, zoo
 
 /* ---------- storage ---------- */
 function load() { try { FL = (JSON.parse(localStorage.getItem(KEY) || '[]') || []).map(F.clean).filter(Boolean); } catch (e) { FL = []; } }
-let saveT = null;
-function save() { if (!cur || cur.ex || cur.tmp) { return; } cur.upd = Date.now(); clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (e) { msg(L({ en: 'Could not save on this device (storage full?).', no: 'Kunne ikke lagre på denne enheten (lagringen full?).' }), 'err'); } }, 250); }
+let saveT = null; const UNDO = []; let lastSnap = null;
+function snap() { lastSnap = cur && !cur.ex && !cur.tmp ? JSON.stringify(cur) : null; }
+function undo() { if (!UNDO.length || !cur) { msg(L({ en: 'Nothing to undo.', no: 'Ingenting å angre.' })); return; } const o = F.clean(JSON.parse(UNDO.pop())); if (!o || o.id !== cur.id) return; Object.assign(cur, o); lastSnap = JSON.stringify(cur); sel = null;
+  try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (e) {} bg().then(() => { draw(); panel(); }); msg(L({ en: 'Undone.', no: 'Angret.' })); }
+function save() { if (!cur || cur.ex || cur.tmp) { return; } if (lastSnap && lastSnap !== JSON.stringify(Object.assign({}, cur, { upd: JSON.parse(lastSnap).upd }))) { if (Date.now() - (save.u || 0) > 1000) { UNDO.push(lastSnap); if (UNDO.length > 40) UNDO.shift(); } save.u = Date.now(); } cur.upd = Date.now(); lastSnap = JSON.stringify(cur); clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (e) { msg(L({ en: 'Could not save on this device (storage full?).', no: 'Kunne ikke lagre på denne enheten (lagringen full?).' }), 'err'); } }, 250); }
 let DB = null;
 function db() { return DB || (DB = new Promise((ok, ko) => { const r = indexedDB.open('bb-flows', 1); r.onupgradeneeded = () => r.result.createObjectStore('img', { keyPath: 'id' }); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); })); }
 const tx = (m, f) => db().then(d => new Promise((ok, ko) => { const t = d.transaction('img', m), s = t.objectStore('img'), r = f(s); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }));
@@ -76,7 +79,7 @@ function fit() { setZoom(1); $('stage').scrollTop = 0; }
 /* ---------- taps on the cockpit ---------- */
 const tol = () => { const k = $('cv').clientWidth / 1000 || 1; return Math.max(18, 14 / k); };
 function pt(e) { const svg = $('cv'), p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const q = p.matrixTransform(svg.getScreenCTM().inverse()); return { x: Math.round(q.x * 10) / 10, y: Math.round(q.y * 10) / 10 }; }
-let drag = null;
+let drag = null; const SZ = { on: true, told: false }, addN = { v: '', t: 0 };
 function onDown(e) { if (mode !== 'build' || !cur) return; const b = e.target.closest('.bdg,.note'); if (!b) return; e.preventDefault(); const p = pt(e);
   drag = { el: b, s: b.dataset.s ? cur.steps.find(s => s.id === b.dataset.s) : null, n: b.dataset.n ? cur.notes.find(n => n.id === b.dataset.n) : null, x0: p.x, y0: p.y, moved: false, id: e.pointerId };
   try { b.setPointerCapture(e.pointerId); } catch (x) {} }
@@ -87,6 +90,7 @@ function onUp(e) { if (!drag) return; const d = drag; drag = null;
   if (d.s) { sel = sel === d.s.id ? null : d.s.id; role = d.s.r; draw(); panel(true); } else if (d.n) editNote(d.n); }
 function onClick(e) { if (!cur || drag) return; if (e.target.closest('.bdg,.note')) return; const p = pt(e);
   if (mode === 'practise' || (mode === 'together' && P.on)) return pTap(p); if (mode !== 'build') return;
+  const k = $('cv').clientWidth / 1000; if (SZ.on && k < 0.62 && zoom < 1.5) { const st = $('stage'), r = st.getBoundingClientRect(); setZoom(2.4, e.clientX - r.left, e.clientY - r.top); if (!SZ.told) { SZ.told = true; msg(L({ en: 'Zoomed in: tap again to place. ⤢ shows the whole cockpit.', no: 'Zoomet inn: trykk igjen for å plassere. ⤢ viser hele cockpiten.' })); } return; }
   if (noteMode) { noteMode = false; const n = { id: F.uid(), x: p.x, y: p.y, t: '' }; cur.notes.push(n); save(); draw(); editNote(n); panel(); return; }
   const t = ac ? A.hit(ac, p.x, p.y, Math.min(10, tol() / 3)) : null, at = t ? { tg: t.id, x: Math.round(t.x + t.w / 2), y: Math.round(t.y + t.h / 2) } : { tg: undefined, x: p.x, y: p.y };
   if (cur.ex) adoptExample();
@@ -100,12 +104,12 @@ function editNote(n) { const t = prompt(L({ en: 'Note on the panel (FCOM referen
 
 /* ---------- panels ---------- */
 function msg(t, k) { const m = $('fmsg'); m.textContent = t || ''; m.className = 'fmsg' + (k ? ' ' + k : ''); if (t && k !== 'err') { clearTimeout(msg.t); msg.t = setTimeout(() => { if (m.textContent === t) m.textContent = ''; }, 5000); } }
-function adoptExample() { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); c.name = cur.name.replace(/^Example: /, '') ; FL.unshift(c); cur = c; flowSel(); }
+function adoptExample() { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); c.name = cur.name.replace(/^Example: /, '') ; FL.unshift(c); cur = c; UNDO.length = 0; snap(); flowSel(); }
 function flowSel() { const s = $('fsel'), ex = A.list.map(a => ({ id: 'ex:' + a.id, n: L({ en: 'Example', no: 'Eksempel' }) + ' · ' + a.name }));
   s.innerHTML = (FL.length ? `<optgroup label="${esc(L({ en: 'My flows', no: 'Mine flows' }))}">` + FL.map(f => `<option value="${f.id}">${esc(f.name)}${f.ac !== 'img' && A.get(f.ac) ? ' · ' + esc(A.get(f.ac).name) : ''}</option>`).join('') + '</optgroup>' : '') +
     `<optgroup label="${esc(L({ en: 'Examples on Birdbird cockpits', no: 'Eksempler på Birdbird-cockpiter' }))}">` + ex.map(x => `<option value="${x.id}">${esc(x.n)}</option>`).join('') + '</optgroup>';
   s.value = cur ? (cur.ex ? 'ex:' + cur.ac : cur.id) : ''; }
-async function open(f) { stopAll(); cur = f; sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); fit(); draw(); flowSel(); panel(); setMode(mode);
+async function open(f) { stopAll(); cur = f; UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); fit(); draw(); flowSel(); panel(); setMode(mode);
   try { localStorage.setItem('bb-flows-last', f ? (f.ex ? 'ex:' + f.ac : f.id) : ''); } catch (e) {} }
 function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !== 'event'), i = cur.steps.indexOf(s);
   return `<li class="fs${sel === s.id ? ' on' : ''}${F.placed(s) || s.k !== 'act' ? '' : ' unp'}" data-s="${s.id}" style="--c:${col(s.r)}">` +
@@ -118,18 +122,23 @@ function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !==
       (cur.roles.length > 1 ? `<label>${L({ en: 'Layer', no: 'Lag' })} <select data-f="r">${cur.roles.map(r => `<option${r === s.r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` : '') +
       `<label class="wide">${L({ en: 'Note (reference, limitation)', no: 'Notat (referanse, begrensning)' })} <input data-f="n" value="${esc(s.n || '')}" maxlength="400"></label>` +
       `<div class="fmb">${F.placed(s) ? `<button class="btn sm" data-a="unplace">${L({ en: 'Place again', no: 'Plasser på nytt' })}</button>` : ''}<button class="btn sm warn" data-a="del">${L({ en: 'Delete step', no: 'Slett steg' })}</button></div></div>` : '') + '</li>'; }
-function panel(scroll) { const p = $('fpanel'); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex;
+function panel(scroll) { const p = $('fpanel'); if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; if (mode !== 'build' || !ex) { $('fstart').hidden = true; }
   const cockpitOpts = `<option value="img"${cur.ac === 'img' ? ' selected' : ''}>${esc(L({ en: 'My own photo or PDF', no: 'Mitt eget bilde eller PDF' }))}${cur.img && cur.img.name ? ' (' + esc(cur.img.name.slice(0, 24)) + ')' : ''}</option>` + A.list.map(a => `<option value="${a.id}"${cur.ac === a.id ? ' selected' : ''}>${esc(a.name)} · Birdbird</option>`).join('');
   if (mode === 'build') {
     const R = cur.roles, unp = cur.steps.filter(s => s.r === role && !F.placed(s) && s.k === 'act').length;
-    p.innerHTML = (ex ? `<p class="fex">${L({ en: 'This is an example scan pattern (where to look, in what order), not an SOP. Change anything and it becomes your own flow; paste your own SOP to fill in the items.', no: 'Dette er et eksempel på et skannemønster (hvor du ser, i hvilken rekkefølge), ikke en SOP. Endrer du noe, blir det din egen flow. Lim inn din egen SOP for å fylle inn punktene.' })}</p>` : '') +
+    const names = ac ? A.targets(ac).map(t => t.whole ? t.name : t.name + ' · ' + t.panel) : [];
+    const sc = $('fstart'); sc.hidden = !ex; sc.innerHTML = ex ? `<div class="fstart"><b>${L({ en: 'Start here', no: 'Start her' })}</b><div class="fsg"><button class="fsb pri" id="sown"><i>📷</i><span><b>${L({ en: 'My own cockpit', no: 'Min egen cockpit' })}</b><small>${L({ en: 'Photo or PDF page, stays on this device', no: 'Bilde eller PDF-side, blir på denne enheten' })}</small></span></button>` +
+      `<button class="fsb" id="sbird"><i>✈</i><span><b>${L({ en: `New flow on the ${ac ? ac.name.replace(/^(Airbus|Beechcraft|Piper|Diamond|Cessna) /, '') : 'Birdbird'} cockpit`, no: `Ny flow på ${ac ? ac.name.replace(/^(Airbus|Beechcraft|Piper|Diamond|Cessna) /, '') : 'Birdbird'}-cockpiten` })}</b><small>${L({ en: 'Every control named, nothing to upload', no: 'Hver bryter har navn, ingenting å laste opp' })}</small></span></button>` +
+      `<button class="fsb" id="swatch"><i>▶</i><span><b>${L({ en: 'Watch the example', no: 'Se eksempelet' })}</b><small>${L({ en: 'A scan pattern, not an SOP', no: 'Et skannemønster, ikke en SOP' })}</small></span></button></div></div>` : '';
+    p.innerHTML = 
       `<div class="frow"><label class="grow">${L({ en: 'Name', no: 'Navn' })}<input id="fname" value="${esc(cur.name)}" maxlength="80"></label><label class="grow">${L({ en: 'Cockpit', no: 'Cockpit' })}<select id="fac">${cockpitOpts}</select></label></div>` +
       `<div class="frow"><label class="btn sm pri ffile">${L({ en: cur.img ? 'Change photo or PDF…' : 'Upload cockpit photo or PDF…', no: cur.img ? 'Bytt bilde eller PDF …' : 'Last opp cockpitbilde eller PDF …' })}<input type="file" id="fimg" accept="image/*,application/pdf,.pdf" hidden></label>` +
       `<label>${L({ en: 'Roles', no: 'Roller' })} <select id="frs"><option value="pfpm"${cur.rs === 'pfpm' ? ' selected' : ''}>PF / PM</option><option value="cm"${cur.rs === 'cm' ? ' selected' : ''}>CM1 / CM2</option><option value="one"${cur.rs === 'one' ? ' selected' : ''}>${L({ en: 'One pilot', no: 'Én pilot' })}</option></select></label></div>` +
       `<div class="flay">${R.map(r => `<button class="fly${r === role ? ' on' : ''}" data-r="${r}" style="--c:${col(r)}"><i></i>${r} <small>${F.roleSteps(cur, r).length}</small></button><button class="feye${hidden[r] ? ' off' : ''}" data-eye="${r}" title="${esc(L({ en: 'Show or hide this layer', no: 'Vis eller skjul dette laget' }))}">${hidden[r] ? '◌' : '◉'}</button>`).join('')}</div>` +
       `<p class="fhint">${unp ? L({ en: `Tap the cockpit to place the next of ${unp} unplaced ${role} steps.`, no: `Trykk i cockpiten for å plassere neste av ${unp} uplasserte ${role}-steg.` }) : ac ? L({ en: `Tap a control to add the next ${role} step. Drag a badge to move it.`, no: `Trykk på en bryter for å legge til neste ${role}-steg. Dra et merke for å flytte det.` }) : L({ en: `Tap the cockpit to add the next ${role} step. Drag a badge to move it.`, no: `Trykk i cockpiten for å legge til neste ${role}-steg. Dra et merke for å flytte det.` })}</p>` +
+      (ac ? `<div class="frow fadd"><label class="grow">${L({ en: 'Add a control by name', no: 'Legg til en bryter etter navn' })}<input id="fname2" list="ftlist" placeholder="${esc(L({ en: 'e.g. BAT 1, BEACON, FLAPS', no: 'f.eks. BAT 1, BEACON, FLAPS' }))}" autocomplete="off"></label><datalist id="ftlist">${names.map(n => `<option value="${esc(n)}">`).join('')}</datalist></div>` : '') +
       `<ol class="fsteps">${cur.steps.filter(s => s.r === role).map(stepRow).join('') || `<li class="fempty">${L({ en: 'No steps yet.', no: 'Ingen steg ennå.' })}</li>`}</ol>` +
-      `<div class="frow"><button class="btn sm" id="fcall">+ ${L({ en: 'Checklist call', no: 'Sjekklistekall' })}</button><button class="btn sm" id="fev">+ ${L({ en: 'Outside event', no: 'Hendelse utenfra' })}</button><button class="btn sm" id="fsop">${L({ en: 'Paste SOP text…', no: 'Lim inn SOP-tekst …' })}</button><button class="btn sm" id="fnote">+ ${L({ en: 'Note on the panel', no: 'Notat på panelet' })}</button></div>` +
+      `<div class="frow"><button class="btn sm" id="fundo"${UNDO.length ? '' : ' disabled'} title="Ctrl/⌘ Z">↶ ${L({ en: 'Undo', no: 'Angre' })}</button><button class="btn sm" id="fcall">+ ${L({ en: 'Checklist call', no: 'Sjekklistekall' })}</button><button class="btn sm" id="fev">+ ${L({ en: 'Outside event', no: 'Hendelse utenfra' })}</button><button class="btn sm" id="fsop">${L({ en: 'Paste SOP text…', no: 'Lim inn SOP-tekst …' })}</button><button class="btn sm" id="fnote">+ ${L({ en: 'Note on the panel', no: 'Notat på panelet' })}</button></div>` +
       `<details class="fsty"><summary>${L({ en: 'Lines and badges', no: 'Linjer og merker' })}</summary><div class="frow">${R.map(r => `<label>${r} <input type="color" data-col="${r}" value="${col(r)}"></label>`).join('')}<label>${L({ en: 'Line', no: 'Linje' })} <input type="range" id="flw" min="1" max="8" step="0.5" value="${cur.style.lw}"></label><label>${L({ en: 'Badge size', no: 'Merkestørrelse' })} <input type="range" id="fls" min="0.6" max="2" step="0.1" value="${cur.style.ls}"></label><label><input type="checkbox" id="flab"${cur.style.lab ? ' checked' : ''}> ${L({ en: 'Text next to badges', no: 'Tekst ved merkene' })}</label></div></details>`;
     if (scroll) inPanel(p.querySelector('.fs.on'));
   } else if (mode === 'watch') {
@@ -163,6 +172,10 @@ function wirePanel() { const p = $('fpanel');
     if (t.id === 'flw') { cur.style.lw = +t.value; save(); draw(); return; } if (t.id === 'fls') { cur.style.ls = +t.value; save(); draw(); return; } });
   p.addEventListener('change', async e => { const t = e.target; if (!cur) return;
     if (t.id === 'rname') { rName(t.value); return; }
+    if (t.id === 'fname2' && ac) { if (!t.value.trim() || (addN.v === t.value && Date.now() - addN.t < 1500)) return; addN.v = t.value; addN.t = Date.now(); const v = t.value.trim().toLowerCase(), T = A.targets(ac).find(x => (x.whole ? x.name : x.name + ' · ' + x.panel).toLowerCase() === v) || A.targets(ac).find(x => x.name.toLowerCase() === v); if (!T) return;
+      if (cur.ex) adoptExample(); const at = { tg: T.id, x: Math.round(T.x + T.w / 2), y: Math.round(T.y + T.h / 2) }, wait = cur.steps.find(s => s.r === role && !F.placed(s) && s.k === 'act');
+      if (wait) { Object.assign(wait, at); if (!wait.t) wait.t = T.name; sel = wait.id; } else sel = F.addStep(cur, Object.assign({ r: role, t: T.name }, at)).id;
+      save(); draw(); panel(true); ripple(at.x, at.y, null, 900); const n = $('fname2'); if (n) n.focus(); return; }
     if (t.id === 'fimg') { await addPicture(t.files && t.files[0]); t.value = ''; return; }
     if (t.id === 'fac') { if (cur.ex) adoptExample(); if (t.value === 'img') { cur.ac = 'img'; if (!cur.img) { $('fpanel').querySelector('#fimg').click(); } } else { cur.ac = t.value; } snapAll(); save(); imgFor = null; await bg(); fit(); draw(); panel(); flowSel(); return; }
     if (t.id === 'frs') { if (cur.ex) adoptExample(); const nr = F.ROLESETS[t.value]; const map = {}; cur.roles.forEach((r, i) => map[r] = nr[Math.min(i, nr.length - 1)]); cur.steps.forEach(s => s.r = map[s.r] || nr[0]); const c = {}; nr.forEach((r, i) => c[r] = cur.style.col[cur.roles[i]] || F.COLORS[i]); cur.style.col = c; cur.roles = nr.slice(); cur.rs = t.value; role = nr[0]; save(); draw(); panel(); return; }
@@ -180,7 +193,8 @@ function wirePanel() { const p = $('fpanel');
       save(); draw(); panel(true); return; }
     if (b.id === 'fcall' || b.id === 'fev') { if (cur.ex) adoptExample(); const call = b.id === 'fcall'; const t = prompt(call ? L({ en: 'Which checklist or callout? (e.g. BEFORE START CHECKLIST)', no: 'Hvilken sjekkliste eller callout? (f.eks. BEFORE START CHECKLIST)' }) : L({ en: 'Which outside event starts the next steps? (e.g. ATC clearance received)', no: 'Hvilken hendelse utenfra starter de neste stegene? (f.eks. ATC-klarering mottatt)' }), call ? 'BEFORE START CHECKLIST' : '');
       if (!t) return; const st = F.addStep(cur, { r: role, k: call ? 'call' : 'event', t: t.trim().slice(0, 160), x: null, y: null }); sel = call ? st.id : null; save(); draw(); panel(true); msg(call ? L({ en: 'Tap the cockpit to put the call where it is read from, or leave it unplaced.', no: 'Trykk i cockpiten for å legge kallet der det leses fra, eller la det være uplassert.' }) : ''); return; }
-    if (b.id === 'fsop') return sopDialog();
+    if (b.id === 'fsop') return sopDialog(); if (b.id === 'fundo') return undo();
+
     if (b.id === 'fnote') { noteMode = true; msg(L({ en: 'Tap the panel where the note goes.', no: 'Trykk på panelet der notatet skal stå.' })); return; }
     if (b.id === 'wplay') { W.on ? wPause() : wPlay(); return; } if (b.id === 'wrst') { wReset(); wPlay(); return; }
     if (b.id === 'ropen') return rOpen(); if (b.id === 'rjoin') { const c = ($('rjc').value || '').toLowerCase().replace(/^.*[#?&](room|c)=/, '').replace(/[^a-z0-9-]/g, ''); if (c) rJoin(c); return; }
@@ -190,6 +204,10 @@ function wirePanel() { const p = $('fpanel');
     if (b.id === 'rsave') { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); FL.unshift(c); try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (x) {} flowSel(); msg(L({ en: 'Saved in My flows.', no: 'Lagret i Mine flows.' }), 'ok'); return; }
     if (b.id === 'pgo') return pStart('flow'); if (b.id === 'pex') return pStart('exam'); if (b.id === 'pwk') return pStart('weak'); if (b.id === 'pfc') return pStart('cards'); if (b.id === 'pfa') return pStart('all');
     if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') { pEnd(); return; } if (b.id === 'pcheck') { draw({ notes: true }); $('ov').classList.add('chk'); return; } if (b.id === 'pagain') return pStart(P.exam ? 'exam' : P.kind); });
+  $('fstart').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || !cur) return;
+    if (b.id === 'sown') { const f = F.newFlow('img', { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) }); FL.unshift(f); save(); open(f).then(() => { const i = $('fpanel').querySelector('#fimg'); if (i) i.click(); }); return; }
+    if (b.id === 'sbird') { const f = F.newFlow(cur.ac, { roles: cur.rs, name: (A.get(cur.ac) || {}).name || 'Flow' }); FL.unshift(f); save(); open(f); return; }
+    if (b.id === 'swatch') { setMode('watch'); wPlay(); } });
   $('fpq').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') return pEnd(); });
   p.addEventListener('focusin', e => { const li = e.target.closest('.fs'); if (li && mode === 'build' && e.target.classList.contains('ft')) { const id = li.dataset.s; if (sel !== id) { sel = id; draw(); } } }); }
 function snapAll() { if (cur.ac === 'img') return; const a = A.get(cur.ac); cur.steps.forEach(s => { if (s.tg) { const t = A.byId(a, s.tg); if (t) { s.x = Math.round(t.x + t.w / 2); s.y = Math.round(t.y + t.h / 2); } else { s.x = null; s.y = null; delete s.tg; } } }); }
@@ -360,6 +378,34 @@ async function png() { const svg = $('cv'), Hh = H(), sc = 2; draw(mode === 'pra
   const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = 1000 * sc; c.height = (Hh + 60) * sc; c.getContext('2d').drawImage(img, 0, 0); c.toBlob(b => download(fileName('.png'), b), 'image/png'); };
   img.onerror = () => msg(L({ en: 'Could not make the picture.', no: 'Kunne ikke lage bildet.' }), 'err'); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s); if (mode === 'watch') draw({ upto: W.i }); }
 
+/* ---------- video: the flow drawn step by step, recorded from a canvas (MP4 where the browser can, else WebM) ---------- */
+async function video() { if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg(L({ en: 'This browser cannot record video. Try Chrome, Edge or Safari.', no: 'Denne nettleseren kan ikke ta opp video. Prøv Chrome, Edge eller Safari.' }), 'err'); return; }
+  const S = cur.steps.filter(x => !hidden[x.r]); if (!S.length) return; const Hh = H(), k = 1.08, top = 120, bot = 150, Wd = Math.round(1000 * k), Ht = Math.round(Hh * k) + top + bot;
+  let bgs = $('bg').innerHTML; if (cur.ac === 'img' && cur.img && cur.img.id) { const r = await imgGet(cur.img.id); if (r && r.blob) { const d = await new Promise(ok => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.readAsDataURL(r.blob); }); bgs = `<image href="${d}" x="0" y="0" width="1000" height="${Hh}" preserveAspectRatio="none"/>`; } }
+  const css = '.fz{font:700 11px sans-serif;fill:#5E6873;letter-spacing:.08em}.fpn{font:700 11px sans-serif;fill:#D7DCE1}.fpn.scr{fill:#7FD1A0}.ftn{font-family:sans-serif;fill:#E9ECEF}.nophoto{font:600 26px sans-serif;fill:#9AA5B1}';
+  const bgImg = await new Promise((ok, ko) => { const im = new Image(); im.onload = () => ok(im); im.onerror = ko; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 ${Hh}" width="${Wd}" height="${Math.round(Hh * k)}"><style>${css}</style>${bgs}</svg>`); });
+  const c = document.createElement('canvas'); c.width = Wd; c.height = Ht; const x = c.getContext('2d'), X = v => v * k, Y = v => top + v * k;
+  const quad = (a, b) => { const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, dx = b.x - a.x, dy = b.y - a.y, L0 = Math.hypot(dx, dy) || 1, kk = Math.min(40, L0 * 0.12); return { cx: mx - dy / L0 * kk, cy: my + dx / L0 * kk, L0 }; };
+  const qp = (a, b, q, t) => [(1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * q.cx + t * t * b.x, (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * q.cy + t * t * b.y];
+  function line(a, b, col, prog) { const q = quad(a, b), r = 15 * cur.style.ls, t0 = Math.min(.45, r / q.L0), t1 = t0 + (Math.max(.55, 1 - (r + 4) / q.L0) - t0) * prog, n = 24;
+    x.lineCap = 'round'; [[ 'rgba(0,0,0,.45)', cur.style.lw + 3 ], [col, cur.style.lw]].forEach(([cc, w]) => { x.strokeStyle = cc; x.lineWidth = w * k; x.beginPath(); for (let i = 0; i <= n; i++) { const p = qp(a, b, q, t0 + (t1 - t0) * i / n); i ? x.lineTo(X(p[0]), Y(p[1])) : x.moveTo(X(p[0]), Y(p[1])); } x.stroke(); });
+    if (prog > .98) { const p1 = qp(a, b, q, t1), p0 = qp(a, b, q, t1 - .03), ang = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]), s = 9 * k * Math.max(1, cur.style.lw / 3); x.fillStyle = col; x.beginPath(); x.moveTo(X(p1[0]) + Math.cos(ang) * s, Y(p1[1]) + Math.sin(ang) * s); x.lineTo(X(p1[0]) + Math.cos(ang + 2.5) * s, Y(p1[1]) + Math.sin(ang + 2.5) * s); x.lineTo(X(p1[0]) + Math.cos(ang - 2.5) * s, Y(p1[1]) + Math.sin(ang - 2.5) * s); x.fill(); } }
+  function badge(s, sc) { const R = 15 * cur.style.ls * k * sc, cx = X(s.x), cy = Y(s.y); x.fillStyle = col(s.r); x.strokeStyle = '#0B0F12'; x.lineWidth = 2.5 * k; x.beginPath(); if (s.k === 'call') x.rect(cx - R, cy - R, 2 * R, 2 * R); else x.arc(cx, cy, R, 0, 7); x.fill(); x.stroke();
+    const b = s.k === 'call' ? '✓' : F.badge(cur, s); x.fillStyle = '#0B0F12'; x.font = `800 ${Math.round((b.length > 2 ? 11 : 15) * cur.style.ls * k * sc)}px sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(b, cx, cy + 1); }
+  function text(t, px, y0, colr, w, bold) { x.fillStyle = colr; x.font = `${bold ? 800 : 600} ${px}px sans-serif`; x.textAlign = 'left'; x.textBaseline = 'alphabetic'; const words = String(t).split(' '); let line0 = '', y = y0; for (const wd of words) { if (x.measureText(line0 + wd).width > w && line0) { x.fillText(line0, 40, y); line0 = ''; y += px * 1.25; } line0 += wd + ' '; } x.fillText(line0, 40, y); }
+  function frame(i, t) { x.fillStyle = '#0E1114'; x.fillRect(0, 0, Wd, Ht); x.drawImage(bgImg, 0, top);
+    text(cur.name, 38, 58, '#fff', Wd - 80, true); text(cur.roles.map(r => r).join(' · ') + ' · birdbird.eu', 22, 94, '#9AA5B1', Wd - 80);
+    const shown = S.slice(0, i + 1).filter(F.placed); cur.roles.forEach(r => { const R = shown.filter(s => s.r === r); for (let j = 1; j < R.length; j++) line(R[j - 1], R[j], col(r), R[j] === S[i] && F.placed(S[i]) ? Math.min(1, t / .6) : 1); });
+    shown.forEach(s => badge(s, s === S[i] ? Math.min(1, Math.max(0, (t - .45) / .25)) : 1));
+    const s = S[i]; if (s) { x.fillStyle = col(s.r); x.fillRect(0, Ht - bot, 10, bot); text((s.k === 'call' ? '☑ ' : s.k === 'event' ? '⚑ ' : F.badge(cur, s) + '  ') + s.r, 26, Ht - bot + 48, col(s.r), Wd - 80, true); text(s.t || '', 34, Ht - bot + 96, '#fff', Wd - 80, true); } }
+  const type = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find(t => MediaRecorder.isTypeSupported(t)); if (!type) { msg(L({ en: 'This browser cannot record video.', no: 'Denne nettleseren kan ikke ta opp video.' }), 'err'); return; }
+  const st = c.captureStream(30), rec = new MediaRecorder(st, { mimeType: type, videoBitsPerSecond: 6e6 }), parts = []; rec.ondataavailable = e => { if (e.data.size) parts.push(e.data); };
+  const done = new Promise(ok => rec.onstop = ok); rec.start(500); const per = s => s.k === 'act' ? 1.1 : 2.2, total = S.reduce((a, s) => a + per(s), 0) + 1.5; let t0 = performance.now();
+  await new Promise(ok => { const tick = () => { const el = (performance.now() - t0) / 1000; let acc = 0, i = 0; for (; i < S.length; i++) { if (el < acc + per(S[i])) break; acc += per(S[i]); }
+    frame(Math.min(i, S.length - 1), i < S.length ? (el - acc) / per(S[i]) * (S[i].k === 'act' ? 1 : 2) : 1); msg(L({ en: `Recording the video… ${Math.max(0, Math.ceil(total - el))} s`, no: `Tar opp videoen … ${Math.max(0, Math.ceil(total - el))} s` }));
+    if (el >= total) ok(); else requestAnimationFrame(tick); }; tick(); });
+  rec.stop(); await done; download(fileName(type.includes('mp4') ? '.mp4' : '.webm'), new Blob(parts, { type: type.split(';')[0] })); msg(L({ en: 'Video saved.', no: 'Videoen er lagret.' }), 'ok'); }
+
 /* ---------- new flow ---------- */
 function newDialog() { const d = $('dnew'); $('nname').value = ''; $('nac').innerHTML = `<option value="img">${esc(L({ en: 'My own cockpit photo or PDF', no: 'Mitt eget cockpitbilde eller PDF' }))}</option>` + A.list.map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(L({ en: 'Birdbird drawing', no: 'Birdbird-tegning' }))}</option>`).join('');
   $('nrs').value = 'pfpm'; d.showModal(); }
@@ -380,20 +426,25 @@ function init() { load(); wirePanel();
   $('dsop').addEventListener('close', () => { if ($('dsop').returnValue !== 'ok' || !cur) return; const S = F.parseSop($('soptxt').value); if (!S.length) return; if (cur.ex) adoptExample();
     S.forEach(x => F.addStep(cur, { r: role, t: x.t, k: x.k, x: null, y: null })); save(); draw(); panel(); msg(L({ en: `${S.length} steps added. Tap the cockpit to place them one by one.`, no: `${S.length} steg lagt til. Trykk i cockpiten for å plassere dem ett for ett.` }), 'ok'); });
   $('fmenu').addEventListener('click', async e => { const b = e.target.closest('button'); if (!b || !cur) return; $('fmenu').closest('details').open = false; const a = b.dataset.a;
-    if (a === 'share') return share(); if (a === 'file') return exportFile(); if (a === 'png') return png(); if (a === 'print') { window.print(); return; }
+    if (a === 'share') return share(); if (a === 'file') return exportFile(); if (a === 'png') return png(); if (a === 'video') return video(); if (a === 'print') { window.print(); return; }
     if (a === 'import') return $('fimp').click();
     if (a === 'dup') { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); c.name = (cur.name + ' (2)').slice(0, 80); FL.unshift(c); save(); return open(c); }
     if (a === 'del') { if (cur.ex) return; if (!confirm(L({ en: `Delete “${cur.name}”? This cannot be undone.`, no: `Slette «${cur.name}»? Dette kan ikke angres.` }))) return; const im = cur.img && cur.img.id; FL = FL.filter(f => f !== cur); if (im && !FL.some(f => f.img && f.img.id === im)) imgDel(im).catch(() => {}); try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (x) {} return open(FL[0] || F.example('a320', A)); } });
+  document.addEventListener('keydown', e => { if (mode !== 'build' || !cur) return; const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); undo(); }
+    else if ((e.key === 'Delete' || e.key === 'Backspace') && !typing && sel) { e.preventDefault(); F.delStep(cur, sel); sel = null; save(); draw(); panel(); } });
   $('fimp').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) importFile(f); e.target.value = ''; };
   new MutationObserver(() => { flowSel(); panel(); if (cur && cur.ac === 'img' && !imgURL) bg(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
   // a shared link (#f=…) opens as a copy in My flows
   const h = location.hash.match(/#f=([\w-]+)/); let first = null;
   if (h) { const f = F.decode(h[1]); if (f) { if (!FL.some(x => x.id === f.id)) { FL.unshift(f); save(); } first = FL.find(x => x.id === f.id); history.replaceState(null, '', location.pathname); setTimeout(() => msg(f.ac === 'img' ? L({ en: 'Flow opened from a link. It was drawn on a photo: add your own cockpit picture under Cockpit.', no: 'Flowen er åpnet fra en lenke. Den er tegnet på et bilde: legg til ditt eget cockpitbilde under Cockpit.' }) : L({ en: 'Flow opened from a link and saved in My flows.', no: 'Flowen er åpnet fra en lenke og lagret i Mine flows.' }), 'ok'), 300); } }
+  // from a cockpit page (#ac=b200): your newest flow on that cockpit, else its example
+  const ha = location.hash.match(/#ac=(\w+)/); if (!first && ha && A.get(ha[1])) { first = FL.find(f => f.ac === ha[1]) || F.example(ha[1], A); history.replaceState(null, '', location.pathname); }
   if (!first) { let last = ''; try { last = localStorage.getItem('bb-flows-last') || ''; } catch (e) {} first = last.startsWith('ex:') ? F.example(last.slice(3), A) : FL.find(f => f.id === last) || FL[0] || F.example('a320', A); }
   open(first).then(() => { const rm = location.hash.match(/room=([\w-]+)/); let back = null; try { back = JSON.parse(sessionStorage.getItem('bb-flows-room') || 'null'); } catch (e) {}
     if (rm) { setMode('together'); if (back && back.code === rm[1]) rJoin(back.code, back.me); }
     else if (back && back.code) { if (back.host) { RM.code = back.code; RM.me = back.me; RM.host = true; RM.role = back.role; rPoll(); } else rJoin(back.code, back.me); } });
-  window.BBFLOWS = { RM, get P() { return P; }, get cur() { return cur; }, get role() { return role; }, draw, ripple, banner, now, col, open, save, panel, H, get ac() { return ac; }, setMode, get mode() { return mode; } };
+  window.BBFLOWS = { RM, SZ, get P() { return P; }, get cur() { return cur; }, get role() { return role; }, draw, ripple, banner, now, col, open, save, panel, H, get ac() { return ac; }, setMode, get mode() { return mode; } };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
