@@ -786,7 +786,7 @@
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=20"></script>
+<script src="rxmap.js?v=21"></script>
 <script src="aip.js?v=2"></script>
 <script src="windsaloft.js?v=1"></script>
 <script>
@@ -1015,7 +1015,7 @@ async function waMapSync(){ if(!ML) return; if(!LY.wa){ mlPut('bb-wa',mlC([])); 
       for(let j=0;j<d.ny-1;j+=st2) for(let i=0;i<d.nx-1;i+=st2){ const la=d.la0-j*d.d, lo=d.lo0+i*d.d; const fz=BBWIND.freezing(la,lo,time,0); if(!fz) continue; const v=Math.round(fz.ft/100);
         g.push(mlF(mlP(la,lo),{f:fz.below?'0':String(v),v})); } });
     mlPut('bb-frz',mlC(g)); return; }
-  mlPut('bb-frz',mlC([]));
+  mlPut('bb-frz',mlC([])); RXMAP.addBarbs(ML);
   T.forEach(t=>{ const [la0,lo0]=t.split(',').map(Number); const d=BBWIND.tileAt(la0+2.5,lo0+2.5,time); if(!d) return; const k=d.lev.indexOf(h); if(k<0||!d.u[k]) return;
     for(let j=0;j<d.ny-1;j+=stride) for(let i=0;i<d.nx-1;i+=stride){ const n=j*d.nx+i, u=d.u[k][n], v=d.v[k][n]; const sp=Math.hypot(u,v);
       f.push(mlF(mlP(d.la0-j*d.d,d.lo0+i*d.d),{s:Math.min(150,Math.round(sp/5)*5),d:BBWIND.dirOf(u,v),t:Math.round(d.t[k][n])})); } });
@@ -2528,7 +2528,7 @@ function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); 
   try{ RXMAP.addAirspace(m,st=>{ asUI(st); MLK.ly=''; drawMap(); }); }catch(e){ asUI('denied'); }
   if(LY.ct) RXMAP.addContours(m).then(()=>{ MLK.ly=''; drawMap(); });
   m.on('move',()=>{ const c=m.getCenter(); V.la=c.lat; V.lo=c.lng; V.z=mlVz(m.getZoom(),c.lat); MLV={la:V.la,lo:V.lo,z:V.z}; try{ ptPop(); }catch(e){} });
-  m.on('moveend',()=>{ windyHref(); mlMef(); if(!T3.play){ ASX.dirty=true; wxSoon(); if(LY.wa) waMapSoon(); } }); lookInit();
+  m.on('moveend',()=>{ windyHref(); mlMef(); if(!T3.play){ ASX.dirty=true; wxSoon(); if(LY.wa) waMapSoon(); } }); if(LY.sig) setTimeout(sigSync,1500); lookInit();
   m.on('sourcedata',e=>{ if(e.sourceId==='bb-oaip'&&e.tile) ASX.dirty=true; }); m.on('idle',()=>{ if(ASX.dirty) asSoon(150); });
   m.getContainer().addEventListener('bb-satfail',()=>{ if(BM==='sat') setBM('vfr'); }); // no satellite source loads: back to the VFR chart
   m.on('dragstart',()=>{ if(T3.drive){ mlNoPad(); mlFov(); T3.drive=false; T3.mb=null; try{ m.setCenterClampedToGround(true); }catch(e){} } });
@@ -2538,7 +2538,7 @@ function mlInit(){ const m=ML; RXMAP.addOverlays(m); mapEl.classList.add('ml'); 
 function mlHold(on){ if(!ML) return; if(on){ ML.dragPan.disable(); ML.touchZoomRotate.disable(); } else { ML.dragPan.enable(); ML.touchZoomRotate.enable(); if(!T3.on) ML.touchZoomRotate.disableRotation(); } }
 function mlHit(mx,my,r){ const h=ML&&RXMAP.hit(ML,mx,my,r); if(!h) return null; if(h.k==='oa') return h.o?{x:h.x,y:h.y,k:'oa',o:h.o}:null; const o= h.k==='ap'?NAV.ap[h.i] : h.k==='nv'?NAV.nv[h.i] : h.k==='aip'?NAV.fx[h.i] : h.k==='fix'?FIX[h.i] : h.k==='note'?NOTES[h.i] : null; return o?{x:h.x,y:h.y,k:h.k,o}:null; }
 const mlF=(g,p)=>({type:'Feature',geometry:g,properties:p||{}}), mlP=(la,lo)=>({type:'Point',coordinates:[lo,la]}), mlC=a=>({type:'FeatureCollection',features:a});
-function mlPut(id,fc){ const k=JSON.stringify(fc); if(MLK[id]===k) return; MLK[id]=k; RXMAP.setData(ML,id,fc); }
+function mlPut(id,fc){ const k=JSON.stringify(fc); if(MLK[id]===k) return; const first=MLK[id]===undefined; MLK[id]=k; if(first&&!fc.features.length) return; /* a source starts empty: no repaint for nothing */ RXMAP.setData(ML,id,fc); }
 function mlStatic(){ if(!NAV) return;
   RXMAP.setData(ML,'bb-ap',mlC(NAV.ap.map((a,i)=>mlF(mlP(a[2],a[3]),{k:'ap',i,c:a[5]||0,n:a[0]}))));
   RXMAP.setData(ML,'bb-nv',mlC(NAV.nv.map((n,i)=>mlF(mlP(n[4],n[5]),{k:'nv',i,n:n[0],ndb:/NDB/.test(n[2])?1:0}))));

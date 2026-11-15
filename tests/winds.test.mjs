@@ -45,7 +45,7 @@ test('toTile: north-to-south rows, units kt / °C / ft', () => {
   assert.equal(t.t[i850][0], Math.round((REF['t_850_grid_complex_spatial_differencing'][0] - 273.15) * 10) / 10);
   assert.equal(t.u[i850][0], Math.round(REF['u_850_grid_complex_spatial_differencing'][0] * 1.9438445 * 10) / 10);
   assert.equal(t.z[i850][0], Math.round(REF['gh_850_grid_complex_spatial_differencing'][0] * 3.28084 / 10) * 10);
-  assert.equal(t.t[t.lev.indexOf(1000)], null); // not in the fixture
+  assert.equal(t.t[t.lev.indexOf(925)], null); // not in the fixture
   assert.equal(t.valid, '2026-11-15T13:00:00.000Z');
 });
 

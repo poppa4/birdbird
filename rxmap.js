@@ -441,15 +441,6 @@ function addImages(map){
   ad('bb-oa-w',g=>{ g.beginPath(); g.moveTo(3,7.5); g.quadraticCurveTo(5,5.5,7,7.5); g.quadraticCurveTo(9,9.5,11,7.5); g.stroke(); });
   ad('bb-oa-m',g=>{ g.beginPath(); g.arc(7,7,3,0,7); g.stroke(); });
   ad('bb-oa-x',g=>{ g.beginPath(); g.moveTo(4.2,4.2); g.lineTo(9.8,9.8); g.moveTo(9.8,4.2); g.lineTo(4.2,9.8); g.stroke(); });
-  // wind barbs, 0–150 kt in 5 kt steps: staff points up (north) from the station in the middle, feathers on the clockwise side;
-  // the layer rotates each barb to the direction the wind blows from. 50 kt = pennant, 10 kt = long barb, 5 kt = short barb.
-  for(let sp=0;sp<=150;sp+=5) icon(map,'bb-barb-'+sp,44,44,g=>{ const cx=22, cy=22, L=19; g.strokeStyle='#14324F'; g.fillStyle='#14324F'; g.lineWidth=1.5; g.lineCap='round';
-    if(sp<5){ g.beginPath(); g.arc(cx,cy,3.6,0,7); g.stroke(); return; }
-    g.beginPath(); g.arc(cx,cy,1.8,0,7); g.fill(); g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx,cy-L); g.stroke();
-    let r=sp, y=cy-L; const step=3.6;
-    while(r>=50){ g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+8,y+1.5); g.lineTo(cx,y+step+0.8); g.closePath(); g.fill(); y+=step+1.6; r-=50; }
-    while(r>=10){ g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+9,y-3); g.stroke(); y+=step; r-=10; }
-    if(r>=5){ if(sp<10) y+=step; g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+5,y-1.7); g.stroke(); } });
   [['n','#13202A'],['a','#B86E00'],['r','#B3261E']].forEach(([k,c])=>icon(map,'bb-crit-'+k,18,16,g=>{ g.beginPath(); g.moveTo(9,1.5); g.lineTo(16.5,14.5); g.lineTo(1.5,14.5); g.closePath(); g.fillStyle='#fff'; g.fill(); g.strokeStyle=c; g.lineWidth=2; g.lineJoin='round'; g.stroke(); }));
 }
 const FC={type:'FeatureCollection',features:[]};
@@ -457,6 +448,18 @@ const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
 /* SIGMET/AIRMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown, cloud/visibility green; AIRMETs lighter */
 const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
 const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-wa','bb-frz','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+/* wind barbs, 0–150 kt in 5 kt steps, made the first time the winds layer is shown (not at every map load):
+   staff points up (north) from the station in the middle, feathers on the clockwise side; the layer rotates each barb
+   to the direction the wind blows from. 50 kt = pennant, 10 kt = long barb, 5 kt = short barb. */
+function addBarbs(map){ if(map.hasImage('bb-barb-150')) return;
+  for(let sp=0;sp<=150;sp+=5) icon(map,'bb-barb-'+sp,44,44,g=>{ const cx=22, cy=22, L=19; g.strokeStyle='#14324F'; g.fillStyle='#14324F'; g.lineWidth=1.5; g.lineCap='round';
+    if(sp<5){ g.beginPath(); g.arc(cx,cy,3.6,0,7); g.stroke(); return; }
+    g.beginPath(); g.arc(cx,cy,1.8,0,7); g.fill(); g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx,cy-L); g.stroke();
+    let r=sp, y=cy-L; const step=3.6;
+    while(r>=50){ g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+8,y+1.5); g.lineTo(cx,y+step+0.8); g.closePath(); g.fill(); y+=step+1.6; r-=50; }
+    while(r>=10){ g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+9,y-3); g.stroke(); y+=step; r-=10; }
+    if(r>=5){ if(sp<10) y+=step; g.beginPath(); g.moveTo(cx,y); g.lineTo(cx+5,y-1.7); g.stroke(); } });
+}
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
   const halo={'text-halo-color':'rgba(255,255,255,.92)','text-halo-width':1.6,'text-halo-blur':0.2};
@@ -650,6 +653,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,addBarbs,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();

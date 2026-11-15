@@ -1,5 +1,5 @@
 /* Birdbird – Cloudflare Pages Function: GET /api/winds?tile=55,5[&t=2026-11-15T12:00Z]
-   Upper winds, temperature and height on 12 pressure levels (1000–150 hPa) for one 5° × 5° tile, from NOAA's GFS model
+   Upper winds, temperature and height on 10 pressure levels (925–200 hPa) for one 5° × 5° tile, from NOAA's GFS model
    (0.25°, hourly to 120 h; public domain), subset by the NOMADS grib filter and decoded here (functions/_lib/grib2.js).
    Global coverage. The newest finished model run is used; if it is not on NOMADS yet, the one before.
    One upstream call per tile and hour for everyone: answers are cached at the edge for 2 h.
@@ -12,7 +12,7 @@ import { readGrib2 } from '../_lib/grib2.js';
 
 const NOMADS = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl';
 const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
-export const LEVELS = [1000, 925, 850, 800, 700, 600, 500, 400, 300, 250, 200, 150];
+export const LEVELS = [925, 850, 800, 700, 600, 500, 400, 300, 250, 200]; // FL025–FL390: what the table and map show
 const TILE = 5;
 const TTL = 7200;
 const TIMEOUT = 12000;

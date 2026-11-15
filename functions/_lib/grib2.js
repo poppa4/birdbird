@@ -15,10 +15,13 @@ const f32 = (b, o) => new DataView(b.buffer, b.byteOffset + o, 4).getFloat32(0, 
 
 /* big-endian bit reader */
 function Bits(b, off) { this.b = b; this.p = off * 8; }
-Bits.prototype.read = function (n) {
-  if (n === 0) return 0;
+Bits.prototype.read = function (n) { // whole byte chunks, not bit by bit: this is the hot loop
   let v = 0;
-  for (let i = 0; i < n; i++) { const byte = this.b[this.p >> 3]; v = v * 2 + ((byte >> (7 - (this.p & 7))) & 1); this.p++; }
+  while (n > 0) {
+    const avail = 8 - (this.p & 7), take = avail < n ? avail : n;
+    v = v * (1 << take) + ((this.b[this.p >> 3] >> (avail - take)) & ((1 << take) - 1));
+    this.p += take; n -= take;
+  }
   return v;
 };
 Bits.prototype.align = function () { this.p = (this.p + 7) & ~7; };

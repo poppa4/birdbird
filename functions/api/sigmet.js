@@ -191,11 +191,11 @@ export async function handleSigmet(request, env, deps) {
   const firs = String(url.searchParams.get('fir') || '').toUpperCase().split(/[\s,;]+/).filter(Boolean);
   if (firs.some(f => !/^[A-Z]{2}([A-Z]{2})?$/.test(f)) || firs.length > 12) return json({ ok: false, error: 'bad_fir', message: 'Use two- or four-letter FIR or country codes, e.g. ?fir=EN,ES.' }, 400);
 
-  // one upstream round for the whole world, cached raw; filters run on the cached copy
-  const key = new Request(url.origin + '/api/sigmet?raw=2', { method: 'GET' });
-  let raw = null;
-  if (cache) { try { const hit = await cache.match(key); if (hit) raw = await hit.json(); } catch (e) {} }
-  if (!raw) {
+  // one upstream round for the whole world; the parsed, combined list is cached, so a cache hit only filters
+  const key = new Request(url.origin + '/api/sigmet?all=3', { method: 'GET' });
+  let all = null;
+  if (cache) { try { const hit = await cache.match(key); if (hit) all = await hit.json(); } catch (e) {} }
+  if (!all) { let raw = null;
     const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), TIMEOUT);
     const mctl = new AbortController(), mt = setTimeout(() => mctl.abort(), MET_TIMEOUT);
     try {
@@ -211,12 +211,14 @@ export async function handleSigmet(request, env, deps) {
       return json({ ok: false, error: 'upstream', message: 'Could not reach the weather service' + (e && e.status ? ' (HTTP ' + e.status + ')' : '') + '.' }, 502);
     }
     clearTimeout(timer); clearTimeout(mt);
-    if (cache) { const put = cache.put(key, json(raw, 200, 'public, max-age=' + TTL)).catch(() => {}); if (deps.waitUntil) deps.waitUntil(put); else await put; }
+    const met = raw.met == null ? null : parseTac(raw.met, now);
+    all = { metOk: raw.met != null, items: combineAll(met, raw.isig, raw.us, now) };
+    if (cache) { const put = cache.put(key, json(all, 200, 'public, max-age=' + TTL)).catch(() => {}); if (deps.waitUntil) deps.waitUntil(put); else await put; }
   }
-  const met = raw.met == null ? null : parseTac(raw.met, now);
-  const items = combineAll(met, raw.isig, raw.us, now, firs);
+  const want = firs.map(f => f.toUpperCase()), t = now.getTime();
+  const items = all.items.filter(x => (!want.length || want.some(w => x.fir.startsWith(w))) && (!x.to || Date.parse(x.to) > t));
   return json({ ok: true, sources: { 'MET Norway': 'api.met.no (CC BY 4.0), Norway: SIGMET and AIRMET', 'aviationweather.gov': 'NOAA Aviation Weather Center: international and US SIGMETs' },
-    metOk: raw.met != null, fetched: now.toISOString(), items }, 200, 'public, max-age=60, s-maxage=' + TTL);
+    metOk: all.metOk, fetched: now.toISOString(), items }, 200, 'public, max-age=60, s-maxage=' + TTL);
 }
 
 export async function onRequestGet(ctx) {
