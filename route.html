@@ -1276,7 +1276,8 @@ function asFq(a){ if(a.freq) return a.freq; if(!/^(ctr|tiz|tia|atz|matz|htz|rmz|
   if(!FQ[p]){ FQ[p]={p:fetch('data/freq/'+p+'.json').then(r=>r.ok?r.json():{}).catch(()=>({}))}; FQ[p].p.then(d=>{ FQ[p].d=d; try{ asList(compute(),TP); }catch(e){} }); return null; }
   const L0=FQ[p].d&&FQ[p].d[ap[0]]; if(!L0) return null; const f=['TWR','AFIS','INFO','A/G','RDO','CTAF','APP'].map(t=>L0.find(x=>x[0]===t)).find(Boolean); return f?f[2]:null; }
 /* SIGMET/AIRMET that the route crosses (the map's SIGMET list), with the part of the route and whether your planned altitude is in it */
-function swList(M){ const box=el('swl'); if(!box) return; const items=(SIG.items||[]).filter(x=>x.poly&&(!x.to||new Date(x.to)>Date.now()));
+let SWH=null; // SIGMET/AIRMET hits on the route (null: not checked)
+function swList(M){ const box=el('swl'); if(!box) return; SWH=null; const items=(SIG.items||[]).filter(x=>x.poly&&(!x.to||new Date(x.to)>Date.now()));
   if(!LY.sig||!items.length||M.C.length<2||!(M.total>0.2)){ box.hidden=true; box.innerHTML=''; return; }
   const tot=M.total, n=Math.max(40,Math.min(600,Math.ceil(tot/2))), S=[]; for(let i=0;i<=n;i++){ const x=tot*i/n, q=M.posAt(x); if(q&&q.la!=null) S.push({x,q}); }
   const hits=[]; items.forEach(s=>{ let x0=180,x1=-180,y0=90,y1=-90; s.poly.forEach(c=>{ x0=Math.min(x0,c[0]); x1=Math.max(x1,c[0]); y0=Math.min(y0,c[1]); y1=Math.max(y1,c[1]); });
@@ -1284,9 +1285,29 @@ function swList(M){ const box=el('swl'); if(!box) return; const items=(SIG.items
       if(v){ if(st==null) st=p.x; if(M.PM!=='ter'){ const al=M.altAt(p.x); if(al>=(s.base||0)-1&&al<=(s.top==null?1e6:s.top)+1) inAlt=true; } }
       if((!v||k===S.length-1)&&st!=null){ iv.push([st,p.x]); st=null; } });
     if(iv.length) hits.push({s,iv,inAlt}); });
+  SWH=hits;
   if(!hits.length){ box.hidden=false; box.innerHTML=`<div class="ash"><b>${L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'})}</b><span>${L({en:'none of the valid ones cross the route.',no:'ingen av de gyldige krysser ruten.'})}</span></div>`; return; }
   const col=s=>RXMAP.SIGC[s.cat]||RXMAP.SIGC.other, nm=v=>tot>30?fx(Math.round(v)):fx(v,1);
   box.hidden=false; box.innerHTML=`<div class="ash"><b>${L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'})}</b></div><ul>`+hits.map(h=>`<li class="${h.inAlt?'in':''}" style="color:${col(h.s)}"><i style="background:${col(h.s)}"></i><span style="color:var(--ink)"><b>${esc(h.s.type||'SIGMET')} ${esc(h.s.series||'')}</b> ${esc(sigLabel(h.s))} <small>${esc(h.s.fir)} · ${sigLevels(h.s)||'?'} · ${h.iv.map(v=>nm(v[0])+'–'+nm(v[1])).join(', ')} NM</small></span>${h.inAlt?`<em style="background:${col(h.s)}">${L({en:'your altitude is in it',no:'høyden din er i den'})}</em>`:''}</li>`).join('')+'</ul>'; }
+/* structured route data for the briefing pack's go/no-go: SIGMET/AIRMET hits and model icing/turbulence along the planned profile */
+function goData(M){ const d={sigOn:!!LY.sig&&!!(SIG.items||[]).length,sw:null,aloft:null};
+  if(SWH) d.sw=SWH.map(h=>({t:h.s.type||'SIGMET',l:sigLabel(h.s),cat:h.s.cat,fir:h.s.fir,lv:sigLevels(h.s)||'',in:!!h.inAlt,to:h.s.to||null,iv:h.iv.map(v=>[Math.round(v[0]),Math.round(v[1])])}));
+  const R0=WA.res; if(!R0||!(M.total>0.2)||M.PM==='ter') return d;
+  const n=Math.max(20,Math.min(160,Math.ceil(M.total/3))), xs=[]; for(let i=0;i<=n;i++){ const x=M.total*i/n, q=M.posAt(x); if(q&&q.la!=null) xs.push({x,q,a:M.altAt(x)}); }
+  const tbAt=(q,a)=>{ const t=BBWIND.turb(q.la,q.lo,R0.time); return t?Math.max(0,...t.filter(l=>a>=l.zlo-1&&a<=l.zhi+1).map(l=>l.cat)):0; };
+  let ice=null, tb=null, any=0; xs.forEach(p=>{ if(p.a<300) return; const w=BBWIND.at(p.q.la,p.q.lo,p.a,R0.time); if(!w) return; any=1;
+    if(w.ice){ if(!ice) ice={x0:p.x,x1:p.x,max:0,a0:p.a,a1:p.a}; ice.x1=p.x; ice.max=Math.max(ice.max,w.ice); ice.a0=Math.min(ice.a0,p.a); ice.a1=Math.max(ice.a1,p.a); }
+    const c=tbAt(p.q,p.a); if(c>=2){ if(!tb) tb={x0:p.x,x1:p.x,cat:0}; tb.x1=p.x; tb.cat=Math.max(tb.cat,c); } });
+  if(!any) return d;
+  // other cruise levels: which are free of model icing and moderate turbulence over the cruise part of the route
+  const cr=M.cr!=null?M.cr:null, mid=xs.filter(p=>(!M.toc||p.x>=M.toc.x)&&(!M.tod||p.x<=M.tod.x)), free=[];
+  // lowest level allowed: the highest terrain under the cruise legs plus your margin, or your MSA if higher; no terrain data → no suggestions
+  const mg=+S('mg')||1000; let ter=null; for(let i=1;i<M.C.length;i++){ const x0=M.C[i-1].x, x1=M.C[i].x; if(!mid.some(p=>p.x>=x0&&p.x<=x1)) continue; const t=legTer(M,i)??pnum(M.C[i].p.ter); if(t!=null) ter=Math.max(ter==null?-1e9:ter,t); }
+  const msa=Math.max(pnum(S('msa'))??-1e9, ter!=null?ter+mg:-1e9), floor=msa>-1e8?msa:null;
+  if(cr!=null&&mid.length&&floor!=null){ for(let a=Math.max(1500,Math.ceil((cr-5000)/500)*500);a<=cr+5000;a+=500){ if(a<floor) continue;
+    if(mid.every(p=>{ const w=BBWIND.at(p.q.la,p.q.lo,a,R0.time); return w&&!w.ice&&tbAt(p.q,a)<2; })) free.push(a); } }
+  d.aloft={time:R0.time,cr,msa:floor,ice:ice&&{x0:Math.round(ice.x0),x1:Math.round(ice.x1),max:ice.max,a0:Math.round(ice.a0/100)*100,a1:Math.round(ice.a1/100)*100},turb:tb&&{x0:Math.round(tb.x0),x1:Math.round(tb.x1),cat:tb.cat},free};
+  return d; }
 /* ---------- profil-tegning ---------- */
 const psv=el('psv');
 function render(){
@@ -1939,6 +1960,7 @@ async function sendRoute(silent){ if(MODE==='draw') return silent?null:sendDraw(
   // route briefing that goes with the profile: SIGMET/AIRMET on the route, airspace crossed, winds/cloud/icing/turbulence, NOTAM, aerodromes along the route
   const bh=(id,n)=>{ const b=el(id); if(!b||b.hidden||!b.innerHTML.trim()) return ''; const c=b.cloneNode(true); c.querySelectorAll('button,input,select,script,.noprint').forEach(e=>e.remove()); return c.innerHTML; };
   const brief={sw:bh('swl'),as:bh('asl'),wa:bh('wat')?'<table class="tb wat">'+bh('wat')+'</table>'+(el('wanote')&&el('wanote').textContent?'<p class="note">'+esc(el('wanote').textContent)+'</p>':''):'',ntm:bh('ntmmsg'),nr:bh('nrt')?'<table class="tb nrt">'+bh('nrt')+'</table>':''};
+  try{ brief.d=goData(M); }catch(e){}
   P.xs={pts,zoom:R.zoom!==false,svg:snap.innerHTML,route:R.id,wx:R.wx||'',gs:R.gs||'',at:Date.now(),brief};
   const f=P.f; const firstR=M.C[0].p, lastR=[...M.C].reverse().find(c=>c.p.t==='rwy'&&c.i>0);
   if(firstR.t==='rwy'&&!f.depapt) f.depapt=firstR.n; if(lastR&&!f.destapt) f.destapt=lastR.p.n;

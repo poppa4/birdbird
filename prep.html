@@ -122,6 +122,10 @@ body.briefing .why{display:none}
 .pager select option{color:var(--ink)}
 .clbox{margin-top:18px;border-top:1px solid var(--rule);padding-top:12px}
 .clbox h3{font-size:14px;margin:0 0 2px;display:flex;justify-content:space-between;align-items:baseline}.clbox h3 small{font-weight:600;color:var(--ink-2)}
+.go{margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--rule)}.go h3{margin:0 0 4px}
+.gov{font-weight:700;font-size:14px;margin:0 0 6px;padding:6px 9px;border-radius:7px}.gv-bad{background:var(--warning-wash);color:var(--warning)}.gv-warn{background:#FFF4DC;color:#8A5A00}.gv-ok{background:rgba(31,122,77,.1);color:var(--green)}
+.go ul{list-style:none;margin:0;padding:0}.go li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px;font-size:12.5px;line-height:1.38;padding:3px 0}.go li i{font-style:normal;font-weight:700;text-align:center}
+.go li em{display:block;font-style:normal;color:var(--ink-2);font-size:12px}.g-bad i{color:var(--warning)}.g-warn i{color:#B86E00}.g-ok i{color:var(--green)}.g-unk i{color:var(--ink-2)}.g-ok span{color:var(--ink-2)}
 .clbox .clbar{height:4px;background:var(--rule-2);margin:6px 0 8px}.clbox .clbar i{display:block;height:100%;background:var(--green)}
 .cl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .cl li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;align-items:start;font-size:13px;line-height:1.35;padding:3px 0}
@@ -635,6 +639,7 @@ function altCalc(f,g){
     setC('aa.'+k+'.ok', afc!=null&&afv!=null&&q.v!=null? okm(afc>=q.c&&afv>=q.v) : ''); });
   return out;
 }
+let GOMB=null;
 function calc(){
   const f=P.f, g=k=>num(f[k]);
   setC('title',esc([f.type,f.reg,f.purpose].filter(Boolean).join(' · '))); setC('kick',esc((f.heading||'').trim()||((f.rules==='VFR'||f.rules==='IFR')?f.rules+' ':'')+'BRIEFING PACK')); document.querySelectorAll('[data-c="kick"]').forEach(e=>e.classList.toggle('custom',!!(f.heading||'').trim()));
@@ -693,6 +698,7 @@ function calc(){
   if(any&&mz) msgs.push(`ZFM ${fx(M,1)} kg ${okm(M<=mz)}`);
   if(any&&cg){ if(E) msgs.push(`CG ${fx(cg,3)} m ${okm(inE(TM,cg))}`); else if(fw&&af) msgs.push(`CG ${fx(cg,3)} m ${okm(cg>=fw&&cg<=af)}`); }
   setC('mb.check',msgs.join(' · '));
+  GOMB=any?{TM,LM,M,mt,ml,mz,cg,cgOk:cg==null?null:E?inE(TM,cg):(fw&&af?cg>=fw&&cg<=af:null)}:null;
   const pts=[]; if(any&&M){ pts.push({n:'ZF',m:M,a:MO/M,ok:inE(M,MO/M)}); } if(any&&TM&&fm){ pts.push({n:'TO',m:TM,a:TMO/TM,ok:inE(TM,TMO/TM)&&(!mt||TM<=mt)}); } if(any&&LM&&bm){ pts.push({n:'LDG',m:LM,a:LMO/LM,ok:inE(LM,LMO/LM)}); }
   envChart(E,pts.sort((x,y)=>x.m-y.m),mt);
   try{ drawLoad(E,any?TM:null,any&&TM?TMO/TM:null,mt,any?LM:null,any&&LM?LMO/LM:null); }catch(e){}
@@ -1229,7 +1235,7 @@ function wxRender(){ const box=el('wxCards'); if(!box||!P||!window.WXK) return; 
   sigRender(TW); swxDraw(); el('wxp').classList.toggle('has',cards.length>0); { const d=el('wxman'); if(d&&!d.dataset.touched) d.open=!cards.length; }
   if(fid){ const f=el(fid); if(f) f.focus(); }
   el('wxNote').innerHTML=L({en:'For training. Reports from MET Norway (Norwegian aerodromes) and aviationweather.gov can be late or incomplete, and the reading here can miss things. Before flight, check the official briefing (for Norway: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).',no:'For trening. Meldinger fra MET Norway (norske flyplasser) og aviationweather.gov kan være forsinket eller mangelfulle, og tolkningen her kan overse ting. Sjekk den offisielle briefingen før flyging (i Norge: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).'});
-  ntmRender(TW,NT,t0,t1); }
+  ntmRender(TW,NT,t0,t1); setTimeout(()=>{ try{ drawCL(); }catch(e){} },0); }
 el('book').addEventListener('change',e=>{ const s=e.target.closest('[data-wxrwy]'); if(!s) return; P.f['wx.'+s.dataset.wxrwy+'.rwy']=s.value.trim().toUpperCase(); wxSig=''; calc(); queueSave(); });
 el('book').addEventListener('click',e=>{ if(e.target.closest('#wxman>summary')) el('wxman').dataset.touched='1'; });
 /* SIGMET and AIRMET for the FIRs of the aerodromes in the pack (/api/sigmet: MET Norway for Norway, aviationweather.gov elsewhere); stored without geometry */
@@ -1395,11 +1401,78 @@ const CL=[
 const DEFF=blankPrep().f;
 function secFilled(id){ const sec=document.getElementById('s-'+id); if(!sec||sec.hidden) return false; let n=0; sec.querySelectorAll('[data-k]').forEach(i=>{ const k=i.dataset.k, v=P.f[k]; if(v!=null&&v!==''&&v!==DEFF[k]) n++; }); return n>=2; }
 function clState(){ return CL.map(([id,t])=>{ const auto=id.indexOf('x.')!==0&&secFilled(id); const man=P.f['cl.'+id]==='1'; return {id,t,auto,done:auto||man}; }); }
+/* ---------- go / no-go: everything the pack knows, judged together, with the reason and what would change it ----------
+   Levels: bad (no-go as planned), warn (go only if you can manage it), ok, unk (not checked). The pilot decides; this is a summary. */
+function sunset(d,la,lo){ // NOAA solar position (good to about a minute); → Date of sunset (sun 0.833° below the horizon), or null in midnight sun / polar night
+  const D=Math.PI/180, J=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),12)/864e5+2440587.5, n=Math.round(J-2451545-0.0009+lo/360);
+  const Js=2451545.0009-lo/360+n, M=(357.5291+0.98560028*(Js-2451545))%360, C=1.9148*Math.sin(M*D)+0.02*Math.sin(2*M*D)+0.0003*Math.sin(3*M*D), lam=(M+C+180+102.9372)%360;
+  const Jt=Js+0.0053*Math.sin(M*D)-0.0069*Math.sin(2*lam*D), dec=Math.asin(Math.sin(lam*D)*Math.sin(23.4397*D)), cw=(Math.sin(-0.833*D)-Math.sin(la*D)*Math.sin(dec))/(Math.cos(la*D)*Math.cos(dec));
+  if(cw<-1||cw>1) return null; return new Date((Jt+Math.acos(cw)/D/360-2440587.5)*864e5); }
+function goState(){ const f=P.f, g=k=>num(f[k]), out=[], add=(lv,t,why,fix)=>out.push({lv,t,why,fix}), TW=wxTimes(), V=(f.rules||'IFR')==='VFR';
+  const hm=d=>d?String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+'Z':'';
+  // weather and runway at each aerodrome, as read in the weather cards
+  const cards=[...document.querySelectorAll('#wxCards article.wxc')], txt=li=>li?li.querySelector('span').textContent.replace(/\s+/g,' ').trim().slice(0,220):'';
+  ['dep','dest','toalt','alt1','alt2'].forEach(k=>{ const c=cards.find(x=>x.dataset.k===k), id=wxIcao(k); if(!c){ if((k==='dep'||k==='dest')&&id) add('unk',L(WXR[k])+' '+id,L({en:'no METAR or TAF in the pack',no:'ingen METAR eller TAF i pakken'}),L({en:'Fetch the weather on the Meteorology page.',no:'Hent været på Meteorologi-siden.'})); return; }
+    const b=c.querySelector('li.l-bad'), w=c.querySelector('li.l-warn'), nm=L(WXR[k])+' '+(WXA[k]&&WXA[k].id||id||'');
+    if(b) add('bad',nm,txt(b),L({en:'Pick another time, runway or aerodrome, or wait for a newer TAF.',no:'Velg et annet tidspunkt, en annen bane eller flyplass, eller vent på en nyere TAF.'}));
+    else if(w) add('warn',nm,txt(w),''); else add('ok',nm,L({en:'weather and wind inside the limits in your window',no:'vær og vind innenfor grensene i vinduet ditt'}),''); });
+  // route: SIGMET/AIRMET, model icing and turbulence (sent from Route Explorer)
+  const X=f&&P.xs&&P.xs.route?P.xs:null, d=X&&X.brief&&X.brief.d;
+  if(d&&d.sw){ const hit=d.sw.filter(x=>!x.to||new Date(x.to)>Date.now()), inn=hit.filter(x=>x.in);
+    if(inn.length) add('bad',L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'}),inn.map(x=>`${x.t} ${x.l} (${x.lv}) ${x.iv.map(v=>v[0]+'–'+v[1]).join(', ')} NM`).join('; ')+' · '+L({en:'your planned altitude is inside',no:'den planlagte høyden er inni'}),L({en:'Change level or route around it, or wait until it expires.',no:'Endre høyde eller rute rundt, eller vent til den utløper.'}));
+    else if(hit.length) add('warn',L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'}),hit.map(x=>`${x.t} ${x.l} (${x.lv})`).join('; ')+' · '+L({en:'not at your planned altitude',no:'ikke i den planlagte høyden'}),L({en:'Keep clear of its levels if you change altitude.',no:'Hold deg unna nivåene hvis du endrer høyde.'}));
+    else add('ok',L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'}),L({en:'none of the valid ones cross the route',no:'ingen av de gyldige krysser ruten'}),''); }
+  else { const n=(P.wx&&P.wx.sig||[]).length; add(n?'warn':'unk',L({en:'SIGMET / AIRMET on the route',no:'SIGMET / AIRMET på ruten'}),n?L({en:`${n} valid in the FIRs, not checked against the route`,no:`${n} gyldige i FIR-ene, ikke sjekket mot ruten`}):L({en:'not checked',no:'ikke sjekket'}),L({en:'Turn on SIGMET in Route Explorer; the route is then checked and sent here.',no:'Slå på SIGMET i Route Explorer; da sjekkes ruten og sendes hit.'})); }
+  const A=d&&d.aloft, fl=a=>a>=10000?'FL'+Math.round(a/100):fx(a)+' ft';
+  if(A){ const alts=A.free.filter(a=>a!==A.cr), sug=alts.length?L({en:'Free of model icing and moderate turbulence over the cruise: ',no:'Uten modell-ising og moderat turbulens over marsjdelen: '})+alts.slice(0,8).map(fl).join(', ')+' ('+L({en:'all at or above',no:'alle på eller over'})+' '+fl(A.msa)+', '+L({en:'terrain plus your margin',no:'terreng pluss marginen din'})+').':A.msa==null?L({en:'Set an MSA or terrain margin in Route Explorer to get suggested levels.',no:'Sett MSA eller terrengmargin i Route Explorer for å få forslag til høyder.'}):L({en:'No level within ±5000 ft of cruise and above your terrain margin is clear in the model: consider another day, route or time.',no:'Ingen høyde innenfor ±5000 ft av marsjhøyden og over terrengmarginen er fri i modellen: vurder en annen dag, rute eller tid.'});
+    if(A.ice) add(A.ice.max>=2?'bad':'warn',L({en:'Icing (model)',no:'Ising (modell)'}),L({en:`in cloud at 0 to −20 °C on your profile ${A.ice.x0}–${A.ice.x1} NM, ${fl(A.ice.a0)}${A.ice.a1!==A.ice.a0?'–'+fl(A.ice.a1):''}${A.ice.max>=2?', high risk':''}`,no:`i sky ved 0 til −20 °C på profilen din ${A.ice.x0}–${A.ice.x1} NM, ${fl(A.ice.a0)}${A.ice.a1!==A.ice.a0?'–'+fl(A.ice.a1):''}${A.ice.max>=2?', høy risiko':''}`}),L({en:'Unless the aircraft is approved for icing: ',no:'Med mindre flyet er godkjent for ising: '})+sug);
+    else add('ok',L({en:'Icing (model)',no:'Ising (modell)'}),L({en:'none on your profile',no:'ingen på profilen din'}),'');
+    if(A.turb) add(A.turb.cat>=3?'bad':'warn',L({en:'Turbulence (model index)',no:'Turbulens (modellindeks)'}),L({en:`${A.turb.cat>=3?'severe possible':'moderate'} ${A.turb.x0}–${A.turb.x1} NM`,no:`${A.turb.cat>=3?'mulig kraftig':'moderat'} ${A.turb.x0}–${A.turb.x1} NM`}),A.ice?'':sug);
+  } else add('unk',L({en:'Icing and turbulence aloft',no:'Ising og turbulens i høyden'}),L({en:'not checked',no:'ikke sjekket'}),L({en:'In Route Explorer, set ETD and cruise and press “Fill winds from the forecast”.',no:'I Route Explorer: sett ETD og marsjhøyde og trykk «Fill winds from the forecast».'}));
+  // NOTAM
+  const NT=wxNotams(); if(!(f['n.paste']||'').trim()) add('unk','NOTAM',L({en:'not read: none pasted in the pack',no:'ikke lest: ingen limt inn i pakken'}),L({en:'Paste the NOTAM for departure, route, destination and alternates on the NOTAM page.',no:'Lim inn NOTAM for avgang, rute, destinasjon og alternativer på NOTAM-siden.'}));
+  else { const t0=TW?new Date(+TW.etd-36e5):null, t1=TW?new Date(+(TW.eta||TW.etd)+36e5):null, ids=['dep','dest','alt1','alt2','toalt'].map(wxIcao).filter(Boolean);
+    const act=NT.filter(n=>(n.loc||[]).some(l=>ids.includes(l))&&(!t0||!['later','ended'].includes(WXK.overlap(n,t0,t1)))), cl=act.filter(n=>(n.impacts||[]).some(x=>/clsd/.test(x.k)));
+    add(cl.length?'warn':'ok','NOTAM',L({en:`${NT.length} read, ${act.length} active at your aerodromes in the window`,no:`${NT.length} lest, ${act.length} aktive på flyplassene dine i vinduet`})+(cl.length?' · '+L({en:'closures: ',no:'stengninger: '})+cl.map(n=>n.id).join(', '):''),cl.length?L({en:'Check that the closures do not hit your runway, taxi route or approach.',no:'Sjekk at stengningene ikke rammer banen, takseruten eller innflygingen din.'}):''); }
+  // daylight (VFR by day)
+  { const ap=NAVD&&NAVD[wxIcao('dest')]; let ss=null, how='';
+    if(TW&&TW.eta&&ap){ ss=sunset(TW.eta,ap[2],ap[3]); how=L({en:'calculated',no:'beregnet'}); }
+    const man=pHM(f['ar.last']); if(man!=null&&TW&&TW.eta){ const b=new Date(TW.eta); b.setUTCHours(0,man,0,0); ss=b; how=L({en:'your latest landing time',no:'din seneste landingstid'}); }
+    if(TW&&TW.eta&&ss){ const mg=Math.round((ss-TW.eta)/60e3), night=/night|natt|\bIR\b|NVFR/i.test(f['p.lic']||'');
+      add(mg<0&&V&&!night?'bad':mg<30?'warn':'ok',L({en:'Daylight',no:'Dagslys'}),L({en:`ETA ${hm(TW.eta)}, sunset ${hm(ss)} (${how}): ${mg>=0?mg+' min margin':-mg+' min after sunset'}`,no:`ETA ${hm(TW.eta)}, solnedgang ${hm(ss)} (${how}): ${mg>=0?mg+' min margin':-mg+' min etter solnedgang'}`}),mg<30?L({en:'Leave earlier, shorten the route, or plan for night (rating, lighting at the aerodrome).',no:'Dra tidligere, kort ned ruten, eller planlegg for mørke (rettighet, lys på flyplassen).'}):''); }
+    else if(V) add('unk',L({en:'Daylight',no:'Dagslys'}),L({en:'not checked',no:'ikke sjekket'}),L({en:'Add date, ETD and flight time (EET), and the destination.',no:'Legg inn dato, ETD og flytid (EET), og destinasjonen.'})); }
+  // fuel
+  { const parts=['taxi','trip','cont','alt','frf','add','xtra'].map(k=>g('fu.l1.'+k)), ob=g('fu.l1.ob'); if(parts.some(v=>v!=null)&&ob!=null){ const mn=parts.reduce((a,v)=>a+(v||0),0), u=f['fu.unit']||'';
+    add(ob<mn?'bad':ob<mn*1.05?'warn':'ok',L({en:'Fuel',no:'Drivstoff'}),L({en:`on board ${fx(ob,1)} ${u}, minimum ${fx(mn,1)} ${u}`,no:`om bord ${fx(ob,1)} ${u}, minimum ${fx(mn,1)} ${u}`}),ob<mn?L({en:'Take more fuel, add a stop, or reduce the load.',no:'Ta mer drivstoff, legg inn en mellomlanding, eller reduser lasten.'}):''); }
+    else add('unk',L({en:'Fuel',no:'Drivstoff'}),L({en:'not calculated',no:'ikke beregnet'}),L({en:'Fill in the Fuel page.',no:'Fyll ut Drivstoff-siden.'})); }
+  // mass and balance
+  if(GOMB){ const B=GOMB, bad=(B.mt&&B.TM>B.mt)||(B.ml&&B.LM>B.ml)||(B.mz&&B.M>B.mz)||B.cgOk===false;
+    add(bad?'bad':B.cgOk==null&&!B.mt?'unk':'ok',L({en:'Mass and balance',no:'Masse og balanse'}),[B.mt?L({en:'take-off',no:'avgang'})+` ${fx(B.TM,1)} / ${fx(B.mt)} kg`:'',B.cgOk===false?L({en:'CG outside the envelope',no:'tyngdepunktet utenfor grensene'}):B.cgOk?L({en:'CG inside',no:'tyngdepunktet innenfor'}):''].filter(Boolean).join(' · ')||L({en:'limits missing',no:'grenser mangler'}),bad?L({en:'Move or remove load, or take less fuel if the trip allows it.',no:'Flytt eller fjern last, eller ta mindre drivstoff hvis turen tillater det.'}):''); }
+  else add('unk',L({en:'Mass and balance',no:'Masse og balanse'}),L({en:'not calculated',no:'ikke beregnet'}),L({en:'Fill in the Mass and balance page.',no:'Fyll ut Masse og balanse-siden.'}));
+  // runway performance
+  { const tf=g('rf.to')||1, lf=g('rf.ld')||1, t=g('r.dep.tod'), a=g('r.dep.tora'), l=g('r.dest.ldr'), la=g('r.dest.lda'), r=[];
+    if(t!=null&&a!=null) r.push([t*tf<=a,L({en:`take-off ${fx(t*tf)} m of ${fx(a)} m`,no:`avgang ${fx(t*tf)} m av ${fx(a)} m`})]); if(l!=null&&la!=null) r.push([l*lf<=la,L({en:`landing ${fx(l*lf)} m of ${fx(la)} m`,no:`landing ${fx(l*lf)} m av ${fx(la)} m`})]);
+    if(r.length) add(r.every(x=>x[0])?'ok':'bad',L({en:'Runway length (with factors)',no:'Banelengde (med faktorer)'}),r.map(x=>x[1]).join(' · '),r.every(x=>x[0])?'':L({en:'Lighter, another runway or aerodrome, or wait for better wind or temperature.',no:'Lettere, annen bane eller flyplass, eller vent på bedre vind eller temperatur.'}));
+    else add('unk',L({en:'Runway length',no:'Banelengde'}),L({en:'not calculated',no:'ikke beregnet'}),L({en:'Fill in the Runway performance page.',no:'Fyll ut Baneytelse-siden.'})); }
+  // licence and medical against the date of the flight
+  { const pd=s=>{ let m=String(s||'').match(/(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return Date.UTC(+m[1],m[2]-1,+m[3]); m=String(s||'').match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/); return m?Date.UTC(+m[3],m[2]-1,+m[1]):null; };
+    const day=TW?+TW.etd:Date.now(), ex=[['p.lic',L({en:'licence/rating',no:'sertifikat/rettighet'})],['p.med',L({en:'medical',no:'medisinsk'})]].map(([k,n])=>[n,pd(f[k])]).filter(x=>x[1]!=null);
+    if(ex.length){ const gone=ex.filter(x=>x[1]+864e5<=day), soon=ex.filter(x=>x[1]+864e5>day&&x[1]-day<30*864e5);
+      add(gone.length?'bad':soon.length?'warn':'ok',L({en:'Licence and medical',no:'Sertifikat og medisinsk'}),gone.length?gone.map(x=>x[0]).join(', ')+' '+L({en:'expired by the flight date',no:'utløpt på flydatoen'}):soon.length?soon.map(x=>x[0]).join(', ')+' '+L({en:'expires within 30 days',no:'utløper innen 30 dager'}):L({en:'valid on the flight date',no:'gyldig på flydatoen'}),gone.length?L({en:'You cannot fly as PIC until it is renewed.',no:'Du kan ikke fly som fartøysjef før det er fornyet.'}):''); } }
+  // your own risk assessment
+  { const rk=['pilot','ac','wx','terr','aero','night','time','fuel'].map(k=>+f['rk.'+k]||0), hi=rk.filter(v=>v===3).length;
+    if(rk.some(Boolean)) add(hi>=2?'bad':hi?'warn':'ok',L({en:'Your risk assessment',no:'Din risikovurdering'}),hi?L({en:`${hi} factor(s) high`,no:`${hi} faktor(er) høy`}):L({en:'no high factors',no:'ingen høye faktorer'}),hi?L({en:'Name a mitigation for each high factor, or change the plan.',no:'Navngi et tiltak for hver høye faktor, eller endre planen.'}):''); }
+  return out; }
+function goHtml(){ let G=[]; try{ G=goState(); }catch(e){ return ''; } if(!G.length) return '';
+  const nb=G.filter(x=>x.lv==='bad').length, nw=G.filter(x=>x.lv==='warn').length, nu=G.filter(x=>x.lv==='unk').length;
+  const v=nb?['bad',L({en:'No-go as planned',no:'No-go slik det er planlagt'})]:nw||nu?['warn',L({en:'Go only if you can manage the yellow points',no:'Go bare hvis du kan håndtere de gule punktene'})]:['ok',L({en:'Go: nothing found against it',no:'Go: ingenting funnet imot'})];
+  const ic={bad:'✗',warn:'!',ok:'✓',unk:'?'}, ord={bad:0,warn:1,unk:2,ok:3};
+  return `<div class="go"><h3 aria-level="2">Go / no-go</h3><p class="gov gv-${v[0]}">${v[1]}${nu?` <small>· ${nu} ${L({en:'not checked',no:'ikke sjekket'})}</small>`:''}</p><ul>${G.slice().sort((a,b)=>ord[a.lv]-ord[b.lv]).map(x=>`<li class="g-${x.lv}"><i>${ic[x.lv]}</i><span><b>${esc(x.t)}</b> ${esc(x.why)}${x.fix?`<em>${esc(x.fix)}</em>`:''}</span></li>`).join('')}</ul><p class="note" style="font-size:11.5px;margin:6px 0 0">${L({en:'A summary of what is in the pack. Model icing and turbulence are rough guides. You make the decision.',no:'Et sammendrag av det som står i pakken. Modell-ising og -turbulens er grove pekepinner. Du tar avgjørelsen.'})}</p></div>`; }
 function clHtml(){ const st=clState(), n=st.filter(x=>x.done).length;
-  return `<h3 aria-level="2">${L({en:'Before you go',no:'Før du drar'})}<small>${n} / ${st.length}</small></h3><div class="clbar"><i style="width:${Math.round(n/st.length*100)}%"></i></div><ul class="cl">${st.map(x=>`<li class="${x.done?'done':''}"><input type="checkbox" data-cl="${x.id}" ${x.done?'checked':''} ${x.auto?'disabled title="'+esc(L({en:'Filled in the pack',no:'Fylt ut i pakken'}))+'"':''} aria-label="${esc(L(x.t))}"><span>${x.id.indexOf('x.')!==0&&document.getElementById('s-'+x.id)&&!document.getElementById('s-'+x.id).hidden?`<a href="#s-${x.id}" data-go="${x.id}">${esc(L(x.t))}</a>`:esc(L(x.t))}${x.auto?`<em>✓ ${L({en:'in the pack',no:'i pakken'})}</em>`:''}</span></li>`).join('')}</ul>
+  return goHtml()+`<h3 aria-level="2">${L({en:'Before you go',no:'Før du drar'})}<small>${n} / ${st.length}</small></h3><div class="clbar"><i style="width:${Math.round(n/st.length*100)}%"></i></div><ul class="cl">${st.map(x=>`<li class="${x.done?'done':''}"><input type="checkbox" data-cl="${x.id}" ${x.done?'checked':''} ${x.auto?'disabled title="'+esc(L({en:'Filled in the pack',no:'Fylt ut i pakken'}))+'"':''} aria-label="${esc(L(x.t))}"><span>${x.id.indexOf('x.')!==0&&document.getElementById('s-'+x.id)&&!document.getElementById('s-'+x.id).hidden?`<a href="#s-${x.id}" data-go="${x.id}">${esc(L(x.t))}</a>`:esc(L(x.t))}${x.auto?`<em>✓ ${L({en:'in the pack',no:'i pakken'})}</em>`:''}</span></li>`).join('')}</ul>
    <p class="note" style="font-size:12px;margin:8px 0 0">${L({en:'Not a form. Items tick themselves when you fill in that page; tick the rest yourself.',no:'Ikke et skjema. Punktene hukes av selv når du fyller ut den siden; huk av resten selv.'})}</p>`; }
-function drawCL(){ const h=clHtml(); el('clbox').innerHTML=h; el('clbox2').innerHTML=h; const st=clState(), n=st.filter(x=>x.done).length; el('clmob').querySelector('summary').textContent=L({en:'Before you go',no:'Før du drar'})+` · ${n} / ${st.length}`;
-  el('clprint').innerHTML=`<h2>${L({en:'Before you go',no:'Før du drar'})} – ${esc(P.title||'')}</h2><ul>${st.map(x=>`<li><b>${x.done?'✓':''}</b>${esc(L(x.t))}</li>`).join('')}</ul>`;
+function drawCL(){ const h=clHtml(); el('clbox').innerHTML=h; el('clbox2').innerHTML=h; const st=clState(), n=st.filter(x=>x.done).length; let gv=''; try{ const G=goState(); gv=G.some(x=>x.lv==='bad')?'✗ No-go · ':G.some(x=>x.lv==='warn'||x.lv==='unk')?'! Go / no-go · ':'✓ Go · '; }catch(e){} el('clmob').querySelector('summary').textContent=gv+L({en:'Before you go',no:'Før du drar'})+` · ${n} / ${st.length}`;
+  el('clprint').innerHTML=goHtml()+`<h2>${L({en:'Before you go',no:'Før du drar'})} – ${esc(P.title||'')}</h2><ul>${st.map(x=>`<li><b>${x.done?'✓':''}</b>${esc(L(x.t))}</li>`).join('')}</ul>`;
   const open=st.filter(x=>!x.done).map(x=>x.t.en).join('; '); if((P.f['cl.open']||'')!==open){ P.f['cl.open']=open; } }
 ['clbox','clbox2'].forEach(id=>el(id).addEventListener('click',e=>{ const c=e.target.closest('input[data-cl]'); if(c){ P.f['cl.'+c.dataset.cl]=c.checked?'1':''; drawCL(); queueSave(); return; } const a=e.target.closest('a[data-go]'); if(a&&view==='book'){ e.preventDefault(); const i=vis().findIndex(s=>s.id==='s-'+a.dataset.go); if(i>=0) go(i); } }));
 let clT=null; el('book').addEventListener('input',()=>{ clearTimeout(clT); clT=setTimeout(drawCL,400); }); el('book').addEventListener('change',()=>{ clearTimeout(clT); clT=setTimeout(drawCL,400); });
