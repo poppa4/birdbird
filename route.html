@@ -598,7 +598,7 @@
     <details class="lyg" data-g="mine"><summary>My stuff <span class="lyc"></span></summary>
     <label class="chk"><input type="checkbox" data-ly="my"> My fixes</label>
     <label class="chk"><input type="checkbox" data-ly="nt"> My notes</label></details>
-    <p class="note">Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.</p>
+    <p class="note">Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from MET Norway (Norwegian aerodromes) and aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.</p>
   </div>
   <aside class="rx-side noprint" id="side" hidden></aside>
   <aside class="rx-side rx-lib noprint" id="lib" hidden></aside>
@@ -895,7 +895,7 @@ async function terrainProfile(M){
   TP={pts:out,hr,cov:out.filter(o=>o.e!=null).length/Math.max(1,out.length)}; return TP;
 }
 
-/* ---------- METAR on the map (/api/wx, aviationweather.gov) ----------
+/* ---------- METAR on the map (/api/wx: MET Norway for EN**, aviationweather.gov for the rest) ----------
    Airports on the route, medium and large airports within 20 NM of it, and in view when zoomed in. At most 8 ids per
    request (the function's limit), 3 requests per update and 6 per minute; each answer (also "no METAR") is kept 5 min. */
 const WXS={c:{},t:0,hist:[],busy:false,lib:null,idx:null};
@@ -916,7 +916,7 @@ async function wxFetch(ids){ const now=Date.now(); WXS.hist=WXS.hist.filter(t=>n
   ids.forEach(id=>{ WXS.c[id]=Object.assign(WXS.c[id]||{},{busy:1}); });
   try{ const r=await fetch('/api/wx?ids='+ids.join(','),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw new Error((j&&j.error)||'wx');
     ids.forEach(id=>{ const st=j.stations&&j.stations[id], mt=st&&st.metar; let m=null; try{ m=mt&&mt.raw?WXK.parseMetar(mt.raw,new Date()):null; }catch(e){}
-      WXS.c[id]={t:Date.now(),raw:mt?mt.raw:'',obs:mt?mt.obsTime:null,m,fc:wxCat(m),name:st&&st.name}; }); return true; }
+      WXS.c[id]={t:Date.now(),raw:mt?mt.raw:'',obs:mt?mt.obsTime:null,m,fc:wxCat(m),name:st&&st.name,src:st&&st.source}; }); return true; }
   catch(e){ ids.forEach(id=>{ WXS.c[id]={t:Date.now(),err:1}; }); return false; } }
 async function wxSync(only){ if(!ML) return; if(!LY.wx){ mlPut('bb-wx',mlC([])); return; } if(WXS.busy){ if(only) WXS.pend=(WXS.pend||[]).concat(only); return; } if(T3.play) return;
   try{ await wxLib(); }catch(e){ return; }
@@ -938,7 +938,7 @@ function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="
   if(m.ceil!=null&&!m.cavok) rows.push([L({en:'Ceiling',no:'Skydekke'}),fx(m.ceil)+' ft']);
   if(m.temp!=null) rows.push([L({en:'Temp / dew point',no:'Temp / duggpunkt'}),m.temp+' / '+(m.dew!=null?m.dew:'–')+' °C']);
   if(m.qnh!=null) rows.push(['QNH',m.qnh+' hPa']);
-  return box(`<b style="font-size:13px;display:block;margin-top:10px">METAR${c.obs?' '+new Date(c.obs).toISOString().slice(11,16)+'Z':''}${age!=null&&age>=0?` <span style="font-weight:400;color:var(--ink-2)">(${age<120?age+' min':Math.round(age/60)+' h'} ${L({en:'ago',no:'siden'})})</span>`:''}${c.fc?`<span class="fc" style="background:${col}">${c.fc}</span>`:''}</b><dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl><pre>${esc(c.raw)}</pre><p class="src">${L({en:'Source: aviationweather.gov (NOAA). Can be late or incomplete: check the official briefing before flight. Category (SERA, EASA): VFR = visibility ≥ 5 km and ceiling ≥ 1500 ft; SVFR = special VFR only (≥ 1500 m, ceiling ≥ 600 ft, in a control zone with ATC clearance); IFR = below that. Ceiling = lowest BKN or OVC layer.',no:'Kilde: aviationweather.gov (NOAA). Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging. Kategori (SERA, EASA): VFR = sikt ≥ 5 km og skydekke ≥ 1500 ft; SVFR = bare spesiell VFR (≥ 1500 m, skydekke ≥ 600 ft, i kontrollsone med klarering fra ATC); IFR = under det. Skydekke = laveste BKN- eller OVC-lag.'})}</p>`); }
+  return box(`<b style="font-size:13px;display:block;margin-top:10px">METAR${c.obs?' '+new Date(c.obs).toISOString().slice(11,16)+'Z':''}${age!=null&&age>=0?` <span style="font-weight:400;color:var(--ink-2)">(${age<120?age+' min':Math.round(age/60)+' h'} ${L({en:'ago',no:'siden'})})</span>`:''}${c.fc?`<span class="fc" style="background:${col}">${c.fc}</span>`:''}</b><dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl><pre>${esc(c.raw)}</pre><p class="src">${L({en:'Source: '+(c.src==='MET Norway'?'MET Norway':'aviationweather.gov (NOAA)')+'. Can be late or incomplete: check the official briefing before flight. Category (SERA, EASA): VFR = visibility ≥ 5 km and ceiling ≥ 1500 ft; SVFR = special VFR only (≥ 1500 m, ceiling ≥ 600 ft, in a control zone with ATC clearance); IFR = below that. Ceiling = lowest BKN or OVC layer.',no:'Kilde: '+(c.src==='MET Norway'?'MET Norway':'aviationweather.gov (NOAA)')+'. Kan være forsinket eller ufullstendig: sjekk den offisielle briefingen før flyging. Kategori (SERA, EASA): VFR = sikt ≥ 5 km og skydekke ≥ 1500 ft; SVFR = bare spesiell VFR (≥ 1500 m, skydekke ≥ 600 ft, i kontrollsone med klarering fra ATC); IFR = under det. Skydekke = laveste BKN- eller OVC-lag.'})}</p>`); }
 /* ---------- navigasjonslogg: vindtrekant per etappe ----------
    TC = great-circle initial course of the leg, VAR from wmm.js (World Magnetic Model) at the leg's mid-point,
    wind for the route (R.nl.w) or per leg (p.nw on the leg's end point), TAS = the speed field in the profile bar. */
@@ -1925,7 +1925,7 @@ LAB.add({},{
 });
 LAB.add({},{
  'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','Weather (METAR)':'Vær (METAR)',
- 'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. METAR fra aviationweather.gov, til trening: sjekk den offisielle briefingen. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
+ 'Highest terrain per square: our own figure from the terrain data, highest point + 300 ft for unknown obstacles, rounded up to 100 ft. Not an official MEF. Airspace comes from openAIP, a community database: it can be incomplete or out of date, so check the AIP and NOTAM. METAR from MET Norway (Norwegian aerodromes) and aviationweather.gov, for training: check the official briefing. Not shown: airways, obstacles and IFR points for Norway, Sweden and Denmark. Not an official VFR or IFR chart.':'Høyeste terreng per rute: vårt eget tall fra terrengdataene, høyeste punkt + 300 ft for ukjente hindre, rundet opp til 100 ft. Ikke en offisiell MEF. Luftrommet kommer fra openAIP, en dugnadsdatabase: det kan være ufullstendig eller utdatert, så sjekk AIP og NOTAM. METAR fra MET Norway (norske flyplasser) og aviationweather.gov, til trening: sjekk den offisielle briefingen. Vises ikke: luftveier, hindre og IFR-punkter for Norge, Sverige og Danmark. Ikke et offisielt VFR- eller IFR-kart.',
  'Navlog':'Navlogg','TAS':'TAS','Wind':'Vind','° / kt':'° / kt','Fuel flow':'Forbruk','per hour':'per time','Unit':'Enhet','Print navlog':'Skriv ut navloggen','True airspeed, knots':'Sann flyfart, knop','Wind for the whole route, direction and speed':'Vind for hele ruten, retning og styrke','Fuel flow per hour':'Forbruk per time','Fuel unit':'Drivstoffenhet',
  '⇪ ForeFlight or Garmin Pilot screenshot / PDF':'⇪ Skjermbilde / PDF fra ForeFlight eller Garmin Pilot','Export':'Eksporter','GPX':'GPX','Garmin FPL':'Garmin FPL','Copy route':'Kopier ruten'});
 LAB.add({},{

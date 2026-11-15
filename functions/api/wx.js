@@ -1,18 +1,24 @@
 /* Birdbird – Cloudflare Pages Function: GET /api/wx?ids=ENGM,ENBR,ENZV
-   Proxies the aviationweather.gov Data API (NOAA Aviation Weather Center) so the briefing pack can show the latest
-   METAR and TAF. The browser cannot call aviationweather.gov directly (no CORS), and going through one edge cache keeps
-   us far below the API's limit (100 requests per minute) however many people open the page.
+   Latest METAR and TAF for the briefing pack, Route Explorer and the weather page.
+   Sources, best first:
+   - Norwegian aerodromes (EN**): MET Norway, the regulated MET service that issues them (api.met.no tafmetar, CC BY 4.0).
+   - Everything else, and any EN** station MET Norway does not answer for: aviationweather.gov (NOAA Aviation Weather
+     Center), which relays the worldwide OPMET exchange.
+   The browser cannot call these directly (no CORS, User-Agent rules), and one edge cache keeps both far below their limits.
 
-   Response 200: { ok:true, source, fetched, stations:{ ENGM:{ icao, name, metar:{raw,obsTime}|null, taf:{raw,issueTime,validFrom,validTo}|null } }, missing:[…] }
+   Response 200: { ok:true, source, fetched, stations:{ ENGM:{ icao, name, source, metar:{raw,obsTime}|null, taf:{raw,issueTime,validFrom,validTo}|null } }, missing:[…] }
    Errors:       { ok:false, error:'bad_ids'|'upstream'|'timeout', message } with status 400 / 502 / 504.
    GET /api/wx?ping=1 answers { ok:true } without calling upstream.
    For training: data can be late or incomplete; the page tells the user to check the official briefing. */
 
 const UPSTREAM = 'https://aviationweather.gov/api/data';
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
+const MET = 'https://api.met.no/weatherapi/tafmetar/1.0';
+const SRC_MET = 'MET Norway', SRC_AWC = 'aviationweather.gov';
+const UA = 'Birdbird/1.0 (+https://birdbird.eu)'; // MET Norway requires an identifying User-Agent
 const MAX_IDS = 8;
 const TTL = 300; // seconds: METARs are issued every 30 or 60 minutes, TAFs every 3 to 6 hours
 const TIMEOUT = 8000;
+const MET_TIMEOUT = 3500; // then the EN** stations go to aviationweather.gov instead
 
 const json = (body, status, cache) => new Response(JSON.stringify(body), {
   status: status || 200,
@@ -53,7 +59,7 @@ async function getJson(fetchFn, url, signal) {
 
 export function combine(ids, metars, tafs, now) {
   const st = {};
-  ids.forEach(id => { st[id] = { icao: id, name: null, metar: null, taf: null }; });
+  ids.forEach(id => { st[id] = { icao: id, name: null, source: SRC_AWC, metar: null, taf: null }; });
   // the API can return more than one report per station: keep the newest
   (metars || []).forEach(m => {
     const id = String(m.icaoId || m.stationId || '').toUpperCase(); if (!st[id]) return;
@@ -72,7 +78,53 @@ export function combine(ids, metars, tafs, now) {
     if (t.name && !st[id].name) st[id].name = String(t.name);
   });
   const missing = ids.filter(id => !st[id].metar && !st[id].taf);
-  return { ok: true, source: 'aviationweather.gov (NOAA Aviation Weather Center)', fetched: (now || new Date()).toISOString(), stations: st, missing };
+  return { ok: true, source: SRC_AWC + ' (NOAA Aviation Weather Center)', fetched: (now || new Date()).toISOString(), stations: st, missing };
+}
+
+/* ---------- MET Norway (tafmetar text) ---------- */
+/* Time of a DDHHMM(Z) group relative to now: a day far ahead of today belongs to the previous month. */
+export function dayTime(d, h, mi, now) {
+  const n = now || new Date();
+  let t = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), d, h, mi);
+  if (t - n.getTime() > 2 * 864e5) t = Date.UTC(n.getUTCFullYear(), n.getUTCMonth() - 1, d, h, mi);
+  return t;
+}
+/* Newest report in a tafmetar .txt answer (last 24 h; messages end with '='). Returns null when nothing is readable,
+   so the caller falls back to aviationweather.gov. */
+export function metLatest(txt, kind, now) {
+  const all = String(txt || '');
+  if (/<\s*(html|\?xml)/i.test(all)) return null;
+  const parts = (/=/.test(all) ? all.split('=') : all.split('\n')).map(x => x.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  let best = null, bt = -Infinity;
+  for (let x of parts) {
+    x = x.replace(/^(METAR|SPECI|TAF)\s+(?:(?:AMD|COR|AUTO)\s+)*(?=[A-Z]{4}\b)/, m => kind === 'taf' ? m : (/^SPECI/.test(m) ? m : ''));
+    const g = x.match(/^(?:(?:TAF|SPECI)\s+(?:(?:AMD|COR)\s+)*)?([A-Z]{4})\s+(?:COR\s+)?(\d{2})(\d{2})(\d{2})Z\b/);
+    if (!g) continue;
+    const t = dayTime(+g[2], +g[3], +g[4], now);
+    if (t >= bt) { best = x; bt = t; }
+  }
+  if (!best) return null;
+  if (kind === 'metar') return { raw: best, obsTime: new Date(bt).toISOString() };
+  const raw = /^TAF\b/.test(best) ? best : 'TAF ' + best;
+  const v = raw.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
+  const vt = (d, h) => new Date(dayTime(d, 0, 0, now) + h * 36e5).toISOString(); // 24 = end of day
+  return { raw, issueTime: new Date(bt).toISOString(), validFrom: v ? vt(+v[1], +v[2]) : null, validTo: v ? vt(+v[3], +v[4]) : null };
+}
+async function metGet(fetchFn, kind, id, signal, now) {
+  const r = await fetchFn(MET + '/' + kind + '.txt?icao=' + id, { headers: { 'user-agent': UA }, signal, cf: { cacheTtl: TTL, cacheEverything: true } });
+  if (!r.ok) return null;
+  return metLatest(await r.text(), kind, now);
+}
+/* { ENGM:{metar,taf} } for the Norwegian ids MET Norway answered; errors and empty answers are left out. */
+export async function fromMet(fetchFn, ids, signal, now) {
+  const out = {};
+  await Promise.all(ids.filter(id => /^EN/.test(id)).map(async id => {
+    try {
+      const [metar, taf] = await Promise.all([metGet(fetchFn, 'metar', id, signal, now), metGet(fetchFn, 'taf', id, signal, now)]);
+      if (metar || taf) out[id] = { metar, taf };
+    } catch (e) { if (e && e.name === 'AbortError') throw e; }
+  }));
+  return out;
 }
 
 export async function handleWx(request, env, deps) {
@@ -94,13 +146,20 @@ export async function handleWx(request, env, deps) {
 
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), TIMEOUT);
-  const q = 'ids=' + encodeURIComponent(ids.join(',')) + '&format=json';
-  let metars, tafs;
+  let met = {}, metars = [], tafs = [];
   try {
-    [metars, tafs] = await Promise.all([
-      getJson(fetchFn, UPSTREAM + '/metar?' + q, ctl.signal),
-      getJson(fetchFn, UPSTREAM + '/taf?' + q, ctl.signal)
-    ]);
+    // MET Norway first for EN**; one slow or broken answer only sends that station to aviationweather.gov
+    const mctl = new AbortController(), mt = setTimeout(() => mctl.abort(), MET_TIMEOUT);
+    try { met = await fromMet(fetchFn, ids, mctl.signal, deps.now ? new Date(deps.now()) : null); } catch (e) { met = {}; }
+    clearTimeout(mt);
+    const rest = ids.filter(id => !met[id]);
+    if (rest.length) {
+      const q = 'ids=' + encodeURIComponent(rest.join(',')) + '&format=json';
+      [metars, tafs] = await Promise.all([
+        getJson(fetchFn, UPSTREAM + '/metar?' + q, ctl.signal),
+        getJson(fetchFn, UPSTREAM + '/taf?' + q, ctl.signal)
+      ]);
+    }
   } catch (e) {
     clearTimeout(timer);
     if (e && e.name === 'AbortError') return json({ ok: false, error: 'timeout', message: 'The weather service did not answer in time.' }, 504, 'no-store');
@@ -110,6 +169,14 @@ export async function handleWx(request, env, deps) {
   clearTimeout(timer);
 
   const body = combine(ids, metars, tafs);
+  const used = new Set();
+  ids.forEach(id => {
+    const m = met[id], s = body.stations[id];
+    if (m) { s.source = SRC_MET; s.metar = m.metar; s.taf = m.taf; }
+    if (s.metar || s.taf) used.add(s.source);
+  });
+  body.missing = ids.filter(id => !body.stations[id].metar && !body.stations[id].taf);
+  body.source = used.size ? [...used].sort((a, b) => (a === SRC_MET ? -1 : b === SRC_MET ? 1 : 0)).join(' and ') : SRC_AWC;
   const res = json(body, 200, 'public, max-age=60, s-maxage=' + TTL);
   if (cache) {
     const put = cache.put(key, res.clone()).catch(() => {});

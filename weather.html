@@ -248,7 +248,8 @@ async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=
   const s=j.stations[id], x=s&&(kind==='T'?s.taf:s.metar);
   if(!x){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
   el('raw').value=x.raw; run(); const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
-  say(LL(`From aviationweather.gov${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra aviationweather.gov${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
+  const src=s.source||'aviationweather.gov';
+  say(LL(`From ${src}${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra ${src}${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
 el('liveM').onclick=()=>live('M'); el('liveT').onclick=()=>live('T'); el('liveId').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); live('M'); } });
 
 /* ---------- sidevind ---------- */
