@@ -108,7 +108,10 @@ export function metLatest(txt, kind, now) {
   const raw = /^TAF\b/.test(best) ? best : 'TAF ' + best;
   const v = raw.match(/\b(\d{2})(\d{2})\/(\d{2})(\d{2})\b/);
   const vt = (d, h) => new Date(dayTime(d, 0, 0, now) + h * 36e5).toISOString(); // 24 = end of day
-  return { raw, issueTime: new Date(bt).toISOString(), validFrom: v ? vt(+v[1], +v[2]) : null, validTo: v ? vt(+v[3], +v[4]) : null };
+  const out = { raw, issueTime: new Date(bt).toISOString(), validFrom: v ? vt(+v[1], +v[2]) : null, validTo: v ? vt(+v[3], +v[4]) : null };
+  // short TAFs (e.g. ENNO, daytime only): MET returns the last 24 h, so an expired one is dropped, as aviationweather.gov does
+  if (out.validTo && new Date(out.validTo).getTime() <= (now || new Date()).getTime()) return null;
+  return out;
 }
 async function metGet(fetchFn, kind, id, signal, now) {
   const r = await fetchFn(MET + '/' + kind + '.txt?icao=' + id, { headers: { 'user-agent': UA }, signal, cf: { cacheTtl: TTL, cacheEverything: true } });

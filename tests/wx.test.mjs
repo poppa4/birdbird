@@ -45,6 +45,13 @@ test('metLatest picks the newest METAR and TAF and reads the validity', () => {
   assert.equal(metLatest('METAR ENGM 151050Z 36010KT=', 'metar', new Date(NOW)).raw, 'ENGM 151050Z 36010KT');
 });
 
+test('an expired short TAF is dropped (falls back to aviationweather.gov)', () => {
+  const evening = new Date(Date.UTC(2026, 10, 15, 19, 0));
+  assert.equal(metLatest('TAF ENNO 150800Z 1509/1518 31005KT CAVOK=', 'taf', evening), null);
+  assert.ok(metLatest('TAF ENNO 150800Z 1509/1518 31005KT CAVOK=', 'taf', new Date(NOW)));
+  assert.ok(metLatest('ENNO 151850Z VRB02KT CAVOK 01/M03 Q1020=', 'metar', evening), 'METAR still shown');
+});
+
 test('day groups across a month change', () => {
   assert.equal(new Date(dayTime(30, 23, 50, new Date(Date.UTC(2026, 11, 1, 0, 10)))).toISOString(), '2026-11-30T23:50:00.000Z');
 });
