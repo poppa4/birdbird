@@ -445,8 +445,8 @@ function addImages(map){
 }
 const FC={type:'FeatureCollection',features:[]};
 const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
-/* SIGMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown */
-const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',other:'#3A4650'};
+/* SIGMET/AIRMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown, cloud/visibility green; AIRMETs lighter */
+const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',vis:'#4E6B2E',other:'#3A4650'};
 const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
@@ -456,10 +456,10 @@ function addOverlays(map){
   add({id:'bb-mefg',type:'line',source:'bb-mefg',paint:{'line-color':'rgba(46,91,154,.18)','line-width':0.8}});
   add({id:'bb-mef',type:'symbol',source:'bb-mef',layout:{'text-field':['format',['get','th'],{'font-scale':1},['get','hu'],{'font-scale':0.62}],'text-font':FONT_B,'text-size':lin(4,15,9,24),'text-allow-overlap':true,'text-ignore-placement':true},paint:Object.assign({'text-color':'rgba(46,91,154,.8)'},halo,{'text-halo-color':'rgba(255,255,255,.75)'})});
   add({id:'bb-awy',type:'line',source:'bb-awy',minzoom:5,paint:{'line-color':'rgba(29,78,158,.45)','line-width':lin(5,0.6,10,1.3)}});
-  // SIGMET areas (international SIGMETs, Europe): tinted fill + dashed outline by hazard, under the route
-  const SGC=['match',['get','cat'],'ts',SIGC.ts,'turb',SIGC.turb,'ice',SIGC.ice,'mtw',SIGC.mtw,'va',SIGC.va,SIGC.other];
-  add({id:'bb-sig-f',type:'fill',source:'bb-sig',layout:{visibility:'none'},paint:{'fill-color':SGC,'fill-opacity':0.1}});
-  add({id:'bb-sig-l',type:'line',source:'bb-sig',layout:{visibility:'none','line-join':'round'},paint:{'line-color':SGC,'line-width':lin(3,1.4,10,2.4),'line-dasharray':[3,2],'line-opacity':0.9}});
+  // SIGMET and AIRMET areas (worldwide SIGMETs; AIRMETs where published openly): tinted fill + dashed outline by hazard, under the route
+  const SGC=['match',['get','cat'],'ts',SIGC.ts,'turb',SIGC.turb,'ice',SIGC.ice,'mtw',SIGC.mtw,'va',SIGC.va,'vis',SIGC.vis,SIGC.other], AM=['==',['get','a'],1];
+  add({id:'bb-sig-f',type:'fill',source:'bb-sig',layout:{visibility:'none'},paint:{'fill-color':SGC,'fill-opacity':['case',AM,0.05,0.1]}});
+  add({id:'bb-sig-l',type:'line',source:'bb-sig',layout:{visibility:'none','line-join':'round'},paint:{'line-color':SGC,'line-width':['interpolate',['linear'],['zoom'],3,['case',AM,1,1.4],10,['case',AM,1.6,2.4]],'line-dasharray':[3,2],'line-opacity':['case',AM,0.6,0.9]}});
   add({id:'bb-sig-t',type:'symbol',source:'bb-sig',minzoom:4,layout:{visibility:'none','symbol-placement':'point','text-field':['get','t'],'text-font':FONT_B,'text-size':11,'text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':SGC},halo)});
   // the route, under the aviation symbols (dashed for missed approach / alternate legs)
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});

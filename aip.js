@@ -1,11 +1,14 @@
-/* Birdbird – official AIP for an aerodrome, by ICAO prefix (window.BBAIP.of('ENGM') → {name,url,ead}).
-   National eAIP sites where the state publishes one openly; every other European state through EUROCONTROL EAD Basic,
-   the free (registration) library of all ECAC AIPs. We link only: the AIP itself is never copied into Birdbird.
-   Deep links to AD 2 are not used: the national URLs carry the AIRAC date and break every 28 days. */
+/* Birdbird – official AIP for an aerodrome, by ICAO prefix (window.BBAIP.of('ENGM') → {name,url,kind,ead,note}).
+   1. National eAIP site where the state publishes one openly (kind 'national').
+   2. Other European (ECAC) states: EUROCONTROL EAD Basic, the free (registration) library of all their AIPs (kind 'ead').
+   3. Anywhere else in the world: EUROCONTROL @IS Online, the maintained directory of every state's AIS website (kind 'dir').
+   We link only: the AIP itself is never copied into Birdbird. Deep links to AD 2 are not used: the national URLs carry
+   the AIRAC date and break every 28 days. tests/aip-links.mjs checks every URL here weekly (.github/workflows). */
 (function(){
   'use strict';
-  const EAD={name:'EUROCONTROL EAD Basic',url:'https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic',ead:true};
-  const N=(name,url)=>({name,url,ead:false});
+  const EAD={name:'EUROCONTROL EAD Basic',url:'https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic',kind:'ead',ead:true,note:{en:'free registration; the national AIP is in its AIP Library',no:'gratis registrering; nasjonal AIP ligger i AIP Library'}};
+  const DIR={name:'EUROCONTROL @IS Online',url:'https://www.eurocontrol.int/articles/ais-online',kind:'dir',ead:false,note:{en:'directory of every country\'s AIS: pick the country',no:'katalog over alle lands AIS: velg landet'}};
+  const N=(name,url)=>({name,url,kind:'national',ead:false,note:null});
   const A={
     EN:N('Avinor AIP Norway','https://ais.avinor.no/'),
     ES:N('LFV AIP Sweden','https://aro.lfv.se/'),
@@ -30,7 +33,7 @@
   };
   /* ICAO prefixes of the other European (ECAC) states: their AIPs are in EAD Basic */
   const EUR=/^(E[EIVY]|L[ABCDHJKMNQRSTUWXYZ]|UK|UD|UB|UG)/;
-  function of(icao){ const id=String(icao||'').toUpperCase(); if(!/^[A-Z]{4}$/.test(id)) return null; const p=id.slice(0,2);
-    return A[p]||(EUR.test(id)?EAD:null); }
-  window.BBAIP={of,EAD};
+  function of(icao){ const id=String(icao||'').toUpperCase(); if(!/^[A-Z][A-Z0-9]{3}$/.test(id)) return null; const p=id.slice(0,2);
+    return A[p]||(EUR.test(id)?EAD:DIR); }
+  window.BBAIP={of,EAD,DIR,ALL:A};
 })();
