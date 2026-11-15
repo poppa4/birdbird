@@ -271,6 +271,7 @@ body:not(.nofab) #askbar{display:none}
 .wxst.ok{color:var(--ok)}.wxst.warn{color:var(--caution-ink)}.wxst.err{color:var(--warning);background:var(--warning-wash);padding:6px 10px;border-left:3px solid var(--warning)}
 .wxt{max-width:520px}
 .wxwin{font-size:13.5px;color:var(--ink-2);margin:2px 0 10px}
+.sigbox:empty{display:none}.sigbox{margin:12px 0 0}.sigbox h4{margin:0 0 6px}.sigc{border:1px solid var(--rule);border-left:4px solid var(--sgc,#3A4650);background:#fff;padding:8px 12px;margin:0 0 8px;break-inside:avoid}.sigc b{color:var(--sgc,#3A4650)}.sigc .meta{font-size:12.5px;color:var(--ink-2)}.sigc code{display:block;font-size:12px;white-space:pre-wrap;word-break:break-word;margin-top:4px}.sigc.out{opacity:.62}.wxaip{font-size:12.5px;margin-left:6px;white-space:nowrap}
 .wxnote{font-size:12.5px;color:var(--ink-2);background:var(--wash);border-left:3px solid var(--caution);padding:7px 11px;margin:8px 0}
 .wxcards{display:flex;flex-direction:column;gap:12px}
 .wxempty{font-size:14px;color:var(--ink-2);border:1px dashed var(--rule);padding:12px 14px;margin:0}
@@ -358,6 +359,7 @@ body:not(.nofab) #askbar{display:none}
 <script src="ai.js?v=5"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=1"></script>
+<script src="aip.js?v=1"></script>
 <script src="store.js?v=3"></script>
 <script src="flightlink.js?v=1"></script>
 <script>
@@ -397,6 +399,7 @@ const SECTIONS=[
    <div class="fg wxt">${F('wx.eet','Flight time, EET (h:mm)')}${F('wx.altt','Destination to alternate (min)',{num:1})}</div>
    <p class="wxwin" id="wxWin"></p>
    <div class="wxcards" id="wxCards"></div>
+   <div class="sigbox" id="sigBox"></div>
    <div class="wxbar noprint"><button class="btn" id="wxApply" type="button">Use these forecasts in Planning minima</button><span class="note" id="wxApplyNote"></span></div>
    <p class="wxnote" id="wxNote"></p></div>
    <details class="wxman" id="wxman" open><summary>Aerodrome reports: edit or paste manually</summary><div class="wrapx"><table class="tb wxtb"><tr><th></th><th>ICAO</th><th>METAR (now)</th><th>TAF</th></tr>${APT.map(([k,l])=>`<tr><th>${l}</th><td style="width:70px">${I('mt.'+k+'.icao')}</td><td><textarea class="wxr" data-k="mt.${k}.metar" rows="2" spellcheck="false" aria-label="METAR ${l}"></textarea></td><td><textarea class="wxr" data-k="mt.${k}.taf" rows="2" spellcheck="false" aria-label="TAF ${l}"></textarea></td></tr>`).join('')}</table></div>
@@ -1191,7 +1194,7 @@ function wxRender(){ const box=el('wxCards'); if(!box||!P||!window.WXK) return; 
     const mAge=M&&M.time?ageTxt(M.time):'', mOld=M&&M.time&&Date.now()-M.time>90*60e3;
     const T=F?tafItems(k,F,TW,R):{it:[],A:null}; WXA[k]={id:sid,M,F,A:T.A,R};
     const opts=R.ends.length? `<option value="">${L({en:'Auto',no:'Auto'})}${R.auto&&R.rw?' ('+esc(R.rw.id)+')':''}</option>`+R.ends.map(e=>`<option value="${esc(e.id)}" ${P.f['wx.'+k+'.rwy']===e.id?'selected':''}>RWY ${esc(e.id)}${e.len?' · '+fx(Math.round(e.len*0.3048/10)*10)+' m':''}</option>`).join('') : '';
-    cards.push(`<article class="wxc" data-k="${k}"><header><span class="wxrole">${esc(L(WXR[k]))}</span> <b class="mono">${esc(sid||'????')}</b> <span class="wxname">${esc(st.name||R.name||'')}</span></header>
+    cards.push(`<article class="wxc" data-k="${k}"><header><span class="wxrole">${esc(L(WXR[k]))}</span> <b class="mono">${esc(sid||'????')}</b> <span class="wxname">${esc(st.name||R.name||'')}</span>${(()=>{ const a=window.BBAIP&&BBAIP.of(sid); return a?`<a class="wxaip noprint" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.name)}${a.ead?' ('+L({en:'free registration',no:'gratis registrering'})+')':''}">${L({en:'AIP and charts',no:'AIP og kart'})} ↗</a>`:''; })()}</header>
       ${M?`<div class="wxraw"><span class="wxlab">METAR${M.time?` · <span class="${mOld?'ko':''}">${WXK.zt(M.time)} · ${mAge} ${L({en:'old',no:'gammel'})}</span>`:''}</span><code>${esc(mr)}</code></div>`:''}
       ${F?`<div class="wxraw"><span class="wxlab">TAF${F.issue?` · ${L({en:'issued',no:'utstedt'})} ${WXK.zt(F.issue)} · ${ageTxt(F.issue)} ${L({en:'ago',no:'siden'})}`:''}${F.from?` · ${L({en:'valid',no:'gyldig'})} ${WXK.zt(F.from).slice(0,4)}–${WXK.zt(F.to).slice(0,4)}`:''}</span><code>${tafLines(/^TAF\b/i.test(tr)?tr:'TAF '+tr)}</code></div>`:''}
       <div class="wxrwy">${R.ends.length?`<label class="noprint">${L({en:'Runway',no:'Bane'})} <select id="wxr-${k}" data-wxrwy="${k}">${opts}</select></label><span class="printonly">RWY ${esc(R.rw?R.rw.id:'—')}</span>`:`<label>${L({en:'Runway',no:'Bane'})} <input id="wxr-${k}" data-wxrwy="${k}" value="${esc(P.f['wx.'+k+'.rwy']||'')}" placeholder="17" size="4" inputmode="numeric"></label>`}<small>${L({en:'Heading from the runway number (±5°, magnetic); METAR and TAF wind is true. Runway list: OurAirports.',no:'Kurs fra banenummeret (±5°, magnetisk); vind i METAR og TAF er rettvisende. Baneliste: OurAirports.'})}</small></div>
@@ -1200,12 +1203,30 @@ function wxRender(){ const box=el('wxCards'); if(!box||!P||!window.WXK) return; 
       ${M&&M.unk&&M.unk.length?`<p class="note">${L({en:'Not read:',no:'Ikke lest:'})} <span class="mono">${esc(M.unk.join(' '))}</span></p>`:''}</article>`); });
   if(needNav&&!NAVD) navLoad();
   box.innerHTML= cards.length? cards.join('') : `<p class="wxempty">${L({en:'Fetch the latest reports, or paste METAR and TAF in the table below. The plain-language reading for each aerodrome appears here.',no:'Hent de siste meldingene, eller lim inn METAR og TAF i tabellen under. Tolkningen for hver flyplass kommer her.'})}</p>`;
-  el('wxp').classList.toggle('has',cards.length>0); { const d=el('wxman'); if(d&&!d.dataset.touched) d.open=!cards.length; }
+  sigRender(TW); el('wxp').classList.toggle('has',cards.length>0); { const d=el('wxman'); if(d&&!d.dataset.touched) d.open=!cards.length; }
   if(fid){ const f=el(fid); if(f) f.focus(); }
   el('wxNote').innerHTML=L({en:'For training. Reports from MET Norway (Norwegian aerodromes) and aviationweather.gov can be late or incomplete, and the reading here can miss things. Before flight, check the official briefing (for Norway: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).',no:'For trening. Meldinger fra MET Norway (norske flyplasser) og aviationweather.gov kan være forsinket eller mangelfulle, og tolkningen her kan overse ting. Sjekk den offisielle briefingen før flyging (i Norge: <a href="https://www.ippc.no/ippc/index.jsp" target="_blank" rel="noopener">Avinor IPPC</a>).'});
   ntmRender(TW,NT,t0,t1); }
 el('book').addEventListener('change',e=>{ const s=e.target.closest('[data-wxrwy]'); if(!s) return; P.f['wx.'+s.dataset.wxrwy+'.rwy']=s.value.trim().toUpperCase(); wxSig=''; calc(); queueSave(); });
 el('book').addEventListener('click',e=>{ if(e.target.closest('#wxman>summary')) el('wxman').dataset.touched='1'; });
+/* SIGMET for the FIRs of the aerodromes in the pack (/api/sigmet, aviationweather.gov); stored without geometry */
+async function sigFetch(ids){ const firs=[...new Set(ids.map(x=>x.slice(0,2)))]; P.wx=P.wx||{};
+  try{ const r=await fetch('/api/sigmet?fir='+encodeURIComponent(firs.join(',')),{headers:{accept:'application/json'}}); const j=await r.json(); if(!j||!j.ok) throw 0;
+    P.wx.sig=(j.items||[]).map(x=>({fir:x.fir,firName:x.firName,series:x.series,label:x.label,cat:x.cat,from:x.from,to:x.to,base:x.base,top:x.top,dir:x.dir,spd:x.spd,raw:x.raw})); P.wx.sigFirs=firs; P.wx.sigErr=false; }
+  catch(e){ P.wx.sigErr=true; P.wx.sigFirs=firs; } }
+const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',other:'#3A4650'};
+const SIGNO={'Severe turbulence':'Kraftig turbulens','Severe icing':'Kraftig ising','Severe icing (freezing rain)':'Kraftig ising (underkjølt regn)','Severe mountain wave':'Kraftige fjellbølger','Volcanic ash':'Vulkansk aske','Tropical cyclone':'Tropisk syklon','Radioactive cloud':'Radioaktiv sky','Heavy duststorm':'Kraftig støvstorm','Heavy sandstorm':'Kraftig sandstorm','Thunderstorms':'Tordenvær','Embedded thunderstorms':'Innleiret tordenvær','Obscured thunderstorms':'Skjult tordenvær','Frequent thunderstorms':'Hyppig tordenvær','Squall line thunderstorms':'Bygelinje med tordenvær'};
+const sigLab=x=>{ if(LAB.lang!=='no') return x.label; const b=String(x.label||'').replace(/ with hail$/,''); return (SIGNO[b]||x.label)+(/ with hail$/.test(x.label||'')?' med hagl':''); };
+const sigLev=x=>{ const f=v=>v==null?null:v<=0?'SFC':v>=10000?'FL'+String(Math.round(v/100)).padStart(3,'0'):fx(v)+' ft'; const b=f(x.base), t=f(x.top); return b&&t?b+'–'+t:t?L({en:'up to ',no:'opp til '})+t:b?L({en:'above ',no:'over '})+b:''; };
+function sigRender(TW){ const box=el('sigBox'); if(!box) return; const w=P&&P.wx; if(!w||!w.sigFirs){ box.innerHTML=''; return; }
+  const now=Date.now(), z=d=>d?WXK.zt(new Date(d)):'?';
+  const t0=TW?+TW.etd-3600e3:null, t1=TW?+(TW.eta||TW.etd)+3600e3:null;
+  const list=(w.sig||[]).filter(x=>!x.to||new Date(x.to)>now).map(x=>Object.assign({},x,{inw:t0==null||((!x.from||+new Date(x.from)<=t1)&&(!x.to||+new Date(x.to)>=t0))})).sort((a,b)=>(b.inw-a.inw)||String(a.from).localeCompare(String(b.from)));
+  const head=`<h4>SIGMET <span class="note" style="font-weight:400">· FIR ${esc(w.sigFirs.map(f=>f+'**').join(', '))}</span></h4>`;
+  if(w.sigErr){ box.innerHTML=head+`<p class="note">${L({en:'SIGMETs could not be fetched. Check them in the official briefing.',no:'SIGMET kunne ikke hentes. Sjekk dem i den offisielle briefingen.'})}</p>`; return; }
+  if(!list.length){ box.innerHTML=head+`<p class="note">${L({en:'No valid SIGMET for these FIRs when the reports were fetched.',no:'Ingen gyldige SIGMET for disse FIR-ene da meldingene ble hentet.'})}</p>`; return; }
+  box.innerHTML=head+list.map(x=>`<div class="sigc${x.inw?'':' out'}" style="--sgc:${SIGC[x.cat]||SIGC.other}"><b>${esc(sigLab(x))}</b> <span class="meta">· ${esc(x.fir)}${x.firName?' '+esc(x.firName):''}${x.series?' · SIGMET '+esc(x.series):''} · ${z(x.from)}–${z(x.to)}${sigLev(x)?' · '+sigLev(x):''}${x.dir||x.spd?' · '+L({en:'moving',no:'beveger seg'})+' '+esc(x.dir||'')+(x.spd?' '+x.spd+' kt':''):''}${x.inw?'':' · '+L({en:'outside your window',no:'utenfor vinduet ditt'})}</span><code>${esc(x.raw)}</code></div>`).join('')
+    +`<p class="note">${L({en:'Valid SIGMETs for the FIRs whose code starts like your aerodromes (e.g. EN → ENOR, ENOB). Source: aviationweather.gov (NOAA). Route Explorer draws the areas on the map.',no:'Gyldige SIGMET for FIR-ene som har samme kode-start som flyplassene dine (f.eks. EN → ENOR, ENOB). Kilde: aviationweather.gov (NOAA). Route Explorer tegner områdene på kartet.'})}</p>`; }
 /* fetch */
 function wxStatus(kind,html){ const s=el('wxSt'); if(!s) return; s.className='wxst '+kind; s.innerHTML=html; }
 function wxIdle(){ if(P&&P.wx&&P.wx.at){ const d=new Date(P.wx.at); wxStatus('',L({en:`Last fetched ${WXK.zt(d)} (${ageTxt(d)} ago). Fetch again for the latest.`,no:`Sist hentet ${WXK.zt(d)} (${ageTxt(d)} siden). Hent på nytt for det siste.`})); } else wxStatus('',L({en:'Not fetched yet.',no:'Ikke hentet ennå.'})); }
@@ -1223,6 +1244,7 @@ async function wxFetch(){ const ids=[...new Set(APT.map(([k])=>wxIcao(k)).filter
   const got=[]; APT.forEach(([k])=>{ const id=wxIcao(k), s=id&&j.stations&&j.stations[id]; if(!s) return; if(!icaoOf(P.f['mt.'+k+'.icao'])) setF('mt.'+k+'.icao',id);
     P.wx.st[id]={metar:s.metar&&s.metar.obsTime||null,taf:s.taf&&s.taf.issueTime||null,name:s.name||null};
     if(s.metar){ setF('mt.'+k+'.metar',s.metar.raw); } if(s.taf){ setF('mt.'+k+'.taf',s.taf.raw); } if(s.metar||s.taf) got.push(id); });
+  await sigFetch(ids);
   const miss=(j.missing||[]).filter(x=>ids.includes(x)), notaf=ids.filter(x=>j.stations[x]&&j.stations[x].metar&&!j.stations[x].taf);
   b.disabled=false; await navLoad().catch(()=>{}); wxSig='';
   wxStatus(miss.length?'warn':'ok',L({en:`Fetched ${WXK.zt(new Date(P.wx.at))} from ${esc(j.source||'aviationweather.gov')}: ${[...new Set(got)].length} of ${ids.length} aerodromes.`,no:`Hentet ${WXK.zt(new Date(P.wx.at))} fra ${esc(String(j.source||'aviationweather.gov').replace(' and ',' og '))}: ${[...new Set(got)].length} av ${ids.length} flyplasser.`})

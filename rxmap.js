@@ -445,7 +445,9 @@ function addImages(map){
 }
 const FC={type:'FeatureCollection',features:[]};
 const WXC={VFR:'#2E7D32',SVFR:'#D98200',IFR:'#C62828'};
-const SRC=['bb-mef','bb-mefg','bb-awy','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
+/* SIGMET hazard colours: thunderstorms red, turbulence amber, icing blue, mountain wave purple, volcanic ash brown */
+const SIGC={ts:'#C62828',turb:'#C77700',ice:'#1D63B8',mtw:'#7B3FA0',va:'#6D4C2F',other:'#3A4650'};
+const SRC=['bb-mef','bb-mefg','bb-awy','bb-sig','bb-ap','bb-wx','bb-nv','bb-fx','bb-my','bb-note','bb-leg','bb-rpt','bb-crit','bb-hov','bb-snap'];
 function addOverlays(map){
   SRC.forEach(id=>{ if(!map.getSource(id)) map.addSource(id,{type:'geojson',data:FC,buffer:64,tolerance:0.2}); });
   const halo={'text-halo-color':'rgba(255,255,255,.92)','text-halo-width':1.6,'text-halo-blur':0.2};
@@ -454,6 +456,11 @@ function addOverlays(map){
   add({id:'bb-mefg',type:'line',source:'bb-mefg',paint:{'line-color':'rgba(46,91,154,.18)','line-width':0.8}});
   add({id:'bb-mef',type:'symbol',source:'bb-mef',layout:{'text-field':['format',['get','th'],{'font-scale':1},['get','hu'],{'font-scale':0.62}],'text-font':FONT_B,'text-size':lin(4,15,9,24),'text-allow-overlap':true,'text-ignore-placement':true},paint:Object.assign({'text-color':'rgba(46,91,154,.8)'},halo,{'text-halo-color':'rgba(255,255,255,.75)'})});
   add({id:'bb-awy',type:'line',source:'bb-awy',minzoom:5,paint:{'line-color':'rgba(29,78,158,.45)','line-width':lin(5,0.6,10,1.3)}});
+  // SIGMET areas (international SIGMETs, Europe): tinted fill + dashed outline by hazard, under the route
+  const SGC=['match',['get','cat'],'ts',SIGC.ts,'turb',SIGC.turb,'ice',SIGC.ice,'mtw',SIGC.mtw,'va',SIGC.va,SIGC.other];
+  add({id:'bb-sig-f',type:'fill',source:'bb-sig',layout:{visibility:'none'},paint:{'fill-color':SGC,'fill-opacity':0.1}});
+  add({id:'bb-sig-l',type:'line',source:'bb-sig',layout:{visibility:'none','line-join':'round'},paint:{'line-color':SGC,'line-width':lin(3,1.4,10,2.4),'line-dasharray':[3,2],'line-opacity':0.9}});
+  add({id:'bb-sig-t',type:'symbol',source:'bb-sig',minzoom:4,layout:{visibility:'none','symbol-placement':'point','text-field':['get','t'],'text-font':FONT_B,'text-size':11,'text-allow-overlap':false,'text-optional':true},paint:Object.assign({'text-color':SGC},halo)});
   // the route, under the aviation symbols (dashed for missed approach / alternate legs)
   add({id:'bb-leg-case',type:'line',source:'bb-leg',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'rgba(255,255,255,.9)','line-width':lin(3,6,12,9)}});
   add({id:'bb-leg',type:'line',source:'bb-leg',filter:['!=',['get','d'],1],layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':P.accent,'line-width':lin(3,3.2,12,4.6)}});
@@ -480,7 +487,7 @@ function addOverlays(map){
   add({id:'bb-hovl',type:'symbol',source:'bb-hov',layout:{'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'top-left','text-offset':[0.9,0.7],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
-const LYG={wx:['bb-wx'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+const LYG={wx:['bb-wx'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
 /* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
 const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
 function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;
@@ -500,6 +507,9 @@ function hit(map,x,y,r){ const L=HITL.filter(id=>map.getLayer(id)&&map.getLayout
   const fs=map.queryRenderedFeatures([[x-r,y-r],[x+r,y+r]],{layers:L}); let best=null, bd=r;
   fs.forEach(f=>{ const c=f.geometry&&f.geometry.coordinates; if(!c) return; const p=map.project(c); const dy=f.layer.id==='bb-note'?14:0; const d=Math.hypot(p.x-x,p.y-dy-y); if(d<bd){ bd=d;
     const oa=/^bb-oa-/.test(f.layer.id), q=f.properties; best=oa?{x:p.x,y:p.y,k:'oa',o:{kind:f.layer.id.slice(6),type:q.type||'',n:q.name||q.identifier||q.icao_code||q.name_label||'',full:q.name_label_full||q.name||'',la:c[1],lo:c[0]}}:{x:p.x,y:p.y-dy,k:q.k,i:q.i}; } }); return best; }
+// SIGMET areas under a screen point: their ids (the page keeps the details)
+function sigmetAt(map,x,y){ if(!map.getLayer('bb-sig-f')||map.getLayoutProperty('bb-sig-f','visibility')==='none') return []; let fs=[]; try{ fs=map.queryRenderedFeatures([[x-2,y-2],[x+2,y+2]],{layers:['bb-sig-f']}); }catch(e){}
+  return [...new Set(fs.map(f=>f.properties&&f.properties.id).filter(Boolean))]; }
 // airspace under a screen point (for the info panel)
 function airspaceAt(map,x,y){ if(map.__bb.oaip!=='ok'||!map.getLayer('bb-as-tma')) return []; const ids=(map.__bb.asIds||[]).filter(id=>map.getLayer(id)&&map.getLayoutProperty(id,'visibility')!=='none'&&/-(ctrf|pf)$/.test(id)===false);
   let fs=[]; try{ fs=map.queryRenderedFeatures([[x-3,y-3],[x+3,y+3]],{layers:ids}); }catch(e){} const seen={}; return fs.map(f=>f.properties).filter(p=>{ const k=(p.name||'')+p.type; if(seen[k]) return false; seen[k]=1; return true; }); }
@@ -626,6 +636,6 @@ function prefetch(map,pts,zc,o){ o=o||{}; const jobs=tileJobs(map,pts,zc).slice(
 // pts: the path (undefined = keep), hov: aircraft {la,lo,alt,tr,gnd,hide}
 function setPath3D(map,pts,hov){ const L=map.getLayer('bb-path3d'); const impl=L&&(L.implementation||L); if(impl&&impl.set) impl.set(pts,hov); }
 
-window.RXMAP={create,asRoute,limOf,WXC,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
+window.RXMAP={create,asRoute,limOf,WXC,SIGC,sigmetAt,satActive,OAG,prefetch,tileJobs,setBasemap,setRelief,setLight,set3D,setSun,addOverlays,addAirspace,addContours,airspaceAt,oaipKey,setGroups,setData,hit,setPath3D,exag,imgKey,BASEMAPS,ATT,P,
   urls:{style:STYLE_URL,dem:DEM_URL,sat:SAT_URL,hi:HI_URL,lo:LO_URL,topo:TOPO_URL,oaip:OPENAIP_URL}};
 })();
