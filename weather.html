@@ -258,11 +258,11 @@ async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=
   { const ago=t=>{ if(!t) return ''; const a=Math.round((Date.now()-new Date(t))/60e3); return ' · '+(a<120?a+' min':Math.round(a/60)+' h')+' '+LL('old','gammel'); };
     el('liveOut').innerHTML=s&&(s.metar||s.taf)?[['M','METAR',s.metar],['T','TAF',s.taf]].filter(r=>r[2]).map(r=>`<button type="button" class="lo${(kind==='T')===(r[0]==='T')?' on':''}" data-k="${r[0]}"><span>${r[1]}${r[0]==='M'?ago(r[2].obsTime):''}</span><code>${wesc(r[2].raw)}</code></button>`).join(''):''; }
   if(!x){ say(kind==='T'?LL(`No TAF for ${id}. Not every aerodrome publishes one.`,`Ingen TAF for ${id}. Ikke alle flyplasser publiserer TAF.`):LL(`No METAR for ${id}.`,`Ingen METAR for ${id}.`),1); return; }
-  el('raw').value=x.raw; run(); try{ localStorage.setItem('bb.wxid',id); }catch(e){} const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
+  el('raw').value=x.raw; run(); try{ localStorage.setItem('bb-wxid',id); }catch(e){} const t=x.obsTime||x.issueTime; const age=t?Math.round((Date.now()-new Date(t))/60e3):null;
   const src=s.source||'aviationweather.gov';
   say(LL(`From ${src}${age!=null?`, ${age} min old`:''}. For training: check the official briefing before flight.`,`Fra ${src}${age!=null?`, ${age} min gammel`:''}. For trening: sjekk den offisielle briefingen før flyging.`)); }
 // ?ids=ENGM (from the search bar or a link) fetches it straight away; otherwise the last code you looked up is filled in
-{ const q=new URLSearchParams(location.search), id=(q.get('ids')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb.wxid')||''; }catch(e){}
+{ const q=new URLSearchParams(location.search), id=(q.get('ids')||'').split(',')[0].trim().toUpperCase(); let last=''; try{ last=localStorage.getItem('bb-wxid')||''; }catch(e){}
   if(/^[A-Z]{4}$/.test(id)){ el('liveId').value=id; setTimeout(()=>live(q.get('k')==='T'?'T':'M'),0); } else if(/^[A-Z]{4}$/.test(last)) el('liveId').value=last; }
 el('liveId').addEventListener('input',e=>{ const v=e.target.value.toUpperCase().replace(/[^A-Z]/g,''); if(v!==e.target.value) e.target.value=v; });
 el('liveOut').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b) live(b.dataset.k); });
