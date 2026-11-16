@@ -29,6 +29,9 @@ function parseSop(txt) { const out = [];
     out.push({ t: t.slice(0, 120), k: /\bcheck\s?list\b|\bsjekkliste\b/i.test(t) ? 'call' : 'act' }); });
   return out.slice(0, 200); }
 /* did a tap land on the step? On a schematic: inside the step's control (or within 18 units). On a photo: within the radius. */
+/* flight phases a flow can be filed under (optional): id, English, Norwegian. The same ids are known to functions/api/flowlib.js */
+const PHASES = [['pre', 'Cockpit preparation', 'Klargjøring av cockpit'], ['bst', 'Before start', 'Før start'], ['ast', 'After start', 'Etter start'], ['taxi', 'Taxi', 'Taksing'], ['bto', 'Before takeoff', 'Før avgang'], ['clb', 'After takeoff and climb', 'Etter avgang og stigning'],
+  ['crz', 'Cruise', 'Cruise'], ['des', 'Descent', 'Nedstigning'], ['app', 'Approach', 'Innflyging'], ['ldg', 'Landing and go-around', 'Landing og go-around'], ['aldg', 'After landing', 'Etter landing'], ['shut', 'Parking and shutdown', 'Parkering og avslutning'], ['abn', 'Abnormal and memory items', 'Unormale og memory items']];
 const markName = v => String(v == null ? '' : v).replace(/[|<>]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
 const markFind = (f, n) => (f.marks || []).find(m => m.n.toLowerCase() === String(n || '').toLowerCase()) || null;
 /* name the spot a step sits on (own picture). An empty name removes the name; a name that exists moves the step to that control;
@@ -61,6 +64,7 @@ function clean(o) { if (!o || typeof o !== 'object') return null; const f = newF
     after: s.after ? String(s.after).slice(0, 24) : undefined, n: s.n ? String(s.n).slice(0, 400) : undefined }));
   // names the user has given to spots on their own picture: they work like the named controls of a Birdbird cockpit
   if (Array.isArray(o.marks)) f.marks = o.marks.slice(0, 600).map(m => ({ n: markName(m && m.n), x: num(m && m.x), y: num(m && m.y) })).filter((m, i, a) => m.n && m.x != null && m.y != null && a.findIndex(q => q.n.toLowerCase() === m.n.toLowerCase()) === i);
+  if (PHASES.some(p => p[0] === o.phase)) f.phase = o.phase;
   f.notes = (Array.isArray(o.notes) ? o.notes : []).slice(0, 60).map(n => ({ id: String(n.id || uid()).slice(0, 24), x: num(n.x), y: num(n.y), t: String(n.t || '').slice(0, 400) })).filter(n => n.x != null && n.y != null);
   f.upd = +o.upd || Date.now(); return f; }
 /* share link: the flow (without the photo) as base64url JSON in the #hash */
@@ -83,6 +87,6 @@ const EX = {
 function example(acId, A) { const e = EX[acId], ac = A && A.get(acId), ph = A && A.photo && A.photo(acId); if (!e || (!ac && !ph)) return null; const f = newFlow(acId, { roles: e.roles, name: e.name }); f.ex = true;
   e.steps.forEach(([r, tg, t, k]) => { if (Array.isArray(tg)) { addStep(f, { r, t, k: k || 'act', x: tg[0], y: tg[1] }); return; } const T = tg && ac && A.byId(ac, tg); addStep(f, { r, t, k: k || 'act', tg: T ? T.id : undefined, x: T ? Math.round(T.x + T.w / 2) : null, y: T ? Math.round(T.y + T.h / 2) : null }); });
   return f; }
-const API = { uid, ROLESETS, COLORS, newFlow, roleSteps, placed, addStep, moveStep, delStep, badge, parseSop, check, score, nextFor, clean, encode, decode, example, markName, markFind, nameSpot, ownAc };
+const API = { uid, ROLESETS, COLORS, newFlow, roleSteps, placed, addStep, moveStep, delStep, badge, parseSop, check, score, nextFor, clean, encode, decode, example, PHASES, markName, markFind, nameSpot, ownAc };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOW = API;
 })(typeof window !== 'undefined' ? window : globalThis);

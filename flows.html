@@ -101,6 +101,7 @@ dialog.fd{border:0;border-radius:14px;padding:20px;width:min(520px,94vw);box-sha
 dialog.fd h3{margin:0 0 12px}dialog.fd label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;margin:0 0 12px}
 dialog.fd input,dialog.fd select,dialog.fd textarea{font:inherit;padding:9px 10px;border:1px solid var(--rule);border-radius:6px}dialog.fd textarea{min-height:220px;font-family:var(--f-mono,monospace);font-size:13px}
 .omk{fill:rgba(255,255,255,.25);stroke:#fff;stroke-width:1.2;stroke-dasharray:2 2;pointer-events:none}.fmore small{display:block;font-weight:400;color:var(--ink-2,#566);margin-top:3px}
+dialog.fl{width:min(640px,96vw);max-height:90vh;overflow:auto}dialog.fl .flf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 10px}dialog.fl .flf select,dialog.fl .flf input{min-width:0;width:100%;box-sizing:border-box}@media(max-width:520px){dialog.fl .flf{grid-template-columns:minmax(0,1fr)}}dialog.fl .fln{font-size:13px;background:var(--wash,#f3f5f4);padding:8px 10px;border-radius:6px;margin:0 0 12px}dialog.fl ul{list-style:none;margin:0 0 14px;padding:0}dialog.fl li{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;margin:0 0 8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}dialog.fl li div{flex:1 1 220px;min-width:0}dialog.fl li b{display:block}dialog.fl li small{color:var(--ink-2,#566);font-size:12.5px}dialog.fl li button.lk{font:inherit;font-size:12.5px;background:none;border:0;color:var(--ink-2,#566);text-decoration:underline;cursor:pointer;padding:6px 2px}dialog.fl .flc{flex-direction:row;align-items:flex-start;gap:10px;font-weight:400}dialog.fl .flc input{width:22px;height:22px;flex:none;padding:0}dialog.fl .flm{min-height:18px;font-size:13.5px;color:#A32020;margin:0 0 10px}
 dialog.fd .frq{margin:-6px 0 12px;font-size:13px}dialog.fd .frq button{font:inherit;font-weight:600;background:none;border:0;border-bottom:1px solid currentColor;padding:4px 0 1px;color:var(--accent,#0B5CAD);cursor:pointer}
 dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fcomp{width:100%;border-collapse:collapse;font-size:14px}.fcomp td,.fcomp th{padding:7px 8px;border-bottom:1px solid var(--rule);text-align:left}.fcomp td:not(:first-child){text-align:center}
@@ -152,7 +153,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
       <select id="fsel" aria-label="Flow"></select>
       <button class="btn pri" id="fnew" type="button" aria-label="New flow">+ New</button>
       <details class="fmenu"><summary aria-label="More">⋯</summary><div id="fmenu">
-        <button data-a="share">Share as a link</button><button data-a="file">Save as file</button><button data-a="import">Open a flow file…</button>
+        <button data-a="lib">Flows from other pilots</button><button data-a="pub">Share with other pilots</button><button data-a="share">Share as a link</button><button data-a="file">Save as file</button><button data-a="import">Open a flow file…</button>
         <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="clear">Remove all steps</button><button data-a="del" class="warn">Delete flow</button><button type="button" data-reqplane="flows">Request your aircraft</button>
       </div></details>
       <input type="file" id="fimp" accept=".json,application/json" hidden>
@@ -203,7 +204,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 
 <script src="lab.js?v=51"></script>
 <script src="flowsac.js?v=18"></script>
-<script src="flowscore.js?v=8"></script>
+<script src="flowscore.js?v=9"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Trainer':'Trener','How it works':'Slik virker det',
@@ -221,7 +222,8 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=13"></script>
+<script src="flows.js?v=14"></script>
+<script src="flowlib.js?v=1"></script>
 <script src="reqplane.js?v=1"></script>
 </body>
 </html>
