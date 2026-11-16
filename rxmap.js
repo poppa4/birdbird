@@ -497,6 +497,9 @@ function addOverlays(map){
   add({id:'bb-leg-d',type:'line',source:'bb-leg',filter:['==',['get','d'],1],layout:{'line-join':'round'},paint:{'line-color':P.accent,'line-width':lin(3,2.4,12,3.4),'line-dasharray':[2,1.5]}});
   // METAR flight category: a coloured ring around the airport (SERA categories: VFR green, special VFR amber, IFR red), under the airport and route symbols
   add({id:'bb-wx',type:'circle',source:'bb-wx',layout:{visibility:'none'},paint:{'circle-radius':lin(4,5.5,10,10),'circle-color':['match',['get','fc'],'VFR',WXC.VFR,'SVFR',WXC.SVFR,'IFR',WXC.IFR,'#8A97A2'],'circle-opacity':0.2,'circle-stroke-color':['match',['get','fc'],'VFR',WXC.VFR,'SVFR',WXC.SVFR,'IFR',WXC.IFR,'#8A97A2'],'circle-stroke-width':lin(4,2,10,2.8),'circle-pitch-alignment':'map'}});
+  // METAR at a glance (as on a chart): lowest cloud or ceiling, visibility and wind beside the dot, from zoom 6.5
+  add({id:'bb-wx-t',type:'symbol',source:'bb-wx',minzoom:6.5,layout:{visibility:'none','text-field':['get','lab'],'text-font':FONT_B,'text-size':lin(6.5,10,10,12),'text-anchor':'right','text-justify':'right','text-offset':[-0.9,0],'text-allow-overlap':false,'text-optional':true},
+    paint:{'text-color':['match',['get','fc'],'VFR',WXC.VFR,'SVFR',WXC.SVFR,'IFR',WXC.IFR,'#56636E'],'text-halo-color':'#FFFFFF','text-halo-width':1.6}});
   // airports: large from the start, medium and small as you zoom in
   [[2,2.5,4.2],[1,5,3.2],[0,7.5,2.4]].forEach(([c,mz,r])=>{
     if(c===2) add({id:'bb-ap2r',type:'circle',source:'bb-ap',minzoom:mz,filter:['==',['get','c'],2],paint:{'circle-radius':lin(3,r+2.2,10,r+4.5),'circle-color':'rgba(0,0,0,0)','circle-stroke-color':'rgba(44,95,141,.5)','circle-stroke-width':1}});
@@ -517,7 +520,7 @@ function addOverlays(map){
   add({id:'bb-hovl',type:'symbol',source:'bb-hov',layout:{'text-field':['get','t'],'text-font':FONT_B,'text-size':11.5,'text-anchor':'top-left','text-offset':[0.9,0.7],'text-allow-overlap':true},paint:{'text-color':P.info,'text-halo-color':'#fff','text-halo-width':2}});
   if(!map.getLayer('bb-path3d')) map.addLayer(pathLayer());
 }
-const LYG={wx:['bb-wx'],wa:['bb-wa','bb-frz'],ntm:['bb-ntm-f','bb-ntm-l','bb-ntm-t'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
+const LYG={wx:['bb-wx','bb-wx-t'],wa:['bb-wa','bb-frz'],ntm:['bb-ntm-f','bb-ntm-l','bb-ntm-t'],sig:['bb-sig-f','bb-sig-l','bb-sig-t'],ap:['bb-ap0','bb-ap1','bb-ap2','bb-ap2r','bb-apl0','bb-apl1','bb-apl2'],nv:['bb-nv'],fx:['bb-fx'],my:['bb-my'],nt:['bb-note'],mef:['bb-mef','bb-mefg'],awy:['bb-awy']};
 /* airspace sub-groups the user can switch off one by one (default on); 'other' with an ICAO class rides with TMA/CTA */
 const ASG={asCtr:['ctr'],asTma:['tma','cta','other'],asRes:['restricted','danger','prohibited'],asTiz:['tiz','tia','rmz','tmz'],asAtz:['atz','matz','htz'],asTra:['tra','tsa','tfa','tfr','alert','warning','protected']};
 function asTypes(map,LY){ const on=[]; Object.keys(ASG).forEach(k=>{ if(LY[k]!==0) on.push(...ASG[k]); }); const key=on.join(','); if(map.__bb.asK===key) return; map.__bb.asK=key;

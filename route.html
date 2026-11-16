@@ -812,7 +812,7 @@
 <script src="flightlink.js?v=1"></script>
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=25"></script>
+<script src="rxmap.js?v=26"></script>
 <script src="aip.js?v=6"></script>
 <script src="windsaloft.js?v=3"></script>
 <script src="cloudcol.js?v=1"></script>
@@ -958,8 +958,16 @@ async function wxSync(only){ if(!ML) return; if(!LY.wx){ mlPut('bb-wx',mlC([]));
   try{ await wxLib(); }catch(e){ return; }
   const now=Date.now(), want=only||wxWanted(), need=want.filter(id=>{ const c=WXS.c[id]; return !c||(!c.busy&&now-c.t>WX_TTL); });
   WXS.busy=true; try{ for(let i=0;i<need.length&&i<24;i+=8){ if(i) await new Promise(r=>setTimeout(r,1200)); const ok=await wxFetch(need.slice(i,i+8)); wxDraw(); if(!ok) break; } } finally{ WXS.busy=false; } wxDraw(); if(WXS.pend){ const q=WXS.pend; WXS.pend=null; wxSync(q); } }
+/* chart-style METAR label: lowest cloud (ceiling first), CB/TCU, visibility, wind. "BKN012 CB · 8 km · 240/12G22" */
+function wxLab(m){ if(!m) return ''; const p=[]; const h3=h=>String(Math.round(h/100)).padStart(3,'0');
+  if(m.cavok) p.push('CAVOK'); else { const cl=(m.clouds||[]).filter(c=>c.h!=null); const ce=cl.find(c=>c.c==='BKN'||c.c==='OVC'), lo=ce||cl[0];
+    if(m.vv!=null) p.push('VV'+h3(m.vv)); else if(lo) p.push(lo.c+h3(lo.h)+(m.cb?' CB':m.tcu?' TCU':'')); else if(m.nsc) p.push('NSC');
+    if(m.vis!=null) p.push(m.vis>=10000?'10 km+':m.vis>=5000?Math.round(m.vis/1000)+' km':m.vis+' m'); }
+  const line1=p.join(' · '); let w='';
+  if(m.wind){ w=m.wind.spd===0?'calm':(m.wind.vrb?'VRB':String(m.wind.dir).padStart(3,'0'))+'/'+m.wind.spd+(m.wind.gust?'G'+m.wind.gust:''); }
+  return w?line1+'\n'+w:line1; }
 function wxDraw(){ if(!ML||!NAV) return; if(!WXS.idx){ WXS.idx={}; NAV.ap.forEach((a,i)=>WXS.idx[a[0]]=i); }
-  const f=LY.wx?Object.keys(WXS.c).filter(id=>WXS.c[id].fc&&WXS.idx[id]!=null).map(id=>{ const a=NAV.ap[WXS.idx[id]]; return mlF(mlP(a[2],a[3]),{k:'ap',i:WXS.idx[id],fc:WXS.c[id].fc,id}); }):[];
+  const f=LY.wx?Object.keys(WXS.c).filter(id=>WXS.c[id].fc&&WXS.idx[id]!=null).map(id=>{ const a=NAV.ap[WXS.idx[id]]; return mlF(mlP(a[2],a[3]),{k:'ap',i:WXS.idx[id],fc:WXS.c[id].fc,id,lab:wxLab(WXS.c[id].m)}); }):[];
   mlPut('bb-wx',mlC(f)); const sd=el('side'), b=sd&&!sd.hidden&&sd.querySelector('.mwx[data-id]'); if(b) b.outerHTML=wxHtml(b.dataset.id); }
 function wxHtml(id){ const c=WXS.c[id]; const box=x=>`<div class="mwx" data-id="${esc(id)}">${x}${c&&!c.busy&&(c.raw||c.taf)?`<details class="mwxraw"${c.raw?'':' open'}><summary>${L({en:'METAR and TAF as written',no:'METAR og TAF slik de er skrevet'})}</summary>${c.raw?`<code>${esc(c.raw)}</code>`:''}${c.taf?`<code>${esc(c.taf)}</code>`:`<p class="src">${L({en:'No TAF from this airport.',no:'Ingen TAF fra denne flyplassen.'})}</p>`}<a class="src" href="weather.html?ids=${esc(id)}" target="_blank" rel="noopener">${L({en:'Decode on the Weather page',no:'Dekod på vær-siden'})} ↗</a></details>`:''}</div>`;
   if(!c||c.busy) return box(`<p class="src">${L({en:'Loading the METAR…',no:'Henter METAR…'})}</p>`);
