@@ -62,7 +62,7 @@ export const STATES = {
   EF: { idx: 'https://www.ais.fi/eaip/', rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index\.html"/g, base: p => encodeURI(p) + '/', toc: 'eAIP/menu.html' },
   BI: { idx: 'https://eaip.isavia.is/', rx: /\/\/eaip\.(?:isavia|avians)\.is\/(?<p>A_\d+-\d{4}_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\//g, base: p => p + '/', toc: 'eAIP/menu.html' },
   EG: { idx: 'https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP/', rx: /(?<p>https?:\/\/www\.aurora\.nats\.co\.uk\/htmlAIP\/Publications\/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EG-AD-2.{I}-en-GB.html', abs: true },
-  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', toc: 'eAIP/EB-menu-en-GB.html', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html' },
+  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html' },
   EP: { idx: 'https://www.ais.pansa.pl/en/publications/aip-poland/', rx: /(?<p>https:\/\/docs\.pansa\.pl\/ais\/eaipifr\/default_offline_(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\.html)/g, abs: true,
         idx2: { rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index-v2\.html"/g, base: p => encodeURI(p) + '/' }, toc: 'v2/js/datasource.js', tocBase: 'eAIP/' },
   EE: { idx: 'https://eaip.eans.ee/', follow: true, toc: 'eAIP/EE-menu-en-GB.html', tpl: 'eAIP/EE-AD-2.{I}-en-GB.html' },
@@ -71,7 +71,9 @@ export const STATES = {
   LP: { fixed: 'https://ais.nav.pt/wp-content/uploads/AIS_Files/eAIP_Current/eAIP_Online/eAIP/html/', tpl: 'eAIP/LP-AD-2.{I}-en-PT.html' },
   LZ: { idx: 'https://aim.lps.sk/web/index.php?fn=200&lng=en', rx: /(?<p>https:\/\/aim\.lps\.sk\/web\/eAIP_SR\/AIP_SR_EFF_(?<d>\d{2})(?<mon>[A-Z]{3})(?<y>\d{4})(?:_amdt)?)\/html\/LZ-frameset-en-SK\.html/g, base: p => p + '/html/', abs: true, toc: 'LZ-menu-en-SK.html' },
   LK: { fixed: 'https://aim.rlp.cz/eaip/html/', toc: 'eAIP/LK-menu-en-GB.html', tpl: 'eAIP/LK-AD-2.{I}-en-GB.html' },
-  LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', toc: 'ad.htm' },
+  LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', part: 'ad.htm' },
+  LF: { airac: d => { const [y, m, dd] = d.split('-'); const mon = Object.keys(MON)[+m - 1]; return `https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_${dd}_${mon}_${y}/FRANCE/AIRAC-${d}/html/`; },
+        tpl: ['eAIP/FR-AD-2.{I}-en-GB.html', 'eAIP/FR-AD-2.{I}-fr-FR.html'], toc: 'eAIP/FR-menu-fr-FR.html' },
   LE: { fixed: 'https://aip.enaire.es/AIP/', toc: 'AIP-en.html', lang: /_en\./ }
 };
 STATES.EL = STATES.EB; STATES.GC = STATES.LE;
@@ -105,7 +107,7 @@ export function findAd2(text, icao, lang) {
     const h = m[1].replace(/&amp;/g, '&'); const u = h.toUpperCase();
     if (!u.includes(icao)) continue;
     const d = u.replace(/%20/g, ' ');
-    if (!/(^|[^A-Z])AD[\s_\-.]*2(?![0-9])/.test(d)) continue;
+    if (!/(^|[^A-Z])AD[\s_\-.]*2(?![0-9])/.test(d) && !new RegExp('(^|[^A-Z])AD[\\s_\\-.]+' + icao).test(d)) continue;
     out.push(h);
   }
   if (!out.length) return null;
@@ -125,15 +127,23 @@ async function exists(fetchFn, url) {
       if (r.body && method === 'GET') { try { r.body.cancel(); } catch (e) {} }
       if (r.ok) return true;
       if (r.status === 404 || r.status === 410) return false;
+      if (r.status === 401 || r.status === 403) return null;
     } catch (e) {}
   }
   return false;
+}
+/* AIRAC effective dates repeat every 28 days (29 OCT 2026 is one) */
+export function airacOf(today) {
+  const ref = Date.UTC(2026, 9, 29), t = Date.parse(today + 'T00:00:00Z');
+  const n = Math.floor((t - ref) / (28 * 864e5));
+  return new Date(ref + n * 28 * 864e5).toISOString().slice(0, 10);
 }
 
 /* the edition in force for a state: { base, eff } */
 export async function edition(st, deps) {
   const fetchFn = deps.fetch, today = deps.today || ymd(new Date());
   if (st.fixed) return { base: st.fixed, eff: null };
+  if (st.airac) { const eff = airacOf(today); return { base: st.airac(eff), eff }; }
   const page = await getText(fetchFn, st.idx);
   if (st.follow) return { base: page.url.replace(/[^/]*$/, ''), eff: (page.url.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || null };
   let ed = pickEdition(page.text, st.rx, today);
@@ -176,16 +186,18 @@ export async function resolve(icaoIn, deps) {
     // 2. the aerodrome's page (cached 6 h per edition)
     const ak = 'ad:' + icao + ':' + ed.base;
     const hit = await cget(cache, ak);
-    if (hit) return hit.url ? done(hit.url) : fallback;
+    if (hit && hit.url) return done(hit.url);
+    if (hit) return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
     let url = null;
-    if (st.tpl) { const u = new URL(st.tpl.replace('{I}', icao), ed.base).href; if (await exists(deps.fetch, u)) url = u; }
+    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc)) { url = u; break; } }
     if (!url && st.toc) {
       const toc = await getText(deps.fetch, new URL(st.toc, ed.base).href);
       const h = findAd2(toc.text, icao, st.lang);
       if (h) url = new URL(h, st.tocBase ? new URL(st.tocBase, ed.base).href : toc.url).href;
     }
     await cput(cache, ak, { url }, 21600, deps);
-    return url ? done(url) : fallback;
+    if (url) return done(url);
+    return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
   } catch (e) {
     if (deps.log) deps.log(pre + ': ' + (e && e.message || e));
     return Object.assign({ lookupFailed: true }, fallback);
