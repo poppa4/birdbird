@@ -60,7 +60,8 @@ export const STATES = {
   EN: { idx: 'https://aim-prod.avinor.no/no/AIP/', rx: /href="(?<p>(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-/g, base: p => p + '/html/', tpl: 'eAIP/EN-AD-2.{I}-en-GB.html' },
   ES: { idx: 'https://aro.lfv.se/content/eaip/default_offline.html', rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index-v2\.html"/g, base: p => encodeURI(p) + '/', toc: 'v2/js/datasource.js', tocBase: 'eAIP/' },
   EF: { idx: 'https://www.ais.fi/eaip/', rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index\.html"/g, base: p => encodeURI(p) + '/', toc: 'eAIP/menu.html' },
-  BI: { idx: 'https://eaip.isavia.is/', rx: /\/\/eaip\.(?:isavia|avians)\.is\/(?<p>A_\d+-\d{4}_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\//g, base: p => p + '/', toc: 'eAIP/menu.html' },
+  BI: { idx: 'https://eaip.isavia.is/', rx: /\/\/eaip\.(?:isavia|avians)\.is\/(?<p>A_\d+-\d{4}_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\//g, base: p => p + '/', toc: 'eAIP/menu.html',
+        want: (h, i) => new RegExp('^BI-AD ' + i + ' .* 1-en-GB\\.html$').test(h) },
   EG: { idx: 'https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP/', rx: /(?<p>https?:\/\/www\.aurora\.nats\.co\.uk\/htmlAIP\/Publications\/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EG-AD-2.{I}-en-GB.html', abs: true },
   EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html' },
   EP: { idx: 'https://www.ais.pansa.pl/en/publications/aip-poland/', rx: /(?<p>https:\/\/docs\.pansa\.pl\/ais\/eaipifr\/default_offline_(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\.html)/g, abs: true,
@@ -100,7 +101,7 @@ export function pickEdition(text, rx, today) {
   return best;
 }
 /* every link in a table of contents that points at the AD 2 page of this aerodrome */
-export function findAd2(text, icao, lang) {
+export function findAd2(text, icao, lang, want) {
   const out = [];
   const rx = /(?:href|"href")\s*[=:]\s*["']([^"'#]+)(?:#[^"']*)?["']/gi;
   for (const m of text.matchAll(rx)) {
@@ -108,6 +109,7 @@ export function findAd2(text, icao, lang) {
     if (!u.includes(icao)) continue;
     const d = u.replace(/%20/g, ' ');
     if (!/(^|[^A-Z])AD[\s_\-.]*2(?![0-9])/.test(d) && !new RegExp('(^|[^A-Z])AD[\\s_\\-.]+' + icao).test(d)) continue;
+    if (want && !want(h, icao)) continue;
     out.push(h);
   }
   if (!out.length) return null;
@@ -192,7 +194,7 @@ export async function resolve(icaoIn, deps) {
     for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc)) { url = u; break; } }
     if (!url && st.toc) {
       const toc = await getText(deps.fetch, new URL(st.toc, ed.base).href);
-      const h = findAd2(toc.text, icao, st.lang);
+      const h = findAd2(toc.text, icao, st.lang, st.want);
       if (h) url = new URL(h, st.tocBase ? new URL(st.tocBase, ed.base).href : toc.url).href;
     }
     await cput(cache, ak, { url }, 21600, deps);
