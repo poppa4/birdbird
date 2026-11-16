@@ -1,8 +1,9 @@
 const UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36';
 const keep=setInterval(()=>{},1000);
-async function get(u){ const r=await fetch(u,{headers:{'user-agent':UA},signal:AbortSignal.timeout(25000)}); return {r,t:await r.text()}; }
+async function get(u,o={}){ const r=await fetch(u,Object.assign({headers:{'user-agent':UA,accept:'application/json, text/html, */*'},signal:AbortSignal.timeout(25000)},o)); return {r,t:await r.text()}; }
 const J=s=>JSON.stringify(s);
-const hrefs=t=>[...new Set([...t.matchAll(/(?:href|src)\s*=\s*["']([^"'#]+)["']/gi)].map(m=>m[1]))];
-for (const u of ['https://www.kans-ks.org/eAIP/AIRAC%20AMDT%2011-2026_2026_10_29/index.html','https://www.kans-ks.org/eAIP/AIRAC%20AMDT%2011-2026_2026_10_29/eAIP/menu.html','https://www.kans-ks.org/eAIP/AIRAC%20AMDT%2011-2026_2026_10_29/toc-frameset.html',
- 'https://armats.am/wp-content/uploads/html-uploads/03-26-29OCT2026/','https://armats.am/wp-content/uploads/html-uploads/03-26-29OCT2026/index.html']) { try{ const {r,t}=await get(u); const h=hrefs(t); console.log('DBG',r.status,u,t.length,J(h.filter(x=>/AD|BKPR|UDYZ|menu|toc|eAIP/i.test(x)).slice(0,25))); if(t.length<3000) console.log('DBG T',J(t.replace(/\s+/g,' ').slice(0,1500))); }catch(e){ console.log('DBG ERR',u,e.message);} }
+for (const u of ['https://aim.crocontrol.hr/rest/file_sharing/api/explorer','https://aim.crocontrol.hr/rest/file_sharing/api/folders','https://aim.crocontrol.hr/rest/file_sharing/api/files','https://aim.crocontrol.hr/rest/file_sharing/api/config']) { try{ const {r,t}=await get(u); console.log('DBG',r.status,u,J(t.slice(0,1200))); }catch(e){ console.log('DBG ERR',u,e.message);} }
+{ const {t}=await get('https://b-flip.bulatsa.com/main-D5OUP5XC.js'); const ch=[...new Set(t.match(/chunk-[A-Z0-9]+\.js/g)||[])]; console.log('DBG LB chunks',J(ch));
+  for (const c of ch.slice(0,20)) { const x=await get('https://b-flip.bulatsa.com/'+c); const eps=[...new Set((x.t.match(/["'`][^"'`\s]{0,60}(?:api|aip|publication)[^"'`\s]{0,100}["'`]/gi)||[]))].filter(e=>/\//.test(e)).slice(0,25); if(eps.length) console.log('DBG LB',c,J(eps)); } }
+{ const {t}=await get('https://www.airnav.ie/air-traffic-management/aeronautical-information-management/aip-package'); const i=t.indexOf('AIP'); console.log('DBG EI', J([...t.matchAll(/(?:href|data-[a-z-]+|src)=["']([^"']*(?:aip|getattachment|iaip|pdf)[^"']*)["']/gi)].map(m=>m[1]).slice(0,30)), J(t.replace(/\s+/g,' ').match(/.{0,200}(?:Integrated|iAIP|eAIP).{0,300}/i)?.[0])); }
 clearInterval(keep);

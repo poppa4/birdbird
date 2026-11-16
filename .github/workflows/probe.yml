@@ -9,4 +9,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - run: node rlive.mjs LROP LRCL LRBS BKPR LR9Z BK9Z
+      - run: node dbg.mjs
