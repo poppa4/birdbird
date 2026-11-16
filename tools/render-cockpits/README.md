@@ -10,6 +10,7 @@ everything else needed to make the pictures again. What the displays show is Bir
 | Cessna 172 | FlightGear Cessna 172P, https://github.com/c172p-team/c172p | GPL-2.0 |
 | Diamond DA42 | FlightGear Diamond DA42, https://github.com/FGMEMBERS/Diamond-DA42 | GPL-2.0 |
 | Boeing 737-800 | FlightGear 737-800YV, https://github.com/FGMEMBERS/737-800YV | GPL-2.0 |
+| Beechcraft King Air | FlightGear Beechcraft Super King Air, https://github.com/FGMEMBERS/Beechcraft-King-Air | GPL-2.0 |
 | ATR 72-500 | FlightGear ATR 72-500 (ATR 72-500/C project), https://github.com/FGMEMBERS/ATR72 | GPL-3.0 |
 
 Steps for one aircraft (folder `<a>` with `cfg.py`, `spec.py`, `render.sh`):
