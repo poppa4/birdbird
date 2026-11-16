@@ -57,7 +57,14 @@ export const PORTAL = {
   LT: N('DHMI AIP Türkiye', 'https://www.dhmi.gov.tr/Sayfalar/aipturkey.aspx'),
   LS: N('skyguide AIP Switzerland', 'https://www.skybriefing.com/'),
   EY: N('ANS AIP Lithuania', 'https://www.ans.lt/en/aim'),
-  LM: N('MATS AIP Malta', 'https://www.maltats.com/')
+  LM: N('MATS AIP Malta', 'https://www.maltats.com/'),
+  BK: N('ANSP Kosovo AIP', 'https://www.kans-ks.org/eAIP/default.html'),
+  UD: N('ARMATS AIP Armenia', 'https://armats.am/category/eaip/'),
+  UM: N('BelAeroNavigatsia AIP Belarus', 'https://www.ban.by/en/aeronautical-information-aip'),
+  LW: N('M-NAV AIP North Macedonia', 'https://www.mnavigation.mk/'),
+  UG: N('Sakaeronavigatsia AIP Georgia', 'https://airnav.ge/'),
+  LU: N('MoldATSA AIP Moldova', 'https://www.moldatsa.md/'),
+  LC: N('Department of Civil Aviation of Cyprus AIP', 'https://www.mcw.gov.cy/mcw/dca/dca.nsf/')
 };
 export const EAD = { name: 'EUROCONTROL EAD Basic', url: 'https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic', kind: 'ead' };
 export const DIR = { name: 'EUROCONTROL @IS Online', url: 'https://www.eurocontrol.int/articles/ais-online', kind: 'dir' };
@@ -78,7 +85,10 @@ export const STATES = {
   BI: { idx: 'https://eaip.isavia.is/', rx: /\/\/eaip\.(?:isavia|avians)\.is\/(?<p>A_\d+-\d{4}_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\//g, base: p => p + '/', toc: 'eAIP/menu.html',
         want: (h, i) => new RegExp('^BI-AD ' + i + ' .* 1-en-GB\\.html$').test(h) },
   EG: { idx: 'https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP/', rx: /(?<p>https?:\/\/www\.aurora\.nats\.co\.uk\/htmlAIP\/Publications\/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EG-AD-2.{I}-en-GB.html', abs: true },
-  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html' },
+  /* Belgium/Luxembourg: skeyes refuses automated requests, so the page cannot be checked; only the aerodromes known to
+     have an AD 2 page in this AIP get the direct link, the rest the AIP's front page */
+  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html',
+        known: ['EBAW', 'EBBR', 'EBCI', 'EBKT', 'EBLG', 'EBOS', 'ELLX'] },
   EP: { idx: 'https://www.ais.pansa.pl/en/publications/aip-poland/', rx: /(?<p>https:\/\/docs\.pansa\.pl\/ais\/eaipifr\/default_offline_(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\.html)/g, abs: true,
         idx2: { rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index-v2\.html"/g, base: p => encodeURI(p) + '/' }, toc: 'v2/js/datasource.js', tocBase: 'eAIP/' },
   EE: { idx: 'https://eaip.eans.ee/', follow: true, toc: 'eAIP/EE-menu-en-GB.html', tpl: 'eAIP/EE-AD-2.{I}-en-GB.html' },
@@ -92,15 +102,21 @@ export const STATES = {
   LE: { fixed: 'https://aip.enaire.es/AIP/', toc: 'AIP-en.html', lang: /_en\./ },
   LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', toc: 'ad_2.htm', part: 'ad.htm',
         want: (h, i) => new RegExp('^ad_2_' + i.toLowerCase() + '\\.htm$').test(h) || new RegExp('LO_AD_2_' + i + '_en\\.pdf$').test(h), prefer: /\.htm$/ },
-  LJ: { fixed: 'https://aim.sloveniacontrol.si/aim/products/aip/part-3-aerodromes-ad/', toc: 'ad-2-aerodromes/',
-        match: (h, i) => new RegExp('/charts/aerodromes/' + i.toLowerCase() + '-').test(h) },
+  /* Slovenia: one chart page per aerodrome, always the current charts (the site's certificate chain is incomplete, so it
+     cannot be read automatically; the four aerodromes are listed here) */
+  LJ: { custom: async icao => ({ LJLJ: 'ljlj-ljubljana-brnik', LJMB: 'ljmb-maribor-orehova-vas', LJPZ: 'ljpz-portoroz-secovlje', LJCE: 'ljce-cerklje-ob-krki' })[icao]
+        ? 'https://aim.sloveniacontrol.si/aim/products/charts/aerodromes/' + ({ LJLJ: 'ljlj-ljubljana-brnik', LJMB: 'ljmb-maribor-orehova-vas', LJPZ: 'ljpz-portoroz-secovlje', LJCE: 'ljce-cerklje-ob-krki' })[icao] + '/' : null },
   LY: { idx: 'https://smatsa.rs/upload/aip/published/start_page.html', rx: /\.\/(?<p>(?<d>\d{2})-(?<mon>[A-Za-z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC)\/html\//g, base: p => p + '/html/', tpl: 'eAIP/LY-AD-2.{I}-en-GB.html' },
   LA: { idx: 'https://www.albcontrol.al/aip/', rx: /(?<p>https:\/\/www\.albcontrol\.al\/al\/aip\/(?<d>\d{2})-(?<mon>[A-Z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC\/html)/g, base: p => p + '/', tpl: 'eAIP/LA-AD-2.{I}-en-GB.html' },
   LQ: { idx: 'https://eaip.bhansa.gov.ba/updates.json', rx: /"effectiveDate"\s*:\s*"(?<p>(?<d>\d{1,2}) (?<mon>[A-Z]{3}) (?<y>\d{4}))"/g, base: (p, eff) => eff + '-AIRAC/html/', tpl: 'eAIP/LQ-AD-2.{I}-en-GB.html' },
   /* Germany: DFS permalinks (they redirect to the edition in force); the list is rebuilt weekly by tools/build-aip-de.mjs */
   ED: { custom: async icao => DE.ifr[icao] ? 'https://aip.dfs.de/BasicIFR/pages/' + DE.ifr[icao] + '.html' : DE.vfr[icao] ? 'https://aip.dfs.de/BasicVFR/pages/' + DE.vfr[icao] + '.html' : null },
   /* Denmark, the Faroe Islands and Greenland: Naviair's own search, the newest AD 2 text that is already published */
-  EK: { custom: naviair }
+  EK: { custom: naviair },
+  LR: { idx: 'https://www.aisro.ro/aip/aip.php', rx: /href="(?<p>(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2}))\/index\.html"/g, base: p => p + '/html/en/', toc: 'aip_toc_ad.html',
+        want: (h, i) => new RegExp('LR_AD_2_' + i + '_en\\.pdf$').test(h) },
+  BK: { idx: 'https://www.kans-ks.org/eAIP/default.html', rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index\.html"/g, base: p => encodeURI(p) + '/', toc: 'eAIP/menu.html' },
+  EH: { idx: 'https://eaip.lvnl.nl/web/eaip/default.html', rx: /(?<p>[^"']*?(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EH-AD-2.{I}-en-GB.html', toc: 'eAIP/EH-menu-en-GB.html' }
 };
 STATES.ET = STATES.ED; STATES.BG = STATES.EK;
 
@@ -160,17 +176,16 @@ async function getText(fetchFn, url) {
   if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
   return { text: await r.text(), url: r.url || url };
 }
-async function exists(fetchFn, url) {
-  for (const method of ['HEAD', 'GET']) {
-    try {
-      const r = await fetchFn(url, { method, headers: { 'user-agent': UA }, redirect: 'follow' });
-      if (r.body && method === 'GET') { try { r.body.cancel(); } catch (e) {} }
-      if (r.ok) return true;
-      if (r.status === 404 || r.status === 410) return false;
-      if (r.status === 401 || r.status === 403) return null;
-    } catch (e) {}
-  }
-  return false;
+async function exists(fetchFn, url, icao) {
+  // GET, and the page must name the aerodrome: some states answer 200 with an empty page for any name
+  try {
+    const r = await fetchFn(url, { headers: { 'user-agent': UA }, redirect: 'follow' });
+    if (r.status === 401 || r.status === 403) return null;
+    if (!r.ok) return false;
+    if (/pdf/i.test(r.headers.get('content-type') || '')) { try { r.body && r.body.cancel(); } catch (e) {} return true; }
+    const t = await r.text();
+    return !icao || t.toUpperCase().includes(icao);
+  } catch (e) { return false; }
 }
 /* AIRAC effective dates repeat every 28 days (29 OCT 2026 is one) */
 export function airacOf(today) {
@@ -235,7 +250,7 @@ export async function resolve(icaoIn, deps) {
     if (hit && hit.url) return done(hit.url);
     if (hit) return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
     let url = null;
-    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc)) { url = u; break; } }
+    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u, icao); if (x || (x === null && !st.toc && (!st.known || st.known.includes(icao)))) { url = u; break; } }
     if (!url && st.toc) {
       // the whole table of contents is read once per edition: every aerodrome in it is kept (cached 6 h)
       const mk = 'toc:' + pre + ':' + ed.base;
@@ -255,6 +270,6 @@ export async function resolve(icaoIn, deps) {
     return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
   } catch (e) {
     if (deps.log) deps.log(pre + ': ' + (e && e.message || e));
-    return Object.assign({ lookupFailed: true }, fallback);
+    return Object.assign({ lookupFailed: true, why: String(e && e.message || e).slice(0, 200) }, fallback);
   }
 }
