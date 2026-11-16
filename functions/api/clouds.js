@@ -5,7 +5,7 @@
    layers?" between the airports that report a METAR.
 
    Response 200: { ok:true, model, run, fh, valid, la0 (north edge), lo0 (west edge), d:0.25, nx, ny,
-     lc, mc, hc        cover of the low / middle / high cloud layer, %           (time average over the last hour or few)
+     lc, mc, hc, tc    cover of the low / middle / high cloud layer and of all cloud, % (time average over the last hour or few)
      lb, lt, mb, mt, hb, ht   base and top of each layer, ft pressure altitude (≈ FL × 100); null where there is no layer
      ceil              cloud ceiling, ft above mean sea level; null where there is none
      frz               freezing level (0 °C), ft above mean sea level
@@ -31,22 +31,22 @@ export function nomadsUrl(run, fh, tile) {
   const ymd = run.getUTCFullYear() + p2(run.getUTCMonth() + 1) + p2(run.getUTCDate()), hh = p2(run.getUTCHours());
   const w = tile.lo < 0 ? tile.lo + 360 : tile.lo, e = w + TILE;
   const lev = ['low_cloud_layer', 'middle_cloud_layer', 'high_cloud_layer', 'low_cloud_bottom_level', 'low_cloud_top_level', 'middle_cloud_bottom_level',
-    'middle_cloud_top_level', 'high_cloud_bottom_level', 'high_cloud_top_level', 'cloud_ceiling', '0C_isotherm', 'surface'];
+    'middle_cloud_top_level', 'high_cloud_bottom_level', 'high_cloud_top_level', 'cloud_ceiling', '0C_isotherm', 'surface', 'entire_atmosphere'];
   const q = ['dir=' + encodeURIComponent('/gfs.' + ymd + '/' + hh + '/atmos'), 'file=gfs.t' + hh + 'z.pgrb2.0p25.f' + String(fh).padStart(3, '0'),
-    'var_TCDC=on', 'var_PRES=on', 'var_HGT=on', 'var_CAPE=on'].concat(lev.map(l => 'lev_' + l + '=on'))
+    'var_LCDC=on', 'var_MCDC=on', 'var_HCDC=on', 'var_TCDC=on', 'var_PRES=on', 'var_HGT=on', 'var_CAPE=on'].concat(lev.map(l => 'lev_' + l + '=on'))
     .concat(['subregion=', 'toplat=' + (tile.la + TILE), 'bottomlat=' + tile.la, 'leftlon=' + w, 'rightlon=' + e]);
   return NOMADS + '?' + q.join('&');
 }
 
 /* which field is which: discipline 0, category/number, level type */
 const FIELDS = {
-  lc: ['6/1', 214], mc: ['6/1', 224], hc: ['6/1', 234],
+  lc: ['6/3', 214], mc: ['6/4', 224], hc: ['6/5', 234], tc: ['6/1', 10],
   lb: ['3/0', 212], lt: ['3/0', 213], mb: ['3/0', 222], mt: ['3/0', 223], hb: ['3/0', 232], ht: ['3/0', 233],
   ceil: ['3/5', 215], frz: ['3/5', 4], sfc: ['3/5', 1], cape: ['7/6', 1]
 };
 const ok = v => v != null && isFinite(v);
 const CONV = {
-  lc: v => Math.round(v), mc: v => Math.round(v), hc: v => Math.round(v),
+  lc: v => Math.round(v), mc: v => Math.round(v), hc: v => Math.round(v), tc: v => Math.round(v),
   lb: v => Math.round(pressAlt(v) / 100) * 100, lt: v => Math.round(pressAlt(v) / 100) * 100, mb: v => Math.round(pressAlt(v) / 100) * 100,
   mt: v => Math.round(pressAlt(v) / 100) * 100, hb: v => Math.round(pressAlt(v) / 100) * 100, ht: v => Math.round(pressAlt(v) / 100) * 100,
   ceil: v => v > 0 && v < 30000 ? Math.round(v * FT / 100) * 100 : null, frz: v => Math.round(v * FT / 100) * 100, sfc: v => Math.round(v * FT), cape: v => Math.round(v)
