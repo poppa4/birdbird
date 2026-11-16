@@ -37,6 +37,8 @@
   const logo='<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.5" fill="#13202A"/><circle cx="16" cy="16" r="12.6" fill="#F3EFE4"/><path d="M16 16L14.94 14.94L16.00 4.70Z" fill="#13202A"/><path d="M16 16L16.00 4.70L17.06 14.94Z" fill="#3B5670"/><path d="M16 16L17.06 14.94L27.30 16.00Z" fill="#13202A"/><path d="M16 16L27.30 16.00L17.06 17.06Z" fill="#3B5670"/><path d="M16 16L17.06 17.06L16.00 27.30Z" fill="#13202A"/><path d="M16 16L16.00 27.30L14.94 17.06Z" fill="#3B5670"/><path d="M16 16L14.94 17.06L4.70 16.00Z" fill="#13202A"/><path d="M16 16L4.70 16.00L14.94 14.94Z" fill="#3B5670"/><g transform="translate(16 16.6) rotate(-6) scale(0.27)"><path d="M-42 -2 Q-30 -23 -10 -11 Q-4 -7 0 2 Q5 -9 12 -14 Q34 -30 46 -6 Q32 -12 15 -1 Q6 4 0 14 Q-5 4 -12 0 Q-28 -8 -42 -2 Z" fill="#9A1E68" stroke="#F3EFE4" stroke-width="4.5" stroke-linejoin="round"/></g></svg>';
   /* the full seal for larger places (footer); the mark above is for the header and small sizes. The earlier logo: logo-classic.svg */
   const seal='<img src="logo-seal.svg" width="64" height="64" alt="" class="seal" loading="lazy">';
+  /* the header carries the same seal as the footer */
+  const sealHead='<img src="logo-seal.svg" width="42" height="42" alt="" class="seal">';
 
   /* ---------- rang og progresjon (lokalt; klar for synk mot konto senere) ---------- */
   const PK='naeroson-prog';
@@ -126,7 +128,7 @@
   const foot=document.createElement('footer'); foot.className='sitefoot';
   function render(){
     const keep=head.querySelector('.hright')||Object.assign(document.createElement('div'),{className:'hright'});
-    head.innerHTML=`<div class="in"><a class="logo" href="index.html" aria-label="Birdbird">${logo}<span>Birdbird</span></a>
+    head.innerHTML=`<div class="in"><a class="logo" href="index.html" aria-label="Birdbird">${sealHead}<span>Birdbird</span></a>
       <button class="menu" aria-expanded="false" aria-controls="sitenav"><i aria-hidden="true"></i>${t('Menu')}</button>
       <nav id="sitenav" aria-label="${t('Main')}"><a href="index.html" class="${page==='index.html'?'on':''}"${page==='index.html'?' aria-current="page"':''}>${t('Home')}</a><a href="lab.html" class="${lab?'on':''}">${t('Virtual Labs')}</a><a href="prep.html" class="${pln?'on':''}">${t('Briefing pack')}</a><a href="route.html" class="${page==='route.html'?'on':''}">${t('Route Explorer')}</a><a href="training.html" class="${trn?'on':''}">${t('Training')}</a><a href="fi.html" class="${(page==='fi.html'&&!checkMode)?'on':''}">${t('Flight Intelligence')}</a><a href="workspace.html" class="mob ${page==='workspace.html'?'on':''}">${t('My workspace')}</a><a href="profile.html" class="mob ${page==='profile.html'?'on':''}">${t('My page')}</a></nav></div>`;
     head.querySelectorAll('nav a').forEach(a=>{ a.dataset.l=a.textContent; });
@@ -218,7 +220,7 @@
     const fl=()=>document.querySelectorAll('a[data-flowlink]').forEach(a=>{ a.href='flows.html#ac='+a.dataset.flowlink; a.innerHTML=lang()==='no'?'<b>Flow-trener</b> · tegn flowene for denne cockpiten, se dem spilt av og øv fra hukommelsen, alene eller med en partner →':'<b>Flow trainer</b> · draw the flows for this cockpit, watch them play and practise from memory, alone or with a partner →'; });
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fl); else fl(); new MutationObserver(fl).observe(HTML,{attributes:true,attributeFilter:['lang']});
     /* search.js wires the bar. It is not needed to draw the page, so it is fetched after the page's own scripts (it used to share the line with them) */
-    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=45'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
+    later(()=>{ if(!document.querySelector('script[src^="search.js"]')){ const sj=document.createElement('script'); sj.src='search.js?v=46'; sj.onload=()=>{ const i=document.querySelector('.nsearch input'); if(i&&i.value) i.dispatchEvent(new Event('input')); }; document.head.appendChild(sj); } });
     const addFoot=()=>document.body.appendChild(foot); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addFoot); else addFoot();
     const tipNow=()=>tip(); if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',tipNow); else tipNow();
     later(trainNote);

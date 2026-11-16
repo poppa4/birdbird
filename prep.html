@@ -6,7 +6,7 @@
 <title>Briefing pack · Birdbird</title>
 <meta name="description" content="Build a printable briefing pack for each flight: aircraft, NOTAM, weather, minima, profile, performance, fuel, mass and balance, radio failure and the ATC flight plan.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=25">
+<link rel="stylesheet" href="site.css?v=26">
 <link rel="stylesheet" href="train.css?v=3">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
@@ -329,7 +329,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=73"></script>
+<script src="site.js?v=74"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -373,7 +373,7 @@ body:not(.nofab) #askbar{display:none}
 <script src="ai.js?v=5"></script>
 <script src="easa.js?v=1"></script>
 <script src="wxkit.js?v=2"></script>
-<script src="aip.js?v=2"></script>
+<script src="aip.js?v=3"></script>
 <script src="store.js?v=3"></script>
 <script src="flightlink.js?v=1"></script>
 <script>
@@ -1223,7 +1223,7 @@ function wxRender(){ const box=el('wxCards'); if(!box||!P||!window.WXK) return; 
     const mAge=M&&M.time?ageTxt(M.time):'', mOld=M&&M.time&&Date.now()-M.time>90*60e3;
     const T=F?tafItems(k,F,TW,R):{it:[],A:null}; WXA[k]={id:sid,M,F,A:T.A,R};
     const opts=R.ends.length? `<option value="">${L({en:'Auto',no:'Auto'})}${R.auto&&R.rw?' ('+esc(R.rw.id)+')':''}</option>`+R.ends.map(e=>`<option value="${esc(e.id)}" ${P.f['wx.'+k+'.rwy']===e.id?'selected':''}>RWY ${esc(e.id)}${e.len?' · '+fx(Math.round(e.len*0.3048/10)*10)+' m':''}</option>`).join('') : '';
-    cards.push(`<article class="wxc" data-k="${k}"><header><span class="wxrole">${esc(L(WXR[k]))}</span> <b class="mono">${esc(sid||'????')}</b> <span class="wxname">${esc(st.name||R.name||'')}</span>${(()=>{ const a=window.BBAIP&&BBAIP.of(sid); return a?`<a class="wxaip noprint" href="${esc(a.url)}" target="_blank" rel="noopener" title="${esc(a.name)}${a.note?' ('+L(a.note)+')':''}">${L({en:'AIP and charts',no:'AIP og kart'})} ↗</a>`:''; })()}</header>
+    cards.push(`<article class="wxc" data-k="${k}"><header><span class="wxrole">${esc(L(WXR[k]))}</span> <b class="mono">${esc(sid||'????')}</b> <span class="wxname">${esc(st.name||R.name||'')}</span>${(()=>{ const a=window.BBAIP&&BBAIP.of(sid); return a?`<a class="wxaip noprint" href="${esc(BBAIP.deep(sid)?BBAIP.ad(sid):a.url)}" target="_blank" rel="noopener" title="${esc(BBAIP.deep(sid)?'AD 2 '+sid+' · '+a.name:a.name+(a.note?' ('+L(a.note)+')':''))}">${L({en:'AIP and charts',no:'AIP og kart'})} ↗</a>`:''; })()}</header>
       ${M?`<div class="wxraw"><span class="wxlab">METAR${M.time?` · <span class="${mOld?'ko':''}">${WXK.zt(M.time)} · ${mAge} ${L({en:'old',no:'gammel'})}</span>`:''}</span><code>${esc(mr)}</code></div>`:''}
       ${F?`<div class="wxraw"><span class="wxlab">TAF${F.issue?` · ${L({en:'issued',no:'utstedt'})} ${WXK.zt(F.issue)} · ${ageTxt(F.issue)} ${L({en:'ago',no:'siden'})}`:''}${F.from?` · ${L({en:'valid',no:'gyldig'})} ${WXK.zt(F.from).slice(0,4)}–${WXK.zt(F.to).slice(0,4)}`:''}</span><code>${tafLines(/^TAF\b/i.test(tr)?tr:'TAF '+tr)}</code></div>`:''}
       <div class="wxrwy">${R.ends.length?`<label class="noprint">${L({en:'Runway',no:'Bane'})} <select id="wxr-${k}" data-wxrwy="${k}">${opts}</select></label><span class="printonly">RWY ${esc(R.rw?R.rw.id:'—')}</span>`:`<label>${L({en:'Runway',no:'Bane'})} <input id="wxr-${k}" data-wxrwy="${k}" value="${esc(P.f['wx.'+k+'.rwy']||'')}" placeholder="17" size="4" inputmode="numeric"></label>`}<small>${L({en:'Heading from the runway number (±5°, magnetic); METAR and TAF wind is true. Runway list: OurAirports.',no:'Kurs fra banenummeret (±5°, magnetisk); vind i METAR og TAF er rettvisende. Baneliste: OurAirports.'})}</small></div>

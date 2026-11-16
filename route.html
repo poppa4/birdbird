@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=25">
+<link rel="stylesheet" href="site.css?v=26">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -160,6 +160,7 @@
 .rx-side .rw{font-size:13px;border-top:1px solid #F0F2F2;padding:5px 0;display:flex;justify-content:space-between;gap:8px}.rx-side .rw b{font-family:var(--f-mono)}
 .rx-side .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rx-side .acts .btn{padding:6px 10px;font-size:13px}
 .rx-side .src{font-size:11.5px;color:var(--ink-2);margin:10px 0 0}
+.rx-side .aipl .btn{display:inline-flex;margin:0 0 6px;text-decoration:none}
 .rx-sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;background:#FBFBF8;border-top:1px solid var(--rule);box-shadow:0 -6px 20px rgba(19,32,42,.10);display:flex;flex-direction:column;transition:height .2s}
 .rx-sheet[data-s="full"]{z-index:8}
 .rx-sheet[data-s="min"]{height:46px}
@@ -537,7 +538,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=73"></script>
+<script src="site.js?v=74"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -807,7 +808,7 @@
 <script src="terrain.js?v=2"></script>
 <script src="wmm.js?v=1"></script>
 <script src="rxmap.js?v=25"></script>
-<script src="aip.js?v=2"></script>
+<script src="aip.js?v=3"></script>
 <script src="windsaloft.js?v=3"></script>
 <script>
 (function(){
@@ -2403,7 +2404,8 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
      (rw?`<b style="font-size:13px">${L({en:'Runways',no:'Rullebaner'})}</b>${rw}<p class="src">${L({en:'Headings are from the runway numbers (magnetic, rounded).',no:'Kursene er fra banenumrene (magnetisk, avrundet).'})}</p>`:'')+
      (near.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Navaids within 25 NM',no:'Radiofyr innen 25 NM'})}</b>`+near.map(x=>`<div class="rw"><b>${esc(x.n[0])}</b><span>${esc(x.n[2])} ${esc(x.n[3]||'')} · ${fx(x.d,0)} NM</span></div>`).join(''):'')+
      `<div class="acts"><button class="btn pri" data-a="dep">${L({en:'From here',no:'Herfra'})}</button><button class="btn pri" data-a="dst">${L({en:'To here',no:'Hit'})}</button><button class="btn" data-a="add">${L({en:'Via',no:'Via'})}</button>${ML?`<button class="btn" data-a="adg" title="${L({en:'Zoom in to the taxiways, aprons and their names (OpenStreetMap)',no:'Zoom inn på taksebaner, oppstillingsplasser og navnene (OpenStreetMap)'})}">${L({en:'Airport diagram',no:'Flyplasskart'})}</button>`:''}</div>`+
-     (aip?`<p class="src">${L({en:'Official data, approach and aerodrome charts:',no:'Offisielle data, innflygings- og flyplasskart:'})} <a href="${esc(aip.url)}" target="_blank" rel="noopener">${esc(aip.name)} ↗</a>${aip.note?' ('+esc(L(aip.note))+')':''}, AD 2 ${esc(o[0])}.</p>`:`<p class="src">${L({en:'Official data: the national AIP of this country.',no:'Offisielle data: landets nasjonale AIP.'})}</p>`)+
+     (aip&&BBAIP.deep(o[0])?`<p class="src aipl"><a class="btn" href="${BBAIP.ad(o[0])}" target="_blank" rel="noopener">${L({en:'AIP and charts',no:'AIP og kart'})} · AD 2 ${esc(o[0])} ↗</a><br>${L({en:'Opens the aerodrome in the edition in force today',no:'Åpner flyplassen i utgaven som gjelder i dag'})} (${esc(aip.name)}).</p>`:
+      aip?`<p class="src">${L({en:'Official data, approach and aerodrome charts:',no:'Offisielle data, innflygings- og flyplasskart:'})} <a href="${esc(aip.url)}" target="_blank" rel="noopener">${esc(aip.name)} ↗</a>${aip.note?' ('+esc(L(aip.note))+')':''}, AD 2 ${esc(o[0])}.</p>`:`<p class="src">${L({en:'Official data: the national AIP of this country.',no:'Offisielle data: landets nasjonale AIP.'})}</p>`)+
      `<p class="src">${L({en:'Source: OurAirports (public domain). Check against the AIP.',no:'Kilde: OurAirports (allmenn eiendom). Sjekk mot AIP.'})}</p>`; }
   else { const ty=h.k==='nv'?`${esc(o[2])} ${esc(o[3]||'')}`:h.k==='aip'?`${L({en:'IFR point',no:'IFR-punkt'})} · AIP ${esc(o[3])}`:L({en:'My fix',no:'Min fix'});
     html=`<span class="id">${esc(pt.n)}</span><h3>${h.k==='nv'?esc(o[1]):esc(pt.n)}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${ty}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(pt.la,pt.lo)}</dd>${h.k==='nv'&&o[6]!=null?`<dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[6])} ft</dd>`:''}</dl>`+

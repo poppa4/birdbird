@@ -251,7 +251,11 @@ const css=`.nsearch .res{position:absolute;left:var(--gl);right:var(--gr);max-wi
 .nsearch .ai .lk{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}.nsearch .ai .lk a{font-size:13.5px;border:1px solid var(--rule);border-radius:var(--radius);padding:3px 10px;text-decoration:none;color:var(--accent)}
 .nsearch .sm{font-size:12px;color:var(--ink-3)}`;
 const ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>';
-const EX={en:['crosswind 270/15 rwy 24','alternates NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','what is an occlusion?'],no:['sidevind 270/15 bane 24','alternativer NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','hva er en okklusjon?']};
+const EX={en:['crosswind 270/15 rwy 24','ENTO','alternates NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','what is an occlusion?'],no:['sidevind 270/15 bane 24','ENTO','alternativer NCO','3° 120 kt','holding entry','elev 1500 qnh 1003 t 25','hva er en okklusjon?']};
+/* ICAO code of a European aerodrome → AIP link (the server finds the AD 2 page in force, or the state's portal) */
+const icaoOf=q=>{ const m=String(q).trim().toUpperCase().match(/^([A-Z]{2}[A-Z0-9]{2})$/); return m&&/^(E|L|B[GIK]|GC|U[BDGKM])/.test(m[1])?m[1]:null; };
+let APN=null, apP=null;
+const loadAp=()=>apP||(apP=fetch('data/nav-eu.json').then(r=>r.json()).then(d=>{ APN={}; (d.ap||[]).forEach(a=>{ APN[a[0]]=a[1]; }); }).catch(()=>{ APN={}; }));
 function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.dataset.w) return; const head=document.querySelector('header.site'); if(!head){ setTimeout(mount,50); return; }
   const st=document.createElement('style'); st.textContent=css; document.head.appendChild(st);
   /* site.js places the box before first paint (no jump); this only builds it when it is missing */
@@ -285,12 +289,15 @@ function mount(){ let box=document.querySelector('.nsearch'); if(box&&box.datase
     if(w){ clearTimeout(wxT); wxT=setTimeout(()=>wxGet(w.ids),250); }
     const c=wr?null:calc(q), hits=score(q).filter(x=>!c&&!wr||x.s>=3); items=[]; let h='';
     if(wr){ items.push({u:'weather.html?ids='+w.ids.join(',')+(w.kind==='TAF'?'&k=T':'')}); h+=wr; }
+    const ic=w&&w.forced?null:icaoOf(q); if(ic){ const nm=APN&&APN[ic]; if(!APN) loadAp().then(()=>{ if(icaoOf(inp.value.trim())===ic) draw(); });
+      const u='/api/aip?icao='+ic+'&go=1'; items.push({u,ext:1});
+      h+=`<a class="it" data-i="${items.length-1}" href="${u}" target="_blank" rel="noopener"><span><b>${esc(ic)}${nm?' · '+esc(nm):''}</b><br><small>${L({en:'AIP and charts (AD 2), the edition in force today',no:'AIP og kart (AD 2), utgaven som gjelder i dag'})}</small></span><small>AIP ↗</small></a>`; }
     if(c){ items.push({u:c.u}); h+=`<div class="it calc" data-i="0"><span><b>${esc(c.h)}</b><br><span class="v">${esc(c.v)}</span></span>${c.u?`<small>${L({en:'Open the tool',no:'Åpne verktøyet'})} →</small>`:''}</div>`; }
     hits.forEach(({e})=>{ items.push({u:e.u}); h+=`<a class="it" data-i="${items.length-1}" href="${e.u}"><span><b>${esc(L(e.t))}</b><br><small>${esc(L(e.d))}</small></span><small>${e.u.split(/[?#]/)[0].replace('.html','')}</small></a>`; });
     items.push({ai:1}); h+=`<div class="it" data-i="${items.length-1}"><span><b>${L({en:'Ask the instructor',no:'Spør instruktøren'})}:</b> ${esc(q)}</span><small>Enter${hits.length||c?' ↵':''}</small></div>`;
     res.innerHTML=h+`<div class="aiw"></div>`; res.hidden=false; sel=0; mark(); }
   function mark(){ res.querySelectorAll('.it').forEach(e=>{ const on=+e.dataset.i===sel; e.classList.toggle('on',on); e.id='nsres-'+e.dataset.i; e.setAttribute('role','option'); e.setAttribute('aria-selected',String(on)); if(on) inp.setAttribute('aria-activedescendant',e.id); }); }
-  function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.u) location.href=it.u; }
+  function go(i){ const it=items[i]; if(!it) return; if(it.ai) return ask(); if(it.ext){ window.open(it.u,'_blank','noopener'); return; } if(it.u) location.href=it.u; }
   inp.addEventListener('input',draw); inp.addEventListener('focus',()=>{ if(inp.value.trim()) draw(); });
   inp.addEventListener('keydown',e=>{ if(e.key==='ArrowDown'){ e.preventDefault(); sel=Math.min(items.length-1,sel+1); mark(); } else if(e.key==='ArrowUp'){ e.preventDefault(); sel=Math.max(0,sel-1); mark(); }
     else if(e.key==='Enter'){ e.preventDefault(); const q=inp.value.trim(); if(!q) return; if(/\?$/.test(q)||/^(hva|hvorfor|hvordan|når|what|why|how|when|can|kan|is|er) /i.test(q)) return ask(); go(sel); } else if(e.key==='Escape'){ res.hidden=true; inp.blur(); } });
