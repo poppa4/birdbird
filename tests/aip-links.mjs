@@ -22,6 +22,7 @@ async function check(url) {
 }
 const bad = [];
 for (const [url, name] of urls) {
+  if (/sloveniacontrol\.si/.test(url)) continue;   // checked by tests/aip-lj.mjs (incomplete certificate chain)
   const r = await check(url);
   console.log((r.ok ? 'ok   ' : 'DEAD ') + String(r.status).padEnd(5) + name + '  ' + url + (r.final && r.final !== url ? '  → ' + r.final : ''));
   if (!r.ok) bad.push(name + ': ' + url + ' (' + r.status + ')');
