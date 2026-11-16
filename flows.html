@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Flow trainer · Birdbird</title>
-<meta name="description" content="Draw your cockpit flows over your own cockpit photo or PDF, or over Birdbird's A320, King Air, Seneca, DA42 and C172 cockpits. Separate PF and PM layers, checklist calls, animated playback, practice from memory with hints and flashcards, and a live room for two pilots. Free.">
+<meta name="description" content="Draw your cockpit flows over your own cockpit photo or PDF, over real A320, 737 and ATR 72 photos, or over Birdbird's A320, 737-800, ATR 72-600, King Air, Seneca, DA42 and C172 cockpits. Separate PF and PM layers, checklist calls, animated playback, practice from memory with hints and flashcards, and a live room for two pilots. Free.">
 <link rel="stylesheet" href="lab.css?v=13">
 <link rel="stylesheet" href="site.css?v=25">
 <style>
@@ -22,9 +22,9 @@
 .fwrap{position:relative;background:#14181C;border-radius:12px;overflow:hidden}
 .fstage{overflow:auto;max-height:min(82vh,1100px);-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior:contain}
 #cv{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
-#cv .fz{font:700 11px var(--f-mono,monospace);fill:#5E6873;letter-spacing:.08em}#cv .fpn{font:700 11px var(--f-body,sans-serif);fill:#D7DCE1}#cv .fpn.scr{fill:#7FD1A0}#cv .ftn{font-family:var(--f-body,sans-serif);fill:#E9ECEF;pointer-events:none}
+#cv .fz{font:700 11px var(--f-mono,monospace);fill:#9AA5B1;letter-spacing:.08em}#cv .fpn{font:700 11px var(--f-body,sans-serif);fill:#D7DCE1}#cv .fpn.scr{fill:#7FD1A0}#cv .ftn{font-family:var(--f-body,sans-serif);fill:#E9ECEF;pointer-events:none}
 #cv .ft rect:first-child{transition:fill .15s}[data-mode="build"] #cv .ft:hover rect:first-child{fill:#59646F}
-#cv .nophoto{font:600 26px var(--f-body,sans-serif);fill:#9AA5B1}#cv .nophoto.s{font-size:18px;fill:#6E7A86}
+#cv .phc{font:600 12px var(--f-body,sans-serif);fill:#fff;paint-order:stroke;stroke:#000;stroke-width:3px;opacity:.85}#cv .nophoto{font:600 26px var(--f-body,sans-serif);fill:#9AA5B1}#cv .nophoto.s{font-size:18px;fill:#6E7A86}
 #cv .bdg{cursor:grab;touch-action:none}#cv .bn{font:800 15px var(--f-body,sans-serif);fill:#0B0F12;pointer-events:none}#cv .bl{font:700 13px var(--f-body,sans-serif);fill:#fff;paint-order:stroke;stroke:#000;stroke-width:3px;pointer-events:none}
 #cv .bdg.nw{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}@keyframes pop{0%{transform:scale(0)}}
 #cv .bdg.nw{transform-box:fill-box;transform-origin:center}
@@ -50,7 +50,7 @@
 .rst{margin:10px 0;padding:9px 12px;border-radius:8px;background:#FFF4DC;color:#8A5A00;font-weight:600;font-size:14px}.rst.ok{background:rgba(60,203,127,.14);color:var(--green,#1F7A4D)}
 .rcode span{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.rcode code{font:600 16px var(--f-mono,monospace);padding:7px 10px;background:var(--wash,#F2F4F5);border-radius:6px;user-select:all}
 @media (max-width:640px){.fmode button{padding:9px 2px;font-size:13.5px}}
-.fstart{margin:0 0 12px}@media (min-width:760px){.fsg{grid-template-columns:repeat(3,minmax(0,1fr))}}.fstart>b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}.fsg{display:grid;gap:6px}
+.fstart{margin:0 0 12px}@media (min-width:760px){.fsg{grid-template-columns:repeat(3,minmax(0,1fr))}.fsg:has(>:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}}.fstart>b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}.fsg{display:grid;gap:6px}
 .fsb{display:flex;gap:10px;align-items:center;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--rule);border-radius:10px;background:#fff;cursor:pointer;font:inherit;color:var(--ink)}
 .fsb:hover,.fsb:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}.fsb i{font-style:normal;font-size:20px;width:28px;text-align:center}.fsb b{display:block;font-size:15px}.fsb small{display:block;color:var(--ink-2);font-size:12.5px}
 .fsb.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.fsb.pri small{color:#C9D1D8}
@@ -99,7 +99,7 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
     <div class="brand">
       <div class="eyebrow">Birdbird · Training</div>
       <h1>Flow trainer</h1>
-      <p>Draw your cockpit flows over your own cockpit photo or PDF, or over a ready-made Birdbird cockpit. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.</p>
+      <p>Draw your cockpit flows over your own cockpit photo or PDF, a real photo of an A320, 737 or ATR 72 flight deck, or a Birdbird cockpit with every control named. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -159,12 +159,12 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 </form></dialog>
 
 <script src="lab.js?v=51"></script>
-<script src="flowsac.js?v=1"></script>
-<script src="flowscore.js?v=2"></script>
+<script src="flowsac.js?v=2"></script>
+<script src="flowscore.js?v=3"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Birdbird · Training':'Birdbird · Trening','Trainer':'Trener','How it works':'Slik virker det',
- 'Draw your cockpit flows over your own cockpit photo or PDF, or over a ready-made Birdbird cockpit. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.':'Tegn cockpit-flowene dine over ditt eget cockpitbilde eller PDF, eller over en ferdig Birdbird-cockpit. Ett lag per pilot, sjekklistekall, avspilling og øving fra hukommelsen til flowen sitter i hendene. Gratis, og bildene dine blir på enheten din.',
+ 'Draw your cockpit flows over your own cockpit photo or PDF, a real photo of an A320, 737 or ATR 72 flight deck, or a Birdbird cockpit with every control named. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.':'Tegn cockpit-flowene dine over ditt eget cockpitbilde eller PDF, et ekte foto av en A320-, 737- eller ATR 72-cockpit, eller en Birdbird-cockpit der hver bryter har navn. Ett lag per pilot, sjekklistekall, avspilling og øving fra hukommelsen til flowen sitter i hendene. Gratis, og bildene dine blir på enheten din.',
  '+ New flow':'+ Ny flow','+ New':'+ Ny','Share as a link':'Del som lenke','Save as file':'Lagre som fil','Open a flow file…':'Åpne en flowfil …','Save as picture (PNG)':'Lagre som bilde (PNG)','Save as video':'Lagre som video','Print':'Skriv ut','Duplicate':'Dupliser','Delete flow':'Slett flowen',
  'Build':'Bygg','Watch':'Se','Practise':'Øv','Together':'Sammen',
  '1 · Build':'1 · Bygg','2 · Watch':'2 · Se','3 · Practise':'3 · Øv','4 · Together':'4 · Sammen',"Open a room and send the link or code to your partner on another device. One takes PF, the other PM. The flow runs in order across both roles: you find your steps, you see your partner's taps on your screen, and checklist calls pop up for both. Scores side by side at the end.":'Åpne et rom og send lenken eller koden til partneren din på en annen enhet. Én tar PF, den andre PM. Flowen går i rekkefølge på tvers av rollene: du finner stegene dine, du ser partnerens trykk på skjermen din, og sjekklistekall kommer opp hos begge. Resultatene side om side til slutt.',
@@ -178,6 +178,6 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=3"></script>
+<script src="flows.js?v=4"></script>
 </body>
 </html>
