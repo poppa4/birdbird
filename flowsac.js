@@ -255,6 +255,9 @@ const C172 = { id: 'c172', name: 'Cessna 172', crew: 1, h: 947, t: C172_T,
 /* Boeing 737-800: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 737-800YV (github.com/FGMEMBERS/737-800YV, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
    show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+/* Boeing 737-800: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 737-800YV (github.com/FGMEMBERS/737-800YV, GPL-2.0).
+   The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
+   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
 const B738_T = [
   ["VOICE RECORDER|VOICE RECORDER",661.6,49.3,12.0,12.0], ["FLT CONTROL|FLT CONTROL A",300.4,60.6,12.0,24.6], ["FLT CONTROL|FLT CONTROL B",317.2,60.6,12.0,24.6], ["CABIN|EVAC HORN CUTOUT",399.5,61.1,12.0,12.0],
   ["CABIN|EVAC",422.1,55.3,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT L SIDE",533.1,77.5,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT L FWD",548.8,77.5,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT TEST",566.5,77.5,12.0,12.0],
@@ -267,7 +270,7 @@ const B738_T = [
   ["ANTI ICE|ENG ANTI ICE 2",594.6,167.5,12.0,12.0], ["BLEED|L RECIRC FAN",632.2,169.5,12.0,12.0], ["BLEED|DUCT PRESS",641.0,170.2,46.5,37.1], ["BLEED|R RECIRC FAN",692.4,169.5,12.0,12.0],
   ["ELEC|CAB/UTIL",437.9,174.3,12.0,12.0], ["NAVIGATION / DISPLAYS|VHF NAV",303.3,186.5,12.0,12.0], ["NAVIGATION / DISPLAYS|IRS",353.2,186.5,12.0,12.0], ["BLEED|WING-BODY OVHT TEST",695.3,189.6,12.0,12.0],
   ["NAVIGATION / DISPLAYS|FMC",353.2,209.0,12.0,12.0], ["EQUIP COOLING|EQUIP COOLING SUPPLY",484.7,213.0,12.0,12.0], ["EQUIP COOLING|EQUIP COOLING EXHAUST",505.3,213.0,12.0,12.0], ["HYDRAULICS|ENG 1 HYD",536.1,215.6,12.0,12.0],
-  ["HYDRAULICS|ELEC 2 HYD",554.0,215.7,12.0,12.0], ["HYDRAULICS|ENG 2 HYD",576.9,215.6,12.0,12.0], ["HYDRAULICS|ELEC 1 HYD",595.0,215.6,12.0,12.0], ["BLEED|L PACK",629.3,211.6,12.0,12.0],
+  ["HYDRAULICS|ELEC 2 HYD",554.0,215.7,12.0,12.0], ["HYDRAULICS|ELEC 1 HYD",576.9,215.6,12.0,12.0], ["HYDRAULICS|ENG 2 HYD",595.0,215.6,12.0,12.0], ["BLEED|L PACK",629.3,211.6,12.0,12.0],
   ["BLEED|ISOLATION VALVE",662.3,218.2,12.0,12.0], ["BLEED|R PACK",695.8,212.2,12.0,12.0], ["ELEC|STANDBY POWER",417.1,224.9,24.6,12.0], ["NAVIGATION / DISPLAYS|DISPLAYS SOURCE",300.9,242.4,18.7,20.7],
   ["NAVIGATION / DISPLAYS|DISPLAYS CONTROL PANEL",353.2,244.8,12.0,12.0], ["ELEC|DRIVE DISCONNECT 1",396.5,235.9,12.0,24.6], ["ELEC|DRIVE DISCONNECT 2",453.9,235.9,12.0,24.6], ["BLEED|TRIP RESET",662.1,242.3,12.0,12.0],
   ["CABIN|EMER EXIT LIGHTS",498.5,251.6,12.0,24.6], ["FUEL|FUEL TEMP",313.4,268.8,41.5,40.0], ["BLEED|ENG 1 BLEED",629.0,258.8,12.0,12.0], ["BLEED|APU BLEED",655.8,258.8,12.0,12.0],
@@ -324,6 +327,9 @@ const B738_T = [
   ["TRIM|STAB TRIM OVERRIDE",567.7,1484.6,12.0,19.9]];
 const B738 = { id: 'b738', name: 'Boeing 737-800', style: 'boeing', crew: 2, h: 1520, t: B738_T,
   img: { lo: 'img/cockpits/b738-deck-1500.webp', hi: 'img/cockpits/b738-deck-3000.webp', by: 'FlightGear 737-800YV', lic: 'GPL-2.0', v: '737-800', src: 'https://github.com/FGMEMBERS/737-800YV', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
+/* ATR 72-500: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear ATR 72-500 (github.com/FGMEMBERS/ATR72, GPL-3.0, by Narendran Muraleedharan, Donald Belcham, Dwayne Gable, Oliver (ot-666) and camelon).
+   The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
+   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
 /* ATR 72-500: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear ATR 72-500 (github.com/FGMEMBERS/ATR72, GPL-3.0, by Narendran Muraleedharan, Donald Belcham, Dwayne Gable, Oliver (ot-666) and camelon).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
    show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
@@ -385,8 +391,8 @@ const ATR72_T = [
   ["PARKING / EMER BRAKE|PARKING BRAKE",401.6,883.5,17.2,28.1], ["FLAPS|FLAPS LEVER",565.4,927.6,25.4,31.4], ["GUST LOCK|GUST LOCK",443.8,978.3,41.4,23.0], ["POWER LEVERS|PL 1",431.7,1001.5,35.1,70.2],
   ["POWER LEVERS|PL 2",467.4,1001.6,27.4,70.2], ["CONDITION LEVERS|CL 1",516.2,990.6,17.9,33.3], ["CONDITION LEVERS|CL 2",535.1,990.6,17.9,33.3], ["POWER LEVERS|REVERSE 1",439.4,1008.7,14.9,38.8],
   ["POWER LEVERS|REVERSE 2",475.1,1008.8,14.9,38.8], ["POWER LEVERS|IDLE GATE",443.8,1053.7,41.4,19.9], ["COM 1|COM 1",426.3,1096.5,31.6,35.3], ["COM 2|COM 2",547.3,1096.5,31.6,35.3],
-  ["AUDIO CPT|AUDIO CPT",376.5,1151.8,95.1,55.7,1], ["AUDIO F/O|AUDIO F/O",533.8,1151.8,95.1,55.7,1], ["TRIM|STBY PITCH TRIM",494.3,1164.2,16.4,20.3], ["TRIM|YAW TRIM",491.8,1204.0,19.8,20.1],
-  ["TRIM|ROLL TRIM",498.4,1238.7,6.8,16.3]];
+  ["AUDIO CPT|AUDIO CPT",376.5,1151.8,95.1,55.7,1], ["AUDIO F/O|AUDIO F/O",533.8,1151.8,95.1,55.7,1], ["TRIM|ROLL TRIM",494.3,1164.2,16.4,20.3], ["TRIM|YAW TRIM",491.8,1204.0,19.8,20.1],
+  ["TRIM|STBY PITCH TRIM",498.4,1238.7,6.8,16.3]];
 const ATR72 = { id: 'atr72', name: 'ATR 72-500', style: 'atr', crew: 2, h: 1266, t: ATR72_T,
   img: { lo: 'img/cockpits/atr72-deck-1500.webp', hi: 'img/cockpits/atr72-deck-3000.webp', by: 'FlightGear ATR 72-500 project', lic: 'GPL-3.0', v: 'ATR 72-500, classic instruments (not the -600 glass cockpit)', src: 'https://github.com/FGMEMBERS/ATR72', licUrl: 'https://www.gnu.org/licenses/gpl-3.0.html' } };
 const LIST = [A320, B738, ATR72, B200, PA34, DA42, C172];

@@ -79,5 +79,5 @@ def PED(sh):
     return [('FMC|FMC', 'ped', 'Flight Management Computer:.*', {'whole': 1}), ('PARKING / EMER BRAKE|PARKING BRAKE', 'ped', 'parkbrk'), ('GUST LOCK|GUST LOCK', 'ped', A(552, 1440)), ('POWER LEVERS|PL 1', 'ped', A(478, 1670, 460)), ('POWER LEVERS|PL 2', 'ped', A(633, 1670, 460)),
             ('POWER LEVERS|REVERSE 1', 'ped', 'reverse1'), ('POWER LEVERS|REVERSE 2', 'ped', 'reverse2'), ('POWER LEVERS|IDLE GATE', 'ped', 'idlegate'), ('CONDITION LEVERS|CL 1', 'ped', A(852, 1525)), ('CONDITION LEVERS|CL 2', 'ped', A(946, 1525)), ('FLAPS|FLAPS LEVER', 'ped', 'flapsLever', {'pad': 20}),
             ('COM 1|COM 1', 'ped', 'COM1:.*'), ('COM 2|COM 2', 'ped', 'COM2:.*'), ('AUDIO CPT|AUDIO CPT', 'ped', V(sh, 'ped', 118, 2240, 470, 275), {'whole': 1}), ('AUDIO F/O|AUDIO F/O', 'ped', V(sh, 'ped', 895, 2240, 470, 275), {'whole': 1}),
-            ('TRIM|STBY PITCH TRIM', 'ped', A(740, 2350)), ('TRIM|YAW TRIM', 'ped', A(737, 2547)), ('TRIM|ROLL TRIM', 'ped', A(737, 2710))]
+            ('TRIM|ROLL TRIM', 'ped', A(740, 2350)), ('TRIM|YAW TRIM', 'ped', A(737, 2547)), ('TRIM|STBY PITCH TRIM', 'ped', A(737, 2710))]
 CROP['front'] = (0, 0, 4940, 1900); CROP['ped'] = (0, 110, 1456, 2806)

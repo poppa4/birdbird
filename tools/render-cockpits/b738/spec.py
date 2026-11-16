@@ -19,7 +19,7 @@ OVH = {  # panel -> [(control, seed object, radius px for joining the lever, its
  'VOICE RECORDER': [('CVR ERASE', 'M253', 0), ('CVR TEST', 'M255', 20), ('CVR HEADPHONE', 'headphoneCVR', 0), ('VOICE RECORDER', 'M416', 36)],
  'WINDOW / PROBE HEAT': [('WINDOW HEAT L SIDE', 'windowlf', 36), ('WINDOW HEAT L FWD', 'windowlf1', 36), ('WINDOW HEAT TEST', 'windowctr', 36), ('WINDOW HEAT R FWD', 'windowrt1', 36), ('WINDOW HEAT R SIDE', 'windowrt', 36), ('PROBE HEAT A', 'M407', 36), ('PROBE HEAT B', 'M410', 36), ('TAT TEST', 'M188', 0)],
  'ANTI ICE': [('WING ANTI ICE', 'wingantiice', 36), ('ENG ANTI ICE 1', 'enganti1', 36), ('ENG ANTI ICE 2', 'enganti2', 36)],
- 'HYDRAULICS': [('ENG 1 HYD', 'hydeng1', 36), ('ELEC 2 HYD', 'hydelectr2', 36), ('ELEC 1 HYD', 'hydelectr1', 36), ('ENG 2 HYD', 'hydeng2', 36)],
+ 'HYDRAULICS': [('ENG 1 HYD', 'hydeng1', 36), ('ELEC 2 HYD', 'hydelectr2', 36), ('ELEC 1 HYD', 'hydeng2', 36), ('ENG 2 HYD', 'hydelectr1', 36)],
  'AIR TEMP': [('AIR TEMP SOURCE', 'TempSupplyDuctKnob', 0), ('AIR TEMP', 'M04', 0), ('TRIM AIR', 'M404', 36), ('CONT CAB TEMP', 'TempLKnob', 0), ('FWD CAB TEMP', 'TempCKnob', 0), ('AFT CAB TEMP', 'TempRKnob', 0)],
  'BLEED': [('L RECIRC FAN', 'M380', 36), ('R RECIRC FAN', 'M383', 36), ('DUCT PRESS', 'M20', 0), ('WING-BODY OVHT TEST', 'M144', 0), ('L PACK', 'M377', 36), ('ISOLATION VALVE', 'M389', 36), ('R PACK', 'M386', 36), ('TRIP RESET', 'M143', 0), ('ENG 1 BLEED', 'M398', 36), ('APU BLEED', 'M395', 36), ('ENG 2 BLEED', 'M392', 36)],
  'PRESSURIZATION': [('FLT ALT', 'FltAltDial', 0), ('FLT ALT DISPLAY', 'M246', 0), ('LAND ALT', 'LandAltDial', 0), ('LAND ALT DISPLAY', 'M247', 0), ('PRESS MODE SEL', 'PressureKnob', 0), ('OUTFLOW VALVE', 'M401', 36), ('OUTFLOW VALVE POSITION', 'M40', 0), ('ALT HORN CUTOUT', 'M248', 0), ('CABIN ALT / DIFF PRESS', 'M02', 0), ('CABIN CLIMB', 'M01', 0)],
@@ -101,4 +101,21 @@ def paint(sh):
     f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf', 34); d = ImageDraw.Draw(sh.S)
     for pat, t in ((r'CRS\.\d', '251'), (r'IAS\.\d', '153'), (r'HDG\.\d', '264'), (r'ALT\.\d', ' 5000'), (r'FO-CRS\.\d', '251')):
         x, y, w, h = sh.box('front', rf'{AP}:{pat}'); d.text((x + w / 2, y + h / 2), t, font=f, fill=(244, 150, 40, 255), anchor='mm')
+    # Captions the model leaves blank on unlit annunciators (their real wording), and the two hydraulic pump labels the model
+    # prints in the wrong order (the aircraft has ENG 1, ELEC 2, ELEC 1, ENG 2 from left to right).
+    CAP = {'CAPTPITOT': 'CAPT|PITOT', 'LELEVPITOT': 'L ELEV|PITOT', 'LALPHA': 'L ALPHA|VANE', 'LTEMP': 'TEMP|PROBE', 'FOPITOT': 'F/O|PITOT', 'RELEVPITOT': 'R ELEV|PITOT', 'RALPHA': 'R ALPHA|VANE', 'RTEMP': 'AUX|PITOT',
+           'ZONETEMPL': 'ZONE|TEMP', 'ZONETEMPC': 'ZONE|TEMP', 'ZONETEMPR': 'ZONE|TEMP', 'DUALBLEED': 'DUAL|BLEED', 'RAMDOOROPENL': 'RAM DOOR|FULL OPEN', 'RAMDOOROPENR': 'RAM DOOR|FULL OPEN', 'PACKL': 'PACK', 'PACKR': 'PACK',
+           'WBOVHTL': 'WING-BODY|OVERHEAT', 'WBOVHTR': 'WING-BODY|OVERHEAT', 'BLEEDTRIPL': 'BLEED|TRIP OFF', 'BLEEDTRIPR': 'BLEED|TRIP OFF', 'FWDENTRY': 'FWD|ENTRY', 'FWDSERVICE': 'FWD|SERVICE', 'L1overwing': 'LEFT FWD|OVERWING',
+           'R1overwing': 'RIGHT FWD|OVERWING', 'FWDCARGO': 'FWD|CARGO', 'EQUIP': 'EQUIP', 'L2overwing': 'LEFT AFT|OVERWING', 'R2overwing': 'RIGHT AFT|OVERWING', 'AFTCARGO': 'AFT|CARGO', 'AFTENTRY': 'AFT|ENTRY', 'AFTSERVICE': 'AFT|SERVICE',
+           'AUTOFAIL': 'AUTO|FAIL', 'OFFSCHEDDESC': 'OFF SCHED|DESCENT', 'ALTNpack': 'ALTN', 'MANUALpack': 'MANUAL', 'MAINTapu': 'MAINT', 'lowoilpressapu': 'LOW OIL|PRESSURE', 'fault': 'FAULT', 'overspeed': 'OVER|SPEED'}
+    B = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+    for name, cap in CAP.items():
+        x, y, w, h = sh.box('ovh', rf'overhead:{re.escape(name)}\.on'); L = cap.split('|'); col = (46, 96, 54, 255) if name in ('ALTNpack', 'MANUALpack') else (52, 70, 120, 255) if name == 'MAINTapu' else (116, 66, 20, 255)
+        d.rectangle([x + 1, y + 1, x + w - 1, y + h - 1], fill=(16, 17, 19, 255)); sz = 18
+        while sz > 8 and (max(d.textlength(t, font=ImageFont.truetype(B, sz)) for t in L) > w - 10 or sz * 1.15 * len(L) > h - 6): sz -= 1
+        ff = ImageFont.truetype(B, sz)
+        for i, t in enumerate(L): d.text((x + w / 2, y + h / 2 + (i - (len(L) - 1) / 2) * sz * 1.12), t, font=ff, fill=col, anchor='mm')
+    ox, oy = sh.pos['ovh'][0], sh.pos['ovh'][1]; ff = ImageFont.truetype(B, 15)
+    for x0, x1, t in ((1470, 1522, 'ELEC 1'), (1552, 1612, 'ENG 2')):
+        c = sh.S.getpixel((ox + x0 - 6, oy + 1000)); d.rectangle([ox + x0, oy + 990, ox + x1, oy + 1010], fill=c); d.text((ox + (x0 + x1) / 2, oy + 1000), t, font=ff, fill=(214, 220, 226, 255), anchor='mm')
 PLACE = None
