@@ -10,4 +10,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - run: node dbg.mjs
+      - run: node dbg.mjs; node tools/build-aip-de.mjs; head -c 3000 functions/_lib/aip-de.js | sed "s/^/DBG /"
