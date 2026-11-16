@@ -22,3 +22,17 @@ test('rendered cockpit: picture files exist, credit and licence present, every c
   assert.ok(ac.img && /GPL/.test(ac.img.lic) && ac.img.by && ac.img.src); for (const f of [ac.img.lo, ac.img.hi]) assert.ok(fs.existsSync(new URL('../' + f, import.meta.url)), f);
   const T = A.targets(ac); assert.ok(T.length > 400); T.forEach(t => { assert.ok(t.x >= 0 && t.y >= 0 && t.x + t.w <= 1000 && t.y + t.h <= ac.h, t.id); if (!t.whole) { const c = A.hit(ac, t.x + t.w / 2, t.y + t.h / 2); assert.equal(c.id, t.id, 'centre of ' + t.id + ' hits ' + c.id); } });
   assert.ok(A.svg(ac).includes(ac.img.lo) && A.svg(ac).includes('GPL-2.0')); assert.ok(fs.existsSync(new URL('../tools/render-a320/README.md', import.meta.url))); });
+
+test('own picture: a named spot works like a built-in control (name once, reuse, rename, remove, survives a file round trip)', () => {
+  const f = F.newFlow('img', { roles: 'pfpm' }); f.img = { id: 'img-1', w: 2000, h: 1500, name: 'deck.jpg' };
+  const a = F.addStep(f, { x: 100, y: 200 }), b = F.addStep(f, { x: 500, y: 600 }), c = F.addStep(f, { x: 300, y: 300 });
+  F.nameSpot(f, a, ' BAT 1 '); assert.deepEqual(f.marks, [{ n: 'BAT 1', x: 100, y: 200 }]); assert.equal(a.tg, 'BAT 1'); assert.equal(a.t, 'BAT 1');
+  F.nameSpot(f, b, 'bat 1'); assert.equal(b.tg, 'BAT 1'); assert.deepEqual([b.x, b.y], [100, 200]); assert.equal(f.marks.length, 1);      // an existing name: the step goes to that control
+  F.nameSpot(f, c, 'BEACON'); const ac = F.ownAc(f, 750, '');
+  assert.equal(A.hit(ac, 101, 203, 2).id, 'BAT 1'); assert.equal(A.hit(ac, 150, 200, 2), null); assert.equal(A.byId(ac, 'BEACON').name, 'BEACON');
+  assert.ok(F.check(a, 104, 204, ac, A, 10).ok); assert.ok(!F.check(a, 160, 200, ac, A, 10).ok);
+  F.nameSpot(f, a, 'BATTERY 1'); assert.equal(b.tg, 'BATTERY 1'); assert.equal(a.t, 'BATTERY 1'); assert.equal(f.marks.length, 2);            // rename everywhere
+  const g = F.decode(F.encode(f)); assert.deepEqual(g.marks, f.marks); assert.equal(g.steps[0].tg, 'BATTERY 1');
+  F.nameSpot(f, a, ''); assert.equal(a.tg, undefined); assert.equal(b.tg, undefined); assert.deepEqual(f.marks.map(m => m.n), ['BEACON']);
+  assert.equal(F.clean({ ac: 'img', marks: [{ n: 'A|<b>', x: 1, y: 2 }, { n: 'a b', x: 3, y: 4 }, { n: '', x: 1, y: 1 }, { n: 'Z' }] }).marks.length, 1);
+});

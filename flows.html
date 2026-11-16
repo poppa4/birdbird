@@ -100,6 +100,7 @@
 dialog.fd{border:0;border-radius:14px;padding:20px;width:min(520px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}dialog.fd::backdrop{background:rgba(10,14,18,.55)}
 dialog.fd h3{margin:0 0 12px}dialog.fd label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;margin:0 0 12px}
 dialog.fd input,dialog.fd select,dialog.fd textarea{font:inherit;padding:9px 10px;border:1px solid var(--rule);border-radius:6px}dialog.fd textarea{min-height:220px;font-family:var(--f-mono,monospace);font-size:13px}
+.omk{fill:rgba(255,255,255,.25);stroke:#fff;stroke-width:1.2;stroke-dasharray:2 2;pointer-events:none}.fmore small{display:block;font-weight:400;color:var(--ink-2,#566);margin-top:3px}
 dialog.fd .frq{margin:-6px 0 12px;font-size:13px}dialog.fd .frq button{font:inherit;font-weight:600;background:none;border:0;border-bottom:1px solid currentColor;padding:4px 0 1px;color:var(--accent,#0B5CAD);cursor:pointer}
 dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fcomp{width:100%;border-collapse:collapse;font-size:14px}.fcomp td,.fcomp th{padding:7px 8px;border-bottom:1px solid var(--rule);text-align:left}.fcomp td:not(:first-child){text-align:center}
@@ -163,7 +164,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
         <div class="fwrap"><div class="fextag" id="fextag" hidden>Example · not an SOP</div>
           <div class="fnow" id="fnow" hidden></div>
           <div class="fpq" id="fpq" hidden></div>
-          <div class="fstage" id="stage"><svg id="cv" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" role="img" aria-label="Cockpit"><g id="bg"></g><g id="ov"></g><g id="fx"></g></svg></div>
+          <div class="fstage" id="stage"><svg id="cv" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" role="img" aria-label="Cockpit"><g id="bg"></g><g id="mk"></g><g id="ov"></g><g id="fx"></g></svg></div>
           <div class="fban" id="fban" hidden></div>
           <div class="fzoom"><button id="zout" type="button" aria-label="Zoom out">−</button><span id="zl">100 %</span><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zfit" type="button" aria-label="Whole cockpit">⤢</button><button id="zfull" type="button" aria-label="Full screen">⛶</button></div>
         </div>
@@ -201,8 +202,8 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 </form></dialog>
 
 <script src="lab.js?v=51"></script>
-<script src="flowsac.js?v=17"></script>
-<script src="flowscore.js?v=7"></script>
+<script src="flowsac.js?v=18"></script>
+<script src="flowscore.js?v=8"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Trainer':'Trener','How it works':'Slik virker det',
@@ -220,7 +221,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=12"></script>
+<script src="flows.js?v=13"></script>
 <script src="reqplane.js?v=1"></script>
 </body>
 </html>

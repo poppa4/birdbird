@@ -433,7 +433,7 @@ function targets(ac) { if (ac._t) return ac._t; const out = [];
   });
   return (ac._t = out); }
 function byId(ac, id) { return targets(ac).find(t => t.id === id) || null; }
-function hit(ac, x, y, pad) { pad = pad || 0; let best = null, bd = 1e9;
+function hit(ac, x, y, pad) { pad = pad || 0; let best = null, bd = Infinity;
   // a control wins over the panel or screen it sits on; between two controls whose tap areas meet, the nearer centre wins
   targets(ac).forEach(t => { if (x >= t.x - pad && x <= t.x + t.w + pad && y >= t.y - pad && y <= t.y + t.h + pad) { const d = t.whole ? 1e9 + t.w * t.h : Math.hypot(x - t.x - t.w / 2, y - t.y - t.h / 2); if (d < bd) { bd = d; best = t; } } });
   return best; }
