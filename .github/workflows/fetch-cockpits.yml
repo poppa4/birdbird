@@ -1,0 +1,28 @@
+# Downloads freely licensed cockpit photos and their licence data from Wikimedia Commons to the cockpit-assets branch.
+name: Fetch cockpit photos
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/cockpit-files.txt', '.github/workflows/fetch-cockpits.yml']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download
+        run: |
+          mkdir -p /tmp/out; UA="BirdbirdAssetFetch/1.0 (github actions)"
+          while read -r f; do [ -z "$f" ] && continue
+            curl -sSL -A "$UA" --get "https://commons.wikimedia.org/w/api.php" --data-urlencode "action=query" --data-urlencode "format=json" --data-urlencode "prop=imageinfo" --data-urlencode "iiprop=url|size|extmetadata" --data-urlencode "iiurlwidth=2000" --data-urlencode "titles=File:$f" -o "/tmp/out/$f.json" || true
+            u=$(python3 -c "import json,sys;d=json.load(open(sys.argv[1]));p=list(d['query']['pages'].values())[0];i=p['imageinfo'][0];print(i.get('thumburl') or i['url'])" "/tmp/out/$f.json" 2>/dev/null)
+            if [ -n "$u" ]; then curl -sSL -A "$UA" "$u" -o "/tmp/out/$f"; else echo "fail $f" >> /tmp/out/errors.txt; fi
+            sleep 1
+          done < tools/cockpit-files.txt
+          ls -la /tmp/out
+      - name: Publish
+        run: |
+          git config user.name "fetch"; git config user.email "actions@github.com"
+          git checkout --orphan cockpit-assets && git rm -rqf . && git clean -fdxq && cp /tmp/out/* . && git add -A && git commit -qm "cockpit photos" && git push -f origin cockpit-assets
