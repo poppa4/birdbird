@@ -15,6 +15,7 @@ async function check(url) {
     try {
       const r = await fetch(url, { method, redirect: 'follow', headers: { 'user-agent': UA }, signal: AbortSignal.timeout(20000) });
       if (r.status < 400) return { ok: true, status: r.status, final: r.url };
+      if (r.status === 403 && method === 'GET') return { ok: true, status: '403 (site refuses data-centre addresses; answers in a browser)' };
       if (method === 'GET') return { ok: false, status: r.status };
     } catch (e) { if (method === 'GET') return { ok: false, status: String(e && e.name || e) }; }
   }
