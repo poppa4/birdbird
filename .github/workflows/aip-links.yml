@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['aip.js', 'tools/build-aip-de.mjs', 'functions/_lib/aipres.js', 'tests/aip-links.mjs', '.github/workflows/aip-links.yml']
+    paths: ['aip.js', 'tools/build-aip-de.mjs', 'functions/_lib/aipres.js', 'tests/aip-links.mjs', 'tests/aip-lj.mjs', '.github/workflows/aip-links.yml']
 permissions:
   contents: write
 jobs:
@@ -25,3 +25,8 @@ jobs:
             git add functions/_lib/aip-de.js && git commit -qm "Germany: aerodrome list updated from DFS" && git push
           fi
       - run: node tests/aip-links.mjs
+      - name: Slovenia (certificate chain incomplete; read-only check)
+        if: always()
+        run: node tests/aip-lj.mjs
+        env:
+          NODE_TLS_REJECT_UNAUTHORIZED: '0'
