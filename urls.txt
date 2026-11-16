@@ -1,10 +1,28 @@
-ESd https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/v2/js/datasource.js
-ESe https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/index-v2.html
-EFi https://www.ais.fi/eaip/01%20OCT%202026_2026_10_01/index.html
-EFm https://www.ais.fi/eaip/01%20OCT%202026_2026_10_01/eAIP/EF-menu-en-GB.html AD
-BIm https://eaip.avians.is/A_10-2026_2026_10_29/eAIP/menu.html AD.?2
-LZm https://aim.lps.sk/web/eAIP_SR/AIP_SR_EFF_29OCT2026_amdt/html/LZ-menu-en-SK.html AD.?2
-LKe https://aim.rlp.cz/eaip/html/index-en-GB.html
-LOi https://eaip.austrocontrol.at/lo/261030/index.htm
-PLi https://docs.pansa.pl/ais/eaipifr/default_offline_2026-10-29.html
-EEm https://eaip.eans.ee/2026-10-01/html/eAIP/EE-menu-en-GB.html AD.?2
+EK https://aim.naviair.dk/ 
+EKen https://aim.naviair.dk/en/
+ED https://aip.dfs.de/basicAIP/
+EDi https://aip.dfs.de/BasicIFR/
+EH https://eaip.lvnl.nl/web/eaip/default.html
+LOad https://eaip.austrocontrol.at/lo/261030/ad.htm
+EI https://www.airnav.ie/air-traffic-management/aeronautical-information-management/aip-package
+EIa https://www.airnav.ie/aip
+LD https://www.crocontrol.hr/en/services/aeronautical-information-management/
+LDa https://www.crocontrol.hr/UserDocsImages/AIS%20produkti/eAIP/start.html
+LR https://www.aisro.ro/start_rightv02.php
+LRl https://www.aisro.ro/start_left.php
+LB https://www.bulatsa.com/en/
+LY https://smatsa.rs/upload/aip/published/start_page.html
+LYa https://www.smatsa.rs/aim/
+EY https://www.ans.lt/en/aim/eaip
+EYa https://ais.lt/
+LS https://www.skybriefing.com/en/aip
+LSa https://www.skybriefing.com/portal/en/web/guest/aip
+LM https://www.maltats.com/
+LC https://www.mcw.gov.cy/mcw/dca/dca.nsf/
+LT https://www.dhmi.gov.tr/Sayfalar/aipturkey.aspx
+UK http://www.aisukraine.net/titul_en.php
+LW https://mnav.com.mk/en/aip
+LA https://www.albcontrol.al/aip/
+LQ https://eaip.bhansa.gov.ba/
+LU https://www.moldatsa.md/en/
+LJ https://aim.sloveniacontrol.si/aim/products/aip/
