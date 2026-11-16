@@ -468,3 +468,4 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 
 /* link from a cockpit page to the flow trainer (site.js fills the words) */
 .note.flowlink a{display:block;padding:11px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet,#fff);text-decoration:none;color:var(--ink);line-height:1.4}.note.flowlink a:hover,.note.flowlink a:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.sitefoot .fb .logo img.seal{width:64px;height:64px;flex:0 0 auto}

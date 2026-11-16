@@ -6,7 +6,7 @@
 <title>Flow trainer · Birdbird</title>
 <meta name="description" content="Draw your cockpit flows over your own cockpit photo or PDF, or over Birdbird's A320, King Air, Seneca, DA42 and C172 cockpits. Separate PF and PM layers, checklist calls, animated playback, practice from memory with hints and flashcards, and a live room for two pilots. Free.">
 <link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=24">
+<link rel="stylesheet" href="site.css?v=25">
 <style>
 .fapp{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
 @media (max-width:980px){.fapp{grid-template-columns:minmax(0,1fr)}}
@@ -55,7 +55,7 @@
 .fsb:hover,.fsb:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}.fsb i{font-style:normal;font-size:20px;width:28px;text-align:center}.fsb b{display:block;font-size:15px}.fsb small{display:block;color:var(--ink-2);font-size:12.5px}
 .fsb.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.fsb.pri small{color:#C9D1D8}
 .fadd input{width:100%}
-.fb{flex:0 0 auto;display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 4px;border-radius:50%;background:var(--c);color:#0B0F12;font:800 13px var(--f-body,sans-serif)}.fb.call{border-radius:5px}.fb.ev{background:#9AA5B1;border-radius:4px}
+.fbdg{flex:0 0 auto;display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 4px;border-radius:50%;background:var(--c);color:#0B0F12;font:800 13px var(--f-body,sans-serif)}.fbdg.call{border-radius:5px}.fbdg.ev{background:#9AA5B1;border-radius:4px}
 .fpanel{background:var(--sheet,#fff);border:1px solid var(--rule);border-radius:12px;padding:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
 @media (max-width:980px){.fpanel{position:static;max-height:none}}
 .fpanel label{display:inline-flex;flex-direction:column;gap:3px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
@@ -74,14 +74,14 @@
 .fs.on{box-shadow:0 0 0 2px var(--c)}.fs.unp{border-style:dashed;border-left-style:solid;opacity:.85}
 .fs input.ft{border:0;padding:6px 4px;font-size:14px;width:100%;background:transparent}.fs input.ft:focus{outline:2px solid var(--c);border-radius:4px;background:#fff}
 .fi{width:30px;height:30px;border:0;border-radius:5px;background:var(--wash,#F2F4F5);cursor:pointer;font-size:14px}
-.fmore{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding:6px 2px 2px}.fmore .wide{flex:1 1 100%}.fmore .wide input{width:100%}.fmb{display:flex;gap:6px;flex-basis:100%}
+.fmore{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding:6px 2px 2px}.fmore .fwide{flex:1 1 100%}.fmore .fwide input{width:100%}.fmb{display:flex;gap:6px;flex-basis:100%}
 .fsteps.ro .fs{grid-template-columns:auto minmax(0,1fr);font-size:14px}.fsteps.ro .fx small{display:block;color:var(--ink-2)}
 .fempty{color:var(--ink-2);font-size:14px;padding:8px}
 .fsty summary{cursor:pointer;font-weight:600;font-size:14px;margin:4px 0 8px}
 .fmsg{min-height:20px;font-size:13.5px;margin:6px 0 0;color:var(--ink-2)}.fmsg.ok{color:var(--green,#1F7A4D)}.fmsg.err{color:var(--warning)}
 .btn.warn{color:var(--warning)}
 .pq{padding:4px 0}.pc{font:600 13px var(--f-mono,monospace);color:var(--ink-2)}.pt{font-size:18px;line-height:1.35;margin:6px 0 8px}.pt .hid{color:var(--ink-2);font-style:italic}.pm{min-height:20px;font-size:13px}.pm .bad{color:#D33}
-.pq.res .pt b{font-size:30px}.pr{list-style:none;padding:0;margin:6px 0 12px}.pr li{border-left:4px solid var(--c);padding:3px 8px;margin:3px 0;font-size:14px}.okc{color:var(--green,#1F7A4D);font-weight:700}
+.pq.res .pt b{font-size:30px}.fpres{list-style:none;padding:0;margin:6px 0 12px}.fpres li{border-left:4px solid var(--c);padding:3px 8px;margin:3px 0;font-size:14px}.okc{color:var(--green,#1F7A4D);font-weight:700}
 .fbest{font-size:13px;color:var(--ink-2)}
 dialog.fd{border:0;border-radius:14px;padding:20px;width:min(520px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}dialog.fd::backdrop{background:rgba(10,14,18,.55)}
 dialog.fd h3{margin:0 0 12px}dialog.fd label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;margin:0 0 12px}
@@ -93,7 +93,7 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 </style>
 </head>
 <body data-title="Flow trainer">
-<script src="site.js?v=72"></script>
+<script src="site.js?v=73"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -160,7 +160,7 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 
 <script src="lab.js?v=51"></script>
 <script src="flowsac.js?v=1"></script>
-<script src="flowscore.js?v=1"></script>
+<script src="flowscore.js?v=2"></script>
 <script>
 LAB.add({},{
  'Flow trainer':'Flow-trener','Birdbird · Training':'Birdbird · Trening','Trainer':'Trener','How it works':'Slik virker det',
@@ -178,6 +178,6 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=1"></script>
+<script src="flows.js?v=3"></script>
 </body>
 </html>
