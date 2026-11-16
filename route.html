@@ -161,6 +161,9 @@
 .rx-side .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rx-side .acts .btn{padding:6px 10px;font-size:13px}
 .rx-side .src{font-size:11.5px;color:var(--ink-2);margin:10px 0 0}
 .rx-side .aipl .btn{display:inline-flex;margin:0 0 6px;text-decoration:none}
+.rx-side details.mclw{margin-top:10px;border-top:1px solid var(--rule);padding-top:8px}.rx-side details.mclw>summary{cursor:pointer;font-weight:650;font-size:13.5px}
+.ccol svg{display:block;margin:6px 0 4px}.ccol .cwarn{font-size:12.5px;margin:8px 0 0;padding:6px 8px;border-radius:6px;background:#FFF4E5;color:#7A4A00}
+.lyhelp{font-size:12px;color:var(--ink-2);margin:2px 0 8px 26px;line-height:1.45}.lyhelp .sc{display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 0}.lyhelp .sc span{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}.lyhelp .sc i{width:10px;height:10px;border-radius:2px;display:inline-block}
 .rx-sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;background:#FBFBF8;border-top:1px solid var(--rule);box-shadow:0 -6px 20px rgba(19,32,42,.10);display:flex;flex-direction:column;transition:height .2s}
 .rx-sheet[data-s="full"]{z-index:8}
 .rx-sheet[data-s="min"]{height:46px}
@@ -601,7 +604,9 @@
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="wx"> Weather (METAR) <span class="wxkey" aria-hidden="true"><i style="background:#2E7D32"></i><i style="background:#1D4E9E"></i><i style="background:#C62828"></i><i style="background:#C2189B"></i></span></label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="sig"> SIGMET and AIRMET <span class="wxkey" aria-hidden="true"><i style="background:#C62828"></i><i style="background:#C77700"></i><i style="background:#1D63B8"></i><i style="background:#7B3FA0"></i><i style="background:#4E6B2E"></i></span></label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="rad"> <span>Weather radar (Europe) <span class="wxkey" aria-hidden="true"><i style="background:#96C8FF"></i><i style="background:#1E64F0"></i><i style="background:#14AA3C"></i><i style="background:#F0D200"></i><i style="background:#FF8C00"></i><i style="background:#E61E1E"></i></span> <span class="lyn" id="radnote"></span></span></label>
+    <div class="lyhelp" id="radhelp" hidden><b>Radar shows rain and snow, not cloud,</b> so it has no heights. Rain rate:<div class="sc"><span><i style="background:#96C8FF"></i>light, under 1 mm/h</span><span><i style="background:#1E64F0"></i>1–2</span><span><i style="background:#14AA3C"></i>moderate, 2–5</span><span><i style="background:#F0D200"></i>heavy, 5–10</span><span><i style="background:#FF8C00"></i>very heavy, 10–20: showers, often CB</span><span><i style="background:#E61E1E"></i>20–50: thunderstorm likely</span><span><i style="background:#C800C8"></i>over 50: hail possible</span></div>For the cloud layers and their heights, tap the map and choose <b>Clouds here</b>, or open an airport.</div>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="sat"> <span>Satellite clouds (Meteosat infrared) <span class="lyn" id="satnote"></span></span></label>
+    <div class="lyhelp" id="sathelp" hidden>Infrared shows how cold the cloud tops are: <b>bright white = cold, high tops</b> (CB, frontal cloud), <b>grey = low cloud or fog</b>, which can look like the ground. For heights, tap the map and choose <b>Clouds here</b>.</div>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="ntm"> NOTAM (pasted in the route)</label>
     <label class="chk mlonly" hidden><input type="checkbox" data-ly="wa"> Winds aloft (forecast) <select id="waLev" aria-label="Level for the wind barbs" style="font-size:12px;margin-left:4px"><option value="frz">Freezing level (0 °C, 100 ft)</option><option value="850">FL050 · 850 hPa</option><option value="700">FL100 · 700 hPa</option><option value="600">FL140 · 600 hPa</option><option value="500">FL180 · 500 hPa</option><option value="400">FL240 · 400 hPa</option><option value="300">FL300 · 300 hPa</option><option value="250">FL340 · 250 hPa</option><option value="200">FL390 · 200 hPa</option></select></label>
     <label class="chk"><input type="checkbox" data-ly="nv"> VOR, DME and NDB</label>
@@ -810,6 +815,7 @@
 <script src="rxmap.js?v=25"></script>
 <script src="aip.js?v=6"></script>
 <script src="windsaloft.js?v=3"></script>
+<script src="cloudcol.js?v=1"></script>
 <script>
 (function(){
 'use strict';
@@ -1016,7 +1022,7 @@ el('trkmsg').addEventListener('click',e=>{ if(e.target.closest('#trkrep')) repSt
 const RAD={on:false,t:'',busy:false,at:0,img:null,w:null}, SAT={on:false,t:''};
 const RADB=[-40,31,58,74];
 function ovBefore(){ return ML&&ML.getLayer('bb-mefg')?'bb-mefg':undefined; }
-async function radSync(){ if(!ML) return; const want=!!LY.rad, nt=el('radnote');
+async function radSync(){ if(!ML) return; const want=!!LY.rad, nt=el('radnote'); if(el('radhelp')) el('radhelp').hidden=!want;
   if(!want){ if(ML.getLayer('bb-rad')) ML.setLayoutProperty('bb-rad','visibility','none'); RAD.on=false; if(nt) nt.textContent=''; return; }
   RAD.on=true; if(ML.getLayer('bb-rad')) ML.setLayoutProperty('bb-rad','visibility','visible');
   if(RAD.busy||(Date.now()-RAD.at<10*60e3&&ML.getSource('bb-rad'))) return; RAD.busy=true; if(nt) nt.textContent=L({en:'loading…',no:'laster …'});
@@ -1033,7 +1039,7 @@ async function radSync(){ if(!ML) return; const want=!!LY.rad, nt=el('radnote');
   catch(e){ if(nt) nt.textContent=L({en:'not available right now',no:'ikke tilgjengelig nå'}); RAD.at=Date.now()-8*60e3; }
   finally{ RAD.busy=false; } }
 function satHour(){ const t=new Date(Math.floor((Date.now()-25*60e3)/3600e3)*3600e3); return t.toISOString().replace('.000Z','Z'); } // hourly image: free of licensing
-function satSync(){ if(!ML) return; const nt=el('satnote');
+function satSync(){ if(!ML) return; const nt=el('satnote'); if(el('sathelp')) el('sathelp').hidden=!LY.sat;
   if(!LY.sat){ if(ML.getLayer('bb-wsat')) ML.setLayoutProperty('bb-wsat','visibility','none'); SAT.on=false; if(nt) nt.textContent=''; return; }
   SAT.on=true; const t=satHour();
   if(t!==SAT.t||!ML.getSource('bb-wsat')){ if(ML.getLayer('bb-wsat')) ML.removeLayer('bb-wsat'); if(ML.getSource('bb-wsat')) ML.removeSource('bb-wsat');
@@ -1969,10 +1975,18 @@ function legAt(mx,my,tol){ const A=R.pts; let bi=-1, bd=tol; for(let i=1;i<A.len
 mapEl.addEventListener('pointermove',rafT(e=>{ if(ptDrag||drag||e.pointerType==='touch') return; if(ML&&(e.buttons||ML.isMoving())) return; const r=mapEl.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top; const c= routePtAt(mx,my)>=0? 'move' : legAt(mx,my,8)>0? 'copy' : ML&&mlHit(mx,my,10)? 'pointer' : ''; const t=ML?ML.getCanvasContainer():mapEl; if(t.style.cursor!==c) t.style.cursor=c; }),{passive:true});
 function nearestLeg(la,lo){ const A=R.pts; let bi=-1, bd=1e9; for(let i=1;i<A.length;i++){ const a=A[i-1], b=A[i]; if(a.la==null||b.la==null) continue; const [ax,ay]=prj(a.la,a.lo), [bx,by]=prj(b.la,b.lo), [px,py]=prj(la,lo); const vx=bx-ax, vy=by-ay, t=Math.max(0,Math.min(1,((px-ax)*vx+(py-ay)*vy)/Math.max(1e-6,vx*vx+vy*vy))); const d=Math.hypot(ax+vx*t-px,ay+vy*t-py); if(d<bd){ bd=d; bi=i; } } return bi; }
 let npBox=null;
+/* forecast cloud layers at a point (cloudcol.js): in the airport panel on request, and from "Clouds here" on the map */
+function cloudTime(){ return (WA.res&&WA.res.time)||BBWIND.hourIso(waEtd()); }
+async function cloudFill(box,la,lo,elev){ if(!box||box.dataset.done) return; box.dataset.done='1'; box.innerHTML=`<p class="src">${L({en:'Fetching the forecast…',no:'Henter prognosen …'})}</p>`;
+  try{ const d=await BBCLOUD.at(la,lo,cloudTime()); box.innerHTML=BBCLOUD.html(d,LAB.lang==='no',elev); }
+  catch(e){ delete box.dataset.done; box.innerHTML=`<p class="src">${L({en:'The forecast model could not be fetched right now. Try again in a few minutes.',no:'Prognosemodellen kunne ikke hentes nå. Prøv igjen om noen minutter.'})}</p>`; } }
+function cloudWire(sd){ const d=sd.querySelector('details.mclw'); if(!d) return; d.addEventListener('toggle',()=>{ if(d.open) cloudFill(d.querySelector('.mcl'),+d.dataset.la,+d.dataset.lo,d.dataset.el!==''?+d.dataset.el:null); }); }
+function cloudPanel(la,lo){ const sd=el('side'); sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">${L({en:'FORECAST',no:'PROGNOSE'})}</span><h3>${L({en:'Clouds here',no:'Skyer her'})}</h3><p class="src" style="margin-top:4px">${llTxt(la,lo)}</p><div class="mcl"></div>`;
+  sd.hidden=false; sd.onclick=e=>{ if(e.target.closest('button.x')) sd.hidden=true; }; cloudFill(sd.querySelector('.mcl'),la,lo,null); }
 function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
   const n=R.pts.filter(p=>/^WPT\d+$/.test(p.n||'')).length+1;
   const b=document.createElement('div'); b.className='newpt'; b.style.left=Math.max(4,Math.min(x+8,host.clientWidth-240))+'px'; b.style.top=Math.max(4,Math.min(y+8,host.clientHeight-170))+'px';
-  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">${L({en:'Note',no:'Notat'})}</button>`:''}<button class="btn" data-a="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></div>`;
+  b.innerHTML=`<b>${L({en:'New fix here',no:'Ny fix her'})}</b>${pos&&pos.la!=null?`<span class="note">${llTxt(pos.la,pos.lo)}</span>`:''}<input type="text" value="WPT${n}" aria-label="Name"><label class="chk"><input type="checkbox" checked> ${L({en:'Also save to my fixes',no:'Lagre også under mine fixes'})}</label><div class="row"><button class="btn pri" data-a="ok">${L({en:'Add to route',no:'Legg til i ruten'})}</button>${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="note">${L({en:'Note',no:'Notat'})}</button>`:''}${pos&&pos.la!=null&&dist==null?`<button class="btn" data-a="cl">${L({en:'Clouds here',no:'Skyer her'})}</button>`:''}<button class="btn" data-a="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button></div>`;
   b.addEventListener('pointerdown',e=>e.stopPropagation()); b.addEventListener('pointerup',e=>e.stopPropagation());
   const inp=b.querySelector('input[type=text]'); const go=async()=>{ const name=inp.value.trim().toUpperCase()||('WPT'+n); const save=b.querySelector('input[type=checkbox]').checked;
     const pt={n:name,t:'wpt'}; if(pos&&pos.la!=null){ pt.la=+pos.la.toFixed(5); pt.lo=+pos.lo.toFixed(5); }
@@ -1982,6 +1996,7 @@ function newPointBox(host,x,y,pos,dist){ if(npBox) npBox.remove(); closePop();
   b.querySelector('[data-a=ok]').onclick=go; inp.addEventListener('keydown',e=>{ if(e.key==='Enter') go(); if(e.key==='Escape'){ b.remove(); npBox=null; } });
   b.querySelector('[data-a=x]').onclick=()=>{ b.remove(); npBox=null; };
   { const nb=b.querySelector('[data-a=note]'); if(nb) nb.onclick=()=>{ b.remove(); npBox=null; newNote(pos.la,pos.lo); }; }
+  { const cb=b.querySelector('[data-a=cl]'); if(cb) cb.onclick=()=>{ b.remove(); npBox=null; cloudPanel(pos.la,pos.lo); }; }
   host.appendChild(b); npBox=b; setTimeout(()=>{ inp.focus(); inp.select(); },0); }
 function insertAtDist(pt,dist){ const M=compute(); let i=M.C.findIndex(c=>c.x>=dist); if(i<=0) i=M.C.length-1; const prev=M.C[i-1], next=M.C[i];
   const inApp=next.app||prev.p.t==='da'||next.p.t==='iaf'&&false; const both=pt.la!=null&&prev.p.la!=null&&next.p.la!=null;
@@ -2253,7 +2268,13 @@ LAB.add({},{
  'Weather on the profile':'Vær på profilen','Paste METAR or TAF for aerodromes on the route. The cloud layers are drawn over that aerodrome. Bases come from the report, the thickness is illustrative.':'Lim inn METAR eller TAF for flyplasser på ruten. Skylagene tegnes over den flyplassen. Basene kommer fra rapporten, tykkelsen er illustrativ.',
  'Your markers':'Dine markører','↶ Undo':'↶ Angre','↷ Redo':'↷ Gjør om','✕ Clear route':'✕ Tøm ruten','✕ Remove point':'✕ Fjern punkt','More ▾':'Flere ▾','Show or hide the terrain':'Vis eller skjul terrenget','＋ Departure note':'＋ Avgangsnotat','＋ Arrival note':'＋ Ankomstnotat','Profile scale':'Skala i profilen',
  'Draw the profile yourself, like a page in GoodNotes: climb, cruise, descent, hold, approach and missed approach, terrain and cloud. Tick “Draw on my route” to get the real terrain and the route points under your pencil, or use a blank sheet with your own scale.':'Tegn profilen selv, som en side i GoodNotes: stigning, marsj, sink, holding, innflyging og missed approach, terreng og skyer. Kryss av for «Tegn på ruten min» for å få det ekte terrenget og rutepunktene under blyanten, eller bruk et tomt ark med egen skala.',
- 'Draw on my route: real terrain and the route points, scale set automatically':'Tegn på ruten min: ekte terreng og rutepunktene, skalaen settes automatisk'
+ 'Draw on my route: real terrain and the route points, scale set automatically':'Tegn på ruten min: ekte terreng og rutepunktene, skalaen settes automatisk',
+ 'Radar shows rain and snow, not cloud,':'Radaren viser regn og snø, ikke skyer,','so it has no heights. Rain rate:':'så den har ingen høyder. Nedbørsintensitet:',
+ 'light, under 1 mm/h':'svak, under 1 mm/t','moderate, 2–5':'moderat, 2–5','heavy, 5–10':'kraftig, 5–10','very heavy, 10–20: showers, often CB':'svært kraftig, 10–20: byger, ofte CB',
+ '20–50: thunderstorm likely':'20–50: tordenvær sannsynlig','over 50: hail possible':'over 50: hagl mulig',
+ 'For the cloud layers and their heights, tap the map and choose':'For skylagene og høydene deres, trykk på kartet og velg','Clouds here':'Skyer her',', or open an airport.':', eller åpne en flyplass.',
+ 'Infrared shows how cold the cloud tops are:':'Infrarødt viser hvor kalde skytoppene er:','bright white = cold, high tops':'klart hvitt = kalde, høye topper',
+ '(CB, frontal cloud),':'(CB, frontskyer),','grey = low cloud or fog':'grått = lave skyer eller tåke',', which can look like the ground. For heights, tap the map and choose':', som kan ligne bakken. For høyder, trykk på kartet og velg'
 });
 LAB.add({},{
  'Clean VFR':'Ren VFR','Everything':'Alt på','Layer presets':'Forhåndsvalg for kartlag','Airspace':'Luftrom','Points and weather':'Punkter og vær','My stuff':'Mitt','SIGMET and AIRMET':'SIGMET og AIRMET','Flown track':'Fløyet spor','(GPX from your phone or GPS, for the debrief)':'(GPX fra telefon eller GPS, til debriefen)','Open GPX file…':'Åpne GPX-fil …','Remove track':'Fjern sporet','Weather radar (Europe)':'Værradar (Europa)','Satellite clouds (Meteosat infrared)':'Satellittskyer (Meteosat infrarødt)','NOTAM (pasted in the route)':'NOTAM (limt inn i ruten)','Paste NOTAMs in ICAO format, with the Q) line, from the official briefing':'Lim inn NOTAM i ICAO-format, med Q)-linjen, fra den offisielle briefingen','Winds aloft (forecast)':'Vind i høyden (prognose)','Freezing level (0 °C, 100 ft)':'Frysenivå (0 °C, 100 ft)','Aerodromes along the route':'Flyplasser langs ruten','Within':'Innen','Runway at least':'Bane minst','Forecast winds aloft':'Prognose for vind i høyden','ETD (UTC)':'ETD (UTC)','Fill winds from the forecast':'Fyll inn vind fra prognosen','Weather (METAR)':'Vær (METAR)',
@@ -2400,6 +2421,7 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
     if(/^[A-Z]{4}$/.test(o[0])){ const id=o[0], c=WXS.c[id]; if(!c||(!c.busy&&(c.err||Date.now()-c.t>WX_TTL))) setTimeout(()=>wxLib().catch(()=>{}).then(()=>wxFetch([id])).then(ok=>{ if(!ok&&(!WXS.c[id]||WXS.c[id].busy)) WXS.c[id]={t:Date.now(),err:1}; const b=el('side').querySelector('.mwx[data-id]'); if(b&&b.dataset.id===id) b.outerHTML=wxHtml(id); if(LY.wx) wxDraw(); }),0); }
     html=`<span class="id">${esc(o[0])}</span><h3>${esc(o[1])}</h3><dl><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(o[2],o[3])}</dd><dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[4])} ft · ${fx(o[4]*0.3048)} m</dd></dl>`+
      (/^[A-Z]{4}$/.test(o[0])?wxHtml(o[0]):'')+
+     `<details class="mclw" data-la="${o[2]}" data-lo="${o[3]}" data-el="${o[4]!=null?o[4]:''}"><summary>${L({en:'Cloud layers above (forecast)',no:'Skylag over flyplassen (prognose)'})}</summary><div class="mcl"></div></details>`+
      `<div class="mfq" data-id="${esc(o[0])}"></div>`+
      (rw?`<b style="font-size:13px">${L({en:'Runways',no:'Rullebaner'})}</b>${rw}<p class="src">${L({en:'Headings are from the runway numbers (magnetic, rounded).',no:'Kursene er fra banenumrene (magnetisk, avrundet).'})}</p>`:'')+
      (near.length?`<b style="font-size:13px;display:block;margin-top:8px">${L({en:'Navaids within 25 NM',no:'Radiofyr innen 25 NM'})}</b>`+near.map(x=>`<div class="rw"><b>${esc(x.n[0])}</b><span>${esc(x.n[2])} ${esc(x.n[3]||'')} · ${fx(x.d,0)} NM</span></div>`).join(''):'')+
@@ -2411,7 +2433,7 @@ function showInfo(h){ const sd=el('side'); const o=h.o, pt=ptFrom(h); let html='
     html=`<span class="id">${esc(pt.n)}</span><h3>${h.k==='nv'?esc(o[1]):esc(pt.n)}</h3><dl><dt>${L({en:'Type',no:'Type'})}</dt><dd>${ty}</dd><dt>${L({en:'Position',no:'Posisjon'})}</dt><dd>${llTxt(pt.la,pt.lo)}</dd>${h.k==='nv'&&o[6]!=null?`<dt>${L({en:'Elevation',no:'Høyde'})}</dt><dd>${fx(o[6])} ft</dd>`:''}</dl>`+
      `<div class="acts"><button class="btn pri" data-a="add">${L({en:'Add to route',no:'Legg til i ruten'})}</button></div><p class="src">${h.k==='nv'?L({en:'Source: OurAirports (public domain).',no:'Kilde: OurAirports (allmenn eiendom).'}):h.k==='aip'?L({en:'Source: the national eAIP, ENR 4.4.',no:'Kilde: nasjonal eAIP, ENR 4.4.'}):''}</p>`; }
   sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button>`+html; sd.hidden=false;
-  if(h.k==='ap') freqFill(o[0]);
+  if(h.k==='ap'){ freqFill(o[0]); cloudWire(sd); }
   if(h.k==='ap'&&ML&&LY.wx&&/^[A-Z]{4}$/.test(o[0])){ const c=WXS.c[o[0]]; if(!c||(!c.busy&&Date.now()-c.t>WX_TTL)) wxSync([o[0]]); }
   sd.onclick=e=>{ const b=e.target.closest('button'); if(!b) return; if(b.classList.contains('x')){ sd.hidden=true; return; } const a=b.dataset.a; if(a==='adg'&&ML){ ML.flyTo({center:[pt.lo,pt.la],zoom:14.6,duration:900}); return; } if(a==='dep'||a==='dst') setEnd(pt,a==='dep'?'dep':'dst'); else if(a==='add'){ addPoint(Object.assign({},pt,pt.t==='rwy'&&R.pts.length?{t:'wpt'}:{})); el('rtxt').value=routeStr(); if(R.pts.length>=2) sheetAuto(); } sd.hidden=true; }; }
 // profilmodus

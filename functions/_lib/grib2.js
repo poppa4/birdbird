@@ -1,6 +1,7 @@
 /* Birdbird – minimal GRIB2 reader for model fields on a regular lat/lon grid (NOAA GFS through NOMADS grib filter).
-   Supports: grid template 3.0 (regular lat/lon), product template 4.0, data templates 5.0 (simple packing),
-   5.2 (complex packing) and 5.3 (complex packing with spatial differencing, order 1 or 2), no bitmap.
+   Supports: grid template 3.0 (regular lat/lon), product templates 4.0 and 4.8 (time averages), data templates 5.0 (simple
+   packing), 5.2 (complex packing) and 5.3 (complex packing with spatial differencing, order 1 or 2), and a bitmap in
+   section 6 (points the bitmap leaves out are NaN, e.g. cloud base where there is no cloud).
    That is what GFS pgrb2 uses for wind, temperature and height. Anything else is skipped, not guessed.
    readGrib2(bytes) → [{ disc, cat, num, level:{type,value}, ref:Date, fhr, ni, nj, la1, lo1, la2, lo2, di, dj, scan, values:Float64Array }] */
 
@@ -79,7 +80,7 @@ export function readGrib2(buf) {
     if (b[o + 7] !== 2) throw new Error('grib2: not edition 2');
     const disc = b[o + 6], total = u32(b, o + 12); // octets 9-16 (upper 32 bits are 0 for our sizes)
     const end = o + 16 + (total - 16);
-    let p = o + 16, ref = null, grid = null, prod = null, s5 = null, n = 0, bitmap = 255;
+    let p = o + 16, ref = null, grid = null, prod = null, s5 = null, n = 0, bitmap = 255, bmp = null;
     while (p < end - 4) {
       if (b[p] === 0x37 && b[p + 1] === 0x37 && b[p + 2] === 0x37 && b[p + 3] === 0x37) break; // '7777'
       const len = u32(b, p), sec = b[p + 4], S = b.subarray(p, p + len);
@@ -91,13 +92,18 @@ export function readGrib2(buf) {
         const t = u16(S, 7);
         prod = t === 0 || t === 8 ? { cat: S[9], num: S[10], unit: S[17], fhr: s32(S, 18), level: { type: S[22], value: s32(S, 24) / Math.pow(10, sN(S, 23, 1)) } } : null;
       } else if (sec === 5) { s5 = S; n = u32(S, 5); }
-      else if (sec === 6) bitmap = S[5];
+      else if (sec === 6) { bitmap = S[5]; if (bitmap === 0) bmp = S.subarray(6); }
       else if (sec === 7) {
-        if (grid && prod && s5 && bitmap === 255) {
+        if (grid && prod && s5 && (bitmap === 255 || (bitmap === 0 && bmp))) {
           const tpl = u16(s5, 9), d = S.subarray(5);
           let values = null;
           if (tpl === 0) values = unpackSimple(d, s5, n);
           else if (tpl === 2 || tpl === 3) values = unpackComplex(d, s5, n, tpl);
+          if (values && bitmap === 0) { // spread the packed values over the grid; missing points are NaN
+            const N = grid.ni * grid.nj, full = new Float64Array(N); let k = 0;
+            for (let i = 0; i < N; i++) full[i] = (bmp[i >> 3] >> (7 - (i & 7))) & 1 ? (k < values.length ? values[k++] : NaN) : NaN;
+            values = full;
+          }
           if (values) out.push(Object.assign({ disc, cat: prod.cat, num: prod.num, level: prod.level, ref, fhr: prod.unit === 1 ? prod.fhr : prod.unit === 0 ? prod.fhr / 60 : prod.fhr, values }, grid));
         }
       }
