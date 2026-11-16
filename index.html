@@ -245,6 +245,24 @@
 }
 @media (prefers-reduced-motion:reduce){.sm-shot img,.sm.js .sm-rv,.sm-tabs button,.sm-tabs img{transition:none}}
 
+/* the flow trainer: photo with a live flow over it */
+.ffl{margin:0;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6);background:var(--sheet)}
+.ffl-view{position:relative;display:block;aspect-ratio:1400/836;background:#1b2530;overflow:hidden}
+.ffl-view img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.9) brightness(.82)}
+.ffl-ov{position:absolute;inset:0;width:100%;height:100%}
+.ffl-ov path{fill:none;stroke-linecap:round;transition:stroke-dashoffset .5s ease-out,opacity .4s}
+.ffl-ov .bd{transition:transform .35s cubic-bezier(.3,1.6,.5,1),opacity .35s;transform-box:fill-box;transform-origin:center}
+.ffl-ov .bd text{font:800 15px var(--mono,monospace);fill:#0B0F12;text-anchor:middle}
+.ffl-ov .rp{fill:none;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:fflrp .9s ease-out forwards}
+@keyframes fflrp{from{transform:scale(.3);opacity:1}to{transform:scale(2.6);opacity:0}}
+.ffl-chip{position:absolute;left:14px;top:14px;background:#0B0F12;color:#fff;font:700 13px var(--mono,monospace);letter-spacing:.04em;padding:6px 10px 6px 8px;border-radius:7px;display:flex;gap:8px;align-items:center;transition:opacity .3s}
+.ffl-chip i{font-style:normal;width:20px;height:20px;line-height:20px;text-align:center;border-radius:50%;background:#fff;color:#0B0F12;font-size:12px}
+.ffl-q{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:rgba(11,15,18,.92);color:#fff;padding:9px 14px;border-radius:9px;font-size:15px;white-space:nowrap;opacity:0;transition:opacity .3s}
+.ffl-q b{color:#3CCB7F}.ffl-q.on{opacity:1}
+.ffl figcaption{padding:14px 18px 16px;border-top:1px solid var(--rule);font-size:14.5px;line-height:1.55;color:var(--ink2)}
+.ffl figcaption b{color:var(--ink);font-weight:600}.ffl-cr{display:block;margin-top:4px;font-size:12px;color:var(--ink3,#6b7782)}.ffl-cr a{color:inherit}
+@media (max-width:640px){.ffl{margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}.ffl figcaption{padding:14px var(--gr,24px) 16px var(--gl,24px);font-size:14px}.ffl-q{font-size:13px;bottom:10px}.ffl-chip{font-size:11px;left:10px;top:10px}}
+@media (prefers-reduced-motion:reduce){.ffl-ov path,.ffl-ov .bd,.ffl-q,.ffl-chip{transition:none}.ffl-ov .rp{animation:none;opacity:0}}
 /* the storm film: the real storm lab scene (front-storm.js) with the lab's stage panel attached */
 .fp-storm{margin:0;display:grid;grid-template-columns:minmax(0,1fr) 312px;box-shadow:0 0 0 1px rgba(19,32,42,.12),0 34px 70px -40px rgba(11,37,69,.6)}
 .fs-view{position:relative;aspect-ratio:16/10;overflow:hidden;background:linear-gradient(180deg,#2f5788 0%,#8fa9c4 62%,#56605f 100%)}
@@ -579,34 +597,26 @@
         <p class="sm-foot"><span data-tx="smFoot">Also in Training: the IFR trainer with 46 exercises, briefings and radio drills.</span><a class="sm-all" href="training.html" data-tx="smAll">All training →</a></p>
       </section>
 
-      <div class="fp-labs">
+      <!-- the flow trainer: the real A320 overhead panel with a flow being built, then practised (front-flow.js) -->
+      <div class="fp-labs fp-flows" id="fpFlows">
         <div class="txt">
-          <h3 data-tx="h3how">Every lab works the same way</h3>
+          <h3 data-tx="flH">Learn your airline’s flows by heart</h3>
           <ol class="fp-steps">
-            <li><span data-tx="st1"><b>Understand</b>The key concepts, one card each, linked to the place in the model where you see them.</span></li>
-            <li><span data-tx="st2"><b>Explore</b>The model itself. Change the inputs and the picture and the numbers change with them.</span></li>
-            <li><span data-tx="st3"><b>Test yourself</b>Short questions that ask you to reason, not to recognise a stored answer.</span></li>
+            <li><span data-tx="fl1"><b>Build</b>Tap the controls in your airline’s order, or paste the SOP. On a Birdbird cockpit, a real photo or a page of your own manual.</span></li>
+            <li><span data-tx="fl2"><b>Watch</b>The flow plays step by step, PF and PM in their own colours, with the checklist calls.</span></li>
+            <li><span data-tx="fl3"><b>Practise</b>Find each step, then the whole flow from memory. Alone, or live with your partner on another phone.</span></li>
           </ol>
-          <p class="fp-depth" data-tx="depth">Read each lab at the depth you need: Short, Deep dive or Instructor. In English and Norwegian.</p>
+          <p class="fp-depth" data-tx="flD">A320, 737, ATR 72, King Air, Seneca, DA42 and C172. Free, on phone, tablet and computer, and your flows stay on your device.</p>
         </div>
-        <figure class="fp-storm" id="fpStorm" aria-labelledby="fsCap">
-          <div class="fs-view" id="fsView">
-            <img class="fs-poster" src="img/front/storm-mature-1480.webp" srcset="img/front/storm-mature-800.webp 800w, img/front/storm-mature-1480.webp 1480w" sizes="(max-width:980px) 100vw, 930px" width="1485" height="930" loading="lazy" decoding="async"
-              alt="The storm lab: a mature cumulonimbus in 3D in daylight, with its anvil spreading downwind and the rain shaft under it." data-alt-no="Uværslabben: en moden cumulonimbus i 3D i dagslys, med ambolten som sprer seg med vinden og regnsjakten under.">
-            <canvas id="fsCv" aria-hidden="true"></canvas>
-            <div class="fs-lbl" id="fsLbl" aria-hidden="true"></div>
-            <dl class="fs-ro" id="fsRo" aria-hidden="true"><div><dt>T+</dt><dd>26 min</dd></div><div><dt>TOP</dt><dd>FL385</dd></div></dl>
-            <p class="fs-note" data-tx="fsNote">Heights drawn 1.5 times taller</p>
-            <a class="fp-lab-hit" href="storms.html#explore" tabindex="-1" aria-hidden="true"></a>
-          </div>
-          <div class="fs-panel">
-            <p class="fs-k" data-tx="fsK">Development · single cell</p>
-            <ol class="fs-stages" id="fsStages" aria-label="Stage"></ol>
-            <div class="fs-time"><span class="fs-track"><span id="fsBar"></span></span><span class="fs-clock" id="fsClock">26 / 60 min</span><button type="button" class="fs-play" id="fsPlay" hidden>Pause</button></div>
-            <p class="fs-card" id="fsCard" aria-live="polite"></p>
-            <div class="fs-lay" hidden><p class="fs-k" data-tx="fsLay">Show</p><div class="fs-togs" id="fsTogs"></div></div>
-          </div>
-          <figcaption id="fsCap"><span data-tx="capSt"><b>Thunderstorms and wind shear.</b> The storm lab’s single cell, from a fair-weather cumulus to a mature cumulonimbus and its decay, an hour of storm time in half a minute. Pick a stage in the panel, or open the lab to fly through it.</span> <a class="tl" href="storms.html" data-tx="goSt">Open the storm lab</a></figcaption>
+        <figure class="ffl" id="ffl" aria-labelledby="flCap">
+          <a class="ffl-view" href="flows.html" aria-label="Open the flow trainer" data-aria-no="Åpne flow-treneren">
+            <img src="img/front/flow-a320-1400.webp" srcset="img/front/flow-a320-800.webp 800w, img/front/flow-a320-1400.webp 1400w" sizes="(max-width:980px) 100vw, 1180px" width="1400" height="836" loading="lazy" decoding="async"
+              alt="The overhead panel of an Airbus A320, with a flow drawn over it: numbered steps for the two pilots joined by lines." data-alt-no="Overheadpanelet i en Airbus A320 med en flow tegnet over: nummererte steg for de to pilotene, bundet sammen med linjer.">
+            <svg class="ffl-ov" id="fflOv" viewBox="0 0 1000 597" aria-hidden="true"></svg>
+            <span class="ffl-chip" id="fflChip" aria-hidden="true"></span>
+            <span class="ffl-q" id="fflQ" aria-hidden="true"></span>
+          </a>
+          <figcaption id="flCap"><span data-tx="capFl"><b>Flow trainer.</b> A flow being built on the real A320 overhead panel, then practised with the lines hidden. The steps here only show how it works; your airline’s flow goes in its place.</span> <a class="tl" href="flows.html" data-tx="goFl">Open the flow trainer</a> <small class="ffl-cr">Photo: Olivier Cleynen, <a href="https://creativecommons.org/licenses/by-sa/3.0/" rel="noopener">CC BY-SA 3.0</a></small></figcaption>
         </figure>
       </div>
     </div>
@@ -713,7 +723,7 @@
 
 </main>
 <script src="lab.js?v=51"></script>
-<script src="front-storm.js?v=4" defer></script>
+<script src="front-flow.js?v=1" defer></script>
 <script src="front-fi.js?v=2" defer></script>
 <script>
 (function(){
@@ -744,6 +754,13 @@ LAB.tx({
  h3idx:'Fagområder og tilhørende EASA ATPL-fag',
  allLabs:'Alle <span class="nLabs">25</span> labber', hf:'Menneskelige faktorer',
  h3how:'Hver lab er bygd likt',
+ flH:'Lær flyselskapets flows utenat',
+ fl1:'<b>Bygg</b>Trykk bryterne i flyselskapets rekkefølge, eller lim inn SOP-en. På en Birdbird-cockpit, et ekte foto eller en side fra din egen manual.',
+ fl2:'<b>Se</b>Flowen spilles av steg for steg, PF og PM i hver sin farge, med sjekklistekallene.',
+ fl3:'<b>Øv</b>Finn hvert steg, og så hele flowen etter hukommelsen. Alene, eller live med makkeren din på en annen telefon.',
+ flD:'A320, 737, ATR 72, King Air, Seneca, DA42 og C172. Gratis, på telefon, nettbrett og datamaskin, og flowene dine blir på enheten din.',
+ capFl:'<b>Flow-treneren.</b> En flow bygges på det ekte A320-overheadpanelet, og øves så med linjene skjult. Stegene her viser bare hvordan det virker; flyselskapets flow kommer i stedet.',
+ goFl:'Åpne flow-treneren',
  st1:'<b>Forstå</b>Nøkkelbegrepene, ett kort for hvert, med lenke til stedet i modellen der du ser dem.',
  st2:'<b>Utforsk</b>Selve modellen. Endre verdiene, og bildet og tallene endrer seg med dem.',
  st3:'<b>Test deg selv</b>Korte spørsmål som krever at du resonnerer, ikke at du kjenner igjen et pugget svar.',

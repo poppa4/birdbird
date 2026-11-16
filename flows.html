@@ -59,6 +59,9 @@
 .fguide li{display:flex;gap:9px;align-items:flex-start;cursor:pointer;padding:6px;border-radius:8px}.fguide li:hover{background:#fff}
 .fguide li>i{font-style:normal;font-weight:800;flex:0 0 26px;height:26px;line-height:26px;text-align:center;border-radius:50%;background:var(--ink);color:#fff;font-size:13px}
 .fguide b{display:block;font-size:14px}.fguide span{font-size:13px;color:var(--ink-2);line-height:1.35}.fpq .btn:disabled{opacity:.4;cursor:default}
+.fextag{position:absolute;top:8px;left:8px;z-index:4;background:#F2A623;color:#0B0F12;font:800 11px var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;pointer-events:none}
+#app.pon .fextag{display:none}
+.fexnote{background:#FFF4DC;border:1px solid #F2C46B;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.45}.fexnote .frow{margin:8px 0 0}
 .fguide li.on{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}.fguide .fgx{cursor:default}.fguide .fgx:hover{background:none}
 @media (max-width:760px){.fguide{grid-template-columns:1fr}.fguide .fgx{justify-content:flex-end}}
 
@@ -142,13 +145,13 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
   <nav class="snav" aria-label="Sections"><a href="#app">Trainer</a><a href="#how">How it works</a></nav>
 
   <section class="card" id="app" data-mode="build" aria-label="Flow trainer">
-    <ol class="fguide" id="fguide" hidden><li data-m="build"><i>1</i><span><b>Build</b>Pick a cockpit and tap its controls in the order you do them.</span></li><li data-m="watch"><i>2</i><span><b>Watch</b>See the flow play, step by step.</span></li><li data-m="practise"><i>3</i><span><b>Practise</b>Find the steps until you can do the whole flow from memory.</span></li><li class="fgx"><button type="button" class="btn sm" id="fgok">Got it</button></li></ol>
+    <ol class="fguide" id="fguide" hidden><li data-m="build"><i>1</i><span><b>Build</b>Pick a cockpit and tap its controls in the order your airline does them.</span></li><li data-m="watch"><i>2</i><span><b>Watch</b>See the flow play, step by step.</span></li><li data-m="practise"><i>3</i><span><b>Practise</b>Find the steps until you can do the whole flow from memory.</span></li><li class="fgx"><button type="button" class="btn sm" id="fgok">Got it</button></li></ol>
     <div class="ftop">
       <select id="fsel" aria-label="Flow"></select>
       <button class="btn pri" id="fnew" type="button" aria-label="New flow">+ New</button>
       <details class="fmenu"><summary aria-label="More">⋯</summary><div id="fmenu">
         <button data-a="share">Share as a link</button><button data-a="file">Save as file</button><button data-a="import">Open a flow file…</button>
-        <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="del" class="warn">Delete flow</button>
+        <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="clear">Remove all steps</button><button data-a="del" class="warn">Delete flow</button>
       </div></details>
       <input type="file" id="fimp" accept=".json,application/json" hidden>
       <div class="fmode" role="group" aria-label="Mode"><button data-m="build" aria-pressed="true"><i>1</i>Build</button><button data-m="watch" aria-pressed="false"><i>2</i>Watch</button><button data-m="practise" aria-pressed="false"><i>3</i>Practise</button><button data-m="together" aria-pressed="false">Together</button></div>
@@ -156,7 +159,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
     <div class="fstart" id="fstart" hidden></div>
     <div class="fapp">
       <div>
-        <div class="fwrap">
+        <div class="fwrap"><div class="fextag" id="fextag" hidden>Example · not an SOP</div>
           <div class="fnow" id="fnow" hidden></div>
           <div class="fpq" id="fpq" hidden></div>
           <div class="fstage" id="stage"><svg id="cv" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" role="img" aria-label="Cockpit"><g id="bg"></g><g id="ov"></g><g id="fx"></g></svg></div>
@@ -203,7 +206,7 @@ LAB.add({},{
  'Flow trainer':'Flow-trener','Birdbird · Training':'Birdbird · Trening','Trainer':'Trener','How it works':'Slik virker det',
  'Draw your cockpit flows over your own cockpit photo or PDF, a real photo of an A320, 737 or ATR 72 flight deck, or a Birdbird cockpit with every control named. One layer per pilot, checklist calls, playback, and practice from memory until the flow is in your hands. Free, and your pictures stay on your device.':'Tegn cockpit-flowene dine over ditt eget cockpitbilde eller PDF, et ekte foto av en A320-, 737- eller ATR 72-cockpit, eller en Birdbird-cockpit der hver bryter har navn. Ett lag per pilot, sjekklistekall, avspilling og øving fra hukommelsen til flowen sitter i hendene. Gratis, og bildene dine blir på enheten din.',
  '+ New flow':'+ Ny flow','+ New':'+ Ny','Share as a link':'Del som lenke','Save as file':'Lagre som fil','Open a flow file…':'Åpne en flowfil …','Save as picture (PNG)':'Lagre som bilde (PNG)','Save as video':'Lagre som video','Print':'Skriv ut','Duplicate':'Dupliser','Delete flow':'Slett flowen',
- 'Build':'Bygg','Watch':'Se','Practise':'Øv','Together':'Sammen','Pick a cockpit and tap its controls in the order you do them.':'Velg en cockpit og trykk bryterne i den rekkefølgen du gjør dem.','See the flow play, step by step.':'Se flowen spilles av, steg for steg.','Find the steps until you can do the whole flow from memory.':'Finn stegene til du kan hele flowen etter hukommelsen.','Got it':'Skjønner',
+ 'Build':'Bygg','Watch':'Se','Practise':'Øv','Together':'Sammen','Pick a cockpit and tap its controls in the order you do them.':'Velg en cockpit og trykk bryterne i den rekkefølgen du gjør dem.','See the flow play, step by step.':'Se flowen spilles av, steg for steg.','Find the steps until you can do the whole flow from memory.':'Finn stegene til du kan hele flowen etter hukommelsen.','Got it':'Skjønner','Example · not an SOP':'Eksempel · ikke en SOP','Remove all steps':'Fjern alle steg','Pick a cockpit and tap its controls in the order your airline does them.':'Velg en cockpit og trykk bryterne i den rekkefølgen flyselskapet ditt gjør dem.',
  '1 · Build':'1 · Bygg','2 · Watch':'2 · Se','3 · Practise':'3 · Øv','4 · Together':'4 · Sammen',"Open a room and send the link or code to your partner on another device. One takes PF, the other PM. The flow runs in order across both roles: you find your steps, you see your partner's taps on your screen, and checklist calls pop up for both. Scores side by side at the end.":'Åpne et rom og send lenken eller koden til partneren din på en annen enhet. Én tar PF, den andre PM. Flowen går i rekkefølge på tvers av rollene: du finner stegene dine, du ser partnerens trykk på skjermen din, og sjekklistekall kommer opp hos begge. Resultatene side om side til slutt.',
  "Pick your cockpit: upload a photo or a PDF page of it, or use one of Birdbird's drawings where every control has its name. Choose the PF or PM layer and tap the controls in order. Paste your SOP to get all the items at once, then place them one by one. Add checklist calls, outside events (ATC clearance, fuel figures, cabin secure), steps that wait for the other pilot, and notes on the panels.":'Velg cockpit: last opp et bilde eller en PDF-side av den, eller bruk en av Birdbirds tegninger der hver bryter har navn. Velg PF- eller PM-laget og trykk på bryterne i rekkefølge. Lim inn SOP-en for å få alle punktene på en gang, og plasser dem så ett for ett. Legg til sjekklistekall, hendelser utenfra (ATC-klarering, drivstofftall, kabin klar), steg som venter på den andre piloten, og notater på panelene.',
  'The flow plays step by step with its path drawn between the controls, one role or both, with the checklist calls on screen and the items read aloud if you like.':'Flowen spilles av steg for steg med banen tegnet mellom bryterne, én rolle eller begge, med sjekklistekallene på skjermen og punktene lest høyt hvis du vil.',
@@ -215,6 +218,6 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=8"></script>
+<script src="flows.js?v=9"></script>
 </body>
 </html>
