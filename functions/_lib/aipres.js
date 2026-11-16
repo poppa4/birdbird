@@ -92,8 +92,10 @@ export const STATES = {
   LE: { fixed: 'https://aip.enaire.es/AIP/', toc: 'AIP-en.html', lang: /_en\./ },
   LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', toc: 'ad_2.htm', part: 'ad.htm',
         want: (h, i) => new RegExp('^ad_2_' + i.toLowerCase() + '\\.htm$').test(h) || new RegExp('LO_AD_2_' + i + '_en\\.pdf$').test(h), prefer: /\.htm$/ },
-  LJ: { fixed: 'https://aim.sloveniacontrol.si/aim/products/aip/part-3-aerodromes-ad/', toc: 'ad-2-aerodromes/',
-        match: (h, i) => new RegExp('/charts/aerodromes/' + i.toLowerCase() + '-').test(h) },
+  /* Slovenia: one chart page per aerodrome, always the current charts (the site's certificate chain is incomplete, so it
+     cannot be read automatically; the four aerodromes are listed here) */
+  LJ: { custom: async icao => ({ LJLJ: 'ljlj-ljubljana-brnik', LJMB: 'ljmb-maribor-orehova-vas', LJPZ: 'ljpz-portoroz-secovlje', LJCE: 'ljce-cerklje-ob-krki' })[icao]
+        ? 'https://aim.sloveniacontrol.si/aim/products/charts/aerodromes/' + ({ LJLJ: 'ljlj-ljubljana-brnik', LJMB: 'ljmb-maribor-orehova-vas', LJPZ: 'ljpz-portoroz-secovlje', LJCE: 'ljce-cerklje-ob-krki' })[icao] + '/' : null },
   LY: { idx: 'https://smatsa.rs/upload/aip/published/start_page.html', rx: /\.\/(?<p>(?<d>\d{2})-(?<mon>[A-Za-z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC)\/html\//g, base: p => p + '/html/', tpl: 'eAIP/LY-AD-2.{I}-en-GB.html' },
   LA: { idx: 'https://www.albcontrol.al/aip/', rx: /(?<p>https:\/\/www\.albcontrol\.al\/al\/aip\/(?<d>\d{2})-(?<mon>[A-Z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC\/html)/g, base: p => p + '/', tpl: 'eAIP/LA-AD-2.{I}-en-GB.html' },
   LQ: { idx: 'https://eaip.bhansa.gov.ba/updates.json', rx: /"effectiveDate"\s*:\s*"(?<p>(?<d>\d{1,2}) (?<mon>[A-Z]{3}) (?<y>\d{4}))"/g, base: (p, eff) => eff + '-AIRAC/html/', tpl: 'eAIP/LQ-AD-2.{I}-en-GB.html' },
@@ -256,6 +258,6 @@ export async function resolve(icaoIn, deps) {
     return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
   } catch (e) {
     if (deps.log) deps.log(pre + ': ' + (e && e.message || e));
-    return Object.assign({ lookupFailed: true }, fallback);
+    return Object.assign({ lookupFailed: true, why: String(e && e.message || e).slice(0, 200) }, fallback);
   }
 }

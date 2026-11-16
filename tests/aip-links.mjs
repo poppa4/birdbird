@@ -28,7 +28,7 @@ for (const [url, name] of urls) {
 }
 /* every state with a deep link: the AD 2 page of one aerodrome must be found in the edition in force, and must answer */
 const { resolve } = await import('../functions/_lib/aipres.js');
-const SAMPLE = { EN: 'ENTO', ES: 'ESSA', EF: 'EFHK', BI: 'BIRK', EG: 'EGLL', EB: 'EBBR', EP: 'EPWA', EE: 'EETN', EV: 'EVRA', LH: 'LHBP', LP: 'LPPT', LZ: 'LZIB', LK: 'LKPR', LE: 'LEMD', LF: 'LFPG', ED: 'EDDF', EDv: 'EDFE', EK: 'EKCH', BG: 'BGSF', LO: 'LOWW', LJ: 'LJLJ', LY: 'LYBE', LA: 'LATI', LQ: 'LQSA' };
+const SAMPLE = { EN: 'ENTO', ES: 'ESSA', EF: 'EFHK', BI: 'BIRK', EG: 'EGLL', EB: 'EBBR', EP: 'EPWA', EE: 'EETN', EV: 'EVRA', LH: 'LHBP', LP: 'LPPT', LZ: 'LZIB', LK: 'LKPR', LE: 'LEMD', LF: 'LFPG', ED: 'EDDF', EDv: 'EDFE', EK: 'EKCH', BG: 'BGSF', LO: 'LOWW', LY: 'LYBE', LA: 'LATI', LQ: 'LQSA' };
 const tf = (u, o) => fetch(u, Object.assign({ signal: AbortSignal.timeout(40000) }, o));
 for (const [st, icao] of Object.entries(SAMPLE)) {
   const r = await resolve(icao, { fetch: tf, cache: null, log: m => console.log('  ' + m) });
