@@ -37,3 +37,9 @@ test('/api/aip redirects with go=1 and rejects bad codes', async () => {
   assert.equal(r.status, 302); assert.match(r.headers.get('location'), /EN-AD-2\.ENTO/);
   assert.equal((await handleAip(new Request('https://birdbird.eu/api/aip?icao=x'), {}, { cache: null })).status, 400);
 });
+
+test('Belgium: blocked check, direct link only for aerodromes known to be in the AIP', async () => {
+  const f = async () => new Response('', { status: 403 });
+  assert.equal((await resolve('EBBR', { fetch: f, cache: null })).kind, 'ad2');
+  assert.equal((await resolve('EBZW', { fetch: f, cache: null })).kind, 'portal');
+});

@@ -78,7 +78,10 @@ export const STATES = {
   BI: { idx: 'https://eaip.isavia.is/', rx: /\/\/eaip\.(?:isavia|avians)\.is\/(?<p>A_\d+-\d{4}_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\//g, base: p => p + '/', toc: 'eAIP/menu.html',
         want: (h, i) => new RegExp('^BI-AD ' + i + ' .* 1-en-GB\\.html$').test(h) },
   EG: { idx: 'https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP/', rx: /(?<p>https?:\/\/www\.aurora\.nats\.co\.uk\/htmlAIP\/Publications\/(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EG-AD-2.{I}-en-GB.html', abs: true },
-  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html' },
+  /* Belgium/Luxembourg: skeyes refuses automated requests, so the page cannot be checked; only the aerodromes known to
+     have an AD 2 page in this AIP get the direct link, the rest the AIP's front page */
+  EB: { fixed: 'https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/', tpl: 'eAIP/EB-AD-2.{I}-en-GB.html',
+        known: ['EBAW', 'EBBR', 'EBCI', 'EBKT', 'EBLG', 'EBOS', 'ELLX'] },
   EP: { idx: 'https://www.ais.pansa.pl/en/publications/aip-poland/', rx: /(?<p>https:\/\/docs\.pansa\.pl\/ais\/eaipifr\/default_offline_(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})\.html)/g, abs: true,
         idx2: { rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index-v2\.html"/g, base: p => encodeURI(p) + '/' }, toc: 'v2/js/datasource.js', tocBase: 'eAIP/' },
   EE: { idx: 'https://eaip.eans.ee/', follow: true, toc: 'eAIP/EE-menu-en-GB.html', tpl: 'eAIP/EE-AD-2.{I}-en-GB.html' },
@@ -238,7 +241,7 @@ export async function resolve(icaoIn, deps) {
     if (hit && hit.url) return done(hit.url);
     if (hit) return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
     let url = null;
-    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc)) { url = u; break; } }
+    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc && (!st.known || st.known.includes(icao)))) { url = u; break; } }
     if (!url && st.toc) {
       // the whole table of contents is read once per edition: every aerodrome in it is kept (cached 6 h)
       const mk = 'toc:' + pre + ':' + ed.base;
