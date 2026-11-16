@@ -36,3 +36,11 @@ test('own picture: a named spot works like a built-in control (name once, reuse,
   F.nameSpot(f, a, ''); assert.equal(a.tg, undefined); assert.equal(b.tg, undefined); assert.deepEqual(f.marks.map(m => m.n), ['BEACON']);
   assert.equal(F.clean({ ac: 'img', marks: [{ n: 'A|<b>', x: 1, y: 2 }, { n: 'a b', x: 3, y: 4 }, { n: '', x: 1, y: 1 }, { n: 'Z' }] }).marks.length, 1);
 });
+
+test('a step text gives the control and its position; choices hold the right one once; review intervals grow and reset', () => {
+  assert.deepEqual(F.stateOf('BAT 1+2 – ON'), { n: 'BAT 1+2', st: 'ON' }); assert.deepEqual(F.stateOf('APU BLEED - AS RQRD'), { n: 'APU BLEED', st: 'AS RQRD' }); assert.deepEqual(F.stateOf('ANTI-ICE'), { n: 'ANTI-ICE', st: '' }); assert.equal(F.stateOf('').st, '');
+  const f = F.newFlow('a320'); F.addStep(f, { t: 'BAT 1 – ON' }); F.addStep(f, { t: 'APU MASTER – ON' }); F.addStep(f, { t: 'PACK FLOW – AUTO' }); F.addStep(f, { t: 'BEACON' });
+  const c = F.stateChoices(f, f.steps[0]); assert.equal(c.length, 4); assert.equal(c.filter(x => x === 'ON').length, 1); assert.ok(c.includes('AUTO')); assert.equal(new Set(c.map(x => x.toUpperCase())).size, 4); assert.deepEqual(F.stateChoices(f, f.steps[3]), []);
+  const D = 864e5; let o = F.reviewNext(null, 95, 0); assert.deepEqual([o.n, o.due], [1, D]); o = F.reviewNext(o, 100, 0); assert.equal(o.due, 3 * D); o = F.reviewNext(o, 92, 0); assert.equal(o.due, 7 * D);
+  o = F.reviewNext(o, 60, 5); assert.deepEqual([o.n, o.due], [0, 5]); for (let i = 0; i < 9; i++) o = F.reviewNext(o, 100, 0); assert.equal(o.due, 30 * D);
+});

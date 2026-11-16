@@ -29,6 +29,16 @@ function parseSop(txt) { const out = [];
     out.push({ t: t.slice(0, 120), k: /\bcheck\s?list\b|\bsjekkliste\b/i.test(t) ? 'call' : 'act' }); });
   return out.slice(0, 200); }
 /* did a tap land on the step? On a schematic: inside the step's control (or within 18 units). On a photo: within the radius. */
+/* "BAT 1 – ON": the control and the position it is put in. The position is what the practice can ask for after the tap. */
+function stateOf(t) { const m = /^(.*?\S)\s+[–—-]\s+(\S.*)$/.exec(String(t || '').trim()); return m ? { n: m[1], st: m[2].trim() } : { n: String(t || '').trim(), st: '' }; }
+const STATES = ['ON', 'OFF', 'AUTO', 'ARM', 'NORM', 'OPEN', 'CLOSED', 'SET', 'CHECK', 'TEST', 'UP', 'DOWN'];
+/* the right position among up to three others: first positions used elsewhere in this flow, then common ones */
+function stateChoices(f, s, rnd) { const st = stateOf(s.t).st; if (!st) return []; const up = v => v.toUpperCase(), seen = new Set([up(st)]), out = [];
+  f.steps.map(x => stateOf(x.t).st).concat(STATES).forEach(v => { if (v && v.length <= 24 && !seen.has(up(v)) && out.length < 3) { seen.add(up(v)); out.push(v); } });
+  const all = out.concat([st]), r = rnd || Math.random; for (let i = all.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [all[i], all[j]] = [all[j], all[i]]; } return all; }
+/* spaced review: after a run with at least 90 % right first time the flow rests 1, 3, 7, 14, then 30 days; a weaker run starts over */
+const REVIEW = [1, 3, 7, 14, 30];
+function reviewNext(o, pct, now) { const n = pct >= 90 ? Math.min(REVIEW.length, ((o && o.n) || 0) + 1) : 0; return { n, at: now, due: now + (n ? REVIEW[n - 1] : 0) * 864e5 }; }
 /* flight phases a flow can be filed under (optional): id, English, Norwegian. The same ids are known to functions/api/flowlib.js */
 const PHASES = [['pre', 'Cockpit preparation', 'Klargjøring av cockpit'], ['bst', 'Before start', 'Før start'], ['ast', 'After start', 'Etter start'], ['taxi', 'Taxi', 'Taksing'], ['bto', 'Before takeoff', 'Før avgang'], ['clb', 'After takeoff and climb', 'Etter avgang og stigning'],
   ['crz', 'Cruise', 'Cruise'], ['des', 'Descent', 'Nedstigning'], ['app', 'Approach', 'Innflyging'], ['ldg', 'Landing and go-around', 'Landing og go-around'], ['aldg', 'After landing', 'Etter landing'], ['shut', 'Parking and shutdown', 'Parkering og avslutning'], ['abn', 'Abnormal and memory items', 'Unormale og memory items']];
@@ -87,6 +97,6 @@ const EX = {
 function example(acId, A) { const e = EX[acId], ac = A && A.get(acId), ph = A && A.photo && A.photo(acId); if (!e || (!ac && !ph)) return null; const f = newFlow(acId, { roles: e.roles, name: e.name }); f.ex = true;
   e.steps.forEach(([r, tg, t, k]) => { if (Array.isArray(tg)) { addStep(f, { r, t, k: k || 'act', x: tg[0], y: tg[1] }); return; } const T = tg && ac && A.byId(ac, tg); addStep(f, { r, t, k: k || 'act', tg: T ? T.id : undefined, x: T ? Math.round(T.x + T.w / 2) : null, y: T ? Math.round(T.y + T.h / 2) : null }); });
   return f; }
-const API = { uid, ROLESETS, COLORS, newFlow, roleSteps, placed, addStep, moveStep, delStep, badge, parseSop, check, score, nextFor, clean, encode, decode, example, PHASES, markName, markFind, nameSpot, ownAc };
+const API = { uid, ROLESETS, COLORS, newFlow, roleSteps, placed, addStep, moveStep, delStep, badge, parseSop, check, score, nextFor, clean, encode, decode, example, stateOf, stateChoices, reviewNext, PHASES, markName, markFind, nameSpot, ownAc };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOW = API;
 })(typeof window !== 'undefined' ? window : globalThis);
