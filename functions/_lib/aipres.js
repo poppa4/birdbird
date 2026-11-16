@@ -12,7 +12,7 @@
    If a state changes its website so the lookup fails, the user still gets the state's AIP portal (never a dead link),
    and the weekly check (tests/aip-links.mjs) e-mails the repository owner. */
 
-export const UA = 'Birdbird/1.0 (+https://birdbird.eu; AIP link lookup)';
+export const UA = 'Mozilla/5.0 (compatible; Birdbird/1.0; +https://birdbird.eu)';
 const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
 
 /* Official AIP portals (what the user gets when no AD 2 page can be found). */
