@@ -9,9 +9,9 @@
 /* Airbus A320: laid out from photos of the real flight deck (overhead: Olivier Cleynen, CC BY-SA 3.0; flight deck: Steve
    Jurvetson, CC BY 2.0). Panels sit where they are in the aircraft, and their buttons in the rows they have there; a row
    is an array, and null leaves an empty place in it. Sizes are kept readable, so it is a faithful map, not a photo. */
-const A320 = { id: 'a320', name: 'Airbus A320', style: 'airbus', short: { 'AUTO BRK LO': 'LO', 'AUTO BRK MED': 'MED', 'AUTO BRK MAX': 'MAX', 'LDG GEAR IND': 'GEAR IND', 'A/SKID & N/W STRG': 'A/SKID', 'SIDE STICK PRIORITY CPT': 'PRIORITY', 'SIDE STICK PRIORITY F/O': 'PRIORITY', 'AUTO LAND CPT': 'AUTO LAND', 'AUTO LAND F/O': 'AUTO LAND', 'MASTER WARN CPT': 'MASTER WARN', 'MASTER CAUT CPT': 'MASTER CAUT', 'MASTER WARN F/O': 'MASTER WARN', 'MASTER CAUT F/O': 'MASTER CAUT', 'HDG V/S - TRK FPA': 'HDG-V/S TRK-FPA' },
+const A320 = { id: 'a320', name: 'Airbus A320', style: 'airbus', lines: { ELEC: [0, 2], 'AIR COND': [2], FUEL: [0], HYD: [0] }, short: { 'AUTO BRK LO': 'LO', 'AUTO BRK MED': 'MED', 'AUTO BRK MAX': 'MAX', 'LDG GEAR IND': 'GEAR IND', 'A/SKID & N/W STRG': 'A/SKID', 'SIDE STICK PRIORITY CPT': 'PRIORITY', 'SIDE STICK PRIORITY F/O': 'PRIORITY', 'AUTO LAND CPT': 'AUTO LAND', 'AUTO LAND F/O': 'AUTO LAND', 'MASTER WARN CPT': 'MASTER WARN', 'MASTER CAUT CPT': 'MASTER CAUT', 'MASTER WARN F/O': 'MASTER WARN', 'MASTER CAUT F/O': 'MASTER CAUT', 'HDG V/S - TRK FPA': 'HDG-V/S TRK-FPA' },
   look: { knob: /^(PARKING BRAKE|IR MODE|PACK FLOW|TEMP |WIPER|LDG ELEV|X BLEED|ENG MODE SEL|ND MODE|ND RANGE|QNH|SPD$|HDG$|ALT$|V\/S$|RUD TRIM|GAIN|TILT|WX MODE|PFD BRT|ND BRT|CONSOLE|LOUDSPEAKER|XPDR|TCAS MODE|VOL|FLOOD|RMP 3)/,
-    toggle: /^(MAN V\/S CTL|STROBE|BEACON|WING LT|NAV & LOGO|RWY TURN OFF|LAND [LR]|NOSE LT|SEAT BELTS|NO SMOKING|EMER EXIT LT|OVHD INTEG LT|DOME|ANN LT|STBY COMPASS|ENG MASTER|ADF\/VOR|DOOR LOCK|ATC SYS|WX SYS|CHRONO|ATT HDG|AIR DATA|EIS DMC|ECAM\/ND XFR|PFD\/ND XFR)/,
+    toggle: /^(A\/SKID|MAN V\/S CTL|STROBE|BEACON|WING LT|NAV & LOGO|RWY TURN OFF|LAND [LR]|NOSE LT|SEAT BELTS|NO SMOKING|EMER EXIT LT|OVHD INTEG LT|DOME|ANN LT|STBY COMPASS|ENG MASTER|ADF\/VOR|DOOR LOCK|ATC SYS|WX SYS|CHRONO|ATT HDG|AIR DATA|EIS DMC|ECAM\/ND XFR|PFD\/ND XFR)/,
     guard: /^(EVAC COMMAND|RAT & EMER GEN|EMER GEN TEST|IDG|RAT MAN ON|DITCHING|FWD DISCH|AFT DISCH|MASK MAN ON|PASSENGER|ENG [12] AGENT|APU AGENT|GEN 1 LINE|ENG MASTER)/ }, h: 1745, crew: 2, zones: [],
   /* the classic flat cockpit layout: aft overhead and overhead on top, the glareshield as a bar, the main panel with its
      outer wings, the pedestal down the middle and a side console with the sidestick on each side */
@@ -285,7 +285,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
    with lit push-buttons (dark-cockpit legends), Boeing panels are grey with toggle switches, light aircraft are dark grey.
    A control's look comes from its name: knobs for selectors, red handles for fire, guards over the switches that are guarded,
    lever handles for levers; screens show a plain stylised picture of what they display (no data). */
-const LOOK = { airbus: { bg: '#15191D', zone: '#3B4651', pan: '#56677A', edge: '#7D8FA3', scr: '#07090B', lab: '#F2F5F8', btn: 'pb' },
+const LOOK = { airbus: { bg: '#15191D', zone: '#3B4651', pan: '#56677A', edge: '#7D8FA3', scr: '#07090B', lab: '#F2F5F8', btn: 'pb', real: true },
   atr: { bg: '#16191C', zone: '#3C454E', pan: '#5A6773', edge: '#82909E', scr: '#07090B', lab: '#F2F5F8', btn: 'pb' },
   boeing: { bg: '#17191B', zone: '#45494D', pan: '#696E73', edge: '#8E9499', scr: '#07090B', lab: '#FFFFFF', btn: 'tg' },
   ga: { bg: '#1E2328', zone: '#2A3036', pan: '#3A424B', edge: '#56606B', scr: '#0E1114', lab: '#E9ECEF', btn: 'tg' } };
@@ -311,6 +311,12 @@ function ctl(t, kd, look) { const gh = t.h - 13; if (gh < 8) return ''; const cx
   if (kd === 'keys') { const w = Math.min(t.w - 6, 40), h = Math.min(gh - 2, 18), x = cx - w / 2, y = cy - h / 2; let k = ''; for (let i = 0; i < 4; i++) k += `<rect x="${x + 2 + i * (w - 4) / 4}" y="${y + h * 0.5}" width="${(w - 4) / 4 - 2}" height="${h * 0.38}" rx="1" fill="#2C3136"/>`;
     return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="#1A1D20"/><rect x="${x + 2}" y="${y + 2}" width="${w - 4}" height="${h * 0.36}" fill="#0A1A10"/>` + k; }
   if (kd === 'key') { const w = Math.min(t.w - 6, 22), h = Math.min(gh - 1, 12); return `<rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="2" fill="#22272C" stroke="#9AA5B1" stroke-width=".8"/><rect x="${cx - 3}" y="${cy - h / 2 + 2}" width="6" height="2" fill="#3CCB7F" opacity=".35"/>`; }
+  if ((kd === 'pb' || kd === 'pbg') && look.real) { const w = Math.min(t.w - 6, 28), h = Math.min(gh - 1, 22, w * 0.95), x = cx - w / 2, y = cy - h / 2, two = h >= 12; let [u, d] = legend(t.name); if (!two) { d = d || u; u = ''; } const f = Math.max(2.6, Math.min(5.6, w / 5.4, two ? h / 3.1 : h / 1.9));
+    const b = `<rect x="${x - 1.2}" y="${y - 1.2}" width="${w + 2.4}" height="${h + 2.4}" rx="2" fill="#2B3138"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.2" fill="#0D1013"/><line x1="${x + 1.5}" y1="${cy}" x2="${x + w - 1.5}" y2="${cy}" stroke="#262B30" stroke-width=".7"/>` +
+      (u ? `<text x="${cx}" y="${y + h * 0.4}" text-anchor="middle" class="pbl" style="font-size:${f}px;fill:${u === 'ON' ? '#5BB8F5' : u === 'AUTO' ? '#FF5A4D' : '#E5A33A'}">${u}</text>` : '') +
+      (d ? `<text x="${cx}" y="${two ? y + h * 0.86 : cy + f * 0.36}" text-anchor="middle" class="pbl" style="font-size:${f}px;fill:${LEGC[d] || '#E9EEF2'}">${d}</text>` : '');
+    return kd === 'pbg' ? b + `<path d="M${x - 2.5} ${y - 1}h${w + 5}v${h * 0.5}h${-(w + 5)}z" fill="#C8372B" fill-opacity=".45" stroke="#E0533F" stroke-width=".9"/>` : b; }
+  if (kd === 'knob' && look.real) { const r = Math.max(3.5, Math.min(m * 0.44, 11.5)); return `<circle cx="${cx}" cy="${cy}" r="${r + 2.6}" fill="#3C4651" stroke="#2A3139" stroke-width=".8"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="#D9DEE2" stroke="#9AA4AE" stroke-width=".8"/><circle cx="${cx - r * 0.25}" cy="${cy - r * 0.3}" r="${r * 0.55}" fill="#F2F4F6" opacity=".5"/><path d="M${cx} ${cy}L${cx + r * 0.6} ${cy - r * 0.95}" stroke="#2A3036" stroke-width="${Math.max(1.4, r * 0.24)}" stroke-linecap="round"/>`; }
   if (kd === 'pb' || kd === 'pbg') { const w = Math.min(t.w - 8, 26), h = Math.min(gh - 1, 22), x = cx - w / 2, y = cy - h / 2;
     const b = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="#101316" stroke="#A7B3BF" stroke-width=".8"/><rect x="${x + 3}" y="${y + h * 0.18}" width="${w - 6}" height="${Math.max(1.5, h * 0.18)}" fill="#C98A1A" opacity=".38"/><rect x="${x + 3}" y="${y + h * 0.6}" width="${w - 6}" height="${Math.max(1.5, h * 0.18)}" fill="#DCE3EA" opacity=".3"/>`;
     return kd === 'pbg' ? b + `<rect x="${x - 2.5}" y="${y - 2.5}" width="${w + 5}" height="${h + 5}" rx="2" fill="#D13B2E" fill-opacity=".22" stroke="#E0533F" stroke-width="1.2"/>` : b; }
@@ -346,6 +352,19 @@ function screen(n, x, y, w, h) { const cx = x + w / 2, ix = x + 6, iy = y + 18, 
   if (/G1000|MFD|PFD/.test(N)) return '';
   return ''; }
 const lab = (ac, t) => (ac.short && ac.short[t.name]) || t.name;
+/* Airbus push-button captions: [upper, lower], unlit as on the ground with nothing selected. Upper is amber unless noted. */
+const LEG = [[/^EXT PWR/, ['AVAIL', 'ON']], [/^APU MASTER/, ['FAULT', 'ON']], [/^APU START/, ['ON', 'AVAIL']], [/^X FEED/, ['OPEN', 'ON']], [/MODE SEL$/, ['FAULT', 'MAN']],
+  [/^(RAM AIR|DITCHING|PROBE\/WINDOW HEAT|ENG [12] MAN START|N1 MODE)/, ['', 'ON']], [/A-ICE$/, ['FAULT', 'ON']], [/AGENT/, ['SQUIB', 'DISCH']], [/FIRE TEST|SMOKE TEST|CVR TEST/, ['', 'TEST']],
+  [/^EVAC COMMAND/, ['EVAC', 'ON']], [/^GEN 1 LINE/, ['SMOKE', 'OFF']], [/^RAT & EMER GEN/, ['FAULT', '']], [/^PASSENGER/, ['SYS ON', '']], [/^(MECH|FWD|AFT)$/, ['CALL', '']], [/^EMER$/, ['CALL', 'ON']],
+  [/DISCH$/, ['SMOKE', 'DISCH']], [/^RAIN RPLNT/, ['FAULT', '']], [/^AUTO BRK/, ['DECEL', 'ON']], [/^BRK FAN/, ['HOT', 'ON']], [/^AUTO LAND/, ['AUTO', 'LAND']], [/^RCDR GND CTL/, ['', 'ON']],
+  [/^(HORN SHUT OFF|MASK MAN ON|EMER GEN TEST|RAT MAN ON|CVR ERASE|SIDE STICK PRIORITY|PFD\/ND XFR|PARKING)/, ['', '']], [/^(TERR|GPWS SYS|G\/S MODE|FLAP MODE|LDG FLAP 3)/, ['FAULT', 'OFF']],
+  [/^(AP [12]|A\/THR|LOC|APPR|EXPED|FD |LS |CSTR|WPT|VOR\.D|NDB|ARPT|SPD\/MACH|HDG V\/S|METRIC ALT)/, ['', '•']], [/./, ['FAULT', 'OFF']]];
+const legend = n => (LEG.find(([r]) => r.test(n)) || [0, ['', '']])[1];
+const LEGC = { ON: '#5BB8F5', AVAIL: '#3CCB7F', OPEN: '#3CCB7F', DISCH: '#E9EEF2', TEST: '#E9EEF2', OFF: '#E9EEF2', MAN: '#E9EEF2', LAND: '#FF5A4D', '•': '#3CCB7F' };
+function synoptic(T, rows) { if (!T.length) return ''; const ys = [...new Set(T.map(t => Math.round(t.y)))].sort((a, b) => a - b); let o = '';
+  rows.forEach(r => { const y0 = ys[r]; if (y0 == null) return; const R = T.filter(t => Math.round(t.y) === y0); if (R.length < 2) return; const cy = y0 + 9 + (R[0].h - 10) / 2;
+    o += `<line x1="${R[0].x + R[0].w / 2}" y1="${cy}" x2="${R[R.length - 1].x + R[R.length - 1].w / 2}" y2="${cy}" stroke="#A8E0BB" stroke-width="1.6" opacity=".55"/>`; });
+  return o; }
 function svg(ac) { if (ac._svg) return ac._svg; const T = targets(ac), out = [], LK = LOOK[ac.style] || LOOK.ga;
   out.push(`<rect x="0" y="0" width="1000" height="${ac.h}" fill="${LK.bg}"/>`);
   (ac.shapes || []).forEach(pt => out.push(`<polygon points="${pt.join(' ')}" fill="${LK.zone}" stroke="${LK.edge}" stroke-opacity=".35" stroke-width="1.5"/>`));
@@ -354,10 +373,12 @@ function svg(ac) { if (ac._svg) return ac._svg; const T = targets(ac), out = [],
     out.push(`<g class="fp"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${scr ? 3 : 5}" fill="${scr ? LK.scr : g ? LK.zone : LK.pan}" stroke="${scr ? '#2B3137' : LK.edge}" stroke-width="${scr ? 3 : 1.2}"${g ? ' stroke-dasharray="4 4"' : ''}/>` +
       (!g && !scr && LK !== LOOK.ga ? [[x + 4, y + 4], [x + w - 4, y + 4], [x + 4, y + h - 4], [x + w - 4, y + h - 4]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="1.3" fill="#2A3036"/>`).join('') : '') +
       (scr && (!it || !it.length) ? screen(n, x, y, w, h) : '') +
-      `<text x="${x + 6}" y="${it && it.length && h < 46 ? y + h / 2 + 4 : y + 13}" class="fpn${scr ? ' scr' : ''}" style="${scr ? '' : `fill:${LK.lab};`}font-size:${Math.min(11, (h < 46 && it && it.length ? Math.min(w * 0.3, n.length * 6.4 + 12) - 6 : w - 10) / (n.length * 0.64)).toFixed(1)}px">${esc(n)}</text></g>`); });
+      (LK.real && !scr && !g && ac.lines && ac.lines[n] ? synoptic(T.filter(t => t.panel === n), ac.lines[n]) : '') +
+      `<text x="${LK.real && !scr && !(h < 46 && it && it.length) ? x + w / 2 : x + 6}"${LK.real && !scr && !(h < 46 && it && it.length) ? ' text-anchor="middle"' : ''} y="${it && it.length && h < 46 ? y + h / 2 + 4 : y + 13}" class="fpn${scr ? ' scr' : ''}" style="${scr ? '' : `fill:${LK.lab};`}font-size:${Math.min(11, (h < 46 && it && it.length ? Math.min(w * 0.3, n.length * 6.4 + 12) - 6 : w - 10) / (n.length * 0.64)).toFixed(1)}px">${esc(n)}</text></g>`); });
   T.forEach(t => { if (t.whole) return; const kd = kindOf(t.name, t.k, LK, ac.look, t.panel);
-    out.push(`<g class="ft" data-t="${esc(t.id)}"><rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="3" fill="#000" fill-opacity="${t.k === 'l' ? .22 : .1}" stroke="#000" stroke-opacity=".18" stroke-width=".8"/>` + ctl(t, kd, LK) +
-      `<text x="${t.x + t.w / 2}" y="${t.y + t.h - 3.5}" text-anchor="middle" class="ftn" style="fill:${LK.lab};font-size:${Math.max(5.2, Math.min(10.5, t.w / Math.max(4, lab(ac, t).length) * 1.6)).toFixed(1)}px">${esc(lab(ac, t))}</text></g>`); });
+    const up = LK.real && t.k !== 'l' && !/^(stick|tiller)$/.test(kd), t2 = up ? Object.assign({}, t, { y: t.y + 7, h: t.h + 3 }) : t, L = lab(ac, t);
+    out.push(`<g class="ft" data-t="${esc(t.id)}"><rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="3" fill="#000" fill-opacity="${up ? 0 : t.k === 'l' ? .22 : .1}" stroke="#000" stroke-opacity="${up ? 0 : .18}" stroke-width=".8"/>` + ctl(t2, kd, LK) +
+      `<text x="${t.x + t.w / 2}" y="${up ? t.y + 7.5 : t.y + t.h - 3.5}" text-anchor="middle" class="ftn" style="fill:${LK.lab};font-size:${(up ? Math.max(3, Math.min(7.2, (t.w + 1) / Math.max(3, L.length) * 1.42)) : Math.max(5.2, Math.min(10.5, t.w / Math.max(4, L.length) * 1.6))).toFixed(1)}px">${esc(L)}</text></g>`); });
   return (ac._svg = out.join('')); }
 /* real cockpit photos under free licences (Wikimedia Commons). Shown with the credit on the picture and on sources.html.
    A flow on a photo is placed freely (no named controls), like on your own photo, but it can be shared, since everyone has the same picture. */
