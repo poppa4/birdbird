@@ -2,7 +2,7 @@
 config: ROOT, XML, OUT (.blend), SKIP (regex on sub-model path/instance), HIDE (regex on object name or 'file:name'), DIM (regex), optional fix(o)."""
 import sys, os, re, math, runpy; sys.path.insert(0, '/home/claude/rend')
 import bpy, bmesh, numpy as np, fgmodel
-C = runpy.run_path(sys.argv[-1]); SKIP = re.compile(C.get('SKIP') or r'(?!)'); HIDE = re.compile(C.get('HIDE') or r'(?!)'); DIMR = re.compile(C['DIM']) if C.get('DIM') else None; EMIT = re.compile(C['EMIT']) if C.get('EMIT') else None
+C = runpy.run_path(sys.argv[-1]); SKIP = re.compile(C.get('SKIP') or r'(?!)'); HIDE = re.compile(C.get('HIDE') or r'(?!)'); DIMR = re.compile(C['DIM']) if C.get('DIM') else None; EMIT = re.compile(C['EMIT']) if C.get('EMIT') else None; TINT = [(re.compile(p), c) for p, c in C.get('TINT', [])]
 log = []; objs = fgmodel.assemble(C['ROOT'], C['XML'], lambda p, inst, cond: bool(SKIP.search(p) or SKIP.search(inst)), log)
 objs = [o for o in objs if not HIDE.fullmatch(o['name']) and not HIDE.fullmatch(o['file'] + ':' + o['name']) and not any(HIDE.fullmatch(p) for p in o['path'])]
 if C.get('fix'): objs = [o for o in (C['fix'](o) for o in objs) if o is not None]
@@ -19,10 +19,12 @@ def image(p):
         if imgs[p] is None: print('missing texture', p)
     return imgs[p]
 def material(o, mi):
-    key = (o['file'], mi, o['tex'], bool(EMIT and (EMIT.search(o['name']) or EMIT.search(o['file']))))
+    tint = next((c for p, c in TINT if p.fullmatch(o['file'] + ':' + o['name'])), None)
+    key = (o['file'], mi, o['tex'], bool(EMIT and (EMIT.search(o['name']) or EMIT.search(o['file']))), tint)
     if key in cache: return cache[key]
     m = o['mats'][mi] if mi < len(o['mats']) else {'name': 'x'}; M = bpy.data.materials.new(f"{m['name']}|{os.path.basename(o['tex'] or '')}"); M.use_nodes = True; nt = M.node_tree; B = nt.nodes['Principled BSDF']
     rgb = m.get('rgb', (1, 1, 1)); em = m.get('emis', (0, 0, 0)) if EMIT and (EMIT.search(o['name']) or EMIT.search(o['file'])) else (0, 0, 0); sp = m.get('spec', (.2, .2, .2)); shi = m.get('shi', 10); tr = m.get('trans', 0)
+    if tint: rgb = tuple(a * b for a, b in zip(rgb, tint))
     B.inputs['Base Color'].default_value = (*rgb, 1); B.inputs['Roughness'].default_value = max(0.3, 1 - min(1, shi / 128) * 0.7); B.inputs['Specular IOR Level'].default_value = min(0.4, sum(sp) / 3)
     im = image(o['tex']) if o['tex'] else None
     if im:
@@ -53,6 +55,10 @@ def dim(M):
     if M.name in dimmed: return dimmed[M.name]
     D = M.copy(); nt = D.node_tree; B = nt.nodes['Principled BSDF']; B.inputs['Emission Strength'].default_value = 0
     for l in list(B.inputs['Emission Color'].links): nt.links.remove(l)
+    src = B.inputs['Base Color'].links[0].from_socket if B.inputs['Base Color'].links else None; k = C.get('DIMK', 0.4)
+    if src:
+        X = nt.nodes.new('ShaderNodeMix'); X.data_type = 'RGBA'; X.blend_type = 'MULTIPLY'; X.inputs[0].default_value = 1; X.inputs[7].default_value = (k, k, k, 1); nt.links.new(src, X.inputs[6]); nt.links.new(X.outputs[2], B.inputs['Base Color'])
+    else: c = B.inputs['Base Color'].default_value; B.inputs['Base Color'].default_value = (c[0] * k, c[1] * k, c[2] * k, 1)
     dimmed[M.name] = D; return D
 if DIMR:
     for ob in col.objects:
