@@ -31,7 +31,7 @@ const { resolve } = await import('../functions/_lib/aipres.js');
 /* two or three aerodromes per state (a big one and a small one), and a code that is in no AIP: it must fall back to the portal */
 const SAMPLE = { EN: ['ENTO', 'ENGM', 'ENSB'], ES: ['ESSA', 'ESSB'], EF: ['EFHK', 'EFRO'], BI: ['BIRK', 'BIEG'], EG: ['EGLL', 'EGPH'], EB: ['EBBR'],
   EP: ['EPWA', 'EPGD'], EE: ['EETN'], EV: ['EVRA'], LH: ['LHBP'], LP: ['LPPT', 'LPFR'], LZ: ['LZIB'], LK: ['LKPR', 'LKTB'], LE: ['LEMD', 'GCLP'],
-  LF: ['LFPG', 'LFMN'], ED: ['EDDF', 'EDFE', 'ETNL'], EK: ['EKCH', 'EKRK', 'EKVG', 'BGSF'], LO: ['LOWW', 'LOAG'], LY: ['LYBE', 'LYPG'], LA: ['LATI'], LQ: ['LQSA'] };
+  LF: ['LFPG', 'LFMN'], ED: ['EDDF', 'EDFE', 'ETNL'], EK: ['EKCH', 'EKRK', 'EKVG', 'BGSF'], LO: ['LOWW', 'LOAG'], LY: ['LYBE', 'LYPG'], LA: ['LATI'], LQ: ['LQSA'], LR: ['LROP', 'LRCL'], BK: ['BKPR'] };
 const tf = (u, o) => fetch(u, Object.assign({ signal: AbortSignal.timeout(40000) }, o));
 for (const [st, list] of Object.entries(SAMPLE)) for (const icao of list.concat([st + '9Z'])) {
   const none = icao.endsWith('9Z');

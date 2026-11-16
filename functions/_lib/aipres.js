@@ -57,7 +57,14 @@ export const PORTAL = {
   LT: N('DHMI AIP Türkiye', 'https://www.dhmi.gov.tr/Sayfalar/aipturkey.aspx'),
   LS: N('skyguide AIP Switzerland', 'https://www.skybriefing.com/'),
   EY: N('ANS AIP Lithuania', 'https://www.ans.lt/en/aim'),
-  LM: N('MATS AIP Malta', 'https://www.maltats.com/')
+  LM: N('MATS AIP Malta', 'https://www.maltats.com/'),
+  BK: N('ANSP Kosovo AIP', 'https://www.kans-ks.org/eAIP/default.html'),
+  UD: N('ARMATS AIP Armenia', 'https://armats.am/category/eaip/'),
+  UM: N('BelAeroNavigatsia AIP Belarus', 'https://www.ban.by/en/aeronautical-information-aip'),
+  LW: N('M-NAV AIP North Macedonia', 'https://www.mnavigation.mk/'),
+  UG: N('Sakaeronavigatsia AIP Georgia', 'https://airnav.ge/'),
+  LU: N('MoldATSA AIP Moldova', 'https://www.moldatsa.md/'),
+  LC: N('Department of Civil Aviation of Cyprus AIP', 'https://www.mcw.gov.cy/mcw/dca/dca.nsf/')
 };
 export const EAD = { name: 'EUROCONTROL EAD Basic', url: 'https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic', kind: 'ead' };
 export const DIR = { name: 'EUROCONTROL @IS Online', url: 'https://www.eurocontrol.int/articles/ais-online', kind: 'dir' };
@@ -106,6 +113,9 @@ export const STATES = {
   ED: { custom: async icao => DE.ifr[icao] ? 'https://aip.dfs.de/BasicIFR/pages/' + DE.ifr[icao] + '.html' : DE.vfr[icao] ? 'https://aip.dfs.de/BasicVFR/pages/' + DE.vfr[icao] + '.html' : null },
   /* Denmark, the Faroe Islands and Greenland: Naviair's own search, the newest AD 2 text that is already published */
   EK: { custom: naviair },
+  LR: { idx: 'https://www.aisro.ro/aip/aip.php', rx: /href="(?<p>(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2}))\/index\.html"/g, base: p => p + '/html/en/', toc: 'aip_toc_ad.html',
+        want: (h, i) => new RegExp('LR_AD_2_' + i + '_en\\.pdf$').test(h) },
+  BK: { idx: 'https://www.kans-ks.org/eAIP/default.html', rx: /href="(?<p>[^"\\]*?_(?<y>\d{4})_(?<m>\d{2})_(?<d>\d{2}))\\index\.html"/g, base: p => encodeURI(p) + '/', toc: 'eAIP/menu.html' },
   EH: { idx: 'https://eaip.lvnl.nl/web/eaip/default.html', rx: /(?<p>[^"']*?(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EH-AD-2.{I}-en-GB.html', toc: 'eAIP/EH-menu-en-GB.html' }
 };
 STATES.ET = STATES.ED; STATES.BG = STATES.EK;

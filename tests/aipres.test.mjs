@@ -28,7 +28,7 @@ test('a state whose site fails still gives its portal; other states get EAD or t
   assert.equal(r.kind, 'portal'); assert.equal(r.lookupFailed, true);
   assert.match((await resolve('EDDF', { fetch: null, cache: null })).url, /^https:\/\/aip\.dfs\.de\/BasicIFR\/pages\/C[0-9A-F]+\.html$/);
   assert.equal((await resolve('LIRF', { fetch: null, cache: null })).kind, 'portal');
-  assert.equal((await resolve('LCLK', { fetch: null, cache: null })).kind, 'ead');
+  assert.equal((await resolve('LXGB', { fetch: null, cache: null })).kind, 'ead');
   assert.equal((await resolve('KJFK', { fetch: null, cache: null })).kind, 'dir');
 });
 test('/api/aip redirects with go=1 and rejects bad codes', async () => {
@@ -47,4 +47,12 @@ test('Belgium: blocked check, direct link only for aerodromes known to be in the
 test('a page that answers 200 but does not name the aerodrome is not taken', async () => {
   const f = site({ 'https://aim-prod.avinor.no/no/AIP/': '<a href="2026-09-03-AIRAC/html/index-no-NO.html">', 'https://aim-prod.avinor.no/no/AIP/2026-09-03-AIRAC/html/eAIP/EN-AD-2.ENXX-en-GB.html': '<html>empty</html>' });
   assert.equal((await resolve('ENXX', { fetch: f, cache: null, today: '2026-11-16' })).kind, 'portal');
+});
+
+test('the page script (aip.js) names the same portals and deep-link states as the server', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { PORTAL } = await import('../functions/_lib/aipres.js');
+  const w = {}; new Function('window', readFileSync(new URL('../aip.js', import.meta.url), 'utf8'))(w);
+  for (const [k, v] of Object.entries(PORTAL)) assert.equal(w.BBAIP.ALL[k] && w.BBAIP.ALL[k].name, v.name, k);
+  for (const k of Object.keys(STATES)) if (k !== 'EH') assert.equal(w.BBAIP.deep(k + 'AA'), true, k);
 });
