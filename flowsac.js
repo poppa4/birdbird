@@ -6,98 +6,122 @@
    Coordinates are in a 1000-wide canvas; h is the canvas height per aircraft. Pure data + an SVG string builder (runs in Node). */
 (function (G) {
 'use strict';
+/* A320 overhead, traced control by control from a photo taken square on to the panel (Olivier Cleynen, CC BY-SA 3.0,
+   commons.wikimedia.org/wiki/File:Overhead_panel_of_A320_aircraft_at_parking_stand.jpg). Numbers are in the photo's own frame
+   (1000 units wide); ovp() maps them into the drawing, so every control sits where it does in the aircraft, at its real size.
+   The FIRE panel and the top of ADIRS and HYD are above the photo's edge and are laid out from the panel's known arrangement.
+   Item: [name, x, y, w, h, kind]; kinds: pb push-button, pbr red guard, pbk black guard, knob, tg toggle, rnd round button,
+   disp display, ind light, keys keypad. Deco: ['t', text, x, y, size], ['l', x1, y1, x2, y2, colour], ['b', text, x, y, w, h]. */
+const OVS = 0.588, OVX = x => +(228 + (x - 55) * OVS).toFixed(1), OVY = y => +(156 + (y + 100) * OVS).toFixed(1), OVN = v => +(v * OVS).toFixed(1);
+const ovp = (n, x0, y0, x1, y1, items, deco) => [n, OVX(x0), OVY(y0), OVN(x1 - x0), OVN(y1 - y0),
+  items.map(([nm, x, y, w, h, kd]) => ({ n: nm, kd: kd || 'pb', b: [OVX(x), OVY(y), OVN(w), OVN(h)] })), items.length ? 'a' : 'g',
+  (deco || []).map(d => d[0] === 't' ? ['t', d[1], OVX(d[2]), OVY(d[3]), d[4] || 5] : d[0] === 'l' ? ['l', OVX(d[1]), OVY(d[2]), OVX(d[3]), OVY(d[4]), d[5] || '#7FD9A0'] : ['b', d[1], OVX(d[2]), OVY(d[3]), OVN(d[4]), OVN(d[5])])];
+const T22 = (n, cx, cy) => [n, cx - 11, cy - 11, 22, 22, 'tg'];
+const A320_OVHD = [
+  ovp('ADIRS', 62, -98, 280, 104, [['ADIRS DISPLAY', 78, -84, 62, 18, 'disp'], ['ON BAT', 96, -58, 26, 10, 'ind'], ['DATA SEL', 152, -74, 22, 22, 'knob'], ['SYS SEL', 186, -74, 22, 22, 'knob'], ['ADIRS KEYPAD', 222, -90, 50, 44, 'keys'],
+    ['IR 1', 80, -28, 28, 24], ['IR 3', 149, -29, 28, 24], ['IR 2', 216, -30, 28, 24], ['IR MODE 1', 77, 26, 34, 34, 'knob'], ['IR MODE 3', 146, 25, 34, 34, 'knob'], ['IR MODE 2', 213, 24, 34, 34, 'knob'],
+    ['ADR 1', 85, 68, 32, 32], ['ADR 3', 153, 67, 32, 32], ['ADR 2', 220, 66, 32, 32]], [['t', 'ADIRS', 190, -40, 5], ['l', 72, 60, 270, 57, '#C9D2DA']]),
+  ovp('FLT CTL 1', 68, 106, 286, 173, [['ELAC 1', 140, 131, 34, 32], ['SEC 1', 181, 131, 33, 32], ['FAC 1', 222, 130, 34, 31]], [['t', 'FLT CTL', 176, 118, 5.5]]),
+  ovp('EVAC', 78, 175, 290, 236, [['EVAC COMMAND', 142, 192, 36, 36], ['HORN SHUT OFF', 193, 197, 26, 26, 'rnd'], ['CAPT & PURS', 243, 200, 22, 22, 'tg']], [['t', 'EVAC', 110, 208, 4.6]]),
+  ovp('EMER ELEC PWR', 88, 238, 292, 304, [['EMER GEN TEST', 106, 253, 36, 49, 'pbk'], ['GEN 1 LINE', 156, 268, 29, 26], ['RAT & EMER GEN', 200, 266, 28, 27], ['EMER GEN MAN ON', 228, 251, 32, 51, 'pbr']], [['t', 'EMER ELEC PWR', 186, 243, 4.4], ['l', 148, 252, 150, 296, '#C9D2DA']]),
+  ovp('GPWS', 100, 306, 296, 362, [['TERR', 119, 335, 27, 24], ['GPWS SYS', 156, 334, 29, 24], ['G/S MODE', 192, 332, 29, 26], ['FLAP MODE', 224, 331, 28, 26], ['LDG FLAP 3', 256, 331, 28, 26]], [['t', 'GPWS', 182, 316, 5.5], ['l', 150, 325, 153, 360, '#C9D2DA']]),
+  ovp('RCDR', 108, 364, 298, 408, [['RCDR GND CTL', 170, 379, 29, 25], ['CVR ERASE', 215, 378, 24, 24, 'rnd'], ['CVR TEST', 259, 377, 24, 24, 'rnd']], [['t', 'RCDR', 140, 388, 4.4]]),
+  ovp('OXYGEN', 115, 410, 300, 468, [['MASK MAN ON', 173, 422, 31, 43, 'pbr'], ['PASSENGER', 220, 435, 27, 24], ['CREW SUPPLY', 263, 433, 27, 24]], [['t', 'OXYGEN', 146, 440, 4.4], ['l', 254, 420, 257, 462, '#C9D2DA']]),
+  ovp('CALLS', 122, 470, 304, 508, [['MECH', 143, 484, 24, 24, 'rnd'], ['FWD', 208, 482, 24, 24, 'rnd'], ['AFT', 239, 481, 24, 24, 'rnd'], ['EMER', 268, 476, 30, 29, 'pbk']], [['t', 'CALLS', 186, 476, 4]]),
+  ovp('WIPER CPT', 130, 510, 320, 602, [['RAIN RPLNT CPT', 190, 522, 24, 24, 'rnd'], ['WIPER CPT', 245, 528, 34, 34, 'knob']], []),
+  ovp('FIRE', 322, -98, 746, -24, [['ENG 1 FIRE TEST', 338, -66, 20, 20, 'rnd'], ['ENG 1 AGENT 1', 366, -72, 26, 26], ['ENG 1 FIRE', 398, -80, 32, 40, 'pbr'], ['ENG 1 AGENT 2', 436, -72, 26, 26],
+    ['APU AGENT', 484, -72, 26, 26], ['APU FIRE', 516, -80, 32, 40, 'pbr'], ['APU FIRE TEST', 556, -66, 20, 20, 'rnd'],
+    ['ENG 2 AGENT 1', 600, -72, 26, 26], ['ENG 2 FIRE', 632, -80, 32, 40, 'pbr'], ['ENG 2 AGENT 2', 670, -72, 26, 26], ['ENG 2 FIRE TEST', 708, -66, 20, 20, 'rnd']],
+    [['t', 'ENG 1', 414, -89, 4.5], ['t', 'APU', 532, -89, 4.5], ['t', 'ENG 2', 648, -89, 4.5], ['t', 'FIRE', 332, -86, 4.5]]),
+  ovp('HYD', 322, -22, 746, 71, [['ENG 1 PUMP', 363, 36, 31, 32], ['RAT MAN ON', 432, 14, 33, 53, 'pbr'], ['BLUE ELEC PUMP', 504, 31, 34, 36], ['PTU', 579, 2, 33, 32], ['ENG 2 PUMP', 650, 36, 31, 32], ['YELLOW ELEC PUMP', 699, 25, 32, 34]],
+    [['l', 378, 26, 378, -14, '#7FD9A0'], ['b', 'GREEN', 362, -18, 32, 9], ['l', 521, 20, 521, -6, '#7FB6F0'], ['b', 'BLUE', 505, -18, 32, 9], ['l', 665, 26, 665, -14, '#E8D36A'], ['l', 715, 16, 715, 2, '#E8D36A'], ['l', 665, 2, 715, 2, '#E8D36A'], ['b', 'YELLOW', 649, -18, 34, 9],
+      ['l', 465, 6, 521, 6, '#7FB6F0'], ['l', 378, -4, 579, -4, '#7FD9A0'], ['l', 612, 12, 665, 12, '#E8D36A'], ['t', 'HYD', 336, -8, 4.5]]),
+  ovp('FUEL', 322, 73, 746, 166, [['X FEED', 505, 83, 32, 31], ['L TK PUMP 1', 348, 129, 30, 29], ['L TK PUMP 2', 387, 129, 30, 29], ['CTR TK PUMP 1', 466, 129, 30, 29], ['MODE SEL', 506, 129, 31, 30], ['CTR TK PUMP 2', 547, 129, 29, 29], ['R TK PUMP 1', 625, 129, 31, 29], ['R TK PUMP 2', 665, 129, 29, 29]],
+    [['b', 'ENG 1', 364, 81, 32, 10], ['b', 'APU', 460, 81, 33, 10], ['b', 'ENG 2', 648, 81, 30, 10], ['l', 382, 102, 505, 102], ['l', 537, 102, 663, 102], ['l', 382, 91, 382, 112], ['l', 663, 91, 663, 112], ['l', 477, 91, 477, 102],
+      ['l', 347, 113, 418, 113], ['l', 624, 113, 695, 113], ['l', 481, 102, 481, 117], ['l', 561, 102, 561, 117], ['l', 463, 117, 500, 117], ['l', 543, 117, 580, 117], ['t', 'L TK PUMPS', 382, 121, 3.6], ['t', 'R TK PUMPS', 660, 121, 3.6], ['t', 'FUEL', 336, 84, 4.5]]),
+  ovp('ELEC', 322, 170, 748, 312, [['BAT 1 VOLT', 420, 190, 49, 27, 'disp'], ['BAT 1', 476, 189, 29, 27], ['BAT 2', 506, 189, 28, 27], ['BAT 2 VOLT', 541, 190, 49, 27, 'disp'], ['AC ESS FEED', 596, 203, 30, 29], ['GALY & CAB', 327, 220, 29, 28], ['BUS TIE', 506, 253, 28, 27],
+    ['IDG 1', 328, 270, 32, 34, 'pbr'], ['GEN 1', 376, 275, 28, 26], ['APU GEN', 451, 275, 28, 26], ['EXT PWR', 561, 275, 29, 26], ['GEN 2', 636, 275, 29, 26], ['IDG 2', 680, 270, 32, 34, 'pbr']],
+    [['b', 'DC BUS 1', 367, 183, 37, 9], ['b', 'DC BUS 2', 638, 183, 37, 9], ['b', 'AC BUS 1', 369, 221, 37, 9], ['b', 'AC ESS BUS', 500, 221, 44, 9], ['b', 'AC BUS 2', 636, 221, 37, 9],
+      ['l', 387, 192, 387, 221], ['l', 387, 230, 387, 270], ['l', 655, 192, 655, 221], ['l', 655, 230, 655, 270], ['l', 406, 225, 500, 225], ['l', 544, 225, 596, 225], ['l', 626, 225, 636, 225],
+      ['l', 390, 259, 506, 259], ['l', 534, 259, 652, 259], ['l', 360, 288, 376, 288], ['l', 665, 288, 680, 288], ['l', 479, 288, 512, 288], ['l', 512, 288, 512, 280], ['l', 529, 280, 529, 288], ['l', 529, 288, 561, 288], ['t', 'ELEC', 336, 180, 4.5]]),
+  ovp('AIR COND', 322, 314, 748, 452, [['PACK FLOW', 334, 341, 34, 34, 'knob'], ['TEMP CKPT', 433, 336, 38, 38, 'knob'], ['TEMP FWD CAB', 501, 336, 38, 38, 'knob'], ['TEMP AFT CAB', 569, 336, 38, 38, 'knob'], ['HOT AIR', 665, 340, 29, 26],
+    ['PACK 1', 332, 383, 28, 25], ['PACK 2', 680, 384, 28, 25], ['ENG 1 BLEED', 382, 419, 28, 26], ['RAM AIR', 446, 416, 30, 30, 'pbk'], ['APU BLEED', 505, 419, 28, 27], ['X BLEED', 565, 419, 34, 34, 'knob'], ['ENG 2 BLEED', 628, 420, 28, 26]],
+    [['l', 393, 378, 646, 378], ['l', 393, 398, 565, 398], ['l', 599, 398, 646, 398], ['l', 393, 378, 393, 419], ['l', 646, 378, 646, 420], ['l', 460, 398, 460, 416], ['l', 519, 398, 519, 419], ['l', 452, 378, 452, 374], ['l', 520, 378, 520, 374], ['l', 588, 378, 588, 374],
+      ['b', 'PACK 1', 379, 384, 30, 8], ['b', 'PACK 2', 630, 385, 30, 8], ['t', 'AIR COND', 340, 324, 4.5]]),
+  ovp('ANTI ICE', 322, 456, 490, 512, [['WING A-ICE', 330, 479, 28, 23], ['ENG 1 A-ICE', 412, 479, 28, 23], ['ENG 2 A-ICE', 451, 479, 27, 23]], [['t', 'ANTI ICE', 384, 463, 4.6], ['l', 363, 472, 365, 508, '#C9D2DA'], ['l', 404, 472, 406, 508, '#C9D2DA']]),
+  ovp('PROBE/WINDOW HEAT', 492, 456, 548, 512, [['PROBE/WINDOW HEAT', 505, 480, 27, 23]], [['t', 'PROBE/WINDOW', 520, 463, 3.6], ['t', 'HEAT', 520, 471, 3.6]]),
+  ovp('CABIN PRESS', 550, 456, 748, 512, [['MAN V/S CTL', 556, 479, 22, 22, 'tg'], ['PRESS MODE SEL', 591, 480, 27, 23], ['LDG ELEV', 637, 481, 26, 26, 'knob'], ['DITCHING', 676, 475, 31, 30, 'pbk']], [['t', 'CABIN PRESS', 650, 462, 4.4]]),
+  ovp('EXT LT', 322, 516, 492, 604, [T22('STROBE', 345, 540), T22('BEACON', 381, 540), T22('WING LT', 424, 540), T22('NAV & LOGO', 467, 540), T22('RWY TURN OFF', 351, 579), T22('LAND L', 388, 579), T22('LAND R', 430, 579), T22('NOSE LT', 468, 579)], [['t', 'EXT LT', 407, 519, 3.8]]),
+  ovp('APU', 494, 516, 542, 604, [['APU MASTER SW', 505, 536, 26, 23], ['APU START', 505, 570, 26, 21]], [['t', 'APU', 518, 523, 5]]),
+  ovp('INT LT', 544, 516, 714, 560, [['OVHD INTEG LT', 549, 527, 26, 26, 'knob'], T22('ICE IND & STBY COMPASS', 603, 537), T22('DOME', 638, 537), T22('ANN LT', 681, 535)], [['t', 'INT LT', 660, 519, 3.6]]),
+  ovp('SIGNS', 544, 562, 714, 604, [T22('SEAT BELTS', 559, 580), T22('NO SMOKING', 594, 580), ['EXIT LT OFF', 623, 571, 25, 20, 'ind'], T22('EMER EXIT LT', 671, 578)], [['t', 'SIGNS', 628, 565, 3.8]]),
+  ovp('BLANK PANELS (F/O)', 760, -98, 978, 115, [], []), ovp('TFTS', 758, 118, 975, 186, [], []),
+  ovp('FLT CTL 2', 752, 190, 962, 250, [['ELAC 2', 780, 212, 32, 29], ['SEC 2', 820, 213, 31, 29], ['SEC 3', 860, 214, 31, 29], ['FAC 2', 900, 215, 33, 30]], [['t', 'FLT CTL', 858, 197, 5.5]]),
+  ovp('CARGO VENT', 750, 254, 950, 355, [['AFT ISOL VALVE', 900, 280, 29, 26]], [['t', 'CARGO VENT', 850, 263, 5.5], ['l', 848, 272, 843, 350, '#C9D2DA']]),
+  ovp('CARGO SMOKE', 745, 358, 932, 418, [['FWD DISCH', 755, 368, 30, 44, 'pbr'], ['FWD SMOKE', 785, 382, 28, 26, 'ind'], ['SMOKE TEST', 821, 383, 24, 24, 'rnd'], ['AFT SMOKE', 853, 385, 29, 25, 'ind'], ['AFT DISCH', 884, 373, 31, 44, 'pbr']], [['t', 'CARGO SMOKE', 836, 364, 5.5]]),
+  ovp('VENTILATION', 742, 420, 926, 458, [['BLOWER', 752, 428, 27, 22], ['EXTRACT', 791, 430, 27, 21], ['CAB FANS', 874, 432, 28, 23]], [['t', 'VENTILATION', 846, 424, 3.6], ['l', 868, 428, 864, 456, '#C9D2DA']]),
+  ovp('ENG MAN START', 738, 460, 920, 512, [['ENG 1 MAN START', 743, 478, 30, 29, 'pbk'], ['ENG 2 MAN START', 781, 480, 31, 29, 'pbk']], [['t', 'ENG', 850, 478, 4.4], ['t', 'MAN START', 850, 488, 3.6]]),
+  ovp('WIPER F/O', 735, 514, 908, 602, [['WIPER F/O', 758, 527, 34, 34, 'knob'], ['RAIN RPLNT F/O', 823, 523, 24, 24, 'rnd']], [])
+];
 /* Airbus A320: laid out from photos of the real flight deck (overhead: Olivier Cleynen, CC BY-SA 3.0; flight deck: Steve
    Jurvetson, CC BY 2.0). Panels sit where they are in the aircraft, and their buttons in the rows they have there; a row
    is an array, and null leaves an empty place in it. Sizes are kept readable, so it is a faithful map, not a photo. */
-const A320 = { id: 'a320', name: 'Airbus A320', style: 'airbus', lines: { ELEC: [0, 2], 'AIR COND': [2], FUEL: [0], HYD: [0] }, short: { 'AUTO BRK LO': 'LO', 'AUTO BRK MED': 'MED', 'AUTO BRK MAX': 'MAX', 'LDG GEAR IND': 'GEAR IND', 'A/SKID & N/W STRG': 'A/SKID', 'SIDE STICK PRIORITY CPT': 'PRIORITY', 'SIDE STICK PRIORITY F/O': 'PRIORITY', 'AUTO LAND CPT': 'AUTO LAND', 'AUTO LAND F/O': 'AUTO LAND', 'MASTER WARN CPT': 'MASTER WARN', 'MASTER CAUT CPT': 'MASTER CAUT', 'MASTER WARN F/O': 'MASTER WARN', 'MASTER CAUT F/O': 'MASTER CAUT', 'HDG V/S - TRK FPA': 'HDG-V/S TRK-FPA' },
+const A320 = { id: 'a320', name: 'Airbus A320', style: 'airbus', lines: {}, short: { 'GPWS SYS': 'SYS', 'RCDR GND CTL': 'GND CTL', 'WING A-ICE': 'WING', 'ENG 1 A-ICE': 'ENG 1', 'ENG 2 A-ICE': 'ENG 2', 'PROBE/WINDOW HEAT': '', 'PRESS MODE SEL': 'MODE SEL', 'APU MASTER SW': 'MASTER SW', 'APU START': 'START', 'L TK PUMP 1': '1', 'L TK PUMP 2': '2', 'R TK PUMP 1': '1', 'R TK PUMP 2': '2', 'CTR TK PUMP 1': 'CTR TK 1', 'CTR TK PUMP 2': 'CTR TK 2', 'TEMP CKPT': 'COCKPIT', 'TEMP FWD CAB': 'FWD CABIN', 'TEMP AFT CAB': 'AFT CABIN', 'BLUE ELEC PUMP': 'ELEC PUMP', 'YELLOW ELEC PUMP': 'ELEC PUMP', 'GALY & CAB': 'GALLEY', 'EVAC COMMAND': 'COMMAND', 'ENG 1 MAN START': '1', 'ENG 2 MAN START': '2', 'WIPER CPT': 'WIPER', 'RAIN RPLNT CPT': 'RAIN RPLNT', 'WIPER F/O': 'WIPER', 'RAIN RPLNT F/O': 'RAIN RPLNT', 'ENG 1 AGENT 1': 'AGENT 1', 'ENG 1 AGENT 2': 'AGENT 2', 'ENG 2 AGENT 1': 'AGENT 1', 'ENG 2 AGENT 2': 'AGENT 2', 'APU AGENT': 'AGENT', 'ENG 1 FIRE TEST': 'TEST', 'ENG 2 FIRE TEST': 'TEST', 'APU FIRE TEST': 'TEST', 'ENG 1 FIRE': '', 'ENG 2 FIRE': '', 'APU FIRE': '', 'BAT 1 VOLT': 'BAT 1', 'BAT 2 VOLT': 'BAT 2', 'BAT 1': '1', 'BAT 2': '2', 'FWD DISCH': 'DISCH', 'AFT DISCH': 'DISCH', 'FWD SMOKE': 'FWD', 'AFT SMOKE': 'AFT', 'SMOKE TEST': 'TEST', 'EMER GEN MAN ON': 'MAN ON', 'ICE IND & STBY COMPASS': 'STBY COMP', 'RAT & EMER GEN': 'EMER GEN', 'IR MODE 1': 'OFF NAV ATT', 'IR MODE 3': 'OFF NAV ATT', 'IR MODE 2': 'OFF NAV ATT', 'ADIRS DISPLAY': '', 'ADIRS KEYPAD': '', 'EXIT LT OFF': '', 'ON BAT': '', 'AUTO BRK LO': 'LO', 'AUTO BRK MED': 'MED', 'AUTO BRK MAX': 'MAX', 'LDG GEAR IND': 'GEAR IND', 'A/SKID & N/W STRG': 'A/SKID', 'SIDE STICK PRIORITY CPT': 'PRIORITY', 'SIDE STICK PRIORITY F/O': 'PRIORITY', 'AUTO LAND CPT': 'AUTO LAND', 'AUTO LAND F/O': 'AUTO LAND', 'MASTER WARN CPT': 'MASTER WARN', 'MASTER CAUT CPT': 'MASTER CAUT', 'MASTER WARN F/O': 'MASTER WARN', 'MASTER CAUT F/O': 'MASTER CAUT', 'HDG V/S - TRK FPA': 'HDG-V/S TRK-FPA' },
   look: { knob: /^(AUDIO SWITCHING|DATA SEL|SYS SEL|AFT TEMP|UPPER DISPLAY|LOWER DISPLAY|WX MODE|GAIN|TILT|PARKING BRAKE|IR MODE|PACK FLOW|TEMP |WIPER|LDG ELEV|X BLEED|ENG MODE SEL|ND MODE|ND RANGE|QNH|SPD$|HDG$|ALT$|V\/S$|RUD TRIM|GAIN|TILT|WX MODE|PFD BRT|ND BRT|CONSOLE|LOUDSPEAKER|XPDR|TCAS MODE|VOL|FLOOD|RMP 3)/,
     toggle: /^(WX SYS|MULTISCAN|GCS|PWS|A\/SKID|MAN V\/S CTL|STROBE|BEACON|WING LT|NAV & LOGO|RWY TURN OFF|LAND [LR]|NOSE LT|SEAT BELTS|NO SMOKING|EMER EXIT LT|OVHD INTEG LT|DOME|ANN LT|STBY COMPASS|ENG MASTER|ADF\/VOR|DOOR LOCK|ATC SYS|WX SYS|CHRONO|ATT HDG|AIR DATA|EIS DMC|ECAM\/ND XFR|PFD\/ND XFR)/,
-    guard: /^(EVAC COMMAND|RAT & EMER GEN|EMER GEN TEST|IDG|RAT MAN ON|DITCHING|FWD DISCH|AFT DISCH|MASK MAN ON|PASSENGER|ENG [12] AGENT|APU AGENT|GEN 1 LINE|ENG MASTER)/ }, h: 1772, crew: 2, zones: [],
+    guard: /^(EVAC COMMAND|RAT & EMER GEN|EMER GEN TEST|IDG|RAT MAN ON|DITCHING|FWD DISCH|AFT DISCH|MASK MAN ON|PASSENGER|ENG [12] AGENT|APU AGENT|GEN 1 LINE|ENG MASTER)/ }, h: 1606, crew: 2, zones: [],
   /* the classic flat cockpit layout: aft overhead and overhead on top, the glareshield as a bar, the main panel with its
      outer wings, the pedestal down the middle and a side console with the sidestick on each side */
-  shapes: [[240, 0, 760, 0, 760, 146, 240, 146], [220, 152, 780, 152, 780, 702, 748, 742, 252, 742, 220, 702],
-    [10, 764, 42, 744, 958, 744, 990, 764, 990, 860, 958, 878, 42, 878, 10, 860],
-    [10, 900, 42, 884, 365, 884, 365, 1104, 10, 1104], [635, 884, 958, 884, 990, 900, 990, 1104, 635, 1104], [365, 884, 635, 884, 635, 1182, 365, 1182],
-    [70, 1110, 365, 1110, 365, 1196, 70, 1196], [635, 1110, 930, 1110, 930, 1196, 635, 1196],
-    [318, 1182, 682, 1182, 682, 1766, 318, 1766],
-    [40, 1290, 300, 1270, 300, 1560, 20, 1580], [700, 1270, 960, 1290, 980, 1580, 700, 1560]], p: [
+  shapes: [[240, 0, 760, 0, 760, 146, 240, 146], [230, 156, 772, 156, 772, 362, 760, 403, 742, 474, 730, 544, 634, 572, 387, 572, 274, 549, 266, 491, 253, 391, 233, 285], [10, 598, 42, 578, 958, 578, 990, 598, 990, 694, 958, 712, 42, 712, 10, 694], [10, 734, 42, 718, 365, 718, 365, 938, 10, 938], [635, 718, 958, 718, 990, 734, 990, 938, 635, 938], [365, 718, 635, 718, 635, 1016, 365, 1016], [70, 944, 365, 944, 365, 1030, 70, 1030], [635, 944, 930, 944, 930, 1030, 635, 1030], [318, 1016, 682, 1016, 682, 1600, 318, 1600], [40, 1124, 300, 1104, 300, 1394, 20, 1414], [700, 1104, 960, 1124, 980, 1414, 700, 1394]], p: [
   ['CIRCUIT BREAKERS', 250, 10, 300, 128, [], 'g'],
   ['MAINTENANCE', 554, 10, 196, 128, [['FADEC GND PWR 1', 'FADEC GND PWR 2', 'BLUE PUMP OVRD'], ['LEAK MEAS B', 'LEAK MEAS G', 'LEAK MEAS Y'], ['APU AUTO EXTING', 'OXY TMR RESET', 'SVCE INT OVRD', 'AVNCS COMPT LT']]],
-  ['ADIRS', 238, 160, 124, 128, [['ADIRS DISPLAY', 'ADIRS KEYPAD', 'ON BAT'], ['DATA SEL', 'SYS SEL'], ['IR 1', 'IR 3', 'IR 2'], ['ADR 1', 'ADR 3', 'ADR 2'], ['IR MODE 1', 'IR MODE 3', 'IR MODE 2']]],
-  ['FLT CTL 1', 238, 292, 124, 40, ['ELAC 1', 'SEC 1', 'FAC 1']],
-  ['EVAC', 238, 336, 124, 44, [['EVAC COMMAND', 'HORN SHUT OFF', 'CAPT & PURS']]],
-  ['EMER ELEC PWR', 238, 384, 124, 52, [['EMER GEN TEST', 'GEN 1 LINE', 'RAT & EMER GEN']]],
-  ['GPWS', 238, 440, 124, 48, [['TERR', 'GPWS SYS', 'G/S MODE', 'FLAP MODE', 'LDG FLAP 3']]],
-  ['RCDR', 238, 492, 124, 46, [['RCDR GND CTL', 'DFDR EVENT', 'CVR ERASE', 'CVR TEST']]],
-  ['OXYGEN', 238, 542, 124, 48, [['MASK MAN ON', 'HIGH ALT LDG', 'PASSENGER', 'CREW SUPPLY']]],
-  ['CALLS', 238, 594, 124, 40, ['MECH', 'FWD', 'AFT', 'ALL', 'EMER']],
-  ['WIPER CPT', 238, 638, 124, 90, [['RAIN RPLNT CPT', 'WIPER CPT']]],
-  ['FIRE', 369, 160, 262, 96, [['ENG 1 FIRE', 'APU FIRE', 'ENG 2 FIRE'], ['ENG 1 AGENT 1', 'ENG 1 AGENT 2', 'APU AGENT', 'ENG 2 AGENT 1', 'ENG 2 AGENT 2'], ['ENG 1 FIRE TEST', 'APU FIRE TEST', 'ENG 2 FIRE TEST']]],
-  ['HYD', 369, 260, 262, 46, [['ENG 1 PUMP', 'RAT MAN ON', 'BLUE ELEC PUMP', 'PTU', 'ENG 2 PUMP', 'YELLOW ELEC PUMP']]],
-  ['FUEL', 369, 310, 262, 78, [['L TK PUMP 1', 'L TK PUMP 2', 'CTR TK PUMP 1', 'MODE SEL', 'CTR TK PUMP 2', 'R TK PUMP 1', 'R TK PUMP 2'], [null, null, null, 'X FEED', null, null, null]]],
-  ['ELEC', 369, 392, 262, 94, [['BAT 1 VOLT', 'BAT 1', 'BAT 2', 'BAT 2 VOLT', 'AC ESS FEED'], ['GALY & CAB', 'COMMERCIAL', 'BUS TIE', null, null], ['IDG 1', 'GEN 1', 'APU GEN', 'EXT PWR', 'GEN 2', 'IDG 2']]],
-  ['AIR COND', 369, 490, 262, 110, [['PACK FLOW', 'TEMP CKPT', 'TEMP FWD CAB', 'TEMP AFT CAB', 'HOT AIR'], ['PACK 1', null, null, null, 'PACK 2'], ['ENG 1 BLEED', 'RAM AIR', 'APU BLEED', 'X BLEED', 'ENG 2 BLEED']]],
-  ['ANTI ICE', 369, 604, 86, 46, [['WING A-ICE', 'ENG 1 A-ICE', 'ENG 2 A-ICE']]],
-  ['PROBE/WINDOW HEAT', 457, 604, 41, 46, [['PROBE/WINDOW HEAT']]],
-  ['CABIN PRESS', 500, 604, 131, 46, [['MAN V/S CTL', 'PRESS MODE SEL', 'LDG ELEV', 'DITCHING']]],
-  ['EXT LT', 369, 654, 118, 74, [['STROBE', 'BEACON', 'WING LT', 'NAV & LOGO'], ['RWY TURN OFF', 'LAND L', 'LAND R', 'NOSE LT']]],
-  ['APU', 489, 654, 31, 74, [['APU MASTER SW'], ['APU START']]],
-  ['INT LT', 522, 654, 109, 36, ['OVHD INTEG LT', 'ICE IND & STBY COMPASS', 'DOME', 'ANN LT']],
-  ['SIGNS', 522, 692, 109, 36, ['SEAT BELTS', 'NO SMOKING', 'EMER EXIT LT']],
-  ['FLT CTL 2', 638, 160, 124, 58, [['ELAC 2', 'SEC 2', 'SEC 3', 'FAC 2']]],
-  ['CARGO HEAT', 638, 222, 124, 60, [['AFT ISOL', 'CARGO HOT AIR', 'AFT TEMP']]],
-  ['CARGO VENT', 638, 286, 124, 56, [[null, 'AFT ISOL VALVE', null]]],
-  ['CARGO SMOKE', 638, 346, 124, 76, [['FWD DISCH', 'SMOKE TEST', 'AFT DISCH']]],
-  ['VENTILATION', 638, 426, 124, 70, [['BLOWER', 'EXTRACT', 'CAB FANS']]],
-  ['ENG MAN START', 638, 500, 124, 62, [['ENG 1 MAN START', 'ENG 2 MAN START', 'N1 MODE']]],
-  ['WIPER F/O', 638, 566, 124, 86, [['WIPER F/O', 'RAIN RPLNT F/O']]],
-  ['AUDIO SWITCHING', 638, 656, 124, 72, [['AUDIO SWITCHING']]],
-  ['MASTER CPT', 20, 752, 56, 110, [['MASTER WARN CPT'], ['MASTER CAUT CPT']]],
-  ['CPT GLARESHIELD', 80, 752, 60, 110, [['AUTO LAND CPT'], ['SIDE STICK PRIORITY CPT'], ['CHRONO CPT']]],
-  ['EFIS CPT', 144, 752, 190, 110, [['inHg/hPa CPT', 'QNH CPT', 'FD CPT', 'LS CPT'], ['CSTR', 'WPT', 'VOR.D', 'NDB', 'ARPT'], ['ND MODE CPT', 'ND RANGE CPT', 'ADF/VOR 1', 'ADF/VOR 2']]],
-  ['FCU', 338, 752, 324, 110, [['SPD/MACH', 'SPD', 'HDG', 'HDG V/S - TRK FPA', 'AP 1', 'AP 2', 'ALT', '100/1000', 'METRIC ALT', 'V/S'], ['LOC', null, null, null, 'A/THR', null, null, 'EXPED', 'APPR', null]]],
-  ['EFIS F/O', 666, 752, 190, 110, [['inHg/hPa F/O', 'QNH F/O', 'FD F/O', 'LS F/O'], ['CSTR F/O', 'WPT F/O', 'VOR.D F/O', 'NDB F/O', 'ARPT F/O'], ['ND MODE F/O', 'ND RANGE F/O', 'ADF/VOR 1 F/O', 'ADF/VOR 2 F/O']]],
-  ['F/O GLARESHIELD', 860, 752, 60, 110, [['AUTO LAND F/O'], ['SIDE STICK PRIORITY F/O'], ['CHRONO F/O']]],
-  ['MASTER F/O', 924, 752, 56, 110, [['MASTER WARN F/O'], ['MASTER CAUT F/O']]],
-  ['CPT SIDE', 20, 886, 80, 140, [['CONSOLE/FLOOR LT'], ['LOUDSPEAKER CPT'], ['PFD BRT CPT'], ['ND BRT CPT']]],
-  ['PFD CPT', 104, 886, 130, 140, [], 's'], ['ND CPT', 238, 886, 130, 140, [], 's'],
-  ['CPT WARNINGS', 20, 1030, 345, 46, [['GPWS G/S CPT', 'TERR ON ND CPT', 'PFD/ND XFR CPT']]],
-  ['STANDBY (ISIS)', 374, 886, 66, 88, [], 's'],
-  ['E/WD (upper ECAM)', 444, 886, 112, 136, [], 's'],
-  ['LDG GEAR / BRAKES', 560, 886, 66, 136, [['LDG GEAR IND'], ['A/SKID & N/W STRG'], ['AUTO BRK LO', 'AUTO BRK MED', 'AUTO BRK MAX'], ['BRK FAN']]],
-  ['ND F/O', 632, 886, 130, 140, [], 's'], ['PFD F/O', 766, 886, 130, 140, [], 's'],
-  ['F/O SIDE', 900, 886, 80, 140, [['LOUDSPEAKER F/O'], ['PFD BRT F/O'], ['ND BRT F/O']]],
-  ['F/O WARNINGS', 635, 1030, 345, 46, [['PFD/ND XFR F/O', 'TERR ON ND F/O', 'GPWS G/S F/O']]],
-  ['CPT KNEE PANEL', 80, 1116, 276, 72, [['NAV CHART LT CPT', 'LOUDSPEAKER VOL CPT', 'OXY MASK TEST CPT']]],
-  ['DDRMI', 374, 978, 66, 80, [], 's'],
-  ['CLOCK', 374, 1062, 66, 110, [['CLOCK'], ['CHRONO', 'ET']]],
-  ['SD (lower ECAM)', 444, 1026, 112, 146, [], 's'],
-  ['GEAR LEVER', 560, 1026, 66, 92, ['GEAR LEVER'], 'l'],
-  ['BRAKE PRESS', 560, 1122, 66, 50, [['BRAKE PRESS']]],
-  ['F/O KNEE PANEL', 644, 1116, 276, 72, [['OXY MASK TEST F/O', 'LOUDSPEAKER VOL F/O', 'NAV CHART LT F/O']]],
-  ['MCDU 1', 324, 1194, 112, 178, [], 's'],
-  ['SWITCHING', 440, 1194, 120, 50, [['ATT HDG', 'AIR DATA', 'EIS DMC', 'ECAM/ND XFR']]],
-  ['ECAM CONTROL', 440, 1248, 120, 124, [['UPPER DISPLAY', 'LOWER DISPLAY'], ['ENG', 'BLEED', 'PRESS', 'ELEC', 'HYD', 'FUEL'], ['APU', 'COND', 'DOOR', 'WHEEL', 'F/CTL', 'STS'], ['T.O CONFIG', 'EMER CANC', 'RCL', 'CLR', 'ALL']]],
-  ['MCDU 2', 564, 1194, 112, 178, [], 's'],
-  ['RMP 1', 324, 1378, 96, 92, [['RMP 1 ACTIVE DISPLAY', 'XFER', 'RMP 1 STBY DISPLAY'], ['VHF 1', 'VHF 2', 'VHF 3', 'HF 1', 'AM', 'HF 2'], ['NAV', 'VOR', 'ILS', 'ADF', 'BFO', 'SEL'], ['RMP 1 ON/OFF', 'STBY/CRS']]],
-  ['ACP 1', 324, 1474, 96, 78, [['VHF 1 TX', 'VHF 2 TX', 'VHF 3 TX', 'INT TX', 'CAB TX', 'PA TX'], ['VOR 1', 'VOR 2', 'MKR', 'ILS VOL', 'ADF 1', 'ADF 2'], ['INT/RAD', 'VOICE', 'RESET']]],
-  ['PITCH TRIM L', 424, 1378, 24, 248, ['PITCH TRIM WHEEL L'], 'l'],
-  ['SPEED BRAKE', 450, 1378, 24, 248, ['SPEED BRAKE LEVER'], 'l'],
-  ['THRUST LEVERS', 476, 1378, 76, 248, ['A/THR DISC 1', 'THR LVR 1', 'THR LVR 2', 'A/THR DISC 2'], 'l'],
-  ['FLAPS', 554, 1378, 24, 248, ['FLAPS LEVER'], 'l'],
-  ['PITCH TRIM R', 580, 1378, 24, 248, ['PITCH TRIM WHEEL R'], 'l'],
-  ['RMP 2', 608, 1378, 68, 92, [['RMP 2 ACTIVE DISPLAY', 'XFER F/O', 'RMP 2 STBY DISPLAY'], ['VHF 1 F/O', 'VHF 2 F/O', 'VHF 3 F/O'], ['HF 1 F/O', 'AM F/O', 'HF 2 F/O'], ['RMP 2 ON/OFF', 'STBY/CRS F/O']]],
-  ['ACP 2', 608, 1474, 68, 78, [['VHF 1 TX F/O', 'VHF 2 TX F/O', 'INT TX F/O'], ['VOR 1 F/O', 'ILS F/O', 'ADF F/O'], ['INT/RAD F/O', 'RESET F/O']]],
-  ['WX RADAR', 324, 1556, 96, 70, [['WX SYS', 'WX MODE', 'MULTISCAN', 'GCS'], ['GAIN', 'TILT', 'PWS']]],
-  ['PARKING BRK', 608, 1556, 68, 70, [['PARKING BRAKE']]],
-  ['ENGINE', 424, 1630, 180, 74, [['ENG 1 FIRE IND', 'ENG 1 FAULT IND', null, 'ENG 2 FAULT IND', 'ENG 2 FIRE IND'], [null, 'ENG MASTER 1', 'ENG MODE SEL', 'ENG MASTER 2', null]]],
-  ['ATC / TCAS', 324, 1630, 96, 74, [['XPDR MODE', 'ATC 1/2', 'ALT RPTG', 'IDENT'], ['XPDR CODE', 'TCAS MODE', 'TCAS TRAFFIC']]],
-  ['RUDDER TRIM', 608, 1630, 68, 74, [['RUD TRIM IND'], ['RUD TRIM', 'RESET']]],
-  ['CKPT DOOR', 324, 1708, 96, 52, [['DOOR LOCK', 'DOOR CTL', 'DOOR VIDEO']]],
-  ['FLOOD / INTEG LT', 424, 1708, 180, 52, [['FLOOD LT MAIN PNL', 'FLOOD LT PED', 'INTEG LT MAIN PNL', 'INTEG LT PED', 'RMP 3', 'PRINTER']]],
-  ['GRAVITY GEAR', 608, 1708, 68, 52, [['GRAVITY GEAR EXTN']]],
-  ['CPT SIDE CONSOLE', 40, 1300, 250, 250, [['TILLER CPT', 'SIDESTICK CPT'], ['OXY MASK CPT', 'TABLE CPT']]],
-  ['F/O SIDE CONSOLE', 710, 1300, 250, 250, [['SIDESTICK F/O', 'TILLER F/O'], ['TABLE F/O', 'OXY MASK F/O']]]
+  ...A320_OVHD,
+  ['MASTER CPT', 20, 586, 56, 110, [['MASTER WARN CPT'], ['MASTER CAUT CPT']]],
+  ['CPT GLARESHIELD', 80, 586, 60, 110, [['AUTO LAND CPT'], ['SIDE STICK PRIORITY CPT'], ['CHRONO CPT']]],
+  ['EFIS CPT', 144, 586, 190, 110, [['inHg/hPa CPT', 'QNH CPT', 'FD CPT', 'LS CPT'], ['CSTR', 'WPT', 'VOR.D', 'NDB', 'ARPT'], ['ND MODE CPT', 'ND RANGE CPT', 'ADF/VOR 1', 'ADF/VOR 2']]],
+  ['FCU', 338, 586, 324, 110, [['SPD/MACH', 'SPD', 'HDG', 'HDG V/S - TRK FPA', 'AP 1', 'AP 2', 'ALT', '100/1000', 'METRIC ALT', 'V/S'], ['LOC', null, null, null, 'A/THR', null, null, 'EXPED', 'APPR', null]]],
+  ['EFIS F/O', 666, 586, 190, 110, [['inHg/hPa F/O', 'QNH F/O', 'FD F/O', 'LS F/O'], ['CSTR F/O', 'WPT F/O', 'VOR.D F/O', 'NDB F/O', 'ARPT F/O'], ['ND MODE F/O', 'ND RANGE F/O', 'ADF/VOR 1 F/O', 'ADF/VOR 2 F/O']]],
+  ['F/O GLARESHIELD', 860, 586, 60, 110, [['AUTO LAND F/O'], ['SIDE STICK PRIORITY F/O'], ['CHRONO F/O']]],
+  ['MASTER F/O', 924, 586, 56, 110, [['MASTER WARN F/O'], ['MASTER CAUT F/O']]],
+  ['CPT SIDE', 20, 720, 80, 140, [['CONSOLE/FLOOR LT'], ['LOUDSPEAKER CPT'], ['PFD BRT CPT'], ['ND BRT CPT']]],
+  ['PFD CPT', 104, 720, 130, 140, [], 's'], ['ND CPT', 238, 720, 130, 140, [], 's'],
+  ['CPT WARNINGS', 20, 864, 345, 46, [['GPWS G/S CPT', 'TERR ON ND CPT', 'PFD/ND XFR CPT']]],
+  ['STANDBY (ISIS)', 374, 720, 66, 88, [], 's'],
+  ['E/WD (upper ECAM)', 444, 720, 112, 136, [], 's'],
+  ['LDG GEAR / BRAKES', 560, 720, 66, 136, [['LDG GEAR IND'], ['A/SKID & N/W STRG'], ['AUTO BRK LO', 'AUTO BRK MED', 'AUTO BRK MAX'], ['BRK FAN']]],
+  ['ND F/O', 632, 720, 130, 140, [], 's'], ['PFD F/O', 766, 720, 130, 140, [], 's'],
+  ['F/O SIDE', 900, 720, 80, 140, [['LOUDSPEAKER F/O'], ['PFD BRT F/O'], ['ND BRT F/O']]],
+  ['F/O WARNINGS', 635, 864, 345, 46, [['PFD/ND XFR F/O', 'TERR ON ND F/O', 'GPWS G/S F/O']]],
+  ['CPT KNEE PANEL', 80, 950, 276, 72, [['NAV CHART LT CPT', 'LOUDSPEAKER VOL CPT', 'OXY MASK TEST CPT']]],
+  ['DDRMI', 374, 812, 66, 80, [], 's'],
+  ['CLOCK', 374, 896, 66, 110, [['CLOCK'], ['CHRONO', 'ET']]],
+  ['SD (lower ECAM)', 444, 860, 112, 146, [], 's'],
+  ['GEAR LEVER', 560, 860, 66, 92, ['GEAR LEVER'], 'l'],
+  ['BRAKE PRESS', 560, 956, 66, 50, [['BRAKE PRESS']]],
+  ['F/O KNEE PANEL', 644, 950, 276, 72, [['OXY MASK TEST F/O', 'LOUDSPEAKER VOL F/O', 'NAV CHART LT F/O']]],
+  ['MCDU 1', 324, 1028, 112, 178, [], 's'],
+  ['SWITCHING', 440, 1028, 120, 50, [['ATT HDG', 'AIR DATA', 'EIS DMC', 'ECAM/ND XFR']]],
+  ['ECAM CONTROL', 440, 1082, 120, 124, [['UPPER DISPLAY', 'LOWER DISPLAY'], ['ENG', 'BLEED', 'PRESS', 'ELEC', 'HYD', 'FUEL'], ['APU', 'COND', 'DOOR', 'WHEEL', 'F/CTL', 'STS'], ['T.O CONFIG', 'EMER CANC', 'RCL', 'CLR', 'ALL']]],
+  ['MCDU 2', 564, 1028, 112, 178, [], 's'],
+  ['RMP 1', 324, 1212, 96, 92, [['RMP 1 ACTIVE DISPLAY', 'XFER', 'RMP 1 STBY DISPLAY'], ['VHF 1', 'VHF 2', 'VHF 3', 'HF 1', 'AM', 'HF 2'], ['NAV', 'VOR', 'ILS', 'ADF', 'BFO', 'SEL'], ['RMP 1 ON/OFF', 'STBY/CRS']]],
+  ['ACP 1', 324, 1308, 96, 78, [['VHF 1 TX', 'VHF 2 TX', 'VHF 3 TX', 'INT TX', 'CAB TX', 'PA TX'], ['VOR 1', 'VOR 2', 'MKR', 'ILS VOL', 'ADF 1', 'ADF 2'], ['INT/RAD', 'VOICE', 'RESET']]],
+  ['PITCH TRIM L', 424, 1212, 24, 248, ['PITCH TRIM WHEEL L'], 'l'],
+  ['SPEED BRAKE', 450, 1212, 24, 248, ['SPEED BRAKE LEVER'], 'l'],
+  ['THRUST LEVERS', 476, 1212, 76, 248, ['A/THR DISC 1', 'THR LVR 1', 'THR LVR 2', 'A/THR DISC 2'], 'l'],
+  ['FLAPS', 554, 1212, 24, 248, ['FLAPS LEVER'], 'l'],
+  ['PITCH TRIM R', 580, 1212, 24, 248, ['PITCH TRIM WHEEL R'], 'l'],
+  ['RMP 2', 608, 1212, 68, 92, [['RMP 2 ACTIVE DISPLAY', 'XFER F/O', 'RMP 2 STBY DISPLAY'], ['VHF 1 F/O', 'VHF 2 F/O', 'VHF 3 F/O'], ['HF 1 F/O', 'AM F/O', 'HF 2 F/O'], ['RMP 2 ON/OFF', 'STBY/CRS F/O']]],
+  ['ACP 2', 608, 1308, 68, 78, [['VHF 1 TX F/O', 'VHF 2 TX F/O', 'INT TX F/O'], ['VOR 1 F/O', 'ILS F/O', 'ADF F/O'], ['INT/RAD F/O', 'RESET F/O']]],
+  ['WX RADAR', 324, 1390, 96, 70, [['WX SYS', 'WX MODE', 'MULTISCAN', 'GCS'], ['GAIN', 'TILT', 'PWS']]],
+  ['PARKING BRK', 608, 1390, 68, 70, [['PARKING BRAKE']]],
+  ['ENGINE', 424, 1464, 180, 74, [['ENG 1 FIRE IND', 'ENG 1 FAULT IND', null, 'ENG 2 FAULT IND', 'ENG 2 FIRE IND'], [null, 'ENG MASTER 1', 'ENG MODE SEL', 'ENG MASTER 2', null]]],
+  ['ATC / TCAS', 324, 1464, 96, 74, [['XPDR MODE', 'ATC 1/2', 'ALT RPTG', 'IDENT'], ['XPDR CODE', 'TCAS MODE', 'TCAS TRAFFIC']]],
+  ['RUDDER TRIM', 608, 1464, 68, 74, [['RUD TRIM IND'], ['RUD TRIM', 'RESET']]],
+  ['CKPT DOOR', 324, 1542, 96, 52, [['DOOR LOCK', 'DOOR CTL', 'DOOR VIDEO']]],
+  ['FLOOD / INTEG LT', 424, 1542, 180, 52, [['FLOOD LT MAIN PNL', 'FLOOD LT PED', 'INTEG LT MAIN PNL', 'INTEG LT PED', 'RMP 3', 'PRINTER']]],
+  ['GRAVITY GEAR', 608, 1542, 68, 52, [['GRAVITY GEAR EXTN']]],
+  ['CPT SIDE CONSOLE', 40, 1134, 250, 250, [['TILLER CPT', 'SIDESTICK CPT'], ['OXY MASK CPT', 'TABLE CPT']]],
+  ['F/O SIDE CONSOLE', 710, 1134, 250, 250, [['SIDESTICK F/O', 'TILLER F/O'], ['TABLE F/O', 'OXY MASK F/O']]]
 ]};
 const DA42 = { id: 'da42', name: 'Diamond DA42 (G1000)', h: 1000, crew: 1, zones: [['Instrument panel', 10, 50, 980, 525], ['Centre console', 300, 590, 400, 400]], p: [
   ['CIRCUIT BREAKERS', 18, 62, 40, 500, [], 'g'],
@@ -274,6 +298,7 @@ function targets(ac) { if (ac._t) return ac._t; const out = [];
     if (!it || !it.length) { out.push({ id: n, name: n, panel: n, x, y, w, h, k: k || 'g', whole: true }); return; }
     // a low panel keeps its name on the left and its controls in one row; otherwise the name on top and the controls in a grid
     const low = h < 46, tw = low ? Math.min(w * 0.3, n.length * 6.4 + 12) : 0, X0 = x + 4 + tw, W = w - 8 - tw, top = low ? y + 3 : y + 18, H = low ? h - 5 : h - 22;
+    if (it[0] && it[0].b) { it.forEach(o => { const [bx, by, bw, bh] = o.b; out.push({ id: n + '|' + o.n, name: o.n, panel: n, x: bx - 2, y: by - 5, w: bw + 4, h: bh + 7, k: 'p', kd: o.kd, b: { x: bx, y: by, w: bw, h: bh } }); }); return; }
     if (Array.isArray(it[0])) { const R = it.length, rh = H / R; it.forEach((row, r) => { const cw = W / row.length; row.forEach((name, c) => { if (name) out.push({ id: n + '|' + name, name, panel: n, x: X0 + c * cw + 2, y: top + r * rh + 1, w: cw - 4, h: rh - 3, k: k || 'p' }); }); }); return; }
     const cnt = it.length, ratio = W / Math.max(10, H);
     let cols = low || k === 'l' ? cnt : Math.max(1, Math.min(cnt, Math.round(Math.sqrt(cnt * ratio * 0.9)))); const rows = Math.ceil(cnt / cols);
@@ -379,9 +404,9 @@ function screen(n, x, y, w, h) { const cx = x + w / 2, ix = x + 6, iy = y + 18, 
   if (/SD|LOWER|SYS/.test(N)) { const y2 = iy + ih * 0.35; return `<path d="M${ix + iw * 0.15} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.5} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.85} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.15} ${y2}h${iw * 0.7}" stroke="#3CCB7F" stroke-width="1.4" fill="none"/>` + [0.15, 0.5, 0.85].map(f => `<circle cx="${ix + iw * f}" cy="${iy + ih * 0.6}" r="4" fill="none" stroke="#3CCB7F" stroke-width="1.2"/>`).join(''); }
   if (/G1000|MFD|PFD/.test(N)) return '';
   return ''; }
-const lab = (ac, t) => (ac.short && ac.short[t.name]) || t.name;
+const lab = (ac, t) => ac.short && t.name in ac.short ? ac.short[t.name] : t.name;
 /* Airbus push-button captions: [upper, lower], unlit as on the ground with nothing selected. Upper is amber unless noted. */
-const LEG = [[/^(FADEC GND PWR|BLUE PUMP OVRD|SVCE INT OVRD|AVNCS COMPT LT)/, ['', 'ON']], [/^LEAK MEAS/, ['', 'OFF']], [/^APU AUTO EXTING/, ['TEST', 'RESET']], [/^OXY TMR RESET/, ['FAULT', 'RESET']], [/^EXT PWR/, ['AVAIL', 'ON']], [/^APU MASTER/, ['FAULT', 'ON']], [/^APU START/, ['ON', 'AVAIL']], [/^X FEED/, ['OPEN', 'ON']], [/MODE SEL$/, ['FAULT', 'MAN']],
+const LEG = [[/^(EMER GEN MAN ON|EVAC COMMAND)/, ['', '']], [/^IR \d/, ['FAULT', 'ALIGN']], [/^(FADEC GND PWR|BLUE PUMP OVRD|SVCE INT OVRD|AVNCS COMPT LT)/, ['', 'ON']], [/^LEAK MEAS/, ['', 'OFF']], [/^APU AUTO EXTING/, ['TEST', 'RESET']], [/^OXY TMR RESET/, ['FAULT', 'RESET']], [/^EXT PWR/, ['AVAIL', 'ON']], [/^APU MASTER/, ['FAULT', 'ON']], [/^APU START/, ['ON', 'AVAIL']], [/^X FEED/, ['OPEN', 'ON']], [/MODE SEL$/, ['FAULT', 'MAN']],
   [/^(RAM AIR|DITCHING|PROBE\/WINDOW HEAT|ENG [12] MAN START|N1 MODE)/, ['', 'ON']], [/A-ICE$/, ['FAULT', 'ON']], [/AGENT/, ['SQUIB', 'DISCH']], [/FIRE TEST|SMOKE TEST|CVR TEST/, ['', 'TEST']],
   [/^EVAC COMMAND/, ['EVAC', 'ON']], [/^GEN 1 LINE/, ['SMOKE', 'OFF']], [/^RAT & EMER GEN/, ['FAULT', '']], [/^PASSENGER/, ['SYS ON', '']], [/^(MECH|FWD|AFT)$/, ['CALL', '']], [/^EMER$/, ['CALL', 'ON']],
   [/DISCH$/, ['SMOKE', 'DISCH']], [/^RAIN RPLNT/, ['FAULT', '']], [/^AUTO BRK/, ['DECEL', 'ON']], [/^BRK FAN/, ['HOT', 'ON']], [/^AUTO LAND/, ['AUTO', 'LAND']], [/^RCDR GND CTL/, ['', 'ON']],
@@ -389,6 +414,23 @@ const LEG = [[/^(FADEC GND PWR|BLUE PUMP OVRD|SVCE INT OVRD|AVNCS COMPT LT)/, ['
   [/^(AP [12]|A\/THR|LOC|APPR|EXPED|FD |LS |CSTR|WPT|VOR\.D|NDB|ARPT|SPD\/MACH|HDG V\/S|METRIC ALT)/, ['', '•']], [/./, ['FAULT', 'OFF']]];
 const legend = n => (LEG.find(([r]) => r.test(n)) || [0, ['', '']])[1];
 const LEGC = { ON: '#5BB8F5', AVAIL: '#3CCB7F', OPEN: '#3CCB7F', DISCH: '#E9EEF2', TEST: '#E9EEF2', OFF: '#E9EEF2', MAN: '#E9EEF2', LAND: '#FF5A4D', '•': '#3CCB7F' };
+/* a traced control: drawn to fill its measured rectangle, with the panel's own label above it */
+function absCtl(ac, t) { const b = t.b, kd = t.kd, cx = b.x + b.w / 2, cy = b.y + b.h / 2, r = Math.min(b.w, b.h) / 2, L = lab(ac, t); let o = '';
+  if (kd === 'knob') { const a = -14 * Math.PI / 180, gx = Math.sin(a), gy = -Math.cos(a);
+    o = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#39434D" stroke="#1E252B" stroke-width=".5"/><circle cx="${cx}" cy="${cy}" r="${r * 0.74}" fill="#B9C0C6"/><g transform="rotate(-14 ${cx} ${cy})"><rect x="${cx - r * 0.3}" y="${cy - r * 0.98}" width="${r * 0.6}" height="${r * 1.9}" rx="${r * 0.22}" fill="#E4E7EA" stroke="#8B949C" stroke-width=".4"/><line x1="${cx}" y1="${cy - r * 0.9}" x2="${cx}" y2="${cy - r * 0.1}" stroke="#15181B" stroke-width="${Math.max(.6, r * 0.12)}"/></g>`; }
+  else if (kd === 'tg') o = `<circle cx="${cx}" cy="${cy}" r="${r * 0.72}" fill="#0F1214" stroke="#59626B" stroke-width=".5"/><circle cx="${cx}" cy="${cy}" r="${r * 0.4}" fill="#2A3036"/><line x1="${cx}" y1="${cy}" x2="${cx + r * 0.1}" y2="${cy + r * 0.95}" stroke="#C9CED3" stroke-width="${r * 0.34}" stroke-linecap="round"/><circle cx="${cx + r * 0.1}" cy="${cy + r * 0.95}" r="${r * 0.24}" fill="#EEF0F2"/>`;
+  else if (kd === 'rnd') o = `<circle cx="${cx}" cy="${cy}" r="${r * 0.86}" fill="#0E1113" stroke="#4A535B" stroke-width=".5"/><circle cx="${cx}" cy="${cy}" r="${r * 0.5}" fill="#1D2226" stroke="#30373D" stroke-width=".4"/>`;
+  else if (kd === 'disp') o = `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" fill="#1A2026" stroke="#0C0F12" stroke-width=".6"/><rect x="${b.x + b.w * 0.12}" y="${b.y + b.h * 0.2}" width="${b.w * 0.76}" height="${b.h * 0.6}" fill="#050607"/><text x="${cx}" y="${cy + b.h * 0.17}" text-anchor="middle" class="pbl" style="font-size:${Math.min(b.h * 0.46, b.w * 0.2)}px;fill:#F2A623">${/VOLT/.test(t.name) ? '28.5V' : '- - - -'}</text>`;
+  else if (kd === 'ind') { const tx = /SMOKE/.test(t.name) ? 'SMOKE' : /BAT/.test(t.name) ? 'ON BAT' : 'OFF'; o = `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx=".8" fill="#0D1013" stroke="#7F8B97" stroke-width=".5"/><text x="${cx}" y="${cy + 1}" text-anchor="middle" class="pbl" style="font-size:${Math.min(3.2, b.w / (tx.length * 0.72))}px;fill:${/SMOKE/.test(t.name) ? '#A8443C' : '#B98420'}">${tx}</text>`; }
+  else if (kd === 'keys') { o = `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="1" fill="#1A1F24" stroke="#0C0F12" stroke-width=".5"/>`; for (let i = 0; i < 12; i++) o += `<rect x="${b.x + 1.5 + (i % 3) * (b.w - 3) / 3 + .6}" y="${b.y + 1.5 + Math.floor(i / 3) * (b.h - 3) / 4 + .6}" width="${(b.w - 3) / 3 - 1.2}" height="${(b.h - 3) / 4 - 1.2}" rx=".6" fill="#343C44"/>`; }
+  else if (kd === 'pbr' || kd === 'pbk') { const red = kd === 'pbr', fire = /FIRE$/.test(t.name);
+    o = `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="1.4" fill="${red ? '#D8392B' : '#14171A'}" stroke="${red ? '#8E1F16' : '#4A525A'}" stroke-width=".6"/><rect x="${b.x + b.w * 0.14}" y="${b.y + 1}" width="${b.w * 0.72}" height="${Math.max(1, b.h * 0.08)}" rx=".5" fill="${red ? '#F0695C' : '#2C3339'}"/>` +
+      (fire ? `<text x="${cx}" y="${cy - 0.5}" text-anchor="middle" class="pbl" style="font-size:${b.w * 0.24}px;fill:#fff">FIRE</text><text x="${cx}" y="${cy + b.w * 0.26}" text-anchor="middle" class="pbl" style="font-size:${b.w * 0.2}px;fill:#fff">PUSH</text>` : red ? '' : `<line x1="${b.x + 2}" y1="${cy}" x2="${b.x + b.w - 2}" y2="${cy}" stroke="#2C3339" stroke-width=".6"/>`); }
+  else { let [u, d] = legend(t.name); const f = Math.min(b.w / 5.6, b.h / 3.3);
+    o = `<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="1" fill="#252C33" stroke="#A9B4BE" stroke-width=".45"/><rect x="${b.x + b.w * 0.1}" y="${b.y + b.h * 0.1}" width="${b.w * 0.8}" height="${b.h * 0.8}" rx=".6" fill="#07090B"/>` +
+      (u ? `<text x="${cx}" y="${b.y + b.h * 0.44}" text-anchor="middle" class="pbl" style="font-size:${f}px;fill:${u === 'ON' ? '#5BB8F5' : '#E5A33A'}">${u}</text>` : '') + (d ? `<text x="${cx}" y="${b.y + b.h * 0.8}" text-anchor="middle" class="pbl" style="font-size:${f}px;fill:${LEGC[d] || '#E9EEF2'}">${d}</text>` : ''); }
+  const f = Math.max(2.1, Math.min(3.4, (b.w + 7) / Math.max(3, L.length) * 1.5));
+  return `<g class="ft" data-t="${esc(t.id)}"><rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" fill="#000" fill-opacity="0"/>` + o + (L ? `<text x="${cx}" y="${b.y - 1.3}" text-anchor="middle" class="ftn" style="fill:#F2F5F8;font-size:${f.toFixed(1)}px">${esc(L)}</text>` : '') + '</g>'; }
 function cbs(x, y, w, h) { let o = ''; const cols = Math.floor((w - 16) / 9), rows = Math.floor((h - 26) / 11); for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { const cx = x + 10 + c * 9 + (Math.floor(c / 8) * 2), cy = y + 24 + r * 11; if (cx > x + w - 6) continue; o += `<circle cx="${cx}" cy="${cy}" r="2.6" fill="#1A1E22" stroke="#8A96A2" stroke-width=".5"/><circle cx="${cx}" cy="${cy}" r="1" fill="#E9EEF2" opacity=".6"/>`; } return o; }
 function keyCap(t, L) { const x = t.x + 1, y = t.y + 1, w = t.w - 2, h = Math.min(t.h - 2, 18), f = Math.max(2.8, Math.min(6.4, (w - 2) / Math.max(2, L.length) * 1.55, h * 0.42));
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.8" fill="#1C2126" stroke="#7F8B97" stroke-width=".7"/><rect x="${x + w * 0.3}" y="${y + 1.3}" width="${w * 0.4}" height="1.4" rx=".6" fill="#3CCB7F" opacity=".35"/><text x="${x + w / 2}" y="${y + h / 2 + f * 0.55}" text-anchor="middle" class="pbl" style="font-size:${f.toFixed(1)}px;fill:#E9EEF2">${esc(L)}</text>`; }
@@ -400,13 +442,16 @@ function svg(ac) { if (ac._svg) return ac._svg; const T = targets(ac), out = [],
   out.push(`<rect x="0" y="0" width="1000" height="${ac.h}" fill="${LK.bg}"/>`);
   (ac.shapes || []).forEach(pt => out.push(`<polygon points="${pt.join(' ')}" fill="${LK.zone}" stroke="${LK.edge}" stroke-opacity=".35" stroke-width="1.5"/>`));
   (ac.zones || []).forEach(([n, x, y, w, h]) => out.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${LK.zone}"/><text x="${x + w - 8}" y="${y + h - 6}" text-anchor="end" class="fz">${esc(n.toUpperCase())}</text>`));
-  ac.p.forEach(([n, x, y, w, h, it, k]) => { const scr = k === 's', g = k === 'g';
+  ac.p.forEach(([n, x, y, w, h, it, k, d]) => { const scr = k === 's', g = k === 'g';
+    if (d) { out.push(`<g class="fp"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${LK.pan}" stroke="#2C343C" stroke-width="1"/>` + (it.length ? '' : `<text x="${x + w / 2}" y="${y + h / 2 + 2}" text-anchor="middle" class="fpn" style="fill:#AEB9C4;font-size:4.5px">${esc(n)}</text>`) +
+      d.map(e => e[0] === 't' ? `<text x="${e[2]}" y="${e[3] + e[4] * 0.36}" text-anchor="middle" class="fpn" style="fill:#F2F5F8;font-size:${e[4]}px">${esc(e[1])}</text>` : e[0] === 'l' ? `<line x1="${e[1]}" y1="${e[2]}" x2="${e[3]}" y2="${e[4]}" stroke="${e[5]}" stroke-width="${e[5] === '#C9D2DA' ? .6 : 1.1}" stroke-linecap="round"/>` :
+        `<rect x="${e[2]}" y="${e[3]}" width="${e[4]}" height="${e[5]}" fill="${LK.pan}" stroke="#DCE3EA" stroke-width=".5"/><text x="${e[2] + e[4] / 2}" y="${e[3] + e[5] / 2 + 1.1}" text-anchor="middle" class="ftn" style="fill:#F2F5F8;font-size:3px">${esc(e[1])}</text>`).join('') + '</g>'); return; }
     out.push(`<g class="fp"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${scr ? 3 : 5}" fill="${scr ? LK.scr : g ? LK.zone : LK.pan}" stroke="${scr ? '#2B3137' : LK.edge}" stroke-width="${scr ? 3 : 1.2}"${g ? ' stroke-dasharray="4 4"' : ''}/>` +
       (!g && !scr && LK !== LOOK.ga ? [[x + 4, y + 4], [x + w - 4, y + 4], [x + 4, y + h - 4], [x + w - 4, y + h - 4]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="1.3" fill="#2A3036"/>`).join('') : '') +
       (scr && (!it || !it.length) ? screen(n, x, y, w, h) : '') + (g && /CIRCUIT BREAKERS/.test(n) ? cbs(x, y, w, h) : '') +
       (LK.real && !scr && !g && ac.lines && ac.lines[n] ? synoptic(T.filter(t => t.panel === n), ac.lines[n]) : '') +
       `<text x="${LK.real && !scr && !(h < 46 && it && it.length) ? x + w / 2 : x + 6}"${LK.real && !scr && !(h < 46 && it && it.length) ? ' text-anchor="middle"' : ''} y="${it && it.length && h < 46 ? y + h / 2 + 4 : y + 13}" class="fpn${scr ? ' scr' : ''}" style="${scr ? '' : `fill:${LK.lab};`}font-size:${Math.min(11, (h < 46 && it && it.length ? Math.min(w * 0.3, n.length * 6.4 + 12) - 6 : w - 10) / (n.length * 0.64)).toFixed(1)}px">${esc(n)}</text></g>`); });
-  T.forEach(t => { if (t.whole) return; const kd = kindOf(t.name, t.k, LK, ac.look, t.panel);
+  T.forEach(t => { if (t.whole) return; if (t.b) { out.push(absCtl(ac, t)); return; } const kd = kindOf(t.name, t.k, LK, ac.look, t.panel);
     const onKey = LK.real && kd === 'key', noLab = LK.real && /^(thr|flaps|spd|trimw|disc|gear|park)$/.test(kd), up = LK.real && !onKey && t.k !== 'l' && !/^(stick|tiller|box)$/.test(kd), t2 = up ? Object.assign({}, t, { y: t.y + 7, h: t.h + 3 }) : t, L = lab(ac, t);
     out.push(`<g class="ft" data-t="${esc(t.id)}"><rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="3" fill="#000" fill-opacity="${up || onKey || noLab ? 0 : t.k === 'l' ? .22 : .1}" stroke="#000" stroke-opacity="${up || onKey || noLab ? 0 : .18}" stroke-width=".8"/>` + (onKey ? keyCap(t, L) : ctl(t2, kd, LK)) + (onKey || noLab ? '</g>' :
       `<text x="${t.x + t.w / 2}" y="${up ? t.y + 7.5 : t.y + t.h - 3.5}" text-anchor="middle" class="ftn" style="fill:${LK.lab};font-size:${(up ? Math.max(3, Math.min(7.2, (t.w + 1) / Math.max(3, L.length) * 1.42)) : Math.max(5.2, Math.min(10.5, t.w / Math.max(4, L.length) * 1.6))).toFixed(1)}px">${esc(L)}</text></g>`)); });
