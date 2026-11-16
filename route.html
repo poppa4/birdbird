@@ -399,6 +399,11 @@
 .wxkey{display:inline-flex;gap:2px;margin-left:2px}.wxkey i{width:7px;height:7px;border-radius:50%;display:inline-block}
 .rx .rx-ly>.note{border-top:1px solid var(--hair,#E3E8EA);padding-top:8px;margin-top:2px;font-size:11.5px;line-height:1.45}
 .swl li.in{border-color:currentColor}
+.rc-go{display:block;width:calc(100% - 20px);margin:6px 10px 2px;text-align:left;border:0;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;cursor:pointer}.rc-go b{margin-right:4px}.rc-go span{float:right}
+.rgo{margin:10px 0 6px}.rgo details{border:1px solid var(--rule);border-radius:10px;background:var(--sheet,#fff);padding:0 10px}.rgo summary{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 0;cursor:pointer;list-style:none}.rgo summary::-webkit-details-marker{display:none}
+.rgo summary>b{font-size:14px}.rgo .gv{font-weight:700;font-size:13px;padding:3px 8px;border-radius:6px}.gv-bad{background:#FDE8E6;color:#B3261E}.gv-warn{background:#FFF4DC;color:#8A5A00}.gv-ok{background:rgba(31,122,77,.12);color:#1F7A4D}.gv-unk{background:#EEF1F3;color:#4C5B66}
+.rgo ul{list-style:none;margin:0;padding:0 0 4px}.rgo li{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:13px;line-height:1.38;padding:5px 0;border-top:1px solid var(--rule)}.rgo li i{font-style:normal;font-weight:700;text-align:center}
+.rgo .g-bad i{color:#B3261E}.rgo .g-warn i{color:#B86E00}.rgo .g-ok i{color:#1F7A4D}.rgo .g-ok span{color:var(--ink-2)}.rgo .g-unk i,.rgo .g-pack i{color:var(--ink-2)}.rgo li .btn{white-space:nowrap}.rgo .note{font-size:11.5px;margin:4px 0 8px}
 .asl{margin:2px 0 4px;font-size:12.5px;line-height:1.5;color:var(--ink-2)}.asl[hidden]{display:none}
 .asl .ash{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}.asl .ash>b{color:var(--ink);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
 .asl ul{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
@@ -572,6 +577,7 @@
       <div class="rc-ft" id="rcft" hidden></div>
       <div class="rc-cr"><span class="shcr" id="shcr"><label for="s_cr">Cruise</label><span class="stp"><button type="button" id="crdn" aria-label="500 ft lower" title="500 ft lower">−</button><input id="s_cr" placeholder="6500" list="crlist" autocomplete="off" spellcheck="false" aria-label="Cruise altitude, feet or FL" title="Cruise altitude: feet (6500) or flight level (FL75)"><button type="button" id="crup" aria-label="500 ft higher" title="500 ft higher">+</button></span><label for="s_gs" class="gsl">GS</label><input id="s_gs" inputmode="decimal" placeholder="100" aria-label="Ground speed, knots" title="Ground speed (kt)"><span class="u">kt</span></span><datalist id="crlist"><option value="1500"><option value="2500"><option value="3500"><option value="4500"><option value="5500"><option value="6500"><option value="FL75"><option value="FL85"><option value="FL95"><option value="FL115"><option value="FL150"><option value="FL200"></datalist></div>
       <div class="rc-sum" id="rcsum" hidden></div>
+      <button type="button" class="rc-go" id="rcgo" hidden></button>
       <div class="rc-btns"><button class="btn sh-nl" id="shNl" aria-pressed="false" title="Navigation log: headings, times and fuel with your wind">Navlog</button><button class="btn pri sh-pack" id="packbtn">Briefing pack</button></div>
       <div class="packpop" id="packpop" hidden><div class="flowbox" id="flowbox"></div><b>Send to the briefing pack</b><p class="pinch">Goes with it:</p><ul class="pinc" id="pinc"></ul><div id="packslot"></div><div id="packslot2"></div><p class="pinch">Route, markers and notes are saved together as one route.</p></div>
     </div>
@@ -699,6 +705,7 @@
     <div class="prof" id="profw"><div class="pzoom noprint" id="pzoom"><button data-pz="1" title="Zoom in on the height scale" aria-label="Zoom in on the height scale">＋</button><button data-pz="-1" title="Zoom out on the height scale" aria-label="Zoom out on the height scale">－</button><button data-pz="0" title="Fit the height scale to the terrain and your altitude">Auto</button><button data-pt="1" id="ptter" class="pter on" title="Show or hide the terrain" aria-pressed="true">Terrain</button></div><svg id="psv" viewBox="0 0 1000 420"></svg></div>
     <div class="xnrow noprint" id="xnrow"><div class="xn l"><button type="button" class="xnb" data-x="xdep">＋ Departure note</button><textarea id="xdep" rows="2" hidden placeholder="e.g. OBOLA 2A, RWY 17. Climb straight ahead to 1500, then right turn." spellcheck="false" aria-label="Expected departure (your note)"></textarea></div><div class="xn r"><button type="button" class="xnb" data-x="xarr">＋ Arrival note</button><textarea id="xarr" rows="2" hidden placeholder="e.g. ILS 30 via HE. Hold at HE if busy. Watch the hills north of the field." spellcheck="false" aria-label="Expected arrival (your note)"></textarea></div></div>
     <p class="note pmsg" id="pmsg"></p>
+    <div class="rgo" id="rgo" hidden></div>
     <div class="asl" id="asl" hidden></div>
     <div class="asl swl" id="swl" hidden></div>
     <div class="srcl" id="srcl"></div>
@@ -974,7 +981,7 @@ const SIGNO={'Moderate icing':'Moderat ising','Moderate turbulence':'Moderat tur
 function sigLabel(s){ if(LAB.lang!=='no') return s.label; const base=s.label.replace(/ with hail$/,''); return (SIGNO[base]||s.label)+(/ with hail$/.test(s.label)?' med hagl':''); }
 function sigDraw(){ if(!ML) return; const now=Date.now();
   const f=LY.sig?SIG.items.filter(s=>s.poly&&(!s.to||new Date(s.to)>now)).map(s=>mlF({type:'Polygon',coordinates:[s.poly]},{id:s.id,cat:s.cat,a:s.type==='AIRMET'?1:0,t:(s.type==='AIRMET'?'AIRMET ':'')+s.fir+' '+(s.series||'')})):[];
-  mlPut('bb-sig',mlC(f)); try{ swList(compute()); }catch(e){} }
+  mlPut('bb-sig',mlC(f)); try{ swList(compute()); goRoute(compute()); }catch(e){} }
 function sigInfo(ids,mx,my,pos){ const sd=el('side'); const list=SIG.items.filter(s=>ids.includes(s.id)); const z=d=>d?new Date(d).toISOString().slice(8,10)+' '+new Date(d).toISOString().slice(11,16)+'Z':'?';
   const html=list.map(s=>`<div class="mwx"><b style="font-size:13px;display:block;margin-top:10px;color:${RXMAP.SIGC[s.cat]||RXMAP.SIGC.other}">${esc(s.type||'SIGMET')} ${esc(s.series||'')}${list.length>1?' · '+esc(sigLabel(s)):''}</b><dl><dt>FIR</dt><dd>${esc(s.fir)}${s.firName?' '+esc(s.firName):''}</dd><dt>${L({en:'Source',no:'Kilde'})}</dt><dd>${esc(s.source||'aviationweather.gov')}</dd><dt>${L({en:'Valid',no:'Gyldig'})}</dt><dd>${z(s.from)} – ${z(s.to)}</dd>${sigLevels(s)?`<dt>${L({en:'Levels',no:'Nivåer'})}</dt><dd>${sigLevels(s)}</dd>`:''}${s.dir||s.spd?`<dt>${L({en:'Movement',no:'Bevegelse'})}</dt><dd>${esc(s.dir||'')}${s.spd?' '+s.spd+' kt':''}</dd>`:''}</dl><pre>${esc(s.raw)}</pre></div>`).join('');
   sd.innerHTML=`<button class="x" aria-label="${L({en:'Close',no:'Lukk'})}">×</button><span class="id">${list.length>1?'SIGMET / AIRMET':esc(list[0]?list[0].type||'SIGMET':'SIGMET')}</span><h3>${list.length>1?list.length+' '+L({en:'warnings here',no:'varsler her'}):esc(list[0]?sigLabel(list[0]):'SIGMET')}</h3>`+html+
@@ -996,11 +1003,12 @@ function trkAlong(M){ const tot=M.total; if(!TRK||!(tot>0.2)) return null; const
   return {pts:out,off}; }
 function trkDraw(){ if(ML) mlPut('bb-trk',mlC(TRK?[mlF({type:'LineString',coordinates:TRK.pts.map(p=>[p.lo,p.la])},{})]:[])); const m=el('trkmsg'), x=el('trkx'); if(x) x.hidden=!TRK;
   if(!m) return; if(!TRK){ m.textContent=''; return; } const st=trkStats(), A=trkAlong(compute());
-  m.innerHTML=`<b>${esc(TRK.name||L({en:'Track',no:'Spor'}))}</b>: ${fx(TRK.pts.length)} ${L({en:'points',no:'punkter'})} · ${fx(st.d,1)} NM`+(st.dur!=null?` · ${Math.floor(st.dur/60)}:${String(Math.round(st.dur%60)).padStart(2,'0')}`:'')+(st.mx!=null?` · ${L({en:'highest',no:'høyest'})} ${fx(Math.round(st.mx/10)*10)} ft`:'')+(A?` · ${L({en:'furthest from the planned route',no:'lengst fra planlagt rute'})} ${fx(A.off,1)} NM`:'')+`. ${L({en:'Orange on the map; on the profile against your plan (GPS altitude). Not saved: it stays in this tab.',no:'Oransje på kartet; i profilen mot planen din (GPS-høyde). Ikke lagret: det blir i denne fanen.'})}`; }
+  m.innerHTML=(ML?`<button type="button" class="btn sm pri" id="trkrep">▶ ${L({en:'Replay in 3D',no:'Spill av i 3D'})}</button> `:'')+`<b>${esc(TRK.name||L({en:'Track',no:'Spor'}))}</b>: ${fx(TRK.pts.length)} ${L({en:'points',no:'punkter'})} · ${fx(st.d,1)} NM`+(st.dur!=null?` · ${Math.floor(st.dur/60)}:${String(Math.round(st.dur%60)).padStart(2,'0')}`:'')+(st.mx!=null?` · ${L({en:'highest',no:'høyest'})} ${fx(Math.round(st.mx/10)*10)} ft`:'')+(A?` · ${L({en:'furthest from the planned route',no:'lengst fra planlagt rute'})} ${fx(A.off,1)} NM`:'')+`. ${L({en:'Orange on the map; on the profile against your plan (GPS altitude). Not saved: it stays in this tab.',no:'Oransje på kartet; i profilen mot planen din (GPS-høyde). Ikke lagret: det blir i denne fanen.'})}`; }
 el('trkf').addEventListener('change',async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const m=el('trkmsg');
   try{ if(f.size>30e6) throw new Error(L({en:'the file is larger than 30 MB',no:'filen er større enn 30 MB'})); TRK=trkParse(await f.text()); if(ML){ const b=TRK.pts.reduce((a,p)=>[Math.min(a[0],p.lo),Math.min(a[1],p.la),Math.max(a[2],p.lo),Math.max(a[3],p.la)],[180,90,-180,-90]); ML.fitBounds([[b[0],b[1]],[b[2],b[3]]],{padding:60,duration:600}); } render(); }
   catch(err){ TRK=null; if(m) m.textContent=L({en:'Could not read the file: ',no:'Kunne ikke lese filen: '})+(err.message||err); trkDraw(); } e.target.value=''; });
-el('trkx').onclick=()=>{ TRK=null; render(); };
+el('trkx').onclick=()=>{ repEnd(); TRK=null; render(); };
+el('trkmsg').addEventListener('click',e=>{ if(e.target.closest('#trkrep')) repStart(); });
 /* ---------- weather radar (EUMETNET OPERA, all of Europe) and satellite clouds (EUMETSAT Meteosat IR) ----------
    Radar: newest 15-min rain-rate composite from /api/radar (ODIM HDF5), drawn in a Web Worker (radarworker.js) to a Web Mercator
    image over the OPERA domain; refreshed every 10 min while shown. Satellite: hourly IR tiles through /api/sat. Both off by default. */
@@ -1268,6 +1276,75 @@ function asList(M,tp,IN){ try{ swList(M); }catch(e){} const box=el('asl'); if(!b
     (ASR.partial?`<span class="asn asw">${L({en:'Part of the route is outside the map view, so airspace there is not loaded and not listed.',no:'En del av ruten er utenfor kartutsnittet, så luftrommet der er ikke lastet og ikke med.'})} <button type="button" data-asfit="1">${L({en:'Show the whole route',no:'Vis hele ruten'})}</button></span>`:'')+
     `<span class="asn">${L({en:'Airspace from openAIP, a community database: not an official source. Check the AIP and NOTAM.',no:'Luftrom fra openAIP, en dugnadsdatabase: ikke en offisiell kilde. Sjekk AIP og NOTAM.'})}</span>`; }
 el('asl').addEventListener('click',e=>{ if(e.target.closest('[data-asfit]')){ fit(); setTimeout(()=>asSoon(0),900); } });
+/* ---------- go / no-go while planning: what Route Explorer knows, each point with its reason and a button to what is missing ----------
+   The same idea as the briefing pack's summary (fuel, mass and balance and runway lengths stay there). The pilot decides. */
+function sunsetAt(d,la,lo){ const D=Math.PI/180, J=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),12)/864e5+2440587.5, n=Math.round(J-2451545-0.0009+lo/360);
+  const Js=2451545.0009-lo/360+n, M0=(357.5291+0.98560028*(Js-2451545))%360, C=1.9148*Math.sin(M0*D)+0.02*Math.sin(2*M0*D)+0.0003*Math.sin(3*M0*D), lam=(M0+C+180+102.9372)%360;
+  const Jt=Js+0.0053*Math.sin(M0*D)-0.0069*Math.sin(2*lam*D), dec=Math.asin(Math.sin(lam*D)*Math.sin(23.4397*D)), cw=(Math.sin(-0.833*D)-Math.sin(la*D)*Math.sin(dec))/(Math.cos(la*D)*Math.cos(dec));
+  if(cw<-1||cw>1) return null; const w=Math.acos(cw)/D/360; return { rise:new Date((Jt-w-2440587.5)*864e5), set:new Date((Jt+w-2440587.5)*864e5) }; }
+let GOWX=0;
+function goRoute(M){ const box=el('rgo'); if(!box) return; if(PACKDIM||M.C.length<2||!(M.total>0.2)){ box.hidden=true; return; }
+  const G=[], add=(lv,t,why,act)=>G.push({lv,t,why,act}), btn=(go,txt)=>`<button type="button" class="btn sm" data-go="${go}">${txt}</button>`;
+  const dep=M.C[0].p, dstC=[...M.C].reverse().find(c=>c.p.t==='rwy'&&c.i>0), dst=dstC?dstC.p:M.C[M.C.length-1].p, hmz=d=>String(d.getUTCHours()).padStart(2,'0')+String(d.getUTCMinutes()).padStart(2,'0')+'Z';
+  // weather at departure and destination (fetched for the panel even with the weather layer off)
+  const ids=[dep,dst].map(p=>p&&p.n).filter(id=>/^[A-Z]{4}$/.test(id||''));
+  const need=ids.filter(id=>!WXS.c[id]||(!WXS.c[id].busy&&Date.now()-WXS.c[id].t>WX_TTL)); if(need.length&&Date.now()-GOWX>20e3){ GOWX=Date.now(); wxLib().catch(()=>{}).then(()=>wxFetch(need)).then(()=>goRoute(compute())).catch(()=>{}); }
+  ids.forEach((id,i)=>{ const c=WXS.c[id], role=i===0&&ids.length>1?L({en:'Departure',no:'Avgang'}):L({en:'Destination',no:'Destinasjon'});
+    if(!c||c.busy) { add('unk',`${role} ${id}`,L({en:'fetching METAR and TAF…',no:'henter METAR og TAF …'})); return; }
+    if(!c.raw){ add('unk',`${role} ${id}`,L({en:'no METAR from this aerodrome',no:'ingen METAR fra denne flyplassen'})+(c.taf?'':' · '+L({en:'no TAF',no:'ingen TAF'})),btn('wx:'+id,L({en:'Weather page',no:'Vær-siden'}))); return; }
+    const m=c.m||{}, age=c.obs?(Date.now()-new Date(c.obs))/36e5:0, cat=c.fc, gust=(m.wind&&m.wind.gust)||0, wnd=(m.wind&&m.wind.spd)||0, why=[];
+    if(cat) why.push(cat==='VFR'?L({en:'VFR conditions',no:'VFR-forhold'}):cat==='SVFR'?L({en:'special VFR conditions (ceiling or visibility below VFR in a control zone)',no:'spesial-VFR-forhold (skydekke eller sikt under VFR i kontrollsone)'}):L({en:'IFR conditions',no:'IFR-forhold'}));
+    if(gust||wnd>=20) why.push(L({en:`wind ${wnd} kt`,no:`vind ${wnd} kt`})+(gust?L({en:` gusting ${gust}`,no:` med kast ${gust}`}):''));
+    if(age>3) why.push(L({en:`METAR ${Math.round(age)} h old`,no:`METAR ${Math.round(age)} t gammel`}));
+    if(!c.taf) why.push(L({en:'no TAF',no:'ingen TAF'}));
+    add(cat==='IFR'?'bad':(cat==='SVFR'||gust>=25||wnd>=25||age>3)?'warn':'ok',`${role} ${id}`,why.join(' · ')||L({en:'METAR read',no:'METAR lest'})); });
+  // terrain clearance at cruise
+  const ter=TP&&TP.pts.some(p=>p.e!=null)?Math.max(...TP.pts.map(p=>p.e||0)):null, mg=sNum('mg',1000);
+  if(ter!=null&&M.cr==null) add('unk',L({en:'Terrain clearance',no:'Terrengklaring'}),L({en:`set a cruise altitude: highest terrain ±${fx(sNum('cw',4.3),1)} NM is ${fx(ter)} ft`,no:`sett marsjhøyde: høyeste terreng ±${fx(sNum('cw',4.3),1)} NM er ${fx(ter)} ft`}),btn('cr:'+Math.ceil((ter+mg)/500)*500,L({en:`Set ${fx(Math.ceil((ter+mg)/500)*500)} ft`,no:`Sett ${fx(Math.ceil((ter+mg)/500)*500)} ft`})));
+  if(ter!=null&&M.cr!=null){ const d=M.cr-ter, need2=Math.ceil((ter+mg)/500)*500;
+    add(d<0?'bad':d<mg?'warn':'ok',L({en:'Terrain clearance',no:'Terrengklaring'}),L({en:`cruise ${altTxt(M.cr)}, highest terrain ±${fx(sNum('cw',4.3),1)} NM ${fx(ter)} ft: ${d>=0?fx(d)+' ft above':fx(-d)+' ft below'}`,no:`marsj ${altTxt(M.cr)}, høyeste terreng ±${fx(sNum('cw',4.3),1)} NM ${fx(ter)} ft: ${d>=0?fx(d)+' ft over':fx(-d)+' ft under'}`})+(d<mg?' · '+L({en:`at least ${fx(need2)} ft with your ${fx(mg)} ft margin (plus obstacles)`,no:`minst ${fx(need2)} ft med marginen din på ${fx(mg)} ft (pluss hindringer)`}):''),d<mg?btn('cr:'+need2,L({en:`Set ${fx(need2)} ft`,no:`Sett ${fx(need2)} ft`})):''); }
+  // SIGMET / AIRMET
+  if(!LY.sig) add('unk','SIGMET / AIRMET',L({en:'not checked',no:'ikke sjekket'}),btn('sig',L({en:'Check the route',no:'Sjekk ruten'})));
+  else if(SWH==null) add('unk','SIGMET / AIRMET',L({en:'loading…',no:'laster …'}));
+  else { const inn=SWH.filter(h=>h.inAlt); add(inn.length?'bad':SWH.length?'warn':'ok','SIGMET / AIRMET',inn.length?inn.map(h=>`${h.s.type||'SIGMET'} ${sigLabel(h.s)}`).join('; ')+' · '+L({en:'at your altitude',no:'i høyden din'}):SWH.length?SWH.map(h=>`${h.s.type||'SIGMET'} ${sigLabel(h.s)}`).join('; ')+' · '+L({en:'not at your altitude',no:'ikke i høyden din'}):L({en:'none of the valid ones cross the route',no:'ingen av de gyldige krysser ruten'})); }
+  // icing and turbulence from the model
+  let A=null; try{ A=goData(M).aloft; }catch(e){}
+  if(!A) add('unk',L({en:'Icing and turbulence (model)',no:'Ising og turbulens (modell)'}),L({en:'not checked',no:'ikke sjekket'}),btn('wa',L({en:'Get the forecast',no:'Hent prognosen'})));
+  else { const fl=a=>a>=10000?'FL'+Math.round(a/100):fx(a)+' ft', alts=A.free.filter(a=>a!==A.cr), sug=alts.length?L({en:'Clear levels: ',no:'Frie høyder: '})+alts.slice(0,6).map(fl).join(', '):'';
+    const parts=[]; if(A.ice) parts.push(L({en:`icing ${A.ice.x0}–${A.ice.x1} NM`,no:`ising ${A.ice.x0}–${A.ice.x1} NM`})+(A.ice.max>=2?L({en:' (high)',no:' (høy)'}):'')); if(A.turb) parts.push(L({en:`${A.turb.cat>=3?'severe':'moderate'} turbulence ${A.turb.x0}–${A.turb.x1} NM`,no:`${A.turb.cat>=3?'kraftig':'moderat'} turbulens ${A.turb.x0}–${A.turb.x1} NM`}));
+    add(A.ice&&A.ice.max>=2||A.turb&&A.turb.cat>=3?'bad':parts.length?'warn':'ok',L({en:'Icing and turbulence (model)',no:'Ising og turbulens (modell)'}),(parts.join(' · ')||L({en:'none on your profile',no:'ingen på profilen din'}))+(parts.length&&sug?' · '+sug:'')); }
+  // NOTAM
+  if(!(R.ntm||'').trim()) add('unk','NOTAM',L({en:'not read',no:'ikke lest'}),btn('ntm',L({en:'Paste NOTAM',no:'Lim inn NOTAM'})));
+  else { let n=0; try{ n=WXK.parseNotams(R.ntm).length; }catch(e){} add('ok','NOTAM',L({en:`${n} pasted, shown on the map`,no:`${n} limt inn, vist på kartet`})); }
+  // daylight at the destination
+  { const gs=+R.gs||0; if(!gs) add('unk',L({en:'Daylight',no:'Dagslys'}),L({en:'set ground speed to get an arrival time',no:'sett fart over bakken for å få ankomsttid'}),btn('gs','GS'));
+    else { const etd=waEtd(), eta=new Date(+etd+M.total/gs*36e5), sd=dep&&dep.la!=null?sunsetAt(etd,dep.la,dep.lo):null, sa=dst&&dst.la!=null?sunsetAt(eta,dst.la,dst.lo):null;
+      // sunrise and sunset on the day of departure (at departure) and of arrival (at the destination); polar day or night: no times
+      if(sd&&sa){ const head=L({en:`ETD ${hmz(etd)}${R.nl&&R.nl.etd?'':' (now)'}, ETA ${hmz(eta)} · `,no:`ETD ${hmz(etd)}${R.nl&&R.nl.etd?'':' (nå)'}, ETA ${hmz(eta)} · `});
+        if(etd<sd.rise) add('bad',L({en:'Daylight',no:'Dagslys'}),head+L({en:`departure before sunrise (${hmz(sd.rise)})`,no:`avgang før soloppgang (${hmz(sd.rise)})`}),btn('etd','ETD'));
+        else if(eta>sa.set) add('bad',L({en:'Daylight',no:'Dagslys'}),head+L({en:`arrival ${Math.round((eta-sa.set)/60e3)} min after sunset (${hmz(sa.set)})`,no:`ankomst ${Math.round((eta-sa.set)/60e3)} min etter solnedgang (${hmz(sa.set)})`}),btn('etd','ETD'));
+        else { const mg2=Math.round((sa.set-eta)/60e3); add(mg2<30?'warn':'ok',L({en:'Daylight',no:'Dagslys'}),head+L({en:`sunset ${hmz(sa.set)}: ${mg2} min margin`,no:`solnedgang ${hmz(sa.set)}: ${mg2} min margin`}),btn('etd','ETD')); } }
+      else add('unk',L({en:'Daylight',no:'Dagslys'}),L({en:'polar day or night at these places: check the times yourself',no:'midnattssol eller mørketid her: sjekk tidene selv'})); } }
+  // controlled airspace on the way
+  if(ASR&&ASR.ok&&ASR.list){ const ctl=ASR.list.filter(a=>/^[A-D]$/.test(a.cls||'')||/^(ctr|tma|cta)$/.test(a.type)); if(ctl.length) add('warn',L({en:'Clearance',no:'Klarering'}),L({en:'controlled airspace on the route: ',no:'kontrollert luftrom på ruten: '})+ctl.slice(0,5).map(a=>a.name+(a.cls?' ('+a.cls+')':'')+(asFq(a)?' '+asFq(a):'')).join(', ')); }
+  // the rest lives in the briefing pack
+  add('pack',L({en:'Fuel, mass and balance, runway length',no:'Drivstoff, masse og balanse, banelengde'}),L({en:'in the briefing pack, with the full go / no-go',no:'i briefing-pakken, med full go / no-go'}),btn('pack',L({en:'Briefing pack',no:'Briefing-pakken'})));
+  const nb=G.filter(g=>g.lv==='bad').length, nw=G.filter(g=>g.lv==='warn').length, nu=G.filter(g=>g.lv==='unk').length;
+  const v=nb?['bad',L({en:'No-go as planned',no:'No-go slik det er planlagt'})]:nw?['warn',L({en:'Go only if you can manage the yellow points',no:'Go bare hvis du kan håndtere de gule punktene'})]:nu?['unk',L({en:`${nu} point${nu>1?'s':''} to check`,no:`${nu} punkt${nu>1?'er':''} å sjekke`})]:['ok',L({en:'Go: nothing found against it',no:'Go: ingenting funnet imot'})];
+  const ic={bad:'✗',warn:'!',ok:'✓',unk:'?',pack:'→'}, ord={bad:0,warn:1,unk:2,ok:3,pack:4}, open=box.querySelector('details')?box.querySelector('details').open:true;
+  { const rb=el('rcgo'); if(rb){ rb.hidden=false; rb.className='rc-go gv-'+v[0]; rb.innerHTML=`<b>Go / no-go</b> ${esc(v[1])}${nu&&v[0]!=='unk'?` · ${nu} ${L({en:'to check',no:'å sjekke'})}`:''} <span aria-hidden="true">→</span>`; } }
+  box.hidden=false; box.innerHTML=`<details${open?' open':''}><summary><b>Go / no-go</b><span class="gv gv-${v[0]}">${v[1]}</span></summary><ul>${G.slice().sort((a,b)=>ord[a.lv]-ord[b.lv]).map(g=>`<li class="g-${g.lv}"><i>${ic[g.lv]}</i><span><b>${esc(g.t)}</b> ${esc(g.why)}</span>${g.act||''}</li>`).join('')}</ul><p class="note">${L({en:'A summary of what Route Explorer knows. Model icing and turbulence are rough guides. You make the decision.',no:'Et sammendrag av det Route Explorer vet. Modell-ising og -turbulens er grove pekepinner. Du tar avgjørelsen.'})}</p></details>`; }
+el('rcgo').addEventListener('click',()=>{ const o=el('shOpen'); if(o&&!o.hidden) o.click(); if(!el('nlp').hidden) nlOpen(false); if(!el('advp').hidden) el('shAdv').click(); setTimeout(()=>{ const d=el('rgo').querySelector('details'); if(d) d.open=true; el('rgo').scrollIntoView({block:'start',behavior:'smooth'}); },120); });
+el('rgo').addEventListener('click',e=>{ const b=e.target.closest('button[data-go]'); if(!b) return; const g=b.dataset.go;
+  if(g==='sig'){ LY.sig=1; const c=document.querySelector('input[data-ly="sig"]'); if(c) c.checked=true; try{ saveLY(); }catch(x){} sigSync(); setTimeout(()=>goRoute(compute()),1800); return; }
+  if(g==='ntm'){ if(el('advp').hidden) el('shAdv').click(); setTimeout(()=>{ el('ntmin').scrollIntoView({block:'center'}); el('ntmin').focus(); },60); return; }
+  if(g==='wa'&&!pnum(R.s&&R.s.cr)){ if(el('rcTog').getAttribute('aria-expanded')==='false') el('rcTog').click(); setTimeout(()=>{ const i=el('s_cr'); i.scrollIntoView({block:'center'}); i.focus(); },60); return; }
+  if(g==='wa'){ nlOpen(true); setTimeout(()=>{ document.querySelector('.wabox').scrollIntoView({block:'start'}); const t=el('nl_tas'); if(!t.value) t.focus(); else el('wa_go').click(); },60); return; }
+  if(g==='etd'){ nlOpen(true); setTimeout(()=>{ el('wa_etd').scrollIntoView({block:'center'}); el('wa_etd').focus(); },60); return; }
+  if(g==='gs'){ const i=el('s_gs'); if(el('rcbody').hidden||el('rcTog').getAttribute('aria-expanded')==='false') el('rcTog').click(); setTimeout(()=>{ i.scrollIntoView({block:'center'}); i.focus(); },60); return; }
+  if(g==='pack'){ el('packbtn').click(); return; }
+  if(g.startsWith('cr:')){ const v=g.slice(3), i=el('s_cr'); i.value=v; i.dispatchEvent(new Event('input',{bubbles:true})); i.dispatchEvent(new Event('change',{bubbles:true})); return; }
+  if(g.startsWith('wx:')){ window.open('weather.html?ids='+g.slice(3),'_blank','noopener'); } });
 /* frequency for an airspace: openAIP's own if the tiles carry one, else the aerodrome's (TWR/AFIS/INFO) for a CTR, TIZ, ATZ or TIA
    named after an aerodrome (data/freq, OurAirports) */
 function asFq(a){ if(a.freq) return a.freq; if(!/^(ctr|tiz|tia|atz|matz|htz|rmz|tmz)$/.test(a.type)||!NAV) return null;
@@ -1313,8 +1390,8 @@ const psv=el('psv');
 function render(){
   SIMC.k=null; const M=compute(); drawTable(M); drawMap(M); simUI(M); drawProfile(M,TP); drawSum(M); drawMkList(M); drawSelbar(); wxMsg(M);
   if(T3.on&&!ML){ clearTimeout(T3.rb); T3.rb=setTimeout(()=>{ if(T3.on&&window.THREE) build3(); },350); }
-  asSoon(); if(ML&&LY.wx) wxSoon(); if(ML&&LY.sig) sigSync(); if(ML&&LY.wa) waMapSoon(); if(R&&R.ntm) ntmSync(); if(ML&&(LY.rad||RAD.on)) radSync(); if(ML&&(LY.sat||SAT.on)) satSync(); try{ trkDraw(); }catch(e){} try{ swList(compute()); }catch(e){} nlLabel(); drawNavlog(M); pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
-  terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
+  asSoon(); if(ML&&LY.wx) wxSoon(); if(ML&&LY.sig) sigSync(); if(ML&&LY.wa) waMapSoon(); if(R&&R.ntm) ntmSync(); if(ML&&(LY.rad||RAD.on)) radSync(); if(ML&&(LY.sat||SAT.on)) satSync(); try{ trkDraw(); }catch(e){} try{ swList(compute()); }catch(e){} try{ goRoute(M); }catch(e){} nlLabel(); drawNavlog(M); pmUI(); try{ daUI(); }catch(e){} if(HOV==null) rdo(null); sheetAuto(); { const e=R.pts.filter(p=>p.la!=null).length<2; el('sheet').classList.toggle('empty',e); const had=el('rx').classList.contains('has'); el('rx').classList.toggle('has',!e); if(had===e) setTimeout(()=>{ rxTop(); drawMap(); },0); }
+  terrainProfile(M).then(tp=>{ if(tp!==TP||tp){ TP=tp; drawProfile(M,TP); drawTable(M); drawSum(M); try{ goRoute(M); }catch(e){} if(MODE==='draw') drawSheet(); } el('terstat').textContent= !window.TERRAIN? '' : TERRAIN.status(); drawSrc(); });
 }
 function hm(h){ if(!Number.isFinite(h)) return ''; const m=Math.round(h*60); return Math.floor(m/60)+':'+String(m%60).padStart(2,'0'); }
 function rcSum(M,dep,dst,ter,gs){ // route card: one-line summary, from/to with names, distance / time / highest terrain
@@ -2749,7 +2826,7 @@ el('bmsel').addEventListener('click',e=>{ const b=e.target.closest('[data-b]'); 
 // 3D i MapLibre: terreng fra AWS, ruten draperes, planlagt bane som gardin i høyden
 function ml3(on){ T3.on=on; el('rx').classList.toggle('d3',on); setTimeout(()=>{ rxTop(); try{ ML.resize(); }catch(e){} },30); el('v23').querySelectorAll('button').forEach(b=>b.classList.toggle('on',(b.dataset.v==='3')===on)); el('x3w').hidden=!on; el('m3msg').hidden=true;
   { const ct=el('x3ct').closest('label'); if(ct) ct.hidden=true; } el('x3ltl').hidden=false; el('x3acl').hidden=false; el('x3hint').hidden=true; el('x3hml').hidden=false;
-  if(!on){ if(AC3.L) AC3.L.set({on:false}); mlNoPad(); mlFov(); simStop(); mlDrive(false); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
+  if(!on){ REP.on=false; REP.M=null; SIMC.k=null; if(AC3.L) AC3.L.set({on:false}); mlNoPad(); mlFov(); simStop(); mlDrive(false); T3.play=false; T3.drive=false; T3.mb=null; el('simhud').hidden=true; simBtnUI(); try{ ML.setCenterClampedToGround(true); }catch(e){} if(T3.raf){ cancelAnimationFrame(T3.raf); T3.raf=0; } RXMAP.setPath3D(ML,null,null); RXMAP.set3D(ML,false); ML.easeTo({pitch:0,bearing:0,duration:700}); drawMap(); return Promise.resolve(); }
   T3.sun=sun3(); if(RXMAP.setSun) RXMAP.setSun(ML,T3.sun); RXMAP.set3D(ML,true,T3.ex); ml3Fit(); MLK.p3=''; drawMap(); return Promise.resolve(); }
 /* the 3D aircraft (simac3d.js + three.js, as a MapLibre custom layer): loaded the first time the simulation starts */
 const AC3={st:null,L:null,bank:0,pitch:0};
@@ -2850,8 +2927,26 @@ document.addEventListener('keydown',e=>{ if(!T3.on||!T3.dvOn||e.target.closest('
 /* ================= Simulate the flight ================= */
 const SIMC={k:null,M:null};
 // the profile the simulation flies (cached per frame; render() clears it)
-function simM(){ const k=(R.pm||'')+'|'+JSON.stringify(R.s)+'|'+R.pts.length+'|'+(TP?TP.pts.length:0); if(SIMC.k!==k||!SIMC.M){ SIMC.k=k; SIMC.M=compute(); } return SIMC.M; }
-const gsOf=()=>pnum(R&&R.gs)||100;
+/* replay of a flown track (GPX) in the 3D view: the simulation's profile object is swapped for one built from the track,
+   with GPS altitude and the ground speed from the track's own times; the planned route stays on the map */
+const REP={on:false,M:null};
+function trkM(){ const P=TRK.pts.filter((p,i,a)=>i===0||p.la!==a[i-1].la||p.lo!==a[i-1].lo); const cum=[0]; for(let i=1;i<P.length;i++) cum.push(cum[i-1]+gc(P[i-1],P[i]));
+  const hasE=P.some(p=>p.ft!=null), tot=cum[cum.length-1], idx=x=>{ let lo=0, hi=cum.length-1; while(hi-lo>1){ const m=(lo+hi)>>1; if(cum[m]<=x) lo=m; else hi=m; } return lo; };
+  const at=x=>{ x=Math.max(0,Math.min(tot,x)); const i=idx(x), j=Math.min(P.length-1,i+1), f=cum[j]>cum[i]?(x-cum[i])/(cum[j]-cum[i]):0; return {i,j,f}; };
+  const M={trk:true,total:tot,PM:'adv',cr:null,C:[{p:{la:P[0].la,lo:P[0].lo,n:'',t:'wpt'},x:0,i:0},{p:{la:P[P.length-1].la,lo:P[P.length-1].lo,n:'',t:'wpt'},x:tot,i:1}],
+    posAt(x){ const a=at(x); return {la:P[a.i].la+(P[a.j].la-P[a.i].la)*a.f, lo:P[a.i].lo+(P[a.j].lo-P[a.i].lo)*a.f}; },
+    altAt(x){ if(!hasE) return 3000; const a=at(x), e0=P[a.i].ft, e1=P[a.j].ft; return e0==null?(e1||0):e1==null?e0:e0+(e1-e0)*a.f; },
+    gsAt(x){ const a=at(x), i0=Math.max(0,a.i-3), i1=Math.min(P.length-1,a.i+4); if(P[i0].t==null||P[i1].t==null||P[i1].t<=P[i0].t) return null; return (cum[i1]-cum[i0])/((P[i1].t-P[i0].t)/36e5); },
+    timeAt(x){ const a=at(x); if(P[a.i].t==null) return null; return P[a.i].t+((P[a.j].t||P[a.i].t)-P[a.i].t)*a.f; } };
+  const R0=compute(); let A=null; try{ A=trkAlong(R0); }catch(e){} M.rx=x=>{ if(!A||!A.pts.length) return null; const k=Math.round(x/tot*(A.pts.length-1)); return A.pts[Math.max(0,Math.min(A.pts.length-1,k))].x; };
+  return M; }
+async function repStart(){ if(!TRK||!ML) return; REP.M=trkM(); if(!(REP.M.total>0.2)) return; REP.on=true; SIMC.k=null;
+  if(!T3.on) await set3(true); if(T3.spd<30){ T3.spd=30; el('x3spd').value='30'; } T3.x=0; T3.mb=null; T3.k=1; lookHome(); el('x3r').max=String(Math.round(REP.M.total*10)/10); el('x3r').value=0; setCam('chase');
+  ac3Load(); T3.ch=null; T3.play=false; HOV=0; T3.drive=true; kick3(); await new Promise(r=>setTimeout(r,400)); if(!T3.on||!REP.on) return;
+  T3.loading=true; ui3p(); await simPreload(); T3.loading=false; if(!T3.on||!REP.on) return; T3.play=true; T3.t=0; ui3p(); kick3(); trkDraw(); }
+function repEnd(){ if(!REP.on) return; REP.on=false; REP.M=null; SIMC.k=null; T3.play=false; T3.x=0; ui3p(); const M=compute(); if(M.total) el('x3r').max=String(Math.round(M.total*10)/10); el('simhud').hidden=true; trkDraw(); }
+function simM(){ if(REP.on&&REP.M) return REP.M; const k=(R.pm||'')+'|'+JSON.stringify(R.s)+'|'+R.pts.length+'|'+(TP?TP.pts.length:0); if(SIMC.k!==k||!SIMC.M){ SIMC.k=k; SIMC.M=compute(); } return SIMC.M; }
+const gsOf=()=>{ if(REP.on&&REP.M){ const g=REP.M.gsAt(T3.x||0); return g&&g>20&&g<600?g:(pnum(R&&R.gs)||100); } return pnum(R&&R.gs)||100; };
 /* buffering: the tiles along the route are fetched before the flight starts (with progress, skippable) and then
    ahead of the aircraft in 12 NM chunks. If the aircraft gets within ~8 s of flight of the unfetched part, or the
    view is still loading, the speed eases down (to 15 % at most) and recovers once the tiles are in. */
@@ -2875,9 +2970,12 @@ function simPreload(){ return new Promise(res=>{ if(!ML){ res(); return; } const
   c.promise.then(()=>{ pf.readyX=Math.max(pf.readyX,first); setTimeout(end,150); }); }); }
 const simAdv=()=>gsOf()/3600*T3.spd*(T3.k||1); // NM per second of screen time (T3.k < 1 while tiles ahead are still loading)
 // move the profile cursor every frame, the readout a few times a second
-function simHov(x,now){ HOV=x; const l=el('hcur'); if(l&&psv._XS){ const px=psv._XS(x); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); } if(!T3.rdoT||now-T3.rdoT>200){ T3.rdoT=now; rdo(x); } }
+function simHov(x,now){ if(REP.on&&REP.M){ const rx=REP.M.rx(x); if(rx!=null){ const l=el('hcur'); if(l&&psv._XS){ const px=psv._XS(rx); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); } } HOV=x; if(!T3.rdoT||now-T3.rdoT>200){ T3.rdoT=now; simHud(x); } return; } HOV=x; const l=el('hcur'); if(l&&psv._XS){ const px=psv._XS(x); l.setAttribute('x1',px); l.setAttribute('x2',px); l.setAttribute('visibility','visible'); } if(!T3.rdoT||now-T3.rdoT>200){ T3.rdoT=now; rdo(x); } }
 function hmsOf(h){ if(!Number.isFinite(h)) return '–'; const s=Math.round(h*3600), hh=Math.floor(s/3600), mm=Math.floor(s%3600/60), ss=s%60; return hh? hh+':'+String(mm).padStart(2,'0')+':'+String(ss).padStart(2,'0') : mm+':'+String(ss).padStart(2,'0'); }
-function simHud(x){ const h=el('simhud'); if(!h) return; const M=ML?simM():(T3.S&&T3.S.M); const show=!!(T3.on&&M&&M.C.length>=2&&M.total>0&&M.PM!=='ter');
+function simHud(x){ const h=el('simhud'); if(!h) return;
+  if(REP.on&&REP.M){ const M=REP.M, c=(k,v,u)=>`<div><i>${k}</i><b>${v}${u?`<small>${u}</small>`:''}</b></div>`, tm=M.timeAt(x), g=M.gsAt(x), A=trkAlong(compute()), k2=A&&A.pts.length?A.pts[Math.max(0,Math.min(A.pts.length-1,Math.round(x/M.total*(A.pts.length-1))))]:null;
+    h.hidden=!T3.on; h.innerHTML=c(L({en:'Replay',no:'Avspilling'}),esc(TRK.name||'GPX'),'')+c(L({en:'Time',no:'Tid'}),tm?new Date(tm).toISOString().slice(11,19):'–','UTC')+c('GS',g?fx(Math.round(g)):'–','kt')+c(L({en:'GPS alt',no:'GPS-høyde'}),fx(Math.round(M.altAt(x)/10)*10),'ft')+c(L({en:'Flown',no:'Fløyet'}),fx(x,1)+' / '+fx(M.total,1),'NM')+(k2?c(L({en:'Off route',no:'Fra ruten'}),fx(k2.off,1),'NM'):'')+`<div class="hw nt"><button type="button" class="btn sm" id="repx">${L({en:'End replay',no:'Avslutt avspillingen'})}</button></div>`;
+    const b=el('repx'); if(b) b.onclick=repEnd; return; } const M=ML?simM():(T3.S&&T3.S.M); const show=!!(T3.on&&M&&M.C.length>=2&&M.total>0&&M.PM!=='ter');
   if(!show){ h.hidden=true; return; } h.hidden=false; x=Math.max(0,Math.min(M.total,x||0));
   const gs=gsOf(), q=tpq(x), ter=q?(q.c!=null?q.c:q.e):null, hi=q?q.e:null, alt=M.altAt(x), mg=+S('mg')||1000;
   const d=0.05, slope=(M.altAt(Math.min(M.total,x+d))-M.altAt(Math.max(0,x-d)))/(Math.min(M.total,x+d)-Math.max(0,x-d)||1), vs=Math.round(slope*gs/60/50)*50;
@@ -2901,7 +2999,7 @@ function setCam(c){ T3.cm=c; camUI(); T3.mb=null; if(ML&&T3.on&&c==='chase') ac3
   else { T3.drive=true; if(!T3.play&&HOV==null){ HOV=T3.x; } if(!ML) T3.snap=false; }
   kick3(); }
 function autoCruise(){ const top=(TP&&Math.max(0,...TP.pts.map(q=>q.e||0)))||0; return Math.max(3000,Math.ceil(top/500)*500+1000); }
-async function simStart(){ if(T3.loading){ el('simskip').click(); return; } if(T3.on&&T3.play){ T3.play=false; ui3p(); return; }
+async function simStart(){ if(REP.on&&!(T3.on&&T3.play)) repEnd(); if(T3.loading){ el('simskip').click(); return; } if(T3.on&&T3.play){ T3.play=false; ui3p(); return; }
   const M0=compute(); if(M0.C.filter(c=>c.p.la!=null).length<2||!M0.total) return;
   let ch=false; if(pnum(R.s.cr)==null){ const a=autoCruise(); R.s.cr=a>taOf()?'FL'+String(Math.round(a/100)).padStart(3,'0'):String(a); el('s_cr').value=R.s.cr; ch=true; }
   if(pmode()!=='adv'){ R.pm='adv'; ch=true; } if(ch){ pmUI(); render(); queueSave(); }
