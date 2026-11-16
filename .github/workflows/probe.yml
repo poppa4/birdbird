@@ -5,9 +5,8 @@ on:
 jobs:
   p:
     runs-on: ubuntu-latest
-    env: { NODE_TLS_REJECT_UNAUTHORIZED: '0' }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - run: node live.mjs
+      - run: node rlive.mjs LROP LRCL LRBS BKPR LR9Z BK9Z
