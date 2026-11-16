@@ -90,6 +90,30 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fcomp{width:100%;border-collapse:collapse;font-size:14px}.fcomp td,.fcomp th{padding:7px 8px;border-bottom:1px solid var(--rule);text-align:left}.fcomp td:not(:first-child){text-align:center}
 .ftop .fmode{order:5}@media (max-width:640px){.fmode{width:100%}#fnew{padding-left:12px;padding-right:12px}.fstage{max-height:calc(100svh - 120px)}.fmode button{flex:1;padding:9px 6px}.fnow{font-size:14px}.fpanel{padding:12px}}
 @media print{.ftop,.fzoom,.fmenu,.snav,.fpanel .frow,.fhint,.fsty,dialog,.fban,.fnow,#more{display:none!important}.fapp{grid-template-columns:1fr}.fstage{max-height:none;overflow:visible}.fwrap{break-inside:avoid}.fpanel{position:static;max-height:none;border:0}.fs input.ft{font-size:12px}}
+
+/* phones and tablets */
+.fpanel label.grow>input,.fpanel label.grow>select{width:100%}.frow .grow{min-width:0}
+@media (max-width:980px){
+ .fapp>div:first-child{display:contents}
+ .fwrap{position:sticky;top:var(--fstick,0px);z-index:6;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+ .fstage{max-height:52vh}
+ .fmsg{margin:6px 0 0}
+ .fapp:has(.fpanel input:focus,.fpanel textarea:focus) .fwrap{position:relative;top:0}
+}
+@media (max-width:640px){
+ #app.card{padding-left:10px;padding-right:10px}
+ .lhead .brand>p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+ .ftop{gap:6px}.ftop .fmode{flex:1 1 100%}.fmode button{flex:1}
+ .fpanel{padding:10px}
+ .fpq{padding:8px 10px}.fpq .pt{font-size:15px;margin:0 0 6px}.fpq .frow{flex-wrap:nowrap;overflow-x:auto}.fpq .btn{padding:7px 10px;font-size:13px;white-space:nowrap;flex:0 0 auto}
+ .fnow{padding:8px 10px;font-size:14px}
+ .fzoom{right:6px;bottom:6px;gap:3px}.fzoom span{display:none}
+}
+@media (max-width:980px){#app[data-mode="practise"] .fstage,#app[data-mode="watch"] .fstage,#app[data-mode="together"] .fstage{max-height:64vh}}
+@media (pointer:coarse){.fzoom button{width:42px;height:42px}.fi{width:38px;height:38px}.fsteps{gap:7px}.fly{padding:9px 14px}}
+.fwrap.full{position:fixed;inset:0;z-index:1000;border-radius:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.fwrap.full .fstage{max-height:none;flex:1 1 auto}
+html.fnoscroll,html.fnoscroll body{overflow:hidden}
 </style>
 </head>
 <body data-title="Flow trainer">
@@ -124,7 +148,7 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
           <div class="fpq" id="fpq" hidden></div>
           <div class="fstage" id="stage"><svg id="cv" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" role="img" aria-label="Cockpit"><g id="bg"></g><g id="ov"></g><g id="fx"></g></svg></div>
           <div class="fban" id="fban" hidden></div>
-          <div class="fzoom"><button id="zout" type="button" aria-label="Zoom out">−</button><span id="zl">100 %</span><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zfit" type="button" aria-label="Whole cockpit">⤢</button></div>
+          <div class="fzoom"><button id="zout" type="button" aria-label="Zoom out">−</button><span id="zl">100 %</span><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zfit" type="button" aria-label="Whole cockpit">⤢</button><button id="zfull" type="button" aria-label="Full screen">⛶</button></div>
         </div>
         <p class="fmsg" id="fmsg" role="status" aria-live="polite"></p>
       </div>
@@ -159,7 +183,7 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 </form></dialog>
 
 <script src="lab.js?v=51"></script>
-<script src="flowsac.js?v=2"></script>
+<script src="flowsac.js?v=3"></script>
 <script src="flowscore.js?v=3"></script>
 <script>
 LAB.add({},{
@@ -178,6 +202,6 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=4"></script>
+<script src="flows.js?v=5"></script>
 </body>
 </html>

@@ -304,7 +304,7 @@ function screen(n, x, y, w, h) { const cx = x + w / 2, ix = x + 6, iy = y + 18, 
   if (/SD|LOWER|SYS/.test(N)) { const y2 = iy + ih * 0.35; return `<path d="M${ix + iw * 0.15} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.5} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.85} ${iy + ih * 0.15}v${ih * 0.6}M${ix + iw * 0.15} ${y2}h${iw * 0.7}" stroke="#3CCB7F" stroke-width="1.4" fill="none"/>` + [0.15, 0.5, 0.85].map(f => `<circle cx="${ix + iw * f}" cy="${iy + ih * 0.6}" r="4" fill="none" stroke="#3CCB7F" stroke-width="1.2"/>`).join(''); }
   if (/G1000|MFD|PFD/.test(N)) return '';
   return ''; }
-function svg(ac, o) { o = o || {}; const T = targets(ac), out = [], LK = LOOK[ac.style] || LOOK.ga;
+function svg(ac) { if (ac._svg) return ac._svg; const T = targets(ac), out = [], LK = LOOK[ac.style] || LOOK.ga;
   out.push(`<rect x="0" y="0" width="1000" height="${ac.h}" fill="${LK.bg}"/>`);
   (ac.zones || []).forEach(([n, x, y, w, h]) => out.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${LK.zone}"/><text x="${x + w - 8}" y="${y + h - 6}" text-anchor="end" class="fz">${esc(n.toUpperCase())}</text>`));
   ac.p.forEach(([n, x, y, w, h, it, k]) => { const scr = k === 's', g = k === 'g';
@@ -315,7 +315,7 @@ function svg(ac, o) { o = o || {}; const T = targets(ac), out = [], LK = LOOK[ac
   T.forEach(t => { if (t.whole) return; const kd = kindOf(t.name, t.k, LK);
     out.push(`<g class="ft" data-t="${esc(t.id)}"><rect x="${t.x}" y="${t.y}" width="${t.w}" height="${t.h}" rx="3" fill="#000" fill-opacity="${t.k === 'l' ? .22 : .1}" stroke="#000" stroke-opacity=".18" stroke-width=".8"/>` + ctl(t, kd, LK) +
       `<text x="${t.x + t.w / 2}" y="${t.y + t.h - 3.5}" text-anchor="middle" class="ftn" style="fill:${LK.lab};font-size:${Math.max(6.5, Math.min(10.5, t.w / Math.max(4, t.name.length) * 1.75)).toFixed(1)}px">${esc(t.name)}</text></g>`); });
-  return out.join(''); }
+  return (ac._svg = out.join('')); }
 /* real cockpit photos under free licences (Wikimedia Commons). Shown with the credit on the picture and on sources.html.
    A flow on a photo is placed freely (no named controls), like on your own photo, but it can be shared, since everyone has the same picture. */
 const C = 'https://commons.wikimedia.org/wiki/File:';

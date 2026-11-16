@@ -77,9 +77,25 @@ function ripple(x, y, ok, keep) { const g = $('fx'), c = document.createElementN
 function setZoom(z, cx, cy) { const st = $('stage'), old = zoom; zoom = Math.max(1, Math.min(5, z)); const svg = $('cv'); const fx = cx == null ? st.clientWidth / 2 : cx, fy = cy == null ? st.clientHeight / 2 : cy;
   const ax = (st.scrollLeft + fx) / old, ay = (st.scrollTop + fy) / old; svg.style.width = (zoom * 100) + '%'; st.scrollLeft = ax * zoom - fx; st.scrollTop = ay * zoom - fy; $('zl').textContent = Math.round(zoom * 100) + ' %'; }
 function fit() { setZoom(1); $('stage').scrollTop = 0; }
+/* phone: pinch with two fingers to zoom around the fingers, and pan with them; one finger still scrolls the stage and taps */
+function pinch() { const st = $('stage'); let g = null; const two = e => { const [a, b] = e.touches, r = st.getBoundingClientRect(); return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), x: (a.clientX + b.clientX) / 2 - r.left, y: (a.clientY + b.clientY) / 2 - r.top }; };
+  st.addEventListener('touchstart', e => { if (e.touches.length === 2) { const t = two(e); g = { d: t.d, z: zoom, x: t.x, y: t.y }; SZ.told = true; } }, { passive: true });
+  st.addEventListener('touchmove', e => { if (!g || e.touches.length !== 2) return; e.preventDefault(); const t = two(e); setZoom(g.z * t.d / g.d, t.x, t.y); st.scrollLeft -= t.x - g.x; st.scrollTop -= t.y - g.y; g.x = t.x; g.y = t.y; PZ.at = Date.now(); }, { passive: false });
+  st.addEventListener('touchend', e => { if (e.touches.length < 2) g = null; }, { passive: true }); }
+const PZ = { at: 0 };
+/* phone: the cockpit stays on screen (sticky under the site's own sticky bar) while the steps scroll underneath */
+function stickTop() { let top = 0; document.querySelectorAll('header,nav,.snav,[class*="sticky"],[class*="jump"]').forEach(e => { if (e.closest('#app')) return; const cs = getComputedStyle(e); if (cs.position === 'sticky' || cs.position === 'fixed') top = Math.max(top, (parseFloat(cs.top) || 0) + e.offsetHeight); }); document.documentElement.style.setProperty('--fstick', Math.min(top, 90) + 'px'); }
+/* focus mode: the cockpit fills the screen (with the step bar on top in practice); back with ✕, Esc or the back gesture */
+function focusMode(on) { const w = document.querySelector('.fwrap'); on = on == null ? !w.classList.contains('full') : on; if (on === w.classList.contains('full')) return;
+  w.classList.toggle('full', on); document.documentElement.classList.toggle('fnoscroll', on); $('zfull').textContent = on ? '✕' : '⛶'; $('zfull').setAttribute('aria-label', on ? L({ en: 'Leave full screen', no: 'Lukk fullskjerm' }) : L({ en: 'Full screen', no: 'Fullskjerm' }));
+  if (on) { try { history.pushState({ ffull: 1 }, ''); } catch (e) {} } else if (history.state && history.state.ffull) { try { history.back(); } catch (e) {} }
+  requestAnimationFrame(() => setZoom(zoom)); }
+addEventListener('keydown', e => { if (e.key === 'Escape' && document.querySelector('.fwrap.full')) focusMode(false); });
+addEventListener('popstate', () => { const w = document.querySelector('.fwrap'); if (w && w.classList.contains('full')) { w.classList.remove('full'); document.documentElement.classList.remove('fnoscroll'); $('zfull').textContent = '⛶'; } });
 
 /* ---------- taps on the cockpit ---------- */
-const tol = () => { const k = $('cv').clientWidth / 1000 || 1; return Math.max(18, 14 / k); };
+const COARSE = matchMedia('(pointer: coarse)').matches;
+const tol = () => { const k = $('cv').clientWidth / 1000 || 1; return Math.max(18, (COARSE ? 22 : 14) / k); };
 function pt(e) { const svg = $('cv'), p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const q = p.matrixTransform(svg.getScreenCTM().inverse()); return { x: Math.round(q.x * 10) / 10, y: Math.round(q.y * 10) / 10 }; }
 let drag = null; const SZ = { on: true, told: false }, addN = { v: '', t: 0 };
 function onDown(e) { if (mode !== 'build' || !cur) return; const b = e.target.closest('.bdg,.note'); if (!b) return; e.preventDefault(); const p = pt(e);
@@ -90,7 +106,7 @@ function onMove(e) { if (!drag) return; const p = pt(e), o = drag.s || drag.n; i
 function onUp(e) { if (!drag) return; const d = drag; drag = null;
   if (d.moved) { if (d.s && ac) { const t = A.hit(ac, d.s.x, d.s.y, 4); if (t) { const auto = !d.s.t || d.s.t === (A.byId(ac, d.s.tg) || {}).name; d.s.tg = t.id; d.s.x = Math.round(t.x + t.w / 2); d.s.y = Math.round(t.y + t.h / 2); if (auto) d.s.t = t.name; } else delete d.s.tg; } save(); draw(); panel(); return; }
   if (d.s) { sel = sel === d.s.id ? null : d.s.id; role = d.s.r; draw(); panel(true); } else if (d.n) editNote(d.n); }
-function onClick(e) { if (!cur || drag) return; if (e.target.closest('.bdg,.note')) return; const p = pt(e);
+function onClick(e) { if (!cur || drag || Date.now() - PZ.at < 350) return; if (e.target.closest('.bdg,.note')) return; const p = pt(e);
   if (mode === 'practise' || (mode === 'together' && P.on)) return pTap(p); if (mode !== 'build') return;
   const k = $('cv').clientWidth / 1000; if (SZ.on && k < 0.62 && zoom < 1.5) { const st = $('stage'), r = st.getBoundingClientRect(); setZoom(2.4, e.clientX - r.left, e.clientY - r.top); if (!SZ.told) { SZ.told = true; msg(L({ en: 'Zoomed in: tap again to place. ⤢ shows the whole cockpit.', no: 'Zoomet inn: trykk igjen for å plassere. ⤢ viser hele cockpiten.' })); } return; }
   if (noteMode) { noteMode = false; const n = { id: F.uid(), x: p.x, y: p.y, t: '' }; cur.notes.push(n); save(); draw(); editNote(n); panel(); return; }
@@ -422,10 +438,8 @@ async function createFlow() { const acv = $('nac').value, a = A.get(acv), f = F.
 function init() { load(); wirePanel();
   const svg = $('cv'); svg.addEventListener('pointerdown', onDown); svg.addEventListener('pointermove', onMove); svg.addEventListener('pointerup', onUp); svg.addEventListener('pointercancel', () => { drag = null; }); svg.addEventListener('click', onClick);
   $('stage').addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); const r = $('stage').getBoundingClientRect(); setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
-  let pinch = null; $('stage').addEventListener('touchstart', e => { if (e.touches.length === 2) { const [a, b] = e.touches; pinch = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), z: zoom }; } }, { passive: true });
-  $('stage').addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { e.preventDefault(); const [a, b] = e.touches, r = $('stage').getBoundingClientRect(); setZoom(pinch.z * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinch.d, (a.clientX + b.clientX) / 2 - r.left, (a.clientY + b.clientY) / 2 - r.top); } }, { passive: false });
-  $('stage').addEventListener('touchend', () => { pinch = null; });
-  $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit;
+  $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit; $('zfull').onclick = () => focusMode();
+  pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
   document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
   $('fsel').onchange = e => { const v = e.target.value; if (v.startsWith('ex:')) open(F.example(v.slice(3), A)); else open(FL.find(f => f.id === v)); };
   $('fnew').onclick = newDialog; $('dnew').addEventListener('close', () => { if ($('dnew').returnValue === 'ok') createFlow(); });
