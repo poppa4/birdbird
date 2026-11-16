@@ -1,34 +1,10 @@
-ESi https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/index-v2.html
-EFi https://www.ais.fi/eaip/ index
-EF1 https://www.ais.fi/eaip/currently_effective/eAIP/EF-AD%202%20EFHK-fi-FI.html
-EF2 https://www.ais.fi/eaip/currently_effective/eAIP/EF-AD-2.EFHK-fi-FI.html
-EF3 https://www.ais.fi/eaip/currently_effective/eAIP/EF-AD%202%20EFHK%201-fi-FI.html
-EF4 https://www.ais.fi/eaip/currently_effective/eAIP/EF-menu-en-GB.html
-EF5 https://www.ais.fi/eaip/currently_effective/
-EF6 https://www.ais.fi/eaip/currently_effective/eAIP/EF-GEN%202.2-fi-FI.html
-BIt https://eaip.avians.is/A_10-2026_2026_10_29/toc-frameset.html
-BI1 https://eaip.avians.is/A_10-2026_2026_10_29/BI-AD%202%20BIRK%201-en-GB.html
-EEi https://eaip.eans.ee/2026-10-01/html/index-en-GB.html
-EE1 https://eaip.eans.ee/2026-10-01/html/eAIP/EE-AD-2.EETN-en-GB.html
-EV1 https://ais.lgs.lv/eAIPfiles/2026_007_29-OCT-2026/data/2026-10-29/html/eAIP/EV-AD-2.EVRA-en-GB.html
-EVi https://ais.lgs.lv/eAIPfiles/2026_007_29-OCT-2026/data/2026-10-29/html/index.html
-LZi https://aim.lps.sk/web/eAIP_SR/AIP_SR_EFF_29OCT2026_amdt/html/LZ-frameset-en-SK.html
-LZ1 https://aim.lps.sk/web/eAIP_SR/AIP_SR_EFF_29OCT2026_amdt/html/eAIP/LZ-AD-2.LZIB-en-SK.html
-LHi https://ais-en.hungarocontrol.hu/aip/2026-09-03/
-LH1 https://ais-en.hungarocontrol.hu/aip/2026-09-03/2026-09-03-AIRAC/html/eAIP/LH-AD-2.LHBP-en-HU.html
-LH2 https://ais-en.hungarocontrol.hu/aip/2026-09-03/html/eAIP/LH-AD-2.LHBP-en-HU.html
-LP1 https://ais.nav.pt/wp-content/uploads/AIS_Files/eAIP_Current/eAIP_Online/eAIP/html/eAIP/LP-AD-2.LPPT-en-PT.html
-LPi https://ais.nav.pt/wp-content/uploads/AIS_Files/eAIP_Current/eAIP_Online/eAIP/html/index.html
-LKi https://aim.rlp.cz/eaip/html/index.html
-LK1 https://aim.rlp.cz/eaip/html/eAIP/LK-AD-2.LKPR-en-CZ.html
-LK2 https://aim.rlp.cz/ais_data/aip/data/valid/c_lkpr_text.pdf
-EB1 https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/eAIP/EB-AD-2.ELLX-en-GB.html
-EBx https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/eAIP/EB-AD-2.EBZZ-en-GB.html
-ENx https://aim-prod.avinor.no/no/AIP/View/Index/155/2026-09-03-AIRAC/html/eAIP/EN-AD-2.ENZZ-en-GB.html
-EKi https://aim.naviair.dk/
-EPi https://www.ais.pansa.pl/en/publications/aip-poland/ eaip|aip|html
-LOi https://eaip.austrocontrol.at/
-LFi https://www.sia.aviation-civile.gouv.fr/produits-numeriques-en-libre-disposition/eaip.html
-LDi https://www.crocontrol.hr/en/services/aeronautical-information-management/aip/
-EIi https://www.airnav.ie/air-traffic-management/aeronautical-information-management/aip-package
-LRi https://www.aisro.ro/
+ESd https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/v2/js/datasource.js
+ESe https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/index-v2.html
+EFi https://www.ais.fi/eaip/01%20OCT%202026_2026_10_01/index.html
+EFm https://www.ais.fi/eaip/01%20OCT%202026_2026_10_01/eAIP/EF-menu-en-GB.html AD
+BIm https://eaip.avians.is/A_10-2026_2026_10_29/eAIP/menu.html AD.?2
+LZm https://aim.lps.sk/web/eAIP_SR/AIP_SR_EFF_29OCT2026_amdt/html/LZ-menu-en-SK.html AD.?2
+LKe https://aim.rlp.cz/eaip/html/index-en-GB.html
+LOi https://eaip.austrocontrol.at/lo/261030/index.htm
+PLi https://docs.pansa.pl/ais/eaipifr/default_offline_2026-10-29.html
+EEm https://eaip.eans.ee/2026-10-01/html/eAIP/EE-menu-en-GB.html AD.?2
