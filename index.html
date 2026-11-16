@@ -198,6 +198,7 @@
 .sm-ac dl{margin:0}
 .sm-ac dt{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#93A4B6;margin-bottom:6px}
 .sm-ac dd{margin:0;font-size:15.5px;line-height:1.55;color:#DCE4EC}
+.sm-req{margin:18px 0 0;font-size:14.5px;opacity:.9}.sm-req button{font:inherit;font-weight:600;color:inherit;background:none;border:0;border-bottom:1px solid currentColor;padding:6px 0 2px;min-height:32px;cursor:pointer}
 .sm-go{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 .sm-go .fp-btn{min-height:46px;padding:0 20px;font-size:15.5px}
 .sm-go .fp-btn.sec small{font:600 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#F0B9D8;border:1px solid rgba(240,185,216,.45);padding:2px 4px 1px;margin-left:8px}
@@ -615,6 +616,7 @@
                 <div class="sm-go"><a class="fp-btn pri" href="b200.html" data-tx="smB3">Fly the King Air</a><a class="fp-btn sec" href="b200-3d.html"><span data-tx="sm3d">Also in 3D</span><span class="vh"> – King Air B200</span><small>beta</small></a></div>
               </div>
             </div>
+            <p class="sm-req"><span data-tx="smRq">Is your aircraft missing?</span> <button type="button" data-reqplane="sim">Request your aircraft</button></p>
           </div>
         </div>
         <ul class="sm-facts">
@@ -729,6 +731,7 @@
 
 </main>
 <script src="lab.js?v=51"></script>
+<script src="reqplane.js?v=1" defer></script>
 <script src="front-flow.js?v=1" defer></script>
 <script src="front-fi.js?v=2" defer></script>
 <script>
@@ -782,7 +785,7 @@ LAB.tx({
  smC2:'Instrumentskanning og attitydeflyging, navigasjon med VOR, ADF og DME, og landingsrunden.',
  smD2:'Flermotorsflyging med glasscockpit: ILS- og RNP-innflyginger, autopiloten, motorbortfall og asymmetrisk flyging.',
  smB2:'En turboprop med to piloter fra batteristart til avslåing: systemer som trykkabin, autofeather og brannvern, og forberedelse til typerating med 320 spørsmål.',
- smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', sm3d:'Også i 3D',
+ smRq:'Mangler flyet ditt?', smC3:'Fly Cessna 172', smD3:'Fly DA42', smB3:'Fly King Air', sm3d:'Også i 3D',
  smF1:'<b>I nettleseren</b>Ingenting å installere', smF2:'<b>2D og 3D</b>Et panel i full størrelse, og en 3D-cockpit i beta',
  smF3:'<b>Start på ILS-en</b>I luften på innflygingen, med ett klikk', smF4:'<b>Tastatur, mus eller berøring</b>En spillkontroller virker også',
  smFoot:'Også under Trening: IFR-treneren med 46 øvelser, briefinger og radiodriller.', smAll:'All trening →',

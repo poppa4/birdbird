@@ -100,6 +100,7 @@
 dialog.fd{border:0;border-radius:14px;padding:20px;width:min(520px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.3)}dialog.fd::backdrop{background:rgba(10,14,18,.55)}
 dialog.fd h3{margin:0 0 12px}dialog.fd label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;margin:0 0 12px}
 dialog.fd input,dialog.fd select,dialog.fd textarea{font:inherit;padding:9px 10px;border:1px solid var(--rule);border-radius:6px}dialog.fd textarea{min-height:220px;font-family:var(--f-mono,monospace);font-size:13px}
+dialog.fd .frq{margin:-6px 0 12px;font-size:13px}dialog.fd .frq button{font:inherit;font-weight:600;background:none;border:0;border-bottom:1px solid currentColor;padding:4px 0 1px;color:var(--accent,#0B5CAD);cursor:pointer}
 dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fcomp{width:100%;border-collapse:collapse;font-size:14px}.fcomp td,.fcomp th{padding:7px 8px;border-bottom:1px solid var(--rule);text-align:left}.fcomp td:not(:first-child){text-align:center}
 .ftop .fmode{order:5}@media (max-width:640px){.fmode{width:100%}#fnew{padding-left:12px;padding-right:12px}.fstage{max-height:calc(100svh - 120px)}.fmode button{flex:1;padding:9px 6px}.fnow{font-size:14px}.fpanel{padding:12px}}
@@ -151,7 +152,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
       <button class="btn pri" id="fnew" type="button" aria-label="New flow">+ New</button>
       <details class="fmenu"><summary aria-label="More">⋯</summary><div id="fmenu">
         <button data-a="share">Share as a link</button><button data-a="file">Save as file</button><button data-a="import">Open a flow file…</button>
-        <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="clear">Remove all steps</button><button data-a="del" class="warn">Delete flow</button>
+        <button data-a="png">Save as picture (PNG)</button><button data-a="video">Save as video</button><button data-a="print">Print</button><button data-a="dup">Duplicate</button><button data-a="clear">Remove all steps</button><button data-a="del" class="warn">Delete flow</button><button type="button" data-reqplane="flows">Request your aircraft</button>
       </div></details>
       <input type="file" id="fimp" accept=".json,application/json" hidden>
       <div class="fmode" role="group" aria-label="Mode"><button data-m="build" aria-pressed="true"><i>1</i>Build</button><button data-m="watch" aria-pressed="false"><i>2</i>Watch</button><button data-m="practise" aria-pressed="false"><i>3</i>Practise</button><button data-m="together" aria-pressed="false">Together</button></div>
@@ -188,6 +189,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
   <h3>New flow</h3>
   <label>Name<input id="nname" maxlength="80" placeholder="e.g. Before start – A320"></label>
   <label>Cockpit<select id="nac"></select></label>
+  <p class="frq">Is your aircraft missing? <button type="button" data-reqplane="flows">Request your aircraft</button></p>
   <label>Roles<select id="nrs"><option value="pfpm">PF and PM</option><option value="cm">CM1 and CM2</option><option value="one">One pilot</option></select></label>
   <div class="acts"><button class="btn" value="cancel">Cancel</button><button class="btn pri" value="ok">Create</button></div>
 </form></dialog>
@@ -219,5 +221,6 @@ LAB.add({},{
 LAB.start('flows');
 </script>
 <script src="flows.js?v=12"></script>
+<script src="reqplane.js?v=1"></script>
 </body>
 </html>
