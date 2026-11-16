@@ -149,6 +149,7 @@
 .fp-index em{font-style:normal;font-size:13.5px;color:var(--ink2);white-space:nowrap;text-align:right}
 .fp-index .foot{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:20px;font-size:15px}
 .fp-labs{margin-top:104px}
+.fp-flows .ffl{margin-top:0}.fp-flows .txt{margin:40px 0 0}
 .fp-labs .txt{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:8px 64px;align-items:start;margin-bottom:40px}
 .fp-labs .txt h3{grid-column:1;grid-row:1}
 .fp-labs .fp-depth{grid-column:1;grid-row:2}
@@ -381,6 +382,7 @@
   .fp-head{align-items:start}
   .fp-row.flip .fp-fig{order:0}
   .fp-labs .txt{grid-template-columns:minmax(0,1fr);margin-bottom:32px}
+  .fp-flows .txt{margin:28px 0 0}
   .fp-labs .fp-depth{grid-row:3}
   .fp-steps{grid-column:1;grid-row:2;margin-top:14px}
   .fp-storm{grid-template-columns:minmax(0,1fr)}
@@ -545,15 +547,6 @@
 
       <!-- the flow trainer: the real A320 overhead panel with a flow being built, then practised (front-flow.js) -->
       <div class="fp-labs fp-flows" id="fpFlows">
-        <div class="txt">
-          <h3 data-tx="flH">Learn your airline’s flows by heart</h3>
-          <ol class="fp-steps">
-            <li><span data-tx="fl1"><b>Build</b>Tap the controls in your airline’s order, or paste the SOP. On a Birdbird cockpit, a real photo or a page of your own manual.</span></li>
-            <li><span data-tx="fl2"><b>Watch</b>The flow plays step by step, PF and PM in their own colours, with the checklist calls.</span></li>
-            <li><span data-tx="fl3"><b>Practise</b>Find each step, then the whole flow from memory. Alone, or live with your partner on another phone.</span></li>
-          </ol>
-          <p class="fp-depth" data-tx="flD">A320, 737, ATR 72, King Air, Seneca, DA42 and C172. Free, on phone, tablet and computer, and your flows stay on your device.</p>
-        </div>
         <figure class="ffl" id="ffl" aria-labelledby="flCap">
           <a class="ffl-view" href="flows.html" aria-label="Open the flow trainer" data-aria-no="Åpne flow-treneren">
             <img src="img/front/flow-a320-1400.webp" srcset="img/front/flow-a320-800.webp 800w, img/front/flow-a320-1400.webp 1400w" sizes="(max-width:980px) 100vw, 1180px" width="1400" height="836" loading="lazy" decoding="async"
@@ -564,6 +557,15 @@
           </a>
           <figcaption id="flCap"><span data-tx="capFl"><b>Flow trainer.</b> A flow being built on the real A320 overhead panel, then practised with the lines hidden. The steps here only show how it works; your airline’s flow goes in its place.</span> <a class="tl" href="flows.html" data-tx="goFl">Open the flow trainer</a> <small class="ffl-cr">Photo: Olivier Cleynen, <a href="https://creativecommons.org/licenses/by-sa/3.0/" rel="noopener">CC BY-SA 3.0</a></small></figcaption>
         </figure>
+        <div class="txt">
+          <h3 data-tx="flH">Learn your airline’s flows by heart</h3>
+          <ol class="fp-steps">
+            <li><span data-tx="fl1"><b>Build</b>Tap the controls in your airline’s order, or paste the SOP. On a Birdbird cockpit, a real photo or a page of your own manual.</span></li>
+            <li><span data-tx="fl2"><b>Watch</b>The flow plays step by step, PF and PM in their own colours, with the checklist calls.</span></li>
+            <li><span data-tx="fl3"><b>Practise</b>Find each step, then the whole flow from memory. Alone, or live with your partner on another phone.</span></li>
+          </ol>
+          <p class="fp-depth" data-tx="flD">A320, 737, ATR 72, King Air, Seneca, DA42 and C172. Free, on phone, tablet and computer, and your flows stay on your device.</p>
+        </div>
       </div>
 
       <!-- the cockpit trainers: Cessna 172, DA42, King Air B200, each in 2D and 3D -->
