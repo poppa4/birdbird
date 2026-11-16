@@ -112,7 +112,7 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo svg{width:28px;height:28px;display:block}
 .site .logo img.seal{width:42px;height:42px;display:block;flex:0 0 auto}
 .site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:23px;letter-spacing:-.01em;line-height:1;width:79.1px;white-space:nowrap}
-.site nav{display:flex;gap:4px 26px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
+.site nav{display:flex;gap:4px 22px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
 .site nav a{display:flex;flex-direction:column;justify-content:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
 /* every link keeps the width of its bold (current) form, so the items never move from page to page */
 .site nav a::before,.trnav>.in>a::before{content:attr(data-l);display:block;font-weight:600;height:0;visibility:hidden;overflow:hidden;pointer-events:none;user-select:none}
@@ -130,7 +130,9 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .rank .rb{width:56px;height:4px;background:var(--rule-2);overflow:hidden;flex:0 0 56px}
 .site .rank .rb i{display:block;height:100%;background:var(--accent)}
 .site .rank .rx{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
-@media (max-width:1180px){
+/* narrower desktops: tighter spacing so the main menu stays on one line; below 1260 px it folds into the Menu button */
+@media (max-width:1439px){.site>.in{gap:20px}.site nav{column-gap:16px}}
+@media (max-width:1260px){
   .site>.in{flex-wrap:wrap;gap:0 14px;min-height:56px}
   .site .logo{order:1}
   .site .menu{display:inline-flex;order:3;margin-left:0}
