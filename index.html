@@ -116,7 +116,9 @@
 .ff-cbar .tk i::before{content:'';position:absolute;left:50%;top:-4px;width:1px;height:3px;background:rgba(255,255,255,.55)}
 /* service index: four steps, in the order you prepare a flight */
 .fp-svc{background:var(--navy);border-top:1px solid var(--navy-rule);position:relative}
-.fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.fp-svc ol{list-style:none;margin:0 auto;padding:0;max-width:var(--wrap);display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.fp-svc li:nth-child(3n+1) a{padding-left:0;border-left:0}
+.fp-svc li:nth-child(n+4) a{border-top:1px solid var(--navy-rule)}
 .fp-svc li{min-width:0}
 .fp-svc a{display:grid;grid-template-columns:30px minmax(0,1fr);align-content:start;gap:4px 10px;padding:24px 24px 30px 0;height:100%;text-decoration:none;color:var(--on-navy-2);font-size:15px;line-height:1.5}
 .fp-svc li+li a{padding-left:24px;border-left:1px solid var(--navy-rule)}
@@ -372,7 +374,8 @@
   .fi{max-width:640px;justify-self:start}
   .fp-credit{position:static;max-width:none;padding:0 0 18px;background:none}
   .fp-svc ol{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .fp-svc li:nth-child(3) a{padding-left:0;border-left:0}
+  .fp-svc li:nth-child(3n+1) a{padding-left:16px;border-left:1px solid var(--navy-rule)}
+  .fp-svc li:nth-child(odd) a{padding-left:0;border-left:0}
   .fp-svc li:nth-child(n+3) a{border-top:1px solid var(--navy-rule)}
   .fp-head,.fp-areas-grid,.fp-labs,.fp-row,.fp-row.flip,.fp-end{grid-template-columns:minmax(0,1fr)}
   .fp-head{align-items:start}
@@ -413,7 +416,7 @@
   .ff-cbar .tk i:nth-child(2),.ff-cbar .tk i:nth-child(4){display:none}
   .fp-ro{left:14px;top:12px;gap:16px;font-size:12.5px}
   .fp-svc ol{grid-template-columns:minmax(0,1fr)}
-  .fp-svc a,.fp-svc li+li a,.fp-svc li:nth-child(3) a{padding:16px 0 18px;border-left:0;border-top:1px solid var(--navy-rule)}
+  .fp-svc a,.fp-svc li+li a,.fp-svc li:nth-child(3n+1) a,.fp-svc li:nth-child(odd) a{padding:16px 0 18px;border-left:0;border-top:1px solid var(--navy-rule)}
   .fp-svc li:first-child a{border-top:0}
   .fp-svc b{font-size:19px}
   .fp-sec{padding-top:72px}
@@ -503,13 +506,14 @@
     </div>
   </section>
   <nav class="fp-svc fp-band" aria-labelledby="h-svc">
-    <h2 class="vh" id="h-svc">Five services, from theory to the flight</h2>
+    <h2 class="vh" id="h-svc">Six services, from theory to the flight</h2>
     <ol>
       <li><a href="lab.html"><i>1</i><b>Virtual Labs</b><span data-tx="s1"><span class="nLabs">25</span> interactive labs on the EASA ATPL theory subjects.</span></a></li>
       <li><a href="training.html"><i>2</i><b data-tx="trnB">Training</b><span data-tx="s5">Cockpit trainers for the C172, DA42 and B200, IFR, briefing and radio.</span></a></li>
-      <li><a href="route.html"><i>3</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
-      <li><a href="prep.html"><i>4</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
-      <li><a href="fi.html"><i>5</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
+      <li><a href="flows.html"><i>3</i><b>Flows</b><span data-tx="s6">Learn your airline’s flows by heart on the real cockpit, alone or with your partner.</span></a></li>
+      <li><a href="route.html"><i>4</i><b>Route Explorer</b><span data-tx="s2">Plan the route on a VFR map and read the terrain under it.</span></a></li>
+      <li><a href="prep.html"><i>5</i><b>Briefing pack</b><span data-tx="s3">NOTAM, weather, minima, performance, fuel, mass and balance, printed as a booklet.</span></a></li>
+      <li><a href="fi.html"><i>6</i><b>Flight Intelligence</b><span data-tx="s4">Answers from your AFM, QRH and SOP, with the page each one comes from.</span></a></li>
     </ol>
   </nav>
 
@@ -734,7 +738,7 @@ const {L,el}=LAB;
 LAB.add({},{
  'Birdbird · Aviation theory and flight preparation, built in Norway':'Birdbird · Flyteori og flyforberedelse, laget i Norge',
  'Open Virtual Labs':'Åpne Virtual Labs','Make a briefing pack':'Lag en briefingpakke','Examples':'Eksempler',
- 'Five services, from theory to the flight':'Fire tjenester, i den rekkefølgen du forbereder en flyging',
+ 'Six services, from theory to the flight':'Seks tjenester, fra teori til flyging',
  'Briefing pack':'Briefingpakke'
 });
 LAB.tx({
@@ -747,7 +751,7 @@ LAB.tx({
  s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
  s4:'Svar fra din AFM, QRH og SOP, med siden hvert svar kommer fra.',
- s5:'Cockpittrenere for C172, DA42 og B200, IFR, briefing og radio.', trnB:'Trening', bTrn:'Trening', bBp:'Briefingpakke',
+ s5:'Cockpittrenere for C172, DA42 og B200, IFR, briefing og radio.', s6:'Lær flowene til ditt flyselskap utenat i den ekte cockpiten, alene eller med partneren din.', trnB:'Trening', bTrn:'Trening', bBp:'Briefingpakke',
  h2a:'Seks fagområder, bygd på EASA ATPL-pensumet',
  p2a:'Hver lab er en modell du kan endre og se reagere: fly vingen inn i stall, la et tordenvær vokse, fly en VOR-radial over Bergen. Der en lab viser tall, kommer de fra en illustrerende A320.',
  capFoil:'<b>Vingen sett fra siden med 13° angrepsvinkel.</b> Profilsnittet fra aerodynamikklabben, beregnet direkte i nettleseren din: trykkfelt (Cp) og strømlinjer fra en panelmetode, omslag og separasjon fra en grensesjiktmodell. <a class="tl" href="tunnel.html#profil">Åpne profilsnittet</a>',
