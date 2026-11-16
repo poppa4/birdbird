@@ -166,17 +166,16 @@ async function getText(fetchFn, url) {
   if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
   return { text: await r.text(), url: r.url || url };
 }
-async function exists(fetchFn, url) {
-  for (const method of ['HEAD', 'GET']) {
-    try {
-      const r = await fetchFn(url, { method, headers: { 'user-agent': UA }, redirect: 'follow' });
-      if (r.body && method === 'GET') { try { r.body.cancel(); } catch (e) {} }
-      if (r.ok) return true;
-      if (r.status === 404 || r.status === 410) return false;
-      if (r.status === 401 || r.status === 403) return null;
-    } catch (e) {}
-  }
-  return false;
+async function exists(fetchFn, url, icao) {
+  // GET, and the page must name the aerodrome: some states answer 200 with an empty page for any name
+  try {
+    const r = await fetchFn(url, { headers: { 'user-agent': UA }, redirect: 'follow' });
+    if (r.status === 401 || r.status === 403) return null;
+    if (!r.ok) return false;
+    if (/pdf/i.test(r.headers.get('content-type') || '')) { try { r.body && r.body.cancel(); } catch (e) {} return true; }
+    const t = await r.text();
+    return !icao || t.toUpperCase().includes(icao);
+  } catch (e) { return false; }
 }
 /* AIRAC effective dates repeat every 28 days (29 OCT 2026 is one) */
 export function airacOf(today) {
@@ -241,7 +240,7 @@ export async function resolve(icaoIn, deps) {
     if (hit && hit.url) return done(hit.url);
     if (hit) return st.part ? Object.assign({}, fallback, { url: new URL(st.part, ed.base).href, kind: 'part', name }) : fallback;
     let url = null;
-    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u); if (x || (x === null && !st.toc && (!st.known || st.known.includes(icao)))) { url = u; break; } }
+    for (const t of [].concat(st.tpl || [])) { const u = new URL(t.replace('{I}', icao), ed.base).href; const x = await exists(deps.fetch, u, icao); if (x || (x === null && !st.toc && (!st.known || st.known.includes(icao)))) { url = u; break; } }
     if (!url && st.toc) {
       // the whole table of contents is read once per edition: every aerodrome in it is kept (cached 6 h)
       const mk = 'toc:' + pre + ':' + ed.base;

@@ -33,8 +33,8 @@ const SAMPLE = { EN: ['ENTO', 'ENGM', 'ENSB'], ES: ['ESSA', 'ESSB'], EF: ['EFHK'
   EP: ['EPWA', 'EPGD'], EE: ['EETN'], EV: ['EVRA'], LH: ['LHBP'], LP: ['LPPT', 'LPFR'], LZ: ['LZIB'], LK: ['LKPR', 'LKTB'], LE: ['LEMD', 'GCLP'],
   LF: ['LFPG', 'LFMN'], ED: ['EDDF', 'EDFE', 'ETNL'], EK: ['EKCH', 'EKRK', 'EKVG', 'BGSF'], LO: ['LOWW', 'LOAG'], LY: ['LYBE', 'LYPG'], LA: ['LATI'], LQ: ['LQSA'] };
 const tf = (u, o) => fetch(u, Object.assign({ signal: AbortSignal.timeout(40000) }, o));
-for (const [st, list] of Object.entries(SAMPLE)) for (const icao of list.concat([st + 'QX'])) {
-  const none = icao.endsWith('QX');
+for (const [st, list] of Object.entries(SAMPLE)) for (const icao of list.concat([st + '9Z'])) {
+  const none = icao.endsWith('9Z');
   const r = await resolve(icao, { fetch: tf, cache: null, log: m => console.log('  ' + m) });
   const c = await check(r.url);
   const blocked = c.status && String(c.status).startsWith('403');
