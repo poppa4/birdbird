@@ -112,13 +112,19 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo svg{width:28px;height:28px;display:block}
 .site .logo img.seal{width:42px;height:42px;display:block;flex:0 0 auto}
 .site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:23px;letter-spacing:-.01em;line-height:1;width:79.1px;white-space:nowrap}
-.site nav{display:flex;gap:4px 22px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
+.site nav{display:flex;gap:4px 20px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
 .site nav a{display:flex;flex-direction:column;justify-content:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
 /* every link keeps the width of its bold (current) form, so the items never move from page to page */
 .site nav a::before,.trnav>.in>a::before{content:attr(data-l);display:block;font-weight:600;height:0;visibility:hidden;overflow:hidden;pointer-events:none;user-select:none}
 .site nav a:hover{color:var(--ink)}
 .site nav a.on{color:var(--ink);font-weight:600}
 .site nav a.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+/* Flight Intelligence: the one AI service, set apart in a quiet tinted box with a small mark */
+.site nav a.nfi{flex-direction:row;align-items:center;align-self:center;gap:6px;padding:4px 10px;margin:0 -4px;background:var(--accent-wash);border:1px solid rgba(154,30,104,.18);border-radius:999px;color:var(--ink)}
+.site nav a.nfi::before{display:none}
+.site nav a.nfi::after,.site nav a.nfi.on::after{content:"";position:static;flex:0 0 auto;width:6px;height:6px;border-radius:50%;background:var(--accent);display:block}
+.site nav a.nfi:hover{border-color:rgba(154,30,104,.4)}
+.site nav a.nfi.on{border-color:var(--accent);font-weight:600}
 .site .hright{display:flex;align-items:center;gap:12px;flex:0 0 auto}
 .site .hright .seg button{padding:4px 9px;font-size:13px;min-height:0}
 .site .cta{flex:0 0 auto;text-decoration:none}
@@ -130,9 +136,9 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .rank .rb{width:56px;height:4px;background:var(--rule-2);overflow:hidden;flex:0 0 56px}
 .site .rank .rb i{display:block;height:100%;background:var(--accent)}
 .site .rank .rx{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);white-space:nowrap}
-/* narrower desktops: tighter spacing so the main menu stays on one line; below 1260 px it folds into the Menu button */
-@media (max-width:1439px){.site>.in{gap:20px}.site nav{column-gap:16px}}
-@media (max-width:1260px){
+/* narrower desktops: tighter spacing so the main menu stays on one line; below 1300 px it folds into the Menu button */
+@media (max-width:1439px){.site>.in{gap:18px}.site nav{column-gap:14px}}
+@media (max-width:1300px){
   .site>.in{flex-wrap:wrap;gap:0 14px;min-height:56px}
   .site .logo{order:1}
   .site .menu{display:inline-flex;order:3;margin-left:0}
@@ -142,6 +148,8 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
   .site nav a:last-child{border-bottom:0}
   .site nav a.on{color:var(--accent)}
   .site nav a.on::after{display:none}
+  .site nav a.nfi{align-self:flex-start;margin:8px 0 4px;padding:9px 14px;border-bottom:1px solid rgba(154,30,104,.18)}
+  .site nav a.nfi::after{display:block}
   .site.open nav{display:flex}
   .site .rank .rb,.site .rank .rx{display:none}
 }
