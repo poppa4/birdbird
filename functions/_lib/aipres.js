@@ -12,6 +12,8 @@
    If a state changes its website so the lookup fails, the user still gets the state's AIP portal (never a dead link),
    and the weekly check (tests/aip-links.mjs) e-mails the repository owner. */
 
+import DE from './aip-de.js';
+
 export const UA = 'Mozilla/5.0 (compatible; Birdbird/1.0; +https://birdbird.eu)';
 const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
 
@@ -42,7 +44,20 @@ export const PORTAL = {
   LP: N('NAV Portugal AIP', 'https://ais.nav.pt/online-eaip-en/'),
   LE: N('ENAIRE AIP Spain', 'https://aip.enaire.es/AIP/AIP-en.html'),
   GC: N('ENAIRE AIP Spain', 'https://aip.enaire.es/AIP/AIP-en.html'),
-  LZ: N('LPS AIP Slovak Republic', 'https://aim.lps.sk/web/index.php?fn=200&lng=en')
+  LZ: N('LPS AIP Slovak Republic', 'https://aim.lps.sk/web/index.php?fn=200&lng=en'),
+  LJ: N('Slovenia Control AIP Slovenia', 'https://aim.sloveniacontrol.si/aim/products/aip/'),
+  LY: N('SMATSA AIP Serbia and Montenegro', 'https://smatsa.rs/upload/aip/published/start_page.html'),
+  LA: N('Albcontrol AIP Albania', 'https://www.albcontrol.al/aip/'),
+  LQ: N('BHANSA AIP Bosnia and Herzegovina', 'https://eaip.bhansa.gov.ba/'),
+  LR: N('ROMATSA AIP Romania', 'https://www.aisro.ro/aip/aip.php'),
+  LD: N('Croatia Control AIP Croatia', 'https://www.crocontrol.hr/en/services/aeronautical-information-management/'),
+  EI: N('AirNav Ireland AIP', 'https://www.airnav.ie/air-traffic-management/aeronautical-information-management/aip-package'),
+  LB: N('BULATSA AIP Bulgaria', 'https://b-flip.bulatsa.com/publications/aip/home'),
+  UK: N('UkSATSE AIP Ukraine', 'https://www.aisukraine.net/titul_en.php'),
+  LT: N('DHMI AIP Türkiye', 'https://www.dhmi.gov.tr/Sayfalar/aipturkey.aspx'),
+  LS: N('skyguide AIP Switzerland', 'https://www.skybriefing.com/'),
+  EY: N('ANS AIP Lithuania', 'https://www.ans.lt/en/aim'),
+  LM: N('MATS AIP Malta', 'https://www.maltats.com/')
 };
 export const EAD = { name: 'EUROCONTROL EAD Basic', url: 'https://www.ead.eurocontrol.int/cms-eadbasic/opencms/en/login/ead-basic', kind: 'ead' };
 export const DIR = { name: 'EUROCONTROL @IS Online', url: 'https://www.eurocontrol.int/articles/ais-online', kind: 'dir' };
@@ -72,11 +87,34 @@ export const STATES = {
   LP: { fixed: 'https://ais.nav.pt/wp-content/uploads/AIS_Files/eAIP_Current/eAIP_Online/eAIP/html/', tpl: 'eAIP/LP-AD-2.{I}-en-PT.html' },
   LZ: { idx: 'https://aim.lps.sk/web/index.php?fn=200&lng=en', rx: /(?<p>https:\/\/aim\.lps\.sk\/web\/eAIP_SR\/AIP_SR_EFF_(?<d>\d{2})(?<mon>[A-Z]{3})(?<y>\d{4})(?:_amdt)?)\/html\/LZ-frameset-en-SK\.html/g, base: p => p + '/html/', abs: true, toc: 'LZ-menu-en-SK.html' },
   LK: { fixed: 'https://aim.rlp.cz/eaip/html/', toc: 'eAIP/LK-menu-en-GB.html', tpl: 'eAIP/LK-AD-2.{I}-en-GB.html' },
-  LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', part: 'ad.htm' },
   LF: { airac: d => { const [y, m, dd] = d.split('-'); const mon = Object.keys(MON)[+m - 1]; return `https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_${dd}_${mon}_${y}/FRANCE/AIRAC-${d}/html/`; },
         tpl: ['eAIP/FR-AD-2.{I}-en-GB.html', 'eAIP/FR-AD-2.{I}-fr-FR.html'], toc: 'eAIP/FR-menu-fr-FR.html' },
-  LE: { fixed: 'https://aip.enaire.es/AIP/', toc: 'AIP-en.html', lang: /_en\./ }
+  LE: { fixed: 'https://aip.enaire.es/AIP/', toc: 'AIP-en.html', lang: /_en\./ },
+  LO: { idx: 'https://eaip.austrocontrol.at/', rx: /\.\/(?<p>lo\/(?<yy>\d{2})(?<m>\d{2})(?<d>\d{2}))\/index\.htm/g, base: p => p + '/', toc: 'ad_2.htm', part: 'ad.htm',
+        want: (h, i) => new RegExp('^ad_2_' + i.toLowerCase() + '\\.htm$').test(h) || new RegExp('LO_AD_2_' + i + '_en\\.pdf$').test(h), prefer: /\.htm$/ },
+  LJ: { fixed: 'https://aim.sloveniacontrol.si/aim/products/aip/part-3-aerodromes-ad/', toc: 'ad-2-aerodromes/',
+        match: (h, i) => new RegExp('/charts/aerodromes/' + i.toLowerCase() + '-').test(h) },
+  LY: { idx: 'https://smatsa.rs/upload/aip/published/start_page.html', rx: /\.\/(?<p>(?<d>\d{2})-(?<mon>[A-Za-z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC)\/html\//g, base: p => p + '/html/', tpl: 'eAIP/LY-AD-2.{I}-en-GB.html' },
+  LA: { idx: 'https://www.albcontrol.al/aip/', rx: /(?<p>https:\/\/www\.albcontrol\.al\/al\/aip\/(?<d>\d{2})-(?<mon>[A-Z]{3})-(?<y>\d{4})-A\/\d{4}-\d{2}-\d{2}-AIRAC\/html)/g, base: p => p + '/', tpl: 'eAIP/LA-AD-2.{I}-en-GB.html' },
+  LQ: { idx: 'https://eaip.bhansa.gov.ba/updates.json', rx: /"effectiveDate"\s*:\s*"(?<p>(?<d>\d{1,2}) (?<mon>[A-Z]{3}) (?<y>\d{4}))"/g, base: (p, eff) => eff + '-AIRAC/html/', tpl: 'eAIP/LQ-AD-2.{I}-en-GB.html' },
+  /* Germany: DFS permalinks (they redirect to the edition in force); the list is rebuilt weekly by tools/build-aip-de.mjs */
+  ED: { custom: async icao => DE.ifr[icao] ? 'https://aip.dfs.de/BasicIFR/pages/' + DE.ifr[icao] + '.html' : DE.vfr[icao] ? 'https://aip.dfs.de/BasicVFR/pages/' + DE.vfr[icao] + '.html' : null },
+  /* Denmark, the Faroe Islands and Greenland: Naviair's own search, the newest AD 2 text that is already published */
+  EK: { custom: naviair },
+  EH: { idx: 'https://eaip.lvnl.nl/web/eaip/default.html', rx: /(?<p>[^"']*?(?<y>\d{4})-(?<m>\d{2})-(?<d>\d{2})-AIRAC)\/html\/index-en-GB\.html/g, base: p => p + '/html/', tpl: 'eAIP/EH-AD-2.{I}-en-GB.html', toc: 'eAIP/EH-menu-en-GB.html' }
 };
+STATES.ET = STATES.ED; STATES.BG = STATES.EK;
+
+async function naviair(icao, deps) {
+  const r = await deps.fetch('https://aim.naviair.dk/umbraco/api/naviairapi/getsearch?criterion=' + icao + '&skip=0&take=50', { headers: { 'user-agent': UA, accept: 'application/json' } });
+  if (!r.ok) throw new Error('Naviair HTTP ' + r.status);
+  const nodes = ((await r.json()) || {}).nodes || [];
+  const now = deps.now || Date.now();
+  const rx = new RegExp('^(?:EK|BG|XX)_AD_2_' + icao + '_en\\.pdf$', 'i');
+  const ok = nodes.filter(n => rx.test(n.name || '') && n.href && (!n.publishAt || Date.parse(n.publishAt) <= now) && (!n.unpublishAt || Date.parse(n.unpublishAt) > now));
+  ok.sort((a, b) => (/AD 2/.test(b.title) - /AD 2/.test(a.title)) || (Date.parse(b.publishAt || 0) - Date.parse(a.publishAt || 0)));
+  return ok.length ? new URL(ok[0].href, 'https://aim.naviair.dk/').href : null;
+}
 STATES.EL = STATES.EB; STATES.GC = STATES.LE;
 
 export function portalFor(icao) {
@@ -101,11 +139,12 @@ export function pickEdition(text, rx, today) {
   return best;
 }
 /* every link in a table of contents that points at the AD 2 page of this aerodrome */
-export function findAd2(text, icao, lang, want) {
+export function findAd2(text, icao, lang, want, match, prefer) {
   const out = [];
   const rx = /(?:href|"href")\s*[=:]\s*["']([^"'#]+)(?:#[^"']*)?["']/gi;
   for (const m of text.matchAll(rx)) {
     const h = m[1].replace(/&amp;/g, '&'); const u = h.toUpperCase();
+    if (match) { if (match(h, icao)) out.push(h); continue; }
     if (!u.includes(icao)) continue;
     const d = u.replace(/%20/g, ' ');
     if (!/(^|[^A-Z])AD[\s_\-.]*2(?![0-9])/.test(d) && !new RegExp('(^|[^A-Z])AD[\\s_\\-.]+' + icao).test(d)) continue;
@@ -113,7 +152,7 @@ export function findAd2(text, icao, lang, want) {
     out.push(h);
   }
   if (!out.length) return null;
-  const score = h => (/en-GB|-en-|_en[._]|-en\./i.test(h) ? 4 : 0) + (lang && lang.test(h) ? 4 : 0) + (/AD[\s_\-.]*(?:%20)?2[.\s_-]1\b/i.test(h) ? 1 : 0) - (/\.pdf$/i.test(h) ? 1 : 0) - h.length / 1000;
+  const score = h => (prefer && prefer.test(h) ? 10 : 0) + (/en-GB|-en-|_en[._]|-en\./i.test(h) ? 4 : 0) + (lang && lang.test(h) ? 4 : 0) + (/AD[\s_\-.]*(?:%20)?2[.\s_-]1\b/i.test(h) ? 1 : 0) - (/\.pdf$/i.test(h) ? 1 : 0) - h.length / 1000;
   return out.sort((a, b) => score(b) - score(a))[0];
 }
 
@@ -150,7 +189,7 @@ export async function edition(st, deps) {
   if (st.follow) return { base: page.url.replace(/[^/]*$/, ''), eff: (page.url.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || null };
   let ed = pickEdition(page.text, st.rx, today);
   if (!ed) throw new Error('no edition in force on ' + st.idx);
-  let at = new URL(st.base ? st.base(ed.p) : ed.p, page.url).href;
+  let at = new URL(st.base ? st.base(ed.p, ed.eff) : ed.p, page.url).href;
   if (st.idx2) {
     const p2 = await getText(fetchFn, new URL(ed.p, page.url).href);
     const e2 = pickEdition(p2.text, st.idx2.rx, today);
@@ -179,6 +218,12 @@ export async function resolve(icaoIn, deps) {
   const cache = deps.cache === undefined ? (typeof caches !== 'undefined' ? caches.default : null) : deps.cache;
   const today = deps.today || ymd(new Date());
   try {
+    if (st.custom) {
+      const ck = 'cu:' + icao + ':' + today;
+      let hit = await cget(cache, ck);
+      if (!hit) { hit = { url: await st.custom(icao, deps) }; await cput(cache, ck, hit, 10800, deps); }
+      return hit.url ? { ok: true, icao, url: hit.url, kind: 'ad2', name: (PORTAL[pre] || {}).name || 'AIP', eff: null } : fallback;
+    }
     // 1. the edition in force (cached 3 h, keyed by day so a new AIRAC is never missed past midnight UTC)
     const ek = 'ed:' + pre + ':' + today;
     let ed = await cget(cache, ek);
@@ -200,8 +245,8 @@ export async function resolve(icaoIn, deps) {
         const toc = await getText(deps.fetch, new URL(st.toc, ed.base).href);
         const rel = st.tocBase ? new URL(st.tocBase, ed.base).href : toc.url;
         map = {};
-        const ids = new Set((toc.text.match(new RegExp('\\b' + pre[0] + '[A-Z][A-Z0-9]{2}\\b', 'g')) || []).filter(x => STATES[x.slice(0, 2)] === st));
-        for (const id of ids) { const h = findAd2(toc.text, id, st.lang, st.want); if (h) map[id] = new URL(h, rel).href; }
+        const ids = new Set((toc.text.match(new RegExp('(?<![A-Z0-9])' + pre[0] + '[A-Z][A-Z0-9]{2}(?![A-Z0-9])', 'gi')) || []).map(x => x.toUpperCase()).filter(x => STATES[x.slice(0, 2)] === st));
+        for (const id of ids) { const h = findAd2(toc.text, id, st.lang, st.want, st.match, st.prefer); if (h) map[id] = new URL(h, rel).href; }
         await cput(cache, mk, map, 21600, deps);
       }
       url = map[icao] || null;

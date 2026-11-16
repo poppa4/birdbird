@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['aip.js', 'functions/_lib/aipres.js', 'tests/aip-links.mjs', '.github/workflows/aip-links.yml']
+    paths: ['aip.js', 'tools/build-aip-de.mjs', 'functions/_lib/aipres.js', 'tests/aip-links.mjs', '.github/workflows/aip-links.yml']
+permissions:
+  contents: write
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -15,4 +17,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Germany's aerodrome list (DFS permalinks), committed when it changed
+        run: |
+          node tools/build-aip-de.mjs
+          if ! git diff --quiet -- functions/_lib/aip-de.js; then
+            git config user.name "aip-links"; git config user.email "actions@github.com"
+            git add functions/_lib/aip-de.js && git commit -qm "Germany: aerodrome list updated from DFS" && git push
+          fi
       - run: node tests/aip-links.mjs

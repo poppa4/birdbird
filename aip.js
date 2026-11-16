@@ -44,7 +44,7 @@
   function of(icao){ const id=String(icao||'').toUpperCase(); if(!/^[A-Z][A-Z0-9]{3}$/.test(id)) return null; const p=id.slice(0,2);
     return A[p]||(EUR.test(id)?EAD:DIR); }
   /* states where the AD 2 page itself is found (the rest open the portal) */
-  const DEEP=/^(EN|ES|EF|BI|EG|EB|EL|EP|EE|EV|LH|LP|LZ|LK|LE|GC|LF)/;
+  const DEEP=/^(EN|ES|EF|BI|EG|EB|EL|EP|EE|EV|LH|LP|LZ|LK|LE|GC|LF|ED|ET|EK|BG|LO|LJ|LY|LA|LQ|EH)/;
   const ad=icao=>{ const id=String(icao||'').toUpperCase(); return /^[A-Z]{2}[A-Z0-9]{2}$/.test(id)?'/api/aip?icao='+id+'&go=1':null; };
   const deep=icao=>DEEP.test(String(icao||'').toUpperCase());
   window.BBAIP={of,ad,deep,EAD,DIR,ALL:A};

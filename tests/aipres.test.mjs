@@ -26,9 +26,9 @@ test('Norway: AD 2 page of the edition in force, portal when the aerodrome is no
 test('a state whose site fails still gives its portal; other states get EAD or the directory', async () => {
   const r = await resolve('EGLL', { fetch: async () => { throw new Error('down'); }, cache: null, today: '2026-11-16' });
   assert.equal(r.kind, 'portal'); assert.equal(r.lookupFailed, true);
-  assert.equal((await resolve('EDDF', { fetch: null, cache: null })).kind, 'portal');
+  assert.match((await resolve('EDDF', { fetch: null, cache: null })).url, /^https:\/\/aip\.dfs\.de\/BasicIFR\/pages\/C[0-9A-F]+\.html$/);
   assert.equal((await resolve('LIRF', { fetch: null, cache: null })).kind, 'portal');
-  assert.equal((await resolve('UKBB', { fetch: null, cache: null })).kind, 'ead');
+  assert.equal((await resolve('LCLK', { fetch: null, cache: null })).kind, 'ead');
   assert.equal((await resolve('KJFK', { fetch: null, cache: null })).kind, 'dir');
 });
 test('/api/aip redirects with go=1 and rejects bad codes', async () => {
