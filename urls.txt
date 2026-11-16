@@ -1,21 +1,19 @@
-EN https://ais.avinor.no/no/AIP/
-EN2 https://aim-prod.avinor.no/no/AIP/
-ES https://aro.lfv.se/content/eaip/default_offline.html
-ES2 https://aro.lfv.se/Editorial/View/IAIP?folderId=19
-EK https://aim.naviair.dk/
-EF https://www.ais.fi/eaip/
-EF2 https://www.ais.fi/en/
-BI https://eaip.isavia.is/
-EG https://nats-uk.ead-it.com/cms-nats/opencms/en/Publications/AIP/
-EG2 https://www.aurora.nats.co.uk/htmlAIP/Publications/
-EH https://eaip.lvnl.nl/web/eaip/default.html
-EH2 https://www.lvnl.nl/diensten/aip
-EB https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/index-en-GB.html
-EP https://www.ais.pansa.pl/en/publications/aip-ifr/
+EN https://aim-prod.avinor.no/no/AIP/View/Index/155/history-no-NO.html
+ENa https://aim-prod.avinor.no/no/AIP/View/Index/155/2026-09-03-AIRAC/html/eAIP/EN-AD-2.ENTO-en-GB.html
+ENb https://aim-prod.avinor.no/no/AIP/View/Index/155/2026-09-03-AIRAC/html/index-no-NO.html
+ESa https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/index-v2.html
+ESb https://aro.lfv.se/content/eaip/AIRAC%20AIP%20AMDT%206-2026_2026_10_29/eAIP/ES-menu-en-GB.html AD
+EFa https://www.ais.fi/eaip/currently_effective/eAIP/EF-menu-fi-FI.html AD
+EFb https://www.ais.fi/eaip/ eaip
+BIa https://eaip.avians.is/A_10-2026_2026_10_29/ 
+EGa https://www.aurora.nats.co.uk/htmlAIP/Publications/2026-10-29-AIRAC/html/eAIP/EG-AD-2.EGLL-en-GB.html
+EBa https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/eAIP/EB-menu-en-GB.html AD
+EBb https://ops.skeyes.be/html/belgocontrol_static/eaip/eAIP_Main/html/eAIP/EB-AD-2.EBBR-en-GB.html
 LO https://eaip.austrocontrol.at/
-LF https://www.sia.aviation-civile.gouv.fr/media/dvd/
-LF2 https://www.sia.aviation-civile.gouv.fr/
+EP https://www.ais.pansa.pl/en/publications/aip-ifr/ eaip|aip
+LF https://www.sia.aviation-civile.gouv.fr/vaip
 LE https://aip.enaire.es/AIP/AIP-en.html
+LEa https://aip.enaire.es/AIP/contenido_AIP/AD/AD2/LEMD/LE_AD_2_LEMD_en.pdf
 LP https://ais.nav.pt/online-eaip-en/
 ED https://aip.dfs.de/basicAIP/
 EE https://eaip.eans.ee/
@@ -33,5 +31,6 @@ LG https://aisgr.hasp.gov.gr/cd/start.html
 LS https://www.skybriefing.com/
 EI https://www.airnav.ie/air-traffic-management/aeronautical-information-management/aip-package
 LM https://www.maltats.com/aim/
-LT https://www.dhmi.gov.tr/
 LI https://onlineservices.enav.it/enavWebPortalStatic/AIP/AIP/default.html
+EK https://aim.naviair.dk/ 
+EKa https://aim.naviair.dk/da/aip/
