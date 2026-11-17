@@ -111,7 +111,8 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 .site .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:0 0 auto}
 .site .logo svg{width:28px;height:28px;display:block}
 .site .logo img.seal{width:42px;height:42px;display:block;flex:0 0 auto}
-.site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:92.9px;white-space:nowrap}
+.site .logo span{font-family:var(--f-display);font-stretch:88%;font-weight:750;font-size:21px;letter-spacing:.07em;line-height:1;width:113.9px;white-space:nowrap}
+.site .logo span small{display:block;margin-top:4px;font-family:var(--f-body);font-stretch:100%;font-weight:600;font-size:9.5px;letter-spacing:.02em;line-height:1;color:var(--ink-2)}
 .site nav{display:flex;gap:4px 20px;flex:1 1 auto;flex-wrap:wrap;align-self:stretch}
 .site nav a{display:flex;flex-direction:column;justify-content:center;font-size:15px;font-weight:500;color:var(--ink-2);text-decoration:none;position:relative;white-space:nowrap}
 /* every link keeps the width of its bold (current) form, so the items never move from page to page */
@@ -482,3 +483,6 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 /* link from a cockpit page to the flow trainer (site.js fills the words) */
 .note.flowlink a{display:block;padding:11px 14px;border:1px solid var(--rule);border-radius:8px;background:var(--sheet,#fff);text-decoration:none;color:var(--ink);line-height:1.4}.note.flowlink a:hover,.note.flowlink a:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}
 .sitefoot .fb .logo img.seal{width:64px;height:64px;flex:0 0 auto}
+/* phones: the full name under NORDAP must not push the Menu button onto a second row */
+@media (max-width:429px){.site>.in{gap:0 9px}.site .logo{gap:7px}.site .logo span{width:auto}.site .logo span small{font-size:9px;letter-spacing:0}}
+@media (max-width:389px){.site .logo span small{display:none}}
