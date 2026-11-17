@@ -15,7 +15,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 OUT = sys.argv[1] if len(sys.argv) > 1 else '/tmp/logo/out'
 FONTS = '/usr/share/fonts/opentype/inter/'
-NAVY, GOLD, GOLD2, PAPER, BLUE, WHITE = '#13202A', '#C9A24A', '#A8842F', '#F3EFE4', '#3B5670', '#FFFFFF'
+NAVY, GOLD, GOLD2, PAPER, BLUE, WHITE = '#0B2545', '#C9A24A', '#A8842F', '#FFFFFF', '#34588A', '#FFFFFF'   # navy, sheet white and gold are the site's own tokens (site.css)
 NAME, FULL = 'NORDAP', 'NORDIC AVIATION PLATFORM'
 
 _fonts = {}
