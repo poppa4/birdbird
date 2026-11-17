@@ -210,7 +210,7 @@
       return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=6'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=2')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=9')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=10')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -510,13 +510,13 @@
           <button type="button" data-e="note">${ic('note')}<b>${esc(t('New note', 'Nytt notat'))}</b><small>${esc(t('Saved as you type', 'Lagres mens du skriver'))}</small></button>
           <button type="button" data-e="ac">${ic('aircraft')}<b>${esc(A.aircraft().length ? t('Choose aircraft', 'Velg fly') : t('Add aircraft', 'Legg til fly'))}</b><small>${esc(A.aircraft().length ? t('Speeds, limits and its documents', 'Hastigheter, grenser og dokumentene') : t('The aircraft you fly', 'Flyet du flyr'))}</small></button>
         </div>
-        <button type="button" class="fi-card" data-e="fi">${ic('ask')}<span class="tx"><b>Flight Intelligence</b><small>${esc(askable ? t('Ask your manuals and checklists. Answers point to the page.', 'Spør manualene og sjekklistene dine. Svarene viser til siden.') : t('Add your manuals, then ask them anything. Answers point to the page.', 'Legg til manualene dine, og spør dem om hva som helst. Svarene viser til siden.'))}</small></span><span class="go">→</span></button>
+        <button type="button" class="fi-card" data-e="fi">${ic('ask')}<span class="tx"><b>Flight Intelligence</b><small>${esc(askable ? t('Ask your manuals and checklists. Answers point to the page.', 'Spør manualene og sjekklistene dine. Svarene viser til siden.') : t('Ask anything: theory, weather, EASA rules. Add your manuals and the answers point to the page too.', 'Spør om hva som helst: teori, vær, EASA-regler. Legg til manualene dine, så viser svarene til siden også.'))}</small></span><span class="go">→</span></button>
         <p class="more2"><button type="button" data-e="nb">${ic('pen')}<span>${esc(t('New notebook', 'Ny notatbok'))}</span></button></p>
         ${now2.length ? `<h3>${esc(t('Open now', 'Åpent nå'))}</h3><ul class="rec now">${now2.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="go" aria-hidden="true">→</span></button></li>`).join('')}</ul>` : ''}
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
-      box.querySelector('.fi-card').addEventListener('click', () => emptyAction('ask'));
+      box.querySelector('.fi-card').addEventListener('click', () => { if (window.WSFI) window.WSFI.focus(); else emptyAction('ask'); });
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null, dead = false; const mh = box.querySelector('.mmh');
       if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
@@ -1191,7 +1191,7 @@
         const it = e.target.closest('.dk-it'); if (it) { openItem(it.dataset.k, it.dataset.r, { beside: e.shiftKey || e.altKey }); return; }
         const ri = e.target.closest('[data-ri]'); if (ri) { const o = Object.assign({}, (A.M.deskRail || {}).open || {}); o[ri.dataset.ri] = true; A.M.deskRail = Object.assign({}, A.M.deskRail || {}, { open: o, c: false }); A.saveMeta(); drawRail(); drawBar(); return; }
         const b = e.target.closest('[data-b]'); if (!b) return;
-        if (b.dataset.b === 'fi') askBeside(null); else if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({}); else if (b.dataset.b === 'desks') deskMenu(b);
+        if (b.dataset.b === 'fi') { if (window.WSFI) window.WSFI.focus(); else askBeside(null); } else if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({}); else if (b.dataset.b === 'desks') deskMenu(b);
       };
       railEl.addEventListener('click', railClick);
       sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; }

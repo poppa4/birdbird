@@ -328,13 +328,63 @@
     try { railMap = { sig, host, m: window.WSMAP.mount(host, { graph: a.g, t, mini: true, sample: a.sample }) }; } catch (e) { railMap = null; console.error('rail map', e); }
   }
   window.addEventListener('resize', () => { const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library'); drawRailMap(cur); });
-  function drawFiButton() {
-    let b = el('wsFi');
-    if (!b) { document.body.insertAdjacentHTML('beforeend', '<a id="wsFi" class="ws-fi" href="#/fi"><span class="d" aria-hidden="true"></span><span class="l"></span></a>'); b = el('wsFi'); }
-    b.querySelector('.l').textContent = t('Ask Flight Intelligence', 'Spør Flight Intelligence');
+  /* ---------- Flight Intelligence, always open beside My workspace ----------
+     A fixed panel on the right (wide screens) or an ask bar at the bottom that opens into a sheet (narrow screens),
+     on every view including the desk. It is the desk's Flight Intelligence (ask.js) mounted outside the panes:
+     the same conversation all session, answers from your documents, the EASA rules library and general knowledge.
+     Collapsed on wide screens it is a slim strip; the choice is remembered on this device. */
+  const DOCK = 'bb-fi-dock';
+  let dock = null;
+  const dockWide = () => window.innerWidth >= 1200;
+  function dockState(v) { try { if (v != null) LS && LS.setItem(DOCK, v); return (LS && LS.getItem(DOCK)) || 'open'; } catch (e) { return 'open'; } }
+  function dockApply() {
+    if (!dock) return;
+    const wide = dockWide(), open = wide ? dockState() === 'open' : dock.sheet;
+    document.documentElement.classList.toggle('ws-dock-wide', wide);
+    document.documentElement.classList.toggle('ws-dock-open', open);
+    dock.el.classList.toggle('open', open);
+    dock.el.querySelector('[data-dock="tog"]').setAttribute('aria-expanded', String(open));
+    dock.el.querySelector('[data-dock="tog"]').title = open ? t('Hide', 'Skjul') : t('Show', 'Vis');
+    const hb = dock.el.querySelector('.hd [data-dock="tog"]'); hb.textContent = wide ? '»' : '×'; hb.setAttribute('aria-label', wide ? t('Hide Flight Intelligence', 'Skjul Flight Intelligence') : t('Close', 'Lukk'));
   }
+  function dockLabels() {
+    if (!dock) return;
+    dock.el.querySelector('.ttl').textContent = 'Flight Intelligence';
+    dock.el.querySelector('.strip span').textContent = 'Flight Intelligence';
+  }
+  async function ensureDock() {
+    if (dock || !window.WSDESK || !window.WSDESK.needAsk) return;
+    document.body.insertAdjacentHTML('beforeend', `<aside class="ws-dock" id="wsDock" aria-label="Flight Intelligence">
+      <button type="button" class="strip" data-dock="tog"><i aria-hidden="true"></i><span></span></button>
+      <div class="hd"><i aria-hidden="true"></i><b class="ttl"></b><span class="sp"></span><button type="button" class="dk-ib" data-dock="tog" aria-controls="wsDockBody" aria-label="Hide">»</button></div>
+      <div class="bd" id="wsDockBody"><p class="ws-loading">…</p></div></aside>`);
+    dock = { el: el('wsDock'), sheet: false, view: null };
+    dockLabels(); dockApply();
+    dock.el.addEventListener('click', e => {
+      const b = e.target.closest('[data-dock="tog"]'); if (!b) return;
+      if (dockWide()) dockState(dockState() === 'open' ? 'closed' : 'open'); else dock.sheet = !dock.sheet;
+      dockApply(); if (dock.el.classList.contains('open')) focusDock();
+    });
+    /* narrow screens: asking opens the sheet */
+    dock.el.addEventListener('submit', () => { if (!dockWide() && !dock.sheet) { dock.sheet = true; dockApply(); } }, true);
+    dock.el.addEventListener('focusin', e => { if (!dockWide() && !dock.sheet && e.target.matches('textarea')) { /* stay a bar until something is asked */ } });
+    window.addEventListener('resize', dockApply);
+    try { await window.WSDESK.needAsk(); } catch (e) { dock.el.querySelector('.bd').innerHTML = `<p class="ws-loading">${t('Flight Intelligence could not load. Check the connection.', 'Flight Intelligence kunne ikke lastes. Sjekk tilkoblingen.')}</p>`; return; }
+    const bd = dock.el.querySelector('.bd'); bd.innerHTML = '';
+    dock.view = window.WSASK.mountAsk(bd, { id: 'dock', r: 'dock', k: 'ask' }, {
+      paneId: '__dock', noFocus: true, compact: true,
+      jumpTo(docId, page) { go('desk'); setTimeout(() => window.WSDESK.openItem('doc', docId, { st: { p: page || 1, o: 0, v: 'file' }, flash: true }), 60); }
+    });
+  }
+  function focusDock() {
+    if (!dock) return;
+    if (dockWide() && dockState() !== 'open') { dockState('open'); dockApply(); }
+    if (!dockWide() && !dock.sheet) { dock.sheet = true; dockApply(); }
+    const q = dock.el.querySelector('textarea'); if (q) setTimeout(() => q.focus(), 30);
+  }
+  window.WSFI = { focus: focusDock };
   function drawRail() {
-    drawFiButton();
+    ensureDock();
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     setTimeout(() => drawRailMap(cur), 0);
     el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
@@ -1030,7 +1080,7 @@
       const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
       return; }
     /* Flight Intelligence: always one click away (the rail and the floating button): the desk with its tab open */
-    if (p[0] === 'fi' && window.WSDESK) { history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('ask', 'ask'); return; }
+    if (p[0] === 'fi') { history.replaceState(null, '', '#/' + (lastPath && lastPath !== 'fi' ? lastPath : 'map')); render(); focusDock(); return; }
     if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
     if (mapV && p[0] !== 'map') { if (mapV.m) mapV.m.destroy(); mapV = null; }
@@ -1197,7 +1247,7 @@
     if (user()) syncNow();
   }
   window.addEventListener('hashchange', () => { if (route().path !== 'search') { clearTimeout(qT); } render(); const r = route(); if (r.path !== 'search' && lastPath !== null && document.activeElement === document.body) main.focus({ preventScroll: true }); });
-  LAB.onLang(() => { drawChrome(); render(); });
+  LAB.onLang(() => { drawChrome(); render(); dockLabels(); });
   document.addEventListener('bb-account', () => { drawStatus(); if (S.ready && user() && SY.state !== 'syncing' && Date.now() - SY.lastRun > 8000) syncNow(); if (S.ready && !user()) { SY.state = 'idle'; const p = route().path; if (p === '' || p === 'storage') render(); } });
   document.addEventListener('visibilitychange', async () => { if (document.visibilityState !== 'visible' || !S.ready) return; await loadStores(); await FI.load(); await reconcile(); const a = document.activeElement; if (!(a && main.contains(a) && (a.isContentEditable || /INPUT|TEXTAREA|SELECT/.test(a.tagName))) && !dlg.open) render(); else drawRail(); if (user() && Date.now() - (M.sync.last || 0) > 30000) syncNow(); });
   window.addEventListener('online', () => { if (user()) syncNow(); });

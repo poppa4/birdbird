@@ -74,6 +74,8 @@
     }
     function drawBar() {
       const acs = A.aircraft(), od = openDoc();
+      /* the panel beside My workspace: no scope buttons until there are documents to choose between */
+      if (ctx.compact && !A.docsAll().length) { bar.innerHTML = chat.turns.length ? `<span class="sp"></span><button type="button" class="ask-new" data-a="clear">${esc(t('New conversation', 'Ny samtale'))}</button>` : ''; return; }
       if (scope === 'ac' && !acs.length) scope = 'all';
       bar.innerHTML = `<div class="seg ask-scope" role="group" aria-label="${esc(t('Ask', 'Spør'))}">
           ${acs.length ? `<button type="button" data-s="ac" class="${scope === 'ac' ? 'on' : ''}" aria-pressed="${scope === 'ac'}">${esc(t('This aircraft', 'Dette flyet'))}</button>` : ''}
@@ -100,7 +102,7 @@
     function drawLog() {
       const html = chat.turns.map((x, i) => `<div class="ask-q"><span>${esc(x.q)}</span></div>
         <div class="ask-a${x.err ? ' err' : ''}" data-i="${i}">${x.pending && !x.a ? `<p class="ask-wait">${esc(t('Thinking…', 'Tenker …'))}</p>` : x.local ? localHtml(x) : x.err ? `<p>${esc(x.err)}</p>` : md(x.a, x.src, x.easa)}
-        ${!x.pending && !x.err && !x.local && x.a ? `<div class="ask-acts">${usedHtml(x)}<span class="sp"></span><button type="button" class="btn sm" data-a="note" data-i="${i}">${X.ic('cite')}<span>${esc(t('Copy to note', 'Kopier til notat'))}</span></button><button type="button" class="dk-ib" data-a="copy" data-i="${i}" title="${esc(t('Copy', 'Kopier'))}" aria-label="${esc(t('Copy', 'Kopier'))}">${X.ic('tabs')}</button></div>` : ''}</div>`).join('');
+        ${!x.pending && !x.err && !x.local && x.a ? `<div class="ask-acts">${usedHtml(x)}<span class="sp"></span>${ctx.quote ? `<button type="button" class="btn sm" data-a="note" data-i="${i}">${X.ic('cite')}<span>${esc(t('Copy to note', 'Kopier til notat'))}</span></button>` : ''}<button type="button" class="dk-ib" data-a="copy" data-i="${i}" title="${esc(t('Copy', 'Kopier'))}" aria-label="${esc(t('Copy', 'Kopier'))}">${X.ic('tabs')}</button></div>` : ''}</div>`).join('');
       log.innerHTML = intro() + html;
     }
     function usedHtml(x) { const used = [...new Set((x.a.match(/\[S(\d{1,2})\]/g) || []).map(m => +m.slice(2, -1)))].filter(n => x.src[n - 1]); return used.length ? `<span class="ask-used">${used.map(n => chip(x.src, n)).join('')}</span>` : ''; }
@@ -169,7 +171,7 @@ ${hist ? 'CONVERSATION SO FAR:\n' + hist + '\n' : ''}PILOT NOW: ${question}`;
       const b = e.target.closest('[data-a]'); if (!b) return; const x = chat.turns[+b.dataset.i];
       if (b.dataset.a === 'add') A.pickFiles({});
       else if (b.dataset.a === 'copy' && x) { try { navigator.clipboard.writeText(plain(x.a, x.src)); A.toast(t('Copied.', 'Kopiert.')); } catch (er) {} }
-      else if (b.dataset.a === 'note' && x) {
+      else if (b.dataset.a === 'note' && x && ctx.quote) {
         const used = [...new Set((x.a.match(/\[S(\d{1,2})\]/g) || []).map(m => +m.slice(2, -1)))].map(n => x.src[n - 1]).filter(Boolean);
         const refs = used.map(s => X.D.citeHtml(s.d.id, s.c.p, s.label, A.item(s.d.id) ? A.item(s.d.id).name : s.d.name)).join(' ');
         const text = plain(x.a.replace(/\[S\d{1,2}\]/g, ''), x.src).split(/\n+/).map(l => W.sanitizeHtml(esc(l))).join('<br>');
@@ -178,7 +180,7 @@ ${hist ? 'CONVERSATION SO FAR:\n' + hist + '\n' : ''}PILOT NOW: ${question}`;
     });
     drawBar(); drawLog(); check();
     if (chat.turns.length) requestAnimationFrame(() => { sc.scrollTop = sc.scrollHeight; });
-    setTimeout(() => { if (alive && !X.isPhone()) q.focus({ preventScroll: true }); }, 60);
+    if (!ctx.noFocus) setTimeout(() => { if (alive && !X.isPhone()) q.focus({ preventScroll: true }); }, 60);
     const view = {
       ctxChanged() { if (alive) drawBar(); },
       refresh() { if (alive && !busy) drawBar(); },

@@ -513,11 +513,39 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .ws-rail a[href="#/fi"]{color:var(--accent);font-weight:600}
 .ws-rail a[href="#/fi"]::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(181,43,126,.15);align-self:center;flex:none;margin-right:-2px;order:-1}
 .ws-rail a[href="#/fi"]{justify-content:flex-start;gap:10px}
-.ws-fi{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:9px;padding:11px 18px 11px 15px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14.5px;box-shadow:0 8px 24px rgba(20,30,50,.25)}
-.ws-fi:hover{filter:brightness(1.08)}
-.ws-fi:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-.ws-fi .d{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
-@media (max-width:640px){.ws-fi{right:14px;bottom:14px;padding:10px 14px}}
-@media print{.ws-fi{display:none}}
-html.ws-deskmode .ws-fi{display:none}   /* on the desk, Flight Intelligence is the first action in the sidebar */
+
 .dk-add.dk-fi{color:var(--accent);font-weight:600}
+
+/* ---------- Flight Intelligence panel (workspace.js ensureDock) ---------- */
+.ws-dock{--dock:380px;position:fixed;z-index:50;display:flex;flex-direction:column;background:var(--sheet);color:var(--ink)}
+.ws-dock .hd{display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--rule)}
+.ws-dock .hd i,.ws-dock .strip i{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(181,43,126,.16);flex:none}
+.ws-dock .hd b{font-size:15px;font-weight:650}
+.ws-dock .hd .sp{flex:1}
+.ws-dock .hd .dk-ib{width:30px;height:30px;border:0;background:none;border-radius:var(--radius);font-size:20px;line-height:1;color:var(--ink-2);cursor:pointer}
+.ws-dock .hd .dk-ib:hover{background:var(--wash);color:var(--ink)}
+.ws-dock .bd{flex:1;min-height:0;display:flex;flex-direction:column}
+.ws-dock .bd .ask{flex:1;min-height:0;display:flex;flex-direction:column}
+.ws-dock .strip{display:none}
+.ws-dock .i{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.ws-dock .ask-bar:empty{display:none}
+.ws-dock .ask-new{border:0;background:none;padding:4px 2px;font:inherit;font-size:13px;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* wide screens: a column on the right, under the site header, the page makes room for it */
+html.ws-dock-wide .ws-dock{top:61px;right:0;bottom:0;width:var(--dock);border-left:1px solid var(--rule);box-shadow:-8px 0 24px rgba(20,30,50,.06)}
+html.ws-dock-wide.ws-dock-open body{padding-right:380px}
+html.ws-dock-wide.ws-dock-open body>header.site{margin-right:-380px}
+html.ws-dock-wide:not(.ws-dock-open) body>header.site{margin-right:-44px}
+html.ws-dock-wide:not(.ws-dock-open) body{padding-right:44px}
+html.ws-dock-wide .ws-dock:not(.open){width:44px}
+html.ws-dock-wide .ws-dock:not(.open) .hd,html.ws-dock-wide .ws-dock:not(.open) .bd{display:none}
+html.ws-dock-wide .ws-dock:not(.open) .strip{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;height:100%;padding:16px 0;border:0;background:var(--sheet);cursor:pointer;color:var(--ink)}
+html.ws-dock-wide .ws-dock:not(.open) .strip span{writing-mode:vertical-rl;font-weight:600;font-size:13.5px;letter-spacing:.02em}
+html.ws-dock-wide .ws-dock:not(.open) .strip:hover{background:var(--wash)}
+/* narrow screens: an ask bar at the bottom; asking (or the arrow) opens it as a sheet */
+html:not(.ws-dock-wide) .ws-dock{left:0;right:0;bottom:0;border-top:1px solid var(--rule);box-shadow:0 -8px 24px rgba(20,30,50,.12)}
+html:not(.ws-dock-wide) .ws-dock .hd .dk-ib{font-size:22px}
+html:not(.ws-dock-wide) .ws-dock:not(.open) .hd,html:not(.ws-dock-wide) .ws-dock:not(.open) .ask-bar,html:not(.ws-dock-wide) .ws-dock:not(.open) .ask-sc{display:none}
+html:not(.ws-dock-wide) .ws-dock.open{top:12vh;border-radius:14px 14px 0 0}
+html:not(.ws-dock-wide) body{padding-bottom:84px}
+html.ws-deskmode:not(.ws-dock-wide) body{padding-bottom:84px}
+@media print{.ws-dock{display:none!important}html body{padding:0!important}}
