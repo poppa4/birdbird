@@ -50,3 +50,6 @@ test('every pictured cockpit: files exist, credit present, every control inside 
     const T = A.targets(ac), ids = new Set(); assert.ok(T.length >= 40, ac.id); for (const t of T) { assert.ok(!ids.has(t.id), ac.id + ' twice: ' + t.id); ids.add(t.id);
       assert.ok(t.x >= 0 && t.y >= 0 && t.x + t.w <= 1000.5 && t.y + t.h <= ac.h + 0.5, ac.id + ' outside: ' + t.id); if (!t.whole) { const c = A.hit(ac, t.x + t.w / 2, t.y + t.h / 2); assert.equal(c && c.id, t.id, ac.id + ': centre of ' + t.id); } }
     assert.ok(A.groups.some(g => g.list.includes(ac)), ac.id + ' is in a group'); } });
+test('every ready-made library flow points at controls that exist, has a known phase and builds', () => { const L = F.stdList(); assert.ok(L.length >= 10);
+  for (const e of L) { const ac = A.get(e.ac); assert.ok(ac, e.id); assert.ok(F.PHASES.some(p => p[0] === e.phase), e.id); const f = F.stdFlow(e.id, A); assert.ok(f && f.steps.length === e.n, e.id);
+    f.steps.forEach(s => assert.ok(s.tg && A.byId(ac, s.tg) && s.x != null, e.id + ' · ' + s.t)); assert.ok(F.clean(f), e.id); } assert.equal(F.stdFlow('bb:nope:x', A), null); });

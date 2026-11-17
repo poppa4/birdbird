@@ -16,8 +16,8 @@
   /* ---------- browse ---------- */
   let flt = { ac: null, phase: '' };
   async function browse() { const d = box(), cur = B().cur; if (flt.ac == null) flt.ac = cur && A.get(cur.ac) ? cur.ac : '';
-    d.innerHTML = `<h3>${L({ en: 'Flows from other pilots', no: 'Flows fra andre piloter' })}</h3>` +
-      `<p class="fln">${L({ en: 'Made by users and not checked by Birdbird. A shared flow is not an SOP: open a copy, then check and change it against your operator’s documents.', no: 'Laget av brukere og ikke kontrollert av Birdbird. En delt flow er ikke en SOP: åpne en kopi, og sjekk og endre den mot operatørens dokumenter.' })}</p>` +
+    d.innerHTML = `<h3>${L({ en: 'Flow library', no: 'Flow-bibliotek' })}</h3>` +
+      `<p class="fln">${L({ en: 'Flows marked Birdbird follow the public handbook checklist for the type. The others are made by users and not checked by Birdbird. None of them is an SOP: open a copy, then check and change it against your operator’s documents.', no: 'Flows merket Birdbird følger den åpne håndbok-sjekklisten for typen. De andre er laget av brukere og ikke kontrollert av Birdbird. Ingen av dem er en SOP: åpne en kopi, og sjekk og endre den mot operatørens dokumenter.' })}</p>` +
       `<div class="flf"><label>${L({ en: 'Cockpit', no: 'Cockpit' })}<select id="flac"><option value="">${L({ en: 'All', no: 'Alle' })}</option>${B().acOpts(flt.ac)}</select></label>` +
       `<label>${L({ en: 'Flight phase', no: 'Flyfase' })}<select id="flph">${phOpts(flt.phase, L({ en: 'All', no: 'Alle' }))}</select></label></div>` +
       `<ul id="fll"><li>${L({ en: 'Loading…', no: 'Laster …' })}</li></ul><div class="acts"><button class="btn" data-x>${L({ en: 'Close', no: 'Lukk' })}</button><button class="btn pri" data-pub>${L({ en: 'Share one of mine', no: 'Del en av mine' })}</button></div>`;
@@ -25,12 +25,16 @@
     d.querySelector('#flac').onchange = e => { flt.ac = e.target.value; list(); }; d.querySelector('#flph').onchange = e => { flt.phase = e.target.value; list(); };
     if (!d.open) d.showModal(); list(); }
   async function list() { const ul = dlg.querySelector('#fll'); if (!ul) return; const j = await api('GET', '?ac=' + encodeURIComponent(flt.ac || '') + '&phase=' + encodeURIComponent(flt.phase || '')); if (!dlg.querySelector('#fll')) return;
-    if (!j.ok) { ul.innerHTML = `<li>${esc(NET())}</li>`; return; }
+    const no = document.documentElement.lang === 'nb', std = F.stdList().filter(f => (!flt.ac || f.ac === flt.ac) && (!flt.phase || f.phase === flt.phase));
+    const stdH = std.map(f => { const a = A.get(f.ac); return `<li data-id="${esc(f.id)}" class="flbb"><div><b>${esc(f.name[no ? 'no' : 'en'])}</b><small>${esc([a ? a.name : f.ac, phName(f.phase), f.n + ' ' + L({ en: 'steps', no: 'steg' }), 'Birdbird · ' + L({ en: 'from: ', no: 'fra: ' }) + f.src].filter(Boolean).join(' · '))}</small></div><button class="btn sm pri" data-o>${L({ en: 'Open a copy', no: 'Åpne en kopi' })}</button></li>`; }).join('');
+    const openStd = async id => { const f = F.stdFlow(id, A, no); if (!f) return; dlg.close(); await B().addFlow(f); B().msg(L({ en: 'A copy is now among your flows. It follows the public handbook checklist for the type, not your operator’s SOP: check it before you train on it.', no: 'En kopi ligger nå blant dine flows. Den følger den åpne håndbok-sjekklisten for typen, ikke operatørens SOP: sjekk den før du trener på den.' }), 'ok'); };
+    if (!j.ok) { ul.innerHTML = stdH || `<li>${esc(NET())}</li>`; ul.onclick = e => { const b = e.target.closest('button[data-o]'), li = e.target.closest('li[data-id]'); if (b && li) openStd(li.dataset.id); }; return; }
     const M = mine();
-    ul.innerHTML = j.flows.length ? j.flows.map(f => { const a = A.get(f.ac); return `<li data-id="${esc(f.id)}"><div><b>${esc(f.name)}</b><small>${esc([a ? a.name : f.ac, phName(f.phase), f.n + ' ' + L({ en: 'steps', no: 'steg' }), f.roles, f.by ? L({ en: 'by ', no: 'av ' }) + f.by : '', f.uses ? L({ en: `opened ${f.uses} times`, no: `åpnet ${f.uses} ganger` }) : ''].filter(Boolean).join(' · '))}</small></div>` +
+    ul.innerHTML = stdH + (j.flows.length ? j.flows.map(f => { const a = A.get(f.ac); return `<li data-id="${esc(f.id)}"><div><b>${esc(f.name)}</b><small>${esc([a ? a.name : f.ac, phName(f.phase), f.n + ' ' + L({ en: 'steps', no: 'steg' }), f.roles, f.by ? L({ en: 'by ', no: 'av ' }) + f.by : '', f.uses ? L({ en: `opened ${f.uses} times`, no: `åpnet ${f.uses} ganger` }) : ''].filter(Boolean).join(' · '))}</small></div>` +
         `<button class="btn sm pri" data-o${a ? '' : ' disabled'}>${L({ en: 'Open a copy', no: 'Åpne en kopi' })}</button>${M[f.id] ? `<button class="lk" data-d>${L({ en: 'Remove', no: 'Fjern' })}</button>` : `<button class="lk" data-r>${L({ en: 'Report', no: 'Rapporter' })}</button>`}</li>`; }).join('')
-      : `<li>${L({ en: 'No flows here yet. Be the first to share one.', no: 'Ingen flows her ennå. Bli den første som deler en.' })}</li>`;
+      : stdH ? '' : `<li>${L({ en: 'No flows here yet. Be the first to share one.', no: 'Ingen flows her ennå. Bli den første som deler en.' })}</li>`);
     ul.onclick = async e => { const b = e.target.closest('button'), li = e.target.closest('li[data-id]'); if (!b || !li) return; const id = li.dataset.id;
+      if (id.startsWith('bb:')) { if (b.hasAttribute('data-o')) openStd(id); return; }
       if (b.hasAttribute('data-o')) { b.disabled = true; const r = await api('GET', '?id=' + encodeURIComponent(id)); if (!r.ok || !r.flow) { b.disabled = false; B().msg(NET(), 'err'); return; }
         const f = F.clean(r.flow); if (!f || !A.get(f.ac)) { b.disabled = false; return; } f.id = F.uid(); dlg.close(); await B().addFlow(f);
         B().msg(L({ en: 'A copy is now among your flows. Check it against your operator’s documents before you train on it.', no: 'En kopi ligger nå blant dine flows. Sjekk den mot operatørens dokumenter før du trener på den.' }), 'ok'); return; }
