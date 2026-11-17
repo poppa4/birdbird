@@ -12,6 +12,9 @@
                          namespace is too big for the account, the largest notebooks stay on this device (and say so). */
 (function () {
   'use strict';
+  /* opening My workspace (a fresh page load with no place in the address) always starts on the Map, whatever was open last;
+     the desk is one click away ("Back to the desk"), and links to a place (#/documents/…, #/?open=…) still go straight there */
+  { const h = location.hash; if (!h || h === '#' || h === '#/') history.replaceState(null, '', location.pathname + location.search + '#/map'); }
   const W = window.WSCORE, LAB = window.LAB, NSTORE = window.NSTORE;
   const el = id => document.getElementById(id);
   const t = (en, no) => LAB.lang === 'en' ? en : (no == null ? en : no);
@@ -306,7 +309,7 @@
   function route() { const h = location.hash.replace(/^#\/?/, ''); const i = h.indexOf('?'); const path = decodeURIComponent(i < 0 ? h : h.slice(0, i)); return { path, q: new URLSearchParams(i < 0 ? '' : h.slice(i + 1)) }; }
   function go(path) { location.hash = '#/' + path; }
   function visit(tp, id) { M.recent = W.pushRecent(M.recent, { t: tp, id }); saveMeta(); }
-  const RAIL = () => [['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
+  const RAIL = () => [['fi', 'Flight Intelligence', null], ['library', t('Overview', 'Oversikt'), null], ['map', t('Map', 'Kart'), null], ['aircraft', t('My aircraft', 'Mine fly'), aircraft().length], ['documents', t('Documents', 'Dokumenter'), docsAll().length], ['packs', t('Briefing packs', 'Briefingpakker'), S.packs.length], ['notes', t('Notes', 'Notater'), liveOf('note').length], ['routes', t('Routes', 'Ruter'), S.routes.length], null, ['trash', t('Trash', 'Papirkurv'), W.trashed(S.items).length || null], ['storage', t('Storage and backup', 'Lagring og sikkerhetskopi'), null]];
   let railMap = null;
   function drawRailMap(cur) {
     const rl = el('wsRail'); if (!rl || !window.WSMAP || !GW) return;
@@ -325,7 +328,13 @@
     try { railMap = { sig, host, m: window.WSMAP.mount(host, { graph: a.g, t, mini: true, sample: a.sample }) }; } catch (e) { railMap = null; console.error('rail map', e); }
   }
   window.addEventListener('resize', () => { const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library'); drawRailMap(cur); });
+  function drawFiButton() {
+    let b = el('wsFi');
+    if (!b) { document.body.insertAdjacentHTML('beforeend', '<a id="wsFi" class="ws-fi" href="#/fi"><span class="d" aria-hidden="true"></span><span class="l"></span></a>'); b = el('wsFi'); }
+    b.querySelector('.l').textContent = t('Ask Flight Intelligence', 'Spør Flight Intelligence');
+  }
   function drawRail() {
+    drawFiButton();
     const cur = route().path.split('/')[0] || (deskMode() ? '' : 'library');
     setTimeout(() => drawRailMap(cur), 0);
     el('wsRail').innerHTML = RAIL().map(r => r ? `<a href="#/${r[0]}" class="${r[0] === cur ? 'on' : ''}"${r[0] === cur ? ' aria-current="page"' : ''}><span>${esc(r[1])}</span>${r[2] != null ? `<span class="c">${r[2]}</span>` : ''}</a>` : '<span class="gap"></span>').join('');
@@ -1020,6 +1029,8 @@
     if (desk) { closeViewer(); if (mapV) { if (mapV.m) mapV.m.destroy(); mapV = null; } window.WSDESK.show(); drawRail(); drawStatus(); lastPath = r.path;
       const op = r.q.get('open'); if (op && window.FLIGHT) { history.replaceState(null, '', '#/'); lastPath = ''; const l = window.FLIGHT.parseOpen(op); l.forEach((x, i) => window.WSDESK.openItem(x[0], x[1], i ? { beside: true } : {})); if (l.length > 1) window.WSDESK.openItem(l[0][0], l[0][1]); }
       return; }
+    /* Flight Intelligence: always one click away (the rail and the floating button): the desk with its tab open */
+    if (p[0] === 'fi' && window.WSDESK) { history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('ask', 'ask'); return; }
     if (p[0] === 'notebook' && p[1] && window.WSDESK) { const id = p[1]; history.replaceState(null, '', '#/'); render(); window.WSDESK.openItem('notebook', id); return; }
     if (window.WSDESK) window.WSDESK.hide();
     if (mapV && p[0] !== 'map') { if (mapV.m) mapV.m.destroy(); mapV = null; }

@@ -31,7 +31,7 @@
   /* ---------- the answer: a little markdown, [S1] becomes a page chip ---------- */
   const shortName = n => { n = String(n || '').replace(/\s+/g, ' ').trim(); if (n.length <= 22) return n; const c = n.slice(0, 21); const sp = c.lastIndexOf(' '); return (sp > 10 ? c.slice(0, sp) : c).replace(/[\s,.;:–-]+$/, '') + '…'; };
   function chip(src, i) { const x = src[i - 1]; if (!x) return `<span class="ask-x" title="${esc(t('Not one of the passages: check it yourself', 'Ikke en av utdragene: sjekk det selv'))}">S${i}?</span>`; return `<button type="button" class="ask-src" data-doc="${esc(x.d.id)}" data-p="${x.c.p}" title="${esc(x.d.name + ' · ' + t('page ', 'side ') + x.label)}">${esc(shortName(x.d.name))} ${esc(t('p. ', 's. '))}${esc(x.label)}</button>`; }
-  function md(s, src) {
+  function md(s, src, easa) {
     s = esc(s);
     const inl = x => x.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[S(\d{1,2})\]/g, (m, n) => chip(src, +n)).replace(/\[GK\]/g, `<span class="ask-gk" title="${esc(t('General knowledge, not from your documents', 'Generell kunnskap, ikke fra dokumentene dine'))}">GK</span>`);
     let h = '', list = null;
@@ -42,7 +42,8 @@
       if (/^#{1,4}\s/.test(l)) h += `<p><b>${inl(l.replace(/^#+\s*/, ''))}</b></p>`; else if (l.trim()) h += `<p>${inl(l)}</p>`;
     });
     if (list) h += `</${list}>`;
-    return h;
+    const __h = h;
+    return easa && easa.length && window.EASA ? window.EASA.cite(__h, easa) : __h;
   }
   const plain = (s, src) => String(s || '').replace(/\[S(\d{1,2})\]/g, (m, n) => { const x = src[+n - 1]; return x ? '(' + shortName(x.d.name) + ' ' + t('p. ', 's. ') + x.label + ')' : ''; }).replace(/\[GK\]/g, '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/[ \t]+\n/g, '\n').trim();
 
@@ -60,7 +61,7 @@
     if (wantDoc) { scope = 'doc'; wantDoc = false; }
     const root = X.h('div', 'ask'); box.appendChild(root);
     root.innerHTML = `<div class="ask-bar"></div><div class="ask-sc" data-keep-scroll><div class="ask-in"><div class="ask-log" aria-live="polite"></div></div></div>
-      <form class="ask-f" novalidate><label class="sr" for="askQ${esc(tab.id)}">${esc(t('Your question', 'Spørsmålet ditt'))}</label><textarea id="askQ${esc(tab.id)}" rows="2" maxlength="${MAX_Q}" enterkeyhint="send" placeholder="${esc(t('Ask about your documents, e.g. “maximum crosswind”', 'Spør om dokumentene dine, f.eks. «maks sidevind»'))}"></textarea><button type="submit" class="btn pri sm">${esc(t('Ask', 'Spør'))}</button><button type="button" class="btn sm" data-a="stop" hidden>${esc(t('Stop', 'Stopp'))}</button></form>`;
+      <form class="ask-f" novalidate><label class="sr" for="askQ${esc(tab.id)}">${esc(t('Your question', 'Spørsmålet ditt'))}</label><textarea id="askQ${esc(tab.id)}" rows="2" maxlength="${MAX_Q}" enterkeyhint="send" placeholder="${esc(t('Ask Flight Intelligence, e.g. “maximum crosswind” or “alternate minima”', 'Spør Flight Intelligence, f.eks. «maks sidevind» eller «alternative minima»'))}"></textarea><button type="submit" class="btn pri sm">${esc(t('Ask', 'Spør'))}</button><button type="button" class="btn sm" data-a="stop" hidden>${esc(t('Stop', 'Stopp'))}</button></form>`;
     const bar = root.querySelector('.ask-bar'), log = root.querySelector('.ask-log'), sc = root.querySelector('.ask-sc'), form = root.querySelector('.ask-f'), q = form.querySelector('textarea');
 
     /* which document is "the open document": the one showing in another pane, else the one Ask was opened from */
@@ -93,12 +94,12 @@
       if (avail === false) return `<div class="ask-off"><p class="eb">Flight Intelligence</p><h3>${esc(t('Answers from your documents are not switched on here yet.', 'Svar fra dokumentene dine er ikke slått på her ennå.'))}</h3>
         <p>${esc(t('When they are, you ask in your own words and get a short answer with the page it came from, for example “AFM p. 4-12”, and the page opens beside you. Nothing you type here has been sent anywhere.', 'Når de er det, spør du med dine egne ord og får et kort svar med siden det kom fra, for eksempel «AFM s. 4-12», og siden åpnes ved siden av deg. Ingenting du skriver her, er sendt noe sted.'))}</p>
         <p>${esc(t('Until then, a question still finds the pages that match it in your documents.', 'Inntil da finner et spørsmål likevel sidene i dokumentene dine som passer.'))}</p></div>`;
-      if (!docs.length) return `<div class="ask-off"><p class="eb">Flight Intelligence</p><h3>${esc(t('Add a document to ask about it.', 'Legg til et dokument for å spørre om det.'))}</h3><p>${esc(t('Answers come only from your own AFM, QRH, SOP and checklists, with the page they came from. The files stay on this device.', 'Svarene kommer bare fra din egen AFM, QRH, SOP og sjekklister, med siden de kom fra. Filene blir på denne enheten.'))}</p><p><button type="button" class="btn sm" data-a="add">${esc(t('Add documents', 'Legg til dokumenter'))}</button></p></div>`;
+      if (!docs.length) return `<div class="ask-hi"><p class="eb">Flight Intelligence</p><h3>${esc(t('Ask anything about flying', 'Spør om alt som har med flyging å gjøre'))}</h3><p>${esc(t('Theory, weather, procedures and EASA rules, with the rule each answer rests on. Add your AFM, QRH or SOP to My workspace and the answers come from your own documents too, with the page.', 'Teori, vær, prosedyrer og EASA-regler, med regelen hvert svar bygger på. Legg AFM, QRH eller SOP inn i My workspace, så kommer svarene også fra dine egne dokumenter, med siden.'))}</p></div>`;
       return `<div class="ask-hi"><p class="eb">Flight Intelligence</p><h3>${esc(t('Ask your documents', 'Spør dokumentene'))}</h3><p>${esc(t('Short answers from your own manuals, each with the page it came from. Tap a page to open it beside you, or copy the answer into your note.', 'Korte svar fra dine egne manualer, hvert med siden det kom fra. Trykk på en side for å åpne den ved siden av deg, eller kopier svaret inn i notatet ditt.'))}</p><p class="small">${esc(t('For learning. The approved flight manual always applies.', 'For opplæring. Den godkjente flyhåndboken gjelder alltid.'))}</p></div>`;
     }
     function drawLog() {
       const html = chat.turns.map((x, i) => `<div class="ask-q"><span>${esc(x.q)}</span></div>
-        <div class="ask-a${x.err ? ' err' : ''}" data-i="${i}">${x.pending && !x.a ? `<p class="ask-wait">${esc(t('Reading your documents…', 'Leser dokumentene dine …'))}</p>` : x.local ? localHtml(x) : x.err ? `<p>${esc(x.err)}</p>` : md(x.a, x.src)}
+        <div class="ask-a${x.err ? ' err' : ''}" data-i="${i}">${x.pending && !x.a ? `<p class="ask-wait">${esc(t('Thinking…', 'Tenker …'))}</p>` : x.local ? localHtml(x) : x.err ? `<p>${esc(x.err)}</p>` : md(x.a, x.src, x.easa)}
         ${!x.pending && !x.err && !x.local && x.a ? `<div class="ask-acts">${usedHtml(x)}<span class="sp"></span><button type="button" class="btn sm" data-a="note" data-i="${i}">${X.ic('cite')}<span>${esc(t('Copy to note', 'Kopier til notat'))}</span></button><button type="button" class="dk-ib" data-a="copy" data-i="${i}" title="${esc(t('Copy', 'Kopier'))}" aria-label="${esc(t('Copy', 'Kopier'))}">${X.ic('tabs')}</button></div>` : ''}</div>`).join('');
       log.innerHTML = intro() + html;
     }
@@ -109,37 +110,43 @@
       /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
       try {
         if (!window.NAI) await A.loadScript('ai.js?v=8');
+        if (!window.EASA) await A.loadScript('easa.js?v=4').catch(() => {});
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
         avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }
       if (alive) { drawLog(); }
       return avail;
     }
-    function prompt(question, src, hist) {
-      const ex = src.length ? src.map((x, i) => `[S${i + 1}] ${x.d.name}${x.d.rev ? ', revision ' + x.d.rev : ''}, page ${x.label}${x.c.s ? ', ' + x.c.s : ''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents matched)';
-      return `You are an experienced flight instructor answering inside NORDAP, beside the pilot's own documents. Answer only from the excerpts. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
-Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English. Be short and concrete: two to six sentences or a short list.
-SOURCES (excerpts from the pilot's own documents):
-${ex}
+    function prompt(question, src, hist, easa) {
+      const ex = src.length ? src.map((x, i) => `[S${i + 1}] ${x.d.name}${x.d.rev ? ', revision ' + x.d.rev : ''}, page ${x.label}${x.c.s ? ', ' + x.c.s : ''}:\n${x.c.t}`).join('\n\n') : '';
+      const rules = easa && easa.length && window.EASA ? window.EASA.promptBlock(easa) : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. Do not state a rule ID, minimum, fuel figure or other regulatory number from memory: say it is not in the NORDAP rules library yet and that the pilot should check the current EASA Easy Access Rules.';
+      return `You are Flight Intelligence, an experienced flight instructor inside NORDAP's My workspace. Answer any aviation question clearly (theory, meteorology, systems, procedures, planning, EASA rules), short and concrete: two to six sentences or a short list. Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English.
+${src.length ? `The pilot's own documents are below. Use them first. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
 
-CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. Anything not from a source is marked [GK] and must never be a limitation, speed, procedure step or performance value. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
+SOURCES (excerpts from the pilot's own documents):
+${ex}` : `No passage from the pilot's own documents matched this question${A.docsAll().length ? '' : ' (they have not added any documents yet)'}. Never give aircraft-specific limitations, speeds, procedure steps or performance values from memory: say that adding their AFM, QRH or SOP to My workspace lets you answer that with the page.`}
+
+${rules}
+
+CITATION RULES: after every statement that comes from a document passage, cite it as [S1], [S2] and so on; from an EASA entry, as [E1], [E2]. Anything else is marked [GK] (general knowledge), once at the end of the sentence. Calculations the pilot asks for (descent, wind, fuel, time, conversions) are fine: show the working. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it.
 ${hist ? 'CONVERSATION SO FAR:\n' + hist + '\n' : ''}PILOT NOW: ${question}`;
     }
     async function ask(question) {
       question = String(question || '').replace(/\s+/g, ' ').trim().slice(0, MAX_Q); if (!question || busy) return;
       const docs = docsInScope().map(d => Object.assign({}, S.docs[d.id], { id: d.id, name: d.name, rev: d.rev || S.docs[d.id].rev || '' }));
       const hits = search(question, 6, docs).map(x => Object.assign(x, { label: X.pdfLabel(x.d.id, x.c.p) }));
-      const turn = { q: question, a: '', src: hits, pending: true }; chat.turns.push(turn); if (chat.turns.length > MAX_TURNS) chat.turns.shift();
+      const easa = window.EASA && window.EASA.isRules(question) ? window.EASA.search(question, 4) : [];
+      const turn = { q: question, a: '', src: hits, easa, pending: true }; chat.turns.push(turn); if (chat.turns.length > MAX_TURNS) chat.turns.shift();
       drawBar(); drawLog(); sc.scrollTop = sc.scrollHeight;
       const ok = await check();
       if (!alive) return;
       if (!ok) { const top = hits.length ? hits[0].s : 0; turn.src = hits.filter(x => x.s >= top * 0.6).slice(0, 5); turn.pending = false; turn.local = true; drawLog(); sc.scrollTop = sc.scrollHeight; return; }
-      if (!docs.length) { turn.pending = false; turn.err = scope === 'doc' ? t('Open a document beside this tab, or ask all your documents.', 'Åpne et dokument ved siden av denne fanen, eller spør alle dokumentene dine.') : t('There is no document text to answer from in this choice. Add documents or choose all your documents.', 'Det finnes ingen dokumenttekst å svare fra i dette valget. Legg til dokumenter eller velg alle dokumentene dine.'); drawLog(); return; }
+      if (!docs.length && scope === 'doc') { turn.pending = false; turn.err = t('Open a document beside this tab, or ask all your documents.', 'Åpne et dokument ved siden av denne fanen, eller spør alle dokumentene dine.'); drawLog(); return; }
       const hist = chat.turns.slice(-5, -1).filter(x => x.a).map(x => 'PILOT: ' + x.q.slice(0, 600) + '\nINSTRUCTOR: ' + x.a.slice(0, 900)).join('\n');
       busy = new AbortController(); setBusy(true);
       const el = () => log.querySelector(`.ask-a[data-i="${chat.turns.indexOf(turn)}"]`);
       try {
-        const out = await window.NAI.text(prompt(question, hits, hist), { signal: busy.signal, tier: 'default', onText: ({ text }) => { turn.a = text; const e = el(); if (e && alive) e.innerHTML = md(text, hits); } });
+        const out = await window.NAI.text(prompt(question, hits, hist, easa), { signal: busy.signal, tier: 'default', onText: ({ text }) => { turn.a = text; const e = el(); if (e && alive) e.innerHTML = md(text, hits, easa); } });
         turn.a = String(out || '').replace(/\n-{3,}[\s\S]*$/, '').trim();
       } catch (e) {
         if (e && e.code === 'not_available') { avail = false; turn.local = true; }

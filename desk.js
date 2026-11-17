@@ -67,7 +67,7 @@
       pack: { icon: () => 'pack', title: r => { const p = findPack(r); return p ? A.packTitle(p) : t('Briefing pack', 'Briefingpakke'); }, mount: mountPack },
       route: { icon: () => 'route', title: r => { const x = findRoute(r); return x ? A.routeTitle(x) : t('Route', 'Rute'); }, mount: mountRoute },
       notebook: { icon: () => 'notebook', title: r => { const n = A.item(r); return n && !n.gone && n.title ? n.title : t('Notebook', 'Notatbok'); }, mount: mountNotebook },
-      ask: { icon: () => 'ask', title: () => t('Ask your documents', 'Spør dokumentene'), mount: mountAsk }
+      ask: { icon: () => 'ask', title: () => 'Flight Intelligence', mount: mountAsk }
     };
     const typeOf = k => TYPES[k] || { icon: () => 'doc', title: () => k, mount: mountUnknown };
 
@@ -210,7 +210,7 @@
       return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=6'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=2')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=7')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=8')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -337,7 +337,7 @@
       const deskRow = sheet && desk ? `<div class="dk-sdesk"><button type="button" class="dk-deskbtn" data-b="desks" aria-haspopup="menu" aria-label="${esc(t('Desk: ', 'Arbeidsflate: ') + desk.name + t('. Switch, rename or add a desk', '. Bytt, gi nytt navn eller lag en ny'))}"><span class="eb">${esc(t('Desk', 'Arbeidsflate'))}</span> <span class="nm">${esc(desk.name)}</span>${ic('chev')}</button></div>` : '';
       return `${deskRow}<div class="dk-rs"><label class="sr" for="dkQ${sheet ? 's' : ''}">${esc(t('Filter the library', 'Filtrer biblioteket'))}</label>${ic('search')}<input id="dkQ${sheet ? 's' : ''}" type="search" value="${esc(railQ)}" placeholder="${esc(t('Filter the library', 'Filtrer biblioteket'))}" autocomplete="off" spellcheck="false"></div>
         <div class="dk-tree">${secs || `<p class="dk-none">${esc(t('Nothing matches.', 'Ingen treff.'))}</p>`}</div>
-        <div class="dk-rf"><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>${sheet ? sheetFoot() : ''}`;
+        <div class="dk-rf"><button type="button" class="dk-add dk-fi" data-b="fi">${ic('ask')}Flight Intelligence</button><button type="button" class="dk-add" data-b="add-doc">${ic('plus')}${esc(t('Add documents', 'Legg til dokumenter'))}</button><button type="button" class="dk-add" data-b="new-note">${ic('plus')}${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="dk-add" data-b="new-nb">${ic('plus')}${esc(t('New notebook', 'Ny notatbok'))}</button></div>${sheet ? sheetFoot() : ''}`;
     }
     /* phone: the way to the map, the library pages and "where things are kept" lives at the foot of the sheet */
     function sheetFoot() { const st = A.statusShort();
@@ -516,7 +516,7 @@
         ${rec.length ? `<h3>${esc(t('Recently opened', 'Sist åpnet'))}</h3><ul class="rec">${rec.map(x => `<li><button type="button" data-k="${x.k}" data-r="${esc(x.r)}">${ic(TYPES[x.k].icon(x.r))}<span class="n">${esc(TYPES[x.k].title(x.r))}</span><span class="w">${esc(A.ago(x.at))}</span></button></li>`).join('')}</ul>` : ''}
       </div></div>`;
       box.querySelector('.big3').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
-      box.querySelector('.fi-card').addEventListener('click', () => { if (askable) emptyAction('ask'); else location.href = 'fi.html'; });
+      box.querySelector('.fi-card').addEventListener('click', () => emptyAction('ask'));
       box.querySelector('.more2').addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) emptyAction(b.dataset.e); });
       let mm = null, dead = false; const mh = box.querySelector('.mmh');
       if (mh) requestAnimationFrame(() => setTimeout(() => { if (dead || !mh.isConnected) return; try { mm = window.WSMAP.mount(mh, { graph: mg, t, mini: true, sample: !!(ma && ma.sample) }); } catch (e) { console.error('mini map', e); } }, 0));
@@ -947,7 +947,7 @@
     function palette(o) {
       o = o || {}; const target = o.pane || L.act;
       const cmds = () => [
-        { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: t('Ask your documents', 'Spør dokumentene'), i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
+        { c: 'note', n: t('New note', 'Nytt notat'), i: 'note' }, { c: 'nb', n: t('New notebook', 'Ny notatbok'), i: 'pen' }, { c: 'ask', n: 'Flight Intelligence', i: 'ask' }, { c: 'add', n: t('Add documents…', 'Legg til dokumenter …'), i: 'plus' },
         !isPhone() && D.panes(L).length < maxPanes() ? { c: 'split-h', n: t('Split right', 'Del til høyre'), i: 'splith' } : null,
         canDown() && D.panes(L).length < maxPanes() ? { c: 'split-v', n: t('Split down', 'Del nedover'), i: 'splitv' } : null,
         { c: 'desk', n: t('New desk…', 'Ny arbeidsflate …'), i: 'tabs' }, { c: 'map', n: t('Map of your workspace', 'Kart over arbeidsområdet'), i: 'map' }, { c: 'lib', n: t('Library and backup', 'Bibliotek og sikkerhetskopi'), i: 'lib' }].filter(Boolean);
@@ -1191,7 +1191,7 @@
         const it = e.target.closest('.dk-it'); if (it) { openItem(it.dataset.k, it.dataset.r, { beside: e.shiftKey || e.altKey }); return; }
         const ri = e.target.closest('[data-ri]'); if (ri) { const o = Object.assign({}, (A.M.deskRail || {}).open || {}); o[ri.dataset.ri] = true; A.M.deskRail = Object.assign({}, A.M.deskRail || {}, { open: o, c: false }); A.saveMeta(); drawRail(); drawBar(); return; }
         const b = e.target.closest('[data-b]'); if (!b) return;
-        if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({}); else if (b.dataset.b === 'desks') deskMenu(b);
+        if (b.dataset.b === 'fi') askBeside(null); else if (b.dataset.b === 'add-doc') A.pickFiles({}); else if (b.dataset.b === 'new-note') newNote({}); else if (b.dataset.b === 'new-nb') newNotebook({}); else if (b.dataset.b === 'desks') deskMenu(b);
       };
       railEl.addEventListener('click', railClick);
       sheetEl.addEventListener('click', e => { if (e.target.closest('[data-sheet-close]')) { closeSheet(); return; }

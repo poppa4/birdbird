@@ -6,7 +6,7 @@
    The map is a calm cloud (WSGRAPH.cloudLayout): each aircraft and each topic a soft glowing blob of evenly spread dots,
    'Unsorted' one more, the blobs together one cloud with no lines round it. Every group has a clear name and count ('DA42 · 6'),
    placed where it collides with nothing and stays on the plate (or left out on a mini map if there is no room).
-   Links are hairlines inside a group, faint; a dot's links light up on hover. Hover or tap a dot: its card. Tap a
+   Links are hairlines inside a group, faint; a dot's links light up on hover. Hover a dot: its card; click or tap it: the card stays, and the item opens from the card (or with a double click). Tap a
    group name: the camera moves to the group, every item is named and listed in the card; tap outside: back.
    mini: a small, quiet map without controls (the desk home and the sidebar); a click calls onClick. labels: false
    leaves the group names off a mini map.
@@ -525,7 +525,8 @@
       if (!d || moved >= 4) return;
       const [x, y] = local(e), k = hitG(x, y), i = k < 0 ? hit(x, y) : -1;
       if (k >= 0) { focusGroup(k === gsel && sel < 0 ? -1 : k); return; }
-      if (i >= 0) { if (e.pointerType === 'touch' && !isEx(i)) { select(i); return; } open(i, d.shift || e.shiftKey || e.altKey); return; }
+      /* a click shows the dot's card (Open on the desk / Open beside); it opens only from the card, or with a double click */
+      if (i >= 0) { if (!isEx(i) && (d.shift || e.shiftKey || e.altKey)) { open(i, true); return; } hover = -1; select(i); return; }
       back();
     }
     /* tap outside: the card closes; a focused group goes back to the whole cloud */
@@ -592,6 +593,7 @@
     }
     cv.addEventListener('pointerdown', down); cv.addEventListener('pointermove', move); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', leave);
     cv.addEventListener('wheel', wheel, { passive: false }); cv.addEventListener('keydown', key);
+    cv.addEventListener('dblclick', e => { if (mini) return; const [x, y] = local(e), i = hitG(x, y) < 0 ? hit(x, y) : -1; if (i >= 0 && !isEx(i)) { e.preventDefault(); open(i, false); } });
     cv.addEventListener('contextmenu', e => { if (mini) return; const [x, y] = local(e), i = hit(x, y); if (i < 0 || isEx(i)) return; e.preventDefault(); hover = -1; select(i); });
     cv.addEventListener('dblclick', e => { if (mini) return; const [x, y] = local(e); if (hit(x, y) < 0 && hitG(x, y) < 0) zoomAt(1.8, x, y); });
     if (mini) cv.addEventListener('click', () => { if (o.onClick) o.onClick(); });

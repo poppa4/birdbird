@@ -380,7 +380,7 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .wsm-card .btn:not(.pri){background:transparent;color:var(--map-ink-2);border-color:rgba(255,255,255,.35)}
 .wsm-card .btn:not(.pri):hover{background:rgba(255,255,255,.08)}
 .wsm-card{max-height:calc(100% - 140px);overflow:auto}
-.wsm-card.grp{width:min(280px,calc(100% - 28px))}
+.wsm-card.grp{width:min(310px,calc(100% - 28px))}
 .wsm-card .gh{font-family:var(--f-mono);font-size:15px;letter-spacing:.08em;text-transform:uppercase}
 .wsm-card .gh .gc{font-weight:500;color:var(--map-ink-3)}
 .wsm-card .gl{list-style:none;margin:8px -6px 0;padding:0;display:flex;flex-direction:column;gap:1px}
@@ -481,7 +481,9 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .ws-deskopen+.ws-place{margin:0 0 14px 8px}
 @media (pointer:coarse){.ws-main .ws-place{height:44px;padding:0 10px 0 14px}}
 /* the group card on the map keeps its actions in view above a long list */
-.wsm-card.grp .b{flex-wrap:nowrap}
+/* .grp is also a heading class in lab.css: undo it here */
+.wsm-card.grp{font-family:var(--f-body);font-size:inherit;font-weight:inherit;letter-spacing:0;text-transform:none;margin:0;color:var(--map-ink-2)}
+.wsm-card.grp .b{flex-wrap:wrap}
 .wsm-card.grp .b .btn{padding-left:9px;padding-right:9px;white-space:nowrap;min-width:0}
 .wsm-card .ge{display:flex;gap:18px;margin-top:6px}
 @media (pointer:coarse){.wsm-card .b .btn{min-height:44px}.wsm-card .ge .lnk{min-height:44px;min-width:44px;text-align:left}}
@@ -506,3 +508,16 @@ html.ws-deskmode .nsearch,html.ws-deskmode .ws-status{display:none}
 .ws-pick-none{font-style:italic}
 @media (pointer:coarse){.wsm-ng{height:44px}.wsm-card .gl .ux{width:40px;height:40px}.ws-pick label{min-height:44px}}
 @media (max-width:640px){.wsm-ng{padding:0 9px}}
+
+/* Flight Intelligence, always one click away in My workspace */
+.ws-rail a[href="#/fi"]{color:var(--accent);font-weight:600}
+.ws-rail a[href="#/fi"]::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(181,43,126,.15);align-self:center;flex:none;margin-right:-2px;order:-1}
+.ws-rail a[href="#/fi"]{justify-content:flex-start;gap:10px}
+.ws-fi{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:9px;padding:11px 18px 11px 15px;border-radius:999px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14.5px;box-shadow:0 8px 24px rgba(20,30,50,.25)}
+.ws-fi:hover{filter:brightness(1.08)}
+.ws-fi:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.ws-fi .d{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
+@media (max-width:640px){.ws-fi{right:14px;bottom:14px;padding:10px 14px}}
+@media print{.ws-fi{display:none}}
+html.ws-deskmode .ws-fi{display:none}   /* on the desk, Flight Intelligence is the first action in the sidebar */
+.dk-add.dk-fi{color:var(--accent);font-weight:600}
