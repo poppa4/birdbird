@@ -16,6 +16,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 OUT = sys.argv[1] if len(sys.argv) > 1 else '/tmp/logo/out'
 FONTS = '/usr/share/fonts/opentype/inter/'
 NAVY, GOLD, GOLD2, PAPER, BLUE, WHITE = '#0B2545', '#C9A24A', '#A8842F', '#FFFFFF', '#34588A', '#FFFFFF'   # navy, sheet white and gold are the site's own tokens (site.css)
+ACCENT, ACCENT2 = '#9A1E68', '#82165A'   # the site accent (site.css --accent, --accent-hover): the north point
 NAME, FULL = 'NORDAP', 'NORDIC AVIATION PLATFORM'
 
 _fonts = {}
@@ -60,7 +61,7 @@ def star(cx, cy, R=6.5, r=2.4, fill=GOLD):
     return '<path d="M%sZ" fill="%s"/>' % ('L'.join(pts), fill)
 
 def rose(cx, cy, long, short, wl, ws):
-    """Eight-point compass rose. The north point is gold: Nord."""
+    """Eight-point compass rose. The north point carries the site accent: Nord."""
     o = []
     for i in range(4):                                   # intercardinal points first (they sit under the main ones)
         a = math.radians(45 + 90 * i); tip = (cx + short * math.sin(a), cy - short * math.cos(a))
@@ -69,7 +70,7 @@ def rose(cx, cy, long, short, wl, ws):
             o.append('<path d="M%.2f %.2fL%.2f %.2fL%.2f %.2fZ" fill="%s"/>' % (cx, cy, base[0], base[1], tip[0], tip[1], col))
     for i in range(4):
         a = math.radians(90 * i); tip = (cx + long * math.sin(a), cy - long * math.cos(a))
-        for sgn, col in ((-1, GOLD if i == 0 else NAVY), (1, GOLD2 if i == 0 else BLUE)):
+        for sgn, col in ((-1, ACCENT if i == 0 else NAVY), (1, ACCENT2 if i == 0 else BLUE)):
             b = a + sgn * math.pi / 4; base = (cx + wl * math.sin(b), cy - wl * math.cos(b))
             o.append('<path d="M%.2f %.2fL%.2f %.2fL%.2f %.2fZ" fill="%s"/>' % (cx, cy, base[0], base[1], tip[0], tip[1], col))
     return ''.join(o)
