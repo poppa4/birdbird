@@ -128,4 +128,9 @@ export const CALC_RULES = 'CALCULATIONS: You may and should calculate when the p
   + 'and the constant pi. Store a result for later with a name: {{calc: tod = (35000 - 3000) / 1000 * 3}} and later {{calc: tod / 2}}. '
   + 'Add "; n" to set n decimals: {{calc: 1013.25 - 27 * 0.5; 1}}. Write each value without units inside the marker and put the unit '
   + 'after it. Show the steps briefly (formula, then the numbers put in, then the marker with the result) so the pilot can check them. '
-  + 'State any rule of thumb you use (e.g. 3 NM per 1000 ft, 1 hPa ≈ 27 ft) as an approximation. Do not use markers inside JSON keys.';
+  + 'State any rule of thumb you use (e.g. 3 NM per 1000 ft, 1 hPa ≈ 27 ft) as an approximation. Do not use markers inside JSON keys. '
+  + 'Write plain text: never LaTeX (no \\[ \\], no \\frac, no \\text), the page cannot show it.';
+
+/* a short reminder put after the pilot's last message for the free engine: gpt-oss follows the system prompt loosely and
+   otherwise does the arithmetic in its head (tested on nordap.eu, Nov 2026) */
+export const CALC_REMINDER = '\n\n(NORDAP: if your answer contains any calculated number, write each one as {{calc: expression}}, e.g. {{calc: (35000 - 3000) / 1000 * 3}} NM or {{calc: 25 * sin(40); 0}} kt - never work it out yourself, the marker is replaced with the exact result. Trig functions take degrees. No LaTeX.)';

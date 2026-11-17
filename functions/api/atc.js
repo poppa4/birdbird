@@ -33,7 +33,7 @@
      against the caps (its price relative to the default model), so the worst-case daily cost is the same whatever the tier. */
 
 import { endpoint, json, getSession, readJson, limit, fail, rateKey, ipOf } from '../_lib/api.js';
-import { render as renderCalc, CALC_RULES } from '../_lib/calc.js';
+import { render as renderCalc, CALC_RULES, CALC_REMINDER } from '../_lib/calc.js';
 
 /* ---------- limits (each can be overridden with an environment variable of the same name, prefixed ATC_) ---------- */
 const DEFAULTS = {
@@ -200,7 +200,8 @@ function workersText(r) {
   return '';
 }
 async function callWorkers(c, messages, L) {
-  const msgs = [{ role: 'system', content: WORKERS_SYSTEM }, ...messages];
+  const last = messages.length - 1;
+  const msgs = [{ role: 'system', content: WORKERS_SYSTEM }, ...messages.map((m, i) => i === last ? { role: m.role, content: m.content + CALC_REMINDER } : m)];
   const inChars = msgs.reduce((a, m) => a + m.content.length, 0);
   let lastStatus = 'error';
   for (const model of WORKERS_MODELS) {

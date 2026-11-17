@@ -293,6 +293,7 @@ test('workers ai: answers when only the AI binding is set, counts input + 2 x ou
   assert.equal(r.status, 200); assert.equal(r.body.text, 'Lift is the aerodynamic force [GK].');
   assert.equal(calls[0].model, '@cf/openai/gpt-oss-120b'); assert.equal(calls[0].inp.messages[0].role, 'system');
   assert.match(calls[0].inp.messages[0].content, /CALCULATIONS:/); assert.match(calls[0].inp.messages[0].content, /Calculating is different and allowed/);
+  assert.ok(calls[0].inp.messages[1].content.startsWith('What is lift?')); assert.match(calls[0].inp.messages[1].content, /\{\{calc: /);
   const row = w.env.DB.raw.prepare("SELECT tokens FROM ai_usage WHERE user_id='u1'").get();
   assert.equal(row.tokens, 1400);
   assert.equal(w.up.calls.length, 0); // Anthropic never called
