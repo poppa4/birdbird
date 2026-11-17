@@ -579,9 +579,77 @@ const B38M_T = [
   ["AUDIO SELECTOR PANEL CPT",344.8,1500.0,99.1,77.5,1], ["AUDIO SELECTOR PANEL F/O",545.4,1500.0,99.1,77.5,1], ["TRIM|RUDDER TRIM INDICATOR",467.7,1616.8,53.3,16.6], ["TRIM|AILERON TRIM",463.6,1643.7,10.1,29.6],
   ["TRIM|RUDDER TRIM",498.4,1639.0,36.0,36.0], ["AFT ELECTRONIC|FLOOD LIGHT",368.0,1657.9,18.9,18.9], ["AFT ELECTRONIC|PANEL LIGHT",405.6,1657.9,18.9,18.9], ["AFT ELECTRONIC|STAB TRIM OVERRIDE",559.9,1656.1,12.4,22.0],
   ["AFT ELECTRONIC|FLT DK DOOR",613.0,1657.9,18.9,18.9]];
+/* Airbus A350-900: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Airbus A350 XWB (github.com/FGMEMBERS/A350XWB, GPL-2.0). Overhead panel: drawing by Birdbird.
+   The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
+   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+const A359_T = [
+  ["C/B",355.4,1.6,71.4,44.8,1], ["MAINTENANCE",428.5,1.6,142.9,37.3,1], ["C/B 2",573.0,1.6,71.4,52.3,1], ["FIRE",428.5,40.6,142.9,48.7,1],
+  ["ADIRS",355.4,48.1,71.4,83.8,1], ["FIRE|ENG 1 FIRE",433.2,55.8,11.4,14.0], ["FIRE|ENG 1 AGENT 1",450.9,57.4,10.7,10.7], ["FIRE|ENG 1 AGENT 2",468.4,57.4,10.7,10.7],
+  ["FIRE|APU FIRE",485.5,54.1,11.4,14.0], ["FIRE|APU AGENT",503.3,57.4,10.7,10.7], ["FIRE|ENG 2 FIRE",520.4,55.8,11.4,14.0], ["FIRE|ENG 2 AGENT 1",538.2,57.4,10.7,10.7],
+  ["FIRE|ENG 2 AGENT 2",555.6,57.4,10.7,10.7], ["F/CTL 2",573.0,55.6,71.4,56.9,1], ["ADIRS|IR 1",361.3,70.3,14.3,14.3], ["ADIRS|IR 3",384.0,70.3,14.3,14.3],
+  ["ADIRS|IR 2",406.7,70.3,14.3,14.3], ["FIRE|FIRE TEST",494.6,76.1,10.7,10.7], ["F/CTL|PRIM 2",580.6,85.0,10.7,10.7], ["F/CTL|PRIM 3",603.3,85.0,10.7,10.7],
+  ["F/CTL|SEC 2",626.1,85.0,10.7,10.7], ["HYD",428.5,90.9,142.9,40.6,1], ["ADIRS|ADR 1",363.0,109.9,10.7,10.7], ["ADIRS|ADR 3",385.8,109.9,10.7,10.7],
+  ["ADIRS|ADR 2",408.5,109.9,10.7,10.7], ["HYD|GREEN ENG 1 PUMP",436.4,113.8,10.7,10.7], ["HYD|GREEN ENG 2 PUMP",459.7,113.8,10.7,10.7], ["HYD|GREEN ELEC PUMP",482.9,113.8,10.7,10.7],
+  ["HYD|YELLOW ELEC PUMP",506.2,113.8,10.7,10.7], ["HYD|YELLOW ENG 1 PUMP",529.5,113.8,10.7,10.7], ["HYD|YELLOW ENG 2 PUMP",552.7,113.8,10.7,10.7], ["CARGO AIR COND",573.0,114.1,71.4,127.4,1],
+  ["F/CTL",355.4,133.6,71.4,48.7,1], ["FUEL",428.5,133.1,142.9,53.6,1], ["FUEL|L MAIN",436.4,149.5,10.7,10.7], ["FUEL|L STBY",459.7,149.5,10.7,10.7],
+  ["FUEL|CTR L",482.9,149.5,10.7,10.7], ["FUEL|CTR R",506.2,149.5,10.7,10.7], ["FUEL|R STBY",529.5,149.5,10.7,10.7], ["FUEL|R MAIN",552.7,149.5,10.7,10.7],
+  ["CARGO AIR COND|FWD CARGO TEMP",584.5,147.1,14.3,14.3], ["CARGO AIR COND|BULK CARGO TEMP",618.6,147.1,14.3,14.3], ["F/CTL|PRIM 1",368.7,158.9,10.7,10.7], ["F/CTL|SEC 1",402.8,158.9,10.7,10.7],
+  ["FUEL|X FEED",494.6,172.3,10.7,10.7], ["EMER ELEC PWR",355.4,183.9,71.4,48.7,1], ["ELEC",428.5,188.3,142.9,107.2,1], ["EMER ELEC PWR|RAT MAN ON",385.5,207.6,11.4,14.0],
+  ["ELEC|BAT 1",442.2,203.3,10.7,10.7], ["ELEC|EMER BAT 1",477.1,203.3,10.7,10.7], ["ELEC|EMER BAT 2",512.0,203.3,10.7,10.7], ["ELEC|BAT 2",546.9,203.3,10.7,10.7],
+  ["CARGO AIR COND|BULK HEATER",626.1,208.5,10.7,10.7], ["CARGO AIR COND|FWD ISOL VALVES",580.6,210.2,10.7,10.7], ["CARGO AIR COND|BULK ISOL VALVES",603.3,210.2,10.7,10.7], ["ELEC|GALLEY",448.0,223.1,10.7,10.7],
+  ["ELEC|BUS TIE",494.6,223.1,10.7,10.7], ["ELEC|COMMERCIAL",541.1,223.1,10.7,10.7], ["EVAC",355.4,234.3,71.4,50.7,1], ["ELEC|EXT 1",448.0,242.9,10.7,10.7],
+  ["ELEC|APU GEN",494.6,242.9,10.7,10.7], ["ELEC|EXT 2",541.1,242.9,10.7,10.7], ["CARGO SMOKE",573.0,243.1,71.4,91.0,1], ["EVAC|COMMAND",362.7,259.0,11.4,14.0],
+  ["EVAC|HORN SHUT OFF",385.8,262.2,10.7,10.7], ["EVAC|CAPT & PURS",409.8,260.4,8.1,11.0], ["ELEC|GEN 1A",442.2,262.7,10.7,10.7], ["ELEC|GEN 1B",477.1,262.7,10.7,10.7],
+  ["ELEC|GEN 2A",512.0,262.7,10.7,10.7], ["ELEC|GEN 2B",546.9,262.7,10.7,10.7], ["CARGO SMOKE|FWD AGENT",586.0,267.2,11.4,14.0], ["CARGO SMOKE|AFT / BULK AGENT",620.1,267.2,11.4,14.0],
+  ["ELEC|DRIVE 1A",441.9,280.9,11.4,14.0], ["ELEC|DRIVE 1B",476.8,280.9,11.4,14.0], ["ELEC|DRIVE 2A",511.7,280.9,11.4,14.0], ["ELEC|DRIVE 2B",546.6,280.9,11.4,14.0],
+  ["RCDR",355.4,286.6,71.4,44.8,1], ["AIR",428.5,297.1,142.9,64.9,1], ["RCDR|GND CTL",363.0,310.0,10.7,10.7], ["RCDR|CVR ERASE",385.8,310.0,10.7,10.7],
+  ["RCDR|CVR TEST",408.5,310.0,10.7,10.7], ["AIR|COCKPIT TEMP",436.9,314.6,14.3,14.3], ["AIR|HOT AIR 1",466.6,316.4,10.7,10.7], ["AIR|AIR FLOW",492.8,314.6,14.3,14.3],
+  ["AIR|HOT AIR 2",522.5,316.4,10.7,10.7], ["AIR|CABIN TEMP",548.6,314.6,14.3,14.3], ["CARGO SMOKE|SMOKE TEST",603.3,310.2,10.7,10.7], ["OXYGEN",355.4,333.1,71.4,50.7,1],
+  ["VENT",573.0,335.7,71.4,86.4,1], ["AIR|PACK 1",434.7,344.8,10.7,10.7], ["AIR|ENG 1 BLEED",454.7,346.4,10.7,10.7], ["AIR|RAM AIR",474.3,343.2,11.4,14.0],
+  ["AIR|X BLEED",492.8,343.0,14.3,14.3], ["AIR|APU BLEED",514.5,344.8,10.7,10.7], ["AIR|ENG 2 BLEED",534.5,346.4,10.7,10.7], ["AIR|PACK 2",554.4,344.8,10.7,10.7],
+  ["OXYGEN|MASK MAN ON",362.7,359.4,11.4,14.0], ["OXYGEN|CREW SUPPLY",385.8,361.0,10.7,10.7], ["OXYGEN|PASSENGER",408.5,359.4,10.7,10.7], ["ANTI ICE",428.5,363.7,70.6,37.3,1],
+  ["CABIN PRESS",500.7,363.7,70.6,37.3,1], ["CALLS",355.4,385.4,71.4,44.8,1], ["ANTI ICE|WING",433.2,383.3,10.7,10.7], ["ANTI ICE|ENG 1",450.0,383.3,10.7,10.7],
+  ["ANTI ICE|ENG 2",466.9,383.3,10.7,10.7], ["ANTI ICE|PROBE & WINDOW HEAT",483.7,386.6,10.7,10.7], ["CABIN PRESS|CABIN ALT MODE",508.2,385.0,10.7,10.7], ["CABIN PRESS|CABIN V/S MODE",530.7,385.0,10.7,10.7],
+  ["CABIN PRESS|DITCHING",552.8,381.7,11.4,14.0], ["VENT|EXTRACT",586.3,379.9,10.7,10.7], ["VENT|AVNCS COOLG",620.4,379.9,10.7,10.7], ["CALLS|MECH",363.0,408.8,10.7,10.7],
+  ["CALLS|ALL",385.8,408.8,10.7,10.7], ["CALLS|EMER",408.5,408.8,10.7,10.7], ["EXT LT",428.5,402.7,107.4,39.0,1], ["APU",537.5,402.7,33.9,39.0,1],
+  ["EXT LT|STROBE",432.6,423.0,8.1,11.0], ["EXT LT|BEACON",445.6,423.0,8.1,11.0], ["EXT LT|NAV",458.6,423.0,8.1,11.0], ["EXT LT|LOGO",471.6,423.0,8.1,11.0],
+  ["EXT LT|WING",484.6,423.0,8.1,11.0], ["EXT LT|LAND",510.6,423.0,8.1,11.0], ["EXT LT|NOSE",523.6,423.0,8.1,11.0], ["APU|MASTER SW",541.4,424.7,10.7,10.7],
+  ["APU|START",556.7,423.1,10.7,10.7], ["WIPER 2",573.0,423.7,71.4,56.9,1], ["WIPER",355.4,431.9,71.4,48.7,1], ["EXT LT|RWY TURN OFF",497.6,426.2,8.1,11.0],
+  ["INT LT",428.5,443.3,70.6,37.3,1], ["SIGNS",500.7,443.3,70.6,37.3,1], ["WIPER|WIPER CAPT",366.9,455.4,14.3,14.3], ["WIPER|RAIN RPLNT CAPT",402.8,457.2,10.7,10.7],
+  ["WIPER|WIPER F/O",584.5,451.4,14.3,14.3], ["WIPER|RAIN RPLNT F/O",620.4,453.1,10.7,10.7], ["INT LT|STORM",437.3,462.7,8.1,11.0], ["INT LT|DOME",459.7,462.7,8.1,11.0],
+  ["INT LT|ANN LT",482.2,462.7,8.1,11.0], ["SIGNS|SEAT BELTS",509.5,462.7,8.1,11.0], ["SIGNS|NO SMOKING",532.0,462.7,8.1,11.0], ["SIGNS|EMER EXIT LT",554.4,462.7,8.1,11.0],
+  ["EFIS CONTROL PANEL CPT",363.5,523.5,80.5,46.3,1], ["EFIS CPT|TAXI CPT",367.0,525.4,7.6,6.0], ["AFS CONTROL PANEL|SPD / MACH",454.9,525.7,5.3,5.3], ["AFS CONTROL PANEL|TRUE / MAG",477.4,525.7,5.3,5.3],
+  ["AFS CONTROL PANEL|HDG-V/S / TRK-FPA",497.4,528.7,5.3,5.3], ["AFS CONTROL PANEL|METER",517.3,525.7,5.3,5.3], ["EFIS CONTROL PANEL F/O",555.9,523.5,80.5,46.3,1], ["EFIS F/O|TAXI F/O",625.1,525.4,7.6,6.0],
+  ["GLARESHIELD|MASTER WARN CPT",346.3,538.4,11.5,11.5], ["AFS CONTROL PANEL|FD",495.9,540.3,8.1,8.1], ["GLARESHIELD|MASTER WARN F/O",641.9,538.1,11.5,11.5], ["GLARESHIELD|CHRONO CPT",310.9,553.4,10.7,10.7],
+  ["GLARESHIELD|SIDESTICK PRIORITY CPT",328.4,552.8,10.7,10.7], ["GLARESHIELD|MASTER CAUT CPT",346.3,552.5,11.5,11.5], ["EFIS CPT|BARO CPT",369.8,546.7,10.3,11.5], ["EFIS CPT|ND MODE CPT",391.5,557.2,11.5,11.5],
+  ["EFIS CPT|ND RANGE CPT",422.4,557.2,11.5,11.5], ["AFS CONTROL PANEL|SPD SEL",450.6,547.7,13.8,13.8], ["AFS CONTROL PANEL|HDG SEL",472.6,547.2,14.8,14.8], ["AFS CONTROL PANEL|AP 1",491.3,550.2,8.1,8.1],
+  ["AFS CONTROL PANEL|AP 2",500.8,550.2,8.1,8.1], ["AFS CONTROL PANEL|ALT SEL",513.6,547.3,13.8,13.8], ["AFS CONTROL PANEL|V/S SEL",535.7,547.6,13.8,13.8], ["EFIS F/O|ND RANGE F/O",565.9,557.2,11.5,11.5],
+  ["EFIS F/O|ND MODE F/O",596.6,557.2,11.5,11.5], ["EFIS F/O|BARO F/O",619.6,546.5,10.3,11.5], ["GLARESHIELD|MASTER CAUT F/O",641.9,552.3,11.5,11.5], ["GLARESHIELD|SIDESTICK PRIORITY F/O",660.6,552.7,10.7,10.7],
+  ["GLARESHIELD|CHRONO F/O",678.1,553.4,10.7,10.7], ["EFIS CPT|LS CPT",366.5,563.5,7.6,6.0], ["EFIS CPT|VV CPT",375.0,563.5,7.6,6.0], ["AFS CONTROL PANEL|LOC",476.0,563.5,8.1,6.0],
+  ["AFS CONTROL PANEL|A/THR",495.9,559.4,8.1,8.1], ["AFS CONTROL PANEL|ALT",516.5,563.6,8.1,6.0], ["AFS CONTROL PANEL|APPR",538.5,563.6,8.1,6.0], ["EFIS F/O|VV F/O",617.2,563.5,7.6,6.0],
+  ["EFIS F/O|LS F/O",625.9,563.5,7.6,6.0], ["OIS CPT",54.7,625.1,154.1,106.0,1], ["PFD AND ND CPT",218.9,630.0,166.4,101.2,1], ["PFD AND ND F/O",617.6,630.0,169.3,101.2,1],
+  ["OIS F/O",791.2,625.1,155.9,106.0,1], ["ECAM DISPLAY",419.5,634.8,161.1,94.5,1], ["MAIN PANEL|RWY COND / BRAKING ACTION",593.9,653.0,12.5,12.5], ["MAIN PANEL|A/BRK",594.9,668.6,7.8,7.8],
+  ["MAIN PANEL|AIR DATA",392.5,686.1,16.4,16.4], ["MAIN PANEL|LANDING GEAR LEVER",588.5,680.6,21.4,42.9], ["MAIN PANEL|FMS",392.5,711.4,16.4,16.4], ["MFD (LOWER DISPLAY)",421.0,768.0,164.0,92.5,1],
+  ["KCCU CPT",395.5,876.8,69.8,90.9,1], ["KCCU F/O",536.8,876.8,69.8,90.9,1], ["THRUST LEVERS|THRUST LEVER 1",482.4,912.5,17.9,64.9], ["THRUST LEVERS|THRUST LEVER 2",500.2,912.5,17.9,64.9],
+  ["RMP 1",395.5,969.3,60.1,76.3,1], ["RMP 2",544.1,969.3,60.1,76.3,1], ["ENG START|ENG 1 MASTER",469.4,985.1,11.4,12.3], ["ENG START|ENG START SELECTOR",492.0,989.1,15.6,15.6],
+  ["ENG START|ENG 2 MASTER",518.1,985.1,11.4,12.3], ["ECAM CONTROL PANEL|T.O CONFIG",474.1,1009.6,7.8,5.5], ["ECAM CONTROL PANEL|DEFRD",490.3,1010.7,7.8,5.5], ["ECAM CONTROL PANEL|ABN",498.5,1010.7,7.8,5.5],
+  ["ECAM CONTROL PANEL|EMER CANC",514.2,1009.6,7.8,5.5], ["ECAM CONTROL PANEL|RCL LAST",474.1,1015.3,7.8,5.5], ["ECAM CONTROL PANEL|DISPCH",486.8,1019.8,7.8,5.5], ["ECAM CONTROL PANEL|STS",494.9,1019.5,7.8,5.5],
+  ["ECAM CONTROL PANEL|MORE",503.0,1019.8,7.8,5.5], ["ECAM CONTROL PANEL|RCL ALL",514.2,1015.3,7.8,5.5], ["ECAM CONTROL PANEL|CLEAR CPT",461.6,1034.7,7.8,5.5], ["ECAM CONTROL PANEL|ENG",482.1,1027.0,7.8,5.5],
+  ["ECAM CONTROL PANEL|EL/AC",482.1,1035.9,7.8,5.5], ["ECAM CONTROL PANEL|DOOR",490.5,1027.0,7.8,5.5], ["ECAM CONTROL PANEL|EL/DC",490.5,1035.9,7.8,5.5], ["ECAM CONTROL PANEL|WHEEL",498.8,1027.0,7.8,5.5],
+  ["ECAM CONTROL PANEL|HYD",498.8,1035.9,7.8,5.5], ["ECAM CONTROL PANEL|FUEL",507.1,1027.0,7.8,5.5], ["ECAM CONTROL PANEL|F/CTL",507.1,1035.9,7.8,5.5], ["ECAM CONTROL PANEL|CLEAR F/O",526.1,1034.7,7.8,5.5],
+  ["PEDESTAL|FLAPS",543.3,1035.1,17.9,53.6], ["ECAM CONTROL PANEL|ALL",471.7,1041.6,7.8,5.5], ["ECAM CONTROL PANEL|APU",482.1,1041.6,7.8,5.5], ["ECAM CONTROL PANEL|BLEED",490.5,1041.6,7.8,5.5],
+  ["ECAM CONTROL PANEL|COND",498.8,1041.6,7.8,5.5], ["ECAM CONTROL PANEL|PRESS",507.1,1041.6,7.8,5.5], ["PEDESTAL|SPEED BRAKE",448.8,1060.2,14.6,27.6], ["SURV PANEL",470.5,1054.1,56.8,38.2,1],
+  ["PEDESTAL|PRK BRK",415.8,1097.6,27.6,21.1], ["PEDESTAL|RUDDER TRIM",497.0,1119.3,14.6,15.6], ["PEDESTAL|CKPT LT INTEG",463.1,1124.9,10.4,10.4], ["PEDESTAL|CKPT LT FLOOD",479.6,1124.9,10.4,10.4],
+  ["PEDESTAL|RUDDER TRIM RESET",515.2,1123.6,6.5,6.5], ["RMP 3",527.0,1122.4,60.1,76.3,1], ["PEDESTAL|CKPT LT STORM",463.1,1139.1,10.4,10.4], ["PEDESTAL|CKPT DOOR",502.7,1137.7,14.6,9.7]];
+const A359 = { id: 'a359', name: 'Airbus A350-900', crew: 2, h: 1239, t: A359_T,
+  img: { lo: 'img/cockpits/a359-deck-1500.webp', hi: 'img/cockpits/a359-deck-3000.webp', by: 'FlightGear A350XWB', lic: 'GPL-2.0', v: 'A350-900 flight deck. The overhead panel is a simplified drawing: the panels are in the right order, single buttons are approximate', src: 'https://github.com/FGMEMBERS/A350XWB', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
+const PA28 = { id: 'pa28', name: 'Piper PA-28 Warrior', crew: 1, h: 1000, t: [],
+  img: { lo: '', hi: '', by: '', lic: '', v: '', src: '', licUrl: '' } };
+const DA40 = { id: 'da40', name: 'Diamond DA40 NG', crew: 1, h: 1000, t: [],
+  img: { lo: '', hi: '', by: '', lic: '', v: '', src: '', licUrl: '' } };
 const B38M = { id: 'b38m', name: 'Boeing 737 MAX 8', crew: 2, h: 1685, t: B38M_T,
   img: { lo: 'img/cockpits/b38m-deck-1500.webp', hi: 'img/cockpits/b38m-deck-3000.webp', by: 'FlightGear 737 MAX', lic: 'GPL-2.0', v: '737 MAX 7/8/9/10 flight deck', src: 'https://github.com/REXO-77/737-MAX', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
-const LIST = [A320, B738, B38M, B788, E190, ATR72, B200, PA34, DA42, C172];
+const LIST = [A320, A359, B738, B38M, B788, E190, ATR72, B200, PA34, DA42, C172];
 
 /* layout: the targets (named controls) of an aircraft, with their rectangles; panels without items are one target */
 function targets(ac) { if (ac._t) return ac._t; const out = [];
@@ -767,6 +835,10 @@ const PHOTOS = [
   { id: 'ph-atr72ovh', ac: 'atr72', name: 'ATR 72 overhead panel', file: 'img/cockpits/atr72-ovhd.jpg', w: 2000, h: 1935, by: 'Olivier Cleynen', lic: 'CC BY-SA 3.0, cropped', licUrl: 'https://creativecommons.org/licenses/by-sa/3.0/', src: C + 'Overhead_panel_of_an_ATR_72_cockpit.jpg' },
   { id: 'ph-atr72eng', ac: 'atr72', name: 'ATR 72 engine instrument panel', file: 'img/cockpits/atr72-eng.jpg', w: 1415, h: 2000, by: 'Olivier Cleynen', lic: 'CC BY-SA 3.0', licUrl: 'https://creativecommons.org/licenses/by-sa/3.0/', src: C + 'Engine_instrument_panel_of_an_ATR_72_cockpit.jpg' }
 ];
-const API = { list: LIST, photos: PHOTOS, photo: id => PHOTOS.find(p => p.id === id) || null, get: id => LIST.find(a => a.id === id) || null, targets, byId, hit, svg };
+/* the cockpit lists everywhere show the aircraft in these groups, in this order */
+const GROUPS = [{ en: 'Airliners', no: 'Rutefly', ids: ['a320', 'a359', 'b738', 'b38m', 'b788', 'e190'] }, { en: 'Turboprops', no: 'Turboprop', ids: ['atr72', 'b200'] }, { en: 'Training aircraft', no: 'Skolefly', ids: ['c172', 'pa28', 'da40', 'da42', 'pa34'] }]
+  .map(g => ({ en: g.en, no: g.no, list: g.ids.map(i => LIST.find(a => a.id === i)).filter(Boolean) }));
+GROUPS[GROUPS.length - 1].list.push(...LIST.filter(a => !GROUPS.some(g => g.list.includes(a))));
+const API = { groups: GROUPS, list: LIST, photos: PHOTOS, photo: id => PHOTOS.find(p => p.id === id) || null, get: id => LIST.find(a => a.id === id) || null, targets, byId, hit, svg };
 if (typeof module === 'object' && module.exports) module.exports = API; else G.BBFLOWAC = API;
 })(typeof window !== 'undefined' ? window : globalThis);

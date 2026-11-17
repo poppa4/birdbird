@@ -11,6 +11,7 @@ everything else needed to make the pictures again. What the displays show is Bir
 | Diamond DA42 | FlightGear Diamond DA42, https://github.com/FGMEMBERS/Diamond-DA42 | GPL-2.0 |
 | Boeing 737-800 | FlightGear 737-800YV, https://github.com/FGMEMBERS/737-800YV | GPL-2.0 |
 | Beechcraft King Air | FlightGear Beechcraft Super King Air, https://github.com/FGMEMBERS/Beechcraft-King-Air | GPL-2.0 |
+| Airbus A350-900 | FlightGear A350 XWB, https://github.com/FGMEMBERS/A350XWB (overhead: own drawing, a359/ovh.py) | GPL-2.0 |
 | Boeing 737 MAX 8 | FlightGear 737 MAX, https://github.com/REXO-77/737-MAX | GPL-2.0 |
 | Boeing 787-8 | FlightGear 787 family, https://github.com/IskenderWang/787-family | GPL-2.0 |
 | Embraer E190 | FlightGear E-Jet family, https://github.com/YV3399/E-jet-family-YV | GPL-2.0 |

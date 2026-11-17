@@ -18,7 +18,7 @@
   async function browse() { const d = box(), cur = B().cur; if (flt.ac == null) flt.ac = cur && A.get(cur.ac) ? cur.ac : '';
     d.innerHTML = `<h3>${L({ en: 'Flows from other pilots', no: 'Flows fra andre piloter' })}</h3>` +
       `<p class="fln">${L({ en: 'Made by users and not checked by Birdbird. A shared flow is not an SOP: open a copy, then check and change it against your operator’s documents.', no: 'Laget av brukere og ikke kontrollert av Birdbird. En delt flow er ikke en SOP: åpne en kopi, og sjekk og endre den mot operatørens dokumenter.' })}</p>` +
-      `<div class="flf"><label>${L({ en: 'Cockpit', no: 'Cockpit' })}<select id="flac"><option value="">${L({ en: 'All', no: 'Alle' })}</option>${A.list.map(a => `<option value="${a.id}"${flt.ac === a.id ? ' selected' : ''}>${esc(a.name)}</option>`).join('')}</select></label>` +
+      `<div class="flf"><label>${L({ en: 'Cockpit', no: 'Cockpit' })}<select id="flac"><option value="">${L({ en: 'All', no: 'Alle' })}</option>${B().acOpts(flt.ac)}</select></label>` +
       `<label>${L({ en: 'Flight phase', no: 'Flyfase' })}<select id="flph">${phOpts(flt.phase, L({ en: 'All', no: 'Alle' }))}</select></label></div>` +
       `<ul id="fll"><li>${L({ en: 'Loading…', no: 'Laster …' })}</li></ul><div class="acts"><button class="btn" data-x>${L({ en: 'Close', no: 'Lukk' })}</button><button class="btn pri" data-pub>${L({ en: 'Share one of mine', no: 'Del en av mine' })}</button></div>`;
     d.querySelector('[data-x]').onclick = () => d.close(); d.querySelector('[data-pub]').onclick = () => publish();
