@@ -32,7 +32,7 @@ async function apiCall(messages,signal){
   if(!res.ok){ let c=''; try{ c=String((await res.json()).error||''); }catch(e){}
     if(c==='signed_out'){ why='signed_out'; throw {code:'signed_out'}; }
     if(MSG[c]) throw {code:c}; if(res.status===429) throw {code:'rate_limited'}; if(res.status===413) throw {code:'prompt_too_large'}; throw {code:'upstream_error'}; }
-  const j=await res.json(); return String(j.text||'');
+  const j=await res.json(); return String(j.text||'').replace(/[\u200B-\u200D\u2060\uFEFF]/g,''); // zero-width characters would break [E1]/[S1] citation markers
 }
 function parseJson(t){
   try{ return JSON.parse(t); }catch(e){}
