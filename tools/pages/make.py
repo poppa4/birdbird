@@ -214,7 +214,7 @@ def card(i, h, inner): return '  <section class="card" id="%s">\n    <h2>%s</h2>
 def ps(*pairs): return ''.join('    <p>%s</p>\n' % T(*p) for p in pairs)
 def ul(cls, pairs): return '    <ul class="%s">\n%s    </ul>\n' % (cls, ''.join('      <li>%s</li>\n' % T(*p) for p in pairs))
 body = card('who', ('Who writes and checks', 'Hvem som skriver og kontrollerer'), ps(
-    ('NORDAP is built and written by one pilot, with AI tools for the programming. There is no editorial staff and no panel of instructors.', 'NORDAP er bygget og skrevet av én pilot, med AI-verktøy til programmeringen. Det finnes ingen redaksjon og ikke noe panel av instruktører.'),
+    ('NORDAP is built and written by one commercial pilot, with AI tools for the programming. There is no editorial staff and no panel of instructors.', 'NORDAP er bygget og skrevet av én pilot med trafikkflygersertifikat (CPL), med AI-verktøy til programmeringen. Det finnes ingen redaksjon og ikke noe panel av instruktører.'),
     ('Nothing on the site has been reviewed by an instructor or a subject expert outside NORDAP yet. When that happens, the page concerned will say who reviewed it and when.', 'Ikke noe på siden er gjennomgått av en instruktør eller fagperson utenfor NORDAP ennå. Når det skjer, vil den aktuelle siden si hvem som gjennomgikk den og når.')))
 body += card('how', ('What is checked, and how', 'Hva som kontrolleres, og hvordan'), ul('sc-list', [
     ('Rules and phraseology are written from the published regulation, and the page names the rule.', 'Regler og fraseologi skrives ut fra publisert regelverk, og siden oppgir regelen.'),
