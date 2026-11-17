@@ -13,7 +13,8 @@ const TH = require('../theory.js');
 
 test('every entry is complete and points at a real source and lab', () => {
   const ids = new Set();
-  assert.ok(TH.items.length >= 40);
+  assert.ok(TH.items.length >= 80);
+  for (const k of ['081', '050', '022', '021', '040', '061', '062']) assert.ok(TH.items.some(x => x.subj === k), 'subject ' + k);
   for (const x of TH.items) {
     assert.ok(!ids.has(x.id), 'duplicate ' + x.id); ids.add(x.id);
     assert.ok(TH.subjects[x.subj], x.id + ' subject');
@@ -21,6 +22,7 @@ test('every entry is complete and points at a real source and lab', () => {
     assert.ok(x.title.en && x.title.no, x.id + ' title');
     assert.ok(x.en.length > 200 && x.en.length < 1400, x.id + ' text length ' + x.en.length);
     assert.ok(x.kw.split(' ').length >= 6, x.id + ' keywords');
+    if (x.sky) assert.match(x.sky, /^[a-z0-9-]+$/, x.id + ' skybrary slug');
     if (x.lab) assert.ok(existsSync(join(ROOT, x.lab.split('#')[0])), x.id + ' lab ' + x.lab);
   }
 });
@@ -30,6 +32,7 @@ test('no rules, no U.S. regulation, no U.S. units in the theory library', () => 
     /\bClass [BCDE] airspace\b/i, /\b(LIFR|MVFR)\b/, /\bmiles?\b(?! per)/i, /\bstatute\b/i, /\bis required\b|\bare required\b|\bmust be carried\b|\bregulations? (say|require)/i];
   for (const x of TH.items) for (const re of bad) assert.ok(!re.test(x.en + ' ' + x.title.en), `${x.id} matches ${re}`);
   assert.match(TH.promptBlock([TH.items[0]]), /NEVER a source for rules/);
+  assert.match(TH.promptBlock([TH.get('040-hypoxia')]), /skybrary\.aero\/articles\/hypoxia \(Source: www\.skybrary\.aero\)/);
 });
 
 test('search finds the right entry in English and Norwegian', () => {
@@ -47,6 +50,13 @@ test('search finds the right entry in English and Norwegian', () => {
   assert.equal(first('Hva er forskjellen på rimis og klaris?'), '050-icing');
   assert.equal(first('what is dutch roll'), '081-lateral');
   assert.deepEqual(TH.search('hello', 3), []);
+  assert.equal(first('what is hypoxia'), '040-hypoxia');
+  assert.equal(first('hva er somatogravisk illusjon'), '040-spatial');
+  assert.equal(first('black hole approach'), '040-visual-illusions');
+  assert.equal(first('hva er forgasserising'), '021-carb-ice');
+  assert.equal(first('how does DME slant range work'), '062-dme');
+  assert.equal(first('hva er en falsk glidebane'), '062-ils');
+  assert.equal(first('1 in 60 rule'), '061-one-in-sixty');
   assert.ok(TH.search('what is lift', 3).some(x => x.id === '081-bernoulli'));
 });
 
