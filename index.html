@@ -91,6 +91,7 @@
 .fi-ask:hover,.fi-ask:focus-within{border-color:#fff}.fi-ask button:hover{background:#B02A7B}
 .fp .fi-ask button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
 .fi-ask button[disabled]{opacity:.6;cursor:default}
+.fi-pv{margin:-12px 0 0!important;padding:0 24px 22px;font-size:12.5px;line-height:1.45;color:#AEBBC8}.fi-pv b{color:#fff;font-weight:600}
 /* the live conversation (front-fi.js): replaces the examples once the visitor asks */
 .fi-stack.is-live .fi-qa{display:none}
 .fi-live{grid-area:1/1;min-width:0;max-height:440px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
@@ -429,6 +430,7 @@
   .fi-src li span:last-child{grid-column:2}
   .fi-keep{padding:12px 18px 0;font-size:12.5px}
   .fi-ask{margin:12px 18px 18px}
+  .fi-pv{margin:-8px 0 0!important;padding:0 18px 18px}
   .fi-ask input{padding:0 12px;font-size:16px}
   .fi-ask button{padding:0 16px}
   .fi-live{max-height:380px}
@@ -485,6 +487,7 @@
   .fi-src{margin-top:12px;padding-top:6px}.fi-src li{padding:4px 0}
   .fi-keep{display:none}
   .fi-ask{margin:12px 22px 18px;min-height:44px}
+  .fi-pv{margin:-8px 0 0!important;padding:0 22px 18px}
 }
 @media (min-width:901px) and (max-height:820px){ .fi-src{display:none} .fp-hero h1{font-size:clamp(38px,min(4.2vw,7vh),62px)} }
 /* touch: 44 px targets for the example pager, the storm stages and the stand-alone text links */
@@ -525,6 +528,7 @@
           </div>
           <p class="fi-keep" data-tx="fiKeep">Answers come from your own AFM, QRH and SOP and from the EASA Easy Access Rules, each with the page it rests on. Your documents are read and stored in this browser.</p>
           <form class="fi-ask" id="fiAskF" action="fi.html" method="get" role="search" aria-label="Ask Flight Intelligence"><label class="vh" for="fiAskIn" data-tx="fiAsk">Ask Flight Intelligence</label><input id="fiAskIn" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="Ask Flight Intelligence" data-ai><button type="submit" data-tx="fiGo">Ask</button></form>
+          <p class="fi-pv" data-tx="fiPv"><b>Preview.</b> Flight Intelligence runs on a lighter AI model while NORDAP is in testing. Use answers as a study reference, and always check the official source.</p>
         </section>
       </div>
     </div>
@@ -772,6 +776,7 @@ LAB.tx({
  fiK:'Eksempel · illustrerende dokumenter',
  fiKeep:'Svarene kommer fra din egen AFM, QRH og SOP og fra EASA Easy Access Rules, hver med siden de bygger på. Dokumentene dine leses og lagres i denne nettleseren.',
  fiAsk:'Spør Flight Intelligence', fiGo:'Spør',
+ fiPv:'<b>Forhåndsversjon.</b> Flight Intelligence bruker en lettere AI-modell mens NORDAP er i testfasen. Bruk svarene som studiereferanse, og sjekk alltid den offisielle kilden.',
  s1:'<span class="nLabs">25</span> interaktive labber på EASA ATPL-teorifagene.',
  s2:'Planlegg ruten på et VFR-kart og les terrenget under den.',
  s3:'NOTAM, vær, minima, ytelse, drivstoff, masse og balanse, skrevet ut som et hefte.',
