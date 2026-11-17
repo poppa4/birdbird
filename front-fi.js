@@ -170,7 +170,7 @@
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
   const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
-  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=4'), window.THEORY ? 0 : load('theory.js?v=1')]).catch(() => {}); return loading; }
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=5'), window.THEORY ? 0 : load('theory.js?v=1')]).catch(() => {}); return loading; }
 
   function md(text, list, th) {
     let h = esc(String(text || '').trim());
@@ -217,7 +217,7 @@
     const hist = turns.slice(-5, -1).filter(t => t.a).map(t => 'PILOT: ' + t.q.slice(0, 800) + '\nFLIGHT INTELLIGENCE: ' + t.a.slice(0, 1200)).join('\n');
     return `You are Flight Intelligence, the AI instructor of NORDAP (the Nordic Aviation Platform), answering a pilot on NORDAP's front page. Answer any aviation question clearly, like a good flight instructor: aerodynamics, meteorology, systems, navigation, procedures and EASA rules.
 Write in ${NAI.langName()} and keep aviation terms in English. Be concrete and short: at most a few short paragraphs or a short list. No tables.
-${th && th.length && window.THEORY ? THEORY.promptBlock(th) + '\n\n' : ''}${list.length ? EASA.promptBlock(list) : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. Do not state any rule ID, minimum, fuel figure or other regulatory number from memory: say that it is not in the NORDAP rules library yet and that the pilot should check the current EASA Easy Access Rules.'}
+${th && th.length && window.THEORY ? THEORY.promptBlock(th) + '\n\n' : ''}${list.length ? EASA.promptBlock(list) : EASA.noMatch()}
 
 RULES FOR THIS ANSWER: Mark every statement that does not come from an EASA entry or a theory entry above with [GK] (general knowledge), once at the end of the sentence. Never give aircraft-specific limitations, speeds or procedure steps from memory: say that Flight Intelligence can answer that from the pilot's own AFM and SOP on the Flight Intelligence page. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
 ${hist ? '\nCONVERSATION SO FAR:\n' + hist + '\n' : ''}

@@ -383,7 +383,7 @@ body:not(.nofab) #askbar{display:none}
 <script src="lab.js?v=52"></script>
 <script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{}));</script>
 <script src="ai.js?v=8"></script>
-<script src="easa.js?v=4"></script>
+<script src="easa.js?v=5"></script>
 <script src="wxkit.js?v=3"></script>
 <script src="aip.js?v=7"></script>
 <script src="store.js?v=4"></script>
@@ -1108,7 +1108,7 @@ async function ask(){
   const filled=Object.fromEntries(Object.entries(P.f).filter(([k,v])=>v!==''&&v!=null));
   const fdocs=await fiDocs(); const ex=fiSearch(q,fdocs,5); const chk=(window.__fiac||[]).filter(a=>a.vdOk&&Object.keys(a.vdOk).length).map(a=>`${a.name}: `+Object.entries(a.vdOk).map(([k,o])=>`${k} ${o.v} (${o.src})`).join(', ')).join('\n');
   const docTxt=(ex.length?ex.map((x,i)=>`[S${i+1}] ${x.d.name}${x.d.rev?' rev '+x.d.rev:''}, page ${x.c.p}:\n${x.c.t}`).join('\n\n'):'(none relevant)')+(chk?'\n\nAIRCRAFT DATA CHECKED BY THE PILOT AGAINST THE AFM:\n'+chk:'');
-  const ea=easaFor(q); const easaTxt= ea.length? '\n\n'+EASA.promptBlock(ea) : '\n\nEASA RULES: no entry from the NORDAP EASA rules library matched this question. If you state an EASA rule, name its exact ID and tell the pilot to check it in the current EASA Easy Access Rules.';
+  const ea=easaFor(q); const easaTxt= ea.length? '\n\n'+EASA.promptBlock(ea) : '\n\n'+EASA.noMatch();
   const rules=`You are the NORDAP instructor (an experienced EASA flight instructor) sitting next to a pilot who is filling in a briefing pack (sections: aircraft, pilot, NOTAM, meteorology, planning minima, cross-section, runway performance, climb gradients, fuel, mass and balance, radio failure, risk assessment, briefing notes, ATC flight plan). Answer in ${NAI.langName()}, briefly and concretely. Do calculations step by step with units and round sensibly. Use the pilot's filled-in values (below) where relevant; say which value you used. If a value is missing, say what you need. Remind them that their flight manual and operations manual are the authority when a number depends on them. Field keys are abbreviations: r.dep.* runway data for departure, fu.l1.* fuel leg 1, mb.* mass and balance, mi.* IFR planning minima, mv.* VFR minima.\n\nFILLED IN NOW:\n${JSON.stringify(filled).slice(0,12000)}\n\nEXCERPTS FROM THE PILOT'S OWN DOCUMENTS (cite as [S1], [S2]; never invent a limitation, speed or performance value that is not in them or in the checked data):\n${docTxt}${easaTxt}`;
   const att=aiAtt; aiAtt=null; let imgs=null; if(att){ const b=await attBlob(att); if(b) imgs=[b]; }
   const turns=[{role:'user',content:rules},{role:'assistant',content:'Ready.'}].concat(AT.slice(-8)).concat([{role:'user',content:(att?`[Attached chart: ${att.name}. The pilot's lines are drawn on it in colour where they have marked it. Their reading so far: ${att.note||'none'}]\n`:'')+q}]);

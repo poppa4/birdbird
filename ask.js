@@ -110,7 +110,7 @@
       /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
       try {
         if (!window.NAI) await A.loadScript('ai.js?v=8');
-        if (!window.EASA) await A.loadScript('easa.js?v=4').catch(() => {});
+        if (!window.EASA) await A.loadScript('easa.js?v=5').catch(() => {});
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
         avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }
@@ -119,7 +119,7 @@
     }
     function prompt(question, src, hist, easa) {
       const ex = src.length ? src.map((x, i) => `[S${i + 1}] ${x.d.name}${x.d.rev ? ', revision ' + x.d.rev : ''}, page ${x.label}${x.c.s ? ', ' + x.c.s : ''}:\n${x.c.t}`).join('\n\n') : '';
-      const rules = easa && easa.length && window.EASA ? window.EASA.promptBlock(easa) : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. Do not state a rule ID, minimum, fuel figure or other regulatory number from memory: say it is not in the NORDAP rules library yet and that the pilot should check the current EASA Easy Access Rules.';
+      const rules = easa && easa.length && window.EASA ? window.EASA.promptBlock(easa) : (window.EASA? window.EASA.noMatch() : '');
       return `You are Flight Intelligence, an experienced flight instructor inside NORDAP's My workspace. Answer any aviation question clearly (theory, meteorology, systems, procedures, planning, EASA rules), short and concrete: two to six sentences or a short list. Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English.
 ${src.length ? `The pilot's own documents are below. Use them first. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
 
