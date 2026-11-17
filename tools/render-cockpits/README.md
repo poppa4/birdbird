@@ -15,6 +15,7 @@ everything else needed to make the pictures again. What the displays show is Bir
 | Boeing 737 MAX 8 | FlightGear 737 MAX, https://github.com/REXO-77/737-MAX | GPL-2.0 |
 | Boeing 787-8 | FlightGear 787 family, https://github.com/IskenderWang/787-family | GPL-2.0 |
 | Diamond DA40 NG | FlightGear DA40 NG, https://github.com/sryu1/DA40 (G1000 bezels: FGData) | GPL-2.0 |
+| Piper PA-34 Seneca II | FlightGear SenecaII, https://github.com/FGMEMBERS/SenecaII (shared instruments: FGData) | GPL-2.0 |
 | Piper PA-28 Warrior | FlightGear PA28 Warrior, https://github.com/FGMEMBERS/PA28-Warrior | GPL-2.0 |
 | Embraer E190 | FlightGear E-Jet family, https://github.com/YV3399/E-jet-family-YV | GPL-2.0 |
 | ATR 72-500 | FlightGear ATR 72-500 (ATR 72-500/C project), https://github.com/FGMEMBERS/ATR72 | GPL-3.0 |
