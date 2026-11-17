@@ -10,7 +10,18 @@ const B = window.BBAIP;
 const urls = new Map();
 Object.values(B.ALL).concat([B.EAD, B.DIR]).forEach(x => urls.set(x.url, x.name));
 const UA = 'NORDAP link check (+https://birdbird.eu)';
+/* One answer per try. A network error or a 5xx is tried again twice, 20 s apart: a single hiccup at one portal
+   must not fail the whole weekly run and e-mail the owner (skybriefing.com did exactly that once). */
 async function check(url) {
+  let r;
+  for (let i = 0; i < 3; i++) {
+    r = await once(url);
+    if (r.ok || (typeof r.status === 'number' && r.status < 500)) return r;
+    if (i < 2) await new Promise(f => setTimeout(f, 20000));
+  }
+  return r;
+}
+async function once(url) {
   for (const method of ['HEAD', 'GET']) {
     try {
       const r = await fetch(url, { method, redirect: 'follow', headers: { 'user-agent': UA }, signal: AbortSignal.timeout(20000) });
