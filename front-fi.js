@@ -144,7 +144,8 @@
   box.addEventListener('focusin', () => { over = true; });
   box.addEventListener('focusout', e => { if (!box.contains(e.relatedTarget)) { over = false; go(); } });
   document.addEventListener('visibilitychange', go);
-  if (window.LAB && LAB.onLang) LAB.onLang(() => { n = phase === 'type' ? Math.min(n, total(QA[cur])) : total(QA[cur]); build(); });
+  if (window.LAB && LAB.onLang) LAB.onLang(() => { n = phase === 'type' ? Math.min(n, total(QA[cur])) : total(QA[cur]); build();
+    if (live) { for (const el of stack.children) el.setAttribute('aria-hidden', 'true'); stack.appendChild(live); pg.hidden = true; } });
 
   if (RM) n = total(QA[0]);
   build();
@@ -152,5 +153,94 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
   if ('IntersectionObserver' in window) new IntersectionObserver(es => { vis = es[0].isIntersecting; go(); }, { threshold: 0.2 }).observe(box);
   else { vis = true; go(); }
+
+  /* ---------- ask for real: the visitor's own question, answered here ----------
+     The same service as fi.html (ai.js → /api/atc), grounded in NORDAP's EASA rules library (easa.js). ai.js and easa.js load
+     on first focus. The examples stop for good once a question is asked; the thread stays in this page only. Rules
+     questions cite [E1]…; anything not in the library is marked as general knowledge. The pilot's own documents live on the
+     Flight Intelligence page, so every answer offers to continue there. */
+  const form = document.getElementById('fiAskF'), inp = document.getElementById('fiAskIn');
+  let live = null, turns = [], busy = false, loading = null;
+  const LT = { ph: t2('Ask Flight Intelligence', 'Spør Flight Intelligence'), wait: t2('Thinking…', 'Tenker …'),
+    cont: t2('Continue in Flight Intelligence →', 'Fortsett i Flight Intelligence →'),
+    docs: t2('Answer from my own AFM and SOP →', 'Svar fra min egen AFM og SOP →'),
+    clear: t2('Back to the examples', 'Tilbake til eksemplene'),
+    off: t2('Flight Intelligence is not available right now. You can still open it and use the EASA rules library.', 'Flight Intelligence er ikke tilgjengelig akkurat nå. Du kan fortsatt åpne den og bruke EASA-regelbiblioteket.'),
+    gk: t2('general knowledge', 'generell kunnskap') };
+  const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
+  const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=7'), window.EASA ? 0 : load('easa.js?v=3')]).catch(() => {}); return loading; }
+
+  function md(text, list) {
+    let h = esc(String(text || '').trim());
+    h = h.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+    const out = []; let ul = null;
+    for (const line of h.split('\n')) {
+      const m = line.match(/^\s*(?:[-•*]|\d+[.)])\s+(.*)$/);
+      if (m) { if (!ul) { ul = []; } ul.push(`<li>${m[1]}</li>`); continue; }
+      if (ul) { out.push(`<ul>${ul.join('')}</ul>`); ul = null; }
+      if (line.trim()) out.push(`<p>${line}</p>`);
+    }
+    if (ul) out.push(`<ul>${ul.join('')}</ul>`);
+    h = out.join('');
+    h = h.replace(/\[GK\]/g, `<span class="gk">${esc(L(LT.gk))}</span>`).replace(/\[S\d+\]/g, '');
+    return window.EASA ? EASA.cite(h, list) : h;
+  }
+  function fiUrl(q) { return 'fi.html?q=' + encodeURIComponent(String(q).slice(0, 1500)); }
+  function paintLive() {
+    if (!live) return;
+    live.innerHTML = turns.map((t, i) => `<div class="fi-t">
+      <p class="fi-q">${esc(t.q)}</p>
+      <div class="fi-a">${t.err ? `<p class="fi-err">${esc(t.err)}</p>` : t.a == null ? `<p class="fi-wait">${esc(L(LT.wait))}</p>` : md(t.a, t.list)}</div>
+      ${i === turns.length - 1 && t.a != null ? `<div class="fi-go"><a href="${fiUrl(t.q)}">${esc(L(LT.cont))}</a><a href="fi.html#docs">${esc(L(LT.docs))}</a><button type="button" data-fi-clear>${esc(L(LT.clear))}</button></div>` : ''}
+    </div>`).join('');
+    live.scrollTop = live.scrollHeight;
+  }
+  function startLive() {
+    if (live) return;
+    over = true; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    for (const el of stack.children) el.setAttribute('aria-hidden', 'true');
+    pg.hidden = true;
+    stack.classList.add('is-live');
+    live = document.createElement('div'); live.className = 'fi-live'; live.setAttribute('aria-live', 'polite');
+    stack.appendChild(live);
+    live.addEventListener('click', e => { if (e.target.closest('[data-fi-clear]')) stopLive(); });
+  }
+  function stopLive() {
+    if (!live) return; live.remove(); live = null; stack.classList.remove('is-live'); turns = []; pg.hidden = false; over = false; show(cur, false); go();
+  }
+  function prompt(q, list) {
+    const hist = turns.slice(-5, -1).filter(t => t.a).map(t => 'PILOT: ' + t.q.slice(0, 800) + '\nFLIGHT INTELLIGENCE: ' + t.a.slice(0, 1200)).join('\n');
+    return `You are Flight Intelligence, the AI instructor of NORDAP (the Nordic Aviation Platform), answering a pilot on NORDAP's front page. Answer any aviation question clearly, like a good flight instructor: aerodynamics, meteorology, systems, navigation, procedures and EASA rules.
+Write in ${NAI.langName()} and keep aviation terms in English. Be concrete and short: at most a few short paragraphs or a short list. No tables.
+${list.length ? EASA.promptBlock(list) : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. Do not state any rule ID, minimum, fuel figure or other regulatory number from memory: say that it is not in the NORDAP rules library yet and that the pilot should check the current EASA Easy Access Rules.'}
+
+RULES FOR THIS ANSWER: Mark every statement that does not come from an EASA entry above with [GK] (general knowledge), once at the end of the sentence. Never give aircraft-specific limitations, speeds or procedure steps from memory: say that Flight Intelligence can answer that from the pilot's own AFM and SOP on the Flight Intelligence page. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it.
+${hist ? '\nCONVERSATION SO FAR:\n' + hist + '\n' : ''}
+PILOT: ${q.slice(0, 1500)}`;
+  }
+  async function ask(q) {
+    q = String(q || '').trim(); if (!q || busy) return;
+    busy = true; const btn = form.querySelector('button'); if (btn) btn.disabled = true;
+    startLive();
+    const t = { q, a: null, list: [] }; turns.push(t); if (turns.length > 8) turns.shift(); paintLive();
+    try {
+      await deps();
+      if (!window.NAI || !(await NAI.ready)) { t.err = L(LT.off); }
+      else {
+        t.list = EASA.isRules(q) ? EASA.search(q, 4) : [];
+        t.a = String(await NAI.text(prompt(q, t.list), { tier: 'default' }) || '').split(/\n-{3,}\s*\n?/)[0];
+        if (!t.a.trim()) t.err = NAI.errText({ code: 'other' });
+      }
+    } catch (e) { t.err = window.NAI ? NAI.errText(e) : L(LT.off); }
+    busy = false; if (btn) btn.disabled = false; paintLive();
+  }
+  if (form && inp) {
+    setPh();
+    inp.addEventListener('focus', deps, { once: true });
+    form.addEventListener('submit', e => { e.preventDefault(); const q = inp.value; inp.value = ''; ask(q); });
+    if (window.LAB && LAB.onLang) LAB.onLang(() => { setPh(); paintLive(); });
+  }
+
   window.__fpFi = { show, get state() { return { cur, n, phase }; } };
 })();

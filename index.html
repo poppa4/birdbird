@@ -85,10 +85,29 @@
 .fi-src li span:last-child{font-family:var(--mono);font-size:11.5px;color:#93A4B6;white-space:nowrap}
 .fi-keep{margin:0!important;padding:14px 24px 0;border-top:1px solid rgba(255,255,255,.12);font-size:13px;line-height:1.5;color:#AEBBC8}
 .fi-ask{display:flex;align-items:stretch;margin:14px 24px 24px;min-height:50px;border:1px solid rgba(255,255,255,.34);text-decoration:none;transition:border-color .15s}
-.fi-ask span{flex:1;display:flex;align-items:center;padding:0 16px;font-size:15.5px;color:#AEBBC8}
-.fi-ask b{display:flex;align-items:center;padding:0 20px;background:var(--acc);color:#fff;font-weight:600;font-size:15px;white-space:nowrap}
-.fi-ask:hover{border-color:#fff}.fi-ask:hover b{background:#B02A7B}
-.fp .fi-ask:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.fi-ask input{flex:1;min-width:0;border:0;border-radius:0;background:none;padding:0 16px;font:inherit;font-size:15.5px;color:#fff;outline:none}
+.fi-ask input::placeholder{color:#AEBBC8;opacity:1}
+.fi-ask button{display:flex;align-items:center;padding:0 20px;border:0;border-radius:0;background:var(--acc);color:#fff;font:inherit;font-weight:600;font-size:15px;white-space:nowrap;cursor:pointer}
+.fi-ask:hover,.fi-ask:focus-within{border-color:#fff}.fi-ask button:hover{background:#B02A7B}
+.fp .fi-ask button:focus-visible{outline:2px solid #fff;outline-offset:-4px}
+.fi-ask button[disabled]{opacity:.6;cursor:default}
+/* the live conversation (front-fi.js): replaces the examples once the visitor asks */
+.fi-stack.is-live .fi-qa{display:none}
+.fi-live{grid-area:1/1;min-width:0;max-height:440px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
+.fi-live .fi-q{font-size:19px}
+.fi-live .fi-t+.fi-t{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}
+.fi-live .fi-a ul,.fi-live .fi-a ol{margin:8px 0 0 18px;padding:0}
+.fi-live .fi-a li+li{margin-top:4px}
+.fi-live .fi-a a{color:#fff}
+.fi-live .fi-a .ecite{display:inline-block;margin-left:6px;padding:0 6px;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.06);font-family:var(--mono);font-size:11.5px;font-weight:500;line-height:1.55;color:#fff;text-decoration:none;white-space:nowrap}
+.fi-live .fi-a .ecite::before{content:'EASA';margin-right:6px;font-weight:600;color:#E07DB6}
+.fi-live .fi-a .ecite span{color:#93A4B6}
+.fi-live .fi-a .gk{display:inline-block;margin-left:6px;padding:0 5px;border:1px dashed rgba(255,255,255,.3);font-family:var(--mono);font-size:10.5px;color:#93A4B6;white-space:nowrap}
+.fi-live .fi-wait{color:#93A4B6;font-size:14px}
+.fi-live .fi-err{color:#F3C4DF;font-size:14px}
+.fi-go{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13.5px}
+.fi-go a{color:#fff;text-underline-offset:3px}
+.fi-go button{border:0;background:none;padding:0;color:#AEBBC8;font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .fp-lab-hit{position:absolute;inset:0;z-index:2}
 .fp-lab-hit:focus-visible{outline:2px solid #fff!important;outline-offset:-4px!important}
 .fp-ro{position:absolute;z-index:1;left:18px;top:14px;display:flex;gap:22px;margin:0;font-family:var(--mono);font-size:14px;color:#E8EDF1;pointer-events:none}
@@ -409,8 +428,9 @@
   .fi-src li span:last-child{grid-column:2}
   .fi-keep{padding:12px 18px 0;font-size:12.5px}
   .fi-ask{margin:12px 18px 18px}
-  .fi-ask span{padding:0 12px;font-size:15px}
-  .fi-ask b{padding:0 16px}
+  .fi-ask input{padding:0 12px;font-size:16px}
+  .fi-ask button{padding:0 16px}
+  .fi-live{max-height:380px}
   .ff{aspect-ratio:4/4.1;margin:0 calc(-1*var(--gr,24px)) 0 calc(-1*var(--gl,24px));box-shadow:none}
   .ff-frame{left:14px;right:14px;top:72px;bottom:58px}
   .ff .fp-ro{left:var(--gl,24px);top:16px;font-size:12.5px;gap:16px}
@@ -503,7 +523,7 @@
             </div>
           </div>
           <p class="fi-keep" data-tx="fiKeep">Answers come from your own AFM, QRH and SOP and from the EASA Easy Access Rules, each with the page it rests on. Your documents are read and stored in this browser.</p>
-          <a class="fi-ask" href="fi.html"><span data-tx="fiAsk">Ask Flight Intelligence</span><b data-tx="fiGo">Ask</b></a>
+          <form class="fi-ask" id="fiAskF" action="fi.html" method="get" role="search" aria-label="Ask Flight Intelligence"><label class="vh" for="fiAskIn" data-tx="fiAsk">Ask Flight Intelligence</label><input id="fiAskIn" name="q" type="text" maxlength="1500" autocomplete="off" placeholder="Ask Flight Intelligence" data-ai><button type="submit" data-tx="fiGo">Ask</button></form>
         </section>
       </div>
     </div>
@@ -733,7 +753,7 @@
 <script src="lab.js?v=52"></script>
 <script src="reqplane.js?v=2" defer></script>
 <script src="front-flow.js?v=1" defer></script>
-<script src="front-fi.js?v=3" defer></script>
+<script src="front-fi.js?v=4" defer></script>
 <script>
 (function(){
 'use strict';
