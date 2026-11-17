@@ -859,7 +859,9 @@ function show(a){ box.dataset.ac=a;
   $$('.sm-ac').forEach(d=>d.classList.toggle('on',d.dataset.ac===a));
   $$('.sm-tabs button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ac===a))); }
 box.classList.add('js');
-$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>show(b.dataset.ac)); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
+/* the aircraft chosen in Flows opens first here too, and a choice here is remembered for Flows */
+try{ const m={c172:'c172',da42:'da42',b200s:'b200',b200:'b200'}[localStorage.getItem('bb-flows-ac')||'']; if(m&&m!==box.dataset.ac) show(m); }catch(e){}
+$$('.sm-tabs button').forEach(b=>{ b.addEventListener('click',()=>{ show(b.dataset.ac); try{ localStorage.setItem('bb-flows-ac',{b200:'b200s'}[b.dataset.ac]||b.dataset.ac); }catch(e){} }); ['pointerenter','focus'].forEach(e=>b.addEventListener(e,()=>load(img(b.dataset.ac)))); });
 ready(img(box.dataset.ac));
 const thumbs=()=>$$('.sm-tabs img[data-src]').forEach(i=>{ i.src=i.dataset.src; i.removeAttribute('data-src'); });
 if(!('IntersectionObserver' in window)){ thumbs(); box.classList.add('in'); return; }

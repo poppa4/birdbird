@@ -50,7 +50,7 @@
 .rst{margin:10px 0;padding:9px 12px;border-radius:8px;background:#FFF4DC;color:#8A5A00;font-weight:600;font-size:14px}.rst.ok{background:rgba(60,203,127,.14);color:var(--green,#1F7A4D)}
 .rcode span{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.rcode code{font:600 16px var(--f-mono,monospace);padding:7px 10px;background:var(--wash,#F2F4F5);border-radius:6px;user-select:all}
 @media (max-width:640px){.fmode button{padding:9px 2px;font-size:13.5px}}
-.fstart{margin:0 0 12px}.fac{display:block;margin:0 0 14px}.fac select{display:block;width:100%;margin-top:6px;padding:11px 12px;font:inherit;font-size:16px;font-weight:600;border:1px solid var(--rule);border-radius:8px;background:var(--paper,#fff);color:var(--ink)}@media (min-width:760px){.fsg{grid-template-columns:repeat(3,minmax(0,1fr))}.fsg:has(>:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}}.fstart>b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}.fsg{display:grid;gap:6px}
+.fstart{margin:0 0 12px}.fac{display:flex;align-items:center;gap:12px;margin:0;max-width:520px}.fac b{flex:0 0 auto;font-size:14px}.fac select{display:block;flex:1 1 auto;min-width:0;padding:11px 12px;font:inherit;font-size:16px;font-weight:600;border:1px solid var(--rule);border-radius:8px;background:var(--paper,#fff);color:var(--ink)}@media (min-width:760px){.fsg{grid-template-columns:repeat(3,minmax(0,1fr))}.fsg:has(>:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}}.fstart>b{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin:0 0 6px}.fsg{display:grid;gap:6px}
 .fsb{display:flex;gap:10px;align-items:center;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--rule);border-radius:10px;background:#fff;cursor:pointer;font:inherit;color:var(--ink)}
 .fsb:hover,.fsb:focus-visible{border-color:var(--ink);box-shadow:0 2px 0 var(--ink)}.fsb i{font-style:normal;font-size:20px;width:28px;text-align:center}.fsb b{display:block;font-size:15px}.fsb small{display:block;color:var(--ink-2);font-size:12.5px}
 .fsb.pri{background:var(--ink);color:#fff;border-color:var(--ink)}.fsb.pri small{color:#C9D1D8}
@@ -61,7 +61,7 @@
 .fguide b{display:block;font-size:14px}.fguide span{font-size:13px;color:var(--ink-2);line-height:1.35}.fpq .btn:disabled{opacity:.4;cursor:default}
 .fextag{position:absolute;top:8px;left:8px;z-index:4;background:#F2A623;color:#0B0F12;font:800 11px var(--f-mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:4px 8px;border-radius:5px;pointer-events:none}
 #app.pon .fextag{display:none}
-.fexnote{background:#FFF4DC;border:1px solid #F2C46B;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.45}.fexnote .frow{margin:8px 0 0}
+.fexnote{background:#FFF4DC;border:1px solid #F2C46B;border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:14px;line-height:1.45}.fexnote .frow{margin:8px 0 0}.fexnote .fsg{grid-template-columns:1fr!important;margin:8px 0 0}
 .fguide li.on{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}.fguide .fgx{cursor:default}.fguide .fgx:hover{background:none}
 @media (max-width:760px){.fguide{grid-template-columns:1fr}.fguide .fgx{justify-content:flex-end}}
 
@@ -223,7 +223,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=20"></script>
+<script src="flows.js?v=21"></script>
 <script src="flowlib.js?v=2"></script>
 <script src="reqplane.js?v=1"></script>
 </body>
