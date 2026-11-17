@@ -19,8 +19,8 @@ const SOURCES={
     online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-standardised-european',
     eurlex:'https://eur-lex.europa.eu/eli/reg_impl/2012/923/oj'},
   aircrew:{name:'Easy Access Rules for Aircrew (Part-FCL)',reg:'Regulation (EU) No 1178/2011',rev:'Consolidated text of 30 April 2026',revNo:'Konsolidert tekst av 30. april 2026',short:'Apr. 2026',
-    ear:'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew-regulation-eu-no-11782011',
-    online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew-regulation-eu-no',
+    ear:'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew',
+    online:'https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew',
     eurlex:'https://eur-lex.europa.eu/eli/reg/2011/1178/2026-04-30'}
 };
 /* entries without a deep link open the EASA online publication (search the rule ID there) */
