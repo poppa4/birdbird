@@ -13,6 +13,7 @@
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
 .bar{position:relative;z-index:5;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;background:var(--paper);padding:10px 0;border-bottom:1px solid var(--rule)}
 .bar select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);max-width:320px}
+.mbac .btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 8px}.mbac select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);color:var(--ink);min-height:38px;max-width:100%;flex:1 1 200px}
 .saved{font-size:13px;color:var(--ink-2)}
 .flowbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:10px 0;border-bottom:1px solid var(--rule);font-size:13.5px}
 .flowbar[hidden]{display:none}.flowbar .fw-r{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 300px}
@@ -383,14 +384,14 @@ const {T,L,el}=LAB, esc=NAI.esc;
 /* ---------- skjema ---------- */
 const F=(k,l,o)=>{ o=o||{}; const cls='fl'+(o.w?' '+o.w:''); if(o.area) return `<label class="${cls}"><span>${l}</span><textarea data-k="${k}" placeholder=" " rows="${o.rows||3}"></textarea></label>`;
   if(o.sel) return `<label class="${cls}"><span>${l}</span><select data-k="${k}">${o.sel.map(x=>`<option>${x}</option>`).join('')}</select></label>`;
-  return `<label class="${cls}"><span>${l}</span><input data-k="${k}" placeholder=" " ${o.num?'inputmode="decimal"':''} autocomplete="off"></label>`; };
+  return `<label class="${cls}"><span>${l}</span><input data-k="${k}" placeholder=" " ${o.num?'inputmode="decimal"':''}${o.list?` list="${o.list}"`:''} autocomplete="off"></label>`; };
 const I=(k,o)=>`<input data-k="${k}" ${o&&o.num?'inputmode="decimal"':''} autocomplete="off" aria-label="${k}">`;
 const C=k=>`<td class="calc" data-c="${k}"><span></span></td>`;
 const XQ=(k,l,ph)=>`<label class="fl"><span>${l}</span><input data-q="${k}" placeholder="${ph}" autocomplete="off"></label>`;
 const APT=[['dep','Departure'],['toalt','Take-off alternate'],['dest','Destination'],['alt1','Alternate 1'],['alt2','Alternate 2']];
 const SECTIONS=[
  ['cover','Cover',()=>`<div class="cover"><div class="band"></div><div class="kicker" data-c="kick"><span>BRIEFING PACK</span></div><div class="route" data-c="route"><span>— → —</span></div><div class="sub" data-c="title"><span></span></div>
-   <div class="fg" style="margin-top:24px">${F('heading','Heading (optional)',{w:'noprint hdrf'})}${F('pilot','Pilot')}${F('instr','Instructor / examiner',{w:'instrrow'})}${F('type','Aircraft type')}${F('reg','Registration')}${F('purpose','Purpose',{sel:['Training flight','Proficiency check','Skill test','Navigation flight','Commercial flight','Other']})}${F('rules','Flight rules',{sel:['VFR','IFR','IFR / VFR']})}${F('date','Date')}${F('etd','ETD (UTC)')}${F('depapt','Departure')}${F('destapt','Destination')}${F('alt1apt','Alternate 1')}${F('alt2apt','Alternate 2')}</div>
+   <div class="fg" style="margin-top:24px">${F('heading','Heading (optional)',{w:'noprint hdrf'})}${F('pilot','Pilot')}${F('instr','Instructor / examiner',{w:'instrrow'})}${F('type','Aircraft type')}${F('reg','Registration',{list:'dlReg'})}${F('purpose','Purpose',{sel:['Training flight','Proficiency check','Skill test','Navigation flight','Commercial flight','Other']})}${F('rules','Flight rules',{sel:['VFR','IFR','IFR / VFR']})}${F('date','Date',{list:'dlDate'})}${F('etd','ETD (UTC)')}${F('depapt','Departure')}${F('destapt','Destination')}${F('alt1apt','Alternate 1')}${F('alt2apt','Alternate 2')}</div>
    <details class="noprint" style="text-align:left;margin-top:14px"><summary style="cursor:pointer;font-size:14px">Choose the pages in this pack</summary><div id="secsel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:4px 16px;margin-top:8px;font-size:14px"></div></details>
    <h3 aria-level="2" style="text-align:left;margin-top:22px!important">Contents</h3><div class="contents" id="contents"></div>
    <div class="signs"><div>Pilot</div><div class="instrrow">Instructor / examiner</div></div></div>`],
@@ -734,7 +735,22 @@ function drawSel(){ el('sel').innerHTML=ALL.map(p=>`<option value="${p.id}" ${p.
 el('sel').onchange=()=>{ P=ALL.find(p=>p.id===el('sel').value); fill(); };
 function pickTpl(){ return new Promise(res=>{ const d=document.createElement('dialog'); d.className='pp'; d.innerHTML=`<b>${L({en:'New briefing pack',no:'Ny briefingpakke'})}</b><p class="note">${L({en:'Start from a template. You can add or remove pages on the cover.',no:'Start fra en mal. Du kan legge til eller fjerne sider på forsiden.'})}</p><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">${['ifr','vfr','local','pc','cat','blank'].map(k=>[k,TPL[k]]).map(([k,t])=>`<button class="btn" data-k="${k}" style="text-align:left">${esc(L(t.n))}</button>`).join('')}</div><div class="btns" style="margin-top:12px"><button class="btn" data-no>${L({en:'Cancel',no:'Avbryt'})}</button></div>`;
   document.body.appendChild(d); d.showModal(); const done=v=>{ d.close(); d.remove(); res(v); }; d.querySelector('[data-no]').onclick=()=>done(null); d.addEventListener('cancel',()=>done(null)); d.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>done(b.dataset.k)); }); }
-el('new').onclick=async()=>{ const k=await pickTpl(); if(!k) return; P=blankPrep(); Object.assign(P.f,TPL[k].f); P.hide=TPL[k].hide.slice(); P.tpl=k; ALL.unshift(P); drawSel(); fill(); page=0; paging(); await saveNow(); window.scrollTo({top:0}); };
+/* A new pack starts with what does not change from flight to flight: the pilot's name from your latest pack and the default aircraft
+   in My workspace. The cover offers your aircraft's registrations and today's and tomorrow's date as suggestions. Nothing is forced. */
+let WSAC=[];
+function wsAircraft(){ return new Promise(res=>{ try{ const r=indexedDB.open('birdbird-workspace',1); r.onupgradeneeded=()=>{ const db=r.result; db.createObjectStore('items',{keyPath:'id'}); db.createObjectStore('kv'); db.createObjectStore('trashdocs',{keyPath:'id'}); };
+  r.onerror=r.onblocked=()=>res([]); r.onsuccess=()=>{ try{ const q=r.result.transaction('items').objectStore('items').getAll(); q.onsuccess=()=>{ const l=(q.result||[]).filter(it=>it&&it.kind==='aircraft'&&!it.deletedAt&&!it.gone); r.result.close(); res(l); }; q.onerror=()=>{ r.result.close(); res([]); }; }catch(e){ res([]); } }; }catch(e){ res([]); } }); }
+function preset(p){ const last=ALL.find(x=>x!==p&&x.f&&(x.f.pilot||'').trim()); if(last&&!p.f.pilot) p.f.pilot=last.f.pilot; const a=WSAC.find(x=>x.isDefault)||(WSAC.length===1?WSAC[0]:null); if(a){ if(!p.f.type&&a.type) p.f.type=a.type; if(!p.f.reg&&a.reg) p.f.reg=a.reg; } if(p.f.reg){ ['ac.reg','mb.reg'].forEach(k=>{ if(!p.f[k]) p.f[k]=p.f.reg; }); } }
+function coverLists(){ let d=el('dlReg'); if(!d){ d=document.createElement('datalist'); d.id='dlReg'; document.body.appendChild(d); } const regs=[...new Set(WSAC.map(a=>a.reg).concat((typeof MYAC!=='undefined'&&MYAC||[]).map(a=>a.reg)).filter(Boolean))]; d.innerHTML=regs.map(r=>`<option value="${esc(r)}"></option>`).join('');
+  let e=el('dlDate'); if(!e){ e=document.createElement('datalist'); e.id='dlDate'; document.body.appendChild(e); } const f=n=>{ const x=new Date(Date.now()+n*864e5); return x.getDate()+'.'+(x.getMonth()+1)+'.'+x.getFullYear(); }; e.innerHTML=`<option value="${f(0)}">${L({en:'Today',no:'I dag'})}</option><option value="${f(1)}">${L({en:'Tomorrow',no:'I morgen'})}</option>`; }
+/* what is typed on the cover is not typed again: the registration goes on to the Aircraft and Mass and balance pages and the date to the
+   flight plan's date of flight, while those are empty or still hold the cover's earlier value */
+const CARRY={reg:['ac.reg','mb.reg'],date:['fp.dof']}; let carryOld={};
+function carry(k,v){ (CARRY[k]||[]).forEach(d=>{ const c=(P.f[d]||'').trim(); if(!c||c===(carryOld[k]||'').trim()){ P.f[d]=v; const e=document.querySelector(`#book [data-k="${d}"]`); if(e) e.value=v; } }); carryOld[k]=v; }
+el('book').addEventListener('focusin',e=>{ const k=e.target.dataset&&e.target.dataset.k; if(CARRY[k]) carryOld[k]=e.target.value; });
+el('book').addEventListener('change',e=>{ const t=e.target, k=t.dataset&&t.dataset.k; if(!CARRY[k]) return; carry(k,t.value);
+  if(k==='reg'){ const n=s=>String(s||'').toUpperCase().replace(/[\s-]/g,''), a=WSAC.find(x=>n(x.reg)&&n(x.reg)===n(t.value)); if(a&&a.type&&!(P.f.type||'').trim()) setF('type',a.type); } calc(); queueSave(); });
+el('new').onclick=async()=>{ const k=await pickTpl(); if(!k) return; P=blankPrep(); Object.assign(P.f,TPL[k].f); P.hide=TPL[k].hide.slice(); P.tpl=k; preset(P); ALL.unshift(P); drawSel(); fill(); page=0; paging(); await saveNow(); window.scrollTo({top:0}); };
 el('dup').onclick=async()=>{ const c=JSON.parse(JSON.stringify(P)); c.id=blankPrep().id; c.created=Date.now(); ['date','etd'].forEach(k=>delete c.f[k]); P=c; ALL.unshift(P); drawSel(); fill(); await saveNow(); };
 let delArm=false; el('del').onclick=async()=>{ if(!delArm){ delArm=true; el('del').textContent=L({en:'Click again to delete',no:'Klikk igjen for å slette'}); setTimeout(()=>{ delArm=false; el('del').textContent=T('Delete'); const m=el('mdel'); if(m) m.textContent=T('Delete'); },3000); return; }
   delArm=false; el('del').textContent=T('Delete'); await NSTORE.del('prep',P.id); ALL=ALL.filter(p=>p.id!==P.id); if(!ALL.length){ P=blankPrep(); ALL=[P]; } else P=ALL[0]; drawSel(); fill(); };
@@ -1374,7 +1390,7 @@ LAB.add({},{
 });
 /* ---------- oppstart ---------- */
 LAB.start('prep');
-NSTORE.ready.then(async m=>{ mbList(); ALL=await NSTORE.list('prep'); ALL.forEach(x=>{ if(!x.v2){ x.v2=1; if(x.f&&x.f.purpose!=='Commercial flight') x.hide=[...new Set([...(x.hide||[]),'crew','load'])]; } }); const want=new URLSearchParams(location.search).get('id'); if(!ALL.length){ P=blankPrep(); ALL=[P]; } else P=ALL.find(x=>x.id===want)||ALL[0]; drawSel(); fill(); if(location.hash){ const hh=/^#s-/.test(location.hash)?location.hash:'#s-'+location.hash.slice(1); const i=vis().findIndex(x=>'#'+x.id===hh); if(i>=0) setTimeout(()=>go(i),50); }
+NSTORE.ready.then(async m=>{ mbList(); ALL=await NSTORE.list('prep'); ALL.forEach(x=>{ if(!x.v2){ x.v2=1; if(x.f&&x.f.purpose!=='Commercial flight') x.hide=[...new Set([...(x.hide||[]),'crew','load'])]; } }); const want=new URLSearchParams(location.search).get('id'); WSAC=await wsAircraft(); coverLists(); if(!ALL.length){ P=blankPrep(); ALL=[P]; preset(P); } else P=ALL.find(x=>x.id===want)||ALL[0]; drawSel(); fill(); if(location.hash){ const hh=/^#s-/.test(location.hash)?location.hash:'#s-'+location.hash.slice(1); const i=vis().findIndex(x=>'#'+x.id===hh); if(i>=0) setTimeout(()=>go(i),50); }
   el('saved').textContent= m==='account'? L({en:'Saved to your profile',no:'Lagres på profilen din'}) : L({en:'Saved in this browser',no:'Lagres i denne nettleseren'}); });
 /* ---------- før du drar: sjekkliste ---------- */
 const CL=[
