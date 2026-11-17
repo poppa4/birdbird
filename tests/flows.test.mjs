@@ -44,3 +44,9 @@ test('a step text gives the control and its position; choices hold the right one
   const D = 864e5; let o = F.reviewNext(null, 95, 0); assert.deepEqual([o.n, o.due], [1, D]); o = F.reviewNext(o, 100, 0); assert.equal(o.due, 3 * D); o = F.reviewNext(o, 92, 0); assert.equal(o.due, 7 * D);
   o = F.reviewNext(o, 60, 5); assert.deepEqual([o.n, o.due], [0, 5]); for (let i = 0; i < 9; i++) o = F.reviewNext(o, 100, 0); assert.equal(o.due, 30 * D);
 });
+
+test('every pictured cockpit: files exist, credit present, every control inside the picture, unique, and its centre hits itself', async () => { const fs = await import('node:fs');
+  for (const ac of A.list.filter(a => a.img)) { assert.ok(ac.img.by && ac.img.lic && ac.img.src, ac.id); for (const f of [ac.img.lo, ac.img.hi]) assert.ok(fs.existsSync(new URL('../' + f, import.meta.url)), f);
+    const T = A.targets(ac), ids = new Set(); assert.ok(T.length >= 40, ac.id); for (const t of T) { assert.ok(!ids.has(t.id), ac.id + ' twice: ' + t.id); ids.add(t.id);
+      assert.ok(t.x >= 0 && t.y >= 0 && t.x + t.w <= 1000.5 && t.y + t.h <= ac.h + 0.5, ac.id + ' outside: ' + t.id); if (!t.whole) { const c = A.hit(ac, t.x + t.w / 2, t.y + t.h / 2); assert.equal(c && c.id, t.id, ac.id + ': centre of ' + t.id); } }
+    assert.ok(A.groups.some(g => g.list.includes(ac)), ac.id + ' is in a group'); } });

@@ -643,10 +643,50 @@ const A359_T = [
   ["PEDESTAL|RUDDER TRIM RESET",515.2,1123.6,6.5,6.5], ["RMP 3",527.0,1122.4,60.1,76.3,1], ["PEDESTAL|CKPT LT STORM",463.1,1139.1,10.4,10.4], ["PEDESTAL|CKPT DOOR",502.7,1137.7,14.6,9.7]];
 const A359 = { id: 'a359', name: 'Airbus A350-900', crew: 2, h: 1239, t: A359_T,
   img: { lo: 'img/cockpits/a359-deck-1500.webp', hi: 'img/cockpits/a359-deck-3000.webp', by: 'FlightGear A350XWB', lic: 'GPL-2.0', v: 'A350-900 flight deck. The overhead panel is a simplified drawing: the panels are in the right order, single buttons are approximate', src: 'https://github.com/FGMEMBERS/A350XWB', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
-const PA28 = { id: 'pa28', name: 'Piper PA-28 Warrior', crew: 1, h: 1000, t: [],
-  img: { lo: '', hi: '', by: '', lic: '', v: '', src: '', licUrl: '' } };
-const DA40 = { id: 'da40', name: 'Diamond DA40 NG', crew: 1, h: 1000, t: [],
-  img: { lo: '', hi: '', by: '', lic: '', v: '', src: '', licUrl: '' } };
+/* Piper PA-28 Warrior: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Piper PA-28-161 Warrior (github.com/FGMEMBERS/PA28-Warrior, GPL-2.0).
+   The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
+   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+const PA28_T = [
+  ["FLIGHT INSTRUMENTS|COMPASS",452.4,16.4,41.4,20.5], ["ANNUNCIATOR|ANNUNCIATOR TEST",352.0,147.2,12.2,12.2], ["ANNUNCIATOR|ANNUNCIATOR PANEL",415.6,141.7,51.1,14.7], ["AVIONICS|AUDIO PANEL",523.8,145.8,142.9,27.2,1],
+  ["FLIGHT INSTRUMENTS|ALTIMETER",340.5,161.9,71.5,72.4], ["FLIGHT INSTRUMENTS|AIRSPEED INDICATOR",159.2,164.9,66.3,70.2], ["FLIGHT INSTRUMENTS|ATTITUDE INDICATOR",250.0,162.9,68.0,68.0], ["FLIGHT INSTRUMENTS|VOR 1 (CDI)",432.5,162.3,71.4,71.4],
+  ["AVIONICS|NAV 1 / NAV 2 SELECT",692.2,166.2,10.2,10.2], ["AVIONICS|GNS 530",523.8,175.4,142.9,102.0,1], ["AVIONICS|COM / NAV 1",681.1,185.3,141.2,44.9,1], ["FLIGHT INSTRUMENTS|CLOCK",103.7,189.7,43.3,43.3],
+  ["AVIONICS|COM / NAV 2",681.1,230.5,141.2,44.9,1], ["PANEL|LOW VACUUM LIGHT",46.6,242.8,20.4,13.6], ["FLIGHT INSTRUMENTS|TURN COORDINATOR",158.5,240.1,68.0,68.0], ["FLIGHT INSTRUMENTS|HEADING INDICATOR (HSI)",249.1,239.2,69.7,69.7],
+  ["FLIGHT INSTRUMENTS|VERTICAL SPEED",340.5,239.7,71.4,71.4], ["FLIGHT INSTRUMENTS|VOR 2 (CDI)",432.5,239.7,71.4,71.4], ["AVIONICS|AUTOPILOT (S-TEC 55X)",523.8,277.6,142.9,35.7,1], ["AVIONICS|TRANSPONDER",681.1,276.6,141.2,35.7,1],
+  ["PANEL|AUTOPILOT AND TRIM SWITCHES",91.0,327.5,131.0,23.8,1], ["ENGINE|ENGINE GAUGES",306.6,338.9,154.0,23.2], ["SWITCHES|NAV LIGHT / RADIO DIM",518.7,337.3,11.6,35.4], ["SWITCHES|BATTERY MASTER",535.7,340.4,8.8,29.2],
+  ["SWITCHES|ALTERNATOR",544.9,340.4,8.8,29.2], ["SWITCHES|FUEL PUMP",557.5,340.4,19.7,29.2], ["SWITCHES|LANDING LIGHT",581.3,340.4,19.7,29.2], ["SWITCHES|FIN STROBE",604.8,340.4,9.5,29.2],
+  ["SWITCHES|WING STROBE",614.3,340.4,9.5,29.2], ["SWITCHES|PITOT HEAT",626.5,340.4,19.7,29.2], ["SWITCHES|PANEL LIGHT DIM",651.4,337.3,11.6,35.4], ["CABIN|FAN",769.7,338.0,23.8,23.8],
+  ["CABIN|CABIN HEAT",862.3,333.1,37.4,14.7], ["AVIONICS MASTER|PRIMARY",799.3,346.2,14.7,14.7], ["AVIONICS MASTER|SECONDARY",823.1,346.2,14.7,14.7], ["CABIN|DEFROSTER",862.3,352.1,37.4,14.7],
+  ["ENGINE|TACHOMETER",313.9,389.2,71.7,71.2], ["ENGINE CONTROLS|CARB HEAT",587.5,380.1,14.7,50.3], ["ENGINE|EGT",212.3,400.3,46.6,47.0], ["ENGINE|PRIMER",464.3,396.3,19.5,19.5],
+  ["CIRCUIT BREAKERS",698.1,399.9,214.9,50.9,1], ["ENGINE|HOUR METER",157.8,413.0,34.7,21.6], ["ENGINE|MAGNETOS / START",265.0,413.3,51.2,50.9], ["PANEL|ELT",410.2,402.0,29.5,45.4],
+  ["ENGINE CONTROLS|THROTTLE",476.9,405.2,51.9,64.4], ["ENGINE|AMMETER",632.7,403.3,39.4,39.1], ["ENGINE CONTROLS|MIXTURE",534.0,419.0,17.2,50.9], ["ENGINE CONTROLS|FRICTION LOCK",554.5,458.6,14.7,16.0],
+  ["PANEL|PARKING BRAKE",408.2,474.1,23.8,27.2], ["FLOOR|FLAPS",498.4,542.1,35.1,184.9], ["FLOOR|PITCH TRIM",453.8,711.1,92.5,141.9], ["FUEL SELECTOR",449.5,922.8,102.0,102.0]];
+const PA28 = { id: 'pa28', name: 'Piper PA-28 Warrior', crew: 1, h: 1050, t: PA28_T,
+  img: { lo: 'img/cockpits/pa28-deck-1500.webp', hi: 'img/cockpits/pa28-deck-3000.webp', by: 'FlightGear PA28 Warrior', lic: 'GPL-2.0', v: 'PA-28-161 Warrior II/III with a GNS 530', src: 'https://github.com/FGMEMBERS/PA28-Warrior', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
+/* Diamond DA40 NG: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Diamond DA40 NG (github.com/sryu1/DA40, GPL-2.0).
+   The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
+   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+const DA40_T = [
+  ["STANDBY INSTRUMENTS|AIRSPEED INDICATOR",377.6,27.5,74.6,76.6], ["STANDBY INSTRUMENTS|ATTITUDE INDICATOR",459.6,25.4,80.8,81.0], ["STANDBY INSTRUMENTS|ALTIMETER",546.5,29.1,75.4,75.0], ["STANDBY INSTRUMENTS|COMPASS",626.8,38.1,68.1,70.4],
+  ["LIGHTS|INSTRUMENT",196.7,65.5,14.9,14.9], ["LIGHTS|FLOOD",228.9,65.8,14.9,14.9], ["LIGHTS|LANDING",260.7,64.4,14.9,19.7], ["LIGHTS|TAXI",279.4,64.4,14.9,19.7],
+  ["LIGHTS|POSITION",297.8,64.4,14.9,19.7], ["LIGHTS|STROBE",316.7,64.4,14.9,19.7], ["PANEL|ELT",765.8,61.8,16.1,23.8], ["PFD",142.1,116.4,281.1,183.8,1],
+  ["PFD|NAV VOL (PFD)",153.0,123.4,13.5,13.5], ["PFD|COM VOL (PFD)",398.8,123.4,13.5,13.5], ["AUDIO PANEL",426.8,120.0,32.8,178.0,1], ["MFD",463.1,115.8,282.4,184.7,1],
+  ["MFD|NAV VOL (MFD)",474.1,122.9,13.5,13.5], ["MFD|COM VOL (MFD)",721.0,122.9,13.5,13.5], ["CIRCUIT BREAKERS",768.6,125.7,172.3,175.7,1], ["PFD|NAV (PFD)",153.1,151.7,13.5,13.5],
+  ["PFD|COM (PFD)",398.7,151.7,13.5,13.5], ["MFD|NAV (MFD)",474.2,151.4,13.5,13.5], ["MFD|COM (MFD)",720.9,151.4,13.5,13.5], ["PFD|HDG (PFD)",153.3,184.5,13.5,13.5],
+  ["PFD|CRS / BARO (PFD)",398.7,184.3,13.5,13.5], ["MFD|HDG (MFD)",474.3,184.4,13.5,13.5], ["MFD|CRS / BARO (MFD)",720.9,184.2,13.5,13.5], ["AUTOPILOT|AP KEY",466.8,204.9,13.5,13.5],
+  ["AUTOPILOT|FD KEY",480.6,204.9,13.5,13.5], ["PFD|RANGE (PFD)",395.6,212.2,19.6,19.6], ["AUTOPILOT|HDG KEY",467.2,215.7,13.5,13.5], ["AUTOPILOT|ALT KEY",480.6,215.7,13.5,13.5],
+  ["MFD|RANGE (MFD)",717.8,212.1,19.7,19.7], ["AUTOPILOT|NAV KEY",467.2,226.1,13.5,13.5], ["AUTOPILOT|VNV KEY",480.6,226.1,13.5,13.5], ["PFD|DIRECT-TO (PFD)",392.2,237.5,13.5,13.5],
+  ["PFD|MENU (PFD)",405.6,237.5,13.5,13.5], ["AUTOPILOT|APR KEY",467.2,237.5,13.5,13.5], ["AUTOPILOT|BC KEY",480.6,237.5,13.5,13.5], ["MFD|DIRECT-TO (MFD)",714.4,237.5,13.5,13.5],
+  ["MFD|MENU (MFD)",727.9,237.5,13.5,13.5], ["ENGINE|VOTER (ECU A / AUTO / ECU B)",48.9,255.6,14.9,14.9], ["ENGINE|ECU TEST",64.9,255.6,14.9,14.9], ["ENGINE|ENGINE MASTER",94.8,247.1,14.9,29.5],
+  ["PFD|FPL (PFD)",392.2,248.3,13.5,13.5], ["PFD|PROC (PFD)",405.6,248.3,13.5,13.5], ["AUTOPILOT|VS KEY",467.2,248.4,13.5,13.5], ["AUTOPILOT|NOSE UP KEY",480.6,248.4,13.5,13.5],
+  ["MFD|FPL (MFD)",714.4,248.4,13.5,13.5], ["MFD|PROC (MFD)",727.9,248.4,13.5,13.5], ["PFD|CLR (PFD)",392.2,258.6,13.5,13.5], ["PFD|ENT (PFD)",405.6,258.6,13.5,13.5],
+  ["AUTOPILOT|FLC KEY",467.2,258.8,13.5,13.5], ["AUTOPILOT|NOSE DN KEY",480.6,258.8,13.5,13.5], ["MFD|CLR (MFD)",714.4,258.8,13.5,13.5], ["MFD|ENT (MFD)",727.9,258.8,13.5,13.5],
+  ["PFD|ALT (PFD)",153.1,278.1,13.5,13.5], ["PFD|FMS (PFD)",398.7,278.1,13.5,13.5], ["MFD|ALT (MFD)",474.2,278.3,13.5,13.5], ["MFD|FMS (MFD)",720.9,278.3,13.5,13.5],
+  ["ENGINE|FUEL PUMPS",64.9,282.9,14.9,14.9], ["ELECTRICAL|ESS BUS",190.8,327.6,14.9,19.7], ["ELECTRICAL|AVIONIC MASTER",208.5,327.6,14.9,19.7], ["ELECTRICAL|ELECTRIC MASTER (KEY)",486.6,327.2,24.0,24.0],
+  ["ELECTRICAL|FUEL TRANSFER",519.3,327.6,14.9,19.7], ["ELECTRICAL|PITOT HEAT",536.0,327.6,14.9,19.7], ["PANEL|FLAPS",697.1,319.1,30.8,23.1], ["PANEL|ACCESSORY POWER SOCKET",898.9,318.7,46.4,28.4],
+  ["CENTRE CONSOLE|ALTERNATE AIR",486.5,381.8,23.6,22.3], ["CENTRE CONSOLE|PARKING BRAKE",469.3,441.1,16.9,17.4], ["CENTRE CONSOLE|DEFROST / FLOOR",497.1,441.1,16.9,17.4], ["CENTRE CONSOLE|CABIN HEAT",514.2,441.1,16.9,17.4],
+  ["CENTRE CONSOLE|POWER LEVER",466.7,561.9,61.1,35.7], ["CENTRE CONSOLE|FUEL VALVE",483.0,650.1,32.2,57.6], ["CENTRE CONSOLE|ELEVATOR TRIM",495.1,720.5,16.9,136.3]];
+const DA40 = { id: 'da40', name: 'Diamond DA40 NG', crew: 1, h: 868, t: DA40_T,
+  img: { lo: 'img/cockpits/da40-deck-1500.webp', hi: 'img/cockpits/da40-deck-3000.webp', by: 'FlightGear DA40 NG', lic: 'GPL-2.0', v: 'DA40 NG with Garmin G1000', src: 'https://github.com/sryu1/DA40', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 const B38M = { id: 'b38m', name: 'Boeing 737 MAX 8', crew: 2, h: 1685, t: B38M_T,
   img: { lo: 'img/cockpits/b38m-deck-1500.webp', hi: 'img/cockpits/b38m-deck-3000.webp', by: 'FlightGear 737 MAX', lic: 'GPL-2.0', v: '737 MAX 7/8/9/10 flight deck', src: 'https://github.com/REXO-77/737-MAX', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* King Air B200 as in the Birdbird simulator: Birdbird's own drawing (b200panel.js), EFIS on the pilot side. The picture and the
@@ -728,7 +768,7 @@ const B200S_T = [
   ["PILOT SUBPANEL|ENGINE ANTI-ICE LEFT (ON / OFF)",128.9,521.9,8.4,15.4], ["PILOT SUBPANEL|ENGINE ANTI-ICE RIGHT (ON / OFF)",150.6,521.9,8.4,15.4], ["PILOT SUBPANEL|ENG ANTI-ICE ACTUATOR LEFT (STANDBY / MAIN)",128.9,553.3,8.4,15.4], ["PILOT SUBPANEL|ENG ANTI-ICE ACTUATOR RIGHT (STANDBY / MAIN)",150.6,553.3,8.4,15.4]];
 const B200S = { id: 'b200s', name: 'Beechcraft King Air B200', crew: 2, h: 884, t: B200S_T,
   img: { lo: 'img/cockpits/b200s-deck-1500.webp', hi: 'img/cockpits/b200s-deck-3000.webp', own: 1, by: 'Birdbird', lic: 'own drawing', v: 'King Air B200 with EFIS on the pilot side, the same panel as in the Birdbird simulator', src: 'b200.html', licUrl: 'sources.html' } };
-const LIST = [A320, A359, B738, B38M, B788, E190, ATR72, B200S, B200, PA34, DA42, C172];
+const LIST = [A320, A359, B738, B38M, B788, E190, ATR72, B200S, B200, PA34, DA42, C172, PA28, DA40];
 
 /* layout: the targets (named controls) of an aircraft, with their rectangles; panels without items are one target */
 function targets(ac) { if (ac._t) return ac._t; const out = [];

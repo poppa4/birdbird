@@ -85,6 +85,10 @@ function decode(s) { try { return clean(JSON.parse(b64d(String(s)))); } catch (e
 /* example flow patterns for the schematics: where the eye and hand go, in what order. No switch positions: those come from
    your SOP (paste it in), because they differ between operators. */
 const EX = {
+  da40: { name: 'Example: cockpit scan pattern', roles: 'one', steps: [['P', 'CENTRE CONSOLE|FUEL VALVE', 'Centre console'], ['P', 'ELECTRICAL|ELECTRIC MASTER (KEY)', 'Electrical switches'], ['P', 'ENGINE|ENGINE MASTER', 'Engine master and ECU'], ['P', 'PFD', 'PFD'], ['P', 'AUDIO PANEL', 'Audio panel'], ['P', 'MFD', 'MFD and engine page'],
+    ['P', 'LIGHTS|LANDING', 'Lights'], ['P', 'STANDBY INSTRUMENTS|AIRSPEED INDICATOR', 'Standby instruments'], ['P', 'PANEL|FLAPS', 'Flaps'], ['P', null, 'BEFORE START CHECKLIST', 'call']] },
+  pa28: { name: 'Example: cockpit scan pattern', roles: 'one', steps: [['P', 'FUEL SELECTOR', 'Fuel selector'], ['P', 'SWITCHES|BATTERY MASTER', 'Electrical switches, left to right'], ['P', 'ENGINE|ENGINE GAUGES', 'Engine gauges'], ['P', 'ENGINE CONTROLS|THROTTLE', 'Throttle and mixture'], ['P', 'ENGINE|MAGNETOS / START', 'Magnetos'],
+    ['P', 'FLIGHT INSTRUMENTS|AIRSPEED INDICATOR', 'Flight instruments'], ['P', 'AVIONICS|GNS 530', 'Avionics'], ['P', 'FLOOR|FLAPS', 'Flaps and trim'], ['P', null, 'BEFORE START CHECKLIST', 'call']] },
   b200s: { name: 'Example: cockpit scan pattern', roles: 'pfpm', steps: [['PM', 'PILOT SUBPANEL|BATTERY', 'Electrical'], ['PM', 'PILOT SUBPANEL|ENG AUTO IGNITION LEFT', 'Engine start'], ['PM', 'FUEL PANEL|STANDBY PUMP LEFT', 'Fuel panel'], ['PF', 'GLARESHIELD|ANNUNCIATOR TEST', 'Glareshield'],
     ['PF', 'AUTOPILOT|AP/FD HDG', 'Autopilot and flight director'], ['PF', 'NAV / COM|COMM 1 FREQUENCY', 'Radios'], ['PF', 'PEDESTAL|POWER L', 'Pedestal'], ['PF', null, 'BEFORE START CHECKLIST', 'call']] },
   a359: { name: 'Example: cockpit scan pattern', roles: 'pfpm', steps: [['PM', 'FIRE', 'Overhead, centre row from the top: fire'], ['PM', 'HYD', 'Hydraulics'], ['PM', 'FUEL', 'Fuel'], ['PM', 'ELEC', 'Electrics'], ['PM', 'AIR', 'Air'], ['PM', 'ANTI ICE', 'Anti-ice'], ['PM', 'EXT LT', 'Lights and APU'],
