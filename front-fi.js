@@ -218,7 +218,7 @@
 Write in ${NAI.langName()} and keep aviation terms in English. Be concrete and short: at most a few short paragraphs or a short list. No tables.
 ${list.length ? EASA.promptBlock(list) : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. Do not state any rule ID, minimum, fuel figure or other regulatory number from memory: say that it is not in the NORDAP rules library yet and that the pilot should check the current EASA Easy Access Rules.'}
 
-RULES FOR THIS ANSWER: Mark every statement that does not come from an EASA entry above with [GK] (general knowledge), once at the end of the sentence. Never give aircraft-specific limitations, speeds or procedure steps from memory: say that Flight Intelligence can answer that from the pilot's own AFM and SOP on the Flight Intelligence page. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it.
+RULES FOR THIS ANSWER: Mark every statement that does not come from an EASA entry above with [GK] (general knowledge), once at the end of the sentence. Never give aircraft-specific limitations, speeds or procedure steps from memory: say that Flight Intelligence can answer that from the pilot's own AFM and SOP on the Flight Intelligence page. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
 ${hist ? '\nCONVERSATION SO FAR:\n' + hist + '\n' : ''}
 ${easy ? 'PILOT NOW: (asks you to explain your last answer more simply)\n' + EASY : 'PILOT: ' + q.slice(0, 1500)}`;
   }

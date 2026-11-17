@@ -122,7 +122,7 @@ Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist 
 SOURCES (excerpts from the pilot's own documents):
 ${ex}
 
-CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. Anything not from a source is marked [GK] and must never be a limitation, speed, procedure step or performance value.
+CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. Anything not from a source is marked [GK] and must never be a limitation, speed, procedure step or performance value. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
 ${hist ? 'CONVERSATION SO FAR:\n' + hist + '\n' : ''}PILOT NOW: ${question}`;
     }
     async function ask(question) {

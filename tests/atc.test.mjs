@@ -123,7 +123,8 @@ test('happy path: GET ok, POST returns { ok, text }, sends the allow-listed mode
   assert.equal(c.init.method, 'POST');
   assert.equal(c.init.headers['x-api-key'], KEY);
   assert.equal(c.init.headers['anthropic-version'], '2023-06-01');
-  assert.deepEqual(Object.keys(c.body).sort(), ['max_tokens', 'messages', 'model', 'thinking']); // nothing else from the client is passed on
+  assert.deepEqual(Object.keys(c.body).sort(), ['max_tokens', 'messages', 'model', 'system', 'thinking']); // nothing else from the client is passed on
+  assert.equal(c.body.system, T.ANTHROPIC_SYSTEM); assert.match(c.body.system, /\{\{calc: /);
   assert.equal(c.body.model, 'claude-haiku-5-5');
   assert.equal(c.body.max_tokens, T.DEFAULTS.MAX_OUTPUT_TOKENS);
   assert.deepEqual(c.body.thinking, { type: 'disabled' });
@@ -291,6 +292,7 @@ test('workers ai: answers when only the AI binding is set, counts input + 2 x ou
   const r = await w.call('POST', { messages: [{ role: 'user', content: 'What is lift?' }] }, { cookie });
   assert.equal(r.status, 200); assert.equal(r.body.text, 'Lift is the aerodynamic force [GK].');
   assert.equal(calls[0].model, '@cf/openai/gpt-oss-120b'); assert.equal(calls[0].inp.messages[0].role, 'system');
+  assert.match(calls[0].inp.messages[0].content, /CALCULATIONS:/); assert.match(calls[0].inp.messages[0].content, /Calculating is different and allowed/);
   const row = w.env.DB.raw.prepare("SELECT tokens FROM ai_usage WHERE user_id='u1'").get();
   assert.equal(row.tokens, 1400);
   assert.equal(w.up.calls.length, 0); // Anthropic never called
@@ -312,4 +314,21 @@ test('workers ai: falls back to the second model, and Anthropic wins when both a
   assert.equal(r.body.text, 'ok'); assert.deepEqual(seen, T.WORKERS_MODELS);
   assert.equal(T.engineOf({ ANTHROPIC_API_KEY: 'k', AI }), 'anthropic');
   assert.equal(T.engineOf({ AI }), 'workers'); assert.equal(T.engineOf({}), '');
+});
+
+/* ---------- calculator markers: worked out on the server for both engines ---------- */
+test('calculator: {{calc: …}} markers are replaced with exact results (workers ai)', async () => {
+  const AI = { run: async () => ({ choices: [{ message: { content: 'Top of descent: {{calc: tod = (35000 - 3000) / 1000 * 3}} NM before the fix; halfway {{calc: tod / 2}} NM. Crosswind {{calc: 20 * sin(30); 0}} kt.' }, finish_reason: 'stop' }], usage: { prompt_tokens: 10, completion_tokens: 10 } }) };
+  const w = world({ noKey: true, env: { AI } });
+  const cookie = await w.user('u1', 1);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: 'FL350 to 3000 ft, where is TOD?' }] }, { cookie });
+  assert.equal(r.status, 200);
+  assert.equal(r.body.text, 'Top of descent: 96 NM before the fix; halfway 48 NM. Crosswind 10 kt.');
+});
+test('calculator: markers are replaced in the paid engine too', async () => {
+  const w = world();
+  w.up.reply = () => ({ status: 200, body: { content: [{ type: 'text', text: 'Fuel: {{calc: 2.25 * 38; 1}} l.' }], stop_reason: 'end_turn', usage: { input_tokens: 10, output_tokens: 10 } } });
+  const cookie = await w.user('u1', 1);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: '2 h 15 min at 38 l/h?' }] }, { cookie });
+  assert.equal(r.body.text, 'Fuel: 85.5 l.');
 });

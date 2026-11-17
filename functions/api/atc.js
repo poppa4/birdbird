@@ -33,6 +33,7 @@
      against the caps (its price relative to the default model), so the worst-case daily cost is the same whatever the tier. */
 
 import { endpoint, json, getSession, readJson, limit, fail, rateKey, ipOf } from '../_lib/api.js';
+import { render as renderCalc, CALC_RULES } from '../_lib/calc.js';
 
 /* ---------- limits (each can be overridden with an environment variable of the same name, prefixed ATC_) ---------- */
 const DEFAULTS = {
@@ -54,17 +55,20 @@ const WORKERS_LIMITS = {
   USER_DAILY_TOKENS: 60000,
   GLOBAL_DAILY_REQUESTS: 300,
   GLOBAL_DAILY_TOKENS: 300000,
-  MAX_OUTPUT_TOKENS: 2500,        // gpt-oss reasons before it answers; the reasoning counts here too
+  MAX_OUTPUT_TOKENS: 4000,        // gpt-oss reasons before it answers (more for calculations); the reasoning counts here too
   ANON_GLOBAL_DAILY_REQUESTS: 100 // a third of the free allocation for visitors without an account
 };
 const WORKERS_MODELS = ['@cf/openai/gpt-oss-120b', '@cf/zai-org/glm-4.7-flash']; // second one only if the first errors
 const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
   + 'Follow the instructions in the user message exactly, including language, citation markers and output format. Use EASA/SERA terms and standards, never FAA ones. '
-  + 'Hard rules, in this order: (1) Every regulation statement, number, limitation, speed, minimum or procedure step must come from the EASA entries [E1], [E2]… or the document excerpts [S1], [S2]… given in the message, and carry that marker. '
-  + '(2) If the answer is not in them, say plainly that it is not in the NORDAP rules library or in the pilot\'s documents and where to check it; never fill the gap with a number or rule ID from memory, and never invent a rule ID. '
+  + 'Hard rules, in this order: (1) Every regulation statement, regulatory number, limitation, speed, minimum, performance value or procedure step taken from a rule or a manual must come from the EASA entries [E1], [E2]… or the document excerpts [S1], [S2]… given in the message, and carry that marker. '
+  + 'Calculating is different and allowed: work with the numbers the pilot gives you or with cited values, as described under CALCULATIONS. '
+  + '(2) If a rule or manual value is not in them, say plainly that it is not in the NORDAP rules library or in the pilot\'s documents and where to check it; never fill the gap with a rule value or rule ID from memory, and never invent a rule ID. '
   + '(3) Keep Part-NCO, Part-NCC and Part-CAT apart: a light aircraft flown privately or by a training organisation falls under Part-NCO unless the message says otherwise. '
   + '(4) If the question contains a wrong premise (a wrong number, a rule that does not exist, a wrong rule ID), correct it instead of going along with it. '
-  + '(5) The approved flight manual and the official legal text always take precedence; say so when it matters. Be short and concrete.';
+  + '(5) The approved flight manual and the official legal text always take precedence; say so when it matters. Be short and concrete.\n\n' + CALC_RULES;
+/* the paid engine gets only the calculator rules as its system prompt: everything else is in the page's own prompt */
+const ANTHROPIC_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. Follow the instructions in the user message exactly.\n\n' + CALC_RULES;
 const MAX_BODY_BYTES = 200000;    // the JSON body of one POST
 const MAX_MESSAGES = 40;
 
@@ -155,7 +159,7 @@ async function callModel(c, key, model, messages, L) {
   const timer = setTimeout(() => ctl.abort(), L.TIMEOUT_MS);
   let res, data = null;
   const send = async thinking => {
-    const payload = { model: model.id, max_tokens: L.MAX_OUTPUT_TOKENS, messages };
+    const payload = { model: model.id, max_tokens: L.MAX_OUTPUT_TOKENS, system: ANTHROPIC_SYSTEM, messages };
     if (thinking) payload.thinking = thinking;
     res = await fetchFn(UPSTREAM, {
       method: 'POST', signal: ctl.signal,
@@ -250,7 +254,7 @@ async function atcPost(c) {
   if (engine === 'workers') {
     const w = await callWorkers(c, messages, L);
     try { await addTokens(c, who, day, w.used); } catch (e) { console.error('nordap atc: could not record usage'); }
-    return json({ ok: true, text: w.text, truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
+    return json({ ok: true, text: renderCalc(w.text).text, truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
   }
   const data = await callModel(c, key, model, messages, L);
   const u = data.usage || {};
@@ -262,7 +266,7 @@ async function atcPost(c) {
     if (data.stop_reason === 'refusal') fail(422, 'refused', 'The AI declined that request. Rephrase it.');
     fail(502, 'upstream_error', 'The AI service gave no answer. Try again.');
   }
-  return json({ ok: true, text, truncated: data.stop_reason === 'max_tokens' }, 200, { 'set-cookie': c.setCookie });
+  return json({ ok: true, text: renderCalc(text).text, truncated: data.stop_reason === 'max_tokens' }, 200, { 'set-cookie': c.setCookie });
 }
 
 /* deps (tests): { now, random, fetch } */
@@ -276,4 +280,4 @@ export function makeOnRequest(deps) {
   };
 }
 export const onRequest = makeOnRequest();
-export const _test = { DEFAULTS, WORKERS_LIMITS, WORKERS_MODELS, engineOf, MODELS, TIERS, MAX_BODY_BYTES, MAX_MESSAGES, UPSTREAM, API_VERSION, limitsFor };
+export const _test = { ANTHROPIC_SYSTEM, WORKERS_SYSTEM, DEFAULTS, WORKERS_LIMITS, WORKERS_MODELS, engineOf, MODELS, TIERS, MAX_BODY_BYTES, MAX_MESSAGES, UPSTREAM, API_VERSION, limitsFor };
