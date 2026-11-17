@@ -148,7 +148,8 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
   .site nav a:last-child{border-bottom:0}
   .site nav a.on{color:var(--accent)}
   .site nav a.on::after{display:none}
-  .site nav a.nfi{align-self:flex-start;margin:8px 0 4px;padding:9px 14px;border-bottom:1px solid rgba(154,30,104,.18)}
+  .site nav a.nfi{align-self:stretch;justify-content:flex-start;margin:0;padding:11px 0;background:none;border:0;border-bottom:1px solid var(--rule-2);border-radius:0;color:var(--ink-2)}
+  .site nav a.nfi.on{color:var(--accent)}
   .site nav a.nfi::after{display:block}
   .site.open nav{display:flex}
   .site .rank .rb,.site .rank .rx{display:none}

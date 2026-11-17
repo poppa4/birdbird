@@ -158,12 +158,14 @@ function adoptExample(copy) { const c = F.clean(JSON.parse(JSON.stringify(cur)))
   else { c.steps = []; c.notes = []; c.name = L({ en: 'My flow', no: 'Min flow' }) + ' · ' + ((A.get(c.ac) || A.photo(c.ac) || {}).name || ''); }
   FL.unshift(c); cur = c; UNDO.length = 0; snap(); flowSel(); try { localStorage.setItem('bb-flows-last', c.id); } catch (e) {}
   msg(copy ? L({ en: 'Copied to My flows. Change it as you like; the example stays as it was.', no: 'Kopiert til Mine flows. Endre den som du vil; eksempelet er uendret.' }) : L({ en: 'Your own flow is started on this cockpit, empty. The example is still in the list.', no: 'Din egen flow er startet på denne cockpiten, tom. Eksempelet ligger fortsatt i listen.' }), 'ok'); }
-function flowSel() { const s = $('fsel'), ex = A.groups.flatMap(g => g.list).map(a => ({ id: 'ex:' + a.id, n: L({ en: 'Example, not an SOP', no: 'Eksempel, ikke SOP' }) + ' · ' + a.name })).concat(A.photos.filter(p => F.example(p.id, A)).map(p => ({ id: 'ex:' + p.id, n: L({ en: 'Example, not an SOP', no: 'Eksempel, ikke SOP' }) + ' · ' + p.name })));
+function flowSel() { const s = $('fsel'), exL = L({ en: 'Examples (not SOPs)', no: 'Eksempler (ikke SOP)' }), exO = a => `<option value="ex:${a.id}">${esc(a.name)} · ${L({ en: 'example', no: 'eksempel' })}</option>`, ph = A.photos.filter(p => F.example(p.id, A));
+  // examples are listed by aircraft size, like the cockpit picker
+  const exH = A.groups.map(g => g.list.length ? `<optgroup label="${esc(exL + ' · ' + L(g))}">` + g.list.map(exO).join('') + '</optgroup>' : '').join('') + (ph.length ? `<optgroup label="${esc(exL + ' · ' + L({ en: 'Real photos', no: 'Ekte foto' }))}">` + ph.map(exO).join('') + '</optgroup>' : '');
   const opt = f => `<option value="${f.id}">${isDue(f) ? '● ' : ''}${esc(f.name)}${f.ac !== 'img' && (A.get(f.ac) || A.photo(f.ac)) && (A.get(f.ac) || A.photo(f.ac)).name !== f.name ? ' · ' + esc((A.get(f.ac) || A.photo(f.ac)).name) : ''}</option>`, mine = L({ en: 'My flows', no: 'Mine flows' });
   // flows with a flight phase are listed phase by phase, in the order of a flight; the rest under "My flows"
   const grp = (label, list) => list.length ? `<optgroup label="${esc(label)}">` + list.map(opt).join('') + '</optgroup>' : '';
   s.innerHTML = grp(mine, FL.filter(f => !f.phase)) + F.PHASES.map(p => grp(mine + ' · ' + L({ en: p[1], no: p[2] }), FL.filter(f => f.phase === p[0]))).join('') +
-    `<optgroup label="${esc(L({ en: 'Examples on Birdbird cockpits', no: 'Eksempler på Birdbird-cockpiter' }))}">` + ex.map(x => `<option value="${x.id}">${esc(x.n)}</option>`).join('') + '</optgroup>';
+    exH;
   s.value = cur ? (cur.ex ? 'ex:' + cur.ac : cur.id) : ''; }
 async function open(f) { stopAll(); cur = f; UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
   try { localStorage.setItem('bb-flows-last', f ? (f.ex ? 'ex:' + f.ac : f.id) : ''); } catch (e) {} }
