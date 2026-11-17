@@ -194,7 +194,7 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 @media (max-width:640px){.trnav>.in{gap:0 20px;mask-image:linear-gradient(90deg,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}}
 
 /* ---------------- Footer (groups match the top nav) ---------------- */
-.sitefoot{margin:72px auto 0;max-width:var(--container);border-top:1px solid var(--rule);padding-top:32px;display:grid;grid-template-columns:minmax(0,1.5fr) repeat(4,minmax(0,1fr));gap:32px 24px;font-family:var(--f-body);font-size:14px;color:var(--ink-2)}
+.sitefoot{margin:72px auto 0;max-width:var(--container);border-top:1px solid var(--rule);padding-top:32px;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(5,minmax(0,1fr));gap:32px 20px;font-family:var(--f-body);font-size:14px;color:var(--ink-2)}
 .sitefoot b{display:block;color:var(--ink);font-size:14px;font-weight:600;margin-bottom:10px}
 .sitefoot .fb .logo{display:flex;align-items:center;gap:8px;color:var(--ink);text-decoration:none;margin-bottom:10px}
 .sitefoot .fb .logo svg{width:22px;height:22px}

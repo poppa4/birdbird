@@ -602,6 +602,7 @@ function init() { load(); wirePanel();
   // newer flows from the account (another device): take them in without a reload; an edit made in the last second is saved first
   document.addEventListener('bb-account-sync', e => { if (!e.detail || !(e.detail.applied || []).includes('progress')) return; const id = cur && !cur.ex ? cur.id : null, before = JSON.stringify(FL); clearTimeout(saveT); load(); if (JSON.stringify(FL) === before) return; e.preventDefault();
     try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (x) {} const same = id && FL.find(x => x.id === id); if (id) open(same || FL[0] || F.example(myAc(), A)); else flowSel(); msg(L({ en: 'Your flows were updated from your account.', no: 'Flowene dine ble oppdatert fra kontoen din.' }), 'ok'); });
+  if (/#lib\b/.test(location.hash)) { history.replaceState(null, '', location.pathname); setTimeout(() => window.BBFLOWLIB && window.BBFLOWLIB.browse(), 600); }   // from the footer
   window.BBFLOWS = { RM, SZ, get P() { return P; }, get cur() { return cur; }, get role() { return role; }, draw, ripple, banner, now, col, open, save, panel, H, get ac() { return ac; }, setMode, get mode() { return mode; }, msg, acOpts, addFlow: async f => { FL.unshift(f); await open(f); save(); } };
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
