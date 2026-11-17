@@ -136,7 +136,7 @@
 </style>
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=84"></script>
+<script src="site.js?v=85"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -265,7 +265,7 @@ const LABS={engines:['engines.html','The turbofan engine','turbofan, CFM56, LEAP
 const GO=[['cockpit.html','DA42 / G1000 glass cockpit trainer (simulator)','DA42 glass cockpit trainer'],['c172.html','Cessna 172 cockpit procedure trainer (simulator)','Cessna 172 trainer'],['b200.html','King Air B200 cockpit procedure trainer (simulator)','King Air B200 trainer'],['simcheck.html','A320 simulator assessment preparation','A320 sim assessment'],['prep.html','Briefing pack: build a flight preparation (weather, NOTAM, fuel, minima, mass and balance)','Briefing pack'],['briefing.html','Briefings (departure and approach brief, T-RIBETS, TSADMM)','Briefings'],['route.html','Route Explorer: see a route on the map','Route Explorer'],['radio.html','Gate to gate radio trainer with AI ATC','Gate to gate radio trainer'],['radio-drills.html','Radio drills','Radio drills'],['workspace.html','My Workspace: the pilot\'s own documents, aircraft and notes','My Workspace'],['fi.html#docs','Upload documents (AFM, SOP, QRH) to Flight Intelligence','My aircraft and documents'],['fi.html#easa','EASA rules library','EASA rules library'],['checkride.html','Check preparation (proficiency check / skill test)','Check preparation'],['typerating.html','Type rating trainer: King Air B200','Type rating trainer'],['lab.html','Virtual Labs overview','Virtual Labs'],['weather.html','Weather for pilots','Weather for pilots'],['wxreports.html','Reading METAR, TAF and SIGWX','Reading the weather'],['essentials.html','VFR and IFR essentials','VFR and IFR essentials']];
 function goList(q){ const out=GO.slice(); try{ if(q&&window.NSEARCH&&NSEARCH.score) for(const h of NSEARCH.score(String(q))){ const u=h.e.u, t=L(h.e.t); if(!out.some(g=>g[0]===u)) out.push([u,t+(h.e.d&&L(h.e.d)?' ('+L(h.e.d)+')':''),t]); } }catch(e){} return out; }
 const REGS=[[/\bSERA\.\d{4,5}/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-standardised-european-rules-air-sera','EASA Easy Access Rules: SERA'],
-  [/\b(?:FCL|MED|ARA|ORA)\.\d{3}[A-Z]?(?:\.[A-Z0-9]+)*/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew-regulation-eu-no-11782011','EASA Easy Access Rules: Aircrew (Part-FCL, Part-MED)'],
+  [/\b(?:FCL|MED|ARA|ORA)\.\d{3}[A-Z]?(?:\.[A-Z0-9]+)*/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-aircrew','EASA Easy Access Rules: Aircrew (Part-FCL, Part-MED)'],
   [/\b(?:NCO|NCC|CAT|SPO|ORO)\.[A-Z]{2,4}(?:\.[A-Z]{2,4})?\.\d{3}/g,'https://www.easa.europa.eu/en/document-library/easy-access-rules/easy-access-rules-air-operations','EASA Easy Access Rules: Air Operations'],
   [/\bICAO Annex \d{1,2}\b/g,'https://www.icao.int/safety/airnavigation/nationalitymarks/annexes_booklet_en.pdf','ICAO Annexes (overview)']];
 

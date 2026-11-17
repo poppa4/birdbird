@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rules we link to · NORDAP</title>
+<meta name="description" content="Every EASA rule and official document NORDAP links to, grouped by Part (Part-CAT, Part-NCO, Part-NCC, Part-SPA, SERA, Part-FCL), with the revision it is based on and a link to the official text.">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+/* rules.html – overview of every official document and rule NORDAP links to, built from easa.js */
+.rdoc{margin:0;padding:0;list-style:none;border-top:1px solid var(--ink)}
+.rdoc li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:6px 24px;align-items:start;padding:13px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.rdoc li b{display:block;font-weight:600}
+.rdoc li span{display:block;font-size:13.5px;color:var(--ink-2)}
+.rdoc .lk{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px}
+.rgrp{margin:22px 0 0}
+.rgrp:first-of-type{margin-top:8px}
+.rgrp h3{margin:0 0 2px;font-size:17px}
+.rgrp>p{margin:0 0 8px;font-size:13.5px;color:var(--ink-2)}
+.rlist{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.rlist li{display:grid;grid-template-columns:minmax(150px,230px) minmax(0,1fr) auto;gap:4px 20px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.45}
+.rlist code{font-family:var(--f-mono);font-size:13px;font-weight:500;color:var(--ink)}
+.rlist .rt{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.rlist .tag{font-size:10.5px}
+.rlist .nv{font-size:12.5px;color:var(--caution-ink)}
+.rlist a{white-space:nowrap;font-size:14px}
+.rsum{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 12px;font-size:14px;color:var(--ink-2)}
+@media (max-width:700px){.rdoc li,.rlist li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body data-title="Rules we link to">
+<script src="site.js?v=85"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Regulations</div>
+      <h1>Rules we link to</h1>
+      <p>Every official EASA document and rule that NORDAP links to, grouped by Part. Each rule opens the official text at EASA. The summaries themselves are in the EASA rules library in Flight Intelligence.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#docs">Official documents</a><a href="#rules">Rules by Part</a></nav>
+
+  <section class="card" id="docs">
+    <h2>Official documents</h2>
+    <p class="rsum" id="rChecked"></p>
+    <ul class="rdoc" id="rDocs"></ul>
+    <p class="note">NORDAP cannot read the EASA website while you use it. The list is checked for new revisions every week, and the date of the last check is shown above. Always use the current version published by EASA.</p>
+  </section>
+
+  <section class="card" id="rules">
+    <h2>Rules by Part</h2>
+    <div id="rGroups"></div>
+    <p class="note">Rules marked “not checked word for word” describe the requirement but have not yet been compared with the official text. <a href="fi.html#easa">Read the summaries in the EASA rules library</a> · <a href="sources.html#rules">Data sources</a></p>
+  </section>
+</div>
+<script src="lab.js?v=52"></script>
+<script src="easa.js?v=4"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({'Sections':'Sections'},{
+ 'Sections':'Seksjoner',
+ 'Rules we link to':'Regelverk vi lenker til','NORDAP · Regulations':'NORDAP · Regelverk',
+ 'Every official EASA document and rule that NORDAP links to, grouped by Part. Each rule opens the official text at EASA. The summaries themselves are in the EASA rules library in Flight Intelligence.':'Alle offisielle EASA-dokumenter og regler som NORDAP lenker til, sortert etter Part. Hver regel åpner den offisielle teksten hos EASA. Selve sammendragene finner du i EASA-regelbiblioteket i Flight Intelligence.',
+ 'Official documents':'Offisielle dokumenter','Rules by Part':'Regler etter Part',
+ 'NORDAP cannot read the EASA website while you use it. The list is checked for new revisions every week, and the date of the last check is shown above. Always use the current version published by EASA.':'NORDAP kan ikke lese EASAs nettsider mens du bruker siden. Listen sjekkes for nye revisjoner hver uke, og datoen for siste kontroll står over. Bruk alltid gjeldende versjon publisert av EASA.',
+ 'Rules marked “not checked word for word” describe the requirement but have not yet been compared with the official text.':'Regler merket «ikke kontrollert ord for ord» beskriver kravet, men er ikke sammenlignet med den offisielle teksten ennå.',
+ 'Read the summaries in the EASA rules library':'Les sammendragene i EASA-regelbiblioteket','Data sources':'Datakilder'
+});
+const E=window.EASA, L=o=>LAB.lang==='no'?o.no:o.en;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const el=id=>document.getElementById(id);
+/* Part groups, in reading order; the part of an entry is its x.part up to " / " */
+const GROUPS=[
+ ['Annex I',{en:'Annex I — Definitions',no:'Annex I — Definisjoner'},{en:'Air Operations: definitions of terms.',no:'Air Operations: definisjoner av begreper.'}],
+ ['Part-CAT',{en:'Part-CAT — Commercial air transport',no:'Part-CAT — Kommersiell lufttransport'},{en:'Air Operations, Annex IV.',no:'Air Operations, Annex IV.'}],
+ ['Part-SPA',{en:'Part-SPA — Specific approvals',no:'Part-SPA — Særskilte godkjenninger'},{en:'Air Operations, Annex V.',no:'Air Operations, Annex V.'}],
+ ['Part-NCC',{en:'Part-NCC — Non-commercial, complex aircraft',no:'Part-NCC — Ikke-kommersiell, komplekse luftfartøy'},{en:'Air Operations, Annex VI.',no:'Air Operations, Annex VI.'}],
+ ['Part-NCO',{en:'Part-NCO — Non-commercial, other-than-complex aircraft',no:'Part-NCO — Ikke-kommersiell, ikke-komplekse luftfartøy'},{en:'Air Operations, Annex VII.',no:'Air Operations, Annex VII.'}],
+ ['SERA',{en:'SERA — Rules of the air',no:'SERA — Lufttrafikkregler'},{en:'Standardised European Rules of the Air.',no:'Felles europeiske lufttrafikkregler.'}],
+ ['Part-FCL',{en:'Part-FCL — Flight crew licensing',no:'Part-FCL — Flygersertifikater'},{en:'Aircrew, Annex I.',no:'Aircrew, Annex I.'}]
+];
+const partOf=x=>String(x.part).split(' / ')[0];
+const base=id=>String(id).replace(/^(AMC|GM)\d+\s+/,'');
+const order=id=>/^AMC/.test(id)?1:/^GM/.test(id)?2:0;
+const num=s=>String(s).replace(/\d+/g,d=>d.padStart(4,'0'));
+function sortItems(a,b){ const A=num(base(a.id)),B=num(base(b.id)); return A<B?-1:A>B?1:(order(a.id)-order(b.id))||(num(a.id)<num(b.id)?-1:1); }
+function row(x){ const off=L({en:'Official text',no:'Offisiell tekst'});
+  return `<li><code>${esc(x.id)}</code><span class="rt">${esc(x.title)}<span class="tag">${esc(x.type)}</span>${x.verified?'':`<span class="nv">${L({en:'not checked word for word',no:'ikke kontrollert ord for ord'})}</span>`}</span><a href="${esc(x.url)}" target="_blank" rel="noopener">${off} ↗</a></li>`; }
+function draw(){
+  const S=E.sources;
+  el('rChecked').innerHTML=`<span>${L({en:'Last checked',no:'Sist kontrollert'})}: <b>${esc(E.checked)}</b></span><span>${E.items.length} ${L({en:'rules',no:'regler'})}</span><span>${Object.keys(S).length} ${L({en:'official documents',no:'offisielle dokumenter'})}</span>`;
+  el('rDocs').innerHTML=Object.values(S).map(s=>`<li><div><b>${esc(s.name)}</b><span>${esc(s.reg)}</span></div><div>${esc(LAB.lang==='no'?s.revNo:s.rev)}</div><div class="lk"><a href="${esc(s.online)}" target="_blank" rel="noopener">${L({en:'Online',no:'Nettversjon'})} ↗</a><a href="${esc(s.ear)}" target="_blank" rel="noopener">${L({en:'Downloads',no:'Nedlastinger'})} ↗</a><a href="${esc(s.eurlex)}" target="_blank" rel="noopener">EUR-Lex ↗</a></div></li>`).join('');
+  const known=GROUPS.map(g=>g[0]);
+  const rest=[...new Set(E.items.map(partOf).filter(p=>!known.includes(p)))].map(p=>[p,{en:p,no:p},{en:'',no:''}]);
+  el('rGroups').innerHTML=GROUPS.concat(rest).map(([p,t,d])=>{ const list=E.items.filter(x=>partOf(x)===p).sort(sortItems); if(!list.length) return '';
+    return `<div class="rgrp"><h3>${esc(L(t))} <span class="note">· ${list.length}</span></h3>${L(d)?`<p>${esc(L(d))}</p>`:''}<ul class="rlist">${list.map(row).join('')}</ul></div>`; }).join('');
+}
+LAB.start('rules'); draw(); LAB.onLang(draw);
+})();
+</script>
+</body>
+</html>
