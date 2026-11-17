@@ -17,7 +17,7 @@ import { readGrib2 } from '../_lib/grib2.js';
 import { parseTile, cycles, forecastHour } from './winds.js';
 
 const NOMADS = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl';
-const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://nordap.eu)';
 const TILE = 5, TTL = 7200, TIMEOUT = 15000, H = 3600e3, FT = 3.28084;
 const json = (body, status, cache) => new Response(JSON.stringify(body), {
   status: status || 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': cache || 'no-store', 'x-content-type-options': 'nosniff' }

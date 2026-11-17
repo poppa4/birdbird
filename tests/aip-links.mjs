@@ -9,7 +9,7 @@ const window = {}; new Function('window', readFileSync(join(ROOT, 'aip.js'), 'ut
 const B = window.BBAIP;
 const urls = new Map();
 Object.values(B.ALL).concat([B.EAD, B.DIR]).forEach(x => urls.set(x.url, x.name));
-const UA = 'NORDAP link check (+https://birdbird.eu)';
+const UA = 'NORDAP link check (+https://nordap.eu)';
 /* One answer per try. A network error or a 5xx is tried again twice, 20 s apart: a single hiccup at one portal
    must not fail the whole weekly run and e-mail the owner (skybriefing.com did exactly that once). */
 async function check(url) {

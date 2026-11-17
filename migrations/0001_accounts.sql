@@ -1,4 +1,4 @@
--- Birdbird accounts: passkeys, recovery code, sessions and synced user data.
+-- NORDAP accounts: passkeys, recovery code, sessions and synced user data.
 -- Cloudflare D1 (SQLite). Paste this whole file into the D1 console (Dashboard > Storage & Databases > D1 > birdbird > Console) and run it.
 -- Safe to run more than once. All times are milliseconds since 1970 (UTC).
 

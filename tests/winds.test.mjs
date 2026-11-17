@@ -53,14 +53,14 @@ test('toTile: north-to-south rows, units kt / °C / ft', () => {
 test('handler: newest run not on NOMADS yet → previous run', async () => {
   const calls = [];
   const fetch = async u => { calls.push(u); return calls.length === 1 ? new Response('<html>data file is not present</html>', { status: 200 }) : new Response(BIN); };
-  const r = await handleWinds(new Request('https://birdbird.eu/api/winds?tile=60,5&t=2026-11-15T13:10:00Z'), {}, { fetch, cache: null, now: () => Date.parse('2026-11-15T12:00:00Z') });
+  const r = await handleWinds(new Request('https://nordap.eu/api/winds?tile=60,5&t=2026-11-15T13:10:00Z'), {}, { fetch, cache: null, now: () => Date.parse('2026-11-15T12:00:00Z') });
   const j = await r.json();
   assert.equal(j.ok, true); assert.equal(calls.length, 2);
   assert.match(calls[0], /gfs\.20261115%2F06/); assert.match(calls[1], /gfs\.20261115%2F00/);
   assert.equal(j.model, 'GFS 0.25°');
-  const bad = await handleWinds(new Request('https://birdbird.eu/api/winds?tile=61,5'), {}, { fetch, cache: null });
+  const bad = await handleWinds(new Request('https://nordap.eu/api/winds?tile=61,5'), {}, { fetch, cache: null });
   assert.equal(bad.status, 400);
-  const down = await handleWinds(new Request('https://birdbird.eu/api/winds?tile=60,5'), {}, { fetch: async () => new Response('', { status: 503 }), cache: null });
+  const down = await handleWinds(new Request('https://nordap.eu/api/winds?tile=60,5'), {}, { fetch: async () => new Response('', { status: 503 }), cache: null });
   assert.equal(down.status, 502);
 });
 
@@ -68,9 +68,9 @@ import { handleSigchart } from '../functions/api/sigchart.js';
 test('sigchart proxy: image through, errors as JSON', async () => {
   const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
   let seen = '';
-  const ok = await handleSigchart(new Request('https://birdbird.eu/api/sigchart?area=norway&offset=1'), {}, { cache: null, fetch: async u => { seen = u; return new Response(png, { headers: { 'content-type': 'image/png' } }); } });
+  const ok = await handleSigchart(new Request('https://nordap.eu/api/sigchart?area=norway&offset=1'), {}, { cache: null, fetch: async u => { seen = u; return new Response(png, { headers: { 'content-type': 'image/png' } }); } });
   assert.equal(ok.status, 200); assert.equal(ok.headers.get('content-type'), 'image/png'); assert.match(seen, /area=norway&offset=1/);
-  const html = await handleSigchart(new Request('https://birdbird.eu/api/sigchart'), {}, { cache: null, fetch: async () => new Response('<html>', { headers: { 'content-type': 'text/html' } }) });
+  const html = await handleSigchart(new Request('https://nordap.eu/api/sigchart'), {}, { cache: null, fetch: async () => new Response('<html>', { headers: { 'content-type': 'text/html' } }) });
   assert.equal(html.status, 502);
-  assert.equal((await handleSigchart(new Request('https://birdbird.eu/api/sigchart?area=sweden'), {}, { cache: null })).status, 400);
+  assert.equal((await handleSigchart(new Request('https://nordap.eu/api/sigchart?area=sweden'), {}, { cache: null })).status, 400);
 });

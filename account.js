@@ -73,7 +73,7 @@
     } catch (e) { const er = new Error(L({ en: 'No connection. Check your internet connection and try again.', no: 'Ingen forbindelse. Sjekk internettforbindelsen og prøv igjen.' })); er.code = 'offline'; er.status = 0; throw er; }
     let j = null; const ct = r.headers.get('content-type') || '';
     if (ct.includes('application/json')) { try { j = await r.json(); } catch (e) {} }
-    if (!j || typeof j.ok !== 'boolean') { const er = new Error(L({ en: 'Accounts are available on birdbird.eu.', no: 'Kontoer er tilgjengelige på birdbird.eu.' })); er.code = 'no_backend'; er.status = r.status; throw er; }
+    if (!j || typeof j.ok !== 'boolean') { const er = new Error(L({ en: 'Accounts are available on nordap.eu.', no: 'Kontoer er tilgjengelige på nordap.eu.' })); er.code = 'no_backend'; er.status = r.status; throw er; }
     if (!r.ok || !j.ok) { const er = new Error(msgFor(j) || ('HTTP ' + r.status)); er.code = j.error; er.status = r.status; er.body = j; er.retryAfter = +r.headers.get('retry-after') || 0; throw er; }
     return j;
   }
@@ -90,7 +90,7 @@
     no_db: 'Kontoer er ikke slått på for dette nettstedet ennå. Alt fungerer fortsatt og lagres i denne nettleseren.',
     bad_origin: 'Forespørselen kom ikke fra NORDAP selv. Last inn siden på nytt og prøv igjen.',
     server: 'Noe gikk galt hos oss. Dataene dine er fortsatt lagret i denne nettleseren. Prøv igjen om et minutt.',
-    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne NORDAP på https://birdbird.eu.'
+    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne NORDAP på https://nordap.eu.'
   };
   const msgFor = j => j ? (lang() === 'no' && NO_MSG[j.error] ? NO_MSG[j.error] + (j.error === 'rate_limited' && j.retryAfter ? ' (' + j.retryAfter + ' s)' : '') : j.message) : '';
 
@@ -109,7 +109,7 @@
     const n = e && e.name;
     const m = n === 'NotAllowedError' ? { en: 'The passkey request was cancelled or timed out. Try again when you are ready.', no: 'Passnøkkelforespørselen ble avbrutt eller gikk ut på tid. Prøv igjen når du er klar.' }
       : n === 'InvalidStateError' ? (mode === 'create' ? { en: 'This device already has a passkey for your NORDAP account. Sign in with it instead.', no: 'Denne enheten har allerede en passnøkkel for NORDAP-kontoen din. Logg inn med den i stedet.' } : { en: 'The passkey could not be used. Try again.', no: 'Passnøkkelen kunne ikke brukes. Prøv igjen.' })
-      : n === 'SecurityError' ? { en: 'Passkeys only work on https://birdbird.eu (or localhost). Open NORDAP there and try again.', no: 'Passnøkler virker bare på https://birdbird.eu (eller localhost). Åpne NORDAP der og prøv igjen.' }
+      : n === 'SecurityError' ? { en: 'Passkeys only work on https://nordap.eu (or localhost). Open NORDAP there and try again.', no: 'Passnøkler virker bare på https://nordap.eu (eller localhost). Åpne NORDAP der og prøv igjen.' }
       : n === 'NotSupportedError' ? { en: 'This device cannot make a suitable passkey. Try your phone, or another browser.', no: 'Denne enheten kan ikke lage en passende passnøkkel. Prøv telefonen eller en annen nettleser.' }
       : n === 'AbortError' ? { en: 'The passkey request was stopped. Try again.', no: 'Passnøkkelforespørselen ble stoppet. Prøv igjen.' }
       : null;
@@ -196,7 +196,7 @@
   }
   /* detect the backend without signing in (used by profile.html; other pages only call the API when signed in) */
   /* a plain static server on this machine (python -m http.server, npx serve) has no Functions: do not probe it.
-     wrangler pages dev (port 8788) does, so it is probed like birdbird.eu and pages.dev previews. */
+     wrangler pages dev (port 8788) does, so it is probed like nordap.eu and pages.dev previews. */
   const staticLocal = location.protocol === 'file:' || (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && location.port !== '8788');
   async function detect() {
     if (staticLocal && !A.user) { A.backend = 'none'; changed(); return A.backend; }

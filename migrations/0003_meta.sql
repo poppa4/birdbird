@@ -1,4 +1,4 @@
--- Birdbird – small server settings table, and no authenticator model ids.
+-- NORDAP – small server settings table, and no authenticator model ids.
 -- Cloudflare D1 (SQLite). Paste this whole file into the D1 console (Dashboard > Storage & Databases > D1 > birdbird > Console) and run it,
 -- or run:  npx wrangler d1 execute birdbird --remote --file=migrations/0003_meta.sql
 -- Safe to run more than once.

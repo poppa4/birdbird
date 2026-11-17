@@ -541,7 +541,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=83"></script>
+<script src="site.js?v=84"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -812,7 +812,7 @@
 <script src="flightlink.js?v=2"></script>
 <script src="terrain.js?v=3"></script>
 <script src="wmm.js?v=2"></script>
-<script src="rxmap.js?v=27"></script>
+<script src="rxmap.js?v=28"></script>
 <script src="aip.js?v=7"></script>
 <script src="windsaloft.js?v=4"></script>
 <script src="cloudcol.js?v=2"></script>
@@ -1212,7 +1212,7 @@ const isAp=p=>p.t==='rwy'&&/^[A-Z]{4}$/.test(p.n||'')&&NAV&&NAV.apI&&NAV.apI[p.n
 function exName(){ const P=exPts(); return P.length?asc((P[0].n||'')+'-'+(P[P.length-1].n||'')).replace(/[^A-Za-z0-9-]/g,'')||'route':'route'; }
 function toGpx(){ const P=exPts(), nm=exName();
   const pt=p=>`    <rtept lat="${p.la.toFixed(6)}" lon="${p.lo.toFixed(6)}">${isAp(p)&&NAV.apI[p.n][4]!=null?`<ele>${(NAV.apI[p.n][4]*0.3048).toFixed(1)}</ele>`:''}<name>${xq(p.n||llIcao(p.la,p.lo))}</name>${p.note?`<desc>${xq(p.note)}</desc>`:''}<sym>${isAp(p)?'Airport':'Waypoint'}</sym></rtept>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="NORDAP Route Explorer (birdbird.eu)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n  <metadata><name>${xq(nm)}</name><time>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</time></metadata>\n  <rte>\n    <name>${xq(nm)}</name>\n${P.map(pt).join('\n')}\n  </rte>\n</gpx>\n`; }
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="NORDAP Route Explorer (nordap.eu)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n  <metadata><name>${xq(nm)}</name><time>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</time></metadata>\n  <rte>\n    <name>${xq(nm)}</name>\n${P.map(pt).join('\n')}\n  </rte>\n</gpx>\n`; }
 function toFpl(){ const P=exPts(), used={}, tbl=[], seq=[];
   P.forEach((p,i)=>{ let id, ty, cc='';
     if(isAp(p)){ id=p.n; ty='AIRPORT'; cc=p.n.slice(0,2); }

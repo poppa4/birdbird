@@ -35,11 +35,11 @@ test('normalise: worldwide, valid only, polygons closed, FIR filter', () => {
 test('handler: one upstream call, filter, bad input', async () => {
   let calls = 0;
   const deps = { cache: null, now: () => NOW, fetch: async () => { calls++; return Response.json(UP); } };
-  const j = await (await handleSigmet(new Request('https://birdbird.eu/api/sigmet?fir=ES'), {}, deps)).json();
+  const j = await (await handleSigmet(new Request('https://nordap.eu/api/sigmet?fir=ES'), {}, deps)).json();
   assert.equal(j.ok, true); assert.equal(j.items.length, 1); assert.equal(calls, 3); // isigmet, US airsigmet, MET Norway
-  const bad = await handleSigmet(new Request('https://birdbird.eu/api/sigmet?fir=E1'), {}, deps);
+  const bad = await handleSigmet(new Request('https://nordap.eu/api/sigmet?fir=E1'), {}, deps);
   assert.equal(bad.status, 400);
-  const down = await handleSigmet(new Request('https://birdbird.eu/api/sigmet'), {}, { cache: null, fetch: async () => new Response('', { status: 503 }) });
+  const down = await handleSigmet(new Request('https://nordap.eu/api/sigmet'), {}, { cache: null, fetch: async () => new Response('', { status: 503 }) });
   assert.equal(down.status, 502);
 });
 
@@ -87,11 +87,11 @@ test('combine: MET Norway first for Norway, expired dropped, NOAA kept when MET 
 
 test('handler with MET Norway', async () => {
   const deps = { cache: null, now: () => NOW, fetch: async u => /api\.met\.no/.test(u) ? new Response(TAC) : /airsigmet/.test(u) ? Response.json([]) : Response.json(UP) };
-  const j = await (await handleSigmet(new Request('https://birdbird.eu/api/sigmet?fir=EN'), {}, deps)).json();
+  const j = await (await handleSigmet(new Request('https://nordap.eu/api/sigmet?fir=EN'), {}, deps)).json();
   assert.equal(j.metOk, true);
   assert.deepEqual(j.items.map(x => x.type + ' ' + x.series), ['AIRMET B1', 'AIRMET B2', 'SIGMET A3']);
   const deps2 = Object.assign({}, deps, { fetch: async u => /api\.met\.no/.test(u) ? new Response('', { status: 503 }) : /airsigmet/.test(u) ? Response.json([]) : Response.json(UP) });
-  const j2 = await (await handleSigmet(new Request('https://birdbird.eu/api/sigmet?fir=EN'), {}, deps2)).json();
+  const j2 = await (await handleSigmet(new Request('https://nordap.eu/api/sigmet?fir=EN'), {}, deps2)).json();
   assert.equal(j2.metOk, false); assert.equal(j2.items[0].source, 'aviationweather.gov');
 });
 

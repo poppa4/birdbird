@@ -1,12 +1,12 @@
 import test from 'node:test'; import assert from 'node:assert/strict';
 import { makeD1 } from './lib/d1mock.mjs';
 import { handleRoom, makeCode, normCode } from '../functions/api/room.js';
-const O = 'https://birdbird.eu';
+const O = 'https://nordap.eu';
 let t = 1_800_000_000_000; const deps = { now: () => t };
 const post = (env, b, origin = O) => handleRoom(new Request(O + '/api/room', { method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify(b) }), env, deps).then(async r => ({ s: r.status, j: await r.json() }));
 const get = (env, q) => handleRoom(new Request(O + '/api/room?' + new URLSearchParams(q)), env, deps).then(async r => ({ s: r.status, j: await r.json() }));
 const FLOW = { name: 'Before start', ac: 'a320', roles: ['PF', 'PM'], steps: [{ id: 'a', r: 'PF', t: 'BAT', x: 1, y: 2 }] };
-test('code words and normalising a pasted link', () => { assert.match(makeCode(new Uint8Array([14, 0, 0x18, 0x45])), /^oscar-beacon-\d{4}$/); assert.equal(normCode('https://birdbird.eu/flows#room=Oscar-Beacon-6209'), 'oscar-beacon-6209'); });
+test('code words and normalising a pasted link', () => { assert.match(makeCode(new Uint8Array([14, 0, 0x18, 0x45])), /^oscar-beacon-\d{4}$/); assert.equal(normCode('https://nordap.eu/flows#room=Oscar-Beacon-6209'), 'oscar-beacon-6209'); });
 test('create, join, relay, presence and leave', async () => { const env = { DB: makeD1() };
   const c = await post(env, { op: 'create', flow: FLOW, name: 'Goose', role: 'PF' }); assert.equal(c.s, 200); assert.match(c.j.code, /^[a-z]+-[a-z]+-\d{4}$/);
   const g = await post(env, { op: 'join', code: c.j.code.toUpperCase(), name: 'Jester', role: 'PM' }); assert.equal(g.j.flow.name, 'Before start'); assert.deepEqual(g.j.members.map(m => [m.name, m.role, m.on]), [['Goose', 'PF', true], ['Jester', 'PM', true]]);

@@ -1,7 +1,7 @@
 import test from 'node:test'; import assert from 'node:assert/strict';
 import { makeD1 } from './lib/d1mock.mjs';
 import { handleRequest, mailText } from '../functions/api/request.js';
-const O = 'https://birdbird.eu'; let t = 1_800_000_000_000;
+const O = 'https://nordap.eu'; let t = 1_800_000_000_000;
 const JPG = '/9j/' + 'A'.repeat(400);
 const mk = (mails, ok = true) => ({ now: () => t, fetch: async (u, init) => { mails.push({ u, h: init.headers, b: JSON.parse(init.body) }); return new Response(ok ? '{"id":"x"}' : 'no', { status: ok ? 200 : 403 }); } });
 const post = (env, deps, b, origin = O, ip = '1.2.3.4') => handleRequest(new Request(O + '/api/request', { method: 'POST', headers: { origin, 'content-type': 'application/json', 'cf-connecting-ip': ip }, body: JSON.stringify(b) }), env, deps).then(async r => ({ s: r.status, j: await r.json() }));

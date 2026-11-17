@@ -1,6 +1,6 @@
 """Front-end test of accounts with /api/* mocked in Playwright (no backend needed):
     python3 tests/frontend_mock.py [static-server-url]
-The site is served from this folder under https://birdbird.eu (so passkeys get a secure origin and the real RP id),
+The site is served from this folder under https://nordap.eu (so passkeys get a secure origin and the real RP id),
 Chrome's virtual authenticator answers navigator.credentials, and a small in-memory backend answers /api/*.
 Covers: signup, recovery code, logout, login, sync roundtrip, conflict prompt, delete, NO/EN, 1440 and 390 px,
 no page errors, no horizontal overflow, and the no-backend states (404 / no database / plain static server)."""
@@ -8,7 +8,7 @@ import base64, json, mimetypes, os, secrets, sys, time
 from playwright.sync_api import sync_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ORIGIN = 'https://birdbird.eu'
+ORIGIN = 'https://nordap.eu'
 STATIC = sys.argv[1] if len(sys.argv) > 1 else 'http://localhost:8902'
 SHOTS = '/tmp/acshots'; os.makedirs(SHOTS, exist_ok=True)
 b64u = lambda b: base64.urlsafe_b64encode(b).rstrip(b'=').decode()
@@ -30,7 +30,7 @@ class Server:
         if path == '/api/auth/register/options':
             uid = self.user['id'] if signed else b64u(secrets.token_bytes(16))
             sess['pending'] = uid
-            return J(200, {'ok': True, 'mode': 'add' if signed else 'new', 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rp': {'id': 'birdbird.eu', 'name': 'NORDAP'},
+            return J(200, {'ok': True, 'mode': 'add' if signed else 'new', 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rp': {'id': 'nordap.eu', 'name': 'NORDAP'},
                 'user': {'id': uid, 'name': 'pilot', 'displayName': (body or {}).get('name') or 'NORDAP pilot'}, 'pubKeyCredParams': [{'type': 'public-key', 'alg': -7}, {'type': 'public-key', 'alg': -257}],
                 'timeout': 300000, 'attestation': 'none', 'authenticatorSelection': {'residentKey': 'required', 'requireResidentKey': True, 'userVerification': 'required'},
                 'excludeCredentials': [{'type': 'public-key', 'id': c['id']} for c in self.creds] if signed else []}})
@@ -45,7 +45,7 @@ class Server:
             sess['in'] = True
             return J(200, {'ok': True, 'created': created, 'user': self.user, 'credential': {'id': cr['id']}, 'recoveryCode': self.code if created else None})
         if path == '/api/auth/login/options':
-            return J(200, {'ok': True, 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rpId': 'birdbird.eu', 'timeout': 300000, 'userVerification': 'required', 'allowCredentials': []}})
+            return J(200, {'ok': True, 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rpId': 'nordap.eu', 'timeout': 300000, 'userVerification': 'required', 'allowCredentials': []}})
         if path == '/api/auth/login/verify':
             cr = body['credential']; assert cr['response']['signature'] and cr['response']['authenticatorData']
             if not any(c['id'] == cr['id'] for c in self.creds): return J(400, {'ok': False, 'error': 'unknown_passkey', 'message': 'This passkey is not linked to a NORDAP account any more.'})
@@ -204,7 +204,7 @@ with sync_playwright() as p:
         for x in (c, c2, c3): x.close()
 
     # ---------- no backend ----------
-    for mode, needle in (('404', 'Accounts are available on birdbird.eu'), ('nodb', 'Accounts are being switched on')):
+    for mode, needle in (('404', 'Accounts are available on nordap.eu'), ('nodb', 'Accounts are being switched on')):
         srv = Server(mode)
         c, pg, errs, sess, _ = device(b, srv, 390, 844, auth=False)
         pg.goto(ORIGIN + '/profile.html#account'); pg.wait_for_timeout(1500)
@@ -218,7 +218,7 @@ with sync_playwright() as p:
     c = b.new_context(viewport={'width': 1440, 'height': 900}); pg = c.new_page(); errs = []; api = []
     pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('request', lambda r: api.append(r.url) if '/api/' in r.url and not any(x in r.url for x in ('/api/atc', '/api/wx')) else None)  # atc/wx: other features
     pg.goto(STATIC + '/profile.html#account'); pg.wait_for_timeout(1500)
-    check('static server: "available on birdbird.eu"', 'Accounts are available on birdbird.eu' in pg.locator('#account').inner_text())
+    check('static server: "available on nordap.eu"', 'Accounts are available on nordap.eu' in pg.locator('#account').inner_text())
     check('static server: no /api requests, no errors', not api and not errs, (api, errs))
     for page in ('index.html', 'prep.html', 'lab.html'):
         pg.goto(STATIC + '/' + page); pg.wait_for_timeout(900)

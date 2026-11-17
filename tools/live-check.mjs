@@ -9,7 +9,7 @@ import { handleSat, LAYERS } from '../functions/api/sat.js';
 import { handleSigchart } from '../functions/api/sigchart.js';
 fs.mkdirSync('out', { recursive: true });
 const W = (f, d) => fs.writeFileSync('out/' + f, typeof d === 'string' ? d : JSON.stringify(d, null, 1));
-const UA = { 'user-agent': 'NORDAP/1.0 (+https://birdbird.eu) live-check' };
+const UA = { 'user-agent': 'NORDAP/1.0 (+https://nordap.eu) live-check' };
 const rep = [];
 const log = (k, v) => { rep.push(k + ': ' + (typeof v === 'string' ? v : JSON.stringify(v))); console.log(k, v); };
 const T = async (k, fn) => { try { await fn(); } catch (e) { log(k + ' ERROR', String(e && e.stack || e).slice(0, 400)); } };
@@ -38,11 +38,11 @@ await T('openAIP tile', async () => { const { VectorTile } = await import('@mapb
   const r = await head(`https://api.tiles.openaip.net/api/data/openaip/${z}/${x}/${y}.pbf?apiKey=9f22478d838e75c88512f7131a079bfa`); const vt = new VectorTile(new Pbf(r.b)); const out = { status: r.status, layers: Object.keys(vt.layers) };
   const L = vt.layers.airspaces; if (L) { const keys = new Set(); const ex = []; for (let i = 0; i < L.length; i++) { const p = L.feature(i).properties; Object.keys(p).forEach(k => keys.add(k)); if (ex.length < 5 && /CTR|TMA|ATZ|TIZ/i.test(p.name || '')) ex.push(p); } out.airspaceKeys = [...keys]; out.examples = ex; }
   log('openAIP tile', out); });
-for (const [k, u] of [['site sigmet', 'https://birdbird.eu/api/sigmet'], ['site wx', 'https://birdbird.eu/api/wx?ids=ENGM,ENNO,ENKJ'], ['site winds', 'https://birdbird.eu/api/winds?tile=55,5'], ['site radar', 'https://birdbird.eu/api/radar'], ['site sw', 'https://birdbird.eu/sw.js'], ['site atc', 'https://birdbird.eu/api/atc'], ['site me', 'https://birdbird.eu/api/me'], ['site room', 'https://birdbird.eu/api/room?c=test-test-0000'], ['site flows', 'https://birdbird.eu/flows'], ['site route', 'https://birdbird.eu/route']])
+for (const [k, u] of [['site sigmet', 'https://nordap.eu/api/sigmet'], ['site wx', 'https://nordap.eu/api/wx?ids=ENGM,ENNO,ENKJ'], ['site winds', 'https://nordap.eu/api/winds?tile=55,5'], ['site radar', 'https://nordap.eu/api/radar'], ['site sw', 'https://nordap.eu/sw.js'], ['site atc', 'https://nordap.eu/api/atc'], ['site me', 'https://nordap.eu/api/me'], ['site room', 'https://nordap.eu/api/room?c=test-test-0000'], ['site flows', 'https://nordap.eu/flows'], ['site route', 'https://nordap.eu/route']])
   await T(k, async () => { const t0 = Date.now(); const r = await head(u); log(k, { status: r.status, ms: Date.now() - t0, type: r.type, len: r.len, head: /json|javascript|text/.test(r.type || '') ? r.b.toString().slice(0, 400) : '' }); });
-await T('site room roundtrip', async () => { const H = { 'content-type': 'application/json', origin: 'https://birdbird.eu' }, P = b => fetch('https://birdbird.eu/api/room', { method: 'POST', headers: H, body: JSON.stringify(b) }).then(r => r.json());
+await T('site room roundtrip', async () => { const H = { 'content-type': 'application/json', origin: 'https://nordap.eu' }, P = b => fetch('https://nordap.eu/api/room', { method: 'POST', headers: H, body: JSON.stringify(b) }).then(r => r.json());
   const c = await P({ op: 'create', flow: { name: 'live-check', roles: ['PF', 'PM'], steps: [{ id: 'a', r: 'PF', t: 'x', x: 1, y: 1 }] }, name: 'check', role: 'PF' }); if (!c.ok) { log('site room roundtrip', c); return; }
   const j = await P({ op: 'join', code: c.code, name: 'check2' }); const s = await P({ op: 'send', code: c.code, me: j.me, ev: { t: 'tap', x: 5, y: 6, ok: true } });
-  const g = await (await fetch(`https://birdbird.eu/api/room?c=${c.code}&me=${c.me}&since=0`)).json(); await P({ op: 'leave', code: c.code, me: j.me }); await P({ op: 'leave', code: c.code, me: c.me });
+  const g = await (await fetch(`https://nordap.eu/api/room?c=${c.code}&me=${c.me}&since=0`)).json(); await P({ op: 'leave', code: c.code, me: j.me }); await P({ op: 'leave', code: c.code, me: c.me });
   log('site room roundtrip', { code: c.code, joined: j.ok, members: j.members && j.members.length, sent: s.seq, got: g.ev && g.ev.map(e => e.t) }); });
 W('report.txt', rep.join('\n'));

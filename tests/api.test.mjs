@@ -11,7 +11,7 @@ import { createHash, createHmac } from 'node:crypto';
 import { cborDecode, derToRaw, parseAuthData } from '../functions/_lib/webauthn.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ORIGIN = 'https://birdbird.eu';
+const ORIGIN = 'https://nordap.eu';
 const ROUTES = {
   '/api/auth/register/options': { POST: H.registerOptions }, '/api/auth/register/verify': { POST: H.registerVerify },
   '/api/auth/login/options': { POST: H.loginOptions }, '/api/auth/login/verify': { POST: H.loginVerify },
@@ -68,7 +68,7 @@ test('signup with an ES256 passkey: session cookie, recovery code, account shows
   const w = world(), br = w.browser(), a = new SoftAuthenticator();
   const { o, v } = await signup(w, br, a, 'Daniel');
   const op = o.body.options;
-  assert.equal(op.rp.id, 'birdbird.eu');
+  assert.equal(op.rp.id, 'nordap.eu');
   assert.equal(op.attestation, 'none');
   assert.equal(op.authenticatorSelection.residentKey, 'required');
   assert.deepEqual(op.pubKeyCredParams.map(x => x.alg), [-7, -257]);
@@ -168,13 +168,13 @@ test('challenges are single use, expire after 5 minutes, and cannot cross ceremo
   assert.equal(late.body.error, 'expired');
   // a registration challenge cannot be used to sign in
   const ro = await br.call('POST', '/api/auth/register/options', {});
-  const cross = await br.call('POST', '/api/auth/login/verify', { credential: await a.get({ rpId: 'birdbird.eu', challenge: ro.body.options.challenge }, ORIGIN) });
+  const cross = await br.call('POST', '/api/auth/login/verify', { credential: await a.get({ rpId: 'nordap.eu', challenge: ro.body.options.challenge }, ORIGIN) });
   assert.equal(cross.body.error, 'expired');
 });
 
 test('registration is rejected for a wrong origin, rp id or missing user verification', async () => {
   const w = world(), br = w.browser();
-  for (const [tw, code, auth] of [[{ origin: 'https://birdbird.eu.evil.example' }, 'bad_origin'], [{ rpId: 'example.com' }, 'bad_rpid'], [{}, 'no_verification', new SoftAuthenticator({ uv: false })]]) {
+  for (const [tw, code, auth] of [[{ origin: 'https://nordap.eu.evil.example' }, 'bad_origin'], [{ rpId: 'example.com' }, 'bad_rpid'], [{}, 'no_verification', new SoftAuthenticator({ uv: false })]]) {
     const a = auth || new SoftAuthenticator();
     const o = await br.call('POST', '/api/auth/register/options', {});
     const v = await br.call('POST', '/api/auth/register/verify', { credential: await a.create(o.body.options, ORIGIN, tw) });
@@ -338,12 +338,12 @@ test('no D1 binding: 503 no_db with a clear message; wrong method: 405', async (
 
 test('relying party id per host', () => {
   const rp = u => rpFor(new URL(u), {});
-  assert.equal(rp('https://birdbird.eu/x').rpId, 'birdbird.eu');
-  assert.equal(rp('https://www.birdbird.eu/x').rpId, 'birdbird.eu');
-  assert.equal(rp('https://www.birdbird.eu/x').origin, 'https://www.birdbird.eu');
+  assert.equal(rp('https://nordap.eu/x').rpId, 'nordap.eu');
+  assert.equal(rp('https://www.nordap.eu/x').rpId, 'nordap.eu');
+  assert.equal(rp('https://www.nordap.eu/x').origin, 'https://www.nordap.eu');
   assert.equal(rp('https://3f2a1b.birdbird.pages.dev/').rpId, '3f2a1b.birdbird.pages.dev');
   assert.equal(rp('http://localhost:8788/').rpId, 'localhost');
-  assert.throws(() => rp('http://birdbird.eu/'), /secure/);
+  assert.throws(() => rp('http://nordap.eu/'), /secure/);
   assert.throws(() => rp('https://127.0.0.1:8788/'), /IP address/);
   assert.throws(() => rp('http://127.0.0.1:8788/'), /secure/);
   assert.equal(rpFor(new URL('https://train.example.no/'), { RP_ID: 'example.no' }).rpId, 'example.no');

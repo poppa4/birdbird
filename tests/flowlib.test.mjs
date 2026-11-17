@@ -1,7 +1,7 @@
 import test from 'node:test'; import assert from 'node:assert/strict';
 import { makeD1 } from './lib/d1mock.mjs';
 import { handleFlowlib } from '../functions/api/flowlib.js';
-const O = 'https://birdbird.eu'; let t = 1_800_000_000_000; const deps = { now: () => t };
+const O = 'https://nordap.eu'; let t = 1_800_000_000_000; const deps = { now: () => t };
 const call = (env, m, q, b, ip = '1.1.1.1', origin = O) => handleFlowlib(new Request(O + '/api/flowlib' + (q || ''), { method: m, headers: { origin, 'content-type': 'application/json', 'cf-connecting-ip': ip }, body: b ? JSON.stringify(b) : undefined }), env, deps).then(async r => ({ s: r.status, j: await r.json() }));
 const FLOW = (o = {}) => Object.assign({ name: 'Before start', ac: 'a320', rs: 'pfpm', roles: ['PF', 'PM'], phase: 'bst', marks: [{ n: 'x', x: 1, y: 1 }], img: { id: 'secret' }, steps: [1, 2, 3, 4].map(i => ({ id: 's' + i, r: i % 2 ? 'PF' : 'PM', k: 'act', t: 'BAT ' + i + ' <b>ON</b>', x: i * 10, y: 20, tg: 'ELEC|BAT 1' })), notes: [{ x: 5, y: 5, t: 'note' }] }, o);
 test('share, list with filters, open a copy, count uses; private fields are dropped', async () => { const env = { DB: makeD1() };

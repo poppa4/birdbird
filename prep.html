@@ -330,7 +330,7 @@ body:not(.nofab) #askbar{display:none}
 </style>
 </head>
 <body data-title="Briefing pack">
-<script src="site.js?v=83"></script>
+<script src="site.js?v=84"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -1291,7 +1291,7 @@ async function wxFetch(){ const ids=[...new Set(APT.map(([k])=>wxIcao(k)).filter
   if(!ids.length){ wxStatus('err',L({en:'Add the aerodromes first: ICAO codes on the cover (departure, destination, alternates) or in the table below.',no:'Legg inn flyplassene først: ICAO-koder på forsiden (avgang, destinasjon, alternativer) eller i tabellen under.'})); return; }
   const b=el('wxGo'); b.disabled=true; wxStatus('load',L({en:`Fetching METAR and TAF for ${ids.join(', ')}…`,no:`Henter METAR og TAF for ${ids.join(', ')} …`}));
   const fail=(why,msg)=>{ b.disabled=false; const man=L({en:'Enter METAR and TAF manually in the table below; the reading works the same.',no:'Skriv inn METAR og TAF manuelt i tabellen under; tolkningen virker likt.'});
-    wxStatus('err',{nofn:L({en:'Live weather isn’t available on this copy of the page (it needs the weather service on birdbird.eu).',no:'Levende vær er ikke tilgjengelig i denne kopien av siden (den trenger værtjenesten på birdbird.eu).'}),offline:L({en:'You’re offline.',no:'Du er frakoblet.'}),bad:L({en:'Check the ICAO codes.',no:'Sjekk ICAO-kodene.'})+(msg?' '+esc(msg):''),upstream:L({en:'Couldn’t reach the weather service.',no:'Fikk ikke kontakt med værtjenesten.'})+(msg?' <small>'+esc(msg)+'</small>':' '+L({en:'Try again in a minute.',no:'Prøv igjen om et minutt.'})),timeout:L({en:'The weather service didn’t answer in time. Try again in a minute.',no:'Værtjenesten svarte ikke i tide. Prøv igjen om et minutt.'})}[why]+' '+(why==='bad'?'':man));
+    wxStatus('err',{nofn:L({en:'Live weather isn’t available on this copy of the page (it needs the weather service on nordap.eu).',no:'Levende vær er ikke tilgjengelig i denne kopien av siden (den trenger værtjenesten på nordap.eu).'}),offline:L({en:'You’re offline.',no:'Du er frakoblet.'}),bad:L({en:'Check the ICAO codes.',no:'Sjekk ICAO-kodene.'})+(msg?' '+esc(msg):''),upstream:L({en:'Couldn’t reach the weather service.',no:'Fikk ikke kontakt med værtjenesten.'})+(msg?' <small>'+esc(msg)+'</small>':' '+L({en:'Try again in a minute.',no:'Prøv igjen om et minutt.'})),timeout:L({en:'The weather service didn’t answer in time. Try again in a minute.',no:'Værtjenesten svarte ikke i tide. Prøv igjen om et minutt.'})}[why]+' '+(why==='bad'?'':man));
     { const d=el('wxman'); if(d) d.open=true; } };
   let r,j; try{ if(!/^https?:/.test(location.protocol)) throw 0; r=await fetch('/api/wx?ids='+encodeURIComponent(ids.join(',')),{headers:{accept:'application/json'}}); }catch(e){ return fail(navigator.onLine===false?'offline':'nofn'); }
   if(!/json/.test(r.headers.get('content-type')||'')) return fail(r.status>=500?'upstream':'nofn');

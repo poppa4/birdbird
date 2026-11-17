@@ -12,7 +12,7 @@ import { endpoint, handlers as H, _test } from '../functions/_lib/api.js';
 const W = createRequire(import.meta.url)('../workspacecore.js');
 const INK = createRequire(import.meta.url)('../inkcore.js');
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ORIGIN = 'https://birdbird.eu';
+const ORIGIN = 'https://nordap.eu';
 const T0 = Date.UTC(2026, 10, 10, 9, 0, 0), MIN = 60e3, DAY = 864e5;
 const map = (...items) => Object.fromEntries(items.map(i => [i.id, i]));
 

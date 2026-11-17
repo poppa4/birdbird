@@ -10,7 +10,7 @@
      REQUEST_TO       where requests are mailed
      RESEND_API_KEY   key for resend.com (free plan: 100 mails a day). With the sender 'onboarding@resend.dev' Resend only
                       delivers to the address the Resend account itself is registered with, so no domain set-up is needed.
-     REQUEST_FROM     optional sender, once a domain is verified with Resend, e.g. 'NORDAP <requests@birdbird.eu>'
+     REQUEST_FROM     optional sender, once a domain is verified with Resend, e.g. 'NORDAP <requests@nordap.eu>'
    Without them the request is still stored; stored requests are mailed as soon as the settings are there (five at a time).
 
    Storage (D1, binding DB; table made here on first use, also in migrations/0005_requests.sql):

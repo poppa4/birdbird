@@ -1,4 +1,4 @@
-# Weekly: every official AIP link Birdbird shows must still answer. A failed run e-mails the repository owner.
+# Weekly: every official AIP link NORDAP shows must still answer. A failed run e-mails the repository owner.
 name: AIP links
 on:
   schedule:

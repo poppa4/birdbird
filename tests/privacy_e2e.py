@@ -86,7 +86,7 @@ with sync_playwright() as p:
     check('profile: button label EN', pg.inner_text('#exp').strip() == 'Download all my data', pg.inner_text('#exp'))
     with pg.expect_download() as dl: pg.click('#exp')
     d = dl.value; data = json.loads(open(d.path()).read())
-    check('export: file name', d.suggested_filename.startswith('birdbird-data-') and d.suggested_filename.endswith('.json'), d.suggested_filename)
+    check('export: file name', d.suggested_filename.startswith('nordap-data-') and d.suggested_filename.endswith('.json'), d.suggested_filename)
     check('export: import-compatible header', data.get('app') == 'birdbird' and isinstance(data.get('keys'), dict), list(data))
     check('export: every NORDAP localStorage key', all(k in data['keys'] for k in LS) and 'other-site' not in data['keys'], list(data['keys']))
     check('export: sessionStorage', data['sessionStorage'] == SS, data['sessionStorage'])

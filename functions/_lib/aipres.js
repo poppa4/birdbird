@@ -14,7 +14,7 @@
 
 import DE from './aip-de.js';
 
-export const UA = 'Mozilla/5.0 (compatible; NORDAP/1.0; +https://birdbird.eu)';
+export const UA = 'Mozilla/5.0 (compatible; NORDAP/1.0; +https://nordap.eu)';
 const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
 
 /* Official AIP portals (what the user gets when no AD 2 page can be found). */
@@ -214,7 +214,7 @@ export async function edition(st, deps) {
 }
 
 /* cache helpers: one small JSON per state and edition, a few hours at the edge */
-const CK = k => new Request('https://birdbird.eu/__aipcache/' + encodeURIComponent(k));
+const CK = k => new Request('https://nordap.eu/__aipcache/' + encodeURIComponent(k));
 async function cget(cache, k) { if (!cache) return null; try { const r = await cache.match(CK(k)); return r ? await r.json() : null; } catch (e) { return null; } }
 async function cput(cache, k, v, ttl, deps) {
   if (!cache) return;

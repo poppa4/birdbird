@@ -992,7 +992,7 @@
         load: async () => { const b = hasFile(d.id) ? await FI.getBlob(d.id) : null; return b ? { u8: new Uint8Array(await b.arrayBuffer()), keep: b } : null; } }));
       const z = await W.buildBackup({ items: S.items, local, docs });
       const blob = new Blob(z.finish(), { type: 'application/zip' });
-      download(blob, 'birdbird-backup-' + new Date().toISOString().slice(0, 10) + '.zip');
+      download(blob, 'nordap-backup-' + new Date().toISOString().slice(0, 10) + '.zip');
       M.backupAt = Date.now(); await saveMeta(); render();
       toast(t('Backup file saved to your downloads (', 'Sikkerhetskopien er lagret i nedlastinger (') + W.fmtBytes(blob.size) + ').');
     } catch (e) { const m = e && e.code === 'zip_too_big' ? t('The backup would be larger than 4 GB. Remove some large documents and try again.', 'Sikkerhetskopien ville blitt større enn 4 GB. Fjern noen store dokumenter og prøv igjen.') : t('The backup could not be made. Free some space on the device and try again.', 'Sikkerhetskopien kunne ikke lages. Frigjør litt plass på enheten og prøv igjen.'); toast(m); if (note) note.textContent = m; }

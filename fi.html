@@ -136,7 +136,7 @@
 </style>
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=83"></script>
+<script src="site.js?v=84"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -590,7 +590,7 @@ el('vProg').addEventListener('click',async e=>{ const b=e.target.closest('button
   if(b.dataset.gap!=null){ const g=gapsAll()[+b.dataset.gap]; if(!g) return; INSTK=INST[g.inst]?g.inst:'aircraft'; MODE='rev'; modeSeg.set('rev'); show(INSTK); if(g.ac&&ACS.some(a=>a.id===g.ac)) el('tAc').value=g.ac; el('tTopic').value=g.t; drawUsed(); el('vTrain').scrollIntoView({behavior:'smooth'}); }
   if(b.dataset.rep){ const s=SES.find(x=>x.id===b.dataset.rep); if(!s) return; el('pRep').innerHTML=`<div class="a md" style="border-left:3px solid #1D4E9E;padding-left:14px;margin-top:10px">${reportHtml(s)}<details><summary>${L({en:'Transcript',no:'Utskrift'})}</summary>${(s.turns||[]).map(t=>(t.q?`<p><b>${L({en:'You',no:'Du'})}:</b> ${esc(t.q)}</p>`:'')+`<div>${md(t.a||'',0)}</div>${t.cites&&t.cites.length?`<p class="note">${L({en:'Sources',no:'Kilder'})}: ${esc(t.cites.join(' · '))}</p>`:''}`).join('')}</details></div>`; }
 });
-el('pExp').onclick=()=>{ const data={exported:new Date().toISOString(),aircraft:ACS,sessions:SES,documents:DOCS.map(d=>({name:d.name,ac:d.ac,kind:d.kind,rev:d.rev,old:!!d.old,pages:d.pages}))}; const b=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='birdbird-flight-intelligence.json'; document.body.appendChild(a); a.click(); a.remove(); el('pNote').textContent=L({en:'Export started. The document text itself is not included, only the list.',no:'Eksporten er startet. Selve dokumentteksten er ikke med, bare listen.'}); };
+el('pExp').onclick=()=>{ const data={exported:new Date().toISOString(),aircraft:ACS,sessions:SES,documents:DOCS.map(d=>({name:d.name,ac:d.ac,kind:d.kind,rev:d.rev,old:!!d.old,pages:d.pages}))}; const b=new Blob([JSON.stringify(data,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='nordap-flight-intelligence.json'; document.body.appendChild(a); a.click(); a.remove(); el('pNote').textContent=L({en:'Export started. The document text itself is not included, only the list.',no:'Eksporten er startet. Selve dokumentteksten er ikke med, bare listen.'}); };
 el('pDel').onclick=async()=>{ if(!window.confirm(L({en:'Delete all aircraft profiles, sessions, progress and documents in Flight Intelligence? This cannot be undone.',no:'Slette alle flyprofiler, økter, fremgang og dokumenter i Flight Intelligence? Dette kan ikke angres.'}))) return;
   for(const s of SES) await NSTORE.del('fises',s.id); for(const a of ACS) await NSTORE.del('fiac',a.id); DOCS.forEach(d=>delDoc(d.id)); DOCS=[]; SES=[]; await loadProfile(); drawProg(); drawWelcome(); el('pNote').textContent=L({en:'Deleted.',no:'Slettet.'}); };
 

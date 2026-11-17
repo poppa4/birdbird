@@ -16,12 +16,12 @@ const LO_URL='https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_Next
 /* High-resolution satellite: Esri World Imagery (about 0.3–1 m in Europe, Norway included), drawn over EOX.
    Needs an API key from a free ArcGIS Location Platform account (location.arcgis.com, not ArcGIS Online):
    Developer credentials → API key, privilege "Location services → Basemaps", referrers limited to the site
-   (https://birdbird.eu/*). The monthly free tier is 2,000,000 basemap tiles; Location Platform includes a commercial
+   (https://nordap.eu/*). The monthly free tier is 2,000,000 basemap tiles; Location Platform includes a commercial
    deployment licence for public apps. Esri requires "Powered by Esri" and the data sources in the attribution (ATT.hi).
    Leave it empty to keep EOX Sentinel-2 cloudless 2016 (10 m) only. Like the openAIP key, it is visible in the page.
    localStorage 'bb-imagery-key' overrides it in one browser (for testing); the value 'off' turns it off.
    (Kartverket's Norge i bilder orthophotos are not used: access is reserved for Norge digitalt parties.) */
-// owner's key (2026-11): public app, Basemap Styles + Static basemap tiles, referrers birdbird.eu / www / *.birdbird.pages.dev; expires 2027
+// owner's key (2026-11): public app, Basemap Styles + Static basemap tiles, referrers birdbird.eu / www / *.birdbird.pages.dev — nordap.eu and www.nordap.eu must be added in ArcGIS; expires 2027
 const IMAGERY_KEY='AAPTaoK3SB8A-KrfERE0AaleapQ..lpVejDkDwt5LDu1rII1GEMUs4BdlVLmuki7dcHCszyIzOiPja54cKtzZ0AZU-Mla-srhHvxHVpESdXQbFVvgO9nkXc_2fYrAT9MtBZDAant9ZrqA_k6XGay6g7j1RMUyCbkT92Hkc7tjRTGPLDzyPkMh7-FD5BZqyJlmPnACo_Qcpz3s5ivTSkngBf0olVepAPCb6nOzV90c7iP6rfijgZjJejfTDdBTgjxnUHTvVutI7jFQ4xrwAT1_BviSZTam';
 const HI_URL='https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=';
 // Kartverket topo (WMTS REST: TileMatrix/TileRow/TileCol = z/y/x)

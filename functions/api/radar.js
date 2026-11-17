@@ -3,7 +3,7 @@
    from the Open Radar Data 24-hour cache. Without t: JSON with the newest composite on the store ({ ok, t, url }), found with 1-byte range requests.
    With t: the file itself, passed through (no decoding here; radarworker.js draws it in the browser). Cached at the edge. */
 const STORES = ['https://s3.waw3-1.cloudferro.com/openradar-24h', 'https://object-store.os-api.cci1.ecmwf.int/openradar-24h-backup', 'https://s3.waw3-1.cloudferro.com/openradar-archive'];
-const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://nordap.eu)';
 const STEP = 15 * 60e3;
 const json = (b, s, c) => new Response(JSON.stringify(b), { status: s || 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': c || 'no-store' } });
 const p2 = n => String(n).padStart(2, '0');

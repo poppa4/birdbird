@@ -1,4 +1,4 @@
--- Birdbird – Flight Intelligence (/api/atc) usage counters, for the daily cost caps in functions/api/atc.js.
+-- NORDAP – Flight Intelligence (/api/atc) usage counters, for the daily cost caps in functions/api/atc.js.
 -- Cloudflare D1 (SQLite). Paste this whole file into the D1 console (Dashboard > Storage & Databases > D1 > birdbird > Console) and run it,
 -- or run:  npx wrangler d1 execute birdbird --remote --file=migrations/0002_ai_usage.sql
 -- Safe to run more than once.

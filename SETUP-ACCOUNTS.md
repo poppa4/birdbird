@@ -1,4 +1,4 @@
-# Setting up accounts on birdbird.eu
+# Setting up accounts on nordap.eu
 
 NORDAP accounts (passkey sign-in and sync of progress, briefing packs, routes and settings) run as
 Cloudflare Pages Functions in `/functions` and store their data in a Cloudflare D1 database. The code is
@@ -59,14 +59,14 @@ Bindings only take effect on a new deployment.
 1. In the **birdbird** project, open **Deployments**.
 2. On the latest **Production** deployment, open the **⋯** menu and click **Retry deployment**
    (or push any commit to `main`).
-3. When it shows Success, open https://birdbird.eu/profile.html#account. You should see
+3. When it shows Success, open https://nordap.eu/profile.html#account. You should see
    "Create account with a passkey". If it still says "Accounts are being switched on", the binding is
    missing or misspelled (step 3), or the deployment is still the old one (step 4).
 
 ## 5. Test it on real devices
 
 - On an iPhone (Safari): create an account with Face ID, save the recovery code, take a quiz, then
-  open birdbird.eu on a Mac signed in to the same Apple ID and sign in with the passkey (iCloud Keychain
+  open nordap.eu on a Mac signed in to the same Apple ID and sign in with the passkey (iCloud Keychain
   syncs it). The quiz result should appear.
 - On a Windows PC without the passkey: choose "Sign in with a passkey" and scan the QR code with the phone.
 - Try "Use a recovery code" on a private browser window, then delete the test account on My training.
@@ -74,7 +74,7 @@ Bindings only take effect on a new deployment.
 ## Good to know
 
 - **Nothing to configure.** No secrets or environment variables are needed. The passkey site id is
-  `birdbird.eu` (also valid on www.birdbird.eu). Optional variable `RP_ID` overrides it if the domain changes.
+  `nordap.eu` (also valid on www.nordap.eu). Optional variable `RP_ID` overrides it if the domain changes.
 - **Settings table (migration 0003).** Run `migrations/0003_meta.sql` once as well (D1 console, or
   `npx wrangler d1 execute birdbird --remote --file=migrations/0003_meta.sql`; safe to run more than once). It adds the small
   `meta` table (the key for hashing IP addresses in rate limits, and when old rows were last cleaned up) and clears the
@@ -109,7 +109,7 @@ It needs the accounts database above, plus two things:
    choose **Workers AI**, variable name `AI` (exactly that). Save.
 3. **Redeploy** (Deployments → latest Production → ⋯ → Retry deployment).
 
-Then open https://birdbird.eu/fi.html signed in and ask a question. Signed-out visitors are asked to sign in.
+Then open https://nordap.eu/fi.html signed in and ask a question. Signed-out visitors are asked to sign in.
 Daily caps for the free engine are in `WORKERS_LIMITS` in `functions/api/atc.js` (about 300 questions a day for the
 whole site, 25 per user), set so the account stays inside the free 10,000 Neurons. On the Workers Free plan Cloudflare
 never bills: when the allocation is used up the AI simply answers "back tomorrow".

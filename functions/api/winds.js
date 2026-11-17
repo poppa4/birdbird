@@ -11,7 +11,7 @@
 import { readGrib2 } from '../_lib/grib2.js';
 
 const NOMADS = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl';
-const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://nordap.eu)';
 export const LEVELS = [925, 850, 800, 700, 600, 500, 400, 300, 250, 200]; // FL025–FL390: what the table and map show
 const TILE = 5;
 const TTL = 7200;

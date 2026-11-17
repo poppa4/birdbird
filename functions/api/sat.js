@@ -5,7 +5,7 @@
    MTG (Meteosat Third Generation) if available, else MSG. */
 const WMS = 'https://view.eumetsat.int/geoserver/wms';
 export const LAYERS = ['mtg_fd:ir105_hrfi', 'msg_fes:ir108']; // names checked against EUMETView GetCapabilities (Nov 2026)
-const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://nordap.eu)';
 const err = (s, m) => new Response(JSON.stringify({ ok: false, message: m }), { status: s, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 export function getMapUrl(layer, bbox, t, size) {
   const q = { service: 'WMS', version: '1.3.0', request: 'GetMap', layers: layer, styles: '', format: 'image/png', transparent: 'true', crs: 'EPSG:3857', width: size, height: size, bbox: bbox.join(',') };

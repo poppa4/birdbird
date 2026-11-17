@@ -33,9 +33,9 @@ test('a state whose site fails still gives its portal; other states get EAD or t
 });
 test('/api/aip redirects with go=1 and rejects bad codes', async () => {
   const f = site({ 'https://aim-prod.avinor.no/no/AIP/': '<a href="2026-09-03-AIRAC/html/index-no-NO.html">', 'https://aim-prod.avinor.no/no/AIP/2026-09-03-AIRAC/html/eAIP/EN-AD-2.ENTO-en-GB.html': '<h1>ENTO SANDEFJORD</h1>' });
-  const r = await handleAip(new Request('https://birdbird.eu/api/aip?icao=ENTO&go=1'), {}, { fetch: f, cache: null, today: '2026-11-16' });
+  const r = await handleAip(new Request('https://nordap.eu/api/aip?icao=ENTO&go=1'), {}, { fetch: f, cache: null, today: '2026-11-16' });
   assert.equal(r.status, 302); assert.match(r.headers.get('location'), /EN-AD-2\.ENTO/);
-  assert.equal((await handleAip(new Request('https://birdbird.eu/api/aip?icao=x'), {}, { cache: null })).status, 400);
+  assert.equal((await handleAip(new Request('https://nordap.eu/api/aip?icao=x'), {}, { cache: null })).status, 400);
 });
 
 test('Belgium: blocked check, direct link only for aerodromes known to be in the AIP', async () => {

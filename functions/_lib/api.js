@@ -82,13 +82,13 @@ async function readJson(request, required, maxBytes) {
   catch (e) { fail(400, 'bad_request', 'The request was not valid JSON. Reload the page and try again.'); }
 }
 
-/* Relying party: birdbird.eu in production (also for www.), the exact host on pages.dev previews and on localhost */
+/* Relying party: nordap.eu in production (also for www.), the exact host on pages.dev previews and on localhost */
 export function rpFor(url, env) {
   const host = url.hostname.toLowerCase();
-  const fixed = (env && env.RP_ID ? String(env.RP_ID) : 'birdbird.eu').toLowerCase();
+  const fixed = (env && env.RP_ID ? String(env.RP_ID) : 'nordap.eu').toLowerCase();
   const local = host === 'localhost' || host.endsWith('.localhost');
-  if (url.protocol !== 'https:' && !local) fail(400, 'insecure', 'Passkeys need a secure (https) connection. Open NORDAP at https://birdbird.eu.');
-  if (/^[\d.]+$/.test(host) || host.includes(':')) fail(400, 'bad_host', 'Passkeys do not work on an IP address. Use http://localhost or https://birdbird.eu.');
+  if (url.protocol !== 'https:' && !local) fail(400, 'insecure', 'Passkeys need a secure (https) connection. Open NORDAP at https://nordap.eu.');
+  if (/^[\d.]+$/.test(host) || host.includes(':')) fail(400, 'bad_host', 'Passkeys do not work on an IP address. Use http://localhost or https://nordap.eu.');
   const rpId = (host === fixed || host.endsWith('.' + fixed)) ? fixed : host;
   return { rpId, origin: url.origin, rpName: 'NORDAP' };
 }
@@ -537,7 +537,7 @@ export function endpoint(methods, deps) {
         return json(Object.assign({ ok: false, error: e.code, message: e.message }, extra), e.status, extra.retryAfter ? { 'retry-after': String(extra.retryAfter) } : null);
       }
       if (e instanceof WAError) return json({ ok: false, error: e.code, message: e.message + ' Try again, or use another passkey.' }, 400);
-      console.error('birdbird api error', e && e.stack || e);
+      console.error('nordap api error', e && e.stack || e);
       return json({ ok: false, error: 'server', message: 'Something went wrong on our side. Your data is still saved in this browser. Try again in a minute.' }, 500);
     }
   };

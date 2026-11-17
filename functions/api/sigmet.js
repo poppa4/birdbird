@@ -16,7 +16,7 @@ const UPSTREAM_US = 'https://aviationweather.gov/api/data/airsigmet?format=json'
 const MET = 'https://api.met.no/weatherapi/sigmets/2.0/';
 const SRC_MET = 'MET Norway', SRC_AWC = 'aviationweather.gov';
 const MET_TIMEOUT = 3500;
-const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://nordap.eu)';
 const TTL = 300;
 const TIMEOUT = 8000;
 const NORWAY = /^EN/;

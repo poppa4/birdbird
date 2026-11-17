@@ -154,12 +154,12 @@ async function callModel(c, key, model, messages, L) {
     if (ctl.signal.aborted) throw new Error('aborted');
   } catch (e) {
     if (ctl.signal.aborted) fail(504, 'timeout', 'The answer took too long. Try again, or ask a shorter question.');
-    console.error('birdbird atc: upstream unreachable'); // no error text: nothing from the request may reach the log
+    console.error('nordap atc: upstream unreachable'); // no error text: nothing from the request may reach the log
     fail(502, 'upstream_error', 'The AI service could not be reached. Try again in a minute.');
   } finally { clearTimeout(timer); }
   if (!res.ok) {
     const type = data && data.error && typeof data.error.type === 'string' ? data.error.type.slice(0, 40) : '';
-    console.error('birdbird atc: upstream status ' + res.status + (type ? ' ' + type : ''));
+    console.error('nordap atc: upstream status ' + res.status + (type ? ' ' + type : ''));
     if (res.status === 429 || res.status === 529 || res.status === 503) fail(503, 'busy', 'The AI service is busy right now. Wait a moment and try again.', { retryAfter: 20 });
     if (res.status === 413) fail(413, 'prompt_too_large', 'Too much text at once. Pick fewer documents or ask a shorter question.');
     if (res.status === 504) fail(504, 'timeout', 'The answer took too long. Try again, or ask a shorter question.');
@@ -200,7 +200,7 @@ async function callWorkers(c, messages, L) {
       // the account's free Neurons for today are used up: no point trying the next model
       if (/4006|daily free allocation|neurons/i.test(m)) fail(429, 'service_limit', 'Flight Intelligence has reached its limit for today. It is back tomorrow (00:00 UTC).');
       if (/3040|capacity|429/i.test(m)) lastStatus = 'busy';
-      console.error('birdbird atc: workers ai error on ' + model); // no error text: it may contain parts of the request
+      console.error('nordap atc: workers ai error on ' + model); // no error text: it may contain parts of the request
     } finally { clearTimeout(timer); }
   }
   if (lastStatus === 'busy') fail(503, 'busy', 'The AI service is busy right now. Wait a moment and try again.', { retryAfter: 20 });
@@ -226,14 +226,14 @@ async function atcPost(c) {
 
   if (engine === 'workers') {
     const w = await callWorkers(c, messages, L);
-    try { await addTokens(c, s.user_id, day, w.used); } catch (e) { console.error('birdbird atc: could not record usage'); }
+    try { await addTokens(c, s.user_id, day, w.used); } catch (e) { console.error('nordap atc: could not record usage'); }
     return json({ ok: true, text: w.text, truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
   }
   const data = await callModel(c, key, model, messages, L);
   const u = data.usage || {};
   const used = ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((a, k) => a + (Number(u[k]) > 0 ? Number(u[k]) : 0), 0);
   try { await addTokens(c, s.user_id, day, Math.ceil(used * model.weight)); }
-  catch (e) { console.error('birdbird atc: could not record usage'); }
+  catch (e) { console.error('nordap atc: could not record usage'); }
   const text = (Array.isArray(data.content) ? data.content : []).filter(b => b && b.type === 'text' && typeof b.text === 'string').map(b => b.text).join('');
   if (!text) {
     if (data.stop_reason === 'refusal') fail(422, 'refused', 'The AI declined that request. Rephrase it.');

@@ -30,7 +30,7 @@ function upstream(opts) {
   };
   return { fetch, calls };
 }
-const get = (ids, up) => handleWx(new Request('https://birdbird.eu/api/wx?ids=' + ids), {}, { fetch: up.fetch, cache: null, now: () => NOW }).then(r => r.json());
+const get = (ids, up) => handleWx(new Request('https://nordap.eu/api/wx?ids=' + ids), {}, { fetch: up.fetch, cache: null, now: () => NOW }).then(r => r.json());
 
 test('metLatest picks the newest METAR and TAF and reads the validity', () => {
   const m = metLatest(MET_METAR, 'metar', new Date(NOW));

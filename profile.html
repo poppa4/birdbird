@@ -219,7 +219,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=83"></script>
+<script src="site.js?v=84"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -514,7 +514,7 @@ el('exp').onclick=async()=>{ const m=el('expMsg'), b=el('exp'); b.disabled=true;
       notes:{en:'Everything NORDAP stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on My page reads the "keys" part.',
              no:'Alt NORDAP lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Min side leser «keys»-delen.'},
       account, accountError:accNote, keys:loc.keys, sessionStorage:loc.sessionStorage, indexedDB:loc.indexedDB};
-    const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='birdbird-data-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
+    const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nordap-data-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
     const n=Object.keys(loc.keys).length, d=Object.keys(loc.indexedDB).length;
     m.className=accNote?'dmsg bad':'dmsg ok';
     m.textContent=L({en:`Downloaded ${n} stored items and ${d} database${d===1?'':'s'} from this browser`,no:`Lastet ned ${n} lagrede elementer og ${d} database${d===1?'':'r'} fra denne nettleseren`})+(account?L({en:', plus your account.',no:', pluss kontoen din.'}):'.')+(accNote?' '+L({en:'The account part is missing: ',no:'Kontodelen mangler: '})+accNote:'');
@@ -576,8 +576,8 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
   drawDataNote();
   if(!A||A.backend==='unknown'&&!A.user){ st.textContent=''; body.innerHTML=`<p class="note">${L({en:'Checking your account…',no:'Sjekker kontoen din …'})}</p>`; return; }
   if(A.backend==='none'&&!A.user){ st.textContent='';
-    body.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only, and everything else works as usual.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren, og alt annet virker som vanlig.'})}</div>
-      <p class="btns"><a class="btn" href="https://birdbird.eu/profile.html#account">${L({en:'Open birdbird.eu',no:'Åpne birdbird.eu'})}</a></p>`; return; }
+    body.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on nordap.eu. Here, your progress and briefing packs are saved in this browser only, and everything else works as usual.',no:'Kontoer er tilgjengelige på nordap.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren, og alt annet virker som vanlig.'})}</div>
+      <p class="btns"><a class="btn" href="https://nordap.eu/profile.html#account">${L({en:'Open nordap.eu',no:'Åpne nordap.eu'})}</a></p>`; return; }
   if(A.backend==='off'&&!A.user){ st.textContent='';
     body.innerHTML=`<div class="callout caution"><span class="ct">${L({en:'Coming soon',no:'Kommer snart'})}</span>${L({en:'Accounts are being switched on for NORDAP. Until then, your progress and briefing packs are saved in this browser only, and nothing is lost.',no:'Kontoer er i ferd med å bli slått på for NORDAP. Til da lagres progresjonen og briefingpakkene bare i denne nettleseren, og ingenting går tapt.'})}</div>`; return; }
   const dis=UI.busy?' disabled':'';
@@ -646,7 +646,7 @@ el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); i
   else if(id==='acOut') acRun(async A=>{ await A.logout(); UI.code=null; UI.needKey=false; },L({en:'Signed out. Your data is still in this browser.',no:'Logget ut. Dataene ligger fortsatt i denne nettleseren.'}));
   else if(id==='acNewCode') acRun(async A=>{ const v=await A.newRecoveryCode(); UI.code=v.recoveryCode; UI.codeWhy='new'; return v; },L({en:'New recovery code made. Save it now.',no:'Ny gjenopprettingskode laget. Lagre den nå.'}));
   else if(id==='acCopy'){ const t=UI.code; (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>acMsg('ok',L({en:'Copied. Paste it into your password manager or a note you keep safe.',no:'Kopiert. Lim den inn i passordbehandleren eller et notat du tar vare på.'})),()=>{ const r=document.createRange(); r.selectNodeContents(el('acRc')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); acMsg('',L({en:'Selected. Press Ctrl+C or ⌘C to copy.',no:'Merket. Trykk Ctrl+C eller ⌘C for å kopiere.'})); }); }
-  else if(id==='acDl'){ const txt=`NORDAP recovery code\n\n${UI.code}\n\nUse it at https://birdbird.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='birdbird-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
+  else if(id==='acDl'){ const txt=`NORDAP recovery code\n\n${UI.code}\n\nUse it at https://nordap.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='nordap-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
   else if(id==='acDone'){ UI.code=null; acMsg('',''); drawAcct(); const f=el('acSync')||el('acNew'); if(f) f.focus(); }
   else if(id==='acDel'){ const d=el('acDelDlg'); el('acDelP').textContent=L({en:'This permanently deletes your NORDAP account, its passkeys and all progress, briefing packs, routes and settings saved to it, on every device. It cannot be undone. The passkey itself stays in your device’s password settings, where you can delete it.',no:'Dette sletter NORDAP-kontoen din for godt, med passnøklene og all progresjon, alle briefingpakker, ruter og innstillinger som er lagret på den, på alle enheter. Det kan ikke angres. Selve passnøkkelen blir liggende i passordinnstillingene på enheten, der du kan slette den.'});
     el('acDelLocalT').textContent=L({en:'Also delete everything stored on this device',no:'Slett også alt som er lagret på denne enheten'}); el('acDelYes').textContent=L({en:'Delete account',no:'Slett kontoen'}); el('acDelNo').textContent=L({en:'Cancel',no:'Avbryt'}); el('acDelH').textContent=L({en:'Delete your account?',no:'Slette kontoen?'});
@@ -663,7 +663,7 @@ function acctReady(){ const A=AC(); if(!A) return;
   drawAcct(); }
 const acHold=window.BBHOLD?BBHOLD.wait():()=>{};   /* the account box is drawn once the account state is known */
 if(window.BBACCOUNT) acctReady(); else document.addEventListener('bb-account-ready',acctReady,{once:true});
-setTimeout(()=>{ if(!window.BBACCOUNT){ const b=el('acBody'); if(b&&/Checking|Sjekker/.test(b.textContent)) b.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren.'})}</div>`; } },6000);
+setTimeout(()=>{ if(!window.BBACCOUNT){ const b=el('acBody'); if(b&&/Checking|Sjekker/.test(b.textContent)) b.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on nordap.eu. Here, your progress and briefing packs are saved in this browser only.',no:'Kontoer er tilgjengelige på nordap.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren.'})}</div>`; } },6000);
 
 /* ---------- draw ---------- */
 async function reloadStore(){ try{ await NSTORE.ready; const r=await Promise.all(['prep','route','mapview','mapnote','fises'].map(k=>NSTORE.list(k).catch(()=>[])));

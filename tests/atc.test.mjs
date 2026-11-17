@@ -9,7 +9,7 @@ import { makeOnRequest, _test as T } from '../functions/api/atc.js';
 import { endpoint, handlers as H, COOKIE, _test as AT } from '../functions/_lib/api.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const ORIGIN = 'https://birdbird.eu';
+const ORIGIN = 'https://nordap.eu';
 const KEY = 'sk-ant-test-SECRET-0123456789abcdef';
 const TOKEN = n => String(n).padStart(43, 'A'); // a session cookie value (43 base64url characters)
 

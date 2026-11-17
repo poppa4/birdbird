@@ -44,7 +44,7 @@
 </style>
 </head>
 <body data-title="METAR and TAF">
-<script src="site.js?v=83"></script>
+<script src="site.js?v=84"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
@@ -246,13 +246,13 @@ function run(){
   if(w&&w.dir!=null){ XW.dir=w.dir; XW.spd=w.spd; XW.gust=w.gust||0; xwD.set(XW.dir); xwS.set(XW.spd); drawXW(); }
 }
 el('raw').addEventListener('input',run);
-/* live: latest METAR or TAF through /api/wx (only on birdbird.eu) */
+/* live: latest METAR or TAF through /api/wx (only on nordap.eu) */
 const wesc=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function live(kind){ const id=el('liveId').value.trim().toUpperCase(), st=el('liveSt'); const say=(t,e)=>{ st.textContent=t; st.className='livest'+(e?' err':''); };
   if(!/^[A-Z]{4}$/.test(id)){ say(LL('Type a four-letter ICAO code, e.g. ENGM.','Skriv en ICAO-kode med fire bokstaver, f.eks. ENGM.'),1); el('liveId').focus(); return; }
   say(LL('Fetching…','Henter …')); let r,j;
   try{ if(!/^https?:/.test(location.protocol)) throw 0; r=await fetch('/api/wx?ids='+id,{headers:{accept:'application/json'}}); if(!/json/.test(r.headers.get('content-type')||'')) throw 0; j=await r.json(); }
-  catch(e){ say(LL('Live reports aren’t available on this copy of the page (they need birdbird.eu). Paste a report below instead.','Levende meldinger er ikke tilgjengelig i denne kopien av siden (de krever birdbird.eu). Lim inn en melding under i stedet.'),1); return; }
+  catch(e){ say(LL('Live reports aren’t available on this copy of the page (they need nordap.eu). Paste a report below instead.','Levende meldinger er ikke tilgjengelig i denne kopien av siden (de krever nordap.eu). Lim inn en melding under i stedet.'),1); return; }
   if(!r.ok||!j.ok){ say((j&&j.message)||LL('Couldn’t reach the weather service. Try again in a minute.','Fikk ikke kontakt med værtjenesten. Prøv igjen om et minutt.'),1); return; }
   const s=j.stations[id], x=s&&(kind==='T'?s.taf:s.metar);
   { const ago=t=>{ if(!t) return ''; const a=Math.round((Date.now()-new Date(t))/60e3); return ' · '+(a<120?a+' min':Math.round(a/60)+' h')+' '+LL('old','gammel'); };
