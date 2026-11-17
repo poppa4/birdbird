@@ -166,6 +166,8 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 .acc-two .btns,.acc-grid .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
 .acc-f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink)}
 .acc-form{display:flex;flex-direction:column;gap:10px}
+.acc-verify{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-left:3px solid var(--accent);background:var(--paper,#F6F8FA)}
+.acc-verify .btns{margin-top:0}
 .acc-form .btns{margin-top:0;align-items:center}
 .btn.link{background:none;border-color:transparent;padding-left:4px;padding-right:4px;text-decoration:underline;text-underline-offset:3px;color:var(--ink-2)}
 .btn.link:hover{color:var(--ink);border-color:transparent;background:none}
@@ -228,7 +230,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=86"></script>
+<script src="site.js?v=87"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -562,7 +564,9 @@ async function doReset(plan){ if(P()) try{ P().reset(); }catch(e){}
 /* ---------- account (account.js: passkeys and sync) ---------- */
 const UI={code:null,codeWhy:null,busy:false,arm:null,armT:0,needKey:false,forgot:false,reset:null,sent:false};
 function takeReset(){ const m=/^#reset=([A-Za-z0-9_-]{43})$/.exec(location.hash||''); if(m){ UI.reset=m[1]; history.replaceState(null,'',location.pathname+'#account'); try{ document.getElementById('account').scrollIntoView(); }catch(e){} return true; } return false; }
-takeReset(); addEventListener('hashchange',()=>{ if(takeReset()) drawAcct(); });
+function takeVerify(){ const m=/^#verify=([A-Za-z0-9_-]{43})$/.exec(location.hash||''); if(m){ UI.verify=m[1]; history.replaceState(null,'',location.pathname+'#account'); try{ document.getElementById('account').scrollIntoView(); }catch(e){} return true; } return false; }
+takeReset(); takeVerify(); addEventListener('hashchange',()=>{ if(takeReset()||takeVerify()) { drawAcct(); runVerify(); } });
+function runVerify(){ const t=UI.verify; if(!t||!AC()) return; UI.verify=null; acRun(A=>A.verifyEmail(t),r=>L({en:'E-mail address confirmed: ',no:'E-postadressen er bekreftet: '})+(r&&r.email||'')); }
 const AC=()=>window.BBACCOUNT||null;
 const day=t=>t?new Date(t).toLocaleDateString(LAB.lang==='en'?'en-GB':'nb-NO',{day:'numeric',month:'short',year:'numeric'}):'–';
 const NSL={progress:{en:'Progress and results',no:'Progresjon og resultater'},packs:{en:'Briefing packs and aircraft',no:'Briefingpakker og fly'},routes:{en:'Routes, fixes and map notes',no:'Ruter, punkter og kartnotater'},settings:{en:'Settings, such as language',no:'Innstillinger, som språk'}};
@@ -635,7 +639,13 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
         <div class="box"><h3>${L({en:'What is synced',no:'Hva som synkroniseres'})}</h3><ul class="acc-ns">${A.namespaces.map(n=>`<li>${esc(L(NSL[n]))}<span>${dm[n]?esc(ago(dm[n].updatedAt)):L({en:'nothing yet',no:'ingenting ennå'})}</span></li>`).join('')}</ul>
           <p class="note">${L({en:'Not synced: documents you upload to Flight Intelligence and attachments in briefing packs. They stay on this device.',no:'Synkroniseres ikke: dokumenter du laster opp til Flight Intelligence og vedlegg i briefingpakker. De blir på denne enheten.'})}</p></div>
         <div class="box"><h3>${L({en:'E-mail and password',no:'E-post og passord'})}</h3>
-          ${me.user&&me.user.hasPassword?`<p>${L({en:'You sign in with',no:'Du logger inn med'})} <b>${esc(me.user.email||'')}</b>.</p>
+          ${me.user&&me.user.email&&!me.user.emailVerified?`<div class="acc-verify"><p>${L({en:'Confirm your e-mail address: we sent a link to',no:'Bekreft e-postadressen din: vi har sendt en lenke til'})} <b>${esc(me.user.email)}</b>.</p><div class="btns"><button type="button" class="btn sm" id="acVfAgain"${dis}>${L({en:'Send the link again',no:'Send lenken på nytt'})}</button></div></div>`:''}
+          ${me.user&&me.user.hasPassword?`<p>${L({en:'You sign in with',no:'Du logger inn med'})} <b>${esc(me.user.email||'')}</b>${me.user.emailVerified?` <span class="tag">${L({en:'confirmed',no:'bekreftet'})}</span>`:''}.</p>
+          <details id="acEmCh"><summary>${L({en:'Change e-mail address',no:'Bytt e-postadresse'})}</summary>
+            <label class="acc-f" for="acEmNew">${L({en:'New e-mail',no:'Ny e-post'})}<input id="acEmNew" type="email" autocomplete="email"></label>
+            <label class="acc-f" for="acEmPw">${L({en:'Current password',no:'Nåværende passord'})}<input id="acEmPw" type="password" autocomplete="current-password"></label>
+            <p class="note">${L({en:'We send a link to the new address. The change happens when you click it.',no:'Vi sender en lenke til den nye adressen. Byttet skjer når du klikker på den.'})}</p>
+            <div class="btns"><button type="button" class="btn" id="acEmGo"${dis}>${L({en:'Send confirmation',no:'Send bekreftelse'})}</button></div></details>
           <details id="acPwCh"><summary>${L({en:'Change password',no:'Bytt passord'})}</summary>
             <label class="acc-f" for="acCurPw">${L({en:'Current password',no:'Nåværende passord'})}<input id="acCurPw" type="password" autocomplete="current-password"></label>
             <label class="acc-f" for="acNewPw">${L({en:'New password',no:'Nytt passord'})}<input id="acNewPw" type="password" autocomplete="new-password" minlength="8"><small>${L({en:'At least 8 characters.',no:'Minst 8 tegn.'})}</small></label>
@@ -678,13 +688,15 @@ el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); i
   if(id==='acPwIn'){ const em=el('acInEmail').value.trim(), pw=el('acInPw').value; if(!em||!pw){ acMsg('bad',L({en:'Type your e-mail and password.',no:'Skriv inn e-post og passord.'})); (em?el('acInPw'):el('acInEmail')).focus(); return; }
     acRun(async A=>{ const v=await A.pwLogin(em,pw); UI.needKey=false; UI.forgot=false; return v; },L({en:'Signed in. Your data is synced.',no:'Logget inn. Dataene dine er synkronisert.'})); }
   else if(id==='acPwNew'){ const em=el('acUpEmail').value.trim(), pw=el('acUpPw').value, nm=el('acName').value.trim(); if(!em||!pw){ acMsg('bad',L({en:'Type your e-mail and choose a password.',no:'Skriv inn e-post og velg et passord.'})); (em?el('acUpPw'):el('acUpEmail')).focus(); return; }
-    acRun(async A=>{ const v=await A.pwSignup(em,pw,nm); UI.code=v.recoveryCode; UI.codeWhy='pwsignup'; UI.needKey=true; return v; },L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'})); }
+    acRun(async A=>{ const v=await A.pwSignup(em,pw,nm); UI.needKey=true; return v; },v=>v&&v.verifySent?L({en:'Account created. We have sent you an e-mail: click the link in it to confirm your address.',no:'Kontoen er laget. Vi har sendt deg en e-post: klikk lenken i den for å bekrefte adressen.'}):L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'})); }
   else if(id==='acFg'){ UI.forgot=!UI.forgot; UI.sent=false; acMsg('',''); drawAcct(); if(el('acFgEmail')) el('acFgEmail').focus(); }
   else if(id==='acFgGo'){ const em=el('acFgEmail').value.trim(); if(!em){ el('acFgEmail').focus(); return; } acRun(async A=>{ await A.forgot(em); UI.sent=true; },''); }
   else if(id==='acRsGo'){ const pw=el('acRsPw').value; acRun(async A=>{ const v=await A.resetPassword(UI.reset,pw); UI.reset=null; return v; },L({en:'New password saved. You are signed in.',no:'Nytt passord lagret. Du er logget inn.'})); }
   else if(id==='acPwSave'){ const me=(AC().me||{}).user||{}; const o=me.hasPassword?{current:el('acCurPw').value,password:el('acNewPw').value}:{email:(el('acAddEmail')||{}).value,password:el('acNewPw').value};
     acRun(async A=>A.setPassword(o),me.hasPassword?L({en:'Password changed.',no:'Passordet er byttet.'}):L({en:'E-mail and password added. You can now sign in with them too.',no:'E-post og passord er lagt til. Du kan nå logge inn med dem også.'})); }
   else if(id==='acNoKey'){ UI.needKey=false; drawAcct(); }
+  else if(id==='acVfAgain') acRun(A=>A.resendVerify(),L({en:'Sent. Check your inbox (and spam).',no:'Sendt. Sjekk innboksen (og søppelpost).'}));
+  else if(id==='acEmGo'){ const em=el('acEmNew').value.trim(), pw=el('acEmPw').value; if(!em){ el('acEmNew').focus(); return; } acRun(A=>A.changeEmail(em,pw),r=>L({en:'We have sent a link to ',no:'Vi har sendt en lenke til '})+((r&&r.pending)||em)+L({en:'. Click it to finish the change.',no:'. Klikk den for å fullføre byttet.'})); }
   else if(id==='acNew') acRun(async A=>{ const v=await A.signup(el('acName').value.trim()); UI.code=v.recoveryCode; UI.codeWhy='signup'; UI.needKey=false; return v; },L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'}));
   else if(id==='acIn') acRun(async A=>{ const v=await A.login(); UI.needKey=false; return v; },L({en:'Signed in. Your data is synced.',no:'Logget inn. Dataene dine er synkronisert.'}));
   else if(id==='acRecGo'){ const c=el('acCode').value.trim(); if(!c){ acMsg('bad',L({en:'Type your recovery code first.',no:'Skriv inn gjenopprettingskoden først.'})); el('acCode').focus(); return; }
@@ -707,7 +719,7 @@ el('acDelDlg').addEventListener('close',()=>{ if(el('acDelDlg').returnValue!=='y
 function acctReady(){ const A=AC(); if(!A) return;
   document.addEventListener('bb-account',()=>{ if(!UI.busy) drawAcct(); });
   document.addEventListener('bb-account-sync',e=>{ e.preventDefault(); B.loaded=false; bLoading=null; reloadStore().then(drawAll); });
-  A.detect().then(()=>drawAcct()).then(acHold,acHold);
+  A.detect().then(()=>{ drawAcct(); runVerify(); }).then(acHold,acHold);
   drawAcct(); }
 const acHold=window.BBHOLD?BBHOLD.wait():()=>{};   /* the account box is drawn once the account state is known */
 if(window.BBACCOUNT) acctReady(); else document.addEventListener('bb-account-ready',acctReady,{once:true});

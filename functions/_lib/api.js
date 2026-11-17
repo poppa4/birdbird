@@ -396,7 +396,7 @@ async function logout(c) {
    Sign-in errors never say whether the address exists. Reset links are one-time challenges (kind 'pwreset', 1 hour), sent
    by e-mail through Resend when RESEND_API_KEY and MAIL_FROM are set; without them the reset form says so and points to the
    recovery code. The two columns are added on first use (migration 0007, idempotent). */
-const PW_ITER = 100000, RESET_MS = 60 * 60e3;
+const PW_ITER = 100000, RESET_MS = 60 * 60e3, VERIFY_MS = 7 * DAY;
 const pwColsOk = new WeakSet();   // per D1 binding
 async function ensurePasswordColumns(c) {
   if (pwColsOk.has(c.db)) return;
@@ -439,6 +439,20 @@ async function sendMail(c, to, subject, text) {
   if (!r.ok) { console.error('nordap mail: status ' + r.status); fail(502, 'mail_failed', 'The e-mail could not be sent. Try again in a few minutes.'); }
 }
 
+/* a one-time link that confirms an address (kind 'emailverify'); data.email set = the new address of an e-mail change */
+async function sendVerify(c, userId, email, change) {
+  if (!mailOn(c.env)) return false;
+  const token = b64u(randomBytes(32));
+  await c.db.prepare("DELETE FROM challenges WHERE kind = 'emailverify' AND user_id = ?1").bind(userId).run();
+  await c.db.prepare('INSERT INTO challenges (challenge, kind, user_id, data, expires_at) VALUES (?1, ?2, ?3, ?4, ?5)')
+    .bind(await sha256hex('bb-verify:' + token), 'emailverify', userId, JSON.stringify({ email }), c.now + VERIFY_MS).run();
+  const link = c.url.origin + '/profile.html#verify=' + token;
+  await sendMail(c, email, change ? 'Confirm your new e-mail address for NORDAP' : 'Confirm your e-mail address for NORDAP',
+    (change ? 'You asked to use this address for your NORDAP account.' : 'Welcome to NORDAP. Confirm that this is your e-mail address:') +
+    '\n\n' + link + '\n\nThe link works once, for seven days. If it was not you, ignore this e-mail.\n\nNORDAP · Nordic Aviation Platform · nordap.eu');
+  return true;
+}
+
 /* POST /api/auth/signup { email, password, name? } – new account with e-mail and password */
 async function pwSignup(c) {
   const body = await readJson(c.request, true);
@@ -455,7 +469,9 @@ async function pwSignup(c) {
       .bind(userId, name, email, await hashPassword(pw), c.now, await hashRecovery(recoveryCode)),
     ...await newSessionStmts(c, userId, 'password')
   ]);
-  return json({ ok: true, created: true, user: { id: userId, name }, recoveryCode }, 200, { 'set-cookie': c.setCookie });
+  let verifySent = false;
+  try { verifySent = await sendVerify(c, userId, email, false); } catch (e) { verifySent = false; } // the account works anyway; the e-mail can be sent again
+  return json({ ok: true, created: true, user: { id: userId, name }, recoveryCode, verifySent }, 200, { 'set-cookie': c.setCookie });
 }
 /* POST /api/auth/password { email, password } – sign in */
 async function pwLogin(c) {
@@ -529,7 +545,55 @@ async function mePassword(c) {
   }
   const pw = checkNewPassword(body.password, email);
   await c.db.prepare('UPDATE users SET email = ?1, password_hash = ?2, password_set_at = ?3, updated_at = ?3 WHERE id = ?4').bind(email, await hashPassword(pw), c.now, s.user_id).run();
+  if (!(u && u.password_hash)) { try { await sendVerify(c, s.user_id, email, false); } catch (e) {} }
   return json({ ok: true, email }, 200, { 'set-cookie': c.setCookie });
+}
+/* POST /api/auth/verify { token } – confirm an address from the e-mailed link (also completes an e-mail change) */
+async function emailVerify(c) {
+  const body = await readJson(c.request, true);
+  await limit(c, 'recovery', ipOf(c.request));
+  await ensurePasswordColumns(c);
+  const token = String(body.token || '');
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) fail(400, 'expired', 'This confirmation link is not valid. Ask for a new one on your account page.');
+  const row = await c.db.prepare("DELETE FROM challenges WHERE challenge = ?1 AND kind = 'emailverify' RETURNING user_id, data, expires_at").bind(await sha256hex('bb-verify:' + token)).first();
+  if (!row || row.expires_at < c.now) fail(400, 'expired', 'This confirmation link has expired or was already used. Ask for a new one on your account page.');
+  const email = cleanEmail((JSON.parse(row.data || '{}') || {}).email);
+  const taken = await c.db.prepare('SELECT id FROM users WHERE email = ?1 AND id <> ?2').bind(email, row.user_id).first();
+  if (taken) fail(409, 'email_taken', 'Another account uses this e-mail address now.');
+  const r = await c.db.prepare('UPDATE users SET email = ?1, email_verified_at = ?2, updated_at = ?2 WHERE id = ?3 RETURNING id').bind(email, c.now, row.user_id).first();
+  if (!r) fail(400, 'expired', 'This confirmation link is not valid any more.');
+  return json({ ok: true, email });
+}
+/* POST /api/me/verify – send the confirmation link again */
+async function meVerifyAgain(c) {
+  const s = await requireSession(c);
+  await readJson(c.request, false);
+  await limit(c, 'mail', 'user|' + s.user_id);
+  await ensurePasswordColumns(c);
+  const u = await c.db.prepare('SELECT email, email_verified_at FROM users WHERE id = ?1').bind(s.user_id).first();
+  if (!u || !u.email) fail(400, 'bad_email', 'Add an e-mail address first.');
+  if (u.email_verified_at) return json({ ok: true, verified: true }, 200, { 'set-cookie': c.setCookie });
+  if (!mailOn(c.env)) fail(503, 'no_mail', 'E-mail is not switched on yet.');
+  await sendVerify(c, s.user_id, u.email, false);
+  return json({ ok: true, sent: true }, 200, { 'set-cookie': c.setCookie });
+}
+/* POST /api/me/email { email, current } – change the address: a link goes to the new address, the change happens when it is used */
+async function meEmail(c) {
+  const s = await requireSession(c);
+  await limit(c, 'write', s.user_id);
+  await limit(c, 'mail', 'user|' + s.user_id);
+  await ensurePasswordColumns(c);
+  const body = await readJson(c.request, true);
+  const u = await c.db.prepare('SELECT email, password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
+  if (u && u.password_hash && !(await checkPassword(String(body.current == null ? '' : body.current), u.password_hash))) fail(400, 'bad_current', 'Your current password is wrong.');
+  const email = cleanEmail(body.email);
+  if (!okEmail(email)) fail(400, 'bad_email', 'Type a valid e-mail address.');
+  if (u && email === u.email) fail(400, 'same_email', 'That is already your e-mail address.');
+  const taken = await c.db.prepare('SELECT id FROM users WHERE email = ?1 AND id <> ?2').bind(email, s.user_id).first();
+  if (taken) fail(409, 'email_taken', 'There is already an account with this e-mail address.');
+  if (!mailOn(c.env)) fail(503, 'no_mail', 'E-mail is not switched on yet, so the address cannot be changed.');
+  await sendVerify(c, s.user_id, email, true);
+  return json({ ok: true, pending: email }, 200, { 'set-cookie': c.setCookie });
 }
 const sha256hex = async s => hex(await sha256(s));
 
@@ -538,14 +602,14 @@ async function meGet(c) {
   const s = await getSession(c);
   if (!s) return json({ ok: true, user: null }); // signed out is a normal answer here (no 401 noise in the console)
   await ensurePasswordColumns(c);
-  const pw = await c.db.prepare('SELECT email, password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
+  const pw = await c.db.prepare('SELECT email, email_verified_at, password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
   const [creds, data] = await Promise.all([
     c.db.prepare('SELECT id, name, created_at, last_used_at, backup_eligible, transports FROM credentials WHERE user_id = ?1 ORDER BY created_at').bind(s.user_id).all(),
     c.db.prepare('SELECT ns, version, updated_at, LENGTH(data) AS bytes FROM user_data WHERE user_id = ?1').bind(s.user_id).all()
   ]);
   return json({
     ok: true,
-    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null, email: pw ? pw.email || null : null, hasPassword: !!(pw && pw.password_hash) },
+    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null, email: pw ? pw.email || null : null, emailVerified: !!(pw && pw.email_verified_at), hasPassword: !!(pw && pw.password_hash) },
     mail: mailOn(c.env),
     recovery: { created: s.recovery_created_at || null },
     credentials: (creds.results || []).map(x => ({ id: x.id, name: x.name, created: x.created_at, lastUsed: x.last_used_at, synced: !!x.backup_eligible })),
@@ -692,7 +756,7 @@ export function endpoint(methods, deps) {
   };
 }
 
-export const handlers = { pwSignup, pwLogin, pwForgot, pwReset, mePassword, registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, meExport, newRecovery, credDelete, syncGet, syncPut };
+export const handlers = { emailVerify, meVerifyAgain, meEmail, pwSignup, pwLogin, pwForgot, pwReset, mePassword, registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, meExport, newRecovery, credDelete, syncGet, syncPut };
 export const onRegisterOptions = endpoint({ POST: registerOptions });
 export const onRegisterVerify = endpoint({ POST: registerVerify });
 export const onLoginOptions = endpoint({ POST: loginOptions });
@@ -708,6 +772,9 @@ export const onPassword = endpoint({ POST: pwLogin });
 export const onForgot = endpoint({ POST: pwForgot });
 export const onReset = endpoint({ POST: pwReset });
 export const onMePassword = endpoint({ POST: mePassword });
+export const onVerify = endpoint({ POST: emailVerify });
+export const onMeVerify = endpoint({ POST: meVerifyAgain });
+export const onMeEmail = endpoint({ POST: meEmail });
 export const onSync = endpoint({ GET: syncGet, PUT: syncPut });
 export { getSession, requireSession, readJson, limit, fail, rateKey, ipOf }; // used by functions/api/atc.js
 export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u, rateKey, maybeCleanup, cleanupNow, CLEANUP_EVERY, AI_KEEP_DAYS };

@@ -10,6 +10,7 @@ import { endpoint, handlers as H } from '../functions/_lib/api.js';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ORIGIN = 'https://nordap.eu';
 const ROUTES = {
+  '/api/auth/verify': { POST: H.emailVerify }, '/api/me/verify': { POST: H.meVerifyAgain }, '/api/me/email': { POST: H.meEmail },
   '/api/auth/signup': { POST: H.pwSignup }, '/api/auth/password': { POST: H.pwLogin }, '/api/auth/forgot': { POST: H.pwForgot },
   '/api/auth/reset': { POST: H.pwReset }, '/api/me/password': { POST: H.mePassword }, '/api/auth/logout': { POST: H.logout },
   '/api/me': { GET: H.meGet }, '/api/me/credentials': { DELETE: H.credDelete }
@@ -84,6 +85,8 @@ test('forgot password: without a mail service it says so; with Resend it mails a
   const w = world({ env: MAIL }), a = w.browser();
   await a.call('POST', '/api/auth/signup', { email: 'p@q.no', password: 'longenough' });
   const other = w.browser('198.51.100.3');
+  assert.equal(w.mails.length, 1); assert.match(w.mails[0].body.subject, /Confirm your e-mail/); // the sign-up confirmation
+  w.mails.length = 0;
   const unknown = await other.call('POST', '/api/auth/forgot', { email: 'ghost@q.no' });
   assert.equal(unknown.status, 200); assert.equal(w.mails.length, 0); // same answer, no mail
   const f = await other.call('POST', '/api/auth/forgot', { email: 'P@q.no' });
@@ -116,4 +119,43 @@ test('change password needs the current one; a passkey-only account can add e-ma
   assert.equal((await b.call('POST', '/api/me/password', { current: 'longenough', password: 'next password' })).status, 200);
   await b.call('POST', '/api/auth/logout', {});
   assert.equal((await b.call('POST', '/api/auth/password', { email: 'new@x.no', password: 'next password' })).status, 200);
+});
+
+test('sign-up e-mail confirmation: link confirms once; it can be sent again; without mail nothing breaks', async () => {
+  const w = world({ env: MAIL }), b = w.browser();
+  const s1 = await b.call('POST', '/api/auth/signup', { email: 'v@x.no', password: 'longenough' });
+  assert.equal(s1.body.verifySent, true);
+  assert.equal((await b.call('GET', '/api/me')).body.user.emailVerified, false);
+  const again = await b.call('POST', '/api/me/verify', {});
+  assert.equal(again.status, 200); assert.equal(w.mails.length, 2);
+  const tok = n => /#verify=([A-Za-z0-9_-]{43})/.exec(w.mails[n].body.text)[1];
+  assert.equal((await b.call('POST', '/api/auth/verify', { token: tok(0) })).body.error, 'expired'); // the first link was replaced
+  const v = await w.browser('198.51.100.7').call('POST', '/api/auth/verify', { token: tok(1) }); // works from another device too
+  assert.equal(v.status, 200); assert.equal(v.body.email, 'v@x.no');
+  assert.equal((await b.call('GET', '/api/me')).body.user.emailVerified, true);
+  assert.equal((await b.call('POST', '/api/auth/verify', { token: tok(1) })).body.error, 'expired');
+  const off = world(), ob = off.browser();
+  const s2 = await ob.call('POST', '/api/auth/signup', { email: 'n@x.no', password: 'longenough' });
+  assert.equal(s2.status, 200); assert.equal(s2.body.verifySent, false);
+});
+
+test('change e-mail: needs the password, a link goes to the new address, the change happens only when it is used', async () => {
+  const w = world({ env: MAIL }), b = w.browser();
+  await b.call('POST', '/api/auth/signup', { email: 'old@x.no', password: 'longenough' });
+  await w.browser('192.0.2.50').call('POST', '/api/auth/signup', { email: 'other@x.no', password: 'longenough' });
+  assert.equal((await b.call('POST', '/api/me/email', { email: 'new@x.no', current: 'wrong' })).body.error, 'bad_current');
+  assert.equal((await b.call('POST', '/api/me/email', { email: 'other@x.no', current: 'longenough' })).body.error, 'email_taken');
+  assert.equal((await b.call('POST', '/api/me/email', { email: 'old@x.no', current: 'longenough' })).body.error, 'same_email');
+  w.mails.length = 0;
+  const r = await b.call('POST', '/api/me/email', { email: 'New@X.no', current: 'longenough' });
+  assert.equal(r.status, 200); assert.equal(r.body.pending, 'new@x.no');
+  assert.deepEqual(w.mails[0].body.to, ['new@x.no']);
+  assert.equal((await b.call('GET', '/api/me')).body.user.email, 'old@x.no'); // not yet
+  const token = /#verify=([A-Za-z0-9_-]{43})/.exec(w.mails[0].body.text)[1];
+  assert.equal((await b.call('POST', '/api/auth/verify', { token })).status, 200);
+  const me = (await b.call('GET', '/api/me')).body.user;
+  assert.equal(me.email, 'new@x.no'); assert.equal(me.emailVerified, true);
+  await b.call('POST', '/api/auth/logout', {});
+  assert.equal((await w.browser('192.0.2.60').call('POST', '/api/auth/password', { email: 'new@x.no', password: 'longenough' })).status, 200);
+  assert.equal((await w.browser('192.0.2.61').call('POST', '/api/auth/password', { email: 'old@x.no', password: 'longenough' })).body.error, 'bad_login');
 });

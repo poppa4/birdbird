@@ -97,7 +97,8 @@
     email_taken: 'Det finnes allerede en konto med denne e-postadressen. Logg inn i stedet, eller bruk «Glemt passord».',
     no_mail: 'Tilbakestilling av passord på e-post er ikke slått på ennå. Logg inn med gjenopprettingskoden i stedet.',
     mail_failed: 'E-posten kunne ikke sendes. Prøv igjen om noen minutter.',
-    bad_current: 'Det nåværende passordet er feil.'
+    bad_current: 'Det nåværende passordet er feil.',
+    same_email: 'Det er allerede e-postadressen din.'
   };
   const msgFor = j => j ? (lang() === 'no' && NO_MSG[j.error] ? NO_MSG[j.error] + (j.error === 'rate_limited' && j.retryAfter ? ' (' + j.retryAfter + ' s)' : '') : j.message) : '';
 
@@ -179,6 +180,9 @@
     await signedIn(v.user); await syncNow({ first: true }); refreshMe().catch(() => {});
     return v;
   }
+  async function verifyEmail(token) { const v = await api('POST', '/auth/verify', { token: String(token || '') }); if (A.user) await refreshMe().catch(() => {}); return v; }
+  async function resendVerify() { return api('POST', '/me/verify', {}); }
+  async function changeEmail(email, current) { return api('POST', '/me/email', { email: String(email || ''), current: String(current || '') }); }
   async function setPassword(o) { const v = await api('POST', '/me/password', o || {}); await refreshMe(); return v; }
   async function newRecoveryCode() { const v = await api('POST', '/me/recovery', {}); await refreshMe(); return v; }
   async function removePasskey(id) { const v = await api('DELETE', '/me/credentials?id=' + encodeURIComponent(id), {}); await refreshMe(); return v; }
@@ -492,7 +496,7 @@ dialog.bbacct-dlg::backdrop{background:rgba(19,32,42,.38)}
     return A;
   })();
 
-  Object.assign(A, { pwSignup, pwLogin, forgot, resetPassword, setPassword, signup, login, recovery, logout, forgetDevice, wipeLocal, addPasskey, removePasskey, newRecoveryCode, rename, deleteAccount, refreshMe, detect, syncNow, flush, collect });
+  Object.assign(A, { verifyEmail, resendVerify, changeEmail, pwSignup, pwLogin, forgot, resetPassword, setPassword, signup, login, recovery, logout, forgetDevice, wipeLocal, addPasskey, removePasskey, newRecoveryCode, rename, deleteAccount, refreshMe, detect, syncNow, flush, collect });
   G.BBACCOUNT = A;
   fire('bb-account-ready', { state: A });
 })(window);
