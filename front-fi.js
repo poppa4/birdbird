@@ -170,7 +170,7 @@
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
   const load = src => new Promise((ok, no) => { if (document.querySelector(`script[src="${src}"]`)) return ok(); const sc = document.createElement('script'); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
-  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=5'), window.THEORY ? 0 : load('theory.js?v=2')]).catch(() => {}); return loading; }
+  function deps() { if (!loading) loading = Promise.all([window.NAI ? 0 : load('ai.js?v=8'), window.EASA ? 0 : load('easa.js?v=6'), window.THEORY ? 0 : load('theory.js?v=2')]).catch(() => {}); return loading; }
 
   function md(text, list, th) {
     let h = esc(String(text || '').trim());
@@ -234,7 +234,12 @@ ${easy ? 'PILOT NOW: (asks you to explain your last answer more simply)\n' + EAS
       await deps();
       if (!window.NAI || !(await NAI.ready)) { t.err = L(LT.off); }
       else {
-        if (!easy) { t.list = EASA.isRules(q) ? EASA.search(q, 4) : []; t.th = window.THEORY ? THEORY.search(q, 3) : []; }
+        if (!easy) {
+          /* a short follow-up ("answer shorter, what are the numbers") keeps the rules of the question before it */
+          const pt = turns.slice(0, -1).reverse().find(x => x.a && !x.easy), ctx = pt && q.length < 160 ? q + ' ' + (pt.src || pt.q) : q;
+          const own = EASA.isRules(q) ? EASA.search(q, 4) : [], more = ctx !== q && EASA.isRules(ctx) ? EASA.search(ctx, 4) : [];
+          t.list = [...own, ...more.filter(x => !own.includes(x))].slice(0, 5); t.th = window.THEORY ? THEORY.search(ctx, 3) : [];
+        }
         t.a = String(await NAI.text(prompt(q, t.list, easy, t.th), { tier: 'default' }) || '').split(/\n-{3,}\s*\n?/)[0];
         if (!t.a.trim()) t.err = NAI.errText({ code: 'other' });
       }

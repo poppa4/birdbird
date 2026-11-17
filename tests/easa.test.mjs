@@ -24,6 +24,10 @@ const CASES = [
   ['when do I need oxygen in a private aircraft', 'NCO.OP.190'],
   ['circling minima category B', 'NCO.OP.112'],
   ['what is the difference between type A and type B approach', 'Annex I (approach operations)'],
+  ['Whats the diffrence between type a and type b categorie planning minima for part nco and part cat', 'AMC6 CAT.OP.MPA.182'],
+  ['Whats the diffrence between type a and type b categorie planning minima for part nco and part cat', 'NCO.OP.143'],
+  ['Whats the difference in type a / b in part nco vs part cat', 'Annex I (approach operations)'],
+  ['whats the numbers for plan ing minima', 'AMC6 CAT.OP.MPA.182'],
 ];
 
 for (const [q, id] of CASES) {
