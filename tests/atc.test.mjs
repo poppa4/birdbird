@@ -90,6 +90,15 @@ test('signed out: a few free questions per visitor (HMAC of the IP, never the IP
   assert.equal((await w.call('POST', Q, { cookie: ck, headers: ip })).status, 200);
 });
 
+test('owners in ATC_OWNER_IDS skip the per-user daily cap, others do not', async () => {
+  const w = world({ env: { ATC_USER_DAILY_REQUESTS: '2', ATC_OWNER_IDS: ' u1 , x9' } });
+  const own = await w.user('u1', 1), other = await w.user('u2', 2);
+  for (let i = 0; i < 4; i++) assert.equal((await w.call('POST', Q, { cookie: own })).status, 200);
+  assert.equal((await w.call('POST', Q, { cookie: other })).status, 200);
+  assert.equal((await w.call('POST', Q, { cookie: other })).status, 200);
+  assert.equal((await w.call('POST', Q, { cookie: other })).body.error, 'daily_limit');
+});
+
 test('signed out: all visitors together stop at ANON_GLOBAL_DAILY_REQUESTS, account holders keep going', async () => {
   const w = world({ env: { ATC_ANON_GLOBAL_DAILY_REQUESTS: '2' } });
   assert.equal((await w.call('POST', Q, { headers: { 'cf-connecting-ip': '192.0.2.1' } })).status, 200);

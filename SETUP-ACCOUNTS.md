@@ -112,6 +112,8 @@ It needs the accounts database above, plus two things:
 Then open https://nordap.eu/fi.html and ask a question. Visitors without an account get a few free questions a day
 (`ANON_DAILY_REQUESTS`, default 5; all of them together at most `ANON_GLOBAL_DAILY_REQUESTS`); after that they are asked to
 create a free account. Each limit can be changed with an environment variable named `ATC_` + the name, e.g. `ATC_ANON_DAILY_REQUESTS`.
+Owners and testers: put their account ids (shown at https://nordap.eu/api/me when signed in) in the variable
+`ATC_OWNER_IDS`, comma-separated. They skip the per-user daily caps; the site-wide caps still apply.
 Daily caps for the free engine are in `WORKERS_LIMITS` in `functions/api/atc.js` (about 300 questions a day for the
 whole site, 25 per user), set so the account stays inside the free 10,000 Neurons. On the Workers Free plan Cloudflare
 never bills: when the allocation is used up the AI simply answers "back tomorrow".

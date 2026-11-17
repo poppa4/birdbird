@@ -128,7 +128,7 @@ async function countRequest(c, who, day) {
      ON CONFLICT(user_id, day) DO UPDATE SET requests = ai_usage.requests + 1
      RETURNING requests, tokens`).bind(who, day).first();
 }
-async function reserve(c, userId, day, L, anon) {
+async function reserve(c, userId, day, L, anon, owner) {
   let u, g;
   try {
     u = await countRequest(c, userId, day);
@@ -136,7 +136,7 @@ async function reserve(c, userId, day, L, anon) {
       if (u.requests > L.ANON_DAILY_REQUESTS || u.tokens >= L.ANON_DAILY_TOKENS) return 'signup_required';
       const a = await countRequest(c, ANON_GLOBAL, day);
       if (a.requests > L.ANON_GLOBAL_DAILY_REQUESTS) return 'signup_required';
-    } else if (u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS) return 'daily_limit';
+    } else if (!owner && u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS) return 'daily_limit';
     g = await countRequest(c, GLOBAL, day);
     if (g.requests > L.GLOBAL_DAILY_REQUESTS || g.tokens >= L.GLOBAL_DAILY_TOKENS) return 'service_limit';
   } catch (e) { notConfigured(); } // migration 0002 not applied
@@ -240,7 +240,9 @@ async function atcPost(c) {
   const messages = readMessages(body, L);
   const model = MODELS[TIERS[body.tier] || 'default'];
   const day = dayOf(c.now);
-  const over = await reserve(c, who, day, L, anon);
+  // owners/testers (env ATC_OWNER_IDS: comma-separated user ids) skip the per-user daily caps; the site-wide caps still apply
+  const owner = !!s && String(c.env.ATC_OWNER_IDS || '').split(',').map(x => x.trim()).filter(Boolean).includes(s.user_id);
+  const over = await reserve(c, who, day, L, anon, owner);
   if (over === 'signup_required') fail(429, 'signup_required', 'You have used the free questions without an account. Create a free account under Profile to keep going.');
   if (over === 'daily_limit') fail(429, 'daily_limit', 'You have used today’s Flight Intelligence questions. They are back tomorrow (00:00 UTC).');
   if (over === 'service_limit') fail(429, 'service_limit', 'Flight Intelligence has reached its limit for today. It is back tomorrow (00:00 UTC).');
