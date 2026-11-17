@@ -52,7 +52,7 @@
   --caution-ink:#8A5A0B;                                                /* caution as text on paper or sheet (AA); --caution is for fills, rules and dark panels */
   --ok-wash:#EAF4EE; --caution-wash:#FBF3E4; --warning-wash:#FBECEA;
   --instrument:#10171D; --instrument-2:#18232C; --instrument-ink:#D7E1E6; --instrument-rule:#2A3742;
-  --navy:#0B2545; --navy-2:#132F55; --gold:#C9A24A;                                      /* brand navy: front-page bands, map chrome */
+  --navy:#0B2545; --navy-2:#132F55;                                      /* brand navy: front-page bands, map chrome */
   --focus:var(--info); --focus-dark:#7FCBE8;                            /* focus ring on paper / on dark panels */
   /* legacy names still used by pages (keep) */
   --magenta:var(--accent); --chart-blue:var(--info); --inst:var(--instrument); --inst-2:var(--instrument-2);
@@ -106,7 +106,7 @@ html.bb-hold body>:not(.site):not(.nsearch):not(.trnav){visibility:hidden}
 
 /* ---------------- SiteHeader ---------------- */
 .site{position:relative;z-index:30;margin:0 calc(-1*var(--gr)) 0 calc(-1*var(--gl));padding:0 var(--gr) 0 var(--gl);
-  padding-top:env(safe-area-inset-top,0px);background:var(--paper);border-bottom:2px solid var(--gold);font-family:var(--f-body)}
+  padding-top:env(safe-area-inset-top,0px);background:var(--paper);border-bottom:1px solid var(--rule);font-family:var(--f-body)}
 .site>.in{max-width:var(--shell);margin:0 auto;display:flex;align-items:center;gap:32px;min-height:60px}
 .site .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:0 0 auto}
 .site .logo svg{width:28px;height:28px;display:block}
