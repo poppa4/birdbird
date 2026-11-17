@@ -955,7 +955,8 @@ const PHOTOS = [
   { id: 'ph-atr72eng', ac: 'atr72', name: 'ATR 72 engine instrument panel', file: 'img/cockpits/atr72-eng.jpg', w: 1415, h: 2000, by: 'Olivier Cleynen', lic: 'CC BY-SA 3.0', licUrl: 'https://creativecommons.org/licenses/by-sa/3.0/', src: C + 'Engine_instrument_panel_of_an_ATR_72_cockpit.jpg' }
 ];
 /* the cockpit lists everywhere show the aircraft in these groups, in this order */
-const GROUPS = [{ en: 'Airliners', no: 'Rutefly', ids: ['a320', 'a359', 'b738', 'b38m', 'b788', 'e190'] }, { en: 'Turboprops', no: 'Turboprop', ids: ['atr72', 'b200s', 'b200'] }, { en: 'Training aircraft', no: 'Skolefly', ids: ['c172', 'pa28', 'da40', 'da42', 'pa34'] }]
+const GROUPS = [{ en: 'Wide-body jets', no: 'Bredbuksfly', ids: ['a359', 'b788'] }, { en: 'Narrow-body jets', no: 'Smalbuksfly', ids: ['a320', 'b738', 'b38m'] }, { en: 'Regional jets', no: 'Regionaljet', ids: ['e190'] },
+  { en: 'Turboprops', no: 'Turboprop', ids: ['atr72', 'b200s', 'b200'] }, { en: 'Twin piston', no: 'Tomotors stempelfly', ids: ['da42', 'pa34'] }, { en: 'Single piston', no: 'Enmotors stempelfly', ids: ['c172', 'pa28', 'da40'] }]
   .map(g => ({ en: g.en, no: g.no, list: g.ids.map(i => LIST.find(a => a.id === i)).filter(Boolean) }));
 GROUPS[GROUPS.length - 1].list.push(...LIST.filter(a => !GROUPS.some(g => g.list.includes(a))));
 const API = { groups: GROUPS, list: LIST, photos: PHOTOS, photo: id => PHOTOS.find(p => p.id === id) || null, get: id => LIST.find(a => a.id === id) || null, targets, byId, hit, svg };
