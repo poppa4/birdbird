@@ -13,22 +13,22 @@
 'use strict';
 const Q = [
   /* ---- 081 principles of flight ---- */
-  { id: 'pof-induced', q: 'What is induced drag and why does it get smaller as speed increases?', must: [/vortex|vortices|downwash/i, /angle of attack/i] },
+  { id: 'pof-induced', q: 'What is induced drag and why does it get smaller as speed increases?', must: [/vortex|vortices|downwash/i, [/angle of attack/i, /lift coefficient|C_?L\b/i]] },
   { id: 'pof-turn-stall', lang: 'no', q: 'Hvorfor øker steilefarten i en sving?', must: [[/lastfaktor/i, /load factor/i], [/kvadratrot/i, /square root/i, /√/]] },
   { id: 'pof-60bank', q: 'Wings-level stall speed is 50 kt. What is the stall speed in a level 60° banked turn?', num: [[70.7, 1]] },
-  { id: 'pof-ground-effect', lang: 'no', q: 'Hva er bakkeeffekt?', must: [[/vingespenn/i, /wingspan/i], [/indusert/i, /induced/i]] },
+  { id: 'pof-ground-effect', lang: 'no', q: 'Hva er bakkeeffekt?', must: [[/vingespenn/i, /wingspan/i], [/induser|indusert|induc/i, /induced/i]] },
   { id: 'pof-heavy-glide', q: 'Does a heavier aircraft glide further than a light one?', must: [[/same (glide )?(angle|distance|ratio|range)/i, /does not glide further/i, /not further/i, /no[,.]/i]], not: [/heavier aircraft (will )?glides? further/i] },
   { id: 'pof-left-yaw', q: 'Why does a single-engine aircraft with a clockwise propeller yaw left on take-off?', must: [[/p-factor/i, /asymmetric blade/i], /slipstream/i] },
   { id: 'pof-trap-transit', q: 'Since equal transit time explains lift, how can aerobatic aircraft fly upside down?', must: [[/equal.transit[^.]*(wrong|incorrect|myth|false|not (true|correct)|misconception)/i, /(wrong|incorrect|myth|false|misconception)[^.]*equal.transit/i, /does not explain|doesn't explain/i]], must2: [/angle of attack/i] },
   /* ---- 050 meteorology ---- */
   { id: 'met-cb-conditions', q: 'What three conditions are needed for a thunderstorm to form?', must: [/moist/i, /unstable|instability/i, /lift|trigger/i] },
-  { id: 'met-fog', lang: 'no', q: 'Hva er forskjellen på strålingståke og adveksjonståke?', must: [[/klar(e)? natt/i, /klarvær/i, /skyfri/i, /clear/i], [/kald(ere)? (overflate|sjø|hav|bakke|underlag)/i, /colder surface/i, /kaldt underlag/i, /kaldere/i]] },
+  { id: 'met-fog', lang: 'no', q: 'Hva er forskjellen på strålingståke og adveksjonståke?', must: [[/klar(e)? (natt|himmel)/i, /klarvær/i, /skyfri/i, /clear/i], [/kald(ere)? (overflate|sjø|hav|bakke|underlag)/i, /colder surface/i, /kaldt underlag/i, /kaldere/i]] },
   { id: 'met-cloud-base', q: 'Surface temperature is 15 °C and the dew point is 7 °C. Estimate the base of cumulus cloud.', num: [[3200, 300]] },
-  { id: 'met-microburst', q: 'What happens to an aircraft that flies through a microburst on final approach?', must: [/headwind/i, /tailwind/i, /downdraft|downdraught|sink/i] },
-  { id: 'met-icing', lang: 'no', q: 'Ved hvilke temperaturer er faren for ising på flyet størst, og hvorfor?', must: [[/underkjøl/i, /supercooled/i], [/-\s?15|−\s?15|-\s?10|−\s?10|-\s?20|−\s?20/]] },
+  { id: 'met-microburst', q: 'What happens to an aircraft that flies through a microburst on final approach?', must: [/head\W?wind/i, /tail\W?wind/i, /down\W?draft|downdraught|sink/i] },
+  { id: 'met-icing', lang: 'no', q: 'Ved hvilke temperaturer er faren for ising på flyet størst, og hvorfor?', must: [[/underkjøl|superkjøl/i, /super\W?cooled/i], [/-\s?15|−\s?15|-\s?10|−\s?10|-\s?20|−\s?20/]] },
   { id: 'met-dalr', q: 'What is the dry adiabatic lapse rate?', must: [[/3\s?°?\s?C/i, /9\.8\s?°?\s?C/i, /10\s?°?\s?C\s*(per|\/)\s*km/i]] },
   /* ---- 022 instruments ---- */
-  { id: 'ins-static-block', q: 'My static ports block during a climb. What do the altimeter, VSI and airspeed indicator show?', must: [[/freez/i, /stuck/i, /constant/i, /stays? at/i], [/zero/i, /\b0\b/], [/(reads?|indicates?|shows?) (too )?low/i, /under-?read/i, /lower than/i]] },
+  { id: 'ins-static-block', q: 'My static ports block during a climb. What do the altimeter, VSI and airspeed indicator show?', must: [[/freez/i, /stuck/i, /constant/i, /stays? at/i], [/zero/i, /\b0\b/], [/(airspeed|ASI)[^]{0,400}?(low|decreas|less|under)/i]] },
   { id: 'ins-unos', lang: 'no', q: 'Forklar UNOS og ANDS på magnetkompasset.', must: [/nord|north/i, /sør|south/i, [/akselerasjon|akselerer/i, /accelerat/i]] },
   { id: 'ins-high-low', q: 'I fly from high to low pressure without changing the altimeter setting. Am I higher or lower than indicated?', must: [/lower/i], not: [/you (are|will be) higher than (indicated|shown)/i] },
   { id: 'ins-airspeeds', q: 'What is the difference between IAS, CAS, EAS and TAS?', must: [/compressib/i, /density/i, [/position|installation|instrument error/i]] },

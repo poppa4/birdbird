@@ -204,7 +204,7 @@ I('050-precipitation','050',{title:{en:'Precipitation and visibility',no:'Nedbø
 
 /* ================= 061 GENERAL NAVIGATION ================= */
 I('061-one-in-sixty','061',{title:{en:'The 1-in-60 rule',no:'1-av-60-regelen'},src:'ch16',lab:'gennav.html',
- kw:'1 in 60 one in sixty track error closing angle off track distance gone distance to go correction angle dead reckoning 1 av 60 regel kursfeil avdrift korreksjon',
+ kw:'1 in 60 one in sixty left of track right of track off track alter heading fly direct destination still to go track error closing angle off track distance gone distance to go correction angle dead reckoning 1 av 60 regel kursfeil avdrift korreksjon',
  en:'At small angles, 1 NM off track after 60 NM flown is an error of 1°. So the track error in degrees = distance off track × 60 / distance flown. To fly directly to the destination you add a closing angle = distance off track × 60 / distance to go; the total heading change is track error + closing angle. To regain track halfway between, you double the track error. The same idea gives the descent path: a 3° path drops 3/60 of the distance flown, so about 300 ft per NM (318 ft precisely). It is accurate enough below about 20°.'}),
 I('061-wind-triangle','061',{title:{en:'Wind triangle: drift, heading and ground speed',no:'Vindtrekanten: avdrift, kurs og bakkefart'},src:'ch16',lab:'gennav.html',
  kw:'wind triangle drift angle wind correction angle heading track ground speed tas crosswind headwind maximum drift wind velocity vindtrekant avdrift vindkorreksjonsvinkel kurs bakkefart',

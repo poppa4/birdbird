@@ -33,7 +33,7 @@
      against the caps (its price relative to the default model), so the worst-case daily cost is the same whatever the tier. */
 
 import { endpoint, json, getSession, readJson, limit, fail, rateKey, ipOf } from '../_lib/api.js';
-import { render as renderCalc, CALC_RULES, CALC_REMINDER } from '../_lib/calc.js';
+import { render as renderCalc, delatex, CALC_RULES, CALC_REMINDER } from '../_lib/calc.js';
 
 /* ---------- limits (each can be overridden with an environment variable of the same name, prefixed ATC_) ---------- */
 const DEFAULTS = {
@@ -72,7 +72,8 @@ const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA)
    never given). The hard rules are therefore repeated right after the pilot's last message, where it does follow them. */
 const RULES_REMINDER = '\n\n(NORDAP rules for this answer: cite only the entries given above ([E…] EASA, [T…] theory, [S…] documents). '
   + 'Never name a regulation, rule ID, AMC/GM, document, handbook or website that is not in them, and never invent one. Rules come only from EASA; '
-  + 'never use FAA/U.S. rules. If the pilot\'s question contains a wrong fact, say so and correct it.)';
+  + 'never use FAA/U.S. rules. If an entry lists several cases or conditions, give every one that fits the question, not only the first. '
+  + 'If the pilot\'s question contains a wrong fact, say so and correct it.)';
 /* the paid engine gets only the calculator rules as its system prompt: everything else is in the page's own prompt */
 const ANTHROPIC_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. Follow the instructions in the user message exactly.\n\n' + CALC_RULES;
 /* Quality tests (tests/fi-eval: the question set run against the real model): a request carrying the header x-nordap-eval with
@@ -226,7 +227,7 @@ export function checkRefs(text, given) {
   out = out.replace(US_RE, m => { if (seen.has(m)) return m; seen.add(m); flagged++; return m + tagUs; });
   return { text: out, flagged };
 }
-const finish = (text, messages, base) => base ? renderCalc(text).text : checkRefs(renderCalc(text).text, messages.map(m => m.content).join('\n')).text;
+const finish = (text, messages, base) => base ? renderCalc(text).text : checkRefs(delatex(renderCalc(text).text), messages.map(m => m.content).join('\n')).text;
 
 /* Workers AI: same messages, our own system prompt; returns { text, used, truncated } */
 function workersText(r) {

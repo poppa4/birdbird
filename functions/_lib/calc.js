@@ -134,3 +134,26 @@ export const CALC_RULES = 'CALCULATIONS: You may and should calculate when the p
 /* a short reminder put after the pilot's last message for the free engine: gpt-oss follows the system prompt loosely and
    otherwise does the arithmetic in its head (tested on nordap.eu, Nov 2026) */
 export const CALC_REMINDER = '\n\n(NORDAP: if your answer contains any calculated number, write each one as {{calc: expression}}, e.g. {{calc: (35000 - 3000) / 1000 * 3}} NM or {{calc: 25 * sin(40); 0}} kt - never work it out yourself, the marker is replaced with the exact result. Trig functions take degrees. No LaTeX.)';
+
+/* The free model writes LaTeX even when told not to (tested on nordap.eu: 4 of 30 answers). The pages show plain text, so
+   common LaTeX is turned into readable plain text: \frac{a}{b} → (a)/(b), \sqrt{x} → √(x), \times → ×, \text{kt} → kt, and
+   the \( \) \[ \] $$ delimiters are removed. Text without a backslash command is returned unchanged. */
+export function delatex(t) {
+  if (typeof t !== 'string' || !/\\[a-zA-Z(\[)\]]|\$\$/.test(t)) return t;
+  let s = t, prev;
+  const SYM = { times: '×', cdot: '·', div: '÷', approx: '≈', pm: '±', le: '≤', leq: '≤', ge: '≥', geq: '≥', neq: '≠', to: '→', rightarrow: '→', Rightarrow: '⇒',
+    degree: '°', circ: '°', rho: 'ρ', alpha: 'α', beta: 'β', theta: 'θ', Delta: 'Δ', delta: 'δ', pi: 'π', mu: 'μ', sigma: 'σ', gamma: 'γ', phi: 'φ', infty: '∞', quad: ' ', qquad: ' ', percent: '%' };
+  do { prev = s;
+    s = s.replace(/\\(?:d|t)?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}/g, (m, a, b) => (/^[\w.,° ]+$/.test(a.trim()) ? a.trim() : '(' + a.trim() + ')') + '/' + (/^[\w.,°]+$/.test(b.trim()) ? b.trim() : '(' + b.trim() + ')'));
+    s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, '√($1)');
+    s = s.replace(/\\(?:text|mathrm|mathbf|mathit|operatorname|textbf|boldsymbol)\s*\{([^{}]*)\}/g, '$1');
+    s = s.replace(/\\left|\\right/g, '');
+  } while (s !== prev);
+  s = s.replace(/\\(sin|cos|tan|arcsin|arccos|arctan|log|ln|exp)\b/g, '$1');
+  s = s.replace(/\\([A-Za-z]+)/g, (m, w) => SYM[w] !== undefined ? SYM[w] : m);
+  s = s.replace(/\\[,;:! ]/g, ' ').replace(/\\%/g, '%');
+  s = s.replace(/\$\$|\\\[|\\\]|\\\(|\\\)/g, '');
+  s = s.replace(/\^\{?\\?circ\}?|\^\{\s*°\s*\}/g, '°').replace(/_\{([^{}]*)\}/g, '$1').replace(/\^\{([^{}]*)\}/g, '^$1');
+  s = s.replace(/\{([^{}]*)\}/g, '$1').replace(/[ \t]{2,}/g, ' ');
+  return s;
+}

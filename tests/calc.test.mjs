@@ -58,3 +58,12 @@ test('default formatting', () => {
 test('rules text tells the model about the markers', () => {
   assert.match(CALC_RULES, /\{\{calc: /); assert.match(CALC_RULES, /degrees/);
 });
+
+import { delatex } from '../functions/_lib/calc.js';
+test('delatex turns the LaTeX the free model writes into plain text', () => {
+  assert.equal(delatex('\\[ n = \\frac{1}{\\cos 60°} \\]').trim(), 'n = 1/(cos 60°)');
+  assert.equal(delatex('\\(15 °C – 7 °C = 8 °C\\)'), '15 °C – 7 °C = 8 °C');
+  assert.equal(delatex('50\\;\\text{kt}\\times\\sqrt{2} = 70.7'), '50 kt×√(2) = 70.7');
+  assert.equal(delatex('Plain text [T1], no change {x}.'), 'Plain text [T1], no change {x}.');
+  assert.doesNotMatch(delatex('$$ \\dfrac{a+b}{2} \\approx 3 $$'), /\\|\$\$/);
+});
