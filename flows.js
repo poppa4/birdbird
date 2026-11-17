@@ -34,7 +34,13 @@ function marksBorrow() { if (!cur || (cur.marks && cur.marks.length)) return; co
 function marksDraw() { const g = $('mk'); if (!g) return; g.innerHTML = cur && ac && ac.own && mode === 'build' ? (cur.marks || []).map(m => `<circle cx="${m.x}" cy="${m.y}" r="4.5" class="omk"><title>${esc(m.n)}</title></circle>`).join('') : ''; }
 const PH = () => cur && A.photo(cur.ac), freeBg = () => cur && (cur.ac === 'img' || !!PH());
 const H = () => PH() ? Math.round(1000 * PH().h / PH().w) : cur && cur.ac === 'img' ? Math.round(1000 * ((cur.img && cur.img.h) || 750) / ((cur.img && cur.img.w) || 1000)) : (ac ? ac.h : 1000);
-async function bg() { const svg = $('cv'); svg.setAttribute('viewBox', `0 0 1000 ${H()}`); const g = $('bg');
+/* picture credit behind a small (i): hover on desktop, tap on touch */
+function credit() { const ph = PH(), im = !ph && cur && cur.ac !== 'img' && ac && ac.img && !ac.img.own ? ac.img : null, w = $('fcr'); if (!w) return;
+  const lk = c => `<a href="${esc(c.src)}" target="_blank" rel="noopener">${esc(c.by)}</a>, <a href="${esc(c.licUrl)}" target="_blank" rel="noopener">${esc(c.lic)}</a>`;
+  const h = ph ? `${L({ en: 'Photo', no: 'Foto' })}: ${lk(ph)}` : im ? `${L({ en: '3D model', no: '3D-modell' })}: ${lk(im)}` : '';
+  w.hidden = !h; w.classList.remove('on'); $('fcrb').setAttribute('aria-expanded', 'false'); $('fcrt').innerHTML = h; }
+async function bg() { const svg = $('cv'); svg.setAttribute('viewBox', `0 0 1000 ${H()}`); const g = $('bg'); try { await bgIn(svg, g); } finally { credit(); } }
+async function bgIn(svg, g) {
   if (!cur) { g.innerHTML = ''; return; }
   const ph = PH(); if (ph) { marksBorrow(); ac = own(); g.innerHTML = `<image href="${ph.file}" x="0" y="0" width="1000" height="${H()}" preserveAspectRatio="none"/><text x="10" y="${H() - 10}" class="phc">${esc(L({ en: 'Photo', no: 'Foto' }) + ': ' + ph.by + ' · ' + ph.lic)}</text>`; return; }
   if (cur.ac !== 'img') { ac = A.get(cur.ac); g.innerHTML = ac ? A.svg(ac) : ''; svg.setAttribute('viewBox', `0 0 1000 ${H()}`);
@@ -204,7 +210,7 @@ function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon',
     p.innerHTML = (ex ? `<div class="fexnote"><b>${L({ en: 'Example, not an SOP.', no: 'Eksempel, ikke en SOP.' })}</b> ${L({ en: 'It shows how the trainer works. Your airline’s flow will differ, so make your own:', no: 'Det viser hvordan treneren virker. Flyselskapets flow vil være annerledes, så lag din egen:' })}${cardsH}<div class="frow"><button class="btn sm" id="fcopy">${L({ en: 'Copy the example and change it', no: 'Kopier eksempelet og endre det' })}</button></div></div>` : '') +
       `<div class="frow"><label class="grow">${L({ en: 'Name', no: 'Navn' })}<input id="fname" value="${esc(cur.name)}" maxlength="80"></label><label class="grow">${L({ en: 'Cockpit', no: 'Cockpit' })}<select id="fac">${cockpitOpts}</select></label></div>` +
       `<div class="frow"><label class="grow">${L({ en: 'Flight phase (optional)', no: 'Flyfase (valgfritt)' })}<select id="fph"><option value="">${L({ en: 'Not set', no: 'Ikke satt' })}</option>${F.PHASES.map(p => `<option value="${p[0]}"${cur.phase === p[0] ? ' selected' : ''}>${esc(L({ en: p[1], no: p[2] }))}</option>`).join('')}</select></label></div>` +
-      (PH() ? `<p class="fex fcred">${L({ en: 'Photo', no: 'Foto' })}: <a href="${esc(PH().src)}" target="_blank" rel="noopener">${esc(PH().by)}</a>, <a href="${esc(PH().licUrl)}" target="_blank" rel="noopener">${esc(PH().lic)}</a>. ${L({ en: 'Tap the photo to place each step.', no: 'Trykk på bildet for å plassere hvert steg.' })}</p>` : '') +
+      '' +
       `<div class="frow"><label class="btn sm ffile${cur.ac === 'img' ? ' pri' : ''}">${cur.ac === 'img' ? L({ en: cur.img ? 'Change photo or PDF…' : 'Upload cockpit photo or PDF…', no: cur.img ? 'Bytt bilde eller PDF …' : 'Last opp cockpitbilde eller PDF …' }) : L({ en: 'Use my own photo or PDF instead…', no: 'Bruk mitt eget bilde eller PDF i stedet …' })}<input type="file" id="fimg" accept="image/*,application/pdf,.pdf" hidden></label>` +
       (cur.ac === 'img' && cur.img ? `<label class="btn sm ffile">${L({ en: 'Add a picture below…', no: 'Legg til et bilde under …' })}<input type="file" id="fimg2" accept="image/*,application/pdf,.pdf" hidden></label><button class="btn sm" id="frot" title="${esc(L({ en: 'Turn the picture a quarter clockwise', no: 'Snu bildet en kvart omdreining med klokka' }))}">↻ ${L({ en: 'Turn', no: 'Snu' })}</button>` : '') +
       (cur.ac === 'img' ? `<p class="fex fdrop">${L({ en: 'You can also drop a picture or PDF on the cockpit, or paste one (Ctrl+V). Overhead, panel and pedestal can be separate pictures: add them one under the other.', no: 'Du kan også slippe et bilde eller en PDF på cockpiten, eller lime inn (Ctrl+V). Overhead, panel og pidestall kan være egne bilder: legg dem under hverandre.' })}</p>` : '') +
@@ -563,6 +569,7 @@ function init() { load(); wirePanel();
   $('stage').addEventListener('wheel', e => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); const r = $('stage').getBoundingClientRect(); setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
   { const G = $('fguide'); let seen = 0; try { seen = +localStorage.getItem('bb-flows-guide'); } catch (e) {} G.hidden = !!seen;
     G.addEventListener('click', e => { if (e.target.closest('#fgok')) { G.hidden = true; try { localStorage.setItem('bb-flows-guide', '1'); } catch (x) {} return; } const li = e.target.closest('li[data-m]'); if (li) setMode(li.dataset.m); }); }
+  $('fcrb').onclick = e => { e.stopPropagation(); const w = $('fcr'), on = w.classList.toggle('on'); e.currentTarget.setAttribute('aria-expanded', on); }; document.addEventListener('click', e => { if (!e.target.closest('#fcr')) { const w = $('fcr'); if (w) w.classList.remove('on'); } });
   $('zin').onclick = () => setZoom(zoom * 1.4); $('zout').onclick = () => setZoom(zoom / 1.4); $('zfit').onclick = fit; $('zfull').onclick = () => focusMode();
   pinch(); stickTop(); addEventListener('resize', stickTop, { passive: true }); addEventListener('orientationchange', () => setTimeout(stickTop, 300));
   document.querySelectorAll('.fmode button').forEach(b => b.onclick = () => setMode(b.dataset.m));

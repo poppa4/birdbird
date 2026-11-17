@@ -136,6 +136,11 @@ dialog.fd .acts{display:flex;gap:8px;justify-content:flex-end}
 .fwrap.full{position:fixed;inset:0;z-index:1000;border-radius:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 .fwrap.full .fstage{max-height:none;flex:1 1 auto}
 html.fnoscroll,html.fnoscroll body{overflow:hidden}
+#cv .phc{display:none}
+.fcr{position:absolute;left:10px;bottom:10px;z-index:5}.fcr button{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.45);background:rgba(14,17,20,.6);color:#fff;font:italic 700 13px/1 Georgia,serif;cursor:pointer;opacity:.7;padding:0}.fcr button:hover,.fcr.on button{opacity:1}
+.fcrt{display:none;position:absolute;left:0;bottom:30px;width:max-content;max-width:min(320px,70vw);background:rgba(14,17,20,.92);color:#E9EEF2;font:12.5px/1.4 var(--f-body,sans-serif);padding:7px 10px;border-radius:6px}.fcrt a{color:#fff}
+.fcr:hover .fcrt,.fcr:focus-within .fcrt,.fcr.on .fcrt{display:block}
+@media print{.fcr{display:none!important}}
 </style>
 </head>
 <body data-title="Flow trainer">
@@ -171,6 +176,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
           <div class="fpq" id="fpq" hidden></div>
           <div class="fstage" id="stage"><svg id="cv" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1500" role="img" aria-label="Cockpit"><g id="bg"></g><g id="mk"></g><g id="ov"></g><g id="fx"></g></svg></div>
           <div class="fban" id="fban" hidden></div>
+          <div class="fcr" id="fcr" hidden><button type="button" id="fcrb" aria-label="Picture credit" aria-expanded="false">i</button><div class="fcrt" id="fcrt" role="tooltip"></div></div>
           <div class="fzoom"><button id="zout" type="button" aria-label="Zoom out">−</button><span id="zl">100 %</span><button id="zin" type="button" aria-label="Zoom in">+</button><button id="zfit" type="button" aria-label="Whole cockpit">⤢</button><button id="zfull" type="button" aria-label="Full screen">⛶</button></div>
         </div>
         <p class="fmsg" id="fmsg" role="status" aria-live="polite"></p>
@@ -226,7 +232,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=30"></script>
+<script src="flows.js?v=31"></script>
 <script src="flowlib.js?v=3"></script>
 <script src="reqplane.js?v=1"></script>
 </body>
