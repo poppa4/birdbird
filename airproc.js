@@ -1,4 +1,4 @@
-/* Birdbird – airborne starts, procedure picker and auto-fly for the cockpit trainers (C172, DA42, King Air B200).
+/* NORDAP – airborne starts, procedure picker and auto-fly for the cockpit trainers (C172, DA42, King Air B200).
    Shared practice area: runway 36 threshold at N=0, E=0 (metres). Procedure data follow the training chart and ops.js:
    ILS 36 IASN 110.30 crs 360, IAF ALPOR/BIKAN 3000, IF RONAX D10 3000, FAP FAPSO D5 1650, DA 210 / LOC MDA 460,
    RNP 36 LPV DA 250 / LNAV MDA 470, missed: straight ahead 360 to 3000, direct HOLAN and hold,

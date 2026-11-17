@@ -1,8 +1,8 @@
-/* Birdbird – EASA rules library (curated).
+/* NORDAP – EASA rules library (curated).
    A curated, structured set of references to EASA rules used by Flight Intelligence and the briefing pack instructor.
-   Summaries are Birdbird's own paraphrases, not the legal text. Each item links to the official EASA Easy Access Rules
+   Summaries are NORDAP's own paraphrases, not the legal text. Each item links to the official EASA Easy Access Rules
    online publication (deep link to the rule, with its AMC/GM below it) and to the regulation on EUR-Lex.
-   This is NOT a live feed: the site cannot fetch EASA at runtime. Birdbird checks for new revisions and updates this file.
+   This is NOT a live feed: the site cannot fetch EASA at runtime. NORDAP checks for new revisions and updates this file.
    verified:true  = summary and numbers checked against the EASA online publication text when the library was last checked.
    verified:false = written from general knowledge; the requirement is described but has not been checked word for word. */
 (function(G){
@@ -229,9 +229,9 @@ function rev(x,l){ return (l||lang())==='no'? SOURCES[x.src].revNo : x.rev; }
 function label(x){ return `EASA: ${x.id} — ${x.revShort}`; }
 /* text block for the AI prompt; items are cited as [E1], [E2]… */
 function promptBlock(list){ if(!list||!list.length) return '';
-  return `EASA RULES (Birdbird's curated EASA rules library. Each entry is Birdbird's own summary of the official text, with its revision. Air Operations: ${SOURCES.airops.name}, ${SOURCES.airops.rev}. SERA: ${SOURCES.sera.name}, ${SOURCES.sera.rev}. Library last checked ${API.checked}. Not a live feed.):\n`+
+  return `EASA RULES (NORDAP's curated EASA rules library. Each entry is NORDAP's own summary of the official text, with its revision. Air Operations: ${SOURCES.airops.name}, ${SOURCES.airops.rev}. SERA: ${SOURCES.sera.name}, ${SOURCES.sera.rev}. Library last checked ${API.checked}. Not a live feed.):\n`+
     list.map((x,i)=>`[E${i+1}] ${label(x)} · ${x.id} ${x.title} (${x.type}, ${x.part}; ${x.rev}${x.verified?'':'; NOT yet checked word for word against the EASA text'}):\n${x.en}\nOfficial text: ${x.url}`).join('\n\n')+
-    `\n\nEASA CITATION RULES: when a statement rests on one of the EASA entries above, cite it as [E1], [E2] and so on, and name the rule ID in the sentence (e.g. "CAT.OP.MPA.182"). Say once which revision the answer is based on (e.g. "EASA Easy Access Rules for Air Operations, Rev. 24, March 2026") and tell the pilot to check the current revision through the link before relying on it. Use only the numbers that appear in these entries or in the pilot's documents; if a requirement or number is not in them, say that it is not in the Birdbird EASA library and mark it [GK]. The operator's operations manual can be stricter and an approved fuel scheme with variations can differ: say so where it matters.`; }
+    `\n\nEASA CITATION RULES: when a statement rests on one of the EASA entries above, cite it as [E1], [E2] and so on, and name the rule ID in the sentence (e.g. "CAT.OP.MPA.182"). Say once which revision the answer is based on (e.g. "EASA Easy Access Rules for Air Operations, Rev. 24, March 2026") and tell the pilot to check the current revision through the link before relying on it. Use only the numbers that appear in these entries or in the pilot's documents; if a requirement or number is not in them, say that it is not in the NORDAP EASA library and mark it [GK]. The operator's operations manual can be stricter and an approved fuel scheme with variations can differ: say so where it matters.`; }
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 /* a citation chip that opens the official source in a new tab */
 function chip(x,n){ const l=lang(); const t=(l==='no'?'Åpne den offisielle teksten hos EASA (':'Open the official text at EASA (')+rev(x,l)+')';

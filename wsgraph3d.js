@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace map in 3D, core (no DOM): runs in the browser (window.WSGRAPH3D) and in node tests.
+/* NORDAP – My Workspace map in 3D, core (no DOM): runs in the browser (window.WSGRAPH3D) and in node tests.
    The map is a cloud: every group (an aircraft, a topic, then 'Unsorted') a soft ball of evenly spaced points, slightly flattened
    front to back, the balls side by side as in the 2D map (WSGRAPH.arrange) and set at a little different depths, so the
    cloud has parallax when it turns. No surface, no outline: the soft look comes from a few large puffs of light per group.

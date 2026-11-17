@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Briefings · Birdbird</title>
+<title>Briefings · NORDAP</title>
 <meta name="description" content="Practise departure and approach briefings out loud with today’s weather, a training chart and the aircraft numbers, and get them scored.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
-<link rel="stylesheet" href="train.css?v=3">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
+<link rel="stylesheet" href="train.css?v=4">
 <style>
 .bgrid{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:24px;align-items:start}
 @media (max-width:1180px){.bgrid{grid-template-columns:minmax(0,1fr)}}
@@ -75,11 +75,11 @@
 </style>
 </head>
 <body data-title="Briefings">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Training</div>
+      <div class="eyebrow">NORDAP · Training</div>
       <h1>Briefings</h1>
       <p>Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. Your briefing is scored on its structure, the numbers and how you deal with the threats.</p>
     </div>
@@ -149,18 +149,18 @@
   </section>
   <p class="note">The aerodrome, procedures and charts are fictional and drawn for training. Not for navigation. A320 speeds and limits are typical teaching values, not FCOM data.</p>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="ops.js?v=3"></script>
-<script src="brief.js?v=10"></script>
-<script src="chart.js?v=5"></script>
-<script src="ai.js?v=5"></script>
-<script src="store.js?v=3"></script>
+<script src="lab.js?v=52"></script>
+<script src="ops.js?v=4"></script>
+<script src="brief.js?v=11"></script>
+<script src="chart.js?v=6"></script>
+<script src="ai.js?v=6"></script>
+<script src="store.js?v=4"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el}=LAB, esc=NAI.esc;
 LAB.add({},{
- 'Birdbird · Training':'Birdbird · Trening','Briefings':'Briefinger','Briefing Trainer':'Briefingtrener',
+ 'NORDAP · Training':'NORDAP · Trening','Briefings':'Briefinger','Briefing Trainer':'Briefingtrener',
  'Brief a departure or an approach out loud, the way you will in the aircraft. You get today’s weather, the chart and the aircraft numbers. Your briefing is scored on its structure, the numbers and how you deal with the threats.':'Brief en avgang eller en innflyging høyt, slik du gjør i flyet. Du får dagens vær, kartet og tallene for flyet. Briefingen vurderes på struktur, tall og hvordan du håndterer truslene.',
  'Practice airport (fictional)':'Øvingsflyplass (oppdiktet)','Trainer':'Trener','How to brief a plate':'Slik briefer du et kart','A320 speed card':'A320-fartskort','New scenario':'Nytt scenario',
  'Reading an approach chart':'Slik leser du et innflygingskart','Chart reading':'Kartlesing',
@@ -212,9 +212,9 @@ setIt('land',4,{d:{en:'When you go around and how: TOGA, pitch, flaps one step, 
 function facts320(kind,V){
   const s=SP(V), P=BRIEF.proc(V), A=OPS.APT;
   const base=`AIRCRAFT: Airbus A320 (typical A320ceo training values, not FCOM), two-crew, approach category C. Mass ${s.t.toFixed(1)} t (MTOM 78 t, MLM 64.5 t). Take-off CONF 1+F, ${thrTxt(s)}, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}, S ${s.S}, F ${s.F}. Landing CONF FULL: VLS ${s.vls}, VAPP ${s.vapp} (VLS + 1/3 of the headwind, at least 5 and at most 15 kt). VFE CONF 1 230, 1+F 215, 2 200, 3 185, FULL 177. VLO 250 extend / 220 retract, VLE 280. Demonstrated crosswind 38 kt. Engine failure on take-off: before V1 reject (thrust idle, reverse, autobrake RTO); after V1 continue, rotate, SRS, no action below 400 ft except gear up, ECAM actions, level off at engine-out acceleration altitude, green dot.
-AERODROME: Birdbird (NAER, fictional), elevation ${A.elev} ft, runway 36/18, ${RWY_LEN} x ${RWY_W} m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${A.freq.atis}, Delivery ${A.freq.del}, Ground ${A.freq.gnd}, Tower ${A.freq.twr}, Approach ${A.freq.app}. Transition altitude ${A.ta} ft. MSA (ASN 25 NM) 3200 ft west of the 360/180 line, 2300 ft east.
+AERODROME: NORDAP (NAER, fictional), elevation ${A.elev} ft, runway 36/18, ${RWY_LEN} x ${RWY_W} m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${A.freq.atis}, Delivery ${A.freq.del}, Ground ${A.freq.gnd}, Tower ${A.freq.twr}, Approach ${A.freq.app}. Transition altitude ${A.ta} ft. MSA (ASN 25 NM) 3200 ft west of the 360/180 line, 2300 ft east.
 WEATHER: ${V.metar}. ATIS information ${V.info}. Wind ${V.wind}: headwind ${V.hw} kt, crosswind ${V.xw} kt on runway 36. QNH ${V.qnh}.`;
-  if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared via ${OPS.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${OPS.SID.name}: ${OPS.SID.text} Minimum climb gradient 4.5 % to 1500 ft (terrain north-west); at 160 kt groundspeed about 730 ft/min. Check engine-out performance against it. Departure frequency: Birdbird Approach ${A.freq.app}.`
+  if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared via ${OPS.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${OPS.SID.name}: ${OPS.SID.text} Minimum climb gradient 4.5 % to 1500 ft (terrain north-west); at 160 kt groundspeed about 730 ft/min. Check engine-out performance against it. Departure frequency: NORDAP Approach ${A.freq.app}.`
      : `VFR: leave the control zone via ${A.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Vestfjell Information ${A.freq.fis}.`);
   if(kind==='app') return base+`\nAPPROACH CHART: ${P.kind==='RNP'?'RNP RWY 36':'ILS or LOC RWY 36'} (flying ${P.name}), chart ${P.chart} effective ${P.date}. ${P.kind==='RNP'?'SBAS channel 41736, LPV and LNAV minima':'LOC IASN 110.30'}, final course 360°. ${P.kind==='LOC'?'Glide slope OUT: fly as LOC only, constant-angle descent (CDFA) on the DME/altitude table.':'Glide path 3.0°, TCH 50 ft.'}
 IAF: ALPOR and BIKAN 3000 ft. IF: RONAX D10.0 IASN 3000 ft. FAP: FAPSO D5.0 IASN 1650 ft. Distance/altitude checks: ${P.checks.map(c=>c[0]+' '+c[1]+' ft').join(', ')}. Rate of descent on 3.0°: 120 kt GS 635, 130 kt 690, 140 kt 745, 150 kt 795 ft/min.
@@ -250,7 +250,7 @@ BRIEF.model=function(kind,V){
   if(kind==='dep') return V.ifr?
 `Departure briefing. Threats: ${V.cld[0]==='BKN'||V.cld[0]==='OVC'?'cloud base '+V.cld[1]+' feet so we are in IMC early, ':''}terrain north-west and the 4.5 per cent gradient to 1500 feet, ${V.t<=3?'icing conditions so engine anti-ice on, ':''}take-off mass ${t} tonnes.
 Runway 36 from A1, full length ${RWY_LEN} metres, wind ${V.wind}, ${xwTxt(V)}.
-Initial: ${OPS.SID.name}, track 360, at 1500 feet left turn direct OSVIK, climb 3000 feet, squawk ${V.sq}, minimum gradient 4.5 per cent to 1500 feet. FMS flight plan checked against the chart. After departure Birdbird Approach ${OPS.APT.freq.app}.
+Initial: ${OPS.SID.name}, track 360, at 1500 feet left turn direct OSVIK, climb 3000 feet, squawk ${V.sq}, minimum gradient 4.5 per cent to 1500 feet. FMS flight plan checked against the chart. After departure NORDAP Approach ${OPS.APT.freq.app}.
 Bugs: ${thrTxt(s)}, CONF 1+F, V1 ${s.v1}, VR ${s.vr}, V2 ${s.v2}, green dot ${s.gd}.
 Emergencies: before V1, any failure or warning, I call stop: thrust idle, reverse max, autobrake RTO, keep it straight. After V1 we continue: rotate, SRS, positive climb gear up, no action below 400 feet except gear up, ECAM actions, level off at engine-out acceleration altitude and accelerate to green dot. Engine-out route: runway track, climb to MSA 3200 and ask for vectors back to the ILS 36.
 Transition altitude 7000, standard set passing 7000.
@@ -331,7 +331,7 @@ NAI.onMode(drawAist); LAB.onLang(()=>drawAist(NAI.mode));
 /* ---------- Reading an approach chart: interaktiv gjennomgang ---------- */
 const HS={
  head:{t:{en:'Heading and frequencies',no:'Topptekst og frekvenser'},k:'S',
-  d:{en:'The airport (NAER, Birdbird), the chart index (11-1) and effective date, and the procedure title. The title names every approach on the plate: “ILS or LOC RWY 36” is one chart for the ILS and for the localizer-only approach. The row below lists the frequencies in the order you use them: ATIS, Approach, Tower, Ground.',no:'Flyplassen (NAER, Birdbird), kartindeksen (11-1) og gyldighetsdato, og navnet på prosedyren. Tittelen nevner hver innflyging på kartet: «ILS or LOC RWY 36» er ett kart for både ILS og innflyging kun på localizer. Raden under viser frekvensene i den rekkefølgen du bruker dem: ATIS, Approach, Tower, Ground.'},
+  d:{en:'The airport (NAER, NORDAP), the chart index (11-1) and effective date, and the procedure title. The title names every approach on the plate: “ILS or LOC RWY 36” is one chart for the ILS and for the localizer-only approach. The row below lists the frequencies in the order you use them: ATIS, Approach, Tower, Ground.',no:'Flyplassen (NAER, NORDAP), kartindeksen (11-1) og gyldighetsdato, og navnet på prosedyren. Tittelen nevner hver innflyging på kartet: «ILS or LOC RWY 36» er ett kart for både ILS og innflyging kun på localizer. Raden under viser frekvensene i den rekkefølgen du bruker dem: ATIS, Approach, Tower, Ground.'},
   r:{en:'Check the date against the current revision and the title against your clearance.',no:'Sjekk datoen mot gjeldende revisjon og tittelen mot klareringen.'},
   say:'“ILS 36, chart 11-1, effective 1 November, current.”'},
  strip:{t:{en:'Briefing strip',no:'Briefingstripen'},k:'S · D',

@@ -1,4 +1,4 @@
-/* Birdbird – holdcore.js: pure maths for the holding and instrument approach lab (holding.html).
+/* NORDAP – holdcore.js: pure maths for the holding and instrument approach lab (holding.html).
    Builds on navcore.js (NAVCORE): same frame (x east, y north in NM, true angles, degrees), no DOM, no state.
    Loaded in the page as window.HOLDCORE and in Node (tests/holdcore.test.mjs) through vm, after navcore.js.
    Sources: ICAO Doc 8168 (PANS-OPS) Vol I for holding entries, timing, speeds and bank; ICAO Annex 6 for

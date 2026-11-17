@@ -1,4 +1,4 @@
-"""Birdbird's own drawing of the A350 overhead panel. The FlightGear model's overhead is unfinished, so this panel is drawn, not rendered.
+"""NORDAP's own drawing of the A350 overhead panel. The FlightGear model's overhead is unfinished, so this panel is drawn, not rendered.
 It is simplified: the system panels sit in the order they have in the aircraft (centre row: fire, hydraulics, fuel, electrics, air, anti-ice and
 cabin pressure, lights and APU; other systems in the two lateral rows); the place of each single control inside a panel is approximate.
 Writes out/ovh_0_0.png and out/ovh.json (name -> rectangle in pixels)."""

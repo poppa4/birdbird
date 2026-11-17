@@ -1,4 +1,4 @@
-/* Birdbird – concepts.js: the "Key concepts" card grid from the wind tunnel, shared by the other labs.
+/* NORDAP – concepts.js: the "Key concepts" card grid from the wind tunnel, shared by the other labs.
    KCS.render(gridEl, items) with items {k, t, d, dd, ill, click, to, dp}:
    t, d, dd are {en,no}; d is one or two sentences (the first is shown, the rest goes under "More" with dd);
    ill() returns a 200×64 SVG (KCS.sv / KCS.ar / KCS.tx help); click is a CSS selector of a control to press

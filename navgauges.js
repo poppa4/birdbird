@@ -1,4 +1,4 @@
-/* Birdbird – navgauges.js: vector round gauges for the radio navigation simulator.
+/* NORDAP – navgauges.js: vector round gauges for the radio navigation simulator.
    NAVG.make(canvas, kind) → gauge with .set(values), .tick(dt) (damped needles, returns true while moving), .draw(), .knobs.
    kinds: cdi, hsi, rmi, adf, asi, ai, alt, tc, dg, vsi.
    Static parts (plate, bezel, fixed markings, glass) and rotating cards are cached in offscreen canvases at device

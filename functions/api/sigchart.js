@@ -1,9 +1,9 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/sigchart?area=nordic|norway&offset=0..3
+/* NORDAP – Cloudflare Pages Function: GET /api/sigchart?area=nordic|norway&offset=0..3
    Low-level significant weather charts (PNG) from MET Norway (api.met.no sigcharts 2.0, CC BY 4.0): the Nordic and
    Baltic area (Iceland excluded) or Norway, Svalbard and the Norwegian Sea. Proxied so MET Norway sees our User-Agent,
    and cached 15 min at the edge. offset picks the chart in the series (0 = the first one MET Norway lists). */
 const MET = 'https://api.met.no/weatherapi/sigcharts/2.0/';
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
 const TTL = 900;
 const AREAS = ['nordic', 'norway'];
 const err = (status, message) => new Response(JSON.stringify({ ok: false, message }), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });

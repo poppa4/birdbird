@@ -1,6 +1,6 @@
-/* Birdbird front page: the Flight Intelligence panel in the hero (#fpFi).
+/* NORDAP front page: the Flight Intelligence panel in the hero (#fpFi).
    Three example questions, answered the way fi.html answers: from the pilot's own documents (AFM, SOP) and from
-   Birdbird's EASA rules library (easa.js: Easy Access Rules for Air Operations, Rev. 24), every statement with a
+   NORDAP's EASA rules library (easa.js: Easy Access Rules for Air Operations, Rev. 24), every statement with a
    citation chip and every source listed with its revision. The documents here are illustrative and say so.
    The answer is typed in at reading pace (the untyped rest is laid out but hidden, so nothing moves), the source rows
    light up as they are cited, and after a pause the next example follows. Paused off screen, in a hidden tab and while

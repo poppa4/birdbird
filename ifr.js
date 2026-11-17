@@ -1,4 +1,4 @@
-/* Birdbird – ifr.js: the IFR trainer page (ifr.html).
+/* NORDAP – ifr.js: the IFR trainer page (ifr.html).
    Two views. The start screen: everything you can practise, grouped along the recommended path, with your progress, a
    "continue" and a "recommended next" nudge, and the builder ("Practise exactly this": exercise, area, station, course,
    hold, entry, wind, instrument, start position on a map, help level). The trainer: Understand (a short animated
@@ -1780,7 +1780,7 @@ function loop(ts){ const dt=Math.min(0.1,Math.max(0,(ts-lastT)/1000)); lastT=ts;
   requestAnimationFrame(loop); }
 
 /* ---------- start ---------- */
-LAB.add({},{'Birdbird · Training':'Birdbird · Trening','IFR trainer':'IFR-trener','Training aid · not for navigation':'Treningshjelpemiddel · ikke for navigasjon',
+LAB.add({},{'NORDAP · Training':'NORDAP · Trening','IFR trainer':'IFR-trener','Training aid · not for navigation':'Treningshjelpemiddel · ikke for navigasjon',
   'What the trainer models':'Hva treneren modellerer','Limits and tolerances':'Grenser og toleranser','Real and practice data':'Ekte data og øvingsdata',
   'All exercises':'Alle øvelser','Start here':'Start her'});
 LAB.start('ifr');

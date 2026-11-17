@@ -1,4 +1,4 @@
-/* Birdbird – radio trainer UI (radio-drills.html). Engine: radiocore.js + radioscen.js (works without AI).
+/* NORDAP – radio trainer UI (radio-drills.html). Engine: radiocore.js + radioscen.js (works without AI).
    Voice out: speechSynthesis with ICAO pronunciation, squelch and band-limited static from WebAudio (optional).
    Voice in: SpeechRecognition (Chrome, Edge, Safari) with hold-to-talk (button or space bar); typing is fully equivalent.
    Progress: naeroson-radio-* keys (synced by account.js as "progress"). */
@@ -230,7 +230,7 @@ function aiSetup(){
   let wired=false; NAI.onMode(mode=>{ const box=el('ai'); if(!mode){ box.hidden=true; return; } box.hidden=false; if(wired) return; wired=true;
     let turns=[]; const log=el('aiLog');
     const add=(cls,who,h)=>{ const d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=(who?`<span class="who">${esc(who)}</span>`:'')+h; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; };
-    const rules=()=>`You are an air traffic controller in a radiotelephony training simulator for pilots training under EASA in Norway. Fictional aerodrome Birdbird, runway 36/18, Tower 118.300, Ground 121.700, Approach 119.250, transition altitude 7000 ft. The pilot is ${P.callsign}, a DA42. Situation: ${el('aiSit').value||'infer it from the first call'}. Reply as ATC with ICAO Doc 4444/9432 and SERA phraseology, then judge only the pilot's last transmission. Reply with JSON only: {"atc":"…","ok":true|false,"notes":["max 3, in ${NAI.langName()}"],"better":"ideal pilot transmission"}`;
+    const rules=()=>`You are an air traffic controller in a radiotelephony training simulator for pilots training under EASA in Norway. Fictional aerodrome NORDAP, runway 36/18, Tower 118.300, Ground 121.700, Approach 119.250, transition altitude 7000 ft. The pilot is ${P.callsign}, a DA42. Situation: ${el('aiSit').value||'infer it from the first call'}. Reply as ATC with ICAO Doc 4444/9432 and SERA phraseology, then judge only the pilot's last transmission. Reply with JSON only: {"atc":"…","ok":true|false,"notes":["max 3, in ${NAI.langName()}"],"better":"ideal pilot transmission"}`;
     async function send(){ const t=el('aiSay').value.trim(); if(!t) return; el('aiSay').value=''; const me=add('me',P.callsign,esc(t)); turns.push({role:'user',content:'PILOT: '+t}); const w=add('atc','ATC','…');
       try{ const r=await NAI.json([{role:'user',content:rules()},...turns.slice(-20)]); const a=String(r&&r.atc||'Say again.'); w.innerHTML=`<span class="who">ATC</span>${esc(a)}`; turns.push({role:'assistant',content:JSON.stringify({atc:a})});
         const fb=document.createElement('div'); fb.className='fb'; fb.innerHTML=`<ul class="els">${(r.notes||[]).slice(0,3).map(n=>`<li class="${r.ok?'warn':'wrong'}"><span class="sy">${r.ok?'!':'✕'}</span><span>${esc(n)}</span></li>`).join('')}${r.ok&&!(r.notes||[]).length?`<li class="ok"><span class="sy">✓</span><span>${L({en:'Correct and complete',no:'Riktig og fullstendig'})}</span></li>`:''}</ul>${!r.ok&&r.better?`<div class="model"><span class="mono">${esc(r.better)}</span></div>`:''}`; me.appendChild(fb); speak(a); }
@@ -270,7 +270,7 @@ function init(){
   el('setAuto').checked=P.auto; el('setAuto').onchange=()=>{ P.auto=el('setAuto').checked; saveP(); };
   el('setRate').value=P.rate; const rt=()=>el('setRateV').textContent=(+P.rate).toFixed(2)+'×'; rt(); el('setRate').oninput=()=>{ P.rate=+el('setRate').value; saveP(); rt(); };
   el('setMic').value=P.mic; el('setMic').onchange=()=>{ P.mic=el('setMic').value; saveP(); };
-  el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, Birdbird Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
+  el('setTest').onclick=()=>{ AU.init(); speak(`${R.parseCallsign(P.callsign).full}, NORDAP Tower, wind 340 degrees 8 knots, runway 36, cleared to land.`); };
   if(!TTS){ el('setVoice').disabled=true; el('ttsNote').textContent=L({en:'This browser has no speech synthesis: the controller is shown as text.',no:'Denne nettleseren har ikke talesyntese: flygelederen vises som tekst.'}); }
   drawHome(); show('home'); aiSetup();
   LAB.onLang(()=>{ drawHome(); if(!el('v-pick').hidden) drawPick(); if(ses&&!el('v-sess').hidden){ el('sessT').textContent=L(cur.t); drawBasis(); drawTurn(); } if(!el('v-deb').hidden&&ses) drawDeb(ses.summary()); });

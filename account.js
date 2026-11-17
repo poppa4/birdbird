@@ -1,5 +1,5 @@
-/* Birdbird – accounts and sync (client). Loaded on every page by site.js.
-   Passkey sign-in against /api/auth/*, and sync of the browser's own Birdbird data (localStorage) to /api/sync,
+/* NORDAP – accounts and sync (client). Loaded on every page by site.js.
+   Passkey sign-in against /api/auth/*, and sync of the browser's own NORDAP data (localStorage) to /api/sync,
    grouped in four namespaces. Without the backend (static server, the old Claude artifact) everything stays local.
 
    Sync rules
@@ -82,15 +82,15 @@
     signed_out: 'Du er logget ut. Logg inn med passnøkkelen din og prøv igjen.',
     rate_limited: 'For mange forsøk. Vent litt og prøv igjen.',
     bad_code: 'Gjenopprettingskoden stemmer ikke med noen konto. Sjekk for skrivefeil, eller bruk den nyeste koden hvis du har laget en ny.',
-    unknown_passkey: 'Denne passnøkkelen er ikke koblet til en Birdbird-konto lenger. Logg inn med gjenopprettingskoden, eller lag en ny konto. Den gamle passnøkkelen kan du slette i passordinnstillingene på enheten.',
+    unknown_passkey: 'Denne passnøkkelen er ikke koblet til en NORDAP-konto lenger. Logg inn med gjenopprettingskoden, eller lag en ny konto. Den gamle passnøkkelen kan du slette i passordinnstillingene på enheten.',
     expired: 'Forespørselen gikk ut på tid eller ble allerede brukt. Start på nytt.',
-    exists: 'Denne passnøkkelen er allerede koblet til en Birdbird-konto. Bruk «Logg inn» i stedet.',
+    exists: 'Denne passnøkkelen er allerede koblet til en NORDAP-konto. Bruk «Logg inn» i stedet.',
     last_passkey: 'Dette er den eneste passnøkkelen din. Legg til en passnøkkel på en annen enhet først, og fjern så denne.',
     too_large: 'Dataene er over 1,5 MB, for store til å synkroniseres. Slett gamle briefingpakker eller ruter og prøv igjen.',
     no_db: 'Kontoer er ikke slått på for dette nettstedet ennå. Alt fungerer fortsatt og lagres i denne nettleseren.',
-    bad_origin: 'Forespørselen kom ikke fra Birdbird selv. Last inn siden på nytt og prøv igjen.',
+    bad_origin: 'Forespørselen kom ikke fra NORDAP selv. Last inn siden på nytt og prøv igjen.',
     server: 'Noe gikk galt hos oss. Dataene dine er fortsatt lagret i denne nettleseren. Prøv igjen om et minutt.',
-    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne Birdbird på https://birdbird.eu.'
+    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne NORDAP på https://birdbird.eu.'
   };
   const msgFor = j => j ? (lang() === 'no' && NO_MSG[j.error] ? NO_MSG[j.error] + (j.error === 'rate_limited' && j.retryAfter ? ' (' + j.retryAfter + ' s)' : '') : j.message) : '';
 
@@ -108,8 +108,8 @@
   function passkeyError(e, mode) {
     const n = e && e.name;
     const m = n === 'NotAllowedError' ? { en: 'The passkey request was cancelled or timed out. Try again when you are ready.', no: 'Passnøkkelforespørselen ble avbrutt eller gikk ut på tid. Prøv igjen når du er klar.' }
-      : n === 'InvalidStateError' ? (mode === 'create' ? { en: 'This device already has a passkey for your Birdbird account. Sign in with it instead.', no: 'Denne enheten har allerede en passnøkkel for Birdbird-kontoen din. Logg inn med den i stedet.' } : { en: 'The passkey could not be used. Try again.', no: 'Passnøkkelen kunne ikke brukes. Prøv igjen.' })
-      : n === 'SecurityError' ? { en: 'Passkeys only work on https://birdbird.eu (or localhost). Open Birdbird there and try again.', no: 'Passnøkler virker bare på https://birdbird.eu (eller localhost). Åpne Birdbird der og prøv igjen.' }
+      : n === 'InvalidStateError' ? (mode === 'create' ? { en: 'This device already has a passkey for your NORDAP account. Sign in with it instead.', no: 'Denne enheten har allerede en passnøkkel for NORDAP-kontoen din. Logg inn med den i stedet.' } : { en: 'The passkey could not be used. Try again.', no: 'Passnøkkelen kunne ikke brukes. Prøv igjen.' })
+      : n === 'SecurityError' ? { en: 'Passkeys only work on https://birdbird.eu (or localhost). Open NORDAP there and try again.', no: 'Passnøkler virker bare på https://birdbird.eu (eller localhost). Åpne NORDAP der og prøv igjen.' }
       : n === 'NotSupportedError' ? { en: 'This device cannot make a suitable passkey. Try your phone, or another browser.', no: 'Denne enheten kan ikke lage en passende passnøkkel. Prøv telefonen eller en annen nettleser.' }
       : n === 'AbortError' ? { en: 'The passkey request was stopped. Try again.', no: 'Passnøkkelforespørselen ble stoppet. Prøv igjen.' }
       : null;
@@ -175,7 +175,7 @@
     meta = { uid: null, signedIn: false, user: null, ns: {}, last: 0 }; saveMeta();
     A.user = null; A.me = null; A.sync = { state: 'idle', last: 0, error: null }; changed();
   }
-  /* remove Birdbird data from this browser without syncing the removal (used after deleting the account, and by localdata.js).
+  /* remove NORDAP data from this browser without syncing the removal (used after deleting the account, and by localdata.js).
      match(key) picks the keys; default: the synced keys. Removing the account link (META) also forgets it in memory. */
   function wipeLocal(match) {
     if (!LS) return;
@@ -417,7 +417,7 @@ dialog.bbacct-dlg::backdrop{background:rgba(19,32,42,.38)}
       const d = document.createElement('dialog'); d.className = 'bbacct-dlg'; d.setAttribute('aria-labelledby', 'bbacctChH');
       const what = clash.map(n => L(NSNAME[n])).join(', ');
       d.innerHTML = `<h3 id="bbacctChH">${esc(L({ en: 'This device has its own data', no: 'Denne enheten har egne data' }))}</h3>
-        <p>${esc(L({ en: 'Your account already has data, and this browser has different data (', no: 'Kontoen din har allerede data, og denne nettleseren har andre data (' }))}<span class="ns">${esc(what)}</span>${esc(L({ en: '). What should Birdbird do?', no: '). Hva skal Birdbird gjøre?' }))}</p>
+        <p>${esc(L({ en: 'Your account already has data, and this browser has different data (', no: 'Kontoen din har allerede data, og denne nettleseren har andre data (' }))}<span class="ns">${esc(what)}</span>${esc(L({ en: '). What should NORDAP do?', no: '). Hva skal NORDAP gjøre?' }))}</p>
         <div class="opts">
           <button type="button" class="opt rec" data-c="combine"><b>${esc(L({ en: 'Combine both', no: 'Slå sammen begge' }))}</b><span>${esc(L({ en: 'Keeps your best scores and every briefing pack and route from both. Recommended.', no: 'Beholder de beste resultatene og alle briefingpakker og ruter fra begge. Anbefalt.' }))}</span></button>
           <button type="button" class="opt" data-c="account"><b>${esc(L({ en: 'Use account data', no: 'Bruk kontodataene' }))}</b><span>${esc(L({ en: 'Replaces the data in this browser with what is saved to your account.', no: 'Erstatter dataene i denne nettleseren med det som er lagret på kontoen.' }))}</span></button>

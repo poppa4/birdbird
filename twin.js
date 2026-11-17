@@ -1,4 +1,4 @@
-/* Birdbird – twin.js: light-twin engine failure, the propeller as a wing, and the Try tasks for propeller.html.
+/* NORDAP – twin.js: light-twin engine failure, the propeller as a wing, and the Try tasks for propeller.html.
    Uses VMC.LT / VMC.ltPoint / VMC.ltVmc / VMC.blade (vmc.js) and the drawing helpers of stab.js.
    Light-twin teaching model of our own design (no real type): both propellers turn clockwise seen from behind. */
 (function(){

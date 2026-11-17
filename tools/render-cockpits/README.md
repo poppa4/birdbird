@@ -2,7 +2,7 @@
 
 The cockpit pictures `img/cockpits/<aircraft>-deck-*.webp` are rendered from free 3D aircraft models. Each picture is a derived
 work of its model and is distributed under the model's licence, without warranty. The models are the source; these scripts are
-everything else needed to make the pictures again. What the displays show is Birdbird's own drawing.
+everything else needed to make the pictures again. What the displays show is NORDAP's own drawing.
 
 | Aircraft | Model | Licence |
 |---|---|---|

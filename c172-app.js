@@ -1,4 +1,4 @@
-/* Birdbird – Cessna 172 cockpit procedure trainer: page logic shared by c172.html (2D panel) and c172-3d.html (3D cockpit, beta).
+/* NORDAP – Cessna 172 cockpit procedure trainer: page logic shared by c172.html (2D panel) and c172-3d.html (3D cockpit, beta).
    The 3D page sets data-d3 on <body> and loads cockpit3d.js + c172-3d.js; everything else is identical. */
 (function(){
 'use strict';
@@ -6,11 +6,11 @@ const {T,L,el,slider,visible,quiz,shuffle}=LAB;
 const tr2=(en,no)=>({en,no});
 LAB.add({},{
  '3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg rundt i en 3D-cockpit (beta)',
- 'Birdbird · Simulators':'Birdbird · Simulatorer','Cessna 172 cockpit procedure trainer':'Cessna 172 prosedyretrener for cockpit',
+ 'NORDAP · Simulators':'NORDAP · Simulatorer','Cessna 172 cockpit procedure trainer':'Cessna 172 prosedyretrener for cockpit',
  'A typical classic C172 with a carburetted 160 hp engine and an analog six-pack. Prime and start the engine, do the run-up and magneto check, fly a circuit, and practise carburettor ice, engine failure after take-off, vacuum and alternator failures and an ILS.':'En typisk klassisk C172 med 160 hk forgassermotor og analoge «six-pack»-instrumenter. Prim og start motoren, gjør run-up og magnetsjekk, fly en landingsrunde, og øv på forgasserising, motorstopp etter avgang, vakuum- og generatorsvikt og en ILS.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv',
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
- 'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to Birdbird':'← Tilbake til Birdbird',"For training only — follow the POH/AFM and your school's checklist.":'Kun for trening — følg POH/AFM og skolens sjekkliste.','Zoom to the next control':'Zoom til neste kontroll',
+ 'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',"For training only — follow the POH/AFM and your school's checklist.":'Kun for trening — følg POH/AFM og skolens sjekkliste.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, touch controls or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringskontrollene eller denne flaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches and knobs':'Brytere og knotter','Click a rocker or toggle to flip it. Push-pull knobs (carburettor heat, primer, cabin heat and air, parking brake) toggle in and out with a click. Drag the throttle and mixture down to pull them out, up to push them in.':'Klikk på en vippe- eller vippebryter for å slå den om. Trekk-skyv-knotter (forgasservarme, primer, kabinvarme og -luft, parkeringsbrems) går inn og ut med et klikk. Dra gass og blanding ned for å trekke dem ut, opp for å skyve dem inn.',

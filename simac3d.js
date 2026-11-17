@@ -1,4 +1,4 @@
-/* Birdbird Route Explorer: the aircraft in the 3D simulation (simac3d.js)
+/* NORDAP Route Explorer: the aircraft in the 3D simulation (simac3d.js)
    Loaded on demand by route.html (after three.min.js, r128). Procedural, low-poly but smooth-shaded models of the three
    lab aircraft (Diamond DA42 NG, Beechcraft King Air B200, Airbus A320) at their published size, drawn into the MapLibre
    map as a custom 3D layer that shares the terrain's depth buffer. Model frame: metres, x = right wing, y = nose, z = up,

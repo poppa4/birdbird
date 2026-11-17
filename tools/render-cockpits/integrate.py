@@ -9,7 +9,7 @@ if f'const {S["CONST"]} = [' in src[:i]:                                        
     a = src.index(f'const {S["CONST"]} = ['); b = src.index('];', a) + 3; src = src[:a] + src[b:]; i -= b - a; j -= b - a
 img = S['IMG']; block = f'''/* {S["TITLE"]}: a picture rendered from a 3D model, square-on to each panel. {S["CREDIT_LONG"]}
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 {M["table"]}
 const {V} = {{ id: '{S["ID"]}', name: '{S["TITLE"]}', {S.get("EXTRA", "")}crew: {S["CREW"]}, h: {M["h"]}, t: {S["CONST"]},
   img: {{ lo: 'img/cockpits/{S["NAME"]}-deck-1500.webp', hi: 'img/cockpits/{S["NAME"]}-deck-3000.webp', by: '{img["by"]}', lic: '{img["lic"]}', v: '{img.get("v", "")}', src: '{img["src"]}', licUrl: '{img["licUrl"]}' }} }};

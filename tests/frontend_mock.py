@@ -30,8 +30,8 @@ class Server:
         if path == '/api/auth/register/options':
             uid = self.user['id'] if signed else b64u(secrets.token_bytes(16))
             sess['pending'] = uid
-            return J(200, {'ok': True, 'mode': 'add' if signed else 'new', 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rp': {'id': 'birdbird.eu', 'name': 'Birdbird'},
-                'user': {'id': uid, 'name': 'pilot', 'displayName': (body or {}).get('name') or 'Birdbird pilot'}, 'pubKeyCredParams': [{'type': 'public-key', 'alg': -7}, {'type': 'public-key', 'alg': -257}],
+            return J(200, {'ok': True, 'mode': 'add' if signed else 'new', 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rp': {'id': 'birdbird.eu', 'name': 'NORDAP'},
+                'user': {'id': uid, 'name': 'pilot', 'displayName': (body or {}).get('name') or 'NORDAP pilot'}, 'pubKeyCredParams': [{'type': 'public-key', 'alg': -7}, {'type': 'public-key', 'alg': -257}],
                 'timeout': 300000, 'attestation': 'none', 'authenticatorSelection': {'residentKey': 'required', 'requireResidentKey': True, 'userVerification': 'required'},
                 'excludeCredentials': [{'type': 'public-key', 'id': c['id']} for c in self.creds] if signed else []}})
         if path == '/api/auth/register/verify':
@@ -48,7 +48,7 @@ class Server:
             return J(200, {'ok': True, 'options': {'challenge': b64u(secrets.token_bytes(32)), 'rpId': 'birdbird.eu', 'timeout': 300000, 'userVerification': 'required', 'allowCredentials': []}})
         if path == '/api/auth/login/verify':
             cr = body['credential']; assert cr['response']['signature'] and cr['response']['authenticatorData']
-            if not any(c['id'] == cr['id'] for c in self.creds): return J(400, {'ok': False, 'error': 'unknown_passkey', 'message': 'This passkey is not linked to a Birdbird account any more.'})
+            if not any(c['id'] == cr['id'] for c in self.creds): return J(400, {'ok': False, 'error': 'unknown_passkey', 'message': 'This passkey is not linked to a NORDAP account any more.'})
             sess['in'] = True; return J(200, {'ok': True, 'user': self.user})
         if path == '/api/auth/recovery':
             if not self.user or body.get('code', '').upper().replace(' ', '-') != self.code: return J(400, {'ok': False, 'error': 'bad_code', 'message': 'That recovery code does not match an account.'})

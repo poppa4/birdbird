@@ -1,4 +1,4 @@
-/* Birdbird – find the aerodrome page (AD 2, with the charts in AD 2.24) in the current edition of a national eAIP.
+/* NORDAP – find the aerodrome page (AD 2, with the charts in AD 2.24) in the current edition of a national eAIP.
 
    resolve('ENTO', deps) → { ok:true, icao, url, kind:'ad2', state, name, eff } when the state publishes its eAIP openly and the
    aerodrome is in it; otherwise { ok:false, icao, url, kind:'portal'|'ead'|'dir', name } with the best official page to open.
@@ -14,7 +14,7 @@
 
 import DE from './aip-de.js';
 
-export const UA = 'Mozilla/5.0 (compatible; Birdbird/1.0; +https://birdbird.eu)';
+export const UA = 'Mozilla/5.0 (compatible; NORDAP/1.0; +https://birdbird.eu)';
 const MON = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 };
 
 /* Official AIP portals (what the user gets when no AD 2 page can be found). */

@@ -1,4 +1,4 @@
-/* Birdbird – "Request your aircraft". Any element with data-reqplane="sim" or "flows" opens the form.
+/* NORDAP – "Request your aircraft". Any element with data-reqplane="sim" or "flows" opens the form.
    Pictures are shrunk in the browser to small JPEGs before they are sent to /api/request (functions/api/request.js). */
 (function () {
   'use strict';

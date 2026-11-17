@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: live rooms for the flow trainer (flows.html, flowsroom.js). No account needed.
+/* NORDAP – Cloudflare Pages Function: live rooms for the flow trainer (flows.html, flowsroom.js). No account needed.
    Two pilots on two devices practise one flow together: the host opens a room with the flow (never a photo), the partner joins
    with the room code or link, each picks a role (PF/PM, CM1/CM2). Their taps and checklist calls are relayed through here,
    or straight between the browsers (WebRTC) once they have found each other through the 'sig' messages below.

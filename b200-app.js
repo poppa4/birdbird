@@ -1,4 +1,4 @@
-/* Birdbird – King Air B200 cockpit procedure trainer: page logic shared by b200.html (2D panel) and b200-3d.html (3D cockpit, beta).
+/* NORDAP – King Air B200 cockpit procedure trainer: page logic shared by b200.html (2D panel) and b200-3d.html (3D cockpit, beta).
    The 3D page sets data-d3 on <body> and loads cockpit3d.js + b200-3d.js; everything else is identical. */
 (function(){
 'use strict';
@@ -6,11 +6,11 @@ const {T,L,el,slider,visible,quiz,shuffle}=LAB;
 const tr2=(en,no)=>({en,no});
 LAB.add({},{
  '3D (beta)':'3D (beta)','Look around in a 3D cockpit (beta)':'Se deg rundt i en 3D-cockpit (beta)',
- 'Birdbird · Simulators':'Birdbird · Simulatorer','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
+ 'NORDAP · Simulators':'NORDAP · Simulatorer','King Air B200 cockpit procedure trainer':'King Air B200 prosedyretrener for cockpit',
  'A typical twin-turboprop panel: EFIS attitude and HSI displays for both pilots, a centre navigator and radar/multifunction display, round engine gauges, annunciators, subpanels and pedestal. Start the engines, test the autofeather and fly the engine-failure, fire and pressurisation drills.':'Tomotors turbopropp-panelet slik det er lagt opp i typeratingmaterialet: EFIS-attityde og -HSI for piloten, analoge instrumenter for andrepiloten, radar/flerfunksjonsskjerm i midten, runde motorinstrumenter, varsellys, underpaneler og pidestall. Start motorene, test autofeather og fly øvelsene for motorsvikt, brann og trykkfall.',
  'Cockpit':'Cockpit','Flight controls':'Flykontroller','Failures':'Feil','How it works':'Slik virker det','Test yourself':'Test deg selv','B200 type rating':'B200-typerating',
  'Procedures':'Prosedyrer','Limits':'Begrensninger','Pause':'Pause','Resume':'Fortsett','Restart':'Start på nytt','More':'Mer','Full screen':'Fullskjerm','Outside view':'Utsikt','View out of the window':'Utsikt ut av vinduet','3D view is not available in this browser.':'3D-visning er ikke tilgjengelig i denne nettleseren.','← Whole panel':'← Hele panelet',
- 'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to Birdbird':'← Tilbake til Birdbird',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
+ 'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',"For training only — follow the AFM/POH and your operator's SOP.":'Kun for trening — følg AFM/POH og operatørens SOP.','Zoom to the next control':'Zoom til neste kontroll',
  'Fly it':'Fly','Drag either control wheel on the panel, use the keyboard, a gamepad, touch controls or this pad.':'Dra i et av rattene på panelet, eller bruk tastaturet, en spillkontroll, berøringskontrollene eller denne flaten.',
  'How to use the panel':'Slik bruker du panelet','Zoom':'Zoom','Tap an area to zoom to it; pinch or scroll to zoom in and out, drag to move when zoomed. ← Back, Esc or a double tap returns to the whole panel. Keys 0–9 jump between areas.':'Trykk på et område for å zoome inn på det; knip eller rull for å zoome inn og ut, dra for å flytte når du har zoomet. ← Tilbake, Esc eller dobbelttrykk går tilbake til hele panelet. Tastene 0–9 hopper mellom områdene.',
  'Switches':'Brytere','Click a toggle to flip it. Three-position switches: click the top or bottom half to select that position, the middle to return to the centre. Guarded switches: the first click lifts the guard.':'Klikk på en vippebryter for å slå den om. Tre-stillingsbrytere: klikk på øvre eller nedre halvdel for å velge den stillingen, midten for å gå tilbake til midtstilling. Brytere med deksel: første klikk løfter dekselet.',
@@ -924,7 +924,7 @@ function drawGps(o){ const on=gpsOk(); if(!on){ B200P.gps(P,{on:false}); return;
   const g=gpsTo(SYS.gpsWpt), gsk=Math.max(1,o.gs), ete=g.d/gsk*60;
   const L=[['DIS '+g.d.toFixed(1)+'NM','GS  '+Math.round(o.gs)+'KT','DTK '+String(Math.round(g.brg)).padStart(3,'0')+'°','ETE '+Math.floor(ete)+':'+String(Math.floor(ete*60)%60).padStart(2,'0')],['FPL 0','1 AN','2 ASN','3 RW36'],['MODE','CRS '+(SYS.gpsCrs?'OBS':'LEG'),'APR '+(SYS.gpsApr?(gpsAprActive()?'ACTV':'ARM'):'OFF'),''],['TRIP','FF '+Math.round(E[0].ff+E[1].ff)+'PPH','FUEL '+Math.round(E[0].main+E[0].aux+E[1].main+E[1].aux),'']][SYS.gpsPgL];
   const sAN=gpsTo('AN'), sASN=gpsTo('ASN');
-  let R=[['RW36','BIRDBIRD','ELEV 0FT','RWY 36'],['ASN VOR','113.30','BRG '+String(Math.round(sASN.brg)).padStart(3,'0'),'DIS '+sASN.d.toFixed(1)],['AN NDB','375.0','BRG '+String(Math.round(sAN.brg)).padStart(3,'0'),'DIS '+sAN.d.toFixed(1)],['INT','----','',''],['SUPL','',''+'','']][SYS.gpsPgR];
+  let R=[['RW36','NORDAP','ELEV 0FT','RWY 36'],['ASN VOR','113.30','BRG '+String(Math.round(sASN.brg)).padStart(3,'0'),'DIS '+sASN.d.toFixed(1)],['AN NDB','375.0','BRG '+String(Math.round(sAN.brg)).padStart(3,'0'),'DIS '+sAN.d.toFixed(1)],['INT','----','',''],['SUPL','',''+'','']][SYS.gpsPgR];
   let Lx=L; if(SYS.gpsAltT>0) Lx=['ALT '+Math.round(o.alt)+'FT','BARO '+(S.baro/33.8639).toFixed(2),'MSA 2500FT',''];
   if(SYS.gpsMsgT>0) R=['NO','MESSAGES','',''];
   if(SYS.gpsDtoPend) R=['DIRECT TO:',SYS.gpsDtoPend,'ENT?',''];

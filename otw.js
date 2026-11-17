@@ -1,4 +1,4 @@
-/* Birdbird – 3D-utsikt ut av vinduet (three.js r128). Terreng, hav, rullebane med merking, lys, PAPI, trær, bygninger og skyer.
+/* NORDAP – 3D-utsikt ut av vinduet (three.js r128). Terreng, hav, rullebane med merking, lys, PAPI, trær, bygninger og skyer.
    Kamera følger flyets posisjon og attityde. Verden: x = øst, y = opp, z = −nord. */
 (function(G){
 'use strict';

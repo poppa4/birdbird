@@ -1,4 +1,4 @@
-/* Birdbird – engines.js: the Engines lab (engines.html).
+/* NORDAP – engines.js: the Engines lab (engines.html).
    One dark figure with four modes: How it works (a cutaway of the chosen engine with the gas path coloured by temperature,
    turning spools and the right cockpit gauges), Compare (all four engine types at the same height and speed),
    Start the engine (start sequences with hot, hung and wet starts) and, in Deep dive, Ratings and limits (flat rating, FLEX,
@@ -817,7 +817,7 @@ LAB.quiz(el('qbox'),'engines',()=>LAB.shuffle([
  {q:t2('Feathering the propeller of a failed engine…','Å fjære propellen på en motor som har stoppet …'),a:[t2('turns the blades edge-on, stopping it and giving the least drag','dreier bladene med kanten mot vinden, stopper den og gir minst motstand'),t2('gives reverse thrust','gir revers'),t2('keeps it windmilling for a restart','holder den vindmøllende for omstart')],c:0,e:t2('A windmilling propeller makes large drag and yaw. Feathered, it stops.','En vindmøllende propell gir stor motstand og gir. Fjæret stopper den.')}]),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Aircraft Engines':'Flymotorer','Powerplant: piston, turboprop and jet':'Motorer: stempel, turboprop og jet','Birdbird Virtual Labs · Aircraft and engine systems':'Birdbird Virtual Labs · Fly- og motorsystemer',
+LAB.add({},{'Aircraft Engines':'Flymotorer','Powerplant: piston, turboprop and jet':'Motorer: stempel, turboprop og jet','NORDAP Virtual Labs · Aircraft and engine systems':'NORDAP Virtual Labs · Fly- og motorsystemer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The engine lab':'Motorlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Engine':'Motor','Levers':'Hendler','Start':'Start','Conditions':'Forhold','Reduced take-off thrust':'Redusert startskyv','Scenarios':'Scenarier','Advanced':'Avansert','Mode':'Modus','Sections':'Seksjoner',
  'Assembled':'Sammensatt','Exploded':'Sprengskisse','Assembled to exploded':'Sammensatt til sprengskisse','Parts':'Deler','Lean to peak EGT':'Len til topp-EGT','Carburettor heat':'Forgasservarme','Condition lever':'Kondisjonshendel','Start fault':'Startfeil','Piston: turbo-normalised':'Stempel: turbo-normalisert','Piston: carburettor ice forming':'Stempel: forgasseris dannes','Show temperatures along the gas path':'Vis temperaturer langs gasstrømmen','Layout':'Oppbygning','Reverse flow (most common in small turboprops)':'Motstrøm (vanligst i små turboproper)','Direct flow (common on larger regional turboprops)':'Direkte strøm (vanlig på større regionale turboproper)',

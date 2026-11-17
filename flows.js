@@ -1,4 +1,4 @@
-/* Birdbird – Flow trainer (flows.html). Draw a cockpit flow over your own cockpit photo or PDF, or over one of Birdbird's
+/* NORDAP – Flow trainer (flows.html). Draw a cockpit flow over your own cockpit photo or PDF, or over one of NORDAP's
    cockpit schematics (flowsac.js), in layers per role (PF/PM, CM1/CM2 or one pilot); watch it play; practise it from memory.
    Storage on this device only: flows in localStorage 'bb-flows', cockpit photos in IndexedDB 'bb-flows' (store 'img'),
    best results in 'bb-flows-best'. Nothing is sent anywhere, except the flow itself when the user shares a link or opens a
@@ -200,7 +200,7 @@ function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon',
   if (mode === 'build') {
     const R = cur.roles, unp = cur.steps.filter(s => s.r === role && !F.placed(s) && s.k === 'act').length;
     const names = ac ? A.targets(ac).map(t => t.whole ? t.name : t.name + ' · ' + t.panel) : [];
-    const acN = ac ? ac.name.replace(/^(Airbus|Beechcraft|Piper|Diamond|Cessna|Boeing) /, '') : PH() ? PH().name : 'Birdbird', phs = A.photos.filter(x => x.ac === (ac ? ac.id : (PH() || {}).ac));
+    const acN = ac ? ac.name.replace(/^(Airbus|Beechcraft|Piper|Diamond|Cessna|Boeing) /, '') : PH() ? PH().name : 'NORDAP', phs = A.photos.filter(x => x.ac === (ac ? ac.id : (PH() || {}).ac));
     const cardsH = ex ? `<div class="fsg">` +
       `<button class="fsb pri" id="sbird"><i>✈</i><span><b>${L({ en: `On the ${acN} cockpit`, no: `På ${acN}-cockpiten` })}</b><small>${L({ en: 'Empty flow. Tap the controls in your order.', no: 'Tom flow. Trykk bryterne i din rekkefølge.' })}</small></span></button>` +
       `<button class="fsb" id="sown"><i>📷</i><span><b>${L({ en: 'On your own photo or PDF', no: 'På ditt eget bilde eller PDF' })}</b><small>${L({ en: 'From your airline’s manual. Stays on this device.', no: 'Fra flyselskapets manual. Blir på denne enheten.' })}</small></span></button>` +
@@ -237,7 +237,7 @@ function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon',
     pq(); p.innerHTML = P.on ? (P.i >= P.q.length ? pResult() : `<p class="fhint">${L({ en: 'Practising: the question is at the top of the cockpit. Tap where the step belongs.', no: 'Øver: spørsmålet står øverst på cockpiten. Trykk der steget hører hjemme.' })}</p><div class="frow"><button class="btn sm" id="pstop">${L({ en: 'Stop', no: 'Stopp' })}</button></div>`) : 
       `<div class="frow"><label>${L({ en: 'Practise', no: 'Øv' })} <select id="prole">${cur.roles.map(r => `<option value="${r}"${P.role === r ? ' selected' : ''}>${r}</option>`).join('')}${cur.roles.length > 1 ? `<option value="*"${P.role === '*' ? ' selected' : ''}>${L({ en: 'Both, in flow order', no: 'Begge, i flow-rekkefølge' })}</option>` : ''}</select></label>` +
       `<label><input type="checkbox" id="ptxt"${P.txt ? ' checked' : ''}> ${L({ en: 'Show the step text', no: 'Vis stegteksten' })}</label>` +
-      (cur.roles.length > 1 ? `<label><input type="checkbox" id="pauto"${P.auto ? ' checked' : ''}> ${L({ en: 'Birdbird does the other pilot’s steps', no: 'Birdbird gjør den andre pilotens steg' })}</label>` : '') +
+      (cur.roles.length > 1 ? `<label><input type="checkbox" id="pauto"${P.auto ? ' checked' : ''}> ${L({ en: 'NORDAP does the other pilot’s steps', no: 'NORDAP gjør den andre pilotens steg' })}</label>` : '') +
       `<label><input type="checkbox" id="pspk"${P.speak ? ' checked' : ''}> ${L({ en: 'Read calls aloud', no: 'Les kall høyt' })}</label>` +
       (cur.steps.some(x => x.k === 'act' && F.stateOf(x.t).st) ? `<label><input type="checkbox" id="ppos"${P.pos ? ' checked' : ''}> ${L({ en: 'Ask for the position too (ON, AUTO …)', no: 'Spør om posisjonen også (ON, AUTO …)' })}</label>` : '') + '</div>' + revTxt() + logTxt() +
       `<p class="fex">${L({ en: 'Choose how hard', no: 'Velg hvor vanskelig' })}</p><div class="fpc">` +
@@ -291,7 +291,7 @@ function wirePanel() { const p = $('fpanel');
     if (b.id === 'ropen') return rOpen(); if (b.id === 'rjoin') { const c = ($('rjc').value || '').toLowerCase().replace(/^.*[#?&](room|c)=/, '').replace(/[^a-z0-9-]/g, ''); if (c) rJoin(c); return; }
     if (b.id === 'ragain') return rStart(true); if (b.id === 'rleave') return rLeave(); if (b.id === 'rstart') return rStart(true); if (b.id === 'rreset') { rSend({ t: 'reset' }); P.on = false; P.live = false; RM.live = false; pq(); draw(); panel(); return; }
     if (b.id === 'rcopy') { const l = location.origin + location.pathname + '#room=' + RM.code; navigator.clipboard.writeText(l).then(() => msg(L({ en: 'Link copied.', no: 'Lenken er kopiert.' }), 'ok'), () => prompt('', l)); return; }
-    if (b.id === 'rshare') { navigator.share({ title: 'Birdbird flow room', text: cur.name, url: location.origin + location.pathname + '#room=' + RM.code }).catch(() => {}); return; }
+    if (b.id === 'rshare') { navigator.share({ title: 'NORDAP flow room', text: cur.name, url: location.origin + location.pathname + '#room=' + RM.code }).catch(() => {}); return; }
     if (b.id === 'rsave') { const c = F.clean(JSON.parse(JSON.stringify(cur))); c.id = F.uid(); FL.unshift(c); try { localStorage.setItem(KEY, JSON.stringify(FL)); } catch (x) {} flowSel(); msg(L({ en: 'Saved in My flows.', no: 'Lagret i Mine flows.' }), 'ok'); return; }
     if (b.id === 'frot') { b.disabled = true; rotatePicture(); return; }
     if (b.id === 'fmine' || b.id === 'fcopy') { adoptExample(b.id === 'fcopy'); save(); draw(); panel(); return; } if (b.id === 'pmem') return pStart('draw'); if (b.id === 'pord') return pStart('order'); if (b.id === 'pmshow') { P.memShow = !P.memShow; memDraw(); panel(); return; } if (b.id === 'pgo') return pStart('flow'); if (b.id === 'pex') return pStart('exam'); if (b.id === 'pwk') return pStart('weak'); if (b.id === 'pfc') return pStart('cards'); if (b.id === 'pfa') return pStart('all');
@@ -487,8 +487,8 @@ function roomCard() { const meId = RM.me.slice(0, 8), mine = RM.members.find(m =
   return `<div class="room"><h3>${L({ en: RM.host ? 'Your room' : 'Room', no: RM.host ? 'Rommet ditt' : 'Rom' })}</h3><div class="ravs">${av(mine, true)}<span class="rline${ready ? ' on' : ''}"></span>${other.length ? other.map(m => av(m)).join('') : `<div class="rav wait"><i>?</i><b>${L({ en: 'Waiting…', no: 'Venter …' })}</b><span>${esc(cur.roles.find(r => r !== RM.role) || '')}</span></div>`}</div>` +
     `<p class="rst${ready ? ' ok' : ''}">${ready ? (RM.live ? L({ en: 'Live: both pilots connected', no: 'Direkte: begge pilotene er koblet til' }) : L({ en: 'Both pilots connected: ready', no: 'Begge pilotene er koblet til: klare' })) : L({ en: 'Waiting for your partner…', no: 'Venter på partneren din …' })}</p>` +
     `<label class="rcode">${L({ en: 'Room code', no: 'Romkode' })}<span><code>${esc(RM.code)}</code><button class="btn sm" id="rcopy">${L({ en: 'Copy link', no: 'Kopier lenke' })}</button>${navigator.share ? `<button class="btn sm" id="rshare">${L({ en: 'Share', no: 'Del' })}</button>` : ''}</span></label>` +
-    `<p class="note">${L({ en: 'Your partner opens the link, or Birdbird → Flow trainer → Together and types the code. No account needed.', no: 'Partneren åpner lenken, eller Birdbird → Flow-trener → Sammen og skriver koden. Ingen konto trengs.' })}</p>` +
-    (cur.ac === 'img' ? `<p class="fex">${L({ en: 'This flow is drawn on a photo, and photos are never shared: your partner adds their own picture of the same cockpit, or you both use a Birdbird cockpit.', no: 'Flowen er tegnet på et bilde, og bilder deles aldri: partneren legger til sitt eget bilde av samme cockpit, eller dere bruker begge en Birdbird-cockpit.' })}</p>` : '') + res +
+    `<p class="note">${L({ en: 'Your partner opens the link, or NORDAP → Flow trainer → Together and types the code. No account needed.', no: 'Partneren åpner lenken, eller NORDAP → Flow-trener → Sammen og skriver koden. Ingen konto trengs.' })}</p>` +
+    (cur.ac === 'img' ? `<p class="fex">${L({ en: 'This flow is drawn on a photo, and photos are never shared: your partner adds their own picture of the same cockpit, or you both use a NORDAP cockpit.', no: 'Flowen er tegnet på et bilde, og bilder deles aldri: partneren legger til sitt eget bilde av samme cockpit, eller dere bruker begge en NORDAP-cockpit.' })}</p>` : '') + res +
     `<div class="frow">${RM.live ? `<button class="btn" id="rreset">↺ ${L({ en: 'Restart', no: 'Start på nytt' })}</button>` : `<button class="btn pri" id="rstart"${ready ? '' : ' disabled'}>▶ ${L({ en: 'Start the flow together', no: 'Start flowen sammen' })}</button>`}<button class="btn warn" id="rleave">${L({ en: 'Leave', no: 'Forlat' })}</button>${cur.tmp ? `<button class="btn" id="rsave">${L({ en: 'Save a copy', no: 'Lagre en kopi' })}</button>` : ''}</div>` +
     `<p class="note">${L({ en: 'In flow order: you find your own steps; your partner’s taps show as dashed rings in their colour, and their checklist calls appear on your screen.', no: 'I flow-rekkefølge: du finner dine egne steg; partnerens trykk vises som stiplede ringer i deres farge, og sjekklistekallene deres kommer opp på skjermen din.' })}</p></div>`; }
 function roomForm() { const h = (location.hash.match(/room=([\w-]+)/) || [])[1] || '';
@@ -512,8 +512,8 @@ async function exportFile() { const o = JSON.parse(JSON.stringify(cur)); delete 
 async function importFile(file) { try { const j = JSON.parse(await file.text()), o = j && (j.flow || j); const f = F.clean(o); if (!f) throw new Error('not a flow');
   if (o.imgData && /^data:image\/(jpeg|png|webp);base64,/.test(o.imgData)) { const blob = await (await fetch(o.imgData)).blob(); const id = 'img-' + F.uid(); await imgPut({ id, blob, w: f.img ? f.img.w : 1000, h: f.img ? f.img.h : 750, name: f.img ? f.img.name : 'cockpit', at: Date.now() }); f.img = Object.assign({}, f.img || {}, { id }); }
   if (FL.some(x => x.id === f.id)) f.id = F.uid(); FL.unshift(f); save(); await open(f); msg(L({ en: 'Flow imported.', no: 'Flowen er importert.' }), 'ok'); }
-  catch (e) { msg(L({ en: 'That is not a Birdbird flow file.', no: 'Det er ikke en Birdbird-flowfil.' }), 'err'); } }
-async function share() { const url = location.origin + location.pathname + '#f=' + F.encode(cur), txt = cur.name + ' · Birdbird';
+  catch (e) { msg(L({ en: 'That is not a NORDAP flow file.', no: 'Det er ikke en NORDAP-flowfil.' }), 'err'); } }
+async function share() { const url = location.origin + location.pathname + '#f=' + F.encode(cur), txt = cur.name + ' · NORDAP';
   if (url.length > 60000) { msg(L({ en: 'This flow is too large for a link: use Save as file.', no: 'Flowen er for stor for en lenke: bruk Lagre som fil.' }), 'err'); return; }
   try { if (navigator.share && /Mobi|Android|iPhone|iPad/.test(navigator.userAgent)) { await navigator.share({ title: txt, url }); return; } await navigator.clipboard.writeText(url); msg(L({ en: 'Link copied. Photos are not in the link: the other pilot adds their own.', no: 'Lenken er kopiert. Bilder er ikke med i lenken: den andre piloten legger til sitt eget.' }), 'ok'); }
   catch (e) { prompt(L({ en: 'Copy the link', no: 'Kopier lenken' }), url); } }
@@ -556,7 +556,7 @@ async function video() { if (!window.MediaRecorder || !HTMLCanvasElement.prototy
   rec.stop(); await done; download(fileName(type.includes('mp4') ? '.mp4' : '.webm'), new Blob(parts, { type: type.split(';')[0] })); msg(L({ en: 'Video saved.', no: 'Videoen er lagret.' }), 'ok'); }
 
 /* ---------- new flow ---------- */
-/* the Birdbird cockpits as <optgroup>s: airliners, turboprops, training aircraft; the same list and order everywhere */
+/* the NORDAP cockpits as <optgroup>s: airliners, turboprops, training aircraft; the same list and order everywhere */
 function acOpts(sel) { return A.groups.map(g => g.list.length ? `<optgroup label="${esc(L(g))}">` + g.list.map(a => `<option value="${a.id}"${sel === a.id ? ' selected' : ''}>${esc(a.name)}${a.img ? '' : ' · ' + esc(L({ en: 'drawing', no: 'tegning' }))}</option>`).join('') + '</optgroup>' : '').join(''); }
 function newDialog() { const d = $('dnew'); $('nname').value = ''; $('nac').innerHTML = `<option value="img">${esc(L({ en: 'My own cockpit photo or PDF', no: 'Mitt eget cockpitbilde eller PDF' }))}</option>` + acOpts('') + `<optgroup label="${esc(L({ en: 'Real photos (free licence)', no: 'Ekte foto (fri lisens)' }))}">` + A.photos.map(a => `<option value="${a.id}">${esc(a.name)} · ${esc(L({ en: 'real photo', no: 'ekte foto' }))}</option>`).join('') + '</optgroup>';
   $('nrs').value = 'pfpm'; d.showModal(); }

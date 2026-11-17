@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Navigation log · Birdbird</title>
+<title>Navigation log · NORDAP</title>
 <meta name="description" content="Plan each leg with the wind triangle, work out fuel to Part-NCO rules and check the ICAO flight plan format before you file it.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
 <style>
 .fgrid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px}
 .it{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -62,11 +62,11 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
 </style>
 </head>
 <body data-title="Navigation log">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Flight planning</div>
+      <div class="eyebrow">NORDAP · Flight planning</div>
       <h1>Navigation log</h1>
       <p>Plan the legs with the wind triangle: wind correction, magnetic heading, groundspeed, time and fuel. When the plan is ready, check the ICAO flight plan format before you file it.</p>
     </div>
@@ -150,15 +150,15 @@ table.ft td input{width:70px;font-family:var(--f-mono);background:var(--bg);colo
 
   <p class="note">Teaching tool. Formats follow ICAO Doc 4444 (FPL 2012) and EASA Part-NCO in simplified form. Always check the current AIP, your state's ATS office requirements and the aircraft flight manual. Example values are not for navigation.</p>
 </div>
-<script src="lab.js?v=51"></script>
+<script src="lab.js?v=52"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,nf,el,seg,fit,quiz,shuffle}=LAB;
 LAB.add({},{
- 'Navigation log and tools':'Navigasjonslogg og verktøy','Birdbird · Flight planning':'Birdbird · Flyplanlegging',
+ 'Navigation log and tools':'Navigasjonslogg og verktøy','NORDAP · Flight planning':'NORDAP · Flyplanlegging',
  'Plan the legs with the wind triangle: wind correction, magnetic heading, groundspeed, time and fuel. When the plan is ready, check the ICAO flight plan format before you file it.':'Planlegg etappene med vindtrekanten: vindkorreksjon, magnetisk kurs, groundspeed, tid og drivstoff. Når planen er klar, sjekker du formatet på ICAO-flyplanen før du sender den inn.',
- 'Birdbird · Flight planning':'Birdbird · Flyplanlegging','Flight plan and navigation log':'Flyplan og navigasjonslogg',
+ 'NORDAP · Flight planning':'NORDAP · Flyplanlegging','Flight plan and navigation log':'Flyplan og navigasjonslogg',
  'Fill in an ICAO flight plan the way it is filed in Europe, with a check that explains every error. Then plan the legs: wind correction, magnetic heading, time and fuel.':'Fyll ut en ICAO-flyplan slik den sendes inn i Europa, med en sjekk som forklarer hver feil. Planlegg så leggene: vindkorreksjon, magnetisk kurs, tid og drivstoff.',
  'ICAO flight plan':'ICAO-flyplan','Navigation log':'Navigasjonslogg','Fuel':'Drivstoff','Test yourself':'Test deg selv',
  'The same items as the European flight plan form. Fields turn red when the format is wrong; the check list below says why and how to fix it.':'Samme felt som det europeiske flyplanskjemaet. Feltene blir røde når formatet er feil; sjekklisten under sier hvorfor og hvordan du retter det.',

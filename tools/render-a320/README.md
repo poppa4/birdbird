@@ -8,7 +8,7 @@ https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
 
 The two pictures are derived works of that model and are distributed under GPL-2.0 as well, without warranty.
 The model is the source; these scripts are everything else needed to make the pictures again. What the displays
-(PFD, ND, ECAM, MCDU, ISIS) show is Birdbird's own drawing (`screens.py`), as the model's screens are painted by the
+(PFD, ND, ECAM, MCDU, ISIS) show is NORDAP's own drawing (`screens.py`), as the model's screens are painted by the
 simulator at run time and are blank in the files.
 
 Configuration rendered: A320neo, CFM engines, no head-up display.

@@ -1,4 +1,4 @@
-/* Birdbird – engparts.js: "Take it apart" for the Engines lab (engines.html).
+/* NORDAP – engparts.js: "Take it apart" for the Engines lab (engines.html).
    An exploded technical illustration of each generic engine type, drawn on the lab's 2D canvas.
    Every part carries the lab's numbered stage (1 intake, 2 compression, 3 combustion, 4 exhaust, 5 drive) and its colour.
    Geometry is in engine units (gas turbines: nacelle/casing radius ≈ 1; piston: bore ≈ 0.8), scaled to fit at draw time.

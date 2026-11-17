@@ -1,4 +1,4 @@
-/* Birdbird – cb3d.js: the 3D thunderstorm scene for storms.html (three.js r128, no external assets).
+/* NORDAP – cb3d.js: the 3D thunderstorm scene for storms.html (three.js r128, no external assets).
    One renderer, three views that share the craft of the wind tunnel (tunnel.html):
    - storm: a cumulonimbus built from a few thousand lit soft sprites (cauliflower towers, overshooting top, anvil,
      mammatus, flanking line, shelf cloud), rain shafts, levels, and live layers (air motion coloured by vertical

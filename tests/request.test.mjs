@@ -14,7 +14,7 @@ test('a request is stored and mailed to REQUEST_TO with its pictures; the addres
 test('without mail settings the request is kept, and goes out with the next one once they are set', async () => { const mails = [], db = makeD1();
   const a = await post({ DB: db }, mk(mails), { kind: 'sim', aircraft: 'PC-12' }); assert.deepEqual(a.j, { ok: true, mailed: false }); assert.equal(mails.length, 0);
   t += 1000; const b = await post({ DB: db, REQUEST_TO: 'owner@example.org', RESEND_API_KEY: 'k' }, mk(mails), { kind: 'sim', aircraft: 'TBM 940' }, O, '5.6.7.8'); assert.equal(b.j.mailed, true);
-  assert.deepEqual(mails.map(m => m.b.subject).sort(), ['Birdbird request: PC-12 (simulator)', 'Birdbird request: TBM 940 (simulator)']); });
+  assert.deepEqual(mails.map(m => m.b.subject).sort(), ['NORDAP request: PC-12 (simulator)', 'NORDAP request: TBM 940 (simulator)']); });
 test('a refused mail leaves the request waiting', async () => { const mails = [], env = { DB: makeD1(), REQUEST_TO: 'o@example.org', RESEND_API_KEY: 'k' };
   const r = await post(env, mk(mails, false), { kind: 'sim', aircraft: 'PC-12' }); assert.deepEqual(r.j, { ok: true, mailed: false }); assert.equal((await env.DB.prepare('SELECT sent FROM plane_requests').first()).sent, 0); });
 test('refusals: foreign origin, no aircraft, pictures without the rights box, too many or bad pictures, robots, five a day', async () => { const mails = [], env = { DB: makeD1(), REQUEST_TO: 'o@example.org', RESEND_API_KEY: 'k' }, d = mk(mails);

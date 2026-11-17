@@ -1,4 +1,4 @@
-/* Birdbird – briefingmodell: rubrikker (avgang, TSADMM-innflyging, VFR), fakta for AI-vurdering, lokal reservevurdering og modellbriefing.
+/* NORDAP – briefingmodell: rubrikker (avgang, TSADMM-innflyging, VFR), fakta for AI-vurdering, lokal reservevurdering og modellbriefing.
    Brukes av briefing.html og gate-to-gate-treneren. */
 (function(G){
 'use strict';
@@ -64,9 +64,9 @@ function proc(V){ return O.APPS[V.app]||O.ILS36; }
 function facts(kind,V){
   const s=O.speeds(V.mass), A=O.AC, P=proc(V);
   const base=`AIRCRAFT: ${A.type} ${A.reg}, mass ${V.mass} kg (MTOM ${A.mtom}). Speeds KIAS: Vr ${s.vr}, V50 ${s.v50}, Vy ${s.vy}, Vyse ${A.vyse} (blue line), Vmca ${A.vmca.up}, VFE APP ${A.vfe.app} / LDG ${A.vfe.ldg}, VLO extend ${A.vlo.ext} retract ${A.vlo.ret}, Vref flaps LDG ${s.vref} (APP ${s.vrefApp}), min go-around speed ${A.vga}. Demonstrated crosswind ${A.xwind} kt. OEI: ${A.oei}
-AERODROME: Birdbird (NAER, fictional), elevation ${O.APT.elev} ft, runway 36/18, 1500 x 30 m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${O.APT.freq.atis}, Delivery ${O.APT.freq.del}, Ground ${O.APT.freq.gnd}, Tower ${O.APT.freq.twr}, Approach ${O.APT.freq.app}. Transition altitude ${O.APT.ta} ft. MSA ${O.APT.msa} ft (${O.APT.msaRef}).
+AERODROME: NORDAP (NAER, fictional), elevation ${O.APT.elev} ft, runway 36/18, 1500 x 30 m, asphalt. Taxiway A parallel east of the runway, holding point A1 for runway 36, exit A3 at the north end. Frequencies: ATIS ${O.APT.freq.atis}, Delivery ${O.APT.freq.del}, Ground ${O.APT.freq.gnd}, Tower ${O.APT.freq.twr}, Approach ${O.APT.freq.app}. Transition altitude ${O.APT.ta} ft. MSA ${O.APT.msa} ft (${O.APT.msaRef}).
 WEATHER: ${V.metar}. ATIS information ${V.info}. Wind ${V.wind}: headwind ${V.hw} kt, crosswind ${V.xw} kt on runway 36. QNH ${V.qnh}.`;
-  if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared to Birdbird via ${O.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${O.SID.name}: ${O.SID.text} Minimum climb gradient ${O.SID.grad}. ${O.SID.gradNote} Departure frequency: Birdbird Approach ${O.APT.freq.app}.`
+  if(kind==='dep') return base+'\n'+(V.ifr?`CLEARANCE: cleared to NORDAP via ${O.SID.name} departure, flight planned route, climb ${V.clrAlt}, squawk ${V.sq}. SID ${O.SID.name}: ${O.SID.text} Minimum climb gradient ${O.SID.grad}. ${O.SID.gradNote} Departure frequency: NORDAP Approach ${O.APT.freq.app}.`
      : `VFR: leave the control zone via ${O.APT.vrp[V.vrp]}, at or below 1500 ft, squawk 7000. After leaving: Vestfjell Information ${O.APT.freq.fis}.`);
   if(kind==='app') return base+`\nAPPROACH CHART: ${P.name}, chart ${P.chart} dated ${P.date}. ${P.kind==='RNP'?'SBAS '+P.loc+', LPV and LNAV minima':'LOC '+P.loc}, final course ${P.crs}°. ${P.kind==='LOC'?'Glidepath OUT: fly as LOC only, step down / CDFA.':'Glidepath '+P.gp+'°, TCH '+P.tch+' ft.'}
 IAF: ${P.iaf.map(x=>x.join(' ')).join(', ')}. IF: ${P.if_.join(' ')}. ${P.kind==='LOC'?'FAF':'FAP'}: ${P.faf.join(' ')}. Distance/altitude checks: ${P.checks.map(c=>c[0]+' '+c[1]+' ft').join(', ')}. Rate of descent on ${P.gp}°: ${Object.entries(P.rod).map(([k,v])=>k+' kt GS '+v+' fpm').join(', ')}.
@@ -115,7 +115,7 @@ function model(kind,V){
   if(kind==='dep') return V.ifr?
 `Departure briefing. Threats: ${V.cld[0]==='BKN'||V.cld[0]==='OVC'?'cloud base '+V.cld[1]+' feet so we enter IMC early, ':''}terrain north-west and the 4.5 per cent gradient on one engine, ${V.t<=3?'possible icing so pitot heat on, ':''}mass ${V.mass} kilos.
 Runway 36 from A1, full length 1500 metres, wind ${V.wind}, ${xwTxt(V)}.
-Initial: ${O.SID.name}, track 360, at 1500 feet left turn direct OSVIK, climb 3000 feet, squawk ${V.sq}, minimum gradient 4.5 per cent to 1500 feet. After departure Birdbird Approach ${O.APT.freq.app}. Flight plan and course checked on the PFD.
+Initial: ${O.SID.name}, track 360, at 1500 feet left turn direct OSVIK, climb 3000 feet, squawk ${V.sq}, minimum gradient 4.5 per cent to 1500 feet. After departure NORDAP Approach ${O.APT.freq.app}. Flight plan and course checked on the PFD.
 Bugs: normal take-off, flaps up, rotate ${s.vr}, climb ${s.vy}, blue line ${O.AC.vyse}.
 Emergencies: any failure or warning before rotation, I call stopping, both power levers idle, keep it straight, brake as required. Engine failure after rotation with gear down and runway remaining: land ahead. Otherwise power max, gear up, flaps up, 85 knots, identify, verify, secure. The SID gradient may not be achievable on one engine today, so I fly runway track, climb to MSA and ask Approach for vectors back to the ILS 36.
 Transition altitude 7000, standard set passing 7000 in the climb.

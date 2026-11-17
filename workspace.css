@@ -1,4 +1,4 @@
-/* Birdbird – My workspace (page styles; tokens and shared components from site.css and lab.css).
+/* NORDAP – My workspace (page styles; tokens and shared components from site.css and lab.css).
    One idea carries the page: every item says where it is kept. The custody band on Overview and the
    small "kept" marks on rows use the same three states: this device, your account, a backup file. */
 .ws{--rail:208px;

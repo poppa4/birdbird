@@ -1,4 +1,4 @@
-/* Birdbird – "Use my own checklist" for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
+/* NORDAP – "Use my own checklist" for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    Every flight school has its own checklists and SOPs, so the trainers do not impose one. The student picks a checklist from
    My Workspace (a document in the Checklists or SOP category, or a note) or pastes the text. It is parsed into sections and
    items and shown in the Procedures drawer: tap to tick, the current item highlighted, large text on request. Items whose

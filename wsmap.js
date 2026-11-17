@@ -1,4 +1,4 @@
-/* Birdbird – My workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
+/* NORDAP – My workspace map: draws a graph from wsgraph.js on a canvas (2D, devicePixelRatio aware, capped at 2).
    Frames are drawn only while something moves: the short intro, a camera move, a pan. Once still, no animation frame
    is requested, so an idle map costs nothing. With reduced motion it is drawn once.
    WSMAP.mount(host, { graph, t, mini, labels, sample, onOpen(node, beside), onEdit(what, node or group, button), onClick(), padBottom, view })

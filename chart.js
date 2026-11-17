@@ -1,4 +1,4 @@
-/* Birdbird – oppdiktede kart for opplæring: innflygingskart RWY 36 (ILS/LOC/RNP) og SID OSVIK 1N. Tegnes som SVG.
+/* NORDAP – oppdiktede kart for opplæring: innflygingskart RWY 36 (ILS/LOC/RNP) og SID OSVIK 1N. Tegnes som SVG.
    Innflygingskartet følger den kjente oppbyggingen til kommersielle innflygingskart (topptekst, briefingstripe, planvisning,
    profil, omregningstabell, minimaboks) slik at man lærer å lese ekte kart. Alt innhold er oppdiktet. Ikke for navigasjon. */
 (function(G){
@@ -44,13 +44,13 @@ function app(P,opt){
   s+=box(4,4,592,842,{c:ink,w:1.4});
 
   /* 1 topptekst */
-  s+=T(14,28,A.icao,{fs:21,w:800,st:80})+T(14,44,'BIRDBIRD',{fs:10.5,w:600,c:mut,ls:.5});
+  s+=T(14,28,A.icao,{fs:21,w:800,st:80})+T(14,44,'NORDAP',{fs:10.5,w:600,c:mut,ls:.5});
   s+=T(300,25,idx,{fs:18,w:800,a:'middle'})+T(300,41,'EFF '+P.date,{fs:9.5,a:'middle',c:mut});
-  s+=T(586,21,'BIRDBIRD',{fs:9,a:'end',c:mut,ls:.5})+T(586,42,title,{fs:17.5,w:800,a:'end',st:82});
+  s+=T(586,21,'NORDAP',{fs:9,a:'end',c:mut,ls:.5})+T(586,42,title,{fs:17.5,w:800,a:'end',st:82});
   s+=ln(4,50,596,50);
   s+=box(4,50,592,14,{f:aw})+T(300,60.5,'FICTIONAL TRAINING CHART — NOT FOR NAVIGATION',{fs:9,w:700,c:mag,a:'middle',ls:.8});
   s+=ln(4,64,596,64);
-  [['D-ATIS',A.freq.atis],['BIRDBIRD APPROACH (R)',A.freq.app],['BIRDBIRD TOWER',A.freq.twr],['BIRDBIRD GROUND',A.freq.gnd]].forEach((c,i)=>{ const x=4+i*148;
+  [['D-ATIS',A.freq.atis],['NORDAP APPROACH (R)',A.freq.app],['NORDAP TOWER',A.freq.twr],['NORDAP GROUND',A.freq.gnd]].forEach((c,i)=>{ const x=4+i*148;
     if(i) s+=ln(x,64,x,88,{c:rule}); s+=T(x+7,74,c[0],{fs:8,c:mut,w:500})+T(x+7,85,c[1],{fs:11.5,w:700}); });
   s+=ln(4,88,596,88);
 
@@ -88,7 +88,7 @@ function app(P,opt){
   // bane, VOR, navaid-bokser
   s+=box(X-3,yT-18,6,18,{f:ink})+ln(X-7,yT+3,X+7,yT+3,{w:1.2});
   s+=`<path d="M${X+17} ${yT-26}l4 0 2 3.5 -2 3.5 -4 0 -2 -3.5z" fill="#fff" stroke="${ink}" stroke-width="1.2"/><circle cx="${X+19}" cy="${yT-22.5}" r="1" fill="${ink}"/>`;
-  s+=box(X+28,yT-40,96,28,{f:'#fff',c:ink})+T(X+33,yT-30,'BIRDBIRD',{fs:7.5,c:mut,w:600})+T(X+33,yT-18.5,'113.30 ASN',{fs:9.5,w:750})+mc('ASN',X+72,yT-32);
+  s+=box(X+28,yT-40,96,28,{f:'#fff',c:ink})+T(X+33,yT-30,'NORDAP',{fs:7.5,c:mut,w:600})+T(X+33,yT-18.5,'113.30 ASN',{fs:9.5,w:750})+mc('ASN',X+72,yT-32);
   if(!rnp) s+=box(X+12,yT+8,104,26,{f:'#fff',c:ink})+T(X+17,yT+18,'ILS DME',{fs:7.5,c:mut,w:600})+T(X+17,yT+29.5,'110.30 IASN',{fs:9.5,w:750})+mc('IASN',X+50,yT+15);
   // sluttkurs med LOC-fjær
   if(!rnp) s+=`<path d="M${X} ${Y(1.2)}L${X-6} ${Y(10.6)}L${X} ${Y(9.6)}z" fill="#fff" stroke="${ink}" stroke-width="1"/><path d="M${X} ${Y(1.2)}L${X+6} ${Y(10.6)}L${X} ${Y(9.6)}z" fill="url(#${id}h)" stroke="${ink}" stroke-width="1"/>`;
@@ -176,7 +176,7 @@ function app(P,opt){
   [[218,sub],[444,sub],[530,sub],[133,spl],[303,spl]].forEach(([x,y0])=>{ s+=ln(x,y0,x,827,{c:rule}); });
   s+=ln(48,top+13,48,827,{c:rule});
   s+=ln(4,827,596,827,{w:1.2});
-  s+=T(10,839.5,'Fictional training chart (Birdbird). Not for navigation. Not a reproduction of any published chart.',{fs:7.5,c:mut});
+  s+=T(10,839.5,'Fictional training chart (NORDAP). Not for navigation. Not a reproduction of any published chart.',{fs:7.5,c:mut});
   s+=T(590,839.5,'Tint: A320 / CAT C',{fs:7.5,c:mag,a:'end',w:700});
 
   if(opt.hot) REG.forEach(r=>{ s+=`<g class="hs" data-k="${r.k}" tabindex="0" role="button" aria-label="${r.n}"><rect class="hz" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}"/><circle class="hb" cx="${r.bx}" cy="${r.by}" r="8.5"/><text class="hn" x="${r.bx}" y="${r.by+3.6}" text-anchor="middle" font-size="10.5" font-weight="800" font-family="${FF}">${r.n}</text></g>`; });
@@ -188,7 +188,7 @@ function sid(){
   let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SID OSVIK 1N chart, fictional training chart, not for navigation" style="background:#fff;max-width:100%;height:auto;display:block">`;
   s+=`<defs><marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="${ink}"/></marker></defs>`;
   s+=box(6,6,W-12,H-12,{c:ink,w:1.2});
-  s+=T(16,27,'NAER',{fs:18,w:800,st:80})+T(16,42,'BIRDBIRD  ·  SID RWY 36',{fs:9.5,c:mut,w:600})+T(W-16,25,'OSVIK 1N',{fs:16,w:800,a:'end'})+T(W-16,41,'10-3   EFF 01 NOV 26',{fs:9.5,c:mut,a:'end'});
+  s+=T(16,27,'NAER',{fs:18,w:800,st:80})+T(16,42,'NORDAP  ·  SID RWY 36',{fs:9.5,c:mut,w:600})+T(W-16,25,'OSVIK 1N',{fs:16,w:800,a:'end'})+T(W-16,41,'10-3   EFF 01 NOV 26',{fs:9.5,c:mut,a:'end'});
   s+=ln(6,50,W-6,50);
   [['TWR',G.OPS.APT.freq.twr],['DEP / APP',G.OPS.APT.freq.app],['TA','7000\''],['INITIAL CLB','3000\'']].forEach((b,i)=>{ const x=6+i*(W-12)/4; if(i) s+=ln(x,50,x,78,{c:rule}); s+=T(x+6,62,b[0],{fs:8,c:mut,w:500})+T(x+6,74,b[1],{fs:11.5,w:700}); });
   s+=ln(6,78,W-6,78);

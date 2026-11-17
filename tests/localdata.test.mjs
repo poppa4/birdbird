@@ -1,4 +1,4 @@
-/* localdata.js (BBLOCAL): every Birdbird key and database on the device is listed, exported and deleted.
+/* localdata.js (BBLOCAL): every NORDAP key and database on the device is listed, exported and deleted.
    The first test reads the site's code, so a new storage key or IndexedDB database that localdata.js does not cover fails here. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -68,7 +68,7 @@ const SEED = { 'bb-track': 'ppl', 'bb-ws-items': '{}', 'bb-openaip-key': 'k', 'n
   'vlab-done-forces': '1', 'vlab-lang': 'no', 'fi-imp-ck': '1', 'birdbird-account': '{"signedIn":false}', 'birdbird-navsim-snap': '{}', 'birdbird-navsim-panel-x': '1',
   'other-site': 'keep me', 'theme': 'dark' };
 
-test('clearAll removes every Birdbird key, session key and database, and nothing else', async () => {
+test('clearAll removes every NORDAP key, session key and database, and nothing else', async () => {
   const ls = new MemStorage(SEED), ss = new MemStorage({ 'fi-view': 'docs', 'bb-ai-api': '1', 'bb-ai-off': '1', 'bb-map-weak': 'lost', 'unrelated': 'x' });
   const idb = fakeIdb(['birdbird-workspace', 'naeroson-fi', 'naeroson-att']);
   const G = load({ localStorage: ls, sessionStorage: ss, indexedDB: idb });

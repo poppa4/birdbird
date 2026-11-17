@@ -1,8 +1,8 @@
-/* Birdbird – Cloudflare Pages Function: "Request your aircraft" (reqplane.js; the simulators and the flow trainer).
+/* NORDAP – Cloudflare Pages Function: "Request your aircraft" (reqplane.js; the simulators and the flow trainer).
    No account needed. A visitor says which aircraft they want, with links and up to three small pictures they have the right
    to share. The request is kept in D1 and sent on by e-mail to the address in REQUEST_TO.
 
-   POST /api/request  { kind:'sim'|'flows'|'fix' (fix: a wrong or missing control name in a Birdbird cockpit), aircraft, variant?, want?, links?, name?, reply?, rights:true, images?:[{ name, data }] }
+   POST /api/request  { kind:'sim'|'flows'|'fix' (fix: a wrong or missing control name in a NORDAP cockpit), aircraft, variant?, want?, links?, name?, reply?, rights:true, images?:[{ name, data }] }
         -> { ok:true, mailed:true|false }      images: base64 JPEG, each at most 400 kB, three at most
    errors { ok:false, error, message }: 400 bad_request · 403 bad_origin · 413 too_large · 429 rate_limited · 503 no_db
 
@@ -10,7 +10,7 @@
      REQUEST_TO       where requests are mailed
      RESEND_API_KEY   key for resend.com (free plan: 100 mails a day). With the sender 'onboarding@resend.dev' Resend only
                       delivers to the address the Resend account itself is registered with, so no domain set-up is needed.
-     REQUEST_FROM     optional sender, once a domain is verified with Resend, e.g. 'Birdbird <requests@birdbird.eu>'
+     REQUEST_FROM     optional sender, once a domain is verified with Resend, e.g. 'NORDAP <requests@birdbird.eu>'
    Without them the request is still stored; stored requests are mailed as soon as the settings are there (five at a time).
 
    Storage (D1, binding DB; table made here on first use, also in migrations/0005_requests.sql):
@@ -58,7 +58,7 @@ export function mailText(o, t) {
 /* returns true when the mail went out */
 export async function send(env, o, images, t, fetcher) {
   if (!env.REQUEST_TO || !env.RESEND_API_KEY) return false;
-  const body = { from: env.REQUEST_FROM || 'Birdbird <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: `Birdbird ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`.slice(0, 150), text: mailText(o, t) };
+  const body = { from: env.REQUEST_FROM || 'NORDAP <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: `NORDAP ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`.slice(0, 150), text: mailText(o, t) };
   if (o.reply) body.reply_to = o.reply;
   if (images.length) body.attachments = images.map(im => ({ filename: im.name, content: im.data }));
   try { const r = await (fetcher || fetch)(RESEND, { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' }, body: JSON.stringify(body) });

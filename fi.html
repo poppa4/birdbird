@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Flight Intelligence · Birdbird</title>
+<title>Flight Intelligence · NORDAP</title>
 <meta name="description" content="An instructor that answers from your own AFM, QRH and SOP: learn, practise orals and work through scenarios, with every answer showing its source.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
-<link rel="stylesheet" href="train.css?v=3">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
+<link rel="stylesheet" href="train.css?v=4">
 <style>
 .welcome{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--sheet);border:1px solid var(--rule);border-left:4px solid var(--info);padding:12px 16px;font-size:15px}
 .welcome[hidden]{display:none}
@@ -136,13 +136,13 @@
 </style>
 </head>
 <body data-title="Flight Intelligence">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Flight Intelligence</div>
+      <div class="eyebrow">NORDAP · Flight Intelligence</div>
       <h1>Flight Intelligence</h1>
-      <p>Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on Birdbird, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.</p>
+      <p>Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on NORDAP, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.</p>
     </div>
     <div class="hright"></div>
   </header>
@@ -236,10 +236,10 @@
 
   <div class="modal" id="modal" hidden><div class="mbox"><div class="btns" style="justify-content:space-between"><b id="mTitle"></b><button class="btn" id="mClose">Close</button></div><div id="mBody"></div></div></div>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="ai.js?v=5"></script>
-<script src="easa.js?v=1"></script>
-<script src="store.js?v=3"></script>
+<script src="lab.js?v=52"></script>
+<script src="ai.js?v=6"></script>
+<script src="easa.js?v=2"></script>
+<script src="store.js?v=4"></script>
 <script>
 (function(){
 'use strict';
@@ -318,7 +318,7 @@ function drawChips(){ el('chips').innerHTML=(CHIPS[INSTK]||[]).map(([l,t])=>`<bu
 el('chips').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const t=b.dataset.c;
   if(MODE==='learn'){ if(!S) startSession(); if(S) turn(L({en:'Teach me: ',no:'Lær meg: '})+t,false); }
   else { el('tTopic').value=t; if(S) endSession(false); startSession(); } });
-const BUILTIN_DA42={id:'bb-da42',ac:'*da42',name:'Birdbird DA42 learning example (not AFM data: use your own AFM)',kind:'ref',rev:'Birdbird',on:true,pages:1,builtin:true,chunks:[
+const BUILTIN_DA42={id:'bb-da42',ac:'*da42',name:'NORDAP DA42 learning example (not AFM data: use your own AFM)',kind:'ref',rev:'NORDAP',on:true,pages:1,builtin:true,chunks:[
  {p:1,s:'Speeds',t:'DA42-VI (DA42 NG with MÄM 42-600; 2 × Austro AE300, FADEC, Jet A-1). Speeds KIAS: Vr 76 (flaps UP), V50 83, Vy 90 (≤1900 kg) / 92 (>1900 kg), Vyse 85 (blue line), Vmca 71 (flaps UP) / 68 (APP); a DA42 NG without MÄM 42-600 has Vmca 76, Vref flaps LDG 84 / 86, VFE APP 133 / LDG 113, VLO extend 188 / retract 152, VLE 188, VNO 151, VNE 188, VO 112 (≤1700 kg) / 119 / 122 (>1800 kg). MTOM 1999 kg with MÄM 42-659 and 42-678 (standard NG 1900 kg). Demonstrated crosswind 25 kt. Starter max 10 s then 20 s cool-down. Max take-off power 100 % for 5 min, max continuous 92 %.'},
  {p:1,s:'Engine failure',t:'DA42 engine failure: on the ground, power levers idle, directional control, brakes. After lift-off with gear down and runway remaining, land ahead. Otherwise power MAX, rudder, Vyse 85 KIAS, gear UP, flaps UP, identify – verify – secure. Before departure, check the one-engine-inoperative climb performance (AFM section 5) against the SID or obstacle gradient, and brief what you will do if it cannot be met.'},
  {p:1,s:'Stable approach',t:'Stable approach: by 1000 ft AAL in IMC (500 ft in VMC) within half scale CDI and GS/GP, vertical speed not more than 1000 fpm, speed within ±10 kt, landing configuration. Otherwise go around.'}]};
@@ -341,7 +341,7 @@ function vdState(a,k){ const r=(a.vd||{})[k]; if(!r) return {s:'none'}; const d=
 function vdBlock(a){ const afm=DOCS.filter(d=>d.ac===a.id&&['afm','lim','fcom','qrh'].includes(d.kind)&&!d.old); const sug=VDS[a.id]||{};
   const n=VDF.filter(([k])=>{ const st=vdState(a,k).s; return ['confirmed','corrected','entered'].includes(st); }).length;
   return `<details class="vd" data-vd="${a.id}" ${sug._open?'open':''}><summary>${L({en:'Checked aircraft data',no:'Kontrollerte flydata'})} <span>· ${n} / ${VDF.length} ${L({en:'checked',no:'kontrollert'})}</span></summary><div class="in">
-   <div class="warn">${L({en:'The AI suggests values from your AFM. Open the page and compare before you confirm: only values you have checked are used by Birdbird. Educational use only, not approved for operational flight planning. The approved flight manual always applies.',no:'AI-en foreslår verdier fra din AFM. Åpne siden og sammenlign før du bekrefter: bare verdier du har kontrollert brukes av Birdbird. Kun til opplæring, ikke godkjent for operativ flyplanlegging. Den godkjente flyhåndboken gjelder alltid.'})}</div>
+   <div class="warn">${L({en:'The AI suggests values from your AFM. Open the page and compare before you confirm: only values you have checked are used by NORDAP. Educational use only, not approved for operational flight planning. The approved flight manual always applies.',no:'AI-en foreslår verdier fra din AFM. Åpne siden og sammenlign før du bekrefter: bare verdier du har kontrollert brukes av NORDAP. Kun til opplæring, ikke godkjent for operativ flyplanlegging. Den godkjente flyhåndboken gjelder alltid.'})}</div>
    <div class="btns" style="margin:6px 0"><button class="btn" data-vdai="${a.id}" ${afm.length?'':'disabled'}>${L({en:'Find values in the AFM (AI)',no:'Finn verdier i AFM (AI)'})}</button><span class="note" data-vdmsg="${a.id}">${afm.length?'':L({en:'Add the AFM or POH first and mark its revision.',no:'Legg til AFM eller POH først og merk revisjonen.'})}</span></div>
    <div style="overflow-x:auto"><table><tr><th>${L({en:'Item',no:'Verdi'})}</th><th>${L({en:'Suggested (source)',no:'Foreslått (kilde)'})}</th><th>${L({en:'Your value',no:'Din verdi'})}</th><th>${L({en:'Status',no:'Status'})}</th><th></th></tr>
    ${VDF.map(([k,l,u])=>{ const g=sug[k], st=vdState(a,k), r=st.r; const val=r?r.v:(g?g.v:'');
@@ -430,7 +430,7 @@ let SRC=[];
 function drawSrc(list,regs,hl,easa){ SRC=list; easa=easa||[];
   el('srcList').innerHTML= list.length? list.map((x,i)=>`<div class="sitem ${hl&&hl.includes(i+1)?'hl':''}" id="si${i+1}"><b>S${i+1} · ${esc(x.d.name)}</b><span class="meta">${esc(KN[x.d.kind]||'')}${x.d.rev?' · rev. '+esc(x.d.rev):''} · ${L({en:'page',no:'side'})} ${x.c.p}${x.c.s?' · '+esc(x.c.s):''}</span><blockquote>${esc(x.c.t.slice(0,900))}${x.c.t.length>900?'…':''}</blockquote>${x.d.blob?`<button class="btn" data-open="${i}">${L({en:'Open the page',no:'Åpne siden'})}</button>`:''}</div>`).join('')
     : `<p class="note">${L({en:'No passages from your documents were used for this answer.',no:'Ingen avsnitt fra dokumentene dine ble brukt i dette svaret.'})}</p>`;
-  const eh= easa.length? `<div class="sitem easa"><b>${L({en:'EASA rules used',no:'EASA-regler brukt'})}</b><span class="meta">${L({en:'Birdbird EASA rules library: summaries in Birdbird’s own words, linked to the official text.',no:'Birdbirds EASA-regelbibliotek: sammendrag med Birdbirds egne ord, lenket til den offisielle teksten.'})}</span>${easa.map((x,i)=>`<div class="ei" id="se${i+1}"><div>E${i+1} · ${EASA.chip(x,i+1)}</div><span class="meta">${esc(x.title)} · ${esc(x.type)} · ${esc(EASA.rev(x,LAB.lang))}${x.verified?'':' · '+L({en:'not yet checked word for word',no:'ikke kontrollert ord for ord ennå'})}</span><p>${esc(EASA.sum(x,LAB.lang))}</p><span class="meta"><a href="${esc(x.url)}" target="_blank" rel="noopener">${L({en:'Open the official text',no:'Åpne den offisielle teksten'})} ↗</a> · <a href="${esc(x.eurlex)}" target="_blank" rel="noopener">EUR-Lex ↗</a></span></div>`).join('')}<span class="meta">${L({en:'Check the current revision through the link before you rely on it.',no:'Sjekk gjeldende revisjon via lenken før du stoler på det.'})}</span></div>` : '';
+  const eh= easa.length? `<div class="sitem easa"><b>${L({en:'EASA rules used',no:'EASA-regler brukt'})}</b><span class="meta">${L({en:'NORDAP EASA rules library: summaries in NORDAP’s own words, linked to the official text.',no:'NORDAPs EASA-regelbibliotek: sammendrag med NORDAPs egne ord, lenket til den offisielle teksten.'})}</span>${easa.map((x,i)=>`<div class="ei" id="se${i+1}"><div>E${i+1} · ${EASA.chip(x,i+1)}</div><span class="meta">${esc(x.title)} · ${esc(x.type)} · ${esc(EASA.rev(x,LAB.lang))}${x.verified?'':' · '+L({en:'not yet checked word for word',no:'ikke kontrollert ord for ord ennå'})}</span><p>${esc(EASA.sum(x,LAB.lang))}</p><span class="meta"><a href="${esc(x.url)}" target="_blank" rel="noopener">${L({en:'Open the official text',no:'Åpne den offisielle teksten'})} ↗</a> · <a href="${esc(x.eurlex)}" target="_blank" rel="noopener">EUR-Lex ↗</a></span></div>`).join('')}<span class="meta">${L({en:'Check the current revision through the link before you rely on it.',no:'Sjekk gjeldende revisjon via lenken før du stoler på det.'})}</span></div>` : '';
   const rg=(regs||[]).filter(r=>!easa.some(x=>x.id.toUpperCase()===r.ref.toUpperCase()));
   el('regList').innerHTML= eh + (rg.length? `<div class="sitem reg"><b>${L({en:'Regulations mentioned',no:'Regelverk nevnt'})}</b>${rg.map(r=>`<div>${esc(r.ref)} · <a href="${r.url}" target="_blank" rel="noopener">${esc(r.doc)}</a></div>`).join('')}<span class="meta">${L({en:'Open the current text and check the article yourself.',no:'Åpne gjeldende tekst og sjekk artikkelen selv.'})}</span></div>` : ''); }
 el('srcList').addEventListener('click',async e=>{ const b=e.target.closest('[data-open]'); if(!b) return; const x=SRC[+b.dataset.open]; openPage(x.d,x.c.p); });
@@ -457,7 +457,7 @@ function startSession(){ if(!NAI.mode){ el('tNote').textContent=NAI.errText({cod
   const ac=acOf(el('tAc').value); S={id:'s'+Date.now().toString(36),inst:INSTK,mode:MODE,ac:ac.id,acName:ac.name,topic:el('tTopic').value.trim(),started:Date.now(),secs:0,turns:[],grades:[],gaps:[],labs:[],paused:false,qn:0};
   el('log').innerHTML=''; el('ans').hidden=false; el('tStart').hidden=true; el('tEnd').hidden=false; el('tPause').hidden=false; el('tSkip').hidden=MODE==='learn'; el('tNote').textContent='';
   clearInterval(timer); timer=setInterval(tick,1000); drawSrc([],[]);
-  if(MODE==='learn'){ addA(L({en:`Hi. Ask me anything: flying in general, EASA rules or the ${ac.name}. I use your documents when they have the answer, show the source on the right, and point you to the right place on Birdbird.`,no:`Hei. Spør meg om hva som helst: flyging generelt, EASA-regler eller ${ac.name}. Jeg bruker dokumentene dine når de har svaret, viser kilden til høyre og peker deg til riktig sted på Birdbird.`}),{src:[],regs:[]}); el('tA').focus(); }
+  if(MODE==='learn'){ addA(L({en:`Hi. Ask me anything: flying in general, EASA rules or the ${ac.name}. I use your documents when they have the answer, show the source on the right, and point you to the right place on NORDAP.`,no:`Hei. Spør meg om hva som helst: flyging generelt, EASA-regler eller ${ac.name}. Jeg bruker dokumentene dine når de har svaret, viser kilden til høyre og peker deg til riktig sted på NORDAP.`}),{src:[],regs:[]}); el('tA').focus(); }
   else turn(null,false); }
 function addQ(t){ const d=document.createElement('div'); d.className='q'; d.textContent=t; el('log').appendChild(d); d.scrollIntoView({block:'nearest'}); }
 function addA(html,tr){ const d=document.createElement('div'); d.className='a md'; const i=S.turns.length; d.dataset.t=i; S.turns.push(Object.assign({a:''},tr||{})); d.innerHTML=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span>${md(html,0)}`; el('log').appendChild(d); return d; }
@@ -481,7 +481,7 @@ function prompt(user,skip,ex,easa){
     check:`MODE: Check preparation, like an EASA examiner conducting the oral part of a ${ckScope()[1]}. Scope: ${ckScope()[2]} ${user||skip?'Grade the answer (0-10, 7 = pass standard), say what was missing and give the correct answer with citations, then':'Greet the candidate in one sentence, then'} ask ONE short, practical, often scenario-based question at a time, increasing depth when answers are good, mixing topics and not repeating one.`,
     rev:`MODE: Revision. Focus only on these weak topics from earlier sessions: ${revTopics().join('; ')||'(none recorded yet: pick core topics for this aircraft)'}. ${user||skip?'Grade the answer (0-10), correct it briefly with citations, then':''} ask the next question on a weak topic, rephrased from a different angle than before.`
   }[MODE];
-  return `You are ${I.role}, working inside Birdbird Flight Intelligence. ${I.rules}
+  return `You are ${I.role}, working inside NORDAP Flight Intelligence. ${I.rules}
 Aircraft: ${ac.name}${ac.type?' ('+ac.type+')':''}. ${S.topic?'The pilot wants to focus on: '+S.topic+'.':''}
 Write in ${NAI.langName()} and keep aviation terms, speeds and checklist items in English. Be concrete and short: a few short paragraphs or a short list. This may be read aloud, so avoid tables.
 ${modeTxt}
@@ -489,16 +489,16 @@ ${modeTxt}
 SOURCES (excerpts from the pilot's own documents):
 ${srcTxt}
 
-${easa&&easa.length? EASA.promptBlock(easa)+'\n\n' : 'EASA RULES: no entry from the Birdbird EASA rules library matched this question. If you state an EASA rule, name its exact ID, mark it [GK] and tell the pilot to check it in the current EASA Easy Access Rules.\n\n'}CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. A statement that is not supported by a source must be marked [GK] (general knowledge), and limitations, speeds, procedure steps and performance values must NEVER be given from general knowledge for this aircraft: say you cannot find them in the documents instead. Name regulations exactly (e.g. SERA.5015) when you use them.
+${easa&&easa.length? EASA.promptBlock(easa)+'\n\n' : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. If you state an EASA rule, name its exact ID, mark it [GK] and tell the pilot to check it in the current EASA Easy Access Rules.\n\n'}CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. A statement that is not supported by a source must be marked [GK] (general knowledge), and limitations, speeds, procedure steps and performance values must NEVER be given from general knowledge for this aircraft: say you cannot find them in the documents instead. Name regulations exactly (e.g. SERA.5015) when you use them.
 
 Virtual Labs simulations you may recommend when the pilot misunderstands a concept (only these keys): ${labs}.
 
-BIRDBIRD PAGES you may send the pilot to when doing something there would help more than reading your answer (only these URLs): ${goList(user).map(g=>g[0]+' = '+g[1]).join('; ')}.
+NORDAP PAGES you may send the pilot to when doing something there would help more than reading your answer (only these URLs): ${goList(user).map(g=>g[0]+' = '+g[1]).join('; ')}.
 
 ${hist?'CONVERSATION SO FAR:\n'+hist+'\n':''}${user?'PILOT NOW: '+String(user).slice(0,3000)+'\n(this may be dictated by speech recognition: ignore spelling)':skip?'PILOT NOW: (says they do not know)':''}
 
 Reply in this exact format: your answer for the pilot first. Then a line with only three dashes (---), then one JSON object on one line:
-{"grade": integer 0-10 or null (only when you graded an answer or decision), "topic": "short topic of what you graded or null", "gap": "short topic the pilot clearly does not know yet, or null", "lab": "one lab key from the list if it would really help, or null", "go": "one Birdbird page URL from the list if the pilot should go and do something there (fly a procedure in a simulator, build a briefing pack, look at a route, open their workspace documents), or null", "question": "the question you just asked the pilot, or null"}`; }
+{"grade": integer 0-10 or null (only when you graded an answer or decision), "topic": "short topic of what you graded or null", "gap": "short topic the pilot clearly does not know yet, or null", "lab": "one lab key from the list if it would really help, or null", "go": "one NORDAP page URL from the list if the pilot should go and do something there (fly a procedure in a simulator, build a briefing pack, look at a route, open their workspace documents), or null", "question": "the question you just asked the pilot, or null"}`; }
 function revTopics(){ return gapsAll().filter(g=>!S||g.ac===S.ac||!g.ac).slice(0,8).map(g=>g.t); }
 
 async function turn(user,skip){
@@ -514,7 +514,7 @@ async function turn(user,skip){
     if(meta.grade!=null&&Number.isFinite(+meta.grade)&&(user||skip)){ const g=Math.max(0,Math.min(10,Math.round(+meta.grade))); S.grades.push({topic:String(meta.topic||'').slice(0,80)||((S.turns[ti-1]||{}).question||'').slice(0,60),score:g}); extra+=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
     if(meta.gap){ const gp=String(meta.gap).slice(0,80); if(!S.gaps.some(x=>x.toLowerCase()===gp.toLowerCase())) S.gaps.push(gp); }
     if(meta.lab&&LABS[meta.lab]){ const lb=LABS[meta.lab]; if(!S.labs.includes(meta.lab)) S.labs.push(meta.lab); extra+=`<div class="labgo">${L({en:'See it in the lab:',no:'Se det i labben:'})} <a href="${lb[0]}" target="_blank" rel="noopener">${esc(T(lb[1]))} →</a> <span class="note">${L({en:'come back and I’ll ask you again',no:'kom tilbake, så spør jeg deg igjen'})}</span></div>`; S.pendingLab=meta.lab; }
-    const gl=meta.go&&goList(user).find(g=>g[0]===meta.go); if(gl) extra+=`<div class="labgo">${L({en:'Do it on Birdbird:',no:'Gjør det på Birdbird:'})} <a href="${esc(gl[0])}">${esc(gl[2])} →</a></div>`;
+    const gl=meta.go&&goList(user).find(g=>g[0]===meta.go); if(gl) extra+=`<div class="labgo">${L({en:'Do it on NORDAP:',no:'Gjør det på NORDAP:'})} <a href="${esc(gl[0])}">${esc(gl[2])} →</a></div>`;
     d.innerHTML=who+md(body,ex.length,ea)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
     saveSoon(); }
   catch(e){ if(e&&e.text) d.innerHTML=who+md(e.text.split(/\n-{3,}/)[0],ex.length,ea); else d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
@@ -617,7 +617,7 @@ function drawEasaList(){ const q=el('eQ').value, list=eFilter(q);
 function drawEasa(){ const A=EASA.sources.airops, R=EASA.sources.sera;
   el('eQ').placeholder=L({en:'Search: alternate, final reserve, special VFR, CAT.OP.MPA.182…',no:'Søk: alternativ, final reserve, spesiell VFR, CAT.OP.MPA.182…'}); el('eQ').setAttribute('aria-label',L({en:'Search the EASA rules library',no:'Søk i EASA-regelbiblioteket'}));
   el('eChecked').textContent=L({en:'Library last checked: ',no:'Biblioteket sist kontrollert: '})+EASA.checked;
-  el('eLive').innerHTML=L({en:'<b>Linked to EASA’s official rules (Easy Access Rules, Rev. 24).</b> Not a live feed — Birdbird checks for new revisions and updates the library. Each entry is a short summary in Birdbird’s own words with the rule ID, its revision and a link to the official text. The instructor cites these entries when you ask about minima, alternates, fuel or VMC and IFR rules. The official text, and your operations manual where it applies, always take precedence.',no:'<b>Lenket til EASAs offisielle regelverk (Easy Access Rules, Rev. 24).</b> Ikke en direkte strøm — Birdbird sjekker om det kommer nye revisjoner og oppdaterer biblioteket. Hver oppføring er et kort sammendrag med Birdbirds egne ord, med regel-ID, revisjon og lenke til den offisielle teksten. Instruktøren viser til disse når du spør om minima, alternativer, drivstoff eller VMC- og IFR-regler. Den offisielle teksten, og driftshåndboken der den gjelder, går alltid foran.'});
+  el('eLive').innerHTML=L({en:'<b>Linked to EASA’s official rules (Easy Access Rules, Rev. 24).</b> Not a live feed — NORDAP checks for new revisions and updates the library. Each entry is a short summary in NORDAP’s own words with the rule ID, its revision and a link to the official text. The instructor cites these entries when you ask about minima, alternates, fuel or VMC and IFR rules. The official text, and your operations manual where it applies, always take precedence.',no:'<b>Lenket til EASAs offisielle regelverk (Easy Access Rules, Rev. 24).</b> Ikke en direkte strøm — NORDAP sjekker om det kommer nye revisjoner og oppdaterer biblioteket. Hver oppføring er et kort sammendrag med NORDAPs egne ord, med regel-ID, revisjon og lenke til den offisielle teksten. Instruktøren viser til disse når du spør om minima, alternativer, drivstoff eller VMC- og IFR-regler. Den offisielle teksten, og driftshåndboken der den gjelder, går alltid foran.'});
   el('eTop').innerHTML=[['all',{en:'All',no:'Alle'}]].concat(Object.entries(EASA.topics)).map(([k,t])=>`<button type="button" data-et="${k}" class="${ETOP===k?'on':''}">${esc(L(t))}</button>`).join('');
   el('eSrc').innerHTML=`<b>${L({en:'Official sources',no:'Offisielle kilder'})}</b><ul>
    <li>${esc(A.name)}, ${esc(LAB.lang==='no'?A.revNo:A.rev)} (${esc(A.reg)}): <a href="${A.online}" target="_blank" rel="noopener">${L({en:'online publication',no:'nettversjon'})} ↗</a> · <a href="${A.ear}" target="_blank" rel="noopener">${L({en:'downloads',no:'nedlastinger'})} ↗</a> · <a href="${A.eurlex}" target="_blank" rel="noopener">EUR-Lex ↗</a></li>
@@ -633,8 +633,8 @@ window.FI_EASA={pick:q=>EASA.search(q,4),block:list=>EASA.promptBlock(list),rend
 const NOI={'Instructor':'Instruktør','Aircraft Instructor':'Instruktør','SOP Instructor':'Instruktør','Aviation Instructor':'Instruktør'};
 const NOM={'An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Ask anything. The instructor explains, then checks your understanding with a follow-up question.':'Spør om hva som helst. Instruktøren forklarer, og sjekker forståelsen med et oppfølgingsspørsmål.','One question at a time, like an examiner. Each answer is graded 0–10 with the correct answer and the source.':'Ett spørsmål om gangen, som en eksaminator. Hvert svar får 0–10 med riktig svar og kilde.','A practical situation that unfolds step by step. You make the decisions and get feedback on each one.':'En praktisk situasjon som utvikler seg steg for steg. Du tar avgjørelsene og får tilbakemelding på hver.','Questions on the topics you found difficult before, until they stick.':'Spørsmål om temaene du syntes var vanskelige, til de sitter.'};
 LAB.add({},Object.assign({},NOI,{'Example setup':'Eksempeloppsett','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200','Study plan, cockpit systems simulators, 320 questions, flashcards, exam mode and an oral examiner that uses your documents. This is how your instructor can be set up for a type rating. →':'Studieplan, simulatorer for cockpitsystemene, 320 spørsmål, flashcards, eksamensmodus og en muntlig eksaminator som bruker dokumentene dine. Slik kan instruktøren din settes opp for en typerating. →',
- 'Birdbird · Flight Intelligence':'Birdbird · Flight Intelligence','Learn':'Lær','Check preparation':'Kontrollforberedelse','An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Check':'Kontroll','Flight':'Tur','Oral exam':'Muntlig eksamen','Scenario':'Scenario','Revision':'Repetisjon',
- 'Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on Birdbird, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.':'Spør om hva som helst om flyging, fra hva løft er til gjeldende EASA-regler. Flight Intelligence svarer, sender deg til riktig sted på Birdbird og jobber ut fra din egen AFM, QRH og SOP når du legger dem inn. Hvert svar viser hvor det kommer fra.',
+ 'NORDAP · Flight Intelligence':'NORDAP · Flight Intelligence','Learn':'Lær','Check preparation':'Kontrollforberedelse','An oral like an examiner for a proficiency check or skill test, from your documents and the EASA test content.':'En muntlig som hos en eksaminator, for ferdighetskontroll eller praktisk prøve, fra dokumentene dine og EASA-innholdet.','Check':'Kontroll','Flight':'Tur','Oral exam':'Muntlig eksamen','Scenario':'Scenario','Revision':'Repetisjon',
+ 'Ask anything about flying, from what lift is to the current EASA rules. Flight Intelligence answers, sends you to the right place on NORDAP, and works from your own AFM, QRH and SOP when you add them. Every answer shows where it comes from.':'Spør om hva som helst om flyging, fra hva løft er til gjeldende EASA-regler. Flight Intelligence svarer, sender deg til riktig sted på NORDAP og jobber ut fra din egen AFM, QRH og SOP når du legger dem inn. Hvert svar viser hvor det kommer fra.',
  'Ask anything: theory, weather, EASA rules, your aircraft and your SOP. Answers from your own documents when you have added them.':'Spør om hva som helst: teori, vær, EASA-regler, flyet ditt og SOP-en din. Svarer fra dine egne dokumenter når du har lagt dem inn.','ask, learn, practise':'spør, lær, øv','Systems, limitations, normal and abnormal procedures, from your AFM, POH, FCOM and QRH.':'Systemer, begrensninger, normale og unormale prosedyrer, fra din AFM, POH, FCOM og QRH.','your aircraft':'ditt fly',
  'Briefings, flows, callouts and flight profiles from your operator’s SOP and checklists.':'Briefinger, flows, callouts og flygeprofiler fra operatørens SOP og sjekklister.','your operator':'din operatør',
  'EASA rules, IFR, meteorology, navigation, aerodynamics and flight preparation.':'EASA-regler, IFR, meteorologi, navigasjon, aerodynamikk og flyforberedelse.','the theory':'teorien',
@@ -654,8 +654,8 @@ LAB.add({},Object.assign({},NOI,{'Example setup':'Eksempeloppsett','Type rating 
 
 /* ---------- oppstart ---------- */
 function drawOffline(){ const o=el('offline'); if(o.hidden) return; const q=el('tA').value.trim();
-  o.innerHTML=`<h3>${L({en:'The live instructor is not connected on this copy of Birdbird',no:'Den levende instruktøren er ikke koblet til på denne kopien av Birdbird'})}</h3>
-  <p>${L({en:'The instructor runs on an AI service. It is switched on when Birdbird is opened in Claude or on a site where the service is set up. Your documents and progress stay in this browser, and everything below works fully without it.',no:'Instruktøren bruker en AI-tjeneste. Den er slått på når Birdbird åpnes i Claude eller på et nettsted der tjenesten er satt opp. Dokumentene og progresjonen din blir i denne nettleseren, og alt nedenfor virker fullt ut uten den.'})}</p>
+  o.innerHTML=`<h3>${L({en:'The live instructor is not connected on this copy of NORDAP',no:'Den levende instruktøren er ikke koblet til på denne kopien av NORDAP'})}</h3>
+  <p>${L({en:'The instructor runs on an AI service. It is switched on when NORDAP is opened in Claude or on a site where the service is set up. Your documents and progress stay in this browser, and everything below works fully without it.',no:'Instruktøren bruker en AI-tjeneste. Den er slått på når NORDAP åpnes i Claude eller på et nettsted der tjenesten er satt opp. Dokumentene og progresjonen din blir i denne nettleseren, og alt nedenfor virker fullt ut uten den.'})}</p>
   ${q?`<p class="asked">${L({en:'Your question',no:'Spørsmålet ditt'})}: “${esc(q)}”. ${L({en:'The labs and the type rating trainer cover most theory questions.',no:'Labene og typeratingtreneren dekker de fleste teorispørsmål.'})}</p>`:''}
   ${(()=>{ const m=q&&EASA.isRules(q)? EASA.search(q,4) : []; return m.length? `<div class="ematch" id="eMatch"><span>${L({en:'Matching rules in the EASA rules library:',no:'Regler som passer i EASA-regelbiblioteket:'})}</span><div>${m.map((x,i)=>EASA.chip(x,i+1)).join('')}</div></div>` : ''; })()}
   <ul>

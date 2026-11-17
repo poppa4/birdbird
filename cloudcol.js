@@ -1,4 +1,4 @@
-/* Birdbird – forecast cloud layers at a point (window.BBCLOUD), for Route Explorer.
+/* NORDAP – forecast cloud layers at a point (window.BBCLOUD), for Route Explorer.
    Loads 5° tiles from /api/clouds (NOAA GFS 0.25°: low, middle and high cloud with base, top and cover, the ceiling, the
    freezing level and CAPE) and draws them as one column, ground to FL400, so "where are the layers?" has an answer between
    the airports. A forecast from a global model, not an observation: the panel says so and points to the METAR and TAF. */

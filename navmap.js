@@ -1,4 +1,4 @@
-/* Birdbird – navmap.js: the shared plan-view map of the navigation labs (radionav.html, gnss.html, holding.html).
+/* NORDAP – navmap.js: the shared plan-view map of the navigation labs (radionav.html, gnss.html, holding.html).
    One look everywhere: relief and coastline (data/navsim-<region>.png/.json, Mapzen/AWS Terrain Tiles via terrain/hr),
    palette, navaid/fix/waypoint symbols, runways, ILS feathers, racetracks, the aircraft, labels that never overlap,
    wind badge, north arrow and scale bar.

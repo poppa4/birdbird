@@ -1,4 +1,4 @@
-/* Birdbird – fpcore.js: the pure maths behind the Climb, cruise and fuel lab (flightplanning.html).
+/* NORDAP – fpcore.js: the pure maths behind the Climb, cruise and fuel lab (flightplanning.html).
    No DOM, no state. Loaded in the page as window.FPC and in Node (tests/fp.test.mjs) through vm.
    Three GENERIC teaching aircraft with typical, rounded values (not AFM/FCOM data): sep light single piston,
    tp twin turboprop, jet twin jet. Parabolic drag polar CD = CD0 + k·CL² (plus a wave-drag rise for the jet),

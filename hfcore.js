@@ -1,4 +1,4 @@
-/* Birdbird – hfcore.js: the pure maths behind the Human factors labs (orientation.html, humanperf.html).
+/* NORDAP – hfcore.js: the pure maths behind the Human factors labs (orientation.html, humanperf.html).
    No DOM, no state. Loaded in the page as window.HFC and in Node (tests/hf.test.mjs) through vm.
    These are TEACHING models with typical values, not physiology research models:
    - the semicircular canals as a high-pass filter (time constant TAU_C) with a detection threshold (about 2 °/s, typical);

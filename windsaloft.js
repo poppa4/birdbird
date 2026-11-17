@@ -1,4 +1,4 @@
-/* Birdbird – forecast winds aloft in the browser (window.BBWIND). Loads 5° tiles from /api/winds (NOAA GFS 0.25°,
+/* NORDAP – forecast winds aloft in the browser (window.BBWIND). Loads 5° tiles from /api/winds (NOAA GFS 0.25°,
    12 pressure levels) and interpolates: bilinear between grid points, linear in height between levels.
    Heights are the model's geopotential heights (≈ altitude AMSL). Planning practice only: check the official forecast. */
 (function(){

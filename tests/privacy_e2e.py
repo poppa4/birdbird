@@ -1,6 +1,6 @@
 """Browser test of the privacy tools and the learning-only notes (static server, /api/* mocked in Playwright):
     python3 tests/privacy_e2e.py [static-server-url]     (default http://127.0.0.1:9101)
-Covers: privacy.html "Clear Birdbird data" empties every Birdbird localStorage/sessionStorage key and IndexedDB database
+Covers: privacy.html "Clear NORDAP data" empties every NORDAP localStorage/sessionStorage key and IndexedDB database
 (seeded first) and keeps the language and other sites' keys; My page "Download all my data" (signed out, and signed in with
 the server export); account deletion with "Also delete everything stored on this device" (on by default); the learning-only
 line on printed briefing-pack and kneeboard sheets; the note under the title on six pages at 390 and 1470 px in EN and NO."""
@@ -75,8 +75,8 @@ with sync_playwright() as p:
     pg.click('#clr'); pg.click('#clr'); pg.wait_for_function("document.querySelector('#res').textContent.length>0")
     after = pg.evaluate(STATE)
     check('privacy: only the language and other sites\' keys are left', after['ls'] == ['other-site', 'vlab-lang'], after)
-    check('privacy: sessionStorage Birdbird keys gone', after['ss'] == ['other-session'], after)
-    check('privacy: all Birdbird databases deleted', after['dbs'] == [], after)
+    check('privacy: sessionStorage NORDAP keys gone', after['ss'] == ['other-session'], after)
+    check('privacy: all NORDAP databases deleted', after['dbs'] == [], after)
     check('privacy: result message in Norwegian', 'Ferdig.' in pg.inner_text('#res'), pg.inner_text('#res'))
     ctx.close()
 
@@ -88,7 +88,7 @@ with sync_playwright() as p:
     d = dl.value; data = json.loads(open(d.path()).read())
     check('export: file name', d.suggested_filename.startswith('birdbird-data-') and d.suggested_filename.endswith('.json'), d.suggested_filename)
     check('export: import-compatible header', data.get('app') == 'birdbird' and isinstance(data.get('keys'), dict), list(data))
-    check('export: every Birdbird localStorage key', all(k in data['keys'] for k in LS) and 'other-site' not in data['keys'], list(data['keys']))
+    check('export: every NORDAP localStorage key', all(k in data['keys'] for k in LS) and 'other-site' not in data['keys'], list(data['keys']))
     check('export: sessionStorage', data['sessionStorage'] == SS, data['sessionStorage'])
     idb = data['indexedDB']
     check('export: four databases', sorted(idb) == ['birdbird-workspace', 'naeroson-att', 'naeroson-docs', 'naeroson-fi'], sorted(idb))

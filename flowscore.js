@@ -1,5 +1,5 @@
-/* Birdbird – flow trainer core (flows.html): the flow model and everything that does not touch the page, so it runs in Node.
-   A flow is a sequence of steps drawn over a cockpit: either one of Birdbird's own schematics (flowsac.js, named controls)
+/* NORDAP – flow trainer core (flows.html): the flow model and everything that does not touch the page, so it runs in Node.
+   A flow is a sequence of steps drawn over a cockpit: either one of NORDAP's own schematics (flowsac.js, named controls)
    or the user's own cockpit photo or PDF page (kept on the device). Steps belong to a role layer (PF/PM, CM1/CM2 or one pilot).
    Step kinds: 'act' (a control or spot), 'call' (a checklist or callout the role commands), 'event' (an outside start point:
    ATC clearance, fuel figures, cabin secure). A step can wait for a step of the other role ('after'). */
@@ -72,7 +72,7 @@ function clean(o) { if (!o || typeof o !== 'object') return null; const f = newF
   f.steps = (Array.isArray(o.steps) ? o.steps : []).slice(0, 400).map(s => ({ id: String(s.id || uid()).slice(0, 24), r: f.roles.includes(s.r) ? s.r : f.roles[0], k: ['act', 'call', 'event'].includes(s.k) ? s.k : 'act',
     t: String(s.t || '').slice(0, 160), b: s.b ? String(s.b).slice(0, 6) : undefined, x: s.x == null ? null : num(s.x), y: s.y == null ? null : num(s.y), tg: s.tg ? String(s.tg).slice(0, 80) : undefined,
     after: s.after ? String(s.after).slice(0, 24) : undefined, n: s.n ? String(s.n).slice(0, 400) : undefined }));
-  // names the user has given to spots on their own picture: they work like the named controls of a Birdbird cockpit
+  // names the user has given to spots on their own picture: they work like the named controls of a NORDAP cockpit
   if (Array.isArray(o.marks)) f.marks = o.marks.slice(0, 600).map(m => ({ n: markName(m && m.n), x: num(m && m.x), y: num(m && m.y) })).filter((m, i, a) => m.n && m.x != null && m.y != null && a.findIndex(q => q.n.toLowerCase() === m.n.toLowerCase()) === i);
   if (PHASES.some(p => p[0] === o.phase)) f.phase = o.phase;
   f.notes = (Array.isArray(o.notes) ? o.notes : []).slice(0, 60).map(n => ({ id: String(n.id || uid()).slice(0, 24), x: num(n.x), y: num(n.y), t: String(n.t || '').slice(0, 400) })).filter(n => n.x != null && n.y != null);
@@ -108,7 +108,7 @@ const EX = {
   pa34: { name: 'Example: cockpit scan pattern', roles: 'one', steps: [['P', 'GEAR|PARKING BRAKE', 'Parking brake'], ['P', 'SWITCH PANEL|BATTERY MASTER', 'Side switch panel, bottom to top'], ['P', 'SWITCH PANEL|MAGNETO LEFT ENGINE L', 'Magnetos'], ['P', 'FLIGHT INSTRUMENTS|ATTITUDE INDICATOR', 'Flight instruments'], ['P', 'AVIONICS|AUDIO PANEL', 'Avionics, top to bottom'], ['P', 'ENGINE LEFT|FUEL QUANTITY', 'Engine instruments'], ['P', 'GEAR|GEAR LIGHTS', 'Gear'], ['P', 'ENGINE CONTROLS|THROTTLE LEFT', 'Quadrant'], ['P', 'ENGINE CONTROLS|ALTERNATE AIR LEFT', 'Alternate air'], ['P', 'COWL FLAPS|COWL FLAP LEFT', 'Cowl flaps'], ['P', 'FLOOR|ELEVATOR TRIM', 'Trims and flaps'], ['P', 'FUEL|FUEL SELECTOR LEFT', 'Fuel selectors'], ['P', null, 'Before start checklist', 'call']] },
   da42: { name: 'Example: panel scan pattern', roles: 'one', steps: [['P', 'PEDESTAL|PARKING BRAKE', 'Brakes'], ['P', 'FUEL SELECTORS|FUEL SELECTOR L', 'Fuel selectors'], ['P', 'POWER LEVERS|POWER LEVER L', 'Power levers'], ['P', 'ENGINE / ELECTRIC|ELECTRIC MASTER', 'Switch panel'], ['P', 'PFD|PFD', 'PFD'], ['P', 'MFD|MFD', 'MFD and engine page'], ['P', 'FLAPS|FLAPS', 'Right panel'], ['P', null, 'Before start checklist', 'call']] },
   c172: { name: 'Example: panel scan pattern', roles: 'one', steps: [['P', 'FUEL SELECTOR|FUEL SELECTOR', 'Fuel selector'], ['P', 'SWITCHES|MASTER BAT', 'Switches'], ['P', 'FLIGHT INSTRUMENTS|ALTIMETER', 'Flight instruments'], ['P', 'AUDIO PANEL|AUDIO PANEL', 'Radios'], ['P', 'ENGINE CONTROLS|MIXTURE', 'Engine controls'], ['P', 'FLAPS|WING FLAPS', 'Flaps'], ['P', null, 'Before start checklist', 'call']] } };
-/* Birdbird's own ready-made flows, built from public handbook checklists of the type (not an operator's SOP). They are listed first in
+/* NORDAP's own ready-made flows, built from public handbook checklists of the type (not an operator's SOP). They are listed first in
    the library. Each: key, name [en, no], phase, src (where the checklist is from), steps [role, target id, text]. Tests check every target. */
 const STD = {
   c172: { src: 'Cessna 172N/P POH, Section 4, normal procedures', flows: [

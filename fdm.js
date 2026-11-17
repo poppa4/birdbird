@@ -1,4 +1,4 @@
-/* Birdbird – DA42-lignende flymodell (pedagogisk), navigasjon og autopilot.
+/* NORDAP – DA42-lignende flymodell (pedagogisk), navigasjon og autopilot.
    SI-enheter internt. Kroppsakser: x frem, y høyre, z ned. Verden: N, E, h (opp).
    Tallene er tilnærmede og ikke hentet fra en sertifisert modell. */
 (function(G){
@@ -50,8 +50,8 @@ function useType(n){ const t=TYPES[n]; if(!t) return AC; Object.assign(AC,JSON.p
 /* ---------- verden ---------- */
 const WORLD={
   elev:0,
-  rwy:{ id:'36', n0:0, e0:0, hdg:360, len:1500, wid:30, name:'Birdbird Field' },
-  vor:{ id:'ASN', name:'Birdbird VOR', freq:'113.30', N:900, E:-2600 },
+  rwy:{ id:'36', n0:0, e0:0, hdg:360, len:1500, wid:30, name:'NORDAP Field' },
+  vor:{ id:'ASN', name:'NORDAP VOR', freq:'113.30', N:900, E:-2600 },
   loc:{ id:'IASN', freq:'110.30', N:1500+300, E:0, crs:360, fs:2.5 },
   gs:{ N:300, E:110, ang:3.0, fs:0.7 }
 };

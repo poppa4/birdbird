@@ -1,4 +1,4 @@
-/* Birdbird – navcore.js: the pure geometry engine behind the radio navigation simulator.
+/* NORDAP – navcore.js: the pure geometry engine behind the radio navigation simulator.
    No DOM, no state. Loaded in the page as window.NAVCORE and in Node (tests/navcore.test.mjs) through vm.
    Frame: a flat local projection around the area's reference point, x east and y north in NM, true north up.
    Angles in degrees. Variation is East-positive: magnetic = true − variation.

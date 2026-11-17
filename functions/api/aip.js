@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/aip?icao=ENTO[&go=1]
+/* NORDAP – Cloudflare Pages Function: GET /api/aip?icao=ENTO[&go=1]
    The aerodrome's page (AD 2, with its charts) in the national eAIP edition that is in force today, found afresh from the
    state's own index (see functions/_lib/aipres.js). With go=1 the browser is sent straight there (302); when the state's eAIP
    is not open or the aerodrome is not in it, to the state's AIP portal instead. Without go: JSON { ok, icao, url, kind, name, eff }. */

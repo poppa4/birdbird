@@ -1,5 +1,5 @@
 // Live check, run on GitHub Actions (tools/live-check.yml): calls the real upstream sources and the deployed site,
-// runs Birdbird's own handlers against the real data, and writes what it saw to out/ for review.
+// runs NORDAP's own handlers against the real data, and writes what it saw to out/ for review.
 import fs from 'node:fs';
 import { handleSigmet, parseTac } from '../functions/api/sigmet.js';
 import { handleWx } from '../functions/api/wx.js';
@@ -9,7 +9,7 @@ import { handleSat, LAYERS } from '../functions/api/sat.js';
 import { handleSigchart } from '../functions/api/sigchart.js';
 fs.mkdirSync('out', { recursive: true });
 const W = (f, d) => fs.writeFileSync('out/' + f, typeof d === 'string' ? d : JSON.stringify(d, null, 1));
-const UA = { 'user-agent': 'Birdbird/1.0 (+https://birdbird.eu) live-check' };
+const UA = { 'user-agent': 'NORDAP/1.0 (+https://birdbird.eu) live-check' };
 const rep = [];
 const log = (k, v) => { rep.push(k + ': ' + (typeof v === 'string' ? v : JSON.stringify(v))); console.log(k, v); };
 const T = async (k, fn) => { try { await fn(); } catch (e) { log(k + ' ERROR', String(e && e.stack || e).slice(0, 400)); } };

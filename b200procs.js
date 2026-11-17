@@ -1,4 +1,4 @@
-/* Birdbird – B200 data for the shared Procedures drawer (simshell.js): key speeds and limits, the failure buttons and which of
+/* NORDAP – B200 data for the shared Procedures drawer (simshell.js): key speeds and limits, the failure buttons and which of
    the page's exercises are failure scenarios (Failures tab) or start exercises (✈ Start picker). Typical King Air B200 values. */
 (function(G){
 'use strict';

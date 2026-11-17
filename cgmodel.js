@@ -1,4 +1,4 @@
-/* Birdbird – cgmodel.js: the "CG and mass" master model on stability.html.
+/* NORDAP – cgmodel.js: the "CG and mass" master model on stability.html.
    One side view of an illustrative twin-jet (own design), with live forces, an enlarged MAC ruler,
    phases (cruise, take-off rotation, landing flare), presets, six outcome gauges, a draggable
    mass/CG envelope, the "what sets the limits" chart, the Understand diagram and the Try tasks.

@@ -1,4 +1,4 @@
-/* Birdbird – navsim.css: the radio navigation simulator (radionav.html). Builds on lab.css .xapp/.xvp/.xpanel. */
+/* NORDAP – navsim.css: the radio navigation simulator (radionav.html). Builds on lab.css .xapp/.xvp/.xpanel. */
 .ns-vp{background:radial-gradient(130% 100% at 50% 0%,#1d2832 0%,#121a21 55%,#0c1217 100%)}
 .ns-vp:focus{outline:none}
 .ns-vp .vbar{padding:10px 12px 6px}

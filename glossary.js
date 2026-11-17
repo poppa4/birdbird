@@ -1,4 +1,4 @@
-/* Birdbird – glossary.js: one shared glossary for the IFR trainer and the Virtual Labs.
+/* NORDAP – glossary.js: one shared glossary for the IFR trainer and the Virtual Labs.
    G: id → [term, short (what it stands for, plain words), one or two plain sentences, lab page that explains it (optional)].
    Terms and texts are EN/NO ({en,no}); a term that is the same in both languages is a plain string.
    PAT: what to look for in a text, in order (the first alternative that matches at a position wins).

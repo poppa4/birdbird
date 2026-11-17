@@ -1,4 +1,4 @@
-/* Birdbird – press.js: the Pressurisation and oxygen lab (pressurisation.html).
+/* NORDAP – press.js: the Pressurisation and oxygen lab (pressurisation.html).
    One dark figure: a cut-away fuselage (bleed and packs in, outflow valve out, relief valves, cabin controller),
    a live altitude–time chart (aircraft, cabin, ΔP) and a hypoxia panel (time of useful consciousness, stage, oxygen).
    Four modes: normal climb and descent, rapid decompression, slow leak, oxygen. Three generic classes:
@@ -498,7 +498,7 @@ LAB.quiz(el('qbox'),'pressurisation',()=>LAB.shuffle([
  {q:t2('Why should you not fly with a cold?','Hvorfor bør du ikke fly forkjølet?'),a:[t2('Blocked ears and sinuses cannot equalise, especially descending','Tette ører og bihuler klarer ikke å utligne, særlig i nedstigning'),t2('The virus spreads faster at altitude','Viruset sprer seg raskere i høyden'),t2('It causes decompression sickness','Det gir trykkfallssyke'),t2('It lowers the cabin altitude','Det senker kabinhøyden')],c:0,e:t2('On the way down the pressure rises, and air must get into the middle ear and sinuses.','På vei ned øker trykket, og luft må inn i mellomøret og bihulene.')}]),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Pressurisation and Oxygen':'Trykkabin og oksygen','Pressurisation and oxygen':'Trykkabin og oksygen','Birdbird Virtual Labs · Aircraft and engine systems':'Birdbird Virtual Labs · Fly- og motorsystemer',
+LAB.add({},{'Pressurisation and Oxygen':'Trykkabin og oksygen','Pressurisation and oxygen':'Trykkabin og oksygen','NORDAP Virtual Labs · Aircraft and engine systems':'NORDAP Virtual Labs · Fly- og motorsystemer',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The pressurisation lab':'Trykkabinlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Aircraft':'Flytype','The flight':'Flygingen','Decompression':'Dekompresjon','Leak':'Lekkasje','Oxygen':'Oksygen','Time':'Tid','Scenarios':'Scenarier','Advanced':'Avansert','Mode':'Modus','Sections':'Seksjoner',
  'Landing elevation in the controller':'Landingshøyde i regulatoren','Opening':'Åpning','Packs running':'Pakker i drift','Crew mask regulator':'Regulator på besetningsmasken','Passenger oxygen (chemical generators)':'Passasjeroksygen (kjemiske generatorer)','Rules':'Regler',

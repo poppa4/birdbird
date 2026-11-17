@@ -1,4 +1,4 @@
-/* Birdbird – My workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
+/* NORDAP – My workspace: "Ask your documents" as a desk tab (Flight Intelligence beside the manual).
    The same contract as fi.html: the passages are found here in the browser (in the document text already stored
    for Flight Intelligence), only the question and those passages go to the AI through ai.js (window.NAI: the
    /api/atc service, or Claude when the page runs inside Claude). Nothing is stored on the server by this tab.
@@ -108,7 +108,7 @@
       if (avail !== null) return avail;
       /* the answer service is looked for only when this pane is open (it answers 200 whether or not it is switched on) */
       try {
-        if (!window.NAI) await A.loadScript('ai.js?v=5');
+        if (!window.NAI) await A.loadScript('ai.js?v=6');
         const m = await Promise.race([window.NAI.ready, new Promise(r => setTimeout(() => r('timeout'), 6000))]);
         avail = !!m && m !== 'timeout';
       } catch (e) { avail = false; }
@@ -117,7 +117,7 @@
     }
     function prompt(question, src, hist) {
       const ex = src.length ? src.map((x, i) => `[S${i + 1}] ${x.d.name}${x.d.rev ? ', revision ' + x.d.rev : ''}, page ${x.label}${x.c.s ? ', ' + x.c.s : ''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents matched)';
-      return `You are an experienced flight instructor answering inside Birdbird, beside the pilot's own documents. Answer only from the excerpts. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
+      return `You are an experienced flight instructor answering inside NORDAP, beside the pilot's own documents. Answer only from the excerpts. Never invent a limitation, speed, procedure step, callout or performance value: if the excerpts do not contain it, say plainly that you cannot find it in their documents and where they should look. Keep manufacturer documentation and operator documentation apart.
 Write in ${window.NAI.langName()} and keep aviation terms, speeds and checklist items in English. Be short and concrete: two to six sentences or a short list.
 SOURCES (excerpts from the pilot's own documents):
 ${ex}

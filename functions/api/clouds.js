@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/clouds?tile=55,5[&t=2026-11-15T12:00Z]
+/* NORDAP – Cloudflare Pages Function: GET /api/clouds?tile=55,5[&t=2026-11-15T12:00Z]
    Forecast cloud layers for one 5° × 5° tile from NOAA's GFS model (0.25°, hourly to 120 h; public domain), the same model and
    tiles as /api/winds: low, middle and high cloud (cover, base and top), the cloud ceiling, the freezing level, the ground
    height and CAPE (energy for convection). Weather radar shows precipitation, not cloud; this is what answers "where are the
@@ -17,7 +17,7 @@ import { readGrib2 } from '../_lib/grib2.js';
 import { parseTile, cycles, forecastHour } from './winds.js';
 
 const NOMADS = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_0p25.pl';
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
 const TILE = 5, TTL = 7200, TIMEOUT = 15000, H = 3600e3, FT = 3.28084;
 const json = (body, status, cache) => new Response(JSON.stringify(body), {
   status: status || 200, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': cache || 'no-store', 'x-content-type-options': 'nosniff' }

@@ -1,4 +1,4 @@
-/* Birdbird – offline for the ground briefing. Registered by the briefing pack and Route Explorer.
+/* NORDAP – offline for the ground briefing. Registered by the briefing pack and Route Explorer.
    Pages you have opened, their scripts and data, and the last weather you fetched stay usable without a network
    (at the aerodrome, before flight). Online, everything comes fresh from the network first.
    - On install: the briefing pack and Route Explorer pages, every versioned script/style they load, and the airport data.

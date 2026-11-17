@@ -1,4 +1,4 @@
-/* Birdbird – alltid synlig søk og spørsmål.
+/* NORDAP – alltid synlig søk og spørsmål.
    1) Lokalt: sider og seksjoner (EN/NO-nøkkelord) og små utregninger, øyeblikkelig og uten AI.
    2) AI som reserve: svarer kort og peker til riktig side. */
 (function(){

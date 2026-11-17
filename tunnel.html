@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="description" content="Profil og klaff følger valget i panelet. Relativ vind fra venstre.">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Wind tunnel · Birdbird</title>
+<title>Wind tunnel · NORDAP</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="site.css?v=30">
+<link rel="stylesheet" href="site.css?v=31">
 <style>
 /* Layout: tunnelen er scenen, kontrollpanel til høyre som instrumentpanel; avlesninger og diagrammer under. Bevisst ett mørkt tema (vindtunnel med røyk). */
 :root{
@@ -430,12 +430,12 @@ body.depth-instructor .memo h3{font-size:20px}
 
 </head>
 <body data-title="Wind tunnel">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
 <nav class="labnav" aria-label="Virtual Labs"></nav>
 <header class="lhead">
   <div class="brand">
-    <div class="eyebrow">Birdbird Virtual Labs · Aerodynamikk</div>
+    <div class="eyebrow">NORDAP Virtual Labs · Aerodynamikk</div>
     <h1>Vindtunnelen</h1>
     <p class="purp" data-tx="tPurp">Put an aerofoil and a whole aircraft in a wind tunnel. Change the angle of attack, speed, flaps and bank, and see where the airflow separates, how lift and drag change, and why the wing stalls.</p>
     <p id="acFull">Airbus A320</p>
@@ -760,10 +760,10 @@ body.depth-instructor .memo h3{font-size:20px}
 window.addEventListener('error',function(e){ var b=document.getElementById('errbox'); if(!b) return; b.hidden=false; b.textContent='Error: '+(e.message||e)+(e.filename?'\n'+e.filename.split('/').pop()+':'+e.lineno:''); });
 </script>
 <script src="three.min.js?v=128"></script>
-<script src="tunnel3d.js?v=3"></script>
+<script src="tunnel3d.js?v=4"></script>
 <script src="cfd3d.js?v=7"></script>
-<script src="lab.js?v=51"></script>
-<script src="chartnote.js?v=2"></script>
+<script src="lab.js?v=52"></script>
+<script src="chartnote.js?v=3"></script>
 <script src="physics.js?v=14"></script>
 <script src="section.js?v=12"></script>
 <script src="flow3d.js?v=7"></script>
@@ -877,7 +877,7 @@ const P = window.VLab, DEG = Math.PI/180, KT = 0.514444, G0 = 9.80665;
 /* ---------------- Språk / language ---------------- */
 // Kildeteksten i koden er norsk; engelsk er standard i grensesnittet.
 const NO2EN={
-'Birdbird Virtual Labs · Aerodynamikk':'Birdbird Virtual Labs · Aerodynamics','Vindtunnelen':'Wind tunnel',
+'NORDAP Virtual Labs · Aerodynamikk':'NORDAP Virtual Labs · Aerodynamics','Vindtunnelen':'Wind tunnel',
 'Normal':'Normal','Stall':'Stall','Nær stall':'Near stall',
 'Trykk':'Pressure','Strømlinjer':'Streamlines','Røyk':'Smoke','Snitt':'Slice','Virvler':'Vortices','Ulltråder':'Tufts',
 'Side':'Side','Front':'Front','Topp':'Top',
@@ -1096,8 +1096,8 @@ function applyStatic(){
 }
 
 // språk og lab-meny tidlig, så siden er på riktig språk selv om 3D-delen feiler
-applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird';
-if(window.LAB){ LAB.tx({tPurp:'Sett et vingeprofil og et helt fly i en vindtunnel. Endre anstigningsvinkel, fart, klaffer og krengning, og se hvor luftstrømmen løsner, hvordan løft og motstand endrer seg, og hvorfor vingen staller.'}); LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird'; } } }); }
+applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP';
+if(window.LAB){ LAB.tx({tPurp:'Sett et vingeprofil og et helt fly i en vindtunnel. Endre anstigningsvinkel, fart, klaffer og krengning, og se hvor luftstrømmen løsner, hvordan løft og motstand endrer seg, og hvorfor vingen staller.'}); LAB.head('tunnel'); LAB.onLang(()=>{ if(LAB.lang!==LANG){ try{ setLang(LAB.lang); }catch(e){ LANG=LAB.lang; try{ localStorage.setItem('vlab-lang',LANG); }catch(_){} applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP'; } } }); }
 
 /* ---------------- Tilstand ---------------- */
 const AC0=P.AIRCRAFT.a320;
@@ -3905,7 +3905,7 @@ document.addEventListener('tunac',()=>{ try{ renderDataFold(); }catch(e){} });
 /* ---------------- Språkbytte ---------------- */
 function setLang(l){
   LANG=l; try{ localStorage.setItem('vlab-lang',l); }catch(e){}
-  applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird';
+  applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP';
   for(const k in sliders){ const sd=sliders[k], sp=sd.wrap.querySelector('label span'), h=sd.wrap.querySelector('.hint'); sp.textContent=T(sd.d.label); if(h) h.textContent=T(sd.d.hint); }
   const af=Object.values(P.AIRFOILS); document.querySelectorAll('#segAf button').forEach((b,i)=>b.innerHTML=`${T(af[i].name)}<small>${T(af[i].note)}</small>`);
   document.querySelectorAll('#segContam button').forEach((b,i)=>b.textContent=T(window.VSection.CONTAM[i].name));
@@ -3916,7 +3916,7 @@ function setLang(l){
   acUI();
   syncSliders(); ctlVis(); confHint(); renderDataFold(); compute(); SEC.ui(); updateFlow(); WAKE.sync(); demoLabel(); if(PIN.on){ PIN.on=false; } buildLabels(); setLegend(); SEC.redraw();
 }
-applyStatic(); document.title=T('Vindtunnelen')+' · Birdbird';
+applyStatic(); document.title=T('Vindtunnelen')+' · NORDAP';
 
 document.getElementById('moreVals').addEventListener('toggle',()=>{ try{ localStorage.setItem('vlab-more',document.getElementById('moreVals').open?'1':'0'); }catch(e){} if(document.getElementById('moreVals').open) drawCharts(); });
 try{ if(localStorage.getItem('vlab-more')==='1') document.getElementById('moreVals').open=true; }catch(e){}

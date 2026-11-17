@@ -1,4 +1,4 @@
-/* Birdbird – Cessna 172 cockpit trainer. Base rules shared with the DA42 and King Air B200 cockpits (cockpit.html, b200.html);
+/* NORDAP – Cessna 172 cockpit trainer. Base rules shared with the DA42 and King Air B200 cockpits (cockpit.html, b200.html);
    the shell itself (toolbar, … menu, drawer, notification pill) is in simshell.css. */
 /* ---------- cockpit stage: one view that always fits ---------- */
 .ctop .beta{flex:0 0 auto;font:700 10.5px/1 var(--f-mono,monospace);letter-spacing:.14em;text-transform:uppercase;color:#0d1319;background:#ffcf3a;border-radius:4px;padding:6px 7px}

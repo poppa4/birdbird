@@ -1,4 +1,4 @@
-/* Birdbird – ifrcore.js: the pure engine behind the IFR trainer (ifr.html).
+/* NORDAP – ifrcore.js: the pure engine behind the IFR trainer (ifr.html).
    No DOM, no state of its own. Builds on navcore.js (NAVCORE: angles, VOR, ILS, ADF, wind) and holdcore.js
    (HOLDCORE: holding entries with the 5° flexibility, wind in the hold). Loaded in the page as window.IFRCORE
    and in Node (tests/ifr.test.mjs) through vm, after navcore.js and holdcore.js.

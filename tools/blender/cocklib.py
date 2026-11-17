@@ -1,4 +1,4 @@
-"""Birdbird cockpit modelling kit for headless Blender (bpy 5.x as a Python module).
+"""NORDAP cockpit modelling kit for headless Blender (bpy 5.x as a Python module).
 
 All geometry is written in the COCKPIT FRAME used by cockpit3d.js: metres, x = right, y = up, z = aft (forward is −z),
 origin on the aircraft centre line at the cabin reference height (each aircraft file documents it). glTF is +Y up, so the

@@ -1,4 +1,4 @@
-/* Birdbird – zoom gestures shared by the 2D cockpit trainers (C172, DA42, King Air B200) and their 3D pages.
+/* NORDAP – zoom gestures shared by the 2D cockpit trainers (C172, DA42, King Air B200) and their 3D pages.
    The panels zoom between named areas (REG); this file adds the gestures on top of each page's own zoomTo():
    - single click / tap on the panel (not on a control): whole-panel view → zoom to the area under the pointer;
      zoomed → a click outside the zoomed area goes back to the whole panel (pages with their own click logic pass click:false)

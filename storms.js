@@ -1,4 +1,4 @@
-/* Birdbird – storms.js: "Thunderstorms and wind shear" (storms.html).
+/* NORDAP – storms.js: "Thunderstorms and wind shear" (storms.html).
    The page: controls, readouts, the three views of the 3D model (cb3d.js) on the physics in cbmodel.js,
    the navigation display and the airspeed strip (2D canvases), Key concepts, deep-dive folds, a one-at-a-time
    "Try it" stepper with live checks, key points and the quiz. Every string EN/NO. */
@@ -445,7 +445,7 @@ LAB.quiz(el('qbox'),'storms',()=>LAB.shuffle([
 ]),10);
 
 /* ---------------- static strings, start ---------------- */
-LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
+LAB.add({},{'Thunderstorms and Wind Shear':'Tordenvær og vindskjær','Thunderstorms and wind shear':'Tordenvær og vindskjær','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','The storm lab':'Stormlabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv','Deep dive':'Dypdykk',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Instability':'Ustabilitet','Wind shear with height':'Vindskjær med høyden','Development':'Utvikling','Fly':'Fly','Stage':'Stadium','Pilot':'Pilot','Radar':'Radar','Range':'Rekkevidde','Gain':'Gain','Show':'Vis','Cloud':'Sky','Scenarios':'Scenarioer','Advanced':'Avansert',
  'Navigation display':'Navigasjonsskjerm','Virtual Labs':'Virtual Labs','Sections':'Seksjoner','View':'Visning',

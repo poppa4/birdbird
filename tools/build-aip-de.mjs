@@ -6,7 +6,7 @@ import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const UA = 'Mozilla/5.0 (compatible; Birdbird/1.0; +https://birdbird.eu)';
+const UA = 'Mozilla/5.0 (compatible; NORDAP/1.0; +https://birdbird.eu)';
 const get = async u => { for (let i = 0; i < 3; i++) { try { const r = await fetch(u, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(60000) }); if (r.ok) return { url: r.url, t: await r.text() }; } catch (e) {} await new Promise(r => setTimeout(r, 1500)); } throw new Error('failed ' + u); };
 const anchors = t => [...t.matchAll(/<a\b[^>]*href\s*=\s*["']([0-9a-f]{32}\.html)["'][^>]*>([\s\S]{0,300}?)<\/a>/gi)].map(m => [m[1], m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()]).filter(a => /raquo|»/.test(a[1]));
 const perm = t => (t.match(/myPermalink = "pages\/(C[0-9A-F]+)\.html"/) || [])[1];

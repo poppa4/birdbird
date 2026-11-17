@@ -1,4 +1,4 @@
-/* Birdbird – enginecore.js: the pure maths behind the Engines lab (engines.html).
+/* NORDAP – enginecore.js: the pure maths behind the Engines lab (engines.html).
    No DOM, no state. Loaded in the page as window.ENGC and in Node (tests/engine.test.mjs) through vm.
    Scaled representative models of four generic engine types, not data for any real engine:
    piston (normally aspirated, ~180 hp class, constant-speed propeller; optional turbo-normalising),

@@ -1,4 +1,4 @@
-/* Birdbird – one flight across Route Explorer, the briefing pack and My Workspace.
+/* NORDAP – one flight across Route Explorer, the briefing pack and My Workspace.
    Pure helpers, no DOM. Data stays where it was:
      route  (NSTORE 'route')  { id, pts:[{n,t,la,lo}], rt, packId? }
      pack   (NSTORE 'prep')   { id, f:{depapt,destapt,alt1apt,date,type,reg,route}, xs:{route}, routeId? }

@@ -1,11 +1,11 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/sat?bbox=minx,miny,maxx,maxy (EPSG:3857)&t=YYYY-MM-DDTHH:00:00Z
+/* NORDAP – Cloudflare Pages Function: GET /api/sat?bbox=minx,miny,maxx,maxy (EPSG:3857)&t=YYYY-MM-DDTHH:00:00Z
    Meteosat infrared (10.8 µm) cloud image from EUMETSAT's EUMETView WMS, one 256 px map tile, for the full hour t.
    Hourly EUMETSAT imagery is free of licensing (EUMETSAT data policy); shown with "© EUMETSAT". Proxied because the WMS
    sends no CORS headers (the map needs them for WebGL), and cached for everyone. The first layer that answers is used:
    MTG (Meteosat Third Generation) if available, else MSG. */
 const WMS = 'https://view.eumetsat.int/geoserver/wms';
 export const LAYERS = ['mtg_fd:ir105_hrfi', 'msg_fes:ir108']; // names checked against EUMETView GetCapabilities (Nov 2026)
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
 const err = (s, m) => new Response(JSON.stringify({ ok: false, message: m }), { status: s, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
 export function getMapUrl(layer, bbox, t, size) {
   const q = { service: 'WMS', version: '1.3.0', request: 'GetMap', layers: layer, styles: '', format: 'image/png', transparent: 'true', crs: 'EPSG:3857', width: size, height: size, bbox: bbox.join(',') };

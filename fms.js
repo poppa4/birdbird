@@ -1,5 +1,5 @@
-/* Birdbird – FMS: navigasjonsdatabase, flyplan, prosedyrer, direkte-til og GPS-navigasjon.
-   Fiktiv region rundt Birdbird. Lokale koordinater i meter (N, E) med terskel RWY 36 i origo. */
+/* NORDAP – FMS: navigasjonsdatabase, flyplan, prosedyrer, direkte-til og GPS-navigasjon.
+   Fiktiv region rundt NORDAP. Lokale koordinater i meter (N, E) med terskel RWY 36 i origo. */
 (function(G){
 'use strict';
 const NM=1852, D2R=Math.PI/180, R2D=180/Math.PI, FT=0.3048;
@@ -8,12 +8,12 @@ const w360=a=>{ a%=360; return a<0?a+360:a; }, w180=a=>{ a=(a+180)%360; if(a<0) 
 /* ---------- database ---------- */
 const DB={};
 function add(id,type,N,E,name,extra){ DB[id]=Object.assign({id,type,N,E,name},extra||{}); }
-add('NAER','APT',750,0,'BIRDBIRD FIELD',{elev:0,rwy:'18/36',city:'BIRDBIRD'});
+add('NAER','APT',750,0,'NORDAP FIELD',{elev:0,rwy:'18/36',city:'NORDAP'});
 add('VSTB','APT',40*NM,6*NM,'VESTBY',{elev:300,rwy:'04/22',city:'VESTBY'});
 add('FJVK','APT',12*NM,-11*NM,'FJORDVIK',{elev:60,rwy:'11/29',city:'FJORDVIK'});
 add('HOLM','APT',-28*NM,20*NM,'HOLMEN',{elev:120,rwy:'16/34',city:'HOLMEN'});
 add('SKRV','APT',-35*NM,-12*NM,'SKARVIK',{elev:40,rwy:'09/27',city:'SKARVIK'});
-add('ASN','VOR',900,-2600,'BIRDBIRD',{freq:'113.30'});
+add('ASN','VOR',900,-2600,'NORDAP',{freq:'113.30'});
 add('VSB','VOR',40.5*NM,8*NM,'VESTBY',{freq:'116.50'});
 add('ALPOR','INT',-10*NM,-5*NM,'ALPOR'); add('BIKAN','INT',-10*NM,5*NM,'BIKAN'); add('RONAX','INT',-10*NM,0,'RONAX');
 add('FAPSO','INT',-5*NM,0,'FAPSO'); add('RW36','RWY',0,0,'RUNWAY 36'); add('HOLAN','INT',9*NM,0,'HOLAN');

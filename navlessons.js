@@ -1,4 +1,4 @@
-/* Birdbird – navlessons.js: Learn (10 lessons), Practice (10 task types), Explore, Instructor (scenarios),
+/* NORDAP – navlessons.js: Learn (10 lessons), Practice (10 task types), Explore, Instructor (scenarios),
    the Guide strip with next-step hints, and the "Why?" sentences after every action. Plugs into navsim.js (NSIM). */
 window.NAVLESSONS=function(A){
 'use strict';

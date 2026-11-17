@@ -149,7 +149,7 @@ test('session state machine: correction, retry with carry, say again, standby, f
   assert.notEqual(ses.i,before);
   // initial call without callsign -> "Station calling ..., say again your callsign"
   const s2=new R.Session(S.byKey('vatis'),{seed:3}); s2.start(); s2.submit(s2.step.model);
-  r=s2.submit('Birdbird Ground at the apron information '+V.info+' request taxi'); assert.equal(r.kind,'retry'); assert.match(r.ev.find(e=>e.t==='atc').text,/say again your callsign/);
+  r=s2.submit('NORDAP Ground at the apron information '+V.info+' request taxi'); assert.equal(r.kind,'retry'); assert.match(r.ev.find(e=>e.t==='atc').text,/say again your callsign/);
 });
 test('summary, weak items and spaced repetition', ()=>{
   const ses=new R.Session(S.byKey('ifrclr'),{seed:5,level:'beginner'}); ses.start();
@@ -218,7 +218,7 @@ test('SERA.14095: MAYDAY and PAN PAN are preferably spoken three times', ()=>{
   assert.ok(!R.grade(m,m.model.replace('MAYDAY MAYDAY MAYDAY, ',''),{V}).pass,'no MAYDAY at all fails');
   assert.ok(R.grade(p,p.model.replace('PAN PAN, PAN PAN, PAN PAN','PAN PAN'),{V,level:'check'}).pass);
   assert.ok(!R.grade(p,p.model.replace('PAN PAN, PAN PAN, PAN PAN, ',''),{V}).pass);
-  assert.match(S.stepById('efuel:1',V).model,/^MAYDAY MAYDAY MAYDAY FUEL, Birdbird Approach/);   // SERA.11012(b)
+  assert.match(S.stepById('efuel:1',V).model,/^MAYDAY MAYDAY MAYDAY FUEL, NORDAP Approach/);   // SERA.11012(b)
   assert.match(S.stepById('efuel:0',V).reply,/roger, expect \d+ minutes delay/);                 // AMC1 SERA.14001 1.1.3 b)
 });
 test('SERA.8015(ec) / AMC 1.4.10: conditional line-up', ()=>{
@@ -256,14 +256,14 @@ test('AMC1 SERA.14001: controller templates use the standard forms', ()=>{
 });
 test('SERA.14065(a): initial call after a frequency change gives passing level and assigned speed', ()=>{
   const V=V0(), c=S.stepById('iclimb:0',V), h=S.stepById('ihold:0',V);
-  assert.ok(!R.grade(c,`Birdbird Approach, ${V.c}, climbing to 3000 feet`,{V}).pass,'passing level missing');
-  assert.ok(R.grade(c,`Birdbird Approach, ${V.c}, passing 1500 feet climbing 3000 feet`,{V}).pass);
-  assert.ok(!R.grade(h,`Birdbird Approach, ${V.c}, passing 6000 feet descending to 5000 feet, information ${R.PHW[V.info2.toLowerCase()]}`,{V}).pass,'assigned speed missing');
+  assert.ok(!R.grade(c,`NORDAP Approach, ${V.c}, climbing to 3000 feet`,{V}).pass,'passing level missing');
+  assert.ok(R.grade(c,`NORDAP Approach, ${V.c}, passing 1500 feet climbing 3000 feet`,{V}).pass);
+  assert.ok(!R.grade(h,`NORDAP Approach, ${V.c}, passing 6000 feet descending to 5000 feet, information ${R.PHW[V.info2.toLowerCase()]}`,{V}).pass,'assigned speed missing');
 });
 test('SERA.14070: radio check includes the frequency; SERA Appendix 1 light signals', ()=>{
   const V=V0(), r=S.stepById('vcheck:0',V);
-  assert.ok(!R.grade(r,`Birdbird Ground, ${V.c}, radio check`,{V}).pass);
-  assert.ok(R.grade(r,`Birdbird Ground, ${V.c}, radio check one two one decimal seven`,{V}).pass);
+  assert.ok(!R.grade(r,`NORDAP Ground, ${V.c}, radio check`,{V}).pass);
+  assert.ok(R.grade(r,`NORDAP Ground, ${V.c}, radio check one two one decimal seven`,{V}).pass);
   assert.ok(R.grade(S.stepById('ercf:2',V),'return for landing',{V}).pass);
   assert.ok(R.grade(S.stepById('ercf:3',V),'give way to other aircraft and continue circling',{V}).pass);
 });

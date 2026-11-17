@@ -1,4 +1,4 @@
-/* Birdbird – gyrocore.js: the pure maths behind the Attitude and heading lab (gyros.html).
+/* NORDAP – gyrocore.js: the pure maths behind the Attitude and heading lab (gyros.html).
    No DOM, no state. Loaded in the page as window.GYC and in Node (tests/gyros.test.mjs) through vm.
    Angles in degrees, headings 0–360 clockwise from north, latitude north positive, speeds in kt, rates in °/h unless stated. */
 (function(root){

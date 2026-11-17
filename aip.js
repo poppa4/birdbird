@@ -1,8 +1,8 @@
-/* Birdbird – official AIP for an aerodrome, by ICAO prefix (window.BBAIP.of('ENGM') → {name,url,kind,ead,note}).
+/* NORDAP – official AIP for an aerodrome, by ICAO prefix (window.BBAIP.of('ENGM') → {name,url,kind,ead,note}).
    1. National eAIP site where the state publishes one openly (kind 'national').
    2. Other European (ECAC) states: EUROCONTROL EAD Basic, the free (registration) library of all their AIPs (kind 'ead').
    3. Anywhere else in the world: EUROCONTROL @IS Online, the maintained directory of every state's AIS website (kind 'dir').
-   We link only: the AIP itself is never copied into Birdbird.
+   We link only: the AIP itself is never copied into NORDAP.
    Aerodrome page: BBAIP.ad('ENTO') → '/api/aip?icao=ENTO&go=1'. The server finds the AD 2 page (with the charts) in the
    edition in force today, every time (functions/_lib/aipres.js), so the link follows each new AIRAC by itself. Where a
    state has no open eAIP, or the aerodrome is not in it, the same link opens the state's AIP portal instead.

@@ -1,5 +1,5 @@
-/* Birdbird – simulatorens terreng (simterrain.js). Ikke forveksle med terrain.js, som er Europa-terrenget i ruteprofilen.
-   Terreng for regionen rundt Birdbird. Deterministisk høydefelt (meter) i lokale koordinater (N, E).
+/* NORDAP – simulatorens terreng (simterrain.js). Ikke forveksle med terrain.js, som er Europa-terrenget i ruteprofilen.
+   Terreng for regionen rundt NORDAP. Deterministisk høydefelt (meter) i lokale koordinater (N, E).
    Brukes av 3D-utsikten, kartet og bakkekollisjon. Fjord og hav i vest, åser i øst og nord, flatt rundt flyplassen og under finalen. */
 (function(G){
 'use strict';

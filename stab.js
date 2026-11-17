@@ -1,4 +1,4 @@
-/* Birdbird – stab.js: A320 stability, control and load-factor model for stability.html.
+/* NORDAP – stab.js: A320 stability, control and load-factor model for stability.html.
    Illustrative training values for an A320-size aircraft, not AFM / FCOM data.
    Closed-form trim and gust equations, linear small-perturbation dynamics (RK4),
    eigenvalues from the characteristic polynomial. Plus a small canvas 3D polygon renderer

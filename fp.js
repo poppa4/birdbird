@@ -1,4 +1,4 @@
-/* Birdbird – fp.js: the Climb, cruise and fuel planning lab (flightplanning.html).
+/* NORDAP – fp.js: the Climb, cruise and fuel planning lab (flightplanning.html).
    One dark figure, three modes: Climb (drag and thrust available against airspeed: Vx at the biggest gap, Vy at the
    biggest gap × speed), Cruise (fuel flow against true airspeed: best range at the tangent from the origin, or from
    the wind point; best endurance at the lowest fuel flow) and Fuel (the EASA fuel scheme as a stack against the tank,
@@ -348,7 +348,7 @@ LAB.quiz(el('qbox'),'flightplanning',()=>LAB.shuffle([
 ]),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Climb, cruise and fuel planning':'Stigning, marsj og drivstoffplanlegging','Birdbird Virtual Labs · Performance':'Birdbird Virtual Labs · Ytelse',
+LAB.add({},{'Climb, cruise and fuel planning':'Stigning, marsj og drivstoffplanlegging','NORDAP Virtual Labs · Performance':'NORDAP Virtual Labs · Ytelse',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The climb, cruise and fuel lab':'Stigning-, marsj- og drivstofflabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Aircraft':'Fly','Flight':'Flyging','The flight':'Flygingen','More fuel':'Mer drivstoff','Scenarios':'Scenarier','Advanced':'Avansert','Rules':'Regler','Destination alternate':'Destinasjonsalternativ','Contingency':'Uforutsett','Mode':'Modus','Sections':'Seksjoner',
  'Drag and thrust against airspeed with the best climb speeds; fuel flow against airspeed with the best range and endurance speeds; and the fuel for a flight as a stack against the tank.':'Motstand og skyvekraft mot fart med de beste stigefartene; drivstofforbruk mot fart med fartene for beste rekkevidde og flytid; og drivstoffet for en flytur som en stabel mot tanken.'});

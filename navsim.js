@@ -1,4 +1,4 @@
-/* Birdbird – navsim.js: the radio navigation simulator (plan view, profile, instrument panel, controls, guide).
+/* NORDAP – navsim.js: the radio navigation simulator (plan view, profile, instrument panel, controls, guide).
    Geometry comes from navcore.js (NAVCORE), the gauges from navgauges.js (NAVG), the plan-view map (relief, symbols, labels,
    scale) from navmap.js (NAVMAP), the lessons, practice tasks,
    scenarios and the "Why?" sentences from navlessons.js (NAVLESSONS). Strings are EN/NO through LAB.L.

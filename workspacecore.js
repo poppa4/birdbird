@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace, core logic (no DOM, no storage): runs in the browser (window.WSCORE) and in node tests.
+/* NORDAP – My Workspace, core logic (no DOM, no storage): runs in the browser (window.WSCORE) and in node tests.
    Items   every aircraft, document index entry, note and pack mark is one item: { id, kind, createdAt, updatedAt, deletedAt? }.
            Deleting sets deletedAt (Trash, 30 days), then the item shrinks to a small tombstone ({ gone:1 }) so the
            deletion still reaches other devices; tombstones are dropped after 180 days.
@@ -449,11 +449,11 @@
   /* -> { exportedAt, items, local, docs:[{ doc, read() -> Uint8Array|null, blob(type) -> Blob|null, fileName, fileType }] } */
   async function readBackup(src) {
     const fail = m => { const e = new Error(m); e.code = 'bad_backup'; return e; };
-    let entries; try { entries = await zipRead(src); } catch (e) { if (e.code === 'bad_zip') throw fail('This is not a Birdbird backup file.'); throw e; }
+    let entries; try { entries = await zipRead(src); } catch (e) { if (e.code === 'bad_zip') throw fail('This is not a NORDAP backup file.'); throw e; }
     const by = {}; entries.forEach(e => { by[e.name] = e; });
-    if (!by[BACKUP_NAME]) throw fail('This is not a Birdbird backup file.');
+    if (!by[BACKUP_NAME]) throw fail('This is not a NORDAP backup file.');
     let j; try { j = JSON.parse(dec.decode(await by[BACKUP_NAME].read())); } catch (e) { if (e.code === 'bad_crc') throw e; throw fail('The backup file could not be read.'); }
-    if (!j || j.format !== BACKUP_FORMAT) throw fail('This is not a Birdbird backup file.');
+    if (!j || j.format !== BACKUP_FORMAT) throw fail('This is not a NORDAP backup file.');
     const items = await unpackNs({ items: j.items });
     for (const id in items) { const it = items[id]; if (it.kind === 'note' && !it.gone) { it.body = sanitizeHtml(it.body); it.versions = (it.versions || []).map(v => ({ at: +v.at || 0, title: String(v.title || ''), body: sanitizeHtml(v.body), conflict: v.conflict ? 1 : undefined })); } }
     const docs = [];

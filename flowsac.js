@@ -1,4 +1,4 @@
-/* Birdbird – cockpit schematics for the flow trainer (flows.html).
+/* NORDAP – cockpit schematics for the flow trainer (flows.html).
    The A320 is a picture rendered from a 3D model; the others are our own drawings: the panels of each cockpit in their usual
    places, roughly to scale. Every control is named, so a tap lands on "BAT 1" and not just on a spot in a picture. Not a substitute for the aircraft's documents: layouts
    vary between variants and operators, which is why a user can also put their own cockpit photo or PDF behind a flow.
@@ -11,7 +11,7 @@
    the aircraft. Model: FlightGear A320-family (github.com/legoboyvdlp/A320-family, GPL-2.0, Copyright (c) 2025 Josh Davidson,
    Jonathan Redpath, merspieler, Matthew Maring, Thorsten Herrmann, Semir Gebran), A320neo with CFM engines. The picture is a
    derived work and is under GPL-2.0 as well; the scripts that make it are in tools/render-a320/. What the displays show is
-   Birdbird's own drawing. Each control's rectangle is computed from the model's own geometry, not placed by hand.
+   NORDAP's own drawing. Each control's rectangle is computed from the model's own geometry, not placed by hand.
    A320_T: [id ("PANEL|CONTROL"), x, y, w, h, whole?] in the 1000-wide frame. */
 const A320_T = [
   ["MAINTENANCE|CVR HEADSET",610.6,30.1,11.4,11.4], ["MAINTENANCE|OXY TMR RESET",610.3,50.9,12.5,11.9], ["MAINTENANCE|SVCE INT OVRD",628.5,50.9,12.5,11.9], ["MAINTENANCE|AVNCS COMPT LT",665.2,50.9,12.5,11.9],
@@ -127,7 +127,7 @@ const A320 = { id: 'a320', name: 'Airbus A320', style: 'airbus', crew: 2, h: 167
   img: { lo: 'img/cockpits/a320-deck-1500.webp', hi: 'img/cockpits/a320-deck-3000.webp', by: 'FlightGear A320-family', lic: 'GPL-2.0', v: 'A320neo, CFM engines', src: 'https://github.com/legoboyvdlp/A320-family', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Diamond DA42 (G1000): a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Diamond DA42 (github.com/FGMEMBERS/Diamond-DA42, GPL-2.0, by Emmanuel Baranger, OO ZVY, Jeep and MrZac).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const DA42_T = [
   ["STANDBY INSTRUMENTS|AIRSPEED",372.7,37.3,72.7,72.7], ["STANDBY INSTRUMENTS|ATTITUDE",462.0,37.4,72.4,72.4], ["STANDBY INSTRUMENTS|ALTIMETER",547.5,36.8,78.2,78.2], ["STANDBY INSTRUMENTS|EMERGENCY HORIZON",332.7,61.0,32.8,57.4],
   ["STANDBY INSTRUMENTS|COMPASS",636.8,54.5,53.6,54.7], ["ELT|ELT",756.8,65.9,31.7,57.2], ["LIGHTS|LANDING LT",253.5,73.5,16.7,34.8], ["LIGHTS|TAXI LT",274.4,73.5,16.7,34.8],
@@ -178,7 +178,7 @@ const DA42 = { id: 'da42', name: 'Diamond DA42 (G1000)', crew: 1, h: 990, t: DA4
   img: { lo: 'img/cockpits/da42-deck-1500.webp', hi: 'img/cockpits/da42-deck-3000.webp', by: 'FlightGear DA42 (E. Baranger and others)', lic: 'GPL-2.0', v: 'DA42 Twin Star', src: 'https://github.com/FGMEMBERS/Diamond-DA42', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Piper PA-34 Seneca II: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Piper PA-34-200T Seneca II (github.com/FGMEMBERS/SenecaII, GPL-2.0), with shared instruments from FlightGear FGData (GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const PA34_T = [
   ["AVIONICS|AUDIO PANEL",400.0,21.9,123.1,25.4,1], ["AVIONICS|HSI SLAVING",526.7,19.9,23.5,29.5,1], ["ANNUNCIATOR|ANNUNCIATOR PANEL",288.6,35.3,87.3,13.7,1], ["FLIGHT INSTRUMENTS|AIRSPEED INDICATOR",130.2,53.9,57.7,58.0],
   ["FLIGHT INSTRUMENTS|ATTITUDE INDICATOR",194.0,52.7,60.8,60.8], ["FLIGHT INSTRUMENTS|ALTIMETER",259.0,52.3,61.5,61.5], ["AVIONICS|COM / NAV 1",400.8,49.6,121.5,39.2,1], ["AVIONICS|DME",531.5,49.6,121.5,39.2,1],
@@ -207,7 +207,7 @@ const PA34 = { id: 'pa34', name: 'Piper PA-34 Seneca II', crew: 1, h: 853, t: PA
   img: { lo: 'img/cockpits/pa34-deck-1500.webp', hi: 'img/cockpits/pa34-deck-3000.webp', by: 'FlightGear Seneca II', lic: 'GPL-2.0', v: 'PA-34-200T Seneca II', src: 'https://github.com/FGMEMBERS/SenecaII', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Beechcraft King Air B200: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Beechcraft Super King Air (github.com/FGMEMBERS/Beechcraft-King-Air, GPL-2.0, by Emmanuel Baranger).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const B200_T = [
   ["OVERHEAD|WINDSHIELD WIPER",426.9,56.3,20.6,24.4], ["OVERHEAD|PILOT OVHD FLOOD",460.8,56.8,20.5,20.5], ["OVERHEAD|INSTR INDIRECT",490.3,56.8,20.5,20.5], ["OVERHEAD|COPILOT OVHD FLOOD",519.9,56.8,20.5,20.5],
   ["OVERHEAD|MASTER PANEL LIGHTS",375.2,101.3,18.2,20.9], ["OVERHEAD|PILOT FLIGHT INSTR LT",402.3,101.6,20.5,20.5], ["OVERHEAD|ENGINE INSTR LT",460.8,101.6,20.5,20.5], ["OVERHEAD|AVIONICS PANEL LT",490.3,101.6,20.5,20.5],
@@ -245,7 +245,7 @@ const B200 = { id: 'b200', name: 'King Air B200 · FlightGear model', crew: 2, h
   img: { lo: 'img/cockpits/b200-deck-1500.webp', hi: 'img/cockpits/b200-deck-3000.webp', by: 'FlightGear Super King Air (E. Baranger)', lic: 'GPL-2.0', v: 'Super King Air 200 series, EFIS', src: 'https://github.com/FGMEMBERS/Beechcraft-King-Air', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Cessna 172: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Cessna 172P (github.com/c172p-team/c172p, GPL-2.0, by David Megginson, Gilberto Agostinho, Wayne Bragg, Juan Vera del Campo, onox, thevirtualfer, Daniel Dubreuil and others).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const C172_T = [
   ["COMPASS|MAGNETIC COMPASS",298.6,44.8,222.6,76.6], ["AUDIO PANEL|AUDIO PANEL",527.0,132.7,128.2,34.4,1], ["AUDIO PANEL|MIC SELECT",534.5,137.8,15.6,16.4], ["AUDIO PANEL|AUTO",554.8,134.1,13.2,21.4],
   ["AUDIO PANEL|COM 1 AUDIO",565.2,134.1,13.2,21.4], ["AUDIO PANEL|COM 2 AUDIO",575.7,134.1,13.2,21.4], ["AUDIO PANEL|NAV 1 AUDIO",586.2,134.1,13.2,21.4], ["AUDIO PANEL|NAV 2 AUDIO",596.7,134.1,13.2,21.4],
@@ -280,10 +280,10 @@ const C172 = { id: 'c172', name: 'Cessna 172', crew: 1, h: 947, t: C172_T,
   img: { lo: 'img/cockpits/c172-deck-1500.webp', hi: 'img/cockpits/c172-deck-3000.webp', by: 'FlightGear c172p team', lic: 'GPL-2.0', v: 'Cessna 172P, classic instruments', src: 'https://github.com/c172p-team/c172p', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Boeing 737-800: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 737-800YV (github.com/FGMEMBERS/737-800YV, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 /* Boeing 737-800: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 737-800YV (github.com/FGMEMBERS/737-800YV, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const B738_T = [
   ["VOICE RECORDER|VOICE RECORDER",661.6,49.3,12.0,12.0], ["FLT CONTROL|FLT CONTROL A",300.4,60.6,12.0,24.6], ["FLT CONTROL|FLT CONTROL B",317.2,60.6,12.0,24.6], ["CABIN|EVAC HORN CUTOUT",399.5,61.1,12.0,12.0],
   ["CABIN|EVAC",422.1,55.3,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT L SIDE",533.1,77.5,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT L FWD",548.8,77.5,12.0,12.0], ["WINDOW / PROBE HEAT|WINDOW HEAT TEST",566.5,77.5,12.0,12.0],
@@ -355,10 +355,10 @@ const B738 = { id: 'b738', name: 'Boeing 737-800', style: 'boeing', crew: 2, h: 
   img: { lo: 'img/cockpits/b738-deck-1500.webp', hi: 'img/cockpits/b738-deck-3000.webp', by: 'FlightGear 737-800YV', lic: 'GPL-2.0', v: '737-800', src: 'https://github.com/FGMEMBERS/737-800YV', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* ATR 72-500: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear ATR 72-500 (github.com/FGMEMBERS/ATR72, GPL-3.0, by Narendran Muraleedharan, Donald Belcham, Dwayne Gable, Oliver (ot-666) and camelon).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 /* ATR 72-500: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear ATR 72-500 (github.com/FGMEMBERS/ATR72, GPL-3.0, by Narendran Muraleedharan, Donald Belcham, Dwayne Gable, Oliver (ot-666) and camelon).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const ATR72_T = [
   ["ENG 1 FIRE|ENG 1 SQUIB TEST",325.7,17.4,12.1,12.1], ["ENG 2 FIRE|ENG 2 SQUIB TEST",600.0,16.4,12.1,12.1], ["ENG 1 FIRE|ENG 1 AGENT 1",330.2,35.6,12.1,12.1], ["ENG 1 FIRE|ENG 1 LOOP A",343.1,35.6,12.1,12.1],
   ["ENG 1 FIRE|ENG 1 FAULT TEST",356.8,33.4,12.1,12.1], ["ENG 1 FIRE|ENG 1 LOOP B",370.3,35.6,12.1,12.1], ["ENG 1 FIRE|ENG 1 AGENT 2",383.1,35.6,12.1,12.1], ["ENG 2 FIRE|ENG 2 AGENT 1",604.7,34.3,12.1,12.1],
@@ -423,7 +423,7 @@ const ATR72 = { id: 'atr72', name: 'ATR 72-500', style: 'atr', crew: 2, h: 1266,
   img: { lo: 'img/cockpits/atr72-deck-1500.webp', hi: 'img/cockpits/atr72-deck-3000.webp', by: 'FlightGear ATR 72-500 project', lic: 'GPL-3.0', v: 'ATR 72-500, classic instruments (not the -600 glass cockpit)', src: 'https://github.com/FGMEMBERS/ATR72', licUrl: 'https://www.gnu.org/licenses/gpl-3.0.html' } };
 /* Embraer E190: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Embraer E-Jet family (github.com/YV3399/E-jet-family-YV, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const E190_T = [
   ["ENGINE FIRE|ENG 1 FIRE HANDLE",371.2,24.0,45.7,56.5], ["ENGINE FIRE|ENG 2 FIRE HANDLE",581.1,24.0,45.7,56.6], ["DVDR|CVR ERASE",274.8,39.7,9.6,8.6], ["DVDR|DVDR TEST",289.2,39.6,9.5,8.7],
   ["DVDR|HEADPHONE",303.1,35.7,13.8,13.4], ["DVDR|DVDR FWD / AFT",325.1,36.4,8.6,8.6], ["FIRE EXTINGUISHER|CARGO SMOKE FWD",473.7,37.7,25.8,18.4], ["FIRE EXTINGUISHER|CARGO SMOKE AFT",501.7,37.7,25.8,18.4],
@@ -469,7 +469,7 @@ const E190 = { id: 'e190', name: 'Embraer E190', crew: 2, h: 1212, t: E190_T,
   img: { lo: 'img/cockpits/e190-deck-1500.webp', hi: 'img/cockpits/e190-deck-3000.webp', by: 'FlightGear E-jet-family-YV', lic: 'GPL-2.0', v: 'E170/175/190/195 flight deck (E-Jet, Primus Epic)', src: 'https://github.com/YV3399/E-jet-family-YV', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Boeing 787-8: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 787 family (github.com/IskenderWang/787-family, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const B788_T = [
   ["BATTERY|TOWING POWER",454.2,65.9,14.3,14.4], ["FLIGHT CONTROL SURFACES|TAIL LOCK",319.8,68.2,14.3,14.5], ["FLIGHT CONTROL SURFACES|WINGS LOCK",365.3,68.2,14.3,14.5], ["BATTERY|BATTERY TEST",405.6,66.8,9.7,9.7],
   ["GND TEST|DATA LOAD / GND TEST",519.3,69.2,15.9,17.9], ["CVR|CVR TEST",561.8,66.8,9.7,9.7], ["CVR|CVR ERASE",580.1,66.8,9.7,9.7], ["OVERHEAD|ELT",652.3,101.7,12.6,28.7],
@@ -532,7 +532,7 @@ const B788 = { id: 'b788', name: 'Boeing 787-8', crew: 2, h: 1366, t: B788_T,
   img: { lo: 'img/cockpits/b788-deck-1500.webp', hi: 'img/cockpits/b788-deck-3000.webp', by: 'FlightGear 787 family', lic: 'GPL-2.0', v: '787-8/-9/-10 flight deck', src: 'https://github.com/IskenderWang/787-family', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Boeing 737 MAX 8: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Boeing 737 MAX (github.com/REXO-77/737-MAX, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const B38M_T = [
   ["IRS|IRS KEYPAD",427.6,85.4,39.2,47.4,1], ["IRS|IRS DISPLAY SELECTOR",386.8,91.7,17.7,17.7], ["AFT OVERHEAD|ELT",692.6,101.2,14.5,34.8], ["IRS|IRS SYS DSPL",388.4,117.7,14.5,14.5],
   ["ENGINE|EEC 1",552.8,131.9,17.7,17.7], ["ENGINE|EEC 2",575.9,131.9,17.7,17.7], ["AFT OVERHEAD|SERVICE INTERPHONE",491.5,139.8,13.9,17.7], ["LE DEVICES",276.1,153.4,91.7,47.4,1],
@@ -590,9 +590,9 @@ const B38M_T = [
   ["AUDIO SELECTOR PANEL CPT",344.8,1500.0,99.1,77.5,1], ["AUDIO SELECTOR PANEL F/O",545.4,1500.0,99.1,77.5,1], ["TRIM|RUDDER TRIM INDICATOR",467.7,1616.8,53.3,16.6], ["TRIM|AILERON TRIM",463.6,1643.7,10.1,29.6],
   ["TRIM|RUDDER TRIM",498.4,1639.0,36.0,36.0], ["AFT ELECTRONIC|FLOOD LIGHT",368.0,1657.9,18.9,18.9], ["AFT ELECTRONIC|PANEL LIGHT",405.6,1657.9,18.9,18.9], ["AFT ELECTRONIC|STAB TRIM OVERRIDE",559.9,1656.1,12.4,22.0],
   ["AFT ELECTRONIC|FLT DK DOOR",613.0,1657.9,18.9,18.9]];
-/* Airbus A350-900: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Airbus A350 XWB (github.com/FGMEMBERS/A350XWB, GPL-2.0). Overhead panel: drawing by Birdbird.
+/* Airbus A350-900: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Airbus A350 XWB (github.com/FGMEMBERS/A350XWB, GPL-2.0). Overhead panel: drawing by NORDAP.
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const A359_T = [
   ["C/B",355.4,1.6,71.4,44.8,1], ["MAINTENANCE",428.5,1.6,142.9,37.3,1], ["C/B 2",573.0,1.6,71.4,52.3,1], ["FIRE",428.5,40.6,142.9,48.7,1],
   ["ADIRS",355.4,48.1,71.4,83.8,1], ["FIRE|ENG 1 FIRE",433.2,55.8,11.4,14.0], ["FIRE|ENG 1 AGENT 1",450.9,57.4,10.7,10.7], ["FIRE|ENG 1 AGENT 2",468.4,57.4,10.7,10.7],
@@ -656,7 +656,7 @@ const A359 = { id: 'a359', name: 'Airbus A350-900', crew: 2, h: 1239, t: A359_T,
   img: { lo: 'img/cockpits/a359-deck-1500.webp', hi: 'img/cockpits/a359-deck-3000.webp', by: 'FlightGear A350XWB', lic: 'GPL-2.0', v: 'A350-900 flight deck. The overhead panel is a simplified drawing: the panels are in the right order, single buttons are approximate', src: 'https://github.com/FGMEMBERS/A350XWB', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Piper PA-28 Warrior: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Piper PA-28-161 Warrior (github.com/FGMEMBERS/PA28-Warrior, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const PA28_T = [
   ["FLIGHT INSTRUMENTS|COMPASS",452.4,16.4,41.4,20.5], ["ANNUNCIATOR|ANNUNCIATOR TEST",352.0,147.2,12.2,12.2], ["ANNUNCIATOR|ANNUNCIATOR PANEL",415.6,141.7,51.1,14.7], ["AVIONICS|AUDIO PANEL",523.8,145.8,142.9,27.2,1],
   ["FLIGHT INSTRUMENTS|ALTIMETER",340.5,161.9,71.5,72.4], ["FLIGHT INSTRUMENTS|AIRSPEED INDICATOR",159.2,164.9,66.3,70.2], ["FLIGHT INSTRUMENTS|ATTITUDE INDICATOR",250.0,162.9,68.0,68.0], ["FLIGHT INSTRUMENTS|VOR 1 (CDI)",432.5,162.3,71.4,71.4],
@@ -675,7 +675,7 @@ const PA28 = { id: 'pa28', name: 'Piper PA-28 Warrior', crew: 1, h: 1050, t: PA2
   img: { lo: 'img/cockpits/pa28-deck-1500.webp', hi: 'img/cockpits/pa28-deck-3000.webp', by: 'FlightGear PA28 Warrior', lic: 'GPL-2.0', v: 'PA-28-161 Warrior II/III with a GNS 530', src: 'https://github.com/FGMEMBERS/PA28-Warrior', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 /* Diamond DA40 NG: a picture rendered from a 3D model, square-on to each panel. Model: FlightGear Diamond DA40 NG (github.com/sryu1/DA40, GPL-2.0).
    The picture is a derived work under the same licence; the scripts that make it are in tools/render-cockpits/. What the displays
-   show is Birdbird's own drawing. Each control's rectangle is computed from the model's geometry. */
+   show is NORDAP's own drawing. Each control's rectangle is computed from the model's geometry. */
 const DA40_T = [
   ["STANDBY INSTRUMENTS|AIRSPEED INDICATOR",377.6,27.5,74.6,76.6], ["STANDBY INSTRUMENTS|ATTITUDE INDICATOR",459.6,25.4,80.8,81.0], ["STANDBY INSTRUMENTS|ALTIMETER",546.5,29.1,75.4,75.0], ["STANDBY INSTRUMENTS|COMPASS",626.8,38.1,68.1,70.4],
   ["LIGHTS|INSTRUMENT",196.7,65.5,14.9,14.9], ["LIGHTS|FLOOD",228.9,65.8,14.9,14.9], ["LIGHTS|LANDING",260.7,64.4,14.9,19.7], ["LIGHTS|TAXI",279.4,64.4,14.9,19.7],
@@ -700,7 +700,7 @@ const DA40 = { id: 'da40', name: 'Diamond DA40 NG', crew: 1, h: 868, t: DA40_T,
   img: { lo: 'img/cockpits/da40-deck-1500.webp', hi: 'img/cockpits/da40-deck-3000.webp', by: 'FlightGear DA40 NG', lic: 'GPL-2.0', v: 'DA40 NG with Garmin G1000', src: 'https://github.com/sryu1/DA40', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
 const B38M = { id: 'b38m', name: 'Boeing 737 MAX 8', crew: 2, h: 1685, t: B38M_T,
   img: { lo: 'img/cockpits/b38m-deck-1500.webp', hi: 'img/cockpits/b38m-deck-3000.webp', by: 'FlightGear 737 MAX', lic: 'GPL-2.0', v: '737 MAX 7/8/9/10 flight deck', src: 'https://github.com/REXO-77/737-MAX', licUrl: 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html' } };
-/* King Air B200 as in the Birdbird simulator: Birdbird's own drawing (b200panel.js), EFIS on the pilot side. The picture and the
+/* King Air B200 as in the NORDAP simulator: NORDAP's own drawing (b200panel.js), EFIS on the pilot side. The picture and the
    control table are taken from the simulator's panel by tools/render-cockpits/b200s/capture.py. */
 const B200S_T = [
   ["OVERHEAD|MASTER PANEL LIGHTS",427.4,43.5,10.9,16.8], ["OVERHEAD|WINDSHIELD WIPERS",436.9,22.8,23.4,16.8], ["OVERHEAD|OVERHEAD FLOOD LIGHTS",500.3,18.3,14.8,20.0], ["OVERHEAD|INSTRUMENT INDIRECT LIGHTS",515.1,18.3,14.8,20.0], ["OVERHEAD|PILOT FLIGHT LIGHTS",440.8,38.8,14.8,20.0], ["OVERHEAD|ENGINE INSTRUMENT LIGHTS",472.0,38.8,14.8,20.0],
@@ -778,7 +778,7 @@ const B200S_T = [
   ["AUTOPILOT|AUTOPILOT PITCH WHEEL (DN / UP)",564.2,234.7,17.3,17.3], ["PEDESTAL|CABIN ALTITUDE SELECT",554.3,747.4,16.4,19.2], ["PEDESTAL|CABIN RATE",580.5,754.9,13.4,16.0], ["PEDESTAL|CABIN PRESS (DUMP / PRESS / TEST)",374.5,770.0,9.9,15.4], ["PEDESTAL|RUDDER BOOST",407.1,770.0,9.9,23.0], ["PEDESTAL|ELEVATOR TRIM 2",437.8,770.0,9.9,23.0],
   ["PILOT SUBPANEL|ENGINE ANTI-ICE LEFT (ON / OFF)",128.9,521.9,8.4,15.4], ["PILOT SUBPANEL|ENGINE ANTI-ICE RIGHT (ON / OFF)",150.6,521.9,8.4,15.4], ["PILOT SUBPANEL|ENG ANTI-ICE ACTUATOR LEFT (STANDBY / MAIN)",128.9,553.3,8.4,15.4], ["PILOT SUBPANEL|ENG ANTI-ICE ACTUATOR RIGHT (STANDBY / MAIN)",150.6,553.3,8.4,15.4]];
 const B200S = { id: 'b200s', name: 'Beechcraft King Air B200', crew: 2, h: 884, t: B200S_T,
-  img: { lo: 'img/cockpits/b200s-deck-1500.webp', hi: 'img/cockpits/b200s-deck-3000.webp', own: 1, by: 'Birdbird', lic: 'own drawing', v: 'King Air B200 with EFIS on the pilot side, the same panel as in the Birdbird simulator', src: 'b200.html', licUrl: 'sources.html' } };
+  img: { lo: 'img/cockpits/b200s-deck-1500.webp', hi: 'img/cockpits/b200s-deck-3000.webp', own: 1, by: 'NORDAP', lic: 'own drawing', v: 'King Air B200 with EFIS on the pilot side, the same panel as in the NORDAP simulator', src: 'b200.html', licUrl: 'sources.html' } };
 const LIST = [A320, A359, B738, B38M, B788, E190, ATR72, B200S, B200, PA34, DA42, C172, PA28, DA40];
 
 /* layout: the targets (named controls) of an aircraft, with their rectangles; panels without items are one target */

@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/wx?ids=ENGM,ENBR,ENZV
+/* NORDAP – Cloudflare Pages Function: GET /api/wx?ids=ENGM,ENBR,ENZV
    Latest METAR and TAF for the briefing pack, Route Explorer and the weather page.
    Sources, best first:
    - Norwegian aerodromes (EN**): MET Norway, the regulated MET service that issues them (api.met.no tafmetar, CC BY 4.0).
@@ -14,7 +14,7 @@
 const UPSTREAM = 'https://aviationweather.gov/api/data';
 const MET = 'https://api.met.no/weatherapi/tafmetar/1.0';
 const SRC_MET = 'MET Norway', SRC_AWC = 'aviationweather.gov';
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)'; // MET Norway requires an identifying User-Agent
+const UA = 'NORDAP/1.0 (+https://birdbird.eu)'; // MET Norway requires an identifying User-Agent
 const MAX_IDS = 8;
 const TTL = 300; // seconds: METARs are issued every 30 or 60 minutes, TAFs every 3 to 6 hours
 const TIMEOUT = 8000;

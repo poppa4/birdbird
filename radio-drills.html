@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Radio drills · Birdbird</title>
+<title>Radio drills · NORDAP</title>
 <meta name="description" content="Radio trainer with EASA and ICAO phraseology: talk to the controller by voice or keyboard, VFR and IFR from gate to gate, emergencies and basics. Every readback is checked element by element, with the rule behind it.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
-<link rel="stylesheet" href="train.css?v=3">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
+<link rel="stylesheet" href="train.css?v=4">
 <style>
 /* ---- radio trainer ---- */
 .rt-wrap{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -144,11 +144,11 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
 </style>
 </head>
 <body data-title="Radio drills">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Training</div>
+      <div class="eyebrow">NORDAP · Training</div>
       <h1>Radio drills</h1>
       <p>Talk to the controller by voice or keyboard, from the first radio check to a full IFR flight. Every call is checked element by element, with the correct readback and the rule behind it. No account and no AI needed.</p>
     </div>
@@ -179,7 +179,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
     <div class="rt-wrap" id="v-pick" hidden>
       <div class="bar2"><button class="lnkb" id="pickBack" type="button">← Back</button><h3 id="pickT"></h3></div>
       <div class="sclist" id="pickL"></div>
-      <p class="note"><span class="td">Training data</span> Birdbird, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.</p>
+      <p class="note"><span class="td">Training data</span> NORDAP, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.</p>
     </div>
 
     <div class="rt-wrap" id="v-sess" hidden>
@@ -216,7 +216,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
     <div class="eyebrow">Optional · AI</div>
     <h2>Free talk with an AI controller</h2>
     <p class="lead">Fly any situation you like. The AI answers like a controller and comments on each call. The trainer above works without it.</p>
-    <div class="aiset"><label>Your situation (optional)<input id="aiSit" placeholder="e.g. VFR from Skarvik to Birdbird, 2500 ft, 12 NM south"></label></div>
+    <div class="aiset"><label>Your situation (optional)<input id="aiSit" placeholder="e.g. VFR from Skarvik to NORDAP, 2500 ft, 12 NM south"></label></div>
     <div class="radio"><div class="log" id="aiLog" style="height:300px"></div>
       <div class="inrow"><textarea id="aiSay" placeholder="Type your first call…" aria-label="Your transmission to the AI controller"></textarea></div>
       <div class="rbtns"><button class="btn pri" id="aiSend" type="button">Transmit</button><button class="btn" id="aiReset" type="button">New session</button><span class="note" id="aiNote"></span></div></div>
@@ -227,7 +227,7 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
     <h2>Phraseology</h2>
     <div class="cols">
       <div class="box"><b class="t">Always read back</b><p>Route clearances. Clearances and instructions to enter, land on, take off from, hold short of, cross, taxi on or backtrack a runway. Runway in use, altimeter settings (QNH), squawk codes, new frequencies, level, heading and speed instructions, and transition levels, also those in the ATIS (SERA.8015(e)(1)). Other clearances, such as conditional clearances and taxi instructions, are read back or acknowledged so it is clear you understood them (SERA.8015(e)(2)). Include your callsign.</p></div>
-      <div class="box"><b class="t">First call</b><p>Station called, your full callsign, then where you are and what you want (SERA.14055(b)(1)). After a frequency change also give your level, with the passing and cleared level if you are climbing or descending, and any speed ATC gave you (SERA.14065). Example: “Birdbird Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.”</p></div>
+      <div class="box"><b class="t">First call</b><p>Station called, your full callsign, then where you are and what you want (SERA.14055(b)(1)). After a frequency change also give your level, with the passing and cleared level if you are climbing or descending, and any speed ATC gave you (SERA.14065). Example: “NORDAP Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.”</p></div>
       <div class="box"><b class="t">Conditional clearances</b><p>Callsign, condition, clearance, condition again (SERA.8015(ec)). Acknowledge the same way: “Behind the landing DA40, lining up runway 36, behind.” Only when you and the controller can both see the traffic: identify it before you move.</p></div>
       <div class="box"><b class="t">Words to avoid</b><p>Say “ready for departure”: “take-off” is only used in the take-off clearance or to cancel it (SERA.14045(c)). “Say again”, not “repeat”. “Affirm”, not “yes” or “affirmative”. “Roger” is never a readback or an answer to a question. A hold short is acknowledged with “holding short”. “QNH”, not “altimeter”. No “over and out”.</p></div>
       <div class="box"><b class="t">Levels</b><p>Climb or descend “to” the level (AMC1 SERA.14001, 1.1.2). Below the transition altitude: “3000 feet” on QNH, “altitude 3000 feet” where that helps. At or above the transition level: “flight level 90” on 1013 hPa, and “flight level one hundred” for whole hundreds. Never mix the two.</p></div>
@@ -288,25 +288,25 @@ table.ph td:first-child{font-family:var(--f-mono);white-space:nowrap}
     </ol>
   </section>
 
-  <p class="note">Teaching tool based on EASA SERA, ICAO Doc 4444 and Doc 9432 and AIP Norway, with UK CAP 413 only as a cross-check (see Sources). Local phraseology varies: always follow the AIP and your instructor. Birdbird, Skarvik, Tjernmo, their frequencies, procedures and the scenarios are fictional training data, not for navigation.</p>
+  <p class="note">Teaching tool based on EASA SERA, ICAO Doc 4444 and Doc 9432 and AIP Norway, with UK CAP 413 only as a cross-check (see Sources). Local phraseology varies: always follow the AIP and your instructor. NORDAP, Skarvik, Tjernmo, their frequencies, procedures and the scenarios are fictional training data, not for navigation.</p>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="ai.js?v=5"></script>
-<script src="radiocore.js?v=2"></script>
-<script src="radioscen.js?v=3"></script>
+<script src="lab.js?v=52"></script>
+<script src="ai.js?v=6"></script>
+<script src="radiocore.js?v=3"></script>
+<script src="radioscen.js?v=4"></script>
 <script>
 (function(){
 'use strict';
 const {el,quiz,shuffle}=LAB;
 LAB.add({},{
  'Radio Drills':'Radiodriller','Beginner':'Nybegynner','Intermediate':'Middels','Check-ready':'Klar for sjekk',
- 'Birdbird · Training':'Birdbird · Trening','Radio drills':'Radiodriller',
+ 'NORDAP · Training':'NORDAP · Trening','Radio drills':'Radiodriller',
  'Talk to the controller by voice or keyboard, from the first radio check to a full IFR flight. Every call is checked element by element, with the correct readback and the rule behind it. No account and no AI needed.':'Snakk med flygelederen med stemme eller tastatur, fra den første radiosjekken til en hel IFR-tur. Hvert oppkall sjekkes element for element, med riktig tilbakelesing og regelen bak. Du trenger verken konto eller AI.',
  'Trainer':'Trener','Phraseology':'Fraseologi','Norway':'Norge','Test yourself':'Test deg selv','What do you want to practise?':'Hva vil du øve på?','Level':'Nivå',
  'Voice and settings':'Stemme og innstillinger','Your callsign':'Kallesignalet ditt','Controller speed':'Flygelederens tempo',
  'Speech recognition accent':'Aksent for talegjenkjenning','English (UK)':'Engelsk (UK)','English (US)':'Engelsk (US)','English (Ireland)':'Engelsk (Irland)','English (India)':'Engelsk (India)',
  'Controller voice':'Flygelederstemme','Radio static and squelch':'Radiostøy og squelch','Send when I release the talk button':'Send når jeg slipper snakkeknappen','Test the controller voice':'Test flygelederstemmen',
- '← Back':'← Tilbake','Training data':'Treningsdata','Birdbird, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.':'Birdbird, Skarvik og Tjernmo, frekvensene, prosedyrene og trafikken er oppdiktet og ikke for navigasjon.',
+ '← Back':'← Tilbake','Training data':'Treningsdata','NORDAP, Skarvik and Tjernmo, their frequencies, procedures and traffic are fictional and not for navigation.':'NORDAP, Skarvik og Tjernmo, frekvensene, prosedyrene og trafikken er oppdiktet og ikke for navigasjon.',
  '← End session':'← Avslutt økten','Hold to talk':'Hold for å snakke','Type your call, or hold the talk button (space bar) and speak…':'Skriv oppkallet, eller hold snakkeknappen (mellomrom) og snakk …',
  'Transmit':'Send','Say again':'Say again','Show a good call':'Vis et godt oppkall','Skip':'Hopp over','Misheard? Undo':'Feilhørt? Angre','Last call':'Siste oppkall',
  'Type or speak as on a real frequency. Numbers may be digits or words (“one two one decimal seven”), letters as phonetics. Order is free; the controller corrects you like real ATC. Say “say again” to hear it once more.':'Skriv eller snakk som på en ekte frekvens. Tall kan være sifre eller ord («one two one decimal seven»), bokstaver fonetisk. Rekkefølgen er fri; flygelederen korrigerer deg som ekte ATC. Si «say again» for å høre det en gang til.',
@@ -332,7 +332,7 @@ LAB.add({},{
  'Numbers':'Tall',
  'Emergencies':'Nødsituasjoner',
  'Route clearances. Clearances and instructions to enter, land on, take off from, hold short of, cross, taxi on or backtrack a runway. Runway in use, altimeter settings (QNH), squawk codes, new frequencies, level, heading and speed instructions, and transition levels, also those in the ATIS (SERA.8015(e)(1)). Other clearances, such as conditional clearances and taxi instructions, are read back or acknowledged so it is clear you understood them (SERA.8015(e)(2)). Include your callsign.':'Ruteklareringer. Klareringer og instrukser for å kjøre inn på, lande på, ta av fra, holde kort av, krysse, taksere på eller backtracke en rullebane. Rullebane i bruk, høydemålerinnstilling (QNH), squawk-koder, nye frekvenser, nivå-, kurs- og fartsinstrukser, og overgangsnivå, også det i ATIS (SERA.8015(e)(1)). Andre klareringer, som betingede klareringer og taksiinstrukser, leses tilbake eller bekreftes slik at det er klart at du har forstått dem (SERA.8015(e)(2)). Ta med kallesignalet.',
- 'Station called, your full callsign, then where you are and what you want (SERA.14055(b)(1)). After a frequency change also give your level, with the passing and cleared level if you are climbing or descending, and any speed ATC gave you (SERA.14065). Example: “Birdbird Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.”':'Stasjonen du kaller, fullt kallesignal, så hvor du er og hva du vil (SERA.14055(b)(1)). Etter frekvensskifte gir du også nivået, med høyden du passerer og klarert høyde hvis du stiger eller synker, og fart hvis ATC har gitt deg en (SERA.14065). Eksempel: «Birdbird Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.»',
+ 'Station called, your full callsign, then where you are and what you want (SERA.14055(b)(1)). After a frequency change also give your level, with the passing and cleared level if you are climbing or descending, and any speed ATC gave you (SERA.14065). Example: “NORDAP Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.”':'Stasjonen du kaller, fullt kallesignal, så hvor du er og hva du vil (SERA.14055(b)(1)). Etter frekvensskifte gir du også nivået, med høyden du passerer og klarert høyde hvis du stiger eller synker, og fart hvis ATC har gitt deg en (SERA.14065). Eksempel: «NORDAP Tower, LN-NAE, DA42, 10 miles north, 2000 feet, information Bravo, request joining for landing.»',
  'Callsign, condition, clearance, condition again (SERA.8015(ec)). Acknowledge the same way: “Behind the landing DA40, lining up runway 36, behind.” Only when you and the controller can both see the traffic: identify it before you move.':'Kallesignal, betingelse, klarering, betingelsen igjen (SERA.8015(ec)). Bekreft på samme måte: «Behind the landing DA40, lining up runway 36, behind.» Bare når både du og flygelederen ser trafikken: identifiser den før du ruller.',
  'Say “ready for departure”: “take-off” is only used in the take-off clearance or to cancel it (SERA.14045(c)). “Say again”, not “repeat”. “Affirm”, not “yes” or “affirmative”. “Roger” is never a readback or an answer to a question. A hold short is acknowledged with “holding short”. “QNH”, not “altimeter”. No “over and out”.':'Si «ready for departure»: «take-off» brukes bare i avgangsklareringen eller for å kansellere den (SERA.14045(c)). «Say again», ikke «repeat». «Affirm», ikke «yes» eller «affirmative». «Roger» er aldri en tilbakelesing eller et svar på et spørsmål. Hold short bekreftes med «holding short». «QNH», ikke «altimeter». Ingen «over and out».',
  'Climb or descend “to” the level (AMC1 SERA.14001, 1.1.2). Below the transition altitude: “3000 feet” on QNH, “altitude 3000 feet” where that helps. At or above the transition level: “flight level 90” on 1013 hPa, and “flight level one hundred” for whole hundreds. Never mix the two.':'Stig eller synk «to» nivået (AMC1 SERA.14001, 1.1.2). Under overgangshøyden: «3000 feet» på QNH, «altitude 3000 feet» der det hjelper. Ved eller over overgangsnivået: «flight level 90» på 1013 hPa, og «flight level one hundred» for hele hundrer. Bland aldri de to.',
@@ -344,7 +344,7 @@ LAB.add({},{
  'Urgency: a condition that concerns safety, no immediate assistance required. Preferably spoken three times.':'Il: en situasjon som angår sikkerheten, uten behov for umiddelbar hjelp. Sies helst tre ganger.',
  'You are committed to one aerodrome and any change to the clearance may make you land with less than final reserve fuel. Not an emergency.':'Du er låst til én flyplass, og enhver endring i klareringen kan gjøre at du lander med mindre enn endelig reservedrivstoff. Ikke en nødsituasjon.',
  'The acknowledgement of “hold short of …”. “Roger” or “wilco” is not enough.':'Bekreftelsen av «hold short of …». «Roger» eller «wilco» er ikke nok.',
- 'Teaching tool based on EASA SERA, ICAO Doc 4444 and Doc 9432 and AIP Norway, with UK CAP 413 only as a cross-check (see Sources). Local phraseology varies: always follow the AIP and your instructor. Birdbird, Skarvik, Tjernmo, their frequencies, procedures and the scenarios are fictional training data, not for navigation.':'Opplæringsverktøy basert på EASA SERA, ICAO Doc 4444 og Doc 9432 og AIP Norge, med britiske CAP 413 bare som kontroll (se Kilder). Lokal fraseologi varierer: følg alltid AIP og instruktøren din. Birdbird, Skarvik, Tjernmo, frekvensene, prosedyrene og scenariene er oppdiktede treningsdata, ikke for navigasjon.'
+ 'Teaching tool based on EASA SERA, ICAO Doc 4444 and Doc 9432 and AIP Norway, with UK CAP 413 only as a cross-check (see Sources). Local phraseology varies: always follow the AIP and your instructor. NORDAP, Skarvik, Tjernmo, their frequencies, procedures and the scenarios are fictional training data, not for navigation.':'Opplæringsverktøy basert på EASA SERA, ICAO Doc 4444 og Doc 9432 og AIP Norge, med britiske CAP 413 bare som kontroll (se Kilder). Lokal fraseologi varierer: følg alltid AIP og instruktøren din. NORDAP, Skarvik, Tjernmo, frekvensene, prosedyrene og scenariene er oppdiktede treningsdata, ikke for navigasjon.'
 });
 LAB.tx({
  'no-ta':'<b class="t">Overgangshøyde</b><p>7000 ft på nesten alle flyplasser i AIP Norge AD 2; 5000 ft på Svalbard (Longyear og Ny-Ålesund). Overgangsnivået avhenger av QNH og gis i ATIS eller av ATC. I stigning stiller du 1013 etter å ha passert overgangshøyden; i nedstigning QNH etter å ha passert overgangsnivået (ENR 1.7).</p>',
@@ -375,6 +375,6 @@ el('alpha').innerHTML=AL.map(a=>`<div><b>${a[0]}</b>${a[1]}<small>${a[2]}</small
 LAB.start('radio');
 })();
 </script>
-<script src="radiotrainer.js?v=4"></script>
+<script src="radiotrainer.js?v=5"></script>
 </body>
 </html>

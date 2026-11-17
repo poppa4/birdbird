@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
+/* NORDAP – My Workspace map in 3D (the full Map page only; the mini maps stay 2D in wsmap.js).
    A calm cloud drawn by three.js (r128, lazy-loaded with this file): each group (an aircraft, then 'Unsorted') a soft
    ball of glowing points inside a few large puffs of light (one draw call for all puffs, one for all points), the groups
    side by side at slightly different depths so the cloud has parallax when it turns. Links are faint hairlines inside a

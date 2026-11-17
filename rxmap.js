@@ -1,4 +1,4 @@
-/* Birdbird Route Explorer: the MapLibre chart (rxmap.js)
+/* NORDAP Route Explorer: the MapLibre chart (rxmap.js)
    Loaded by route.html. Builds a calm aeronautical chart from OpenFreeMap vector tiles,
    relief, contours and 3D from AWS Terrain Tiles, satellite from EOX Sentinel-2 cloudless 2016 (or, with a key,
    Esri World Imagery),
@@ -47,7 +47,7 @@ const ATT={
   oaip:'Airspace, VFR points, obstacles: '+A('https://www.openaip.net','© openAIP')+' ('+A('https://creativecommons.org/licenses/by-nc/4.0/','CC BY-NC 4.0')+')'
 };
 // chart-room palette (site.css: --paper #EDF1EE, --sheet #FFF, --ink #13202A, --accent #9A1E68, --info #1D4E9E)
-// modern palette (2026-11): cooler neutral land, clear blue water, quiet greys for roads and borders; airports in Birdbird navy-blue
+// modern palette (2026-11): cooler neutral land, clear blue water, quiet greys for roads and borders; airports in NORDAP navy-blue
 const AP_SM='#A0286F';
 const P={land:'#F1F3F1',water:'#CFE1EC',coast:'#9DB9CC',waterLine:'#B3CDDD',wood:'#DFE8DC',park:'#E3EBE0',ice:'#F9FBFC',resid:'#E6E7E4',bldg:'#DCDDD8',aero:'#DEE1E3',runway:'#B9BEC3',
   border:'#8E97A3',state:'#C5CBD2',road:'#E2E4E6',roadMaj:'#D6DADF',rail:'#CDD1D5',ink:'#0B2545',ink2:'#435466',ink3:'#6B7A88',halo:'rgba(250,251,250,.94)',waterLbl:'#4E7896',peak:'#4A5562',

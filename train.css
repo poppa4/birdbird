@@ -1,4 +1,4 @@
-/* Birdbird – felles stil for flytrening: radio, kneebrett, AI-svar, briefing og eksaminator. */
+/* NORDAP – felles stil for flytrening: radio, kneebrett, AI-svar, briefing og eksaminator. */
 .radio{background:linear-gradient(#1f2328,#16191d);border:1px solid #363c44;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0;color:#e2e8ee}
 .rhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .freq{display:flex;gap:10px;align-items:baseline;font-family:var(--f-mono)}

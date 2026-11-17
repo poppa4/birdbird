@@ -1,7 +1,7 @@
-/* Birdbird – weather and NOTAM toolkit for the briefing pack (and the METAR page).
+/* NORDAP – weather and NOTAM toolkit for the briefing pack (and the METAR page).
    Pure functions, no DOM: parse METAR, TAF and ICAO NOTAMs, resolve report times, work out the TAF
    conditions to plan with for a time window, and runway wind components.
-   TAF planning conventions (Birdbird's reading of AMC3 CAT.OP.MPA.182 and AMC1 NCO.OP.160; the official table rules):
+   TAF planning conventions (NORDAP's reading of AMC3 CAT.OP.MPA.182 and AMC1 NCO.OP.160; the official table rules):
    - initial part and FM: apply from the start time;
    - BECMG: a deterioration applies from the start of the change, an improvement only from its end;
    - TEMPO or PROB30/40 alone: a deterioration with persistent conditions (fog, mist, haze, dust, continuous

@@ -1,4 +1,4 @@
-/* Birdbird – pen notebook and PDF ink, core logic (no DOM): runs in the browser (window.INKCORE) and in node tests.
+/* NORDAP – pen notebook and PDF ink, core logic (no DOM): runs in the browser (window.INKCORE) and in node tests.
    Page space   every page is 2100 units wide (0.1 mm on A4); an A4 page is 2100 x 2970. A PDF page keeps its own
                 height (2100 x ratio). Strokes are stored in page units, so zoom and screen size never change them.
    A stroke     in memory { t:'p' pen | 'h' highlighter, c:'#rrggbb', w: width in units, s: 1 when the pressure was
@@ -266,10 +266,10 @@
     const obj = (n, body, stream) => { offs[n] = pos; push(enc(n + ' 0 obj\n' + body + (stream ? '\nstream\n' : '\nendobj\n'))); if (stream) { push(stream); push(enc('\nendstream\nendobj\n')); } };
     const n = pages.length, total = 4 + n * 3;
     push(enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
-    const title = String((info && info.title) || 'Birdbird').replace(/[^\x20-\x7E]/g, '?').replace(/[()\\]/g, '\\$&').slice(0, 120);
+    const title = String((info && info.title) || 'NORDAP').replace(/[^\x20-\x7E]/g, '?').replace(/[()\\]/g, '\\$&').slice(0, 120);
     obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
     obj(2, '<< /Type /Pages /Count ' + n + ' /Kids [' + pages.map((_, i) => (4 + i * 3) + ' 0 R').join(' ') + '] >>');
-    obj(3, '<< /Title (' + title + ') /Producer (Birdbird) >>');
+    obj(3, '<< /Title (' + title + ') /Producer (NORDAP) >>');
     pages.forEach((p, i) => {
       const po = 4 + i * 3, co = po + 1, io = po + 2, pw = +(p.pw || 595.28).toFixed(2), ph = +(p.ph || 841.89).toFixed(2);
       obj(po, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pw + ' ' + ph + '] /Resources << /XObject << /Im' + i + ' ' + io + ' 0 R >> /ProcSet [/PDF /ImageC] >> /Contents ' + co + ' 0 R >>');

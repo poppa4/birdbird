@@ -1,4 +1,4 @@
-/* Birdbird – minimal GRIB2 reader for model fields on a regular lat/lon grid (NOAA GFS through NOMADS grib filter).
+/* NORDAP – minimal GRIB2 reader for model fields on a regular lat/lon grid (NOAA GFS through NOMADS grib filter).
    Supports: grid template 3.0 (regular lat/lon), product templates 4.0 and 4.8 (time averages), data templates 5.0 (simple
    packing), 5.2 (complex packing) and 5.3 (complex packing with spatial differencing, order 1 or 2), and a bitmap in
    section 6 (points the bitmap leaves out are NaN, e.g. cloud base where there is no cloud).

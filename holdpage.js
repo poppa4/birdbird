@@ -1,4 +1,4 @@
-/* Birdbird – holdpage.js: holding.html's key concept cards, deep dive, Try-it tasks (one at a time), key points,
+/* NORDAP – holdpage.js: holding.html's key concept cards, deep dive, Try-it tasks (one at a time), key points,
    memory aid and quiz. The model is holdlab.js (window.HLAB); the maths holdcore.js (window.HOLDCORE). */
 (function(){
 'use strict';

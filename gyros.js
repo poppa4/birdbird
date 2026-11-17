@@ -1,4 +1,4 @@
-/* Birdbird – gyros.js: the Attitude and heading lab (gyros.html).
+/* NORDAP – gyros.js: the Attitude and heading lab (gyros.html).
    One dark figure with four modes: the magnetic compass (variation, deviation, dip, turning and acceleration errors),
    gyroscopes (rigidity, precession with a rotor you can push, and the heading indicator's apparent drift),
    the instruments (classic analog panel in a light piston against AHRS / IRS glass in a turboprop or jet, with faults),
@@ -622,7 +622,7 @@ LAB.quiz(el('qbox'),'gyros',()=>LAB.shuffle([
  {q:t2('GNSS is lost and there are no radio aids. The IRS position…','GNSS er tapt og det finnes ingen radiohjelpemidler. IRS-posisjonen …'),a:[t2('carries on, drifting about 1–2 NM per hour','fortsetter, men driver rundt 1–2 NM per time'),t2('freezes at the last GNSS position','fryser på siste GNSS-posisjon'),t2('is lost at once','forsvinner med en gang')],c:0,e:t2('Inertial navigation needs no outside signal, but its error grows with time.','Treghetsnavigasjon trenger ikke signaler utenfra, men feilen vokser med tiden.')}]),10);
 
 /* ---------------- static strings, text, start ---------------- */
-LAB.add({},{'Attitude and Heading':'Holdning og kurs','Attitude and heading: compass, gyros and inertial systems':'Holdning og kurs: kompass, gyroer og treghetssystemer','Birdbird Virtual Labs · Instruments':'Birdbird Virtual Labs · Instrumenter',
+LAB.add({},{'Attitude and Heading':'Holdning og kurs','Attitude and heading: compass, gyros and inertial systems':'Holdning og kurs: kompass, gyroer og treghetssystemer','NORDAP Virtual Labs · Instruments':'NORDAP Virtual Labs · Instrumenter',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Key concepts':'Nøkkelbegreper','Deep dive':'Dypdykk','The attitude and heading lab':'Holdnings- og kurslabben','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  'Controls':'Kontroller','Fly it':'Fly','Conditions':'Forhold','Advanced':'Avansert','The rotor':'Rotoren','Heading indicator drift':'Drift i kursgyroen','Aircraft':'Fly','Faults':'Feil','Alignment':'Innretting','In flight':'I lufta','Scenarios':'Scenarier','Mode':'Modus','Sections':'Seksjoner',
  'Magnetic compass, gyroscope, flight instruments and inertial reference, one mode at a time.':'Magnetkompass, gyroskop, flyinstrumenter og treghetsreferanse, én modus om gangen.'});

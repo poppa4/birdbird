@@ -1,7 +1,7 @@
-/* Birdbird – Cloudflare Pages Function: the shared flow library (flow trainer, flows.js).
-   Pilots publish a flow drawn on one of Birdbird's own cockpits so others can open a copy. No account needed.
-   Only flows on Birdbird cockpits can be published: a flow on a private photo is of no use without the photo, and photos are never shared.
-   Nothing here is checked by Birdbird; the page says so. Texts with links are refused. Anyone can report a flow; a flow reported
+/* NORDAP – Cloudflare Pages Function: the shared flow library (flow trainer, flows.js).
+   Pilots publish a flow drawn on one of NORDAP's own cockpits so others can open a copy. No account needed.
+   Only flows on NORDAP cockpits can be published: a flow on a private photo is of no use without the photo, and photos are never shared.
+   Nothing here is checked by NORDAP; the page says so. Texts with links are refused. Anyone can report a flow; a flow reported
    from three different connections is hidden. The publisher gets a key to delete their flow; ADMIN_KEY (a Pages secret) deletes any.
 
    GET    /api/flowlib?ac=a320&phase=bst      -> { ok, flows:[{ id, name, ac, phase, by, n, roles, t, uses }] }   (newest 200; both filters optional)
@@ -41,7 +41,7 @@ const sid = v => String(v || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24);
 /* a flow as it may be stored: only the fields the trainer knows, texts without links (the page escapes all text it shows) */
 export function cleanFlow(o) {
   if (!o || typeof o !== 'object') bad(400, 'bad_request', 'There is no flow to share.');
-  const ac = String(o.ac || ''); if (!/^[a-z0-9]{2,12}$/.test(ac) || ac === 'img' || ac === 'own') bad(400, 'bad_request', 'Only flows on a Birdbird cockpit can be shared. A flow on your own picture stays with you.');
+  const ac = String(o.ac || ''); if (!/^[a-z0-9]{2,12}$/.test(ac) || ac === 'img' || ac === 'own') bad(400, 'bad_request', 'Only flows on a NORDAP cockpit can be shared. A flow on your own picture stays with you.');
   const rs = ROLESETS[o.rs] ? o.rs : 'pfpm', roles = Array.isArray(o.roles) && o.roles.length && o.roles.length <= 2 ? o.roles.map(r => String(r).replace(/[^A-Za-z0-9]/g, '').slice(0, 6) || 'P') : ROLESETS[rs];
   const name = txt(o.name, 80); if (name.length < 3) bad(400, 'bad_request', 'Give the flow a name before you share it.');
   const steps = (Array.isArray(o.steps) ? o.steps : []).slice(0, 300).map(s => { const st = { id: sid(s && s.id) || rnd(5), r: roles.includes(s && s.r) ? s.r : roles[0], k: ['act', 'call', 'event'].includes(s && s.k) ? s.k : 'act', t: txt(s && s.t, 160), x: s && s.x != null ? num(s.x) : null, y: s && s.y != null ? num(s.y) : null };

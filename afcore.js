@@ -1,4 +1,4 @@
-/* Birdbird – afcore.js: the pure logic behind the Automation and warnings lab (autoflight.html).
+/* NORDAP – afcore.js: the pure logic behind the Automation and warnings lab (autoflight.html).
    No DOM. Loaded in the page as window.AFC and in Node (tests/afcore.test.mjs) through vm.
    Three parts:
    1. TCAS II version 7.1: sensitivity levels, tau and modified tau, the TA/RA tests, RA choice and a time-stepped encounter.

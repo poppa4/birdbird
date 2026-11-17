@@ -1,4 +1,4 @@
-/* Birdbird – King Air B200 panel drawn in SVG (world units 2000×1640).
+/* NORDAP – King Air B200 panel drawn in SVG (world units 2000×1640).
    Own drawing: positions and proportions follow the reference instrument-panel layout for the
    type (EFIS pilot side, analog copilot side, centre radar/multifunction display); no images or
    artwork from any manual are used. No manufacturer or operator marks.

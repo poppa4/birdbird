@@ -1,4 +1,4 @@
-/* Birdbird – fronts.js: "Fronts and air masses" (fronts.html).
+/* NORDAP – fronts.js: "Fronts and air masses" (fronts.html).
    Teaching model of textbook fronts in the northern hemisphere.
    Cross-section: x = distance from the surface front in km (+ ahead, − behind), z = altitude in ft.
      frontal surface height z = x / N × 3281 ft (slope 1:N, warm front about 1:150, cold front about 1:70);
@@ -597,7 +597,7 @@ LAB.quiz(el('qbox'),'fronts',()=>LAB.shuffle([
 ]),8);
 
 /* ---------------- static strings, rich text, start ---------------- */
-LAB.add({},{'Fronts and Air Masses':'Fronter og luftmasser','Fronts and air masses':'Fronter og luftmasser','Birdbird Virtual Labs · Meteorology':'Birdbird Virtual Labs · Meteorologi',
+LAB.add({},{'Fronts and Air Masses':'Fronter og luftmasser','Fronts and air masses':'Fronter og luftmasser','NORDAP Virtual Labs · Meteorology':'NORDAP Virtual Labs · Meteorologi',
  'Key concepts':'Nøkkelbegreper','Fly through a front':'Fly gjennom en front','Try it':'Prøv selv','Key points':'Det viktigste','Test yourself':'Test deg selv',
  '1 · Understand':'1 · Forstå','2 · Explore':'2 · Utforsk','3 · Test yourself':'3 · Test deg selv','Controls':'Kontroller','Conditions':'Forhold','Front':'Front','Occlusion type':'Okklusjonstype','Warm air':'Varm luft','Season':'Årstid','Show':'Vis','Scenarios':'Scenarioer','Advanced':'Avansert',
  'Virtual Labs':'Virtual Labs','Sections':'Seksjoner','View':'Visning',

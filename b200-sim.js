@@ -1,4 +1,4 @@
-/* Birdbird – King Air B200 type rating trainer: cockpit system simulators.
+/* NORDAP – King Air B200 type rating trainer: cockpit system simulators.
    Teaching models of the system logic a type-rating candidate must master. Own drawings and simplified
    behaviour; numbers are typical B200 values for learning only. Verify everything in your AFM/POH. */
 (function(G){

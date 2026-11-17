@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gate to gate · Birdbird</title>
+<title>Gate to gate · NORDAP</title>
 <meta name="description" content="Fly a whole DA42 training trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
-<link rel="stylesheet" href="train.css?v=3">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
+<link rel="stylesheet" href="train.css?v=4">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -88,11 +88,11 @@
 </style>
 </head>
 <body data-title="Gate to gate">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Training</div>
+      <div class="eyebrow">NORDAP · Training</div>
       <h1>Gate to gate</h1>
       <p>Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. ATC answers each call and every step is checked, by voice or keyboard.</p>
     </div>
@@ -127,28 +127,28 @@
       <thead><tr><th>When</th><th>What you do</th><th>Radio</th></tr></thead>
       <tbody id="otab"></tbody>
     </table>
-    <p class="note">Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.</p>
+    <p class="note">Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. NORDAP, its procedures, charts and frequencies are fictional.</p>
     <p class="note"><a href="radio-drills.html">Radio drills</a>: practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.</p>
   </section>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="ops.js?v=3"></script>
-<script src="brief.js?v=10"></script>
-<script src="chart.js?v=5"></script>
-<script src="g2g-steps.js?v=4"></script>
-<script src="ai.js?v=5"></script>
-<script src="radiocore.js?v=2"></script>
+<script src="lab.js?v=52"></script>
+<script src="ops.js?v=4"></script>
+<script src="brief.js?v=11"></script>
+<script src="chart.js?v=6"></script>
+<script src="g2g-steps.js?v=5"></script>
+<script src="ai.js?v=6"></script>
+<script src="radiocore.js?v=3"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el,shuffle}=LAB, esc=NAI.esc;
 LAB.add({},{
- 'Birdbird · Training':'Birdbird · Trening','Gate to gate':'Gate to gate','Gate to Gate':'Gate to gate',
+ 'NORDAP · Training':'NORDAP · Trening','Gate to gate':'Gate to gate','Gate to Gate':'Gate to gate',
  'Fly a whole DA42 trip in the right order: flows, checklists, briefings and every radio call, from the planning room to the chocks. ATC answers each call and every step is checked, by voice or keyboard.':'Fly en hel tur i DA42 i riktig rekkefølge: flows, sjekklister, briefinger og hvert radiooppkall, fra planleggingsrommet til klossene. Flygelederen svarer på hvert oppkall, og hvert steg sjekkes, med tale eller tastatur.',
  'Flight':'Tur','Mode':'Modus','ATC voice':'ATC-stemme','New flight':'Ny tur','Reference':'Oppslag','The order of a flight':'Rekkefølgen på en flytur',
  'The rhythm is the same in every phase: do the flow from memory, verify with the checklist, brief what is coming, then talk. The checklist is read in full on the ground, and kept short below 1000 ft.':'Rytmen er den samme i hver fase: gjør flowen fra hukommelsen, verifiser med sjekklisten, brief det som kommer, og snakk så. Sjekklisten leses fullt ut på bakken, og holdes kort under 1000 ft.',
  'When':'Når','What you do':'Hva du gjør','Radio':'Radio',
- 'Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. Birdbird, its procedures, charts and frequencies are fictional.':'Basert på flyhåndboken for Diamond DA42 NG/VI og en typisk ATO-SOP for DA42-VI. Skolens egen SOP og sjekkliste går alltid foran. Birdbird, prosedyrene, kartene og frekvensene er oppdiktet.',
+ 'Based on the Diamond DA42 NG/VI flight manual and a typical ATO standard operating procedure for the DA42-VI. Your own school’s SOP and checklist always come first. NORDAP, its procedures, charts and frequencies are fictional.':'Basert på flyhåndboken for Diamond DA42 NG/VI og en typisk ATO-SOP for DA42-VI. Skolens egen SOP og sjekkliste går alltid foran. NORDAP, prosedyrene, kartene og frekvensene er oppdiktet.',
  'IFR training flight':'IFR-treningstur','Radio drills':'Radiodriller',': practise only the radio calls, by voice or keyboard, with VFR, IFR, emergencies and basics.':': øv bare på radiooppkallene, med stemme eller tastatur, med VFR, IFR, nødsituasjoner og grunnleggende.','VFR local flight':'VFR lokaltur','Learn':'Lær','Check':'Sjekk'
 });
 const KEY='naeroson-g2g';
@@ -379,7 +379,7 @@ function rRadio(st,box){
 }
 function radioPrompt(st,txt,ctx){
   const V=S.V;
-  return `You are an EASA radiotelephony instructor running a training simulator, and you also play the ATC unit "${st.freq[1]}" (${st.freq[0]}). Fictional aerodrome Birdbird (NAER), runway 36. The pilot is LN-NAE, a DA42 (abbreviated L-AE once ATC has used it). Flight: ${V.ifr?'IFR training flight':'VFR local flight'}. ATIS information ${V.info} then ${V.infoNext}, QNH ${V.qnh} then ${V.qnh2}, squawk ${V.sq}.
+  return `You are an EASA radiotelephony instructor running a training simulator, and you also play the ATC unit "${st.freq[1]}" (${st.freq[0]}). Fictional aerodrome NORDAP (NAER), runway 36. The pilot is LN-NAE, a DA42 (abbreviated L-AE once ATC has used it). Flight: ${V.ifr?'IFR training flight':'VFR local flight'}. ATIS information ${V.info} then ${V.infoNext}, QNH ${V.qnh} then ${V.qnh2}, squawk ${V.sq}.
 ${ctx?`The last ATC transmission to the pilot was: "${ctx}"`:'This is the pilot\'s call to ATC.'}
 Task given to the pilot: ${st.task.en}
 The pilot's transmission (it may come from speech recognition: ignore spelling, punctuation and filler words; numbers may be in words or digits; "L-AE" and "Lima November November Alfa Echo" are the callsign): "${txt}"

@@ -1,4 +1,4 @@
-/* Birdbird – panel layers. A sim panel is one large SVG; Chrome repaints (re-records) the whole SVG when any needle in it moves,
+/* NORDAP – panel layers. A sim panel is one large SVG; Chrome repaints (re-records) the whole SVG when any needle in it moves,
    because only an <svg> root gets its own paint layer. This splits the drawing into sibling <svg> layers stacked in the panel's
    own order, all with the same viewBox, so a moving needle repaints only its own small layer and the static artwork (bezels,
    placards, ~2,000 labels) is painted once:

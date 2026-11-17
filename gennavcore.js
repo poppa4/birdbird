@@ -1,4 +1,4 @@
-/* Birdbird – gennavcore.js: the pure maths behind the General navigation lab (gennav.html).
+/* NORDAP – gennavcore.js: the pure maths behind the General navigation lab (gennav.html).
    No DOM, no state. Loaded in the page as window.GNAV and in Node (tests/gennav.test.mjs) through vm.
    Uses NAVCORE (navcore.js) for the flat wind triangle when it is present, so both labs share one solver.
    Angles in degrees, distances in NM, speeds in kt, times in minutes unless stated.

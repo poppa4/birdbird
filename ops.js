@@ -1,4 +1,4 @@
-/* Birdbird – felles operative data: DA42-VI fartskort og begrensninger, flyplassen Birdbird (oppdiktet) med frekvenser,
+/* NORDAP – felles operative data: DA42-VI fartskort og begrensninger, flyplassen NORDAP (oppdiktet) med frekvenser,
    avgangs- og innflygingsprosedyrer, og et værgenerator. Brukes av flytreneren, briefingtreneren og checkride-treneren.
    Fartene følger Diamond DA42 NG/VI AFM. Skolens eget fartskort gjelder alltid foran disse. */
 (function(G){
@@ -23,9 +23,9 @@ const AC={
 const sp=(v,m)=>Array.isArray(v)?(m>1900?v[1]:v[0]):v;
 function speeds(mass){ return {vr:AC.vr.up, v50:AC.v50, vy:sp(AC.vy,mass), vyse:AC.vyse, vmca:AC.vmca.up, vref:sp(AC.vref.ldg,mass), vrefApp:sp(AC.vref.app,mass), vga:AC.vga, vfeApp:AC.vfe.app, vfeLdg:AC.vfe.ldg}; }
 
-/* ---------- Birdbird (oppdiktet) ---------- */
+/* ---------- NORDAP (oppdiktet) ---------- */
 const APT={
-  icao:'NAER', name:'Birdbird', elev:10, rwy:{'36':{qfu:360,tora:2500,lda:2500}, '18':{qfu:180,tora:2500,lda:2500}}, width:45,
+  icao:'NAER', name:'NORDAP', elev:10, rwy:{'36':{qfu:360,tora:2500,lda:2500}, '18':{qfu:180,tora:2500,lda:2500}}, width:45,
   freq:{atis:'127.180', del:'121.875', gnd:'121.700', twr:'118.300', app:'119.250', fis:'125.350'},
   navaids:{loc:{id:'IASN',freq:'110.30',crs:360}, vor:{id:'ASN',freq:'113.30'}},
   ta:7000, msa:3200, msaRef:'ASN 25 NM',
@@ -71,7 +71,7 @@ function flight(o){ o=o||{}; const ifr=o.rules!=='vfr';
   const V={ifr, wd, ws, gust, qnh, t, dp, cld, vis, info, infoNext:LET[(li+1)%26], sq, mass, stand, app, rwy:'36', hp:APT.hp36,
     wind:pad(wd,3)+'° '+ws+(gust?'G'+gust:'')+' kt', tl:qnh<995?'FL 95':qnh<1013?'FL 90':'FL 80', clrAlt:ifr?'3000 ft':'1500 ft', vrp:ifr?null:pick(['N','S'])};
   V.metar=`${APT.icao} ${pad(rint(1,28),2)}${pad(rint(6,16),2)}20Z ${pad(wd,3)}${pad(ws,2)}${gust?'G'+gust:''}KT ${vis===9999?'9999':pad(vis,4)} ${cld[0]}${pad(cld[1]/100,3)} ${t<0?'M'+pad(-t,2):pad(t,2)}/${dp<0?'M'+pad(-dp,2):pad(dp,2)} Q${qnh}`;
-  V.atis=`THIS IS BIRDBIRD INFORMATION ${info}. RUNWAY 36 IN USE${ifr?', EXPECT '+(APPS[app].kind==='RNP'?'RNP':APPS[app].kind==='LOC'?'LOCALIZER':'ILS')+' APPROACH':''}. TRANSITION LEVEL ${V.tl.replace('FL ','FLIGHT LEVEL ')}. WIND ${pad(wd,3)} DEGREES ${ws} KNOTS${gust?' MAXIMUM '+gust:''}. VISIBILITY ${vis===9999?'10 KILOMETRES OR MORE':vis+' METRES'}. ${cld[0]==='BKN'?'BROKEN':cld[0]==='OVC'?'OVERCAST':cld[0]==='SCT'?'SCATTERED':'FEW'} ${cld[1]} FEET. TEMPERATURE ${t}, DEW POINT ${dp}. QNH ${qnh}.${ifr&&app==='loc36'?' ILS GLIDEPATH RUNWAY 36 OUT OF SERVICE.':''} ACKNOWLEDGE INFORMATION ${info} ON FIRST CONTACT.`;
+  V.atis=`THIS IS NORDAP INFORMATION ${info}. RUNWAY 36 IN USE${ifr?', EXPECT '+(APPS[app].kind==='RNP'?'RNP':APPS[app].kind==='LOC'?'LOCALIZER':'ILS')+' APPROACH':''}. TRANSITION LEVEL ${V.tl.replace('FL ','FLIGHT LEVEL ')}. WIND ${pad(wd,3)} DEGREES ${ws} KNOTS${gust?' MAXIMUM '+gust:''}. VISIBILITY ${vis===9999?'10 KILOMETRES OR MORE':vis+' METRES'}. ${cld[0]==='BKN'?'BROKEN':cld[0]==='OVC'?'OVERCAST':cld[0]==='SCT'?'SCATTERED':'FEW'} ${cld[1]} FEET. TEMPERATURE ${t}, DEW POINT ${dp}. QNH ${qnh}.${ifr&&app==='loc36'?' ILS GLIDEPATH RUNWAY 36 OUT OF SERVICE.':''} ACKNOWLEDGE INFORMATION ${info} ON FIRST CONTACT.`;
   V.qnh2=qnh+(Math.random()<0.5?-1:1);
   V.atis2=V.atis.split('INFORMATION '+info).join('INFORMATION '+V.infoNext).replace('QNH '+qnh,'QNH '+V.qnh2);
   // sidevind

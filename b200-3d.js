@@ -1,8 +1,8 @@
-/* Birdbird – King Air B200 3D flight deck (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
+/* NORDAP – King Air B200 3D flight deck (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
    Two-crew flight deck: two-piece windshield with a centre post, side windows with their frames, the upper panel at the top of
    the windshield, the pedestal with the power, propeller and condition levers, the fuel panel on the left side console and the
    circuit breakers on the right, both crew seats, the control wheels and, outside, the long nose, nacelles and wing.
-   Generic training model drawn by Birdbird (no registration or marks). Panel drawing: b200panel.js (2000 × 1780 units).
+   Generic training model drawn by NORDAP (no registration or marks). Panel drawing: b200panel.js (2000 × 1780 units).
    Cockpit frame: metres, x right, y up, z aft. */
 (function(G){
 'use strict';

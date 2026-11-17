@@ -1,4 +1,4 @@
-/* Birdbird – felles AI og tale.
+/* NORDAP – felles AI og tale.
    AI: /api/atc (Flight Intelligence) når siden ligger på eget domene.
    Tale: talesyntese for ATC og eksaminator, push-to-talk / diktering med nettleserens talegjenkjenning. */
 (function(G){

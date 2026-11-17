@@ -1,4 +1,4 @@
-/* Birdbird – shared keyboard and mouse flying for all six simulator pages (2D and 3D).
+/* NORDAP – shared keyboard and mouse flying for all six simulator pages (2D and 3D).
    W / S (or ↑ / ↓): nose down / nose up, like pushing and pulling a control wheel.
    A / D (or ← / →): roll left / right. Q / E rudder (pages keep their own rudder logic).
    Home / End (or [ / ]): elevator trim nose down / nose up. , / . : rudder trim left / right (the twins; the pages apply it).

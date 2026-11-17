@@ -1,4 +1,4 @@
-/* Birdbird – C172 data for the shared Procedures drawer (simshell.js): key speeds, the failure buttons and which of the page's
+/* NORDAP – C172 data for the shared Procedures drawer (simshell.js): key speeds, the failure buttons and which of the page's
    exercises are failure scenarios (Failures tab) or start exercises (✈ Start picker). Typical classic C172 values for learning. */
 (function(G){
 'use strict';

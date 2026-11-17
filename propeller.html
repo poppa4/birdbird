@@ -5,8 +5,8 @@
 <meta name="description" content="Engine failure on the A320 for ATPL 081 and the type rating: slow down until the rudder runs out and find VMCA, see why bank, thrust, altitude, CG and weight move it, and how CS-25 turns it into VMCG, VMCL, V1, VR and V2.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Engine Failure and Minimum Control Speeds</title>
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
 <style>
 .stack{display:flex;flex-direction:column;gap:12px;min-width:0}
 .view canvas{touch-action:pan-y}
@@ -128,12 +128,12 @@ ol.steps li{margin:4px 0}
 </style>
 </head>
 <body data-title="Engine Failure and Minimum Control Speeds">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <nav class="labnav" aria-label="Virtual Labs"></nav>
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird Virtual Labs · Aerodynamics</div>
+      <div class="eyebrow">NORDAP Virtual Labs · Aerodynamics</div>
       <h1>Engine failure and minimum control speeds</h1>
       <p data-tx="lead">Lose an engine on a light twin and on the A320 and slow down until the rudder runs out. That speed is VMCA. See why one engine is critical, what bank, feathering, power and CG do, how a propeller blade works as a wing, and how CS-25 turns VMC into VMCG, VMCL and the limits on V1, VR, V2 and VREF.</p>
       <p class="goal" id="goal" data-tx="goal"><span class="k">Learning goal</span>Explain why one engine is critical on a light twin, what sets VMCA and how bank, feathering, power and CG move it, and how VMCA becomes VMCG, VMCL and the take-off speeds on the A320.</p>
@@ -338,11 +338,11 @@ ol.steps li{margin:4px 0}
   </section>
   <p class="foot" id="foot"></p>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="chartnote.js?v=2"></script>
-<script src="concepts.js?v=2"></script>
-<script src="stab.js?v=1"></script>
-<script src="vmc.js?v=2"></script>
+<script src="lab.js?v=52"></script>
+<script src="chartnote.js?v=3"></script>
+<script src="concepts.js?v=3"></script>
+<script src="stab.js?v=2"></script>
+<script src="vmc.js?v=3"></script>
 <script>
 /* strings of the light-twin and propeller sections (twin.js), registered before LAB.start so the static text is translated */
 LAB.add({},{
@@ -365,7 +365,7 @@ LAB.add({},{
 const {L,el,nf}=LAB, S=STAB, I=S.INK, D2R=Math.PI/180, M=VMC, AC=M.AC;
 const txt=S.txt, arrow=S.arrow;
 LAB.add({},{
- 'Engine Failure and Minimum Control Speeds':'Motorstans og minste kontrollfarter','Engine failure and minimum control speeds':'Motorstans og minste kontrollfarter','Birdbird Virtual Labs · Aerodynamics':'Birdbird Virtual Labs · Aerodynamikk',
+ 'Engine Failure and Minimum Control Speeds':'Motorstans og minste kontrollfarter','Engine failure and minimum control speeds':'Motorstans og minste kontrollfarter','NORDAP Virtual Labs · Aerodynamics':'NORDAP Virtual Labs · Aerodynamikk',
  'Lose an engine on the A320 and slow down until the rudder runs out. That speed is VMCA. Change the bank, thrust, airfield, CG and mass and watch it move, then see how CS-25 turns it into VMCG, VMCL and the limits on V1, VR, V2 and VREF.':'Mist en motor på A320 og senk farten til sideroret ikke strekker til. Den farten er VMCA. Endre krengning, skyv, flyplass, CG og masse og se den flytte seg, og se så hvordan CS-25 gjør den om til VMCG, VMCL og grensene for V1, VR, V2 og VREF.',
  'VMCA lab':'VMCA-lab','Certification and speeds':'Sertifisering og farter','VMCG and VMCL':'VMCG og VMCL','In the aircraft':'I flyet','Test yourself':'Test deg selv',
  '1 · Interactive':'1 · Interaktiv','2 · Certification':'2 · Sertifisering','3 · Interactive':'3 · Interaktiv','4 · Operations':'4 · Operativt','Check':'Sjekk',
@@ -861,7 +861,7 @@ LAB.onLang(()=>{ hooks.forEach(f=>f()); vmRead(); acC.draw(); trC.draw(); mvC.dr
 })();
 </script>
 <script src="cfd3d.js?v=7"></script>
-<script src="twin.js?v=7"></script>
+<script src="twin.js?v=8"></script>
 <script>
 /* Understand: key concept cards (same pattern as the wind tunnel) */
 (function(){ if(!window.KCS) return; const {sv,tx,ar}=KCS, L=LAB.L;

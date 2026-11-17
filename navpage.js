@@ -1,4 +1,4 @@
-/* Birdbird – navpage.js: radionav.html's key concept cards, memory aid, quiz, and the radar / transponder / ADS-B model. */
+/* NORDAP – navpage.js: radionav.html's key concept cards, memory aid, quiz, and the radar / transponder / ADS-B model. */
 (function(){
 'use strict';
 const {L,el,nf}=LAB, t2=(en,no)=>({en,no});

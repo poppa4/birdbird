@@ -2,7 +2,7 @@
    list an aerodrome we lack. Slovenia's certificate chain is incomplete, so this one check runs without verifying it
    (it only reads; nothing is sent). Run by .github/workflows/aip-links.yml with NODE_TLS_REJECT_UNAUTHORIZED=0. */
 import { resolve } from '../functions/_lib/aipres.js';
-const UA = 'Mozilla/5.0 (compatible; Birdbird/1.0; +https://birdbird.eu)';
+const UA = 'Mozilla/5.0 (compatible; NORDAP/1.0; +https://birdbird.eu)';
 const get = async u => { const r = await fetch(u, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(90000) }); return { ok: r.ok, status: r.status, t: await r.text() }; };
 const bad = [];
 const portal = await get('https://aim.sloveniacontrol.si/aim/products/aip/');

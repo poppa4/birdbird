@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: Flight Intelligence (the AI behind ai.js: Ask your documents, fi.html, the radio trainer, …).
+/* NORDAP – Cloudflare Pages Function: Flight Intelligence (the AI behind ai.js: Ask your documents, fi.html, the radio trainer, …).
 
    GET  /api/atc   -> 200 { ok:true }                                  the service can be used by this signed-in user
                       200 { ok:false, reason:'not_configured' }        no API key, no database or migration 0002 not applied
@@ -50,7 +50,7 @@ const WORKERS_LIMITS = {
   MAX_OUTPUT_TOKENS: 2500         // gpt-oss reasons before it answers; the reasoning counts here too
 };
 const WORKERS_MODELS = ['@cf/openai/gpt-oss-120b', '@cf/zai-org/glm-4.7-flash']; // second one only if the first errors
-const WORKERS_SYSTEM = 'You are Flight Intelligence in Birdbird, a European (EASA) preparation platform for pilots. '
+const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
   + 'Follow the instructions in the user message exactly, including language and output format. Use EASA/SERA terms and standards, not FAA. '
   + 'Never invent regulation references, figures or limitations; if something is not in the material given and you are not sure, say so.';
 const MAX_BODY_BYTES = 200000;    // the JSON body of one POST
@@ -83,7 +83,7 @@ const notConfigured = () => fail(503, 'not_configured', 'Flight Intelligence is 
 /* ---------- GET: can this visitor use the service? ---------- */
 async function atcGet(c) {
   const o = c.request.headers.get('origin');
-  if (o && o !== c.url.origin) fail(403, 'bad_origin', 'This request did not come from Birdbird itself.');
+  if (o && o !== c.url.origin) fail(403, 'bad_origin', 'This request did not come from NORDAP itself.');
   const s = await getSession(c);
   if (!s) return json({ ok: false, reason: 'signed_out' });
   try { await c.db.prepare('SELECT 1 FROM ai_usage LIMIT 1').first(); }

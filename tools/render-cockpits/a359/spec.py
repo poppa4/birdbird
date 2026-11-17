@@ -1,8 +1,8 @@
-"""Airbus A350-900: views and named controls. Main panel, glareshield and pedestal: FlightGear A350XWB (GPL-2.0). Overhead: Birdbird's own simplified drawing (ovh.py)."""
+"""Airbus A350-900: views and named controls. Main panel, glareshield and pedestal: FlightGear A350XWB (GPL-2.0). Overhead: NORDAP's own simplified drawing (ovh.py)."""
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np, re, json
 NAME = 'a359'; CONST = 'A359_T'; ID = 'a359'; JSVAR = 'A359'; TITLE = 'Airbus A350-900'; CREW = 2
-CREDIT_LONG = 'Model: FlightGear Airbus A350 XWB (github.com/FGMEMBERS/A350XWB, GPL-2.0). Overhead panel: drawing by Birdbird.'
+CREDIT_LONG = 'Model: FlightGear Airbus A350 XWB (github.com/FGMEMBERS/A350XWB, GPL-2.0). Overhead panel: drawing by NORDAP.'
 IMG = {'v': 'A350-900 flight deck. The overhead panel is a simplified drawing: the panels are in the right order, single buttons are approximate', 'by': 'FlightGear A350XWB', 'lic': 'GPL-2.0', 'src': 'https://github.com/FGMEMBERS/A350XWB', 'licUrl': 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.html'}
 VIEWS = {'ovh': ((0, 0, 0), (0, 0, 1), (0, 1, 0), 1800 / 2800, 2970 / 2800, 2800, 1, 1), 'main': ((2.45, 1.88, 0), (-1, 0, 0), (0, 1, 0), 2.2, 0.8, 2800, 3, 1), 'ped': ((2.67, 1.6, 0), (0, -1, 0), (-1, 0, 0), 0.62, 1.6, 2800, 1, 2)}
 CROP = {'main': (0, 0, 6159, 1560), 'ped': (0, 1380, 1736, 4400)}

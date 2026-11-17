@@ -1,4 +1,4 @@
-/* Birdbird – classic Cessna 172 panel drawn in SVG (world units 2000×1320).
+/* NORDAP – classic Cessna 172 panel drawn in SVG (world units 2000×1320).
    Own drawing of a typical carburetted 172P-style panel: six-pack, left column of engine and electrical gauges,
    NAV indicators and ADF beside the six-pack, centre radio stack (audio, two NAV/COMs, ADF, DME, transponder),
    lower switch and control panel, push-pull engine controls, flaps, trim wheel and fuel selector.

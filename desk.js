@@ -1,4 +1,4 @@
-/* Birdbird – My workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
+/* NORDAP – My workspace: the desk (the default view, #/). Layout model in deskcore.js; storage, sync, names and
    dialogs come from workspace.js (WS.api). One screen like a desk: the library on the left, panes with tabs on the right.
    A desk is a 'desk' item in the 'workspace' namespace and holds positions only (which tabs, where, which page).
    Overview (first in the bar) lays the desk home over the panes without closing a tab; each pane's strip shows the group
@@ -207,10 +207,10 @@
     const lazy = {};
     const cssOnce = href => new Promise(res => { if (document.querySelector(`link[href="${href}"]`)) return res(); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href; l.onload = l.onerror = () => res(); document.head.appendChild(l); });
     function needNB() {
-      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=5'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=1')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=5'))])
+      return lazy.nb || (lazy.nb = Promise.all([cssOnce('notebook.css?v=6'), (window.INKCORE ? Promise.resolve() : A.loadScript('inkcore.js?v=2')).then(() => window.WSNB ? 0 : A.loadScript('notebook.js?v=6'))])
         .then(() => { window.WSNB.init(EXT); lazy.nbOk = true; S.index = null; }).catch(e => { lazy.nb = null; throw e; }));
     }
-    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=5'), window.WSASK ? 0 : A.loadScript('ask.js?v=5')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
+    function needAsk() { return lazy.ask || (lazy.ask = Promise.all([cssOnce('notebook.css?v=6'), window.WSASK ? 0 : A.loadScript('ask.js?v=6')]).then(() => { window.WSASK.init(EXT); lazy.askOk = true; }).catch(e => { lazy.ask = null; throw e; })); }
     /* a tab whose code is still loading: a quiet line, then the real view (render() remounts it) */
     function mountLazy(box, need) {
       let ok = false, dead = false;
@@ -704,7 +704,7 @@
       function drawText() {
         const keep = mode === 'text' && sc.querySelector('.dv-tp') ? where() : { p: cur, o: st.o || 0 };
         sc.innerHTML = hasText ? `<div class="dv-txt">${pages.map(p => `<section class="dv-tp" data-p="${p.p}"><h4>${esc(t('Page ', 'Side ') + p.p)}${p.s ? ' · ' + esc(p.s) : ''}</h4><p>${find.q.trim() ? mark(p.t, find.q) : esc(p.t)}</p></section>`).join('')}</div>`
-          : `<div class="dk-msg"><p>${esc(t('This file has no text Birdbird can show (it may be scanned or protected). Download it to open it in another app.', 'Denne filen har ingen tekst Birdbird kan vise (den kan være skannet eller beskyttet). Last den ned for å åpne den i en annen app.'))}</p></div>`;
+          : `<div class="dk-msg"><p>${esc(t('This file has no text NORDAP can show (it may be scanned or protected). Download it to open it in another app.', 'Denne filen har ingen tekst NORDAP kan vise (den kan være skannet eller beskyttet). Last den ned for å åpne den i en annen app.'))}</p></div>`;
         goPage(keep.p, keep.o);
       }
       async function setMode(m) {
@@ -882,7 +882,7 @@
             <div class="acts">${ty.trainer ? `<a class="btn sm pri" href="${ty.trainer}">${esc(t('Launch simulator', 'Start simulatoren'))}</a>` : ''}<button type="button" class="btn sm" data-av="note">${esc(t('New note', 'Nytt notat'))}</button><button type="button" class="btn sm" data-av="pack">${esc(t('New briefing pack', 'Ny briefingpakke'))}</button><button type="button" class="dk-ib" data-av="more" aria-haspopup="menu" aria-label="${esc(t('More', 'Mer'))}">${ic('more')}</button></div></header>
           <div class="av-grid"><section><h3>${esc(t('Key speeds and limits', 'Viktige hastigheter og grenser'))} <span class="savedmark" data-sv></span></h3>
             <table class="speeds"><colgroup><col class="ck"><col class="cv"><col class="cu"><col class="cx"></colgroup><thead><tr><th>${esc(t('Item', 'Punkt'))}</th><th style="text-align:right">${esc(t('Value', 'Verdi'))}</th><th>${esc(t('Unit', 'Enhet'))}</th><th><span hidden>x</span></th></tr></thead><tbody>${(a.speeds || []).map(A.speedRow).join('')}</tbody></table>
-            <p class="speeds-note"><button type="button" class="lk" data-av="sp-add">${esc(t('Add a row', 'Legg til en rad'))}</button> · ${esc(t('From this aircraft’s own AFM or POH. Birdbird does not fill them in.', 'Fra flyets egen AFM eller POH. Birdbird fyller dem ikke ut.'))}</p>
+            <p class="speeds-note"><button type="button" class="lk" data-av="sp-add">${esc(t('Add a row', 'Legg til en rad'))}</button> · ${esc(t('From this aircraft’s own AFM or POH. NORDAP does not fill them in.', 'Fra flyets egen AFM eller POH. NORDAP fyller dem ikke ut.'))}</p>
             <h3><label for="avN${esc(tab.id)}">${esc(t('About this aircraft', 'Om dette flyet'))}</label></h3><textarea class="acnotes" id="avN${esc(tab.id)}" maxlength="4000" placeholder="${esc(t('Equipment, quirks, where the tow bar is kept…', 'Utstyr, særheter, hvor slepestangen ligger …'))}">${esc(a.notes)}</textarea></section>
           <section><h3>${esc(t('Documents', 'Dokumenter'))} <span class="c">${docs.length}</span></h3>${docs.length ? `<ul class="av-l">${docs.map(d => row('doc', d.id, d.name, A.catName(d.cat), docKind(d))).join('')}</ul>` : `<p class="none">${esc(t('The AFM, checklists and SOP for this aircraft.', 'AFM, sjekklister og SOP for dette flyet.'))}</p>`}
             <p class="av-add"><button type="button" class="lk" data-av="doc-add" aria-haspopup="menu">${ic('plus')}${esc(t('Add a document', 'Legg til et dokument'))}</button></p>

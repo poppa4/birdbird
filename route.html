@@ -5,8 +5,8 @@
 <meta name="description" content="Route Explorer: build a route on the map, see the terrain under it in profile and 3D, and send it to your briefing pack.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Route Explorer</title>
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
 <style>
 @font-face{font-family:"Caveat";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/caveat-latin-500-normal.woff2) format("woff2")}
 @font-face{font-family:"Caveat";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/caveat-latin-700-normal.woff2) format("woff2")}
@@ -353,7 +353,7 @@
 .chk.sub{padding-left:22px;font-size:.94em}.chk.sub.dis{opacity:.45}
 .bb-satnote{position:absolute;left:50%;bottom:30px;top:auto;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:6px 8px 6px 10px;font-size:12.5px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:calc(100% - 24px);box-sizing:border-box}.bb-satnote .rxclr{font-size:12.5px;color:var(--accent);text-decoration:underline;padding:0 4px}.bb-satnote button{border:0;background:none;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-2);padding:0 0 0 6px}
 .mlwarn{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:4;background:#fff;border:1px solid #E0B4C9;border-left:3px solid var(--accent);border-radius:4px;padding:8px 10px;font-size:13px;color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;gap:8px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 24px)}.mlwarn code{font-size:11.5px;color:var(--ink-2)}.mlwarn button{font:inherit;font-size:12.5px;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;padding:3px 8px;cursor:pointer}.mlwarn .x{border:0;background:none;font-size:16px;padding:0 4px}
-/* ---- modern map chrome: floating rounded groups, soft shadows, Birdbird navy var(--navy) with magenta accents ---- */
+/* ---- modern map chrome: floating rounded groups, soft shadows, NORDAP navy var(--navy) with magenta accents ---- */
 .rx{--glass:rgba(255,255,255,.95);--hair:rgba(11,37,69,.09);--lift:0 6px 20px rgba(11,37,69,.13),0 1px 3px rgba(11,37,69,.08)}
 .rx .seg3{border:0;border-radius:10px;background:var(--glass);box-shadow:var(--lift)}
 .rx .seg3 button{border-right:1px solid var(--hair);color:#3A4D60;transition:background .15s,color .15s}
@@ -541,7 +541,7 @@
 <link rel="preload" as="style" href="vendor/maplibre/maplibre-gl.css?v=5.24.0">
 </head>
 <body data-title="Route Explorer">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <main id="main">
 <h1 class="sr">Route Explorer</h1>
 <dialog class="updlg" id="updlg"><form method="dialog"><h3>Add to the briefing pack</h3><div class="upprev"><img id="upimg" alt=""></div><label class="f">Name<input id="upname" autocomplete="off"></label><label class="f">Briefing pack<select id="uppack"></select></label><p class="note" id="upnote"></p><div class="btns"><button class="btn pri" id="upok" value="ok" autofocus>Add to briefing pack</button><button class="btn" value="cancel" id="upcancel">Cancel</button></div></form></dialog>
@@ -805,17 +805,17 @@
   </div>
 </div>
 </main>
-<script src="lab.js?v=51"></script>
+<script src="lab.js?v=52"></script>
 <script>/* offline for the ground briefing: sw.js */ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')) addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=3').catch(()=>{}));</script>
-<script src="ai.js?v=5"></script>
-<script src="store.js?v=3"></script>
-<script src="flightlink.js?v=1"></script>
-<script src="terrain.js?v=2"></script>
-<script src="wmm.js?v=1"></script>
-<script src="rxmap.js?v=26"></script>
-<script src="aip.js?v=6"></script>
-<script src="windsaloft.js?v=3"></script>
-<script src="cloudcol.js?v=1"></script>
+<script src="ai.js?v=6"></script>
+<script src="store.js?v=4"></script>
+<script src="flightlink.js?v=2"></script>
+<script src="terrain.js?v=3"></script>
+<script src="wmm.js?v=2"></script>
+<script src="rxmap.js?v=27"></script>
+<script src="aip.js?v=7"></script>
+<script src="windsaloft.js?v=4"></script>
+<script src="cloudcol.js?v=2"></script>
 <script>
 (function(){
 'use strict';
@@ -936,7 +936,7 @@ async function terrainProfile(M){
    request (the function's limit), 3 requests per update and 6 per minute; each answer (also "no METAR") is kept 5 min. */
 const WXS={c:{},t:0,hist:[],busy:false,lib:null,idx:null};
 const WX_TTL=5*60e3;
-function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=2'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
+function wxLib(){ if(window.WXK) return Promise.resolve(); return WXS.lib||(WXS.lib=new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='wxkit.js?v=3'; sc.onload=ok; sc.onerror=()=>{ WXS.lib=null; ko(new Error('wxkit')); }; document.head.appendChild(sc); })); }
 function wxCat(m){ if(!m||m.nil) return null; const vis=m.vis==null?null:m.vis/1609.34, cig=m.cavok?null:m.ceil; if(vis==null&&cig==null&&!m.cavok&&!m.hasCloud) return null;
   /* European categories from SERA (EU 923/2012): VFR in a control zone needs ground visibility ≥ 5 km and ceiling ≥ 1500 ft (SERA.5005(b)); special VFR needs ≥ 1500 m and ceiling ≥ 600 ft (SERA.5010); below that only IFR */
   const c=v=>v!=null, vm=m.vis==null?null:m.vis; if(m.cavok) return 'VFR'; if((c(cig)&&cig<600)||(c(vm)&&vm<1500)) return 'IFR'; if((c(cig)&&cig<1500)||(c(vm)&&vm<5000)) return 'SVFR'; return 'VFR'; }
@@ -1036,7 +1036,7 @@ async function radSync(){ if(!ML) return; const want=!!LY.rad, nt=el('radnote');
   if(RAD.busy||(Date.now()-RAD.at<10*60e3&&ML.getSource('bb-rad'))) return; RAD.busy=true; if(nt) nt.textContent=L({en:'loading…',no:'laster …'});
   try{ const j=await (await fetch('/api/radar',{headers:{accept:'application/json'}})).json(); if(!j||!j.ok) throw new Error((j&&j.message)||'radar');
     if(j.t!==RAD.t||!ML.getSource('bb-rad')){ const buf=await (await fetch(j.url)).arrayBuffer();
-      if(!RAD.w) RAD.w=new Worker('radarworker.js?v=1'); const D=Math.PI/180, my=la=>Math.log(Math.tan(Math.PI/4+la*D/2)); const w=1100, h=Math.round(w*(my(RADB[3])-my(RADB[1]))/((RADB[2]-RADB[0])*D));
+      if(!RAD.w) RAD.w=new Worker('radarworker.js?v=2'); const D=Math.PI/180, my=la=>Math.log(Math.tan(Math.PI/4+la*D/2)); const w=1100, h=Math.round(w*(my(RADB[3])-my(RADB[1]))/((RADB[2]-RADB[0])*D));
       const out=await new Promise((ok,ko)=>{ RAD.w.onmessage=e=>e.data.ok?ok(e.data):ko(new Error(e.data.err)); RAD.w.onerror=e=>ko(new Error(e.message||'worker')); RAD.w.postMessage({buf,w,h,b:RADB},[buf]); });
       const cv=document.createElement('canvas'); cv.width=out.w; cv.height=out.h; cv.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(out.rgba),out.w,out.h),0,0);
       const url=cv.toDataURL('image/png'), coords=[[RADB[0],RADB[3]],[RADB[2],RADB[3]],[RADB[2],RADB[1]],[RADB[0],RADB[1]]];
@@ -1196,7 +1196,7 @@ el('nlp').addEventListener('input',e=>{ const t=e.target; if(!R) return; R.nl=R.
 el('nl_fu').addEventListener('change',e=>{ R.nl=R.nl||{}; R.nl.fu=e.target.value; drawNavlog(); queueSave(); });
 el('nlprint').onclick=()=>{ const M=compute(), N=nlRows(M); let o=el('nlprint-out'); if(!o){ o=document.createElement('div'); o.id='nlprint-out'; document.body.appendChild(o); }
   const dep=M.C[0]&&M.C[0].p.n, dst=M.C.length?M.C[M.C.length-1].p.n:''; const NLs=R.nl||{};
-  o.innerHTML=`<h2>${L({en:'Navigation log',no:'Navigasjonslogg'})} · ${esc(dep||'')} → ${esc(dst||'')}</h2><p>TAS ${esc(String(R.gs||'–'))} kt · ${L({en:'wind',no:'vind'})} ${esc(nlW3(nlWind(NLs.w))||'–')} · ${L({en:'cruise',no:'marsj'})} ${M.cr!=null?altTxt(M.cr):'–'} · ${L({en:'fuel flow',no:'forbruk'})} ${esc(NLs.ff||'–')} ${esc(NLs.fu||'L')}/h · ${new Date().toISOString().slice(0,10)}</p><table>${nlTable(N,true)}</table><p style="font-size:10px">${L({en:'Birdbird Route Explorer, for planning practice. Not an official flight plan.',no:'Birdbird Route Explorer, til planleggingsøvelse. Ikke en offisiell reiseplan.'})}</p>`;
+  o.innerHTML=`<h2>${L({en:'Navigation log',no:'Navigasjonslogg'})} · ${esc(dep||'')} → ${esc(dst||'')}</h2><p>TAS ${esc(String(R.gs||'–'))} kt · ${L({en:'wind',no:'vind'})} ${esc(nlW3(nlWind(NLs.w))||'–')} · ${L({en:'cruise',no:'marsj'})} ${M.cr!=null?altTxt(M.cr):'–'} · ${L({en:'fuel flow',no:'forbruk'})} ${esc(NLs.ff||'–')} ${esc(NLs.fu||'L')}/h · ${new Date().toISOString().slice(0,10)}</p><table>${nlTable(N,true)}</table><p style="font-size:10px">${L({en:'NORDAP Route Explorer, for planning practice. Not an official flight plan.',no:'NORDAP Route Explorer, til planleggingsøvelse. Ikke en offisiell reiseplan.'})}</p>`;
   document.body.classList.add('printnl'); const done=()=>{ document.body.classList.remove('printnl'); window.removeEventListener('afterprint',done); }; window.addEventListener('afterprint',done); window.print(); setTimeout(done,1500); };
 
 /* ---------- eksport: GPX, Garmin .fpl og rutetekst (ForeFlight leser GPX og FPL) ---------- */
@@ -1208,7 +1208,7 @@ const isAp=p=>p.t==='rwy'&&/^[A-Z]{4}$/.test(p.n||'')&&NAV&&NAV.apI&&NAV.apI[p.n
 function exName(){ const P=exPts(); return P.length?asc((P[0].n||'')+'-'+(P[P.length-1].n||'')).replace(/[^A-Za-z0-9-]/g,'')||'route':'route'; }
 function toGpx(){ const P=exPts(), nm=exName();
   const pt=p=>`    <rtept lat="${p.la.toFixed(6)}" lon="${p.lo.toFixed(6)}">${isAp(p)&&NAV.apI[p.n][4]!=null?`<ele>${(NAV.apI[p.n][4]*0.3048).toFixed(1)}</ele>`:''}<name>${xq(p.n||llIcao(p.la,p.lo))}</name>${p.note?`<desc>${xq(p.note)}</desc>`:''}<sym>${isAp(p)?'Airport':'Waypoint'}</sym></rtept>`;
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="Birdbird Route Explorer (birdbird.eu)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n  <metadata><name>${xq(nm)}</name><time>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</time></metadata>\n  <rte>\n    <name>${xq(nm)}</name>\n${P.map(pt).join('\n')}\n  </rte>\n</gpx>\n`; }
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="NORDAP Route Explorer (birdbird.eu)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n  <metadata><name>${xq(nm)}</name><time>${new Date().toISOString().replace(/\.\d+Z$/,'Z')}</time></metadata>\n  <rte>\n    <name>${xq(nm)}</name>\n${P.map(pt).join('\n')}\n  </rte>\n</gpx>\n`; }
 function toFpl(){ const P=exPts(), used={}, tbl=[], seq=[];
   P.forEach((p,i)=>{ let id, ty, cc='';
     if(isAp(p)){ id=p.n; ty='AIRPORT'; cc=p.n.slice(0,2); }
@@ -2253,7 +2253,7 @@ LAB.add({},{
  'Approach, levels and your fixes':'Innflyging, høyder og dine fikspunkter','Add the approach at the end of the route, the MSA, freezing level and cloud, and any fixes the map does not have.':'Legg til innflygingen på slutten av ruten, MSA, frysepunkt og skyer, og fikspunkter kartet ikke har.',
  'Map':'Kart','Profile':'Profil','Send to the briefing pack':'Send til briefingpakken','Markers':'Markører','Points table':'Punkttabell','Data sources and limits':'Datakilder og begrensninger','Type or paste the route, add the cruise level and your climb and descent. The map and the profile are drawn straight away.':'Skriv eller lim inn ruten, legg inn marsjhøyden og stigning og sink. Kartet og profilen tegnes med en gang.','Route, or a route string from ForeFlight, Garmin or the flight plan':'Rute, eller en rutestreng fra ForeFlight, Garmin eller flyplanen','Climb (ft/NM)':'Stigning (ft/NM)','Descent (ft/NM)':'Sink (ft/NM)','For example':'For eksempel','. A 3° descent is about 318 ft/NM; departures are designed for at least 200 ft/NM (3.3 %). Your aircraft’s real climb comes from the AFM.':'. En 3° nedstigning er rundt 318 ft/NM; avganger er laget for minst 200 ft/NM (3,3 %). Flyets virkelige stigning finner du i AFM.','Drag a route point onto a fix, or click a fix to add it. The approach, the weather and your own fixes are in the tabs.':'Dra et rutepunkt til en fix, eller klikk på en fix for å legge den til. Innflyging, vær og dine egne fixer ligger i fanene.','Paste METAR or TAF for aerodromes on the route; the cloud layers are drawn over that aerodrome.':'Lim inn METAR eller TAF for flyplasser på ruten; skylagene tegnes over den flyplassen.','Drag the aircraft to change the cruise level, drag a point to change its altitude, and add your own markers.':'Dra flyet for å endre marsjhøyden, dra et punkt for å endre høyden, og legg til dine egne markører.','Pick one, then click on the profile:':'Velg én, og klikk så på profilen:','Choose the pack and send. The profile, your markers, the weather and the navigation log go with it. The points table shows every point with its distance, track and altitude.':'Velg pakken og send. Profilen, markørene, været og navigasjonsloggen følger med. Punkttabellen viser hvert punkt med distanse, kurs og høyde.',
  "Full planner":"Full planlegger","Draw it yourself":"Tegn selv","A blank profile sheet, like a page in GoodNotes. Set the scale, then draw the route yourself: climb, cruise, descent, hold, approach and missed approach, terrain and cloud. The example below shows what a finished one can look like.":"Et tomt profilark, som en side i GoodNotes. Sett skalaen, og tegn ruten selv: stigning, marsj, sink, holding, innflyging og missed approach, terreng og skyer. Eksempelet viser hvordan en ferdig profil kan se ut.","Line":"Linje","Pen":"Penn","Text":"Tekst","Fix":"Fix","Terrain":"Terreng","Cloud":"Sky","Straight":"Rett","Dashed":"Stiplet","Undo":"Angre","Clear":"Tøm","Highest altitude on the sheet (ft)":"Høyeste høyde på arket (ft)","Total distance (NM)":"Total distanse (NM)","From":"Fra","To":"Til","Print blank sheet":"Skriv ut tomt ark","Use “Send to briefing pack” at the top to put your drawing in the pack.":"Bruk «Send til briefingpakken» øverst for å legge tegningen i pakken.","Example: a finished profile":"Eksempel: en ferdig profil","Set the highest altitude and the distance, so the grid has the right scale.":"Sett høyeste høyde og distansen, så rutenettet får riktig skala.","Draw the departure: runway, climb to the first fix or the SID altitude.":"Tegn avgangen: banen, stigning til første fix eller SID-høyden.","Cruise level, then top of descent. A 3° descent is about 300 ft per NM.":"Marsjhøyde, så toppen av nedstigningen. En 3°-nedstigning er rundt 300 ft per NM.","Hold, approach and the minimum. Mark the FAF and the DA or MDA.":"Holding, innflyging og minimum. Merk FAF og DA eller MDA.","Missed approach as a dashed line, with the altitude.":"Missed approach som stiplet linje, med høyden.","Terrain, MSA, cloud base and tops, and the freezing level.":"Terreng, MSA, skybase og -topper, og frysenivået.",
- 'Birdbird · Route profile':'Birdbird · Ruteprofil','Route profile':'Ruteprofil',
+ 'NORDAP · Route profile':'NORDAP · Ruteprofil','Route profile':'Ruteprofil',
  'Build the route on the map and see it from the side: climb, cruise, descent, hold, approach and missed approach, with the terrain under it. Send the finished profile to your briefing pack.':'Bygg ruten på kartet og se den fra siden: stigning, marsj, sink, holding, innflyging og missed approach, med terrenget under. Send den ferdige profilen til briefingpakken.',
  'New':'Ny','Duplicate':'Dupliser','Delete':'Slett','Also fill the navigation log':'Fyll også navigasjonsloggen','Send to briefing pack':'Send til briefingpakken','Print':'Skriv ut',
  'Drag to move · scroll or pinch to zoom · click anything to add it · drag a route point, or drag the line to add a point · click a point to remove it':'Dra for å flytte · scroll eller knip for å zoome · klikk på noe for å legge det til · dra et rutepunkt, eller dra linjen for å legge til et punkt · klikk på et punkt for å fjerne det',
@@ -2268,7 +2268,7 @@ LAB.add({},{
  'Save the fixes you need (IFR waypoints, VRPs, your own points). They are stored on your profile and can be used in the route by name.':'Lagre fixene du trenger (IFR-veipunkter, VRP-er, egne punkter). De lagres på profilen din og kan brukes i ruten med navn.',
  'Name':'Navn','Coordinates':'Koordinater','Note':'Notat','Save fix':'Lagre fix','Pick on the map':'Velg på kartet','Paste from the AIP or a list':'Lim inn fra AIP eller en liste','Read the list':'Les listen','Read fixes from a chart':'Les fixes fra et kart','Read the chart':'Les kartet','Your fixes':'Dine fixes',
  'Points':'Punkter','Add point':'Legg til punkt','Clear route':'Tøm ruten',
- 'Map':'Kart','Cross-section':'Tverrsnitt','Cross-section and map':'Tverrsnitt og kart','Vertical scale:':'Vertikal skala:','Manual':'Manuell','Reset':'Tilbakestill','Terrain':'Terreng','Max':'Maks','Transition altitude (ft)':'Overgangshøyde (ft)','Draw':'Tegn','Birdbird · Route Explorer':'Birdbird · Route Explorer',
+ 'Map':'Kart','Cross-section':'Tverrsnitt','Cross-section and map':'Tverrsnitt og kart','Vertical scale:':'Vertikal skala:','Manual':'Manuell','Reset':'Tilbakestill','Terrain':'Terreng','Max':'Maks','Transition altitude (ft)':'Overgangshøyde (ft)','Draw':'Tegn','NORDAP · Route Explorer':'NORDAP · Route Explorer',
  'See the route before you fly it. Paste the route from ForeFlight or build it on the map, then look at it from the side with the terrain under it, mark your own altitudes, and send it to the briefing pack. A visual preparation tool, not a flight planner.':'Se ruten før du flyr den. Lim inn ruten fra ForeFlight eller bygg den på kartet, se den fra siden med terrenget under, merk dine egne høyder og send den til briefingpakken. Et visuelt forberedelsesverktøy, ikke en flyplanlegger.',
  'Route, or paste a route string from ForeFlight, Garmin or the flight plan':'Rute, eller lim inn en rutestreng fra ForeFlight, Garmin eller flyplanen',
  'Reference: 3° descent ≈ 318 ft/NM (5.2 %). Departure procedures are designed for at least 3.3 % ≈ 200 ft/NM. Your aircraft’s real climb depends on the AFM, mass, weather and configuration.':'Referanse: 3° nedstigning ≈ 318 ft/NM (5,2 %). Avgangsprosedyrer er konstruert for minst 3,3 % ≈ 200 ft/NM. Flyets faktiske stigning avhenger av AFM, masse, vær og konfigurasjon.',
@@ -2865,7 +2865,7 @@ const AC3={st:null,L:null,bank:0,pitch:0};
 const RM3=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 function acType(){ if(T3.act&&T3.act!=='auto') return T3.act; const g=gsOf(); return g>=200?'a320':g>=150?'b200':'da42'; }
 const acLen=()=>({da42:8.6,b200:13.3,a320:37.6})[acType()]||9;
-function ac3Load(){ if(T3.act==='off') return null; if(AC3.st||!ML) return AC3.st; AC3.st=load3().then(()=>window.SIMAC?0:new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='simac3d.js?v=1'; sc.onload=ok; sc.onerror=()=>ko(new Error('simac3d.js')); document.head.appendChild(sc); }))
+function ac3Load(){ if(T3.act==='off') return null; if(AC3.st||!ML) return AC3.st; AC3.st=load3().then(()=>window.SIMAC?0:new Promise((ok,ko)=>{ const sc=document.createElement('script'); sc.src='simac3d.js?v=2'; sc.onload=ok; sc.onerror=()=>ko(new Error('simac3d.js')); document.head.appendChild(sc); }))
   .then(()=>{ if(!ML||!window.SIMAC) return; if(!ML.getLayer('bb-ac3d')){ const L=SIMAC.layer(); ML.addLayer(L); AC3.L=L; } mlKick3(); })
   .catch(e=>{ AC3.st=null; try{ console.info('Route Explorer: no 3D aircraft ('+((e&&e.message)||e)+')'); }catch(_){} }); return AC3.st; }
 /* sun for the sky: local solar noon today at the middle of the route (no departure time is stored); in the Nordic

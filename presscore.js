@@ -1,4 +1,4 @@
-/* Birdbird – presscore.js: the pure maths behind the Pressurisation and oxygen lab (pressurisation.html).
+/* NORDAP – presscore.js: the pure maths behind the Pressurisation and oxygen lab (pressurisation.html).
    No DOM, no state. Loaded in the page as window.PRC and in Node (tests/press.test.mjs) through vm.
    ICAO standard atmosphere (Doc 7488): 1013.25 hPa, 15 °C, 6.5 °C/km to 11 km, then −56.5 °C.
    Units: altitudes in ft, pressures in hPa (psi only for display and ΔP), time in s unless stated. */

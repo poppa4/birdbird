@@ -1,4 +1,4 @@
-/* Birdbird – vmc.js: engine-out yaw model and minimum control speeds (VMCA, VMCG, VMCL) for propeller.html.
+/* NORDAP – vmc.js: engine-out yaw model and minimum control speeds (VMCA, VMCG, VMCL) for propeller.html.
    Illustrative training values for an A320-size twin, not AFM / FCOM data.
    Frame: y positive toward the LIVE engine. φ > 0 = bank toward the live engine, β > 0 = relative wind from the
    live-engine side, r > 0 = nose toward the live engine, δr > 0 = rudder that yaws the nose toward the live engine.

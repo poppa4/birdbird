@@ -1,4 +1,4 @@
-/* Birdbird – perfcore.js: the pure maths behind the Take-off and landing lab (performance.html).
+/* NORDAP – perfcore.js: the pure maths behind the Take-off and landing lab (performance.html).
    No DOM, no state. Loaded in the page as window.PFC and in Node (tests/perf.test.mjs) through vm.
    Three GENERIC teaching aircraft with typical, rounded values (not AFM data):
      sep  light single piston, performance Class B   (≈1 100 kg)

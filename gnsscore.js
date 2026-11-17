@@ -1,4 +1,4 @@
-/* Birdbird – gnsscore.js: the pure maths behind the GNSS and RNAV lab (gnss.html).
+/* NORDAP – gnsscore.js: the pure maths behind the GNSS and RNAV lab (gnss.html).
    No DOM, no state. Loaded in the page as window.GNSSCORE and in Node (tests/gnsscore.test.mjs) through vm.
    Satellites are {az, el} in degrees (azimuth from true north, clockwise; elevation above the horizon).
    Plan geometry uses the same frame as navcore.js: x east, y north, NM, bearings in degrees true.

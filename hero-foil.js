@@ -1,4 +1,4 @@
-/* Birdbird front page: the live aerofoil on the navy plate in the subject areas (#ffBox).
+/* NORDAP front page: the live aerofoil on the navy plate in the subject areas (#ffBox).
    The Aerodynamics lab's 2D section (tunnel.html, "Aerofoil section and stall"), drawn large on the navy:
    - the panel method and the boundary-layer model are section.js (VSection.build / inviscid / viscous / polar / velAt),
      on the lab's A320-like supercritical section (physics.js VLab.AIRFOILS.sc) at the lab's default Reynolds number;

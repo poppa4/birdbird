@@ -1,4 +1,4 @@
-/* Birdbird – the shared shell of the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
+/* NORDAP – the shared shell of the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    One toolbar (the markup is the same on all six pages), the "…" menu, the Procedures drawer tabs and ONE notification area.
    - Toolbar order: aircraft · 2D/3D · ✈︎ Start · Auto-fly · Procedures · Pause · Restart · [Debrief, only after a flight] · …
      (narrow screens: the two selects shrink first, then Restart shows its icon only; nothing is ever clipped).
@@ -26,7 +26,7 @@ if(G.LAB&&G.LAB.add) G.LAB.add({},{
   'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Panel area':'Panelområde',
   'Sound':'Lyd','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
   'Controls':'Kontroller','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
-  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to Birdbird':'← Tilbake til Birdbird',
+  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to NORDAP':'← Tilbake til NORDAP',
   [NOTE_EN]:NOTE_NO
 });
 

@@ -1,4 +1,4 @@
-/* Birdbird – shared 3D cockpit engine (beta). The cockpit (the Blender-built glTF model in models/, see "glTF cockpit" below; a
+/* NORDAP – shared 3D cockpit engine (beta). The cockpit (the Blender-built glTF model in models/, see "glTF cockpit" below; a
    procedural low-poly shell with baked lighting if the model cannot be loaded) is drawn by three.js on top of the
    otw.js outside world, and the page's real interactive SVG/HTML panel is placed in 3D with a projective CSS matrix, so every
    switch, knob and lever stays the live DOM control (no re-rasterising). Parts of the panel drawing can be lifted onto their own

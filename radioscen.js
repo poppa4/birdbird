@@ -1,4 +1,4 @@
-/* Birdbird – radio trainer scenario library. TRAINING DATA: the aerodromes (Birdbird, Skarvik, Tjernmo), units, frequencies,
+/* NORDAP – radio trainer scenario library. TRAINING DATA: the aerodromes (NORDAP, Skarvik, Tjernmo), units, frequencies,
    procedures (OSVIK 1N, TUSKA 1A, RONAX hold, ILS/RNP 36) and traffic are fictional and not for navigation.
    Phraseology follows EASA SERA (Regulation (EU) No 923/2012, Section 14, and its AMC1 SERA.14001 phraseology appendix,
    EAR revision August 2025), ICAO Doc 4444 (16th ed., Amdt 13) and Doc 9432, and AIP Norway (transition altitude 7000 ft,
@@ -26,11 +26,11 @@ function vars(seed,o){
     appT:pick(['ILS','RNP']),pob:int(1,3),tpos:String(int(10,40)).padStart(2,'0'),endur:pick([40,50,60]),
     dist:pick([8,10,12]),alt0:pick([1500,2000,2500])};
 }
-const UNIT=V=>({atis:{n:'Birdbird ATIS',f:'127.130'},del:{n:'Birdbird Delivery',f:'121.875'},gnd:{n:'Birdbird Ground',f:'121.700'},twr:{n:'Birdbird Tower',f:'118.300'},
-  app:{n:'Birdbird Approach',f:V.app},ctl:{n:'Vestfjell Control',f:'128.905'},fis:{n:'Vestfjell Information',f:V.fis},afis:{n:'Skarvik Information',f:'123.455'},trf:{n:'Tjernmo Traffic',f:'123.505'}});
+const UNIT=V=>({atis:{n:'NORDAP ATIS',f:'127.130'},del:{n:'NORDAP Delivery',f:'121.875'},gnd:{n:'NORDAP Ground',f:'121.700'},twr:{n:'NORDAP Tower',f:'118.300'},
+  app:{n:'NORDAP Approach',f:V.app},ctl:{n:'Vestfjell Control',f:'128.905'},fis:{n:'Vestfjell Information',f:V.fis},afis:{n:'Skarvik Information',f:'123.455'},trf:{n:'Tjernmo Traffic',f:'123.505'}});
 const W=l=>PHW[String(l).toLowerCase()];
 function atisText(V,arr){ const L=arr?V.info2:V.info, Q=arr?V.qnh2:V.qnh;
-  return `Birdbird information ${W(L)}, time ${V.time}. Runway 36 in use. Transition level ${V.tl}. Wind ${V.wd} degrees ${V.ws} knots. Visibility 10 kilometres or more. ${V.cloud[0].toUpperCase()+V.cloud.slice(1)}. Temperature ${V.t}, dew point ${V.td}. QNH ${Q} hectopascals. Acknowledge information ${W(L)} on first contact.`; }
+  return `NORDAP information ${W(L)}, time ${V.time}. Runway 36 in use. Transition level ${V.tl}. Wind ${V.wd} degrees ${V.ws} knots. Visibility 10 kilometres or more. ${V.cloud[0].toUpperCase()+V.cloud.slice(1)}. Temperature ${V.t}, dew point ${V.td}. QNH ${Q} hectopascals. Acknowledge information ${W(L)} on first contact.`; }
 
 /* ---------------- element shorthands ---------------- */
 const cs=o=>Object.assign({k:'cs'},o), stn=(v,o)=>Object.assign({k:'stn',v},o), rwy=(v,o)=>Object.assign({k:'rwy',v:String(v)},o), qnh=(v,o)=>Object.assign({k:'qnh',v},o),
@@ -59,18 +59,18 @@ atis:V=>{ const u=UNIT(V); return [
    why:tr('Copy the letter and the QNH first; they are what you say and set. The transition level tells you where altitudes become flight levels.','Noter bokstaven og QNH først; det er dem du sier og stiller inn. Overgangsnivået forteller hvor høyder blir flygenivåer.')}]; },
 /* --- VFR: taxi to the holding point --- */
 vtaxi:V=>{ const u=UNIT(V); return [
-  {unit:u.gnd,ph:'ground',cat:'call',sit:tr(`Engines running at the apron. VFR to the training area south of Birdbird via Sierra. ATIS is information ${W(V.info)}.`,`Motorene går på apron. VFR til øvingsområdet sør for Birdbird via Sierra. ATIS er information ${W(V.info)}.`),
+  {unit:u.gnd,ph:'ground',cat:'call',sit:tr(`Engines running at the apron. VFR to the training area south of NORDAP via Sierra. ATIS is information ${W(V.info)}.`,`Motorene går på apron. VFR til øvingsområdet sør for NORDAP via Sierra. ATIS er information ${W(V.info)}.`),
    task:tr('First call to Ground: station, callsign, where you are, ATIS letter, what you want (taxi).','Første oppkall til Ground: stasjon, kallesignal, hvor du er, ATIS-bokstav, hva du vil (taksing).'),
-   els:[stn('Birdbird Ground'),cs(),POS('at the apron','på apron',/\b(apron|stand|parking|ramp)\b/),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request taxi','Be om taksing',/\btaxi\b/,{ask:'say intentions'}),P('VFR / destination','VFR / mål',/\b(vfr|training area|local|sierra|s)\b/,OPT)],
-   model:`Birdbird Ground, ${V.c}, DA42 at the apron, information ${W(V.info)}, VFR to the training area via Sierra, request taxi.`},
+   els:[stn('NORDAP Ground'),cs(),POS('at the apron','på apron',/\b(apron|stand|parking|ramp)\b/),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request taxi','Be om taksing',/\btaxi\b/,{ask:'say intentions'}),P('VFR / destination','VFR / mål',/\b(vfr|training area|local|sierra|s)\b/,OPT)],
+   model:`NORDAP Ground, ${V.c}, DA42 at the apron, information ${W(V.info)}, VFR to the training area via Sierra, request taxi.`},
   {rb:1,cat:'rb',ph:'ground',atc:`${V.a}, taxi to holding point A1 runway 36 via Alpha, QNH ${V.qnh}.`,task:tr('Read back the taxi clearance.','Les tilbake taksiklareringen.'),
    els:[hp('A1'),rwy(36),qnh(V.qnh),cs(),P('Via Alpha','Via Alpha',/\b(via )?a\b|\balpha\b/,OPT)],model:`Holding point A1 runway 36 via Alpha, QNH ${V.qnh}, ${V.a}.`},
   fc(V,'Tower','118.300',{ph:'ground',sit:tr('You taxi to A1 and do the run-up. Ground hands you over.','Du takserer til A1 og gjør run-up. Ground gir deg videre.')})]; },
 /* --- VFR: line-up (conditional) and take-off --- */
 vline:V=>{ const u=UNIT(V); return [
   {unit:u.twr,ph:'dep',cat:'call',sit:tr('Run-up done at holding point A1. A DA40 is on short final.','Run-up ferdig på holdepunkt A1. En DA40 er på kort finale.'),
-   task:tr('Tell Tower you are ready.','Si fra til Tower at du er klar.'),els:[stn('Birdbird Tower'),cs(),hp('A1',{opt:true}),READY],
-   model:`Birdbird Tower, ${V.c}, holding point A1, ready for departure.`},
+   task:tr('Tell Tower you are ready.','Si fra til Tower at du er klar.'),els:[stn('NORDAP Tower'),cs(),hp('A1',{opt:true}),READY],
+   model:`NORDAP Tower, ${V.c}, holding point A1, ready for departure.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, behind the landing DA40 on short final, line up runway 36, behind.`,
    task:tr('Read back the conditional clearance: condition, clearance, condition again.','Les tilbake den betingede klareringen: betingelse, klarering, betingelse igjen.'),
    els:[P('Condition first: “behind the landing DA40”','Betingelsen først: «behind the landing DA40»',/\bbehind\b.*\b(landing|da ?40|d a 40|traffic|aircraft)\b/,{say:'behind the landing DA40'}),P('“Lining up” (or “line up”)','«Lining up» (eller «line up»)',/\b(lineup|lining up)\b/,{say:'line up'}),rwy(36),{k:'count',re:/\bbehind\b/g,n:2,l:tr('“Behind” repeated at the end','«Behind» gjentatt til slutt'),say:'behind'},cs()],
@@ -87,7 +87,7 @@ vdep:V=>{ const u=UNIT(V); return [
 vfis:V=>{ const u=UNIT(V); return [
   {unit:u.fis,ph:'enroute',cat:'call',sit:tr('South of Sierra at 2500 ft, heading for the training area. You want flight information service.','Sør for Sierra i 2500 ft, på vei mot øvingsområdet. Du vil ha flygeinformasjonstjeneste.'),
    task:tr('First call to Vestfjell Information: station, full callsign, type, position, altitude, request.','Første oppkall til Vestfjell Information: stasjon, fullt kallesignal, type, posisjon, høyde, ønske.'),
-   els:[stn('Vestfjell Information'),cs(),TYPE,POS('south of Birdbird / Sierra','sør for Birdbird / Sierra'),alt(2500,{ask:'say altitude'}),INTENT('flight information / training area','flygeinformasjon / øvingsområdet',/\b(information|service|training|area|request)\b/)],
+   els:[stn('Vestfjell Information'),cs(),TYPE,POS('south of NORDAP / Sierra','sør for NORDAP / Sierra'),alt(2500,{ask:'say altitude'}),INTENT('flight information / training area','flygeinformasjon / øvingsområdet',/\b(information|service|training|area|request)\b/)],
    model:`Vestfjell Information, ${V.c}, DA42, 5 miles south of Sierra, 2500 feet, VFR to the training area, request flight information service.`},
   {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Vestfjell Information, squawk ${V.sqv}, QNH ${V.qnh2}, report entering the training area.`,task:tr('Read back.','Les tilbake.'),
    els:[sq(V.sqv),qnh(V.qnh2),cs(),WILCO],model:`Squawk ${V.sqv}, QNH ${V.qnh2}, wilco, ${V.c}.`},
@@ -100,17 +100,17 @@ vfis:V=>{ const u=UNIT(V); return [
    model:`${V.c}, Skarvik ${V.tpos}, 2500 feet, estimate Tjernmo ${String((+V.tpos+12)%60).padStart(2,'0')}.`}]; },
 /* --- VFR: TMA crossing --- */
 vtma:V=>{ const u=UNIT(V); return [
-  {unit:u.app,ph:'enroute',cat:'call',sit:tr('VFR from Skarvik to Tjernmo. The direct line crosses Birdbird TMA. You are 5 miles south of Skarvik at 2500 ft and want to cross at 4500 ft.','VFR fra Skarvik til Tjernmo. Den rette linjen krysser Birdbird TMA. Du er 5 miles sør for Skarvik i 2500 ft og vil krysse i 4500 ft.'),
+  {unit:u.app,ph:'enroute',cat:'call',sit:tr('VFR from Skarvik to Tjernmo. The direct line crosses NORDAP TMA. You are 5 miles south of Skarvik at 2500 ft and want to cross at 4500 ft.','VFR fra Skarvik til Tjernmo. Den rette linjen krysser NORDAP TMA. Du er 5 miles sør for Skarvik i 2500 ft og vil krysse i 4500 ft.'),
    task:tr('Call Approach and request the crossing.','Kall Approach og be om kryssing.'),
-   els:[stn('Birdbird Approach'),cs(),TYPE,POS('5 miles south of Skarvik','5 miles sør for Skarvik'),alt(2500,{ask:'say altitude'}),P('Request crossing (at 4500 ft)','Be om kryssing (i 4500 ft)',/\b(cross|crossing|transit)\b/,{ask:'say intentions'}),fix('Tjernmo',{opt:true,alt:['tiernmo','chernmo']})],
-   model:`Birdbird Approach, ${V.c}, DA42, 5 miles south of Skarvik, 2500 feet, VFR to Tjernmo, request crossing of Birdbird TMA at 4500 feet.`},
-  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, Birdbird Approach, squawk ${V.sq}.`,task:tr('Read back the squawk.','Les tilbake squawk-koden.'),els:[sq(V.sq),cs()],model:`Squawk ${V.sq}, ${V.c}.`},
-  {rb:1,cat:'rb',ph:'enroute',atc:`${V.a}, identified, 6 miles south of Skarvik. Cleared to cross Birdbird TMA via Skarvik and Tjernmo, altitude 4500 feet, VFR, QNH ${V.qnh}.`,
+   els:[stn('NORDAP Approach'),cs(),TYPE,POS('5 miles south of Skarvik','5 miles sør for Skarvik'),alt(2500,{ask:'say altitude'}),P('Request crossing (at 4500 ft)','Be om kryssing (i 4500 ft)',/\b(cross|crossing|transit)\b/,{ask:'say intentions'}),fix('Tjernmo',{opt:true,alt:['tiernmo','chernmo']})],
+   model:`NORDAP Approach, ${V.c}, DA42, 5 miles south of Skarvik, 2500 feet, VFR to Tjernmo, request crossing of NORDAP TMA at 4500 feet.`},
+  {rb:1,cat:'rb',ph:'enroute',atc:`${V.c}, NORDAP Approach, squawk ${V.sq}.`,task:tr('Read back the squawk.','Les tilbake squawk-koden.'),els:[sq(V.sq),cs()],model:`Squawk ${V.sq}, ${V.c}.`},
+  {rb:1,cat:'rb',ph:'enroute',atc:`${V.a}, identified, 6 miles south of Skarvik. Cleared to cross NORDAP TMA via Skarvik and Tjernmo, altitude 4500 feet, VFR, QNH ${V.qnh}.`,
    task:tr('Read back the crossing clearance.','Les tilbake kryssingsklareringen.'),
-   els:[P('“Cleared to cross”','«Cleared to cross»',/\bcleared (to )?cross/,{say:'cleared to cross Birdbird TMA'}),fix('Skarvik',{opt:true,alt:['scarvik']}),fix('Tjernmo',{alt:['tiernmo','chernmo','tjernmoe']}),alt(4500),qnh(V.qnh),cs()],
-   model:`Cleared to cross Birdbird TMA via Skarvik and Tjernmo, altitude 4500 feet, QNH ${V.qnh}, ${V.a}.`},
+   els:[P('“Cleared to cross”','«Cleared to cross»',/\bcleared (to )?cross/,{say:'cleared to cross NORDAP TMA'}),fix('Skarvik',{opt:true,alt:['scarvik']}),fix('Tjernmo',{alt:['tiernmo','chernmo','tjernmoe']}),alt(4500),qnh(V.qnh),cs()],
+   model:`Cleared to cross NORDAP TMA via Skarvik and Tjernmo, altitude 4500 feet, QNH ${V.qnh}, ${V.a}.`},
   {cat:'call',ph:'enroute',sit:tr('Twenty minutes later you leave the TMA to the north, still at 4500 ft.','Tjue minutter senere forlater du TMA-en mot nord, fortsatt i 4500 ft.'),task:tr('Report leaving the TMA.','Meld at du forlater TMA-en.'),
-   els:[cs(),P('Leaving the TMA / controlled airspace','Forlater TMA / kontrollert luftrom',/\b(leaving|left|exiting|vacating)\b/,{ask:'say position'}),alt(4500,{opt:true})],model:`${V.a}, leaving Birdbird TMA, 4500 feet.`,
+   els:[cs(),P('Leaving the TMA / controlled airspace','Forlater TMA / kontrollert luftrom',/\b(leaving|left|exiting|vacating)\b/,{ask:'say position'}),alt(4500,{opt:true})],model:`${V.a}, leaving NORDAP TMA, 4500 feet.`,
    reply:`${V.a}, squawk 7000, frequency change approved.`},
   {rb:1,cat:'rb',ph:'enroute',task:tr('Read back.','Les tilbake.'),els:[sq('7000'),cs()],model:`Squawk 7000, ${V.a}.`,ctxAtc:1}]; },
 /* --- AFIS aerodrome (Norwegian style) --- */
@@ -148,10 +148,10 @@ vblind:V=>{ const u=UNIT(V); const T='Tjernmo traffic'; return [
    els:[stn(T),cs(),P('Runway vacated','Banen forlatt',/\b(vacated|clear of|off the runway)\b/),rwy(27,{opt:true}),{k:'last',v:'Tjernmo',l:tr('End with “Tjernmo” (UK practice)','Avslutt med «Tjernmo» (britisk praksis)'),opt:true}],model:`Tjernmo traffic, ${V.c}, runway 27 vacated, Tjernmo.`}]; },
 /* --- VFR: zone entry and landing --- */
 varr:V=>{ const u=UNIT(V); return [
-  {unit:u.twr,ph:'arr',cat:'call',sit:tr(`Back from the training area: 10 miles north of Birdbird, 2000 ft. You have ATIS information ${W(V.info2)}.`,`Tilbake fra øvingsområdet: 10 miles nord for Birdbird, 2000 ft. Du har ATIS information ${W(V.info2)}.`),
+  {unit:u.twr,ph:'arr',cat:'call',sit:tr(`Back from the training area: 10 miles north of NORDAP, 2000 ft. You have ATIS information ${W(V.info2)}.`,`Tilbake fra øvingsområdet: 10 miles nord for NORDAP, 2000 ft. Du har ATIS information ${W(V.info2)}.`),
    task:tr('First call to Tower: station, callsign, type, position, altitude, ATIS, intention.','Første oppkall til Tower: stasjon, kallesignal, type, posisjon, høyde, ATIS, hensikt.'),
-   els:[stn('Birdbird Tower'),cs(),TYPE,POS('10 miles north','10 miles nord'),alt(2000,{ask:'say altitude'}),info(V.info2,{ask:`confirm information ${W(V.info2)}`}),INTENT('landing','landing',/\b(land|landing|join|joining|full stop|inbound)\b/)],
-   model:`Birdbird Tower, ${V.c}, DA42, 10 miles north, 2000 feet, information ${W(V.info2)}, request joining for landing.`},
+   els:[stn('NORDAP Tower'),cs(),TYPE,POS('10 miles north','10 miles nord'),alt(2000,{ask:'say altitude'}),info(V.info2,{ask:`confirm information ${W(V.info2)}`}),INTENT('landing','landing',/\b(land|landing|join|joining|full stop|inbound)\b/)],
+   model:`NORDAP Tower, ${V.c}, DA42, 10 miles north, 2000 feet, information ${W(V.info2)}, request joining for landing.`},
   {rb:1,cat:'rb',ph:'arr',atc:`${V.a}, enter control zone via November, not above 1500 feet, QNH ${V.qnh2}, runway 36, report November.`,task:tr('Read back the zone entry clearance.','Les tilbake soneklareringen.'),
    els:[fix('November'),alt(1500),qnh(V.qnh2),rwy(36,{opt:true}),cs(),WILCO],model:`Enter control zone via November, not above 1500 feet, QNH ${V.qnh2}, runway 36, wilco, ${V.a}.`},
   {cat:'call',ph:'arr',sit:tr('A few minutes later you are over November at 1500 ft.','Noen minutter senere er du over November i 1500 ft.'),task:tr('Report over November.','Meld over November.'),
@@ -166,8 +166,8 @@ varr:V=>{ const u=UNIT(V); return [
 /* --- taxi in --- */
 taxiin:V=>{ const u=UNIT(V); return [
   {unit:u.gnd,ph:'arr',cat:'call',sit:tr('Runway vacated at A3.','Banen er forlatt ved A3.'),task:tr('Call Ground and ask to taxi to the apron.','Kall Ground og be om taksing til apron.'),
-   els:[stn('Birdbird Ground'),cs({full:1}),P('Position: vacated via A3','Posisjon: forlatt ved A3',/\b(vacated|a ?3|clear)\b/,{ask:'say position'}),P('Request taxi to the apron','Be om taksing til apron',/\btaxi\b/,{ask:'say intentions'})],
-   model:`Birdbird Ground, ${V.c}, runway vacated via A3, request taxi to the apron.`,
+   els:[stn('NORDAP Ground'),cs({full:1}),P('Position: vacated via A3','Posisjon: forlatt ved A3',/\b(vacated|a ?3|clear)\b/,{ask:'say position'}),P('Request taxi to the apron','Be om taksing til apron',/\btaxi\b/,{ask:'say intentions'})],
+   model:`NORDAP Ground, ${V.c}, runway vacated via A3, request taxi to the apron.`,
    why:tr('A new unit is a new contact: use your full callsign until Ground abbreviates it (SERA.14055(b)(1)).','En ny enhet er en ny kontakt: bruk fullt kallesignal til Ground forkorter det (SERA.14055(b)(1)).')},
   {rb:1,cat:'rb',ph:'arr',atc:`${V.a}, taxi to the apron via Alpha.`,task:tr('Read back.','Les tilbake.'),els:[P('Apron','Apron',/\b(apron|stand|parking)\b/,{say:'taxi to the apron'}),P('Via Alpha','Via Alpha',/\b(alpha|a)\b/,OPT),cs()],model:`Taxi to the apron via Alpha, ${V.a}.`}]; },
 /* --- circuits --- */
@@ -189,52 +189,52 @@ vcirc:V=>{ const u=UNIT(V); return [
 /* --- radio check --- */
 vcheck:V=>{ const u=UNIT(V); return [
   {unit:u.gnd,ph:'ground',cat:'call',sit:tr('You have just switched on the radio at the apron and want to check it.','Du har nettopp slått på radioen på apron og vil sjekke den.'),
-   task:tr('Ask Ground for a radio check, with the frequency.','Be Ground om en radiosjekk, med frekvensen.'),els:[stn('Birdbird Ground'),cs(),P('“Radio check”','«Radio check»',/\bradio check\b/,{ask:'say request'}),freq('121.700',null,{ask:'say frequency'})],
-   model:`Birdbird Ground, ${V.c}, radio check 121.700.`,reply:`${V.c}, Birdbird Ground, readability 5.`,
+   task:tr('Ask Ground for a radio check, with the frequency.','Be Ground om en radiosjekk, med frekvensen.'),els:[stn('NORDAP Ground'),cs(),P('“Radio check”','«Radio check»',/\bradio check\b/,{ask:'say request'}),freq('121.700',null,{ask:'say frequency'})],
+   model:`NORDAP Ground, ${V.c}, radio check 121.700.`,reply:`${V.c}, NORDAP Ground, readability 5.`,
    why:tr('A radio check is: station called, your callsign, “radio check”, the frequency (SERA.14070(a)). Readability scale: 1 unreadable, 2 readable now and then, 3 readable but with difficulty, 4 readable, 5 perfectly readable (SERA.14070(c)).','En radiosjekk er: stasjonen du kaller, kallesignalet ditt, «radio check», frekvensen (SERA.14070(a)). Lesbarhetsskala: 1 uleselig, 2 leselig nå og da, 3 leselig men med vanskelighet, 4 leselig, 5 helt leselig (SERA.14070(c)).')},
-  {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, Birdbird Ground, radio check, how do you read?`,task:tr('Answer: you read them perfectly (readability 5).','Svar: du hører dem perfekt (readability 5).'),
+  {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, NORDAP Ground, radio check, how do you read?`,task:tr('Answer: you read them perfectly (readability 5).','Svar: du hører dem perfekt (readability 5).'),
    els:[P('Readability 5','Readability 5',/\b(readability 5|read(ing)? (you )?(5|loud and clear)|5 by 5|loud and clear)\b/,{say:'how do you read'}),cs()],model:`${V.c}, readability 5.`}]; },
 
 /* =================== IFR =================== */
 iclr:V=>{ const u=UNIT(V); return [
-  {unit:u.del,ph:'ground',cat:'call',sit:tr(`IFR training flight from Birdbird and back to Birdbird, filed via OSVIK and TUSKA. ATIS is information ${W(V.info)}. Have a pen ready for CRAFT: Clearance limit, Route, Altitude, Frequency, Transponder.`,`IFR-treningstur fra Birdbird og tilbake til Birdbird, innsendt via OSVIK og TUSKA. ATIS er information ${W(V.info)}. Ha penn klar for CRAFT: Clearance limit, Route, Altitude, Frequency, Transponder.`),
-   task:tr('Ask Delivery for your IFR clearance.','Be Delivery om IFR-klareringen.'),els:[stn('Birdbird Delivery'),cs(),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request clearance','Be om klarering',/\bclearance\b/,{ask:'say request'}),P('IFR / destination','IFR / mål',/\b(ifr|birdbird)\b/,OPT)],
-   model:`Birdbird Delivery, ${V.c}, DA42 at the apron, information ${W(V.info)}, IFR to Birdbird, request clearance.`},
-  {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, cleared to Birdbird via OSVIK 1N departure, flight planned route, climb to altitude 3000 feet, after departure contact Birdbird Approach ${V.app}, squawk ${V.sq}.`,
+  {unit:u.del,ph:'ground',cat:'call',sit:tr(`IFR training flight from NORDAP and back to NORDAP, filed via OSVIK and TUSKA. ATIS is information ${W(V.info)}. Have a pen ready for CRAFT: Clearance limit, Route, Altitude, Frequency, Transponder.`,`IFR-treningstur fra NORDAP og tilbake til NORDAP, innsendt via OSVIK og TUSKA. ATIS er information ${W(V.info)}. Ha penn klar for CRAFT: Clearance limit, Route, Altitude, Frequency, Transponder.`),
+   task:tr('Ask Delivery for your IFR clearance.','Be Delivery om IFR-klareringen.'),els:[stn('NORDAP Delivery'),cs(),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request clearance','Be om klarering',/\bclearance\b/,{ask:'say request'}),P('IFR / destination','IFR / mål',/\b(ifr|birdbird)\b/,OPT)],
+   model:`NORDAP Delivery, ${V.c}, DA42 at the apron, information ${W(V.info)}, IFR to NORDAP, request clearance.`},
+  {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, cleared to NORDAP via OSVIK 1N departure, flight planned route, climb to altitude 3000 feet, after departure contact NORDAP Approach ${V.app}, squawk ${V.sq}.`,
    task:tr('Read back the full clearance (CRAFT).','Les tilbake hele klareringen (CRAFT).'),
-   els:[P('C: cleared to Birdbird','C: cleared to Birdbird',/\bcleared (to )?birdbird|\bbirdbird\b/,{say:'cleared to Birdbird'}),fix('OSVIK 1N'),alt(3000),freq(V.app,'Approach'),sq(V.sq),cs(),P('Flight planned route','Flight planned route',/\b(flight ?plan(ned)?|route)\b/,OPT)],
-   model:`Cleared to Birdbird via OSVIK 1N departure, flight planned route, climb to altitude 3000 feet, after departure ${V.app}, squawk ${V.sq}, ${V.c}.`,
+   els:[P('C: cleared to NORDAP','C: cleared to NORDAP',/\bcleared (to )?(nor ?d[aeu]p|birdbird)|\b(nor ?d[aeu]p|birdbird)\b/,{say:'cleared to NORDAP'}),fix('OSVIK 1N'),alt(3000),freq(V.app,'Approach'),sq(V.sq),cs(),P('Flight planned route','Flight planned route',/\b(flight ?plan(ned)?|route)\b/,OPT)],
+   model:`Cleared to NORDAP via OSVIK 1N departure, flight planned route, climb to altitude 3000 feet, after departure ${V.app}, squawk ${V.sq}, ${V.c}.`,
    why:tr('Read back route clearances in full: clearance limit, route (SID), altitude, departure frequency and squawk. Altitude 3000 ft is below the transition altitude: say “altitude”, not “flight level”.','Ruteklareringer leses tilbake i sin helhet: klareringsgrense, rute (SID), høyde, utflygingsfrekvens og squawk. 3000 ft er under overgangshøyden: si «altitude», ikke «flight level».')},
   {rb:1,cat:'rb',ph:'ground',atc:`${V.c}, that is correct, contact Ground 121.700 for start-up.`,task:tr('Read back the frequency.','Les tilbake frekvensen.'),els:[freq('121.700','Ground'),cs()],model:`Ground 121.700, ${V.c}.`}]; },
 istart:V=>{ const u=UNIT(V); return [
   {unit:u.gnd,ph:'ground',cat:'call',task:tr('Ask Ground for start-up, with your position and the ATIS letter.','Be Ground om oppstart, med posisjon og ATIS-bokstav.'),
-   els:[stn('Birdbird Ground'),cs(),POS('at the apron','på apron',/\b(apron|stand|parking)\b/),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request start-up','Be om oppstart',/\b(start ?up|start)\b/,{ask:'say request'})],
-   model:`Birdbird Ground, ${V.c}, at the apron, information ${W(V.info)}, request start-up.`},
+   els:[stn('NORDAP Ground'),cs(),POS('at the apron','på apron',/\b(apron|stand|parking)\b/),info(V.info,{ask:`confirm information ${W(V.info)}`}),P('Request start-up','Be om oppstart',/\b(start ?up|start)\b/,{ask:'say request'})],
+   model:`NORDAP Ground, ${V.c}, at the apron, information ${W(V.info)}, request start-up.`},
   {rb:1,cat:'rb',ph:'ground',atc:`${V.a}, start-up approved, QNH ${V.qnh}.`,task:tr('Read back.','Les tilbake.'),els:[P('Start-up approved','Start-up approved',/\bstart ?up( approved)?|\bstarting\b/,{say:'start-up approved'}),qnh(V.qnh),cs()],model:`Start-up approved, QNH ${V.qnh}, ${V.a}.`}]; },
 itaxi:V=>{ const u=UNIT(V); return [
   {unit:u.gnd,abbr:1,ph:'ground',cat:'call',sit:tr('Both engines running, after-start checks done.','Begge motorene går, etter-start-sjekkene er gjort.'),task:tr('Request taxi.','Be om taksing.'),
-   els:[stn('Birdbird Ground',OPT),cs(),P('Request taxi','Be om taksing',/\btaxi\b/,{ask:'say request'})],model:`${V.a}, request taxi.`},
+   els:[stn('NORDAP Ground',OPT),cs(),P('Request taxi','Be om taksing',/\btaxi\b/,{ask:'say request'})],model:`${V.a}, request taxi.`},
   {rb:1,cat:'rb',ph:'ground',atc:`${V.a}, taxi to holding point A1 runway 36 via Bravo and Alpha, hold short of runway 07.`,
    task:tr('Read back: holding point, runway, route and the hold short.','Les tilbake: holdepunkt, bane, rute og hold short.'),
    els:[hp('A1'),rwy(36),hs('07'),cs(),P('Via Bravo and Alpha','Via Bravo og Alpha',/\b(b|bravo)\b.*\b(a|alpha)\b/,OPT)],
    model:`Holding point A1 runway 36 via Bravo and Alpha, holding short of runway 07, ${V.a}.`,
-   why:tr('Birdbird has a short crossing runway 07/25 on the taxi route. An instruction to hold short of a runway must be read back with the runway.','Birdbird har en kort kryssende bane 07/25 på taksiruten. En instruks om å holde kort av en bane må leses tilbake med banenummeret.')},
+   why:tr('NORDAP has a short crossing runway 07/25 on the taxi route. An instruction to hold short of a runway must be read back with the runway.','NORDAP har en kort kryssende bane 07/25 på taksiruten. En instruks om å holde kort av en bane må leses tilbake med banenummeret.')},
   {rb:1,cat:'rb',ph:'ground',sit:tr('You stop at Bravo, short of runway 07.','Du stopper ved Bravo, kort av bane 07.'),atc:`${V.a}, cross runway 07 at Bravo, report vacated.`,
    task:tr('Read back the crossing clearance.','Les tilbake kryssingsklareringen.'),els:[P('“Cross runway 07”','«Cross runway 07»',/\bcross(ing)?\b/,{say:'cross runway 07'}),rwy('07'),cs(),WILCO],model:`Cross runway 07 at Bravo, wilco, ${V.a}.`},
   {cat:'call',ph:'ground',sit:tr('You have crossed runway 07.','Du har krysset bane 07.'),task:tr('Report runway vacated.','Meld at banen er forlatt.'),els:[cs(),P('Runway 07 vacated','Bane 07 forlatt',/\b(vacated|clear of|crossed)\b/,{ask:'report vacated'}),rwy('07',{opt:true})],
    model:`${V.a}, runway 07 vacated.`,reply:`${V.a}, continue to holding point A1, contact Tower 118.300.`},
   {rb:1,cat:'rb',ph:'ground',task:tr('Read back.','Les tilbake.'),els:[hp('A1',{opt:true}),freq('118.300','Tower'),cs()],model:`Tower 118.300, ${V.a}.`,ctxAtc:1}]; },
 ito:V=>{ const u=UNIT(V); return [
-  {unit:u.twr,ph:'dep',cat:'call',sit:tr('Run-up and departure briefing done at A1.','Run-up og avgangsbriefing ferdig ved A1.'),task:tr('Tell Tower you are ready.','Si fra til Tower at du er klar.'),els:[stn('Birdbird Tower'),cs(),hp('A1',{opt:true}),READY],model:`Birdbird Tower, ${V.c}, holding point A1, ready for departure.`},
+  {unit:u.twr,ph:'dep',cat:'call',sit:tr('Run-up and departure briefing done at A1.','Run-up og avgangsbriefing ferdig ved A1.'),task:tr('Tell Tower you are ready.','Si fra til Tower at du er klar.'),els:[stn('NORDAP Tower'),cs(),hp('A1',{opt:true}),READY],model:`NORDAP Tower, ${V.c}, holding point A1, ready for departure.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, wind ${V.wd} degrees ${V.ws} knots, runway 36, cleared for take-off.`,task:tr('Read back the take-off clearance.','Les tilbake avgangsklareringen.'),els:[rwy(36),CTO,cs()],model:`Runway 36, cleared for take-off, ${V.a}.`},
-  fc(V,'Birdbird Approach',V.app,{ph:'dep',sit:tr('Airborne, passing 800 ft on the OSVIK 1N departure.','I luften, passerer 800 ft på OSVIK 1N.'),atc:`${V.a}, contact Approach ${V.app}.`,els:[freq(V.app,'Approach'),cs()],model:`Approach ${V.app}, ${V.a}.`})]; },
+  fc(V,'NORDAP Approach',V.app,{ph:'dep',sit:tr('Airborne, passing 800 ft on the OSVIK 1N departure.','I luften, passerer 800 ft på OSVIK 1N.'),atc:`${V.a}, contact Approach ${V.app}.`,els:[freq(V.app,'Approach'),cs()],model:`Approach ${V.app}, ${V.a}.`})]; },
 iclimb:V=>{ const u=UNIT(V); return [
   {unit:u.app,ph:'dep',cat:'call',sit:tr('Passing 1500 ft, climbing to 3000 ft on the OSVIK 1N departure.','Passerer 1500 ft, stiger til 3000 ft på OSVIK 1N.'),
    task:tr('Check in with Approach: station, callsign, passing level, cleared level, SID.','Sjekk inn med Approach: stasjon, kallesignal, passerer, klarert høyde, SID.'),
-   els:[stn('Birdbird Approach'),cs(),P('Passing level (1500 ft)','Høyden du passerer (1500 ft)',/\bpassing\b/,{ask:'say passing level'}),alt(3000,{ask:'say cleared altitude'}),fix('OSVIK 1N',{opt:true})],
-   model:`Birdbird Approach, ${V.c}, passing 1500 feet, climbing to 3000 feet, OSVIK 1N departure.`,
+   els:[stn('NORDAP Approach'),cs(),P('Passing level (1500 ft)','Høyden du passerer (1500 ft)',/\bpassing\b/,{ask:'say passing level'}),alt(3000,{ask:'say cleared altitude'}),fix('OSVIK 1N',{opt:true})],
+   model:`NORDAP Approach, ${V.c}, passing 1500 feet, climbing to 3000 feet, OSVIK 1N departure.`,
    why:tr('After a frequency change the initial call gives the level, with the passing and the cleared level when you are not level (SERA.14065(a)).','Etter frekvensskifte gir første oppkall nivået, med høyden du passerer og klarert høyde når du ikke er planet ut (SERA.14065(a)).')},
-  {rb:1,cat:'rb',ph:'dep',atc:`${V.c}, Birdbird Approach, identified, climb to flight level ${V.fl}.`,task:tr('Read back. Above the transition altitude, set 1013 when passing the transition altitude.','Les tilbake. Over overgangshøyden: still 1013 når du passerer overgangshøyden.'),
+  {rb:1,cat:'rb',ph:'dep',atc:`${V.c}, NORDAP Approach, identified, climb to flight level ${V.fl}.`,task:tr('Read back. Above the transition altitude, set 1013 when passing the transition altitude.','Les tilbake. Over overgangshøyden: still 1013 når du passerer overgangshøyden.'),
    els:[P('Climb','Climb',/\bclimb(ing)?\b/,OPT),fl(V.fl),cs()],model:`Climb to flight level ${V.fl}, ${V.c}.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, turn left heading ${V.hdgL}, vectors for traffic.`,task:tr('Read back the heading.','Les tilbake kursen.'),els:[turn('left'),hdg(V.hdgL),cs()],model:`Left heading ${V.hdgL}, ${V.a}.`},
   {rb:1,cat:'rb',ph:'dep',atc:`${V.a}, resume own navigation direct TUSKA.`,task:tr('Read back.','Les tilbake.'),els:[P('Direct','Direkte',/\b(direct|resume|resuming)\b/,{say:'resume own navigation direct'}),fix('TUSKA'),cs()],model:`Resume own navigation direct TUSKA, ${V.a}.`},
@@ -247,14 +247,14 @@ ienr:V=>{ const u=UNIT(V); return [
    task:tr('Read back. You are cleared below the transition level: altitude on QNH.','Les tilbake. Du er klarert under overgangsnivået: høyde på QNH.'),
    els:[P('Descend','Descend',/\bdescend(ing)?\b/,OPT),alt(5000),qnh(V.qnh2),fix('TUSKA 1A'),cs()],model:`Descend to altitude 5000 feet, QNH ${V.qnh2}, cleared TUSKA 1A arrival, ${V.a}.`,
    why:tr('When cleared to an altitude below the transition level, the QNH comes with it. Read back both, and say “altitude”.','Når du klareres til en høyde under overgangsnivået, følger QNH med. Les tilbake begge, og si «altitude».')},
-  fc(V,'Birdbird Approach',V.app,{ph:'enroute',els:[freq(V.app,'Birdbird Approach'),cs()],model:`Birdbird Approach ${V.app}, ${V.a}.`})]; },
+  fc(V,'NORDAP Approach',V.app,{ph:'enroute',els:[freq(V.app,'NORDAP Approach'),cs()],model:`NORDAP Approach ${V.app}, ${V.a}.`})]; },
 ihold:V=>{ const u=UNIT(V); return [
   {unit:u.app,ph:'arr',cat:'call',sit:tr(`Passing 6000 ft, descending to 5000 ft on the TUSKA 1A arrival. Vestfjell Control gave you speed ${V.spd} knots. You have the arrival ATIS, information ${W(V.info2)}.`,`Passerer 6000 ft, synker til 5000 ft på TUSKA 1A. Vestfjell Control ga deg fart ${V.spd} knop. Du har ankomst-ATIS, information ${W(V.info2)}.`),
    task:tr('Check in with Approach: station, callsign, passing and cleared level, assigned speed, arrival, ATIS.','Sjekk inn med Approach: stasjon, kallesignal, høyden du passerer og klarert høyde, tildelt fart, ankomstrute, ATIS.'),
-   els:[stn('Birdbird Approach'),cs(),P('Passing level (6000 ft)','Høyden du passerer (6000 ft)',/\bpassing\b/,{ask:'say passing level'}),alt(5000,{ask:'say cleared altitude'}),spd(V.spd,{ask:'say speed'}),fix('TUSKA 1A',{opt:true}),info(V.info2,{ask:`confirm information ${W(V.info2)}`})],
-   model:`Birdbird Approach, ${V.c}, passing 6000 feet, descending to 5000 feet, speed ${V.spd} knots, TUSKA 1A arrival, information ${W(V.info2)}.`,
+   els:[stn('NORDAP Approach'),cs(),P('Passing level (6000 ft)','Høyden du passerer (6000 ft)',/\bpassing\b/,{ask:'say passing level'}),alt(5000,{ask:'say cleared altitude'}),spd(V.spd,{ask:'say speed'}),fix('TUSKA 1A',{opt:true}),info(V.info2,{ask:`confirm information ${W(V.info2)}`})],
+   model:`NORDAP Approach, ${V.c}, passing 6000 feet, descending to 5000 feet, speed ${V.spd} knots, TUSKA 1A arrival, information ${W(V.info2)}.`,
    why:tr('Initial call after a frequency change: level with passing and cleared level, and the speed if ATC assigned one (SERA.14065(a)).','Første oppkall etter frekvensskifte: nivå med høyden du passerer og klarert høyde, og farten hvis ATC har tildelt en (SERA.14065(a)).')},
-  {rb:1,cat:'rb',ph:'arr',atc:`${V.c}, Birdbird Approach, proceed to RONAX, descend to altitude 3000 feet, hold inbound track 360 degrees, right-hand pattern, expect approach clearance at ${V.eat}.`,
+  {rb:1,cat:'rb',ph:'arr',atc:`${V.c}, NORDAP Approach, proceed to RONAX, descend to altitude 3000 feet, hold inbound track 360 degrees, right-hand pattern, expect approach clearance at ${V.eat}.`,
    task:tr('Read back the holding instruction.','Les tilbake ventemønsterinstruksen.'),
    els:[fix('RONAX'),trk('360'),P('Right-hand pattern','Høyre ventemønster (right-hand pattern)',/\bright( hand)?( pattern| turns?)?\b/,{say:'right-hand pattern'}),alt(3000),num(V.eat,['expect','at','approach','time'],'Expect approach clearance at '+V.eat,'Forvent innflygingsklarering '+V.eat),cs()],
    model:`Proceed to RONAX, descend to altitude 3000 feet, hold inbound track 360, right-hand pattern, expect approach clearance at ${V.eat}, ${V.c}.`,
@@ -271,7 +271,7 @@ ivec:V=>{ const u=UNIT(V); const A=V.appT; return [
   {rb:1,cat:'rb',ph:'arr',task:tr('Read back.','Les tilbake.'),els:[freq('118.300','Tower'),cs()],model:`Tower 118.300, ${V.a}.`,ctxAtc:1}]; },
 iland:V=>{ const u=UNIT(V); const A=V.appT; return [
   {unit:u.twr,ph:'arr',cat:'call',sit:tr(`On the ${A} approach, 6 miles from touchdown.`,`På ${A}-innflygingen, 6 miles fra touchdown.`),task:tr('Call Tower.','Kall Tower.'),
-   els:[stn('Birdbird Tower'),cs({full:1}),P(`${A} runway 36 / 6 miles`,`${A} bane 36 / 6 miles`,/\b(ils|rnp|established|final|miles|6)\b/,{ask:'say position'})],model:`Birdbird Tower, ${V.c}, ${A} runway 36, 6 miles.`,
+   els:[stn('NORDAP Tower'),cs({full:1}),P(`${A} runway 36 / 6 miles`,`${A} bane 36 / 6 miles`,/\b(ils|rnp|established|final|miles|6)\b/,{ask:'say position'})],model:`NORDAP Tower, ${V.c}, ${A} runway 36, 6 miles.`,
    why:tr('Establishing contact with a new unit: full callsign (SERA.14055(b)(1)). Tower may abbreviate it in the reply.','Når du etablerer kontakt med en ny enhet: fullt kallesignal (SERA.14055(b)(1)). Tower kan forkorte det i svaret.')},
   {rb:1,cat:'rb',ph:'arr',atc:`${V.a}, wind ${V.wd} degrees ${V.ws} knots, runway 36, cleared to land.`,task:tr('Read back the landing clearance.','Les tilbake landingsklareringen.'),els:[rwy(36),CLD,cs()],model:`Runway 36, cleared to land, ${V.a}.`},
   {rb:1,cat:'rb',ph:'arr',sit:tr('You have landed.','Du har landet.'),atc:`${V.a}, take first left, A3, and contact Ground 121.700.`,task:tr('Read back.','Les tilbake.'),els:[fix('A3'),freq('121.700','Ground'),cs()],model:`First left A3, Ground 121.700, ${V.a}.`}]; },
@@ -287,10 +287,10 @@ iga:V=>{ const u=UNIT(V); return [
 
 /* =================== Emergencies =================== */
 emay:V=>{ const u=UNIT(V); return [
-  {unit:u.app,ph:'emerg',cat:'emerg',sit:tr(`Your right engine has failed. You are 15 miles south of Birdbird at 3000 ft, heading 360, ${V.pob} on board, and you want to land at Birdbird.`,`Høyre motor har stoppet. Du er 15 miles sør for Birdbird i 3000 ft, kurs 360, ${V.pob} om bord, og vil lande på Birdbird.`),
+  {unit:u.app,ph:'emerg',cat:'emerg',sit:tr(`Your right engine has failed. You are 15 miles south of NORDAP at 3000 ft, heading 360, ${V.pob} on board, and you want to land at NORDAP.`,`Høyre motor har stoppet. Du er 15 miles sør for NORDAP i 3000 ft, kurs 360, ${V.pob} om bord, og vil lande på NORDAP.`),
    task:tr('Transmit a MAYDAY: MAYDAY ×3, station, callsign, type, nature, intention, position, level, heading, persons on board.','Send MAYDAY: MAYDAY ×3, stasjon, kallesignal, type, art, hensikt, posisjon, nivå, kurs, personer om bord.'),
-   els:[{k:'count',re:/\bmayday\b/g,n:3,min:1,l:tr('MAYDAY (preferably three times)','MAYDAY (helst tre ganger)'),whyMin:tr('Allowed, but MAYDAY is preferably spoken three times (SERA.14095(b)(1)).','Tillatt, men MAYDAY sies helst tre ganger (SERA.14095(b)(1)).')},stn('Birdbird Approach',OPT),cs(),TYPE,P('Nature: engine failure','Art: motorstans',/\bengine\b/,{ask:'say nature of emergency'}),INTENT('land at Birdbird','lande på Birdbird',/\b(intend|request|land|return|divert|birdbird)\b/),POS('15 miles south','15 miles sør'),alt(3000),hdg('360'),num(V.pob,['persons','person','pob','souls','board'],'Persons on board: '+V.pob,'Personer om bord: '+V.pob,OPT)],
-   model:`MAYDAY MAYDAY MAYDAY, Birdbird Approach, ${V.c}, DA42, right engine failure, intend to land at Birdbird, 15 miles south, 3000 feet, heading 360, ${V.pob} persons on board.`,
+   els:[{k:'count',re:/\bmayday\b/g,n:3,min:1,l:tr('MAYDAY (preferably three times)','MAYDAY (helst tre ganger)'),whyMin:tr('Allowed, but MAYDAY is preferably spoken three times (SERA.14095(b)(1)).','Tillatt, men MAYDAY sies helst tre ganger (SERA.14095(b)(1)).')},stn('NORDAP Approach',OPT),cs(),TYPE,P('Nature: engine failure','Art: motorstans',/\bengine\b/,{ask:'say nature of emergency'}),INTENT('land at NORDAP','lande på NORDAP',/\b(intend|request|land|return|divert|birdbird)\b/),POS('15 miles south','15 miles sør'),alt(3000),hdg('360'),num(V.pob,['persons','person','pob','souls','board'],'Persons on board: '+V.pob,'Personer om bord: '+V.pob,OPT)],
+   model:`MAYDAY MAYDAY MAYDAY, NORDAP Approach, ${V.c}, DA42, right engine failure, intend to land at NORDAP, 15 miles south, 3000 feet, heading 360, ${V.pob} persons on board.`,
    why:tr('Distress message (SERA.14095(b)(1)): MAYDAY, preferably three times, then as many as possible of, in this order: station, callsign, nature of the distress, intention, present position, level and heading. Persons on board and endurance are useful extras. Fly the aircraft first.','Nødmelding (SERA.14095(b)(1)): MAYDAY, helst tre ganger, så så mange som mulig av, i denne rekkefølgen: stasjon, kallesignal, nødens art, hensikt, nåværende posisjon, nivå og kurs. Personer om bord og utholdenhet er nyttige tillegg. Fly flyet først.')},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, roger MAYDAY, turn right heading ${V.hdgM}, runway 36 available, squawk 7700, report field in sight.`,task:tr('Read back.','Les tilbake.'),
    els:[turn('right'),hdg(V.hdgM),sq('7700'),rwy(36,{opt:true}),cs(),WILCO],model:`Right heading ${V.hdgM}, squawk 7700, wilco, ${V.c}.`},
@@ -298,10 +298,10 @@ emay:V=>{ const u=UNIT(V); return [
    model:`${V.c}, field in sight.`,reply:`${V.c}, wind ${V.wd} degrees ${V.ws} knots, runway 36, cleared to land, emergency services are standing by.`},
   {rb:1,cat:'rb',ph:'emerg',task:tr('Read back the landing clearance.','Les tilbake landingsklareringen.'),els:[rwy(36),CLD,cs()],model:`Runway 36, cleared to land, ${V.c}.`,ctxAtc:1}]; },
 epan:V=>{ const u=UNIT(V); return [
-  {unit:u.app,ph:'emerg',cat:'emerg',sit:tr('The left engine runs rough and the oil pressure is low but steady. No immediate danger. You are 12 miles west of Birdbird at 4000 ft, heading 090, and want to land at Birdbird.','Venstre motor går ujevnt og oljetrykket er lavt men stabilt. Ingen umiddelbar fare. Du er 12 miles vest for Birdbird i 4000 ft, kurs 090, og vil lande på Birdbird.'),
+  {unit:u.app,ph:'emerg',cat:'emerg',sit:tr('The left engine runs rough and the oil pressure is low but steady. No immediate danger. You are 12 miles west of NORDAP at 4000 ft, heading 090, and want to land at NORDAP.','Venstre motor går ujevnt og oljetrykket er lavt men stabilt. Ingen umiddelbar fare. Du er 12 miles vest for NORDAP i 4000 ft, kurs 090, og vil lande på NORDAP.'),
    task:tr('Transmit an urgency call: PAN PAN ×3, station, callsign, type, problem, intention, position, level, heading.','Send en ilmelding: PAN PAN ×3, stasjon, kallesignal, type, problem, hensikt, posisjon, nivå, kurs.'),
-   els:[{k:'count',re:/\bpan\b/g,n:6,min:2,l:tr('PAN PAN (preferably three times)','PAN PAN (helst tre ganger)'),whyMin:tr('Allowed, but PAN PAN is preferably spoken three times (SERA.14095(c)(1)).','Tillatt, men PAN PAN sies helst tre ganger (SERA.14095(c)(1)).')},stn('Birdbird Approach',OPT),cs(),TYPE,P('Nature: rough running / oil pressure','Art: ujevn gange / oljetrykk',/\b(rough|engine|oil)\b/,{ask:'say nature of the problem'}),INTENT('land at Birdbird','lande på Birdbird',/\b(intend|request|land|return|birdbird|priority)\b/),POS('12 miles west','12 miles vest'),alt(4000),hdg('090')],
-   model:`PAN PAN, PAN PAN, PAN PAN, Birdbird Approach, ${V.c}, DA42, left engine rough running, low oil pressure, request priority landing at Birdbird, 12 miles west, 4000 feet, heading 090.`,
+   els:[{k:'count',re:/\bpan\b/g,n:6,min:2,l:tr('PAN PAN (preferably three times)','PAN PAN (helst tre ganger)'),whyMin:tr('Allowed, but PAN PAN is preferably spoken three times (SERA.14095(c)(1)).','Tillatt, men PAN PAN sies helst tre ganger (SERA.14095(c)(1)).')},stn('NORDAP Approach',OPT),cs(),TYPE,P('Nature: rough running / oil pressure','Art: ujevn gange / oljetrykk',/\b(rough|engine|oil)\b/,{ask:'say nature of the problem'}),INTENT('land at NORDAP','lande på NORDAP',/\b(intend|request|land|return|birdbird|priority)\b/),POS('12 miles west','12 miles vest'),alt(4000),hdg('090')],
+   model:`PAN PAN, PAN PAN, PAN PAN, NORDAP Approach, ${V.c}, DA42, left engine rough running, low oil pressure, request priority landing at NORDAP, 12 miles west, 4000 feet, heading 090.`,
    why:tr('Urgency (PAN PAN, preferably three times) is for a condition that concerns safety but needs no immediate assistance. Same order as MAYDAY, plus any other useful information (SERA.14095(c)(1)). If it gets worse, upgrade to MAYDAY.','Il (PAN PAN, helst tre ganger) er for en situasjon som angår sikkerheten men ikke krever umiddelbar hjelp. Samme rekkefølge som MAYDAY, pluss annen nyttig informasjon (SERA.14095(c)(1)). Blir det verre: oppgrader til MAYDAY.')},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, roger PAN, descend to altitude 2500 feet, QNH ${V.qnh}, turn right heading ${V.hdgR}, vectors ILS runway 36, you are number 1.`,task:tr('Read back.','Les tilbake.'),
    els:[alt(2500),qnh(V.qnh),turn('right'),hdg(V.hdgR),P('ILS runway 36 / number 1','ILS bane 36 / nummer 1',/\b(ils|number 1|vectors)\b/,OPT),cs()],model:`Descend to altitude 2500 feet, QNH ${V.qnh}, right heading ${V.hdgR}, ${V.c}.`}]; },
@@ -321,14 +321,14 @@ efuel:V=>{ const u=UNIT(V); return [
   {cat:'emerg',ph:'emerg',sit:tr(`After 5 minutes ATC tells you of a further 15 minute delay. You now calculate landing below final reserve. You are at RONAX, 3000 ft, ${V.pob} on board.`,`Etter 5 minutter melder ATC 15 minutter ekstra forsinkelse. Nå regner du med å lande under endelig reserve. Du er ved RONAX, 3000 ft, ${V.pob} om bord.`),
    task:tr('Declare a fuel emergency.','Erklær nødsituasjon for drivstoff.'),
    els:[{k:'count',re:/\bmayday\b/g,n:3,min:1,l:tr('MAYDAY (preferably three times)','MAYDAY (helst tre ganger)'),whyMin:tr('Allowed, but MAYDAY is preferably spoken three times (SERA.14095(b)(1)).','Tillatt, men MAYDAY sies helst tre ganger (SERA.14095(b)(1)).')},P('“Fuel”','«Fuel»',/\bfuel\b/),cs(),fix('RONAX',{ask:'say position'}),alt(3000,OPT),INTENT('immediate approach','umiddelbar innflyging',/\b(immediate|request|approach|land|priority)\b/)],
-   model:`MAYDAY MAYDAY MAYDAY FUEL, Birdbird Approach, ${V.c}, RONAX, 3000 feet, request immediate approach, ${V.pob} persons on board.`},
+   model:`MAYDAY MAYDAY MAYDAY FUEL, NORDAP Approach, ${V.c}, RONAX, 3000 feet, request immediate approach, ${V.pob} persons on board.`},
   {rb:1,cat:'rb',ph:'emerg',atc:`${V.c}, roger MAYDAY, turn left heading ${V.hdgL}, descend to altitude 2500 feet, cleared ILS approach runway 36, you are number 1.`,task:tr('Read back.','Les tilbake.'),
    els:[turn('left'),hdg(V.hdgL),alt(2500),P('“Cleared ILS approach”','«Cleared ILS approach»',/\bcleared (for )?(the )?(ils|i l s)\b/,{say:'cleared ILS approach'}),rwy(36),cs()],model:`Left heading ${V.hdgL}, descend to altitude 2500 feet, cleared ILS approach runway 36, ${V.c}.`}]; },
 ercf:V=>{ const u=UNIT(V); return [
-  {unit:u.twr,ph:'emerg',cat:'emerg',noAtc:1,sit:tr('VFR, 10 miles south of Birdbird at 2000 ft. You hear nothing on any frequency, but the transmitter may still work. You have set squawk 7600.','VFR, 10 miles sør for Birdbird i 2000 ft. Du hører ingenting på noen frekvens, men senderen virker kanskje. Du har satt squawk 7600.'),
+  {unit:u.twr,ph:'emerg',cat:'emerg',noAtc:1,sit:tr('VFR, 10 miles south of NORDAP at 2000 ft. You hear nothing on any frequency, but the transmitter may still work. You have set squawk 7600.','VFR, 10 miles sør for NORDAP i 2000 ft. Du hører ingenting på noen frekvens, men senderen virker kanskje. Du har satt squawk 7600.'),
    task:tr('Transmit blind: “transmitting blind due to receiver failure”, callsign, position, altitude, intention, then the whole message once more.','Send blindt: «transmitting blind due to receiver failure», kallesignal, posisjon, høyde, hensikt, og så hele meldingen én gang til.'),
    els:[P('“Transmitting blind”','«Transmitting blind»',/\btransmitting blind\b|\bblind\b/),cs(),P('“Due to receiver failure”','«Due to receiver failure»',/\b(receiver|radio) failure\b|\bfailure\b/,OPT),POS('10 miles south','10 miles sør'),alt(2000),INTENT('join and land','komme inn og lande',/\b(join|joining|land|landing|inbound)\b/),P('Message repeated (“I say again …”)','Meldingen gjentatt («I say again …»)',/\bi say again\b/,OPT)],
-   model:`Transmitting blind due to receiver failure, ${V.c}, 10 miles south of Birdbird, 2000 feet, joining for landing runway 36. I say again, transmitting blind due to receiver failure, ${V.c}, 10 miles south of Birdbird, 2000 feet, joining for landing runway 36.`,
+   model:`Transmitting blind due to receiver failure, ${V.c}, 10 miles south of NORDAP, 2000 feet, joining for landing runway 36. I say again, transmitting blind due to receiver failure, ${V.c}, 10 miles south of NORDAP, 2000 feet, joining for landing runway 36.`,
    why:tr('Radio failure (SERA.14083(c)): squawk 7600, watch for light signals at a controlled aerodrome, and as VFR keep VMC, land at the nearest suitable aerodrome and report your arrival. With a receiver failure, transmit blind: “transmitting blind due to receiver failure”, the message, then a complete repetition, and the time of your next transmission (SERA.14085(b)). IFR follows SERA.14083(c)(4) and (5), or squawks 7601 if it continues in VMC and lands at the nearest suitable aerodrome (SERA.14083(c)(6)).','Radiosvikt (SERA.14083(c)): squawk 7600, se etter lyssignaler på en kontrollert flyplass, og som VFR: hold VMC, land på nærmeste egnede flyplass og meld ankomst. Ved mottakerfeil sender du blindt: «transmitting blind due to receiver failure», meldingen, så en fullstendig gjentakelse, og tiden for neste sending (SERA.14085(b)). IFR følger SERA.14083(c)(4) og (5), eller setter squawk 7601 hvis flyvningen fortsetter i VMC og lander på nærmeste egnede flyplass (SERA.14083(c)(6)).')},
   {cat:'emerg',ph:'emerg',noAtc:1,prompt:tr('You are on final. The tower shows you a steady green light. What does it mean?','Du er på finale. Tårnet viser deg et fast grønt lys. Hva betyr det?'),task:tr('Type (or say) what it means.','Skriv (eller si) hva det betyr.'),
    els:[P('Cleared to land','Klarert for landing',/\b(cleared|clear) (to )?land\b|\bland\b/)],model:'Cleared to land.'},

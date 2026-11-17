@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Type rating trainer: King Air B200 · Birdbird</title>
+<title>Type rating trainer: King Air B200 · NORDAP</title>
 <meta name="description" content="King Air B200 type rating trainer: a study plan for every system, cockpit system simulators, flashcards, a question trainer with exam mode and an oral exam.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
-<link rel="stylesheet" href="train.css?v=3">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
+<link rel="stylesheet" href="train.css?v=4">
 <style>
 .intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:900px){.intro{grid-template-columns:minmax(0,1fr)}}
@@ -165,13 +165,13 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 </style>
 </head>
 <body data-title="Type rating trainer: King Air B200">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="lhead">
     <div class="brand">
-      <div class="eyebrow">Birdbird · Training</div>
+      <div class="eyebrow">NORDAP · Training</div>
       <h1>Type rating trainer: King Air B200</h1>
-      <p>An example of how your Birdbird instructor can be set up for a type rating. A study plan through every system, cockpit simulators for the logic you must master, flashcards for the numbers, a question trainer with an exam mode, an oral exam and the reasoning behind the normal procedures.</p>
+      <p>An example of how your NORDAP instructor can be set up for a type rating. A study plan through every system, cockpit simulators for the logic you must master, flashcards for the numbers, a question trainer with an exam mode, an oral exam and the reasoning behind the normal procedures.</p>
       <div class="trmeta"><span class="langbadge" title="Type ratings are conducted in English, so this trainer is in English only.">English only</span><span>Beechcraft King Air B200 · 15 modules · example setup</span></div>
     </div>
     <div class="hright"></div>
@@ -181,7 +181,7 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
   <section class="card" id="setup">
     <div class="intro">
       <div class="callout blue">
-        <p><b>Use your own documents.</b> Add your POH/AFM, training manual, checklists and SOP in <a href="fi.html#docs">Flight Intelligence</a>. They are read and stored privately in your browser, never uploaded to Birdbird. The instructor then answers, quizzes and grades you from those documents and shows the page each answer comes from.</p>
+        <p><b>Use your own documents.</b> Add your POH/AFM, training manual, checklists and SOP in <a href="fi.html#docs">Flight Intelligence</a>. They are read and stored privately in your browser, never uploaded to NORDAP. The instructor then answers, quizzes and grades you from those documents and shows the page each answer comes from.</p>
         <p>Without documents it answers from general knowledge and says so. Every number on this page is a <span class="verify">typical B200 — verify in your AFM/POH</span> value: serial numbers, modifications and operators differ, and your approved documents always take precedence.</p>
         <p class="note">Type ratings are conducted in English, so this trainer is in English only.</p>
       </div>
@@ -284,11 +284,11 @@ svg.schem{display:block;width:100%;min-width:470px;height:auto;font-family:"IBM 
 
   <p class="foot">Teaching material. The simulators are simplified models of system logic, with own drawings; they are not the aircraft panel, a checklist or approved data. Numbers are typical King Air B200 values that vary with serial number, modifications and the operator: verify every figure in your AFM/POH and follow your approved checklists and SOP. Progress, statistics and flashcard boxes are stored in this browser only.</p>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="ai.js?v=5"></script>
-<script src="store.js?v=3"></script>
-<script src="b200-qbank.js?v=1"></script>
-<script src="b200-sim.js?v=4"></script>
+<script src="lab.js?v=52"></script>
+<script src="ai.js?v=6"></script>
+<script src="store.js?v=4"></script>
+<script src="b200-qbank.js?v=2"></script>
+<script src="b200-sim.js?v=5"></script>
 <script>
 (function(){
 'use strict';
@@ -448,7 +448,7 @@ function addLog(cls,html){ const d=document.createElement('div'); d.className=cl
 function oPrompt(user,skip,ex){ const m=MODS.find(x=>x.id===OS.mod);
   const src= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name}, page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
   const hist=OS.turns.slice(-8).map(t=>(t.q?'CANDIDATE: '+t.q.slice(0,1200)+'\n':'')+(t.a?'EXAMINER: '+t.a.slice(0,1400):'')).join('\n');
-  return `You are an experienced type rating examiner and instructor conducting the oral (systems and procedures) part of a Beechcraft King Air B200 type rating, inside the Birdbird training site. The topic of this oral is: ${m.t} (${m.oral}).
+  return `You are an experienced type rating examiner and instructor conducting the oral (systems and procedures) part of a Beechcraft King Air B200 type rating, inside the NORDAP training site. The topic of this oral is: ${m.t} (${m.oral}).
 Ask practical, examiner-style questions that test understanding of how the system works, how it fails, what the pilot sees and what the pilot does, and the related limitations. Never invent a limitation, speed, procedure step or value. Prefer the pilot's documents; keep manufacturer documentation (AFM/POH) and operator documentation (SOP, checklists) apart. Write in English, concise: a short grade comment, the correct answer in a few sentences or a short list, then the next question. Do not mention any training company or airline.
 ${user||skip?'Grade the candidate\'s answer to your last question strictly but fairly (0-10, 7 = pass standard), say what was missing or wrong and give the correct answer, then':'Greet the candidate in one short sentence, then'} ask ONE next question. Increase depth when answers are good; do not repeat a question.
 
@@ -510,7 +510,7 @@ drawMods(); drawStats(); fcNext(true); drawKpi(); loadDocs();
 const h=(location.hash||'').slice(1); const sk=h.startsWith('cockpit-')?h.slice(8):'';
 showSim(SIMS.some(s=>s[0]===sk)?sk:'elec',false,true);
 if(sk) setTimeout(()=>el('cockpit').scrollIntoView(),50);
-LAB.add({},{'Type ratings are conducted in English, so this trainer is in English only.':'Typerating gjennomføres på engelsk, så denne treneren er bare på engelsk.','English only':'Kun på engelsk','Birdbird · Training':'Birdbird · Trening','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200'});
+LAB.add({},{'Type ratings are conducted in English, so this trainer is in English only.':'Typerating gjennomføres på engelsk, så denne treneren er bare på engelsk.','English only':'Kun på engelsk','NORDAP · Training':'NORDAP · Trening','Type rating trainer: King Air B200':'Typeratingtrener: King Air B200'});
 LAB.start('b200');
 })();
 </script>

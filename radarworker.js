@@ -1,4 +1,4 @@
-/* Birdbird – OPERA radar composite → map image, in a Web Worker so the page never waits.
+/* NORDAP – OPERA radar composite → map image, in a Web Worker so the page never waits.
    In: { buf: ArrayBuffer (ODIM HDF5 from /api/radar), w, h, b:[west,south,east,north] }
    Out: { ok, w, h, rgba: ArrayBuffer, max, t } or { ok:false, err }
    The OPERA grid is Lambert Azimuthal Equal Area (lat0 55, lon0 10, x0 1 950 000, y0 −2 100 000, WGS84), 3 800 × 4 400 km,

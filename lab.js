@@ -1,4 +1,4 @@
-/* Birdbird Virtual Lab – felles: språk, navigasjon, kontroller, quiz.
+/* NORDAP Virtual Lab – felles: språk, navigasjon, kontroller, quiz.
    Kildetekst i HTML og kode er norsk; engelsk er standard i grensesnittet.
 
    THE LAB TEMPLATE (one shell for every lab; the page keeps only its own subject content and model)
@@ -50,7 +50,7 @@
     for(const x of nodes){ if(x.e) x.e.setAttribute('aria-label',T(x.orig)); else x.n.nodeValue=x.raw.replace(x.orig,T(x.orig)); }
     document.documentElement.lang= lang==='en'?'en':'nb';
     document.querySelectorAll('.langseg button').forEach(b=>b.classList.toggle('on',b.dataset.v===lang));
-    if(document.body.dataset.title){ const dt=T(document.body.dataset.title); document.title=/Birdbird/.test(dt)?dt:dt+' · Birdbird'; }
+    if(document.body.dataset.title){ const dt=T(document.body.dataset.title); document.title=/NORDAP/.test(dt)?dt:dt+' · NORDAP'; }
     eyebrows();
   }
   function setLang(l){ lang=l; try{ localStorage.setItem('vlab-lang',l); }catch(e){} apply(); hooks.forEach(f=>f()); eyebrows(); }
@@ -325,7 +325,7 @@
     if(!document.querySelector('.gloss')) return;
     const go=()=>{ if(window.GLOSS) window.GLOSS.auto('.gloss'); };
     if(window.GLOSS){ setTimeout(go,0); return; }
-    const sc=document.createElement('script'); sc.src='glossary.js?v=2'; sc.async=true; sc.onload=go; document.head.appendChild(sc);
+    const sc=document.createElement('script'); sc.src='glossary.js?v=3'; sc.async=true; sc.onload=go; document.head.appendChild(sc);
   }
   /* "Next" at the end of every lab (the step bar's last step): next topic in the area, then the next area */
   function pathbar(page){

@@ -1,4 +1,4 @@
-/* Birdbird – jetsyscore.js: the system logic behind the Aircraft systems lab (jetsystems.html).
+/* NORDAP – jetsyscore.js: the system logic behind the Aircraft systems lab (jetsystems.html).
    No DOM, no drawing. Loaded in the page as window.SYC and in Node (tests/jetsys.test.mjs) through vm.
    Three generic classes: 'pist' light piston twin, 'tp' turboprop twin, 'jet' jet transport. Five systems:
    'elec', 'hyd', 'fuel', 'fc' (flight controls), 'gear' (landing gear and brakes).

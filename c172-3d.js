@@ -1,7 +1,7 @@
-/* Birdbird – Cessna 172 3D cockpit (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
+/* NORDAP – Cessna 172 3D cockpit (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
    High-wing cabin: one-piece windshield with door posts, door and rear side windows, the wing root and strut outside,
    headliner, front and rear seats, rudder pedals, pedestal with the trim wheel and the fuel selector on the floor, and the
-   two control wheels in front of the live panel. Generic training model drawn by Birdbird (no registration or marks).
+   two control wheels in front of the live panel. Generic training model drawn by NORDAP (no registration or marks).
    Panel drawing: c172panel.js (2000 × 1320 units, ~1.9 units per mm). Cockpit frame: metres, x right, y up, z aft. */
 (function(G){
 'use strict';

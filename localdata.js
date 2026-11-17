@@ -1,8 +1,8 @@
-/* Birdbird – everything Birdbird keeps on this device, in one place: list it, download it, delete it.
-   Used by privacy.html ("Clear Birdbird data") and profile.html ("Download all my data", account deletion).
+/* NORDAP – everything NORDAP keeps on this device, in one place: list it, download it, delete it.
+   Used by privacy.html ("Clear NORDAP data") and profile.html ("Download all my data", account deletion).
    Loaded only on those pages. Never touches the server account (deleting that is a separate action on My page).
 
-   What Birdbird stores on a device (found by searching the code for localStorage, sessionStorage and indexedDB):
+   What NORDAP stores on a device (found by searching the code for localStorage, sessionStorage and indexedDB):
    - localStorage and sessionStorage keys starting with one of PREFIXES (bb-…, naeroson…, aeroson…, vlab-…, fi-…, birdbird-…)
    - IndexedDB databases in DBS: bb-flows (flow trainer cockpit pictures), birdbird-workspace (My Workspace items, notes, ink, settings, trashed files),
      naeroson-fi (Flight Intelligence / workspace documents and their files), naeroson-docs (older document store),
@@ -83,7 +83,7 @@
   function deleteDb(name) {
     return new Promise(r => { try { const q = G.indexedDB.deleteDatabase(name); q.onsuccess = () => r('deleted'); q.onerror = () => r('error'); q.onblocked = () => r('blocked'); } catch (e) { r('error'); } });
   }
-  /* delete every Birdbird key and database on this device. opts.keepLang (default true) keeps the language choice.
+  /* delete every NORDAP key and database on this device. opts.keepLang (default true) keeps the language choice.
      Removals are not synced to the account (account.js wipeLocal does them without noting a change). */
   async function clearAll(opts) {
     const keepLang = !opts || opts.keepLang !== false;

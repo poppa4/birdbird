@@ -1,4 +1,4 @@
-/* Birdbird – accounts and sync for Cloudflare Pages Functions (D1 binding: DB).
+/* NORDAP – accounts and sync for Cloudflare Pages Functions (D1 binding: DB).
 
    Endpoints (each file in functions/api/… re-exports one handler from here):
      POST   /api/auth/register/options   new account (no session) or add a passkey (signed in)
@@ -68,7 +68,7 @@ export function checkOrigin(request) {
   if (!STATE_CHANGING.has(request.method)) return;
   const url = new URL(request.url);
   const o = request.headers.get('origin');
-  if (!o || o !== url.origin) fail(403, 'bad_origin', 'This request did not come from Birdbird itself. Reload the page and try again.');
+  if (!o || o !== url.origin) fail(403, 'bad_origin', 'This request did not come from NORDAP itself. Reload the page and try again.');
 }
 
 async function readJson(request, required, maxBytes) {
@@ -87,10 +87,10 @@ export function rpFor(url, env) {
   const host = url.hostname.toLowerCase();
   const fixed = (env && env.RP_ID ? String(env.RP_ID) : 'birdbird.eu').toLowerCase();
   const local = host === 'localhost' || host.endsWith('.localhost');
-  if (url.protocol !== 'https:' && !local) fail(400, 'insecure', 'Passkeys need a secure (https) connection. Open Birdbird at https://birdbird.eu.');
+  if (url.protocol !== 'https:' && !local) fail(400, 'insecure', 'Passkeys need a secure (https) connection. Open NORDAP at https://birdbird.eu.');
   if (/^[\d.]+$/.test(host) || host.includes(':')) fail(400, 'bad_host', 'Passkeys do not work on an IP address. Use http://localhost or https://birdbird.eu.');
   const rpId = (host === fixed || host.endsWith('.' + fixed)) ? fixed : host;
-  return { rpId, origin: url.origin, rpName: 'Birdbird' };
+  return { rpId, origin: url.origin, rpName: 'NORDAP' };
 }
 
 function deviceLabel(ua) {
@@ -287,14 +287,14 @@ async function registerOptions(c) {
   let userId, userName, display, exclude = [];
   if (s) { // add a passkey to the signed-in account
     userId = s.user_id;
-    display = s.name || 'Birdbird pilot';
+    display = s.name || 'NORDAP pilot';
     const r = await c.db.prepare('SELECT id, transports FROM credentials WHERE user_id = ?1').bind(userId).all();
     exclude = (r.results || []).map(x => ({ type: 'public-key', id: x.id, transports: x.transports ? JSON.parse(x.transports) : undefined }));
   } else {
     userId = b64u(randomBytes(16));
-    display = cleanName(body.name) || 'Birdbird pilot';
+    display = cleanName(body.name) || 'NORDAP pilot';
   }
-  userName = display + ' · Birdbird';
+  userName = display + ' · NORDAP';
   const challenge = await newChallenge(c, 'reg', userId, s ? { addTo: userId } : { newUser: true, name: cleanName(body.name) });
   return json({
     ok: true, mode: s ? 'add' : 'new',
@@ -320,7 +320,7 @@ async function registerVerify(c) {
   if (ch.data.addTo && (!s || s.user_id !== ch.data.addTo)) fail(401, 'signed_out', 'You were signed out while adding the passkey. Sign in and try again.');
   const v = await verifyRegistration(cred, { challenge: ch.challenge, origin: rp.origin, rpId: rp.rpId, requireUV: true });
   const exists = await c.db.prepare('SELECT user_id FROM credentials WHERE id = ?1').bind(v.credentialId).first();
-  if (exists) fail(409, 'exists', 'This passkey is already linked to a Birdbird account. Use “Sign in” instead.');
+  if (exists) fail(409, 'exists', 'This passkey is already linked to a NORDAP account. Use “Sign in” instead.');
   const userId = ch.userId;
   const label = deviceLabel(c.request.headers.get('user-agent'));
   const stmts = [];
@@ -356,7 +356,7 @@ async function loginVerify(c) {
   const ch = await takeChallenge(c, cred, 'auth');
   const id = cred && typeof cred.id === 'string' ? cred.id : '';
   const row = id ? await c.db.prepare('SELECT c.id, c.user_id, c.public_key, c.alg, c.sign_count, u.name FROM credentials c JOIN users u ON u.id = c.user_id WHERE c.id = ?1').bind(id).first() : null;
-  if (!row) fail(400, 'unknown_passkey', 'This passkey is not linked to a Birdbird account any more. Sign in with your recovery code, or create a new account. You can delete the old passkey in your device’s password settings.');
+  if (!row) fail(400, 'unknown_passkey', 'This passkey is not linked to a NORDAP account any more. Sign in with your recovery code, or create a new account. You can delete the old passkey in your device’s password settings.');
   if (cred.response.userHandle && cred.response.userHandle !== row.user_id) fail(400, 'unknown_passkey', 'This passkey belongs to a different account. Try again and pick the right passkey.');
   const v = await verifyAuthentication(cred, { challenge: ch.challenge, origin: rp.origin, rpId: rp.rpId, requireUV: true }, { jwk: JSON.parse(row.public_key), alg: row.alg, signCount: row.sign_count });
   await c.db.batch([
@@ -491,7 +491,7 @@ async function syncPut(c) {
   await limit(c, 'sync', s.user_id);
   const body = await readJson(c.request, true);
   const ns = body.ns;
-  if (!NAMESPACES.includes(ns)) fail(400, 'bad_ns', 'Unknown data group. Reload the page to get the latest Birdbird.');
+  if (!NAMESPACES.includes(ns)) fail(400, 'bad_ns', 'Unknown data group. Reload the page to get the latest NORDAP.');
   if (!body.data || typeof body.data !== 'object' || Array.isArray(body.data)) fail(400, 'bad_request', 'Nothing to save.');
   const text = JSON.stringify(body.data);
   if (new TextEncoder().encode(text).length > MAX_NS_BYTES) fail(413, 'too_large', 'This data is over 1.5 MB, too large to sync. Delete old briefing packs or routes, then try again.');
@@ -513,7 +513,7 @@ async function syncPut(c) {
   if (!res) {
     const cur = await c.db.prepare('SELECT data, version, updated_at FROM user_data WHERE user_id = ?1 AND ns = ?2').bind(s.user_id, ns).first();
     let d = {}; try { d = cur ? JSON.parse(cur.data) : {}; } catch (e) {}
-    return json({ ok: false, error: 'conflict', message: 'Another device saved newer data. Birdbird will merge and try again.', current: cur ? { data: d, version: cur.version, updatedAt: cur.updated_at } : { data: {}, version: 0, updatedAt: 0 } }, 409, { 'set-cookie': c.setCookie });
+    return json({ ok: false, error: 'conflict', message: 'Another device saved newer data. NORDAP will merge and try again.', current: cur ? { data: d, version: cur.version, updatedAt: cur.updated_at } : { data: {}, version: 0, updatedAt: 0 } }, 409, { 'set-cookie': c.setCookie });
   }
   return json({ ok: true, ns, version: res.version, updatedAt: res.updated_at }, 200, { 'set-cookie': c.setCookie });
 }

@@ -1,4 +1,4 @@
-/* Birdbird – glass cockpit (PFD og MFD) tegnet i canvas. Virtuell skjerm 1024×768.
+/* NORDAP – glass cockpit (PFD og MFD) tegnet i canvas. Virtuell skjerm 1024×768.
    Stilen følger vanlige glass-cockpit-konvensjoner; dette er ikke et Garmin-produkt. */
 (function(G){
 'use strict';
@@ -426,7 +426,7 @@ function mfd(st,d){
 
 function blank(st){ if(!st.w) return; const g=begin(st); g.fillStyle='#020303'; g.fillRect(0,0,VW,VH); }
 function splash(st,t,line){ if(!st.w) return; const g=begin(st); g.fillStyle='#000'; g.fillRect(0,0,VW,VH);
-  txt(g,'BIRDBIRD AVIONICS',VW/2,VH/2-60,'#cfd6dc',F(700,30),'center'); txt(g,'Training display system',VW/2,VH/2-22,COL.gray,F(500,16),'center');
+  txt(g,'NORDAP AVIONICS',VW/2,VH/2-60,'#cfd6dc',F(700,30),'center'); txt(g,'Training display system',VW/2,VH/2-22,COL.gray,F(500,16),'center');
   if(line){ txt(g,line,VW/2,VH/2+40,COL.cyan,F(700,18),'center'); return; }
   const w=360, p=Math.min(1,t/4); box(g,VW/2-w/2,VH/2+30,w,10,'#1d2228'); box(g,VW/2-w/2,VH/2+30,w*p,10,COL.cyan); txt(g,'SELF TEST',VW/2,VH/2+64,COL.gray,F(600,13),'center'); }
 G.GLASS={pfd,mfd,blank,splash,VW,VH};

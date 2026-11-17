@@ -1,4 +1,4 @@
-/* Birdbird – avionikk-logikk for glass cockpit-treneren: radioer, CDI, FMS-vinduer, softkeys og bezel-kontroller.
+/* NORDAP – avionikk-logikk for glass cockpit-treneren: radioer, CDI, FMS-vinduer, softkeys og bezel-kontroller.
    Funksjonene følger vanlig glass-cockpit-arbeidsflyt (NAV/COM, CRS/BARO, FMS, D→, FPL, PROC, MENU, CLR, ENT). Grafikken er vår egen. */
 (function(G){
 'use strict';

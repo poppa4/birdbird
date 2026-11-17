@@ -1,4 +1,4 @@
-/* Birdbird – holdlab.js: the Explore model of the holding and instrument approach lab (holding.html).
+/* NORDAP – holdlab.js: the Explore model of the holding and instrument approach lab (holding.html).
    One figure: a plan view over Bergen (navmap.js: the radio navigation simulator's map, relief, coastline,
    FLS VOR/DME and ILS RWY 17 geometry), the side profile of the approach under it, and an HSI and
    a CDI (navgauges.js) beside it. Paths are computed in advance by holdcore.js / navcore.js and played back,

@@ -1,4 +1,4 @@
-/* Birdbird – chartnote.js: a plain-language frame around a lab chart.
+/* NORDAP – chartnote.js: a plain-language frame around a lab chart.
    CN.add(canvas, {read, take, full, tog, status}) puts a one-line "How to read" above the chart,
    one "Takeaway" sentence below it, and (optionally) a quiet "Show full chart" toggle.
    The chart's own draw code asks CN.full(key) to decide whether to draw the secondary layers.

@@ -1,4 +1,4 @@
-/* Birdbird – shared debrief and scoring for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
+/* NORDAP – shared debrief and scoring for the cockpit trainers (C172, DA42, King Air B200; 2D and 3D pages).
    Recorder: samples the flight at 5 Hz of simulated time into a fixed ring buffer (no allocation per frame, no DOM work while flying).
    Scoring: pure functions (evaluate) over the recorded columns and the scenario's checklist state: tolerance bands after
    EASA/ICAO-style stabilised-approach criteria, limit exceedances, engine-failure handling (time to the outcome), the exercise goals and, when chosen, the student's own checklist.

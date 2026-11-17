@@ -1,4 +1,4 @@
-/* Birdbird front page: the storm lab's build-up, played like a short film, with the lab's stage panel beside it.
+/* NORDAP front page: the storm lab's build-up, played like a short film, with the lab's stage panel beside it.
    This is the real scene from storms.html: cbmodel.js (the single-cell life cycle) drawn by cb3d.js (three.js r128),
    loaded only when the section comes near the screen. The timeline runs 0–60 min of storm time in about 36 s, the camera
    drifts slowly round the cell, and the panel follows the stage of the main cell (cbmodel's own c.dev). Clicking a stage
@@ -78,8 +78,8 @@
   async function start() {
     try {
       if (!window.THREE) await load('three.min.js?v=128');
-      if (!window.CBM) await load('cbmodel.js?v=1');
-      if (!window.CB3D) await load('cb3d.js?v=4');
+      if (!window.CBM) await load('cbmodel.js?v=2');
+      if (!window.CB3D) await load('cb3d.js?v=5');
     } catch (e) { return; }
     model();
     V = CB3D.init({ host: view, canvas: cv, labels: lab, T: () => '', labelSet: labels });

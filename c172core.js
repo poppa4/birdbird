@@ -1,4 +1,4 @@
-/* Birdbird – classic Cessna 172 (typical 172P-like, 160 hp carburetted, fixed-pitch propeller) systems model.
+/* NORDAP – classic Cessna 172 (typical 172P-like, 160 hp carburetted, fixed-pitch propeller) systems model.
    Pure logic, no DOM: used by c172.html and by tests/c172core.test.mjs.
    Engine: throttle → induction air, mixture → fuel/air ratio, carburettor heat and carburettor ice, two magnetos,
    priming and starting, fixed-pitch propeller rpm from the power balance with the airspeed, oil, EGT and fuel flow.

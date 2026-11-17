@@ -1,4 +1,4 @@
-/* Birdbird – minimal WebAuthn (passkey) verification for Cloudflare Pages Functions.
+/* NORDAP – minimal WebAuthn (passkey) verification for Cloudflare Pages Functions.
    No dependencies: WebCrypto only, so it runs in Workers without a build step.
 
    What it checks (W3C WebAuthn Level 2, sections 7.1 and 7.2):
@@ -113,7 +113,7 @@ export function coseToJwk(cose) {
     if (!(n instanceof Uint8Array) || !(e instanceof Uint8Array) || n.length < 256) throw new WAError('bad_key', 'RSA key is missing or shorter than 2048 bits.');
     return { alg: COSE_RS256, jwk: { kty: 'RSA', n: b64u(n), e: b64u(e) } };
   }
-  throw new WAError('unsupported_alg', 'This passkey uses a key type Birdbird does not support (only ES256 and RS256).');
+  throw new WAError('unsupported_alg', 'This passkey uses a key type NORDAP does not support (only ES256 and RS256).');
 }
 
 const importParams = alg => alg === COSE_ES256 ? { name: 'ECDSA', namedCurve: 'P-256' } : { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };

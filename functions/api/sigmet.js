@@ -1,4 +1,4 @@
-/* Birdbird – Cloudflare Pages Function: GET /api/sigmet[?fir=EN,ES]
+/* NORDAP – Cloudflare Pages Function: GET /api/sigmet[?fir=EN,ES]
    Valid SIGMETs and AIRMETs, worldwide, best source first:
    - Norway (ENOR, ENOB): MET Norway, the meteorological watch office that issues them (api.met.no sigmets 2.0, TAC text,
      CC BY 4.0): SIGMETs and AIRMETs.
@@ -16,7 +16,7 @@ const UPSTREAM_US = 'https://aviationweather.gov/api/data/airsigmet?format=json'
 const MET = 'https://api.met.no/weatherapi/sigmets/2.0/';
 const SRC_MET = 'MET Norway', SRC_AWC = 'aviationweather.gov';
 const MET_TIMEOUT = 3500;
-const UA = 'Birdbird/1.0 (+https://birdbird.eu)';
+const UA = 'NORDAP/1.0 (+https://birdbird.eu)';
 const TTL = 300;
 const TIMEOUT = 8000;
 const NORWAY = /^EN/;

@@ -1,4 +1,4 @@
-/* Birdbird – DA42 data for the trainer: control predicates, failure scenarios, the failure menu and the key speeds.
+/* NORDAP – DA42 data for the trainer: control predicates, failure scenarios, the failure menu and the key speeds.
    No procedure text: schools have their own checklists (ownck.js). CK predicates tick the student's own checklist items and
    judge the outcome of a failure scenario (debrief, any order). A predicate gets the page context c = {S, SYS, o, AP,
    i (affected engine 0/1), dt, cb(name), cbAll()} and a per-key memo m; ctl is the panel control to highlight

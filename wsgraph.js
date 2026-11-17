@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace map, core logic (no DOM): runs in the browser (window.WSGRAPH) and in node tests.
+/* NORDAP – My Workspace map, core logic (no DOM): runs in the browser (window.WSGRAPH) and in node tests.
    buildGraph   the workspace as nodes and links, only from relations already in the data:
                   document -> aircraft (acIds) · note -> aircraft / document / pack (links) · note -> cited page
                   (<cite data-doc data-p>) -> document · pack <-> route (routeId, xs.route, packId) · pack -> aircraft

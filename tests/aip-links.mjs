@@ -9,7 +9,7 @@ const window = {}; new Function('window', readFileSync(join(ROOT, 'aip.js'), 'ut
 const B = window.BBAIP;
 const urls = new Map();
 Object.values(B.ALL).concat([B.EAD, B.DIR]).forEach(x => urls.set(x.url, x.name));
-const UA = 'Birdbird link check (+https://birdbird.eu)';
+const UA = 'NORDAP link check (+https://birdbird.eu)';
 async function check(url) {
   for (const method of ['HEAD', 'GET']) {
     try {

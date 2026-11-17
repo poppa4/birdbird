@@ -1,4 +1,4 @@
-/* Birdbird – airdatacore.js: the pure maths behind the Air data lab (airdata.html).
+/* NORDAP – airdatacore.js: the pure maths behind the Air data lab (airdata.html).
    No DOM, no state. Loaded in the page as window.ADC and in Node (tests/airdata.test.mjs) through vm.
    ICAO standard atmosphere (Doc 7488) up to 20 km: sea level 1013.25 hPa, 15 °C, lapse rate 6.5 °C/km to 11 km, then −56.5 °C.
    Units: altitudes in ft, pressures in hPa, temperatures in °C, speeds in kt, unless stated. */

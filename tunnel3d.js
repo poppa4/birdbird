@@ -161,7 +161,7 @@
           poly([[a + 0.45 * L2, m(0.35)], [b, m(0.33)], [b - 0.03 * L2, m(0.41)], [a + 0.48 * L2, m(0.44)]]); }
       }
     }
-    // registrering/logo-felt: diskré "BIRDBIRD LAB" i grått
+    // registrering/logo-felt: diskré "NORDAP LAB" i grått
     g.fillStyle = 'rgba(80,90,100,0.35)'; g.font = '600 15px Arial, sans-serif';
     g.save(); g.translate(U(6.5), V(0.34)); g.scale(1, -1); g.restore();
     const t = tex(THREE, c, false, true); t.wrapS = THREE.ClampToEdgeWrapping; t.wrapT = THREE.RepeatWrapping;

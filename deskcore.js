@@ -1,4 +1,4 @@
-/* Birdbird – My Workspace desk, layout model (no DOM, no storage): runs in the browser (window.DESKCORE) and in node tests.
+/* NORDAP – My Workspace desk, layout model (no DOM, no storage): runs in the browser (window.DESKCORE) and in node tests.
    A desk is one item of kind 'desk' in the 'workspace' sync namespace: { id, kind:'desk', name, L, createdAt, updatedAt }.
    L, the layout, holds positions only, never content:
      L      { root: node, act: id of the active pane }

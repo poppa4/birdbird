@@ -1,4 +1,4 @@
-/* Birdbird – cbmodel.js: the thunderstorm teaching model behind storms.html (no drawing here).
+/* NORDAP – cbmodel.js: the thunderstorm teaching model behind storms.html (no drawing here).
    Conditions → environment → cells → fields. Everything is schematic textbook physics, not a forecast model.
    - Cloud base from the dew-point spread: (T − Td) × 400 ft, surface T fixed at 25 °C.
    - Instability (CAPE-like low/moderate/high, reduced in dry air by entrainment) → updraft from parcel theory,

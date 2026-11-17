@@ -152,7 +152,7 @@ with sync_playwright() as p:
     pg.goto(URL + '#/storage'); pg.wait_for_selector('[data-act="import"]')
     with pg.expect_file_chooser() as fc: pg.click('[data-act="import"]')
     fc.value.set_files('/tmp/wsfix/not-a-backup.zip'); pg.wait_for_timeout(800)
-    check('wrong file refused clearly', 'not a Birdbird backup' in pg.inner_text('#bkNote') and snap() == before, pg.inner_text('#bkNote'))
+    check('wrong file refused clearly', 'not a NORDAP backup' in pg.inner_text('#bkNote') and snap() == before, pg.inner_text('#bkNote'))
 
     # index entry without its file (as on a new device): honest label
     pg.evaluate("""() => new Promise(r => { const q = indexedDB.open('naeroson-fi'); q.onsuccess = () => { const tx = q.result.transaction(['docs','blobs'],'readwrite'); tx.objectStore('docs').getAll().onsuccess = e => { const d = e.target.result.find(x => /SOP/.test(x.name)); tx.objectStore('docs').delete(d.id); tx.objectStore('blobs').delete(d.id); }; tx.oncomplete = () => r(); }; })""")

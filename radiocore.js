@@ -1,4 +1,4 @@
-/* Birdbird – radio trainer engine (no DOM, no AI).
+/* NORDAP – radio trainer engine (no DOM, no AI).
    1. norm(): typed or spoken radio calls -> canonical tokens ("one two one decimal seven" -> 121.7, "flight level eight zero",
       "niner", "tree", "fife", phonetic letters -> letters, "three thousand five hundred" -> 3500).
    2. grade(): element-by-element check of a call or readback (callsign, runway, altitude/level with the right reference,

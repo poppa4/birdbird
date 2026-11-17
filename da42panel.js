@@ -1,5 +1,5 @@
-/* Birdbird – front-on DA42-style instrument panel drawn in SVG (world units 1600×980).
-   Generic training layout drawn by Birdbird; not a manufacturer drawing. Controls report through io.get/io.set. */
+/* NORDAP – front-on DA42-style instrument panel drawn in SVG (world units 1600×980).
+   Generic training layout drawn by NORDAP; not a manufacturer drawing. Controls report through io.get/io.set. */
 (function(G){
 'use strict';
 const SKY=420, LIP=82; // 2D: canopy headroom above y=0 with the outside view on; glareshield top on the centre line

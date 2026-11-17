@@ -1,4 +1,4 @@
-/* Birdbird – grovt terreng (høyeste punkt per celle, fot).
+/* NORDAP – grovt terreng (høyeste punkt per celle, fot).
    Data: terrain/index.json + terrain/t_<lat0>_<lon0>.png (5°×5°, høyde i fot = R·256 + G, rad 0 = nord).
    Hver celle er høyeste terreng i cellen, avrundet opp. Uten hindre. Kun til planlegging. */
 (function(G){

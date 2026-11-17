@@ -1,7 +1,7 @@
-/* Birdbird – DA42 3D cockpit (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
+/* NORDAP – DA42 3D cockpit (beta): aircraft definition for the shared 3D cockpit engine (cockpit3d.js).
    A low-poly cockpit shell with baked lighting, drawn by three.js on top of the otw.js outside world, and the real interactive
    SVG/HTML panel placed in 3D with a projective CSS matrix (so every switch, knob and lever is the live DOM control – no
-   re-rasterising). Generic training model drawn by Birdbird.
+   re-rasterising). Generic training model drawn by NORDAP.
    Cockpit frame: metres, x = right, y = up, z = aft (forward is −z), origin between the pilots at eye height. */
 (function(G){
 'use strict';

@@ -1,5 +1,5 @@
-/* Birdbird – lagring på profilen din: i denne nettleseren (localStorage), med eksport og import som fil, og synk med
-   Birdbird-kontoen (account.js) når du er logget inn. mode er alltid 'local'. */
+/* NORDAP – lagring på profilen din: i denne nettleseren (localStorage), med eksport og import som fil, og synk med
+   NORDAP-kontoen (account.js) når du er logget inn. mode er alltid 'local'. */
 (function(G){
 'use strict';
 const mode='local';

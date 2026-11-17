@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>My training · Birdbird</title>
-<meta name="description" content="Your Birdbird training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
-<link rel="stylesheet" href="lab.css?v=13">
-<link rel="stylesheet" href="site.css?v=30">
+<title>My training · NORDAP</title>
+<meta name="description" content="Your NORDAP training dashboard: rank, next steps, learning path, type rating, briefing packs, routes and achievements.">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=31">
 <style>
 /* ---------- My training (page-only styles; tokens from site.css) ---------- */
 .mt-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,420px);gap:24px 48px;align-items:end;margin:40px 0 0}
@@ -219,11 +219,11 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=80"></script>
+<script src="site.js?v=81"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
-      <div class="eyebrow on">Birdbird · My page</div>
+      <div class="eyebrow on">NORDAP · My page</div>
       <h1>My page</h1>
       <p>Your briefing packs, saved routes and account.</p>
     </div>
@@ -299,7 +299,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     <h2>Your data</h2>
     <div class="callout info" id="dataNote"><span class="ct">Stored in this browser only</span>Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.</div>
     <div class="dgrid">
-      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: your account (when you are signed in) and everything Birdbird keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.</p><div class="btns"><button class="btn pri" id="exp">Download all my data</button></div><p class="dmsg" id="expMsg"></p></div>
+      <div class="box"><b class="t">Export</b><p>Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.</p><div class="btns"><button class="btn pri" id="exp">Download all my data</button></div><p class="dmsg" id="expMsg"></p></div>
       <div class="box"><b class="t">Import</b><p>Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.</p><div class="btns"><button class="btn" id="impBtn">Choose a file…</button><input type="file" id="impFile" accept=".json,application/json,text/plain" hidden></div><p class="dmsg" id="impMsg"></p></div>
       <div class="box"><b class="t">Start over</b><p>Delete your training progress in this browser. You choose whether briefing packs and routes go too.</p><div class="btns"><button class="btn danger" id="rsBtn">Reset progress…</button></div><p class="dmsg" id="rsMsg"></p></div>
     </div>
@@ -315,16 +315,16 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
     </form>
   </dialog>
 </div>
-<script src="lab.js?v=51"></script>
-<script src="store.js?v=3"></script>
-<script src="localdata.js?v=2"></script>
+<script src="lab.js?v=52"></script>
+<script src="store.js?v=4"></script>
+<script src="localdata.js?v=3"></script>
 <script>
 (function(){
 'use strict';
 const {T,L,el}=LAB;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 LAB.add({},{
- 'My page':'Min side','Birdbird · My page':'Birdbird · Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','Birdbird · My training':'Birdbird · Min trening','My training':'Min trening','My training · Birdbird':'Min trening · Birdbird',
+ 'My page':'Min side','NORDAP · My page':'NORDAP · Min side','Your briefing packs, saved routes and account.':'Briefingpakkene dine, lagrede ruter og konto.','NORDAP · My training':'NORDAP · Min trening','My training':'Min trening','My training · NORDAP':'Min trening · NORDAP',
  'Your rank, what to do next, and everything you have done in the labs, the type rating trainer and your flight planning, in one place.':'Rangen din, hva du bør gjøre nå, og alt du har gjort i labbene, typeratingtreneren og flyplanleggingen, samlet på ett sted.',
  'Next up':'Neste','Learning path':'Læringsløp','Type rating':'Typerating','Planning':'Planlegging','Achievements':'Prestasjoner','Your data':'Dine data',
  'Open Virtual Labs':'Åpne Virtual Labs','Nine modules in the recommended order. A lab counts as done when you score 60 % or more on its quiz.':'Ni moduler i anbefalt rekkefølge. En lab regnes som ferdig når du får 60 % eller mer på quizen.',
@@ -333,7 +333,7 @@ LAB.add({},{
  'Every test, drill, simulator mission and radio scenario earns experience points toward your rank. Your best result counts, so you can always try again. An achievement is earned at 80 %.':'Hver test, drill, simulatoroppdrag og radioscenario gir erfaringspoeng mot rangen din. Det beste resultatet teller, så du kan alltid prøve igjen. En prestasjon er oppnådd ved 80 %.',
  'Stored in this browser only':'Lagret bare i denne nettleseren',
  'Your progress, briefing packs and routes live in this browser on this device. Nothing is sent to a server, and nothing syncs between devices yet. Clearing your browser data deletes it, so export a copy now and then.':'Progresjonen, briefingpakkene og rutene dine ligger i denne nettleseren på denne enheten. Ingenting sendes til en server, og ingenting synkroniseres mellom enheter ennå. Sletter du nettleserdataene, forsvinner de, så eksporter en kopi innimellom.',
- 'Export':'Eksporter','Download everything as one JSON file: your account (when you are signed in) and everything Birdbird keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.':'Last ned alt som én JSON-fil: kontoen din (når du er logget inn) og alt Birdbird har i denne nettleseren, fra progresjon og flashkort til briefingpakker, ruter og Mitt arbeidsområde.','Download all my data':'Last ned alle dataene mine',
+ 'Export':'Eksporter','Download everything as one JSON file: your account (when you are signed in) and everything NORDAP keeps in this browser, from progress and flashcards to briefing packs, routes and My Workspace.':'Last ned alt som én JSON-fil: kontoen din (når du er logget inn) og alt NORDAP har i denne nettleseren, fra progresjon og flashkort til briefingpakker, ruter og Mitt arbeidsområde.','Download all my data':'Last ned alle dataene mine',
  'Import':'Importer','Load a progress file from another device or browser. Your best results are kept, and newer packs and routes win.':'Last inn en progresjonsfil fra en annen enhet eller nettleser. De beste resultatene beholdes, og nyeste pakker og ruter vinner.','Choose a file…':'Velg en fil …',
  'Start over':'Start på nytt','Delete your training progress in this browser. You choose whether briefing packs and routes go too.':'Slett treningsprogresjonen i denne nettleseren. Du velger selv om briefingpakker og ruter også skal slettes.','Reset progress…':'Nullstill progresjonen …',
  'Reset your progress?':'Nullstille progresjonen?',
@@ -397,7 +397,7 @@ function readB200(){ B.stats=ls.json(BK+'stats',{})||{}; B.fc=ls.json(BK+'leitne
 function loadScript(src){ return new Promise(res=>{ const s=document.createElement('script'); s.src=src; s.onload=()=>res(true); s.onerror=()=>res(false); document.head.appendChild(s); }); }
 let bLoading=null;
 function loadBank(){ if(bLoading) return bLoading;
-  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js?v=1'), window.B200C?true:loadScript('b200-sim.js?v=4')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
+  bLoading=Promise.all([window.B200Q?true:loadScript('b200-qbank.js?v=2'), window.B200C?true:loadScript('b200-sim.js?v=5')]).then(()=>{ B.loaded=true; B.C=window.B200C||null;
     const CHN=['gen','elec','light','warn','fuel','power','fire','pneu','ice','air','press','hyd','gear','flt','avio','misc','wb','perf','lim','emer'];
     B.Q=(Array.isArray(window.B200Q)?window.B200Q:[]).filter(q=>q&&q.id!=null&&q.q&&Array.isArray(q.a)&&q.a.length>1&&Number.isInteger(q.c)).map(q=>({id:String(q.id),q:q.q,a:q.a,c:q.c,ch:CHN.includes(q.ch)?q.ch:'misc',lvl:+q.lvl||2})); drawAll(); });
   return bLoading; }
@@ -502,7 +502,7 @@ function drawAch(){ const N=P(); if(!N){ el('ach').innerHTML=''; return; } const
 const OURS=/^(naeroson-|aeroson-quiz-|vlab-|bb-)/;
 const PROGRESS=k=> k==='naeroson-prog'||/^(aeroson-quiz-|naeroson-radio-|vlab-done-|bb-b200-)/.test(k)||k==='vlab-reg'||k==='bb-track'||k==='naeroson-store-fises';
 const PLANNING=k=> /^naeroson-store-(prep|route|mapview|mapnote|fixes|aircraft|fiac)$/.test(k);
-/* one download: the account's server copy (when signed in) and everything Birdbird keeps on this device (localdata.js).
+/* one download: the account's server copy (when signed in) and everything NORDAP keeps on this device (localdata.js).
    `keys` has the same shape as the older progress file, so Import reads both. */
 el('exp').onclick=async()=>{ const m=el('expMsg'), b=el('exp'); b.disabled=true; m.className='dmsg'; m.textContent=L({en:'Collecting your data…',no:'Samler inn dataene dine …'});
   try{
@@ -511,8 +511,8 @@ el('exp').onclick=async()=>{ const m=el('expMsg'), b=el('exp'); b.disabled=true;
     let account=null, accNote=null; const A=AC();
     if(A&&A.user){ try{ const r=await fetch('/api/me/export',{credentials:'same-origin',headers:{accept:'application/json'}}); const j=await r.json(); if(r.ok&&j&&j.ok){ delete j.ok; account=j; } else accNote=(j&&j.message)||('HTTP '+r.status); }catch(e){ accNote='The account could not be reached.'; } }
     const o={app:'birdbird',kind:'all-data',v:3,exported:new Date().toISOString(),
-      notes:{en:'Everything Birdbird stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on My page reads the "keys" part.',
-             no:'Alt Birdbird lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Min side leser «keys»-delen.'},
+      notes:{en:'Everything NORDAP stores about you: your account on the server (if you are signed in) and everything stored in this browser. Document and image files themselves are not included; their names, details and extracted text are. Import on My page reads the "keys" part.',
+             no:'Alt NORDAP lagrer om deg: kontoen på serveren (hvis du er logget inn) og alt som er lagret i denne nettleseren. Selve dokument- og bildefilene er ikke med; navn, detaljer og uttrukket tekst er med. Import på Min side leser «keys»-delen.'},
       account, accountError:accNote, keys:loc.keys, sessionStorage:loc.sessionStorage, indexedDB:loc.indexedDB};
     const blob=new Blob([JSON.stringify(o,null,1)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='birdbird-data-'+new Date().toISOString().slice(0,10)+'.json'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500);
     const n=Object.keys(loc.keys).length, d=Object.keys(loc.indexedDB).length;
@@ -540,7 +540,7 @@ el('impFile').onchange=async()=>{ const f=el('impFile').files[0], m=el('impMsg')
     else throw new Error('format');
     m.className='dmsg ok'; m.textContent= n? L({en:'Imported. Your best results are kept.',no:'Importert. De beste resultatene dine er beholdt.'}) : L({en:'Nothing new in that file. Everything was already here.',no:'Ingenting nytt i den filen. Alt var her fra før.'});
     document.dispatchEvent(new CustomEvent('nprog')); await reloadStore(); drawAll();
-  }catch(e){ m.className='dmsg bad'; m.textContent=L({en:'That file is not a Birdbird progress file.',no:'Den filen er ikke en progresjonsfil fra Birdbird.'}); } };
+  }catch(e){ m.className='dmsg bad'; m.textContent=L({en:'That file is not a NORDAP progress file.',no:'Den filen er ikke en progresjonsfil fra NORDAP.'}); } };
 const dlg=el('rsDlg');
 el('rsBtn').onclick=()=>{ el('rsPlan').checked=false; if(dlg.showModal) dlg.showModal(); else if(confirm(T('Reset your progress?'))) doReset(false); };
 dlg.addEventListener('close',()=>{ if(dlg.returnValue==='yes') doReset(el('rsPlan').checked); });
@@ -565,7 +565,7 @@ function codePanel(){ const why=UI.codeWhy==='recovery'?L({en:'You signed in wit
     : UI.codeWhy==='new'?L({en:'Your new recovery code. The old one no longer works.',no:'Den nye gjenopprettingskoden din. Den gamle virker ikke lenger.'})
     : L({en:'Your account is ready. If you ever lose every device with your passkey, this code is the only way back in.',no:'Kontoen din er klar. Mister du alle enhetene med passnøkkelen, er denne koden eneste vei tilbake.'});
   return `<div class="acc-code" role="region" aria-labelledby="acCodeH"><h3 id="acCodeH">${L({en:'Save your recovery code',no:'Ta vare på gjenopprettingskoden'})}</h3>
-    <p>${esc(why)} ${L({en:'Write it down or save it in your password manager. Birdbird stores only a scrambled copy and cannot show it again.',no:'Skriv den ned eller lagre den i passordbehandleren. Birdbird lagrer bare en kryptert kopi og kan ikke vise den igjen.'})}</p>
+    <p>${esc(why)} ${L({en:'Write it down or save it in your password manager. NORDAP stores only a scrambled copy and cannot show it again.',no:'Skriv den ned eller lagre den i passordbehandleren. NORDAP lagrer bare en kryptert kopi og kan ikke vise den igjen.'})}</p>
     <code class="rc" id="acRc">${esc(UI.code)}</code>
     <div class="btns"><button type="button" class="btn" id="acCopy">${L({en:'Copy',no:'Kopier'})}</button><button type="button" class="btn" id="acDl">${L({en:'Download as a text file',no:'Last ned som tekstfil'})}</button></div>
     <label><input type="checkbox" id="acSaved"> <span>${L({en:'I have saved my recovery code somewhere safe',no:'Jeg har lagret gjenopprettingskoden et trygt sted'})}</span></label>
@@ -579,7 +579,7 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
     body.innerHTML=`<div class="callout info"><span class="ct">${L({en:'Accounts',no:'Kontoer'})}</span>${L({en:'Accounts are available on birdbird.eu. Here, your progress and briefing packs are saved in this browser only, and everything else works as usual.',no:'Kontoer er tilgjengelige på birdbird.eu. Her lagres progresjonen og briefingpakkene bare i denne nettleseren, og alt annet virker som vanlig.'})}</div>
       <p class="btns"><a class="btn" href="https://birdbird.eu/profile.html#account">${L({en:'Open birdbird.eu',no:'Åpne birdbird.eu'})}</a></p>`; return; }
   if(A.backend==='off'&&!A.user){ st.textContent='';
-    body.innerHTML=`<div class="callout caution"><span class="ct">${L({en:'Coming soon',no:'Kommer snart'})}</span>${L({en:'Accounts are being switched on for Birdbird. Until then, your progress and briefing packs are saved in this browser only, and nothing is lost.',no:'Kontoer er i ferd med å bli slått på for Birdbird. Til da lagres progresjonen og briefingpakkene bare i denne nettleseren, og ingenting går tapt.'})}</div>`; return; }
+    body.innerHTML=`<div class="callout caution"><span class="ct">${L({en:'Coming soon',no:'Kommer snart'})}</span>${L({en:'Accounts are being switched on for NORDAP. Until then, your progress and briefing packs are saved in this browser only, and nothing is lost.',no:'Kontoer er i ferd med å bli slått på for NORDAP. Til da lagres progresjonen og briefingpakkene bare i denne nettleseren, og ingenting går tapt.'})}</div>`; return; }
   const dis=UI.busy?' disabled':'';
   let h=UI.code?codePanel():'';
   if(!A.user){ st.textContent='';
@@ -596,13 +596,13 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
         <details id="acRec"${recOpen||!A.supported?' open':''}><summary>${L({en:'Use a recovery code',no:'Bruk en gjenopprettingskode'})}</summary>
           <label class="acc-f" for="acCode">${L({en:'Recovery code',no:'Gjenopprettingskode'})}<input id="acCode" class="code" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" value="${esc(codeVal)}"><small>${L({en:'The code you saved when you created the account.',no:'Koden du lagret da du laget kontoen.'})}</small></label>
           <div class="btns"><button type="button" class="btn" id="acRecGo"${dis}>${L({en:'Sign in with the code',no:'Logg inn med koden'})}</button></div></details></div></div>
-      <p class="note" style="margin-top:12px">${L({en:'Your data stays in this browser too, so Birdbird keeps working offline. The privacy page explains what is stored.',no:'Dataene ligger også i denne nettleseren, så Birdbird virker uten nett. Personvernsiden forklarer hva som lagres.'})} <a href="privacy.html#account">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
+      <p class="note" style="margin-top:12px">${L({en:'Your data stays in this browser too, so NORDAP keeps working offline. The privacy page explains what is stored.',no:'Dataene ligger også i denne nettleseren, så NORDAP virker uten nett. Personvernsiden forklarer hva som lagres.'})} <a href="privacy.html#account">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
   } else {
     const me=A.me||{}, creds=me.credentials||[], sl=syncLine(A), nm=(A.user&&A.user.name)||'';
     st.textContent=L({en:'Signed in',no:'Logget inn'});
     const dm={}; (me.data||[]).forEach(x=>dm[x.ns]=x);
     if(UI.needKey) h+=`<div class="callout info"><span class="ct">${L({en:'Next step',no:'Neste steg'})}</span>${L({en:'Add a passkey on this device, so next time you sign in with Face ID, fingerprint or your screen lock instead of the recovery code.',no:'Legg til en passnøkkel på denne enheten, så logger du inn med Face ID, fingeravtrykk eller skjermlåsen neste gang i stedet for gjenopprettingskoden.'})}<div class="btns" style="margin-top:10px"><button type="button" class="btn pri" id="acAdd2"${dis}${A.supported?'':' disabled'}>${L({en:'Add a passkey on this device',no:'Legg til passnøkkel på denne enheten'})}</button></div></div>`;
-    h+=`<div class="acc-top"><div class="acc-who"><span class="av" aria-hidden="true">${esc((nm||'B').slice(0,1).toUpperCase())}</span><div><b>${nm?esc(nm):L({en:'Your Birdbird account',no:'Birdbird-kontoen din'})}</b><small><i class="${sl.c}"></i><span id="acSyncLine">${esc(sl.t)}</span></small></div></div>
+    h+=`<div class="acc-top"><div class="acc-who"><span class="av" aria-hidden="true">${esc((nm||'B').slice(0,1).toUpperCase())}</span><div><b>${nm?esc(nm):L({en:'Your NORDAP account',no:'NORDAP-kontoen din'})}</b><small><i class="${sl.c}"></i><span id="acSyncLine">${esc(sl.t)}</span></small></div></div>
         <div class="btns"><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
       <p class="lead">${L({en:'Your progress and briefing packs are saved to your account and follow you to other devices. Sign in with your passkey on your phone or another computer to pick up where you left off.',no:'Progresjonen og briefingpakkene dine lagres på kontoen og følger deg til andre enheter. Logg inn med passnøkkelen på telefonen eller en annen datamaskin for å fortsette der du slapp.'})}</p>
       <div class="acc-grid">
@@ -620,7 +620,7 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
           <p>${L({en:'Deletes your account, its passkeys and everything saved to it on the server, straight away.',no:'Sletter kontoen, passnøklene og alt som er lagret på den på serveren, med en gang.'})}</p>
           <div class="btns"><button type="button" class="btn danger" id="acDel"${dis}>${L({en:'Delete account…',no:'Slett kontoen …'})}</button></div></div>
       </div>
-      <p class="note" style="margin-top:12px">${L({en:'Signing out keeps your data in this browser. To remove it from this device as well, use “Clear Birdbird data” on the privacy page.',no:'Når du logger ut, blir dataene liggende i denne nettleseren. For å fjerne dem fra enheten også, bruk «Slett Birdbird-data» på personvernsiden.'})} <a href="privacy.html#clear">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
+      <p class="note" style="margin-top:12px">${L({en:'Signing out keeps your data in this browser. To remove it from this device as well, use “Clear NORDAP data” on the privacy page.',no:'Når du logger ut, blir dataene liggende i denne nettleseren. For å fjerne dem fra enheten også, bruk «Slett NORDAP-data» på personvernsiden.'})} <a href="privacy.html#clear">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
   }
   body.innerHTML=h;
   if(keepFocus&&el(keepFocus)&&!el(keepFocus).disabled) el(keepFocus).focus({preventScroll:true});
@@ -646,9 +646,9 @@ el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); i
   else if(id==='acOut') acRun(async A=>{ await A.logout(); UI.code=null; UI.needKey=false; },L({en:'Signed out. Your data is still in this browser.',no:'Logget ut. Dataene ligger fortsatt i denne nettleseren.'}));
   else if(id==='acNewCode') acRun(async A=>{ const v=await A.newRecoveryCode(); UI.code=v.recoveryCode; UI.codeWhy='new'; return v; },L({en:'New recovery code made. Save it now.',no:'Ny gjenopprettingskode laget. Lagre den nå.'}));
   else if(id==='acCopy'){ const t=UI.code; (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t):Promise.reject()).then(()=>acMsg('ok',L({en:'Copied. Paste it into your password manager or a note you keep safe.',no:'Kopiert. Lim den inn i passordbehandleren eller et notat du tar vare på.'})),()=>{ const r=document.createRange(); r.selectNodeContents(el('acRc')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); acMsg('',L({en:'Selected. Press Ctrl+C or ⌘C to copy.',no:'Merket. Trykk Ctrl+C eller ⌘C for å kopiere.'})); }); }
-  else if(id==='acDl'){ const txt=`Birdbird recovery code\n\n${UI.code}\n\nUse it at https://birdbird.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='birdbird-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
+  else if(id==='acDl'){ const txt=`NORDAP recovery code\n\n${UI.code}\n\nUse it at https://birdbird.eu/profile.html#account (Sign in > Use a recovery code)\nif you lose all your passkeys. It works once; you get a new code when you use it.\nMade ${new Date().toISOString().slice(0,10)}.\n`; const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'})); a.download='birdbird-recovery-code.txt'; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
   else if(id==='acDone'){ UI.code=null; acMsg('',''); drawAcct(); const f=el('acSync')||el('acNew'); if(f) f.focus(); }
-  else if(id==='acDel'){ const d=el('acDelDlg'); el('acDelP').textContent=L({en:'This permanently deletes your Birdbird account, its passkeys and all progress, briefing packs, routes and settings saved to it, on every device. It cannot be undone. The passkey itself stays in your device’s password settings, where you can delete it.',no:'Dette sletter Birdbird-kontoen din for godt, med passnøklene og all progresjon, alle briefingpakker, ruter og innstillinger som er lagret på den, på alle enheter. Det kan ikke angres. Selve passnøkkelen blir liggende i passordinnstillingene på enheten, der du kan slette den.'});
+  else if(id==='acDel'){ const d=el('acDelDlg'); el('acDelP').textContent=L({en:'This permanently deletes your NORDAP account, its passkeys and all progress, briefing packs, routes and settings saved to it, on every device. It cannot be undone. The passkey itself stays in your device’s password settings, where you can delete it.',no:'Dette sletter NORDAP-kontoen din for godt, med passnøklene og all progresjon, alle briefingpakker, ruter og innstillinger som er lagret på den, på alle enheter. Det kan ikke angres. Selve passnøkkelen blir liggende i passordinnstillingene på enheten, der du kan slette den.'});
     el('acDelLocalT').textContent=L({en:'Also delete everything stored on this device',no:'Slett også alt som er lagret på denne enheten'}); el('acDelYes').textContent=L({en:'Delete account',no:'Slett kontoen'}); el('acDelNo').textContent=L({en:'Cancel',no:'Avbryt'}); el('acDelH').textContent=L({en:'Delete your account?',no:'Slette kontoen?'});
     el('acDelLocal').checked=true; if(d.showModal) d.showModal(); }
   else if(b.dataset.rm){ const cid=b.dataset.rm; if(UI.arm!==cid){ UI.arm=cid; clearTimeout(UI.armT); UI.armT=setTimeout(()=>{ UI.arm=null; drawAcct(); },6000); drawAcct(); const nb=[...el('acBody').querySelectorAll('[data-rm]')].find(x=>x.dataset.rm===cid); if(nb) nb.focus(); return; }
