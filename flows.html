@@ -150,6 +150,7 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
 
   <section class="card" id="app" data-mode="build" aria-label="Flow trainer">
     <ol class="fguide" id="fguide" hidden><li data-m="build"><i>1</i><span><b>Build</b>Pick a cockpit and tap its controls in the order your airline does them.</span></li><li data-m="watch"><i>2</i><span><b>Watch</b>See the flow play, step by step.</span></li><li data-m="practise"><i>3</i><span><b>Practise</b>Find the steps until you can do the whole flow from memory.</span></li><li class="fgx"><button type="button" class="btn sm" id="fgok">Got it</button></li></ol>
+    <div class="fstart" id="fstart" hidden></div>
     <div class="ftop">
       <select id="fsel" aria-label="Flow"></select>
       <button class="btn pri" id="fnew" type="button" aria-label="New flow">+ New</button>
@@ -160,7 +161,6 @@ html.fnoscroll,html.fnoscroll body{overflow:hidden}
       <input type="file" id="fimp" accept=".json,application/json" hidden>
       <div class="fmode" role="group" aria-label="Mode"><button data-m="build" aria-pressed="true"><i>1</i>Build</button><button data-m="watch" aria-pressed="false"><i>2</i>Watch</button><button data-m="practise" aria-pressed="false"><i>3</i>Practise</button><button data-m="together" aria-pressed="false">Together</button></div>
     </div>
-    <div class="fstart" id="fstart" hidden></div>
     <div class="fapp">
       <div>
         <div class="fwrap"><div class="fextag" id="fextag" hidden>Example · not an SOP</div>
@@ -223,7 +223,7 @@ LAB.add({},{
 });
 LAB.start('flows');
 </script>
-<script src="flows.js?v=21"></script>
+<script src="flows.js?v=22"></script>
 <script src="flowlib.js?v=2"></script>
 <script src="reqplane.js?v=1"></script>
 </body>

@@ -159,14 +159,17 @@ function adoptExample(copy) { const c = F.clean(JSON.parse(JSON.stringify(cur)))
   FL.unshift(c); cur = c; UNDO.length = 0; snap(); flowSel(); try { localStorage.setItem('bb-flows-last', c.id); } catch (e) {}
   msg(copy ? L({ en: 'Copied to My flows. Change it as you like; the example stays as it was.', no: 'Kopiert til Mine flows. Endre den som du vil; eksempelet er uendret.' }) : L({ en: 'Your own flow is started on this cockpit, empty. The example is still in the list.', no: 'Din egen flow er startet på denne cockpiten, tom. Eksempelet ligger fortsatt i listen.' }), 'ok'); }
 function myAc() { let v = ''; try { v = localStorage.getItem('bb-flows-ac') || ''; } catch (e) {} return A.get(v) ? v : 'a320'; }
-function flowSel() { const s = $('fsel'), exO = a => `<option value="ex:${a.id}">${esc(a.name)} · ${L({ en: 'example', no: 'eksempel' })}</option>`;
-  // the list holds your own flows and one example: the aircraft you chose (the aircraft is picked under "Your aircraft")
-  const exA = [A.get(myAc())].concat(cur && cur.ex && cur.ac !== myAc() ? [A.get(cur.ac) || A.photo(cur.ac)] : []).filter(Boolean);
-  const exH = `<optgroup label="${esc(L({ en: 'Example (not an SOP)', no: 'Eksempel (ikke SOP)' }))}">` + exA.map(exO).join('') + '</optgroup>';
+const acKey = f => !f ? myAc() : f.ac === 'img' ? 'img' : A.get(f.ac) ? f.ac : (A.photo(f.ac) || {}).ac || myAc();
+function flowSel() { const s = $('fsel'), S = acKey(cur), mineS = FL.filter(f => acKey(f) === S), exO = a => `<option value="ex:${a.id}">${esc(a.name)} · ${L({ en: 'example', no: 'eksempel' })}</option>`;
+  // first the aircraft, then its flows: the list holds your flows on that aircraft and its example
+  const sc = $('fstart'), lab = L({ en: 'Aircraft', no: 'Fly' }); sc.hidden = false;
+  sc.innerHTML = `<label class="fac"><b>${lab}</b><select id="sac" aria-label="${lab}">${acOpts(S)}${FL.some(f => f.ac === 'img') ? `<optgroup label="${esc(L({ en: 'Your own', no: 'Dine egne' }))}"><option value="img"${S === 'img' ? ' selected' : ''}>${esc(L({ en: 'Own pictures', no: 'Egne bilder' }))}</option></optgroup>` : ''}</select></label>`;
+  const exA = (S === 'img' ? [] : [A.get(S)]).concat(cur && cur.ex && cur.ac !== S ? [A.get(cur.ac) || A.photo(cur.ac)] : []).filter(Boolean);
+  const exH = exA.length ? `<optgroup label="${esc(L({ en: 'Example (not an SOP)', no: 'Eksempel (ikke SOP)' }))}">` + exA.map(exO).join('') + '</optgroup>' : '';
   const opt = f => `<option value="${f.id}">${isDue(f) ? '● ' : ''}${esc(f.name)}${f.ac !== 'img' && (A.get(f.ac) || A.photo(f.ac)) && !f.name.includes((A.get(f.ac) || A.photo(f.ac)).name) ? ' · ' + esc((A.get(f.ac) || A.photo(f.ac)).name) : ''}</option>`, mine = L({ en: 'My flows', no: 'Mine flows' });
   // flows with a flight phase are listed phase by phase, in the order of a flight; the rest under "My flows"
   const grp = (label, list) => list.length ? `<optgroup label="${esc(label)}">` + list.map(opt).join('') + '</optgroup>' : '';
-  s.innerHTML = grp(mine, FL.filter(f => !f.phase)) + F.PHASES.map(p => grp(mine + ' · ' + L({ en: p[1], no: p[2] }), FL.filter(f => f.phase === p[0]))).join('') +
+  s.innerHTML = grp(mine, mineS.filter(f => !f.phase)) + F.PHASES.map(p => grp(mine + ' · ' + L({ en: p[1], no: p[2] }), mineS.filter(f => f.phase === p[0]))).join('') +
     exH;
   s.value = cur ? (cur.ex ? 'ex:' + cur.ac : cur.id) : ''; }
 async function open(f) { stopAll(); cur = f; try { if (f && A.get(f.ac)) localStorage.setItem('bb-flows-ac', f.ac); } catch (e) {} UNDO.length = 0; snap(); sel = null; placing = null; hidden = {}; role = f ? f.roles[0] : null; imgFor = null; await bg(); if (f && ac) { const B = JSON.stringify(f.steps.map(s => [s.x, s.y])); snapAll(); if (B !== JSON.stringify(f.steps.map(s => [s.x, s.y]))) save(); } fit(); draw(); flowSel(); panel(); setMode(mode);
@@ -183,13 +186,12 @@ function stepRow(s) { const other = cur.steps.filter(x => x.r !== s.r && x.k !==
       (cur.roles.length > 1 ? `<label>${L({ en: 'Layer', no: 'Lag' })} <select data-f="r">${cur.roles.map(r => `<option${r === s.r ? ' selected' : ''}>${r}</option>`).join('')}</select></label>` : '') +
       `<label class="fwide">${L({ en: 'Note (reference, limitation)', no: 'Notat (referanse, begrensning)' })} <input data-f="n" value="${esc(s.n || '')}" maxlength="400"></label>` +
       `<div class="fmb">${F.placed(s) ? `<button class="btn sm" data-a="unplace">${L({ en: 'Place again', no: 'Plasser på nytt' })}</button>` : ''}<button class="btn sm warn" data-a="del">${L({ en: 'Delete step', no: 'Slett steg' })}</button></div></div>` : '') + '</li>'; }
-function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; if (mode !== 'build' || !ex) { $('fstart').hidden = true; }
+function panel(scroll) { const p = $('fpanel'); $('app').classList.toggle('pon', !!P.on || W.on); $('fextag').hidden = !cur || !cur.ex; if (!cur) { p.innerHTML = ''; return; } const ex = cur.ex; 
   const cockpitOpts = `<option value="img"${cur.ac === 'img' ? ' selected' : ''}>${esc(L({ en: 'My own photo or PDF', no: 'Mitt eget bilde eller PDF' }))}${cur.img && cur.img.name ? ' (' + esc(cur.img.name.slice(0, 24)) + ')' : ''}</option>` + `<optgroup label="${esc(L({ en: 'Real photos (free licence)', no: 'Ekte foto (fri lisens)' }))}">` + A.photos.map(a => `<option value="${a.id}"${cur.ac === a.id ? ' selected' : ''}>${esc(a.name)} · ${esc(L({ en: 'photo', no: 'foto' }))}</option>`).join('') + '</optgroup>' + acOpts(cur.ac);
   if (mode === 'build') {
     const R = cur.roles, unp = cur.steps.filter(s => s.r === role && !F.placed(s) && s.k === 'act').length;
     const names = ac ? A.targets(ac).map(t => t.whole ? t.name : t.name + ' · ' + t.panel) : [];
     const acN = ac ? ac.name.replace(/^(Airbus|Beechcraft|Piper|Diamond|Cessna|Boeing) /, '') : PH() ? PH().name : 'Birdbird', phs = A.photos.filter(x => x.ac === (ac ? ac.id : (PH() || {}).ac));
-    const sc = $('fstart'); sc.hidden = !ex; sc.innerHTML = ex ? `<div class="fstart"><label class="fac"><b>${L({ en: 'Your aircraft', no: 'Ditt fly' })}</b><select id="sac" aria-label="${L({ en: 'Your aircraft', no: 'Ditt fly' })}">${acOpts(ac ? ac.id : (PH() || {}).ac)}</select></label></div>` : '';
     const cardsH = ex ? `<div class="fsg">` +
       `<button class="fsb pri" id="sbird"><i>✈</i><span><b>${L({ en: `On the ${acN} cockpit`, no: `På ${acN}-cockpiten` })}</b><small>${L({ en: 'Empty flow. Tap the controls in your order.', no: 'Tom flow. Trykk bryterne i din rekkefølge.' })}</small></span></button>` +
       `<button class="fsb" id="sown"><i>📷</i><span><b>${L({ en: 'On your own photo or PDF', no: 'På ditt eget bilde eller PDF' })}</b><small>${L({ en: 'From your airline’s manual. Stays on this device.', no: 'Fra flyselskapets manual. Blir på denne enheten.' })}</small></span></button>` +
@@ -283,12 +285,12 @@ function wirePanel() { const p = $('fpanel');
     if (b.id === 'frot') { b.disabled = true; rotatePicture(); return; }
     if (b.id === 'fmine' || b.id === 'fcopy') { adoptExample(b.id === 'fcopy'); save(); draw(); panel(); return; } if (b.id === 'pmem') return pStart('draw'); if (b.id === 'pord') return pStart('order'); if (b.id === 'pmshow') { P.memShow = !P.memShow; memDraw(); panel(); return; } if (b.id === 'pgo') return pStart('flow'); if (b.id === 'pex') return pStart('exam'); if (b.id === 'pwk') return pStart('weak'); if (b.id === 'pfc') return pStart('cards'); if (b.id === 'pfa') return pStart('all');
     if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') { pEnd(); return; } if (b.id === 'pcheck') { draw({ notes: true }); $('ov').classList.add('chk'); return; } if (b.id === 'pagain') return pStart(P.exam ? 'exam' : P.kind); });
-  $('fstart').addEventListener('change', e => { if (e.target.id === 'sac' && A.get(e.target.value)) open(F.example(e.target.value, A)); });
+  $('fstart').addEventListener('change', e => { if (e.target.id !== 'sac') return; const v = e.target.value, own = FL.find(f => acKey(f) === v); if (own) open(own); else if (A.get(v)) open(F.example(v, A)); });
   $('fpanel').addEventListener('click', e => { const b = e.target.closest('.fsb'); if (!b || !cur || !/^s(lib|own|photo|bird)$/.test(b.id)) return;
     if (b.id === 'slib') return window.BBFLOWLIB.browse();
     if (b.id === 'sown') { const f = F.newFlow('img', { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) }); FL.unshift(f); save(); open(f).then(() => { const i = $('fpanel').querySelector('#fimg'); if (i) i.click(); }); return; }
-    if (b.id === 'sphoto') { const ph = A.photos.find(x => x.ac === (A.get(cur.ac) ? cur.ac : (A.photo(cur.ac) || {}).ac)); const f = F.newFlow(ph.id, { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) + ' · ' + ph.name }); FL.unshift(f); save(); open(f); return; }
-    if (b.id === 'sbird') { const f = F.newFlow(cur.ac, { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) + ' · ' + ((A.get(cur.ac) || A.photo(cur.ac) || {}).name || 'Flow') }); FL.unshift(f); save(); open(f); return; }
+    if (b.id === 'sphoto') { const ph = A.photos.find(x => x.ac === (A.get(cur.ac) ? cur.ac : (A.photo(cur.ac) || {}).ac)); const f = F.newFlow(ph.id, { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) + ' · ' + ph.name }); FL.unshift(f); open(f).then(save); return; }
+    if (b.id === 'sbird') { const f = F.newFlow(cur.ac, { roles: cur.rs, name: L({ en: 'My flow', no: 'Min flow' }) + ' · ' + ((A.get(cur.ac) || A.photo(cur.ac) || {}).name || 'Flow') }); FL.unshift(f); open(f).then(save); return; }
     if (b.id === 'swatch') { setMode('watch'); wPlay(); } });
   $('fpq').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.pos != null) return pPick(+b.dataset.pos, false); if (b.dataset.ord != null) return pPick(+b.dataset.ord, true); if (b.id === 'pmundo') { P.taps.pop(); memDraw(); pq(); return; } if (b.id === 'pmchk') return memCheck(); if (b.id === 'phint') return pHint(); if (b.id === 'pskip') return pNext(true, true); if (b.id === 'pdone') return pNext(true); if (b.id === 'pstop') return pEnd(); });
   p.addEventListener('focusin', e => { const li = e.target.closest('.fs'); if (li && mode === 'build' && e.target.classList.contains('ft')) { const id = li.dataset.s; if (sel !== id) { sel = id; draw(); } } }); }
