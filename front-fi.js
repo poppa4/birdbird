@@ -165,6 +165,7 @@
     cont: t2('Continue in Flight Intelligence →', 'Fortsett i Flight Intelligence →'),
     docs: t2('Answer from my own AFM and SOP →', 'Svar fra min egen AFM og SOP →'),
     clear: t2('Back to the examples', 'Tilbake til eksemplene'),
+    easy: t2('Explain it more simply', 'Forklar enklere'), easier: t2('Even simpler', 'Enda enklere'),
     off: t2('Flight Intelligence is not available right now. You can still open it and use the EASA rules library.', 'Flight Intelligence er ikke tilgjengelig akkurat nå. Du kan fortsatt åpne den og bruke EASA-regelbiblioteket.'),
     gk: t2('general knowledge', 'generell kunnskap') };
   const setPh = () => { if (inp) inp.placeholder = L(LT.ph); };
@@ -192,7 +193,7 @@
     live.innerHTML = turns.map((t, i) => `<div class="fi-t">
       <p class="fi-q">${esc(t.q)}</p>
       <div class="fi-a">${t.err ? `<p class="fi-err">${esc(t.err)}</p>` : t.a == null ? `<p class="fi-wait">${esc(L(LT.wait))}</p>` : md(t.a, t.list)}</div>
-      ${i === turns.length - 1 && t.a != null ? `<div class="fi-go"><a href="${fiUrl(t.q)}">${esc(L(LT.cont))}</a><a href="fi.html#docs">${esc(L(LT.docs))}</a><button type="button" data-fi-clear>${esc(L(LT.clear))}</button></div>` : ''}
+      ${i === turns.length - 1 && t.a != null ? `<div class="fi-go"><button type="button" class="fi-easy" data-fi-easy>${esc(L(t.easy ? LT.easier : LT.easy))}</button><a href="${fiUrl(t.src || t.q)}">${esc(L(LT.cont))}</a><a href="fi.html#docs">${esc(L(LT.docs))}</a><button type="button" data-fi-clear>${esc(L(LT.clear))}</button></div>` : ''}
     </div>`).join('');
     live.scrollTop = live.scrollHeight;
   }
@@ -204,12 +205,14 @@
     stack.classList.add('is-live');
     live = document.createElement('div'); live.className = 'fi-live'; live.setAttribute('aria-live', 'polite');
     stack.appendChild(live);
-    live.addEventListener('click', e => { if (e.target.closest('[data-fi-clear]')) stopLive(); });
+    live.addEventListener('click', e => { if (e.target.closest('[data-fi-clear]')) stopLive(); else if (e.target.closest('[data-fi-easy]')) ask('', true); });
   }
   function stopLive() {
     if (!live) return; live.remove(); live = null; stack.classList.remove('is-live'); turns = []; pg.hidden = false; over = false; show(cur, false); go();
   }
-  function prompt(q, list) {
+  /* "Explain it more simply": the last answer again in plain language, same facts and EASA entries, nothing new */
+  const EASY = 'The pilot finds your last answer hard to follow. Explain the same thing again in plain language: start with the core idea in one or two short sentences; use short sentences and everyday words; explain every abbreviation the first time you use it (for example RVR = how far you can see along the runway); give one concrete example with real numbers, or one simple comparison; end with one line on what it means in practice for the pilot. Keep exactly the same facts, numbers, rule IDs and citations as your last answer. Do not add new rules, numbers or exceptions, and do not leave out a condition that changes the answer.';
+  function prompt(q, list, easy) {
     const hist = turns.slice(-5, -1).filter(t => t.a).map(t => 'PILOT: ' + t.q.slice(0, 800) + '\nFLIGHT INTELLIGENCE: ' + t.a.slice(0, 1200)).join('\n');
     return `You are Flight Intelligence, the AI instructor of NORDAP (the Nordic Aviation Platform), answering a pilot on NORDAP's front page. Answer any aviation question clearly, like a good flight instructor: aerodynamics, meteorology, systems, navigation, procedures and EASA rules.
 Write in ${NAI.langName()} and keep aviation terms in English. Be concrete and short: at most a few short paragraphs or a short list. No tables.
@@ -217,19 +220,21 @@ ${list.length ? EASA.promptBlock(list) : 'EASA RULES: no entry from the NORDAP E
 
 RULES FOR THIS ANSWER: Mark every statement that does not come from an EASA entry above with [GK] (general knowledge), once at the end of the sentence. Never give aircraft-specific limitations, speeds or procedure steps from memory: say that Flight Intelligence can answer that from the pilot's own AFM and SOP on the Flight Intelligence page. If the question contains a wrong premise (a wrong number, a rule that does not exist), correct it.
 ${hist ? '\nCONVERSATION SO FAR:\n' + hist + '\n' : ''}
-PILOT: ${q.slice(0, 1500)}`;
+${easy ? 'PILOT NOW: (asks you to explain your last answer more simply)\n' + EASY : 'PILOT: ' + q.slice(0, 1500)}`;
   }
-  async function ask(q) {
-    q = String(q || '').trim(); if (!q || busy) return;
+  async function ask(q, easy) {
+    q = String(q || '').trim(); const prev = easy ? [...turns].reverse().find(x => x.a) : null;
+    if (busy || (easy ? !prev : !q)) return;
     busy = true; const btn = form.querySelector('button'); if (btn) btn.disabled = true;
     startLive();
-    const t = { q, a: null, list: [] }; turns.push(t); if (turns.length > 8) turns.shift(); paintLive();
+    const t = easy ? { q: L(LT.easy), a: null, list: prev.list, easy: true, src: prev.src || prev.q } : { q, a: null, list: [] };
+    turns.push(t); if (turns.length > 8) turns.shift(); paintLive();
     try {
       await deps();
       if (!window.NAI || !(await NAI.ready)) { t.err = L(LT.off); }
       else {
-        t.list = EASA.isRules(q) ? EASA.search(q, 4) : [];
-        t.a = String(await NAI.text(prompt(q, t.list), { tier: 'default' }) || '').split(/\n-{3,}\s*\n?/)[0];
+        if (!easy) t.list = EASA.isRules(q) ? EASA.search(q, 4) : [];
+        t.a = String(await NAI.text(prompt(q, t.list, easy), { tier: 'default' }) || '').split(/\n-{3,}\s*\n?/)[0];
         if (!t.a.trim()) t.err = NAI.errText({ code: 'other' });
       }
     } catch (e) { t.err = window.NAI ? NAI.errText(e) : L(LT.off); }

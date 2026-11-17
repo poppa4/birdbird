@@ -36,6 +36,7 @@
 .grade .g{font-family:var(--f-display);font-stretch:85%;font-weight:780;font-size:28px;line-height:1;min-width:52px}
 .labgo{display:inline-flex;gap:8px;align-items:center;margin-top:8px;font-size:14px;background:#F2F6F4;border:1px solid #C9D9D2;border-radius:4px;padding:6px 10px}
 .labgo a{font-weight:600}
+.a .easy{margin-top:8px}
 .ansrow{display:flex;flex-direction:column;gap:8px}
 .ansrow textarea{min-height:84px}
 .btn.talk{min-width:150px}.btn.talk.on{background:var(--red);border-color:var(--red);color:#fff}
@@ -449,7 +450,7 @@ function md(s,nsrc,easa){ s=esc(s); const lines=s.split('\n'); let h='',ul=false
     const hh=l.match(/^#{1,4}\s+(.*)/); if(hh){ h+='<h4>'+inl(hh[1])+'</h4>'; continue; }
     if(l.trim()) h+='<p>'+inl(l)+'</p>'; }
   if(ul) h+='</ul>'; if(ol) h+='</ol>'; return h; }
-el('log').addEventListener('click',e=>{ const c=e.target.closest('.cite[data-s]'); if(!c) return; const turn=c.closest('[data-t]'); const tr=S&&S.turns[+turn.dataset.t]; if(tr){ drawSrc(tr.src,tr.regs,[+c.dataset.s],tr.easa); } const t=el('si'+c.dataset.s); if(t) t.scrollIntoView({block:'nearest',behavior:'smooth'}); });
+el('log').addEventListener('click',e=>{ if(e.target.closest('[data-easy]')){ if(!S||el('tSend').disabled) return; if(S.paused) togglePause(); turn(null,false,true); return; } const c=e.target.closest('.cite[data-s]'); if(!c) return; const tn=c.closest('[data-t]'); const tr=S&&S.turns[+tn.dataset.t]; if(tr){ drawSrc(tr.src,tr.regs,[+c.dataset.s],tr.easa); } const t=el('si'+c.dataset.s); if(t) t.scrollIntoView({block:'nearest',behavior:'smooth'}); });
 
 /* ---------- økt ---------- */
 function tick(){ if(!S||S.paused) return; S.secs++; el('clock').textContent=Math.floor(S.secs/60)+':'+String(S.secs%60).padStart(2,'0'); }
@@ -469,7 +470,7 @@ function pickEx(user){ const P=pool(S.inst,S.ac); const prevQ=[...S.turns].rever
   return ex; }
 function pickEasa(user){ const prevQ=[...S.turns].reverse().find(t=>t.question); const t=[S.topic,user||'',prevQ?prevQ.question:''].join(' ');
   return EASA.isRules(t)? EASA.search(t,4) : []; }
-function prompt(user,skip,ex,easa){
+function prompt(user,skip,ex,easa,easy){
   const I=INST[S.inst], ac=acOf(S.ac);
   const srcTxt= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name} (${KN[x.d.kind]||'document'}${x.d.rev?', revision '+x.d.rev:''}), page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
   const labs=Object.entries(LABS).map(([k,v])=>`${k}: ${v[1]} (${v[2]})`).join('; ');
@@ -481,10 +482,11 @@ function prompt(user,skip,ex,easa){
     check:`MODE: Check preparation, like an EASA examiner conducting the oral part of a ${ckScope()[1]}. Scope: ${ckScope()[2]} ${user||skip?'Grade the answer (0-10, 7 = pass standard), say what was missing and give the correct answer with citations, then':'Greet the candidate in one sentence, then'} ask ONE short, practical, often scenario-based question at a time, increasing depth when answers are good, mixing topics and not repeating one.`,
     rev:`MODE: Revision. Focus only on these weak topics from earlier sessions: ${revTopics().join('; ')||'(none recorded yet: pick core topics for this aircraft)'}. ${user||skip?'Grade the answer (0-10), correct it briefly with citations, then':''} ask the next question on a weak topic, rephrased from a different angle than before.`
   }[MODE];
+  const modeNow= easy? EASY_TXT : modeTxt;
   return `You are ${I.role}, working inside NORDAP Flight Intelligence. ${I.rules}
 Aircraft: ${ac.name}${ac.type?' ('+ac.type+')':''}. ${S.topic?'The pilot wants to focus on: '+S.topic+'.':''}
 Write in ${NAI.langName()} and keep aviation terms, speeds and checklist items in English. Be concrete and short: a few short paragraphs or a short list. This may be read aloud, so avoid tables.
-${modeTxt}
+${modeNow}
 
 SOURCES (excerpts from the pilot's own documents):
 ${srcTxt}
@@ -495,26 +497,30 @@ Virtual Labs simulations you may recommend when the pilot misunderstands a conce
 
 NORDAP PAGES you may send the pilot to when doing something there would help more than reading your answer (only these URLs): ${goList(user).map(g=>g[0]+' = '+g[1]).join('; ')}.
 
-${hist?'CONVERSATION SO FAR:\n'+hist+'\n':''}${user?'PILOT NOW: '+String(user).slice(0,3000)+'\n(this may be dictated by speech recognition: ignore spelling)':skip?'PILOT NOW: (says they do not know)':''}
+${hist?'CONVERSATION SO FAR:\n'+hist+'\n':''}${easy?'PILOT NOW: (asks you to explain your last answer more simply)':user?'PILOT NOW: '+String(user).slice(0,3000)+'\n(this may be dictated by speech recognition: ignore spelling)':skip?'PILOT NOW: (says they do not know)':''}
 
 Reply in this exact format: your answer for the pilot first. Then a line with only three dashes (---), then one JSON object on one line:
 {"grade": integer 0-10 or null (only when you graded an answer or decision), "topic": "short topic of what you graded or null", "gap": "short topic the pilot clearly does not know yet, or null", "lab": "one lab key from the list if it would really help, or null", "go": "one NORDAP page URL from the list if the pilot should go and do something there (fly a procedure in a simulator, build a briefing pack, look at a route, open their workspace documents), or null", "question": "the question you just asked the pilot, or null"}`; }
+/* "Explain it more simply": the same answer again in plain language, same facts and sources, nothing new */
+const EASY_TXT='MODE: Explain more simply. The pilot finds your last answer hard to follow. Explain the same thing again in plain language: start with the core idea in one or two short sentences; use short sentences and everyday words; explain every abbreviation the first time you use it (for example RVR = how far you can see along the runway); give one concrete example with real numbers, or one simple comparison; end with one line on what it means in practice for the pilot. Keep exactly the same facts, numbers, rule IDs and citations as your last answer. Do not add new rules, numbers or exceptions, and do not leave out a condition that changes the answer. No follow-up question.';
 function revTopics(){ return gapsAll().filter(g=>!S||g.ac===S.ac||!g.ac).slice(0,8).map(g=>g.t); }
 
-async function turn(user,skip){
-  if(!S) return; NAI.hush(); if(user) addQ(user); else if(skip) addQ(L({en:'I don’t know.',no:'Jeg vet ikke.'}));
-  const ex=pickEx(user), ea=pickEasa(user); const P=prompt(user,skip,ex,ea);
-  const d=addA('',{q:user||(skip?'(I don\'t know)':''),src:ex,regs:[],easa:ea}); const ti=+d.dataset.t;
+async function turn(user,skip,easy){
+  if(!S) return; NAI.hush(); if(easy) addQ(L({en:'Explain it more simply',no:'Forklar enklere'})); else if(user) addQ(user); else if(skip) addQ(L({en:'I don’t know.',no:'Jeg vet ikke.'}));
+  const prevA= easy? [...S.turns].reverse().find(t=>t.a) : null; if(easy&&!prevA) return;
+  const ex= easy? (prevA.src||[]) : pickEx(user), ea= easy? (prevA.easa||[]) : pickEasa(user); const P=prompt(user,skip,ex,ea,easy);
+  const d=addA('',{q:easy?'(explain more simply)':user||(skip?'(I don\'t know)':''),src:ex,regs:[],easa:ea,easy:!!easy}); const ti=+d.dataset.t;
   d.innerHTML=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span><div class="thinking">${L({en:'Thinking…',no:'Tenker…'})}</div>`;
   ctl=new AbortController(); setBusy(true); drawSrc(ex,[],null,ea);
   const who=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span>`;
   try{ const t=await NAI.text(P,{signal:ctl.signal,tier:'default',onText:({text})=>{ d.innerHTML=who+md(text.split(/\n-{3,}\s*\n?/)[0],ex.length,ea); }});
     const [body,meta]=splitMeta(t); const tr=S.turns[ti]; tr.a=body; tr.regs=regsIn(body); tr.question=meta.question||null;
     let extra='';
-    if(meta.grade!=null&&Number.isFinite(+meta.grade)&&(user||skip)){ const g=Math.max(0,Math.min(10,Math.round(+meta.grade))); S.grades.push({topic:String(meta.topic||'').slice(0,80)||((S.turns[ti-1]||{}).question||'').slice(0,60),score:g}); extra+=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
+    if(!easy&&meta.grade!=null&&Number.isFinite(+meta.grade)&&(user||skip)){ const g=Math.max(0,Math.min(10,Math.round(+meta.grade))); S.grades.push({topic:String(meta.topic||'').slice(0,80)||((S.turns[ti-1]||{}).question||'').slice(0,60),score:g}); extra+=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
     if(meta.gap){ const gp=String(meta.gap).slice(0,80); if(!S.gaps.some(x=>x.toLowerCase()===gp.toLowerCase())) S.gaps.push(gp); }
     if(meta.lab&&LABS[meta.lab]){ const lb=LABS[meta.lab]; if(!S.labs.includes(meta.lab)) S.labs.push(meta.lab); extra+=`<div class="labgo">${L({en:'See it in the lab:',no:'Se det i labben:'})} <a href="${lb[0]}" target="_blank" rel="noopener">${esc(T(lb[1]))} →</a> <span class="note">${L({en:'come back and I’ll ask you again',no:'kom tilbake, så spør jeg deg igjen'})}</span></div>`; S.pendingLab=meta.lab; }
     const gl=meta.go&&goList(user).find(g=>g[0]===meta.go); if(gl) extra+=`<div class="labgo">${L({en:'Do it on NORDAP:',no:'Gjør det på NORDAP:'})} <a href="${esc(gl[0])}">${esc(gl[2])} →</a></div>`;
+    if(MODE==='learn'&&body) extra+=`<div class="easy"><button type="button" class="btn sm" data-easy>${L({en:easy?'Even simpler':'Explain it more simply',no:easy?'Enda enklere':'Forklar enklere'})}</button></div>`;
     d.innerHTML=who+md(body,ex.length,ea)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
     saveSoon(); }
   catch(e){ if(e&&e.text) d.innerHTML=who+md(e.text.split(/\n-{3,}/)[0],ex.length,ea); else d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
