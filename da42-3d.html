@@ -178,7 +178,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 .psvg.cpt .rkTop,.psvg.cpt .rkBot{opacity:1;fill-opacity:0;transition:fill-opacity .12s}.psvg.cpt .t-rocker:not(.on) .rkTop,.psvg.cpt .t-rocker.on .rkBot{opacity:1;fill-opacity:.16}
 .psvg.cpt .fguard{transform:rotate(var(--bbr));transition:--bbr .2s}.psvg.cpt .fguard.open{--bbr:-40deg}
 </style>
-<link rel="stylesheet" href="simshell.css?v=9">
+<link rel="stylesheet" href="simshell.css?v=10">
 </head>
 <body data-title="DA42 3D (beta)">
 <script src="site.js?v=79"></script>
@@ -195,6 +195,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 
   <section id="cockpit" class="ckp" aria-label="Cockpit">
     <div class="ctop" role="toolbar" aria-label="Cockpit tools">
+      <a class="cbhome" href="training.html" aria-label="Birdbird: training overview"><span aria-hidden="true">‹</span><b>Birdbird</b></a>
       <select class="cb" id="acSel" aria-label="Aircraft" onchange="location.href=this.value"><option value="da42-3d.html" selected>DA42</option><option value="b200-3d.html">King Air B200</option><option value="c172-3d.html">Cessna 172</option></select>
       <span class="dseg" role="group" aria-label="View"><a href="cockpit.html">2D</a><a href="da42-3d.html" class=on aria-current=page>3D<small>beta</small></a></span>
       <select class="cb afsel" id="apSel" aria-label="Start"></select>
@@ -212,7 +213,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
         <button class="zback" id="zBack" type="button">← Back</button>
         <div class="more" id="moreMenu" hidden role="group" aria-label="Settings"><button class="cb" id="bAhead" type="button" hidden>Look ahead</button><button class="cb" id="bOtw" type="button" aria-pressed="true">Outside view</button><label>Panel area<select id="zoomSel" aria-label="Panel area"></select></label><hr><button class="cb" id="bSound" type="button" aria-pressed="true">Sound</button><button class="cb" id="bTouch" type="button" aria-pressed="false">Touch controls</button><button class="cb" id="bFull" type="button">Full screen</button><hr><button class="cb" id="bDbNow" type="button">Debrief now</button><button class="cb" id="bDbAuto" type="button" aria-pressed="false">Open debrief after landing</button><button class="cb" id="bKeys" type="button">Controls</button><button class="cb" id="bPerf" type="button" aria-pressed="false">Performance meter</button></div>
         <div class="pill" id="pill" aria-live="polite"></div>
-        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.</div></div>
+        <div class="rot"><div><b>⟳</b>Rotate your device to landscape to use the cockpit.<a class="rotback" href="training.html">← Back to Birdbird</a></div></div>
       </div>
       <aside class="drawer" id="drawer" aria-label="Procedures"><div class="din">
         <div class="tabs" role="tablist" aria-label="Procedures"><button data-t="ck" class="on" role="tab" aria-selected="true">Checklist</button><button data-t="fl" role="tab" aria-selected="false">Failures</button><button data-t="sp" role="tab" aria-selected="false">Speeds</button></div>
@@ -331,7 +332,7 @@ table.keys td:first-child{white-space:nowrap;width:1%}
 <script src="cockpit3d.js?v=7"></script>
 <script src="da42-3d.js?v=4"></script>
 <script src="lab.js?v=51"></script>
-<script src="simshell.js?v=8"></script>
+<script src="simshell.js?v=9"></script>
 <script>
 (function(){
 'use strict';

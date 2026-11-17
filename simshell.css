@@ -31,6 +31,7 @@
 .drawer label{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#a9b5bf;margin-top:8px}
 .rot{position:absolute;inset:0;z-index:30;display:none;place-items:center;text-align:center;background:#0b0d10;color:#fff;font:600 16px system-ui;padding:24px}
 .rot b{display:block;font-size:44px;margin-bottom:8px}
+.rot .rotback{display:block;margin-top:22px;font:500 14px system-ui;color:#C9D1D8;text-decoration:underline;text-underline-offset:3px}
 @media (max-height:500px){.ctop{padding:3px 6px}.ctop .cb{padding:5px 8px;font-size:11.5px}.drawer.open,.drawer .din{width:min(270px,36vw)}.drawer .din{font-size:12px;padding:6px 8px}}
 #cockpit:fullscreen{width:100vw;margin:0}
 .ctop{flex-wrap:wrap;row-gap:4px;overflow-x:visible}
@@ -189,3 +190,8 @@
 .ckp .stage:not(.d3){background:linear-gradient(180deg,#3a3f45 0,#2a2e33 45%,#1b1e22 75%,#121417 100%)}
 .ckp .stage:not(.d3):not(.zoomed)>canvas#otw{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 36px),transparent)}
 .ckp .stage.zoomed .afban{left:112px}
+
+/* the way back to the rest of Birdbird, first in the cockpit toolbar */
+.cbhome{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;padding:0 10px 0 4px;margin-right:2px;color:#C9D1D8;text-decoration:none;font:650 13.5px/1 system-ui,sans-serif;letter-spacing:-.01em;border-right:1px solid rgba(255,255,255,.14);align-self:stretch}
+.cbhome span{font-size:18px;line-height:1}.cbhome:hover,.cbhome:focus-visible{color:#fff}
+@media (max-width:760px){.cbhome b{display:none}.cbhome{padding:0 8px 0 2px}}

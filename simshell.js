@@ -26,7 +26,7 @@ if(G.LAB&&G.LAB.add) G.LAB.add({},{
   'Restart':'Start på nytt','Outside view':'Utsikt','Look ahead':'Se fremover','Panel area':'Panelområde',
   'Sound':'Lyd','Full screen':'Fullskjerm','Debrief now':'Debrief nå','Open debrief after landing':'Åpne debrief etter landing',
   'Controls':'Kontroller','Touch controls':'Berøringskontroller','Performance meter':'Ytelsesmåler','← Back':'← Tilbake',
-  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.',
+  'Rotate your device to landscape to use the cockpit.':'Snu enheten til liggende for å bruke cockpiten.','← Back to Birdbird':'← Tilbake til Birdbird',
   [NOTE_EN]:NOTE_NO
 });
 
