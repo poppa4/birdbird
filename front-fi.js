@@ -241,6 +241,9 @@ ${easy ? 'PILOT NOW: (asks you to explain your last answer more simply)\n' + EAS
     } catch (e) { t.err = window.NAI ? NAI.errText(e) : L(LT.off); }
     busy = false; if (btn) btn.disabled = false; paintLive();
   }
+  /* for the quality tests (tools/fi-eval): the exact prompt this page would send for a question, with no conversation */
+  window.NORDAP_FI = { deps, build(q, lang) { const list = EASA.isRules(q) ? EASA.search(q, 4) : [], th = window.THEORY ? THEORY.search(q, 3) : [];
+    let p = prompt(q, list, false, th); if (lang) p = p.replace(/Write in [^.\n]+\./, 'Write in ' + (lang === 'no' ? 'Norwegian (bokmål)' : 'English') + '.'); return p; } };
   if (form && inp) {
     setPh();
     inp.addEventListener('focus', deps, { once: true });

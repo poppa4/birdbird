@@ -477,7 +477,7 @@ let CUR_TH=[];
 function prompt(user,skip,ex,easa,easy){
   const I=INST[S.inst], ac=acOf(S.ac);
   const srcTxt= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name} (${KN[x.d.kind]||'document'}${x.d.rev?', revision '+x.d.rev:''}), page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
-  const labs=Object.entries(LABS).map(([k,v])=>`${k}: ${v[1]} (${v[2]})`).join('; ');
+  const labs=Object.entries(LABS).map(([k,v])=>`${k}: ${v[1]} (${v[2].split(', ').slice(0,6).join(', ')})`).join('; '); /* first keywords only: the prompt stays short on the free engine */
   const hist=S.turns.slice(-8).map(t=>(t.q?'PILOT: '+t.q.slice(0,1200)+'\n':'')+(t.a?'INSTRUCTOR: '+t.a.slice(0,1500):'')).join('\n');
   const modeTxt={
     learn:'MODE: Learn. Answer the pilot\'s question clearly and at the right depth, then end with ONE short follow-up question that checks understanding (put it last, on its own line, starting with "Check:").',

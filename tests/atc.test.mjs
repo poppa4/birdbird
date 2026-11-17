@@ -333,3 +333,42 @@ test('calculator: markers are replaced in the paid engine too', async () => {
   const r = await w.call('POST', { messages: [{ role: 'user', content: '2 h 15 min at 38 l/h?' }] }, { cookie });
   assert.equal(r.body.text, 'Fuel: 85.5 l.');
 });
+
+/* ---------- reference check, eval key, owner token cap ---------- */
+import { checkRefs } from '../functions/api/atc.js';
+test('reference check: made-up rule IDs and U.S. rules are marked, given ones are not', () => {
+  const given = 'Write in English.\n[E1] EASA: NCO.OP.140 …';
+  assert.equal(checkRefs('See NCO.OP.140.', given).text, 'See NCO.OP.140.');
+  assert.equal(checkRefs('AMC1 NCO.OP.140 explains it.', given).text, 'AMC1 NCO.OP.140 explains it.');
+  assert.match(checkRefs('See NCO.OP.999 and NCO.OP.999 again.', given).text, /^See NCO\.OP\.999 \(unverified – check the official EASA text\) and NCO\.OP\.999 again\.$/);
+  assert.match(checkRefs('It is in Part-NCO guidance.', given).text, /Part-NCO guidance \(unverified/);
+  assert.match(checkRefs('Per 14 CFR 91.155 …', given).text, /14 CFR 91\.155 \(U\.S\. rule – not valid under EASA\)/);
+  assert.match(checkRefs('Se SERA.5001.', 'Write in Norwegian').text, /SERA\.5001 \(ikke bekreftet/);
+  assert.equal(checkRefs('Lift is a force [T1].', given).flagged, 0);
+});
+test('workers ai: hard rules follow the question, and a made-up reference is marked in the answer', async () => {
+  const calls = [];
+  const AI = { run: async (model, inp) => { calls.push(inp); return { choices: [{ message: { content: '27 ft per hPa is given in Part-NCO guidance.' }, finish_reason: 'stop' }], usage: { prompt_tokens: 10, completion_tokens: 10 } }; } };
+  const w = world({ noKey: true, env: { AI } });
+  const cookie = await w.user('u1', 1);
+  const r = await w.call('POST', { messages: [{ role: 'user', content: 'Write in English. How many ft per hPa?' }] }, { cookie });
+  assert.match(calls[0].messages[1].content, /Never name a regulation, rule ID/);
+  assert.match(r.body.text, /Part-NCO guidance \(unverified/);
+});
+test('eval key: skips per-user and no-account caps, not the site-wide ones; a wrong key does nothing', async () => {
+  const { createHash } = await import('node:crypto');
+  const KEYE = 'test-eval-key-0123456789abcdef';
+  const w = world({ env: { ATC_EVAL_SHA256: createHash('sha256').update(KEYE).digest('hex'), ATC_ANON_DAILY_REQUESTS: '1', ATC_GLOBAL_DAILY_REQUESTS: '3' } });
+  const q = { messages: [{ role: 'user', content: 'q' }] };
+  assert.equal((await w.call('POST', q, { headers: { 'x-nordap-eval': KEYE } })).status, 200);
+  assert.equal((await w.call('POST', q, { headers: { 'x-nordap-eval': KEYE } })).status, 200); // over the no-account cap of 1
+  assert.equal((await w.call('POST', q, { headers: { 'x-nordap-eval': 'wrong-key-0123456789abcdef' } })).status, 200); // a normal visitor's first question
+  const r = await w.call('POST', q, { headers: { 'x-nordap-eval': KEYE } });
+  assert.equal(r.status, 429); assert.equal(r.body.error, 'service_limit'); // site-wide cap still applies
+});
+test('owners also skip the per-user token cap', async () => {
+  const w = world({ env: { ATC_USER_DAILY_TOKENS: '100', ATC_OWNER_IDS: 'u1' } });
+  const cookie = await w.user('u1', 1);
+  const q = { messages: [{ role: 'user', content: 'q' }] };
+  for (let i = 0; i < 3; i++) assert.equal((await w.call('POST', q, { cookie })).status, 200);
+});

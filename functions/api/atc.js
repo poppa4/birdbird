@@ -68,8 +68,24 @@ const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA)
   + '(3) Keep Part-NCO, Part-NCC and Part-CAT apart: a light aircraft flown privately or by a training organisation falls under Part-NCO unless the message says otherwise. '
   + '(4) If the question contains a wrong premise (a wrong number, a rule that does not exist, a wrong rule ID), correct it instead of going along with it. '
   + '(5) The approved flight manual and the official legal text always take precedence; say so when it matters. Be short and concrete.\n\n' + CALC_RULES;
+/* The free model follows the system prompt loosely (tested on nordap.eu, Nov 2026: it named "Part-NCO guidance" that it was
+   never given). The hard rules are therefore repeated right after the pilot's last message, where it does follow them. */
+const RULES_REMINDER = '\n\n(NORDAP rules for this answer: cite only the entries given above ([E…] EASA, [T…] theory, [S…] documents). '
+  + 'Never name a regulation, rule ID, AMC/GM, document, handbook or website that is not in them, and never invent one. Rules come only from EASA; '
+  + 'never use FAA/U.S. rules. If the pilot\'s question contains a wrong fact, say so and correct it.)';
 /* the paid engine gets only the calculator rules as its system prompt: everything else is in the page's own prompt */
 const ANTHROPIC_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. Follow the instructions in the user message exactly.\n\n' + CALC_RULES;
+/* Quality tests (tests/fi-eval: the question set run against the real model): a request carrying the header x-nordap-eval with
+   the key whose SHA-256 is below (or in the env ATC_EVAL_SHA256) is counted as the tester 'eval': it skips the per-user and
+   no-account caps, never the site-wide ones, so a leaked key can use at most the day's normal allowance. Only the hash is public. */
+const EVAL_KEY_SHA256 = '48e39ebbf700bab0a9a3626aaa03087938f9c7121f4013a69accdc8da922653c';
+async function isEval(c) {
+  const k = c.request.headers.get('x-nordap-eval');
+  if (!k || k.length < 20 || k.length > 200) return false;
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(k));
+  const h = [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return h === EVAL_KEY_SHA256 || (!!c.env.ATC_EVAL_SHA256 && h === String(c.env.ATC_EVAL_SHA256).trim().toLowerCase());
+}
 const MAX_BODY_BYTES = 200000;    // the JSON body of one POST
 const MAX_MESSAGES = 40;
 
@@ -141,7 +157,7 @@ async function reserve(c, userId, day, L, anon, owner) {
       if (u.requests > L.ANON_DAILY_REQUESTS || u.tokens >= L.ANON_DAILY_TOKENS) return 'signup_required';
       const a = await countRequest(c, ANON_GLOBAL, day);
       if (a.requests > L.ANON_GLOBAL_DAILY_REQUESTS) return 'signup_required';
-    } else if (!owner && u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS) return 'daily_limit';
+    } else if (!owner && (u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS)) return 'daily_limit'; // owners skip both per-user caps
     g = await countRequest(c, GLOBAL, day);
     if (g.requests > L.GLOBAL_DAILY_REQUESTS || g.tokens >= L.GLOBAL_DAILY_TOKENS) return 'service_limit';
   } catch (e) { notConfigured(); } // migration 0002 not applied
@@ -190,6 +206,28 @@ async function callModel(c, key, model, messages, L) {
   return data || {};
 }
 
+/* ---------- reference check on every answer ----------
+   A rule ID (CAT.OP.MPA.182, SERA.5015, FCL.740 …), "Part-XXX guidance/AMC/GM" or a U.S. regulation in the answer that was
+   not in what the model was given is marked as unverified, so a made-up reference is never shown as fact. */
+const REF_RE = /\b(?:(?:AMC|GM)\d*\s+)?(?:CAT|NCO|NCC|SPO|SPA|ORO|ORA|ARO|ARA|MED)\.[A-Z]{2,4}(?:\.[A-Z]{1,4})?\.\d{3}(?:\.[A-Za-z0-9]+)*|\bSERA\.\d{4,5}|\bFCL\.\d{3}(?:\.[A-Z])?|\bPart-(?:NCO|NCC|CAT|SPO|ORO|FCL|MED|ORA)\s+(?:guidance|material|AMC|GM|guidelines?)\b/g;
+const US_RE = /\b(?:14\s*CFR(?:\s*(?:Part\s*)?\d+(?:\.\d+)*)?|FAR\s*(?:Part\s*)?\d+(?:\.\d+)*|AIM\s+\d-\d-\d+)/g;
+const normRef = x => String(x).toUpperCase().replace(/\s+/g, ' ').replace(/^(AMC|GM)\d*\s+/, '');
+export function checkRefs(text, given) {
+  if (typeof text !== 'string' || !text) return { text, flagged: 0 };
+  const G = String(given || '').toUpperCase();
+  const no = /Write in Norwegian/i.test(given || '');
+  const tagUnv = no ? ' (ikke bekreftet – sjekk den offisielle EASA-teksten)' : ' (unverified – check the official EASA text)';
+  const tagUs = no ? ' (amerikansk regel – gjelder ikke under EASA)' : ' (U.S. rule – not valid under EASA)';
+  const seen = new Set(); let flagged = 0;
+  let out = text.replace(REF_RE, m => { const k = normRef(m).replace(/\s+(GUIDANCE|MATERIAL|AMC|GM|GUIDELINES?)$/, '');
+    if (G.includes(k) && !/\s(guidance|material|guidelines?)$/i.test(m)) return m;
+    if (/\s(guidance|material|guidelines?)$/i.test(m) && G.includes(normRef(m))) return m;
+    if (seen.has(k)) return m; seen.add(k); flagged++; return m + tagUnv; });
+  out = out.replace(US_RE, m => { if (seen.has(m)) return m; seen.add(m); flagged++; return m + tagUs; });
+  return { text: out, flagged };
+}
+const finish = (text, messages, base) => base ? renderCalc(text).text : checkRefs(renderCalc(text).text, messages.map(m => m.content).join('\n')).text;
+
 /* Workers AI: same messages, our own system prompt; returns { text, used, truncated } */
 function workersText(r) {
   if (!r) return '';
@@ -200,9 +238,9 @@ function workersText(r) {
   if (Array.isArray(r.output)) return r.output.filter(o => o && o.type === 'message').flatMap(o => o.content || []).filter(x => x && typeof x.text === 'string').map(x => x.text).join('');
   return '';
 }
-async function callWorkers(c, messages, L) {
+async function callWorkers(c, messages, L, base) {
   const last = messages.length - 1;
-  const msgs = [{ role: 'system', content: WORKERS_SYSTEM }, ...messages.map((m, i) => i === last ? { role: m.role, content: m.content + CALC_REMINDER } : m)];
+  const msgs = [{ role: 'system', content: WORKERS_SYSTEM }, ...messages.map((m, i) => i === last ? { role: m.role, content: m.content + (base ? '' : RULES_REMINDER) + CALC_REMINDER } : m)];
   const inChars = msgs.reduce((a, m) => a + m.content.length, 0);
   let lastStatus = 'error';
   for (const model of WORKERS_MODELS) {
@@ -235,10 +273,13 @@ async function atcPost(c) {
   if (!engine) notConfigured();
   const key = keyOf(c.env);
   const s = await getSession(c);
-  const anon = !s;
+  const ev = await isEval(c);
+  // eval only: x-nordap-eval-variant: baseline answers without the hard-rules reminder and the reference check, to measure them
+  const base = ev && c.request.headers.get('x-nordap-eval-variant') === 'baseline';
+  const anon = !s && !ev;
   // without an account: counted under an HMAC of the IP address for today (rateKey), never the address itself
-  const who = s ? s.user_id : await rateKey(c, 'anon', ipOf(c.request));
-  await limit(c, 'ai', s ? s.user_id : 'ip|' + ipOf(c.request));
+  const who = ev ? 'eval' : s ? s.user_id : await rateKey(c, 'anon', ipOf(c.request));
+  await limit(c, 'ai', ev ? 'eval' : s ? s.user_id : 'ip|' + ipOf(c.request));
   const len = Number(c.request.headers.get('content-length'));
   if (len > MAX_BODY_BYTES) fail(413, 'too_large', 'That is too much text in one go. Send less and try again.');
   const body = await readJson(c.request, true, MAX_BODY_BYTES);
@@ -247,16 +288,16 @@ async function atcPost(c) {
   const model = MODELS[TIERS[body.tier] || 'default'];
   const day = dayOf(c.now);
   // owners/testers (env ATC_OWNER_IDS: comma-separated user ids) skip the per-user daily caps; the site-wide caps still apply
-  const owner = !!s && String(c.env.ATC_OWNER_IDS || '').split(',').map(x => x.trim()).filter(Boolean).includes(s.user_id);
+  const owner = ev || !!s && String(c.env.ATC_OWNER_IDS || '').split(',').map(x => x.trim()).filter(Boolean).includes(s.user_id);
   const over = await reserve(c, who, day, L, anon, owner);
   if (over === 'signup_required') fail(429, 'signup_required', 'You have used the free questions without an account. Create a free account under Profile to keep going.');
   if (over === 'daily_limit') fail(429, 'daily_limit', 'You have used today’s Flight Intelligence questions. They are back tomorrow (00:00 UTC).');
   if (over === 'service_limit') fail(429, 'service_limit', 'Flight Intelligence has reached its limit for today. It is back tomorrow (00:00 UTC).');
 
   if (engine === 'workers') {
-    const w = await callWorkers(c, messages, L);
+    const w = await callWorkers(c, messages, L, base);
     try { await addTokens(c, who, day, w.used); } catch (e) { console.error('nordap atc: could not record usage'); }
-    return json({ ok: true, text: renderCalc(w.text).text, truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
+    return json({ ok: true, text: finish(w.text, messages, base), truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
   }
   const data = await callModel(c, key, model, messages, L);
   const u = data.usage || {};
@@ -268,7 +309,7 @@ async function atcPost(c) {
     if (data.stop_reason === 'refusal') fail(422, 'refused', 'The AI declined that request. Rephrase it.');
     fail(502, 'upstream_error', 'The AI service gave no answer. Try again.');
   }
-  return json({ ok: true, text: renderCalc(text).text, truncated: data.stop_reason === 'max_tokens' }, 200, { 'set-cookie': c.setCookie });
+  return json({ ok: true, text: finish(text, messages, base), truncated: data.stop_reason === 'max_tokens' }, 200, { 'set-cookie': c.setCookie });
 }
 
 /* deps (tests): { now, random, fetch } */
