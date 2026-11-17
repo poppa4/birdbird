@@ -125,10 +125,19 @@ body.briefing .why{display:none}
 .pager select option{color:var(--ink)}
 .clbox{margin-top:18px;border-top:1px solid var(--rule);padding-top:12px}
 .clbox h3{font-size:14px;margin:0 0 2px;display:flex;justify-content:space-between;align-items:baseline}.clbox h3 small{font-weight:600;color:var(--ink-2)}
-.go{margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--rule)}.go h3{margin:0 0 4px}
-.gov{font-weight:700;font-size:14px;margin:0 0 6px;padding:6px 9px;border-radius:7px}.gv-bad{background:var(--warning-wash);color:var(--warning)}.gv-warn{background:#FFF4DC;color:#8A5A00}.gv-ok{background:rgba(31,122,77,.1);color:var(--green)}
-.go ul{list-style:none;margin:0;padding:0}.go li{display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px;font-size:12.5px;line-height:1.38;padding:3px 0}.go li i{font-style:normal;font-weight:700;text-align:center}
-.go li em{display:block;font-style:normal;color:var(--ink-2);font-size:12px}.g-bad i{color:var(--warning)}.g-warn i{color:#B86E00}.g-ok i{color:var(--green)}.g-unk i{color:var(--ink-2)}.g-ok span{color:var(--ink-2)}
+.go{margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--rule)}.go h3{margin:0 0 6px}
+.gov{display:flex;flex-direction:column;gap:2px;margin:0 0 8px;padding:9px 11px;border-radius:7px;border-left:4px solid currentColor}.gov b{font-size:15px;font-weight:700}.gov span{font-size:12.5px;line-height:1.35;color:var(--ink-2)}
+.gv-bad{background:var(--warning-wash);color:var(--warning)}.gv-warn{background:#FFF4DC;color:#8A5A00}.gv-ok{background:rgba(31,122,77,.1);color:var(--green)}.gv-unk{background:#EEF1F5;color:var(--ink)}
+.gometer{height:4px;background:var(--rule);border-radius:2px;overflow:hidden}.gometer i{display:block;height:100%;background:var(--ink-2)}.gocount{margin:4px 0 10px!important;font-size:11.5px;color:var(--ink-2)}
+.gok{margin:10px 0 4px!important;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.go ul{list-style:none;margin:0;padding:0}
+.gol li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:6px;font-size:12.5px;line-height:1.38;padding:5px 0;border-top:1px solid var(--rule)}.gol li:first-child{border-top:0}.gol li i{font-style:normal;font-weight:700;text-align:center}
+.gol li b,.gtodo li b,.gtodo li a{display:block;font-weight:600;color:var(--ink)}.gol li span{display:block}.gol li em{display:block;font-style:normal;color:var(--ink-2);font-size:12px;margin-top:2px}
+.gol li a,.gtodo li a{font-size:12px;color:var(--magenta);text-decoration:none}.gol li a{display:inline-block;margin-top:3px}.gol li a:hover,.gtodo li a:hover{text-decoration:underline}
+.g-bad i{color:var(--warning)}.g-warn i{color:#B86E00}
+.gtodo li{font-size:12.5px;line-height:1.35;padding:5px 0 5px 10px;border-left:2px solid var(--rule);margin:0 0 4px}.gtodo li a{font-size:12.5px;color:var(--ink)}.gtodo li a::after{content:''}.gtodo li span{display:block;color:var(--ink-2);font-size:12px}
+.gdone{display:flex;flex-wrap:wrap;gap:4px;margin:0!important}.gdone span{font-size:11.5px;padding:2px 7px;border-radius:10px;background:rgba(31,122,77,.1);color:var(--green)}
+.gonote{font-size:11.5px!important;margin:10px 0 0!important}
 .clbox .clbar{height:4px;background:var(--rule-2);margin:6px 0 8px}.clbox .clbar i{display:block;height:100%;background:var(--green)}
 .cl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .cl li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:7px;align-items:start;font-size:13px;line-height:1.35;padding:3px 0}
@@ -1482,15 +1491,30 @@ function goState(){ const f=P.f, g=k=>num(f[k]), out=[], add=(lv,t,why,fix)=>out
   { const rk=['pilot','ac','wx','terr','aero','night','time','fuel'].map(k=>+f['rk.'+k]||0), hi=rk.filter(v=>v===3).length;
     if(rk.some(Boolean)) add(hi>=2?'bad':hi?'warn':'ok',L({en:'Your risk assessment',no:'Din risikovurdering'}),hi?L({en:`${hi} factor(s) high`,no:`${hi} faktor(er) høy`}):L({en:'no high factors',no:'ingen høye faktorer'}),hi?L({en:'Name a mitigation for each high factor, or change the plan.',no:'Navngi et tiltak for hver høye faktor, eller endre planen.'}):''); }
   return out; }
+/* the go / no-go box: the verdict first, then what needs attention, what is not checked yet (each with a link to its page), and what is fine */
+const GO_SEC=[[/SIGMET|AIRMET/,'met'],[/Icing|Ising|Turbul/,'xsec'],[/^NOTAM/,'notam'],[/Daylight|Dagslys/,'air'],[/Fuel|Drivstoff/,'fuel'],[/Mass|Masse/,'mb'],[/Runway|Banelengde/,'rwy'],[/Licence|Sertifikat/,'pilot'],[/risk|risiko/i,'risk']];
+function goSec(x){ for(const [re,id] of GO_SEC) if(re.test(x.t)) return id; return /^(Departure|Destination|Take-off|Alternate|Avgang|Destinasjon|Avgangsalternativ|Alternativ)/.test(x.t)?'met':''; }
+function goLink(x,label){ const id=goSec(x), s=id&&document.getElementById('s-'+id); return s&&!s.hidden?`<a href="#s-${id}" data-go="${id}">${esc(label)} →</a>`:''; }
 function goHtml(){ let G=[]; try{ G=goState(); }catch(e){ return ''; } if(!G.length) return '';
-  const nb=G.filter(x=>x.lv==='bad').length, nw=G.filter(x=>x.lv==='warn').length, nu=G.filter(x=>x.lv==='unk').length;
-  const v=nb?['bad',L({en:'No-go as planned',no:'No-go slik det er planlagt'})]:nw||nu?['warn',L({en:'Go only if you can manage the yellow points',no:'Go bare hvis du kan håndtere de gule punktene'})]:['ok',L({en:'Nothing against it in what you entered. Not verified by NORDAP',no:'Ingenting imot i det du har ført inn. Ikke kontrollert av NORDAP'})];
-  const ic={bad:'✗',warn:'!',ok:'✓',unk:'?'}, ord={bad:0,warn:1,unk:2,ok:3};
-  return `<div class="go"><h3 aria-level="2">Go / no-go</h3><p class="gov gv-${v[0]}">${v[1]}${nu?` <small>· ${nu} ${L({en:'not checked',no:'ikke sjekket'})}</small>`:''}</p><ul>${G.slice().sort((a,b)=>ord[a.lv]-ord[b.lv]).map(x=>`<li class="g-${x.lv}"><i>${ic[x.lv]}</i><span><b>${esc(x.t)}</b> ${esc(x.why)}${x.fix?`<em>${esc(x.fix)}</em>`:''}</span></li>`).join('')}</ul><p class="note" style="font-size:11.5px;margin:6px 0 0">${L({en:'A summary of what is in the pack. Model icing and turbulence are rough guides. You make the decision.',no:'Et sammendrag av det som står i pakken. Modell-ising og -turbulens er grove pekepinner. Du tar avgjørelsen.'})}</p></div>`; }
+  const by=lv=>G.filter(x=>x.lv===lv), bad=by('bad'), warn=by('warn'), unk=by('unk'), ok=by('ok'), done=G.length-unk.length;
+  const v=bad.length?['bad',L({en:'No-go as planned',no:'No-go slik det er planlagt'}),L({en:`${bad.length} point${bad.length>1?'s':''} stop${bad.length>1?'':'s'} the flight as planned.`,no:`${bad.length} punkt${bad.length>1?'er':''} stopper flygingen slik den er planlagt.`})]
+    :warn.length?['warn',L({en:'Go with care',no:'Go med forsiktighet'}),L({en:`${warn.length} point${warn.length>1?'s':''} you must have a plan for.`,no:`${warn.length} punkt${warn.length>1?'er':''} du må ha en plan for.`})]
+    :unk.length?['unk',L({en:'Not ready to decide',no:'Ikke klar for avgjørelse'}),L({en:`Nothing against it so far, but ${unk.length} check${unk.length>1?'s are':' is'} missing.`,no:`Ingenting imot så langt, men ${unk.length} sjekk${unk.length>1?'er':''} mangler.`})]
+    :['ok',L({en:'No findings',no:'Ingen funn'}),L({en:'Nothing against it in what you entered. You make the decision.',no:'Ingenting imot i det du har ført inn. Du tar avgjørelsen.'})];
+  const ic={bad:'✗',warn:'!',ok:'✓'};
+  const item=x=>`<li class="g-${x.lv}"><i aria-hidden="true">${ic[x.lv]}</i><div><b>${esc(x.t)}</b><span>${esc(x.why)}</span>${x.fix?`<em>${esc(x.fix)}</em>`:''}${goLink(x,L({en:'Open the page',no:'Åpne siden'}))}</div></li>`;
+  const todo=x=>`<li>${goLink(x,x.t)||`<b>${esc(x.t)}</b>`}<span>${esc(x.fix||x.why)}</span></li>`;
+  return `<div class="go"><h3 aria-level="2">Go / no-go</h3>
+    <div class="gov gv-${v[0]}"><b>${v[1]}</b><span>${v[2]}</span></div>
+    <div class="gometer" aria-label="${done} / ${G.length}"><i style="width:${Math.round(done/G.length*100)}%"></i></div><p class="gocount">${L({en:`${done} of ${G.length} checked`,no:`${done} av ${G.length} sjekket`})}</p>
+    ${bad.length||warn.length?`<p class="gok">${L({en:'Needs attention',no:'Trenger oppmerksomhet'})}</p><ul class="gol">${bad.concat(warn).map(item).join('')}</ul>`:''}
+    ${unk.length?`<p class="gok">${L({en:'Not checked yet',no:'Ikke sjekket ennå'})}</p><ul class="gtodo">${unk.map(todo).join('')}</ul>`:''}
+    ${ok.length?`<p class="gok">${L({en:'OK',no:'OK'})}</p><p class="gdone">${ok.map(x=>`<span title="${esc(x.why)}">✓ ${esc(x.t)}</span>`).join('')}</p>`:''}
+    <p class="note gonote">${L({en:'A summary of what is in this pack, not an approval. Model icing and turbulence are rough guides. You make the decision.',no:'Et sammendrag av det som står i pakken, ikke en godkjenning. Modell-ising og -turbulens er grove anslag. Du tar avgjørelsen.'})}</p></div>`; }
 function clHtml(){ const st=clState(), n=st.filter(x=>x.done).length;
   return goHtml()+`<h3 aria-level="2">${L({en:'Before you go',no:'Før du drar'})}<small>${n} / ${st.length}</small></h3><div class="clbar"><i style="width:${Math.round(n/st.length*100)}%"></i></div><ul class="cl">${st.map(x=>`<li class="${x.done?'done':''}"><input type="checkbox" data-cl="${x.id}" ${x.done?'checked':''} ${x.auto?'disabled title="'+esc(L({en:'Filled in the pack',no:'Fylt ut i pakken'}))+'"':''} aria-label="${esc(L(x.t))}"><span>${x.id.indexOf('x.')!==0&&document.getElementById('s-'+x.id)&&!document.getElementById('s-'+x.id).hidden?`<a href="#s-${x.id}" data-go="${x.id}">${esc(L(x.t))}</a>`:esc(L(x.t))}${x.auto?`<em>✓ ${L({en:'in the pack',no:'i pakken'})}</em>`:''}</span></li>`).join('')}</ul>
    <p class="note" style="font-size:12px;margin:8px 0 0">${L({en:'Not a form. Items tick themselves when you fill in that page; tick the rest yourself.',no:'Ikke et skjema. Punktene hukes av selv når du fyller ut den siden; huk av resten selv.'})}</p>`; }
-function drawCL(){ const h=clHtml(); el('clbox').innerHTML=h; el('clbox2').innerHTML=h; const st=clState(), n=st.filter(x=>x.done).length; let gv=''; try{ const G=goState(); gv=G.some(x=>x.lv==='bad')?'✗ No-go · ':G.some(x=>x.lv==='warn'||x.lv==='unk')?'! Go / no-go · ':L({en:'✓ No findings · ',no:'✓ Ingen funn · '}); }catch(e){} el('clmob').querySelector('summary').textContent=gv+L({en:'Before you go',no:'Før du drar'})+` · ${n} / ${st.length}`;
+function drawCL(){ const h=clHtml(); el('clbox').innerHTML=h; el('clbox2').innerHTML=h; const st=clState(), n=st.filter(x=>x.done).length; let gv=''; try{ const G=goState(); gv=G.some(x=>x.lv==='bad')?L({en:'✗ No-go · ',no:'✗ No-go · '}):G.some(x=>x.lv==='warn')?L({en:'! Go with care · ',no:'! Go med forsiktighet · '}):G.some(x=>x.lv==='unk')?L({en:'… Not ready · ',no:'… Ikke klar · '}):L({en:'✓ No findings · ',no:'✓ Ingen funn · '}); }catch(e){} el('clmob').querySelector('summary').textContent=gv+L({en:'Before you go',no:'Før du drar'})+` · ${n} / ${st.length}`;
   el('clprint').innerHTML=goHtml()+`<h2>${L({en:'Before you go',no:'Før du drar'})} – ${esc(P.title||'')}</h2><ul>${st.map(x=>`<li><b>${x.done?'✓':''}</b>${esc(L(x.t))}</li>`).join('')}</ul>`;
   const open=st.filter(x=>!x.done).map(x=>x.t.en).join('; '); if((P.f['cl.open']||'')!==open){ P.f['cl.open']=open; } }
 ['clbox','clbox2'].forEach(id=>el(id).addEventListener('click',e=>{ const c=e.target.closest('input[data-cl]'); if(c){ P.f['cl.'+c.dataset.cl]=c.checked?'1':''; drawCL(); queueSave(); return; } const a=e.target.closest('a[data-go]'); if(a&&view==='book'){ e.preventDefault(); const i=vis().findIndex(s=>s.id==='s-'+a.dataset.go); if(i>=0) go(i); } }));
