@@ -40,3 +40,8 @@ test('_headers caches only versioned kinds of file, and never HTML', () => {
   const h = fs.readFileSync(path.join(root, '_headers'), 'utf8').split('\n').filter(l => l && !l.startsWith('#') && !/^\s/.test(l));
   assert.deepEqual(h, ['/*.js', '/*.css', '/fonts/*.woff2', '/models/*.glb']);
 });
+
+test('every script in the site root parses (a browser-only file is not loaded by any other test)', async () => {
+  const { execFileSync } = await import('node:child_process'); const { readdirSync } = await import('node:fs');
+  for (const f of readdirSync(new URL('..', import.meta.url)).filter(n => n.endsWith('.js'))) execFileSync(process.execPath, ['--check', new URL('../' + f, import.meta.url).pathname]);
+});
