@@ -109,7 +109,9 @@ It needs the accounts database above, plus two things:
    choose **Workers AI**, variable name `AI` (exactly that). Save.
 3. **Redeploy** (Deployments → latest Production → ⋯ → Retry deployment).
 
-Then open https://nordap.eu/fi.html signed in and ask a question. Signed-out visitors are asked to sign in.
+Then open https://nordap.eu/fi.html and ask a question. Visitors without an account get a few free questions a day
+(`ANON_DAILY_REQUESTS`, default 5; all of them together at most `ANON_GLOBAL_DAILY_REQUESTS`); after that they are asked to
+create a free account. Each limit can be changed with an environment variable named `ATC_` + the name, e.g. `ATC_ANON_DAILY_REQUESTS`.
 Daily caps for the free engine are in `WORKERS_LIMITS` in `functions/api/atc.js` (about 300 questions a day for the
 whole site, 25 per user), set so the account stays inside the free 10,000 Neurons. On the Workers Free plan Cloudflare
 never bills: when the allocation is used up the AI simply answers "back tomorrow".

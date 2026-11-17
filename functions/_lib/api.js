@@ -555,5 +555,5 @@ export const onMeRecovery = endpoint({ POST: newRecovery });
 export const onMeExport = endpoint({ GET: meExport });
 export const onMeCredentials = endpoint({ DELETE: credDelete });
 export const onSync = endpoint({ GET: syncGet, PUT: syncPut });
-export { getSession, requireSession, readJson, limit, fail }; // used by functions/api/atc.js
+export { getSession, requireSession, readJson, limit, fail, rateKey, ipOf }; // used by functions/api/atc.js
 export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u, rateKey, maybeCleanup, cleanupNow, CLEANUP_EVERY, AI_KEEP_DAYS };

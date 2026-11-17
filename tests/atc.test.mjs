@@ -38,6 +38,7 @@ function world(opts) {
     if (o.origin !== null && (method !== 'GET' || o.origin)) h.set('origin', o.origin || ORIGIN);
     if (body !== undefined) h.set('content-type', o.ct || 'application/json');
     if (o.cookie) h.set('cookie', o.cookie);
+    for (const [k, v] of Object.entries(o.headers || {})) h.set(k, v);
     const req = new Request(ORIGIN + '/api/atc', { method, headers: h, body: body === undefined ? undefined : (typeof body === 'string' ? body : JSON.stringify(body)) });
     const err = console.error; console.error = (...a) => logs.push(a.map(String).join(' '));
     let res; try { res = await fn({ request: req, env, waitUntil: () => {} }); } finally { console.error = err; }
@@ -66,14 +67,37 @@ test('not configured: GET says so with 200, POST is a clear 503, the model is ne
   assert.equal(p.status, 503); assert.equal(p.body.error, 'not_configured'); assert.equal(w.up.calls.length, 0);
 });
 
-test('signed out: GET is 200 { ok:false, reason:"signed_out" }, POST is 401, the model is never called', async () => {
-  const w = world();
+test('signed out: a few free questions per visitor (HMAC of the IP, never the IP), then signup_required', async () => {
+  const w = world({ env: { ATC_ANON_DAILY_REQUESTS: '3' } });
+  const ip = { 'cf-connecting-ip': '203.0.113.7' };
   const g = await w.call('GET');
-  assert.equal(g.status, 200); assert.deepEqual(g.body, { ok: false, reason: 'signed_out' });
-  assert.deepEqual((await w.call('GET', undefined, { cookie: COOKIE + '=' + TOKEN(9) })).body, { ok: false, reason: 'signed_out' });
-  const p = await w.call('POST', Q);
-  assert.equal(p.status, 401); assert.equal(p.body.error, 'signed_out');
-  assert.equal(w.up.calls.length, 0);
+  assert.equal(g.status, 200); assert.deepEqual(g.body, { ok: true, anon: true });
+  for (let i = 0; i < 3; i++) {
+    const p = await w.call('POST', Q, { headers: ip });
+    assert.equal(p.status, 200, JSON.stringify(p.body)); assert.equal(p.body.ok, true);
+  }
+  const over = await w.call('POST', Q, { headers: ip });
+  assert.equal(over.status, 429); assert.equal(over.body.error, 'signup_required'); assert.match(over.body.message, /account/);
+  assert.equal(w.up.calls.length, 3);
+  // another visitor still has their own free questions
+  assert.equal((await w.call('POST', Q, { headers: { 'cf-connecting-ip': '198.51.100.9' } })).status, 200);
+  // nothing in the database contains the IP address
+  const dump = JSON.stringify(w.env.DB.raw.prepare('SELECT * FROM ai_usage').all()) + JSON.stringify(w.env.DB.raw.prepare('SELECT * FROM rate_limits').all());
+  assert.ok(!dump.includes('203.0.113.7') && !dump.includes('198.51.100.9'));
+  assert.ok(w.env.DB.raw.prepare("SELECT COUNT(*) AS n FROM ai_usage WHERE user_id LIKE 'anon:%'").get().n === 2);
+  // a signed-in user is not affected by the visitor limit
+  const ck = await w.user('u1', 1);
+  assert.equal((await w.call('POST', Q, { cookie: ck, headers: ip })).status, 200);
+});
+
+test('signed out: all visitors together stop at ANON_GLOBAL_DAILY_REQUESTS, account holders keep going', async () => {
+  const w = world({ env: { ATC_ANON_GLOBAL_DAILY_REQUESTS: '2' } });
+  assert.equal((await w.call('POST', Q, { headers: { 'cf-connecting-ip': '192.0.2.1' } })).status, 200);
+  assert.equal((await w.call('POST', Q, { headers: { 'cf-connecting-ip': '192.0.2.2' } })).status, 200);
+  const p = await w.call('POST', Q, { headers: { 'cf-connecting-ip': '192.0.2.3' } });
+  assert.equal(p.status, 429); assert.equal(p.body.error, 'signup_required');
+  const ck = await w.user('u1', 1);
+  assert.equal((await w.call('POST', Q, { cookie: ck })).status, 200);
 });
 
 test('happy path: GET ok, POST returns { ok, text }, sends the allow-listed model, counts requests and tokens only', async () => {

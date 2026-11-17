@@ -1,13 +1,15 @@
 /* NORDAP – Cloudflare Pages Function: Flight Intelligence (the AI behind ai.js: Ask your documents, fi.html, the radio trainer, …).
 
    GET  /api/atc   -> 200 { ok:true }                                  the service can be used by this signed-in user
+                      200 { ok:true, anon:true }                       signed out: a few free questions, then sign up
                       200 { ok:false, reason:'not_configured' }        no API key, no database or migration 0002 not applied
-                      200 { ok:false, reason:'signed_out' }            (200 on purpose: no red lines in the browser console)
+                                                                       (200 on purpose: no red lines in the browser console)
    POST /api/atc   { messages:[{ role:'user'|'assistant', content:'…' }, …], tier?:'quick'|'default'|'high' }
                    -> 200 { ok:true, text, truncated }
                    errors { ok:false, error, message }:
-                      400 bad_request · 401 signed_out · 403 bad_origin · 413 too_large | prompt_too_large · 422 refused
+                      400 bad_request · 403 bad_origin · 413 too_large | prompt_too_large · 422 refused
                       429 rate_limited (per minute) | daily_limit (this user, today) | service_limit (whole site, today)
+                          | signup_required (no account: the free questions without an account are used up)
                       502 upstream_error · 503 not_configured | busy · 504 timeout
 
    Two engines; the first one that is set up is used:
@@ -22,14 +24,15 @@
    Nothing of the question or the answer is stored or logged; D1 keeps counters only (user id, UTC day, requests, tokens).
 
    Cost protection, all enforced here on the server:
-   - signed-in users only, same-origin JSON POST only (the checks in functions/_lib/api.js);
+   - same-origin JSON POST only (the checks in functions/_lib/api.js); without an account only ANON_DAILY_REQUESTS a day per
+     visitor (an HMAC of the IP address, rotated daily) and ANON_GLOBAL_DAILY_REQUESTS for all of them together;
    - a per-minute limit per user (LIMITS.ai there), a daily request cap and a daily token cap per user, and the same for the
      whole site; the request counters are raised before the model is called, so parallel requests cannot slip past them;
    - a body size limit, a prompt size limit and a fixed max_tokens;
    - the model is chosen here from the tier, never by the client; tokens on the stronger model count MODELS[..].weight times
      against the caps (its price relative to the default model), so the worst-case daily cost is the same whatever the tier. */
 
-import { endpoint, json, getSession, requireSession, readJson, limit, fail } from '../_lib/api.js';
+import { endpoint, json, getSession, readJson, limit, fail, rateKey, ipOf } from '../_lib/api.js';
 
 /* ---------- limits (each can be overridden with an environment variable of the same name, prefixed ATC_) ---------- */
 const DEFAULTS = {
@@ -39,7 +42,11 @@ const DEFAULTS = {
   GLOBAL_DAILY_TOKENS: 4000000,   // tokens for the whole site per UTC day (default-model units)
   MAX_INPUT_CHARS: 60000,         // all message text in one request
   MAX_OUTPUT_TOKENS: 1500,        // max_tokens sent to the model
-  TIMEOUT_MS: 45000               // how long we wait for the model
+  TIMEOUT_MS: 45000,              // how long we wait for the model
+  /* trying it without an account: counted per visitor under an HMAC of the IP address (never the address itself) */
+  ANON_DAILY_REQUESTS: 5,         // questions per visitor without an account per UTC day
+  ANON_DAILY_TOKENS: 20000,       // tokens per visitor without an account per UTC day
+  ANON_GLOBAL_DAILY_REQUESTS: 200 // all visitors without an account together per UTC day (the rest is kept for account holders)
 };
 /* free engine (Workers AI): smaller caps so the daily 10,000 free Neurons are not exceeded (≈ 300k counted tokens on gpt-oss-120b) */
 const WORKERS_LIMITS = {
@@ -47,7 +54,8 @@ const WORKERS_LIMITS = {
   USER_DAILY_TOKENS: 60000,
   GLOBAL_DAILY_REQUESTS: 300,
   GLOBAL_DAILY_TOKENS: 300000,
-  MAX_OUTPUT_TOKENS: 2500         // gpt-oss reasons before it answers; the reasoning counts here too
+  MAX_OUTPUT_TOKENS: 2500,        // gpt-oss reasons before it answers; the reasoning counts here too
+  ANON_GLOBAL_DAILY_REQUESTS: 100 // a third of the free allocation for visitors without an account
 };
 const WORKERS_MODELS = ['@cf/openai/gpt-oss-120b', '@cf/zai-org/glm-4.7-flash']; // second one only if the first errors
 const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
@@ -67,6 +75,7 @@ const TIERS = { quick: 'default', default: 'default', high: 'high' };
 const UPSTREAM = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
 const GLOBAL = '*';
+const ANON_GLOBAL = 'anon*';
 
 function limitsFor(env, engine) {
   const base = engine === 'workers' ? Object.assign({}, DEFAULTS, WORKERS_LIMITS) : DEFAULTS;
@@ -85,9 +94,9 @@ async function atcGet(c) {
   const o = c.request.headers.get('origin');
   if (o && o !== c.url.origin) fail(403, 'bad_origin', 'This request did not come from NORDAP itself.');
   const s = await getSession(c);
-  if (!s) return json({ ok: false, reason: 'signed_out' });
   try { await c.db.prepare('SELECT 1 FROM ai_usage LIMIT 1').first(); }
   catch (e) { return json({ ok: false, reason: 'not_configured' }, 200, { 'set-cookie': c.setCookie }); }
+  if (!s) return json({ ok: true, anon: true }); // a few free questions without an account, then sign up
   return json({ ok: true }, 200, { 'set-cookie': c.setCookie });
 }
 
@@ -115,11 +124,15 @@ async function countRequest(c, who, day) {
      ON CONFLICT(user_id, day) DO UPDATE SET requests = ai_usage.requests + 1
      RETURNING requests, tokens`).bind(who, day).first();
 }
-async function reserve(c, userId, day, L) {
+async function reserve(c, userId, day, L, anon) {
   let u, g;
   try {
     u = await countRequest(c, userId, day);
-    if (u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS) return 'daily_limit';
+    if (anon) {
+      if (u.requests > L.ANON_DAILY_REQUESTS || u.tokens >= L.ANON_DAILY_TOKENS) return 'signup_required';
+      const a = await countRequest(c, ANON_GLOBAL, day);
+      if (a.requests > L.ANON_GLOBAL_DAILY_REQUESTS) return 'signup_required';
+    } else if (u.requests > L.USER_DAILY_REQUESTS || u.tokens >= L.USER_DAILY_TOKENS) return 'daily_limit';
     g = await countRequest(c, GLOBAL, day);
     if (g.requests > L.GLOBAL_DAILY_REQUESTS || g.tokens >= L.GLOBAL_DAILY_TOKENS) return 'service_limit';
   } catch (e) { notConfigured(); } // migration 0002 not applied
@@ -211,8 +224,11 @@ async function atcPost(c) {
   const engine = engineOf(c.env);
   if (!engine) notConfigured();
   const key = keyOf(c.env);
-  const s = await requireSession(c);
-  await limit(c, 'ai', s.user_id);
+  const s = await getSession(c);
+  const anon = !s;
+  // without an account: counted under an HMAC of the IP address for today (rateKey), never the address itself
+  const who = s ? s.user_id : await rateKey(c, 'anon', ipOf(c.request));
+  await limit(c, 'ai', s ? s.user_id : 'ip|' + ipOf(c.request));
   const len = Number(c.request.headers.get('content-length'));
   if (len > MAX_BODY_BYTES) fail(413, 'too_large', 'That is too much text in one go. Send less and try again.');
   const body = await readJson(c.request, true, MAX_BODY_BYTES);
@@ -220,19 +236,20 @@ async function atcPost(c) {
   const messages = readMessages(body, L);
   const model = MODELS[TIERS[body.tier] || 'default'];
   const day = dayOf(c.now);
-  const over = await reserve(c, s.user_id, day, L);
+  const over = await reserve(c, who, day, L, anon);
+  if (over === 'signup_required') fail(429, 'signup_required', 'You have used the free questions without an account. Create a free account under Profile to keep going.');
   if (over === 'daily_limit') fail(429, 'daily_limit', 'You have used today’s Flight Intelligence questions. They are back tomorrow (00:00 UTC).');
   if (over === 'service_limit') fail(429, 'service_limit', 'Flight Intelligence has reached its limit for today. It is back tomorrow (00:00 UTC).');
 
   if (engine === 'workers') {
     const w = await callWorkers(c, messages, L);
-    try { await addTokens(c, s.user_id, day, w.used); } catch (e) { console.error('nordap atc: could not record usage'); }
+    try { await addTokens(c, who, day, w.used); } catch (e) { console.error('nordap atc: could not record usage'); }
     return json({ ok: true, text: w.text, truncated: w.truncated }, 200, { 'set-cookie': c.setCookie });
   }
   const data = await callModel(c, key, model, messages, L);
   const u = data.usage || {};
   const used = ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((a, k) => a + (Number(u[k]) > 0 ? Number(u[k]) : 0), 0);
-  try { await addTokens(c, s.user_id, day, Math.ceil(used * model.weight)); }
+  try { await addTokens(c, who, day, Math.ceil(used * model.weight)); }
   catch (e) { console.error('nordap atc: could not record usage'); }
   const text = (Array.isArray(data.content) ? data.content : []).filter(b => b && b.type === 'text' && typeof b.text === 'string').map(b => b.text).join('');
   if (!text) {

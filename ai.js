@@ -60,6 +60,7 @@ const MSG={
   refused:{en:'The AI declined that request. Rephrase it.',no:'AI-en avslo den forespørselen. Formuler den annerledes.'},
   session_expired:{en:'Sign in to Claude again.',no:'Logg inn i Claude på nytt.'},
   signed_out:{en:'Sign in to use Flight Intelligence. It is free: create an account under Profile.',no:'Logg inn for å bruke Flight Intelligence. Det er gratis: opprett en konto under Profil.'},
+  signup_required:{en:'You have used the free questions without an account. Create a free account under Profile to keep going: it takes a few seconds with a passkey.',no:'Du har brukt opp gratisspørsmålene uten konto. Opprett en gratis konto under Profil for å fortsette: det tar noen sekunder med passnøkkel.'},
   daily_limit:{en:'You have used today’s Flight Intelligence questions. They are back tomorrow.',no:'Du har brukt dagens spørsmål i Flight Intelligence. De er tilbake i morgen.'},
   service_limit:{en:'Flight Intelligence has reached its free limit for today. It is back tomorrow.',no:'Flight Intelligence har nådd dagens gratisgrense. Den er tilbake i morgen.'},
   busy:{en:'The AI service is busy right now. Wait a moment and try again.',no:'AI-tjenesten er opptatt akkurat nå. Vent litt og prøv igjen.'},
