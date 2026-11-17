@@ -2,7 +2,7 @@
    No account needed. A visitor says which aircraft they want, with links and up to three small pictures they have the right
    to share. The request is kept in D1 and sent on by e-mail to the address in REQUEST_TO.
 
-   POST /api/request  { kind:'sim'|'flows', aircraft, variant?, want?, links?, name?, reply?, rights:true, images?:[{ name, data }] }
+   POST /api/request  { kind:'sim'|'flows'|'fix' (fix: a wrong or missing control name in a Birdbird cockpit), aircraft, variant?, want?, links?, name?, reply?, rights:true, images?:[{ name, data }] }
         -> { ok:true, mailed:true|false }      images: base64 JPEG, each at most 400 kB, three at most
    errors { ok:false, error, message }: 400 bad_request · 403 bad_origin · 413 too_large · 429 rate_limited · 503 no_db
 
@@ -35,7 +35,7 @@ const str = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u0008\u000B\u
 const hex = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(b => b.toString(16).padStart(2, '0')).join('');
 
 export function clean(b) {
-  const kind = b.kind === 'sim' ? 'sim' : b.kind === 'flows' ? 'flows' : bad(400, 'bad_request', 'Say whether the request is for a simulator or for the flow trainer.');
+  const kind = b.kind === 'sim' ? 'sim' : b.kind === 'flows' ? 'flows' : b.kind === 'fix' ? 'fix' : bad(400, 'bad_request', 'Say whether the request is for a simulator or for the flow trainer.');
   const o = { kind, aircraft: str(b.aircraft, 80), variant: str(b.variant, 80), want: str(b.want, 1500), links: str(b.links, 1000), name: str(b.name, 80), reply: str(b.reply, 120) };
   if (o.aircraft.length < 2) bad(400, 'bad_request', 'Write which aircraft you want.');
   if (o.reply && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(o.reply)) bad(400, 'bad_request', 'That e-mail address does not look right. Correct it or leave it empty.');
@@ -48,9 +48,9 @@ export function clean(b) {
   return { o, images };
 }
 export function mailText(o, t) {
-  const L = [`Request for ${o.kind === 'sim' ? 'a simulator' : 'the flow trainer'}`, '', `Aircraft: ${o.aircraft}`];
+  const L = [o.kind === 'fix' ? 'Correction to a cockpit in the flow trainer' : `Request for ${o.kind === 'sim' ? 'a simulator' : 'the flow trainer'}`, '', `Aircraft: ${o.aircraft}`];
   if (o.variant) L.push(`Variant: ${o.variant}`);
-  if (o.want) L.push('', 'What they want:', o.want);
+  if (o.want) L.push('', o.kind === 'fix' ? 'What is wrong:' : 'What they want:', o.want);
   if (o.links) L.push('', 'Links (model, pictures, licence):', o.links);
   L.push('', `From: ${o.name || 'no name given'}${o.reply ? ' <' + o.reply + '>' : ''}`, `Sent: ${new Date(t).toISOString()}`);
   return L.join('\n');
@@ -58,7 +58,7 @@ export function mailText(o, t) {
 /* returns true when the mail went out */
 export async function send(env, o, images, t, fetcher) {
   if (!env.REQUEST_TO || !env.RESEND_API_KEY) return false;
-  const body = { from: env.REQUEST_FROM || 'Birdbird <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: `Birdbird request: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`.slice(0, 150), text: mailText(o, t) };
+  const body = { from: env.REQUEST_FROM || 'Birdbird <onboarding@resend.dev>', to: [env.REQUEST_TO], subject: `Birdbird ${o.kind === 'fix' ? 'correction' : 'request'}: ${o.aircraft}${o.variant ? ' ' + o.variant : ''} (${o.kind === 'sim' ? 'simulator' : 'flow trainer'})`.slice(0, 150), text: mailText(o, t) };
   if (o.reply) body.reply_to = o.reply;
   if (images.length) body.attachments = images.map(im => ({ filename: im.name, content: im.data }));
   try { const r = await (fetcher || fetch)(RESEND, { method: 'POST', headers: { authorization: 'Bearer ' + env.RESEND_API_KEY, 'content-type': 'application/json' }, body: JSON.stringify(body) });

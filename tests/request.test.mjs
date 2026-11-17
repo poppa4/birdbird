@@ -25,3 +25,6 @@ test('refusals: foreign origin, no aircraft, pictures without the rights box, to
   for (let i = 0; i < 5; i++) assert.equal((await post(env, d, { kind: 'sim', aircraft: 'PC-12' })).s, 200); assert.equal((await post(env, d, { kind: 'sim', aircraft: 'PC-12' })).s, 429);
   assert.equal((await post({ REQUEST_TO: 'o@example.org' }, d, REQ)).s, 503); });
 test('mail text leaves out empty lines of the form', () => { const s = mailText({ kind: 'sim', aircraft: 'PC-12', variant: '', want: '', links: '', name: '', reply: '' }, t); assert.match(s, /^Request for a simulator\n\nAircraft: PC-12\n\nFrom: no name given\nSent: /); });
+test('a correction to a cockpit is stored and mailed as a correction', async () => { const mails = [], env = { DB: makeD1(), REQUEST_TO: 'o@example.org', RESEND_API_KEY: 'k' };
+  const r = await post(env, mk(mails), { kind: 'fix', aircraft: 'Boeing 787-8', want: "LOC should be LOC/FAC", rights: true }); assert.equal(r.s, 200);
+  assert.equal(mails.length, 1); assert.match(mails[0].b.subject, /correction: Boeing 787-8/); assert.match(mails[0].b.text, /What is wrong:\nLOC should be LOC\/FAC/); });
