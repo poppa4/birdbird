@@ -166,6 +166,25 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 .acc-two .btns,.acc-grid .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
 .acc-f{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink)}
 .acc-form{display:flex;flex-direction:column;gap:10px}
+.acc-sub{margin:18px 0 8px!important;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.acc-rows{display:flex;flex-direction:column;border:1px solid var(--rule);border-radius:var(--radius-lg);background:var(--sheet);overflow:hidden}
+.acc-row+.acc-row{border-top:1px solid var(--rule)}
+.acc-row>summary{display:flex;align-items:baseline;gap:12px;padding:15px 18px;cursor:pointer;list-style:none}
+.acc-row>summary::-webkit-details-marker{display:none}
+.acc-row>summary::after{content:'›';margin-left:auto;color:var(--ink-2);font-size:20px;line-height:1;transition:transform .15s}
+.acc-row[open]>summary::after{transform:rotate(90deg)}
+.acc-row>summary b{font-size:15.5px;font-weight:600;color:var(--ink);min-width:200px}
+.acc-row>summary span{font-size:14px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-row>summary:hover{background:var(--paper,#F6F8FA)}
+.acc-row.danger>summary b{color:var(--warning,#B42318);font-weight:500}
+.acc-rowb{display:flex;flex-direction:column;gap:10px;padding:0 18px 18px;max-width:640px}
+.acc-rowb p{margin:0;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.acc-rowb .btns{display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:640px){.acc-row>summary{flex-wrap:wrap}.acc-row>summary b{min-width:0}}
+.acc-welcome{margin:0 0 16px;padding:20px 22px;border:1px solid var(--ink);border-radius:var(--radius-lg);background:var(--sheet);box-shadow:inset 0 3px 0 var(--accent);display:flex;flex-direction:column;gap:10px}
+.acc-welcome h3{margin:0;font-family:var(--f-display);font-stretch:90%;font-size:22px;font-weight:700;color:var(--ink)}
+.acc-welcome p{margin:0;font-size:15px;line-height:1.5;color:var(--ink-2)}
+.acc-welcome .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .acc-verify{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-left:3px solid var(--accent);background:var(--paper,#F6F8FA)}
 .acc-verify .btns{margin-top:0}
 .acc-form .btns{margin-top:0;align-items:center}
@@ -230,7 +249,7 @@ dialog.rs label input{margin-top:2px;accent-color:var(--warning)}
 </style>
 </head>
 <body data-title="My page">
-<script src="site.js?v=87"></script>
+<script src="site.js?v=88"></script>
 <div class="page">
   <header class="mt-head" id="top">
     <div class="brand">
@@ -562,12 +581,15 @@ async function doReset(plan){ if(P()) try{ P().reset(); }catch(e){}
   await reloadStore(); drawAll(); window.scrollTo({top:0,behavior:'auto'}); }
 
 /* ---------- account (account.js: passkeys and sync) ---------- */
-const UI={code:null,codeWhy:null,busy:false,arm:null,armT:0,needKey:false,forgot:false,reset:null,sent:false};
+const UI={open:new Set(),welcome:false,code:null,codeWhy:null,busy:false,arm:null,armT:0,needKey:false,forgot:false,reset:null,sent:false};
 function takeReset(){ const m=/^#reset=([A-Za-z0-9_-]{43})$/.exec(location.hash||''); if(m){ UI.reset=m[1]; history.replaceState(null,'',location.pathname+'#account'); try{ document.getElementById('account').scrollIntoView(); }catch(e){} return true; } return false; }
 function takeVerify(){ const m=/^#verify=([A-Za-z0-9_-]{43})$/.exec(location.hash||''); if(m){ UI.verify=m[1]; history.replaceState(null,'',location.pathname+'#account'); try{ document.getElementById('account').scrollIntoView(); }catch(e){} return true; } return false; }
 takeReset(); takeVerify(); addEventListener('hashchange',()=>{ if(takeReset()||takeVerify()) { drawAcct(); runVerify(); } });
 function runVerify(){ const t=UI.verify; if(!t||!AC()) return; UI.verify=null; acRun(A=>A.verifyEmail(t),r=>L({en:'E-mail address confirmed: ',no:'E-postadressen er bekreftet: '})+(r&&r.email||'')); }
 const AC=()=>window.BBACCOUNT||null;
+/* after signing in: back to the page you came from (?next=, same site only), otherwise My workspace */
+const NEXT=(()=>{ try{ const n=new URLSearchParams(location.search).get('next')||''; return /^[a-z0-9-]+\.html(\?[^#\s]*)?(#[\w=&.-]*)?$/i.test(n)&&!/^profile\.html/i.test(n)?n:''; }catch(e){ return ''; } })();
+const goIn=()=>{ location.href=NEXT||'workspace.html'; };
 const day=t=>t?new Date(t).toLocaleDateString(LAB.lang==='en'?'en-GB':'nb-NO',{day:'numeric',month:'short',year:'numeric'}):'–';
 const NSL={progress:{en:'Progress and results',no:'Progresjon og resultater'},packs:{en:'Briefing packs and aircraft',no:'Briefingpakker og fly'},routes:{en:'Routes, fixes and map notes',no:'Ruter, punkter og kartnotater'},settings:{en:'Settings, such as language',no:'Innstillinger, som språk'}};
 function acMsg(kind,text){ const m=el('acMsg'); m.className='dmsg acc-msg'+(kind?' '+kind:''); m.textContent=text||''; }
@@ -631,14 +653,18 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
     const me=A.me||{}, creds=me.credentials||[], sl=syncLine(A), nm=(A.user&&A.user.name)||'';
     st.textContent=L({en:'Signed in',no:'Logget inn'});
     const dm={}; (me.data||[]).forEach(x=>dm[x.ns]=x);
-    if(UI.needKey&&A.supported&&!UI.code) h+=`<div class="callout info"><span class="ct">${L({en:'Faster sign-in',no:'Raskere innlogging'})}</span>${L({en:'Sign in with Face ID or your fingerprint next time, instead of typing your password. It takes one tap.',no:'Logg inn med Face ID eller fingeravtrykk neste gang, i stedet for å skrive passordet. Det tar ett trykk.'})}<div class="btns" style="margin-top:10px"><button type="button" class="btn pri" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button><button type="button" class="btn" id="acNoKey">${L({en:'Not now',no:'Ikke nå'})}</button></div></div>`;
+    if(UI.welcome) h+=`<div class="acc-welcome"><h3>${L({en:'Welcome to NORDAP',no:'Velkommen til NORDAP'})}${nm?', '+esc(nm.split(/\s+/)[0]):''}</h3>
+        <p>${L({en:'Your account is ready. Your progress and briefing packs now follow you to every device you sign in on.',no:'Kontoen din er klar. Progresjonen og briefingpakkene dine følger deg nå til alle enheter du logger inn på.'})}${me.user&&me.user.email&&!me.user.emailVerified?' '+L({en:'We have sent you an e-mail to confirm your address.',no:'Vi har sendt deg en e-post for å bekrefte adressen.'}):''}</p>
+        ${UI.needKey&&A.supported?`<p class="note">${L({en:'Tip: switch on Face ID or fingerprint and sign in with one tap next time.',no:'Tips: slå på Face ID eller fingeravtrykk, så logger du inn med ett trykk neste gang.'})}</p>`:''}
+        <div class="btns"><a class="btn pri" href="${esc(NEXT||'workspace.html')}">${NEXT?L({en:'Continue where you were →',no:'Fortsett der du var →'}):L({en:'Go to My workspace →',no:'Gå til My workspace →'})}</a>${UI.needKey&&A.supported?`<button type="button" class="btn" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button>`:''}</div></div>`;
+    else if(UI.needKey&&A.supported&&!UI.code) h+=`<div class="callout info"><span class="ct">${L({en:'Faster sign-in',no:'Raskere innlogging'})}</span>${L({en:'Sign in with Face ID or your fingerprint next time, instead of typing your password. It takes one tap.',no:'Logg inn med Face ID eller fingeravtrykk neste gang, i stedet for å skrive passordet. Det tar ett trykk.'})}<div class="btns" style="margin-top:10px"><button type="button" class="btn pri" id="acAdd2"${dis}>${L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button><button type="button" class="btn" id="acNoKey">${L({en:'Not now',no:'Ikke nå'})}</button></div></div>`;
     h+=`<div class="acc-top"><div class="acc-who"><span class="av" aria-hidden="true">${esc((nm||'B').slice(0,1).toUpperCase())}</span><div><b>${nm?esc(nm):L({en:'Your NORDAP account',no:'NORDAP-kontoen din'})}</b><small><i class="${sl.c}"></i><span id="acSyncLine">${esc(sl.t)}</span></small></div></div>
-        <div class="btns"><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
-      <p class="lead">${L({en:'Your progress and briefing packs are saved to your account and follow you to other devices. Sign in on your phone or another computer to pick up where you left off.',no:'Progresjonen og briefingpakkene dine lagres på kontoen og følger deg til andre enheter. Logg inn på telefonen eller en annen datamaskin for å fortsette der du slapp.'})}</p>
-      <div class="acc-grid">
-        <div class="box"><h3>${L({en:'What is synced',no:'Hva som synkroniseres'})}</h3><ul class="acc-ns">${A.namespaces.map(n=>`<li>${esc(L(NSL[n]))}<span>${dm[n]?esc(ago(dm[n].updatedAt)):L({en:'nothing yet',no:'ingenting ennå'})}</span></li>`).join('')}</ul>
-          <p class="note">${L({en:'Not synced: documents you upload to Flight Intelligence and attachments in briefing packs. They stay on this device.',no:'Synkroniseres ikke: dokumenter du laster opp til Flight Intelligence og vedlegg i briefingpakker. De blir på denne enheten.'})}</p></div>
-        <div class="box"><h3>${L({en:'E-mail and password',no:'E-post og passord'})}</h3>
+        <div class="btns"><a class="btn sm pri" href="workspace.html">${L({en:'My workspace',no:'My workspace'})}</a><button type="button" class="btn sm" id="acSync"${dis}>${L({en:'Sync now',no:'Synkroniser nå'})}</button><button type="button" class="btn sm" id="acOut"${dis}>${L({en:'Sign out',no:'Logg ut'})}</button></div></div>
+      <p class="acc-sub">${L({en:'Account settings',no:'Kontoinnstillinger'})}</p>
+      <div class="acc-rows">
+        <details class="acc-row" data-row="sync"${UI.open.has('sync')?' open':''}><summary><b>${L({en:'What is synced',no:'Hva som synkroniseres'})}</b><span>${L({en:'Progress, briefing packs, routes and settings',no:'Progresjon, briefingpakker, ruter og innstillinger'})}</span></summary><div class="acc-rowb"><ul class="acc-ns">${A.namespaces.map(n=>`<li>${esc(L(NSL[n]))}<span>${dm[n]?esc(ago(dm[n].updatedAt)):L({en:'nothing yet',no:'ingenting ennå'})}</span></li>`).join('')}</ul>
+          <p class="note">${L({en:'Not synced: documents you upload to Flight Intelligence and attachments in briefing packs. They stay on this device.',no:'Synkroniseres ikke: dokumenter du laster opp til Flight Intelligence og vedlegg i briefingpakker. De blir på denne enheten.'})}</p></div></details>
+        <details class="acc-row" data-row="email"${UI.open.has('email')||(me.user&&me.user.email&&!me.user.emailVerified)?' open':''}><summary><b>${L({en:'E-mail and password',no:'E-post og passord'})}</b><span>${esc((me.user&&me.user.email)||L({en:'not added',no:'ikke lagt til'}))}${me.user&&me.user.email&&!me.user.emailVerified?' · '+L({en:'not confirmed',no:'ikke bekreftet'}):''}</span></summary><div class="acc-rowb">
           ${me.user&&me.user.email&&!me.user.emailVerified?`<div class="acc-verify"><p>${L({en:'Confirm your e-mail address: we sent a link to',no:'Bekreft e-postadressen din: vi har sendt en lenke til'})} <b>${esc(me.user.email)}</b>.</p><div class="btns"><button type="button" class="btn sm" id="acVfAgain"${dis}>${L({en:'Send the link again',no:'Send lenken på nytt'})}</button></div></div>`:''}
           ${me.user&&me.user.hasPassword?`<p>${L({en:'You sign in with',no:'Du logger inn med'})} <b>${esc(me.user.email||'')}</b>${me.user.emailVerified?` <span class="tag">${L({en:'confirmed',no:'bekreftet'})}</span>`:''}.</p>
           <details id="acEmCh"><summary>${L({en:'Change e-mail address',no:'Bytt e-postadresse'})}</summary>
@@ -653,19 +679,19 @@ function drawAcct(){ const A=AC(), body=el('acBody'), st=el('acState'); if(!body
           :`<p>${L({en:'Add an e-mail address and a password, so you can also sign in without your passkey and reset it if you lose it.',no:'Legg til e-post og passord, så kan du også logge inn uten passnøkkelen, og tilbakestille hvis du mister den.'})}</p>
             <label class="acc-f" for="acAddEmail">${L({en:'E-mail',no:'E-post'})}<input id="acAddEmail" type="email" autocomplete="username"></label>
             <label class="acc-f" for="acNewPw">${L({en:'Password',no:'Passord'})}<input id="acNewPw" type="password" autocomplete="new-password" minlength="8"><small>${L({en:'At least 8 characters.',no:'Minst 8 tegn.'})}</small></label>
-            <div class="btns"><button type="button" class="btn" id="acPwSave"${dis}>${L({en:'Add e-mail and password',no:'Legg til e-post og passord'})}</button></div>`}</div>
-        <div class="box"><h3>${L({en:'Face ID and fingerprint',no:'Face ID og fingeravtrykk'})}</h3>
+            <div class="btns"><button type="button" class="btn" id="acPwSave"${dis}>${L({en:'Add e-mail and password',no:'Legg til e-post og passord'})}</button></div>`}</div></details>
+        <details class="acc-row" data-row="face"${UI.open.has('face')?' open':''}><summary><b>${L({en:'Face ID and fingerprint',no:'Face ID og fingeravtrykk'})}</b><span>${creds.length?creds.length+' '+(creds.length>1?L({en:'devices',no:'enheter'}):L({en:'device',no:'enhet'})):L({en:'off',no:'av'})}</span></summary><div class="acc-rowb">
           ${creds.length?'':`<p>${L({en:'Sign in with one tap instead of your password. This uses a passkey: your device keeps the key, NORDAP never sees your face or fingerprint.',no:'Logg inn med ett trykk i stedet for passordet. Dette bruker en passnøkkel: enheten din holder nøkkelen, og NORDAP ser aldri ansiktet eller fingeravtrykket ditt.'})}</p>`}
           <ul class="acc-keys">${creds.map(c=>{ const arm=UI.arm===c.id; return `<li><b>${esc(c.name||L({en:'Passkey',no:'Passnøkkel'}))}${c.synced?`<span class="tag">${L({en:'synced',no:'synkronisert'})}</span>`:''}</b><small>${L({en:'Added',no:'Lagt til'})} ${esc(day(c.created))}${c.lastUsed?' · '+L({en:'last used',no:'sist brukt'})+' '+esc(ago(c.lastUsed)):''}</small><button type="button" class="btn sm ${arm?'dangerfill':'danger'}" data-rm="${esc(c.id)}"${(creds.length<2&&!(me.user&&me.user.hasPassword))||UI.busy?' disabled':''} aria-label="${esc(L({en:'Remove passkey ',no:'Fjern passnøkkel '})+(c.name||''))}">${arm?L({en:'Click again to remove',no:'Klikk igjen for å fjerne'}):L({en:'Remove',no:'Fjern'})}</button></li>`; }).join('')}</ul>
           ${creds.length===1&&!(me.user&&me.user.hasPassword)?`<p class="note">${L({en:'Your only passkey cannot be removed. Add one on another device first.',no:'Den eneste passnøkkelen kan ikke fjernes. Legg til en på en annen enhet først.'})}</p>`:''}
           <p class="note">${L({en:'With iCloud Keychain or Google Password Manager, a passkey made on one device is already on your others.',no:'Med iCloud-nøkkelring eller Googles passordbehandler finnes en passnøkkel laget på én enhet allerede på de andre.'})}</p>
-          <div class="btns"><button type="button" class="btn" id="acAdd"${dis}${A.supported?'':' disabled'}>${creds.length?L({en:'Add this device too',no:'Legg til denne enheten også'}):L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button></div></div>
-        <div class="box"><h3>${L({en:'Recovery code',no:'Gjenopprettingskode'})}</h3>
+          <div class="btns"><button type="button" class="btn" id="acAdd"${dis}${A.supported?'':' disabled'}>${creds.length?L({en:'Add this device too',no:'Legg til denne enheten også'}):L({en:'Switch on Face ID / fingerprint',no:'Slå på Face ID / fingeravtrykk'})}</button></div></div></details>
+        <details class="acc-row" data-row="rec"${UI.open.has('rec')?' open':''}><summary><b>${L({en:'Recovery code',no:'Gjenopprettingskode'})}</b><span>${me.recovery&&me.recovery.created?L({en:'made ',no:'laget '})+esc(day(me.recovery.created)):L({en:'none',no:'ingen'})}</span></summary><div class="acc-rowb">
           <p>${me.recovery&&me.recovery.created?L({en:'Made on ',no:'Laget '})+esc(day(me.recovery.created))+'. ':''}${L({en:'Keep it somewhere safe: it gets you back in if you forget your password or lose your passkeys. Lost it? Make a new one, and the old one stops working.',no:'Oppbevar den trygt: med den kommer du inn igjen hvis du glemmer passordet eller mister passnøklene. Mistet den? Lag en ny, så slutter den gamle å virke.'})}</p>
-          <div class="btns"><button type="button" class="btn" id="acNewCode"${dis}>${L({en:'Make a new recovery code',no:'Lag en ny gjenopprettingskode'})}</button></div></div>
-        <div class="box"><h3>${L({en:'Delete account',no:'Slett kontoen'})}</h3>
+          <div class="btns"><button type="button" class="btn" id="acNewCode"${dis}>${L({en:'Make a new recovery code',no:'Lag en ny gjenopprettingskode'})}</button></div></div></details>
+        <details class="acc-row danger" data-row="del"${UI.open.has('del')?' open':''}><summary><b>${L({en:'Delete account',no:'Slett kontoen'})}</b><span></span></summary><div class="acc-rowb">
           <p>${L({en:'Deletes your account, its passkeys and everything saved to it on the server, straight away.',no:'Sletter kontoen, passnøklene og alt som er lagret på den på serveren, med en gang.'})}</p>
-          <div class="btns"><button type="button" class="btn danger" id="acDel"${dis}>${L({en:'Delete account…',no:'Slett kontoen …'})}</button></div></div>
+          <div class="btns"><button type="button" class="btn danger" id="acDel"${dis}>${L({en:'Delete account…',no:'Slett kontoen …'})}</button></div></div></details>
       </div>
       <p class="note" style="margin-top:12px">${L({en:'Signing out keeps your data in this browser. To remove it from this device as well, use “Clear NORDAP data” on the privacy page.',no:'Når du logger ut, blir dataene liggende i denne nettleseren. For å fjerne dem fra enheten også, bruk «Slett NORDAP-data» på personvernsiden.'})} <a href="privacy.html#clear">${L({en:'Privacy',no:'Personvern'})}</a></p>`;
   }
@@ -680,25 +706,26 @@ async function acRun(fn,okText){ const A=AC(); if(!A||UI.busy) return; UI.busy=t
   try{ const r=await fn(A); UI.busy=false; acMsg('ok',typeof okText==='function'?okText(r):(okText||'')); }
   catch(e){ UI.busy=false; acMsg('bad',(e&&e.message)||L({en:'Something went wrong. Try again.',no:'Noe gikk galt. Prøv igjen.'})); }
   drawAcct(); }
+el('acBody').addEventListener('toggle',e=>{ const d=e.target; if(d.matches&&d.matches('details.acc-row')){ if(d.open) UI.open.add(d.dataset.row); else UI.open.delete(d.dataset.row); } },true);
 el('acBody').addEventListener('input',e=>{ if(e.target.id==='acSaved') el('acDone').disabled=!e.target.checked; });
 el('acBody').addEventListener('change',e=>{ if(e.target.id==='acSaved') el('acDone').disabled=!e.target.checked; });
 el('acBody').addEventListener('submit',e=>{ e.preventDefault(); if(e.target.id==='acInF') el('acPwIn').click(); else if(e.target.id==='acUpF') el('acPwNew').click(); });
 el('acBody').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; if(e.target.id==='acFgEmail'){ e.preventDefault(); el('acFgGo').click(); } if(e.target.id==='acRsPw'){ e.preventDefault(); el('acRsGo').click(); } if(e.target.id==='acNewPw'||e.target.id==='acCurPw'){ e.preventDefault(); el('acPwSave').click(); } if(e.target.id==='acCode'){ e.preventDefault(); el('acRecGo').click(); } });
 el('acBody').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||b.disabled) return; const id=b.id;
   if(id==='acPwIn'){ const em=el('acInEmail').value.trim(), pw=el('acInPw').value; if(!em||!pw){ acMsg('bad',L({en:'Type your e-mail and password.',no:'Skriv inn e-post og passord.'})); (em?el('acInPw'):el('acInEmail')).focus(); return; }
-    acRun(async A=>{ const v=await A.pwLogin(em,pw); UI.needKey=false; UI.forgot=false; return v; },L({en:'Signed in. Your data is synced.',no:'Logget inn. Dataene dine er synkronisert.'})); }
+    acRun(async A=>{ const v=await A.pwLogin(em,pw); UI.needKey=false; UI.forgot=false; goIn(); return v; },L({en:'Signed in. Taking you in…',no:'Logget inn. Sender deg videre …'})); }
   else if(id==='acPwNew'){ const em=el('acUpEmail').value.trim(), pw=el('acUpPw').value, nm=el('acName').value.trim(); if(!em||!pw){ acMsg('bad',L({en:'Type your e-mail and choose a password.',no:'Skriv inn e-post og velg et passord.'})); (em?el('acUpPw'):el('acUpEmail')).focus(); return; }
-    acRun(async A=>{ const v=await A.pwSignup(em,pw,nm); UI.needKey=true; return v; },v=>v&&v.verifySent?L({en:'Account created. We have sent you an e-mail: click the link in it to confirm your address.',no:'Kontoen er laget. Vi har sendt deg en e-post: klikk lenken i den for å bekrefte adressen.'}):L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'})); }
+    acRun(async A=>{ const v=await A.pwSignup(em,pw,nm); UI.needKey=true; UI.welcome=true; return v; },v=>v&&v.verifySent?L({en:'Account created. We have sent you an e-mail: click the link in it to confirm your address.',no:'Kontoen er laget. Vi har sendt deg en e-post: klikk lenken i den for å bekrefte adressen.'}):L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'})); }
   else if(id==='acFg'){ UI.forgot=!UI.forgot; UI.sent=false; acMsg('',''); drawAcct(); if(el('acFgEmail')) el('acFgEmail').focus(); }
   else if(id==='acFgGo'){ const em=el('acFgEmail').value.trim(); if(!em){ el('acFgEmail').focus(); return; } acRun(async A=>{ await A.forgot(em); UI.sent=true; },''); }
-  else if(id==='acRsGo'){ const pw=el('acRsPw').value; acRun(async A=>{ const v=await A.resetPassword(UI.reset,pw); UI.reset=null; return v; },L({en:'New password saved. You are signed in.',no:'Nytt passord lagret. Du er logget inn.'})); }
+  else if(id==='acRsGo'){ const pw=el('acRsPw').value; acRun(async A=>{ const v=await A.resetPassword(UI.reset,pw); UI.reset=null; setTimeout(goIn,1200); return v; },L({en:'New password saved. You are signed in.',no:'Nytt passord lagret. Du er logget inn.'})); }
   else if(id==='acPwSave'){ const me=(AC().me||{}).user||{}; const o=me.hasPassword?{current:el('acCurPw').value,password:el('acNewPw').value}:{email:(el('acAddEmail')||{}).value,password:el('acNewPw').value};
     acRun(async A=>A.setPassword(o),me.hasPassword?L({en:'Password changed.',no:'Passordet er byttet.'}):L({en:'E-mail and password added. You can now sign in with them too.',no:'E-post og passord er lagt til. Du kan nå logge inn med dem også.'})); }
   else if(id==='acNoKey'){ UI.needKey=false; drawAcct(); }
   else if(id==='acVfAgain') acRun(A=>A.resendVerify(),L({en:'Sent. Check your inbox (and spam).',no:'Sendt. Sjekk innboksen (og søppelpost).'}));
   else if(id==='acEmGo'){ const em=el('acEmNew').value.trim(), pw=el('acEmPw').value; if(!em){ el('acEmNew').focus(); return; } acRun(A=>A.changeEmail(em,pw),r=>L({en:'We have sent a link to ',no:'Vi har sendt en lenke til '})+((r&&r.pending)||em)+L({en:'. Click it to finish the change.',no:'. Klikk den for å fullføre byttet.'})); }
   else if(id==='acNew') acRun(async A=>{ const v=await A.signup(el('acName').value.trim()); UI.code=v.recoveryCode; UI.codeWhy='signup'; UI.needKey=false; return v; },L({en:'Account created. Your data is now saved to your account.',no:'Kontoen er laget. Dataene dine lagres nå på kontoen.'}));
-  else if(id==='acIn') acRun(async A=>{ const v=await A.login(); UI.needKey=false; return v; },L({en:'Signed in. Your data is synced.',no:'Logget inn. Dataene dine er synkronisert.'}));
+  else if(id==='acIn') acRun(async A=>{ const v=await A.login(); UI.needKey=false; goIn(); return v; },L({en:'Signed in. Taking you in…',no:'Logget inn. Sender deg videre …'}));
   else if(id==='acRecGo'){ const c=el('acCode').value.trim(); if(!c){ acMsg('bad',L({en:'Type your recovery code first.',no:'Skriv inn gjenopprettingskoden først.'})); el('acCode').focus(); return; }
     acRun(async A=>{ const v=await A.recovery(c); UI.code=v.recoveryCode; UI.codeWhy='recovery'; UI.needKey=true; return v; },L({en:'Signed in with your recovery code.',no:'Logget inn med gjenopprettingskoden.'})); }
   else if(id==='acAdd'||id==='acAdd2') acRun(async A=>{ const v=await A.addPasskey(); UI.needKey=false; return v; },L({en:'Passkey added. You can sign in with it on this device now.',no:'Passnøkkelen er lagt til. Du kan logge inn med den på denne enheten nå.'}));
