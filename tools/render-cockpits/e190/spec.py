@@ -27,7 +27,7 @@ def CTL(sh):
                  ('COCKPIT LIGHTS|MAIN PNL', r'Brightness\.MainPanel'), ('COCKPIT LIGHTS|OVHD PNL', r'Brightness\.OHP'), ('COCKPIT LIGHTS|PEDESTAL', r'Brightness\.Pedestal'), ('COCKPIT LIGHTS|DOME', r'domelt\.switch'),
                  ('ENGINE FIRE|ENG 1 FIRE HANDLE', r'extg\.left(\.001)?'), ('ENGINE FIRE|ENG 2 FIRE HANDLE', r'extg\.right(\.001)?'),
                  ('FUEL|XFEED', r'fuel\.crossfeed'), ('FUEL|DC PUMP', r'fuel\.pump\.dc'), ('FUEL|AC PUMP 1', r'fuel\.pump\.left'), ('FUEL|AC PUMP 2', r'fuel\.pump\.right'),
-                 ('PASSENGER SIGNS|EMER LT', r'emerlt\.switch'), ('PASSENGER SIGNS|NO ELEC DEV', r'noelec\.switch'), ('PASSENGER SIGNS|SEAT BELT', r'seat\.belt'),
+                 ('PASSENGER SIGNS|EMER LT', r'emerlt\.switch'), ('PASSENGER SIGNS|NO ELEC DEVICES / NO SMKG', r'noelec\.switch'), ('PASSENGER SIGNS|FSTN BELTS', r'seat\.belt'),
                  ('FIRE EXTINGUISHER|APU', r'ATBtn\.003'), ('FIRE EXTINGUISHER|FIRE TEST', 'fire-test'),
                  ('APU CONTROL|APU MASTER', r'APU\.knob'), ('APU CONTROL|EMER STOP', 'ATBtn'),
                  ('EXTERNAL LIGHTS|NAV', r'nav\.switch'), ('EXTERNAL LIGHTS|STROBE', r'strobe\.switch'), ('EXTERNAL LIGHTS|RED BCN', r'bcn\.switch'), ('EXTERNAL LIGHTS|LOGO', r'logo\.switch'), ('EXTERNAL LIGHTS|TAXI NOSE', r'nose\.switch'),

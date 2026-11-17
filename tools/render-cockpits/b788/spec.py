@@ -63,7 +63,7 @@ def CTL(sh):
     def M(n, pat, **o): R.append((n, 'main', ':' + pat, dict({'min': 46}, **o)))
     def MP(n, x, y, w, h): R.append((n, 'main', VP(sh, 'main', x - w / 2, y - h / 2, w, h)))
     for n, p in (('IAS / MACH', 'IAS-MACH'), ('SPEED SEL', r'SPD\.knob'), ('CLB / CON', r'clb\.con'), ('A/T', r'AT\.toggle'), ('LNAV', r'LNAV\.toggle'), ('VNAV', r'VNAV\.toggle'), ('FLCH', r'FLCH\.toggle'), ('A/P DISENGAGE BAR', 'APdisengage'), ('HDG / TRK', 'HDG-TRK'), ('HDG SEL', r'HDG\.knob'),
-                 ('HDG HOLD', r'HDG\.toggle'), ('V/S / FPA', 'VS-FPA'), ('V/S WHEEL', r'VS\.knob'), ('V/S', r'VS\.toggle'), ('ALT SEL', r'ALT\.knob'), ('ALT HOLD', r'ALT\.toggle'), ('LOC', r'LOC\.toggle'), ('APP', r'APP\.toggle')): M('MCP|' + n, p)
+                 ('HDG HOLD', r'HDG\.toggle'), ('V/S / FPA', 'VS-FPA'), ('V/S WHEEL', r'VS\.knob'), ('V/S', r'VS\.toggle'), ('ALT SEL', r'ALT\.knob'), ('ALT HOLD', r'ALT\.toggle'), ('LOC/FAC', r'LOC\.toggle'), ('APP', r'APP\.toggle')): M('MCP|' + n, p)
     MP('MCP|A/P ENGAGE L', 2198, 220, 60, 46); MP('MCP|A/P ENGAGE R', 3402, 220, 60, 46); MP('MCP|F/D L', 2205, 370, 50, 60); MP('MCP|F/D R', 3395, 365, 50, 60); MP('MCP|A/T ARM L', 2272, 215, 44, 90); MP('MCP|A/T ARM R', 2312, 215, 44, 90)
     for sfx, a, b, c, d2, e, f, g in (('CPT', r'Baro\.knob\.001', r'Baro\.knob', 'FPV', 'MTRS', 'navrange', '', 0), ('F/O', r'Baro\.knob\.006', r'Baro\.knob\.007', 'FPV1', 'MTRS1', 'navrange1', r'\.001', 1)):
         M(f'EFIS {sfx}|MINS {sfx}', a); M(f'EFIS {sfx}|BARO {sfx}', b); M(f'EFIS {sfx}|FPV {sfx}', c); M(f'EFIS {sfx}|MTRS {sfx}', d2); M(f'EFIS {sfx}|ND RANGE {sfx}', e); M(f'EFIS {sfx}|WXR {sfx}', r'WXR\.btn' + f); M(f'EFIS {sfx}|TFC {sfx}', r'TFC\.btn' + f); M(f'EFIS {sfx}|TERR {sfx}', r'TERR\.btn' + f)

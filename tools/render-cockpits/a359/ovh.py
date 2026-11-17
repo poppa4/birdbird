@@ -11,7 +11,7 @@ C = [  # centre row, aft (top) to forward (bottom): (title, height, rows) or a l
     ('FIRE', 300, [[GD('ENG 1 FIRE'), PB('ENG 1 AGENT 1', 'SQUIB', 'DISCH'), PB('ENG 1 AGENT 2', 'SQUIB', 'DISCH'), GD('APU FIRE'), PB('APU AGENT', 'SQUIB', 'DISCH'), GD('ENG 2 FIRE'), PB('ENG 2 AGENT 1', 'SQUIB', 'DISCH'), PB('ENG 2 AGENT 2', 'SQUIB', 'DISCH')], [PB('FIRE TEST', '', '')]]),
     ('HYD', 250, [[PB('GREEN ENG 1 PUMP'), PB('GREEN ENG 2 PUMP'), PB('GREEN ELEC PUMP', 'FAULT', 'ON'), PB('YELLOW ELEC PUMP', 'FAULT', 'ON'), PB('YELLOW ENG 1 PUMP'), PB('YELLOW ENG 2 PUMP')]]),
     ('FUEL', 330, [[PB('L MAIN'), PB('L STBY'), PB('CTR L'), PB('CTR R'), PB('R STBY'), PB('R MAIN')], [PB('X FEED', 'OPEN', 'ON')]]),
-    ('ELEC', 660, [[PB('BAT 1'), PB('EMER BAT 1'), PB('EMER BAT 2'), PB('BAT 2')], [PB('GALLEY'), PB('BUS TIE'), PB('COMMERCIAL')], [PB('EXT 1', 'AVAIL', 'ON'), PB('APU GEN'), PB('EXT 2', 'AVAIL', 'ON')],
+    ('ELEC', 660, [[PB('BAT 1'), PB('BAT EMER 1'), PB('BAT EMER 2'), PB('BAT 2')], [PB('GALLEY'), PB('BUS TIE'), PB('COMMERCIAL')], [PB('EXT 1', 'AVAIL', 'ON'), PB('APU GEN'), PB('EXT 2', 'AVAIL', 'ON')],
                    [PB('GEN 1A'), PB('GEN 1B'), PB('GEN 2A'), PB('GEN 2B')], [GD('DRIVE 1A'), GD('DRIVE 1B'), GD('DRIVE 2A'), GD('DRIVE 2B')]]),
     ('AIR', 400, [[KN('COCKPIT TEMP'), PB('HOT AIR 1'), KN('AIR FLOW'), PB('HOT AIR 2'), KN('CABIN TEMP')], [PB('PACK 1'), PB('ENG 1 BLEED'), GD('RAM AIR'), KN('X BLEED'), PB('APU BLEED', 'FAULT', 'ON'), PB('ENG 2 BLEED'), PB('PACK 2')]]),
     [('ANTI ICE', 230, [[PB('WING', 'FAULT', 'ON'), PB('ENG 1', 'FAULT', 'ON'), PB('ENG 2', 'FAULT', 'ON'), PB('PROBE & WINDOW HEAT', '', 'ON')]]), ('CABIN PRESS', 230, [[PB('CABIN ALT MODE', '', 'MAN'), PB('CABIN V/S MODE', '', 'MAN'), GD('DITCHING')]])],
