@@ -59,8 +59,12 @@ const WORKERS_LIMITS = {
 };
 const WORKERS_MODELS = ['@cf/openai/gpt-oss-120b', '@cf/zai-org/glm-4.7-flash']; // second one only if the first errors
 const WORKERS_SYSTEM = 'You are Flight Intelligence in NORDAP, a European (EASA) preparation platform for pilots. '
-  + 'Follow the instructions in the user message exactly, including language and output format. Use EASA/SERA terms and standards, not FAA. '
-  + 'Never invent regulation references, figures or limitations; if something is not in the material given and you are not sure, say so.';
+  + 'Follow the instructions in the user message exactly, including language, citation markers and output format. Use EASA/SERA terms and standards, never FAA ones. '
+  + 'Hard rules, in this order: (1) Every regulation statement, number, limitation, speed, minimum or procedure step must come from the EASA entries [E1], [E2]… or the document excerpts [S1], [S2]… given in the message, and carry that marker. '
+  + '(2) If the answer is not in them, say plainly that it is not in the NORDAP rules library or in the pilot\'s documents and where to check it; never fill the gap with a number or rule ID from memory, and never invent a rule ID. '
+  + '(3) Keep Part-NCO, Part-NCC and Part-CAT apart: a light aircraft flown privately or by a training organisation falls under Part-NCO unless the message says otherwise. '
+  + '(4) If the question contains a wrong premise (a wrong number, a rule that does not exist, a wrong rule ID), correct it instead of going along with it. '
+  + '(5) The approved flight manual and the official legal text always take precedence; say so when it matters. Be short and concrete.';
 const MAX_BODY_BYTES = 200000;    // the JSON body of one POST
 const MAX_MESSAGES = 40;
 
@@ -198,7 +202,7 @@ async function callWorkers(c, messages, L) {
   for (const model of WORKERS_MODELS) {
     let timer;
     try {
-      const run = c.env.AI.run(model, { messages: msgs, max_tokens: L.MAX_OUTPUT_TOKENS, temperature: 0.3 });
+      const run = c.env.AI.run(model, { messages: msgs, max_tokens: L.MAX_OUTPUT_TOKENS, temperature: 0.1 });
       const r = await Promise.race([run, new Promise((_, no) => { timer = setTimeout(() => no(new Error('timeout')), L.TIMEOUT_MS); })]);
       const text = workersText(r).trim();
       const u = (r && r.usage) || {};
