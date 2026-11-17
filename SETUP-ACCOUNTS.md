@@ -117,3 +117,15 @@ Owners and testers: put their account ids (shown at https://nordap.eu/api/me whe
 Daily caps for the free engine are in `WORKERS_LIMITS` in `functions/api/atc.js` (about 300 questions a day for the
 whole site, 25 per user), set so the account stays inside the free 10,000 Neurons. On the Workers Free plan Cloudflare
 never bills: when the allocation is used up the AI simply answers "back tomorrow".
+
+## E-mail and password (and "Forgot password")
+Accounts can be made with an e-mail address and a password (`/api/auth/signup`, `/api/auth/password`); passkeys
+("Face ID / fingerprint") can be switched on afterwards. The two new columns (`password_hash`, `password_set_at`) are
+added automatically the first time they are needed (the same SQL is in `migrations/0007_password.sql`).
+
+"Forgot password" sends a one-time link (valid one hour) by e-mail through Resend. Until it is set up, the form says so
+and points to the recovery code. To switch it on:
+1. Create a free account at resend.com, add the domain `nordap.eu` and add the DNS records it shows in Cloudflare (DNS).
+2. Create an API key (sending access).
+3. In **Workers & Pages → birdbird → Settings → Variables and secrets**, add a **Secret** `RESEND_API_KEY` with the key,
+   and a **Text** variable `MAIL_FROM` = `NORDAP <noreply@nordap.eu>`. Redeploy.

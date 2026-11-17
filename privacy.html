@@ -86,12 +86,14 @@
 
   <section class="card" id="account">
     <h2>Accounts and sync</h2>
-    <p class="lead">If you create an account, NORDAP stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with a passkey, so there is no password, and NORDAP does not ask for your e-mail address.</p>
+    <p class="lead">If you create an account, NORDAP stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with your e-mail address and a password, and you can also switch on sign-in with Face ID or your fingerprint (a passkey).</p>
     <table class="reg">
       <thead><tr><th>What</th><th>Why</th><th>How long</th></tr></thead>
       <tbody>
         <tr><td>Passkey public key, a device label (such as “iPhone · Safari”) and dates</td><td>To check that it is you when you sign in. The private key, your face and your fingerprint never leave your device; NORDAP only ever sees the public key.</td><td class="w">Until you remove the passkey or delete the account</td></tr>
-        <tr><td>Recovery code</td><td>So you can get back in if you lose every passkey. Only a one-way hash is stored, never the code itself.</td><td class="w">Until it is used or replaced</td></tr>
+        <tr><td>E-mail address</td><td>To sign you in, and to send you a link to choose a new password if you ask for one. NORDAP sends no newsletters or other e-mail. Reset e-mails are delivered by Resend (Resend, Inc.) once that is switched on.</td><td class="w">Until you delete the account</td></tr>
+        <tr><td>Password</td><td>To check that it is you when you sign in. Only a salted one-way hash (PBKDF2-SHA-256) is stored, never the password itself.</td><td class="w">Until you change it or delete the account</td></tr>
+        <tr><td>Recovery code</td><td>So you can get back in if you forget your password or lose every passkey. Only a one-way hash is stored, never the code itself.</td><td class="w">Until it is used or replaced</td></tr>
         <tr><td>Name (optional)</td><td>Shown to you on My training and in your passkey list.</td><td class="w">Until you delete the account</td></tr>
         <tr><td>Session</td><td>A random sign-in id in a cookie (HttpOnly, Secure, SameSite=Lax). The server stores only a hash of it, with a short device label.</td><td class="w">60 days after last use, or until you sign out</td></tr>
         <tr><td>Synced data: progress and results, briefing packs and saved aircraft, routes, fixes and map notes, settings such as language</td><td>So your training and plans follow you from one device to another.</td><td class="w">Until you delete it or the account</td></tr>
@@ -157,7 +159,7 @@
   <section class="card" id="changes">
     <h2>Changes to this page</h2>
     <div class="pv-text">
-      <p>School features, e-mail sign-in or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.</p>
+      <p>School features or other new services would change what is stored and where. This page will be updated before any of that is switched on.</p>
     </div>
     <p class="btns"><a class="btn" href="about.html#contact">Contact</a><a class="btn quiet" href="sources.html">Data sources and licences</a></p>
   </section>
@@ -229,13 +231,15 @@ LAB.add({'Sections':'Sections'},{
  "With an account, your progress, briefing packs, routes and settings are also saved on NORDAP’s server, so they follow you to your other devices. You can delete the account at any time.":"Med konto lagres progresjon, briefingpakker, ruter og innstillinger også på NORDAPs server, så de følger deg til de andre enhetene dine. Du kan slette kontoen når som helst.",
  "No analytics, no tracking cookies and no advertising. The only cookie is the sign-in cookie, and only if you sign in.":"Ingen analyseverktøy, ingen sporingscookies og ingen reklame. Den eneste cookien er innloggingscookien, og bare hvis du logger inn.",
  "Without an account, nothing is stored on a NORDAP server, so NORDAP cannot see, recover or delete that data for you. Clearing it is in your hands, see below.":"Uten konto lagres ingenting på en NORDAP-server, så NORDAP kan ikke se, gjenopprette eller slette de dataene for deg. Det er du som sletter dem, se under.",
- "If you create an account, NORDAP stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with a passkey, so there is no password, and NORDAP does not ask for your e-mail address.":"Lager du en konto, lagrer NORDAP det som trengs for å logge deg inn og holde dataene like på alle enhetene dine. Du logger inn med en passnøkkel, så det finnes ikke noe passord, og NORDAP ber ikke om e-postadressen din.",
+ 'If you create an account, NORDAP stores what is needed to sign you in and to keep your data the same on all your devices. You sign in with your e-mail address and a password, and you can also switch on sign-in with Face ID or your fingerprint (a passkey).':'Lager du en konto, lagrer NORDAP det som trengs for å logge deg inn og holde dataene dine like på alle enhetene dine. Du logger inn med e-postadresse og passord, og du kan også slå på innlogging med Face ID eller fingeravtrykk (en passnøkkel).',
+ 'E-mail address':'E-postadresse','To sign you in, and to send you a link to choose a new password if you ask for one. NORDAP sends no newsletters or other e-mail. Reset e-mails are delivered by Resend (Resend, Inc.) once that is switched on.':'For å logge deg inn, og for å sende deg en lenke til å velge nytt passord hvis du ber om det. NORDAP sender ingen nyhetsbrev eller annen e-post. E-poster om nytt passord leveres av Resend (Resend, Inc.) når det er slått på.',
+ 'Password':'Passord','To check that it is you when you sign in. Only a salted one-way hash (PBKDF2-SHA-256) is stored, never the password itself.':'For å sjekke at det er deg når du logger inn. Bare en saltet enveis-hash (PBKDF2-SHA-256) lagres, aldri selve passordet.','Until you change it or delete the account':'Til du endrer det eller sletter kontoen',
  "How long":"Hvor lenge",
  "Passkey public key, a device label (such as “iPhone · Safari”) and dates":"Passnøkkelens offentlige nøkkel, en enhetsetikett (som «iPhone · Safari») og datoer",
  "To check that it is you when you sign in. The private key, your face and your fingerprint never leave your device; NORDAP only ever sees the public key.":"For å sjekke at det er deg når du logger inn. Den private nøkkelen, ansiktet og fingeravtrykket ditt forlater aldri enheten; NORDAP ser bare den offentlige nøkkelen.",
  "Until you remove the passkey or delete the account":"Til du fjerner passnøkkelen eller sletter kontoen",
  "Recovery code":"Gjenopprettingskode",
- "So you can get back in if you lose every passkey. Only a one-way hash is stored, never the code itself.":"Så du kommer inn igjen hvis du mister alle passnøklene. Bare en enveis hash lagres, aldri selve koden.",
+ 'So you can get back in if you forget your password or lose every passkey. Only a one-way hash is stored, never the code itself.':'Så du kommer inn igjen hvis du glemmer passordet eller mister alle passnøklene. Bare en enveis-hash lagres, aldri selve koden.',
  "Until it is used or replaced":"Til den brukes eller erstattes",
  "Name (optional)":"Navn (valgfritt)",
  "Shown to you on My training and in your passkey list.":"Vises for deg på Min trening og i passnøkkellisten.",
@@ -261,7 +265,7 @@ LAB.add({'Sections':'Sections'},{
  "NORDAP does not use analytics or tracking tools and shows no advertising. No tracking pixels, no social media widgets. The only cookie is the sign-in cookie, set when you sign in to an account and removed when you sign out. It is needed for the account to work and is never used to follow you.":"NORDAP bruker ingen analyse- eller sporingsverktøy og viser ingen reklame. Ingen sporingspiksler, ingen widgeter fra sosiale medier. Den eneste cookien er innloggingscookien, som settes når du logger inn på en konto og fjernes når du logger ut. Den trengs for at kontoen skal virke, og brukes aldri til å følge deg.",
  "Removes progress, settings, saved plans, setups and documents that NORDAP has stored in this browser. It cannot be undone. If you are signed in, you are signed out first, and the copy in your account is kept.":"Fjerner progresjon, innstillinger, lagrede planer, oppsett og dokumenter som NORDAP har lagret i denne nettleseren. Det kan ikke angres. Er du logget inn, logges du ut først, og kopien på kontoen beholdes.",
  "Data saved to your NORDAP account is removed by deleting the account on My page. Data kept with your Claude account, when NORDAP runs inside Claude, is removed by deleting the saved items inside NORDAP.":"Data som er lagret på NORDAP-kontoen, fjerner du ved å slette kontoen på Min side. Data som ligger hos Claude-kontoen din når NORDAP kjører inne i Claude, fjerner du ved å slette de lagrede elementene inne i NORDAP.",
- "School features, e-mail sign-in or a hosted AI service would change what is stored and where. This page will be updated before any of that is switched on.":"Skolefunksjoner, innlogging med e-post eller en egen AI-tjeneste vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på."
+ 'School features or other new services would change what is stored and where. This page will be updated before any of that is switched on.':'Skolefunksjoner eller andre nye tjenester vil endre hva som lagres og hvor. Denne siden oppdateres før noe av det slås på.'
 });
 LAB.start('privacy');
 count(); label(); LAB.onLang(()=>{ count(); label(); if(res.textContent) res.textContent=''; });

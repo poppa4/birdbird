@@ -39,6 +39,8 @@ const LIMITS = {
   reg: [20, 3600],                     // new-account / add-passkey requests (options + verify) per IP per hour
   login: [30, 600],                    // sign-in ceremonies per IP per 10 minutes
   recovery: [6, 900],                  // recovery code attempts per IP per 15 minutes
+  pw: [10, 600],                       // e-mail + password sign-in attempts per IP, and per e-mail address, per 10 minutes
+  mail: [5, 3600],                     // password-reset e-mails per IP, and per address, per hour
   write: [60, 60],                     // account changes per user per minute
   sync: [120, 60],                     // sync requests per user per minute
   ai: [12, 60]                         // Flight Intelligence questions per user per minute (daily caps: functions/api/atc.js)
@@ -389,17 +391,162 @@ async function logout(c) {
   return json({ ok: true }, 200, { 'set-cookie': cookieHeader('', 0) });
 }
 
+/* ---------- e-mail and password ----------
+   Passwords are stored as PBKDF2-SHA-256 (100 000 iterations, the most Cloudflare Workers allow; 16-byte random salt).
+   Sign-in errors never say whether the address exists. Reset links are one-time challenges (kind 'pwreset', 1 hour), sent
+   by e-mail through Resend when RESEND_API_KEY and MAIL_FROM are set; without them the reset form says so and points to the
+   recovery code. The two columns are added on first use (migration 0007, idempotent). */
+const PW_ITER = 100000, RESET_MS = 60 * 60e3;
+const pwColsOk = new WeakSet();   // per D1 binding
+async function ensurePasswordColumns(c) {
+  if (pwColsOk.has(c.db)) return;
+  try { await c.db.prepare('SELECT password_hash, password_set_at FROM users LIMIT 1').first(); pwColsOk.add(c.db); return; } catch (e) {}
+  for (const sql of ['ALTER TABLE users ADD COLUMN password_hash TEXT', 'ALTER TABLE users ADD COLUMN password_set_at INTEGER']) {
+    try { await c.db.prepare(sql).run(); } catch (e) { if (!/duplicate column/i.test(String(e && e.message))) throw e; }
+  }
+  pwColsOk.add(c.db);
+}
+async function pbkdf2(password, salt, iter) {
+  const key = await crypto.subtle.importKey('raw', enc(String(password)), 'PBKDF2', false, ['deriveBits']);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, key, 256));
+}
+async function hashPassword(password) {
+  const salt = randomBytes(16);
+  return 'pbkdf2-sha256$' + PW_ITER + '$' + b64u(salt) + '$' + b64u(await pbkdf2(password, salt, PW_ITER));
+}
+async function checkPassword(password, stored) {
+  const m = /^pbkdf2-sha256\$(\d+)\$([A-Za-z0-9_-]+)\$([A-Za-z0-9_-]+)$/.exec(String(stored || ''));
+  if (!m) { await pbkdf2(password, randomBytes(16), PW_ITER); return false; } // same work either way
+  const got = await pbkdf2(password, unb64u(m[2]), +m[1]), want = unb64u(m[3]);
+  if (got.length !== want.length) return false;
+  let d = 0; for (let i = 0; i < got.length; i++) d |= got[i] ^ want[i];
+  return d === 0;
+}
+const cleanEmail = e => String(e == null ? '' : e).trim().toLowerCase();
+const okEmail = e => e.length <= 254 && /^[^\s@<>()",;:]+@[^\s@<>()",;:]+\.[a-z]{2,}$/i.test(e);
+function checkNewPassword(pw, email) {
+  pw = String(pw == null ? '' : pw);
+  if (pw.length < 8) fail(400, 'weak_password', 'Use a password of at least 8 characters.');
+  if (pw.length > 200) fail(400, 'weak_password', 'That password is too long (200 characters at most).');
+  if (email && pw.toLowerCase() === email) fail(400, 'weak_password', 'Your password cannot be your e-mail address.');
+  return pw;
+}
+const mailOn = env => !!(env && env.RESEND_API_KEY && env.MAIL_FROM);
+async function sendMail(c, to, subject, text) {
+  const f = (c.deps && c.deps.fetch) || fetch;
+  const r = await f('https://api.resend.com/emails', { method: 'POST', headers: { authorization: 'Bearer ' + c.env.RESEND_API_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ from: c.env.MAIL_FROM, to: [to], subject, text }) });
+  if (!r.ok) { console.error('nordap mail: status ' + r.status); fail(502, 'mail_failed', 'The e-mail could not be sent. Try again in a few minutes.'); }
+}
+
+/* POST /api/auth/signup { email, password, name? } – new account with e-mail and password */
+async function pwSignup(c) {
+  const body = await readJson(c.request, true);
+  await limit(c, 'reg', ipOf(c.request));
+  await ensurePasswordColumns(c);
+  const email = cleanEmail(body.email);
+  if (!okEmail(email)) fail(400, 'bad_email', 'Type a valid e-mail address.');
+  const pw = checkNewPassword(body.password, email);
+  const taken = await c.db.prepare('SELECT id FROM users WHERE email = ?1').bind(email).first();
+  if (taken) fail(409, 'email_taken', 'There is already an account with this e-mail address. Sign in instead, or use “Forgot password”.');
+  const userId = b64u(randomBytes(16)), recoveryCode = makeRecoveryCode(), name = cleanName(body.name);
+  await c.db.batch([
+    c.db.prepare('INSERT INTO users (id, name, email, password_hash, password_set_at, recovery_hash, recovery_created_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?5, ?5, ?5)')
+      .bind(userId, name, email, await hashPassword(pw), c.now, await hashRecovery(recoveryCode)),
+    ...await newSessionStmts(c, userId, 'password')
+  ]);
+  return json({ ok: true, created: true, user: { id: userId, name }, recoveryCode }, 200, { 'set-cookie': c.setCookie });
+}
+/* POST /api/auth/password { email, password } – sign in */
+async function pwLogin(c) {
+  const body = await readJson(c.request, true);
+  const email = cleanEmail(body.email);
+  await limit(c, 'pw', ipOf(c.request));
+  await limit(c, 'pw', 'email|' + email);
+  await ensurePasswordColumns(c);
+  const u = okEmail(email) ? await c.db.prepare('SELECT id, name, password_hash FROM users WHERE email = ?1').bind(email).first() : null;
+  const ok = await checkPassword(String(body.password == null ? '' : body.password), u && u.password_hash);
+  if (!u || !ok) fail(400, 'bad_login', 'The e-mail address or the password is wrong. Check both and try again.');
+  await c.db.batch(await newSessionStmts(c, u.id, 'password'));
+  return json({ ok: true, user: { id: u.id, name: u.name || null } }, 200, { 'set-cookie': c.setCookie });
+}
+/* POST /api/auth/forgot { email } – e-mail a one-time reset link (same answer whether or not the address has an account) */
+async function pwForgot(c) {
+  const body = await readJson(c.request, true);
+  const email = cleanEmail(body.email);
+  if (!okEmail(email)) fail(400, 'bad_email', 'Type a valid e-mail address.');
+  if (!mailOn(c.env)) fail(503, 'no_mail', 'Password reset by e-mail is not switched on yet. Sign in with your recovery code instead.');
+  await limit(c, 'mail', ipOf(c.request));
+  await limit(c, 'mail', 'email|' + email);
+  await ensurePasswordColumns(c);
+  const u = await c.db.prepare('SELECT id FROM users WHERE email = ?1').bind(email).first();
+  if (u) {
+    const token = b64u(randomBytes(32));
+    await c.db.prepare('INSERT INTO challenges (challenge, kind, user_id, data, expires_at) VALUES (?1, ?2, ?3, NULL, ?4)').bind(await sha256hex('bb-reset:' + token), 'pwreset', u.id, c.now + RESET_MS).run();
+    const link = c.url.origin + '/profile.html#reset=' + token;
+    await sendMail(c, email, 'Reset your NORDAP password',
+      'Someone (hopefully you) asked to reset the password of your NORDAP account.\n\nChoose a new password here (the link works once, for one hour):\n' + link +
+      '\n\nIf it was not you, ignore this e-mail: nothing changes.\n\nNORDAP · Nordic Aviation Platform · nordap.eu');
+  }
+  return json({ ok: true, sent: true });
+}
+/* POST /api/auth/reset { token, password } – set a new password from the e-mailed link, and sign in */
+async function pwReset(c) {
+  const body = await readJson(c.request, true);
+  await limit(c, 'recovery', ipOf(c.request));
+  await ensurePasswordColumns(c);
+  const token = String(body.token || '');
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) fail(400, 'expired', 'This reset link is not valid. Ask for a new one.');
+  checkNewPassword(body.password);    // a too-short password must not use up the link
+  const row = await c.db.prepare("DELETE FROM challenges WHERE challenge = ?1 AND kind = 'pwreset' RETURNING user_id, expires_at").bind(await sha256hex('bb-reset:' + token)).first();
+  if (!row || row.expires_at < c.now) fail(400, 'expired', 'This reset link has expired or was already used. Ask for a new one.');
+  const u = await c.db.prepare('SELECT id, name, email FROM users WHERE id = ?1').bind(row.user_id).first();
+  if (!u) fail(400, 'expired', 'This reset link is not valid any more. Ask for a new one.');
+  const pw = checkNewPassword(body.password, u.email);
+  await c.db.batch([
+    c.db.prepare('UPDATE users SET password_hash = ?1, password_set_at = ?2, email_verified_at = COALESCE(email_verified_at, ?2), updated_at = ?2 WHERE id = ?3').bind(await hashPassword(pw), c.now, u.id),
+    c.db.prepare('DELETE FROM sessions WHERE user_id = ?1').bind(u.id),               // signed out everywhere else
+    ...await newSessionStmts(c, u.id, 'password')
+  ]);
+  return json({ ok: true, user: { id: u.id, name: u.name || null } }, 200, { 'set-cookie': c.setCookie });
+}
+/* POST /api/me/password { email?, current?, password } – add e-mail + password to an account, or change the password */
+async function mePassword(c) {
+  const s = await requireSession(c);
+  await limit(c, 'write', s.user_id);
+  await limit(c, 'pw', 'user|' + s.user_id);
+  await ensurePasswordColumns(c);
+  const body = await readJson(c.request, true);
+  const u = await c.db.prepare('SELECT email, password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
+  let email = u && u.email;
+  if (u && u.password_hash) {
+    if (!(await checkPassword(String(body.current == null ? '' : body.current), u.password_hash))) fail(400, 'bad_current', 'Your current password is wrong.');
+  } else {
+    email = cleanEmail(body.email);
+    if (!okEmail(email)) fail(400, 'bad_email', 'Type a valid e-mail address.');
+    const taken = await c.db.prepare('SELECT id FROM users WHERE email = ?1 AND id <> ?2').bind(email, s.user_id).first();
+    if (taken) fail(409, 'email_taken', 'There is already an account with this e-mail address.');
+  }
+  const pw = checkNewPassword(body.password, email);
+  await c.db.prepare('UPDATE users SET email = ?1, password_hash = ?2, password_set_at = ?3, updated_at = ?3 WHERE id = ?4').bind(email, await hashPassword(pw), c.now, s.user_id).run();
+  return json({ ok: true, email }, 200, { 'set-cookie': c.setCookie });
+}
+const sha256hex = async s => hex(await sha256(s));
+
 /* ---------- account ---------- */
 async function meGet(c) {
   const s = await getSession(c);
   if (!s) return json({ ok: true, user: null }); // signed out is a normal answer here (no 401 noise in the console)
+  await ensurePasswordColumns(c);
+  const pw = await c.db.prepare('SELECT email, password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
   const [creds, data] = await Promise.all([
     c.db.prepare('SELECT id, name, created_at, last_used_at, backup_eligible, transports FROM credentials WHERE user_id = ?1 ORDER BY created_at').bind(s.user_id).all(),
     c.db.prepare('SELECT ns, version, updated_at, LENGTH(data) AS bytes FROM user_data WHERE user_id = ?1').bind(s.user_id).all()
   ]);
   return json({
     ok: true,
-    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null },
+    user: { id: s.user_id, name: s.name || null, created: s.user_created, signedInWith: s.via || null, email: pw ? pw.email || null : null, hasPassword: !!(pw && pw.password_hash) },
+    mail: mailOn(c.env),
     recovery: { created: s.recovery_created_at || null },
     credentials: (creds.results || []).map(x => ({ id: x.id, name: x.name, created: x.created_at, lastUsed: x.last_used_at, synced: !!x.backup_eligible })),
     data: (data.results || []).map(x => ({ ns: x.ns, version: x.version, updatedAt: x.updated_at, bytes: x.bytes }))
@@ -472,7 +619,9 @@ async function credDelete(c) {
   const all = await c.db.prepare('SELECT id FROM credentials WHERE user_id = ?1').bind(s.user_id).all();
   const list = (all.results || []).map(x => x.id);
   if (!list.includes(id)) fail(404, 'not_found', 'That passkey is not on your account. Reload the page to see the current list.');
-  if (list.length < 2) fail(409, 'last_passkey', 'This is your only passkey. Add a passkey on another device first, then remove this one.');
+  await ensurePasswordColumns(c);
+  const hasPw = await c.db.prepare('SELECT password_hash FROM users WHERE id = ?1').bind(s.user_id).first();
+  if (list.length < 2 && !(hasPw && hasPw.password_hash)) fail(409, 'last_passkey', 'This is your only passkey. Add a passkey on another device first, then remove this one.');
   await c.db.prepare('DELETE FROM credentials WHERE id = ?1 AND user_id = ?2').bind(id, s.user_id).run();
   return json({ ok: true, removed: id }, 200, { 'set-cookie': c.setCookie });
 }
@@ -543,7 +692,7 @@ export function endpoint(methods, deps) {
   };
 }
 
-export const handlers = { registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, meExport, newRecovery, credDelete, syncGet, syncPut };
+export const handlers = { pwSignup, pwLogin, pwForgot, pwReset, mePassword, registerOptions, registerVerify, loginOptions, loginVerify, recovery, logout, meGet, mePatch, meDelete, meExport, newRecovery, credDelete, syncGet, syncPut };
 export const onRegisterOptions = endpoint({ POST: registerOptions });
 export const onRegisterVerify = endpoint({ POST: registerVerify });
 export const onLoginOptions = endpoint({ POST: loginOptions });
@@ -554,6 +703,11 @@ export const onMe = endpoint({ GET: meGet, PATCH: mePatch, DELETE: meDelete });
 export const onMeRecovery = endpoint({ POST: newRecovery });
 export const onMeExport = endpoint({ GET: meExport });
 export const onMeCredentials = endpoint({ DELETE: credDelete });
+export const onSignup = endpoint({ POST: pwSignup });
+export const onPassword = endpoint({ POST: pwLogin });
+export const onForgot = endpoint({ POST: pwForgot });
+export const onReset = endpoint({ POST: pwReset });
+export const onMePassword = endpoint({ POST: mePassword });
 export const onSync = endpoint({ GET: syncGet, PUT: syncPut });
 export { getSession, requireSession, readJson, limit, fail, rateKey, ipOf }; // used by functions/api/atc.js
 export const _test = { deviceLabel, hashToken, LIMITS, NAMESPACES, unb64u, rateKey, maybeCleanup, cleanupNow, CLEANUP_EVERY, AI_KEEP_DAYS };

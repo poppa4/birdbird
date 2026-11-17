@@ -79,7 +79,7 @@
   }
   /* server messages are English; give the Norwegian version for the common ones */
   const NO_MSG = {
-    signed_out: 'Du er logget ut. Logg inn med passnøkkelen din og prøv igjen.',
+    signed_out: 'Du er logget ut. Logg inn og prøv igjen.',
     rate_limited: 'For mange forsøk. Vent litt og prøv igjen.',
     bad_code: 'Gjenopprettingskoden stemmer ikke med noen konto. Sjekk for skrivefeil, eller bruk den nyeste koden hvis du har laget en ny.',
     unknown_passkey: 'Denne passnøkkelen er ikke koblet til en NORDAP-konto lenger. Logg inn med gjenopprettingskoden, eller lag en ny konto. Den gamle passnøkkelen kan du slette i passordinnstillingene på enheten.',
@@ -90,7 +90,14 @@
     no_db: 'Kontoer er ikke slått på for dette nettstedet ennå. Alt fungerer fortsatt og lagres i denne nettleseren.',
     bad_origin: 'Forespørselen kom ikke fra NORDAP selv. Last inn siden på nytt og prøv igjen.',
     server: 'Noe gikk galt hos oss. Dataene dine er fortsatt lagret i denne nettleseren. Prøv igjen om et minutt.',
-    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne NORDAP på https://nordap.eu.'
+    insecure: 'Passnøkler krever en sikker (https) forbindelse. Åpne NORDAP på https://nordap.eu.',
+    bad_login: 'E-postadressen eller passordet er feil. Sjekk begge og prøv igjen.',
+    bad_email: 'Skriv inn en gyldig e-postadresse.',
+    weak_password: 'Bruk et passord på minst 8 tegn, som ikke er e-postadressen din.',
+    email_taken: 'Det finnes allerede en konto med denne e-postadressen. Logg inn i stedet, eller bruk «Glemt passord».',
+    no_mail: 'Tilbakestilling av passord på e-post er ikke slått på ennå. Logg inn med gjenopprettingskoden i stedet.',
+    mail_failed: 'E-posten kunne ikke sendes. Prøv igjen om noen minutter.',
+    bad_current: 'Det nåværende passordet er feil.'
   };
   const msgFor = j => j ? (lang() === 'no' && NO_MSG[j.error] ? NO_MSG[j.error] + (j.error === 'rate_limited' && j.retryAfter ? ' (' + j.retryAfter + ' s)' : '') : j.message) : '';
 
@@ -155,6 +162,24 @@
     refreshMe().catch(() => {});
     return v; // v.recoveryCode: the new code, v.passkeys: how many the account has
   }
+  /* e-mail and password */
+  async function pwSignup(email, password, name) {
+    const v = await api('POST', '/auth/signup', { email: String(email || ''), password: String(password || ''), name: name || '' });
+    await signedIn(v.user); await syncNow({ first: true }); refreshMe().catch(() => {});
+    return v; // v.recoveryCode is shown once
+  }
+  async function pwLogin(email, password) {
+    const v = await api('POST', '/auth/password', { email: String(email || ''), password: String(password || '') });
+    await signedIn(v.user); await syncNow({ first: true }); refreshMe().catch(() => {});
+    return v;
+  }
+  async function forgot(email) { return api('POST', '/auth/forgot', { email: String(email || '') }); }
+  async function resetPassword(token, password) {
+    const v = await api('POST', '/auth/reset', { token: String(token || ''), password: String(password || '') });
+    await signedIn(v.user); await syncNow({ first: true }); refreshMe().catch(() => {});
+    return v;
+  }
+  async function setPassword(o) { const v = await api('POST', '/me/password', o || {}); await refreshMe(); return v; }
   async function newRecoveryCode() { const v = await api('POST', '/me/recovery', {}); await refreshMe(); return v; }
   async function removePasskey(id) { const v = await api('DELETE', '/me/credentials?id=' + encodeURIComponent(id), {}); await refreshMe(); return v; }
   async function rename(name) { const v = await api('PATCH', '/me', { name }); A.user = v.user; meta.user = v.user; saveMeta(); await refreshMe(); return v; }
@@ -467,7 +492,7 @@ dialog.bbacct-dlg::backdrop{background:rgba(19,32,42,.38)}
     return A;
   })();
 
-  Object.assign(A, { signup, login, recovery, logout, forgetDevice, wipeLocal, addPasskey, removePasskey, newRecoveryCode, rename, deleteAccount, refreshMe, detect, syncNow, flush, collect });
+  Object.assign(A, { pwSignup, pwLogin, forgot, resetPassword, setPassword, signup, login, recovery, logout, forgetDevice, wipeLocal, addPasskey, removePasskey, newRecoveryCode, rename, deleteAccount, refreshMe, detect, syncNow, flush, collect });
   G.BBACCOUNT = A;
   fire('bb-account-ready', { state: A });
 })(window);
