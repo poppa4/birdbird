@@ -240,6 +240,7 @@
 <script src="lab.js?v=52"></script>
 <script src="ai.js?v=8"></script>
 <script src="easa.js?v=4"></script>
+<script src="theory.js?v=1"></script>
 <script src="store.js?v=4"></script>
 <script>
 (function(){
@@ -442,8 +443,8 @@ el('mClose').onclick=()=>{ el('modal').hidden=true; el('mBody').innerHTML=''; };
 function regsIn(t){ const out=[], seen=new Set(); REGS.forEach(([re,url,doc])=>{ (String(t).match(re)||[]).forEach(ref=>{ if(!seen.has(ref)){ seen.add(ref); const e=EASA.get(ref); out.push(e? {ref,url:e.url,doc:L({en:'EASA official text',no:'EASA offisiell tekst'})+' ('+e.revShort+')'} : {ref,url,doc}); } }); }); return out; }
 
 /* ---------- markdown + sitater ---------- */
-function md(s,nsrc,easa){ s=esc(s); const lines=s.split('\n'); let h='',ul=false,ol=false;
-  const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[S(\d{1,2})\]/g,(m,n)=> +n>=1&&+n<=nsrc? `<span class="cite" data-s="${n}">S${n}</span>` : `<span class="cite x" title="${L({en:'No such source: treat this as unverified',no:'Finnes ikke: behandle dette som ubekreftet'})}">S${n}?</span>`).replace(/\[GK\]/g,`<span class="cite x" title="${L({en:'General knowledge, not from your documents',no:'Generell kunnskap, ikke fra dokumentene dine'})}">${L({en:'general',no:'generelt'})}</span>`).replace(/\[E\d{1,2}\]/g,m=>EASA.cite(m,easa||[]));
+function md(s,nsrc,easa,th){ s=esc(s); const lines=s.split('\n'); let h='',ul=false,ol=false;
+  const inl=t=>t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[S(\d{1,2})\]/g,(m,n)=> +n>=1&&+n<=nsrc? `<span class="cite" data-s="${n}">S${n}</span>` : `<span class="cite x" title="${L({en:'No such source: treat this as unverified',no:'Finnes ikke: behandle dette som ubekreftet'})}">S${n}?</span>`).replace(/\[GK\]/g,`<span class="cite x" title="${L({en:'General knowledge, not from your documents',no:'Generell kunnskap, ikke fra dokumentene dine'})}">${L({en:'general',no:'generelt'})}</span>`).replace(/\[E\d{1,2}\]/g,m=>EASA.cite(m,easa||[])).replace(/\[T(\d{1,2})\]/g,(m,n)=> window.THEORY&&th&&th[+n-1]? THEORY.chip(th[+n-1],+n) : '');
   for(const l of lines){ const m=l.match(/^\s*[-*•]\s+(.*)/), n=l.match(/^\s*\d+[.)]\s+(.*)/);
     if(m){ if(!ul){ h+='<ul>'; ul=true; } h+='<li>'+inl(m[1])+'</li>'; continue; } if(ul){ h+='</ul>'; ul=false; }
     if(n){ if(!ol){ h+='<ol>'; ol=true; } h+='<li>'+inl(n[1])+'</li>'; continue; } if(ol){ h+='</ol>'; ol=false; }
@@ -470,6 +471,9 @@ function pickEx(user){ const P=pool(S.inst,S.ac); const prevQ=[...S.turns].rever
   return ex; }
 function pickEasa(user){ const prevQ=[...S.turns].reverse().find(t=>t.question); const t=[S.topic,user||'',prevQ?prevQ.question:''].join(' ');
   return EASA.isRules(t)? EASA.search(t,4) : []; }
+/* theory entries (theory.js) for this turn: aviation theory only, cited [T1]…; never a source for rules */
+function pickTheory(user){ if(!window.THEORY) return []; const prevQ=[...S.turns].reverse().find(t=>t.question); return THEORY.search([S.topic,user||'',prevQ?prevQ.question:''].join(' '),3); }
+let CUR_TH=[];
 function prompt(user,skip,ex,easa,easy){
   const I=INST[S.inst], ac=acOf(S.ac);
   const srcTxt= ex.length? ex.map((x,i)=>`[S${i+1}] ${x.d.name} (${KN[x.d.kind]||'document'}${x.d.rev?', revision '+x.d.rev:''}), page ${x.c.p}${x.c.s?', '+x.c.s:''}:\n${x.c.t}`).join('\n\n') : '(no passages from the pilot\'s documents)';
@@ -491,7 +495,7 @@ ${modeNow}
 SOURCES (excerpts from the pilot's own documents):
 ${srcTxt}
 
-${easa&&easa.length? EASA.promptBlock(easa)+'\n\n' : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. If you state an EASA rule, name its exact ID, mark it [GK] and tell the pilot to check it in the current EASA Easy Access Rules.\n\n'}CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. A statement that is not supported by a source must be marked [GK] (general knowledge), and limitations, speeds, procedure steps and performance values must NEVER be given from general knowledge for this aircraft: say you cannot find them in the documents instead. Name regulations exactly (e.g. SERA.5015) when you use them. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
+${CUR_TH.length&&window.THEORY? THEORY.promptBlock(CUR_TH)+'\n\n' : ''}${easa&&easa.length? EASA.promptBlock(easa)+'\n\n' : 'EASA RULES: no entry from the NORDAP EASA rules library matched this question. If you state an EASA rule, name its exact ID, mark it [GK] and tell the pilot to check it in the current EASA Easy Access Rules.\n\n'}CITATION RULES: after every statement that comes from a source, cite it as [S1], [S2] and so on. Only cite sources listed above. A statement that is not supported by a source must be marked [GK] (general knowledge), and limitations, speeds, procedure steps and performance values must NEVER be given from general knowledge for this aircraft: say you cannot find them in the documents instead. Name regulations exactly (e.g. SERA.5015) when you use them. Calculations the pilot asks for (descent, wind, fuel, time, conversions and so on) are allowed and wanted: use the calculator markers described in your instructions; a calculated result is not [GK].
 
 Virtual Labs simulations you may recommend when the pilot misunderstands a concept (only these keys): ${labs}.
 
@@ -508,12 +512,12 @@ function revTopics(){ return gapsAll().filter(g=>!S||g.ac===S.ac||!g.ac).slice(0
 async function turn(user,skip,easy){
   if(!S) return; NAI.hush(); if(easy) addQ(L({en:'Explain it more simply',no:'Forklar enklere'})); else if(user) addQ(user); else if(skip) addQ(L({en:'I don’t know.',no:'Jeg vet ikke.'}));
   const prevA= easy? [...S.turns].reverse().find(t=>t.a) : null; if(easy&&!prevA) return;
-  const ex= easy? (prevA.src||[]) : pickEx(user), ea= easy? (prevA.easa||[]) : pickEasa(user); const P=prompt(user,skip,ex,ea,easy);
-  const d=addA('',{q:easy?'(explain more simply)':user||(skip?'(I don\'t know)':''),src:ex,regs:[],easa:ea,easy:!!easy}); const ti=+d.dataset.t;
+  const ex= easy? (prevA.src||[]) : pickEx(user), ea= easy? (prevA.easa||[]) : pickEasa(user), th= easy? (prevA.th||[]) : pickTheory(user); CUR_TH=th; const P=prompt(user,skip,ex,ea,easy);
+  const d=addA('',{q:easy?'(explain more simply)':user||(skip?'(I don\'t know)':''),src:ex,regs:[],easa:ea,th,easy:!!easy}); const ti=+d.dataset.t;
   d.innerHTML=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span><div class="thinking">${L({en:'Thinking…',no:'Tenker…'})}</div>`;
   ctl=new AbortController(); setBusy(true); drawSrc(ex,[],null,ea);
   const who=`<span class="who">${esc(L({en:INST[S.inst].name,no:NOI[INST[S.inst].name]}))}</span>`;
-  try{ const t=await NAI.text(P,{signal:ctl.signal,tier:'default',onText:({text})=>{ d.innerHTML=who+md(text.split(/\n-{3,}\s*\n?/)[0],ex.length,ea); }});
+  try{ const t=await NAI.text(P,{signal:ctl.signal,tier:'default',onText:({text})=>{ d.innerHTML=who+md(text.split(/\n-{3,}\s*\n?/)[0],ex.length,ea,th); }});
     const [body,meta]=splitMeta(t); const tr=S.turns[ti]; tr.a=body; tr.regs=regsIn(body); tr.question=meta.question||null;
     let extra='';
     if(!easy&&meta.grade!=null&&Number.isFinite(+meta.grade)&&(user||skip)){ const g=Math.max(0,Math.min(10,Math.round(+meta.grade))); S.grades.push({topic:String(meta.topic||'').slice(0,80)||((S.turns[ti-1]||{}).question||'').slice(0,60),score:g}); extra+=`<div class="grade ${g>=7?'ok':g<5?'bad':''}"><span class="g">${g}/10</span><div>${esc(meta.topic||'')}</div></div>`; }
@@ -521,9 +525,9 @@ async function turn(user,skip,easy){
     if(meta.lab&&LABS[meta.lab]){ const lb=LABS[meta.lab]; if(!S.labs.includes(meta.lab)) S.labs.push(meta.lab); extra+=`<div class="labgo">${L({en:'See it in the lab:',no:'Se det i labben:'})} <a href="${lb[0]}" target="_blank" rel="noopener">${esc(T(lb[1]))} →</a> <span class="note">${L({en:'come back and I’ll ask you again',no:'kom tilbake, så spør jeg deg igjen'})}</span></div>`; S.pendingLab=meta.lab; }
     const gl=meta.go&&goList(user).find(g=>g[0]===meta.go); if(gl) extra+=`<div class="labgo">${L({en:'Do it on NORDAP:',no:'Gjør det på NORDAP:'})} <a href="${esc(gl[0])}">${esc(gl[2])} →</a></div>`;
     if(MODE==='learn'&&body) extra+=`<div class="easy"><button type="button" class="btn sm" data-easy>${L({en:easy?'Even simpler':'Explain it more simply',no:easy?'Enda enklere':'Forklar enklere'})}</button></div>`;
-    d.innerHTML=who+md(body,ex.length,ea)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
+    d.innerHTML=who+md(body,ex.length,ea,th)+extra; drawSrc(ex,tr.regs,null,ea); if(el('tVoice').checked) NAI.speak(body.replace(/\[(S\d+|E\d+|T\d+|GK)\]/g,''),{radio:false,lang:LAB.lang==='no'?'no':'en'});
     saveSoon(); }
-  catch(e){ if(e&&e.text) d.innerHTML=who+md(e.text.split(/\n-{3,}/)[0],ex.length,ea); else d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
+  catch(e){ if(e&&e.text) d.innerHTML=who+md(e.text.split(/\n-{3,}/)[0],ex.length,ea,th); else d.innerHTML=who+`<p class="note">${esc(NAI.errText(e))}</p>`; NAI.fatal(e); }
   finally{ setBusy(false); d.scrollIntoView({block:'nearest',behavior:'smooth'}); }
 }
 function splitMeta(t){ const m=t.match(/\n-{3,}\s*\n?\s*(\{[\s\S]*\})\s*$/); if(!m) return [t.replace(/\n-{3,}[\s\S]*$/,'').trim(),{}]; let o={}; try{ o=JSON.parse(m[1]); }catch(e){} return [t.slice(0,m.index).trim(),o]; }
@@ -531,7 +535,7 @@ function setBusy(b){ el('tSend').disabled=el('tSkip').disabled=b; el('tStop').hi
 function send(){ if(!S){ if(MODE==='learn'&&el('tA').value.trim()){ const v=el('tA').value.trim(); startSession(); if(S){ el('tA').value=''; turn(v,false); } } return; } if(S.paused) togglePause(); const v=el('tA').value.trim(); if(!v) return; el('tA').value=''; turn(v,false); }
 let saveT=null; function saveSoon(){ clearTimeout(saveT); saveT=setTimeout(saveSes,1500); }
 async function saveSes(){ if(!S) return; const o={id:S.id,inst:S.inst,mode:S.mode,ac:S.ac,acName:S.acName,topic:S.topic,started:S.started,mins:Math.round(S.secs/60),grades:S.grades,gaps:S.gaps,labs:S.labs,report:S.report||null,
-  turns:S.turns.slice(-30).map(t=>({q:(t.q||'').slice(0,1500),a:(t.a||'').slice(0,2500),cites:(t.src||[]).map(x=>x.d.name+' p.'+x.c.p).concat((t.easa||[]).map(x=>EASA.label(x)))}))};
+  turns:S.turns.slice(-30).map(t=>({q:(t.q||'').slice(0,1500),a:(t.a||'').slice(0,2500),cites:(t.src||[]).map(x=>x.d.name+' p.'+x.c.p).concat((t.easa||[]).map(x=>EASA.label(x))).concat((t.th||[]).map(x=>'Theory: '+x.title.en))}))};
   const i=SES.findIndex(x=>x.id===o.id); if(i>=0) SES[i]=o; else SES.unshift(o); await NSTORE.put('fises',o); }
 function togglePause(){ if(!S) return; S.paused=!S.paused; el('tPause').textContent=S.paused?L({en:'Resume',no:'Fortsett'}):L({en:'Pause',no:'Pause'}); if(S.paused) NAI.hush(); }
 async function endSession(report){ if(!S) return; clearInterval(timer); if(ctl) ctl.abort(); NAI.hush(); const s=S;
