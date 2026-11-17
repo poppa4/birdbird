@@ -490,6 +490,9 @@
     visit('aircraft', id);
     const ty = W.typeOf(a.typeKey), docs = docsAll().filter(d => (d.acIds || []).includes(id)), notes = notesAll().filter(n => groupOf('note', n.id) === id || (n.links || []).some(l => l.t === 'aircraft' && l.id === id)), packs = packsAll().filter(p => packAc(p) === a);
     const free = docsAll().filter(d => !(d.acIds || []).includes(id));
+    // the flow trainer's flows on this type's cockpit (flows.js keeps them in localStorage 'bb-flows')
+    const flowAc = ({ c172: ['c172'], da42: ['da42'], b200: ['b200s', 'b200'], pa28: ['pa28'], da40: ['da40'], pa34: ['pa34'], a320: ['a320'] })[a.typeKey] || [];
+    let flows = []; try { const D = JSON.parse(localStorage.getItem('bb-flows-del') || '{}') || {}; flows = (JSON.parse(localStorage.getItem('bb-flows') || '[]') || []).filter(f => f && f.id && !D[f.id] && flowAc.includes(f.ac)).sort((x, y) => (y.upd || 0) - (x.upd || 0)); } catch (e) {}
     const byCat = W.DOC_CATS.map(c => [c, docs.filter(d => d.cat === c)]).filter(x => x[1].length);
     main.innerHTML = `<a class="ws-back" href="#/aircraft"><span aria-hidden="true">←</span> ${t('My aircraft', 'Mine fly')}</a>
       <div class="achead"><div><div class="reg">${esc(a.reg || a.type)}</div><div class="ty">${a.reg ? `<span>${esc(a.type)}</span>` : ''}${a.callsign ? `<span>${t('Callsign', 'Kallesignal')} <b>${esc(a.callsign)}</b></span>` : ''}${a.isDefault ? `<span class="deflt">${t('Default for new briefing packs', 'Standard for nye briefingpakker')}</span>` : ''}</div></div>
@@ -503,6 +506,8 @@
         ${notes.length ? `<ul class="rows">${notes.map(n => `<li><div class="t"><a class="n" href="#/notes/${esc(n.id)}">${n.pinned ? '<i class="pin"></i>' : ''}${esc(noteTitle(n))}</a><small>${esc(W.noteText(n).slice(0, 120))}</small></div><div class="r"><span class="w">${esc(ago(n.updatedAt))}</span></div></li>`).join('')}</ul>` : empty(t('Notes you link to this aircraft show here.', 'Notater du kobler til dette flyet, vises her.'))}
         <h3 class="ws-sub"><span>${t('Briefing packs', 'Briefingpakker')} <span class="c">${packs.length}</span></span></h3>
         ${packs.length ? `<ul class="rows">${packs.map(p => packRow(p)).join('')}</ul>` : empty(t('Briefing packs with this registration show here.', 'Briefingpakker med denne registreringen vises her.'))}
+        ${flowAc.length ? `<h3 class="ws-sub"><span>${t('Flows', 'Flows')} <span class="c">${flows.length}</span></span><a class="lk" href="flows.html#ac=${esc(flowAc[0])}">${t('Open the flow trainer', 'Åpne flow-treneren')}</a></h3>
+        ${flows.length ? `<ul class="rows">${flows.map(f => `<li><div class="t"><a class="n" href="flows.html#flow=${esc(f.id)}">${esc(f.name || t('Flow', 'Flow'))}</a><small>${esc((f.steps || []).length + ' ' + t('steps', 'steg'))}</small></div><div class="r"><span class="w">${esc(ago(f.upd))}</span></div></li>`).join('')}</ul>` : empty(t('Flows you build on this cockpit in the flow trainer show here.', 'Flows du bygger på denne cockpiten i flow-treneren vises her.'))}` : ''}
       </div><div>
         <h3 class="ws-sub"><span>${t('Key speeds and limits', 'Viktige hastigheter og grenser')}</span><span class="savedmark" id="spSaved"></span></h3>
         <table class="speeds"><colgroup><col class="ck"><col class="cv"><col class="cu"><col class="cx"></colgroup><thead><tr><th>${t('Item', 'Punkt')}</th><th style="text-align:right">${t('Value', 'Verdi')}</th><th>${t('Unit', 'Enhet')}</th><th><span hidden>x</span></th></tr></thead><tbody id="spBody">${(a.speeds || []).map(speedRow).join('')}</tbody></table>
