@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Model profiles · NORDAP</title>
+<meta name="description" content="What each NORDAP simulator and tool is built on, what works, what is simplified or left out, and what it must not be used for.">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+.sc-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.sc-list li{padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.mp{margin:14px 0 0;border-top:1px solid var(--ink)}
+.mp>div{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:4px 28px;padding:13px 0;border-bottom:1px solid var(--rule-2)}
+.mp dt{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding-top:3px}
+.mp dd{margin:0;font-size:15px;line-height:1.55}
+.mp dd ul{margin:0;padding:0;list-style:none}
+.mp dd li{padding:0 0 6px}.mp dd li:last-child{padding:0}
+.mp-st{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0 0}
+.mp-st a{font-size:13.5px;margin-left:4px}
+.lg{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.lg li{display:grid;grid-template-columns:minmax(150px,230px) minmax(0,1fr);gap:6px 24px;align-items:start;padding:11px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.lg li>span:first-child{padding-top:1px}
+.cl{margin:0;padding:0;list-style:none;border-top:1px solid var(--ink)}
+.cl li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 24px;padding:11px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.cl time{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);padding-top:2px}
+@media (max-width:700px){.mp>div,.lg li,.cl li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body data-title="Model profiles">
+<script src="site.js?v=83"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Model profiles</div>
+      <h1>Model profiles</h1>
+      <p>What each simulator and tool is built on, what works, what is simplified or left out, and what it must not be used for. NORDAP is a training aid next to approved theory and flight training. It is not an approved training organisation, not a qualified simulator and not a planning tool.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#c172">Cessna 172</a><a href="#da42">DA42</a><a href="#b200">King Air B200</a><a href="#flows">Flow trainer</a><a href="#ifr">IFR trainer</a><a href="#g2g">Gate to gate</a><a href="#radio">Radio drills</a><a href="#briefings">Briefings</a><a href="#route">Route Explorer</a><a href="#pack">Briefing pack</a><a href="#labs">Virtual Labs</a><a href="#words">Status words</a></nav>
+  <section class="card" id="c172">
+    <h2>Cessna 172 cockpit trainer</h2>
+    <p class="mp-st"><span class="stt illus">Illustrative model</span><span class="stt fict">Fictional training data</span><a href="c172.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>A general light single-engine flight model, tuned to typical Cessna 172 numbers.</li><li>An analogue six-pack panel drawn by NORDAP, and a fictional training area around one aerodrome.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>The instrument scan, attitude flying, VOR, ADF and DME navigation, the circuit and basic instrument procedures.</li><li>Mixture and EGT, the magneto check, the electrical system and a vacuum failure with gyros that slowly topple.</li><li>Your own checklist from My workspace, and a debrief after each exercise.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>No P-factor or torque on the ground.</li><li>No mass and balance: one fixed weight of about 2,200 lb.</li><li>Gauges and limits are typical values for learning, not certified data.</li><li>The 3D cockpit is in beta.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Performance planning, real limits or a checklist. Use the POH or AFM and your school's checklist.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="da42">
+    <h2>DA42 glass cockpit trainer</h2>
+    <p class="mp-st"><span class="stt illus">Illustrative model</span><span class="stt fict">Fictional training data</span><a href="cockpit.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>A DA42-like twin-engine flight model made for teaching. The numbers are approximate and do not come from a certified model.</li><li>Glass displays that follow common glass-cockpit conventions, with NORDAP's own graphics. It is not a product of any avionics maker.</li><li>A fictional region with its own navigation database.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>PFD and MFD, radios, the CDI, flight plan, direct-to and loading an approach.</li><li>The autopilot, ILS approaches and engine-failure scenarios, with wind and atmosphere you set yourself.</li><li>Your own checklist from My workspace, and a debrief after each exercise.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>Performance is approximate. Speeds and limits are learning examples, not facts.</li><li>The trainer gives no procedure text. Every school has its own checklists.</li><li>Waypoints, frequencies and procedures in the database are invented.</li><li>The 3D cockpit is in beta.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Learning a real avionics unit button for button, real procedures or real aircraft data. Use the AFM, the avionics pilot's guide and your school's material.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="b200">
+    <h2>King Air B200 cockpit trainer and type-rating example</h2>
+    <p class="mp-st"><span class="stt illus">Illustrative model</span><span class="stt fict">Fictional training data</span><a href="b200.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>A typical twin-turboprop panel drawn by NORDAP, with teaching models of the system logic.</li><li>Typical King Air B200 values, for learning only.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Engine start, the autofeather test, and engine-failure, fire and pressurisation drills.</li><li>Power, propeller and condition levers with their detents, ground power and the annunciators.</li><li>The type-rating page shows how an instructor can be set up from your own POH, checklists and SOP.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>Own drawings and simplified behaviour. The model does not show every system detail of the aircraft.</li><li>Numbers are typical values and are not taken from an AFM.</li><li>The 3D cockpit is in beta.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Type-rating training, limits or procedures. Verify everything in your AFM or POH.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="flows">
+    <h2>Flow trainer and its cockpits</h2>
+    <p class="mp-st"><span class="stt ex">Examples, not your SOP</span><a href="flows.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>Fourteen cockpits: NORDAP cockpits with every control named, real flight-deck photos under free licences, or your own picture.</li><li>Ready-made flows written from public handbooks and checklists. Each one names its source.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Drawing your own flow, one layer per pilot, playback, practice from memory and a practice log.</li><li>A button to report a wrong or missing control name.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>A control is named after the label on the picture you see.</li><li>Names on the 737, 787 and A350 have not been checked against the aircraft handbooks.</li><li>The A350 overhead panel is a drawing. The E190 lacks a few controls. The ATR 72-600 is shown with a photo, not a NORDAP cockpit.</li><li>The Cessna 172 flows come from the handbook of an earlier model than the cockpit shown. The King Air flows come from a public simulator checklist, not the POH.</li><li>There are no ready-made flows for the A320, the Seneca, the E190, the ATR or the large jets.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>A standard. The examples show how a flow can look. Your operator's SOP decides the order and the words.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="ifr">
+    <h2>IFR trainer</h2>
+    <p class="mp-st"><span class="stt illus">Illustrative model</span><span class="stt fict">Fictional training data</span><span class="stt nonav">Not for navigation</span><a href="ifr.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>The same teaching flight model as the cockpit trainers, in a training world with invented aerodromes, navaids and procedures.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>One instrument procedure at a time, with the next step on screen and a replay of your first mistake.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>The procedures teach the method. They are not published procedures.</li><li>The score compares your flying with tolerance bands set by NORDAP.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Proof that you are ready for a skill test, or for flying a published procedure. Your instructor decides that.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="g2g">
+    <h2>Gate to gate</h2>
+    <p class="mp-st"><span class="stt fict">Fictional training data</span><span class="stt ex">Examples, not your SOP</span><span class="stt nonav">Not for navigation</span><a href="radio.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>One whole DA42 trip in an invented setting: aerodromes, charts, frequencies and weather are made for the exercise.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Flows, checklists, briefings and every radio call in order, by voice or keyboard.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>The order of flows, checklists and briefings is NORDAP's example. It is not the DA42 AFM and not any school's SOP.</li><li>No instructor outside NORDAP has reviewed the sequence yet.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>A checklist or a procedure in a real aircraft.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="radio">
+    <h2>Radio drills</h2>
+    <p class="mp-st"><span class="stt src">Checked against source</span><a href="radio-drills.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>Phraseology written from the published rules. The trainer shows the rule behind each call.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Calls checked element by element, with the correct readback, by voice or keyboard. No account and no AI.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>Call signs, aerodromes and frequencies in the drills are invented.</li><li>Local practice differs between countries. The drill says which rule it follows.</li><li>Speech recognition can mishear. The keyboard is a full alternative.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>A radio licence test, or as the last word on phraseology. Use the regulation and your instructor.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="briefings">
+    <h2>Briefings</h2>
+    <p class="mp-st"><span class="stt fict">Fictional training data</span><span class="stt nonav">Not for navigation</span><a href="briefing.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>A departure or an approach briefing on an invented chart, with weather and aircraft numbers given for the exercise.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Briefing out loud, scored on structure, the numbers and how you deal with the threats.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>The chart is drawn for training and is not a published chart.</li><li>The score follows a fixed structure. An instructor may want another order.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Briefing a real flight. Use current charts and your operator's briefing format.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="route">
+    <h2>Route Explorer</h2>
+    <p class="mp-st"><span class="stt open">Open data, not the official AIP</span><span class="stt nonav">Not for navigation</span><a href="route.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>Open data: airspace, aerodromes and navaids from openAIP, terrain from public elevation models, weather from public services.</li><li>Each map layer names its source and how old the data is.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Seeing a route before you plan it: terrain, airspace, weather along the track and the vertical profile.</li><li>A link to the official AIP of each country, checked every week.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>It is not an official chart. Airspace, points and frequencies can be missing or out of date.</li><li>Coverage differs between countries.</li><li>The go / no-go view compares the data on the map with limits you set. It does not decide anything.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Flight planning or navigation. Plan in an approved tool and check airspace, points and frequencies in the current AIP.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="pack">
+    <h2>Briefing pack</h2>
+    <p class="mp-st"><span class="stt own">Your own data</span><a href="prep.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>A fixed order of pages for one flight. What you type is the content.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Arithmetic on your own numbers: fuel, mass and balance, performance factors and times.</li><li>Weather fetched for an aerodrome is shown with its source and time.</li><li>It prints as a booklet and stays on your device.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>NORDAP does not check that what you typed is right, complete or current.</li><li>Aircraft figures offered as examples are learning values, not facts.</li><li>The go / no-go page sums up your own entries against your own limits. It is not an operational assessment.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Replacing the AFM, NOTAM, minima or weather from official sources. Check each of them yourself.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="labs">
+    <h2>Virtual Labs</h2>
+    <p class="mp-st"><span class="stt illus">Illustrative model</span><a href="lab.html">Open</a></p>
+    <dl class="mp">
+      <div><dt>Built on</dt><dd><ul><li>Simplified physics that shows how things relate. Each lab states its purpose and what it leaves out.</li></ul></dd></div>
+      <div><dt>What works</dt><dd><ul><li>Changing one thing at a time and seeing what follows, in six subject areas.</li></ul></dd></div>
+      <div><dt>Simplified or left out</dt><dd><ul><li>Aircraft figures, also where a lab says A320, are illustrative values.</li><li>The labs are a visual reference. They do not cover a whole ATPL subject and are not a question bank.</li></ul></dd></div>
+      <div><dt>Do not use it for</dt><dd><ul><li>Operational decisions or exam preparation alone.</li></ul></dd></div>
+    </dl>
+  </section>
+  <section class="card" id="words">
+    <h2>What the status words mean</h2>
+    <ul class="lg">
+      <li><span><span class="stt beta">Beta</span></span><span>The feature works but is not finished. It can fail on some devices.</span></li>
+      <li><span><span class="stt illus">Illustrative model</span></span><span>A simplified model that shows how things relate. The numbers are typical or example values.</span></li>
+      <li><span><span class="stt fict">Fictional training data</span></span><span>Aerodromes, charts, frequencies, weather or call signs are invented for the exercise.</span></li>
+      <li><span><span class="stt ex">Examples, not your SOP</span></span><span>One way of doing it, shown as an example. Your operator or school decides.</span></li>
+      <li><span><span class="stt src">Checked against source</span></span><span>The content is written from a named source and has been compared with it by NORDAP.</span></li>
+      <li><span><span class="stt open">Open data, not the official AIP</span></span><span>Real data from open sources. It can be incomplete or out of date and is not the official publication.</span></li>
+      <li><span><span class="stt own">Your own data</span></span><span>What you typed. NORDAP calculates with it but does not check it.</span></li>
+      <li><span><span class="stt nonav">Not for navigation</span></span><span>Must not be used to plan or fly a real flight.</span></li>
+    </ul>
+    <p class="note">No status word here means reviewed by an outside expert. None of the content has had that review yet. <a href="quality.html">How content is checked</a></p>
+  </section>
+</div>
+<script src="lab.js?v=52"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({'Sections':'Sections'},{
+ 'Sections':'Seksjoner',
+ "Cessna 172 cockpit trainer":"Cessna 172 cockpit-trener",
+ "Illustrative model":"Illustrativ modell",
+ "Fictional training data":"Fiktive treningsdata",
+ "Open":"Åpne",
+ "Built on":"Bygger på",
+ "A general light single-engine flight model, tuned to typical Cessna 172 numbers.":"En generell flymodell for lett enmotors fly, stilt inn etter typiske tall for Cessna 172.",
+ "An analogue six-pack panel drawn by NORDAP, and a fictional training area around one aerodrome.":"Et analogt six-pack-panel tegnet av NORDAP, og et fiktivt øvingsområde rundt én flyplass.",
+ "What works":"Hva som virker",
+ "The instrument scan, attitude flying, VOR, ADF and DME navigation, the circuit and basic instrument procedures.":"Instrumentskann, attitydeflyging, navigasjon med VOR, ADF og DME, landingsrunden og grunnleggende instrumentprosedyrer.",
+ "Mixture and EGT, the magneto check, the electrical system and a vacuum failure with gyros that slowly topple.":"Blanding og EGT, magnetsjekk, det elektriske systemet og vakuumsvikt der gyroene sakte velter.",
+ "Your own checklist from My workspace, and a debrief after each exercise.":"Din egen sjekkliste fra Min arbeidsflate, og debrief etter hver øvelse.",
+ "Simplified or left out":"Forenklet eller utelatt",
+ "No P-factor or torque on the ground.":"Ingen P-faktor eller dreiemoment på bakken.",
+ "No mass and balance: one fixed weight of about 2,200 lb.":"Ingen masse og balanse: én fast vekt på omtrent 2200 lb.",
+ "Gauges and limits are typical values for learning, not certified data.":"Instrumentverdier og grenser er typiske verdier for læring, ikke sertifiserte data.",
+ "The 3D cockpit is in beta.":"3D-cockpiten er i beta.",
+ "Do not use it for":"Bruk det ikke til",
+ "Performance planning, real limits or a checklist. Use the POH or AFM and your school's checklist.":"Ytelsesberegning, virkelige grenser eller sjekkliste. Bruk POH eller AFM og skolens sjekkliste.",
+ "DA42 glass cockpit trainer":"DA42 glass cockpit-trener",
+ "A DA42-like twin-engine flight model made for teaching. The numbers are approximate and do not come from a certified model.":"En DA42-lignende tomotors flymodell laget for undervisning. Tallene er tilnærmede og kommer ikke fra en sertifisert modell.",
+ "Glass displays that follow common glass-cockpit conventions, with NORDAP's own graphics. It is not a product of any avionics maker.":"Glassskjermer som følger vanlige glass cockpit-konvensjoner, med NORDAPs egen grafikk. Det er ikke et produkt fra noen avionikkprodusent.",
+ "A fictional region with its own navigation database.":"En fiktiv region med egen navigasjonsdatabase.",
+ "PFD and MFD, radios, the CDI, flight plan, direct-to and loading an approach.":"PFD og MFD, radioer, CDI, flyplan, direkte-til og lasting av innflyging.",
+ "The autopilot, ILS approaches and engine-failure scenarios, with wind and atmosphere you set yourself.":"Autopilot, ILS-innflyginger og motorsviktscenarioer, med vind og atmosfære du stiller selv.",
+ "Performance is approximate. Speeds and limits are learning examples, not facts.":"Ytelsen er tilnærmet. Hastigheter og grenser er læringseksempler, ikke fakta.",
+ "The trainer gives no procedure text. Every school has its own checklists.":"Treneren gir ingen prosedyretekst. Hver skole har sine egne sjekklister.",
+ "Waypoints, frequencies and procedures in the database are invented.":"Veipunkter, frekvenser og prosedyrer i databasen er oppdiktet.",
+ "Learning a real avionics unit button for button, real procedures or real aircraft data. Use the AFM, the avionics pilot's guide and your school's material.":"Å lære en virkelig avionikkenhet knapp for knapp, virkelige prosedyrer eller virkelige flydata. Bruk AFM, avionikkens pilotveiledning og skolens materiell.",
+ "King Air B200 cockpit trainer and type-rating example":"King Air B200 cockpit-trener og typerating-eksempel",
+ "A typical twin-turboprop panel drawn by NORDAP, with teaching models of the system logic.":"Et typisk tomotors turboprop-panel tegnet av NORDAP, med undervisningsmodeller av systemlogikken.",
+ "Typical King Air B200 values, for learning only.":"Typiske verdier for King Air B200, kun for læring.",
+ "Engine start, the autofeather test, and engine-failure, fire and pressurisation drills.":"Motorstart, autofeather-test, og øvelser på motorsvikt, brann og trykkabin.",
+ "Power, propeller and condition levers with their detents, ground power and the annunciators.":"Gass-, propell- og condition-spaker med sperrer, bakkestrøm og varsellys.",
+ "The type-rating page shows how an instructor can be set up from your own POH, checklists and SOP.":"Typerating-siden viser hvordan en instruktør kan settes opp fra din egen POH, sjekklister og SOP.",
+ "Own drawings and simplified behaviour. The model does not show every system detail of the aircraft.":"Egne tegninger og forenklet oppførsel. Modellen viser ikke alle systemdetaljer i flyet.",
+ "Numbers are typical values and are not taken from an AFM.":"Tallene er typiske verdier og er ikke hentet fra en AFM.",
+ "Type-rating training, limits or procedures. Verify everything in your AFM or POH.":"Typerating-trening, grenser eller prosedyrer. Kontroller alt i din AFM eller POH.",
+ "Flow trainer and its cockpits":"Flow-treneren og cockpitene",
+ "Examples, not your SOP":"Eksempler, ikke din SOP",
+ "Fourteen cockpits: NORDAP cockpits with every control named, real flight-deck photos under free licences, or your own picture.":"Fjorten cockpiter: NORDAP-cockpiter med alle kontroller navngitt, ekte cockpitbilder under frie lisenser, eller ditt eget bilde.",
+ "Ready-made flows written from public handbooks and checklists. Each one names its source.":"Ferdige flows skrevet ut fra offentlige håndbøker og sjekklister. Hver av dem oppgir kilden.",
+ "Drawing your own flow, one layer per pilot, playback, practice from memory and a practice log.":"Tegne din egen flow, ett lag per pilot, avspilling, øving fra hukommelsen og øvingslogg.",
+ "A button to report a wrong or missing control name.":"En knapp for å melde feil eller manglende kontrollnavn.",
+ "A control is named after the label on the picture you see.":"En kontroll har navn etter merkingen på bildet du ser.",
+ "Names on the 737, 787 and A350 have not been checked against the aircraft handbooks.":"Navn på 737, 787 og A350 er ikke kontrollert mot flyenes håndbøker.",
+ "The A350 overhead panel is a drawing. The E190 lacks a few controls. The ATR 72-600 is shown with a photo, not a NORDAP cockpit.":"Overheadpanelet på A350 er en tegning. E190 mangler noen få kontroller. ATR 72-600 vises med et bilde, ikke en NORDAP-cockpit.",
+ "The Cessna 172 flows come from the handbook of an earlier model than the cockpit shown. The King Air flows come from a public simulator checklist, not the POH.":"Flows for Cessna 172 kommer fra håndboken til en eldre modell enn cockpiten som vises. Flows for King Air kommer fra en offentlig simulatorsjekkliste, ikke POH.",
+ "There are no ready-made flows for the A320, the Seneca, the E190, the ATR or the large jets.":"Det finnes ingen ferdige flows for A320, Seneca, E190, ATR eller de store jetflyene.",
+ "A standard. The examples show how a flow can look. Your operator's SOP decides the order and the words.":"En standard. Eksemplene viser hvordan en flow kan se ut. Operatørens SOP bestemmer rekkefølge og ordlyd.",
+ "IFR trainer":"IFR-trener",
+ "Not for navigation":"Ikke for navigasjon",
+ "The same teaching flight model as the cockpit trainers, in a training world with invented aerodromes, navaids and procedures.":"Den samme undervisningsmodellen som cockpit-trenerne, i en øvingsverden med oppdiktede flyplasser, navigasjonshjelpemidler og prosedyrer.",
+ "One instrument procedure at a time, with the next step on screen and a replay of your first mistake.":"Én instrumentprosedyre om gangen, med neste steg på skjermen og avspilling av din første feil.",
+ "The procedures teach the method. They are not published procedures.":"Prosedyrene lærer bort metoden. De er ikke publiserte prosedyrer.",
+ "The score compares your flying with tolerance bands set by NORDAP.":"Poengsummen sammenligner flygingen din med toleransebånd satt av NORDAP.",
+ "Proof that you are ready for a skill test, or for flying a published procedure. Your instructor decides that.":"Bevis på at du er klar for en ferdighetsprøve, eller for å fly en publisert prosedyre. Det avgjør instruktøren din.",
+ "Gate to gate":"Gate to gate",
+ "One whole DA42 trip in an invented setting: aerodromes, charts, frequencies and weather are made for the exercise.":"Én hel DA42-tur i oppdiktede omgivelser: flyplasser, kart, frekvenser og vær er laget for øvelsen.",
+ "Flows, checklists, briefings and every radio call in order, by voice or keyboard.":"Flows, sjekklister, briefinger og hvert radioanrop i rekkefølge, med stemme eller tastatur.",
+ "The order of flows, checklists and briefings is NORDAP's example. It is not the DA42 AFM and not any school's SOP.":"Rekkefølgen på flows, sjekklister og briefinger er NORDAPs eksempel. Det er ikke DA42 AFM og ikke noen skoles SOP.",
+ "No instructor outside NORDAP has reviewed the sequence yet.":"Ingen instruktør utenfor NORDAP har gjennomgått sekvensen ennå.",
+ "A checklist or a procedure in a real aircraft.":"En sjekkliste eller prosedyre i et virkelig fly.",
+ "Radio drills":"Radioøvelser",
+ "Checked against source":"Kontrollert mot kilde",
+ "Phraseology written from the published rules. The trainer shows the rule behind each call.":"Fraseologi skrevet ut fra publisert regelverk. Treneren viser regelen bak hvert anrop.",
+ "Calls checked element by element, with the correct readback, by voice or keyboard. No account and no AI.":"Anrop kontrollert element for element, med riktig tilbakelesing, med stemme eller tastatur. Ingen konto og ingen AI.",
+ "Call signs, aerodromes and frequencies in the drills are invented.":"Kallesignaler, flyplasser og frekvenser i øvelsene er oppdiktet.",
+ "Local practice differs between countries. The drill says which rule it follows.":"Lokal praksis varierer mellom land. Øvelsen sier hvilken regel den følger.",
+ "Speech recognition can mishear. The keyboard is a full alternative.":"Talegjenkjenning kan høre feil. Tastaturet er et fullverdig alternativ.",
+ "A radio licence test, or as the last word on phraseology. Use the regulation and your instructor.":"En prøve for radiosertifikat, eller som siste ord om fraseologi. Bruk regelverket og instruktøren din.",
+ "Briefings":"Briefinger",
+ "A departure or an approach briefing on an invented chart, with weather and aircraft numbers given for the exercise.":"En avgangs- eller innflygingsbrief på et oppdiktet kart, med vær og flytall gitt for øvelsen.",
+ "Briefing out loud, scored on structure, the numbers and how you deal with the threats.":"Briefing høyt, vurdert på struktur, tallene og hvordan du håndterer truslene.",
+ "The chart is drawn for training and is not a published chart.":"Kartet er tegnet for øving og er ikke et publisert kart.",
+ "The score follows a fixed structure. An instructor may want another order.":"Poengsummen følger en fast struktur. En instruktør kan ønske en annen rekkefølge.",
+ "Briefing a real flight. Use current charts and your operator's briefing format.":"Briefing av en virkelig flyging. Bruk gjeldende kart og operatørens briefingformat.",
+ "Route Explorer":"Route Explorer",
+ "Open data, not the official AIP":"Åpne data, ikke offisiell AIP",
+ "Open data: airspace, aerodromes and navaids from openAIP, terrain from public elevation models, weather from public services.":"Åpne data: luftrom, flyplasser og navigasjonshjelpemidler fra openAIP, terreng fra offentlige høydemodeller, vær fra offentlige tjenester.",
+ "Each map layer names its source and how old the data is.":"Hvert kartlag oppgir kilden og hvor gamle dataene er.",
+ "Seeing a route before you plan it: terrain, airspace, weather along the track and the vertical profile.":"Å se en rute før du planlegger den: terreng, luftrom, vær langs sporet og vertikalprofil.",
+ "A link to the official AIP of each country, checked every week.":"Lenke til offisiell AIP for hvert land, kontrollert hver uke.",
+ "It is not an official chart. Airspace, points and frequencies can be missing or out of date.":"Det er ikke et offisielt kart. Luftrom, punkter og frekvenser kan mangle eller være utdaterte.",
+ "Coverage differs between countries.":"Dekningen varierer mellom land.",
+ "The go / no-go view compares the data on the map with limits you set. It does not decide anything.":"Go / no-go-visningen sammenligner dataene i kartet med grenser du setter. Den avgjør ingenting.",
+ "Flight planning or navigation. Plan in an approved tool and check airspace, points and frequencies in the current AIP.":"Flyplanlegging eller navigasjon. Planlegg i et godkjent verktøy og kontroller luftrom, punkter og frekvenser i gjeldende AIP.",
+ "Briefing pack":"Briefingpakke",
+ "Your own data":"Dine egne data",
+ "A fixed order of pages for one flight. What you type is the content.":"En fast rekkefølge av sider for én flyging. Det du skriver inn er innholdet.",
+ "Arithmetic on your own numbers: fuel, mass and balance, performance factors and times.":"Regning på dine egne tall: drivstoff, masse og balanse, ytelsesfaktorer og tider.",
+ "Weather fetched for an aerodrome is shown with its source and time.":"Vær hentet for en flyplass vises med kilde og tidspunkt.",
+ "It prints as a booklet and stays on your device.":"Den skrives ut som et hefte og blir på enheten din.",
+ "NORDAP does not check that what you typed is right, complete or current.":"NORDAP kontrollerer ikke at det du har skrevet er riktig, komplett eller gjeldende.",
+ "Aircraft figures offered as examples are learning values, not facts.":"Flytall som tilbys som eksempler er læringsverdier, ikke fakta.",
+ "The go / no-go page sums up your own entries against your own limits. It is not an operational assessment.":"Go / no-go-siden oppsummerer dine egne tall mot dine egne grenser. Det er ikke en operativ vurdering.",
+ "Replacing the AFM, NOTAM, minima or weather from official sources. Check each of them yourself.":"Å erstatte AFM, NOTAM, minima eller vær fra offisielle kilder. Kontroller hver av dem selv.",
+ "Virtual Labs":"Virtual Labs",
+ "Simplified physics that shows how things relate. Each lab states its purpose and what it leaves out.":"Forenklet fysikk som viser hvordan ting henger sammen. Hver lab oppgir formålet og hva den utelater.",
+ "Changing one thing at a time and seeing what follows, in six subject areas.":"Å endre én ting om gangen og se hva som følger, i seks fagområder.",
+ "Aircraft figures, also where a lab says A320, are illustrative values.":"Flytall, også der en lab sier A320, er illustrative verdier.",
+ "The labs are a visual reference. They do not cover a whole ATPL subject and are not a question bank.":"Labbene er et visuelt oppslagsverk. De dekker ikke et helt ATPL-fag og er ikke en spørsmålsbank.",
+ "Operational decisions or exam preparation alone.":"Operative beslutninger eller eksamensforberedelse alene.",
+ "What the status words mean":"Hva statusordene betyr",
+ "Beta":"Beta",
+ "The feature works but is not finished. It can fail on some devices.":"Funksjonen virker, men er ikke ferdig. Den kan svikte på noen enheter.",
+ "A simplified model that shows how things relate. The numbers are typical or example values.":"En forenklet modell som viser hvordan ting henger sammen. Tallene er typiske verdier eller eksempler.",
+ "Aerodromes, charts, frequencies, weather or call signs are invented for the exercise.":"Flyplasser, kart, frekvenser, vær eller kallesignaler er oppdiktet for øvelsen.",
+ "One way of doing it, shown as an example. Your operator or school decides.":"Én måte å gjøre det på, vist som eksempel. Operatøren eller skolen din bestemmer.",
+ "The content is written from a named source and has been compared with it by NORDAP.":"Innholdet er skrevet ut fra en navngitt kilde og er sammenlignet med den av NORDAP.",
+ "Real data from open sources. It can be incomplete or out of date and is not the official publication.":"Virkelige data fra åpne kilder. De kan være ufullstendige eller utdaterte og er ikke den offisielle publikasjonen.",
+ "What you typed. NORDAP calculates with it but does not check it.":"Det du har skrevet inn. NORDAP regner med det, men kontrollerer det ikke.",
+ "Must not be used to plan or fly a real flight.":"Må ikke brukes til å planlegge eller fly en virkelig flyging.",
+ "No status word here means reviewed by an outside expert. None of the content has had that review yet.":"Ingen statusord her betyr gjennomgått av en ekstern fagperson. Ikke noe av innholdet har fått en slik gjennomgang ennå.",
+ "How content is checked":"Slik kontrolleres innholdet",
+ "NORDAP · Model profiles":"NORDAP · Modellprofiler",
+ "Model profiles":"Modellprofiler",
+ "What each simulator and tool is built on, what works, what is simplified or left out, and what it must not be used for. NORDAP is a training aid next to approved theory and flight training. It is not an approved training organisation, not a qualified simulator and not a planning tool.":"Hva hver simulator og hvert verktøy bygger på, hva som virker, hva som er forenklet eller utelatt, og hva det ikke må brukes til. NORDAP er et hjelpemiddel ved siden av godkjent teori- og flyopplæring. Det er ikke en godkjent opplæringsorganisasjon, ikke en kvalifisert simulator og ikke et planleggingsverktøy.",
+ "Cessna 172":"Cessna 172",
+ "DA42":"DA42",
+ "King Air B200":"King Air B200",
+ "Flow trainer":"Flow-trener",
+ "Status words":"Statusord"
+});
+LAB.start('models');
+})();
+</script>
+</body>
+</html>

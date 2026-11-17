@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How content is checked · NORDAP</title>
+<meta name="description" content="Who writes the content on NORDAP, what it is checked against, what has not been reviewed by an outside expert, and a change log.">
+<link rel="stylesheet" href="lab.css?v=14">
+<link rel="stylesheet" href="site.css?v=35">
+<style>
+.sc-list{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.sc-list li{padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.mp{margin:14px 0 0;border-top:1px solid var(--ink)}
+.mp>div{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr);gap:4px 28px;padding:13px 0;border-bottom:1px solid var(--rule-2)}
+.mp dt{font-family:var(--f-mono);font-size:11.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding-top:3px}
+.mp dd{margin:0;font-size:15px;line-height:1.55}
+.mp dd ul{margin:0;padding:0;list-style:none}
+.mp dd li{padding:0 0 6px}.mp dd li:last-child{padding:0}
+.mp-st{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0 0}
+.mp-st a{font-size:13.5px;margin-left:4px}
+.lg{margin:0;padding:0;list-style:none;border-top:1px solid var(--rule)}
+.lg li{display:grid;grid-template-columns:minmax(150px,230px) minmax(0,1fr);gap:6px 24px;align-items:start;padding:11px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.lg li>span:first-child{padding-top:1px}
+.cl{margin:0;padding:0;list-style:none;border-top:1px solid var(--ink)}
+.cl li{display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 24px;padding:11px 0;border-bottom:1px solid var(--rule-2);font-size:15px;line-height:1.5}
+.cl time{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);padding-top:2px}
+@media (max-width:700px){.mp>div,.lg li,.cl li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body data-title="How content is checked">
+<script src="site.js?v=83"></script>
+<div class="page">
+  <header class="lhead">
+    <div class="brand">
+      <div class="eyebrow">NORDAP · Quality</div>
+      <h1>How content is checked</h1>
+      <p>Who writes the content, what it is checked against, what has not been checked by anyone else, and what has changed.</p>
+    </div>
+  </header>
+  <nav class="snav" aria-label="Sections"><a href="#who">Who</a><a href="#how">What is checked</a><a href="#not">Not checked</a><a href="#errors">Report an error</a><a href="#log">Change log</a></nav>
+  <section class="card" id="who">
+    <h2>Who writes and checks</h2>
+    <p>NORDAP is built and written by one pilot, with AI tools for the programming. There is no editorial staff and no panel of instructors.</p>
+    <p>Nothing on the site has been reviewed by an instructor or a subject expert outside NORDAP yet. When that happens, the page concerned will say who reviewed it and when.</p>
+  </section>
+  <section class="card" id="how">
+    <h2>What is checked, and how</h2>
+    <ul class="sc-list">
+      <li>Rules and phraseology are written from the published regulation, and the page names the rule.</li>
+      <li>Data from outside sources is shown with its source. The sources and their licences are listed on the data sources page.</li>
+      <li>The link to each country's official AIP is tested automatically every week.</li>
+      <li>Weather sources and the live site are tested automatically.</li>
+      <li>Every change to the code runs the automated tests before it is published. They test that the pages work, not that the content is right.</li>
+      <li>Control names in the flow trainer follow the label on the picture. Some have also been compared with public references.</li>
+    </ul>
+  </section>
+  <section class="card" id="not">
+    <h2>What has not been checked</h2>
+    <ul class="sc-list">
+      <li>The flight models have not been compared with flight-test data or a certified model.</li>
+      <li>Gate to gate, the IFR trainer and the briefings have not been reviewed by an instructor.</li>
+      <li>The labs have not been mapped to the EASA learning objectives one by one.</li>
+      <li>No study has measured whether the tools improve learning. NORDAP makes no such claim.</li>
+      <li>The 3D cockpits and the maps have not been tested on every device.</li>
+    </ul>
+    <p class="note">What each tool is built on and what it leaves out is listed in the model profiles. <a href="models.html">Model profiles</a></p>
+  </section>
+  <section class="card" id="errors">
+    <h2>Found an error?</h2>
+    <p>The flow trainer has a button for a wrong or missing control name. For everything else, use the contact address on the about page. A confirmed error is corrected and entered in the change log.</p>
+    <p><a class="btn" href="about.html#contact">Contact</a></p>
+  </section>
+  <section class="card" id="log">
+    <h2>Change log</h2>
+    <p class="lead">Changes to content, data and models. Changes to layout and wording are not listed.</p>
+    <ul class="cl">
+      <li><time datetime="2026-11-17">2026-11-17</time><span>The platform is renamed NORDAP, Nordic Aviation Platform. Model profiles, status words and this page are added.</span></li>
+      <li><time datetime="2026-11-17">2026-11-17</time><span>Flow trainer: 34 ready-made flows from public handbooks and checklists, each with its source. Control names corrected against public references on the 787, the A350 and the Seneca.</span></li>
+      <li><time datetime="2026-11-17">2026-11-17</time><span>AIP link check: a portal that fails to answer once is tried again before it counts as dead.</span></li>
+      <li><time datetime="2026-11-16">2026-11-16</time><span>Official AIP link for every European country, always the edition in force, with a weekly check.</span></li>
+      <li><time datetime="2026-11-15">2026-11-15</time><span>DA42 values are marked as learning examples, not facts, in the briefing pack and in Flight Intelligence.</span></li>
+      <li><time datetime="2026-11-14">2026-11-14</time><span>Virtual Labs: one template on all labs, with purpose, learning goal and what the model leaves out.</span></li>
+      <li><time datetime="2026-11-13">2026-11-13</time><span>Weather: METAR and TAF from MET Norway for Norwegian aerodromes, radar from the European radar network and satellite cloud on the Route Explorer map, each with its source.</span></li>
+    </ul>
+    <p class="note">The code is public. Every change, with its reason, is in the history. <a href="https://github.com/poppa4/birdbird/commits/main" rel="noopener">Full history</a></p>
+  </section>
+
+</div>
+<script src="lab.js?v=52"></script>
+<script>
+(function(){
+'use strict';
+LAB.add({'Sections':'Sections'},{
+ 'Sections':'Seksjoner',
+ "NORDAP is built and written by one pilot, with AI tools for the programming. There is no editorial staff and no panel of instructors.":"NORDAP er bygget og skrevet av én pilot, med AI-verktøy til programmeringen. Det finnes ingen redaksjon og ikke noe panel av instruktører.",
+ "Nothing on the site has been reviewed by an instructor or a subject expert outside NORDAP yet. When that happens, the page concerned will say who reviewed it and when.":"Ikke noe på siden er gjennomgått av en instruktør eller fagperson utenfor NORDAP ennå. Når det skjer, vil den aktuelle siden si hvem som gjennomgikk den og når.",
+ "Who writes and checks":"Hvem som skriver og kontrollerer",
+ "Rules and phraseology are written from the published regulation, and the page names the rule.":"Regler og fraseologi skrives ut fra publisert regelverk, og siden oppgir regelen.",
+ "Data from outside sources is shown with its source. The sources and their licences are listed on the data sources page.":"Data fra eksterne kilder vises med kilde. Kildene og lisensene står på siden om datakilder.",
+ "The link to each country's official AIP is tested automatically every week.":"Lenken til hvert lands offisielle AIP testes automatisk hver uke.",
+ "Weather sources and the live site are tested automatically.":"Værkilder og den publiserte siden testes automatisk.",
+ "Every change to the code runs the automated tests before it is published. They test that the pages work, not that the content is right.":"Hver endring i koden kjører de automatiske testene før den publiseres. De tester at sidene virker, ikke at innholdet er riktig.",
+ "Control names in the flow trainer follow the label on the picture. Some have also been compared with public references.":"Kontrollnavn i flow-treneren følger merkingen på bildet. Noen er også sammenlignet med offentlige referanser.",
+ "What is checked, and how":"Hva som kontrolleres, og hvordan",
+ "The flight models have not been compared with flight-test data or a certified model.":"Flymodellene er ikke sammenlignet med testflygingsdata eller en sertifisert modell.",
+ "Gate to gate, the IFR trainer and the briefings have not been reviewed by an instructor.":"Gate to gate, IFR-treneren og briefingene er ikke gjennomgått av en instruktør.",
+ "The labs have not been mapped to the EASA learning objectives one by one.":"Labbene er ikke koblet til EASAs læringsmål én for én.",
+ "No study has measured whether the tools improve learning. NORDAP makes no such claim.":"Ingen undersøkelse har målt om verktøyene gir bedre læring. NORDAP påstår ikke det.",
+ "The 3D cockpits and the maps have not been tested on every device.":"3D-cockpitene og kartene er ikke testet på alle enheter.",
+ "What each tool is built on and what it leaves out is listed in the model profiles.":"Hva hvert verktøy bygger på og hva det utelater, står i modellprofilene.",
+ "Model profiles":"Modellprofiler",
+ "What has not been checked":"Hva som ikke er kontrollert",
+ "The flow trainer has a button for a wrong or missing control name. For everything else, use the contact address on the about page. A confirmed error is corrected and entered in the change log.":"Flow-treneren har en knapp for feil eller manglende kontrollnavn. For alt annet, bruk kontaktadressen på Om-siden. En bekreftet feil rettes og føres i endringsloggen.",
+ "Contact":"Kontakt",
+ "Found an error?":"Funnet en feil?",
+ "Changes to content, data and models. Changes to layout and wording are not listed.":"Endringer i innhold, data og modeller. Endringer i utseende og ordlyd er ikke med.",
+ "The platform is renamed NORDAP, Nordic Aviation Platform. Model profiles, status words and this page are added.":"Plattformen får navnet NORDAP, Nordic Aviation Platform. Modellprofiler, statusord og denne siden legges til.",
+ "Flow trainer: 34 ready-made flows from public handbooks and checklists, each with its source. Control names corrected against public references on the 787, the A350 and the Seneca.":"Flow-trener: 34 ferdige flows fra offentlige håndbøker og sjekklister, hver med kilde. Kontrollnavn rettet mot offentlige referanser på 787, A350 og Seneca.",
+ "AIP link check: a portal that fails to answer once is tried again before it counts as dead.":"AIP-lenkesjekk: en portal som ikke svarer én gang, prøves på nytt før den regnes som død.",
+ "Official AIP link for every European country, always the edition in force, with a weekly check.":"Offisiell AIP-lenke for hvert europeisk land, alltid gjeldende utgave, med ukentlig kontroll.",
+ "DA42 values are marked as learning examples, not facts, in the briefing pack and in Flight Intelligence.":"DA42-verdier er merket som læringseksempler, ikke fakta, i briefingpakken og i Flight Intelligence.",
+ "Virtual Labs: one template on all labs, with purpose, learning goal and what the model leaves out.":"Virtual Labs: én mal på alle labber, med formål, læringsmål og hva modellen utelater.",
+ "Weather: METAR and TAF from MET Norway for Norwegian aerodromes, radar from the European radar network and satellite cloud on the Route Explorer map, each with its source.":"Vær: METAR og TAF fra MET Norway for norske flyplasser, radar fra det europeiske radarnettverket og satellittskyer i Route Explorer-kartet, hver med kilde.",
+ "The code is public. Every change, with its reason, is in the history.":"Koden er åpen. Hver endring, med begrunnelse, står i historikken.",
+ "Full history":"Full historikk",
+ "Change log":"Endringslogg",
+ "NORDAP · Quality":"NORDAP · Kvalitet",
+ "How content is checked":"Slik kontrolleres innholdet",
+ "Who writes the content, what it is checked against, what has not been checked by anyone else, and what has changed.":"Hvem som skriver innholdet, hva det kontrolleres mot, hva som ikke er kontrollert av andre, og hva som er endret.",
+ "Who":"Hvem",
+ "What is checked":"Hva som kontrolleres",
+ "Not checked":"Ikke kontrollert",
+ "Report an error":"Meld en feil"
+});
+LAB.start('quality');
+})();
+</script>
+</body>
+</html>

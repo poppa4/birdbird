@@ -486,3 +486,9 @@ body.depth-instructor .atl-model canvas{max-height:min(80vh,820px)}
 /* phones: the full name under NORDAP must not push the Menu button onto a second row */
 @media (max-width:429px){.site>.in{gap:0 9px}.site .logo{gap:7px}.site .logo span{width:auto}.site .logo span small{font-size:9px;letter-spacing:0}}
 @media (max-width:389px){.site .logo span small{display:none}}
+/* status words: the same few on every page (site.js STAT; models.html explains them) */
+.stt{display:inline-flex;align-items:center;font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;line-height:1;padding:4px 7px;border:1px solid var(--rule);border-radius:3px;color:var(--ink-2);background:var(--sheet);white-space:nowrap}
+.stt.beta{color:var(--caution-ink,#8A5A0B);border-color:color-mix(in srgb,var(--caution,#B7791F) 40%,transparent);background:var(--caution-wash,#FBF3E4)}
+.stt.src{color:var(--ok,#2E7D4F);border-color:color-mix(in srgb,var(--ok,#2E7D4F) 35%,transparent)}
+p.mstat{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:12px 0 0;max-width:none}
+p.mstat a{font-size:13.5px;margin-left:4px;color:var(--accent)}
